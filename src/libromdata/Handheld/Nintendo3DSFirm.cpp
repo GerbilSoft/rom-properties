@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Nintendo3DSFirm.hpp: Nintendo 3DS firmware reader.                      *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -321,7 +321,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 			const char *searchstr;	// Search string.
 			unsigned int searchlen;	// Search string length, without the NULL terminator.
 		};
-		static const Arm9VerStr_t arm9VerStr[] = {
+		static const Arm9VerStr_t arm9VerStr_tbl[] = {
 			{"Luma3DS",		"Luma3DS v", 9},
 			{"GodMode9",		"GodMode9 Explorer v", 19},	// Older versions
 			{"GodMode9",		"GodMode9 v", 10},		// Newer versions (v1.9.1; TODO check for first one?)
@@ -331,22 +331,20 @@ int Nintendo3DSFirm::loadFieldData(void)
 			{"SafeB9SInstaller",	"SafeB9SInstaller v", 18},
 			{"OpenFirmInstaller",	"OpenFirmInstaller v", 19},
 			{"fastboot3DS",		"fastboot3DS v", 13},
-
-			{nullptr, nullptr, 0}
 		};
 
 		const char *arm9VerStr_title = nullptr;
 		string s_verstr;
-		for (const Arm9VerStr_t *p = arm9VerStr; p->title != nullptr; p++) {
+		for (auto &&p : arm9VerStr_tbl) {
 			const char *verstr = static_cast<const char*>(memmem(
-				firmBuf.get(), szFile, p->searchstr, p->searchlen));
+				firmBuf.get(), szFile, p.searchstr, p.searchlen));
 			if (!verstr)
 				continue;
 
-			arm9VerStr_title = p->title;
+			arm9VerStr_title = p.title;
 
 			// Version does NOT include the 'v' character.
-			verstr += p->searchlen;
+			verstr += p.searchlen;
 			const char *end = (const char*)firmBuf.get() + szFile;
 			int count = 0;
 			while (verstr < end && count < 32 && verstr[count] != 0 &&
@@ -374,7 +372,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 			uint32_t first4;
 			const char *status;
 		};
-		static const SighaxStatus_t sighaxStatus[] = {
+		static const SighaxStatus_t sighaxStatus_tbl[] = {
 			{0xB6724531,	"NAND retail"},		// SciresM
 			{0x6EFF209C,	"NAND retail"},		// sighax.com
 			{0x88697CDC,	"NAND devkit"},		// SciresM
@@ -384,14 +382,12 @@ int Nintendo3DSFirm::loadFieldData(void)
 
 			{0x37E96B10,	"SPI retail"},
 			{0x18722BC7,	"SPI devkit"},
-
-			{0, nullptr}
 		};
 
 		const char *s_sighax_status = nullptr;
-		for (const SighaxStatus_t *p = sighaxStatus; p->first4 != 0; p++) {
-			if (p->first4 == first4) {
-				s_sighax_status = p->status;
+		for (auto &&p : sighaxStatus_tbl) {
+			if (p.first4 == first4) {
+				s_sighax_status = p.status;
 				break;
 			}
 		}

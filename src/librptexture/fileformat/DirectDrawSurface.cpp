@@ -349,15 +349,13 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 			// TODO: PVRTC no-alpha formats?
 			{DDPF_FOURCC_PTC2, DXGI_FORMAT_FAKE_PVRTC_2bpp, DDS_ALPHA_MODE_STRAIGHT},
 			{DDPF_FOURCC_PTC4, DXGI_FORMAT_FAKE_PVRTC_4bpp, DDS_ALPHA_MODE_STRAIGHT},
-
-			{0, 0, 0}
 		};
 
-		for (const auto *p = fourCC_dxgi_lkup_tbl; p->dwFourCC != 0; p++) {
-			if (ddspf.dwFourCC == p->dwFourCC) {
+		for (auto &&p : fourCC_dxgi_lkup_tbl) {
+			if (ddspf.dwFourCC == p.dwFourCC) {
 				// Found a match.
-				dxgi_format = p->dxgi_format;
-				dxgi_alpha = p->dxgi_alpha;
+				dxgi_format = p.dxgi_format;
+				dxgi_alpha = p.dxgi_alpha;
 				break;
 			}
 		}
@@ -414,17 +412,15 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 				{DXGI_FORMAT_B8G8R8X8_UNORM_SRGB,	ImageDecoder::PixelFormat::xRGB8888, 4},
 
 				{DXGI_FORMAT_B4G4R4A4_UNORM,		ImageDecoder::PixelFormat::ARGB4444, 2},
-
-				{0, ImageDecoder::PixelFormat::Unknown, 0}
 			};
 
 			// If the dxgi_format is not listed in the table, we'll use it
 			// as-is, assuming it's compressed.
-			for (const auto *p = dx10_lkup_tbl; p->dxgi_format != 0; p++) {
-				if (dxgi_format == p->dxgi_format) {
+			for (auto &&p : dx10_lkup_tbl) {
+				if (dxgi_format == p.dxgi_format) {
 					// Found a match.
-					pxf_uncomp = p->pxf_uncomp;
-					bytespp = p->bytespp;
+					pxf_uncomp = p.pxf_uncomp;
+					bytespp = p.bytespp;
 				}
 			}
 		}

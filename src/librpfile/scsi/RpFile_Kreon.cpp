@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_Kreon.cpp: Standard file object. (Kreon-specific functions)      *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -84,21 +84,20 @@ bool RpFile::isKreonDriveModel(void)
 	// NOTE: Vendor strings MUST be 8 characters long.
 	// NOTE: Strings in product ID tables MUST be 16 characters long.
 	static const struct {
-		const char *vendor;
+		char vendor[8];
 		const char *const *product_id_tbl;
 	} vendor_tbl[] = {
-		{"TSSTcorp", TSSTcorp_product_tbl},
-		{"PBDS    ", PBDS_product_tbl},
-		{"HL-DT-ST", HLDTST_product_tbl},
-		{nullptr, nullptr}
+		{{'T','S','S','T','c','o','r','p'}, TSSTcorp_product_tbl},
+		{{'P','B','D','S',' ',' ',' ',' '}, PBDS_product_tbl},
+		{{'H','L','-','D','T','-','S','T'}, HLDTST_product_tbl},
 	};
 
 	// Find the vendor.
 	const char *const *pProdTbl = nullptr;
-	for (auto *pVendorTbl = vendor_tbl; pVendorTbl->vendor != nullptr; pVendorTbl++) {
-		if (!memcmp(resp.vendor_id, pVendorTbl->vendor, 8)) {
+	for (auto &&pVendorTbl : vendor_tbl) {
+		if (!memcmp(resp.vendor_id, pVendorTbl.vendor, 8)) {
 			// Found a match.
-			pProdTbl = pVendorTbl->product_id_tbl;
+			pProdTbl = pVendorTbl.product_id_tbl;
 			break;
 		}
 	}

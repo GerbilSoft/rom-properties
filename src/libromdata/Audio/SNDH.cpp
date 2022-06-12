@@ -720,13 +720,10 @@ int SNDH::isRomSupported_static(const DetectInfo *info)
 				{4, {'C','O','N','V'}},
 				{4, {'R','I','P','P'}},
 				{4, {'H','D','N','S'}},
-				{0, {0,0,0,0}}
 			};
 
-			for (const struct _sndh_fragment_t *fragment = fragments;
-			     fragment->len != 0; fragment++)
-			{
-				void *p = memmem(&info->header.pData[12], sz, fragment->data, fragment->len);
+			for (auto &&fragment : fragments) {
+				void *p = memmem(&info->header.pData[12], sz, fragment.data, fragment.len);
 				if (p) {
 					// Found a matching fragment.
 					// TODO: Use a constant to indicate ICE-compressed?

@@ -818,8 +818,6 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 		// Uses the Homebrew Launcher theme.
 		// Reference: https://gbatemp.net/threads/release-default-homebrew-custom-logo-bin.457611/
 		{0xF257BD67U,	"Homebrew (animated)"},
-
-		{0U, nullptr}
 	};
 
 	// If CRC is zero, we don't have a valid logo section.
@@ -827,10 +825,10 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 	const char *logo_name = nullptr;
 	if (crc != 0) {
 		// Search for a matching logo.
-		for (const logo_crc_tbl_t *pLogo = logo_crc_tbl; pLogo->crc != 0; pLogo++) {
-			if (pLogo->crc == crc) {
+		for (auto &&p : logo_crc_tbl) {
+			if (p.crc == crc) {
 				// Found a matching logo.
-				logo_name = pLogo->name;
+				logo_name = p.name;
 				break;
 			}
 		}

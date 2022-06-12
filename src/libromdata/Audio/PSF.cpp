@@ -224,14 +224,12 @@ const char *PSFPrivate::getRippedByTagName(uint8_t version)
 		{PSF_VERSION_GBA,		"gsfby"},
 		{PSF_VERSION_SNES,		"snsfby"},
 		{PSF_VERSION_QSOUND,		"qsfby"},
-
-		{0, ""}
 	};
 
-	for (const auto *p = psfby_lkup_tbl; p->version != 0; p++) {
-		if (p->version == version) {
+	for (auto &&p : psfby_lkup_tbl) {
+		if (p.version == version) {
 			// Found a match.
-			return p->tag_name;
+			return p.tag_name;
 		}
 	}
 
@@ -517,16 +515,14 @@ int PSF::loadFieldData(void)
 		{PSF_VERSION_GBA,		NOP_C_("PSF|System", "Game Boy Advance")},
 		{PSF_VERSION_SNES,		NOP_C_("PSF|System", "Super NES")},
 		{PSF_VERSION_QSOUND,		NOP_C_("PSF|System", "Capcom QSound")},
-
-		{0, nullptr}
 	};
 
 	const uint8_t psf_version = psfHeader->version;
 	const char *sysname = nullptr;
-	for (const auto *p = sysname_lkup_tbl; p->version != 0; p++) {
-		if (p->version == psf_version) {
+	for (auto &&p : sysname_lkup_tbl) {
+		if (p.version == psf_version) {
 			// Found a match.
-			sysname = p->sysname;
+			sysname = p.sysname;
 			break;
 		}
 	}

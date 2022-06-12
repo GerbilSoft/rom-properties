@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * XboxDisc.cpp: Microsoft Xbox disc image parser.                         *
  *                                                                         *
- * Copyright (c) 2019-2021 by David Korth.                                 *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -552,17 +552,15 @@ int XboxDisc::isRomSupported_static(
 		// - Hour and TZ:
 		//   - 17, -07:00
 		//   - 16, -08:00
-
-		{0, 0, 0}
 	};
 
-	for (const xgd_pvd_t *pXgd = xgd_tbl; pXgd->xgd != 0; pXgd++) {
-		if (pXgd->btime == btime) {
+	for (auto &&p : xgd_tbl) {
+		if (p.btime == btime) {
 			// Found a match!
 			if (pWave) {
-				*pWave = pXgd->wave;
+				*pWave = p.wave;
 			}
-			return pXgd->xgd;
+			return p.xgd;
 		}
 	}
 

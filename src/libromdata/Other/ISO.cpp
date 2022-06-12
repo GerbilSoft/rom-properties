@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ISO.cpp: ISO-9660 disc image parser.                                    *
  *                                                                         *
- * Copyright (c) 2019-2021 by David Korth.                                 *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * Copyright (c) 2020 by Egor.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -612,11 +612,11 @@ ISO::ISO(IRpFile *file)
 		d->sector_offset = ISO_DATA_OFFSET_MODE1_COOKED;
 	} else {
 		// Try again using raw sectors: 2352, 2448
-		static const unsigned int sector_sizes[] = {2352, 2448, 0};
+		static const unsigned int sector_sizes[] = {2352, 2448};
 		CDROM_2352_Sector_t sector;
 
-		for (const unsigned int *p = sector_sizes; *p != 0; p++) {
-			size_t size = d->file->seekAndRead(*p * ISO_PVD_LBA, &sector, sizeof(sector));
+		for (auto p : sector_sizes) {
+			size_t size = d->file->seekAndRead(p * ISO_PVD_LBA, &sector, sizeof(sector));
 			if (size != sizeof(sector)) {
 				// Unable to read the PVD.
 				UNREF_AND_NULL_NOCHK(d->file);
@@ -628,7 +628,7 @@ ISO::ISO(IRpFile *file)
 			if (d->discType > ISOPrivate::DiscType::Unknown) {
 				// Found the correct sector size.
 				memcpy(&d->pvd, pData, sizeof(d->pvd));
-				d->sector_size = *p;
+				d->sector_size = p;
 				d->sector_offset = (sector.mode == 2 ? ISO_DATA_OFFSET_MODE2_XA : ISO_DATA_OFFSET_MODE1_RAW);
 				break;
 			}

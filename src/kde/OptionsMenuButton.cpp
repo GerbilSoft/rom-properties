@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * OptionsMenuButton.cpp: Options menu button QPushButton subclass.        *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,7 +25,6 @@ static const option_menu_action_t stdacts[] = {
 	{NOP_C_("OptionsMenuButton|StdActs", "Export to JSON..."),	OPTION_EXPORT_JSON},
 	{NOP_C_("OptionsMenuButton|StdActs", "Copy as Text"),		OPTION_COPY_TEXT},
 	{NOP_C_("OptionsMenuButton|StdActs", "Copy as JSON"),		OPTION_COPY_JSON},
-	{nullptr, 0}
 };
 
 OptionsMenuButton::OptionsMenuButton(QWidget *parent)
@@ -63,18 +62,19 @@ void OptionsMenuButton::reinitMenu(const LibRpBase::RomData *romData)
 	menuOptions->clear();
 
 	// Add the standard actions.
-	for (const auto *p = stdacts; p->desc != nullptr; p++) {
+	for (auto &&p : stdacts) {
 		QAction *const action = menuOptions->addAction(
-			U82Q(dpgettext_expr(RP_I18N_DOMAIN, "OptionsMenuButton", p->desc)));
+			U82Q(dpgettext_expr(RP_I18N_DOMAIN, "OptionsMenuButton", p.desc)));
 #ifdef RP_OMB_USE_LAMBDA_FUNCTIONS
 		// Qt5: Use a lambda function.
+		const int id = p.id;	// only capture id, not the whole reference
 		QObject::connect(action, &QAction::triggered,
-			[this, p] { emit triggered(p->id); });
+			[this, id] { emit triggered(id); });
 #else /* !RP_OMB_USE_LAMBDA_FUNCTIONS */
 		// Qt4: Use the QSignalMapper.
 		QObject::connect(action, SIGNAL(triggered()),
 			mapperOptionsMenu, SLOT(map()));
-		mapperOptionsMenu->setMapping(action, p->id);
+		mapperOptionsMenu->setMapping(action, p.id);
 #endif /* RP_OMB_USE_LAMBDA_FUNCTIONS */
 	}
 

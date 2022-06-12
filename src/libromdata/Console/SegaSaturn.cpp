@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SegaSaturn.hpp: Sega Saturn disc image reader.                          *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -197,13 +197,11 @@ uint32_t SegaSaturnPrivate::parsePeripherals(const char *peripherals, int size)
 			SATURN_IO_SUPPORT_ENTRY(FDD),
 			SATURN_IO_SUPPORT_ENTRY(ROM_CARTRIDGE),
 			SATURN_IO_SUPPORT_ENTRY(MPEG_CARD),
-
-			{0, 0}
 		};
 
-		for (const auto *p = saturn_io_lkup_tbl; p->io_chr != 0; p++) {
-			if (p->io_chr == peripherals[i]) {
-				ret |= p->io_bf;
+		for (auto &&p : saturn_io_lkup_tbl) {
+			if (p.io_chr == peripherals[i]) {
+				ret |= p.io_bf;
 				break;
 			}
 		}

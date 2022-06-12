@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * VGM.hpp: VGM audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018-2021 by David Korth.                                 *
+ * Copyright (c) 2018-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -435,15 +435,13 @@ int VGM::loadFieldData(void)
 				GD3_TAG_FIELD_TBL_ENTRY("RomData",		NOP_C_("RomData", "Release Date"),	GD3_TAG_DATE_GAME_RELEASE),
 				GD3_TAG_FIELD_TBL_ENTRY("VGM",			NOP_C_("VGM", "VGM Ripper"),		GD3_TAG_VGM_RIPPER),
 				GD3_TAG_FIELD_TBL_ENTRY("RomData|Audio",	NOP_C_("RomData|Audio", "Notes"),	GD3_TAG_NOTES),
-
-				GD3_TAG_FIELD_TBL_ENTRY(nullptr, nullptr, GD3_TAG_MAX)
 			};
 
-			for (const gd3_tag_field_tbl_t *pTag = gd3_tag_field_tbl; pTag->desc != nullptr; pTag++) {
-				const string &str = (*gd3_tags)[pTag->idx];
+			for (auto &&p : gd3_tag_field_tbl) {
+				const string &str = (*gd3_tags)[p.idx];
 				if (!str.empty()) {
 					d->fields->addField_string(
-						dpgettext_expr(RP_I18N_DOMAIN, pTag->ctx, pTag->desc), str);
+						dpgettext_expr(RP_I18N_DOMAIN, p.ctx, p.desc), str);
 				}
 			}
 

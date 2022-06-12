@@ -351,11 +351,11 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 		discReader = new DiscReader(d->file);
 	} else {
 		// Check for a PVD with 2352-byte or 2448-byte sectors.
-		static const unsigned int sector_sizes[] = {2352, 2448, 0};
+		static const unsigned int sector_sizes[] = {2352, 2448};
 		CDROM_2352_Sector_t sector;
 
-		for (const unsigned int *p = sector_sizes; *p != 0; p++) {
-			size_t size = d->file->seekAndRead(*p * ISO_PVD_LBA, &sector, sizeof(sector));
+		for (auto p : sector_sizes) {
+			size_t size = d->file->seekAndRead(p * ISO_PVD_LBA, &sector, sizeof(sector));
 			if (size != sizeof(d->pvd)) {
 				UNREF_AND_NULL_NOCHK(d->file);
 				return;
@@ -365,7 +365,7 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 			if (ISO::checkPVD(pData) >= 0) {
 				// Found the correct sector size.
 				memcpy(&d->pvd, pData, sizeof(d->pvd));
-				discReader = new Cdrom2352Reader(d->file, *p);
+				discReader = new Cdrom2352Reader(d->file, p);
 				break;
 			}
 		}

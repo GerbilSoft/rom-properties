@@ -146,7 +146,6 @@ static const option_menu_action_t stdacts[] = {
 	{NOP_C_("OptionsMenuButton|StdActs", "Export to JSON..."),	OPTION_EXPORT_JSON},
 	{NOP_C_("OptionsMenuButton|StdActs", "Copy as Text"),		OPTION_COPY_TEXT},
 	{NOP_C_("OptionsMenuButton|StdActs", "Copy as JSON"),		OPTION_COPY_JSON},
-	{nullptr, 0}
 };
 
 static void
@@ -571,19 +570,19 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 
 	GMenu *const menuStdActs = g_menu_new();
 	g_menu_append_section(menuModel, nullptr, G_MENU_MODEL(menuStdActs));
-	for (const auto *p = stdacts; p->desc != nullptr; p++) {
+	for (auto &&p : stdacts) {
 		// Create the action.
 		char buf[128];
-		snprintf(buf, sizeof(buf), "%d", p->id);
+		snprintf(buf, sizeof(buf), "%d", p.id);
 		GSimpleAction *const action = g_simple_action_new(buf, nullptr);
 		g_simple_action_set_enabled(action, TRUE);
-		g_object_set_data(G_OBJECT(action), "menuOptions_id", GINT_TO_POINTER(p->id));
+		g_object_set_data(G_OBJECT(action), "menuOptions_id", GINT_TO_POINTER(p.id));
 		g_signal_connect(action, "activate", G_CALLBACK(action_triggered_signal_handler), widget);
 		g_action_map_add_action(G_ACTION_MAP(actionGroup), G_ACTION(action));
 
 		// Create the menu item.
-		snprintf(buf, sizeof(buf), "%s.%d", prefix, p->id);
-		g_menu_append(menuStdActs, dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p->desc), buf);
+		snprintf(buf, sizeof(buf), "%s.%d", prefix, p.id);
+		g_menu_append(menuStdActs, dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p.desc), buf);
 	}
 
 	/** ROM operations. **/
@@ -616,10 +615,10 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 	// Create a new GtkMenu.
 	GtkWidget *const menuOptions = gtk_menu_new();
 
-	for (const auto *p = stdacts; p->desc != nullptr; p++) {
+	for (auto &&p : stdacts) {
 		GtkWidget *const menuItem = gtk_menu_item_new_with_label(
-			dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p->desc));
-		g_object_set_data(G_OBJECT(menuItem), "menuOptions_id", GINT_TO_POINTER(p->id));
+			dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p.desc));
+		g_object_set_data(G_OBJECT(menuItem), "menuOptions_id", GINT_TO_POINTER(p.id));
 		g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), widget);
 		gtk_widget_show(menuItem);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menuOptions), menuItem);
@@ -719,7 +718,7 @@ options_menu_button_update_op(OptionsMenuButton *widget,
 	GList *l = gtk_container_get_children(GTK_CONTAINER(widget->menuOptions));
 
 	// Skip the standard actions and separator.
-	for (size_t i = 0; i < ARRAY_SIZE(stdacts) && l != nullptr; i++) {
+	for (size_t i = 0; i < (ARRAY_SIZE(stdacts)+1) && l != nullptr; i++) {
 		l = l->next;
 	}
 

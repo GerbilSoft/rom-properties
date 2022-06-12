@@ -3,7 +3,7 @@
  * EXE_PE.cpp: DOS/Windows executable reader.                              *
  * 32-bit/64-bit Portable Executable format.                               *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -350,8 +350,6 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		{ 40,	 "4.0", nullptr, nullptr},
 		{ 20,	 "2.0", nullptr, nullptr},
 		{ 10,	 "1.0", nullptr, nullptr},
-
-		{  0,	    "", nullptr, nullptr}
 	};
 
 	// Visual Basic DLL version to display version table.
@@ -368,8 +366,6 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		// TODO: Find a download link.
 		{4,0, "vbrun400.dll", nullptr},
 		{4,0, "vbrun400.dll", nullptr},
-
-		{0,0, "", nullptr}
 	};
 
 	// Check all of the DLL names.
@@ -424,11 +420,12 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 			&c_or_cpp, &dll_name_version, &is_debug, &last_char);
 		if (n == 4 && (c_or_cpp == 'p' || c_or_cpp == 'r') && is_debug == 'd' && last_char == 'l') {
 			// Found an MSVC debug DLL.
-			for (const auto *p = &msvc_dll_tbl[0]; p->dll_name_version != 0; p++) {
-				if (p->dll_name_version == dll_name_version) {
+			for (auto &&p : msvc_dll_tbl) {
+				if (p.dll_name_version == dll_name_version) {
 					// Found a matching version.
 					refDesc = rp_sprintf(
-						C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"), p->display_version);
+						C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"),
+						p.display_version);
 					found = true;
 					break;
 				}
@@ -441,18 +438,19 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		n = sscanf(dll_name, "msvc%c%u.dl%c", &c_or_cpp, &dll_name_version, &last_char);
 		if (n == 3 && (c_or_cpp == 'p' || c_or_cpp == 'r') && last_char == 'l') {
 			// Found an MSVC release DLL.
-			for (auto *p = &msvc_dll_tbl[0]; p->dll_name_version != 0; p++) {
-				if (p->dll_name_version == dll_name_version) {
+			for (auto &&p : msvc_dll_tbl) {
+				if (p.dll_name_version == dll_name_version) {
 					// Found a matching version.
 					refDesc = rp_sprintf(
-						C_("EXE|Runtime", "Microsoft Visual C++ %s Runtime"), p->display_version);
+						C_("EXE|Runtime", "Microsoft Visual C++ %s Runtime"),
+						p.display_version);
 					if (is64) {
-						if (p->url_amd64) {
-							refLink = p->url_amd64;
+						if (p.url_amd64) {
+							refLink = p.url_amd64;
 						}
 					} else {
-						if (p->url_i386) {
-							refLink = p->url_i386;
+						if (p.url_i386) {
+							refLink = p.url_i386;
 						}
 					}
 					found = true;
@@ -477,12 +475,12 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		// Check for Visual Basic DLLs.
 		// NOTE: There's only three 32-bit versions of Visual Basic,
 		// and .NET versions don't count.
-		for (auto *p = &msvb_dll_tbl[0]; p->ver_major != 0; p++) {
-			if (!strcmp(dll_name, p->dll_name)) {
+		for (auto &&p : msvb_dll_tbl) {
+			if (!strcmp(dll_name, p.dll_name)) {
 				// Found a matching version.
 				refDesc = rp_sprintf(C_("EXE|Runtime", "Microsoft Visual Basic %u.%u Runtime"),
-					p->ver_major, p->ver_minor);
-				refLink = p->url;
+					p.ver_major, p.ver_minor);
+				refLink = p.url;
 				break;
 			}
 		}

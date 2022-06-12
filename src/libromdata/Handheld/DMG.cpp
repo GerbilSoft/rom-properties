@@ -1073,16 +1073,14 @@ int DMG::loadFieldData(void)
 			{GBX_MAPPER_LI_CHENG,		"Li Cheng"},
 			{GBX_MAPPER_LAST_BIBLE,		"\"Last Bible\" multicart"},
 			{GBX_MAPPER_LIEBAO,		"Liebao Technology"},
-
-			{(GBX_Mapper_e)0, nullptr}
 		};
 
 		const char *s_mapper = nullptr;
 		const uint32_t lkup = be32_to_cpu(gbxFooter->mapper_id);
-		for (const gbx_mapper_tbl_t *pMapper = gbx_mapper_tbl; pMapper->mapper_id != 0; pMapper++) {
-			if (pMapper->mapper_id == lkup) {
+		for (auto &&p : gbx_mapper_tbl) {
+			if (p.mapper_id == lkup) {
 				// Found the mapper.
-				s_mapper = pMapper->desc;
+				s_mapper = p.desc;
 				break;
 			}
 		}

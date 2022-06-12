@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SNES.cpp: Super Nintendo ROM image reader.                              *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1318,15 +1318,13 @@ int SNES::loadFieldData(void)
 		{SNES_ROMMAPPING_ExLoROM_FastROM,	"ExLoROM + FastROM"},
 		{SNES_ROMMAPPING_ExHiROM_FastROM,	"ExHiROM + FastROM"},
 		{SNES_ROMMAPPING_HiROM_FastROM_SPC7110,	"HiROM + SPC7110"},
-
-		{0, nullptr}
 	};
 
 	const char *s_rom_mapping = nullptr;
-	for (const auto *p = rom_mapping_tbl; p->rom_mapping != 0; p++) {
-		if (p->rom_mapping == rom_mapping) {
+	for (auto &&p : rom_mapping_tbl) {
+		if (p.rom_mapping == rom_mapping) {
 			// Found a match.
-			s_rom_mapping = p->s_rom_mapping;
+			s_rom_mapping = p.s_rom_mapping;
 			break;
 		}
 	}

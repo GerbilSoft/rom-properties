@@ -164,16 +164,14 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		{VOS_OS216_PM16,	"OS/2 with Presentation Manager (16-bit)"},
 		{VOS_OS232_PM32,	"OS/2 with Presentation Manager (32-bit)"},
 		{VOS_NT_WINDOWS32,	"Windows NT"},
-
-		{0, nullptr}
 	};
 
 	const uint32_t dwFileOS = pVsFfi->dwFileOS;
 	const char *s_fileOS = nullptr;
-	for (const auto *p = fileOS_lkup_tbl; p->dwFileOS != 0; p++) {
-		if (p->dwFileOS == dwFileOS) {
+	for (auto &&p : fileOS_lkup_tbl) {
+		if (p.dwFileOS == dwFileOS) {
 			// Found a match.
-			s_fileOS = p->s_fileOS;
+			s_fileOS = p.s_fileOS;
 			break;
 		}
 	}

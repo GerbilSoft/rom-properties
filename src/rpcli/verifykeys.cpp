@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rpcli)                            *
  * verifykeys.hpp: Verify encryption keys.                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * Copyright (c) 2016-2017 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -60,8 +60,6 @@ static const EncKeyFns_t encKeyFns[] = {
 	ENCKEYFNS(CtrKeyScrambler),
 	ENCKEYFNS(N3DSVerifyKeys),
 	ENCKEYFNS(Xbox360_XEX),
-
-	{nullptr, nullptr, nullptr, nullptr}
 };
 
 /**
@@ -82,16 +80,16 @@ int VerifyKeys(void)
 	// Get keys from supported classes.
 	int ret = 0;
 	bool printedOne = false;
-	for (const EncKeyFns_t *p = encKeyFns; p->name != nullptr; p++) {
+	for (auto &&p : encKeyFns) {
 		if (printedOne) {
 			cerr << endl;
 		}
 		printedOne = true;
 
-		cerr << "*** " << rp_sprintf(C_("rpcli", "Checking encryption keys from '%s'..."), p->name) << endl;
-		int keyCount = p->pfnKeyCount();
+		cerr << "*** " << rp_sprintf(C_("rpcli", "Checking encryption keys from '%s'..."), p.name) << endl;
+		int keyCount = p.pfnKeyCount();
 		for (int i = 0; i < keyCount; i++) {
-			const char *const keyName = p->pfnKeyName(i);
+			const char *const keyName = p.pfnKeyName(i);
 			assert(keyName != nullptr);
 			if (!keyName) {
 				cerr << rp_sprintf(C_("rpcli", "WARNING: Key %d has no name. Skipping..."), i) << endl;
@@ -100,7 +98,7 @@ int VerifyKeys(void)
 			}
 
 			// Verification data. (16 bytes)
-			const uint8_t *const verifyData = p->pfnVerifyData(i);
+			const uint8_t *const verifyData = p.pfnVerifyData(i);
 			assert(verifyData != nullptr);
 			if (!verifyData) {
 				cerr << rp_sprintf(C_("rpcli", "WARNING: Key '%s' has no verification data. Skipping..."), keyName) << endl;

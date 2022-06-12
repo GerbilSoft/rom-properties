@@ -213,8 +213,6 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 		{3,0, {'V','B','R','U','N','3','0','0'}, nullptr},
 		{2,0, {'V','B','R','U','N','2','0','0'}, nullptr},
 		{1,0, {'V','B','R','U','N','1','0','0'}, "https://download.microsoft.com/download/vb30/sampleaa/1/w9xnt4/en-us/vbrun100.exe"},
-
-		{0,0, "", nullptr}
 	};
 
 	// FIXME: Alignment?
@@ -261,12 +259,12 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 			// Check for Visual Basic DLLs.
 			// NOTE: There's only three 32-bit versions of Visual Basic,
 			// and .NET versions don't count.
-			for (auto *p = &msvb_dll_tbl[0]; p->ver_major != 0; p++) {
-				if (!strncmp(pDllName, p->dll_name, sizeof(p->dll_name))) {
+			for (auto &&p : msvb_dll_tbl) {
+				if (!strncmp(pDllName, p.dll_name, sizeof(p.dll_name))) {
 					// Found a matching version.
 					refDesc = rp_sprintf(C_("EXE|Runtime", "Microsoft Visual Basic %u.%u Runtime"),
-						p->ver_major, p->ver_minor);
-					refLink = p->url;
+						p.ver_major, p.ver_minor);
+					refLink = p.url;
 					break;
 				}
 			}

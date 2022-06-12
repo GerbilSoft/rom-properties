@@ -1139,15 +1139,13 @@ int NintendoDS::loadFieldData(void)
 		{DSi_FTYPE_SYSTEM_BASE_TOOL,	NOP_C_("NintendoDS|DSiFileType", "System Base Tool")},
 		// tr: System Menu
 		{DSi_FTYPE_SYSTEM_MENU,		NOP_C_("NintendoDS|DSiFileType", "System Menu")},
-
-		{0, nullptr}
 	};
 
 	const char *s_dsi_filetype = nullptr;
-	for (const auto *p = dsi_filetype_lkup_tbl; p->s_dsi_filetype != nullptr; p++) {
-		if (p->dsi_filetype == dsi_filetype) {
+	for (auto &&p : dsi_filetype_lkup_tbl) {
+		if (p.dsi_filetype == dsi_filetype) {
 			// Found a match.
-			s_dsi_filetype = p->s_dsi_filetype;
+			s_dsi_filetype = p.s_dsi_filetype;
 			break;
 		}
 	}

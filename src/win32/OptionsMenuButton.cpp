@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * OptionsMenuButton.cpp: Options menu button WC_BUTTON superclass.        *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -35,7 +35,6 @@ static const option_menu_action_t stdacts[] = {
 	{NOP_C_("OptionsMenuButton|StdActs", "Export to JSON..."),	OPTION_EXPORT_JSON},
 	{NOP_C_("OptionsMenuButton|StdActs", "Copy as Text"),		OPTION_COPY_TEXT},
 	{NOP_C_("OptionsMenuButton|StdActs", "Copy as JSON"),		OPTION_COPY_JSON},
-	{nullptr, 0}
 };
 
 class OptionsMenuButtonPrivate
@@ -132,9 +131,9 @@ void OptionsMenuButtonPrivate::reinitMenu(const RomData *romData)
 	hMenuOptions = CreatePopupMenu();
 
 	// Add the standard actions.
-	for (const auto *p = stdacts; p->desc != nullptr; p++) {
-		AppendMenu(hMenuOptions, MF_STRING, IDM_OPTIONS_MENU_BASE + p->id,
-			U82T_c(dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p->desc)));
+	for (auto &&p : stdacts) {
+		AppendMenu(hMenuOptions, MF_STRING, IDM_OPTIONS_MENU_BASE + p.id,
+			U82T_c(dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p.desc)));
 	}
 
 	/** ROM operations. **/
