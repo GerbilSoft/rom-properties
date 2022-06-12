@@ -2,6 +2,9 @@
 
 ## v1.9.1 (released 2022/??/??)
 
+* New parsers:
+  * Atari7800: Atari 7800 ROM images with an A78 header.
+
 * Bug fixes:
   * Lua: Fix a crash on Windows where systemName() sometimes returned
     an invalid pointer when using the GUI frontend.

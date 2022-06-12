@@ -32,6 +32,7 @@ audio/x-spc				# SPC
 audio/x-vgm				# VGM
 
 # Console
+application/x-atari-7800-rom		# Atari7800
 application/x-n64-rom			# N64
 application/x-nes-rom			# NES
 application/x-fds-disk			# NES
