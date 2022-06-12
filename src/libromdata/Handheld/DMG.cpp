@@ -1083,6 +1083,7 @@ int DMG::loadFieldData(void)
 			if (pMapper->mapper_id == lkup) {
 				// Found the mapper.
 				s_mapper = pMapper->desc;
+				break;
 			}
 		}
 
