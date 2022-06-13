@@ -678,8 +678,8 @@ int SAP::loadFieldData(void)
 			data_row.emplace_back(rp_sprintf("%u", song_num));
 			data_row.emplace_back(rp_sprintf("%u:%02u.%03u", min, sec, ms));
 			data_row.emplace_back(src_iter->second
-				? C_("SAP|SongList|Looping", "Yes")
-				: C_("SAP|SongList|Looping", "No"));
+				? C_("RomData", "Yes")
+				: C_("RomData", "No"));
 		}
 
 		static const char *const song_list_hdr[3] = {

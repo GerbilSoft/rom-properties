@@ -477,8 +477,8 @@ int VGM::loadFieldData(void)
 	if (!d->s_clockrate) {
 		d->s_clockrate = C_("VGM", "%s Clock Rate");
 		d->s_dualchip = C_("VGM", "%s Dual-Chip");
-		d->s_yes = C_("VGM", "Yes");
-		d->s_no = C_("VGM", "No");
+		d->s_yes = C_("RomData", "Yes");
+		d->s_no = C_("RomData", "No");
 	}
 	// Common strings not needed by subroutines.
 	const char *const s_flags = C_("VGM", "%s Flags");

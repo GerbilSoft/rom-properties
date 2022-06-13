@@ -408,9 +408,9 @@ int GameBoyAdvance::loadFieldData(void)
 		d->fields->addField_string(C_("GameBoyAdvance", "Enable Debug"),
 			(debug_enable & 0xA5) == 0xA5
 				// tr: Debugging is enabled.
-				? C_("GameBoyAdvance", "Yes")
+				? C_("RomData", "Yes")
 				// tr: Debugging is disabled.
-				: C_("GameBoyAdvance", "No"));
+				: C_("RomData", "No"));
 	}
 
 	// Finished reading the field data.

@@ -309,8 +309,8 @@ int ADX::loadFieldData(void)
 #endif
 
 	// Translated strings
-	const char *const s_yes = C_("ADX", "Yes");
-	const char *const s_no  = C_("ADX", "No");
+	const char *const s_yes = C_("RomData", "Yes");
+	const char *const s_no  = C_("RomData", "No");
 
 	// Encryption
 	d->fields->addField_string(C_("ADX", "Encrypted"),
