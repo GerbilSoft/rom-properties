@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * MachO.cpp: Mach-O executable format.                                    *
  *                                                                         *
- * Copyright (c) 2019-2021 by David Korth.                                 *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -199,12 +199,11 @@ MachO::MachO(IRpFile *file)
 	}
 
 	// Check if this executable is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(header);
-	info.header.pData = header;
-	info.ext = nullptr;	// Not needed for ELF.
-	info.szFile = 0;	// Not needed for ELF.
+	const DetectInfo info = {
+		{0, sizeof(header), header},
+		nullptr,	// ext (not needed for MachO)
+		0		// szFile (not needed for MachO)
+	};
 	d->execFormat = static_cast<MachOPrivate::Exec_Format>(isRomSupported_static(&info));
 
 	// Load the Mach header.

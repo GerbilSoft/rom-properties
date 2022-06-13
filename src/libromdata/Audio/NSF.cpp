@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NSF.hpp: NSF audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018-2021 by David Korth.                                 *
+ * Copyright (c) 2018-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -104,12 +104,11 @@ NSF::NSF(IRpFile *file)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->nsfHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->nsfHeader);
-	info.ext = nullptr;	// Not needed for NSF.
-	info.szFile = 0;	// Not needed for NSF.
+	const DetectInfo info = {
+		{0, sizeof(d->nsfHeader), reinterpret_cast<const uint8_t*>(&d->nsfHeader)},
+		nullptr,	// ext (not needed for NSF)
+		0		// szFile (not needed for NSF)
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {

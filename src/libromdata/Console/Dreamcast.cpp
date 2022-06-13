@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Dreamcast.hpp: Sega Dreamcast disc image reader.                        *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -348,13 +348,12 @@ Dreamcast::Dreamcast(IRpFile *file)
 	}
 
 	// Check if this disc image is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = static_cast<unsigned int>(size);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&sector);
 	const string filename = file->filename();
-	info.ext = FileSystem::file_ext(filename);
-	info.szFile = 0;	// Not needed for Dreamcast.
+	const DetectInfo info = {
+		{0, static_cast<unsigned int>(size), reinterpret_cast<const uint8_t*>(&sector)},
+		FileSystem::file_ext(filename),	// ext
+		0		// szFile (not needed for Dreamcast)
+	};
 	d->discType = static_cast<DreamcastPrivate::DiscType>(isRomSupported_static(&info));
 
 	if ((int)d->discType < 0) {

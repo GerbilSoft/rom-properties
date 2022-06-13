@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCubeBNR.cpp: Nintendo GameCube banner reader.                       *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -269,12 +269,11 @@ GameCubeBNR::GameCubeBNR(IRpFile *file)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(bnr_magic);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&bnr_magic);
-	info.ext = nullptr;	// Not needed for GameCube banner files.
-	info.szFile = d->file->size();
+	const DetectInfo info = {
+		{0, sizeof(bnr_magic), reinterpret_cast<const uint8_t*>(&bnr_magic)},
+		nullptr,	// ext (not needed for GameCubeBNR)
+		d->file->size()	// szFile
+	};
 	d->bannerType = static_cast<GameCubeBNRPrivate::BannerType>(isRomSupported_static(&info));
 	d->isValid = ((int)d->bannerType >= 0);
 

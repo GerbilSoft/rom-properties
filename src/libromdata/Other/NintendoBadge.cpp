@@ -428,12 +428,11 @@ NintendoBadge::NintendoBadge(IRpFile *file)
 	}
 
 	// Check if this badge is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->badgeHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->badgeHeader);
-	info.ext = nullptr;	// Not needed for badges.
-	info.szFile = 0;	// Not needed for badges.
+	const DetectInfo info = {
+		{0, sizeof(d->badgeHeader), reinterpret_cast<const uint8_t*>(&d->badgeHeader)},
+		nullptr,	// ext (not needed for NintendoBadge)
+		0		// szFile (not needed for NintendoBadge)
+	};
 	d->badgeType = static_cast<NintendoBadgePrivate::BadgeType>(isRomSupported_static(&info));
 	d->isValid = ((int)d->badgeType >= 0);
 	d->megaBadge = false;	// check later

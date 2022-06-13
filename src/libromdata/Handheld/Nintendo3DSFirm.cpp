@@ -123,12 +123,11 @@ Nintendo3DSFirm::Nintendo3DSFirm(IRpFile *file)
 	}
 
 	// Check if this firmware binary is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->firmHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->firmHeader);
-	info.ext = nullptr;	// Not needed for N3DS FIRM.
-	info.szFile = 0;	// Not needed for N3DS FIRM.
+	const DetectInfo info = {
+		{0, sizeof(d->firmHeader), reinterpret_cast<const uint8_t*>(&d->firmHeader)},
+		nullptr,	// ext (not needed for Nintendo3DSFirm)
+		0		// szFile (not needed for Nintendo3DSFirm)
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {

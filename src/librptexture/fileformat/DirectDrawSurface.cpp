@@ -1064,12 +1064,11 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 	}
 
 	// Check if this DDS texture is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = static_cast<uint32_t>(size);
-	info.header.pData = header;
-	info.ext = nullptr;	// Not needed for DDS.
-	info.szFile = file->size();
+	const DetectInfo info = {
+		{0, static_cast<uint32_t>(size), header},
+		nullptr,	// ext (not needed for DirectDrawSurface)
+		file->size()	// szFile
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {

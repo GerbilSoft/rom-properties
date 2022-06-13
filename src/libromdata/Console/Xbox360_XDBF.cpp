@@ -1626,12 +1626,11 @@ void Xbox360_XDBF::init(void)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(header);
-	info.header.pData = header;
-	info.ext = nullptr;	// Not needed for XDBF.
-	info.szFile = 0;	// Not needed for XDBF.
+	const DetectInfo info = {
+		{0, sizeof(header), header},
+		nullptr,	// ext (not needed for Xbox360_XDBF)
+		0		// szFile (not needed for Xbox360_XDBF)
+	};
 	d->xdbfType = static_cast<Xbox360_XDBF_Private::XDBFType>(isRomSupported_static(&info));
 	d->isValid = ((int)d->xdbfType >= 0);
 

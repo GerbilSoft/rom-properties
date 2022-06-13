@@ -568,12 +568,11 @@ Lua::Lua(IRpFile *file)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->header);
-	info.header.pData = d->header;
-	info.ext = nullptr;	// Not needed for Lua.
-	info.szFile = 0;	// Not needed for Lua.
+	const DetectInfo info = {
+		{0, sizeof(d->header), d->header},
+		nullptr,	// ext (not needed for Lua)
+		0		// szFile (not needed for Lua)
+	};
 	d->luaVersion = static_cast<LuaPrivate::LuaVersion>(isRomSupported_static(&info));
 	d->isValid = ((int)d->luaVersion >= 0);
 

@@ -914,12 +914,11 @@ KhronosKTX::KhronosKTX(IRpFile *file)
 	}
 
 	// Check if this KTX texture is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->ktxHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->ktxHeader);
-	info.ext = nullptr;	// Not needed for KTX.
-	info.szFile = file->size();
+	const DetectInfo info = {
+		{0, sizeof(d->ktxHeader), reinterpret_cast<const uint8_t*>(&d->ktxHeader)},
+		nullptr,	// ext (not needed for KhronosKTX)
+		file->size()	// szFile
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {

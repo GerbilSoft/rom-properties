@@ -118,12 +118,11 @@ N64::N64(IRpFile *file)
 	}
 
 	// Check if this ROM image is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->romHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
-	info.ext = nullptr;	// Not needed for N64.
-	info.szFile = 0;	// Not needed for N64.
+	const DetectInfo info = {
+		{0, sizeof(d->romHeader), reinterpret_cast<const uint8_t*>(&d->romHeader)},
+		nullptr,	// ext (not needed for N64)
+		0		// szFile (not needed for N64)
+	};
 	d->romType = static_cast<N64Private::RomType>(isRomSupported_static(&info));
 
 	switch (d->romType) {

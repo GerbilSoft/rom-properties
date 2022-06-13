@@ -153,17 +153,17 @@ WonderSwan::WonderSwan(IRpFile *file)
 	}
 
 	// Seek to the beginning of the footer.
-	const off64_t filesize = d->file->size();
+	const off64_t fileSize = d->file->size();
 	// File must be at least 1024 bytes,
 	// and cannot be larger than 16 MB.
-	if (filesize < 1024 || filesize > (16*1024*1024)) {
+	if (fileSize < 1024 || fileSize > (16*1024*1024)) {
 		// File size is out of range.
 		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
 	// Read the ROM footer.
-	const unsigned int footer_addr = static_cast<unsigned int>(filesize - sizeof(WS_RomFooter));
+	const unsigned int footer_addr = static_cast<unsigned int>(fileSize - sizeof(WS_RomFooter));
 	d->file->seek(footer_addr);
 	size_t size = d->file->read(&d->romFooter, sizeof(d->romFooter));
 	if (size != sizeof(d->romFooter)) {
@@ -184,12 +184,12 @@ WonderSwan::WonderSwan(IRpFile *file)
 	}
 
 	// Make sure this is actually a WonderSwan ROM.
-	DetectInfo info;
-	info.header.addr = footer_addr;
-	info.header.size = sizeof(d->romFooter);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romFooter);
-	info.ext = ext;
-	info.szFile = filesize;
+	const DetectInfo info = {
+		{footer_addr, sizeof(d->romFooter),
+			reinterpret_cast<const uint8_t*>(&d->romFooter)},
+		ext,		// ext
+		fileSize	// szFile
+	};
 	d->romType = static_cast<WonderSwanPrivate::RomType>(isRomSupported(&info));
 	d->isValid = ((int)d->romType >= 0);
 

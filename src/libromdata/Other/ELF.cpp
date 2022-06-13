@@ -800,12 +800,11 @@ ELF::ELF(IRpFile *file)
 	}
 
 	// Check if this executable is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->Elf_Header);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->Elf_Header);
-	info.ext = nullptr;	// Not needed for ELF.
-	info.szFile = 0;	// Not needed for ELF.
+	const DetectInfo info = {
+		{0, sizeof(d->Elf_Header), reinterpret_cast<const uint8_t*>(&d->Elf_Header)},
+		nullptr,	// ext (not needed for ELF)
+		0		// szFile (not needed for ELF)
+	};
 	d->elfFormat = static_cast<ELFPrivate::Elf_Format>(isRomSupported_static(&info));
 
 	d->isValid = ((int)d->elfFormat >= 0);

@@ -448,12 +448,11 @@ EXE::EXE(IRpFile *file)
 	}
 
 	// Check if this executable is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->mz);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->mz);
-	info.ext = nullptr;	// Not needed for EXE.
-	info.szFile = 0;	// Not needed for EXE.
+	const DetectInfo info = {
+		{0, sizeof(d->mz), reinterpret_cast<const uint8_t*>(&d->mz)},
+		nullptr,	// ext (not needed for EXE)
+		0		// szFile (not needed for EXE)
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {

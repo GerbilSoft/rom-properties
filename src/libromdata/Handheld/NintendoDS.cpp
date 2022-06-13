@@ -644,12 +644,11 @@ void NintendoDS::init(void)
 	d->romSize = d->file->size();
 
 	// Check if this ROM image is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->romHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
-	info.ext = nullptr;		// Not needed for NDS.
-	info.szFile = d->romSize;	// Not needed for NDS.
+	const DetectInfo info = {
+		{0, sizeof(d->romHeader), reinterpret_cast<const uint8_t*>(&d->romHeader)},
+		nullptr,	// ext (not needed for Nintendo3DS_SMDH)
+		d->romSize	// szFile
+	};
 	d->romType = static_cast<NintendoDSPrivate::RomType>(isRomSupported_static(&info));
 	d->isValid = ((int)d->romType >= 0);
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCom.hpp: Tiger game.com ROM reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -513,16 +513,17 @@ GameCom::GameCom(IRpFile *file)
 		return;
 	}
 
+	DetectInfo info = {
+		{0, sizeof(d->romHeader), reinterpret_cast<const uint8_t*>(&d->romHeader)},
+		nullptr,	// ext (not needed for GameCom)
+		0		// szFile (not needed for GameCom)
+	};
+
 	// Read the ROM header at the standard address.
 	size_t size = d->file->seekAndRead(GCOM_HEADER_ADDRESS, &d->romHeader, sizeof(d->romHeader));
 	if (size == sizeof(d->romHeader)) {
 		// Check if this ROM image is supported.
-		DetectInfo info;
 		info.header.addr = GCOM_HEADER_ADDRESS;
-		info.header.size = sizeof(d->romHeader);
-		info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
-		info.ext = nullptr;	// Not needed for Gcom.
-		info.szFile = 0;	// Not needed for Gcom.
 		d->isValid = (isRomSupported_static(&info) >= 0);
 	}
 
@@ -531,12 +532,7 @@ GameCom::GameCom(IRpFile *file)
 		size = d->file->seekAndRead(GCOM_HEADER_ADDRESS_ALT, &d->romHeader, sizeof(d->romHeader));
 		if (size == sizeof(d->romHeader)) {
 			// Check if this ROM image is supported.
-			DetectInfo info;
 			info.header.addr = GCOM_HEADER_ADDRESS_ALT;
-			info.header.size = sizeof(d->romHeader);
-			info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
-			info.ext = nullptr;	// Not needed for Gcom.
-			info.szFile = 0;	// Not needed for Gcom.
 			d->isValid = (isRomSupported_static(&info) >= 0);
 		}
 	}

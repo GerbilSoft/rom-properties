@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * SegaPVR.cpp: Sega PVR texture reader.                                   *
  *                                                                         *
- * Copyright (c) 2017-2021 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1230,12 +1230,11 @@ SegaPVR::SegaPVR(IRpFile *file)
 	}
 
 	// Check if this PVR image is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = static_cast<uint32_t>(sz_header);
-	info.header.pData = header;
-	info.ext = nullptr;	// Not needed for PVR.
-	info.szFile = file->size();
+	const DetectInfo info = {
+		{0, static_cast<uint32_t>(sz_header), header},
+		nullptr,	// ext (not needed for SegaPVR)
+		file->size()	// szFile
+	};
 	d->pvrType = static_cast<SegaPVRPrivate::PVRType>(isRomSupported_static(&info));
 	d->isValid = ((int)d->pvrType >= 0);
 

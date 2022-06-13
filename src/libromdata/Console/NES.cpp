@@ -643,12 +643,11 @@ NES::NES(IRpFile *file)
 	}
 
 	// Check if this ROM image is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(header);
-	info.header.pData = header;
-	info.ext = nullptr;	// Not needed for NES.
-	info.szFile = d->file->size();
+	const DetectInfo info = {
+		{0, sizeof(header), header},
+		nullptr,	// ext (not needed for NES)
+		d->file->size()	// szFile
+	};
 	d->romType = isRomSupported_static(&info);
 
 	switch (d->romType & NESPrivate::ROM_FORMAT_MASK) {

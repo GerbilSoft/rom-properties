@@ -718,13 +718,12 @@ GameCube::GameCube(IRpFile *file)
 	}
 
 	// Check if this disc image is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(header);
-	info.header.pData = header;
 	const string filename = file->filename();
-	info.ext = FileSystem::file_ext(filename);
-	info.szFile = 0;	// Not needed for GCN.
+	const DetectInfo info = {
+		{0, sizeof(header), header},
+		FileSystem::file_ext(filename),	// ext
+		0		// szFile (not needed for GameCube)
+	};
 	d->discType = isRomSupported_static(&info);
 
 	d->isValid = (d->discType >= 0);

@@ -579,12 +579,11 @@ Xbox360_STFS::Xbox360_STFS(IRpFile *file)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->stfsHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->stfsHeader);
-	info.ext = nullptr;	// Not needed for STFS.
-	info.szFile = 0;	// Not needed for STFS.
+	const DetectInfo info = {
+		{0, sizeof(d->stfsHeader), reinterpret_cast<const uint8_t*>(&d->stfsHeader)},
+		nullptr,	// ext (not needed for Xbox360_STFS)
+		0		// szFile (not needed for Xbox360_STFS)
+	};
 	d->stfsType = static_cast<Xbox360_STFS_Private::StfsType>(isRomSupported_static(&info));
 	d->isValid = ((int)d->stfsType >= 0);
 

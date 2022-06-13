@@ -405,12 +405,11 @@ PSF::PSF(IRpFile *file)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->psfHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->psfHeader);
-	info.ext = nullptr;	// Not needed for PSF.
-	info.szFile = 0;	// Not needed for PSF.
+	const DetectInfo info = {
+		{0, sizeof(d->psfHeader), reinterpret_cast<const uint8_t*>(&d->psfHeader)},
+		nullptr,	// ext (not needed for PSF)
+		0		// szFile (not needed for PSF)
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {

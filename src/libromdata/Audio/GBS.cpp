@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GBS.hpp: GBS audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018-2021 by David Korth.                                 *
+ * Copyright (c) 2018-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -123,12 +123,11 @@ GBS::GBS(IRpFile *file)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->header);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->header);
-	info.ext = nullptr;	// Not needed for GBS.
-	info.szFile = 0;	// Not needed for GBS.
+	const DetectInfo info = {
+		{0, sizeof(d->header), reinterpret_cast<const uint8_t*>(&d->header)},
+		nullptr,	// ext (not needed for GBS)
+		0		// szFile (not needed for GBS)
+	};
 	d->audioFormat = static_cast<GBSPrivate::AudioFormat>(isRomSupported_static(&info));
 
 	if ((int)d->audioFormat < 0) {

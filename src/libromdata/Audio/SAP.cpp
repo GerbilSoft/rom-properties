@@ -472,12 +472,11 @@ SAP::SAP(IRpFile *file)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(buf);
-	info.header.pData = buf;
-	info.ext = nullptr;	// Not needed for SAP.
-	info.szFile = 0;	// Not needed for SAP.
+	const DetectInfo info = {
+		{0, sizeof(buf), buf},
+		nullptr,	// ext (not needed for SAP)
+		0		// szFile (not needed for SAP)
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {

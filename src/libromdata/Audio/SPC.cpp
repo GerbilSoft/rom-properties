@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SPC.hpp: SPC audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018-2021 by David Korth.                                 *
+ * Copyright (c) 2018-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -537,12 +537,11 @@ SPC::SPC(IRpFile *file)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->spcHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->spcHeader);
-	info.ext = nullptr;	// Not needed for SPC.
-	info.szFile = 0;	// Not needed for SPC.
+	const DetectInfo info = {
+		{0, sizeof(d->spcHeader), reinterpret_cast<const uint8_t*>(&d->spcHeader)},
+		nullptr,	// ext (not needed for SPC)
+		0		// szFile (not needed for SPC)
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {

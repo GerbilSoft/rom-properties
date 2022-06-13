@@ -348,12 +348,11 @@ SegaSaturn::SegaSaturn(IRpFile *file)
 	}
 
 	// Check if this ROM image is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(sector);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&sector);
-	info.ext = nullptr;	// Not needed for SegaSaturn.
-	info.szFile = 0;	// Not needed for SegaSaturn.
+	const DetectInfo info = {
+		{0, sizeof(sector), reinterpret_cast<const uint8_t*>(&sector)},
+		nullptr,	// ext (not needed for SegaSaturn)
+		0		// szFile (not needed for SegaSaturn)
+	};
 	d->discType = static_cast<SegaSaturnPrivate::DiscType>(isRomSupported_static(&info));
 
 	switch (d->discType) {

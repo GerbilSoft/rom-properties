@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PokemonMini.cpp: Pokémon Mini ROM reader.                               *
  *                                                                         *
- * Copyright (c) 2019-2021 by David Korth.                                 *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -102,12 +102,12 @@ PokemonMini::PokemonMini(IRpFile *file)
 	}
 
 	// Check if this ROM image is supported.
-	DetectInfo info;
-	info.header.addr = POKEMONMINI_HEADER_ADDRESS;
-	info.header.size = sizeof(d->romHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
-	info.ext = nullptr;	// Not needed for Pokémon Mini.
-	info.szFile = 0;	// Not needed for Pokémon Mini.
+	const DetectInfo info = {
+		{POKEMONMINI_HEADER_ADDRESS, sizeof(d->romHeader),
+			reinterpret_cast<const uint8_t*>(&d->romHeader)},
+		nullptr,	// ext (not needed for PokemonMini)
+		0		// szFile (not needed for PokemonMini)
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {

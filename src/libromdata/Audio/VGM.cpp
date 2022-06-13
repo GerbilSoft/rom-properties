@@ -277,12 +277,11 @@ VGM::VGM(IRpFile *file)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->vgmHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->vgmHeader);
-	info.ext = nullptr;	// Not needed for VGM.
-	info.szFile = 0;	// Not needed for VGM.
+	const DetectInfo info = {
+		{0, sizeof(d->vgmHeader), reinterpret_cast<const uint8_t*>(&d->vgmHeader)},
+		nullptr,	// ext (not needed for VGM)
+		0		// szFile (not needed for VGM)
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {

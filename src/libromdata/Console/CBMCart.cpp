@@ -240,12 +240,11 @@ CBMCart::CBMCart(IRpFile *file)
 	}
 
 	// Check if this ROM image is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->romHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
-	info.ext = nullptr;	// Not needed for CBMCart.
-	info.szFile = 0;	// Not needed for CBMCart.
+	const DetectInfo info = {
+		{0, sizeof(d->romHeader), reinterpret_cast<const uint8_t*>(&d->romHeader)},
+		nullptr,	// ext (not needed for CBMCart)
+		0		// szFile (not needed for CBMCart)
+	};
 	d->romType = static_cast<CBMCartPrivate::RomType>(isRomSupported_static(&info));
 	d->isValid = (d->romType > CBMCartPrivate::RomType::Unknown);
 

@@ -272,12 +272,11 @@ Nintendo3DS_SMDH::Nintendo3DS_SMDH(IRpFile *file)
 	}
 
 	// Check if this ROM image is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->smdh);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->smdh);
-	info.ext = nullptr;	// Not needed for Nintendo3DS_SMDH.
-	info.szFile = 0;	// Not needed for Nintendo3DS_SMDH.
+	const DetectInfo info = {
+		{0, sizeof(d->smdh), reinterpret_cast<const uint8_t*>(&d->smdh)},
+		nullptr,	// ext (not needed for Nintendo3DS_SMDH)
+		0		// szFile (not needed for Nintendo3DS_SMDH)
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {

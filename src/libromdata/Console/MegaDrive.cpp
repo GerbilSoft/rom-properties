@@ -767,12 +767,11 @@ MegaDrive::MegaDrive(IRpFile *file)
 	}
 
 	// Check if this ROM is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = static_cast<uint32_t>(size);
-	info.header.pData = header;
-	info.ext = nullptr;	// Not needed for MD.
-	info.szFile = 0;	// Not needed for MD.
+	const DetectInfo info = {
+		{0, static_cast<uint32_t>(size), header},
+		nullptr,	// ext (not needed for MegaDrive)
+		0		// szFile (not needed for MegaDrive)
+	};
 	d->romType = isRomSupported_static(&info);
 
 	// Mega CD security program CRC32

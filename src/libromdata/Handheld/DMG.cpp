@@ -595,12 +595,11 @@ DMG::DMG(IRpFile *file)
 	}
 
 	// Check if this ROM is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = static_cast<unsigned int>(size);
-	info.header.pData = header.u8;
-	info.ext = nullptr;	// Not needed for DMG.
-	info.szFile = 0;	// Not needed for DMG.
+	const DetectInfo info = {
+		{0, static_cast<unsigned int>(size), header.u8},
+		nullptr,	// ext (not needed for DMG)
+		0		// szFile (not needed for DMG)
+	};
 	d->romType = static_cast<DMGPrivate::RomType>(isRomSupported_static(&info));
 
 	d->isValid = ((int)d->romType >= 0);

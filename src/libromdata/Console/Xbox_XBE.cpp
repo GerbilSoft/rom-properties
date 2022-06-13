@@ -437,12 +437,11 @@ Xbox_XBE::Xbox_XBE(IRpFile *file)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->xbeHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->xbeHeader);
-	info.ext = nullptr;	// Not needed for XBE.
-	info.szFile = 0;	// Not needed for XBE.
+	const DetectInfo info = {
+		{0, sizeof(d->xbeHeader), reinterpret_cast<const uint8_t*>(&d->xbeHeader)},
+		nullptr,	// ext (not needed for Xbox_XBE)
+		0		// szFile (not needed for Xbox_XBE)
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {

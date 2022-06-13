@@ -569,12 +569,11 @@ GameCubeSave::GameCubeSave(IRpFile *file)
 	}
 
 	// Check if this disc image is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(header);
-	info.header.pData = header;
-	info.ext = nullptr;	// Not needed for GCN save files.
-	info.szFile = d->file->size();
+	const DetectInfo info = {
+		{0, sizeof(header), header},
+		nullptr,	// ext (not needed for GameCubeSave)
+		d->file->size()	// szFile
+	};
 	d->saveType = static_cast<GameCubeSavePrivate::SaveType>(isRomSupported_static(&info));
 
 	// Save the directory entry for later.

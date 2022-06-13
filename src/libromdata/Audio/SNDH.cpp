@@ -660,12 +660,11 @@ SNDH::SNDH(IRpFile *file)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = static_cast<uint32_t>(size);
-	info.header.pData = buf;
-	info.ext = nullptr;	// Not needed for SNDH.
-	info.szFile = 0;	// Not needed for SNDH.
+	const DetectInfo info = {
+		{0, static_cast<uint32_t>(size), buf},
+		nullptr,	// ext (not needed for SNDH)
+		0		// szFile (not needed for SNDH)
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {

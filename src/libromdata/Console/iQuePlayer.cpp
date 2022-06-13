@@ -419,9 +419,9 @@ iQuePlayer::iQuePlayer(IRpFile *file)
 
 	// Check the filesize.
 	// TODO: Identify CMD vs. Ticket and display ticket-specific information?
-	const off64_t filesize = file->size();
-	if (filesize != IQUE_PLAYER_CMD_FILESIZE &&
-	    filesize != IQUE_PLAYER_DAT_FILESIZE)
+	const off64_t fileSize = file->size();
+	if (fileSize != IQUE_PLAYER_CMD_FILESIZE &&
+	    fileSize != IQUE_PLAYER_DAT_FILESIZE)
 	{
 		// Incorrect filesize.
 		UNREF_AND_NULL_NOCHK(d->file);
@@ -437,12 +437,11 @@ iQuePlayer::iQuePlayer(IRpFile *file)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->contentDesc);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->contentDesc);
-	info.ext = nullptr;	// Not needed for iQuePlayer.
-	info.szFile = filesize;
+	const DetectInfo info = {
+		{0, sizeof(d->contentDesc), reinterpret_cast<const uint8_t*>(&d->contentDesc)},
+		nullptr,	// ext (not needed for iQuePlayer)
+		fileSize	// szFile
+	};
 	d->iQueFileType = static_cast<iQuePlayerPrivate::IQueFileType>(isRomSupported_static(&info));
 	d->isValid = ((int)d->iQueFileType >= 0);
 

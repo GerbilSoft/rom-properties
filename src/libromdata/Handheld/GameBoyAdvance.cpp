@@ -152,12 +152,11 @@ GameBoyAdvance::GameBoyAdvance(IRpFile *file)
 	}
 
 	// Check if this ROM image is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->romHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
-	info.ext = nullptr;	// Not needed for GBA.
-	info.szFile = 0;	// Not needed for GBA.
+	const DetectInfo info = {
+		{0, sizeof(d->romHeader), reinterpret_cast<const uint8_t*>(&d->romHeader)},
+		nullptr,	// ext (not needed for GameBoyAdvance)
+		0		// szFile (not needed for GameBoyAdvance)
+	};
 	d->romType = static_cast<GameBoyAdvancePrivate::RomType>(isRomSupported_static(&info));
 
 	d->isValid = ((int)d->romType >= 0);

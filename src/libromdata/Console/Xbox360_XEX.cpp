@@ -1385,12 +1385,11 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(header);
-	info.header.pData = header;
-	info.ext = nullptr;	// Not needed for XEX.
-	info.szFile = 0;	// Not needed for XEX.
+	const DetectInfo info = {
+		{0, sizeof(header), header},
+		nullptr,	// ext (not needed for Xbox360_XEX)
+		0		// szFile (not needed for Xbox360_XEX)
+	};
 	d->xexType = static_cast<Xbox360_XEX_Private::XexType>(isRomSupported_static(&info));
 	d->isValid = ((int)d->xexType >= 0);
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * VirtualBoy.cpp: Nintendo Virtual Boy ROM reader.                        *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -156,17 +156,17 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	}
 
 	// Seek to the beginning of the footer.
-	const off64_t filesize = d->file->size();
+	const off64_t fileSize = d->file->size();
 	// File must be at least 0x220 bytes,
 	// and cannot be larger than 16 MB.
-	if (filesize < 0x220 || filesize > (16*1024*1024)) {
+	if (fileSize < 0x220 || fileSize > (16*1024*1024)) {
 		// File size is out of range.
 		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
 	// Read the ROM footer.
-	const unsigned int footer_addr = static_cast<unsigned int>(filesize - 0x220);
+	const unsigned int footer_addr = static_cast<unsigned int>(fileSize - 0x220);
 	d->file->seek(footer_addr);
 	size_t size = d->file->read(&d->romFooter, sizeof(d->romFooter));
 	if (size != sizeof(d->romFooter)) {
@@ -175,12 +175,12 @@ VirtualBoy::VirtualBoy(IRpFile *file)
 	}
 
 	// Make sure this is actually a Virtual Boy ROM.
-	DetectInfo info;
-	info.header.addr = footer_addr;
-	info.header.size = sizeof(d->romFooter);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romFooter);
-	info.ext = nullptr;	// Not needed for Virtual Boy.
-	info.szFile = filesize;
+	const DetectInfo info = {
+		{footer_addr, sizeof(d->romFooter),
+			reinterpret_cast<const uint8_t*>(&d->romFooter)},
+		nullptr,	// ext (not needed for VirtualBoy)
+		fileSize	// szFile
+	};
 	d->isValid = (isRomSupported(&info) >= 0);
 
 	if (!d->isValid) {

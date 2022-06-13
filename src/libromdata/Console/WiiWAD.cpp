@@ -264,12 +264,11 @@ WiiWAD::WiiWAD(IRpFile *file)
 	}
 
 	// Check if this WAD file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->wadHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->wadHeader);
-	info.ext = nullptr;	// Not needed for WiiWAD.
-	info.szFile = d->file->size();
+	const DetectInfo info = {
+		{0, sizeof(d->wadHeader), reinterpret_cast<const uint8_t*>(&d->wadHeader)},
+		nullptr,	// ext (not needed for WiiWAD)
+		d->file->size()	// szFile
+	};
 	d->wadType = static_cast<WiiWADPrivate::WadType>(isRomSupported_static(&info));
 	if ((int)d->wadType < 0) {
 		UNREF_AND_NULL_NOCHK(d->file);

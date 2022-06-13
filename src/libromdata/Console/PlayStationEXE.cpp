@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PlayStationEXE.cpp: PlayStation PS-X executable reader.                 *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -150,12 +150,11 @@ void PlayStationEXE::init(void)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->psxHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->psxHeader);
-	info.ext = nullptr;	// Not needed for XBE.
-	info.szFile = 0;	// Not needed for XBE.
+	const DetectInfo info = {
+		{0, sizeof(d->psxHeader), reinterpret_cast<const uint8_t*>(&d->psxHeader)},
+		nullptr,	// ext (not needed for PlayStationEXE)
+		0		// szFile (not needed for PlayStationEXE)
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
