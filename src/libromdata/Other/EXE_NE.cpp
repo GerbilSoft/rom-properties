@@ -209,7 +209,7 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 		const char *url;
 	} msvb_dll_tbl[] = {
 		{4,0, {'V','B','R','U','N','4','0','0'}, nullptr},
-		{4,0, {'V','B','R','U','N','4','3','2'}, nullptr},
+		{4,0, {'V','B','R','U','N','4','1','6'}, nullptr},	// TODO: Is this a thing?
 		{3,0, {'V','B','R','U','N','3','0','0'}, nullptr},
 		{2,0, {'V','B','R','U','N','2','0','0'}, nullptr},
 		{1,0, {'V','B','R','U','N','1','0','0'}, "https://download.microsoft.com/download/vb30/sampleaa/1/w9xnt4/en-us/vbrun100.exe"},

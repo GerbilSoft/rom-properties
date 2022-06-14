@@ -364,7 +364,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		// FIXME: Is it vbrun400.dll, vbrun432.dll, or both?
 		// TODO: Find a download link.
 		{4,0, "vbrun400.dll", nullptr},
-		{4,0, "vbrun400.dll", nullptr},
+		{4,0, "vbrun432.dll", nullptr},
 	};
 
 	// Check all of the DLL names.
