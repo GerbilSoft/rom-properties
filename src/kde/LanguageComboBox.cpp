@@ -70,9 +70,7 @@ void LanguageComboBox::setLCs(const std::set<uint32_t> &set_lc)
 
 	int sel_idx = -1;
 	int cur_idx = 0;
-	const auto set_lc_cend = set_lc.cend();
-	for (auto iter = set_lc.cbegin(); iter != set_lc_cend; ++iter, cur_idx++) {
-		const uint32_t lc = *iter;
+	for (uint32_t lc : set_lc) {
 		const char *const name = SystemRegion::getLocalizedLanguageName(lc);
 		if (name) {
 			this->addItem(U82Q(name), lc);
@@ -85,6 +83,9 @@ void LanguageComboBox::setLCs(const std::set<uint32_t> &set_lc)
 			// This was the previously-selected LC.
 			sel_idx = cur_idx;
 		}
+
+		// Next index.
+		cur_idx++;
 	}
 
 	// Update the icons.

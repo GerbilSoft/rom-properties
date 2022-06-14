@@ -429,11 +429,8 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 
 				const uint16_t *p_tbl = reinterpret_cast<const uint16_t*>(p + 4);
 				tags.subtune_lengths.resize(subtunes);
-				const auto tags_subtune_lengths_end = tags.subtune_lengths.end();
-				for (auto iter = tags.subtune_lengths.begin();
-				     iter != tags_subtune_lengths_end; ++iter, p_tbl++)
-				{
-					*iter = be16_to_cpu(*p_tbl);
+				for (unsigned int &pSubtuneLength : tags.subtune_lengths) {
+					pSubtuneLength = be16_to_cpu(*p_tbl++);
 				}
 
 				p = p_next;
@@ -873,13 +870,10 @@ int SNDH::loadFieldData(void)
 		// TODO: Hide the third column if there are names but all zero durations?
 		uint64_t duration_total = 0;
 
-		unsigned int idx = 0;
 		const size_t count = std::max(tags.subtune_names.size(), tags.subtune_lengths.size());
 		auto vv_subtune_list = new RomFields::ListData_t(count);
-		auto dest_iter = vv_subtune_list->begin();
-		const auto vv_subtune_list_end = vv_subtune_list->end();
-		for (; dest_iter != vv_subtune_list_end; ++dest_iter, idx++) {
-			vector<string> &data_row = *dest_iter;
+		unsigned int idx = 0;
+		for (vector<string> &data_row : *vv_subtune_list) {
 			data_row.reserve(col_count);	// 2 or 3 fields per row.
 
 			data_row.emplace_back(rp_sprintf("%u", idx+1));	// NOTE: First subtune is 1, not 0.
@@ -904,6 +898,9 @@ int SNDH::loadFieldData(void)
 					data_row.emplace_back("");
 				}
 			}
+
+			// Next row.
+			idx++;
 		}
 
 		if (!has_SN && has_TIME && duration_total == 0) {
