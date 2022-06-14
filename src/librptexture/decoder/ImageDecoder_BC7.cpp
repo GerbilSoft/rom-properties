@@ -570,8 +570,7 @@ static int decodeBC7Block(array<argb32_t, 4*4> &tileBuf, const uint64_t *bc7_src
 				// Highest bit is 0.
 				data_idx = idxData & (index_mask >> 1);
 				idxData >>= (index_bits - 1);
-			}
-			else {
+			} else {
 				// Regular index.
 				data_idx = idxData & index_mask;
 				idxData >>= index_bits;
