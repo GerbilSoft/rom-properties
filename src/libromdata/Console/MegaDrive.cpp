@@ -453,15 +453,17 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 	uint32_t io_support = parseIOSupport(s_io_support, sizeof(pRomHeader->io_support));
 	string s_io_devices;
 	s_io_devices.reserve(32);
-	uint32_t bit = 1;
-	for (unsigned int i = 0; i < ARRAY_SIZE(io_bitfield_names); i++, bit <<= 1) {
+	uint32_t bit = 1U;
+	for (const char *name : io_bitfield_names) {
 		if (io_support & bit) {
 			if (!s_io_devices.empty()) {
 				s_io_devices += ", ";
 			}
-			s_io_devices += dpgettext_expr(RP_I18N_DOMAIN,
-				"MegaDrive|I/O", io_bitfield_names[i]);
+			s_io_devices += dpgettext_expr(RP_I18N_DOMAIN, "MegaDrive|I/O", name);
 		}
+
+		// Next bit.
+		bit <<= 1;
 	}
 	if (s_io_devices.empty()) {
 		s_io_devices = C_("MegaDrive|I/O", "None");
@@ -1127,12 +1129,10 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 	int sysId = MegaDrivePrivate::ROM_UNKNOWN;
 	if (!memcmp(&pHeader[0x100], sega_magic, sizeof(sega_magic))) {
 		// "SEGA" is at 0x100.
-		for (unsigned int i = 0; i < ARRAY_SIZE(cart_magic_sega); i++) {
-			if (!memcmp(&pHeader[0x104], cart_magic_sega[i].sys_name,
-			                             cart_magic_sega[i].sys_name_len))
-			{
+		for (const auto &p : cart_magic_sega) {
+			if (!memcmp(&pHeader[0x104], p.sys_name, p.sys_name_len)) {
 				// Found a matching system name.
-				sysId = cart_magic_sega[i].system_id;
+				sysId = p.system_id;
 				break;
 			}
 		}
@@ -1143,12 +1143,10 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 		}
 	} else if (!memcmp(&pHeader[0x101], sega_magic, sizeof(sega_magic))) {
 		// "SEGA" is at 0x101.
-		for (unsigned int i = 0; i < ARRAY_SIZE(cart_magic_sega); i++) {
-			if (!memcmp(&pHeader[0x105], cart_magic_sega[i].sys_name,
-			                             cart_magic_sega[i].sys_name_len-1))
-			{
+		for (const auto &p : cart_magic_sega) {
+			if (!memcmp(&pHeader[0x105], p.sys_name, p.sys_name_len-1)) {
 				// Found a matching system name.
-				sysId = cart_magic_sega[i].system_id;
+				sysId = p.system_id;
 				break;
 			}
 		}
@@ -1160,10 +1158,10 @@ int MegaDrive::isRomSupported_static(const DetectInfo *info)
 	} else {
 		// Not a "SEGA" cartridge header.
 		// Check for less common ROMs without a "SEGA" system name.
-		for (unsigned int i = 0; i < ARRAY_SIZE(cart_magic_other); i++) {
-			if (!memcmp(&pHeader[0x100], cart_magic_other[i].sys_name, 16)) {
+		for (const auto &p : cart_magic_other) {
+			if (!memcmp(&pHeader[0x100], p.sys_name, 16)) {
 				// Found a matching system name.
-				sysId = cart_magic_other[i].system_id;
+				sysId = p.system_id;
 				break;
 			}
 		}
