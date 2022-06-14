@@ -9,6 +9,10 @@ ENDIF(POLICY CMP0063)
 PROJECT(rpsecure LANGUAGES C)
 
 OPTION(ENABLE_EXTRA_SECURITY "Enable extra security functionality if available." ON)
+IF(CMAKE_C_FLAGS MATCHES -fsanitize OR CMAKE_CXX_FLAGS MATCHES -fsanitize)
+	# Disable extra security if a sanitizer is in use.
+	SET(ENABLE_EXTRA_SECURITY OFF CACHE BOOL "Enable extra security functionality if available." FORCE)
+ENDIF()
 
 IF(ENABLE_EXTRA_SECURITY)
 	IF(WIN32)
