@@ -165,10 +165,7 @@ RomMetaDataPrivate::~RomMetaDataPrivate()
 void RomMetaDataPrivate::delete_data(void)
 {
 	// Delete all of the allocated strings in this->metaData.
-	const auto metaData_end = metaData.end();
-	for (auto iter = this->metaData.begin(); iter != metaData_end; ++iter) {
-		RomMetaData::MetaData &metaData = *iter;
-
+	for (RomMetaData::MetaData &metaData : this->metaData) {
 		assert(metaData.name > Property::FirstProperty);
 		assert(metaData.name < Property::PropertyCount);
 		if (metaData.name <= Property::FirstProperty ||
