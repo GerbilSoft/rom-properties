@@ -165,7 +165,7 @@ class NintendoDSPrivate final : public LibRpBase::RomDataPrivate
 				// - https://github.com/DS-Homebrew/nds-bootstrap/commit/24243ff4ad6a9bf9c47c16b3e285dc85266b9372
 				// - https://github.com/DS-Homebrew/nds-bootstrap/releases/tag/v0.44.2
 				const uint32_t nds_rom_size = le32_to_cpu(romHeader.total_used_rom_size) + 0x88;
-				return ((off_t)nds_rom_size < this->romSize
+				return (static_cast<off64_t>(nds_rom_size) < this->romSize
 					? nds_rom_size
 					: static_cast<uint32_t>(this->romSize));
 			}

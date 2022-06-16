@@ -327,32 +327,32 @@ string formatFileSize(off64_t size)
 		// tr: Kilobytes
 		suffix = C_("TextFuncs|FileSize", "KiB");
 		whole_part = static_cast<int>(size >> 10);
-		frac_part = calc_frac_part<off_t>(size, (1LL << 10));
+		frac_part = calc_frac_part<off64_t>(size, (1LL << 10));
 	} else if (size < (2LL << 30)) {
 		// tr: Megabytes
 		suffix = C_("TextFuncs|FileSize", "MiB");
 		whole_part = static_cast<int>(size >> 20);
-		frac_part = calc_frac_part<off_t>(size, (1LL << 20));
+		frac_part = calc_frac_part<off64_t>(size, (1LL << 20));
 	} else if (size < (2LL << 40)) {
 		// tr: Gigabytes
 		suffix = C_("TextFuncs|FileSize", "GiB");
 		whole_part = static_cast<int>(size >> 30);
-		frac_part = calc_frac_part<off_t>(size, (1LL << 30));
+		frac_part = calc_frac_part<off64_t>(size, (1LL << 30));
 	} else if (size < (2LL << 50)) {
 		// tr: Terabytes
 		suffix = C_("TextFuncs|FileSize", "TiB");
 		whole_part = static_cast<int>(size >> 40);
-		frac_part = calc_frac_part<off_t>(size, (1LL << 40));
+		frac_part = calc_frac_part<off64_t>(size, (1LL << 40));
 	} else if (size < (2LL << 60)) {
 		// tr: Petabytes
 		suffix = C_("TextFuncs|FileSize", "PiB");
 		whole_part = static_cast<int>(size >> 50);
-		frac_part = calc_frac_part<off_t>(size, (1LL << 50));
+		frac_part = calc_frac_part<off64_t>(size, (1LL << 50));
 	} else /*if (size < (2LL << 70))*/ {
 		// tr: Exabytes
 		suffix = C_("TextFuncs|FileSize", "EiB");
 		whole_part = static_cast<int>(size >> 60);
-		frac_part = calc_frac_part<off_t>(size, (1LL << 60));
+		frac_part = calc_frac_part<off64_t>(size, (1LL << 60));
 	}
 
 	// Localize the whole part.

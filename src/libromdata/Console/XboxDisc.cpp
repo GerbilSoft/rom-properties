@@ -407,7 +407,7 @@ XboxDisc::XboxDisc(IRpFile *file)
 		// to be an edge case where it's an XGD3 disc that has a video
 		// partition that matches an XGD2 timestamp.
 		if (d->discType == XboxDiscPrivate::DiscType::XGD2) {
-			static const off_t xgd3_offset = XDVDFS_LBA_OFFSET_XGD3 * XDVDFS_BLOCK_SIZE;
+			static const off64_t xgd3_offset = XDVDFS_LBA_OFFSET_XGD3 * XDVDFS_BLOCK_SIZE;
 			d->xdvdfs_addr = XDVDFS_LBA_OFFSET_XGD3 * XDVDFS_BLOCK_SIZE;
 			d->xdvdfsPartition = new XDVDFSPartition(discReader,
 				xgd3_offset, d->file->size() - xgd3_offset);
