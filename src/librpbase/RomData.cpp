@@ -125,21 +125,9 @@ string RomDataPrivate::getURL_RPDB(
 {
 	// Game ID may need to be urlencoded.
 	string gameID_urlencode = LibCacheCommon::urlencode(gameID);
-
-	string url;
-	url.reserve(64+32);
-	url.assign("https://rpdb.gerbilsoft.com/");
-	url += system;
-	url += '/';
-	url += type;
-	url += '/';
-	if (region) {
-		url += region;
-		url += '/';
-	}
-	url += gameID_urlencode;
-	url += ext;
-	return url;
+	return rp_sprintf("https://rpdb.gerbilsoft.com/%s/%s/%s%s%s%s",
+		system, type, (region ? region : ""), (region ? "/" : ""),
+		gameID_urlencode.c_str(), ext);
 }
 
 /**
@@ -157,19 +145,9 @@ string RomDataPrivate::getCacheKey_RPDB(
 	const char *region, const char *gameID,
 	const char *ext)
 {
-	string cacheKey;
-	cacheKey.reserve(64);
-	cacheKey  = system;
-	cacheKey += '/';
-	cacheKey += type;
-	cacheKey += '/';
-	if (region) {
-		cacheKey += region;
-		cacheKey += '/';
-	}
-	cacheKey += gameID;
-	cacheKey += ext;
-	return cacheKey;
+	return rp_sprintf("%s/%s/%s%s%s%s",
+		system, type, (region ? region : ""), (region ? "/" : ""),
+		gameID, ext);
 }
 
 /**
