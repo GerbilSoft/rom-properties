@@ -13,7 +13,7 @@
 #ifdef HAVE_IFUNC
 
 #include "SuperMagicDrive.hpp"
-using LibRomData::SuperMagicDrive;
+using namespace LibRomData::SuperMagicDrive;
 
 // IFUNC attribute doesn't support C++ name mangling.
 extern "C" {
