@@ -6,7 +6,7 @@
 
 MACRO(CHECK_HIDDEN_VISIBILITY)
 	# Check for visibility symbols.
-	IF(NOT CMAKE_VERSION VERSION_LESS 3.3.0)
+	IF(POLICY CMP0063)
 		# CMake 3.3: Use CMake predefined variables.
 		# NOTE: CMake 3.0-3.2 do not apply these settings
 		# to static libraries, so we have to fall back to the

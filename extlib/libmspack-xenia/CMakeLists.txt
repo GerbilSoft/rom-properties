@@ -17,6 +17,11 @@ CHECK_SYMBOL_EXISTS(fseeko "stdio.h" HAVE_FSEEKO)
 CHECK_TYPE_SIZE(off_t SIZEOF_OFF_T)
 CONFIGURE_FILE(config.h.in config.h)
 
+# rom-properties: Hide symbols by default, since we don't want them
+# leaking from the static library to the plugins.
+INCLUDE(CheckHiddenVisibility)
+CHECK_HIDDEN_VISIBILITY()
+
 # Sources.
 SET(libmspack_SRCS
 	lzxd.c

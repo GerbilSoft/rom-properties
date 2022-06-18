@@ -3,6 +3,11 @@
 # unice68
 project(unice68 C)
 
+# rom-properties: Hide symbols by default, since we don't want them
+# leaking from the static library to the plugins.
+INCLUDE(CheckHiddenVisibility)
+CHECK_HIDDEN_VISIBILITY()
+
 # ======================================================================
 # cmake setup
 
