@@ -37,7 +37,7 @@ namespace LibRpTexture {
 class rp_image_backend;
 
 class rp_image_private;
-class rp_image : public RefBase
+class RP_LIBROMDATA_PUBLIC rp_image : public RefBase
 {
 	public:
 		enum class Format {
@@ -85,7 +85,7 @@ class rp_image : public RefBase
 		}
 
 		/**
-		 * Special case unref() function to allow
+		 * Special case ref() function to allow
 		 * const rp_image* to be ref'd.
 		 */
 		inline const rp_image *ref(void) const

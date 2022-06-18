@@ -218,6 +218,8 @@ rp_image *fromLinear8(PixelFormat px_format,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 4, 5)
+RP_LIBROMDATA_PUBLIC
 rp_image *fromLinear16_cpp(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *RESTRICT img_buf, int img_siz, int stride = 0);
@@ -234,6 +236,8 @@ rp_image *fromLinear16_cpp(PixelFormat px_format,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 4, 5)
+RP_LIBROMDATA_PUBLIC
 rp_image *fromLinear16_sse2(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *RESTRICT img_buf, int img_siz, int stride = 0);
@@ -255,6 +259,7 @@ rp_image *fromLinear16_sse2(PixelFormat px_format,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 4, 5)
 static inline rp_image *fromLinear16(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *img_buf, int img_siz, int stride = 0)
@@ -275,6 +280,7 @@ static inline rp_image *fromLinear16(PixelFormat px_format,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 4, 5)
 IFUNC_SSE2_STATIC_INLINE rp_image *fromLinear16(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *RESTRICT img_buf, int img_siz, int stride = 0);
@@ -294,6 +300,7 @@ IFUNC_SSE2_STATIC_INLINE rp_image *fromLinear16(PixelFormat px_format,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 4, 5)
 static inline rp_image *fromLinear16(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *RESTRICT img_buf, int img_siz, int stride = 0)
@@ -329,6 +336,7 @@ static inline rp_image *fromLinear16(PixelFormat px_format,
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 4, 5)
+RP_LIBROMDATA_PUBLIC
 rp_image *fromLinear24_cpp(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz, int stride = 0);
@@ -346,6 +354,7 @@ rp_image *fromLinear24_cpp(PixelFormat px_format,
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 4, 5)
+RP_LIBROMDATA_PUBLIC
 rp_image *fromLinear24_ssse3(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz, int stride = 0);
@@ -363,6 +372,7 @@ rp_image *fromLinear24_ssse3(PixelFormat px_format,
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 4, 5)
+RP_LIBROMDATA_PUBLIC
 IFUNC_STATIC_INLINE rp_image *fromLinear24(PixelFormat px_format,
 	int width, int height,
 	const uint8_t *RESTRICT img_buf, int img_siz, int stride = 0);
@@ -409,6 +419,8 @@ static inline rp_image *fromLinear24(PixelFormat px_format,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 4, 5)
+RP_LIBROMDATA_PUBLIC
 rp_image *fromLinear32_cpp(PixelFormat px_format,
 	int width, int height,
 	const uint32_t *RESTRICT img_buf, int img_siz, int stride = 0);
@@ -425,6 +437,8 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
+ATTR_ACCESS_SIZE(read_only, 4, 5)
+RP_LIBROMDATA_PUBLIC
 rp_image *fromLinear32_ssse3(PixelFormat px_format,
 	int width, int height,
 	const uint32_t *RESTRICT img_buf, int img_siz, int stride = 0);
@@ -441,6 +455,7 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
  * @param stride	[in,opt] Stride, in bytes. If 0, assumes width*bytespp.
  * @return rp_image, or nullptr on error.
  */
+RP_LIBROMDATA_PUBLIC
 IFUNC_STATIC_INLINE rp_image *fromLinear32(PixelFormat px_format,
 	int width, int height,
 	const uint32_t *RESTRICT img_buf, int img_siz, int stride = 0);

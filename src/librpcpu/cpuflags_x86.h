@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpcpu)                         *
  * cpuflags_x86.h: x86 CPU flags detection.                                *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -33,12 +33,13 @@ extern "C" {
 #endif /* _M_IX86) || __i386__ || _M_X64 || _M_AMD64 || __amd64__ || __x86_64__ */
 
 // Don't modify these!
-extern uint32_t RP_CPU_Flags;
-extern int RP_CPU_Flags_Init;	// 1 if RP_CPU_Flags has been initialized.
+extern RP_LIBROMDATA_PUBLIC uint32_t RP_CPU_Flags;
+extern RP_LIBROMDATA_PUBLIC int RP_CPU_Flags_Init;	// 1 if RP_CPU_Flags has been initialized.
 
 /**
  * Initialize RP_CPU_Flags.
  */
+RP_LIBROMDATA_PUBLIC
 void RP_CPU_InitCPUFlags(void);
 
 /**

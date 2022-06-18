@@ -430,9 +430,38 @@ ENDIF(ENABLE_PCH)
 INCLUDE(SetMSVCDebugPath)
 SET_MSVC_DEBUG_PATH(${PROJECT_NAME})
 
-# TODO: More public/private library stuff.
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC rptexture rpfile rpbase)
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpcpu rpthreads cachecommon)
+# Include paths:
+# - Public: Current source and binary directories.
+# - Private: Parent source and binary directories,
+#            and top-level binary directory for git_version.h.
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
+	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# libromdata
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# libromdata
+	PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# src
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# src
+		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# top-level
+	)
+
+IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
+	# When linking as a shared library, all internal library components
+	# should be linked in as PRIVATE, and include directories added
+	# manually. Otherwise, the .a libraries get linked in to the
+	# UI frontend plugins.
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpcpu rptexture rpfile rpbase)
+	TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} INTERFACE
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../librpcpu>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../librpcpu>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../librptexture>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../librptexture>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../librpfile>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../librpfile>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../librpbase>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../librpbase>
+		)
+ELSE()
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC rpcpu rptexture rpfile rpbase)
+ENDIF()
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpthreads cachecommon)
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE inih)
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE i18n)
@@ -459,17 +488,6 @@ IF(${PROJECT_NAME}_SOVERSION)
 		)
 ENDIF(${PROJECT_NAME}_SOVERSION)
 
-# Include paths:
-# - Public: Current source and binary directories.
-# - Private: Parent source and binary directories,
-#            and top-level binary directory for git_version.h.
-TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
-	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# libromdata
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# libromdata
-	PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# src
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# src
-		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# top-level
-	)
 IF(WIN32)
 	# librpsecure: integrity_level.h
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpsecure)

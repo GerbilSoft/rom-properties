@@ -33,6 +33,7 @@ class MemFile : public IRpFile
 		 * @param size Size of memory buffer.
 		 */
 		ATTR_ACCESS_SIZE(read_only, 2, 3)
+		RP_LIBROMDATA_PUBLIC
 		MemFile(const void *buf, size_t size);
 	protected:
 		/**

@@ -853,7 +853,7 @@ void RpPngFormatTest::Compare_CI8_BMP1(
 }
 
 /**
- * Run an RpImageLoader test.
+ * Run an RpPngFormat test.
  */
 TEST_P(RpPngFormatTest, loadTest)
 {

@@ -211,6 +211,7 @@ std::string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int 
  * @param flags	[in] Flags. (See TextConv_Flags_e.)
  * @return UTF-16 string.
  */
+RP_LIBROMDATA_PUBLIC
 std::u16string cpN_to_utf16(unsigned int cp, const char *str, int len, unsigned int flags = 0);
 
 /**
@@ -621,6 +622,7 @@ std::string petscii_to_utf8(const char *str, int len, bool shifted = false);
  * @return std::string
  */
 ATTR_PRINTF(1, 0)
+RP_LIBROMDATA_PUBLIC
 std::string rp_vsprintf(const char *fmt, va_list ap);
 
 /**
@@ -653,6 +655,7 @@ static inline std::string rp_sprintf(const char *fmt, ...)
  * @return std::string
  */
 ATTR_PRINTF(1, 0)
+RP_LIBROMDATA_PUBLIC
 std::string rp_vsprintf_p(const char *fmt, va_list ap);
 
 /**

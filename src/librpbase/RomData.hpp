@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomData.hpp: ROM data base class.                                       *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -77,12 +77,14 @@ class RomData : public RefBase
 		 * Is this ROM valid?
 		 * @return True if it is; false if it isn't.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		bool isValid(void) const;
 
 		/**
 		 * Is the file open?
 		 * @return True if the file is open; false if it isn't.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		bool isOpen(void) const;
 
 		/**
@@ -456,6 +458,7 @@ class RomData : public RefBase
 		 * @param imageType Image type to load.
 		 * @return Internal image, or nullptr if the ROM doesn't have one.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const LibRpTexture::rp_image *image(ImageType imageType) const;
 
 		/**
