@@ -509,23 +509,25 @@ void EXEPrivate::addFields_PE(void)
 	uint16_t dll_flags;
 	bool dotnet;
 	if (exeType == EXEPrivate::ExeType::PE) {
-		os_ver_major = le16_to_cpu(hdr.pe.OptionalHeader.opt32.MajorOperatingSystemVersion);
-		os_ver_minor = le16_to_cpu(hdr.pe.OptionalHeader.opt32.MinorOperatingSystemVersion);
-		subsystem_ver_major = le16_to_cpu(hdr.pe.OptionalHeader.opt32.MajorSubsystemVersion);
-		subsystem_ver_minor = le16_to_cpu(hdr.pe.OptionalHeader.opt32.MinorSubsystemVersion);
-		dll_flags = le16_to_cpu(hdr.pe.OptionalHeader.opt32.DllCharacteristics);
+		const auto &opthdr = hdr.pe.OptionalHeader.opt32;
+		os_ver_major = le16_to_cpu(opthdr.MajorOperatingSystemVersion);
+		os_ver_minor = le16_to_cpu(opthdr.MinorOperatingSystemVersion);
+		subsystem_ver_major = le16_to_cpu(opthdr.MajorSubsystemVersion);
+		subsystem_ver_minor = le16_to_cpu(opthdr.MinorSubsystemVersion);
+		dll_flags = le16_to_cpu(opthdr.DllCharacteristics);
 		// TODO: Check VirtualAddress, Size, or both?
 		// 'file' checks VirtualAddress.
-		dotnet = (hdr.pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_CLR_HEADER].Size != 0);
+		dotnet = (opthdr.DataDirectory[IMAGE_DATA_DIRECTORY_CLR_HEADER].Size != 0);
 	} else /*if (exeType == EXEPrivate::ExeType::PE32PLUS)*/ {
-		os_ver_major = le16_to_cpu(hdr.pe.OptionalHeader.opt64.MajorOperatingSystemVersion);
-		os_ver_minor = le16_to_cpu(hdr.pe.OptionalHeader.opt64.MinorOperatingSystemVersion);
-		subsystem_ver_major = le16_to_cpu(hdr.pe.OptionalHeader.opt64.MajorSubsystemVersion);
-		subsystem_ver_minor = le16_to_cpu(hdr.pe.OptionalHeader.opt64.MinorSubsystemVersion);
-		dll_flags = le16_to_cpu(hdr.pe.OptionalHeader.opt64.DllCharacteristics);
+		const auto &opthdr = hdr.pe.OptionalHeader.opt64;
+		os_ver_major = le16_to_cpu(opthdr.MajorOperatingSystemVersion);
+		os_ver_minor = le16_to_cpu(opthdr.MinorOperatingSystemVersion);
+		subsystem_ver_major = le16_to_cpu(opthdr.MajorSubsystemVersion);
+		subsystem_ver_minor = le16_to_cpu(opthdr.MinorSubsystemVersion);
+		dll_flags = le16_to_cpu(opthdr.DllCharacteristics);
 		// TODO: Check VirtualAddress, Size, or both?
 		// 'file' checks VirtualAddress.
-		dotnet = (hdr.pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_CLR_HEADER].Size != 0);
+		dotnet = (opthdr.DataDirectory[IMAGE_DATA_DIRECTORY_CLR_HEADER].Size != 0);
 	}
 
 	// CPU. (Also .NET status.)
