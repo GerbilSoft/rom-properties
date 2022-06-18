@@ -37,7 +37,7 @@ namespace LibRpTexture {
 class rp_image_backend;
 
 class rp_image_private;
-class RP_LIBROMDATA_PUBLIC rp_image : public RefBase
+class rp_image : public RefBase
 {
 	public:
 		enum class Format {
@@ -143,18 +143,21 @@ class RP_LIBROMDATA_PUBLIC rp_image : public RefBase
 		 * Is the image valid?
 		 * @return True if the image is valid.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		bool isValid(void) const;
 
 		/**
 		 * Get the image width.
 		 * @return Image width.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int width(void) const;
 
 		/**
 		 * Get the image height.
 		 * @return Image height.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int height(void) const;
 
 		/**
@@ -168,6 +171,7 @@ class RP_LIBROMDATA_PUBLIC rp_image : public RefBase
 		 * This includes memory alignment padding.
 		 * @return Bytes per line.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int stride(void) const;
 
 		/**
@@ -175,18 +179,21 @@ class RP_LIBROMDATA_PUBLIC rp_image : public RefBase
 		 * This does not include memory alignment padding.
 		 * @return Number of active bytes per line.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int row_bytes(void) const;
 
 		/**
 		 * Get the image format.
 		 * @return Image format.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		Format format(void) const;
 
 		/**
 		 * Get a pointer to the first line of image data.
 		 * @return Image data.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const void *bits(void) const;
 
 		/**
@@ -201,6 +208,7 @@ class RP_LIBROMDATA_PUBLIC rp_image : public RefBase
 		 * @param i Line number.
 		 * @return Line of image data, or nullptr if i is out of range.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const void *scanLine(int i) const;
 
 		/**
@@ -303,6 +311,7 @@ class RP_LIBROMDATA_PUBLIC rp_image : public RefBase
 		 * Duplicate the rp_image, converting to ARGB32 if necessary.
 		 * @return New ARGB32 rp_image with a copy of the image data.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		rp_image *dup_ARGB32(void) const;
 
 		/**
