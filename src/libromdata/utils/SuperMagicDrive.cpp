@@ -3,14 +3,14 @@
  * SuperMagicDrive.cpp: Super Magic Drive deinterleaving function.         *
  * Standard version. (C++ code only)                                       *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "SuperMagicDrive.hpp"
 
-namespace LibRomData {
+namespace LibRomData { namespace SuperMagicDrive {
 
 /**
  * Decode a Super Magic Drive interleaved block.
@@ -18,7 +18,7 @@ namespace LibRomData {
  * @param pDest	[out] Destination block. (Must be 16 KB.)
  * @param pSrc	[in] Source block. (Must be 16 KB.)
  */
-void SuperMagicDrive::decodeBlock_cpp(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc)
+void decodeBlock_cpp(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc)
 {
 	// First 8 KB of the source block is ODD bytes.
 	const uint8_t *pSrc_end = pSrc + (SMD_BLOCK_SIZE / 2);
@@ -47,4 +47,4 @@ void SuperMagicDrive::decodeBlock_cpp(uint8_t *RESTRICT pDest, const uint8_t *RE
 	}
 }
 
-}
+} }

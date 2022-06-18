@@ -30,69 +30,48 @@
 #  define SMD_ALWAYS_HAS_SSE2 1
 #endif
 
-namespace LibRomData {
+namespace LibRomData { namespace SuperMagicDrive {
 
-class SuperMagicDrive
-{
-	private:
-		// Static class.
-		SuperMagicDrive();
-		~SuperMagicDrive();
-		RP_DISABLE_COPY(SuperMagicDrive)
+// SMD block size.
+static const unsigned int SMD_BLOCK_SIZE = 16384;
 
-	public:
-		/** Internal algorithms. **/
-		// NOTE: These are public to allow for unit tests and benchmarking.
+/** Internal algorithms. **/
+// NOTE: These are public to allow for unit tests and benchmarking.
 
-		/**
-		 * Decode a Super Magic Drive interleaved block.
-		 * Standard version using regular C++ code.
-		 * @param pDest	[out] Destination block. (Must be 16 KB.)
-		 * @param pSrc	[in] Source block. (Must be 16 KB.)
-		 */
-		static void decodeBlock_cpp(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
+/**
+ * Decode a Super Magic Drive interleaved block.
+ * Standard version using regular C++ code.
+ * @param pDest	[out] Destination block. (Must be 16 KB.)
+ * @param pSrc	[in] Source block. (Must be 16 KB.)
+ */
+void decodeBlock_cpp(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
 
 #if SMD_HAS_MMX
-		/**
-		 * Decode a Super Magic Drive interleaved block.
-		 * MMX-optimized version.
-		 * NOTE: Pointers must be 16-byte aligned.
-		 * @param pDest	[out] Destination block. (Must be 16 KB.)
-		 * @param pSrc	[in] Source block. (Must be 16 KB.)
-		 */
-		static void decodeBlock_mmx(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
+/**
+ * Decode a Super Magic Drive interleaved block.
+ * MMX-optimized version.
+ * NOTE: Pointers must be 16-byte aligned.
+ * @param pDest	[out] Destination block. (Must be 16 KB.)
+ * @param pSrc	[in] Source block. (Must be 16 KB.)
+ */
+void decodeBlock_mmx(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
 #endif /* SMD_HAS_MMX */
 
 #if SMD_HAS_SSE2
-		/**
-		 * Decode a Super Magic Drive interleaved block.
-		 * SSE2-optimized version.
-		 * NOTE: Pointers must be 16-byte aligned.
-		 * @param pDest	[out] Destination block. (Must be 16 KB.)
-		 * @param pSrc	[in] Source block. (Must be 16 KB.)
-		 */
-		static void decodeBlock_sse2(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
+/**
+ * Decode a Super Magic Drive interleaved block.
+ * SSE2-optimized version.
+ * NOTE: Pointers must be 16-byte aligned.
+ * @param pDest	[out] Destination block. (Must be 16 KB.)
+ * @param pSrc	[in] Source block. (Must be 16 KB.)
+ */
+void decodeBlock_sse2(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
 #endif /* SMD_HAS_SSE2 */
-
-	public:
-		// SMD block size.
-		static const unsigned int SMD_BLOCK_SIZE = 16384;
-
-		/**
-		 * Decode a Super Magic Drive interleaved block.
-		 * NOTE: Pointers must be 16-byte aligned if using SSE2.
-		 * @param pDest	[out] Destination block. (Must be 16 KB.)
-		 * @param pSrc	[in] Source block. (Must be 16 KB.)
-		 */
-		static IFUNC_SSE2_INLINE void decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
-};
-
-// TODO: Use gcc target-specific function attributes if available?
-// (IFUNC dispatcher, etc.)
 
 /** Dispatch functions. **/
 
-#if defined(HAVE_IFUNC) && defined(SMD_ALWAYS_HAS_SSE2)
+#if defined(HAVE_IFUNC) && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64))
+#  if defined(SMD_ALWAYS_HAS_SSE2)
 
 // System does support IFUNC, but it's always guaranteed to have SSE2.
 // Eliminate the IFUNC dispatch on this system.
@@ -103,15 +82,19 @@ class SuperMagicDrive
  * @param dest	[out] Destination block. (Must be 16 KB.)
  * @param src	[in] Source block. (Must be 16 KB.)
  */
-inline void SuperMagicDrive::decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc)
+static inline void decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc)
 {
 	// amd64 always has SSE2.
 	decodeBlock_sse2(pDest, pSrc);
 }
 
-#endif /* defined(HAVE_IFUNC) && defined(SMD_ALWAYS_HAS_SSE2) */
+#  else /* !defined(SMD_ALWAYS_HAS_SSE2) */
+// System does support IFUNC, and we have to use a dispatch function.
+void decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
+#  endif /* defined(SMD_ALWAYS_HAS_SSE2) */
+#else
 
-#if !defined(HAVE_IFUNC) || (!defined(RP_CPU_I386) && !defined(RP_CPU_AMD64))
+// System does not have IFUNC, or is not i386/amd64.
 
 /**
  * Decode a Super Magic Drive interleaved block.
@@ -119,7 +102,7 @@ inline void SuperMagicDrive::decodeBlock(uint8_t *RESTRICT pDest, const uint8_t 
  * @param dest	[out] Destination block. (Must be 16 KB.)
  * @param src	[in] Source block. (Must be 16 KB.)
  */
-inline void SuperMagicDrive::decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc)
+static inline void decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc)
 {
 #ifdef SMD_ALWAYS_HAS_SSE2
 	// amd64 always has SSE2.
@@ -141,8 +124,8 @@ inline void SuperMagicDrive::decodeBlock(uint8_t *RESTRICT pDest, const uint8_t 
 #endif /* SMD_ALWAYS_HAS_SSE2 */
 }
 
-#endif /* !defined(HAVE_IFUNC) || (!defined(RP_CPU_I386) && !defined(RP_CPU_AMD64)) */
+#endif /* defined(HAVE_IFUNC) && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64)) */
 
-}
+} }
 
 #endif /* __ROMPROPERTIES_LIBROMDATA_UTILS_SUPERMAGICDRIVE_HPP__ */
