@@ -352,22 +352,81 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
  */
 void EXEPrivate::addFields_MZ(void)
 {
-	// Program image size
-	uint32_t program_size = le16_to_cpu(mz.e_cp) * 512;
-	if (mz.e_cblp != 0) {
-		program_size -= 512 - le16_to_cpu(mz.e_cblp);
-	}
+	/* MS-DOS allocation algorithm (all sizes in paragraphs):
+	 *     progsize = e_cp*512/16 - e_cparhdr
+	 *     if maxfreeblock < 0x10 + progsize:
+	 *         error
+	 *     if e_maxalloc == 0:
+	 *         allocate(maxfreeblock)
+	 *         load_high
+	 *         return
+	 *     if maxfreeblock < 0x10 + progsize + e_minalloc:
+	 *         error
+	 *     allocate(min(0x10 + progsize + e_maxalloc, maxfreeblock))
+	 *     load_low
+	 *
+	 * e_cblp doesn't seem to be used by MS-DOS at all. The documentation says
+	 * that its meant for overlays. However, overlay or not, the loader just
+	 * keeps reading until it reads progsize paragraphs, or gets a short read.
+	 * With the above in mind, progsize seems to be the most useful metric
+	 * to display, since e_cp/e_cblp is supposed to be the same as the filesize.
+	 */
+
+	// Header and program size
+	fields->addField_string(C_("EXE", "Header Size"), formatFileSize(le16_to_cpu(mz.e_cparhdr) * 16));
+	uint32_t program_size = le16_to_cpu(mz.e_cp) * 512 - le16_to_cpu(mz.e_cparhdr) * 16;
 	fields->addField_string(C_("EXE", "Program Size"), formatFileSize(program_size));
 
+	// File size warnings
+	// Only show them if it's an MZ-only executable and if e_cblp is sane
+	if (exeType == EXEPrivate::ExeType::MZ && le16_to_cpu(mz.e_cblp) > 511) {
+		off64_t file_size = file->size();
+		if (file_size != -1) {
+			off64_t image_size = le16_to_cpu(mz.e_cp)*512;
+			if (mz.e_cblp != 0)
+				image_size -= 512 - le16_to_cpu(mz.e_cblp);
+			if (file_size < image_size)
+				fields->addField_string(C_("RomData", "Warning"),
+					C_("EXE", "Program image truncated"), RomFields::STRF_WARNING);
+			else if (file_size > image_size)
+				fields->addField_string(C_("RomData", "Warning"),
+					C_("EXE", "Extra data after end of file"), RomFields::STRF_WARNING);
+		}
+	}
+
 	// Min/Max allocated memory
-	fields->addField_string(C_("EXE", "Min. Memory"), formatFileSize(le16_to_cpu(mz.e_minalloc) * 16));
-	fields->addField_string(C_("EXE", "Max. Memory"), formatFileSize(le16_to_cpu(mz.e_maxalloc) * 16));
+	if (mz.e_maxalloc != 0) {
+		fields->addField_string(C_("EXE", "Min. Memory"), formatFileSize(le16_to_cpu(mz.e_minalloc) * 16));
+		fields->addField_string(C_("EXE", "Max. Memory"),
+			mz.e_maxalloc == 0xFFFF ? C_("EXE", "All") : formatFileSize(le16_to_cpu(mz.e_maxalloc) * 16));
+	} else {
+		/* NOTE: A "high" load means the program it at the end of the allocated
+		 * area, with extra pragraphs being between PSP and the program.
+		 * Not to be confused with "LOADHIGH" which loads programs into UMB.
+		 */
+		fields->addField_string(C_("EXE", "Load Type"), C_("EXE", "High"));
+	}
 
 	// Initial CS:IP/SS:SP
 	fields->addField_string(C_("EXE", "Initial CS:IP"),
 		rp_sprintf("%04X:%04X", le16_to_cpu(mz.e_cs), le16_to_cpu(mz.e_ip)), RomFields::STRF_MONOSPACE);
 	fields->addField_string(C_("EXE", "Initial SS:SP"),
 		rp_sprintf("%04X:%04X", le16_to_cpu(mz.e_ss), le16_to_cpu(mz.e_sp)), RomFields::STRF_MONOSPACE);
+
+	/* Linkers will happily put 0:0 in SS:SP if the stack is not defined.
+	 * In this case, at least DOS 5 and later will do the following hacks:
+	 * - If progsize < 64k-256, add 256 to it.
+	 * - If allocation size < 64k, set SP to allocation size - 256 (size of PSP)
+	 * The idea is that if a <64k program specifies 0:0 as the stack, it likely
+	 * expects to own 0:FFFF, as that's where the first push will go. Now, the
+	 * default maxalloc is FFFF, so unless you have <64k free memory, it'll
+	 * work fine. This hack improves compatibility with such programs when
+	 * you're low on memory.
+	 * I think this warrants a warning.
+	 */
+	if (mz.e_ss == 0 && mz.e_sp == 0)
+		fields->addField_string(C_("RomData", "Warning"),
+			C_("EXE", "No stack"), RomFields::STRF_WARNING);
 }
 
 /** LE/LX-specific **/
