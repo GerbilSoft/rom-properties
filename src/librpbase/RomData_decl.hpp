@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomData_decl.hpp: ROM data base class. (Subclass macros)                *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -26,13 +26,17 @@ namespace LibRpBase {
 /**
  * Initial declaration for a RomData subclass.
  * Declares functions common to all RomData subclasses.
+ * @param klass Class name
+ * @param VISIBILITY_SPEC RP_LIBROMDATA_PUBLIC for dllexport; otherwise, RP_LIBROMDATA_LOCAL
  */
-#define ROMDATA_DECL_BEGIN(klass) \
+#define ROMDATA_DECL_BEGIN_INT(klass, VISIBILITY_SPEC) \
 class klass##Private; \
 class klass final : public LibRpBase::RomData { \
 	public: \
+		VISIBILITY_SPEC \
 		explicit klass(LibRpFile::IRpFile *file); \
 	protected: \
+		RP_LIBROMDATA_LOCAL \
 		virtual ~klass() { } \
 	private: \
 		typedef RomData super; \
@@ -73,7 +77,23 @@ class klass final : public LibRpBase::RomData { \
 		 * Called by RomData::fields() if the field data hasn't been loaded yet. \
 		 * @return 0 on success; negative POSIX error code on error. \
 		 */ \
+		RP_LIBROMDATA_LOCAL \
 		int loadFieldData(void) final;
+
+/**
+ * Initial declaration for a RomData subclass.
+ * Declares functions common to all RomData subclasses.
+ * @param klass Class name
+ */
+#define ROMDATA_DECL_BEGIN(klass) ROMDATA_DECL_BEGIN_INT(klass, RP_LIBROMDATA_LOCAL)
+
+/**
+ * Initial declaration for a RomData subclass.
+ * Declares functions common to all RomData subclasses.
+ * This version dllexports functions required by other programs.
+ * @param klass Class name
+ */
+#define ROMDATA_DECL_BEGIN_EXPORT(klass) ROMDATA_DECL_BEGIN_INT(klass, RP_LIBROMDATA_PUBLIC)
 
 /**
  * RomData subclass function declaration for loading metadata properties.
@@ -85,6 +105,7 @@ class klass final : public LibRpBase::RomData { \
 		 * Called by RomData::metaData() if the field data hasn't been loaded yet. \
 		 * @return Number of metadata properties read on success; negative POSIX error code on error. \
 		 */ \
+		RP_LIBROMDATA_LOCAL \
 		int loadMetaData(void) final;
 
 /**
@@ -222,6 +243,7 @@ class klass final : public LibRpBase::RomData { \
 		 * Internal function; called by RomData::romOps(). \
 		 * @return List of operations. \
 		 */ \
+		RP_LIBROMDATA_LOCAL \
 		std::vector<RomOp> romOps_int(void) const final; \
 		\
 		/** \
@@ -231,6 +253,7 @@ class klass final : public LibRpBase::RomData { \
 		 * @param pParams	[in/out] Parameters and results. (for e.g. UI updates) \
 		 * @return 0 on success; negative POSIX error code on error.
 		 */ \
+		RP_LIBROMDATA_LOCAL \
 		int doRomOp_int(int id, RomOpParams *pParams) final;
 
 /**

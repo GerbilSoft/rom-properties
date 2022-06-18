@@ -3,7 +3,7 @@
  * Nintendo3DS_SMDH.hpp: Nintendo 3DS SMDH reader.                         *
  * Handles SMDH files and SMDH sections.                                   *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,7 +15,7 @@
 namespace LibRomData {
 
 class Nintendo3DS_SMDH_Private;
-ROMDATA_DECL_BEGIN(Nintendo3DS_SMDH)
+ROMDATA_DECL_BEGIN_EXPORT(Nintendo3DS_SMDH)
 ROMDATA_DECL_METADATA()
 ROMDATA_DECL_IMGSUPPORT()
 ROMDATA_DECL_IMGPF()

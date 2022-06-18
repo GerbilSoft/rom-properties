@@ -15,7 +15,7 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../..)
 IF(ENABLE_DECRYPTION)
 	# CtrKeyScrambler test.
 	ADD_EXECUTABLE(CtrKeyScramblerTest CtrKeyScramblerTest.cpp)
-	TARGET_LINK_LIBRARIES(CtrKeyScramblerTest PRIVATE rptest romdata rpbase)
+	TARGET_LINK_LIBRARIES(CtrKeyScramblerTest PRIVATE rptest romdata)
 	TARGET_LINK_LIBRARIES(CtrKeyScramblerTest PRIVATE gtest)
 	DO_SPLIT_DEBUG(CtrKeyScramblerTest)
 	SET_WINDOWS_SUBSYSTEM(CtrKeyScramblerTest CONSOLE)
@@ -29,7 +29,7 @@ ADD_EXECUTABLE(GcnFstPrint
 	disc/FstPrint.hpp
 	disc/GcnFstPrint.cpp
 	)
-TARGET_LINK_LIBRARIES(GcnFstPrint PRIVATE rpsecure romdata rpbase)
+TARGET_LINK_LIBRARIES(GcnFstPrint PRIVATE rpsecure romdata)
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(GcnFstPrint PRIVATE i18n)
 ENDIF(ENABLE_NLS)
@@ -48,7 +48,7 @@ ADD_EXECUTABLE(GcnFstTest
 	disc/FstPrint.hpp
 	disc/GcnFstTest.cpp
 	)
-TARGET_LINK_LIBRARIES(GcnFstTest PRIVATE rptest romdata rpbase)
+TARGET_LINK_LIBRARIES(GcnFstTest PRIVATE rptest romdata)
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(GcnFstTest PRIVATE i18n)
 ENDIF(ENABLE_NLS)
@@ -83,7 +83,7 @@ ENDFOREACH(test_fst test_fsts)
 
 # ImageDecoder test.
 ADD_EXECUTABLE(ImageDecoderTest img/ImageDecoderTest.cpp)
-TARGET_LINK_LIBRARIES(ImageDecoderTest PRIVATE rptest romdata rpbase)
+TARGET_LINK_LIBRARIES(ImageDecoderTest PRIVATE rptest romdata)
 TARGET_LINK_LIBRARIES(ImageDecoderTest PRIVATE gtest ${ZLIB_LIBRARY})
 TARGET_INCLUDE_DIRECTORIES(ImageDecoderTest PRIVATE ${ZLIB_INCLUDE_DIRS})
 TARGET_COMPILE_DEFINITIONS(ImageDecoderTest PRIVATE ${ZLIB_DEFINITIONS})
@@ -141,7 +141,7 @@ ENDFOREACH(test_image ${ImageDecoderTest_images})
 
 # Nintendo System ID test.
 ADD_EXECUTABLE(NintendoSystemIDTest NintendoSystemIDTest.cpp)
-TARGET_LINK_LIBRARIES(NintendoSystemIDTest PRIVATE rptest romdata rpbase)
+TARGET_LINK_LIBRARIES(NintendoSystemIDTest PRIVATE rptest romdata)
 TARGET_LINK_LIBRARIES(NintendoSystemIDTest PRIVATE gtest)
 DO_SPLIT_DEBUG(NintendoSystemIDTest)
 SET_WINDOWS_SUBSYSTEM(NintendoSystemIDTest CONSOLE)
@@ -153,7 +153,7 @@ ADD_EXECUTABLE(SuperMagicDriveTest
 	utils/SuperMagicDriveTest.cpp
 	utils/SuperMagicDriveTest_data.hpp
 	)
-TARGET_LINK_LIBRARIES(SuperMagicDriveTest PRIVATE rptest romdata rpbase)
+TARGET_LINK_LIBRARIES(SuperMagicDriveTest PRIVATE rptest romdata)
 TARGET_LINK_LIBRARIES(SuperMagicDriveTest PRIVATE gtest)
 TARGET_LINK_LIBRARIES(SuperMagicDriveTest PRIVATE ${ZLIB_LIBRARY})
 TARGET_INCLUDE_DIRECTORIES(SuperMagicDriveTest PRIVATE ${ZLIB_INCLUDE_DIRS})

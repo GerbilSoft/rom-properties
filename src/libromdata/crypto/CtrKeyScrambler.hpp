@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CtrKeyScrambler.hpp: Nintendo 3DS key scrambler.                        *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,7 +21,7 @@
 
 namespace LibRomData {
 
-class CtrKeyScrambler
+class RP_LIBROMDATA_PUBLIC CtrKeyScrambler
 {
 	private:
 		// Static class.

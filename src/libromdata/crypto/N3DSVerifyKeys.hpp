@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * N3DSVerifyKeys.hpp: Nintendo 3DS key verification data.                 *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -149,12 +149,14 @@ class N3DSVerifyKeys
 		// Verification key data.
 		static const uint8_t EncryptionKeyVerifyData[Key_Max][16];
 
+	public:
 		/** Public access functions used by rpcli and others. **/
 
 		/**
 		 * Get the total number of encryption key names.
 		 * @return Number of encryption key names.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static int encryptionKeyCount_static(void);
 
 		/**
@@ -162,6 +164,7 @@ class N3DSVerifyKeys
 		 * @param keyIdx Encryption key index.
 		 * @return Encryption key name (in ASCII), or nullptr on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static const char *encryptionKeyName_static(int keyIdx);
 
 		/**
@@ -169,6 +172,7 @@ class N3DSVerifyKeys
 		 * @param keyIdx Encryption key index.
 		 * @return Verification data. (16 bytes)
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static const uint8_t *encryptionVerifyData_static(int keyIdx);
 };
 

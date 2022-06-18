@@ -15,7 +15,7 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../..)
 # ImageDecoderLinear test
 # TODO: Move to libromdata, or move libromdata stuff here?
 ADD_EXECUTABLE(ImageDecoderLinearTest ImageDecoderLinearTest.cpp)
-TARGET_LINK_LIBRARIES(ImageDecoderLinearTest PRIVATE rptest rpcpu romdata rptexture)
+TARGET_LINK_LIBRARIES(ImageDecoderLinearTest PRIVATE rptest romdata)
 TARGET_LINK_LIBRARIES(ImageDecoderLinearTest PRIVATE gtest ${ZLIB_LIBRARY})
 TARGET_INCLUDE_DIRECTORIES(ImageDecoderLinearTest PRIVATE ${ZLIB_INCLUDE_DIRS})
 TARGET_COMPILE_DEFINITIONS(ImageDecoderLinearTest PRIVATE ${ZLIB_DEFINITIONS})

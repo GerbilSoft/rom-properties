@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GcnFst.hpp: GameCube/Wii FST parser.                                    *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -24,7 +24,9 @@ class GcnFst : public LibRpBase::IFst
 		 * @param offsetShift File offset shift. (0 = GCN, 2 = Wii)
 		 */
 		ATTR_ACCESS_SIZE(read_only, 2, 3)
+		RP_LIBROMDATA_PUBLIC
 		GcnFst(const uint8_t *fstData, uint32_t len, uint8_t offsetShift);
+
 		virtual ~GcnFst();
 
 	private:
@@ -40,12 +42,14 @@ class GcnFst : public LibRpBase::IFst
 		 * Is the FST open?
 		 * @return True if open; false if not.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		bool isOpen(void) const final;
 
 		/**
 		 * Have any errors been detected in the FST?
 		 * @return True if yes; false if no.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		bool hasErrors(void) const final;
 
 	public:

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Xbox360_XEX.hpp: Microsoft Xbox 360 executable reader.                  *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -40,6 +40,7 @@ ROMDATA_DECL_VIEWED_ACHIEVEMENTS()
 		 * Get the total number of encryption key names.
 		 * @return Number of encryption key names.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static int encryptionKeyCount_static(void);
 
 		/**
@@ -47,6 +48,7 @@ ROMDATA_DECL_VIEWED_ACHIEVEMENTS()
 		 * @param keyIdx Encryption key index.
 		 * @return Encryption key name (in ASCII), or nullptr on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static const char *encryptionKeyName_static(int keyIdx);
 
 		/**
@@ -54,6 +56,7 @@ ROMDATA_DECL_VIEWED_ACHIEVEMENTS()
 		 * @param keyIdx Encryption key index.
 		 * @return Verification data. (16 bytes)
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static const uint8_t *encryptionVerifyData_static(int keyIdx);
 #endif /* ENABLE_DECRYPTION */
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * RpTextureWrapper.hpp: librptexture file format wrapper.                 *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,7 +13,7 @@
 
 namespace LibRomData {
 
-ROMDATA_DECL_BEGIN(RpTextureWrapper)
+ROMDATA_DECL_BEGIN_EXPORT(RpTextureWrapper)
 ROMDATA_DECL_CLOSE()
 ROMDATA_DECL_METADATA()
 ROMDATA_DECL_IMGSUPPORT()
