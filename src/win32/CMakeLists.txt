@@ -32,7 +32,6 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/res/${PROJECT_NAME}.dll.manifest.in"
 # Sources and headers.
 SET(${PROJECT_NAME}_SRCS
 	DllMain.cpp
-	com-iids.c
 	RP_ExtractIcon.cpp
 	RP_ExtractIcon_Register.cpp
 	RP_ExtractIcon_Fallback.cpp
