@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * AboutTabText.hpp: About tab for rp-config. (Common text)                *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,22 +11,22 @@
 #include "config.version.h"
 #include "git.h"
 
-namespace LibRpBase {
+namespace LibRpBase { namespace AboutTabText {
 
 // Program version string.
-const char AboutTabText::prg_version[] = RP_VERSION_STRING;
+const char prg_version[] = RP_VERSION_STRING;
 
 // git versions.
 #ifdef RP_GIT_VERSION
-const char AboutTabText::git_version[] = RP_GIT_VERSION;
+const char git_version[] = RP_GIT_VERSION;
 # ifdef RP_GIT_DESCRIBE
-const char AboutTabText::git_describe[] = RP_GIT_DESCRIBE;
+const char git_describe[] = RP_GIT_DESCRIBE;
 # else
-const char AboutTabText::git_describe[] = "";
+const char git_describe[] = "";
 # endif
 #else
-const char AboutTabText::git_version[] = "";
-const char AboutTabText::git_describe[] = "";
+const char git_version[] = "";
+const char git_describe[] = "";
 #endif
 
 /** Credits **/
@@ -35,7 +35,7 @@ const char AboutTabText::git_describe[] = "";
  * Credits data.
  * Ends with CreditType::Max.
  */
-const AboutTabText::CreditsData_t AboutTabText::CreditsData[] = {
+const CreditsData_t CreditsData[] = {
 	// Developers
 	{CreditType::Developer,		"David Korth", "mailto:gerbilsoft@gerbilsoft.com", "gerbilsoft@gerbilsoft.com", nullptr},
 	{CreditType::Continue,		"Egor", "mailto:egor@opensrc.club", "egor@opensrc.club", nullptr},
@@ -58,7 +58,7 @@ const AboutTabText::CreditsData_t AboutTabText::CreditsData[] = {
  * Support sites.
  * Ends with nullptr.
  */
-const AboutTabText::SupportSite_t AboutTabText::SupportSites[] = {
+const SupportSite_t SupportSites[] = {
 	{"GitHub: GerbilSoft/rom-properties", "https://github.com/GerbilSoft/rom-properties"},
 	{"Sonic Retro", "https://forums.sonicretro.org/index.php?showtopic=35692"},
 	{"GBAtemp", "https://gbatemp.net/threads/rom-properties-page-shell-extension.442424/"},
@@ -66,4 +66,4 @@ const AboutTabText::SupportSite_t AboutTabText::SupportSites[] = {
 	{nullptr, nullptr}
 };
 
-}
+} }
