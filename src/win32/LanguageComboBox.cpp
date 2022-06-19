@@ -16,6 +16,7 @@
 #include "librpbase/img/RpPng.hpp"
 #include "librpfile/win32/RpFile_windres.hpp"
 using namespace LibRpBase;
+using LibRpFile::RpFile_windres;
 using LibRpTexture::rp_image;
 
 // C++ STL classes
