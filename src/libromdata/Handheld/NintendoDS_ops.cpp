@@ -14,10 +14,7 @@
 #include "ndscrypt.hpp"
 
 // librpbase
-using LibRpBase::RomData;
-using LibRpBase::RomFields;
-using LibRpBase::rp_sprintf;
-using LibRpBase::rp_sprintf_p;
+using namespace LibRpBase;
 
 // C++ STL classes.
 using std::ostringstream;

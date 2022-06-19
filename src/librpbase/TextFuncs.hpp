@@ -684,19 +684,10 @@ static inline std::string rp_sprintf_p(const char *fmt, ...)
 
 // glibc supports positional format string arguments
 // in the standard printf() functions.
-static inline std::string rp_vsprintf_p(const char *fmt, va_list ap)
-{
-	return rp_vsprintf(fmt, ap);
-}
+// NOTE: gcc can't inline varargs functions, so simply #define them as macros.
+#define rp_vsprintf_p(fmt, ap)	rp_vsprintf((fmt), (ap))
+#define rp_sprintf_p(fmt, ...)	rp_sprintf((fmt), ##__VA_ARGS__)
 
-static inline std::string rp_sprintf_p(const char *fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	std::string s_ret = rp_vsprintf(fmt, ap);
-	va_end(ap);
-	return s_ret;
-}
 #endif /* _MSC_VER && __MINGW32__ */
 
 /** Other useful text functions **/
