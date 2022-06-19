@@ -16,8 +16,7 @@
 #include "librpbase/img/RpPng.hpp"
 #include "librpfile/win32/RpFile_windres.hpp"
 #include "librptexture/img/rp_image.hpp"
-using LibRpBase::Achievements;
-using LibRpBase::RpPng;
+using namespace LibRpBase;
 using LibRpFile::RpFile_windres;
 using LibRpTexture::rp_image;
 

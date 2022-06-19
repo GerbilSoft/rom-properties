@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpPng.cpp: PNG image handler.                                           *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -61,7 +61,7 @@ using std::unique_ptr;
 #include "libwin32common/DelayLoadHelper.h"
 #endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
 
-namespace LibRpBase {
+namespace LibRpBase { namespace RpPng {
 
 #if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 // DelayLoad test implementation.
@@ -82,79 +82,9 @@ static int DelayLoad_test_zlib_and_png(void)
 }
 #endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
 
-class RpPngPrivate
-{
-	private:
-		// RpPngPrivate is a static class.
-		RpPngPrivate();
-		~RpPngPrivate();
-		RP_DISABLE_COPY(RpPngPrivate)
-
-	public:
-		/** I/O functions. **/
-
-		/**
-		 * libpng I/O read handler for IRpFile.
-		 * @param png_ptr	[in]  PNG pointer.
-		 * @param data		[out] Buffer for the data to read.
-		 * @param length	[in]  Size of data.
-		 */
-		static void PNGCAPI png_io_IRpFile_read(png_structp png_ptr, png_bytep data, png_size_t length);
-
-		/**
-		 * libpng I/O write handler for IRpFile.
-		 * @param png_ptr	[in] PNG pointer.
-		 * @param data		[in] Data to write.
-		 * @param length	[in] Size of data.
-		 */
-		static void PNGCAPI png_io_IRpFile_write(png_structp png_ptr, png_bytep data, png_size_t length);
-
-		/**
-		 * libpng I/O flush handler for IRpFile.
-		 * @param png_ptr	[in] PNG pointer.
-		 */
-		static void PNGCAPI png_io_IRpFile_flush(png_structp png_ptr);
-
-		/** Error handler functions. **/
-
-#ifdef PNG_WARNINGS_SUPPORTED
-		/**
-		 * libpng warning handler function that simply ignores warnings.
-		 *
-		 * Certain PNG images have "known incorrect" sRGB profiles,
-		 * and we don't want libpng to spam stderr with warnings
-		 * about them.
-		 *
-		 * @param png_ptr	[in] PNG pointer.
-		 * @param msg		[in] Warning message.
-		 */
-		static void PNGCAPI png_warning_fn(png_structp png_ptr, png_const_charp msg);
-#endif /* PNG_WARNINGS_SUPPORTED */
-
-		/** Read functions. **/
-
-		/**
-		 * Read the palette for a CI8 image.
-		 * @param png_ptr png_structp
-		 * @param info_ptr png_infop
-		 * @param color_type PNG color type.
-		 * @param img rp_image to store the palette in.
-		 */
-		static void Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
-					     int color_type, rp_image *img);
-
-		/**
-		 * Load a PNG image from an opened PNG handle.
-		 * @param png_ptr png_structp
-		 * @param info_ptr png_infop
-		 * @return rp_image*, or nullptr on error.
-		 */
-		static rp_image *loadPng(png_structp png_ptr, png_infop info_ptr);
-};
-
 /** RpPngPrivate **/
 
-/** I/O functions. **/
+/** I/O functions **/
 
 /**
  * libpng I/O handler for IRpFile.
@@ -162,7 +92,7 @@ class RpPngPrivate
  * @param data		[out] Buffer for the data to read.
  * @param length	[in]  Size of data.
  */
-void PNGCAPI RpPngPrivate::png_io_IRpFile_read(png_structp png_ptr, png_bytep data, png_size_t length)
+static void PNGCAPI png_io_IRpFile_read(png_structp png_ptr, png_bytep data, png_size_t length)
 {
 	// Assuming io_ptr is an IRpFile*.
 	IRpFile *file = static_cast<IRpFile*>(png_get_io_ptr(png_ptr));
@@ -188,7 +118,7 @@ void PNGCAPI RpPngPrivate::png_io_IRpFile_read(png_structp png_ptr, png_bytep da
  * @param data		[in] Data to write.
  * @param length	[in] Size of data.
  */
-void PNGCAPI RpPngPrivate::png_io_IRpFile_write(png_structp png_ptr, png_bytep data, png_size_t length)
+static void PNGCAPI png_io_IRpFile_write(png_structp png_ptr, png_bytep data, png_size_t length)
 {
 	// Assuming io_ptr is an IRpFile*.
 	IRpFile *file = static_cast<IRpFile*>(png_get_io_ptr(png_ptr));
@@ -204,7 +134,7 @@ void PNGCAPI RpPngPrivate::png_io_IRpFile_write(png_structp png_ptr, png_bytep d
  * libpng I/O flush handler for IRpFile.
  * @param png_ptr	[in] PNG pointer.
  */
-void PNGCAPI RpPngPrivate::png_io_IRpFile_flush(png_structp png_ptr)
+static void PNGCAPI png_io_IRpFile_flush(png_structp png_ptr)
 {
 	// Assuming io_ptr is an IRpFile*.
 	IRpFile *const file = static_cast<IRpFile*>(png_get_io_ptr(png_ptr));
@@ -225,7 +155,7 @@ void PNGCAPI RpPngPrivate::png_io_IRpFile_flush(png_structp png_ptr)
  * @param png_ptr	[in] PNG pointer.
  * @param msg		[in] Warning message.
  */
-void PNGCAPI RpPngPrivate::png_warning_fn(png_structp png_ptr, png_const_charp msg)
+static void PNGCAPI png_warning_fn(png_structp png_ptr, png_const_charp msg)
 {
 	// Nothing to do here...
 	RP_UNUSED(png_ptr);
@@ -233,7 +163,7 @@ void PNGCAPI RpPngPrivate::png_warning_fn(png_structp png_ptr, png_const_charp m
 }
 #endif /* PNG_WARNINGS_SUPPORTED */
 
-/** Read functions. **/
+/** Read functions **/
 
 /**
  * Read the palette for a CI8 image.
@@ -242,8 +172,8 @@ void PNGCAPI RpPngPrivate::png_warning_fn(png_structp png_ptr, png_const_charp m
  * @param color_type PNG color type.
  * @param img rp_image to store the palette in.
  */
-void RpPngPrivate::Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
-				    int color_type, rp_image *img)
+static void Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
+			     int color_type, rp_image *img)
 {
 	png_colorp png_palette;
 	png_bytep trans;
@@ -333,7 +263,7 @@ void RpPngPrivate::Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
  * @param info_ptr png_infop
  * @return rp_image*, or nullptr on error.
  */
-rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
+static rp_image *loadPng(png_structp png_ptr, png_infop info_ptr)
 {
 	// Row pointers. (NOTE: Allocated after IHDR is read.)
 	const png_byte **row_pointers = nullptr;
@@ -563,7 +493,7 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */
-rp_image *RpPng::load(IRpFile *file)
+rp_image *load(IRpFile *file)
 {
 	if (!file)
 		return nullptr;
@@ -600,14 +530,14 @@ rp_image *RpPng::load(IRpFile *file)
 
 #ifdef PNG_WARNINGS_SUPPORTED
 	// Initialize the custom warning handler.
-	png_set_error_fn(png_ptr, nullptr, nullptr, RpPngPrivate::png_warning_fn);
+	png_set_error_fn(png_ptr, nullptr, nullptr, png_warning_fn);
 #endif /* PNG_WARNINGS_SUPPORTED */
 
 	// Initialize the custom I/O handler for IRpFile.
-	png_set_read_fn(png_ptr, file, RpPngPrivate::png_io_IRpFile_read);
+	png_set_read_fn(png_ptr, file, png_io_IRpFile_read);
 
 	// Call the actual PNG image reading function.
-	rp_image *img = RpPngPrivate::loadPng(png_ptr, info_ptr);
+	rp_image *img = loadPng(png_ptr, info_ptr);
 
 	// Free the PNG structs.
 	png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
@@ -625,7 +555,7 @@ rp_image *RpPng::load(IRpFile *file)
  * @param img rp_image to save.
  * @return 0 on success; negative POSIX error code on error.
  */
-int RpPng::save(IRpFile *file, const rp_image *img)
+int save(IRpFile *file, const rp_image *img)
 {
 	assert(file != nullptr);
 	assert(img != nullptr);
@@ -653,7 +583,7 @@ int RpPng::save(IRpFile *file, const rp_image *img)
  * @param img rp_image to save.
  * @return 0 on success; negative POSIX error code on error.
  */
-int RpPng::save(const char *filename, const rp_image *img)
+int save(const char *filename, const rp_image *img)
 {
 	assert(filename != nullptr);
 	assert(filename[0] != 0);
@@ -694,7 +624,7 @@ int RpPng::save(const char *filename, const rp_image *img)
  * @param iconAnimData Animated image data to save.
  * @return 0 on success; negative POSIX error code on error.
  */
-int RpPng::save(IRpFile *file, const IconAnimData *iconAnimData)
+int save(IRpFile *file, const IconAnimData *iconAnimData)
 {
 	assert(file != nullptr);
 	assert(iconAnimData != nullptr);
@@ -731,7 +661,7 @@ int RpPng::save(IRpFile *file, const IconAnimData *iconAnimData)
  * @param iconAnimData Animated image data to save.
  * @return 0 on success; negative POSIX error code on error.
  */
-int RpPng::save(const char *filename, const IconAnimData *iconAnimData)
+int save(const char *filename, const IconAnimData *iconAnimData)
 {
 	assert(filename != nullptr);
 	assert(filename[0] != 0);
@@ -753,4 +683,4 @@ int RpPng::save(const char *filename, const IconAnimData *iconAnimData)
 	return pngWriter->write_IDAT();
 }
 
-}
+} }
