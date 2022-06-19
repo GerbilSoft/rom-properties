@@ -408,6 +408,8 @@ ENDIF(ENABLE_PCH)
 # On Linux, we're now linking libromdata as a shared library as of v1.10.
 IF(UNIX AND NOT APPLE)
 	SET(${PROJECT_NAME}_LINKAGE SHARED)
+	# NOTE: Not using the project version here.
+	# This represents the ABI version.
 	SET(${PROJECT_NAME}_VERSION 1.0.0)
 	SET(${PROJECT_NAME}_SOVERSION 1)
 ELSE()
