@@ -220,7 +220,7 @@
 #  else
 #    define RP_PLUGIN_PUBLIC __declspec(dllexport)
 #  endif
-#  define RP_PLUGIN_PUBLIC
+#  define RP_PLUGIN_LOCAL
 #else
 #  if __GNUC__ >= 4
 #    define RP_PLUGIN_PUBLIC __attribute__ ((visibility ("default")))
