@@ -23,6 +23,7 @@ namespace LibUnixCommon {
  * @param path Directory path.
  * @return True if this is a writable directory; false if not.
  */
+RP_LIBROMDATA_PUBLIC
 bool isWritableDirectory(const char *path);
 
 /**

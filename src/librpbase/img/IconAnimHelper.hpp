@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IconAnimHelper.hpp: Icon animation helper.                              *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -107,6 +107,7 @@ class IconAnimHelper
 		/**
 		 * Reset the animation.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		void reset(void);
 
 		/**
@@ -114,6 +115,8 @@ class IconAnimHelper
 		 * @param pDelay	[out] Pointer to int to store the frame delay, in milliseconds.
 		 * @return Next frame number. (Returns 0 if there's no animation.)
 		 */
+		ATTR_ACCESS(write_only, 2)
+		RP_LIBROMDATA_PUBLIC
 		int nextFrame(int *pDelay);
 
 	protected:

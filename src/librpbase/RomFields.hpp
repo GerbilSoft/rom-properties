@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomFields.hpp: ROM fields class.                                        *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -370,6 +370,7 @@ class RomFields
 		 * Get the number of fields.
 		 * @return Number of fields.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int count(void) const;
 
 		/**
@@ -383,18 +384,21 @@ class RomFields
 		 * @param idx Field index.
 		 * @return ROM field, or nullptr if the index is invalid.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const Field *at(int idx) const;
 
 		/**
 		 * Get a const iterator pointing to the beginning of the RomFields.
 		 * @return Const iterator.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const_iterator cbegin(void) const;
 
 		/**
 		 * Get a const iterator pointing to the end of the RomFields.
 		 * @return Const iterator.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const_iterator cend(void) const;
 
 	public:
@@ -423,6 +427,7 @@ class RomFields
 		 * @param newlines If true, print newlines after every four ratings.
 		 * @return Human-readable string, or empty string if no ratings.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static std::string ageRatingsDecode(const age_ratings_t *age_ratings, bool newlines = true);
 
 	public:
@@ -435,6 +440,7 @@ class RomFields
 		 * @param user_lc User-specified language code.
 		 * @return Pointer to string, or nullptr if not found.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static const std::string *getFromStringMulti(const StringMultiMap_t *pStr_multi, uint32_t def_lc, uint32_t user_lc);
 
 		/**
@@ -444,6 +450,7 @@ class RomFields
 		 * @param user_lc User-specified language code.
 		 * @return Pointer to ListData_t, or nullptr if not found.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static const ListData_t *getFromListDataMulti(const ListDataMultiMap_t *pListData_multi, uint32_t def_lc, uint32_t user_lc);
 
 	public:
@@ -482,6 +489,7 @@ class RomFields
 		 * Get the tab count.
 		 * @return Tab count. (highest tab index, plus 1)
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int tabCount(void) const;
 
 		/**
@@ -489,12 +497,14 @@ class RomFields
 		 * @param tabIdx Tab index.
 		 * @return Tab name, or nullptr if no name is set.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const char *tabName(int tabIdx) const;
 
 		/**
 		 * Get the default language code for RFT_STRING_MULTI and RFT_LISTDATA_MULTI.
 		 * @return Default language code, or 0 if not set.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		uint32_t defaultLanguageCode(void) const;
 
 		/** Fields **/

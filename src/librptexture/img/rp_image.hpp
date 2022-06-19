@@ -121,6 +121,7 @@ class rp_image : public RefBase
 		 * Set the image backend creator function.
 		 * @param backend Image backend creator function.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static void setBackendCreatorFn(rp_image_backend_creator_fn backend_fn);
 
 		/**
@@ -134,6 +135,7 @@ class rp_image : public RefBase
 		 * Get this image's backend object.
 		 * @return Image backend object.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const rp_image_backend *backend(void) const;
 
 	public:
@@ -230,6 +232,7 @@ class rp_image : public RefBase
 		 * Get the image palette.
 		 * @return Pointer to image palette, or nullptr if not a paletted image.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const uint32_t *palette(void) const;
 
 		/**
@@ -242,6 +245,7 @@ class rp_image : public RefBase
 		 * Get the number of elements in the image palette.
 		 * @return Number of elements in the image palette, or 0 if not a paletted image.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		unsigned int palette_len(void) const;
 
 		/**
@@ -291,6 +295,7 @@ class rp_image : public RefBase
 		 * @param sBIT	[out] sBIT_t struct.
 		 * @return 0 on success; non-zero if not set or error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int get_sBIT(sBIT_t *sBIT) const;
 
 		/**
@@ -305,6 +310,7 @@ class rp_image : public RefBase
 		 * Duplicate the rp_image.
 		 * @return New rp_image with a copy of the image data.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		rp_image *dup(void) const;
 
 		/**
@@ -414,6 +420,7 @@ class rp_image : public RefBase
 		 * @param px	[in] ARGB32 pixel to premultiply.
 		 * @return Premultiplied pixel.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static uint32_t premultiply_pixel(uint32_t px);
 
 		/**
@@ -423,6 +430,7 @@ class rp_image : public RefBase
 		 *
 		 * @return 0 on success; non-zero on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int premultiply(void);
 
 		/**

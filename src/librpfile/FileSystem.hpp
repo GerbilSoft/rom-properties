@@ -55,6 +55,7 @@ namespace LibRpFile { namespace FileSystem {
  * @param path Path to recursively mkdir. (last component is ignored)
  * @return 0 on success; non-zero on error.
  */
+RP_LIBROMDATA_PUBLIC
 int rmkdir(const std::string &path);
 
 /**
@@ -150,6 +151,7 @@ const wchar_t *file_ext(const std::wstring& filename);
  * @param ext		[in] New extension.
  * @return Filename, with replaced extension.
  */
+RP_LIBROMDATA_PUBLIC
 std::string replace_ext(const char *filename, const char *ext);
 
 /**
@@ -180,6 +182,7 @@ std::string resolve_symlink(const char *filename);
  *
  * @return True if this file is on a "bad" file system; false if not.
  */
+RP_LIBROMDATA_PUBLIC
 bool isOnBadFS(const char *filename, bool netFS = false);
 
 /**

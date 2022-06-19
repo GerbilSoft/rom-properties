@@ -780,6 +780,7 @@ const char *NintendoDS::systemName(unsigned int type) const
  * Get a bitfield of image types this class can retrieve.
  * @return Bitfield of supported image types. (ImageTypesBF)
  */
+RP_LIBROMDATA_PUBLIC
 uint32_t NintendoDS::supportedImageTypes_static(void)
 {
 #ifdef HAVE_JPEG

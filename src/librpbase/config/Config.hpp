@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * Config.hpp: Configuration manager.                                      *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,7 +16,7 @@
 
 namespace LibRpBase {
 
-class Config : public ConfReader
+class RP_LIBROMDATA_PUBLIC Config : public ConfReader
 {
 	protected:
 		/**

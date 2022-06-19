@@ -80,6 +80,7 @@ class RpFile : public IRpFile
 		/**
 		 * Close the file.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		void close(void) final;
 
 		/**

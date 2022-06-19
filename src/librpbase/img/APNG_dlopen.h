@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * APNG_dlopen.h: APNG dlopen()'d function pointers.                       *
  *                                                                         *
- * Copyright (c) 2014-2017 by David Korth.                                 *
+ * Copyright (c) 2014-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,18 +18,18 @@ extern "C" {
 
 #if defined(USE_INTERNAL_PNG) && !defined(USE_INTERNAL_PNG_DLL)
 /* Internal libpng; we always know if APNG is supported. */
-#ifdef PNG_APNG_SUPPORTED
-#define APNG_ref() 0
-#define APNG_unref() do { } while (0)
-#else /* !PNG_APNG_SUPPORTED */
-#define APNG_ref() -1
-#define APNG_unref() do { } while (0)
-#endif /* PNG_APNG_SUPPORTED */
+#  ifdef PNG_APNG_SUPPORTED
+#    define APNG_ref() 0
+#    define APNG_unref() do { } while (0)
+#  else /* !PNG_APNG_SUPPORTED */
+#    define APNG_ref() -1
+#    define APNG_unref() do { } while (0)
+#  endif /* PNG_APNG_SUPPORTED */
 /* Disable DLL import/export when using the internal libpng. */
-#ifdef PNG_IMPEXP
-#undef PNG_IMPEXP
-#define PNG_IMPEXP
-#endif /* PNG_IMPEXP */
+#  ifdef PNG_IMPEXP
+#    undef PNG_IMPEXP
+#    define PNG_IMPEXP
+#  endif /* PNG_IMPEXP */
 #else /* USE_INTERNAL_PNG && !USE_INTERNAL_PNG_DLL */
 /**
  * Load APNG and increment the reference counter.
@@ -40,11 +40,13 @@ extern "C" {
  *
  * @return 0 on success; non-zero on error.
  */
+RP_LIBROMDATA_PUBLIC
 extern int APNG_ref(void);
 
 /**
  * Decrement the APNG reference counter.
  */
+RP_LIBROMDATA_PUBLIC
 extern void APNG_unref(void);
 
 /**

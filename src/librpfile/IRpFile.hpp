@@ -31,7 +31,9 @@ namespace LibRpFile {
 class IRpFile : public RefBase
 {
 	protected:
+		RP_LIBROMDATA_PUBLIC
 		IRpFile();
+
 		virtual ~IRpFile() { }	// call unref() instead
 
 	private:

@@ -102,6 +102,7 @@ class RomData : public RefBase
 		 * Get the filename that was loaded.
 		 * @return Filename, or nullptr on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const char *filename(void) const;
 
 		/**
@@ -191,6 +192,7 @@ class RomData : public RefBase
 		 * Get the class name for the user configuration.
 		 * @return Class name. (ASCII) (nullptr on error)
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const char *className(void) const;
 
 		enum class FileType {
@@ -238,12 +240,14 @@ class RomData : public RefBase
 		 * Get the general file type as a string.
 		 * @return General file type as a string, or nullptr if unknown.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const char *fileType_string(void) const;
 
 		/**
 		 * Get the file's MIME type.
 		 * @return MIME type, or nullptr if unknown.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const char *mimeType(void) const;
 
 		// TODO:
@@ -432,12 +436,14 @@ class RomData : public RefBase
 		 * Get the ROM Fields object.
 		 * @return ROM Fields object.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const RomFields *fields(void) const;
 
 		/**
 		 * Get the ROM Metadata object.
 		 * @return ROM Metadata object.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const RomMetaData *metaData(void) const;
 
 	private:
@@ -603,6 +609,7 @@ class RomData : public RefBase
 		 * Get the list of operations that can be performed on this ROM.
 		 * @return List of operations.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		std::vector<RomOp> romOps(void) const;
 
 		/**
@@ -611,6 +618,7 @@ class RomData : public RefBase
 		 * @param pParams	[in/out] Parameters and results. (for e.g. UI updates)
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int doRomOp(int id, RomOpParams *pParams);
 
 	protected:

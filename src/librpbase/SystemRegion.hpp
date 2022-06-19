@@ -49,6 +49,7 @@ uint32_t getLanguageCode(void);
  * @param lc Language code.
  * @return Localized name, or nullptr if not found.
  */
+RP_LIBROMDATA_PUBLIC
 const char *getLocalizedLanguageName(uint32_t lc);
 
 // Flag sprite sheet columns/rows.
@@ -65,6 +66,7 @@ static const unsigned int FLAGS_SPRITE_SHEET_ROWS = 4;
  */
 ATTR_ACCESS(write_only, 2)
 ATTR_ACCESS(write_only, 3)
+RP_LIBROMDATA_PUBLIC
 int getFlagPosition(uint32_t lc, int *pCol, int *pRow, bool forcePAL = false);
 
 /**
@@ -73,6 +75,7 @@ int getFlagPosition(uint32_t lc, int *pCol, int *pRow, bool forcePAL = false);
  * @param lc Language code.
  * @return String.
  */
+RP_LIBROMDATA_PUBLIC
 std::string lcToString(uint32_t lc);
 
 /**
@@ -90,6 +93,7 @@ std::string lcToStringUpper(uint32_t lc);
  * @param lc Language code.
  * @return Wide string.
  */
+RP_LIBROMDATA_PUBLIC
 std::wstring lcToWString(uint32_t lc);
 
 /**

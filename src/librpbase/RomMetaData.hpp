@@ -6,7 +6,7 @@
  * a generic list, RomMetaData stores specific properties that can be used *
  * by the desktop environment's indexer.                                   *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -195,6 +195,7 @@ class RomMetaData
 		 * Get the number of metadata properties.
 		 * @return Number of metadata properties.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int count(void) const;
 
 		/**
@@ -202,12 +203,14 @@ class RomMetaData
 		 * @param idx Field index.
 		 * @return Metadata property, or nullptr if the index is invalid.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const MetaData *prop(int idx) const;
 
 		/**
 		 * Is this RomMetaData empty?
 		 * @return True if empty; false if not.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		bool empty(void) const;
 
 	public:
