@@ -105,11 +105,11 @@ std::wstring lcToWString(uint32_t lc);
 std::wstring lcToWStringUpper(uint32_t lc);
 
 #  ifdef _UNICODE
-#    define lcToTString		lcToWString
-#    define lcToTStringUpper	lcToWStringUpper
-#  else /* !_UNCIODE */
-#    define lcToTString		lcToString
-#    define lcToTStringUpper	lcToStringUpper
+#    define lcToTString(lc)		lcToWString(lc)
+#    define lcToTStringUpper(lc)	lcToWStringUpper(lc)
+#  else /* !_UNICODE */
+#    define lcToTString(lc)		lcToString(lc)
+#    define lcToTStringUpper(lc)	lcToStringUpper(lc)
 #  endif /* _UNICODE */
 
 #endif /* _WIN32 */
