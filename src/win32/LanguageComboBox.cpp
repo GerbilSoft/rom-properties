@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * LanguageComboBox.cpp: Language ComboBoxEx superclass.                   *
  *                                                                         *
- * Copyright (c) 2017-2021 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,9 +15,7 @@
 #include "librpbase/SystemRegion.hpp"
 #include "librpbase/img/RpPng.hpp"
 #include "librpfile/win32/RpFile_windres.hpp"
-using LibRpBase::SystemRegion;
-using LibRpBase::RpPng;
-using LibRpFile::RpFile_windres;
+using namespace LibRpBase;
 using LibRpTexture::rp_image;
 
 // C++ STL classes
