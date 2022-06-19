@@ -405,8 +405,8 @@ ENDIF(ENABLE_PCH)
 # Build the library. #
 ######################
 
-# On Linux, we're now linking libromdata as a shared library as of v1.10.
-IF(UNIX AND NOT APPLE)
+# libromdata can be built as a shared library.
+IF(RP_LIBROMDATA_IS_DLL)
 	SET(${PROJECT_NAME}_LINKAGE SHARED)
 	# NOTE: Not using the project version here.
 	# This represents the ABI version.
@@ -480,7 +480,6 @@ IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 	DO_SPLIT_DEBUG(${PROJECT_NAME})
 	SET_WINDOWS_SUBSYSTEM(${PROJECT_NAME} WIN32)
 	SET_WINDOWS_NO_MANIFEST(${PROJECT_NAME})
-	TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME} PRIVATE RP_LIBROMDATA_IS_DLL)
 ENDIF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 # SOVERSION
 IF(${PROJECT_NAME}_SOVERSION)

@@ -77,6 +77,12 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.version.h.in" "${CMAKE_CURREN
 # Write stdbool.h.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/stdboolx.h.in" "${CMAKE_CURRENT_BINARY_DIR}/stdboolx.h")
 
+# Build certain libraries as shared libraries on Linux.
+IF(UNIX AND NOT APPLE)
+	SET(RP_LIBROMDATA_IS_DLL 1)
+	ADD_DEFINITIONS(-DRP_LIBROMDATA_IS_DLL=1)
+ENDIF(UNIX AND NOT APPLE)
+
 # Source Code subdirectories.
 ADD_SUBDIRECTORY(librpsecure)
 ADD_SUBDIRECTORY(libi18n)
