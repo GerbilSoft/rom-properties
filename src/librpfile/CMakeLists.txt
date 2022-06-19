@@ -113,7 +113,12 @@ ENDIF(ENABLE_PCH)
 # Build the library. #
 ######################
 
-ADD_LIBRARY(${PROJECT_NAME} STATIC
+# NOTE: OBJECT library is used to ensure that VectorFile is linked in
+# when building libromdata as a shared library.
+# References:
+# - https://gitlab.kitware.com/cmake/cmake/-/issues/16947
+# - https://cmake.org/cmake/help/v3.9/manual/cmake-buildsystem.7.html#object-libraries
+ADD_LIBRARY(${PROJECT_NAME} OBJECT
 	${${PROJECT_NAME}_PCH_SRC} ${${PROJECT_NAME}_PCH_H}
 	${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
 	${${PROJECT_NAME}_OS_SRCS} ${${PROJECT_NAME}_OS_H}
@@ -159,7 +164,7 @@ IF(TARGET git_version)
 ENDIF(TARGET git_version)
 
 # Other libraries.
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rptexture inih rpthreads cachecommon)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpthreads cachecommon)
 IF(ZLIB_FOUND)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${ZLIB_LIBRARIES})
 	TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PRIVATE ${ZLIB_INCLUDE_DIRS})
