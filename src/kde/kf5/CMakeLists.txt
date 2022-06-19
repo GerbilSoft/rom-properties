@@ -149,14 +149,6 @@ IF(COMMAND QT5_WRAP_UI)
 	ADD_CUSTOM_TARGET(kf5_generate_ui_h DEPENDS ${${PROJECT_NAME}_UIS_H})
 ENDIF(COMMAND QT5_WRAP_UI)
 
-IF(ENABLE_PCH)
-	# Precompiled headers.
-	INCLUDE(PrecompiledHeader)
-	SET(${PROJECT_NAME}_PCH_CXX ../stdafx.cpp)
-	SET(${PROJECT_NAME}_PCH_SRC ${rom-properties-kde4_PCH_CXX})
-	SET(${PROJECT_NAME}_PCH_H ../stdafx.h)
-ENDIF(ENABLE_PCH)
-
 #####################
 # Build the plugin. #
 #####################
@@ -164,14 +156,14 @@ ENDIF(ENABLE_PCH)
 IF(BUILD_KF5)
 	# Reference: https://community.kde.org/Frameworks/Porting_Notes
 	ADD_LIBRARY(${PROJECT_NAME} MODULE
-		${${PROJECT_NAME}_PCH_SRC} ${${PROJECT_NAME}_PCH_H}
 		${${PROJECT_NAME}_SRCS}
 		${${PROJECT_NAME}_H}
 		${${PROJECT_NAME}_UIS_H}
 		)
 	IF(ENABLE_PCH)
-		ADD_PRECOMPILED_HEADER(${PROJECT_NAME} ${${PROJECT_NAME}_PCH_H}
-			SOURCE_CXX ${${PROJECT_NAME}_PCH_CXX}
+		TARGET_PRECOMPILE_HEADERS(${PROJECT_NAME} PRIVATE
+			"${RP_CONFIG_LIBC_H}" "${RP_CXX11_COMPAT_H}"
+			../stdafx.h
 			)
 	ENDIF(ENABLE_PCH)
 	SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES PREFIX "")

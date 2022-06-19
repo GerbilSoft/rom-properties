@@ -193,15 +193,6 @@ ENDIF()
 # Write the config.h files.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.lib${PROJECT_NAME}.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.lib${PROJECT_NAME}.h")
 
-IF(ENABLE_PCH)
-	# Precompiled headers.
-	INCLUDE(PrecompiledHeader)
-	SET(${PROJECT_NAME}_PCH_C stdafx.c)
-	SET(${PROJECT_NAME}_PCH_CXX stdafx.cpp)
-	SET(${PROJECT_NAME}_PCH_SRC ${${PROJECT_NAME}_PCH_C} ${${PROJECT_NAME}_PCH_CXX})
-	SET(${PROJECT_NAME}_PCH_H stdafx.h)
-ENDIF(ENABLE_PCH)
-
 ######################
 # Build the library. #
 ######################
@@ -212,7 +203,6 @@ ENDIF(ENABLE_PCH)
 # - https://gitlab.kitware.com/cmake/cmake/-/issues/16947
 # - https://cmake.org/cmake/help/v3.9/manual/cmake-buildsystem.7.html#object-libraries
 ADD_LIBRARY(${PROJECT_NAME} OBJECT
-	${${PROJECT_NAME}_PCH_SRC} ${${PROJECT_NAME}_PCH_H}
 	${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
 	${${PROJECT_NAME}_OS_SRCS} ${${PROJECT_NAME}_OS_H}
 	${${PROJECT_NAME}_CRYPTO_SRCS} ${${PROJECT_NAME}_CRYPTO_H}
@@ -220,9 +210,9 @@ ADD_LIBRARY(${PROJECT_NAME} OBJECT
 	${${PROJECT_NAME}_SSSE3_SRCS}
 	)
 IF(ENABLE_PCH)
-	ADD_PRECOMPILED_HEADER(${PROJECT_NAME} ${${PROJECT_NAME}_PCH_H}
-		SOURCE_C ${${PROJECT_NAME}_PCH_C}
-		SOURCE_CXX ${${PROJECT_NAME}_PCH_CXX}
+	TARGET_PRECOMPILE_HEADERS(${PROJECT_NAME} PRIVATE
+		"${RP_CONFIG_LIBC_H}" "${RP_CXX11_COMPAT_H}"
+		stdafx.h
 		)
 ENDIF(ENABLE_PCH)
 INCLUDE(SetMSVCDebugPath)

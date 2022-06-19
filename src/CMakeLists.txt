@@ -46,17 +46,15 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libc.h.in" "${CMAKE_CURRENT_B
 # C++11 compatibility header.
 # NOTE: This must be included regardless of C++11 support in the compiler.
 # gcc-4.6 supports some C++11, but is missing explicit virtual overrides.
+SET(RP_CONFIG_LIBC_H "${CMAKE_CURRENT_BINARY_DIR}/config.libc.h")
+SET(RP_CXX11_COMPAT_H "${CMAKE_CURRENT_SOURCE_DIR}/c++11-compat.h")
 IF(MSVC)
-	SET(RP_CONFIG_LIBC_H "-FI${CMAKE_CURRENT_BINARY_DIR}/config.libc.h")
-	SET(RP_CXX11_COMPAT_H "-FI${CMAKE_CURRENT_SOURCE_DIR}/c++11-compat.h")
+	SET(CMAKE_C_FLAGS	"${CMAKE_C_FLAGS} -FI${RP_CONFIG_LIBC_H} -FI${RP_CXX11_COMPAT_H}")
+	SET(CMAKE_CXX_FLAGS	"${CMAKE_CXX_FLAGS} -FI${RP_CONFIG_LIBC_H} -FI${RP_CXX11_COMPAT_H}")
 ELSE(MSVC)
-	SET(RP_CONFIG_LIBC_H "-include ${CMAKE_CURRENT_BINARY_DIR}/config.libc.h")
-	SET(RP_CXX11_COMPAT_H "-include ${CMAKE_CURRENT_SOURCE_DIR}/c++11-compat.h")
+	SET(CMAKE_C_FLAGS	"${CMAKE_C_FLAGS} -include ${RP_CONFIG_LIBC_H} -include ${RP_CXX11_COMPAT_H}")
+	SET(CMAKE_CXX_FLAGS	"${CMAKE_CXX_FLAGS} -include ${RP_CONFIG_LIBC_H} -include ${RP_CXX11_COMPAT_H}")
 ENDIF(MSVC)
-
-# Add the C++11 compatibility header to CFLAGS/CXXFLAGS.
-SET(CMAKE_C_FLAGS	"${CMAKE_C_FLAGS} ${RP_CONFIG_LIBC_H} ${RP_CXX11_COMPAT_H}")
-SET(CMAKE_CXX_FLAGS	"${CMAKE_CXX_FLAGS} ${RP_CONFIG_LIBC_H} ${RP_CXX11_COMPAT_H}")
 
 # Check for hidden visibility flags.
 INCLUDE(CheckHiddenVisibility)

@@ -69,15 +69,6 @@ ELSE(WIN32)
 		)
 ENDIF()
 
-IF(ENABLE_PCH)
-	# Precompiled headers.
-	INCLUDE(PrecompiledHeader)
-	SET(${PROJECT_NAME}_PCH_C stdafx.c)
-	SET(${PROJECT_NAME}_PCH_CXX stdafx.cpp)
-	SET(${PROJECT_NAME}_PCH_SRC ${${PROJECT_NAME}_PCH_C} ${${PROJECT_NAME}_PCH_CXX})
-	SET(${PROJECT_NAME}_PCH_H stdafx.h)
-ENDIF(ENABLE_PCH)
-
 #########################
 # Build the executable. #
 #########################
@@ -86,14 +77,13 @@ INCLUDE(SetMSVCDebugPath)
 
 # rp-download: Cache downloader program. (Can be sandboxed.)
 ADD_EXECUTABLE(${PROJECT_NAME}
-	${${PROJECT_NAME}_PCH_SRC} ${${PROJECT_NAME}_PCH_H}
 	${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
 	${${PROJECT_NAME}_OS_SRCS} ${${PROJECT_NAME}_OS_H}
 	)
 IF(ENABLE_PCH)
-	ADD_PRECOMPILED_HEADER(${PROJECT_NAME} ${${PROJECT_NAME}_PCH_H}
-		SOURCE_C ${${PROJECT_NAME}_PCH_C}
-		SOURCE_CXX ${${PROJECT_NAME}_PCH_CXX}
+	TARGET_PRECOMPILE_HEADERS(${PROJECT_NAME} PRIVATE
+		"${RP_CONFIG_LIBC_H}" "${RP_CXX11_COMPAT_H}"
+		stdafx.h
 		)
 ENDIF(ENABLE_PCH)
 SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES PREFIX "")
