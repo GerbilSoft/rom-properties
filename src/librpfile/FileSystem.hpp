@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * FileSystem.hpp: File system functions.                                  *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,27 +10,28 @@
 #define __ROMPROPERTIES_LIBRPFILE_FILESYSTEM_HPP__
 
 #include <stdint.h>
+#include "common.h"
 
 // access() macros.
 #ifdef _WIN32
-#include <io.h>
+#  include <io.h>
 #else
-#include <unistd.h>
+#  include <unistd.h>
 #endif
 
 // Windows doesn't define X_OK, W_OK, or R_OK.
 // NOTE: F_OK doesn't work properly on Windows.
 #ifndef F_OK
-#define F_OK 0
+#  define F_OK 0
 #endif
 #ifndef X_OK
-#define X_OK 1
+#  define X_OK 1
 #endif
 #ifndef W_OK
-#define W_OK 2
+#  define W_OK 2
 #endif
 #ifndef R_OK
-#define R_OK 4
+#  define R_OK 4
 #endif
 
 // Directory separator characters.
@@ -80,6 +81,7 @@ off64_t filesize(const std::string &filename);
  *
  * @return User's rom-properties cache directory, or empty string on error.
  */
+RP_LIBROMDATA_PUBLIC
 const std::string &getCacheDirectory(void);
 
 /**
@@ -90,6 +92,7 @@ const std::string &getCacheDirectory(void);
  *
  * @return User's rom-properties configuration directory, or empty string on error.
  */
+RP_LIBROMDATA_PUBLIC
 const std::string &getConfigDirectory(void);
 
 /**

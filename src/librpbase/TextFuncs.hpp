@@ -197,6 +197,7 @@ typedef enum {
  * @param flags	[in] Flags. (See TextConv_Flags_e.)
  * @return UTF-8 string.
  */
+RP_LIBROMDATA_PUBLIC
 std::string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int flags = 0);
 
 /**

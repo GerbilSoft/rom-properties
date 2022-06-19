@@ -519,6 +519,7 @@ class RomData : public RefBase
 		 * @param imageType Image type.
 		 * @return String containing user-friendly name of an image type.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static const char *getImageTypeName(ImageType imageType);
 
 		/**

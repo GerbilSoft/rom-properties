@@ -2,8 +2,8 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextOut.hpp: Text output for RomData.                                   *
  *                                                                         *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * Copyright (c) 2016-2017 by Egor.                                        *
- * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -34,7 +34,9 @@ class ROMOutput {
 	uint32_t lc;
 	bool skipInternalImages;
 public:
+	RP_LIBROMDATA_PUBLIC
 	explicit ROMOutput(const RomData *romdata, uint32_t lc = 0, bool skipInternalImages = false);
+
 	friend std::ostream& operator<<(std::ostream& os, const ROMOutput& fo);
 };
 
@@ -44,7 +46,9 @@ class JSONROMOutput {
 	bool skipInternalImages;
 	bool crlf_;
 public:
+	RP_LIBROMDATA_PUBLIC
 	explicit JSONROMOutput(const RomData *romdata, uint32_t lc = 0, bool skipInternalImages = false);
+
 	friend std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo);
 
 	inline bool crlf(void) const {

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpPng.hpp: PNG image handler.                                           *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -58,6 +58,7 @@ class RpPng
 		 * @param img rp_image to save.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static int save(const char *filename, const LibRpTexture::rp_image *img);
 
 		/**
@@ -96,6 +97,7 @@ class RpPng
 		 * @param iconAnimData Animated image data to save.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static int save(const char *filename, const IconAnimData *iconAnimData);
 };
 

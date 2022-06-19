@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * userdirs.hpp: Find user directories.                                    *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,6 +11,7 @@
 
 // NOTE: All functions return 8-bit strings.
 // This is usually encoded as UTF-8.
+#include "common.h"
 
 // C++ includes.
 #include <string>
@@ -25,6 +26,7 @@ namespace LibWin32Common {
  *
  * @return User's cache directory (without trailing slash), or empty string on error.
  */
+RP_LIBROMDATA_PUBLIC
 std::string getHomeDirectory(void);
 
 /**
@@ -35,6 +37,7 @@ std::string getHomeDirectory(void);
  *
  * @return User's cache directory (without trailing slash), or empty string on error.
  */
+RP_LIBROMDATA_PUBLIC
 std::string getCacheDirectory(void);
 
 /**
@@ -45,6 +48,7 @@ std::string getCacheDirectory(void);
  *
  * @return User's configuration directory (without trailing slash), or empty string on error.
  */
+RP_LIBROMDATA_PUBLIC
 std::string getConfigDirectory(void);
 
 }

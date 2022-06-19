@@ -2,8 +2,8 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextOut.hpp: Text output for RomData. (User-readable text)              *
  *                                                                         *
- * Copyright (c) 2016-2018 by Egor.                                        *
  * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -745,6 +745,7 @@ ROMOutput::ROMOutput(const RomData *romdata, uint32_t lc, bool skipInternalImage
 	: romdata(romdata)
 	, lc(lc)
 	, skipInternalImages(skipInternalImages) { }
+RP_LIBROMDATA_PUBLIC
 std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	auto romdata = fo.romdata;
 	const char *const systemName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);

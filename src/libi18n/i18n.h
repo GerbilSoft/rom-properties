@@ -10,6 +10,7 @@
 #define __ROMPROPERTIES_LIBI18N_H__
 
 #include "libi18n/config.libi18n.h"
+#include "common.h"
 
 #define RP_I18N_DOMAIN "rom-properties"
 #define DEFAULT_TEXT_DOMAIN RP_I18N_DOMAIN
@@ -51,6 +52,7 @@ extern "C" {
  * Initialize the internationalization subsystem.
  * @return 0 on success; non-zero on error.
  */
+RP_LIBROMDATA_PUBLIC
 int rp_i18n_init(void);
 
 #ifdef __cplusplus

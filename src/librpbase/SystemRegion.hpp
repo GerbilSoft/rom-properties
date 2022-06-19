@@ -26,6 +26,7 @@ namespace LibRpBase { namespace SystemRegion {
  *
  * @return ISO-3166 country code as a uint32_t, or 0 on error.
  */
+RP_LIBROMDATA_PUBLIC
 uint32_t getCountryCode(void);
 
 /**
@@ -38,6 +39,7 @@ uint32_t getCountryCode(void);
  *
  * @return ISO-639 language code as a uint32_t, or 0 on error.
  */
+RP_LIBROMDATA_PUBLIC
 uint32_t getLanguageCode(void);
 
 /**

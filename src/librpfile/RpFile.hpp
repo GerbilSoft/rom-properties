@@ -142,6 +142,7 @@ class RpFile : public IRpFile
 		 * Get the filename.
 		 * @return Filename. (May be empty if the filename is not available.)
 		 */
+		RP_LIBROMDATA_PUBLIC
 		std::string filename(void) const final;
 
 	public:
@@ -181,6 +182,7 @@ class RpFile : public IRpFile
 		 * @param pResp Response buffer.
 		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int scsi_inquiry(struct _SCSI_RESP_INQUIRY_STD *pResp);
 
 		/**
@@ -188,6 +190,7 @@ class RpFile : public IRpFile
 		 * @param pResp Response buffer.
 		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int ata_identify_device(struct _ATA_RESP_IDENTIFY_DEVICE *pResp);
 
 		/**
@@ -195,6 +198,7 @@ class RpFile : public IRpFile
 		 * @param pResp Response buffer.
 		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int ata_identify_packet_device(struct _ATA_RESP_IDENTIFY_DEVICE *pResp);
 
 	private:
