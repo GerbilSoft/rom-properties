@@ -402,7 +402,7 @@ const rp_image *GameCubeSavePrivate::loadIcon(void)
 		switch (iconfmt & CARD_ICON_MASK) {
 			case CARD_ICON_RGB: {
 				// RGB5A3
-				static const unsigned int iconsize = CARD_ICON_W * CARD_ICON_H * 2;
+				static const size_t iconsize = CARD_ICON_W * CARD_ICON_H * 2;
 				iconAnimData->frames[i] = ImageDecoder::fromGcn16(
 					ImageDecoder::PixelFormat::RGB5A3, CARD_ICON_W, CARD_ICON_H,
 					reinterpret_cast<const uint16_t*>(icondata.get() + iconaddr_cur),
@@ -414,7 +414,7 @@ const rp_image *GameCubeSavePrivate::loadIcon(void)
 			case CARD_ICON_CI_UNIQUE: {
 				// CI8 with a unique palette.
 				// Palette is located immediately after the icon.
-				static const unsigned int iconsize = CARD_ICON_W * CARD_ICON_H * 1;
+				static const size_t iconsize = CARD_ICON_W * CARD_ICON_H * 1;
 				iconAnimData->frames[i] = ImageDecoder::fromGcnCI8(
 					CARD_ICON_W, CARD_ICON_H,
 					icondata.get() + iconaddr_cur, iconsize,
@@ -424,7 +424,7 @@ const rp_image *GameCubeSavePrivate::loadIcon(void)
 			}
 
 			case CARD_ICON_CI_SHARED: {
-				static const unsigned int iconsize = CARD_ICON_W * CARD_ICON_H * 1;
+				static const size_t iconsize = CARD_ICON_W * CARD_ICON_H * 1;
 				iconAnimData->frames[i] = ImageDecoder::fromGcnCI8(
 					CARD_ICON_W, CARD_ICON_H,
 					icondata.get() + iconaddr_cur, iconsize,
@@ -484,7 +484,7 @@ const rp_image *GameCubeSavePrivate::loadBanner(void)
 
 	// Banner is located at direntry.iconaddr.
 	// Determine the banner format and size.
-	uint32_t bannersize;
+	size_t bannersize;
 	switch (direntry.bannerfmt & CARD_BANNER_MASK) {
 		case CARD_BANNER_CI:
 			// CI8 banner.

@@ -33,7 +33,7 @@ namespace LibRpTexture { namespace ImageDecoder {
  * @return rp_image, or nullptr on error.
  */
 rp_image *fromPVRTC(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz,
+	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	uint8_t mode)
 {
 	// Verify parameters.
@@ -70,9 +70,9 @@ rp_image *fromPVRTC(int width, int height,
 	const uint32_t expected_size_in = ((physWidth * physHeight) /
 		(((mode & PVRTC_BPP_MASK) == PVRTC_2BPP) ? 4 : 2));
 
-	assert(img_siz >= static_cast<int>(expected_size_in));
+	assert(img_siz >= expected_size_in);
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < static_cast<int>(expected_size_in))
+	    img_siz < expected_size_in)
 	{
 		return nullptr;
 	}
@@ -123,7 +123,7 @@ rp_image *fromPVRTC(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 rp_image *fromPVRTCII(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz,
+	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	uint8_t mode)
 {
 	// Verify parameters.
@@ -164,9 +164,9 @@ rp_image *fromPVRTCII(int width, int height,
 	const uint32_t expected_size_in = ((physWidth * physHeight) /
 		(((mode & PVRTC_BPP_MASK) == PVRTC_2BPP) ? 4 : 2));
 
-	assert(img_siz >= static_cast<int>(expected_size_in));
+	assert(img_siz >= expected_size_in);
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < static_cast<int>(expected_size_in))
+	    img_siz < expected_size_in)
 	{
 		return nullptr;
 	}

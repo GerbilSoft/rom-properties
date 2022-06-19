@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_GCN.cpp: Image decoding functions. (Nintendo 3DS)          *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -38,15 +38,15 @@ static const uint8_t N3DS_tile_order[] = {
  * @return rp_image, or nullptr on error.
  */
 rp_image *fromN3DSTiledRGB565(int width, int height,
-	const uint16_t *RESTRICT img_buf, int img_siz)
+	const uint16_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= ((width * height) * 2));
+	assert(img_siz >= (((size_t)width * (size_t)height) * 2));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((width * height) * 2))
+	    img_siz < (((size_t)width * (size_t)height) * 2))
 	{
 		return nullptr;
 	}
@@ -104,19 +104,19 @@ rp_image *fromN3DSTiledRGB565(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 rp_image *fromN3DSTiledRGB565_A4(int width, int height,
-	const uint16_t *RESTRICT img_buf, int img_siz,
-	const uint8_t *RESTRICT alpha_buf, int alpha_siz)
+	const uint16_t *RESTRICT img_buf, size_t img_siz,
+	const uint8_t *RESTRICT alpha_buf, size_t alpha_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(alpha_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= ((width * height) * 2));
-	assert(alpha_siz >= ((width * height) / 2));
+	assert(img_siz >= (((size_t)width * (size_t)height) * 2));
+	assert(alpha_siz >= (((size_t)width * (size_t)height) / 2));
 	if (!img_buf || !alpha_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((width * height) * 2) ||
-	    alpha_siz < ((width * height) / 2))
+	    img_siz < (((size_t)width * (size_t)height) * 2) ||
+	    alpha_siz < (((size_t)width * (size_t)height) / 2))
 	{
 		return nullptr;
 	}

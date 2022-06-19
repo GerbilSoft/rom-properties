@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_GCN.cpp: Image decoding functions. (GameCube)              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -29,15 +29,15 @@ namespace LibRpTexture { namespace ImageDecoder {
  */
 rp_image *fromGcn16(PixelFormat px_format,
 	int width, int height,
-	const uint16_t *RESTRICT img_buf, int img_siz)
+	const uint16_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= ((width * height) * 2));
+	assert(img_siz >= (((size_t)width * (size_t)height) * 2));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((width * height) * 2))
+	    img_siz < (((size_t)width * (size_t)height) * 2))
 	{
 		return nullptr;
 	}
@@ -150,18 +150,18 @@ rp_image *fromGcn16(PixelFormat px_format,
  * @return rp_image, or nullptr on error.
  */
 rp_image *fromGcnCI8(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz,
-	const uint16_t *RESTRICT pal_buf, int pal_siz)
+	const uint8_t *RESTRICT img_buf, size_t img_siz,
+	const uint16_t *RESTRICT pal_buf, size_t pal_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(pal_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= (width * height));
+	assert(img_siz >= ((size_t)width * (size_t)height));
 	assert(pal_siz >= 256*2);
 	if (!img_buf || !pal_buf || width <= 0 || height <= 0 ||
-	    img_siz < (width * height) || pal_siz < 256*2)
+	    img_siz < ((size_t)width * (size_t)height) || pal_siz < 256*2)
 	{
 		return nullptr;
 	}
@@ -243,15 +243,15 @@ rp_image *fromGcnCI8(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 rp_image *fromGcnI8(int width, int height,
-	const uint8_t *img_buf, int img_siz)
+	const uint8_t *img_buf, size_t img_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= (width * height));
+	assert(img_siz >= ((size_t)width * (size_t)height));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (width * height))
+	    img_siz < ((size_t)width * (size_t)height))
 	{
 		return nullptr;
 	}

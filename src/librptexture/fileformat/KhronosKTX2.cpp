@@ -232,7 +232,7 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 	// Calculate the expected size.
 	// NOTE: Scanlines are 4-byte aligned.
 	// TODO: Differences between UNORM, UINT, SRGB; handle SNORM, SINT.
-	uint32_t expected_size;
+	size_t expected_size;
 	int stride = 0;
 	switch (ktx2Header.vkFormat) {
 		case VK_FORMAT_R8G8B8_UNORM:

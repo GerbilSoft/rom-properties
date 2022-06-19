@@ -71,7 +71,7 @@ static FORCEINLINE void initDreamcastTwiddleMap(void)
  */
 rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
 	int width, int height,
-	const uint16_t *RESTRICT img_buf, int img_siz)
+	const uint16_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -79,10 +79,10 @@ rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
 	assert(height > 0);
 	assert(width == height);
 	assert(width <= 4096);
-	assert(img_siz >= ((width * height) * 2));
+	assert(img_siz >= (((size_t)width * (size_t)height) * 2));
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    width != height || width > 4096 ||
-	    img_siz < ((width * height) * 2))
+	    img_siz < (((size_t)width * (size_t)height) * 2))
 	{
 		return nullptr;
 	}
@@ -173,8 +173,8 @@ rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
 rp_image *fromDreamcastVQ16(PixelFormat px_format,
 	bool smallVQ, bool hasMipmaps,
 	int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz,
-	const uint16_t *RESTRICT pal_buf, int pal_siz)
+	const uint8_t *RESTRICT img_buf, size_t img_siz,
+	const uint16_t *RESTRICT pal_buf, size_t pal_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -203,9 +203,9 @@ rp_image *fromDreamcastVQ16(PixelFormat px_format,
 	}
 
 	assert(pal_entry_count % 2 == 0);
-	assert(pal_entry_count * 2 >= pal_siz);
+	assert((size_t)pal_entry_count * 2 >= pal_siz);
 	if ((pal_entry_count % 2 != 0) ||
-	    (pal_entry_count * 2 < pal_siz))
+	    ((size_t)pal_entry_count * 2 < pal_siz))
 	{
 		// Palette isn't large enough,
 		// or palette isn't an even multiple.

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_GCN.cpp: Image decoding functions. (Nintendo DS)           *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -29,18 +29,18 @@ namespace LibRpTexture { namespace ImageDecoder {
  * @return rp_image, or nullptr on error.
  */
 rp_image *fromNDS_CI4(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz,
-	const uint16_t *RESTRICT pal_buf, int pal_siz)
+	const uint8_t *RESTRICT img_buf, size_t img_siz,
+	const uint16_t *RESTRICT pal_buf, size_t pal_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(pal_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= ((width * height) / 2));
+	assert(img_siz >= (((size_t)width * (size_t)height) / 2));
 	assert(pal_siz >= 16*2);
 	if (!img_buf || !pal_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((width * height) / 2) || pal_siz < 16*2)
+	    img_siz < (((size_t)width * (size_t)height) / 2) || pal_siz < 16*2)
 	{
 		return nullptr;
 	}

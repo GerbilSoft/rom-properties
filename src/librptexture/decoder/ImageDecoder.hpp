@@ -156,8 +156,8 @@ ATTR_ACCESS_SIZE(read_only, 5, 6)
 ATTR_ACCESS_SIZE(read_only, 7, 8)
 rp_image *fromLinearCI4(PixelFormat px_format, bool msn_left,
 	int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz,
-	const void *RESTRICT pal_buf, int pal_siz);
+	const uint8_t *RESTRICT img_buf, size_t img_siz,
+	const void *RESTRICT pal_buf, size_t pal_siz);
 
 /**
  * Convert a linear CI8 image to rp_image with a little-endian 16-bit palette.
@@ -174,8 +174,8 @@ ATTR_ACCESS_SIZE(read_only, 4, 5)
 ATTR_ACCESS_SIZE(read_only, 6, 7)
 rp_image *fromLinearCI8(PixelFormat px_format,
 	int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz,
-	const void *RESTRICT pal_buf, int pal_siz);
+	const uint8_t *RESTRICT img_buf, size_t img_siz,
+	const void *RESTRICT pal_buf, size_t pal_siz);
 
 /**
  * Convert a linear monochrome image to rp_image.
@@ -187,7 +187,7 @@ rp_image *fromLinearCI8(PixelFormat px_format,
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromLinearMono(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz);
+	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
  * Convert a linear 8-bit RGB image to rp_image.
@@ -203,7 +203,7 @@ rp_image *fromLinearMono(int width, int height,
 ATTR_ACCESS_SIZE(read_only, 4, 5)
 rp_image *fromLinear8(PixelFormat px_format,
 	int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz, int stride = 0);
+	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
 
 /** 16-bit **/
 
@@ -222,7 +222,7 @@ ATTR_ACCESS_SIZE(read_only, 4, 5)
 RP_LIBROMDATA_PUBLIC
 rp_image *fromLinear16_cpp(PixelFormat px_format,
 	int width, int height,
-	const uint16_t *RESTRICT img_buf, int img_siz, int stride = 0);
+	const uint16_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
 
 #ifdef IMAGEDECODER_HAS_SSE2
 /**
@@ -240,7 +240,7 @@ ATTR_ACCESS_SIZE(read_only, 4, 5)
 RP_LIBROMDATA_PUBLIC
 rp_image *fromLinear16_sse2(PixelFormat px_format,
 	int width, int height,
-	const uint16_t *RESTRICT img_buf, int img_siz, int stride = 0);
+	const uint16_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
 #endif /* IMAGEDECODER_HAS_SSE2 */
 
 #if defined(HAVE_IFUNC) && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64))
@@ -262,7 +262,7 @@ rp_image *fromLinear16_sse2(PixelFormat px_format,
 ATTR_ACCESS_SIZE(read_only, 4, 5)
 static inline rp_image *fromLinear16(PixelFormat px_format,
 	int width, int height,
-	const uint16_t *img_buf, int img_siz, int stride = 0)
+	const uint16_t *img_buf, size_t img_siz, int stride = 0)
 {
 	// amd64 always has SSE2.
 	return fromLinear16_sse2(px_format, width, height, img_buf, img_siz, stride);
@@ -283,7 +283,7 @@ static inline rp_image *fromLinear16(PixelFormat px_format,
 ATTR_ACCESS_SIZE(read_only, 4, 5)
 IFUNC_SSE2_STATIC_INLINE rp_image *fromLinear16(PixelFormat px_format,
 	int width, int height,
-	const uint16_t *RESTRICT img_buf, int img_siz, int stride = 0);
+	const uint16_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
 #  endif /* IMAGEDECODER_ALWAYS_HAS_SSE2 */
 
 #else /* !HAVE_IFUNC or not i386/amd64 */
@@ -303,7 +303,7 @@ IFUNC_SSE2_STATIC_INLINE rp_image *fromLinear16(PixelFormat px_format,
 ATTR_ACCESS_SIZE(read_only, 4, 5)
 static inline rp_image *fromLinear16(PixelFormat px_format,
 	int width, int height,
-	const uint16_t *RESTRICT img_buf, int img_siz, int stride = 0)
+	const uint16_t *RESTRICT img_buf, size_t img_siz, int stride = 0)
 {
 #  ifdef IMAGEDECODER_ALWAYS_HAS_SSE2
 	// amd64 always has SSE2.
@@ -339,7 +339,7 @@ ATTR_ACCESS_SIZE(read_only, 4, 5)
 RP_LIBROMDATA_PUBLIC
 rp_image *fromLinear24_cpp(PixelFormat px_format,
 	int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz, int stride = 0);
+	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
 
 #ifdef IMAGEDECODER_HAS_SSSE3
 /**
@@ -357,7 +357,7 @@ ATTR_ACCESS_SIZE(read_only, 4, 5)
 RP_LIBROMDATA_PUBLIC
 rp_image *fromLinear24_ssse3(PixelFormat px_format,
 	int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz, int stride = 0);
+	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
 #endif /* IMAGEDECODER_HAS_SSSE3 */
 
 #if defined(HAVE_IFUNC) && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64))
@@ -375,7 +375,7 @@ ATTR_ACCESS_SIZE(read_only, 4, 5)
 RP_LIBROMDATA_PUBLIC
 IFUNC_STATIC_INLINE rp_image *fromLinear24(PixelFormat px_format,
 	int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz, int stride = 0);
+	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
 #else
 // System does not support IFUNC, or we aren't guaranteed to have
 // optimizations for these CPUs. Use standard inline dispatch.
@@ -393,7 +393,7 @@ IFUNC_STATIC_INLINE rp_image *fromLinear24(PixelFormat px_format,
 ATTR_ACCESS_SIZE(read_only, 4, 5)
 static inline rp_image *fromLinear24(PixelFormat px_format,
 	int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz, int stride = 0)
+	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride = 0)
 {
 #  ifdef IMAGEDECODER_HAS_SSSE3
 	if (RP_CPU_HasSSSE3()) {
@@ -423,7 +423,7 @@ ATTR_ACCESS_SIZE(read_only, 4, 5)
 RP_LIBROMDATA_PUBLIC
 rp_image *fromLinear32_cpp(PixelFormat px_format,
 	int width, int height,
-	const uint32_t *RESTRICT img_buf, int img_siz, int stride = 0);
+	const uint32_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
 
 #ifdef IMAGEDECODER_HAS_SSSE3
 /**
@@ -441,7 +441,7 @@ ATTR_ACCESS_SIZE(read_only, 4, 5)
 RP_LIBROMDATA_PUBLIC
 rp_image *fromLinear32_ssse3(PixelFormat px_format,
 	int width, int height,
-	const uint32_t *RESTRICT img_buf, int img_siz, int stride = 0);
+	const uint32_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
 #endif /* IMAGEDECODER_HAS_SSSE3 */
 
 #if defined(HAVE_IFUNC) && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64))
@@ -458,7 +458,7 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 RP_LIBROMDATA_PUBLIC
 IFUNC_STATIC_INLINE rp_image *fromLinear32(PixelFormat px_format,
 	int width, int height,
-	const uint32_t *RESTRICT img_buf, int img_siz, int stride = 0);
+	const uint32_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
 #else
 // System does not support IFUNC, or we aren't guaranteed to have
 // optimizations for these CPUs. Use standard inline dispatch.
@@ -475,7 +475,7 @@ IFUNC_STATIC_INLINE rp_image *fromLinear32(PixelFormat px_format,
  */
 static inline rp_image *fromLinear32(PixelFormat px_format,
 	int width, int height,
-	const uint32_t *RESTRICT img_buf, int img_siz, int stride = 0)
+	const uint32_t *RESTRICT img_buf, size_t img_siz, int stride = 0)
 {
 #  ifdef IMAGEDECODER_HAS_SSSE3
 	if (RP_CPU_HasSSSE3()) {
@@ -501,7 +501,7 @@ static inline rp_image *fromLinear32(PixelFormat px_format,
  */
 rp_image *fromGcn16(PixelFormat px_format,
 	int width, int height,
-	const uint16_t *RESTRICT img_buf, int img_siz);
+	const uint16_t *RESTRICT img_buf, size_t img_siz);
 
 /**
  * Convert a GameCube CI8 image to rp_image.
@@ -514,8 +514,8 @@ rp_image *fromGcn16(PixelFormat px_format,
  * @return rp_image, or nullptr on error.
  */
 rp_image *fromGcnCI8(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz,
-	const uint16_t *RESTRICT pal_buf, int pal_siz);
+	const uint8_t *RESTRICT img_buf, size_t img_siz,
+	const uint16_t *RESTRICT pal_buf, size_t pal_siz);
 
 /**
  * Convert a GameCube I8 image to rp_image.
@@ -528,7 +528,7 @@ rp_image *fromGcnCI8(int width, int height,
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromGcnI8(int width, int height,
-	const uint8_t *img_buf, int img_siz);
+	const uint8_t *img_buf, size_t img_siz);
 
 /** Nintendo DS **/
 
@@ -544,8 +544,8 @@ rp_image *fromGcnI8(int width, int height,
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromNDS_CI4(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz,
-	const uint16_t *RESTRICT pal_buf, int pal_siz);
+	const uint8_t *RESTRICT img_buf, size_t img_siz,
+	const uint16_t *RESTRICT pal_buf, size_t pal_siz);
 
 /** Nintendo 3DS **/
 
@@ -558,7 +558,7 @@ rp_image *fromNDS_CI4(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 rp_image *fromN3DSTiledRGB565(int width, int height,
-	const uint16_t *RESTRICT img_buf, int img_siz);
+	const uint16_t *RESTRICT img_buf, size_t img_siz);
 
 /**
  * Convert a Nintendo 3DS RGB565+A4 tiled icon to rp_image.
@@ -572,8 +572,8 @@ rp_image *fromN3DSTiledRGB565(int width, int height,
  */
 ATTR_ACCESS_SIZE(read_only, 5, 6)
 rp_image *fromN3DSTiledRGB565_A4(int width, int height,
-	const uint16_t *RESTRICT img_buf, int img_siz,
-	const uint8_t *RESTRICT alpha_buf, int alpha_siz);
+	const uint16_t *RESTRICT img_buf, size_t img_siz,
+	const uint8_t *RESTRICT alpha_buf, size_t alpha_siz);
 
 /* S3TC */
 
@@ -590,7 +590,7 @@ rp_image *fromN3DSTiledRGB565_A4(int width, int height,
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromDXT1_GCN(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz);
+	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
  * Convert a DXT1 image to rp_image.
@@ -604,7 +604,7 @@ rp_image *fromDXT1_GCN(int width, int height,
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromDXT1(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz);
+	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
  * Convert a DXT1 image to rp_image.
@@ -618,7 +618,7 @@ rp_image *fromDXT1(int width, int height,
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromDXT1_A1(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz);
+	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
  * Convert a DXT2 image to rp_image.
@@ -630,7 +630,7 @@ rp_image *fromDXT1_A1(int width, int height,
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromDXT2(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz);
+	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
  * Convert a DXT3 image to rp_image.
@@ -642,7 +642,7 @@ rp_image *fromDXT2(int width, int height,
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromDXT3(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz);
+	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
  * Convert a DXT4 image to rp_image.
@@ -654,7 +654,7 @@ rp_image *fromDXT3(int width, int height,
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromDXT4(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz);
+	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
  * Convert a DXT5 image to rp_image.
@@ -666,7 +666,7 @@ rp_image *fromDXT4(int width, int height,
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromDXT5(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz);
+	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
  * Convert a BC4 (ATI1) image to rp_image.
@@ -680,7 +680,7 @@ rp_image *fromDXT5(int width, int height,
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromBC4(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz);
+	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
  * Convert a BC5 (ATI2) image to rp_image.
@@ -694,7 +694,7 @@ rp_image *fromBC4(int width, int height,
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromBC5(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz);
+	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
  * Convert a Red image to Luminance.
@@ -725,7 +725,7 @@ int fromRed8ToL8(rp_image *img);
  */
 rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
 	int width, int height,
-	const uint16_t *RESTRICT img_buf, int img_siz);
+	const uint16_t *RESTRICT img_buf, size_t img_siz);
 
 /**
  * Convert a Dreamcast vector-quantized image to rp_image.
@@ -744,8 +744,8 @@ ATTR_ACCESS_SIZE(read_only, 6, 7)
 rp_image *fromDreamcastVQ16(PixelFormat px_format,
 	bool smallVQ, bool hasMipmaps,
 	int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz,
-	const uint16_t *RESTRICT pal_buf, int pal_siz);
+	const uint8_t *RESTRICT img_buf, size_t img_siz,
+	const uint16_t *RESTRICT pal_buf, size_t pal_siz);
 
 /**
  * Get the number of palette entries for Dreamcast SmallVQ textures.
@@ -799,7 +799,7 @@ static inline int calcDreamcastSmallVQPaletteEntries_WithMipmaps(int width)
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromETC1(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz);
+	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
  * Convert an ETC2 RGB image to rp_image.
@@ -811,7 +811,7 @@ rp_image *fromETC1(int width, int height,
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromETC2_RGB(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz);
+	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
  * Convert an ETC2 RGBA image to rp_image.
@@ -823,7 +823,7 @@ rp_image *fromETC2_RGB(int width, int height,
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromETC2_RGBA(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz);
+	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
  * Convert an ETC2 RGB+A1 (punchthrough alpha) image to rp_image.
@@ -835,7 +835,7 @@ rp_image *fromETC2_RGBA(int width, int height,
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromETC2_RGB_A1(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz);
+	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
  * Convert an EAC R11 image to rp_image.
@@ -847,7 +847,7 @@ rp_image *fromETC2_RGB_A1(int width, int height,
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromEAC_R11(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz);
+	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 /**
  * Convert an EAC RG11 image to rp_image.
@@ -859,7 +859,7 @@ rp_image *fromEAC_R11(int width, int height,
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromEAC_RG11(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz);
+	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 #ifdef ENABLE_PVRTC
 /* PVRTC */
@@ -887,7 +887,7 @@ enum PVRTC_Mode_e {
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromPVRTC(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz,
+	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	uint8_t mode);
 
 /**
@@ -901,7 +901,7 @@ rp_image *fromPVRTC(int width, int height,
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromPVRTCII(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz,
+	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	uint8_t mode);
 #endif /* ENABLE_PVRTC */
 
@@ -917,7 +917,7 @@ rp_image *fromPVRTCII(int width, int height,
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromBC7(int width, int height,
-	const uint8_t *img_buf, int img_siz);
+	const uint8_t *img_buf, size_t img_siz);
 
 #ifdef ENABLE_ASTC
 /**
@@ -932,7 +932,7 @@ rp_image *fromBC7(int width, int height,
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromASTC(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz,
+	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	uint8_t block_x, uint8_t block_y);
 #endif /* ENABLE_ASTC */
 

@@ -31,17 +31,17 @@ namespace LibRpTexture { namespace ImageDecoder {
  */
 rp_image *fromLinearCI4(PixelFormat px_format, bool msn_left,
 	int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz,
-	const void *RESTRICT pal_buf, int pal_siz)
+	const uint8_t *RESTRICT img_buf, size_t img_siz,
+	const void *RESTRICT pal_buf, size_t pal_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(pal_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= ((width * height) / 2));
+	assert(img_siz >= (((size_t)width * (size_t)height) / 2));
 	if (!img_buf || !pal_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((width * height) / 2))
+	    img_siz < (((size_t)width * (size_t)height) / 2))
 	{
 		return nullptr;
 	}
@@ -270,17 +270,17 @@ rp_image *fromLinearCI4(PixelFormat px_format, bool msn_left,
  */
 rp_image *fromLinearCI8(PixelFormat px_format,
 	int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz,
-	const void *RESTRICT pal_buf, int pal_siz)
+	const uint8_t *RESTRICT img_buf, size_t img_siz,
+	const void *RESTRICT pal_buf, size_t pal_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(pal_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= (width * height));
+	assert(img_siz >= ((size_t)width * (size_t)height));
 	if (!img_buf || !pal_buf || width <= 0 || height <= 0 ||
-	    img_siz < (width * height))
+	    img_siz < ((size_t)width * (size_t)height))
 	{
 		return nullptr;
 	}
@@ -592,15 +592,15 @@ rp_image *fromLinearCI8(PixelFormat px_format,
  * @return rp_image, or nullptr on error.
  */
 rp_image *fromLinearMono(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz)
+	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= ((width * height) / 8));
+	assert(img_siz >= (((size_t)width * (size_t)height) / 8));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((width * height) / 8))
+	    img_siz < (((size_t)width * (size_t)height) / 8))
 	{
 		return nullptr;
 	}
@@ -666,7 +666,7 @@ rp_image *fromLinearMono(int width, int height,
  */
 rp_image *fromLinear8(PixelFormat px_format,
 	int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz, int stride)
+	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride)
 {
 	static const int bytespp = 1;
 
@@ -674,9 +674,9 @@ rp_image *fromLinear8(PixelFormat px_format,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= ((width * height) * bytespp));
+	assert(img_siz >= (((size_t)width * (size_t)height) * bytespp));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((width * height) * bytespp))
+	    img_siz < (((size_t)width * (size_t)height) * bytespp))
 	{
 		return nullptr;
 	}
@@ -767,7 +767,7 @@ rp_image *fromLinear8(PixelFormat px_format,
  */
 rp_image *fromLinear16_cpp(PixelFormat px_format,
 	int width, int height,
-	const uint16_t *RESTRICT img_buf, int img_siz, int stride)
+	const uint16_t *RESTRICT img_buf, size_t img_siz, int stride)
 {
 	static const int bytespp = 2;
 
@@ -775,9 +775,9 @@ rp_image *fromLinear16_cpp(PixelFormat px_format,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= ((width * height) * bytespp));
+	assert(img_siz >= (((size_t)width * (size_t)height) * bytespp));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((width * height) * bytespp))
+	    img_siz < (((size_t)width * (size_t)height) * bytespp))
 	{
 		return nullptr;
 	}
@@ -885,7 +885,7 @@ rp_image *fromLinear16_cpp(PixelFormat px_format,
  */
 rp_image *fromLinear24_cpp(PixelFormat px_format,
 	int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz, int stride)
+	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride)
 {
 	static const int bytespp = 3;
 
@@ -893,9 +893,9 @@ rp_image *fromLinear24_cpp(PixelFormat px_format,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= ((width * height) * bytespp));
+	assert(img_siz >= (((size_t)width * (size_t)height) * bytespp));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((width * height) * bytespp))
+	    img_siz < (((size_t)width * (size_t)height) * bytespp))
 	{
 		return nullptr;
 	}
@@ -986,7 +986,7 @@ rp_image *fromLinear24_cpp(PixelFormat px_format,
  */
 rp_image *fromLinear32_cpp(PixelFormat px_format,
 	int width, int height,
-	const uint32_t *RESTRICT img_buf, int img_siz, int stride)
+	const uint32_t *RESTRICT img_buf, size_t img_siz, int stride)
 {
 	static const int bytespp = sizeof(uint32_t);
 
@@ -994,9 +994,9 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= ((width * height) * bytespp));
+	assert(img_siz >= (((size_t)width * (size_t)height) * bytespp));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((width * height) * bytespp))
+	    img_siz < (((size_t)width * (size_t)height) * bytespp))
 	{
 		return nullptr;
 	}

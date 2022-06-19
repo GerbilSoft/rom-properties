@@ -195,15 +195,15 @@ static inline uint8_t decode_DXT5_alpha_S3TC(unsigned int a3, const uint8_t *RES
  * @return rp_image, or nullptr on error.
  */
 rp_image *fromDXT1_GCN(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz)
+	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= ((width * height) / 2));
+	assert(img_siz >= (((size_t)width * (size_t)height) / 2));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((width * height) / 2))
+	    img_siz < (((size_t)width * (size_t)height) / 2))
 	{
 		return nullptr;
 	}
@@ -282,7 +282,7 @@ rp_image *fromDXT1_GCN(int width, int height,
  */
 template<unsigned int palflags>
 static rp_image *T_fromDXT1(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz)
+	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -295,9 +295,9 @@ static rp_image *T_fromDXT1(int width, int height,
 	const int physWidth = ALIGN_BYTES(4, width);
 	const int physHeight = ALIGN_BYTES(4, height);
 
-	assert(img_siz >= ((physWidth * physHeight) / 2));
+	assert(img_siz >= (((size_t)physWidth * (size_t)physHeight) / 2));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((physWidth * physHeight) / 2))
+	    img_siz < (((size_t)physWidth * (size_t)physHeight) / 2))
 	{
 		return nullptr;
 	}
@@ -360,7 +360,7 @@ static rp_image *T_fromDXT1(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 rp_image *fromDXT1(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz)
+	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	return T_fromDXT1<0>(width, height, img_buf, img_siz);
 }
@@ -376,7 +376,7 @@ rp_image *fromDXT1(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 rp_image *fromDXT1_A1(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz)
+	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	return T_fromDXT1<DXTn_PALETTE_COLOR3_ALPHA>(width, height, img_buf, img_siz);
 }
@@ -390,7 +390,7 @@ rp_image *fromDXT1_A1(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 rp_image *fromDXT2(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz)
+	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// TODO: Completely untested. Needs testing!
 
@@ -419,7 +419,7 @@ rp_image *fromDXT2(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 rp_image *fromDXT3(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz)
+	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -432,9 +432,9 @@ rp_image *fromDXT3(int width, int height,
 	const int physWidth = ALIGN_BYTES(4, width);
 	const int physHeight = ALIGN_BYTES(4, height);
 
-	assert(img_siz >= (physWidth * physHeight));
+	assert(img_siz >= ((size_t)physWidth * (size_t)physHeight));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (physWidth * physHeight))
+	    img_siz < ((size_t)physWidth * (size_t)physHeight))
 	{
 		return nullptr;
 	}
@@ -504,7 +504,7 @@ rp_image *fromDXT3(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 rp_image *fromDXT4(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz)
+	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// TODO: Completely untested. Needs testing!
 
@@ -533,7 +533,7 @@ rp_image *fromDXT4(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 rp_image *fromDXT5(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz)
+	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -546,9 +546,9 @@ rp_image *fromDXT5(int width, int height,
 	const int physWidth = ALIGN_BYTES(4, width);
 	const int physHeight = ALIGN_BYTES(4, height);
 
-	assert(img_siz >= (physWidth * physHeight));
+	assert(img_siz >= ((size_t)physWidth * (size_t)physHeight));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (physWidth * physHeight))
+	    img_siz < ((size_t)physWidth * (size_t)physHeight))
 	{
 		return nullptr;
 	}
@@ -620,7 +620,7 @@ rp_image *fromDXT5(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 rp_image *fromBC4(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz)
+	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -633,9 +633,9 @@ rp_image *fromBC4(int width, int height,
 	const int physWidth = ALIGN_BYTES(4, width);
 	const int physHeight = ALIGN_BYTES(4, height);
 
-	assert(img_siz >= ((width * height) / 2));
+	assert(img_siz >= (((size_t)width * (size_t)height) / 2));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((physWidth * physHeight) / 2))
+	    img_siz < (((size_t)physWidth * (size_t)physHeight) / 2))
 	{
 		return nullptr;
 	}
@@ -708,7 +708,7 @@ rp_image *fromBC4(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 rp_image *fromBC5(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz)
+	const uint8_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -721,9 +721,9 @@ rp_image *fromBC5(int width, int height,
 	const int physWidth = ALIGN_BYTES(4, width);
 	const int physHeight = ALIGN_BYTES(4, height);
 
-	assert(img_siz >= (width * height));
+	assert(img_siz >= ((size_t)width * (size_t)height));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (physWidth * physHeight))
+	    img_siz < ((size_t)physWidth * (size_t)physHeight))
 	{
 		return nullptr;
 	}
