@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * GdiplusHelper.cpp: GDI+ helper class. (Win32)                           *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,11 +19,13 @@ namespace Gdiplus {
 #include <olectl.h>
 #include <gdiplus.h>
 
+namespace GdiplusHelper {
+
 /**
  * Initialize GDI+.
  * @return GDI+ token, or 0 on failure.
  */
-ULONG_PTR GdiplusHelper::InitGDIPlus(void)
+ULONG_PTR InitGDIPlus(void)
 {
 	Gdiplus::GdiplusStartupInput gdipSI;
 	gdipSI.GdiplusVersion = 1;
@@ -39,7 +41,9 @@ ULONG_PTR GdiplusHelper::InitGDIPlus(void)
  * Shut down GDI+.
  * @param gdipToken GDI+ token.
  */
-void GdiplusHelper::ShutdownGDIPlus(ULONG_PTR gdipToken)
+void ShutdownGDIPlus(ULONG_PTR gdipToken)
 {
 	Gdiplus::GdiplusShutdown(gdipToken);
+}
+
 }
