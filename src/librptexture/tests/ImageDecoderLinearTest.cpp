@@ -11,11 +11,18 @@
 #include "tcharx.h"
 #include "common.h"
 
-// librpcpu, librpbase, librptexture
+// librpcpu, librpbase
 #include "librpcpu/byteswap_rp.h"
 #include "librpbase/aligned_malloc.h"
+
+// librptexture
 #include "librptexture/img/rp_image.hpp"
 #include "librptexture/decoder/ImageDecoder.hpp"
+#ifdef _WIN32
+// rp_image backend registration.
+#  include "librptexture/img/RpGdiplusBackend.hpp"
+#endif /* _WIN32 */
+using namespace LibRpTexture;
 
 // C includes.
 #include <stdint.h>
@@ -77,7 +84,13 @@ class ImageDecoderLinearTest : public ::testing::TestWithParam<ImageDecoderLinea
 			, m_img_buf(nullptr)
 			, m_img_buf_len(0)
 			, m_img(nullptr)
-		{ }
+		{
+#ifdef _WIN32
+			// Register RpGdiplusBackend.
+			// TODO: Static initializer somewhere?
+			rp_image::setBackendCreatorFn(RpGdiplusBackend::creator_fn);
+#endif /* _WIN32 */
+		}
 
 		~ImageDecoderLinearTest()
 		{

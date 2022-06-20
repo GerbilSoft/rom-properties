@@ -25,11 +25,8 @@ ENDIF(NOT WIN32)
 ADD_LIBRARY(rptest STATIC gtest_init.cpp)
 TARGET_LINK_LIBRARIES(rptest PUBLIC rpsecure)
 IF(WIN32)
-	# rptexture is only used for GDI+ rp_image backend registration on Windows.
-	# Since it's part of libromdata when linked as a shared library, we'll
-	# need to link in romdata instead of rptexture.
-	TARGET_LINK_LIBRARIES(rptest PRIVATE romdata)
-	TARGET_COMPILE_DEFINITIONS(rptest PRIVATE RP_BUILDING_FOR_DLL=1)
+	# rptest initializes GDI+, since it's used by rp_image.
+	TARGET_LINK_LIBRARIES(rptest PRIVATE gdiplus)
 ENDIF(WIN32)
 INCLUDE(SetMSVCDebugPath)
 SET_MSVC_DEBUG_PATH(rptest)
@@ -109,7 +106,7 @@ ADD_TEST(NAME TextFuncsTest COMMAND TextFuncsTest)
 
 # TimegmTest
 ADD_EXECUTABLE(TimegmTest TimegmTest.cpp)
-TARGET_LINK_LIBRARIES(TimegmTest PRIVATE rptest romdata)
+TARGET_LINK_LIBRARIES(TimegmTest PRIVATE rptest)
 TARGET_COMPILE_DEFINITIONS(TimegmTest PRIVATE RP_BUILDING_FOR_DLL=1)
 TARGET_LINK_LIBRARIES(TimegmTest PRIVATE gtest)
 DO_SPLIT_DEBUG(TimegmTest)

@@ -17,8 +17,7 @@ ADD_EXECUTABLE(ByteswapTest
 	ByteswapTest.cpp
 	ByteswapTest_data.hpp
 	)
-TARGET_LINK_LIBRARIES(ByteswapTest PRIVATE rptest romdata)
-TARGET_COMPILE_DEFINITIONS(ByteswapTest PRIVATE RP_BUILDING_FOR_DLL=1)
+TARGET_LINK_LIBRARIES(ByteswapTest PRIVATE rptest rpcpu)
 TARGET_LINK_LIBRARIES(ByteswapTest PRIVATE gtest)
 DO_SPLIT_DEBUG(ByteswapTest)
 SET_WINDOWS_SUBSYSTEM(ByteswapTest CONSOLE)

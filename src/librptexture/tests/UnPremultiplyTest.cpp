@@ -13,6 +13,11 @@
 
 // librptexture
 #include "librptexture/img/rp_image.hpp"
+#ifdef _WIN32
+// rp_image backend registration.
+#  include "librptexture/img/RpGdiplusBackend.hpp"
+#endif /* _WIN32 */
+using namespace LibRpTexture;
 
 // C includes.
 #include <stdint.h>
@@ -33,6 +38,12 @@ class UnPremultiplyTest : public ::testing::Test
 		UnPremultiplyTest()
 			: m_img(new rp_image(512, 512, rp_image::Format::ARGB32))
 		{
+#ifdef _WIN32
+			// Register RpGdiplusBackend.
+			// TODO: Static initializer somewhere?
+			rp_image::setBackendCreatorFn(RpGdiplusBackend::creator_fn);
+#endif /* _WIN32 */
+
 			// Initialize the image with non-zero data.
 			size_t sz = m_img->row_bytes() * (m_img->height() - 1);
 			sz += (m_img->width() * sizeof(uint32_t));

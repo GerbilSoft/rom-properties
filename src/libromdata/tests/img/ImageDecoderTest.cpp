@@ -42,6 +42,10 @@ using namespace LibRpFile;
 // librptexture
 #include "librptexture/img/rp_image.hpp"
 #include "librptexture/decoder/ImageDecoder.hpp"
+#ifdef _WIN32
+// rp_image backend registration.
+#  include "librptexture/img/RpGdiplusBackend.hpp"
+#endif /* _WIN32 */
 using namespace LibRpTexture;
 
 // TODO: Separate out the actual DDS texture loader
@@ -122,7 +126,13 @@ class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 			, m_gzDds(nullptr)
 			, m_f_dds(nullptr)
 			, m_romData(nullptr)
-		{ }
+		{
+#ifdef _WIN32
+			// Register RpGdiplusBackend.
+			// TODO: Static initializer somewhere?
+			rp_image::setBackendCreatorFn(RpGdiplusBackend::creator_fn);
+#endif /* _WIN32 */
+		}
 
 		void SetUp(void) final;
 		void TearDown(void) final;
