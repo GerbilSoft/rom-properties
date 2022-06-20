@@ -112,38 +112,6 @@ static void PNGCAPI png_io_IRpFile_read(png_structp png_ptr, png_bytep data, png
 	}
 }
 
-/**
- * libpng I/O write handler for IRpFile.
- * @param png_ptr	[in] PNG pointer.
- * @param data		[in] Data to write.
- * @param length	[in] Size of data.
- */
-static void PNGCAPI png_io_IRpFile_write(png_structp png_ptr, png_bytep data, png_size_t length)
-{
-	// Assuming io_ptr is an IRpFile*.
-	IRpFile *file = static_cast<IRpFile*>(png_get_io_ptr(png_ptr));
-	if (!file)
-		return;
-
-	// Write data to the IRpFile.
-	// TODO: Error handling?
-	file->write(data, length);
-}
-
-/**
- * libpng I/O flush handler for IRpFile.
- * @param png_ptr	[in] PNG pointer.
- */
-static void PNGCAPI png_io_IRpFile_flush(png_structp png_ptr)
-{
-	// Assuming io_ptr is an IRpFile*.
-	IRpFile *const file = static_cast<IRpFile*>(png_get_io_ptr(png_ptr));
-	if (!file)
-		return;
-
-	// TODO: IRpFile::flush()
-}
-
 #ifdef PNG_WARNINGS_SUPPORTED
 /**
  * libpng warning handler function that simply ignores warnings.
