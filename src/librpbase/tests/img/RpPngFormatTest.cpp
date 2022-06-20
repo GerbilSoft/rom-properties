@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpbase/tests)                  *
- * RpPngFormatTest.cpp: RpImageLoader PNG format test.                     *
+ * RpPngFormatTest.cpp: RpPng format test.                                 *
  *                                                                         *
  * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -40,7 +40,7 @@
 using namespace LibRpFile;
 
 // librptexture
-#include "img/RpImageLoader.hpp"
+#include "img/RpPng.hpp"
 #include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
 
@@ -886,8 +886,8 @@ TEST_P(RpPngFormatTest, loadTest)
 	ASSERT_TRUE(png_mem_file->isOpen());
 
 	// Load the PNG image from memory.
-	m_img = RpImageLoader::load(png_mem_file.get());
-	ASSERT_NE(nullptr, m_img) << "RpImageLoader failed to load the image.";
+	m_img = RpPng::load(png_mem_file.get());
+	ASSERT_NE(nullptr, m_img) << "RpPng failed to load the image.";
 
 	// Check the rp_image parameters.
 	EXPECT_EQ((int)mode.ihdr.width, m_img->width()) << "rp_image width is incorrect.";
@@ -1314,3 +1314,20 @@ INSTANTIATE_TEST_SUITE_P(happy_mac_mono_png, RpPngFormatTest,
 	, RpPngFormatTest::test_case_suffix_generator);
 
 } }
+
+/**
+ * Test suite main function.
+ * Called by gtest_init.c.
+ */
+extern "C" int gtest_main(int argc, TCHAR *argv[])
+{
+	fprintf(stderr, "LibRpBase test suite: RpPng format test.\n\n");
+	fflush(nullptr);
+
+	// Make sure the CRC32 table is initialized.
+	get_crc_table();
+
+	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.
+	::testing::InitGoogleTest(&argc, argv);
+	return RUN_ALL_TESTS();
+}

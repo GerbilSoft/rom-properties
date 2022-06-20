@@ -32,7 +32,7 @@
 
 // librpbase, librpfile
 #include "common.h"
-#include "librpbase/img/RpImageLoader.hpp"
+#include "librpbase/img/RpPng.hpp"
 #include "librpfile/RpFile.hpp"
 #include "librpfile/MemFile.hpp"
 #include "librpfile/FileSystem.hpp"
@@ -405,7 +405,7 @@ void ImageDecoderTest::decodeTest_internal(void)
 	// Load the PNG image.
 	unique_RefBase<MemFile> f_png(new MemFile(m_png_buf.data(), m_png_buf.size()));
 	ASSERT_TRUE(f_png->isOpen()) << "Could not create MemFile for the PNG image.";
-	unique_ptr<rp_image, RpImageUnrefDeleter> img_png(RpImageLoader::load(f_png.get()), RpImageUnrefDeleter());
+	unique_ptr<rp_image, RpImageUnrefDeleter> img_png(RpPng::load(f_png.get()), RpImageUnrefDeleter());
 	ASSERT_TRUE(img_png != nullptr) << "Could not load the PNG image as rp_image.";
 	ASSERT_TRUE(img_png->isValid()) << "Could not load the PNG image as rp_image.";
 

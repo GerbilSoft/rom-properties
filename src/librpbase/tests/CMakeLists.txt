@@ -31,25 +31,19 @@ ENDIF(WIN32)
 INCLUDE(SetMSVCDebugPath)
 SET_MSVC_DEBUG_PATH(rptest)
 
-# RpImageLoader test
-ADD_EXECUTABLE(RpImageLoaderTest
-	img/RpImageLoaderTest.cpp
+# RpPng format test
+ADD_EXECUTABLE(RpPngFormatTest
 	img/RpPngFormatTest.cpp
 	)
-TARGET_LINK_LIBRARIES(RpImageLoaderTest PRIVATE rptest romdata)
-TARGET_COMPILE_DEFINITIONS(RpImageLoaderTest PRIVATE RP_BUILDING_FOR_DLL=1)
-TARGET_LINK_LIBRARIES(RpImageLoaderTest PRIVATE gtest ${ZLIB_LIBRARIES})
-TARGET_INCLUDE_DIRECTORIES(RpImageLoaderTest PRIVATE ${ZLIB_INCLUDE_DIRS})
-TARGET_COMPILE_DEFINITIONS(RpImageLoaderTest PRIVATE ${ZLIB_DEFINITIONS})
-IF(PNG_LIBRARY)
-	TARGET_LINK_LIBRARIES(RpImageLoaderTest PRIVATE ${PNG_LIBRARY})
-	TARGET_INCLUDE_DIRECTORIES(RpImageLoaderTest PRIVATE ${PNG_INCLUDE_DIRS})
-	TARGET_COMPILE_DEFINITIONS(RpImageLoaderTest PRIVATE ${PNG_DEFINITIONS})
-ENDIF(PNG_LIBRARY)
-DO_SPLIT_DEBUG(RpImageLoaderTest)
-SET_WINDOWS_SUBSYSTEM(RpImageLoaderTest CONSOLE)
-SET_WINDOWS_ENTRYPOINT(RpImageLoaderTest wmain OFF)
-ADD_TEST(NAME RpImageLoaderTest COMMAND RpImageLoaderTest)
+TARGET_LINK_LIBRARIES(RpPngFormatTest PRIVATE rptest romdata)
+TARGET_COMPILE_DEFINITIONS(RpPngFormatTest PRIVATE RP_BUILDING_FOR_DLL=1)
+TARGET_LINK_LIBRARIES(RpPngFormatTest PRIVATE gtest ${ZLIB_LIBRARIES} ${PNG_LIBRARY})
+TARGET_INCLUDE_DIRECTORIES(RpPngFormatTest PRIVATE ${ZLIB_INCLUDE_DIRS} ${PNG_INCLUDE_DIRS})
+TARGET_COMPILE_DEFINITIONS(RpPngFormatTest PRIVATE ${ZLIB_DEFINITIONS} ${PNG_DEFINITIONS})
+DO_SPLIT_DEBUG(RpPngFormatTest)
+SET_WINDOWS_SUBSYSTEM(RpPngFormatTest CONSOLE)
+SET_WINDOWS_ENTRYPOINT(RpPngFormatTest wmain OFF)
+ADD_TEST(NAME RpPngFormatTest COMMAND RpPngFormatTest)
 
 # Copy the reference images to:
 # - bin/png_data/ (TODO: Subdirectory?)
@@ -57,21 +51,21 @@ ADD_TEST(NAME RpImageLoaderTest COMMAND RpImageLoaderTest)
 # NOTE: Although the test executable is in bin/, CTest still
 # uses ${CMAKE_CURRENT_BINARY_DIR} as the working directory.
 # Hence, we have to copy the files to both places.
-FILE(GLOB RpImageLoaderTest_images RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/img/png_data" img/png_data/*.png img/png_data/*.bmp.gz)
-FOREACH(test_image ${RpImageLoaderTest_images})
-	ADD_CUSTOM_COMMAND(TARGET RpImageLoaderTest POST_BUILD
+FILE(GLOB RpPngFormatTest_images RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/img/png_data" img/png_data/*.png img/png_data/*.bmp.gz)
+FOREACH(test_image ${RpPngFormatTest_images})
+	ADD_CUSTOM_COMMAND(TARGET RpPngFormatTest POST_BUILD
 		COMMAND ${CMAKE_COMMAND}
 		ARGS -E copy_if_different
 			"${CMAKE_CURRENT_SOURCE_DIR}/img/png_data/${test_image}"
-			"$<TARGET_FILE_DIR:RpImageLoaderTest>/png_data/${test_image}"
+			"$<TARGET_FILE_DIR:RpPngFormatTest>/png_data/${test_image}"
 		)
-	ADD_CUSTOM_COMMAND(TARGET RpImageLoaderTest POST_BUILD
+	ADD_CUSTOM_COMMAND(TARGET RpPngFormatTest POST_BUILD
 		COMMAND ${CMAKE_COMMAND}
 		ARGS -E copy_if_different
 			"${CMAKE_CURRENT_SOURCE_DIR}/img/png_data/${test_image}"
 			"${CMAKE_CURRENT_BINARY_DIR}/png_data/${test_image}"
 		)
-ENDFOREACH(test_image ${RpImageLoaderTest_images})
+ENDFOREACH(test_image ${RpPngFormatTest_images})
 
 IF(ENABLE_DECRYPTION)
 	# Crypto tests
