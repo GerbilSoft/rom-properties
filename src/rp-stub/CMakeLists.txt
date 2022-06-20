@@ -76,16 +76,16 @@ IF(INSTALL_DEBUG)
 	IF(DEBUG_FILENAME)
 		# TODO: Uncomment this once symlinking is fixed.
 		#INSTALL(FILES "${DEBUG_FILENAME}"
-		#	DESTINATION "lib/debug/${DIR_INSTALL_EXE}"
+		#	DESTINATION "${DIR_INSTALL_EXE_DEBUG}"
 		#	COMPONENT "debug"
 		#	)
 		INSTALL(FILES "${DEBUG_FILENAME}"
-			DESTINATION "lib/debug/${DIR_INSTALL_EXE}"
+			DESTINATION "${DIR_INSTALL_EXE_DEBUG}"
 			RENAME "rp-thumbnail.debug"
 			COMPONENT "debug"
 			)
 		INSTALL(FILES "${DEBUG_FILENAME}"
-			DESTINATION "lib/debug/${DIR_INSTALL_EXE}"
+			DESTINATION "${DIR_INSTALL_EXE_DEBUG}"
 			RENAME "rp-config.debug"
 			COMPONENT "debug"
 			)
