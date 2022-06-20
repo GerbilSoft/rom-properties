@@ -11,6 +11,13 @@
 #include "config.version.h"
 #include "git.h"
 
+// AboutTabText isn't used by libromdata directly,
+// so use some linker hax to force linkage.
+extern "C" {
+	extern uint8_t RP_LibRpBase_AboutTabText_ForceLinkage;
+	uint8_t RP_LibRpBase_AboutTabText_ForceLinkage;
+}
+
 namespace LibRpBase { namespace AboutTabText {
 
 // Program version string.

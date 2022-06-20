@@ -35,6 +35,13 @@ using std::vector;
 #include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
 
+// TextOut_text isn't used by libromdata directly,
+// so use some linker hax to force linkage.
+extern "C" {
+	extern uint8_t RP_LibRpBase_TextOut_text_ForceLinkage;
+	uint8_t RP_LibRpBase_TextOut_text_ForceLinkage;
+}
+
 namespace LibRpBase {
 
 class StreamStateSaver {

@@ -33,6 +33,13 @@ using LibRpTexture::rp_image;
 #include "rapidjson/prettywriter.h"
 using namespace rapidjson;
 
+// TextOut_json isn't used by libromdata directly,
+// so use some linker hax to force linkage.
+extern "C" {
+	extern uint8_t RP_LibRpBase_TextOut_json_ForceLinkage;
+	uint8_t RP_LibRpBase_TextOut_json_ForceLinkage;
+}
+
 namespace LibRpBase {
 
 template<typename Allocator>

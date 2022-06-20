@@ -19,6 +19,13 @@ namespace Gdiplus {
 #include <olectl.h>
 #include <gdiplus.h>
 
+// GdiplusHelper isn't used by libromdata directly,
+// so use some linker hax to force linkage.
+extern "C" {
+	extern uint8_t RP_LibRpTexture_GdiplusHelper_ForceLinkage;
+	uint8_t RP_LibRpTexture_GdiplusHelper_ForceLinkage;
+}
+
 namespace GdiplusHelper {
 
 /**

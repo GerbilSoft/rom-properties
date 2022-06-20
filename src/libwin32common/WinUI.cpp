@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * WinUI.hpp: Windows UI common functions.                                 *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -30,6 +30,13 @@ using std::vector;
 // COM smart pointer typedefs.
 _COM_SMARTPTR_TYPEDEF(IFileDialog, IID_IFileDialog);
 _COM_SMARTPTR_TYPEDEF(IShellItem, IID_IShellItem);
+
+// WinUI isn't used by libromdata directly,
+// so use some linker hax to force linkage.
+extern "C" {
+	extern uint8_t RP_LibWin32Common_WinUI_ForceLinkage;
+	uint8_t RP_LibWin32Common_WinUI_ForceLinkage;
+}
 
 namespace LibWin32Common {
 

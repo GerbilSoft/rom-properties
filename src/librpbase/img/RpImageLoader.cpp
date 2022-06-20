@@ -22,6 +22,13 @@ using LibRpTexture::rp_image;
 #  include "RpJpeg.hpp"
 #endif /* HAVE_JPEG */
 
+// RpImageLoader isn't used by libromdata directly,
+// so use some linker hax to force linkage.
+extern "C" {
+	extern uint8_t RP_LibRpBase_RpImageLoader_ForceLinkage;
+	uint8_t RP_LibRpBase_RpImageLoader_ForceLinkage;
+}
+
 namespace LibRpBase { namespace RpImageLoader {
 
 // Magic numbers

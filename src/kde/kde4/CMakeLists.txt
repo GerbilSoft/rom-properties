@@ -113,14 +113,6 @@ IF(BUILD_KDE4)
 	IF(HAVE_QtDBus_NOTIFY)
 		TARGET_LINK_LIBRARIES(rom-properties-kde4 PUBLIC Qt4::QtDBus)
 	ENDIF(HAVE_QtDBus_NOTIFY)
-
-	# Add zlib and png directories for the About tab.
-	IF(HAVE_ZLIB)
-		TARGET_INCLUDE_DIRECTORIES(rom-properties-kde4 PRIVATE ${ZLIB_INCLUDE_DIRS})
-	ENDIF(HAVE_ZLIB)
-	IF(HAVE_PNG)
-		TARGET_INCLUDE_DIRECTORIES(rom-properties-kde4 PRIVATE ${PNG_INCLUDE_DIRS})
-	ENDIF(HAVE_PNG)
 ENDIF(BUILD_KDE4)
 
 #######################

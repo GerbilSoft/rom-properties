@@ -10,7 +10,7 @@
 #define __ROMPROPERTIES_LIBRPFILE_WIN32_RPFILE_WINDRES_HPP__
 
 #ifndef _WIN32
-#error RpFile_Resource.hpp is Windows only.
+#  error RpFile_Resource.hpp is Windows only.
 #endif
 
 #include "../MemFile.hpp"
