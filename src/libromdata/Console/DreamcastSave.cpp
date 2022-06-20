@@ -1088,7 +1088,6 @@ const char *DreamcastSave::systemName(unsigned int type) const
  * Get a bitfield of image types this class can retrieve.
  * @return Bitfield of supported image types. (ImageTypesBF)
  */
-RP_LIBROMDATA_PUBLIC
 uint32_t DreamcastSave::supportedImageTypes_static(void)
 {
 	return IMGBF_INT_ICON | IMGBF_INT_BANNER;

@@ -58,6 +58,7 @@ class rp_image : public RefBase
 		 * @param height Image height.
 		 * @param format Image format.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		rp_image(int width, int height, Format format);
 
 		/**
@@ -166,6 +167,7 @@ class rp_image : public RefBase
 		 * Is this rp_image square?
 		 * @return True if width == height; false if not.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		bool isSquare(void) const;
 
 		/**
@@ -203,6 +205,7 @@ class rp_image : public RefBase
 		 * TODO: detach()
 		 * @return Image data.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		void *bits(void);
 
 		/**
@@ -254,6 +257,7 @@ class rp_image : public RefBase
 		 * color instead of alpha transparency.
 		 * @return Transparent color index, or -1 if ARGB32 is used or the palette has alpha transparent colors.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int tr_idx(void) const;
 
 		/**
@@ -329,6 +333,7 @@ class rp_image : public RefBase
 		 *
 		 * @return New rp_image with a squared version of the original, or nullptr on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		rp_image *squared(void) const;
 
 		/**
@@ -380,6 +385,7 @@ class rp_image : public RefBase
 		 * @param bgColor Background color for empty space. (default is ARGB 0x00000000)
 		 * @return New rp_image with a resized version of the original, or nullptr on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		rp_image *resized(int width, int height,
 			Alignment alignment = AlignDefault,
 			uint32_t bgColor = 0x00000000) const;
@@ -392,6 +398,7 @@ class rp_image : public RefBase
 		 *
 		 * @return 0 on success; non-zero on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int un_premultiply_cpp(void);
 
 #ifdef RP_IMAGE_HAS_SSE41
@@ -403,6 +410,7 @@ class rp_image : public RefBase
 		 *
 		 * @return 0 on success; non-zero on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int un_premultiply_sse41(void);
 #endif /* RP_IMAGE_HAS_SSE41 */
 
@@ -492,6 +500,7 @@ class rp_image : public RefBase
 		 * @param op Flip operation.
 		 * @return Flipped image, or nullptr on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		rp_image *flip(FlipOp op) const;
 
 		/**

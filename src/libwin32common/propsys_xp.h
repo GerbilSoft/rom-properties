@@ -11,6 +11,7 @@
 
 #include "RpWin32_sdk.h"
 #include <propvarutil.h>
+#include "common.h"	// for RP_LIBROMDATA_PUBLIC
 
 // C includes.
 #include <assert.h>
@@ -49,6 +50,7 @@ static inline HRESULT InitPropVariantFromFileTime_xp(_In_ const FILETIME *pftIn,
  * @param pPropVar	[out] PROPVARIANT
  * @return HRESULT
  */
+RP_LIBROMDATA_PUBLIC
 HRESULT InitPropVariantFromStringVector_xp(_In_ PCWSTR *prgsz, ULONG cElems, PROPVARIANT *pPropVar);
 
 /**

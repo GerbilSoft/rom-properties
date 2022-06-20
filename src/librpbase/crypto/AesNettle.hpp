@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * AesNettle.hpp: AES decryption class using GNU Nettle.                   *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,7 +17,9 @@ class AesNettlePrivate;
 class AesNettle : public IAesCipher
 {
 	public:
+		RP_LIBROMDATA_PUBLIC
 		AesNettle();
+
 		virtual ~AesNettle();
 
 	private:

@@ -22,12 +22,14 @@ namespace GdiplusHelper {
  * Initialize GDI+.
  * @return GDI+ token, or 0 on failure.
  */
+RP_LIBROMDATA_PUBLIC
 ULONG_PTR InitGDIPlus(void);
 
 /**
  * Shut down GDI+.
  * @param gdipToken GDI+ token.
  */
+RP_LIBROMDATA_PUBLIC
 void ShutdownGDIPlus(ULONG_PTR gdipToken);
 
 }

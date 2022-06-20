@@ -2,12 +2,14 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * RegKey.hpp: Registry key wrapper.                                       *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBWIN32COMMON_REGKEY_HPP__
 #define __ROMPROPERTIES_LIBWIN32COMMON_REGKEY_HPP__
+
+#include "common.h"
 
 // C++ includes.
 #include <string>
@@ -18,7 +20,7 @@
 
 namespace LibWin32Common {
 
-class RegKey
+class RP_LIBROMDATA_PUBLIC RegKey
 {
 	public:
 		/**

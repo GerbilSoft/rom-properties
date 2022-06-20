@@ -44,6 +44,7 @@ static inline size_t u16_strlen(const char16_t *wcs)
 	return wcslen(reinterpret_cast<const wchar_t*>(wcs));
 }
 #else /* !RP_WIS16 */
+RP_LIBROMDATA_PUBLIC
 size_t u16_strlen(const char16_t *wcs);
 #endif /* RP_WIS16 */
 
@@ -75,6 +76,7 @@ static inline char16_t *u16_strdup(const char16_t *wcs)
 		wcsdup(reinterpret_cast<const wchar_t*>(wcs)));
 }
 #else /* !RP_WIS16 */
+RP_LIBROMDATA_PUBLIC
 char16_t *u16_strdup(const char16_t *wcs);
 #endif /* RP_WIS16 */
 
@@ -91,6 +93,7 @@ static inline int u16_strcmp(const char16_t *wcs1, const char16_t *wcs2)
 	              reinterpret_cast<const wchar_t*>(wcs2));
 }
 #else /* !RP_WIS16 */
+RP_LIBROMDATA_PUBLIC
 int u16_strcmp(const char16_t *wcs1, const char16_t *wcs2);
 #endif /* RP_WIS16 */
 
@@ -127,6 +130,7 @@ static inline int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2)
 	                  reinterpret_cast<const wchar_t*>(wcs2));
 }
 #else /* !RP_WIS16 */
+RP_LIBROMDATA_PUBLIC
 int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2);
 #endif /* RP_WIS16 */
 
@@ -227,6 +231,7 @@ std::u16string cpN_to_utf16(unsigned int cp, const char *str, int len, unsigned 
  * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
  * @return 8-bit text.
  */
+RP_LIBROMDATA_PUBLIC
 std::string utf8_to_cpN(unsigned int cp, const char *str, int len);
 
 /**
@@ -241,6 +246,7 @@ std::string utf8_to_cpN(unsigned int cp, const char *str, int len);
  * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
  * @return 8-bit text.
  */
+RP_LIBROMDATA_PUBLIC
 std::string utf16_to_cpN(unsigned int cp, const char16_t *wcs, int len);
 
 /** Inline wrappers for text conversion functions **/
@@ -501,6 +507,7 @@ static inline std::u16string utf8_to_utf16(const std::string &str)
  * @param len	[in] Length of wcs, in characters. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
+RP_LIBROMDATA_PUBLIC
 std::string utf16le_to_utf8(const char16_t *wcs, int len);
 
 /**
@@ -510,6 +517,7 @@ std::string utf16le_to_utf8(const char16_t *wcs, int len);
  * @param len	[in] Length of wcs, in characters. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
+RP_LIBROMDATA_PUBLIC
 std::string utf16be_to_utf8(const char16_t *wcs, int len);
 
 /**
@@ -536,6 +544,7 @@ static inline std::string utf16_to_utf8(const char16_t *wcs, int len)
  * @param len Length of wcs, in characters. (-1 for NULL-terminated string)
  * @return Byteswapped UTF-16 string.
  */
+RP_LIBROMDATA_PUBLIC
 std::u16string utf16_bswap(const char16_t *wcs, int len);
 
 /**
@@ -592,6 +601,7 @@ static inline std::u16string utf16be_to_utf16(const char16_t *wcs, int len)
  * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
+RP_LIBROMDATA_PUBLIC
 std::string atariST_to_utf8(const char *str, int len);
 
 /**
@@ -601,6 +611,7 @@ std::string atariST_to_utf8(const char *str, int len);
  * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
+RP_LIBROMDATA_PUBLIC
 std::string atascii_to_utf8(const char *str, int len);
 
 /**

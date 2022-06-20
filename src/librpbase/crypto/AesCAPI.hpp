@@ -17,7 +17,9 @@ class AesCAPIPrivate;
 class AesCAPI : public IAesCipher
 {
 	public:
+		RP_LIBROMDATA_PUBLIC
 		AesCAPI();
+
 		virtual ~AesCAPI();
 
 	private:

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * RpGdiplusBackend.hpp: rp_image_backend using GDI+.                      *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -75,6 +75,7 @@ class RpGdiplusBackend : public rp_image_backend
 		/**
 		 * Creator function for rp_image::setBackendCreatorFn().
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static rp_image_backend *creator_fn(int width, int height, rp_image::Format format);
 
 		// Image data.
@@ -144,6 +145,7 @@ class RpGdiplusBackend : public rp_image_backend
 		 * @param bgColor	[in] Background color for images with alpha transparency. (ARGB32 format)
 		 * @return HBITMAP, or nullptr on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		HBITMAP toHBITMAP(Gdiplus::ARGB bgColor);
 
 		/**
@@ -161,6 +163,7 @@ class RpGdiplusBackend : public rp_image_backend
 		 * @param nearest	[in] If true, use nearest-neighbor scaling.
 		 * @return HBITMAP, or nullptr on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		HBITMAP toHBITMAP(uint32_t bgColor, const SIZE &size, bool nearest);
 
 		/**
@@ -174,6 +177,7 @@ class RpGdiplusBackend : public rp_image_backend
 		 *
 		 * @return HBITMAP, or nullptr on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		HBITMAP toHBITMAP_alpha();
 
 		/**
@@ -189,6 +193,7 @@ class RpGdiplusBackend : public rp_image_backend
 		 * @param nearest	[in] If true, use nearest-neighbor scaling.
 		 * @return HBITMAP, or nullptr on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		HBITMAP toHBITMAP_alpha(const SIZE &size, bool nearest);
 
 	protected:

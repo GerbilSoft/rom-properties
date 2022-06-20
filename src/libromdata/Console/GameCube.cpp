@@ -1345,7 +1345,6 @@ const char *GameCube::systemName(unsigned int type) const
  * Get a bitfield of image types this class can retrieve.
  * @return Bitfield of supported image types. (ImageTypesBF)
  */
-RP_LIBROMDATA_PUBLIC
 uint32_t GameCube::supportedImageTypes_static(void)
 {
 	return IMGBF_INT_BANNER | IMGBF_EXT_MEDIA |

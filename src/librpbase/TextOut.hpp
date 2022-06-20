@@ -37,6 +37,7 @@ public:
 	RP_LIBROMDATA_PUBLIC
 	explicit ROMOutput(const RomData *romdata, uint32_t lc = 0, bool skipInternalImages = false);
 
+	RP_LIBROMDATA_PUBLIC
 	friend std::ostream& operator<<(std::ostream& os, const ROMOutput& fo);
 };
 
@@ -49,6 +50,7 @@ public:
 	RP_LIBROMDATA_PUBLIC
 	explicit JSONROMOutput(const RomData *romdata, uint32_t lc = 0, bool skipInternalImages = false);
 
+	RP_LIBROMDATA_PUBLIC
 	friend std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo);
 
 	inline bool crlf(void) const {

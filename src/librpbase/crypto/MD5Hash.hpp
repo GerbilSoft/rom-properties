@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * MD5Hash.hpp: MD5 hash class.                                            *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -37,6 +37,7 @@ class MD5Hash
 		 */
 		ATTR_ACCESS_SIZE(read_write, 1, 2)
 		ATTR_ACCESS_SIZE(read_only, 3, 4)
+		RP_LIBROMDATA_PUBLIC
 		static int calcHash(uint8_t *pHash, size_t hash_len, const void *pData, size_t len);
 };
 

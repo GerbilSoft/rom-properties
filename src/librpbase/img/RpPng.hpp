@@ -29,6 +29,7 @@ namespace RpPng {
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */
+RP_LIBROMDATA_PUBLIC
 LibRpTexture::rp_image *load(LibRpFile::IRpFile *file);
 
 /**

@@ -14,7 +14,7 @@
 namespace LibRpBase {
 
 class ConfReaderPrivate;
-class ConfReader
+class RP_LIBROMDATA_PUBLIC ConfReader
 {
 	protected:
 		/**
@@ -65,7 +65,6 @@ class ConfReader
 		 *
 		 * @return Configuration filename, or nullptr on error.
 		 */
-		RP_LIBROMDATA_PUBLIC
 		const char *filename(void) const;
 };
 

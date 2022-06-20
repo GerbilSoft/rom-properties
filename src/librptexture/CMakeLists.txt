@@ -194,76 +194,115 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.lib${PROJECT_NAME}.h.in" "${C
 # Build the library. #
 ######################
 
-ADD_LIBRARY(${PROJECT_NAME} STATIC
-	${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
-	${${PROJECT_NAME}_OS_SRCS} ${${PROJECT_NAME}_OS_H}
-	${${PROJECT_NAME}_IFUNC_SRCS}
-	${${PROJECT_NAME}_MMX_SRCS}
-	${${PROJECT_NAME}_SSE2_SRCS}
-	${${PROJECT_NAME}_SSSE3_SRCS}
-	${${PROJECT_NAME}_SSE41_SRCS}
-	)
-IF(ENABLE_PCH)
-	TARGET_PRECOMPILE_HEADERS(${PROJECT_NAME} PRIVATE
-		"${RP_CONFIG_LIBC_H}" "${RP_CXX11_COMPAT_H}"
-		stdafx.h
+# NOTE: ${PROJECT_NAME} is the original target.
+# ${PROJECT_NAME}-dll is the target with dllimport/dllexport for libromdata.
+IF(RP_LIBROMDATA_IS_DLL AND WIN32)
+	# On Win32, the dll target needs dllimport/dllexport.
+	SET(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}-dll)
+ELSE()
+	# On other platforms, the dll target will be an alias to the regular target.
+	# That will be set up later, since the regular target doesn't exist yet.
+	SET(TARGETS ${PROJECT_NAME})
+ENDIF()
+
+FOREACH(_target ${TARGETS})
+	# NOTE: OBJECT library is used to ensure that GdiplusHelper is linked in
+	# when building libromdata as a shared library.
+	# References:
+	# - https://gitlab.kitware.com/cmake/cmake/-/issues/16947
+	# - https://cmake.org/cmake/help/v3.9/manual/cmake-buildsystem.7.html#object-libraries
+	ADD_LIBRARY(${_target} OBJECT
+		${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
+		${${PROJECT_NAME}_OS_SRCS} ${${PROJECT_NAME}_OS_H}
+		${${PROJECT_NAME}_IFUNC_SRCS}
+		${${PROJECT_NAME}_MMX_SRCS}
+		${${PROJECT_NAME}_SSE2_SRCS}
+		${${PROJECT_NAME}_SSSE3_SRCS}
+		${${PROJECT_NAME}_SSE41_SRCS}
 		)
-ENDIF(ENABLE_PCH)
-INCLUDE(SetMSVCDebugPath)
-SET_MSVC_DEBUG_PATH(${PROJECT_NAME})
+	IF(ENABLE_PCH)
+		TARGET_PRECOMPILE_HEADERS(${_target} PRIVATE
+			"${RP_CONFIG_LIBC_H}" "${RP_CXX11_COMPAT_H}"
+			stdafx.h
+			)
+	ENDIF(ENABLE_PCH)
+	INCLUDE(SetMSVCDebugPath)
+	SET_MSVC_DEBUG_PATH(${_target})
+	# Exclude from ALL builds.
+	SET_TARGET_PROPERTIES(${_target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
-# TODO: More public/private library stuff.
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC rpcpu rpfile)
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpthreads)
+	# DLL targets need the appropriate macros.
+	IF(${_target} MATCHES "-dll$")
+		SET(_target_suffix "-dll")
+		TARGET_COMPILE_DEFINITIONS(${_target}
+			PUBLIC		RP_BUILDING_FOR_DLL=1
+			PRIVATE		RP_BUILDING_LIBROMDATA=1
+			)
+	ELSE()
+		UNSET(_target_suffix)
+	ENDIF()
 
-# Include paths:
-# - Public: Current source and binary directories.
-# - Private: Parent source and binary directories,
-#            and top-level binary directory for git_version.h.
-TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
-	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# librptexture
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# librptexture
-	PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# src
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# src
-		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# build
-	)
-IF(ENABLE_NLS)
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE i18n)
-ENDIF(ENABLE_NLS)
-IF(MSVC)
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE delayimp)
-ENDIF(MSVC)
-IF(OpenMP_FOUND)
-	TARGET_COMPILE_OPTIONS(${PROJECT_NAME} PUBLIC ${OpenMP_CXX_FLAGS})
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${OpenMP_CXX_LIB_NAMES})
-ENDIF(OpenMP_FOUND)
-# Exclude from ALL builds.
-SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+	# TODO: More public/private library stuff.
+	TARGET_LINK_LIBRARIES(${_target} PUBLIC rpcpu${_target_suffix} rpfile${_target_suffix})
+	TARGET_LINK_LIBRARIES(${_target} PRIVATE rpthreads${_target_suffix})
 
-# zlib
-IF(NOT ZLIB_LIBRARY)
-	MESSAGE(FATAL_ERROR "ZLIB_LIBRARY has not been set by CheckZLIB.cmake.")
-ENDIF(NOT ZLIB_LIBRARY)
-TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PRIVATE ${ZLIB_INCLUDE_DIRS})
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${ZLIB_LIBRARY})
+	# Include paths:
+	# - Public: Current source and binary directories.
+	# - Private: Parent source and binary directories,
+	#            and top-level binary directory for git_version.h.
+	TARGET_INCLUDE_DIRECTORIES(${_target}
+		PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# librptexture
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# librptexture
+		PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# src
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# src
+			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# build
+		)
+	IF(ENABLE_NLS)
+		TARGET_LINK_LIBRARIES(${_target} PRIVATE i18n${_target_suffix})
+	ENDIF(ENABLE_NLS)
+	IF(MSVC)
+		TARGET_LINK_LIBRARIES(${_target} PRIVATE delayimp)
+	ENDIF(MSVC)
+	IF(OpenMP_FOUND)
+		TARGET_COMPILE_OPTIONS(${_target} PUBLIC ${OpenMP_CXX_FLAGS})
+		TARGET_LINK_LIBRARIES(${_target} PUBLIC ${OpenMP_CXX_LIB_NAMES})
+	ENDIF(OpenMP_FOUND)
 
-# PowerVR Native SDK
-IF(ENABLE_PVRTC)
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE pvrtc)
-ENDIF(ENABLE_PVRTC)
+	# zlib
+	IF(ZLIB_FOUND)
+		# NOTE: ZLIB must be PUBLIC in order for the Win32 UI frontend
+		# to link properly.
+		TARGET_LINK_LIBRARIES(${_target} PUBLIC ${ZLIB_LIBRARIES})
+		TARGET_INCLUDE_DIRECTORIES(${_target} PUBLIC ${ZLIB_INCLUDE_DIRS})
+		TARGET_COMPILE_DEFINITIONS(${_target} PUBLIC ${ZLIB_DEFINITIONS})
+	ELSE(ZLIB_FOUND)
+		MESSAGE(FATAL_ERROR "ZLIB_LIBRARIES has not been set by CheckZLIB.cmake.")
+	ENDIF(ZLIB_FOUND)
 
-# ASTC decoder from Basis Universal
-IF(ENABLE_ASTC)
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE basisu_astc)
-ENDIF(ENABLE_ASTC)
+	# PowerVR Native SDK
+	IF(ENABLE_PVRTC)
+		TARGET_LINK_LIBRARIES(${_target} PRIVATE pvrtc)
+	ENDIF(ENABLE_PVRTC)
 
-# Other libraries.
-IF(WIN32)
-	# libwin32common
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE win32common)
-	# Windows system libraries
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE gdiplus)
-ENDIF(WIN32)
+	# ASTC decoder from Basis Universal
+	IF(ENABLE_ASTC)
+		TARGET_LINK_LIBRARIES(${_target} PRIVATE basisu_astc)
+	ENDIF(ENABLE_ASTC)
+
+	# Other libraries.
+	IF(WIN32)
+		# libwin32common
+		TARGET_LINK_LIBRARIES(${_target} PRIVATE win32common${_target_suffix})
+		# Windows system libraries
+		TARGET_LINK_LIBRARIES(${_target} PRIVATE gdiplus)
+	ENDIF(WIN32)
+ENDFOREACH(_target)
+UNSET(_target_suffix)
+
+IF(NOT TARGET ${PROJECT_NAME}-dll)
+	# On other platforms, the dll target will be an alias to the regular target.
+	ADD_LIBRARY(${PROJECT_NAME}-dll ALIAS ${PROJECT_NAME})
+ENDIF()
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
 IF(UNIX AND NOT APPLE)

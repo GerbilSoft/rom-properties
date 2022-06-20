@@ -26,7 +26,10 @@ ADD_LIBRARY(rptest STATIC gtest_init.cpp)
 TARGET_LINK_LIBRARIES(rptest PUBLIC rpsecure)
 IF(WIN32)
 	# rptexture is only used for GDI+ rp_image backend registration on Windows.
-	TARGET_LINK_LIBRARIES(rptest PRIVATE rptexture)
+	# Since it's part of libromdata when linked as a shared library, we'll
+	# need to link in romdata instead of rptexture.
+	TARGET_LINK_LIBRARIES(rptest PRIVATE romdata)
+	TARGET_COMPILE_DEFINITIONS(rptest PRIVATE RP_BUILDING_FOR_DLL=1)
 ENDIF(WIN32)
 INCLUDE(SetMSVCDebugPath)
 SET_MSVC_DEBUG_PATH(rptest)
@@ -36,8 +39,9 @@ ADD_EXECUTABLE(RpImageLoaderTest
 	img/RpImageLoaderTest.cpp
 	img/RpPngFormatTest.cpp
 	)
-TARGET_LINK_LIBRARIES(RpImageLoaderTest PRIVATE rptest rpcpu rpbase)
-TARGET_LINK_LIBRARIES(RpImageLoaderTest PRIVATE gtest ${ZLIB_LIBRARY})
+TARGET_LINK_LIBRARIES(RpImageLoaderTest PRIVATE rptest romdata)
+TARGET_COMPILE_DEFINITIONS(RpImageLoaderTest PRIVATE RP_BUILDING_FOR_DLL=1)
+TARGET_LINK_LIBRARIES(RpImageLoaderTest PRIVATE gtest ${ZLIB_LIBRARIES})
 TARGET_INCLUDE_DIRECTORIES(RpImageLoaderTest PRIVATE ${ZLIB_INCLUDE_DIRS})
 TARGET_COMPILE_DEFINITIONS(RpImageLoaderTest PRIVATE ${ZLIB_DEFINITIONS})
 IF(PNG_LIBRARY)
@@ -75,7 +79,8 @@ ENDFOREACH(test_image ${RpImageLoaderTest_images})
 IF(ENABLE_DECRYPTION)
 	# Crypto tests
 	ADD_EXECUTABLE(CryptoTests AesCipherTest.cpp MD5HashTest.cpp)
-	TARGET_LINK_LIBRARIES(CryptoTests PRIVATE rptest rpbase)
+	TARGET_LINK_LIBRARIES(CryptoTests PRIVATE rptest romdata)
+	TARGET_COMPILE_DEFINITIONS(CryptoTests PRIVATE RP_BUILDING_FOR_DLL=1)
 	TARGET_LINK_LIBRARIES(CryptoTests PRIVATE gtest)
 	IF(WIN32)
 		TARGET_LINK_LIBRARIES(CryptoTests PRIVATE advapi32)
@@ -95,7 +100,7 @@ ADD_EXECUTABLE(TextFuncsTest
 	TextFuncsTest.cpp
 	TextFuncsTest_data.hpp
 	)
-TARGET_LINK_LIBRARIES(TextFuncsTest PRIVATE rptest rpcpu rpbase)
+TARGET_LINK_LIBRARIES(TextFuncsTest PRIVATE rptest romdata)
 TARGET_LINK_LIBRARIES(TextFuncsTest PRIVATE gtest)
 DO_SPLIT_DEBUG(TextFuncsTest)
 SET_WINDOWS_SUBSYSTEM(TextFuncsTest CONSOLE)
@@ -104,7 +109,8 @@ ADD_TEST(NAME TextFuncsTest COMMAND TextFuncsTest)
 
 # TimegmTest
 ADD_EXECUTABLE(TimegmTest TimegmTest.cpp)
-TARGET_LINK_LIBRARIES(TimegmTest PRIVATE rptest rpbase)
+TARGET_LINK_LIBRARIES(TimegmTest PRIVATE rptest romdata)
+TARGET_COMPILE_DEFINITIONS(TimegmTest PRIVATE RP_BUILDING_FOR_DLL=1)
 TARGET_LINK_LIBRARIES(TimegmTest PRIVATE gtest)
 DO_SPLIT_DEBUG(TimegmTest)
 SET_WINDOWS_SUBSYSTEM(TimegmTest CONSOLE)
