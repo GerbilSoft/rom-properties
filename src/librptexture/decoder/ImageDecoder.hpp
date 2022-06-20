@@ -281,6 +281,7 @@ static inline rp_image *fromLinear16(PixelFormat px_format,
  * @return rp_image, or nullptr on error.
  */
 ATTR_ACCESS_SIZE(read_only, 4, 5)
+RP_LIBROMDATA_PUBLIC
 IFUNC_SSE2_STATIC_INLINE rp_image *fromLinear16(PixelFormat px_format,
 	int width, int height,
 	const uint16_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
