@@ -10,6 +10,7 @@
 #define __ROMPROPERTIES_LIBROMDATA_DISC_GCNFST_HPP__
 
 #include "librpbase/disc/IFst.hpp"
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 namespace LibRomData {
 

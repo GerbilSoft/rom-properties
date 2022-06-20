@@ -10,6 +10,7 @@
 #define __ROMPROPERTIES_LIBRPBASE_IMG_RPPNGWRITER_HPP__
 
 #include "common.h"
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 #include "librptexture/img/rp_image.hpp"
 
 // C++ includes.

@@ -11,7 +11,7 @@
 
 #include "RpWin32_sdk.h"
 #include <propvarutil.h>
-#include "common.h"	// for RP_LIBROMDATA_PUBLIC
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 // C includes.
 #include <assert.h>

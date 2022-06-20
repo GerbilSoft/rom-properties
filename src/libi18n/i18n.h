@@ -10,7 +10,7 @@
 #define __ROMPROPERTIES_LIBI18N_H__
 
 #include "libi18n/config.libi18n.h"
-#include "common.h"
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 #define RP_I18N_DOMAIN "rom-properties"
 #define DEFAULT_TEXT_DOMAIN RP_I18N_DOMAIN

@@ -10,7 +10,7 @@
 #define __ROMPROPERTIES_LIBWIN32COMMON_HIDPI_H__
 
 #include "RpWin32_sdk.h"
-#include "common.h"	// for RP_LIBROMDATA_PUBLIC
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 #ifdef __cplusplus
 extern "C" {

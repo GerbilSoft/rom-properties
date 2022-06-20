@@ -20,7 +20,7 @@
 // QISearch()
 #include "sdk/QITab.h"
 
-#include "common.h"	// for RP_LIBROMDATA_PUBLIC
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 namespace LibWin32Common {
 

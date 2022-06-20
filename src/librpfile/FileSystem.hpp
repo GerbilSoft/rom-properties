@@ -10,7 +10,7 @@
 #define __ROMPROPERTIES_LIBRPFILE_FILESYSTEM_HPP__
 
 #include <stdint.h>
-#include "common.h"
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 // access() macros.
 #ifdef _WIN32

@@ -11,7 +11,7 @@
 
 // NOTE: All functions return 8-bit strings.
 // This is usually encoded as UTF-8.
-#include "common.h"
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 // C++ includes.
 #include <string>

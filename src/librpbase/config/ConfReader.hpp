@@ -10,6 +10,7 @@
 #define __ROMPROPERTIES_LIBRPBASE_CONFIG_CONFREADER_HPP__
 
 #include "common.h"
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 namespace LibRpBase {
 

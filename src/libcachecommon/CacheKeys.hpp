@@ -9,7 +9,7 @@
 #ifndef __ROMPROPERTIES_LIBCACHECOMMON_CACHEKEYS_HPP__
 #define __ROMPROPERTIES_LIBCACHECOMMON_CACHEKEYS_HPP__
 
-#include "common.h"
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 // C++ includes.
 #include <string>

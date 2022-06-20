@@ -11,6 +11,7 @@
 
 #include <stdint.h>
 #include "common.h"
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 #ifdef __cplusplus
 extern "C" {

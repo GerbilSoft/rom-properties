@@ -19,7 +19,7 @@
 #include "byteorder.h"
 #include "cpu_dispatch.h"
 
-#include "common.h"	// for RP_LIBROMDATA_PUBLIC
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
 #  include "cpuflags_x86.h"

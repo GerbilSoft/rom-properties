@@ -13,8 +13,8 @@
 // Conversions to UTF-16 always use host-endian.
 #include "librpcpu/byteorder.h"
 
-// Common definitions, including function attributes.
 #include "common.h"
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 // C includes.
 #include <stddef.h>	/* size_t */

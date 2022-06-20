@@ -10,6 +10,7 @@
 #define __ROMPROPERTIES_LIBRPBASE_CRYPTO_AESCAPI_NG_HPP__
 
 #include "IAesCipher.hpp"
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 namespace LibRpBase {
 

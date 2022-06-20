@@ -13,7 +13,7 @@
 #include <string>
 
 #include "RpWin32_sdk.h"
-#include "common.h"	// for RP_LIBROMDATA_PUBLIC
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 namespace LibWin32Common {
 
