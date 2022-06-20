@@ -25,7 +25,6 @@ typedef enum WTS_ALPHATYPE {
 	WTSAT_ARGB	= 2
 } WTS_ALPHATYPE;
 
-EXTERN_C
 static const IID IID_IThumbnailProvider =
 	{0xe357fccd, 0xa995, 0x4576, {0xb0, 0x1f, 0x23, 0x46, 0x30, 0x15, 0x4e, 0x96}};
 
