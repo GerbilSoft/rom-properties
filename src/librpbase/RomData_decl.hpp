@@ -27,13 +27,11 @@ namespace LibRpBase {
  * Initial declaration for a RomData subclass.
  * Declares functions common to all RomData subclasses.
  * @param klass Class name
- * @param VISIBILITY_SPEC RP_LIBROMDATA_PUBLIC for dllexport; otherwise, RP_LIBROMDATA_LOCAL
  */
-#define ROMDATA_DECL_BEGIN_INT(klass, VISIBILITY_SPEC) \
+#define ROMDATA_DECL_BEGIN(klass) \
 class klass##Private; \
 class klass final : public LibRpBase::RomData { \
 	public: \
-		VISIBILITY_SPEC \
 		explicit klass(LibRpFile::IRpFile *file); \
 	protected: \
 		RP_LIBROMDATA_LOCAL \
@@ -79,21 +77,6 @@ class klass final : public LibRpBase::RomData { \
 		 */ \
 		RP_LIBROMDATA_LOCAL \
 		int loadFieldData(void) final;
-
-/**
- * Initial declaration for a RomData subclass.
- * Declares functions common to all RomData subclasses.
- * @param klass Class name
- */
-#define ROMDATA_DECL_BEGIN(klass) ROMDATA_DECL_BEGIN_INT(klass, RP_LIBROMDATA_LOCAL)
-
-/**
- * Initial declaration for a RomData subclass.
- * Declares functions common to all RomData subclasses.
- * This version dllexports functions required by other programs.
- * @param klass Class name
- */
-#define ROMDATA_DECL_BEGIN_EXPORT(klass) ROMDATA_DECL_BEGIN_INT(klass, RP_LIBROMDATA_PUBLIC)
 
 /**
  * RomData subclass function declaration for loading metadata properties.

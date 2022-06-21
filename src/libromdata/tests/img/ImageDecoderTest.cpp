@@ -33,6 +33,7 @@
 // librpbase, librpfile
 #include "common.h"
 #include "librpbase/img/RpPng.hpp"
+#include "librpbase/RomData.hpp"
 #include "librpfile/RpFile.hpp"
 #include "librpfile/MemFile.hpp"
 #include "librpfile/FileSystem.hpp"
@@ -48,17 +49,8 @@ using namespace LibRpFile;
 #endif /* _WIN32 */
 using namespace LibRpTexture;
 
-// TODO: Separate out the actual DDS texture loader
-// from the RomData subclass?
-#include "Other/RpTextureWrapper.hpp"
-
-// ROM images. Used for console-specific image formats.
-#include "Console/DreamcastSave.hpp"
-#include "Console/GameCubeSave.hpp"
-#include "Console/PlayStationSave.hpp"
-#include "Handheld/NintendoDS.hpp"
-#include "Handheld/Nintendo3DS_SMDH.hpp"
-#include "Other/NintendoBadge.hpp"
+// RomDataFactory to load test files.
+#include "RomDataFactory.hpp"
 
 // C includes.
 #include <stdint.h>
@@ -238,8 +230,7 @@ void ImageDecoderTest::SetUp(void)
 	path += mode.dds_gz_filename;
 	replace_slashes(path);
 	m_gzDds = gzopen(path.c_str(), "rb");
-	ASSERT_TRUE(m_gzDds != nullptr) << "gzopen() failed to open the DDS file: "
-		<< mode.dds_gz_filename;
+	ASSERT_TRUE(m_gzDds != nullptr) << "gzopen() failed to open the test file.";
 
 	// Get the decompressed file size.
 	// gzseek() does not support SEEK_END.
@@ -271,16 +262,14 @@ void ImageDecoderTest::SetUp(void)
 	gzclose_r(m_gzDds);
 	m_gzDds = nullptr;
 
-	ASSERT_EQ(ddsSize, (uint32_t)sz) << "Error loading DDS image file: " <<
-		mode.dds_gz_filename << " - short read";
+	ASSERT_EQ(ddsSize, (uint32_t)sz) << "Error loading test image file: short read";
 
 	// Open the PNG image file being tested.
 	path.resize(18);	// Back to "ImageDecoder_data/".
 	path += mode.png_filename;
 	replace_slashes(path);
 	unique_RefBase<RpFile> file(new RpFile(path, RpFile::FM_OPEN_READ));
-	ASSERT_TRUE(file->isOpen()) << "Error loading PNG image file: " <<
-		mode.png_filename << " - " << strerror(file->lastError());
+	ASSERT_TRUE(file->isOpen()) << "Error loading PNG image file: " << strerror(file->lastError());
 
 	// Maximum image size.
 	ASSERT_LE(file->size(), MAX_PNG_IMAGE_FILESIZE) << "PNG test image is too big.";
@@ -290,8 +279,7 @@ void ImageDecoderTest::SetUp(void)
 	m_png_buf.resize(pngSize);
 	ASSERT_EQ(pngSize, m_png_buf.size());
 	size_t readSize = file->read(m_png_buf.data(), pngSize);
-	ASSERT_EQ(pngSize, readSize) << "Error loading PNG image file: " <<
-		mode.png_filename << " - short read";
+	ASSERT_EQ(pngSize, readSize) << "Error loading PNG image file: short read";
 }
 
 /**
@@ -413,99 +401,14 @@ void ImageDecoderTest::decodeTest_internal(void)
 	m_f_dds = new MemFile(m_dds_buf.data(), m_dds_buf.size());
 	ASSERT_TRUE(m_f_dds->isOpen()) << "Could not create MemFile for the DDS image.";
 
-	// Determine the image type by checking the last 7 characters of the filename.
-	const char *filetype = nullptr;
-	ASSERT_GT(mode.dds_gz_filename.size(), 7U);
-	if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".dds.gz") ||
-	    !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".dds")) {
-		// DDS image
-		// NOTE: Using RpTextureWrapper.
-		filetype = "DDS";
-		m_romData = new RpTextureWrapper(m_f_dds);
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".pvr.gz") ||
-		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gvr.gz") ||
-		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".svr.gz")) {
-		// PVR/GVR/SVR image
-		// NOTE: Using RpTextureWrapper.
-		// NOTE: May be PowerVR3.
-		filetype = "PVR";
-		m_romData = new RpTextureWrapper(m_f_dds);
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".ktx.gz")) {
-		// Khronos KTX image
-		// TODO: Use .zktx format instead of .ktx.gz.
-		// NOTE: Using RpTextureWrapper.
-		filetype = "KTX";
-		m_romData = new RpTextureWrapper(m_f_dds);
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-8, 8, ".ktx2.gz")) {
-		// Khronos KTX2 image
-		// TODO: Use .zktx2 format instead of .ktx2.gz.
-		// NOTE: Using RpTextureWrapper.
-		filetype = "KTX2";
-		m_romData = new RpTextureWrapper(m_f_dds);
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".ps3.vtf.gz")) {
-		// Valve Texture File (PS3)
-		// NOTE: Using RpTextureWrapper.
-		filetype = "VTF3";
-		m_romData = new RpTextureWrapper(m_f_dds);
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".vtf.gz")) {
-		// Valve Texture File
-		// NOTE: Using RpTextureWrapper.
-		filetype = "VTF";
-		m_romData = new RpTextureWrapper(m_f_dds);
-	} else if (mode.dds_gz_filename.size() >= 8U &&
-		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-8, 8, ".smdh.gz"))
-	{
-		// Nintendo 3DS SMDH file
-		filetype = "SMDH";
-		m_romData = new Nintendo3DS_SMDH(m_f_dds);
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gci.gz")) {
-		// Nintendo GameCube save file
-		filetype = "GCI";
-		m_romData = new GameCubeSave(m_f_dds);
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".VMS.gz")) {
-		// Sega Dreamcast save file
-		filetype = "VMS";
-		m_romData = new DreamcastSave(m_f_dds);
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".PSV.gz")) {
-		// Sony PlayStation save file
-		filetype = "PSV";
-		m_romData = new PlayStationSave(m_f_dds);
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".nds.gz")) {
-		// Nintendo DS ROM image
-		filetype = "NDS";
-		m_romData = new NintendoDS(m_f_dds);
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".cab.gz") ||
-		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".prb.gz")) {
-		// Nintendo Badge Arcade texture
-		filetype = "NintendoBadge";
-		m_romData = new NintendoBadge(m_f_dds);
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".tex")) {
-		// Leapster Didj texture
-		// NOTE: Using RpTextureWrapper.
-		filetype = "DidjTex";
-		m_romData = new RpTextureWrapper(m_f_dds);
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".tga.gz")) {
-		// TrueVision TGA
-		// NOTE: Using RpTextureWrapper.
-		// NOTE 2: TGA detection is currently done by file extension,
-		// so we need to set the MemFile's filename.
-		filetype = "TGA";
-		m_f_dds->setFilename(mode.dds_gz_filename);
-		m_romData = new RpTextureWrapper(m_f_dds);
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-8, 8, ".stex.gz")) {
-		// Godot 3.x STEX texture
-		// NOTE: Using RpTextureWrapper.
-		filetype = "GodotSTEX";
-		m_romData = new RpTextureWrapper(m_f_dds);
-	} else {
-		ASSERT_TRUE(false) << "Unknown image type.";
-	}
-	ASSERT_TRUE(m_romData->isValid()) << "Could not load the " << filetype << " image.";
-	ASSERT_TRUE(m_romData->isOpen()) << "Could not load the " << filetype << " image.";
+	// Load the image file.
+	m_romData = RomDataFactory::create(m_f_dds);
+	ASSERT_TRUE(m_romData->isValid()) << "Could not load the test file.";
+	ASSERT_TRUE(m_romData->isOpen()) << "Could not load the test file.";
 
 	// Get the DDS image as an rp_image.
 	const rp_image *const img_dds = m_romData->image(mode.imgType);
-	ASSERT_TRUE(img_dds != nullptr) << "Could not load the " << filetype << " image as rp_image.";
+	ASSERT_TRUE(img_dds != nullptr) << "Could not load the test file as rp_image.";
 
 	// Get the image again.
 	// The pointer should be identical to the first one.
@@ -534,7 +437,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 
 	// Open the image as an IRpFile.
 	m_f_dds = new MemFile(m_dds_buf.data(), m_dds_buf.size());
-	ASSERT_TRUE(m_f_dds->isOpen()) << "Could not create MemFile for the DDS image.";
+	ASSERT_TRUE(m_f_dds->isOpen()) << "Could not create MemFile for the test image.";
 
 	// NOTE: We can't simply decode the image multiple times.
 	// We have to reopen the RomData subclass every time.
@@ -550,93 +453,45 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 		max_iterations = BENCHMARK_ITERATIONS;
 	}
 
-	// Constructor function.
-	std::function<RomData*(IRpFile*)> fn_ctor;
+	// Load the image file.
+	// TODO: RomDataFactory function to retrieve a constructor function?
+	auto fn_ctor = [](IRpFile *file) { return RomDataFactory::create(file); };
 
-	// Determine the image type by checking the last 7 characters of the filename.
+	// For certain types, increase the number of iterations.
 	ASSERT_GT(mode.dds_gz_filename.size(), 7U);
-	if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".dds.gz") ||
-	    !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".dds")) {
-		// DDS image
-		// NOTE: Using RpTextureWrapper.
-		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".pvr.gz") ||
-		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gvr.gz") ||
-		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".svr.gz")) {
-		// PVR/GVR/SVR image
-		// NOTE: Using RpTextureWrapper.
-		// NOTE: May be PowerVR3.
-		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".ktx.gz")) {
-		// Khronos KTX image
-		// TODO: Use .zktx format instead of .ktx.gz?
-		// NOTE: Using RpTextureWrapper.
-		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-8, 8, ".ktx2.gz")) {
-		// Khronos KTX image
-		// TODO: Use .zktx2 format instead of .ktx2.gz?
-		// NOTE: Using RpTextureWrapper.
-		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".ps3.vtf.gz")) {
-		// Valve Texture File (PS3)
-		// NOTE: Using RpTextureWrapper.
-		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".vtf.gz")) {
-		// Valve Texture File
-		// NOTE: Using RpTextureWrapper.
-		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
-	} else if (mode.dds_gz_filename.size() >= 8U &&
-		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-8, 8, ".smdh.gz"))
+	if (mode.dds_gz_filename.size() >= 8U &&
+	    !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-8, 8, ".smdh.gz"))
 	{
 		// Nintendo 3DS SMDH file
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
-		fn_ctor = [](IRpFile *file) { return new Nintendo3DS_SMDH(file); };
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gci.gz")) {
 		// Nintendo GameCube save file
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
-		fn_ctor = [](IRpFile *file) { return new GameCubeSave(file); };
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".VMS.gz")) {
 		// Sega Dreamcast save file
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
-		fn_ctor = [](IRpFile *file) { return new DreamcastSave(file); };
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".PSV.gz")) {
 		// Sony PlayStation save file
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
-		fn_ctor = [](IRpFile *file) { return new PlayStationSave(file); };
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".nds.gz")) {
 		// Nintendo DS ROM image
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
-		fn_ctor = [](IRpFile *file) { return new NintendoDS(file); };
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".cab.gz") ||
 		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".prb.gz")) {
 		// Nintendo Badge Arcade texture
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
-		fn_ctor = [](IRpFile *file) { return new NintendoBadge(file); };
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".tex")) {
 		// Leapster Didj texture
 		// NOTE: Increased iterations due to smaller files.
 		// NOTE: Using RpTextureWrapper.
 		max_iterations *= 10;
-		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".tga.gz")) {
-		// TrueVision TGA
-		// NOTE: Using RpTextureWrapper.
-		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-8, 8, ".stex.gz")) {
-		// Godot 3.x STEX
-		// NOTE: Using RpTextureWrapper.
-		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
-	} else {
-		ASSERT_TRUE(false) << "Unknown image type.";
 	}
-
-	ASSERT_TRUE(fn_ctor) << "Unable to get a constructor function.";
 
 	for (unsigned int i = max_iterations; i > 0; i--) {
 		m_romData = fn_ctor(m_f_dds);
@@ -646,7 +501,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 		// Get the source image as an rp_image.
 		// TODO: imgType to string?
 		const rp_image *const img_dds = m_romData->image(mode.imgType);
-		ASSERT_TRUE(img_dds != nullptr) << "Could not load the source image as rp_image.";
+		ASSERT_TRUE(img_dds != nullptr) << "Could not load the test image as rp_image.";
 
 		UNREF_AND_NULL_NOCHK(m_romData);
 	}

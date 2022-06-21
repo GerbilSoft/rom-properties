@@ -13,7 +13,7 @@
 
 namespace LibRomData {
 
-ROMDATA_DECL_BEGIN_EXPORT(DreamcastSave)
+ROMDATA_DECL_BEGIN(DreamcastSave)
 
 	public:
 		/**

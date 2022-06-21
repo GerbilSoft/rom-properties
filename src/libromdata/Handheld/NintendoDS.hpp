@@ -13,7 +13,7 @@
 
 namespace LibRomData {
 
-ROMDATA_DECL_BEGIN_EXPORT(NintendoDS)
+ROMDATA_DECL_BEGIN(NintendoDS)
 
 	public:
 		/**
