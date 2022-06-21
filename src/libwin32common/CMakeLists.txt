@@ -106,6 +106,8 @@ FOREACH(_target ${TARGETS})
 
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE rpthreads${_target_suffix})
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE uuid ole32 advapi32 shell32)
+	# for DefSubclassProc and related
+	TARGET_LINK_LIBRARIES(${_target} PUBLIC comctl32)
 
 	TARGET_INCLUDE_DIRECTORIES(${_target}
 		PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# libwin32common
