@@ -348,9 +348,12 @@ if(MZ_ZSTD)
     # Check if zstd is present
     if(NOT MZ_FORCE_FETCH_LIBS)
         find_package(PkgConfig QUIET)
+        # rom-properties: Disabled; this is handled elsewhere.
+        IF(0)
         if(PKGCONFIG_FOUND)
             pkg_check_modules(ZSTD libzstd)
         endif()
+        ENDIF(0) # rom-properties
         if(NOT ZSTD_FOUND)
             find_package(ZSTD QUIET)
             if(ZSTD_FOUND)
