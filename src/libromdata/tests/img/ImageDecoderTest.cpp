@@ -400,6 +400,7 @@ void ImageDecoderTest::decodeTest_internal(void)
 	// Open the image as an IRpFile.
 	m_f_dds = new MemFile(m_dds_buf.data(), m_dds_buf.size());
 	ASSERT_TRUE(m_f_dds->isOpen()) << "Could not create MemFile for the DDS image.";
+	m_f_dds->setFilename(mode.dds_gz_filename);
 
 	// Load the image file.
 	m_romData = RomDataFactory::create(m_f_dds);
@@ -439,6 +440,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 	// Open the image as an IRpFile.
 	m_f_dds = new MemFile(m_dds_buf.data(), m_dds_buf.size());
 	ASSERT_TRUE(m_f_dds->isOpen()) << "Could not create MemFile for the test image.";
+	m_f_dds->setFilename(mode.dds_gz_filename);
 
 	// NOTE: We can't simply decode the image multiple times.
 	// We have to reopen the RomData subclass every time.
@@ -459,7 +461,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 	auto fn_ctor = [](IRpFile *file) { return RomDataFactory::create(file); };
 
 	// For certain types, increase the number of iterations.
-	ASSERT_GT(mode.dds_gz_filename.size(), 7U);
+	ASSERT_GT(mode.dds_gz_filename.size(), 4U);
 	if (mode.dds_gz_filename.size() >= 8U &&
 	    !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-8, 8, ".smdh.gz"))
 	{
@@ -470,8 +472,9 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 		// Nintendo GameCube save file
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".VMS.gz")) {
+	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".VMS")) {
 		// Sega Dreamcast save file
+		// NOTE: RomDataFactory and DreamcastSave don't support gzip at the moment.
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
 	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".PSV.gz")) {
@@ -1193,11 +1196,11 @@ INSTANTIATE_TEST_SUITE_P(GCI_Banner_2, ImageDecoderTest,
 INSTANTIATE_TEST_SUITE_P(VMS, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
-			"Misc/BIOS002.VMS.gz",
+			"Misc/BIOS002.VMS",
 			"Misc/BIOS002.png",
 			RomData::IMG_INT_ICON),
 		ImageDecoderTest_mode(
-			"Misc/SONIC2C.VMS.gz",
+			"Misc/SONIC2C.VMS",
 			"Misc/SONIC2C.png",
 			RomData::IMG_INT_ICON))
 	, ImageDecoderTest::test_case_suffix_generator);
