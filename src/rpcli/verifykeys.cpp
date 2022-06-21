@@ -35,6 +35,7 @@ using namespace LibRomData;
 // C++ includes.
 #include <iostream>
 using std::cerr;
+using std::cout;
 using std::endl;
 
 typedef int (*pfnKeyCount_t)(void);
@@ -82,17 +83,17 @@ int VerifyKeys(void)
 	bool printedOne = false;
 	for (const EncKeyFns_t &p : encKeyFns) {
 		if (printedOne) {
-			cerr << endl;
+			cout << '\n';
 		}
 		printedOne = true;
 
-		cerr << "*** " << rp_sprintf(C_("rpcli", "Checking encryption keys from '%s'..."), p.name) << endl;
+		cout << "*** " << rp_sprintf(C_("rpcli", "Checking encryption keys from '%s'..."), p.name) << '\n';
 		int keyCount = p.pfnKeyCount();
 		for (int i = 0; i < keyCount; i++) {
 			const char *const keyName = p.pfnKeyName(i);
 			assert(keyName != nullptr);
 			if (!keyName) {
-				cerr << rp_sprintf(C_("rpcli", "WARNING: Key %d has no name. Skipping..."), i) << endl;
+				cout << rp_sprintf(C_("rpcli", "WARNING: Key %d has no name. Skipping..."), i) << '\n';
 				ret = 1;
 				continue;
 			}
@@ -101,23 +102,24 @@ int VerifyKeys(void)
 			const uint8_t *const verifyData = p.pfnVerifyData(i);
 			assert(verifyData != nullptr);
 			if (!verifyData) {
-				cerr << rp_sprintf(C_("rpcli", "WARNING: Key '%s' has no verification data. Skipping..."), keyName) << endl;
+				cout << rp_sprintf(C_("rpcli", "WARNING: Key '%s' has no verification data. Skipping..."), keyName) << '\n';
 				ret = 1;
 				continue;
 			}
 
 			// Verify the key.
 			KeyManager::VerifyResult res = keyManager->getAndVerify(keyName, nullptr, verifyData, 16);
-			cerr << keyName << ": ";
+			cout << keyName << ": ";
 			if (res == KeyManager::VerifyResult::OK) {
-				cerr << C_("rpcli", "OK") << endl;
+				cout << C_("rpcli", "OK") << '\n';
 			} else {
-				cerr << rp_sprintf(C_("rpcli", "ERROR: %s"),
-					KeyManager::verifyResultToString(res)) << endl;
+				cout << rp_sprintf(C_("rpcli", "ERROR: %s"),
+					KeyManager::verifyResultToString(res)) << '\n';
 				ret = 1;
 			}
 		}
 	}
 
+	cout.flush();
 	return ret;
 }
