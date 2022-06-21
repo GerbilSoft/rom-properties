@@ -389,6 +389,9 @@ const char *TImageTypesConfig<ComboBox>::imageTypeName(unsigned int imageType)
 	static_assert(ARRAY_SIZE(imageType_names) == IMG_TYPE_COUNT,
 		"imageType_names[] needs to be updated.");
 
+	assert(imageType < IMG_TYPE_COUNT);
+	if (imageType >= IMG_TYPE_COUNT)
+		return nullptr;
 	return dpgettext_expr(RP_I18N_DOMAIN, "TImageTypesConfig|ImageTypeDisp", imageType_names[imageType]);
 }
 
@@ -426,6 +429,9 @@ const char *TImageTypesConfig<ComboBox>::sysName(unsigned int sys)
 	static_assert(ARRAY_SIZE(sysNames) == SYS_COUNT,
 		"sysNames[] needs to be updated.");
 
+	assert(sys < SYS_COUNT);
+	if (sys >= SYS_COUNT)
+		return nullptr;
 	return dpgettext_expr(RP_I18N_DOMAIN, "TImageTypesConfig|SysName", sysNames[sys]);
 }
 
