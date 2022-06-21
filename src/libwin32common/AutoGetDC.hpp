@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * AutoGetDC.hpp: GetDC() RAII wrapper class.                              *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,36 +25,37 @@ class AutoGetDC
 {
 	public:
 		explicit inline AutoGetDC(HWND hWnd)
-			: hWnd(hWnd)
-			, bAdjFont(false)
+			: m_hWnd(hWnd)
+			, m_hFontOrig(nullptr)
+			, m_bAdjFont(false)
 		{
 			assert(hWnd != nullptr);
-			hDC = GetDC(hWnd);
+			m_hDC = GetDC(hWnd);
 		}
 
 		explicit inline AutoGetDC(HWND hWnd, HFONT hFont)
-			: hWnd(hWnd)
-			, bAdjFont(true)
+			: m_hWnd(hWnd)
+			, m_bAdjFont(true)
 		{
 			assert(hWnd != nullptr);
 			assert(hFont != nullptr);
-			hDC = GetDC(hWnd);
-			hFontOrig = (hDC ? SelectFont(hDC, hFont) : nullptr);
+			m_hDC = GetDC(m_hWnd);
+			m_hFontOrig = (m_hDC ? SelectFont(m_hDC, hFont) : nullptr);
 		}
 
 		inline ~AutoGetDC() {
-			if (!hDC) {
+			if (!m_hDC) {
 				return;
 			}
 
-			if (bAdjFont) {
-				SelectFont(hDC, hFontOrig);
+			if (m_bAdjFont) {
+				SelectFont(m_hDC, m_hFontOrig);
 			}
-			ReleaseDC(hWnd, hDC);
+			ReleaseDC(m_hWnd, m_hDC);
 		}
 
 		inline operator HDC() {
-			return hDC;
+			return m_hDC;
 		}
 
 	private:
@@ -63,10 +64,10 @@ class AutoGetDC
 		AutoGetDC &operator=(const AutoGetDC &);
 
 	private:
-		HWND hWnd;
-		HDC hDC;
-		HFONT hFontOrig;
-		bool bAdjFont;
+		HWND m_hWnd;
+		HDC m_hDC;
+		HFONT m_hFontOrig;
+		bool m_bAdjFont;
 };
 
 }
