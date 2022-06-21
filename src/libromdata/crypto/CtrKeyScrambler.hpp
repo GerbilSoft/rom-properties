@@ -21,7 +21,7 @@
 
 namespace LibRomData {
 
-class RP_LIBROMDATA_PUBLIC CtrKeyScrambler
+class CtrKeyScrambler
 {
 	private:
 		// Static class.
@@ -38,6 +38,7 @@ class RP_LIBROMDATA_PUBLIC CtrKeyScrambler
 		 * @param ctr_scrambler	[in] Scrambler constant.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static int CtrScramble(u128_t *keyNormal,
 			const u128_t *keyX, const u128_t *keyY,
 			const u128_t *ctr_scrambler);
@@ -53,6 +54,7 @@ class RP_LIBROMDATA_PUBLIC CtrKeyScrambler
 		 * @param keyY		[in] KeyY.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static int CtrScramble(u128_t *keyNormal,
 			const u128_t *keyX, const u128_t *keyY);
 

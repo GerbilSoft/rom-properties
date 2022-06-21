@@ -17,16 +17,12 @@
 #include "verifykeys.hpp"
 
 // librpbase
-#include "librpbase/crypto/KeyManager.hpp"
 #include "librpbase/TextFuncs.hpp"
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
 
 // libromdata
-#include "libromdata/disc/WiiPartition.hpp"
-#include "libromdata/crypto/CtrKeyScrambler.hpp"
-#include "libromdata/crypto/N3DSVerifyKeys.hpp"
-#include "libromdata/Console/Xbox360_XEX.hpp"
+#include "libromdata/crypto/KeyStoreUI.hpp"
 using namespace LibRomData;
 
 // C includes. (C++ namespace)
@@ -38,29 +34,16 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
-typedef int (*pfnKeyCount_t)(void);
-typedef const char* (*pfnKeyName_t)(int keyIdx);
-typedef const uint8_t* (*pfnVerifyData_t)(int keyIdx);
-
-typedef struct _EncKeyFns_t {
-	const char *name;
-	pfnKeyCount_t pfnKeyCount;
-	pfnKeyName_t pfnKeyName;
-	pfnVerifyData_t pfnVerifyData;
-} EncKeyFns_t;
-
-#define ENCKEYFNS(klass) { \
-	#klass, \
-	klass::encryptionKeyCount_static, \
-	klass::encryptionKeyName_static, \
-	klass::encryptionVerifyData_static, \
-}
-
-static const EncKeyFns_t encKeyFns[] = {
-	ENCKEYFNS(WiiPartition),
-	ENCKEYFNS(CtrKeyScrambler),
-	ENCKEYFNS(N3DSVerifyKeys),
-	ENCKEYFNS(Xbox360_XEX),
+/**
+ * Simple implementation of KeyStoreUI with no signal handling.
+ */
+class KeyStoreCLI final : public KeyStoreUI
+{
+	protected: /*signals:*/
+		void keyChanged_int(int, int) final { }
+		void keyChanged_int(int) final { }
+		void allKeysChanged_int(void) final { }
+		void modified_int(void) final { }
 };
 
 /**
@@ -69,52 +52,68 @@ static const EncKeyFns_t encKeyFns[] = {
  */
 int VerifyKeys(void)
 {
-	// Initialize the key manager.
-	// Get the Key Manager instance.
-	KeyManager *const keyManager = KeyManager::instance();
-	assert(keyManager != nullptr);
-	if (!keyManager) {
-		cerr << "*** " << C_("rpcli", "ERROR initializing KeyManager. Cannot verify keys.") << endl;
-		return 1;
-	}
+	// Instantiate the key store.
+	// TODO: Check if load failed?
+	KeyStoreUI *const keyStore = new KeyStoreCLI();
+	keyStore->reset();
 
 	// Get keys from supported classes.
 	int ret = 0;
 	bool printedOne = false;
-	for (const EncKeyFns_t &p : encKeyFns) {
+	const int sectCount = keyStore->sectCount();
+	for (int sectIdx = 0; sectIdx < sectCount; sectIdx++) {
 		if (printedOne) {
 			cout << '\n';
 		}
 		printedOne = true;
 
-		cout << "*** " << rp_sprintf(C_("rpcli", "Checking encryption keys from '%s'..."), p.name) << '\n';
-		int keyCount = p.pfnKeyCount();
-		for (int i = 0; i < keyCount; i++) {
-			const char *const keyName = p.pfnKeyName(i);
-			assert(keyName != nullptr);
-			if (!keyName) {
-				cout << rp_sprintf(C_("rpcli", "WARNING: Key %d has no name. Skipping..."), i) << '\n';
+		cout << "*** " << rp_sprintf(C_("rpcli", "Checking encryption keys: %s"), keyStore->sectName(sectIdx)) << '\n';
+		const int keyCount = keyStore->keyCount(sectIdx);
+		for (int keyIdx = 0; keyIdx < keyCount; keyIdx++) {
+			const KeyStoreUI::Key *const key = keyStore->getKey(sectIdx, keyIdx);
+			assert(key != nullptr);
+			if (!key) {
+				cout << rp_sprintf(C_("rpcli", "WARNING: Key [%d,%d] has no Key object. Skipping..."), sectIdx, keyIdx) << '\n';
+				ret = 1;
+				continue;
+			}
+			assert(!key->name.empty());
+			if (key->name.empty()) {
+				cout << rp_sprintf(C_("rpcli", "WARNING: Key [%d,%d] has no name. Skipping..."), sectIdx, keyIdx) << '\n';
 				ret = 1;
 				continue;
 			}
 
-			// Verification data. (16 bytes)
-			const uint8_t *const verifyData = p.pfnVerifyData(i);
-			assert(verifyData != nullptr);
-			if (!verifyData) {
-				cout << rp_sprintf(C_("rpcli", "WARNING: Key '%s' has no verification data. Skipping..."), keyName) << '\n';
-				ret = 1;
-				continue;
+			// Verification status.
+			// TODO: Make this a function in KeyStoreUI?
+			// NOTE: Not a table because only 'OK' is valid; others are errors.
+			bool isOK = false;
+			const char *s_err = nullptr;
+			switch (key->status) {
+				case KeyStoreUI::Key::Status::Empty:
+					s_err = C_("rpcli|KeyVerifyStatus", "Empty key");
+					break;
+				case KeyStoreUI::Key::Status::Unknown:
+				default:
+					s_err = C_("rpcli|KeyVerifyStatus", "Unknown status");
+					break;
+				case KeyStoreUI::Key::Status::NotAKey:
+					s_err = C_("rpcli|KeyVerifyStatus", "Not a key");
+					break;
+				case KeyStoreUI::Key::Status::Incorrect:
+					s_err = C_("rpcli|KeyVerifyStatus", "Key is incorrect");
+					break;
+				case KeyStoreUI::Key::Status::OK:
+					isOK = true;
+					s_err = C_("rpcli|KeyVerifyStatus", "OK");
+					break;
 			}
 
-			// Verify the key.
-			KeyManager::VerifyResult res = keyManager->getAndVerify(keyName, nullptr, verifyData, 16);
-			cout << keyName << ": ";
-			if (res == KeyManager::VerifyResult::OK) {
-				cout << C_("rpcli", "OK") << '\n';
+			cout << key->name << ": ";
+			if (isOK) {
+				cout << s_err << '\n';
 			} else {
-				cout << rp_sprintf(C_("rpcli", "ERROR: %s"),
-					KeyManager::verifyResultToString(res)) << '\n';
+				cout << rp_sprintf(C_("rpcli", "ERROR: %s"), s_err) << '\n';
 				ret = 1;
 			}
 		}

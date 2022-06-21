@@ -180,7 +180,6 @@ class WiiPartition : public GcnPartition
 		 * Get the total number of encryption key names.
 		 * @return Number of encryption key names.
 		 */
-		RP_LIBROMDATA_PUBLIC
 		static int encryptionKeyCount_static(void);
 
 		/**
@@ -188,7 +187,6 @@ class WiiPartition : public GcnPartition
 		 * @param keyIdx Encryption key index.
 		 * @return Encryption key name (in ASCII), or nullptr on error.
 		 */
-		RP_LIBROMDATA_PUBLIC
 		static const char* encryptionKeyName_static(int keyIdx);
 
 		/**
@@ -196,7 +194,6 @@ class WiiPartition : public GcnPartition
 		 * @param keyIdx Encryption key index.
 		 * @return Verification data. (16 bytes)
 		 */
-		RP_LIBROMDATA_PUBLIC
 		static const uint8_t* encryptionVerifyData_static(int keyIdx);
 #endif /* ENABLE_DECRYPTION */
 };
