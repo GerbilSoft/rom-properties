@@ -93,10 +93,23 @@ class KeyStoreModel : public QAbstractItemModel
 		 */
 		void keyStore_allKeysChanged_slot(void);
 
+	public slots:
 		/**
-		 * The system theme has changed.
+		 * System font has changed.
+		 *
+		 * Call this from the parent widget's changeEvent() function
+		 * on QEvent::FontChange.
 		 */
-		void themeChanged_slot(void);
+		void systemFontChanged(void);
+
+		/**
+		 * System color scheme has changed.
+		 * Icons may need to be re-cached.
+		 *
+		 * Call this from the parent widget's changeEvent() function
+		 * on QEvent::PaletteChange.
+		 */
+		void systemPaletteChanged(void);
 };
 
 #endif /* __ROMPROPERTIES_KDE_CONFIG_KEYSTOREMODEL_HPP__ */
