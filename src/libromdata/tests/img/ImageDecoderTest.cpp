@@ -403,12 +403,13 @@ void ImageDecoderTest::decodeTest_internal(void)
 
 	// Load the image file.
 	m_romData = RomDataFactory::create(m_f_dds);
-	ASSERT_TRUE(m_romData->isValid()) << "Could not load the test file.";
-	ASSERT_TRUE(m_romData->isOpen()) << "Could not load the test file.";
+	ASSERT_TRUE(m_romData != nullptr) << "Could not load the test image.";
+	ASSERT_TRUE(m_romData->isValid()) << "Could not load the test image.";
+	ASSERT_TRUE(m_romData->isOpen()) << "Could not load the test image.";
 
 	// Get the DDS image as an rp_image.
 	const rp_image *const img_dds = m_romData->image(mode.imgType);
-	ASSERT_TRUE(img_dds != nullptr) << "Could not load the test file as rp_image.";
+	ASSERT_TRUE(img_dds != nullptr) << "Could not load the test image as rp_image.";
 
 	// Get the image again.
 	// The pointer should be identical to the first one.
@@ -495,8 +496,9 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 
 	for (unsigned int i = max_iterations; i > 0; i--) {
 		m_romData = fn_ctor(m_f_dds);
-		ASSERT_TRUE(m_romData->isValid()) << "Could not load the source image.";
-		ASSERT_TRUE(m_romData->isOpen()) << "Could not load the source image.";
+		ASSERT_TRUE(m_romData != nullptr) << "Could not load the test image.";
+		ASSERT_TRUE(m_romData->isValid()) << "Could not load the test image.";
+		ASSERT_TRUE(m_romData->isOpen()) << "Could not load the test image.";
 
 		// Get the source image as an rp_image.
 		// TODO: imgType to string?
