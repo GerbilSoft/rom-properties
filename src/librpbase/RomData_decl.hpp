@@ -117,7 +117,6 @@ class klass final : public LibRpBase::RomData { \
 		 * Get a bitfield of image types this class can retrieve. \
 		 * @return Bitfield of supported image types. (ImageTypesBF) \
 		 */ \
-		RP_LIBROMDATA_PUBLIC \
 		static uint32_t supportedImageTypes_static(void); \
 		\
 		/** \

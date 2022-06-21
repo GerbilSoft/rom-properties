@@ -22,39 +22,10 @@ using namespace LibRpBase;
 // libi18n
 #include "libi18n/i18n.h"
 
-// RomData subclasses with images.
-// Does not include texture files, since those are always
-// thumbnailed using IMG_INT_IMAGE.
-#include "Other/Amiibo.hpp"
-#include "Console/DreamcastSave.hpp"
-#include "Console/GameCube.hpp"
-#include "Console/GameCubeSave.hpp"
-#include "Other/NintendoBadge.hpp"
-#include "Handheld/NintendoDS.hpp"
-#include "Handheld/Nintendo3DS.hpp"
-#include "Console/PlayStationSave.hpp"
-#include "Console/WiiU.hpp"
-#include "Console/WiiWAD.hpp"
-
 // C++ includes.
 #include <string>
 
 namespace LibRomData {
-
-// System data.
-template<typename ComboBox>
-const SysData_t TImageTypesConfig<ComboBox>::sysData[] = {
-	SysDataEntry(Amiibo),
-	SysDataEntry(NintendoBadge),
-	SysDataEntry(DreamcastSave),
-	SysDataEntry(GameCube),
-	SysDataEntry(GameCubeSave),
-	SysDataEntry(NintendoDS),
-	SysDataEntry(Nintendo3DS),
-	SysDataEntry(PlayStationSave),
-	SysDataEntry(WiiU),
-	SysDataEntry(WiiWAD),
-};
 
 template<typename ComboBox>
 TImageTypesConfig<ComboBox>::TImageTypesConfig()
@@ -87,7 +58,7 @@ void TImageTypesConfig<ComboBox>::createGrid(void)
 	// Create the ComboBoxes.
 	for (unsigned int sys = 0; sys < SYS_COUNT; sys++) {
 		// Get supported image types.
-		uint32_t imgbf = sysData[sys].getTypes();
+		uint32_t imgbf = ImageTypesConfig::supportedImageTypes(sys);
 		assert(imgbf != 0);
 
 		validImageTypes[sys] = 0;
@@ -145,7 +116,8 @@ bool TImageTypesConfig<ComboBox>::reset_int(bool loadDefaults)
 	for (int sys = SYS_COUNT-1; sys >= 0; sys--) {
 		if (!loadDefaults) {
 			// Get the image priority.
-			Config::ImgTypeResult res = config->getImgTypePrio(sysData[sys].className, &imgTypePrio);
+			const char *const className = ImageTypesConfig::className(sys);
+			Config::ImgTypeResult res = config->getImgTypePrio(className, &imgTypePrio);
 			bool no_thumbs = false;
 			switch (res) {
 				case Config::ImgTypeResult::Success:
@@ -269,10 +241,12 @@ int TImageTypesConfig<ComboBox>::save(void)
 	std::string imageTypeList;
 	imageTypeList.reserve(128);	// TODO: Optimal reservation?
 	for (unsigned int sys = 0; sys < SYS_COUNT; sys++) {
+		const char *const className = ImageTypesConfig::className(sys);
+
 		// Is this system using the default configuration?
 		if (sysIsDefault[sys]) {
 			// Default configuration. Write an empty string.
-			ret = saveWriteEntry(sysData[sys].className, "");
+			ret = saveWriteEntry(className, "");
 			if (ret != 0) {
 				// Error...
 				saveFinish();
@@ -330,10 +304,10 @@ int TImageTypesConfig<ComboBox>::save(void)
 
 		if (hasOne) {
 			// At least one image type is enabled.
-			ret = saveWriteEntry(sysData[sys].className, imageTypeList.c_str());
+			ret = saveWriteEntry(className, imageTypeList.c_str());
 		} else {
 			// All image types are disabled.
-			ret = saveWriteEntry(sysData[sys].className, "No");
+			ret = saveWriteEntry(className, "No");
 		}
 		if (ret != 0) {
 			// Error...
@@ -348,91 +322,6 @@ int TImageTypesConfig<ComboBox>::save(void)
 		changed = false;
 	}
 	return ret;
-}
-
-/**
- * Get an image type name.
- * @param imageType Image type ID.
- * @return Image type name, or nullptr if invalid.
- */
-template<typename ComboBox>
-const char *TImageTypesConfig<ComboBox>::imageTypeName(unsigned int imageType)
-{
-	// Image type names.
-	static const char *const imageType_names[] = {
-		/** Internal **/
-
-		// tr: IMG_INT_ICON
-		NOP_C_("TImageTypesConfig|ImageTypeDisp", "Internal\nIcon"),
-		// tr: IMG_INT_BANNER
-		NOP_C_("TImageTypesConfig|ImageTypeDisp", "Internal\nBanner"),
-		// tr: IMG_INT_MEDIA
-		NOP_C_("TImageTypesConfig|ImageTypeDisp", "Internal\nMedia"),
-		// tr: IMG_INT_IMAGE
-		NOP_C_("TImageTypesConfig|ImageTypeDisp", "Internal\nImage"),
-
-		/** External **/
-
-		// tr: IMG_EXT_MEDIA
-		NOP_C_("TImageTypesConfig|ImageTypeDisp", "External\nMedia"),
-		// tr: IMG_EXT_COVER
-		NOP_C_("TImageTypesConfig|ImageTypeDisp", "External\nCover"),
-		// tr: IMG_EXT_COVER_3D
-		NOP_C_("TImageTypesConfig|ImageTypeDisp", "External\n3D Cover"),
-		// tr: IMG_EXT_COVER_FULL
-		NOP_C_("TImageTypesConfig|ImageTypeDisp", "External\nFull Cover"),
-		// tr: IMG_EXT_BOX
-		NOP_C_("TImageTypesConfig|ImageTypeDisp", "External\nBox"),
-		// tr: IMG_EXT_TITLE_SCREEN
-		NOP_C_("TImageTypesConfig|ImageTypeDisp", "External\nTitle Screen"),
-	};
-	static_assert(ARRAY_SIZE(imageType_names) == IMG_TYPE_COUNT,
-		"imageType_names[] needs to be updated.");
-
-	assert(imageType < IMG_TYPE_COUNT);
-	if (imageType >= IMG_TYPE_COUNT)
-		return nullptr;
-	return dpgettext_expr(RP_I18N_DOMAIN, "TImageTypesConfig|ImageTypeDisp", imageType_names[imageType]);
-}
-
-/**
- * Get a system name.
- * @param sys System ID.
- * @return System name, or nullptr if invalid.
- */
-template<typename ComboBox>
-const char *TImageTypesConfig<ComboBox>::sysName(unsigned int sys)
-{
-	// System names.
-	static const char *const sysNames[] = {
-		// tr: amiibo
-		NOP_C_("TImageTypesConfig|SysName", "amiibo"),
-		// tr: NintendoBadge
-		NOP_C_("TImageTypesConfig|SysName", "Badge Arcade"),
-		// tr: DreamcastSave
-		NOP_C_("TImageTypesConfig|SysName", "Dreamcast Saves"),
-		// tr: GameCube
-		NOP_C_("TImageTypesConfig|SysName", "GameCube / Wii"),
-		// tr: GameCubeSave
-		NOP_C_("TImageTypesConfig|SysName", "GameCube Saves"),
-		// tr: NintendoDS
-		NOP_C_("TImageTypesConfig|SysName", "Nintendo DS(i)"),
-		// tr: Nintendo3DS
-		NOP_C_("TImageTypesConfig|SysName", "Nintendo 3DS"),
-		// tr: PlayStationSave
-		NOP_C_("TImageTypesConfig|SysName", "PlayStation Saves"),
-		// tr: WiiU
-		NOP_C_("TImageTypesConfig|SysName", "Wii U"),
-		// tr: WiiWAD
-		NOP_C_("TImageTypesConfig|SysName", "Wii WAD Files"),
-	};
-	static_assert(ARRAY_SIZE(sysNames) == SYS_COUNT,
-		"sysNames[] needs to be updated.");
-
-	assert(sys < SYS_COUNT);
-	if (sys >= SYS_COUNT)
-		return nullptr;
-	return dpgettext_expr(RP_I18N_DOMAIN, "TImageTypesConfig|SysName", sysNames[sys]);
 }
 
 /**

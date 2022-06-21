@@ -124,6 +124,7 @@ SET(${PROJECT_NAME}_SRCS
 	disc/WuxReader.cpp
 	disc/XDVDFSPartition.cpp
 
+	config/ImageTypesConfig.cpp
 	#config/TImageTypesConfig.cpp	# NOT listed here due to template stuff.
 	#img/TCreateThumbnail.cpp	# NOT listed here due to template stuff.
 	img/CacheManager.cpp
@@ -307,6 +308,7 @@ SET(${PROJECT_NAME}_H
 	disc/wux_structs.h
 	disc/xdvdfs_structs.h
 
+	config/ImageTypesConfig.hpp
 	config/TImageTypesConfig.hpp
 	img/TCreateThumbnail.hpp
 	img/CacheManager.hpp

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * TImageTypesConfig.hpp: Image Types editor template.                     *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,22 +16,12 @@
  */
 
 #include "common.h"
-#include "librpbase/RomData.hpp"
+#include "ImageTypesConfig.hpp"
 
 // C includes. (C++ namespace)
 #include <cassert>
 
 namespace LibRomData {
-
-// NOTE: SysData_t is defined here because it causes
-// problems if it's embedded inside of a templated class.
-typedef uint32_t (*pFnSupportedImageTypes)(void);
-struct SysData_t {
-	const char *className;			// Class name in Config. (ASCII)
-	pFnSupportedImageTypes getTypes;	// Get supported image types.
-};
-#define SysDataEntry(klass) \
-	{#klass, LibRomData::klass::supportedImageTypes_static}
 
 template<typename ComboBox>
 class TImageTypesConfig
@@ -44,9 +34,9 @@ class TImageTypesConfig
 
 	public:
 		// Number of image types. (columns)
-		static const int IMG_TYPE_COUNT = LibRpBase::RomData::IMG_EXT_MAX+1;
+		static const int IMG_TYPE_COUNT = ImageTypesConfig::IMG_TYPE_COUNT;
 		// Number of systems. (rows)
-		static const int SYS_COUNT = 10;
+		static const int SYS_COUNT = ImageTypesConfig::SYS_COUNT;
 
 		/**
 		 * Create the grid of labels and ComboBoxes.
@@ -81,22 +71,27 @@ class TImageTypesConfig
 		int save(void);
 
 	public:
+		/** ImageTypesConfig wrapper functions **/
+
 		/**
 		 * Get an image type name.
 		 * @param imageType Image type ID.
 		 * @return Image type name, or nullptr if invalid.
 		 */
-		static const char *imageTypeName(unsigned int imageType);
-
-		// System data. (SYS_COUNT)
-		static const SysData_t sysData[];
+		static inline const char *imageTypeName(unsigned int imageType)
+		{
+			return ImageTypesConfig::imageTypeName(imageType);
+		}
 
 		/**
 		 * Get a system name.
-		 * @param sys System ID.
+		 * @param sys System ID
 		 * @return System name, or nullptr if invalid.
 		 */
-		static const char *sysName(unsigned int sys);
+		static inline const char *sysName(unsigned int sys)
+		{
+			return ImageTypesConfig::sysName(sys);
+		}
 
 	public:
 		/**
