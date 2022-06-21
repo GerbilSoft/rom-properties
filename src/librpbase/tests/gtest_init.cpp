@@ -58,6 +58,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(mprotect),	// iconv_open()
 		SCMP_SYS(munmap),	// free() [in some cases]
 		SCMP_SYS(lseek), SCMP_SYS(_llseek),
+		SCMP_SYS(lstat), SCMP_SYS(lstat64),		// LibRpBase::FileSystem::is_symlink(), resolve_symlink()
 		SCMP_SYS(open),		// Ubuntu 16.04
 		SCMP_SYS(openat),	// glibc-2.31
 #if defined(__SNR_openat2)
