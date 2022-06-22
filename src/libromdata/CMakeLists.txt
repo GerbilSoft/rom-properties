@@ -399,6 +399,12 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.lib${PROJECT_NAME}.h.in" "${C
 # Build the library. #
 ######################
 
+IF(WIN32)
+	# Delay-load extlibs.
+	INCLUDE(../libwin32common/DelayLoadHelper.cmake)
+	SET_DELAYLOAD_EXTLIB_FLAGS()
+ENDIF(WIN32)
+
 # libromdata can be built as a shared library.
 IF(RP_LIBROMDATA_IS_DLL)
 	SET(${PROJECT_NAME}_LINKAGE SHARED)
