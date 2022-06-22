@@ -749,7 +749,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	// FIXME: Runtime version?
 	sLibraries += RTF_BR RTF_BR;
 	sLibraries += rp_sprintf(sCompiledWith, sVerBuf);
-	sLibraries += "." RTF_BR
+	sLibraries += RTF_BR
 		"Copyright (C) 2000-2019 Lee Thomason" RTF_BR
 		"http://www.grinninglizard.com/" RTF_BR;
 	sLibraries += rp_sprintf(sLicense, "zlib license");
