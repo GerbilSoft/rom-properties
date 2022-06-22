@@ -23,10 +23,12 @@
 
 namespace LibRomData { namespace ImageTypesConfig {
 
-// Number of image types. (columns)
-static const int IMG_TYPE_COUNT = LibRpBase::RomData::IMG_EXT_MAX+1;
-// Number of systems. (rows)
-static const int SYS_COUNT = 10;
+/**
+ * Get the number of image types that can be configured.
+ * @return Image type count.
+ */
+RP_LIBROMDATA_PUBLIC
+unsigned int imageTypeCount(void);
 
 /**
  * Get an image type name.
@@ -35,6 +37,13 @@ static const int SYS_COUNT = 10;
  */
 RP_LIBROMDATA_PUBLIC
 const char *imageTypeName(unsigned int imageType);
+
+/**
+ * Get the number of systems that can be configured.
+ * @return System count.
+ */
+RP_LIBROMDATA_PUBLIC
+unsigned int sysCount(void);
 
 /**
  * Get a system name.

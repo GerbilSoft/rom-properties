@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * ImageTypesTab.cpp: Image type priorities tab. (Part of ConfigDialog.)   *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,11 +17,12 @@ using namespace LibRpFile;
 // C++ STL classes.
 using std::array;
 using std::tstring;
+using std::vector;
 
 // TImageTypesConfig is a templated class,
 // so we have to #include the .cpp file here.
 #include "libromdata/config/TImageTypesConfig.cpp"
-using LibRomData::TImageTypesConfig;
+using namespace LibRomData;
 
 class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 {
@@ -34,7 +35,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 		RP_DISABLE_COPY(ImageTypesTabPrivate)
 
 	protected:
-		/** TImageTypesConfig functions. (protected) **/
+		/** TImageTypesConfig functions (protected) **/
 
 		/**
 		 * Create the labels in the grid.
@@ -84,7 +85,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 		int saveFinish(void) final;
 
 	protected:
-		/** TImageTypesConfig functions. (public) **/
+		/** TImageTypesConfig functions (public) **/
 
 		/**
 		 * Set a ComboBox's current index.
@@ -95,7 +96,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 		void cboImageType_setPriorityValue(unsigned int cbid, unsigned int prio) final;
 
 	public:
-		/** Other ImageTypesTabPrivate functions. **/
+		/** Other ImageTypesTabPrivate functions **/
 
 		/**
 		 * Initialize strings.
@@ -168,7 +169,7 @@ ImageTypesTabPrivate::~ImageTypesTabPrivate()
 	assert(tmp_conf_filename.empty());
 }
 
-/** TImageTypesConfig functions. (protected) **/
+/** TImageTypesConfig functions (protected) **/
 
 /**
  * Create the labels in the grid.
@@ -208,9 +209,11 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	// Determine the size of the largest image type label.
 	// NOTE: Keeping heights of each label in order to
 	// vertically-align labels on the bottom.
-	array<int, IMG_TYPE_COUNT> h_lbl;
+	const unsigned int imageTypeCount = ImageTypesConfig::imageTypeCount();
+	vector<int> h_lbl;
+	h_lbl.resize(imageTypeCount);
 	SIZE sz_lblImageType = {0, 0};
-	for (int i = IMG_TYPE_COUNT-1; i >= 0; i--) {
+	for (unsigned int i = 0; i < imageTypeCount; i++) {
 		if (i == RomData::IMG_INT_MEDIA) {
 			// No INT MEDIA boxes, so eliminate the column.
 			continue;
@@ -228,8 +231,9 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	}
 
 	// Determine the size of the largest system name label.
+	const unsigned int sysCount = ImageTypesConfig::sysCount();
 	SIZE sz_lblSysName = {0, 0};
-	for (int sys = SYS_COUNT-1; sys >= 0; sys--) {
+	for (unsigned int sys = 0; sys < sysCount; sys++) {
 		SIZE szCur;
 		LibWin32Common::measureTextSize(hWndPropSheet, hFontDlg, U82T_c(sysName(sys)), &szCur);
 		if (szCur.cx > sz_lblSysName.cx) {
@@ -260,7 +264,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	// Create the image type labels.
 	POINT curPt = {rect_lblDesc2.left + sz_lblSysName.cx + (dlgMargin.right/2),
 		rect_lblDesc2.bottom + dlgMargin.bottom};
-	for (unsigned int i = 0; i < IMG_TYPE_COUNT; i++) {
+	for (unsigned int i = 0; i < imageTypeCount; i++) {
 		if (i == RomData::IMG_INT_MEDIA) {
 			// No INT MEDIA boxes, so eliminate the column.
 			continue;
@@ -290,7 +294,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 
 	// Create the system name labels.
 	curPt.y += yadj_lblSysName;
-	for (unsigned int sys = 0; sys < SYS_COUNT; sys++) {
+	for (unsigned int sys = 0; sys < sysCount; sys++) {
 		// System name label.
 		HWND lblSysName = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
 			WC_STATIC, U82T_c(sysName(sys)),
@@ -320,6 +324,7 @@ void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
 	const unsigned int imageType = imageTypeFromCbid(cbid);
 	if (!validateSysImageType(sys, imageType))
 		return;
+	ImageTypesTabPrivate::SysData_t &sysData = v_sysData[sys];
 
 	// Get the parent dialog's font.
 	HFONT hFontDlg = GetWindowFont(GetParent(hWndPropSheet));
@@ -347,7 +352,7 @@ void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
 		hWndPropSheet, (HMENU)(INT_PTR)(IDC_IMAGETYPES_CBOIMAGETYPE_BASE + cbid),
 		nullptr, nullptr);
 	SetWindowFont(hComboBox, hFontDlg, FALSE);
-	cboImageType[sys][imageType] = hComboBox;
+	sysData.cboImageType[imageType] = hComboBox;
 
 	SetWindowPos(hComboBox,
 		cboImageType_lastAdded ? cboImageType_lastAdded : hWndPropSheet,
@@ -372,7 +377,7 @@ void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 
 	// NOTE: Need to add one more than the total number,
 	// since "No" counts as an entry.
-	assert(max_prio <= IMG_TYPE_COUNT);
+	assert(max_prio <= static_cast<int>(ImageTypesConfig::imageTypeCount()));
 	ComboBox_AddString(cboImageType, U82T_c(C_("ImageTypesTab|Values", "No")));
 	for (int i = 1; i <= max_prio; i++) {
 		TCHAR buf[16];
@@ -470,7 +475,7 @@ int ImageTypesTabPrivate::saveFinish(void)
 	return 0;
 }
 
-/** TImageTypesConfig functions. (public) **/
+/** TImageTypesConfig functions (public) **/
 
 /**
  * Set a ComboBox's current index.
@@ -486,11 +491,11 @@ void ImageTypesTabPrivate::cboImageType_setPriorityValue(unsigned int cbid, unsi
 	HWND cboImageType = GetDlgItem(hWndPropSheet, IDC_IMAGETYPES_CBOIMAGETYPE_BASE + cbid);
 	assert(cboImageType != nullptr);
 	if (cboImageType) {
-		ComboBox_SetCurSel(cboImageType, (prio < IMG_TYPE_COUNT ? prio+1 : 0));
+		ComboBox_SetCurSel(cboImageType, (prio < ImageTypesConfig::imageTypeCount() ? prio+1 : 0));
 	}
 }
 
-/** Other ImageTypesTabPrivate functions. **/
+/** Other ImageTypesTabPrivate functions **/
 
 /**
  * Initialize strings.

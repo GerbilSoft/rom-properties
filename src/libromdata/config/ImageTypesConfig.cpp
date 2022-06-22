@@ -38,6 +38,11 @@ using namespace LibRpBase;
 
 namespace LibRomData { namespace ImageTypesConfig {
 
+// Number of image types. (columns)
+static const unsigned int IMG_TYPE_COUNT = LibRpBase::RomData::IMG_EXT_MAX+1;
+// Number of systems. (rows)
+static const unsigned int SYS_COUNT = 10;
+
 namespace Private {
 
 // NOTE: SysData_t is defined here because it causes
@@ -51,7 +56,7 @@ struct SysData_t {
 	{#klass, LibRomData::klass::supportedImageTypes_static}
 
 // System data.
-static const SysData_t sysData[] = {
+static const SysData_t sysData[SYS_COUNT] = {
 	SysDataEntry(Amiibo),
 	SysDataEntry(NintendoBadge),
 	SysDataEntry(DreamcastSave),
@@ -64,6 +69,15 @@ static const SysData_t sysData[] = {
 	SysDataEntry(WiiWAD),
 };
 
+}
+
+/**
+ * Get the number of image types that can be configured.
+ * @return Image type count.
+ */
+unsigned int imageTypeCount(void)
+{
+	return IMG_TYPE_COUNT;
 }
 
 /**
@@ -108,6 +122,15 @@ const char *imageTypeName(unsigned int imageType)
 	if (imageType >= IMG_TYPE_COUNT)
 		return nullptr;
 	return dpgettext_expr(RP_I18N_DOMAIN, "ImageTypesConfig|ImageTypeDisp", imageType_names[imageType]);
+}
+
+/**
+ * Get the number of systems that can be configured.
+ * @return System count.
+ */
+unsigned int sysCount(void)
+{
+	return SYS_COUNT;
 }
 
 /**
