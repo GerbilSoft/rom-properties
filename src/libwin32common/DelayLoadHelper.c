@@ -48,6 +48,7 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 	// System DLLs should be handled normally.
 
 	// libromdata DLL is "romdata-X.dll" (MSVC) or "libromdata-X.dll" (MinGW).
+	// TODO: Get the SOVERSIONs instead of hard-coding them where necessary.
 #ifdef _MSC_VER
 #  define ROMDATA_PREFIX
 #else
@@ -59,7 +60,7 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 		ROMDATA_PREFIX "romdata-1.dll",
 		"zlib1.dll",
 		"libpng16.dll",
-		"tinyxml2.dll",
+		"tinyxml2-9.dll",
 		"zstd.dll",
 		"lz4.dll",
 		"minilzo.dll",
@@ -67,7 +68,7 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 		ROMDATA_PREFIX "romdata-1d.dll",
 		"zlib1d.dll",
 		"libpng16d.dll",
-		"tinyxml2d.dll",
+		"tinyxml2-9d.dll",
 		"zstdd.dll",
 		"lz4d.dll",
 		"minilzod.dll",

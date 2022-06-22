@@ -60,6 +60,14 @@ set_target_properties(
     SOVERSION "${tinyxml2_VERSION_MAJOR}"
 )
 
+# rom-properties: Make sure we have a versioned DLL on Windows.
+IF(WIN32)
+	# Append the SOVERSION and "d" for debug.
+	SET(CMAKE_DEBUG_POSTFIX "d")
+	SET_TARGET_PROPERTIES(tinyxml2 PROPERTIES DEBUG_POSTFIX "-${tinyxml2_VERSION_MAJOR}d")
+	SET_TARGET_PROPERTIES(tinyxml2 PROPERTIES RELEASE_POSTFIX "-${tinyxml2_VERSION_MAJOR}")
+ENDIF(WIN32)
+
 # rom-properties: Set TINYXML2_IMPORT when linking to TinyXML2.
 TARGET_COMPILE_DEFINITIONS(tinyxml2
 	PRIVATE "TINYXML2_EXPORT"
