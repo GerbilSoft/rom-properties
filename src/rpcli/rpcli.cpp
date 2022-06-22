@@ -33,7 +33,7 @@ using namespace LibRpFile;
 
 // libromdata
 #include "libromdata/RomDataFactory.hpp"
-using LibRomData::RomDataFactory;
+using namespace LibRomData;
 
 // librptexture
 #include "librptexture/img/rp_image.hpp"
@@ -51,22 +51,22 @@ using LibRpTexture::rp_image;
 
 // OS-specific userdirs
 #ifdef _WIN32
-# include "libwin32common/userdirs.hpp"
-# define OS_NAMESPACE LibWin32Common
+#  include "libwin32common/userdirs.hpp"
+#  define OS_NAMESPACE LibWin32Common
 #else
-# include "libunixcommon/userdirs.hpp"
-# define OS_NAMESPACE LibUnixCommon
+#  include "libunixcommon/userdirs.hpp"
+#  define OS_NAMESPACE LibUnixCommon
 #endif
 #include "tcharx.h"
 
-// C includes.
+// C includes
 #include <stdlib.h>
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cassert>
 #include <cerrno>
 
-// C++ includes.
+// C++ includes
 #include <fstream>
 #include <iostream>
 #include <locale>
@@ -81,13 +81,33 @@ using std::string;
 using std::vector;
 
 #include "libi18n/config.libi18n.h"
-#if defined(_MSC_VER) && defined(ENABLE_NLS)
+#ifdef _MSC_VER
 // MSVC: Exception handling for /DELAYLOAD.
 #include "libwin32common/DelayLoadHelper.h"
-// DelayLoad test implementation.
-#include "libi18n/i18n.h"
+
+// DelayLoad: libromdata
+// NOTE: Not using DELAYLOAD_TEST_FUNCTION_IMPL1 here due to the use of C++ functions.
+#include "libromdata/config/ImageTypesConfig.hpp"
+DELAYLOAD_FILTER_FUNCTION_IMPL(ImageTypesConfig_className);
+static int DelayLoad_test_ImageTypesConfig_className(void) {
+	static bool success = 0;
+	if (!success) {
+		__try {
+			(void)ImageTypesConfig::className(0);
+		} __except (DelayLoad_filter_ImageTypesConfig_className(GetExceptionCode())) {
+			return -ENOTSUP;
+		}
+		success = 1;
+	}
+	return 0;
+}
+
+#  ifdef ENABLE_NLS
+// DelayLoad: libi18n
+#    include "libi18n/i18n.h"
 DELAYLOAD_TEST_FUNCTION_IMPL1(textdomain, nullptr);
-#endif /* defined(_MSC_VER) && defined(ENABLE_NLS) */
+#  endif /* ENABLE_NLS */
+#endif /* _MSC_VER */
 
 struct ExtractParam {
 	const char* filename;	// Target filename. Can be null due to argv[argc]
@@ -326,9 +346,37 @@ int RP_C_API main(int argc, char *argv[])
 	// Set the C and C++ locales.
 	locale::global(locale(""));
 
-#if defined(_MSC_VER) && defined(ENABLE_NLS)
-	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
+// TODO: Get the libromdata SOVERSION using a macro?
+#ifdef _MSC_VER
+#  define ROMDATA_PREFIX
+#else
+#  define ROMDATA_PREFIX _T("lib")
+#endif
+#ifndef NDEBUG
+#  define ROMDATA_SUFFIX _T("-1d")
+#else
+#  define ROMDATA_SUFFIX _T("-1")
+#endif
+#ifdef _WIN32
+#  define ROMDATA_EXT _T(".dll")
+#else
+// TODO: macOS
+#  define ROMDATA_EXT _T(".so")
+#endif
+#define ROMDATA_DLL ROMDATA_PREFIX _T("romdata") ROMDATA_SUFFIX ROMDATA_EXT
+
+#ifdef _MSC_VER
+	// TODO: Skip these if not linked with /DELAYLOAD?
+	if (DelayLoad_test_ImageTypesConfig_className() != 0) {
+		// Delay load failed.
+		_fputts(_T("*** ERROR: ") ROMDATA_DLL _T(" could not be loaded.\n\n")
+			_T("Please redownload rom-properties and copy the\n")
+			ROMDATA_DLL _T(" file to the installation directory.\n"),
+			stderr);
+		return EXIT_FAILURE;
+	}
+#  ifdef ENABLE_NLS
+	// Delay load verification: libgnuintl
 	if (DelayLoad_test_textdomain() != 0) {
 		// Delay load failed.
 		// TODO: Use a CMake macro for the soversion?
@@ -340,7 +388,8 @@ int RP_C_API main(int argc, char *argv[])
 			stderr);
 		return EXIT_FAILURE;
 	}
-#endif /* defined(_MSC_VER) && defined(ENABLE_NLS) */
+#  endif /* ENABLE_NLS */
+#endif /* _MSC_VER */
 
 	// Initialize i18n.
 	rp_i18n_init();

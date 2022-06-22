@@ -68,6 +68,24 @@ SET_WINDOWS_NO_MANIFEST(${PROJECT_NAME})
 # FIXME: setargv isn't necessarily sorted...
 # TODO: Implement our own setargv function?
 SET_WINDOWS_ENTRYPOINT(${PROJECT_NAME} wmain ON)
+
+IF(RP_LIBROMDATA_IS_DLL)
+	# libromdata is being built as a DLL.
+	# Need to enable dllimports.
+	# FIXME: This *should* be inherited by linking to romdata...
+	TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME} PRIVATE RP_BUILDING_FOR_DLL=1)
+
+	# Delay-load libromdata in order to allow usage of
+	# architecture-specific subdirectories.
+	GET_TARGET_PROPERTY(ROMDATA_DEBUG_POSTFIX   romdata DEBUG_POSTFIX)
+	GET_TARGET_PROPERTY(ROMDATA_RELEASE_POSTFIX romdata RELEASE_POSTFIX)
+	# FIXME: This doesn't seem to work...
+	#SET_PROPERTY(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS_DEBUG   " /DELAYLOAD:romdata${ROMDATA_DEBUG_POSTFIX}")
+	#SET_PROPERTY(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS_RELEASE " /DELAYLOAD:romdata${ROMDATA_RELEASE_POSTFIX}")
+	SET(CMAKE_EXE_LINKER_FLAGS_DEBUG   "${CMAKE_EXE_LINKER_FLAGS_DEBUG} /DELAYLOAD:romdata${ROMDATA_DEBUG_POSTFIX}.dll")
+	SET(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DELAYLOAD:romdata${ROMDATA_RELEASE_POSTFIX}.dll")
+ENDIF(RP_LIBROMDATA_IS_DLL)
+
 # Include paths:
 # - Public: Current source and binary directories.
 # - Private: Parent source and binary directories,

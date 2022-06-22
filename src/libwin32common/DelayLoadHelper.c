@@ -46,8 +46,17 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 {
 	// We only want to handle DLLs included with rom-properties.
 	// System DLLs should be handled normally.
+
+	// libromdata DLL is "romdata-X.dll" (MSVC) or "libromdata-X.dll" (MinGW).
+#ifdef _MSC_VER
+#  define ROMDATA_PREFIX
+#else
+#  define ROMDATA_PREFIX "lib"
+#endif
+
 	static const char *const dll_whitelist[] = {
 #ifdef NDEBUG
+		ROMDATA_PREFIX "romdata-1.dll",
 		"zlib1.dll",
 		"libpng16.dll",
 		"tinyxml2.dll",
@@ -55,6 +64,7 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 		"lz4.dll",
 		"minilzo.dll",
 #else /* !NDEBUG */
+		ROMDATA_PREFIX "romdata-1d.dll",
 		"zlib1d.dll",
 		"libpng16d.dll",
 		"tinyxml2d.dll",
