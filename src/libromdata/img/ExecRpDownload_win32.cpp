@@ -21,11 +21,6 @@
 using std::string;
 using std::wstring;
 
-// Defined in win32/DllMain.cpp.
-extern "C" {
-	extern TCHAR dll_filename[];
-}
-
 namespace LibRomData {
 
 /**
@@ -36,6 +31,16 @@ namespace LibRomData {
 int CacheManager::execRpDownload(const string &filteredCacheKey)
 {
 	// The executable should be located in the DLL directory.
+	TCHAR dll_filename[MAX_PATH];
+	DWORD dwResult = GetModuleFileName(HINST_THISCOMPONENT,
+		dll_filename, _countof(dll_filename));
+	if (dwResult == 0 || GetLastError() != ERROR_SUCCESS) {
+		// Cannot get the DLL filename.
+		// TODO: Windows XP doesn't SetLastError() if the
+		// filename is too big for the buffer.
+		return -EINVAL;
+	}
+
 	tstring rp_download_exe = dll_filename;
 	tstring::size_type bs = rp_download_exe.rfind(_T('\\'));
 	if (bs == tstring::npos) {

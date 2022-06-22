@@ -32,7 +32,7 @@ namespace LibRpTexture { namespace ImageDecoder {
  */
 ATTR_ACCESS_SIZE(read_only, 3, 4)
 rp_image *fromASTC(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz,
+	const uint8_t *RESTRICT img_buf, size_t img_siz,
 	uint8_t block_x, uint8_t block_y)
 {
 	// Verify parameters.
@@ -47,9 +47,9 @@ rp_image *fromASTC(int width, int height,
 
 	// Get the expected size.
 	const unsigned int expected_size_in = ImageSizeCalc::calcImageSizeASTC(width, height, block_x, block_y);
-	assert(img_siz >= static_cast<int>(expected_size_in));
+	assert(img_siz >= expected_size_in);
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < static_cast<int>(expected_size_in))
+	    img_siz < expected_size_in)
 	{
 		return nullptr;
 	}

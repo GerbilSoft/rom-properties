@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * stdafx.h: Common definitions and includes.                              *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -70,7 +70,7 @@
 
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector
-#include "librpbase/uvector.h"
+#include "uvector.h"
 
 // librpbase DiscReader
 #include "librpbase/disc/IDiscReader.hpp"

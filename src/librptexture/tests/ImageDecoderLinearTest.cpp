@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture/tests)               *
  * ImageDecoderLinearTest.cpp: Linear image decoding tests with SSSE3.     *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,11 +11,18 @@
 #include "tcharx.h"
 #include "common.h"
 
-// librpcpu, librpbase, librptexture
+// librpcpu, librpbase
 #include "librpcpu/byteswap_rp.h"
 #include "librpbase/aligned_malloc.h"
+
+// librptexture
 #include "librptexture/img/rp_image.hpp"
 #include "librptexture/decoder/ImageDecoder.hpp"
+#ifdef _WIN32
+// rp_image backend registration.
+#  include "librptexture/img/RpGdiplusBackend.hpp"
+#endif /* _WIN32 */
+using namespace LibRpTexture;
 
 // C includes.
 #include <stdint.h>
@@ -77,7 +84,13 @@ class ImageDecoderLinearTest : public ::testing::TestWithParam<ImageDecoderLinea
 			, m_img_buf(nullptr)
 			, m_img_buf_len(0)
 			, m_img(nullptr)
-		{ }
+		{
+#ifdef _WIN32
+			// Register RpGdiplusBackend.
+			// TODO: Static initializer somewhere?
+			rp_image::setBackendCreatorFn(RpGdiplusBackend::creator_fn);
+#endif /* _WIN32 */
+		}
 
 		~ImageDecoderLinearTest()
 		{
@@ -395,14 +408,14 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_test)
 		case 24:
 			// 24-bit image.
 			m_img = ImageDecoder::fromLinear24_cpp(mode.src_pxf, 128, 128,
-				m_img_buf, static_cast<int>(m_img_buf_len), mode.stride);
+				m_img_buf, m_img_buf_len, mode.stride);
 			break;
 
 		case 32:
 			// 32-bit image.
 			m_img = ImageDecoder::fromLinear32_cpp(mode.src_pxf, 128, 128,
 				reinterpret_cast<const uint32_t*>(m_img_buf),
-				static_cast<int>(m_img_buf_len), mode.stride);
+				m_img_buf_len, mode.stride);
 			break;
 
 		case 15:
@@ -410,7 +423,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_test)
 			// 15/16-bit image.
 			m_img = ImageDecoder::fromLinear16_cpp(mode.src_pxf, 128, 128,
 				reinterpret_cast<const uint16_t*>(m_img_buf),
-				static_cast<int>(m_img_buf_len), mode.stride);
+				m_img_buf_len, mode.stride);
 			break;
 
 		default:
@@ -438,7 +451,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_benchmark)
 			// 24-bit image.
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				m_img = ImageDecoder::fromLinear24_cpp(mode.src_pxf, 128, 128,
-					m_img_buf, static_cast<int>(m_img_buf_len), mode.stride);
+					m_img_buf, m_img_buf_len, mode.stride);
 				UNREF_AND_NULL(m_img);
 			}
 			break;
@@ -448,7 +461,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_benchmark)
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				m_img = ImageDecoder::fromLinear32_cpp(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint32_t*>(m_img_buf),
-					static_cast<int>(m_img_buf_len), mode.stride);
+					m_img_buf_len, mode.stride);
 				UNREF_AND_NULL(m_img);
 			}
 			break;
@@ -459,7 +472,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_benchmark)
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				m_img = ImageDecoder::fromLinear16_cpp(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint16_t*>(m_img_buf),
-					static_cast<int>(m_img_buf_len), mode.stride);
+					m_img_buf_len, mode.stride);
 				UNREF_AND_NULL(m_img);
 			}
 			break;
@@ -497,7 +510,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_sse2_test)
 			// 15/16-bit image.
 			m_img = ImageDecoder::fromLinear16_sse2(mode.src_pxf, 128, 128,
 				reinterpret_cast<const uint16_t*>(m_img_buf),
-				static_cast<int>(m_img_buf_len), mode.stride);
+				m_img_buf_len, mode.stride);
 			break;
 
 		default:
@@ -538,7 +551,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_sse2_benchmark)
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				m_img = ImageDecoder::fromLinear16_sse2(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint16_t*>(m_img_buf),
-					static_cast<int>(m_img_buf_len), mode.stride);
+					m_img_buf_len, mode.stride);
 				UNREF_AND_NULL(m_img);
 			}
 			break;
@@ -569,14 +582,14 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_test)
 		case 24:
 			// 24-bit image.
 			m_img = ImageDecoder::fromLinear24_ssse3(mode.src_pxf, 128, 128,
-				m_img_buf, static_cast<int>(m_img_buf_len), mode.stride);
+				m_img_buf, m_img_buf_len, mode.stride);
 			break;
 
 		case 32:
 			// 32-bit image.
 			m_img = ImageDecoder::fromLinear32_ssse3(mode.src_pxf, 128, 128,
 				reinterpret_cast<const uint32_t*>(m_img_buf),
-				static_cast<int>(m_img_buf_len), mode.stride);
+				m_img_buf_len, mode.stride);
 			break;
 
 		case 15:
@@ -615,7 +628,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_benchmark)
 			// 24-bit image.
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				m_img = ImageDecoder::fromLinear24_ssse3(mode.src_pxf, 128, 128,
-					m_img_buf, static_cast<int>(m_img_buf_len), mode.stride);
+					m_img_buf, m_img_buf_len, mode.stride);
 				UNREF_AND_NULL(m_img);
 			}
 			break;
@@ -625,7 +638,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_benchmark)
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				m_img = ImageDecoder::fromLinear32_ssse3(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint32_t*>(m_img_buf),
-					static_cast<int>(m_img_buf_len), mode.stride);
+					m_img_buf_len, mode.stride);
 				UNREF_AND_NULL(m_img);
 			}
 			break;
@@ -658,14 +671,14 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_test)
 		case 24:
 			// 24-bit image.
 			m_img = ImageDecoder::fromLinear24(mode.src_pxf, 128, 128,
-				m_img_buf, static_cast<int>(m_img_buf_len), mode.stride);
+				m_img_buf, m_img_buf_len, mode.stride);
 			break;
 
 		case 32:
 			// 32-bit image.
 			m_img = ImageDecoder::fromLinear32(mode.src_pxf, 128, 128,
 				reinterpret_cast<const uint32_t*>(m_img_buf),
-				static_cast<int>(m_img_buf_len), mode.stride);
+				m_img_buf_len, mode.stride);
 			break;
 
 		case 15:
@@ -673,7 +686,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_test)
 			// 15/16-bit image.
 			m_img = ImageDecoder::fromLinear16(mode.src_pxf, 128, 128,
 				reinterpret_cast<const uint16_t*>(m_img_buf),
-				static_cast<int>(m_img_buf_len), mode.stride);
+				m_img_buf_len, mode.stride);
 			return;
 
 		default:
@@ -701,7 +714,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_benchmark)
 			// 24-bit image.
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				m_img = ImageDecoder::fromLinear24(mode.src_pxf, 128, 128,
-					m_img_buf, static_cast<int>(m_img_buf_len), mode.stride);
+					m_img_buf, m_img_buf_len, mode.stride);
 				UNREF_AND_NULL(m_img);
 			}
 			break;
@@ -711,7 +724,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_benchmark)
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				m_img = ImageDecoder::fromLinear32(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint32_t*>(m_img_buf),
-					static_cast<int>(m_img_buf_len), mode.stride);
+					m_img_buf_len, mode.stride);
 				UNREF_AND_NULL(m_img);
 			}
 			break;
@@ -722,7 +735,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_dispatch_benchmark)
 			for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
 				m_img = ImageDecoder::fromLinear16(mode.src_pxf, 128, 128,
 					reinterpret_cast<const uint16_t*>(m_img_buf),
-					static_cast<int>(m_img_buf_len), mode.stride);
+					m_img_buf_len, mode.stride);
 				UNREF_AND_NULL(m_img);
 			}
 			break;

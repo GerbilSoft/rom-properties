@@ -29,7 +29,7 @@
 
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector
-#include "librpbase/uvector.h"
+#include "uvector.h"
 
 namespace LibRpBase {
 #ifdef ENABLE_DECRYPTION

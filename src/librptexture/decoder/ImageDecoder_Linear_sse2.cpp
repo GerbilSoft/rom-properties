@@ -229,7 +229,7 @@ static inline void T_ARGB16_sse2(
  */
 rp_image *fromLinear16_sse2(PixelFormat px_format,
 	int width, int height,
-	const uint16_t *RESTRICT img_buf, int img_siz, int stride)
+	const uint16_t *RESTRICT img_buf, size_t img_siz, int stride)
 {
 	ASSERT_ALIGNMENT(16, img_buf);
 	static const int bytespp = 2;
@@ -255,9 +255,9 @@ rp_image *fromLinear16_sse2(PixelFormat px_format,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= ((width * height) * bytespp));
+	assert(img_siz >= (((size_t)width * (size_t)height) * bytespp));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((width * height) * bytespp))
+	    img_siz < (((size_t)width * (size_t)height) * bytespp))
 	{
 		return nullptr;
 	}

@@ -9,6 +9,7 @@
 // Reference: http://otb.manusoft.com/2013/01/using-delayload-to-specify-dependent-dll-path.htm
 #include "stdafx.h"
 #include "DelayLoadHelper.h"
+#include "libromdata/config.libromdata.h"
 
 // C includes.
 #include <stdlib.h>
@@ -46,18 +47,28 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 {
 	// We only want to handle DLLs included with rom-properties.
 	// System DLLs should be handled normally.
+
+	// libromdata DLL is "romdata-X.dll" (MSVC) or "libromdata-X.dll" (MinGW).
+#ifdef _MSC_VER
+#  define ROMDATA_PREFIX
+#else
+#  define ROMDATA_PREFIX "lib"
+#endif
+
 	static const char *const dll_whitelist[] = {
 #ifdef NDEBUG
+		ROMDATA_PREFIX "romdata-" LIBROMDATA_SOVERSION_STR ".dll",
 		"zlib1.dll",
 		"libpng16.dll",
-		"tinyxml2.dll",
+		"tinyxml2-9.dll",
 		"zstd.dll",
 		"lz4.dll",
 		"minilzo.dll",
 #else /* !NDEBUG */
+		ROMDATA_PREFIX "romdata-" LIBROMDATA_SOVERSION_STR "d.dll",
 		"zlib1d.dll",
 		"libpng16d.dll",
-		"tinyxml2d.dll",
+		"tinyxml2-9d.dll",
 		"zstdd.dll",
 		"lz4d.dll",
 		"minilzod.dll",

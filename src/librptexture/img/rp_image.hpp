@@ -58,6 +58,7 @@ class rp_image : public RefBase
 		 * @param height Image height.
 		 * @param format Image format.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		rp_image(int width, int height, Format format);
 
 		/**
@@ -85,7 +86,7 @@ class rp_image : public RefBase
 		}
 
 		/**
-		 * Special case unref() function to allow
+		 * Special case ref() function to allow
 		 * const rp_image* to be ref'd.
 		 */
 		inline const rp_image *ref(void) const
@@ -121,6 +122,7 @@ class rp_image : public RefBase
 		 * Set the image backend creator function.
 		 * @param backend Image backend creator function.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static void setBackendCreatorFn(rp_image_backend_creator_fn backend_fn);
 
 		/**
@@ -134,6 +136,7 @@ class rp_image : public RefBase
 		 * Get this image's backend object.
 		 * @return Image backend object.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const rp_image_backend *backend(void) const;
 
 	public:
@@ -143,24 +146,28 @@ class rp_image : public RefBase
 		 * Is the image valid?
 		 * @return True if the image is valid.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		bool isValid(void) const;
 
 		/**
 		 * Get the image width.
 		 * @return Image width.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int width(void) const;
 
 		/**
 		 * Get the image height.
 		 * @return Image height.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int height(void) const;
 
 		/**
 		 * Is this rp_image square?
 		 * @return True if width == height; false if not.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		bool isSquare(void) const;
 
 		/**
@@ -168,6 +175,7 @@ class rp_image : public RefBase
 		 * This includes memory alignment padding.
 		 * @return Bytes per line.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int stride(void) const;
 
 		/**
@@ -175,18 +183,21 @@ class rp_image : public RefBase
 		 * This does not include memory alignment padding.
 		 * @return Number of active bytes per line.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int row_bytes(void) const;
 
 		/**
 		 * Get the image format.
 		 * @return Image format.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		Format format(void) const;
 
 		/**
 		 * Get a pointer to the first line of image data.
 		 * @return Image data.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const void *bits(void) const;
 
 		/**
@@ -194,6 +205,7 @@ class rp_image : public RefBase
 		 * TODO: detach()
 		 * @return Image data.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		void *bits(void);
 
 		/**
@@ -201,6 +213,7 @@ class rp_image : public RefBase
 		 * @param i Line number.
 		 * @return Line of image data, or nullptr if i is out of range.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const void *scanLine(int i) const;
 
 		/**
@@ -222,6 +235,7 @@ class rp_image : public RefBase
 		 * Get the image palette.
 		 * @return Pointer to image palette, or nullptr if not a paletted image.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const uint32_t *palette(void) const;
 
 		/**
@@ -234,6 +248,7 @@ class rp_image : public RefBase
 		 * Get the number of elements in the image palette.
 		 * @return Number of elements in the image palette, or 0 if not a paletted image.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		unsigned int palette_len(void) const;
 
 		/**
@@ -242,6 +257,7 @@ class rp_image : public RefBase
 		 * color instead of alpha transparency.
 		 * @return Transparent color index, or -1 if ARGB32 is used or the palette has alpha transparent colors.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int tr_idx(void) const;
 
 		/**
@@ -283,6 +299,7 @@ class rp_image : public RefBase
 		 * @param sBIT	[out] sBIT_t struct.
 		 * @return 0 on success; non-zero if not set or error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int get_sBIT(sBIT_t *sBIT) const;
 
 		/**
@@ -297,12 +314,14 @@ class rp_image : public RefBase
 		 * Duplicate the rp_image.
 		 * @return New rp_image with a copy of the image data.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		rp_image *dup(void) const;
 
 		/**
 		 * Duplicate the rp_image, converting to ARGB32 if necessary.
 		 * @return New ARGB32 rp_image with a copy of the image data.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		rp_image *dup_ARGB32(void) const;
 
 		/**
@@ -314,6 +333,7 @@ class rp_image : public RefBase
 		 *
 		 * @return New rp_image with a squared version of the original, or nullptr on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		rp_image *squared(void) const;
 
 		/**
@@ -365,6 +385,7 @@ class rp_image : public RefBase
 		 * @param bgColor Background color for empty space. (default is ARGB 0x00000000)
 		 * @return New rp_image with a resized version of the original, or nullptr on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		rp_image *resized(int width, int height,
 			Alignment alignment = AlignDefault,
 			uint32_t bgColor = 0x00000000) const;
@@ -377,6 +398,7 @@ class rp_image : public RefBase
 		 *
 		 * @return 0 on success; non-zero on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int un_premultiply_cpp(void);
 
 #ifdef RP_IMAGE_HAS_SSE41
@@ -388,6 +410,7 @@ class rp_image : public RefBase
 		 *
 		 * @return 0 on success; non-zero on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int un_premultiply_sse41(void);
 #endif /* RP_IMAGE_HAS_SSE41 */
 
@@ -405,6 +428,7 @@ class rp_image : public RefBase
 		 * @param px	[in] ARGB32 pixel to premultiply.
 		 * @return Premultiplied pixel.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static uint32_t premultiply_pixel(uint32_t px);
 
 		/**
@@ -414,6 +438,7 @@ class rp_image : public RefBase
 		 *
 		 * @return 0 on success; non-zero on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int premultiply(void);
 
 		/**
@@ -475,6 +500,7 @@ class rp_image : public RefBase
 		 * @param op Flip operation.
 		 * @return Flipped image, or nullptr on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		rp_image *flip(FlipOp op) const;
 
 		/**

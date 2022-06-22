@@ -321,7 +321,7 @@ rp_image *iQuePlayerPrivate::loadImage(off64_t address, size_t z_size, size_t un
 
 	// Convert the image.
 	return ImageDecoder::fromLinear16(px_format,
-		w, h, img_buf.get(), static_cast<int>(unz_size));
+		w, h, img_buf.get(), unz_size);
 }
 
 /**

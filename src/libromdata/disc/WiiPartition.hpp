@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiPartition.hpp: Wii partition reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -187,14 +187,14 @@ class WiiPartition : public GcnPartition
 		 * @param keyIdx Encryption key index.
 		 * @return Encryption key name (in ASCII), or nullptr on error.
 		 */
-		static const char *encryptionKeyName_static(int keyIdx);
+		static const char* encryptionKeyName_static(int keyIdx);
 
 		/**
 		 * Get the verification data for a given encryption key index.
 		 * @param keyIdx Encryption key index.
 		 * @return Verification data. (16 bytes)
 		 */
-		static const uint8_t *encryptionVerifyData_static(int keyIdx);
+		static const uint8_t* encryptionVerifyData_static(int keyIdx);
 #endif /* ENABLE_DECRYPTION */
 };
 

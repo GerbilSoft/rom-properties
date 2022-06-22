@@ -44,7 +44,7 @@ static const unsigned int SMD_BLOCK_SIZE = 16384;
  * @param pDest	[out] Destination block. (Must be 16 KB.)
  * @param pSrc	[in] Source block. (Must be 16 KB.)
  */
-void decodeBlock_cpp(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
+void RP_LIBROMDATA_PUBLIC decodeBlock_cpp(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
 
 #if SMD_HAS_MMX
 /**
@@ -54,7 +54,7 @@ void decodeBlock_cpp(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
  * @param pDest	[out] Destination block. (Must be 16 KB.)
  * @param pSrc	[in] Source block. (Must be 16 KB.)
  */
-void decodeBlock_mmx(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
+void RP_LIBROMDATA_PUBLIC decodeBlock_mmx(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
 #endif /* SMD_HAS_MMX */
 
 #if SMD_HAS_SSE2
@@ -65,7 +65,7 @@ void decodeBlock_mmx(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
  * @param pDest	[out] Destination block. (Must be 16 KB.)
  * @param pSrc	[in] Source block. (Must be 16 KB.)
  */
-void decodeBlock_sse2(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
+void RP_LIBROMDATA_PUBLIC decodeBlock_sse2(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
 #endif /* SMD_HAS_SSE2 */
 
 /** Dispatch functions. **/
@@ -90,7 +90,7 @@ static inline void decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT 
 
 #  else /* !defined(SMD_ALWAYS_HAS_SSE2) */
 // System does support IFUNC, and we have to use a dispatch function.
-void decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
+void RP_LIBROMDATA_PUBLIC decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
 #  endif /* defined(SMD_ALWAYS_HAS_SSE2) */
 #else
 

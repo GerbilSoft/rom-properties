@@ -91,13 +91,17 @@ OPTION(ENABLE_PVRTC "Enable the PowerVR Native SDK subset for PVRTC decompressio
 OPTION(ENABLE_ASTC "Enable ASTC decoding using the Basis Universal decoder." ON)
 
 # Enable precompiled headers.
-# FIXME: Not working properly on older gcc. Use cmake-3.16.0's built-in PCH?
-IF(MSVC)
-	SET(PCH_DEFAULT ON)
+# NOTE: Requires CMake 3.16.0.
+IF(NOT (CMAKE_VERSION VERSION_LESS 3.16.0))
+	IF(MSVC)
+		SET(PCH_DEFAULT ON)
+	ELSE()
+		SET(PCH_DEFAULT OFF)
+	ENDIF()
+	OPTION(ENABLE_PCH "Enable precompiled headers for faster builds." ${PCH_DEFAULT})
 ELSE()
-	SET(PCH_DEFAULT OFF)
+	SET(ENABLE_PCH OFF CACHE INTERNAL "Enable precompiled headers for faster builds." FORCE)
 ENDIF()
-OPTION(ENABLE_PCH "Enable precompiled headers for faster builds." ${PCH_DEFAULT})
 
 # Link-time optimization.
 # FIXME: Not working in clang builds and Ubuntu's gcc...

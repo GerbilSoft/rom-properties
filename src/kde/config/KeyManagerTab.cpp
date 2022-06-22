@@ -317,10 +317,25 @@ KeyManagerTab::~KeyManagerTab()
  */
 void KeyManagerTab::changeEvent(QEvent *event)
 {
-	if (event->type() == QEvent::LanguageChange) {
-		// Retranslate the UI.
-		Q_D(KeyManagerTab);
-		d->ui.retranslateUi(this);
+	Q_D(KeyManagerTab);
+	switch (event->type()) {
+		case QEvent::LanguageChange:
+			// Retranslate the UI.
+			d->ui.retranslateUi(this);
+			break;
+		case QEvent::FontChange:
+			// Update the KeyStoreModel fonts.
+			d->keyStoreModel->systemFontChanged();
+			break;
+		case QEvent::PaletteChange:
+			// Update the KeyStoreModel icons.
+			// NOTE: This only handles light vs. dark.
+			// FIXME: Find a notification for the system icon theme changing entirely,
+			// e.g. Breeze -> Oxygen.
+			d->keyStoreModel->systemPaletteChanged();
+			break;
+		default:
+			break;
 	}
 
 	// Pass the event to the base class.

@@ -304,7 +304,7 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 	int height = (pvr3Header.height > 0 ? pvr3Header.height : 1);
 
 	// Calculate the expected size.
-	uint32_t expected_size;
+	size_t expected_size;
 	const FmtLkup_t *fmtLkup = nullptr;
 	if (pvr3Header.channel_depth != 0) {
 		// Uncompressed format.

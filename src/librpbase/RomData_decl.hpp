@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomData_decl.hpp: ROM data base class. (Subclass macros)                *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -26,6 +26,7 @@ namespace LibRpBase {
 /**
  * Initial declaration for a RomData subclass.
  * Declares functions common to all RomData subclasses.
+ * @param klass Class name
  */
 #define ROMDATA_DECL_BEGIN(klass) \
 class klass##Private; \
@@ -33,6 +34,7 @@ class klass final : public LibRpBase::RomData { \
 	public: \
 		explicit klass(LibRpFile::IRpFile *file); \
 	protected: \
+		RP_LIBROMDATA_LOCAL \
 		virtual ~klass() { } \
 	private: \
 		typedef RomData super; \
@@ -73,6 +75,7 @@ class klass final : public LibRpBase::RomData { \
 		 * Called by RomData::fields() if the field data hasn't been loaded yet. \
 		 * @return 0 on success; negative POSIX error code on error. \
 		 */ \
+		RP_LIBROMDATA_LOCAL \
 		int loadFieldData(void) final;
 
 /**
@@ -85,6 +88,7 @@ class klass final : public LibRpBase::RomData { \
 		 * Called by RomData::metaData() if the field data hasn't been loaded yet. \
 		 * @return Number of metadata properties read on success; negative POSIX error code on error. \
 		 */ \
+		RP_LIBROMDATA_LOCAL \
 		int loadMetaData(void) final;
 
 /**
@@ -222,6 +226,7 @@ class klass final : public LibRpBase::RomData { \
 		 * Internal function; called by RomData::romOps(). \
 		 * @return List of operations. \
 		 */ \
+		RP_LIBROMDATA_LOCAL \
 		std::vector<RomOp> romOps_int(void) const final; \
 		\
 		/** \
@@ -231,6 +236,7 @@ class klass final : public LibRpBase::RomData { \
 		 * @param pParams	[in/out] Parameters and results. (for e.g. UI updates) \
 		 * @return 0 on success; negative POSIX error code on error.
 		 */ \
+		RP_LIBROMDATA_LOCAL \
 		int doRomOp_int(int id, RomOpParams *pParams) final;
 
 /**

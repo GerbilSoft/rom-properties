@@ -142,7 +142,7 @@ const rp_image *ValveVTF3Private::loadImage(void)
 	const int height = (vtf3Header.height > 0 ? vtf3Header.height : 1);
 
 	// Calculate the expected size.
-	unsigned int expected_size = vtf3Header.width * height;
+	size_t expected_size = vtf3Header.width * height;
 	if (!(vtf3Header.flags & VTF3_FLAG_ALPHA)) {
 		// Image does not have an alpha channel,
 		// which means it's DXT1 and thus 4bpp.

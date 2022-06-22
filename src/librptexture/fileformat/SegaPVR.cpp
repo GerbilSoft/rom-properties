@@ -423,7 +423,7 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 
 	const unsigned int pvrDataStart = gbix_len + sizeof(PVR_Header);
 	uint32_t mipmap_size = 0;
-	uint32_t expected_size = 0;
+	size_t expected_size = 0;
 
 	// Do we need to skip mipmap data?
 	switch (pvrHeader.pvr.img_data_type) {
@@ -696,10 +696,10 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 
 		case PVR_IMG_VQ: {
 			// VQ images have a 1024-entry palette.
-			static const unsigned int pal_siz = 1024*2;
+			static const size_t pal_siz = 1024U * 2;
 			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(buf.get());
 			const uint8_t *const img_buf = buf.get() + pal_siz;
-			const unsigned int img_siz = expected_size - pal_siz;
+			const size_t img_siz = expected_size - pal_siz;
 
 			img = ImageDecoder::fromDreamcastVQ16(px_format,
 				false, false,
@@ -728,11 +728,11 @@ const rp_image *SegaPVRPrivate::loadPvrImage(void)
 
 		case PVR_IMG_SMALL_VQ: {
 			// Small VQ images have up to 1024 palette entries based on width.
-			const unsigned int pal_siz =
+			const size_t pal_siz =
 				ImageDecoder::calcDreamcastSmallVQPaletteEntries_NoMipmaps(pvrHeader.width) * 2;
 			const uint16_t *const pal_buf = reinterpret_cast<const uint16_t*>(buf.get());
 			const uint8_t *const img_buf = buf.get() + pal_siz;
-			const unsigned int img_siz = expected_size - pal_siz;
+			const size_t img_siz = expected_size - pal_siz;
 
 			img = ImageDecoder::fromDreamcastVQ16(px_format,
 				true, false,
@@ -889,7 +889,7 @@ const rp_image *SegaPVRPrivate::loadGvrImage(void)
 	const uint32_t file_sz = static_cast<uint32_t>(file->size());
 
 	const unsigned int pvrDataStart = gbix_len + sizeof(PVR_Header);
-	uint32_t expected_size = (pvrHeader.width * pvrHeader.height);
+	size_t expected_size = ((size_t)pvrHeader.width * (size_t)pvrHeader.height);
 
 	switch (pvrHeader.gvr.img_data_type) {
 		case GVR_IMG_I4:

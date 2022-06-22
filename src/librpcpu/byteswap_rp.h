@@ -19,6 +19,8 @@
 #include "byteorder.h"
 #include "cpu_dispatch.h"
 
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
+
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
 #  include "cpuflags_x86.h"
 /* MSVC does not support MMX intrinsics in 64-bit builds. */
@@ -123,6 +125,7 @@ extern "C" {
  * @param ptr Pointer to array to swap. (MUST be 16-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
  */
+RP_LIBROMDATA_PUBLIC
 void __byte_swap_16_array_c(uint16_t *ptr, size_t n);
 
 /**
@@ -131,6 +134,7 @@ void __byte_swap_16_array_c(uint16_t *ptr, size_t n);
  * @param ptr Pointer to array to swap. (MUST be 32-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
  */
+RP_LIBROMDATA_PUBLIC
 void __byte_swap_32_array_c(uint32_t *ptr, size_t n);
 
 #ifdef BYTESWAP_HAS_MMX
@@ -140,6 +144,7 @@ void __byte_swap_32_array_c(uint32_t *ptr, size_t n);
  * @param ptr Pointer to array to swap. (MUST be 16-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
  */
+RP_LIBROMDATA_PUBLIC
 void __byte_swap_16_array_mmx(uint16_t *ptr, size_t n);
 
 /**
@@ -148,6 +153,7 @@ void __byte_swap_16_array_mmx(uint16_t *ptr, size_t n);
  * @param ptr Pointer to array to swap. (MUST be 32-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
  */
+RP_LIBROMDATA_PUBLIC
 void __byte_swap_32_array_mmx(uint32_t *ptr, size_t n);
 #endif /* BYTESWAP_HAS_MMX */
 
@@ -158,6 +164,7 @@ void __byte_swap_32_array_mmx(uint32_t *ptr, size_t n);
  * @param ptr Pointer to array to swap. (MUST be 16-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
  */
+RP_LIBROMDATA_PUBLIC
 void __byte_swap_16_array_sse2(uint16_t *ptr, size_t n);
 
 /**
@@ -166,6 +173,7 @@ void __byte_swap_16_array_sse2(uint16_t *ptr, size_t n);
  * @param ptr Pointer to array to swap. (MUST be 32-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
  */
+RP_LIBROMDATA_PUBLIC
 void __byte_swap_32_array_sse2(uint32_t *ptr, size_t n);
 #endif /* BYTESWAP_HAS_SSE2 */
 
@@ -176,6 +184,7 @@ void __byte_swap_32_array_sse2(uint32_t *ptr, size_t n);
  * @param ptr Pointer to array to swap. (MUST be 16-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
  */
+RP_LIBROMDATA_PUBLIC
 void __byte_swap_16_array_ssse3(uint16_t *ptr, size_t n);
 
 /**
@@ -184,6 +193,7 @@ void __byte_swap_16_array_ssse3(uint16_t *ptr, size_t n);
  * @param ptr Pointer to array to swap. (MUST be 32-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
  */
+RP_LIBROMDATA_PUBLIC
 void __byte_swap_32_array_ssse3(uint32_t *ptr, size_t n);
 #endif /* BYTESWAP_HAS_SSSE3 */
 
@@ -195,6 +205,7 @@ void __byte_swap_32_array_ssse3(uint32_t *ptr, size_t n);
  * @param ptr Pointer to array to swap. (MUST be 16-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
  */
+RP_LIBROMDATA_PUBLIC
 void __byte_swap_16_array(uint16_t *ptr, size_t n);
 
 /**
@@ -202,6 +213,7 @@ void __byte_swap_16_array(uint16_t *ptr, size_t n);
  * @param ptr Pointer to array to swap. (MUST be 32-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
  */
+RP_LIBROMDATA_PUBLIC
 void __byte_swap_32_array(uint32_t *ptr, size_t n);
 
 #else /* !HAVE_IFUNC && !(defined(RP_CPU_I386) || defined(RP_CPU_AMD64)) */

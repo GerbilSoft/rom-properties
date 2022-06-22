@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RpFile_IStream.hpp: IRpFile using an IStream*.                          *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -55,7 +55,7 @@ RpFile_IStream::RpFile_IStream(IStream *pStream, bool gzip)
 	// TODO: Proper writable check.
 	m_isWritable = true;
 
-	if (gzip) {
+	if (gzip) { do {
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 		// Delay load verification.
 		// TODO: Only if linked with /DELAYLOAD?
@@ -70,67 +70,72 @@ RpFile_IStream::RpFile_IStream(IStream *pStream, bool gzip)
 		get_crc_table();
 #endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
 
-		// for IStream::Seek()
-		LARGE_INTEGER li;
-
 		// Check for a gzipped file.
 		uint16_t gzmagic;
 		ULONG cbRead;
 		HRESULT hr = m_pStream->Read(&gzmagic, (ULONG)sizeof(gzmagic), &cbRead);
-		if (SUCCEEDED(hr) && cbRead == (ULONG)sizeof(gzmagic) &&
-		    gzmagic == be16_to_cpu(0x1F8B))
-		{
-			// gzip magic found!
-			// Get the uncompressed size at the end of the file.
-			ULARGE_INTEGER uliFileSize;
-			li.QuadPart = -4;
-			hr = m_pStream->Seek(li, STREAM_SEEK_END, &uliFileSize);
-			if (SUCCEEDED(hr)) {
-				uliFileSize.QuadPart += 4;
-				hr = m_pStream->Read(&m_z_uncomp_sz, (ULONG)sizeof(m_z_uncomp_sz), &cbRead);
-				if (SUCCEEDED(hr) && cbRead == (ULONG)sizeof(m_z_uncomp_sz)) {
-					m_z_uncomp_sz = le32_to_cpu(m_z_uncomp_sz);
-					if (m_z_uncomp_sz >= uliFileSize.QuadPart-(10+8)) {
-						// Valid filesize.
-						// Initialize zlib.
-						// NOTE: m_pZstm *must* be zero-initialized.
-						// Otherwise, inflateInit() will crash.
-						m_pZstm = static_cast<z_stream*>(calloc(1, sizeof(z_stream)));
-						if (m_pZstm) {
-							// Make sure the CRC32 table is initialized.
-							get_crc_table();
+		if (FAILED(hr) || cbRead != (ULONG)sizeof(gzmagic) ||
+		    gzmagic != be16_to_cpu(0x1F8B))
+			break;
 
-							int err = inflateInit2(m_pZstm, 16 + MAX_WBITS);
-							if (err == Z_OK) {
-								// Allocate the zlib buffer.
-								m_pZbuf = static_cast<uint8_t*>(malloc(ZLIB_BUFFER_SIZE));
-								if (m_pZbuf) {
-									m_isCompressed = true;
-								} else {
-									// malloc() failed.
-									inflateEnd(m_pZstm);
-									free(m_pZstm);
-									m_pZstm = nullptr;
-									m_z_uncomp_sz = 0;
-								}
-							} else {
-								// Error initializing zlib.
-								free(m_pZstm);
-								m_pZstm = nullptr;
-								m_z_uncomp_sz = 0;
-							}
-						}
-					}
-				}
+		// gzip magic found!
+		// Get the uncompressed size at the end of the file.
+		LARGE_INTEGER li;
+		ULARGE_INTEGER uliFileSize;
+		li.QuadPart = -4;
+		hr = m_pStream->Seek(li, STREAM_SEEK_END, &uliFileSize);
+		if (FAILED(hr))
+			break;
+
+		uliFileSize.QuadPart += 4;
+		hr = m_pStream->Read(&m_z_uncomp_sz, (ULONG)sizeof(m_z_uncomp_sz), &cbRead);
+		if (FAILED(hr) || cbRead != (ULONG)sizeof(m_z_uncomp_sz))
+			break;
+
+		m_z_uncomp_sz = le32_to_cpu(m_z_uncomp_sz);
+		if (m_z_uncomp_sz <= uliFileSize.QuadPart-(10+8))
+			break;
+
+		// Valid filesize.
+		// Initialize zlib.
+		// NOTE: m_pZstm *must* be zero-initialized.
+		// Otherwise, inflateInit() will crash.
+		m_pZstm = static_cast<z_stream*>(calloc(1, sizeof(z_stream)));
+		if (!m_pZstm)
+			break;
+
+		// Make sure the CRC32 table is initialized.
+		get_crc_table();
+
+		int err = inflateInit2(m_pZstm, 16 + MAX_WBITS);
+		if (err == Z_OK) {
+			// Allocate the zlib buffer.
+			m_pZbuf = static_cast<uint8_t*>(malloc(ZLIB_BUFFER_SIZE));
+			if (m_pZbuf) {
+				m_isCompressed = true;
+			} else {
+				// malloc() failed.
+				inflateEnd(m_pZstm);
+				free(m_pZstm);
+				m_pZstm = nullptr;
+				m_z_uncomp_sz = 0;
 			}
+		} else {
+			// Error initializing zlib.
+			free(m_pZstm);
+			m_pZstm = nullptr;
+			m_z_uncomp_sz = 0;
 		}
+	} while (0); }
 
+	if (gzip) {
 		if (!m_pZstm) {
 			// Error initializing zlib.
 			m_z_uncomp_sz = 0;
 		}
 
 		// Rewind back to the beginning of the stream.
+		LARGE_INTEGER li;
 		li.QuadPart = 0;
 		m_pStream->Seek(li, STREAM_SEEK_SET, nullptr);
 	}

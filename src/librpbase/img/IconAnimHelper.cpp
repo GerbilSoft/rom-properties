@@ -2,13 +2,20 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IconAnimHelper.cpp: Icon animation helper.                              *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "IconAnimHelper.hpp"
 #include "img/rp_image.hpp"
+
+// IconAnimHelper isn't used by libromdata directly,
+// so use some linker hax to force linkage.
+extern "C" {
+	extern uint8_t RP_LibRpBase_IconAnimHelper_ForceLinkage;
+	uint8_t RP_LibRpBase_IconAnimHelper_ForceLinkage;
+}
 
 namespace LibRpBase {
 

@@ -2,8 +2,8 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextOut.hpp: Text output for RomData. (User-readable text)              *
  *                                                                         *
- * Copyright (c) 2016-2018 by Egor.                                        *
  * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -34,6 +34,13 @@ using std::vector;
 // librptexture
 #include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
+
+// TextOut_text isn't used by libromdata directly,
+// so use some linker hax to force linkage.
+extern "C" {
+	extern uint8_t RP_LibRpBase_TextOut_text_ForceLinkage;
+	uint8_t RP_LibRpBase_TextOut_text_ForceLinkage;
+}
 
 namespace LibRpBase {
 
@@ -745,6 +752,7 @@ ROMOutput::ROMOutput(const RomData *romdata, uint32_t lc, bool skipInternalImage
 	: romdata(romdata)
 	, lc(lc)
 	, skipInternalImages(skipInternalImages) { }
+RP_LIBROMDATA_PUBLIC
 std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	auto romdata = fo.romdata;
 	const char *const systemName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);

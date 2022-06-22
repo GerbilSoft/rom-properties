@@ -247,54 +247,58 @@ void RpFile::init(void)
 	// Check if this is a gzipped file.
 	// If it is, use transparent decompression.
 	// Reference: https://www.forensicswiki.org/wiki/Gzip
-	if (d->mode == FM_OPEN_READ_GZ) {
+	const bool tryGzip = (d->mode == FM_OPEN_READ_GZ);
+	if (tryGzip) { do {
 		uint16_t gzmagic;
 		size_t size = fread(&gzmagic, 1, sizeof(gzmagic), d->file);
-		if (size == sizeof(gzmagic) && gzmagic == be16_to_cpu(0x1F8B)) {
-			// This is a gzipped file.
-			// Get the uncompressed size at the end of the file.
-			fseeko(d->file, 0, SEEK_END);
-			off64_t real_sz = ftello(d->file);
-			if (real_sz > 10+8) {
-				int ret = fseeko(d->file, real_sz-4, SEEK_SET);
-				if (!ret) {
-					uint32_t uncomp_sz;
-					size = fread(&uncomp_sz, 1, sizeof(uncomp_sz), d->file);
-					uncomp_sz = le32_to_cpu(uncomp_sz);
-					if (size == sizeof(uncomp_sz) /*&& uncomp_sz >= real_sz-(10+8)*/) {
-						// NOTE: Uncompressed size might be smaller than the real filesize
-						// in cases where gzip doesn't help much.
-						// TODO: Add better verification heuristics?
-						d->gzsz = (off64_t)uncomp_sz;
+		if (size != sizeof(gzmagic) || gzmagic != be16_to_cpu(0x1F8B))
+			break;
 
-						// Make sure the CRC32 table is initialized.
-						get_crc_table();
+		// This is a gzipped file.
+		// Get the uncompressed size at the end of the file.
+		fseeko(d->file, 0, SEEK_END);
+		off64_t real_sz = ftello(d->file);
+		if (real_sz <= 10+8)
+			break;
 
-						// Open the file with gzdopen().
-						::rewind(d->file);
-						::fflush(d->file);
-						int gzfd_dup = ::dup(fileno(d->file));
-						if (gzfd_dup >= 0) {
-							d->gzfd = gzdopen(gzfd_dup, "r");
-							if (d->gzfd) {
-								m_isCompressed = true;
-							} else {
-								// gzdopen() failed.
-								// Close the dup()'d handle to prevent a leak.
-								::close(gzfd_dup);
-							}
-						}
-					}
-				}
+		if (fseeko(d->file, real_sz-4, SEEK_SET) != 0)
+			break;
+
+		uint32_t uncomp_sz;
+		size = fread(&uncomp_sz, 1, sizeof(uncomp_sz), d->file);
+		uncomp_sz = le32_to_cpu(uncomp_sz);
+		if (size != sizeof(uncomp_sz) /*|| uncomp_sz < real_sz-(10+8)*/)
+			break;
+
+		// NOTE: Uncompressed size might be smaller than the real filesize
+		// in cases where gzip doesn't help much.
+		// TODO: Add better verification heuristics?
+		d->gzsz = (off64_t)uncomp_sz;
+
+		// Make sure the CRC32 table is initialized.
+		get_crc_table();
+
+		// Open the file with gzdopen().
+		::rewind(d->file);
+		::fflush(d->file);
+		int gzfd_dup = ::dup(fileno(d->file));
+		if (gzfd_dup >= 0) {
+			d->gzfd = gzdopen(gzfd_dup, "r");
+			if (d->gzfd) {
+				m_isCompressed = true;
+			} else {
+				// gzdopen() failed.
+				// Close the dup()'d handle to prevent a leak.
+				::close(gzfd_dup);
 			}
 		}
+	} while (0); }
 
-		if (!d->gzfd) {
-			// Not a gzipped file.
-			// Rewind and flush the file.
-			::rewind(d->file);
-			::fflush(d->file);
-		}
+	if (tryGzip && !d->gzfd) {
+		// Not a gzipped file.
+		// Rewind and flush the file.
+		::rewind(d->file);
+		::fflush(d->file);
 	}
 }
 

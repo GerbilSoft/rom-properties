@@ -16,9 +16,10 @@
 #include "../RpWin32_sdk.h"
 #include <unknwn.h>
 
-// Interface IDs.
+// Interface IDs
 extern "C" {
-	extern const IID IID_IOwnerDataCallback;
+	static const IID IID_IOwnerDataCallback =
+		{0x44C09D56, 0x8D3B, 0x419D, {0xA4, 0x62, 0x7B, 0x95, 0x6B, 0x10, 0x5B, 0x47}};
 }
 
 class UUID_ATTR("{44C09D56-8D3B-419D-A462-7B956B105B47}")

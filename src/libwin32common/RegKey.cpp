@@ -24,6 +24,13 @@ using std::tstring;
 #include <objbase.h>
 #include "sdk/GUID_fn.h"
 
+// RegKey isn't used by libromdata directly,
+// so use some linker hax to force linkage.
+extern "C" {
+	extern uint8_t RP_LibWin32Common_RegKey_ForceLinkage;
+	uint8_t RP_LibWin32Common_RegKey_ForceLinkage;
+}
+
 namespace LibWin32Common {
 
 /**

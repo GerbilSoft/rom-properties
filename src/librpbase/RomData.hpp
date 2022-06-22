@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomData.hpp: ROM data base class.                                       *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,6 +10,7 @@
 #define __ROMPROPERTIES_LIBRPBASE_ROMDATA_HPP__
 
 #include "common.h"
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 #include "RefBase.hpp"
 #include "RomData_decl.hpp"
 
@@ -77,12 +78,14 @@ class RomData : public RefBase
 		 * Is this ROM valid?
 		 * @return True if it is; false if it isn't.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		bool isValid(void) const;
 
 		/**
 		 * Is the file open?
 		 * @return True if the file is open; false if it isn't.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		bool isOpen(void) const;
 
 		/**
@@ -100,6 +103,7 @@ class RomData : public RefBase
 		 * Get the filename that was loaded.
 		 * @return Filename, or nullptr on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const char *filename(void) const;
 
 		/**
@@ -189,6 +193,7 @@ class RomData : public RefBase
 		 * Get the class name for the user configuration.
 		 * @return Class name. (ASCII) (nullptr on error)
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const char *className(void) const;
 
 		enum class FileType {
@@ -236,12 +241,14 @@ class RomData : public RefBase
 		 * Get the general file type as a string.
 		 * @return General file type as a string, or nullptr if unknown.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const char *fileType_string(void) const;
 
 		/**
 		 * Get the file's MIME type.
 		 * @return MIME type, or nullptr if unknown.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const char *mimeType(void) const;
 
 		// TODO:
@@ -430,12 +437,14 @@ class RomData : public RefBase
 		 * Get the ROM Fields object.
 		 * @return ROM Fields object.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const RomFields *fields(void) const;
 
 		/**
 		 * Get the ROM Metadata object.
 		 * @return ROM Metadata object.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const RomMetaData *metaData(void) const;
 
 	private:
@@ -456,6 +465,7 @@ class RomData : public RefBase
 		 * @param imageType Image type to load.
 		 * @return Internal image, or nullptr if the ROM doesn't have one.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const LibRpTexture::rp_image *image(ImageType imageType) const;
 
 		/**
@@ -516,6 +526,7 @@ class RomData : public RefBase
 		 * @param imageType Image type.
 		 * @return String containing user-friendly name of an image type.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static const char *getImageTypeName(ImageType imageType);
 
 		/**
@@ -599,6 +610,7 @@ class RomData : public RefBase
 		 * Get the list of operations that can be performed on this ROM.
 		 * @return List of operations.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		std::vector<RomOp> romOps(void) const;
 
 		/**
@@ -607,6 +619,7 @@ class RomData : public RefBase
 		 * @param pParams	[in/out] Parameters and results. (for e.g. UI updates)
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int doRomOp(int id, RomOpParams *pParams);
 
 	protected:

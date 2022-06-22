@@ -62,6 +62,7 @@ class KeyManager : public ConfReader
 		 * @param res VerifyResult.
 		 * @return Description, or nullptr if invalid.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static const char *verifyResultToString(VerifyResult res);
 
 #ifdef ENABLE_DECRYPTION
@@ -70,6 +71,7 @@ class KeyManager : public ConfReader
 		 * Get the KeyManager instance.
 		 * @return KeyManager instance.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static KeyManager *instance(void);
 
 	public:
@@ -104,6 +106,7 @@ class KeyManager : public ConfReader
 		 * @return VerifyResult.
 		 */
 		ATTR_ACCESS_SIZE(read_only, 4, 5)
+		RP_LIBROMDATA_PUBLIC
 		VerifyResult getAndVerify(const char *keyName, KeyData_t *pKeyData,
 			const uint8_t *pVerifyData, unsigned int verifyLen) const;
 

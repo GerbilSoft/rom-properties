@@ -2,11 +2,16 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * propsys_xp.c: Implementation of PropSys functions not available in XP.  *
  *                                                                         *
- * Copyright (c) 2018 by David Korth.                                      *
+ * Copyright (c) 2018-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "propsys_xp.h"
+
+// RpFile_windres isn't used by libromdata directly,
+// so use some linker hax to force linkage.
+extern uint8_t RP_LibWin32Common_propsys_xp_ForceLinkage;
+uint8_t RP_LibWin32Common_propsys_xp_ForceLinkage;
 
 /**
  * Initialize a PROPVARIANT from a string vector.

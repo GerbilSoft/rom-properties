@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_win32.cpp: Standard file object. (Win32 implementation)          *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -315,7 +315,8 @@ void RpFile::init(void)
 	// Check if this is a gzipped file.
 	// If it is, use transparent decompression.
 	// Reference: https://www.forensicswiki.org/wiki/Gzip
-	if (!d->devInfo && d->mode == FM_OPEN_READ_GZ) {
+	const bool tryGzip = (!d->devInfo && d->mode == FM_OPEN_READ_GZ);
+	if (tryGzip) { do {
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 		// Delay load verification.
 		// TODO: Only if linked with /DELAYLOAD?
@@ -331,76 +332,78 @@ void RpFile::init(void)
 #endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
 
 		DWORD bytesRead;
-		BOOL bRet;
-
 		uint16_t gzmagic;
-		bRet = ReadFile(d->file, &gzmagic, sizeof(gzmagic), &bytesRead, nullptr);
-		if (bRet && bytesRead == sizeof(gzmagic) && gzmagic == be16_to_cpu(0x1F8B)) {
-			// This is a gzipped file.
-			// Get the uncompressed size at the end of the file.
-			LARGE_INTEGER liFileSize;
-			bRet = GetFileSizeEx(d->file, &liFileSize);
-			if (bRet && liFileSize.QuadPart > 10+8) {
-				LARGE_INTEGER liSeekPos;
-				liSeekPos.QuadPart = liFileSize.QuadPart - 4;
-				bRet = SetFilePointerEx(d->file, liSeekPos, nullptr, FILE_BEGIN);
-				if (bRet) {
-					uint32_t uncomp_sz;
-					bRet = ReadFile(d->file, &uncomp_sz, sizeof(uncomp_sz), &bytesRead, nullptr);
-					uncomp_sz = le32_to_cpu(uncomp_sz);
-					if (bRet && bytesRead == sizeof(uncomp_sz) /*&& uncomp_sz >= liFileSize.QuadPart-(10+8)*/) {
-						// NOTE: Uncompressed size might be smaller than the real filesize
-						// in cases where gzip doesn't help much.
-						// TODO: Add better verification heuristics?
-						d->gzsz = (off64_t)uncomp_sz;
+		BOOL bRet = ReadFile(d->file, &gzmagic, sizeof(gzmagic), &bytesRead, nullptr);
+		if (!bRet || bytesRead != sizeof(gzmagic) || gzmagic != be16_to_cpu(0x1F8B))
+			break;
 
-						liSeekPos.QuadPart = 0;
-						SetFilePointerEx(d->file, liSeekPos, nullptr, FILE_BEGIN);
-						// NOTE: Not sure if this is needed on Windows.
-						FlushFileBuffers(d->file);
+		// This is a gzipped file.
+		// Get the uncompressed size at the end of the file.
+		LARGE_INTEGER liFileSize;
+		bRet = GetFileSizeEx(d->file, &liFileSize);
+		if (!bRet || liFileSize.QuadPart <= 10+8)
+			break;
 
-						// Open the file with gzdopen().
-						HANDLE hGzDup;
-						BOOL bRet = DuplicateHandle(
-							GetCurrentProcess(),	// hSourceProcessHandle
-							d->file,		// hSourceHandle
-							GetCurrentProcess(),	// hTargetProcessHandle
-							&hGzDup,		// lpTargetHandle
-							0,			// dwDesiredAccess
-							FALSE,			// bInheritHandle
-							DUPLICATE_SAME_ACCESS);	// dwOptions
-						if (bRet) {
-							// NOTE: close() on gzfd_dup() will close the
-							// underlying Windows handle.
-							int gzfd_dup = _open_osfhandle((intptr_t)hGzDup, _O_RDONLY);
-							if (gzfd_dup >= 0) {
-								d->gzfd = gzdopen(gzfd_dup, "r");
-								if (d->gzfd) {
-									m_isCompressed = true;
-								} else {
-									// gzdopen() failed.
-									// Close the dup()'d handle to prevent a leak.
-									_close(gzfd_dup);
-								}
-							} else {
-								// Unable to open an fd.
-								CloseHandle(hGzDup);
-							}
-						}
-					}
-				}
+		LARGE_INTEGER liSeekPos;
+		liSeekPos.QuadPart = liFileSize.QuadPart - 4;
+		if (!SetFilePointerEx(d->file, liSeekPos, nullptr, FILE_BEGIN))
+			break;
+
+		uint32_t uncomp_sz;
+		bRet = ReadFile(d->file, &uncomp_sz, sizeof(uncomp_sz), &bytesRead, nullptr);
+		uncomp_sz = le32_to_cpu(uncomp_sz);
+		if (!bRet || bytesRead != sizeof(uncomp_sz) /*|| uncomp_sz < liFileSize.QuadPart-(10+8)*/)
+			break;
+
+		// NOTE: Uncompressed size might be smaller than the real filesize
+		// in cases where gzip doesn't help much.
+		// TODO: Add better verification heuristics?
+		d->gzsz = (off64_t)uncomp_sz;
+
+		liSeekPos.QuadPart = 0;
+		SetFilePointerEx(d->file, liSeekPos, nullptr, FILE_BEGIN);
+		// NOTE: Not sure if this is needed on Windows.
+		FlushFileBuffers(d->file);
+
+		// Open the file with gzdopen().
+		HANDLE hGzDup;
+		bRet = DuplicateHandle(
+			GetCurrentProcess(),	// hSourceProcessHandle
+			d->file,		// hSourceHandle
+			GetCurrentProcess(),	// hTargetProcessHandle
+			&hGzDup,		// lpTargetHandle
+			0,			// dwDesiredAccess
+			FALSE,			// bInheritHandle
+			DUPLICATE_SAME_ACCESS);	// dwOptions
+		if (!bRet)
+			break;
+
+		// NOTE: close() on gzfd_dup() will close the
+		// underlying Windows handle.
+		int gzfd_dup = _open_osfhandle((intptr_t)hGzDup, _O_RDONLY);
+		if (gzfd_dup >= 0) {
+			d->gzfd = gzdopen(gzfd_dup, "r");
+			if (d->gzfd) {
+				m_isCompressed = true;
+			} else {
+				// gzdopen() failed.
+				// Close the dup()'d handle to prevent a leak.
+				_close(gzfd_dup);
 			}
+		} else {
+			// Unable to open an fd.
+			CloseHandle(hGzDup);
 		}
+	} while (0); }
 
-		if (!d->gzfd) {
-			// Not a gzipped file.
-			// Rewind and flush the file.
-			LARGE_INTEGER liSeekPos;
-			liSeekPos.QuadPart = 0;
-			SetFilePointerEx(d->file, liSeekPos, nullptr, FILE_BEGIN);
-			// NOTE: Not sure if this is needed on Windows.
-			FlushFileBuffers(d->file);
-		}
+	if (tryGzip && !d->gzfd) {
+		// Not a gzipped file.
+		// Rewind and flush the file.
+		LARGE_INTEGER liSeekPos;
+		liSeekPos.QuadPart = 0;
+		SetFilePointerEx(d->file, liSeekPos, nullptr, FILE_BEGIN);
+		// NOTE: Not sure if this is needed on Windows.
+		FlushFileBuffers(d->file);
 	}
 }
 

@@ -37,18 +37,24 @@ IF(MSVC)
 	SET(OUTPUT_NAME_EXPR "${OUTPUT_NAME_EXPR_1}${OUTPUT_NAME_EXPR_2}")
 	SET(OUTPUT_NAME_FULL "${PREFIX_EXPR_FULL}${OUTPUT_NAME_EXPR}$<TARGET_PROPERTY:${_target},POSTFIX>")
 
-	SET(SPLITDEBUG_SOURCE "$<TARGET_FILE:${_target}>")
-	SET(SPLITDEBUG_TARGET "$<TARGET_FILE_DIR:${_target}>/${OUTPUT_NAME_FULL}.debug")
-
 	SET(OUTPUT_NAME_EXPR_1 "$<TARGET_PROPERTY:${_target},PREFIX>$<TARGET_PROPERTY:${_target},OUTPUT_NAME>$<TARGET_PROPERTY:${_target},POSTFIX>")
 	SET(OUTPUT_NAME_EXPR_2 "$<$<STREQUAL:$<TARGET_PROPERTY:${_target},OUTPUT_NAME>,>:$<TARGET_PROPERTY:${_target},PREFIX>${_target}$<TARGET_PROPERTY:${_target},POSTFIX>>")
 
+	# FIXME: "-dll" suffix seems to be missing here.
+	# If it's present in the target name, add it here.
+	IF(${_target} MATCHES "-dll$")
+		SET(_target_suffix "-dll")
+	ELSE()
+		UNSET(_target_suffix)
+	ENDIF()
+
 	# Set the target PDB filename.
 	SET_TARGET_PROPERTIES(${_target}
-		PROPERTIES PDB "$<TARGET_FILE_DIR:${_target}>/${OUTPUT_NAME_EXPR_1}${OUTPUT_NAME_EXPR_2}.pdb"
+		PROPERTIES PDB "$<TARGET_FILE_DIR:${_target}>/${OUTPUT_NAME_EXPR_1}${OUTPUT_NAME_EXPR_2}${_target_suffix}.pdb"
 		)
 
 	UNSET(OUTPUT_NAME_EXPR_1)
 	UNSET(OUTPUT_NAME_EXPR_2)
+	UNSET(_target_suffix)
 ENDIF(MSVC)
 ENDMACRO(SET_MSVC_DEBUG_PATH)

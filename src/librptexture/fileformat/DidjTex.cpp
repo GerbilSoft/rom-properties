@@ -220,9 +220,9 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 	switch (le32_to_cpu(texHeader.px_format)) {
 		case DIDJ_PIXEL_FORMAT_RGB565: {
 			// RGB565
-			const int img_siz = width * height * sizeof(uint16_t);
-			assert(static_cast<unsigned int>(img_siz) == uncompr_size);
-			if (static_cast<unsigned int>(img_siz) != uncompr_size) {
+			const size_t img_siz = (size_t)width * (size_t)height * sizeof(uint16_t);
+			assert(img_siz == uncompr_size);
+			if (img_siz != uncompr_size) {
 				// Incorrect size.
 				return nullptr;
 			}
@@ -235,9 +235,9 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 
 		case DIDJ_PIXEL_FORMAT_RGBA4444: {
 			// RGBA4444
-			const int img_siz = width * height * sizeof(uint16_t);
-			assert(static_cast<unsigned int>(img_siz) == uncompr_size);
-			if (static_cast<unsigned int>(img_siz) != uncompr_size) {
+			const size_t img_siz = (size_t)width * (size_t)height * sizeof(uint16_t);
+			assert(img_siz == uncompr_size);
+			if (img_siz != uncompr_size) {
 				// Incorrect size.
 				return nullptr;
 			}
@@ -250,10 +250,10 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 
 		case DIDJ_PIXEL_FORMAT_8BPP_RGB565: {
 			// 8bpp with RGB565 palette.
-			const int pal_siz = static_cast<int>(256 * sizeof(uint16_t));
-			const int img_siz = width * height;
-			assert(static_cast<unsigned int>(pal_siz + img_siz) == uncompr_size);
-			if (static_cast<unsigned int>(pal_siz + img_siz) != uncompr_size) {
+			const size_t pal_siz = 256U * sizeof(uint16_t);
+			const size_t img_siz = (size_t)width * (size_t)height;
+			assert(pal_siz + img_siz == uncompr_size);
+			if (pal_siz + img_siz != uncompr_size) {
 				// Incorrect size.
 				return nullptr;
 			}
@@ -268,10 +268,10 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 
 		case DIDJ_PIXEL_FORMAT_8BPP_RGBA4444: {
 			// 8bpp with RGBA4444 palette.
-			const int pal_siz = static_cast<int>(256 * sizeof(uint16_t));
-			const int img_siz = width * height;
-			assert(static_cast<unsigned int>(pal_siz + img_siz) == uncompr_size);
-			if (static_cast<unsigned int>(pal_siz + img_siz) != uncompr_size) {
+			const size_t pal_siz = 256U * sizeof(uint16_t);
+			const size_t img_siz = (size_t)width * (size_t)height;
+			assert(pal_siz + img_siz == uncompr_size);
+			if (pal_siz + img_siz != uncompr_size) {
 				// Incorrect size.
 				return nullptr;
 			}
@@ -286,10 +286,10 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 
 		case DIDJ_PIXEL_FORMAT_4BPP_RGB565: {
 			// 4bpp with RGB565 palette.
-			const int pal_siz = static_cast<int>(16 * sizeof(uint16_t));
-			const int img_siz = (width * height) / 2;
-			assert(static_cast<unsigned int>(pal_siz + img_siz) == uncompr_size);
-			if (static_cast<unsigned int>(pal_siz + img_siz) != uncompr_size) {
+			const size_t pal_siz = 16U * sizeof(uint16_t);
+			const size_t img_siz = ((size_t)width * (size_t)height) / 2;
+			assert(pal_siz + img_siz == uncompr_size);
+			if (pal_siz + img_siz != uncompr_size) {
 				// Incorrect size.
 				return nullptr;
 			}
@@ -304,10 +304,10 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 
 		case DIDJ_PIXEL_FORMAT_4BPP_RGBA4444: {
 			// 4bpp with RGBA4444 palette.
-			const int pal_siz = static_cast<int>(16 * sizeof(uint16_t));
-			const int img_siz = (width * height) / 2;
-			assert(static_cast<unsigned int>(pal_siz + img_siz) == uncompr_size);
-			if (static_cast<unsigned int>(pal_siz + img_siz) != uncompr_size) {
+			const size_t pal_siz = 16U * sizeof(uint16_t);
+			const size_t img_siz = ((size_t)width * (size_t)height) / 2;
+			assert(pal_siz + img_siz == uncompr_size);
+			if (pal_siz + img_siz != uncompr_size) {
 				// Incorrect size.
 				return nullptr;
 			}

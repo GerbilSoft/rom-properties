@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * ComBase.hpp: Base class for COM objects.                                *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,20 +20,25 @@
 // QISearch()
 #include "sdk/QITab.h"
 
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
+
 namespace LibWin32Common {
 
 // Manipulate the global COM reference count.
-void incRpGlobalRefCount(void);
-void decRpGlobalRefCount(void);
+RP_LIBROMDATA_PUBLIC void incRpGlobalRefCount(void);
+RP_LIBROMDATA_PUBLIC void decRpGlobalRefCount(void);
 
 // References of all objects.
+RP_LIBROMDATA_PUBLIC
 extern volatile ULONG RP_ulTotalRefCount;
 
 // QISearch() [our own implementation]
+RP_LIBROMDATA_PUBLIC
 HRESULT WINAPI rp_QISearch(_Inout_ void *that, _In_ LPCQITAB pqit, _In_ REFIID riid, _COM_Outptr_ void **ppv);
 
 // IsThemeActive() [uxtheme.dll]
 typedef BOOL (STDAPICALLTYPE* PFNISTHEMEACTIVE)(void);
+RP_LIBROMDATA_PUBLIC
 extern PFNISTHEMEACTIVE pfnIsThemeActive;
 
 /**

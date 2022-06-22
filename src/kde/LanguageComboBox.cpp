@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * LanguageComboBox.cpp: Language QComboBox subclass.                      *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,7 +10,7 @@
 #include "LanguageComboBox.hpp"
 
 // librpbase
-using LibRpBase::SystemRegion;
+using namespace LibRpBase;
 
 // C++ STL classes
 using std::set;

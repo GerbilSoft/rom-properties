@@ -15,7 +15,7 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../..)
 IF(ENABLE_DECRYPTION)
 	# CtrKeyScrambler test.
 	ADD_EXECUTABLE(CtrKeyScramblerTest CtrKeyScramblerTest.cpp)
-	TARGET_LINK_LIBRARIES(CtrKeyScramblerTest PRIVATE rptest romdata rpbase)
+	TARGET_LINK_LIBRARIES(CtrKeyScramblerTest PRIVATE rptest romdata)
 	TARGET_LINK_LIBRARIES(CtrKeyScramblerTest PRIVATE gtest)
 	DO_SPLIT_DEBUG(CtrKeyScramblerTest)
 	SET_WINDOWS_SUBSYSTEM(CtrKeyScramblerTest CONSOLE)
@@ -29,7 +29,7 @@ ADD_EXECUTABLE(GcnFstPrint
 	disc/FstPrint.hpp
 	disc/GcnFstPrint.cpp
 	)
-TARGET_LINK_LIBRARIES(GcnFstPrint PRIVATE rpsecure romdata rpbase)
+TARGET_LINK_LIBRARIES(GcnFstPrint PRIVATE rpsecure romdata)
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(GcnFstPrint PRIVATE i18n)
 ENDIF(ENABLE_NLS)
@@ -48,12 +48,12 @@ ADD_EXECUTABLE(GcnFstTest
 	disc/FstPrint.hpp
 	disc/GcnFstTest.cpp
 	)
-TARGET_LINK_LIBRARIES(GcnFstTest PRIVATE rptest romdata rpbase)
+TARGET_LINK_LIBRARIES(GcnFstTest PRIVATE rptest romdata)
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(GcnFstTest PRIVATE i18n)
 ENDIF(ENABLE_NLS)
 TARGET_LINK_LIBRARIES(GcnFstTest PRIVATE gtest)
-TARGET_LINK_LIBRARIES(GcnFstTest PRIVATE minizip ${ZLIB_LIBRARY})
+TARGET_LINK_LIBRARIES(GcnFstTest PRIVATE minizip ${ZLIB_LIBRARIES})
 DO_SPLIT_DEBUG(GcnFstTest)
 SET_WINDOWS_SUBSYSTEM(GcnFstTest CONSOLE)
 SET_WINDOWS_ENTRYPOINT(GcnFstTest wmain OFF)
@@ -83,8 +83,8 @@ ENDFOREACH(test_fst test_fsts)
 
 # ImageDecoder test.
 ADD_EXECUTABLE(ImageDecoderTest img/ImageDecoderTest.cpp)
-TARGET_LINK_LIBRARIES(ImageDecoderTest PRIVATE rptest romdata rpbase)
-TARGET_LINK_LIBRARIES(ImageDecoderTest PRIVATE gtest ${ZLIB_LIBRARY})
+TARGET_LINK_LIBRARIES(ImageDecoderTest PRIVATE rptest romdata)
+TARGET_LINK_LIBRARIES(ImageDecoderTest PRIVATE gtest ${ZLIB_LIBRARIES})
 TARGET_INCLUDE_DIRECTORIES(ImageDecoderTest PRIVATE ${ZLIB_INCLUDE_DIRS})
 TARGET_COMPILE_DEFINITIONS(ImageDecoderTest PRIVATE ${ZLIB_DEFINITIONS})
 IF(PNG_LIBRARY)
@@ -103,7 +103,7 @@ ADD_TEST(NAME ImageDecoderTest COMMAND ImageDecoderTest "--gtest_filter=-*Benchm
 # NOTE: Although the test executable is in bin/, CTest still
 # uses ${CMAKE_CURRENT_BINARY_DIR} as the working directory.
 # Hence, we have to copy the files to both places.
-FOREACH(test_dir Alpha ARGB Luma RGB S3TC BC7 PVR GVR KTX KTX2 VTF VTF3
+FOREACH(test_dir Alpha ARGB Luma RGB S3TC Misc BC7 PVR GVR KTX KTX2 VTF VTF3
 	tctest DidjTex PowerVR3 TGA TGA/conformance TGA/tga-go STEX3 STEX4)
 
 	ADD_CUSTOM_COMMAND(TARGET ImageDecoderTest POST_BUILD
@@ -123,6 +123,7 @@ FILE(GLOB_RECURSE ImageDecoderTest_images RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/
 	img/ImageDecoder_data/*.gz
 	img/ImageDecoder_data/*.dds
 	img/ImageDecoder_data/*.tex
+	img/ImageDecoder_data/*.VMS
 	)
 FOREACH(test_image ${ImageDecoderTest_images})
 	ADD_CUSTOM_COMMAND(TARGET ImageDecoderTest POST_BUILD
@@ -141,7 +142,7 @@ ENDFOREACH(test_image ${ImageDecoderTest_images})
 
 # Nintendo System ID test.
 ADD_EXECUTABLE(NintendoSystemIDTest NintendoSystemIDTest.cpp)
-TARGET_LINK_LIBRARIES(NintendoSystemIDTest PRIVATE rptest romdata rpbase)
+TARGET_LINK_LIBRARIES(NintendoSystemIDTest PRIVATE rptest romdata)
 TARGET_LINK_LIBRARIES(NintendoSystemIDTest PRIVATE gtest)
 DO_SPLIT_DEBUG(NintendoSystemIDTest)
 SET_WINDOWS_SUBSYSTEM(NintendoSystemIDTest CONSOLE)
@@ -153,9 +154,9 @@ ADD_EXECUTABLE(SuperMagicDriveTest
 	utils/SuperMagicDriveTest.cpp
 	utils/SuperMagicDriveTest_data.hpp
 	)
-TARGET_LINK_LIBRARIES(SuperMagicDriveTest PRIVATE rptest romdata rpbase)
+TARGET_LINK_LIBRARIES(SuperMagicDriveTest PRIVATE rptest romdata)
 TARGET_LINK_LIBRARIES(SuperMagicDriveTest PRIVATE gtest)
-TARGET_LINK_LIBRARIES(SuperMagicDriveTest PRIVATE ${ZLIB_LIBRARY})
+TARGET_LINK_LIBRARIES(SuperMagicDriveTest PRIVATE ${ZLIB_LIBRARIES})
 TARGET_INCLUDE_DIRECTORIES(SuperMagicDriveTest PRIVATE ${ZLIB_INCLUDE_DIRS})
 TARGET_COMPILE_DEFINITIONS(SuperMagicDriveTest PRIVATE ${ZLIB_DEFINITIONS})
 DO_SPLIT_DEBUG(SuperMagicDriveTest)

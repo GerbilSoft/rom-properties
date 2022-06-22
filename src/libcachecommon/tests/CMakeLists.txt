@@ -14,7 +14,12 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../..)
 
 # LibCacheCommon::filterCacheKey() test.
 ADD_EXECUTABLE(FilterCacheKeyTest FilterCacheKeyTest.cpp)
-TARGET_LINK_LIBRARIES(FilterCacheKeyTest PRIVATE rptest rpbase cachecommon)
+TARGET_LINK_LIBRARIES(FilterCacheKeyTest PRIVATE rptest cachecommon)
+IF(WIN32)
+	TARGET_LINK_LIBRARIES(FilterCacheKeyTest PRIVATE win32common)
+ELSE(WIN32)
+	TARGET_LINK_LIBRARIES(FilterCacheKeyTest PRIVATE unixcommon)
+ENDIF(WIN32)
 TARGET_LINK_LIBRARIES(FilterCacheKeyTest PRIVATE gtest)
 DO_SPLIT_DEBUG(FilterCacheKeyTest)
 SET_WINDOWS_SUBSYSTEM(FilterCacheKeyTest CONSOLE)

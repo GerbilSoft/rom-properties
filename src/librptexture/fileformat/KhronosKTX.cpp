@@ -187,7 +187,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 
 	// Calculate the expected size.
 	// NOTE: Scanlines are 4-byte aligned.
-	uint32_t expected_size;
+	size_t expected_size;
 	int stride = 0;
 	switch (ktxHeader.glFormat) {
 		case GL_RGB:

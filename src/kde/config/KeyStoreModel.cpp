@@ -31,12 +31,17 @@ class KeyStoreModelPrivate
 
 		// Style variables.
 		struct style_t {
-			style_t() { init(); }
+			style_t() { init_fonts(); init_icons(); }
 
 			/**
-			 * Initialize the style variables.
+			 * Initialize the fonts.
 			 */
-			void init(void);
+			void init_fonts(void);
+
+			/**
+			 * Initialize the icons.
+			 */
+			void init_icons(void);
 
 			// Monospace font.
 			QFont fntMonospace;
@@ -96,9 +101,9 @@ KeyStoreModelPrivate::KeyStoreModelPrivate(KeyStoreModel *q)
 }
 
 /**
- * Initialize the style variables.
+ * Initialize the fonts.
  */
-void KeyStoreModelPrivate::style_t::init(void)
+void KeyStoreModelPrivate::style_t::init_fonts(void)
 {
 	// Monospace font.
 	fntMonospace = QApplication::font();
@@ -110,7 +115,13 @@ void KeyStoreModelPrivate::style_t::init(void)
 	QFontMetrics fm(fntMonospace);
 	szValueHint = fm.size(Qt::TextSingleLine,
 		QLatin1String("0123456789ABCDEF0123456789ABCDEF "));
+}
 
+/**
+ * Initialize the icons.
+ */
+void KeyStoreModelPrivate::style_t::init_icons(void)
+{
 	// Initialize the Column::IsValid pixmaps.
 	// TODO: Handle SP_MessageBoxQuestion on non-Windows systems,
 	// which usually have an 'i' icon here (except for GNOME).
@@ -503,7 +514,7 @@ KeyStoreQt *KeyStoreModel::keyStore(void) const
 	return d->keyStore;
 }
 
-/** Private slots. **/
+/** Private slots **/
 
 /**
  * KeyStore object was destroyed.
@@ -560,14 +571,35 @@ void KeyStoreModel::keyStore_allKeysChanged_slot(void)
 	emit dataChanged(qmi_left, qmi_right);
 }
 
+/** Public slots **/
+
 /**
- * The system theme has changed.
+ * System font has changed.
+ *
+ * Call this from the parent widget's changeEvent() function
+ * on QEvent::FontChange.
  */
-void KeyStoreModel::themeChanged_slot(void)
+void KeyStoreModel::systemFontChanged(void)
 {
-	// Reinitialize the style.
+	// Reinitialize the fonts.
 	Q_D(KeyStoreModel);
 	emit layoutAboutToBeChanged();
-	d->style.init();
+	d->style.init_fonts();
+	emit layoutChanged();
+}
+
+/**
+ * System color scheme has changed.
+ * Icons may need to be re-cached.
+ *
+ * Call this from the parent widget's changeEvent() function
+ * on QEvent::PaletteChange.
+ */
+void KeyStoreModel::systemPaletteChanged(void)
+{
+	// Reinitialize the icons.
+	Q_D(KeyStoreModel);
+	emit layoutAboutToBeChanged();
+	d->style.init_icons();
 	emit layoutChanged();
 }

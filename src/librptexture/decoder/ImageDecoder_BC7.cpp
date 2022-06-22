@@ -650,7 +650,7 @@ static int decodeBC7Block(array<argb32_t, 4*4> &tileBuf, const uint64_t *bc7_src
  * @return rp_image, or nullptr on error.
  */
 rp_image *fromBC7(int width, int height,
-	const uint8_t *img_buf, int img_siz)
+	const uint8_t *img_buf, size_t img_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -663,9 +663,9 @@ rp_image *fromBC7(int width, int height,
 	const int physWidth = ALIGN_BYTES(4, width);
 	const int physHeight = ALIGN_BYTES(4, height);
 
-	assert(img_siz >= (width * height));
+	assert(img_siz >= ((size_t)width * (size_t)height));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (physWidth * physHeight))
+	    img_siz < ((size_t)physWidth * (size_t)physHeight))
 	{
 		return nullptr;
 	}

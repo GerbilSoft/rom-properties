@@ -578,7 +578,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 
 		// NOTE: dwPitchOrLinearSize is not necessarily correct.
 		// Calculate the expected size.
-		uint32_t expected_size;
+		size_t expected_size;
 		switch (dxgi_format) {
 #ifdef ENABLE_PVRTC
 			case DXGI_FORMAT_FAKE_PVRTC_2bpp:
@@ -970,7 +970,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			// Stride is too large.
 			return nullptr;
 		}
-		const unsigned int expected_size = ddsHeader.dwHeight * stride;
+		const size_t expected_size = (size_t)ddsHeader.dwHeight * stride;
 
 		// Verify file size.
 		if (expected_size >= file_sz + texDataStartAddr) {

@@ -19,9 +19,7 @@
 #include "librpbase/img/RpPng.hpp"
 #include "librpbase/TextFuncs.hpp"
 #include "librpfile/MemFile.hpp"
-using LibRpBase::RomFields;
-using LibRpBase::RpPng;
-using LibRpBase::rp_sprintf;
+using namespace LibRpBase;
 using LibRpFile::IRpFile;
 using LibRpFile::MemFile;
 

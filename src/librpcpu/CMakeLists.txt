@@ -84,34 +84,64 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.byteswap.h.in" "${CMAKE_CURRE
 # Build the library. #
 ######################
 
-ADD_LIBRARY(${PROJECT_NAME} STATIC
-	${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
-	${${PROJECT_NAME}_OS_SRCS} ${${PROJECT_NAME}_OS_H}
-	${${PROJECT_NAME}_CPU_SRCS} ${${PROJECT_NAME}_CPU_H}
-	${${PROJECT_NAME}_IFUNC_SRCS}
-	${${PROJECT_NAME}_MMX_SRCS}
-	${${PROJECT_NAME}_SSE2_SRCS}
-	${${PROJECT_NAME}_SSSE3_SRCS}
-	)
-INCLUDE(SetMSVCDebugPath)
-SET_MSVC_DEBUG_PATH(${PROJECT_NAME})
+# NOTE: ${PROJECT_NAME} is the original target.
+# ${PROJECT_NAME}-dll is the target with dllimport/dllexport for libromdata.
+IF(RP_LIBROMDATA_IS_DLL AND WIN32)
+	# On Win32, the dll target needs dllimport/dllexport.
+	SET(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}-dll)
+ELSE()
+	# On other platforms, the dll target will be an alias to the regular target.
+	# That will be set up later, since the regular target doesn't exist yet.
+	SET(TARGETS ${PROJECT_NAME})
+ENDIF()
 
-# rpthreads is needed for atomic functions.
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpthreads)
+FOREACH(_target ${TARGETS})
+	ADD_LIBRARY(${_target} STATIC
+		${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
+		${${PROJECT_NAME}_OS_SRCS} ${${PROJECT_NAME}_OS_H}
+		${${PROJECT_NAME}_CPU_SRCS} ${${PROJECT_NAME}_CPU_H}
+		${${PROJECT_NAME}_IFUNC_SRCS}
+		${${PROJECT_NAME}_MMX_SRCS}
+		${${PROJECT_NAME}_SSE2_SRCS}
+		${${PROJECT_NAME}_SSSE3_SRCS}
+		)
+	INCLUDE(SetMSVCDebugPath)
+	SET_MSVC_DEBUG_PATH(${_target})
+	# Exclude from ALL builds.
+	SET_TARGET_PROPERTIES(${_target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
-# Include paths:
-# - Public: Current source and binary directories.
-# - Private: Parent source and binary directories,
-#            and top-level binary directory for git_version.h.
-TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
-	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# librpcpu
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# librpcpu
-	PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# src
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# src
-		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# build
-	)
-# Exclude from ALL builds.
-SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+	# DLL targets need the appropriate macros.
+	IF(${_target} MATCHES "-dll$")
+		SET(_target_suffix "-dll")
+		TARGET_COMPILE_DEFINITIONS(${_target}
+			PUBLIC		RP_BUILDING_FOR_DLL=1
+			PRIVATE		RP_BUILDING_LIBROMDATA=1
+			)
+	ELSE()
+		UNSET(_target_suffix)
+	ENDIF()
+
+	# rpthreads is needed for atomic functions.
+	TARGET_LINK_LIBRARIES(${_target} PRIVATE rpthreads${_target_suffix})
+
+	# Include paths:
+	# - Public: Current source and binary directories.
+	# - Private: Parent source and binary directories,
+	#            and top-level binary directory for git_version.h.
+	TARGET_INCLUDE_DIRECTORIES(${_target}
+		PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# librpcpu
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# librpcpu
+		PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# src
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# src
+			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# build
+		)
+ENDFOREACH(_target)
+UNSET(_target_suffix)
+
+IF(NOT TARGET ${PROJECT_NAME}-dll)
+	# On other platforms, the dll target will be an alias to the regular target.
+	ADD_LIBRARY(${PROJECT_NAME}-dll ALIAS ${PROJECT_NAME})
+ENDIF()
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
 IF(UNIX AND NOT APPLE)

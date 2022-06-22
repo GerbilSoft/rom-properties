@@ -11,7 +11,7 @@
 #include "PIMGTYPE.hpp"
 
 // librpbase
-using LibRpBase::SystemRegion;
+using namespace LibRpBase;
 
 // C++ STL classes
 using std::string;

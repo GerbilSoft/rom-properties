@@ -85,10 +85,6 @@ class AmiiboDataPrivate {
 		};
 		AmiiboBinFileType amiiboBinFileType;
 
-#ifdef _WIN32
-		tstring s_dll_filename;
-#endif /* _WIN32 */
-
 		// Convenience pointers to amiibo.bin structs.
 		const AmiiboBinHeader *pHeader;
 		const char *pStrTbl;
@@ -174,20 +170,7 @@ AmiiboDataPrivate::AmiiboDataPrivate()
 	, aseriesTbl_count(0)
 	, amiiboIdTbl_count(0)
 {
-	// Loading will be delayed until it's needed.
-
-#ifdef _WIN32
-	TCHAR dll_filename[MAX_PATH];
-	DWORD dwResult = GetModuleFileName(HINST_THISCOMPONENT,
-		dll_filename, _countof(dll_filename));
-	if (dwResult == 0 || GetLastError() != ERROR_SUCCESS) {
-		// Cannot get the DLL filename.
-		// TODO: Windows XP doesn't SetLastError() if the
-		// filename is too big for the buffer.
-		dll_filename[0] = _T('\0');
-	}
-	s_dll_filename = dll_filename;
-#endif /* _WIN32 */
+	// Loading amiibo-data.bin will be delayed until it's needed.
 }
 
 /**
@@ -208,11 +191,18 @@ string AmiiboDataPrivate::getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileTy
 #if defined(DIR_INSTALL_SHARE)
 			filename = DIR_INSTALL_SHARE DIR_SEP_STR AMIIBO_BIN_FILENAME;
 #elif defined(_WIN32)
-			if (s_dll_filename.empty())
+			TCHAR dll_filename[MAX_PATH];
+			DWORD dwResult = GetModuleFileName(HINST_THISCOMPONENT,
+				dll_filename, _countof(dll_filename));
+			if (dwResult == 0 || GetLastError() != ERROR_SUCCESS) {
+				// Cannot get the DLL filename.
+				// TODO: Windows XP doesn't SetLastError() if the
+				// filename is too big for the buffer.
 				break;
+			}
 
 			// Remove the last backslash.
-			tstring tfilename(s_dll_filename);
+			tstring tfilename(dll_filename);
 			size_t bs_pos = tfilename.rfind(DIR_SEP_CHR);
 			if (bs_pos == string::npos)
 				break;

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * RomDataFactory.hpp: RomData factory class.                              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -73,6 +73,7 @@ class RomDataFactory
 		 * @param attrs RomDataAttr bitfield. If set, RomData subclass must have the specified attributes.
 		 * @return RomData subclass, or nullptr if the ROM isn't supported.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static LibRpBase::RomData *create(LibRpFile::IRpFile *file, unsigned int attrs = 0);
 
 		struct ExtInfo {
@@ -95,6 +96,7 @@ class RomDataFactory
 		 *
 		 * @return All supported file extensions, including the leading dot.
 		 */
+		RP_LIBROMDATA_PUBLIC	/* TODO: Export on Windows only? */
 		static const std::vector<ExtInfo> &supportedFileExtensions(void);
 
 		/**
@@ -103,6 +105,7 @@ class RomDataFactory
 		 *
 		 * @return All supported MIME types.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static const std::vector<const char*> &supportedMimeTypes(void);
 };
 

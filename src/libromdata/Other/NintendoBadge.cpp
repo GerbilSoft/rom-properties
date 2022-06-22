@@ -251,7 +251,7 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 
 	// TODO: Multiple internal image sizes.
 	// For now, 64x64 only.
-	const unsigned int badge_sz = badge_rgb_sz + badge_a4_sz;
+	const size_t badge_sz = badge_rgb_sz + badge_a4_sz;
 	auto badgeData = aligned_uptr<uint8_t>(16, badge_sz);
 
 	rp_image *img = nullptr;

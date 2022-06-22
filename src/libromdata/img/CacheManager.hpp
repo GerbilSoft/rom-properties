@@ -45,6 +45,7 @@ class CacheManager
 		 * Set the proxy server.
 		 * @param proxyUrl Proxy server URL. (Use nullptr or blank string for default settings.)
 		 */
+		RP_LIBROMDATA_PUBLIC
 		void setProxyUrl(const char *proxyUrl);
 
 		/**
@@ -70,6 +71,7 @@ class CacheManager
 		 *
 		 * @return Absolute path to the cached file.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		std::string download(const std::string &cache_key);
 
 		/**
@@ -77,6 +79,7 @@ class CacheManager
 		 * @param cache_key Cache key.
 		 * @return Filename in the cache, or empty string if not found.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		std::string findInCache(const std::string &cache_key);
 
 	protected:

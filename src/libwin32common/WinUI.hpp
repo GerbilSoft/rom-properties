@@ -2,18 +2,18 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * WinUI.hpp: Windows UI common functions.                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBWIN32COMMON_WINUICOMMON_HPP__
 #define __ROMPROPERTIES_LIBWIN32COMMON_WINUICOMMON_HPP__
 
-// C++ includes.
+// C++ includes
 #include <string>
 
-// Windows SDK.
 #include "RpWin32_sdk.h"
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 namespace LibWin32Common {
 
@@ -23,6 +23,7 @@ namespace LibWin32Common {
  * @param lf_count	[out,opt] Number of LF characters found.
  * @return tstring with DOS line endings.
  */
+RP_LIBROMDATA_PUBLIC
 std::tstring unix2dos(const TCHAR *tstr_unix, int *lf_count = nullptr);
 
 /**
@@ -33,6 +34,7 @@ std::tstring unix2dos(const TCHAR *tstr_unix, int *lf_count = nullptr);
  * @param lpSize	[out] Size.
  * @return 0 on success; non-zero on error.
  */
+RP_LIBROMDATA_PUBLIC
 int measureTextSize(HWND hWnd, HFONT hFont, const TCHAR *tstr, LPSIZE lpSize);
 
 /**
@@ -58,6 +60,7 @@ static inline int measureTextSize(HWND hWnd, HFONT hFont, const std::tstring &ts
  * @param lpSize	[out] Size.
  * @return 0 on success; non-zero on error.
  */
+RP_LIBROMDATA_PUBLIC
 int measureTextSizeLink(HWND hWnd, HFONT hFont, const TCHAR *tstr, LPSIZE lpSize);
 
 /**
@@ -83,6 +86,7 @@ static inline int measureTextSizeLink(HWND hWnd, HFONT hFont, const std::tstring
  *
  * @return Alternate row color for ListViews.
  */
+RP_LIBROMDATA_PUBLIC
 COLORREF getAltRowColor(void);
 
 /**
@@ -118,6 +122,7 @@ static inline uint32_t GetSysColor_ARGB32(int nIndex)
  * Are we using COMCTL32.DLL v6.10 or later?
  * @return True if it's v6.10 or later; false if not.
  */
+RP_LIBROMDATA_PUBLIC
 bool isComCtl32_v610(void);
 
 /**
@@ -128,12 +133,14 @@ bool isComCtl32_v610(void);
  * @param pNlCount     [out,opt] Newline count.
  * @return Width. (May return LVSCW_AUTOSIZE_USEHEADER if it's a single line.)
  */
+RP_LIBROMDATA_PUBLIC
 int measureStringForListView(HDC hDC, const std::tstring &tstr, int *pNlCount = nullptr);
 
 /**
  * Is the system using an RTL language?
  * @return WS_EX_LAYOUTRTL if the system is using RTL; 0 if not.
  */
+RP_LIBROMDATA_PUBLIC
 DWORD isSystemRTL(void);
 
 /** File dialogs **/
@@ -151,6 +158,7 @@ DWORD isSystemRTL(void);
  * @param origFilename	[in,opt] Starting filename.
  * @return Filename, or empty string on error.
  */
+RP_LIBROMDATA_PUBLIC
 std::tstring getOpenFileName(HWND hWnd, const TCHAR *dlgTitle, const char *filterSpec, const TCHAR *origFilename);
 
 /**
@@ -166,6 +174,7 @@ std::tstring getOpenFileName(HWND hWnd, const TCHAR *dlgTitle, const char *filte
  * @param origFilename	[in,opt] Starting filename.
  * @return Filename, or empty string on error.
  */
+RP_LIBROMDATA_PUBLIC
 std::tstring getSaveFileName(HWND hWnd, const TCHAR *dlgTitle, const char *filterSpec, const TCHAR *origFilename);
 
 /** Window procedure subclasses **/
@@ -183,6 +192,7 @@ std::tstring getSaveFileName(HWND hWnd, const TCHAR *dlgTitle, const char *filte
  * @param uIdSubclass	Subclass ID. (usually the control ID)
  * @param dwRefData	HWND of parent dialog to forward WM_COMMAND messages to.
  */
+RP_LIBROMDATA_PUBLIC
 LRESULT CALLBACK MultiLineEditProc(
 	HWND hWnd, UINT uMsg,
 	WPARAM wParam, LPARAM lParam,
@@ -201,6 +211,7 @@ LRESULT CALLBACK MultiLineEditProc(
  * @param uIdSubclass	Subclass ID. (usually the control ID)
  * @param dwRefData	HWND of parent dialog to forward WM_COMMAND messages to.
  */
+RP_LIBROMDATA_PUBLIC
 LRESULT CALLBACK SingleLineEditProc(
 	HWND hWnd, UINT uMsg,
 	WPARAM wParam, LPARAM lParam,
@@ -215,6 +226,7 @@ LRESULT CALLBACK SingleLineEditProc(
  * @param uIdSubclass	Subclass ID (usually the control ID)
  * @param dwRefData	RP_ShellPropSheetExt_Private*
  */
+RP_LIBROMDATA_PUBLIC
 LRESULT CALLBACK ListViewNoDividerDblClickSubclassProc(
 	HWND hWnd, UINT uMsg,
 	WPARAM wParam, LPARAM lParam,

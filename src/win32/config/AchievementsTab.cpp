@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * AchievementsTab.cpp: Achievements tab for rp-config.                    *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,8 +16,7 @@
 #include "librpbase/img/RpPng.hpp"
 #include "librpfile/win32/RpFile_windres.hpp"
 #include "librptexture/img/rp_image.hpp"
-using LibRpBase::Achievements;
-using LibRpBase::RpPng;
+using namespace LibRpBase;
 using LibRpFile::RpFile_windres;
 using LibRpTexture::rp_image;
 

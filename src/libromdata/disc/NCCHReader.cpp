@@ -19,8 +19,8 @@
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
-// CIA Reader.
 #include "disc/CIAReader.hpp"
+#include "disc/PartitionFile.hpp"
 
 #include "NCCHReader_p.hpp"
 namespace LibRomData {

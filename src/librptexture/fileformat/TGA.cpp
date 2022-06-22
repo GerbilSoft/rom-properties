@@ -249,7 +249,7 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 		 (tgaHeader.image_type == TGA_IMAGETYPE_HUFFMAN_4PASS_COLORMAP);
 
 	unsigned int cmap_size = 0;	// size of the color map in the TGA file
-	int pal_size = 0;		// size of pal_data[] (usually 256*bytespp)
+	size_t pal_siz = 0;		// size of pal_data[] (usually 256*bytespp)
 	unique_ptr<uint8_t[]> pal_data;
 	if (tgaHeader.color_map_type >= 1) {
 		const unsigned int cmap_bytespp = (tgaHeader.cmap.bpp == 15 ? 2 : (tgaHeader.cmap.bpp / 8));
@@ -262,13 +262,13 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 				return nullptr;
 			}
 
-			pal_size = 256 * cmap_bytespp;
-			pal_data.reset(new uint8_t[pal_size]);
+			pal_siz = 256U * cmap_bytespp;
+			pal_data.reset(new uint8_t[pal_siz]);
 
 			// If we don't have a full 256-color palette,
 			// zero-initialize it. (TODO: Optimize this?)
 			if (tgaHeader.cmap.idx0 != 0 || tgaHeader.cmap.len < 256) {
-				memset(pal_data.get(), 0, pal_size);
+				memset(pal_data.get(), 0, pal_siz);
 			}
 
 			// Read the palette.
@@ -287,8 +287,8 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 	// Allocate a buffer for the image.
 	// NOTE: Assuming scanlines are not padded. (pitch == width)
 	const unsigned int bytespp = (tgaHeader.img.bpp == 15 ? 2 : (tgaHeader.img.bpp / 8));
-	const int img_size = tgaHeader.img.width * tgaHeader.img.height * bytespp;
-	auto img_data = aligned_uptr<uint8_t>(16, img_size);
+	const size_t img_siz = (size_t)tgaHeader.img.width * (size_t)tgaHeader.img.height * bytespp;
+	auto img_data = aligned_uptr<uint8_t>(16, img_siz);
 
 	if (tgaHeader.image_type == TGA_IMAGETYPE_HUFFMAN_COLORMAP) {
 		// TODO: Huffman+Delta compression.
@@ -315,15 +315,15 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 		}
 
 		// Decompress the RLE image.
-		int ret = decompressRLE(img_data.get(), img_size, rle_data.get(), rle_size, bytespp);
+		int ret = decompressRLE(img_data.get(), img_siz, rle_data.get(), rle_size, bytespp);
 		if (ret != 0) {
 			// Error decompressing the RLE image.
 			return nullptr;
 		}
 	} else {
 		// Image is not compressed. Read it directly.
-		size_t size = file->read(img_data.get(), img_size);
-		if (size != static_cast<size_t>(img_size)) {
+		size_t size = file->read(img_data.get(), img_siz);
+		if (size != static_cast<size_t>(img_siz)) {
 			// Read error.
 			return nullptr;
 		}
@@ -360,8 +360,8 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 			// Decode the image.
 			imgtmp = ImageDecoder::fromLinearCI8(px_fmt,
 				tgaHeader.img.width, tgaHeader.img.height,
-				img_data.get(), img_size,
-				pal_data.get(), pal_size);
+				img_data.get(), img_siz,
+				pal_data.get(), pal_siz);
 			break;
 		}
 
@@ -376,7 +376,7 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 						hasAlpha ? ImageDecoder::PixelFormat::ARGB1555
 						         : ImageDecoder::PixelFormat::RGB555,
 						tgaHeader.img.width, tgaHeader.img.height,
-						reinterpret_cast<const uint16_t*>(img_data.get()), img_size);
+						reinterpret_cast<const uint16_t*>(img_data.get()), img_siz);
 					break;
 
 				case 24:
@@ -384,7 +384,7 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 					imgtmp = ImageDecoder::fromLinear24(
 						ImageDecoder::PixelFormat::RGB888,
 						tgaHeader.img.width, tgaHeader.img.height,
-						img_data.get(), img_size);
+						img_data.get(), img_siz);
 					break;
 
 				case 32:
@@ -394,7 +394,7 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 						hasAlpha ? ImageDecoder::PixelFormat::ARGB8888
 						         : ImageDecoder::PixelFormat::xRGB8888,
 						tgaHeader.img.width, tgaHeader.img.height,
-						reinterpret_cast<const uint32_t*>(img_data.get()), img_size);
+						reinterpret_cast<const uint32_t*>(img_data.get()), img_siz);
 					break;
 			}
 			break;
@@ -418,7 +418,7 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 						imgtmp = ImageDecoder::fromLinearCI8(
 							ImageDecoder::PixelFormat::Host_ARGB32,
 							tgaHeader.img.width, tgaHeader.img.height,
-							img_data.get(), img_size,
+							img_data.get(), img_siz,
 							palette, sizeof(palette));
 					}
 					break;
@@ -432,7 +432,7 @@ const rp_image *TGAPrivate::loadTGAImage(void)
 						imgtmp = ImageDecoder::fromLinear16(
 							ImageDecoder::PixelFormat::IA8,
 							tgaHeader.img.width, tgaHeader.img.height,
-							reinterpret_cast<const uint16_t*>(img_data.get()), img_size);
+							reinterpret_cast<const uint16_t*>(img_data.get()), img_siz);
 					}
 					break;
 

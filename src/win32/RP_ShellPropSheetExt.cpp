@@ -2198,7 +2198,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 			HFONT hFontOrig = nullptr;
 			HFONT hFontBold = fontHandler.boldFont();
 			if (hFontBold) {
-				HFONT hFontOrig = SelectFont(hDC, hFontBold);
+				hFontOrig = SelectFont(hDC, hFontBold);
 			}
 			GetTextExtentPoint32(hDC, desc_text.data(),
 				static_cast<int>(desc_text.size()), &textSize);

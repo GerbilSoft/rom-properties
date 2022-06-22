@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libunixcommon)                    *
  * userdirs.hpp: Find user directories.                                    *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,6 +11,7 @@
 
 // NOTE: All functions return 8-bit strings.
 // This is usually encoded as UTF-8.
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 // C++ includes.
 #include <string>
@@ -22,6 +23,7 @@ namespace LibUnixCommon {
  * @param path Directory path.
  * @return True if this is a writable directory; false if not.
  */
+RP_LIBROMDATA_PUBLIC
 bool isWritableDirectory(const char *path);
 
 /**
@@ -32,6 +34,7 @@ bool isWritableDirectory(const char *path);
  *
  * @return User's cache directory (without trailing slash), or empty string on error.
  */
+RP_LIBROMDATA_PUBLIC
 std::string getHomeDirectory(void);
 
 /**
@@ -42,6 +45,7 @@ std::string getHomeDirectory(void);
  *
  * @return User's cache directory (without trailing slash), or empty string on error.
  */
+RP_LIBROMDATA_PUBLIC
 std::string getCacheDirectory(void);
 
 /**
@@ -52,6 +56,7 @@ std::string getCacheDirectory(void);
  *
  * @return User's configuration directory (without trailing slash), or empty string on error.
  */
+RP_LIBROMDATA_PUBLIC
 std::string getConfigDirectory(void);
 
 }

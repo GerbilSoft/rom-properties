@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_windres.cpp: Windows resource wrapper for IRpFile. (Win32)       *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,6 +14,13 @@
 
 // C++ STL classes.
 using std::string;
+
+// RpFile_windres isn't used by libromdata directly,
+// so use some linker hax to force linkage.
+extern "C" {
+	extern uint8_t RP_LibRpFile_RpFile_windres_ForceLinkage;
+	uint8_t RP_LibRpFile_RpFile_windres_ForceLinkage;
+}
 
 namespace LibRpFile {
 

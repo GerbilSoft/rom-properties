@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image_backend.hpp: Image backend and storage classes.                *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,7 +17,7 @@ namespace LibRpTexture {
  * rp_image data storage class.
  * This can be overridden for e.g. QImage or GDI+.
  */
-class rp_image_backend
+class RP_LIBROMDATA_PUBLIC rp_image_backend
 {
 	public:
 		rp_image_backend(int width, int height, rp_image::Format format);

@@ -49,8 +49,10 @@
 #include "librpcpu/bitstuff.h"
 
 #ifdef __cplusplus
+// C++ headers
+#include "uvector.h"
+
 // librpbase C++ headers
-#include "librpbase/uvector.h"
 #include "librpbase/RomFields.hpp"
 #include "librpbase/TextFuncs.hpp"
 
