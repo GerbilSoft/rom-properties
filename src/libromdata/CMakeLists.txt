@@ -606,12 +606,9 @@ IF(WIN32)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE advapi32)
 
 	# Delay-load shell32.dll and ole32.dll to prevent a performance penalty due to gdi32.dll.
+	# Also delay-load user32.dll to prevent user object allocation when it's not necessary.
 	# Reference: https://randomascii.wordpress.com/2018/12/03/a-not-called-function-can-cause-a-5x-slowdown/
-	# This is also needed when disabling direct Win32k syscalls,
-	# since loading gdi32.dll will crash in that case.
-	# NOTE: ole32.dll is indirectly linked through libwin32common. (CoTaskMemFree())
-	# FIXME: gdiplus.dll isn't linked in, though I'm pretty sure it's used...
-	ADD_DELAYLOAD_FLAGS(${PROJECT_NAME} shell32.dll ole32.dll)
+	ADD_DELAYLOAD_FLAGS(${PROJECT_NAME} shell32.dll ole32.dll user32.dll)
 	IF(MSVC)
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE delayimp)
 	ENDIF(MSVC)
