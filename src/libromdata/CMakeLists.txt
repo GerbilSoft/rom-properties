@@ -469,6 +469,18 @@ TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# top-level
 	)
 
+# Make sure git_version.h is created before compiling this target.
+IF(TARGET git_version)
+	ADD_DEPENDENCIES(${PROJECT_NAME} git_version)
+ENDIF(TARGET git_version)
+
+# CMake-3.7.2 doesn't add include paths to windres.
+IF(MINGW)
+	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_CURRENT_SOURCE_DIR}/..\"")
+	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_CURRENT_BINARY_DIR}/..\"")
+	SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I \"${CMAKE_CURRENT_BINARY_DIR}\"")
+ENDIF(MINGW)
+
 IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 	# When linking as a shared library, all internal library components
 	# should be linked in as PRIVATE, and include directories added
@@ -590,8 +602,16 @@ IF(WIN32)
 	# librpsecure: integrity_level.h
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpsecure)
 
-	# Windows SDK libraries.
+	# Windows SDK libraries
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE advapi32)
+
+	# Delay-load shell32.dll and ole32.dll to prevent a performance penalty due to gdi32.dll.
+	# Reference: https://randomascii.wordpress.com/2018/12/03/a-not-called-function-can-cause-a-5x-slowdown/
+	# This is also needed when disabling direct Win32k syscalls,
+	# since loading gdi32.dll will crash in that case.
+	# NOTE: ole32.dll is indirectly linked through libwin32common. (CoTaskMemFree())
+	# FIXME: gdiplus.dll isn't linked in, though I'm pretty sure it's used...
+	ADD_DELAYLOAD_FLAGS(${PROJECT_NAME} shell32.dll ole32.dll)
 	IF(MSVC)
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE delayimp)
 	ENDIF(MSVC)
