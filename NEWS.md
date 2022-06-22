@@ -1,6 +1,16 @@
 # Changes
 
-## v1.9.1 (released 2022/??/??)
+## v1.10 (released 2022/??/??)
+
+* New features:
+  * libromdata is now compiled as a shared library on Windows and Linux.
+    This means an extra DLL (romdata-1.dll) or SO (libromdata.so.1) will
+    be included with the distribution. The advantage of splitting it out
+    is that all the UI frontends are now significantly smaller.
+    * WARNING: Binary compatibility between releases is NOT guaranteed.
+      The SOVERSION (-1, .1) will be incremented if the ABI is known to
+      have broken between releases, but I can't guarantee that it will
+      always remain compatible.
 
 * New parsers:
   * Atari7800: Atari 7800 ROM images with an A78 header.
