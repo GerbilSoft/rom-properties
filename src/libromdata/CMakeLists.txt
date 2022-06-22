@@ -399,6 +399,15 @@ IF(CPU_i386 OR CPU_amd64)
 	ENDIF(SSE2_FLAG)
 ENDIF()
 
+# SOVERSION
+IF(RP_LIBROMDATA_IS_DLL)
+	SET(${PROJECT_NAME}_LINKAGE SHARED)
+	# NOTE: Not using the project version here.
+	# This represents the ABI version.
+	SET(${PROJECT_NAME}_VERSION 1.0)
+	SET(${PROJECT_NAME}_SOVERSION 1)
+ENDIF(RP_LIBROMDATA_IS_DLL)
+
 # Write the config.h file.
 INCLUDE(DirInstallPaths)
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.lib${PROJECT_NAME}.h.in"
@@ -423,10 +432,6 @@ ENDIF(WIN32)
 # libromdata can be built as a shared library.
 IF(RP_LIBROMDATA_IS_DLL)
 	SET(${PROJECT_NAME}_LINKAGE SHARED)
-	# NOTE: Not using the project version here.
-	# This represents the ABI version.
-	SET(${PROJECT_NAME}_VERSION 1.0)
-	SET(${PROJECT_NAME}_SOVERSION 1)
 	ADD_DEFINITIONS(-DRP_BUILDING_FOR_DLL=1)
 ELSE()
 	SET(${PROJECT_NAME}_LINKAGE STATIC)

@@ -10,6 +10,7 @@
 #include "stdafx.h"
 #include "config.rpcli.h"
 #include "config.version.h"
+#include "libromdata/config.libromdata.h"
 
 // OS-specific security options.
 #include "rpcli_secure.h"
@@ -347,16 +348,15 @@ int RP_C_API main(int argc, char *argv[])
 	// Set the C and C++ locales.
 	locale::global(locale(""));
 
-// TODO: Get the libromdata SOVERSION using a macro?
 #ifdef _MSC_VER
 #  define ROMDATA_PREFIX
 #else
 #  define ROMDATA_PREFIX _T("lib")
 #endif
 #ifndef NDEBUG
-#  define ROMDATA_SUFFIX _T("-1d")
+#  define ROMDATA_SUFFIX _T("-") _T(LIBROMDATA_SOVERSION_STR) _T("d")
 #else
-#  define ROMDATA_SUFFIX _T("-1")
+#  define ROMDATA_SUFFIX _T("-") _T(LIBROMDATA_SOVERSION_STR)
 #endif
 #ifdef _WIN32
 #  define ROMDATA_EXT _T(".dll")

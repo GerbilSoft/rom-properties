@@ -2,12 +2,19 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * config.libromdata.h.in: LibRomData configuration. (source file)         *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_CONFIG_H__
 #define __ROMPROPERTIES_LIBROMDATA_CONFIG_H__
+
+/* DLL SOVERSION (if linking as a shared library) */
+#cmakedefine romdata_LINKAGE 1
+#ifdef romdata_LINKAGE
+#  define LIBROMDATA_SOVERSION		@romdata_SOVERSION@
+#  define LIBROMDATA_SOVERSION_STR	"@romdata_SOVERSION@"
+#endif
 
 /* libexec path for rp-download */
 #define DIR_INSTALL_LIBEXEC "@CMAKE_INSTALL_PREFIX@/@DIR_INSTALL_LIBEXEC@"
