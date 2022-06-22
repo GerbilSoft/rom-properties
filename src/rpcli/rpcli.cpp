@@ -9,6 +9,7 @@
 
 #include "stdafx.h"
 #include "config.rpcli.h"
+#include "config.version.h"
 
 // OS-specific security options.
 #include "rpcli_secure.h"
@@ -370,7 +371,7 @@ int RP_C_API main(int argc, char *argv[])
 	if (DelayLoad_test_ImageTypesConfig_className() != 0) {
 		// Delay load failed.
 		_fputts(_T("*** ERROR: ") ROMDATA_DLL _T(" could not be loaded.\n\n")
-			_T("Please redownload rom-properties and copy the\n")
+			_T("Please redownload rom-properties ") _T(RP_VERSION_STRING) _T(" and copy the\n")
 			ROMDATA_DLL _T(" file to the installation directory.\n"),
 			stderr);
 		return EXIT_FAILURE;
@@ -383,7 +384,7 @@ int RP_C_API main(int argc, char *argv[])
 		_fputts(_T("*** ERROR: ") LIBGNUINTL_DLL _T(" could not be loaded.\n\n")
 			_T("This build of rom-properties has localization enabled,\n")
 			_T("which requires the use of GNU gettext.\n\n")
-			_T("Please redownload rom-properties and copy the\n")
+			_T("Please redownload rom-properties ") _T(RP_VERSION_STRING) _T(" and copy the\n")
 			LIBGNUINTL_DLL _T(" file to the installation directory.\n"),
 			stderr);
 		return EXIT_FAILURE;
