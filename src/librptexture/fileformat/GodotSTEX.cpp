@@ -25,8 +25,13 @@ using LibRpFile::MemFile;
 
 // librptexture
 #include "img/rp_image.hpp"
-#include "decoder/ImageDecoder.hpp"
 #include "decoder/ImageSizeCalc.hpp"
+#include "decoder/ImageDecoder_Linear.hpp"
+#include "decoder/ImageDecoder_S3TC.hpp"
+#include "decoder/ImageDecoder_BC7.hpp"
+#include "decoder/ImageDecoder_PVRTC.hpp"
+#include "decoder/ImageDecoder_ETC1.hpp"
+#include "decoder/ImageDecoder_ASTC.hpp"
 using LibRpTexture::ImageSizeCalc::OpCode;
 
 // C++ STL classes

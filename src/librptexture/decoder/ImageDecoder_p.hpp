@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librptexture)                     *
- * ImageDecoder_p.hpp: Image decoding functions. (PRIVATE CLASS)           *
+ * ImageDecoder_p.hpp: Image decoding functions. (PRIVATE NAMESPACE)       *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,82 +19,7 @@
 // C++ includes.
 #include <array>
 
-namespace LibRpTexture {
-
-class ImageDecoderPrivate
-{
-	private:
-		// ImageDecoderPrivate is a static class.
-		ImageDecoderPrivate();
-		~ImageDecoderPrivate();
-		RP_DISABLE_COPY(ImageDecoderPrivate)
-
-	private:
-		/**
-		 * Blit a tile to an rp_image. (pixel*)
-		 * NOTE: No bounds checking is done.
-		 * @tparam pixel	[in] Pixel type
-		 * @tparam tileW	[in] Tile width
-		 * @tparam tileH	[in] Tile height
-		 * @param img		[out] rp_image
-		 * @param tileBuf	[in] Tile buffer (pixel*)
-		 * @param tileX		[in] Horizontal tile number
-		 * @param tileY		[in] Vertical tile number
-		 */
-		template<typename pixel, unsigned int tileW, unsigned int tileH>
-		static inline void BlitTile(
-			rp_image *RESTRICT img, const pixel *RESTRICT tileBuf,
-			unsigned int tileX, unsigned int tileY);
-
-	public:
-		/**
-		 * Blit a tile to an rp_image. (std::array<pixel>)
-		 * NOTE: No bounds checking is done.
-		 * @tparam pixel	[in] Pixel type
-		 * @tparam tileW	[in] Tile width
-		 * @tparam tileH	[in] Tile height
-		 * @param img		[out] rp_image
-		 * @param tileBuf	[in] Tile buffer (std::array<pixel>)
-		 * @param tileX		[in] Horizontal tile number
-		 * @param tileY		[in] Vertical tile number
-		 */
-		template<typename pixel, unsigned int tileW, unsigned int tileH>
-		static inline void BlitTile(
-			rp_image *RESTRICT img, const std::array<pixel, tileW*tileH> &tileBuf,
-			unsigned int tileX, unsigned int tileY);
-
-		/**
-		 * Blit a tile to an rp_image. (std::array<argb32_t>)
-		 * NOTE: No bounds checking is done.
-		 * @tparam pixel	[in] Pixel type
-		 * @tparam tileW	[in] Tile width
-		 * @tparam tileH	[in] Tile height
-		 * @param img		[out] rp_image
-		 * @param tileBuf	[in] Tile buffer (std::array<argb32_t>)
-		 * @param tileX		[in] Horizontal tile number
-		 * @param tileY		[in] Vertical tile number
-		 */
-		template<typename pixel, unsigned int tileW, unsigned int tileH>
-		static inline void BlitTile(
-			rp_image *RESTRICT img, const std::array<argb32_t, tileW*tileH> &tileBuf,
-			unsigned int tileX, unsigned int tileY);
-
-		/**
-		 * Blit a CI4 tile to a CI8 rp_image.
-		 * NOTE: Left pixel is the least significant nybble.
-		 * NOTE: No bounds checking is done.
-		 * @tparam tileW	[in] Tile width.
-		 * @tparam tileH	[in] Tile height.
-		 * @param img		[out] rp_image.
-		 * @param tileBuf	[in] Tile buffer.
-		 * @param tileX		[in] Horizontal tile number.
-		 * @param tileY		[in] Vertical tile number.
-		 */
-		template<unsigned int tileW, unsigned int tileH>
-		static inline void BlitTile_CI4_LeftLSN(
-			rp_image *RESTRICT img, const std::array<uint8_t, tileW*tileH/2> &tileBuf,
-			unsigned int tileX, unsigned int tileY);
-};
+namespace LibRpTexture { namespace ImageDecoderPrivate {
 
 /**
  * Blit a tile to an rp_image. (pixel*)
@@ -108,7 +33,7 @@ class ImageDecoderPrivate
  * @param tileY		[in] Vertical tile number
  */
 template<typename pixel, unsigned int tileW, unsigned int tileH>
-inline void ImageDecoderPrivate::BlitTile(
+static inline void BlitTile(
 	rp_image *RESTRICT img, const pixel *tileBuf,
 	unsigned int tileX, unsigned int tileY)
 {
@@ -150,7 +75,7 @@ inline void ImageDecoderPrivate::BlitTile(
  * @param tileY		[in] Vertical tile number
  */
 template<typename pixel, unsigned int tileW, unsigned int tileH>
-inline void ImageDecoderPrivate::BlitTile(
+static inline void BlitTile(
 	rp_image *RESTRICT img, const std::array<pixel, tileW*tileH> &tileBuf,
 	unsigned int tileX, unsigned int tileY)
 {
@@ -169,7 +94,7 @@ inline void ImageDecoderPrivate::BlitTile(
  * @param tileY		[in] Vertical tile number
  */
 template<typename pixel, unsigned int tileW, unsigned int tileH>
-inline void ImageDecoderPrivate::BlitTile(
+static inline void BlitTile(
 	rp_image *RESTRICT img, const std::array<argb32_t, tileW*tileH> &tileBuf,
 	unsigned int tileX, unsigned int tileY)
 {
@@ -189,7 +114,7 @@ inline void ImageDecoderPrivate::BlitTile(
  * @param tileY		[in] Vertical tile number.
  */
 template<unsigned int tileW, unsigned int tileH>
-inline void ImageDecoderPrivate::BlitTile_CI4_LeftLSN(
+static inline void BlitTile_CI4_LeftLSN(
 	rp_image *RESTRICT img, const std::array<uint8_t, tileW*tileH/2> &tileBuf,
 	unsigned int tileX, unsigned int tileY)
 {
@@ -219,6 +144,6 @@ inline void ImageDecoderPrivate::BlitTile_CI4_LeftLSN(
 	}
 }
 
-}
+} }
 
 #endif /* __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGEDECODER_P_HPP__ */

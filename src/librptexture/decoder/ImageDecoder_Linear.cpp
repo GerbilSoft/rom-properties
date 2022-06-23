@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librptexture)                     *
- * ImageDecoder_Linear.cpp: Image decoding functions. (Linear)             *
+ * ImageDecoder_Linear.cpp: Image decoding functions: Linear               *
  * Standard version. (C++ code only)                                       *
  *                                                                         *
  * Copyright (c) 2016-2022 by David Korth.                                 *
@@ -8,7 +8,7 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "ImageDecoder.hpp"
+#include "ImageDecoder_Linear.hpp"
 
 // librptexture
 #include "img/rp_image.hpp"

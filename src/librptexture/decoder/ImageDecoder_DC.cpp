@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librptexture)                     *
- * ImageDecoder_DC.cpp: Image decoding functions. (Dreamcast)              *
+ * ImageDecoder_DC.cpp: Image decoding functions: Dreamcast                *
  *                                                                         *
  * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -9,7 +9,7 @@
 // Reference: https://github.com/nickworonekin/puyotools/blob/548a52684fd48d936526fd91e8ead8e52aa33eb3/Libraries/VrSharp/PvrTexture/PvrDataCodec.cs
 
 #include "stdafx.h"
-#include "ImageDecoder.hpp"
+#include "ImageDecoder_DC.hpp"
 
 // librptexture
 #include "img/rp_image.hpp"

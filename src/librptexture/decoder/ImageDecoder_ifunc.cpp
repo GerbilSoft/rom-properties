@@ -10,7 +10,7 @@
 
 #ifdef HAVE_IFUNC
 
-#include "ImageDecoder.hpp"
+#include "ImageDecoder_Linear.hpp"
 using namespace LibRpTexture;
 
 // IFUNC attribute doesn't support C++ name mangling.

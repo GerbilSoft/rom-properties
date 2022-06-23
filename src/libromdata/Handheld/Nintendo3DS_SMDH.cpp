@@ -14,6 +14,7 @@
 #include "data/NintendoLanguage.hpp"
 
 // librpbase, librpfile, librptexture
+#include "librptexture/decoder/ImageDecoder_N3DS.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 using namespace LibRpTexture;

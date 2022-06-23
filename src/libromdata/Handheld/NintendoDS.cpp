@@ -17,6 +17,7 @@
 // librpbase, librpfile, librptexture
 #include "librpbase/config/Config.hpp"
 #include "librpbase/SystemRegion.hpp"
+#include "librptexture/decoder/ImageDecoder_NDS.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 using LibRpFile::RpFile;

@@ -25,8 +25,9 @@ using LibRpFile::IRpFile;
 
 // librptexture
 #include "img/rp_image.hpp"
-#include "decoder/ImageDecoder.hpp"
 #include "decoder/ImageSizeCalc.hpp"
+#include "decoder/ImageDecoder_Linear.hpp"
+#include "decoder/ImageDecoder_S3TC.hpp"
 using LibRpTexture::ImageSizeCalc::OpCode;
 
 // C++ STL classes.

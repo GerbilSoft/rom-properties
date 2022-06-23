@@ -19,7 +19,10 @@ using LibRpFile::IRpFile;
 
 // librptexture
 #include "img/rp_image.hpp"
-#include "decoder/ImageDecoder.hpp"
+#include "decoder/ImageDecoder_Linear.hpp"
+#include "decoder/ImageDecoder_DC.hpp"
+#include "decoder/ImageDecoder_GCN.hpp"
+#include "decoder/ImageDecoder_S3TC.hpp"
 
 // C++ STL classes.
 using std::unique_ptr;

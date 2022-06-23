@@ -18,7 +18,7 @@ using LibRpFile::IRpFile;
 
 // librptexture
 #include "img/rp_image.hpp"
-#include "decoder/ImageDecoder.hpp"
+#include "decoder/ImageDecoder_S3TC.hpp"
 
 namespace LibRpTexture {
 

@@ -17,7 +17,7 @@
 // zlib and libpng
 #include <zlib.h>
 #ifdef HAVE_PNG
-# include <png.h>
+#  include <png.h>
 #endif /* HAVE_PNG */
 
 // gzclose_r() and gzclose_w() were introduced in zlib-1.2.4.
@@ -42,7 +42,6 @@ using namespace LibRpFile;
 
 // librptexture
 #include "librptexture/img/rp_image.hpp"
-#include "librptexture/decoder/ImageDecoder.hpp"
 #ifdef _WIN32
 // rp_image backend registration.
 #  include "librptexture/img/RpGdiplusBackend.hpp"

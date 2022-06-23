@@ -22,7 +22,7 @@ using LibRpFile::IRpFile;
 
 // librptexture
 #include "img/rp_image.hpp"
-#include "decoder/ImageDecoder.hpp"
+#include "decoder/ImageDecoder_Linear.hpp"
 
 // C++ STL classes.
 using std::string;

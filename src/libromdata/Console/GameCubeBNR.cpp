@@ -14,6 +14,7 @@
 #include "gcn_structs.h"
 
 // librpbase, librpfile, librptexture
+#include "librptexture/decoder/ImageDecoder_GCN.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 using namespace LibRpTexture;

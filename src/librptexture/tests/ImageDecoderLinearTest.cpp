@@ -17,7 +17,7 @@
 
 // librptexture
 #include "librptexture/img/rp_image.hpp"
-#include "librptexture/decoder/ImageDecoder.hpp"
+#include "librptexture/decoder/ImageDecoder_Linear.hpp"
 #ifdef _WIN32
 // rp_image backend registration.
 #  include "librptexture/img/RpGdiplusBackend.hpp"

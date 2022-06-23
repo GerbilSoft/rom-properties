@@ -73,8 +73,16 @@ SET(${PROJECT_NAME}_H
 	img/rp_image_p.hpp
 	img/rp_image_backend.hpp
 
-	decoder/ImageDecoder.hpp
+	decoder/ImageDecoder_common.hpp
 	decoder/ImageDecoder_p.hpp
+	decoder/ImageDecoder_Linear.hpp
+	decoder/ImageDecoder_GCN.hpp
+	decoder/ImageDecoder_NDS.hpp
+	decoder/ImageDecoder_N3DS.hpp
+	decoder/ImageDecoder_S3TC.hpp
+	decoder/ImageDecoder_DC.hpp
+	decoder/ImageDecoder_ETC1.hpp
+	decoder/ImageDecoder_BC7.hpp
 	decoder/ImageSizeCalc.hpp
 	decoder/PixelConversion.hpp
 
@@ -127,9 +135,11 @@ ENDIF(WIN32)
 
 IF(ENABLE_PVRTC)
 	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} decoder/ImageDecoder_PVRTC.cpp)
+	SET(${PROJECT_NAME}_H    ${${PROJECT_NAME}_H}    decoder/ImageDecoder_PVRTC.hpp)
 ENDIF(ENABLE_PVRTC)
 IF(ENABLE_ASTC)
 	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} decoder/ImageDecoder_ASTC.cpp)
+	SET(${PROJECT_NAME}_H    ${${PROJECT_NAME}_H}    decoder/ImageDecoder_ASTC.hpp)
 ENDIF(ENABLE_ASTC)
 
 # CPU-specific and optimized sources.

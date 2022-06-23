@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librptexture)                     *
- * ImageDecoder_BC7.cpp: Image decoding functions. (BC7)                   *
+ * ImageDecoder_BC7.cpp: Image decoding functions: BC7                     *
  *                                                                         *
  * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -8,7 +8,7 @@
 
 #include "stdafx.h"
 
-#include "ImageDecoder.hpp"
+#include "ImageDecoder_ASTC.hpp"
 #include "ImageDecoder_p.hpp"
 
 // C++ STL classes.

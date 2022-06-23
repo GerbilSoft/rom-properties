@@ -13,6 +13,7 @@
 
 // librpbase, librpfile, librptexture
 #include "librpbase/SystemRegion.hpp"
+#include "librptexture/decoder/ImageDecoder_GCN.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 using namespace LibRpTexture;

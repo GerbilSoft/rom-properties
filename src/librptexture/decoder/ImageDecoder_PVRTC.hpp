@@ -1,0 +1,62 @@
+/***************************************************************************
+ * ROM Properties Page shell extension. (librptexture)                     *
+ * ImageDecoder_PVRTC.hpp: Image decoding functions: PVRTC                 *
+ *                                                                         *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
+ * SPDX-License-Identifier: GPL-2.0-or-later                               *
+ ***************************************************************************/
+
+#ifndef __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGEDECODER_PVRTC_HPP__
+#define __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGEDECODER_PVRTC_HPP__
+
+#include "ImageDecoder_common.hpp"
+
+namespace LibRpTexture { namespace ImageDecoder {
+
+#ifdef ENABLE_PVRTC
+/* PVRTC */
+
+enum PVRTC_Mode_e {
+	// bpp
+	PVRTC_4BPP		= (0U << 0),
+	PVRTC_2BPP		= (1U << 0),
+	PVRTC_BPP_MASK		= (1U << 0),
+
+	// Alpha channel (PVRTC-I only)
+	PVRTC_ALPHA_NONE	= (0U << 1),
+	PVRTC_ALPHA_YES		= (1U << 1),
+	PVRTC_ALPHA_MASK	= (1U << 1),
+};
+
+/**
+ * Convert a PVRTC 2bpp or 4bpp image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf PVRTC image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)/4]
+ * @param mode Mode bitfield. (See PVRTC_Mode_e.)
+ * @return rp_image, or nullptr on error.
+ */
+ATTR_ACCESS_SIZE(read_only, 3, 4)
+rp_image *fromPVRTC(int width, int height,
+	const uint8_t *RESTRICT img_buf, size_t img_siz,
+	uint8_t mode);
+
+/**
+ * Convert a PVRTC-II 2bpp or 4bpp image to rp_image.
+ * @param width Image width.
+ * @param height Image height.
+ * @param img_buf PVRTC image buffer.
+ * @param img_siz Size of image data. [must be >= (w*h)/4]
+ * @param mode Mode bitfield. (See PVRTC_Mode_e.)
+ * @return rp_image, or nullptr on error.
+ */
+ATTR_ACCESS_SIZE(read_only, 3, 4)
+rp_image *fromPVRTCII(int width, int height,
+	const uint8_t *RESTRICT img_buf, size_t img_siz,
+	uint8_t mode);
+#endif /* ENABLE_PVRTC */
+
+} }
+
+#endif /* __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGEDECODER_PVRTC_HPP__ */

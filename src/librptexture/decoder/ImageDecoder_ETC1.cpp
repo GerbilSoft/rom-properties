@@ -1,13 +1,13 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librptexture)                     *
- * ImageDecoder_ETC1.cpp: Image decoding functions. (ETC1)                 *
+ * ImageDecoder_ETC1.cpp: Image decoding functions: ETC1                   *
  *                                                                         *
  * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "ImageDecoder.hpp"
+#include "ImageDecoder_ETC1.hpp"
 #include "ImageDecoder_p.hpp"
 
 // C++ STL classes.

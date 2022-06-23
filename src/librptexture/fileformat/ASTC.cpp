@@ -18,8 +18,8 @@ using LibRpFile::IRpFile;
 
 // librptexture
 #include "img/rp_image.hpp"
-#include "decoder/ImageDecoder.hpp"
 #include "decoder/ImageSizeCalc.hpp"
+#include "decoder/ImageDecoder_ASTC.hpp"
 
 namespace LibRpTexture {
 
