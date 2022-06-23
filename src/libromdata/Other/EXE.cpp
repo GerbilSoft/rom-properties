@@ -379,18 +379,22 @@ void EXEPrivate::addFields_MZ(void)
 
 	// File size warnings
 	// Only show them if it's an MZ-only executable and if e_cblp is sane
+	bool shownWarning = false;
 	if (exeType == EXEPrivate::ExeType::MZ && le16_to_cpu(mz.e_cblp) > 511) {
 		off64_t file_size = file->size();
 		if (file_size != -1) {
 			off64_t image_size = le16_to_cpu(mz.e_cp)*512;
 			if (mz.e_cblp != 0)
 				image_size -= 512 - le16_to_cpu(mz.e_cblp);
-			if (file_size < image_size)
+			if (file_size < image_size) {
 				fields->addField_string(C_("RomData", "Warning"),
 					C_("EXE", "Program image truncated"), RomFields::STRF_WARNING);
-			else if (file_size > image_size)
+				shownWarning = true;
+			} else if (file_size > image_size) {
 				fields->addField_string(C_("RomData", "Warning"),
 					C_("EXE", "Extra data after end of file"), RomFields::STRF_WARNING);
+				shownWarning = true;
+			}
 		}
 	}
 
@@ -424,9 +428,12 @@ void EXEPrivate::addFields_MZ(void)
 	 * you're low on memory.
 	 * I think this warrants a warning.
 	 */
-	if (mz.e_ss == 0 && mz.e_sp == 0)
-		fields->addField_string(C_("RomData", "Warning"),
-			C_("EXE", "No stack"), RomFields::STRF_WARNING);
+	if (mz.e_ss == 0 && mz.e_sp == 0) {
+		if (!shownWarning) {
+			fields->addField_string(C_("RomData", "Warning"),
+				C_("EXE", "No stack"), RomFields::STRF_WARNING);
+		}
+	}
 }
 
 /** LE/LX-specific **/
@@ -880,11 +887,12 @@ int EXE::loadFieldData(void)
 	}
 
 	// Maximum number of fields:
-	// - NE: 6
+	// - MZ: 7
+	// - NE: 9
 	// - PE: 8
 	//   - PE Version: +6
 	//   - PE Manifest: +12
-	d->fields->reserve(26);
+	d->fields->reserve(27);
 
 	// Executable type.
 	// NOTE: Not translatable.
