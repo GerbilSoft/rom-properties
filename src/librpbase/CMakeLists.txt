@@ -96,6 +96,7 @@ SET(${PROJECT_NAME}_H
 	TextFuncs.hpp
 	TextFuncs_wchar.hpp
 	TextFuncs_libc.h
+	RP_CP_tbls.hpp
 	RomData.hpp
 	RomData_decl.hpp
 	RomData_p.hpp

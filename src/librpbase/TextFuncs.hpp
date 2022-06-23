@@ -182,6 +182,13 @@ static inline char16_t *u16_memchr(char16_t *wcs, char16_t c, size_t n)
 # define CP_GB2312 936
 #endif
 
+// Specialized code pages.
+#define CP_RP_BASE			0x10000
+#define CP_RP_ATARIST			(CP_RP_BASE | 0)
+#define CP_RP_ATASCII			(CP_RP_BASE | 1)
+#define CP_RP_PETSCII_Unshifted		(CP_RP_BASE | 2)
+#define CP_RP_PETSCII_Shifted		(CP_RP_BASE | 3)
+
 // Text conversion flags.
 typedef enum {
 	// Enable cp1252 fallback if the text fails to
@@ -203,6 +210,17 @@ typedef enum {
  */
 RP_LIBROMDATA_PUBLIC
 std::string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int flags = 0);
+
+/**
+ * Convert 8-bit text to UTF-8 using an RP-custom code page.
+ * Code page number must be CP_RP_*.
+ *
+ * @param cp	[in] Code page number.
+ * @param str	[in] 8-bit text.
+ * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
+ * @return UTF-8 string.
+ */
+std::string cpRP_to_utf8(unsigned int cp, const char *str, int len);
 
 /**
  * Convert 8-bit text to UTF-16.
@@ -591,38 +609,6 @@ static inline std::u16string utf16be_to_utf16(const char16_t *wcs, int len)
 	return std::u16string(wcs, len);
 #endif
 }
-
-/** Specialized text conversion functions **/
-
-/**
- * Convert Atari ST text to UTF-8.
- * Trailing NULL bytes will be removed.
- * @param str	[in] Atari ST text.
- * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
- * @return UTF-8 string.
- */
-RP_LIBROMDATA_PUBLIC
-std::string atariST_to_utf8(const char *str, int len);
-
-/**
- * Convert Atari ATASCII text to UTF-8.
- * Trailing NULL bytes will be removed.
- * @param str	[in] Atari ATASCII text.
- * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
- * @return UTF-8 string.
- */
-RP_LIBROMDATA_PUBLIC
-std::string atascii_to_utf8(const char *str, int len);
-
-/**
- * Convert Commodore PETSCII text (C64 variant) to UTF-8.
- * Trailing NULL bytes will be removed.
- * @param str	[in] Commodore PETSCII text.
- * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
- * @param shifted [in] False for unshifted (uppercase+graphics); true for shifted (lowercase+uppercase).
- * @return UTF-8 string.
- */
-std::string petscii_to_utf8(const char *str, int len, bool shifted = false);
 
 /** sprintf() **/
 

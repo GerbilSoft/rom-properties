@@ -159,7 +159,7 @@ string SNDHPrivate::readStrFromBuffer(const uint8_t **p, const uint8_t *p_end, b
 		// Reference: https://en.wikipedia.org/wiki/Atari_ST_character_set
 		const uint8_t *const p_old = *p;
 		*p = s_end + 1;
-		return atariST_to_utf8(reinterpret_cast<const char*>(p_old), (int)(s_end-p_old));
+		return cpN_to_utf8(CP_RP_ATARIST, reinterpret_cast<const char*>(p_old), (int)(s_end-p_old));
 	}
 
 	// Empty string.

@@ -172,7 +172,7 @@ class TextFuncsTest : public ::testing::Test
 		/**
 		 * Atari ST to UTF-16 test string.
 		 * Contains the expected result from:
-		 * - utf8_to_utf16(atariST_to_utf8(atariST_data, ARRAY_SIZE_I(atariST_data)))
+		 * - utf8_to_utf16(cpN_to_utf8(CP_RP_ATARIST, atariST_data, ARRAY_SIZE_I(atariST_data)))
 		 */
 		static const char16_t atariST_utf16_data[236+1];
 
@@ -185,7 +185,7 @@ class TextFuncsTest : public ::testing::Test
 		/**
 		 * Atari ATASCII to UTF-16 test string.
 		 * Contains the expected result from:
-		 * - utf8_to_utf16(atascii_to_utf8(atascii_data, ARRAY_SIZE_I(atascii_data)-1))
+		 * - utf8_to_utf16(cpN_to_utf8(CP_RP_ATASCII, atascii_data, ARRAY_SIZE_I(atascii_data)-1))
 		 */
 		static const char16_t atascii_utf16_data[229+1];
 };
@@ -853,20 +853,20 @@ TEST_F(TextFuncsTest, atariST_to_utf8)
 	// Reference: https://en.wikipedia.org/wiki/Atari_ST_character_set
 
 	// Test with implicit length.
-	string str = atariST_to_utf8(atariST_data, -1);
+	string str = cpN_to_utf8(CP_RP_ATARIST, atariST_data, -1);
 	u16string u16str = utf8_to_utf16(str);
 	EXPECT_EQ(ARRAY_SIZE(atariST_utf16_data)-1, u16str.size());
 	EXPECT_EQ(atariST_utf16_data, u16str);
 
 	// Test with explicit length.
-	str = atariST_to_utf8(atariST_data, ARRAY_SIZE(atariST_data)-1);
+	str = cpN_to_utf8(CP_RP_ATARIST, atariST_data, ARRAY_SIZE(atariST_data)-1);
 	u16str = utf8_to_utf16(str);
 	EXPECT_EQ(ARRAY_SIZE(atariST_utf16_data)-1, u16str.size());
 	EXPECT_EQ(atariST_utf16_data, u16str);
 
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
-	str = atariST_to_utf8(atariST_data, ARRAY_SIZE(atariST_data));
+	str = cpN_to_utf8(CP_RP_ATARIST, atariST_data, ARRAY_SIZE(atariST_data));
 	u16str = utf8_to_utf16(str);
 	EXPECT_EQ(ARRAY_SIZE(atariST_utf16_data)-1, u16str.size());
 	EXPECT_EQ(atariST_utf16_data, u16str);
@@ -881,20 +881,20 @@ TEST_F(TextFuncsTest, atascii_to_utf8)
 	// Test with implicit length.
 	// NOTE: We have to skip the first character, 0x00, because
 	// implicit length mode would interpret that as an empty string.
-	string str = atascii_to_utf8(&atascii_data[1], -1);
+	string str = cpN_to_utf8(CP_RP_ATASCII, &atascii_data[1], -1);
 	u16string u16str = utf8_to_utf16(str);
 	EXPECT_EQ(ARRAY_SIZE(atascii_utf16_data)-2, u16str.size());
 	EXPECT_EQ(&atascii_utf16_data[1], u16str);
 
 	// Test with explicit length.
-	str = atascii_to_utf8(atascii_data, ARRAY_SIZE(atascii_data)-1);
+	str = cpN_to_utf8(CP_RP_ATASCII, atascii_data, ARRAY_SIZE(atascii_data)-1);
 	u16str = utf8_to_utf16(str);
 	EXPECT_EQ(ARRAY_SIZE(atascii_utf16_data)-1, u16str.size());
 	EXPECT_EQ(atascii_utf16_data, u16str);
 
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
-	str = atascii_to_utf8((const char*)atascii_data, ARRAY_SIZE(atascii_data));
+	str = cpN_to_utf8(CP_RP_ATASCII, (const char*)atascii_data, ARRAY_SIZE(atascii_data));
 	u16str = utf8_to_utf16(str);
 	EXPECT_EQ(ARRAY_SIZE(atascii_utf16_data)-1, u16str.size());
 	EXPECT_EQ(atascii_utf16_data, u16str);
