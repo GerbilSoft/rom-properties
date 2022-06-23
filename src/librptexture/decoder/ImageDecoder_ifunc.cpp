@@ -7,7 +7,6 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "librpcpu/cpu_dispatch.h"
 
 #ifdef HAVE_IFUNC
 
@@ -24,8 +23,13 @@ extern "C" {
  */
 static __typeof__(&ImageDecoder::fromLinear16_cpp) fromLinear16_resolve(void)
 {
+	// NOTE: Since libromdata is a shared library now, IFUNC resolvers
+	// cannot call PLT functions. Otherwise, it will crash.
+	// We'll use gcc's built-in CPU ID functions instead.
+	// Requires gcc-4.8 or later, or clang-6.0 or later.
 #ifdef IMAGEDECODER_HAS_SSE2
-	if (RP_CPU_HasSSE2()) {
+	__builtin_cpu_init();
+	if (__builtin_cpu_supports("sse2")) {
 		return &ImageDecoder::fromLinear16_sse2;
 	} else
 #endif /* IMAGEDECODER_HAS_SSE2 */
@@ -42,7 +46,8 @@ static __typeof__(&ImageDecoder::fromLinear16_cpp) fromLinear16_resolve(void)
 static __typeof__(&ImageDecoder::fromLinear24_cpp) fromLinear24_resolve(void)
 {
 #ifdef IMAGEDECODER_HAS_SSSE3
-	if (RP_CPU_HasSSSE3()) {
+	__builtin_cpu_init();
+	if (__builtin_cpu_supports("ssse3")) {
 		return &ImageDecoder::fromLinear24_ssse3;
 	} else
 #endif /* IMAGEDECODER_HAS_SSSE3 */

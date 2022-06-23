@@ -11,6 +11,9 @@
       The SOVERSION (-1, .1) will be incremented if the ABI is known to
       have broken between releases, but I can't guarantee that it will
       always remain compatible.
+    * IFUNC resolvers now use gcc's built-in CPU flag functions because
+      the regular rom-properties functions aren't available due to PLT
+      shenanigans. IFUNC now requires gcc-4.8+ or clang-6.0+.
 
 * New parsers:
   * Atari7800: Atari 7800 ROM images with an A78 header.

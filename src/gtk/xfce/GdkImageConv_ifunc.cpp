@@ -23,8 +23,14 @@ extern "C" {
  */
 static __typeof__(&GdkImageConv::rp_image_to_GdkPixbuf_cpp) rp_image_to_GdkPixbuf_resolve(void)
 {
+	// NOTE: Since libromdata is a shared library now, IFUNC resolvers
+	// cannot call PLT functions. Otherwise, it will crash.
+	// We'll use gcc's built-in CPU ID functions instead.
+	// Requires gcc-4.8 or later, or clang-6.0 or later.
+
 #ifdef GDKIMAGECONV_HAS_SSSE3
-	if (RP_CPU_HasSSSE3()) {
+	__builtin_cpu_init();
+	if (__builtin_cpu_supports("ssse3")) {
 		return &GdkImageConv::rp_image_to_GdkPixbuf_ssse3;
 	} else
 #endif /* GDKIMAGECONV_HAS_SSSE3 */

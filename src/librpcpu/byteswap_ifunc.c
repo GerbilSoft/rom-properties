@@ -17,8 +17,12 @@
  */
 static __typeof__(&__byte_swap_16_array_c) __byte_swap_16_array_resolve(void)
 {
+#if defined(BYTESWAP_HAS_SSSE3) || defined(BYTESWAP_HAS_SSE2) || defined(BYTESWAP_HAS_MMX)
+	__builtin_cpu_init();
+#endif
+
 #ifdef BYTESWAP_HAS_SSSE3
-	if (RP_CPU_HasSSSE3()) {
+	if (__builtin_cpu_supports("ssse3")) {
 		return &__byte_swap_16_array_ssse3;
 	} else
 #endif /* BYTESWAP_HAS_SSSE3 */
@@ -28,12 +32,12 @@ static __typeof__(&__byte_swap_16_array_c) __byte_swap_16_array_resolve(void)
 	}
 #else /* !BYTESWAP_ALWAYS_HAS_SSE2 */
 # ifdef BYTESWAP_HAS_SSE2
-	if (RP_CPU_HasSSE2()) {
+	if (__builtin_cpu_supports("sse2")) {
 		return &__byte_swap_16_array_sse2;
 	} else
 # endif /* BYTESWAP_HAS_SSE2 */
 # ifdef BYTESWAP_HAS_MMX
-	if (RP_CPU_HasMMX()) {
+	if (__builtin_cpu_supports("mmx")) {
 		return &__byte_swap_16_array_mmx;
 	} else
 # endif /* BYTESWAP_HAS_MMX */
@@ -49,8 +53,17 @@ static __typeof__(&__byte_swap_16_array_c) __byte_swap_16_array_resolve(void)
  */
 static __typeof__(&__byte_swap_32_array_c) __byte_swap_32_array_resolve(void)
 {
+	// NOTE: Since libromdata is a shared library now, IFUNC resolvers
+	// cannot call PLT functions. Otherwise, it will crash.
+	// We'll use gcc's built-in CPU ID functions instead.
+	// Requires gcc-4.8 or later, or clang-6.0 or later.
+
+#if defined(BYTESWAP_HAS_SSSE3) || defined(BYTESWAP_HAS_SSE2) || defined(BYTESWAP_HAS_MMX)
+	__builtin_cpu_init();
+#endif
+
 #ifdef BYTESWAP_HAS_SSSE3
-	if (RP_CPU_HasSSSE3()) {
+	if (__builtin_cpu_supports("ssse3")) {
 		return &__byte_swap_32_array_ssse3;
 	} else
 #endif /* BYTESWAP_HAS_SSSE3 */
@@ -60,13 +73,13 @@ static __typeof__(&__byte_swap_32_array_c) __byte_swap_32_array_resolve(void)
 	}
 #else /* !BYTESWAP_ALWAYS_HAS_SSE2 */
 # ifdef BYTESWAP_HAS_SSE2
-	if (RP_CPU_HasSSE2()) {
+	if (__builtin_cpu_supports("sse2")) {
 		return &__byte_swap_32_array_sse2;
 	} else
 # endif /* BYTESWAP_HAS_SSE2 */
 # if 0 /* FIXME: The MMX version is actually *slower* than the C version. */
 # ifdef BYTESWAP_HAS_MMX
-	if (RP_CPU_HasMMX()) {
+	if (__builtin_cpu_supports("mmx")) {
 		return &__byte_swap_32_array_mmx;
 	} else
 # endif /* BYTESWAP_HAS_MMX */
