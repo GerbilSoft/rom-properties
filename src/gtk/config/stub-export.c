@@ -15,6 +15,10 @@
 typedef void *GtkApplication;
 #endif /* !GTK_CHECK_VERSION(3,0,0) */
 
+#if GTK_CHECK_VERSION(4,0,0)
+static bool stub_quit;
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+
 /**
  * ConfigDialog was closed by clicking the X button.
  * @param dialog ConfigDialog
@@ -31,7 +35,11 @@ config_dialog_delete_event(ConfigDialog *dialog,
 	RP_UNUSED(user_data);
 
 	// Quit the application.
+#if GTK_CHECK_VERSION(4,0,0)
+	stub_quit = true;
+#else /* !GTK_CHECK_VERSION(4,0,0) */
 	gtk_main_quit();
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Continue processing.
 	return FALSE;
@@ -60,7 +68,11 @@ int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 	// TODO: Single-instance?
 
 	CHECK_UID_RET(EXIT_FAILURE);
+#if GTK_CHECK_VERSION(4,0,0)
+	gtk_init();
+#else /* !GTK_CHECK_VERSION(4,0,0) */
 	gtk_init(NULL, NULL);
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Initialize base i18n.
 	rp_i18n_init();
@@ -74,6 +86,14 @@ int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 	g_signal_connect(dialog, "delete-event", G_CALLBACK(config_dialog_delete_event), NULL);
 
 	// TODO: Get the return value?
+#if GTK_CHECK_VERSION(4,0,0)
+	stub_quit = false;
+	while (!stub_quit) {
+		g_main_context_iteration(NULL, TRUE);
+	}
+#else /* !GTK_CHECK_VERSION(4,0,0) */
 	gtk_main();
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+
 	return 0;
 }

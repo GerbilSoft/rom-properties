@@ -9,11 +9,12 @@
 #include "stdafx.h"
 #include "config.gtk.h"
 
+#include "ConfigDialog.hpp"
+#include "RpGtk.hpp"
+
 // librpbase, librpfile
 using namespace LibRpBase;
 using namespace LibRpFile;
-
-#include "ConfigDialog.hpp"
 
 #define CONFIG_DIALOG_RESPONSE_RESET		0
 #define CONFIG_DIALOG_RESPONSE_DEFAULTS		1
@@ -68,9 +69,11 @@ config_dialog_init(ConfigDialog *dialog)
 	// TODO: Spacing between "Defaults" and "Cancel".
 	// NOTE: Only need to save Reset, Defaults, and Apply.
 	dialog->btnReset = gtk_dialog_add_button(GTK_DIALOG(dialog),
-		C_("ConfigDialog|Button", "Reset"), CONFIG_DIALOG_RESPONSE_RESET);
+		convert_accel_to_gtk(C_("ConfigDialog|Button", "&Reset")).c_str(),
+		CONFIG_DIALOG_RESPONSE_RESET);
 	dialog->btnDefaults = gtk_dialog_add_button(GTK_DIALOG(dialog),
-		C_("ConfigDialog|Button", "Defaults"), CONFIG_DIALOG_RESPONSE_DEFAULTS);
+		convert_accel_to_gtk(C_("ConfigDialog|Button", "Defaults")).c_str(),
+		CONFIG_DIALOG_RESPONSE_DEFAULTS);
 
 	// TODO: GTK2 alignment.
 	// TODO: This merely adds a space. It doesn't force the buttons
@@ -89,12 +92,16 @@ config_dialog_init(ConfigDialog *dialog)
 
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
+	// GTK4 no longer has GTK_STOCK_*, so we'll have to provide it ourselves.
 	GtkWidget *const btnCancel = gtk_dialog_add_button(GTK_DIALOG(dialog),
-		GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL);
+		convert_accel_to_gtk(C_("ConfigDialog|Button", "&Cancel")).c_str(),
+		GTK_RESPONSE_CANCEL);
 	dialog->btnApply = gtk_dialog_add_button(GTK_DIALOG(dialog),
-		GTK_STOCK_APPLY, GTK_RESPONSE_APPLY);
+		convert_accel_to_gtk(C_("ConfigDialog|Button", "&Apply")).c_str(),
+		GTK_RESPONSE_APPLY);
 	GtkWidget *const btnOK = gtk_dialog_add_button(GTK_DIALOG(dialog),
-		GTK_STOCK_OK, GTK_RESPONSE_OK);
+		convert_accel_to_gtk(C_("ConfigDialog|Button", "&OK")).c_str(),
+		GTK_RESPONSE_OK);
 
 	// Connect signals.
 	g_signal_connect(dialog, "response", G_CALLBACK(config_dialog_response_handler), NULL);
