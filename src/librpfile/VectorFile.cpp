@@ -12,6 +12,13 @@
 // C++ STL classes.
 using std::string;
 
+// TextOut_json isn't used by libromdata directly,
+// so use some linker hax to force linkage.
+extern "C" {
+	extern uint8_t RP_LibRpFile_VectorFile_ForceLinkage;
+	uint8_t RP_LibRpFile_VectorFile_ForceLinkage;
+}
+
 namespace LibRpFile {
 
 /**
