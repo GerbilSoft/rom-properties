@@ -91,6 +91,7 @@
 #include "librpbase/RomFields.hpp"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/SystemRegion.hpp"
+#include "librpbase/config/Config.hpp"
 #include "librpbase/img/RpPngWriter.hpp"
 
 // librpfile C++ headers
