@@ -41,6 +41,9 @@ struct _ConfigDialog {
 	GtkWidget *btnReset;
 	GtkWidget *btnDefaults;
 	GtkWidget *btnApply;
+
+	// GtkNotebook tab widget
+	GtkWidget *tabWidget;
 };
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -102,6 +105,28 @@ config_dialog_init(ConfigDialog *dialog)
 	GtkWidget *const btnOK = gtk_dialog_add_button(GTK_DIALOG(dialog),
 		convert_accel_to_gtk(C_("ConfigDialog|Button", "&OK")).c_str(),
 		GTK_RESPONSE_OK);
+
+	// Dialog content area.
+	GtkWidget *const content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+
+	// Create the GtkNotebook.
+	dialog->tabWidget = gtk_notebook_new();
+	gtk_widget_show(dialog->tabWidget);
+#if GTK_CHECK_VERSION(4,0,0)
+	gtk_box_append(GTK_BOX(content_area), dialog->tabWidget);
+	// TODO: Verify that this works.
+	gtk_widget_set_halign(dialog->tabWidget, GTK_ALIGN_FILL);
+	gtk_widget_set_valign(dialog->tabWidget, GTK_ALIGN_FILL);
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+	gtk_box_pack_start(GTK_BOX(content_area), dialog->tabWidget, TRUE, TRUE, 0);
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+
+	// Sample page. TODO add real pages
+	GtkWidget *const lblPage = gtk_label_new("it's a page");
+	gtk_widget_show(lblPage);
+	GtkWidget *const lblTab = gtk_label_new_with_mnemonic("_My Page");
+	gtk_widget_show(lblTab);
+	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), lblPage, lblTab);
 
 	// Connect signals.
 	g_signal_connect(dialog, "response", G_CALLBACK(config_dialog_response_handler), NULL);
