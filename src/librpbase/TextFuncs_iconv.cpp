@@ -201,6 +201,11 @@ static inline void codePageToEncName(char *enc_name, size_t len, unsigned int cp
  */
 string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int flags)
 {
+	if (cp & CP_RP_BASE) {
+		// RP-custom code page.
+		return cpRP_to_utf8(cp, str, len);
+	}
+
 	len = check_NULL_terminator(str, len);
 
 	// Get the encoding name for the primary code page.

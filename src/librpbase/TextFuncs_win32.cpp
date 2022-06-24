@@ -136,6 +136,11 @@ static char *W32U_UTF16_to_mbs(const char16_t *wcs, int cchWcs,
  */
 string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int flags)
 {
+	if (cp & CP_RP_BASE) {
+		// RP-custom code page.
+		return cpRP_to_utf8(cp, str, len);
+	}
+
 	len = check_NULL_terminator(str, len);
 	DWORD dwFlags = 0;
 	if (flags & TEXTCONV_FLAG_CP1252_FALLBACK) {
