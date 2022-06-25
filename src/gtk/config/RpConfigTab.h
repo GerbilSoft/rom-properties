@@ -31,11 +31,11 @@ typedef struct _RpConfigTabInterface {
 GType		rp_config_tab_get_type		(void) G_GNUC_CONST G_GNUC_INTERNAL;
 void		rp_config_tab_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
 
-gboolean	rp_config_tab_has_defaults	(RpConfigTab *tab);
+gboolean	rp_config_tab_has_defaults	(RpConfigTab *tab) G_GNUC_INTERNAL;
 
-void		rp_config_tab_reset		(RpConfigTab *tab);
-void		rp_config_tab_load_defaults	(RpConfigTab *tab);
-void		rp_config_tab_save		(RpConfigTab *tab, GKeyFile *keyFile);
+void		rp_config_tab_reset		(RpConfigTab *tab) G_GNUC_INTERNAL;
+void		rp_config_tab_load_defaults	(RpConfigTab *tab) G_GNUC_INTERNAL;
+void		rp_config_tab_save		(RpConfigTab *tab, GKeyFile *keyFile) G_GNUC_INTERNAL;
 
 G_END_DECLS
 
