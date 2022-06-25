@@ -289,9 +289,14 @@ void ConfigDialog::apply(void)
 
 	// Save all tabs.
 	Q_D(ConfigDialog);
-	d->ui.tabImageTypes->save(&settings);
-	d->ui.tabSystems->save(&settings);
-	d->ui.tabOptions->save(&settings);
+	const int tabCount = d->ui.tabWidget->count();
+	for (int i = 0; i < tabCount; i++) {
+		ITab *const pTab = qobject_cast<ITab*>(d->ui.tabWidget->widget(i));
+		assert(pTab != nullptr);
+		if (pTab) {
+			pTab->save(&settings);
+		}
+	}
 
 #ifdef ENABLE_DECRYPTION
 	// KeyManager needs to save to keys.conf.
@@ -324,12 +329,14 @@ void ConfigDialog::reset(void)
 {
 	// Reset all tabs.
 	Q_D(ConfigDialog);
-	d->ui.tabImageTypes->reset();
-	d->ui.tabSystems->reset();
-	d->ui.tabOptions->reset();
-#ifdef ENABLE_DECRYPTION
-	d->tabKeyManager->reset();
-#endif /* ENABLE_DECRYPTION */
+	const int tabCount = d->ui.tabWidget->count();
+	for (int i = 0; i < tabCount; i++) {
+		ITab *const pTab = qobject_cast<ITab*>(d->ui.tabWidget->widget(i));
+		assert(pTab != nullptr);
+		if (pTab) {
+			pTab->reset();
+		}
+	}
 
 	// Set the focus to the last-focused widget.
 	// Otherwise, it ends up focusing the "Cancel" button.
@@ -348,19 +355,10 @@ void ConfigDialog::reset(void)
 void ConfigDialog::loadDefaults(void)
 {
 	Q_D(ConfigDialog);
-	switch (d->ui.tabWidget->currentIndex()) {
-		case 0:
-			d->ui.tabImageTypes->loadDefaults();
-			break;
-		case 1:
-			d->ui.tabSystems->loadDefaults();
-			break;
-		case 2:
-			d->ui.tabOptions->loadDefaults();
-			break;
-		default:
-			assert(!"Unrecognized tab index.");
-			break;
+	ITab *const pTab = qobject_cast<ITab*>(d->ui.tabWidget->currentWidget());
+	assert(pTab != nullptr);
+	if (pTab) {
+		pTab->loadDefaults();
 	}
 }
 
