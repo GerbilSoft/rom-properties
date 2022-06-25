@@ -13,8 +13,6 @@
 #include "RpGtk.hpp"
 #include "gtk-compat.h"
 
-#include "LanguageComboBox.hpp"
-
 // librpbase
 using namespace LibRpBase;
 
