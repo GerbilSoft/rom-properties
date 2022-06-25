@@ -142,12 +142,6 @@
 // so use __restrict on both gcc and MSVC.
 #define RESTRICT __restrict
 
-// typeof() for MSVC.
-// FIXME: Doesn't work in C mode.
-#if defined(_MSC_VER) && defined(__cplusplus)
-#  define __typeof__(x) decltype(x)
-#endif
-
 /**
  * Alignment macro.
  * @param a	Alignment value.
