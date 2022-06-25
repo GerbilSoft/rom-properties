@@ -175,8 +175,6 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	// TODO: Make sure that all columns except 0 have equal sizes.
 
 	// Create the image type labels.
-	//const QString cssImageType = QLatin1String(
-	//	"QLabel { margin-left: 0.2em; margin-right: 0.2em; margin-bottom: 0.1em; }");
 	const unsigned int imageTypeCount = ImageTypesConfig::imageTypeCount();
 	for (unsigned int i = 0; i < imageTypeCount; i++) {
 		// TODO: Decrement the column number for >IMG_INT_MEDIA?
@@ -191,6 +189,10 @@ void ImageTypesTabPrivate::createGridLabels(void)
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 		GTK_LABEL_XALIGN_CENTER(lblImageType);
 		gtk_label_set_justify(GTK_LABEL(lblImageType), GTK_JUSTIFY_CENTER);
+		gtk_widget_set_margin_start(lblImageType, 3);
+		gtk_widget_set_margin_end(lblImageType, 3);
+		gtk_widget_set_margin_bottom(lblImageType, 4);
+
 #ifdef USE_GTK_GRID
 		gtk_grid_attach(GTK_GRID(q->table), lblImageType, i+1, 0, 1, 1);
 #else /* !USE_GTK_GRID */
@@ -199,8 +201,6 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	}
 
 	// Create the system name labels.
-	//const QString cssSysName = QLatin1String(
-	//	"QLabel { margin-right: 0.25em; }");
 	const unsigned int sysCount = ImageTypesConfig::sysCount();
 	for (unsigned int sys = 0; sys < sysCount; sys++) {
 		GtkWidget *const lblSysName = gtk_label_new(sysName(sys));
@@ -208,7 +208,8 @@ void ImageTypesTabPrivate::createGridLabels(void)
 		gtk_widget_show(lblSysName);
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 		GTK_LABEL_XALIGN_LEFT(lblSysName);
-		//lblSysName->setStyleSheet(cssSysName);
+		gtk_widget_set_margin_end(lblSysName, 6);
+
 #ifdef USE_GTK_GRID
 		gtk_grid_attach(GTK_GRID(q->table), lblSysName, 0, sys+1, 1, 1);
 #else /* !USE_GTK_GRID */
@@ -428,12 +429,12 @@ image_types_tab_init(ImageTypesTab *tab)
 #ifdef USE_GTK_GRID
 	tab->table = gtk_grid_new();
 	gtk_grid_set_row_spacing(GTK_GRID(tab->table), 2);
-	gtk_grid_set_column_spacing(GTK_GRID(tab->table), 8);
+	gtk_grid_set_column_spacing(GTK_GRID(tab->table), 2);
 #else /* !USE_GTK_GRID */
 	tab->table = gtk_table_new(ImageTypesConfig::sysCount()+1,
 				   ImageTypesConfig::imageTypeCount()+1, false);
 	gtk_table_set_row_spacings(GTK_TABLE(tab->table), 2);
-	gtk_table_set_col_spacings(GTK_TABLE(tab->table), 8);
+	gtk_table_set_col_spacings(GTK_TABLE(tab->table), 2);
 #endif /* USE_GTK_GRID */
 
 	// Create the control grid.

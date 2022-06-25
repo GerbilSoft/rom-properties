@@ -224,6 +224,30 @@ RP_gtk_hbox_new(gint spacing)
 #  define GTK_LABEL_XALIGN_RIGHT(label)		gtk_misc_set_alignment(GTK_MISC(label), 1.0f, 0.0f)
 #endif
 
+#if !GTK_CHECK_VERSION(3,12,0)
+/**
+ * gtk_widget_set_margin_start(): GTK+ 3.12 replacement for gtk_widget_set_margin_left().
+ * @param widget GtkWidget
+ * @param margin Margin
+ */
+static inline void
+gtk_widget_set_margin_start(GtkWidget *widget, gint margin)
+{
+	gtk_widget_set_margin_left(widget, margin);
+}
+
+/**
+ * gtk_widget_set_margin_end(): GTK+ 3.12 replacement for gtk_widget_set_margin_right().
+ * @param widget GtkWidget
+ * @param margin Margin
+ */
+static inline void
+gtk_widget_set_margin_end(GtkWidget *widget, gint margin)
+{
+	gtk_widget_set_margin_right(widget, margin);
+}
+#endif /* !GTK_CHECK_VERSION(3,12,0) */
+
 /**
  * Set margin for all four sides.
  * @param widget GtkWidget
@@ -231,21 +255,16 @@ RP_gtk_hbox_new(gint spacing)
 static inline void
 gtk_widget_set_margin(GtkWidget *widget, gint margin)
 {
+#if GTK_CHECK_VERSION(3,0,0)
 	// TODO: GTK2 version.
-#if GTK_CHECK_VERSION(3,12,0)
 	gtk_widget_set_margin_start(widget, margin);
 	gtk_widget_set_margin_end(widget, margin);
 	gtk_widget_set_margin_top(widget, margin);
 	gtk_widget_set_margin_bottom(widget, margin);
-#elif GTK_CHECK_VERSION(3,0,0)
-	gtk_widget_set_margin_left(widget, margin);
-	gtk_widget_set_margin_right(widget, margin);
-	gtk_widget_set_margin_top(widget, margin);
-	gtk_widget_set_margin_bottom(widget, margin);
-#else
+#else /* !GTK_CHECK_VERSION(3,0,0) */
 	((void)widget);
 	((void)margin);
-#endif
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 }
 
 #if !GTK_CHECK_VERSION(4,0,0)
