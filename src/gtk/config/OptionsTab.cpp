@@ -47,8 +47,8 @@ struct _OptionsTabClass {
 // OptionsTab instance
 struct _OptionsTab {
 	super __parent__;
-	gboolean inhibit;	// If true, inhibit signals.
-	gboolean changed;	// If true, an option was changed.
+	bool inhibit;	// If true, inhibit signals.
+	bool changed;	// If true, an option was changed.
 
 	// Downloads
 	GtkWidget *chkExtImgDownloadEnabled;
