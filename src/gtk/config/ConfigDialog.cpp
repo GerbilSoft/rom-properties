@@ -76,6 +76,29 @@ config_dialog_init(ConfigDialog *dialog)
 	gtk_window_set_title(GTK_WINDOW(dialog),
 		C_("ConfigDialog", "ROM Properties Page Configuration"));
 
+	// TODO: Custom icon? For now, using "media-flash".
+#if GTK_CHECK_VERSION(4,0,0)
+	// GTK4 has a very easy way to set an icon using the system theme.
+	gtk_window_set_icon_name(GTK_WINDOW(dialog), "media-flash");
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+	GtkIconTheme *const iconTheme = gtk_icon_theme_get_default();
+
+	// Set the window icon.
+	// TODO: Redo icon if the icon theme changes?
+	const int icon_sizes[] = {16, 32, 48, 64, 128};
+	GList *icon_list = nullptr;
+	for (int icon_size : icon_sizes) {
+		GdkPixbuf *const icon = gtk_icon_theme_load_icon(
+			iconTheme, "media-flash", icon_size,
+			(GtkIconLookupFlags)0, nullptr);
+		if (icon) {
+			icon_list = g_list_prepend(icon_list, icon);
+		}
+	}
+	gtk_window_set_icon_list(GTK_WINDOW(dialog), icon_list);
+	g_list_free_full(icon_list, g_object_unref);
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+
 	// Add dialog buttons.
 	// NOTE: GTK+ has deprecated icons on buttons, so we won't add them.
 	// TODO: Proper ordering for the Apply button?
