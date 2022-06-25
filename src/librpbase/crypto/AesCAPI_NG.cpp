@@ -21,7 +21,7 @@
 #include <winternl.h>
 
 // Function pointer macro.
-#define DECL_FUNCPTR(f) __typeof__w(f) * p##f
+#define DECL_FUNCPTR(f) __typeof__(f) * p##f
 #define DEF_FUNCPTR(f) __typeof__(f) * AesCAPI_NG_Private::p##f = nullptr
 #define LOAD_FUNCPTR(f) AesCAPI_NG_Private::p##f = (__typeof__(f)*)GetProcAddress(hBcryptDll, #f)
 
