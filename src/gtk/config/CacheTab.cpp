@@ -7,8 +7,11 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+
 #include "CacheTab.hpp"
 #include "RpConfigTab.h"
+#include "../MessageSound.hpp"
+#include "CacheCleaner.hpp"
 
 #include "RpGtk.hpp"
 #include "gtk-compat.h"
@@ -38,17 +41,20 @@ struct _CacheTabClass {
 struct _CacheTab {
 	super __parent__;
 
-	GtkWidget *lblSysCache;
-	GtkWidget *btnSysCache;
-	GtkWidget *lblRpCache;
-	GtkWidget *btnRpCache;
+	GtkWidget	*lblSysCache;
+	GtkWidget	*btnSysCache;
+	GtkWidget	*lblRpCache;
+	GtkWidget	*btnRpCache;
 
-	GtkWidget *lblStatus;
-	GtkWidget *pbStatus;
+	GtkWidget	*lblStatus;
+	GtkWidget	*pbStatus;
 
 #if !GTK_CHECK_VERSION(4,0,0)
 	GdkCursor *curBusy;
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
+
+	GThread		*thrCleaner;
+	CacheCleaner	*ccCleaner;
 };
 
 static void	cache_tab_dispose			(GObject	*object);
@@ -65,6 +71,32 @@ static void	cache_tab_save				(CacheTab	*tab,
 // Enable/disable the UI controls.
 static void	cache_tab_enable_ui_controls		(CacheTab	*tab,
 							 gboolean	enable);
+
+// Widget signal handlers
+static void	cache_tab_on_btnSysCache_clicked	(GtkButton	*button,
+							 CacheTab	*tab);
+static void	cache_tab_on_btnRpCache_clicked		(GtkButton	*button,
+							 CacheTab	*tab);
+
+// CacheCleaner signal handlers
+static void	ccCleaner_progress			(CacheCleaner	*cleaner,
+							 int		 pg_cur,
+							 int		 pg_max,
+							 gboolean	 hasError,
+							 CacheTab	*tab);
+static void	ccCleaner_error				(CacheCleaner	*cleaner,
+							 const char	*error,
+							 CacheTab	*tab);
+static void	ccCleaner_cacheIsEmpty			(CacheCleaner	*cleaner,
+							 RpCacheDir	 cache_dir,
+							 CacheTab	*tab);
+static void	ccCleaner_cacheCleared			(CacheCleaner	*cleaner,
+							 RpCacheDir	 cacheDir,
+							 unsigned int	 dirErrs,
+							 unsigned int	 fileErrs,
+							 CacheTab	*tab);
+static void	ccCleaner_finished			(CacheCleaner	*cleaner,
+							 CacheTab	*tab);
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
@@ -120,6 +152,10 @@ cache_tab_init(CacheTab *tab)
 	gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(tab->pbStatus), TRUE);
 #endif /* !GTK_CHECK_VERSION(3,0,0) */
 
+	// Connect the signal handlers for the buttons.
+	g_signal_connect(tab->btnSysCache, "clicked", G_CALLBACK(cache_tab_on_btnSysCache_clicked), tab);
+	g_signal_connect(tab->btnRpCache,  "clicked", G_CALLBACK(cache_tab_on_btnRpCache_clicked),  tab);
+
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_widget_hide(tab->lblStatus);
 	gtk_widget_hide(tab->pbStatus);
@@ -149,8 +185,8 @@ cache_tab_init(CacheTab *tab)
 	gtk_box_pack_start(GTK_BOX(tab), tab->btnRpCache, false, false, 0);
 
 	// TODO: Spacer and/or alignment?
-	gtk_box_pack_end(GTK_BOX(tab), tab->lblStatus, false, false, 0);
 	gtk_box_pack_end(GTK_BOX(tab), tab->pbStatus, false, false, 0);
+	gtk_box_pack_end(GTK_BOX(tab), tab->lblStatus, false, false, 0);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Load the current configuration.
@@ -172,13 +208,22 @@ cache_tab_dispose(GObject *object)
 static void
 cache_tab_finalize(GObject *object)
 {
-#if !GTK_CHECK_VERSION(4,0,0)
 	CacheTab *const tab = CACHE_TAB(object);
 
+#if !GTK_CHECK_VERSION(4,0,0)
 	if (tab->curBusy) {
 		g_object_unref(tab->curBusy);
 	}
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
+
+	// FIXME: We can't check the GThread status easily,
+	// so join() until the thread exits.
+	if (tab->thrCleaner) {
+		g_thread_join(tab->thrCleaner);
+	}
+	if (tab->ccCleaner) {
+		g_object_unref(tab->ccCleaner);
+	}
 
 	// Call the superclass finalize() function.
 	G_OBJECT_CLASS(cache_tab_parent_class)->finalize(object);
@@ -266,4 +311,238 @@ cache_tab_enable_ui_controls(CacheTab *tab, gboolean enable)
 		}
 	}
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
+}
+
+// TODO: gtk_progress_bar_set_error()
+static inline
+void gtk_progress_bar_set_error(GtkProgressBar *pb, gboolean error)
+{
+	RP_UNUSED(pb);
+	RP_UNUSED(error);
+}
+
+/**
+ * Clear the specified cache directory.
+ * @param tab CacheTab
+ * @param cache_dir Cache directory
+ */
+static void
+cache_tab_clear_cache_dir(CacheTab *tab, RpCacheDir cache_dir)
+{
+	// NOTE: We can't check if a GThread is still running.
+	// We'll assume it isn't, since the UI controls should
+	// be disabled in that case.
+
+	// Reset the progress bar.
+	// FIXME: No "error" option in GtkProgressBar.
+	gtk_progress_bar_set_error(GTK_PROGRESS_BAR(tab->pbStatus), FALSE);
+	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(tab->pbStatus), 0.0);
+
+	// Set the label text.
+	const char *s_label;
+	switch (cache_dir) {
+		default:
+			assert(!"Invalid cache directory specified.");
+			ccCleaner_error(tab->ccCleaner, C_("CacheTab", "Invalid cache directory specified."), tab);
+			return;
+		case RP_CD_System:
+			s_label = C_("CacheTab", "Clearing the system thumbnail cache...");
+			break;
+		case RP_CD_RomProperties:
+			s_label = C_("CacheTab", "Clearing the ROM Properties Page cache...");
+			break;
+	}
+	gtk_label_set_text(GTK_LABEL(tab->lblStatus), s_label);
+
+	// Show the progress controls.
+	gtk_widget_show(tab->lblStatus);
+	gtk_widget_show(tab->pbStatus);
+
+	// Disable the buttons until we're done.
+	cache_tab_enable_ui_controls(tab, FALSE);
+
+	// Create the CacheCleaner if necessary.
+	if (!tab->ccCleaner) {
+		tab->ccCleaner = cache_cleaner_new(cache_dir);
+		g_object_ref_sink(tab->ccCleaner);
+
+		// Connect the signal handlers.
+		g_signal_connect(tab->ccCleaner, "progress",       G_CALLBACK(ccCleaner_progress),     tab);
+		g_signal_connect(tab->ccCleaner, "error",          G_CALLBACK(ccCleaner_error),        tab);
+		g_signal_connect(tab->ccCleaner, "cache-is-empty", G_CALLBACK(ccCleaner_cacheIsEmpty), tab);
+		g_signal_connect(tab->ccCleaner, "cache-cleared",  G_CALLBACK(ccCleaner_cacheCleared), tab);
+		g_signal_connect(tab->ccCleaner, "finished",       G_CALLBACK(ccCleaner_finished),     tab);
+	}
+
+	// Set the cache directory.
+	cache_cleaner_set_cache_dir(tab->ccCleaner, cache_dir);
+
+	// If the GThread already exists, wait for it to complete.
+	// TODO: Better method of handling this?
+	if (tab->thrCleaner) {
+		g_thread_join(tab->thrCleaner);
+	}
+
+	// Create (and run) the cleaning thread.
+	tab->thrCleaner = g_thread_try_new("CacheCleaner",
+		(GThreadFunc)cache_cleaner_run, tab->ccCleaner, nullptr);
+	if (!tab->thrCleaner) {
+		// Error creating the thread.
+		// TODO: Indicate the error?
+		const char *s_label = C_("CacheTab", "Failed to start cleaning thread!");
+		gtk_label_set_text(GTK_LABEL(tab->lblStatus), s_label);
+		cache_tab_enable_ui_controls(tab, TRUE);
+	}
+}
+
+/** CacheCleaner signal handlers **/
+
+/**
+ * Cache cleaning task progress update.
+ * @param cleaner CacheCleaner
+ * @param pg_cur Current progress
+ * @param pg_max Maximum progress
+ * @param hasError If true, errors have occurred
+ * @param tab CacheTab
+ */
+static void
+ccCleaner_progress(CacheCleaner *cleaner, int pg_cur, int pg_max, gboolean hasError, CacheTab *tab)
+{
+	g_return_if_fail(IS_CACHE_TAB(tab));
+	RP_UNUSED(cleaner);
+
+	// GtkProgressBar uses a gdouble fraction in the range [0.0,1.0].
+	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(tab->pbStatus),
+		(gdouble)pg_cur / (gdouble)pg_max);
+	gtk_progress_bar_set_error(GTK_PROGRESS_BAR(tab->pbStatus), hasError);
+}
+
+/**
+ * An error occurred while clearing the cache.
+ * @param cleaner CacheCleaner
+ * @param error Error description
+ * @param tab CacheTab
+ */
+static void
+ccCleaner_error(CacheCleaner *cleaner, const char *error, CacheTab *tab)
+{
+	g_return_if_fail(IS_CACHE_TAB(tab));
+	RP_UNUSED(cleaner);
+
+	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(tab->pbStatus), 1.0);
+	gtk_progress_bar_set_error(GTK_PROGRESS_BAR(tab->pbStatus), TRUE);
+
+	const string s_msg = rp_sprintf(C_("CacheTab", "<b>ERROR:</b> %s"), error);
+	gtk_label_set_markup(GTK_LABEL(tab->lblStatus), s_msg.c_str());
+	MessageSound::play(GTK_MESSAGE_WARNING, s_msg.c_str(), GTK_WIDGET(tab));
+}
+
+/**
+ * Cache directory is empty.
+ * @param cleaner CacheCleaner
+ * @param cache_dir Which cache directory was checked
+ * @param tab CacheTab
+ */
+static void
+ccCleaner_cacheIsEmpty(CacheCleaner *cleaner, RpCacheDir cache_dir, CacheTab *tab)
+{
+	g_return_if_fail(IS_CACHE_TAB(tab));
+	RP_UNUSED(cleaner);
+
+	const char *s_msg;
+	switch (cache_dir) {
+		default:
+			assert(!"Invalid cache directory specified.");
+			s_msg = C_("CacheTab", "Invalid cache directory specified.");
+			break;
+		case RP_CD_System:
+			s_msg = C_("CacheTab", "System thumbnail cache is empty. Nothing to do.");
+			break;
+		case RP_CD_RomProperties:
+			s_msg = C_("CacheTab", "rom-properties cache is empty. Nothing to do.");
+			break;
+	}
+
+	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(tab->pbStatus), 1.0);
+	gtk_label_set_text(GTK_LABEL(tab->lblStatus), s_msg);
+	MessageSound::play(GTK_MESSAGE_WARNING, s_msg, GTK_WIDGET(tab));
+}
+
+/**
+ * Cache was cleared.
+ * @param cleaner CacheCleaner
+ * @param cache_dir Which cache dir was cleared
+ * @param dirErrs Number of directories that could not be deleted
+ * @param fileErrs Number of files that could not be deleted
+ * @param tab CacheTab
+ */
+static void
+ccCleaner_cacheCleared(CacheCleaner *cleaner, RpCacheDir cache_dir, unsigned int dirErrs, unsigned int fileErrs, CacheTab *tab)
+{
+	RP_UNUSED(cleaner);
+
+	if (dirErrs > 0 || fileErrs > 0) {
+		const string s_msg = rp_sprintf(C_("CacheTab", "<b>ERROR:</b> %s"),
+			rp_sprintf_p(C_("CacheTab", "Unable to delete %1$u file(s) and/or %2$u dir(s)."),
+				fileErrs, dirErrs).c_str());
+		gtk_label_set_markup(GTK_LABEL(tab->lblStatus), s_msg.c_str());
+		MessageSound::play(GTK_MESSAGE_WARNING, s_msg.c_str(), GTK_WIDGET(tab));
+		return;
+	}
+
+	const char *s_msg;
+	GtkMessageType icon;
+	switch (cache_dir) {
+		default:
+			assert(!"Invalid cache directory specified.");
+			s_msg = C_("CacheTab", "Invalid cache directory specified.");
+			icon = GTK_MESSAGE_WARNING;
+			break;
+		case RP_CD_System:
+			s_msg = C_("CacheTab", "System thumbnail cache cleared successfully.");
+			icon = GTK_MESSAGE_INFO;
+			break;
+		case RP_CD_RomProperties:
+			s_msg = C_("CacheTab", "rom-properties cache cleared successfully.");
+			icon = GTK_MESSAGE_INFO;
+			break;
+	}
+
+	gtk_label_set_text(GTK_LABEL(tab->lblStatus), s_msg);
+	MessageSound::play(icon, s_msg, GTK_WIDGET(tab));
+}
+
+/**
+ * Cache cleaning task has completed.
+ * This is called when run() exits, regardless of status.
+ * @param cleaner CacheCleaner
+ * @param tab CacheTab
+ */
+static void
+ccCleaner_finished(CacheCleaner *cleaner, CacheTab *tab)
+{
+	RP_UNUSED(cleaner);
+	cache_tab_enable_ui_controls(tab, TRUE);
+}
+
+/** Widget signal handlers **/
+
+/**
+ * "Clear the System Thumbnail Cache" button was clicked.
+ */
+static void
+cache_tab_on_btnSysCache_clicked(GtkButton *button, CacheTab *tab)
+{
+	RP_UNUSED(button);
+	cache_tab_clear_cache_dir(tab, RP_CD_System);
+}
+
+/**
+ * "Clear the ROM Properties Page Download Cache" button was clicked.
+ */
+static void
+cache_tab_on_btnRpCache_clicked(GtkButton *button, CacheTab *tab)
+{
+	RP_UNUSED(button);
+	cache_tab_clear_cache_dir(tab, RP_CD_RomProperties);
 }

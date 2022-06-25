@@ -34,10 +34,12 @@
 // C++ includes.
 #include <algorithm>
 #include <array>
+#include <list>
 #include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #else /* !__cplusplus */
