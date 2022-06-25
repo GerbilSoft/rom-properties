@@ -18,9 +18,6 @@
 // librpbase
 using namespace LibRpBase;
 
-static void	options_tab_dispose		(GObject	*object);
-static void	options_tab_finalize		(GObject	*object);
-
 // PAL language codes for GameTDB.
 // NOTE: 'au' is technically not a language code, but
 // GameTDB handles it as a separate language.
@@ -84,9 +81,7 @@ G_DEFINE_TYPE_EXTENDED(OptionsTab, options_tab,
 static void
 options_tab_class_init(OptionsTabClass *klass)
 {
-	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-	gobject_class->dispose = options_tab_dispose;
-	gobject_class->finalize = options_tab_finalize;
+	RP_UNUSED(klass);
 }
 
 static void
@@ -109,8 +104,9 @@ options_tab_init(OptionsTab *tab)
 
 	// Create the "Downloads" frame.
 	// FIXME: GtkFrame doesn't support mnemonics?
-	GtkWidget *const fraDownloads = gtk_frame_new(C_("ConfigDialog", "Downloads"));
+	GtkWidget *const fraDownloads = gtk_frame_new(C_("SystemsTab", "Downloads"));
 	GtkWidget *const vboxDownloads = RP_gtk_vbox_new(6);
+	gtk_widget_set_margin(vboxDownloads, 6);
 	gtk_frame_set_child(GTK_FRAME(fraDownloads), vboxDownloads);
 
 	// "Downloads" checkboxes.
@@ -131,22 +127,12 @@ options_tab_init(OptionsTab *tab)
 	tab->cboGameTDBPAL = language_combo_box_new();
 	language_combo_box_set_force_pal(LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL), true);
 	language_combo_box_set_lcs(LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL), pal_lc);
-#if GTK_CHECK_VERSION(3,12,0)
-	// Add some margins to the sides.
-	// TODO: GTK2 version.
-	gtk_widget_set_margin_start(hboxGameTDBPAL, 6);
-	gtk_widget_set_margin_end(hboxGameTDBPAL, 6);
-	gtk_widget_set_margin_bottom(hboxGameTDBPAL, 6);
-#elif GTK_CHECK_VERSION(3,0,0)
-	gtk_widget_set_margin_left(hboxGameTDBPAL, 6);
-	gtk_widget_set_margin_right(hboxGameTDBPAL, 6);
-	gtk_widget_set_margin_bottom(hboxGameTDBPAL, 6);
-#endif
 
 	// Create the "Options" frame.
 	// FIXME: GtkFrame doesn't support mnemonics?
-	GtkWidget *const fraOptions = gtk_frame_new(C_("ConfigDialog", "Options"));
+	GtkWidget *const fraOptions = gtk_frame_new(C_("SystemsTab", "Options"));
 	GtkWidget *const vboxOptions = RP_gtk_vbox_new(6);
+	gtk_widget_set_margin(vboxOptions, 6);
 	gtk_frame_set_child(GTK_FRAME(fraOptions), vboxOptions);
 
 	// "Options" checkboxes.
@@ -156,7 +142,7 @@ options_tab_init(OptionsTab *tab)
 		C_("OptionsTab", "Enable thumbnailing and metadata extraction on network\n"
 			"file systems. This may slow down file browsing."));
 
-	// Connect signal handlers for checkboxes.
+	// Connect the signal handlers for the checkboxes.
 	// NOTE: Signal handlers are triggered if the value is
 	// programmatically edited, unlike Qt, so we'll need to
 	// inhibit handling when loading settings.
@@ -232,24 +218,6 @@ options_tab_init(OptionsTab *tab)
 
 	// Load the current configuration.
 	options_tab_reset(tab);
-}
-
-static void
-options_tab_dispose(GObject *object)
-{
-	//OptionsTab *const dialog = OPTIONS_TAB(object);
-
-	// Call the superclass dispose() function.
-	G_OBJECT_CLASS(options_tab_parent_class)->dispose(object);
-}
-
-static void
-options_tab_finalize(GObject *object)
-{
-	//OptionsTab *const dialog = OPTIONS_TAB(object);
-
-	// Call the superclass finalize() function.
-	G_OBJECT_CLASS(options_tab_parent_class)->finalize(object);
 }
 
 GtkWidget*
@@ -339,6 +307,8 @@ options_tab_load_defaults(OptionsTab *tab)
 
 #define COMPARE_CHK(widget, defval) \
 	(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) != (defval))
+#define COMPARE_CBO(widget, defval) \
+	(gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != (defval))
 
 	// Downloads
 	if (COMPARE_CHK(tab->chkExtImgDownloadEnabled, extImgDownloadEnabled_default)) {
@@ -371,7 +341,7 @@ options_tab_load_defaults(OptionsTab *tab)
 			storeFileOriginInfo_default);
 		isDefChanged = true;
 	}
-	if (gtk_combo_box_get_active(GTK_COMBO_BOX(tab->cboGameTDBPAL)) != palLanguageForGameTDB_default) {
+	if (COMPARE_CBO(tab->cboGameTDBPAL, palLanguageForGameTDB_default)) {
 		gtk_combo_box_set_active(
 			GTK_COMBO_BOX(tab->cboGameTDBPAL),
 			palLanguageForGameTDB_default);
