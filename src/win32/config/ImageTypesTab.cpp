@@ -506,7 +506,7 @@ void ImageTypesTabPrivate::initStrings(void)
 		// tr: External image credits.
 		C_("ImageTypesTab",
 			"GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\n"
-			"are provided by <a href=\"http://www.gametdb.com/\">GameTDB</a>.\n"
+			"are provided by <a href=\"https://www.gametdb.com/\">GameTDB</a>.\n"
 			"amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</a>,"
 			" the Unofficial amiibo Database.")
 	));

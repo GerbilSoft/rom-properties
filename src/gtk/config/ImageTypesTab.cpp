@@ -420,7 +420,7 @@ image_types_tab_init(ImageTypesTab *tab)
 	tab->lblCredits = gtk_label_new(nullptr);
 	gtk_label_set_markup(GTK_LABEL(tab->lblCredits), C_("ImageTypesTab",
 		"GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\n"
-		"are provided by <a href=\"http://www.gametdb.com/\">GameTDB</a>.\n"
+		"are provided by <a href=\"https://www.gametdb.com/\">GameTDB</a>.\n"
 		"amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</a>,"
 		" the Unofficial amiibo Database."));
 	GTK_LABEL_XALIGN_LEFT(tab->lblCredits);
