@@ -53,7 +53,6 @@ struct _CacheTab {
 	GdkCursor *curBusy;
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 
-	GThread		*thrCleaner;
 	CacheCleaner	*ccCleaner;
 };
 
@@ -216,11 +215,6 @@ cache_tab_finalize(GObject *object)
 	}
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 
-	// FIXME: We can't check the GThread status easily,
-	// so join() until the thread exits.
-	if (tab->thrCleaner) {
-		g_thread_join(tab->thrCleaner);
-	}
 	if (tab->ccCleaner) {
 		g_object_unref(tab->ccCleaner);
 	}
@@ -329,10 +323,6 @@ void gtk_progress_bar_set_error(GtkProgressBar *pb, gboolean error)
 static void
 cache_tab_clear_cache_dir(CacheTab *tab, RpCacheDir cache_dir)
 {
-	// NOTE: We can't check if a GThread is still running.
-	// We'll assume it isn't, since the UI controls should
-	// be disabled in that case.
-
 	// Reset the progress bar.
 	// FIXME: No "error" option in GtkProgressBar.
 	gtk_progress_bar_set_error(GTK_PROGRESS_BAR(tab->pbStatus), FALSE);
@@ -377,22 +367,28 @@ cache_tab_clear_cache_dir(CacheTab *tab, RpCacheDir cache_dir)
 	// Set the cache directory.
 	cache_cleaner_set_cache_dir(tab->ccCleaner, cache_dir);
 
-	// If the GThread already exists, wait for it to complete.
-	// TODO: Better method of handling this?
-	if (tab->thrCleaner) {
-		g_thread_join(tab->thrCleaner);
-	}
+	// Run the CacheCleaner object.
+	// NOTE: Sending signals from a GObject to a GtkWidget
+	// and updating the UI can cause the program to crash.
+	// Instead, we'll just run gtk_main_iteration() within
+	// cache_cleaner_run().
+	// Everything else works just like the KDE version.
+	cache_cleaner_run(tab->ccCleaner);
+}
 
-	// Create (and run) the cleaning thread.
-	tab->thrCleaner = g_thread_try_new("CacheCleaner",
-		(GThreadFunc)cache_cleaner_run, tab->ccCleaner, nullptr);
-	if (!tab->thrCleaner) {
-		// Error creating the thread.
-		// TODO: Indicate the error?
-		const char *s_label = C_("CacheTab", "Failed to start cleaning thread!");
-		gtk_label_set_text(GTK_LABEL(tab->lblStatus), s_label);
-		cache_tab_enable_ui_controls(tab, TRUE);
+static inline void
+gtk_process_main_event_loop(void)
+{
+	// FIXME: This causes flickering...
+#if GTK_CHECK_VERSION(4,0,0)
+	while (g_main_context_pending(nullptr)) {
+		g_main_context_iteration(nullptr, TRUE);
 	}
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+	while (gtk_events_pending()) {
+		gtk_main_iteration();
+	}
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 }
 
 /** CacheCleaner signal handlers **/
@@ -415,6 +411,7 @@ ccCleaner_progress(CacheCleaner *cleaner, int pg_cur, int pg_max, gboolean hasEr
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(tab->pbStatus),
 		(gdouble)pg_cur / (gdouble)pg_max);
 	gtk_progress_bar_set_error(GTK_PROGRESS_BAR(tab->pbStatus), hasError);
+	gtk_process_main_event_loop();
 }
 
 /**
@@ -434,7 +431,9 @@ ccCleaner_error(CacheCleaner *cleaner, const char *error, CacheTab *tab)
 
 	const string s_msg = rp_sprintf(C_("CacheTab", "<b>ERROR:</b> %s"), error);
 	gtk_label_set_markup(GTK_LABEL(tab->lblStatus), s_msg.c_str());
-	MessageSound::play(GTK_MESSAGE_WARNING, s_msg.c_str(), GTK_WIDGET(tab));
+	// FIXME: Causes crashes...
+	//MessageSound::play(GTK_MESSAGE_WARNING, s_msg.c_str(), GTK_WIDGET(tab));
+	gtk_process_main_event_loop();
 }
 
 /**
@@ -465,7 +464,9 @@ ccCleaner_cacheIsEmpty(CacheCleaner *cleaner, RpCacheDir cache_dir, CacheTab *ta
 
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(tab->pbStatus), 1.0);
 	gtk_label_set_text(GTK_LABEL(tab->lblStatus), s_msg);
-	MessageSound::play(GTK_MESSAGE_WARNING, s_msg, GTK_WIDGET(tab));
+	// FIXME: Causes crashes...
+	//MessageSound::play(GTK_MESSAGE_WARNING, s_msg, GTK_WIDGET(tab));
+	gtk_process_main_event_loop();
 }
 
 /**
@@ -486,7 +487,8 @@ ccCleaner_cacheCleared(CacheCleaner *cleaner, RpCacheDir cache_dir, unsigned int
 			rp_sprintf_p(C_("CacheTab", "Unable to delete %1$u file(s) and/or %2$u dir(s)."),
 				fileErrs, dirErrs).c_str());
 		gtk_label_set_markup(GTK_LABEL(tab->lblStatus), s_msg.c_str());
-		MessageSound::play(GTK_MESSAGE_WARNING, s_msg.c_str(), GTK_WIDGET(tab));
+		// FIXME: Causes crashes...
+		//MessageSound::play(GTK_MESSAGE_WARNING, s_msg.c_str(), GTK_WIDGET(tab));
 		return;
 	}
 
@@ -509,7 +511,10 @@ ccCleaner_cacheCleared(CacheCleaner *cleaner, RpCacheDir cache_dir, unsigned int
 	}
 
 	gtk_label_set_text(GTK_LABEL(tab->lblStatus), s_msg);
-	MessageSound::play(icon, s_msg, GTK_WIDGET(tab));
+	// FIXME: Causes crashes...
+	//MessageSound::play(icon, s_msg, GTK_WIDGET(tab));
+	RP_UNUSED(icon);
+	gtk_process_main_event_loop();
 }
 
 /**

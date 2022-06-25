@@ -41,8 +41,13 @@ void		cache_cleaner_set_cache_dir	(CacheCleaner *cleaner, RpCacheDir cache_dir) 
 /**
  * Clean the selected cache directory.
  *
- * This function should be called asynchronously from a GThread.
- * Connect to signals for progress information.
+ * This function should be called directly from the GUI thread,
+ * since cross-thread signals aren't safe for GTK+.
+ *
+ * Signal handlers should call gtk_main_iteration() to ensure
+ * the GUI doesn't hang.
+ *
+ * @param cleaner CacheCleaner
  */
 void		cache_cleaner_run		(CacheCleaner *cleaner) G_GNUC_INTERNAL;
 
