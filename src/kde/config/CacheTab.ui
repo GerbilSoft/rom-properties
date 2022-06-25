@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>414</width>
     <height>300</height>
    </rect>
   </property>
@@ -20,7 +20,8 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>If any image type settings were changed, you will need to clear the system thumbnail cache.</string>
+      <string>If any image type settings were changed, you will need to
+clear the system thumbnail cache.</string>
      </property>
      <property name="textFormat">
       <enum>Qt::PlainText</enum>
@@ -49,8 +50,10 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>ROM Properties Page maintains its own download cache for external images.
-Clearing this cache will force external images to be redownloaded.</string>
+      <string>ROM Properties Page maintains its own download cache for
+external images.
+Clearing this cache will force external images to be
+redownloaded.</string>
      </property>
      <property name="textFormat">
       <enum>Qt::PlainText</enum>
