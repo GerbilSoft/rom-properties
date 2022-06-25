@@ -16,7 +16,7 @@
 #include "LanguageComboBox.hpp"
 
 // librpbase
-using LibRpBase::Config;
+using namespace LibRpBase;
 
 static void	options_tab_dispose		(GObject	*object);
 static void	options_tab_finalize		(GObject	*object);
@@ -403,8 +403,36 @@ static void
 options_tab_save(OptionsTab *tab, GKeyFile *keyFile)
 {
 	g_return_if_fail(IS_OPTIONS_TAB(tab));
-	// TODO
-	printf("OptionsTab Save!\n");
+	g_return_if_fail(keyFile != nullptr);
+
+	if (!tab->changed) {
+		// Configuration was not changed.
+		return;
+	}
+
+	// Save the configuration.
+
+	// Downloads
+	g_key_file_set_boolean(keyFile, "Downloads", "ExtImageDownload",
+		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(tab->chkExtImgDownloadEnabled)));
+	g_key_file_set_boolean(keyFile, "Downloads", "UseIntIconForSmallSizes",
+		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(tab->chkUseIntIconForSmallSizes)));
+	g_key_file_set_boolean(keyFile, "Downloads", "DownloadHighResScans",
+		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(tab->chkDownloadHighResScans)));
+	g_key_file_set_boolean(keyFile, "Downloads", "StoreFileOriginInfo",
+		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(tab->chkStoreFileOriginInfo)));
+	g_key_file_set_string(keyFile, "Downloads", "PalLanguageForGameTDB",
+		SystemRegion::lcToString(language_combo_box_get_selected_lc(
+			LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL))).c_str());
+
+	// Options
+	g_key_file_set_boolean(keyFile, "Options", "ShowDangerousPermissionsOverlayIcon",
+		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(tab->chkShowDangerousPermissionsOverlayIcon)));
+	g_key_file_set_boolean(keyFile, "Options", "EnableThumbnailOnNetworkFS",
+		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(tab->chkEnableThumbnailOnNetworkFS)));
+
+	// Configuration saved.
+	tab->changed = false;
 }
 
 /** Signal handlers **/
@@ -417,9 +445,11 @@ options_tab_save(OptionsTab *tab, GKeyFile *keyFile)
 static void
 options_tab_modified_handler(GtkWidget *widget, OptionsTab *tab)
 {
+	RP_UNUSED(widget);
 	if (tab->inhibit)
 		return;
 
 	// Forward the "modified" signal.
+	tab->changed = true;
 	g_signal_emit_by_name(tab, "modified", NULL);
 }
