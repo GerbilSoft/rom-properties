@@ -755,16 +755,6 @@ rom_data_view_init_header_row(RomDataView *page)
 	gtk_widget_show(page->hboxHeaderRow_outer);
 }
 
-#if GTK_CHECK_VERSION(3,0,0)
-#define GTK_WIDGET_HALIGN_LEFT(widget)		gtk_widget_set_halign((widget), GTK_ALIGN_START)
-#define GTK_WIDGET_HALIGN_CENTER(widget)	gtk_widget_set_halign((widget), GTK_ALIGN_CENTER)
-#define GTK_WIDGET_HALIGN_RIGHT(widget)		gtk_widget_set_halign((widget), GTK_ALIGN_END)
-#else
-#define GTK_WIDGET_HALIGN_LEFT(widget)		gtk_misc_set_alignment(GTK_MISC(widget), 0.0f, 0.0f)
-#define GTK_WIDGET_HALIGN_CENTER(widget)	gtk_misc_set_alignment(GTK_MISC(widget), 0.5f, 0.0f)
-#define GTK_WIDGET_HALIGN_RIGHT(widget)		gtk_misc_set_alignment(GTK_MISC(widget), 1.0f, 0.0f)
-#endif
-
 /**
  * Initialize a string field.
  * @param page		[in] RomDataView object
@@ -2188,11 +2178,7 @@ rom_data_view_update_display(RomDataView *page)
 			if (separate_rows) {
 				// Separate rows.
 				// Make sure the description label is left-aligned.
-#if GTK_CHECK_VERSION(3,16,0)
-				gtk_label_set_xalign(GTK_LABEL(lblDesc), 0.0);
-#else /* !GTK_CHECK_VERSION(3,16,0) */
-				gtk_misc_set_alignment(GTK_MISC(lblDesc), 0.0f, 0.0f);
-#endif /* GTK_CHECK_VERSION(3,16,0) */
+				GTK_LABEL_XALIGN_LEFT(lblDesc);
 
 				// If this is the last field in the tab,
 				// put the RFT_LISTDATA in the GtkGrid instead.

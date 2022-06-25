@@ -18,6 +18,7 @@ using namespace LibRpFile;
 
 // Tabs
 #include "RpConfigTab.h"
+#include "SystemsTab.hpp"
 #include "OptionsTab.hpp"
 
 #define CONFIG_DIALOG_RESPONSE_RESET		0
@@ -53,6 +54,7 @@ struct _ConfigDialog {
 	GtkWidget *tabWidget;
 
 	// Tabs
+	GtkWidget *tabSystems;
 	GtkWidget *tabOptions;
 };
 
@@ -162,6 +164,16 @@ config_dialog_init(ConfigDialog *dialog)
 
 	// Create the tabs.
 	GtkWidget *lblTab = gtk_label_new_with_mnemonic(
+		convert_accel_to_gtk(C_("ConfigDialog", "&Systems")).c_str());
+	gtk_widget_show(lblTab);
+	dialog->tabSystems = systems_tab_new();
+	g_object_set(dialog->tabSystems, "margin", 8, nullptr);
+	gtk_widget_show(dialog->tabSystems);
+	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabSystems, lblTab);
+	g_signal_connect(dialog->tabSystems, "modified",
+		G_CALLBACK(config_dialog_tab_modified), dialog);
+
+	lblTab = gtk_label_new_with_mnemonic(
 		convert_accel_to_gtk(C_("ConfigDialog", "&Options")).c_str());
 	gtk_widget_show(lblTab);
 	dialog->tabOptions = options_tab_new();

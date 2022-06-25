@@ -204,6 +204,47 @@ RP_gtk_hbox_new(gint spacing)
 #endif
 }
 
+#if GTK_CHECK_VERSION(3,0,0)
+#  define GTK_WIDGET_HALIGN_LEFT(widget)	gtk_widget_set_halign((widget), GTK_ALIGN_START)
+#  define GTK_WIDGET_HALIGN_CENTER(widget)	gtk_widget_set_halign((widget), GTK_ALIGN_CENTER)
+#  define GTK_WIDGET_HALIGN_RIGHT(widget)	gtk_widget_set_halign((widget), GTK_ALIGN_END)
+#else
+#  define GTK_WIDGET_HALIGN_LEFT(widget)	gtk_misc_set_alignment(GTK_MISC(widget), 0.0f, 0.0f)
+#  define GTK_WIDGET_HALIGN_CENTER(widget)	gtk_misc_set_alignment(GTK_MISC(widget), 0.5f, 0.0f)
+#  define GTK_WIDGET_HALIGN_RIGHT(widget)	gtk_misc_set_alignment(GTK_MISC(widget), 1.0f, 0.0f)
+#endif
+
+#if GTK_CHECK_VERSION(3,16,0)
+#  define GTK_LABEL_XALIGN_LEFT(label)		gtk_label_set_xalign(GTK_LABEL(label), 0.0f)
+#  define GTK_LABEL_XALIGN_CENTER(label)	gtk_label_set_xalign(GTK_LABEL(label), 0.5f)
+#  define GTK_LABEL_XALIGN_RIGHT(label)		gtk_label_set_xalign(GTK_LABEL(label), 1.0f)
+#else
+#  define GTK_LABEL_XALIGN_LEFT(label)		gtk_misc_set_alignment(GTK_MISC(label), 0.0f, 0.0f)
+#  define GTK_LABEL_XALIGN_CENTER(label)	gtk_misc_set_alignment(GTK_MISC(label), 0.5f, 0.0f)
+#  define GTK_LABEL_XALIGN_RIGHT(label)		gtk_misc_set_alignment(GTK_MISC(label), 1.0f, 0.0f)
+#endif
+
+/**
+ * Set margin for all four sides.
+ * @param widget GtkWidget
+ */
+static inline void
+gtk_widget_set_margin(GtkWidget *widget, gint margin)
+{
+	// TODO: GTK2 version.
+#if GTK_CHECK_VERSION(3,12,0)
+	gtk_widget_set_margin_start(widget, margin);
+	gtk_widget_set_margin_end(widget, margin);
+	gtk_widget_set_margin_top(widget, margin);
+	gtk_widget_set_margin_bottom(widget, margin);
+#elif GTK_CHECK_VERSION(3,0,0)
+	gtk_widget_set_margin_left(widget, margin);
+	gtk_widget_set_margin_right(widget, margin);
+	gtk_widget_set_margin_top(widget, margin);
+	gtk_widget_set_margin_bottom(widget, margin);
+#endif
+}
+
 G_END_DECLS
 
 #endif /* __ROMPROPERTIES_GTK_GTK_COMPAT_H__ */

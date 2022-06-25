@@ -52,6 +52,7 @@ SET(${PROJECT_NAME}_SRCS
 	config/stub-export.c
 	config/ConfigDialog.cpp
 	config/RpConfigTab.c
+	config/SystemsTab.cpp
 	config/OptionsTab.cpp
 	)
 SET(${PROJECT_NAME}_H
@@ -70,6 +71,7 @@ SET(${PROJECT_NAME}_H
 	is-supported.hpp
 	config/ConfigDialog.hpp
 	config/RpConfigTab.h
+	config/SystemsTab.hpp
 	config/OptionsTab.hpp
 	)
 
