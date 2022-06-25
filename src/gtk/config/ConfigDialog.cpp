@@ -12,9 +12,12 @@
 #include "ConfigDialog.hpp"
 #include "RpGtk.hpp"
 
-// librpbase, librpfile
+// for e.g. Config and FileSystem
 using namespace LibRpBase;
 using namespace LibRpFile;
+
+// Tabs
+#include "OptionsTab.hpp"
 
 #define CONFIG_DIALOG_RESPONSE_RESET		0
 #define CONFIG_DIALOG_RESPONSE_DEFAULTS		1
@@ -28,12 +31,12 @@ static void	config_dialog_response_handler	(ConfigDialog	*dialog,
 						 gpointer	 user_data);
 
 
-// ConfigDialog class.
+// ConfigDialog class
 struct _ConfigDialogClass {
 	GtkDialogClass __parent__;
 };
 
-// ConfigDialog instance.
+// ConfigDialog instance
 struct _ConfigDialog {
 	GtkDialog __parent__;
 
@@ -44,6 +47,9 @@ struct _ConfigDialog {
 
 	// GtkNotebook tab widget
 	GtkWidget *tabWidget;
+
+	// Tabs
+	GtkWidget *tabOptions;
 };
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -112,6 +118,11 @@ config_dialog_init(ConfigDialog *dialog)
 	// Create the GtkNotebook.
 	dialog->tabWidget = gtk_notebook_new();
 	gtk_widget_show(dialog->tabWidget);
+#if GTK_CHECK_VERSION(3,0,0)
+	// Add some margin at the bottom.
+	// TODO: GTK2 version.
+	gtk_widget_set_margin_bottom(dialog->tabWidget, 8);
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_box_append(GTK_BOX(content_area), dialog->tabWidget);
 	// TODO: Verify that this works.
@@ -121,12 +132,14 @@ config_dialog_init(ConfigDialog *dialog)
 	gtk_box_pack_start(GTK_BOX(content_area), dialog->tabWidget, TRUE, TRUE, 0);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
-	// Sample page. TODO add real pages
-	GtkWidget *const lblPage = gtk_label_new("it's a page");
-	gtk_widget_show(lblPage);
-	GtkWidget *const lblTab = gtk_label_new_with_mnemonic("_My Page");
+	// Create the tabs.
+	GtkWidget *lblTab = gtk_label_new_with_mnemonic(
+		convert_accel_to_gtk(C_("ConfigDialog", "&Options")).c_str());
 	gtk_widget_show(lblTab);
-	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), lblPage, lblTab);
+	dialog->tabOptions = options_tab_new();
+	g_object_set(dialog->tabOptions, "margin", 8, nullptr);
+	gtk_widget_show(dialog->tabOptions);
+	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabOptions, lblTab);
 
 	// Connect signals.
 	g_signal_connect(dialog, "response", G_CALLBACK(config_dialog_response_handler), NULL);

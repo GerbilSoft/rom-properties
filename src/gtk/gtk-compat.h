@@ -177,6 +177,33 @@ static inline guint gtk_widget_class_get_activate_signal(GtkWidgetClass *widget_
 }
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 
+#if !GTK_CHECK_VERSION(4,0,0)
+static inline void gtk_frame_set_child(GtkFrame *frame, GtkWidget *child)
+{
+	gtk_container_add(GTK_CONTAINER(frame), child);
+}
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
+
+static inline GtkWidget*
+RP_gtk_vbox_new(gint spacing)
+{
+#if GTK_CHECK_VERSION(3,0,0)
+	return gtk_box_new(GTK_ORIENTATION_VERTICAL, spacing);
+#else /* GTK_CHECK_VERSION(3,0,0) */
+	return gtk_vbox_new(FALSE, spacing);
+#endif
+}
+
+static inline GtkWidget*
+RP_gtk_hbox_new(gint spacing)
+{
+#if GTK_CHECK_VERSION(3,0,0)
+	return gtk_box_new(GTK_ORIENTATION_HORIZONTAL, spacing);
+#else /* GTK_CHECK_VERSION(3,0,0) */
+	return gtk_hbox_new(FALSE, spacing);
+#endif
+}
+
 G_END_DECLS
 
 #endif /* __ROMPROPERTIES_GTK_GTK_COMPAT_H__ */

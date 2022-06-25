@@ -51,6 +51,7 @@ SET(${PROJECT_NAME}_SRCS
 	is-supported.cpp
 	config/stub-export.c
 	config/ConfigDialog.cpp
+	config/OptionsTab.cpp
 	)
 SET(${PROJECT_NAME}_H
 	RomDataView.hpp
@@ -67,6 +68,7 @@ SET(${PROJECT_NAME}_H
 	check-uid.h
 	is-supported.hpp
 	config/ConfigDialog.hpp
+	config/OptionsTab.hpp
 	)
 
 IF(ENABLE_ACHIEVEMENTS)
