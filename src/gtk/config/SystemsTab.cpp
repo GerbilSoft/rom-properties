@@ -95,6 +95,7 @@ systems_tab_init(SystemsTab *tab)
 	gtk_widget_set_margin(vboxDMG, 6);
 	gtk_frame_set_child(GTK_FRAME(fraDMG), vboxDMG);
 
+	// FIXME: Better wrapping that doesn't require manual newlines.
 	GtkWidget *const lblDMGDescription = gtk_label_new(
 		C_("SystemsTab", "Select the Game Boy model to use for title screens for different types of\nGame Boy ROM images."));
 	GTK_LABEL_XALIGN_LEFT(lblDMGDescription);
