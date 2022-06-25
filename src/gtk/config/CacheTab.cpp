@@ -146,6 +146,7 @@ cache_tab_init(CacheTab *tab)
 	tab->btnRpCache  = gtk_button_new_with_label(C_("CacheTab", "Clear the ROM Properties Page Download Cache"));
 
 	tab->lblStatus = gtk_label_new(nullptr);
+	GTK_LABEL_XALIGN_LEFT(tab->lblStatus);
 	tab->pbStatus = gtk_progress_bar_new();
 #if GTK_CHECK_VERSION(3,0,0)
 	gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(tab->pbStatus), TRUE);
