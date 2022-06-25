@@ -15,6 +15,9 @@
 
 #include "LanguageComboBox.hpp"
 
+// librpbase
+using LibRpBase::Config;
+
 static void	options_tab_dispose		(GObject	*object);
 static void	options_tab_finalize		(GObject	*object);
 
@@ -44,6 +47,8 @@ struct _OptionsTabClass {
 // OptionsTab instance
 struct _OptionsTab {
 	super __parent__;
+	gboolean inhibit;	// If true, inhibit signals.
+	gboolean changed;	// If true, an option was changed.
 
 	// Downloads
 	GtkWidget *chkExtImgDownloadEnabled;
@@ -64,6 +69,10 @@ static void	options_tab_reset				(OptionsTab	*tab);
 static void	options_tab_load_defaults			(OptionsTab	*tab);
 static void	options_tab_save				(OptionsTab	*tab,
 								 GKeyFile       *keyFile);
+
+// "modified" signal handler for UI widgets
+static void	options_tab_modified_handler			(GtkWidget	*widget,
+								 OptionsTab	*tab);
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
@@ -147,6 +156,26 @@ options_tab_init(OptionsTab *tab)
 		C_("OptionsTab", "Enable thumbnailing and metadata extraction on network\n"
 			"file systems. This may slow down file browsing."));
 
+	// Connect signal handlers for checkboxes.
+	// NOTE: Signal handlers are triggered if the value is
+	// programmatically edited, unlike Qt, so we'll need to
+	// inhibit handling when loading settings.
+	g_signal_connect(tab->chkExtImgDownloadEnabled, "toggled",
+		G_CALLBACK(options_tab_modified_handler), tab);
+	g_signal_connect(tab->chkUseIntIconForSmallSizes, "toggled",
+		G_CALLBACK(options_tab_modified_handler), tab);
+	g_signal_connect(tab->chkDownloadHighResScans, "toggled",
+		G_CALLBACK(options_tab_modified_handler), tab);
+	g_signal_connect(tab->chkStoreFileOriginInfo, "toggled",
+		G_CALLBACK(options_tab_modified_handler), tab);
+	g_signal_connect(tab->cboGameTDBPAL, "changed",
+		G_CALLBACK(options_tab_modified_handler), tab);
+
+	g_signal_connect(tab->chkShowDangerousPermissionsOverlayIcon, "toggled",
+		G_CALLBACK(options_tab_modified_handler), tab);
+	g_signal_connect(tab->chkEnableThumbnailOnNetworkFS, "toggled",
+		G_CALLBACK(options_tab_modified_handler), tab);
+
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_box_append(GTK_BOX(tab), fraDownloads);
 
@@ -200,6 +229,9 @@ options_tab_init(OptionsTab *tab)
 	gtk_box_pack_start(GTK_BOX(tab), fraDownloads, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(tab), fraOptions, false, false, 0);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
+
+	// Load the current configuration.
+	options_tab_reset(tab);
 }
 
 static void
@@ -239,16 +271,132 @@ static void
 options_tab_reset(OptionsTab *tab)
 {
 	g_return_if_fail(IS_OPTIONS_TAB(tab));
-	// TODO
-	printf("OptionsTab Reset!\n");
+
+	// NOTE: This may re-check the configuration timestamp.
+	const Config *const config = Config::instance();
+
+	tab->inhibit = true;
+
+	// Downloads
+	gtk_toggle_button_set_active(
+		GTK_TOGGLE_BUTTON(tab->chkExtImgDownloadEnabled),
+		config->extImgDownloadEnabled());
+	gtk_toggle_button_set_active(
+		GTK_TOGGLE_BUTTON(tab->chkUseIntIconForSmallSizes),
+		config->useIntIconForSmallSizes());
+	gtk_toggle_button_set_active(
+		GTK_TOGGLE_BUTTON(tab->chkDownloadHighResScans),
+		config->downloadHighResScans());
+	gtk_toggle_button_set_active(
+		GTK_TOGGLE_BUTTON(tab->chkStoreFileOriginInfo),
+		config->storeFileOriginInfo());
+
+	// Options
+	gtk_toggle_button_set_active(
+		GTK_TOGGLE_BUTTON(tab->chkShowDangerousPermissionsOverlayIcon),
+		config->showDangerousPermissionsOverlayIcon());
+	gtk_toggle_button_set_active(
+		GTK_TOGGLE_BUTTON(tab->chkEnableThumbnailOnNetworkFS),
+		config->enableThumbnailOnNetworkFS());
+
+	// PAL language code
+	const uint32_t lc = config->palLanguageForGameTDB();
+	int idx = 0;
+	for (; idx < ARRAY_SIZE_I(pal_lc)-1; idx++) {
+		if (pal_lc[idx] == lc)
+			break;
+	}
+	if (idx >= ARRAY_SIZE_I(pal_lc)) {
+		// Out of range. Default to 'en'.
+		idx = pal_lc_idx_def;
+	}
+	gtk_combo_box_set_active(GTK_COMBO_BOX(tab->cboGameTDBPAL), idx);
+
+	tab->changed = false;
+	tab->inhibit = false;
 }
 
 static void
 options_tab_load_defaults(OptionsTab *tab)
 {
 	g_return_if_fail(IS_OPTIONS_TAB(tab));
-	// TODO
-	printf("OptionsTab Load Defaults!\n");
+	tab->inhibit = true;
+
+	// TODO: Get the defaults from Config.
+	// For now, hard-coding everything here.
+
+	// Downloads
+	static const bool extImgDownloadEnabled_default = true;
+	static const bool useIntIconForSmallSizes_default = true;
+	static const bool downloadHighResScans_default = true;
+	static const bool storeFileOriginInfo_default = true;
+	static const int palLanguageForGameTDB_default = pal_lc_idx_def;	// cboGameTDBPAL index ('en')
+
+	// Options
+	static const bool showDangerousPermissionsOverlayIcon_default = true;
+	static const bool enableThumbnailOnNetworkFS_default = false;
+	bool isDefChanged = false;
+
+#define COMPARE_CHK(widget, defval) \
+	(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) != (defval))
+
+	// Downloads
+	if (COMPARE_CHK(tab->chkExtImgDownloadEnabled, extImgDownloadEnabled_default)) {
+		gtk_toggle_button_set_active(
+			GTK_TOGGLE_BUTTON(tab->chkExtImgDownloadEnabled),
+			extImgDownloadEnabled_default);
+		isDefChanged = true;
+	}
+	if (COMPARE_CHK(tab->chkUseIntIconForSmallSizes, useIntIconForSmallSizes_default)) {
+		gtk_toggle_button_set_active(
+			GTK_TOGGLE_BUTTON(tab->chkUseIntIconForSmallSizes),
+			extImgDownloadEnabled_default);
+		isDefChanged = true;
+	}
+	if (COMPARE_CHK(tab->chkUseIntIconForSmallSizes, useIntIconForSmallSizes_default)) {
+		gtk_toggle_button_set_active(
+			GTK_TOGGLE_BUTTON(tab->chkUseIntIconForSmallSizes),
+			useIntIconForSmallSizes_default);
+		isDefChanged = true;
+	}
+	if (COMPARE_CHK(tab->chkDownloadHighResScans, downloadHighResScans_default)) {
+		gtk_toggle_button_set_active(
+			GTK_TOGGLE_BUTTON(tab->chkDownloadHighResScans),
+			downloadHighResScans_default);
+		isDefChanged = true;
+	}
+	if (COMPARE_CHK(tab->chkStoreFileOriginInfo, storeFileOriginInfo_default)) {
+		gtk_toggle_button_set_active(
+			GTK_TOGGLE_BUTTON(tab->chkStoreFileOriginInfo),
+			storeFileOriginInfo_default);
+		isDefChanged = true;
+	}
+	if (gtk_combo_box_get_active(GTK_COMBO_BOX(tab->cboGameTDBPAL)) != palLanguageForGameTDB_default) {
+		gtk_combo_box_set_active(
+			GTK_COMBO_BOX(tab->cboGameTDBPAL),
+			palLanguageForGameTDB_default);
+		isDefChanged = true;
+	}
+
+	// Options
+	if (COMPARE_CHK(tab->chkShowDangerousPermissionsOverlayIcon, showDangerousPermissionsOverlayIcon_default)) {
+		gtk_toggle_button_set_active(
+			GTK_TOGGLE_BUTTON(tab->chkShowDangerousPermissionsOverlayIcon),
+			showDangerousPermissionsOverlayIcon_default);
+		isDefChanged = true;
+	}
+	if (COMPARE_CHK(tab->chkEnableThumbnailOnNetworkFS, enableThumbnailOnNetworkFS_default)) {
+		gtk_toggle_button_set_active(
+			GTK_TOGGLE_BUTTON(tab->chkEnableThumbnailOnNetworkFS),
+			enableThumbnailOnNetworkFS_default);
+		isDefChanged = true;
+	}
+
+	if (isDefChanged) {
+		tab->changed = true;
+		g_signal_emit_by_name(tab, "modified", NULL);
+	}
+	tab->inhibit = false;
 }
 
 static void
@@ -257,4 +405,21 @@ options_tab_save(OptionsTab *tab, GKeyFile *keyFile)
 	g_return_if_fail(IS_OPTIONS_TAB(tab));
 	// TODO
 	printf("OptionsTab Save!\n");
+}
+
+/** Signal handlers **/
+
+/**
+ * "modified" signal handler for UI widgets
+ * @param widget Widget sending the signal
+ * @param tab OptionsTab
+ */
+static void
+options_tab_modified_handler(GtkWidget *widget, OptionsTab *tab)
+{
+	if (tab->inhibit)
+		return;
+
+	// Forward the "modified" signal.
+	g_signal_emit_by_name(tab, "modified", NULL);
 }

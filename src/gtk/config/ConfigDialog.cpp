@@ -31,6 +31,9 @@ static void	config_dialog_response_handler	(ConfigDialog	*dialog,
 						 gint		 response_id,
 						 gpointer	 user_data);
 
+static void	config_dialog_tab_modified	(RpConfigTab	*tab,
+						 ConfigDialog	*dialog);
+
 
 // ConfigDialog class
 struct _ConfigDialogClass {
@@ -109,6 +112,7 @@ config_dialog_init(ConfigDialog *dialog)
 	dialog->btnApply = gtk_dialog_add_button(GTK_DIALOG(dialog),
 		convert_accel_to_gtk(C_("ConfigDialog|Button", "&Apply")).c_str(),
 		GTK_RESPONSE_APPLY);
+	gtk_widget_set_sensitive(dialog->btnApply, FALSE);
 	gtk_dialog_add_button(GTK_DIALOG(dialog),
 		convert_accel_to_gtk(C_("ConfigDialog|Button", "&OK")).c_str(),
 		GTK_RESPONSE_OK);
@@ -141,15 +145,17 @@ config_dialog_init(ConfigDialog *dialog)
 	g_object_set(dialog->tabOptions, "margin", 8, nullptr);
 	gtk_widget_show(dialog->tabOptions);
 	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabOptions, lblTab);
+	g_signal_connect(dialog->tabOptions, "modified",
+		G_CALLBACK(config_dialog_tab_modified), dialog);
 
 	// Reset button is disabled initially.
 	gtk_widget_set_sensitive(dialog->btnReset, FALSE);
 
 	// If the first page doesn't have default settings, disable btnDefaults.
-	RpConfigTab *const pTab = RP_CONFIG_TAB(gtk_notebook_get_nth_page(GTK_NOTEBOOK(dialog->tabWidget), 0));
-	assert(pTab != nullptr);
-	if (pTab) {
-		gtk_widget_set_sensitive(dialog->btnDefaults, rp_config_tab_has_defaults(pTab));
+	RpConfigTab *const tab = RP_CONFIG_TAB(gtk_notebook_get_nth_page(GTK_NOTEBOOK(dialog->tabWidget), 0));
+	assert(tab != nullptr);
+	if (tab) {
+		gtk_widget_set_sensitive(dialog->btnDefaults, rp_config_tab_has_defaults(tab));
 	}
 
 	// Connect signals.
@@ -230,12 +236,16 @@ config_dialog_apply(ConfigDialog *dialog)
 	GtkNotebook *const tabWidget = GTK_NOTEBOOK(dialog->tabWidget);
 	const int num_pages = gtk_notebook_get_n_pages(tabWidget);
 	for (int i = 0; i < num_pages; i++) {
-		RpConfigTab *const pTab = RP_CONFIG_TAB(gtk_notebook_get_nth_page(tabWidget, i));
-		assert(pTab != nullptr);
-		if (pTab) {
-			rp_config_tab_save(pTab, keyFile);
+		RpConfigTab *const tab = RP_CONFIG_TAB(gtk_notebook_get_nth_page(tabWidget, i));
+		assert(tab != nullptr);
+		if (tab) {
+			rp_config_tab_save(tab, keyFile);
 		}
 	}
+
+	// Disable the "Apply" and "Reset" buttons.
+	gtk_widget_set_sensitive(dialog->btnApply, FALSE);
+	gtk_widget_set_sensitive(dialog->btnReset, FALSE);
 }
 
 /**
@@ -248,12 +258,16 @@ config_dialog_reset(ConfigDialog *dialog)
 	GtkNotebook *const tabWidget = GTK_NOTEBOOK(dialog->tabWidget);
 	const int num_pages = gtk_notebook_get_n_pages(tabWidget);
 	for (int i = 0; i < num_pages; i++) {
-		RpConfigTab *const pTab = RP_CONFIG_TAB(gtk_notebook_get_nth_page(tabWidget, i));
-		assert(pTab != nullptr);
-		if (pTab) {
-			rp_config_tab_reset(pTab);
+		RpConfigTab *const tab = RP_CONFIG_TAB(gtk_notebook_get_nth_page(tabWidget, i));
+		assert(tab != nullptr);
+		if (tab) {
+			rp_config_tab_reset(tab);
 		}
 	}
+
+	// Disable the "Apply" and "Reset" buttons.
+	gtk_widget_set_sensitive(dialog->btnApply, FALSE);
+	gtk_widget_set_sensitive(dialog->btnReset, FALSE);
 }
 
 /**
@@ -264,11 +278,11 @@ static void
 config_dialog_load_defaults(ConfigDialog *dialog)
 {
 	GtkNotebook *const tabWidget = GTK_NOTEBOOK(dialog->tabWidget);
-	RpConfigTab *const pTab = RP_CONFIG_TAB(gtk_notebook_get_nth_page(
+	RpConfigTab *const tab = RP_CONFIG_TAB(gtk_notebook_get_nth_page(
 		tabWidget, gtk_notebook_get_current_page(tabWidget)));
-	assert(pTab != nullptr);
-	if (pTab) {
-		rp_config_tab_load_defaults(pTab);
+	assert(tab != nullptr);
+	if (tab) {
+		rp_config_tab_load_defaults(tab);
 	}
 }
 
@@ -318,4 +332,17 @@ config_dialog_response_handler(ConfigDialog *dialog,
 		default:
 			break;
 	}
+}
+
+/**
+ * A tab has been modified.
+ */
+static void
+config_dialog_tab_modified(RpConfigTab *tab, ConfigDialog *dialog)
+{
+	RP_UNUSED(tab);
+
+	// Enable the "Apply" and "Reset" buttons.
+	gtk_widget_set_sensitive(dialog->btnApply, TRUE);
+	gtk_widget_set_sensitive(dialog->btnReset, TRUE);
 }
