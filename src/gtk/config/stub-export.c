@@ -67,6 +67,19 @@ int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 	// just using GtkDialog like we're doing with ConfigDialog.
 	// TODO: Single-instance?
 
+#if !GLIB_CHECK_VERSION(2,35,1)
+        // g_type_init() is automatic as of glib-2.35.1
+        // and is marked deprecated.
+        g_type_init();
+#endif
+#if !GLIB_CHECK_VERSION(2,32,0)
+        // g_thread_init() is automatic as of glib-2.32.0
+        // and is marked deprecated.
+        if (!g_thread_supported()) {
+                g_thread_init(nullptr);
+        }
+#endif
+
 	CHECK_UID_RET(EXIT_FAILURE);
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_init();
