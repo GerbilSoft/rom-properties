@@ -18,6 +18,7 @@ using namespace LibRpFile;
 
 // Tabs
 #include "RpConfigTab.h"
+#include "ImageTypesTab.hpp"
 #include "SystemsTab.hpp"
 #include "OptionsTab.hpp"
 #include "CacheTab.hpp"
@@ -55,6 +56,7 @@ struct _ConfigDialog {
 	GtkWidget *tabWidget;
 
 	// Tabs
+	GtkWidget *tabImageTypes;
 	GtkWidget *tabSystems;
 	GtkWidget *tabOptions;
 	GtkWidget *tabCache;
@@ -166,6 +168,16 @@ config_dialog_init(ConfigDialog *dialog)
 
 	// Create the tabs.
 	GtkWidget *lblTab = gtk_label_new_with_mnemonic(
+		convert_accel_to_gtk(C_("ConfigDialog", "&Image Types")).c_str());
+	gtk_widget_show(lblTab);
+	dialog->tabImageTypes = image_types_tab_new();
+	g_object_set(dialog->tabImageTypes, "margin", 8, nullptr);
+	gtk_widget_show(dialog->tabImageTypes);
+	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabImageTypes, lblTab);
+	g_signal_connect(dialog->tabImageTypes, "modified",
+		G_CALLBACK(config_dialog_tab_modified), dialog);
+
+	lblTab = gtk_label_new_with_mnemonic(
 		convert_accel_to_gtk(C_("ConfigDialog", "&Systems")).c_str());
 	gtk_widget_show(lblTab);
 	dialog->tabSystems = systems_tab_new();

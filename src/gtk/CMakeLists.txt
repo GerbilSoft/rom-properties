@@ -52,6 +52,7 @@ SET(${PROJECT_NAME}_SRCS
 	config/stub-export.c
 	config/ConfigDialog.cpp
 	config/RpConfigTab.c
+	config/ImageTypesTab.cpp
 	config/SystemsTab.cpp
 	config/OptionsTab.cpp
 	config/CacheTab.cpp
@@ -73,6 +74,7 @@ SET(${PROJECT_NAME}_H
 	is-supported.hpp
 	config/ConfigDialog.hpp
 	config/RpConfigTab.h
+	config/ImageTypesTab.hpp
 	config/SystemsTab.hpp
 	config/OptionsTab.hpp
 	config/CacheCleaner.hpp
