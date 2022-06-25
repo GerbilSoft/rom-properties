@@ -98,7 +98,9 @@ systems_tab_init(SystemsTab *tab)
 	gtk_frame_set_child(GTK_FRAME(fraDMG), vboxDMG);
 
 	GtkWidget *const lblDMGDescription = gtk_label_new(
-		C_("SystemsTab", "Select the Game Boy model to use for title screens for different types of Game Boy ROM images."));
+		C_("SystemsTab", "Select the Game Boy model to use for title screens for different types of\nGame Boy ROM images."));
+	GTK_LABEL_XALIGN_LEFT(lblDMGDescription);
+	gtk_label_set_wrap(GTK_LABEL(lblDMGDescription), TRUE);
 
 	GtkWidget *const lblDMG = gtk_label_new_with_mnemonic(
 		convert_accel_to_gtk(C_("SystemsTab", "Game &Boy:")).c_str());

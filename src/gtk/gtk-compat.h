@@ -245,6 +245,19 @@ gtk_widget_set_margin(GtkWidget *widget, gint margin)
 #endif
 }
 
+#if !GTK_CHECK_VERSION(4,0,0)
+/**
+ * GTK4 renamed gtk_label_set_line_wrap() to gtk_label_set_wrap().
+ * @param label GtkLabel
+ * @param wrap Wrap?
+ */
+static inline void
+gtk_label_set_wrap(GtkLabel *label, gboolean wrap)
+{
+	gtk_label_set_line_wrap(label, wrap);
+}
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
+
 G_END_DECLS
 
 #endif /* __ROMPROPERTIES_GTK_GTK_COMPAT_H__ */
