@@ -54,6 +54,7 @@ SET(${PROJECT_NAME}_SRCS
 	config/RpConfigTab.c
 	config/SystemsTab.cpp
 	config/OptionsTab.cpp
+	config/CacheTab.cpp
 	)
 SET(${PROJECT_NAME}_H
 	RomDataView.hpp
@@ -73,6 +74,7 @@ SET(${PROJECT_NAME}_H
 	config/RpConfigTab.h
 	config/SystemsTab.hpp
 	config/OptionsTab.hpp
+	config/CacheTab.hpp
 	)
 
 IF(ENABLE_ACHIEVEMENTS)

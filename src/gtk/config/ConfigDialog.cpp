@@ -20,6 +20,7 @@ using namespace LibRpFile;
 #include "RpConfigTab.h"
 #include "SystemsTab.hpp"
 #include "OptionsTab.hpp"
+#include "CacheTab.hpp"
 
 #define CONFIG_DIALOG_RESPONSE_RESET		0
 #define CONFIG_DIALOG_RESPONSE_DEFAULTS		1
@@ -56,6 +57,7 @@ struct _ConfigDialog {
 	// Tabs
 	GtkWidget *tabSystems;
 	GtkWidget *tabOptions;
+	GtkWidget *tabCache;
 };
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -181,6 +183,15 @@ config_dialog_init(ConfigDialog *dialog)
 	gtk_widget_show(dialog->tabOptions);
 	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabOptions, lblTab);
 	g_signal_connect(dialog->tabOptions, "modified",
+		G_CALLBACK(config_dialog_tab_modified), dialog);
+
+	lblTab = gtk_label_new_with_mnemonic(C_("ConfigDialog", "Thumbnail Cache"));
+	gtk_widget_show(lblTab);
+	dialog->tabCache = cache_tab_new();
+	g_object_set(dialog->tabCache, "margin", 8, nullptr);
+	gtk_widget_show(dialog->tabCache);
+	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabCache, lblTab);
+	g_signal_connect(dialog->tabCache, "modified",
 		G_CALLBACK(config_dialog_tab_modified), dialog);
 
 	// Reset button is disabled initially.
