@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * AesCAPI_NG.cpp: AES decryption class using Win32 CryptoAPI NG.          *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,9 +21,9 @@
 #include <winternl.h>
 
 // Function pointer macro.
-#define DECL_FUNCPTR(f) typeof(f) * p##f
-#define DEF_FUNCPTR(f) typeof(f) * AesCAPI_NG_Private::p##f = nullptr
-#define LOAD_FUNCPTR(f) AesCAPI_NG_Private::p##f = (typeof(f)*)GetProcAddress(hBcryptDll, #f)
+#define DECL_FUNCPTR(f) __typeof__w(f) * p##f
+#define DEF_FUNCPTR(f) __typeof__(f) * AesCAPI_NG_Private::p##f = nullptr
+#define LOAD_FUNCPTR(f) AesCAPI_NG_Private::p##f = (__typeof__(f)*)GetProcAddress(hBcryptDll, #f)
 
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define AesCAPI_NGPrivate AesCAPI_NG_Private

@@ -1,7 +1,7 @@
 /***************************************************************************
  * c++11-compat.msvc.h: C++ 2011 compatibility header. (MSVC)              *
  *                                                                         *
- * Copyright (c) 2011-2021 by David Korth.                                 *
+ * Copyright (c) 2011-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
