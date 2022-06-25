@@ -242,6 +242,9 @@ gtk_widget_set_margin(GtkWidget *widget, gint margin)
 	gtk_widget_set_margin_right(widget, margin);
 	gtk_widget_set_margin_top(widget, margin);
 	gtk_widget_set_margin_bottom(widget, margin);
+#else
+	((void)widget);
+	((void)margin);
 #endif
 }
 
