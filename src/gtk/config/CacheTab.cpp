@@ -152,6 +152,36 @@ cache_tab_init(CacheTab *tab)
 	gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(tab->pbStatus), TRUE);
 #endif /* !GTK_CHECK_VERSION(3,0,0) */
 
+#if GTK_CHECK_VERSION(3,0,0)
+	// Add a CSS class for a GtkProgressBar "error" state.
+#if GTK_CHECK_VERSION(3,0,0)
+	// Initialize MessageWidget CSS.
+	GtkCssProvider *const provider = gtk_css_provider_new();
+	GdkDisplay *const display = gdk_display_get_default();
+#  if GTK_CHECK_VERSION(4,0,0)
+	// GdkScreen no longer exists in GTK4.
+	// Style context providers are added directly to GdkDisplay instead.
+	gtk_style_context_add_provider_for_display(display,
+		GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
+#  else /* !GTK_CHECK_VERSION(4,0,0) */
+	GdkScreen *const screen = gdk_display_get_default_screen(display);
+	gtk_style_context_add_provider_for_screen(screen,
+		GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
+#  endif /* !GTK_CHECK_VERSION(4,0,0) */
+
+	static const char css_ProgressBar[] =
+		"@define-color gsrp_color_pb_error rgb(144,24,24);\n"
+		"progressbar.gsrp_pb_error > trough > progress {\n"
+		"\tbackground-image: none;\n"
+		"\tbackground-color: lighter(@gsrp_color_pb_error);\n"
+		"\tborder: solid @gsrp_color_info;\n"
+		"}\n";
+
+	GTK_CSS_PROVIDER_LOAD_FROM_DATA(GTK_CSS_PROVIDER(provider), css_ProgressBar, -1);
+	g_object_unref(provider);
+#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* GTK_CHECK_VERSION(3,0,0) */
+
 	// Connect the signal handlers for the buttons.
 	g_signal_connect(tab->btnSysCache, "clicked", G_CALLBACK(cache_tab_on_btnSysCache_clicked), tab);
 	g_signal_connect(tab->btnRpCache,  "clicked", G_CALLBACK(cache_tab_on_btnRpCache_clicked),  tab);
@@ -308,12 +338,24 @@ cache_tab_enable_ui_controls(CacheTab *tab, gboolean enable)
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 }
 
-// TODO: gtk_progress_bar_set_error()
 static inline
 void gtk_progress_bar_set_error(GtkProgressBar *pb, gboolean error)
 {
+#if GTK_CHECK_VERSION(3,0,0)
+	// If error, add our CSS class.
+	// Otherwise, remove our CSS class.
+	GtkStyleContext *const context = gtk_widget_get_style_context(GTK_WIDGET(pb));
+	if (error) {
+		printf("ERR\n");
+		gtk_style_context_add_class(context, "gsrp_pb_error");
+	} else {
+		gtk_style_context_remove_class(context, "gsrp_pb_error");
+	}
+#else /* !GTK_CHECK_VERSION(3,0,0) */
+	// TODO: GTK2 version.
 	RP_UNUSED(pb);
 	RP_UNUSED(error);
+#endif
 }
 
 /**
