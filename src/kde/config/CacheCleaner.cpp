@@ -218,10 +218,12 @@ void CacheCleaner::run(void)
 				qs_err = tr("rom-properties cache has unexpected files. Not clearing it.");
 				break;
 		}
+		emit progress(1, 1, true);
 		emit error(qs_err);
 		emit finished();
 		return;
 	} else if (rlist.empty()) {
+		emit progress(1, 1, true);
 		emit cacheIsEmpty(m_cacheDir);
 		emit finished();
 		return;
