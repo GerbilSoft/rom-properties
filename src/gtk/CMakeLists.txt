@@ -51,6 +51,7 @@ SET(${PROJECT_NAME}_SRCS
 	is-supported.cpp
 	config/stub-export.c
 	config/ConfigDialog.cpp
+	config/RpConfigTab.c
 	config/OptionsTab.cpp
 	)
 SET(${PROJECT_NAME}_H
@@ -68,6 +69,7 @@ SET(${PROJECT_NAME}_H
 	check-uid.h
 	is-supported.hpp
 	config/ConfigDialog.hpp
+	config/RpConfigTab.h
 	config/OptionsTab.hpp
 	)
 

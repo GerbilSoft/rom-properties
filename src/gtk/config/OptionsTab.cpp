@@ -8,6 +8,7 @@
 
 #include "stdafx.h"
 #include "OptionsTab.hpp"
+#include "RpConfigTab.h"
 
 #include "RpGtk.hpp"
 #include "gtk-compat.h"
@@ -56,10 +57,20 @@ struct _OptionsTab {
 	GtkWidget *chkEnableThumbnailOnNetworkFS;
 };
 
+// Interface initialization
+static void	options_tab_rp_config_tab_interface_init	(RpConfigTabInterface *iface);
+static gboolean	options_tab_has_defaults			(OptionsTab	*tab);
+static void	options_tab_reset				(OptionsTab	*tab);
+static void	options_tab_load_defaults			(OptionsTab	*tab);
+static void	options_tab_save				(OptionsTab	*tab,
+								 GKeyFile       *keyFile);
+
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
 G_DEFINE_TYPE_EXTENDED(OptionsTab, options_tab,
-	GTK_TYPE_SUPER, static_cast<GTypeFlags>(0), {});
+	GTK_TYPE_SUPER, static_cast<GTypeFlags>(0),
+		G_IMPLEMENT_INTERFACE(RP_CONFIG_TYPE_TAB,
+			options_tab_rp_config_tab_interface_init));
 
 static void
 options_tab_class_init(OptionsTabClass *klass)
@@ -67,6 +78,15 @@ options_tab_class_init(OptionsTabClass *klass)
 	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 	gobject_class->dispose = options_tab_dispose;
 	gobject_class->finalize = options_tab_finalize;
+}
+
+static void
+options_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)
+{
+	iface->has_defaults = (__typeof__(iface->has_defaults))options_tab_has_defaults;
+	iface->reset = (__typeof__(iface->reset))options_tab_reset;
+	iface->load_defaults = (__typeof__(iface->load_defaults))options_tab_load_defaults;
+	iface->save = (__typeof__(iface->save))options_tab_save;
 }
 
 static void
@@ -204,4 +224,37 @@ GtkWidget*
 options_tab_new(void)
 {
 	return static_cast<GtkWidget*>(g_object_new(TYPE_OPTIONS_TAB, nullptr));
+}
+
+/** RpConfigTab interface functions **/
+
+static gboolean
+options_tab_has_defaults(OptionsTab *tab)
+{
+	g_return_val_if_fail(IS_OPTIONS_TAB(tab), false);
+	return true;
+}
+
+static void
+options_tab_reset(OptionsTab *tab)
+{
+	g_return_if_fail(IS_OPTIONS_TAB(tab));
+	// TODO
+	printf("OptionsTab Reset!\n");
+}
+
+static void
+options_tab_load_defaults(OptionsTab *tab)
+{
+	g_return_if_fail(IS_OPTIONS_TAB(tab));
+	// TODO
+	printf("OptionsTab Load Defaults!\n");
+}
+
+static void
+options_tab_save(OptionsTab *tab, GKeyFile *keyFile)
+{
+	g_return_if_fail(IS_OPTIONS_TAB(tab));
+	// TODO
+	printf("OptionsTab Save!\n");
 }
