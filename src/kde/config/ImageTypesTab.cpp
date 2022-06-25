@@ -108,11 +108,6 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 		// Temporary QSettings object.
 		// Set and cleared by ImageTypesTab::save();
 		QSettings *pSettings;
-
-#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
-		// QSignalMapper for the QComboBoxes.
-		QSignalMapper *mapperCboImageType;
-#endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 };
 
 /** ImageTypesTabPrivate **/
@@ -121,16 +116,7 @@ ImageTypesTabPrivate::ImageTypesTabPrivate(ImageTypesTab* q)
 	: q_ptr(q)
 	, cboImageType_lastAdded(nullptr)
 	, pSettings(nullptr)
-#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
-	, mapperCboImageType(new QSignalMapper(q))
-#endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
-{
-#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
-	// Connect the QSignalMapper to the ImageTypesTab.
-	QObject::connect(mapperCboImageType, SIGNAL(mapped(int)),
-		q, SLOT(cboImageType_currentIndexChanged(int)));
-#endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
-}
+{ }
 
 ImageTypesTabPrivate::~ImageTypesTabPrivate()
 {
@@ -208,17 +194,10 @@ void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
 	ui.gridImageTypes->addWidget(cbo, sys+1, imageType+1);
 	sysData.cboImageType[imageType] = cbo;
 
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-	// Connect the signal to the slot with the appropriate value.
-	QObject::connect(cbo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-		[q, cbid] { q->cboImageType_currentIndexChanged(cbid); }
-	);
-#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
-	// Connect the signal to the QSignalMapper.
+	// Connect the signal handler.
+	cbo->setProperty("rp-config.cbid", cbid);
 	QObject::connect(cbo, SIGNAL(currentIndexChanged(int)),
-		mapperCboImageType, SLOT(map()));
-	mapperCboImageType->setMapping(cbo, (int)cbid);
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+			 q, SLOT(cboImageType_currentIndexChanged()));
 
 	// Adjust the tab order.
 	if (cboImageType_lastAdded) {
@@ -248,11 +227,13 @@ void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 	// NOTE: Need to add one more than the total number,
 	// since "No" counts as an entry.
 	assert(max_prio <= static_cast<int>(ImageTypesConfig::imageTypeCount()));
+	const bool blockCbo = cbo->blockSignals(true);
 	cbo->addItem(U82Q(C_("ImageTypesTab|Values", "No")));
 	for (int i = 1; i <= max_prio; i++) {
 		cbo->addItem(QString::number(i));
 	}
 	cbo->setCurrentIndex(0);
+	cbo->blockSignals(blockCbo);
 }
 
 /**
@@ -342,7 +323,9 @@ void ImageTypesTabPrivate::cboImageType_setPriorityValue(unsigned int cbid, unsi
 	QComboBox *const cbo = sysData.cboImageType[imageType];
 	assert(cbo != nullptr);
 	if (cbo) {
+		const bool blockCbo = cbo->blockSignals(true);
 		cbo->setCurrentIndex(prio < ImageTypesConfig::imageTypeCount() ? prio+1 : 0);
+		cbo->blockSignals(blockCbo);
 	}
 }
 
@@ -455,21 +438,17 @@ void ImageTypesTab::save(QSettings *pSettings)
 
 /**
  * A QComboBox index has changed.
- * @param cbid ComboBox ID.
+ * Check the QComboBox's "rp-config.cbid" property for the cbid.
  */
-void ImageTypesTab::cboImageType_currentIndexChanged(int cbid)
+void ImageTypesTab::cboImageType_currentIndexChanged(void)
 {
 	Q_D(ImageTypesTab);
-	const unsigned int sys = d->sysFromCbid((unsigned int)cbid);
-	const unsigned int imageType = d->imageTypeFromCbid((unsigned int)cbid);
-	if (!d->validateSysImageType(sys, imageType))
-		return;
-	const ImageTypesTabPrivate::SysData_t &sysData = d->v_sysData[sys];
-
-	QComboBox *cbo = sysData.cboImageType[imageType];
+	QComboBox *const cbo = qobject_cast<QComboBox*>(QObject::sender());
 	assert(cbo != nullptr);
 	if (!cbo)
 		return;
+
+	const unsigned int cbid = cbo->property("rp-config.cbid").toUInt();
 
 	const int idx = cbo->currentIndex();
 	const unsigned int prio = (unsigned int)(idx <= 0 ? 0xFF : idx-1);
