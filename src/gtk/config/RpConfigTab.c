@@ -15,7 +15,7 @@ typedef enum {
 
 	SIGNAL_LAST
 } RpConfigTabSignalID;
-static guint RpConfigTab_signals[SIGNAL_LAST];
+static guint signals[SIGNAL_LAST];
 
 G_DEFINE_INTERFACE(RpConfigTab, rp_config_tab, G_TYPE_OBJECT);
 
@@ -25,7 +25,7 @@ rp_config_tab_default_init(RpConfigTabInterface *iface)
 	// TODO: "has-defaults" property?
 
 	/** Signals **/
-	RpConfigTab_signals[SIGNAL_MODIFIED] = g_signal_new("modified",
+	signals[SIGNAL_MODIFIED] = g_signal_new("modified",
 		RP_CONFIG_TYPE_TAB, G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 0);

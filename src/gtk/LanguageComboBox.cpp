@@ -54,7 +54,7 @@ static void	internal_changed_handler	(LanguageComboBox *widget,
 						 gpointer          user_data);
 
 static GParamSpec *props[PROP_LAST];
-static guint language_combo_box_signals[SIGNAL_LAST];
+static guint signals[SIGNAL_LAST];
 
 // LanguageComboBox class.
 struct _LanguageComboBoxClass {
@@ -98,7 +98,7 @@ language_combo_box_class_init(LanguageComboBoxClass *klass)
 
 	/** Signals **/
 
-	language_combo_box_signals[SIGNAL_LC_CHANGED] = g_signal_new("lc-changed",
+	signals[SIGNAL_LC_CHANGED] = g_signal_new("lc-changed",
 		TYPE_LANGUAGE_COMBO_BOX, G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 1, G_TYPE_UINT);
@@ -363,7 +363,7 @@ language_combo_box_clear_lcs(LanguageComboBox *widget)
 	gtk_list_store_clear(widget->listStore);
 	if (cur_idx >= 0) {
 		// Nothing is selected now.
-		g_signal_emit(widget, language_combo_box_signals[SIGNAL_LC_CHANGED], 0, 0);
+		g_signal_emit(widget, signals[SIGNAL_LC_CHANGED], 0, 0);
 	}
 }
 
@@ -476,5 +476,5 @@ internal_changed_handler(LanguageComboBox *widget,
 {
 	RP_UNUSED(user_data);
 	const uint32_t lc = language_combo_box_get_selected_lc(widget);
-	g_signal_emit(widget, language_combo_box_signals[SIGNAL_LC_CHANGED], 0, lc);
+	g_signal_emit(widget, signals[SIGNAL_LC_CHANGED], 0, lc);
 }

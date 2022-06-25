@@ -85,7 +85,7 @@ static gboolean	rp_thumbnailer_dequeue		(OrgFreedesktopThumbnailsSpecializedThum
 						 RpThumbnailer	*thumbnailer);
 
 static GParamSpec *props[PROP_LAST];
-static guint thumbnailer_signals[SIGNAL_LAST];
+static guint signals[SIGNAL_LAST];
 
 struct _RpThumbnailerClass {
 	GObjectClass __parent__;
@@ -211,7 +211,7 @@ rp_thumbnailer_class_init(RpThumbnailerClass *klass, gpointer class_data)
 	/** Signals **/
 
 	// RpThumbnailer has been idle for long enough and should exit.
-	thumbnailer_signals[SIGNAL_SHUTDOWN] = g_signal_new("shutdown",
+	signals[SIGNAL_SHUTDOWN] = g_signal_new("shutdown",
 		TYPE_RP_THUMBNAILER, G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 0);
@@ -487,7 +487,7 @@ rp_thumbnailer_timeout(RpThumbnailer *thumbnailer)
 	// Stop the timeout and shut down the thumbnailer.
 	thumbnailer->timeout_id = 0;
 	thumbnailer->shutdown_emitted = true;
-	g_signal_emit(thumbnailer, thumbnailer_signals[SIGNAL_SHUTDOWN], 0);
+	g_signal_emit(thumbnailer, signals[SIGNAL_SHUTDOWN], 0);
 	g_debug("Shutting down due to %u seconds of inactivity.", SHUTDOWN_TIMEOUT_SECONDS);
 	return false;
 }
