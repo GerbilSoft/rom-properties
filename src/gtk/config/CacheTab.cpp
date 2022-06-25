@@ -106,10 +106,8 @@ cache_tab_init(CacheTab *tab)
 	gtk_label_set_wrap(GTK_LABEL(tab->lblSysCache), TRUE);
 
 	tab->lblRpCache = gtk_label_new(
-		C_("CacheTab", "ROM Properties Page maintains its own download cache for\n"
-		               "external images.\n"
-			       "Clearing this cache will force external images to be\n"
-			       "redownloaded."));
+		C_("CacheTab", "ROM Properties Page maintains its own download cache for external images.\n"
+			       "Clearing this cache will force external images to be redownloaded."));
 	GTK_LABEL_XALIGN_LEFT(tab->lblRpCache);
 	gtk_label_set_wrap(GTK_LABEL(tab->lblRpCache), TRUE);
 

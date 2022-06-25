@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>414</width>
-    <height>300</height>
+    <width>540</width>
+    <height>245</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="vboxMain">
@@ -50,10 +50,8 @@ clear the system thumbnail cache.</string>
       </sizepolicy>
      </property>
      <property name="text">
-      <string>ROM Properties Page maintains its own download cache for
-external images.
-Clearing this cache will force external images to be
-redownloaded.</string>
+      <string>ROM Properties Page maintains its own download cache for external images.
+Clearing this cache will force external images to be redownloaded.</string>
      </property>
      <property name="textFormat">
       <enum>Qt::PlainText</enum>
