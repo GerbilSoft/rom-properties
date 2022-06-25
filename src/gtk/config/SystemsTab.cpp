@@ -23,6 +23,7 @@ using std::string;
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_BOX
+#define USE_GTK_GRID 1	// Use GtkGrid instead of GtkTable.
 #else
 typedef GtkVBoxClass superclass;
 typedef GtkVBox super;
@@ -166,7 +167,7 @@ systems_tab_init(SystemsTab *tab)
 		G_CALLBACK(systems_tab_modified_handler), tab);
 
 	// GtkGrid/GtkTable
-#if GTK_CHECK_VERSION(3,0,0)
+#ifdef USE_GTK_GRID
 	GtkWidget *const table = gtk_grid_new();
 	gtk_grid_set_row_spacing(GTK_GRID(table), 2);
 	gtk_grid_set_column_spacing(GTK_GRID(table), 8);
@@ -178,7 +179,7 @@ systems_tab_init(SystemsTab *tab)
 	gtk_grid_attach(GTK_GRID(table), tab->cboSGB, 1, 1, 1, 1);
 	gtk_grid_attach(GTK_GRID(table), lblCGB, 0, 2, 1, 1);
 	gtk_grid_attach(GTK_GRID(table), tab->cboCGB, 1, 2, 1, 1);
-#else /* GTK_CHECK_VERSION(3,0,0) */
+#else /* !USE_GTK_GRID */
 	GtkWidget *const table = gtk_table_new(3, 2, false);
 	gtk_table_set_row_spacings(GTK_TABLE(table), 2);
 	gtk_table_set_col_spacings(GTK_TABLE(table), 8);
@@ -189,7 +190,7 @@ systems_tab_init(SystemsTab *tab)
 	gtk_table_attach(GTK_TABLE(table), tab->cboSGB, 1, 2, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(table), lblCGB, 0, 1, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(table), tab->cboCGB, 1, 2, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* USE_GTK_GRID */
 
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_box_append(GTK_BOX(tab), fraDMG);
