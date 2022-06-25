@@ -115,6 +115,8 @@ void OptionsTab::reset(void)
 		idx = d->pal_lc_idx_def;
 	}
 	d->ui.cboGameTDBPAL->setCurrentIndex(idx);
+
+	d->changed = false;
 }
 
 /**
@@ -126,6 +128,7 @@ void OptionsTab::loadDefaults(void)
 {
 	// TODO: Get the defaults from Config.
 	// For now, hard-coding everything here.
+
 	// Downloads
 	static const bool extImgDownloadEnabled_default = true;
 	static const bool useIntIconForSmallSizes_default = true;
@@ -133,9 +136,10 @@ void OptionsTab::loadDefaults(void)
 	static const bool storeFileOriginInfo_default = true;
 	static const int palLanguageForGameTDB_default =
 		OptionsTabPrivate::pal_lc_idx_def;	// cboGameTDBPAL index ('en')
+
 	// Options
 	static const bool showDangerousPermissionsOverlayIcon_default = true;
-	static const bool enableThumbnailOnNetworkFS = false;
+	static const bool enableThumbnailOnNetworkFS_default = false;
 	bool isDefChanged = false;
 
 	Q_D(OptionsTab);
@@ -170,8 +174,8 @@ void OptionsTab::loadDefaults(void)
 			showDangerousPermissionsOverlayIcon_default);
 		isDefChanged = true;
 	}
-	if (d->ui.chkEnableThumbnailOnNetworkFS->isChecked() != enableThumbnailOnNetworkFS) {
-		d->ui.chkEnableThumbnailOnNetworkFS->setChecked(enableThumbnailOnNetworkFS);
+	if (d->ui.chkEnableThumbnailOnNetworkFS->isChecked() != enableThumbnailOnNetworkFS_default) {
+		d->ui.chkEnableThumbnailOnNetworkFS->setChecked(enableThumbnailOnNetworkFS_default);
 		isDefChanged = true;
 	}
 
@@ -191,8 +195,13 @@ void OptionsTab::save(QSettings *pSettings)
 	if (!pSettings)
 		return;
 
+	Q_D(OptionsTab);
+	if (!d->changed) {
+		// Configuration was not changed.
+		return;
+	}
+
 	// Save the configuration.
-	Q_D(const OptionsTab);
 
 	// Downloads
 	pSettings->beginGroup(QLatin1String("Downloads"));
@@ -216,6 +225,9 @@ void OptionsTab::save(QSettings *pSettings)
 	pSettings->setValue(QLatin1String("EnableThumbnailOnNetworkFS"),
 		d->ui.chkEnableThumbnailOnNetworkFS->isChecked());
 	pSettings->endGroup();
+
+	// Configuration saved.
+	d->changed = false;
 }
 
 /**

@@ -291,10 +291,10 @@ void ConfigDialog::apply(void)
 	Q_D(ConfigDialog);
 	const int tabCount = d->ui.tabWidget->count();
 	for (int i = 0; i < tabCount; i++) {
-		ITab *const pTab = qobject_cast<ITab*>(d->ui.tabWidget->widget(i));
-		assert(pTab != nullptr);
-		if (pTab) {
-			pTab->save(&settings);
+		ITab *const tab = qobject_cast<ITab*>(d->ui.tabWidget->widget(i));
+		assert(tab != nullptr);
+		if (tab) {
+			tab->save(&settings);
 		}
 	}
 
@@ -331,10 +331,10 @@ void ConfigDialog::reset(void)
 	Q_D(ConfigDialog);
 	const int tabCount = d->ui.tabWidget->count();
 	for (int i = 0; i < tabCount; i++) {
-		ITab *const pTab = qobject_cast<ITab*>(d->ui.tabWidget->widget(i));
-		assert(pTab != nullptr);
-		if (pTab) {
-			pTab->reset();
+		ITab *const tab = qobject_cast<ITab*>(d->ui.tabWidget->widget(i));
+		assert(tab != nullptr);
+		if (tab) {
+			tab->reset();
 		}
 	}
 
@@ -355,10 +355,10 @@ void ConfigDialog::reset(void)
 void ConfigDialog::loadDefaults(void)
 {
 	Q_D(ConfigDialog);
-	ITab *const pTab = qobject_cast<ITab*>(d->ui.tabWidget->currentWidget());
-	assert(pTab != nullptr);
-	if (pTab) {
-		pTab->loadDefaults();
+	ITab *const tab = qobject_cast<ITab*>(d->ui.tabWidget->currentWidget());
+	assert(tab != nullptr);
+	if (tab) {
+		tab->loadDefaults();
 	}
 }
 
@@ -367,7 +367,7 @@ void ConfigDialog::loadDefaults(void)
  */
 void ConfigDialog::tabModified(void)
 {
-	// Disable the "Apply" and "Reset" buttons.
+	// Enable the "Apply" and "Reset" buttons.
 	Q_D(ConfigDialog);
 	d->btnApply->setEnabled(true);
 	d->btnReset->setEnabled(true);
