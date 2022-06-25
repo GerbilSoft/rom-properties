@@ -124,6 +124,28 @@ struct _ImageTypesTab {
 	GtkWidget *lblCredits;
 };
 
+static void	image_types_tab_dispose				(GObject	*object);
+static void	image_types_tab_finalize			(GObject	*object);
+
+// Interface initialization
+static void	image_types_tab_rp_config_tab_interface_init	(RpConfigTabInterface *iface);
+static gboolean	image_types_tab_has_defaults			(ImageTypesTab	*tab);
+static void	image_types_tab_reset				(ImageTypesTab	*tab);
+static void	image_types_tab_load_defaults			(ImageTypesTab	*tab);
+static void	image_types_tab_save				(ImageTypesTab	*tab,
+								 GKeyFile       *keyFile);
+
+// "modified" signal handler for UI widgets
+static void	image_types_tab_modified_handler		(GtkWidget	*widget,
+								 ImageTypesTab	*tab);
+
+// NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
+// due to an implicit int to GTypeFlags conversion.
+G_DEFINE_TYPE_EXTENDED(ImageTypesTab, image_types_tab,
+	GTK_TYPE_SUPER, static_cast<GTypeFlags>(0),
+		G_IMPLEMENT_INTERFACE(RP_CONFIG_TYPE_TAB,
+			image_types_tab_rp_config_tab_interface_init));
+
 /** ImageTypesTabPrivate **/
 
 ImageTypesTabPrivate::ImageTypesTabPrivate(ImageTypesTab* q)
@@ -226,20 +248,15 @@ void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
 #endif /* USE_GTK_GRID */
 	sysData.cboImageType[imageType] = GTK_COMBO_BOX(cbo);
 
-	// TODO: Signals.
-#if 0
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-	// Connect the signal to the slot with the appropriate value.
-	QObject::connect(cbo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-		[q, cbid] { q->cboImageType_currentIndexChanged(cbid); }
-	);
-#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
-	// Connect the signal to the QSignalMapper.
-	QObject::connect(cbo, SIGNAL(currentIndexChanged(int)),
-		mapperCboImageType, SLOT(map()));
-	mapperCboImageType->setMapping(cbo, (int)cbid);
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
-#endif /* 0 */
+	// Set the cbid as GObject data.
+	g_object_set_data(G_OBJECT(cbo), "rp-config.cbid", GUINT_TO_POINTER(cbid));
+
+	// Connect the signal handlers for the comboboxes.
+	// NOTE: Signal handlers are triggered if the value is
+	// programmatically edited, unlike Qt, so we'll need to
+	// inhibit handling when loading settings.
+	g_signal_connect(cbo, "changed",
+		G_CALLBACK(image_types_tab_modified_handler), q);
 
 	// Adjust the tab order. [TODO]
 #if 0
@@ -268,6 +285,9 @@ void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 	if (!cbo)
 		return;
 
+	const bool prev_inhibit = q->inhibit;
+	q->inhibit = true;
+
 	// NOTE: Need to add one more than the total number,
 	// since "No" counts as an entry.
 	assert(max_prio <= static_cast<int>(ImageTypesConfig::imageTypeCount()));
@@ -289,6 +309,8 @@ void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 		column, "text", 0, nullptr);
 
 	gtk_combo_box_set_active(cbo, 0);
+
+	q->inhibit = prev_inhibit;
 }
 
 /**
@@ -317,6 +339,9 @@ void ImageTypesTabPrivate::finishComboBoxes(void)
  */
 int ImageTypesTabPrivate::saveWriteEntry(const char *sysName, const char *imageTypeList)
 {
+	// NOTE: GKeyFile does *not* store comma-separated strings with
+	// double-quotes, whereas QSettings does.
+	// Config will simply ignore the double-quotes if it's present.
 	assert(keyFile != nullptr);
 	if (!keyFile) {
 		return -ENOENT;
@@ -353,28 +378,6 @@ void ImageTypesTabPrivate::cboImageType_setPriorityValue(unsigned int cbid, unsi
 }
 
 /** ImageTypesTab **/
-
-static void	image_types_tab_dispose				(GObject	*object);
-static void	image_types_tab_finalize			(GObject	*object);
-
-// Interface initialization
-static void	image_types_tab_rp_config_tab_interface_init	(RpConfigTabInterface *iface);
-static gboolean	image_types_tab_has_defaults			(ImageTypesTab	*tab);
-static void	image_types_tab_reset				(ImageTypesTab	*tab);
-static void	image_types_tab_load_defaults			(ImageTypesTab	*tab);
-static void	image_types_tab_save				(ImageTypesTab	*tab,
-								 GKeyFile       *keyFile);
-
-// "modified" signal handler for UI widgets
-static void	image_types_tab_modified_handler		(GtkWidget	*widget,
-								 ImageTypesTab	*tab);
-
-// NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
-// due to an implicit int to GTypeFlags conversion.
-G_DEFINE_TYPE_EXTENDED(ImageTypesTab, image_types_tab,
-	GTK_TYPE_SUPER, static_cast<GTypeFlags>(0),
-		G_IMPLEMENT_INTERFACE(RP_CONFIG_TYPE_TAB,
-			image_types_tab_rp_config_tab_interface_init));
 
 static void
 image_types_tab_class_init(ImageTypesTabClass *klass)
@@ -558,7 +561,18 @@ image_types_tab_modified_handler(GtkWidget *widget, ImageTypesTab *tab)
 	if (tab->inhibit)
 		return;
 
-	// Forward the "modified" signal.
-	tab->changed = true;
-	g_signal_emit_by_name(tab, "modified", NULL);
+	assert(GTK_IS_COMBO_BOX(widget));
+	g_return_if_fail(GTK_IS_COMBO_BOX(widget));
+	GtkComboBox *const cbo = GTK_COMBO_BOX(widget);
+	const unsigned int cbid = GPOINTER_TO_UINT(g_object_get_data(G_OBJECT(cbo), "rp-config.cbid"));
+	ImageTypesTabPrivate *const d = tab->d;
+
+	const int idx = gtk_combo_box_get_active(cbo);
+	const unsigned int prio = (unsigned int)(idx <= 0 ? 0xFF : idx-1);
+	if (d->cboImageType_priorityValueChanged(cbid, prio)) {
+		// Configuration has been changed.
+		// Forward the "modified" signal.
+		tab->changed = true;
+		g_signal_emit_by_name(tab, "modified", NULL);
+	}
 }
