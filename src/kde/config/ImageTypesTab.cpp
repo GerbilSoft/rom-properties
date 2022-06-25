@@ -398,6 +398,7 @@ void ImageTypesTab::changeEvent(QEvent *event)
 		// Retranslate the UI.
 		Q_D(ImageTypesTab);
 		d->ui.retranslateUi(this);
+		d->initStrings();
 	}
 
 	// Pass the event to the base class.
@@ -421,8 +422,7 @@ void ImageTypesTab::reset(void)
 void ImageTypesTab::loadDefaults(void)
 {
 	Q_D(ImageTypesTab);
-	bool bRet = d->loadDefaults();
-	if (bRet) {
+	if (d->loadDefaults()) {
 		// Configuration has been changed.
 		emit modified();
 	}
@@ -440,11 +440,17 @@ void ImageTypesTab::save(QSettings *pSettings)
 
 	// Save the configuration.
 	Q_D(ImageTypesTab);
-	if (d->changed) {
-		d->pSettings = pSettings;
-		d->save();
-		d->pSettings = nullptr;
+	if (!d->changed) {
+		// Configuration was not changed.
+		return;
 	}
+
+	d->pSettings = pSettings;
+	d->save();
+	d->pSettings = nullptr;
+
+	// Configuration saved.
+	d->changed = false;
 }
 
 /**

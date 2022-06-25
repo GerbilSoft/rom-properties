@@ -639,8 +639,7 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			}
 
 			// Load the defaults.
-			bool bRet = d->loadDefaults();
-			if (bRet) {
+			if (d->loadDefaults()) {
 				// Configuration has been changed.
 				PropSheet_Changed(GetParent(d->hWndPropSheet), d->hWndPropSheet);
 			}
