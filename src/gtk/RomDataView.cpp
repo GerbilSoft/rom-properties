@@ -2021,13 +2021,12 @@ rom_data_view_update_display(RomDataView *page)
 
 			auto &tab = *tabIter;
 
+			tab.vbox = RP_gtk_vbox_new(8);
 #if USE_GTK_GRID
-			tab.vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
 			tab.table = gtk_grid_new();
 			gtk_grid_set_row_spacing(GTK_GRID(tab.table), 2);
 			gtk_grid_set_column_spacing(GTK_GRID(tab.table), 8);
 #else /* !USE_GTK_GRID */
-			tab.vbox = gtk_vbox_new(false, 8);
 			// TODO: Adjust the table size?
 			tab.table = gtk_table_new(rowCount, 2, false);
 			gtk_table_set_row_spacings(GTK_TABLE(tab.table), 2);
