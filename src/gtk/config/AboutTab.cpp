@@ -131,7 +131,7 @@ about_tab_init(AboutTab *tab)
 
 	// Libraries tab: Scroll area
 #if GTK_CHECK_VERSION(4,0,0)
-	GtkWidet *const scrlLibraries = gtk_scrolled_window_new();
+	GtkWidget *const scrlLibraries = gtk_scrolled_window_new();
 	gtk_scrolled_window_set_has_frame(GTK_SCROLLED_WINDOW(scrlLibraries), true);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	GtkWidget *scrlLibraries = gtk_scrolled_window_new(nullptr, nullptr);
@@ -149,7 +149,7 @@ about_tab_init(AboutTab *tab)
 
 	// Support tab: Scroll area
 #if GTK_CHECK_VERSION(4,0,0)
-	GtkWidet *const scrlSupport = gtk_scrolled_window_new();
+	GtkWidget *const scrlSupport = gtk_scrolled_window_new();
 	gtk_scrolled_window_set_has_frame(GTK_SCROLLED_WINDOW(scrlSupport), true);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	GtkWidget *scrlSupport = gtk_scrolled_window_new(nullptr, nullptr);
