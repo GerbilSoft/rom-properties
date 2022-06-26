@@ -15,8 +15,8 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 
 #ifdef ENABLE_DECRYPTION
-# include "KeyManagerTab.hpp"
-# include "librpbase/crypto/KeyManager.hpp"
+#  include "KeyManagerTab.hpp"
+#  include "librpbase/crypto/KeyManager.hpp"
 using LibRpBase::KeyManager;
 #endif
 
@@ -289,14 +289,9 @@ void ConfigDialog::apply(void)
 
 	// Save all tabs.
 	Q_D(ConfigDialog);
-	const int tabCount = d->ui.tabWidget->count();
-	for (int i = 0; i < tabCount; i++) {
-		ITab *const tab = qobject_cast<ITab*>(d->ui.tabWidget->widget(i));
-		assert(tab != nullptr);
-		if (tab) {
-			tab->save(&settings);
-		}
-	}
+	d->ui.tabImageTypes->save(&settings);
+	d->ui.tabSystems->save(&settings);
+	d->ui.tabOptions->save(&settings);
 
 #ifdef ENABLE_DECRYPTION
 	// KeyManager needs to save to keys.conf.
