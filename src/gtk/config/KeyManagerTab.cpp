@@ -120,7 +120,7 @@ G_DEFINE_TYPE_EXTENDED(KeyManagerTab, key_manager_tab,
 static void
 key_manager_tab_class_init(KeyManagerTabClass *klass)
 {
-	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
+	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
 	gobject_class->dispose = key_manager_tab_dispose;
 	gobject_class->finalize = key_manager_tab_finalize;
 }

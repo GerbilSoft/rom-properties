@@ -230,7 +230,7 @@ G_DEFINE_TYPE_EXTENDED(RomDataView, rom_data_view,
 static void
 rom_data_view_class_init(RomDataViewClass *klass)
 {
-	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
+	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
 	gobject_class->dispose = rom_data_view_dispose;
 	gobject_class->finalize = rom_data_view_finalize;
 	gobject_class->set_property = rom_data_view_set_property;
@@ -284,7 +284,7 @@ rom_data_view_class_init(RomDataViewClass *klass)
 static inline void
 set_label_format_type(GtkLabel *label, RpDescFormatType desc_format_type)
 {
-	PangoAttrList *attr_lst = pango_attr_list_new();
+	PangoAttrList *const attr_lst = pango_attr_list_new();
 
 	// Check if this label has the "Warning" flag set.
 	const gboolean is_warning = (gboolean)GPOINTER_TO_UINT(

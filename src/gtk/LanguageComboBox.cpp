@@ -77,7 +77,7 @@ G_DEFINE_TYPE_EXTENDED(LanguageComboBox, language_combo_box,
 static void
 language_combo_box_class_init(LanguageComboBoxClass *klass)
 {
-	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
+	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
 	gobject_class->set_property = language_combo_box_set_property;
 	gobject_class->get_property = language_combo_box_get_property;
 

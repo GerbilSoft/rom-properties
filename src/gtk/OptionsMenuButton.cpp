@@ -147,8 +147,7 @@ static const option_menu_action_t stdacts[] = {
 static void
 options_menu_button_class_init(OptionsMenuButtonClass *klass)
 {
-	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-
+	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
 	gobject_class->dispose = options_menu_button_dispose;
 	gobject_class->set_property = options_menu_button_set_property;
 	gobject_class->get_property = options_menu_button_get_property;

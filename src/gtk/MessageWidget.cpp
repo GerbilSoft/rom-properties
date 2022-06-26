@@ -19,9 +19,6 @@ typedef enum {
 	PROP_LAST
 } MessageWidgetPropID;
 
-static void	message_widget_dispose	(GObject	*object);
-static void	message_widget_finalize	(GObject	*object);
-
 static void	message_widget_set_property	(GObject	*object,
 						 guint		 prop_id,
 						 const GValue	*value,
@@ -80,9 +77,7 @@ G_DEFINE_TYPE_EXTENDED(MessageWidget, message_widget,
 static void
 message_widget_class_init(MessageWidgetClass *klass)
 {
-	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-	gobject_class->dispose = message_widget_dispose;
-	gobject_class->finalize = message_widget_finalize;
+	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
 	gobject_class->set_property = message_widget_set_property;
 	gobject_class->get_property = message_widget_get_property;
 
@@ -194,28 +189,6 @@ message_widget_init(MessageWidget *widget)
 
 	g_signal_connect(widget->closeButton, "clicked",
 		G_CALLBACK(closeButton_clicked_handler), widget);
-}
-
-static void
-message_widget_dispose(GObject *object)
-{
-	//MessageWidget *const widget = MESSAGE_WIDGET(object);
-
-	// Nothing to do here right now...
-
-	// Call the superclass dispose() function.
-	G_OBJECT_CLASS(message_widget_parent_class)->dispose(object);
-}
-
-static void
-message_widget_finalize(GObject *object)
-{
-	//MessageWidget *const widget = MESSAGE_WIDGET(object);
-
-	// Nothing to do here right now...
-
-	// Call the superclass finalize() function.
-	G_OBJECT_CLASS(message_widget_parent_class)->finalize(object);
 }
 
 GtkWidget*

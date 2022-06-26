@@ -54,7 +54,6 @@ struct _KeyStoreGTK {
 	KeyStoreGTKPrivate *d;
 };
 
-static void	key_store_gtk_dispose		(GObject	*object);
 static void	key_store_gtk_finalize		(GObject	*object);
 
 /**
@@ -115,11 +114,10 @@ G_DEFINE_TYPE_EXTENDED(KeyStoreGTK, key_store_gtk,
 static void
 key_store_gtk_class_init(KeyStoreGTKClass *klass)
 {
-	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
+	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
+	gobject_class->finalize = key_store_gtk_finalize;
 	gobject_class->set_property = key_store_gtk_set_property;
 	gobject_class->get_property = key_store_gtk_get_property;
-	gobject_class->dispose = key_store_gtk_dispose;
-	gobject_class->finalize = key_store_gtk_finalize;
 
 	/** Properties **/
 
@@ -179,15 +177,6 @@ key_store_gtk_init(KeyStoreGTK *tab)
 	// This is a workaround for GObject not supporting
 	// C++ directly, and I don't want to use glibmm/gtkmm.
 	tab->d = new KeyStoreGTKPrivate(tab);
-}
-
-static void
-key_store_gtk_dispose(GObject *object)
-{
-	//KeyStoreGTK *const keyStore = KEY_MANAGER_TAB(object);
-
-	// Call the superclass dispose() function.
-	G_OBJECT_CLASS(key_store_gtk_parent_class)->dispose(object);
 }
 
 static void

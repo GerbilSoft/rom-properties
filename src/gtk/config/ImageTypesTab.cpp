@@ -124,7 +124,6 @@ struct _ImageTypesTab {
 	GtkWidget *lblCredits;
 };
 
-static void	image_types_tab_dispose				(GObject	*object);
 static void	image_types_tab_finalize			(GObject	*object);
 
 // Interface initialization
@@ -383,8 +382,7 @@ void ImageTypesTabPrivate::cboImageType_setPriorityValue(unsigned int cbid, unsi
 static void
 image_types_tab_class_init(ImageTypesTabClass *klass)
 {
-	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-	gobject_class->dispose = image_types_tab_dispose;
+	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
 	gobject_class->finalize = image_types_tab_finalize;
 }
 
@@ -463,16 +461,6 @@ image_types_tab_init(ImageTypesTab *tab)
 
 	// Load the current configuration.
 	image_types_tab_reset(tab);
-}
-
-static void
-image_types_tab_dispose(GObject *object)
-{
-	//ImageTypesTab *const tab = IMAGE_TYPES_TAB(object);
-	RP_UNUSED(object);
-
-	// Call the superclass dispose() function.
-	G_OBJECT_CLASS(image_types_tab_parent_class)->dispose(object);
 }
 
 static void

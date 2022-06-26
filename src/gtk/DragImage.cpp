@@ -25,7 +25,6 @@ using std::vector;
 #define DIL_MIN_IMAGE_SIZE 32
 
 static void	drag_image_dispose	(GObject	*object);
-static void	drag_image_finalize	(GObject	*object);
 
 // Signal handlers
 // FIXME: GTK4 has a new Drag & Drop API.
@@ -111,9 +110,8 @@ G_DEFINE_TYPE_EXTENDED(DragImage, drag_image,
 static void
 drag_image_class_init(DragImageClass *klass)
 {
-	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
+	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
 	gobject_class->dispose = drag_image_dispose;
-	gobject_class->finalize = drag_image_finalize;
 
 	// TODO
 	//gobject_class->set_property = drag_image_set_property;
@@ -167,17 +165,6 @@ drag_image_dispose(GObject *object)
 
 	// Call the superclass dispose() function.
 	G_OBJECT_CLASS(drag_image_parent_class)->dispose(object);
-}
-
-static void
-drag_image_finalize(GObject *object)
-{
-	//DragImage *const image = DRAG_IMAGE(object);
-
-	// Nothing to do here right now...
-
-	// Call the superclass finalize() function.
-	G_OBJECT_CLASS(drag_image_parent_class)->finalize(object);
 }
 
 GtkWidget*

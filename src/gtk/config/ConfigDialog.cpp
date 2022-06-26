@@ -35,9 +35,6 @@ using LibRpBase::KeyManager;
 #define CONFIG_DIALOG_RESPONSE_RESET		0
 #define CONFIG_DIALOG_RESPONSE_DEFAULTS		1
 
-static void	config_dialog_dispose		(GObject	*object);
-static void	config_dialog_finalize		(GObject	*object);
-
 // Signal handlers
 static void	config_dialog_response_handler	(ConfigDialog	*dialog,
 						 gint		 response_id,
@@ -89,9 +86,7 @@ G_DEFINE_TYPE_EXTENDED(ConfigDialog, config_dialog,
 static void
 config_dialog_class_init(ConfigDialogClass *klass)
 {
-	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-	gobject_class->dispose = config_dialog_dispose;
-	gobject_class->finalize = config_dialog_finalize;
+	RP_UNUSED(klass);
 }
 
 static void
@@ -276,24 +271,6 @@ config_dialog_init(ConfigDialog *dialog)
 
 	// Connect signals.
 	g_signal_connect(dialog, "response", G_CALLBACK(config_dialog_response_handler), NULL);
-}
-
-static void
-config_dialog_dispose(GObject *object)
-{
-	//ConfigDialog *const dialog = CONFIG_DIALOG(object);
-
-	// Call the superclass dispose() function.
-	G_OBJECT_CLASS(config_dialog_parent_class)->dispose(object);
-}
-
-static void
-config_dialog_finalize(GObject *object)
-{
-	//ConfigDialog *const dialog = CONFIG_DIALOG(object);
-
-	// Call the superclass finalize() function.
-	G_OBJECT_CLASS(config_dialog_parent_class)->finalize(object);
 }
 
 GtkWidget*
