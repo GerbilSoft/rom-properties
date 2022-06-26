@@ -35,6 +35,11 @@ static void	config_dialog_response_handler	(ConfigDialog	*dialog,
 						 gint		 response_id,
 						 gpointer	 user_data);
 
+static void	config_dialog_switch_page	(GtkNotebook	*tabWidget,
+						 GtkWidget	*page,
+						 guint		 page_num,
+						 ConfigDialog	*dialog);
+
 static void	config_dialog_tab_modified	(RpConfigTab	*tab,
 						 ConfigDialog	*dialog);
 
@@ -154,6 +159,8 @@ config_dialog_init(ConfigDialog *dialog)
 	// Create the GtkNotebook.
 	dialog->tabWidget = gtk_notebook_new();
 	gtk_widget_show(dialog->tabWidget);
+	g_signal_connect(dialog->tabWidget, "switch-page",
+		G_CALLBACK(config_dialog_switch_page), dialog);
 #if GTK_CHECK_VERSION(3,0,0)
 	// Add some margin at the bottom.
 	// TODO: GTK2 version.
@@ -222,7 +229,8 @@ config_dialog_init(ConfigDialog *dialog)
 	gtk_widget_set_sensitive(dialog->btnReset, FALSE);
 
 	// If the first page doesn't have default settings, disable btnDefaults.
-	RpConfigTab *const tab = RP_CONFIG_TAB(gtk_notebook_get_nth_page(GTK_NOTEBOOK(dialog->tabWidget), 0));
+	RpConfigTab *const tab = RP_CONFIG_TAB(
+		gtk_notebook_get_nth_page(GTK_NOTEBOOK(dialog->tabWidget), 0));
 	assert(tab != nullptr);
 	if (tab) {
 		gtk_widget_set_sensitive(dialog->btnDefaults, rp_config_tab_has_defaults(tab));
@@ -396,6 +404,8 @@ config_dialog_response_handler(ConfigDialog *dialog,
 			       gint          response_id,
 			       gpointer      user_data)
 {
+	RP_UNUSED(user_data);
+
 	switch (response_id) {
 		case GTK_RESPONSE_OK:
 			// The "OK" button was clicked.
@@ -430,6 +440,27 @@ config_dialog_response_handler(ConfigDialog *dialog,
 
 		default:
 			break;
+	}
+}
+
+/**
+ * The selected tab has been changed.
+ * @param tabWidget
+ * @param page
+ * @param page_num
+ * @param dialog
+ */
+static void
+config_dialog_switch_page(GtkNotebook *tabWidget, GtkWidget *page, guint page_num, ConfigDialog *dialog)
+{
+	g_return_if_fail(RP_CONFIG_IS_TAB(page));
+	RP_UNUSED(tabWidget);
+	RP_UNUSED(page_num);
+
+	RpConfigTab *const tab = RP_CONFIG_TAB(page);
+	assert(tab != nullptr);
+	if (tab) {
+		gtk_widget_set_sensitive(dialog->btnDefaults, rp_config_tab_has_defaults(tab));
 	}
 }
 
