@@ -162,6 +162,7 @@ key_manager_tab_init(KeyManagerTab *tab)
 	tab->treeStore = gtk_tree_store_new(4, G_TYPE_STRING, G_TYPE_STRING, PIMGTYPE_GOBJECT_TYPE, G_TYPE_INT);
 	tab->treeView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(tab->treeStore));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tab->treeView), TRUE);
+	gtk_tree_view_set_enable_tree_lines(GTK_TREE_VIEW(tab->treeView), TRUE);
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolledWindow), tab->treeView);
 
 	// Column 1: Key Name
@@ -309,17 +310,31 @@ key_manager_tab_init_keys(KeyManagerTab *tab)
 {
 	gtk_tree_store_clear(tab->treeStore);
 
-	// TODO: Key sections. For now, adding all keys in a flat list.
+	// FIXME: GtkTreeView doesn't have anything equivalent to
+	// Qt's QTreeView::setFirstColumnSpanned().
+
 	const KeyStoreUI *const keyStore = key_store_gtk_get_key_store_ui(tab->keyStore);
-	const int keyCount = keyStore->totalKeyCount();
-	for (int i = 0; i < keyCount; i++) {
-		const KeyStoreUI::Key *const key = keyStore->getKey(i);
-		GtkTreeIter treeIter;
-		gtk_tree_store_append(tab->treeStore, &treeIter, nullptr);
-		gtk_tree_store_set(tab->treeStore, &treeIter,
-			0, key->name.c_str(),	// key name
-			3, i, -1);		// flat key index
+	const int sectCount = keyStore->sectCount();
+	int idx = 0;	// flat key index
+	for (int sectIdx = 0; sectIdx < sectCount; sectIdx++) {
+		GtkTreeIter treeIterGroup;
+		gtk_tree_store_append(tab->treeStore, &treeIterGroup, nullptr);
+		gtk_tree_store_set(tab->treeStore, &treeIterGroup,
+			0, keyStore->sectName(sectIdx), -1);
+
+		const int keyCount = keyStore->keyCount(sectIdx);
+		for (int keyIdx = 0; keyIdx < keyCount; keyIdx++, idx++) {
+			const KeyStoreUI::Key *const key = keyStore->getKey(sectIdx, keyIdx);
+			GtkTreeIter treeIter;
+			gtk_tree_store_append(tab->treeStore, &treeIter, &treeIterGroup);
+			gtk_tree_store_set(tab->treeStore, &treeIter,
+				0, key->name.c_str(),	// key name
+				3, idx, -1);		// flat key index
+		}
 	}
+
+	// Expand all of the sections initially.
+	gtk_tree_view_expand_all(GTK_TREE_VIEW(tab->treeView));
 }
 
 static void
