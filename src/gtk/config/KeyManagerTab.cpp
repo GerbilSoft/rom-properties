@@ -67,6 +67,7 @@ struct _KeyManagerTab {
 	GtkWidget *treeView;
 
 	GtkWidget *btnImport;
+	gchar *prevOpenDir;
 #ifdef USE_G_MENU_MODEL
 	GMenu *menuModel;
 	GSimpleActionGroup *actionGroup;
@@ -311,7 +312,10 @@ key_manager_tab_dispose(GObject *object)
 static void
 key_manager_tab_finalize(GObject *object)
 {
-	//KeyManagerTab *const tab = KEY_MANAGER_TAB(object);
+	KeyManagerTab *const tab = KEY_MANAGER_TAB(object);
+
+	// Free the strings.
+	g_free(tab->prevOpenDir);
 
 	// Call the superclass finalize() function.
 	G_OBJECT_CLASS(key_manager_tab_parent_class)->finalize(object);
@@ -425,8 +429,95 @@ btnImport_event_signal_handler(GtkButton *button, GdkEvent *event, KeyManagerTab
 static void
 key_manager_tab_handle_menu_action(KeyManagerTab *tab, gint id)
 {
-	// TODO
 	printf("key_manager_tab_handle_menu_action: %d\n", id);
+	assert(id >= IMPORT_WII_KEYS_BIN);
+	assert(id <= IMPORT_3DS_AESKEYDB_BIN);
+	if (id < IMPORT_WII_KEYS_BIN || id > IMPORT_3DS_AESKEYDB_BIN)
+		return;
+
+	static const char *const dialog_titles_tbl[] = {
+		NOP_C_("KeyManagerTab", "Select Wii keys.bin File"),
+		NOP_C_("KeyManagerTab", "Select Wii U otp.bin File"),
+		NOP_C_("KeyManagerTab", "Select 3DS boot9.bin File"),
+		NOP_C_("KeyManagerTab", "Select 3DS aeskeydb.bin File"),
+	};
+
+	static const char *const file_filters_tbl[] = {
+		NOP_C_("KeyManagerTab", "keys.bin|keys.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
+		NOP_C_("KeyManagerTab", "otp.bin|otp.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
+		NOP_C_("KeyManagerTab", "boot9.bin|boot9.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
+		NOP_C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
+	};
+
+	const char *const s_title = dpgettext_expr(
+		RP_I18N_DOMAIN, "KeyManagerTab", dialog_titles_tbl[id]);
+	const char *const s_filter = dpgettext_expr(
+		RP_I18N_DOMAIN, "KeyManagerTab", file_filters_tbl[id]);
+
+	GtkWindow *const parent = gtk_widget_get_toplevel_window(GTK_WIDGET(tab));
+
+#if GTK_CHECK_VERSION(4,0,0)
+	// NOTE: GTK4 has *mandatory* overwrite confirmation.
+	// Reference: https://gitlab.gnome.org/GNOME/gtk/-/commit/063ad28b1a06328e14ed72cc4b99cd4684efed12
+	GtkFileChooserNative *const dialog = gtk_file_chooser_native_new(
+		s_title,			// title
+		parent,				// parent
+		GTK_FILE_CHOOSER_ACTION_OPEN,	// action
+		_("_Open"), _("_Cancel"));
+	// TODO: URI?
+	if (tab->prevOpenDir) {
+		GFile *const set_file = g_file_new_for_path(tab->prevOpenDir);
+		if (set_file) {
+			gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), set_file, nullptr);
+			g_object_unref(set_file);
+		}
+	}
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+	GtkWidget *const dialog = gtk_file_chooser_dialog_new(
+		s_title,			// title
+		parent,				// parent
+		GTK_FILE_CHOOSER_ACTION_OPEN,	// action
+		_("_Cancel"), GTK_RESPONSE_CANCEL,
+		_("_Open"), GTK_RESPONSE_ACCEPT,
+		nullptr);
+	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
+	if (tab->prevOpenDir) {
+		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), tab->prevOpenDir);
+	}
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+
+	// Set the filters.
+	rpFileDialogFilterToGtk(GTK_FILE_CHOOSER(dialog), s_filter);
+
+	// Prompt for a filename.
+#if GTK_CHECK_VERSION(4,0,0)
+	// GTK4 no longer supports blocking dialogs.
+	// FIXME for GTK4: Rewrite to use gtk_window_set_modal() and handle the "response" signal.
+	// This will also work for older GTK+.
+	assert(!"gtk_dialog_run() is not available in GTK4; needs a rewrite!");
+	GFile *const get_file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(dialog));
+
+	// TODO: URIs?
+	gchar *in_filename = (get_file ? g_file_get_path(get_file) : nullptr);
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+	gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+	gchar *in_filename = (res == GTK_RESPONSE_ACCEPT
+		? gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog))
+		: nullptr);
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
+
+	g_object_unref(dialog);
+	if (!in_filename) {
+		// No filename...
+		return;
+	}
+
+	// Save the previous export directory.
+	g_free(tab->prevOpenDir);
+	tab->prevOpenDir = g_path_get_dirname(in_filename);
+
+	// TODO
+	g_free(in_filename);
 }
 
 #ifdef USE_G_MENU_MODEL
