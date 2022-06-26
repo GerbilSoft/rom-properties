@@ -13,6 +13,9 @@
 #include "RpGtk.hpp"
 #include "gtk-compat.h"
 
+#include "KeyStoreGTK.hpp"
+using LibRomData::KeyStoreUI;
+
 // librpbase
 using namespace LibRpBase;
 
@@ -63,6 +66,8 @@ struct _KeyManagerTab {
 	bool inhibit;	// If true, inhibit signals.
 	bool changed;	// If true, an option was changed.
 
+	KeyStoreGTK *keyStore;
+
 	GtkTreeStore *treeStore;
 	GtkWidget *treeView;
 
@@ -78,6 +83,8 @@ struct _KeyManagerTab {
 
 static void	key_manager_tab_dispose				(GObject	*object);
 static void	key_manager_tab_finalize			(GObject	*object);
+
+static void	key_manager_tab_init_keys			(KeyManagerTab *tab);
 
 // Interface initialization
 static void	key_manager_tab_rp_config_tab_interface_init	(RpConfigTabInterface *iface);
@@ -136,6 +143,9 @@ key_manager_tab_init(KeyManagerTab *tab)
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 	gtk_box_set_spacing(GTK_BOX(tab), 8);
 
+	// Initialize the KeyStoreGTK.
+	tab->keyStore = key_store_gtk_new();
+
 	// Scroll area for the GtkTreeView.
 #if GTK_CHECK_VERSION(4,0,0)
 	GtkWidget *const scrolledWindow = gtk_scrolled_window_new();
@@ -148,8 +158,8 @@ key_manager_tab_init(KeyManagerTab *tab)
 		GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
 	// Create the GtkTreeStore and GtkTreeView.
-	// TODO: Additional internal columns for key IDs?
-	tab->treeStore = gtk_tree_store_new(3, G_TYPE_STRING, G_TYPE_STRING, PIMGTYPE_GOBJECT_TYPE);
+	// Columns: Key Name, Value, Valid?, Flat Key Index
+	tab->treeStore = gtk_tree_store_new(4, G_TYPE_STRING, G_TYPE_STRING, PIMGTYPE_GOBJECT_TYPE, G_TYPE_INT);
 	tab->treeView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(tab->treeStore));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tab->treeView), TRUE);
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolledWindow), tab->treeView);
@@ -157,7 +167,7 @@ key_manager_tab_init(KeyManagerTab *tab)
 	// Column 1: Key Name
 	GtkTreeViewColumn *column = gtk_tree_view_column_new();
 	gtk_tree_view_column_set_title(column, C_("KeyManagerTab", "Key Name"));
-	gtk_tree_view_column_set_resizable(column, FALSE);
+	gtk_tree_view_column_set_resizable(column, TRUE);
 	GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
 	gtk_tree_view_column_pack_start(column, renderer, FALSE);
 	gtk_tree_view_column_add_attribute(column, renderer, "text", 0);
@@ -173,11 +183,10 @@ key_manager_tab_init(KeyManagerTab *tab)
 	gtk_tree_view_column_add_attribute(column, renderer, "text", 1);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tab->treeView), column);
 
-	// Column 3: Unlock Time
-	// TODO: Store as a string, or as a GDateTime?
+	// Column 3: Valid?
 	column = gtk_tree_view_column_new();
 	gtk_tree_view_column_set_title(column, C_("KeyManagerTab", "Valid?"));
-	gtk_tree_view_column_set_resizable(column, TRUE);
+	gtk_tree_view_column_set_resizable(column, FALSE);
 	renderer = gtk_cell_renderer_pixbuf_new();
 	gtk_tree_view_column_pack_start(column, renderer, FALSE);
 	gtk_tree_view_column_add_attribute(column, renderer, GTK_CELL_RENDERER_PIXBUF_PROPERTY, 2);
@@ -282,8 +291,35 @@ key_manager_tab_init(KeyManagerTab *tab)
 	gtk_box_pack_start(GTK_BOX(tab), tab->btnImport, FALSE, FALSE, 0);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
-	// Load the current configuration.
+	// Initialize the GtkTreeView with the available keys.
+	key_manager_tab_init_keys(tab);
+
+	// Load the current keys.
 	key_manager_tab_reset(tab);
+}
+
+/**
+ * Initialize keys in the GtkTreeView.
+ * This initializes sections and key names.
+ * Key values and "Valid?" are initialized by reset().
+ * @param tab KeyManagerTab
+ */
+static void
+key_manager_tab_init_keys(KeyManagerTab *tab)
+{
+	gtk_tree_store_clear(tab->treeStore);
+
+	// TODO: Key sections. For now, adding all keys in a flat list.
+	const KeyStoreUI *const keyStore = key_store_gtk_get_key_store_ui(tab->keyStore);
+	const int keyCount = keyStore->totalKeyCount();
+	for (int i = 0; i < keyCount; i++) {
+		const KeyStoreUI::Key *const key = keyStore->getKey(i);
+		GtkTreeIter treeIter;
+		gtk_tree_store_append(tab->treeStore, &treeIter, nullptr);
+		gtk_tree_store_set(tab->treeStore, &treeIter,
+			0, key->name.c_str(),	// key name
+			3, i, -1);		// flat key index
+	}
 }
 
 static void
@@ -313,6 +349,9 @@ static void
 key_manager_tab_finalize(GObject *object)
 {
 	KeyManagerTab *const tab = KEY_MANAGER_TAB(object);
+
+	// Unreference the KeyStoreGTK.
+	g_object_unref(tab->keyStore);
 
 	// Free the strings.
 	g_free(tab->prevOpenDir);
