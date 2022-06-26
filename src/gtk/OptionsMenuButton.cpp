@@ -69,13 +69,13 @@ typedef enum {
 } OptionsMenuButtonSignalID;
 
 static void	options_menu_button_dispose	(GObject	*object);
-static void	options_menu_button_get_property(GObject	*object,
-						 guint		 prop_id,
-						 GValue		*value,
-						 GParamSpec	*pspec);
 static void	options_menu_button_set_property(GObject	*object,
 						 guint		 prop_id,
 						 const GValue	*value,
+						 GParamSpec	*pspec);
+static void	options_menu_button_get_property(GObject	*object,
+						 guint		 prop_id,
+						 GValue		*value,
 						 GParamSpec	*pspec);
 
 static gboolean	btnOptions_clicked_signal_handler(GtkButton	*button,
@@ -150,8 +150,8 @@ options_menu_button_class_init(OptionsMenuButtonClass *klass)
 	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
 	gobject_class->dispose = options_menu_button_dispose;
-	gobject_class->get_property = options_menu_button_get_property;
 	gobject_class->set_property = options_menu_button_set_property;
+	gobject_class->get_property = options_menu_button_get_property;
 
 	/** Properties **/
 
@@ -292,25 +292,6 @@ options_menu_button_new(void)
 /** Properties **/
 
 static void
-options_menu_button_get_property(GObject	*object,
-				 guint		 prop_id,
-				 GValue		*value,
-				 GParamSpec	*pspec)
-{
-	OptionsMenuButton *const widget = OPTIONS_MENU_BUTTON(object);
-
-	switch (prop_id) {
-		case PROP_DIRECTION:
-			g_value_set_enum(value, options_menu_button_get_direction(widget));
-			break;
-
-		default:
-			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-			break;
-	}
-}
-
-static void
 options_menu_button_set_property(GObject	*object,
 				 guint	 	 prop_id,
 				 const GValue	*value,
@@ -321,6 +302,25 @@ options_menu_button_set_property(GObject	*object,
 	switch (prop_id) {
 		case PROP_DIRECTION:
 			options_menu_button_set_direction(widget, (GtkArrowType)g_value_get_enum(value));
+			break;
+
+		default:
+			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+			break;
+	}
+}
+
+static void
+options_menu_button_get_property(GObject	*object,
+				 guint		 prop_id,
+				 GValue		*value,
+				 GParamSpec	*pspec)
+{
+	OptionsMenuButton *const widget = OPTIONS_MENU_BUTTON(object);
+
+	switch (prop_id) {
+		case PROP_DIRECTION:
+			g_value_set_enum(value, options_menu_button_get_direction(widget));
 			break;
 
 		default:

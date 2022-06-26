@@ -116,8 +116,8 @@ drag_image_class_init(DragImageClass *klass)
 	gobject_class->finalize = drag_image_finalize;
 
 	// TODO
-	//gobject_class->get_property = drag_image_get_property;
 	//gobject_class->set_property = drag_image_set_property;
+	//gobject_class->get_property = drag_image_get_property;
 }
 
 static void

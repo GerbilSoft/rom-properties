@@ -22,13 +22,13 @@ typedef enum {
 static void	message_widget_dispose	(GObject	*object);
 static void	message_widget_finalize	(GObject	*object);
 
-static void	message_widget_get_property	(GObject	*object,
-						 guint		 prop_id,
-						 GValue		*value,
-						 GParamSpec	*pspec);
 static void	message_widget_set_property	(GObject	*object,
 						 guint		 prop_id,
 						 const GValue	*value,
+						 GParamSpec	*pspec);
+static void	message_widget_get_property	(GObject	*object,
+						 guint		 prop_id,
+						 GValue		*value,
 						 GParamSpec	*pspec);
 
 /** Signal handlers. **/
@@ -83,8 +83,8 @@ message_widget_class_init(MessageWidgetClass *klass)
 	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 	gobject_class->dispose = message_widget_dispose;
 	gobject_class->finalize = message_widget_finalize;
-	gobject_class->get_property = message_widget_get_property;
 	gobject_class->set_property = message_widget_set_property;
+	gobject_class->get_property = message_widget_get_property;
 
 	/** Properties **/
 
@@ -227,29 +227,6 @@ message_widget_new(void)
 /** Properties **/
 
 static void
-message_widget_get_property(GObject	*object,
-			   guint	 prop_id,
-			   GValue	*value,
-			   GParamSpec	*pspec)
-{
-	MessageWidget *const widget = MESSAGE_WIDGET(object);
-
-	switch (prop_id) {
-		case PROP_TEXT:
-			g_value_set_string(value, gtk_label_get_text(GTK_LABEL(widget->label)));
-			break;
-
-		case PROP_MESSAGE_TYPE:
-			g_value_set_enum(value, widget->messageType);
-			break;
-
-		default:
-			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-			break;
-	}
-}
-
-static void
 message_widget_set_property(GObject	*object,
 			   guint	 prop_id,
 			   const GValue	*value,
@@ -264,6 +241,29 @@ message_widget_set_property(GObject	*object,
 
 		case PROP_MESSAGE_TYPE:
 			message_widget_set_message_type(widget, static_cast<GtkMessageType>(g_value_get_enum(value)));
+			break;
+
+		default:
+			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+			break;
+	}
+}
+
+static void
+message_widget_get_property(GObject	*object,
+			   guint	 prop_id,
+			   GValue	*value,
+			   GParamSpec	*pspec)
+{
+	MessageWidget *const widget = MESSAGE_WIDGET(object);
+
+	switch (prop_id) {
+		case PROP_TEXT:
+			g_value_set_string(value, gtk_label_get_text(GTK_LABEL(widget->label)));
+			break;
+
+		case PROP_MESSAGE_TYPE:
+			g_value_set_enum(value, widget->messageType);
 			break;
 
 		default:

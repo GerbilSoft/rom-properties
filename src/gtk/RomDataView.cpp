@@ -77,13 +77,13 @@ typedef enum {
 
 static void	rom_data_view_dispose		(GObject	*object);
 static void	rom_data_view_finalize		(GObject	*object);
-static void	rom_data_view_get_property	(GObject	*object,
-						 guint		 prop_id,
-						 GValue		*value,
-						 GParamSpec	*pspec);
 static void	rom_data_view_set_property	(GObject	*object,
 						 guint		 prop_id,
 						 const GValue	*value,
+						 GParamSpec	*pspec);
+static void	rom_data_view_get_property	(GObject	*object,
+						 guint		 prop_id,
+						 GValue		*value,
 						 GParamSpec	*pspec);
 
 static void	rom_data_view_desc_format_type_changed(RomDataView *page,
@@ -233,8 +233,8 @@ rom_data_view_class_init(RomDataViewClass *klass)
 	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 	gobject_class->dispose = rom_data_view_dispose;
 	gobject_class->finalize = rom_data_view_finalize;
-	gobject_class->get_property = rom_data_view_get_property;
 	gobject_class->set_property = rom_data_view_set_property;
+	gobject_class->get_property = rom_data_view_get_property;
 
 	/** Properties **/
 
@@ -519,6 +519,31 @@ rom_data_view_new_with_romData(const gchar *uri, RomData *romData, RpDescFormatT
 /** Properties **/
 
 static void
+rom_data_view_set_property(GObject	*object,
+			   guint	 prop_id,
+			   const GValue	*value,
+			   GParamSpec	*pspec)
+{
+	RomDataView *const page = ROM_DATA_VIEW(object);
+
+	switch (prop_id) {
+		case PROP_URI:
+			rom_data_view_set_uri(page, g_value_get_string(value));
+			break;
+
+		case PROP_DESC_FORMAT_TYPE:
+			rom_data_view_set_desc_format_type(page,
+				static_cast<RpDescFormatType>(g_value_get_enum(value)));
+			break;
+
+		case PROP_SHOWING_DATA:	// TODO: "Non-writable property" warning?
+		default:
+			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+			break;
+	}
+}
+
+static void
 rom_data_view_get_property(GObject	*object,
 			   guint	 prop_id,
 			   GValue	*value,
@@ -539,31 +564,6 @@ rom_data_view_get_property(GObject	*object,
 			g_value_set_boolean(value, (page->romData != nullptr));
 			break;
 
-		default:
-			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-			break;
-	}
-}
-
-static void
-rom_data_view_set_property(GObject	*object,
-			   guint	 prop_id,
-			   const GValue	*value,
-			   GParamSpec	*pspec)
-{
-	RomDataView *const page = ROM_DATA_VIEW(object);
-
-	switch (prop_id) {
-		case PROP_URI:
-			rom_data_view_set_uri(page, g_value_get_string(value));
-			break;
-
-		case PROP_DESC_FORMAT_TYPE:
-			rom_data_view_set_desc_format_type(page,
-				static_cast<RpDescFormatType>(g_value_get_enum(value)));
-			break;
-
-		case PROP_SHOWING_DATA:	// TODO: "Non-writable property" warning?
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
 			break;

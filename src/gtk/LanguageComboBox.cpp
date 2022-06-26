@@ -40,13 +40,13 @@ typedef enum {
 	SM_COL_LC,
 } StringMultiColumns;
 
-static void	language_combo_box_get_property	(GObject	*object,
-						 guint		 prop_id,
-						 GValue		*value,
-						 GParamSpec	*pspec);
 static void	language_combo_box_set_property	(GObject	*object,
 						 guint		 prop_id,
 						 const GValue	*value,
+						 GParamSpec	*pspec);
+static void	language_combo_box_get_property	(GObject	*object,
+						 guint		 prop_id,
+						 GValue		*value,
 						 GParamSpec	*pspec);
 
 /** Signal handlers. **/
@@ -78,8 +78,8 @@ static void
 language_combo_box_class_init(LanguageComboBoxClass *klass)
 {
 	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-	gobject_class->get_property = language_combo_box_get_property;
 	gobject_class->set_property = language_combo_box_set_property;
+	gobject_class->get_property = language_combo_box_get_property;
 
 	/** Properties **/
 
@@ -144,29 +144,6 @@ language_combo_box_new(void)
 /** Properties **/
 
 static void
-language_combo_box_get_property(GObject	*object,
-			   guint	 prop_id,
-			   GValue	*value,
-			   GParamSpec	*pspec)
-{
-	LanguageComboBox *const widget = LANGUAGE_COMBO_BOX(object);
-
-	switch (prop_id) {
-		case PROP_SELECTED_LC:
-			g_value_set_uint(value, language_combo_box_get_selected_lc(widget));
-			break;
-
-		case PROP_FORCE_PAL:
-			g_value_set_boolean(value, widget->forcePAL);
-			break;
-
-		default:
-			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-			break;
-	}
-}
-
-static void
 language_combo_box_set_property(GObject	*object,
 			   guint	 prop_id,
 			   const GValue	*value,
@@ -181,6 +158,29 @@ language_combo_box_set_property(GObject	*object,
 
 		case PROP_FORCE_PAL:
 			language_combo_box_set_force_pal(widget, g_value_get_boolean(value));
+			break;
+
+		default:
+			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+			break;
+	}
+}
+
+static void
+language_combo_box_get_property(GObject	*object,
+			   guint	 prop_id,
+			   GValue	*value,
+			   GParamSpec	*pspec)
+{
+	LanguageComboBox *const widget = LANGUAGE_COMBO_BOX(object);
+
+	switch (prop_id) {
+		case PROP_SELECTED_LC:
+			g_value_set_uint(value, language_combo_box_get_selected_lc(widget));
+			break;
+
+		case PROP_FORCE_PAL:
+			g_value_set_boolean(value, widget->forcePAL);
 			break;
 
 		default:

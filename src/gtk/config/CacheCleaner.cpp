@@ -85,8 +85,8 @@ static void
 cache_cleaner_class_init(CacheCleanerClass *klass)
 {
 	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-	gobject_class->get_property = cache_cleaner_get_property;
 	gobject_class->set_property = cache_cleaner_set_property;
+	gobject_class->get_property = cache_cleaner_get_property;
 
 	/** Properties **/
 
