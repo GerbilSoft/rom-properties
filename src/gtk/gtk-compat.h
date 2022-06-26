@@ -204,6 +204,9 @@ RP_gtk_hbox_new(gint spacing)
 #endif
 }
 
+// FIXME: Cannot set both HALIGN and VALIGN for GTK2...
+// Setting HALIGN sets VALIGN to Top.
+// Setting VALIGN sets HALIGN to Left.
 #if GTK_CHECK_VERSION(3,0,0)
 #  define GTK_WIDGET_HALIGN_LEFT(widget)	gtk_widget_set_halign((widget), GTK_ALIGN_START)
 #  define GTK_WIDGET_HALIGN_CENTER(widget)	gtk_widget_set_halign((widget), GTK_ALIGN_CENTER)
@@ -212,6 +215,16 @@ RP_gtk_hbox_new(gint spacing)
 #  define GTK_WIDGET_HALIGN_LEFT(widget)	gtk_misc_set_alignment(GTK_MISC(widget), 0.0f, 0.0f)
 #  define GTK_WIDGET_HALIGN_CENTER(widget)	gtk_misc_set_alignment(GTK_MISC(widget), 0.5f, 0.0f)
 #  define GTK_WIDGET_HALIGN_RIGHT(widget)	gtk_misc_set_alignment(GTK_MISC(widget), 1.0f, 0.0f)
+#endif
+
+#if GTK_CHECK_VERSION(3,0,0)
+#  define GTK_WIDGET_VALIGN_TOP(widget)		gtk_widget_set_valign((widget), GTK_ALIGN_START)
+#  define GTK_WIDGET_VALIGN_CENTER(widget)	gtk_widget_set_valign((widget), GTK_ALIGN_CENTER)
+#  define GTK_WIDGET_VALIGN_BOTTOM(widget)	gtk_widget_set_valign((widget), GTK_ALIGN_END)
+#else
+#  define GTK_WIDGET_VALIGN_TOP(widget)		gtk_misc_set_alignment(GTK_MISC(widget), 0.0f, 0.0f)
+#  define GTK_WIDGET_VALIGN_CENTER(widget)	gtk_misc_set_alignment(GTK_MISC(widget), 0.0f, 0.5f)
+#  define GTK_WIDGET_VALIGN_BOTTOM(widget)	gtk_misc_set_alignment(GTK_MISC(widget), 0.0f, 1.0f)
 #endif
 
 #if GTK_CHECK_VERSION(3,16,0)

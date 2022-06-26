@@ -60,6 +60,11 @@ static void	about_tab_save				(AboutTab	*tab,
 // Label initialization
 static void	about_tab_init_program_title_text	(GtkImage	*imgLogo,
 							 GtkLabel	*lblTitle);
+static void	about_tab_init_credits_tab		(GtkLabel	*lblCredits);
+
+// NOTE: Pango doesn't recognize "&nbsp;". Use U+00A0 instead.
+static const char sIndent[] = "\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0";
+static const char chrBullet[] = "\xE2\x80\xA2";	// U+2022: BULLET
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
@@ -98,7 +103,6 @@ about_tab_init(AboutTab *tab)
 	tab->lblTitle = gtk_label_new(nullptr);
 	GTK_WIDGET_HALIGN_CENTER(tab->imgLogo);
 	GTK_WIDGET_HALIGN_CENTER(tab->lblTitle);
-	GTK_LABEL_XALIGN_CENTER(tab->lblTitle);	// TODO: Redundant?
 	gtk_label_set_justify(GTK_LABEL(tab->lblTitle), GTK_JUSTIFY_CENTER);
 
 	// Create the GtkNotebook for the three tabs.
@@ -121,6 +125,9 @@ about_tab_init(AboutTab *tab)
 	// Credits tab: Label
 	tab->lblCredits = gtk_label_new(nullptr);
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrlCredits), tab->lblCredits);
+	GTK_WIDGET_HALIGN_LEFT(tab->lblCredits);
+	GTK_WIDGET_VALIGN_TOP(tab->lblCredits);
+	gtk_widget_set_margin(tab->lblCredits, 8);
 
 	// Libraries tab: Scroll area
 #if GTK_CHECK_VERSION(4,0,0)
@@ -136,6 +143,9 @@ about_tab_init(AboutTab *tab)
 	// Libraries tab: Label
 	tab->lblLibraries = gtk_label_new(nullptr);
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrlLibraries), tab->lblLibraries);
+	GTK_WIDGET_HALIGN_LEFT(tab->lblLibraries);
+	GTK_WIDGET_VALIGN_TOP(tab->lblLibraries);
+	gtk_widget_set_margin(tab->lblLibraries, 8);
 
 	// Support tab: Scroll area
 #if GTK_CHECK_VERSION(4,0,0)
@@ -151,6 +161,9 @@ about_tab_init(AboutTab *tab)
 	// Support tab: Label
 	tab->lblSupport = gtk_label_new(nullptr);
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrlSupport), tab->lblSupport);
+	GTK_WIDGET_HALIGN_LEFT(tab->lblSupport);
+	GTK_WIDGET_VALIGN_TOP(tab->lblSupport);
+	gtk_widget_set_margin(tab->lblSupport, 8);
 
 	// Create the tabs.
 	GtkWidget *lblTab = gtk_label_new_with_mnemonic(
@@ -190,6 +203,7 @@ about_tab_init(AboutTab *tab)
 
 	// Initialize the various text fields.
 	about_tab_init_program_title_text(GTK_IMAGE(tab->imgLogo), GTK_LABEL(tab->lblTitle));
+	about_tab_init_credits_tab(GTK_LABEL(tab->lblCredits));
 }
 
 GtkWidget*
@@ -251,7 +265,6 @@ about_tab_init_program_title_text(GtkImage *imgLogo, GtkLabel *lblTitle)
 	GdkPixbuf *const icon = gtk_icon_theme_load_icon(
 		gtk_icon_theme_get_default(), "media-flash", 128,
 		(GtkIconLookupFlags)0, nullptr);
-	printf("icon: %p\n", icon);
 	if (icon) {
 		gtk_image_set_from_pixbuf(imgLogo, icon);
 		g_object_unref(icon);
@@ -276,4 +289,86 @@ about_tab_init_program_title_text(GtkImage *imgLogo, GtkLabel *lblTitle)
 	}
 
 	gtk_label_set_markup(lblTitle, sPrgTitle.c_str());
+}
+
+/**
+ * Initialize the "Credits" tab.
+ * @param lblCredits
+ */
+static void
+about_tab_init_credits_tab(GtkLabel *lblCredits)
+{
+	// License name, with HTML formatting.
+	const string sPrgLicense = rp_sprintf("<a href='https://www.gnu.org/licenses/gpl-2.0.html'>%s</a>",
+		C_("AboutTabl|Credits", "GNU GPL v2"));
+
+	// lblCredits is RichText.
+	string sCredits;
+	sCredits.reserve(4096);
+	// NOTE: Copyright is NOT localized.
+	sCredits += "Copyright (c) 2016-2022 by David Korth.\n";
+	sCredits += rp_sprintf(
+		// tr: %s is the name of the license.
+		C_("AboutTab|Credits", "This program is licensed under the %s or later."),
+			sPrgLicense.c_str());
+
+	AboutTabText::CreditType lastCreditType = AboutTabText::CreditType::Continue;
+	for (const AboutTabText::CreditsData_t *creditsData = &AboutTabText::CreditsData[0];
+	     creditsData->type < AboutTabText::CreditType::Max; creditsData++)
+	{
+		if (creditsData->type != AboutTabText::CreditType::Continue &&
+		    creditsData->type != lastCreditType)
+		{
+			// New credit type.
+			sCredits += "\n\n<b>";
+
+			switch (creditsData->type) {
+				case AboutTabText::CreditType::Developer:
+					sCredits += C_("AboutTab|Credits", "Developers:");
+					break;
+				case AboutTabText::CreditType::Contributor:
+					sCredits += C_("AboutTab|Credits", "Contributors:");
+					break;
+				case AboutTabText::CreditType::Translator:
+					sCredits += C_("AboutTab|Credits", "Translators:");
+					break;
+
+				case AboutTabText::CreditType::Continue:
+				case AboutTabText::CreditType::Max:
+				default:
+					assert(!"Invalid credit type.");
+					break;
+			}
+
+			sCredits += "</b>";
+		}
+
+		// Append the contributor's name.
+		sCredits += '\n';
+		sCredits += sIndent;
+		sCredits += chrBullet;
+		sCredits += ' ';
+		sCredits += creditsData->name;
+		if (creditsData->url) {
+			sCredits += " &lt;<a href='";
+			sCredits += creditsData->url;
+			sCredits += "'>";
+			if (creditsData->linkText) {
+				sCredits += creditsData->linkText;
+			} else {
+				sCredits += creditsData->url;
+			}
+			sCredits += "</a>&gt;";
+		}
+		if (creditsData->sub) {
+			// tr: Sub-credit.
+			sCredits += rp_sprintf(C_("AboutTab|Credits", " (%s)"),
+				creditsData->sub);
+		}
+
+		lastCreditType = creditsData->type;
+	}
+
+	// We're done building the string.
+	gtk_label_set_markup(lblCredits, sCredits.c_str());
 }
