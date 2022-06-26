@@ -23,6 +23,7 @@ using namespace LibRpFile;
 #include "OptionsTab.hpp"
 #include "CacheTab.hpp"
 #include "AchievementsTab.hpp"
+#include "AboutTab.hpp"
 
 #define CONFIG_DIALOG_RESPONSE_RESET		0
 #define CONFIG_DIALOG_RESPONSE_DEFAULTS		1
@@ -67,6 +68,7 @@ struct _ConfigDialog {
 	GtkWidget *tabOptions;
 	GtkWidget *tabCache;
 	GtkWidget *tabAchievements;
+	GtkWidget *tabAbout;
 };
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -161,11 +163,7 @@ config_dialog_init(ConfigDialog *dialog)
 	gtk_widget_show(dialog->tabWidget);
 	g_signal_connect(dialog->tabWidget, "switch-page",
 		G_CALLBACK(config_dialog_switch_page), dialog);
-#if GTK_CHECK_VERSION(3,0,0)
-	// Add some margin at the bottom.
-	// TODO: GTK2 version.
 	gtk_widget_set_margin_bottom(dialog->tabWidget, 8);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_box_append(GTK_BOX(content_area), dialog->tabWidget);
 	// TODO: Verify that this works.
@@ -223,6 +221,16 @@ config_dialog_init(ConfigDialog *dialog)
 	gtk_widget_show(dialog->tabAchievements);
 	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabAchievements, lblTab);
 	g_signal_connect(dialog->tabAchievements, "modified",
+		G_CALLBACK(config_dialog_tab_modified), dialog);
+
+	lblTab = gtk_label_new_with_mnemonic(
+		convert_accel_to_gtk(C_("ConfigDialog", "Abou&t")).c_str());
+	gtk_widget_show(lblTab);
+	dialog->tabAbout = about_tab_new();
+	g_object_set(dialog->tabAbout, "margin", 8, nullptr);
+	gtk_widget_show(dialog->tabAbout);
+	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabAbout, lblTab);
+	g_signal_connect(dialog->tabAbout, "modified",
 		G_CALLBACK(config_dialog_tab_modified), dialog);
 
 	// Reset button is disabled initially.
