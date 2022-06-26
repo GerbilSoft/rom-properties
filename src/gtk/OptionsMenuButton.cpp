@@ -39,17 +39,13 @@ typedef GtkHBox super;
 #endif
 
 // GtkMenuButton was added in GTK 3.6.
+// GMenuModel is also implied by this, since GMenuModel
+// support was added to GTK+ 3.4.
+// NOTE: GtkMenu was removed from GTK4.
 #if GTK_CHECK_VERSION(3,6,0)
 #  define USE_GTK_MENU_BUTTON 1
-#endif
-
-// Use GMenuModel?
-// - glib-2.32: Adds GMenuModel.
-// - GTK+ 3.4: Supports GMenuModel.
-// - GTK+ 3.6: gtk_widget_insert_action_group()
-#if GTK_CHECK_VERSION(3,6,0)
 #  define USE_G_MENU_MODEL 1
-#endif /* GTK_CHECK_VERSION(3,6,0) */
+#endif
 
 /* Property identifiers */
 typedef enum {
@@ -83,22 +79,22 @@ static void	options_menu_button_set_property(GObject	*object,
 						 GParamSpec	*pspec);
 
 static gboolean	btnOptions_clicked_signal_handler(GtkButton	*button,
-						 gpointer	user_data);
+						  OptionsMenuButton *widget);
 static gboolean	btnOptions_activate_signal_handler(GtkButton	*button,
-						 gpointer	user_data);
+						   OptionsMenuButton *widget);
 #ifndef USE_GTK_MENU_BUTTON
 static gboolean	btnOptions_event_signal_handler (GtkButton	*button,
 						 GdkEvent 	*event,
-						 gpointer	user_data);
+						 OptionsMenuButton *widget);
 #endif /* !USE_GTK_MENU_BUTTON */
 
 #ifdef USE_G_MENU_MODEL
 static void	action_triggered_signal_handler     (GSimpleAction	*action,
 						     GVariant		*parameter,
-						     gpointer		 user_data);
+						     OptionsMenuButton	*widget);
 #else
 static void	menuOptions_triggered_signal_handler(GtkMenuItem	*menuItem,
-						     gpointer		 user_data);
+						     OptionsMenuButton	*widget);
 #endif /* USE_G_MENU_MODEL */
 
 static GParamSpec *props[PROP_LAST];
@@ -241,15 +237,15 @@ options_menu_button_init(OptionsMenuButton *widget)
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Connect the wrapper signals.
-	g_signal_connect(widget->button, "clicked", G_CALLBACK(btnOptions_clicked_signal_handler), 0);
-	g_signal_connect(widget->button, "activate", G_CALLBACK(btnOptions_activate_signal_handler), 0);
+	g_signal_connect(widget->button, "clicked", G_CALLBACK(btnOptions_clicked_signal_handler), widget);
+	g_signal_connect(widget->button, "activate", G_CALLBACK(btnOptions_activate_signal_handler), widget);
 
 #ifndef USE_GTK_MENU_BUTTON
 	// Connect the button's "event" signal.
 	// NOTE: We need to pass the event details. Otherwise, we'll
 	// end up with the menu getting "stuck" to the mouse.
 	// Reference: https://developer.gnome.org/gtk-tutorial/stable/x1577.html
-	g_signal_connect(widget->button, "event", G_CALLBACK(btnOptions_event_signal_handler), 0);
+	g_signal_connect(widget->button, "event", G_CALLBACK(btnOptions_event_signal_handler), widget);
 #endif /* !USE_GTK_MENU_BUTTON */
 
 #if USE_G_MENU_MODEL
@@ -392,25 +388,19 @@ options_menu_button_set_direction(OptionsMenuButton *widget, GtkArrowType arrowT
 }
 
 static gboolean
-btnOptions_clicked_signal_handler(GtkButton *button, gpointer user_data)
+btnOptions_clicked_signal_handler(GtkButton *button, OptionsMenuButton *widget)
 {
-	RP_UNUSED(user_data);
-
-	OptionsMenuButton *const widget = OPTIONS_MENU_BUTTON(gtk_widget_get_parent(GTK_WIDGET(button)));
-	g_return_val_if_fail(widget != nullptr, FALSE);
-
+	RP_UNUSED(button);
+	g_return_val_if_fail(IS_OPTIONS_MENU_BUTTON(widget), FALSE);
 	g_signal_emit(GTK_WIDGET(widget), signals[SIGNAL_CLICKED], 0);
 	return TRUE;
 }
 
 static gboolean
-btnOptions_activate_signal_handler(GtkButton *button, gpointer user_data)
+btnOptions_activate_signal_handler(GtkButton *button, OptionsMenuButton *widget)
 {
-	RP_UNUSED(user_data);
-
-	OptionsMenuButton *const widget = OPTIONS_MENU_BUTTON(gtk_widget_get_parent(GTK_WIDGET(button)));
-	g_return_val_if_fail(widget != nullptr, FALSE);
-
+	RP_UNUSED(button);
+	g_return_val_if_fail(IS_OPTIONS_MENU_BUTTON(widget), FALSE);
 	g_signal_emit(GTK_WIDGET(widget), signals[SIGNAL_ACTIVATE], 0);
 	return TRUE;
 }
@@ -444,14 +434,14 @@ btnOptions_menu_pos_func(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, gpo
  * "Options" button event handler. (Non-GtkMenuButton version)
  * @param button	GtkButton
  * @param event		GdkEvent
- * @param user_data	User data
+ * @param widget	OptionsMenuButton
  */
 static gboolean
-btnOptions_event_signal_handler(GtkButton *button,
-				GdkEvent  *event,
-				gpointer   user_data)
+btnOptions_event_signal_handler(GtkButton *button, GdkEvent *event, OptionsMenuButton *widget)
 {
-	RP_UNUSED(user_data);
+	RP_UNUSED(button);
+	g_return_val_if_fail(IS_OPTIONS_MENU_BUTTON(widget), FALSE);
+	g_return_val_if_fail(GTK_IS_MENU(widget->menuOptions), FALSE);
 
 	if (gdk_event_get_event_type(event) != GDK_BUTTON_PRESS) {
 		// Tell the caller that we did NOT handle the event.
@@ -459,14 +449,6 @@ btnOptions_event_signal_handler(GtkButton *button,
 	}
 
 	// Reference: https://developer.gnome.org/gtk-tutorial/stable/x1577.html
-	OptionsMenuButton *const widget = OPTIONS_MENU_BUTTON(gtk_widget_get_parent(GTK_WIDGET(button)));
-	assert(widget != nullptr);
-	assert(widget->menuOptions != nullptr);
-	if (!widget || !widget->menuOptions) {
-		// No OptionsMenuButton...
-		return FALSE;
-	}
-
 	GtkMenuPositionFunc menuPositionFunc;
 #if GTK_CHECK_VERSION(3,12,0)
 	// If we're using a GtkHeaderBar, don't use a custom menu positioning function.
@@ -499,16 +481,13 @@ btnOptions_event_signal_handler(GtkButton *button,
  * An "Options" menu action was triggered.
  * @param action     	GSimpleAction (Get the "menuOptions_id" data.)
  * @param parameter	Parameter data
- * @param user_data	OptionsMenuButton
+ * @param widget	OptionsMenuButton
  */
 static void
-action_triggered_signal_handler(GSimpleAction	*action,
-				GVariant	*parameter,
-				gpointer	 user_data)
+action_triggered_signal_handler(GSimpleAction *action, GVariant *parameter, OptionsMenuButton *widget)
 {
+	g_return_if_fail(IS_OPTIONS_MENU_BUTTON(widget));
 	RP_UNUSED(parameter);
-	OptionsMenuButton *const widget = OPTIONS_MENU_BUTTON(user_data);
-	g_return_if_fail(widget != nullptr);
 
 	const gint id = (gboolean)GPOINTER_TO_INT(
 		g_object_get_data(G_OBJECT(action), "menuOptions_id"));
@@ -519,15 +498,13 @@ action_triggered_signal_handler(GSimpleAction	*action,
 /**
  * An "Options" menu action was triggered.
  * @param menuItem     	Menu item (Get the "menuOptions_id" data.)
- * @param user_data	OptionsMenuButton
+ * @param widget	OptionsMenuButton
  */
 static void
 menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
-				     gpointer user_data)
+				     OptionsMenuButton *widget)
 {
-	g_return_if_fail(IS_OPTIONS_MENU_BUTTON(user_data));
-	OptionsMenuButton *const widget = OPTIONS_MENU_BUTTON(user_data);
-	g_return_if_fail(widget != nullptr);
+	g_return_if_fail(IS_OPTIONS_MENU_BUTTON(widget));
 
 	const gint id = (gboolean)GPOINTER_TO_INT(
 		g_object_get_data(G_OBJECT(menuItem), "menuOptions_id"));
@@ -550,10 +527,6 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 	g_return_if_fail(IS_OPTIONS_MENU_BUTTON(widget));
 
 #if USE_G_MENU_MODEL
-	GApplication *const pApp = g_application_get_default();
-	assert(pApp != nullptr);
-	g_return_if_fail(pApp != nullptr);
-
 	char prefix[64];
 	snprintf(prefix, sizeof(prefix), "rp-OptionsMenuButton-%p", widget);
 
@@ -654,13 +627,12 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 
 	// Replace the existing menu.
 #ifdef USE_GTK_MENU_BUTTON
-	// NOTE: GtkMenuButton takes ownership of the menu.
+	// NOTE: GtkMenuButton does NOT take ownership of the menu.
 #  ifdef USE_G_MENU_MODEL
 	gtk_menu_button_set_menu_model(GTK_MENU_BUTTON(widget->button), G_MENU_MODEL(menuModel));
 #  else /* !USE_G_MENU_MODEL */
 	gtk_menu_button_set_popup(GTK_MENU_BUTTON(widget->button), GTK_WIDGET(menuOptions));
 #  endif /* USE_G_MENU_MODEL */
-#else /* !USE_GTK_MENU_BUTTON */
 #endif /* USE_GTK_MENU_BUTTON */
 
 #ifdef USE_G_MENU_MODEL
