@@ -715,7 +715,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 #  else /* !ZLIBNG_VERSION */
 	sLibraries += rp_sprintf(sCompiledWith, "zlib " ZLIB_VERSION) + RTF_BR;
 #  endif /* ZLIBNG_VERSION */
-	sLibraries += "Copyright (C) 1995-2017 Jean-loup Gailly and Mark Adler." RTF_BR
+	sLibraries += "Copyright (C) 1995-2022 Jean-loup Gailly and Mark Adler." RTF_BR
 		"https://zlib.net/" RTF_BR;
 #  ifdef ZLIBNG_VERSION
 	// TODO: Also if zlibVersion() contains "zlib-ng"?
@@ -750,7 +750,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += RTF_BR RTF_BR;
 	sLibraries += rp_sprintf(sCompiledWith, sVerBuf);
 	sLibraries += RTF_BR
-		"Copyright (C) 2000-2019 Lee Thomason" RTF_BR
+		"Copyright (C) 2000-2021 Lee Thomason" RTF_BR
 		"http://www.grinninglizard.com/" RTF_BR;
 	sLibraries += rp_sprintf(sLicense, "zlib license");
 #endif /* ENABLE_XML */

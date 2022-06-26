@@ -21,10 +21,10 @@ using std::string;
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 // KIO version.
 // NOTE: Only available as a compile-time constant.
-#include <kio_version.h>
+#  include <kio_version.h>
 #else
 // kdelibs version.
-#include <kdeversion.h>
+#  include <kdeversion.h>
 #endif
 
 // Other libraries.
@@ -320,7 +320,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += rp_sprintf(sUsingDll, sZlibVersion.c_str());
 #endif
 	sLibraries += BR
-		"Copyright (C) 1995-2017 Jean-loup Gailly and Mark Adler." BR
+		"Copyright (C) 1995-2022 Jean-loup Gailly and Mark Adler." BR
 		"<a href='https://zlib.net/'>https://zlib.net/</a>" BR;
 #  ifdef ZLIBNG_VERSION
 	// TODO: Also if zlibVersion() contains "zlib-ng"?
@@ -383,22 +383,11 @@ void AboutTabPrivate::initLibrariesTab(void)
 	 * will not have a leading newline, and all newlines
 	 * will be replaced with groups of 6 spaces.
 	 */
-	QString png_copyright = QLatin1String(png_get_copyright(nullptr));
-	const QString qs_br = QLatin1String(br);
-	if (png_copyright.indexOf(QChar(L'\n')) < 0) {
-		// Convert spaces to "<br/>\n".
-		// TODO: QString::simplified() to remove other patterns,
-		// or just assume all versions of libpng have the same
-		// number of spaces?
-		png_copyright.replace(QLatin1String("      "), qs_br);
-		png_copyright.prepend(qs_br);
-		png_copyright.append(qs_br);
-	} else {
-		// Replace newlines with "<br/>\n".
-		png_copyright.replace(QChar(L'\n'), qs_br);
-	}
-	sLibraries += png_copyright.toUtf8().constData();
+	// NOTE: Ignoring this for the GTK+ build, since it's
+	// only built for Linux systems.
+	sLibraries += png_get_copyright(nullptr);
 	sLibraries += "<a href='http://www.libpng.org/pub/png/libpng.html'>http://www.libpng.org/pub/png/libpng.html</a>" BR;
+	sLibraries += "<a href='https://github.com/glennrp/libpng'>https://github.com/glennrp/libpng</a>\n";
 	if (APNG_is_supported) {
 		sLibraries += C_("AboutTab|Libraries", "APNG patch:");
 		sLibraries += " <a href='https://sourceforge.net/projects/libpng-apng/'>https://sourceforge.net/projects/libpng-apng/</a>" BR;
@@ -424,7 +413,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += rp_sprintf(sUsingDll, sVerBuf);
 #    endif /* HAVE_NETTLE_VERSION_FUNCTIONS */
 	sLibraries += BR
-		"Copyright (C) 2001-2021 Niels Möller." BR
+		"Copyright (C) 2001-2022 Niels Möller." BR
 		"<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>" BR;
 	sLibraries += rp_sprintf(sLicenses, "GNU LGPL v3+, GNU GPL v2+");
 #  else /* !HAVE_NETTLE_VERSION_H */
@@ -459,7 +448,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += rp_sprintf(sCompiledWith, sVerBuf);
 #  endif
 	sLibraries += BR
-		"Copyright (C) 2000-2020 Lee Thomason" BR
+		"Copyright (C) 2000-2021 Lee Thomason" BR
 		"<a href='http://www.grinninglizard.com/'>http://www.grinninglizard.com/</a>" BR;
 	sLibraries += rp_sprintf(sLicense, "zlib license");
 #endif /* ENABLE_XML */
