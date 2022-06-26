@@ -224,7 +224,7 @@ RP_gtk_hbox_new(gint spacing)
 #  define GTK_LABEL_XALIGN_RIGHT(label)		gtk_misc_set_alignment(GTK_MISC(label), 1.0f, 0.0f)
 #endif
 
-#if !GTK_CHECK_VERSION(3,12,0)
+#if GTK_CHECK_VERSION(3,0,0) && !GTK_CHECK_VERSION(3,12,0)
 /**
  * gtk_widget_set_margin_start(): GTK+ 3.12 replacement for gtk_widget_set_margin_left().
  * @param widget GtkWidget
@@ -246,7 +246,63 @@ gtk_widget_set_margin_end(GtkWidget *widget, gint margin)
 {
 	gtk_widget_set_margin_right(widget, margin);
 }
-#endif /* !GTK_CHECK_VERSION(3,12,0) */
+#endif /* GTK_CHECK_VERSION(3,0,0) && !GTK_CHECK_VERSION(3,12,0) */
+
+#if !GTK_CHECK_VERSION(3,0,0)
+// TODO: Implement these.
+
+/**
+ * GTK+ 2.x compatibility wrapper for: gtk_widget_set_margin_start()
+ * @param widget GtkWidget
+ * @param margin Margin
+ */
+static inline void
+gtk_widget_set_margin_start(GtkWidget *widget, gint margin)
+{
+	// TODO
+	((void)widget);
+	((void)margin);
+}
+
+/**
+ * GTK+ 2.x compatibility wrapper for: gtk_widget_set_margin_end()
+ * @param widget GtkWidget
+ * @param margin Margin
+ */
+static inline void
+gtk_widget_set_margin_end(GtkWidget *widget, gint margin)
+{
+	// TODO
+	((void)widget);
+	((void)margin);
+}
+
+/**
+ * GTK+ 2.x compatibility wrapper for: gtk_widget_set_margin_top()
+ * @param widget GtkWidget
+ * @param margin Margin
+ */
+static inline void
+gtk_widget_set_margin_top(GtkWidget *widget, gint margin)
+{
+	// TODO
+	((void)widget);
+	((void)margin);
+}
+
+/**
+ * GTK+ 2.x compatibility wrapper for: gtk_widget_set_margin_bottom()
+ * @param widget GtkWidget
+ * @param margin Margin
+ */
+static inline void
+gtk_widget_set_margin_bottom(GtkWidget *widget, gint margin)
+{
+	// TODO
+	((void)widget);
+	((void)margin);
+}
+ #endif /* !GTK_CHECK_VERSION(3,0,0) */
 
 /**
  * Set margin for all four sides.
