@@ -346,7 +346,6 @@ void gtk_progress_bar_set_error(GtkProgressBar *pb, gboolean error)
 	// Otherwise, remove our CSS class.
 	GtkStyleContext *const context = gtk_widget_get_style_context(GTK_WIDGET(pb));
 	if (error) {
-		printf("ERR\n");
 		gtk_style_context_add_class(context, "gsrp_pb_error");
 	} else {
 		gtk_style_context_remove_class(context, "gsrp_pb_error");
