@@ -85,6 +85,17 @@ SET(${PROJECT_NAME}_H
 	config/AboutTab.hpp
 	)
 
+IF(ENABLE_DECRYPTION)
+	SET(${PROJECT_NAME}_SRCS
+		${${PROJECT_NAME}_SRCS}
+		config/KeyManagerTab.cpp
+		)
+	SET(${PROJECT_NAME}_H
+		${${PROJECT_NAME}_H}
+		config/KeyManagerTab.hpp
+		)
+ENDIF(ENABLE_DECRYPTION)
+
 IF(ENABLE_ACHIEVEMENTS)
 	# D-Bus notification for achievements
 	SET(${PROJECT_NAME}-notify_SRCS AchGDBus.cpp)

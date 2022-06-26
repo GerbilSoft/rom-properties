@@ -7,6 +7,7 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "librpbase/config.librpbase.h"
 #include "config.gtk.h"
 
 #include "ConfigDialog.hpp"
@@ -24,6 +25,12 @@ using namespace LibRpFile;
 #include "CacheTab.hpp"
 #include "AchievementsTab.hpp"
 #include "AboutTab.hpp"
+
+#ifdef ENABLE_DECRYPTION
+#  include "KeyManagerTab.hpp"
+#  include "librpbase/crypto/KeyManager.hpp"
+using LibRpBase::KeyManager;
+#endif
 
 #define CONFIG_DIALOG_RESPONSE_RESET		0
 #define CONFIG_DIALOG_RESPONSE_DEFAULTS		1
@@ -68,6 +75,9 @@ struct _ConfigDialog {
 	GtkWidget *tabOptions;
 	GtkWidget *tabCache;
 	GtkWidget *tabAchievements;
+#ifdef ENABLE_DECRYPTION
+	GtkWidget *tabKeyManager;
+#endif /* ENABLE_DECRYPTION */
 	GtkWidget *tabAbout;
 };
 
@@ -231,6 +241,18 @@ config_dialog_init(ConfigDialog *dialog)
 	g_signal_connect(dialog->tabAchievements, "modified",
 		G_CALLBACK(config_dialog_tab_modified), dialog);
 
+#ifdef ENABLE_DECRYPTION
+	lblTab = gtk_label_new_with_mnemonic(
+		convert_accel_to_gtk(C_("ConfigDialog", "&Key Manager")).c_str());
+	gtk_widget_show(lblTab);
+	dialog->tabKeyManager = key_manager_tab_new();
+	g_object_set(dialog->tabKeyManager, "margin", 8, nullptr);
+	gtk_widget_show(dialog->tabKeyManager);
+	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabKeyManager, lblTab);
+	g_signal_connect(dialog->tabKeyManager, "modified",
+		G_CALLBACK(config_dialog_tab_modified), dialog);
+#endif /* ENABLE_DECRYPTION */
+
 	lblTab = gtk_label_new_with_mnemonic(
 		convert_accel_to_gtk(C_("ConfigDialog", "Abou&t")).c_str());
 	gtk_widget_show(lblTab);
@@ -323,7 +345,7 @@ config_dialog_apply(ConfigDialog *dialog)
 		return;
 	}
 
-	GKeyFile *const keyFile = g_key_file_new();
+	GKeyFile *keyFile = g_key_file_new();
 	if (!g_key_file_load_from_file(keyFile, filename,
 		(GKeyFileFlags)(G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS),
 		nullptr))
@@ -334,27 +356,21 @@ config_dialog_apply(ConfigDialog *dialog)
 	}
 
 	// Save the settings.
-	GtkNotebook *const tabWidget = GTK_NOTEBOOK(dialog->tabWidget);
-	const int num_pages = gtk_notebook_get_n_pages(tabWidget);
-	for (int i = 0; i < num_pages; i++) {
-		RpConfigTab *const tab = RP_CONFIG_TAB(gtk_notebook_get_nth_page(tabWidget, i));
-		assert(tab != nullptr);
-		if (tab) {
-			rp_config_tab_save(tab, keyFile);
-		}
-	}
+	rp_config_tab_save(RP_CONFIG_TAB(dialog->tabImageTypes), keyFile);
+	rp_config_tab_save(RP_CONFIG_TAB(dialog->tabSystems), keyFile);
+	rp_config_tab_save(RP_CONFIG_TAB(dialog->tabOptions), keyFile);
 
 	// Commit the changes.
 	// NOTE: g_key_file_save_to_file() was added in glib-2.40.
 	// We'll use g_key_file_to_data() instead.
 	gsize length = 0;
-	gchar *const keyFileData = g_key_file_to_data(keyFile, &length, nullptr);
+	gchar *keyFileData = g_key_file_to_data(keyFile, &length, nullptr);
 	if (!keyFileData) {
 		// Failed to get the key file data.
 		g_key_file_unref(keyFile);
 		return;
 	}
-	FILE *const f_conf = fopen(filename, "w");
+	FILE *f_conf = fopen(filename, "w");
 	if (!f_conf) {
 		// Failed to open the configuration file for writing.
 		g_free(keyFileData);
@@ -365,6 +381,49 @@ config_dialog_apply(ConfigDialog *dialog)
 	fclose(f_conf);
 	g_free(keyFileData);
 	g_key_file_unref(keyFile);
+
+#ifdef ENABLE_DECRYPTION
+	// KeyManager needs to save to keys.conf.
+	const KeyManager *const keyManager = KeyManager::instance();
+	filename = keyManager->filename();
+	assert(filename != nullptr);
+	if (filename) {
+		keyFile = g_key_file_new();
+		if (!g_key_file_load_from_file(keyFile, filename,
+			(GKeyFileFlags)(G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS),
+			nullptr))
+		{
+			// Failed to open the configuration file.
+			g_object_unref(keyFile);
+			return;
+		}
+
+		// Save the keys.
+		rp_config_tab_save(RP_CONFIG_TAB(dialog->tabKeyManager), keyFile);
+
+		// Commit the changes.
+		// NOTE: g_key_file_save_to_file() was added in glib-2.40.
+		// We'll use g_key_file_to_data() instead.
+		gsize length = 0;
+		gchar *keyFileData = g_key_file_to_data(keyFile, &length, nullptr);
+		if (!keyFileData) {
+			// Failed to get the key file data.
+			g_key_file_unref(keyFile);
+			return;
+		}
+		FILE *f_conf = fopen(filename, "w");
+		if (!f_conf) {
+			// Failed to open the configuration file for writing.
+			g_free(keyFileData);
+			g_key_file_unref(keyFile);
+			return;
+		}
+		fwrite(keyFileData, 1, length, f_conf);
+		fclose(f_conf);
+		g_free(keyFileData);
+		g_key_file_unref(keyFile);
+	}
+#endif /* ENABLE_DECRYPTION */
 
 	// Disable the "Apply" and "Reset" buttons.
 	gtk_widget_set_sensitive(dialog->btnApply, FALSE);
