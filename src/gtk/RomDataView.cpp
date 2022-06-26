@@ -2646,7 +2646,7 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 				s_title,			// title
 				parent,				// parent
 				GTK_FILE_CHOOSER_ACTION_SAVE,	// action
-				_("Cancel"), _("Save"));
+				_("_Save"), _("_Cancel"));
 			// TODO: URI?
 			GFile *const set_file = g_file_new_for_path(page->prevExportDir);
 			if (set_file) {
@@ -2658,8 +2658,8 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 				s_title,			// title
 				parent,				// parent
 				GTK_FILE_CHOOSER_ACTION_SAVE,	// action
-				_("Cancel"), GTK_RESPONSE_CANCEL,
-				_("Save"), GTK_RESPONSE_ACCEPT,
+				_("_Cancel"), GTK_RESPONSE_CANCEL,
+				_("_Save"), GTK_RESPONSE_ACCEPT,
 				nullptr);
 			gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
 			gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), page->prevExportDir);
@@ -2703,10 +2703,7 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 			}
 
 			// Save the previous export directory.
-			if (page->prevExportDir) {
-				g_free(page->prevExportDir);
-				page->prevExportDir = nullptr;
-			}
+			g_free(page->prevExportDir);
 			page->prevExportDir = g_path_get_dirname(out_filename);
 
 			ofs.open(out_filename, ofstream::out);
