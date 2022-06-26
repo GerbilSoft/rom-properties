@@ -78,6 +78,7 @@ static void	about_tab_init_program_title_text	(GtkImage	*imgLogo,
 							 GtkLabel	*lblTitle);
 static void	about_tab_init_credits_tab		(GtkLabel	*lblCredits);
 static void	about_tab_init_libraries_tab		(GtkLabel	*lblLibraries);
+static void	about_tab_init_support_tab		(GtkLabel	*lblSupport);
 
 // NOTE: Pango doesn't recognize "&nbsp;". Use U+00A0 instead.
 static const char sIndent[] = "\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0";
@@ -224,6 +225,7 @@ about_tab_init(AboutTab *tab)
 	about_tab_init_program_title_text(GTK_IMAGE(tab->imgLogo), GTK_LABEL(tab->lblTitle));
 	about_tab_init_credits_tab(GTK_LABEL(tab->lblCredits));
 	about_tab_init_libraries_tab(GTK_LABEL(tab->lblLibraries));
+	about_tab_init_support_tab(GTK_LABEL(tab->lblSupport));
 }
 
 GtkWidget*
@@ -656,4 +658,46 @@ about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 
 	// We're done building the string.
 	gtk_label_set_markup(lblLibraries, sLibraries.c_str());
+}
+
+/**
+ * Initialize the "Support" tab.
+ * @param lblSupport
+ */
+static void
+about_tab_init_support_tab(GtkLabel *lblSupport)
+{
+	string sSupport;
+	sSupport.reserve(4096);
+	sSupport = C_("AboutTab|Support",
+		"For technical support, you can visit the following websites:");
+	sSupport += '\n';
+
+	for (const AboutTabText::SupportSite_t *supportSite = &AboutTabText::SupportSites[0];
+	     supportSite->name != nullptr; supportSite++)
+	{
+		sSupport += sIndent;
+		sSupport += chrBullet;
+		sSupport += ' ';
+		sSupport += supportSite->name;
+		sSupport += " &lt;<a href='";
+		sSupport += supportSite->url;
+		sSupport += "'>";
+		sSupport += supportSite->url;
+		sSupport += "</a>&gt;\n";
+	}
+
+	// Email the author.
+	sSupport += '\n';
+	sSupport += C_("AboutTab|Support", "You can also email the developer directly:");
+	sSupport += '\n';
+	sSupport += sIndent;
+	sSupport += chrBullet;
+	sSupport += ' ';
+	sSupport += "David Korth "
+		"&lt;<a href=\"mailto:gerbilsoft@gerbilsoft.com\">"
+		"gerbilsoft@gerbilsoft.com</a>&gt;";
+
+	// We're done building the string.
+	gtk_label_set_markup(lblSupport, sSupport.c_str());
 }
