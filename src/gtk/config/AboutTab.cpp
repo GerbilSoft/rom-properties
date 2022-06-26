@@ -263,10 +263,12 @@ about_tab_init_program_title_text(GtkImage *imgLogo, GtkLabel *lblTitle)
 	// Get the 128x128 icon.
 	// TODO: Determine the best size.
 #if GTK_CHECK_VERSION(4,0,0)
-	// TODO: Get text direction?
+	// TODO: Get text direction from lblTitle instead of imgLogo?
 	GtkIconPaintable *const icon = gtk_icon_theme_lookup_icon(
 		gtk_icon_theme_get_for_display(gtk_widget_get_display(GTK_WIDGET(imgLogo))),
-		"media-flash", nullptr, 128, 1, GTK_TEXT_DIR_NONE, (GtkIconLookupFlags)0);
+		"media-flash", nullptr, 128, 1,
+		gtk_widget_get_direction(GTK_WIDGET(imgLogo)), (GtkIconLookupFlags)0);
+
 	if (icon) {
 		gtk_image_set_from_paintable(imgLogo, GDK_PAINTABLE(icon));
 		g_object_unref(icon);
