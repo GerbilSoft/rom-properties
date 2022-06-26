@@ -83,6 +83,7 @@
 // librpbase common headers
 #include "common.h"
 #include "librpbase/aligned_malloc.h"
+#include "ctypex.h"
 
 // librpcpu
 #include "librpcpu/cpu_dispatch.h"

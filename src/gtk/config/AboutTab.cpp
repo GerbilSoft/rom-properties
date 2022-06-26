@@ -22,6 +22,22 @@ using namespace LibRpBase;
 // C++ STL classes
 using std::string;
 
+// Libraries
+#ifdef HAVE_ZLIB
+#  include <zlib.h>
+#endif
+#ifdef HAVE_PNG
+#  include "librpbase/img/APNG_dlopen.h"
+#  include <png.h>
+#endif
+// TODO: JPEG
+#if defined(ENABLE_DECRYPTION) && defined(HAVE_NETTLE_VERSION_H)
+#  include <nettle/version.h>
+#endif
+#ifdef ENABLE_XML
+#  include <tinyxml2.h>
+#endif
+
 #if GTK_CHECK_VERSION(3,0,0)
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
@@ -61,6 +77,7 @@ static void	about_tab_save				(AboutTab	*tab,
 static void	about_tab_init_program_title_text	(GtkImage	*imgLogo,
 							 GtkLabel	*lblTitle);
 static void	about_tab_init_credits_tab		(GtkLabel	*lblCredits);
+static void	about_tab_init_libraries_tab		(GtkLabel	*lblLibraries);
 
 // NOTE: Pango doesn't recognize "&nbsp;". Use U+00A0 instead.
 static const char sIndent[] = "\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0";
@@ -110,6 +127,8 @@ about_tab_init(AboutTab *tab)
 	//gtk_widget_set_margin_bottom(tabWidget, 8);
 
 	// Each tab contains a scroll area and a label.
+	// FIXME: GtkScrolledWindow seems to start at the label contents,
+	// ignoring the top margin...
 
 	// Credits tab: Scroll area
 #if GTK_CHECK_VERSION(4,0,0)
@@ -204,6 +223,7 @@ about_tab_init(AboutTab *tab)
 	// Initialize the various text fields.
 	about_tab_init_program_title_text(GTK_IMAGE(tab->imgLogo), GTK_LABEL(tab->lblTitle));
 	about_tab_init_credits_tab(GTK_LABEL(tab->lblCredits));
+	about_tab_init_libraries_tab(GTK_LABEL(tab->lblLibraries));
 }
 
 GtkWidget*
@@ -386,4 +406,254 @@ about_tab_init_credits_tab(GtkLabel *lblCredits)
 
 	// We're done building the string.
 	gtk_label_set_markup(lblCredits, sCredits.c_str());
+}
+
+/**
+ * Initialize the "Libraries" tab.
+ * @param lblLibraries
+ */
+static void
+about_tab_init_libraries_tab(GtkLabel *lblLibraries)
+{
+	// lblLibraries is RichText.
+	char sVerBuf[64];
+
+	// NOTE: These strings can NOT be static.
+	// Otherwise, they won't be retranslated if the UI language
+	// is changed at runtime.
+
+	// tr: Using an internal copy of a library.
+	const char *const sIntCopyOf = C_("AboutTab|Libraries", "Internal copy of %s.");
+	// tr: Compiled with a specific version of an external library.
+	const char *const sCompiledWith = C_("AboutTab|Libraries", "Compiled with %s.");
+	// tr: Using an external library, e.g. libpcre.so
+	const char *const sUsingDll = C_("AboutTab|Libraries", "Using %s.");
+	// tr: License: (libraries with only a single license)
+	const char *const sLicense = C_("AboutTab|Libraries", "License: %s");
+	// tr: Licenses: (libraries with multiple licenses)
+	const char *const sLicenses = C_("AboutTab|Libraries", "Licenses: %s");
+
+	// Suppress "unused variable" warnings.
+	// sIntCopyOf isn't used if no internal copies of libraries are needed.
+	RP_UNUSED(sIntCopyOf);
+	RP_UNUSED(sCompiledWith);
+	RP_UNUSED(sUsingDll);
+
+	// Included libraries string.
+	string sLibraries;
+	sLibraries.reserve(8192);
+
+	/** GTK+ **/
+	string gtkVersionCompiled = rp_sprintf("GTK%s %u.%u.%u",
+		(GTK_MAJOR_VERSION >= 4 ? "" : "+"),
+		(guint)GTK_MAJOR_VERSION, (guint)GTK_MINOR_VERSION,
+		(guint)GTK_MICRO_VERSION);
+#ifdef QT_IS_STATIC
+	sLibraries += rp_sprintf(sIntCopyOf, gtkVersion.c_str());
+#else
+	const guint gtk_major = gtk_get_major_version();
+	string gtkVersionUsing = rp_sprintf("GTK%s %u.%u.%u",
+		(gtk_major >= 4 ? "" : "+"),
+		gtk_major, gtk_get_minor_version(),
+		gtk_get_minor_version());
+	sLibraries += rp_sprintf(sCompiledWith, gtkVersionCompiled.c_str()) + '\n';
+	sLibraries += rp_sprintf(sUsingDll, gtkVersionUsing.c_str());
+#endif /* QT_IS_STATIC */
+	sLibraries += '\n';
+	sLibraries +=
+		"Copyright (C) 1995-1997 Peter Mattis, Spencer Kimball and Josh MacDonald.\n"
+		"Copyright (C) 1995-2022 the GTK+ Team and others.\n"
+		"<a href='https://www.gtk.org/'>https://www.gtk.org/</a>\n";
+	sLibraries += rp_sprintf(sLicenses, "GNU LGPL v2.1+");
+
+	/** zlib **/
+#ifdef HAVE_ZLIB
+	sLibraries += "\n\n";
+#  ifdef ZLIBNG_VERSION
+	string sZlibVersion = "zlib-ng ";
+	sZlibVersion += zlibngVersion();
+#  else /* !ZLIBNG_VERSION */
+	string sZlibVersion = "zlib ";
+	sZlibVersion += zlibVersion();
+#  endif /* ZLIBNG_VERSION */
+
+#if defined(USE_INTERNAL_ZLIB) && !defined(USE_INTERNAL_ZLIB_DLL)
+	sLibraries += rp_sprintf(sIntCopyOf, sZlibVersion.c_str());
+#else
+#  ifdef ZLIBNG_VERSION
+	sLibraries += rp_sprintf(sCompiledWith, "zlib-ng " ZLIBNG_VERSION);
+#  else /* !ZLIBNG_VERSION */
+	sLibraries += rp_sprintf(sCompiledWith, "zlib " ZLIB_VERSION);
+#  endif /* ZLIBNG_VERSION */
+	sLibraries += '\n';
+	sLibraries += rp_sprintf(sUsingDll, sZlibVersion.c_str());
+#endif
+	sLibraries += '\n';
+	sLibraries +=
+		"Copyright (C) 1995-2022 Jean-loup Gailly and Mark Adler.\n"
+		"<a href='https://zlib.net/'>https://zlib.net/</a>\n";
+#  ifdef ZLIBNG_VERSION
+	// TODO: Also if zlibVersion() contains "zlib-ng"?
+	sLibraries += "<a href='https://github.com/zlib-ng/zlib-ng'>https://github.com/zlib-ng/zlib-ng</a>\n";
+#  endif /* ZLIBNG_VERSION */
+	sLibraries += rp_sprintf(sLicense, "zlib license");
+#endif /* HAVE_ZLIB */
+
+	/** libpng **/
+#ifdef HAVE_PNG
+	// APNG suffix.
+	const bool APNG_is_supported = (APNG_ref() == 0);
+	if (APNG_is_supported) {
+		// APNG is supported.
+		// Unreference it to prevent leaks.
+		APNG_unref();
+	}
+
+	const uint32_t png_version_number = png_access_version_number();
+	char pngVersion[48];
+	snprintf(pngVersion, sizeof(pngVersion), "libpng %u.%u.%u%s",
+		png_version_number / 10000,
+		(png_version_number / 100) % 100,
+		png_version_number % 100,
+		(APNG_is_supported ? " + APNG" : " (No APNG support)"));
+
+	sLibraries += "\n\n";
+#if defined(USE_INTERNAL_PNG) && !defined(USE_INTERNAL_ZLIB_DLL)
+	sLibraries += rp_sprintf(sIntCopyOf, pngVersion);
+#else
+	// NOTE: Gentoo's libpng has "+apng" at the end of
+	// PNG_LIBPNG_VER_STRING if APNG is enabled.
+	// We have our own "+ APNG", so remove Gentoo's.
+	string pngVersionCompiled = "libpng " PNG_LIBPNG_VER_STRING;
+	while (!pngVersionCompiled.empty()) {
+		size_t idx = pngVersionCompiled.size() - 1;
+		char chr = pngVersionCompiled[idx];
+		if (ISDIGIT(chr))
+			break;
+		pngVersionCompiled.resize(idx);
+	}
+
+	string fullPngVersionCompiled;
+	if (APNG_is_supported) {
+		// PNG version, with APNG support.
+		fullPngVersionCompiled = rp_sprintf("%s + APNG", pngVersionCompiled.c_str());
+	} else {
+		// PNG version, without APNG support.
+		fullPngVersionCompiled = rp_sprintf("%s (No APNG support)", pngVersionCompiled.c_str());
+	}
+
+	sLibraries += rp_sprintf(sCompiledWith, fullPngVersionCompiled.c_str());
+	sLibraries += '\n';
+	sLibraries += rp_sprintf(sUsingDll, pngVersion);
+#endif
+
+	/**
+	 * NOTE: MSVC does not define __STDC__ by default.
+	 * If __STDC__ is not defined, the libpng copyright
+	 * will not have a leading newline, and all newlines
+	 * will be replaced with groups of 6 spaces.
+	 */
+	// NOTE: Ignoring this for the GTK+ build, since it's
+	// only built for Linux systems.
+	sLibraries += png_get_copyright(nullptr);
+	sLibraries += "<a href='http://www.libpng.org/pub/png/libpng.html'>http://www.libpng.org/pub/png/libpng.html</a>\n";
+	sLibraries += "<a href='https://github.com/glennrp/libpng'>https://github.com/glennrp/libpng</a>\n";
+	if (APNG_is_supported) {
+		sLibraries += C_("AboutTab|Libraries", "APNG patch:");
+		sLibraries += " <a href='https://sourceforge.net/projects/libpng-apng/'>https://sourceforge.net/projects/libpng-apng/</a>\n";
+	}
+	sLibraries += rp_sprintf(sLicense, "libpng license");
+#endif /* HAVE_PNG */
+
+	/** nettle **/
+#ifdef ENABLE_DECRYPTION
+	sLibraries += "\n\n";
+#  ifdef HAVE_NETTLE_VERSION_H
+	snprintf(sVerBuf, sizeof(sVerBuf),
+		"GNU Nettle %u.%u",
+			static_cast<unsigned int>(NETTLE_VERSION_MAJOR),
+			static_cast<unsigned int>(NETTLE_VERSION_MINOR));
+	sLibraries += rp_sprintf(sCompiledWith, sVerBuf);
+#    ifdef HAVE_NETTLE_VERSION_FUNCTIONS
+	snprintf(sVerBuf, sizeof(sVerBuf),
+		"GNU Nettle %u.%u",
+			static_cast<unsigned int>(nettle_version_major()),
+			static_cast<unsigned int>(nettle_version_minor()));
+	sLibraries += '\n';
+	sLibraries += rp_sprintf(sUsingDll, sVerBuf);
+#    endif /* HAVE_NETTLE_VERSION_FUNCTIONS */
+	sLibraries += '\n';
+	sLibraries +=
+		"Copyright (C) 2001-2022 Niels Möller.\n"
+		"<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>\n";
+	sLibraries += rp_sprintf(sLicenses, "GNU LGPL v3+, GNU GPL v2+");
+#  else /* !HAVE_NETTLE_VERSION_H */
+#    ifdef HAVE_NETTLE_3
+	sLibraries += rp_sprintf(sCompiledWith, "GNU Nettle 3.0");
+	sLibraries += '\n';
+	sLibraries +=
+		"Copyright (C) 2001-2014 Niels Möller.\n"
+		"<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>\n";
+	sLibraries += rp_sprintf(sLicenses, "GNU LGPL v3+, GNU GPL v2+");
+#    else /* !HAVE_NETTLE_3 */
+	sLibraries += rp_sprintf(sCompiledWith, "GNU Nettle 2.x");
+	sLibraries += '\n';
+	sLibraries +=
+		"Copyright (C) 2001-2013 Niels Möller.\n"
+		"<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>\n";
+	sLibraries += rp_sprintf(sLicense, "GNU LGPL v2.1+");
+#    endif /* HAVE_NETTLE_3 */
+#  endif /* HAVE_NETTLE_VERSION_H */
+#endif /* ENABLE_DECRYPTION */
+
+	/** TinyXML2 **/
+#ifdef ENABLE_XML
+	sLibraries += "\n\n";
+	snprintf(sVerBuf, sizeof(sVerBuf), "TinyXML2 %u.%u.%u",
+		static_cast<unsigned int>(TIXML2_MAJOR_VERSION),
+		static_cast<unsigned int>(TIXML2_MINOR_VERSION),
+		static_cast<unsigned int>(TIXML2_PATCH_VERSION));
+
+#  if defined(USE_INTERNAL_XML) && !defined(USE_INTERNAL_XML_DLL)
+	sLibraries += rp_sprintf(sIntCopyOf, sVerBuf);
+#  else
+	// FIXME: Runtime version?
+	sLibraries += rp_sprintf(sCompiledWith, sVerBuf);
+#  endif
+	sLibraries += '\n';
+	sLibraries +=
+		"Copyright (C) 2000-2021 Lee Thomason\n"
+		"<a href='http://www.grinninglizard.com/'>http://www.grinninglizard.com/</a>\n";
+	sLibraries += rp_sprintf(sLicense, "zlib license");
+#endif /* ENABLE_XML */
+
+	/** GNU gettext **/
+	// NOTE: glibc's libintl.h doesn't have the version information,
+	// so we're only printing this if we're using GNU gettext's version.
+#if defined(HAVE_GETTEXT) && defined(LIBINTL_VERSION)
+	if (LIBINTL_VERSION & 0xFF) {
+		snprintf(sVerBuf, sizeof(sVerBuf), "GNU gettext %u.%u.%u",
+			static_cast<unsigned int>( LIBINTL_VERSION >> 16),
+			static_cast<unsigned int>((LIBINTL_VERSION >>  8) & 0xFF),
+			static_cast<unsigned int>( LIBINTL_VERSION        & 0xFF));
+	} else {
+		snprintf(sVerBuf, sizeof(sVerBuf), "GNU gettext %u.%u",
+			static_cast<unsigned int>( LIBINTL_VERSION >> 16),
+			static_cast<unsigned int>((LIBINTL_VERSION >>  8) & 0xFF));
+	}
+#  ifdef _WIN32
+	sLibraries += rp_sprintf(sIntCopyOf, sVerBuf);
+#  else /* _WIN32 */
+	// FIXME: Runtime version?
+	sLibraries += rp_sprintf(sCompiledWith, sVerBuf);
+#  endif /* _WIN32 */
+	sLibraries += '\n';
+	sLibraries +=
+		"Copyright (C) 1995-1997, 2000-2016, 2018-2020 Free Software Foundation, Inc.\n"
+		"<a href='https://www.gnu.org/software/gettext/'>https://www.gnu.org/software/gettext/</a>\n";
+	sLibraries += rp_sprintf(sLicense, "GNU LGPL v2.1+");
+#endif /* HAVE_GETTEXT && LIBINTL_VERSION */
+
+	// We're done building the string.
+	gtk_label_set_markup(lblLibraries, sLibraries.c_str());
 }

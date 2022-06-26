@@ -349,6 +349,26 @@ gtk_label_set_wrap(GtkLabel *label, gboolean wrap)
 }
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 
+#if !GTK_CHECK_VERSION(3,0,0)
+// Version functions were introduced in GTK+ 3.0.
+// Prior to GTK3, they were directly exported as guints.
+static inline guint
+gtk_get_major_version(void)
+{
+	return gtk_major_version;
+}
+static inline guint
+gtk_get_minor_version(void)
+{
+	return gtk_minor_version;
+}
+static inline guint
+gtk_get_micro_version(void)
+{
+	return gtk_micro_version;
+}
+#endif /* !GTK_CHECK_VERSION(3,0,0) */
+
 G_END_DECLS
 
 #endif /* __ROMPROPERTIES_GTK_GTK_COMPAT_H__ */
