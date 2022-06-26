@@ -262,6 +262,18 @@ about_tab_init_program_title_text(GtkImage *imgLogo, GtkLabel *lblTitle)
 
 	// Get the 128x128 icon.
 	// TODO: Determine the best size.
+#if GTK_CHECK_VERSION(4,0,0)
+	// TODO: Get text direction?
+	GtkIconPaintable *const icon = gtk_icon_theme_lookup_icon(
+		gtk_icon_theme_get_for_display(gtk_widget_get_display(GTK_WIDGET(imgLogo))),
+		"media-flash", nullptr, 128, 1, GTK_TEXT_DIR_NONE, (GtkIconLookupFlags)0);
+	if (icon) {
+		gtk_image_set_from_paintable(imgLogo, GDK_PAINTABLE(icon));
+		g_object_unref(icon);
+	} else {
+		gtk_image_clear(imgLogo);
+	}
+#else /* !GTK_CHECK_VERSION(4,0,0) */
 	GdkPixbuf *const icon = gtk_icon_theme_load_icon(
 		gtk_icon_theme_get_default(), "media-flash", 128,
 		(GtkIconLookupFlags)0, nullptr);
@@ -271,6 +283,7 @@ about_tab_init_program_title_text(GtkImage *imgLogo, GtkLabel *lblTitle)
 	} else {
 		gtk_image_clear(imgLogo);
 	}
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	string sPrgTitle;
 	sPrgTitle.reserve(1024);
