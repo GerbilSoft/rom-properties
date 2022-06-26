@@ -22,6 +22,7 @@ using namespace LibRpFile;
 #include "SystemsTab.hpp"
 #include "OptionsTab.hpp"
 #include "CacheTab.hpp"
+#include "AchievementsTab.hpp"
 
 #define CONFIG_DIALOG_RESPONSE_RESET		0
 #define CONFIG_DIALOG_RESPONSE_DEFAULTS		1
@@ -60,6 +61,7 @@ struct _ConfigDialog {
 	GtkWidget *tabSystems;
 	GtkWidget *tabOptions;
 	GtkWidget *tabCache;
+	GtkWidget *tabAchievements;
 };
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -204,6 +206,16 @@ config_dialog_init(ConfigDialog *dialog)
 	gtk_widget_show(dialog->tabCache);
 	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabCache, lblTab);
 	g_signal_connect(dialog->tabCache, "modified",
+		G_CALLBACK(config_dialog_tab_modified), dialog);
+
+	lblTab = gtk_label_new_with_mnemonic(
+		convert_accel_to_gtk(C_("ConfigDialog", "&Achievements")).c_str());
+	gtk_widget_show(lblTab);
+	dialog->tabAchievements = achievements_tab_new();
+	g_object_set(dialog->tabAchievements, "margin", 8, nullptr);
+	gtk_widget_show(dialog->tabAchievements);
+	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabAchievements, lblTab);
+	g_signal_connect(dialog->tabAchievements, "modified",
 		G_CALLBACK(config_dialog_tab_modified), dialog);
 
 	// Reset button is disabled initially.

@@ -57,6 +57,7 @@ SET(${PROJECT_NAME}_SRCS
 	config/OptionsTab.cpp
 	config/CacheTab.cpp
 	config/CacheCleaner.cpp
+	config/AchievementsTab.cpp
 	)
 SET(${PROJECT_NAME}_H
 	RomDataView.hpp
@@ -77,7 +78,9 @@ SET(${PROJECT_NAME}_H
 	config/ImageTypesTab.hpp
 	config/SystemsTab.hpp
 	config/OptionsTab.hpp
+	config/CacheTab.hpp
 	config/CacheCleaner.hpp
+	config/AchievementsTab.hpp
 	)
 
 IF(ENABLE_ACHIEVEMENTS)

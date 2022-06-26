@@ -1159,17 +1159,18 @@ rom_data_view_init_listdata(RomDataView *page,
 		PANGO_ALIGN_CENTER, PANGO_ALIGN_RIGHT
 	};
 
-	// Set up the column names.
+	// Set up the columns.
 	RomFields::ListDataColAttrs_t col_attrs = listDataDesc.col_attrs;
 	for (int i = 0; i < colCount; i++, col_attrs.shiftRight()) {
 		const int listStore_col_idx = i + listStore_col_start;
 
 		// NOTE: Not skipping empty column names.
 		// TODO: Hide them.
-		GtkCellRenderer *const renderer = gtk_cell_renderer_text_new();
 		GtkTreeViewColumn *const column = gtk_tree_view_column_new();
 		gtk_tree_view_column_set_title(column,
 			(listDataDesc.names ? listDataDesc.names->at(i).c_str() : ""));
+
+		GtkCellRenderer *const renderer = gtk_cell_renderer_text_new();
 		if (col0_renderer != nullptr) {
 			// Prepend the icon/checkbox renderer.
 			gtk_tree_view_column_pack_start(column, col0_renderer, FALSE);
@@ -1310,6 +1311,11 @@ rom_data_view_init_datetime(RomDataView *page,
 		dateTime = g_date_time_new_from_unix_utc(field.data.date_time);
 	} else {
 		dateTime = g_date_time_new_from_unix_local(field.data.date_time);
+	}
+	assert(dateTime != nullptr);
+	if (!dateTime) {
+		// Unable to convert the timestamp.
+		return rom_data_view_init_string(page, field, fieldIdx, C_("RomDataView", "Unknown"));
 	}
 
 	static const char *const formats[8] = {
