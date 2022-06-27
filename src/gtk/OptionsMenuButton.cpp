@@ -407,16 +407,15 @@ btnOptions_activate_signal_handler(GtkButton *button, OptionsMenuButton *widget)
 #ifndef USE_GTK_MENU_BUTTON
 /**
  * Menu positioning function.
- * @param menu		[in] GtkMenu*
+ * @param menu		[in] GtkMenu
  * @param x		[out] X position
  * @param y		[out] Y position
  * @param push_in
- * @param user_data	[in] GtkButton* the menu is attached to.
+ * @param button	[in] GtkWidget the menu is attached to.
  */
 static void
-btnOptions_menu_pos_func(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, gpointer user_data)
+btnOptions_menu_pos_func(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, GtkWidget *button)
 {
-	GtkWidget *const button = (GtkWidget*)GTK_BUTTON(user_data);
 	GdkWindow *const window = gtk_widget_get_window(button);
 
 	GtkAllocation button_alloc, menu_alloc;
@@ -456,7 +455,7 @@ btnOptions_event_signal_handler(GtkButton *button, GdkEvent *event, OptionsMenuB
 	} else
 #endif /* GTK_CHECK_VERSION(3,12,0) */
 	{
-		menuPositionFunc = btnOptions_menu_pos_func;
+		menuPositionFunc = (GtkMenuPositionFunc)btnOptions_menu_pos_func;
 	}
 
 	// Pop up the menu.

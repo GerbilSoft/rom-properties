@@ -29,8 +29,8 @@ static void	message_widget_get_property	(GObject	*object,
 						 GParamSpec	*pspec);
 
 /** Signal handlers. **/
-static void	closeButton_clicked_handler	(GtkButton	*button,
-						 gpointer	 user_data);
+static void	message_widget_close_button_clicked_handler	(GtkButton	*button,
+								 MessageWidget	*widget);
 static gboolean	timeout_hide_source_func	(gpointer	 user_data);
 
 #if GTK_CHECK_VERSION(3,0,0)
@@ -63,7 +63,7 @@ struct _MessageWidget {
 
 	GtkWidget *image;
 	GtkWidget *label;
-	GtkWidget *closeButton;
+	GtkWidget *close_button;
 
 	GtkMessageType messageType;
 	guint timeout_hide;
@@ -148,12 +148,10 @@ message_widget_init(MessageWidget *widget)
 #else /* !GTK_CHECK_VERSION(3,0,0) */
 	// Add a GtkEventBox for the inner color.
 	widget->evbox_inner = gtk_event_box_new();
-	gtk_widget_show(widget->evbox_inner);
 	gtk_container_add(GTK_CONTAINER(widget), widget->evbox_inner);
 
 	// Add a GtkHBox for all the other widgets.
 	widget->hbox = gtk_hbox_new(0, 0);
-	gtk_widget_show(widget->hbox);
 	gtk_container_add(GTK_CONTAINER(widget->evbox_inner), widget->hbox);
 	hbox = GTK_BOX(widget->hbox);
 #endif /* GTK_CHECK_VERSION(3,0,0) */
@@ -161,34 +159,39 @@ message_widget_init(MessageWidget *widget)
 	widget->messageType = GTK_MESSAGE_OTHER;
 	widget->image = gtk_image_new();
 	widget->label = gtk_label_new(nullptr);
-	gtk_widget_show(widget->label);
 
 	// TODO: Prpoer alignment.
 
-	widget->closeButton = gtk_button_new();
-	gtk_widget_show(widget->closeButton);
+	widget->close_button = gtk_button_new();
 #if GTK_CHECK_VERSION(4,0,0)
-	gtk_button_set_icon_name(GTK_BUTTON(widget->closeButton), "dialog-close");
-	gtk_button_set_has_frame(GTK_BUTTON(widget->closeButton), FALSE);
+	gtk_button_set_icon_name(GTK_BUTTON(widget->close_button), "dialog-close");
+	gtk_button_set_has_frame(GTK_BUTTON(widget->close_button), FALSE);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	GtkWidget *const imageClose = gtk_image_new_from_icon_name("dialog-close", GTK_ICON_SIZE_BUTTON);
-	gtk_button_set_image(GTK_BUTTON(widget->closeButton), imageClose);
-	gtk_button_set_relief(GTK_BUTTON(widget->closeButton), GTK_RELIEF_NONE);
+	gtk_button_set_image(GTK_BUTTON(widget->close_button), imageClose);
+	gtk_button_set_relief(GTK_BUTTON(widget->close_button), GTK_RELIEF_NONE);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 #if GTK_CHECK_VERSION(4,0,0)
 	// TODO: Padding?
 	gtk_box_append(hbox, widget->image);
 	gtk_box_append(hbox, widget->label);
-	gtk_box_append(hbox, widget->closeButton);
+	gtk_box_append(hbox, widget->close_button);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
+#  if !GTK_CHECK_VERSION(3,0,0)
+	gtk_widget_show(widget->evbox_inner);
+	gtk_widget_show(widget->hbox);
+#  endif /* GTK_CHECK_VERSION(3,0,0) */
+	gtk_widget_show(widget->label);
+	gtk_widget_show(widget->close_button);
+
 	gtk_box_pack_start(hbox, widget->image, FALSE, FALSE, 4);
 	gtk_box_pack_start(hbox, widget->label, FALSE, FALSE, 0);
-	gtk_box_pack_end(hbox, widget->closeButton, FALSE, FALSE, 0);
+	gtk_box_pack_end(hbox, widget->close_button, FALSE, FALSE, 0);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
-	g_signal_connect(widget->closeButton, "clicked",
-		G_CALLBACK(closeButton_clicked_handler), widget);
+	g_signal_connect(widget->close_button, "clicked",
+		G_CALLBACK(message_widget_close_button_clicked_handler), widget);
 }
 
 GtkWidget*
@@ -372,14 +375,11 @@ message_widget_show_with_timeout(MessageWidget *widget)
 /**
  * The Close button was clicked.
  * @param button Close button
- * @param user_data MessageWidget*
+ * @param widget MessageWidget
  */
 static void
-closeButton_clicked_handler(GtkButton	*button,
-			    gpointer	 user_data)
+message_widget_close_button_clicked_handler(GtkButton *button, MessageWidget *widget)
 {
-	MessageWidget *const widget = MESSAGE_WIDGET(user_data);
-
 	// TODO: Animation like KMessageWidget.
 	RP_UNUSED(button);
 	if (widget->timeout_hide != 0) {

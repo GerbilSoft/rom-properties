@@ -91,12 +91,12 @@ static void	rom_data_view_desc_format_type_changed(RomDataView *page,
 
 static void	rom_data_view_init_header_row	(RomDataView	*page);
 static void	rom_data_view_update_display	(RomDataView	*page);
-static gboolean	rom_data_view_load_rom_data	(gpointer	 data);
+static gboolean	rom_data_view_load_rom_data	(RomDataView	*page);
 static void	rom_data_view_delete_tabs	(RomDataView	*page);
 
 /** Signal handlers **/
 static void	checkbox_no_toggle_signal_handler   (GtkCheckButton	*checkbutton,
-						     gpointer		 user_data);
+						     RomDataView	*page);
 static void	rom_data_view_map_signal_handler    (RomDataView	*page,
 						     gpointer		 user_data);
 static void	rom_data_view_unmap_signal_handler  (RomDataView	*page,
@@ -105,10 +105,10 @@ static void	tree_view_realize_signal_handler    (GtkTreeView	*treeView,
 						     RomDataView	*page);
 static void	cboLanguage_lc_changed_signal_handler(GtkComboBox	*widget,
 						     uint32_t		 lc,
-						     gpointer		 user_data);
+						     RomDataView	*page);
 static void	btnOptions_triggered_signal_handler (OptionsMenuButton	*menuButton,
 						     gint		 id,
-						     gpointer		 user_data);
+						     RomDataView	*page);
 
 #if GTK_CHECK_VERSION(3,0,0)
 typedef GtkBoxClass superclass;
@@ -277,9 +277,9 @@ rom_data_view_class_init(RomDataViewClass *klass)
 
 /**
  * Set the label format type.
- * @param page RomDataView.
- * @param label GtkLabel.
- * @param desc_format_type Format type.
+ * @param page RomDataView
+ * @param label GtkLabel
+ * @param desc_format_type Format type
  */
 static inline void
 set_label_format_type(GtkLabel *label, RpDescFormatType desc_format_type)
@@ -510,7 +510,8 @@ rom_data_view_new_with_romData(const gchar *uri, RomData *romData, RpDescFormatT
 		}
 	}
 	if (G_LIKELY(uri != nullptr)) {
-		page->changed_idle = g_idle_add(rom_data_view_load_rom_data, page);
+		// NOTE: G_SOURCE_FUNC() was added in glib-2.58.
+		page->changed_idle = g_idle_add((GSourceFunc)rom_data_view_load_rom_data, page);
 	}
 
 	return reinterpret_cast<GtkWidget*>(page);
@@ -621,7 +622,8 @@ rom_data_view_set_uri(RomDataView	*page,
 	/* Connect to the new file (if any) */
 	if (G_LIKELY(page->uri != nullptr)) {
 		if (page->changed_idle == 0) {
-			page->changed_idle = g_idle_add(rom_data_view_load_rom_data, page);
+			// NOTE: G_SOURCE_FUNC() was added in glib-2.58.
+			page->changed_idle = g_idle_add((GSourceFunc)rom_data_view_load_rom_data, page);
 		}
 	} else {
 		// Hide the header row. (outerbox)
@@ -2290,11 +2292,16 @@ rom_data_view_update_display(RomDataView *page)
 	}
 }
 
+/**
+ * Load the actual ROM data.
+ * Call this function using g_idle_add().
+ * @param page RomDataView
+ * @return G_SOURCE_REMOVE
+ */
 static gboolean
-rom_data_view_load_rom_data(gpointer data)
+rom_data_view_load_rom_data(RomDataView *page)
 {
-	RomDataView *const page = ROM_DATA_VIEW(data);
-	g_return_val_if_fail(page != nullptr && IS_ROM_DATA_VIEW(page), G_SOURCE_REMOVE);
+	g_return_val_if_fail(!IS_ROM_DATA_VIEW(page), G_SOURCE_REMOVE);
 
 	if (G_UNLIKELY(page->uri == nullptr && page->romData == nullptr)) {
 		// No URI or RomData.
@@ -2342,7 +2349,7 @@ rom_data_view_load_rom_data(gpointer data)
 
 /**
  * Delete tabs and related widgets.
- * @param page RomDataView.
+ * @param page RomDataView
  */
 static void
 rom_data_view_delete_tabs(RomDataView *page)
@@ -2418,13 +2425,12 @@ rom_data_view_delete_tabs(RomDataView *page)
 
 /**
  * Prevent bitfield checkboxes from being toggled.
- * @param checkbutton Bitfield checkbox.
- * @param user_data RomDataView*.
+ * @param checkbutton Bitfield checkbox
+ * @param page RomDataView
  */
 static void
-checkbox_no_toggle_signal_handler(GtkCheckButton *checkbutton, gpointer user_data)
+checkbox_no_toggle_signal_handler(GtkCheckButton *checkbutton, RomDataView *page)
 {
-	RomDataView *const page = ROM_DATA_VIEW(user_data);
 	if (page->inhibit_checkbox_no_toggle) {
 		// Inhibiting the no-toggle handler.
 		return;
@@ -2441,7 +2447,7 @@ checkbox_no_toggle_signal_handler(GtkCheckButton *checkbutton, gpointer user_dat
 /**
  * RomDataView is being mapped onto the screen.
  * @param page RomDataView
- * @param user_data User data.
+ * @param user_data User data
  */
 static void
 rom_data_view_map_signal_handler(RomDataView	*page,
@@ -2463,7 +2469,7 @@ rom_data_view_map_signal_handler(RomDataView	*page,
 /**
  * RomDataView is being unmapped from the screen.
  * @param page RomDataView
- * @param user_data User data.
+ * @param user_data User data
  */
 static void
 rom_data_view_unmap_signal_handler(RomDataView	*page,
@@ -2569,30 +2575,29 @@ tree_view_realize_signal_handler(GtkTreeView	*treeView,
  * The RFT_MULTI_STRING language was changed.
  * @param widget	GtkComboBox
  * @param lc		Language code
- * @param user_data	RomDataView
+ * @param page		RomDataView
  */
 static void
 cboLanguage_lc_changed_signal_handler(GtkComboBox *widget,
 				      uint32_t     lc,
-				      gpointer     user_data)
+				      RomDataView *page)
 {
 	RP_UNUSED(widget);
-	rom_data_view_update_multi(ROM_DATA_VIEW(user_data), lc);
+	rom_data_view_update_multi(page, lc);
 }
 
 /**
  * An "Options" menu action was triggered.
  * @param menuButton	OptionsMenuButton
  * @param id		Menu options ID
- * @param user_data	RomDataView
+ * @param page		RomDataView
  */
 static void
 btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 				    gint id,
-				    gpointer user_data)
+				    RomDataView *page)
 {
 	RP_UNUSED(menuButton);
-	RomDataView *const page = ROM_DATA_VIEW(user_data);
 	GtkWindow *const parent = gtk_widget_get_toplevel_window(GTK_WIDGET(page));
 
 	if (id < 0) {
