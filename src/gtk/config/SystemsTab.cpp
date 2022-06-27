@@ -209,17 +209,9 @@ systems_tab_init(SystemsTab *tab)
 	gtk_widget_show(lblCGB);
 	gtk_widget_show(tab->cboCGB);
 
+	gtk_box_pack_start(GTK_BOX(tab), fraDMG, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(vboxDMG), lblDMGDescription, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(vboxDMG), table, false, false, 0);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
-
-	// Add the frames to the main VBox.
-	// TODO: Fill?
-#if GTK_CHECK_VERSION(4,0,0)
-	gtk_box_append(GTK_BOX(tab), fraDMG);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
-	gtk_widget_show(fraDMG);
-	gtk_box_pack_start(GTK_BOX(tab), fraDMG, false, false, 0);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Load the current configuration.

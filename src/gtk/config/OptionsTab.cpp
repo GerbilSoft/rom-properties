@@ -164,7 +164,6 @@ options_tab_init(OptionsTab *tab)
 
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_box_append(GTK_BOX(tab), fraDownloads);
-
 	gtk_box_append(GTK_BOX(vboxDownloads), tab->chkExtImgDownloadEnabled);
 	gtk_box_append(GTK_BOX(vboxDownloads), tab->chkUseIntIconForSmallSizes);
 	gtk_box_append(GTK_BOX(vboxDownloads), tab->chkDownloadHighResScans);
@@ -176,6 +175,7 @@ options_tab_init(OptionsTab *tab)
 
 	gtk_box_append(GTK_BOX(tab), fraOptions);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
+	gtk_widget_show(fraDownloads);
 	gtk_widget_show(vboxDownloads);
 	gtk_widget_show(tab->chkExtImgDownloadEnabled);
 	gtk_widget_show(tab->chkUseIntIconForSmallSizes);
@@ -186,10 +186,12 @@ options_tab_init(OptionsTab *tab)
 	gtk_widget_show(lblGameTDBPAL);
 	gtk_widget_show(tab->cboGameTDBPAL);
 
+	gtk_widget_show(fraOptions);
 	gtk_widget_show(vboxOptions);
 	gtk_widget_show(tab->chkShowDangerousPermissionsOverlayIcon);
 	gtk_widget_show(tab->chkEnableThumbnailOnNetworkFS);
 
+	gtk_box_pack_start(GTK_BOX(tab), fraDownloads, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(vboxDownloads), tab->chkExtImgDownloadEnabled, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(vboxDownloads), tab->chkUseIntIconForSmallSizes, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(vboxDownloads), tab->chkDownloadHighResScans, false, false, 0);
@@ -199,21 +201,9 @@ options_tab_init(OptionsTab *tab)
 	gtk_box_pack_start(GTK_BOX(hboxGameTDBPAL), lblGameTDBPAL, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(hboxGameTDBPAL), tab->cboGameTDBPAL, false, false, 0);
 
+	gtk_box_pack_start(GTK_BOX(tab), fraOptions, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(vboxOptions), tab->chkShowDangerousPermissionsOverlayIcon, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(vboxOptions), tab->chkEnableThumbnailOnNetworkFS, false, false, 0);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
-
-	// Add the frames to the main VBox.
-	// TODO: Fill?
-#if GTK_CHECK_VERSION(4,0,0)
-	gtk_box_append(GTK_BOX(tab), fraDownloads);
-	gtk_box_append(GTK_BOX(tab), fraOptions);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
-	gtk_widget_show(fraDownloads);
-	gtk_widget_show(fraOptions);
-
-	gtk_box_pack_start(GTK_BOX(tab), fraDownloads, false, false, 0);
-	gtk_box_pack_start(GTK_BOX(tab), fraOptions, false, false, 0);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Load the current configuration.
