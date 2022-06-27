@@ -139,26 +139,17 @@ config_dialog_init(ConfigDialog *dialog)
 	// TODO: This merely adds a space. It doesn't force the buttons
 	// to the left if the window is resized.
 	GtkWidget *const parent = gtk_widget_get_parent(dialog->btnReset);
-#if !GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(4,0,0)
+	// FIXME: Spacer between secondary and primary buttons.
+	gtk_widget_set_halign(parent, GTK_ALIGN_FILL);
+	gtk_box_set_spacing(GTK_BOX(parent), 2);
+#else /* !GTK_CHECK_VERSION(4,0,0) */
 	// GTK2, GTK3: May be GtkButtonBox.
 	if (GTK_IS_BUTTON_BOX(parent)) {
 		gtk_button_box_set_child_secondary(GTK_BUTTON_BOX(parent), dialog->btnReset, true);
 		gtk_button_box_set_child_secondary(GTK_BUTTON_BOX(parent), dialog->btnDefaults, true);
-	} else
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
-	{
-		// TODO: GTK2 fallback?
-#if GTK_CHECK_VERSION(3,0,0)
-		GtkWidget *const lblSpacer = gtk_label_new(nullptr);
-		gtk_widget_set_halign(lblSpacer, GTK_ALIGN_FILL);
-		gtk_widget_show(lblSpacer);
-#if GTK_CHECK_VERSION(4,0,0)
-		gtk_box_append(GTK_BOX(parent), lblSpacer);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
-		gtk_container_add(GTK_CONTAINER(parent), lblSpacer);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
-#endif /* GTK_CHECK_VERSION(3,0,0) */
 	}
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// GTK4 no longer has GTK_STOCK_*, so we'll have to provide it ourselves.
 	gtk_dialog_add_button(GTK_DIALOG(dialog),
