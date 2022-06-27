@@ -470,7 +470,7 @@ about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 	string gtkVersionUsing = rp_sprintf("GTK%s %u.%u.%u",
 		(gtk_major >= 4 ? "" : "+"),
 		gtk_major, gtk_get_minor_version(),
-		gtk_get_minor_version());
+		gtk_get_micro_version());
 	sLibraries += rp_sprintf(sCompiledWith, gtkVersionCompiled.c_str()) + '\n';
 	sLibraries += rp_sprintf(sUsingDll, gtkVersionUsing.c_str());
 #endif /* QT_IS_STATIC */
