@@ -2722,7 +2722,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			}
 
 			const tstring tfilename = LibWin32Common::getSaveFileName(hDlgSheet,
-				U82T_c(dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", info->title)).c_str(),
+				U82T_c(dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", info->title)),
 				dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", info->filter),
 				defaultFileName.c_str());
 			if (tfilename.empty())
@@ -2793,7 +2793,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 				return;
 		}
 
-		if (toClipboard && OpenClipboard(hDlgSheet)) {
+		if (info->toClipboard && OpenClipboard(hDlgSheet)) {
 			EmptyClipboard();
 			HGLOBAL hglbCopy = GlobalAlloc(GMEM_MOVEABLE, (ts_out.size() + 1) * sizeof(TCHAR));
 			if (hglbCopy) {
