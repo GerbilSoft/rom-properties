@@ -447,7 +447,18 @@ key_manager_tab_save(KeyManagerTab *tab, GKeyFile *keyFile)
 		return;
 	}
 
-	// TODO
+	// Save the keys.
+	const KeyStoreUI *const keyStoreUI = key_store_gtk_get_key_store_ui(tab->keyStore);
+	const int totalKeyCount = keyStoreUI->totalKeyCount();
+	for (int i = 0; i < totalKeyCount; i++) {
+		const KeyStoreUI::Key *const key = keyStoreUI->getKey(i);
+		assert(key != nullptr);
+		if (!key || !key->modified)
+			continue;
+
+		// Save this key.
+		g_key_file_set_string(keyFile, "Keys", key->name.c_str(), key->value.c_str());
+	}
 
 	// Keys saved.
 	tab->changed = false;
