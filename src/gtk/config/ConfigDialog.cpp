@@ -63,7 +63,9 @@ struct _ConfigDialog {
 	// Buttons
 	GtkWidget *btnReset;
 	GtkWidget *btnDefaults;
+	GtkWidget *btnCancel;
 	GtkWidget *btnApply;
+	GtkWidget *btnOK;
 
 	// GtkNotebook tab widget
 	GtkWidget *tabWidget;
@@ -135,14 +137,31 @@ config_dialog_init(ConfigDialog *dialog)
 		convert_accel_to_gtk(C_("ConfigDialog|Button", "Defaults")).c_str(),
 		CONFIG_DIALOG_RESPONSE_DEFAULTS);
 
-	// TODO: GTK2 alignment.
-	// TODO: This merely adds a space. It doesn't force the buttons
-	// to the left if the window is resized.
+	// GTK4 no longer has GTK_STOCK_*, so we'll have to provide it ourselves.
+	dialog->btnCancel = gtk_dialog_add_button(GTK_DIALOG(dialog),
+		convert_accel_to_gtk(C_("ConfigDialog|Button", "&Cancel")).c_str(),
+		GTK_RESPONSE_CANCEL);
+	dialog->btnApply = gtk_dialog_add_button(GTK_DIALOG(dialog),
+		convert_accel_to_gtk(C_("ConfigDialog|Button", "&Apply")).c_str(),
+		GTK_RESPONSE_APPLY);
+	gtk_widget_set_sensitive(dialog->btnApply, FALSE);
+	dialog->btnOK = gtk_dialog_add_button(GTK_DIALOG(dialog),
+		convert_accel_to_gtk(C_("ConfigDialog|Button", "&OK")).c_str(),
+		GTK_RESPONSE_OK);
+
+
+	// Set button alignment.
 	GtkWidget *const parent = gtk_widget_get_parent(dialog->btnReset);
 #if GTK_CHECK_VERSION(4,0,0)
-	// FIXME: Spacer between secondary and primary buttons.
 	gtk_widget_set_halign(parent, GTK_ALIGN_FILL);
 	gtk_box_set_spacing(GTK_BOX(parent), 2);
+
+	// FIXME: This doesn't seem to be working...
+	gtk_widget_set_halign(dialog->btnReset, GTK_ALIGN_START);
+	gtk_widget_set_halign(dialog->btnDefaults, GTK_ALIGN_START);
+	gtk_widget_set_halign(dialog->btnCancel, GTK_ALIGN_END);
+	gtk_widget_set_halign(dialog->btnApply, GTK_ALIGN_END);
+	gtk_widget_set_halign(dialog->btnOK, GTK_ALIGN_END);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	// GTK2, GTK3: May be GtkButtonBox.
 	if (GTK_IS_BUTTON_BOX(parent)) {
@@ -150,18 +169,6 @@ config_dialog_init(ConfigDialog *dialog)
 		gtk_button_box_set_child_secondary(GTK_BUTTON_BOX(parent), dialog->btnDefaults, true);
 	}
 #endif /* GTK_CHECK_VERSION(4,0,0) */
-
-	// GTK4 no longer has GTK_STOCK_*, so we'll have to provide it ourselves.
-	gtk_dialog_add_button(GTK_DIALOG(dialog),
-		convert_accel_to_gtk(C_("ConfigDialog|Button", "&Cancel")).c_str(),
-		GTK_RESPONSE_CANCEL);
-	dialog->btnApply = gtk_dialog_add_button(GTK_DIALOG(dialog),
-		convert_accel_to_gtk(C_("ConfigDialog|Button", "&Apply")).c_str(),
-		GTK_RESPONSE_APPLY);
-	gtk_widget_set_sensitive(dialog->btnApply, FALSE);
-	gtk_dialog_add_button(GTK_DIALOG(dialog),
-		convert_accel_to_gtk(C_("ConfigDialog|Button", "&OK")).c_str(),
-		GTK_RESPONSE_OK);
 
 	// Dialog content area.
 	GtkWidget *const content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
