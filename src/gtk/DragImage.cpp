@@ -43,7 +43,7 @@ typedef GtkBox super;
 typedef GtkEventBoxClass superclass;
 typedef GtkEventBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_EVENT_BOX
-#endif
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 // DragImage class.
 struct _DragImageClass {

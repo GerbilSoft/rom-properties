@@ -115,11 +115,11 @@ typedef GtkBoxClass superclass;
 typedef GtkBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_BOX
 #define USE_GTK_GRID 1	// Use GtkGrid instead of GtkTable.
-#else
+#else /* !GTK_CHECK_VERSION(3,0,0) */
 typedef GtkVBoxClass superclass;
 typedef GtkVBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_VBOX
-#endif
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 
 #if GTK_CHECK_VERSION(3,0,0)
 // libhandy function pointers.
@@ -430,7 +430,7 @@ rom_data_view_init(RomDataView *page)
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Make lblSysInfo bold.
-	PangoAttrList *attr_lst = pango_attr_list_new();
+	PangoAttrList *const attr_lst = pango_attr_list_new();
 	pango_attr_list_insert(attr_lst,
 		pango_attr_weight_new(PANGO_WEIGHT_BOLD));
 	gtk_label_set_attributes(GTK_LABEL(page->lblSysInfo), attr_lst);
@@ -833,8 +833,8 @@ rom_data_view_init_string(RomDataView *page,
 
 			// Credits row.
 #if GTK_CHECK_VERSION(4,0,0)
-			// TODO: "end"?
 			gtk_box_append(GTK_BOX(tab.vbox), widget);
+			gtk_widget_set_valign(tab.vbox, GTK_ALIGN_END);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 			gtk_box_pack_end(GTK_BOX(tab.vbox), widget, false, false, 0);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
@@ -1639,7 +1639,7 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 		GtkWidget *const table = iter->table;	// GtkTable (2.x); GtkGrid (3.x)
 
 #if GTK_CHECK_VERSION(4,0,0)
-		// Get the first child.
+		// Enumerate the child widgets.
 		// NOTE: Widgets are enumerated in forwards order.
 		// TODO: Needs testing!
 		for (GtkWidget *tmp_widget = gtk_widget_get_first_child(table);
@@ -1853,11 +1853,10 @@ rom_data_view_create_options_button(RomDataView *page)
 	//   - NOTE: Nautilus 40 uses HdyWindow, which is a GtkWindow subclass.
 	// - Caja: FMPropertiesWindow
 	// - Nemo: NemoPropertiesWindow
+	parent = gtk_widget_get_parent(parent);
+
 #if GTK_CHECK_VERSION(3,0,0)
 	bool isLibHandy = false;
-#endif /* GTK_CHECK_VERSION(3,0,0) */
-	parent = gtk_widget_get_parent(parent);
-#if GTK_CHECK_VERSION(3,0,0)
 	if (!GTK_IS_DIALOG(parent)) {
 		// NOTE: As of Nautilus 40, there may be an HdyDeck here.
 		// Check if it's HdyDeck using dynamically-loaded function pointers.
@@ -1910,7 +1909,7 @@ rom_data_view_create_options_button(RomDataView *page)
 		g_signal_handler_disconnect(page->btnOptions, handler_id);
 	}
 
-#if GTK_CHECK_VERSION(3,12,0)
+#if GTK_CHECK_VERSION(3,11,5)
 	GtkWidget *headerBar = nullptr;
 	if (isLibHandy) {
 		// Nautilus 40 uses libhandy, which has a different arrangement of widgets.
@@ -1940,7 +1939,7 @@ rom_data_view_create_options_button(RomDataView *page)
 		// Change the arrow to point down instead of up.
 		options_menu_button_set_direction(OPTIONS_MENU_BUTTON(page->btnOptions), GTK_ARROW_DOWN);
 	} else
-#endif /* GTK_CHECK_VERSION(3,12,0) */
+#endif /* GTK_CHECK_VERSION(3,11,5) */
 	{
 		// Reorder the "Options" button so it's to the right of "Help".
 		// NOTE: GTK+ 3.10 introduced the GtkHeaderBar, but

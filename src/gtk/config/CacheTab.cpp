@@ -26,11 +26,11 @@ using std::string;
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_BOX
-#else
+#else /* !GTK_CHECK_VERSION(3,0,0) */
 typedef GtkVBoxClass superclass;
 typedef GtkVBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_VBOX
-#endif
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 
 // CacheTab class
 struct _CacheTabClass {
@@ -154,8 +154,6 @@ cache_tab_init(CacheTab *tab)
 
 #if GTK_CHECK_VERSION(3,0,0)
 	// Add a CSS class for a GtkProgressBar "error" state.
-#if GTK_CHECK_VERSION(3,0,0)
-	// Initialize MessageWidget CSS.
 	GtkCssProvider *const provider = gtk_css_provider_new();
 	GdkDisplay *const display = gdk_display_get_default();
 #  if GTK_CHECK_VERSION(4,0,0)
@@ -179,7 +177,6 @@ cache_tab_init(CacheTab *tab)
 
 	GTK_CSS_PROVIDER_LOAD_FROM_DATA(GTK_CSS_PROVIDER(provider), css_ProgressBar, -1);
 	g_object_unref(provider);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
 	// Connect the signal handlers for the buttons.

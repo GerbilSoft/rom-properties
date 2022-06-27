@@ -32,20 +32,20 @@ using std::vector;
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_BOX
-#else /* !GTK_CHECK_VERSION */
+#else /* !GTK_CHECK_VERSION(3,0,0) */
 typedef GtkHBoxClass superclass;
 typedef GtkHBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_HBOX
-#endif
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 
 // GtkMenuButton was added in GTK 3.6.
 // GMenuModel is also implied by this, since GMenuModel
 // support was added to GTK+ 3.4.
 // NOTE: GtkMenu was removed from GTK4.
-#if GTK_CHECK_VERSION(3,6,0)
+#if GTK_CHECK_VERSION(3,5,6)
 #  define USE_GTK_MENU_BUTTON 1
 #  define USE_G_MENU_MODEL 1
-#endif
+#endif /* GTK_CHECK_VERSION(3,5,6) */
 
 /* Property identifiers */
 typedef enum {
@@ -216,11 +216,7 @@ options_menu_button_init(OptionsMenuButton *widget)
 	GtkWidget *const lblOptions = gtk_label_new(nullptr);
 	gtk_label_set_markup_with_mnemonic(GTK_LABEL(lblOptions), s_title.c_str());
 	gtk_widget_show(lblOptions);
-#  if GTK_CHECK_VERSION(3,0,0)
-	GtkWidget *const hboxOptions = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
-#  else /* !GTK_CHECK_VERSION(3,0,0) */
-	GtkWidget *const hboxOptions = gtk_hbox_new(false, 4);
-#  endif /* GTK_CHECK_VERSION(3,0,0) */
+	GtkWidget *const hboxOptions = rp_gtk_hbox_new(4);
 	gtk_widget_show(hboxOptions);
 
 	// Add the label and image to the GtkBox.

@@ -30,11 +30,11 @@ static const int pal_lc_idx_def = 2;
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_BOX
-#else
+#else /* !GTK_CHECK_VERSION(3,0,0) */
 typedef GtkVBoxClass superclass;
 typedef GtkVBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_VBOX
-#endif
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 
 // OptionsTab class
 struct _OptionsTabClass {

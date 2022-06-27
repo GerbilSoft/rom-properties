@@ -311,14 +311,14 @@ config_dialog_new(void)
 static void
 config_dialog_close(ConfigDialog *dialog)
 {
-#if GTK_CHECK_VERSION(3,10,0)
+#if GTK_CHECK_VERSION(3,9,8)
 	gtk_window_close(GTK_WINDOW(dialog));
-#else /* !GTK_CHECK_VERSION(3,10,0) */
+#else /* !GTK_CHECK_VERSION(3,9,8) */
 	gtk_widget_destroy(GTK_WIDGET(dialog));
 	// NOTE: This doesn't send a delete-event.
 	// HACK: Call gtk_main_quit() here.
 	gtk_main_quit();
-#endif /* GTK_CHECK_VERSION(3,10,0) */
+#endif /* GTK_CHECK_VERSION(3,9,8) */
 }
 
 /**

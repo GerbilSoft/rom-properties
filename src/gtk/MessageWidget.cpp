@@ -37,13 +37,13 @@ static gboolean	timeout_hide_source_func	(gpointer	 user_data);
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_BOX
-#else
+#else /* !GTK_CHECK_VERSION(3,0,0) */
 // Top class is GtkEventBox, since we can't
 // set the background color of GtkHBox.
 typedef GtkEventBoxClass superclass;
 typedef GtkEventBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_EVENT_BOX
-#endif
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 
 static GParamSpec *props[PROP_LAST];
 
