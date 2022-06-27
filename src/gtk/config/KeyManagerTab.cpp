@@ -630,6 +630,14 @@ menuImport_triggered_signal_handler(GtkMenuItem *menuItem, KeyManagerTab *tab)
 
 /** KeyStoreGTK signal handlers **/
 
+static const char *const is_valid_icon_name_tbl[] = {
+	nullptr,		// Empty
+	"dialog-question",	// Unknown
+	"dialog-error",		// NotAKey
+	"dialog-error",		// Incorrect
+	"dialog-ok-apply",	// OK
+};
+
 /**
  * A key in the KeyStore has changed.
  * @param keyStore KeyStoreGTK
@@ -640,7 +648,34 @@ menuImport_triggered_signal_handler(GtkMenuItem *menuItem, KeyManagerTab *tab)
 static void
 keyStore_key_changed_signal_handler(KeyStoreGTK *keyStore, int sectIdx, int keyIdx, KeyManagerTab *tab)
 {
-	// TODO
+	const KeyStoreUI *const keyStoreUI = key_store_gtk_get_key_store_ui(keyStore);
+	GtkTreeModel *const treeModel = GTK_TREE_MODEL(tab->treeStore);
+
+	// Get the iterator from a path.
+	GtkTreeIter treeIterKey;
+	GtkTreePath *const path = gtk_tree_path_new_from_indices(sectIdx, keyIdx, -1);
+	if (!gtk_tree_model_get_iter(treeModel, &treeIterKey, path)) {
+		// Path not found...
+		assert(!"GtkTreePath not found!");
+		gtk_tree_path_free(path);
+		return;
+	}
+	gtk_tree_path_free(path);
+
+	const KeyStoreUI::Key *const key = keyStoreUI->getKey(sectIdx, keyIdx);
+	assert(key != nullptr);
+	if (!key) {
+		return;
+	}
+
+	const char *icon_name = nullptr;
+	if ((int)key->status >= 0 && (int)key->status < ARRAY_SIZE_I(is_valid_icon_name_tbl)) {
+		icon_name = is_valid_icon_name_tbl[(int)key->status];
+	}
+
+	gtk_tree_store_set(tab->treeStore, &treeIterKey,
+		1, key->value.c_str(),	// value
+		2, icon_name, -1);	// Valid?
 }
 
 /**
@@ -677,17 +712,9 @@ keyStore_all_keys_changed_signal_handler(KeyStoreGTK *keyStore, KeyManagerTab *t
 					continue;
 				}
 
-				static const char *const icon_name_tbl[] = {
-					nullptr,		// Empty
-					"dialog-question",	// Unknown
-					"dialog-error",		// NotAKey
-					"dialog-error",		// Incorrect
-					"dialog-ok-apply",	// OK
-				};
-
 				const char *icon_name = nullptr;
-				if ((int)key->status >= 0 && (int)key->status < ARRAY_SIZE_I(icon_name_tbl)) {
-					icon_name = icon_name_tbl[(int)key->status];
+				if ((int)key->status >= 0 && (int)key->status < ARRAY_SIZE_I(is_valid_icon_name_tbl)) {
+					icon_name = is_valid_icon_name_tbl[(int)key->status];
 				}
 
 				gtk_tree_store_set(tab->treeStore, &treeIterKey,
