@@ -150,23 +150,23 @@ class RP_LIBROMDATA_PUBLIC KeyStoreUI
 		 * If successful, and the new value is different,
 		 * keyChanged() will be emitted.
 		 *
-		 * @param sectIdx Section index.
-		 * @param keyIdx Key index.
-		 * @param value New value.
+		 * @param sectIdx Section index
+		 * @param keyIdx Key index
+		 * @param value New value [NULL-terminated UTF-8 string]
 		 * @return 0 on success; non-zero on error.
 		 */
-		int setKey(int sectIdx, int keyIdx, const std::string &value);
+		int setKey(int sectIdx, int keyIdx, const char *value);
 
 		/**
 		 * Set a key's value.
 		 * If successful, and the new value is different,
 		 * keyChanged() will be emitted.
 		 *
-		 * @param idx Flat key index.
-		 * @param value New value.
+		 * @param idx Flat key index
+		 * @param value New value [NULL-terminated UTF-8 string]
 		 * @return 0 on success; non-zero on error.
 		 */
-		int setKey(int idx, const std::string &value);
+		int setKey(int idx, const char *value);
 
 	public /*slots*/:
 		/**

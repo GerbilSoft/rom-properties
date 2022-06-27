@@ -63,7 +63,6 @@ struct _KeyManagerTabClass {
 // KeyManagerTab instance
 struct _KeyManagerTab {
 	super __parent__;
-	bool inhibit;	// If true, inhibit signals.
 	bool changed;	// If true, an option was changed.
 
 	KeyStoreGTK *keyStore;
@@ -117,6 +116,14 @@ static void	keyStore_key_changed_signal_handler		(KeyStoreGTK	*keyStore,
 								 KeyManagerTab	*tab);
 static void	keyStore_all_keys_changed_signal_handler	(KeyStoreGTK	*keyStore,
 								 KeyManagerTab	*tab);
+static void	keyStore_modified_signal_handler		(KeyStoreGTK	*keyStore,
+								 KeyManagerTab	*tab);
+
+// GtkCellRendererText signal handlers
+static void	renderer_edited_signal_handler			(GtkCellRendererText *self,
+								 gchar		*path,
+								 gchar		*new_text,
+								 KeyManagerTab	*tab);
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
@@ -155,6 +162,7 @@ key_manager_tab_init(KeyManagerTab *tab)
 	tab->keyStore = key_store_gtk_new();
 	g_signal_connect(tab->keyStore, "key-changed", G_CALLBACK(keyStore_key_changed_signal_handler), tab);
 	g_signal_connect(tab->keyStore, "all-keys-changed", G_CALLBACK(keyStore_all_keys_changed_signal_handler), tab);
+	g_signal_connect(tab->keyStore, "modified", G_CALLBACK(keyStore_modified_signal_handler), tab);
 
 	// Scroll area for the GtkTreeView.
 #if GTK_CHECK_VERSION(4,0,0)
@@ -192,6 +200,9 @@ key_manager_tab_init(KeyManagerTab *tab)
 	gtk_tree_view_column_set_resizable(column, TRUE);
 	renderer = gtk_cell_renderer_text_new();
 	g_object_set(renderer, "family", "Monospace", nullptr);
+	g_object_set(renderer, "mode", GTK_CELL_RENDERER_MODE_EDITABLE, nullptr);
+	g_object_set(renderer, "editable", TRUE, nullptr);
+	g_signal_connect(renderer, "edited", G_CALLBACK(renderer_edited_signal_handler), tab);
 	gtk_tree_view_column_pack_start(column, renderer, FALSE);
 	gtk_tree_view_column_add_attribute(column, renderer, "text", 1);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tab->treeView), column);
@@ -431,7 +442,15 @@ key_manager_tab_save(KeyManagerTab *tab, GKeyFile *keyFile)
 	g_return_if_fail(IS_KEY_MANAGER_TAB(tab));
 	g_return_if_fail(keyFile != nullptr);
 
+	if (!tab->changed) {
+		// Keys were not changed.
+		return;
+	}
+
 	// TODO
+
+	// Keys saved.
+	tab->changed = false;
 }
 
 /** "Import" menu button **/
@@ -724,4 +743,45 @@ keyStore_all_keys_changed_signal_handler(KeyStoreGTK *keyStore, KeyManagerTab *t
 			g_value_unset(&gv_idx);
 		}
 	}
+}
+
+/**
+ * KeyStore has been modified.
+ * This signal is forwarded to the parent ConfigDialog.
+ * @param keyStore KeyStoreGTK
+ * @param tab KeyManagerTab
+ */
+static void
+keyStore_modified_signal_handler(KeyStoreGTK *keyStore, KeyManagerTab *tab)
+{
+        RP_UNUSED(keyStore);
+
+        // Forward the "modified" signal.
+        tab->changed = true;
+        g_signal_emit_by_name(tab, "modified", NULL);
+}
+
+/** GtkCellRendererText signal handlers **/
+
+static void
+renderer_edited_signal_handler(GtkCellRendererText *self, gchar *path, gchar *new_text, KeyManagerTab *tab)
+{
+	RP_UNUSED(self);
+	RP_UNUSED(tab);
+
+	KeyStoreUI *const keyStoreUI = key_store_gtk_get_key_store_ui(tab->keyStore);
+
+	// Convert the path to sectIdx/keyIdx.
+	int sectIdx, keyIdx; char dummy;
+	int ret = sscanf(path, "%d:%d%c", &sectIdx, &keyIdx, &dummy);
+	assert(ret == 2);
+	if (ret != 2) {
+		// Path was not in the expected format.
+		return;
+	}
+
+	// NOTE: GtkCellRendererText won't update the treeStore itself.
+	// If the key is valid, KeyStoreUI will emit a 'key-changed' signal,
+	// and our 'key-changed' signal handler will update the treeStore.
+	keyStoreUI->setKey(sectIdx, keyIdx, new_text);
 }

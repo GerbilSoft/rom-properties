@@ -102,7 +102,7 @@ class KeyStoreGTKPrivate final : public LibRomData::KeyStoreUI
 		 */
 		void modified_int(void) final
 		{
-			g_signal_emit(q, signals[SIGNAL_ALL_KEYS_CHANGED], 0);
+			g_signal_emit(q, signals[SIGNAL_MODIFIED], 0);
 		}
 };
 
