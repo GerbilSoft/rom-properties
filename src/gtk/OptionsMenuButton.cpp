@@ -211,6 +211,7 @@ options_menu_button_init(OptionsMenuButton *widget)
 
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_menu_button_set_label(GTK_MENU_BUTTON(widget), s_title.c_str());
+	gtk_menu_button_set_use_underline(GTK_MENU_BUTTON(widget), TRUE);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	GtkWidget *const lblOptions = gtk_label_new(nullptr);
 	gtk_label_set_markup_with_mnemonic(GTK_LABEL(lblOptions), s_title.c_str());

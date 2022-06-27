@@ -210,6 +210,7 @@ key_manager_tab_init(KeyManagerTab *tab)
 
 #if GTK_CHECK_VERSION(4,0,0) && defined(USE_GTK_MENU_BUTTON)
 	gtk_menu_button_set_label(GTK_MENU_BUTTON(tab->btnImport), s_import.c_str());
+	gtk_menu_button_set_use_underline(GTK_MENU_BUTTON(tab->btnImport), TRUE);
 	gtk_menu_button_set_direction(GTK_MENU_BUTTON(tab->btnImport), GTK_ARROW_UP);
 #else /* !GTK_CHECK_VERSION(4,0,0) || !defined(USE_GTK_MENU_BUTTON) */
 	// GtkMenuButton in GTK3 only supports a label *or* an image by default.
