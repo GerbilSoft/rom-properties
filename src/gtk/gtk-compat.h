@@ -372,15 +372,17 @@ gtk_get_micro_version(void)
 #if !GTK_CHECK_VERSION(4,0,0)
 // Prior to GTK4, GtkCheckButton inherited from GtkToggleButton.
 // In GTK4, the two are now distinct classes.
+// NOTE: Casting directly to GtkToggleButton to avoid a
+// runtime GObject class check.
 static inline void
 gtk_check_button_set_active(GtkCheckButton *self, gboolean setting)
 {
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self), setting);
+	gtk_toggle_button_set_active((GtkToggleButton*)self, setting);
 }
 static inline gboolean
 gtk_check_button_get_active(GtkCheckButton *self)
 {
-	return gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(self));
+	return gtk_toggle_button_get_active((GtkToggleButton*)self);
 }
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 
