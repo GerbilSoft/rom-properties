@@ -159,7 +159,8 @@ key_manager_tab_init(KeyManagerTab *tab)
 
 	// Create the GtkTreeStore and GtkTreeView.
 	// Columns: Key Name, Value, Valid?, Flat Key Index
-	tab->treeStore = gtk_tree_store_new(4, G_TYPE_STRING, G_TYPE_STRING, PIMGTYPE_GOBJECT_TYPE, G_TYPE_INT);
+	// NOTE: "Valid?" column contains an icon name.
+	tab->treeStore = gtk_tree_store_new(4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT);
 	tab->treeView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(tab->treeStore));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tab->treeView), TRUE);
 	gtk_tree_view_set_enable_tree_lines(GTK_TREE_VIEW(tab->treeView), TRUE);
@@ -191,7 +192,12 @@ key_manager_tab_init(KeyManagerTab *tab)
 	gtk_tree_view_column_set_resizable(column, FALSE);
 	renderer = gtk_cell_renderer_pixbuf_new();
 	gtk_tree_view_column_pack_start(column, renderer, FALSE);
-	gtk_tree_view_column_add_attribute(column, renderer, GTK_CELL_RENDERER_PIXBUF_PROPERTY, 2);
+	gtk_tree_view_column_add_attribute(column, renderer, "icon-name", 2);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(tab->treeView), column);
+
+	// Dummy column to shrink Column 3.
+	column = gtk_tree_view_column_new();
+	gtk_tree_view_column_set_resizable(column, FALSE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tab->treeView), column);
 
 	// "Import" button.
@@ -420,8 +426,23 @@ key_manager_tab_reset(KeyManagerTab *tab)
 				// TODO: "Valid?" icon.
 				const int idx = g_value_get_int(&gv_idx);
 				const KeyStoreUI::Key *const key = keyStore->getKey(idx);
+
+				static const char *const icon_name_tbl[] = {
+					nullptr,		// Empty
+					"dialog-question",	// Unknown
+					"dialog-error",		// NotAKey
+					"dialog-error",		// Incorrect
+					"dialog-ok-apply",	// OK
+				};
+
+				const char *icon_name = nullptr;
+				if ((int)key->status >= 0 && (int)key->status < ARRAY_SIZE_I(icon_name_tbl)) {
+					icon_name = icon_name_tbl[(int)key->status];
+				}
+
 				gtk_tree_store_set(tab->treeStore, &treeIterKey,
-					1, key->value.c_str(), -1);	// value
+					1, key->value.c_str(),	// value
+					2, icon_name, -1);	// Valid?
 			}
 			g_value_unset(&gv_idx);
 		}
