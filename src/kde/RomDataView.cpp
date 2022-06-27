@@ -735,8 +735,6 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 
 	// Set up column and header visibility.
 	if (listDataDesc.names) {
-		QStringList columnNames;
-		columnNames.reserve(colCount);
 		int col = 0;
 		const auto names_cend = listDataDesc.names->cend();
 		for (auto iter = listDataDesc.names->cbegin(); iter != names_cend && col < colCount; ++iter, col++) {
