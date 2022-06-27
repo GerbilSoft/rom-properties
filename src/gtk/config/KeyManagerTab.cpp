@@ -110,6 +110,14 @@ static void	menuImport_triggered_signal_handler		(GtkMenuItem	*menuItem,
 								 KeyManagerTab	*tab);
 #endif /* USE_G_MENU_MODEL */
 
+// KeyStoreGTK signal handlers
+static void	keyStore_key_changed_signal_handler		(KeyStoreGTK	*keyStore,
+								 int		 sectIdx,
+								 int		 keyIdx,
+								 KeyManagerTab	*tab);
+static void	keyStore_all_keys_changed_signal_handler	(KeyStoreGTK	*keyStore,
+								 KeyManagerTab	*tab);
+
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
 G_DEFINE_TYPE_EXTENDED(KeyManagerTab, key_manager_tab,
@@ -145,6 +153,8 @@ key_manager_tab_init(KeyManagerTab *tab)
 
 	// Initialize the KeyStoreGTK.
 	tab->keyStore = key_store_gtk_new();
+	g_signal_connect(tab->keyStore, "key-changed", G_CALLBACK(keyStore_key_changed_signal_handler), tab);
+	g_signal_connect(tab->keyStore, "all-keys-changed", G_CALLBACK(keyStore_all_keys_changed_signal_handler), tab);
 
 	// Scroll area for the GtkTreeView.
 #if GTK_CHECK_VERSION(4,0,0)
@@ -321,18 +331,18 @@ key_manager_tab_init_keys(KeyManagerTab *tab)
 	// FIXME: GtkTreeView doesn't have anything equivalent to
 	// Qt's QTreeView::setFirstColumnSpanned().
 
-	const KeyStoreUI *const keyStore = key_store_gtk_get_key_store_ui(tab->keyStore);
-	const int sectCount = keyStore->sectCount();
+	const KeyStoreUI *const keyStoreUI = key_store_gtk_get_key_store_ui(tab->keyStore);
+	const int sectCount = keyStoreUI->sectCount();
 	int idx = 0;	// flat key index
 	for (int sectIdx = 0; sectIdx < sectCount; sectIdx++) {
 		GtkTreeIter treeIterSect;
 		gtk_tree_store_append(tab->treeStore, &treeIterSect, nullptr);
 		gtk_tree_store_set(tab->treeStore, &treeIterSect,
-			0, keyStore->sectName(sectIdx), -1);
+			0, keyStoreUI->sectName(sectIdx), -1);
 
-		const int keyCount = keyStore->keyCount(sectIdx);
+		const int keyCount = keyStoreUI->keyCount(sectIdx);
 		for (int keyIdx = 0; keyIdx < keyCount; keyIdx++, idx++) {
-			const KeyStoreUI::Key *const key = keyStore->getKey(sectIdx, keyIdx);
+			const KeyStoreUI::Key *const key = keyStoreUI->getKey(sectIdx, keyIdx);
 			GtkTreeIter treeIterKey;
 			gtk_tree_store_append(tab->treeStore, &treeIterKey, &treeIterSect);
 			gtk_tree_store_set(tab->treeStore, &treeIterKey,
@@ -406,48 +416,6 @@ key_manager_tab_reset(KeyManagerTab *tab)
 	// Reset/reload the key store.
 	KeyStoreUI *const keyStore = key_store_gtk_get_key_store_ui(tab->keyStore);
 	keyStore->reset();
-
-	// Load the key values and "Valid?" icons.
-	// TODO: Move this to the "all-keys-changed" signal handler.
-	GtkTreeModel *const treeModel = GTK_TREE_MODEL(tab->treeStore);
-	GtkTreeIter treeIterSect;
-	for (bool validSect = gtk_tree_model_get_iter_first(treeModel, &treeIterSect);
-	     validSect; validSect = gtk_tree_model_iter_next(treeModel, &treeIterSect))
-	{
-		// treeIterSect points to a section.
-		// Iterate over all keys in the section.
-		GtkTreeIter treeIterKey;
-		for (bool validKey = gtk_tree_model_iter_children(treeModel, &treeIterKey, &treeIterSect);
-		     validKey; validKey = gtk_tree_model_iter_next(treeModel, &treeIterKey))
-		{
-			// Get the flat key index.
-			GValue gv_idx = G_VALUE_INIT;
-			gtk_tree_model_get_value(treeModel, &treeIterKey, 3, &gv_idx);
-			if (G_VALUE_HOLDS_INT(&gv_idx)) {
-				// TODO: "Valid?" icon.
-				const int idx = g_value_get_int(&gv_idx);
-				const KeyStoreUI::Key *const key = keyStore->getKey(idx);
-
-				static const char *const icon_name_tbl[] = {
-					nullptr,		// Empty
-					"dialog-question",	// Unknown
-					"dialog-error",		// NotAKey
-					"dialog-error",		// Incorrect
-					"dialog-ok-apply",	// OK
-				};
-
-				const char *icon_name = nullptr;
-				if ((int)key->status >= 0 && (int)key->status < ARRAY_SIZE_I(icon_name_tbl)) {
-					icon_name = icon_name_tbl[(int)key->status];
-				}
-
-				gtk_tree_store_set(tab->treeStore, &treeIterKey,
-					1, key->value.c_str(),	// value
-					2, icon_name, -1);	// Valid?
-			}
-			g_value_unset(&gv_idx);
-		}
-	}
 }
 
 static void
@@ -659,3 +627,74 @@ menuImport_triggered_signal_handler(GtkMenuItem *menuItem, KeyManagerTab *tab)
 	key_manager_tab_handle_menu_action(tab, id);
 }
 #endif /* USE_G_MENU_MODEL */
+
+/** KeyStoreGTK signal handlers **/
+
+/**
+ * A key in the KeyStore has changed.
+ * @param keyStore KeyStoreGTK
+ * @param sectIdx Section index
+ * @param keyIdx Key index
+ * @param tab KeyManagerTab
+ */
+static void
+keyStore_key_changed_signal_handler(KeyStoreGTK *keyStore, int sectIdx, int keyIdx, KeyManagerTab *tab)
+{
+	// TODO
+}
+
+/**
+ * All keys in the KeyStore have changed.
+ * @param keyStore KeyStoreGTK
+ * @param tab KeyManagerTab
+ */
+static void
+keyStore_all_keys_changed_signal_handler(KeyStoreGTK *keyStore, KeyManagerTab *tab)
+{
+	const KeyStoreUI *const keyStoreUI = key_store_gtk_get_key_store_ui(keyStore);
+	GtkTreeModel *const treeModel = GTK_TREE_MODEL(tab->treeStore);
+
+	// Load the key values and "Valid?" icons.
+	GtkTreeIter treeIterSect;
+	for (bool validSect = gtk_tree_model_get_iter_first(treeModel, &treeIterSect);
+	     validSect; validSect = gtk_tree_model_iter_next(treeModel, &treeIterSect))
+	{
+		// treeIterSect points to a section.
+		// Iterate over all keys in the section.
+		GtkTreeIter treeIterKey;
+		for (bool validKey = gtk_tree_model_iter_children(treeModel, &treeIterKey, &treeIterSect);
+		     validKey; validKey = gtk_tree_model_iter_next(treeModel, &treeIterKey))
+		{
+			// Get the flat key index.
+			GValue gv_idx = G_VALUE_INIT;
+			gtk_tree_model_get_value(treeModel, &treeIterKey, 3, &gv_idx);
+			if (G_VALUE_HOLDS_INT(&gv_idx)) {
+				const int idx = g_value_get_int(&gv_idx);
+				const KeyStoreUI::Key *const key = keyStoreUI->getKey(idx);
+				assert(key != nullptr);
+				if (!key) {
+					g_value_unset(&gv_idx);
+					continue;
+				}
+
+				static const char *const icon_name_tbl[] = {
+					nullptr,		// Empty
+					"dialog-question",	// Unknown
+					"dialog-error",		// NotAKey
+					"dialog-error",		// Incorrect
+					"dialog-ok-apply",	// OK
+				};
+
+				const char *icon_name = nullptr;
+				if ((int)key->status >= 0 && (int)key->status < ARRAY_SIZE_I(icon_name_tbl)) {
+					icon_name = icon_name_tbl[(int)key->status];
+				}
+
+				gtk_tree_store_set(tab->treeStore, &treeIterKey,
+					1, key->value.c_str(),	// value
+					2, icon_name, -1);	// Valid?
+			}
+			g_value_unset(&gv_idx);
+		}
+	}
+}
