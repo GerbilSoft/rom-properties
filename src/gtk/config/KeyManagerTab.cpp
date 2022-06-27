@@ -393,8 +393,8 @@ key_manager_tab_new(void)
 static gboolean
 key_manager_tab_has_defaults(KeyManagerTab *tab)
 {
-	g_return_val_if_fail(IS_KEY_MANAGER_TAB(tab), false);
-	return true;
+	g_return_val_if_fail(IS_KEY_MANAGER_TAB(tab), FALSE);
+	return FALSE;
 }
 
 static void
