@@ -635,12 +635,12 @@ static void InitDialog(HWND hDlg)
 	// message and disable the buttons.
 	bHasMsvc32 = CheckMsvc(false);
 
-	// MSVC 2019 runtime requires Windows Vista or later.
+	// MSVC 2022 runtime requires Windows Vista or later.
 	osvi.dwOSVersionInfoSize = sizeof(osvi);
 	if (GetVersionEx(&osvi) != 0 && osvi.dwMajorVersion >= 6) {
 		// Windows Vista or later. Use MSVC 2019.
-		vcyear = 2019;
-		vcver = 16;
+		vcyear = 2022;
+		vcver = 17;
 	} else {
 		// Windows XP/2003 or earlier, or GetVersionEx() failed.
 		// Use MSVC 2017.
@@ -658,8 +658,8 @@ static void InitDialog(HWND hDlg)
 				_T("The 32-bit MSVC 2015-%u runtime is not installed."), vcyear);
 			_sntprintf(line2, _countof(line2),
 				_T("You can download the 32-bit MSVC 2015-%u runtime at:\n")
-				BULLET _T(" <a href=\"https://aka.ms/vs/%u/release/vc_redist.x86.exe\">")
-					_T("https://aka.ms/vs/%u/release/vc_redist.x86.exe</a>"),
+				BULLET _T(" <a href=\"https://aka.ms/vs/%u/release/VC_redist.x86.exe\">")
+					_T("https://aka.ms/vs/%u/release/VC_redist.x86.exe</a>"),
 				vcyear, vcver, vcver);
 		}
 	} else
@@ -673,10 +673,10 @@ static void InitDialog(HWND hDlg)
 				_T("The 32-bit and 64-bit MSVC 2015-%u runtimes are not installed."), vcyear);
 			_sntprintf(line2, _countof(line2),
 				_T("You can download the MSVC 2015-%u runtime at:\n")
-				BULLET _T(" 32-bit: <a href=\"https://aka.ms/vs/%u/release/vc_redist.x86.exe\">")
-					_T("https://aka.ms/vs/%u/release/vc_redist.x86.exe</a>\n")
-				BULLET _T(" 64-bit: <a href=\"https://aka.ms/vs/%u/release/vc_redist.x64.exe\">")
-					_T("https://aka.ms/vs/%u/release/vc_redist.x64.exe</a>"),
+				BULLET _T(" 32-bit: <a href=\"https://aka.ms/vs/%u/release/VC_redist.x86.exe\">")
+					_T("https://aka.ms/vs/%u/release/VC_redist.x86.exe</a>\n")
+				BULLET _T(" 64-bit: <a href=\"https://aka.ms/vs/%u/release/VC_redist.x64.exe\">")
+					_T("https://aka.ms/vs/%u/release/VC_redist.x64.exe</a>"),
 				vcyear, vcver, vcver, vcver, vcver);
 		} else if (!bHasMsvc32 && bHasMsvc64) {
 			// 32-bit MSVCRT is missing.
@@ -684,8 +684,8 @@ static void InitDialog(HWND hDlg)
 				_T("The 32-bit MSVC 2015-%u runtime is not installed."), vcyear);
 			_sntprintf(line2, _countof(line2),
 				_T("You can download the 32-bit MSVC 2015-%u runtime at:\n")
-				BULLET _T(" <a href=\"https://aka.ms/vs/%u/release/vc_redist.x86.exe\">")
-					_T("https://aka.ms/vs/%u/release/vc_redist.x86.exe</a>"),
+				BULLET _T(" <a href=\"https://aka.ms/vs/%u/release/VC_redist.x86.exe\">")
+					_T("https://aka.ms/vs/%u/release/VC_redist.x86.exe</a>"),
 				vcyear, vcver, vcver);
 		} else if (bHasMsvc32 && !bHasMsvc64) {
 			// 64-bit MSVCRT is missing.
@@ -693,8 +693,8 @@ static void InitDialog(HWND hDlg)
 				_T("The 64-bit MSVC 2015-%u runtime is not installed."), vcyear);
 			_sntprintf(line2, _countof(line2),
 				_T("You can download the 64-bit MSVC 2015-%u runtime at:\n")
-				BULLET _T(" <a href=\"https://aka.ms/vs/%u/release/vc_redist.x64.exe\">")
-					_T("https://aka.ms/vs/%u/release/vc_redist.x64.exe</a>"),
+				BULLET _T(" <a href=\"https://aka.ms/vs/%u/release/VC_redist.x64.exe\">")
+					_T("https://aka.ms/vs/%u/release/VC_redist.x64.exe</a>"),
 				vcyear, vcver, vcver);
 		}
 	}
