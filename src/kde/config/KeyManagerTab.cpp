@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyManagerTab.cpp: Key Manager tab for rp-config.                       *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -382,13 +382,13 @@ void KeyManagerTab::save(QSettings *pSettings)
 	// Save the keys.
 	const int totalKeyCount = d->keyStore->totalKeyCount();
 	for (int i = 0; i < totalKeyCount; i++) {
-		const KeyStoreQt::Key *const pKey = d->keyStore->getKey(i);
-		assert(pKey != nullptr);
-		if (!pKey || !pKey->modified)
+		const KeyStoreQt::Key *const key = d->keyStore->getKey(i);
+		assert(key != nullptr);
+		if (!key || !key->modified)
 			continue;
 
 		// Save this key.
-		pSettings->setValue(U82Q(pKey->name), U82Q(pKey->value));
+		pSettings->setValue(U82Q(key->name), U82Q(key->value));
 	}
 
 	// End of [Keys]
