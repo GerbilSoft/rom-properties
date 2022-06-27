@@ -191,7 +191,7 @@ config_dialog_init(ConfigDialog *dialog)
 		convert_accel_to_gtk(C_("ConfigDialog", "&Image Types")).c_str());
 	gtk_widget_show(lblTab);
 	dialog->tabImageTypes = image_types_tab_new();
-	g_object_set(dialog->tabImageTypes, "margin", 8, nullptr);
+	gtk_widget_set_margin(dialog->tabImageTypes, 8);
 	gtk_widget_show(dialog->tabImageTypes);
 	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabImageTypes, lblTab);
 	g_signal_connect(dialog->tabImageTypes, "modified",
@@ -201,7 +201,7 @@ config_dialog_init(ConfigDialog *dialog)
 		convert_accel_to_gtk(C_("ConfigDialog", "&Systems")).c_str());
 	gtk_widget_show(lblTab);
 	dialog->tabSystems = systems_tab_new();
-	g_object_set(dialog->tabSystems, "margin", 8, nullptr);
+	gtk_widget_set_margin(dialog->tabSystems, 8);
 	gtk_widget_show(dialog->tabSystems);
 	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabSystems, lblTab);
 	g_signal_connect(dialog->tabSystems, "modified",
@@ -211,7 +211,7 @@ config_dialog_init(ConfigDialog *dialog)
 		convert_accel_to_gtk(C_("ConfigDialog", "&Options")).c_str());
 	gtk_widget_show(lblTab);
 	dialog->tabOptions = options_tab_new();
-	g_object_set(dialog->tabOptions, "margin", 8, nullptr);
+	gtk_widget_set_margin(dialog->tabOptions, 8);
 	gtk_widget_show(dialog->tabOptions);
 	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabOptions, lblTab);
 	g_signal_connect(dialog->tabOptions, "modified",
@@ -220,7 +220,7 @@ config_dialog_init(ConfigDialog *dialog)
 	lblTab = gtk_label_new_with_mnemonic(C_("ConfigDialog", "Thumbnail Cache"));
 	gtk_widget_show(lblTab);
 	dialog->tabCache = cache_tab_new();
-	g_object_set(dialog->tabCache, "margin", 8, nullptr);
+	gtk_widget_set_margin(dialog->tabCache, 8);
 	gtk_widget_show(dialog->tabCache);
 	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabCache, lblTab);
 	g_signal_connect(dialog->tabCache, "modified",
@@ -230,7 +230,7 @@ config_dialog_init(ConfigDialog *dialog)
 		convert_accel_to_gtk(C_("ConfigDialog", "&Achievements")).c_str());
 	gtk_widget_show(lblTab);
 	dialog->tabAchievements = achievements_tab_new();
-	g_object_set(dialog->tabAchievements, "margin", 8, nullptr);
+	gtk_widget_set_margin(dialog->tabAchievements, 8);
 	gtk_widget_show(dialog->tabAchievements);
 	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabAchievements, lblTab);
 	g_signal_connect(dialog->tabAchievements, "modified",
@@ -241,7 +241,7 @@ config_dialog_init(ConfigDialog *dialog)
 		convert_accel_to_gtk(C_("ConfigDialog", "&Key Manager")).c_str());
 	gtk_widget_show(lblTab);
 	dialog->tabKeyManager = key_manager_tab_new();
-	g_object_set(dialog->tabKeyManager, "margin", 8, nullptr);
+	gtk_widget_set_margin(dialog->tabKeyManager, 8);
 	gtk_widget_show(dialog->tabKeyManager);
 	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabKeyManager, lblTab);
 	g_signal_connect(dialog->tabKeyManager, "modified",
@@ -252,7 +252,7 @@ config_dialog_init(ConfigDialog *dialog)
 		convert_accel_to_gtk(C_("ConfigDialog", "Abou&t")).c_str());
 	gtk_widget_show(lblTab);
 	dialog->tabAbout = about_tab_new();
-	g_object_set(dialog->tabAbout, "margin", 8, nullptr);
+	gtk_widget_set_margin(dialog->tabAbout, 8);
 	gtk_widget_show(dialog->tabAbout);
 	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabAbout, lblTab);
 	g_signal_connect(dialog->tabAbout, "modified",

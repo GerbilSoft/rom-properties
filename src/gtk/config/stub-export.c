@@ -17,8 +17,25 @@ typedef void *GtkApplication;
 
 #if GTK_CHECK_VERSION(4,0,0)
 static bool stub_quit;
-#endif /* GTK_CHECK_VERSION(4,0,0) */
 
+/**
+ * ConfigDialog was closed by clicking the X button.
+ * @param dialog ConfigDialog
+ * @param user_data
+ */
+static gboolean
+config_dialog_close_request(ConfigDialog *dialog, gpointer user_data)
+{
+	RP_UNUSED(dialog);
+	RP_UNUSED(user_data);
+
+	// Quit the application.
+	stub_quit = true;
+
+	// Continue processing.
+	return FALSE;
+}
+#else /* !GTK_CHECK_VERSION(4,0,0) */
 /**
  * ConfigDialog was closed by clicking the X button.
  * @param dialog ConfigDialog
@@ -26,25 +43,19 @@ static bool stub_quit;
  * @param user_data
  */
 static gboolean
-config_dialog_delete_event(ConfigDialog *dialog,
-			   GdkEvent     *event,
-			   gpointer      user_data)
+config_dialog_delete_event(ConfigDialog *dialog, GdkEvent *event, gpointer user_data)
 {
 	RP_UNUSED(dialog);
 	RP_UNUSED(event);
 	RP_UNUSED(user_data);
 
 	// Quit the application.
-#if GTK_CHECK_VERSION(4,0,0)
-	stub_quit = true;
-#else /* !GTK_CHECK_VERSION(4,0,0) */
 	gtk_main_quit();
-#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Continue processing.
 	return FALSE;
 }
-
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 /**
  * Exported function for the rp-config stub.
@@ -96,7 +107,11 @@ int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 
 	// Connect signals.
 	// We need to ensure the GTK main loop exits when the window is closed.
+#if GTK_CHECK_VERSION(4,0,0)
+	g_signal_connect(dialog, "close-request", G_CALLBACK(config_dialog_close_request), NULL);
+#else /* !GTK_CHECK_VERSION(4,0,0) */
 	g_signal_connect(dialog, "delete-event", G_CALLBACK(config_dialog_delete_event), NULL);
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// TODO: Get the return value?
 #if GTK_CHECK_VERSION(4,0,0)

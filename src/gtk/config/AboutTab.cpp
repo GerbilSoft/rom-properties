@@ -200,6 +200,16 @@ about_tab_init(AboutTab *tab)
 	gtk_box_append(GTK_BOX(hboxTitle), tab->imgLogo);
 	gtk_box_append(GTK_BOX(hboxTitle), tab->lblTitle);
 
+	// FIXME: This isn't working; the GtkScrolledWindows are too small...
+	gtk_widget_set_halign(tabWidget, GTK_ALIGN_FILL);
+	gtk_widget_set_valign(tabWidget, GTK_ALIGN_FILL);
+	gtk_widget_set_halign(scrlCredits, GTK_ALIGN_FILL);
+	gtk_widget_set_valign(scrlCredits, GTK_ALIGN_FILL);
+	gtk_widget_set_halign(scrlLibraries, GTK_ALIGN_FILL);
+	gtk_widget_set_valign(scrlLibraries, GTK_ALIGN_FILL);
+	gtk_widget_set_halign(scrlSupport, GTK_ALIGN_FILL);
+	gtk_widget_set_valign(scrlSupport, GTK_ALIGN_FILL);
+
 	gtk_box_append(GTK_BOX(tab), hboxTitle);
 	gtk_box_append(GTK_BOX(tab), tabWidget);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
@@ -284,14 +294,17 @@ about_tab_init_program_title_text(GtkImage *imgLogo, GtkLabel *lblTitle)
 
 	// Get the 128x128 icon.
 	// TODO: Determine the best size.
+	static const int icon_size = 128;
 #if GTK_CHECK_VERSION(4,0,0)
 	// TODO: Get text direction from lblTitle instead of imgLogo?
+	// FIXME: This is loading a 32x32 icon...
 	GtkIconPaintable *const icon = gtk_icon_theme_lookup_icon(
 		gtk_icon_theme_get_for_display(gtk_widget_get_display(GTK_WIDGET(imgLogo))),
-		"media-flash", nullptr, 128, 1,
+		"media-flash", nullptr, icon_size, 1,
 		gtk_widget_get_direction(GTK_WIDGET(imgLogo)), (GtkIconLookupFlags)0);
 
 	if (icon) {
+		gtk_image_set_icon_size(imgLogo, GTK_ICON_SIZE_LARGE);
 		gtk_image_set_from_paintable(imgLogo, GDK_PAINTABLE(icon));
 		g_object_unref(icon);
 	} else {
@@ -299,7 +312,7 @@ about_tab_init_program_title_text(GtkImage *imgLogo, GtkLabel *lblTitle)
 	}
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	GdkPixbuf *const icon = gtk_icon_theme_load_icon(
-		gtk_icon_theme_get_default(), "media-flash", 128,
+		gtk_icon_theme_get_default(), "media-flash", icon_size,
 		(GtkIconLookupFlags)0, nullptr);
 	if (icon) {
 		gtk_image_set_from_pixbuf(imgLogo, icon);

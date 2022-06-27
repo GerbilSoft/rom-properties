@@ -87,7 +87,7 @@ achievements_tab_init(AchievementsTab *tab)
 	GtkWidget *const scrolledWindow = gtk_scrolled_window_new();
 	gtk_scrolled_window_set_has_frame(GTK_SCROLLED_WINDOW(scrolledWindow), true);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-	GtkWidget *scrolledWindow = gtk_scrolled_window_new(nullptr, nullptr);
+	GtkWidget *const scrolledWindow = gtk_scrolled_window_new(nullptr, nullptr);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolledWindow), GTK_SHADOW_IN);
 #endif /* GTK_CHECK_VERSION */
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledWindow),
@@ -129,6 +129,10 @@ achievements_tab_init(AchievementsTab *tab)
 
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_box_append(GTK_BOX(tab), scrolledWindow);
+
+	// FIXME: This isn't working; the GtkScrolledWindow is too small...
+	gtk_widget_set_halign(scrolledWindow, GTK_ALIGN_FILL);
+	gtk_widget_set_valign(scrolledWindow, GTK_ALIGN_FILL);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	gtk_widget_show(scrolledWindow);
 	gtk_widget_show(tab->treeView);
