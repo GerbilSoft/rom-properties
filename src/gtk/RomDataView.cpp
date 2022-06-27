@@ -2019,7 +2019,7 @@ rom_data_view_update_display(RomDataView *page)
 
 			auto &tab = *tabIter;
 
-			tab.vbox = RP_gtk_vbox_new(8);
+			tab.vbox = rp_gtk_vbox_new(8);
 #if USE_GTK_GRID
 			tab.table = gtk_grid_new();
 			gtk_grid_set_row_spacing(GTK_GRID(tab.table), 2);

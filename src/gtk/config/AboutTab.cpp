@@ -114,7 +114,7 @@ about_tab_init(AboutTab *tab)
 	gtk_box_set_spacing(GTK_BOX(tab), 8);
 
 	// HBox for the logo and title.
-	GtkWidget *const hboxTitle = RP_gtk_hbox_new(6);
+	GtkWidget *const hboxTitle = rp_gtk_hbox_new(6);
 	GTK_WIDGET_HALIGN_CENTER(hboxTitle);
 	// Logo and title labels. (Will be filled in later.)
 	tab->imgLogo = gtk_image_new();

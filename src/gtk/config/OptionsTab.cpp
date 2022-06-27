@@ -105,7 +105,7 @@ options_tab_init(OptionsTab *tab)
 	// Create the "Downloads" frame.
 	// FIXME: GtkFrame doesn't support mnemonics?
 	GtkWidget *const fraDownloads = gtk_frame_new(C_("SystemsTab", "Downloads"));
-	GtkWidget *const vboxDownloads = RP_gtk_vbox_new(6);
+	GtkWidget *const vboxDownloads = rp_gtk_vbox_new(6);
 	gtk_widget_set_margin(vboxDownloads, 6);
 	gtk_frame_set_child(GTK_FRAME(fraDownloads), vboxDownloads);
 
@@ -122,7 +122,7 @@ options_tab_init(OptionsTab *tab)
 			"This helps to identify where cached files were downloaded from."));
 
 	// GameTDB PAL hbox.
-	GtkWidget *const hboxGameTDBPAL = RP_gtk_hbox_new(6);
+	GtkWidget *const hboxGameTDBPAL = rp_gtk_hbox_new(6);
 	GtkWidget *const lblGameTDBPAL = gtk_label_new(C_("OptionsTab", "Language for PAL titles on GameTDB:"));
 	tab->cboGameTDBPAL = language_combo_box_new();
 	language_combo_box_set_force_pal(LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL), true);
@@ -131,7 +131,7 @@ options_tab_init(OptionsTab *tab)
 	// Create the "Options" frame.
 	// FIXME: GtkFrame doesn't support mnemonics?
 	GtkWidget *const fraOptions = gtk_frame_new(C_("SystemsTab", "Options"));
-	GtkWidget *const vboxOptions = RP_gtk_vbox_new(6);
+	GtkWidget *const vboxOptions = rp_gtk_vbox_new(6);
 	gtk_widget_set_margin(vboxOptions, 6);
 	gtk_frame_set_child(GTK_FRAME(fraOptions), vboxOptions);
 

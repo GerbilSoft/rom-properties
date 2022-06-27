@@ -188,9 +188,14 @@ void ImageTypesTabPrivate::createGridLabels(void)
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 		GTK_LABEL_XALIGN_CENTER(lblImageType);
 		gtk_label_set_justify(GTK_LABEL(lblImageType), GTK_JUSTIFY_CENTER);
+#if GTK_CHECK_VERSION(3,0,0)
 		gtk_widget_set_margin_start(lblImageType, 3);
 		gtk_widget_set_margin_end(lblImageType, 3);
 		gtk_widget_set_margin_bottom(lblImageType, 4);
+#else /* !GTK_CHECK_VERSION(3,0,0) */
+		g_object_set(G_OBJECT(lblImageType), "xpad", 3, nullptr);
+		g_object_set(G_OBJECT(lblImageType), "ypad", 4, nullptr);
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 
 #ifdef USE_GTK_GRID
 		gtk_grid_attach(GTK_GRID(q->table), lblImageType, i+1, 0, 1, 1);
@@ -207,7 +212,11 @@ void ImageTypesTabPrivate::createGridLabels(void)
 		gtk_widget_show(lblSysName);
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 		GTK_LABEL_XALIGN_LEFT(lblSysName);
+#if GTK_CHECK_VERSION(3,0,0)
 		gtk_widget_set_margin_end(lblSysName, 6);
+#else /* !GTK_CHECK_VERSION(3,0,0) */
+		g_object_set(G_OBJECT(lblSysName), "xpad", 6, nullptr);
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 
 #ifdef USE_GTK_GRID
 		gtk_grid_attach(GTK_GRID(q->table), lblSysName, 0, sys+1, 1, 1);

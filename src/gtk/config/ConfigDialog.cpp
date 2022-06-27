@@ -179,7 +179,11 @@ config_dialog_init(ConfigDialog *dialog)
 	dialog->tabWidget_switch_page = g_signal_connect(
 		dialog->tabWidget, "switch-page",
 		G_CALLBACK(config_dialog_switch_page), dialog);
+#if GTK_CHECK_VERSION(3,0,0)
 	gtk_widget_set_margin_bottom(dialog->tabWidget, 8);
+#else /* GTK_CHECK_VERSION(3,0,0) */
+	g_object_set(G_OBJECT(dialog->tabWidget), "ypad", 8, nullptr);
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_box_append(GTK_BOX(content_area), dialog->tabWidget);
 	// TODO: Verify that this works.

@@ -223,7 +223,7 @@ key_manager_tab_init(KeyManagerTab *tab)
 	GtkWidget *const imgImport = gtk_image_new_from_icon_name("pan-up-symbolic", GTK_ICON_SIZE_BUTTON);
 	gtk_widget_show(imgImport);
 
-	GtkWidget *const hboxImport = RP_gtk_hbox_new(4);
+	GtkWidget *const hboxImport = rp_gtk_hbox_new(4);
 	gtk_box_pack_start(GTK_BOX(hboxImport), lblImport, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(hboxImport), imgImport, false, false, 0);
 	gtk_widget_show(hboxImport);

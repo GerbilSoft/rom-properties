@@ -92,7 +92,7 @@ systems_tab_init(SystemsTab *tab)
 	// Create the "Game Boy Title Screens" frame.
 	// FIXME: GtkFrame doesn't support mnemonics?
 	GtkWidget *const fraDMG = gtk_frame_new(C_("SystemsTab", "Game Boy Title Screens"));
-	GtkWidget *const vboxDMG = RP_gtk_vbox_new(6);
+	GtkWidget *const vboxDMG = rp_gtk_vbox_new(6);
 	gtk_widget_set_margin(vboxDMG, 6);
 	gtk_frame_set_child(GTK_FRAME(fraDMG), vboxDMG);
 
