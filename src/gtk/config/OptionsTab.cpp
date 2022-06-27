@@ -246,25 +246,25 @@ options_tab_reset(OptionsTab *tab)
 	tab->inhibit = true;
 
 	// Downloads
-	gtk_toggle_button_set_active(
-		GTK_TOGGLE_BUTTON(tab->chkExtImgDownloadEnabled),
+	gtk_check_button_set_active(
+		GTK_CHECK_BUTTON(tab->chkExtImgDownloadEnabled),
 		config->extImgDownloadEnabled());
-	gtk_toggle_button_set_active(
-		GTK_TOGGLE_BUTTON(tab->chkUseIntIconForSmallSizes),
+	gtk_check_button_set_active(
+		GTK_CHECK_BUTTON(tab->chkUseIntIconForSmallSizes),
 		config->useIntIconForSmallSizes());
-	gtk_toggle_button_set_active(
-		GTK_TOGGLE_BUTTON(tab->chkDownloadHighResScans),
+	gtk_check_button_set_active(
+		GTK_CHECK_BUTTON(tab->chkDownloadHighResScans),
 		config->downloadHighResScans());
-	gtk_toggle_button_set_active(
-		GTK_TOGGLE_BUTTON(tab->chkStoreFileOriginInfo),
+	gtk_check_button_set_active(
+		GTK_CHECK_BUTTON(tab->chkStoreFileOriginInfo),
 		config->storeFileOriginInfo());
 
 	// Options
-	gtk_toggle_button_set_active(
-		GTK_TOGGLE_BUTTON(tab->chkShowDangerousPermissionsOverlayIcon),
+	gtk_check_button_set_active(
+		GTK_CHECK_BUTTON(tab->chkShowDangerousPermissionsOverlayIcon),
 		config->showDangerousPermissionsOverlayIcon());
-	gtk_toggle_button_set_active(
-		GTK_TOGGLE_BUTTON(tab->chkEnableThumbnailOnNetworkFS),
+	gtk_check_button_set_active(
+		GTK_CHECK_BUTTON(tab->chkEnableThumbnailOnNetworkFS),
 		config->enableThumbnailOnNetworkFS());
 
 	// PAL language code
@@ -306,38 +306,38 @@ options_tab_load_defaults(OptionsTab *tab)
 	bool isDefChanged = false;
 
 #define COMPARE_CHK(widget, defval) \
-	(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) != (defval))
+	(gtk_check_button_get_active(GTK_CHECK_BUTTON(widget)) != (defval))
 #define COMPARE_CBO(widget, defval) \
 	(gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != (defval))
 
 	// Downloads
 	if (COMPARE_CHK(tab->chkExtImgDownloadEnabled, extImgDownloadEnabled_default)) {
-		gtk_toggle_button_set_active(
-			GTK_TOGGLE_BUTTON(tab->chkExtImgDownloadEnabled),
+		gtk_check_button_set_active(
+			GTK_CHECK_BUTTON(tab->chkExtImgDownloadEnabled),
 			extImgDownloadEnabled_default);
 		isDefChanged = true;
 	}
 	if (COMPARE_CHK(tab->chkUseIntIconForSmallSizes, useIntIconForSmallSizes_default)) {
-		gtk_toggle_button_set_active(
-			GTK_TOGGLE_BUTTON(tab->chkUseIntIconForSmallSizes),
+		gtk_check_button_set_active(
+			GTK_CHECK_BUTTON(tab->chkUseIntIconForSmallSizes),
 			extImgDownloadEnabled_default);
 		isDefChanged = true;
 	}
 	if (COMPARE_CHK(tab->chkUseIntIconForSmallSizes, useIntIconForSmallSizes_default)) {
-		gtk_toggle_button_set_active(
-			GTK_TOGGLE_BUTTON(tab->chkUseIntIconForSmallSizes),
+		gtk_check_button_set_active(
+			GTK_CHECK_BUTTON(tab->chkUseIntIconForSmallSizes),
 			useIntIconForSmallSizes_default);
 		isDefChanged = true;
 	}
 	if (COMPARE_CHK(tab->chkDownloadHighResScans, downloadHighResScans_default)) {
-		gtk_toggle_button_set_active(
-			GTK_TOGGLE_BUTTON(tab->chkDownloadHighResScans),
+		gtk_check_button_set_active(
+			GTK_CHECK_BUTTON(tab->chkDownloadHighResScans),
 			downloadHighResScans_default);
 		isDefChanged = true;
 	}
 	if (COMPARE_CHK(tab->chkStoreFileOriginInfo, storeFileOriginInfo_default)) {
-		gtk_toggle_button_set_active(
-			GTK_TOGGLE_BUTTON(tab->chkStoreFileOriginInfo),
+		gtk_check_button_set_active(
+			GTK_CHECK_BUTTON(tab->chkStoreFileOriginInfo),
 			storeFileOriginInfo_default);
 		isDefChanged = true;
 	}
@@ -350,14 +350,14 @@ options_tab_load_defaults(OptionsTab *tab)
 
 	// Options
 	if (COMPARE_CHK(tab->chkShowDangerousPermissionsOverlayIcon, showDangerousPermissionsOverlayIcon_default)) {
-		gtk_toggle_button_set_active(
-			GTK_TOGGLE_BUTTON(tab->chkShowDangerousPermissionsOverlayIcon),
+		gtk_check_button_set_active(
+			GTK_CHECK_BUTTON(tab->chkShowDangerousPermissionsOverlayIcon),
 			showDangerousPermissionsOverlayIcon_default);
 		isDefChanged = true;
 	}
 	if (COMPARE_CHK(tab->chkEnableThumbnailOnNetworkFS, enableThumbnailOnNetworkFS_default)) {
-		gtk_toggle_button_set_active(
-			GTK_TOGGLE_BUTTON(tab->chkEnableThumbnailOnNetworkFS),
+		gtk_check_button_set_active(
+			GTK_CHECK_BUTTON(tab->chkEnableThumbnailOnNetworkFS),
 			enableThumbnailOnNetworkFS_default);
 		isDefChanged = true;
 	}
@@ -384,22 +384,22 @@ options_tab_save(OptionsTab *tab, GKeyFile *keyFile)
 
 	// Downloads
 	g_key_file_set_boolean(keyFile, "Downloads", "ExtImageDownload",
-		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(tab->chkExtImgDownloadEnabled)));
+		gtk_check_button_get_active(GTK_CHECK_BUTTON(tab->chkExtImgDownloadEnabled)));
 	g_key_file_set_boolean(keyFile, "Downloads", "UseIntIconForSmallSizes",
-		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(tab->chkUseIntIconForSmallSizes)));
+		gtk_check_button_get_active(GTK_CHECK_BUTTON(tab->chkUseIntIconForSmallSizes)));
 	g_key_file_set_boolean(keyFile, "Downloads", "DownloadHighResScans",
-		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(tab->chkDownloadHighResScans)));
+		gtk_check_button_get_active(GTK_CHECK_BUTTON(tab->chkDownloadHighResScans)));
 	g_key_file_set_boolean(keyFile, "Downloads", "StoreFileOriginInfo",
-		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(tab->chkStoreFileOriginInfo)));
+		gtk_check_button_get_active(GTK_CHECK_BUTTON(tab->chkStoreFileOriginInfo)));
 	g_key_file_set_string(keyFile, "Downloads", "PalLanguageForGameTDB",
 		SystemRegion::lcToString(language_combo_box_get_selected_lc(
 			LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL))).c_str());
 
 	// Options
 	g_key_file_set_boolean(keyFile, "Options", "ShowDangerousPermissionsOverlayIcon",
-		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(tab->chkShowDangerousPermissionsOverlayIcon)));
+		gtk_check_button_get_active(GTK_CHECK_BUTTON(tab->chkShowDangerousPermissionsOverlayIcon)));
 	g_key_file_set_boolean(keyFile, "Options", "EnableThumbnailOnNetworkFS",
-		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(tab->chkEnableThumbnailOnNetworkFS)));
+		gtk_check_button_get_active(GTK_CHECK_BUTTON(tab->chkEnableThumbnailOnNetworkFS)));
 
 	// Configuration saved.
 	tab->changed = false;

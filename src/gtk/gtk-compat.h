@@ -87,7 +87,7 @@ gdk_event_get_event_type (const GdkEvent *event)
 static inline void
 gtk_scrolled_window_set_child(GtkScrolledWindow *scrolled_window, GtkWidget *child)
 {
-	// TODO: Remove the exisitng child widget?
+	// TODO: Remove the existing child widget?
 	gtk_container_add(GTK_CONTAINER(scrolled_window), child);
 }
 #endif /* GTK_CHECK_VERSION(4,0,0) */
@@ -315,7 +315,7 @@ gtk_widget_set_margin_bottom(GtkWidget *widget, gint margin)
 	((void)widget);
 	((void)margin);
 }
- #endif /* !GTK_CHECK_VERSION(3,0,0) */
+#endif /* !GTK_CHECK_VERSION(3,0,0) */
 
 /**
  * Set margin for all four sides.
@@ -368,6 +368,21 @@ gtk_get_micro_version(void)
 	return gtk_micro_version;
 }
 #endif /* !GTK_CHECK_VERSION(3,0,0) */
+
+#if !GTK_CHECK_VERSION(4,0,0)
+// Prior to GTK4, GtkCheckButton inherited from GtkToggleButton.
+// In GTK4, the two are now distinct classes.
+static inline void
+gtk_check_button_set_active(GtkCheckButton *self, gboolean setting)
+{
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self), setting);
+}
+static inline gboolean
+gtk_check_button_get_active(GtkCheckButton *self)
+{
+	return gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(self));
+}
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
 
 G_END_DECLS
 

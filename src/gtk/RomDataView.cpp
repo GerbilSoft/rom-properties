@@ -95,7 +95,7 @@ static gboolean	rom_data_view_load_rom_data	(gpointer	 data);
 static void	rom_data_view_delete_tabs	(RomDataView	*page);
 
 /** Signal handlers **/
-static void	checkbox_no_toggle_signal_handler   (GtkToggleButton	*togglebutton,
+static void	checkbox_no_toggle_signal_handler   (GtkCheckButton	*checkbutton,
 						     gpointer		 user_data);
 static void	rom_data_view_map_signal_handler    (RomDataView	*page,
 						     gpointer		 user_data);
@@ -904,7 +904,7 @@ rom_data_view_init_bitfield(RomDataView *page,
 		GtkWidget *checkBox = gtk_check_button_new_with_label(name.c_str());
 		gtk_widget_show(checkBox);
 		gboolean value = (bitfield & 1);
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkBox), value);
+		gtk_check_button_set_active(GTK_CHECK_BUTTON(checkBox), value);
 
 		// Save the bitfield checkbox's value in the GObject.
 		g_object_set_data(G_OBJECT(checkBox), "RFT_BITFIELD_value", GUINT_TO_POINTER((guint)value));
@@ -1754,7 +1754,7 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 					break;
 
 				const bool value = (bitfield & 1);
-				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkBox), value);
+				gtk_check_button_set_active(GTK_CHECK_BUTTON(checkBox), value);
 				g_object_set_data(G_OBJECT(checkBox), "RFT_BITFIELD_value", GUINT_TO_POINTER((guint)value));
 			}
 #else /* !GTK_CHECK_VERSION(4,0,0) */
@@ -1785,7 +1785,7 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 					break;
 
 				const bool value = (bitfield & 1);
-				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkBox), value);
+				gtk_check_button_set_active(GTK_CHECK_BUTTON(checkBox), value);
 				g_object_set_data(G_OBJECT(checkBox), "RFT_BITFIELD_value", GUINT_TO_POINTER((guint)value));
 			}
 			g_list_free(widgetList);
@@ -2418,12 +2418,11 @@ rom_data_view_delete_tabs(RomDataView *page)
 
 /**
  * Prevent bitfield checkboxes from being toggled.
- * @param togglebutton Bitfield checkbox.
+ * @param checkbutton Bitfield checkbox.
  * @param user_data RomDataView*.
  */
 static void
-checkbox_no_toggle_signal_handler(GtkToggleButton	*togglebutton,
-				  gpointer		 user_data)
+checkbox_no_toggle_signal_handler(GtkCheckButton *checkbutton, gpointer user_data)
 {
 	RomDataView *const page = ROM_DATA_VIEW(user_data);
 	if (page->inhibit_checkbox_no_toggle) {
@@ -2432,10 +2431,10 @@ checkbox_no_toggle_signal_handler(GtkToggleButton	*togglebutton,
 	}
 
 	// Get the saved RFT_BITFIELD value.
-	const gboolean value = (gboolean)GPOINTER_TO_UINT(g_object_get_data(G_OBJECT(togglebutton), "RFT_BITFIELD_value"));
-	if (gtk_toggle_button_get_active(togglebutton) != value) {
+	const gboolean value = (gboolean)GPOINTER_TO_UINT(g_object_get_data(G_OBJECT(checkbutton), "RFT_BITFIELD_value"));
+	if (gtk_check_button_get_active(checkbutton) != value) {
 		// Toggle this box.
-		gtk_toggle_button_set_active(togglebutton, value);
+		gtk_check_button_set_active(checkbutton, value);
 	}
 }
 
