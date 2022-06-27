@@ -180,6 +180,7 @@ key_manager_tab_init(KeyManagerTab *tab)
 	gtk_tree_view_column_set_title(column, C_("KeyManagerTab", "Value"));
 	gtk_tree_view_column_set_resizable(column, TRUE);
 	renderer = gtk_cell_renderer_text_new();
+	g_object_set(renderer, "family", "Monospace", nullptr);
 	gtk_tree_view_column_pack_start(column, renderer, FALSE);
 	gtk_tree_view_column_add_attribute(column, renderer, "text", 1);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tab->treeView), column);
@@ -317,17 +318,17 @@ key_manager_tab_init_keys(KeyManagerTab *tab)
 	const int sectCount = keyStore->sectCount();
 	int idx = 0;	// flat key index
 	for (int sectIdx = 0; sectIdx < sectCount; sectIdx++) {
-		GtkTreeIter treeIterGroup;
-		gtk_tree_store_append(tab->treeStore, &treeIterGroup, nullptr);
-		gtk_tree_store_set(tab->treeStore, &treeIterGroup,
+		GtkTreeIter treeIterSect;
+		gtk_tree_store_append(tab->treeStore, &treeIterSect, nullptr);
+		gtk_tree_store_set(tab->treeStore, &treeIterSect,
 			0, keyStore->sectName(sectIdx), -1);
 
 		const int keyCount = keyStore->keyCount(sectIdx);
 		for (int keyIdx = 0; keyIdx < keyCount; keyIdx++, idx++) {
 			const KeyStoreUI::Key *const key = keyStore->getKey(sectIdx, keyIdx);
-			GtkTreeIter treeIter;
-			gtk_tree_store_append(tab->treeStore, &treeIter, &treeIterGroup);
-			gtk_tree_store_set(tab->treeStore, &treeIter,
+			GtkTreeIter treeIterKey;
+			gtk_tree_store_append(tab->treeStore, &treeIterKey, &treeIterSect);
+			gtk_tree_store_set(tab->treeStore, &treeIterKey,
 				0, key->name.c_str(),	// key name
 				3, idx, -1);		// flat key index
 		}
@@ -395,7 +396,36 @@ key_manager_tab_reset(KeyManagerTab *tab)
 {
 	g_return_if_fail(IS_KEY_MANAGER_TAB(tab));
 
-	// TODO
+	// Reset/reload the key store.
+	KeyStoreUI *const keyStore = key_store_gtk_get_key_store_ui(tab->keyStore);
+	keyStore->reset();
+
+	// Load the key values and "Valid?" icons.
+	// TODO: Move this to the "all-keys-changed" signal handler.
+	GtkTreeModel *const treeModel = GTK_TREE_MODEL(tab->treeStore);
+	GtkTreeIter treeIterSect;
+	for (bool validSect = gtk_tree_model_get_iter_first(treeModel, &treeIterSect);
+	     validSect; validSect = gtk_tree_model_iter_next(treeModel, &treeIterSect))
+	{
+		// treeIterSect points to a section.
+		// Iterate over all keys in the section.
+		GtkTreeIter treeIterKey;
+		for (bool validKey = gtk_tree_model_iter_children(treeModel, &treeIterKey, &treeIterSect);
+		     validKey; validKey = gtk_tree_model_iter_next(treeModel, &treeIterKey))
+		{
+			// Get the flat key index.
+			GValue gv_idx = G_VALUE_INIT;
+			gtk_tree_model_get_value(treeModel, &treeIterKey, 3, &gv_idx);
+			if (G_VALUE_HOLDS_INT(&gv_idx)) {
+				// TODO: "Valid?" icon.
+				const int idx = g_value_get_int(&gv_idx);
+				const KeyStoreUI::Key *const key = keyStore->getKey(idx);
+				gtk_tree_store_set(tab->treeStore, &treeIterKey,
+					1, key->value.c_str(), -1);	// value
+			}
+			g_value_unset(&gv_idx);
+		}
+	}
 }
 
 static void
