@@ -155,8 +155,8 @@ achievements_tab_new(void)
 static gboolean
 achievements_tab_has_defaults(AchievementsTab *tab)
 {
-	g_return_val_if_fail(IS_ACHIEVEMENTS_TAB(tab), false);
-	return false;
+	g_return_val_if_fail(IS_ACHIEVEMENTS_TAB(tab), FALSE);
+	return FALSE;
 }
 
 static void

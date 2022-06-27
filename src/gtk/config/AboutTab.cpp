@@ -249,8 +249,8 @@ about_tab_new(void)
 static gboolean
 about_tab_has_defaults(AboutTab *tab)
 {
-	g_return_val_if_fail(IS_ABOUT_TAB(tab), false);
-	return false;
+	g_return_val_if_fail(IS_ABOUT_TAB(tab), FALSE);
+	return FALSE;
 }
 
 static void

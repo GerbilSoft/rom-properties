@@ -221,8 +221,8 @@ options_tab_new(void)
 static gboolean
 options_tab_has_defaults(OptionsTab *tab)
 {
-	g_return_val_if_fail(IS_OPTIONS_TAB(tab), false);
-	return true;
+	g_return_val_if_fail(IS_OPTIONS_TAB(tab), FALSE);
+	return TRUE;
 }
 
 static void

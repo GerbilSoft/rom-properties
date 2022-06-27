@@ -265,8 +265,8 @@ cache_tab_new(void)
 static gboolean
 cache_tab_has_defaults(CacheTab *tab)
 {
-	g_return_val_if_fail(IS_CACHE_TAB(tab), false);
-	return false;
+	g_return_val_if_fail(IS_CACHE_TAB(tab), FALSE);
+	return FALSE;
 }
 
 static void

@@ -486,8 +486,8 @@ image_types_tab_new(void)
 static gboolean
 image_types_tab_has_defaults(ImageTypesTab *tab)
 {
-	g_return_val_if_fail(IS_IMAGE_TYPES_TAB(tab), false);
-	return true;
+	g_return_val_if_fail(IS_IMAGE_TYPES_TAB(tab), FALSE);
+	return TRUE;
 }
 
 static void

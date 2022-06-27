@@ -229,8 +229,8 @@ systems_tab_new(void)
 static gboolean
 systems_tab_has_defaults(SystemsTab *tab)
 {
-	g_return_val_if_fail(IS_SYSTEMS_TAB(tab), false);
-	return true;
+	g_return_val_if_fail(IS_SYSTEMS_TAB(tab), FALSE);
+	return TRUE;
 }
 
 static void
