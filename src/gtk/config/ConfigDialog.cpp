@@ -35,6 +35,8 @@ using LibRpBase::KeyManager;
 #define CONFIG_DIALOG_RESPONSE_RESET		0
 #define CONFIG_DIALOG_RESPONSE_DEFAULTS		1
 
+static void	config_dialog_dispose		(GObject	*object);
+
 // Signal handlers
 static void	config_dialog_response_handler	(ConfigDialog	*dialog,
 						 gint		 response_id,
@@ -65,6 +67,7 @@ struct _ConfigDialog {
 
 	// GtkNotebook tab widget
 	GtkWidget *tabWidget;
+	gulong tabWidget_switch_page;	// signal handler ID
 
 	// Tabs
 	GtkWidget *tabImageTypes;
@@ -86,7 +89,8 @@ G_DEFINE_TYPE_EXTENDED(ConfigDialog, config_dialog,
 static void
 config_dialog_class_init(ConfigDialogClass *klass)
 {
-	RP_UNUSED(klass);
+	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
+	gobject_class->dispose = config_dialog_dispose;
 }
 
 static void
@@ -174,7 +178,8 @@ config_dialog_init(ConfigDialog *dialog)
 	// Create the GtkNotebook.
 	dialog->tabWidget = gtk_notebook_new();
 	gtk_widget_show(dialog->tabWidget);
-	g_signal_connect(dialog->tabWidget, "switch-page",
+	dialog->tabWidget_switch_page = g_signal_connect(
+		dialog->tabWidget, "switch-page",
 		G_CALLBACK(config_dialog_switch_page), dialog);
 	gtk_widget_set_margin_bottom(dialog->tabWidget, 8);
 #if GTK_CHECK_VERSION(4,0,0)
@@ -271,6 +276,24 @@ config_dialog_init(ConfigDialog *dialog)
 
 	// Connect signals.
 	g_signal_connect(dialog, "response", G_CALLBACK(config_dialog_response_handler), NULL);
+}
+
+static void
+config_dialog_dispose(GObject *object)
+{
+	ConfigDialog *const dialog = CONFIG_DIALOG(object);
+
+	// Disconnect GtkNotebook's signals.
+	// Otherwise, it ends up trying to adjust btnDefaults after
+	// the widget is already destroyed.
+	// NOTE: g_clear_signal_handler() was added in glib-2.62.
+	if (dialog->tabWidget_switch_page > 0) {
+		g_signal_handler_disconnect(dialog->tabWidget, dialog->tabWidget_switch_page);
+		dialog->tabWidget_switch_page = 0;
+	}
+
+	// Call the superclass dispose() function.
+	G_OBJECT_CLASS(config_dialog_parent_class)->dispose(object);
 }
 
 GtkWidget*
