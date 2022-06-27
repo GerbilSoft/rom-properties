@@ -386,16 +386,16 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		if (!strcmp(dll_name, "vcruntime140.dll")) {
 			// TODO: If host OS is Windows XP or earlier, limit it to 2017?
 			refDesc = rp_sprintf(
-				C_("EXE|Runtime", "Microsoft Visual C++ %s Runtime"), "2015-2019");
+				C_("EXE|Runtime", "Microsoft Visual C++ %s Runtime"), "2015-2022");
 			switch (le16_to_cpu(hdr.pe.FileHeader.Machine)) {
 				case IMAGE_FILE_MACHINE_I386:
-					refLink = "https://aka.ms/vs/16/release/vc_redist.x86.exe";
+					refLink = "https://aka.ms/vs/17/release/VC_redist.x86.exe";
 					break;
 				case IMAGE_FILE_MACHINE_AMD64:
-					refLink = "https://aka.ms/vs/16/release/vc_redist.x64.exe";
+					refLink = "https://aka.ms/vs/17/release/VC_redist.x64.exe";
 					break;
 				case IMAGE_FILE_MACHINE_ARM64:
-					refLink = "https://aka.ms/vs/16/release/VC_redist.arm64.exe";
+					refLink = "https://aka.ms/vs/17/release/VC_redist.arm64.exe";
 					break;
 				default:
 					break;
@@ -403,7 +403,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 			break;
 		} else if (!strcmp(dll_name, "vcruntime140d.dll")) {
 			refDesc = rp_sprintf(
-				C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"), "2015-2019");
+				C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"), "2015-2022");
 			break;
 		}
 
