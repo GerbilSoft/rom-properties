@@ -2301,7 +2301,7 @@ rom_data_view_update_display(RomDataView *page)
 static gboolean
 rom_data_view_load_rom_data(RomDataView *page)
 {
-	g_return_val_if_fail(!IS_ROM_DATA_VIEW(page), G_SOURCE_REMOVE);
+	g_return_val_if_fail(IS_ROM_DATA_VIEW(page), G_SOURCE_REMOVE);
 
 	if (G_UNLIKELY(page->uri == nullptr && page->romData == nullptr)) {
 		// No URI or RomData.
