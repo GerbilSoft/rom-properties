@@ -19,8 +19,7 @@ IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf
 	# We're not going to have an explicit dependency on libnautilus-extension.
 	# It will be dlopen()'d at runtime based on which
 	# initialization function is called.
-
-	# TODO: File browser extension libraries.
+	INCLUDE(LibNautilusExtensionDirs)
 ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf2_FOUND AND GTK4_FOUND)
 	# GTK 4.x (or required dependencies) were not found.
 	# Disable the GTK4 frontend.
@@ -172,14 +171,14 @@ ENDIF(BUILD_GTK4)
 IF(0) #IF(BUILD_GTK4)
 	# GNOME (Nautilus) extension is installed directly.
 	INSTALL(TARGETS ${PROJECT_NAME}
-		LIBRARY DESTINATION "${LibNautilusExtension_EXTENSION_DIR}"
+		LIBRARY DESTINATION "${LibNautilusExtension4_EXTENSION_DIR}"
 		COMPONENT "plugin"
 		)
 
 	# Symlinks are created for Caja, Nemo, and Thunar.
 	# Reference: https://stackoverflow.com/questions/34578362/how-can-i-package-a-symlink-with-cpack
 	ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME} POST_BUILD
-		COMMAND ln -sf "${LibNautilusExtension_EXTENSION_DIR}/${PROJECT_NAME}.so" ${PROJECT_NAME}.symlink.so
+		COMMAND ln -sf "${LibNautilusExtension4_EXTENSION_DIR}/${PROJECT_NAME}.so" ${PROJECT_NAME}.symlink.so
 		WORKING_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
 		VERBATIM
 		)
@@ -207,7 +206,7 @@ IF(0) #IF(BUILD_GTK4)
 		GET_TARGET_PROPERTY(DEBUG_FILENAME ${PROJECT_NAME} PDB)
 		IF(DEBUG_FILENAME)
 			INSTALL(FILES "${DEBUG_FILENAME}"
-				DESTINATION "lib/debug/${LibNautilusExtension_EXTENSION_DIR}"
+				DESTINATION "lib/debug/${LibNautilusExtension4_EXTENSION_DIR}"
 				COMPONENT "debug"
 				)
 		ENDIF(DEBUG_FILENAME)
