@@ -9,19 +9,22 @@
 #include "stdafx.h"
 #include "AchievementsItemDelegate.hpp"
 
-// Qt includes.
+// Qt includes
 #include <QtGui/QPainter>
 #include <QApplication>
 #include <QtGui/QFont>
 #include <QtGui/QFontMetrics>
 #include <QStyle>
 
-// C++ STL includes.
+// C++ STL includes
+using std::array;
 using std::vector;
 
 #ifdef _WIN32
 #  include <windows.h>
 #endif /* _WIN32 */
+
+#define LINE_COUNT 2
 
 class AchievementsItemDelegatePrivate
 {
@@ -192,9 +195,11 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 		super::paint(painter, option, index);
 		return;
 	}
-	QStringList sl;
-	sl.append(s_ach.left(nl_pos));
-	sl.append(s_ach.mid(nl_pos + 1));
+
+	array<QString, LINE_COUNT> sl = {
+		s_ach.left(nl_pos),
+		s_ach.mid(nl_pos + 1)
+	};
 
 	// Alignment flags.
 	static const int HALIGN_FLAGS =
@@ -243,20 +248,16 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 	int textHeight = 0;
 
 	// Text boundaries.
-	vector<QRect> v_rect;
-	v_rect.resize(sl.size());
+	array<QRect, LINE_COUNT> v_rect;
 
-	for (int i = 0; i < sl.size(); i++) {
+	for (size_t i = 0; i < sl.size(); i++) {
 		// Name uses the normal font.
 		// Description lines use a slightly smaller font.
-		QString &line = sl[i];
-		QRect &rect = v_rect[i];
-
 		const QFontMetrics fm(i == 0 ? fontName : fontDesc);
-		line = fm.elidedText(line, Qt::ElideRight, textRect.width()-1);
+		sl[i] = fm.elidedText(sl[i], Qt::ElideRight, textRect.width()-1);
 		QRect tmpRect(textRect.x(), textRect.y() + textHeight, textRect.width(), fm.height());
 		textHeight += fm.height();
-		rect = fm.boundingRect(tmpRect, (textAlignment & HALIGN_FLAGS), line);
+		v_rect[i] = fm.boundingRect(tmpRect, (textAlignment & HALIGN_FLAGS), sl[i]);
 	}
 
 	// Adjust for vertical alignment.
@@ -323,14 +324,11 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 
 	// Draw the text lines.
 	painter->setFont(fontName);
-	int i = 0;
-	auto iter_rect = v_rect.cbegin();
-	const auto sl_end = sl.end();
-	for (auto iter_sl = sl.begin(); iter_sl != sl_end; ++iter_sl, ++iter_rect, ++i) {
+	for (size_t i = 0; i < sl.size(); i++) {
 		if (i == 1) {
 			painter->setFont(fontDesc);
 		}
-		painter->drawText(*iter_rect, *iter_sl);
+		painter->drawText(v_rect[i], sl[i]);
 	}
 
 	painter->restore();
@@ -357,9 +355,11 @@ QSize AchievementsItemDelegate::sizeHint(const QStyleOptionViewItem &option,
 		// Use the default sizeHint().
 		return super::sizeHint(option, index);
 	}
-	QStringList sl;
-	sl.append(s_ach.left(nl_pos));
-	sl.append(s_ach.mid(nl_pos + 1));
+
+	const array<QString, LINE_COUNT> sl = {
+		s_ach.left(nl_pos),
+		s_ach.mid(nl_pos + 1)
+	};
 
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 	const QStyleOptionViewItem &bgOption = option;
@@ -374,13 +374,11 @@ QSize AchievementsItemDelegate::sizeHint(const QStyleOptionViewItem &option,
 	QFont fontDesc = d->fontDesc(bgOption.widget);
 
 	QSize sz;
-	for (int i = 0; i < sl.size(); i++) {
+	for (size_t i = 0; i < sl.size(); i++) {
 		// Name uses the normal font.
 		// Description lines use a slightly smaller font.
-		const QString &line = sl[i];
-
 		const QFontMetrics fm(i == 0 ? fontName : fontDesc);
-		QSize szLine = fm.size(0, line);
+		QSize szLine = fm.size(0, sl[i]);
 		sz.setHeight(sz.height() + szLine.height());
 
 		if (szLine.width() > sz.width()) {
@@ -391,8 +389,9 @@ QSize AchievementsItemDelegate::sizeHint(const QStyleOptionViewItem &option,
 	// Increase width by 1 to prevent accidental eliding.
 	// NOTE: We can't just remove the "-1" from paint(),
 	// because that still causes weird wordwrapping.
-	if (sz.width() > 0)
+	if (sz.width() > 0) {
 		sz.setWidth(sz.width() + 1);
+	}
 
 	return sz;
 }
