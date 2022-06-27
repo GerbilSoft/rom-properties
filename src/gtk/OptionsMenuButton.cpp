@@ -352,23 +352,16 @@ options_menu_button_set_direction(OptionsMenuButton *widget, GtkArrowType arrowT
 #endif /* USE_GTK_MENU_BUTTON */
 
 #if !GTK_CHECK_VERSION(4,0,0)
-	const char *iconName;
-	switch (arrowType) {
-		case GTK_ARROW_UP:
-			iconName = "pan-up-symbolic";
-			break;
-		case GTK_ARROW_DOWN:
-			iconName = "pan-down-symbolic";
-			break;
-		case GTK_ARROW_LEFT:
-			iconName = "pan-start-symbolic";
-			break;
-		case GTK_ARROW_RIGHT:
-			iconName = "pan-end-symbolic";
-			break;
-		default:
-			iconName = nullptr;
-			break;
+	static const char *const iconName_tbl[] = {
+		"pan-up-symbolic",
+		"pan-down-symbolic",
+		"pan-start-symbolic",
+		"pan-end-symbolic",
+	};
+	
+	const char *iconName = nullptr;
+	if (arrowType >= GTK_ARROW_UP && arrowType <= GTK_ARROW_RIGHT) {
+		iconName = iconName_tbl[(int)arrowType];
 	}
 
 	if (iconName) {
