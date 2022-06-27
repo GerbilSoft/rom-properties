@@ -198,6 +198,7 @@ systems_tab_init(SystemsTab *tab)
 	gtk_box_append(GTK_BOX(vboxDMG), lblDMGDescription);
 	gtk_box_append(GTK_BOX(vboxDMG), table);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
+	gtk_widget_show(fraDMG);
 	gtk_widget_show(vboxDMG);
 	gtk_widget_show(lblDMGDescription);
 
