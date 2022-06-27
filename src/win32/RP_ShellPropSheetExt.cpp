@@ -2646,38 +2646,44 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 		if (!rom_filename)
 			return;
 
-		bool toClipboard;
-		tstring ts_title;
-		const TCHAR *ts_default_ext = nullptr;
-		const char *s_filter = nullptr;
-		switch (menuId) {
-			case IDM_OPTIONS_MENU_EXPORT_TEXT:
-				toClipboard = false;
-				ts_title = U82T_c(C_("RomDataView", "Export to Text File"));
-				ts_default_ext = _T(".txt");
-				// tr: Text files filter. (RP format)
-				s_filter = C_("RomDataView", "Text Files|*.txt|text/plain|All Files|*.*|-");
-				break;
-			case IDM_OPTIONS_MENU_EXPORT_JSON:
-				toClipboard = false;
-				ts_title = U82T_c(C_("RomDataView", "Export to JSON File"));
-				ts_default_ext = _T(".json");
-				// tr: JSON files filter. (RP format)
-				s_filter = C_("RomDataView", "JSON Files|*.json|application/json|All Files|*.*|-");
-				break;
-			case IDM_OPTIONS_MENU_COPY_TEXT:
-			case IDM_OPTIONS_MENU_COPY_JSON:
-				toClipboard = true;
-				break;
-			default:
-				assert(!"Invalid action ID.");
-				return;
+		const unsigned int id2 = static_cast<unsigned int>(abs(menuId - IDM_OPTIONS_MENU_BASE)) - 1;
+		assert(id2 < 4);
+		if (id2 >= 4) {
+			// Out of range.
+			return;
 		}
+
+		struct StdActsInfo_t {
+			const char *title;	// NOP_C_
+			const char *filter;	// NOP_C_
+			TCHAR default_ext[7];
+			bool toClipboard;
+		};
+		static const StdActsInfo_t stdActsInfo[] = {
+			// OPTION_EXPORT_TEXT
+			{NOP_C_("RomDataView", "Export to Text File"),
+			 NOP_C_("RomDataView", "Text Files|*.txt|text/plain|All Files|*.*|-"),
+			 _T(".txt"), false},
+
+			// OPTION_EXPORT_JSON
+			{NOP_C_("RomDataView", "Export to JSON File"),
+			 NOP_C_("RomDataView", "JSON Files|*.json|application/json|All Files|*.*|-"),
+			 _T(".json"), false},
+
+			// OPTION_COPY_TEXT
+			{nullptr, nullptr, _T(""), true},
+
+			// OPTION_COPY_JSON
+			{nullptr, nullptr, _T(""), true},
+		};
+
+		// Standard Actions information for this action
+		const StdActsInfo_t *const info = &stdActsInfo[id2];
 
 		ofstream ofs;
 		tstring ts_out;
 
-		if (!toClipboard) {
+		if (!info->toClipboard) {
 			if (ts_prevExportDir.empty()) {
 				ts_prevExportDir = U82T_c(rom_filename);
 
@@ -2710,10 +2716,15 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			if (extpos != string::npos) {
 				rom_basename.resize(extpos);
 			}
-			defaultFileName += rom_basename + ts_default_ext;
+			defaultFileName += rom_basename;
+			if (info->default_ext[0] != _T('\0')) {
+				defaultFileName += info->default_ext;
+			}
 
 			const tstring tfilename = LibWin32Common::getSaveFileName(hDlgSheet,
-				ts_title.c_str(), s_filter, defaultFileName.c_str());
+				U82T_c(dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", info->title)).c_str(),
+				dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", info->filter),
+				defaultFileName.c_str());
 			if (tfilename.empty())
 				return;
 

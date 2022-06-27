@@ -30,6 +30,7 @@
 #include <cstring>
 #include <cinttypes>
 #include <stdint.h>
+#include <stdlib.h>
 
 // C++ includes.
 #include <algorithm>
@@ -51,6 +52,7 @@
 #include <inttypes.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #endif /* __cplusplus */
 

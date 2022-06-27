@@ -2606,39 +2606,45 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 		if (!rom_filename)
 			return;
 
-		bool toClipboard;
-		const char *s_title = nullptr;
-		const char *s_default_ext = nullptr;
-		const char *s_filter = nullptr;
-		switch (id) {
-			case OPTION_EXPORT_TEXT:
-				toClipboard = false;
-				s_title = C_("RomDataView", "Export to Text File");
-				s_default_ext = ".txt";
-				// tr: Text files filter. (RP format)
-				s_filter = C_("RomDataView", "Text Files|*.txt|text/plain|All Files|*.*|-");
-				break;
-			case OPTION_EXPORT_JSON:
-				toClipboard = false;
-				s_title = C_("RomDataView", "Export to JSON File");
-				s_default_ext = ".json";
-				// tr: JSON files filter. (RP format)
-				s_filter = C_("RomDataView", "JSON Files|*.json|application/json|All Files|*.*|-");
-				break;
-			case OPTION_COPY_TEXT:
-			case OPTION_COPY_JSON:
-				toClipboard = true;
-				break;
-			default:
-				assert(!"Invalid action ID.");
-				return;
+		const unsigned int id2 = static_cast<unsigned int>(abs(id)) - 1;
+		assert(id2 < 4);
+		if (id2 >= 4) {
+			// Out of range.
+			return;
 		}
+
+		struct StdActsInfo_t {
+			const char *title;	// NOP_C_
+			const char *filter;	// NOP_C_
+			char default_ext[7];
+			bool toClipboard;
+		};
+		static const StdActsInfo_t stdActsInfo[] = {
+			// OPTION_EXPORT_TEXT
+			{NOP_C_("RomDataView", "Export to Text File"),
+			 NOP_C_("RomDataView", "Text Files|*.txt|text/plain|All Files|*.*|-"),
+			 ".txt", false},
+
+			// OPTION_EXPORT_JSON
+			{NOP_C_("RomDataView", "Export to JSON File"),
+			 NOP_C_("RomDataView", "JSON Files|*.json|application/json|All Files|*.*|-"),
+			 ".json", false},
+
+			// OPTION_COPY_TEXT
+			{nullptr, nullptr, "", true},
+
+			// OPTION_COPY_JSON
+			{nullptr, nullptr, "", true},
+		};
+
+		// Standard Actions information for this action
+		const StdActsInfo_t *const info = &stdActsInfo[id2];
 
 		// TODO: GIO wrapper for ostream.
 		// For now, we'll use ofstream.
 		ofstream ofs;
 
-		if (!toClipboard) {
+		if (!info->toClipboard) {
 			if (!page->prevExportDir) {
 				page->prevExportDir = g_path_get_dirname(rom_filename);
 			}
@@ -2647,9 +2653,8 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 			// NOTE: GTK4 has *mandatory* overwrite confirmation.
 			// Reference: https://gitlab.gnome.org/GNOME/gtk/-/commit/063ad28b1a06328e14ed72cc4b99cd4684efed12
 			GtkFileChooserNative *const dialog = gtk_file_chooser_native_new(
-				s_title,			// title
-				parent,				// parent
-				GTK_FILE_CHOOSER_ACTION_SAVE,	// action
+				dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", info->title),
+				parent, GTK_FILE_CHOOSER_ACTION_SAVE,
 				_("_Save"), _("_Cancel"));
 			// TODO: URI?
 			GFile *const set_file = g_file_new_for_path(page->prevExportDir);
@@ -2659,9 +2664,8 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 			}
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 			GtkWidget *const dialog = gtk_file_chooser_dialog_new(
-				s_title,			// title
-				parent,				// parent
-				GTK_FILE_CHOOSER_ACTION_SAVE,	// action
+				dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", info->title),
+				parent, GTK_FILE_CHOOSER_ACTION_SAVE,	// action
 				_("_Cancel"), GTK_RESPONSE_CANCEL,
 				_("_Save"), GTK_RESPONSE_ACCEPT,
 				nullptr);
@@ -2670,7 +2674,8 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 			// Set the filters.
-			rpFileDialogFilterToGtk(GTK_FILE_CHOOSER(dialog), s_filter);
+			rpFileDialogFilterToGtk(GTK_FILE_CHOOSER(dialog),
+				dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", info->filter));
 
 			gchar *const basename = g_path_get_basename(rom_filename);
 			string defaultName = basename;
@@ -2680,7 +2685,9 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 			if (extpos != string::npos) {
 				defaultName.resize(extpos);
 			}
-			defaultName += s_default_ext;
+			if (info->default_ext[0] != '\0') {
+				defaultName += info->default_ext;
+			}
 			gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), defaultName.c_str());
 
 			// Prompt for a save file.

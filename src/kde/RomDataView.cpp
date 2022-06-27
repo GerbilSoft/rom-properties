@@ -1677,50 +1677,57 @@ void RomDataView::btnOptions_triggered(int id)
 			return;
 		QFileInfo fi(U82Q(rom_filename));
 
-		bool toClipboard;
-		QString qs_title;
-		const char *s_default_ext = nullptr;
-		const char *s_filter = nullptr;
-		switch (id) {
-			case OPTION_EXPORT_TEXT:
-				toClipboard = false;
-				qs_title = U82Q(C_("RomDataView", "Export to Text File"));
-				s_default_ext = ".txt";
-				// tr: Text files filter. (RP format)
-				s_filter = C_("RomDataView", "Text Files|*.txt|text/plain|All Files|*.*|-");
-				break;
-			case OPTION_EXPORT_JSON:
-				toClipboard = false;
-				qs_title = U82Q(C_("RomDataView", "Export to JSON File"));
-				s_default_ext = ".json";
-				// tr: JSON files filter. (RP format)
-				s_filter = C_("RomDataView", "JSON Files|*.json|application/json|All Files|*.*|-");
-				break;
-			case OPTION_COPY_TEXT:
-			case OPTION_COPY_JSON:
-				toClipboard = true;
-				break;
-			default:
-				assert(!"Invalid action ID.");
-				return;
+		const unsigned int id2 = static_cast<unsigned int>(abs(id)) - 1;
+		assert(id2 < 4);
+		if (id2 >= 4) {
+			// Out of range.
+			return;
 		}
+
+		struct StdActsInfo_t {
+			const char *title;	// NOP_C_
+			const char *filter;	// NOP_C_
+			char default_ext[7];
+			bool toClipboard;
+		};
+		static const StdActsInfo_t stdActsInfo[] = {
+			// OPTION_EXPORT_TEXT
+			{NOP_C_("RomDataView", "Export to Text File"),
+			 NOP_C_("RomDataView", "Text Files|*.txt|text/plain|All Files|*.*|-"),
+			 ".txt", false},
+
+			// OPTION_EXPORT_JSON
+			{NOP_C_("RomDataView", "Export to JSON File"),
+			 NOP_C_("RomDataView", "JSON Files|*.json|application/json|All Files|*.*|-"),
+			 ".json", false},
+
+			// OPTION_COPY_TEXT
+			{nullptr, nullptr, "", true},
+
+			// OPTION_COPY_JSON
+			{nullptr, nullptr, "", true},
+		};
+
+		// Standard Actions information for this action
+		const StdActsInfo_t *const info = &stdActsInfo[id2];
 
 		// TODO: QTextStream wrapper for ostream.
 		// For now, we'll use ofstream.
 		ofstream ofs;
 
-		if (!toClipboard) {
+		if (!info->toClipboard) {
 			if (d->prevExportDir.isEmpty()) {
 				d->prevExportDir = fi.path();
 			}
 
 			QString defaultFileName = d->prevExportDir + QChar(L'/') + fi.completeBaseName();
-			if (s_default_ext) {
-				defaultFileName += QLatin1String(s_default_ext);
+			if (info->default_ext[0] != '\0') {
+				defaultFileName += QLatin1String(info->default_ext);
 			}
 			QString out_filename = QFileDialog::getSaveFileName(this,
-				qs_title, defaultFileName,
-				rpFileDialogFilterToQt(s_filter));
+				U82Q(dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", info->title)),
+				defaultFileName,
+				rpFileDialogFilterToQt(dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", info->filter)));
 			if (out_filename.isEmpty())
 				return;
 
