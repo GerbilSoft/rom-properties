@@ -250,6 +250,159 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 }
 
 /**
+ * ROM operation: Standard Operations
+ * Dispatched by btnOptions_triggered_signal_handler().
+ * @param page RomDataView
+ * @param id Standard action ID
+ */
+static void
+rom_data_view_doRomOp_stdop(RomDataView *page, int id)
+{
+	const char *const rom_filename = page->romData->filename();
+	if (!rom_filename)
+		return;
+	const uint32_t sel_lc = page->cboLanguage
+		? language_combo_box_get_selected_lc(LANGUAGE_COMBO_BOX(page->cboLanguage))
+		: 0;
+
+	const char *title = nullptr;
+	const char *filter = nullptr;
+	const char *default_ext = nullptr;
+
+	// Check the standard operation.
+	switch (id) {
+		case OPTION_COPY_TEXT: {
+			ostringstream oss;
+			oss << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
+			ROMOutput ro(page->romData, sel_lc);
+			oss << ro;
+			rp_gtk_main_clipboard_set_text(oss.str().c_str());
+			// Nothing else to do here.
+			return;
+		}
+
+		case OPTION_COPY_JSON: {
+			ostringstream oss;
+			JSONROMOutput jsro(page->romData);
+			oss << jsro << std::endl;
+			rp_gtk_main_clipboard_set_text(oss.str().c_str());
+			// Nothing else to do here.
+			return;
+		}
+
+		case OPTION_EXPORT_TEXT:
+			title = C_("RomDataView", "Export to Text File");
+			filter = C_("RomDataView", "Text Files|*.txt|text/plain|All Files|*.*|-");
+			default_ext = ".txt";
+			break;
+
+		case OPTION_EXPORT_JSON:
+			title = C_("RomDataView", "Export to JSON File");
+			filter = C_("RomDataView", "JSON Files|*.json|application/json|All Files|*.*|-");
+			default_ext = ".json";
+			break;
+
+		default:
+			assert(!"Invalid ID for a Standard ROM Operation.");
+			return;
+	}
+
+	GtkWindow *const parent = gtk_widget_get_toplevel_window(GTK_WIDGET(page));
+#if GTK_CHECK_VERSION(4,0,0)
+	// NOTE: GTK4 has *mandatory* overwrite confirmation.
+	// Reference: https://gitlab.gnome.org/GNOME/gtk/-/commit/063ad28b1a06328e14ed72cc4b99cd4684efed12
+	GtkFileChooserNative *const dialog = gtk_file_chooser_native_new(
+		title, parent,GTK_FILE_CHOOSER_ACTION_SAVE,
+		_("_Save"), _("_Cancel"));
+	// TODO: URI?
+	GFile *const set_file = g_file_new_for_path(page->prevExportDir);
+	if (set_file) {
+		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), set_file, nullptr);
+		g_object_unref(set_file);
+	}
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+	GtkWidget *const dialog = gtk_file_chooser_dialog_new(
+		title, parent, GTK_FILE_CHOOSER_ACTION_SAVE,
+		_("_Cancel"), GTK_RESPONSE_CANCEL,
+		_("_Save"), GTK_RESPONSE_ACCEPT,
+		nullptr);
+	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
+	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), page->prevExportDir);
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+
+	// Set the filters.
+	rpFileDialogFilterToGtk(GTK_FILE_CHOOSER(dialog), filter);
+
+	gchar *const basename = g_path_get_basename(rom_filename);
+	string defaultName = basename;
+	g_free(basename);
+	// Remove the extension, if present.
+	size_t extpos = defaultName.rfind('.');
+	if (extpos != string::npos) {
+		defaultName.resize(extpos);
+	}
+	defaultName += default_ext;
+	gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), defaultName.c_str());
+
+	// Prompt for a save file.
+#if GTK_CHECK_VERSION(4,0,0)
+	// GTK4 no longer supports blocking dialogs.
+	// FIXME for GTK4: Rewrite to use gtk_window_set_modal() and handle the "response" signal.
+	// This will also work for older GTK+.
+	assert(!"gtk_dialog_run() is not available in GTK4; needs a rewrite!");
+	GFile *const get_file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(dialog));
+
+	// TODO: URIs?
+	gchar *out_filename = (get_file ? g_file_get_path(get_file) : nullptr);
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+	gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+	gchar *out_filename = (res == GTK_RESPONSE_ACCEPT
+		? gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog))
+		: nullptr);
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
+
+	g_object_unref(dialog);
+	if (!out_filename) {
+		// No filename...
+		return;
+	}
+
+	// Save the previous export directory.
+	g_free(page->prevExportDir);
+	page->prevExportDir = g_path_get_dirname(out_filename);
+
+	// TODO: QTextStream wrapper for ostream.
+	// For now, we'll use ofstream.
+	ofstream ofs;
+	ofs.open(out_filename, ofstream::out);
+	if (ofs.fail()) {
+		// TODO: Show an error message?
+		return;
+	}
+
+	switch (id) {
+		case OPTION_EXPORT_TEXT: {
+			ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
+			ROMOutput ro(page->romData, sel_lc);
+			ofs << ro;
+			break;
+		}
+
+		case OPTION_EXPORT_JSON: {
+			JSONROMOutput jsro(page->romData);
+			ofs << jsro << std::endl;
+			break;
+		}
+
+		default:
+			assert(!"Invalid ID for an Export Standard ROM Operation.");
+			return;
+	}
+
+	ofs.close();
+}
+
+/**
  * An "Options" menu action was triggered.
  * @param menuButton	OptionsMenuButton
  * @param id		Menu options ID
@@ -264,173 +417,8 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 	GtkWindow *const parent = gtk_widget_get_toplevel_window(GTK_WIDGET(page));
 
 	if (id < 0) {
-		// Export/copy to text or JSON.
-		const char *const rom_filename = page->romData->filename();
-		if (!rom_filename)
-			return;
-
-		const unsigned int id2 = static_cast<unsigned int>(abs(id)) - 1;
-		assert(id2 < 4);
-		if (id2 >= 4) {
-			// Out of range.
-			return;
-		}
-
-		struct StdActsInfo_t {
-			const char *title;	// NOP_C_
-			const char *filter;	// NOP_C_
-			char default_ext[7];
-			bool toClipboard;
-		};
-		static const StdActsInfo_t stdActsInfo[] = {
-			// OPTION_EXPORT_TEXT
-			{NOP_C_("RomDataView", "Export to Text File"),
-			 NOP_C_("RomDataView", "Text Files|*.txt|text/plain|All Files|*.*|-"),
-			 ".txt", false},
-
-			// OPTION_EXPORT_JSON
-			{NOP_C_("RomDataView", "Export to JSON File"),
-			 NOP_C_("RomDataView", "JSON Files|*.json|application/json|All Files|*.*|-"),
-			 ".json", false},
-
-			// OPTION_COPY_TEXT
-			{nullptr, nullptr, "", true},
-
-			// OPTION_COPY_JSON
-			{nullptr, nullptr, "", true},
-		};
-
-		// Standard Actions information for this action
-		const StdActsInfo_t *const info = &stdActsInfo[id2];
-
-		// TODO: GIO wrapper for ostream.
-		// For now, we'll use ofstream.
-		ofstream ofs;
-
-		if (!info->toClipboard) {
-			if (!page->prevExportDir) {
-				page->prevExportDir = g_path_get_dirname(rom_filename);
-			}
-
-#if GTK_CHECK_VERSION(4,0,0)
-			// NOTE: GTK4 has *mandatory* overwrite confirmation.
-			// Reference: https://gitlab.gnome.org/GNOME/gtk/-/commit/063ad28b1a06328e14ed72cc4b99cd4684efed12
-			GtkFileChooserNative *const dialog = gtk_file_chooser_native_new(
-				dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", info->title),
-				parent, GTK_FILE_CHOOSER_ACTION_SAVE,
-				_("_Save"), _("_Cancel"));
-			// TODO: URI?
-			GFile *const set_file = g_file_new_for_path(page->prevExportDir);
-			if (set_file) {
-				gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), set_file, nullptr);
-				g_object_unref(set_file);
-			}
-#else /* !GTK_CHECK_VERSION(4,0,0) */
-			GtkWidget *const dialog = gtk_file_chooser_dialog_new(
-				dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", info->title),
-				parent, GTK_FILE_CHOOSER_ACTION_SAVE,	// action
-				_("_Cancel"), GTK_RESPONSE_CANCEL,
-				_("_Save"), GTK_RESPONSE_ACCEPT,
-				nullptr);
-			gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
-			gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), page->prevExportDir);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
-
-			// Set the filters.
-			rpFileDialogFilterToGtk(GTK_FILE_CHOOSER(dialog),
-				dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", info->filter));
-
-			gchar *const basename = g_path_get_basename(rom_filename);
-			string defaultName = basename;
-			g_free(basename);
-			// Remove the extension, if present.
-			size_t extpos = defaultName.rfind('.');
-			if (extpos != string::npos) {
-				defaultName.resize(extpos);
-			}
-			if (info->default_ext[0] != '\0') {
-				defaultName += info->default_ext;
-			}
-			gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), defaultName.c_str());
-
-			// Prompt for a save file.
-#if GTK_CHECK_VERSION(4,0,0)
-			// GTK4 no longer supports blocking dialogs.
-			// FIXME for GTK4: Rewrite to use gtk_window_set_modal() and handle the "response" signal.
-			// This will also work for older GTK+.
-			assert(!"gtk_dialog_run() is not available in GTK4; needs a rewrite!");
-			GFile *const get_file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(dialog));
-
-			// TODO: URIs?
-			gchar *out_filename = (get_file ? g_file_get_path(get_file) : nullptr);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
-			gint res = gtk_dialog_run(GTK_DIALOG(dialog));
-			gchar *out_filename = (res == GTK_RESPONSE_ACCEPT
-				? gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog))
-				: nullptr);
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
-
-			g_object_unref(dialog);
-			if (!out_filename) {
-				// No filename...
-				return;
-			}
-
-			// Save the previous export directory.
-			g_free(page->prevExportDir);
-			page->prevExportDir = g_path_get_dirname(out_filename);
-
-			ofs.open(out_filename, ofstream::out);
-			g_free(out_filename);
-			if (ofs.fail()) {
-				return;
-			}
-		}
-
-		// TODO: Optimize this such that we can pass ofstream or ostringstream
-		// to a factored-out function.
-
-		switch (id) {
-			case OPTION_EXPORT_TEXT: {
-				const uint32_t lc = page->cboLanguage
-					? language_combo_box_get_selected_lc(LANGUAGE_COMBO_BOX(page->cboLanguage))
-					: 0;
-				ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
-				ROMOutput ro(page->romData, lc);
-				ofs << ro;
-				break;
-			}
-			case OPTION_EXPORT_JSON: {
-				JSONROMOutput jsro(page->romData);
-				ofs << jsro << std::endl;
-				break;
-			}
-			case OPTION_COPY_TEXT: {
-				const uint32_t lc = page->cboLanguage
-					? language_combo_box_get_selected_lc(LANGUAGE_COMBO_BOX(page->cboLanguage))
-					: 0;
-				ostringstream oss;
-				oss << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
-				ROMOutput ro(page->romData, lc);
-				oss << ro;
-
-				const string str = oss.str();
-				rp_gtk_main_clipboard_set_text(str.c_str());
-				break;
-			}
-			case OPTION_COPY_JSON: {
-				ostringstream oss;
-				JSONROMOutput jsro(page->romData);
-				oss << jsro << std::endl;
-
-				const string str = oss.str();
-				rp_gtk_main_clipboard_set_text(str.c_str());
-				break;
-			}
-			default:
-				assert(!"Invalid action ID.");
-				return;
-		}
+		// Standard operation.
+		rom_data_view_doRomOp_stdop(page, id);
 		return;
 	}
 
