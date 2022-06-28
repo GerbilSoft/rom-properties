@@ -538,6 +538,15 @@ IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../libunixcommon>
 			)
 	ENDIF()
+	# FIXME: On Xubuntu 16.04, libgcc.a isn't linked in for some reason,
+	# resulting in the following error:
+	# /usr/bin/ld: ../../../bin/TextFuncsTest: hidden symbol `__cpu_indicator_init'
+	# in /usr/lib/gcc/i686-linux-gnu/5/libgcc.a(cpuinfo.o) is referenced by DSO
+	IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+		# FIXME: FIND_LIBRARY() isn't working...
+		#FIND_LIBRARY(GCC_LIBRARY gcc)
+		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE -lgcc)
+	ENDIF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 ELSE()
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC rpcpu rptexture rpfile rpbase)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC rpthreads cachecommon)
