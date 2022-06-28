@@ -250,7 +250,7 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 }
 
 static void
-rom_data_view_doRomOp_stdop_response(GtkWidget *dialog, gint response_id, RomDataView *page);
+rom_data_view_doRomOp_stdop_response(GtkFileChooserDialog *dialog, gint response_id, RomDataView *page);
 
 /**
  * ROM operation: Standard Operations
@@ -368,11 +368,15 @@ rom_data_view_doRomOp_stdop(RomDataView *page, int id)
  * @param page RomDataView
  */
 static void
-rom_data_view_doRomOp_stdop_response(GtkWidget *dialog, gint response_id, RomDataView *page)
+rom_data_view_doRomOp_stdop_response(GtkFileChooserDialog *dialog, gint response_id, RomDataView *page)
 {
 	if (response_id != GTK_RESPONSE_ACCEPT) {
 		// User cancelled the dialog.
-		g_object_unref(dialog);
+#if GTK_CHECK_VERSION(4,0,0)
+		gtk_window_destroy(GTK_WINDOW(dialog));
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+		gtk_widget_destroy(GTK_WIDGET(dialog));
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 		return;
 	}
 
@@ -381,12 +385,17 @@ rom_data_view_doRomOp_stdop_response(GtkWidget *dialog, gint response_id, RomDat
 
 #if GTK_CHECK_VERSION(4,0,0)
 	// TODO: URIs?
+	gchar *out_filename = nullptr;
 	GFile *const get_file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(dialog));
-	gchar *const out_filename = (get_file ? g_file_get_path(get_file) : nullptr);
+	if (get_file) {
+		out_filename = g_file_get_path(get_file);
+		g_object_unref(get_file);
+	}
+	gtk_window_destroy(GTK_WINDOW(dialog));
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	gchar *const out_filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+	gtk_widget_destroy(GTK_WIDGET(dialog));
 #endif /* GTK_CHECK_VERSION(4,0,0) */
-	g_object_unref(dialog);
 
 	if (!out_filename) {
 		// No filename...
@@ -517,21 +526,20 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 
 		// Prompt for a save file.
 #if GTK_CHECK_VERSION(4,0,0)
-		// GTK4 no longer supports blocking dialogs.
-		// FIXME for GTK4: Rewrite to use gtk_window_set_modal() and handle the "response" signal.
-		// This will also work for older GTK+.
-		assert(!"gtk_dialog_run() is not available in GTK4; needs a rewrite!");
-		GFile *const get_file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(dialog));
-
 		// TODO: URIs?
-		save_filename = (get_file ? g_file_get_path(get_file) : nullptr);
+		GFile *const get_file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(dialog));
+		if (get_file) {
+			save_filename = (get_file ? g_file_get_path(get_file) : nullptr);
+			g_object_unref(get_file);
+		}
+		gtk_window_destroy(GTK_WINDOW(dialog));
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 		gint res = gtk_dialog_run(GTK_DIALOG(dialog));
 		save_filename = (res == GTK_RESPONSE_ACCEPT
 			? gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog))
 			: nullptr);
+		gtk_widget_destroy(dialog);
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
-		g_object_unref(dialog);
 
 		params.save_filename = save_filename;
 	}
