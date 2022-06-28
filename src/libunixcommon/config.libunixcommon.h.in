@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-stub)                          *
  * config.libunixcommon.h.in: libunixcommon configuration. (source file)   *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017 by David Korth.                                      *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,11 +18,8 @@
 /* ThunarX2 extensions path */
 #cmakedefine ThunarX2_EXTENSIONS_DIR "@ThunarX2_EXTENSIONS_DIR@"
 
-/* libnautilus-extension (GTK3) extensions path */
-#cmakedefine LibNautilusExtension3_EXTENSION_DIR "@LibNautilusExtension3_EXTENSION_DIR@"
-
-/* libnautilus-extension (GTK4) extensions path */
-#cmakedefine LibNautilusExtension4_EXTENSION_DIR "@LibNautilusExtension4_EXTENSION_DIR@"
+/* libnautilus-extension extensions path */
+#cmakedefine LibNautilusExtension_EXTENSION_DIR "@LibNautilusExtension_EXTENSION_DIR@"
 
 /* Define to 1 if you have the `getpwuid_r' function. */
 #cmakedefine HAVE_GETPWUID_R 1

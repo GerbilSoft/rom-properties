@@ -53,13 +53,14 @@ static const char *const RP_Extension_Path[RP_FE_MAX] = {
 #else
 	NULL,
 #endif
-#ifdef LibNautilusExtension3_EXTENSION_DIR
-	LibNautilusExtension3_EXTENSION_DIR "/rom-properties-gtk3.so",
+	// FIXME: libnautilus-extension 3 and 4 cannot be installed at the same time.
+#ifdef LibNautilusExtension_EXTENSION_DIR
+	LibNautilusExtension_EXTENSION_DIR "/rom-properties-gtk3.so",
 #else
 	NULL,
 #endif
-#ifdef LibNautilusExtension4_EXTENSION_DIR
-	LibNautilusExtension4_EXTENSION_DIR "/rom-properties-gtk4.so",
+#ifdef LibNautilusExtension_EXTENSION_DIR
+	LibNautilusExtension_EXTENSION_DIR "/rom-properties-gtk4.so",
 #else
 	NULL,
 #endif

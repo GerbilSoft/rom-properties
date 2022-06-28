@@ -23,7 +23,13 @@ IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND Cairo_FOU
 	# We're not going to have an explicit dependency on libnautilus-extension.
 	# It will be dlopen()'d at runtime based on which
 	# initialization function is called.
-	INCLUDE(LibNautilusExtensionDirs)
+
+	# Nautilus (GNOME)
+	FIND_PACKAGE(LibNautilusExtension 3.0.0)
+	IF(NOT LibNautilusExtension_FOUND)
+		MESSAGE(STATUS "LibNautilusExtension not found. Using the default extensions directory.")
+		SET(LibNautilusExtension_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/nautilus/extensions-3.0")
+	ENDIF(NOT LibNautilusExtension_FOUND)
 
 	# Caja (MATE)
 	FIND_PACKAGE(LibCajaExtension 1.18.0)
@@ -178,14 +184,14 @@ ENDIF(BUILD_GTK3)
 IF(BUILD_GTK3)
 	# GNOME (Nautilus) extension is installed directly.
 	INSTALL(TARGETS ${PROJECT_NAME}
-		LIBRARY DESTINATION "${LibNautilusExtension3_EXTENSION_DIR}"
+		LIBRARY DESTINATION "${LibNautilusExtension_EXTENSION_DIR}"
 		COMPONENT "plugin"
 		)
 
 	# Symlinks are created for Caja, Nemo, and Thunar.
 	# Reference: https://stackoverflow.com/questions/34578362/how-can-i-package-a-symlink-with-cpack
 	ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME} POST_BUILD
-		COMMAND ln -sf "${LibNautilusExtension3_EXTENSION_DIR}/${PROJECT_NAME}.so" ${PROJECT_NAME}.symlink.so
+		COMMAND ln -sf "${LibNautilusExtension_EXTENSION_DIR}/${PROJECT_NAME}.so" ${PROJECT_NAME}.symlink.so
 		WORKING_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
 		VERBATIM
 		)
@@ -213,7 +219,7 @@ IF(BUILD_GTK3)
 		GET_TARGET_PROPERTY(DEBUG_FILENAME ${PROJECT_NAME} PDB)
 		IF(DEBUG_FILENAME)
 			INSTALL(FILES "${DEBUG_FILENAME}"
-				DESTINATION "lib/debug/${LibNautilusExtension3_EXTENSION_DIR}"
+				DESTINATION "lib/debug/${LibNautilusExtension_EXTENSION_DIR}"
 				COMPONENT "debug"
 				)
 		ENDIF(DEBUG_FILENAME)
