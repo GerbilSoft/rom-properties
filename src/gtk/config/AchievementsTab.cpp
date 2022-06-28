@@ -172,6 +172,14 @@ achievements_tab_reset(AchievementsTab *tab)
 	PIMGTYPE imgAchSheet = AchGDBus::loadSpriteSheet(iconSize, false);
 	PIMGTYPE imgAchGraySheet = AchGDBus::loadSpriteSheet(iconSize, true);
 
+	// Pango 1.49.0 [2021/08/22] added percentage sizes.
+	// For older versions, we'll need to use 'smaller' instead.
+	// Note that compared to the KDE version, 'smaller' is slightly
+	// big, and 'smaller'+'smaller' is too small.
+	const char *const span_start_line2 = (pango_version() >= PANGO_VERSION_ENCODE(1,49,0))
+		? "\n<span size='75%'>"
+		: "\n<span size='smaller'>";
+
 	const Achievements *const pAch = Achievements::instance();
 	for (int i = 0; i < (int)Achievements::ID::Max; i++) {
 		// Is the achievement unlocked?
@@ -193,7 +201,7 @@ achievements_tab_reset(AchievementsTab *tab)
 		gchar *const s_ach_name = g_markup_escape_text(pAch->getName(id), -1);
 		gchar *const s_ach_desc_unlocked = g_markup_escape_text(pAch->getDescUnlocked(id), -1);
 		string s_ach = s_ach_name;
-		s_ach += "\n<span size='75%'>";
+		s_ach += span_start_line2;
 		// TODO: Locked description?
 		s_ach += s_ach_desc_unlocked;
 		s_ach += "</span>";
