@@ -249,6 +249,15 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 	return ret;
 }
 
+#if GTK_CHECK_VERSION(4,0,0)
+typedef GtkFileChooserNative RpGtkFileDialog;
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+typedef GtkWidget RpGtkFileDialog;
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+
+static void
+rom_data_view_doRomOp_stdop_response(RpGtkFileDialog *dialog, gint response_id, RomDataView *page);
+
 /**
  * ROM operation: Standard Operations
  * Dispatched by btnOptions_triggered_signal_handler().
@@ -261,9 +270,6 @@ rom_data_view_doRomOp_stdop(RomDataView *page, int id)
 	const char *const rom_filename = page->romData->filename();
 	if (!rom_filename)
 		return;
-	const uint32_t sel_lc = page->cboLanguage
-		? language_combo_box_get_selected_lc(LANGUAGE_COMBO_BOX(page->cboLanguage))
-		: 0;
 
 	const char *title = nullptr;
 	const char *filter = nullptr;
@@ -272,6 +278,10 @@ rom_data_view_doRomOp_stdop(RomDataView *page, int id)
 	// Check the standard operation.
 	switch (id) {
 		case OPTION_COPY_TEXT: {
+			const uint32_t sel_lc = page->cboLanguage
+				? language_combo_box_get_selected_lc(LANGUAGE_COMBO_BOX(page->cboLanguage))
+				: 0;
+
 			ostringstream oss;
 			oss << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
 			ROMOutput ro(page->romData, sel_lc);
@@ -311,8 +321,8 @@ rom_data_view_doRomOp_stdop(RomDataView *page, int id)
 #if GTK_CHECK_VERSION(4,0,0)
 	// NOTE: GTK4 has *mandatory* overwrite confirmation.
 	// Reference: https://gitlab.gnome.org/GNOME/gtk/-/commit/063ad28b1a06328e14ed72cc4b99cd4684efed12
-	GtkFileChooserNative *const dialog = gtk_file_chooser_native_new(
-		title, parent,GTK_FILE_CHOOSER_ACTION_SAVE,
+	RpGtkFileDialog *const dialog = gtk_file_chooser_native_new(
+		title, parent, GTK_FILE_CHOOSER_ACTION_SAVE,
 		_("_Save"), _("_Cancel"));
 	// TODO: URI?
 	GFile *const set_file = g_file_new_for_path(page->prevExportDir);
@@ -321,17 +331,22 @@ rom_data_view_doRomOp_stdop(RomDataView *page, int id)
 		g_object_unref(set_file);
 	}
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-	GtkWidget *const dialog = gtk_file_chooser_dialog_new(
+	RpGtkFileDialog *const dialog = gtk_file_chooser_dialog_new(
 		title, parent, GTK_FILE_CHOOSER_ACTION_SAVE,
 		_("_Cancel"), GTK_RESPONSE_CANCEL,
 		_("_Save"), GTK_RESPONSE_ACCEPT,
 		nullptr);
 	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
-	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), page->prevExportDir);
+	if (page->prevExportDir) {
+		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), page->prevExportDir);
+	}
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Set the filters.
 	rpFileDialogFilterToGtk(GTK_FILE_CHOOSER(dialog), filter);
+
+	// Set the operation ID in the dialog.
+	g_object_set_data(G_OBJECT(dialog), "RomDataView.romOp", GINT_TO_POINTER(id));
 
 	gchar *const basename = g_path_get_basename(rom_filename);
 	string defaultName = basename;
@@ -345,23 +360,41 @@ rom_data_view_doRomOp_stdop(RomDataView *page, int id)
 	gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), defaultName.c_str());
 
 	// Prompt for a save file.
+	g_signal_connect(dialog, "response", G_CALLBACK(rom_data_view_doRomOp_stdop_response), page);
+	gtk_window_set_transient_for(GTK_WINDOW(dialog), parent);
+	gtk_window_set_modal(GTK_WINDOW(dialog), true);
+	gtk_widget_show(GTK_WIDGET(dialog));
+
+	// GtkFileChooserNative will send the "response" signal when the dialog is closed.
+}
+
+/**
+ * The Save dialog for a Standard ROM Operation has been closed.
+ * @param dialog Save dialog
+ * @param response_id Response ID
+ * @param page RomDataView
+ */
+static void
+rom_data_view_doRomOp_stdop_response(RpGtkFileDialog *dialog, gint response_id, RomDataView *page)
+{
+	if (response_id != GTK_RESPONSE_ACCEPT) {
+		// User cancelled the dialog.
+		g_object_unref(dialog);
+		return;
+	}
+
+	// Get the operation ID from the dialog.
+	const int id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(dialog), "RomDataView.romOp"));
+
 #if GTK_CHECK_VERSION(4,0,0)
-	// GTK4 no longer supports blocking dialogs.
-	// FIXME for GTK4: Rewrite to use gtk_window_set_modal() and handle the "response" signal.
-	// This will also work for older GTK+.
-	assert(!"gtk_dialog_run() is not available in GTK4; needs a rewrite!");
-	GFile *const get_file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(dialog));
-
 	// TODO: URIs?
-	gchar *out_filename = (get_file ? g_file_get_path(get_file) : nullptr);
+	GFile *const get_file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(dialog));
+	gchar *const out_filename = (get_file ? g_file_get_path(get_file) : nullptr);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-	gint res = gtk_dialog_run(GTK_DIALOG(dialog));
-	gchar *out_filename = (res == GTK_RESPONSE_ACCEPT
-		? gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog))
-		: nullptr);
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
-
+	gchar *const out_filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 	g_object_unref(dialog);
+
 	if (!out_filename) {
 		// No filename...
 		return;
@@ -382,7 +415,11 @@ rom_data_view_doRomOp_stdop(RomDataView *page, int id)
 
 	switch (id) {
 		case OPTION_EXPORT_TEXT: {
-			ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
+			const uint32_t sel_lc = page->cboLanguage
+				? language_combo_box_get_selected_lc(LANGUAGE_COMBO_BOX(page->cboLanguage))
+				: 0;
+
+			ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), page->romData->filename()) << std::endl;
 			ROMOutput ro(page->romData, sel_lc);
 			ofs << ro;
 			break;
@@ -508,8 +545,8 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 			? gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog))
 			: nullptr);
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
-
 		g_object_unref(dialog);
+
 		params.save_filename = save_filename;
 	}
 
