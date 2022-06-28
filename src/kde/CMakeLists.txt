@@ -14,6 +14,7 @@ PROJECT(rom-properties-kde LANGUAGES CXX)
 SET(${PROJECT_NAME}_SRCS
 	RomPropertiesDialogPlugin.cpp
 	RomDataView.cpp
+	RomDataView_ops.cpp
 	RomThumbCreator.cpp
 	RpQt.cpp
 	RpQImageBackend.cpp
@@ -41,6 +42,7 @@ SET(${PROJECT_NAME}_SRCS
 SET(${PROJECT_NAME}_H
 	RomPropertiesDialogPlugin.hpp
 	RomDataView.hpp
+	RomDataView_p.hpp
 	RomThumbCreator.hpp
 	RpQt.hpp
 	RpQImageBackend.hpp
