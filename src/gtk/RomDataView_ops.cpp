@@ -35,6 +35,9 @@ using std::ostringstream;
 using std::string;
 using std::vector;
 
+// Uncomment to enable the automatic timeout for the ROM Operations MessageWidget.
+//#define AUTO_TIMEOUT_MESSAGEWIDGET 1
+
 /**
  * Update a field's value.
  * This is called after running a ROM operation.

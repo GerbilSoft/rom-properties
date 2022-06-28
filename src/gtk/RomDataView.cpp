@@ -60,9 +60,6 @@ typedef enum {
 
 static GParamSpec *props[PROP_LAST];
 
-// Uncomment to enable the automatic timeout for the ROM Operations MessageWidget.
-//#define AUTO_TIMEOUT_MESSAGEWIDGET 1
-
 static void	rom_data_view_dispose		(GObject	*object);
 static void	rom_data_view_finalize		(GObject	*object);
 static void	rom_data_view_set_property	(GObject	*object,
