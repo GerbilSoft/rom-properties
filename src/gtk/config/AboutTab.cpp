@@ -10,7 +10,7 @@
 #include "config.librpbase.h"
 
 #include "AboutTab.hpp"
-#include "RpConfigTab.h"
+#include "RpConfigTab.hpp"
 
 #include "RpGtk.hpp"
 #include "gtk-compat.h"

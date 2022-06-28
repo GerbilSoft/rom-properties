@@ -9,7 +9,7 @@
 #include "stdafx.h"
 
 #include "AchievementsTab.hpp"
-#include "RpConfigTab.h"
+#include "RpConfigTab.hpp"
 #include "../AchGDBus.hpp"
 
 #include "RpGtk.hpp"

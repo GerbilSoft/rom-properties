@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK+ common)                      *
- * RpConfigTab.h: Configuration tab interface.                             *
+ * RpConfigTab.hpp: Configuration tab interface.                           *
  *                                                                         *
  * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *

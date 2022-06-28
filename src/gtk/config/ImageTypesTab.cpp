@@ -8,7 +8,7 @@
 
 #include "stdafx.h"
 #include "ImageTypesTab.hpp"
-#include "RpConfigTab.h"
+#include "RpConfigTab.hpp"
 
 #include "RpGtk.hpp"
 #include "gtk-compat.h"

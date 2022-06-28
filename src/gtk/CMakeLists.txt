@@ -51,7 +51,7 @@ SET(${PROJECT_NAME}_SRCS
 	is-supported.cpp
 	config/stub-export.c
 	config/ConfigDialog.cpp
-	config/RpConfigTab.c
+	config/RpConfigTab.cpp
 	config/ImageTypesTab.cpp
 	config/SystemsTab.cpp
 	config/OptionsTab.cpp
