@@ -180,6 +180,112 @@ int RomDataViewPrivate::updateField(int fieldIdx)
 }
 
 /**
+ * ROM operation: Standard Operations
+ * Dispatched by RomDataView::btnOptions_triggered().
+ * @param id Standard action ID
+ */
+void RomDataViewPrivate::doRomOp_stdop(int id)
+{
+	const char *const rom_filename = romData->filename();
+	if (!rom_filename)
+		return;
+	const uint32_t sel_lc = (cboLanguage ? cboLanguage->selectedLC() : 0);
+
+	const char *title = nullptr;	// NOP_C_
+	const char *filter = nullptr;	// NOP_C_
+	const char *default_ext = nullptr;
+
+	// Check the standard operation.
+	switch (id) {
+		case OPTION_COPY_TEXT: {
+			ostringstream oss;
+			oss << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
+			ROMOutput ro(romData, sel_lc);
+			oss << ro;
+			QApplication::clipboard()->setText(U82Q(oss.str()));
+			// Nothing else to do here.
+			return;
+		}
+
+		case OPTION_COPY_JSON: {
+			ostringstream oss;
+			JSONROMOutput jsro(romData);
+			oss << jsro << std::endl;
+			QApplication::clipboard()->setText(U82Q(oss.str()));
+			// Nothing else to do here.
+			return;
+		}
+
+		case OPTION_EXPORT_TEXT:
+			title = C_("RomDataView", "Export to Text File");
+			filter = C_("RomDataView", "Text Files|*.txt|text/plain|All Files|*.*|-");
+			default_ext = ".txt";
+			break;
+
+		case OPTION_EXPORT_JSON:
+			title = C_("RomDataView", "Export to JSON File");
+			filter = C_("RomDataView", "JSON Files|*.json|application/json|All Files|*.*|-");
+			default_ext = ".json";
+			break;
+
+		default:
+			assert(!"Invalid ID for a Standard ROM Operation.");
+			return;
+	}
+
+	// Export/copy to text or JSON.
+	QFileInfo fi(U82Q(rom_filename));
+
+	if (prevExportDir.isEmpty()) {
+		prevExportDir = fi.path();
+	}
+
+	QString defaultFileName = prevExportDir + QChar(L'/') + fi.completeBaseName();
+	defaultFileName += QLatin1String(default_ext);
+
+	// TODO: Rework so it's not application-modal.
+	Q_Q(RomDataView);
+	QString out_filename = QFileDialog::getSaveFileName(q,
+		U82Q(title), defaultFileName, rpFileDialogFilterToQt(filter));
+	if (out_filename.isEmpty())
+		return;
+
+	// Save the previous export directory.
+	QFileInfo fi2(out_filename);
+	prevExportDir = fi2.path();
+
+	// TODO: QTextStream wrapper for ostream.
+	// For now, we'll use ofstream.
+	ofstream ofs;
+	ofs.open(out_filename.toUtf8().constData(), ofstream::out);
+	if (ofs.fail()) {
+		// TODO: Show an error message?
+		return;
+	}
+
+	switch (id) {
+		case OPTION_EXPORT_TEXT: {
+			ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
+			ROMOutput ro(romData, sel_lc);
+			ofs << ro;
+			break;
+		}
+
+		case OPTION_EXPORT_JSON: {
+			JSONROMOutput jsro(romData);
+			ofs << jsro << std::endl;
+			break;
+		}
+
+		default:
+			assert(!"Invalid ID for an Export Standard ROM Operation.");
+			return;
+	}
+
+	ofs.close();
+}
+
+/**
  * An "Options" menu action was triggered.
  * @param id Options ID.
  */
@@ -190,110 +296,8 @@ void RomDataView::btnOptions_triggered(int id)
 	Q_D(RomDataView);
 
 	if (id < 0) {
-		// Export/copy to text or JSON.
-		const char *const rom_filename = d->romData->filename();
-		if (!rom_filename)
-			return;
-		QFileInfo fi(U82Q(rom_filename));
-
-		const unsigned int id2 = static_cast<unsigned int>(abs(id)) - 1;
-		assert(id2 < 4);
-		if (id2 >= 4) {
-			// Out of range.
-			return;
-		}
-
-		struct StdActsInfo_t {
-			const char *title;	// NOP_C_
-			const char *filter;	// NOP_C_
-			char default_ext[7];
-			bool toClipboard;
-		};
-		static const StdActsInfo_t stdActsInfo[] = {
-			// OPTION_EXPORT_TEXT
-			{NOP_C_("RomDataView", "Export to Text File"),
-			 NOP_C_("RomDataView", "Text Files|*.txt|text/plain|All Files|*.*|-"),
-			 ".txt", false},
-
-			// OPTION_EXPORT_JSON
-			{NOP_C_("RomDataView", "Export to JSON File"),
-			 NOP_C_("RomDataView", "JSON Files|*.json|application/json|All Files|*.*|-"),
-			 ".json", false},
-
-			// OPTION_COPY_TEXT
-			{nullptr, nullptr, "", true},
-
-			// OPTION_COPY_JSON
-			{nullptr, nullptr, "", true},
-		};
-
-		// Standard Actions information for this action
-		const StdActsInfo_t *const info = &stdActsInfo[id2];
-
-		// TODO: QTextStream wrapper for ostream.
-		// For now, we'll use ofstream.
-		ofstream ofs;
-
-		if (!info->toClipboard) {
-			if (d->prevExportDir.isEmpty()) {
-				d->prevExportDir = fi.path();
-			}
-
-			QString defaultFileName = d->prevExportDir + QChar(L'/') + fi.completeBaseName();
-			if (info->default_ext[0] != '\0') {
-				defaultFileName += QLatin1String(info->default_ext);
-			}
-			QString out_filename = QFileDialog::getSaveFileName(this,
-				U82Q(dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", info->title)),
-				defaultFileName,
-				rpFileDialogFilterToQt(dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", info->filter)));
-			if (out_filename.isEmpty())
-				return;
-
-			// Save the previous export directory.
-			QFileInfo fi2(out_filename);
-			d->prevExportDir = fi2.path();
-
-			ofs.open(out_filename.toUtf8().constData(), ofstream::out);
-			if (ofs.fail())
-				return;
-		}
-
-		// TODO: Optimize this such that we can pass ofstream or ostringstream
-		// to a factored-out function.
-
-		const uint32_t sel_lc = (d->cboLanguage ? d->cboLanguage->selectedLC() : 0);
-		switch (id) {
-			case OPTION_EXPORT_TEXT: {
-				ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
-				ROMOutput ro(d->romData, sel_lc);
-				ofs << ro;
-				break;
-			}
-			case OPTION_EXPORT_JSON: {
-				JSONROMOutput jsro(d->romData);
-				ofs << jsro << std::endl;
-				break;
-			}
-			case OPTION_COPY_TEXT: {
-				ostringstream oss;
-				oss << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
-				ROMOutput ro(d->romData, sel_lc);
-				oss << ro;
-				QApplication::clipboard()->setText(U82Q(oss.str()));
-				break;
-			}
-			case OPTION_COPY_JSON: {
-				ostringstream oss;
-				JSONROMOutput jsro(d->romData);
-				oss << jsro << std::endl;
-				QApplication::clipboard()->setText(U82Q(oss.str()));
-				break;
-			}
-			default:
-				assert(!"Invalid action ID.");
-				return;
-		}
+		// Standard operation.
+		d->doRomOp_stdop(id);
 		return;
 	}
 

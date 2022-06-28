@@ -227,6 +227,14 @@ class RomDataViewPrivate
 		 * be deleted and recreated.
 		 */
 		void initDisplayWidgets(void);
+
+	public:
+		/**
+		 * ROM operation: Standard Operations
+		 * Dispatched by RomDataView::btnOptions_triggered().
+		 * @param id Standard operation ID
+		 */
+		void doRomOp_stdop(int id);
 };
 
 
