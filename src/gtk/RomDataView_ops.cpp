@@ -249,14 +249,8 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 	return ret;
 }
 
-#if GTK_CHECK_VERSION(4,0,0)
-typedef GtkFileChooserNative RpGtkFileDialog;
-#else /* !GTK_CHECK_VERSION(4,0,0) */
-typedef GtkWidget RpGtkFileDialog;
-#endif /* GTK_CHECK_VERSION(4,0,0) */
-
 static void
-rom_data_view_doRomOp_stdop_response(RpGtkFileDialog *dialog, gint response_id, RomDataView *page);
+rom_data_view_doRomOp_stdop_response(GtkWidget *dialog, gint response_id, RomDataView *page);
 
 /**
  * ROM operation: Standard Operations
@@ -318,12 +312,16 @@ rom_data_view_doRomOp_stdop(RomDataView *page, int id)
 	}
 
 	GtkWindow *const parent = gtk_widget_get_toplevel_window(GTK_WIDGET(page));
+	GtkWidget *const dialog = gtk_file_chooser_dialog_new(
+		title, parent, GTK_FILE_CHOOSER_ACTION_SAVE,
+		_("_Cancel"), GTK_RESPONSE_CANCEL,
+		_("_Save"), GTK_RESPONSE_ACCEPT,
+		nullptr);
+
 #if GTK_CHECK_VERSION(4,0,0)
 	// NOTE: GTK4 has *mandatory* overwrite confirmation.
 	// Reference: https://gitlab.gnome.org/GNOME/gtk/-/commit/063ad28b1a06328e14ed72cc4b99cd4684efed12
-	RpGtkFileDialog *const dialog = gtk_file_chooser_native_new(
-		title, parent, GTK_FILE_CHOOSER_ACTION_SAVE,
-		_("_Save"), _("_Cancel"));
+
 	// TODO: URI?
 	GFile *const set_file = g_file_new_for_path(page->prevExportDir);
 	if (set_file) {
@@ -331,11 +329,6 @@ rom_data_view_doRomOp_stdop(RomDataView *page, int id)
 		g_object_unref(set_file);
 	}
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-	RpGtkFileDialog *const dialog = gtk_file_chooser_dialog_new(
-		title, parent, GTK_FILE_CHOOSER_ACTION_SAVE,
-		_("_Cancel"), GTK_RESPONSE_CANCEL,
-		_("_Save"), GTK_RESPONSE_ACCEPT,
-		nullptr);
 	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
 	if (page->prevExportDir) {
 		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), page->prevExportDir);
@@ -365,17 +358,17 @@ rom_data_view_doRomOp_stdop(RomDataView *page, int id)
 	gtk_window_set_modal(GTK_WINDOW(dialog), true);
 	gtk_widget_show(GTK_WIDGET(dialog));
 
-	// GtkFileChooserNative will send the "response" signal when the dialog is closed.
+	// GtkFileChooserDialog will send the "response" signal when the dialog is closed.
 }
 
 /**
  * The Save dialog for a Standard ROM Operation has been closed.
- * @param dialog Save dialog
+ * @param dialog GtkFileChooserDialog
  * @param response_id Response ID
  * @param page RomDataView
  */
 static void
-rom_data_view_doRomOp_stdop_response(RpGtkFileDialog *dialog, gint response_id, RomDataView *page)
+rom_data_view_doRomOp_stdop_response(GtkWidget *dialog, gint response_id, RomDataView *page)
 {
 	if (response_id != GTK_RESPONSE_ACCEPT) {
 		// User cancelled the dialog.
@@ -472,22 +465,15 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 	RomData::RomOpParams params;
 	const RomData::RomOp *op = &ops[id];
 	if (op->flags & RomData::RomOp::ROF_SAVE_FILE) {
-#if GTK_CHECK_VERSION(4,0,0)
-		// NOTE: GTK4 has *mandatory* overwrite confirmation.
-		// Reference: https://gitlab.gnome.org/GNOME/gtk/-/commit/063ad28b1a06328e14ed72cc4b99cd4684efed12
-		GtkFileChooserNative *const dialog = gtk_file_chooser_native_new(
-			op->sfi.title,			// title
-			parent,				// parent
-			GTK_FILE_CHOOSER_ACTION_SAVE,	// action
-			_("Cancel"), _("Save"));
-#else /* !GTK_CHECK_VERSION(4,0,0) */
 		GtkWidget *const dialog = gtk_file_chooser_dialog_new(
-			op->sfi.title,			// title
-			parent,				// parent
-			GTK_FILE_CHOOSER_ACTION_SAVE,	// action
+			op->sfi.title, parent, GTK_FILE_CHOOSER_ACTION_SAVE,
 			_("Cancel"), GTK_RESPONSE_CANCEL,
 			_("Save"), GTK_RESPONSE_ACCEPT,
 			nullptr);
+
+#if !GTK_CHECK_VERSION(4,0,0)
+		// NOTE: GTK4 has *mandatory* overwrite confirmation.
+		// Reference: https://gitlab.gnome.org/GNOME/gtk/-/commit/063ad28b1a06328e14ed72cc4b99cd4684efed12
 		gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 

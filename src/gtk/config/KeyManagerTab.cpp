@@ -559,15 +559,18 @@ key_manager_tab_handle_menu_action(KeyManagerTab *tab, gint id)
 		RP_I18N_DOMAIN, "KeyManagerTab", file_filters_tbl[id]);
 
 	GtkWindow *const parent = gtk_widget_get_toplevel_window(GTK_WIDGET(tab));
+	GtkWidget *const dialog = gtk_file_chooser_dialog_new(
+		s_title,			// title
+		parent,				// parent
+		GTK_FILE_CHOOSER_ACTION_OPEN,	// action
+		_("_Cancel"), GTK_RESPONSE_CANCEL,
+		_("_Open"), GTK_RESPONSE_ACCEPT,
+		nullptr);
 
 #if GTK_CHECK_VERSION(4,0,0)
 	// NOTE: GTK4 has *mandatory* overwrite confirmation.
 	// Reference: https://gitlab.gnome.org/GNOME/gtk/-/commit/063ad28b1a06328e14ed72cc4b99cd4684efed12
-	GtkFileChooserNative *const dialog = gtk_file_chooser_native_new(
-		s_title,			// title
-		parent,				// parent
-		GTK_FILE_CHOOSER_ACTION_OPEN,	// action
-		_("_Open"), _("_Cancel"));
+
 	// TODO: URI?
 	if (tab->prevOpenDir) {
 		GFile *const set_file = g_file_new_for_path(tab->prevOpenDir);
@@ -577,13 +580,6 @@ key_manager_tab_handle_menu_action(KeyManagerTab *tab, gint id)
 		}
 	}
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-	GtkWidget *const dialog = gtk_file_chooser_dialog_new(
-		s_title,			// title
-		parent,				// parent
-		GTK_FILE_CHOOSER_ACTION_OPEN,	// action
-		_("_Cancel"), GTK_RESPONSE_CANCEL,
-		_("_Open"), GTK_RESPONSE_ACCEPT,
-		nullptr);
 	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
 	if (tab->prevOpenDir) {
 		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), tab->prevOpenDir);
