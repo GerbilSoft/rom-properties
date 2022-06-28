@@ -29,26 +29,6 @@ gtk_widget_get_window(GtkWidget *widget)
 
 /** Functions added in GTK+ 3.0.0 **/
 
-#if !GTK_CHECK_VERSION(2,90,7)
-// Version functions were introduced in GTK+ 3.0.
-// Prior to GTK3, they were directly exported as guints.
-static inline guint
-gtk_get_major_version(void)
-{
-	return gtk_major_version;
-}
-static inline guint
-gtk_get_minor_version(void)
-{
-	return gtk_minor_version;
-}
-static inline guint
-gtk_get_micro_version(void)
-{
-	return gtk_micro_version;
-}
-#endif /* !GTK_CHECK_VERSION(2,90,7) */
-
 #if !GTK_CHECK_VERSION(2,91,6)
 static inline GtkWidget*
 gtk_tree_view_column_get_button(GtkTreeViewColumn *tree_column)

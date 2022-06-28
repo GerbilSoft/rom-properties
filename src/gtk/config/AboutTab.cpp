@@ -466,13 +466,19 @@ about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 #ifdef QT_IS_STATIC
 	sLibraries += rp_sprintf(sIntCopyOf, gtkVersion.c_str());
 #else
+	sLibraries += rp_sprintf(sCompiledWith, gtkVersionCompiled.c_str()) + '\n';
+
+	// NOTE: Although the GTK+ 2.x headers export variables,
+	// the shared libraries for 2.24.33 do *not* export them,
+	// which results in undefined symbols at at runtime.
+#if GTK_CHECK_VERSION(2,90,7)
 	const guint gtk_major = gtk_get_major_version();
 	string gtkVersionUsing = rp_sprintf("GTK%s %u.%u.%u",
 		(gtk_major >= 4 ? "" : "+"),
 		gtk_major, gtk_get_minor_version(),
 		gtk_get_micro_version());
-	sLibraries += rp_sprintf(sCompiledWith, gtkVersionCompiled.c_str()) + '\n';
 	sLibraries += rp_sprintf(sUsingDll, gtkVersionUsing.c_str());
+#endif /* GTK_CHECK_VERSION(2,90,7) */
 #endif /* QT_IS_STATIC */
 	sLibraries += '\n';
 	sLibraries +=
