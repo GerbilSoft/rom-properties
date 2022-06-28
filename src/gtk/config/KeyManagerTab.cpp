@@ -627,8 +627,12 @@ key_manager_tab_menu_action_response(GtkFileChooserDialog *dialog, gint response
 
 #if GTK_CHECK_VERSION(4,0,0)
 	// TODO: URIs?
+	gchar *in_filename = nullptr;
 	GFile *const get_file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(dialog));
-	gchar *const in_filename = (get_file ? g_file_get_path(get_file) : nullptr);
+	if (get_file) {
+		in_filename = g_file_get_path(get_file);
+		g_object_unref(get_file);
+	}
 	gtk_window_destroy(GTK_WINDOW(dialog));
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	gchar *const in_filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
