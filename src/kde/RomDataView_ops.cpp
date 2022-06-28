@@ -191,8 +191,8 @@ void RomDataViewPrivate::doRomOp_stdop(int id)
 		return;
 	const uint32_t sel_lc = (cboLanguage ? cboLanguage->selectedLC() : 0);
 
-	const char *title = nullptr;	// NOP_C_
-	const char *filter = nullptr;	// NOP_C_
+	const char *title = nullptr;
+	const char *filter = nullptr;
 	const char *default_ext = nullptr;
 
 	// Check the standard operation.
