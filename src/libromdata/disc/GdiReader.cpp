@@ -310,7 +310,10 @@ GdiReader::GdiReader(IRpFile *file)
 
 	// Save the filename for later.
 	RP_D(GdiReader);
-	d->filename = m_file->filename();
+	const char *const filename = m_file->filename();
+	if (filename) {
+		d->filename = filename;
+	}
 
 	// GDI file should be 4k or less.
 	const off64_t fileSize = m_file->size();

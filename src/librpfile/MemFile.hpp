@@ -115,11 +115,11 @@ class MemFile : public IRpFile
 
 		/**
 		 * Get the filename.
-		 * @return Filename. (May be empty if the filename is not available.)
+		 * @return Filename. (May be nullptr if the filename is not available.)
 		 */
-		inline std::string filename(void) const final
+		inline const char *filename(void) const final
 		{
-			return m_filename;
+			return (!m_filename.empty() ? m_filename.c_str() : nullptr);
 		}
 
 	public:

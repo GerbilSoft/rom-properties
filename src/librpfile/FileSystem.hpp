@@ -131,20 +131,22 @@ static inline int delete_file(const std::string &filename)
 
 /**
  * Get the file extension from a filename or pathname.
+ * NOTE: Returned value points into the specified filename.
  * @param filename Filename
- * @return File extension, including the leading dot (pointer to within the filename) [nullptr if no extension]
+ * @return File extension, including the leading dot; nullptr if no extension.
  */
 RP_LIBROMDATA_PUBLIC
-const char *file_ext(const std::string &filename);
+const char *file_ext(const char *filename);
 
 #ifdef _WIN32
 /**
  * Get the file extension from a filename or pathname. (wchar_t version)
+ * NOTE: Returned value points into the specified filename.
  * @param filename Filename
- * @return File extension, including the leading dot (pointer to within the filename) [nullptr if no extension]
+ * @return File extension, including the leading dot; nullptr if no extension.
  */
 RP_LIBROMDATA_PUBLIC
-const wchar_t *file_ext(const std::wstring& filename);
+const wchar_t *file_ext(const wchar_t *filename);
 #endif /* _WIN32 */
 
 /**

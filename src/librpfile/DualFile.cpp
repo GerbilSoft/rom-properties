@@ -219,14 +219,4 @@ off64_t DualFile::size(void)
 	return m_fullSize;
 }
 
-/**
- * Get the filename.
- * @return Filename. (May be empty if the filename is not available.)
- */
-string DualFile::filename(void) const
-{
-	// TODO: Implement this?
-	return string();
-}
-
 }

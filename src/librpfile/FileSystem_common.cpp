@@ -88,45 +88,51 @@ const string &getConfigDirectory(void)
 
 /**
  * Get the file extension from a filename or pathname.
+ * NOTE: Returned value points into the specified filename.
  * @param filename Filename
- * @return File extension, including the leading dot (pointer to within the filename) [nullptr if no extension]
+ * @return File extension, including the leading dot; nullptr if no extension.
  */
-template<typename T>
-static const T *T_file_ext(const std::basic_string<T> &filename)
+const char *file_ext(const char *filename)
 {
-	size_t dotpos = filename.find_last_of('.');
-	size_t slashpos = filename.find_last_of(DIR_SEP_CHR);
-	if (dotpos == string::npos ||
-	    dotpos >= filename.size()-1 ||
-	    (slashpos != string::npos && dotpos <= slashpos))
+	if (unlikely(!filename))
+		return nullptr;
+
+	const char *const dotpos = strrchr(filename, '.');
+	const char *const slashpos = strrchr(filename, DIR_SEP_CHR);
+	if (!dotpos || dotpos[1] == '\0' ||
+	    (slashpos && dotpos <= slashpos))
 	{
 		// Invalid or missing file extension.
 		return nullptr;
 	}
 
 	// Return the file extension. (pointer to within the filename)
-	return &filename[dotpos];
-}
-
-/**
- * Get the file extension from a filename or pathname.
- * @param filename Filename
- * @return File extension, including the leading dot (pointer to within the filename) [nullptr if no extension]
- */
-const char* file_ext(const string& filename)
-{
-	return T_file_ext(filename);
+	return dotpos;
 }
 
 #ifdef _WIN32
 /**
  * Get the file extension from a filename or pathname. (wchar_t version)
+ * NOTE: Returned value points into the specified filename.
  * @param filename Filename
- * @return File extension, including the leading dot (pointer to within the filename) [nullptr if no extension]
+ * @return File extension, including the leading dot; nullptr if no extension.
  */
-const wchar_t* file_ext(const std::wstring& filename)
+const char *file_ext(const char *filename)
 {
-	return T_file_ext(filename);
+	if (unlikely(!filename))
+		return nullptr;
+
+	const wchar_t *const dotpos = wcsrchr(filename, '.');
+	const wchar_t *const slashpos = wcsrchr(filename, DIR_SEP_CHR);
+	if (!dotpos || dotpos[1] == L'\0' ||
+	    (slashpos && dotpos <= slashpos))
+	{
+		// Invalid or missing file extension.
+		return nullptr;
+	}
+
+	// Return the file extension. (pointer to within the filename)
+	return dotpos;
 }
 #endif /* _WIN32 */
 

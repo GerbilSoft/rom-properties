@@ -672,9 +672,9 @@ off64_t RpFile_IStream::size(void)
 
 /**
  * Get the filename.
- * @return Filename. (May be empty if the filename is not available.)
+ * @return Filename. (May be nullptr if the filename is not available.)
  */
-string RpFile_IStream::filename(void) const
+const char *RpFile_IStream::filename(void) const
 {
 	if (m_filename.empty()) {
 		// Get the filename.
@@ -696,5 +696,5 @@ string RpFile_IStream::filename(void) const
 	}
 
 	// Return the filename.
-	return m_filename;
+	return (!m_filename.empty() ? m_filename.c_str() : nullptr);
 }

@@ -790,13 +790,11 @@ SNES::SNES(IRpFile *file)
 	// TODO: BS-X heuristics.
 	// For now, assuming that if the file extension starts with
 	// ".b", it's a BS-X ROM image.
-	const string filename = file->filename();
-	if (!filename.empty()) {
-		const char *const ext = FileSystem::file_ext(filename);
-		if (ext && ext[0] == '.' && tolower(ext[1]) == 'b') {
-			// BS-X ROM image.
-			d->romType = SNESPrivate::RomType::BSX;
-		}
+	const char *const filename = file->filename();
+	const char *const ext = FileSystem::file_ext(filename);
+	if (ext && ext[0] == '.' && tolower(ext[1]) == 'b') {
+		// BS-X ROM image.
+		d->romType = SNESPrivate::RomType::BSX;
 	}
 
 	if (d->romType == SNESPrivate::RomType::Unknown) {

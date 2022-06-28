@@ -729,12 +729,12 @@ off64_t RpFile::size(void)
 
 /**
  * Get the filename.
- * @return Filename. (May be empty if the filename is not available.)
+ * @return Filename. (May be nullptr if the filename is not available.)
  */
-string RpFile::filename(void) const
+const char *RpFile::filename(void) const
 {
 	RP_D(const RpFile);
-	return d->filename;
+	return (!d->filename.empty() ? d->filename.c_str() : nullptr);
 }
 
 /** Extra functions **/

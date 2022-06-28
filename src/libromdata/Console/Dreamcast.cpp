@@ -348,7 +348,7 @@ Dreamcast::Dreamcast(IRpFile *file)
 	}
 
 	// Check if this disc image is supported.
-	const string filename = file->filename();
+	const char *const filename = file->filename();
 	const DetectInfo info = {
 		{0, static_cast<unsigned int>(size), reinterpret_cast<const uint8_t*>(&sector)},
 		FileSystem::file_ext(filename),	// ext

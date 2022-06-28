@@ -287,10 +287,10 @@ off64_t RpFileGio::size(void)
 /**
  * Get the filename.
  * NOTE: For RpFileGio, this returns a GVfs URI.
- * @return Filename. (May be empty if the filename is not available.)
+ * @return Filename. (May be nullptr if the filename is not available.)
  */
-string RpFileGio::filename(void) const
+const char *RpFileGio::filename(void) const
 {
 	RP_D(const RpFileGio);
-	return d->uri;
+	return (!d->uri.empty() ? d->uri.c_str() : nullptr);
 }

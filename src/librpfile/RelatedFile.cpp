@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RelatedFile.hpp: Open a related file.                                   *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -33,8 +33,11 @@ namespace LibRpFile { namespace FileSystem {
  */
 IRpFile *openRelatedFile(const char *filename, const char *basename, const char *ext)
 {
-	if (!filename || !ext)
+	assert(filename != nullptr);
+	assert(ext != nullptr);
+	if (!filename || !ext) {
 		return nullptr;
+	}
 
 	// Get the directory portion of the filename.
 	string s_dir = filename;

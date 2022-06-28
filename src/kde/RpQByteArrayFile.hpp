@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpQByteArrayFile.hpp: IRpFile implementation using a QByteArray.        *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -89,12 +89,6 @@ class RpQByteArrayFile : public LibRpFile::IRpFile
 		 * @return File size, or negative on error.
 		 */
 		off64_t size(void) final;
-
-		/**
-		 * Get the filename.
-		 * @return Filename. (May be empty if the filename is not available.)
-		 */
-		std::string filename(void) const final;
 
 	public:
 		/** RpQByteArrayFile-specific functions **/
