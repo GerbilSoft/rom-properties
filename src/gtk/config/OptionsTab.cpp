@@ -106,8 +106,16 @@ options_tab_init(OptionsTab *tab)
 	// FIXME: GtkFrame doesn't support mnemonics?
 	GtkWidget *const fraDownloads = gtk_frame_new(C_("SystemsTab", "Downloads"));
 	GtkWidget *const vboxDownloads = rp_gtk_vbox_new(6);
+#if GTK_CHECK_VERSION(2,91,0)
 	gtk_widget_set_margin(vboxDownloads, 6);
 	gtk_frame_set_child(GTK_FRAME(fraDownloads), vboxDownloads);
+#else /* !GTK_CHECK_VERSION(2,91,0) */
+	GtkWidget *const alignDownloads = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignDownloads), 6, 6, 6, 6);
+	gtk_widget_show(alignDownloads);
+	gtk_container_add(GTK_CONTAINER(alignDownloads), vboxDownloads);
+	gtk_frame_set_child(GTK_FRAME(fraDownloads), alignDownloads);
+#endif /* GTK_CHECK_VERSION(2,91,0) */
 
 	// "Downloads" checkboxes.
 	tab->chkExtImgDownloadEnabled = gtk_check_button_new_with_label(
@@ -132,8 +140,16 @@ options_tab_init(OptionsTab *tab)
 	// FIXME: GtkFrame doesn't support mnemonics?
 	GtkWidget *const fraOptions = gtk_frame_new(C_("SystemsTab", "Options"));
 	GtkWidget *const vboxOptions = rp_gtk_vbox_new(6);
+#if GTK_CHECK_VERSION(2,91,0)
 	gtk_widget_set_margin(vboxOptions, 6);
 	gtk_frame_set_child(GTK_FRAME(fraOptions), vboxOptions);
+#else /* !GTK_CHECK_VERSION(2,91,0) */
+	GtkWidget *const alignOptions = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignOptions), 6, 6, 6, 6);
+	gtk_widget_show(alignOptions);
+	gtk_container_add(GTK_CONTAINER(alignOptions), vboxOptions);
+	gtk_frame_set_child(GTK_FRAME(fraOptions), alignOptions);
+#endif /* GTK_CHECK_VERSION(2,91,0) */
 
 	// "Options" checkboxes.
 	tab->chkShowDangerousPermissionsOverlayIcon = gtk_check_button_new_with_label(

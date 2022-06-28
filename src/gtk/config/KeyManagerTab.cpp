@@ -213,6 +213,7 @@ key_manager_tab_init(KeyManagerTab *tab)
 	gtk_tree_view_column_set_title(column, C_("KeyManagerTab", "Valid?"));
 	gtk_tree_view_column_set_resizable(column, FALSE);
 	renderer = gtk_cell_renderer_pixbuf_new();
+	g_object_set(renderer, "xalign", 0.5f, nullptr);	// FIXME: Not working on GTK2.
 	gtk_tree_view_column_pack_start(column, renderer, FALSE);
 	gtk_tree_view_column_add_attribute(column, renderer, "icon-name", 2);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tab->treeView), column);
@@ -255,7 +256,15 @@ key_manager_tab_init(KeyManagerTab *tab)
 	gtk_container_add(GTK_CONTAINER(tab->btnImport), hboxImport);
 #  endif /* GTK_CHECK_VERSION(4,0,0) */
 #endif /* GTK_CHECK_VERSION(4,0,0) && defined(USE_GTK_MENU_BUTTON) */
+
+#ifndef RP_USE_GTK_ALIGNMENT
 	GTK_WIDGET_HALIGN_LEFT(tab->btnImport);
+#else /* RP_USE_GTK_ALIGNMENT */
+	// GTK2: Use a GtkAlignment.
+	GtkWidget *const alignImport = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
+	gtk_container_add(GTK_CONTAINER(alignImport), tab->btnImport);
+	gtk_widget_show(alignImport);
+#endif /* RP_USE_GTK_ALIGNMENT */
 
 	// Create the "Import" popup menu.
 #ifdef USE_G_MENU_MODEL
@@ -319,7 +328,11 @@ key_manager_tab_init(KeyManagerTab *tab)
 	gtk_widget_show(tab->btnImport);
 
 	gtk_box_pack_start(GTK_BOX(tab), scrolledWindow, TRUE, TRUE, 0);
+#  ifndef RP_USE_GTK_ALIGNMENT
 	gtk_box_pack_start(GTK_BOX(tab), tab->btnImport, FALSE, FALSE, 0);
+#  else /* RP_USE_GTK_ALIGNMENT */
+	gtk_box_pack_start(GTK_BOX(tab), alignImport, FALSE, FALSE, 0);
+#  endif /* RP_USE_GTK_ALIGNMENT */
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Initialize the GtkTreeView with the available keys.
@@ -482,6 +495,7 @@ btnImport_menu_pos_func(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, gpoi
 	GtkWidget *const button = (GtkWidget*)GTK_BUTTON(user_data);
 	GdkWindow *const window = gtk_widget_get_window(button);
 
+	// FIXME: GTK2: First run results in the menu going down, not up.
 	GtkAllocation button_alloc, menu_alloc;
 	gtk_widget_get_allocation(GTK_WIDGET(button), &button_alloc);
 	gtk_widget_get_allocation(GTK_WIDGET(menu), &menu_alloc);

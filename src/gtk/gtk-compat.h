@@ -304,6 +304,7 @@ gtk_widget_set_margin_end(GtkWidget *widget, gint margin)
 }
 #endif /* GTK_CHECK_VERSION(2,91,0) && !GTK_CHECK_VERSION(3,11,2) */
 
+#if GTK_CHECK_VERSION(2,91,0)
 /**
  * Set margin for all four sides.
  * @param widget GtkWidget
@@ -311,16 +312,12 @@ gtk_widget_set_margin_end(GtkWidget *widget, gint margin)
 static inline void
 gtk_widget_set_margin(GtkWidget *widget, gint margin)
 {
-#if GTK_CHECK_VERSION(2,91,0)
 	gtk_widget_set_margin_start(widget, margin);
 	gtk_widget_set_margin_end(widget, margin);
 	gtk_widget_set_margin_top(widget, margin);
 	gtk_widget_set_margin_bottom(widget, margin);
-#else /* !GTK_CHECK_VERSION(2,91,0) */
-	assert(GTK_IS_MISC(widget));
-	gtk_misc_set_padding(GTK_MISC(widget), margin, margin);
-#endif /* GTK_CHECK_VERSION(2,91,0) */
 }
+#endif /* GTK_CHECK_VERSION(2,91,0) */
 
 G_END_DECLS
 

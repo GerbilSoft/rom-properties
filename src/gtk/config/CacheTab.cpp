@@ -49,10 +49,6 @@ struct _CacheTab {
 	GtkWidget	*lblStatus;
 	GtkWidget	*pbStatus;
 
-#if !GTK_CHECK_VERSION(4,0,0)
-	GdkCursor *curBusy;
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
-
 	CacheCleaner	*ccCleaner;
 };
 
@@ -237,12 +233,6 @@ cache_tab_finalize(GObject *object)
 {
 	CacheTab *const tab = CACHE_TAB(object);
 
-#if !GTK_CHECK_VERSION(4,0,0)
-	if (tab->curBusy) {
-		g_object_unref(tab->curBusy);
-	}
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
-
 	if (tab->ccCleaner) {
 		g_object_unref(tab->ccCleaner);
 	}
@@ -313,7 +303,7 @@ cache_tab_enable_ui_controls(CacheTab *tab, gboolean enable)
 	// Set the busy cursor if needed.
 	GtkWidget *const widget = GTK_WIDGET(tab);
 #if GTK_CHECK_VERSION(4,0,0)
-	gtk_widget_set_cursor_from_name(widget, (enable ? "wait" : nullptr));
+	gtk_widget_set_cursor_from_name(widget, (enable ? nullptr : "wait"));
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	GdkWindow *const gdkWindow = gtk_widget_get_window(widget);
 	if (gdkWindow) {
@@ -322,17 +312,16 @@ cache_tab_enable_ui_controls(CacheTab *tab, gboolean enable)
 			gdk_window_set_cursor(gdkWindow, nullptr);
 		} else {
 			// Busy cursor.
-			if (!tab->curBusy) {
-				// Create the Busy cursor.
-				// TODO: Also if the theme changes?
-				// TODO: Verify that this doesn't leak.
-				tab->curBusy = gdk_cursor_new_from_name(gtk_widget_get_display(widget), "wait");
-				g_object_ref_sink(tab->curBusy);
-			}
-			gdk_window_set_cursor(gdkWindow, tab->curBusy);
+			GdkCursor *const curBusy = gdk_cursor_new_from_name(gtk_widget_get_display(widget), "wait");
+			gdk_window_set_cursor(gdkWindow, curBusy);
+#if GTK_CHECK_VERSION(3,0,0)
+			g_object_unref(curBusy);
+#else /* !GTK_CHECK_VERSION(3,0,0) */
+			gdk_cursor_unref(curBusy);
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 		}
 	}
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 }
 
 static inline

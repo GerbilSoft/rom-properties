@@ -101,6 +101,7 @@ config_dialog_init(ConfigDialog *dialog)
 	// g_object_new() guarantees that all values are initialized to 0.
 	gtk_window_set_title(GTK_WINDOW(dialog),
 		C_("ConfigDialog", "ROM Properties Page Configuration"));
+	gtk_window_set_resizable(GTK_WINDOW(dialog), TRUE);
 
 	// TODO: Custom icon? For now, using "media-flash".
 #if GTK_CHECK_VERSION(4,0,0)
@@ -179,11 +180,11 @@ config_dialog_init(ConfigDialog *dialog)
 	dialog->tabWidget_switch_page = g_signal_connect(
 		dialog->tabWidget, "switch-page",
 		G_CALLBACK(config_dialog_switch_page), dialog);
-#if GTK_CHECK_VERSION(3,0,0)
+#ifndef RP_USE_GTK_ALIGNMENT
+	// NOTE: This doesn't seem to be needed for GTK2.
+	// May be a theme-specific thing...
 	gtk_widget_set_margin_bottom(dialog->tabWidget, 8);
-#else /* GTK_CHECK_VERSION(3,0,0) */
-	g_object_set(G_OBJECT(dialog->tabWidget), "ypad", 8, nullptr);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif /* RP_USE_GTK_ALIGNMENT */
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_box_append(GTK_BOX(content_area), dialog->tabWidget);
 	// TODO: Verify that this works.
@@ -194,87 +195,139 @@ config_dialog_init(ConfigDialog *dialog)
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Create the tabs.
-	GtkWidget *lblTab = gtk_label_new_with_mnemonic(
+	GtkWidget *const lblImageTypes = gtk_label_new_with_mnemonic(
 		convert_accel_to_gtk(C_("ConfigDialog", "&Image Types")).c_str());
-	gtk_widget_show(lblTab);
+	gtk_widget_show(lblImageTypes);
 	dialog->tabImageTypes = image_types_tab_new();
-	gtk_widget_set_margin(dialog->tabImageTypes, 8);
 	gtk_widget_show(dialog->tabImageTypes);
-	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabImageTypes, lblTab);
 	g_signal_connect(dialog->tabImageTypes, "modified",
 		G_CALLBACK(config_dialog_tab_modified), dialog);
 
-	lblTab = gtk_label_new_with_mnemonic(
+	GtkWidget *const lblSystems = gtk_label_new_with_mnemonic(
 		convert_accel_to_gtk(C_("ConfigDialog", "&Systems")).c_str());
-	gtk_widget_show(lblTab);
+	gtk_widget_show(lblSystems);
 	dialog->tabSystems = systems_tab_new();
-	gtk_widget_set_margin(dialog->tabSystems, 8);
 	gtk_widget_show(dialog->tabSystems);
-	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabSystems, lblTab);
 	g_signal_connect(dialog->tabSystems, "modified",
 		G_CALLBACK(config_dialog_tab_modified), dialog);
 
-	lblTab = gtk_label_new_with_mnemonic(
+	GtkWidget *const lblOptions = gtk_label_new_with_mnemonic(
 		convert_accel_to_gtk(C_("ConfigDialog", "&Options")).c_str());
-	gtk_widget_show(lblTab);
+	gtk_widget_show(lblOptions);
 	dialog->tabOptions = options_tab_new();
-	gtk_widget_set_margin(dialog->tabOptions, 8);
 	gtk_widget_show(dialog->tabOptions);
-	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabOptions, lblTab);
 	g_signal_connect(dialog->tabOptions, "modified",
 		G_CALLBACK(config_dialog_tab_modified), dialog);
 
-	lblTab = gtk_label_new_with_mnemonic(C_("ConfigDialog", "Thumbnail Cache"));
-	gtk_widget_show(lblTab);
+	GtkWidget *const lblCache = gtk_label_new_with_mnemonic(C_("ConfigDialog", "Thumbnail Cache"));
+	gtk_widget_show(lblCache);
 	dialog->tabCache = cache_tab_new();
-	gtk_widget_set_margin(dialog->tabCache, 8);
 	gtk_widget_show(dialog->tabCache);
-	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabCache, lblTab);
 	g_signal_connect(dialog->tabCache, "modified",
 		G_CALLBACK(config_dialog_tab_modified), dialog);
 
-	lblTab = gtk_label_new_with_mnemonic(
+	GtkWidget *const lblAchievements = gtk_label_new_with_mnemonic(
 		convert_accel_to_gtk(C_("ConfigDialog", "&Achievements")).c_str());
-	gtk_widget_show(lblTab);
+	gtk_widget_show(lblAchievements);
 	dialog->tabAchievements = achievements_tab_new();
-	gtk_widget_set_margin(dialog->tabAchievements, 8);
 	gtk_widget_show(dialog->tabAchievements);
-	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabAchievements, lblTab);
 	g_signal_connect(dialog->tabAchievements, "modified",
 		G_CALLBACK(config_dialog_tab_modified), dialog);
 
 #ifdef ENABLE_DECRYPTION
-	lblTab = gtk_label_new_with_mnemonic(
+	GtkWidget *const lblKeyManager = gtk_label_new_with_mnemonic(
 		convert_accel_to_gtk(C_("ConfigDialog", "&Key Manager")).c_str());
-	gtk_widget_show(lblTab);
+	gtk_widget_show(lblKeyManager);
 	dialog->tabKeyManager = key_manager_tab_new();
-	gtk_widget_set_margin(dialog->tabKeyManager, 8);
 	gtk_widget_show(dialog->tabKeyManager);
-	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabKeyManager, lblTab);
 	g_signal_connect(dialog->tabKeyManager, "modified",
 		G_CALLBACK(config_dialog_tab_modified), dialog);
 #endif /* ENABLE_DECRYPTION */
 
-	lblTab = gtk_label_new_with_mnemonic(
+	GtkWidget *const lblAbout = gtk_label_new_with_mnemonic(
 		convert_accel_to_gtk(C_("ConfigDialog", "Abou&t")).c_str());
-	gtk_widget_show(lblTab);
+	gtk_widget_show(lblAbout);
 	dialog->tabAbout = about_tab_new();
-	gtk_widget_set_margin(dialog->tabAbout, 8);
 	gtk_widget_show(dialog->tabAbout);
-	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabAbout, lblTab);
 	g_signal_connect(dialog->tabAbout, "modified",
 		G_CALLBACK(config_dialog_tab_modified), dialog);
+
+	// Add padding and append the pages.
+#ifndef RP_USE_GTK_ALIGNMENT
+	// GTK3/GTK4: Use the 'margin-*' properties and add the pages directly.
+	gtk_widget_set_margin(dialog->tabImageTypes, 8);
+	gtk_widget_set_margin(dialog->tabSystems, 8);
+	gtk_widget_set_margin(dialog->tabOptions, 8);
+	gtk_widget_set_margin(dialog->tabCache, 8);
+	gtk_widget_set_margin(dialog->tabAchievements, 8);
+#  ifdef ENABLE_DECRYPTION
+	gtk_widget_set_margin(dialog->tabKeyManager, 8);
+#  endif /* ENABLE_DECRYPTION */
+	gtk_widget_set_margin(dialog->tabAbout, 8);
+
+	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabImageTypes, lblImageTypes);
+	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabSystems, lblSystems);
+	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabOptions, lblOptions);
+	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabCache, lblCache);
+	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabAchievements, lblAchievements);
+#  ifdef ENABLE_DECRYPTION
+	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabKeyManager, lblKeyManager);
+#  endif /* ENABLE_DECRYPTION */
+	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabAbout, lblAbout);
+#else /* RP_USE_GTK_ALIGNMENT */
+	// GTK2: Need to add GtkAlignment widgets for padding.
+	GtkWidget *const alignImageTypes = gtk_alignment_new(0.0f, 0.0f, 1.0f, 1.0f);
+	GtkWidget *const alignSystems = gtk_alignment_new(0.0f, 0.0f, 1.0f, 1.0f);
+	GtkWidget *const alignOptions = gtk_alignment_new(0.0f, 0.0f, 1.0f, 1.0f);
+	GtkWidget *const alignCache = gtk_alignment_new(0.0f, 0.0f, 1.0f, 1.0f);
+	GtkWidget *const alignAchievements = gtk_alignment_new(0.0f, 0.0f, 1.0f, 1.0f);
+	GtkWidget *const alignAbout = gtk_alignment_new(0.0f, 0.0f, 1.0f, 1.0f);
+
+	gtk_container_add(GTK_CONTAINER(alignImageTypes), dialog->tabImageTypes);
+	gtk_container_add(GTK_CONTAINER(alignSystems), dialog->tabSystems);
+	gtk_container_add(GTK_CONTAINER(alignOptions), dialog->tabOptions);
+	gtk_container_add(GTK_CONTAINER(alignCache), dialog->tabCache);
+	gtk_container_add(GTK_CONTAINER(alignAchievements), dialog->tabAchievements);
+	gtk_container_add(GTK_CONTAINER(alignAbout), dialog->tabAbout);
+
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignImageTypes), 8, 8, 8, 8);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignSystems), 8, 8, 8, 8);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignOptions), 8, 8, 8, 8);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignCache), 8, 8, 8, 8);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignAchievements), 8, 8, 8, 8);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignAbout), 8, 8, 8, 8);
+
+	gtk_widget_show(alignImageTypes);
+	gtk_widget_show(alignSystems);
+	gtk_widget_show(alignOptions);
+	gtk_widget_show(alignCache);
+	gtk_widget_show(alignAchievements);
+	gtk_widget_show(alignAbout);
+
+#  ifdef ENABLE_DECRYPTION
+	GtkWidget *const alignKeyManager = gtk_alignment_new(0.0f, 0.0f, 1.0f, 1.0f);
+	gtk_container_add(GTK_CONTAINER(alignKeyManager), dialog->tabKeyManager);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignKeyManager), 8, 8, 8, 8);
+	gtk_widget_show(alignKeyManager);
+#  endif /* ENABLE_DECRYPTION */
+
+	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), alignImageTypes, lblImageTypes);
+	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), alignSystems, lblSystems);
+	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), alignOptions, lblOptions);
+	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), alignCache, lblCache);
+	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), alignAchievements, lblAchievements);
+#  ifdef ENABLE_DECRYPTION
+	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), alignKeyManager, lblKeyManager);
+#  endif /* ENABLE_DECRYPTION */
+	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), alignAbout, lblAbout);
+#endif /* RP_USE_GTK_ALIGNMENT */
 
 	// Reset button is disabled initially.
 	gtk_widget_set_sensitive(dialog->btnReset, FALSE);
 
-	// If the first page doesn't have default settings, disable btnDefaults.
-	RpConfigTab *const tab = RP_CONFIG_TAB(
-		gtk_notebook_get_nth_page(GTK_NOTEBOOK(dialog->tabWidget), 0));
-	assert(tab != nullptr);
-	if (tab) {
-		gtk_widget_set_sensitive(dialog->btnDefaults, rp_config_tab_has_defaults(tab));
-	}
+	// Adjust btnDefaults for the first tab.
+	gtk_widget_set_sensitive(dialog->btnDefaults,
+		rp_config_tab_has_defaults(RP_CONFIG_TAB(dialog->tabImageTypes)));
 
 	// Connect signals.
 	g_signal_connect(dialog, "response", G_CALLBACK(config_dialog_response_handler), NULL);
@@ -530,12 +583,23 @@ config_dialog_response_handler(ConfigDialog *dialog,
 static void
 config_dialog_switch_page(GtkNotebook *tabWidget, GtkWidget *page, guint page_num, ConfigDialog *dialog)
 {
+#ifndef RP_USE_GTK_ALIGNMENT
 	g_return_if_fail(RP_CONFIG_IS_TAB(page));
+#else /* RP_USE_GTK_ALIGNMENT */
+	g_return_if_fail(GTK_IS_ALIGNMENT(page));
+#endif /* RP_USE_GTK_ALIGNMENT */
 	RP_UNUSED(tabWidget);
 	RP_UNUSED(page_num);
 
+#ifndef RP_USE_GTK_ALIGNMENT
 	RpConfigTab *const tab = RP_CONFIG_TAB(page);
 	assert(tab != nullptr);
+#else /* RP_USE_GTK_ALIGNMENT */
+	GtkAlignment *const align = GTK_ALIGNMENT(page);
+	assert(align != nullptr);
+	RpConfigTab *const tab = RP_CONFIG_TAB(gtk_bin_get_child(GTK_BIN(align)));
+	assert(tab != nullptr);
+#endif /* RP_USE_GTK_ALIGNMENT */
 	if (tab) {
 		gtk_widget_set_sensitive(dialog->btnDefaults, rp_config_tab_has_defaults(tab));
 	}

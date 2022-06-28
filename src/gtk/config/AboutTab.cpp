@@ -115,7 +115,6 @@ about_tab_init(AboutTab *tab)
 
 	// HBox for the logo and title.
 	GtkWidget *const hboxTitle = rp_gtk_hbox_new(6);
-	GTK_WIDGET_HALIGN_CENTER(hboxTitle);
 	// Logo and title labels. (Will be filled in later.)
 	tab->imgLogo = gtk_image_new();
 	tab->lblTitle = gtk_label_new(nullptr);
@@ -144,10 +143,15 @@ about_tab_init(AboutTab *tab)
 
 	// Credits tab: Label
 	tab->lblCredits = gtk_label_new(nullptr);
-	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrlCredits), tab->lblCredits);
 	GTK_WIDGET_HALIGN_LEFT(tab->lblCredits);
 	GTK_WIDGET_VALIGN_TOP(tab->lblCredits);
+#if GTK_CHECK_VERSION(3,0,0)
 	gtk_widget_set_margin(tab->lblCredits, 8);
+	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrlCredits), tab->lblCredits);
+#else /* !GTK_CHECK_VERSION(3,0,0) */
+	gtk_misc_set_padding(GTK_MISC(tab->lblCredits), 8, 8);
+	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrlCredits), tab->lblCredits);
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 
 	// Libraries tab: Scroll area
 #if GTK_CHECK_VERSION(4,0,0)
@@ -162,10 +166,15 @@ about_tab_init(AboutTab *tab)
 
 	// Libraries tab: Label
 	tab->lblLibraries = gtk_label_new(nullptr);
-	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrlLibraries), tab->lblLibraries);
 	GTK_WIDGET_HALIGN_LEFT(tab->lblLibraries);
 	GTK_WIDGET_VALIGN_TOP(tab->lblLibraries);
+#if GTK_CHECK_VERSION(3,0,0)
 	gtk_widget_set_margin(tab->lblLibraries, 8);
+	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrlLibraries), tab->lblLibraries);
+#else /* !GTK_CHECK_VERSION(3,0,0) */
+	gtk_misc_set_padding(GTK_MISC(tab->lblLibraries), 8, 8);
+	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrlLibraries), tab->lblLibraries);
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 
 	// Support tab: Scroll area
 #if GTK_CHECK_VERSION(4,0,0)
@@ -180,10 +189,15 @@ about_tab_init(AboutTab *tab)
 
 	// Support tab: Label
 	tab->lblSupport = gtk_label_new(nullptr);
-	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrlSupport), tab->lblSupport);
 	GTK_WIDGET_HALIGN_LEFT(tab->lblSupport);
 	GTK_WIDGET_VALIGN_TOP(tab->lblSupport);
+#if GTK_CHECK_VERSION(3,0,0)
 	gtk_widget_set_margin(tab->lblSupport, 8);
+	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrlSupport), tab->lblSupport);
+#else /* !GTK_CHECK_VERSION(3,0,0) */
+	gtk_misc_set_padding(GTK_MISC(tab->lblSupport), 8, 8);
+	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrlSupport), tab->lblSupport);
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 
 	// Create the tabs.
 	GtkWidget *lblTab = gtk_label_new_with_mnemonic(
@@ -227,7 +241,15 @@ about_tab_init(AboutTab *tab)
 	gtk_box_pack_start(GTK_BOX(hboxTitle), tab->imgLogo, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(hboxTitle), tab->lblTitle, false, false, 0);
 
+#ifndef RP_USE_GTK_ALIGNMENT
+	GTK_WIDGET_HALIGN_CENTER(hboxTitle);
 	gtk_box_pack_start(GTK_BOX(tab), hboxTitle, false, false, 0);
+#else /* RP_USE_GTK_ALIGNMENT */
+	GtkWidget *const alignTitle = gtk_alignment_new(0.5f, 0.0f, 0.0f, 0.0f);
+	gtk_container_add(GTK_CONTAINER(alignTitle), hboxTitle);
+	gtk_widget_show(alignTitle);
+	gtk_box_pack_start(GTK_BOX(tab), alignTitle, false, false, 0);
+#endif /* RP_USE_GTK_ALIGNMENT */
 	gtk_box_pack_start(GTK_BOX(tab), tabWidget, true, true, 0);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 

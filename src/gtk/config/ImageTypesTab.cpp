@@ -221,7 +221,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 #ifdef USE_GTK_GRID
 		gtk_grid_attach(GTK_GRID(q->table), lblSysName, 0, sys+1, 1, 1);
 #else /* !USE_GTK_GRID */
-		gtk_table_attach(GTK_TABLE(q->table), lblSysName, 0, 1, sys+1, sys+2, GTK_SHRINK, GTK_SHRINK, 0, 0);
+		gtk_table_attach(GTK_TABLE(q->table), lblSysName, 0, 1, sys+1, sys+2, GTK_FILL, GTK_SHRINK, 0, 0);
 #endif /* USE_GTK_GRID */
 	}
 }

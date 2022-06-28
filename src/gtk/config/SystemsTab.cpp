@@ -93,8 +93,16 @@ systems_tab_init(SystemsTab *tab)
 	// FIXME: GtkFrame doesn't support mnemonics?
 	GtkWidget *const fraDMG = gtk_frame_new(C_("SystemsTab", "Game Boy Title Screens"));
 	GtkWidget *const vboxDMG = rp_gtk_vbox_new(6);
+#if GTK_CHECK_VERSION(2,91,0)
 	gtk_widget_set_margin(vboxDMG, 6);
 	gtk_frame_set_child(GTK_FRAME(fraDMG), vboxDMG);
+#else /* !GTK_CHECK_VERSION(2,91,0) */
+	GtkWidget *const alignDMG = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignDMG), 6, 6, 6, 6);
+	gtk_widget_show(alignDMG);
+	gtk_container_add(GTK_CONTAINER(alignDMG), vboxDMG);
+	gtk_frame_set_child(GTK_FRAME(fraDMG), alignDMG);
+#endif /* GTK_CHECK_VERSION(2,91,0) */
 
 	// FIXME: Better wrapping that doesn't require manual newlines.
 	GtkWidget *const lblDMGDescription = gtk_label_new(
