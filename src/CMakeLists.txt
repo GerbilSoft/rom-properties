@@ -86,6 +86,15 @@ IF(WIN32 OR (UNIX AND NOT APPLE))
 	ADD_DEFINITIONS(-DRP_LIBROMDATA_IS_DLL=1)
 ENDIF(WIN32 OR (UNIX AND NOT APPLE))
 
+# FIXME: gcc-5's libgcc.a doesn't get linked in for some reason,
+# resulting in the following error:
+# /usr/bin/ld: ../../../bin/TextFuncsTest: hidden symbol `__cpu_indicator_init'
+# in /usr/lib/gcc/i686-linux-gnu/5/libgcc.a(cpuinfo.o) is referenced by DSO
+# Reference: https://github.com/baldurk/renderdoc/issues/365
+IF(GCC_5xx_LTO_ISSUES)
+	LINK_LIBRARIES(-lgcc)
+ENDIF(GCC_5xx_LTO_ISSUES)
+
 # Source Code subdirectories.
 ADD_SUBDIRECTORY(librpsecure)
 ADD_SUBDIRECTORY(libi18n)
