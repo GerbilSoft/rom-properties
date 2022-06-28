@@ -1302,7 +1302,7 @@ rom_data_view_init_string_multi(RomDataView *page,
 	// NOTE: The string contents won't be initialized here.
 	// They will be initialized separately, since the user will
 	// be able to change the displayed language.
-	GtkWidget *const lblStringMulti = rom_data_view_init_string(page, field, fieldIdx, nullptr);
+	GtkWidget *const lblStringMulti = rom_data_view_init_string(page, field, fieldIdx, "");
 	if (lblStringMulti) {
 		page->cxx->vecStringMulti.emplace_back(lblStringMulti, &field);
 	}
