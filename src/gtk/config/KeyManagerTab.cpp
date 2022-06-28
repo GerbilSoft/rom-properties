@@ -22,6 +22,7 @@ using namespace LibRpBase;
 // C++ STL classes
 using std::string;
 
+// TODO: Move to KeyStoreUI?
 enum ImportMenuID {
 	IMPORT_WII_KEYS_BIN	= 0,
 	IMPORT_WII_U_OTP_BIN	= 1,
@@ -623,7 +624,8 @@ key_manager_tab_menu_action_response(GtkFileChooserDialog *dialog, gint response
 	}
 
 	// Get the file ID from the dialog.
-	const int id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(dialog), "KeyManagerTab.fileID"));
+	const ImportMenuID id = (ImportMenuID)
+		GPOINTER_TO_INT(g_object_get_data(G_OBJECT(dialog), "KeyManagerTab.fileID"));
 
 #if GTK_CHECK_VERSION(4,0,0)
 	// TODO: URIs?
@@ -644,8 +646,29 @@ key_manager_tab_menu_action_response(GtkFileChooserDialog *dialog, gint response
 		return;
 	}
 
-	// TODO
-	printf("KeyManagerTab: File %d -> %s\n", id, in_filename);
+	KeyStoreUI *const keyStoreUI = key_store_gtk_get_key_store_ui(tab->keyStore);
+	KeyStoreUI::ImportReturn iret;
+	switch (id) {
+		case IMPORT_WII_KEYS_BIN:
+			iret = keyStoreUI->importWiiKeysBin(in_filename);
+			break;
+		case IMPORT_WII_U_OTP_BIN:
+			iret = keyStoreUI->importWiiUOtpBin(in_filename);
+			break;
+		case IMPORT_3DS_BOOT9_BIN:
+			iret = keyStoreUI->import3DSboot9bin(in_filename);
+			break;
+		case IMPORT_3DS_AESKEYDB_BIN:
+			iret = keyStoreUI->import3DSaeskeydb(in_filename);
+			break;
+		default:
+			assert(!"Invalid key file ID.");
+			g_free(in_filename);
+			return;
+	}
+
+	// TODO: Show the key import status in a MessageWidget.
+	printf("KeyManagerTab: File %d -> %s: ret %d\n", id, in_filename, (int)iret.status);
 	g_free(in_filename);
 }
 
