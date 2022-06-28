@@ -524,6 +524,9 @@ btnImport_event_signal_handler(GtkButton *button, GdkEvent *event, KeyManagerTab
 }
 #endif /* !USE_GTK_MENU_BUTTON */
 
+static void
+key_manager_tab_menu_action_response(GtkFileChooserDialog *dialog, gint response_id, KeyManagerTab *page);
+
 /**
  * Handle a menu action.
  * Internal function used by both the GMenuModel and GtkMenu implementations.
@@ -533,7 +536,6 @@ btnImport_event_signal_handler(GtkButton *button, GdkEvent *event, KeyManagerTab
 static void
 key_manager_tab_handle_menu_action(KeyManagerTab *tab, gint id)
 {
-	printf("key_manager_tab_handle_menu_action: %d\n", id);
 	assert(id >= IMPORT_WII_KEYS_BIN);
 	assert(id <= IMPORT_3DS_AESKEYDB_BIN);
 	if (id < IMPORT_WII_KEYS_BIN || id > IMPORT_3DS_AESKEYDB_BIN)
@@ -589,34 +591,57 @@ key_manager_tab_handle_menu_action(KeyManagerTab *tab, gint id)
 	// Set the filters.
 	rpFileDialogFilterToGtk(GTK_FILE_CHOOSER(dialog), s_filter);
 
+	// Set the file ID in the dialog.
+	g_object_set_data(G_OBJECT(dialog), "KeyManagerTab.fileID", GINT_TO_POINTER(id));
+
 	// Prompt for a filename.
+	g_signal_connect(dialog, "response", G_CALLBACK(key_manager_tab_menu_action_response), tab);
+	gtk_window_set_transient_for(GTK_WINDOW(dialog), parent);
+	gtk_window_set_modal(GTK_WINDOW(dialog), true);
+	gtk_widget_show(GTK_WIDGET(dialog));
+
+	// GtkFileChooserDialog will send the "response" signal when the dialog is closed.
+}
+
+/**
+ * The Save dialog for a Standard ROM Operation has been closed.
+ * @param dialog GtkFileChooserDialog
+ * @param response_id Response ID
+ * @param tab KeyManagerTab
+ */
+static void
+key_manager_tab_menu_action_response(GtkFileChooserDialog *dialog, gint response_id, KeyManagerTab *tab)
+{
+	if (response_id != GTK_RESPONSE_ACCEPT) {
+		// User cancelled the dialog.
 #if GTK_CHECK_VERSION(4,0,0)
-	// GTK4 no longer supports blocking dialogs.
-	// FIXME for GTK4: Rewrite to use gtk_window_set_modal() and handle the "response" signal.
-	// This will also work for older GTK+.
-	assert(!"gtk_dialog_run() is not available in GTK4; needs a rewrite!");
-	GFile *const get_file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(dialog));
-
-	// TODO: URIs?
-	gchar *in_filename = (get_file ? g_file_get_path(get_file) : nullptr);
+		gtk_window_destroy(GTK_WINDOW(dialog));
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-	gint res = gtk_dialog_run(GTK_DIALOG(dialog));
-	gchar *in_filename = (res == GTK_RESPONSE_ACCEPT
-		? gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog))
-		: nullptr);
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+		gtk_widget_destroy(GTK_WIDGET(dialog));
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+		return;
+	}
 
-	g_object_unref(dialog);
+	// Get the file ID from the dialog.
+	const int id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(dialog), "KeyManagerTab.fileID"));
+
+#if GTK_CHECK_VERSION(4,0,0)
+	// TODO: URIs?
+	GFile *const get_file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(dialog));
+	gchar *const in_filename = (get_file ? g_file_get_path(get_file) : nullptr);
+	gtk_window_destroy(GTK_WINDOW(dialog));
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+	gchar *const in_filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+	gtk_widget_destroy(GTK_WIDGET(dialog));
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+
 	if (!in_filename) {
 		// No filename...
 		return;
 	}
 
-	// Save the previous export directory.
-	g_free(tab->prevOpenDir);
-	tab->prevOpenDir = g_path_get_dirname(in_filename);
-
 	// TODO
+	printf("KeyManagerTab: File %d -> %s\n", id, in_filename);
 	g_free(in_filename);
 }
 
