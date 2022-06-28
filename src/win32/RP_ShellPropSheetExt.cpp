@@ -1392,6 +1392,8 @@ int RP_ShellPropSheetExt_Private::initStringMulti(HWND hDlg, HWND hWndTab,
 	// NOTE: The string contents won't be initialized here.
 	// They will be initialized separately, since the user will
 	// be able to change the displayed language.
+	// NOTE 2: The string must be _T(""), not nullptr. Otherwise, it will
+	// attempt to use the field's string data, which is invalid.
 	HWND lblStringMulti = nullptr;
 	int field_cy = initString(hDlg, hWndTab, pt_start, size, field, fieldIdx,
 		_T(""), &lblStringMulti);

@@ -776,6 +776,8 @@ void RomDataViewPrivate::initStringMulti(QLabel *lblDesc,
 	// NOTE: The string contents won't be initialized here.
 	// They will be initialized separately, since the user will
 	// be able to change the displayed language.
+	// NOTE 2: The string must be an empty QString, not nullptr. Otherwise, it will
+	// attempt to use the field's string data, which is invalid.
 	QString qs_empty;
 	QLabel *const lblStringMulti = initString(lblDesc, field, fieldIdx, &qs_empty);
 	if (lblStringMulti) {
