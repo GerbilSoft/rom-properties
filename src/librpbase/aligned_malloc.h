@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * aligned_malloc.h: Aligned memory allocation compatibility header.       *
  *                                                                         *
- * Copyright (c) 2015-2021 by David Korth                                  *
+ * Copyright (c) 2015-2022 by David Korth                                  *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,7 +25,7 @@
  */
 
 #include "librpbase/config.librpbase.h"
-#include "common.h"
+#include "../force_inline.h"
 
 /**
  * This header defines two functions if they aren't present:
@@ -42,11 +42,11 @@
 
 // Alignment for statically-allocated data.
 #if defined(_MSC_VER)
-# define ALIGN_ATTR(x) __declspec(align(x))
+#  define ALIGN_ATTR(x) __declspec(align(x))
 #elif defined(__GNUC__)
-# define ALIGN_ATTR(x) __attribute__ ((aligned (x)))
+#  define ALIGN_ATTR(x) __attribute__ ((aligned (x)))
 #else
-# error Missing ALIGN_ATTR() implementation for this compiler.
+#  error Missing ALIGN_ATTR() implementation for this compiler.
 #endif
 
 #if defined(HAVE_MSVC_ALIGNED_MALLOC)
@@ -117,7 +117,7 @@ static FORCEINLINE void aligned_free(void *memptr)
 }
 
 #else
-# error Missing aligned malloc() function for this system.
+#  error Missing aligned malloc() function for this system.
 #endif
 
 #ifdef __cplusplus
@@ -130,9 +130,9 @@ static FORCEINLINE void aligned_free(void *memptr)
 // TODO: Check 2012; assuming 2013+ for now.
 #if !defined(_MSC_VER) || _MSC_VER >= 1800
 template<class T> using unique_ptr_aligned = std::unique_ptr<T, decltype(&aligned_free)>;
-# define UNIQUE_PTR_ALIGNED_T unique_ptr_aligned<T>
+#  define UNIQUE_PTR_ALIGNED_T unique_ptr_aligned<T>
 #else /* _MSC_VER < 1900 */
-# define UNIQUE_PTR_ALIGNED_T std::unique_ptr<T, decltype(&aligned_free)>
+#  define UNIQUE_PTR_ALIGNED_T std::unique_ptr<T, decltype(&aligned_free)>
 #endif
 
 /**
