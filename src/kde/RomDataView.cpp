@@ -7,7 +7,6 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "config.kde.h"
 
 #include "RomDataView.hpp"
 #include "RomDataView_p.hpp"

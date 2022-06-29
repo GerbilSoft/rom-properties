@@ -9,6 +9,7 @@
 #ifndef __ROMPROPERTIES_GTK_ROMDATAVIEW_P_HPP__
 #define __ROMPROPERTIES_GTK_ROMDATAVIEW_P_HPP__
 
+#include "config.gtk.h"
 #include <gtk/gtk.h>
 
 #include "OptionsMenuButton.hpp"

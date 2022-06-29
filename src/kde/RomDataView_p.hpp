@@ -9,6 +9,8 @@
 #ifndef __ROMPROPERTIES_KDE_ROMDATAVIEW_P_HPP__
 #define __ROMPROPERTIES_KDE_ROMDATAVIEW_P_HPP__
 
+#include "config.kde.h"
+
 // KDE4/KF5 includes
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 #  include <KAcceleratorManager>
