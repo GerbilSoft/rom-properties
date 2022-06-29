@@ -342,7 +342,7 @@ key_manager_tab_init(KeyManagerTab *tab)
 	gtk_widget_hide(tab->messageWidget);
 
 	gtk_widget_show_all(scrolledWindow);
-	gtk_widget_show_all(hboxImport);
+	gtk_widget_show_all(tab->btnImport);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Initialize the GtkTreeView with the available keys.
