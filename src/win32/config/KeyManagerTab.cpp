@@ -28,9 +28,6 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 
 // libromdata
-#include "libromdata/disc/WiiPartition.hpp"
-#include "libromdata/crypto/CtrKeyScrambler.hpp"
-#include "libromdata/crypto/N3DSVerifyKeys.hpp"
 using namespace LibRomData;
 
 // C++ STL classes.
