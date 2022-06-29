@@ -190,6 +190,8 @@ options_tab_init(OptionsTab *tab)
 	gtk_box_append(GTK_BOX(hboxGameTDBPAL), tab->cboGameTDBPAL);
 
 	gtk_box_append(GTK_BOX(tab), fraOptions);
+	gtk_box_append(GTK_BOX(vboxOptions), tab->chkShowDangerousPermissionsOverlayIcon);
+	gtk_box_append(GTK_BOX(vboxOptions), tab->chkEnableThumbnailOnNetworkFS);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	gtk_widget_show(fraDownloads);
 	gtk_widget_show(vboxDownloads);
