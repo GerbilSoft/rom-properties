@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * PartitionFile.hpp: IRpFile implementation for IPartition.               *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -171,16 +171,6 @@ off64_t PartitionFile::size(void)
 	}
 
 	return m_size;
-}
-
-/**
- * Get the filename.
- * @return Filename. (May be empty if the filename is not available.)
- */
-string PartitionFile::filename(void) const
-{
-	// TODO: Implement this.
-	return string();
 }
 
 }

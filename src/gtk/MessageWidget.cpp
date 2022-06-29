@@ -19,34 +19,31 @@ typedef enum {
 	PROP_LAST
 } MessageWidgetPropID;
 
-static void	message_widget_dispose	(GObject	*object);
-static void	message_widget_finalize	(GObject	*object);
-
-static void	message_widget_get_property	(GObject	*object,
-						 guint		 prop_id,
-						 GValue		*value,
-						 GParamSpec	*pspec);
 static void	message_widget_set_property	(GObject	*object,
 						 guint		 prop_id,
 						 const GValue	*value,
 						 GParamSpec	*pspec);
+static void	message_widget_get_property	(GObject	*object,
+						 guint		 prop_id,
+						 GValue		*value,
+						 GParamSpec	*pspec);
 
 /** Signal handlers. **/
-static void	closeButton_clicked_handler	(GtkButton	*button,
-						 gpointer	 user_data);
+static void	message_widget_close_button_clicked_handler	(GtkButton	*button,
+								 MessageWidget	*widget);
 static gboolean	timeout_hide_source_func	(gpointer	 user_data);
 
 #if GTK_CHECK_VERSION(3,0,0)
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_BOX
-#else
+#else /* !GTK_CHECK_VERSION(3,0,0) */
 // Top class is GtkEventBox, since we can't
 // set the background color of GtkHBox.
 typedef GtkEventBoxClass superclass;
 typedef GtkEventBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_EVENT_BOX
-#endif
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 
 static GParamSpec *props[PROP_LAST];
 
@@ -66,7 +63,7 @@ struct _MessageWidget {
 
 	GtkWidget *image;
 	GtkWidget *label;
-	GtkWidget *closeButton;
+	GtkWidget *close_button;
 
 	GtkMessageType messageType;
 	guint timeout_hide;
@@ -80,11 +77,9 @@ G_DEFINE_TYPE_EXTENDED(MessageWidget, message_widget,
 static void
 message_widget_class_init(MessageWidgetClass *klass)
 {
-	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-	gobject_class->dispose = message_widget_dispose;
-	gobject_class->finalize = message_widget_finalize;
-	gobject_class->get_property = message_widget_get_property;
+	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
 	gobject_class->set_property = message_widget_set_property;
+	gobject_class->get_property = message_widget_get_property;
 
 	/** Properties **/
 
@@ -109,11 +104,11 @@ message_widget_class_init(MessageWidgetClass *klass)
 	// GdkScreen no longer exists in GTK4.
 	// Style context providers are added directly to GdkDisplay instead.
 	gtk_style_context_add_provider_for_display(display,
-		GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
+		GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 #  else /* !GTK_CHECK_VERSION(4,0,0) */
 	GdkScreen *const screen = gdk_display_get_default_screen(display);
 	gtk_style_context_add_provider_for_screen(screen,
-		GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
+		GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 #  endif /* !GTK_CHECK_VERSION(4,0,0) */
 
 	static const char css_MessageWidget[] =
@@ -135,6 +130,22 @@ message_widget_class_init(MessageWidgetClass *klass)
 		".gsrp_msgw_error {\n"
 		"\tbackground-color: lighter(@gsrp_color_error);\n"
 		"\tborder: 2px solid @gsrp_color_error;\n"
+		"}\n"
+		".gsrp_msgw_info_dark {\n"
+		"\tbackground-color: darker(@gsrp_color_info);\n"
+		"\tborder: 2px solid @gsrp_color_info;\n"
+		"}\n"
+		".gsrp_msgw_warning_dark {\n"
+		"\tbackground-color: darker(@gsrp_color_warning);\n"
+		"\tborder: 2px solid @gsrp_color_warning;\n"
+		"}\n"
+		".gsrp_msgw_question_dark {\n"
+		"\tbackground-color: darker(@gsrp_color_info);\n"	// NOTE: Same as INFO.
+		"\tborder: 2px solid @gsrp_color_info;\n"
+		"}\n"
+		".gsrp_msgw_error_dark {\n"
+		"\tbackground-color: darker(@gsrp_color_error);\n"
+		"\tborder: 2px solid @gsrp_color_error;\n"
 		"}\n";
 
 	GTK_CSS_PROVIDER_LOAD_FROM_DATA(GTK_CSS_PROVIDER(provider), css_MessageWidget, -1);
@@ -153,12 +164,10 @@ message_widget_init(MessageWidget *widget)
 #else /* !GTK_CHECK_VERSION(3,0,0) */
 	// Add a GtkEventBox for the inner color.
 	widget->evbox_inner = gtk_event_box_new();
-	gtk_widget_show(widget->evbox_inner);
 	gtk_container_add(GTK_CONTAINER(widget), widget->evbox_inner);
 
 	// Add a GtkHBox for all the other widgets.
 	widget->hbox = gtk_hbox_new(0, 0);
-	gtk_widget_show(widget->hbox);
 	gtk_container_add(GTK_CONTAINER(widget->evbox_inner), widget->hbox);
 	hbox = GTK_BOX(widget->hbox);
 #endif /* GTK_CHECK_VERSION(3,0,0) */
@@ -166,56 +175,40 @@ message_widget_init(MessageWidget *widget)
 	widget->messageType = GTK_MESSAGE_OTHER;
 	widget->image = gtk_image_new();
 	widget->label = gtk_label_new(nullptr);
-	gtk_widget_show(widget->label);
 
-	// TODO: Prpoer alignment.
+	// TODO: Align the GtkImage to the top of the first line
+	// if the label has multiple lines.
 
-	widget->closeButton = gtk_button_new();
-	gtk_widget_show(widget->closeButton);
+	widget->close_button = gtk_button_new();
 #if GTK_CHECK_VERSION(4,0,0)
-	gtk_button_set_icon_name(GTK_BUTTON(widget->closeButton), "dialog-close");
-	gtk_button_set_has_frame(GTK_BUTTON(widget->closeButton), FALSE);
+	gtk_button_set_icon_name(GTK_BUTTON(widget->close_button), "dialog-close");
+	gtk_button_set_has_frame(GTK_BUTTON(widget->close_button), FALSE);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	GtkWidget *const imageClose = gtk_image_new_from_icon_name("dialog-close", GTK_ICON_SIZE_BUTTON);
-	gtk_button_set_image(GTK_BUTTON(widget->closeButton), imageClose);
-	gtk_button_set_relief(GTK_BUTTON(widget->closeButton), GTK_RELIEF_NONE);
+	gtk_button_set_image(GTK_BUTTON(widget->close_button), imageClose);
+	gtk_button_set_relief(GTK_BUTTON(widget->close_button), GTK_RELIEF_NONE);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 #if GTK_CHECK_VERSION(4,0,0)
 	// TODO: Padding?
 	gtk_box_append(hbox, widget->image);
 	gtk_box_append(hbox, widget->label);
-	gtk_box_append(hbox, widget->closeButton);
+	gtk_box_append(hbox, widget->close_button);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
+#  if !GTK_CHECK_VERSION(3,0,0)
+	gtk_widget_show(widget->evbox_inner);
+	gtk_widget_show(widget->hbox);
+#  endif /* GTK_CHECK_VERSION(3,0,0) */
+	gtk_widget_show(widget->label);
+	gtk_widget_show(widget->close_button);
+
 	gtk_box_pack_start(hbox, widget->image, FALSE, FALSE, 4);
 	gtk_box_pack_start(hbox, widget->label, FALSE, FALSE, 0);
-	gtk_box_pack_end(hbox, widget->closeButton, FALSE, FALSE, 0);
+	gtk_box_pack_end(hbox, widget->close_button, FALSE, FALSE, 0);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
-	g_signal_connect(widget->closeButton, "clicked",
-		G_CALLBACK(closeButton_clicked_handler), widget);
-}
-
-static void
-message_widget_dispose(GObject *object)
-{
-	//MessageWidget *const widget = MESSAGE_WIDGET(object);
-
-	// Nothing to do here right now...
-
-	// Call the superclass dispose() function.
-	G_OBJECT_CLASS(message_widget_parent_class)->dispose(object);
-}
-
-static void
-message_widget_finalize(GObject *object)
-{
-	//MessageWidget *const widget = MESSAGE_WIDGET(object);
-
-	// Nothing to do here right now...
-
-	// Call the superclass finalize() function.
-	G_OBJECT_CLASS(message_widget_parent_class)->finalize(object);
+	g_signal_connect(widget->close_button, "clicked",
+		G_CALLBACK(message_widget_close_button_clicked_handler), widget);
 }
 
 GtkWidget*
@@ -225,29 +218,6 @@ message_widget_new(void)
 }
 
 /** Properties **/
-
-static void
-message_widget_get_property(GObject	*object,
-			   guint	 prop_id,
-			   GValue	*value,
-			   GParamSpec	*pspec)
-{
-	MessageWidget *const widget = MESSAGE_WIDGET(object);
-
-	switch (prop_id) {
-		case PROP_TEXT:
-			g_value_set_string(value, gtk_label_get_text(GTK_LABEL(widget->label)));
-			break;
-
-		case PROP_MESSAGE_TYPE:
-			g_value_set_enum(value, widget->messageType);
-			break;
-
-		default:
-			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-			break;
-	}
-}
 
 static void
 message_widget_set_property(GObject	*object,
@@ -264,6 +234,29 @@ message_widget_set_property(GObject	*object,
 
 		case PROP_MESSAGE_TYPE:
 			message_widget_set_message_type(widget, static_cast<GtkMessageType>(g_value_get_enum(value)));
+			break;
+
+		default:
+			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+			break;
+	}
+}
+
+static void
+message_widget_get_property(GObject	*object,
+			   guint	 prop_id,
+			   GValue	*value,
+			   GParamSpec	*pspec)
+{
+	MessageWidget *const widget = MESSAGE_WIDGET(object);
+
+	switch (prop_id) {
+		case PROP_TEXT:
+			g_value_set_string(value, gtk_label_get_text(GTK_LABEL(widget->label)));
+			break;
+
+		case PROP_MESSAGE_TYPE:
+			g_value_set_enum(value, widget->messageType);
 			break;
 
 		default:
@@ -304,13 +297,14 @@ message_widget_set_message_type(MessageWidget *widget, GtkMessageType messageTyp
 		{"dialog-warning",	"gsrp_msgw_warning",	0xF67400, 0xFF9B41},	// WARNING
 		{"dialog-question",	"gsrp_msgw_question",	0x3DAEE9, 0x7FD3FF},	// QUESTION (same as INFO)
 		{"dialog-error",	"gsrp_msgw_error",	0xDA4453, 0xF77E8A},	// ERROR
-		{nullptr,		nullptr,		0,        0},		// OTHER
 	};
 
-	if (messageType < 0 || messageType > ARRAY_SIZE(iconInfo)) {
+	if (messageType < 0 || messageType >= ARRAY_SIZE(iconInfo)) {
 		// Default to OTHER.
 		messageType = GTK_MESSAGE_OTHER;
 	}
+
+	// TODO: Update regardless if the system theme changes.
 	if (widget->messageType == messageType)
 		return;
 	widget->messageType = messageType;
@@ -333,9 +327,35 @@ message_widget_set_message_type(MessageWidget *widget, GtkMessageType messageTyp
 		gtk_style_context_remove_class(context, "gsrp_msgw_warning");
 		gtk_style_context_remove_class(context, "gsrp_msgw_question");
 		gtk_style_context_remove_class(context, "gsrp_msgw_error");
+		gtk_style_context_remove_class(context, "gsrp_msgw_info_dark");
+		gtk_style_context_remove_class(context, "gsrp_msgw_warning_dark");
+		gtk_style_context_remove_class(context, "gsrp_msgw_question_dark");
+		gtk_style_context_remove_class(context, "gsrp_msgw_error_dark");
+
+		// Get the text color. If its grayscale value is >= 0.75,
+		// assume we're using a dark theme.
+		bool dark = false;
+		GdkRGBA color;
+		gboolean bRet = gtk_style_context_lookup_color(context, "theme_text_color", &color);
+		if (bRet) {
+			// BT.601 grayscale conversion
+			const gfloat grayscale = (color.red   * 0.299f) +
+			                         (color.green * 0.587f) +
+						 (color.blue  * 0.114f);
+			dark = (grayscale >= 0.750f);
+		}
+
+		// Dark CSS classes
+		static const char *const dark_css_class_tbl[] = {
+			"gsrp_msgw_info_dark",
+			"gsrp_msgw_warning_dark",
+			"gsrp_msgw_question_dark",
+			"gsrp_msgw_error_dark",
+		};
 
 		// Add the new CSS class.
-		gtk_style_context_add_class(context, pIconInfo->css_class);
+		gtk_style_context_add_class(context,
+			(likely(!dark) ? pIconInfo->css_class : dark_css_class_tbl[messageType]));
 #else /* !GTK_CHECK_VERSION(3,0,0) */
 		GdkColor color;
 		color.pixel	 = pIconInfo->border_color;
@@ -399,14 +419,11 @@ message_widget_show_with_timeout(MessageWidget *widget)
 /**
  * The Close button was clicked.
  * @param button Close button
- * @param user_data MessageWidget*
+ * @param widget MessageWidget
  */
 static void
-closeButton_clicked_handler(GtkButton	*button,
-			    gpointer	 user_data)
+message_widget_close_button_clicked_handler(GtkButton *button, MessageWidget *widget)
 {
-	MessageWidget *const widget = MESSAGE_WIDGET(user_data);
-
 	// TODO: Animation like KMessageWidget.
 	RP_UNUSED(button);
 	if (widget->timeout_hide != 0) {

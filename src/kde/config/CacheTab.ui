@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>540</width>
+    <height>245</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="vboxMain">
@@ -20,7 +20,8 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>If any image type settings were changed, you will need to clear the system thumbnail cache.</string>
+      <string>If any image type settings were changed, you will need to
+clear the system thumbnail cache.</string>
      </property>
      <property name="textFormat">
       <enum>Qt::PlainText</enum>

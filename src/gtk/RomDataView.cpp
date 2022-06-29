@@ -7,29 +7,20 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "config.gtk.h"
 
 #include "RomDataView.hpp"
+#include "RomDataView_p.hpp"
 #include "rp-gtk-enums.h"
-#include "RpGtk.hpp"
 #include "sort_funcs.h"
 #include "is-supported.hpp"
-
-// ENABLE_MESSAGESOUND is set by CMakeLists.txt.
-#ifdef ENABLE_MESSAGESOUND
-#  include "MessageSound.hpp"
-#endif /* ENABLE_MESSAGESOUND */
 
 // Custom widgets
 #include "DragImage.hpp"
 #include "MessageWidget.hpp"
 #include "LanguageComboBox.hpp"
-#include "OptionsMenuButton.hpp"
 
-// librpbase, librpfile, librptexture
-#include "librpbase/TextOut.hpp"
+// librpbase, librptexture
 using namespace LibRpBase;
-using namespace LibRpFile;
 using LibRpTexture::rp_image;
 
 // libromdata
@@ -46,15 +37,9 @@ using LibRomData::RomDataFactory;
 #endif /* HAVE_DLVSYM */
 #include <dlfcn.h>
 
-// C++ STL classes.
-#include <fstream>
-#include <sstream>
-using std::array;
-using std::ofstream;
-using std::ostringstream;
+// C++ STL classes
 using std::set;
 using std::string;
-using std::unordered_map;
 using std::vector;
 
 // References:
@@ -72,18 +57,17 @@ typedef enum {
 	PROP_LAST
 } RomDataViewPropID;
 
-// Uncomment to enable the automatic timeout for the ROM Operations MessageWidget.
-//#define AUTO_TIMEOUT_MESSAGEWIDGET 1
+static GParamSpec *props[PROP_LAST];
 
 static void	rom_data_view_dispose		(GObject	*object);
 static void	rom_data_view_finalize		(GObject	*object);
-static void	rom_data_view_get_property	(GObject	*object,
-						 guint		 prop_id,
-						 GValue		*value,
-						 GParamSpec	*pspec);
 static void	rom_data_view_set_property	(GObject	*object,
 						 guint		 prop_id,
 						 const GValue	*value,
+						 GParamSpec	*pspec);
+static void	rom_data_view_get_property	(GObject	*object,
+						 guint		 prop_id,
+						 GValue		*value,
 						 GParamSpec	*pspec);
 
 static void	rom_data_view_desc_format_type_changed(RomDataView *page,
@@ -91,12 +75,12 @@ static void	rom_data_view_desc_format_type_changed(RomDataView *page,
 
 static void	rom_data_view_init_header_row	(RomDataView	*page);
 static void	rom_data_view_update_display	(RomDataView	*page);
-static gboolean	rom_data_view_load_rom_data	(gpointer	 data);
+static gboolean	rom_data_view_load_rom_data	(RomDataView	*page);
 static void	rom_data_view_delete_tabs	(RomDataView	*page);
 
 /** Signal handlers **/
-static void	checkbox_no_toggle_signal_handler   (GtkToggleButton	*togglebutton,
-						     gpointer		 user_data);
+static void	checkbox_no_toggle_signal_handler   (GtkCheckButton	*checkbutton,
+						     RomDataView	*page);
 static void	rom_data_view_map_signal_handler    (RomDataView	*page,
 						     gpointer		 user_data);
 static void	rom_data_view_unmap_signal_handler  (RomDataView	*page,
@@ -105,21 +89,7 @@ static void	tree_view_realize_signal_handler    (GtkTreeView	*treeView,
 						     RomDataView	*page);
 static void	cboLanguage_lc_changed_signal_handler(GtkComboBox	*widget,
 						     uint32_t		 lc,
-						     gpointer		 user_data);
-static void	btnOptions_triggered_signal_handler (OptionsMenuButton	*menuButton,
-						     gint		 id,
-						     gpointer		 user_data);
-
-#if GTK_CHECK_VERSION(3,0,0)
-typedef GtkBoxClass superclass;
-typedef GtkBox super;
-#define GTK_TYPE_SUPER GTK_TYPE_BOX
-#define USE_GTK_GRID 1	// Use GtkGrid instead of GtkTable.
-#else
-typedef GtkVBoxClass superclass;
-typedef GtkVBox super;
-#define GTK_TYPE_SUPER GTK_TYPE_VBOX
-#endif
+						     RomDataView	*page);
 
 #if GTK_CHECK_VERSION(3,0,0)
 // libhandy function pointers.
@@ -133,95 +103,6 @@ static pfnGlibGetType_t pfn_hdy_header_bar_get_type = nullptr;
 static pfnHdyHeaderBarPackEnd_t pfn_hdy_header_bar_pack_end = nullptr;
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
-static GParamSpec *props[PROP_LAST];
-
-// GTK+ property page class.
-struct _RomDataViewClass {
-	superclass __parent__;
-};
-
-// Multi-language stuff.
-typedef std::pair<GtkWidget*, const RomFields::Field*> Data_StringMulti_t;
-
-struct Data_ListDataMulti_t {
-	GtkListStore *listStore;
-	GtkTreeView *treeView;
-	const RomFields::Field *field;
-
-	Data_ListDataMulti_t(
-		GtkListStore *listStore,
-		GtkTreeView *treeView,
-		const RomFields::Field *field)
-		: listStore(listStore)
-		, treeView(treeView)
-		, field(field) { }
-};
-
-// C++ objects.
-struct _RomDataViewCxx {
-	struct tab {
-		GtkWidget	*vbox;		// Either parent page or a GtkVBox/GtkBox.
-		GtkWidget	*table;		// GtkTable (2.x); GtkGrid (3.x)
-		GtkWidget	*lblCredits;
-
-		tab() : vbox(nullptr), table(nullptr), lblCredits(nullptr) { }
-	};
-	vector<tab> tabs;
-
-	// Description labels.
-	vector<GtkWidget*>	vecDescLabels;
-
-	// Multi-language functionality.
-	uint32_t	def_lc;
-
-	// RFT_STRING_MULTI value labels.
-	vector<Data_StringMulti_t> vecStringMulti;
-
-	// RFT_LISTDATA_MULTI value GtkListStores.
-	vector<Data_ListDataMulti_t> vecListDataMulti;
-};
-
-// GTK+ property page instance.
-struct _RomDataView {
-	super __parent__;
-
-	_RomDataViewCxx	*cxx;		// C++ objects
-	RomData		*romData;	// ROM data
-	gchar		*uri;		// URI (GVfs)
-
-	// "Options" button. (OptionsMenuButton)
-	GtkWidget	*btnOptions;
-	gchar		*prevExportDir;
-
-	// Header row.
-	GtkWidget	*hboxHeaderRow_outer;
-	GtkWidget	*hboxHeaderRow;
-	GtkWidget	*lblSysInfo;
-	GtkWidget	*imgIcon;
-	GtkWidget	*imgBanner;
-
-	// Tab layout.
-	GtkWidget	*tabWidget;
-	// Tabs moved to: cxx->tabs
-
-	// MessageWidget for ROM operation notifications.
-	GtkWidget	*messageWidget;
-
-	// Multi-language combo box.
-	GtkWidget	*cboLanguage;
-
-	/* Timeouts */
-	guint		changed_idle;
-
-	// Description label format type.
-	RpDescFormatType	desc_format_type;
-
-	// Inhibit checkbox toggling for RFT_BITFIELD while updating.
-	bool inhibit_checkbox_no_toggle;
-	// Have we checked for achievements?
-	bool hasCheckedAchievements;
-};
-
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
 G_DEFINE_TYPE_EXTENDED(RomDataView, rom_data_view,
@@ -230,11 +111,11 @@ G_DEFINE_TYPE_EXTENDED(RomDataView, rom_data_view,
 static void
 rom_data_view_class_init(RomDataViewClass *klass)
 {
-	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
+	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
 	gobject_class->dispose = rom_data_view_dispose;
 	gobject_class->finalize = rom_data_view_finalize;
-	gobject_class->get_property = rom_data_view_get_property;
 	gobject_class->set_property = rom_data_view_set_property;
+	gobject_class->get_property = rom_data_view_get_property;
 
 	/** Properties **/
 
@@ -277,14 +158,14 @@ rom_data_view_class_init(RomDataViewClass *klass)
 
 /**
  * Set the label format type.
- * @param page RomDataView.
- * @param label GtkLabel.
- * @param desc_format_type Format type.
+ * @param page RomDataView
+ * @param label GtkLabel
+ * @param desc_format_type Format type
  */
 static inline void
 set_label_format_type(GtkLabel *label, RpDescFormatType desc_format_type)
 {
-	PangoAttrList *attr_lst = pango_attr_list_new();
+	PangoAttrList *const attr_lst = pango_attr_list_new();
 
 	// Check if this label has the "Warning" flag set.
 	const gboolean is_warning = (gboolean)GPOINTER_TO_UINT(
@@ -430,7 +311,7 @@ rom_data_view_init(RomDataView *page)
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Make lblSysInfo bold.
-	PangoAttrList *attr_lst = pango_attr_list_new();
+	PangoAttrList *const attr_lst = pango_attr_list_new();
 	pango_attr_list_insert(attr_lst,
 		pango_attr_weight_new(PANGO_WEIGHT_BOLD));
 	gtk_label_set_attributes(GTK_LABEL(page->lblSysInfo), attr_lst);
@@ -510,13 +391,39 @@ rom_data_view_new_with_romData(const gchar *uri, RomData *romData, RpDescFormatT
 		}
 	}
 	if (G_LIKELY(uri != nullptr)) {
-		page->changed_idle = g_idle_add(rom_data_view_load_rom_data, page);
+		// NOTE: G_SOURCE_FUNC() was added in glib-2.58.
+		page->changed_idle = g_idle_add((GSourceFunc)rom_data_view_load_rom_data, page);
 	}
 
 	return reinterpret_cast<GtkWidget*>(page);
 }
 
 /** Properties **/
+
+static void
+rom_data_view_set_property(GObject	*object,
+			   guint	 prop_id,
+			   const GValue	*value,
+			   GParamSpec	*pspec)
+{
+	RomDataView *const page = ROM_DATA_VIEW(object);
+
+	switch (prop_id) {
+		case PROP_URI:
+			rom_data_view_set_uri(page, g_value_get_string(value));
+			break;
+
+		case PROP_DESC_FORMAT_TYPE:
+			rom_data_view_set_desc_format_type(page,
+				static_cast<RpDescFormatType>(g_value_get_enum(value)));
+			break;
+
+		case PROP_SHOWING_DATA:	// TODO: "Non-writable property" warning?
+		default:
+			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+			break;
+	}
+}
 
 static void
 rom_data_view_get_property(GObject	*object,
@@ -539,31 +446,6 @@ rom_data_view_get_property(GObject	*object,
 			g_value_set_boolean(value, (page->romData != nullptr));
 			break;
 
-		default:
-			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-			break;
-	}
-}
-
-static void
-rom_data_view_set_property(GObject	*object,
-			   guint	 prop_id,
-			   const GValue	*value,
-			   GParamSpec	*pspec)
-{
-	RomDataView *const page = ROM_DATA_VIEW(object);
-
-	switch (prop_id) {
-		case PROP_URI:
-			rom_data_view_set_uri(page, g_value_get_string(value));
-			break;
-
-		case PROP_DESC_FORMAT_TYPE:
-			rom_data_view_set_desc_format_type(page,
-				static_cast<RpDescFormatType>(g_value_get_enum(value)));
-			break;
-
-		case PROP_SHOWING_DATA:	// TODO: "Non-writable property" warning?
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
 			break;
@@ -621,7 +503,8 @@ rom_data_view_set_uri(RomDataView	*page,
 	/* Connect to the new file (if any) */
 	if (G_LIKELY(page->uri != nullptr)) {
 		if (page->changed_idle == 0) {
-			page->changed_idle = g_idle_add(rom_data_view_load_rom_data, page);
+			// NOTE: G_SOURCE_FUNC() was added in glib-2.58.
+			page->changed_idle = g_idle_add((GSourceFunc)rom_data_view_load_rom_data, page);
 		}
 	} else {
 		// Hide the header row. (outerbox)
@@ -755,16 +638,6 @@ rom_data_view_init_header_row(RomDataView *page)
 	gtk_widget_show(page->hboxHeaderRow_outer);
 }
 
-#if GTK_CHECK_VERSION(3,0,0)
-#define GTK_WIDGET_HALIGN_LEFT(widget)		gtk_widget_set_halign((widget), GTK_ALIGN_START)
-#define GTK_WIDGET_HALIGN_CENTER(widget)	gtk_widget_set_halign((widget), GTK_ALIGN_CENTER)
-#define GTK_WIDGET_HALIGN_RIGHT(widget)		gtk_widget_set_halign((widget), GTK_ALIGN_END)
-#else
-#define GTK_WIDGET_HALIGN_LEFT(widget)		gtk_misc_set_alignment(GTK_MISC(widget), 0.0f, 0.0f)
-#define GTK_WIDGET_HALIGN_CENTER(widget)	gtk_misc_set_alignment(GTK_MISC(widget), 0.5f, 0.0f)
-#define GTK_WIDGET_HALIGN_RIGHT(widget)		gtk_misc_set_alignment(GTK_MISC(widget), 1.0f, 0.0f)
-#endif
-
 /**
  * Initialize a string field.
  * @param page		[in] RomDataView object
@@ -841,8 +714,8 @@ rom_data_view_init_string(RomDataView *page,
 
 			// Credits row.
 #if GTK_CHECK_VERSION(4,0,0)
-			// TODO: "end"?
 			gtk_box_append(GTK_BOX(tab.vbox), widget);
+			gtk_widget_set_valign(tab.vbox, GTK_ALIGN_END);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 			gtk_box_pack_end(GTK_BOX(tab.vbox), widget, false, false, 0);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
@@ -914,7 +787,7 @@ rom_data_view_init_bitfield(RomDataView *page,
 		GtkWidget *checkBox = gtk_check_button_new_with_label(name.c_str());
 		gtk_widget_show(checkBox);
 		gboolean value = (bitfield & 1);
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkBox), value);
+		gtk_check_button_set_active(GTK_CHECK_BUTTON(checkBox), value);
 
 		// Save the bitfield checkbox's value in the GObject.
 		g_object_set_data(G_OBJECT(checkBox), "RFT_BITFIELD_value", GUINT_TO_POINTER((guint)value));
@@ -1169,17 +1042,18 @@ rom_data_view_init_listdata(RomDataView *page,
 		PANGO_ALIGN_CENTER, PANGO_ALIGN_RIGHT
 	};
 
-	// Set up the column names.
+	// Set up the columns.
 	RomFields::ListDataColAttrs_t col_attrs = listDataDesc.col_attrs;
 	for (int i = 0; i < colCount; i++, col_attrs.shiftRight()) {
 		const int listStore_col_idx = i + listStore_col_start;
 
 		// NOTE: Not skipping empty column names.
 		// TODO: Hide them.
-		GtkCellRenderer *const renderer = gtk_cell_renderer_text_new();
 		GtkTreeViewColumn *const column = gtk_tree_view_column_new();
 		gtk_tree_view_column_set_title(column,
 			(listDataDesc.names ? listDataDesc.names->at(i).c_str() : ""));
+
+		GtkCellRenderer *const renderer = gtk_cell_renderer_text_new();
 		if (col0_renderer != nullptr) {
 			// Prepend the icon/checkbox renderer.
 			gtk_tree_view_column_pack_start(column, col0_renderer, FALSE);
@@ -1321,6 +1195,11 @@ rom_data_view_init_datetime(RomDataView *page,
 	} else {
 		dateTime = g_date_time_new_from_unix_local(field.data.date_time);
 	}
+	assert(dateTime != nullptr);
+	if (!dateTime) {
+		// Unable to convert the timestamp.
+		return rom_data_view_init_string(page, field, fieldIdx, C_("RomDataView", "Unknown"));
+	}
 
 	static const char *const formats[8] = {
 		nullptr,	// No date or time.
@@ -1419,7 +1298,9 @@ rom_data_view_init_string_multi(RomDataView *page,
 	// NOTE: The string contents won't be initialized here.
 	// They will be initialized separately, since the user will
 	// be able to change the displayed language.
-	GtkWidget *const lblStringMulti = rom_data_view_init_string(page, field, fieldIdx, nullptr);
+	// NOTE 2: The string must be "", not nullptr. Otherwise, it will
+	// attempt to use the field's string data, which is invalid.
+	GtkWidget *const lblStringMulti = rom_data_view_init_string(page, field, fieldIdx, "");
 	if (lblStringMulti) {
 		page->cxx->vecStringMulti.emplace_back(lblStringMulti, &field);
 	}
@@ -1591,220 +1472,6 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 	}
 }
 
-/**
- * Update a field's value.
- * This is called after running a ROM operation.
- * @param page		[in] RomDataView object.
- * @param fieldIdx	[in] Field index.
- * @return 0 on success; non-zero on error.
- */
-static int
-rom_data_view_update_field(RomDataView *page, int fieldIdx)
-{
-	assert(page != nullptr);
-	assert(page->cxx != nullptr);
-	_RomDataViewCxx *const cxx = page->cxx;
-
-	const RomFields *const pFields = page->romData->fields();
-	assert(pFields != nullptr);
-	if (!pFields) {
-		// No fields.
-		// TODO: Show an error?
-		return 1;
-	}
-
-	assert(fieldIdx >= 0);
-	assert(fieldIdx < pFields->count());
-	if (fieldIdx < 0 || fieldIdx >= pFields->count())
-		return 2;
-
-	const RomFields::Field *const field = pFields->at(fieldIdx);
-	assert(field != nullptr);
-	if (!field)
-		return 3;
-
-	// Lambda function to check a QObject's RFT_fieldIdx.
-	auto checkFieldIdx = [](GtkWidget *widget, int fieldIdx) -> bool {
-		// NOTE: RFT_fieldIdx starts at 1 to prevent conflicts with widgets
-		// that don't have RFT_fieldIdx, which would return NULL here.
-		const gint tmp_fieldIdx = GPOINTER_TO_INT(
-			g_object_get_data(G_OBJECT(widget), "RFT_fieldIdx"));
-		return (tmp_fieldIdx != 0 && (tmp_fieldIdx - 1) == fieldIdx);
-	};
-
-	// Get the GtkWidget*.
-	// NOTE: Linear search through all display objects, since
-	// this function isn't used that often.
-	GtkWidget *widget = nullptr;
-	const auto tabs_cend = cxx->tabs.cend();
-	for (auto iter = cxx->tabs.cbegin(); iter != tabs_cend && widget == nullptr; ++iter) {
-		GtkWidget *const table = iter->table;	// GtkTable (2.x); GtkGrid (3.x)
-
-#if GTK_CHECK_VERSION(4,0,0)
-		// Get the first child.
-		// NOTE: Widgets are enumerated in forwards order.
-		// TODO: Needs testing!
-		for (GtkWidget *tmp_widget = gtk_widget_get_first_child(table);
-		     tmp_widget != nullptr; tmp_widget = gtk_widget_get_next_sibling(tmp_widget))
-		{
-			// Check if the field index is correct.
-			if (checkFieldIdx(tmp_widget, fieldIdx)) {
-				// Found the field.
-				widget = tmp_widget;
-				break;
-			}
-		}
-#else /* !GTK_CHECK_VERSION(4,0,0) */
-		// Get the list of child widgets.
-		// NOTE: Widgets are enumerated in forwards order,
-		// since the list head is the first item.
-		GList *const widgetList = gtk_container_get_children(GTK_CONTAINER(table));
-		if (!widgetList)
-			continue;
-
-		for (GList *widgetIter = widgetList; widgetIter != nullptr;
-		     widgetIter = widgetIter->next)
-		{
-			GtkWidget *const tmp_widget = GTK_WIDGET(widgetIter->data);
-			if (!tmp_widget)
-				continue;
-
-			// Check if the field index is correct.
-			if (checkFieldIdx(tmp_widget, fieldIdx)) {
-				// Found the field.
-				widget = tmp_widget;
-				break;
-			}
-		}
-		g_list_free(widgetList);
-#endif
-	}
-
-	// Update the value widget(s).
-	int ret;
-	switch (field->type) {
-		case RomFields::RFT_INVALID:
-			assert(!"Cannot update an RFT_INVALID field.");
-			ret = 5;
-			break;
-		default:
-			assert(!"Unsupported field type.");
-			ret = 6;
-			break;
-
-		case RomFields::RFT_STRING: {
-			// GtkWidget is a GtkLabel.
-			assert(GTK_IS_LABEL(widget));
-			if (!GTK_IS_LABEL(widget)) {
-				ret = 7;
-				break;
-			}
-
-			gtk_label_set_text(GTK_LABEL(widget), field->data.str
-				? field->data.str->c_str()
-				: nullptr);
-			ret = 0;
-			break;
-		}
-
-		case RomFields::RFT_BITFIELD: {
-			// GtkWidget is a GtkGrid/GtkTable GtkCheckButton widgets.
-#ifdef USE_GTK_GRID
-			assert(GTK_IS_GRID(widget));
-			if (!GTK_IS_GRID(widget)) {
-				ret = 8;
-				break;
-			}
-#else /* !USE_GTK_GRID */
-			assert(GTK_IS_TABLE(widget));
-			if (!GTK_IS_TABLE(widget)) {
-				ret = 8;
-				break;
-			}
-#endif /* USE_GTK_GRID */
-
-			// Bits with a blank name aren't included, so we'll need to iterate
-			// over the bitfield description.
-			const auto &bitfieldDesc = field->desc.bitfield;
-			int count = (int)bitfieldDesc.names->size();
-			assert(count <= 32);
-			if (count > 32)
-				count = 32;
-
-#if GTK_CHECK_VERSION(4,0,0)
-			// Get the first child.
-			// NOTE: Widgets are enumerated in forwards order.
-			// TODO: Needs testing!
-			GtkWidget *checkBox = gtk_widget_get_first_child(widget);
-			if (!checkBox) {
-				ret = 9;
-				break;
-			}
-
-			// Inhibit the "no-toggle" signal while updating.
-			page->inhibit_checkbox_no_toggle = true;
-
-			uint32_t bitfield = field->data.bitfield;
-			const auto names_cend = bitfieldDesc.names->cend();
-			for (auto iter = bitfieldDesc.names->cbegin(); iter != names_cend && checkBox != nullptr;
-			     ++iter, checkBox = gtk_widget_get_next_sibling(checkBox), bitfield >>= 1)
-			{
-				const string &name = *iter;
-				if (name.empty())
-					continue;
-
-				assert(GTK_IS_CHECK_BUTTON(checkBox));
-				if (!GTK_IS_CHECK_BUTTON(checkBox))
-					break;
-
-				const bool value = (bitfield & 1);
-				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkBox), value);
-				g_object_set_data(G_OBJECT(checkBox), "RFT_BITFIELD_value", GUINT_TO_POINTER((guint)value));
-			}
-#else /* !GTK_CHECK_VERSION(4,0,0) */
-			// Get the list of child widgets.
-			// NOTE: Widgets are enumerated in reverse order.
-			GList *const widgetList = gtk_container_get_children(GTK_CONTAINER(widget));
-			if (!widgetList) {
-				ret = 9;
-				break;
-			}
-			GList *checkBoxIter = g_list_last(widgetList);
-
-			// Inhibit the "no-toggle" signal while updating.
-			page->inhibit_checkbox_no_toggle = true;
-
-			uint32_t bitfield = field->data.bitfield;
-			const auto names_cend = bitfieldDesc.names->cend();
-			for (auto iter = bitfieldDesc.names->cbegin(); iter != names_cend && checkBoxIter != nullptr;
-			     ++iter, checkBoxIter = checkBoxIter->prev, bitfield >>= 1)
-			{
-				const string &name = *iter;
-				if (name.empty())
-					continue;
-
-				GtkWidget *const checkBox = GTK_WIDGET(checkBoxIter->data);
-				assert(GTK_IS_CHECK_BUTTON(checkBox));
-				if (!GTK_IS_CHECK_BUTTON(checkBox))
-					break;
-
-				const bool value = (bitfield & 1);
-				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkBox), value);
-				g_object_set_data(G_OBJECT(checkBox), "RFT_BITFIELD_value", GUINT_TO_POINTER((guint)value));
-			}
-			g_list_free(widgetList);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
-
-			// Done updating.
-			page->inhibit_checkbox_no_toggle = false;
-			ret = 0;
-			break;
-		}
-	}
-
-	return ret;
-}
-
 static void
 rom_data_view_create_options_button(RomDataView *page)
 {
@@ -1855,11 +1522,10 @@ rom_data_view_create_options_button(RomDataView *page)
 	//   - NOTE: Nautilus 40 uses HdyWindow, which is a GtkWindow subclass.
 	// - Caja: FMPropertiesWindow
 	// - Nemo: NemoPropertiesWindow
+	parent = gtk_widget_get_parent(parent);
+
 #if GTK_CHECK_VERSION(3,0,0)
 	bool isLibHandy = false;
-#endif /* GTK_CHECK_VERSION(3,0,0) */
-	parent = gtk_widget_get_parent(parent);
-#if GTK_CHECK_VERSION(3,0,0)
 	if (!GTK_IS_DIALOG(parent)) {
 		// NOTE: As of Nautilus 40, there may be an HdyDeck here.
 		// Check if it's HdyDeck using dynamically-loaded function pointers.
@@ -1912,7 +1578,7 @@ rom_data_view_create_options_button(RomDataView *page)
 		g_signal_handler_disconnect(page->btnOptions, handler_id);
 	}
 
-#if GTK_CHECK_VERSION(3,12,0)
+#if GTK_CHECK_VERSION(3,11,5)
 	GtkWidget *headerBar = nullptr;
 	if (isLibHandy) {
 		// Nautilus 40 uses libhandy, which has a different arrangement of widgets.
@@ -1942,7 +1608,7 @@ rom_data_view_create_options_button(RomDataView *page)
 		// Change the arrow to point down instead of up.
 		options_menu_button_set_direction(OPTIONS_MENU_BUTTON(page->btnOptions), GTK_ARROW_DOWN);
 	} else
-#endif /* GTK_CHECK_VERSION(3,12,0) */
+#endif /* GTK_CHECK_VERSION(3,11,5) */
 	{
 		// Reorder the "Options" button so it's to the right of "Help".
 		// NOTE: GTK+ 3.10 introduced the GtkHeaderBar, but
@@ -2021,13 +1687,12 @@ rom_data_view_update_display(RomDataView *page)
 
 			auto &tab = *tabIter;
 
+			tab.vbox = rp_gtk_vbox_new(8);
 #if USE_GTK_GRID
-			tab.vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
 			tab.table = gtk_grid_new();
 			gtk_grid_set_row_spacing(GTK_GRID(tab.table), 2);
 			gtk_grid_set_column_spacing(GTK_GRID(tab.table), 8);
 #else /* !USE_GTK_GRID */
-			tab.vbox = gtk_vbox_new(false, 8);
 			// TODO: Adjust the table size?
 			tab.table = gtk_table_new(rowCount, 2, false);
 			gtk_table_set_row_spacings(GTK_TABLE(tab.table), 2);
@@ -2189,11 +1854,7 @@ rom_data_view_update_display(RomDataView *page)
 			if (separate_rows) {
 				// Separate rows.
 				// Make sure the description label is left-aligned.
-#if GTK_CHECK_VERSION(3,16,0)
-				gtk_label_set_xalign(GTK_LABEL(lblDesc), 0.0);
-#else /* !GTK_CHECK_VERSION(3,16,0) */
-				gtk_misc_set_alignment(GTK_MISC(lblDesc), 0.0f, 0.0f);
-#endif /* GTK_CHECK_VERSION(3,16,0) */
+				GTK_LABEL_XALIGN_LEFT(lblDesc);
 
 				// If this is the last field in the tab,
 				// put the RFT_LISTDATA in the GtkGrid instead.
@@ -2299,11 +1960,16 @@ rom_data_view_update_display(RomDataView *page)
 	}
 }
 
+/**
+ * Load the actual ROM data.
+ * Call this function using g_idle_add().
+ * @param page RomDataView
+ * @return G_SOURCE_REMOVE
+ */
 static gboolean
-rom_data_view_load_rom_data(gpointer data)
+rom_data_view_load_rom_data(RomDataView *page)
 {
-	RomDataView *const page = ROM_DATA_VIEW(data);
-	g_return_val_if_fail(page != nullptr && IS_ROM_DATA_VIEW(page), G_SOURCE_REMOVE);
+	g_return_val_if_fail(IS_ROM_DATA_VIEW(page), G_SOURCE_REMOVE);
 
 	if (G_UNLIKELY(page->uri == nullptr && page->romData == nullptr)) {
 		// No URI or RomData.
@@ -2351,7 +2017,7 @@ rom_data_view_load_rom_data(gpointer data)
 
 /**
  * Delete tabs and related widgets.
- * @param page RomDataView.
+ * @param page RomDataView
  */
 static void
 rom_data_view_delete_tabs(RomDataView *page)
@@ -2427,31 +2093,29 @@ rom_data_view_delete_tabs(RomDataView *page)
 
 /**
  * Prevent bitfield checkboxes from being toggled.
- * @param togglebutton Bitfield checkbox.
- * @param user_data RomDataView*.
+ * @param checkbutton Bitfield checkbox
+ * @param page RomDataView
  */
 static void
-checkbox_no_toggle_signal_handler(GtkToggleButton	*togglebutton,
-				  gpointer		 user_data)
+checkbox_no_toggle_signal_handler(GtkCheckButton *checkbutton, RomDataView *page)
 {
-	RomDataView *const page = ROM_DATA_VIEW(user_data);
 	if (page->inhibit_checkbox_no_toggle) {
 		// Inhibiting the no-toggle handler.
 		return;
 	}
 
 	// Get the saved RFT_BITFIELD value.
-	const gboolean value = (gboolean)GPOINTER_TO_UINT(g_object_get_data(G_OBJECT(togglebutton), "RFT_BITFIELD_value"));
-	if (gtk_toggle_button_get_active(togglebutton) != value) {
+	const gboolean value = (gboolean)GPOINTER_TO_UINT(g_object_get_data(G_OBJECT(checkbutton), "RFT_BITFIELD_value"));
+	if (gtk_check_button_get_active(checkbutton) != value) {
 		// Toggle this box.
-		gtk_toggle_button_set_active(togglebutton, value);
+		gtk_check_button_set_active(checkbutton, value);
 	}
 }
 
 /**
  * RomDataView is being mapped onto the screen.
  * @param page RomDataView
- * @param user_data User data.
+ * @param user_data User data
  */
 static void
 rom_data_view_map_signal_handler(RomDataView	*page,
@@ -2473,7 +2137,7 @@ rom_data_view_map_signal_handler(RomDataView	*page,
 /**
  * RomDataView is being unmapped from the screen.
  * @param page RomDataView
- * @param user_data User data.
+ * @param user_data User data
  */
 static void
 rom_data_view_unmap_signal_handler(RomDataView	*page,
@@ -2579,338 +2243,13 @@ tree_view_realize_signal_handler(GtkTreeView	*treeView,
  * The RFT_MULTI_STRING language was changed.
  * @param widget	GtkComboBox
  * @param lc		Language code
- * @param user_data	RomDataView
+ * @param page		RomDataView
  */
 static void
 cboLanguage_lc_changed_signal_handler(GtkComboBox *widget,
 				      uint32_t     lc,
-				      gpointer     user_data)
+				      RomDataView *page)
 {
 	RP_UNUSED(widget);
-	rom_data_view_update_multi(ROM_DATA_VIEW(user_data), lc);
-}
-
-/**
- * An "Options" menu action was triggered.
- * @param menuButton	OptionsMenuButton
- * @param id		Menu options ID
- * @param user_data	RomDataView
- */
-static void
-btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
-				    gint id,
-				    gpointer user_data)
-{
-	RP_UNUSED(menuButton);
-	RomDataView *const page = ROM_DATA_VIEW(user_data);
-	GtkWindow *const parent = gtk_widget_get_toplevel_window(GTK_WIDGET(page));
-
-	if (id < 0) {
-		// Export/copy to text or JSON.
-		const char *const rom_filename = page->romData->filename();
-		if (!rom_filename)
-			return;
-
-		bool toClipboard;
-		const char *s_title = nullptr;
-		const char *s_default_ext = nullptr;
-		const char *s_filter = nullptr;
-		switch (id) {
-			case OPTION_EXPORT_TEXT:
-				toClipboard = false;
-				s_title = C_("RomDataView", "Export to Text File");
-				s_default_ext = ".txt";
-				// tr: Text files filter. (RP format)
-				s_filter = C_("RomDataView", "Text Files|*.txt|text/plain|All Files|*.*|-");
-				break;
-			case OPTION_EXPORT_JSON:
-				toClipboard = false;
-				s_title = C_("RomDataView", "Export to JSON File");
-				s_default_ext = ".json";
-				// tr: JSON files filter. (RP format)
-				s_filter = C_("RomDataView", "JSON Files|*.json|application/json|All Files|*.*|-");
-				break;
-			case OPTION_COPY_TEXT:
-			case OPTION_COPY_JSON:
-				toClipboard = true;
-				break;
-			default:
-				assert(!"Invalid action ID.");
-				return;
-		}
-
-		// TODO: GIO wrapper for ostream.
-		// For now, we'll use ofstream.
-		ofstream ofs;
-
-		if (!toClipboard) {
-			if (!page->prevExportDir) {
-				page->prevExportDir = g_path_get_dirname(rom_filename);
-			}
-
-#if GTK_CHECK_VERSION(4,0,0)
-			// NOTE: GTK4 has *mandatory* overwrite confirmation.
-			// Reference: https://gitlab.gnome.org/GNOME/gtk/-/commit/063ad28b1a06328e14ed72cc4b99cd4684efed12
-			GtkFileChooserNative *const dialog = gtk_file_chooser_native_new(
-				s_title,			// title
-				parent,				// parent
-				GTK_FILE_CHOOSER_ACTION_SAVE,	// action
-				_("Cancel"), _("Save"));
-			// TODO: URI?
-			GFile *const set_file = g_file_new_for_path(page->prevExportDir);
-			if (set_file) {
-				gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), set_file, nullptr);
-				g_object_unref(set_file);
-			}
-#else /* !GTK_CHECK_VERSION(4,0,0) */
-			GtkWidget *const dialog = gtk_file_chooser_dialog_new(
-				s_title,			// title
-				parent,				// parent
-				GTK_FILE_CHOOSER_ACTION_SAVE,	// action
-				_("Cancel"), GTK_RESPONSE_CANCEL,
-				_("Save"), GTK_RESPONSE_ACCEPT,
-				nullptr);
-			gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
-			gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), page->prevExportDir);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
-
-			// Set the filters.
-			rpFileDialogFilterToGtk(GTK_FILE_CHOOSER(dialog), s_filter);
-
-			gchar *const basename = g_path_get_basename(rom_filename);
-			string defaultName = basename;
-			g_free(basename);
-			// Remove the extension, if present.
-			size_t extpos = defaultName.rfind('.');
-			if (extpos != string::npos) {
-				defaultName.resize(extpos);
-			}
-			defaultName += s_default_ext;
-			gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), defaultName.c_str());
-
-			// Prompt for a save file.
-#if GTK_CHECK_VERSION(4,0,0)
-			// GTK4 no longer supports blocking dialogs.
-			// FIXME for GTK4: Rewrite to use gtk_window_set_modal() and handle the "response" signal.
-			// This will also work for older GTK+.
-			assert(!"gtk_dialog_run() is not available in GTK4; needs a rewrite!");
-			GFile *const get_file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(dialog));
-
-			// TODO: URIs?
-			gchar *out_filename = (get_file ? g_file_get_path(get_file) : nullptr);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
-			gint res = gtk_dialog_run(GTK_DIALOG(dialog));
-			gchar *out_filename = (res == GTK_RESPONSE_ACCEPT
-				? gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog))
-				: nullptr);
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
-
-			g_object_unref(dialog);
-			if (!out_filename) {
-				// No filename...
-				return;
-			}
-
-			// Save the previous export directory.
-			if (page->prevExportDir) {
-				g_free(page->prevExportDir);
-				page->prevExportDir = nullptr;
-			}
-			page->prevExportDir = g_path_get_dirname(out_filename);
-
-			ofs.open(out_filename, ofstream::out);
-			g_free(out_filename);
-			if (ofs.fail()) {
-				return;
-			}
-		}
-
-		// TODO: Optimize this such that we can pass ofstream or ostringstream
-		// to a factored-out function.
-
-		switch (id) {
-			case OPTION_EXPORT_TEXT: {
-				const uint32_t lc = page->cboLanguage
-					? language_combo_box_get_selected_lc(LANGUAGE_COMBO_BOX(page->cboLanguage))
-					: 0;
-				ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
-				ROMOutput ro(page->romData, lc);
-				ofs << ro;
-				break;
-			}
-			case OPTION_EXPORT_JSON: {
-				JSONROMOutput jsro(page->romData);
-				ofs << jsro << std::endl;
-				break;
-			}
-			case OPTION_COPY_TEXT: {
-				const uint32_t lc = page->cboLanguage
-					? language_combo_box_get_selected_lc(LANGUAGE_COMBO_BOX(page->cboLanguage))
-					: 0;
-				ostringstream oss;
-				oss << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
-				ROMOutput ro(page->romData, lc);
-				oss << ro;
-
-				const string str = oss.str();
-				rp_gtk_main_clipboard_set_text(str.c_str());
-				break;
-			}
-			case OPTION_COPY_JSON: {
-				ostringstream oss;
-				JSONROMOutput jsro(page->romData);
-				oss << jsro << std::endl;
-
-				const string str = oss.str();
-				rp_gtk_main_clipboard_set_text(str.c_str());
-				break;
-			}
-			default:
-				assert(!"Invalid action ID.");
-				return;
-		}
-		return;
-	}
-
-	// Run a ROM operation.
-	// TODO: Don't keep rebuilding this vector...
-	vector<RomData::RomOp> ops = page->romData->romOps();
-	assert(id < (int)ops.size());
-	if (id >= (int)ops.size()) {
-		// ID is out of range.
-		return;
-	}
-
-	gchar *save_filename = nullptr;
-	RomData::RomOpParams params;
-	const RomData::RomOp *op = &ops[id];
-	if (op->flags & RomData::RomOp::ROF_SAVE_FILE) {
-#if GTK_CHECK_VERSION(4,0,0)
-		// NOTE: GTK4 has *mandatory* overwrite confirmation.
-		// Reference: https://gitlab.gnome.org/GNOME/gtk/-/commit/063ad28b1a06328e14ed72cc4b99cd4684efed12
-		GtkFileChooserNative *const dialog = gtk_file_chooser_native_new(
-			op->sfi.title,			// title
-			parent,				// parent
-			GTK_FILE_CHOOSER_ACTION_SAVE,	// action
-			_("Cancel"), _("Save"));
-#else /* !GTK_CHECK_VERSION(4,0,0) */
-		GtkWidget *const dialog = gtk_file_chooser_dialog_new(
-			op->sfi.title,			// title
-			parent,				// parent
-			GTK_FILE_CHOOSER_ACTION_SAVE,	// action
-			_("Cancel"), GTK_RESPONSE_CANCEL,
-			_("Save"), GTK_RESPONSE_ACCEPT,
-			nullptr);
-		gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
-
-		// Set the filters.
-		rpFileDialogFilterToGtk(GTK_FILE_CHOOSER(dialog), op->sfi.filter);
-
-		// Add the "All Files" filter.
-		GtkFileFilter *const allFilesFilter = gtk_file_filter_new();
-		// tr: "All Files" filter (GTK+ file filter)
-		gtk_file_filter_set_name(allFilesFilter, C_("RomData", "All Files"));
-		gtk_file_filter_add_pattern(allFilesFilter, "*");
-		gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), allFilesFilter);
-
-		// Initial file and directory, based on the current file.
-		// NOTE: Not checking if it's a file or a directory. Assuming it's a file.
-		string initialFile = FileSystem::replace_ext(page->romData->filename(), op->sfi.ext);
-		if (!initialFile.empty()) {
-			// Split the directory and basename.
-			size_t slash_pos = initialFile.rfind(DIR_SEP_CHR);
-			if (slash_pos != string::npos) {
-				// Full path. Set the directory and filename separately.
-				gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), &initialFile[slash_pos + 1]);
-				initialFile.resize(slash_pos);
-
-#if GTK_CHECK_VERSION(4,0,0)
-				// TODO: URI?
-				GFile *const set_file = g_file_new_for_path(initialFile.c_str());
-				if (set_file) {
-					gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), set_file, nullptr);
-					g_object_unref(set_file);
-				}
-#else /* !GTK_CHECK_VERSION(4,0,0) */
-				// FIXME: Do we need to prepend "file://"?
-				gtk_file_chooser_set_current_folder_uri(GTK_FILE_CHOOSER(dialog), initialFile.c_str());
-#endif /* GTK_CHECK_VERSION(4,0,0) */
-			} else {
-				// Not a full path. We can only set the filename.
-				gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), initialFile.c_str());
-			}
-		}
-
-		// Prompt for a save file.
-#if GTK_CHECK_VERSION(4,0,0)
-		// GTK4 no longer supports blocking dialogs.
-		// FIXME for GTK4: Rewrite to use gtk_window_set_modal() and handle the "response" signal.
-		// This will also work for older GTK+.
-		assert(!"gtk_dialog_run() is not available in GTK4; needs a rewrite!");
-		GFile *const get_file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(dialog));
-
-		// TODO: URIs?
-		save_filename = (get_file ? g_file_get_path(get_file) : nullptr);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
-		gint res = gtk_dialog_run(GTK_DIALOG(dialog));
-		save_filename = (res == GTK_RESPONSE_ACCEPT
-			? gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog))
-			: nullptr);
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
-
-		g_object_unref(dialog);
-		params.save_filename = save_filename;
-	}
-
-	GtkMessageType messageType;
-	int ret = page->romData->doRomOp(id, &params);
-	g_free(save_filename);
-	if (ret == 0) {
-		// ROM operation completed.
-
-		// Update fields.
-		for (int fieldIdx : params.fieldIdx) {
-			rom_data_view_update_field(page, fieldIdx);
-		}
-
-		// Update the RomOp menu entry in case it changed.
-		// NOTE: Assuming the RomOps vector order hasn't changed.
-		ops = page->romData->romOps();
-		assert(id < (int)ops.size());
-		if (id < (int)ops.size()) {
-			options_menu_button_update_op(OPTIONS_MENU_BUTTON(page->btnOptions), id, &ops[id]);
-		}
-
-		messageType = GTK_MESSAGE_INFO;
-	} else {
-		// An error occurred...
-		// TODO: Show an error message.
-		messageType = GTK_MESSAGE_WARNING;
-	}
-
-#ifdef ENABLE_MESSAGESOUND
-	MessageSound::play(messageType, params.msg.c_str(), GTK_WIDGET(page));
-#endif /* ENABLE_MESSAGESOUND */
-
-	if (!params.msg.empty()) {
-		// Show the MessageWidget.
-		if (!page->messageWidget) {
-			page->messageWidget = message_widget_new();
-#if GTK_CHECK_VERSION(4,0,0)
-			gtk_box_append(GTK_BOX(page), page->messageWidget);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
-			gtk_box_pack_end(GTK_BOX(page), page->messageWidget, false, false, 0);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
-		}
-
-		MessageWidget *const messageWidget = MESSAGE_WIDGET(page->messageWidget);
-		message_widget_set_message_type(messageWidget, messageType);
-		message_widget_set_text(messageWidget, params.msg.c_str());
-#ifdef AUTO_TIMEOUT_MESSAGEWIDGET
-		message_widget_show_with_timeout(messageWidget);
-#else /* AUTO_TIMEOUT_MESSAGEWIDGET */
-		gtk_widget_show(page->messageWidget);
-#endif /* AUTO_TIMEOUT_MESSAGEWIDGET */
-	}
+	rom_data_view_update_multi(page, lc);
 }

@@ -141,10 +141,10 @@ class RpFile : public IRpFile
 
 		/**
 		 * Get the filename.
-		 * @return Filename. (May be empty if the filename is not available.)
+		 * @return Filename. (May be nullptr if the filename is not available.)
 		 */
 		RP_LIBROMDATA_PUBLIC
-		std::string filename(void) const final;
+		const char *filename(void) const final;
 
 	public:
 		/** Extra functions **/

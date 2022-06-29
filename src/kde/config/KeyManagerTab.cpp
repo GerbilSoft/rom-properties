@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyManagerTab.cpp: Key Manager tab for rp-config.                       *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,8 +19,20 @@ using namespace LibRpBase;
 // C++ STL classes.
 using std::string;
 
-// KDE includes.
-#include <kmessagewidget.h>
+// KDE4/KF5 includes.
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#  define HAVE_KMESSAGEWIDGET 1
+#  define HAVE_KMESSAGEWIDGET_SETICON 1
+#  include <KWidgetsAddons/kmessagewidget.h>
+#else /* !QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+#  if (KDE_VERSION_MAJOR > 4) || (KDE_VERSION_MAJOR == 4 && KDE_VERSION_MINOR >= 7)
+#    define HAVE_KMESSAGEWIDGET 1
+#    include <kmessagewidget.h>
+#    if (KDE_VERSION_MAJOR > 4) || (KDE_VERSION_MAJOR == 4 && KDE_VERSION_MINOR >= 11)
+#      define HAVE_KMESSAGEWIDGET_SETICON 1
+#    endif
+#  endif
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 
 #include "ui_KeyManagerTab.h"
 class KeyManagerTabPrivate
@@ -38,10 +50,15 @@ class KeyManagerTabPrivate
 		Ui::KeyManagerTab ui;
 
 	public:
-		// KeyStore.
+		// KeyStore
 		KeyStoreQt *keyStore;
-		// KeyStoreModel.
+		// KeyStoreModel
 		KeyStoreModel *keyStoreModel;
+
+#ifdef HAVE_KMESSAGEWIDGET
+		// KMessageWidget for key import
+		KMessageWidget *messageWidget;
+#endif /* HAVE_KMESSAGEWIDGET */
 
 		// Starting directory for importing keys.
 		// TODO: Save this in the configuration file?
@@ -68,6 +85,9 @@ KeyManagerTabPrivate::KeyManagerTabPrivate(KeyManagerTab* q)
 	: q_ptr(q)
 	, keyStore(new KeyStoreQt(q))
 	, keyStoreModel(new KeyStoreModel(q))
+#ifdef HAVE_KMESSAGEWIDGET
+	, messageWidget(nullptr)
+#endif /* HAVE_KMESSAGEWIDGET */
 {
 	// Set the KeyStoreModel's KeyStore.
 	keyStoreModel->setKeyStore(keyStore);
@@ -256,18 +276,12 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 		}
 	}
 
-	Q_Q(KeyManagerTab);
-	KMessageWidget *const widget = new KMessageWidget(q);
-	widget->setCloseButtonVisible(true);
-	widget->setWordWrap(true);
-	widget->setMessageType(type);
-	widget->setIcon(qApp->style()->standardIcon(icon, nullptr, widget));
-	widget->setText(U82Q(msg));
-	QObject::connect(widget, SIGNAL(hideAnimationFinished()),
-			 widget, SLOT(deleteLater()));
-
-	ui.vboxMain->insertWidget(0, widget);
-	widget->animatedShow();
+	// Display the message.
+	// TODO: If it's already visible, animateHide(), then animateShow()?
+	messageWidget->setMessageType(type);
+	messageWidget->setIcon(qApp->style()->standardIcon(icon, nullptr, messageWidget));
+	messageWidget->setText(U82Q(msg));
+	messageWidget->animatedShow();
 }
 
 /** KeyManagerTab **/
@@ -304,6 +318,15 @@ KeyManagerTab::KeyManagerTab(QWidget *parent)
 
 	// Connect KeyStore's modified() signal to our modified() signal.
 	connect(d->keyStore, SIGNAL(modified()), this, SIGNAL(modified()));
+
+#ifdef HAVE_KMESSAGEWIDGET
+	// KMessageWidget
+	d->messageWidget = new KMessageWidget(this);
+	d->messageWidget->setCloseButtonVisible(true);
+	d->messageWidget->setWordWrap(true);
+	d->messageWidget->hide();
+	d->ui.vboxMain->insertWidget(0, d->messageWidget);
+#endif /* HAVE_KMESSAGEWIDGET */
 }
 
 KeyManagerTab::~KeyManagerTab()
@@ -382,13 +405,13 @@ void KeyManagerTab::save(QSettings *pSettings)
 	// Save the keys.
 	const int totalKeyCount = d->keyStore->totalKeyCount();
 	for (int i = 0; i < totalKeyCount; i++) {
-		const KeyStoreQt::Key *const pKey = d->keyStore->getKey(i);
-		assert(pKey != nullptr);
-		if (!pKey || !pKey->modified)
+		const KeyStoreQt::Key *const key = d->keyStore->getKey(i);
+		assert(key != nullptr);
+		if (!key || !key->modified)
 			continue;
 
 		// Save this key.
-		pSettings->setValue(U82Q(pKey->name), U82Q(pKey->value));
+		pSettings->setValue(U82Q(key->name), U82Q(key->value));
 	}
 
 	// End of [Keys]

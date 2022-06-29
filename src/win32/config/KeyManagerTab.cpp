@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * KeyManagerTab.hpp: Key Manager tab for rp-config.                       *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -965,7 +965,7 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 			TCHAR tbuf[128];
 			tbuf[0] = 0;
 			GetWindowText(hWnd, tbuf, _countof(tbuf));
-			d->keyStore->setKey(d->iEditItem, T2U8(tbuf));
+			d->keyStore->setKey(d->iEditItem, T2U8(tbuf).c_str());
 
 			// Item is no longer being edited.
 			d->iEditItem = -1;

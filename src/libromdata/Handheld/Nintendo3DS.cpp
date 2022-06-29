@@ -1240,7 +1240,7 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 	}
 
 	// Check if this ROM image is supported.
-	const string filename = file->filename();
+	const char *const filename = file->filename();
 	const DetectInfo info = {
 		{0, sizeof(header), header},
 		FileSystem::file_ext(filename),	// ext

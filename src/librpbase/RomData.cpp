@@ -54,8 +54,12 @@ RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file, const RomDataInfo *pRo
 	if (file) {
 		// Reference the file.
 		this->file = file->ref();
-		this->filename = this->file->filename();
-		this->isCompressed = this->file->isCompressed();
+		this->isCompressed = file->isCompressed();
+
+		const char *const filename = file->filename();
+		if (filename) {
+			this->filename.assign(filename);
+		}
 	}
 }
 

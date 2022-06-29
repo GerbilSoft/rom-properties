@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * DualFile.hpp: Special wrapper for handling a split file as one.         *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -90,12 +90,6 @@ class DualFile final : public IRpFile
 		 * @return File size, or negative on error.
 		 */
 		off64_t size(void) final;
-
-		/**
-		 * Get the filename.
-		 * @return Filename. (May be empty if the filename is not available.)
-		 */
-		std::string filename(void) const final;
 
 	protected:
 		IRpFile *m_file[2];

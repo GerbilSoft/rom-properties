@@ -718,7 +718,7 @@ GameCube::GameCube(IRpFile *file)
 	}
 
 	// Check if this disc image is supported.
-	const string filename = file->filename();
+	const char *const filename = file->filename();
 	const DetectInfo info = {
 		{0, sizeof(header), header},
 		FileSystem::file_ext(filename),	// ext
@@ -761,7 +761,14 @@ GameCube::GameCube(IRpFile *file)
 			// TODO: Make .wbf1 support optional. Disabled for now.
 			/*if (info.ext && !strcasecmp(info.ext, ".wbf1")) {
 				// Second part of split WBFS.
-				IRpFile *const wbfs0 = FileSystem::openRelatedFile(file->filename().c_str(), nullptr, ".wbfs");
+				const char *const filename = file->filename();
+				if (!filename) {
+					// No filename...
+					d->discType = GameCubePrivate::DISC_UNKNOWN;
+					break;
+				}
+
+				IRpFile *const wbfs0 = FileSystem::openRelatedFile(filename, nullptr, ".wbfs");
 				if (unlikely(!wbfs0) || !wbfs0->isOpen()) {
 					// Unable to open the .wbfs file.
 					UNREF(wbfs0);
@@ -790,12 +797,15 @@ GameCube::GameCube(IRpFile *file)
 			} else*/ if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_WBFS) {
 				// First part of split WBFS.
 				// Check for a WBF1 file.
-				IRpFile *wbfs1 = FileSystem::openRelatedFile(file->filename().c_str(), nullptr, ".wbf1");
-				// COMMIT THIS FIRST BEFORE UNREF
-				if (unlikely(!wbfs1 || !wbfs1->isOpen())) {
-					// Unable to open the .wbf1 file.
-					// Assume it's a single .wbfs file.
-					UNREF_AND_NULL(wbfs1);
+				IRpFile *wbfs1 = nullptr;
+				const char *const filename = file->filename();
+				if (filename) {
+					wbfs1 = FileSystem::openRelatedFile(file->filename(), nullptr, ".wbf1");
+					if (unlikely(!wbfs1 || !wbfs1->isOpen())) {
+						// Unable to open the .wbf1 file.
+						// Assume it's a single .wbfs file.
+						UNREF_AND_NULL(wbfs1);
+					}
 				}
 
 				if (likely(!wbfs1)) {

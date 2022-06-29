@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RpFile_gio.hpp: IRpFile implementation using GIO/GVfs.                  *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -92,9 +92,9 @@ class RpFileGio final : public LibRpFile::IRpFile
 		/**
 		 * Get the filename.
 		 * NOTE: For RpFileGio, this returns a GVfs URI.
-		 * @return Filename. (May be empty if the filename is not available.)
+		 * @return Filename. (May be nullptr if the filename is not available.)
 		 */
-		std::string filename(void) const final;
+		const char *filename(void) const final;
 };
 
 #endif /* __ROMPROPERTIES_GTK_RPFILE_GIO_HPP__ */

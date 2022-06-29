@@ -109,16 +109,6 @@ class VectorFile final : public IRpFile
 			return m_vector.size();
 		}
 
-		/**
-		 * Get the filename.
-		 * @return Filename. (May be empty if the filename is not available.)
-		 */
-		std::string filename(void) const final
-		{
-			// TODO: Implement this?
-			return std::string();
-		}
-
 	public:
 		/** Extra functions **/
 

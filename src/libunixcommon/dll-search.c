@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libunixcommon)                    *
  * dll-search.c: Function to search for a usable rom-properties library.   *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -252,14 +252,18 @@ static inline RP_Frontend check_xdg_desktop_name(const char *name)
 		return RP_FE_GTK3;
 	}
 
-	// NOTE: "KDE4", "KDE5", and "KF5" are not actually used.
+	// NOTE: The following desktop names are not actually used.
 	// They're used here for debugging purposes only.
 	if (!strcasecmp(name, "KF5") || !strcasecmp(name, "KDE5")) {
-		// KF5.
 		return RP_FE_KF5;
 	} else if (!strcasecmp(name, "KDE4")) {
-		// KDE4.
 		return RP_FE_KDE4;
+	} else if (!strcasecmp(name, "GTK4")) {
+		return RP_FE_GTK4;
+	} else if (!strcasecmp(name, "GTK3")) {
+		return RP_FE_GTK3;
+	} else if (!strcasecmp(name, "GTK2")) {
+		return RP_FE_GTK2;
 	}
 
 	// Unknown desktop name.
@@ -371,7 +375,8 @@ int rp_dll_search(const char *symname, void **ppDll, void **ppfn, PFN_RP_DLL_DEB
 		}
 		*ppDll = dlopen(plugin_path, RTLD_LOCAL|RTLD_LAZY);
 		if (!*ppDll) {
-			// Library not found.
+			// Library not found, or unable to open the library.
+			pfnDebug(LEVEL_DEBUG, "*** dlopen() failed: %s", dlerror());
 			continue;
 		}
 
@@ -382,6 +387,7 @@ int rp_dll_search(const char *symname, void **ppDll, void **ppfn, PFN_RP_DLL_DEB
 		*ppfn = dlsym(*ppDll, symname);
 		if (!*ppfn) {
 			// Symbol not found.
+			pfnDebug(LEVEL_DEBUG, "*** dlsym() failed: %s", dlerror());
 			dlclose(*ppDll);
 			*ppDll = NULL;
 			continue;

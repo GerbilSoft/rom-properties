@@ -6,8 +6,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_ROMDATA_VIEW_HPP__
-#define __ROMPROPERTIES_GTK_ROMDATA_VIEW_HPP__
+#ifndef __ROMPROPERTIES_GTK_ROMDATAVIEW_HPP__
+#define __ROMPROPERTIES_GTK_ROMDATAVIEW_HPP__
 
 #include <gtk/gtk.h>
 
@@ -60,4 +60,4 @@ GtkWidget	*rom_data_view_new_with_romData	(const gchar *uri,
 						 RpDescFormatType desc_format_type) G_GNUC_INTERNAL G_GNUC_MALLOC;
 #endif /* __cplusplus */
 
-#endif /* __ROMPROPERTIES_GTK_ROMDATA_VIEW_HPP__ */
+#endif /* __ROMPROPERTIES_GTK_ROMDATAVIEW_HPP__ */

@@ -38,6 +38,7 @@ UNSET(OLD_CMAKE_REQUIRED_DEFINITIONS)
 # Sources and headers.
 SET(${PROJECT_NAME}_SRCS
 	RomDataView.cpp
+	RomDataView_ops.cpp
 	DragImage.cpp
 	CreateThumbnail.cpp
 	PIMGTYPE.cpp
@@ -49,9 +50,20 @@ SET(${PROJECT_NAME}_SRCS
 	LanguageComboBox.cpp
 	OptionsMenuButton.cpp
 	is-supported.cpp
+	config/stub-export.c
+	config/ConfigDialog.cpp
+	config/RpConfigTab.cpp
+	config/ImageTypesTab.cpp
+	config/SystemsTab.cpp
+	config/OptionsTab.cpp
+	config/CacheTab.cpp
+	config/CacheCleaner.cpp
+	config/AchievementsTab.cpp
+	config/AboutTab.cpp
 	)
 SET(${PROJECT_NAME}_H
 	RomDataView.hpp
+	RomDataView_p.hpp
 	DragImage.hpp
 	PIMGTYPE.hpp
 	rp-gtk-enums.h
@@ -64,7 +76,29 @@ SET(${PROJECT_NAME}_H
 	OptionsMenuButton.hpp
 	check-uid.h
 	is-supported.hpp
+	config/ConfigDialog.hpp
+	config/RpConfigTab.h
+	config/ImageTypesTab.hpp
+	config/SystemsTab.hpp
+	config/OptionsTab.hpp
+	config/CacheTab.hpp
+	config/CacheCleaner.hpp
+	config/AchievementsTab.hpp
+	config/AboutTab.hpp
 	)
+
+IF(ENABLE_DECRYPTION)
+	SET(${PROJECT_NAME}_SRCS
+		${${PROJECT_NAME}_SRCS}
+		config/KeyManagerTab.cpp
+		config/KeyStoreGTK.cpp
+		)
+	SET(${PROJECT_NAME}_H
+		${${PROJECT_NAME}_H}
+		config/KeyManagerTab.hpp
+		config/KeyStoreGTK.hpp
+		)
+ENDIF(ENABLE_DECRYPTION)
 
 IF(ENABLE_ACHIEVEMENTS)
 	# D-Bus notification for achievements
@@ -76,9 +110,6 @@ ENDIF(ENABLE_ACHIEVEMENTS)
 FIND_PACKAGE(GLib2 ${GLIB_MIN_VERSION})
 FIND_PACKAGE(GObject2 ${GLIB_MIN_VERSION})
 IF(GLib2_FOUND AND GObject2_FOUND)
-	# Ensure we don't use functions not available in GLib 2.34.
-	ADD_DEFINITIONS(-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_34 -DGLIB_VERSION_MAX_ALLOWED=GLIB_VERSION_2_34)
-
 	# Check for version-specific image libraries.
 	FIND_PACKAGE(GdkPixbuf2)
 	IF(NOT GdkPixbuf2_FOUND)

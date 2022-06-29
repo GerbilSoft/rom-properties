@@ -35,6 +35,7 @@ using LibRpThreads::MutexLocker;
 
 // C++ STL classes
 using std::string;
+using std::unique_ptr;
 
 // Blowfish data.
 // This is loaded from ~/.config/rom-properties/nds-blowfish.bin.
@@ -50,7 +51,7 @@ static const uint8_t blowfish_md5[3][16] = {
 	{0xBC,0x03,0xB0,0xBF,0x27,0x38,0xA2,0x88,
 	 0x9B,0xEA,0x52,0xEE,0xC4,0xF1,0x35,0x7F},
 };
-static uint8_t blowfish_data[3][NDS_BLOWFISH_SIZE];
+static unique_ptr<uint8_t[]> blowfish_data[3];
 
 /**
  * Load and verify a Blowfish file.
@@ -70,14 +71,14 @@ int ndscrypt_load_blowfish_bin(BlowfishKey bfkey)
 	if (bfkey < NDSCRYPT_BF_NDS || bfkey >= NDSCRYPT_BF_MAX)
 		return -EINVAL;
 
-	if (blowfish_data[bfkey][0] != 0) {
+	if (blowfish_data[bfkey] != nullptr) {
 		// Blowfish data was already loaded.
 		return 0;
 	}
 
 	MutexLocker mutexLocker(blowfish_mutex);
 	// Verify again after the mutex is locked.
-	if (blowfish_data[bfkey][0] != 0) {
+	if (blowfish_data[bfkey] != nullptr) {
 		// Blowfish data was already loaded.
 		return 0;
 	}
@@ -106,18 +107,19 @@ int ndscrypt_load_blowfish_bin(BlowfishKey bfkey)
 	}
 
 	// File must be the correct size.
-	if (f_blowfish->size() != static_cast<off64_t>(sizeof(blowfish_data[bfkey]))) {
+	if (f_blowfish->size() != NDS_BLOWFISH_SIZE) {
 		// Wrong size.
 		UNREF(f_blowfish);
 		return 1;
 	}
 
 	// Read the file.
-	size_t size = f_blowfish->read(blowfish_data[bfkey], sizeof(blowfish_data[bfkey]));
+	blowfish_data[bfkey].reset(new uint8_t[NDS_BLOWFISH_SIZE]);
+	size_t size = f_blowfish->read(blowfish_data[bfkey].get(), NDS_BLOWFISH_SIZE);
 	f_blowfish->unref();
-	if (size != sizeof(blowfish_data[bfkey])) {
+	if (size != NDS_BLOWFISH_SIZE) {
 		// Read error.
-		blowfish_data[bfkey][0] = 0;
+		blowfish_data[bfkey].reset(nullptr);
 		int err = f_blowfish->lastError();
 		if (err == 0) {
 			err = EIO;
@@ -127,10 +129,10 @@ int ndscrypt_load_blowfish_bin(BlowfishKey bfkey)
 
 	// Verify the MD5.
 	uint8_t md5[16];
-	MD5Hash::calcHash(md5, sizeof(md5), blowfish_data[bfkey], sizeof(blowfish_data[bfkey]));
+	MD5Hash::calcHash(md5, sizeof(md5), blowfish_data[bfkey].get(), NDS_BLOWFISH_SIZE);
 	if (memcmp(md5, blowfish_md5[bfkey], sizeof(md5)) != 0) {
 		// MD5 is incorrect.
-		blowfish_data[bfkey][0] = 0;
+		blowfish_data[bfkey].reset();
 		return 2;
 	}
 
@@ -281,7 +283,7 @@ void NDSCrypt::init2(uint32_t *magic, uint32_t a[3])
 void NDSCrypt::init1(BlowfishKey bfkey)
 {
 	// FIXME: Not big-endian safe.
-	memcpy(m_card_hash, &blowfish_data[bfkey], 4*(1024 + 18));
+	memcpy(m_card_hash, blowfish_data[bfkey].get(), 4*(1024 + 18));
 	m_keycode[0] = m_gamecode;
 	m_keycode[1] = m_gamecode >> 1;
 	m_keycode[2] = m_gamecode << 1;
@@ -474,11 +476,11 @@ int ndscrypt_encrypt_secure_area(uint8_t *pRom, size_t len, BlowfishKey bfkey)
 
 	// Make sure the Blowfish data has been loaded.
 	if (bfkey == NDSCRYPT_BF_NDS) {
-		if (blowfish_data[NDSCRYPT_BF_NDS][0] != 0x99)
+		if (!blowfish_data[NDSCRYPT_BF_NDS])
 			return -EIO;
 	} else {
 		// FIXME: Check if it's a development cartridge.
-		if (blowfish_data[NDSCRYPT_BF_DSi][0] != 0x59) {
+		if (!blowfish_data[NDSCRYPT_BF_DSi]) {
 			return -EIO;
 		}
 	}
@@ -533,11 +535,11 @@ int ndscrypt_decrypt_secure_area(uint8_t *pRom, size_t len, BlowfishKey bfkey)
 
 	// Make sure the Blowfish data has been loaded.
 	if (bfkey == NDSCRYPT_BF_NDS) {
-		if (blowfish_data[NDSCRYPT_BF_NDS][0] != 0x99)
+		if (!blowfish_data[NDSCRYPT_BF_NDS])
 			return -EIO;
 	} else {
 		// FIXME: Check if it's a development cartridge.
-		if (blowfish_data[NDSCRYPT_BF_DSi][0] != 0x59) {
+		if (!blowfish_data[NDSCRYPT_BF_DSi]) {
 			return -EIO;
 		}
 	}

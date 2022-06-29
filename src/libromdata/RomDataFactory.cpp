@@ -428,8 +428,8 @@ RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
 	// Attempt to open the other file in the pair.
 	// TODO: Verify length.
 	// TODO: For .vmi, check the VMS resource name?
-	const string filename = file->filename();
-	*other_file = FileSystem::openRelatedFile(filename.c_str(), nullptr, rel_ext);
+	const char *const filename = file->filename();
+	*other_file = FileSystem::openRelatedFile(filename, nullptr, rel_ext);
 	if (!*other_file) {
 		// Can't open the other file.
 		return nullptr;
@@ -607,13 +607,11 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 		attrs |= ATTR_SUPPORTS_DEVICES;
 	} else {
 		// Get the actual file extension.
-		const string filename = file->filename();
-		if (!filename.empty()) {
-			const char *pExt = FileSystem::file_ext(filename);
-			if (pExt) {
-				file_ext = pExt;
-				info.ext = file_ext.c_str();
-			}
+		const char *const filename = file->filename();
+		const char *const ext = FileSystem::file_ext(filename);
+		if (ext) {
+			file_ext = ext;
+			info.ext = file_ext.c_str();
 		}
 	}
 

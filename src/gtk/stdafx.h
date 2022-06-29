@@ -30,14 +30,17 @@
 #include <cstring>
 #include <cinttypes>
 #include <stdint.h>
+#include <stdlib.h>
 
 // C++ includes.
 #include <algorithm>
 #include <array>
+#include <list>
 #include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #else /* !__cplusplus */
@@ -49,6 +52,7 @@
 #include <inttypes.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #endif /* __cplusplus */
 
@@ -81,6 +85,7 @@
 // librpbase common headers
 #include "common.h"
 #include "librpbase/aligned_malloc.h"
+#include "ctypex.h"
 
 // librpcpu
 #include "librpcpu/cpu_dispatch.h"
@@ -91,6 +96,7 @@
 #include "librpbase/RomFields.hpp"
 #include "librpbase/TextFuncs.hpp"
 #include "librpbase/SystemRegion.hpp"
+#include "librpbase/config/Config.hpp"
 #include "librpbase/img/RpPngWriter.hpp"
 
 // librpfile C++ headers

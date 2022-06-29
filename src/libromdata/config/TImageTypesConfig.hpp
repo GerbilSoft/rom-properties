@@ -201,7 +201,7 @@ class TImageTypesConfig
 		 * must be opened with an appropriate writer class.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int saveStart(void) = 0;
+		virtual int saveStart(void) { return 0; }
 
 		/**
 		 * Write an ImageType configuration entry.
@@ -217,7 +217,7 @@ class TImageTypesConfig
 		 * must be opened with an appropriate writer class.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int saveFinish(void) = 0;
+		virtual int saveFinish(void) { return 0; }
 
 	public:
 		/** Pure virtual functions (public) **/

@@ -40,13 +40,13 @@ typedef enum {
 	SM_COL_LC,
 } StringMultiColumns;
 
-static void	language_combo_box_get_property	(GObject	*object,
-						 guint		 prop_id,
-						 GValue		*value,
-						 GParamSpec	*pspec);
 static void	language_combo_box_set_property	(GObject	*object,
 						 guint		 prop_id,
 						 const GValue	*value,
+						 GParamSpec	*pspec);
+static void	language_combo_box_get_property	(GObject	*object,
+						 guint		 prop_id,
+						 GValue		*value,
 						 GParamSpec	*pspec);
 
 /** Signal handlers. **/
@@ -54,7 +54,7 @@ static void	internal_changed_handler	(LanguageComboBox *widget,
 						 gpointer          user_data);
 
 static GParamSpec *props[PROP_LAST];
-static guint language_combo_box_signals[SIGNAL_LAST];
+static guint signals[SIGNAL_LAST];
 
 // LanguageComboBox class.
 struct _LanguageComboBoxClass {
@@ -77,9 +77,9 @@ G_DEFINE_TYPE_EXTENDED(LanguageComboBox, language_combo_box,
 static void
 language_combo_box_class_init(LanguageComboBoxClass *klass)
 {
-	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-	gobject_class->get_property = language_combo_box_get_property;
+	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
 	gobject_class->set_property = language_combo_box_set_property;
+	gobject_class->get_property = language_combo_box_get_property;
 
 	/** Properties **/
 
@@ -98,7 +98,7 @@ language_combo_box_class_init(LanguageComboBoxClass *klass)
 
 	/** Signals **/
 
-	language_combo_box_signals[SIGNAL_LC_CHANGED] = g_signal_new("lc-changed",
+	signals[SIGNAL_LC_CHANGED] = g_signal_new("lc-changed",
 		TYPE_LANGUAGE_COMBO_BOX, G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 1, G_TYPE_UINT);
@@ -144,29 +144,6 @@ language_combo_box_new(void)
 /** Properties **/
 
 static void
-language_combo_box_get_property(GObject	*object,
-			   guint	 prop_id,
-			   GValue	*value,
-			   GParamSpec	*pspec)
-{
-	LanguageComboBox *const widget = LANGUAGE_COMBO_BOX(object);
-
-	switch (prop_id) {
-		case PROP_SELECTED_LC:
-			g_value_set_uint(value, language_combo_box_get_selected_lc(widget));
-			break;
-
-		case PROP_FORCE_PAL:
-			g_value_set_boolean(value, widget->forcePAL);
-			break;
-
-		default:
-			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-			break;
-	}
-}
-
-static void
 language_combo_box_set_property(GObject	*object,
 			   guint	 prop_id,
 			   const GValue	*value,
@@ -181,6 +158,29 @@ language_combo_box_set_property(GObject	*object,
 
 		case PROP_FORCE_PAL:
 			language_combo_box_set_force_pal(widget, g_value_get_boolean(value));
+			break;
+
+		default:
+			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+			break;
+	}
+}
+
+static void
+language_combo_box_get_property(GObject	*object,
+			   guint	 prop_id,
+			   GValue	*value,
+			   GParamSpec	*pspec)
+{
+	LanguageComboBox *const widget = LANGUAGE_COMBO_BOX(object);
+
+	switch (prop_id) {
+		case PROP_SELECTED_LC:
+			g_value_set_uint(value, language_combo_box_get_selected_lc(widget));
+			break;
+
+		case PROP_FORCE_PAL:
+			g_value_set_boolean(value, widget->forcePAL);
 			break;
 
 		default:
@@ -363,7 +363,7 @@ language_combo_box_clear_lcs(LanguageComboBox *widget)
 	gtk_list_store_clear(widget->listStore);
 	if (cur_idx >= 0) {
 		// Nothing is selected now.
-		g_signal_emit(widget, language_combo_box_signals[SIGNAL_LC_CHANGED], 0, 0);
+		g_signal_emit(widget, signals[SIGNAL_LC_CHANGED], 0, 0);
 	}
 }
 
@@ -476,5 +476,5 @@ internal_changed_handler(LanguageComboBox *widget,
 {
 	RP_UNUSED(user_data);
 	const uint32_t lc = language_combo_box_get_selected_lc(widget);
-	g_signal_emit(widget, language_combo_box_signals[SIGNAL_LC_CHANGED], 0, lc);
+	g_signal_emit(widget, signals[SIGNAL_LC_CHANGED], 0, lc);
 }

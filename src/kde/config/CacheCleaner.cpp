@@ -31,6 +31,42 @@ using std::pair;
 using std::string;
 
 /**
+ * Get a file's type using stat().
+ * TODO: Move to libunixcommon?
+ * @param path File path
+ * @param deref If true, dereference symbolic links (lstat)
+ * @return File type
+ */
+static uint8_t get_dtype_via_stat(const char *path, bool deref = false)
+{
+	// TODO: statx() if it's available.
+	struct stat sb;
+	int ret = (unlikely(deref) ? stat(path, &sb) : lstat(path, &sb));
+	if (ret != 0) {
+		// stat() failed.
+		return DT_UNKNOWN;
+	}
+
+	uint8_t d_type;
+	switch (sb.st_mode & S_IFMT) {
+		default:
+			// Not supported.
+			d_type = DT_UNKNOWN;
+			break;
+		case S_IFDIR:
+			d_type = DT_DIR;
+			break;
+		case S_IFREG:
+			d_type = DT_REG;
+			break;
+		case S_IFLNK:
+			d_type = DT_LNK;
+			break;
+	}
+	return d_type;
+}
+
+/**
  * Recursively scan a directory for files.
  * @param path	[in] Path to scan.
  * @param rlist	[in/out] Return list for filenames and file types. (d_type)
@@ -67,40 +103,76 @@ static int recursiveScan(const char *path, list<pair<tstring, uint8_t> > &rlist)
 				// TODO: Better error message.
 				closedir(pdir);
 				return -EIO;
+
 			case DT_REG:
-				// Regular file.
-				break;
 			case DT_DIR:
-				// Directory.
+				// Supported.
 				break;
-			case DT_UNKNOWN: {
-				// Unknown. Use stat().
-				// TODO: Use statx() if available?
-				struct stat sb;
-				int ret = stat(fullpath.c_str(), &sb);
-				if (ret != 0) {
-					// stat() failed.
-					closedir(pdir);
-					return -errno;
-				}
-				switch (sb.st_mode & S_IFMT) {
+
+			case DT_LNK:
+				// Symbolic link. Dereference it and check again.
+				d_type = get_dtype_via_stat(fullpath.c_str(), true);
+				switch (d_type) {
+					case DT_REG:
+					case DT_DIR:
+						// Supported.
+						break;
+
+					case DT_UNKNOWN:
+						// This is probably a dangling symlink.
+						// Delete it anyway.
+						break;
+
 					default:
 						// Not supported.
 						// TODO: Better error message.
 						closedir(pdir);
 						return -EIO;
-					case S_IFREG:
-						d_type = DT_REG;
+				}
+				break;
+
+			case DT_UNKNOWN:
+				// Unknown. Use stat().
+				d_type = get_dtype_via_stat(fullpath.c_str(), false);
+				switch (d_type) {
+					default:
+						// Not supported.
+						// TODO: Better error message.
+						closedir(pdir);
+						return -EIO;
+
+					case DT_REG:
+					case DT_DIR:
+						// Supported.
 						break;
-					case S_IFDIR:
-						d_type = DT_DIR;
+
+					case DT_LNK:
+						// Symbolic link. Dereference it and check again.
+						d_type = get_dtype_via_stat(fullpath.c_str(), true);
+						switch (d_type) {
+							case DT_REG:
+							case DT_DIR:
+								// Supported.
+								break;
+
+							case DT_UNKNOWN:
+								// This is probably a dangling symlink.
+								// Delete it anyway.
+								break;
+
+							default:
+								// Not supported.
+								// TODO: Better error message.
+								closedir(pdir);
+								return -EIO;
+						}
 						break;
 				}
-			}
+				break;
 		}
 
 		// Check the filename to see if we should delete it.
-		if (d_type == DT_REG) {
+		if (d_type == DT_REG || d_type == DT_UNKNOWN) {
 			// Thumbs.db files can be deleted.
 			if (!strcasecmp(dirent->d_name, _T("Thumbs.db")))
 				goto isok;
@@ -218,10 +290,12 @@ void CacheCleaner::run(void)
 				qs_err = tr("rom-properties cache has unexpected files. Not clearing it.");
 				break;
 		}
+		emit progress(1, 1, true);
 		emit error(qs_err);
 		emit finished();
 		return;
 	} else if (rlist.empty()) {
+		emit progress(1, 1, true);
 		emit cacheIsEmpty(m_cacheDir);
 		emit finished();
 		return;

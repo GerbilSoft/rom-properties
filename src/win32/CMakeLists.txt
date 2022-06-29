@@ -40,6 +40,7 @@ SET(${PROJECT_NAME}_SRCS
 	RP_ExtractImage_Fallback.cpp
 	RpImageWin32.cpp
 	RP_ShellPropSheetExt.cpp
+	RP_ShellPropSheetExt_ops.cpp
 	RP_ShellPropSheetExt_Register.cpp
 	RpFile_IStream.cpp
 	RP_ThumbnailProvider.cpp
@@ -73,6 +74,7 @@ SET(${PROJECT_NAME}_H
 	RP_ExtractImage_p.hpp
 	RpImageWin32.hpp
 	RP_ShellPropSheetExt.hpp
+	RP_ShellPropSheetExt_p.hpp
 	RpFile_IStream.hpp
 	thumbcache-wrapper.hpp
 	RP_ThumbnailProvider.hpp

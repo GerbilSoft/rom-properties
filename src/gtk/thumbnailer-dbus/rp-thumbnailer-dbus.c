@@ -59,13 +59,13 @@ static void	rp_thumbnailer_constructed	(GObject	*object);
 static void	rp_thumbnailer_dispose		(GObject	*object);
 static void	rp_thumbnailer_finalize		(GObject	*object);
 
-static void	rp_thumbnailer_get_property	(GObject	*object,
-						 guint		 prop_id,
-						 GValue		*value,
-						 GParamSpec	*pspec);
 static void	rp_thumbnailer_set_property	(GObject	*object,
 						 guint		 prop_id,
 						 const GValue	*value,
+						 GParamSpec	*pspec);
+static void	rp_thumbnailer_get_property	(GObject	*object,
+						 guint		 prop_id,
+						 GValue		*value,
 						 GParamSpec	*pspec);
 
 static gboolean	rp_thumbnailer_timeout		(RpThumbnailer	*thumbnailer);
@@ -85,7 +85,7 @@ static gboolean	rp_thumbnailer_dequeue		(OrgFreedesktopThumbnailsSpecializedThum
 						 RpThumbnailer	*thumbnailer);
 
 static GParamSpec *props[PROP_LAST];
-static guint thumbnailer_signals[SIGNAL_LAST];
+static guint signals[SIGNAL_LAST];
 
 struct _RpThumbnailerClass {
 	GObjectClass __parent__;
@@ -181,8 +181,8 @@ rp_thumbnailer_class_init(RpThumbnailerClass *klass, gpointer class_data)
 	gobject_class->dispose = rp_thumbnailer_dispose;
 	gobject_class->finalize = rp_thumbnailer_finalize;
 	gobject_class->constructed = rp_thumbnailer_constructed;
-	gobject_class->get_property = rp_thumbnailer_get_property;
 	gobject_class->set_property = rp_thumbnailer_set_property;
+	gobject_class->get_property = rp_thumbnailer_get_property;
 
 	/** Properties **/
 
@@ -211,7 +211,7 @@ rp_thumbnailer_class_init(RpThumbnailerClass *klass, gpointer class_data)
 	/** Signals **/
 
 	// RpThumbnailer has been idle for long enough and should exit.
-	thumbnailer_signals[SIGNAL_SHUTDOWN] = g_signal_new("shutdown",
+	signals[SIGNAL_SHUTDOWN] = g_signal_new("shutdown",
 		TYPE_RP_THUMBNAILER, G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 0);
@@ -306,39 +306,6 @@ rp_thumbnailer_finalize(GObject *object)
 }
 
 /**
- * Get a property from the RpThumbnailer.
- * @param object	[in] RpThumbnailer object.
- * @param prop_id	[in] Property ID.
- * @param value		[out] Value.
- * @param pspec		[in] Parameter specification.
- */
-static void
-rp_thumbnailer_get_property(GObject *object,
-	guint prop_id, GValue *value, GParamSpec *pspec)
-{
-	g_return_if_fail(IS_RP_THUMBNAILER(object));
-	RpThumbnailer *const thumbnailer = RP_THUMBNAILER(object);
-
-	switch (prop_id) {
-		case PROP_CONNECTION:
-			g_value_set_object(value, thumbnailer->connection);
-			break;
-		case PROP_CACHE_DIR:
-			g_value_set_string(value, thumbnailer->cache_dir);
-			break;
-		case PROP_PFN_RP_CREATE_THUMBNAIL:
-			g_value_set_pointer(value, (gpointer)thumbnailer->pfn_rp_create_thumbnail);
-			break;
-		case PROP_EXPORTED:
-			g_value_set_boolean(value, thumbnailer->exported);
-			break;
-		default:
-			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-			break;
-	}
-}
-
-/**
  * Set a property in the RpThumbnailer.
  * @param object	[in] RpThumbnailer object.
  * @param prop_id	[in] Property ID.
@@ -379,6 +346,39 @@ rp_thumbnailer_set_property(GObject *object,
 			// Need to show some error message...
 			break;
 
+		default:
+			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+			break;
+	}
+}
+
+/**
+ * Get a property from the RpThumbnailer.
+ * @param object	[in] RpThumbnailer object.
+ * @param prop_id	[in] Property ID.
+ * @param value		[out] Value.
+ * @param pspec		[in] Parameter specification.
+ */
+static void
+rp_thumbnailer_get_property(GObject *object,
+	guint prop_id, GValue *value, GParamSpec *pspec)
+{
+	g_return_if_fail(IS_RP_THUMBNAILER(object));
+	RpThumbnailer *const thumbnailer = RP_THUMBNAILER(object);
+
+	switch (prop_id) {
+		case PROP_CONNECTION:
+			g_value_set_object(value, thumbnailer->connection);
+			break;
+		case PROP_CACHE_DIR:
+			g_value_set_string(value, thumbnailer->cache_dir);
+			break;
+		case PROP_PFN_RP_CREATE_THUMBNAIL:
+			g_value_set_pointer(value, (gpointer)thumbnailer->pfn_rp_create_thumbnail);
+			break;
+		case PROP_EXPORTED:
+			g_value_set_boolean(value, thumbnailer->exported);
+			break;
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
 			break;
@@ -487,7 +487,7 @@ rp_thumbnailer_timeout(RpThumbnailer *thumbnailer)
 	// Stop the timeout and shut down the thumbnailer.
 	thumbnailer->timeout_id = 0;
 	thumbnailer->shutdown_emitted = true;
-	g_signal_emit(thumbnailer, thumbnailer_signals[SIGNAL_SHUTDOWN], 0);
+	g_signal_emit(thumbnailer, signals[SIGNAL_SHUTDOWN], 0);
 	g_debug("Shutting down due to %u seconds of inactivity.", SHUTDOWN_TIMEOUT_SECONDS);
 	return false;
 }

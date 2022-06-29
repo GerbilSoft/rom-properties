@@ -49,8 +49,7 @@ class KeyStoreModelPrivate
 
 			// Pixmaps for Column::IsValid.
 			// TODO: Hi-DPI support.
-			static const int pxmIsValid_width = 16;
-			static const int pxmIsValid_height = 16;
+			static const int pxmIsValid_size = 16;
 			QPixmap pxmIsValid_unknown;
 			QPixmap pxmIsValid_invalid;
 			QPixmap pxmIsValid_good;
@@ -127,11 +126,11 @@ void KeyStoreModelPrivate::style_t::init_icons(void)
 	// which usually have an 'i' icon here (except for GNOME).
 	QStyle *const style = QApplication::style();
 	pxmIsValid_unknown = style->standardIcon(QStyle::SP_MessageBoxQuestion)
-				.pixmap(pxmIsValid_width, pxmIsValid_height);
+				.pixmap(pxmIsValid_size, pxmIsValid_size);
 	pxmIsValid_invalid = style->standardIcon(QStyle::SP_MessageBoxCritical)
-				.pixmap(pxmIsValid_width, pxmIsValid_height);
+				.pixmap(pxmIsValid_size, pxmIsValid_size);
 	pxmIsValid_good    = style->standardIcon(QStyle::SP_DialogApplyButton)
-				.pixmap(pxmIsValid_width, pxmIsValid_height);
+				.pixmap(pxmIsValid_size, pxmIsValid_size);
 }
 
 /** KeyStoreModel **/
@@ -347,8 +346,8 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 					return d->style.szValueHint;
 				case (int)Column::IsValid:
 					// Increase row height by 4px.
-					return QSize(d->style.pxmIsValid_width,
-						(d->style.pxmIsValid_height + 4));
+					return QSize(d->style.pxmIsValid_size,
+						(d->style.pxmIsValid_size + 4));
 				default:
 					break;
 			}

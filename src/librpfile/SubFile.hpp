@@ -3,7 +3,7 @@
  * SubFile.hpp: SubFile sub-file implementation, essentially the           *
  * equivalent of DiscReader+PartitionFile but with less overhead.          *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -166,16 +166,6 @@ class SubFile final : public IRpFile
 			}
 
 			return m_length;
-		}
-
-		/**
-		 * Get the filename.
-		 * @return Filename. (May be empty if the filename is not available.)
-		 */
-		std::string filename(void) const final
-		{
-			// FIXME: SubFile name?
-			return std::string();
 		}
 
 	protected:

@@ -506,7 +506,7 @@ void ImageTypesTabPrivate::initStrings(void)
 		// tr: External image credits.
 		C_("ImageTypesTab",
 			"GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\n"
-			"are provided by <a href=\"http://www.gametdb.com/\">GameTDB</a>.\n"
+			"are provided by <a href=\"https://www.gametdb.com/\">GameTDB</a>.\n"
 			"amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</a>,"
 			" the Unofficial amiibo Database.")
 	));
@@ -639,8 +639,7 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			}
 
 			// Load the defaults.
-			bool bRet = d->loadDefaults();
-			if (bRet) {
+			if (d->loadDefaults()) {
 				// Configuration has been changed.
 				PropSheet_Changed(GetParent(d->hWndPropSheet), d->hWndPropSheet);
 			}

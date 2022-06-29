@@ -32,24 +32,20 @@ using std::vector;
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_BOX
-#else /* !GTK_CHECK_VERSION */
+#else /* !GTK_CHECK_VERSION(3,0,0) */
 typedef GtkHBoxClass superclass;
 typedef GtkHBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_HBOX
-#endif
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 
 // GtkMenuButton was added in GTK 3.6.
-#if GTK_CHECK_VERSION(3,6,0)
+// GMenuModel is also implied by this, since GMenuModel
+// support was added to GTK+ 3.4.
+// NOTE: GtkMenu was removed from GTK4.
+#if GTK_CHECK_VERSION(3,5,6)
 #  define USE_GTK_MENU_BUTTON 1
-#endif
-
-// Use GMenuModel?
-// - glib-2.32: Adds GMenuModel.
-// - GTK+ 3.4: Supports GMenuModel.
-// - GTK+ 3.6: gtk_widget_insert_action_group()
-#if GTK_CHECK_VERSION(3,6,0)
 #  define USE_G_MENU_MODEL 1
-#endif /* GTK_CHECK_VERSION(3,6,0) */
+#endif /* GTK_CHECK_VERSION(3,5,6) */
 
 /* Property identifiers */
 typedef enum {
@@ -73,36 +69,36 @@ typedef enum {
 } OptionsMenuButtonSignalID;
 
 static void	options_menu_button_dispose	(GObject	*object);
-static void	options_menu_button_get_property(GObject	*object,
-						 guint		 prop_id,
-						 GValue		*value,
-						 GParamSpec	*pspec);
 static void	options_menu_button_set_property(GObject	*object,
 						 guint		 prop_id,
 						 const GValue	*value,
 						 GParamSpec	*pspec);
+static void	options_menu_button_get_property(GObject	*object,
+						 guint		 prop_id,
+						 GValue		*value,
+						 GParamSpec	*pspec);
 
 static gboolean	btnOptions_clicked_signal_handler(GtkButton	*button,
-						 gpointer	user_data);
+						  OptionsMenuButton *widget);
 static gboolean	btnOptions_activate_signal_handler(GtkButton	*button,
-						 gpointer	user_data);
+						   OptionsMenuButton *widget);
 #ifndef USE_GTK_MENU_BUTTON
 static gboolean	btnOptions_event_signal_handler (GtkButton	*button,
 						 GdkEvent 	*event,
-						 gpointer	user_data);
+						 OptionsMenuButton *widget);
 #endif /* !USE_GTK_MENU_BUTTON */
 
 #ifdef USE_G_MENU_MODEL
 static void	action_triggered_signal_handler     (GSimpleAction	*action,
 						     GVariant		*parameter,
-						     gpointer		 user_data);
+						     OptionsMenuButton	*widget);
 #else
 static void	menuOptions_triggered_signal_handler(GtkMenuItem	*menuItem,
-						     gpointer		 user_data);
+						     OptionsMenuButton	*widget);
 #endif /* USE_G_MENU_MODEL */
 
 static GParamSpec *props[PROP_LAST];
-static guint options_menu_button_signals[SIGNAL_LAST];
+static guint signals[SIGNAL_LAST];
 
 // OptionsMenuButton class.
 struct _OptionsMenuButtonClass {
@@ -151,11 +147,10 @@ static const option_menu_action_t stdacts[] = {
 static void
 options_menu_button_class_init(OptionsMenuButtonClass *klass)
 {
-	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-
+	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
 	gobject_class->dispose = options_menu_button_dispose;
-	gobject_class->get_property = options_menu_button_get_property;
 	gobject_class->set_property = options_menu_button_set_property;
+	gobject_class->get_property = options_menu_button_get_property;
 
 	/** Properties **/
 
@@ -172,12 +167,12 @@ options_menu_button_class_init(OptionsMenuButtonClass *klass)
 	/** Signals **/
 
 	// GtkButton signals
-	options_menu_button_signals[SIGNAL_CLICKED] = g_signal_new("clicked",
+	signals[SIGNAL_CLICKED] = g_signal_new("clicked",
 		TYPE_OPTIONS_MENU_BUTTON,
 		static_cast<GSignalFlags>(G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION),
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 0);
-	options_menu_button_signals[SIGNAL_ACTIVATE] = g_signal_new("activate",
+	signals[SIGNAL_ACTIVATE] = g_signal_new("activate",
 		TYPE_OPTIONS_MENU_BUTTON,
 		static_cast<GSignalFlags>(G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION),
 		0, NULL, NULL, NULL,
@@ -185,13 +180,13 @@ options_menu_button_class_init(OptionsMenuButtonClass *klass)
 
 	// GtkMenuButton signals
 	// TODO: G_SIGNAL_ACTION?
-	options_menu_button_signals[SIGNAL_TRIGGERED] = g_signal_new("triggered",
+	signals[SIGNAL_TRIGGERED] = g_signal_new("triggered",
 		TYPE_OPTIONS_MENU_BUTTON, G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 1, G_TYPE_INT);
 
 	// Register the Activate signal.
-	gtk_widget_class_set_activate_signal(GTK_WIDGET_CLASS(klass), options_menu_button_signals[SIGNAL_ACTIVATE]);
+	gtk_widget_class_set_activate_signal(GTK_WIDGET_CLASS(klass), signals[SIGNAL_ACTIVATE]);
 }
 
 static void
@@ -216,15 +211,12 @@ options_menu_button_init(OptionsMenuButton *widget)
 
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_menu_button_set_label(GTK_MENU_BUTTON(widget), s_title.c_str());
+	gtk_menu_button_set_use_underline(GTK_MENU_BUTTON(widget), TRUE);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	GtkWidget *const lblOptions = gtk_label_new(nullptr);
 	gtk_label_set_markup_with_mnemonic(GTK_LABEL(lblOptions), s_title.c_str());
 	gtk_widget_show(lblOptions);
-#  if GTK_CHECK_VERSION(3,0,0)
-	GtkWidget *const hboxOptions = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
-#  else /* !GTK_CHECK_VERSION(3,0,0) */
-	GtkWidget *const hboxOptions = gtk_hbox_new(false, 4);
-#  endif /* GTK_CHECK_VERSION(3,0,0) */
+	GtkWidget *const hboxOptions = rp_gtk_hbox_new(4);
 	gtk_widget_show(hboxOptions);
 
 	// Add the label and image to the GtkBox.
@@ -241,15 +233,15 @@ options_menu_button_init(OptionsMenuButton *widget)
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Connect the wrapper signals.
-	g_signal_connect(widget->button, "clicked", G_CALLBACK(btnOptions_clicked_signal_handler), 0);
-	g_signal_connect(widget->button, "activate", G_CALLBACK(btnOptions_activate_signal_handler), 0);
+	g_signal_connect(widget->button, "clicked", G_CALLBACK(btnOptions_clicked_signal_handler), widget);
+	g_signal_connect(widget->button, "activate", G_CALLBACK(btnOptions_activate_signal_handler), widget);
 
 #ifndef USE_GTK_MENU_BUTTON
 	// Connect the button's "event" signal.
 	// NOTE: We need to pass the event details. Otherwise, we'll
 	// end up with the menu getting "stuck" to the mouse.
 	// Reference: https://developer.gnome.org/gtk-tutorial/stable/x1577.html
-	g_signal_connect(widget->button, "event", G_CALLBACK(btnOptions_event_signal_handler), 0);
+	g_signal_connect(widget->button, "event", G_CALLBACK(btnOptions_event_signal_handler), widget);
 #endif /* !USE_GTK_MENU_BUTTON */
 
 #if USE_G_MENU_MODEL
@@ -296,25 +288,6 @@ options_menu_button_new(void)
 /** Properties **/
 
 static void
-options_menu_button_get_property(GObject	*object,
-				 guint		 prop_id,
-				 GValue		*value,
-				 GParamSpec	*pspec)
-{
-	OptionsMenuButton *const widget = OPTIONS_MENU_BUTTON(object);
-
-	switch (prop_id) {
-		case PROP_DIRECTION:
-			g_value_set_enum(value, options_menu_button_get_direction(widget));
-			break;
-
-		default:
-			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-			break;
-	}
-}
-
-static void
 options_menu_button_set_property(GObject	*object,
 				 guint	 	 prop_id,
 				 const GValue	*value,
@@ -325,6 +298,25 @@ options_menu_button_set_property(GObject	*object,
 	switch (prop_id) {
 		case PROP_DIRECTION:
 			options_menu_button_set_direction(widget, (GtkArrowType)g_value_get_enum(value));
+			break;
+
+		default:
+			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+			break;
+	}
+}
+
+static void
+options_menu_button_get_property(GObject	*object,
+				 guint		 prop_id,
+				 GValue		*value,
+				 GParamSpec	*pspec)
+{
+	OptionsMenuButton *const widget = OPTIONS_MENU_BUTTON(object);
+
+	switch (prop_id) {
+		case PROP_DIRECTION:
+			g_value_set_enum(value, options_menu_button_get_direction(widget));
 			break;
 
 		default:
@@ -357,23 +349,16 @@ options_menu_button_set_direction(OptionsMenuButton *widget, GtkArrowType arrowT
 #endif /* USE_GTK_MENU_BUTTON */
 
 #if !GTK_CHECK_VERSION(4,0,0)
-	const char *iconName;
-	switch (arrowType) {
-		case GTK_ARROW_UP:
-			iconName = "pan-up-symbolic";
-			break;
-		case GTK_ARROW_DOWN:
-			iconName = "pan-down-symbolic";
-			break;
-		case GTK_ARROW_LEFT:
-			iconName = "pan-start-symbolic";
-			break;
-		case GTK_ARROW_RIGHT:
-			iconName = "pan-end-symbolic";
-			break;
-		default:
-			iconName = nullptr;
-			break;
+	static const char *const iconName_tbl[] = {
+		"pan-up-symbolic",
+		"pan-down-symbolic",
+		"pan-start-symbolic",
+		"pan-end-symbolic",
+	};
+	
+	const char *iconName = nullptr;
+	if (arrowType >= GTK_ARROW_UP && arrowType <= GTK_ARROW_RIGHT) {
+		iconName = iconName_tbl[(int)arrowType];
 	}
 
 	if (iconName) {
@@ -392,42 +377,35 @@ options_menu_button_set_direction(OptionsMenuButton *widget, GtkArrowType arrowT
 }
 
 static gboolean
-btnOptions_clicked_signal_handler(GtkButton *button, gpointer user_data)
+btnOptions_clicked_signal_handler(GtkButton *button, OptionsMenuButton *widget)
 {
-	RP_UNUSED(user_data);
-
-	OptionsMenuButton *const widget = OPTIONS_MENU_BUTTON(gtk_widget_get_parent(GTK_WIDGET(button)));
-	g_return_val_if_fail(widget != nullptr, FALSE);
-
-	g_signal_emit(GTK_WIDGET(widget), options_menu_button_signals[SIGNAL_CLICKED], 0);
+	RP_UNUSED(button);
+	g_return_val_if_fail(IS_OPTIONS_MENU_BUTTON(widget), FALSE);
+	g_signal_emit(GTK_WIDGET(widget), signals[SIGNAL_CLICKED], 0);
 	return TRUE;
 }
 
 static gboolean
-btnOptions_activate_signal_handler(GtkButton *button, gpointer user_data)
+btnOptions_activate_signal_handler(GtkButton *button, OptionsMenuButton *widget)
 {
-	RP_UNUSED(user_data);
-
-	OptionsMenuButton *const widget = OPTIONS_MENU_BUTTON(gtk_widget_get_parent(GTK_WIDGET(button)));
-	g_return_val_if_fail(widget != nullptr, FALSE);
-
-	g_signal_emit(GTK_WIDGET(widget), options_menu_button_signals[SIGNAL_ACTIVATE], 0);
+	RP_UNUSED(button);
+	g_return_val_if_fail(IS_OPTIONS_MENU_BUTTON(widget), FALSE);
+	g_signal_emit(GTK_WIDGET(widget), signals[SIGNAL_ACTIVATE], 0);
 	return TRUE;
 }
 
 #ifndef USE_GTK_MENU_BUTTON
 /**
  * Menu positioning function.
- * @param menu		[in] GtkMenu*
+ * @param menu		[in] GtkMenu
  * @param x		[out] X position
  * @param y		[out] Y position
  * @param push_in
- * @param user_data	[in] GtkButton* the menu is attached to.
+ * @param button	[in] GtkWidget the menu is attached to.
  */
 static void
-btnOptions_menu_pos_func(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, gpointer user_data)
+btnOptions_menu_pos_func(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, GtkWidget *button)
 {
-	GtkWidget *const button = (GtkWidget*)GTK_BUTTON(user_data);
 	GdkWindow *const window = gtk_widget_get_window(button);
 
 	GtkAllocation button_alloc, menu_alloc;
@@ -444,14 +422,14 @@ btnOptions_menu_pos_func(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, gpo
  * "Options" button event handler. (Non-GtkMenuButton version)
  * @param button	GtkButton
  * @param event		GdkEvent
- * @param user_data	User data
+ * @param widget	OptionsMenuButton
  */
 static gboolean
-btnOptions_event_signal_handler(GtkButton *button,
-				GdkEvent  *event,
-				gpointer   user_data)
+btnOptions_event_signal_handler(GtkButton *button, GdkEvent *event, OptionsMenuButton *widget)
 {
-	RP_UNUSED(user_data);
+	RP_UNUSED(button);
+	g_return_val_if_fail(IS_OPTIONS_MENU_BUTTON(widget), FALSE);
+	g_return_val_if_fail(GTK_IS_MENU(widget->menuOptions), FALSE);
 
 	if (gdk_event_get_event_type(event) != GDK_BUTTON_PRESS) {
 		// Tell the caller that we did NOT handle the event.
@@ -459,14 +437,6 @@ btnOptions_event_signal_handler(GtkButton *button,
 	}
 
 	// Reference: https://developer.gnome.org/gtk-tutorial/stable/x1577.html
-	OptionsMenuButton *const widget = OPTIONS_MENU_BUTTON(gtk_widget_get_parent(GTK_WIDGET(button)));
-	assert(widget != nullptr);
-	assert(widget->menuOptions != nullptr);
-	if (!widget || !widget->menuOptions) {
-		// No OptionsMenuButton...
-		return FALSE;
-	}
-
 	GtkMenuPositionFunc menuPositionFunc;
 #if GTK_CHECK_VERSION(3,12,0)
 	// If we're using a GtkHeaderBar, don't use a custom menu positioning function.
@@ -475,7 +445,7 @@ btnOptions_event_signal_handler(GtkButton *button,
 	} else
 #endif /* GTK_CHECK_VERSION(3,12,0) */
 	{
-		menuPositionFunc = btnOptions_menu_pos_func;
+		menuPositionFunc = (GtkMenuPositionFunc)btnOptions_menu_pos_func;
 	}
 
 	// Pop up the menu.
@@ -499,40 +469,35 @@ btnOptions_event_signal_handler(GtkButton *button,
  * An "Options" menu action was triggered.
  * @param action     	GSimpleAction (Get the "menuOptions_id" data.)
  * @param parameter	Parameter data
- * @param user_data	OptionsMenuButton
+ * @param widget	OptionsMenuButton
  */
 static void
-action_triggered_signal_handler(GSimpleAction	*action,
-				GVariant	*parameter,
-				gpointer	 user_data)
+action_triggered_signal_handler(GSimpleAction *action, GVariant *parameter, OptionsMenuButton *widget)
 {
+	g_return_if_fail(IS_OPTIONS_MENU_BUTTON(widget));
 	RP_UNUSED(parameter);
-	OptionsMenuButton *const widget = OPTIONS_MENU_BUTTON(user_data);
-	g_return_if_fail(widget != nullptr);
 
 	const gint id = (gboolean)GPOINTER_TO_INT(
 		g_object_get_data(G_OBJECT(action), "menuOptions_id"));
 
-	g_signal_emit(widget, options_menu_button_signals[SIGNAL_TRIGGERED], 0, id);
+	g_signal_emit(widget, signals[SIGNAL_TRIGGERED], 0, id);
 }
 #else /* !USE_G_MENU_MODEL */
 /**
  * An "Options" menu action was triggered.
  * @param menuItem     	Menu item (Get the "menuOptions_id" data.)
- * @param user_data	OptionsMenuButton
+ * @param widget	OptionsMenuButton
  */
 static void
 menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
-				     gpointer user_data)
+				     OptionsMenuButton *widget)
 {
-	g_return_if_fail(IS_OPTIONS_MENU_BUTTON(user_data));
-	OptionsMenuButton *const widget = OPTIONS_MENU_BUTTON(user_data);
-	g_return_if_fail(widget != nullptr);
+	g_return_if_fail(IS_OPTIONS_MENU_BUTTON(widget));
 
 	const gint id = (gboolean)GPOINTER_TO_INT(
 		g_object_get_data(G_OBJECT(menuItem), "menuOptions_id"));
 
-	g_signal_emit(widget, options_menu_button_signals[SIGNAL_TRIGGERED], 0, id);
+	g_signal_emit(widget, signals[SIGNAL_TRIGGERED], 0, id);
 }
 #endif /* USE_G_MENU_MODEL */
 
@@ -550,10 +515,6 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 	g_return_if_fail(IS_OPTIONS_MENU_BUTTON(widget));
 
 #if USE_G_MENU_MODEL
-	GApplication *const pApp = g_application_get_default();
-	assert(pApp != nullptr);
-	g_return_if_fail(pApp != nullptr);
-
 	char prefix[64];
 	snprintf(prefix, sizeof(prefix), "rp-OptionsMenuButton-%p", widget);
 
@@ -654,13 +615,12 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 
 	// Replace the existing menu.
 #ifdef USE_GTK_MENU_BUTTON
-	// NOTE: GtkMenuButton takes ownership of the menu.
+	// NOTE: GtkMenuButton does NOT take ownership of the menu.
 #  ifdef USE_G_MENU_MODEL
 	gtk_menu_button_set_menu_model(GTK_MENU_BUTTON(widget->button), G_MENU_MODEL(menuModel));
 #  else /* !USE_G_MENU_MODEL */
 	gtk_menu_button_set_popup(GTK_MENU_BUTTON(widget->button), GTK_WIDGET(menuOptions));
 #  endif /* USE_G_MENU_MODEL */
-#else /* !USE_GTK_MENU_BUTTON */
 #endif /* USE_GTK_MENU_BUTTON */
 
 #ifdef USE_G_MENU_MODEL

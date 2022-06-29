@@ -258,8 +258,9 @@ void CacheTab::ccCleaner_error(const QString &error)
 	d->ui.pbStatus->setMaximum(1);
 	d->ui.pbStatus->setValue(1);
 	d->ui.pbStatus->setError(true);
-	d->ui.lblStatus->setText(tr("<b>ERROR:</b> %1").arg(error));
-	MessageSound::play(QMessageBox::Warning, error, this);
+	const QString qs_msg = tr("<b>ERROR:</b> %1").arg(error);
+	d->ui.lblStatus->setText(qs_msg);
+	MessageSound::play(QMessageBox::Warning, qs_msg, this);
 }
 
 /**
@@ -297,32 +298,35 @@ void CacheTab::ccCleaner_cacheIsEmpty(CacheCleaner::CacheDir cacheDir)
  */
 void CacheTab::ccCleaner_cacheCleared(CacheCleaner::CacheDir cacheDir, unsigned int dirErrs, unsigned int fileErrs)
 {
-	QMessageBox::Icon icon;
-	QString qs_msg;
+	Q_D(CacheTab);
+
 	if (dirErrs > 0 || fileErrs > 0) {
-		qs_msg = tr("<b>ERROR:</b> %1").arg(
+		QString qs_msg = tr("<b>ERROR:</b> %1").arg(
 			U82Q(rp_sprintf_p(C_("CacheTab", "Unable to delete %1$u file(s) and/or %2$u dir(s)."),
 				fileErrs, dirErrs)));
-		icon = QMessageBox::Warning;
-	} else {
-		switch (cacheDir) {
-			default:
-				assert(!"Invalid cache directory specified.");
-				qs_msg = tr("Invalid cache directory specified.");
-				icon = QMessageBox::Warning;
-				break;
-			case CacheCleaner::CD_System:
-				qs_msg = tr("System thumbnail cache cleared successfully.");
-				icon = QMessageBox::Information;
-				break;
-			case CacheCleaner::CD_RomProperties:
-				qs_msg = tr("rom-properties cache cleared successfully.");
-				icon = QMessageBox::Information;
-				break;
-		}
+		d->ui.lblStatus->setText(qs_msg);
+		MessageSound::play(QMessageBox::Warning, qs_msg, this);
+		return;
 	}
 
-	Q_D(CacheTab);
+	QMessageBox::Icon icon;
+	QString qs_msg;
+	switch (cacheDir) {
+		default:
+			assert(!"Invalid cache directory specified.");
+			qs_msg = tr("Invalid cache directory specified.");
+			icon = QMessageBox::Warning;
+			break;
+		case CacheCleaner::CD_System:
+			qs_msg = tr("System thumbnail cache cleared successfully.");
+			icon = QMessageBox::Information;
+			break;
+		case CacheCleaner::CD_RomProperties:
+			qs_msg = tr("rom-properties cache cleared successfully.");
+			icon = QMessageBox::Information;
+			break;
+	}
+
 	d->ui.lblStatus->setText(qs_msg);
 	MessageSound::play(icon, qs_msg, this);
 }

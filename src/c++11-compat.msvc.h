@@ -1,7 +1,7 @@
 /***************************************************************************
  * c++11-compat.msvc.h: C++ 2011 compatibility header. (MSVC)              *
  *                                                                         *
- * Copyright (c) 2011-2021 by David Korth.                                 *
+ * Copyright (c) 2011-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -47,10 +47,13 @@
 /**
  * MSVC doesn't have typeof(), but as of MSVC 2010,
  * it has decltype(), which is essentially the same thing.
+ * FIXME: Doesn't work in C mode.
  * TODO: Handle older versions.
  * Possible option for C++:
  * - http://www.nedproductions.biz/blog/implementing-typeof-in-microsofts-c-compiler
  */
-#define typeof(x) decltype(x)
+#if defined(_MSC_VER) && defined(__cplusplus)
+#  define __typeof__(x) decltype(x)
+#endif
 
 #endif /* __CXX11_COMPAT_MSVC_H__ */

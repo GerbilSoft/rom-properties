@@ -12,6 +12,10 @@ G_BEGIN_DECLS
 GType rp_desc_format_type_get_type (void);
 #define RP_TYPE_DESC_FORMAT_TYPE (rp_desc_format_type_get_type())
 
+/* enumerations from "config/CacheCleaner.hpp" */
+GType rp_cache_dir_get_type (void);
+#define RP_TYPE_CACHE_DIR (rp_cache_dir_get_type())
+
 G_END_DECLS
 
 #endif /* __ROMPROPERTIES_GTK_RP_GTK_ENUMS_ENUM_TYPES_H__ */

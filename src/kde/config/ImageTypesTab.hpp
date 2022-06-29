@@ -52,9 +52,9 @@ class ImageTypesTab : public ITab
 	protected slots:
 		/**
 		 * A QComboBox index has changed.
-		 * @param cbid ComboBox ID.
+		 * Check the QComboBox's "rp-config.cbid" property for the cbid.
 		 */
-		void cboImageType_currentIndexChanged(int cbid);
+		void cboImageType_currentIndexChanged(void);
 };
 
 #endif /* __ROMPROPERTIES_KDE_CONFIG_IMAGETYPESTAB_HPP__ */

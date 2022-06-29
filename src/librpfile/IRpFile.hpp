@@ -189,9 +189,12 @@ class IRpFile : public RefBase
 
 		/**
 		 * Get the filename.
-		 * @return Filename. (May be empty if the filename is not available.)
+		 * @return Filename. (May be nullptr if the filename is not available.)
 		 */
-		virtual std::string filename(void) const = 0;
+		virtual const char *filename(void) const
+		{
+			return nullptr;
+		}
 
 	public:
 		/** Extra functions **/

@@ -109,10 +109,10 @@ class KeyStoreUIPrivate
 	public:
 		/**
 		 * Convert a string that may contain kanji to hexadecimal.
-		 * @param str String.
+		 * @param str String [NULL-terminated]
 		 * @return Converted string, or empty string on error.
 		 */
-		static string convertKanjiToHex(const string &str);
+		static string convertKanjiToHex(const char *str);
 
 	public:
 		/**
@@ -601,18 +601,18 @@ int KeyStoreUIPrivate::getAesKeyDB_key(u128_t *pKey) const
 
 /**
  * Convert a string that may contain kanji to hexadecimal.
- * @param str String.
+ * @param str String [NULL-terminated]
  * @return Converted string, or empty string on error.
  */
-string KeyStoreUIPrivate::convertKanjiToHex(const string &str)
+string KeyStoreUIPrivate::convertKanjiToHex(const char *str)
 {
 	// Check for non-ASCII characters.
 	// TODO: Also check for non-hex digits?
 	bool hasNonAscii = false;
-	for (char p : str) {
+	for (const char *p = str; *p != '\0'; p++) {
 		// The following check works for both UTF-8 and UTF-16.
 		// If the character value is >= 128, it's non-ASCII.
-		if (static_cast<unsigned int>(p) >= 128) {
+		if (static_cast<unsigned int>(*p) >= 128) {
 			// Found a non-ASCII character.
 			hasNonAscii = true;
 			break;
@@ -628,7 +628,7 @@ string KeyStoreUIPrivate::convertKanjiToHex(const string &str)
 	// but we'll take any length.
 
 	// Convert to UTF-16 first.
-	const u16string u16str = utf8_to_utf16(str);
+	const u16string u16str = utf8_to_utf16(str, -1);
 
 	// Convert to a UTF-16LE hex string, starting with U+FEFF.
 	// TODO: Combine with the first loop?
@@ -932,12 +932,12 @@ const KeyStoreUI::Key *KeyStoreUI::getKey(int idx) const
  * If successful, and the new value is different,
  * keyChanged() will be emitted.
  *
- * @param sectIdx Section index.
- * @param keyIdx Key index.
- * @param value New value.
+ * @param sectIdx Section index
+ * @param keyIdx Key index
+ * @param value New value [NULL-terminated UTF-8 string]
  * @return 0 on success; non-zero on error.
  */
-int KeyStoreUI::setKey(int sectIdx, int keyIdx, const string &value)
+int KeyStoreUI::setKey(int sectIdx, int keyIdx, const char *value)
 {
 	RP_D(KeyStoreUI);
 	int idx = d->sectKeyToIdx(sectIdx, keyIdx);
@@ -959,7 +959,7 @@ int KeyStoreUI::setKey(int sectIdx, int keyIdx, const string &value)
 		// NOTE 2: convertKanjiToHex() only errors if the string is
 		// non-ASCII and cannot be converted properly, so valid hex
 		// strings will always return the original string.
-		if (!value.empty()) {
+		if (value && value[0] != '\0') {
 			string convKey = d->convertKanjiToHex(value);
 			if (convKey.empty()) {
 				// Invalid kanji key.
@@ -977,17 +977,17 @@ int KeyStoreUI::setKey(int sectIdx, int keyIdx, const string &value)
 	if (new_value.empty()) {
 		// Hexadecimal only.
 		// NOTE: We only want up to expected_key_len.
-		new_value.resize(unlikely(value.size() > expected_key_len)
-			? expected_key_len
-			: value.size());
+		size_t value_len = strlen(value);
+		if (unlikely(value_len > expected_key_len)) {
+			value_len = expected_key_len;
+		}
+		new_value.resize(value_len);
 
 		// Validate hex digits and convert to uppercase.
-		auto iter_src = value.cbegin();
 		auto iter_dest = new_value.begin();
-		const auto value_cend = value.cend();
 		const auto new_value_end = new_value.end();
-		for (; iter_src != value_cend && iter_dest != new_value_end; ++iter_src, ++iter_dest) {
-			char chr = *iter_src;
+		for (; *value != '\0' && iter_dest != new_value_end; ++value, ++iter_dest) {
+			const char chr = *value;
 			if (!ISXDIGIT(chr)) {
 				// Not a hex digit.
 				return -EINVAL;
@@ -1015,11 +1015,11 @@ int KeyStoreUI::setKey(int sectIdx, int keyIdx, const string &value)
  * If successful, and the new value is different,
  * keyChanged() will be emitted.
  *
- * @param idx Flat key index.
- * @param value New value.
+ * @param idx Flat key index
+ * @param value New value [NULL-terminated UTF-8 string]
  * @return 0 on success; non-zero on error.
  */
-int KeyStoreUI::setKey(int idx, const string &value)
+int KeyStoreUI::setKey(int idx, const char *value)
 {
 	// Convert to section/key index format first.
 	// NOTE: The other setKey() overload converts it

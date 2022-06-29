@@ -66,8 +66,13 @@ CHECK_INCLUDE_FILE("stdbool.h" HAVE_STDBOOL_H)
 
 # glib-2.32 (released 2012/03/24) added GResource and GMenuModel.
 # glib-2.34 (released 2012/09/23) added g_clear_object().
+# glib-2.44 (released 2015/03/23) added GListModel, which is needed by GTK4.
 # Ubuntu 14.04 has glib-2.40.
-SET(GLIB_MIN_VERSION 2.34.0)
+IF(BUILD_GTK4)
+	SET(GLIB_MIN_VERSION 2.44.0)
+ELSE(BUILD_GTK4)
+	SET(GLIB_MIN_VERSION 2.34.0)
+ENDIF(BUILD_GTK4)
 
 # Write the version number to config.version.h.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.version.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.version.h")
@@ -80,6 +85,15 @@ IF(WIN32 OR (UNIX AND NOT APPLE))
 	SET(RP_LIBROMDATA_IS_DLL 1)
 	ADD_DEFINITIONS(-DRP_LIBROMDATA_IS_DLL=1)
 ENDIF(WIN32 OR (UNIX AND NOT APPLE))
+
+# FIXME: gcc-5's libgcc.a doesn't get linked in for some reason,
+# resulting in the following error:
+# /usr/bin/ld: ../../../bin/TextFuncsTest: hidden symbol `__cpu_indicator_init'
+# in /usr/lib/gcc/i686-linux-gnu/5/libgcc.a(cpuinfo.o) is referenced by DSO
+# Reference: https://github.com/baldurk/renderdoc/issues/365
+IF(GCC_5xx_LTO_ISSUES)
+	LINK_LIBRARIES(-lgcc)
+ENDIF(GCC_5xx_LTO_ISSUES)
 
 # Source Code subdirectories.
 ADD_SUBDIRECTORY(librpsecure)

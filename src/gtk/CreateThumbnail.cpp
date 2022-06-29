@@ -30,7 +30,7 @@ using std::unique_ptr;
 // We can't simply use GTK_MAJOR_VERSION because
 // that has parentheses.
 #if GTK_CHECK_VERSION(5,0,0)
-#  error Needs updating for GTK4.
+#  error Needs updating for GTK5.
 #elif GTK_CHECK_VERSION(4,0,0)
 #  define GTK_MAJOR_STR "4"
 #elif GTK_CHECK_VERSION(3,0,0)

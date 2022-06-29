@@ -11,7 +11,7 @@
 
 // libwin32common
 #include "libwin32common/MiniU82T.hpp"
-using LibWin32Common::U82W_s;
+using LibWin32Common::U82W_c;
 
 // C++ STL classes.
 using std::wstring;
@@ -299,14 +299,15 @@ IFACEMETHODIMP IStreamWrapper::Stat(STATSTG *pstatstg, DWORD grfStatFlag)
 		// Copy the filename
 		// TODO: Is nullptr for empty filename allowed?
 		// For now, we'll just return an empty name.
-		// TODO: U82W_ss() that returns a wstring?
-		wstring filename = U82W_s(m_file->filename());
-		const size_t sz = (filename.size() + 1) * sizeof(wchar_t);
+		// TODO: U82W_wc() that returns a wstring?
+		const char *const u8_filename = m_file->filename();
+		const wstring wfilename(u8_filename ? U82W_c(u8_filename) : L"");
+		const size_t sz = (wfilename.size() + 1) * sizeof(wchar_t);
 		pstatstg->pwcsName = static_cast<LPOLESTR>(CoTaskMemAlloc(sz));
 		if (!pstatstg->pwcsName) {
 			return E_OUTOFMEMORY;
 		}
-		memcpy(pstatstg->pwcsName, filename.c_str(), sz);
+		memcpy(pstatstg->pwcsName, wfilename.c_str(), sz);
 	}
 
 	pstatstg->type = STGTY_STREAM;	// TODO: or STGTY_STORAGE?
