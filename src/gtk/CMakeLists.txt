@@ -44,6 +44,7 @@ SET(${PROJECT_NAME}_SRCS
 	PIMGTYPE.cpp
 	rp-gtk-enums.c
 	RpFile_gio.cpp
+	MessageWidget.cpp
 	RpGtk.cpp
 	sort_funcs.c
 	LanguageComboBox.cpp
@@ -67,6 +68,7 @@ SET(${PROJECT_NAME}_H
 	PIMGTYPE.hpp
 	rp-gtk-enums.h
 	RpFile_gio.hpp
+	MessageWidget.hpp
 	RpGtk.hpp
 	sort_funcs.h
 	gtk-compat.h
@@ -156,9 +158,8 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.gtk.h.in" "${CMAKE_CURRENT_BI
 
 # Build GTK+ 2.x frontends.
 IF(BUILD_GTK2)
-	# GTK2 minimum is 2.18.0. (GtkInfoBar)
-	# (Ubuntu 16.04 has 2.24.30)
-	FIND_PACKAGE(GTK2 2.18.0 ${REQUIRE_GTK2} COMPONENTS gtk)
+	# GTK2 minimum is 2.0.0, so no version check is needed.
+	FIND_PACKAGE(GTK2 ${REQUIRE_GTK2} COMPONENTS gtk)
 	IF(GTK2_FOUND)
 		ADD_SUBDIRECTORY(xfce)
 	ELSE(GTK2_FOUND)
@@ -169,7 +170,6 @@ ENDIF(BUILD_GTK2)
 # Build GTK+ 3.x frontends.
 IF(BUILD_GTK3)
 	# GTK3 minimum is 3.10.0. (gtk_image_set_from_surface)
-	# (Ubuntu 16.04 has 3.18.9)
 	FIND_PACKAGE(GTK3 3.10.0 ${REQUIRE_GTK3})
 	IF(GTK3_FOUND)
 		ADD_SUBDIRECTORY(gtk3)

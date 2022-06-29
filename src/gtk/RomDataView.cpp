@@ -17,6 +17,7 @@
 
 // Custom widgets
 #include "DragImage.hpp"
+#include "MessageWidget.hpp"
 #include "LanguageComboBox.hpp"
 
 // librpbase, librptexture
@@ -2040,14 +2041,14 @@ rom_data_view_delete_tabs(RomDataView *page)
 	}
 	cxx->tabs.clear();
 
-	if (page->infoBar) {
-		// Delete the GtkInfoBar.
+	if (page->messageWidget) {
+		// Delete the message widget.
 #if GTK_CHECK_VERSION(4,0,0)
-		gtk_box_remove(GTK_BOX(page), page->infoBar);
+		gtk_box_remove(GTK_BOX(page), page->messageWidget);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-		gtk_container_remove(GTK_CONTAINER(page), page->infoBar);
+		gtk_container_remove(GTK_CONTAINER(page), page->messageWidget);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
-		page->infoBar = nullptr;
+		page->messageWidget = nullptr;
 	}
 
 	if (page->tabWidget) {

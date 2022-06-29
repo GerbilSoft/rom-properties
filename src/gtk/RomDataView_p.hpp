@@ -102,9 +102,8 @@ struct _RomDataView {
 	GtkWidget	*tabWidget;
 	// Tabs moved to: cxx->tabs
 
-	// GtkInfoBar for ROM operation notifications.
-	GtkWidget	*infoBar;
-	GtkWidget	*infoBarLabel;
+	// MessageWidget for ROM operation notifications.
+	GtkWidget	*messageWidget;
 
 	// Multi-language combo box.
 	GtkWidget	*cboLanguage;
