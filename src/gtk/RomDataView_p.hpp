@@ -104,6 +104,7 @@ struct _RomDataView {
 
 	// GtkInfoBar for ROM operation notifications.
 	GtkWidget	*infoBar;
+	GtkWidget	*infoBarIcon;
 	GtkWidget	*infoBarLabel;
 
 	// Multi-language combo box.

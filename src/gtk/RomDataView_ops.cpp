@@ -620,16 +620,22 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 			gtk_info_bar_set_revealed(GTK_INFO_BAR(page->infoBar), FALSE);
 			gtk_widget_show(page->infoBar);
 #endif /* GTK_CHECK_VERSION(3,22,29) */
+
+			page->infoBarIcon = gtk_image_new();
 			page->infoBarLabel = gtk_label_new(nullptr);
+			gtk_widget_show(page->infoBarIcon);
 			gtk_widget_show(page->infoBarLabel);
+
 			g_signal_connect(page->infoBar, "close", G_CALLBACK(rom_data_view_infoBar_close), page);
 			g_signal_connect(page->infoBar, "response", G_CALLBACK(rom_data_view_infoBar_response), page);
 
 #if GTK_CHECK_VERSION(4,0,0)
+			gtk_info_bar_add_child(GTK_INFO_BAR(page->infoBar), page->infoBarIcon);
 			gtk_info_bar_add_child(GTK_INFO_BAR(page->infoBar), page->infoBarLabel);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 			GtkWidget *const content_area = gtk_info_bar_get_content_area(GTK_INFO_BAR(page->infoBar));
-			gtk_container_add(GTK_CONTAINER(content_area), page->infoBarLabel);
+			gtk_box_pack_start(GTK_BOX(content_area), page->infoBarIcon, false, false, 0);
+			gtk_box_pack_start(GTK_BOX(content_area), page->infoBarLabel, false, false, 0);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 #if GTK_CHECK_VERSION(3,9,10)
@@ -662,8 +668,26 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 			// TODO: Verify GTK4.
 		}
 
+		static const char *const message_type_icon_tbl[] = {
+			"dialog-information",	// GTK_MESSAGE_INFO
+			"dialog-warning",	// GTK_MESSAGE_WARNING
+			"dialog-question",	// GTK_MESSAGE_QUESTION
+			"dialog-error",		// GTK_MESSAGE_ERROR
+		};
+		const char *icon_name;
+		if (messageType >= GTK_MESSAGE_INFO && messageType <= GTK_MESSAGE_ERROR) {
+			icon_name = message_type_icon_tbl[messageType];
+		} else {
+			icon_name = nullptr;
+		}
+
 		gtk_info_bar_set_message_type(GTK_INFO_BAR(page->infoBar), messageType);
 		gtk_label_set_text(GTK_LABEL(page->infoBarLabel), params.msg.c_str());
+#if GTK_CHECK_VERSION(4,0,0)
+		gtk_image_set_from_icon_name(GTK_IMAGE(page->infoBarIcon), icon_name);
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+		gtk_image_set_from_icon_name(GTK_IMAGE(page->infoBarIcon), icon_name, GTK_ICON_SIZE_BUTTON);
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 #if GTK_CHECK_VERSION(3,22,29)
 		gtk_info_bar_set_revealed(GTK_INFO_BAR(page->infoBar), TRUE);
 #else /* !GTK_CHECK_VERSION(3,22,29) */
