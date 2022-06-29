@@ -24,13 +24,7 @@ using namespace LibRpBase;
 // C++ STL classes
 using std::string;
 
-// TODO: Move to KeyStoreUI?
-enum ImportMenuID {
-	IMPORT_WII_KEYS_BIN	= 0,
-	IMPORT_WII_U_OTP_BIN	= 1,
-	IMPORT_3DS_BOOT9_BIN	= 2,
-	IMPORT_3DS_AESKEYDB_BIN	= 3,
-};
+// KeyStoreUI::ImportFileID
 static const char *const import_menu_actions[] = {
 	"Wii keys.bin",
 	"Wii U otp.bin",
@@ -561,9 +555,10 @@ key_manager_tab_menu_action_response(GtkFileChooserDialog *dialog, gint response
 static void
 key_manager_tab_handle_menu_action(KeyManagerTab *tab, gint id)
 {
-	assert(id >= IMPORT_WII_KEYS_BIN);
-	assert(id <= IMPORT_3DS_AESKEYDB_BIN);
-	if (id < IMPORT_WII_KEYS_BIN || id > IMPORT_3DS_AESKEYDB_BIN)
+	assert(id >= (int)KeyStoreUI::ImportFileID::WiiKeysBin);
+	assert(id <= (int)KeyStoreUI::ImportFileID::N3DSaeskeydb);
+	if (id < (int)KeyStoreUI::ImportFileID::WiiKeysBin ||
+	    id > (int)KeyStoreUI::ImportFileID::N3DSaeskeydb)
 		return;
 
 	static const char *const dialog_titles_tbl[] = {
@@ -659,6 +654,13 @@ key_manager_tab_show_key_import_return_status(KeyManagerTab	*tab,
 		default:
 			msg = C_("KeyManagerTab",
 				"An invalid parameter was passed to the key importer.\n"
+				"THIS IS A BUG; please report this to the developers!");
+			type = GTK_MESSAGE_ERROR;
+			break;
+
+		case KeyStoreUI::ImportStatus::UnknownKeyID:
+			msg = C_("KeyManagerTab",
+				"An unknown key ID was passed to the key importer.\n"
 				"THIS IS A BUG; please report this to the developers!");
 			type = GTK_MESSAGE_ERROR;
 			break;
@@ -817,8 +819,8 @@ key_manager_tab_menu_action_response(GtkFileChooserDialog *dialog, gint response
 	}
 
 	// Get the file ID from the dialog.
-	const ImportMenuID id = (ImportMenuID)
-		GPOINTER_TO_INT(g_object_get_data(G_OBJECT(dialog), "KeyManagerTab.fileID"));
+	const KeyStoreUI::ImportFileID id = static_cast<KeyStoreUI::ImportFileID>(
+		GPOINTER_TO_INT(g_object_get_data(G_OBJECT(dialog), "KeyManagerTab.fileID")));
 
 #if GTK_CHECK_VERSION(4,0,0)
 	// TODO: URIs?
@@ -840,28 +842,10 @@ key_manager_tab_menu_action_response(GtkFileChooserDialog *dialog, gint response
 	}
 
 	KeyStoreUI *const keyStoreUI = key_store_gtk_get_key_store_ui(tab->keyStore);
-	KeyStoreUI::ImportReturn iret;
-	switch (id) {
-		case IMPORT_WII_KEYS_BIN:
-			iret = keyStoreUI->importWiiKeysBin(in_filename);
-			break;
-		case IMPORT_WII_U_OTP_BIN:
-			iret = keyStoreUI->importWiiUOtpBin(in_filename);
-			break;
-		case IMPORT_3DS_BOOT9_BIN:
-			iret = keyStoreUI->import3DSboot9bin(in_filename);
-			break;
-		case IMPORT_3DS_AESKEYDB_BIN:
-			iret = keyStoreUI->import3DSaeskeydb(in_filename);
-			break;
-		default:
-			assert(!"Invalid key file ID.");
-			g_free(in_filename);
-			return;
-	}
+	KeyStoreUI::ImportReturn iret = keyStoreUI->importKeysFromBin(id, in_filename);
 
 	// TODO: Show the key import status in a MessageWidget.
-	key_manager_tab_show_key_import_return_status(tab, in_filename, import_menu_actions[id], iret);
+	key_manager_tab_show_key_import_return_status(tab, in_filename, import_menu_actions[(int)id], iret);
 	g_free(in_filename);
 }
 

@@ -197,6 +197,7 @@ class RP_LIBROMDATA_PUBLIC KeyStoreUI
 	public:
 		enum class ImportStatus : uint8_t {
 			InvalidParams = 0,	// Invalid parameters. (Should not happen!)
+			UnknownKeyID,		// Unknown key ID. (Should not happen!)
 			OpenError,		// Could not open the file. (TODO: More info?)
 			ReadError,		// Could not read the file. (TODO: More info?)
 			InvalidFile,		// File is not the correct type.
@@ -219,32 +220,22 @@ class RP_LIBROMDATA_PUBLIC KeyStoreUI
 		};
 
 		/**
-		 * Import keys from Wii keys.bin. (BootMii format)
-		 * @param filename keys.bin filename.
-		 * @return Key import status.
+		 * Import file ID
 		 */
-		ImportReturn importWiiKeysBin(const char *filename);
+		enum class ImportFileID {
+			WiiKeysBin = 0,
+			WiiUOtpBin,
+			N3DSboot9bin,
+			N3DSaeskeydb,
+		};
 
 		/**
-		 * Import keys from Wii U otp.bin.
-		 * @param filename otp.bin filename.
-		 * @return Key import status.
+		 * Import keys from a binary file.
+		 * @param fileID Type of file
+		 * @param filename Filename
+		 * @return ImportReturn
 		 */
-		ImportReturn importWiiUOtpBin(const char *filename);
-
-		/**
-		 * Import keys from 3DS boot9.bin.
-		 * @param filename boot9.bin filename.
-		 * @return Key import status.
-		 */
-		ImportReturn import3DSboot9bin(const char *filename);
-
-		/**
-		 * Import keys from 3DS aeskeydb.bin.
-		 * @param filename aeskeydb.bin filename.
-		 * @return Key import status.
-		 */
-		ImportReturn import3DSaeskeydb(const char *filename);
+		ImportReturn importKeysFromBin(ImportFileID fileID, const char *filename);
 };
 
 }

@@ -9,12 +9,13 @@
 #include "stdafx.h"
 #include "KeyManagerTab.hpp"
 
-// librpbase
-using namespace LibRpBase;
-
 #include "KeyStoreQt.hpp"
 #include "KeyStoreModel.hpp"
 #include "KeyStoreItemDelegate.hpp"
+
+// librpbase, libromdata
+using namespace LibRpBase;
+using namespace LibRomData;
 
 // C++ STL classes.
 using std::string;
@@ -137,7 +138,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 	// TODO: Thread-safe strerror()?
 
 	switch (iret.status) {
-		case KeyStoreQt::ImportStatus::InvalidParams:
+		case KeyStoreUI::ImportStatus::InvalidParams:
 		default:
 			msg = C_("KeyManagerTab",
 				"An invalid parameter was passed to the key importer.\n"
@@ -146,7 +147,15 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			icon = QStyle::SP_MessageBoxCritical;
 			break;
 
-		case KeyStoreQt::ImportStatus::OpenError:
+		case KeyStoreUI::ImportStatus::UnknownKeyID:
+			msg = C_("KeyManagerTab",
+				"An unknown key ID was passed to the key importer.\n"
+				"THIS IS A BUG; please report this to the developers!");
+			type = KMessageWidget::Error;
+			icon = QStyle::SP_MessageBoxCritical;
+			break;
+
+		case KeyStoreUI::ImportStatus::OpenError:
 			if (iret.error_code != 0) {
 				msg = rp_sprintf_p(C_("KeyManagerTab",
 					// tr: %1$s == filename, %2$s == error message
@@ -163,7 +172,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			icon = QStyle::SP_MessageBoxCritical;
 			break;
 
-		case KeyStoreQt::ImportStatus::ReadError:
+		case KeyStoreUI::ImportStatus::ReadError:
 			// TODO: Error code for short reads.
 			if (iret.error_code != 0) {
 				msg = rp_sprintf_p(C_("KeyManagerTab",
@@ -181,7 +190,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			icon = QStyle::SP_MessageBoxCritical;
 			break;
 
-		case KeyStoreQt::ImportStatus::InvalidFile:
+		case KeyStoreUI::ImportStatus::InvalidFile:
 			msg = rp_sprintf_p(C_("KeyManagerTab",
 				// tr: %1$s == filename, %2$s == type of file
 				"The file '%1$s' is not a valid %2$s file."),
@@ -191,7 +200,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			icon = QStyle::SP_MessageBoxWarning;
 			break;
 
-		case KeyStoreQt::ImportStatus::NoKeysImported:
+		case KeyStoreUI::ImportStatus::NoKeysImported:
 			msg = rp_sprintf(C_("KeyManagerTab",
 				// tr: %s == filename
 				"No keys were imported from '%s'."),
@@ -201,7 +210,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			showKeyStats = true;
 			break;
 
-		case KeyStoreQt::ImportStatus::KeysImported: {
+		case KeyStoreUI::ImportStatus::KeysImported: {
 			const unsigned int keyCount = iret.keysImportedVerify + iret.keysImportedNoVerify;
 			msg = rp_sprintf_p(NC_("KeyManagerTab",
 				// tr: %1$s == number of keys (formatted), %2$u == filename
@@ -423,6 +432,8 @@ void KeyManagerTab::save(QSettings *pSettings)
 
 /** Actions. **/
 
+/** TODO: Combine into a single function by storing an ID in the QActions. **/
+
 /**
  * Import keys from Wii keys.bin. (BootMii format)
  */
@@ -440,7 +451,8 @@ void KeyManagerTab::on_actionImportWiiKeysBin_triggered(void)
 		return;
 	d->keyFileDir = QFileInfo(filename).canonicalPath();
 
-	KeyStoreQt::ImportReturn iret = d->keyStore->importWiiKeysBin(Q2U8(filename));
+	KeyStoreQt::ImportReturn iret = d->keyStore->importKeysFromBin(
+		KeyStoreUI::ImportFileID::WiiKeysBin, Q2U8(filename));
 	d->showKeyImportReturnStatus(filename, QLatin1String("Wii keys.bin"), iret);
 }
 
@@ -461,7 +473,8 @@ void KeyManagerTab::on_actionImportWiiUOtpBin_triggered(void)
 		return;
 	d->keyFileDir = QFileInfo(filename).canonicalPath();
 
-	KeyStoreQt::ImportReturn iret = d->keyStore->importWiiUOtpBin(Q2U8(filename));
+	KeyStoreQt::ImportReturn iret = d->keyStore->importKeysFromBin(
+		KeyStoreUI::ImportFileID::WiiUOtpBin, Q2U8(filename));
 	d->showKeyImportReturnStatus(filename, QLatin1String("Wii U otp.bin"), iret);
 }
 
@@ -482,7 +495,8 @@ void KeyManagerTab::on_actionImport3DSboot9bin_triggered(void)
 		return;
 	d->keyFileDir = QFileInfo(filename).canonicalPath();
 
-	KeyStoreQt::ImportReturn iret = d->keyStore->import3DSboot9bin(Q2U8(filename));
+	KeyStoreQt::ImportReturn iret = d->keyStore->importKeysFromBin(
+		KeyStoreUI::ImportFileID::N3DSboot9bin, Q2U8(filename));
 	d->showKeyImportReturnStatus(filename, QLatin1String("3DS boot9.bin"), iret);
 }
 
@@ -503,6 +517,7 @@ void KeyManagerTab::on_actionImport3DSaeskeydb_triggered(void)
 		return;
 	d->keyFileDir = QFileInfo(filename).canonicalPath();
 
-	KeyStoreQt::ImportReturn iret = d->keyStore->import3DSaeskeydb(Q2U8(filename));
+	KeyStoreQt::ImportReturn iret = d->keyStore->importKeysFromBin(
+		KeyStoreUI::ImportFileID::N3DSaeskeydb, Q2U8(filename));
 	d->showKeyImportReturnStatus(filename, QLatin1String("3DS aeskeydb.bin"), iret);
 }
