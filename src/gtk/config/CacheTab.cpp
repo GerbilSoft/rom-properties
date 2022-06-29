@@ -106,6 +106,33 @@ cache_tab_class_init(CacheTabClass *klass)
 	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 	gobject_class->dispose = cache_tab_dispose;
 	gobject_class->finalize = cache_tab_finalize;
+
+#if GTK_CHECK_VERSION(3,0,0)
+	// Add a CSS class for a GtkProgressBar "error" state.
+	GtkCssProvider *const provider = gtk_css_provider_new();
+	GdkDisplay *const display = gdk_display_get_default();
+#  if GTK_CHECK_VERSION(4,0,0)
+	// GdkScreen no longer exists in GTK4.
+	// Style context providers are added directly to GdkDisplay instead.
+	gtk_style_context_add_provider_for_display(display,
+		GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
+#  else /* !GTK_CHECK_VERSION(4,0,0) */
+	GdkScreen *const screen = gdk_display_get_default_screen(display);
+	gtk_style_context_add_provider_for_screen(screen,
+		GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
+#  endif /* !GTK_CHECK_VERSION(4,0,0) */
+
+	static const char css_ProgressBar[] =
+		"@define-color gsrp_color_pb_error rgb(144,24,24);\n"
+		"progressbar.gsrp_pb_error > trough > progress {\n"
+		"\tbackground-image: none;\n"
+		"\tbackground-color: lighter(@gsrp_color_pb_error);\n"
+		"\tborder: solid @gsrp_color_info;\n"
+		"}\n";
+
+	GTK_CSS_PROVIDER_LOAD_FROM_DATA(GTK_CSS_PROVIDER(provider), css_ProgressBar, -1);
+	g_object_unref(provider);
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 }
 
 static void
@@ -147,33 +174,6 @@ cache_tab_init(CacheTab *tab)
 #if GTK_CHECK_VERSION(3,0,0)
 	gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(tab->pbStatus), TRUE);
 #endif /* !GTK_CHECK_VERSION(3,0,0) */
-
-#if GTK_CHECK_VERSION(3,0,0)
-	// Add a CSS class for a GtkProgressBar "error" state.
-	GtkCssProvider *const provider = gtk_css_provider_new();
-	GdkDisplay *const display = gdk_display_get_default();
-#  if GTK_CHECK_VERSION(4,0,0)
-	// GdkScreen no longer exists in GTK4.
-	// Style context providers are added directly to GdkDisplay instead.
-	gtk_style_context_add_provider_for_display(display,
-		GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
-#  else /* !GTK_CHECK_VERSION(4,0,0) */
-	GdkScreen *const screen = gdk_display_get_default_screen(display);
-	gtk_style_context_add_provider_for_screen(screen,
-		GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
-#  endif /* !GTK_CHECK_VERSION(4,0,0) */
-
-	static const char css_ProgressBar[] =
-		"@define-color gsrp_color_pb_error rgb(144,24,24);\n"
-		"progressbar.gsrp_pb_error > trough > progress {\n"
-		"\tbackground-image: none;\n"
-		"\tbackground-color: lighter(@gsrp_color_pb_error);\n"
-		"\tborder: solid @gsrp_color_info;\n"
-		"}\n";
-
-	GTK_CSS_PROVIDER_LOAD_FROM_DATA(GTK_CSS_PROVIDER(provider), css_ProgressBar, -1);
-	g_object_unref(provider);
-#endif /* GTK_CHECK_VERSION(3,0,0) */
 
 	// Connect the signal handlers for the buttons.
 	g_signal_connect(tab->btnSysCache, "clicked", G_CALLBACK(cache_tab_on_btnSysCache_clicked), tab);
