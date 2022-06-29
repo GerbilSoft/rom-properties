@@ -9,6 +9,14 @@
 #ifndef __ROMPROPERTIES_DLL_MACROS_H__
 #define __ROMPROPERTIES_DLL_MACROS_H__
 
+// C API declaration for MSVC.
+// Required when using stdcall as the default calling convention.
+#ifdef _MSC_VER
+#  define RP_C_API __cdecl
+#else
+#  define RP_C_API
+#endif
+
 // Visibility macros for plugin DLLs. (always dllexport)
 // Reference: https://gcc.gnu.org/wiki/Visibility
 #if defined _WIN32 || defined __CYGWIN__

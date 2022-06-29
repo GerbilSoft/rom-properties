@@ -148,14 +148,6 @@
 #  error No aligned variable macro for this compiler.
 #endif
 
-// C API declaration for MSVC.
-// Required when using stdcall as the default calling convention.
-#ifdef _MSC_VER
-#  define RP_C_API __cdecl
-#else
-#  define RP_C_API
-#endif
-
 // printf()-style function attribute.
 #ifndef ATTR_PRINTF
 #  if defined(__clang__) || defined(__llvm__)

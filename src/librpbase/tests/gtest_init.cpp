@@ -10,7 +10,7 @@
 #include <locale>
 using std::locale;
 
-#include "common.h"
+#include "dll-macros.h"
 #include "tcharx.h"
 
 // librpsecure

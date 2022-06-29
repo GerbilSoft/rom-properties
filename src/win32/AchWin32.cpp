@@ -8,8 +8,10 @@
 
 #include "stdafx.h"
 #include "AchWin32.hpp"
+
 #include "RpImageWin32.hpp"
 #include "res/resource.h"
+#include "dll-macros.h"
 
 // librpbase, librpfile, librptexture
 #include "librpbase/TextFuncs_wchar.hpp"
