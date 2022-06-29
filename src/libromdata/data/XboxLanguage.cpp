@@ -15,13 +15,13 @@ using namespace LibRpBase;
 // Microsoft Xbox system structs.
 #include "Console/xbox360_xdbf_structs.h"
 
-namespace LibRomData {
+namespace LibRomData { namespace XboxLanguage {
 
 /**
  * Determine the system language for Xbox 360.
  * @return XDBF_Language_e. (If unknown, returns XDBF_LANGUAGE_UNKNOWN.)
  */
-int XboxLanguage::getXbox360Language(void)
+int getXbox360Language(void)
 {
 	switch (SystemRegion::getLanguageCode()) {
 		case 'en':
@@ -66,7 +66,7 @@ int XboxLanguage::getXbox360Language(void)
  * @param langID Xbox 360 language ID.
  * @return Language code, or 0 on error.
  */
-uint32_t XboxLanguage::getXbox360LanguageCode(int langID)
+uint32_t getXbox360LanguageCode(int langID)
 {
 	// GCN_PAL_Language_ID system language code mapping.
 	static const uint32_t langID_to_lc[XDBF_LANGUAGE_MAX] = {
@@ -93,6 +93,6 @@ uint32_t XboxLanguage::getXbox360LanguageCode(int langID)
 	}
 
 	return langID_to_lc[langID];
-}
+} }
 
 }

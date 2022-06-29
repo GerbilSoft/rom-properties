@@ -21,13 +21,13 @@ using namespace LibRpBase;
 // C includes. (C++ namespace)
 #include <cassert>
 
-namespace LibRomData {
+namespace LibRomData { namespace NintendoLanguage {
 
 /**
  * Determine the system language for PAL GameCube.
  * @return GCN_PAL_Language_ID. (If unknown, defaults to GCN_PAL_LANG_ENGLISH.)
  */
-int NintendoLanguage::getGcnPalLanguage(void)
+int getGcnPalLanguage(void)
 {
 	switch (SystemRegion::getLanguageCode()) {
 		case 'en':
@@ -59,7 +59,7 @@ int NintendoLanguage::getGcnPalLanguage(void)
  * @param langID GameCube PAL language ID.
  * @return Language code, or 0 on error.
  */
-uint32_t NintendoLanguage::getGcnPalLanguageCode(int langID)
+uint32_t getGcnPalLanguageCode(int langID)
 {
 	// GCN_PAL_Language_ID system language code mapping.
 	static const uint32_t langID_to_lc[GCN_PAL_LANG_MAX] = {
@@ -85,7 +85,7 @@ uint32_t NintendoLanguage::getGcnPalLanguageCode(int langID)
  * Determine the system language for Wii.
  * @return Wii_Language_ID. (If unknown, defaults to WII_LANG_ENGLISH.)
  */
-int NintendoLanguage::getWiiLanguage(void)
+int getWiiLanguage(void)
 {
 	switch (SystemRegion::getLanguageCode()) {
 		case 'en':
@@ -120,7 +120,7 @@ int NintendoLanguage::getWiiLanguage(void)
  * @param langID GameCube PAL language ID.
  * @return Language code, or 0 on error.
  */
-uint32_t NintendoLanguage::getWiiLanguageCode(int langID)
+uint32_t getWiiLanguageCode(int langID)
 {
 	// Wii_Language_ID system language code mapping.
 	static const uint32_t langID_to_lc[WII_LANG_MAX] = {
@@ -150,7 +150,7 @@ uint32_t NintendoLanguage::getWiiLanguageCode(int langID)
  * @param version NDS_IconTitleData version.
  * @return NDS_Language. If unknown, defaults to NDS_LANG_ENGLISH.
  */
-int NintendoLanguage::getNDSLanguage(uint16_t version)
+int getNDSLanguage(uint16_t version)
 {
 	switch (SystemRegion::getLanguageCode()) {
 		case 'en':
@@ -190,7 +190,7 @@ int NintendoLanguage::getNDSLanguage(uint16_t version)
  * TODO: Verify against the game's region code?
  * @return N3DS_Language. If unknown, defaults to N3DS_LANG_ENGLISH.
  */
-int NintendoLanguage::getN3DSLanguage(void)
+int getN3DSLanguage(void)
 {
 	switch (SystemRegion::getLanguageCode()) {
 		case 'en':
@@ -241,7 +241,7 @@ int NintendoLanguage::getN3DSLanguage(void)
  * @param maxID Maximum language ID, inclusive. (es, hans, ko, or hant)
  * @return Language code, or 0 on error.
  */
-uint32_t NintendoLanguage::getNDSLanguageCode(int langID, int maxID)
+uint32_t getNDSLanguageCode(int langID, int maxID)
 {
 	// N3DS_Language_ID system language code mapping.
 	static const uint32_t langID_to_lc[N3DS_LANG_MAX] = {
@@ -275,4 +275,4 @@ uint32_t NintendoLanguage::getNDSLanguageCode(int langID, int maxID)
 	return langID_to_lc[langID];
 }
 
-}
+} }

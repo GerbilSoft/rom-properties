@@ -2,59 +2,39 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Nintendo3DSSysTitles.cpp: Nintendo 3DS system title lookup.             *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "Nintendo3DSSysTitles.hpp"
 
-namespace LibRomData {
+namespace LibRomData { namespace Nintendo3DSSysTitlesPrivate {
 
-class Nintendo3DSSysTitlesPrivate
-{
-	private:
-		// Static class.
-		Nintendo3DSSysTitlesPrivate();
-		~Nintendo3DSSysTitlesPrivate();
-		RP_DISABLE_COPY(Nintendo3DSSysTitlesPrivate)
-
-	public:
-		// System title groups are split up by tid_hi.
-		// New3DS-specific is indicated by $x0000000, where x == 2.
-		struct SysTitle {
-			uint32_t tid_lo[6];	// 6 regions. (If 0, not available.)
-			const char *desc;	// Description.
-		};
-
-		/* TODO: Use this if more groups are added.
-		struct SysTitleGroup {
-			uint32_t tid_hi;
-			const SysTitle *titles;
-			int titles_size;
-		}; */
-
-		// Regions.
-		static const char regions[6][4];
-
-		static const SysTitle sys_title_00040010[];	// System applications.
-		static const SysTitle sys_title_00040030[];	// System applets.
-
-		//static const SysTitleGroup sys_title_group[];	// All SysTitle[] arrays.
+// System title groups are split up by tid_hi.
+// New3DS-specific is indicated by $x0000000, where x == 2.
+struct SysTitle {
+	uint32_t tid_lo[6];	// 6 regions. (If 0, not available.)
+	const char *desc;	// Description.
 };
 
-/** Nintendo3DSSysTitlesPrivate **/
+/* TODO: Use this if more groups are added.
+struct SysTitleGroup {
+	uint32_t tid_hi;
+	const SysTitle *titles;
+	int titles_size;
+}; */
 
-// Regions.
-const char Nintendo3DSSysTitlesPrivate::regions[6][4] = {
+// Regions
+static const char regions[6][4] = {
 	"JPN", "USA", "EUR",
 	"CHN", "KOR", "TWN",
 };
 
 /**
- * System applications. (tid hi == 0x00040010)
+ * System applications (tid hi == 0x00040010)
  */
-const Nintendo3DSSysTitlesPrivate::SysTitle Nintendo3DSSysTitlesPrivate::sys_title_00040010[] = {
+static const SysTitle sys_title_00040010[] = {
 	/** Common titles **/
 	{{0x00020000, 0x00021000, 0x00022000, 0x00026000, 0x00027000, 0x00028000}, NOP_C_("Nintendo3DSSysTitles", "System Settings")},
 	{{0x00020100, 0x00021100, 0x00022100, 0x00026100, 0x00027100, 0x00028100}, NOP_C_("Nintendo3DSSysTitles", "Download Play")},
@@ -80,9 +60,9 @@ const Nintendo3DSSysTitlesPrivate::SysTitle Nintendo3DSSysTitlesPrivate::sys_tit
 };
 
 /**
- * System applets. (tid hi == 0x00040030)
+ * System applets (tid hi == 0x00040030)
  */
-const Nintendo3DSSysTitlesPrivate::SysTitle Nintendo3DSSysTitlesPrivate::sys_title_00040030[] = {
+static const SysTitle sys_title_00040030[] = {
 	/** Common titles **/
 	{{0x00008202, 0x00008F02, 0x00009802, 0x0000A102, 0x0000A902, 0x0000B102}, NOP_C_("Nintendo3DSSysTitles", "HOME Menu")},
 	{{0x00008402, 0x00009002, 0x00009902, 0x0000A202, 0x0000AA02, 0x0000B202}, NOP_C_("Nintendo3DSSysTitles", "Camera")},
@@ -106,18 +86,18 @@ const Nintendo3DSSysTitlesPrivate::SysTitle Nintendo3DSSysTitlesPrivate::sys_tit
 	{{0x2000C003, 0x2000C803, 0x2000D003,          0, 0x2000DE03,          0}, NOP_C_("Nintendo3DSSysTitles", "Software Keyboard (SAFE_MODE)")},
 };
 
-/** Nintendo3DSSysTitles **/
+/** Public functions **/
 
 /**
  * Look up a Nintendo 3DS system title.
- * @param tid_hi	[in] Title ID High.
- * @param tid_lo	[in] Title ID Low.
- * @param pRegion	[out,opt] Output for region name.
+ * @param tid_hi	[in] Title ID High
+ * @param tid_lo	[in] Title ID Low
+ * @param pRegion	[out,opt] Output for region name
  * @return System title name, or nullptr on error.
  */
-const char *Nintendo3DSSysTitles::lookup_sys_title(uint32_t tid_hi, uint32_t tid_lo, const char **pRegion)
+const char *lookup_sys_title(uint32_t tid_hi, uint32_t tid_lo, const char **pRegion)
 {
-	const Nintendo3DSSysTitlesPrivate::SysTitle *titles;
+	const SysTitle *titles;
 	int title_count;
 
 	if (tid_hi == 0 || tid_lo == 0 ||
@@ -131,11 +111,11 @@ const char *Nintendo3DSSysTitles::lookup_sys_title(uint32_t tid_hi, uint32_t tid
 	}
 
 	if (tid_hi == 0x00040010) {
-		titles = Nintendo3DSSysTitlesPrivate::sys_title_00040010;
-		title_count = ARRAY_SIZE(Nintendo3DSSysTitlesPrivate::sys_title_00040010);
+		titles = sys_title_00040010;
+		title_count = ARRAY_SIZE(sys_title_00040010);
 	} else if (tid_hi == 0x00040030) {
-		titles = Nintendo3DSSysTitlesPrivate::sys_title_00040030;
-		title_count = ARRAY_SIZE(Nintendo3DSSysTitlesPrivate::sys_title_00040030);
+		titles = sys_title_00040030;
+		title_count = ARRAY_SIZE(sys_title_00040030);
 	} else {
 		// tid_hi not supported.
 		if (pRegion) {
@@ -150,7 +130,7 @@ const char *Nintendo3DSSysTitles::lookup_sys_title(uint32_t tid_hi, uint32_t tid
 			if (titles->tid_lo[region] != 0 && titles->tid_lo[region] == tid_lo) {
 				// Found a match!
 				if (pRegion) {
-					*pRegion = Nintendo3DSSysTitlesPrivate::regions[region];
+					*pRegion = regions[region];
 				}
 				return dpgettext_expr(RP_I18N_DOMAIN, "Nintendo3DSSysTitles", titles->desc);
 			}
@@ -161,4 +141,4 @@ const char *Nintendo3DSSysTitles::lookup_sys_title(uint32_t tid_hi, uint32_t tid
 	return nullptr;
 }
 
-}
+} }

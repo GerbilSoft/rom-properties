@@ -2,34 +2,18 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WonderSwanPublishers.hpp: Bandai WonderSwan third-party publishers list.*
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "WonderSwanPublishers.hpp"
 
-namespace LibRomData {
+namespace LibRomData { namespace WonderSwanPublishers {
 
-class WonderSwanPublishersPrivate {
-	private:
-		// Static class.
-		WonderSwanPublishersPrivate();
-		~WonderSwanPublishersPrivate();
-		RP_DISABLE_COPY(WonderSwanPublishersPrivate)
-
-	public:
-		struct ThirdPartyEntry {
-			char code[4];		// 3-char code
-			const char *publisher;	// Publisher name
-		};
-
-		/**
-		 * Bandai WonderSwan third-party publisher list.
-		 * Array index is the publisher ID.
-		 * Reference: http://daifukkat.su/docs/wsman/#cart_meta_publist
-		 */
-		static const ThirdPartyEntry thirdPartyList[];
+struct ThirdPartyEntry {
+	char code[4];		// 3-char code
+	const char *publisher;	// Publisher name
 };
 
 /**
@@ -37,7 +21,7 @@ class WonderSwanPublishersPrivate {
  * Array index is the publisher ID.
  * Reference: http://daifukkat.su/docs/wsman/#cart_meta_publist
  */
-const WonderSwanPublishersPrivate::ThirdPartyEntry WonderSwanPublishersPrivate::thirdPartyList[] = {
+static const ThirdPartyEntry thirdPartyList[] = {
 	// 0x00
 	{"",	"<unlicensed>"},
 	{"BAN",	"Bandai"},
@@ -121,12 +105,12 @@ const WonderSwanPublishersPrivate::ThirdPartyEntry WonderSwanPublishersPrivate::
  * @param id Company ID.
  * @return Publisher name, or nullptr if not found.
  */
-const char *WonderSwanPublishers::lookup_name(uint8_t id)
+const char *lookup_name(uint8_t id)
 {
-	if (id >= ARRAY_SIZE(WonderSwanPublishersPrivate::thirdPartyList))
+	if (id >= ARRAY_SIZE(thirdPartyList))
 		return nullptr;
 
-	return WonderSwanPublishersPrivate::thirdPartyList[id].publisher;
+	return thirdPartyList[id].publisher;
 }
 
 /**
@@ -134,13 +118,13 @@ const char *WonderSwanPublishers::lookup_name(uint8_t id)
  * @param id Company ID.
  * @return Publisher code, or nullptr if not found.
  */
-const char *WonderSwanPublishers::lookup_code(uint8_t id)
+const char *lookup_code(uint8_t id)
 {
-	if (id >= ARRAY_SIZE(WonderSwanPublishersPrivate::thirdPartyList))
+	if (id >= ARRAY_SIZE(thirdPartyList))
 		return nullptr;
 
-	const char *code = WonderSwanPublishersPrivate::thirdPartyList[id].code;
+	const char *code = thirdPartyList[id].code;
 	return (code[0] != '\0' ? code : nullptr);
 }
 
-}
+} }

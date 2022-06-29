@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * MachOData.cpp: Mach-O executable format data.                           *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,14 +10,14 @@
 #include "MachOData.hpp"
 #include "Other/macho_structs.h"
 
-namespace LibRomData {
+namespace LibRomData { namespace MachOData {
 
 /**
  * Look up a Mach-O CPU type.
  * @param cputype Mach-O CPU type.
  * @return CPU type name, or nullptr if not found.
  */
-const char *MachOData::lookup_cpu_type(uint32_t cputype)
+const char *lookup_cpu_type(uint32_t cputype)
 {
 	const unsigned int abi = (cputype >> 24);
 	const unsigned int cpu = (cputype & 0xFFFFFF);
@@ -76,7 +76,7 @@ const char *MachOData::lookup_cpu_type(uint32_t cputype)
  * @param cpusubtype Mach-O CPU subtype.
  * @return OS ABI name, or nullptr if not found.
  */
-const char *MachOData::lookup_cpu_subtype(uint32_t cputype, uint32_t cpusubtype)
+const char *lookup_cpu_subtype(uint32_t cputype, uint32_t cpusubtype)
 {
 	const unsigned int abi = (cputype >> 24) & 1;
 	cpusubtype &= 0xFFFFFF;
@@ -293,4 +293,4 @@ const char *MachOData::lookup_cpu_subtype(uint32_t cputype, uint32_t cpusubtype)
 	return s_cpu_subtype;
 }
 
-}
+} }

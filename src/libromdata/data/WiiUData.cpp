@@ -2,56 +2,19 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiUData.hpp: Nintendo Wii U publisher data.                            *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "WiiUData.hpp"
 
-namespace LibRomData {
+namespace LibRomData { namespace WiiUData {
 
-class WiiUDataPrivate {
-	private:
-		// Static class.
-		WiiUDataPrivate();
-		~WiiUDataPrivate();
-		RP_DISABLE_COPY(WiiUDataPrivate)
-
-	public:
-		struct WiiUDiscPublisher {
-			uint32_t id4;		// Packed ID4.
-			uint32_t publisher;	// Packed publisher ID.
-		};
-
-		/**
-		 * Wii U retail disc publisher list. (region-independent)
-		 * These games have the same publisher in all regions.
-		 * ID4 region byte is 'x'. (Not '\0' due to MSVC issues.)
-		 *
-		 * Reference: https://www.gametdb.com/WiiU/List
-		 */
-		static const WiiUDiscPublisher disc_publishers_noregion[];
-
-		/**
-		 * Wii U retail disc publisher list. (region-specific)
-		 * These games have different publishers in different regions.
-		 * ID4 region byte is the original region.
-		 *
-		 * Reference: https://www.gametdb.com/WiiU/List
-		 */
-		static const WiiUDiscPublisher disc_publishers_region[];
-
-		/**
-		 * Comparison function for bsearch().
-		 * @param a
-		 * @param b
-		 * @return
-		 */
-		static int RP_C_API compar(const void *a, const void *b);
+struct WiiUDiscPublisher {
+	uint32_t id4;		// Packed ID4.
+	uint32_t publisher;	// Packed publisher ID.
 };
-
-/** WiiUDataPrivate **/
 
 /**
  * Wii U retail disc publisher list. (region-independent)
@@ -60,7 +23,7 @@ class WiiUDataPrivate {
  *
  * Reference: https://www.gametdb.com/WiiU/List
  */
-const WiiUDataPrivate::WiiUDiscPublisher WiiUDataPrivate::disc_publishers_noregion[] = {
+static const WiiUDiscPublisher disc_publishers_noregion[] = {
 	{'AAFx', '0001'},	// Bayonetta
 	{'AALx', '0001'},	// Animal Crossing: amiibo Festival
 	{'ABAx', '0001'},	// Mario Party 10
@@ -275,7 +238,7 @@ const WiiUDataPrivate::WiiUDiscPublisher WiiUDataPrivate::disc_publishers_noregi
  *
  * Reference: https://www.gametdb.com/WiiU/List
  */
-const WiiUDataPrivate::WiiUDiscPublisher WiiUDataPrivate::disc_publishers_region[] = {
+static const WiiUDiscPublisher disc_publishers_region[] = {
 	{'ABEE', '00G9'},	// Ben 10: Omniverse (NTSC-U)
 	{'ABEP', '00AF'},	// Ben 10: Omniverse (PAL)
 	{'ABVE', '00G9'},	// Ben 10: Omniverse 2 (NTSC-U)
@@ -323,7 +286,7 @@ const WiiUDataPrivate::WiiUDiscPublisher WiiUDataPrivate::disc_publishers_region
  * @param b
  * @return
  */
-int RP_C_API WiiUDataPrivate::compar(const void *a, const void *b)
+static int RP_C_API compar(const void *a, const void *b)
 {
 	unsigned int id4_1 = static_cast<const WiiUDiscPublisher*>(a)->id4;
 	unsigned int id4_2 = static_cast<const WiiUDiscPublisher*>(b)->id4;
@@ -332,7 +295,7 @@ int RP_C_API WiiUDataPrivate::compar(const void *a, const void *b)
 	return 0;
 }
 
-/** WiiUData **/
+/** Public functions **/
 
 /**
  * Look up a Wii U retail disc publisher.
@@ -344,22 +307,22 @@ int RP_C_API WiiUDataPrivate::compar(const void *a, const void *b)
  * @param Wii U retail disc ID4.
  * @return Packed publisher ID, or 0 if not found.
  */
-uint32_t WiiUData::lookup_disc_publisher(const char *id4)
+uint32_t lookup_disc_publisher(const char *id4)
 {
 	// Check the region-independent list first.
-	WiiUDataPrivate::WiiUDiscPublisher key;
+	WiiUDiscPublisher key;
 	key.id4 = (static_cast<uint8_t>(id4[0]) << 24) |
 		  (static_cast<uint8_t>(id4[1]) << 16) |
 		  (static_cast<uint8_t>(id4[2]) << 8) | 'x';
 	key.publisher = 0;
 
 	// Do a binary search.
-	const WiiUDataPrivate::WiiUDiscPublisher *res =
-		static_cast<const WiiUDataPrivate::WiiUDiscPublisher*>(bsearch(&key,
-			WiiUDataPrivate::disc_publishers_noregion,
-			ARRAY_SIZE(WiiUDataPrivate::disc_publishers_noregion)-1,
-			sizeof(WiiUDataPrivate::WiiUDiscPublisher),
-			WiiUDataPrivate::compar));
+	const WiiUDiscPublisher *res =
+		static_cast<const WiiUDiscPublisher*>(bsearch(&key,
+			disc_publishers_noregion,
+			ARRAY_SIZE(disc_publishers_noregion)-1,
+			sizeof(WiiUDiscPublisher),
+			compar));
 	if (res) {
 		// Found a publisher in the region-independent list.
 		return res->publisher;
@@ -370,13 +333,13 @@ uint32_t WiiUData::lookup_disc_publisher(const char *id4)
 	key.id4 |= static_cast<uint8_t>(id4[3]);
 
 	// Do a binary search.
-	res = static_cast<const WiiUDataPrivate::WiiUDiscPublisher*>(bsearch(&key,
-			WiiUDataPrivate::disc_publishers_region,
-			ARRAY_SIZE(WiiUDataPrivate::disc_publishers_region)-1,
-			sizeof(WiiUDataPrivate::WiiUDiscPublisher),
-			WiiUDataPrivate::compar));
+	res = static_cast<const WiiUDiscPublisher*>(bsearch(&key,
+			disc_publishers_region,
+			ARRAY_SIZE(disc_publishers_region)-1,
+			sizeof(WiiUDiscPublisher),
+			compar));
 
 	return (res ? res->publisher : 0);
 }
 
-}
+} }

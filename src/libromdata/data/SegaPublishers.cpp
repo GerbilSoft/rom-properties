@@ -2,48 +2,29 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SegaPublishers.cpp: Sega third-party publishers list.                   *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "SegaPublishers.hpp"
 
-namespace LibRomData {
+namespace LibRomData { namespace SegaPublishersPrivate {
 
-class SegaPublishersPrivate {
-	private:
-		// Static class.
-		SegaPublishersPrivate();
-		~SegaPublishersPrivate();
-		RP_DISABLE_COPY(SegaPublishersPrivate)
-
-	public:
-		/**
-		 * Sega third-party publisher list.
-		 * Reference: http://segaretro.org/Third-party_T-series_codes
-		 */
-		struct TCodeEntry {
-			unsigned int t_code;
-			const char *publisher;
-		};
-		static const TCodeEntry tcodeList[];
-
-		/**
-		 * Comparison function for bsearch().
-		 * @param a
-		 * @param b
-		 * @return
-		 */
-		static int RP_C_API compar(const void *a, const void *b);
-
+/**
+ * Sega third-party publisher list.
+ * Reference: http://segaretro.org/Third-party_T-series_codes
+ */
+struct TCodeEntry {
+	unsigned int t_code;
+	const char *publisher;
 };
 
 /**
  * Sega third-party publisher list.
  * Reference: http://segaretro.org/Third-party_T-series_codes
  */
-const SegaPublishersPrivate::TCodeEntry SegaPublishersPrivate::tcodeList[] = {
+static const TCodeEntry tcodeList[] = {
 	{0,	"Sega"},
 	{11,	"Taito"},
 	{12,	"Capcom"},
@@ -401,7 +382,7 @@ const SegaPublishersPrivate::TCodeEntry SegaPublishersPrivate::tcodeList[] = {
  * @param b
  * @return
  */
-int RP_C_API SegaPublishersPrivate::compar(const void *a, const void *b)
+static int RP_C_API compar(const void *a, const void *b)
 {
 	unsigned int code1 = static_cast<const TCodeEntry*>(a)->t_code;
 	unsigned int code2 = static_cast<const TCodeEntry*>(b)->t_code;
@@ -410,22 +391,24 @@ int RP_C_API SegaPublishersPrivate::compar(const void *a, const void *b)
 	return 0;
 }
 
+/** Public functions **/
+
 /**
  * Look up a company code.
  * @param code Company code.
  * @return Publisher, or nullptr if not found.
  */
-const char *SegaPublishers::lookup(unsigned int code)
+const char *lookup(unsigned int code)
 {
 	// Do a binary search.
-	const SegaPublishersPrivate::TCodeEntry key = {code, nullptr};
-	const SegaPublishersPrivate::TCodeEntry *res =
-		static_cast<const SegaPublishersPrivate::TCodeEntry*>(bsearch(&key,
-			SegaPublishersPrivate::tcodeList,
-			ARRAY_SIZE(SegaPublishersPrivate::tcodeList)-1,
-			sizeof(SegaPublishersPrivate::TCodeEntry),
-			SegaPublishersPrivate::compar));
+	const TCodeEntry key = {code, nullptr};
+	const TCodeEntry *res =
+		static_cast<const TCodeEntry*>(bsearch(&key,
+			tcodeList,
+			ARRAY_SIZE(tcodeList)-1,
+			sizeof(TCodeEntry),
+			compar));
 	return (res ? res->publisher : nullptr);
 }
 
-}
+} }

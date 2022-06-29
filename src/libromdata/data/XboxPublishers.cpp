@@ -2,47 +2,18 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * XboxPublishers.hpp: Xbox third-party publishers list.                   *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "XboxPublishers.hpp"
 
-namespace LibRomData {
+namespace LibRomData { namespace XboxPublishers {
 
-class XboxPublishersPrivate {
-	private:
-		// Static class.
-		XboxPublishersPrivate();
-		~XboxPublishersPrivate();
-		RP_DISABLE_COPY(XboxPublishersPrivate)
-
-	public:
-		struct ThirdPartyEntry {
-			uint16_t code;			// 2-byte code
-			const char *publisher;
-		};
-
-		/**
-		 * Xbox third-party publisher list.
-		 * This list is valid for Xbox and Xbox 360.
-		 *
-		 * References:
-		 * - https://xboxdevwiki.net/Xbe
-		 */
-		static const ThirdPartyEntry thirdPartyList[];
-
-		/**
-		 * Comparison function for bsearch().
-		 * For use with ThirdPartyEntry.
-		 *
-		 * @param a
-		 * @param b
-		 * @return
-		 */
-		static int RP_C_API compar(const void *a, const void *b);
-
+struct ThirdPartyEntry {
+	uint16_t code;			// 2-byte code
+	const char *publisher;
 };
 
 /**
@@ -52,7 +23,7 @@ class XboxPublishersPrivate {
  * References:
  * - https://xboxdevwiki.net/Xbe
  */
-const XboxPublishersPrivate::ThirdPartyEntry XboxPublishersPrivate::thirdPartyList[] = {
+static const ThirdPartyEntry thirdPartyList[] = {
 	{0,	"<unlicensed>"},
 	{'AC',	"Acclaim Entertainment"},
 	{'AH',	"ARUSH Entertainment"},
@@ -166,7 +137,7 @@ const XboxPublishersPrivate::ThirdPartyEntry XboxPublishersPrivate::thirdPartyLi
  * @param b
  * @return
  */
-int RP_C_API XboxPublishersPrivate::compar(const void *a, const void *b)
+static int RP_C_API compar(const void *a, const void *b)
 {
 	uint16_t code1 = static_cast<const ThirdPartyEntry*>(a)->code;
 	uint16_t code2 = static_cast<const ThirdPartyEntry*>(b)->code;
@@ -182,16 +153,16 @@ int RP_C_API XboxPublishersPrivate::compar(const void *a, const void *b)
  * @param code Company code.
  * @return Publisher, or nullptr if not found.
  */
-const char *XboxPublishers::lookup(uint16_t code)
+const char *lookup(uint16_t code)
 {
 	// Do a binary search.
-	const XboxPublishersPrivate::ThirdPartyEntry key = {code, nullptr};
-	const XboxPublishersPrivate::ThirdPartyEntry *res =
-		static_cast<const XboxPublishersPrivate::ThirdPartyEntry*>(bsearch(&key,
-			XboxPublishersPrivate::thirdPartyList,
-			ARRAY_SIZE(XboxPublishersPrivate::thirdPartyList)-1,
-			sizeof(XboxPublishersPrivate::ThirdPartyEntry),
-			XboxPublishersPrivate::compar));
+	const ThirdPartyEntry key = {code, nullptr};
+	const ThirdPartyEntry *res =
+		static_cast<const ThirdPartyEntry*>(bsearch(&key,
+			thirdPartyList,
+			ARRAY_SIZE(thirdPartyList)-1,
+			sizeof(ThirdPartyEntry),
+			compar));
 	return (res ? res->publisher : nullptr);
 }
 
@@ -200,11 +171,11 @@ const char *XboxPublishers::lookup(uint16_t code)
  * @param code Company code.
  * @return Publisher, or nullptr if not found.
  */
-const char *XboxPublishers::lookup(const char *code)
+const char *lookup(const char *code)
 {
 	const uint16_t code16 = (static_cast<uint8_t>(code[0]) << 8) |
 				 static_cast<uint8_t>(code[1]);
 	return lookup(code16);
 }
 
-}
+} }

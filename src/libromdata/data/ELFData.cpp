@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ELFData.cpp: Executable and Linkable Format data.                       *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,39 +10,16 @@
 #include "ELFData.hpp"
 #include "Other/elf_structs.h"
 
-namespace LibRomData {
+namespace LibRomData { namespace ELFData {
 
-class ELFDataPrivate {
-	private:
-		// Static class.
-		ELFDataPrivate();
-		~ELFDataPrivate();
-		RP_DISABLE_COPY(ELFDataPrivate)
-
-	public:
-		// CPUs
-		struct MachineType {
-			uint16_t cpu;
-			const char *name;
-		};
-		static const char *const machineTypes_low[];
-		static const MachineType machineTypes_other[];
-
-		// OS ABIs
-		static const char *const osabi_names[];
-
-		/**
-		 * bsearch() comparison function for MachineType.
-		 * @param a
-		 * @param b
-		 * @return
-		 */
-		static int RP_C_API MachineType_compar(const void *a, const void *b);
+struct MachineType {
+	uint16_t cpu;
+	const char *name;
 };
 
 // ELF machine types. (contiguous low IDs)
 // Reference: https://github.com/file/file/blob/master/magic/Magdir/elf
-const char *const ELFDataPrivate::machineTypes_low[] = {
+static const char *const machineTypes_low[] = {
 	// 0
 	"No machine",
 	"AT&T WE 32100 (M32)",
@@ -291,7 +268,7 @@ const char *const ELFDataPrivate::machineTypes_low[] = {
 
 // ELF machine types. (other IDs)
 // Reference: https://github.com/file/file/blob/master/magic/Magdir/elf
-const ELFDataPrivate::MachineType ELFDataPrivate::machineTypes_other[] = {
+static const MachineType machineTypes_other[] = {
 	{243,		"RISC-V"},
 	{244,		"Lanai"},
 	{247,		"Linux eBPF"},
@@ -337,7 +314,7 @@ const ELFDataPrivate::MachineType ELFDataPrivate::machineTypes_other[] = {
 
 // ELF OS ABI names.
 // Reference: https://github.com/file/file/blob/master/magic/Magdir/elf
-const char *const ELFDataPrivate::osabi_names[] = {
+static const char *const osabi_names[] = {
 	// 0
 	"UNIX System V",
 	"HP-UX",
@@ -369,7 +346,7 @@ const char *const ELFDataPrivate::osabi_names[] = {
  * @param b
  * @return
  */
-int RP_C_API ELFDataPrivate::MachineType_compar(const void *a, const void *b)
+static int RP_C_API MachineType_compar(const void *a, const void *b)
 {
 	const uint16_t cpu1 = static_cast<const MachineType*>(a)->cpu;
 	const uint16_t cpu2 = static_cast<const MachineType*>(b)->cpu;
@@ -378,29 +355,31 @@ int RP_C_API ELFDataPrivate::MachineType_compar(const void *a, const void *b)
 	return 0;
 }
 
+/** Public functions **/
+
 /**
  * Look up an ELF machine type. (CPU)
  * @param cpu ELF machine type.
  * @return Machine type name, or nullptr if not found.
  */
-const char *ELFData::lookup_cpu(uint16_t cpu)
+const char *lookup_cpu(uint16_t cpu)
 {
-	static_assert(ARRAY_SIZE(ELFDataPrivate::machineTypes_low) == 224+2,
-		"ELFDataPrivate::machineTypes_low[] is missing entries.");
-	if (cpu < ARRAY_SIZE(ELFDataPrivate::machineTypes_low)-1) {
+	static_assert(ARRAY_SIZE(machineTypes_low) == 224+2,
+		"ELFData::machineTypes_low[] is missing entries.");
+	if (cpu < ARRAY_SIZE(machineTypes_low)-1) {
 		// CPU ID is in the contiguous low IDs array.
-		return ELFDataPrivate::machineTypes_low[cpu];
+		return machineTypes_low[cpu];
 	}
 
 	// CPU ID is in the "other" IDs array.
 	// Do a binary search.
-	const ELFDataPrivate::MachineType key = {cpu, nullptr};
-	const ELFDataPrivate::MachineType *res =
-		static_cast<const ELFDataPrivate::MachineType*>(bsearch(&key,
-			ELFDataPrivate::machineTypes_other,
-			ARRAY_SIZE(ELFDataPrivate::machineTypes_other)-1,
-			sizeof(ELFDataPrivate::MachineType),
-			ELFDataPrivate::MachineType_compar));
+	const MachineType key = {cpu, nullptr};
+	const MachineType *res =
+		static_cast<const MachineType*>(bsearch(&key,
+			machineTypes_other,
+			ARRAY_SIZE(machineTypes_other)-1,
+			sizeof(MachineType),
+			MachineType_compar));
 	return (res ? res->name : nullptr);
 }
 
@@ -409,11 +388,11 @@ const char *ELFData::lookup_cpu(uint16_t cpu)
  * @param osabi ELF OS ABI.
  * @return OS ABI name, or nullptr if not found.
  */
-const char *ELFData::lookup_osabi(uint8_t osabi)
+const char *lookup_osabi(uint8_t osabi)
 {
-	if (osabi < ARRAY_SIZE(ELFDataPrivate::osabi_names)-1) {
+	if (osabi < ARRAY_SIZE(osabi_names)-1) {
 		// OS ABI ID is in the array.
-		return ELFDataPrivate::osabi_names[osabi];
+		return osabi_names[osabi];
 	}
 
 	switch (osabi) {
@@ -428,4 +407,4 @@ const char *ELFData::lookup_osabi(uint8_t osabi)
 	return nullptr;
 }
 
-}
+} }

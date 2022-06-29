@@ -2,73 +2,24 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoPublishers.cpp: Nintendo third-party publishers list.           *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "NintendoPublishers.hpp"
 
-namespace LibRomData {
+namespace LibRomData { namespace NintendoPublishers {
 
-class NintendoPublishersPrivate {
-	private:
-		// Static class.
-		NintendoPublishersPrivate();
-		~NintendoPublishersPrivate();
-		RP_DISABLE_COPY(NintendoPublishersPrivate)
+struct ThirdPartyEntry {
+	uint16_t code;			// 2-byte code
+	const char *publisher;
+};
 
-	public:
-		struct ThirdPartyEntry {
-			uint16_t code;			// 2-byte code
-			const char *publisher;
-		};
-
-		/**
-		 * Nintendo third-party publisher list.
-		 * This list is valid for most Nintendo systems.
-		 *
-		 * References:
-		 * - https://www.gametdb.com/Wii
-		 * - https://www.gametdb.com/Wii/Downloads
-		 */
-		static const ThirdPartyEntry thirdPartyList[];
-
-		/**
-		 * Comparison function for bsearch().
-		 * For use with ThirdPartyEntry.
-		 *
-		 * @param a
-		 * @param b
-		 * @return
-		 */
-		static int RP_C_API compar(const void *a, const void *b);
-
-	public:
-		struct ThirdPartyEntry_fds {
-			uint8_t code;			// Old publisher code
-			const char *publisher_en;
-			const char *publisher_jp;
-		};
-
-		/**
-		 * Nintendo third-party publisher list.
-		 * This list is valid for Famicom Disk System only.
-		 *
-		 * References:
-		 * - https://wiki.nesdev.com/w/index.php/Family_Computer_Disk_System#Manufacturer_codes
-		 */
-		static const ThirdPartyEntry_fds thirdPartyList_fds[];
-
-		/**
-		 * Comparison function for bsearch().
-		 * For use with ThirdPartyEntry_fds.
-		 *
-		 * @param a
-		 * @param b
-		 * @return
-		 */
-		static int RP_C_API compar_fds(const void *a, const void *b);
+struct ThirdPartyEntry_fds {
+	uint8_t code;			// Old publisher code
+	const char *publisher_en;
+	const char *publisher_jp;
 };
 
 /**
@@ -80,7 +31,7 @@ class NintendoPublishersPrivate {
  * - https://www.gametdb.com/Wii/Downloads
  * - https://wiki.nesdev.com/w/index.php/Family_Computer_Disk_System#Manufacturer_codes
  */
-const NintendoPublishersPrivate::ThirdPartyEntry NintendoPublishersPrivate::thirdPartyList[] = {
+static const ThirdPartyEntry thirdPartyList[] = {
 	{0,	"<unlicensed>"},
 	{'00',	"<unlicensed>"},
 	{'01',	"Nintendo"},
@@ -501,7 +452,7 @@ const NintendoPublishersPrivate::ThirdPartyEntry NintendoPublishersPrivate::thir
  * @param b
  * @return
  */
-int RP_C_API NintendoPublishersPrivate::compar(const void *a, const void *b)
+static int RP_C_API compar(const void *a, const void *b)
 {
 	uint16_t code1 = static_cast<const ThirdPartyEntry*>(a)->code;
 	uint16_t code2 = static_cast<const ThirdPartyEntry*>(b)->code;
@@ -517,7 +468,7 @@ int RP_C_API NintendoPublishersPrivate::compar(const void *a, const void *b)
  * References:
  * - https://wiki.nesdev.com/w/index.php/Family_Computer_Disk_System#Manufacturer_codes
  */
-const NintendoPublishersPrivate::ThirdPartyEntry_fds NintendoPublishersPrivate::thirdPartyList_fds[] = {
+static const ThirdPartyEntry_fds thirdPartyList_fds[] = {
 	{0x00,	"<unlicensed>",			"<非公認>"},
 	{0x01,	"Nintendo",			"任天堂"},
 	{0x08,	"Capcom",			"カプコン"},
@@ -571,7 +522,7 @@ const NintendoPublishersPrivate::ThirdPartyEntry_fds NintendoPublishersPrivate::
  * @param b
  * @return
  */
-int RP_C_API NintendoPublishersPrivate::compar_fds(const void *a, const void *b)
+static int RP_C_API compar_fds(const void *a, const void *b)
 {
 	uint8_t code1 = static_cast<const ThirdPartyEntry_fds*>(a)->code;
 	uint8_t code2 = static_cast<const ThirdPartyEntry_fds*>(b)->code;
@@ -587,16 +538,16 @@ int RP_C_API NintendoPublishersPrivate::compar_fds(const void *a, const void *b)
  * @param code Company code.
  * @return Publisher, or nullptr if not found.
  */
-const char *NintendoPublishers::lookup(uint16_t code)
+const char *lookup(uint16_t code)
 {
 	// Do a binary search.
-	const NintendoPublishersPrivate::ThirdPartyEntry key = {code, nullptr};
-	const NintendoPublishersPrivate::ThirdPartyEntry *res =
-		static_cast<const NintendoPublishersPrivate::ThirdPartyEntry*>(bsearch(&key,
-			NintendoPublishersPrivate::thirdPartyList,
-			ARRAY_SIZE(NintendoPublishersPrivate::thirdPartyList)-1,
-			sizeof(NintendoPublishersPrivate::ThirdPartyEntry),
-			NintendoPublishersPrivate::compar));
+	const ThirdPartyEntry key = {code, nullptr};
+	const ThirdPartyEntry *res =
+		static_cast<const ThirdPartyEntry*>(bsearch(&key,
+			thirdPartyList,
+			ARRAY_SIZE(thirdPartyList)-1,
+			sizeof(ThirdPartyEntry),
+			compar));
 	return (res ? res->publisher : nullptr);
 }
 
@@ -605,7 +556,7 @@ const char *NintendoPublishers::lookup(uint16_t code)
  * @param code Company code.
  * @return Publisher, or nullptr if not found.
  */
-const char *NintendoPublishers::lookup(const char *code)
+const char *lookup(const char *code)
 {
 	const uint16_t code16 = (static_cast<uint8_t>(code[0]) << 8) |
 				 static_cast<uint8_t>(code[1]);
@@ -619,7 +570,7 @@ const char *NintendoPublishers::lookup(const char *code)
  * @param code Company code.
  * @return Publisher, or nullptr if not found.
  */
-const char *NintendoPublishers::lookup_old(uint8_t code)
+const char *lookup_old(uint8_t code)
 {
 	static const uint8_t hex_lookup[16] = {
 		'0','1','2','3','4','5','6','7',
@@ -636,18 +587,18 @@ const char *NintendoPublishers::lookup_old(uint8_t code)
  * @param code Company code.
  * @return Publisher, or nullptr if not found.
  */
-const char *NintendoPublishers::lookup_fds(uint8_t code)
+const char *lookup_fds(uint8_t code)
 {
 	// Do a binary search.
 	// TODO: Option to return the Japanese publisher.
-	const NintendoPublishersPrivate::ThirdPartyEntry_fds key = {code, nullptr, nullptr};
-	const NintendoPublishersPrivate::ThirdPartyEntry_fds *res =
-		static_cast<const NintendoPublishersPrivate::ThirdPartyEntry_fds*>(bsearch(&key,
-			NintendoPublishersPrivate::thirdPartyList_fds,
-			ARRAY_SIZE(NintendoPublishersPrivate::thirdPartyList_fds)-1,
-			sizeof(NintendoPublishersPrivate::ThirdPartyEntry_fds),
-			NintendoPublishersPrivate::compar_fds));
+	const ThirdPartyEntry_fds key = {code, nullptr, nullptr};
+	const ThirdPartyEntry_fds *res =
+		static_cast<const ThirdPartyEntry_fds*>(bsearch(&key,
+			thirdPartyList_fds,
+			ARRAY_SIZE(thirdPartyList_fds)-1,
+			sizeof(ThirdPartyEntry_fds),
+			compar_fds));
 	return (res ? res->publisher_en : nullptr);
 }
 
-}
+} }

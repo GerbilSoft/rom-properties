@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NESMappers.cpp: NES mapper data.                                        *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * Copyright (c) 2016-2022 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -10,7 +10,7 @@
 #include "stdafx.h"
 #include "NESMappers.hpp"
 
-namespace LibRomData {
+namespace LibRomData { namespace NESMappers {
 
 /**
  * References:
@@ -62,120 +62,17 @@ enum class NESMirroring : uint8_t {
 	// and use checksumming to detect the other. Submappers should be used instead.
 };
 
-class NESMappersPrivate
-{
-	private:
-		// Static class.
-		NESMappersPrivate();
-		~NESMappersPrivate();
-		RP_DISABLE_COPY(NESMappersPrivate)
-
-	public:
-
-		// iNES mapper list.
-		struct MapperEntry {
-			const char *name;		// Name of the board. (If unknown, nullptr.)
-			const char *manufacturer;	// Manufacturer. (If unknown, nullptr.)
-			NESMirroring mirroring;		// Mirroring behavior.
-		};
-		static const MapperEntry mappers_plane0[];
-		static const MapperEntry mappers_plane1[];
-		static const MapperEntry mappers_plane2[];
-
-		/**
-		 * NES 2.0 submapper information.
-		 *
-		 * `deprecated` can be one of the following:
-		 * - 0: Not deprecated.
-		 * - >0: Deprecated, and this is the replacement mapper number.
-		 * - 0xFFFF: Deprecated, no replacement.
-		 *
-		 * A submapper may be deprecated in favor of submapper 0, in which
-		 * case the `deprecated` value is equal to that mapper's number.
-		 * It is assumed that the replacement mapper always uses submapper 0.
-		 */
-		struct SubmapperInfo {
-			uint8_t submapper;		// Submapper number.
-			uint8_t reserved;
-			uint16_t deprecated;
-			const char *desc;		// Description.
-			NESMirroring mirroring;		// Mirroring behavior.
-		};
-
-		// Submappers.
-		static const struct SubmapperInfo mmc1_submappers[];		// 001
-		static const struct SubmapperInfo discrete_logic_submappers[];	// 002, 003, 007
-		static const struct SubmapperInfo mmc3_submappers[];		// 004
-		static const struct SubmapperInfo bandai_fcgx_submappers[];	// 016
-		static const struct SubmapperInfo namco_129_164_submappers[];	// 019
-		static const struct SubmapperInfo vrc4a_vrc4c_submappers[];	// 021
-		static const struct SubmapperInfo vrc4ef_vrc2b_submappers[];	// 023
-		static const struct SubmapperInfo vrc4bd_vrc2c_submappers[];	// 025
-		static const struct SubmapperInfo irem_g101_submappers[];	// 032
-		static const struct SubmapperInfo bnrom_nina001_submappers[];	// 034
-		static const struct SubmapperInfo sunsoft4_submappers[];	// 068
-		static const struct SubmapperInfo codemasters_submappers[];	// 071
-		static const struct SubmapperInfo mapper078_submappers[];	// 078
-		static const struct SubmapperInfo cony_yoko_submappers[];	// 083
-		static const struct SubmapperInfo mapper114_submappers[];	// 114
-		static const struct SubmapperInfo mapper197_submappers[];	// 197
-		static const struct SubmapperInfo namcot_175_340_submappers[];	// 210
-		static const struct SubmapperInfo sugar_softec_submappers[];	// 215
-		static const struct SubmapperInfo quattro_submappers[];		// 232
-		static const struct SubmapperInfo onebus_submappers[];		// 256
-		static const struct SubmapperInfo smd132_smd133_submappers[];	// 268
-		static const struct SubmapperInfo mapper313_submappers[];	// 313
-
-		/**
-		 * NES 2.0 submapper list.
-		 *
-		 * NOTE: Submapper 0 is optional, since it's the default behavior.
-		 * It may be included if NES 2.0 submapper 0 acts differently from
-		 * iNES mappers.
-		 */
-		struct SubmapperEntry {
-			uint16_t mapper;		// Mapper number.
-			uint16_t info_size;		// Number of entries in info.
-			const SubmapperInfo *info;	// Submapper information.
-		};
-		static const SubmapperEntry submappers[];
-
-		/**
-		 * bsearch() comparison function for SubmapperInfo.
-		 * @param a
-		 * @param b
-		 * @return
-		 */
-		static int RP_C_API SubmapperInfo_compar(const void *a, const void *b);
-
-		/**
-		 * bsearch() comparison function for SubmapperEntry.
-		 * @param a
-		 * @param b
-		 * @return
-		 */
-		static int RP_C_API SubmapperEntry_compar(const void *a, const void *b);
-
-		/**
-		 * Look up an iNES mapper number.
-		 * @param mapper Mapper number.
-		 * @return Mapper info, or nullptr if not found.
-		 */
-		static const MapperEntry *lookup_ines_info(int mapper);
-
-		/**
-		 * Look up an NES 2.0 submapper number.
-		 * @param mapper Mapper number.
-		 * @param submapper Submapper number.
-		 * @return Submapper info, or nullptr if not found.
-		 */
-		static const SubmapperInfo *lookup_nes2_submapper_info(int mapper, int submapper);
+// iNES mapper list
+struct MapperEntry {
+	const char *name;		// Name of the board. (If unknown, nullptr.)
+	const char *manufacturer;	// Manufacturer. (If unknown, nullptr.)
+	NESMirroring mirroring;		// Mirroring behavior.
 };
 
 /**
  * Mappers: NES 2.0 Plane 0 [000-255] (iNES 1.0)
  */
-const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers_plane0[] = {
+const MapperEntry mappers_plane0[] = {
 	/** NES 2.0 Plane 0 [0-255] (iNES 1.0) **/
 
 	// Mappers 000-009
@@ -491,7 +388,7 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers_plane0[] = {
  * Mappers: NES 2.0 Plane 1 [256-511]
  * TODO: Add mirroring info
  */
-const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers_plane1[] = {
+const MapperEntry mappers_plane1[] = {
 	// Mappers 256-259
 	{"OneBus Famiclone",		nullptr,		NESMirroring::Unknown},
 	{"UNIF PEC-586",		nullptr,		NESMirroring::Unknown},	// From UNIF; reserved by FCEUX developers
@@ -662,7 +559,7 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers_plane1[] = {
  * Mappers: NES 2.0 Plane 2 [512-767]
  * TODO: Add mirroring info
  */
-const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers_plane2[] = {
+const MapperEntry mappers_plane2[] = {
 	// Mappers 512-519
 	{"Zhōngguó Dàhēng",		"Sachen",		NESMirroring::Unknown},
 	{"Měi Shàonǚ Mèng Gōngchǎng III", "Sachen",		NESMirroring::Unknown},
@@ -717,8 +614,28 @@ const NESMappersPrivate::MapperEntry NESMappersPrivate::mappers_plane2[] = {
 
 /** Submappers. **/
 
+/**
+ * NES 2.0 submapper information.
+ *
+ * `deprecated` can be one of the following:
+ * - 0: Not deprecated.
+ * - >0: Deprecated, and this is the replacement mapper number.
+ * - 0xFFFF: Deprecated, no replacement.
+ *
+ * A submapper may be deprecated in favor of submapper 0, in which
+ * case the `deprecated` value is equal to that mapper's number.
+ * It is assumed that the replacement mapper always uses submapper 0.
+ */
+struct SubmapperInfo {
+	uint8_t submapper;		// Submapper number.
+	uint8_t reserved;
+	uint16_t deprecated;
+	const char *desc;		// Description.
+	NESMirroring mirroring;		// Mirroring behavior.
+};
+
 // Mapper 001: MMC1
-const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::mmc1_submappers[] = {
+const struct SubmapperInfo mmc1_submappers[] = {
 	{1, 0,   1, "SUROM", NESMirroring::Unknown},
 	{2, 0,   1, "SOROM", NESMirroring::Unknown},
 	{3, 0, 155, "MMC1A", NESMirroring::Unknown},
@@ -727,14 +644,14 @@ const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::mmc1_submappers
 };
 
 // Discrete logic mappers: UxROM (002), CNROM (003), AxROM (007)
-const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::discrete_logic_submappers[] = {
+const struct SubmapperInfo discrete_logic_submappers[] = {
 	{0, 0,   0, "Bus conflicts are unspecified", NESMirroring::Unknown},
 	{1, 0,   0, "Bus conflicts do not occur", NESMirroring::Unknown},
 	{2, 0,   0, "Bus conflicts occur, resulting in: bus AND rom", NESMirroring::Unknown},
 };
 
 // Mapper 004: MMC3
-const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::mmc3_submappers[] = {
+const struct SubmapperInfo mmc3_submappers[] = {
 	{0, 0,      0, "MMC3C", NESMirroring::Unknown},
 	{1, 0,      0, "MMC6", NESMirroring::Unknown},
 	{2, 0, 0xFFFF, "MMC3C with hard-wired mirroring", NESMirroring::Unknown},
@@ -743,7 +660,7 @@ const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::mmc3_submappers
 };
 
 // Mapper 016: Bandai FCG-x
-const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::bandai_fcgx_submappers[] = {
+const struct SubmapperInfo bandai_fcgx_submappers[] = {
 	{1, 0, 159, "LZ93D50 with 24C01", NESMirroring::Unknown},
 	{2, 0, 157, "Datach Joint ROM System", NESMirroring::Unknown},
 	{3, 0, 153, "8 KiB of WRAM instead of serial EEPROM", NESMirroring::Unknown},
@@ -752,7 +669,7 @@ const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::bandai_fcgx_sub
 };
 
 // Mapper 019: Namco 129, 163
-const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::namco_129_164_submappers[] = {
+const struct SubmapperInfo namco_129_164_submappers[] = {
 	{0, 0,   0, "Expansion sound volume unspecified", NESMirroring::Unknown},
 	{1, 0,  19, "Internal RAM battery-backed; no expansion sound", NESMirroring::Unknown},
 	{2, 0,   0, "No expansion sound", NESMirroring::Unknown},
@@ -762,70 +679,70 @@ const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::namco_129_164_s
 };
 
 // Mapper 021: Konami VRC4c, VRC4c
-const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::vrc4a_vrc4c_submappers[] = {
+const struct SubmapperInfo vrc4a_vrc4c_submappers[] = {
 	{1, 0,   0, "VRC4a", NESMirroring::Unknown},
 	{2, 0,   0, "VRC4c", NESMirroring::Unknown},
 };
 
 // Mapper 023: Konami VRC4e, VRC4f, VRC2b
-const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::vrc4ef_vrc2b_submappers[] = {
+const struct SubmapperInfo vrc4ef_vrc2b_submappers[] = {
 	{1, 0,   0, "VRC4f", NESMirroring::Unknown},
 	{2, 0,   0, "VRC4e", NESMirroring::Unknown},
 	{3, 0,   0, "VRC2b", NESMirroring::Unknown},
 };
 
 // Mapper 025: Konami VRC4b, VRC4d, VRC2c
-const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::vrc4bd_vrc2c_submappers[] = {
+const struct SubmapperInfo vrc4bd_vrc2c_submappers[] = {
 	{1, 0,   0, "VRC4b", NESMirroring::Unknown},
 	{2, 0,   0, "VRC4d", NESMirroring::Unknown},
 	{3, 0,   0, "VRC2c", NESMirroring::Unknown},
 };
 
 // Mapper 032: Irem G101
-const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::irem_g101_submappers[] = {
+const struct SubmapperInfo irem_g101_submappers[] = {
 	{0, 0,   0, "Programmable mirroring", NESMirroring::Unknown},
 	{1, 0,   0, "Fixed one-screen mirroring", NESMirroring::OneScreen_B},
 };
 
 // Mapper 034: BNROM / NINA-001
 // TODO: Distinguish between these two for iNES ROMs.
-const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::bnrom_nina001_submappers[] = {
+const struct SubmapperInfo bnrom_nina001_submappers[] = {
 	{1, 0,   0, "NINA-001", NESMirroring::Unknown},
 	{2, 0,   0, "BNROM", NESMirroring::Unknown},
 };
 
 // Mapper 068: Sunsoft-4
-const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::sunsoft4_submappers[] = {
+const struct SubmapperInfo sunsoft4_submappers[] = {
 	{1, 0,   0, "Dual Cartridge System (NTB-ROM)", NESMirroring::Unknown},
 };
 
 // Mapper 071: Codemasters
-const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::codemasters_submappers[] = {
+const struct SubmapperInfo codemasters_submappers[] = {
 	{1, 0,   0, "Programmable one-screen mirroring (Fire Hawk)", NESMirroring::MapperAB},
 };
 
 // Mapper 078: Cosmo Carrier / Holy Diver
-const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::mapper078_submappers[] = {
+const struct SubmapperInfo mapper078_submappers[] = {
 	{1, 0,      0, "Programmable one-screen mirroring (Uchuusen: Cosmo Carrier)", NESMirroring::MapperAB},
 	{2, 0, 0xFFFF,  "Fixed vertical mirroring + WRAM", NESMirroring::Unknown},
 	{3, 0,      0, "Programmable H/V mirroring (Holy Diver)", NESMirroring::MapperHV},
 };
 
 // Mapper 083: Cony/Yoko
-const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::cony_yoko_submappers[] = {
+const struct SubmapperInfo cony_yoko_submappers[] = {
 	{0, 0,   0, "1 KiB CHR-ROM banking, no WRAM", NESMirroring::Unknown},
 	{1, 0,   0, "2 KiB CHR-ROM banking, no WRAM", NESMirroring::Unknown},
 	{2, 0,   0, "1 KiB CHR-ROM banking, 32 KiB banked WRAM", NESMirroring::Unknown},
 };
 
 // Mapper 114: Sugar Softec/Hosenkan
-const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::mapper114_submappers[] = {
+const struct SubmapperInfo mapper114_submappers[] = {
 	{0, 0,   0, "MMC3 registers: 0,3,1,5,6,7,2,4", NESMirroring::Unknown},
 	{1, 0,   0, "MMC3 registers: 0,2,5,3,6,1,7,4", NESMirroring::Unknown},
 };
 
 // Mapper 197: Kǎshèng (MMC3 clone)
-const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::mapper197_submappers[] = {
+const struct SubmapperInfo mapper197_submappers[] = {
 	{0, 0,   0, "Super Fighter III (PRG-ROM CRC32 0xC333F621)", NESMirroring::Unknown},
 	{1, 0,   0, "Super Fighter III (PRG-ROM CRC32 0x2091BEB2)", NESMirroring::Unknown},
 	{2, 0,   0, "Mortal Kombat III Special", NESMirroring::Unknown},
@@ -833,24 +750,24 @@ const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::mapper197_subma
 };
 
 // Mapper 210: Namcot 175, 340
-const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::namcot_175_340_submappers[] = {
+const struct SubmapperInfo namcot_175_340_submappers[] = {
 	{1, 0,   0, "Namcot 175 (fixed mirroring)",        NESMirroring::Header},
 	{2, 0,   0, "Namcot 340 (programmable mirroring)", NESMirroring::MapperHVAB},
 };
 
 // Mapper 215: Sugar Softec
-const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::sugar_softec_submappers[] = {
+const struct SubmapperInfo sugar_softec_submappers[] = {
 	{0, 0,   0, "UNL-8237", NESMirroring::Unknown},
 	{1, 0,   0, "UNL-8237A", NESMirroring::Unknown},
 };
 
 // Mapper 232: Codemasters Quattro
-const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::quattro_submappers[] = {
+const struct SubmapperInfo quattro_submappers[] = {
 	{1, 0,   0, "Aladdin Deck Enhancer", NESMirroring::Unknown},
 };
 
 // Mapper 256: OneBus Famiclones
-const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::onebus_submappers[] = {
+const struct SubmapperInfo onebus_submappers[] = {
 	{ 1, 0,   0, "Waixing VT03", NESMirroring::Unknown},
 	{ 2, 0,   0, "Power Joy Supermax", NESMirroring::Unknown},
 	{ 3, 0,   0, "Zechess/Hummer Team", NESMirroring::Unknown},
@@ -861,13 +778,13 @@ const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::onebus_submappe
 };
 
 // Mapper 268: SMD132/SMD133
-const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::smd132_smd133_submappers[] = {
+const struct SubmapperInfo smd132_smd133_submappers[] = {
 	{0, 0,   0, "COOLBOY ($6000-$7FFF)", NESMirroring::Unknown},
 	{1, 0,   0, "MINDKIDS ($5000-$5FFF)", NESMirroring::Unknown},
 };
 
 // Mapper 313: Reset-based multicart (MMC3)
-const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::mapper313_submappers[] = {
+const struct SubmapperInfo mapper313_submappers[] = {
 	{0, 0,   0, "Game size: 128 KiB PRG, 128 KiB CHR", NESMirroring::Unknown},
 	{1, 0,   0, "Game size: 256 KiB PRG, 128 KiB CHR", NESMirroring::Unknown},
 	{2, 0,   0, "Game size: 128 KiB PRG, 256 KiB CHR", NESMirroring::Unknown},
@@ -882,8 +799,15 @@ const struct NESMappersPrivate::SubmapperInfo NESMappersPrivate::mapper313_subma
  * It may be included if NES 2.0 submapper 0 acts differently from
  * iNES mappers.
  */
+
+struct SubmapperEntry {
+	uint16_t mapper;		// Mapper number.
+	uint16_t info_size;		// Number of entries in info.
+	const SubmapperInfo *info;	// Submapper information.
+};
+
 #define NES2_SUBMAPPER(num, arr) {num, (uint16_t)ARRAY_SIZE(arr), arr}
-const NESMappersPrivate::SubmapperEntry NESMappersPrivate::submappers[] = {
+const SubmapperEntry submappers[] = {
 	NES2_SUBMAPPER(  1, mmc1_submappers),			// MMC1
 	NES2_SUBMAPPER(  2, discrete_logic_submappers),		// UxROM
 	NES2_SUBMAPPER(  3, discrete_logic_submappers),		// CNROM
@@ -918,7 +842,7 @@ const NESMappersPrivate::SubmapperEntry NESMappersPrivate::submappers[] = {
  * @param b
  * @return
  */
-int RP_C_API NESMappersPrivate::SubmapperInfo_compar(const void *a, const void *b)
+static int RP_C_API SubmapperInfo_compar(const void *a, const void *b)
 {
 	uint8_t submapper1 = static_cast<const SubmapperInfo*>(a)->submapper;
 	uint8_t submapper2 = static_cast<const SubmapperInfo*>(b)->submapper;
@@ -933,7 +857,7 @@ int RP_C_API NESMappersPrivate::SubmapperInfo_compar(const void *a, const void *
  * @param b
  * @return
  */
-int RP_C_API NESMappersPrivate::SubmapperEntry_compar(const void *a, const void *b)
+static int RP_C_API SubmapperEntry_compar(const void *a, const void *b)
 {
 	uint16_t mapper1 = static_cast<const SubmapperEntry*>(a)->mapper;
 	uint16_t mapper2 = static_cast<const SubmapperEntry*>(b)->mapper;
@@ -947,7 +871,7 @@ int RP_C_API NESMappersPrivate::SubmapperEntry_compar(const void *a, const void 
  * @param mapper Mapper number.
  * @return Mapper info, or nullptr if not found.
  */
-const NESMappersPrivate::MapperEntry *NESMappersPrivate::lookup_ines_info(int mapper)
+const MapperEntry *lookup_ines_info(int mapper)
 {
 	assert(mapper >= 0);
 	if (mapper < 0) {
@@ -958,7 +882,7 @@ const NESMappersPrivate::MapperEntry *NESMappersPrivate::lookup_ines_info(int ma
 	if (mapper < 256) {
 		// NES 2.0 Plane 0 [000-255] (iNES 1.0)
 		static_assert(sizeof(mappers_plane0) == (256 * sizeof(MapperEntry)),
-			"NESMappersPrivate::mappers_plane0[] doesn't have 256 entries.");
+			"mappers_plane0[] doesn't have 256 entries.");
 		return &mappers_plane0[mapper];
 	} else if (mapper < 512) {
 		// NES 2.0 Plane 1 [256-511]
@@ -988,7 +912,7 @@ const NESMappersPrivate::MapperEntry *NESMappersPrivate::lookup_ines_info(int ma
  * @param submapper Submapper number.
  * @return Submapper info, or nullptr if not found.
  */
-const NESMappersPrivate::SubmapperInfo *NESMappersPrivate::lookup_nes2_submapper_info(int mapper, int submapper)
+const SubmapperInfo *lookup_nes2_submapper_info(int mapper, int submapper)
 {
 	assert(mapper >= 0);
 	assert(submapper >= 0);
@@ -1019,16 +943,16 @@ const NESMappersPrivate::SubmapperInfo *NESMappersPrivate::lookup_nes2_submapper
 	return res2;
 }
 
-/** NESMappers **/
+/** Public functions **/
 
 /**
  * Look up an iNES mapper number.
  * @param mapper Mapper number.
  * @return Mapper name, or nullptr if not found.
  */
-const char *NESMappers::lookup_ines(int mapper)
+const char *lookup_ines(int mapper)
 {
-	const NESMappersPrivate::MapperEntry *ent = NESMappersPrivate::lookup_ines_info(mapper);
+	const MapperEntry *ent = lookup_ines_info(mapper);
 	return ent ? ent->name : nullptr;
 }
 
@@ -1037,7 +961,7 @@ const char *NESMappers::lookup_ines(int mapper)
  * @param tnes_mapper TNES mapper number.
  * @return iNES mapper number, or -1 if unknown.
  */
-int NESMappers::tnesMapperToInesMapper(int tnes_mapper)
+int tnesMapperToInesMapper(int tnes_mapper)
 {
 	// 255 == not supported
 	static const uint8_t ines_mappers[] = {
@@ -1124,9 +1048,9 @@ int NESMappers::tnesMapperToInesMapper(int tnes_mapper)
  * @param submapper Submapper number.
  * @return Submapper name, or nullptr if not found.
  */
-const char *NESMappers::lookup_nes2_submapper(int mapper, int submapper)
+const char *lookup_nes2_submapper(int mapper, int submapper)
 {
-	const NESMappersPrivate::SubmapperInfo *ent = NESMappersPrivate::lookup_nes2_submapper_info(mapper, submapper);
+	const SubmapperInfo *ent = lookup_nes2_submapper_info(mapper, submapper);
 	// TODO: Return the "deprecated" value?
 	return ent ? ent->desc : nullptr;
 }
@@ -1139,10 +1063,10 @@ const char *NESMappers::lookup_nes2_submapper(int mapper, int submapper)
  * @param vert Four-screen bit in the iNES header
  * @return String describing the mirroring behavior
  */
-const char *NESMappers::lookup_ines_mirroring(int mapper, int submapper, bool vert, bool four)
+const char *lookup_ines_mirroring(int mapper, int submapper, bool vert, bool four)
 {
-	const NESMappersPrivate::MapperEntry *ent1 = NESMappersPrivate::lookup_ines_info(mapper);
-	const NESMappersPrivate::SubmapperInfo *ent2 = NESMappersPrivate::lookup_nes2_submapper_info(mapper, submapper);
+	const MapperEntry *ent1 = lookup_ines_info(mapper);
+	const SubmapperInfo *ent2 = lookup_nes2_submapper_info(mapper, submapper);
 	NESMirroring mirror = ent1 ? ent1->mirroring : NESMirroring::Unknown;
 	NESMirroring submapper_mirror = ent2 ? ent2->mirroring :NESMirroring::Unknown;
 
@@ -1215,4 +1139,4 @@ const char *NESMappers::lookup_ines_mirroring(int mapper, int submapper, bool ve
 	}
 }
 
-}
+} }
