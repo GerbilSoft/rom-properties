@@ -110,7 +110,7 @@ SET(${PROJECT_NAME}_SRCS
 	disc/CisoPspReader.cpp
 	disc/GcnFst.cpp
 	disc/GcnPartition.cpp
-	disc/GcnPartitionPrivate.cpp
+	disc/GcnPartition_p.cpp
 	disc/GczReader.cpp
 	disc/GdiReader.cpp
 	disc/IResourceReader.cpp
@@ -285,7 +285,7 @@ SET(${PROJECT_NAME}_H
 	disc/CisoPspReader.hpp
 	disc/GcnFst.hpp
 	disc/GcnPartition.hpp
-	disc/GcnPartitionPrivate.hpp
+	disc/GcnPartition_p.hpp
 	disc/GczReader.hpp
 	disc/GdiReader.hpp
 	disc/IResourceReader.hpp

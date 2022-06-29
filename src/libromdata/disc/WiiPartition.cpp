@@ -24,7 +24,7 @@ using LibRpFile::IRpFile;
 // C++ STL classes.
 using std::unique_ptr;
 
-#include "GcnPartitionPrivate.hpp"
+#include "GcnPartition_p.hpp"
 namespace LibRomData {
 
 #define SECTOR_SIZE_ENCRYPTED 0x8000

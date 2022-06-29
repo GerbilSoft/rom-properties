@@ -14,7 +14,7 @@
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
-#include "GcnPartitionPrivate.hpp"
+#include "GcnPartition_p.hpp"
 namespace LibRomData {
 
 /** GcnPartition **/

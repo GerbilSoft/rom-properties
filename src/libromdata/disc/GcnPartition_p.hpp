@@ -1,13 +1,13 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * GcnPartitionPrivate.hpp: GCN/Wii partition private class.               *
+ * GcnPartition_p.hpp: GCN/Wii partition private class.                    *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_DISC_GCNPARTITIONPRIVATE_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_DISC_GCNPARTITIONPRIVATE_HPP__
+#ifndef __ROMPROPERTIES_LIBROMDATA_DISC_GCNPARTITION_P_HPP__
+#define __ROMPROPERTIES_LIBROMDATA_DISC_GCNPARTITION_P_HPP__
 
 #include <stdint.h>
 #include "../Console/gcn_structs.h"
@@ -75,4 +75,4 @@ class GcnPartitionPrivate
 
 }
 
-#endif /* __ROMPROPERTIES_LIBROMDATA_DISC_GCNPARTITIONPRIVATE_HPP__ */
+#endif /* __ROMPROPERTIES_LIBROMDATA_DISC_GCNPARTITION_P_HPP__ */
