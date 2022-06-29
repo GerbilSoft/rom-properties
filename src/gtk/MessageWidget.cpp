@@ -176,7 +176,8 @@ message_widget_init(MessageWidget *widget)
 	widget->image = gtk_image_new();
 	widget->label = gtk_label_new(nullptr);
 
-	// TODO: Prpoer alignment.
+	// TODO: Align the GtkImage to the top of the first line
+	// if the label has multiple lines.
 
 	widget->close_button = gtk_button_new();
 #if GTK_CHECK_VERSION(4,0,0)
