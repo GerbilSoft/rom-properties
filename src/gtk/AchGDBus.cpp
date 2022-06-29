@@ -195,7 +195,7 @@ int AchGDBusPrivate::notifyFunc(Achievements::ID id)
 	// Get the icon.
 	// FIXME: Icon size. Using 32px for now.
 	static const int iconSize = 32;
-	PIMGTYPE imgspr = loadSpriteSheet_int(iconSize);
+	PIMGTYPE imgspr = AchSpritesheet::load(iconSize);
 	PIMGTYPE subIcon = nullptr;
 	if (imgspr != nullptr) {
 		// Determine row and column.
