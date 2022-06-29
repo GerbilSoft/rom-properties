@@ -328,7 +328,7 @@ unsigned int DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
 	{
 		// This is probably ICONDATA_VMS.
 		if (this->saveType == SaveType::DCI) {
-			__byte_swap_32_array(vms_header.dci_dword, sizeof(vms_header.icondata_vms));
+			rp_byte_swap_32_array(vms_header.dci_dword, sizeof(vms_header.icondata_vms));
 		}
 
 		// Byteswap the fields.
@@ -346,7 +346,7 @@ unsigned int DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
 
 	// If DCI, the entire vms_header must be 32-bit byteswapped first.
 	if (this->saveType == SaveType::DCI) {
-		__byte_swap_32_array(vms_header.dci_dword, sizeof(vms_header.dci_dword));
+		rp_byte_swap_32_array(vms_header.dci_dword, sizeof(vms_header.dci_dword));
 	}
 
 	// Byteswap the fields.
@@ -476,7 +476,7 @@ const rp_image *DreamcastSavePrivate::loadIcon(void)
 
 	if (this->saveType == SaveType::DCI) {
 		// Apply 32-bit byteswapping to the palette.
-		__byte_swap_32_array(buf.palette.u32, sizeof(buf.palette.u32));
+		rp_byte_swap_32_array(buf.palette.u32, sizeof(buf.palette.u32));
 	}
 
 	this->iconAnimData = new IconAnimData();
@@ -499,7 +499,7 @@ const rp_image *DreamcastSavePrivate::loadIcon(void)
 
 		if (this->saveType == SaveType::DCI) {
 			// Apply 32-bit byteswapping to the palette.
-			__byte_swap_32_array(buf.icon_color.u32, sizeof(buf.icon_color.u32));
+			rp_byte_swap_32_array(buf.icon_color.u32, sizeof(buf.icon_color.u32));
 		}
 
 		iconAnimData->delays[i] = delay;
@@ -579,7 +579,7 @@ const rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 
 		if (this->saveType == SaveType::DCI) {
 			// Apply 32-bit byteswapping to the palette.
-			__byte_swap_32_array(buf.palette.u32, sizeof(buf.palette.u32));
+			rp_byte_swap_32_array(buf.palette.u32, sizeof(buf.palette.u32));
 		}
 
 		// Load the icon data.
@@ -591,7 +591,7 @@ const rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 
 		if (this->saveType == SaveType::DCI) {
 			// Apply 32-bit byteswapping to the icon data.
-			__byte_swap_32_array(buf.icon_color.u32, sizeof(buf.icon_color.u32));
+			rp_byte_swap_32_array(buf.icon_color.u32, sizeof(buf.icon_color.u32));
 		}
 
 		// Convert the icon to rp_image.
@@ -618,7 +618,7 @@ const rp_image *DreamcastSavePrivate::loadIcon_ICONDATA_VMS(void)
 
 	if (this->saveType == SaveType::DCI) {
 		// Apply 32-bit byteswapping to the icon data.
-		__byte_swap_32_array(buf.icon_mono.u32, sizeof(buf.icon_mono.u32));
+		rp_byte_swap_32_array(buf.icon_mono.u32, sizeof(buf.icon_mono.u32));
 	}
 
 	// Convert the icon to rp_image.
@@ -695,7 +695,7 @@ const rp_image *DreamcastSavePrivate::loadBanner(void)
 
 	if (this->saveType == SaveType::DCI) {
 		// Apply 32-bit byteswapping to the eyecatch data.
-		__byte_swap_32_array(reinterpret_cast<uint32_t*>(data.get()), eyecatch_size);
+		rp_byte_swap_32_array(reinterpret_cast<uint32_t*>(data.get()), eyecatch_size);
 	}
 
 	// Convert the eycatch to rp_image.

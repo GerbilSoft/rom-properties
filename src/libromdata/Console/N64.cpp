@@ -133,7 +133,7 @@ N64::N64(IRpFile *file)
 		case N64Private::RomType::V64:
 			// V64 format. (16-bit byteswapped)
 			// Convert the header to Z64 first.
-			__byte_swap_16_array(d->romHeader.u16, sizeof(d->romHeader.u16));
+			rp_byte_swap_16_array(d->romHeader.u16, sizeof(d->romHeader.u16));
 			break;
 
 		case N64Private::RomType::SWAP2:
@@ -151,7 +151,7 @@ N64::N64(IRpFile *file)
 			// TODO: Optimize by not converting the non-text fields
 			// if the host system is little-endian?
 			// FIXME: Untested - ucon64 doesn't support it.
-			__byte_swap_32_array(d->romHeader.u32, sizeof(d->romHeader.u32));
+			rp_byte_swap_32_array(d->romHeader.u32, sizeof(d->romHeader.u32));
 			break;
 
 		default:

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_scsi.cpp: General SCSI functions.                                *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -605,17 +605,17 @@ int RpFile::ata_identify_device_int(struct _ATA_RESP_IDENTIFY_DEVICE *pResp, boo
 	// so byteswap the whole thing. This will also handle
 	// byteswapping the string fields.
 	// TODO: NAA/OUI/WWN and other >16-bit fields.
-	__byte_swap_16_array(reinterpret_cast<uint16_t*>(pResp), sizeof(*pResp));
+	rp_byte_swap_16_array(reinterpret_cast<uint16_t*>(pResp), sizeof(*pResp));
 #else /* SYS_BYTE_ORDER == SYS_LIL_ENDIAN */
 	// String fields are always "swapped" regardless of
 	// host endian, so we'll have to unswap those.
-	__byte_swap_16_array(reinterpret_cast<uint16_t*>(pResp->serial_number),
+	rp_byte_swap_16_array(reinterpret_cast<uint16_t*>(pResp->serial_number),
 		sizeof(pResp->serial_number));
-	__byte_swap_16_array(reinterpret_cast<uint16_t*>(pResp->firmware_revision),
+	rp_byte_swap_16_array(reinterpret_cast<uint16_t*>(pResp->firmware_revision),
 		sizeof(pResp->firmware_revision));
-	__byte_swap_16_array(reinterpret_cast<uint16_t*>(pResp->model_number),
+	rp_byte_swap_16_array(reinterpret_cast<uint16_t*>(pResp->model_number),
 		sizeof(pResp->model_number));
-	__byte_swap_16_array(reinterpret_cast<uint16_t*>(pResp->media_serial_number),
+	rp_byte_swap_16_array(reinterpret_cast<uint16_t*>(pResp->media_serial_number),
 		sizeof(pResp->media_serial_number));
 #endif
 

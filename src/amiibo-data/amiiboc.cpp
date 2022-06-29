@@ -555,7 +555,7 @@ int main(int argc, char *argv[])
 	binHeader.cseries_len = cpu_to_le32(cseries_len);
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
 	// Byteswap the series table to little-endian.
-	__byte_swap_32_array(charSeriesTable.data(), charSeriesTable.size() * sizeof(charSeriesTable[0]));
+	rp_byte_swap_32_array(charSeriesTable.data(), charSeriesTable.size() * sizeof(charSeriesTable[0]));
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 	fwrite(charSeriesTable.data(), 1, cseries_len, f_out);
 
@@ -605,7 +605,7 @@ int main(int argc, char *argv[])
 	binHeader.aseries_len = cpu_to_le32(aseries_len);
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
 	// Byteswap the series table to little-endian.
-	__byte_swap_32_array(amiiboSeriesTable.data(), amiiboSeriesTable.size() * sizeof(amiiboSeriesTable[0]));
+	rp_byte_swap_32_array(amiiboSeriesTable.data(), amiiboSeriesTable.size() * sizeof(amiiboSeriesTable[0]));
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 	fwrite(amiiboSeriesTable.data(), 1, aseries_len, f_out);
 

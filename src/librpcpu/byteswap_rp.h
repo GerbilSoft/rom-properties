@@ -18,6 +18,7 @@
 /* Get the system byte order. */
 #include "byteorder.h"
 #include "cpu_dispatch.h"
+#include "force_inline.h"
 
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
@@ -126,7 +127,7 @@ extern "C" {
  * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
  */
 RP_LIBROMDATA_PUBLIC
-void __byte_swap_16_array_c(uint16_t *ptr, size_t n);
+void rp_byte_swap_16_array_c(uint16_t *ptr, size_t n);
 
 /**
  * 32-bit byteswap function.
@@ -135,7 +136,7 @@ void __byte_swap_16_array_c(uint16_t *ptr, size_t n);
  * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
  */
 RP_LIBROMDATA_PUBLIC
-void __byte_swap_32_array_c(uint32_t *ptr, size_t n);
+void rp_byte_swap_32_array_c(uint32_t *ptr, size_t n);
 
 #ifdef BYTESWAP_HAS_MMX
 /**
@@ -145,7 +146,7 @@ void __byte_swap_32_array_c(uint32_t *ptr, size_t n);
  * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
  */
 RP_LIBROMDATA_PUBLIC
-void __byte_swap_16_array_mmx(uint16_t *ptr, size_t n);
+void rp_byte_swap_16_array_mmx(uint16_t *ptr, size_t n);
 
 /**
  * 32-bit byteswap function.
@@ -154,7 +155,7 @@ void __byte_swap_16_array_mmx(uint16_t *ptr, size_t n);
  * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
  */
 RP_LIBROMDATA_PUBLIC
-void __byte_swap_32_array_mmx(uint32_t *ptr, size_t n);
+void rp_byte_swap_32_array_mmx(uint32_t *ptr, size_t n);
 #endif /* BYTESWAP_HAS_MMX */
 
 #ifdef BYTESWAP_HAS_SSE2
@@ -165,7 +166,7 @@ void __byte_swap_32_array_mmx(uint32_t *ptr, size_t n);
  * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
  */
 RP_LIBROMDATA_PUBLIC
-void __byte_swap_16_array_sse2(uint16_t *ptr, size_t n);
+void rp_byte_swap_16_array_sse2(uint16_t *ptr, size_t n);
 
 /**
  * 32-bit byteswap function.
@@ -174,7 +175,7 @@ void __byte_swap_16_array_sse2(uint16_t *ptr, size_t n);
  * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
  */
 RP_LIBROMDATA_PUBLIC
-void __byte_swap_32_array_sse2(uint32_t *ptr, size_t n);
+void rp_byte_swap_32_array_sse2(uint32_t *ptr, size_t n);
 #endif /* BYTESWAP_HAS_SSE2 */
 
 #ifdef BYTESWAP_HAS_SSSE3
@@ -185,7 +186,7 @@ void __byte_swap_32_array_sse2(uint32_t *ptr, size_t n);
  * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
  */
 RP_LIBROMDATA_PUBLIC
-void __byte_swap_16_array_ssse3(uint16_t *ptr, size_t n);
+void rp_byte_swap_16_array_ssse3(uint16_t *ptr, size_t n);
 
 /**
  * 32-bit byteswap function.
@@ -194,7 +195,7 @@ void __byte_swap_16_array_ssse3(uint16_t *ptr, size_t n);
  * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
  */
 RP_LIBROMDATA_PUBLIC
-void __byte_swap_32_array_ssse3(uint32_t *ptr, size_t n);
+void rp_byte_swap_32_array_ssse3(uint32_t *ptr, size_t n);
 #endif /* BYTESWAP_HAS_SSSE3 */
 
 #if defined(HAVE_IFUNC) && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64))
@@ -206,7 +207,7 @@ void __byte_swap_32_array_ssse3(uint32_t *ptr, size_t n);
  * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
  */
 RP_LIBROMDATA_PUBLIC
-void __byte_swap_16_array(uint16_t *ptr, size_t n);
+void rp_byte_swap_16_array(uint16_t *ptr, size_t n);
 
 /**
  * 32-bit byteswap function.
@@ -214,7 +215,7 @@ void __byte_swap_16_array(uint16_t *ptr, size_t n);
  * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
  */
 RP_LIBROMDATA_PUBLIC
-void __byte_swap_32_array(uint32_t *ptr, size_t n);
+void rp_byte_swap_32_array(uint32_t *ptr, size_t n);
 
 #else /* !HAVE_IFUNC && !(defined(RP_CPU_I386) || defined(RP_CPU_AMD64)) */
 /* System does not have IFUNC. Use inline dispatch functions. */
@@ -224,31 +225,31 @@ void __byte_swap_32_array(uint32_t *ptr, size_t n);
  * @param ptr Pointer to array to swap. (MUST be 16-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
  */
-static inline void __byte_swap_16_array(uint16_t *ptr, size_t n)
+static FORCEINLINE void rp_byte_swap_16_array(uint16_t *ptr, size_t n)
 {
 #  ifdef BYTESWAP_HAS_SSSE3
 	if (RP_CPU_HasSSSE3()) {
-		__byte_swap_16_array_ssse3(ptr, n);
+		rp_byte_swap_16_array_ssse3(ptr, n);
 	} else
 #  endif /* BYTESWAP_HAS_SSSE3 */
 #  ifdef BYTESWAP_ALWAYS_HAS_SSE2
 	{
-		__byte_swap_16_array_sse2(ptr, n);
+		rp_byte_swap_16_array_sse2(ptr, n);
 	}
 #  else /* !BYTESWAP_ALWAYS_HAS_SSE2 */
 #    ifdef BYTESWAP_HAS_SSE2
 	if (RP_CPU_HasSSE2()) {
-		__byte_swap_16_array_sse2(ptr, n);
+		rp_byte_swap_16_array_sse2(ptr, n);
 	} else
 #    endif /* BYTESWAP_HAS_SSE2 */
 #    ifdef BYTESWAP_HAS_MMX
 	if (RP_CPU_HasMMX()) {
-		__byte_swap_16_array_mmx(ptr, n);
+		rp_byte_swap_16_array_mmx(ptr, n);
 	} else
 #    endif /* BYTESWAP_HAS_MMX */
 	// TODO: MMX-optimized version?
 	{
-		__byte_swap_16_array_c(ptr, n);
+		rp_byte_swap_16_array_c(ptr, n);
 	}
 #  endif /* BYTESWAP_ALWAYS_HAS_SSE2 */
 }
@@ -258,32 +259,32 @@ static inline void __byte_swap_16_array(uint16_t *ptr, size_t n)
  * @param ptr Pointer to array to swap. (MUST be 32-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
  */
-static inline void __byte_swap_32_array(uint32_t *ptr, size_t n)
+static FORCEINLINE void rp_byte_swap_32_array(uint32_t *ptr, size_t n)
 {
 #  ifdef BYTESWAP_HAS_SSSE3
 	if (RP_CPU_HasSSSE3()) {
-		__byte_swap_32_array_ssse3(ptr, n);
+		rp_byte_swap_32_array_ssse3(ptr, n);
 	} else
 #  endif /* BYTESWAP_HAS_SSSE3 */
 #  ifdef BYTESWAP_ALWAYS_HAS_SSE2
 	{
-		__byte_swap_32_array_sse2(ptr, n);
+		rp_byte_swap_32_array_sse2(ptr, n);
 	}
 #  else /* !BYTESWAP_ALWAYS_HAS_SSE2 */
 #    ifdef BYTESWAP_HAS_SSE2
 	if (RP_CPU_HasSSE2()) {
-		__byte_swap_32_array_sse2(ptr, n);
+		rp_byte_swap_32_array_sse2(ptr, n);
 	} else
 #    endif /* BYTESWAP_HAS_SSE2 */
 #    if 0 /* FIXME: The MMX version is actually *slower* than the C version. */
 #    ifdef BYTESWAP_HAS_MMX
 	if (RP_CPU_HasMMX()) {
-		__byte_swap_32_array_mmx(ptr, n);
+		rp_byte_swap_32_array_mmx(ptr, n);
 	} else
 #    endif /* BYTESWAP_HAS_MMX */
 #    endif /* 0 */
 	{
-		__byte_swap_32_array_c(ptr, n);
+		rp_byte_swap_32_array_c(ptr, n);
 	}
 #  endif /* !BYTESWAP_ALWAYS_HAS_SSE2 */
 }

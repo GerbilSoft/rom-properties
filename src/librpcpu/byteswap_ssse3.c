@@ -3,7 +3,7 @@
  * byteswap_ssse3.c: Byteswapping functions.                               *
  * SSSE3-optimized version.                                                *
  *                                                                         *
- * Copyright (c) 2008-2020 by David Korth                                  *
+ * Copyright (c) 2008-2022 by David Korth                                  *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,7 +22,7 @@
  * @param ptr Pointer to array to swap. (MUST be 16-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 2; an extra odd byte will be ignored.)
  */
-void __byte_swap_16_array_ssse3(uint16_t *ptr, size_t n)
+void rp_byte_swap_16_array_ssse3(uint16_t *ptr, size_t n)
 {
 	const __m128i shuf_mask = _mm_setr_epi8(1,0, 3,2, 5,4, 7,6, 9,8, 11,10, 13,12, 15,14);
 
@@ -63,7 +63,7 @@ void __byte_swap_16_array_ssse3(uint16_t *ptr, size_t n)
  * @param ptr Pointer to array to swap. (MUST be 32-bit aligned!)
  * @param n Number of bytes to swap. (Must be divisible by 4; extra bytes will be ignored.)
  */
-void __byte_swap_32_array_ssse3(uint32_t *ptr, size_t n)
+void rp_byte_swap_32_array_ssse3(uint32_t *ptr, size_t n)
 {
 	const __m128i shuf_mask = _mm_setr_epi8(3,2,1,0, 7,6,5,4, 11,10,9,8, 15,14,13,12);
 

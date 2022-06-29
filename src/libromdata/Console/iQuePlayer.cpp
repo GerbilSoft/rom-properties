@@ -315,7 +315,7 @@ rp_image *iQuePlayerPrivate::loadImage(off64_t address, size_t z_size, size_t un
 	if (byteswap) {
 		// Byteswap the image first.
 		// TODO: Integrate this into image decoding?
-		__byte_swap_16_array(img_buf.get(), unz_size);
+		rp_byte_swap_16_array(img_buf.get(), unz_size);
 	}
 #endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
