@@ -104,11 +104,11 @@ message_widget_class_init(MessageWidgetClass *klass)
 	// GdkScreen no longer exists in GTK4.
 	// Style context providers are added directly to GdkDisplay instead.
 	gtk_style_context_add_provider_for_display(display,
-		GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
+		GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 #  else /* !GTK_CHECK_VERSION(4,0,0) */
 	GdkScreen *const screen = gdk_display_get_default_screen(display);
 	gtk_style_context_add_provider_for_screen(screen,
-		GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
+		GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 #  endif /* !GTK_CHECK_VERSION(4,0,0) */
 
 	static const char css_MessageWidget[] =
@@ -129,6 +129,22 @@ message_widget_class_init(MessageWidgetClass *klass)
 		"}\n"
 		".gsrp_msgw_error {\n"
 		"\tbackground-color: lighter(@gsrp_color_error);\n"
+		"\tborder: 2px solid @gsrp_color_error;\n"
+		"}\n"
+		".gsrp_msgw_info_dark {\n"
+		"\tbackground-color: darker(@gsrp_color_info);\n"
+		"\tborder: 2px solid @gsrp_color_info;\n"
+		"}\n"
+		".gsrp_msgw_warning_dark {\n"
+		"\tbackground-color: darker(@gsrp_color_warning);\n"
+		"\tborder: 2px solid @gsrp_color_warning;\n"
+		"}\n"
+		".gsrp_msgw_question_dark {\n"
+		"\tbackground-color: darker(@gsrp_color_info);\n"	// NOTE: Same as INFO.
+		"\tborder: 2px solid @gsrp_color_info;\n"
+		"}\n"
+		".gsrp_msgw_error_dark {\n"
+		"\tbackground-color: darker(@gsrp_color_error);\n"
 		"\tborder: 2px solid @gsrp_color_error;\n"
 		"}\n";
 
@@ -280,13 +296,14 @@ message_widget_set_message_type(MessageWidget *widget, GtkMessageType messageTyp
 		{"dialog-warning",	"gsrp_msgw_warning",	0xF67400, 0xFF9B41},	// WARNING
 		{"dialog-question",	"gsrp_msgw_question",	0x3DAEE9, 0x7FD3FF},	// QUESTION (same as INFO)
 		{"dialog-error",	"gsrp_msgw_error",	0xDA4453, 0xF77E8A},	// ERROR
-		{nullptr,		nullptr,		0,        0},		// OTHER
 	};
 
-	if (messageType < 0 || messageType > ARRAY_SIZE(iconInfo)) {
+	if (messageType < 0 || messageType >= ARRAY_SIZE(iconInfo)) {
 		// Default to OTHER.
 		messageType = GTK_MESSAGE_OTHER;
 	}
+
+	// TODO: Update regardless if the system theme changes.
 	if (widget->messageType == messageType)
 		return;
 	widget->messageType = messageType;
@@ -309,9 +326,35 @@ message_widget_set_message_type(MessageWidget *widget, GtkMessageType messageTyp
 		gtk_style_context_remove_class(context, "gsrp_msgw_warning");
 		gtk_style_context_remove_class(context, "gsrp_msgw_question");
 		gtk_style_context_remove_class(context, "gsrp_msgw_error");
+		gtk_style_context_remove_class(context, "gsrp_msgw_info_dark");
+		gtk_style_context_remove_class(context, "gsrp_msgw_warning_dark");
+		gtk_style_context_remove_class(context, "gsrp_msgw_question_dark");
+		gtk_style_context_remove_class(context, "gsrp_msgw_error_dark");
+
+		// Get the text color. If its grayscale value is >= 0.75,
+		// assume we're using a dark theme.
+		bool dark = false;
+		GdkRGBA color;
+		gboolean bRet = gtk_style_context_lookup_color(context, "theme_text_color", &color);
+		if (bRet) {
+			// BT.601 grayscale conversion
+			const gfloat grayscale = (color.red   * 0.299f) +
+			                         (color.green * 0.587f) +
+						 (color.blue  * 0.114f);
+			dark = (grayscale >= 0.750f);
+		}
+
+		// Dark CSS classes
+		static const char *const dark_css_class_tbl[] = {
+			"gsrp_msgw_info_dark",
+			"gsrp_msgw_warning_dark",
+			"gsrp_msgw_question_dark",
+			"gsrp_msgw_error_dark",
+		};
 
 		// Add the new CSS class.
-		gtk_style_context_add_class(context, pIconInfo->css_class);
+		gtk_style_context_add_class(context,
+			(likely(!dark) ? pIconInfo->css_class : dark_css_class_tbl[messageType]));
 #else /* !GTK_CHECK_VERSION(3,0,0) */
 		GdkColor color;
 		color.pixel	 = pIconInfo->border_color;
