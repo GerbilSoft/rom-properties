@@ -1,8 +1,11 @@
 # Changes
 
-## v1.10 (released 2022/??/??)
+## v2.0 (released 2022/??/??)
 
 * New features:
+  * The configuration UI has been ported to GTK+. Users of GTK+-based
+    desktops will no longer need to install the KDE4 or KF5 UI frontends
+    in order to use rp-config.
   * libromdata is now compiled as a shared library on Windows and Linux.
     This means an extra DLL (romdata-1.dll) or SO (libromdata.so.1) will
     be included with the distribution. The advantage of splitting it out
