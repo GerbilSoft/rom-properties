@@ -117,7 +117,7 @@ const char *file_ext(const char *filename)
  * @param filename Filename
  * @return File extension, including the leading dot; nullptr if no extension.
  */
-const char *file_ext(const char *filename)
+const char *file_ext(const wchar_t *filename)
 {
 	if (unlikely(!filename))
 		return nullptr;
