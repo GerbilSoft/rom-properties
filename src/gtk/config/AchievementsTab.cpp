@@ -134,10 +134,9 @@ achievements_tab_init(AchievementsTab *tab)
 	gtk_widget_set_halign(scrolledWindow, GTK_ALIGN_FILL);
 	gtk_widget_set_valign(scrolledWindow, GTK_ALIGN_FILL);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-	gtk_widget_show(scrolledWindow);
-	gtk_widget_show(tab->treeView);
-
 	gtk_box_pack_start(GTK_BOX(tab), scrolledWindow, true, true, 0);
+
+	gtk_widget_show_all(scrolledWindow);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Load the achievements.

@@ -227,30 +227,23 @@ about_tab_init(AboutTab *tab)
 	gtk_box_append(GTK_BOX(tab), hboxTitle);
 	gtk_box_append(GTK_BOX(tab), tabWidget);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-	gtk_widget_show(hboxTitle);
-	gtk_widget_show(tab->imgLogo);
-	gtk_widget_show(tab->lblTitle);
-	gtk_widget_show(tabWidget);
-	gtk_widget_show(scrlCredits);
-	gtk_widget_show(tab->lblCredits);
-	gtk_widget_show(scrlLibraries);
-	gtk_widget_show(tab->lblLibraries);
-	gtk_widget_show(scrlSupport);
-	gtk_widget_show(tab->lblSupport);
 
 	gtk_box_pack_start(GTK_BOX(hboxTitle), tab->imgLogo, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(hboxTitle), tab->lblTitle, false, false, 0);
 
-#ifndef RP_USE_GTK_ALIGNMENT
+#  ifndef RP_USE_GTK_ALIGNMENT
 	GTK_WIDGET_HALIGN_CENTER(hboxTitle);
 	gtk_box_pack_start(GTK_BOX(tab), hboxTitle, false, false, 0);
-#else /* RP_USE_GTK_ALIGNMENT */
+#  else /* RP_USE_GTK_ALIGNMENT */
 	GtkWidget *const alignTitle = gtk_alignment_new(0.5f, 0.0f, 0.0f, 0.0f);
 	gtk_container_add(GTK_CONTAINER(alignTitle), hboxTitle);
-	gtk_widget_show(alignTitle);
 	gtk_box_pack_start(GTK_BOX(tab), alignTitle, false, false, 0);
-#endif /* RP_USE_GTK_ALIGNMENT */
+	gtk_widget_show(alignTitle);
+#  endif /* RP_USE_GTK_ALIGNMENT */
 	gtk_box_pack_start(GTK_BOX(tab), tabWidget, true, true, 0);
+
+	gtk_widget_show_all(hboxTitle);
+	gtk_widget_show_all(tabWidget);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Initialize the various text fields.

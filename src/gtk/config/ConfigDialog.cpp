@@ -176,10 +176,6 @@ config_dialog_init(ConfigDialog *dialog)
 
 	// Create the GtkNotebook.
 	dialog->tabWidget = gtk_notebook_new();
-	gtk_widget_show(dialog->tabWidget);
-	dialog->tabWidget_switch_page = g_signal_connect(
-		dialog->tabWidget, "switch-page",
-		G_CALLBACK(config_dialog_switch_page), dialog);
 #ifndef RP_USE_GTK_ALIGNMENT
 	// NOTE: This doesn't seem to be needed for GTK2.
 	// May be a theme-specific thing...
@@ -197,30 +193,23 @@ config_dialog_init(ConfigDialog *dialog)
 	// Create the tabs.
 	GtkWidget *const lblImageTypes = gtk_label_new_with_mnemonic(
 		convert_accel_to_gtk(C_("ConfigDialog", "&Image Types")).c_str());
-	gtk_widget_show(lblImageTypes);
 	dialog->tabImageTypes = image_types_tab_new();
-	gtk_widget_show(dialog->tabImageTypes);
 	g_signal_connect(dialog->tabImageTypes, "modified",
 		G_CALLBACK(config_dialog_tab_modified), dialog);
 
 	GtkWidget *const lblSystems = gtk_label_new_with_mnemonic(
 		convert_accel_to_gtk(C_("ConfigDialog", "&Systems")).c_str());
-	gtk_widget_show(lblSystems);
 	dialog->tabSystems = systems_tab_new();
-	gtk_widget_show(dialog->tabSystems);
 	g_signal_connect(dialog->tabSystems, "modified",
 		G_CALLBACK(config_dialog_tab_modified), dialog);
 
 	GtkWidget *const lblOptions = gtk_label_new_with_mnemonic(
 		convert_accel_to_gtk(C_("ConfigDialog", "&Options")).c_str());
-	gtk_widget_show(lblOptions);
 	dialog->tabOptions = options_tab_new();
-	gtk_widget_show(dialog->tabOptions);
 	g_signal_connect(dialog->tabOptions, "modified",
 		G_CALLBACK(config_dialog_tab_modified), dialog);
 
 	GtkWidget *const lblCache = gtk_label_new_with_mnemonic(C_("ConfigDialog", "Thumbnail Cache"));
-	gtk_widget_show(lblCache);
 	dialog->tabCache = cache_tab_new();
 	gtk_widget_show(dialog->tabCache);
 	g_signal_connect(dialog->tabCache, "modified",
@@ -228,27 +217,21 @@ config_dialog_init(ConfigDialog *dialog)
 
 	GtkWidget *const lblAchievements = gtk_label_new_with_mnemonic(
 		convert_accel_to_gtk(C_("ConfigDialog", "&Achievements")).c_str());
-	gtk_widget_show(lblAchievements);
 	dialog->tabAchievements = achievements_tab_new();
-	gtk_widget_show(dialog->tabAchievements);
 	g_signal_connect(dialog->tabAchievements, "modified",
 		G_CALLBACK(config_dialog_tab_modified), dialog);
 
 #ifdef ENABLE_DECRYPTION
 	GtkWidget *const lblKeyManager = gtk_label_new_with_mnemonic(
 		convert_accel_to_gtk(C_("ConfigDialog", "&Key Manager")).c_str());
-	gtk_widget_show(lblKeyManager);
 	dialog->tabKeyManager = key_manager_tab_new();
-	gtk_widget_show(dialog->tabKeyManager);
 	g_signal_connect(dialog->tabKeyManager, "modified",
 		G_CALLBACK(config_dialog_tab_modified), dialog);
 #endif /* ENABLE_DECRYPTION */
 
 	GtkWidget *const lblAbout = gtk_label_new_with_mnemonic(
 		convert_accel_to_gtk(C_("ConfigDialog", "Abou&t")).c_str());
-	gtk_widget_show(lblAbout);
 	dialog->tabAbout = about_tab_new();
-	gtk_widget_show(dialog->tabAbout);
 	g_signal_connect(dialog->tabAbout, "modified",
 		G_CALLBACK(config_dialog_tab_modified), dialog);
 
@@ -322,6 +305,30 @@ config_dialog_init(ConfigDialog *dialog)
 	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), alignAbout, lblAbout);
 #endif /* RP_USE_GTK_ALIGNMENT */
 
+#if !GTK_CHECK_VERSION(4,0,0)
+	// Show the GtkNotebook, tab labels, and actual tabs.
+	gtk_widget_show(dialog->tabWidget);
+
+	gtk_widget_show(lblImageTypes);
+	gtk_widget_show(lblSystems);
+	gtk_widget_show(lblOptions);
+	gtk_widget_show(lblCache);
+	gtk_widget_show(lblAchievements);
+	gtk_widget_show(lblAbout);
+
+	gtk_widget_show(dialog->tabImageTypes);
+	gtk_widget_show(dialog->tabSystems);
+	gtk_widget_show(dialog->tabAbout);
+	gtk_widget_show(dialog->tabCache);
+	gtk_widget_show(dialog->tabOptions);
+	gtk_widget_show(dialog->tabAchievements);
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
+
+#  ifdef ENABLE_DECRYPTION
+	gtk_widget_show(lblKeyManager);
+	gtk_widget_show(dialog->tabKeyManager);
+#  endif /* ENABLE_DECRYPTION */
+
 	// Reset button is disabled initially.
 	gtk_widget_set_sensitive(dialog->btnReset, FALSE);
 
@@ -329,7 +336,16 @@ config_dialog_init(ConfigDialog *dialog)
 	gtk_widget_set_sensitive(dialog->btnDefaults,
 		rp_config_tab_has_defaults(RP_CONFIG_TAB(dialog->tabImageTypes)));
 
+	// FIXME: For some reason, GtkNotebook is defaulting to the
+	// "Thumbnail Cache" tab on GTK3 after optimizing
+	// gtk_widget_show(). Explicitly reset it to 0.
+	gtk_notebook_set_current_page(GTK_NOTEBOOK(dialog->tabWidget), 0);
+
 	// Connect signals.
+	dialog->tabWidget_switch_page = g_signal_connect(
+		dialog->tabWidget, "switch-page",
+		G_CALLBACK(config_dialog_switch_page), dialog);
+
 	g_signal_connect(dialog, "response", G_CALLBACK(config_dialog_response_handler), NULL);
 }
 

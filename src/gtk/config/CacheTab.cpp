@@ -192,16 +192,6 @@ cache_tab_init(CacheTab *tab)
 	gtk_box_append(GTK_BOX(tab), tab->lblStatus);
 	gtk_box_append(GTK_BOX(tab), tab->pbStatus);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-	// NOTE: GTK4 defaults to visible; GTK2 and GTK3 defaults to invisible.
-	// Hiding unconditionally just in case.
-	gtk_widget_hide(tab->lblStatus);
-	gtk_widget_hide(tab->pbStatus);
-
-	gtk_widget_show(tab->lblSysCache);
-	gtk_widget_show(tab->btnSysCache);
-	gtk_widget_show(tab->lblRpCache);
-	gtk_widget_show(tab->btnRpCache);
-
 	gtk_box_pack_start(GTK_BOX(tab), tab->lblSysCache, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(tab), tab->btnSysCache, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(tab), tab->lblRpCache, false, false, 0);
@@ -210,6 +200,18 @@ cache_tab_init(CacheTab *tab)
 	// TODO: Spacer and/or alignment?
 	gtk_box_pack_end(GTK_BOX(tab), tab->pbStatus, false, false, 0);
 	gtk_box_pack_end(GTK_BOX(tab), tab->lblStatus, false, false, 0);
+
+	// NOTE: GTK4 defaults to visible; GTK2 and GTK3 defaults to invisible.
+	// Hiding unconditionally just in case.
+	gtk_widget_hide(tab->lblStatus);
+	gtk_widget_hide(tab->pbStatus);
+	gtk_widget_set_no_show_all(tab->lblStatus, TRUE);
+	gtk_widget_set_no_show_all(tab->pbStatus, TRUE);
+
+	gtk_widget_show(tab->lblSysCache);
+	gtk_widget_show(tab->btnSysCache);
+	gtk_widget_show(tab->lblRpCache);
+	gtk_widget_show(tab->btnRpCache);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Load the current configuration.

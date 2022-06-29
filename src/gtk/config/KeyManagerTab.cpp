@@ -249,15 +249,11 @@ key_manager_tab_init(KeyManagerTab *tab)
 	// This will also be used for the non-GtkMenuButton version.
 	GtkWidget *const lblImport = gtk_label_new(nullptr);
 	gtk_label_set_markup_with_mnemonic(GTK_LABEL(lblImport), s_import.c_str());
-	gtk_widget_show(lblImport);
-
 	GtkWidget *const imgImport = gtk_image_new_from_icon_name("pan-up-symbolic", GTK_ICON_SIZE_BUTTON);
-	gtk_widget_show(imgImport);
 
 	GtkWidget *const hboxImport = rp_gtk_hbox_new(4);
 	gtk_box_pack_start(GTK_BOX(hboxImport), lblImport, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(hboxImport), imgImport, false, false, 0);
-	gtk_widget_show(hboxImport);
 #  if GTK_CHECK_VERSION(4,0,0)
 	gtk_button_set_child(GTK_BUTTON(tab->btnImport), hboxImport);
 #  else /* !GTK_CHECK_VERSION(4,0,0) */
@@ -328,23 +324,25 @@ key_manager_tab_init(KeyManagerTab *tab)
 #endif /* !USE_GTK_MENU_BUTTON */
 
 #if GTK_CHECK_VERSION(4,0,0)
-	gtk_widget_hide(tab->messageWidget);
-
 	gtk_box_append(GTK_BOX(tab), tab->messageWidget);
 	gtk_box_append(GTK_BOX(tab), scrolledWindow);
 	gtk_box_append(GTK_BOX(tab), tab->btnImport);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-	gtk_widget_show(scrolledWindow);
-	gtk_widget_show(tab->treeView);
-	gtk_widget_show(tab->btnImport);
-
 	gtk_box_pack_start(GTK_BOX(tab), tab->messageWidget, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(tab), scrolledWindow, TRUE, TRUE, 0);
+
 #  ifndef RP_USE_GTK_ALIGNMENT
 	gtk_box_pack_start(GTK_BOX(tab), tab->btnImport, FALSE, FALSE, 0);
 #  else /* RP_USE_GTK_ALIGNMENT */
 	gtk_box_pack_start(GTK_BOX(tab), alignImport, FALSE, FALSE, 0);
 #  endif /* RP_USE_GTK_ALIGNMENT */
+
+	// NOTE: GTK4 defaults to visible; GTK2 and GTK3 defaults to invisible.
+	// Hiding unconditionally just in case.
+	gtk_widget_hide(tab->messageWidget);
+
+	gtk_widget_show_all(scrolledWindow);
+	gtk_widget_show_all(hboxImport);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Initialize the GtkTreeView with the available keys.

@@ -206,10 +206,6 @@ systems_tab_init(SystemsTab *tab)
 	gtk_box_append(GTK_BOX(vboxDMG), lblDMGDescription);
 	gtk_box_append(GTK_BOX(vboxDMG), table);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-	gtk_widget_show(fraDMG);
-	gtk_widget_show(vboxDMG);
-	gtk_widget_show(lblDMGDescription);
-
 	gtk_widget_show(table);
 	gtk_widget_show(lblDMG);
 	gtk_widget_show(tab->cboDMG);
@@ -221,6 +217,8 @@ systems_tab_init(SystemsTab *tab)
 	gtk_box_pack_start(GTK_BOX(tab), fraDMG, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(vboxDMG), lblDMGDescription, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(vboxDMG), table, false, false, 0);
+
+	gtk_widget_show_all(fraDMG);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Load the current configuration.

@@ -112,7 +112,6 @@ options_tab_init(OptionsTab *tab)
 #else /* !GTK_CHECK_VERSION(2,91,0) */
 	GtkWidget *const alignDownloads = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignDownloads), 6, 6, 6, 6);
-	gtk_widget_show(alignDownloads);
 	gtk_container_add(GTK_CONTAINER(alignDownloads), vboxDownloads);
 	gtk_frame_set_child(GTK_FRAME(fraDownloads), alignDownloads);
 #endif /* GTK_CHECK_VERSION(2,91,0) */
@@ -146,7 +145,6 @@ options_tab_init(OptionsTab *tab)
 #else /* !GTK_CHECK_VERSION(2,91,0) */
 	GtkWidget *const alignOptions = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignOptions), 6, 6, 6, 6);
-	gtk_widget_show(alignOptions);
 	gtk_container_add(GTK_CONTAINER(alignOptions), vboxOptions);
 	gtk_frame_set_child(GTK_FRAME(fraOptions), alignOptions);
 #endif /* GTK_CHECK_VERSION(2,91,0) */
@@ -193,22 +191,6 @@ options_tab_init(OptionsTab *tab)
 	gtk_box_append(GTK_BOX(vboxOptions), tab->chkShowDangerousPermissionsOverlayIcon);
 	gtk_box_append(GTK_BOX(vboxOptions), tab->chkEnableThumbnailOnNetworkFS);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-	gtk_widget_show(fraDownloads);
-	gtk_widget_show(vboxDownloads);
-	gtk_widget_show(tab->chkExtImgDownloadEnabled);
-	gtk_widget_show(tab->chkUseIntIconForSmallSizes);
-	gtk_widget_show(tab->chkDownloadHighResScans);
-	gtk_widget_show(tab->chkStoreFileOriginInfo);
-
-	gtk_widget_show(hboxGameTDBPAL);
-	gtk_widget_show(lblGameTDBPAL);
-	gtk_widget_show(tab->cboGameTDBPAL);
-
-	gtk_widget_show(fraOptions);
-	gtk_widget_show(vboxOptions);
-	gtk_widget_show(tab->chkShowDangerousPermissionsOverlayIcon);
-	gtk_widget_show(tab->chkEnableThumbnailOnNetworkFS);
-
 	gtk_box_pack_start(GTK_BOX(tab), fraDownloads, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(vboxDownloads), tab->chkExtImgDownloadEnabled, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(vboxDownloads), tab->chkUseIntIconForSmallSizes, false, false, 0);
@@ -222,6 +204,9 @@ options_tab_init(OptionsTab *tab)
 	gtk_box_pack_start(GTK_BOX(tab), fraOptions, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(vboxOptions), tab->chkShowDangerousPermissionsOverlayIcon, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(vboxOptions), tab->chkEnableThumbnailOnNetworkFS, false, false, 0);
+
+	gtk_widget_show_all(fraDownloads);
+	gtk_widget_show_all(fraOptions);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Load the current configuration.

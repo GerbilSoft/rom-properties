@@ -455,17 +455,15 @@ image_types_tab_init(ImageTypesTab *tab)
 	// TODO: Spacer and/or alignment?
 	gtk_box_append(GTK_BOX(tab), tab->lblCredits);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-	// NOTE: GTK4 defaults to visible; GTK2 and GTK3 defaults to invisible.
-	// Hiding unconditionally just in case.
-	gtk_widget_show(lblImageTypes);
-	gtk_widget_show(tab->table);
-	gtk_widget_show(tab->lblCredits);
-
 	gtk_box_pack_start(GTK_BOX(tab), lblImageTypes, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(tab), tab->table, false, false, 0);
 
 	// TODO: Spacer and/or alignment?
 	gtk_box_pack_end(GTK_BOX(tab), tab->lblCredits, false, false, 0);
+
+	gtk_widget_show(lblImageTypes);
+	gtk_widget_show(tab->table);
+	gtk_widget_show(tab->lblCredits);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Load the current configuration.
