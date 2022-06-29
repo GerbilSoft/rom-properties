@@ -1411,7 +1411,7 @@ void KeyManagerTabPrivate::importWiiKeysBin(void)
 	// Update ts_keyFileDir using the returned filename.
 	updateKeyFileDir(tfilename);
 
-	KeyStoreWin32::ImportReturn iret = d->keyStore->importKeysFromBin(
+	KeyStoreWin32::ImportReturn iret = keyStore->importKeysFromBin(
 		KeyStoreUI::ImportFileID::WiiKeysBin, T2U8(tfilename).c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
 	//d->showKeyImportReturnStatus(filename, U82T_c(C_("KeyManagerTab", "Wii keys.bin")), iret);
@@ -1438,7 +1438,7 @@ void KeyManagerTabPrivate::importWiiUOtpBin(void)
 	// Update ts_keyFileDir using the returned filename.
 	updateKeyFileDir(tfilename);
 
-	KeyStoreWin32::ImportReturn iret = d->keyStore->importKeysFromBin(
+	KeyStoreWin32::ImportReturn iret = keyStore->importKeysFromBin(
 		KeyStoreUI::ImportFileID::WiiUOtpBin, T2U8(tfilename).c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
 	//d->showKeyImportReturnStatus(filename, U82T_c(C_("KeyManagerTab", "Wii U otp.bin"), iret);
@@ -1465,7 +1465,7 @@ void KeyManagerTabPrivate::import3DSboot9bin(void)
 	// Update ts_keyFileDir using the returned filename.
 	updateKeyFileDir(tfilename);
 
-	KeyStoreWin32::ImportReturn iret = d->keyStore->importKeysFromBin(
+	KeyStoreWin32::ImportReturn iret = keyStore->importKeysFromBin(
 		KeyStoreUI::ImportFileID::N3DSboot9bin, T2U8(tfilename).c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
 	//d->showKeyImportReturnStatus(filename, U82T_c(C_("KeyManagerTab", "3DS boot9.bin"), iret);
@@ -1492,7 +1492,7 @@ void KeyManagerTabPrivate::import3DSaeskeydb(void)
 	// Update ts_keyFileDir using the returned filename.
 	updateKeyFileDir(tfilename);
 
-	KeyStoreWin32::ImportReturn iret = d->keyStore->importKeysFromBin(
+	KeyStoreWin32::ImportReturn iret = keyStore->importKeysFromBin(
 		KeyStoreUI::ImportFileID::N3DSaeskeydb, T2U8(tfilename).c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
 	//d->showKeyImportReturnStatus(filename, U82T_c(C_("KeyManagerTab", "3DS aeskeydb.bin"), iret);
