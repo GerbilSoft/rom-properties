@@ -339,9 +339,18 @@ void gtk_progress_bar_set_error(GtkProgressBar *pb, gboolean error)
 		gtk_style_context_remove_class(context, "gsrp_pb_error");
 	}
 #else /* !GTK_CHECK_VERSION(3,0,0) */
-	// TODO: GTK2 version.
-	RP_UNUSED(pb);
-	RP_UNUSED(error);
+	// Reference: https://www.mail-archive.com/gtk-app-devel-list@gnome.org/msg20073.html
+	// TODO: Probably not optimal, but GTK2 is obsolete, so meh.
+	// NOTE: It causes the theming to break. I suspect the theming
+	// is *why* the usual methods aren't working here.
+	GtkStyle *const style = gtk_style_new();
+	if (error) {
+		gdk_color_parse("#901818", &style->bg[GTK_STATE_PRELIGHT]);
+	} else {
+		gdk_color_parse("#336E8D", &style->bg[GTK_STATE_PRELIGHT]);
+	}
+	gtk_widget_set_style(GTK_WIDGET(pb), style);
+	g_object_unref(style);
 #endif
 }
 
@@ -373,6 +382,11 @@ cache_tab_clear_cache_dir(CacheTab *tab, RpCacheDir cache_dir)
 			break;
 	}
 	gtk_label_set_text(GTK_LABEL(tab->lblStatus), s_label);
+
+#if !GTK_CHECK_VERSION(3,0,0)
+	// GTK2: Clear the styling immediately to prevent shenanigans.
+	gtk_progress_bar_set_error(GTK_PROGRESS_BAR(tab->pbStatus), FALSE);
+#endif /* !GTK_CHECK_VERSION(3,0,0) */
 
 	// Show the progress controls.
 	gtk_widget_show(tab->lblStatus);
