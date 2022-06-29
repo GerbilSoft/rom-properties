@@ -16,6 +16,8 @@
 #include "KeyStoreGTK.hpp"
 using LibRomData::KeyStoreUI;
 
+#include "MessageWidget.hpp"
+
 // librpbase
 using namespace LibRpBase;
 
@@ -79,6 +81,9 @@ struct _KeyManagerTab {
 #else /* !USE_G_MENU_MODEL */
 	GtkWidget *menuImport;	// GtkMenu
 #endif /* USE_G_MENU_MODEL */
+
+	// MessageWidget for key import.
+	GtkWidget *messageWidget;
 };
 
 static void	key_manager_tab_dispose				(GObject	*object);
@@ -158,6 +163,9 @@ key_manager_tab_init(KeyManagerTab *tab)
 	gtk_orientable_set_orientation(GTK_ORIENTABLE(tab), GTK_ORIENTATION_VERTICAL);
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 	gtk_box_set_spacing(GTK_BOX(tab), 8);
+
+	// MessageWidget goes at the top of the window.
+	tab->messageWidget = message_widget_new();
 
 	// Initialize the KeyStoreGTK.
 	tab->keyStore = key_store_gtk_new();
@@ -320,6 +328,9 @@ key_manager_tab_init(KeyManagerTab *tab)
 #endif /* !USE_GTK_MENU_BUTTON */
 
 #if GTK_CHECK_VERSION(4,0,0)
+	gtk_widget_hide(tab->messageWidget);
+
+	gtk_box_append(GTK_BOX(tab), tab->messageWidget);
 	gtk_box_append(GTK_BOX(tab), scrolledWindow);
 	gtk_box_append(GTK_BOX(tab), tab->btnImport);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
@@ -327,6 +338,7 @@ key_manager_tab_init(KeyManagerTab *tab)
 	gtk_widget_show(tab->treeView);
 	gtk_widget_show(tab->btnImport);
 
+	gtk_box_pack_start(GTK_BOX(tab), tab->messageWidget, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(tab), scrolledWindow, TRUE, TRUE, 0);
 #  ifndef RP_USE_GTK_ALIGNMENT
 	gtk_box_pack_start(GTK_BOX(tab), tab->btnImport, FALSE, FALSE, 0);
@@ -619,6 +631,175 @@ key_manager_tab_handle_menu_action(KeyManagerTab *tab, gint id)
 }
 
 /**
+ * Show key import return status.
+ * @praam tab KeyManagerTab
+ * @param filename Filename
+ * @param keyType Key type
+ * @param iret ImportReturn
+ */
+static void
+key_manager_tab_show_key_import_return_status(KeyManagerTab	*tab,
+					      const char	*filename,
+					      const char	*keyType,
+					      const KeyStoreUI::ImportReturn &iret)
+{
+	GtkMessageType type = GTK_MESSAGE_INFO;
+	bool showKeyStats = false;
+	string msg;
+	msg.reserve(1024);
+
+	// Filename, minus directory. (must be g_free()'d later)
+	gchar *const fileNoPath = g_path_get_basename(filename);
+
+	// TODO: Localize POSIX error messages?
+	// TODO: Thread-safe strerror()?
+	// NOTE: glib doesn't seem to have its own numeric formatting,
+	// so we'll use printf()'s grouping modifier.
+
+	switch (iret.status) {
+		case KeyStoreUI::ImportStatus::InvalidParams:
+		default:
+			msg = C_("KeyManagerTab",
+				"An invalid parameter was passed to the key importer.\n"
+				"THIS IS A BUG; please report this to the developers!");
+			type = GTK_MESSAGE_ERROR;
+			break;
+
+		case KeyStoreUI::ImportStatus::OpenError:
+			if (iret.error_code != 0) {
+				msg = rp_sprintf_p(C_("KeyManagerTab",
+					// tr: %1$s == filename, %2$s == error message
+					"An error occurred while opening '%1$s': %2$s"),
+					fileNoPath, strerror(iret.error_code));
+			} else {
+				msg = rp_sprintf_p(C_("KeyManagerTab",
+					// tr: %s == filename
+					"An error occurred while opening '%s'."),
+					fileNoPath);
+			}
+			type = GTK_MESSAGE_ERROR;
+			break;
+
+		case KeyStoreUI::ImportStatus::ReadError:
+			// TODO: Error code for short reads.
+			if (iret.error_code != 0) {
+				msg = rp_sprintf_p(C_("KeyManagerTab",
+					// tr: %1$s == filename, %2$s == error message
+					"An error occurred while reading '%1$s': %2$s"),
+					fileNoPath, strerror(iret.error_code));
+			} else {
+				msg = rp_sprintf_p(C_("KeyManagerTab",
+					// tr: %s == filename
+					"An error occurred while reading '%s'."),
+					fileNoPath);
+			}
+			type = GTK_MESSAGE_ERROR;
+			break;
+
+		case KeyStoreUI::ImportStatus::InvalidFile:
+			msg = rp_sprintf_p(C_("KeyManagerTab",
+				// tr: %1$s == filename, %2$s == type of file
+				"The file '%1$s' is not a valid %2$s file."),
+				fileNoPath, keyType);
+			type = GTK_MESSAGE_WARNING;
+			break;
+
+		case KeyStoreUI::ImportStatus::NoKeysImported:
+			msg = rp_sprintf(C_("KeyManagerTab",
+				// tr: %s == filename
+				"No keys were imported from '%s'."),
+				fileNoPath);
+			type = GTK_MESSAGE_INFO;
+			showKeyStats = true;
+			break;
+
+		case KeyStoreUI::ImportStatus::KeysImported: {
+			const unsigned int keyCount = iret.keysImportedVerify + iret.keysImportedNoVerify;
+			char buf[16];
+			snprintf(buf, sizeof(buf), "%'u", keyCount);
+
+			msg = rp_sprintf_p(NC_("KeyManagerTab",
+				// tr: %1$s == number of keys (formatted), %2$u == filename
+				"%1$s key was imported from '%2$s'.",
+				"%1$s keys were imported from '%2$s'.",
+				keyCount), buf, fileNoPath);
+			type = GTK_MESSAGE_INFO;	// NOTE: No equivalent to KMessageWidget::Positive.
+			showKeyStats = true;
+			break;
+		}
+	}
+
+	// U+2022 (BULLET) == \xE2\x80\xA2
+	static const char nl_bullet[] = "\n\xE2\x80\xA2 ";
+
+	if (showKeyStats) {
+		char buf[16];
+
+		if (iret.keysExist > 0) {
+			snprintf(buf, sizeof(buf), "%'d", 123456789);//iret.keysExist);
+			msg += nl_bullet;
+			msg += rp_sprintf(NC_("KeyManagerTab",
+				// tr: %s == number of keys (formatted)
+				"%s key already exists in the Key Manager.",
+				"%s keys already exist in the Key Manager.",
+				iret.keysExist), buf);
+		}
+		if (iret.keysInvalid > 0) {
+			snprintf(buf, sizeof(buf), "%'d", iret.keysInvalid);//iret.keysExist);
+			msg += nl_bullet;
+			msg += rp_sprintf(NC_("KeyManagerTab",
+				// tr: %s == number of keys (formatted)
+				"%s key was not imported because it is incorrect.",
+				"%s keys were not imported because they are incorrect.",
+				iret.keysInvalid), buf);
+		}
+		if (iret.keysNotUsed > 0) {
+			snprintf(buf, sizeof(buf), "%'d", iret.keysNotUsed);
+			msg += nl_bullet;
+			msg += rp_sprintf(NC_("KeyManagerTab",
+				// tr: %s == number of keys (formatted)
+				"%s key was not imported because it isn't used by rom-properties.",
+				"%s keys were not imported because they aren't used by rom-properties.",
+				iret.keysNotUsed), buf);
+		}
+		if (iret.keysCantDecrypt > 0) {
+			snprintf(buf, sizeof(buf), "%'d", iret.keysCantDecrypt);
+			msg += nl_bullet;
+			msg += rp_sprintf(NC_("KeyManagerTab",
+				// tr: %s == number of keys (formatted)
+				"%s key was not imported because it is encrypted and the master key isn't available.",
+				"%s keys were not imported because they are encrypted and the master key isn't available.",
+				iret.keysCantDecrypt), buf);
+		}
+		if (iret.keysImportedVerify > 0) {
+			snprintf(buf, sizeof(buf), "%'d", iret.keysImportedVerify);
+			msg += nl_bullet;
+			msg += rp_sprintf(NC_("KeyManagerTab",
+				// tr: %s == number of keys (formatted)
+				"%s key has been imported and verified as correct.",
+				"%s keys have been imported and verified as correct.",
+				iret.keysImportedVerify), buf);
+		}
+		if (iret.keysImportedNoVerify > 0) {
+			snprintf(buf, sizeof(buf), "%'d", iret.keysImportedNoVerify);
+			msg += nl_bullet;
+			msg += rp_sprintf(NC_("KeyManagerTab",
+				"%s key has been imported without verification.",
+				"%s keys have been imported without verification.",
+				iret.keysImportedNoVerify), buf);
+		}
+	}
+
+	// Display the message.
+	// TODO: Copy over timeout code from RomDataView?
+	// (Or, remove the timeout code entirely?)
+	// TODO: MessageSound?
+	message_widget_set_message_type(MESSAGE_WIDGET(tab->messageWidget), type);
+	message_widget_set_text(MESSAGE_WIDGET(tab->messageWidget), msg.c_str());
+	gtk_widget_show(tab->messageWidget);
+}
+
+/**
  * The Save dialog for a Standard ROM Operation has been closed.
  * @param dialog GtkFileChooserDialog
  * @param response_id Response ID
@@ -682,7 +863,7 @@ key_manager_tab_menu_action_response(GtkFileChooserDialog *dialog, gint response
 	}
 
 	// TODO: Show the key import status in a MessageWidget.
-	printf("KeyManagerTab: File %d -> %s: ret %d\n", id, in_filename, (int)iret.status);
+	key_manager_tab_show_key_import_return_status(tab, in_filename, import_menu_actions[id], iret);
 	g_free(in_filename);
 }
 
