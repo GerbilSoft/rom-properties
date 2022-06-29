@@ -15,7 +15,6 @@
 // Custom widgets
 #include "LanguageComboBox.hpp"
 #include "OptionsMenuButton.hpp"
-#include "MessageWidget.hpp"
 
 // ENABLE_MESSAGESOUND is set by CMakeLists.txt.
 #ifdef ENABLE_MESSAGESOUND
@@ -34,9 +33,6 @@ using std::ofstream;
 using std::ostringstream;
 using std::string;
 using std::vector;
-
-// Uncomment to enable the automatic timeout for the ROM Operations MessageWidget.
-//#define AUTO_TIMEOUT_MESSAGEWIDGET 1
 
 /**
  * Update a field's value.
@@ -445,6 +441,45 @@ rom_data_view_doRomOp_stdop_response(GtkFileChooserDialog *dialog, gint response
 }
 
 /**
+ * GtkInfoBar was dismissed by the user.
+ * @param infoBar GtkInfoBar
+ * @param page RomDataView
+ */
+static void
+rom_data_view_infoBar_close(GtkInfoBar *infoBar, RomDataView *page)
+{
+	RP_UNUSED(page);
+
+	// Hide the GtkInfoBar.
+#if GTK_CHECK_VERSION(3,22,29)
+	gtk_info_bar_set_revealed(infoBar, FALSE);
+#else /* !GTK_CHECK_VERSION(3,22,29) */
+	gtk_widget_hide(GTK_WIDGET(infoBar));
+#endif /* GTK_CHECK_VERSION(3,22,29) */
+}
+
+/**
+ * GtkInfoBar response handler.
+ * @param infoBar GtkInfoBar
+ * @param response_id Response ID
+ * @param page RomDataView
+ */
+static void
+rom_data_view_infoBar_response(GtkInfoBar *infoBar, int response_id, RomDataView *page)
+{
+	RP_UNUSED(page);
+
+	if (response_id == GTK_RESPONSE_CLOSE) {
+		// Hide the GtkInfoBar.
+#if GTK_CHECK_VERSION(3,22,29)
+		gtk_info_bar_set_revealed(infoBar, FALSE);
+#else /* !GTK_CHECK_VERSION(3,22,29) */
+		gtk_widget_hide(GTK_WIDGET(infoBar));
+#endif /* GTK_CHECK_VERSION(3,22,29) */
+	}
+}
+
+/**
  * An "Options" menu action was triggered.
  * @param menuButton	OptionsMenuButton
  * @param id		Menu options ID
@@ -578,23 +613,61 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 #endif /* ENABLE_MESSAGESOUND */
 
 	if (!params.msg.empty()) {
-		// Show the MessageWidget.
-		if (!page->messageWidget) {
-			page->messageWidget = message_widget_new();
+		// Show the GtkInfoBar.
+		if (!page->infoBar) {
+			page->infoBar = gtk_info_bar_new();
+#if GTK_CHECK_VERSION(3,22,29)
+			gtk_info_bar_set_revealed(GTK_INFO_BAR(page->infoBar), FALSE);
+			gtk_widget_show(page->infoBar);
+#endif /* GTK_CHECK_VERSION(3,22,29) */
+			page->infoBarLabel = gtk_label_new(nullptr);
+			gtk_widget_show(page->infoBarLabel);
+			g_signal_connect(page->infoBar, "close", G_CALLBACK(rom_data_view_infoBar_close), page);
+			g_signal_connect(page->infoBar, "response", G_CALLBACK(rom_data_view_infoBar_response), page);
+
 #if GTK_CHECK_VERSION(4,0,0)
-			gtk_box_append(GTK_BOX(page), page->messageWidget);
+			gtk_info_bar_add_child(GTK_INFO_BAR(page->infoBar), page->infoBarLabel);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-			gtk_box_pack_end(GTK_BOX(page), page->messageWidget, false, false, 0);
+			GtkWidget *const content_area = gtk_info_bar_get_content_area(GTK_INFO_BAR(page->infoBar));
+			gtk_container_add(GTK_CONTAINER(content_area), page->infoBarLabel);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
+
+#if GTK_CHECK_VERSION(3,9,10)
+			gtk_info_bar_set_show_close_button(GTK_INFO_BAR(page->infoBar), TRUE);
+#else /* !GTK_CHECK_VERSION(3,9,10) */
+			// gtk_image_new_from_icon_name() was added in GTK+ 3.9.12.
+			// Hence it won't be available here.
+			GtkWidget *const closeButton = gtk_button_new();
+			GtkWidget *const imgImport = gtk_image_new_from_icon_name(
+				"window-close-symbolic", GTK_ICON_SIZE_BUTTON);
+			gtk_button_set_image(GTK_BUTTON(closeButton), imgImport);
+			gtk_widget_show(imgImport);
+			gtk_widget_show(closeButton);
+
+			// FIXME: On GTK2, the button is too wide...
+			// Can't use GtkAlignment because GtkInfoBar requires
+			// an "activatable" widget.
+			gtk_info_bar_add_action_widget(GTK_INFO_BAR(page->infoBar),
+				closeButton, GTK_RESPONSE_CLOSE);
+#endif /* GTK_CHECK_VERSION(3,9,10) */
+
+#if GTK_CHECK_VERSION(4,0,0)
+			gtk_box_append(GTK_BOX(page), page->infoBar);
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+			gtk_box_pack_end(GTK_BOX(page), page->infoBar, false, false, 0);
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+
+			// FIXME: On GTK3, GtkInfoBar colors seem to be broken.
+			// We'll override it with css.
+			// TODO: Verify GTK4.
 		}
 
-		MessageWidget *const messageWidget = MESSAGE_WIDGET(page->messageWidget);
-		message_widget_set_message_type(messageWidget, messageType);
-		message_widget_set_text(messageWidget, params.msg.c_str());
-#ifdef AUTO_TIMEOUT_MESSAGEWIDGET
-		message_widget_show_with_timeout(messageWidget);
-#else /* AUTO_TIMEOUT_MESSAGEWIDGET */
-		gtk_widget_show(page->messageWidget);
-#endif /* AUTO_TIMEOUT_MESSAGEWIDGET */
+		gtk_info_bar_set_message_type(GTK_INFO_BAR(page->infoBar), messageType);
+		gtk_label_set_text(GTK_LABEL(page->infoBarLabel), params.msg.c_str());
+#if GTK_CHECK_VERSION(3,22,29)
+		gtk_info_bar_set_revealed(GTK_INFO_BAR(page->infoBar), TRUE);
+#else /* !GTK_CHECK_VERSION(3,22,29) */
+		gtk_widget_show(page->infoBar);
+#endif /* GTK_CHECK_VERSION(3,22,29) */
 	}
 }
