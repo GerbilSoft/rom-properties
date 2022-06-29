@@ -666,28 +666,101 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 			// FIXME: On GTK3, GtkInfoBar colors seem to be broken.
 			// We'll override it with css.
 			// TODO: Verify GTK4.
+			// NOTE: On GTK3, GtkInfoBar colors seem to be broken.
+			// We'll override it with css.
+			// TODO: Verify GTK4.
+#if GTK_CHECK_VERSION(3,0,0)
+			// Add a CSS class for a GtkProgressBar "error" state.
+			GtkCssProvider *const provider = gtk_css_provider_new();
+			GdkDisplay *const display = gdk_display_get_default();
+#  if GTK_CHECK_VERSION(4,0,0)
+			// GdkScreen no longer exists in GTK4.
+			// Style context providers are added directly to GdkDisplay instead.
+			gtk_style_context_add_provider_for_display(display,
+				GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+#  else /* !GTK_CHECK_VERSION(4,0,0) */
+			GdkScreen *const screen = gdk_display_get_default_screen(display);
+			gtk_style_context_add_provider_for_screen(screen,
+				GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+#  endif /* !GTK_CHECK_VERSION(4,0,0) */
+
+			static const char css_InfoBar[] =
+				"@define-color gsrp_color_info rgb(61,174,233);\n"
+				"@define-color gsrp_color_warning rgb(246,116,0);\n"
+				"@define-color gsrp_color_error rgb(218,68,83);\n"
+				".gsrp_msgw_info {\n"
+				"\tbackground-color: lighter(@gsrp_color_info);\n"
+				"\tborder: 2px solid @gsrp_color_info;\n"
+				"}\n"
+				".gsrp_msgw_warning {\n"
+				"\tbackground-color: lighter(@gsrp_color_warning);\n"
+				"\tborder: 2px solid @gsrp_color_warning;\n"
+				"}\n"
+				".gsrp_msgw_question {\n"
+				"\tbackground-color: lighter(@gsrp_color_info);\n"      // NOTE: Same as INFO.
+				"\tborder: 2px solid @gsrp_color_info;\n"
+				"}\n"
+				".gsrp_msgw_error {\n"
+				"\tbackground-color: lighter(@gsrp_color_error);\n"
+				"\tborder: 2px solid @gsrp_color_error;\n"
+				"}\n";
+
+			GTK_CSS_PROVIDER_LOAD_FROM_DATA(GTK_CSS_PROVIDER(provider), css_InfoBar, -1);
+			g_object_unref(provider);
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 		}
 
-		static const char *const message_type_icon_tbl[] = {
-			"dialog-information",	// GTK_MESSAGE_INFO
-			"dialog-warning",	// GTK_MESSAGE_WARNING
-			"dialog-question",	// GTK_MESSAGE_QUESTION
-			"dialog-error",		// GTK_MESSAGE_ERROR
+		struct IconInfo_t {
+			const char *icon_name;	// icon name
+			const char *css_class;	// css class (GTK3/GTK4)
 		};
-		const char *icon_name;
+		static const IconInfo_t iconInfo_tbl[] = {
+			{"dialog-information",	"gsrp_msgw_info"},	// GTK_MESSAGE_INFO
+			{"dialog-warning",	"gsrp_msgw_warning"},	// GTK_MESSAGE_WARNING
+			{"dialog-question",	"gsrp_msgw_question"},	// GTK_MESSAGE_QUESTION
+			{"dialog-error",	"gsrp_msgw_error"},	// GTK_MESSAGE_ERROR
+		};
+		const IconInfo_t *pIconInfo;
 		if (messageType >= GTK_MESSAGE_INFO && messageType <= GTK_MESSAGE_ERROR) {
-			icon_name = message_type_icon_tbl[messageType];
+			pIconInfo = &iconInfo_tbl[messageType];
 		} else {
-			icon_name = nullptr;
+			pIconInfo = nullptr;
 		}
 
 		gtk_info_bar_set_message_type(GTK_INFO_BAR(page->infoBar), messageType);
 		gtk_label_set_text(GTK_LABEL(page->infoBarLabel), params.msg.c_str());
 #if GTK_CHECK_VERSION(4,0,0)
-		gtk_image_set_from_icon_name(GTK_IMAGE(page->infoBarIcon), icon_name);
+		gtk_image_set_from_icon_name(GTK_IMAGE(page->infoBarIcon),
+			(pIconInfo ? pIconInfo->icon_name : nullptr));
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-		gtk_image_set_from_icon_name(GTK_IMAGE(page->infoBarIcon), icon_name, GTK_ICON_SIZE_BUTTON);
+		gtk_image_set_from_icon_name(GTK_IMAGE(page->infoBarIcon),
+			(pIconInfo ? pIconInfo->icon_name : nullptr), GTK_ICON_SIZE_BUTTON);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
+#if GTK_CHECK_VERSION(3,0,0)
+		// Remove all of our CSS classes first.
+		GtkStyleContext *context = gtk_widget_get_style_context(page->infoBar);
+		gtk_style_context_remove_class(context, "gsrp_msgw_info");
+		gtk_style_context_remove_class(context, "gsrp_msgw_warning");
+		gtk_style_context_remove_class(context, "gsrp_msgw_question");
+		gtk_style_context_remove_class(context, "gsrp_msgw_error");
+
+		// Add the new CSS class.
+		gtk_style_context_add_class(context, pIconInfo->css_class);
+
+#  if !GTK_CHECK_VERSION(4,0,0)
+		// Also apply to the content area.
+		context = gtk_widget_get_style_context(
+			gtk_info_bar_get_content_area(GTK_INFO_BAR(page->infoBar)));
+		gtk_style_context_remove_class(context, "gsrp_msgw_info");
+		gtk_style_context_remove_class(context, "gsrp_msgw_warning");
+		gtk_style_context_remove_class(context, "gsrp_msgw_question");
+		gtk_style_context_remove_class(context, "gsrp_msgw_error");
+
+		// Add the new CSS class.
+		gtk_style_context_add_class(context, pIconInfo->css_class);
+#  endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(3,0,0) */
+
 #if GTK_CHECK_VERSION(3,22,29)
 		gtk_info_bar_set_revealed(GTK_INFO_BAR(page->infoBar), TRUE);
 #else /* !GTK_CHECK_VERSION(3,22,29) */
