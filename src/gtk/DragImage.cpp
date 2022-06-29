@@ -71,10 +71,10 @@ struct _DragImage {
 	// Animated icon data.
 	struct anim_vars {
 		const IconAnimData *iconAnimData;
-		guint tmrIconAnim;	// Timer ID
-		int last_delay;		// Last delay value.
 		std::array<PIMGTYPE, IconAnimData::MAX_FRAMES> iconFrames;
 		IconAnimHelper iconAnimHelper;
+		guint tmrIconAnim;	// Timer ID
+		int last_delay;		// Last delay value.
 		int last_frame_number;	// Last frame number.
 
 		anim_vars()

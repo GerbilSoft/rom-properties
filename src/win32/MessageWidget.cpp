@@ -17,81 +17,8 @@ static ATOM atom_messageWidget;
 class MessageWidgetPrivate
 {
 	public:
-		MessageWidgetPrivate(HWND hWnd)
-			: hWnd(hWnd)
-			, hFont(nullptr)
-			, hUser32(GetModuleHandle(_T("user32")))
-			, hIcon(nullptr)
-			, messageType(MB_ICONINFORMATION)
-			, hbrBorder(nullptr)
-			, hbrBg(nullptr)
-			, colorBg(0)
-			, closeButtonState(CLSBTN_NORMAL)
-			, bBtnCloseEntered(false)
-			, bBtnCloseDown(false)
-			, hFontMarlett(nullptr)
-			, hFontMarlettBold(nullptr)
-		{
-			assert(hUser32 != nullptr);
-
-			// TODO: Update szIcon on system DPI change.
-			szIcon.cx = GetSystemMetrics(SM_CXSMICON);
-			szIcon.cy = GetSystemMetrics(SM_CYSMICON);
-
-			// Initialize the icon.
-			updateIcon();
-
-			// Get the rect for the Close button.
-			// TODO: Reposition on WM_SIZE?
-			RECT rect;
-			GetClientRect(hWnd, &rect);
-
-			SIZE szBtnClose;
-			szBtnClose.cx = szIcon.cx + BORDER_SIZE;
-			szBtnClose.cy = szIcon.cy + BORDER_SIZE;
-			rectBtnClose.left = rect.right - szBtnClose.cx - BORDER_SIZE;
-			rectBtnClose.top = (rect.bottom - szBtnClose.cy) / 2;
-			rectBtnClose.right = rectBtnClose.left + szBtnClose.cx;
-			rectBtnClose.bottom = rectBtnClose.top + szBtnClose.cy;
-
-			// Create the fonts for the Close button.
-			// (one regular, one bold)
-			LOGFONT lfMarlett = {
-				0,			// lfHeight
-				12,			// lfWidth
-				0,			// lfEscapement
-				0,			// lfOrientation
-				FW_NORMAL,		// lfWeight
-				FALSE,			// lfItalic
-				FALSE,			// lfUnderline
-				FALSE,			// lfStrikeout
-				DEFAULT_CHARSET,	// lfCharset
-				OUT_DEFAULT_PRECIS,	// lfOutPrecision
-				CLIP_DEFAULT_PRECIS,	// lfClipPrecision
-				DEFAULT_QUALITY,	// lfQuality
-				DEFAULT_PITCH | FF_DONTCARE,	// lfPitchAndFamily
-				_T("Marlett"),		// lfFaceName
-			};
-			hFontMarlett = CreateFontIndirect(&lfMarlett);
-			lfMarlett.lfWeight = FW_BOLD;
-			hFontMarlettBold = CreateFontIndirect(&lfMarlett);
-		}
-
-		~MessageWidgetPrivate()
-		{
-			if (hbrBorder) {
-				DeleteBrush(hbrBorder);
-			}
-			if (hbrBg) {
-				DeleteBrush(hbrBg);
-			}
-			if (hFontMarlett) {
-				DeleteFont(hFontMarlett);
-			}
-			if (hFontMarlettBold) {
-				DeleteFont(hFontMarlettBold);
-			}
-		}
+		MessageWidgetPrivate(HWND hWnd);
+		~MessageWidgetPrivate();
 
 	public:
 		void setMessageType(unsigned int messageType)
@@ -121,14 +48,16 @@ class MessageWidgetPrivate
 	public:
 		HWND hWnd;			// MessageWidget control
 		HFONT hFont;			// set by the parent window
-		HMODULE hUser32;		// USER32.DLL
 		HICON hIcon;			// loaded with LR_SHARED
 
-		unsigned int messageType;	// MB_ICON*
-		SIZE szIcon;			// Icon size
+		HFONT hFontMarlett;
+		HFONT hFontMarlettBold;
+
 		HBRUSH hbrBorder;		// Border brush
 		HBRUSH hbrBg;			// Background brush
 		COLORREF colorBg;		// Background color
+		unsigned int messageType;	// MB_ICON*
+		SIZE szIcon;			// Icon size
 
 		enum CloseButtonState {
 			CLSBTN_NORMAL = 0,
@@ -139,9 +68,80 @@ class MessageWidgetPrivate
 		RECT rectBtnClose;		// Close button rect
 		bool bBtnCloseEntered;		// True if the mouse cursor entered the Close button area.
 		bool bBtnCloseDown;		// True if WM_LBUTTONDOWN received while over the Close button.
-		HFONT hFontMarlett;
-		HFONT hFontMarlettBold;
 };
+
+MessageWidgetPrivate::MessageWidgetPrivate(HWND hWnd)
+	: hWnd(hWnd)
+	, hFont(nullptr)
+	, hIcon(nullptr)
+	, hFontMarlett(nullptr)
+	, hFontMarlettBold(nullptr)
+	, hbrBorder(nullptr)
+	, hbrBg(nullptr)
+	, colorBg(0)
+	, messageType(MB_ICONINFORMATION)
+	, closeButtonState(CLSBTN_NORMAL)
+	, bBtnCloseEntered(false)
+	, bBtnCloseDown(false)
+{
+	// TODO: Update szIcon on system DPI change.
+	szIcon.cx = GetSystemMetrics(SM_CXSMICON);
+	szIcon.cy = GetSystemMetrics(SM_CYSMICON);
+
+	// Initialize the icon.
+	updateIcon();
+
+	// Get the rect for the Close button.
+	// TODO: Reposition on WM_SIZE?
+	RECT rect;
+	GetClientRect(hWnd, &rect);
+
+	SIZE szBtnClose;
+	szBtnClose.cx = szIcon.cx + BORDER_SIZE;
+	szBtnClose.cy = szIcon.cy + BORDER_SIZE;
+	rectBtnClose.left = rect.right - szBtnClose.cx - BORDER_SIZE;
+	rectBtnClose.top = (rect.bottom - szBtnClose.cy) / 2;
+	rectBtnClose.right = rectBtnClose.left + szBtnClose.cx;
+	rectBtnClose.bottom = rectBtnClose.top + szBtnClose.cy;
+
+	// Create the fonts for the Close button.
+	// (one regular, one bold)
+	LOGFONT lfMarlett = {
+		0,			// lfHeight
+		12,			// lfWidth
+		0,			// lfEscapement
+		0,			// lfOrientation
+		FW_NORMAL,		// lfWeight
+		FALSE,			// lfItalic
+		FALSE,			// lfUnderline
+		FALSE,			// lfStrikeout
+		DEFAULT_CHARSET,	// lfCharset
+		OUT_DEFAULT_PRECIS,	// lfOutPrecision
+		CLIP_DEFAULT_PRECIS,	// lfClipPrecision
+		DEFAULT_QUALITY,	// lfQuality
+		DEFAULT_PITCH | FF_DONTCARE,	// lfPitchAndFamily
+		_T("Marlett"),		// lfFaceName
+	};
+	hFontMarlett = CreateFontIndirect(&lfMarlett);
+	lfMarlett.lfWeight = FW_BOLD;
+	hFontMarlettBold = CreateFontIndirect(&lfMarlett);
+}
+
+MessageWidgetPrivate::~MessageWidgetPrivate()
+{
+	if (hFontMarlett) {
+		DeleteFont(hFontMarlett);
+	}
+	if (hFontMarlettBold) {
+		DeleteFont(hFontMarlettBold);
+	}
+	if (hbrBorder) {
+		DeleteBrush(hbrBorder);
+	}
+	if (hbrBg) {
+		DeleteBrush(hbrBg);
+	}
+}
 
 /**
  * Update the icon and brushes.
@@ -185,9 +185,15 @@ void MessageWidgetPrivate::updateIcon(void)
 			break;
 	}
 	if (lpszRes) {
-		hbrBg = CreateSolidBrush(colorBg);
-		hIcon = (HICON)LoadImage(hUser32, lpszRes, IMAGE_ICON,
-			szIcon.cx, szIcon.cy, LR_SHARED);
+		HMODULE hUser32 = GetModuleHandle(_T("user32"));
+		assert(hUser32 != nullptr);
+		if (hUser32) {
+			hbrBg = CreateSolidBrush(colorBg);
+			hIcon = (HICON)LoadImage(hUser32, lpszRes, IMAGE_ICON,
+				szIcon.cx, szIcon.cy, LR_SHARED);
+		} else {
+			hIcon = nullptr;
+		}
 	} else {
 		hIcon = nullptr;
 	}

@@ -37,14 +37,14 @@ namespace LibRpBase {
  */
 RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file, const RomDataInfo *pRomDataInfo)
 	: q_ptr(q)
+	, pRomDataInfo(pRomDataInfo)
+	, mimeType(nullptr)
+	, fileType(RomData::FileType::ROM_Image)
 	, isValid(false)
 	, isCompressed(false)
 	, file(nullptr)
 	, fields(new RomFields())
 	, metaData(nullptr)
-	, pRomDataInfo(pRomDataInfo)
-	, mimeType(nullptr)
-	, fileType(RomData::FileType::ROM_Image)
 {
 	assert(pRomDataInfo != nullptr);
 

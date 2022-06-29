@@ -41,10 +41,6 @@ class GdiReaderPrivate : public SparseDiscReaderPrivate {
 		// GDI filename.
 		string filename;
 
-		// Number of logical 2048-byte blocks.
-		// Determined by the highest data track.
-		unsigned int blockCount;
-
 		// Block range mapping.
 		// NOTE: This currently *only* contains data tracks.
 		struct BlockRange {
@@ -63,6 +59,10 @@ class GdiReaderPrivate : public SparseDiscReaderPrivate {
 		// Index = track# (minus 1)
 		// Value = pointer to BlockRange in blockRanges.
 		vector<BlockRange*> trackMappings;
+
+		// Number of logical 2048-byte blocks.
+		// Determined by the highest data track.
+		unsigned int blockCount;
 
 		/**
 		 * Close all opened files.

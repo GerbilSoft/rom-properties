@@ -25,9 +25,9 @@ namespace LibRpBase {
 
 ConfReaderPrivate::ConfReaderPrivate(const char *filename)
 	: conf_rel_filename(filename)
-	, conf_was_found(false)
 	, conf_mtime(0)
 	, conf_last_checked(0)
+	, conf_was_found(false)
 { }
 
 ConfReaderPrivate::~ConfReaderPrivate()

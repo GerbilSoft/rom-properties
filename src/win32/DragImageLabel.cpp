@@ -41,7 +41,6 @@ class DragImageLabelPrivate
 
 	public:
 		HWND hwndParent;
-		bool useNearestNeighbor;
 
 		// Position.
 		POINT position;
@@ -59,11 +58,11 @@ class DragImageLabelPrivate
 
 		// Animated icon data.
 		struct anim_vars {
-			HWND m_hwndParent;
 			const LibRpBase::IconAnimData *iconAnimData;
+			std::array<HBITMAP, IconAnimData::MAX_FRAMES> iconFrames;
+			IconAnimHelper iconAnimHelper;
+			HWND m_hwndParent;
 			UINT_PTR animTimerID;
-			std::array<HBITMAP, LibRpBase::IconAnimData::MAX_FRAMES> iconFrames;
-			LibRpBase::IconAnimHelper iconAnimHelper;
 			int last_frame_number;		// Last frame number.
 
 			anim_vars(HWND hwndParent)
@@ -88,6 +87,9 @@ class DragImageLabelPrivate
 			}
 		};
 		anim_vars *anim;
+
+		// Use nearest-neighbor scaling?
+		bool useNearestNeighbor;
 
 	public:
 		/**
@@ -124,10 +126,10 @@ class DragImageLabelPrivate
 
 DragImageLabelPrivate::DragImageLabelPrivate(HWND hwndParent)
 	: hwndParent(hwndParent)
-	, useNearestNeighbor(false)
 	, img(nullptr)
 	, hbmpImg(nullptr)
 	, anim(nullptr)
+	, useNearestNeighbor(false)
 {
 	// TODO: Set rect/size as parameters?
 	requiredSize.cx = DIL_REQ_IMAGE_SIZE;

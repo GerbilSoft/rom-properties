@@ -71,11 +71,8 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, hBtnOptions(nullptr)
 	, fontHandler(nullptr)
 	, lblSysInfo(nullptr)
-	, colorAltRow(LibWin32Common::getAltRowColor())
-	, isFullyInit(false)
 	, lblBanner(nullptr)
 	, lblIcon(nullptr)
-	, dwExStyleRTL(LibWin32Common::isSystemRTL())
 	, tabWidget(nullptr)
 	, curTabIndex(0)
 	, lblDescHeight(0)
@@ -83,6 +80,9 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, iTabHeightOrig(0)
 	, def_lc(0)
 	, cboLanguage(nullptr)
+	, dwExStyleRTL(LibWin32Common::isSystemRTL())
+	, colorAltRow(LibWin32Common::getAltRowColor())
+	, isFullyInit(false)
 {
 	// Initialize structs.
 	dlgSize.cx = 0;

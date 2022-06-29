@@ -74,14 +74,14 @@ class DreamcastPrivate final : public RomDataPrivate
 		// Disc header.
 		DC_IP0000_BIN_t discHeader;
 
+		// 0GDTEX.PVR image.
+		SegaPVR *pvrData;	// SegaPVR object
+
 		// Track 03 start address.
 		// ISO-9660 directories use physical offsets,
 		// not offsets relative to the start of the track.
 		// NOTE: Not used for GDI.
 		int iso_start_offset;
-
-		// 0GDTEX.PVR image.
-		SegaPVR *pvrData;	// SegaPVR object
 
 		/**
 		 * Calculate the Product CRC16.
@@ -148,8 +148,8 @@ DreamcastPrivate::DreamcastPrivate(Dreamcast *q, IRpFile *file)
 	, discType(DiscType::Unknown)
 	, discReader(nullptr)
 	, isoPartition(nullptr)
-	, iso_start_offset(-1)
 	, pvrData(nullptr)
+	, iso_start_offset(-1)
 {
 	// Clear the disc header struct.
 	memset(&discHeader, 0, sizeof(discHeader));

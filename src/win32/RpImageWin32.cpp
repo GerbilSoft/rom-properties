@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RpImageWin32.cpp: rp_image to Win32 conversion functions.               *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -28,12 +28,14 @@ namespace Gdiplus {
 #include <gdiplus.h>
 #include "librptexture/img/GdiplusHelper.hpp"
 
+namespace RpImageWin32 {
+
 /**
  * Convert an rp_image to a HBITMAP for use as an icon mask.
  * @param image rp_image.
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpImageWin32::toHBITMAP_mask(const rp_image *image)
+static HBITMAP toHBITMAP_mask(const rp_image *image)
 {
 	assert(image != nullptr);
 	assert(image->isValid());
@@ -196,7 +198,7 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const rp_image *image)
  * @param bgColor Background color for images with alpha transparency. (ARGB32 format)
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpImageWin32::toHBITMAP(const rp_image *image, uint32_t bgColor)
+HBITMAP toHBITMAP(const rp_image *image, uint32_t bgColor)
 {
 	assert(image != nullptr);
 	assert(image->isValid());
@@ -228,8 +230,8 @@ HBITMAP RpImageWin32::toHBITMAP(const rp_image *image, uint32_t bgColor)
  * @param nearest	[in] If true, use nearest-neighbor scaling.
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpImageWin32::toHBITMAP(const rp_image *image, uint32_t bgColor,
-				const SIZE &size, bool nearest)
+HBITMAP toHBITMAP(const rp_image *image, uint32_t bgColor,
+		  const SIZE &size, bool nearest)
 {
 	assert(image != nullptr);
 	assert(image->isValid());
@@ -258,7 +260,7 @@ HBITMAP RpImageWin32::toHBITMAP(const rp_image *image, uint32_t bgColor,
  * @param image	[in] rp_image.
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpImageWin32::toHBITMAP_alpha(const rp_image *image)
+HBITMAP toHBITMAP_alpha(const rp_image *image)
 {
 	static const SIZE size = {0, 0};
 	return toHBITMAP_alpha(image, size, false);
@@ -272,7 +274,7 @@ HBITMAP RpImageWin32::toHBITMAP_alpha(const rp_image *image)
  * @param nearest	[in] If true, use nearest-neighbor scaling.
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpImageWin32::toHBITMAP_alpha(const rp_image *image, const SIZE &size, bool nearest)
+HBITMAP toHBITMAP_alpha(const rp_image *image, const SIZE &size, bool nearest)
 {
 	assert(image != nullptr);
 	assert(image->isValid());
@@ -306,7 +308,7 @@ HBITMAP RpImageWin32::toHBITMAP_alpha(const rp_image *image, const SIZE &size, b
  * @param image rp_image.
  * @return HICON, or nullptr on error.
  */
-HICON RpImageWin32::toHICON(const rp_image *image)
+HICON toHICON(const rp_image *image)
 {
 	HBITMAP hBitmap = nullptr;
 	HBITMAP hbmMask = nullptr;
@@ -377,7 +379,7 @@ cleanup:
  * @param hBitmap HBITMAP.
  * @return rp_image.
  */
-rp_image *RpImageWin32::fromHBITMAP(HBITMAP hBitmap)
+rp_image *fromHBITMAP(HBITMAP hBitmap)
 {
 	BITMAP bm;
 	if (!GetObject(hBitmap, sizeof(bm), &bm)) {
@@ -467,7 +469,7 @@ rp_image *RpImageWin32::fromHBITMAP(HBITMAP hBitmap)
  * @param hBitmap HBITMAP.
  * @return HICON, or nullptr on error.
  */
-HICON RpImageWin32::toHICON(HBITMAP hBitmap)
+HICON toHICON(HBITMAP hBitmap)
 {
 	assert(hBitmap != nullptr);
 	if (!hBitmap) {
@@ -556,7 +558,7 @@ HICON RpImageWin32::toHICON(HBITMAP hBitmap)
  * @param dpi			[in,opt] DPI value.
  * @return Sub-bitmap, or nullptr on error.
  */
-HBITMAP RpImageWin32::getSubBitmap(const rp_image *imgSpriteSheet, int x, int y, int width, int height, UINT dpi)
+HBITMAP getSubBitmap(const rp_image *imgSpriteSheet, int x, int y, int width, int height, UINT dpi)
 {
 	// TODO: CI8?
 	assert(imgSpriteSheet->format() == rp_image::Format::ARGB32);
@@ -614,4 +616,6 @@ HBITMAP RpImageWin32::getSubBitmap(const rp_image *imgSpriteSheet, int x, int y,
 
 	ReleaseDC(nullptr, hDC);
 	return hbmIcon;
+}
+
 }

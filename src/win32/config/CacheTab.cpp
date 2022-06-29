@@ -111,19 +111,17 @@ class CacheTabPrivate
 
 		// Function pointer for SHGetImageList.
 		// This function is not exported by name prior to Windows XP.
-		typedef HRESULT (STDAPICALLTYPE *PFNSHGETIMAGELIST)(_In_ int iImageList, _In_ REFIID riid, _Outptr_result_nullonfailure_ void **ppvObj);
+		typedef HRESULT (STDAPICALLTYPE *PFNSHGETIMAGELIST)(
+			_In_ int iImageList, _In_ REFIID riid, _Outptr_result_nullonfailure_ void **ppvObj);
 
 		// Image list for the XP drive list.
 		IImageListPtr pImageList;
 
-		// XP drive update mask.
-		DWORD dwUnitmaskXP;
-
-		// Is this Windows Vista or later?
-		bool isVista;
-
 		// wtsapi32.dll for Remote Desktop status. (WinXP and later)
 		WTSSessionNotification wts;
+
+		DWORD dwUnitmaskXP;	// XP drive update mask
+		bool isVista;		// Is this Windows Vista or later?
 };
 
 /** CacheTabPrivate **/
@@ -1007,30 +1005,4 @@ HPROPSHEETPAGE CacheTab::getHPropSheetPage(void)
 
 	d->hPropSheetPage = CreatePropertySheetPage(&psp);
 	return d->hPropSheetPage;
-}
-
-/**
- * Reset the contents of this tab.
- */
-void CacheTab::reset(void)
-{
-	// Nothing to reset here...
-}
-
-/**
- * Load the default configuration.
- * This does NOT save, and will only emit modified()
- * if it's different from the current configuration.
- */
-void CacheTab::loadDefaults(void)
-{
-	// Nothing to load here...
-}
-
-/**
- * Save the contents of this tab.
- */
-void CacheTab::save(void)
-{
-	// Nothing to save here...
 }

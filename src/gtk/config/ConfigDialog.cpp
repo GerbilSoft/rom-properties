@@ -69,7 +69,6 @@ struct _ConfigDialog {
 
 	// GtkNotebook tab widget
 	GtkWidget *tabWidget;
-	gulong tabWidget_switch_page;	// signal handler ID
 
 	// Tabs
 	GtkWidget *tabImageTypes;
@@ -81,6 +80,9 @@ struct _ConfigDialog {
 	GtkWidget *tabKeyManager;
 #endif /* ENABLE_DECRYPTION */
 	GtkWidget *tabAbout;
+
+	// Signal handler IDs
+	gulong tabWidget_switch_page;
 };
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2

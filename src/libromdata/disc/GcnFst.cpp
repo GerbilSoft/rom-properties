@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GcnFst.cpp: GameCube/Wii FST parser.                                    *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -32,25 +32,21 @@ class GcnFstPrivate
 
 	public:
 		bool hasErrors;
+		uint8_t offsetShift;	// offset shift (0 for GCN, 2 for Wii)
 
-		// FST data.
+		// IFst::Dir* reference counter.
+		int fstDirCount;
+
 		GCN_FST_Entry *fstData;
-		uint32_t fstData_sz;
+		const char *string_table_ptr;	// pointer into fstData
 
-		// String table. (Pointer into d->fstData.)
-		const char *string_table_ptr;
+		uint32_t fstData_sz;
 		uint32_t string_table_sz;
 
 		// String table, converted to Unicode.
 		// - Key: String offset in the FST string table.
 		// - Value: string.
 		mutable unordered_map<uint32_t, string> u8_string_table;
-
-		// Offset shift.
-		uint8_t offsetShift;
-
-		// IFst::Dir* reference counter.
-		int fstDirCount;
 
 		/**
 		 * Check if an fst_entry is a directory.
@@ -89,12 +85,12 @@ class GcnFstPrivate
 
 GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offsetShift)
 	: hasErrors(false)
-	, fstData(nullptr)
-	, fstData_sz(len)
-	, string_table_ptr(nullptr)
-	, string_table_sz(0)
 	, offsetShift(offsetShift)
 	, fstDirCount(0)
+	, fstData(nullptr)
+	, string_table_ptr(nullptr)
+	, fstData_sz(len)
+	, string_table_sz(0)
 {
 	assert(fstData != nullptr);
 	assert(len >= sizeof(GCN_FST_Entry));

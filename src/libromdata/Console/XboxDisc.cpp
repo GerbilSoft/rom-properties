@@ -61,7 +61,8 @@ class XboxDiscPrivate final : public RomDataPrivate
 			Max
 		};
 		DiscType discType;
-		uint8_t wave;
+		uint8_t wave;	// XGD2: Wave number
+		bool isKreon;	// Are we using a Kreon drive?
 
 		// XDVDFS starting address.
 		off64_t xdvdfs_addr;
@@ -108,9 +109,6 @@ class XboxDiscPrivate final : public RomDataPrivate
 		 */
 		ConsoleType getConsoleType(void) const;
 
-		// Are we using a Kreon drive?
-		bool isKreon;
-
 		/**
 		 * Unlock the Kreon drive.
 		 */
@@ -150,11 +148,11 @@ XboxDiscPrivate::XboxDiscPrivate(XboxDisc *q, IRpFile *file)
 	: super(q, file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, wave(0)
+	, isKreon(false)
 	, xdvdfs_addr(0)
 	, xdvdfsPartition(nullptr)
 	, defaultExeData(nullptr)
 	, exeType(ExeType::Unknown)
-	, isKreon(false)
 {
 }
 

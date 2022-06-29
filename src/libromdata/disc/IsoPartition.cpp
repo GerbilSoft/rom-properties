@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * IsoPartition.cpp: ISO-9660 partition reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -37,10 +37,6 @@ class IsoPartitionPrivate
 		off64_t partition_offset;
 		off64_t partition_size;		// Calculated partition size.
 
-		// ISO start offset. (in blocks)
-		// -1 == unknown
-		int iso_start_offset;
-
 		// ISO primary volume descriptor.
 		ISO_Primary_Volume_Descriptor pvd;
 
@@ -51,6 +47,10 @@ class IsoPartitionPrivate
 		// is a byte array, not an ISO_DirEntry array.
 		typedef ao::uvector<uint8_t> DirData_t;
 		unordered_map<string, DirData_t> dir_data;
+
+		// ISO start offset. (in blocks)
+		// -1 == unknown
+		int iso_start_offset;
 
 		/**
 		 * Find the last slash or backslash in a path.

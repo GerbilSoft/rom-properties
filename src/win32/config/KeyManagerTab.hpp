@@ -42,13 +42,6 @@ class KeyManagerTab final : public ITab
 		void reset(void) final;
 
 		/**
-		 * Load the default configuration.
-		 * This does NOT save, and will only emit modified()
-		 * if it's different from the current configuration.
-		 */
-		void loadDefaults(void) final;
-
-		/**
 		 * Save the contents of this tab.
 		 */
 		void save(void) final;

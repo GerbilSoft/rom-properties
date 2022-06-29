@@ -6,7 +6,7 @@
  * a generic list, RomMetaData stores specific properties that can be used *
  * by the desktop environment's indexer.                                   *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -42,20 +42,20 @@ class RomMetaDataPrivate
 		 */
 		void delete_data(void);
 
-		// Property type mapping.
+		// Property type mapping
 		static const PropertyType PropertyTypeMap[];
 
 		/**
 		 * Add or overwrite a Property.
-		 * @param name Property name.
-		 * @return Metadata property.
+		 * @param name Property name
+		 * @return Metadata property
 		 */
 		RomMetaData::MetaData *addProperty(Property name);
 };
 
 /** RomMetaDataPrivate **/
 
-// Property type mapping.
+// Property type mapping
 const PropertyType RomMetaDataPrivate::PropertyTypeMap[] = {
 	PropertyType::FirstPropertyType,	// first type is invalid
 
@@ -196,8 +196,8 @@ void RomMetaDataPrivate::delete_data(void)
 
 /**
  * Add or overwrite a Property.
- * @param name Property name.
- * @return Metadata property.
+ * @param name Property name
+ * @return Metadata property
  */
 RomMetaData::MetaData *RomMetaDataPrivate::addProperty(Property name)
 {
@@ -268,7 +268,7 @@ int RomMetaData::count(void) const
 
 /**
  * Get a metadata property.
- * @param idx Metadata index.
+ * @param idx Metadata index
  * @return Metadata property, or nullptr if the index is invalid.
  */
 const RomMetaData::MetaData *RomMetaData::prop(int idx) const
@@ -293,7 +293,7 @@ bool RomMetaData::empty(void) const
 
 /**
  * Reserve space for metadata.
- * @param n Desired capacity.
+ * @param n Desired capacity
  */
 void RomMetaData::reserve(int n)
 {
@@ -380,8 +380,8 @@ int RomMetaData::addMetaData_metaData(const RomMetaData *other)
  * If a metadata property with the same name already exists,
  * it will be overwritten.
  *
- * @param name Metadata name.
- * @param val Integer value.
+ * @param name Property name
+ * @param val Integer value
  * @return Metadata index, or -1 on error.
  */
 int RomMetaData::addMetaData_integer(Property name, int value)
@@ -410,8 +410,8 @@ int RomMetaData::addMetaData_integer(Property name, int value)
  * If a metadata property with the same name already exists,
  * it will be overwritten.
  *
- * @param name Metadata name.
- * @param val Unsigned integer value.
+ * @param name Property name
+ * @param val Unsigned integer value
  * @return Metadata index, or -1 on error.
  */
 int RomMetaData::addMetaData_uint(Property name, unsigned int value)
@@ -440,9 +440,9 @@ int RomMetaData::addMetaData_uint(Property name, unsigned int value)
  * If a metadata property with the same name already exists,
  * it will be overwritten.
  *
- * @param name Metadata name.
- * @param str String value.
- * @param flags Formatting flags.
+ * @param name Property name
+ * @param str String value
+ * @param flags Formatting flags
  * @return Metadata index, or -1 on error.
  */
 int RomMetaData::addMetaData_string(Property name, const char *str, unsigned int flags)
@@ -487,9 +487,9 @@ int RomMetaData::addMetaData_string(Property name, const char *str, unsigned int
  * If a metadata property with the same name already exists,
  * it will be overwritten.
  *
- * @param name Metadata name.
- * @param str String value.
- * @param flags Formatting flags.
+ * @param name Property name
+ * @param str String value
+ * @param flags Formatting flags
  * @return Metadata index, or -1 on error.
  */
 int RomMetaData::addMetaData_string(Property name, const string &str, unsigned int flags)
@@ -537,8 +537,8 @@ int RomMetaData::addMetaData_string(Property name, const string &str, unsigned i
  * If a metadata property with the same name already exists,
  * it will be overwritten.
  *
- * @param name Metadata name.
- * @param timestamp UNIX timestamp.
+ * @param name Property name
+ * @param timestamp UNIX timestamp
  * @return Metadata index, or -1 on error.
  */
 int RomMetaData::addMetaData_timestamp(Property name, time_t timestamp)

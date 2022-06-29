@@ -124,6 +124,9 @@ class KeyManagerTabPrivate
 		// Font Handler.
 		FontHandler fontHandler;
 
+		// wtsapi32.dll for Remote Desktop status. (WinXP and later)
+		WTSSessionNotification wts;
+
 		// EDIT box for ListView.
 		HWND hEditBox;
 		int iEditItem;		// Item being edited. (-1 for none)
@@ -132,9 +135,6 @@ class KeyManagerTabPrivate
 
 		// Is this COMCTL32.dll v6.10 or later?
 		bool isComCtl32_v610;
-
-		// wtsapi32.dll for Remote Desktop status. (WinXP and later)
-		WTSSessionNotification wts;
 
 		// Icons for the "Valid?" column.
 		// NOTE: "?" and "X" are copies from User32.
@@ -1549,16 +1549,6 @@ void KeyManagerTab::reset(void)
 {
 	RP_D(KeyManagerTab);
 	d->reset();
-}
-
-/**
- * Load the default configuration.
- * This does NOT save, and will only emit modified()
- * if it's different from the current configuration.
- */
-void KeyManagerTab::loadDefaults(void)
-{
-	// Not implemented for this tab.
 }
 
 /**

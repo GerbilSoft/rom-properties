@@ -96,13 +96,6 @@ class CisoPspReaderPrivate : public SparseDiscReaderPrivate {
 		// - v2: If set, block is compressed using LZ4; otherwise, deflate.
 		ao::uvector<uint32_t> indexEntries;
 
-		// DAX: Size and NC area tables.
-		ao::uvector<uint16_t> daxSizeTable;
-		std::vector<uint8_t> daxNCTable;	// 0 = compressed; 1 = not compressed
-
-		bool isDaxWithoutNCTable;	// Convenience variable.
-		uint8_t index_shift;		// Index shift value.
-
 		// Block cache.
 		ao::uvector<uint8_t> blockCache;
 		uint32_t blockCacheIdx;
@@ -110,6 +103,13 @@ class CisoPspReaderPrivate : public SparseDiscReaderPrivate {
 		// Decompression buffer.
 		// (Same size as blockCache.)
 		ao::uvector<uint8_t> z_buffer;
+
+		// DAX: Size and NC area tables.
+		ao::uvector<uint16_t> daxSizeTable;
+		std::vector<uint8_t> daxNCTable;	// 0 = compressed; 1 = not compressed
+
+		uint8_t index_shift;		// Index shift value.
+		bool isDaxWithoutNCTable;	// Convenience variable.
 
 		/**
 		 * Get the compressed size of a block.
@@ -124,9 +124,9 @@ class CisoPspReaderPrivate : public SparseDiscReaderPrivate {
 CisoPspReaderPrivate::CisoPspReaderPrivate(CisoPspReader *q)
 	: super(q)
 	, cisoType(CisoType::Unknown)
-	, isDaxWithoutNCTable(false)
-	, index_shift(0)
 	, blockCacheIdx(~0U)
+	, index_shift(0)
+	, isDaxWithoutNCTable(false)
 {
 	// Clear the header structs.
 	memset(&header, 0, sizeof(header));

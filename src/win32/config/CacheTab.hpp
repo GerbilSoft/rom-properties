@@ -39,19 +39,12 @@ class CacheTab final : public ITab
 		/**
 		 * Reset the contents of this tab.
 		 */
-		void reset(void) final;
-
-		/**
-		 * Load the default configuration.
-		 * This does NOT save, and will only emit modified()
-		 * if it's different from the current configuration.
-		 */
-		void loadDefaults(void) final;
+		void reset(void) final { }		// Nothing to do here.
 
 		/**
 		 * Save the contents of this tab.
 		 */
-		void save(void) final;
+		void save(void) final { }		// Nothing to do here.
 };
 
 #endif /* __ROMPROPERTIES_WIN32_CONFIG_CACHETAB_HPP__ */

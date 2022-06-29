@@ -84,10 +84,6 @@ class Xbox360_XDBF_Private final : public RomDataPrivate
 		// Cached language ID.
 		XDBF_Language_e m_langID;
 
-		// If true, this XDBF section is in an XEX executable.
-		// Some fields shouldn't be displayed.
-		bool xex;
-
 		// String table indexes.
 		// These are indexes into entryTable that indicate
 		// where a language table entry is located.
@@ -100,6 +96,10 @@ class Xbox360_XDBF_Private final : public RomDataPrivate
 		// String tables.
 		// NOTE: These are *pointers* to ao::uvector<>.
 		array<ao::uvector<char>*, XDBF_LANGUAGE_MAX> strTbls;
+
+		// If true, this XDBF section is in an XEX executable.
+		// Some fields shouldn't be displayed.
+		bool xex;
 
 		/**
 		 * Find a resource in the entry table.

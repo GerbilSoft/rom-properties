@@ -118,9 +118,12 @@ class GameCubePrivate final : public RomDataPrivate
 			} wii;
 		} opening_bnr;
 
+		// Do we have certain things loaded?
+		bool hasRegionCode;
+		bool wiiPtblLoaded;
+
 		// Region code. (bi2.bin for GCN, RVL_RegionSetting for Wii.)
 		uint32_t gcnRegion;
-		bool hasRegionCode;
 
 		/**
 		 * Wii partition tables.
@@ -135,9 +138,7 @@ class GameCubePrivate final : public RomDataPrivate
 			uint8_t vg;		// Volume group number.
 			uint8_t pt;		// Partition number.
 		};
-
 		vector<WiiPartEntry> wiiPtbl;
-		bool wiiPtblLoaded;
 
 		// Pointers to specific partitions within wiiPtbl.
 		WiiPartition *updatePartition;
@@ -261,9 +262,9 @@ GameCubePrivate::GameCubePrivate(GameCube *q, IRpFile *file)
 	: super(q, file, &romDataInfo)
 	, discType(DISC_UNKNOWN)
 	, discReader(nullptr)
-	, gcnRegion(~0)
 	, hasRegionCode(false)
 	, wiiPtblLoaded(false)
+	, gcnRegion(~0)
 	, updatePartition(nullptr)
 	, gamePartition(nullptr)
 {

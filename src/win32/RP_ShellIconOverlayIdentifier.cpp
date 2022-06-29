@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ShellIconOverlayIdentifier.cpp: IShellIconOverlayIdentifier          *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,11 +15,6 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 using LibRomData::RomDataFactory;
-
-// from DllMain.cpp
-extern "C" {
-	extern TCHAR dll_filename[];
-}
 
 // C++ STL classes.
 using std::string;
@@ -174,6 +169,11 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::GetOverlayInfo(_Out_writes_(cchMax
 		// same size as the regular icon, but with transparency.
 		hr = E_FAIL;
 #if 0
+		// from DllMain.cpp [TODO: Removed; rework this when needed.]
+		extern "C" {
+			extern TCHAR dll_filename[];
+		}
+
 		wcscpy_s(pwszIconFile, cchMax, dll_filename);
 		*pIndex = -IDI_SHIELD;
 		*pdwFlags = ISIOI_ICONFILE | ISIOI_ICONINDEX;

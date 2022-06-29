@@ -75,15 +75,6 @@ class AmiiboDataPrivate {
 	public:
 		// amiibo.bin data
 		ao::uvector<uint8_t> amiibo_bin_data;
-		time_t amiibo_bin_check_ts;	// Last check timestamp
-		time_t amiibo_bin_file_ts;	// File mtime
-
-		enum class AmiiboBinFileType : uint8_t {
-			None = 0,
-			System = 1,
-			User = 2,
-		};
-		AmiiboBinFileType amiiboBinFileType;
 
 		// Convenience pointers to amiibo.bin structs.
 		const AmiiboBinHeader *pHeader;
@@ -102,6 +93,17 @@ class AmiiboDataPrivate {
 		uint32_t charVarTbl_count;
 		uint32_t aseriesTbl_count;
 		uint32_t amiiboIdTbl_count;
+
+		// amiibo.bin timestamps
+		time_t amiibo_bin_check_ts;	// Last check timestamp
+		time_t amiibo_bin_file_ts;	// File mtime
+
+		enum class AmiiboBinFileType : uint8_t {
+			None = 0,
+			System = 1,
+			User = 2,
+		};
+		AmiiboBinFileType amiiboBinFileType;
 
 	private:
 		/**
@@ -153,10 +155,7 @@ class AmiiboDataPrivate {
 #define AMIIBO_BIN_FILENAME "amiibo-data.bin"
 
 AmiiboDataPrivate::AmiiboDataPrivate()
-	: amiibo_bin_check_ts(-1)
-	, amiibo_bin_file_ts(-1)
-	, amiiboBinFileType(AmiiboBinFileType::None)
-	, pHeader(nullptr)
+	: pHeader(nullptr)
 	, pStrTbl(nullptr)
 	, pCSeriesTbl(nullptr)
 	, pCharTbl(nullptr)
@@ -169,6 +168,9 @@ AmiiboDataPrivate::AmiiboDataPrivate()
 	, charVarTbl_count(0)
 	, aseriesTbl_count(0)
 	, amiiboIdTbl_count(0)
+	, amiibo_bin_check_ts(-1)
+	, amiibo_bin_file_ts(-1)
+	, amiiboBinFileType(AmiiboBinFileType::None)
 {
 	// Loading amiibo-data.bin will be delayed until it's needed.
 }

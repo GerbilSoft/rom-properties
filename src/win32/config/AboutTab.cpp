@@ -1024,29 +1024,3 @@ HPROPSHEETPAGE AboutTab::getHPropSheetPage(void)
 	d->hPropSheetPage = CreatePropertySheetPage(&psp);
 	return d->hPropSheetPage;
 }
-
-/**
- * Reset the contents of this tab.
- */
-void AboutTab::reset(void)
-{
-	// Nothing to reset here...
-}
-
-/**
- * Load the default configuration.
- * This does NOT save, and will only emit modified()
- * if it's different from the current configuration.
- */
-void AboutTab::loadDefaults(void)
-{
-	// Nothing to load here...
-}
-
-/**
- * Save the contents of this tab.
- */
-void AboutTab::save(void)
-{
-	// Nothing to save here...
-}

@@ -56,13 +56,13 @@ class GczReaderPrivate : public SparseDiscReaderPrivate {
 		ao::uvector<uint64_t> blockPointers;
 		ao::uvector<uint32_t> hashes;
 
-		// Block cache.
-		ao::uvector<uint8_t> blockCache;
-		uint32_t blockCacheIdx;
-
 		// Decompression buffer.
 		// (Same size as blockCache.)
 		ao::uvector<uint8_t> z_buffer;
+
+		// Block cache.
+		ao::uvector<uint8_t> blockCache;
+		uint32_t blockCacheIdx;
 
 		// Starting offset of the data area.
 		// This offset must be added to the blockPointers value.

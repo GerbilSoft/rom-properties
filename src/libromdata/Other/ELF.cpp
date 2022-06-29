@@ -83,6 +83,13 @@ class ELFPrivate final : public RomDataPrivate
 		};
 		Elf_Format elfFormat;
 
+		bool hasCheckedPH;	// Have we checked program headers yet?
+		bool hasCheckedSH;	// Have we checked section headers yet?
+
+		// Basic Program Header information
+		bool isPie;		// Is this a position-independent executable?
+		bool isWiiU;		// Is this a Wii U executable?
+
 		// ELF header.
 		union {
 			Elf_PrimaryEhdr primary;
@@ -103,18 +110,13 @@ class ELFPrivate final : public RomDataPrivate
 		 */
 		hdr_info_t readProgramHeader(const uint8_t *phbuf);
 
-		// Program Header information.
-		bool hasCheckedPH;	// Have we checked program headers yet?
-		bool isPie;		// Is this a position-independent executable?
-		bool isWiiU;		// Is this a Wii U executable?
-
+		// Program Header information
 		string interpreter;	// PT_INTERP value
 
 		// PT_DYNAMIC
 		hdr_info_t pt_dynamic;	// If addr == 0, not dynamic.
 
-		// Section Header information.
-		bool hasCheckedSH;	// Have we checked section headers yet?
+		// Section Header information
 		string osVersion;	// Operating system version.
 
 		ao::uvector<uint8_t> build_id;	// GNU `ld` build ID. (raw data)
@@ -199,9 +201,9 @@ ELFPrivate::ELFPrivate(ELF *q, IRpFile *file)
 	: super(q, file, &romDataInfo)
 	, elfFormat(Elf_Format::Unknown)
 	, hasCheckedPH(false)
+	, hasCheckedSH(false)
 	, isPie(false)
 	, isWiiU(false)
-	, hasCheckedSH(false)
 	, build_id_type(nullptr)
 {
 	// Clear the structs.

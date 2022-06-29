@@ -153,9 +153,9 @@ static inline HRESULT InitPropVariantFromInt8(_In_ CHAR iVal, _Out_ PROPVARIANT 
 
 RP_PropertyStore_Private::RP_PropertyStore_Private()
 	: file(nullptr)
+	, romData(nullptr)
 	, pstream(nullptr)
 	, grfMode(0)
-	, romData(nullptr)
 { }
 
 RP_PropertyStore_Private::~RP_PropertyStore_Private()

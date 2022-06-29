@@ -251,7 +251,7 @@ class NintendoDSPrivate final : public LibRpBase::RomDataPrivate
 		 * Get the default language code for the multi-string fields.
 		 * @return Language code, e.g. 'en' or 'es'.
 		 */
-		inline uint32_t getDefaultLC(void) const;
+		uint32_t getDefaultLC(void) const;
 };
 
 }

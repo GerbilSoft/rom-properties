@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PEResourceReader.cpp: Portable Executable resource reader.              *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -37,13 +37,13 @@ class PEResourceReaderPrivate
 		PEResourceReader *const q_ptr;
 
 	public:
-		// .rsrc section.
+		// Read position
+		off64_t pos;
+
+		// .rsrc section
 		uint32_t rsrc_addr;
 		uint32_t rsrc_size;
 		uint32_t rsrc_va;
-
-		// Read position.
-		off64_t pos;
 
 		// Resource directory entry.
 		struct ResDirEntry {
@@ -125,10 +125,10 @@ PEResourceReaderPrivate::PEResourceReaderPrivate(
 		uint32_t rsrc_addr, uint32_t rsrc_size,
 		uint32_t rsrc_va)
 	: q_ptr(q)
+	, pos(0)
 	, rsrc_addr(rsrc_addr)
 	, rsrc_size(rsrc_size)
 	, rsrc_va(rsrc_va)
-	, pos(0)
 {
 	if (!q->m_file) {
 		q->m_lastError = -EBADF;

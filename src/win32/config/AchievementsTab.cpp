@@ -60,11 +60,11 @@ class AchievementsTabPrivate
 		HPROPSHEETPAGE hPropSheetPage;
 		HWND hWndPropSheet;
 
-		// Alternate row color.
-		COLORREF colorAltRow;
-
 		// Image list for achievement icons.
 		HIMAGELIST himglAch;
+
+		// Alternate row color.
+		COLORREF colorAltRow;
 
 	public:
 		/**
@@ -95,8 +95,8 @@ class AchievementsTabPrivate
 AchievementsTabPrivate::AchievementsTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
-	, colorAltRow(0)
 	, himglAch(nullptr)
+	, colorAltRow(0)
 { }
 
 AchievementsTabPrivate::~AchievementsTabPrivate()
@@ -598,22 +598,4 @@ void AchievementsTab::reset(void)
 {
 	RP_D(AchievementsTab);
 	d->reset();
-}
-
-/**
- * Load the default configuration.
- * This does NOT save, and will only emit modified()
- * if it's different from the current configuration.
- */
-void AchievementsTab::loadDefaults(void)
-{
-	// Nothing to load here...
-}
-
-/**
- * Save the contents of this tab.
- */
-void AchievementsTab::save(void)
-{
-	// Nothing to save here...
 }

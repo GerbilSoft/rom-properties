@@ -3,7 +3,7 @@
  * RP_ThumbnailProvider_p.hpp: IThumbnailProvider implementation.          *
  * (PRIVATE CLASS)                                                         *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -36,13 +36,13 @@ class RP_ThumbnailProvider_Private
 		// Set by IInitializeWithStream::Initialize().
 		LibRpFile::IRpFile *file;
 
+		// CreateThumbnail instance.
+		CreateThumbnail thumbnailer;
+
 		// IStream* used by the IRpFile.
 		// NOTE: Do NOT Release() this; RpFile_IStream handles it.
 		IStream *pstream;
 		DWORD grfMode;
-
-		// CreateThumbnail instance.
-		CreateThumbnail thumbnailer;
 
 	public:
 		/**

@@ -66,9 +66,6 @@ class AchievementsPrivate
 		Achievements::NotifyFunc notifyFunc;
 		intptr_t user_data;
 
-		// Have achievements been loaded from disk?
-		bool loaded;
-
 	public:
 		// Achievement types
 		enum AchType : uint8_t {
@@ -112,6 +109,7 @@ class AchievementsPrivate
 		// Achievement map.
 		// TODO: Map vs. unordered_map for performance?
 		unordered_map<Achievements::ID, AchData_t, EnumClassHash> mapAchData;
+		bool loaded;	// Have achievements been loaded from disk?
 
 		// Achievements filename and magic number.
 #if defined(NDEBUG) || defined(FORCE_OBFUSCATE)

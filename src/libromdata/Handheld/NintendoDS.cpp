@@ -338,7 +338,7 @@ NDS_Language_ID NintendoDSPrivate::getLanguageID(void) const
  * Get the default language code for the multi-string fields.
  * @return Language code, e.g. 'en' or 'es'.
  */
-inline uint32_t NintendoDSPrivate::getDefaultLC(void) const
+uint32_t NintendoDSPrivate::getDefaultLC(void) const
 {
 	// Get the system language.
 	// TODO: Verify against the game's region code?

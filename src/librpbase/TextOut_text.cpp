@@ -88,32 +88,32 @@ public:
 class SafeString {
 	const char *str;
 	size_t len;
-	bool quotes;
 	size_t width;
+	bool quotes;
 public:
 	SafeString(const char *str, bool quotes = true, size_t width = 0)
 		: str(str)
 		, len(str ? strlen(str) : 0)
-		, quotes(quotes)
-		, width(width) { }
+		, width(width)
+		, quotes(quotes) { }
 
 	SafeString(const char *str, size_t len, bool quotes = true, size_t width = 0)
 		: str(str)
 		, len(len)
-		, quotes(quotes)
-		, width(width) { }
+		, width(width)
+		, quotes(quotes) { }
 
 	SafeString(const string *str, bool quotes = true, size_t width = 0)
 		: str(str ? str->c_str() : nullptr)
 		, len(str ? str->size() : 0)
-		, quotes(quotes)
-		, width(width) { }
+		, width(width)
+		, quotes(quotes) { }
 
 	SafeString(const string &str, bool quotes = true, size_t width = 0)
 		: str(str.c_str())
 		, len(str.size())
-		, quotes(quotes)
-		, width(width) { }
+		, width(width)
+		, quotes(quotes) { }
 
 private:
 	static string process(const SafeString& cp)

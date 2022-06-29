@@ -265,26 +265,26 @@ class RomFields
 			union _desc {
 				unsigned int flags;	// Generic flags. (string, date)
 
-				// TODO: Reorder to reduce wasted space on 64-bit?
 				struct _bitfield {
-					// Bit flags per row. (3 or 4 is usually good)
-					int elemsPerRow;
 					// Bit flag names.
 					// Must be a vector of at least 'elements' strings.
 					// If a name is nullptr, that element is skipped.
 					const std::vector<std::string> *names;
+
+					// Bit flags per row. (3 or 4 is usually good)
+					int elemsPerRow;
 				} bitfield;
 				struct _list_data {
+					// List field names. (headers)
+					// Must be a vector of at least 'fields' strings.
+					// If a name is nullptr, that field is skipped.
+					const std::vector<std::string> *names;
+
 					// Flags.
 					unsigned int flags;
 
 					// Number of visible rows. (0 for "default")
 					int rows_visible;
-
-					// List field names. (headers)
-					// Must be a vector of at least 'fields' strings.
-					// If a name is nullptr, that field is skipped.
-					const std::vector<std::string> *names;
 
 					// Per-column attributes.
 					ListDataColAttrs_t col_attrs;

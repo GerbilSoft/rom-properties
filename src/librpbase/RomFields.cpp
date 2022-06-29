@@ -34,10 +34,11 @@ class RomFieldsPrivate
 		// ROM field structs.
 		vector<RomFields::Field> fields;
 
-		// Current tab index.
-		uint8_t tabIdx;
 		// Tab names.
 		vector<string> tabNames;
+
+		// Current tab index.
+		uint8_t tabIdx;
 
 		// Default language code.
 		// Set by the first call to addField_string_multi()
@@ -737,20 +738,20 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 				field_dest.data.str = (field_src.data.str ? new string(*field_src.data.str) : nullptr);
 				break;
 			case RFT_BITFIELD:
-				field_dest.desc.bitfield.elemsPerRow = field_src.desc.bitfield.elemsPerRow;
 				field_dest.desc.bitfield.names = (field_src.desc.bitfield.names
 						? new vector<string>(*(field_src.desc.bitfield.names))
 						: nullptr);
+				field_dest.desc.bitfield.elemsPerRow = field_src.desc.bitfield.elemsPerRow;
 				field_dest.data.bitfield = field_src.data.bitfield;
 				break;
 			case RFT_LISTDATA:
+				field_dest.desc.list_data.names = (field_src.desc.list_data.names
+						? new vector<string>(*(field_src.desc.list_data.names))
+						: nullptr);
 				field_dest.desc.list_data.flags =
 					field_src.desc.list_data.flags;
 				field_dest.desc.list_data.rows_visible =
 					field_src.desc.list_data.rows_visible;
-				field_dest.desc.list_data.names = (field_src.desc.list_data.names
-						? new vector<string>(*(field_src.desc.list_data.names))
-						: nullptr);
 				field_dest.desc.list_data.col_attrs =
 					field_src.desc.list_data.col_attrs;
 				if (field_src.desc.list_data.flags & RFT_LISTDATA_MULTI) {
@@ -1022,8 +1023,8 @@ int RomFields::addField_bitfield(const char *name,
 
 	field.name = name;
 	field.type = RFT_BITFIELD;
-	field.desc.bitfield.elemsPerRow = elemsPerRow;
 	field.desc.bitfield.names = bit_names;
+	field.desc.bitfield.elemsPerRow = elemsPerRow;
 	field.data.bitfield = bitfield;
 	field.tabIdx = d->tabIdx;
 	field.isValid = true;

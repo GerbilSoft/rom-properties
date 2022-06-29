@@ -68,12 +68,12 @@ class Xbox_XBE_Private final : public RomDataPrivate
 		// Title image.
 		// NOTE: May be a PNG image on some discs.
 		struct {
-			bool isInit;
-			bool isPng;
 			union {
 				XboxXPR *xpr0;
 				rp_image *png;
 			};
+			bool isInit;
+			bool isPng;
 		} xtImage;
 
 	public:

@@ -49,13 +49,6 @@ class AchievementsTab : public ITab
 		void reset(void) final;
 
 		/**
-		 * Load the default configuration.
-		 * This does NOT save, and will only emit modified()
-		 * if it's different from the current configuration.
-		 */
-		void loadDefaults(void) final { }	// Nothing to do here.
-
-		/**
 		 * Save the configuration.
 		 * @param pSettings QSettings object.
 		 */

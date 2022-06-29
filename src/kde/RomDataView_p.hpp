@@ -68,7 +68,6 @@ class RomDataViewPrivate
 
 		// RomData object.
 		LibRpBase::RomData *romData;
-		bool hasCheckedAchievements;
 
 		// "Options" button.
 		OptionsMenuButton *btnOptions;
@@ -93,7 +92,6 @@ class RomDataViewPrivate
 #endif /* HAVE_KMESSAGEWIDGET */
 
 		// Multi-language functionality.
-		uint32_t def_lc;
 		LanguageComboBox *cboLanguage;
 
 		// RFT_STRING_MULTI value labels.
@@ -105,6 +103,9 @@ class RomDataViewPrivate
 		// might have a QSortFilterProxyModel.
 		typedef std::pair<QTreeView*, ListDataModel*> Data_ListDataMulti_t;
 		std::vector<Data_ListDataMulti_t> vecListDataMulti;
+
+		uint32_t def_lc;	// Default language code for multi-language.
+		bool hasCheckedAchievements;
 
 		/**
 		 * Create the "Options" button in the parent window.

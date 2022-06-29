@@ -34,13 +34,13 @@ class RP_ExtractImage_Private
 		// RomData object. Loaded in IPersistFile::Load().
 		LibRpBase::RomData *romData;
 
+		// CreateThumbnail instance.
+		CreateThumbnailNoAlpha thumbnailer;
+
 		// Data from IExtractImage::GetLocation().
 		SIZE rgSize;
 		DWORD dwRecClrDepth;
 		DWORD dwFlags;
-
-		// CreateThumbnail instance.
-		CreateThumbnailNoAlpha thumbnailer;
 
 	public:
 		/**

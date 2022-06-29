@@ -90,10 +90,6 @@ class RP_ShellPropSheetExt_Private
 		// ListView controls (for toggling LVS_EX_DOUBLEBUFFER)
 		std::vector<HWND> hwndListViewControls;
 
-		// Alternate row color.
-		COLORREF colorAltRow;
-		bool isFullyInit;		// True if the window is fully initialized.
-
 		// ListView data.
 		// - Key: ListView dialog ID
 		// - Value: LvData.
@@ -131,10 +127,6 @@ class RP_ShellPropSheetExt_Private
 		DragImageLabel *lblBanner;
 		DragImageLabel *lblIcon;
 
-		// Is the UI locale right-to-left?
-		// If so, this will be set to WS_EX_LAYOUTRTL.
-		DWORD dwExStyleRTL;
-
 		// Tab layout.
 		HWND tabWidget;
 		struct tab {
@@ -165,6 +157,14 @@ class RP_ShellPropSheetExt_Private
 		// RFT_STRING_MULTI value labels.
 		typedef std::pair<HWND, const LibRpBase::RomFields::Field*> Data_StringMulti_t;
 		std::vector<Data_StringMulti_t> vecStringMulti;
+
+		// Is the UI locale right-to-left?
+		// If so, this will be set to WS_EX_LAYOUTRTL.
+		DWORD dwExStyleRTL;
+
+		// Alternate row color.
+		COLORREF colorAltRow;
+		bool isFullyInit;		// True if the window is fully initialized.
 
 	public:
 		/**

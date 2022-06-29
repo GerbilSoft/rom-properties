@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyStoreModel.cpp: QAbstractListModel for KeyStore.                     *
  *                                                                         *
- * Copyright (c) 2012-2020 by David Korth.                                 *
+ * Copyright (c) 2012-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -56,6 +56,9 @@ class KeyStoreModelPrivate
 		};
 		style_t style;
 
+		// Translated column names.
+		array<QString, 3> columnNames;
+
 		/**
 		 * Cached copy of keyStore->sectCount().
 		 * This value is needed after the KeyStore is destroyed,
@@ -63,9 +66,6 @@ class KeyStoreModelPrivate
 		 * slot might be run *after* the KeyStore is deleted.
 		 */
 		int sectCount;
-
-		// Translated column names.
-		array<QString, 3> columnNames;
 };
 
 // Windows-style LOWORD()/HIWORD()/MAKELONG() functions.

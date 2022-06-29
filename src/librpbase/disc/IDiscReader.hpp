@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IDiscReader.hpp: Disc reader interface.                                 *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -138,15 +138,15 @@ class IDiscReader : public RefBase
 		bool isDevice(void) const;
 
 	protected:
+		int m_lastError;
+		bool m_hasDiscReader;
+
 		// Subclasses may have an underlying file, or may
 		// stack another IDiscReader object.
 		union {
 			LibRpFile::IRpFile *m_file;
 			IDiscReader *m_discReader;
 		};
-		bool m_hasDiscReader;
-
-		int m_lastError;
 };
 
 }

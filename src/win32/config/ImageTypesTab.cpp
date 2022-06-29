@@ -125,11 +125,6 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 		HPROPSHEETPAGE hPropSheetPage;
 		HWND hWndPropSheet;
 
-		// Grid parameters.
-		POINT pt_cboImageType;	// Starting point for the ComboBoxes.
-		SIZE sz_cboImageType;	// ComboBox size.
-		unsigned int cy_cboImageType_list;	// ComboBox list height.
-
 		// Last ComboBox added.
 		// Needed in order to set the correct
 		// tab order for the credits label.
@@ -138,6 +133,11 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 		// Temporary configuration filename.
 		// Set by saveStart(); cleared by saveFinish().
 		tstring tmp_conf_filename;
+
+		// Grid parameters.
+		POINT pt_cboImageType;	// Starting point for the ComboBoxes.
+		SIZE sz_cboImageType;	// ComboBox size.
+		unsigned int cy_cboImageType_list;	// ComboBox list height.
 };
 
 // Control base ID.

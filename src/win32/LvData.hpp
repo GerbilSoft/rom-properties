@@ -28,28 +28,29 @@
 struct LvData {
 	std::vector<std::vector<std::tstring> > vvStr;	// String data.
 	std::vector<int> vImageList;			// ImageList indexes.
-	uint32_t checkboxes;				// Checkboxes.
-	bool hasCheckboxes;				// True if checkboxes are valid.
 
 	// Sorting: key == display index, value == LvData_t index
 	std::vector<unsigned int> vSortMap;
-	uint32_t sortingMethods;			// Sorting methods.
 
 	// Column widths
 	std::vector<int> col_widths;
-
-	// Column 0 size adjustment.
-	// Used for icon and/or checkbox.
-	int col0sizeadj;
 
 	// For RFT_LISTDATA_MULTI only!
 	HWND hListView;
 	const LibRpBase::RomFields::Field *pField;
 
+	// Column 0 size adjustment.
+	// Used for icon and/or checkbox.
+	int col0sizeadj;
+
+	uint32_t checkboxes;				// Checkboxes.
+	uint32_t sortingMethods;			// Sorting methods.
+	bool hasCheckboxes;				// True if checkboxes are valid.
+
 	LvData()
-		: checkboxes(0), hasCheckboxes(false)
-		, sortingMethods(0), col0sizeadj(0)
-		, hListView(nullptr), pField(nullptr) { }
+		: hListView(nullptr), pField(nullptr)
+		, col0sizeadj(0), checkboxes(0)
+		, sortingMethods(0), hasCheckboxes(false) { }
 
 public:
 	/** Strings **/

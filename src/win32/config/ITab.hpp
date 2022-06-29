@@ -74,7 +74,7 @@ class ITab
 		 * This does NOT save, and will only emit modified()
 		 * if it's different from the current configuration.
 		 */
-		virtual void loadDefaults(void) = 0;
+		virtual void loadDefaults(void) { }
 
 		/**
 		 * Save the contents of this tab.

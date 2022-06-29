@@ -43,9 +43,9 @@ class CBCReaderPrivate
 
 #ifdef ENABLE_DECRYPTION
 		// Encryption cipher.
+		LibRpBase::IAesCipher *cipher;
 		uint8_t key[16];
 		uint8_t iv[16];
-		LibRpBase::IAesCipher *cipher;
 #endif /* ENABLE_DECRYPTION */
 };
 

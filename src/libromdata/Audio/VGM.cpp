@@ -47,6 +47,7 @@ class VGMPrivate final : public RomDataPrivate
 		const char *s_dualchip;
 		const char *s_yes;
 		const char *s_no;
+
 	public:
 		/**
 		 * Format an IC clock rate in Hz, kHz, MHz, or GHz.

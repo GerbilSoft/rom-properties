@@ -70,14 +70,14 @@ struct _RomDataViewCxx {
 	// Description labels.
 	std::vector<GtkWidget*> vecDescLabels;
 
-	// Multi-language functionality.
-	uint32_t def_lc;
-
 	// RFT_STRING_MULTI value labels.
 	std::vector<Data_StringMulti_t> vecStringMulti;
 
 	// RFT_LISTDATA_MULTI value GtkListStores.
 	std::vector<Data_ListDataMulti_t> vecListDataMulti;
+
+	// Default language code for multi-language.
+	uint32_t def_lc;
 };
 
 // GTK+ property page instance.

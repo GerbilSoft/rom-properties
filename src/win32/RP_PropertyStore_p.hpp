@@ -37,11 +37,6 @@ class RP_PropertyStore_Private
 		// Set by IInitializeWithStream::Initialize().
 		LibRpFile::IRpFile *file;
 
-		// IStream* used by the IRpFile.
-		// NOTE: Do NOT Release() this; RpFile_IStream handles it.
-		IStream *pstream;
-		DWORD grfMode;
-
 		// RomData object.
 		LibRpBase::RomData *romData;
 
@@ -52,6 +47,11 @@ class RP_PropertyStore_Private
 		std::vector<const PROPERTYKEY*> prop_key;
 		// Property values.
 		std::vector<PROPVARIANT> prop_val;
+
+		// IStream* used by the IRpFile.
+		// NOTE: Do NOT Release() this; RpFile_IStream handles it.
+		IStream *pstream;
+		DWORD grfMode;
 
 		/**
 		 * Metadata conversion table.

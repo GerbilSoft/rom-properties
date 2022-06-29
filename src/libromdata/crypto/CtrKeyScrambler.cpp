@@ -18,30 +18,15 @@
 #include "librpbase/crypto/KeyManager.hpp"
 using LibRpBase::KeyManager;
 
-namespace LibRomData {
-
-class CtrKeyScramblerPrivate
-{
-	private:
-		CtrKeyScramblerPrivate();
-		~CtrKeyScramblerPrivate();
-		RP_DISABLE_COPY(CtrKeyScramblerPrivate);
-
-	public:
-		// Verification key names.
-		static const char *const EncryptionKeyNames[CtrKeyScrambler::Key_Max];
-
-		// Verification key data.
-		static const uint8_t EncryptionKeyVerifyData[CtrKeyScrambler::Key_Max][16];
-};
+namespace LibRomData { namespace CtrKeyScrambler {
 
 // Verification key names.
-const char *const CtrKeyScramblerPrivate::EncryptionKeyNames[CtrKeyScrambler::Key_Max] = {
+static const char *const EncryptionKeyNames[Key_Max] = {
 	"twl-scrambler",
 	"ctr-scrambler",
 };
 
-const uint8_t CtrKeyScramblerPrivate::EncryptionKeyVerifyData[CtrKeyScrambler::Key_Max][16] = {
+static const uint8_t EncryptionKeyVerifyData[Key_Max][16] = {
 	// twl-scrambler
 	{0x65,0xCF,0x82,0xC5,0xDB,0x79,0x93,0x8C,
 	 0x01,0x33,0x65,0x87,0x72,0xDF,0x60,0x94},
@@ -54,7 +39,7 @@ const uint8_t CtrKeyScramblerPrivate::EncryptionKeyVerifyData[CtrKeyScrambler::K
  * Get the total number of encryption key names.
  * @return Number of encryption key names.
  */
-int CtrKeyScrambler::encryptionKeyCount_static(void)
+int encryptionKeyCount_static(void)
 {
 	return Key_Max;
 }
@@ -64,13 +49,13 @@ int CtrKeyScrambler::encryptionKeyCount_static(void)
  * @param keyIdx Encryption key index.
  * @return Encryption key name (in ASCII), or nullptr on error.
  */
-const char *CtrKeyScrambler::encryptionKeyName_static(int keyIdx)
+const char *encryptionKeyName_static(int keyIdx)
 {
 	assert(keyIdx >= 0);
 	assert(keyIdx < Key_Max);
 	if (keyIdx < 0 || keyIdx >= Key_Max)
 		return nullptr;
-	return CtrKeyScramblerPrivate::EncryptionKeyNames[keyIdx];
+	return EncryptionKeyNames[keyIdx];
 }
 
 /**
@@ -78,13 +63,13 @@ const char *CtrKeyScrambler::encryptionKeyName_static(int keyIdx)
  * @param keyIdx Encryption key index.
  * @return Verification data. (16 bytes)
  */
-const uint8_t *CtrKeyScrambler::encryptionVerifyData_static(int keyIdx)
+const uint8_t *encryptionVerifyData_static(int keyIdx)
 {
 	assert(keyIdx >= 0);
 	assert(keyIdx < Key_Max);
 	if (keyIdx < 0 || keyIdx >= Key_Max)
 		return nullptr;
-	return CtrKeyScramblerPrivate::EncryptionKeyVerifyData[keyIdx];
+	return EncryptionKeyVerifyData[keyIdx];
 }
 
 /**
@@ -106,7 +91,7 @@ static inline void bswap_u128_t(u128_t &dest, const u128_t &src)
  * @param ctr_scrambler	[in] Scrambler constant.
  * @return 0 on success; negative POSIX error code on error.
  */
-int CtrKeyScrambler::CtrScramble(u128_t *keyNormal,
+int CtrScramble(u128_t *keyNormal,
 	const u128_t *keyX, const u128_t *keyY,
 	const u128_t *ctr_scrambler)
 {
@@ -167,7 +152,7 @@ int CtrKeyScrambler::CtrScramble(u128_t *keyNormal,
  * @param keyY		[in] KeyY.
  * @return 0 on success; negative POSIX error code on error.
  */
-int CtrKeyScrambler::CtrScramble(u128_t *keyNormal,
+int CtrScramble(u128_t *keyNormal,
 	const u128_t *keyX, const u128_t *keyY)
 {
 	assert(keyNormal != nullptr);
@@ -187,8 +172,8 @@ int CtrKeyScrambler::CtrScramble(u128_t *keyNormal,
 
 	KeyManager::KeyData_t keyData;
 	KeyManager::VerifyResult res = keyManager->getAndVerify(
-		CtrKeyScramblerPrivate::EncryptionKeyNames[Key_Ctr_Scrambler], &keyData,
-		CtrKeyScramblerPrivate::EncryptionKeyVerifyData[Key_Ctr_Scrambler], 16);
+		EncryptionKeyNames[Key_Ctr_Scrambler], &keyData,
+		EncryptionKeyVerifyData[Key_Ctr_Scrambler], 16);
 	if (res != KeyManager::VerifyResult::OK) {
 		// Key error.
 		// TODO: Return the key error?
@@ -204,4 +189,4 @@ int CtrKeyScrambler::CtrScramble(u128_t *keyNormal,
 		reinterpret_cast<const u128_t*>(keyData.key));
 }
 
-}
+} }

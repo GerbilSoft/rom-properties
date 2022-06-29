@@ -32,8 +32,8 @@ class LanguageComboBoxPrivate
 		LanguageComboBoxPrivate(HWND hWnd)
 			: hWnd(hWnd)
 			, himglFlags(nullptr)
-			, forcePAL(false)
 			, dwExStyleRTL(LibWin32Common::isSystemRTL())
+			, forcePAL(false)
 		{
 			minSize.cx = 0;
 			minSize.cy = 0;
@@ -74,12 +74,12 @@ class LanguageComboBoxPrivate
 		HWND hWnd;		// LanguageComboBox control
 		HIMAGELIST himglFlags;	// ImageList for flag icons
 
-		SIZE minSize;		// Minimum size required
-		bool forcePAL;		// Force PAL region flags?
-
 		// Is the UI locale right-to-left?
 		// If so, this will be set to WS_EX_LAYOUTRTL.
 		DWORD dwExStyleRTL;
+
+		SIZE minSize;		// Minimum size required
+		bool forcePAL;		// Force PAL region flags?
 };
 
 /**

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiSave.cpp: Nintendo Wii save game file reader.                        *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -74,11 +74,12 @@ class WiiSavePrivate final : public RomDataPrivate
 		// CBC reader for the main data area.
 		CBCReader *cbcReader;
 		WiiWIBN *wibnData;
-#endif /* ENABLE_DECRYPTION */
+
 		// Key indexes. (0 == AES, 1 == IV)
 		std::array<WiiPartition::EncryptionKeys, 2> key_idx;
 		// Key status.
 		std::array<KeyManager::VerifyResult, 2> key_status;
+#endif /* ENABLE_DECRYPTION */
 };
 
 ROMDATA_IMPL(WiiSave)
@@ -121,8 +122,10 @@ WiiSavePrivate::WiiSavePrivate(WiiSave *q, IRpFile *file)
 	memset(&svHeader, 0, sizeof(svHeader));
 	memset(&bkHeader, 0, sizeof(bkHeader));
 
+#ifdef ENABLE_DECRYPTION
 	key_idx.fill(WiiPartition::Key_Max);
 	key_status.fill(KeyManager::VerifyResult::Unknown);
+#endif /* ENABLE_DECRYPTION */
 }
 
 WiiSavePrivate::~WiiSavePrivate()
@@ -207,6 +210,7 @@ WiiSave::WiiSave(IRpFile *file)
 	// Found the Bk header.
 	d->isValid = true;
 
+#ifdef ENABLE_DECRYPTION
 	// Get the decryption keys.
 	// NOTE: Continuing even if the keys can't be loaded,
 	// since we can still show the Bk header fields.
@@ -215,9 +219,7 @@ WiiSave::WiiSave(IRpFile *file)
 	d->key_idx[0] = WiiPartition::Key_Rvl_SD_AES;
 	d->key_idx[1] = WiiPartition::Key_Rvl_SD_IV;
 
-#ifdef ENABLE_DECRYPTION
 	// Initialize the CBC reader for the main data area.
-
 	// TODO: WiiVerifyKeys class.
 	KeyManager *const keyManager = KeyManager::instance();
 	assert(keyManager != nullptr);

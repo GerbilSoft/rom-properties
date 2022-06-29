@@ -42,7 +42,6 @@ using std::vector;
 RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	: q_ptr(q)
 	, romData(nullptr)
-	, hasCheckedAchievements(false)
 	, btnOptions(nullptr)
 #ifdef HAVE_KMESSAGEWIDGET
 	, messageWidget(nullptr)
@@ -50,8 +49,9 @@ RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	, tmrMessageWidget(nullptr)
 #  endif /* AUTO_TIMEOUT_MESSAGEWIDGET */
 #endif /* HAVE_KMESSAGEWIDGET */
-	, def_lc(0)
 	, cboLanguage(nullptr)
+	, def_lc(0)
+	, hasCheckedAchievements(false)
 {
 	if (romData) {
 		this->romData = romData->ref();
