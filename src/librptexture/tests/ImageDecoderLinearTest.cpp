@@ -13,7 +13,7 @@
 
 // librpcpu, librpbase
 #include "librpcpu/byteswap_rp.h"
-#include "librpbase/aligned_malloc.h"
+#include "aligned_malloc.h"
 
 // librptexture
 #include "librptexture/img/rp_image.hpp"

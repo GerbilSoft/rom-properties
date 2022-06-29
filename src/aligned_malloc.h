@@ -1,13 +1,13 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension.                                    *
  * aligned_malloc.h: Aligned memory allocation compatibility header.       *
  *                                                                         *
  * Copyright (c) 2015-2022 by David Korth                                  *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_ALIGNED_MALLOC_H__
-#define __ROMPROPERTIES_LIBRPBASE_ALIGNED_MALLOC_H__
+#ifndef __ROMPROPERTIES_ALIGNED_MALLOC_H__
+#define __ROMPROPERTIES_ALIGNED_MALLOC_H__
 
 // References:
 // - http://www.gnu.org/software/libc/manual/html_node/Aligned-Memory-Blocks.html
@@ -150,4 +150,4 @@ static inline UNIQUE_PTR_ALIGNED_T aligned_uptr(size_t align, size_t size)
 
 #endif /* __cplusplus */
 
-#endif /* __ROMPROPERTIES_LIBRPBASE_ALIGNED_MALLOC_H__ */
+#endif /* __ROMPROPERTIES_ALIGNED_MALLOC_H__ */

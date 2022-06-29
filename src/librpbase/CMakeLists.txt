@@ -92,7 +92,6 @@ SET(${PROJECT_NAME}_SRCS
 	)
 # Headers.
 SET(${PROJECT_NAME}_H
-	aligned_malloc.h
 	TextFuncs.hpp
 	TextFuncs_wchar.hpp
 	TextFuncs_libc.h

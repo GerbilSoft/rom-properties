@@ -42,7 +42,7 @@
 // librpbase common headers
 #include "common.h"
 #include "ctypex.h"
-#include "librpbase/aligned_malloc.h"
+#include "aligned_malloc.h"
 
 // librpcpu
 #include "librpcpu/byteswap_rp.h"

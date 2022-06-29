@@ -16,7 +16,7 @@
 #endif
 
 // librpbase, librptexture
-#include "librpbase/aligned_malloc.h"
+#include "aligned_malloc.h"
 using LibRpTexture::rp_image;
 using LibRpTexture::rp_image_backend;
 

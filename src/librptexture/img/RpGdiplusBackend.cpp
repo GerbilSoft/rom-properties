@@ -11,7 +11,7 @@
 
 #include "stdafx.h"
 #include "RpGdiplusBackend.hpp"
-#include "librpbase/aligned_malloc.h"
+#include "aligned_malloc.h"
 
 // C++ STL classes.
 using std::unique_ptr;
