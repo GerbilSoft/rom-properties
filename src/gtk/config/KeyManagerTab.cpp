@@ -318,6 +318,9 @@ key_manager_tab_init(KeyManagerTab *tab)
 #endif /* !USE_GTK_MENU_BUTTON */
 
 #if GTK_CHECK_VERSION(4,0,0)
+	// Hide the MessageWidget initially.
+	gtk_widget_hide(tab->messageWidget);
+
 	gtk_box_append(GTK_BOX(tab), tab->messageWidget);
 	gtk_box_append(GTK_BOX(tab), scrolledWindow);
 	gtk_box_append(GTK_BOX(tab), tab->btnImport);
