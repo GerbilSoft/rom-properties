@@ -17,6 +17,9 @@ using LibRpTexture::argb32_t;
 #include <glib-object.h>
 #include "Notifications.h"
 
+// Achievement spritesheets
+#include "AchSpritesheet.hpp"
+
 // C++ STL classes.
 using std::string;
 using std::unordered_map;
@@ -41,20 +44,11 @@ class AchGDBusPrivate
 	public:
 		/**
 		 * Load the specified Achievements icon sprite sheet.
-		 * Caller must free it after use.
-		 * @param iconSize Icon size. (16, 24, 32, 64)
-		 * @param gray If true, load the grayscale version.
-		 * @return PIMGTYPE, or nullptr on error.
-		 */
-		static PIMGTYPE loadSpriteSheet(int iconSize, bool gray = false);
-
-		/**
-		 * Load the specified Achievements icon sprite sheet.
-		 * Internal version that caches the sprite sheet in map_imgAchSheet.
+		 * The sprite sheet will be cached in map_imgAchSheet.
 		 * @param iconSize Icon size. (16, 24, 32, 64)
 		 * @return PIMGTYPE, or nullptr on error.
 		 */
-		PIMGTYPE loadSpriteSheet_int(int iconSize);
+		PIMGTYPE loadSpriteSheet(int iconSize);
 
 	public:
 		/**
@@ -108,49 +102,11 @@ AchGDBusPrivate::~AchGDBusPrivate()
 
 /**
  * Load the specified Achievements icon sprite sheet.
- * Caller must free it after use.
+ * The sprite sheet will be cached in map_imgAchSheet.
  * @param iconSize Icon size. (16, 24, 32, 64)
  * @return PIMGTYPE, or nullptr on error.
  */
-PIMGTYPE AchGDBusPrivate::loadSpriteSheet(int iconSize, bool gray)
-{
-	assert(iconSize == 16 || iconSize == 24 || iconSize == 32 || iconSize == 64);
-
-	char ach_filename[64];
-	snprintf(ach_filename, sizeof(ach_filename),
-		"/com/gerbilsoft/rom-properties/ach/ach%s-%dx%d.png",
-		(gray ? "-gray" : ""), iconSize, iconSize);
-	PIMGTYPE imgAchSheet = PIMGTYPE_load_png_from_gresource(ach_filename);
-	assert(imgAchSheet != nullptr);
-	if (!imgAchSheet) {
-		// Unable to load the achievements sprite sheet.
-		return nullptr;
-	}
-
-	// Make sure the bitmap has the expected size.
-	assert(PIMGTYPE_size_check(imgAchSheet,
-		(int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS),
-		(int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS)));
-	if (!PIMGTYPE_size_check(imgAchSheet,
-	     (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS),
-	     (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS)))
-	{
-		// Incorrect size. We can't use it.
-		PIMGTYPE_destroy(imgAchSheet);
-		return nullptr;
-	}
-
-	// Sprite sheet is correct.
-	return imgAchSheet;
-}
-
-/**
- * Load the specified Achievements icon sprite sheet.
- * Internal version that caches the sprite sheet in map_imgAchSheet.
- * @param iconSize Icon size. (16, 24, 32, 64)
- * @return PIMGTYPE, or nullptr on error.
- */
-PIMGTYPE AchGDBusPrivate::loadSpriteSheet_int(int iconSize)
+PIMGTYPE AchGDBusPrivate::loadSpriteSheet(int iconSize)
 {
 	// Check if the sprite sheet is already loaded.
 	auto iter = map_imgAchSheet.find(iconSize);
@@ -160,7 +116,7 @@ PIMGTYPE AchGDBusPrivate::loadSpriteSheet_int(int iconSize)
 	}
 
 	// Load the sprite sheet.
-	PIMGTYPE imgAchSheet = loadSpriteSheet(iconSize);
+	PIMGTYPE imgAchSheet = AchSpritesheet::load(iconSize);
 	assert(imgAchSheet != nullptr);
 	if (!imgAchSheet) {
 		// Unable to load the achievements sprite sheet.
@@ -366,16 +322,4 @@ AchGDBus *AchGDBus::instance(void)
 	}
 
 	return q;
-}
-
-/**
- * Load the specified Achievements icon sprite sheet.
- * Caller must free it after use.
- * @param iconSize Icon size. (16, 24, 32, 64)
- * @param gray If true, load the grayscale version.
- * @return PIMGTYPE, or nullptr on error.
- */
-PIMGTYPE AchGDBus::loadSpriteSheet(int iconSize, bool gray)
-{
-	return AchGDBusPrivate::loadSpriteSheet(iconSize, gray);
 }

@@ -10,7 +10,7 @@
 
 #include "AchievementsTab.hpp"
 #include "RpConfigTab.hpp"
-#include "../AchGDBus.hpp"
+#include "../AchSpritesheet.hpp"
 
 #include "RpGtk.hpp"
 #include "gtk-compat.h"
@@ -168,8 +168,8 @@ achievements_tab_reset(AchievementsTab *tab)
 	// NOTE: Assuming 32x32 icons for now.
 	// TODO: Check DPI and adjust on DPI changes?
 	const gint iconSize = 32;
-	PIMGTYPE imgAchSheet = AchGDBus::loadSpriteSheet(iconSize, false);
-	PIMGTYPE imgAchGraySheet = AchGDBus::loadSpriteSheet(iconSize, true);
+	PIMGTYPE imgAchSheet = AchSpritesheet::load(iconSize, false);
+	PIMGTYPE imgAchGraySheet = AchSpritesheet::load(iconSize, true);
 
 	// Pango 1.49.0 [2021/08/22] added percentage sizes.
 	// For older versions, we'll need to use 'smaller' instead.

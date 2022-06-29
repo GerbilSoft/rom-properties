@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+)                             *
  * AchGDBus.hpp: GDBus notifications for achievements.                     *
  *                                                                         *
- * Copyright (c) 2020 by David Korth.                                      *
+ * Copyright (c) 2020-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -42,15 +42,6 @@ class AchGDBus
 		 * @return AchGDBus instance.
 		 */
 		static AchGDBus *instance(void);
-
-		/**
-		 * Load the specified Achievements icon sprite sheet.
-		 * Caller must free it after use.
-		 * @param gray If true, load the grayscale version.
-		 * @param iconSize Icon size. (16, 24, 32, 64)
-		 * @return PIMGTYPE, or nullptr on error.
-		 */
-		static PIMGTYPE loadSpriteSheet(int iconSize, bool gray = false);
 };
 
 #endif /* __ROMPROPERTIES_GTK_ACHGDBUS_HPP__ */
