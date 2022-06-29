@@ -685,7 +685,7 @@ const char *RpFile_IStream::filename(void) const
 		HRESULT hr = m_pStream->Stat(&statstg, STATFLAG_DEFAULT);
 		if (FAILED(hr)) {
 			// Stat() failed.
-			return string();
+			return nullptr;
 		}
 
 		if (statstg.pwcsName) {

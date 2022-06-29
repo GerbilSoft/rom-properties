@@ -3,7 +3,7 @@
  * RP_ExtractImage_Fallback.cpp: IExtractImage implementation.             *
  * Fallback functions for unsupported files.                               *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -117,7 +117,7 @@ HRESULT RP_ExtractImage_Private::Fallback(HBITMAP *phBmpImage)
 	if (filename.empty()) {
 		return E_INVALIDARG;
 	}
-	const wchar_t *file_ext = FileSystem::file_ext(filename);
+	const wchar_t *file_ext = FileSystem::file_ext(filename.c_str());
 	if (!file_ext) {
 		// Invalid or missing file extension.
 		return E_INVALIDARG;

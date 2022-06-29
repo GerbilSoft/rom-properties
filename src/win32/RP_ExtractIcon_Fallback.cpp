@@ -3,7 +3,7 @@
  * RP_ExtractIcon_Fallback.cpp: IExtractIcon implementation.               *
  * Fallback functions for unsupported files.                               *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -325,7 +325,7 @@ LONG RP_ExtractIcon_Private::Fallback(HICON *phiconLarge, HICON *phiconSmall, UI
 	if (filename.empty()) {
 		return ERROR_FILE_NOT_FOUND;
 	}
-	const char *file_ext = FileSystem::file_ext(filename);
+	const char *file_ext = FileSystem::file_ext(filename.c_str());
 	if (!file_ext) {
 		// Invalid or missing file extension.
 		return ERROR_FILE_NOT_FOUND;
