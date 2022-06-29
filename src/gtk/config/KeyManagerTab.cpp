@@ -734,7 +734,7 @@ key_manager_tab_show_key_import_return_status(KeyManagerTab	*tab,
 		char buf[16];
 
 		if (iret.keysExist > 0) {
-			snprintf(buf, sizeof(buf), "%'d", 123456789);//iret.keysExist);
+			snprintf(buf, sizeof(buf), "%'d", iret.keysExist);
 			msg += nl_bullet;
 			msg += rp_sprintf(NC_("KeyManagerTab",
 				// tr: %s == number of keys (formatted)
@@ -743,7 +743,7 @@ key_manager_tab_show_key_import_return_status(KeyManagerTab	*tab,
 				iret.keysExist), buf);
 		}
 		if (iret.keysInvalid > 0) {
-			snprintf(buf, sizeof(buf), "%'d", iret.keysInvalid);//iret.keysExist);
+			snprintf(buf, sizeof(buf), "%'d", iret.keysInvalid);
 			msg += nl_bullet;
 			msg += rp_sprintf(NC_("KeyManagerTab",
 				// tr: %s == number of keys (formatted)
