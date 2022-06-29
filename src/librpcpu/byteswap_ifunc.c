@@ -90,9 +90,9 @@ static __typeof__(&rp_byte_swap_32_array_c) rp_byte_swap_32_array_resolve(void)
 #endif /* !BYTESWAP_ALWAYS_HAS_SSE2 */
 }
 
-void rp_byte_swap_16_array(uint16_t *ptr, size_t n)
+void RP_C_API rp_byte_swap_16_array(uint16_t *ptr, size_t n)
 	IFUNC_ATTR(rp_byte_swap_16_array_resolve);
-void rp_byte_swap_32_array(uint32_t *ptr, size_t n)
+void RP_C_API rp_byte_swap_32_array(uint32_t *ptr, size_t n)
 	IFUNC_ATTR(rp_byte_swap_32_array_resolve);
 
 #endif /* HAVE_IFUNC */

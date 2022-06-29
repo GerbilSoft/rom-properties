@@ -150,7 +150,7 @@ static int init_apng(void)
  *
  * @return 0 on success; non-zero on error.
  */
-int APNG_ref(void)
+int RP_C_API APNG_ref(void)
 {
 	assert(ref_cnt >= 0);
 	if (ATOMIC_INC_FETCH(&ref_cnt) == 1) {
@@ -171,7 +171,7 @@ int APNG_ref(void)
  * Decrement the APNG reference counter.
  * @return Non-zero if APNG is supported, 0 if not supported.
  */
-void APNG_unref(void)
+void RP_C_API APNG_unref(void)
 {
 	assert(ref_cnt > 0);
 	if (ATOMIC_DEC_FETCH(&ref_cnt) == 0) {

@@ -10,6 +10,8 @@
 #define __ROMPROPERTIES_LIBRPBASE_IMG_APNG_DLOPEN_H__
 
 #include "librpbase/config.librpbase.h"
+#include "dll-macros.h"
+
 #include <png.h>
 
 #ifdef __cplusplus
@@ -41,13 +43,13 @@ extern "C" {
  * @return 0 on success; non-zero on error.
  */
 RP_LIBROMDATA_PUBLIC
-extern int APNG_ref(void);
+extern int RP_C_API APNG_ref(void);
 
 /**
  * Decrement the APNG reference counter.
  */
 RP_LIBROMDATA_PUBLIC
-extern void APNG_unref(void);
+extern void RP_C_API APNG_unref(void);
 
 /**
  * Force the APNG library to be unloaded.

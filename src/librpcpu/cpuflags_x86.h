@@ -41,7 +41,7 @@ RP_LIBROMDATA_PUBLIC extern int RP_CPU_Flags_Init;	// 1 if RP_CPU_Flags has been
  * Initialize RP_CPU_Flags.
  */
 RP_LIBROMDATA_PUBLIC
-void RP_CPU_InitCPUFlags(void);
+void RP_C_API RP_CPU_InitCPUFlags(void);
 
 /**
  * Check if the CPU supports MMX.
