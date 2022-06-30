@@ -18,21 +18,6 @@
 extern "C" {
 #endif
 
-#if defined(USE_INTERNAL_PNG) && !defined(USE_INTERNAL_PNG_DLL)
-/* Internal libpng; we always know if APNG is supported. */
-#  ifdef PNG_APNG_SUPPORTED
-#    define APNG_ref() 0
-#    define APNG_unref() do { } while (0)
-#  else /* !PNG_APNG_SUPPORTED */
-#    define APNG_ref() -1
-#    define APNG_unref() do { } while (0)
-#  endif /* PNG_APNG_SUPPORTED */
-/* Disable DLL import/export when using the internal libpng. */
-#  ifdef PNG_IMPEXP
-#    undef PNG_IMPEXP
-#    define PNG_IMPEXP
-#  endif /* PNG_IMPEXP */
-#else /* USE_INTERNAL_PNG && !USE_INTERNAL_PNG_DLL */
 /**
  * Load APNG and increment the reference counter.
  *
@@ -56,7 +41,6 @@ extern void RP_C_API APNG_unref(void);
  * This decrements the reference count to 0.
  */
 extern void APNG_force_unload(void);
-#endif /* USE_INTERNAL_PNG */
 
 #ifndef USE_INTERNAL_PNG
 /* PNG/APNG macros that might not be present if the system libpng *
@@ -107,8 +91,7 @@ typedef PNG_CALLBACK(void, *png_progressive_row_ptr, (png_structp, png_bytep,
 #endif
 #endif /* USE_INTERNAL_PNG */
 
-#if !defined(USE_INTERNAL_PNG) || \
-    (defined(USE_INTERNAL_PNG) && defined(USE_INTERNAL_PNG_DLL))
+#if !defined(USE_INTERNAL_PNG) || defined(USE_INTERNAL_PNG_DLL)
 /* Either system libpng is used, or we're using our  *
  * libpng compiled as a DLL. The APNG function names *
  * will be defined as function pointers.             */

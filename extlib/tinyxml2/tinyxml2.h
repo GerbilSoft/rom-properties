@@ -64,6 +64,7 @@ distribution.
 #   pragma warning(disable: 4251)
 #endif
 
+// rom-properties: Allow overriding symbol visibility on Linux.
 #ifdef _WIN32
 #   ifdef TINYXML2_EXPORT
 #       define TINYXML2_LIB __declspec(dllexport)
@@ -72,7 +73,7 @@ distribution.
 #   else
 #       define TINYXML2_LIB
 #   endif
-#elif __GNUC__ >= 4
+#elif __GNUC__ >= 4 && !TINYXML2_NO_GCC_EXPORT
 #   define TINYXML2_LIB __attribute__((visibility("default")))
 #else
 #   define TINYXML2_LIB

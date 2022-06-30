@@ -1016,6 +1016,10 @@ if(1)   #NOT DEFINED BUILD_SHARED_LIBS)
 
         set(ZLIB_INSTALL_LIBRARIES zlib zlibstatic)
     ELSE(WIN32 OR APPLE)
+        # rom-properties: Hide all symbols so they're not exported by libromdata.
+        INCLUDE(CheckHiddenVisibility)
+        CHECK_HIDDEN_VISIBILITY()
+
         add_library(zlibstatic STATIC ${ZLIB_ALL_SRCS})
 
         set(ZLIB_INSTALL_LIBRARIES zlibstatic)

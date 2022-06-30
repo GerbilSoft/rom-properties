@@ -7,21 +7,23 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-#include <png.h>
 
+#include <png.h>
 #include "APNG_dlopen.h"
+
+#if !defined(USE_INTERNAL_PNG) || defined(USE_INTERNAL_PNG_DLL)
 
 // librpthreads
 #include "librpthreads/Atomics.h"
 
 #ifndef _WIN32
 // Unix dlopen()
-# include <dlfcn.h>
+#  include <dlfcn.h>
 #else
 // Windows LoadLibrary()
-# include "libwin32common/RpWin32_sdk.h"
-# define dlsym(handle, symbol)	((void*)GetProcAddress(handle, symbol))
-# define dlclose(handle)	FreeLibrary(handle)
+#  include "libwin32common/RpWin32_sdk.h"
+#  define dlsym(handle, symbol)	((void*)GetProcAddress(handle, symbol))
+#  define dlclose(handle)	FreeLibrary(handle)
 #endif
 
 // DLL handle.
@@ -52,6 +54,9 @@ APNG_png_read_frame_head_t APNG_png_read_frame_head = NULL;
 APNG_png_set_progressive_frame_fn_t APNG_png_set_progressive_frame_fn = NULL;
 APNG_png_write_frame_head_t APNG_png_write_frame_head = NULL;
 APNG_png_write_frame_tail_t APNG_png_write_frame_tail = NULL;
+
+// Internal PNG (statically-linked) always has APNG.
+// System PNG (or bundled DLL) might not.
 
 /**
  * APNG reference couner.
@@ -140,6 +145,7 @@ static int init_apng(void)
 	APNG_png_write_frame_tail = dlsym(libpng_dll, "png_write_frame_tail");
 	return 0;
 }
+#endif /* !USE_INTERNAL_PNG || USE_INTERNAL_PNG_DLL */
 
 /**
  * Load APNG and increment the reference counter.
@@ -152,6 +158,9 @@ static int init_apng(void)
  */
 int RP_C_API APNG_ref(void)
 {
+#if !defined(USE_INTERNAL_PNG) || defined(USE_INTERNAL_PNG_DLL)
+	// Internal PNG (statically-linked) always has APNG.
+	// System PNG (or bundled DLL) might not.
 	assert(ref_cnt >= 0);
 	if (ATOMIC_INC_FETCH(&ref_cnt) == 1) {
 		// First APNG reference.
@@ -164,6 +173,7 @@ int RP_C_API APNG_ref(void)
 			return -1;
 		}
 	}
+#endif /* !USE_INTERNAL_PNG || USE_INTERNAL_PNG_DLL */
 	return 0;
 }
 
@@ -173,6 +183,9 @@ int RP_C_API APNG_ref(void)
  */
 void RP_C_API APNG_unref(void)
 {
+#if !defined(USE_INTERNAL_PNG) || defined(USE_INTERNAL_PNG_DLL)
+	// Internal PNG (statically-linked) always has APNG.
+	// System PNG (or bundled DLL) might not.
 	assert(ref_cnt > 0);
 	if (ATOMIC_DEC_FETCH(&ref_cnt) == 0) {
 		// Unload APNG.
@@ -182,6 +195,7 @@ void RP_C_API APNG_unref(void)
 			libpng_dll = NULL;
 		}
 	}
+#endif /* !USE_INTERNAL_PNG || USE_INTERNAL_PNG_DLL */
 }
 
 /**
@@ -190,6 +204,9 @@ void RP_C_API APNG_unref(void)
  */
 void APNG_force_unload(void)
 {
+#if !defined(USE_INTERNAL_PNG) || defined(USE_INTERNAL_PNG_DLL)
+	// Internal PNG (statically-linked) always has APNG.
+	// System PNG (or bundled DLL) might not.
 	if (ref_cnt > 0) {
 		// Unload APNG.
 		// TODO: Clear the function pointers?
@@ -199,4 +216,5 @@ void APNG_force_unload(void)
 		}
 		ref_cnt = 0;
 	}
+#endif /* !USE_INTERNAL_PNG || USE_INTERNAL_PNG_DLL */
 }

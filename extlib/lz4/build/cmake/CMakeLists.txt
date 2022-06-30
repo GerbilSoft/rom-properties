@@ -137,6 +137,10 @@ if(BUILD_SHARED_LIBS)
   SET_WINDOWS_SUBSYSTEM(lz4_shared WIN32)
 endif()
 if(BUILD_STATIC_LIBS)
+  # rom-properties: Hide all symbols so they're not exported by libromdata.
+  INCLUDE(CheckHiddenVisibility)
+  CHECK_HIDDEN_VISIBILITY()
+
   add_library(lz4_static STATIC ${LZ4_SOURCES})
   set_target_properties(lz4_static PROPERTIES
     OUTPUT_NAME lz4
@@ -144,6 +148,8 @@ if(BUILD_STATIC_LIBS)
   list(APPEND LZ4_LIBRARIES_BUILT lz4_static)
   # rom-properties: Add the include directory.
   target_include_directories(lz4_static PUBLIC "${LZ4_LIB_SOURCE_DIR}")
+  # rom-properties: Hide all symbols so they're not exported by libromdata.
+  target_compile_definitions(lz4_static PUBLIC LZ4LIB_VISIBILITY=)
 endif()
 
 # link to shared whenever possible, to static otherwise

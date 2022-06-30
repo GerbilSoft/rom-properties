@@ -15,6 +15,10 @@ IF(BUILD_SHARED_LIBS)
 	SET(minilzo_LIB_TYPE SHARED)
 ELSE(BUILD_SHARED_LIBS)
 	SET(minilzo_LIB_TYPE STATIC)
+
+	# rom-properties: Hide all symbols so they're not exported by libromdata.
+	INCLUDE(CheckHiddenVisibility)
+	CHECK_HIDDEN_VISIBILITY()
 ENDIF(BUILD_SHARED_LIBS)
 
 ADD_LIBRARY(minilzo ${minilzo_LIB_TYPE}

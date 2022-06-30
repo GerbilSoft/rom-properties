@@ -79,6 +79,7 @@ SET(${PROJECT_NAME}_SRCS
 	img/RpImageLoader.cpp
 	img/RpPng.cpp
 	img/RpPngWriter.cpp
+	img/APNG_dlopen.c
 	img/IconAnimHelper.cpp
 	disc/IDiscReader.cpp
 	disc/DiscReader.cpp
@@ -122,7 +123,6 @@ SET(${PROJECT_NAME}_H
 	)
 
 IF(NOT USE_INTERNAL_PNG OR (USE_INTERNAL_PNG AND USE_INTERNAL_PNG_DLL))
-	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} img/APNG_dlopen.c)
 	SET(${PROJECT_NAME}_NEEDS_DL 1)
 ENDIF(NOT USE_INTERNAL_PNG OR (USE_INTERNAL_PNG AND USE_INTERNAL_PNG_DLL))
 
