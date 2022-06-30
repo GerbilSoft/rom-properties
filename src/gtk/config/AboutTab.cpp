@@ -348,8 +348,10 @@ about_tab_init_program_title_text(GtkWidget *imgLogo, GtkLabel *lblTitle)
 	}
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
-	const char *const programVersion = AboutTabText::getProgramVersion();
-	const char *const gitVersion = AboutTabText::getGitVersion();
+	const char *const programVersion =
+		AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::ProgramVersion);
+	const char *const gitVersion =
+		AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::GitVersion);
 
 	string sPrgTitle;
 	sPrgTitle.reserve(1024);
@@ -360,7 +362,8 @@ about_tab_init_program_title_text(GtkWidget *imgLogo, GtkLabel *lblTitle)
 	if (gitVersion) {
 		sPrgTitle += '\n';
 		sPrgTitle += gitVersion;
-		const char *const gitDescription = AboutTabText::getGitDescription();
+		const char *const gitDescription =
+			AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::GitDescription);
 		if (gitDescription) {
 			sPrgTitle += '\n';
 			sPrgTitle += gitDescription;
@@ -385,7 +388,8 @@ about_tab_init_credits_tab(GtkLabel *lblCredits)
 	string sCredits;
 	sCredits.reserve(4096);
 	// NOTE: Copyright is NOT localized.
-	sCredits += "Copyright (c) 2016-2022 by David Korth.\n";
+	sCredits += AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::Copyright);
+	sCredits += '\n';
 	sCredits += rp_sprintf(
 		// tr: %s is the name of the license.
 		C_("AboutTab|Credits", "This program is licensed under the %s or later."),

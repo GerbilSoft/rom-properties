@@ -505,15 +505,18 @@ void AboutTabPrivate::initProgramTitleText(void)
 	}
 
 	// Version number.
-	const char *const programVersion = AboutTabText::getProgramVersion();
-	const char *const gitVersion = AboutTabText::getGitVersion();
+	const char *const programVersion =
+		AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::ProgramVersion);
+	const char *const gitVersion =
+		AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::GitVersion);
 
 	string s_version = rp_sprintf(C_("AboutTab", "Version %s"), programVersion);
 	s_version.reserve(1024);
 	if (gitVersion) {
 		s_version += "\r\n";
 		s_version += gitVersion;
-		const char *const gitDescription = AboutTabText::getGitDescription();
+		const char *const gitDescription =
+			AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::GitDescription);
 		if (gitDescription) {
 			s_version += "\r\n";
 			s_version += gitDescription;
@@ -603,8 +606,8 @@ void AboutTabPrivate::initCreditsTab(void)
 	// FIXME: Figure out how to get links to work without
 	// resorting to manually adding CFE_LINK data...
 	// NOTE: Copyright is NOT localized.
-	sCredits += "Copyright (c) 2016-2022 by David Korth." RTF_BR;
-	sCredits += RTF_BR;
+	sCredits += AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::Copyright);
+	sCredits += RTF_BR RTF_BR;
 	sCredits += rp_sprintf(
 		// tr: %s is the name of the license.
 		rtfEscape(C_("AboutTab|Credits", "This program is licensed under the %s or later.")).c_str(),

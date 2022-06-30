@@ -20,39 +20,52 @@ extern "C" {
 
 namespace LibRpBase { namespace AboutTabText {
 
-/**
- * Get the program version.
- * @return Program version
- */
-const char *getProgramVersion(void)
-{
-	return RP_VERSION_STRING;
-}
+static const char *const ProgramInfoString_tbl[] = {
+	"rom-properties",				// ProgramName
+	"ROM Properties Page Shell Extension",		// ProgramFullName
+	"Copyright (c) 2016-2022 by David Korth.",	// Copyright
+	RP_VERSION_STRING,
 
-/**
- * Get the git version.
- * @return git version, or nullptr if git was not present.
- */
-const char *getGitVersion(void)
-{
+	// GitVersion
 #ifdef RP_GIT_VERSION
-	return RP_GIT_VERSION;
-#else
-	return nullptr;
-#endif
+	RP_GIT_VERSION,
+#else /* !RP_GIT_VERSION */
+	nullptr,
+#endif /* RP_GIT_VERSION */
+
+	// GitDescription
+#if defined(RP_GIT_VERSION) && defined(RP_GIT_DESCRIBE)
+	RP_GIT_DESCRIBE,
+#else /* !(RP_GIT_VERSION && RP_GIT_DESCRIBE) */
+	nullptr,
+#endif /* RP_GIT_VERSION && RP_GIT_DESCRIBE */
+};
+
+/**
+ * Get a program information string.
+ * @param id String ID
+ * @return String, or nullptr if not available.
+ */
+RP_LIBROMDATA_PUBLIC
+const char *getProgramInfoString(ProgramInfoStringID id)
+{
+	assert(static_cast<int>(id) >= 0);
+	assert(id < ProgramInfoStringID::Max);
+	if (static_cast<int>(id) < 0 || id >= ProgramInfoStringID::Max) {
+		return nullptr;
+	}
+
+	return ProgramInfoString_tbl[static_cast<int>(id)];
 }
 
 /**
- * Get the git description.
- * @return git description, or nullptr if git was not present.
+ * Get the program information string count.
+ * @return Highest program information string ID.
  */
-const char *getGitDescription(void)
+RP_LIBROMDATA_PUBLIC
+ProgramInfoStringID getProgramInfoStringCount(void)
 {
-#if defined(RP_GIT_VERSION) && defined(RP_GIT_DESCRIBE)
-	return RP_GIT_DESCRIBE;
-#else
-	return nullptr;
-#endif
+	return ProgramInfoStringID::Max;
 }
 
 /** Credits **/

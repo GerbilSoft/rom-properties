@@ -13,26 +13,31 @@
 
 namespace LibRpBase { namespace AboutTabText {
 
-/**
- * Get the program version.
- * @return Program version
- */
-RP_LIBROMDATA_PUBLIC
-const char *getProgramVersion(void);
+enum class ProgramInfoStringID {
+	ProgramName = 0,
+	ProgramFullName,
+	Copyright,
+	ProgramVersion,
+	GitVersion,
+	GitDescription,
+
+	Max	// NOTE: May change in future releases.
+};
 
 /**
- * Get the git version.
- * @return git version, or nullptr if git was not present.
+ * Get a program information string.
+ * @param id String ID
+ * @return String, or nullptr if not available.
  */
 RP_LIBROMDATA_PUBLIC
-const char *getGitVersion(void);
+const char *getProgramInfoString(ProgramInfoStringID id);
 
 /**
- * Get the git description.
- * @return git description, or nullptr if git was not present.
+ * Get the program information string count.
+ * @return Highest program information string ID.
  */
 RP_LIBROMDATA_PUBLIC
-const char *getGitDescription(void);
+ProgramInfoStringID getProgramInfoStringCount(void);
 
 /** Credits **/
 

@@ -131,8 +131,10 @@ void AboutTabPrivate::initProgramTitleText(void)
 	}
 #endif /* QT_VERSION >= QT_VERSION_CHECK(4,6,0) */
 
-	const char *const programVersion = AboutTabText::getProgramVersion();
-	const char *const gitVersion = AboutTabText::getGitVersion();
+	const char *const programVersion =
+		AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::ProgramVersion);
+	const char *const gitVersion =
+		AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::GitVersion);
 
 	string sPrgTitle;
 	sPrgTitle.reserve(1024);
@@ -143,7 +145,8 @@ void AboutTabPrivate::initProgramTitleText(void)
 	if (gitVersion) {
 		sPrgTitle += br;
 		sPrgTitle += gitVersion;
-		const char *const gitDescription = AboutTabText::getGitDescription();
+		const char *const gitDescription =
+			AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::GitDescription);
 		if (gitDescription) {
 			sPrgTitle += br;
 			sPrgTitle += gitDescription;
@@ -166,7 +169,8 @@ void AboutTabPrivate::initCreditsTab(void)
 	string sCredits;
 	sCredits.reserve(4096);
 	// NOTE: Copyright is NOT localized.
-	sCredits += "Copyright (c) 2016-2022 by David Korth." BR;
+	sCredits += AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::Copyright);
+	sCredits += BR;
 	sCredits += rp_sprintf(
 		// tr: %s is the name of the license.
 		C_("AboutTab|Credits", "This program is licensed under the %s or later."),
