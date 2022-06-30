@@ -63,7 +63,7 @@ struct _AboutTabClass {
 struct _AboutTab {
 	super __parent__;
 
-	GtkWidget	*imgLogo;
+	GtkWidget	*imgLogo;	// GtkImage (GTK2/GTK3); GtkPicture (GTK4)
 	GtkWidget	*lblTitle;
 
 	GtkWidget	*lblCredits;
@@ -80,7 +80,7 @@ static void	about_tab_save				(AboutTab	*tab,
 							 GKeyFile       *keyFile);
 
 // Label initialization
-static void	about_tab_init_program_title_text	(GtkImage	*imgLogo,
+static void	about_tab_init_program_title_text	(GtkWidget	*imgLogo,
 							 GtkLabel	*lblTitle);
 static void	about_tab_init_credits_tab		(GtkLabel	*lblCredits);
 static void	about_tab_init_libraries_tab		(GtkLabel	*lblLibraries);
@@ -122,11 +122,16 @@ about_tab_init(AboutTab *tab)
 	// HBox for the logo and title.
 	GtkWidget *const hboxTitle = rp_gtk_hbox_new(6);
 	// Logo and title labels. (Will be filled in later.)
+#if GTK_CHECK_VERSION(4,0,0)
+	tab->imgLogo = gtk_picture_new();
+#else /* !GTK_CHECK_VERSION(4,0,0) */
 	tab->imgLogo = gtk_image_new();
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 	tab->lblTitle = gtk_label_new(nullptr);
+	gtk_label_set_justify(GTK_LABEL(tab->lblTitle), GTK_JUSTIFY_CENTER);
+
 	GTK_WIDGET_HALIGN_CENTER(tab->imgLogo);
 	GTK_WIDGET_HALIGN_CENTER(tab->lblTitle);
-	gtk_label_set_justify(GTK_LABEL(tab->lblTitle), GTK_JUSTIFY_CENTER);
 
 	// Create the GtkNotebook for the three tabs.
 	GtkWidget *const tabWidget = gtk_notebook_new();
@@ -217,6 +222,7 @@ about_tab_init(AboutTab *tab)
 	gtk_notebook_append_page(GTK_NOTEBOOK(tabWidget), scrlSupport, lblTab);
 
 #if GTK_CHECK_VERSION(4,0,0)
+	GTK_WIDGET_HALIGN_CENTER(hboxTitle);
 	gtk_box_append(GTK_BOX(hboxTitle), tab->imgLogo);
 	gtk_box_append(GTK_BOX(hboxTitle), tab->lblTitle);
 
@@ -253,7 +259,7 @@ about_tab_init(AboutTab *tab)
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Initialize the various text fields.
-	about_tab_init_program_title_text(GTK_IMAGE(tab->imgLogo), GTK_LABEL(tab->lblTitle));
+	about_tab_init_program_title_text(tab->imgLogo, GTK_LABEL(tab->lblTitle));
 	about_tab_init_credits_tab(GTK_LABEL(tab->lblCredits));
 	about_tab_init_libraries_tab(GTK_LABEL(tab->lblLibraries));
 	about_tab_init_support_tab(GTK_LABEL(tab->lblSupport));
@@ -304,11 +310,11 @@ about_tab_save(AboutTab *tab, GKeyFile *keyFile)
 
 /**
  * Initialize the program title text.
- * @param imgLogo
+ * @param imgLogo GtkImage (GTK2/GTK3); GtkPicture (GTK4)
  * @param lblTitle
  */
 static void
-about_tab_init_program_title_text(GtkImage *imgLogo, GtkLabel *lblTitle)
+about_tab_init_program_title_text(GtkWidget *imgLogo, GtkLabel *lblTitle)
 {
 	// Program icon.
 	// TODO: Make a custom icon instead of reusing the system icon.
@@ -325,21 +331,20 @@ about_tab_init_program_title_text(GtkImage *imgLogo, GtkLabel *lblTitle)
 		gtk_widget_get_direction(GTK_WIDGET(imgLogo)), (GtkIconLookupFlags)0);
 
 	if (icon) {
-		gtk_image_set_icon_size(imgLogo, GTK_ICON_SIZE_LARGE);
-		gtk_image_set_from_paintable(imgLogo, GDK_PAINTABLE(icon));
+		gtk_picture_set_paintable(GTK_PICTURE(imgLogo), GDK_PAINTABLE(icon));
 		g_object_unref(icon);
 	} else {
-		gtk_image_clear(imgLogo);
+		gtk_picture_set_paintable(GTK_PICTURE(imgLogo), nullptr);
 	}
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	GdkPixbuf *const icon = gtk_icon_theme_load_icon(
 		gtk_icon_theme_get_default(), "media-flash", icon_size,
 		(GtkIconLookupFlags)0, nullptr);
 	if (icon) {
-		gtk_image_set_from_pixbuf(imgLogo, icon);
+		gtk_image_set_from_pixbuf(GTK_IMAGE(imgLogo), icon);
 		g_object_unref(icon);
 	} else {
-		gtk_image_clear(imgLogo);
+		gtk_image_clear(GTK_IMAGE(imgLogo));
 	}
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
