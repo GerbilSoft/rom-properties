@@ -13,16 +13,26 @@
 
 namespace LibRpBase { namespace AboutTabText {
 
-// Program version string.
+/**
+ * Get the program version.
+ * @return Program version
+ */
 RP_LIBROMDATA_PUBLIC
-extern const char prg_version[];
+const char *getProgramVersion(void);
 
-// git version, or empty string if git was not present.
+/**
+ * Get the git version.
+ * @return git version, or nullptr if git was not present.
+ */
 RP_LIBROMDATA_PUBLIC
-extern const char git_version[];
-// git description, or empty string if git was not present.
+const char *getGitVersion(void);
+
+/**
+ * Get the git description.
+ * @return git description, or nullptr if git was not present.
+ */
 RP_LIBROMDATA_PUBLIC
-extern const char git_describe[];
+const char *getGitDescription(void);
 
 /** Credits **/
 
@@ -44,11 +54,12 @@ struct CreditsData_t {
 };
 
 /**
- * Credits data.
- * Ends with CT_MAX.
+ * Get the credits data.
+ * Ends with CreditType::Max.
+ * @return Credits data
  */
 RP_LIBROMDATA_PUBLIC
-extern const CreditsData_t CreditsData[];
+const CreditsData_t *getCreditsData(void);
 
 /** Support **/
 
@@ -58,11 +69,12 @@ struct SupportSite_t {
 };
 
 /**
- * Support sites.
- * Ends with nullptr.
+ * Get the support sites.
+ * Ends with nullptr entries.
+ * @return Support sites
  */
 RP_LIBROMDATA_PUBLIC
-extern const SupportSite_t SupportSites[];
+const SupportSite_t *getSupportSites(void);
 
 } }
 

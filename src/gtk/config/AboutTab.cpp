@@ -343,19 +343,22 @@ about_tab_init_program_title_text(GtkImage *imgLogo, GtkLabel *lblTitle)
 	}
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
+	const char *const programVersion = AboutTabText::getProgramVersion();
+	const char *const gitVersion = AboutTabText::getGitVersion();
+
 	string sPrgTitle;
 	sPrgTitle.reserve(1024);
 	// tr: Uses Pango's HTML subset for formatting.
 	sPrgTitle += C_("AboutTab", "<b>ROM Properties Page</b>\nShell Extension");
 	sPrgTitle += "\n\n";
-	sPrgTitle += rp_sprintf(C_("AboutTab", "Version %s"),
-		AboutTabText::prg_version);
-	if (AboutTabText::git_version[0] != 0) {
+	sPrgTitle += rp_sprintf(C_("AboutTab", "Version %s"), programVersion);
+	if (gitVersion) {
 		sPrgTitle += '\n';
-		sPrgTitle += AboutTabText::git_version;
-		if (AboutTabText::git_describe[0] != 0) {
+		sPrgTitle += gitVersion;
+		const char *const gitDescription = AboutTabText::getGitDescription();
+		if (gitDescription) {
 			sPrgTitle += '\n';
-			sPrgTitle += AboutTabText::git_describe;
+			sPrgTitle += gitDescription;
 		}
 	}
 
@@ -384,7 +387,7 @@ about_tab_init_credits_tab(GtkLabel *lblCredits)
 			sPrgLicense.c_str());
 
 	AboutTabText::CreditType lastCreditType = AboutTabText::CreditType::Continue;
-	for (const AboutTabText::CreditsData_t *creditsData = &AboutTabText::CreditsData[0];
+	for (const AboutTabText::CreditsData_t *creditsData = AboutTabText::getCreditsData();
 	     creditsData->type < AboutTabText::CreditType::Max; creditsData++)
 	{
 		if (creditsData->type != AboutTabText::CreditType::Continue &&
@@ -713,7 +716,7 @@ about_tab_init_support_tab(GtkLabel *lblSupport)
 		"For technical support, you can visit the following websites:");
 	sSupport += '\n';
 
-	for (const AboutTabText::SupportSite_t *supportSite = &AboutTabText::SupportSites[0];
+	for (const AboutTabText::SupportSite_t *supportSite = AboutTabText::getSupportSites();
 	     supportSite->name != nullptr; supportSite++)
 	{
 		sSupport += sIndent;

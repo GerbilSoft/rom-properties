@@ -505,15 +505,18 @@ void AboutTabPrivate::initProgramTitleText(void)
 	}
 
 	// Version number.
-	string s_version = rp_sprintf(C_("AboutTab", "Version %s"),
-		AboutTabText::prg_version);
+	const char *const programVersion = AboutTabText::getProgramVersion();
+	const char *const gitVersion = AboutTabText::getGitVersion();
+
+	string s_version = rp_sprintf(C_("AboutTab", "Version %s"), programVersion);
 	s_version.reserve(1024);
-	if (AboutTabText::git_version[0] != 0) {
+	if (gitVersion) {
 		s_version += "\r\n";
-		s_version += AboutTabText::git_version;
-		if (AboutTabText::git_describe[0] != 0) {
+		s_version += gitVersion;
+		const char *const gitDescription = AboutTabText::getGitDescription();
+		if (gitDescription) {
 			s_version += "\r\n";
-			s_version += AboutTabText::git_describe;
+			s_version += gitDescription;
 		}
 	}
 	const tstring st_version = U82T_s(s_version);
@@ -614,7 +617,7 @@ void AboutTabPrivate::initCreditsTab(void)
 	}
 
 	AboutTabText::CreditType lastCreditType = AboutTabText::CreditType::Continue;
-	for (const AboutTabText::CreditsData_t *creditsData = &AboutTabText::CreditsData[0];
+	for (const AboutTabText::CreditsData_t *creditsData = AboutTabText::getCreditsData();
 	     creditsData->type < AboutTabText::CreditType::Max; creditsData++)
 	{
 		if (creditsData->type != AboutTabText::CreditType::Continue &&
@@ -808,7 +811,7 @@ void AboutTabPrivate::initSupportTab(void)
 		"For technical support, you can visit the following websites:"));
 	sSupport += RTF_BR;
 
-	for (const AboutTabText::SupportSite_t *supportSite = &AboutTabText::SupportSites[0];
+	for (const AboutTabText::SupportSite_t *supportSite = AboutTabText::getSupportSites();
 	     supportSite->name != nullptr; supportSite++)
 	{
 		sSupport += RTF_TAB RTF_BULLET " ";

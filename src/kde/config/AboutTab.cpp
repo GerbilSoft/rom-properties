@@ -131,19 +131,22 @@ void AboutTabPrivate::initProgramTitleText(void)
 	}
 #endif /* QT_VERSION >= QT_VERSION_CHECK(4,6,0) */
 
+	const char *const programVersion = AboutTabText::getProgramVersion();
+	const char *const gitVersion = AboutTabText::getGitVersion();
+
 	string sPrgTitle;
 	sPrgTitle.reserve(1024);
 	// tr: Uses Qt's HTML subset for formatting.
 	sPrgTitle += C_("AboutTab", "<b>ROM Properties Page</b><br>Shell Extension");
 	sPrgTitle += brbr;
-	sPrgTitle += rp_sprintf(C_("AboutTab", "Version %s"),
-		AboutTabText::prg_version);
-	if (AboutTabText::git_version[0] != 0) {
+	sPrgTitle += rp_sprintf(C_("AboutTab", "Version %s"), programVersion);
+	if (gitVersion) {
 		sPrgTitle += br;
-		sPrgTitle += AboutTabText::git_version;
-		if (AboutTabText::git_describe[0] != 0) {
+		sPrgTitle += gitVersion;
+		const char *const gitDescription = AboutTabText::getGitDescription();
+		if (gitDescription) {
 			sPrgTitle += br;
-			sPrgTitle += AboutTabText::git_describe;
+			sPrgTitle += gitDescription;
 		}
 	}
 
@@ -170,7 +173,7 @@ void AboutTabPrivate::initCreditsTab(void)
 			sPrgLicense.c_str());
 
 	AboutTabText::CreditType lastCreditType = AboutTabText::CreditType::Continue;
-	for (const AboutTabText::CreditsData_t *creditsData = &AboutTabText::CreditsData[0];
+	for (const AboutTabText::CreditsData_t *creditsData = AboutTabText::getCreditsData();
 	     creditsData->type < AboutTabText::CreditType::Max; creditsData++)
 	{
 		if (creditsData->type != AboutTabText::CreditType::Continue &&
@@ -501,7 +504,7 @@ void AboutTabPrivate::initSupportTab(void)
 		"For technical support, you can visit the following websites:");
 	sSupport += br;
 
-	for (const AboutTabText::SupportSite_t *supportSite = &AboutTabText::SupportSites[0];
+	for (const AboutTabText::SupportSite_t *supportSite = AboutTabText::getSupportSites();
 	     supportSite->name != nullptr; supportSite++)
 	{
 		sSupport += sIndent;
