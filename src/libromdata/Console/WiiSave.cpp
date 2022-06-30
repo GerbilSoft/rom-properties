@@ -284,10 +284,6 @@ WiiSave::WiiSave(IRpFile *file)
 		}
 		ptFile->unref();
 	}
-#else /* !ENABLE_DECRYPTION */
-	// Cannot decrypt anything...
-	d->key_status[0] = KeyManager::VerifyResult::NoSupport;
-	d->key_status[1] = KeyManager::VerifyResult::NoSupport;
 #endif /* ENABLE_DECRYPTION */
 }
 
