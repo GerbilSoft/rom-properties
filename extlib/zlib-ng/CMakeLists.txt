@@ -1005,11 +1005,21 @@ if(WITH_GZFILEOP)
     list(APPEND ZLIB_ALL_SRCS ${ZLIB_GZFILE_PRIVATE_HDRS} ${ZLIB_GZFILE_SRCS})
 endif()
 
-if(NOT DEFINED BUILD_SHARED_LIBS)
-    add_library(zlib SHARED ${ZLIB_ALL_SRCS} ${ZLIB_DLL_SRCS})
-    add_library(zlibstatic STATIC ${ZLIB_ALL_SRCS})
+# rom-properties: FIXME: BUILD_SHARED_LIBS is overridden in CMakeLists
+# but this only works on the first run, since the main project builds
+# shared libraries.
+if(1)   #NOT DEFINED BUILD_SHARED_LIBS)
+    # rom-properties: Only build SHARED on Win32 or Mac OS X.
+    IF(WIN32 OR APPLE)
+        add_library(zlib SHARED ${ZLIB_ALL_SRCS} ${ZLIB_DLL_SRCS})
+        add_library(zlibstatic STATIC ${ZLIB_ALL_SRCS})
 
-    set(ZLIB_INSTALL_LIBRARIES zlib zlibstatic)
+        set(ZLIB_INSTALL_LIBRARIES zlib zlibstatic)
+    ELSE(WIN32 OR APPLE)
+        add_library(zlibstatic STATIC ${ZLIB_ALL_SRCS})
+
+        set(ZLIB_INSTALL_LIBRARIES zlibstatic)
+    ENDIF(WIN32 OR APPLE)
 else()
     add_library(zlib ${ZLIB_ALL_SRCS} ${ZLIB_DLL_SRCS})
 
