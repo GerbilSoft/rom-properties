@@ -26,6 +26,7 @@ using std::string;
 #  define HAVE_KMESSAGEWIDGET_SETICON 1
 #  include <KWidgetsAddons/kmessagewidget.h>
 #else /* !QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+#  include <kdeversion.h>
 #  if (KDE_VERSION_MAJOR > 4) || (KDE_VERSION_MAJOR == 4 && KDE_VERSION_MINOR >= 7)
 #    define HAVE_KMESSAGEWIDGET 1
 #    include <kmessagewidget.h>
