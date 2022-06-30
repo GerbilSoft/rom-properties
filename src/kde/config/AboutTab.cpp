@@ -30,7 +30,13 @@ using std::string;
 // Other libraries.
 #ifdef HAVE_ZLIB
 #  include <zlib.h>
-#endif
+#  ifdef ZLIBNG_VERSION
+// NOTE: Can't #include <zlib-ng.h> because zconf-ng.h isn't generated
+// when using the internal copy of zlib-ng.
+// Manually declare the version function.
+extern "C" const char *zlibng_version(void);
+#  endif /* ZLIBNG_VERSION */
+#endif /* HAVE_ZLIB */
 #ifdef HAVE_PNG
 #  include "librpbase/img/APNG_dlopen.h"
 #  include <png.h>
@@ -302,7 +308,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += brbr;
 #  ifdef ZLIBNG_VERSION
 	string sZlibVersion = "zlib-ng ";
-	sZlibVersion += zlibngVersion();
+	sZlibVersion += zlibng_version();
 #  else /* !ZLIBNG_VERSION */
 	string sZlibVersion = "zlib ";
 	sZlibVersion += zlibVersion();
