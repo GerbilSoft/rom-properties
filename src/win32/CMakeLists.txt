@@ -15,9 +15,9 @@ INCLUDE(CheckCXXSymbolExists)
 # IThumbnailProvider
 CHECK_INCLUDE_FILES("thumbcache.h" HAVE_THUMBCACHE_H)
 # Property key symbols and functions for RP_PropertyStore
-CHECK_SYMBOL_EXISTS(PKEY_Music_Conductor "windows.h;propvarutil.h;propkey.h" HAVE_PKEY_MUSIC_CONDUCTOR)
+CHECK_SYMBOL_EXISTS(PKEY_Subject "windows.h;propvarutil.h;propkey.h" HAVE_PKEY_SUBJECT)
 CHECK_CXX_SYMBOL_EXISTS(InitPropVariantFromUInt16 "windows.h;propvarutil.h" HAVE_INITPROPVARIANTFROMUINT16)
-IF(HAVE_PKEY_MUSIC_CONDUCTOR AND HAVE_INITPROPVARIANTFROMUINT16)
+IF(HAVE_PKEY_SUBJECT AND HAVE_INITPROPVARIANTFROMUINT16)
 	SET(HAVE_RP_PROPERTYSTORE_DEPS 1)
 ELSE()
 	MESSAGE(WARNING "Windows SDK is missing required IPropertyStore symbols.\nIPropertyStore functionality will not be available.")
