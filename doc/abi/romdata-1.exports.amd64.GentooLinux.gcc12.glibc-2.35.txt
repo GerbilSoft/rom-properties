@@ -6,6 +6,9 @@ i LibRpTexture::ImageDecoder::fromLinear24(LibRpTexture::ImageDecoder::PixelForm
 i LibRpTexture::ImageDecoder::fromLinear32(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned int const*, unsigned long, int)
 i rp_byte_swap_16_array
 i rp_byte_swap_32_array
+R LibRpBase::AboutTabText::git_describe
+R LibRpBase::AboutTabText::git_version
+R LibRpBase::AboutTabText::prg_version
 T APNG_ref
 T APNG_unref
 T LibCacheCommon::filterCacheKey(char*)
@@ -206,3 +209,15 @@ T rp_byte_swap_32_array_sse2
 T rp_byte_swap_32_array_ssse3
 T RP_CPU_InitCPUFlags
 T rp_i18n_init
+V typeinfo for LibRomData::KeyStoreUI
+V typeinfo for LibRpBase::Config
+V typeinfo for LibRpBase::ConfReader
+V typeinfo for LibRpTexture::rp_image_backend
+V typeinfo name for LibRomData::KeyStoreUI
+V typeinfo name for LibRpBase::Config
+V typeinfo name for LibRpBase::ConfReader
+V typeinfo name for LibRpTexture::rp_image_backend
+V vtable for LibRomData::KeyStoreUI
+V vtable for LibRpBase::Config
+V vtable for LibRpBase::ConfReader
+V vtable for LibRpTexture::rp_image_backend
