@@ -9,7 +9,7 @@
 #include "stdafx.h"
 #include "Nintendo3DSSysTitles.hpp"
 
-namespace LibRomData { namespace Nintendo3DSSysTitlesPrivate {
+namespace LibRomData { namespace Nintendo3DSSysTitles {
 
 // System title groups are split up by tid_hi.
 // New3DS-specific is indicated by $x0000000, where x == 2.

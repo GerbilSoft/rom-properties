@@ -9,7 +9,7 @@
 #include "stdafx.h"
 #include "SegaPublishers.hpp"
 
-namespace LibRomData { namespace SegaPublishersPrivate {
+namespace LibRomData { namespace SegaPublishers {
 
 /**
  * Sega third-party publisher list.
