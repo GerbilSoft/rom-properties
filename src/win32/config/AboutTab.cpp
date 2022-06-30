@@ -196,9 +196,9 @@ class AboutTabPrivate
 AboutTabPrivate::AboutTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
-	, bUseFriendlyLinks(false)
 	, hFontBold(nullptr)
 	, hRichEdit(nullptr)
+	, bUseFriendlyLinks(false)
 {
 	memset(&rtfCtx, 0, sizeof(rtfCtx));
 
