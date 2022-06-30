@@ -46,7 +46,7 @@ public: static long __cdecl LibWin32Common::RegKey::RegisterComObject(struct _GU
 public: static long __cdecl LibWin32Common::RegKey::RegisterFileType(wchar_t const *,class LibWin32Common::RegKey * *)
 void __cdecl GdiplusHelper::ShutdownGDIPlus(unsigned __int64)
 __int64 __cdecl LibWin32Common::SingleLineEditProc(struct HWND__ *,unsigned int,unsigned __int64,__int64,unsigned __int64,unsigned __int64)
-struct LibRpBase::AboutTabText::SupportSite_t const * const LibRpBase::AboutTabText::SupportSites)
+struct LibRpBase::AboutTabText::SupportSite_t const * const LibRpBase::AboutTabText::SupportSites
 public: static long __cdecl LibWin32Common::RegKey::UnregisterComObject(struct _GUID const &,wchar_t const *)
 public: void __cdecl LibWin32Common::RegKey::__autoclassinit2(unsigned __int64)
 public: static class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl LibRpBase::RomFields::ageRatingsDecode(class std::array<unsigned short,16> const *,bool)
@@ -118,7 +118,7 @@ public: void __cdecl LibRpBase::Config::getDefImgTypePrio(struct LibRpBase::Conf
 public: char const * __cdecl LibRpBase::Achievements::getDescUnlocked(enum LibRpBase::Achievements::ID)const
 int __cdecl LibRpBase::SystemRegion::getFlagPosition(unsigned int,int *,int *,bool)
 public: static class std::vector<class std::vector<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,class std::allocator<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > > >,class std::allocator<class std::vector<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,class std::allocator<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > > > > > const * __cdecl LibRpBase::RomFields::getFromListDataMulti(class std::map<unsigned int,class std::vector<class std::vector<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,class std::allocator<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > > >,class std::allocator<class std::vector<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,class std::allocator<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > > > > >,struct std::less<unsigned int>,class std::allocator<struct std::pair<unsigned int const ,class std::vector<class std::vector<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,class std::allocator<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > > >,class std::allocator<class std::vector<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,class std::allocator<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > > > > > > > > const *,unsigned int,unsigned int)
-public: static class std::vector<class std::vector<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,class std::allocator<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > > >,class std::allocator<class std::vector<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,class std::allocator<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > > > > > const * __cdecl LibRpBase::RomFields::getFromListDataMulti(class std::map<unsigned int,class std::vector<class std::vector<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,class std::allocator<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > > >,class std::allocator<class std::vector<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,class std::allocator<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > > > > >,struct std::less<unsigned int>,class std::allocator<struct std::pair<unsigned int const ,class std::vector<class std::vector<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,class std::allocator<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > > >,class std::allocator<class std::vector<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,class std::allocator<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > > > > > > > > const *,unsigned int,unsigned int)
+public: static class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const * __ptr64 __cdecl LibRpBase::RomFields::getFromStringMulti(class std::map<unsigned int,class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,struct std::less<unsigned int>,class std::allocator<struct std::pair<unsigned int const ,class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > > > > const * __ptr64,unsigned int,unsigned int)
 class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl LibWin32Common::getHomeDirectory(void)
 public: static char const * __cdecl LibRpBase::RomData::getImageTypeName(enum LibRpBase::RomData::ImageType)
 public: enum LibRpBase::Config::ImgTypeResult __cdecl LibRpBase::Config::getImgTypePrio(char const *,struct LibRpBase::Config::ImgTypePrio_t *)const
@@ -130,8 +130,8 @@ public: char const * __cdecl LibRpBase::Achievements::getName(enum LibRpBase::Ac
 class std::basic_string<wchar_t,struct std::char_traits<wchar_t>,class std::allocator<wchar_t> > __cdecl LibWin32Common::getOpenFileName(struct HWND__ *,wchar_t const *,char const *,wchar_t const *)
 class std::basic_string<wchar_t,struct std::char_traits<wchar_t>,class std::allocator<wchar_t> > __cdecl LibWin32Common::getSaveFileName(struct HWND__ *,wchar_t const *,char const *,wchar_t const *)
 public: int __cdecl LibRpTexture::rp_image::get_sBIT(struct LibRpTexture::rp_image::sBIT_t *)const
-char const * const LibRpBase::AboutTabText::git_describe)
-char const * const LibRpBase::AboutTabText::git_version)
+char const * const LibRpBase::AboutTabText::git_describe
+char const * const LibRpBase::AboutTabText::git_version
 public: struct HKEY__ * __cdecl LibWin32Common::RegKey::handle(void)const
 public: bool __cdecl LibRomData::KeyStoreUI::hasChanged(void)const
 public: virtual bool __cdecl LibRomData::GcnFst::hasErrors(void)const
@@ -182,7 +182,7 @@ public: unsigned int __cdecl LibRpTexture::rp_image::palette_len(void)const
 int (__cdecl* LibWin32Common::pfnIsThemeActive)(void)
 public: int __cdecl LibRpTexture::rp_image::premultiply(void)
 public: static unsigned int __cdecl LibRpTexture::rp_image::premultiply_pixel(unsigned int)
-char const * const LibRpBase::AboutTabText::prg_version)
+char const * const LibRpBase::AboutTabText::prg_version
 public: struct LibRpBase::RomMetaData::MetaData const * __cdecl LibRpBase::RomMetaData::prop(int)const
 public: class std::basic_string<wchar_t,struct std::char_traits<wchar_t>,class std::allocator<wchar_t> > __cdecl LibWin32Common::RegKey::read(wchar_t const *,unsigned long *)const
 public: virtual unsigned __int64 __cdecl LibRpFile::RpFile::read(void *,unsigned __int64)
