@@ -1262,48 +1262,45 @@ const char *DirectDrawSurface::pixelFormat(void) const
 	const DDS_PIXELFORMAT &ddspf = d->ddsHeader.ddspf;
 	if (ddspf.dwFlags & DDPF_FOURCC) {
 		// Compressed RGB data.
+		// NOTE: If DX10, see dxgi_format.
 		d_nc->pixel_format[0] = (ddspf.dwFourCC >> 24) & 0xFF;
 		d_nc->pixel_format[1] = (ddspf.dwFourCC >> 16) & 0xFF;
 		d_nc->pixel_format[2] = (ddspf.dwFourCC >>  8) & 0xFF;
 		d_nc->pixel_format[3] =  ddspf.dwFourCC        & 0xFF;
 		d_nc->pixel_format[4] = '\0';
-	} else if (ddspf.dwFlags & DDPF_RGB) {
+		return d_nc->pixel_format;
+	}
+
+	const char *const pxfmt = d->getPixelFormatName(ddspf);
+	if (pxfmt) {
+		// Got the pixel format name.
+		strcpy(d_nc->pixel_format, pxfmt);
+		return d_nc->pixel_format;
+	}
+
+	// Manually determine the pixel format.
+	if (ddspf.dwFlags & DDPF_RGB) {
 		// Uncompressed RGB data.
-		const char *const pxfmt = d->getPixelFormatName(ddspf);
-		if (pxfmt) {
-			strcpy(d_nc->pixel_format, pxfmt);
-		} else {
-			snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
-				 "RGB (%u-bit)", ddspf.dwRGBBitCount);
-		}
+		snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
+			 "RGB (%u-bit)", ddspf.dwRGBBitCount);
 	} else if (ddspf.dwFlags & DDPF_ALPHA) {
 		// Alpha channel.
-		const char *const pxfmt = d->getPixelFormatName(ddspf);
-		if (pxfmt) {
-			strcpy(d_nc->pixel_format, pxfmt);
-		} else {
-			snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
-				C_("DirectDrawSurface", "Alpha (%u-bit)"), ddspf.dwRGBBitCount);
-		}
+		snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
+			C_("DirectDrawSurface", "Alpha (%u-bit)"), ddspf.dwRGBBitCount);
 	} else if (ddspf.dwFlags & DDPF_YUV) {
 		// YUV. (TODO: Determine the format.)
 		snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
 			C_("DirectDrawSurface", "YUV (%u-bit)"), ddspf.dwRGBBitCount);
 	} else if (ddspf.dwFlags & DDPF_LUMINANCE) {
 		// Luminance.
-		const char *const pxfmt = d->getPixelFormatName(ddspf);
-		if (pxfmt) {
-			strcpy(d_nc->pixel_format, pxfmt);
+		if (ddspf.dwFlags & DDPF_ALPHAPIXELS) {
+			snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
+				C_("DirectDrawSurface", "Luminance + Alpha (%u-bit)"),
+				ddspf.dwRGBBitCount);
 		} else {
-			if (ddspf.dwFlags & DDPF_ALPHAPIXELS) {
-				snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
-					C_("DirectDrawSurface", "Luminance + Alpha (%u-bit)"),
-					ddspf.dwRGBBitCount);
-			} else {
-				snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
-					C_("DirectDrawSurface", "Luminance (%u-bit)"),
-					ddspf.dwRGBBitCount);
-			}
+			snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
+				C_("DirectDrawSurface", "Luminance (%u-bit)"),
+				ddspf.dwRGBBitCount);
 		}
 	} else {
 		// Unknown pixel format.
