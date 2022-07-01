@@ -30,7 +30,8 @@ namespace LibRpTexture { namespace ImageDecoder {
  *
  * Supports textures up to 4096x4096.
  */
-static unsigned int dc_tmap[4096];
+#define DC_TMAP_SIZE 4096
+static unique_ptr<unsigned int[]> dc_tmap;
 
 // pthread_once() control variable.
 static pthread_once_t once_control = PTHREAD_ONCE_INIT;
@@ -43,10 +44,13 @@ static pthread_once_t once_control = PTHREAD_ONCE_INIT;
  */
 static void initDreamcastTwiddleMap_int(void)
 {
-	for (unsigned int i = 0; i < ARRAY_SIZE(dc_tmap); i++) {
-		dc_tmap[i] = 0;
+	dc_tmap.reset(new unsigned int[DC_TMAP_SIZE]);
+	unsigned int *const p_tmap = dc_tmap.get();
+
+	for (unsigned int i = 0; i < DC_TMAP_SIZE; i++) {
+		p_tmap[i] = 0;
 		for (unsigned int j = 0, k = 1; k <= i; j++, k <<= 1) {
-			dc_tmap[i] |= ((i & k) << j);
+			p_tmap[i] |= ((i & k) << j);
 		}
 	}
 }
@@ -89,6 +93,7 @@ rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
 
 	// Initialize the twiddle map.
 	initDreamcastTwiddleMap();
+	const unsigned int *const p_tmap = dc_tmap.get();
 
 	// Create an rp_image.
 	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
@@ -105,7 +110,7 @@ rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
 		case PixelFormat::ARGB1555: {
 			for (unsigned int y = 0; y < static_cast<unsigned int>(height); y++) {
 				for (unsigned int x = 0; x < static_cast<unsigned int>(width); x++) {
-					const unsigned int srcIdx = ((dc_tmap[x] << 1) | dc_tmap[y]);
+					const unsigned int srcIdx = ((p_tmap[x] << 1) | p_tmap[y]);
 					*px_dest = ARGB1555_to_ARGB32(le16_to_cpu(img_buf[srcIdx]));
 					px_dest++;
 				}
@@ -120,7 +125,7 @@ rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
 		case PixelFormat::RGB565: {
 			for (unsigned int y = 0; y < static_cast<unsigned int>(height); y++) {
 				for (unsigned int x = 0; x < static_cast<unsigned int>(width); x++) {
-					const unsigned int srcIdx = ((dc_tmap[x] << 1) | dc_tmap[y]);
+					const unsigned int srcIdx = ((p_tmap[x] << 1) | p_tmap[y]);
 					*px_dest = RGB565_to_ARGB32(le16_to_cpu(img_buf[srcIdx]));
 					px_dest++;
 				}
@@ -135,7 +140,7 @@ rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
 		case PixelFormat::ARGB4444: {
 			for (unsigned int y = 0; y < static_cast<unsigned int>(height); y++) {
 				for (unsigned int x = 0; x < static_cast<unsigned int>(width); x++) {
-					const unsigned int srcIdx = ((dc_tmap[x] << 1) | dc_tmap[y]);
+					const unsigned int srcIdx = ((p_tmap[x] << 1) | p_tmap[y]);
 					*px_dest = ARGB4444_to_ARGB32(le16_to_cpu(img_buf[srcIdx]));
 					px_dest++;
 				}
@@ -214,6 +219,7 @@ rp_image *fromDreamcastVQ16(PixelFormat px_format,
 
 	// Initialize the twiddle map.
 	initDreamcastTwiddleMap();
+	const unsigned int *const p_tmap = dc_tmap.get();
 
 	// Create an rp_image.
 	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
@@ -272,7 +278,7 @@ rp_image *fromDreamcastVQ16(PixelFormat px_format,
 	const int dest_stride_adj = dest_stride + dest_stride - img->width();
 	for (unsigned int y = 0; y < static_cast<unsigned int>(height); y += 2, px_dest += dest_stride_adj) {
 	for (unsigned int x = 0; x < static_cast<unsigned int>(width); x += 2, px_dest += 2) {
-		const unsigned int srcIdx = ((dc_tmap[x >> 1] << 1) | dc_tmap[y >> 1]);
+		const unsigned int srcIdx = ((p_tmap[x >> 1] << 1) | p_tmap[y >> 1]);
 		assert(srcIdx < (unsigned int)img_siz);
 		if (srcIdx >= static_cast<unsigned int>(img_siz)) {
 			// Out of bounds.
