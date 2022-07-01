@@ -442,10 +442,10 @@ void KeyManagerTab::on_actionImportWiiKeysBin_triggered(void)
 {
 	Q_D(KeyManagerTab);
 	QString filename = QFileDialog::getOpenFileName(this,
-		// tr: Wii keys.bin dialog title.
+		// tr: Wii keys.bin dialog title
 		U82Q(C_("KeyManagerTab", "Select Wii keys.bin File")),
 		d->keyFileDir,	// dir
-		// tr: Wii keys.bin file filter. (RP format)
+		// tr: Wii keys.bin file filter (RP format)
 		rpFileDialogFilterToQt(
 			C_("KeyManagerTab", "keys.bin|keys.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-")));
 	if (filename.isEmpty())
@@ -464,10 +464,10 @@ void KeyManagerTab::on_actionImportWiiUOtpBin_triggered(void)
 {
 	Q_D(KeyManagerTab);
 	QString filename = QFileDialog::getOpenFileName(this,
-		// tr: Wii U otp.bin dialog title.
+		// tr: Wii U otp.bin dialog title
 		U82Q(C_("KeyManagerTab", "Select Wii U otp.bin File")),
 		d->keyFileDir,	// dir
-		// tr: Wii U otp.bin file filter. (RP format)
+		// tr: Wii U otp.bin file filter (RP format)
 		rpFileDialogFilterToQt(
 			C_("KeyManagerTab", "otp.bin|otp.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-")));
 	if (filename.isEmpty())
@@ -486,10 +486,10 @@ void KeyManagerTab::on_actionImport3DSboot9bin_triggered(void)
 {
 	Q_D(KeyManagerTab);
 	QString filename = QFileDialog::getOpenFileName(this,
-		// tr: 3DS boot9.bin dialog title.
+		// tr: Nintendo 3DS boot9.bin dialog title
 		U82Q(C_("KeyManagerTab", "Select 3DS boot9.bin File")),
 		d->keyFileDir,	// dir
-		// tr: 3DS boot9.bin file filter. (RP format)
+		// tr: Nintendo 3DS boot9.bin file filter (RP format)
 		rpFileDialogFilterToQt(
 			C_("KeyManagerTab", "boot9.bin|boot9.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-")));
 	if (filename.isEmpty())
@@ -508,10 +508,10 @@ void KeyManagerTab::on_actionImport3DSaeskeydb_triggered(void)
 {
 	Q_D(KeyManagerTab);
 	QString filename = QFileDialog::getOpenFileName(this,
-		// tr: 3DS aeskeydb.bin dialog title.
+		// tr: Nintendo 3DS aeskeydb.bin dialog title
 		U82Q(C_("KeyManagerTab", "Select 3DS aeskeydb.bin File")),
 		d->keyFileDir,	// dir
-		// tr: 3DS aeskeydb.bin file filter. (RP format)
+		// tr: Nintendo 3DS aeskeydb.bin file filter (RP format)
 		rpFileDialogFilterToQt(
 			C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-")));
 	if (filename.isEmpty())

@@ -565,16 +565,24 @@ key_manager_tab_handle_menu_action(KeyManagerTab *tab, gint id)
 		return;
 
 	static const char *const dialog_titles_tbl[] = {
+		// tr: Wii keys.bin dialog title
 		NOP_C_("KeyManagerTab", "Select Wii keys.bin File"),
+		// tr: Wii U otp.bin dialog title
 		NOP_C_("KeyManagerTab", "Select Wii U otp.bin File"),
+		// tr: Nintendo 3DS boot9.bin dialog title
 		NOP_C_("KeyManagerTab", "Select 3DS boot9.bin File"),
+		// tr: Nintendo 3DS aeskeydb.bin dialog title
 		NOP_C_("KeyManagerTab", "Select 3DS aeskeydb.bin File"),
 	};
 
 	static const char *const file_filters_tbl[] = {
+		// tr: Wii keys.bin file filter (RP format)
 		NOP_C_("KeyManagerTab", "keys.bin|keys.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
+		// tr: Wii U otp.bin file filter (RP format)
 		NOP_C_("KeyManagerTab", "otp.bin|otp.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
+		// tr: Nintendo 3DS boot9.bin file filter (RP format)
 		NOP_C_("KeyManagerTab", "boot9.bin|boot9.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
+		// tr: Nintendo 3DS aeskeydb.bin file filter (RP format)
 		NOP_C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
 	};
 
