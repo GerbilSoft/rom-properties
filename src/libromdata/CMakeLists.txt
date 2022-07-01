@@ -92,6 +92,7 @@ SET(${PROJECT_NAME}_SRCS
 	data/EXEData.cpp
 	data/MachOData.cpp
 	data/NESMappers.cpp
+	data/NESMappers_data.h
 	data/NintendoPublishers.cpp
 	data/Nintendo3DSFirmData.cpp
 	data/Nintendo3DSSysTitles.cpp
