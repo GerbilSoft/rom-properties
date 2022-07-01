@@ -340,15 +340,15 @@ const NESMapperEntry *lookup_ines_info(int mapper)
 		return nullptr;
 	}
 
-	if (mapper >= ARRAY_SIZE_I(NESMappers)) {
+	if (mapper >= ARRAY_SIZE_I(NESMappers_offtbl)) {
 		// Mapper number is out of range.
 		return nullptr;
-	} else if (NESMappers[mapper].name_idx == 0) {
+	} else if (NESMappers_offtbl[mapper].name_idx == 0) {
 		// Unused mapper number.
 		return nullptr;
 	}
 
-	return &NESMappers[mapper];
+	return &NESMappers_offtbl[mapper];
 }
 
 /**

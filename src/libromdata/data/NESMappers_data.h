@@ -218,7 +218,7 @@ typedef struct _NESMapperEntry {
 	NESMirroring mirroring;
 } NESMapperEntry;
 
-static const NESMapperEntry NESMappers[] = {
+static const NESMapperEntry NESMappers_offtbl[] = {
 	/* Mapper 000 */
 	{1, 6, NESMirroring::Header},
 	{15, 6, NESMirroring::MapperHVAB},

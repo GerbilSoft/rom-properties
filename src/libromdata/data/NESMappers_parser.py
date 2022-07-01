@@ -142,7 +142,7 @@ f_out.write(
 	f"\t{idx_type} mfr_idx;\n"
 	"\tNESMirroring mirroring;\n"
 	"} NESMapperEntry;\n\n"
-	"static const NESMapperEntry NESMappers[] = {\n"
+	"static const NESMapperEntry NESMappers_offtbl[] = {\n"
 )
 
 for mapper in range(high_mapper+1):
