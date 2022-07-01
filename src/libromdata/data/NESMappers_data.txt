@@ -1,3 +1,4 @@
+# NES Mappers
 # Format: Number|Name|Manufacturer|Mirroring
 # Number is always interpreted as decimal.
 
