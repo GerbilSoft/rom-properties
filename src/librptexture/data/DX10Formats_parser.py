@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-# NES Mappers string table builder
+# DirectX 10 Formats string table builder
 #
-# Converts a text file containing a list of NES mappers
+# Converts a text file containing a list of DirectX 10 formats
 # and prints a string table header.
 #
-# Syntax: DX10Mappers_Parser.py infile outfile
+# Syntax: DX10Formats_Parser.py infile outfile
 #
 # File syntax: Number|Name
 # Number is always parsed as decimal.
@@ -28,7 +28,7 @@ string_table = bytearray(b'\x00')
 string_dict = {"": 0}
 
 # Dictionary of entries.
-# - Key: Mapper number
+# - Key: DirectX 10 format number (DXGI)
 # - Value: Name
 # Name is an index into string_table.
 high_dx10fmt = 0	# highest valid DX10 format index
