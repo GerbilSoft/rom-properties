@@ -884,4 +884,3 @@ static const NESMapperEntry NESMappers_offtbl[] = {
 	{9004, 4297, NESMirroring::Unknown},
 	{9043, 546, NESMirroring::Unknown},
 };
-

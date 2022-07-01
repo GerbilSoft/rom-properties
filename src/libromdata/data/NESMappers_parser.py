@@ -160,4 +160,4 @@ for mapper in range(high_mapper+1):
 
 	# Print the entry.
 	f_out.write(f"\t{{{entry[0]}, {entry[1]}, NESMirroring::{entry[2]}}},\n")
-f_out.write("};\n\n")
+f_out.write("};\n")
