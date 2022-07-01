@@ -86,7 +86,7 @@ with open(sys.argv[1], 'r') as f_in:
 		# TODO: Validate the NESMirroring value?
 
 		# Add the tuple.
-		entry_dict[mapper] = (name_idx, mfr_idx, arr[3]);
+		entry_dict[mapper] = (name_idx, mfr_idx, arr[3])
 
 		# Next line.
 		line = f_in.readline()
@@ -104,7 +104,7 @@ f_out.write(
 	f"/** NES Mappers (generated from {sys.argv[1]}) **/\n\n"
 	"#include <stdint.h>\n\n"
 	"static const char NESMappers_strtbl[] =\n"
-);
+)
 
 # Print up to 64 characters per line, including NULL bytes.
 # Control codes and non-ASCII characters will be escaped.
