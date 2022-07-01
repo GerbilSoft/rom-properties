@@ -26,10 +26,10 @@ using std::string;
 
 // KeyStoreUI::ImportFileID
 static const char *const import_menu_actions[] = {
-	"Wii keys.bin",
-	"Wii U otp.bin",
-	"3DS boot9.bin",
-	"3DS aeskeydb.bin",
+	NOP_C_("KeyManagerTab", "Wii keys.bin"),
+	NOP_C_("KeyManagerTab", "Wii U otp.bin"),
+	NOP_C_("KeyManagerTab", "3DS boot9.bin"),
+	NOP_C_("KeyManagerTab", "3DS aeskeydb.bin"),
 };
 
 #if GTK_CHECK_VERSION(3,0,0)
@@ -856,7 +856,8 @@ key_manager_tab_menu_action_response(GtkFileChooserDialog *dialog, gint response
 	KeyStoreUI::ImportReturn iret = keyStoreUI->importKeysFromBin(id, in_filename);
 
 	// TODO: Show the key import status in a MessageWidget.
-	key_manager_tab_show_key_import_return_status(tab, in_filename, import_menu_actions[(int)id], iret);
+	key_manager_tab_show_key_import_return_status(tab, in_filename,
+		dpgettext_expr(RP_I18N_DOMAIN, "KeyManagerTab", import_menu_actions[(int)id]), iret);
 	g_free(in_filename);
 }
 
