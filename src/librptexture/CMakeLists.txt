@@ -118,6 +118,7 @@ SET(${PROJECT_NAME}_H
 	fileformat/vk_defs.h
 
 	data/DX10Formats.hpp
+	data/DX10Formats_data.h
 	data/GLenumStrings.hpp
 	data/VkEnumStrings.hpp
 	)
