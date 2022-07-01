@@ -148,7 +148,7 @@ f_out.write(
 for mapper in range(high_mapper+1):
 	if mapper % 10 == 0:
 		if mapper != 0:
-			f_out.write('\n')
+			f_out.write("\n")
 		mapper_str = "{0:0{1}}".format(mapper, 3)
 		f_out.write(f"\t/* Mapper {mapper_str} */\n")
 	try:
