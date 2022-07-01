@@ -535,6 +535,7 @@ const MapperEntry mappers_plane1[] = {
 	{"Reset-based MMC1 multicart",	nullptr,		NESMirroring::Unknown},
 	{"135-in-1 (U)NROM multicart",	nullptr,		NESMirroring::Unknown},
 	{"YY841155C multicart",		"J.Y. Company",		NESMirroring::Unknown},
+	{"1998 Super Game 8-in-1 (JY-111)", "J.Y. Company",	NESMirroring::Unknown},
 	{"8-in-1 AxROM/UNROM multicart", nullptr,		NESMirroring::Unknown},
 	{"35-in-1 NROM multicart",	nullptr,		NESMirroring::Unknown},
 
