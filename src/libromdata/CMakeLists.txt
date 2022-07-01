@@ -273,6 +273,7 @@ SET(${PROJECT_NAME}_H
 	data/NintendoLanguage.hpp
 	data/NintendoPublishers.hpp
 	data/SegaPublishers.hpp
+	data/SegaPublishers_data.h
 	data/WiiSystemMenuVersion.hpp
 	data/WiiUData.hpp
 	data/WonderSwanPublishers.hpp
