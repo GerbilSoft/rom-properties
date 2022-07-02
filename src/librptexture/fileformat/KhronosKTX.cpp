@@ -237,6 +237,12 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 					expected_size = static_cast<unsigned int>(stride * height);
 					break;
 
+				case GL_R8:
+					// 8-bit "Red"
+					stride = ktxHeader.pixelWidth;
+					expected_size = static_cast<unsigned int>(stride * height);
+					break;
+
 #ifdef ENABLE_PVRTC
 				case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
 				case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
@@ -499,6 +505,15 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 						ImageDecoder::PixelFormat::ABGR8888,
 						ktxHeader.pixelWidth, height,
 						reinterpret_cast<const uint32_t*>(buf.get()), expected_size, stride);
+					break;
+
+				case GL_R8:
+					// 8-bit "Red"
+					// FIXME: Decode as red, not as L8.
+					img = ImageDecoder::fromLinear8(
+						ImageDecoder::PixelFormat::L8,
+						ktxHeader.pixelWidth, height,
+						buf.get(), expected_size, stride);
 					break;
 
 				case GL_RGB_S3TC:
