@@ -1,0 +1,289 @@
+# ELF Machine Types
+# Format: ID|Name
+
+# References:
+# - https://github.com/file/file/blob/master/magic/Magdir/elf
+
+# 0
+0|No machine
+1|AT&T WE 32100 (M32)
+2|Sun/Oracle SPARC
+3|Intel i386
+4|Motorola M68K
+5|Motorola M88K
+6|Intel i486
+7|Intel i860
+8|MIPS
+9|IBM System/370
+
+# 10
+10|MIPS R3000 LE (deprecated)
+11|SPARC v9 (deprecated)
+12|
+13|
+14|
+15|HP PA-RISC
+16|nCUBE
+17|Fujitsu VPP500
+18|SPARC32PLUS
+19|Intel i960
+
+# 20
+# 20: or Cisco 4500?
+20|PowerPC
+# 21: or Cisco 7500?
+21|64-bit PowerPC
+22|IBM System/390
+23|Cell SPU
+24|Cisco SVIP
+25|Cisco 7200
+26|
+27|
+28|
+29|
+
+# 30
+30|
+31|
+32|
+33|
+34|
+35|
+# 36: or Cisco 12000?
+36|NEC V800
+37|Fujitsu FR20
+38|TRW RH-32
+39|Motorola M*Core
+
+# 40
+40|ARM
+41|DEC Alpha
+42|Renesas SuperH
+43|SPARC v9
+44|Siemens Tricore embedded processor
+45|Argonaut RISC Core
+46|Renesas H8/300
+47|Renesas H8/300H
+48|Renesas H8S
+49|Renesas H8/500
+
+# 50
+50|Intel Itanium
+51|Stanford MIPS-X
+52|Motorola Coldfire
+53|Motorola MC68HC12
+54|Fujitsu Multimedia Accelerator
+55|Siemens PCP
+56|Sony nCPU
+57|Denso NDR1
+58|Motorola Star*Core
+59|Toyota ME16
+
+# 60
+60|STMicroelectronics ST100
+61|Advanced Logic Corp. TinyJ
+62|AMD64
+63|Sony DSP
+64|DEC PDP-10
+65|DEC PDP-11
+66|Siemens FX66
+67|STMicroelectronics ST9+ 8/16-bit
+68|STMicroelectronics ST7 8-bit
+69|Motorola MC68HC16
+
+# 70
+70|Motorola MC68HC11
+71|Motorola MC68HC08
+72|Motorola MC68HC05
+73|SGI SVx or Cray NV1
+74|STMicroelectronics ST19 8-bit
+75|Digital VAX
+76|Axis cris
+77|Infineon Technologies 32-bit embedded CPU
+78|Element 14 64-bit DSP
+79|LSI Logic 16-bit DSP
+
+# 80
+80|Donald Knuth's 64-bit MMIX CPU
+81|Harvard machine-independent
+82|SiTera Prism
+83|Atmel AVR 8-bit
+84|Fujitsu FR30
+85|Mitsubishi D10V
+86|Mitsubishi D30V
+# 87: formerly NEC V850
+87|Renesas V850
+# 88: formerly Mitsubishi M32R
+88|Renesas M32R
+89|Matsushita MN10300
+
+# 90
+90|Matsushita MN10200
+91|picoJava
+92|OpenRISC 1000
+93|ARCompact
+94|Tensilica Xtensa
+95|Alphamosaic VideoCore
+96|Thompson Multimedia GPP
+97|National Semiconductor 32000
+98|Tenor Network TPC
+99|Trebia SNP 1000
+
+# 100
+100|STMicroelectronics ST200
+101|Ubicom IP2022
+102|MAX Processor
+103|National Semiconductor CompactRISC
+104|Fujitsu F2MC16
+105|TI msp430
+106|ADI Blackfin
+107|S1C33 Family of Seiko Epson
+108|Sharp embedded
+109|Arca RISC
+
+# 110
+110|Unicore
+111|eXcess
+112|Icera Deep Execution Processor
+113|Altera Nios II
+114|National Semiconductor CRX
+115|Motorola XGATE
+116|Infineon C16x/XC16x
+117|Renesas M16C series
+118|Microchip dsPIC30F
+119|Freescale RISC core
+
+# 120
+120|Renesas M32C series
+121|
+122|
+123|
+124|
+125|
+126|
+127|
+128|
+129|
+
+# 130
+130|
+131|Altium TSK3000 core
+132|Freescale RS08
+133|ADI SHARC family
+134|Cyan Technology eCOG2
+135|Sunplus S+core7 RISC
+136|New Japan Radio (NJR) 24-bit DSP
+137|Broadcom VideoCore III
+138|Lattice Mico32
+139|Seiko Epson C17 family
+
+# 140
+140|TI TMS320C6000 DSP family
+141|TI TMS320C2000 DSP family
+142|TI TMS320C55x DSP family
+143|TI Application-Specific RISC
+144|TI Programmable Realtime Unit
+145|
+146|
+147|
+148|
+149|
+
+# 150
+150|
+151|
+152|
+153|
+154|
+155|
+156|
+157|
+158|
+159|
+
+# 160
+160|STMicroelectronics 64-bit VLIW DSP
+161|Cypress M8C
+162|Renesas R32C series
+163|NXP TriMedia family
+164|Qualcomm DSP6
+165|Intel 8051
+166|STMicroelectronics STxP7x family
+167|Andes Technology NDS32
+168|Cyan eCOG1X family
+169|Dallas MAXQ30
+
+# 170
+170|New Japan Radio (NJR) 16-bit DSP
+171|M2000 Reconfigurable RISC
+172|Cray NV2 vector architecture
+173|Renesas RX family
+174|Imagination Technologies Meta
+175|MCST Elbrus
+176|Cyan Technology eCOG16 family
+177|National Semiconductor CompactRISC (16-bit)
+178|Freescale Extended Time Processing Unit
+179|Infineon SLE9X
+
+# 180
+180|Intel L10M
+181|Intel K10M
+182|Intel (182)
+183|ARM AArch64
+184|ARM (184)
+185|Atmel AVR32
+186|STMicroelectronics STM8 8-bit
+187|Tilera TILE64
+188|Tilera TILEPro
+189|Xilinx MicroBlaze 32-bit RISC
+
+# 190
+190|NVIDIA CUDA
+191|Tilera TILE-Gx
+192|CloudShield
+193|KIPO-KAIST Core-A 1st gen.
+194|KIPO-KAIST Core-A 2nd gen.
+195|Synopsys ARCompact V2
+196|Open8 RISC
+197|Renesas RL78 family
+198|Broadcom VideoCore V
+199|Renesas 78K0R
+
+# 200
+200|Freescale 56800EX
+201|Beyond BA1
+202|Beyond BA2
+203|XMOS xCORE
+204|Micrchip 8-bit PIC(r)
+205|Intel Graphics Technology
+206|Intel (206)
+207|Intel (207)
+208|Intel (208)
+209|Intel (209)
+
+# 210
+210|KM211 KM32
+211|KM211 KMX32
+212|KM211 KMX16
+213|KM211 KMX8
+214|KM211 KVARC
+215|Paneve CDP
+216|Cognitive Smart Memory
+217|Bluechip Systems CoolEngine
+218|Nanoradio Optimized RISC
+219|CSR Kalimba
+
+# 220
+220|Zilog Z80
+221|Controls and Data Services VISIUMcore
+222|FTDI Chip FT32
+223|Moxie processor
+224|AMD GPU
+
+# Others
+243|RISC-V
+244|Lanai
+247|Linux eBPF
+250|Netronome Flow Processor
+251|NEC VE
+252|C-SKY

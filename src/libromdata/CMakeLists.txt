@@ -265,6 +265,7 @@ SET(${PROJECT_NAME}_H
 
 	data/AmiiboData.hpp
 	data/ELFData.hpp
+	data/ELFMachineTypes_data.h
 	data/EXEData.hpp
 	data/MachOData.hpp
 	data/NESMappers.hpp
