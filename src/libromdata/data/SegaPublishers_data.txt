@@ -1,4 +1,4 @@
-# Sega Publishers
+# Sega Third-Party Publishers
 # Format: Number|Name
 # Number is always interpreted as decimal.
 

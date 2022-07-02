@@ -1,4 +1,4 @@
-# Nintendo Publishers (Famicom Disk System)
+# Nintendo Third-Party Publishers (Famicom Disk System)
 # Format: ID|NameEN|NameJP
 # ID is a two-digit hexadecimal value.
 

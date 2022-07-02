@@ -1,4 +1,4 @@
-# Nintendo Publishers
+# Nintendo Third-Party Publishers
 # Format: ID|Name
 
 # References:
