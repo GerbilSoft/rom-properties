@@ -29,14 +29,6 @@ using std::vector;
 // Qt includes.
 #include <QtCore/QStandardPaths>
 
-// KDE includes.
-#include <kfileitem.h>
-#include <kfilemetadata/extractorplugin.h>
-#include <kfilemetadata/properties.h>
-using KFileMetaData::ExtractorPlugin;
-using KFileMetaData::ExtractionResult;
-using namespace KFileMetaData::Property;
-
 namespace RomPropertiesKF5 {
 
 /**
