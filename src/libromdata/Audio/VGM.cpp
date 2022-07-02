@@ -69,12 +69,11 @@ class VGMPrivate final : public RomDataPrivate
 
 		/**
 		 * Add a common sound chip field.
-		 * @tparam dual If true, dual-chip mode is supported.
 		 * @param clk Clock value. (top two bits are DUAL and )
 		 * @param display Display name.
+		 * @param dual If true, dual-chip mode is supported.
 		 */
-		template<bool dual>
-		void addCommonSoundChip(unsigned int clk, const char *display);
+		void addCommonSoundChip(unsigned int clk, const char *display, bool dual = false);
 };
 
 ROMDATA_IMPL(VGM)
@@ -216,12 +215,11 @@ VGMPrivate::gd3_tags_t *VGMPrivate::loadGD3(unsigned int addr)
 
 /**
  * Add a common sound chip field.
- * @tparam dual If true, dual-chip mode is supported.
+ * @param dual If true, dual-chip mode is supported.
  * @param clk_full Clock value. (top two bits are ALTMODE and possibly DUALCHIP)
  * @param display Display name.
  */
-template<bool dual>
-void VGMPrivate::addCommonSoundChip(unsigned int clk_full, const char *display)
+void VGMPrivate::addCommonSoundChip(unsigned int clk_full, const char *display, bool dual)
 {
 	unsigned int clk = clk_full;
 	if (dual) {
@@ -547,7 +545,7 @@ int VGM::loadFieldData(void)
 #define SOUND_CHIP(field, display, dual) \
 	do { \
 		if (offsetof(VGM_Header, field##_clk) < data_offset) { \
-			d->addCommonSoundChip<dual>(le32_to_cpu(vgmHeader->field##_clk), display); \
+			d->addCommonSoundChip(le32_to_cpu(vgmHeader->field##_clk), (display), (dual)); \
 		} \
 	} while (0)
 
