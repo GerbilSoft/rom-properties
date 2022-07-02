@@ -1,5 +1,6 @@
 # Nintendo Third-Party Publishers
 # Format: ID|Name
+# ID is a two-character ID. Valid characters: [0-9A-Z]
 
 # References:
 # - https://www.gametdb.com/Wii
