@@ -1,0 +1,110 @@
+# Xbox Third-Party Publishers
+# Format: ID|Name
+# ID is a two-character ID. Valid characters: [A-Z]
+
+# References:
+# - https://xboxdevwiki.net/Xbe
+
+# This list is valid for Xbox and Xbox 360.
+
+#\x00\x00|<unlicensed>	# Not supported by parser; script will add this manually.
+AC|Acclaim Entertainment
+AH|ARUSH Entertainment
+AQ|Aqua System
+AS|ASK
+AT|Atlus
+AV|Activision
+AY|Aspyr Media
+BA|Bandai
+BL|Black Box
+BM|BAM! Entertainment
+BR|Broccoli Co.
+BS|Bethesda Softworks
+BU|Bunkasha Co.
+BV|Buena Vista Games
+BW|BBC Multimedia
+BZ|Blizzard
+CC|Capcom
+CK|Kemco Corporation
+CM|Codemasters
+CV|Crave Entertainment
+DC|DreamCatcher Interactive
+DX|Davilex
+EA|Electronic Arts (EA)
+EC|Encore inc
+EL|Enlight Software
+EM|Empire Interactive
+ES|Eidos Interactive
+FI|Fox Interactive
+FS|From Software
+GE|Genki Co.
+GV|Groove Games
+HE|Tru Blu
+HP|Hip games
+HU|Hudson Soft
+HW|Highwaystar
+IA|Mad Catz Interactive
+IF|Idea Factory
+IG|Infogrames
+IL|Interlex Corporation
+IM|Imagine Media
+IO|Ignition Entertainment
+IP|Interplay Entertainment
+IX|InXile Entertainment
+JA|Jaleco
+JW|JoWooD
+KB|Kemco
+KI|Kids Station Inc.
+KN|Konami
+KO|KOEI
+KU|Kobi and/or GAE
+LA|LucasArts
+LS|Black Bean Games
+MD|Metro3D
+ME|Medix
+MI|Microïds
+MJ|Majesco Entertainment
+MM|Myelin Media
+MP|MediaQuest
+MS|Microsoft Game Studios
+MW|Midway Games
+MX|Empire Interactive
+NK|NewKidCo
+NL|NovaLogic
+NM|Namco
+OX|Oxygen Interactive
+PC|Playlogic Entertainment
+PL|Phantagram Co., Ltd.
+RA|Rage
+SA|Sammy
+SC|SCi Games
+SE|SEGA
+SN|SNK
+SQ|Square Enix
+SS|Simon & Schuster
+SU|Success Corporation
+SW|Swing! Deutschland
+TA|Takara
+TC|Tecmo
+TD|The 3DO Company
+TK|Takuyo
+TM|TDK Mediactive
+TQ|THQ
+TS|Titus Interactive
+TT|Take-Two Interactive Software
+US|Ubisoft
+VC|Victor Interactive Software
+VN|Vivendi Universal Games
+VU|Vivendi Universal Games
+VV|Vivendi Universal Games
+WE|Wanadoo Edition
+WR|Warner Bros. Interactive Entertainment
+XA|Xbox Live Arcade
+XI|XPEC Entertainment and Idea Factory
+XK|Xbox kiosk disk
+XL|Xbox special bundled or live demo disk
+XM|Evolved Games
+XP|XPEC Entertainment
+XR|Panorama
+YB|YBM Sisa
+ZD|Zushi Games (Zoo Digital Publishing)

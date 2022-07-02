@@ -11,140 +11,7 @@
 
 namespace LibRomData { namespace XboxPublishers {
 
-struct ThirdPartyEntry {
-	uint16_t code;			// 2-byte code
-	const char *publisher;
-};
-
-/**
- * Xbox third-party publisher list.
- * This list is valid for Xbox and Xbox 360
- *
- * References:
- * - https://xboxdevwiki.net/Xbe
- */
-static const ThirdPartyEntry thirdPartyList[] = {
-	{0,	"<unlicensed>"},
-	{'AC',	"Acclaim Entertainment"},
-	{'AH',	"ARUSH Entertainment"},
-	{'AQ',	"Aqua System"},
-	{'AS',	"ASK"},
-	{'AT',	"Atlus"},
-	{'AV',	"Activision"},
-	{'AY',	"Aspyr Media"},
-	{'BA',	"Bandai"},
-	{'BL',	"Black Box"},
-	{'BM',	"BAM! Entertainment"},
-	{'BR',	"Broccoli Co."},
-	{'BS',	"Bethesda Softworks"},
-	{'BU',	"Bunkasha Co."},
-	{'BV',	"Buena Vista Games"},
-	{'BW',	"BBC Multimedia"},
-	{'BZ',	"Blizzard"},
-	{'CC',	"Capcom"},
-	{'CK',	"Kemco Corporation"},
-	{'CM',	"Codemasters"},
-	{'CV',	"Crave Entertainment"},
-	{'DC',	"DreamCatcher Interactive"},
-	{'DX',	"Davilex"},
-	{'EA',	"Electronic Arts (EA)"},
-	{'EC',	"Encore inc"},
-	{'EL',	"Enlight Software"},
-	{'EM',	"Empire Interactive"},
-	{'ES',	"Eidos Interactive"},
-	{'FI',	"Fox Interactive"},
-	{'FS',	"From Software"},
-	{'GE',	"Genki Co."},
-	{'GV',	"Groove Games"},
-	{'HE',	"Tru Blu"},
-	{'HP',	"Hip games"},
-	{'HU',	"Hudson Soft"},
-	{'HW',	"Highwaystar"},
-	{'IA',	"Mad Catz Interactive"},
-	{'IF',	"Idea Factory"},
-	{'IG',	"Infogrames"},
-	{'IL',	"Interlex Corporation"},
-	{'IM',	"Imagine Media"},
-	{'IO',	"Ignition Entertainment"},
-	{'IP',	"Interplay Entertainment"},
-	{'IX',	"InXile Entertainment"},
-	{'JA',	"Jaleco"},
-	{'JW',	"JoWooD"},
-	{'KB',	"Kemco"},
-	{'KI',	"Kids Station Inc."},
-	{'KN',	"Konami"},
-	{'KO',	"KOEI"},
-	{'KU',	"Kobi and/or GAE"},
-	{'LA',	"LucasArts"},
-	{'LS',	"Black Bean Games"},
-	{'MD',	"Metro3D"},
-	{'ME',	"Medix"},
-	{'MI',	"Microïds"},
-	{'MJ',	"Majesco Entertainment"},
-	{'MM',	"Myelin Media"},
-	{'MP',	"MediaQuest"},
-	{'MS',	"Microsoft Game Studios"},
-	{'MW',	"Midway Games"},
-	{'MX',	"Empire Interactive"},
-	{'NK',	"NewKidCo"},
-	{'NL',	"NovaLogic"},
-	{'NM',	"Namco"},
-	{'OX',	"Oxygen Interactive"},
-	{'PC',	"Playlogic Entertainment"},
-	{'PL',	"Phantagram Co., Ltd."},
-	{'RA',	"Rage"},
-	{'SA',	"Sammy"},
-	{'SC',	"SCi Games"},
-	{'SE',	"SEGA"},
-	{'SN',	"SNK"},
-	{'SQ',	"Square Enix"},
-	{'SS',	"Simon & Schuster"},
-	{'SU',	"Success Corporation"},
-	{'SW',	"Swing! Deutschland"},
-	{'TA',	"Takara"},
-	{'TC',	"Tecmo"},
-	{'TD',	"The 3DO Company"},
-	{'TK',	"Takuyo"},
-	{'TM',	"TDK Mediactive"},
-	{'TQ',	"THQ"},
-	{'TS',	"Titus Interactive"},
-	{'TT',	"Take-Two Interactive Software"},
-	{'US',	"Ubisoft"},
-	{'VC',	"Victor Interactive Software"},
-	{'VN',	"Vivendi Universal Games"},
-	{'VU',	"Vivendi Universal Games"},
-	{'VV',	"Vivendi Universal Games"},
-	{'WE',	"Wanadoo Edition"},
-	{'WR',	"Warner Bros. Interactive Entertainment"},
-	{'XA',	"Xbox Live Arcade"},
-	{'XI',	"XPEC Entertainment and Idea Factory"},
-	{'XK',	"Xbox kiosk disk"},
-	{'XL',	"Xbox special bundled or live demo disk"},
-	{'XM',	"Evolved Games"},
-	{'XP',	"XPEC Entertainment"},
-	{'XR',	"Panorama"},
-	{'YB',	"YBM Sisa"},
-	{'ZD',	"Zushi Games (Zoo Digital Publishing)"},
-
-	{0, nullptr}
-};
-
-/**
- * Comparison function for bsearch().
- * For use with ThirdPartyEntry.
- *
- * @param a
- * @param b
- * @return
- */
-static int RP_C_API compar(const void *a, const void *b)
-{
-	uint16_t code1 = static_cast<const ThirdPartyEntry*>(a)->code;
-	uint16_t code2 = static_cast<const ThirdPartyEntry*>(b)->code;
-	if (code1 < code2) return -1;
-	if (code1 > code2) return 1;
-	return 0;
-}
+#include "XboxPublishers_data.h"
 
 /** Public functions **/
 
@@ -155,15 +22,12 @@ static int RP_C_API compar(const void *a, const void *b)
  */
 const char *lookup(uint16_t code)
 {
-	// Do a binary search.
-	const ThirdPartyEntry key = {code, nullptr};
-	const ThirdPartyEntry *res =
-		static_cast<const ThirdPartyEntry*>(bsearch(&key,
-			thirdPartyList,
-			ARRAY_SIZE(thirdPartyList)-1,
-			sizeof(ThirdPartyEntry),
-			compar));
-	return (res ? res->publisher : nullptr);
+	const char s_code[3] = {
+		(char)(code >> 8),
+		(char)(code & 0xFF),
+		'\0'
+	};
+	return lookup(s_code);
 }
 
 /**
@@ -173,9 +37,33 @@ const char *lookup(uint16_t code)
  */
 const char *lookup(const char *code)
 {
-	const uint16_t code16 = (static_cast<uint8_t>(code[0]) << 8) |
-				 static_cast<uint8_t>(code[1]);
-	return lookup(code16);
+	// Code must be 2 characters, plus NULL.
+	assert(code && code[0] && code[1] && !code[2]);
+	if (!code || !code[0] || !code[1] || code[2]) {
+		return nullptr;
+	}
+
+	// Lookup table uses Base 26. [A-Z]
+	unsigned int idx;
+	if (ISUPPER(code[0])) {
+		idx = (code[0] - 'A') * 26;
+	} else {
+		// Invalid code.
+		return nullptr;
+	}
+	if (ISUPPER(code[1])) {
+		idx += (code[1] - 'A');
+	} else {
+		// Invalid code.
+		return nullptr;
+	}
+
+	if (idx >= ARRAY_SIZE(XboxPublishers_offtbl)) {
+		return nullptr;
+	}
+
+	const unsigned int offset = XboxPublishers_offtbl[idx];
+	return (likely(offset != 0) ? &XboxPublishers_strtbl[offset] : nullptr);
 }
 
 } }

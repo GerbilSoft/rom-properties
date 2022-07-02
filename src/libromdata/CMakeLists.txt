@@ -92,7 +92,6 @@ SET(${PROJECT_NAME}_SRCS
 	data/EXEData.cpp
 	data/MachOData.cpp
 	data/NESMappers.cpp
-	data/NESMappers_data.h
 	data/NintendoPublishers.cpp
 	data/Nintendo3DSFirmData.cpp
 	data/Nintendo3DSSysTitles.cpp
@@ -269,6 +268,7 @@ SET(${PROJECT_NAME}_H
 	data/EXEData.hpp
 	data/MachOData.hpp
 	data/NESMappers.hpp
+	data/NESMappers_data.h
 	data/Nintendo3DSFirmData.hpp
 	data/Nintendo3DSSysTitles.hpp
 	data/NintendoLanguage.hpp
@@ -280,6 +280,7 @@ SET(${PROJECT_NAME}_H
 	data/WonderSwanPublishers.hpp
 	data/XboxLanguage.hpp
 	data/XboxPublishers.hpp
+	data/XboxPublishers_data.h
 	data/Xbox360_STFS_ContentType.hpp
 
 	disc/Cdrom2352Reader.hpp
