@@ -55,6 +55,13 @@ class ListDataModelPrivate
 		// Points to an element in map_data.
 		const vector<QString> *pData;
 
+		// Icons.
+		// NOTE: References to rp_image* are kept in case
+		// the icon size is changed.
+		std::vector<QPixmap> icons;
+		std::vector<const rp_image*> icons_rp;
+		QSize iconSize;
+
 		// Qt::ItemFlags
 		Qt::ItemFlags itemFlags;
 
@@ -65,13 +72,6 @@ class ListDataModelPrivate
 		// Checkboxes.
 		uint32_t checkboxes;
 		bool hasCheckboxes;
-
-		// Icons.
-		// NOTE: References to rp_image* are kept in case
-		// the icon size is changed.
-		std::vector<QPixmap> icons;
-		std::vector<const rp_image*> icons_rp;
-		QSize iconSize;
 
 		// Current language code.
 		uint32_t lc;
@@ -130,12 +130,12 @@ ListDataModelPrivate::ListDataModelPrivate(ListDataModel *q)
 	, columnCount(0)
 	, rowCount(0)
 	, pData(nullptr)
+	, iconSize(QSize(32, 32))
 	, itemFlags(Qt::NoItemFlags)
 	, align_headers(0)
 	, align_data(0)
 	, checkboxes(0)
 	, hasCheckboxes(false)
-	, iconSize(QSize(32, 32))
 	, lc('en')
 {
 	// TODO: Better default icon size?
@@ -196,7 +196,7 @@ void ListDataModelPrivate::updateIconPixmaps(void)
 			pixmap = pixmap.scaled(iconSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 		}
 
-		icons.emplace_back(pixmap);
+		icons.emplace_back(std::move(pixmap));
 	}
 }
 
@@ -457,16 +457,14 @@ void ListDataModel::setField(const RomFields::Field *pField)
 	// Remove data if it's already set.
 	if (d->rowCount > 0) {
 		// Notify the view that we're about to remove all rows and columns.
-		const int rowCount = d->rowCount;
-		if (rowCount > 0) {
-			beginRemoveRows(QModelIndex(), 0, (rowCount - 1));
+		if (d->rowCount > 0) {
+			beginRemoveRows(QModelIndex(), 0, (d->rowCount - 1));
 			d->rowCount = 0;
 			endRemoveRows();
 		}
 
-		const int columnCount = d->columnCount;
-		if (columnCount > 0) {
-			beginRemoveColumns(QModelIndex(), 0, (columnCount - 1));
+		if (d->columnCount > 0) {
+			beginRemoveColumns(QModelIndex(), 0, (d->columnCount - 1));
 			d->columnCount = 0;
 			endRemoveColumns();
 		}
@@ -551,6 +549,7 @@ void ListDataModel::setField(const RomFields::Field *pField)
 	} else {
 		// No column headers.
 		// Use the first row for the column count.
+		d->headers.clear();
 		columnCount = static_cast<int>(list_data->at(0).size());
 	}
 	beginInsertColumns(QModelIndex(), 0, (columnCount - 1));
@@ -622,6 +621,7 @@ void ListDataModel::setField(const RomFields::Field *pField)
 		} else {
 			d->rowCount = static_cast<int>(d->pData->size() / d->columnCount);
 		}
+
 		endInsertRows();
 	}
 }
