@@ -13,38 +13,15 @@
 // C++ includes
 #include <limits>
 
-namespace LibRpTexture {
+namespace LibRpTexture { namespace GLenumStrings {
 
-class GLenumStringsPrivate
-{
-	private:
-		// Static class.
-		GLenumStringsPrivate();
-		~GLenumStringsPrivate();
-		RP_DISABLE_COPY(GLenumStringsPrivate)
-
-	public:
-		/**
-		 * Comparison function for bsearch().
-		 * @param a
-		 * @param b
-		 * @return
-		 */
-		static int RP_C_API compar(const void *a, const void *b);
-
-		// String tables.
-		// NOTE: glEnum_offtbl[] must be sorted by id.
-		// NOTE: Leaving the "GL_" prefix off of the strings.
-		struct OffTbl_t {
-			uint16_t id;
-			uint16_t offset;
-		};
-
-		static const char glEnum_strtbl[];
-		static const OffTbl_t glEnum_offtbl[];
+// String tables.
+// NOTE: glEnum_offtbl[] must be sorted by id.
+// NOTE: Leaving the "GL_" prefix off of the strings.
+struct OffTbl_t {
+	uint16_t id;
+	uint16_t offset;
 };
-
-/** GLenumStringsPrivate **/
 
 /**
  * Comparison function for bsearch().
@@ -52,7 +29,7 @@ class GLenumStringsPrivate
  * @param b
  * @return
  */
-int RP_C_API GLenumStringsPrivate::compar(const void *a, const void *b)
+static int RP_C_API compar(const void *a, const void *b)
 {
 	unsigned int id1 = static_cast<const OffTbl_t*>(a)->id;
 	unsigned int id2 = static_cast<const OffTbl_t*>(b)->id;
@@ -64,7 +41,7 @@ int RP_C_API GLenumStringsPrivate::compar(const void *a, const void *b)
 /**
  * OpenGL enumerations.
  */
-const char GLenumStringsPrivate::glEnum_strtbl[] = {
+static const char glEnum_strtbl[] = {
 	"\0"
 
 	"BYTE\0"
@@ -311,7 +288,7 @@ const char GLenumStringsPrivate::glEnum_strtbl[] = {
 	"COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV2_IMG\0"
 };
 
-const GLenumStringsPrivate::OffTbl_t GLenumStringsPrivate::glEnum_offtbl[] = {
+static const OffTbl_t glEnum_offtbl[] = {
 	{GL_BYTE, 1},
 	{GL_UNSIGNED_BYTE, 6},
 	{GL_SHORT, 20},
@@ -556,14 +533,14 @@ const GLenumStringsPrivate::OffTbl_t GLenumStringsPrivate::glEnum_offtbl[] = {
 	{GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV2_IMG, 4041},
 };
 
-/** GLenumStrings **/
+/** Public functions **/
 
 /**
  * Look up an OpenGL GLenum string.
  * @param glEnum	[in] glEnum
  * @return String, or nullptr if not found.
  */
-const char *GLenumStrings::lookup_glEnum(unsigned int glEnum)
+const char *lookup_glEnum(unsigned int glEnum)
 {
 	// Offset table uses uint16_t for glEnum.
 	assert(glEnum <= std::numeric_limits<uint16_t>::max());
@@ -572,18 +549,18 @@ const char *GLenumStrings::lookup_glEnum(unsigned int glEnum)
 	}
 
 	// Do a binary search.
-	const GLenumStringsPrivate::OffTbl_t key = {static_cast<uint16_t>(glEnum), 0};
-	const GLenumStringsPrivate::OffTbl_t *res =
-		static_cast<const GLenumStringsPrivate::OffTbl_t*>(bsearch(&key,
-			GLenumStringsPrivate::glEnum_offtbl,
-			ARRAY_SIZE(GLenumStringsPrivate::glEnum_offtbl),
-			sizeof(GLenumStringsPrivate::OffTbl_t),
-			GLenumStringsPrivate::compar));
+	const OffTbl_t key = {static_cast<uint16_t>(glEnum), 0};
+	const OffTbl_t *res =
+		static_cast<const OffTbl_t*>(bsearch(&key,
+			glEnum_offtbl,
+			ARRAY_SIZE(glEnum_offtbl),
+			sizeof(OffTbl_t),
+			compar));
 
 	if (!res || res->offset == 0) {
 		return nullptr;
 	}
-	return &GLenumStringsPrivate::glEnum_strtbl[res->offset];
+	return &glEnum_strtbl[res->offset];
 }
 
-}
+} }

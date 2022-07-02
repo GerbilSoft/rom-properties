@@ -10,16 +10,18 @@
 #include "DX10Formats.hpp"
 #include "../fileformat/dds_structs.h"
 
-namespace LibRpTexture {
+namespace LibRpTexture { namespace DX10Formats {
 
 #include "DX10Formats_data.h"
+
+/** Public functions **/
 
 /**
  * Look up a DirectX 10 format value.
  * @param dxgiFormat	[in] DXGI_FORMAT
  * @return String, or nullptr if not found.
  */
-const char *DX10Formats::lookup_dxgiFormat(unsigned int dxgiFormat)
+const char *lookup_dxgiFormat(unsigned int dxgiFormat)
 {
 	const char *texFormat = nullptr;
 	if (dxgiFormat < ARRAY_SIZE(dxgiFormat_offtbl)) {
@@ -50,4 +52,4 @@ const char *DX10Formats::lookup_dxgiFormat(unsigned int dxgiFormat)
 	return texFormat;
 }
 
-}
+} }

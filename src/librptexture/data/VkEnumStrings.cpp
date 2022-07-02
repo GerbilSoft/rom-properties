@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * VkEnumStrings.cpp: Vulkan string tables.                                *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,36 +10,9 @@
 #include "VkEnumStrings.hpp"
 #include "fileformat/vk_defs.h"
 
-namespace LibRpTexture {
+namespace LibRpTexture { namespace VkEnumStrings {
 
-class VkEnumStringsPrivate
-{
-	private:
-		// Static class.
-		VkEnumStringsPrivate();
-		~VkEnumStringsPrivate();
-		RP_DISABLE_COPY(VkEnumStringsPrivate)
-
-	public:
-		// String tables.
-		// NOTE: Four ranges.
-		// NOTE: Not including "" prefixes.
-		static const char vkEnum_base_strtbl[];
-		static const uint16_t vkEnum_base_offtbl[];
-
-		static const char vkEnum_1000156xxx_strtbl[];
-		static const uint16_t vkEnum_1000156xxx_offtbl[];
-
-		static const char vkEnum_PVRTC_strtbl[];
-		static const uint16_t vkEnum_PVRTC_offtbl[];
-
-		static const char vkEnum_ASTC_strtbl[];
-		static const uint16_t vkEnum_ASTC_offtbl[];
-};
-
-/** VkEnumStringsPrivate **/
-
-const char VkEnumStringsPrivate::vkEnum_base_strtbl[] = {
+static const char vkEnum_base_strtbl[] = {
 	"\0"
 
 	// 0
@@ -266,7 +239,7 @@ const char VkEnumStringsPrivate::vkEnum_base_strtbl[] = {
 	"ASTC_12x12_SRGB_BLOCK\0"
 };
 
-const uint16_t VkEnumStringsPrivate::vkEnum_base_offtbl[] = {
+static const uint16_t vkEnum_base_offtbl[] = {
 	// 0
 	1, 11, 28, 50, 72, 92, 112, 134, 156, 178,
 	// 10
@@ -307,7 +280,7 @@ const uint16_t VkEnumStringsPrivate::vkEnum_base_offtbl[] = {
 	3072, 3094, 3117, 3139, 3162,
 };
 
-const char VkEnumStringsPrivate::vkEnum_1000156xxx_strtbl[] = {
+static const char vkEnum_1000156xxx_strtbl[] = {
 	"\0"
 
 	// 1000156000
@@ -353,7 +326,7 @@ const char VkEnumStringsPrivate::vkEnum_1000156xxx_strtbl[] = {
 	"G16_B16_R16_3PLANE_444_UNORM\0"
 };
 
-const uint16_t VkEnumStringsPrivate::vkEnum_1000156xxx_offtbl[] = {
+static const uint16_t vkEnum_1000156xxx_offtbl[] = {
 	// 1000156000
 	1, 20, 39, 65, 90, 116, 141, 167, 186, 211,
 	// 1000156010
@@ -364,7 +337,7 @@ const uint16_t VkEnumStringsPrivate::vkEnum_1000156xxx_offtbl[] = {
 	982, 1010, 1039, 1067,
 };
 
-const char VkEnumStringsPrivate::vkEnum_PVRTC_strtbl[] = {
+static const char vkEnum_PVRTC_strtbl[] = {
 	"\0"
 
 	// 1000054000
@@ -378,12 +351,12 @@ const char VkEnumStringsPrivate::vkEnum_PVRTC_strtbl[] = {
 	"PVRTC2_4BPP_SRGB_BLOCK_IMG\0"
 };
 
-const uint16_t VkEnumStringsPrivate::vkEnum_PVRTC_offtbl[] = {
+static const uint16_t vkEnum_PVRTC_offtbl[] = {
 	// 1000054000
 	1, 29, 57, 85, 113, 140, 167, 194,
 };
 
-const char VkEnumStringsPrivate::vkEnum_ASTC_strtbl[] = {
+static const char vkEnum_ASTC_strtbl[] = {
 	"\0"
 
 	// 1000066000
@@ -405,47 +378,47 @@ const char VkEnumStringsPrivate::vkEnum_ASTC_strtbl[] = {
 	"ASTC_12x12_SFLOAT_BLOCK_EXT\0"
 };
 
-const uint16_t VkEnumStringsPrivate::vkEnum_ASTC_offtbl[] = {
+static const uint16_t vkEnum_ASTC_offtbl[] = {
 	// 1000066000
 	1, 27, 53, 79, 105, 131, 157, 183, 209, 236,
 	// 1000066010
 	263, 290, 318, 346,
 };
 
-/** VkEnumStrings **/
+/** Public functions **/
 
 /**
  * Look up a Vulkan VkFormat enum string.
  * @param vkFormat	[in] vkFormat enum
  * @return String, or nullptr if not found.
  */
-const char *VkEnumStrings::lookup_vkFormat(unsigned int vkFormat)
+const char *lookup_vkFormat(unsigned int vkFormat)
 {
 	const char *tbl = nullptr;
 	uint16_t offset = 0;
 	if (/*vkFormat >= VK_FORMAT_UNDEFINED &&*/
 	      vkFormat <= VK_FORMAT_ASTC_12x12_SRGB_BLOCK)
 	{
-		tbl = VkEnumStringsPrivate::vkEnum_base_strtbl;
-		offset = VkEnumStringsPrivate::vkEnum_base_offtbl[vkFormat];
+		tbl = vkEnum_base_strtbl;
+		offset = vkEnum_base_offtbl[vkFormat];
 	}
 	else if (vkFormat >= VK_FORMAT_G8B8G8R8_422_UNORM &&
 	         vkFormat <= VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM)
 	{
-		tbl = VkEnumStringsPrivate::vkEnum_1000156xxx_strtbl;
-		offset = VkEnumStringsPrivate::vkEnum_1000156xxx_offtbl[vkFormat - VK_FORMAT_G8B8G8R8_422_UNORM];
+		tbl = vkEnum_1000156xxx_strtbl;
+		offset = vkEnum_1000156xxx_offtbl[vkFormat - VK_FORMAT_G8B8G8R8_422_UNORM];
 	}
 	else if (vkFormat >= VK_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG &&
 	         vkFormat <= VK_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG)
 	{
-		tbl = VkEnumStringsPrivate::vkEnum_PVRTC_strtbl;
-		offset = VkEnumStringsPrivate::vkEnum_PVRTC_offtbl[vkFormat - VK_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG];
+		tbl = vkEnum_PVRTC_strtbl;
+		offset = vkEnum_PVRTC_offtbl[vkFormat - VK_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG];
 	}
 	else if (vkFormat >= VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK_EXT &&
 	         vkFormat <= VK_FORMAT_ASTC_12x12_SFLOAT_BLOCK_EXT)
 	{
-		tbl = VkEnumStringsPrivate::vkEnum_ASTC_strtbl;
-		offset = VkEnumStringsPrivate::vkEnum_ASTC_offtbl[vkFormat - VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK_EXT];
+		tbl = vkEnum_ASTC_strtbl;
+		offset = vkEnum_ASTC_offtbl[vkFormat - VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK_EXT];
 	}
 
 	if (!tbl || offset == 0) {
@@ -454,4 +427,4 @@ const char *VkEnumStrings::lookup_vkFormat(unsigned int vkFormat)
 	return &tbl[offset];
 }
 
-}
+} }
