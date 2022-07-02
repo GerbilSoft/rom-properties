@@ -61,7 +61,7 @@ APNG_png_write_frame_tail_t APNG_png_write_frame_tail = NULL;
 /**
  * APNG reference couner.
  */
-static volatile int ref_cnt = 0;
+static volatile int APNG_ref_cnt = 0;
 
 /**
  * Check if the PNG library supports APNG.
@@ -161,8 +161,8 @@ int RP_C_API APNG_ref(void)
 #if !defined(USE_INTERNAL_PNG) || defined(USE_INTERNAL_PNG_DLL)
 	// Internal PNG (statically-linked) always has APNG.
 	// System PNG (or bundled DLL) might not.
-	assert(ref_cnt >= 0);
-	if (ATOMIC_INC_FETCH(&ref_cnt) == 1) {
+	assert(APNG_ref_cnt >= 0);
+	if (ATOMIC_INC_FETCH(&APNG_ref_cnt) == 1) {
 		// First APNG reference.
 		// Attempt to load APNG.
 		if (init_apng() != 0) {
@@ -186,8 +186,8 @@ void RP_C_API APNG_unref(void)
 #if !defined(USE_INTERNAL_PNG) || defined(USE_INTERNAL_PNG_DLL)
 	// Internal PNG (statically-linked) always has APNG.
 	// System PNG (or bundled DLL) might not.
-	assert(ref_cnt > 0);
-	if (ATOMIC_DEC_FETCH(&ref_cnt) == 0) {
+	assert(APNG_ref_cnt > 0);
+	if (ATOMIC_DEC_FETCH(&APNG_ref_cnt) == 0) {
 		// Unload APNG.
 		// TODO: Clear the function pointers?
 		if (libpng_dll) {
@@ -207,14 +207,14 @@ void APNG_force_unload(void)
 #if !defined(USE_INTERNAL_PNG) || defined(USE_INTERNAL_PNG_DLL)
 	// Internal PNG (statically-linked) always has APNG.
 	// System PNG (or bundled DLL) might not.
-	if (ref_cnt > 0) {
+	if (APNG_ref_cnt > 0) {
 		// Unload APNG.
 		// TODO: Clear the function pointers?
 		if (libpng_dll) {
 			dlclose(libpng_dll);
 			libpng_dll = NULL;
 		}
-		ref_cnt = 0;
+		APNG_ref_cnt = 0;
 	}
 #endif /* !USE_INTERNAL_PNG || USE_INTERNAL_PNG_DLL */
 }
