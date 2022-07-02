@@ -39,7 +39,7 @@ const char *lookup(uint16_t code)
  */
 const char *lookup(const char *code)
 {
-	// Code must be 3 characters.
+	// Code must be 2 characters, plus NULL.
 	assert(code && code[0] && code[1] && !code[2]);
 	if (!code || !code[0] || !code[1] || code[2]) {
 		return nullptr;
