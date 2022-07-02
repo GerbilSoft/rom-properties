@@ -1439,13 +1439,15 @@ int ELF::loadFieldData(void)
 			// TODO: Other ARC variants?
 
 			// CPU subtypes.
-			static const char *const arc_cpu_subtypes[] = {
-				nullptr, nullptr, "ARC600", "ARC700",
+			static const char arc_cpu_subtypes[][8] = {
+				"", "", "ARC600", "ARC700",
 				"ARC601", "ARCv2EM", "ARCv2HS",
 			};
 			const uint8_t cpu_subtype = (e_flags & 0xFF);
 			const char *s_cpu_subtype = nullptr;
-			if (cpu_subtype < ARRAY_SIZE(arc_cpu_subtypes)) {
+			if (cpu_subtype < ARRAY_SIZE(arc_cpu_subtypes) &&
+			    arc_cpu_subtypes[cpu_subtype][0] != '\0')
+			{
 				s_cpu_subtype = arc_cpu_subtypes[cpu_subtype];
 			}
 			if (s_cpu_subtype) {
@@ -1500,12 +1502,14 @@ int ELF::loadFieldData(void)
 			}
 
 			// MAC
-			static const char *const cf_mac_tbl[] = {
-				nullptr, "MAC", "EMAC", "EMAC_B"
+			static const char cf_mac_tbl[][8] = {
+				"MAC", "EMAC", "EMAC_B"
 			};
 			const char *cf_mac = nullptr;
 			const uint8_t cf_mac_flags = ((e_flags >> 4) & 0x03);
-			if (cf_mac_flags < ARRAY_SIZE(cf_mac_tbl)) {
+			if (cf_mac_flags < ARRAY_SIZE(cf_mac_tbl) &&
+			    cf_mac_tbl[cf_mac_flags][0] != '\0')
+			{
 				cf_mac = cf_mac_tbl[cf_mac_flags];
 			}
 
@@ -1557,11 +1561,12 @@ int ELF::loadFieldData(void)
 		case EM_M32R:
 		case EM_CYGNUS_M32R: {
 			// binutils: include/elf/m32r.h
-			static const char *const m32r_insn_set_tbl[] = {
-				"m32r", "m32rx", "m32r2", nullptr
+			static const char m32r_insn_set_tbl[][8] = {
+				"m32r", "m32rx", "m32r2"
 			};
-			const char *const m32r_insn_set = m32r_insn_set_tbl[(e_flags >> 28) & 0x03];
-			if (m32r_insn_set) {
+			const unsigned int idx = (e_flags >> 28) & 0x03;
+			if (idx < ARRAY_SIZE(m32r_insn_set_tbl)) {
+				const char *const m32r_insn_set = m32r_insn_set_tbl[idx];
 				d->fields->addField_string(C_("ELF", "Instruction Set"), m32r_insn_set);
 			}
 
