@@ -985,7 +985,12 @@ C:0x3506:Ena
 C:0x3507:Tsukino
 C:0x3508:Magnamalo
 C:0x3509:Palico
+CV:0x3509:0x00:Palico
+CV:0x3509:0x01:Palico "Felyne Malzeno X"
 C:0x350A:Palamute
+CV:0x350A:0x00:Palamute
+CV:0x350A:0x01:Palamute "Canyne Malzeno X"
+C:0x350B:Malzeno
 
 # Shovel Knight (character series == 0x35C)
 C:0x35C0:Shovel Knight
@@ -2020,10 +2025,10 @@ A:0x040C:8:2:Razewing Ratha
 A:0x040D:7:2:Ena
 A:0x040E:9:2:Tsukino
 
-# Monster Hunter Rise [0x040F-0x0411]
-A:0x040F:0:0:Magnamalo
-A:0x0410:0:0:Palico
-A:0x0411:0:0:Palamute
+# Monster Hunter Rise (Wave 1) [0x040F-0x0411]
+A:0x040F:0:1:Magnamalo
+A:0x0410:0:1:Palico
+A:0x0411:0:1:Palamute
 
 # Metroid Dread [0x412-0x413]
 A:0x0412:0:0:Samus (Metroid Dread)
@@ -2043,3 +2048,8 @@ A:0x0427:0:0:Romin Kirishima
 A:0x0428:0:0:Roa Kirishima
 A:0x0429:0:0:Nail Saionji
 A:0x042A:0:0:Asana Mutsuba
+
+# Monster Hunter Rise (Wave 2) [0x042B-0x042D]
+A:0x042B:0:2:Palico "Felyne Malzeno X"
+A:0x042C:0:2:Palamute "Canyne Malzeno X"
+A:0x042D:0:2:Malzeno
