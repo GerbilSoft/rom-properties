@@ -196,25 +196,25 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 	int stride = 0;
 	switch (ktxHeader.glFormat) {
 		case GL_RGB:
-			// 24-bit RGB.
+			// 24-bit RGB
 			stride = ALIGN_BYTES(4, ktxHeader.pixelWidth * 3);
 			expected_size = static_cast<unsigned int>(stride * height);
 			break;
 
 		case GL_RGBA:
-			// 32-bit RGBA.
+			// 32-bit RGBA
 			stride = ktxHeader.pixelWidth * 4;
 			expected_size = static_cast<unsigned int>(stride * height);
 			break;
 
 		case GL_LUMINANCE:
-			// 8-bit luminance.
+			// 8-bit luminance
 			stride = ALIGN_BYTES(4, ktxHeader.pixelWidth);
 			expected_size = static_cast<unsigned int>(stride * height);
 			break;
 
 		case GL_RGB9_E5:
-			// Uncompressed "special" 32bpp formats.
+			// Uncompressed "special" 32bpp formats
 			// TODO: Does KTX handle GL_RGB9_E5 as compressed?
 			stride = ktxHeader.pixelWidth * 4;
 			expected_size = static_cast<unsigned int>(stride * height);
@@ -225,6 +225,18 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 			// May be a compressed format.
 			// TODO: Stride calculations?
 			switch (ktxHeader.glInternalFormat) {
+				case GL_RGB8:
+					// 24-bit RGB
+					stride = ALIGN_BYTES(4, ktxHeader.pixelWidth * 3);
+					expected_size = static_cast<unsigned int>(stride * height);
+					break;
+
+				case GL_RGBA8:
+					// 32-bit RGBA
+					stride = ktxHeader.pixelWidth * 4;
+					expected_size = static_cast<unsigned int>(stride * height);
+					break;
+
 #ifdef ENABLE_PVRTC
 				case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
 				case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
@@ -436,7 +448,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 	// TODO: Handle sRGB post-processing? (for e.g. GL_SRGB8)
 	switch (ktxHeader.glFormat) {
 		case GL_RGB:
-			// 24-bit RGB.
+			// 24-bit RGB
 			img = ImageDecoder::fromLinear24(
 				ImageDecoder::PixelFormat::BGR888,
 				ktxHeader.pixelWidth, height,
@@ -444,7 +456,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 			break;
 
 		case GL_RGBA:
-			// 32-bit RGBA.
+			// 32-bit RGBA
 			img = ImageDecoder::fromLinear32(
 				ImageDecoder::PixelFormat::ABGR8888,
 				ktxHeader.pixelWidth, height,
@@ -452,7 +464,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 			break;
 
 		case GL_LUMINANCE:
-			// 8-bit Luminance.
+			// 8-bit Luminance
 			img = ImageDecoder::fromLinear8(
 				ImageDecoder::PixelFormat::L8,
 				ktxHeader.pixelWidth, height,
@@ -460,7 +472,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 			break;
 
 		case GL_RGB9_E5:
-			// Uncompressed "special" 32bpp formats.
+			// Uncompressed "special" 32bpp formats
 			// TODO: Does KTX handle GL_RGB9_E5 as compressed?
 			img = ImageDecoder::fromLinear32(
 				ImageDecoder::PixelFormat::RGB9_E5,
@@ -473,6 +485,22 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 			// May be a compressed format.
 			// TODO: sRGB post-processing for sRGB formats?
 			switch (ktxHeader.glInternalFormat) {
+				case GL_RGB8:
+					// 24-bit RGB
+					img = ImageDecoder::fromLinear24(
+						ImageDecoder::PixelFormat::BGR888,
+						ktxHeader.pixelWidth, height,
+						buf.get(), expected_size, stride);
+					break;
+
+				case GL_RGBA8:
+					// 32-bit RGBA
+					img = ImageDecoder::fromLinear32(
+						ImageDecoder::PixelFormat::ABGR8888,
+						ktxHeader.pixelWidth, height,
+						reinterpret_cast<const uint32_t*>(buf.get()), expected_size, stride);
+					break;
+
 				case GL_RGB_S3TC:
 				case GL_RGB4_S3TC:
 				case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
