@@ -11,6 +11,7 @@
 
 namespace LibRomData { namespace NintendoPublishers {
 
+// TODO: Combine the two string tables?
 #include "NintendoPublishers_data.h"
 #include "NintendoPublishers_FDS_data.h"
 
