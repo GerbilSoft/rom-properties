@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KF5)                              *
+ * ROM Properties Page shell extension. (KDE)                              *
  * OverlayIconPlugin.cpp: KOverlayIconPlugin.                              *
  *                                                                         *
  * Qt's plugin system prevents a single shared library from exporting      *
@@ -35,14 +35,14 @@ using std::vector;
  * rom-properties, and is called by a forwarder library.
  */
 extern "C" {
-	Q_DECL_EXPORT RomPropertiesKF5::OverlayIconPlugin *PFN_CREATEOVERLAYICONPLUGINKDE_FN(QObject *parent)
+	Q_DECL_EXPORT RomPropertiesKDE::OverlayIconPlugin *PFN_CREATEOVERLAYICONPLUGINKDE_FN(QObject *parent)
 	{
 		CHECK_UID_RET(nullptr);
-		return new RomPropertiesKF5::OverlayIconPlugin(parent);
+		return new RomPropertiesKDE::OverlayIconPlugin(parent);
 	}
 }
 
-namespace RomPropertiesKF5 {
+namespace RomPropertiesKDE {
 
 OverlayIconPlugin::OverlayIconPlugin(QObject *parent)
 	: super(parent)

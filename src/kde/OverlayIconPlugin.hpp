@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KF5)                              *
+ * ROM Properties Page shell extension. (KDE)                              *
  * OverlayIconPlugin.hpp: KOverlayIconPlugin.                              *
  *                                                                         *
  * Qt's plugin system prevents a single shared library from exporting      *
@@ -10,13 +10,31 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_KF5_OVERLAYICONPLUGIN_HPP__
-#define __ROMPROPERTIES_KDE_KF5_OVERLAYICONPLUGIN_HPP__
+#ifndef __ROMPROPERTIES_KDE_OVERLAYICONPLUGIN_HPP__
+#define __ROMPROPERTIES_KDE_OVERLAYICONPLUGIN_HPP__
 
 #include <QtCore/qglobal.h>
 #include <KOverlayIconPlugin>
 
-namespace RomPropertiesKF5 {
+#if QT_VERSION >= QT_VERSION_CHECK(7,0,0)
+#  error Needs updating for Qt7
+#elif QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#  define PFN_CREATEOVERLAYICONPLUGINKDE_FN createOverlayIconPluginKF6
+#  define PFN_CREATEOVERLAYICONPLUGINKDE_NAME "createOverlayIconPluginKF6"
+#  define RomPropertiesKDE RomPropertiesKF6
+#elif QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#  define PFN_CREATEOVERLAYICONPLUGINKDE_FN createOverlayIconPluginKF5
+#  define PFN_CREATEOVERLAYICONPLUGINKDE_NAME "createOverlayIconPluginKF5"
+#  define RomPropertiesKDE RomPropertiesKF5
+#elif QT_VERSION >= QT_VERSION_CHECK(4,0,0)
+#  define PFN_CREATEOVERLAYICONPLUGINKDE_FN createOverlayIconPluginKDE4
+#  define PFN_CREATEOVERLAYICONPLUGINKDE_NAME "createOverlayIconPluginKDE4"
+#  define RomPropertiesKDE RomPropertiesKDE4
+#else /* QT_VERSION < QT_VERSION_CHECK(4,0,0) */
+#  error Qt version is too old
+#endif
+
+namespace RomPropertiesKDE {
 
 class OverlayIconPlugin final : public ::KOverlayIconPlugin
 {
@@ -36,9 +54,7 @@ class OverlayIconPlugin final : public ::KOverlayIconPlugin
 
 // Exported function pointer to create a new RpExtractorPlugin.
 typedef OverlayIconPlugin* (*pfn_createOverlayIconPluginKDE_t)(QObject *parent);
-#define PFN_CREATEOVERLAYICONPLUGINKDE_FN createOverlayIconPluginKF5
-#define PFN_CREATEOVERLAYICONPLUGINKDE_NAME "createOverlayIconPluginKF5"
 
 }
 
-#endif /* __ROMPROPERTIES_KDE_KF5_OVERLAYICONPLUGIN_HPP__ */
+#endif /* __ROMPROPERTIES_KDE_OVERLAYICONPLUGIN_HPP__ */

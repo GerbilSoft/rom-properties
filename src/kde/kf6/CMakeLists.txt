@@ -156,15 +156,15 @@ SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_DBUS_IFACE_SRCS}
 	${${PROJECT_NAME}_RCC_O}
 	RomPropertiesDialogPluginFactoryKF6.cpp
-	#ExtractorPlugin.cpp	# FIXME: KF5 KFileMetaData uses QMap::insertMulti().
-	OverlayIconPlugin.cpp
+	#../ExtractorPlugin.cpp	# FIXME: KF5 KFileMetaData uses QMap::insertMulti().
+	../OverlayIconPlugin.cpp
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_H}
 	${rom-properties-kio6_H}
 	${${PROJECT_NAME}-notify_H}
-	#ExtractorPlugin.hpp	# FIXME: KF5 KFileMetaData uses QMap::insertMulti().
-	OverlayIconPlugin.hpp
+	#../ExtractorPlugin.hpp	# FIXME: KF5 KFileMetaData uses QMap::insertMulti().
+	../OverlayIconPlugin.hpp
 	)
 
 IF(COMMAND QT6_WRAP_UI)

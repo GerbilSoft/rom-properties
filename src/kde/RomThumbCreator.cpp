@@ -40,7 +40,7 @@ using std::unique_ptr;
 
 // Qt major version.
 #if QT_VERSION >= QT_VERSION_CHECK(7,0,0)
-#  error Needs updating for Qt6.
+#  error Needs updating for Qt7
 #elif QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 #  define QT_MAJOR_STR "6"
 #elif QT_VERSION >= QT_VERSION_CHECK(5,0,0)
@@ -48,7 +48,7 @@ using std::unique_ptr;
 #elif QT_VERSION >= QT_VERSION_CHECK(4,0,0)
 #  define QT_MAJOR_STR "4"
 #else /* QT_VERSION < QT_VERSION_CHECK(4,0,0) */
-#  error Qt is too old.
+#  error Qt version is too old
 #endif
 
 /**

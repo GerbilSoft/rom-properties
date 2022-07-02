@@ -14,7 +14,7 @@
 #include "../check-uid.hpp"
 
 #include "ExtractorPluginForwarder.hpp"
-#include "ExtractorPlugin.hpp"
+#include "../ExtractorPlugin.hpp"
 #include "../RpQt.hpp"
 
 // C includes.

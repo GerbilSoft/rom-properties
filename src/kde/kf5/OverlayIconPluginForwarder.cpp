@@ -14,7 +14,7 @@
 #include "../check-uid.hpp"
 
 #include "OverlayIconPluginForwarder.hpp"
-#include "OverlayIconPlugin.hpp"
+#include "../OverlayIconPlugin.hpp"
 #include "../RpQt.hpp"
 
 // C includes.

@@ -132,15 +132,15 @@ SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_DBUS_IFACE_SRCS}
 	${${PROJECT_NAME}_RCC_O}
 	RomPropertiesDialogPluginFactoryKF5.cpp
-	ExtractorPlugin.cpp
-	OverlayIconPlugin.cpp
+	../ExtractorPlugin.cpp
+	../OverlayIconPlugin.cpp
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_H}
 	${rom-properties-kio5_H}
 	${${PROJECT_NAME}-notify_H}
-	ExtractorPlugin.hpp
-	OverlayIconPlugin.hpp
+	../ExtractorPlugin.hpp
+	../OverlayIconPlugin.hpp
 	)
 
 IF(COMMAND QT5_WRAP_UI)

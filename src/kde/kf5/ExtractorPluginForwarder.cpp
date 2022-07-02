@@ -6,7 +6,7 @@
  * multiple plugins, so this file acts as a KFileMetaData ExtractorPlugin, *
  * and then forwards the request to the main library.                      *
  *                                                                         *
- * Copyright (c) 2018-2021 by David Korth.                                 *
+ * Copyright (c) 2018-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,7 +14,7 @@
 #include "../check-uid.hpp"
 
 #include "ExtractorPluginForwarder.hpp"
-#include "ExtractorPlugin.hpp"
+#include "../ExtractorPlugin.hpp"
 #include "../RpQt.hpp"
 
 // C includes.

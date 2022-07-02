@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KF5)                              *
+ * ROM Properties Page shell extension. (KDE)                              *
  * ExtractorPlugin.cpp: KFileMetaData extractor plugin.                    *
  *                                                                         *
  * Qt's plugin system prevents a single shared library from exporting      *
