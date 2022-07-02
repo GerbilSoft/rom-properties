@@ -8,7 +8,7 @@ IF(POLICY CMP0063)
 ENDIF(POLICY CMP0063)
 PROJECT(rom-properties-kde LANGUAGES CXX)
 
-# Common files for both KDE4 and KF5.
+# Common files for all KDE versions.
 
 # Sources and headers.
 SET(${PROJECT_NAME}_SRCS
@@ -155,3 +155,6 @@ ENDIF(BUILD_KDE4)
 IF(BUILD_KF5)
 	ADD_SUBDIRECTORY(kf5)
 ENDIF(BUILD_KF5)
+IF(BUILD_KF6)
+	ADD_SUBDIRECTORY(kf6)
+ENDIF(BUILD_KF6)

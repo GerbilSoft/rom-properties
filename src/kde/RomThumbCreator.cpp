@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomThumbCreator.cpp: Thumbnail creator.                                 *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -39,14 +39,16 @@ using std::unique_ptr;
 #include <kprotocolmanager.h>
 
 // Qt major version.
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-# error Needs updating for Qt6.
+#if QT_VERSION >= QT_VERSION_CHECK(7,0,0)
+#  error Needs updating for Qt6.
+#elif QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#  define QT_MAJOR_STR "6"
 #elif QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-# define QT_MAJOR_STR "5"
+#  define QT_MAJOR_STR "5"
 #elif QT_VERSION >= QT_VERSION_CHECK(4,0,0)
-# define QT_MAJOR_STR "4"
+#  define QT_MAJOR_STR "4"
 #else /* QT_VERSION < QT_VERSION_CHECK(4,0,0) */
-# error Qt is too old.
+#  error Qt is too old.
 #endif
 
 /**

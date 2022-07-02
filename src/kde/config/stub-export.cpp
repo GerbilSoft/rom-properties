@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * stub-export.cpp: Exported function for the rp-config stub.              *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -28,18 +28,19 @@ Q_DECL_EXPORT int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 
 	QApplication *rpApp = qApp;
 	if (!rpApp) {
-#if QT_VERSION >= 0x050000
+		// Set high-DPI mode on Qt 5. (not needed on Qt 6)
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0) && QT_VERSION < QT_VERSION_CHECK(6,0,0)
 		// Enable High DPI.
 		QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, true);
-#if QT_VERSION >= 0x050600
+#if QT_VERSION >= QT_VERSION_CHECK(5,6,0)
 		// Enable High DPI pixmaps.
 		QApplication::setAttribute(Qt::AA_EnableHighDpiScaling, true);
 #else
 		// Hardcode the value in case the user upgrades to Qt 5.6 later.
 		// http://doc.qt.io/qt-5/qt.html#ApplicationAttribute-enum
 		QApplication::setAttribute(static_cast<Qt::ApplicationAttribute>(13), true);
-#endif /* QT_VERSION >= 0x050600 */
-#endif /* QT_VERSION >= 0x050000 */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,6,0) */
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) && QT_VERSION < QT_VERSION_CHECK(6,0,0) */
 		// Create the QApplication.
 		rpApp = new QApplication(argc, argv);
 

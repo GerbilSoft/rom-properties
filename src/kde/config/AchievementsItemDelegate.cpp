@@ -214,10 +214,12 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 
 	// Get the text alignment.
 	int textAlignment = 0;
-	if (index.data(Qt::TextAlignmentRole).canConvert(QVariant::Int))
+	if (index.data(Qt::TextAlignmentRole).canConvert<int>()) {
 		textAlignment = index.data(Qt::TextAlignmentRole).toInt();
-	if (textAlignment == 0)
+	}
+	if (textAlignment == 0) {
 		textAlignment = option.displayAlignment;
+	}
 
 	QRect textRect = option.rect;
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
