@@ -99,7 +99,9 @@ G_DEFINE_TYPE_EXTENDED(AboutTab, about_tab,
 
 static void
 about_tab_class_init(AboutTabClass *klass)
-{ }
+{
+	RP_UNUSED(klass);
+}
 
 static void
 about_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)

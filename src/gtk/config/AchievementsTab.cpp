@@ -62,7 +62,9 @@ G_DEFINE_TYPE_EXTENDED(AchievementsTab, achievements_tab,
 
 static void
 achievements_tab_class_init(AchievementsTabClass *klass)
-{ }
+{
+	RP_UNUSED(klass);
+}
 
 static void
 achievements_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)

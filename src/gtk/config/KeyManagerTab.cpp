@@ -936,7 +936,7 @@ keyStore_key_changed_signal_handler(KeyStoreGTK *keyStore, int sectIdx, int keyI
 	}
 
 	const char *icon_name = nullptr;
-	if ((int)key->status >= 0 && (int)key->status < ARRAY_SIZE_I(is_valid_icon_name_tbl)) {
+	if (/*(int)key->status >= 0 &&*/ (int)key->status < ARRAY_SIZE_I(is_valid_icon_name_tbl)) {
 		icon_name = is_valid_icon_name_tbl[(int)key->status];
 	}
 
@@ -980,7 +980,7 @@ keyStore_all_keys_changed_signal_handler(KeyStoreGTK *keyStore, KeyManagerTab *t
 				}
 
 				const char *icon_name = nullptr;
-				if ((int)key->status >= 0 && (int)key->status < ARRAY_SIZE_I(is_valid_icon_name_tbl)) {
+				if (/*(int)key->status >= 0 &&*/ (int)key->status < ARRAY_SIZE_I(is_valid_icon_name_tbl)) {
 					icon_name = is_valid_icon_name_tbl[(int)key->status];
 				}
 

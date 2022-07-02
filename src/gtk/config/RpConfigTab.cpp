@@ -23,6 +23,7 @@ static void
 rp_config_tab_default_init(RpConfigTabInterface *iface)
 {
 	// TODO: "has-defaults" property?
+	RP_UNUSED(iface);
 
 	/** Signals **/
 	signals[SIGNAL_MODIFIED] = g_signal_new("modified",
