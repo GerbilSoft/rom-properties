@@ -1,12 +1,12 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE)                              *
+ * ROM Properties Page shell extension. (KF5)                              *
  * OverlayIconPlugin.hpp: KOverlayIconPlugin.                              *
  *                                                                         *
  * Qt's plugin system prevents a single shared library from exporting      *
  * multiple plugins, so this file acts as a KOverlayIconPlugin,            *
  * and then forwards the request to the main library.                      *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
