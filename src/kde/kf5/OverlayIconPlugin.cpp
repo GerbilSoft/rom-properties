@@ -1,12 +1,12 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE)                              *
+ * ROM Properties Page shell extension. (KF5)                              *
  * OverlayIconPlugin.cpp: KOverlayIconPlugin.                              *
  *                                                                         *
  * Qt's plugin system prevents a single shared library from exporting      *
  * multiple plugins, so this file acts as a KOverlayIconPlugin,            *
  * and then forwards the request to the main library.                      *
  *                                                                         *
- * Copyright (c) 2018-2021 by David Korth.                                 *
+ * Copyright (c) 2018-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -29,20 +29,20 @@ using std::vector;
 // Qt includes.
 #include <QtCore/QStandardPaths>
 
-namespace RomPropertiesKF5 {
-
 /**
  * Factory method.
  * NOTE: Unlike the ThumbCreator version, this one is specific to
  * rom-properties, and is called by a forwarder library.
  */
 extern "C" {
-	Q_DECL_EXPORT OverlayIconPlugin *PFN_CREATEOVERLAYICONPLUGINKDE_FN(QObject *parent)
+	Q_DECL_EXPORT RomPropertiesKF5::OverlayIconPlugin *PFN_CREATEOVERLAYICONPLUGINKDE_FN(QObject *parent)
 	{
 		CHECK_UID_RET(nullptr);
-		return new OverlayIconPlugin(parent);
+		return new RomPropertiesKF5::OverlayIconPlugin(parent);
 	}
 }
+
+namespace RomPropertiesKF5 {
 
 OverlayIconPlugin::OverlayIconPlugin(QObject *parent)
 	: super(parent)

@@ -34,20 +34,20 @@ using KFileMetaData::ExtractorPlugin;
 using KFileMetaData::ExtractionResult;
 using namespace KFileMetaData::Property;
 
-namespace RomPropertiesKF6 {
-
 /**
  * Factory method.
  * NOTE: Unlike the ThumbCreator version, this one is specific to
  * rom-properties, and is called by a forwarder library.
  */
 extern "C" {
-	Q_DECL_EXPORT ExtractorPlugin *PFN_CREATEEXTRACTORPLUGINKDE_FN(QObject *parent)
+	Q_DECL_EXPORT RomPropertiesKF6::ExtractorPlugin *PFN_CREATEEXTRACTORPLUGINKDE_FN(QObject *parent)
 	{
 		CHECK_UID_RET(nullptr);
-		return new ExtractorPlugin(parent);
+		return new RomPropertiesKF6::ExtractorPlugin(parent);
 	}
 }
+
+namespace RomPropertiesKF6 {
 
 ExtractorPlugin::ExtractorPlugin(QObject *parent)
 	: super(parent)

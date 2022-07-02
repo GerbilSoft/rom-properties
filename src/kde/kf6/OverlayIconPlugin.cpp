@@ -29,20 +29,20 @@ using std::vector;
 // Qt includes.
 #include <QtCore/QStandardPaths>
 
-namespace RomPropertiesKF6 {
-
 /**
  * Factory method.
  * NOTE: Unlike the ThumbCreator version, this one is specific to
  * rom-properties, and is called by a forwarder library.
  */
 extern "C" {
-	Q_DECL_EXPORT OverlayIconPlugin *PFN_CREATEOVERLAYICONPLUGINKDE_FN(QObject *parent)
+	Q_DECL_EXPORT RomPropertiesKF6::OverlayIconPlugin *PFN_CREATEOVERLAYICONPLUGINKDE_FN(QObject *parent)
 	{
 		CHECK_UID_RET(nullptr);
-		return new OverlayIconPlugin(parent);
+		return new RomPropertiesKF6::OverlayIconPlugin(parent);
 	}
 }
+
+namespace RomPropertiesKF6 {
 
 OverlayIconPlugin::OverlayIconPlugin(QObject *parent)
 	: super(parent)
