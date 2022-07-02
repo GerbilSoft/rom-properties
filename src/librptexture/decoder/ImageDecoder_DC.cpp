@@ -34,7 +34,7 @@ namespace LibRpTexture { namespace ImageDecoder {
 static unique_ptr<unsigned int[]> dc_tmap;
 
 // pthread_once() control variable.
-static pthread_once_t once_control = PTHREAD_ONCE_INIT;
+static pthread_once_t dc_tmap_once_control = PTHREAD_ONCE_INIT;
 
 /**
  * Initialize the Dreamcast twiddle map.
@@ -61,7 +61,7 @@ static void initDreamcastTwiddleMap_int(void)
  */
 static FORCEINLINE void initDreamcastTwiddleMap(void)
 {
-	pthread_once(&once_control, initDreamcastTwiddleMap_int);
+	pthread_once(&dc_tmap_once_control, initDreamcastTwiddleMap_int);
 }
 
 /**

@@ -29,7 +29,7 @@ namespace LibCacheCommon {
 
 /** Configuration directories. **/
 // pthread_once() control variable.
-static pthread_once_t once_control = PTHREAD_ONCE_INIT;
+static pthread_once_t cache_dir_once_control = PTHREAD_ONCE_INIT;
 // User's cache directory.
 static string cache_dir;
 
@@ -66,7 +66,7 @@ static void initCacheDirectory(void)
  */
 const std::string &getCacheDirectory(void)
 {
-	pthread_once(&once_control, initCacheDirectory);
+	pthread_once(&cache_dir_once_control, initCacheDirectory);
 	return cache_dir;
 }
 

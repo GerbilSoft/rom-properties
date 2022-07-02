@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * HiDPI.c: High DPI wrapper functions.                                    *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -48,7 +48,7 @@ typedef HRESULT (WINAPI *PFN_GetDpiForMonitor)(
 	_Out_ UINT *dpiY);
 
 // pthread_once() control variable.
-static pthread_once_t once_control = PTHREAD_ONCE_INIT;
+static pthread_once_t hidpi_once_control = PTHREAD_ONCE_INIT;
 
 // Function pointers.
 static union {
@@ -114,7 +114,7 @@ void rp_DpiUnloadModules(void)
 		FreeLibrary(hShcore_dll);
 		hShcore_dll = NULL;
 	}
-	once_control = PTHREAD_ONCE_INIT;
+	hidpi_once_control = PTHREAD_ONCE_INIT;
 }
 
 /**
@@ -125,7 +125,7 @@ void rp_DpiUnloadModules(void)
 UINT rp_GetDpiForWindow(HWND hWnd)
 {
 	UINT dpi = 0;
-	pthread_once(&once_control, rp_init_DPIQueryType);
+	pthread_once(&hidpi_once_control, rp_init_DPIQueryType);
 
 	switch (dpiQueryType) {
 		default:

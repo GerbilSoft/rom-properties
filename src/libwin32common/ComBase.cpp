@@ -25,7 +25,7 @@ namespace LibWin32Common {
 volatile ULONG RP_ulTotalRefCount = 0;
 
 /** Dynamically loaded common functions **/
-static volatile pthread_once_t once_control = PTHREAD_ONCE_INIT;
+static volatile pthread_once_t combase_once_control = PTHREAD_ONCE_INIT;
 
 // IsThemeActive()
 static HMODULE hUxTheme_dll = nullptr;
@@ -50,7 +50,7 @@ void incRpGlobalRefCount(void)
 	ULONG ulRefCount = InterlockedIncrement(&RP_ulTotalRefCount);
 
 	// Make sure the function pointers are initialized.
-	pthread_once((pthread_once_t*)&once_control, initFnPtrs);
+	pthread_once((pthread_once_t*)&combase_once_control, initFnPtrs);
 }
 
 void decRpGlobalRefCount(void)
@@ -60,10 +60,10 @@ void decRpGlobalRefCount(void)
 		return;
 
 	// Last Release(). Unload the function pointers.
-	// NOTE: once_control should not be PTHREAD_ONCE_INIT here.
-	assert(once_control != PTHREAD_ONCE_INIT);
+	// NOTE: combase_once_control should not be PTHREAD_ONCE_INIT here.
+	assert(combase_once_control != PTHREAD_ONCE_INIT);
 	// This is always correct for our pthread_once() implementation.
-	while (once_control != 1) {
+	while (combase_once_control != 1) {
 		SwitchToThread();
 	}
 
@@ -77,7 +77,7 @@ void decRpGlobalRefCount(void)
 	rp_DpiUnloadModules();
 
 	// Finished unloading function pointers.
-	once_control = PTHREAD_ONCE_INIT;
+	combase_once_control = PTHREAD_ONCE_INIT;
 }
 
 /**

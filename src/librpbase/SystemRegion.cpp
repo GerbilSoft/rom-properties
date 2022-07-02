@@ -36,7 +36,7 @@ static uint32_t cc = 0;
 static uint32_t lc = 0;
 
 // pthread_once() control variable.
-static pthread_once_t once_control = PTHREAD_ONCE_INIT;
+static pthread_once_t system_region_once_control = PTHREAD_ONCE_INIT;
 
 struct LangName_t {
 	uint32_t lc;
@@ -322,7 +322,7 @@ static inline void getSystemRegion(void)
  */
 uint32_t getCountryCode(void)
 {
-	pthread_once(&once_control, getSystemRegion);
+	pthread_once(&system_region_once_control, getSystemRegion);
 	return cc;
 }
 
@@ -338,7 +338,7 @@ uint32_t getCountryCode(void)
  */
 uint32_t getLanguageCode(void)
 {
-	pthread_once(&once_control, getSystemRegion);
+	pthread_once(&system_region_once_control, getSystemRegion);
 	return lc;
 }
 

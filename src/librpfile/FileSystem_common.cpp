@@ -31,7 +31,7 @@ namespace LibRpFile { namespace FileSystem {
 
 /** Configuration directories. **/
 // pthread_once() control variable.
-static pthread_once_t once_control = PTHREAD_ONCE_INIT;
+static pthread_once_t cfgdir_once_control = PTHREAD_ONCE_INIT;
 // User's configuration directory.
 static string config_dir;
 
@@ -82,7 +82,7 @@ const string &getCacheDirectory(void)
 const string &getConfigDirectory(void)
 {
 	// TODO: Handle errors.
-	pthread_once(&once_control, initConfigDirectories);
+	pthread_once(&cfgdir_once_control, initConfigDirectories);
 	return config_dir;
 }
 
