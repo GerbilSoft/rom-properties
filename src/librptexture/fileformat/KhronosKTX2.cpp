@@ -475,9 +475,8 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 		case VK_FORMAT_R8_UINT:
 		case VK_FORMAT_R8_SRGB:
 			// 8-bit (red).
-			// FIXME: Decode as red, not as L8.
 			img = ImageDecoder::fromLinear8(
-				ImageDecoder::PixelFormat::L8, width, height,
+				ImageDecoder::PixelFormat::R8, width, height,
 				buf.get(), expected_size, stride);
 			break;
 

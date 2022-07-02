@@ -509,9 +509,8 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 
 				case GL_R8:
 					// 8-bit "Red"
-					// FIXME: Decode as red, not as L8.
 					img = ImageDecoder::fromLinear8(
-						ImageDecoder::PixelFormat::L8,
+						ImageDecoder::PixelFormat::R8,
 						ktxHeader.pixelWidth, height,
 						buf.get(), expected_size, stride);
 					break;
