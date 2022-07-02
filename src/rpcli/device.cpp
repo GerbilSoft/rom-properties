@@ -3,7 +3,7 @@
  * device.cpp: Extra functions for devices.                                *
  *                                                                         *
  * Copyright (c) 2016-2018 by Egor.                                        *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -125,7 +125,7 @@ std::ostream& operator<<(std::ostream& os, const ScsiInquiry& si)
 
 	os << "SCSI version:           ";
 	if (resp.Version <= 0x07) {
-		static const char *const ver_tbl[8] = {
+		static const char ver_tbl[8][8] = {
 			"Any",		// 0x00
 			"SCSI-1",	// 0x01
 			"SCSI-2",	// 0x02

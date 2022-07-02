@@ -757,7 +757,7 @@ int Xbox_XBE::loadFieldData(void)
 	// NOTE: Using a string instead of a bitfield because very rarely
 	// are all of these set, and in most cases, none are.
 	// TODO: RFT_LISTDATA?
-	static const char *const media_type_tbl[] = {
+	static const char media_type_tbl[][12] = {
 		// 0
 		NOP_C_("Xbox_XBE", "Hard Disk"),
 		NOP_C_("Xbox_XBE", "XGD1"),
@@ -790,11 +790,7 @@ int Xbox_XBE::loadFieldData(void)
 		}
 		found++;
 
-		if (media_type_tbl[i]) {
-			oss << media_type_tbl[i];
-		} else {
-			oss << i;
-		}
+		oss << media_type_tbl[i];
 	}
 
 	d->fields->addField_string(C_("Xbox_XBE", "Media Types"),

@@ -22,9 +22,9 @@ const char *lookup_cpu_type(uint32_t cputype)
 	const unsigned int abi = (cputype >> 24);
 	const unsigned int cpu = (cputype & 0xFFFFFF);
 
-	static const char *const cpu_tbl_32[19] = {
+	static const char cpu_tbl_32[19][8] = {
 		// 32-bit CPUs
-		nullptr, "VAX", nullptr, "ROMP",
+		"", "VAX", "", "ROMP",
 		"NS32032", "NS32332", "MC680x0", "i386",
 		"MIPS", "NS32532", "MC98000", "HPPA",
 		"ARM", "MC88000", "SPARC", "i860",
@@ -67,6 +67,9 @@ const char *lookup_cpu_type(uint32_t cputype)
 			break;
 	};
 
+	if (s_cpu && s_cpu[0] == '\0') {
+		s_cpu = nullptr;
+	}
 	return s_cpu;
 }
 

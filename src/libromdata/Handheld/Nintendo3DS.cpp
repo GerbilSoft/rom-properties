@@ -2278,7 +2278,7 @@ int Nintendo3DS::loadFieldData(void)
 			latin1_to_utf8(ncch_exheader->sci.title, sizeof(ncch_exheader->sci.title)));
 
 		// Application type. (resource limit category)
-		static const char *const appl_type_tbl[4] = {
+		static const char appl_type_tbl[4][16] = {
 			// tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_APPLICATION
 			NOP_C_("Nintendo3DS|ApplType", "Application"),
 			// tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_SYS_APPLET

@@ -557,7 +557,7 @@ int CBMCart::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) co
 	}
 
 	// System IDs.
-	static const char *const sys_tbl[] = {
+	static const char sys_tbl[][8] = {
 		"c64", "c128", "cbmII", "vic20", "plus4"
 	};
 	if (static_cast<int>(d->romType) >= ARRAY_SIZE_I(sys_tbl))

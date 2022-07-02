@@ -346,7 +346,7 @@ message_widget_set_message_type(MessageWidget *widget, GtkMessageType messageTyp
 		}
 
 		// Dark CSS classes
-		static const char *const dark_css_class_tbl[] = {
+		static const char dark_css_class_tbl[][24] = {
 			"gsrp_msgw_info_dark",
 			"gsrp_msgw_warning_dark",
 			"gsrp_msgw_question_dark",

@@ -1525,7 +1525,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 	// hard-coded...
 
 	// System IDs.
-	static const char *const sys_tbl[] = {
+	static const char sys_tbl[][8] = {
 		"md", "mcd", "32x", "mcd32x", "pico", "tera"
 	};
 	if ((d->romType & MegaDrivePrivate::ROM_SYSTEM_MASK) >= ARRAY_SIZE(sys_tbl))

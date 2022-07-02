@@ -349,7 +349,7 @@ options_menu_button_set_direction(OptionsMenuButton *widget, GtkArrowType arrowT
 #endif /* USE_GTK_MENU_BUTTON */
 
 #if !GTK_CHECK_VERSION(4,0,0)
-	static const char *const iconName_tbl[] = {
+	static const char iconName_tbl[][20] = {
 		"pan-up-symbolic",
 		"pan-down-symbolic",
 		"pan-start-symbolic",

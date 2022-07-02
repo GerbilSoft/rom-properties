@@ -533,7 +533,7 @@ int ELFPrivate::checkSectionHeaders(void)
 					memcpy(desc, pData, sizeof(desc));
 
 					const uint32_t os_id = elf32_to_cpu(desc[0]);
-					static const char *const os_tbl[] = {
+					static const char os_tbl[][12] = {
 						"Linux", "Hurd", "Solaris", "kFreeBSD", "kNetBSD"
 					};
 
@@ -1260,7 +1260,7 @@ int ELF::loadFieldData(void)
 			}
 
 			// MIPS architecture level.
-			static const char *const mips_levels[] = {
+			static const char mips_levels[][12] = {
 				"MIPS-I", "MIPS-II", "MIPS-III", "MIPS-IV",
 				"MIPS-V", "MIPS32", "MIPS64", "MIPS32 rel2",
 				"MIPS64 rel2", "MIPS32 rel6", "MIPS64 rel6"

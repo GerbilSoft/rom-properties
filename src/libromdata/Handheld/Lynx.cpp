@@ -203,7 +203,7 @@ int Lynx::loadFieldData(void)
 	d->fields->addField_string(C_("Lynx", "Manufacturer"),
 		latin1_to_utf8(romHeader->manufname, sizeof(romHeader->manufname)));
 
-	static const char *const rotation_names[] = {
+	static const char rotation_names[][8] = {
 		NOP_C_("Lynx|Rotation", "None"),
 		NOP_C_("Lynx|Rotation", "Left"),
 		NOP_C_("Lynx|Rotation", "Right"),
