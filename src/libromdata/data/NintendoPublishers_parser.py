@@ -56,7 +56,7 @@ with open(sys.argv[1], 'r') as f_in:
 		# Check if we have an existing entry.
 		publisher = arr[0]
 		if publisher in entry_dict:
-			raise ValueError(f'Duplicate entry for DX10Format {arr[0]}.')
+			raise ValueError(f'Duplicate entry for publisher {arr[0]}.')
 		if publisher > high_publisher:
 			high_publisher = publisher
 
