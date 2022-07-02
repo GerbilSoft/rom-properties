@@ -38,19 +38,6 @@ using std::unique_ptr;
 // Used to find the KDE proxy settings.
 #include <kprotocolmanager.h>
 
-// Qt major version.
-#if QT_VERSION >= QT_VERSION_CHECK(7,0,0)
-#  error Needs updating for Qt7
-#elif QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-#  define QT_MAJOR_STR "6"
-#elif QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-#  define QT_MAJOR_STR "5"
-#elif QT_VERSION >= QT_VERSION_CHECK(4,0,0)
-#  define QT_MAJOR_STR "4"
-#else /* QT_VERSION < QT_VERSION_CHECK(4,0,0) */
-#  error Qt version is too old
-#endif
-
 /**
  * Factory method.
  * References:
@@ -370,7 +357,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const ch
 	}
 
 	// Software.
-	static const char sw[] = "ROM Properties Page shell extension (" RP_KDE_UPPER QT_MAJOR_STR ")";
+	static const char sw[] = "ROM Properties Page shell extension (" RP_KDE_UPPER ")";
 	kv.emplace_back("Software", sw);
 
 	// Local filename.

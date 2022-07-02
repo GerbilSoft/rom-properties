@@ -16,25 +16,12 @@
 #include <QtCore/qglobal.h>
 #include <kfilemetadata/extractorplugin.h>
 
-#if QT_VERSION >= QT_VERSION_CHECK(7,0,0)
-#  error Needs updating for Qt7
-#elif QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-#  define PFN_CREATEEXTRACTORPLUGINKDE_FN createExtractorPluginKF6
-#  define PFN_CREATEEXTRACTORPLUGINKDE_NAME "createExtractorPluginKF6"
-#  define RomPropertiesKDE RomPropertiesKF6
-#elif QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-#  define PFN_CREATEEXTRACTORPLUGINKDE_FN createExtractorPluginKF5
-#  define PFN_CREATEEXTRACTORPLUGINKDE_NAME "createExtractorPluginKF5"
-#  define RomPropertiesKDE RomPropertiesKF5
-#elif QT_VERSION >= QT_VERSION_CHECK(4,0,0)
-#  define PFN_CREATEEXTRACTORPLUGINKDE_FN createExtractorPluginKDE4
-#  define PFN_CREATEEXTRACTORPLUGINKDE_NAME "createExtractorPluginKDE4"
-#  define RomPropertiesKDE RomPropertiesKDE4
-#else /* QT_VERSION < QT_VERSION_CHECK(4,0,0) */
-#  error Qt version is too old
-#endif
+#include "RpQt.hpp"
 
-namespace RomPropertiesKF5 {
+#define PFN_CREATEEXTRACTORPLUGINKDE_FN createExtractorPlugin ## RP_KDE_SUFFIX
+#define PFN_CREATEEXTRACTORPLUGINKDE_NAME "createExtractorPlugin" RP_KDE_UPPER
+
+namespace RomPropertiesKDE {
 
 class ExtractorPlugin final : public ::KFileMetaData::ExtractorPlugin
 {

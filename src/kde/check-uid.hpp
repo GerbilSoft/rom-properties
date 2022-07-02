@@ -15,8 +15,7 @@
 // Prevent running as root.
 #define CHECK_UID() do { \
 	if (getuid() == 0 || geteuid() == 0) { \
-		qCritical("*** rom-properties-" RP_KDE_LOWER "%u does not support running as root.", \
-			static_cast<unsigned int>(QT_VERSION) >> 16); \
+		qCritical("*** rom-properties-" RP_KDE_LOWER " does not support running as root."); \
 		return; \
 	} \
 } while (0)
@@ -25,8 +24,7 @@
 // If running as root, returns errval.
 #define CHECK_UID_RET(errval) do { \
 	if (getuid() == 0 || geteuid() == 0) { \
-		qCritical("*** rom-properties-" RP_KDE_LOWER "%u does not support running as root.", \
-			static_cast<unsigned int>(QT_VERSION) >> 16); \
+		qCritical("*** rom-properties-" RP_KDE_LOWER " does not support running as root."); \
 	} \
 } while (0)
 

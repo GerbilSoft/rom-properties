@@ -16,23 +16,10 @@
 #include <QtCore/qglobal.h>
 #include <KOverlayIconPlugin>
 
-#if QT_VERSION >= QT_VERSION_CHECK(7,0,0)
-#  error Needs updating for Qt7
-#elif QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-#  define PFN_CREATEOVERLAYICONPLUGINKDE_FN createOverlayIconPluginKF6
-#  define PFN_CREATEOVERLAYICONPLUGINKDE_NAME "createOverlayIconPluginKF6"
-#  define RomPropertiesKDE RomPropertiesKF6
-#elif QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-#  define PFN_CREATEOVERLAYICONPLUGINKDE_FN createOverlayIconPluginKF5
-#  define PFN_CREATEOVERLAYICONPLUGINKDE_NAME "createOverlayIconPluginKF5"
-#  define RomPropertiesKDE RomPropertiesKF5
-#elif QT_VERSION >= QT_VERSION_CHECK(4,0,0)
-#  define PFN_CREATEOVERLAYICONPLUGINKDE_FN createOverlayIconPluginKDE4
-#  define PFN_CREATEOVERLAYICONPLUGINKDE_NAME "createOverlayIconPluginKDE4"
-#  define RomPropertiesKDE RomPropertiesKDE4
-#else /* QT_VERSION < QT_VERSION_CHECK(4,0,0) */
-#  error Qt version is too old
-#endif
+#include "RpQt.hpp"
+
+#define PFN_CREATEOVERLAYICONPLUGINKDE_FN createOverlayIconPlugin ## RP_KDE_SUFFIX
+#define PFN_CREATEOVERLAYICONPLUGINKDE_NAME "createOverlayIconPlugin" RP_KDE_UPPER
 
 namespace RomPropertiesKDE {
 

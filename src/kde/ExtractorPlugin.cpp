@@ -40,14 +40,14 @@ using namespace KFileMetaData::Property;
  * rom-properties, and is called by a forwarder library.
  */
 extern "C" {
-	Q_DECL_EXPORT RomPropertiesKF5::ExtractorPlugin *PFN_CREATEEXTRACTORPLUGINKDE_FN(QObject *parent)
+	Q_DECL_EXPORT RomPropertiesKDE::ExtractorPlugin *PFN_CREATEEXTRACTORPLUGINKDE_FN(QObject *parent)
 	{
 		CHECK_UID_RET(nullptr);
-		return new RomPropertiesKF5::ExtractorPlugin(parent);
+		return new RomPropertiesKDE::ExtractorPlugin(parent);
 	}
 }
 
-namespace RomPropertiesKF5 {
+namespace RomPropertiesKDE {
 
 ExtractorPlugin::ExtractorPlugin(QObject *parent)
 	: super(parent)

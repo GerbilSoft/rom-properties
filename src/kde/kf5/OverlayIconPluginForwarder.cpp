@@ -12,10 +12,10 @@
 
 #include "config.kf5.h"
 #include "../check-uid.hpp"
+#include "../RpQt.hpp"
 
 #include "OverlayIconPluginForwarder.hpp"
 #include "../OverlayIconPlugin.hpp"
-#include "../RpQt.hpp"
 
 // C includes.
 #include <dlfcn.h>
