@@ -123,6 +123,18 @@ class ELFPrivate final : public RomDataPrivate
 		const char *build_id_type;	// Build ID type.
 
 		/**
+		 * Byteswap a uint16_t value from ELF to CPU.
+		 * @param x Value to swap.
+		 * @return Swapped value.
+		 */
+		inline uint16_t elf16_to_cpu(uint16_t x)
+		{
+			return (Elf_Header.primary.e_data == ELFDATAHOST)
+				? x
+				: __swab16(x);
+		}
+
+		/**
 		 * Byteswap a uint32_t value from ELF to CPU.
 		 * @param x Value to swap.
 		 * @return Swapped value.
@@ -267,12 +279,22 @@ int ELFPrivate::checkProgramHeaders(void)
 	uint8_t phbuf[sizeof(Elf64_Phdr)];
 
 	if (Elf_Header.primary.e_class == ELFCLASS64) {
-		e_phoff = static_cast<off64_t>(Elf_Header.elf64.e_phoff);
-		e_phnum = Elf_Header.elf64.e_phnum;
+		if (Elf_Header.primary.e_data == ELFDATAHOST) {
+			e_phoff = static_cast<off64_t>(Elf_Header.elf64.e_phoff);
+			e_phnum = Elf_Header.elf64.e_phnum;
+		} else {
+			e_phoff = static_cast<off64_t>(__swab64(Elf_Header.elf64.e_phoff));
+			e_phnum = __swab16(Elf_Header.elf64.e_phnum);
+		}
 		phsize = sizeof(Elf64_Phdr);
 	} else {
-		e_phoff = static_cast<off64_t>(Elf_Header.elf32.e_phoff);
-		e_phnum = Elf_Header.elf32.e_phnum;
+		if (Elf_Header.primary.e_data == ELFDATAHOST) {
+			e_phoff = static_cast<off64_t>(Elf_Header.elf32.e_phoff);
+			e_phnum = Elf_Header.elf32.e_phnum;
+		} else {
+			e_phoff = static_cast<off64_t>(__swab32(Elf_Header.elf32.e_phoff));
+			e_phnum = __swab16(Elf_Header.elf32.e_phnum);
+		}
 		phsize = sizeof(Elf32_Phdr);
 	}
 
@@ -306,7 +328,7 @@ int ELFPrivate::checkProgramHeaders(void)
 		switch (p_type) {
 			case PT_INTERP: {
 				// If the file type is ET_DYN, this is a PIE executable.
-				isPie = (Elf_Header.primary.e_type == ET_DYN);
+				isPie = (elf16_to_cpu(Elf_Header.primary.e_type) == ET_DYN);
 
 				// Get the interpreter name.
 				hdr_info_t info = readProgramHeader(phbuf);
@@ -376,12 +398,22 @@ int ELFPrivate::checkSectionHeaders(void)
 	uint8_t shbuf[sizeof(Elf64_Shdr)];
 
 	if (Elf_Header.primary.e_class == ELFCLASS64) {
-		e_shoff = static_cast<off64_t>(Elf_Header.elf64.e_shoff);
-		e_shnum = Elf_Header.elf64.e_shnum;
+		if (Elf_Header.primary.e_data == ELFDATAHOST) {
+			e_shoff = static_cast<off64_t>(Elf_Header.elf64.e_shoff);
+			e_shnum = Elf_Header.elf64.e_shnum;
+		} else {
+			e_shoff = static_cast<off64_t>(__swab64(Elf_Header.elf64.e_shoff));
+			e_shnum = __swab16(Elf_Header.elf64.e_shnum);
+		}
 		shsize = sizeof(Elf64_Shdr);
 	} else {
-		e_shoff = static_cast<off64_t>(Elf_Header.elf32.e_shoff);
-		e_shnum = Elf_Header.elf32.e_shnum;
+		if (Elf_Header.primary.e_data == ELFDATAHOST) {
+			e_shoff = static_cast<off64_t>(Elf_Header.elf32.e_shoff);
+			e_shnum = Elf_Header.elf32.e_shnum;
+		} else {
+			e_shoff = static_cast<off64_t>(__swab32(Elf_Header.elf32.e_shoff));
+			e_shnum = __swab16(Elf_Header.elf32.e_shnum);
+		}
 		shsize = sizeof(Elf32_Shdr);
 	}
 

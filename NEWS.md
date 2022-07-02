@@ -39,6 +39,8 @@
         value set for clock rate instead of using the system default.
       * Fixes #340, reported by @slp32.
     * Display the ROM header clock rate. If 0, "default" will be shown.
+  * ELF: Some byteswaps were missing, which may have broken reading certain
+    big-endian ELFs on little-endian and vice-versa.
 
 ## v1.9 (released 2022/05/22)
 
