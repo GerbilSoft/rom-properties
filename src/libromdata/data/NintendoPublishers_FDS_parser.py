@@ -4,7 +4,7 @@
 # Converts a text file containing a list of Nintendo third-party publishers (FDS)
 # and prints a string table header.
 #
-# Syntax: NESMappers_Parser.py infile outfile
+# Syntax: NESMappers_parser.py infile outfile
 #
 # File syntax: ID|NameEN|NameJP
 # ID is a two-digit hexadecimal value.

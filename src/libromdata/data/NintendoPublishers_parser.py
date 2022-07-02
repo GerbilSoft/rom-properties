@@ -4,7 +4,7 @@
 # Converts a text file containing a list of Nintendo third-party publishers
 # and prints a string table header.
 #
-# Syntax: NintendoPublishers_Parser.py infile outfile
+# Syntax: NintendoPublishers_parser.py infile outfile
 #
 # File syntax: ID|Name
 # ID is a two-character ID. Valid characters: [0-9A-Z]

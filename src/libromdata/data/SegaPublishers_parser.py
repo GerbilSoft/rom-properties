@@ -4,7 +4,7 @@
 # Converts a text file containing a list of Sega third-party publishers
 # and prints a string table header.
 #
-# Syntax: SegaPublishers_Parser.py infile outfile
+# Syntax: SegaPublishers_parser.py infile outfile
 #
 # File syntax: Number|Name
 # Number is always parsed as decimal.
@@ -130,6 +130,7 @@ for tcode in range(high_tcode+1):
 		f_out.write(f"\t/* Sega Third-Party Publisher {str(tcode)} */\n\t")
 	elif tcode % 8 == 0:
 		f_out.write("\n\t")
+
 	try:
 		entry = entry_dict[tcode]
 	except KeyError:

@@ -4,7 +4,7 @@
 # Converts a text file containing a list of NES mappers
 # and prints a string table header.
 #
-# Syntax: NESMappers_Parser.py infile outfile
+# Syntax: NESMappers_parser.py infile outfile
 #
 # File syntax: Number|Name|Manufacturer|Mirroring
 # Number is always parsed as decimal.
@@ -151,6 +151,7 @@ for mapper in range(high_mapper+1):
 			f_out.write("\n")
 		mapper_str = "{0:0{1}}".format(mapper, 3)
 		f_out.write(f"\t/* Mapper {mapper_str} */\n")
+
 	try:
 		entry = entry_dict[mapper]
 	except KeyError:

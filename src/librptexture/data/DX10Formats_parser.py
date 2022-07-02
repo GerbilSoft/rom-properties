@@ -4,7 +4,7 @@
 # Converts a text file containing a list of DirectX 10 formats
 # and prints a string table header.
 #
-# Syntax: DX10Formats_Parser.py infile outfile
+# Syntax: DX10Formats_parser.py infile outfile
 #
 # File syntax: Number|Name
 # Number is always parsed as decimal.
@@ -130,6 +130,7 @@ for dx10fmt in range(high_dx10fmt+1):
 		f_out.write(f"\t/* DX10 Format {str(dx10fmt)} */\n\t")
 	elif dx10fmt % 8 == 0:
 		f_out.write("\n\t")
+
 	try:
 		entry = entry_dict[dx10fmt]
 	except KeyError:
