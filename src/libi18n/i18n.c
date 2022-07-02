@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libi18n)                          *
  * i18n.c: Internationalization support code.                              *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,7 +25,6 @@
 // Initialized?
 #include "stdboolx.h"
 #include "librpthreads/pthread_once.h"
-static pthread_once_t once_control = PTHREAD_ONCE_INIT;
 static bool i18n_is_init = false;
 
 #ifdef _WIN32
@@ -154,7 +153,8 @@ static void rp_i18n_init_int(void)
  */
 int rp_i18n_init(void)
 {
-	pthread_once(&once_control, rp_i18n_init_int);
+	static pthread_once_t i18n_once_control = PTHREAD_ONCE_INIT;
+	pthread_once(&i18n_once_control, rp_i18n_init_int);
 	return (i18n_is_init ? 0 : -1);
 }
 

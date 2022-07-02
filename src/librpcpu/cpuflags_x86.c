@@ -317,6 +317,6 @@ static void RP_CPU_InitCPUFlags_int(void)
  */
 void RP_C_API RP_CPU_InitCPUFlags(void)
 {
-	static pthread_once_t once_control = PTHREAD_ONCE_INIT;
-	pthread_once(&once_control, RP_CPU_InitCPUFlags_int);
+	static pthread_once_t cpu_once_control = PTHREAD_ONCE_INIT;
+	pthread_once(&cpu_once_control, RP_CPU_InitCPUFlags_int);
 }
