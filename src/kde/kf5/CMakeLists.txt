@@ -191,6 +191,7 @@ IF(BUILD_KF5)
 	SET_TARGET_PROPERTIES(kfilemetadata_${PROJECT_NAME} PROPERTIES PREFIX "")
 	DO_SPLIT_DEBUG(kfilemetadata_${PROJECT_NAME})
 	TARGET_LINK_LIBRARIES(kfilemetadata_${PROJECT_NAME} PRIVATE KF5::KIOCore KF5::FileMetaData)
+	TARGET_LINK_LIBRARIES(kfilemetadata_${PROJECT_NAME} PRIVATE Qt5::Core)
 
 	# Link in libdl if it's required for dlopen().
 	IF(CMAKE_DL_LIBS)
@@ -208,6 +209,7 @@ IF(BUILD_KF5)
 	SET_TARGET_PROPERTIES(overlayiconplugin_${PROJECT_NAME} PROPERTIES PREFIX "")
 	DO_SPLIT_DEBUG(overlayiconplugin_${PROJECT_NAME})
 	TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE KF5::KIOCore KF5::KIOWidgets)
+	TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE Qt5::Core)
 
 	# Link in libdl if it's required for dlopen().
 	IF(CMAKE_DL_LIBS)

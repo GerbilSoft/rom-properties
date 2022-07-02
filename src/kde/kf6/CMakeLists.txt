@@ -62,7 +62,7 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 		IF(NOT KF6_PLUGIN_INSTALL_DIR)
 			MESSAGE(FATAL_ERROR "`qtpaths` isn't working correctly.")
 		ENDIF(NOT KF6_PLUGIN_INSTALL_DIR)
-		# FIXME: Mageia has the Qt path set to "/usr/lib64/qt5" instead of "/usr".
+		# FIXME: Mageia has the Qt path set to "/usr/lib64/qt6" instead of "/usr".
 		# Reference: https://github.com/GerbilSoft/rom-properties/issues/69
 		INCLUDE(ReplaceHardcodedPrefix)
 		REPLACE_HARDCODED_PREFIX(KF6_PLUGIN_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
@@ -84,7 +84,7 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 		SET(KF6_KOVI_PLUGIN_INSTALL_DIR "${KF6_PLUGIN_INSTALL_DIR}/kf6/overlayicon")
 		ENDIF(0)
 
-		# Hard-coded include paths for KF5.
+		# HACK: Hard-coded paths for KF5.
 		# This obviously won't work for KF6, but it's
 		# good enough for testing.
 		INCLUDE_DIRECTORIES(
@@ -96,6 +96,10 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 			"/usr/include/KF5/KIOWidgets"
 			"/usr/include/KF5/KWidgetsAddons"
 			)
+		# HACK: Hard-coded KF6 plugin directories.
+		SET(KF6_PRPD_PLUGIN_INSTALL_DIR "/usr/lib64/qt6/plugins/kf6/propertiesdialog")
+		SET(KF6_KFMD_PLUGIN_INSTALL_DIR "/usr/lib64/qt6/plugins/kf6/kfilemetadata")
+		SET(KF6_KOVI_PLUGIN_INSTALL_DIR "/usr/lib64/qt6/plugins/kf6/overlayicon")
 
 		IF(ENABLE_ACHIEVEMENTS AND Qt6DBus_FOUND)
 			# QtDBus is used for notifications.
@@ -217,11 +221,13 @@ IF(BUILD_KF6)
 	SET_TARGET_PROPERTIES(kfilemetadata_${PROJECT_NAME} PROPERTIES PREFIX "")
 	DO_SPLIT_DEBUG(kfilemetadata_${PROJECT_NAME})
 	TARGET_LINK_LIBRARIES(kfilemetadata_${PROJECT_NAME} PRIVATE KF6::KIOCore KF6::FileMetaData)
+	TARGET_LINK_LIBRARIES(kfilemetadata_${PROJECT_NAME} PRIVATE Qt6::Core)
 
 	# Link in libdl if it's required for dlopen().
 	IF(CMAKE_DL_LIBS)
 		TARGET_LINK_LIBRARIES(kfilemetadata_${PROJECT_NAME} PRIVATE ${CMAKE_DL_LIBS})
 	ENDIF(CMAKE_DL_LIBS)
+	ENDIF(0)
 
 	# OverlayIconPluginForwarder
 	# TODO: Use kcoreaddons_add_plugin() for the JSON?
@@ -233,13 +239,13 @@ IF(BUILD_KF6)
 		)
 	SET_TARGET_PROPERTIES(overlayiconplugin_${PROJECT_NAME} PROPERTIES PREFIX "")
 	DO_SPLIT_DEBUG(overlayiconplugin_${PROJECT_NAME})
-	TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE KF6::KIOCore KF6::KIOWidgets)
+	#TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE KF6::KIOCore KF6::KIOWidgets)
+	TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE Qt6::Core)
 
 	# Link in libdl if it's required for dlopen().
 	IF(CMAKE_DL_LIBS)
 		TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE ${CMAKE_DL_LIBS})
 	ENDIF(CMAKE_DL_LIBS)
-	ENDIF(0)
 
 	# FIXME: Workaround for gcc-5.4.0 LTO bug.
 	# Disabling LTO for the kf6 build if using gcc-5.4.0 or earlier,
