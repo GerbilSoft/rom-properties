@@ -366,7 +366,7 @@ static inline HRESULT getFileName_int_IFileDialog(tstring &ts_ret, bool bSave, H
 			return E_INVALIDARG;
 		}
 		cdfs.pszSpec = token;
-		v_cdfs.emplace_back(cdfs);
+		v_cdfs.emplace_back(std::move(cdfs));
 
 		// Separator 3: Between MIME types and the next display name.
 		// NOTE: May be missing if this is the end of the string
