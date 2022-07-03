@@ -11,9 +11,9 @@
 003|CNROM|Nintendo|Header
 004|TxROM (MMC3), HKROM (MMC6)|Nintendo|MapperHV
 005|ExROM (MMC5)|Nintendo|MapperMMC5
-006|Game Doctor Mode 1|Bung/FFE|MapperHVAB
+006|Front Fareast (Game Doctor) Magic Card 1M/2M RAM cartridge|Bung/FFE|MapperHVAB
 007|AxROM|Nintendo|MapperAB
-008|Game Doctor Mode 4 (GxROM)|Bung/FFE|MapperHVAB
+008|Front Fareast (Game Doctor) GxROM (clone of 006, submapper 4)|Bung/FFE|MapperHVAB
 009|PxROM, PEEOROM (MMC2)|Nintendo|MapperHV
 
 # Mappers 010-019
@@ -74,9 +74,9 @@
 
 # Mappers 050-059
 050|PCB 761214 (FDS conversion)|N-32|Header
-051|||Unknown
+051|11-in-1 Ball Games||Unknown
 052|MMC3 multicart||MapperHV
-053|||Unknown
+053|Supervision 16-in-1||Unknown
 # 054: conflicting information
 054|Novel Diamond 9999999-in-1||Unknown
 # 055: From UNIF
@@ -108,7 +108,7 @@
 # 072: TODO: Jaleco-2?
 072|Jaleco JF-17|Jaleco|Header
 073|VRC3|Konami|Header
-074|43-393/860908C (MMC3 clone)|Waixing|MapperHV
+074|43-393/860908C (MMC3 clone)|Wàixīng|MapperHV
 075|VRC1|Konami|MapperHV
 # 076: TODO: Namco-109?
 076|NAMCOT-3446 (Namcot 108 variant)|Namco|Header
@@ -155,17 +155,17 @@
 # 100: Also used for UNIF
 100|MMC3 variant (hacked ROMs)||MapperHV
 101|Jaleco JF-10 (misdump)|Jaleceo|Header
-102|||Unknown
+102|Drip|Homebrew|Unknown
 103|Doki Doki Panic (FDS conversion)||MapperHV
 104|PEGASUS 5 IN 1||Header
 105|NES-EVENT (MMC1 variant) (Nintendo World Championships 1990)|Nintendo|MapperHVAB
 106|Super Mario Bros. 3 (bootleg)||MapperHV
 107|Magic Dragon|Magicseries|Header
-108|||Unknown
-109|||Unknown
+108|FDS conversions||Unknown
+109|The Great Wall (Sachen 8259D) (duplicate of 137)|Sachen|MapperSachen8259
 
 # Mappers 110-119
-110|||Unknown
+110|Honey Peach (Sachen SA-020A) (duplicate of 243)|Sachen|MapperSachen74LS374N
 # 111: Homebrew
 111|Cheapocabra GTROM 512k flash board|Membler Industries|MapperGTROM
 112|Namcot 118 variant||MapperHV
@@ -173,30 +173,30 @@
 114|MMC3 clone (scrambled registers)||MapperHV
 115|Kǎshèng SFC-02B/-03/-004 (MMC3 clone)|Kǎshèng|MapperHV
 116|SOMARI-P (Huang-1/Huang-2)|Gouder|MapperHVAB
-117|||Unknown
+117|Future Media|Future Media|Unknown
 # 118: TODO: MMC-3+TLS?
 118|TxSROM|Nintendo|MapperTxSROM
 119|TQROM|Nintendo|MapperHV
 
 # Mappers 120-129
-120|||Unknown
+120|Tobidase Daisakusen (FDS conversion)||Unknown
 121|Kǎshèng A9711 and A9713 (MMC3 clone)|Kǎshèng|MapperHV
-122|||Unknown
+122|Sunsoft-1 (duplicate of 184)|Sunsoft|Header
 123|Kǎshèng H2288 (MMC3 clone)|Kǎshèng|MapperHV
-124|||Unknown
+124|Super Game Mega Type III||Unknown
 125|Monty no Doki Doki Daisassō (FDS conversion)|Whirlwind Manu|Header
-126|||Unknown
-127|||Unknown
-128|||Unknown
-129|||Unknown
+126|MMC3 multicart||Unknown
+127|Double Dragon - The Revenge (Japan) (pirated version)||Unknown
+128|Super HiK 4-in-1 multicart||Unknown
+129|(C)NROM-based multicart (duplicate of 058)||MapperHV
 
 # Mappers 130-139
-130|||Unknown
-131|||Unknown
+130|7-in-1 (NS03) multicart (duplicate of 331)||Unknown
+131|MMC3 multicart (duplicate of 205)||MapperHV
 132|TXC 05-00002-010 ASIC|TXC|Header
 133|Jovial Race|Sachen|Header
 134|T4A54A, WX-KB4K, BS-5652 (MMC3 clone)||MapperHV
-135|||Unknown
+135|Sachen 8259A variant (duplicate of 141)|Sachen|MapperSachen8259
 136|Sachen 3011|Sachen|Header
 137|Sachen 8259D|Sachen|MapperSachen8259
 138|Sachen 8259B|Sachen|MapperSachen8259
@@ -227,11 +227,11 @@
 159|Bandai LZ93D50 with 24C01|Bandai|MapperHVAB
 
 # Mappers 160-169
-160|||Unknown
-161|||Unknown
-162|||Unknown
+160|J.Y. Company (simple nametable control) (duplicate of 090)|J.Y. Company|MapperHVAB
+161|Hanjuku Hero (MMC1) (should be 001)|Nintendo|MapperHVAB
+162|Wàixīng FS304|Wàixīng|Unknown
 163|Nanjing|Nanjing|Header
-164|Waixing (unlicensed)|Waixing|Header
+164|PEC-9588 Pyramid Educational Computer|Dōngdá|Unknown
 165|Fire Emblem (unlicensed) (MMC2+MMC3 hybrid)||MapperHV
 166|Subor (variant 1)|Subor|Header
 167|Subor (variant 2)|Subor|Header
@@ -239,16 +239,16 @@
 169|Yuxing|Yuxing|Unknown
 
 # Mappers 170-179
-170|||Unknown
+170|Shiko Game Syu||Unknown
 171|Kaiser KS-7058|Kaiser|Header
 172|Super Mega P-4040||MapperHV
 173|Idea-Tek ET-xx|Idea-Tek|Header
 174|Multicart||MapperHV
-175|||Unknown
-176|Waixing multicart (MMC3 clone)|Waixing|MapperHVAB
+175|Kaiser 15-in-1 multicart|Kaiser|Unknown
+176|Wàixīng multicart (8025) (MMC3 clone)|Wàixīng|MapperHVAB
 177|BNROM variant|Hénggé Diànzǐ|MapperHV
-178|Waixing / Nanjing / Jncota / Henge Dianzi / GameStar|Waixing / Nanjing / Jncota / Henge Dianzi / GameStar|MapperHV
-179|||Unknown
+178|Wàixīng / Nanjing / Jncota / Henge Dianzi / GameStar|Wàixīng / Nanjing / Jncota / Henge Dianzi / GameStar|MapperHV
+179|Wàixīng multicart (8025) (MMC3 clone) (duplicate of 176)|Wàixīng|MapperHVAB
 
 # Mappers 180-189
 180|Crazy Climber (UNROM clone)|Nichibutsu|Header
@@ -269,18 +269,18 @@
 192|MMC3 clone||MapperHV
 193|NTDEC TC-112|NTDEC|MapperHV
 194|MMC3 clone||MapperHV
-195|Waixing FS303 (MMC3 clone)|Waixing|MapperHV
+195|Wàixīng FS303 (MMC3 clone)|Wàixīng|MapperHV
 196|Mario bootleg (MMC3 clone)||MapperHV
 197|Kǎshèng (MMC3 clone)|Kǎshèng|MapperHV /* not sure */
 198|Tūnshí Tiāndì - Sānguó Wàizhuàn||MapperHV
-199|Waixing (clone of either Mapper 004 or 176)|Waixing|MapperHVAB
+199|Wàixīng (clone of either Mapper 004 or 176)|Wàixīng|MapperHVAB
 
 # Mappers 200-209
 200|Multicart||MapperHV
 201|NROM-256 multicart||Header
 202|150-in-1 multicart||MapperHV
 203|35-in-1 multicart||Header
-204|||Unknown
+204|Multicart||Unknown
 205|MMC3 multicart||MapperHV
 206|DxROM (Tengen MIMIC-1, Namcot 118)|Nintendo|Header
 207|Fudou Myouou Den|Taito|MapperNamcot3425
@@ -293,10 +293,10 @@
 211|J.Y. Company (extended nametable control)|J.Y. Company|MapperJY
 212|BMC Super HiK 300-in-1||MapperHV
 213|(C)NROM-based multicart (same as 058)||MapperHV
-214|||Unknown
+214|Super Gun 20-in-1 multicart||Unknown
 215|Sugar Softec (MMC3 clone)|Sugar Softec|MapperHV
-216|||Unknown
-217|||Unknown
+216|Bonza, Magic Jewelry II (Russian; Dendy)||Unknown
+217|500-in-1 / 2000-in-1 multicart||Unknown
 218|Magic Floor|Homebrew|MagicFloor
 219|Kǎshèng A9461 (MMC3 clone)|Kǎshèng|MapperHV
 
@@ -305,7 +305,7 @@
 220|Summer Carnival '92 - Recca|Naxat Soft|Unknown
 221|NTDEC N625092|NTDEC|MapperHV
 222|CTC-31 (VRC2 + 74xx)||MapperHVAB
-223|||Unknown
+223|Wàixīng (clone of either Mapper 004 or 176) (duplicate of 199)|Wàixīng|MapperHVAB
 # 224: TODO mirroring
 224|Jncota KT-008|Jncota|Unknown
 225|Multicart||MapperHV
@@ -323,7 +323,7 @@
 235|Golden Game 150-in-1 multicart||Mapper235
 236|Realtec 8155|Realtec|MapperHV
 237|Teletubbies 420-in-1 multicart||MapperHV
-238|||Unknown
+238|Contra Fighter (G.I. Joe w/ SF2 characters hack)||Unknown
 239|||Unknown
 
 # Mappers 240-249
@@ -331,18 +331,18 @@
 241|BNROM variant (similar to 034)||Header
 242|Unlicensed||MapperHV
 243|Sachen SA-020A|Sachen|MapperSachen74LS374N
-244|||Unknown
+244|Decathlon|C&E|Unknown
 245|MMC3 clone||MapperHV
 246|Fēngshénbǎng: Fúmó Sān Tàizǐ (C&E)|C&E|Header
 247|||Unknown
 248|Kǎshèng SFC-02B/-03/-004 (MMC3 clone) (incorrect assignment; should be 115)|Kǎshèng|MapperHV
-249|||Unknown
+249|Wàixīng MMC3 TKROM clone with address scrambling|Wàixīng|Unknown
 
 # Mappers 250-255
 250|Nitra (MMC3 clone)|Nitra|MapperHV
-251|||Unknown
-252|Waixing - Sangokushi|Waixing|MapperHVAB
-253|Dragon Ball Z: Kyōshū! Saiya-jin (VRC4 clone)|Waixing|MapperHVAB
+251|MMC3 multicart (GA23C) (duplicate of 045)||MapperHV
+252|Wàixīng - Sangokushi|Wàixīng|MapperHVAB
+253|Dragon Ball Z: Kyōshū! Saiya-jin (VRC4 clone)|Wàixīng|MapperHVAB
 254|Pikachu Y2K of crypted ROMs||MapperHV
 255|110-in-1 multicart (same as 225)||MapperHV
 
@@ -422,7 +422,7 @@
 
 # Mappers 310-319
 310|Monty no Doki Doki Daisassō (FDS conversion) (same as 125)|Whirlwind Manu|Unknown
-311|||Unknown
+311|Super Mario Bros. 2 pirate cart (duplicate of 043)||Unknown
 312|Highway Star (bootleg)|Kaiser|Unknown
 313|Reset-based multicart (MMC3)||Unknown
 314|Y2K multicart||Unknown
@@ -430,16 +430,14 @@
 316|||Unknown
 317|||Unknown
 318|||Unknown
-319|||Unknown
+319|HP-898F / KD-7/9-E boards||Unknown
 
 # Mappers 320-329
 320|Super HiK 6-in-1 A-030 multicart||Unknown
 321|||Unknown
 322|35-in-1 (K-3033) multicart||Unknown
-# 323: Homebrew
-323|Farid's homebrew 8-in-1 SLROM multicart||Unknown
-# 324: Homebrew
-324|Farid's homebrew 8-in-1 UNROM multicart||Unknown
+323|Farid's homebrew 8-in-1 SLROM multicart|Homebrew|Unknown
+324|Farid's homebrew 8-in-1 UNROM multicart|Homebrew|Unknown
 325|Super Mali Splash Bomb (bootleg)||Unknown
 326|Contra/Gryzor (bootleg)||Unknown
 327|6-in-1 multicart||Unknown
@@ -461,7 +459,6 @@
 # Mappers 340-349
 340|35-in-1 multicart||Unknown
 341|Simple 4-in-1 multicart||Unknown
-# 342: Homebrew
 342|COOLGIRL multicart (Homebrew)|Homebrew|Unknown
 343|||Unknown
 344|Kuai Da Jin Ka Zhong Ji Tiao Zhan 3-in-1 multicart||Unknown
@@ -474,7 +471,7 @@
 # Mappers 350-359
 350|Super 15-in-1 Game Card multicart||Unknown
 351|9-in-1 multicart|J.Y. Company / Techline|Unknown
-352|||Unknown
+352|Kaiser 4-in-1 multicart (KS106C)|Kaiser|Unknown
 353|92 Super Mario Family multicart||Unknown
 354|250-in-1 multicart||Unknown
 355|黃信維 3D-BLOCK||Unknown
@@ -519,9 +516,72 @@
 388|YY841145C / YY850835C|J.Y. Company|Unknown
 389|Caltron 9-in-1 multicart|Caltron|Unknown
 
-# Mappers 390-391
+# Mappers 390-399
 390|Realtec 8031|Realtec|Unknown
 391|NC7000M (MMC3 clone)||Unknown
+392|||Unknown
+393|||Unknown
+394|Realtec HSK007 multicart|Realtec|Unknown
+395|Realtec 8210 multicart (MMC3-compatible)|Realtec|Unknown
+396|YY850437C / Realtec GN-51 multicart||Unknown
+397|1996 Soccer 6-in-1 (JY-082)|J.Y. Company|Unknown
+398|YY840820C|J.Y. Company|Unknown
+399|Star Versus|Homebrew|Unknown
+
+# Mappers 400-409
+400|8-BIT XMAS 2017|retroUSB|Unknown
+401|KC885 multicart||Unknown
+402|J-2282 multicart||Unknown
+403|89433||Unknown
+404|JY012005 MMC1-based multicart|J.Y. Company|Unknown
+405|Game designed for UMC UM6578|UMC|Unknown
+406|Haradius Zero|Homebrew|Unknown
+407|Win, Lose, or Draw Plug-n-Play (VT03)||Unknown
+408|Konami Collector's Series Advance Arcade Plug & Play|Konami|Unknown
+409|DPCMcart|retroUSB|Unknown
+
+# Mappers 410-419
+410|Super 8-in-1 multicart (JY-302)|J.Y. Company|Unknown
+411|A88S-1 multicart (MMC3-compatible)||Unknown
+412|Intellivision 10-in-1 Plug 'n Play 2nd Edition|Techno Source|Unknown
+413|Super Russian Roulette|Homebrew|Unknown
+414|9999999-in-1 multicart||Unknown
+415|Lucky Rabbit (0353) (FDS conversion of Roger Rabbit)||Unknown
+416|4-in-1 multicart||Unknown
+417|Batman: The Video Game (Fine Studio bootleg)|Fine Studio|Unknown
+418|820106-C / 821007C (LH42)||Unknown
+419|TK-8007 MCU (VT03)|Taikee|Unknown
+
+# Mappers 420-429
+420|A971210|Kasheng|Unknown
+421|SC871115C|J.Y. Company|Unknown
+422|BS-300 / BS-400 / BS-4040 multicarts||Unknown
+423|Lexibook Compact Cyber Arcade (VT369)|Lexibook|Unknown
+424|Lexibook Retro TV Game Console (VT369)|Lexibook|Unknown
+425|Cube Tech VT369 handheld consoles|Cube Tech|Unknown
+426|VT369-based handheld console with 256-byte serial ROM||Unknown
+427|VT369-based handheld console with I²C protection chip||Unknown
+428|(C)NROM multicart||Unknown
+429|Milowork FCFC1 flash cartridge (A mode)|Milowork|Unknown
+
+# Mappers 430-439
+430|831031C/T-308 multicart (MMC3-based)||Unknown
+431|Realtec GN-91B|Realtec|Unknown
+432|Realtec 8090 (MMC3-based)|Realtec|Unknown
+433|NC-20MB PCB; 20-in-1 multicart (CA-006)||Unknown
+434|S-009||Unknown
+435|||Unknown
+436|||Unknown
+437|||Unknown
+438|||Unknown
+439|||Unknown
+
+# Mappers 440-449
+440|||Unknown
+441|||Unknown
+442|||Unknown
+443|NC3000M multicart||Unknown
+444|NC7000M multicart (MMC3-compatible)||Unknown
 
 ### NES 2.0 Plane 2 [512-767] ###
 
@@ -548,13 +608,13 @@
 
 # Mappers 530-539
 530|Super Mario Bros. Pocker Mali (VRC4f clone)||Unknown
-531|||Unknown
+531|LittleCom PC-95|Asder|Unknown
 532|||Unknown
 533|Sachen 3014|Sachen|Unknown
 534|2-in-1 Sudoku/Gomoku (NJ064) (MMC3 clone)||Unknown
 535|Nazo no Murasamejō (FDS conversion)|Whirlwind Manu|Unknown
-536|Waixing FS303 (MMC3 clone) (same as 195)|Waixing|Unknown
-537|Waixing FS303 (MMC3 clone) (same as 195)|Waixing|Unknown
+536|Wàixīng FS303 (MMC3 clone) (same as 195)|Wàixīng|Unknown
+537|Wàixīng FS303 (MMC3 clone) (same as 195)|Wàixīng|Unknown
 538|60-1064-16L||Unknown
 539|Kid Icarus (FDS conversion)||Unknown
 
@@ -564,14 +624,26 @@
 541|LittleCom 160-in-1 multicart||Unknown
 542|World Hero hack (VRC4 clone)||Unknown
 543|5-in-1 (CH-501) multicart (MMC1 clone)||Unknown
-544|Waixing FS306|Waixing|Unknown
+544|Wàixīng FS306|Wàixīng|Unknown
 545|||Unknown
 546|||Unknown
 547|Konami QTa adapter (VRC5)|Konami|Unknown
 548|CTC-15|Co Tung Co.|Unknown
 549|||Unknown
 
-# Mappers 550-552
-550|||Unknown
+# Mappers 550-559
+550|JY820845C|J.Y. Company|Unknown
 551|Jncota RPG re-release (variant of 178)|Jncota|Unknown
 552|Taito X1-017 (correct PRG ROM bank ordering)|Taito|Unknown
+553|Sachen 3013|Sachen|Unknown
+554|Kaiser KS-7010|Kaiser|Unknown
+555|Nintendo Campus Challenge 1991 (RetroUSB version)|Nintendo|Unknown
+556|JY-215 multicart|J.Y. Company|Unknown
+557|Moero TwinBee: Cinnamon-hakase o Sukue! (FDS conversion)|Kaiser|Unknown
+558|YC-03-09|Yànchéng|Unknown
+559|||Unknown
+
+# Mappers 560-569
+560|||Unknown
+561|Bung Super Game Doctor 2M/4M RAM cartridge|Bung/FFE|Unknown
+562|Venus Turbo Game Doctor 4+/6+/6M RAM cartridge||Unknown

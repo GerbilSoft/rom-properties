@@ -120,6 +120,18 @@ const struct NESSubmapperInfo mmc3_submappers[] = {
 	{4, 0,      0, "MMC3A", NESMirroring::Unknown},
 };
 
+// Mapper 006: Game Doctor Mode 1
+const struct NESSubmapperInfo mapper006_submappers[] = {
+	{0, 0,   0, "UNROM", NESMirroring::Unknown},
+	{1, 0,   0, "UN1ROM + CHRSW", NESMirroring::Unknown},
+	{2, 0,   0, "UOROM", NESMirroring::Unknown},
+	{3, 0,   0, "Reverse UOROM + CHRSW", NESMirroring::Unknown},
+	{4, 0,   0, "GNROM", NESMirroring::Unknown},
+	{5, 0,   0, "CNROM-256", NESMirroring::Unknown},
+	{6, 0,   0, "CNROM-128", NESMirroring::Unknown},
+	{7, 0,   0, "NROM-256", NESMirroring::Unknown},
+};
+
 // Mapper 016: Bandai FCG-x
 const struct NESSubmapperInfo bandai_fcgx_submappers[] = {
 	{1, 0, 159, "LZ93D50 with 24C01", NESMirroring::Unknown},
@@ -196,6 +208,14 @@ const struct NESSubmapperInfo cony_yoko_submappers[] = {
 	{2, 0,   0, "1 KiB CHR-ROM banking, 32 KiB banked WRAM", NESMirroring::Unknown},
 };
 
+// Mapper 108: FDS conversions
+const struct NESSubmapperInfo mapper108_submappers[] = {
+	{1, 0,   0, "DH-08: Bubble Bobble (LH31)", NESMirroring::Unknown},
+	{2, 0,   0, "Bubble Bobble (LH31) (CHR-RAM)", NESMirroring::Unknown},
+	{3, 0,   0, "Falsion (LH54); Meikyuu Jiin Dababa (LH28)", NESMirroring::Unknown},
+	{4, 0,   0, "Pro Wrestling (LE05)", NESMirroring::Unknown},
+};
+
 // Mapper 114: Sugar Softec/Hosenkan
 const struct NESSubmapperInfo mapper114_submappers[] = {
 	{0, 0,   0, "MMC3 registers: 0,3,1,5,6,7,2,4", NESMirroring::Unknown},
@@ -253,6 +273,19 @@ const struct NESSubmapperInfo mapper313_submappers[] = {
 	{4, 0,   0, "Game size: 256 KiB PRG (first game); 128 KiB PRG (other games); 128 KiB CHR", NESMirroring::Unknown},
 };
 
+// Mapper 407: Win, Lose, or Draw Plug-n-Play (VT03)
+const struct NESSubmapperInfo mapper407_submappers[] = {
+	{15, 0,   0, "Opcode encryption (see mapper 256, submapper 15)", NESMirroring::Unknown},
+};
+
+// Mapper 444: NC7000M multicart (MMC3-compatible)
+const struct NESSubmapperInfo mapper444_submappers[] = {
+	{0, 0,   0, "CHR A17 to $6000.0; CHR A18 to $6000.1", NESMirroring::Unknown},
+	{1, 0,   0, "CHR A17 to MMC3 CHR A17; CHR A18 to $6000.1", NESMirroring::Unknown},
+	{0, 0,   0, "CHR A17 to $6000.0; CHR A18 to $6000.4", NESMirroring::Unknown},
+	{1, 0,   0, "CHR A17 to MMC3 CHR A17; CHR A18 to $6000.4", NESMirroring::Unknown},
+};
+
 /**
  * NES 2.0 submapper list.
  *
@@ -273,6 +306,7 @@ const NESSubmapperEntry submappers[] = {
 	NES2_SUBMAPPER(  2, discrete_logic_submappers),		// UxROM
 	NES2_SUBMAPPER(  3, discrete_logic_submappers),		// CNROM
 	NES2_SUBMAPPER(  4, mmc3_submappers),			// MMC3
+	NES2_SUBMAPPER(  6, mapper006_submappers),		// Game Doctor
 	NES2_SUBMAPPER(  7, discrete_logic_submappers),		// AxROM
 	NES2_SUBMAPPER( 16, bandai_fcgx_submappers),		// FCG-x
 	NES2_SUBMAPPER( 19, namco_129_164_submappers),		// Namco 129/164
@@ -285,6 +319,7 @@ const NESSubmapperEntry submappers[] = {
 	NES2_SUBMAPPER( 71, codemasters_submappers),		// Codemasters
 	NES2_SUBMAPPER( 78, mapper078_submappers),
 	NES2_SUBMAPPER( 83, cony_yoko_submappers),		// Cony/Yoko
+	NES2_SUBMAPPER(108, mapper108_submappers),		// FDS conversions
 	NES2_SUBMAPPER(114, mapper114_submappers),
 	NES2_SUBMAPPER(197, mapper197_submappers),		// Kǎshèng (MMC3 clone)
 	NES2_SUBMAPPER(210, namcot_175_340_submappers),		// Namcot 175, 340
@@ -293,6 +328,10 @@ const NESSubmapperEntry submappers[] = {
 	NES2_SUBMAPPER(256, onebus_submappers),			// OneBus Famiclones
 	NES2_SUBMAPPER(268, smd132_smd133_submappers),		// SMD132/SMD133
 	NES2_SUBMAPPER(313, mapper313_submappers),		// Reset-based multicart (MMC3)
+	NES2_SUBMAPPER(407, mapper407_submappers),		// Win, Lose, or Draw Plug-n-Play (VT03)
+	NES2_SUBMAPPER(444, mapper444_submappers),		// NC7000M multicart (MMC3-compatible)
+	NES2_SUBMAPPER(561, mapper006_submappers),		// Bung Super Game Doctor
+	NES2_SUBMAPPER(562, mapper006_submappers),		// Venus Turbo Game Doctor
 
 	{0, 0, nullptr}
 };
