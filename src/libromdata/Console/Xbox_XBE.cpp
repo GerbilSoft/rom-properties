@@ -713,7 +713,7 @@ int Xbox_XBE::loadFieldData(void)
 	// TODO: Consolidate implementations into a shared function.
 	string tid_str;
 	char hexbuf[4];
-	if (xbeCertificate->title_id.a >= 0x20) {
+	if (ISUPPER(xbeCertificate->title_id.a)) {
 		tid_str += (char)xbeCertificate->title_id.a;
 	} else {
 		tid_str += "\\x";
@@ -721,7 +721,7 @@ int Xbox_XBE::loadFieldData(void)
 			(uint8_t)xbeCertificate->title_id.a);
 		tid_str.append(hexbuf, 2);
 	}
-	if (xbeCertificate->title_id.b >= 0x20) {
+	if (ISUPPER(xbeCertificate->title_id.b)) {
 		tid_str += (char)xbeCertificate->title_id.b;
 	} else {
 		tid_str += "\\x";

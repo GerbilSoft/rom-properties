@@ -963,7 +963,7 @@ int Xbox360_STFS::loadFieldData(void)
 	// TODO: Consolidate implementations into a shared function.
 	string tid_str;
 	char hexbuf[4];
-	if (stfsMetadata->title_id.a >= 0x20) {
+	if (ISUPPER(stfsMetadata->title_id.a)) {
 		tid_str += (char)stfsMetadata->title_id.a;
 	} else {
 		tid_str += "\\x";
@@ -971,7 +971,7 @@ int Xbox360_STFS::loadFieldData(void)
 			(uint8_t)stfsMetadata->title_id.a);
 		tid_str.append(hexbuf, 2);
 	}
-	if (stfsMetadata->title_id.b >= 0x20) {
+	if (ISUPPER(stfsMetadata->title_id.b)) {
 		tid_str += (char)stfsMetadata->title_id.b;
 	} else {
 		tid_str += "\\x";
