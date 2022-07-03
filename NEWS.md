@@ -17,6 +17,10 @@
     * IFUNC resolvers now use gcc's built-in CPU flag functions because
       the regular rom-properties functions aren't available due to PLT
       shenanigans. IFUNC now requires gcc-4.8+ or clang-6.0+.
+  * Many large string tables have been converted from arrays of C strings
+    to a single string with an offset table using Python scripts. This
+    reduces memory usage by eliminating one pointer per string, and it
+    reduces the number of relocations, which improves startup time.
 
 * New parsers:
   * Atari7800: Atari 7800 ROM images with an A78 header.
