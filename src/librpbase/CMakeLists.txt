@@ -177,19 +177,6 @@ IF(CPU_i386 OR CPU_amd64)
 ENDIF()
 UNSET(arch)
 
-# Aligned malloc() functions.
-# NOTE: MinGW-w64 only has _aligned_malloc().
-# It doesn't even have inline function wrappers
-# for the other functions.
-CHECK_SYMBOL_EXISTS(_aligned_malloc	"malloc.h"		HAVE_MSVC_ALIGNED_MALLOC)
-# FIXME: aligned_alloc isn't working on properly on Mac OS.
-#CHECK_SYMBOL_EXISTS(aligned_alloc	"stdlib.h"		HAVE_ALIGNED_ALLOC)
-CHECK_SYMBOL_EXISTS(posix_memalign	"stdlib.h"		HAVE_POSIX_MEMALIGN)
-CHECK_SYMBOL_EXISTS(memalign		"stdlib.h;malloc.h"	HAVE_MEMALIGN)
-IF(NOT HAVE_MSVC_ALIGNED_MALLOC AND NOT HAVE_ALIGNED_ALLOC AND NOT HAVE_POSIX_MEMALIGN AND NOT HAVE_MEMALIGN)
-	MESSAGE(FATAL_ERROR "System does not have an aligned malloc() function.")
-ENDIF()
-
 # Write the config.h files.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.lib${PROJECT_NAME}.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.lib${PROJECT_NAME}.h")
 

@@ -24,8 +24,8 @@
  * aligned malloc().
  */
 
-#include "librpbase/config.librpbase.h"
-#include "../force_inline.h"
+#include "config.libc.h"
+#include "force_inline.h"
 
 /**
  * This header defines two functions if they aren't present:

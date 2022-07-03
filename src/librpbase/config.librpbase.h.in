@@ -86,20 +86,6 @@
 # define XML_IS_DLL 1
 #endif
 
-/** Aligned malloc() functions. **/
-
-/* Define to 1 if you have the MSVC-specific `_aligned_malloc` function. */
-#cmakedefine HAVE_MSVC_ALIGNED_MALLOC 1
-
-/* Define to 1 if you have the `aligned_alloc` function. */
-#cmakedefine HAVE_ALIGNED_ALLOC 1
-
-/* Define to 1 if you have the `posix_memalign` function. */
-#cmakedefine HAVE_POSIX_MEMALIGN 1
-
-/* Define to 1 if you have the `memalign` function. */
-#cmakedefine HAVE_MEMALIGN 1
-
 /** iconv **/
 
 /* Define to 1 if you have iconv() in either libc or libiconv. */
