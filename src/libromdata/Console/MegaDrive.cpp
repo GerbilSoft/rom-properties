@@ -1543,6 +1543,16 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 		? pRomHeader->early.serial_number
 		: pRomHeader->serial_number);
 
+	// Check for "generic" serial numbers used by some prototypes.
+	// We can't easily look up these ROMs at the moment.
+	if (!memcmp(s_serial_number, "GM 00000000-00", 14) ||
+	    !memcmp(s_serial_number, "GM XXXXXXXX-XX", 14) ||
+	    !memcmp(s_serial_number, "GM MK-0000 -00", 14))
+	{
+		// Generic serial number.
+		return -ENOENT;
+	}
+
 	// Make sure the ROM serial number is valid.
 	// It should start with one of the following:
 	// - "GM ": Game
