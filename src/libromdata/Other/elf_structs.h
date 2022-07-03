@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * elf_structs.h: Executable and Linkable Format structures.               *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,6 +11,9 @@
 // - http://www.mcs.anl.gov/OpenAD/OpenADFortTkExtendedDox/elf_8h_source.html
 // - https://github.com/file/file/blob/master/magic/Magdir/elf
 // - http://www.sco.com/developers/gabi/latest/ch5.pheader.html
+
+// For Sony PS3 SELFs:
+// - https://www.psdevwiki.com/ps3/SELF_-_SPRX
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_ELF_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_ELF_STRUCTS_H__
@@ -114,6 +117,7 @@ typedef enum {
 	ELFOSABI_OPENBSD	= 12,	/* OpenBSD.  */
 	ELFOSABI_ARM_AEABI	= 64,	/* ARM EABI */
 	ELFOSABI_ARM		= 97,	/* ARM */
+	ELFOSABI_CELL_LV2	= 102,	/* Cell LV2 */
 	ELFOSABI_CAFEOS		= 202,	/* Nintendo Wii U */
 	ELFOSABI_STANDALONE	= 255,	/* Standalone (embedded) application */
 } Elf_OSABI;
@@ -133,6 +137,22 @@ typedef enum {
 	ET_HIOS		= 0xFEFF,	/* OS-specific range end */
 	ET_LOPROC	= 0xFF00,	/* Processor-specific range start */
 	ET_HIPROC	= 0xFFFF,	/* Processor-specific range end */
+
+	// Sony PS3 SELFs
+	// Reference: https://www.psdevwiki.com/ps3/SELF_-_SPRX
+	ET_SCE_EXEC		= 0xFE00,	/* SCE Executable - PRX2 */
+	ET_SCE_RELEXEC		= 0xFE04,	/* SCE Relocatable Executable - PRX2 */
+	ET_SCE_STUBLIB		= 0xFE0C,	/* SCE SDK Stubs */
+	ET_SCE_DYNEXEC		= 0xFE10,	/* SCE EXEC_ASLR (PS4 Executable with ASLR) */
+	ET_SCE_DYNAMIC		= 0xFE18,	/* ? */
+	ET_SCE_IOPRELEXEC	= 0xFF80,	/* SCE IOP Relocatable Executable */
+	ET_SCE_IOPRELEXEC2	= 0xFF81,	/* SCE IOP Relocatable Executable Version 2 */
+	ET_SCE_EERELEXEC	= 0xFF90,	/* SCE EE Relocatable Executable */
+	ET_SCE_EERELEXEC2	= 0xFF91,	/* SCE EE Relocatable Executable Version 2 */
+	ET_SCE_PSPRELEXEC	= 0xFFA0,	/* SCE PSP Relocatable Executable */
+	ET_SCE_PPURELEXEC	= 0xFFA4,	/* SCE PPU Relocatable Executable */
+	ET_SCE_ARMRELEXEC	= 0xFFA5,	/* ?SCE ARM Relocatable Executable (PSVita FW <=0.931) */
+	ET_SCE_PSPOVERLAY	= 0xFFA8,	/* ? */
 } Elf_Type;
 
 /**

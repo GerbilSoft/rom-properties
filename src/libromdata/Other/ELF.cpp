@@ -970,7 +970,9 @@ ELF::ELF(IRpFile *file)
 				break;
 
 			// Special cases
-			case 0xFF80: {
+			// TODO: Add more PlayStation variants.
+			case ET_SCE_IOPRELEXEC:
+			case ET_SCE_IOPRELEXEC2: {
 				// PS2 IOP Relocatable Executable
 				// This is basically a shared library.
 				// TODO: Use something like "isWiiU"?

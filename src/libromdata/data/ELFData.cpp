@@ -115,6 +115,7 @@ const char *lookup_osabi(uint8_t osabi)
 	switch (osabi) {
 		case ELFOSABI_ARM_AEABI:	return "ARM EABI";
 		case ELFOSABI_ARM:		return "ARM";
+		case ELFOSABI_CELL_LV2:		return "Cell LV2";
 		case ELFOSABI_CAFEOS:		return "Cafe OS";	// Wii U
 		case ELFOSABI_STANDALONE:	return "Embedded";
 		default:			break;
