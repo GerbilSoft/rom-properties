@@ -408,7 +408,7 @@ const NESSubmapperInfo *lookup_nes2_submapper_info(int mapper, int submapper)
 
 	// Do a binary search in submappers[].
 	const NESSubmapperEntry key = { static_cast<uint16_t>(mapper), 0, nullptr };
-	const NESSubmapperEntry *res =
+	const NESSubmapperEntry *const res =
 		static_cast<const NESSubmapperEntry*>(bsearch(&key,
 			submappers,
 			ARRAY_SIZE(submappers)-1,
@@ -418,8 +418,11 @@ const NESSubmapperInfo *lookup_nes2_submapper_info(int mapper, int submapper)
 		return nullptr;
 
 	// Do a binary search in res->info.
-	const NESSubmapperInfo key2 = { static_cast<uint8_t>(submapper), 0, 0, nullptr, NESMirroring::Unknown };
-	const NESSubmapperInfo *res2 =
+	const NESSubmapperInfo key2 = {
+		static_cast<uint8_t>(submapper), 0, 0,
+		nullptr, NESMirroring::Unknown
+	};
+	const NESSubmapperInfo *const res2 =
 		static_cast<const NESSubmapperInfo*>(bsearch(&key2,
 			res->info, res->info_size,
 			sizeof(NESSubmapperInfo),
@@ -548,7 +551,7 @@ int tnesMapperToInesMapper(int tnes_mapper)
  */
 const char *lookup_nes2_submapper(int mapper, int submapper)
 {
-	const NESSubmapperInfo *ent = lookup_nes2_submapper_info(mapper, submapper);
+	const NESSubmapperInfo *const ent = lookup_nes2_submapper_info(mapper, submapper);
 	// TODO: Return the "deprecated" value?
 	return ent ? ent->desc : nullptr;
 }
@@ -563,8 +566,8 @@ const char *lookup_nes2_submapper(int mapper, int submapper)
  */
 const char *lookup_ines_mirroring(int mapper, int submapper, bool vert, bool four)
 {
-	const NESMapperEntry *ent1 = lookup_ines_info(mapper);
-	const NESSubmapperInfo *ent2 = lookup_nes2_submapper_info(mapper, submapper);
+	const NESMapperEntry *const ent1 = lookup_ines_info(mapper);
+	const NESSubmapperInfo *const ent2 = lookup_nes2_submapper_info(mapper, submapper);
 	NESMirroring mirror = ent1 ? ent1->mirroring : NESMirroring::Unknown;
 	NESMirroring submapper_mirror = ent2 ? ent2->mirroring :NESMirroring::Unknown;
 
