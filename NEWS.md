@@ -21,6 +21,9 @@
 * New parsers:
   * Atari7800: Atari 7800 ROM images with an A78 header.
 
+* New parser features:
+  * ELF: OSABI 102 (Cell LV2) is now detected.
+
 * Bug fixes:
   * Lua: Fix a crash on Windows where systemName() sometimes returned
     an invalid pointer when using the GUI frontend.
