@@ -1547,7 +1547,11 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 	// We can't easily look up these ROMs at the moment.
 	if (!memcmp(s_serial_number, "GM 00000000", 11) ||
 	    !memcmp(s_serial_number, "GM XXXXXXXX", 11) ||
-	    !memcmp(s_serial_number, "GM MK-0000 ", 11))
+	    !memcmp(s_serial_number, "GM MK-0000 ", 11) ||
+	    !memcmp(s_serial_number, "GM T-000000", 11) ||
+	    !memcmp(s_serial_number, "GM T-00000 ", 11) ||
+	    !memcmp(s_serial_number, "GM T000000" , 10) ||
+	    !memcmp(s_serial_number, "GM T-XXXXX ", 11))
 	{
 		// Generic serial number.
 		return -ENOENT;
