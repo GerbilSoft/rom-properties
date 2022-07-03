@@ -13,6 +13,7 @@
 namespace LibRomData { namespace ELFData {
 
 #include "ELFMachineTypes_data.h"
+#include "ELF_OSABI_data.h"
 
 struct ELFMachineType {
 	uint16_t cpu;
@@ -58,34 +59,6 @@ static const ELFMachineType ELFMachineTypes_other[] = {
 	{0, nullptr}
 };
 
-// ELF OS ABI names.
-// Reference: https://github.com/file/file/blob/master/magic/Magdir/elf
-static const char *const osabi_names[] = {
-	// 0
-	"UNIX System V",
-	"HP-UX",
-	"NetBSD",
-	"GNU/Linux",
-	"GNU/Hurd",
-	"86Open",
-	"Solaris",
-	"Monterey",
-	"IRIX",
-	"FreeBSD",
-
-	// 10
-	"Tru64",
-	"Novell Modesto",
-	"OpenBSD",
-	"OpenVMS",
-	"HP NonStop Kernel",
-	"AROS Research Operating System",
-	"FenixOS",
-	"Nuxi CloudABI",
-
-	nullptr
-};
-
 /**
  * bsearch() comparison function for ELFMachineType.
  * @param a
@@ -110,7 +83,7 @@ static int RP_C_API ELFMachineType_compar(const void *a, const void *b)
  */
 const char *lookup_cpu(uint16_t cpu)
 {
-	if (cpu < ARRAY_SIZE(ELFMachineTypes_offtbl)) {
+	if (likely(cpu < ARRAY_SIZE(ELFMachineTypes_offtbl))) {
 		const unsigned int offset = ELFMachineTypes_offtbl[cpu];
 		return (likely(offset != 0) ? &ELFMachineTypes_strtbl[offset] : nullptr);
 	}
@@ -134,9 +107,9 @@ const char *lookup_cpu(uint16_t cpu)
  */
 const char *lookup_osabi(uint8_t osabi)
 {
-	if (osabi < ARRAY_SIZE(osabi_names)-1) {
-		// OS ABI ID is in the array.
-		return osabi_names[osabi];
+	if (likely(osabi < ARRAY_SIZE(ELF_OSABI_offtbl))) {
+		const unsigned int offset = ELF_OSABI_offtbl[osabi];
+		return (likely(offset != 0) ? &ELF_OSABI_strtbl[offset] : nullptr);
 	}
 
 	switch (osabi) {

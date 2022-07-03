@@ -1,0 +1,27 @@
+# ELF OS ABIs
+# Format: ID|Name
+
+# References:
+# - https://github.com/file/file/blob/master/magic/Magdir/elf
+
+# 0
+0|UNIX System V
+1|HP-UX
+2|NetBSD
+3|GNU/Linux
+4|GNU/Hurd
+5|86Open
+6|Solaris
+7|Monterey
+8|IRIX
+9|FreeBSD
+
+# 10
+10|Tru64
+11|Novell Modesto
+12|OpenBSD
+13|OpenVMS
+14|HP NonStop Kernel
+15|AROS Research Operating System
+16|FenixOS
+17|Nuxi CloudABI
