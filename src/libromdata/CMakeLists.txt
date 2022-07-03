@@ -265,6 +265,7 @@ SET(${PROJECT_NAME}_H
 
 	data/AmiiboData.hpp
 	data/CBMData.hpp
+	data/CBM_C64_Cartridge_Type_data.h
 	data/ELFData.hpp
 	data/ELFMachineTypes_data.h
 	data/ELF_OSABI_data.h

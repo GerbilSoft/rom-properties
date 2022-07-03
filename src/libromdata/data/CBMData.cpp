@@ -12,51 +12,7 @@
 namespace LibRomData { namespace CBMData {
 
 /** Cartridge types are synchronized with VICE 3.6. **/
-
-// C64 cartridge types
-static const char *const crt_types_c64[] = {
-	// 0
-	"generic cartridge", "Action Replay", "KCS Power Cartridge",
-	"Final Cartridge III", "Simons' BASIC", "Ocean type 1",
-	"Expert Cartridge", "Fun Play, Power Play", "Super Games",
-	"Atomic Power",
-
-	// 10
-	"Epyx Fastload", "Westermann Learning", "Rex Utility",
-	"Final Cartridge I", "Magic Formel", "C64 Game System, System 3",
-	"Warp Speed", "Dinamic", "Zaxxon / Super Zaxxon (Sega)",
-	"Magic Desk, Domark, HES Australia",
-
-	// 20
-	"Super Snapshot V5", "Comal-80", "Structured BASIC",
-	"Ross", "Dela EP64", "Dela EP7x8", "Dela EP256",
-	"Rex EP256", "Mikro Assembler", "Final Cartridge Plus",
-
-	// 30
-	"Action Replay 4", "Stardos", "EasyFlash", "EasyFlash Xbank",
-	"Capture", "Action Replay 3", "Retro Replay",
-	"MMC64", "MMC Replay", "IDE64",
-
-	// 40
-	"Super Snapshot V4", "IEEE-488", "Game Killer", "Prophet64",
-	"EXOS", "Freeze Frame", "Freeze Machine", "Snapshot64",
-	"Super Explode V5.0", "Magic Voice",
-
-	// 50
-	"Action Replay 2", "MACH 5", "Diashow-Maker", "Pagefox",
-	"Kingsoft", "Silverrock 128K Cartridge", "Formel 64",
-	"RGCD", "RR-Net MK3", "EasyCalc",
-
-	// 60
-	"GMod2", "MAX Basic", "GMod3", "ZIPP-CODE 48",
-	"Blackbox V8", "Blackbox V3", "Blackbox V4",
-	"REX RAM-Floppy", "BIS-Plus", "SD-BOX",
-
-	// 70
-	"MultiMAX", "Blackbox V9", "Lt. Kernal Host Adaptor",
-	"RAMLink", "H.E.R.O.", "IEEE Flash! 64",
-	"Turtle Graphics II", "Freeze Frame MK2",
-};
+#include "CBM_C64_Cartridge_Type_data.h"
 
 // VIC-20 cartridge types
 static const char *const crt_types_vic20[] = {
@@ -77,10 +33,12 @@ static const char *const crt_types_vic20[] = {
  */
 const char *lookup_C64_cart_type(uint16_t type)
 {
-	if (type > ARRAY_SIZE(crt_types_c64)) {
+	if (unlikely(type > ARRAY_SIZE(CBM_C64_cart_type_offtbl))) {
 		return nullptr;
 	}
-	return crt_types_c64[type];
+
+	const unsigned int offset = CBM_C64_cart_type_offtbl[type];
+	return (likely(offset != 0) ? &CBM_C64_cart_type_strtbl[offset] : nullptr);
 }
 
 /**
@@ -90,7 +48,7 @@ const char *lookup_C64_cart_type(uint16_t type)
  */
 const char *lookup_VIC20_cart_type(uint16_t type)
 {
-	if (type > ARRAY_SIZE(crt_types_vic20)) {
+	if (unlikely(type > ARRAY_SIZE(crt_types_vic20))) {
 		return nullptr;
 	}
 	return crt_types_vic20[type];
