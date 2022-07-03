@@ -211,7 +211,7 @@ static int lzxd_read_lens(struct lzxd_stream *lzx, unsigned char *lens,
  * position_base[0] = 0
  * position_base[i] = position_base[i-1] + (1 << extra_bits[i-1])
  */
-static const unsigned int position_slots[11] = {
+static const unsigned short position_slots[11] = {
     30, 32, 34, 36, 38, 42, 50, 66, 98, 162, 290
 };
 static const unsigned char extra_bits[36] = {
