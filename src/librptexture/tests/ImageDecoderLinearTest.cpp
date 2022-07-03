@@ -158,6 +158,7 @@ const char *ImageDecoderLinearTest::pxfToString(ImageDecoder::PixelFormat pxf)
 	switch (pxf) {
 		case ImageDecoder::PixelFormat::Unknown:
 		default:
+			assert(!"Unknown PixelFormat");
 			mode_str = "Unknown";
 			break;
 
@@ -184,6 +185,9 @@ const char *ImageDecoderLinearTest::pxfToString(ImageDecoder::PixelFormat pxf)
 		CASE(RGB5A3)
 		CASE(IA8)
 
+		// PlayStation 2-specific 16-bit
+		CASE(BGR5A3)
+
 		// 15-bit
 		CASE(RGB555)
 		CASE(BGR555)
@@ -204,12 +208,16 @@ const char *ImageDecoderLinearTest::pxfToString(ImageDecoder::PixelFormat pxf)
 		CASE(RGBx8888)
 		CASE(BGRx8888)
 
-		// Uncommon 32-bit formats.
+		// PlayStation 2-specific 32-bit
+		CASE(BGR888_ABGR7888)
+
+		// Uncommon 32-bit formats
 		CASE(G16R16)
 		CASE(A2R10G10B10)
 		CASE(A2B10G10R10)
+		CASE(RGB9_E5)
 
-		// Uncommon 16-bit formats.
+		// Uncommon 16-bit formats
 		CASE(RG88)
 		CASE(GR88)
 
@@ -223,8 +231,11 @@ const char *ImageDecoderLinearTest::pxfToString(ImageDecoder::PixelFormat pxf)
 		CASE(L16)
 		CASE(A8L8)
 
-		// Alpha formats.
+		// Alpha
 		CASE(A8)
+
+		// Other
+		CASE(R8)
 	}
 
 	return mode_str;
