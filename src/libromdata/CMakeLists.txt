@@ -88,6 +88,7 @@ SET(${PROJECT_NAME}_SRCS
 	Other/Lua.cpp
 
 	data/AmiiboData.cpp
+	data/CBMData.cpp
 	data/ELFData.cpp
 	data/EXEData.cpp
 	data/MachOData.cpp
@@ -263,8 +264,10 @@ SET(${PROJECT_NAME}_H
 	Other/nfp_structs.h
 
 	data/AmiiboData.hpp
+	data/CBMData.hpp
 	data/ELFData.hpp
 	data/ELFMachineTypes_data.h
+	data/ELF_OSABI_data.h
 	data/EXEData.hpp
 	data/MachOData.hpp
 	data/NESMappers.hpp
