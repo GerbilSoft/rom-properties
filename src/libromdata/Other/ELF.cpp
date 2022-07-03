@@ -1514,6 +1514,7 @@ int ELF::loadFieldData(void)
 			}
 
 			string s_cf_isa;
+			s_cf_isa.reserve(32);
 			if (cf_isa) {
 				s_cf_isa.assign(cf_isa);
 			}
