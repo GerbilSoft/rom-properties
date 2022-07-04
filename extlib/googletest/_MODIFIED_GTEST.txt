@@ -1,11 +1,16 @@
-This copy of googletest-1.11.0 is a modified version of the original.
+This copy of googletest-1.12.1 is a modified version of the original.
 
-commit e2239ee6043f73722e7aa812a459f54a28552929
-    Googletest export
+commit 58d77fa8070e8cec2dc1ed015d66b454c8d78850 (HEAD, tag: release-1.12.1, origin/v1.12.x)
+Author: Derek Mauro <761129+derekmauro@users.noreply.github.com>
+Date:   Mon Jun 27 13:14:55 2022 -0400
+
+    Updates the version number in CMakeLists.txt to 1.12.1 (#3919)
     
-    Release GoogleTest 1.11.0
+    Due to an oversight version 1.12.0 didn't update the version in
+    CMakeLists.txt. A patch release will fix this issue.
     
-    PiperOrigin-RevId: 378861756
+    I've also added a note to instructions for creating a release to check
+    for this issue.
 
 The following changes have been made to the original:
 
@@ -22,5 +27,5 @@ The following changes have been made to the original:
 - Removed test suites, scripts, and Xcode projects in order to reduce
   warnings on LGTM.
 
-To obtain the original googletest-1.11.0, visit:
+To obtain the original googletest-1.12.1, visit:
 https://github.com/google/googletest
