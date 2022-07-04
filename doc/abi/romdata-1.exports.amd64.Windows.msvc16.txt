@@ -34,12 +34,12 @@ const LibRpBase::ConfReader::`vftable'
 const LibRpBase::Config::`vftable'
 const LibRomData::KeyStoreUI::`vftable'
 const LibRpTexture::rp_image_backend::`vftable'
+bool __cdecl LibWin32Common::ComBase_isReferenced(void)
 int __cdecl LibRomData::CtrKeyScrambler::CtrScramble(union LibRomData::u128_t * __ptr64,union LibRomData::u128_t const * __ptr64,union LibRomData::u128_t const * __ptr64,union LibRomData::u128_t const * __ptr64)
 int __cdecl LibRomData::CtrKeyScrambler::CtrScramble(union LibRomData::u128_t * __ptr64,union LibRomData::u128_t const * __ptr64,union LibRomData::u128_t const * __ptr64)
 unsigned __int64 __cdecl GdiplusHelper::InitGDIPlus(void)
 __int64 __cdecl LibWin32Common::ListViewNoDividerDblClickSubclassProc(struct HWND__ * __ptr64,unsigned int,unsigned __int64,__int64,unsigned __int64,unsigned __int64)
 __int64 __cdecl LibWin32Common::MultiLineEditProc(struct HWND__ * __ptr64,unsigned int,unsigned __int64,__int64,unsigned __int64,unsigned __int64)
-unsigned long volatile LibWin32Common::RP_ulTotalRefCount
 public: static long __cdecl LibWin32Common::RegKey::RegisterApprovedExtension(struct _GUID const & __ptr64,wchar_t const * __ptr64)
 public: static long __cdecl LibWin32Common::RegKey::RegisterComObject(struct _GUID const & __ptr64,wchar_t const * __ptr64,wchar_t const * __ptr64)
 public: static long __cdecl LibWin32Common::RegKey::RegisterFileType(wchar_t const * __ptr64,class LibWin32Common::RegKey * __ptr64 * __ptr64)
@@ -159,6 +159,7 @@ public: virtual bool __cdecl LibRpFile::RpFile::isOpen(void)const __ptr64
 public: bool __cdecl LibRpBase::RpPngWriter::isOpen(void)const __ptr64
 public: bool __cdecl LibRpTexture::rp_image::isSquare(void)const __ptr64
 unsigned long __cdecl LibWin32Common::isSystemRTL(void)
+bool __cdecl LibWin32Common::isThemeActive(void)
 public: __int64 __cdecl LibRpBase::Achievements::isUnlocked(enum LibRpBase::Achievements::ID)const __ptr64
 public: bool __cdecl LibRpBase::RomData::isValid(void)const __ptr64
 public: bool __cdecl LibRpTexture::rp_image::isValid(void)const __ptr64
@@ -180,7 +181,6 @@ public: int __cdecl LibRpBase::IconAnimHelper::nextFrame(int * __ptr64) __ptr64
 public: unsigned int __cdecl LibRpBase::Config::palLanguageForGameTDB(void)const __ptr64
 public: unsigned int const * __ptr64 __cdecl LibRpTexture::rp_image::palette(void)const __ptr64
 public: unsigned int __cdecl LibRpTexture::rp_image::palette_len(void)const __ptr64
-int (__cdecl* __ptr64 LibWin32Common::pfnIsThemeActive)(void)
 public: int __cdecl LibRpTexture::rp_image::premultiply(void) __ptr64
 public: static unsigned int __cdecl LibRpTexture::rp_image::premultiply_pixel(unsigned int)
 public: struct LibRpBase::RomMetaData::MetaData const * __ptr64 __cdecl LibRpBase::RomMetaData::prop(int)const __ptr64

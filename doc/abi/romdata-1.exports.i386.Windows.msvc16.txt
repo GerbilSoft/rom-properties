@@ -34,12 +34,12 @@ const LibRpBase::ConfReader::`vftable'
 const LibRpBase::Config::`vftable'
 const LibRomData::KeyStoreUI::`vftable'
 const LibRpTexture::rp_image_backend::`vftable'
+bool __cdecl LibWin32Common::ComBase_isReferenced(void)
 int __cdecl LibRomData::CtrKeyScrambler::CtrScramble(union LibRomData::u128_t *,union LibRomData::u128_t const *,union LibRomData::u128_t const *,union LibRomData::u128_t const *)
 int __cdecl LibRomData::CtrKeyScrambler::CtrScramble(union LibRomData::u128_t *,union LibRomData::u128_t const *,union LibRomData::u128_t const *)
 unsigned long __cdecl GdiplusHelper::InitGDIPlus(void)
 long __stdcall LibWin32Common::ListViewNoDividerDblClickSubclassProc(struct HWND__ *,unsigned int,unsigned int,long,unsigned int,unsigned long)
 long __stdcall LibWin32Common::MultiLineEditProc(struct HWND__ *,unsigned int,unsigned int,long,unsigned int,unsigned long)
-unsigned long volatile LibWin32Common::RP_ulTotalRefCount
 public: static long __cdecl LibWin32Common::RegKey::RegisterApprovedExtension(struct _GUID const &,wchar_t const *)
 public: static long __cdecl LibWin32Common::RegKey::RegisterComObject(struct _GUID const &,wchar_t const *,wchar_t const *)
 public: static long __cdecl LibWin32Common::RegKey::RegisterFileType(wchar_t const *,class LibWin32Common::RegKey * *)
@@ -160,6 +160,7 @@ public: virtual bool __thiscall LibRpFile::RpFile::isOpen(void)const
 public: bool __thiscall LibRpBase::RpPngWriter::isOpen(void)const
 public: bool __thiscall LibRpTexture::rp_image::isSquare(void)const
 unsigned long __cdecl LibWin32Common::isSystemRTL(void)
+bool __cdecl LibWin32Common::isThemeActive(void)
 public: __int64 __thiscall LibRpBase::Achievements::isUnlocked(enum LibRpBase::Achievements::ID)const
 public: bool __thiscall LibRpBase::RomData::isValid(void)const
 public: bool __thiscall LibRpTexture::rp_image::isValid(void)const
@@ -181,7 +182,6 @@ public: int __thiscall LibRpBase::IconAnimHelper::nextFrame(int *)
 public: unsigned int __thiscall LibRpBase::Config::palLanguageForGameTDB(void)const
 public: unsigned int const * __thiscall LibRpTexture::rp_image::palette(void)const
 public: unsigned int __thiscall LibRpTexture::rp_image::palette_len(void)const
-int (__stdcall* LibWin32Common::pfnIsThemeActive)(void)
 public: int __thiscall LibRpTexture::rp_image::premultiply(void)
 public: static unsigned int __cdecl LibRpTexture::rp_image::premultiply_pixel(unsigned int)
 public: struct LibRpBase::RomMetaData::MetaData const * __thiscall LibRpBase::RomMetaData::prop(int)const

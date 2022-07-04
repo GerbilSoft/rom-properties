@@ -204,6 +204,7 @@ T LibRpTexture::rp_image::tr_idx() const
 T LibRpTexture::rp_image::un_premultiply_cpp()
 T LibRpTexture::rp_image::un_premultiply_sse41()
 T LibRpTexture::rp_image::width() const
+T LibWin32Common::ComBase_isReferenced()
 T LibWin32Common::decRpGlobalRefCount()
 T LibWin32Common::getAltRowColor()
 T LibWin32Common::getCacheDirectory[abi:cxx11]()
@@ -214,12 +215,12 @@ T LibWin32Common::getSaveFileName[abi:cxx11](HWND__*, wchar_t const*, char const
 T LibWin32Common::incRpGlobalRefCount()
 T LibWin32Common::isComCtl32_v610()
 T LibWin32Common::isSystemRTL()
+T LibWin32Common::isThemeActive()
 T LibWin32Common::ListViewNoDividerDblClickSubclassProc(HWND__*, unsigned int, unsigned long long, long long, unsigned long long, unsigned long long)
 T LibWin32Common::measureStringForListView(HDC__*, std::__cxx11::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> > const&, int*)
 T LibWin32Common::measureTextSize(HWND__*, HFONT__*, wchar_t const*, tagSIZE*)
 T LibWin32Common::measureTextSizeLink(HWND__*, HFONT__*, wchar_t const*, tagSIZE*)
 T LibWin32Common::MultiLineEditProc(HWND__*, unsigned int, unsigned long long, long long, unsigned long long, unsigned long long)
-T LibWin32Common::pfnIsThemeActive
 T LibWin32Common::RegKey::close()
 T LibWin32Common::RegKey::deleteSubKey(HKEY__*, wchar_t const*)
 T LibWin32Common::RegKey::deleteValue(wchar_t const*)
@@ -239,7 +240,6 @@ T LibWin32Common::RegKey::write_dword(wchar_t const*, unsigned long)
 T LibWin32Common::RegKey::write(wchar_t const*, std::__cxx11::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> > const&, unsigned long)
 T LibWin32Common::RegKey::write(wchar_t const*, wchar_t const*, unsigned long)
 T LibWin32Common::rp_QISearch(void*, QITAB const*, _GUID const&, void**)
-T LibWin32Common::RP_ulTotalRefCount
 T LibWin32Common::SingleLineEditProc(HWND__*, unsigned int, unsigned long long, long long, unsigned long long, unsigned long long)
 T LibWin32Common::unix2dos[abi:cxx11](wchar_t const*, int*)
 T rp_byte_swap_16_array_sse2
