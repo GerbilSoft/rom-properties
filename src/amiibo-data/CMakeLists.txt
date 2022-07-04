@@ -22,7 +22,7 @@ IF(CMAKE_CROSSCOMPILING)
 	# Use executables from a native build.
 	IF(NOT IMPORT_EXECUTABLES)
 		MESSAGE(FATAL_ERROR "IMPORT_EXECUTABLES is not defined.
-Set IMPORT_EXECUTABLES to the path to a native build.")
+Set IMPORT_EXECUTABLES to the path to a CMake build for the host system's build environment.")
 	ENDIF(NOT IMPORT_EXECUTABLES)
 	INCLUDE("${IMPORT_EXECUTABLES}/src/amiibo-data/ImportExecutables.cmake")
 ELSE(CMAKE_CROSSCOMPILING)
