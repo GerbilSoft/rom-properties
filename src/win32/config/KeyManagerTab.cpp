@@ -10,6 +10,7 @@
 #include "KeyManagerTab.hpp"
 #include "res/resource.h"
 #include "../FontHandler.hpp"
+#include "../MessageWidget.hpp"
 
 // KeyStore
 #include "KeyStoreWin32.hpp"
@@ -31,7 +32,10 @@ using namespace LibRpFile;
 using namespace LibRomData;
 
 // C++ STL classes.
+using std::locale;
+using std::ostringstream;
 using std::string;
+using std::wostringstream;
 using std::wstring;
 
 class KeyManagerTabPrivate
@@ -127,6 +131,9 @@ class KeyManagerTabPrivate
 		// wtsapi32.dll for Remote Desktop status. (WinXP and later)
 		WTSSessionNotification wts;
 
+		// MessageWidget for ROM operation notifications.
+		HWND hMessageWidget;
+
 		// EDIT box for ListView.
 		HWND hEditBox;
 		int iEditItem;		// Item being edited. (-1 for none)
@@ -195,6 +202,15 @@ class KeyManagerTabPrivate
 		}
 
 		/**
+		 * Show key import return status.
+		 * @param filename Filename
+		 * @param keyType Key type
+		 * @param iret ImportReturn
+		 */
+		void showKeyImportReturnStatus(const tstring &filename,
+			const char *keyType, const KeyStoreUI::ImportReturn &iret);
+
+		/**
 		 * Import keys from a binary file.
 		 * @param fileID Type of file
 		 */
@@ -211,6 +227,7 @@ KeyManagerTabPrivate::KeyManagerTabPrivate()
 	, keyStore_ownerDataCallback(nullptr)
 	, fontHandler(nullptr)
 	, hEditBox(nullptr)
+	, hMessageWidget(nullptr)
 	, iEditItem(-1)
 	, bCancelEdit(false)
 	, bAllowKanji(false)
@@ -1369,7 +1386,214 @@ void KeyManagerTabPrivate::loadImages(void)
 		iconSize_new, iconSize_new, 0);
 }
 
-/** "Import" menu actions. **/
+/**
+ * Show key import return status.
+ * @param filename Filename
+ * @param keyType Key type
+ * @param iret ImportReturn
+ */
+void KeyManagerTabPrivate::showKeyImportReturnStatus(
+	const tstring &filename,
+	const char *keyType,
+	const KeyStoreUI::ImportReturn &iret)
+{
+	unsigned int type = MB_ICONINFORMATION;
+	bool showKeyStats = false;
+	tstring msg;
+	msg.reserve(1024);
+
+	// Filename, minus directory.
+	tstring fileNoPath;
+	size_t bs_pos = filename.rfind(_T('\\'));
+	if (bs_pos != tstring::npos && bs_pos != fileNoPath.size()-1) {
+		fileNoPath = filename.substr(bs_pos + 1);
+	} else {
+		fileNoPath = filename;
+	}
+
+
+	// Using ostringstream for numeric formatting.
+	// (MSVCRT doesn't support the apostrophe printf specifier.)
+	tostringstream toss;
+	toss.imbue(std::locale(""));
+
+	// TODO: Localize POSIX error messages?
+	// TODO: Thread-safe _wcserror()?
+
+	switch (iret.status) {
+		case KeyStoreUI::ImportStatus::InvalidParams:
+		default:
+			msg = U82T_s(C_("KeyManagerTab",
+				"An invalid parameter was passed to the key importer.\n"
+				"THIS IS A BUG; please report this to the developers!"));
+			type = MB_ICONSTOP;
+			break;
+
+		case KeyStoreUI::ImportStatus::UnknownKeyID:
+			msg = U82T_s(C_("KeyManagerTab",
+				"An unknown key ID was passed to the key importer.\n"
+				"THIS IS A BUG; please report this to the developers!"));
+			type = MB_ICONSTOP;
+			break;
+
+		case KeyStoreUI::ImportStatus::OpenError:
+			if (iret.error_code != 0) {
+				msg = rp_stprintf_p(U82T_c(C_("KeyManagerTab",
+					// tr: %1$s == filename, %2$s == error message
+					"An error occurred while opening '%1$s': %2$s")),
+					fileNoPath.c_str(), _wcserror(iret.error_code));
+			} else {
+				msg = rp_stprintf_p(U82T_c(C_("KeyManagerTab",
+					// tr: %s == filename
+					"An error occurred while opening '%s'.")),
+					fileNoPath.c_str());
+			}
+			type = MB_ICONSTOP;
+			break;
+
+		case KeyStoreUI::ImportStatus::ReadError:
+			// TODO: Error code for short reads.
+			if (iret.error_code != 0) {
+				msg = rp_stprintf_p(U82T_c(C_("KeyManagerTab",
+					// tr: %1$s == filename, %2$s == error message
+					"An error occurred while reading '%1$s': %2$s")),
+					fileNoPath, _wcserror(iret.error_code));
+			} else {
+				msg = rp_stprintf_p(U82T_c(C_("KeyManagerTab",
+					// tr: %s == filename
+					"An error occurred while reading '%s'.")),
+					fileNoPath.c_str());
+			}
+			type = MB_ICONSTOP;
+			break;
+
+		case KeyStoreUI::ImportStatus::InvalidFile:
+			msg = rp_stprintf_p(U82T_c(C_("KeyManagerTab",
+				// tr: %1$s == filename, %2$s == type of file
+				"The file '%1$s' is not a valid %2$s file.")),
+				fileNoPath.c_str(), U82T_c(keyType));
+			type = MB_ICONWARNING;
+			break;
+
+		case KeyStoreUI::ImportStatus::NoKeysImported:
+			msg = rp_stprintf(U82T_c(C_("KeyManagerTab",
+				// tr: %s == filename
+				"No keys were imported from '%s'.")),
+				fileNoPath.c_str());
+			type = MB_ICONINFORMATION;
+			showKeyStats = true;
+			break;
+
+		case KeyStoreUI::ImportStatus::KeysImported: {
+			const unsigned int keyCount = iret.keysImportedVerify + iret.keysImportedNoVerify;
+			toss << keyCount;
+			msg = rp_stprintf_p(U82T_c(NC_("KeyManagerTab",
+				// tr: %1$s == number of keys (formatted), %2$u == filename
+				"%1$s key was imported from '%2$s'.",
+				"%1$s keys were imported from '%2$s'.",
+				keyCount)),
+				toss.str().c_str(), fileNoPath.c_str());
+			type = MB_ICONINFORMATION;
+			showKeyStats = true;
+			break;
+		}
+	}
+
+	// U+2022 (BULLET) == \xE2\x80\xA2
+#ifdef _UNICODE
+	static const wchar_t nl_bullet[] = L"\n\x2022 ";
+#else /* !_UNICODE */
+	// NOTE: Windows doesn't support UTF-8 as "ANSI", except on recent
+	// versions of Windows 10 (1903) with a manifest setting.
+	static const char nl_bullet[] = "\n* ";
+#endif /* _UNICODE */
+
+	// TODO: Numeric formatting.
+	if (showKeyStats) {
+		if (iret.keysExist > 0) {
+			toss.str(_T(""));
+			toss.clear();
+			toss << iret.keysExist;
+			msg += nl_bullet;
+			msg += rp_swprintf(U82T_c(NC_("KeyManagerTab",
+				// tr: %s == number of keys (formatted)
+				"%s key already exists in the Key Manager.",
+				"%s keys already exist in the Key Manager.",
+				iret.keysExist)),
+				toss.str().c_str());
+		}
+		if (iret.keysInvalid > 0) {
+			toss.str(_T(""));
+			toss.clear();
+			toss << iret.keysInvalid;
+			msg += nl_bullet;
+			msg += rp_swprintf(U82T_c(NC_("KeyManagerTab",
+				// tr: %s == number of keys (formatted)
+				"%s key was not imported because it is incorrect.",
+				"%s keys were not imported because they are incorrect.",
+				iret.keysInvalid)),
+				toss.str().c_str());
+		}
+		if (iret.keysNotUsed > 0) {
+			toss.str(_T(""));
+			toss.clear();
+			toss << iret.keysNotUsed;
+			msg += nl_bullet;
+			msg += rp_swprintf(U82T_c(NC_("KeyManagerTab",
+				// tr: %s == number of keys (formatted)
+				"%s key was not imported because it isn't used by rom-properties.",
+				"%s keys were not imported because they aren't used by rom-properties.",
+				iret.keysNotUsed)),
+				toss.str().c_str());
+		}
+		if (iret.keysCantDecrypt > 0) {
+			toss.str(_T(""));
+			toss.clear();
+			toss << iret.keysCantDecrypt;
+			msg += nl_bullet;
+			msg += rp_swprintf(U82T_c(NC_("KeyManagerTab",
+				// tr: %s == number of keys (formatted)
+				"%s key was not imported because it is encrypted and the master key isn't available.",
+				"%s keys were not imported because they are encrypted and the master key isn't available.",
+				iret.keysCantDecrypt)),
+				toss.str().c_str());
+		}
+		if (iret.keysImportedVerify > 0) {
+			toss.str(_T(""));
+			toss.clear();
+			toss << iret.keysImportedVerify;
+			msg += nl_bullet;
+			msg += rp_swprintf(U82T_c(NC_("KeyManagerTab",
+				// tr: %s == number of keys (formatted)
+				"%s key has been imported and verified as correct.",
+				"%s keys have been imported and verified as correct.",
+				iret.keysImportedVerify)),
+				toss.str().c_str());
+		}
+		if (iret.keysImportedNoVerify > 0) {
+			toss.str(_T(""));
+			toss.clear();
+			toss << iret.keysImportedVerify;
+			msg += nl_bullet;
+			msg += rp_swprintf(U82T_c(NC_("KeyManagerTab",
+				"%s key has been imported without verification.",
+				"%s keys have been imported without verification.",
+				iret.keysImportedNoVerify)),
+				toss.str().c_str());
+		}
+	}
+
+	// TODO: Show the message widget.
+	MessageBoxW(hWndPropSheet, msg.c_str(), L"MessageWidget?", 0);
+#if 0
+	// Display the message.
+	// TODO: If it's already visible, animateHide(), then animateShow()?
+	messageWidget->setMessageType(type);
+	messageWidget->setIcon(qApp->style()->standardIcon(icon, nullptr, messageWidget));
+	messageWidget->setText(U82Q(msg));
+	messageWidget->animatedShow();
+#endif
+}
 
 /**
  * Import keys from a binary file.
@@ -1430,11 +1654,9 @@ void KeyManagerTabPrivate::importKeysFromBin(KeyStoreUI::ImportFileID id)
 		NOP_C_("KeyManagerTab", "3DS aeskeydb.bin"),
 	};
 
-	KeyStoreWin32::ImportReturn iret = keyStore->importKeysFromBin(
-		id, T2U8(tfilename).c_str());
-	// TODO: Port showKeyImportReturnStatus from the KDE version.
-	//d->showKeyImportReturnStatus(filename,
-	//	dpgettext_expr(RP_I18N_DOMAIN, "KeyManagerTab", import_menu_actions[(int)id]), iret);
+	KeyStoreWin32::ImportReturn iret = keyStore->importKeysFromBin(id, T2U8(tfilename).c_str());
+	showKeyImportReturnStatus(tfilename,
+		dpgettext_expr(RP_I18N_DOMAIN, "KeyManagerTab", import_menu_actions[(int)id]), iret);
 }
 
 /** KeyManagerTab **/

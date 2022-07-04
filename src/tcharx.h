@@ -14,11 +14,17 @@
 // Windows: Use the SDK tchar.h.
 #include <tchar.h>
 
-// std::tstring
+// std::tstring, std::tstringstream
 #ifdef _UNICODE
-# define tstring wstring
+#  define tstring		wstring
+#  define tstringstream		wstringstream
+#  define tistringstream	wistringstream
+#  define tostringstream	wostringstream
 #else /* !_UNICODE */
-# define tstring string
+#  define tstring		string
+#  define tstringstream		stringstream
+#  define tistringstream	istringstream
+#  define tostringstream	ostringstream
 #endif /* _UNICODE */
 
 #else /* !_WIN32 */

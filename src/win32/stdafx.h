@@ -70,10 +70,12 @@
 #include <algorithm>
 #include <array>
 #include <list>
+#include <locale>
 #include <memory>
 #include <numeric>
 #include <set>
 #include <string>
+#include <sstream>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
