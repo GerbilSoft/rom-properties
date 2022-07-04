@@ -28,27 +28,21 @@ namespace LibWin32Common {
 RP_LIBROMDATA_PUBLIC void incRpGlobalRefCount(void);
 RP_LIBROMDATA_PUBLIC void decRpGlobalRefCount(void);
 
+/**
+ * Is an RP_ComBase object referenced?
+ * @return True if RP_ulTotalRefCount > 0; false if not.
+ */
 // References of all objects.
 RP_LIBROMDATA_PUBLIC
-extern volatile ULONG RP_ulTotalRefCount;
+bool ComBase_isReferenced(void);
 
 // QISearch() [our own implementation]
 RP_LIBROMDATA_PUBLIC
 HRESULT WINAPI rp_QISearch(_Inout_ void *that, _In_ LPCQITAB pqit, _In_ REFIID riid, _COM_Outptr_ void **ppv);
 
-// IsThemeActive() [uxtheme.dll]
-typedef BOOL (STDAPICALLTYPE* PFNISTHEMEACTIVE)(void);
+// IsThemeActive() [wrapper function for uxtheme.dll!IsThemeActive]
 RP_LIBROMDATA_PUBLIC
-extern PFNISTHEMEACTIVE pfnIsThemeActive;
-
-/**
- * Is an RP_ComBase object referenced?
- * @return True if RP_ulTotalRefCount > 0; false if not.
- */
-static inline bool ComBase_isReferenced(void)
-{
-	return (RP_ulTotalRefCount > 0);
-}
+bool isThemeActive(void);
 
 #define RP_COMBASE_IMPL(name) \
 { \

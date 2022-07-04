@@ -32,6 +32,7 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/res/${PROJECT_NAME}.dll.manifest.in"
 # Sources and headers.
 SET(${PROJECT_NAME}_SRCS
 	DllMain.cpp
+	DllRegisterServer.cpp
 	RP_ExtractIcon.cpp
 	RP_ExtractIcon_Register.cpp
 	RP_ExtractIcon_Fallback.cpp
@@ -144,7 +145,7 @@ ENDIF(ENABLE_ACHIEVEMENTS)
 IF(MSVC)
 	# Delay-load sources.
 	SET(${PROJECT_NAME}-DELAYLOAD_SRC ../libwin32common/DelayLoadHelper.c)
-	SET(${PROJECT_NAME}-DELAYLOAD_H ../libwin32common/DelayLoadHelper.h)
+	SET(${PROJECT_NAME}-DELAYLOAD_H   ../libwin32common/DelayLoadHelper.h)
 ENDIF(MSVC)
 
 #####################

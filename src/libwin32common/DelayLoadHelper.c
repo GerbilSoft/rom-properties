@@ -57,7 +57,9 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 
 	static const char *const dll_whitelist[] = {
 #ifdef NDEBUG
+#  ifdef RP_LIBROMDATA_IS_DLL
 		ROMDATA_PREFIX "romdata-" LIBROMDATA_SOVERSION_STR ".dll",
+#  endif /* RP_LIBROMDATA_IS_DLL */
 		"zlib1.dll",
 		"libpng16.dll",
 		"tinyxml2-9.dll",
@@ -65,7 +67,9 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 		"lz4.dll",
 		"minilzo.dll",
 #else /* !NDEBUG */
+#  ifdef RP_LIBROMDATA_IS_DLL
 		ROMDATA_PREFIX "romdata-" LIBROMDATA_SOVERSION_STR "d.dll",
+#  endif /* RP_LIBROMDATA_IS_DLL */
 		"zlib1d.dll",
 		"libpng16d.dll",
 		"tinyxml2-9d.dll",

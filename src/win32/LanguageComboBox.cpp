@@ -140,8 +140,11 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 	rp_image *imgFlagsSheet = nullptr;
 	RpFile_windres *const f_res = new RpFile_windres(HINST_THISCOMPONENT,
 		MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG));
-	if (f_res->isOpen()) {
+	if (f_res->isOpen()) do {
 		imgFlagsSheet = RpPng::load(f_res);
+		if (!imgFlagsSheet)
+			break;
+
 		// Make sure the bitmap has the expected size.
 		assert(imgFlagsSheet->width() == (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_COLS));
 		assert(imgFlagsSheet->height() == (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_ROWS));
@@ -151,9 +154,10 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 			// Incorrect size. We can't use it.
 			imgFlagsSheet->unref();
 			imgFlagsSheet = nullptr;
+			break;
 		}
 
-		if (imgFlagsSheet != nullptr && dwExStyleRTL != 0) {
+		if (dwExStyleRTL != 0) {
 			// WS_EX_LAYOUTRTL will flip bitmaps in the dropdown box.
 			// ILC_MIRROR mirrors the bitmaps if the process is mirrored,
 			// but we can't rely on that being the case, and this option
@@ -166,7 +170,7 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 				imgFlagsSheet = flipimg;
 			}
 		}
-	}
+	} while (0);
 	UNREF(f_res);
 
 	// Create the ImageList.

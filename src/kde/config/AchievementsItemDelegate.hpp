@@ -33,12 +33,6 @@ class AchievementsItemDelegate : public QStyledItemDelegate
 			   const QModelIndex &index) const final;
 		QSize sizeHint(const QStyleOptionViewItem &option,
 			       const QModelIndex &index) const final;
-
-	private slots:
-		/**
-		 * The system theme has changed.
-		 */
-		void themeChanged_slot(void);
 };
 
 #endif /* __ROMPROPERTIES_KDE_CONFIG_ACHIEVEMENTSITEMDELEGATE_HPP__ */
