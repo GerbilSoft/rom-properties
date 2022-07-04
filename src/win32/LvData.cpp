@@ -151,13 +151,11 @@ BOOL LvData::toggleSortColumn(int iSubItem)
 			// Set the arrow to Up if not set; flip it if set.
 			if (hdi.fmt & HDF_SORTUP) {
 				// Currently Up.
-				hdi.fmt &= ~HDF_SORTUP;
-				hdi.fmt |=  HDF_SORTDOWN;
+				hdi.fmt ^= (HDF_SORTUP | HDF_SORTDOWN);
 				direction = RomFields::COLSORTORDER_DESCENDING;
 			} else if (hdi.fmt & HDF_SORTDOWN) {
 				// Currently Down.
-				hdi.fmt &= ~HDF_SORTDOWN;
-				hdi.fmt |=  HDF_SORTUP;
+				hdi.fmt ^= (HDF_SORTUP | HDF_SORTDOWN);
 			} else {
 				// Not set. Set it to Up.
 				hdi.fmt |=  HDF_SORTUP;
