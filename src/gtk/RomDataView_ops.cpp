@@ -529,6 +529,8 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 
 		// Prompt for a save file.
 #if GTK_CHECK_VERSION(4,0,0)
+		// FIXME: Need to add a response signal like standard operations.
+		assert(!"GTK4 doesn't support gtk_dialog_run().");
 		// TODO: URIs?
 		GFile *const get_file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(dialog));
 		if (get_file) {
