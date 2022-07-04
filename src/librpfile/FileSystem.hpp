@@ -160,6 +160,10 @@ std::string replace_ext(const char *filename, const char *ext);
 
 /**
  * Check if the specified file is a symbolic link.
+ *
+ * Symbolic links are NOT resolved; otherwise wouldn't check
+ * if the specified file was a symlink itself.
+ *
  * @return True if the file is a symbolic link; false if not.
  */
 bool is_symlink(const char *filename);
@@ -174,6 +178,15 @@ bool is_symlink(const char *filename);
  * @return Resolved symbolic link, or empty string on error.
  */
 std::string resolve_symlink(const char *filename);
+
+/**
+ * Check if the specified file is a directory.
+ *
+ * Symbolic links are resolved as per usual directory traversal.
+ *
+ * @return True if the file is a directory; false if not.
+ */
+bool is_directory(const char *filename);
 
 /**
  * Is a file located on a "bad" file system?

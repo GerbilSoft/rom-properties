@@ -314,12 +314,17 @@ int delete_file(const char *filename)
 
 /**
  * Check if the specified file is a symbolic link.
+ *
+ * Symbolic links are NOT resolved; otherwise wouldn't check
+ * if the specified file was a symlink itself.
+ *
  * @return True if the file is a symbolic link; false if not.
  */
 bool is_symlink(const char *filename)
 {
-	if (unlikely(!filename || filename[0] == 0))
+	if (unlikely(!filename || filename[0] == 0)) {
 		return false;
+	}
 	const tstring tfilename = makeWinPath(filename);
 
 	// Check the reparse point type.
@@ -356,11 +361,11 @@ typedef DWORD (WINAPI *PFNGETFINALPATHNAMEBYHANDLEW)(
 	_In_  DWORD  dwFlags
 );
 #ifdef UNICODE
-# define PFNGETFINALPATHNAMEBYHANDLE PFNGETFINALPATHNAMEBYHANDLEW
-# define GETFINALPATHNAMEBYHANDLE_FN "GetFinalPathNameByHandleW"
+#  define PFNGETFINALPATHNAMEBYHANDLE PFNGETFINALPATHNAMEBYHANDLEW
+#  define GETFINALPATHNAMEBYHANDLE_FN "GetFinalPathNameByHandleW"
 #else /* !UNICODE */
-# define PFNGETFINALPATHNAMEBYHANDLE PFNGETFINALPATHNAMEBYHANDLEA
-# define GETFINALPATHNAMEBYHANDLE_FN "GetFinalPathNameByHandleA"
+#  define PFNGETFINALPATHNAMEBYHANDLE PFNGETFINALPATHNAMEBYHANDLEA
+#  define GETFINALPATHNAMEBYHANDLE_FN "GetFinalPathNameByHandleA"
 #endif /* UNICODE */
 static PFNGETFINALPATHNAMEBYHANDLE pfnGetFinalPathnameByHandle = nullptr;
 
@@ -433,6 +438,24 @@ string resolve_symlink(const char *filename)
 	delete[] szDeref;
 	CloseHandle(hFile);
 	return ret;
+}
+
+/**
+ * Check if the specified file is a directory.
+ *
+ * Symbolic links are resolved as per usual directory traversal.
+ *
+ * @return True if the file is a directory; false if not.
+ */
+bool is_directory(const char *filename)
+{
+	if (unlikely(!filename || filename[0] == 0)) {
+		return false;
+	}
+	const tstring tfilename = makeWinPath(filename);
+
+	const DWORD attrs = GetFileAttributes(tfilename.c_str());
+	return (attrs != INVALID_FILE_ATTRIBUTES && (attrs & FILE_ATTRIBUTE_DIRECTORY));
 }
 
 /**

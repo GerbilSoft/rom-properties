@@ -37,6 +37,7 @@ T LibRomData::KeyStoreUI::sectName(int) const
 T LibRomData::KeyStoreUI::setKey(int, char const*)
 T LibRomData::KeyStoreUI::setKey(int, int, char const*)
 T LibRomData::KeyStoreUI::totalKeyCount() const
+T LibRomData::RomDataFactory::create(char const*, unsigned int)
 T LibRomData::RomDataFactory::create(LibRpFile::IRpFile*, unsigned int)
 T LibRomData::RomDataFactory::supportedFileExtensions()
 T LibRomData::RomDataFactory::supportedMimeTypes()

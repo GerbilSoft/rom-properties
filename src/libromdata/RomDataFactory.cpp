@@ -854,6 +854,44 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 }
 
 /**
+ * Create a RomData subclass for the specified ROM file.
+ *
+ * This version creates a base RpFile for the RomData object.
+ * It does not support extended virtual filesystems like GVfs
+ * or KIO, but it does support directories.
+ *
+ * NOTE: RomData::isValid() is checked before returning a
+ * created RomData instance, so returned objects can be
+ * assumed to be valid as long as they aren't nullptr.
+ *
+ * If imgbf is non-zero, at least one of the specified image
+ * types must be supported by the RomData subclass in order to
+ * be returned.
+ *
+ * @param filename ROM filename
+ * @param attrs RomDataAttr bitfield. If set, RomData subclass must have the specified attributes.
+ * @return RomData subclass, or nullptr if the ROM isn't supported.
+ */
+RomData *RomDataFactory::create(const char *filename, unsigned int attrs)
+{
+	// Check if this is a file or a directory.
+	// If it's a file, we'll create an RpFile and then
+	// call create(IRpFile*,unsigned int).
+	if (!FileSystem::is_directory(filename)) {
+		// Not a directory.
+		RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
+		if (file->isOpen()) {
+			RomData *const romData = create(file, attrs);
+			file->unref();
+			return romData;
+		}
+	}
+
+	// TODO: Check for RomData subclasses that support directories.
+	return nullptr;
+}
+
+/**
  * Initialize the vector of supported file extensions.
  * Used for Win32 COM registration.
  *

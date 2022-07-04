@@ -70,6 +70,7 @@ public: int __thiscall LibRpBase::RomMetaData::count(void)const
 class std::basic_string<char16_t,struct std::char_traits<char16_t>,class std::allocator<char16_t> > __cdecl LibRpBase::cpN_to_utf16(unsigned int,char const *,int,unsigned int)
 class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl LibRpBase::cpN_to_utf8(unsigned int,char const *,int,unsigned int)
 public: static class LibRpBase::RomData * __cdecl LibRomData::RomDataFactory::create(class LibRpFile::IRpFile *,unsigned int)
+public: static class LibRpBase::RomData * __cdecl LibRomData::RomDataFactory::create(char const *,unsigned int)
 public: static class LibRpTexture::rp_image_backend * __cdecl LibRpTexture::RpGdiplusBackend::creator_fn(int,int,enum LibRpTexture::rp_image::Format)
 void __cdecl LibWin32Common::decRpGlobalRefCount(void)
 void __cdecl LibRomData::SuperMagicDrive::decodeBlock_cpp(unsigned char * __restrict,unsigned char const * __restrict)
