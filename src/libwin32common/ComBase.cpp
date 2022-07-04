@@ -12,6 +12,7 @@
 
 // C includes. (C++ namespace)
 #include <cassert>
+#include <stdio.h>
 
 // librpthreads
 #include "librpthreads/pthread_once.h"
@@ -22,7 +23,7 @@
 namespace LibWin32Common {
 
 // References of all objects.
-volatile ULONG RP_ulTotalRefCount = 0;
+static volatile ULONG RP_ulTotalRefCount = 0;
 
 /** Dynamically loaded common functions **/
 static volatile pthread_once_t combase_once_control = PTHREAD_ONCE_INIT;
@@ -35,7 +36,7 @@ static PFNISTHEMEACTIVE pfnIsThemeActive = nullptr;
 
 void incRpGlobalRefCount(void)
 {
-	ULONG ulRefCount = InterlockedIncrement(&RP_ulTotalRefCount);
+	InterlockedIncrement(&RP_ulTotalRefCount);
 }
 
 void decRpGlobalRefCount(void)
@@ -45,11 +46,13 @@ void decRpGlobalRefCount(void)
 		return;
 
 	// Last Release(). Unload the function pointers.
-	// NOTE: combase_once_control should not be PTHREAD_ONCE_INIT here.
-	assert(combase_once_control != PTHREAD_ONCE_INIT);
-	// This is always correct for our pthread_once() implementation.
-	while (combase_once_control != 1) {
-		SwitchToThread();
+	// NOTE: Function pointers might not have been loaded.
+	// They're loaded on demand by isThemeActive().
+	// NOTE 2: This is always correct for our pthread_once() implementation.
+	if (combase_once_control != PTHREAD_ONCE_INIT) {
+		while (combase_once_control != 1) {
+			SwitchToThread();
+		}
 	}
 
 	if (hUxTheme_dll) {
@@ -124,23 +127,28 @@ HRESULT WINAPI rp_QISearch(_Inout_ void *that, _In_ LPCQITAB pqit, _In_ REFIID r
 	return E_NOINTERFACE;
 }
 
+static void initFnPtrs(void)
+{
+	// uxtheme.dll!IsThemeActive
+	hUxTheme_dll = LoadLibrary(_T("uxtheme.dll"));
+	assert(hUxTheme_dll != nullptr);
+	if (hUxTheme_dll) {
+		pfnIsThemeActive = reinterpret_cast<PFNISTHEMEACTIVE>(GetProcAddress(hUxTheme_dll, "IsThemeActive"));
+		if (!pfnIsThemeActive) {
+			FreeLibrary(hUxTheme_dll);
+			hUxTheme_dll = nullptr;
+		}
+	}
+}
+
 // IsThemeActive() [wrapper function for uxtheme.dll!IsThemeActive]
 RP_LIBROMDATA_PUBLIC
 bool isThemeActive(void)
 {
-	if (!hUxTheme_dll) {
-		// UXTHEME.DLL!IsThemeActive
-		hUxTheme_dll = LoadLibrary(_T("uxtheme.dll"));
-		assert(hUxTheme_dll != nullptr);
-		if (hUxTheme_dll) {
-			pfnIsThemeActive = reinterpret_cast<PFNISTHEMEACTIVE>(GetProcAddress(hUxTheme_dll, "IsThemeActive"));
-			if (!pfnIsThemeActive) {
-				FreeLibrary(hUxTheme_dll);
-				hUxTheme_dll = nullptr;
-			}
-		}
-	}
+	// Make sure the function pointers are initialized.
+	pthread_once((pthread_once_t*)&combase_once_control, initFnPtrs);
 
+	// Call the real IsThemeActive() if it's available.
 	return (pfnIsThemeActive ? pfnIsThemeActive() : false);
 }
 
