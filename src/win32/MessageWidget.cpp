@@ -91,18 +91,8 @@ MessageWidgetPrivate::MessageWidgetPrivate(HWND hWnd)
 	// Initialize the icon.
 	updateIcon();
 
-	// Get the rect for the Close button.
-	// TODO: Reposition on WM_SIZE?
-	RECT rect;
-	GetClientRect(hWnd, &rect);
-
-	SIZE szBtnClose;
-	szBtnClose.cx = szIcon.cx + BORDER_SIZE;
-	szBtnClose.cy = szIcon.cy + BORDER_SIZE;
-	rectBtnClose.left = rect.right - szBtnClose.cx - BORDER_SIZE;
-	rectBtnClose.top = (rect.bottom - szBtnClose.cy) / 2;
-	rectBtnClose.right = rectBtnClose.left + szBtnClose.cx;
-	rectBtnClose.bottom = rectBtnClose.top + szBtnClose.cy;
+	// Close button positioning will be handled in WM_SIZE.
+	memset(&rectBtnClose, 0, sizeof(rectBtnClose));
 
 	// Create the fonts for the Close button.
 	// (one regular, one bold)
@@ -241,11 +231,11 @@ void MessageWidgetPrivate::paint(void)
 		int len = GetWindowTextLength(hWnd);
 		if (len < 128) {
 			GetWindowText(hWnd, tbuf, _countof(tbuf));
-			DrawText(hDC, tbuf, len, &rect, DT_SINGLELINE | DT_VCENTER);
+			DrawText(hDC, tbuf, len, &rect, DT_SINGLELINE);
 		} else {
 			TCHAR *const tmbuf = static_cast<TCHAR*>(malloc((len+1) * sizeof(TCHAR)));
 			GetWindowText(hWnd, tmbuf, len+1);
-			DrawText(hDC, tmbuf, len, &rect, DT_SINGLELINE | DT_VCENTER);
+			DrawText(hDC, tmbuf, len, &rect, DT_SINGLELINE);
 			free(tmbuf);
 		}
 	} else {
@@ -329,6 +319,30 @@ MessageWidgetWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			MessageWidgetPrivate *const d = reinterpret_cast<MessageWidgetPrivate*>(
 				GetWindowLongPtr(hWnd, GWLP_USERDATA));
 			return reinterpret_cast<LRESULT>(d->hFont);
+		}
+
+		case WM_SIZE: {
+			MessageWidgetPrivate *const d = reinterpret_cast<MessageWidgetPrivate*>(
+				GetWindowLongPtr(hWnd, GWLP_USERDATA));
+
+			// Invalidate the current Close button rect.
+			InvalidateRect(hWnd, &d->rectBtnClose, TRUE);
+
+			// Get the new rect for the Close button.
+			RECT rect;
+			GetClientRect(hWnd, &rect);
+
+			SIZE szBtnClose;
+			szBtnClose.cx = d->szIcon.cx + BORDER_SIZE;
+			szBtnClose.cy = d->szIcon.cy + BORDER_SIZE;
+			d->rectBtnClose.left = rect.right - szBtnClose.cx - BORDER_SIZE;
+			d->rectBtnClose.top = (rect.bottom - szBtnClose.cy) / 2;
+			d->rectBtnClose.right = d->rectBtnClose.left + szBtnClose.cx;
+			d->rectBtnClose.bottom = d->rectBtnClose.top + szBtnClose.cy;
+
+			// Invalidate the new Close button rect.
+			InvalidateRect(hWnd, &d->rectBtnClose, TRUE);
+			break;
 		}
 
 		case WM_MOUSEMOVE: {
