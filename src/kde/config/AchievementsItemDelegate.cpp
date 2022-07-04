@@ -20,10 +20,6 @@
 using std::array;
 using std::vector;
 
-#ifdef _WIN32
-#  include <windows.h>
-#endif /* _WIN32 */
-
 #define LINE_COUNT 2
 
 class AchievementsItemDelegatePrivate
@@ -41,32 +37,13 @@ class AchievementsItemDelegatePrivate
 		// Font retrieval.
 		QFont fontName(const QWidget *widget = 0) const;
 		QFont fontDesc(const QWidget *widget = 0) const;
-
-#ifdef _WIN32
-		// Win32: Theming functions.
-	private:
-		// HACK: Mark this as mutable so const functions can update it.
-		mutable bool m_isXPTheme;
-		static bool resolveSymbols(void);
-	public:
-		bool isXPTheme(bool update = false) const;
-		bool isVistaTheme(void) const;
-#endif /* _WIN32 */
 };
 
 /** AchievementsItemDelegatePrivate **/
 
 AchievementsItemDelegatePrivate::AchievementsItemDelegatePrivate(AchievementsItemDelegate *q)
 	: q_ptr(q)
-#ifdef _WIN32
-	, m_isXPTheme(false)
-#endif /* _WIN32 */
-{
-#ifdef _WIN32
-	// Update the XP theming info.
-	isXPTheme(true);
-#endif /* _WIN32 */
-}
+{ }
 
 QFont AchievementsItemDelegatePrivate::fontName(const QWidget *widget) const
 {
@@ -93,77 +70,12 @@ QFont AchievementsItemDelegatePrivate::fontDesc(const QWidget *widget) const
 	return font;
 }
 
-#ifdef _WIN32
-typedef bool (WINAPI *PtrIsAppThemed)(void);
-typedef bool (WINAPI *PtrIsThemeActive)(void);
-
-static HMODULE pUxThemeDll = nullptr;
-static PtrIsAppThemed pIsAppThemed = nullptr;
-static PtrIsThemeActive pIsThemeActive = nullptr;
-
-/**
- * Resolve symbols for XP/Vista theming.
- * Based on QWindowsXPStyle::resolveSymbols(). (qt-4.8.5)
- * @return True on success; false on failure.
- */
-bool AchievementsItemDelegatePrivate::resolveSymbols(void)
-{
-	static bool tried = false;
-	if (!tried) {
-		pUxThemeDll = LoadLibraryW(L"uxtheme");
-		if (pUxThemeDll) {
-			pIsAppThemed = (PtrIsAppThemed)GetProcAddress(pUxThemeDll, "IsAppThemed");
-			if (pIsAppThemed) {
-				pIsThemeActive = (PtrIsThemeActive)GetProcAddress(pUxThemeDll, "IsThemeActive");
-			}
-		}
-		tried = true;
-	}
-
-	return (pIsAppThemed != nullptr);
-}
-
-/**
- * Check if a Windows XP theme is in use.
- * Based on QWindowsXPStyle::useXP(). (qt-4.8.5)
- * @param update Update the system theming status.
- * @return True if a Windows XP theme is in use; false if not.
- */
-bool AchievementsItemDelegatePrivate::isXPTheme(bool update) const
-{
-	if (!update)
-		return m_isXPTheme;
-
-	m_isXPTheme = (resolveSymbols() && pIsThemeActive() &&
-		       (pIsAppThemed() || !QApplication::instance()));
-	return m_isXPTheme;
-}
-
-/**
- * Check if a Windows Vista theme is in use.
- * Based on QWindowsVistaStyle::useVista(). (qt-4.8.5)
- * @return True if a Windows Vista theme is in use; false if not.
- */
-bool AchievementsItemDelegatePrivate::isVistaTheme(void) const
-{
-	return (isXPTheme() &&
-		QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA &&
-		(QSysInfo::WindowsVersion & QSysInfo::WV_NT_based));
-}
-#endif /* _WIN32 */
-
 /** AchievementsItemDelegate **/
 
 AchievementsItemDelegate::AchievementsItemDelegate(QObject *parent)
 	: super(parent)
 	, d_ptr(new AchievementsItemDelegatePrivate(this))
-{
-#ifdef _WIN32
-	// Connect the "themeChanged" signal.
-	connect(qApp, SIGNAL(themeChanged()),
-		this, SLOT(themeChanged_slot()));
-#endif /* _WIN32 */
-}
+{ }
 
 AchievementsItemDelegate::~AchievementsItemDelegate()
 {
@@ -305,18 +217,6 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 	style->drawControl(QStyle::CE_ItemViewItem, &bgOption, painter, bgOption.widget);
 	bgOption.backgroundBrush = QBrush();
 
-#ifdef _WIN32
-	// Adjust the palette for Vista themes.
-	if (d->isVistaTheme()) {
-		// Vista theme uses a slightly different palette.
-		// See: qwindowsvistastyle.cpp::drawControl(), line 1524 (qt-4.8.5)
-		QPalette *palette = &bgOption.palette;
-                palette->setColor(QPalette::All, QPalette::HighlightedText, palette->color(QPalette::Active, QPalette::Text));
-                // Note that setting a saturated color here results in ugly XOR colors in the focus rect
-                palette->setColor(QPalette::All, QPalette::Highlight, palette->base().color().darker(108));
-	}
-#endif
-
 	// Font color.
 	if (bgOption.state & QStyle::State_Selected) {
 		painter->setPen(bgOption.palette.highlightedText().color());
@@ -396,18 +296,4 @@ QSize AchievementsItemDelegate::sizeHint(const QStyleOptionViewItem &option,
 	}
 
 	return sz;
-}
-
-/** Slots. **/
-
-/**
- * The system theme has changed.
- */
-void AchievementsItemDelegate::themeChanged_slot(void)
-{
-#ifdef _WIN32
-	// Update the XP theming info.
-	Q_D(AchievementsItemDelegate);
-	d->isXPTheme(true);
-#endif
 }
