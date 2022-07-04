@@ -145,7 +145,7 @@ ENDIF(ENABLE_ACHIEVEMENTS)
 IF(MSVC)
 	# Delay-load sources.
 	SET(${PROJECT_NAME}-DELAYLOAD_SRC ../libwin32common/DelayLoadHelper.c)
-	SET(${PROJECT_NAME}-DELAYLOAD_H ../libwin32common/DelayLoadHelper.h)
+	SET(${PROJECT_NAME}-DELAYLOAD_H   ../libwin32common/DelayLoadHelper.h)
 ENDIF(MSVC)
 
 #####################
