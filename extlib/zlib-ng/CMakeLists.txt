@@ -1012,9 +1012,10 @@ if(1)   #NOT DEFINED BUILD_SHARED_LIBS)
     # rom-properties: Only build SHARED on Win32 or Mac OS X.
     IF(WIN32 OR APPLE)
         add_library(zlib SHARED ${ZLIB_ALL_SRCS} ${ZLIB_DLL_SRCS})
-        add_library(zlibstatic STATIC ${ZLIB_ALL_SRCS})
+        #add_library(zlibstatic STATIC ${ZLIB_ALL_SRCS})
 
-        set(ZLIB_INSTALL_LIBRARIES zlib zlibstatic)
+        #set(ZLIB_INSTALL_LIBRARIES zlib zlibstatic)
+        set(ZLIB_INSTALL_LIBRARIES zlib)
     ELSE(WIN32 OR APPLE)
         # rom-properties: Hide all symbols so they're not exported by libromdata.
         INCLUDE(CheckHiddenVisibility)
