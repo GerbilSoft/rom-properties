@@ -1423,16 +1423,16 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 	switch (iret.status) {
 		case KeyStoreUI::ImportStatus::InvalidParams:
 		default:
-			msg = U82T_s(C_("KeyManagerTab",
+			msg = LibWin32UI::unix2dos(U82T_s(C_("KeyManagerTab",
 				"An invalid parameter was passed to the key importer.\n"
-				"THIS IS A BUG; please report this to the developers!"));
+				"THIS IS A BUG; please report this to the developers!")));
 			type = MB_ICONSTOP;
 			break;
 
 		case KeyStoreUI::ImportStatus::UnknownKeyID:
-			msg = U82T_s(C_("KeyManagerTab",
+			msg = LibWin32UI::unix2dos(U82T_s(C_("KeyManagerTab",
 				"An unknown key ID was passed to the key importer.\n"
-				"THIS IS A BUG; please report this to the developers!"));
+				"THIS IS A BUG; please report this to the developers!")));
 			type = MB_ICONSTOP;
 			break;
 
@@ -1501,11 +1501,11 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 
 	// U+2022 (BULLET) == \xE2\x80\xA2
 #ifdef _UNICODE
-	static const wchar_t nl_bullet[] = L"\n\x2022 ";
+	static const wchar_t nl_bullet[] = L"\r\n\x2022 ";
 #else /* !_UNICODE */
 	// NOTE: Windows doesn't support UTF-8 as "ANSI", except on recent
 	// versions of Windows 10 (1903) with a manifest setting.
-	static const char nl_bullet[] = "\n* ";
+	static const char nl_bullet[] = "\r\n* ";
 #endif /* _UNICODE */
 
 	// TODO: Numeric formatting.
@@ -1583,16 +1583,57 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 		}
 	}
 
-	// TODO: Show the message widget.
-	MessageBoxW(hWndPropSheet, msg.c_str(), L"MessageWidget?", 0);
-#if 0
-	// Display the message.
-	// TODO: If it's already visible, animateHide(), then animateShow()?
-	messageWidget->setMessageType(type);
-	messageWidget->setIcon(qApp->style()->standardIcon(icon, nullptr, messageWidget));
-	messageWidget->setText(U82Q(msg));
-	messageWidget->animatedShow();
-#endif
+	// Align to the bottom of the dialog and center-align the text.
+	// 7x7 DLU margin is recommended by the Windows UX guidelines.
+	// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
+	RECT tmpRect = {7, 7, 8, 8};
+	MapDialogRect(hWndPropSheet, &tmpRect);
+	RECT winRect;
+	GetClientRect(hWndPropSheet, &winRect);
+	// NOTE: We need to move left by 1px.
+	OffsetRect(&winRect, -1, 0);
+
+	// Count the number of newlines and increase the MessageWidget height.
+	const int nl_count = std::count_if(msg.cbegin(), msg.cend(),
+		[](TCHAR chr) { return (chr == _T('\n')); }
+	);
+
+	// Determine the size.
+	// TODO: Update on DPI change.
+	const int cySmIcon = GetSystemMetrics(SM_CYSMICON);
+	const SIZE szMsgw = {
+		winRect.right - winRect.left,
+		(cySmIcon * (nl_count + 1)) + 8
+	};
+
+	if (!hMessageWidget) {
+		// Create the MessageWidget.
+		MessageWidgetRegister();
+
+		// Determine the position.
+		const POINT ptMsgw = {winRect.left, winRect.top};
+
+		const DWORD dwExStyleRTL = LibWin32UI::isSystemRTL();
+		hMessageWidget = CreateWindowEx(
+			WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | dwExStyleRTL,
+			WC_MESSAGEWIDGET, nullptr,
+			WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+			ptMsgw.x, ptMsgw.y, szMsgw.cx, szMsgw.cy,
+			hWndPropSheet, nullptr,
+			HINST_THISCOMPONENT, nullptr);
+		SetWindowFont(hMessageWidget, GetWindowFont(hWndPropSheet), false);
+	} else {
+		// Adjust the MessageWidget height.
+		SetWindowPos(hMessageWidget, nullptr, 0, 0, szMsgw.cx, szMsgw.cy,
+			SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOMOVE);
+	}
+
+	// Show the message widget.
+	// TODO: Adjust the ListView positioning and size?
+	MessageBeep(type);
+	MessageWidget_SetMessageType(hMessageWidget, type);
+	SetWindowText(hMessageWidget, msg.c_str());
+	ShowWindow(hMessageWidget, SW_SHOW);
 }
 
 /**
