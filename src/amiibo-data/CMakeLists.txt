@@ -20,6 +20,10 @@ INCLUDE(SetMSVCDebugPath)
 IF(CMAKE_CROSSCOMPILING)
 	# Cross-compiling.
 	# Use executables from a native build.
+	IF(NOT IMPORT_EXECUTABLES)
+		MESSAGE(FATAL_ERROR "IMPORT_EXECUTABLES is not defined.
+Set IMPORT_EXECUTABLES to the path to a native build.")
+	ENDIF(NOT IMPORT_EXECUTABLES)
 	INCLUDE("${IMPORT_EXECUTABLES}/src/amiibo-data/ImportExecutables.cmake")
 ELSE(CMAKE_CROSSCOMPILING)
 	# Not cross-compiling.
