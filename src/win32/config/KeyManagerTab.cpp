@@ -133,6 +133,8 @@ class KeyManagerTabPrivate
 
 		// MessageWidget for ROM operation notifications.
 		HWND hMessageWidget;
+		POINT ptListView;	// Original ListView position
+		SIZE szListView;	// Original ListView size
 
 		// EDIT box for ListView.
 		HWND hEditBox;
@@ -452,6 +454,17 @@ void KeyManagerTabPrivate::initUI(void)
 	// Auto-size the "Valid?" column.
 	ListView_SetColumnWidth(hListView, 2, LVSCW_AUTOSIZE_USEHEADER);
 
+	// Get the ListView's initial position and size.
+	// This will be needed to adjust the ListView when
+	// displaying the MessageWidget.
+	RECT rectListView;
+	GetWindowRect(hListView, &rectListView);
+	MapWindowPoints(HWND_DESKTOP, hWndPropSheet, (LPPOINT)&rectListView, 2);
+	ptListView.x = rectListView.left;
+	ptListView.y = rectListView.top;
+	szListView.cx = rectListView.right - rectListView.left;
+	szListView.cy = rectListView.bottom - rectListView.top;
+
 	// Subclass the ListView.
 	// TODO: Error handling?
 	SetWindowSubclass(hListView, ListViewSubclassProc,
@@ -584,6 +597,11 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 					d->save();
 					break;
 
+				case PSN_SETACTIVE:
+					// Disable the "Defaults" button.
+					RpPropSheet_EnableDefaults(GetParent(hDlg), false);
+					break;
+
 				case LVN_GETDISPINFO: {
 					// Get data for an LVS_OWNERDRAW ListView.
 					if (!d->keyStore || pHdr->idFrom != IDC_KEYMANAGER_LIST)
@@ -607,10 +625,16 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 					return true;
 				}
 
-				case PSN_SETACTIVE:
-					// Disable the "Defaults" button.
-					RpPropSheet_EnableDefaults(GetParent(hDlg), false);
+				case MSGWN_CLOSED: {
+					// MessageWidget's Close button was pressed.
+					HWND hListView = GetDlgItem(hDlg, IDC_KEYMANAGER_LIST);
+					assert(hListView != nullptr);
+					SetWindowPos(hListView, nullptr,
+						d->ptListView.x, d->ptListView.y,
+						d->szListView.cx, d->szListView.cy,
+						SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 					break;
+				}
 
 				default:
 					break;
@@ -1583,11 +1607,6 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 		}
 	}
 
-	// Align to the bottom of the dialog and center-align the text.
-	// 7x7 DLU margin is recommended by the Windows UX guidelines.
-	// Reference: http://stackoverflow.com/questions/2118603/default-dialog-padding
-	RECT tmpRect = {7, 7, 8, 8};
-	MapDialogRect(hWndPropSheet, &tmpRect);
 	RECT winRect;
 	GetClientRect(hWndPropSheet, &winRect);
 	// NOTE: We need to move left by 1px.
@@ -1627,6 +1646,14 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 		SetWindowPos(hMessageWidget, nullptr, 0, 0, szMsgw.cx, szMsgw.cy,
 			SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOMOVE);
 	}
+
+	// Adjust the ListView positioning and size.
+	HWND hListView = GetDlgItem(hWndPropSheet, IDC_KEYMANAGER_LIST);
+	assert(hListView != nullptr);
+	SetWindowPos(hListView, nullptr,
+		ptListView.x, ptListView.y + szMsgw.cy,
+		szListView.cx, szListView.cy - szMsgw.cy,
+		SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 
 	// Show the message widget.
 	// TODO: Adjust the ListView positioning and size?

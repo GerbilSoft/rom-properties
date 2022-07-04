@@ -227,15 +227,19 @@ void MessageWidgetPrivate::paint(void)
 		}
 
 		// Message
+		RECT textRect = {
+			rect.left, rect.top + (szIcon.cy / 4),
+			rect.right, rect.bottom - ((szIcon.cy / 4) * 2)
+		};
 		TCHAR tbuf[128];
 		int len = GetWindowTextLength(hWnd);
 		if (len < 128) {
 			GetWindowText(hWnd, tbuf, _countof(tbuf));
-			DrawText(hDC, tbuf, len, &rect, DT_SINGLELINE);
+			DrawText(hDC, tbuf, len, &textRect, 0);
 		} else {
 			TCHAR *const tmbuf = static_cast<TCHAR*>(malloc((len+1) * sizeof(TCHAR)));
 			GetWindowText(hWnd, tmbuf, len+1);
-			DrawText(hDC, tmbuf, len, &rect, DT_SINGLELINE);
+			DrawText(hDC, tmbuf, len, &textRect, 0);
 			free(tmbuf);
 		}
 	} else {
