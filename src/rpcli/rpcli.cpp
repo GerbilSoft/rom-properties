@@ -348,25 +348,26 @@ int RP_C_API main(int argc, char *argv[])
 	// Set the C and C++ locales.
 	locale::global(locale(""));
 
-#ifdef _MSC_VER
-#  define ROMDATA_PREFIX
-#else
-#  define ROMDATA_PREFIX _T("lib")
-#endif
-#ifndef NDEBUG
-#  define ROMDATA_SUFFIX _T("-") _T(LIBROMDATA_SOVERSION_STR) _T("d")
-#else
-#  define ROMDATA_SUFFIX _T("-") _T(LIBROMDATA_SOVERSION_STR)
-#endif
-#ifdef _WIN32
-#  define ROMDATA_EXT _T(".dll")
-#else
+#ifdef RP_LIBROMDATA_IS_DLL
+#  ifdef _MSC_VER
+#    define ROMDATA_PREFIX
+#  else
+#    define ROMDATA_PREFIX _T("lib")
+#  endif
+#  ifndef NDEBUG
+#    define ROMDATA_SUFFIX _T("-") _T(LIBROMDATA_SOVERSION_STR) _T("d")
+#  else
+#    define ROMDATA_SUFFIX _T("-") _T(LIBROMDATA_SOVERSION_STR)
+#  endif
+#  ifdef _WIN32
+#    define ROMDATA_EXT _T(".dll")
+#  else
 // TODO: macOS
-#  define ROMDATA_EXT _T(".so")
-#endif
-#define ROMDATA_DLL ROMDATA_PREFIX _T("romdata") ROMDATA_SUFFIX ROMDATA_EXT
+#    define ROMDATA_EXT _T(".so")
+#  endif
+#  define ROMDATA_DLL ROMDATA_PREFIX _T("romdata") ROMDATA_SUFFIX ROMDATA_EXT
 
-#ifdef _MSC_VER
+#  ifdef _MSC_VER
 	// TODO: Skip these if not linked with /DELAYLOAD?
 	if (DelayLoad_test_ImageTypesConfig_className() != 0) {
 		// Delay load failed.
@@ -376,7 +377,10 @@ int RP_C_API main(int argc, char *argv[])
 			stderr);
 		return EXIT_FAILURE;
 	}
-#  ifdef ENABLE_NLS
+#  endif /* _MSC_VER */
+#endif /* RP_LIBROMDATA_IS_DLL */
+
+#if defined(ENABLE_NLS) && defined(_MSC_VER)
 	// Delay load verification: libgnuintl
 	if (DelayLoad_test_textdomain() != 0) {
 		// Delay load failed.
@@ -389,8 +393,7 @@ int RP_C_API main(int argc, char *argv[])
 			stderr);
 		return EXIT_FAILURE;
 	}
-#  endif /* ENABLE_NLS */
-#endif /* _MSC_VER */
+#endif /* ENABLE_NLS && _MSC_VER */
 
 	// Initialize i18n.
 	rp_i18n_init();
