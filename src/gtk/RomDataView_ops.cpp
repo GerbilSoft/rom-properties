@@ -575,11 +575,11 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 		messageType = GTK_MESSAGE_WARNING;
 	}
 
+	if (!params.msg.empty()) {
 #ifdef ENABLE_MESSAGESOUND
-	MessageSound::play(messageType, params.msg.c_str(), GTK_WIDGET(page));
+		MessageSound::play(messageType, params.msg.c_str(), GTK_WIDGET(page));
 #endif /* ENABLE_MESSAGESOUND */
 
-	if (!params.msg.empty()) {
 		// Show the MessageWidget.
 		if (!page->messageWidget) {
 			page->messageWidget = message_widget_new();

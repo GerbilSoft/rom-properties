@@ -363,8 +363,9 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 		messageType = MB_ICONWARNING;
 	}
 
-	MessageBeep(messageType);
 	if (!params.msg.empty()) {
+		MessageBeep(messageType);
+
 		if (!hMessageWidget) {
 			// FIXME: Make sure this works if multiple tabs are present.
 			MessageWidgetRegister();

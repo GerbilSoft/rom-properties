@@ -336,6 +336,7 @@ void RomDataView::btnOptions_triggered(int id)
 
 	int ret = d->romData->doRomOp(id, &params);
 	const QString qs_msg = U82Q(params.msg);
+	QMessageBox::Icon messageType;
 	if (ret == 0) {
 		// ROM operation completed.
 
@@ -353,15 +354,16 @@ void RomDataView::btnOptions_triggered(int id)
 		}
 
 		// Show the message and play the sound.
-		const QString qs_msg = U82Q(params.msg);
-		MessageSound::play(QMessageBox::Information, qs_msg, this);
+		messageType = QMessageBox::Information;
 	} else {
 		// An error occurred...
-		MessageSound::play(QMessageBox::Warning, qs_msg, this);
+		messageType = QMessageBox::Warning;
 	}
 
-#ifdef HAVE_KMESSAGEWIDGET
 	if (!qs_msg.isEmpty()) {
+#ifdef HAVE_KMESSAGEWIDGET
+		MessageSound::play(messageType, qs_msg, this);
+
 		if (!d->messageWidget) {
 			d->messageWidget = new KMessageWidget(this);
 			d->messageWidget->setCloseButtonVisible(true);
@@ -401,13 +403,13 @@ void RomDataView::btnOptions_triggered(int id)
 		}
 		d->messageWidget->setText(qs_msg);
 		d->messageWidget->animatedShow();
-#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
-#  ifdef AUTO_TIMEOUT_MESSAGEWIDGET
+#  if QT_VERSION < QT_VERSION_CHECK(5,0,0)
+#    ifdef AUTO_TIMEOUT_MESSAGEWIDGET
 		// KDE4's KMessageWidget doesn't have the "animation finished"
 		// signals, so we'll have to start the timer manually.
 		d->tmrMessageWidget->start();
-#  endif /* AUTO_TIMEOUT_MESSAGEWIDGET */
-#endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
-	}
+#    endif /* AUTO_TIMEOUT_MESSAGEWIDGET */
+#  endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 #endif /* HAVE_KMESSAGEWIDGET */
+	}
 }
