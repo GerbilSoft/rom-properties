@@ -407,14 +407,22 @@ IF(CPU_i386 OR CPU_amd64)
 	ENDIF(SSE2_FLAG)
 ENDIF()
 
-# SOVERSION
+# libromdata can be built as a shared library.
 IF(RP_LIBROMDATA_IS_DLL)
 	SET(${PROJECT_NAME}_LINKAGE SHARED)
+	ADD_DEFINITIONS(-DRP_BUILDING_FOR_DLL=1)
 	# NOTE: Not using the project version here.
 	# This represents the ABI version.
 	SET(${PROJECT_NAME}_VERSION 1.0)
 	SET(${PROJECT_NAME}_SOVERSION 1)
-ENDIF(RP_LIBROMDATA_IS_DLL)
+	IF(MSVC)
+		# Delay-load sources.
+		SET(${PROJECT_NAME}-DELAYLOAD_SRC ../libwin32common/DelayLoadHelper.c)
+		SET(${PROJECT_NAME}-DELAYLOAD_H   ../libwin32common/DelayLoadHelper.h)
+	ENDIF(MSVC)
+ELSE()
+	SET(${PROJECT_NAME}_LINKAGE STATIC)
+ENDIF()
 
 # Write the config.h file.
 INCLUDE(DirInstallPaths)
@@ -437,18 +445,6 @@ IF(WIN32)
 	SET_DELAYLOAD_EXTLIB_FLAGS()
 ENDIF(WIN32)
 
-# libromdata can be built as a shared library.
-IF(RP_LIBROMDATA_IS_DLL)
-	SET(${PROJECT_NAME}_LINKAGE SHARED)
-	ADD_DEFINITIONS(-DRP_BUILDING_FOR_DLL=1)
-	IF(MSVC)
-		# Delay-load sources.
-		SET(${PROJECT_NAME}-DELAYLOAD_SRC ../libwin32common/DelayLoadHelper.c)
-		SET(${PROJECT_NAME}-DELAYLOAD_H   ../libwin32common/DelayLoadHelper.h)
-	ENDIF(MSVC)
-ELSE()
-	SET(${PROJECT_NAME}_LINKAGE STATIC)
-ENDIF()
 ADD_LIBRARY(${PROJECT_NAME} ${${PROJECT_NAME}_LINKAGE}
 	${${PROJECT_NAME}-DELAYLOAD_SRC} ${${PROJECT_NAME}-DELAYLOAD_H}
 	${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
