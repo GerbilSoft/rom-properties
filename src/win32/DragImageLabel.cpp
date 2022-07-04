@@ -213,14 +213,9 @@ bool DragImageLabelPrivate::updateBitmaps(void)
 	// - http://www.codeproject.com/Articles/5978/Correctly-drawn-themed-dialogs-in-WinXP
 	// - https://docs.microsoft.com/en-us/archive/blogs/dsui_team/using-theme-apis-to-draw-the-border-of-a-control
 	// - https://docs.microsoft.com/en-us/archive/blogs/pareshj/draw-the-background-of-static-control-with-gradient-fill-when-theme-is-enabled
-	int colorIndex;
-	if (LibWin32Common::pfnIsThemeActive && LibWin32Common::pfnIsThemeActive()) {
-		// Theme is active.
-		colorIndex = COLOR_WINDOW;
-	} else {
-		// Theme is not active.
-		colorIndex = COLOR_3DFACE;
-	}
+	const int colorIndex = LibWin32Common::isThemeActive()
+		? COLOR_WINDOW	// active theme
+		: COLOR_3DFACE;	// no theme
 	const Gdiplus::ARGB gdipBgColor = LibWin32Common::GetSysColor_ARGB32(colorIndex);
 
 	// Return value.

@@ -28,29 +28,14 @@ volatile ULONG RP_ulTotalRefCount = 0;
 static volatile pthread_once_t combase_once_control = PTHREAD_ONCE_INIT;
 
 // IsThemeActive()
+typedef BOOL (STDAPICALLTYPE* PFNISTHEMEACTIVE)(void);
 static HMODULE hUxTheme_dll = nullptr;
-PFNISTHEMEACTIVE pfnIsThemeActive = nullptr;
+static PFNISTHEMEACTIVE pfnIsThemeActive = nullptr;
 
-static void initFnPtrs(void)
-{
-	// UXTHEME.DLL!IsThemeActive
-	hUxTheme_dll = LoadLibrary(_T("uxtheme.dll"));
-	assert(hUxTheme_dll != nullptr);
-	if (hUxTheme_dll) {
-		pfnIsThemeActive = reinterpret_cast<PFNISTHEMEACTIVE>(GetProcAddress(hUxTheme_dll, "IsThemeActive"));
-		if (!pfnIsThemeActive) {
-			FreeLibrary(hUxTheme_dll);
-			hUxTheme_dll = nullptr;
-		}
-	}
-}
 
 void incRpGlobalRefCount(void)
 {
 	ULONG ulRefCount = InterlockedIncrement(&RP_ulTotalRefCount);
-
-	// Make sure the function pointers are initialized.
-	pthread_once((pthread_once_t*)&combase_once_control, initFnPtrs);
 }
 
 void decRpGlobalRefCount(void)
@@ -78,6 +63,16 @@ void decRpGlobalRefCount(void)
 
 	// Finished unloading function pointers.
 	combase_once_control = PTHREAD_ONCE_INIT;
+}
+
+/**
+ * Is an RP_ComBase object referenced?
+ * @return True if RP_ulTotalRefCount > 0; false if not.
+ */
+// References of all objects.
+bool ComBase_isReferenced(void)
+{
+	return (RP_ulTotalRefCount > 0);
 }
 
 /**
@@ -127,6 +122,26 @@ HRESULT WINAPI rp_QISearch(_Inout_ void *that, _In_ LPCQITAB pqit, _In_ REFIID r
 	// Not IUnknown. Interface is not supported.
 	*ppv = nullptr;
 	return E_NOINTERFACE;
+}
+
+// IsThemeActive() [wrapper function for uxtheme.dll!IsThemeActive]
+RP_LIBROMDATA_PUBLIC
+bool isThemeActive(void)
+{
+	if (!hUxTheme_dll) {
+		// UXTHEME.DLL!IsThemeActive
+		hUxTheme_dll = LoadLibrary(_T("uxtheme.dll"));
+		assert(hUxTheme_dll != nullptr);
+		if (hUxTheme_dll) {
+			pfnIsThemeActive = reinterpret_cast<PFNISTHEMEACTIVE>(GetProcAddress(hUxTheme_dll, "IsThemeActive"));
+			if (!pfnIsThemeActive) {
+				FreeLibrary(hUxTheme_dll);
+				hUxTheme_dll = nullptr;
+			}
+		}
+	}
+
+	return (pfnIsThemeActive ? pfnIsThemeActive() : false);
 }
 
 }
