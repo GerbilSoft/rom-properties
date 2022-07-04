@@ -95,6 +95,7 @@
 #include "librpbase/RomData.hpp"
 #include "librpbase/RomFields.hpp"
 #include "librpbase/TextFuncs.hpp"
+#include "librpbase/TextFuncs_printf.hpp"
 #include "librpbase/SystemRegion.hpp"
 #include "librpbase/config/Config.hpp"
 #include "librpbase/img/RpPngWriter.hpp"

@@ -115,6 +115,7 @@
 // librpbase C++ headers
 #include "librpbase/RomData.hpp"
 #include "librpbase/TextFuncs.hpp"
+#include "librpbase/TextFuncs_printf.hpp"
 #include "librpbase/TextFuncs_wchar.hpp"
 #include "librpbase/config/Config.hpp"
 

@@ -73,12 +73,12 @@ class KeyManagerTabPrivate
 
 		/**
 		 * Show key import return status.
-		 * @param filename Filename.
-		 * @param keyType Key type.
-		 * @param iret ImportReturn.
+		 * @param filename Filename
+		 * @param keyType Key type
+		 * @param iret ImportReturn
 		 */
 		void showKeyImportReturnStatus(const QString &filename,
-			const QString &keyType, const KeyStoreQt::ImportReturn &iret);
+			const QString &keyType, const KeyStoreUI::ImportReturn &iret);
 };
 
 /** KeyManagerTabPrivate **/
@@ -116,14 +116,14 @@ void KeyManagerTabPrivate::resizeColumnsToContents(void)
 
 /**
  * Show key import return status.
- * @param filename Filename.
- * @param keyType Key type.
- * @param iret ImportReturn.
+ * @param filename Filename
+ * @param keyType Key type
+ * @param iret ImportReturn
  */
 void KeyManagerTabPrivate::showKeyImportReturnStatus(
 	const QString &filename,
 	const QString &keyType,
-	const KeyStoreQt::ImportReturn &iret)
+	const KeyStoreUI::ImportReturn &iret)
 {
 	KMessageWidget::MessageType type = KMessageWidget::Information;
 	QStyle::StandardPixmap icon = QStyle::SP_MessageBoxInformation;

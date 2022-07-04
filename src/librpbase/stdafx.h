@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * stdafx.h: Common definitions and includes.                              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -77,6 +77,7 @@
 #ifdef __cplusplus
 // librpbase C++ headers
 #include "TextFuncs.hpp"
+#include "TextFuncs_printf.hpp"
 
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector

@@ -20,7 +20,7 @@
 #include "librpbase/config.librpbase.h"
 #include "librpbase/RomData.hpp"
 #include "librpbase/SystemRegion.hpp"
-#include "librpbase/TextFuncs.hpp"
+#include "librpbase/TextFuncs_printf.hpp"
 #include "librpbase/img/RpPng.hpp"
 #include "librpbase/img/IconAnimData.hpp"
 #include "librpbase/TextOut.hpp"

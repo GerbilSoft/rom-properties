@@ -66,8 +66,9 @@ UNSET(OLD_CMAKE_REQUIRED_INCLUDES)
 # Sources.
 SET(${PROJECT_NAME}_SRCS
 	TextFuncs.cpp
-	TextFuncs_libc.c
 	TextFuncs_conv.cpp
+	TextFuncs_libc.c
+	TextFuncs_printf.cpp
 	RomData.cpp
 	RomFields.cpp
 	RomMetaData.cpp
@@ -94,8 +95,9 @@ SET(${PROJECT_NAME}_SRCS
 # Headers.
 SET(${PROJECT_NAME}_H
 	TextFuncs.hpp
-	TextFuncs_wchar.hpp
 	TextFuncs_libc.h
+	TextFuncs_printf.hpp
+	TextFuncs_wchar.hpp
 	RP_CP_tbls.hpp
 	RomData.hpp
 	RomData_decl.hpp

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * stdafx.h: Common definitions and includes.                              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -55,6 +55,7 @@
 // librpbase C++ headers
 #include "librpbase/RomFields.hpp"
 #include "librpbase/TextFuncs.hpp"
+#include "librpbase/TextFuncs_printf.hpp"
 
 // librpfile C++ headers
 #include "librpfile/IRpFile.hpp"

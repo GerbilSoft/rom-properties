@@ -17,7 +17,7 @@
 #include "verifykeys.hpp"
 
 // librpbase
-#include "librpbase/TextFuncs.hpp"
+#include "librpbase/TextFuncs_printf.hpp"
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
 
