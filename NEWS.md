@@ -3,7 +3,7 @@
 ## v2.0 (released 2022/??/??)
 
 * New features:
-  * The configuration UI has been ported to GTK+. Users of GTK+-based
+  * The configuration UI has been ported to GTK. Users of GTK-based
     desktops will no longer need to install the KDE4 or KF5 UI frontends
     in order to use rp-config.
   * libromdata is now compiled as a shared library on Windows and Linux.
@@ -21,12 +21,16 @@
     to a single string with an offset table using Python scripts. This
     reduces memory usage by eliminating one pointer per string, and it
     reduces the number of relocations, which improves startup time.
+    * DirectDrawSurface formats were previously converted manually, but
+      there were errors in the ASTC formats, so DDS has been converted to
+      use a Python script and these errors are fixed.
 
 * New parsers:
   * Atari7800: Atari 7800 ROM images with an A78 header.
 
 * New parser features:
   * ELF: OSABI 102 (Cell LV2) is now detected.
+  * DirectDrawSurface: Support non-standard ASTC FourCCs.
 
 * Bug fixes:
   * Lua: Fix a crash on Windows where systemName() sometimes returned
