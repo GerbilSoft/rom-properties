@@ -33,6 +33,168 @@ using std::vector;
 using std::wstring;	// for tstring
 
 /**
+ * Adjust tabs for the message widget.
+ * Message widget must have been created first.
+ * @param bVisible True for visible; false for not.
+ */
+void RP_ShellPropSheetExt_Private::adjustTabsForMessageWidgetVisibility(bool bVisible)
+{
+	// NOTE: IsWindowVisible(hMessageWidget) doesn't seem to be
+	// correct when this function is called, so we have to take
+	// the visibility as a parameter instead.
+	RECT rectMsgw;
+	GetClientRect(hMessageWidget, &rectMsgw);
+	int tab_h = iTabHeightOrig;
+	if (bVisible) {
+		tab_h -= rectMsgw.bottom;
+	}
+
+	for (const tab &tab : tabs) {
+		RECT tabRect;
+		GetClientRect(tab.hDlg, &tabRect);
+		if (tabRect.bottom != tab_h) {
+			SetWindowPos(tab.hDlg, nullptr, 0, 0, tabRect.right, tab_h,
+				SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+		}
+	}
+}
+
+/**
+ * Show the message widget.
+ * Message widget must have been created first.
+ * @param messageType Message type.
+ * @param lpszMsg Message.
+ */
+void RP_ShellPropSheetExt_Private::showMessageWidget(unsigned int messageType, const TCHAR *lpszMsg)
+{
+	assert(hMessageWidget != nullptr);
+	if (!hMessageWidget)
+		return;
+
+	// Set the message widget stuff.
+	MessageWidget_SetMessageType(hMessageWidget, messageType);
+	SetWindowText(hMessageWidget, lpszMsg);
+
+	adjustTabsForMessageWidgetVisibility(true);
+	ShowWindow(hMessageWidget, SW_SHOW);
+}
+
+/**
+ * Dialog subclass procedure to intercept WM_COMMAND for the "Options" button.
+ * @param hWnd		Dialog handle
+ * @param uMsg		Message
+ * @param wParam	WPARAM
+ * @param lParam	LPARAM
+ * @param uIdSubclass	Subclass ID (usually the control ID)
+ * @param dwRefData	RP_ShellPropSheetExt_Private*
+ */
+LRESULT CALLBACK RP_ShellPropSheetExt_Private::MainDialogSubclassProc(
+	HWND hWnd, UINT uMsg,
+	WPARAM wParam, LPARAM lParam,
+	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+	// FIXME: Move this to OptionsMenuButton.
+	switch (uMsg) {
+		case WM_NCDESTROY:
+			// Remove the window subclass.
+			// Reference: https://devblogs.microsoft.com/oldnewthing/20031111-00/?p=41883
+			RemoveWindowSubclass(hWnd, MainDialogSubclassProc, uIdSubclass);
+			break;
+
+		case WM_COMMAND: {
+			if (HIWORD(wParam) != BN_CLICKED)
+				break;
+			if (LOWORD(wParam) != IDC_RP_OPTIONS)
+				break;
+
+			// Pop up the menu.
+			auto *const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(dwRefData);
+			assert(d->hBtnOptions != nullptr);
+			if (!d->hBtnOptions)
+				break;
+			int menuId = OptionsMenuButton_PopupMenu(d->hBtnOptions);
+			if (menuId != 0) {
+				d->btnOptions_action_triggered(menuId);
+			}
+			return TRUE;
+		}
+
+		default:
+			break;
+	}
+
+	return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+/**
+ * Create the "Options" button in the parent window.
+ * Called by WM_INITDIALOG.
+ */
+void RP_ShellPropSheetExt_Private::createOptionsButton(void)
+{
+	assert(hDlgSheet != nullptr);
+	assert(romData != nullptr);
+	if (!hDlgSheet || !romData) {
+		// No dialog, or no ROM data loaded.
+		return;
+	}
+
+	HWND hWndParent = GetParent(hDlgSheet);
+	assert(hWndParent != nullptr);
+	if (!hWndParent) {
+		// No parent window...
+		return;
+	}
+
+	// is the "Options" button already present?
+	if (GetDlgItem(hWndParent, IDC_RP_OPTIONS) != nullptr) {
+		assert(!"IDC_RP_OPTIONS is already created.");
+		return;
+	}
+
+	// TODO: Verify RTL positioning.
+	HWND hBtnOK = GetDlgItem(hWndParent, IDOK);
+	HWND hTabControl = PropSheet_GetTabControl(hWndParent);
+	if (!hBtnOK || !hTabControl) {
+		return;
+	}
+
+	RECT rect_btnOK, rect_tabControl;
+	GetWindowRect(hBtnOK, &rect_btnOK);
+	GetWindowRect(hTabControl, &rect_tabControl);
+	MapWindowPoints(HWND_DESKTOP, hWndParent, (LPPOINT)&rect_btnOK, 2);
+	MapWindowPoints(HWND_DESKTOP, hWndParent, (LPPOINT)&rect_tabControl, 2);
+
+	// Create the "Options" button.
+	POINT ptBtn = {rect_tabControl.left, rect_btnOK.top};
+	const SIZE szBtn = {
+		rect_btnOK.right - rect_btnOK.left,
+		rect_btnOK.bottom - rect_btnOK.top
+	};
+	hBtnOptions = CreateWindowEx(dwExStyleRTL, WC_OPTIONSMENUBUTTON,
+		nullptr,	// OptionsMenuButton will set the text.
+		WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_GROUP | BS_PUSHBUTTON | BS_CENTER,
+		ptBtn.x, ptBtn.y, szBtn.cx, szBtn.cy,
+		hWndParent, (HMENU)IDC_RP_OPTIONS, nullptr, nullptr);
+	SetWindowFont(hBtnOptions, GetWindowFont(hDlgSheet), FALSE);
+
+	// Initialize the "Options" submenu.
+	OptionsMenuButton_ReinitMenu(hBtnOptions, romData);
+
+	// Fix up the tab order. ("Options" should be after "Apply".)
+	HWND hBtnApply = GetDlgItem(hWndParent, IDC_APPLY_BUTTON);
+	if (hBtnApply) {
+		SetWindowPos(hBtnOptions, hBtnApply,
+			0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+	}
+
+	// Subclass the parent dialog so we can intercept WM_COMMAND.
+	SetWindowSubclass(hWndParent, MainDialogSubclassProc,
+		static_cast<UINT_PTR>(IDC_RP_OPTIONS),
+		reinterpret_cast<DWORD_PTR>(this));
+}
+
+/**
  * Update a field's value.
  * This is called after running a ROM operation.
  * @param fieldIdx Field index.
