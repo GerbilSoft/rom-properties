@@ -110,12 +110,6 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
 			// Reference: https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-disablethreadlibrarycalls
 			DisableThreadLibraryCalls(hInstance);
 #endif /* !defined(_MSC_VER) || defined(_DLL) */
-
-			// Register RpGdiplusBackend and AchWin32.
-			rp_image::setBackendCreatorFn(RpGdiplusBackend::creator_fn);
-#if defined(ENABLE_ACHIEVEMENTS)
-			AchWin32::instance();
-#endif /* ENABLE_ACHIEVEMENTS */
 			break;
 		}
 
@@ -196,6 +190,12 @@ _Check_return_ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, 
 			return E_OUTOFMEMORY;
 		}
 	}
+
+	// Register RpGdiplusBackend and AchWin32.
+	rp_image::setBackendCreatorFn(RpGdiplusBackend::creator_fn);
+#if defined(ENABLE_ACHIEVEMENTS)
+	AchWin32::instance();
+#endif /* ENABLE_ACHIEVEMENTS */
 
 	// Check for supported classes.
 	HRESULT hr = CLASS_E_CLASSNOTAVAILABLE;
