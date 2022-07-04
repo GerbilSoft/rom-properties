@@ -195,24 +195,10 @@ class KeyManagerTabPrivate
 		}
 
 		/**
-		 * Import keys from Wii keys.bin. (BootMii format)
+		 * Import keys from a binary file.
+		 * @param fileID Type of file
 		 */
-		void importWiiKeysBin(void);
-
-		/**
-		 * Import keys from Wii U otp.bin.
-		 */
-		void importWiiUOtpBin(void);
-
-		/**
-		 * Import keys from 3DS boot9.bin.
-		 */
-		void import3DSboot9bin(void);
-
-		/**
-		 * Import keys from 3DS aeskeydb.bin.
-		 */
-		void import3DSaeskeydb(void);
+		void importKeysFromBin(KeyStoreUI::ImportFileID id);
 };
 
 /** KeyManagerTabPrivate **/
@@ -645,16 +631,16 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				}
 
 				case IDM_KEYMANAGER_IMPORT_WII_KEYS_BIN:
-					d->importWiiKeysBin();
+					d->importKeysFromBin(KeyStoreUI::ImportFileID::WiiKeysBin);
 					return true;
 				case IDM_KEYMANAGER_IMPORT_WIIU_OTP_BIN:
-					d->importWiiUOtpBin();
+					d->importKeysFromBin(KeyStoreUI::ImportFileID::WiiUOtpBin);
 					return true;
 				case IDM_KEYMANAGER_IMPORT_3DS_BOOT9_BIN:
-					d->import3DSboot9bin();
+					d->importKeysFromBin(KeyStoreUI::ImportFileID::N3DSboot9bin);
 					break;
 				case IDM_KEYMANAGER_IMPORT_3DS_AESKEYDB:
-					d->import3DSaeskeydb();
+					d->importKeysFromBin(KeyStoreUI::ImportFileID::N3DSaeskeydb);
 					break;
 
 				default:
@@ -1385,114 +1371,70 @@ void KeyManagerTabPrivate::loadImages(void)
 
 /** "Import" menu actions. **/
 
-/** TODO: Combine into a single function by using the menu ID or something. **/
-
 /**
- * Import keys from Wii keys.bin. (BootMii format)
+ * Import keys from a binary file.
+ * @param id Type of file
  */
-void KeyManagerTabPrivate::importWiiKeysBin(void)
+void KeyManagerTabPrivate::importKeysFromBin(KeyStoreUI::ImportFileID id)
 {
+	assert(id >= KeyStoreUI::ImportFileID::WiiKeysBin);
+	assert(id <= KeyStoreUI::ImportFileID::N3DSaeskeydb);
+	if (id < KeyStoreUI::ImportFileID::WiiKeysBin ||
+	    id > KeyStoreUI::ImportFileID::N3DSaeskeydb)
+		return;
+
+	static const char *const dialog_titles_tbl[] = {
+		// tr: Wii keys.bin dialog title
+		NOP_C_("KeyManagerTab", "Select Wii keys.bin File"),
+		// tr: Wii U otp.bin dialog title
+		NOP_C_("KeyManagerTab", "Select Wii U otp.bin File"),
+		// tr: Nintendo 3DS boot9.bin dialog title
+		NOP_C_("KeyManagerTab", "Select 3DS boot9.bin File"),
+		// tr: Nintendo 3DS aeskeydb.bin dialog title
+		NOP_C_("KeyManagerTab", "Select 3DS aeskeydb.bin File"),
+	};
+
+	static const char *const file_filters_tbl[] = {
+		// tr: Wii keys.bin file filter (RP format)
+		NOP_C_("KeyManagerTab", "keys.bin|keys.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
+		// tr: Wii U otp.bin file filter (RP format)
+		NOP_C_("KeyManagerTab", "otp.bin|otp.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
+		// tr: Nintendo 3DS boot9.bin file filter (RP format)
+		NOP_C_("KeyManagerTab", "boot9.bin|boot9.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
+		// tr: Nintendo 3DS aeskeydb.bin file filter (RP format)
+		NOP_C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
+	};
+
+	const char *const s_title = dpgettext_expr(
+		RP_I18N_DOMAIN, "KeyManagerTab", dialog_titles_tbl[(int)id]);
+	const char *const s_filter = dpgettext_expr(
+		RP_I18N_DOMAIN, "KeyManagerTab", file_filters_tbl[(int)id]);
+
 	assert(hWndPropSheet != nullptr);
 	if (!hWndPropSheet)
 		return;
 
 	const tstring tfilename = LibWin32UI::getOpenFileName(hWndPropSheet,
-		// tr: Wii keys.bin dialog title.
-		U82T_c(C_("KeyManagerTab", "Select Wii keys.bin File")),
-		// tr: Wii keys.bin file filter. (RP format)
-		C_("KeyManagerTab", "keys.bin|keys.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
-		ts_keyFileDir.c_str());
+		U82T_c(s_title), s_filter, ts_keyFileDir.c_str());
 	if (tfilename.empty())
 		return;
 
 	// Update ts_keyFileDir using the returned filename.
 	updateKeyFileDir(tfilename);
 
-	KeyStoreWin32::ImportReturn iret = keyStore->importKeysFromBin(
-		KeyStoreUI::ImportFileID::WiiKeysBin, T2U8(tfilename).c_str());
-	// TODO: Port showKeyImportReturnStatus from the KDE version.
-	//d->showKeyImportReturnStatus(filename, U82T_c(C_("KeyManagerTab", "Wii keys.bin")), iret);
-}
-
-/**
- * Import keys from Wii U otp.bin.
- */
-void KeyManagerTabPrivate::importWiiUOtpBin(void)
-{
-	assert(hWndPropSheet != nullptr);
-	if (!hWndPropSheet)
-		return;
-
-	const tstring tfilename = LibWin32UI::getOpenFileName(hWndPropSheet,
-		// tr: Wii U otp.bin dialog title.
-		U82T_c(C_("KeyManagerTab", "Select Wii U otp.bin File")),
-		// tr: Wii U otp.bin file filter. (RP format)
-		C_("KeyManagerTab", "otp.bin|otp.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
-		ts_keyFileDir.c_str());
-	if (tfilename.empty())
-		return;
-
-	// Update ts_keyFileDir using the returned filename.
-	updateKeyFileDir(tfilename);
+	// KeyStoreUI::ImportFileID
+	static const char *const import_menu_actions[] = {
+		NOP_C_("KeyManagerTab", "Wii keys.bin"),
+		NOP_C_("KeyManagerTab", "Wii U otp.bin"),
+		NOP_C_("KeyManagerTab", "3DS boot9.bin"),
+		NOP_C_("KeyManagerTab", "3DS aeskeydb.bin"),
+	};
 
 	KeyStoreWin32::ImportReturn iret = keyStore->importKeysFromBin(
-		KeyStoreUI::ImportFileID::WiiUOtpBin, T2U8(tfilename).c_str());
+		id, T2U8(tfilename).c_str());
 	// TODO: Port showKeyImportReturnStatus from the KDE version.
-	//d->showKeyImportReturnStatus(filename, U82T_c(C_("KeyManagerTab", "Wii U otp.bin"), iret);
-}
-
-/**
- * Import keys from 3DS boot9.bin.
- */
-void KeyManagerTabPrivate::import3DSboot9bin(void)
-{
-	assert(hWndPropSheet != nullptr);
-	if (!hWndPropSheet)
-		return;
-
-	const tstring tfilename = LibWin32UI::getOpenFileName(hWndPropSheet,
-		// tr: 3DS boot9.bin dialog title.
-		U82T_c(C_("KeyManagerTab", "Select 3DS boot9.bin File")),
-		// tr: 3DS boot9.bin file filter. (RP format)
-		C_("KeyManagerTab", "boot9.bin|boot9.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
-		ts_keyFileDir.c_str());
-	if (tfilename.empty())
-		return;
-
-	// Update ts_keyFileDir using the returned filename.
-	updateKeyFileDir(tfilename);
-
-	KeyStoreWin32::ImportReturn iret = keyStore->importKeysFromBin(
-		KeyStoreUI::ImportFileID::N3DSboot9bin, T2U8(tfilename).c_str());
-	// TODO: Port showKeyImportReturnStatus from the KDE version.
-	//d->showKeyImportReturnStatus(filename, U82T_c(C_("KeyManagerTab", "3DS boot9.bin"), iret);
-}
-
-/**
- * Import keys from 3DS aeskeydb.bin.
- */
-void KeyManagerTabPrivate::import3DSaeskeydb(void)
-{
-	assert(hWndPropSheet != nullptr);
-	if (!hWndPropSheet)
-		return;
-
-	const tstring tfilename = LibWin32UI::getOpenFileName(hWndPropSheet,
-		// tr: aeskeydb.bin dialog title.
-		U82T_c(C_("KeyManagerTab", "Select 3DS aeskeydb.bin File")),
-		// tr: aeskeydb.bin file filter. (RP format)
-		C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
-		ts_keyFileDir.c_str());
-	if (tfilename.empty())
-		return;
-
-	// Update ts_keyFileDir using the returned filename.
-	updateKeyFileDir(tfilename);
-
-	KeyStoreWin32::ImportReturn iret = keyStore->importKeysFromBin(
-		KeyStoreUI::ImportFileID::N3DSaeskeydb, T2U8(tfilename).c_str());
-	// TODO: Port showKeyImportReturnStatus from the KDE version.
-	//d->showKeyImportReturnStatus(filename, U82T_c(C_("KeyManagerTab", "3DS aeskeydb.bin"), iret);
+	//d->showKeyImportReturnStatus(filename,
+	//	dpgettext_expr(RP_I18N_DOMAIN, "KeyManagerTab", import_menu_actions[(int)id]), iret);
 }
 
 /** KeyManagerTab **/
