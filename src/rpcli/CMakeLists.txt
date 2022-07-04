@@ -50,8 +50,8 @@ INCLUDE(../libwin32common/DelayLoadHelper.cmake)
 SET_DELAYLOAD_EXTLIB_FLAGS()
 
 IF(RP_LIBROMDATA_IS_DLL)
-	# Delay-load libromdata because not doing so results in
-	# rom-properties.dll not loading at all.
+	# Delay-load libromdata in order to allow usage of
+	# architecture-specific subdirectories.
 	# TODO: MinGW version.
 	IF(MSVC)
 		GET_TARGET_PROPERTY(ROMDATA_DEBUG_POSTFIX   romdata DEBUG_POSTFIX)
