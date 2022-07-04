@@ -368,7 +368,8 @@ int RP_C_API main(int argc, char *argv[])
 #  define ROMDATA_DLL ROMDATA_PREFIX _T("romdata") ROMDATA_SUFFIX ROMDATA_EXT
 
 #  ifdef _MSC_VER
-	// TODO: Skip these if not linked with /DELAYLOAD?
+	// Delay load verification: romdata-X.dll
+	// TODO: Skip this if not linked with /DELAYLOAD?
 	if (DelayLoad_test_ImageTypesConfig_className() != 0) {
 		// Delay load failed.
 		_fputts(_T("*** ERROR: ") ROMDATA_DLL _T(" could not be loaded.\n\n")
@@ -382,6 +383,7 @@ int RP_C_API main(int argc, char *argv[])
 
 #if defined(ENABLE_NLS) && defined(_MSC_VER)
 	// Delay load verification: libgnuintl
+	// TODO: Skip this if not linked with /DELAYLOAD?
 	if (DelayLoad_test_textdomain() != 0) {
 		// Delay load failed.
 		// TODO: Use a CMake macro for the soversion?
