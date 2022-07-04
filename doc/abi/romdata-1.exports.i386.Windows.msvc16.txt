@@ -23,7 +23,7 @@ public: __thiscall LibRpFile::VectorFile::VectorFile(void)
 public: __thiscall LibRpTexture::rp_image::rp_image(int,int,enum LibRpTexture::rp_image::Format)
 public: __thiscall LibRpTexture::rp_image_backend::rp_image_backend(int,int,enum LibRpTexture::rp_image::Format)
 public: virtual __thiscall LibRpBase::ConfReader::~ConfReader(void)
-public: virtual __thiscall LibRpBase::ConfReader::~ConfReader(void)
+public: virtual __thiscall LibRpBase::Config::~Config(void)
 public: virtual __thiscall LibRomData::KeyStoreUI::~KeyStoreUI(void)
 public: __thiscall LibWin32Common::RegKey::~RegKey(void)
 public: __thiscall LibRpBase::RpPngWriter::~RpPngWriter(void)
@@ -39,7 +39,7 @@ int __cdecl LibRomData::CtrKeyScrambler::CtrScramble(union LibRomData::u128_t *,
 unsigned long __cdecl GdiplusHelper::InitGDIPlus(void)
 long __stdcall LibWin32Common::ListViewNoDividerDblClickSubclassProc(struct HWND__ *,unsigned int,unsigned int,long,unsigned int,unsigned long)
 long __stdcall LibWin32Common::MultiLineEditProc(struct HWND__ *,unsigned int,unsigned int,long,unsigned int,unsigned long)
-unsigned long volatile LibWin32Common::RP_ulTotalRefCount)
+unsigned long volatile LibWin32Common::RP_ulTotalRefCount
 public: static long __cdecl LibWin32Common::RegKey::RegisterApprovedExtension(struct _GUID const &,wchar_t const *)
 public: static long __cdecl LibWin32Common::RegKey::RegisterComObject(struct _GUID const &,wchar_t const *,wchar_t const *)
 public: static long __cdecl LibWin32Common::RegKey::RegisterFileType(wchar_t const *,class LibWin32Common::RegKey * *)
@@ -54,7 +54,7 @@ public: int __thiscall LibRpFile::RpFile::ata_identify_device(struct _ATA_RESP_I
 public: int __thiscall LibRpFile::RpFile::ata_identify_packet_device(struct _ATA_RESP_IDENTIFY_DEVICE *)
 public: class LibRpTexture::rp_image_backend const * __thiscall LibRpTexture::rp_image::backend(void)const
 public: void * __thiscall LibRpTexture::rp_image::bits(void)
-public: void * __thiscall LibRpTexture::rp_image::bits(void)
+public: void const * __thiscall LibRpTexture::rp_image::bits(void)const
 public: static int __cdecl LibRpBase::MD5Hash::calcHash(unsigned char *,unsigned int,void const *,unsigned int)
 public: class std::_Vector_const_iterator<class std::_Vector_val<struct std::_Simple_types<struct LibRpBase::RomFields::Field> > > __thiscall LibRpBase::RomFields::cbegin(void)const
 public: class std::_Vector_const_iterator<class std::_Vector_val<struct std::_Simple_types<struct LibRpBase::RomFields::Field> > > __thiscall LibRpBase::RomFields::cend(void)const
@@ -179,7 +179,7 @@ public: class LibRpBase::RomMetaData const * __thiscall LibRpBase::RomData::meta
 public: char const * __thiscall LibRpBase::RomData::mimeType(void)const
 public: int __thiscall LibRpBase::IconAnimHelper::nextFrame(int *)
 public: unsigned int __thiscall LibRpBase::Config::palLanguageForGameTDB(void)const
-public: unsigned int * __thiscall LibRpTexture::rp_image::palette(void)
+public: unsigned int const * __thiscall LibRpTexture::rp_image::palette(void)const
 public: unsigned int __thiscall LibRpTexture::rp_image::palette_len(void)const
 int (__stdcall* LibWin32Common::pfnIsThemeActive)(void)
 public: int __thiscall LibRpTexture::rp_image::premultiply(void)
@@ -202,7 +202,7 @@ class std::basic_string<char,struct std::char_traits<char>,class std::allocator<
 public: unsigned long __thiscall LibWin32Common::RegKey::samDesired(void)const
 int __cdecl LibRpBase::RpPng::save(char const *,struct LibRpBase::IconAnimData const *)
 int __cdecl LibRpBase::RpPng::save(char const *,class LibRpTexture::rp_image const *)
-public: void * __thiscall LibRpTexture::rp_image::scanLine(int)
+public: void const * __thiscall LibRpTexture::rp_image::scanLine(int)const
 public: int __thiscall LibRpFile::RpFile::scsi_inquiry(struct _SCSI_RESP_INQUIRY_STD *)
 public: int __thiscall LibRomData::KeyStoreUI::sectCount(void)const
 public: int __thiscall LibRomData::KeyStoreUI::sectKeyToIdx(int,int)const
@@ -220,7 +220,7 @@ public: int __thiscall LibRpTexture::rp_image::stride(void)const
 public: static class std::vector<struct LibRomData::RomDataFactory::ExtInfo,class std::allocator<struct LibRomData::RomDataFactory::ExtInfo> > const & __cdecl LibRomData::RomDataFactory::supportedFileExtensions(void)
 unsigned int __cdecl LibRomData::ImageTypesConfig::supportedImageTypes(unsigned int)
 public: static class std::vector<char const *,class std::allocator<char const *> > const & __cdecl LibRomData::RomDataFactory::supportedMimeTypes(void)
-unsigned int __cdecl LibRomData::ImageTypesConfig::imageTypeCount(void)
+unsigned int __cdecl LibRomData::ImageTypesConfig::sysCount(void)
 char const * __cdecl LibRomData::ImageTypesConfig::sysName(unsigned int)
 public: int __thiscall LibRpBase::RomFields::tabCount(void)const
 public: char const * __thiscall LibRpBase::RomFields::tabName(int)const
