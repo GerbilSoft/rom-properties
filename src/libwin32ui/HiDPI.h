@@ -10,7 +10,6 @@
 #define __ROMPROPERTIES_LIBWIN32UI_HIDPI_H__
 
 #include "RpWin32_sdk.h"
-#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,7 +26,6 @@ void rp_DpiUnloadModules(void);
  * @param hWnd Window handle.
  * @return DPI, or 0 on error.
  */
-RP_LIBROMDATA_PUBLIC
 UINT rp_GetDpiForWindow(HWND hWnd);
 
 /**
