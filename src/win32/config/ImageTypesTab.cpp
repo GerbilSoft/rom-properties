@@ -220,7 +220,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 		}
 
 		SIZE szCur;
-		LibWin32Common::measureTextSize(hWndPropSheet, hFontDlg, U82T_c(imageTypeName(i)), &szCur);
+		LibWin32UI::measureTextSize(hWndPropSheet, hFontDlg, U82T_c(imageTypeName(i)), &szCur);
 		h_lbl[i] = szCur.cy;
 		if (szCur.cx > sz_lblImageType.cx) {
 			sz_lblImageType.cx = szCur.cx;
@@ -235,7 +235,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	SIZE sz_lblSysName = {0, 0};
 	for (unsigned int sys = 0; sys < sysCount; sys++) {
 		SIZE szCur;
-		LibWin32Common::measureTextSize(hWndPropSheet, hFontDlg, U82T_c(sysName(sys)), &szCur);
+		LibWin32UI::measureTextSize(hWndPropSheet, hFontDlg, U82T_c(sysName(sys)), &szCur);
 		if (szCur.cx > sz_lblSysName.cx) {
 			sz_lblSysName.cx = szCur.cx;
 		}

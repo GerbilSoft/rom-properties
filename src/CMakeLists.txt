@@ -147,6 +147,7 @@ ENDIF()
 # installed and KF5 isn't explicitly disabled.
 IF(WIN32)
 	ADD_SUBDIRECTORY(libwin32common)
+	ADD_SUBDIRECTORY(libwin32ui)
 ELSE(WIN32)
 	ADD_SUBDIRECTORY(libunixcommon)
 ENDIF(WIN32)

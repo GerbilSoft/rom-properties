@@ -1,12 +1,12 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libwin32common)                   *
+ * ROM Properties Page shell extension. (libwin32ui)                       *
  * HiDPI.c: High DPI wrapper functions.                                    *
  *                                                                         *
  * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "config.libwin32common.h"
+#include "config.libwin32ui.h"
 #include "HiDPI.h"
 
 // librpthreads

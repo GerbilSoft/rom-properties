@@ -16,8 +16,8 @@
 #include "librpbase/config/AboutTabText.hpp"
 using namespace LibRpBase;
 
-// libwin32common
-#include "libwin32common/SubclassWindow.h"
+// libwin32ui
+#include "libwin32ui/SubclassWindow.h"
 
 // Property sheet icon.
 // Extracted from imageres.dll or shell32.dll.
@@ -530,7 +530,7 @@ void AboutTabPrivate::initProgramTitleText(void)
 	// overlap the tab control.
 	// FIXME: If we have too many lines of text, this might still cause problems.
 	SIZE sz_hStaticVersion;
-	int ret = LibWin32Common::measureTextSize(hWndPropSheet, hFontDlg, st_version.c_str(), &sz_hStaticVersion);
+	int ret = LibWin32UI::measureTextSize(hWndPropSheet, hFontDlg, st_version.c_str(), &sz_hStaticVersion);
 	if (ret == 0) {
 		RECT rectStaticVersion;
 		GetWindowRect(hStaticVersion, &rectStaticVersion);
@@ -973,7 +973,7 @@ void AboutTabPrivate::initDialog(void)
 	// Subclass the control.
 	// TODO: Error handling?
 	SetWindowSubclass(hRichEdit,
-		LibWin32Common::MultiLineEditProc,
+		LibWin32UI::MultiLineEditProc,
 		IDC_ABOUT_RICHEDIT,
 		reinterpret_cast<DWORD_PTR>(GetParent(hWndPropSheet)));
 

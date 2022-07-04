@@ -24,9 +24,9 @@ using LibRpTexture::rp_image;
 using std::tstring;
 using std::unique_ptr;
 
-// libwin32common
-#include "libwin32common/AutoGetDC.hpp"
-using LibWin32Common::AutoGetDC;
+// libwin32ui
+#include "libwin32ui/AutoGetDC.hpp"
+using LibWin32UI::AutoGetDC;
 
 class AchievementsTabPrivate
 {
@@ -225,7 +225,7 @@ void AchievementsTabPrivate::updateListViewStyle(void)
 	ListView_SetExtendedListViewStyle(hListView, lvsExStyle);
 
 	// If the alt row color changed, redo the ImageList.
-	COLORREF colorAltRow = LibWin32Common::getAltRowColor();
+	COLORREF colorAltRow = LibWin32UI::getAltRowColor();
 	if (colorAltRow != this->colorAltRow) {
 		this->colorAltRow = colorAltRow;
 		updateImageList();
@@ -468,7 +468,7 @@ void AchievementsTabPrivate::reset(void)
 		ts_ach += U82T_c(pAch->getDescUnlocked(id));
 
 		// Measure the text width.
-		int col1Width_cur = LibWin32Common::measureStringForListView(hDC, ts_ach);
+		int col1Width_cur = LibWin32UI::measureStringForListView(hDC, ts_ach);
 		if (col1Width_cur > col1Width) {
 			col1Width = col1Width_cur;
 		}

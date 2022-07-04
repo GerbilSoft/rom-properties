@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * CreateThumbnail.cpp: TCreateThumbnail<HBITMAP> implementation.          *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -149,7 +149,7 @@ HBITMAP CreateThumbnailNoAlpha::rpImageToImgClass(const rp_image *img) const
 	// most part, at least with Windows Explorer, but the cached
 	// Thumbs.db images won't reflect color scheme changes.
 	HBITMAP hbmp = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(
-		LibWin32Common::GetSysColor_ARGB32(COLOR_WINDOW));
+		LibWin32UI::GetSysColor_ARGB32(COLOR_WINDOW));
 	return hbmp;
 }
 
@@ -178,7 +178,7 @@ HBITMAP CreateThumbnailNoAlpha::rescaleImgClass(const HBITMAP &imgClass, const I
 	// TODO: "nearest" parameter.
 	const SIZE win_sz = {sz.width, sz.height};
 	HBITMAP hbmp = RpImageWin32::toHBITMAP(img,
-		LibWin32Common::GetSysColor_ARGB32(COLOR_WINDOW),
+		LibWin32UI::GetSysColor_ARGB32(COLOR_WINDOW),
 		win_sz, (method == ScalingMethod::Nearest));
 	img->unref();
 	return hbmp;

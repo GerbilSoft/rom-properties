@@ -1,18 +1,18 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libwin32common)                   *
+ * ROM Properties Page shell extension. (libwin32ui)                       *
  * DialogBuilder.hpp: DLGTEMPLATEEX builder class.                         *
  *                                                                         *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBWIN32COMMON_DIALOGBUILDER_HPP__
-#define __ROMPROPERTIES_LIBWIN32COMMON_DIALOGBUILDER_HPP__
+#ifndef __ROMPROPERTIES_LIBWIN32UI_DIALOGBUILDER_HPP__
+#define __ROMPROPERTIES_LIBWIN32UI_DIALOGBUILDER_HPP__
 
-// C includes.
+// C includes
 #include <stdint.h>
 
-// Windows SDK.
+// Windows SDK
 #include "RpWin32_sdk.h"
 
 // Standard window classes.
@@ -25,7 +25,7 @@
 #define WC_ORD_SCROLLBAR	MAKEINTATOM(0x0084)
 #define WC_ORD_COMBOBOX		MAKEINTATOM(0x0085)
 
-namespace LibWin32Common {
+namespace LibWin32UI {
 
 class DialogBuilder
 {
@@ -94,4 +94,4 @@ class DialogBuilder
 
 }
 
-#endif /* __ROMPROPERTIES_LIBWIN32COMMON_DIALOGBUILDER_HPP__ */
+#endif /* __ROMPROPERTIES_LIBWIN32UI_DIALOGBUILDER_HPP__ */

@@ -86,7 +86,7 @@ class RP_ShellPropSheetExt_Private
 		RECT rectHeader;
 
 		// wtsapi32.dll for Remote Desktop status. (WinXP and later)
-		LibWin32Common::WTSSessionNotification wts;
+		LibWin32UI::WTSSessionNotification wts;
 		// ListView controls (for toggling LVS_EX_DOUBLEBUFFER)
 		std::vector<HWND> hwndListViewControls;
 

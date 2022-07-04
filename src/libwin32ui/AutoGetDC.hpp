@@ -1,22 +1,22 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libwin32common)                   *
+ * ROM Properties Page shell extension. (libwin32ui)                       *
  * AutoGetDC.hpp: GetDC() RAII wrapper class.                              *
  *                                                                         *
  * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBWIN32COMMON_AUTOGETDC_HPP__
-#define __ROMPROPERTIES_LIBWIN32COMMON_AUTOGETDC_HPP__
+#ifndef __ROMPROPERTIES_LIBWIN32UI_AUTOGETDC_HPP__
+#define __ROMPROPERTIES_LIBWIN32UI_AUTOGETDC_HPP__
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cassert>
 
-// Windows SDK.
+// Windows SDK
 #include "RpWin32_sdk.h"
 #include <windowsx.h>
 
-namespace LibWin32Common {
+namespace LibWin32UI {
 
 /**
  * GetDC() RAII wrapper.
@@ -72,4 +72,4 @@ class AutoGetDC
 
 }
 
-#endif /* __ROMPROPERTIES_LIBWIN32COMMON_AUTOGETDC_HPP__ */
+#endif /* __ROMPROPERTIES_LIBWIN32UI_AUTOGETDC_HPP__ */

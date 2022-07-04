@@ -1,8 +1,8 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libwin32common)                   *
+ * ROM Properties Page shell extension. (libwin32ui)                       *
  * DialogBuilder.cpp: DLGTEMPLATEEX builder class.                         *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,19 +15,19 @@
 
 #include "DialogBuilder.hpp"
 
-// C includes.
+// C includes
 #include <stdlib.h>
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cassert>
 
-// Windows SDK.
+// Windows SDK
 #include <objbase.h>
 
-// PACKED attribute.
+// PACKED attribute
 #include "common.h"
 
-namespace LibWin32Common {
+namespace LibWin32UI {
 
 DialogBuilder::DialogBuilder()
 	: m_pDlgBuf(m_DlgBuf)

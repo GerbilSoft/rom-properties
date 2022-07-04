@@ -593,7 +593,6 @@ IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 			RP_LibRpTexture_GdiplusHelper_ForceLinkage
 			RP_LibWin32Common_propsys_xp_ForceLinkage
 			RP_LibWin32Common_RegKey_ForceLinkage
-			RP_LibWin32Common_WinUI_ForceLinkage
 			)
 		IF(CPU_i386)
 			SET(SYM_PREFIX "_")

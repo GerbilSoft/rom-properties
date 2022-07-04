@@ -1,15 +1,13 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libwin32common)                   *
+ * ROM Properties Page shell extension. (libwin32ui)                       *
  * WinUI.hpp: Windows UI common functions.                                 *
  *                                                                         *
  * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "config.libwin32common.h"
 #include "WinUI.hpp"
 #include "AutoGetDC.hpp"
-#include "MiniU82T.hpp"
 
 #include <commdlg.h>
 #include <shlwapi.h>
@@ -17,7 +15,7 @@
 #include <comdef.h>
 #include <shobjidl.h>
 
-// C++ includes.
+// C++ includes
 #include <algorithm>
 #include <memory>
 #include <string>
@@ -27,18 +25,45 @@ using std::unique_ptr;
 using std::tstring;
 using std::vector;
 
-// COM smart pointer typedefs.
+// COM smart pointer typedefs
 _COM_SMARTPTR_TYPEDEF(IFileDialog, IID_IFileDialog);
 _COM_SMARTPTR_TYPEDEF(IShellItem, IID_IShellItem);
 
-// WinUI isn't used by libromdata directly,
-// so use some linker hax to force linkage.
-extern "C" {
-	extern uint8_t RP_LibWin32Common_WinUI_ForceLinkage;
-	uint8_t RP_LibWin32Common_WinUI_ForceLinkage;
-}
+namespace LibWin32UI {
 
-namespace LibWin32Common {
+// NOTE: We can't easily link to LibWin32Common for U82T_c(),
+// so we'll define it here.
+
+/**
+ * Mini U82W() function.
+ * @param mbs UTF-8 string.
+ * @return UTF-16 C++ wstring.
+ */
+#ifdef UNICODE
+static wstring U82T_c(const char *mbs)
+{
+	tstring ts_ret;
+
+	// NOTE: cchWcs includes the NULL terminator.
+	int cchWcs = MultiByteToWideChar(CP_UTF8, 0, mbs, -1, nullptr, 0);
+	if (cchWcs <= 1) {
+		return ts_ret;
+	}
+	cchWcs--;
+ 
+	wchar_t *const wcs = new wchar_t[cchWcs];
+	MultiByteToWideChar(CP_UTF8, 0, mbs, -1, wcs, cchWcs);
+	ts_ret.assign(wcs, cchWcs);
+	delete[] wcs;
+	return ts_ret;
+}
+#else /* !UNICODE */
+static inline string U82T_c(const char *mbs)
+{
+	// TODO: Convert UTF-8 to ANSI?
+	return string(mbs);
+}
+#endif /* UNICODE */
 
 /**
  * Convert UNIX line endings to DOS line endings.
@@ -268,7 +293,7 @@ int measureStringForListView(HDC hDC, const tstring &tstr, int *pNlCount)
 		// resize.
 		//
 		// TODO: Use ownerdraw instead? (WM_MEASUREITEM / WM_DRAWITEM)
-		// NOTE: Not using LibWin32Common::measureTextSize()
+		// NOTE: Not using LibWin32UI::measureTextSize()
 		// because that does its own newline checks.
 		// TODO: Verify the values here.
 		SIZE textSize;

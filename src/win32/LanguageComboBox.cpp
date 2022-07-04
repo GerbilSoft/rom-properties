@@ -32,7 +32,7 @@ class LanguageComboBoxPrivate
 		LanguageComboBoxPrivate(HWND hWnd)
 			: hWnd(hWnd)
 			, himglFlags(nullptr)
-			, dwExStyleRTL(LibWin32Common::isSystemRTL())
+			, dwExStyleRTL(LibWin32UI::isSystemRTL())
 			, forcePAL(false)
 		{
 			minSize.cx = 0;
@@ -217,7 +217,7 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 		}
 
 		SIZE size;
-		if (!LibWin32Common::measureTextSize(hWnd, hFont, s_lc.c_str(), &size)) {
+		if (!LibWin32UI::measureTextSize(hWnd, hFont, s_lc.c_str(), &size)) {
 			minSize.cx = std::max(minSize.cx, size.cx);
 			minSize.cy = std::max(minSize.cy, size.cy);
 		}

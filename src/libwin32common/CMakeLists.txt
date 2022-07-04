@@ -13,9 +13,6 @@ PROJECT(win32common LANGUAGES C CXX)
 # since MSVC will trim the object file. Compile it in the
 # executable target directly.
 
-# Check for Windows SDK headers.
-CHECK_INCLUDE_FILES("shellscalingapi.h" HAVE_SHELLSCALINGAPI_H)
-
 # Check for unordered_set::reserve.
 SET(OLD_CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES})
 CHECK_CXX_SOURCE_COMPILES("#include <unordered_set>
@@ -32,31 +29,23 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.lib${PROJECT_NAME}.h.in" "${C
 
 # Sources and headers.
 SET(${PROJECT_NAME}_SRCS
-	DialogBuilder.cpp
 	RegKey.cpp
-	WinUI.cpp
 	w32err.c
 	ComBase.cpp
 	propsys_xp.c
 	userdirs.cpp
-	HiDPI.h
 	MiniU82T.cpp
 	env_vars.cpp
 	sdk/GUID_fn.c
 	)
 SET(${PROJECT_NAME}_H
 	RpWin32_sdk.h
-	DialogBuilder.hpp
 	RegKey.hpp
-	AutoGetDC.hpp
-	WinUI.hpp
 	w32err.h
 	w32time.h
 	ComBase.hpp
 	propsys_xp.h
-	WTSSessionNotification.hpp
 	userdirs.hpp
-	HiDPI.c
 	MiniU82T.hpp
 	env_vars.hpp
 	sdk/QITab.h

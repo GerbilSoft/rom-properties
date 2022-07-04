@@ -87,7 +87,7 @@ int RP_ShellPropSheetExt_Private::updateField(int fieldIdx)
 			}
 
 			if (field->data.str && !field->data.str->empty()) {
-				const tstring ts_text = LibWin32Common::unix2dos(U82T_s(*field->data.str));
+				const tstring ts_text = LibWin32UI::unix2dos(U82T_s(*field->data.str));
 				SetWindowText(hLabel, ts_text.c_str());
 			} else {
 				SetWindowText(hLabel, _T(""));
@@ -214,7 +214,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 				defaultFileName += info->default_ext;
 			}
 
-			const tstring tfilename = LibWin32Common::getSaveFileName(hDlgSheet,
+			const tstring tfilename = LibWin32UI::getSaveFileName(hDlgSheet,
 				U82T_c(dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", info->title)),
 				dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", info->filter),
 				defaultFileName.c_str());
@@ -269,7 +269,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 				ROMOutput ro(romData, lc);
 				oss << ro;
 				oss.flush();
-				ts_out = LibWin32Common::unix2dos(U82T_s(oss.str()));
+				ts_out = LibWin32UI::unix2dos(U82T_s(oss.str()));
 				break;
 			}
 			case IDM_OPTIONS_MENU_COPY_JSON: {
@@ -331,7 +331,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 		string initialFile = FileSystem::replace_ext(romData->filename(), op->sfi.ext);
 
 		// Prompt for a save file.
-		tstring t_save_filename = LibWin32Common::getSaveFileName(hDlgSheet,
+		tstring t_save_filename = LibWin32UI::getSaveFileName(hDlgSheet,
 			U82T_c(op->sfi.title), filter.c_str(), U82T_s(initialFile));
 		if (t_save_filename.empty())
 			return;

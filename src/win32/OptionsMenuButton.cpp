@@ -16,8 +16,8 @@
 #include "librpbase/TextFuncs_wchar.hpp"
 using LibRpBase::RomData;
 
-// libwin32common
-#include "libwin32common/WinUI.hpp"
+// libwin32ui
+#include "libwin32ui/WinUI.hpp"
 
 // C++ STL classes
 using std::vector;
@@ -77,10 +77,10 @@ class OptionsMenuButtonPrivate
 OptionsMenuButtonPrivate::OptionsMenuButtonPrivate(HWND hWnd)
 	: hWnd(hWnd)
 	, hMenuOptions(nullptr)
-	, dwExStyleRTL(LibWin32Common::isSystemRTL())
+	, dwExStyleRTL(LibWin32UI::isSystemRTL())
 {
 	// Initialize the text and style for the "Options" menu button.
-	const bool isComCtl32_v610 = LibWin32Common::isComCtl32_v610();
+	const bool isComCtl32_v610 = LibWin32UI::isComCtl32_v610();
 
 	if (isComCtl32_v610) {
 		// COMCTL32 is v6.10 or later. Use BS_SPLITBUTTON.

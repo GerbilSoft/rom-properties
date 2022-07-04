@@ -18,9 +18,9 @@
 #include "libwin32common/sdk/IListView.hpp"
 #include "KeyStore_OwnerDataCallback.hpp"
 
-// libwin32common
-#include "libwin32common/SubclassWindow.h"
-using LibWin32Common::WTSSessionNotification;
+// libwin32ui
+#include "libwin32ui/SubclassWindow.h"
+using LibWin32UI::WTSSessionNotification;
 
 // librpbase, librpfile
 #include "librpbase/crypto/KeyManager.hpp"
@@ -240,11 +240,11 @@ KeyManagerTabPrivate::KeyManagerTabPrivate()
 	loadImages();
 
 	// Initialize the alternate row color.
-	colorAltRow = LibWin32Common::getAltRowColor();
+	colorAltRow = LibWin32UI::getAltRowColor();
 	hbrAltRow = CreateSolidBrush(colorAltRow);
 
 	// Check the COMCTL32.DLL version.
-	isComCtl32_v610 = LibWin32Common::isComCtl32_v610();
+	isComCtl32_v610 = LibWin32UI::isComCtl32_v610();
 }
 
 KeyManagerTabPrivate::~KeyManagerTabPrivate()
@@ -417,7 +417,7 @@ void KeyManagerTabPrivate::initUI(void)
 	// NOTE: ListView_GetStringWidth() doesn't adjust for the monospaced font.
 	SIZE szValue;
 	HFONT hFontMono = fontHandler.monospacedFont();
-	int ret = LibWin32Common::measureTextSize(hListView, hFontMono, _T("0123456789ABCDEF0123456789ABCDEF"), &szValue);
+	int ret = LibWin32UI::measureTextSize(hListView, hFontMono, _T("0123456789ABCDEF0123456789ABCDEF"), &szValue);
 	assert(ret == 0);
 	if (ret == 0) {
 		column_width[1] = szValue.cx + column_padding[1];
@@ -437,7 +437,7 @@ void KeyManagerTabPrivate::initUI(void)
 		column_width[0] = std::max(column_width[0], tmp_width[0]);
 		//column_width[1] = std::max(column_width[1], tmp_width[1]);
 
-		ret = LibWin32Common::measureTextSize(hListView, hFontMono, U82T_s(key->value), &szValue);
+		ret = LibWin32UI::measureTextSize(hListView, hFontMono, U82T_s(key->value), &szValue);
 		assert(ret == 0);
 		if (ret == 0) {
 			column_width[1] = std::max(column_width[1], (int)szValue.cx + column_padding[1]);
@@ -681,7 +681,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			auto *const d = reinterpret_cast<KeyManagerTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (d) {
 				// Reinitialize the alternate row color.
-				d->colorAltRow = LibWin32Common::getAltRowColor();
+				d->colorAltRow = LibWin32UI::getAltRowColor();
 				if (d->hbrAltRow) {
 					DeleteBrush(d->hbrAltRow);
 				}
@@ -1396,7 +1396,7 @@ void KeyManagerTabPrivate::importWiiKeysBin(void)
 	if (!hWndPropSheet)
 		return;
 
-	const tstring tfilename = LibWin32Common::getOpenFileName(hWndPropSheet,
+	const tstring tfilename = LibWin32UI::getOpenFileName(hWndPropSheet,
 		// tr: Wii keys.bin dialog title.
 		U82T_c(C_("KeyManagerTab", "Select Wii keys.bin File")),
 		// tr: Wii keys.bin file filter. (RP format)
@@ -1423,7 +1423,7 @@ void KeyManagerTabPrivate::importWiiUOtpBin(void)
 	if (!hWndPropSheet)
 		return;
 
-	const tstring tfilename = LibWin32Common::getOpenFileName(hWndPropSheet,
+	const tstring tfilename = LibWin32UI::getOpenFileName(hWndPropSheet,
 		// tr: Wii U otp.bin dialog title.
 		U82T_c(C_("KeyManagerTab", "Select Wii U otp.bin File")),
 		// tr: Wii U otp.bin file filter. (RP format)
@@ -1450,7 +1450,7 @@ void KeyManagerTabPrivate::import3DSboot9bin(void)
 	if (!hWndPropSheet)
 		return;
 
-	const tstring tfilename = LibWin32Common::getOpenFileName(hWndPropSheet,
+	const tstring tfilename = LibWin32UI::getOpenFileName(hWndPropSheet,
 		// tr: 3DS boot9.bin dialog title.
 		U82T_c(C_("KeyManagerTab", "Select 3DS boot9.bin File")),
 		// tr: 3DS boot9.bin file filter. (RP format)
@@ -1477,7 +1477,7 @@ void KeyManagerTabPrivate::import3DSaeskeydb(void)
 	if (!hWndPropSheet)
 		return;
 
-	const tstring tfilename = LibWin32Common::getOpenFileName(hWndPropSheet,
+	const tstring tfilename = LibWin32UI::getOpenFileName(hWndPropSheet,
 		// tr: aeskeydb.bin dialog title.
 		U82T_c(C_("KeyManagerTab", "Select 3DS aeskeydb.bin File")),
 		// tr: aeskeydb.bin file filter. (RP format)

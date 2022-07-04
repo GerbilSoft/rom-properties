@@ -14,8 +14,8 @@
 // librpbase
 using namespace LibRpBase;
 
-// libwin32common
-#include "libwin32common/SubclassWindow.h"
+// libwin32ui
+#include "libwin32ui/SubclassWindow.h"
 
 // Property sheet icon.
 // Extracted from imageres.dll or shell32.dll.
@@ -235,7 +235,7 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 	switch (uMsg) {
 		case WM_SHOWWINDOW: {
 			// Check for RTL.
-			if (LibWin32Common::isSystemRTL() != 0) {
+			if (LibWin32UI::isSystemRTL() != 0) {
 				// Set the dialog to allow automatic right-to-left adjustment.
 				LONG_PTR lpExStyle = GetWindowLongPtr(hWnd, GWL_EXSTYLE);
 				lpExStyle |= WS_EX_LAYOUTRTL;

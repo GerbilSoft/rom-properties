@@ -125,6 +125,9 @@ STDAPI DllCanUnloadNow(void)
 	LanguageComboBoxUnregister();
 	OptionsMenuButtonUnregister();
 
+        // Unload modules needed for High-DPI, if necessary.
+        rp_DpiUnloadModules();
+
 	// Shut down GDI+ if it was initialized.
 	if (gdipToken != 0) {
 		GdiplusHelper::ShutdownGDIPlus(gdipToken);

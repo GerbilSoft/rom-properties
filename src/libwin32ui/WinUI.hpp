@@ -1,13 +1,13 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libwin32common)                   *
+ * ROM Properties Page shell extension. (libwin32ui)                       *
  * WinUI.hpp: Windows UI common functions.                                 *
  *                                                                         *
  * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBWIN32COMMON_WINUICOMMON_HPP__
-#define __ROMPROPERTIES_LIBWIN32COMMON_WINUICOMMON_HPP__
+#ifndef __ROMPROPERTIES_LIBWIN32UI_WINUICOMMON_HPP__
+#define __ROMPROPERTIES_LIBWIN32UI_WINUICOMMON_HPP__
 
 // C++ includes
 #include <string>
@@ -15,7 +15,7 @@
 #include "RpWin32_sdk.h"
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
-namespace LibWin32Common {
+namespace LibWin32UI {
 
 /**
  * Convert UNIX line endings to DOS line endings.
@@ -234,4 +234,4 @@ LRESULT CALLBACK ListViewNoDividerDblClickSubclassProc(
 
 }
 
-#endif /* __ROMPROPERTIES_LIBWIN32COMMON_WINUICOMMON_HPP__ */
+#endif /* __ROMPROPERTIES_LIBWIN32UI_WINUICOMMON_HPP__ */

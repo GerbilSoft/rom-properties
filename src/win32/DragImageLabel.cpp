@@ -216,7 +216,7 @@ bool DragImageLabelPrivate::updateBitmaps(void)
 	const int colorIndex = LibWin32Common::isThemeActive()
 		? COLOR_WINDOW	// active theme
 		: COLOR_3DFACE;	// no theme
-	const Gdiplus::ARGB gdipBgColor = LibWin32Common::GetSysColor_ARGB32(colorIndex);
+	const Gdiplus::ARGB gdipBgColor = LibWin32UI::GetSysColor_ARGB32(colorIndex);
 
 	// Return value.
 	bool bRet = false;

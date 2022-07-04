@@ -10,11 +10,11 @@
 #include "CacheTab.hpp"
 #include "res/resource.h"
 
-// librpbase, librpfile, libwin32common
+// librpbase, librpfile, libwin32common, libwin32ui
 using namespace LibRpBase;
 using namespace LibRpFile;
 using LibWin32Common::RegKey;
-using LibWin32Common::WTSSessionNotification;
+using LibWin32UI::WTSSessionNotification;
 
 // IEmptyVolumeCacheCallBack implementation.
 #include "RP_EmptyVolumeCacheCallback.hpp"

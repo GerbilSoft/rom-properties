@@ -24,11 +24,11 @@
 #include "LanguageComboBox.hpp"
 #include "OptionsMenuButton.hpp"
 
-// libwin32common
-#include "libwin32common/AutoGetDC.hpp"
-#include "libwin32common/SubclassWindow.h"
-using LibWin32Common::AutoGetDC;
-using LibWin32Common::WTSSessionNotification;
+// libwin32ui
+#include "libwin32ui/AutoGetDC.hpp"
+#include "libwin32ui/SubclassWindow.h"
+using LibWin32UI::AutoGetDC;
+using LibWin32UI::WTSSessionNotification;
 
 // NOTE: Using "RomDataView" for the libi18n context, since that
 // matches what's used for the KDE and GTK+ frontends.
@@ -80,8 +80,8 @@ RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt 
 	, iTabHeightOrig(0)
 	, def_lc(0)
 	, cboLanguage(nullptr)
-	, dwExStyleRTL(LibWin32Common::isSystemRTL())
-	, colorAltRow(LibWin32Common::getAltRowColor())
+	, dwExStyleRTL(LibWin32UI::isSystemRTL())
+	, colorAltRow(LibWin32UI::getAltRowColor())
 	, isFullyInit(false)
 {
 	// Initialize structs.
@@ -240,13 +240,13 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 	}
 
 	const tstring ts_sysInfo =
-		LibWin32Common::unix2dos(U82T_s(rp_sprintf_p(
+		LibWin32UI::unix2dos(U82T_s(rp_sprintf_p(
 			// tr: %1$s == system name, %2$s == file type
 			C_("RomDataView", "%1$s\n%2$s"), systemName, fileType)));
 
 	if (!ts_sysInfo.empty()) {
 		// Determine the appropriate label size.
-		if (!LibWin32Common::measureTextSize(hDlg, hFont, ts_sysInfo, &size_lblSysInfo)) {
+		if (!LibWin32UI::measureTextSize(hDlg, hFont, ts_sysInfo, &size_lblSysInfo)) {
 			// Start the total_widget_width.
 			total_widget_width = size_lblSysInfo.cx;
 		} else {
@@ -348,11 +348,11 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 
 		// NULL string == empty string
 		if (field.data.str) {
-			str_nl = LibWin32Common::unix2dos(U82T_s(*(field.data.str)), &lf_count);
+			str_nl = LibWin32UI::unix2dos(U82T_s(*(field.data.str)), &lf_count);
 		}
 	} else {
 		// Use the specified string.
-		str_nl = LibWin32Common::unix2dos(str, &lf_count);
+		str_nl = LibWin32UI::unix2dos(str, &lf_count);
 	}
 
 	// Field height.
@@ -465,8 +465,8 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 			// Reference: http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
 			// TODO: Error handling?
 			SUBCLASSPROC proc = (dwStyle & ES_MULTILINE)
-				? LibWin32Common::MultiLineEditProc
-				: LibWin32Common::SingleLineEditProc;
+				? LibWin32UI::MultiLineEditProc
+				: LibWin32UI::SingleLineEditProc;
 			SetWindowSubclass(hDlgItem, proc,
 				static_cast<UINT_PTR>(cId),
 				reinterpret_cast<DWORD_PTR>(GetParent(hDlgSheet)));
@@ -475,12 +475,12 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 		tab.lblCredits = hDlgItem;
 		SetWindowFont(hDlgItem, hFont, false);
 
-		// NOTE: We can't use LibWin32Common::measureTextSize() because
+		// NOTE: We can't use LibWin32UI::measureTextSize() because
 		// that includes the HTML markup, and LM_GETIDEALSIZE is Vista+ only.
 		// Use a wrapper measureTextSizeLink() that removes HTML-like
 		// tags and then calls measureTextSize().
 		SIZE szText;
-		LibWin32Common::measureTextSizeLink(hWndTab, hFont, str_nl, &szText);
+		LibWin32UI::measureTextSizeLink(hWndTab, hFont, str_nl, &szText);
 
 		// Determine the position.
 		const POINT pos = {
@@ -528,8 +528,8 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 		// Reference:  http://blogs.msdn.com/b/oldnewthing/archive/2007/08/20/4470527.aspx
 		// TODO: Error handling?
 		SUBCLASSPROC proc = (dwStyle & ES_MULTILINE)
-			? LibWin32Common::MultiLineEditProc
-			: LibWin32Common::SingleLineEditProc;
+			? LibWin32UI::MultiLineEditProc
+			: LibWin32UI::SingleLineEditProc;
 		SetWindowSubclass(hDlgItem, proc,
 			static_cast<UINT_PTR>(cId),
 			reinterpret_cast<DWORD_PTR>(GetParent(hDlgSheet)));
@@ -624,7 +624,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 					continue;
 
 				// Get the width of this specific entry.
-				// TODO: Use LibWin32Common::measureTextSize()?
+				// TODO: Use LibWin32UI::measureTextSize()?
 				SIZE textSize;
 				GetTextExtentPoint32(hDC, tname.data(), (int)tname.size(), &textSize);
 				int chk_w = rect_chkbox.right + textSize.cx;
@@ -687,7 +687,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 		int chk_w;
 		if (elemsPerRow == 0) {
 			// Get the width of this specific entry.
-			// TODO: Use LibWin32Common::measureTextSize()?
+			// TODO: Use LibWin32UI::measureTextSize()?
 			SIZE textSize;
 			GetTextExtentPoint32(hDC, tname.data(), (int)tname.size(), &textSize);
 			chk_w = rect_chkbox.right + textSize.cx;
@@ -876,7 +876,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			if (!str.empty()) {
 				// NOTE: pszText is LPTSTR, not LPCTSTR...
 				const tstring tstr = U82T_s(str);
-				lvData.col_widths[col] = LibWin32Common::measureStringForListView(hDC, tstr);
+				lvData.col_widths[col] = LibWin32UI::measureStringForListView(hDC, tstr);
 				lvColumn.pszText = const_cast<LPTSTR>(tstr.c_str());
 				ListView_InsertColumn(hListView, col, &lvColumn);
 			} else {
@@ -955,7 +955,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 				tstring tstr = U82T_s(data_str);
 
 				int nl_count;
-				int width = LibWin32Common::measureStringForListView(hDC, tstr, &nl_count);
+				int width = LibWin32UI::measureStringForListView(hDC, tstr, &nl_count);
 				if (col < colCount) {
 					lvData.col_widths[col] = std::max(lvData.col_widths[col], width);
 				}
@@ -1006,8 +1006,8 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			// NOTE: ListView uses LVSIL_SMALL for LVS_REPORT.
 			ListView_SetImageList(hListView, himl, LVSIL_SMALL);
 			const uint32_t lvBgColor[2] = {
-				LibWin32Common::GetSysColor_ARGB32(COLOR_WINDOW),
-				LibWin32Common::getAltRowColor_ARGB32()
+				LibWin32UI::GetSysColor_ARGB32(COLOR_WINDOW),
+				LibWin32UI::getAltRowColor_ARGB32()
 			};
 
 			// Add icons.
@@ -1189,7 +1189,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	}
 
 	// Subclass the parent dialog so we can intercept HDN_DIVIDERDBLCLICK.
-	SetWindowSubclass(hListView, LibWin32Common::ListViewNoDividerDblClickSubclassProc,
+	SetWindowSubclass(hListView, LibWin32UI::ListViewNoDividerDblClickSubclassProc,
 		static_cast<UINT_PTR>(cId),
 		reinterpret_cast<DWORD_PTR>(this));
 
@@ -1504,7 +1504,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 						continue;
 
 					const tstring tstr = U82T_s(str);
-					lvData.col_widths[col] = LibWin32Common::measureStringForListView(hDC, tstr);
+					lvData.col_widths[col] = LibWin32UI::measureStringForListView(hDC, tstr);
 				}
 			}
 
@@ -1530,7 +1530,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 				     ++iter_sdr, ++iter_ddr, col++)
 				{
 					tstring tstr = U82T_s(*iter_sdr);
-					int width = LibWin32Common::measureStringForListView(hDC, tstr);
+					int width = LibWin32UI::measureStringForListView(hDC, tstr);
 					if (col < colCount) {
 						lvData.col_widths[col] = std::max(lvData.col_widths[col], width);
 					}
@@ -1588,7 +1588,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 
 		// Calculate text height.
 		SIZE textSize;
-		if (LibWin32Common::measureTextSize(hDlgSheet, hFontDlg, _T("Ay"), &textSize) != 0) {
+		if (LibWin32UI::measureTextSize(hDlgSheet, hFontDlg, _T("Ay"), &textSize) != 0) {
 			// Error getting text height.
 			textSize.cy = 0;
 		}
@@ -3041,7 +3041,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			// Did the background color change?
 			// NOTE: Assuming the main background color changed if
 			// the alternate row color changed.
-			COLORREF colorAltRow = LibWin32Common::getAltRowColor();
+			COLORREF colorAltRow = LibWin32UI::getAltRowColor();
 			if (colorAltRow != d->colorAltRow) {
 				// Alternate row color changed.
 				d->colorAltRow = colorAltRow;

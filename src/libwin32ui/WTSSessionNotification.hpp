@@ -1,21 +1,21 @@
 /************************************************************************************
- * ROM Properties Page shell extension. (libwin32common)                            *
+ * ROM Properties Page shell extension. (libwin32ui)                                *
  * WTSSessionNotification.hpp: WTSRegisterSessionNotification() RAII wrapper class. *
  *                                                                                  *
- * Copyright (c) 2016-2019 by David Korth.                                          *
+ * Copyright (c) 2016-2022 by David Korth.                                          *
  * SPDX-License-Identifier: GPL-2.0-or-later                                        *
  ************************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBWIN32COMMON_WTSSESSIONNOTIFICATION_HPP__
-#define __ROMPROPERTIES_LIBWIN32COMMON_WTSSESSIONNOTIFICATION_HPP__
+#ifndef __ROMPROPERTIES_LIBWIN32UI_WTSSESSIONNOTIFICATION_HPP__
+#define __ROMPROPERTIES_LIBWIN32UI_WTSSESSIONNOTIFICATION_HPP__
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cassert>
 
-// Windows SDK.
+// Windows SDK
 #include "RpWin32_sdk.h"
 
-namespace LibWin32Common {
+namespace LibWin32UI {
 
 /**
  * WTSRegisterSessionNotification() RAII wrapper.
@@ -36,10 +36,10 @@ class WTSSessionNotification
 
 	public:
 #ifndef NOTIFY_FOR_ALL_SESSIONS
-# define NOTIFY_FOR_ALL_SESSIONS 1
+#  define NOTIFY_FOR_ALL_SESSIONS 1
 #endif
 #ifndef NOTIFY_FOR_THIS_SESSION
-# define NOTIFY_FOR_THIS_SESSION 0
+#  define NOTIFY_FOR_THIS_SESSION 0
 #endif
 
 		/**
@@ -103,4 +103,4 @@ class WTSSessionNotification
 
 }
 
-#endif /* __ROMPROPERTIES_LIBWIN32COMMON_WTSSESSIONNOTIFICATION_HPP__ */
+#endif /* __ROMPROPERTIES_LIBWIN32UI_WTSSESSIONNOTIFICATION_HPP__ */

@@ -1,13 +1,13 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libwin32common)                   *
+ * ROM Properties Page shell extension. (libwin32ui)                       *
  * SubclassWindow.h: Wrapper functions for COMCTL32 subclassing.           *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBWIN32COMMON_SUBCLASSWINDOW_H__
-#define __ROMPROPERTIES_LIBWIN32COMMON_SUBCLASSWINDOW_H__
+#ifndef __ROMPROPERTIES_LIBWIN32UI_SUBCLASSWINDOW_H__
+#define __ROMPROPERTIES_LIBWIN32UI_SUBCLASSWINDOW_H__
 
 #include "config.libwin32common.h"
 
@@ -148,4 +148,4 @@ static inline LRESULT DefSubclassProc_compat(HWND hWnd, UINT uMsg, WPARAM wParam
 
 #endif /* ENABLE_OLDWINCOMPAT */
 
-#endif /* __ROMPROPERTIES_LIBWIN32COMMON_SUBCLASSWINDOW_H__ */
+#endif /* __ROMPROPERTIES_LIBWIN32UI_SUBCLASSWINDOW_H__ */
