@@ -198,6 +198,8 @@ key_manager_tab_init(KeyManagerTab *tab)
 	
 	// Column 2: Value
 	// TODO: Monospace font
+	// TODO: Handle the cell editor's 'insert-text' signal and stop it
+	// if the entered text is non-hex. (with allowKanji support)
 	column = gtk_tree_view_column_new();
 	gtk_tree_view_column_set_title(column, C_("KeyManagerTab", "Value"));
 	gtk_tree_view_column_set_resizable(column, TRUE);
