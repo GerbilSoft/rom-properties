@@ -47,9 +47,6 @@ class OptionsMenuButton;
 // Data models
 class ListDataModel;
 
-// Uncomment to enable the automatic timeout for the ROM Operations KMessageWidget.
-//#define AUTO_TIMEOUT_MESSAGEWIDGET 1
-
 #include "ui_RomDataView.h"
 class RomDataViewPrivate
 {
@@ -86,9 +83,6 @@ class RomDataViewPrivate
 #ifdef HAVE_KMESSAGEWIDGET
 		// KMessageWidget for ROM operation notifications.
 		KMessageWidget *messageWidget;
-#  ifdef AUTO_TIMEOUT_MESSAGEWIDGET
-		QTimer *tmrMessageWidget;
-#  endif /* AUTO_TIMEOUT_MESSAGEWIDGET */
 #endif /* HAVE_KMESSAGEWIDGET */
 
 		// Multi-language functionality.

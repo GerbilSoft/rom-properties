@@ -35,9 +35,6 @@ using std::ostringstream;
 using std::string;
 using std::vector;
 
-// Uncomment to enable the automatic timeout for the ROM Operations MessageWidget.
-//#define AUTO_TIMEOUT_MESSAGEWIDGET 1
-
 /**
  * Update a field's value.
  * This is called after running a ROM operation.
@@ -593,10 +590,6 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 		MessageWidget *const messageWidget = MESSAGE_WIDGET(page->messageWidget);
 		message_widget_set_message_type(messageWidget, messageType);
 		message_widget_set_text(messageWidget, params.msg.c_str());
-#ifdef AUTO_TIMEOUT_MESSAGEWIDGET
-		message_widget_show_with_timeout(messageWidget);
-#else /* AUTO_TIMEOUT_MESSAGEWIDGET */
 		gtk_widget_show(page->messageWidget);
-#endif /* AUTO_TIMEOUT_MESSAGEWIDGET */
 	}
 }

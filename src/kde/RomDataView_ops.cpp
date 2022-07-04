@@ -369,23 +369,6 @@ void RomDataView::btnOptions_triggered(int id)
 			d->messageWidget->setCloseButtonVisible(true);
 			d->messageWidget->setWordWrap(true);
 			d->ui.vboxLayout->addWidget(d->messageWidget);
-
-#  ifdef AUTO_TIMEOUT_MESSAGEWIDGET
-			d->tmrMessageWidget = new QTimer(this);
-			d->tmrMessageWidget->setSingleShot(true);
-			d->tmrMessageWidget->setInterval(10*1000);
-			connect(d->tmrMessageWidget, SIGNAL(timeout()),
-				d->messageWidget, SLOT(animatedHide()));
-#    if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-			// KMessageWidget::hideAnimationFinished was added in KF5.
-			// FIXME: This is after the animation *finished*, not when
-			// the Close button was clicked.
-			connect(d->messageWidget, &KMessageWidget::showAnimationFinished,
-				d->tmrMessageWidget, static_cast<void (QTimer::*)()>(&QTimer::start));
-			connect(d->messageWidget, &KMessageWidget::hideAnimationFinished,
-				d->tmrMessageWidget, &QTimer::stop);
-#    endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
-#  endif /* AUTO_TIMEOUT_MESSAGEWIDGET */
 		}
 
 		if (ret == 0) {
@@ -403,13 +386,6 @@ void RomDataView::btnOptions_triggered(int id)
 		}
 		d->messageWidget->setText(qs_msg);
 		d->messageWidget->animatedShow();
-#  if QT_VERSION < QT_VERSION_CHECK(5,0,0)
-#    ifdef AUTO_TIMEOUT_MESSAGEWIDGET
-		// KDE4's KMessageWidget doesn't have the "animation finished"
-		// signals, so we'll have to start the timer manually.
-		d->tmrMessageWidget->start();
-#    endif /* AUTO_TIMEOUT_MESSAGEWIDGET */
-#  endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 #endif /* HAVE_KMESSAGEWIDGET */
 	}
 }

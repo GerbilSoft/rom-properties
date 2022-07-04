@@ -45,9 +45,6 @@ RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	, btnOptions(nullptr)
 #ifdef HAVE_KMESSAGEWIDGET
 	, messageWidget(nullptr)
-#  ifdef AUTO_TIMEOUT_MESSAGEWIDGET
-	, tmrMessageWidget(nullptr)
-#  endif /* AUTO_TIMEOUT_MESSAGEWIDGET */
 #endif /* HAVE_KMESSAGEWIDGET */
 	, cboLanguage(nullptr)
 	, def_lc(0)
