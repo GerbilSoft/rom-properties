@@ -587,6 +587,7 @@
     <glob pattern="*.3ds"/>
     <glob pattern="*.3dz"/>
     <glob pattern="*.cci"/>
+    <glob pattern="*.csu"/>
     <magic priority="50">
       <match value="NCSD" type="string" offset="256">
         <match value="\x00\x00\x00\x00\x00\x00\x00\x00" type="string" offset="272"/>
