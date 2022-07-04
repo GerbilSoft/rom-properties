@@ -9,6 +9,10 @@
 #ifndef __ROMPROPERTIES_WIN32_CONFIG_H__
 #define __ROMPROPERTIES_WIN32_CONFIG_H__
 
+// FIXME: Overlay icon handler is crashing in some cases.
+// Uncomment this to enable the overlay icon handler.
+//#define ENABLE_OVERLAY_ICON_HANDLER 1
+
 /* Define to 1 if you have the "thumbcache.h" header file. */
 #cmakedefine HAVE_THUMBCACHE_H 1
 
