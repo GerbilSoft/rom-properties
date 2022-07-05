@@ -594,7 +594,7 @@ TGA::TGA(IRpFile *file)
 	// Looks like it's valid.
 	d->isValid = true;
 
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
 	// Byteswap the header.
 	d->tgaHeader.cmap.idx0		= le16_to_cpu(d->tgaHeader.cmap.idx0);
 	d->tgaHeader.cmap.len		= le16_to_cpu(d->tgaHeader.cmap.len);
@@ -602,7 +602,7 @@ TGA::TGA(IRpFile *file)
 	d->tgaHeader.img.y_origin	= le16_to_cpu(d->tgaHeader.img.y_origin);
 	d->tgaHeader.img.width		= le16_to_cpu(d->tgaHeader.img.width);
 	d->tgaHeader.img.height		= le16_to_cpu(d->tgaHeader.img.height);
-#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
 	// Cache the texture dimensions.
 	d->dimensions[0] = d->tgaHeader.img.width;
