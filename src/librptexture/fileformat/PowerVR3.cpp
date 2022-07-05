@@ -887,18 +887,30 @@ PowerVR3::PowerVR3(IRpFile *file)
 	if (d->pvr3Header.version == PVR3_VERSION_HOST) {
 		// Host-endian. Byteswapping is not needed.
 		d->isByteswapNeeded = false;
+
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+		// Pixel format and channel depth need to be swapped if this is
+		// a big-endian file, since it's technically a 64-bit field.
+		std::swap(d->pvr3Header.pixel_format, d->pvr3Header.channel_depth);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 	} else if (d->pvr3Header.version == PVR3_VERSION_SWAP) {
 		// Swap-endian. Byteswapping is needed.
 		// NOTE: Keeping `version` unswapped in case
 		// the actual image data needs to be byteswapped.
 		d->pvr3Header.flags		= __swab32(d->pvr3Header.flags);
 
-		// Pixel format is technically 64-bit, so we have to
-		// byteswap *and* swap both DWORDs.
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+		// Pixel format and channel depth need to be swapped if this is
+		// a big-endian file, since it's technically a 64-bit field.
 		const uint32_t channel_depth	= __swab32(d->pvr3Header.pixel_format);
 		const uint32_t pixel_format	= __swab32(d->pvr3Header.channel_depth);
 		d->pvr3Header.pixel_format	= pixel_format;
 		d->pvr3Header.channel_depth	= channel_depth;
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+		// Little-endian file. Simply byteswap the two fields.
+		d->pvr3Header.pixel_format	= __swab32(d->pvr3Header.pixel_format);
+		d->pvr3Header.channel_depth	= __swab32(d->pvr3Header.channel_depth);
+#endif
 
 		d->pvr3Header.color_space	= __swab32(d->pvr3Header.color_space);
 		d->pvr3Header.channel_type	= __swab32(d->pvr3Header.channel_type);
