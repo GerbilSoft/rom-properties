@@ -11,6 +11,9 @@
 
 #include "RpPng.hpp"
 
+// librpcpu
+#include "librpcpu/byteorder.h"
+
 // librpfile
 #include "librpfile/IRpFile.hpp"
 using LibRpFile::IRpFile;
@@ -316,6 +319,9 @@ static rp_image *loadPng(png_structp png_ptr, png_infop info_ptr)
 			// TODO: Does this work with 1, 2, and 4-bit grayscale?
 			fmt = rp_image::Format::ARGB32;
 			png_set_gray_to_rgb(png_ptr);
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+			png_set_swap_alpha(png_ptr);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 			if (!has_sBIT) {
 				const uint8_t bits = static_cast<uint8_t>(bit_depth > 8 ? 8 : bit_depth);
 				png_sBIT_fake.red = 0;
@@ -368,6 +374,9 @@ static rp_image *loadPng(png_structp png_ptr, png_infop info_ptr)
 		case PNG_COLOR_TYPE_RGB_ALPHA:
 			// 32-bit ARGB.
 			fmt = rp_image::Format::ARGB32;
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+			png_set_swap_alpha(png_ptr);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 			if (!has_sBIT) {
 				const uint8_t bits = static_cast<uint8_t>(bit_depth > 8 ? 8 : bit_depth);
 				png_sBIT_fake.red = bits;
@@ -396,11 +405,17 @@ static rp_image *loadPng(png_structp png_ptr, png_infop info_ptr)
 		// rp_image doesn't support 24-bit color.
 		// Expand it by having libpng fill the alpha channel
 		// with 0xFF (opaque).
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
 		png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+		png_set_filler(png_ptr, 0xFF, PNG_FILLER_BEFORE);
+#endif
 	}
 
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	// We're using "BGR" color.
 	png_set_bgr(png_ptr);
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
 	// Update the PNG info.
 	png_read_update_info(png_ptr, info_ptr);
