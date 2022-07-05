@@ -13,7 +13,7 @@
 #include "data/Nintendo3DSSysTitles.hpp"
 #include "data/NintendoLanguage.hpp"
 
-// librpbase, librpfile, librptexture
+// librpbase, librpcpu, librpfile, librptexture
 #include "librptexture/decoder/ImageDecoder_N3DS.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
@@ -68,6 +68,7 @@ class NintendoBadgePrivate final : public RomDataPrivate
 
 	public:
 		// Badge header.
+		// Byteswapped to host-endian on load, except `magic` and `title_id`.
 		union {
 			Badge_PRBS_Header prbs;
 			Badge_CABS_Header cabs;
@@ -186,10 +187,10 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 		case BadgeType::PRBS:
 			if (megaBadge) {
 				// Sanity check: Maximum of 16x16 for mega badges.
-				assert(le32_to_cpu(badgeHeader.prbs.mb_width) <= 16);
-				assert(le32_to_cpu(badgeHeader.prbs.mb_height) <= 16);
-				if (le32_to_cpu(badgeHeader.prbs.mb_width) > 16 ||
-				    le32_to_cpu(badgeHeader.prbs.mb_height) > 16)
+				assert(badgeHeader.prbs.mb_width <= 16);
+				assert(badgeHeader.prbs.mb_height <= 16);
+				if (badgeHeader.prbs.mb_width > 16 ||
+				    badgeHeader.prbs.mb_height > 16)
 				{
 					// Mega Badge is too mega for us.
 					return nullptr;
@@ -287,8 +288,8 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 		// and concatenate them manually.
 
 		// Mega badge dimensions.
-		const unsigned int mb_width     = le32_to_cpu(badgeHeader.prbs.mb_width);
-		const unsigned int mb_height    = le32_to_cpu(badgeHeader.prbs.mb_height);
+		const unsigned int mb_width     = badgeHeader.prbs.mb_width;
+		const unsigned int mb_height    = badgeHeader.prbs.mb_height;
 		const unsigned int mb_row_bytes = badge_dims * sizeof(uint32_t);
 
 		// Badges are stored vertically, then horizontally.
@@ -445,9 +446,17 @@ NintendoBadge::NintendoBadge(IRpFile *file)
 
 	// Check for mega badge.
 	if (d->badgeType == NintendoBadgePrivate::BadgeType::PRBS) {
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+		d->badgeHeader.prbs.badge_id	= le32_to_cpu(d->badgeHeader.prbs.badge_id);
+		d->badgeHeader.prbs.mb_width	= le32_to_cpu(d->badgeHeader.prbs.mb_width);
+		d->badgeHeader.prbs.mb_height	= le32_to_cpu(d->badgeHeader.prbs.mb_height);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 		d->megaBadge = (d->badgeHeader.prbs.mb_width > 1 ||
 				d->badgeHeader.prbs.mb_height > 1);
 	} else {
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+		d->badgeHeader.cabs.set_id	= le32_to_cpu(d->badgeHeader.cabs.set_id);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 		// CABS is a set icon, so no mega badge here.
 		d->megaBadge = false;
 	}
@@ -796,7 +805,7 @@ int NintendoBadge::loadFieldData(void)
 			}
 
 			// Badge ID.
-			d->fields->addField_string_numeric(C_("NintendoBadge", "Set ID"), le32_to_cpu(cabs->set_id));
+			d->fields->addField_string_numeric(C_("NintendoBadge", "Set ID"), cabs->set_id);
 
 			// Set name.
 			d->fields->addField_string(s_set_name_title,
