@@ -186,10 +186,10 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 		case BadgeType::PRBS:
 			if (megaBadge) {
 				// Sanity check: Maximum of 16x16 for mega badges.
-				assert(badgeHeader.prbs.mb_width <= 16);
-				assert(badgeHeader.prbs.mb_height <= 16);
-				if (badgeHeader.prbs.mb_width > 16 ||
-				    badgeHeader.prbs.mb_height > 16)
+				assert(le32_to_cpu(badgeHeader.prbs.mb_width) <= 16);
+				assert(le32_to_cpu(badgeHeader.prbs.mb_height) <= 16);
+				if (le32_to_cpu(badgeHeader.prbs.mb_width) > 16 ||
+				    le32_to_cpu(badgeHeader.prbs.mb_height) > 16)
 				{
 					// Mega Badge is too mega for us.
 					return nullptr;
@@ -287,8 +287,8 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 		// and concatenate them manually.
 
 		// Mega badge dimensions.
-		const unsigned int mb_width     = badgeHeader.prbs.mb_width;
-		const unsigned int mb_height    = badgeHeader.prbs.mb_height;
+		const unsigned int mb_width     = le32_to_cpu(badgeHeader.prbs.mb_width);
+		const unsigned int mb_height    = le32_to_cpu(badgeHeader.prbs.mb_height);
 		const unsigned int mb_row_bytes = badge_dims * sizeof(uint32_t);
 
 		// Badges are stored vertically, then horizontally.
