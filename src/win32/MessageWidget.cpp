@@ -229,7 +229,9 @@ void MessageWidgetPrivate::paint(void)
 		// Message
 		RECT textRect = {
 			rect.left, rect.top + (szIcon.cy / 4),
-			rect.right, rect.bottom - ((szIcon.cy / 4) * 2)
+			// NOTE: Not subtracting 2x szIcon.cy in order to
+			// leave room for descenders, e.g. in 'g' and 'y'.
+			rect.right, rect.bottom - (szIcon.cy / 4)
 		};
 		TCHAR tbuf[128];
 		int len = GetWindowTextLength(hWnd);
