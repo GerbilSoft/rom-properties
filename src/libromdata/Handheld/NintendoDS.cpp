@@ -997,7 +997,7 @@ int NintendoDS::loadFieldData(void)
 				continue;
 
 			if (d->nds_icon_title.title[langID][0] != cpu_to_le16('\0')) {
-				pMap_full_title->emplace(lc, utf16_to_utf8(
+				pMap_full_title->emplace(lc, utf16le_to_utf8(
 					d->nds_icon_title.title[langID],
 					ARRAY_SIZE(d->nds_icon_title.title[langID])));
 			}
@@ -1332,7 +1332,7 @@ int NintendoDS::loadMetaData(void)
 		// TODO: Use the default LC if it's available.
 		// For now, default to English.
 		if (d->nds_icon_title.title[NDS_LANG_ENGLISH][0] != cpu_to_le16(0)) {
-			s_title = utf16_to_utf8(d->nds_icon_title.title[NDS_LANG_ENGLISH],
+			s_title = utf16le_to_utf8(d->nds_icon_title.title[NDS_LANG_ENGLISH],
 			                        ARRAY_SIZE(d->nds_icon_title.title[NDS_LANG_ENGLISH]));
 
 			// Adjust the title based on the number of lines.
