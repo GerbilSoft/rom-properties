@@ -697,7 +697,7 @@ int Xbox_XBE::loadFieldData(void)
 		if (size == sizeof(pe_filename_W)) {
 			// Convert to UTF-8.
 			pe_filename_W[ARRAY_SIZE(pe_filename_W)-1] = 0;
-			string pe_filename = utf16_to_utf8(pe_filename_W, -1);
+			string pe_filename = utf16le_to_utf8(pe_filename_W, -1);
 			if (!pe_filename.empty()) {
 				d->fields->addField_string(s_filename_title, pe_filename);
 			} else {
