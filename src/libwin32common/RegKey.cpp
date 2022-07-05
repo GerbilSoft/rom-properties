@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * RegKey.hpp: Registry key wrapper.                                       *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -619,13 +619,15 @@ LONG RegKey::RegisterFileType(LPCTSTR fileType, RegKey **pHkey_Assoc)
 }
 
 /**
- * Register a COM object in this DLL.
- * @param rclsid CLSID.
- * @param progID ProgID.
- * @param description Description of the COM object.
+ * Register a COM object in a DLL.
+ * @param hInstance DLL to be used for registration
+ * @param rclsid CLSID
+ * @param progID ProgID
+ * @param description Description of the COM object
  * @return ERROR_SUCCESS on success; WinAPI error on error.
  */
-LONG RegKey::RegisterComObject(REFCLSID rclsid, LPCTSTR progID, LPCTSTR description)
+LONG RegKey::RegisterComObject(HINSTANCE hInstance, REFCLSID rclsid,
+	LPCTSTR progID, LPCTSTR description)
 {
 	TCHAR szClsid[40];
 	LONG lResult = StringFromGUID2(rclsid, szClsid, _countof(szClsid));
@@ -660,13 +662,14 @@ LONG RegKey::RegisterComObject(REFCLSID rclsid, LPCTSTR progID, LPCTSTR descript
 
 	// Create an InprocServer32 subkey.
 	RegKey hkcr_InprocServer32(hkcr_Obj_CLSID, _T("InprocServer32"), KEY_WRITE, true);
-	if (!hkcr_InprocServer32.isOpen())
+	if (!hkcr_InprocServer32.isOpen()) {
 		return hkcr_InprocServer32.lOpenRes();
-	// Set the default value to the DLL filename.
-	// TODO: Get this once and save it?
+	}
+
+	// Set the default value to the filename of the specified DLL.
 	// TODO: Duplicated from win32/. Consolidate the two?
 	TCHAR dll_filename[MAX_PATH];
-	DWORD dwResult = GetModuleFileName(HINST_THISCOMPONENT, dll_filename, _countof(dll_filename));
+	DWORD dwResult = GetModuleFileName(hInstance, dll_filename, _countof(dll_filename));
 	if (dwResult == 0 || GetLastError() != ERROR_SUCCESS) {
 		// Cannot get the DLL filename.
 		// TODO: Windows XP doesn't SetLastError() if the
@@ -698,8 +701,8 @@ LONG RegKey::RegisterComObject(REFCLSID rclsid, LPCTSTR progID, LPCTSTR descript
 
 /**
  * Register a shell extension as an approved extension.
- * @param rclsid CLSID.
- * @param description Description of the shell extension.
+ * @param rclsid CLSID
+ * @param description Description of the shell extension
  * @return ERROR_SUCCESS on success; WinAPI error on error.
  */
 LONG RegKey::RegisterApprovedExtension(REFCLSID rclsid, LPCTSTR description)
@@ -724,8 +727,8 @@ LONG RegKey::RegisterApprovedExtension(REFCLSID rclsid, LPCTSTR description)
 
 /**
  * Unregister a COM object in this DLL.
- * @param rclsid CLSID.
- * @param progID ProgID.
+ * @param rclsid CLSID
+ * @param progID ProgID
  * @return ERROR_SUCCESS on success; WinAPI error on error.
  */
 LONG RegKey::UnregisterComObject(REFCLSID rclsid, LPCTSTR progID)

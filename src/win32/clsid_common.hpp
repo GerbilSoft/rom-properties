@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * clsid_common.hpp: CLSID common macros.                                  *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -51,7 +51,8 @@ LONG klass::RegisterCLSID(void) \
 	extern const TCHAR RP_ProgID[]; \
 	\
 	/* Register the COM object. */ \
-	LONG lResult = RegKey::RegisterComObject(__uuidof(klass), RP_ProgID, description); \
+	LONG lResult = RegKey::RegisterComObject(HINST_THISCOMPONENT, \
+		__uuidof(klass), RP_ProgID, description); \
 	if (lResult != ERROR_SUCCESS) { \
 		return lResult; \
 	} \
