@@ -249,10 +249,10 @@ void ImageDecoderTest::SetUp(void)
 	/* FIXME: Per-type minimum sizes.
 	 * This fails on some very small SVR files.
 	ASSERT_GT(ddsSize, 4+sizeof(DDS_HEADER))
-		<< "DDS test image is too small.";
+		<< "DDS image is too small.";
 	*/
 	ASSERT_LE(ddsSize, MAX_DDS_IMAGE_FILESIZE)
-		<< "DDS test image is too big.";
+		<< "DDS image is too big.";
 
 	// Read the DDS image into memory.
 	m_dds_buf.resize(ddsSize);
@@ -261,7 +261,7 @@ void ImageDecoderTest::SetUp(void)
 	gzclose_r(m_gzDds);
 	m_gzDds = nullptr;
 
-	ASSERT_EQ(ddsSize, (uint32_t)sz) << "Error loading test image file: short read";
+	ASSERT_EQ(ddsSize, (uint32_t)sz) << "Error loading DDS image file: short read";
 
 	// Open the PNG image file being tested.
 	path.resize(18);	// Back to "ImageDecoder_data/".
@@ -271,7 +271,7 @@ void ImageDecoderTest::SetUp(void)
 	ASSERT_TRUE(file->isOpen()) << "Error loading PNG image file: " << strerror(file->lastError());
 
 	// Maximum image size.
-	ASSERT_LE(file->size(), MAX_PNG_IMAGE_FILESIZE) << "PNG test image is too big.";
+	ASSERT_LE(file->size(), MAX_PNG_IMAGE_FILESIZE) << "PNG image is too big.";
 
 	// Read the PNG image into memory.
 	const size_t pngSize = static_cast<size_t>(file->size());
@@ -403,13 +403,13 @@ void ImageDecoderTest::decodeTest_internal(void)
 
 	// Load the image file.
 	m_romData = RomDataFactory::create(m_f_dds);
-	ASSERT_TRUE(m_romData != nullptr) << "Could not load the test image.";
-	ASSERT_TRUE(m_romData->isValid()) << "Could not load the test image.";
-	ASSERT_TRUE(m_romData->isOpen()) << "Could not load the test image.";
+	ASSERT_TRUE(m_romData != nullptr) << "Could not load the DDS image.";
+	ASSERT_TRUE(m_romData->isValid()) << "Could not load the DDS image.";
+	ASSERT_TRUE(m_romData->isOpen()) << "Could not load the DDS image.";
 
 	// Get the DDS image as an rp_image.
 	const rp_image *const img_dds = m_romData->image(mode.imgType);
-	ASSERT_TRUE(img_dds != nullptr) << "Could not load the test image as rp_image.";
+	ASSERT_TRUE(img_dds != nullptr) << "Could not load the DDS image as rp_image.";
 
 	// Get the image again.
 	// The pointer should be identical to the first one.
@@ -438,7 +438,7 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 
 	// Open the image as an IRpFile.
 	m_f_dds = new MemFile(m_dds_buf.data(), m_dds_buf.size());
-	ASSERT_TRUE(m_f_dds->isOpen()) << "Could not create MemFile for the test image.";
+	ASSERT_TRUE(m_f_dds->isOpen()) << "Could not create MemFile for the DDS image.";
 	m_f_dds->setFilename(mode.dds_gz_filename);
 
 	// NOTE: We can't simply decode the image multiple times.
@@ -498,14 +498,14 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 
 	for (unsigned int i = max_iterations; i > 0; i--) {
 		m_romData = fn_ctor(m_f_dds);
-		ASSERT_TRUE(m_romData != nullptr) << "Could not load the test image.";
-		ASSERT_TRUE(m_romData->isValid()) << "Could not load the test image.";
-		ASSERT_TRUE(m_romData->isOpen()) << "Could not load the test image.";
+		ASSERT_TRUE(m_romData != nullptr) << "Could not load the DDS image.";
+		ASSERT_TRUE(m_romData->isValid()) << "Could not load the DDS image.";
+		ASSERT_TRUE(m_romData->isOpen()) << "Could not load the DDS image.";
 
-		// Get the source image as an rp_image.
+		// Get the DDS image as an rp_image.
 		// TODO: imgType to string?
 		const rp_image *const img_dds = m_romData->image(mode.imgType);
-		ASSERT_TRUE(img_dds != nullptr) << "Could not load the test image as rp_image.";
+		ASSERT_TRUE(img_dds != nullptr) << "Could not load the DDS image as rp_image.";
 
 		UNREF_AND_NULL_NOCHK(m_romData);
 	}
