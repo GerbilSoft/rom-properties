@@ -752,23 +752,31 @@ int RpPngWriterPrivate::write_IDAT(const png_byte *const *row_pointers, bool is_
 	}
 #endif /* PNG_SETJMP_SUPPORTED */
 
-	// TODO: Byteswap image data on big-endian systems?
-	//png_set_swap(png_ptr);
-
-	// TODO: What format on big-endian?
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	if (!is_abgr) {
 		png_set_bgr(png_ptr);
 	}
-
-	if (cache.skip_alpha && cache.format == rp_image::Format::ARGB32) {
-		// Need to skip the alpha bytes.
-		// Assuming 'after' on LE, 'before' on BE.
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
-		static const int flags = PNG_FILLER_AFTER;
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-		static const int flags = PNG_FILLER_BEFORE;
+	if (is_abgr) {
+		png_set_bgr(png_ptr);
+	}
 #endif
-		png_set_filler(png_ptr, 0xFF, flags);
+
+	if (cache.format == rp_image::Format::ARGB32) {
+		if (cache.skip_alpha) {
+			// Need to skip the alpha bytes.
+			// Assuming 'after' on LE, 'before' on BE.
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+			png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+			png_set_filler(png_ptr, 0xFF, PNG_FILLER_BEFORE);
+#endif
+		} else {
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+			// Swap the alpha position on BE.
+			png_set_swap_alpha(png_ptr);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+		}
 	}
 
 	// Write the image data.
@@ -868,10 +876,26 @@ int RpPngWriterPrivate::write_IDAT_APNG(void)
 	}
 #endif /* PNG_SETJMP_SUPPORTED */
 
-	// TODO: Byteswap image data on big-endian systems?
-	//ppng_set_swap(png_ptr);
-	// TODO: What format on big-endian?
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	png_set_bgr(png_ptr);
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+
+	if (cache.format == rp_image::Format::ARGB32) {
+		if (cache.skip_alpha) {
+			// Need to skip the alpha bytes.
+			// Assuming 'after' on LE, 'before' on BE.
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+			png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+			png_set_filler(png_ptr, 0xFF, PNG_FILLER_BEFORE);
+#endif
+		} else {
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+			// Swap the alpha position on BE.
+			png_set_swap_alpha(png_ptr);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+		}
+	}
 
 	// Allocate the row pointers.
 	row_pointers = static_cast<const png_byte**>(
