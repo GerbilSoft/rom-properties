@@ -100,6 +100,9 @@ static inline std::string rp_sprintf_p(const char *fmt, ...)
 #ifdef _WIN32
 /** UTF-16 (wchar_t) **/
 
+// FIXME: ATTR_PRINTF() doesn't work with wchar_t.
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64862
+
 /**
  * vswprintf()-style function for std::wstring.
  *
@@ -107,7 +110,7 @@ static inline std::string rp_sprintf_p(const char *fmt, ...)
  * @param ap Arguments
  * @return std::wstring
  */
-ATTR_PRINTF(1, 0)
+//ATTR_PRINTF(1, 0)
 RP_LIBROMDATA_PUBLIC
 std::wstring rp_vswprintf(const wchar_t *fmt, va_list ap);
 
@@ -118,7 +121,7 @@ std::wstring rp_vswprintf(const wchar_t *fmt, va_list ap);
  * @param ... Arguments
  * @return std::wstring
  */
-ATTR_PRINTF(1, 2)
+//ATTR_PRINTF(1, 2)
 static inline std::wstring rp_swprintf(const wchar_t *fmt, ...)
 {
 	va_list ap;
@@ -140,7 +143,7 @@ static inline std::wstring rp_swprintf(const wchar_t *fmt, ...)
  * @param ap Arguments
  * @return std::string
  */
-ATTR_PRINTF(1, 0)
+//ATTR_PRINTF(1, 0)
 RP_LIBROMDATA_PUBLIC
 std::wstring rp_vswprintf_p(const wchar_t *fmt, va_list ap);
 
@@ -155,7 +158,7 @@ std::wstring rp_vswprintf_p(const wchar_t *fmt, va_list ap);
  * @param ... Arguments
  * @return std::string
  */
-ATTR_PRINTF(1, 2)
+//ATTR_PRINTF(1, 2)
 static inline std::wstring rp_swprintf_p(const wchar_t *fmt, ...)
 {
 	va_list ap;
