@@ -120,9 +120,9 @@ XDVDFSPartitionPrivate::XDVDFSPartitionPrivate(XDVDFSPartition *q,
 
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
 	// Byteswap the fields.
-	d->xdvdfsHeader.root_dir_sector	= le32_to_cpu(d->xdvdfsHeader.root_dir_sector);
-	d->xdvdfsHeader.root_dir_size	= le32_to_cpu(d->xdvdfsHeader.root_dir_size);
-	d->xdvdfsHeader.timestamp	= le64_to_cpu(d->xdvdfsHeader.timestamp);
+	xdvdfsHeader.root_dir_sector	= le32_to_cpu(xdvdfsHeader.root_dir_sector);
+	xdvdfsHeader.root_dir_size	= le32_to_cpu(xdvdfsHeader.root_dir_size);
+	xdvdfsHeader.timestamp		= le64_to_cpu(xdvdfsHeader.timestamp);
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
 	// Load the root directory.

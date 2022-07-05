@@ -10,10 +10,11 @@
 #define __ROMPROPERTIES_LIBROMDATA_UTILS_SUPERMAGICDRIVE_HPP__
 
 #include "common.h"
-#include "librpcpu/cpu_dispatch.h"
+#include "dll-macros.h"
 
 #include <stdint.h>
 
+#include "librpcpu/cpu_dispatch.h"
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
 #  include "librpcpu/cpuflags_x86.h"
 /* MSVC does not support MMX intrinsics in 64-bit builds. */

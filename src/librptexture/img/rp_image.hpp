@@ -10,14 +10,14 @@
 #define __ROMPROPERTIES_LIBRPTEXTURE_RP_IMAGE_HPP__
 
 #include "common.h"
+#include "dll-macros.h"
 #include "RefBase.hpp"
-
-#include "librpcpu/cpu_dispatch.h"
 
 // C includes.
 #include <stddef.h>	/* size_t */
 #include <stdint.h>
 
+#include "librpcpu/cpu_dispatch.h"
 #if defined(RP_CPU_I386) || defined(RP_CPU_AMD64)
 #  include "librpcpu/cpuflags_x86.h"
 #  define RP_IMAGE_HAS_SSE2 1

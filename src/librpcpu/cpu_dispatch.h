@@ -12,6 +12,7 @@
 #include "librpcpu/config.librpcpu.h"
 
 // Check for certain CPUs.
+// Reference: https://sourceforge.net/p/predef/wiki/Architectures/
 #if defined(__i386__) || defined(__i386) || defined(_M_IX86)
 #  define RP_CPU_I386 1
 #endif
@@ -23,6 +24,14 @@
 #endif
 #if defined(__aarch64__)
 #  define RP_CPU_ARM64 1
+#endif
+#if defined(__powerpc64__) || defined(__ppc64__) || defined(__PPC64__) || \
+    defined(_ARCH_PPC64) || defined(_XENON)
+#  define RP_CPU_PPC64 1
+#elif defined(__powerpc) || defined(__powerpc__) || defined(__ppc__) || \
+      defined(__PPC__) || defined(_ARCH_PPC) || defined(_M_PPC) || \
+      defined(__PPCGECKO__) || defined(__PPCBROADWAY__) || defined(__ppc)
+#  define RP_CPU_PPC
 #endif
 
 // IFUNC attribute.

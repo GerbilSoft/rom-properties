@@ -71,7 +71,7 @@ class SegaPVRPrivate final : public FileFormatPrivate
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 		static inline void byteswap_pvr(PVR_Header *pvr);
 		static inline void byteswap_gvr(PVR_Header *gvr) {
-			RP_UNUSED(pvr);
+			RP_UNUSED(gvr);
 		}
 #endif
 
