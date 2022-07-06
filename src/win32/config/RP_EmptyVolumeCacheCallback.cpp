@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                                 *
  * RP_EmptyVolumeCacheCallback.cpp: RP_EmptyVolumeCacheCallback implementation. *
  *                                                                              *
- * Copyright (c) 2016-2021 by David Korth.                                      *
+ * Copyright (c) 2016-2022 by David Korth.                                      *
  * SPDX-License-Identifier: GPL-2.0-or-later                                    *
  ********************************************************************************/
 
@@ -39,16 +39,24 @@ IFACEMETHODIMP RP_EmptyVolumeCacheCallback::QueryInterface(REFIID riid, LPVOID *
 
 IFACEMETHODIMP RP_EmptyVolumeCacheCallback::ScanProgress(DWORDLONG dwlSpaceUsed, DWORD dwFlags, LPCWSTR pcwszStatus)
 {
+	RP_UNUSED(dwlSpaceUsed);
+	RP_UNUSED(dwFlags);
+	RP_UNUSED(pcwszStatus);
 	return S_OK;
 }
 
 IFACEMETHODIMP RP_EmptyVolumeCacheCallback::PurgeProgress(DWORDLONG dwlSpaceFreed, DWORDLONG dwlSpaceToFree, DWORD dwFlags, LPCWSTR pcwszStatus)
 {
+	RP_UNUSED(dwFlags);
+	RP_UNUSED(pcwszStatus);
+
 	// TODO: Verify that the UI gets updated here.
 	if (!m_hProgressBar) {
 		return S_OK;
 	}
+
 	// TODO: Better way to calculate a percentage?
+	// TODO: If dwFlags has EVCCBF_LASTNOTIFICATION, show 100% unconditionally?
 	float fPct = static_cast<float>(dwlSpaceFreed) / static_cast<float>(dwlSpaceToFree);
 	SendMessage(m_hProgressBar, PBM_SETSTATE, m_baseProgress + static_cast<unsigned int>(fPct * 100.0f), 0);
 	return S_OK;

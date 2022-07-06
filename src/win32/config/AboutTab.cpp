@@ -234,6 +234,8 @@ AboutTabPrivate::~AboutTabPrivate()
  */
 INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	RP_UNUSED(wParam);
+
 	switch (uMsg) {
 		case WM_INITDIALOG: {
 			// Get the pointer to the property sheet page object. This is 
@@ -334,6 +336,9 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
  */
 UINT CALLBACK AboutTabPrivate::callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp)
 {
+	RP_UNUSED(hWnd);
+	RP_UNUSED(ppsp);
+
 	switch (uMsg) {
 		case PSPCB_CREATE: {
 			// Must return TRUE to enable the page to be created.

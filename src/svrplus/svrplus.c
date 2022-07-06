@@ -3,7 +3,7 @@
  * svrplus.c: Win32 installer for rom-properties.                          *
  *                                                                         *
  * Copyright (c) 2017-2018 by Egor.                                        *
- * Copyright (c) 2017-2021 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -887,8 +887,9 @@ int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	param.bHighSec = FALSE;
 	rp_secure_enable(param);
 
-	// Unused parameters. (Win16 baggage)
+	// Unused parameters
 	((void)hPrevInstance);
+	((void)lpCmdLine);
 
 	// Check if another instance of svrplus is already running.
 	// References:

@@ -171,6 +171,8 @@ ConfigDialogPrivate::~ConfigDialogPrivate()
  */
 int CALLBACK ConfigDialogPrivate::callbackProc(HWND hDlg, UINT uMsg, LPARAM lParam)
 {
+	RP_UNUSED(lParam);
+
 	switch (uMsg) {
 		case PSCB_INITIALIZED: {
 			// Property sheet has been initialized.
@@ -232,7 +234,15 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 	WPARAM wParam, LPARAM lParam,
 	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
+	RP_UNUSED(dwRefData);
+
 	switch (uMsg) {
+		case WM_NCDESTROY:
+			// Remove the window subclass.
+			// Reference: https://devblogs.microsoft.com/oldnewthing/20031111-00/?p=41883
+			RemoveWindowSubclass(hWnd, subclassProc, uIdSubclass);
+			break;
+
 		case WM_SHOWWINDOW: {
 			// Check for RTL.
 			if (LibWin32UI::isSystemRTL() != 0) {
@@ -392,12 +402,6 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 			EnableWindow(GetDlgItem(hWnd, IDC_RP_RESET), TRUE);
 			break;
 
-		case WM_NCDESTROY:
-			// Remove the window subclass.
-			// Reference: https://devblogs.microsoft.com/oldnewthing/20031111-00/?p=41883
-			RemoveWindowSubclass(hWnd, subclassProc, uIdSubclass);
-			break;
-
 		case WM_RP_PROP_SHEET_ENABLE_DEFAULTS:
 			// Enable/disable the "Defaults" button.
 			EnableWindow(GetDlgItem(hWnd, IDC_RP_DEFAULTS), (BOOL)wParam);
@@ -443,7 +447,9 @@ extern "C"
 int CALLBACK rp_show_config_dialog(
 	HWND hWnd, HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
 {
-	// TODO: nCmdShow.
+	// TODO: Handle hWnd and nCmdShow?
+	RP_UNUSED(hInstance);
+	RP_UNUSED(pszCmdLine);
 
 #if defined(_MSC_VER) && defined(ENABLE_NLS)
 	// Delay load verification.

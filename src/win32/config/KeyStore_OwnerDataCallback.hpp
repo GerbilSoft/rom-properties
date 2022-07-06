@@ -36,8 +36,8 @@ class KeyStore_OwnerDataCallback final : public LibWin32Common::ComBase<IOwnerDa
 		IFACEMETHODIMP GetItemPosition(int itemIndex, LPPOINT pPosition) final;
 		IFACEMETHODIMP SetItemPosition(int itemIndex, POINT position) final;
 		IFACEMETHODIMP GetItemInGroup(int groupIndex, int groupWideItemIndex, PINT pTotalItemIndex) final;
-		IFACEMETHODIMP GetItemGroup(int itemIndex, int occurenceIndex, PINT pGroupIndex) final;
-		IFACEMETHODIMP GetItemGroupCount(int itemIndex, PINT pOccurenceCount) final;
+		IFACEMETHODIMP GetItemGroup(int itemIndex, int occurrenceIndex, PINT pGroupIndex) final;
+		IFACEMETHODIMP GetItemGroupCount(int itemIndex, PINT pOccurrenceCount) final;
 		IFACEMETHODIMP OnCacheHint(LVITEMINDEX firstItem, LVITEMINDEX lastItem) final;
 
 	private:

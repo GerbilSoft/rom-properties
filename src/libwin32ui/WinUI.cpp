@@ -826,6 +826,8 @@ LRESULT CALLBACK ListViewNoDividerDblClickSubclassProc(
 	WPARAM wParam, LPARAM lParam,
 	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
+	((void)dwRefData);
+
 	switch (uMsg) {
 		case WM_NCDESTROY:
 			// Remove the window subclass.

@@ -64,7 +64,7 @@ IOwnerDataCallback : public IUnknown
 		///             specified copy of the specified item.
 		///
 		/// \return An \c HRESULT error code.
-		virtual HRESULT STDMETHODCALLTYPE GetItemGroup(int itemIndex, int occurenceIndex, PINT pGroupIndex) = 0;
+		virtual HRESULT STDMETHODCALLTYPE GetItemGroup(int itemIndex, int occurrenceIndex, PINT pGroupIndex) = 0;
 		/// \brief <em>Will be called to determine how often an item occurs in the listview control</em>
 		///
 		/// This method is called by the listview control to determine how often the specified item occurs in the
@@ -74,7 +74,7 @@ IOwnerDataCallback : public IUnknown
 		/// \param[out] pOccurrencesCount Receives the number of occurrences of the item in the listview control.
 		///
 		/// \return An \c HRESULT error code.
-		virtual HRESULT STDMETHODCALLTYPE GetItemGroupCount(int itemIndex, PINT pOccurenceCount) = 0;
+		virtual HRESULT STDMETHODCALLTYPE GetItemGroupCount(int itemIndex, PINT pOccurrenceCount) = 0;
 		/// \brief <em>Will be called to prepare the client app that the data for a certain range of items will be required very soon</em>
 		///
 		/// This method is similar to the \c LVN_ODCACHEHINT notification. It tells the client application that

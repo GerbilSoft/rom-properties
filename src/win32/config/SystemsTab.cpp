@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * SystemsTab.cpp: Systems tab for rp-config.                              *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -336,6 +336,9 @@ INT_PTR CALLBACK SystemsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
  */
 UINT CALLBACK SystemsTabPrivate::callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp)
 {
+	RP_UNUSED(hWnd);
+	RP_UNUSED(ppsp);
+
 	switch (uMsg) {
 		case PSPCB_CREATE: {
 			// Must return TRUE to enable the page to be created.

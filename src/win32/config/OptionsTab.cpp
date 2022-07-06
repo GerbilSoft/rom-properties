@@ -188,7 +188,9 @@ void OptionsTabPrivate::loadDefaults(void)
 	static const int palLanguageForGameTDB_default =
 		OptionsTabPrivate::pal_lc_idx_def;	// cboGameTDBPAL index ('en')
 	// Options
-	static const bool showDangerousPermissionsOverlayIcon_default = true;
+	// FIXME: Uncomment this once the "dangerous" permissions overlay
+	// is working on Windows.
+	//static const bool showDangerousPermissionsOverlayIcon_default = true;
 	static const bool enableThumbnailOnNetworkFS_default = false;
 	bool isDefChanged = false;
 
@@ -439,6 +441,9 @@ INT_PTR CALLBACK OptionsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
  */
 UINT CALLBACK OptionsTabPrivate::callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp)
 {
+	RP_UNUSED(hWnd);
+	RP_UNUSED(ppsp);
+
 	switch (uMsg) {
 		case PSPCB_CREATE: {
 			// Must return TRUE to enable the page to be created.
