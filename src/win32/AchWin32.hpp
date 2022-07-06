@@ -23,7 +23,7 @@ class AchWin32
 		 * pointer to the class using instance().
 		 */
 		AchWin32();
-		virtual ~AchWin32();
+		~AchWin32();
 
 	private:
 		RP_DISABLE_COPY(AchWin32);

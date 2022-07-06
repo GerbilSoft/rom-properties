@@ -23,7 +23,7 @@ class AchGDBus
 		 * pointer to the class using instance().
 		 */
 		AchGDBus();
-		virtual ~AchGDBus();
+		~AchGDBus();
 
 	private:
 		RP_DISABLE_COPY(AchGDBus);
