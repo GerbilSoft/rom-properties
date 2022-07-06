@@ -1539,7 +1539,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			toss.clear();
 			toss << iret.keysExist;
 			msg += nl_bullet;
-			msg += rp_swprintf(U82T_c(NC_("KeyManagerTab",
+			msg += rp_stprintf(U82T_c(NC_("KeyManagerTab",
 				// tr: %s == number of keys (formatted)
 				"%s key already exists in the Key Manager.",
 				"%s keys already exist in the Key Manager.",
@@ -1551,7 +1551,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			toss.clear();
 			toss << iret.keysInvalid;
 			msg += nl_bullet;
-			msg += rp_swprintf(U82T_c(NC_("KeyManagerTab",
+			msg += rp_stprintf(U82T_c(NC_("KeyManagerTab",
 				// tr: %s == number of keys (formatted)
 				"%s key was not imported because it is incorrect.",
 				"%s keys were not imported because they are incorrect.",
@@ -1563,7 +1563,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			toss.clear();
 			toss << iret.keysNotUsed;
 			msg += nl_bullet;
-			msg += rp_swprintf(U82T_c(NC_("KeyManagerTab",
+			msg += rp_stprintf(U82T_c(NC_("KeyManagerTab",
 				// tr: %s == number of keys (formatted)
 				"%s key was not imported because it isn't used by rom-properties.",
 				"%s keys were not imported because they aren't used by rom-properties.",
@@ -1575,7 +1575,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			toss.clear();
 			toss << iret.keysCantDecrypt;
 			msg += nl_bullet;
-			msg += rp_swprintf(U82T_c(NC_("KeyManagerTab",
+			msg += rp_stprintf(U82T_c(NC_("KeyManagerTab",
 				// tr: %s == number of keys (formatted)
 				"%s key was not imported because it is encrypted and the master key isn't available.",
 				"%s keys were not imported because they are encrypted and the master key isn't available.",
@@ -1587,7 +1587,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			toss.clear();
 			toss << iret.keysImportedVerify;
 			msg += nl_bullet;
-			msg += rp_swprintf(U82T_c(NC_("KeyManagerTab",
+			msg += rp_stprintf(U82T_c(NC_("KeyManagerTab",
 				// tr: %s == number of keys (formatted)
 				"%s key has been imported and verified as correct.",
 				"%s keys have been imported and verified as correct.",
@@ -1599,7 +1599,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			toss.clear();
 			toss << iret.keysImportedVerify;
 			msg += nl_bullet;
-			msg += rp_swprintf(U82T_c(NC_("KeyManagerTab",
+			msg += rp_stprintf(U82T_c(NC_("KeyManagerTab",
 				"%s key has been imported without verification.",
 				"%s keys have been imported without verification.",
 				iret.keysImportedNoVerify)),

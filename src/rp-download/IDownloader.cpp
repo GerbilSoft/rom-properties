@@ -237,7 +237,7 @@ tstring IDownloader::getOSRelease(void)
 
 	// Version number.
 	TCHAR buf[32];
-	_sntprintf(buf, _countof(buf), _T("%u.%u"), osvi.dwMajorVersion, osvi.dwMinorVersion);
+	_sntprintf(buf, _countof(buf), _T("%lu.%lu"), osvi.dwMajorVersion, osvi.dwMinorVersion);
 	s_os_release += buf;
 
 	// Check if we're using an older (pre-Vista) version of Windows.

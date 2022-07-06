@@ -29,6 +29,7 @@ using std::wstring;
 using LibWin32Common::T2U8_c;
 using LibWin32Common::U82W_c;
 using LibWin32Common::U82W_s;
+using LibWin32Common::U82T_c;
 using LibWin32Common::U82T_s;
 
 // Windows includes.
@@ -102,7 +103,7 @@ static inline wstring makeWinPath(const string &filename)
  */
 static inline tstring makeWinPath(const char *filename)
 {
-	return utf8_to_ansi(filename);
+	return U82T_c(filename);
 }
 
 /**
@@ -116,7 +117,7 @@ static inline tstring makeWinPath(const char *filename)
  */
 static inline tstring makeWinPath(const string &filename)
 {
-	return utf8_to_ansi(filename);
+	return U82T_s(filename);
 }
 #endif /* UNICODE */
 

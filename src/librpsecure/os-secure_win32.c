@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpsecure)                      *
  * os-secure_win32.c: OS security functions. (Win32)                       *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -57,7 +57,7 @@ int rp_secure_reduce_integrity(void)
 	} else {
 		// TODO: Return an error code?
 #ifndef NDEBUG
-		_ftprintf(stderr, _T("*** DEBUG: SetProcessIntegrityLevel() failed: %u\n"), dwRet);
+		_ftprintf(stderr, _T("*** DEBUG: SetProcessIntegrityLevel() failed: %lu\n"), dwRet);
 #endif /* !NDEBUG */
 	}
 
