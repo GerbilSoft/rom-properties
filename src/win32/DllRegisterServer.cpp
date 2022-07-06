@@ -275,7 +275,7 @@ static tstring GetUserFileAssoc(const tstring &sid, const char *ext)
 	int len = _sntprintf_s(regPath, _countof(regPath),
 		_T("%s\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\%s\\UserChoice"),
 		sid.c_str(), U82T_c(ext));
-	if (len <= 0 || len >= _countof(regPath)) {
+	if (len <= 0 || len >= (int)_countof(regPath)) {
 		// Buffer isn't large enough...
 		return tstring();
 	}
@@ -615,7 +615,7 @@ STDAPI DllRegisterServer(void)
 		int len = _sntprintf_s(regPath, _countof(regPath),
 			_T("%s\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts"),
 			sid.c_str());
-		if (len > 0 && len < _countof(regPath)) {
+		if (len > 0 && len < (int)_countof(regPath)) {
 			RegKey hkuvxd(HKEY_USERS, regPath, KEY_WRITE, false);
 			if (hkuvxd.isOpen()) {
 				hkuvxd.deleteSubKey(_T("*.vxd"));
@@ -627,7 +627,7 @@ STDAPI DllRegisterServer(void)
 		len = _sntprintf_s(regPath, _countof(regPath),
 			_T("%s\\SOFTWARE\\Classes\\Applications"),
 			sid.c_str());
-		if (len > 0 && len < _countof(regPath)) {
+		if (len > 0 && len < (int)_countof(regPath)) {
 			RegKey hku_Applications(HKEY_USERS, regPath, KEY_READ|KEY_WRITE, false);
 			if (hku_Applications.isOpen()) {
 				UnregisterFromApplications(hku_Applications);
@@ -733,7 +733,7 @@ STDAPI DllUnregisterServer(void)
 		int len = _sntprintf_s(regPath, _countof(regPath),
 			_T("%s\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts"),
 			sid.c_str());
-		if (len > 0 && len < _countof(regPath)) {
+		if (len > 0 && len < (int)_countof(regPath)) {
 			RegKey hkuvxd(HKEY_USERS, regPath, KEY_WRITE, false);
 			if (hkuvxd.isOpen()) {
 				hkuvxd.deleteSubKey(_T("*.vxd"));
@@ -745,7 +745,7 @@ STDAPI DllUnregisterServer(void)
 		len = _sntprintf_s(regPath, _countof(regPath),
 			_T("%s\\SOFTWARE\\Classes\\Applications"),
 			sid.c_str());
-		if (len > 0 && len < _countof(regPath)) {
+		if (len > 0 && len < (int)_countof(regPath)) {
 			RegKey hku_Applications(HKEY_USERS, regPath, KEY_READ | KEY_WRITE, false);
 			if (hku_Applications.isOpen()) {
 				UnregisterFromApplications(hku_Applications);
