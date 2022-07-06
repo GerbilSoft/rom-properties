@@ -66,8 +66,8 @@ class DragImageLabelPrivate
 			int last_frame_number;		// Last frame number.
 
 			anim_vars(HWND hwndParent)
-				: m_hwndParent(hwndParent)
-				, iconAnimData(nullptr)
+				: iconAnimData(nullptr)
+				, m_hwndParent(hwndParent)
 				, animTimerID(0)
 				, last_frame_number(0)
 			{
