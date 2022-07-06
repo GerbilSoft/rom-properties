@@ -234,8 +234,8 @@ rp_image *fromDreamcastVQ16(PixelFormat px_format,
 	switch (px_format) {
 		case PixelFormat::ARGB1555: {
 			for (unsigned int i = 0; i < static_cast<unsigned int>(pal_entry_count); i += 2) {
-				palette[i+0] = ARGB1555_to_ARGB32(pal_buf[i+0]);
-				palette[i+1] = ARGB1555_to_ARGB32(pal_buf[i+1]);
+				palette[i+0] = ARGB1555_to_ARGB32(le16_to_cpu(pal_buf[i+0]));
+				palette[i+1] = ARGB1555_to_ARGB32(le16_to_cpu(pal_buf[i+1]));
 			}
 			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {5,5,5,0,1};
@@ -245,8 +245,8 @@ rp_image *fromDreamcastVQ16(PixelFormat px_format,
 
 		case PixelFormat::RGB565: {
 			for (unsigned int i = 0; i < static_cast<unsigned int>(pal_entry_count); i += 2) {
-				palette[i+0] = RGB565_to_ARGB32(pal_buf[i+0]);
-				palette[i+1] = RGB565_to_ARGB32(pal_buf[i+1]);
+				palette[i+0] = RGB565_to_ARGB32(le16_to_cpu(pal_buf[i+0]));
+				palette[i+1] = RGB565_to_ARGB32(le16_to_cpu(pal_buf[i+1]));
 			}
 			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
@@ -256,8 +256,8 @@ rp_image *fromDreamcastVQ16(PixelFormat px_format,
 
 		case PixelFormat::ARGB4444: {
 			for (unsigned int i = 0; i < static_cast<unsigned int>(pal_entry_count); i += 2) {
-				palette[i+0] = ARGB4444_to_ARGB32(pal_buf[i+0]);
-				palette[i+1] = ARGB4444_to_ARGB32(pal_buf[i+1]);
+				palette[i+0] = ARGB4444_to_ARGB32(le16_to_cpu(pal_buf[i+0]));
+				palette[i+1] = ARGB4444_to_ARGB32(le16_to_cpu(pal_buf[i+1]));
 			}
 			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {4,4,4,0,4};
