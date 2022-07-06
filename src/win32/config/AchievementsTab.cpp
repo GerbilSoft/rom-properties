@@ -464,7 +464,6 @@ void AchievementsTabPrivate::reset(void)
 	for (int i = 0; i < (int)Achievements::ID::Max; i++) {
 		const Achievements::ID id = (Achievements::ID)i;
 		const time_t timestamp = pAch->isUnlocked(id);
-		const bool unlocked = (timestamp != -1);
 
 		// Get the name and description.
 		tstring ts_ach = U82T_c(pAch->getName(id));
