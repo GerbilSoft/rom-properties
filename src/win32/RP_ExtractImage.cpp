@@ -102,18 +102,17 @@ IFACEMETHODIMP RP_ExtractImage::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
 
 	// pszFileName is the file being worked on.
 	// TODO: If the file was already loaded, don't reload it.
-	d->filename = pszFileName;
-	const string filename_u8 = W2U8(pszFileName);
+	d->filename = W2U8(pszFileName);
 
 	// Check for "bad" file systems.
 	const Config *const config = Config::instance();
-	if (FileSystem::isOnBadFS(filename_u8.c_str(), config->enableThumbnailOnNetworkFS())) {
+	if (FileSystem::isOnBadFS(d->filename.c_str(), config->enableThumbnailOnNetworkFS())) {
 		// This file is on a "bad" file system.
 		return E_FAIL;
 	}
 
 	// Attempt to open the ROM file.
-	RpFile *const file = new RpFile(filename_u8, RpFile::FM_OPEN_READ_GZ);
+	RpFile *const file = new RpFile(d->filename, RpFile::FM_OPEN_READ_GZ);
 	if (!file->isOpen()) {
 		// Unable to open the file.
 		file->unref();
@@ -263,7 +262,7 @@ IFACEMETHODIMP RP_ExtractImage::GetDateStamp(_Out_ FILETIME *pDateStamp)
 	// Open the file and get the last write time.
 	// NOTE: LibRpBase::FileSystem::get_mtime() exists,
 	// but its resolution is seconds, less than FILETIME.
-	HANDLE hFile = CreateFile(d->filename.c_str(),
+	HANDLE hFile = CreateFile(U82T_s(d->filename),
 		GENERIC_READ, FILE_SHARE_READ, nullptr,
 		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if (!hFile) {

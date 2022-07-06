@@ -75,7 +75,7 @@ HRESULT RP_ExtractImage_Private::Fallback_int(RegKey &hkey_Assoc, HBITMAP *phBmp
 	}
 
 	// Load the file.
-	hr = pPersistFile->Load(this->filename.c_str(), STGM_READ);
+	hr = pPersistFile->Load(U82W_s(this->filename), STGM_READ);
 	if (FAILED(hr)) {
 		// Failed to load the file.
 		return hr;
@@ -117,14 +117,15 @@ HRESULT RP_ExtractImage_Private::Fallback(HBITMAP *phBmpImage)
 	if (filename.empty()) {
 		return E_INVALIDARG;
 	}
-	const wchar_t *file_ext = FileSystem::file_ext(filename.c_str());
+	const char *file_ext = FileSystem::file_ext(filename.c_str());
 	if (!file_ext) {
 		// Invalid or missing file extension.
 		return E_INVALIDARG;
 	}
+	const tstring ts_file_ext = U82T_c(file_ext);
 
 	// Open the filetype key in HKCR.
-	RegKey hkey_Assoc(HKEY_CLASSES_ROOT, file_ext, KEY_READ, false);
+	RegKey hkey_Assoc(HKEY_CLASSES_ROOT, ts_file_ext.c_str(), KEY_READ, false);
 	if (!hkey_Assoc.isOpen()) {
 		return hkey_Assoc.lOpenRes();
 	}
