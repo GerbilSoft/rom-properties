@@ -1249,8 +1249,8 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
 			for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
 				unsigned int x;
 				for (x = static_cast<unsigned int>(width); x > 1; x -= 2) {
-					const uint32_t px0 = __swab32(img_buf[0]);
-					const uint32_t px1 = __swab32(img_buf[1]);
+					const uint32_t px0 = le32_to_cpu(img_buf[0]);
+					const uint32_t px1 = le32_to_cpu(img_buf[1]);
 
 					px_dest[0]  = (px0 >> 8) & 0xFF;
 					px_dest[0] |= (px0 & 0xFF) << 8;
@@ -1267,7 +1267,7 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
 				}
 				if (x == 1) {
 					// Extra pixel.
-					const uint32_t px = __swab32(*img_buf);
+					const uint32_t px = le32_to_cpu(*img_buf);
 					*px_dest  = (px >> 8) & 0xFF;
 					*px_dest |= (px & 0xFF) << 8;
 					*px_dest |= (px << 8) & 0xFF000000;
