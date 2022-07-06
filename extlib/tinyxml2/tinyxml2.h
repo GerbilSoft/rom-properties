@@ -64,6 +64,15 @@ distribution.
 #   pragma warning(disable: 4251)
 #endif
 
+// rom-properties: Disable -Wsuggest-override.
+#if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 2))
+/* Disable GCC 8 -Wcast-function-type warnings. (Fixed in glib-2.59.1 upstream.) */
+#   if (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#      pragma GCC diagnostic push
+#   endif
+#   pragma GCC diagnostic ignored "-Wsuggest-override"
+#endif
+
 // rom-properties: Allow overriding symbol visibility on Linux.
 #ifdef _WIN32
 #   ifdef TINYXML2_EXPORT
@@ -2373,6 +2382,11 @@ private:
 
 
 }	// tinyxml2
+
+// rom-properties: Disable -Wsuggest-override.
+#if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#   pragma GCC diagnostic pop
+#endif
 
 #if defined(_MSC_VER)
 #   pragma warning(pop)

@@ -19,5 +19,7 @@ The following changes have been made to the original:
 
 - Fixed several -Wformat warnings.
 
+- tinyxml2.h: Disable -Wsuggest-override warnings.
+
 To obtain the original tinyxml2-9.0.0, visit:
 https://github.com/leethomason/tinyxml2
