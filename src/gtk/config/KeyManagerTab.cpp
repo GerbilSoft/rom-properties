@@ -179,6 +179,10 @@ key_manager_tab_init(KeyManagerTab *tab)
 	gtk_widget_set_name(scrolledWindow, "scrolledWindow");
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledWindow),
 		GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+#if GTK_CHECK_VERSION(2,91,1)
+	gtk_widget_set_hexpand(scrolledWindow, TRUE);
+	gtk_widget_set_vexpand(scrolledWindow, TRUE);
+#endif /* GTK_CHECK_VERSION(2,91,1) */
 
 	// Create the GtkTreeStore and GtkTreeView.
 	// Columns: Key Name, Value, Valid?, Flat Key Index

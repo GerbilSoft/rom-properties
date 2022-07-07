@@ -158,6 +158,10 @@ about_tab_init(AboutTab *tab)
 	gtk_widget_set_name(scrlCredits, "scrlCredits");
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrlCredits),
 		GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+#if GTK_CHECK_VERSION(2,91,1)
+	gtk_widget_set_hexpand(scrlCredits, TRUE);
+	gtk_widget_set_vexpand(scrlCredits, TRUE);
+#endif /* GTK_CHECK_VERSION(2,91,1) */
 
 	// Credits tab: Label
 	tab->lblCredits = gtk_label_new(nullptr);
@@ -183,6 +187,10 @@ about_tab_init(AboutTab *tab)
 	gtk_widget_set_name(scrlLibraries, "scrlLibraries");
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrlLibraries),
 		GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+#if GTK_CHECK_VERSION(2,91,1)
+	gtk_widget_set_hexpand(scrlLibraries, TRUE);
+	gtk_widget_set_vexpand(scrlLibraries, TRUE);
+#endif /* GTK_CHECK_VERSION(2,91,1) */
 
 	// Libraries tab: Label
 	tab->lblLibraries = gtk_label_new(nullptr);
@@ -208,6 +216,10 @@ about_tab_init(AboutTab *tab)
 	gtk_widget_set_name(scrlSupport, "scrlSupport");
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrlSupport),
 		GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+#if GTK_CHECK_VERSION(2,91,1)
+	gtk_widget_set_hexpand(scrlSupport, TRUE);
+	gtk_widget_set_vexpand(scrlSupport, TRUE);
+#endif /* GTK_CHECK_VERSION(2,91,1) */
 
 	// Support tab: Label
 	tab->lblSupport = gtk_label_new(nullptr);
