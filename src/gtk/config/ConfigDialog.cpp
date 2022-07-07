@@ -144,6 +144,9 @@ config_dialog_init(ConfigDialog *dialog)
 	dialog->btnCancel = gtk_dialog_add_button(GTK_DIALOG(dialog),
 		convert_accel_to_gtk(C_("ConfigDialog|Button", "&Cancel")).c_str(),
 		GTK_RESPONSE_CANCEL);
+#if GTK_CHECK_VERSION(4,0,0)
+	gtk_widget_set_hexpand(dialog->btnCancel, TRUE);
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 	dialog->btnApply = gtk_dialog_add_button(GTK_DIALOG(dialog),
 		convert_accel_to_gtk(C_("ConfigDialog|Button", "&Apply")).c_str(),
 		GTK_RESPONSE_APPLY);
@@ -155,7 +158,7 @@ config_dialog_init(ConfigDialog *dialog)
 
 	// Set button alignment.
 	GtkWidget *const parent = gtk_widget_get_parent(dialog->btnReset);
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(3,96,0)
 	gtk_widget_set_halign(parent, GTK_ALIGN_FILL);
 	gtk_box_set_spacing(GTK_BOX(parent), 2);
 
@@ -165,13 +168,13 @@ config_dialog_init(ConfigDialog *dialog)
 	gtk_widget_set_halign(dialog->btnCancel, GTK_ALIGN_END);
 	gtk_widget_set_halign(dialog->btnApply, GTK_ALIGN_END);
 	gtk_widget_set_halign(dialog->btnOK, GTK_ALIGN_END);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#else /* !GTK_CHECK_VERSION(3,96,0) */
 	// GTK2, GTK3: May be GtkButtonBox.
 	if (GTK_IS_BUTTON_BOX(parent)) {
 		gtk_button_box_set_child_secondary(GTK_BUTTON_BOX(parent), dialog->btnReset, true);
 		gtk_button_box_set_child_secondary(GTK_BUTTON_BOX(parent), dialog->btnDefaults, true);
 	}
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* GTK_CHECK_VERSION(3,96,0) */
 
 	// Dialog content area.
 	GtkWidget *const content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
