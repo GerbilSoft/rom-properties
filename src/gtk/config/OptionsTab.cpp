@@ -105,12 +105,15 @@ options_tab_init(OptionsTab *tab)
 	// Create the "Downloads" frame.
 	// FIXME: GtkFrame doesn't support mnemonics?
 	GtkWidget *const fraDownloads = gtk_frame_new(C_("SystemsTab", "Downloads"));
+	gtk_widget_set_name(fraDownloads, "fraDownloads");
 	GtkWidget *const vboxDownloads = rp_gtk_vbox_new(6);
+	gtk_widget_set_name(vboxDownloads, "vboxDownloads");
 #if GTK_CHECK_VERSION(2,91,0)
 	gtk_widget_set_margin(vboxDownloads, 6);
 	gtk_frame_set_child(GTK_FRAME(fraDownloads), vboxDownloads);
 #else /* !GTK_CHECK_VERSION(2,91,0) */
 	GtkWidget *const alignDownloads = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
+	gtk_widget_set_name(alignDownloads, "alignDownloads");
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignDownloads), 6, 6, 6, 6);
 	gtk_container_add(GTK_CONTAINER(alignDownloads), vboxDownloads);
 	gtk_frame_set_child(GTK_FRAME(fraDownloads), alignDownloads);
@@ -119,31 +122,40 @@ options_tab_init(OptionsTab *tab)
 	// "Downloads" checkboxes.
 	tab->chkExtImgDownloadEnabled = gtk_check_button_new_with_label(
 		C_("OptionsTab", "Enable external image downloads."));
+	gtk_widget_set_name(tab->chkExtImgDownloadEnabled, "chkExtImgDownloadEnabled");
 	tab->chkUseIntIconForSmallSizes = gtk_check_button_new_with_label(
 		C_("OptionsTab", "Always use the internal icon (if present) for small sizes."));
+	gtk_widget_set_name(tab->chkUseIntIconForSmallSizes, "chkUseIntIconForSmallSizes");
 	tab->chkDownloadHighResScans = gtk_check_button_new_with_label(
 		C_("OptionsTab", "Download high-resolution scans if viewing large thumbnails.\n"
 			"This may increase bandwidth usage."));
+	gtk_widget_set_name(tab->chkDownloadHighResScans, "chkDownloadHighResScans");
 	tab->chkStoreFileOriginInfo = gtk_check_button_new_with_label(
 		C_("OptionsTab", "Store cached file origin information using extended attributes.\n"
 			"This helps to identify where cached files were downloaded from."));
 
 	// GameTDB PAL hbox.
 	GtkWidget *const hboxGameTDBPAL = rp_gtk_hbox_new(6);
+	gtk_widget_set_name(hboxGameTDBPAL, "hboxGameTDBPAL");
 	GtkWidget *const lblGameTDBPAL = gtk_label_new(C_("OptionsTab", "Language for PAL titles on GameTDB:"));
+	gtk_widget_set_name(lblGameTDBPAL, "lblGameTDBPAL");
 	tab->cboGameTDBPAL = language_combo_box_new();
+	gtk_widget_set_name(tab->cboGameTDBPAL, "cboGameTDBPAL");
 	language_combo_box_set_force_pal(LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL), true);
 	language_combo_box_set_lcs(LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL), pal_lc);
 
 	// Create the "Options" frame.
 	// FIXME: GtkFrame doesn't support mnemonics?
 	GtkWidget *const fraOptions = gtk_frame_new(C_("SystemsTab", "Options"));
+	gtk_widget_set_name(fraOptions, "fraOptions");
 	GtkWidget *const vboxOptions = rp_gtk_vbox_new(6);
+	gtk_widget_set_name(vboxOptions, "vboxOptions");
 #if GTK_CHECK_VERSION(2,91,0)
 	gtk_widget_set_margin(vboxOptions, 6);
 	gtk_frame_set_child(GTK_FRAME(fraOptions), vboxOptions);
 #else /* !GTK_CHECK_VERSION(2,91,0) */
 	GtkWidget *const alignOptions = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
+	gtk_widget_set_name(alignOptions, "alignOptions");
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignOptions), 6, 6, 6, 6);
 	gtk_container_add(GTK_CONTAINER(alignOptions), vboxOptions);
 	gtk_frame_set_child(GTK_FRAME(fraOptions), alignOptions);
@@ -152,9 +164,11 @@ options_tab_init(OptionsTab *tab)
 	// "Options" checkboxes.
 	tab->chkShowDangerousPermissionsOverlayIcon = gtk_check_button_new_with_label(
 		C_("OptionsTab", "Show a security overlay icon for ROM images with\n\"dangerous\" permissions."));
+	gtk_widget_set_name(tab->chkShowDangerousPermissionsOverlayIcon, "chkShowDangerousPermissionsOverlayIcon");
 	tab->chkEnableThumbnailOnNetworkFS = gtk_check_button_new_with_label(
 		C_("OptionsTab", "Enable thumbnailing and metadata extraction on network\n"
 			"file systems. This may slow down file browsing."));
+	gtk_widget_set_name(tab->chkEnableThumbnailOnNetworkFS, "chkEnableThumbnailOnNetworkFS");
 
 	// Connect the signal handlers for the checkboxes.
 	// NOTE: Signal handlers are triggered if the value is

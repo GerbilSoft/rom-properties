@@ -156,21 +156,28 @@ cache_tab_init(CacheTab *tab)
 	// FIXME: Better wrapping that doesn't require manual newlines.
 	tab->lblSysCache = gtk_label_new(
 		C_("CacheTab", "If any image type settings were changed, you will need\nto clear the system thumbnail cache."));
+	gtk_widget_set_name(tab->lblSysCache, "lblSysCache");
 	GTK_LABEL_XALIGN_LEFT(tab->lblSysCache);
 	gtk_label_set_wrap(GTK_LABEL(tab->lblSysCache), TRUE);
+
+	tab->btnSysCache = gtk_button_new_with_label(C_("CacheTab", "Clear the System Thumbnail Cache"));
+	gtk_widget_set_name(tab->btnSysCache, "btnSysCache");
 
 	tab->lblRpCache = gtk_label_new(
 		C_("CacheTab", "ROM Properties Page maintains its own download cache for external images.\n"
 			       "Clearing this cache will force external images to be redownloaded."));
+	gtk_widget_set_name(tab->lblRpCache, "lblRpCache");
 	GTK_LABEL_XALIGN_LEFT(tab->lblRpCache);
 	gtk_label_set_wrap(GTK_LABEL(tab->lblRpCache), TRUE);
 
-	tab->btnSysCache = gtk_button_new_with_label(C_("CacheTab", "Clear the System Thumbnail Cache"));
 	tab->btnRpCache  = gtk_button_new_with_label(C_("CacheTab", "Clear the ROM Properties Page Download Cache"));
+	gtk_widget_set_name(tab->btnRpCache, "btnRpCache");
 
 	tab->lblStatus = gtk_label_new(nullptr);
+	gtk_widget_set_name(tab->lblStatus, "lblStatus");
 	GTK_LABEL_XALIGN_LEFT(tab->lblStatus);
 	tab->pbStatus = gtk_progress_bar_new();
+	gtk_widget_set_name(tab->pbStatus, "pbStatus");
 #if GTK_CHECK_VERSION(3,0,0)
 	gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(tab->pbStatus), TRUE);
 #endif /* !GTK_CHECK_VERSION(3,0,0) */

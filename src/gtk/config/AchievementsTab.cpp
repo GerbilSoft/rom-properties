@@ -92,12 +92,14 @@ achievements_tab_init(AchievementsTab *tab)
 	GtkWidget *const scrolledWindow = gtk_scrolled_window_new(nullptr, nullptr);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolledWindow), GTK_SHADOW_IN);
 #endif /* GTK_CHECK_VERSION */
+	gtk_widget_set_name(scrolledWindow, "scrolledWindow");
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledWindow),
 		GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
 	// Create the GtkListStore and GtkTreeView.
 	tab->listStore = gtk_list_store_new(3, PIMGTYPE_GOBJECT_TYPE, G_TYPE_STRING, G_TYPE_STRING);
 	tab->treeView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(tab->listStore));
+	gtk_widget_set_name(tab->treeView, "treeView");
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tab->treeView), TRUE);
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolledWindow), tab->treeView);
 

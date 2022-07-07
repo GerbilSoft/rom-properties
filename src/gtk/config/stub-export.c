@@ -82,13 +82,14 @@ int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 	rp_i18n_init();
 
 	// Create the ConfigDialog.
-	GtkWidget *const dialog = config_dialog_new();
-	gtk_widget_show(dialog);
+	GtkWidget *const configDialog = config_dialog_new();
+	gtk_widget_set_name(configDialog, "configDialog");
+	gtk_widget_show(configDialog);
 
 	// Connect signals.
 	// We need to ensure the GTK main loop exits when the window is closed.
 #if !GTK_CHECK_VERSION(4,0,0)
-	g_signal_connect(dialog, "delete-event", G_CALLBACK(config_dialog_delete_event), NULL);
+	g_signal_connect(configDialog, "delete-event", G_CALLBACK(config_dialog_delete_event), NULL);
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 
 	// TODO: Get the return value?

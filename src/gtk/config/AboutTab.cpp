@@ -123,13 +123,16 @@ about_tab_init(AboutTab *tab)
 
 	// HBox for the logo and title.
 	GtkWidget *const hboxTitle = rp_gtk_hbox_new(6);
+	gtk_widget_set_name(hboxTitle, "hboxTitle");
 	// Logo and title labels. (Will be filled in later.)
 #if GTK_CHECK_VERSION(4,0,0)
 	tab->imgLogo = gtk_picture_new();
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	tab->imgLogo = gtk_image_new();
 #endif /* GTK_CHECK_VERSION(4,0,0) */
+	gtk_widget_set_name(tab->imgLogo, "imgLogo");
 	tab->lblTitle = gtk_label_new(nullptr);
+	gtk_widget_set_name(tab->lblTitle, "lblTitle");
 	gtk_label_set_justify(GTK_LABEL(tab->lblTitle), GTK_JUSTIFY_CENTER);
 
 	GTK_WIDGET_HALIGN_CENTER(tab->imgLogo);
@@ -137,6 +140,7 @@ about_tab_init(AboutTab *tab)
 
 	// Create the GtkNotebook for the three tabs.
 	GtkWidget *const tabWidget = gtk_notebook_new();
+	gtk_widget_set_name(tabWidget, "tabWidget");
 	//gtk_widget_set_margin_bottom(tabWidget, 8);
 
 	// Each tab contains a scroll area and a label.
@@ -151,11 +155,13 @@ about_tab_init(AboutTab *tab)
 	GtkWidget *const scrlCredits = gtk_scrolled_window_new(nullptr, nullptr);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrlCredits), GTK_SHADOW_IN);
 #endif /* GTK_CHECK_VERSION */
+	gtk_widget_set_name(scrlCredits, "scrlCredits");
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrlCredits),
 		GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
 	// Credits tab: Label
 	tab->lblCredits = gtk_label_new(nullptr);
+	gtk_widget_set_name(tab->lblCredits, "lblCredits");
 	GTK_WIDGET_HALIGN_LEFT(tab->lblCredits);
 	GTK_WIDGET_VALIGN_TOP(tab->lblCredits);
 #if GTK_CHECK_VERSION(3,0,0)
@@ -174,11 +180,13 @@ about_tab_init(AboutTab *tab)
 	GtkWidget *scrlLibraries = gtk_scrolled_window_new(nullptr, nullptr);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrlLibraries), GTK_SHADOW_IN);
 #endif /* GTK_CHECK_VERSION */
+	gtk_widget_set_name(scrlLibraries, "scrlLibraries");
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrlLibraries),
 		GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
 	// Libraries tab: Label
 	tab->lblLibraries = gtk_label_new(nullptr);
+	gtk_widget_set_name(tab->lblLibraries, "lblLibraries");
 	GTK_WIDGET_HALIGN_LEFT(tab->lblLibraries);
 	GTK_WIDGET_VALIGN_TOP(tab->lblLibraries);
 #if GTK_CHECK_VERSION(3,0,0)
@@ -197,11 +205,13 @@ about_tab_init(AboutTab *tab)
 	GtkWidget *scrlSupport = gtk_scrolled_window_new(nullptr, nullptr);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrlSupport), GTK_SHADOW_IN);
 #endif /* GTK_CHECK_VERSION */
+	gtk_widget_set_name(scrlSupport, "scrlSupport");
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrlSupport),
 		GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
 	// Support tab: Label
 	tab->lblSupport = gtk_label_new(nullptr);
+	gtk_widget_set_name(tab->lblSupport, "lblSupport");
 	GTK_WIDGET_HALIGN_LEFT(tab->lblSupport);
 	GTK_WIDGET_VALIGN_TOP(tab->lblSupport);
 #if GTK_CHECK_VERSION(3,0,0)
@@ -216,11 +226,14 @@ about_tab_init(AboutTab *tab)
 	GtkWidget *lblTab = gtk_label_new_with_mnemonic(
 		convert_accel_to_gtk(C_("AboutTab", "C&redits")).c_str());
 	gtk_notebook_append_page(GTK_NOTEBOOK(tabWidget), scrlCredits, lblTab);
+	gtk_widget_set_name(lblTab, "lblCreditsTab");
 	lblTab = gtk_label_new_with_mnemonic(
 		convert_accel_to_gtk(C_("AboutTab", "&Libraries")).c_str());
+	gtk_widget_set_name(lblTab, "lblLibrariesTab");
 	gtk_notebook_append_page(GTK_NOTEBOOK(tabWidget), scrlLibraries, lblTab);
 	lblTab = gtk_label_new_with_mnemonic(
 		convert_accel_to_gtk(C_("AboutTab", "&Support")).c_str());
+	gtk_widget_set_name(lblTab, "lblSupportTab");
 	gtk_notebook_append_page(GTK_NOTEBOOK(tabWidget), scrlSupport, lblTab);
 
 #if GTK_CHECK_VERSION(4,0,0)
@@ -250,6 +263,7 @@ about_tab_init(AboutTab *tab)
 	gtk_box_pack_start(GTK_BOX(tab), hboxTitle, false, false, 0);
 #  else /* RP_USE_GTK_ALIGNMENT */
 	GtkWidget *const alignTitle = gtk_alignment_new(0.5f, 0.0f, 0.0f, 0.0f);
+	gtk_widget_set_name(alignTitle, "alignTitle");
 	gtk_container_add(GTK_CONTAINER(alignTitle), hboxTitle);
 	gtk_box_pack_start(GTK_BOX(tab), alignTitle, false, false, 0);
 	gtk_widget_show(alignTitle);

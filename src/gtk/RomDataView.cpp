@@ -258,10 +258,12 @@ rom_data_view_init(RomDataView *page)
 	// Header row. (outer box)
 	// NOTE: Not visible initially.
 	page->hboxHeaderRow_outer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+	gtk_widget_set_name(page->hboxHeaderRow_outer, "hboxHeaderRow_outer");
 	gtk_widget_hide(page->hboxHeaderRow_outer);	// GTK4 shows widgets by default.
 
 	// Header row. (inner box)
 	page->hboxHeaderRow = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
+	gtk_widget_set_name(page->hboxHeaderRow, "hboxHeaderRow");
 	gtk_widget_set_halign(page->hboxHeaderRow, GTK_ALIGN_CENTER);
 	gtk_widget_show(page->hboxHeaderRow);
 
@@ -277,13 +279,16 @@ rom_data_view_init(RomDataView *page)
 	// Header row. (outer box)
 	// NOTE: Not visible initially.
 	page->hboxHeaderRow_outer = gtk_hbox_new(false, 0);
+	gtk_widget_set_name(page->hboxHeaderRow_outer, "hboxHeaderRow_outer");
 
 	// Center-align the header row.
 	GtkWidget *centerAlign = gtk_alignment_new(0.5f, 0.0f, 1.0f, 0.0f);
+	gtk_widget_set_name(centerAlign, "centerAlign");
 	gtk_widget_show(centerAlign);
 
 	// Header row. (inner box)
 	page->hboxHeaderRow = gtk_hbox_new(false, 8);
+	gtk_widget_set_name(page->hboxHeaderRow, "hboxHeaderRow");
 	gtk_widget_show(page->hboxHeaderRow);
 
 	gtk_box_pack_start(GTK_BOX(page), page->hboxHeaderRow_outer, false, false, 0);
@@ -293,12 +298,15 @@ rom_data_view_init(RomDataView *page)
 
 	// System information.
 	page->lblSysInfo = gtk_label_new(nullptr);
+	gtk_widget_set_name(page->lblSysInfo, "lblSysInfo");
 	gtk_label_set_justify(GTK_LABEL(page->lblSysInfo), GTK_JUSTIFY_CENTER);
 	gtk_widget_show(page->lblSysInfo);
 
 	// Banner and icon.
 	page->imgBanner = drag_image_new();
+	gtk_widget_set_name(page->imgBanner, "imgBanner");
 	page->imgIcon = drag_image_new();
+	gtk_widget_set_name(page->imgIcon, "imgIcon");
 
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_box_append(GTK_BOX(page->hboxHeaderRow), page->lblSysInfo);
@@ -653,6 +661,7 @@ rom_data_view_init_string(RomDataView *page,
 {
 	// String type.
 	GtkWidget *widget = gtk_label_new(nullptr);
+	// NOTE: No name for this GtkWidget.
 	gtk_label_set_use_underline(GTK_LABEL(widget), false);
 	gtk_widget_show(widget);
 
@@ -752,6 +761,7 @@ rom_data_view_init_bitfield(RomDataView *page,
 
 #ifdef USE_GTK_GRID
 	GtkWidget *widget = gtk_grid_new();
+	// NOTE: No name for this GtkWidget.
 	//gtk_grid_set_row_spacings(GTK_TABLE(widget), 2);
 	//gtk_grid_set_column_spacings(GTK_TABLE(widget), 8);
 #else /* !USE_GTK_GRID */
@@ -771,6 +781,7 @@ rom_data_view_init_bitfield(RomDataView *page,
 	}
 
 	GtkWidget *widget = gtk_table_new(totalRows, totalCols, false);
+	// NOTE: No name for this GtkWidget.
 	//gtk_table_set_row_spacings(GTK_TABLE(widget), 2);
 	//gtk_table_set_col_spacings(GTK_TABLE(widget), 8);
 #endif /* USE_GTK_GRID */
@@ -785,6 +796,7 @@ rom_data_view_init_bitfield(RomDataView *page,
 			continue;
 
 		GtkWidget *checkBox = gtk_check_button_new_with_label(name.c_str());
+		// NOTE: No name for this GtkWidget.
 		gtk_widget_show(checkBox);
 		gboolean value = (bitfield & 1);
 		gtk_check_button_set_active(GTK_CHECK_BUTTON(checkBox), value);
@@ -987,9 +999,11 @@ rom_data_view_init_listdata(RomDataView *page,
 	// Scroll area for the GtkTreeView.
 #if GTK_CHECK_VERSION(4,0,0)
 	GtkWidget *scrolledWindow = gtk_scrolled_window_new();
+	// NOTE: No name for this GtkWidget.
 	gtk_scrolled_window_set_has_frame(GTK_SCROLLED_WINDOW(scrolledWindow), true);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	GtkWidget *scrolledWindow = gtk_scrolled_window_new(nullptr, nullptr);
+	// NOTE: No name for this GtkWidget.
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolledWindow), GTK_SHADOW_IN);
 #endif /* GTK_CHECK_VERSION */
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledWindow),
@@ -1001,6 +1015,7 @@ rom_data_view_init_listdata(RomDataView *page,
 
 	// Create the GtkTreeView.
 	GtkWidget *treeView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(sortProxy));
+	// NOTE: No name for this GtkWidget.
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeView),
 		(listDataDesc.names != nullptr));
 	gtk_widget_show(treeView);
@@ -1413,6 +1428,7 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 		// Create a VBox for the combobox to reduce its vertical height.
 #if GTK_CHECK_VERSION(3,0,0)
 		GtkWidget *const vboxCboLanguage = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+		gtk_widget_set_name(vboxCboLanguage, "vboxCboLanguage");
 		gtk_widget_set_valign(vboxCboLanguage, GTK_ALIGN_START);
 		gtk_widget_show(vboxCboLanguage);
 
@@ -1423,16 +1439,19 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 #  endif /* GTK_CHECK_VERSION(4,0,0) */
 #else /* !GTK_CHECK_VERSION(3,0,0) */
 		GtkWidget *const topAlign = gtk_alignment_new(0.5f, 0.0f, 0.0f, 0.0f);
+		gtk_widget_set_name(topAlign, "topAlign");
 		gtk_box_pack_end(GTK_BOX(page->hboxHeaderRow_outer), topAlign, false, false, 0);
 		gtk_widget_show(topAlign);
 
 		GtkWidget *const vboxCboLanguage = gtk_vbox_new(false, 0);
+		gtk_widget_set_name(vboxCboLanguage, "vboxCboLanguage");
 		gtk_container_add(GTK_CONTAINER(topAlign), vboxCboLanguage);
 		gtk_widget_show(vboxCboLanguage);
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
 		// Create the language combobox.
 		page->cboLanguage = language_combo_box_new();
+		gtk_widget_set_name(page->cboLanguage, "cboLanguage");
 		gtk_widget_show(page->cboLanguage);
 
 #if GTK_CHECK_VERSION(4,0,0)
@@ -1552,6 +1571,7 @@ rom_data_view_create_options_button(RomDataView *page)
 
 	// Create the OptionsMenuButton.
 	page->btnOptions = options_menu_button_new();
+	gtk_widget_set_name(page->btnOptions, "btnOptions");
 	gtk_widget_hide(page->btnOptions);
 	options_menu_button_set_direction(OPTIONS_MENU_BUTTON(page->btnOptions), GTK_ARROW_UP);
 
@@ -1672,6 +1692,7 @@ rom_data_view_update_display(RomDataView *page)
 	if (tabCount > 1) {
 		tabs.resize(tabCount);
 		page->tabWidget = gtk_notebook_new();
+		gtk_widget_set_name(page->tabWidget, "tabWidget");
 
 		// Add spacing between the system info header and the table.
 		g_object_set(page, "spacing", 8, nullptr);
@@ -1688,6 +1709,9 @@ rom_data_view_update_display(RomDataView *page)
 			auto &tab = *tabIter;
 
 			tab.vbox = rp_gtk_vbox_new(8);
+			char tab_name[32];
+			snprintf(tab_name, sizeof(tab_name), "vboxTab%d", i);
+			gtk_widget_set_name(tab.vbox, tab_name);
 #if USE_GTK_GRID
 			tab.table = gtk_grid_new();
 			gtk_grid_set_row_spacing(GTK_GRID(tab.table), 2);
@@ -1698,6 +1722,8 @@ rom_data_view_update_display(RomDataView *page)
 			gtk_table_set_row_spacings(GTK_TABLE(tab.table), 2);
 			gtk_table_set_col_spacings(GTK_TABLE(tab.table), 8);
 #endif /* USE_GTK_GRID */
+			snprintf(tab_name, sizeof(tab_name), "tableTab%d", i);
+			gtk_widget_set_name(tab.table, tab_name);
 
 #if GTK_CHECK_VERSION(4,0,0)
 			// FIXME: GTK4 equivalent of gtk_container_set_border_width().
@@ -1713,6 +1739,8 @@ rom_data_view_update_display(RomDataView *page)
 
 			// Add the tab.
 			GtkWidget *label = gtk_label_new(name);
+			snprintf(tab_name, sizeof(tab_name), "lblTab%d", i);
+			gtk_widget_set_name(label, tab_name);
 			gtk_notebook_append_page(GTK_NOTEBOOK(page->tabWidget), tab.vbox, label);
 		}
 		gtk_widget_show(page->tabWidget);
@@ -1745,6 +1773,7 @@ rom_data_view_update_display(RomDataView *page)
 		gtk_table_set_row_spacings(GTK_TABLE(tab.table), 2);
 		gtk_table_set_col_spacings(GTK_TABLE(tab.table), 8);
 #endif /* USE_GTK_GRID */
+		gtk_widget_set_name(tab.table, "tableTab0");
 		gtk_widget_show(tab.table);
 
 #if GTK_CHECK_VERSION(4,0,0)
@@ -1826,6 +1855,7 @@ rom_data_view_update_display(RomDataView *page)
 			// tr: Field description label.
 			const string txt = rp_sprintf(desc_label_fmt, field.name.c_str());
 			GtkWidget *lblDesc = gtk_label_new(txt.c_str());
+			// NOTE: No name for this GtkWidget.
 			gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);
 			gtk_widget_show(lblDesc);
 			page->cxx->vecDescLabels.emplace_back(lblDesc);
@@ -1900,6 +1930,7 @@ rom_data_view_update_display(RomDataView *page)
 #else /* !USE_GTK_GRID */
 					// Need to use GtkAlignment on GTK+ 2.x.
 					GtkWidget *const alignment = gtk_alignment_new(0.0f, 0.0f, 1.0f, 1.0f);
+					// NOTE: No name for this GtkWidget.
 					gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 8, 8, 8);
 					gtk_container_add(GTK_CONTAINER(alignment), widget);
 					gtk_widget_show(alignment);

@@ -110,6 +110,7 @@ rp_thunar_provider_get_pages(ThunarxPropertyPageProvider *page_provider, GList *
 	if (G_LIKELY(romData != nullptr)) {
 		// Create the RomDataView.
 		GtkWidget *const romDataView = rom_data_view_new_with_romData(uri, romData, RP_DFT_XFCE);
+		gtk_widget_set_name(romDataView, "romDataView");
 		romData->unref();
 		gtk_widget_show(romDataView);
 

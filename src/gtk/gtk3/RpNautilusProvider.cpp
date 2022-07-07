@@ -127,6 +127,7 @@ rp_nautilus_provider_get_pages(NautilusPropertyPageProvider *provider, GList *fi
 		// Create the RomDataView.
 		// TODO: Add some extra padding to the top...
 		GtkWidget *const romDataView = rom_data_view_new_with_romData(uri, romData, RP_DFT_GNOME);
+		gtk_widget_set_name(romDataView, "romDataView");
 		gtk_widget_show(romDataView);
 		romData->unref();
 

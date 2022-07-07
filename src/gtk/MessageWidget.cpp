@@ -162,27 +162,33 @@ message_widget_init(MessageWidget *widget)
 #else /* !GTK_CHECK_VERSION(3,0,0) */
 	// Add a GtkEventBox for the inner color.
 	widget->evbox_inner = gtk_event_box_new();
+	gtk_widget_set_name(widget->evbox_inner, "evbox_inner");
 	gtk_container_add(GTK_CONTAINER(widget), widget->evbox_inner);
 
 	// Add a GtkHBox for all the other widgets.
 	widget->hbox = gtk_hbox_new(0, 0);
+	gtk_widget_set_name(widget->hbox, "hbox");
 	gtk_container_add(GTK_CONTAINER(widget->evbox_inner), widget->hbox);
 	hbox = GTK_BOX(widget->hbox);
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
 	widget->messageType = GTK_MESSAGE_OTHER;
 	widget->image = gtk_image_new();
+	gtk_widget_set_name(widget->image, "image");
 	widget->label = gtk_label_new(nullptr);
+	gtk_widget_set_name(widget->label, "label");
 
 	// TODO: Align the GtkImage to the top of the first line
 	// if the label has multiple lines.
 
 	widget->close_button = gtk_button_new();
+	gtk_widget_set_name(widget->close_button, "close_button");
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_button_set_icon_name(GTK_BUTTON(widget->close_button), "dialog-close");
 	gtk_button_set_has_frame(GTK_BUTTON(widget->close_button), FALSE);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	GtkWidget *const imageClose = gtk_image_new_from_icon_name("dialog-close", GTK_ICON_SIZE_BUTTON);
+	gtk_widget_set_name(imageClose, "imageClose");
 	gtk_button_set_image(GTK_BUTTON(widget->close_button), imageClose);
 	gtk_button_set_relief(GTK_BUTTON(widget->close_button), GTK_RELIEF_NONE);
 #endif /* GTK_CHECK_VERSION(4,0,0) */

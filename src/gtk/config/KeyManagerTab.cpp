@@ -160,6 +160,7 @@ key_manager_tab_init(KeyManagerTab *tab)
 
 	// MessageWidget goes at the top of the window.
 	tab->messageWidget = message_widget_new();
+	gtk_widget_set_name(tab->messageWidget, "messageWidget");
 
 	// Initialize the KeyStoreGTK.
 	tab->keyStore = key_store_gtk_new();
@@ -175,6 +176,7 @@ key_manager_tab_init(KeyManagerTab *tab)
 	GtkWidget *scrolledWindow = gtk_scrolled_window_new(nullptr, nullptr);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolledWindow), GTK_SHADOW_IN);
 #endif /* GTK_CHECK_VERSION */
+	gtk_widget_set_name(scrolledWindow, "scrolledWindow");
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledWindow),
 		GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
@@ -183,6 +185,7 @@ key_manager_tab_init(KeyManagerTab *tab)
 	// NOTE: "Valid?" column contains an icon name.
 	tab->treeStore = gtk_tree_store_new(4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT);
 	tab->treeView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(tab->treeStore));
+	gtk_widget_set_name(tab->treeView, "treeView");
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tab->treeView), TRUE);
 	gtk_tree_view_set_enable_tree_lines(GTK_TREE_VIEW(tab->treeView), TRUE);
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolledWindow), tab->treeView);
@@ -234,6 +237,7 @@ key_manager_tab_init(KeyManagerTab *tab)
 #else /* !USE_GTK_MENU_BUTTON */
 	tab->btnImport = gtk_button_new();
 #endif /* USE_GTK_MENU_BUTTON */
+	gtk_widget_set_name(tab->btnImport, "btnImport");
 
 #if GTK_CHECK_VERSION(4,0,0) && defined(USE_GTK_MENU_BUTTON)
 	gtk_menu_button_set_label(GTK_MENU_BUTTON(tab->btnImport), s_import.c_str());
@@ -244,10 +248,13 @@ key_manager_tab_init(KeyManagerTab *tab)
 	// Create a GtkBox to store both a label and image.
 	// This will also be used for the non-GtkMenuButton version.
 	GtkWidget *const lblImport = gtk_label_new(nullptr);
+	gtk_widget_set_name(lblImport, "lblImport");
 	gtk_label_set_markup_with_mnemonic(GTK_LABEL(lblImport), s_import.c_str());
 	GtkWidget *const imgImport = gtk_image_new_from_icon_name("pan-up-symbolic", GTK_ICON_SIZE_BUTTON);
+	gtk_widget_set_name(imgImport, "imgImport");
 
 	GtkWidget *const hboxImport = rp_gtk_hbox_new(4);
+	gtk_widget_set_name(hboxImport, "hboxImport");
 	gtk_box_pack_start(GTK_BOX(hboxImport), lblImport, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(hboxImport), imgImport, false, false, 0);
 #  if GTK_CHECK_VERSION(4,0,0)
@@ -262,6 +269,7 @@ key_manager_tab_init(KeyManagerTab *tab)
 #else /* RP_USE_GTK_ALIGNMENT */
 	// GTK2: Use a GtkAlignment.
 	GtkWidget *const alignImport = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
+	gtk_widget_set_name(alignImport, "alignImport");
 	gtk_container_add(GTK_CONTAINER(alignImport), tab->btnImport);
 	gtk_widget_show(alignImport);
 #endif /* RP_USE_GTK_ALIGNMENT */
@@ -291,8 +299,11 @@ key_manager_tab_init(KeyManagerTab *tab)
 	gtk_widget_insert_action_group(GTK_WIDGET(tab->btnImport), prefix, G_ACTION_GROUP(tab->actionGroup));
 #else /* !USE_G_MENU_MODEL */
 	tab->menuImport = gtk_menu_new();
+	gtk_widget_set_name(tab->menuImport, "menuImport");
 	for (int i = 0; i < ARRAY_SIZE_I(import_menu_actions); i++) {
 		GtkWidget *const menuItem = gtk_menu_item_new_with_label(import_menu_actions[i]);
+		char menu_name[32];
+		snprintf(menu_name, sizeof(menu_name), "menuImport%d", i);
 		g_object_set_data(G_OBJECT(menuItem), "menuImport_id", GINT_TO_POINTER(i));
 		g_signal_connect(menuItem, "activate", G_CALLBACK(menuImport_triggered_signal_handler), tab);	// TODO
 		gtk_widget_show(menuItem);
@@ -549,7 +560,7 @@ btnImport_event_signal_handler(GtkButton *button, GdkEvent *event, KeyManagerTab
 #endif /* !USE_GTK_MENU_BUTTON */
 
 static void
-key_manager_tab_menu_action_response(GtkFileChooserDialog *dialog, gint response_id, KeyManagerTab *page);
+key_manager_tab_menu_action_response(GtkFileChooserDialog *fileDialog, gint response_id, KeyManagerTab *page);
 
 /**
  * Handle a menu action.
@@ -594,13 +605,14 @@ key_manager_tab_handle_menu_action(KeyManagerTab *tab, gint id)
 		RP_I18N_DOMAIN, "KeyManagerTab", file_filters_tbl[id]);
 
 	GtkWindow *const parent = gtk_widget_get_toplevel_window(GTK_WIDGET(tab));
-	GtkWidget *const dialog = gtk_file_chooser_dialog_new(
+	GtkWidget *const fileDialog = gtk_file_chooser_dialog_new(
 		s_title,			// title
 		parent,				// parent
 		GTK_FILE_CHOOSER_ACTION_OPEN,	// action
 		_("_Cancel"), GTK_RESPONSE_CANCEL,
 		_("_Open"), GTK_RESPONSE_ACCEPT,
 		nullptr);
+	gtk_widget_set_name(fileDialog, "fileDialog");
 
 #if GTK_CHECK_VERSION(4,0,0)
 	// NOTE: GTK4 has *mandatory* overwrite confirmation.
@@ -610,28 +622,28 @@ key_manager_tab_handle_menu_action(KeyManagerTab *tab, gint id)
 	if (tab->prevOpenDir) {
 		GFile *const set_file = g_file_new_for_path(tab->prevOpenDir);
 		if (set_file) {
-			gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), set_file, nullptr);
+			gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fileDialog), set_file, nullptr);
 			g_object_unref(set_file);
 		}
 	}
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
+	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(fileDialog), TRUE);
 	if (tab->prevOpenDir) {
-		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), tab->prevOpenDir);
+		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fileDialog), tab->prevOpenDir);
 	}
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Set the filters.
-	rpFileDialogFilterToGtk(GTK_FILE_CHOOSER(dialog), s_filter);
+	rpFileDialogFilterToGtk(GTK_FILE_CHOOSER(fileDialog), s_filter);
 
 	// Set the file ID in the dialog.
-	g_object_set_data(G_OBJECT(dialog), "KeyManagerTab.fileID", GINT_TO_POINTER(id));
+	g_object_set_data(G_OBJECT(fileDialog), "KeyManagerTab.fileID", GINT_TO_POINTER(id));
 
 	// Prompt for a filename.
-	g_signal_connect(dialog, "response", G_CALLBACK(key_manager_tab_menu_action_response), tab);
-	gtk_window_set_transient_for(GTK_WINDOW(dialog), parent);
-	gtk_window_set_modal(GTK_WINDOW(dialog), true);
-	gtk_widget_show(GTK_WIDGET(dialog));
+	g_signal_connect(fileDialog, "response", G_CALLBACK(key_manager_tab_menu_action_response), tab);
+	gtk_window_set_transient_for(GTK_WINDOW(fileDialog), parent);
+	gtk_window_set_modal(GTK_WINDOW(fileDialog), true);
+	gtk_widget_show(GTK_WIDGET(fileDialog));
 
 	// GtkFileChooserDialog will send the "response" signal when the dialog is closed.
 }
@@ -814,39 +826,39 @@ key_manager_tab_show_key_import_return_status(KeyManagerTab	*tab,
 
 /**
  * The Save dialog for a Standard ROM Operation has been closed.
- * @param dialog GtkFileChooserDialog
+ * @param fileDialog GtkFileChooserDialog
  * @param response_id Response ID
  * @param tab KeyManagerTab
  */
 static void
-key_manager_tab_menu_action_response(GtkFileChooserDialog *dialog, gint response_id, KeyManagerTab *tab)
+key_manager_tab_menu_action_response(GtkFileChooserDialog *fileDialog, gint response_id, KeyManagerTab *tab)
 {
 	if (response_id != GTK_RESPONSE_ACCEPT) {
 		// User cancelled the dialog.
 #if GTK_CHECK_VERSION(4,0,0)
-		gtk_window_destroy(GTK_WINDOW(dialog));
+		gtk_window_destroy(GTK_WINDOW(fileDialog));
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-		gtk_widget_destroy(GTK_WIDGET(dialog));
+		gtk_widget_destroy(GTK_WIDGET(fileDialog));
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 		return;
 	}
 
 	// Get the file ID from the dialog.
 	const KeyStoreUI::ImportFileID id = static_cast<KeyStoreUI::ImportFileID>(
-		GPOINTER_TO_INT(g_object_get_data(G_OBJECT(dialog), "KeyManagerTab.fileID")));
+		GPOINTER_TO_INT(g_object_get_data(G_OBJECT(fileDialog), "KeyManagerTab.fileID")));
 
 #if GTK_CHECK_VERSION(4,0,0)
 	// TODO: URIs?
 	gchar *in_filename = nullptr;
-	GFile *const get_file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(dialog));
+	GFile *const get_file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(fileDialog));
 	if (get_file) {
 		in_filename = g_file_get_path(get_file);
 		g_object_unref(get_file);
 	}
-	gtk_window_destroy(GTK_WINDOW(dialog));
+	gtk_window_destroy(GTK_WINDOW(fileDialog));
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-	gchar *const in_filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-	gtk_widget_destroy(GTK_WIDGET(dialog));
+	gchar *const in_filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fileDialog));
+	gtk_widget_destroy(GTK_WIDGET(fileDialog));
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	if (!in_filename) {

@@ -183,6 +183,10 @@ void ImageTypesTabPrivate::createGridLabels(void)
 		}
 
 		GtkWidget *const lblImageType = gtk_label_new(imageTypeName(i));
+		char lbl_name[32];
+		snprintf(lbl_name, sizeof(lbl_name), "lblImageType%u", i);
+		gtk_widget_set_name(lblImageType, lbl_name);
+
 #if !GTK_CHECK_VERSION(4,0,0)
 		gtk_widget_show(lblImageType);
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
@@ -208,6 +212,10 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	const unsigned int sysCount = ImageTypesConfig::sysCount();
 	for (unsigned int sys = 0; sys < sysCount; sys++) {
 		GtkWidget *const lblSysName = gtk_label_new(sysName(sys));
+		char lbl_name[32];
+		snprintf(lbl_name, sizeof(lbl_name), "lblSysName%u", sys);
+		gtk_widget_set_name(lblSysName, lbl_name);
+
 #if !GTK_CHECK_VERSION(4,0,0)
 		gtk_widget_show(lblSysName);
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
@@ -247,6 +255,9 @@ void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
 
 	// Create the ComboBox.
 	GtkWidget *const cbo = gtk_combo_box_new();
+	char cbo_name[32];
+	snprintf(cbo_name, sizeof(cbo_name), "cbo%04X", cbid);
+	gtk_widget_set_name(cbo, cbo_name);
 #if !GTK_CHECK_VERSION(4,0,0)
 	gtk_widget_show(cbo);
 #endif /* !GTK_CHECK_VERSION */
@@ -419,12 +430,14 @@ image_types_tab_init(ImageTypesTab *tab)
 		"Internal images are contained within the ROM file.\n"
 		"External images are downloaded from an external image database.\n\n"
 		"1 = highest priority; 2 = second highest priority; No = ignore"));
+	gtk_widget_set_name(lblImageTypes, "lblImageTypes");
 	GTK_LABEL_XALIGN_LEFT(lblImageTypes);
 
 	// Credits label
 	// TODO: Runtime language retranslation?
 	// tr: External image credits.
 	tab->lblCredits = gtk_label_new(nullptr);
+	gtk_widget_set_name(tab->lblCredits, "lblCredits");
 	gtk_label_set_markup(GTK_LABEL(tab->lblCredits), C_("ImageTypesTab",
 		"GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\n"
 		"are provided by <a href=\"https://www.gametdb.com/\">GameTDB</a>.\n"
@@ -443,6 +456,7 @@ image_types_tab_init(ImageTypesTab *tab)
 	gtk_table_set_row_spacings(GTK_TABLE(tab->table), 2);
 	gtk_table_set_col_spacings(GTK_TABLE(tab->table), 2);
 #endif /* USE_GTK_GRID */
+	gtk_widget_set_name(tab->table, "table");
 
 	// Create the control grid.
 	tab->d = new ImageTypesTabPrivate(tab);

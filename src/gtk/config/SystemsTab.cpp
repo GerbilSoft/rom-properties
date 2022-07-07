@@ -92,12 +92,14 @@ systems_tab_init(SystemsTab *tab)
 	// Create the "Game Boy Title Screens" frame.
 	// FIXME: GtkFrame doesn't support mnemonics?
 	GtkWidget *const fraDMG = gtk_frame_new(C_("SystemsTab", "Game Boy Title Screens"));
+	gtk_widget_set_name(fraDMG, "fraDMG");
 	GtkWidget *const vboxDMG = rp_gtk_vbox_new(6);
 #if GTK_CHECK_VERSION(2,91,0)
 	gtk_widget_set_margin(vboxDMG, 6);
 	gtk_frame_set_child(GTK_FRAME(fraDMG), vboxDMG);
 #else /* !GTK_CHECK_VERSION(2,91,0) */
 	GtkWidget *const alignDMG = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
+	gtk_widget_set_name(alignDMG, "alignDMG");
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignDMG), 6, 6, 6, 6);
 	gtk_widget_show(alignDMG);
 	gtk_container_add(GTK_CONTAINER(alignDMG), vboxDMG);
@@ -107,6 +109,7 @@ systems_tab_init(SystemsTab *tab)
 	// FIXME: Better wrapping that doesn't require manual newlines.
 	GtkWidget *const lblDMGDescription = gtk_label_new(
 		C_("SystemsTab", "Select the Game Boy model to use for title screens for different types of\nGame Boy ROM images."));
+	gtk_widget_set_name(lblDMGDescription, "lblDMGDescription");
 	GTK_LABEL_XALIGN_LEFT(lblDMGDescription);
 	gtk_label_set_wrap(GTK_LABEL(lblDMGDescription), TRUE);
 
@@ -116,6 +119,10 @@ systems_tab_init(SystemsTab *tab)
 		convert_accel_to_gtk(C_("SystemsTab", "&Super Game Boy:")).c_str());
 	GtkWidget *const lblCGB = gtk_label_new_with_mnemonic(
 		convert_accel_to_gtk(C_("SystemsTab", "Game Boy &Color:")).c_str());
+
+	gtk_widget_set_name(lblDMG, "lblDMG");
+	gtk_widget_set_name(lblSGB, "lblSGB");
+	gtk_widget_set_name(lblCGB, "lblCGB");
 
 	const string s_DMG = convert_accel_to_gtk(C_("SystemsTab", "Game Boy"));
 	const string s_SGB = convert_accel_to_gtk(C_("SystemsTab", "Super Game Boy"));
@@ -136,6 +143,10 @@ systems_tab_init(SystemsTab *tab)
 	tab->cboSGB = gtk_combo_box_new_with_model(GTK_TREE_MODEL(lstSGB));
 	tab->cboCGB = gtk_combo_box_new_with_model(GTK_TREE_MODEL(lstSGB));
 	g_object_unref(lstSGB);	// TODO: Is this correct?
+
+	gtk_widget_set_name(tab->cboDMG, "cboDMG");
+	gtk_widget_set_name(tab->cboSGB, "cboSGB");
+	gtk_widget_set_name(tab->cboCGB, "cboCGB");
 
 	// TODO: Label alignments based on DE?
 	gtk_label_set_mnemonic_widget(GTK_LABEL(lblDMG), tab->cboDMG);
@@ -177,6 +188,7 @@ systems_tab_init(SystemsTab *tab)
 	// GtkGrid/GtkTable
 #ifdef USE_GTK_GRID
 	GtkWidget *const table = gtk_grid_new();
+	gtk_widget_set_name(table, "table");
 	gtk_grid_set_row_spacing(GTK_GRID(table), 2);
 	gtk_grid_set_column_spacing(GTK_GRID(table), 8);
 
@@ -189,6 +201,7 @@ systems_tab_init(SystemsTab *tab)
 	gtk_grid_attach(GTK_GRID(table), tab->cboCGB, 1, 2, 1, 1);
 #else /* !USE_GTK_GRID */
 	GtkWidget *const table = gtk_table_new(3, 2, false);
+	gtk_widget_set_name(table, "table");
 	gtk_table_set_row_spacings(GTK_TABLE(table), 2);
 	gtk_table_set_col_spacings(GTK_TABLE(table), 8);
 

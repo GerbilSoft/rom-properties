@@ -250,7 +250,7 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 }
 
 static void
-rom_data_view_doRomOp_stdop_response(GtkFileChooserDialog *dialog, gint response_id, RomDataView *page);
+rom_data_view_doRomOp_stdop_response(GtkFileChooserDialog *fileDialog, gint response_id, RomDataView *page);
 
 /**
  * ROM operation: Standard Operations
@@ -312,11 +312,12 @@ rom_data_view_doRomOp_stdop(RomDataView *page, int id)
 	}
 
 	GtkWindow *const parent = gtk_widget_get_toplevel_window(GTK_WIDGET(page));
-	GtkWidget *const dialog = gtk_file_chooser_dialog_new(
+	GtkWidget *const fileDialog = gtk_file_chooser_dialog_new(
 		title, parent, GTK_FILE_CHOOSER_ACTION_SAVE,
 		_("_Cancel"), GTK_RESPONSE_CANCEL,
 		_("_Save"), GTK_RESPONSE_ACCEPT,
 		nullptr);
+	gtk_widget_set_name(fileDialog, "fileDialog");
 
 #if GTK_CHECK_VERSION(4,0,0)
 	// NOTE: GTK4 has *mandatory* overwrite confirmation.
@@ -325,21 +326,21 @@ rom_data_view_doRomOp_stdop(RomDataView *page, int id)
 	// TODO: URI?
 	GFile *const set_file = g_file_new_for_path(page->prevExportDir);
 	if (set_file) {
-		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), set_file, nullptr);
+		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fileDialog), set_file, nullptr);
 		g_object_unref(set_file);
 	}
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
+	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(fileDialog), TRUE);
 	if (page->prevExportDir) {
-		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), page->prevExportDir);
+		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fileDialog), page->prevExportDir);
 	}
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Set the filters.
-	rpFileDialogFilterToGtk(GTK_FILE_CHOOSER(dialog), filter);
+	rpFileDialogFilterToGtk(GTK_FILE_CHOOSER(fileDialog), filter);
 
 	// Set the operation ID in the dialog.
-	g_object_set_data(G_OBJECT(dialog), "RomDataView.romOp", GINT_TO_POINTER(id));
+	g_object_set_data(G_OBJECT(fileDialog), "RomDataView.romOp", GINT_TO_POINTER(id));
 
 	gchar *const basename = g_path_get_basename(rom_filename);
 	string defaultName = basename;
@@ -350,51 +351,51 @@ rom_data_view_doRomOp_stdop(RomDataView *page, int id)
 		defaultName.resize(extpos);
 	}
 	defaultName += default_ext;
-	gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), defaultName.c_str());
+	gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(fileDialog), defaultName.c_str());
 
 	// Prompt for a save file.
-	g_signal_connect(dialog, "response", G_CALLBACK(rom_data_view_doRomOp_stdop_response), page);
-	gtk_window_set_transient_for(GTK_WINDOW(dialog), parent);
-	gtk_window_set_modal(GTK_WINDOW(dialog), true);
-	gtk_widget_show(GTK_WIDGET(dialog));
+	g_signal_connect(fileDialog, "response", G_CALLBACK(rom_data_view_doRomOp_stdop_response), page);
+	gtk_window_set_transient_for(GTK_WINDOW(fileDialog), parent);
+	gtk_window_set_modal(GTK_WINDOW(fileDialog), true);
+	gtk_widget_show(GTK_WIDGET(fileDialog));
 
 	// GtkFileChooserDialog will send the "response" signal when the dialog is closed.
 }
 
 /**
  * The Save dialog for a Standard ROM Operation has been closed.
- * @param dialog GtkFileChooserDialog
+ * @param fileDialog GtkFileChooserDialog
  * @param response_id Response ID
  * @param page RomDataView
  */
 static void
-rom_data_view_doRomOp_stdop_response(GtkFileChooserDialog *dialog, gint response_id, RomDataView *page)
+rom_data_view_doRomOp_stdop_response(GtkFileChooserDialog *fileDialog, gint response_id, RomDataView *page)
 {
 	if (response_id != GTK_RESPONSE_ACCEPT) {
 		// User cancelled the dialog.
 #if GTK_CHECK_VERSION(4,0,0)
-		gtk_window_destroy(GTK_WINDOW(dialog));
+		gtk_window_destroy(GTK_WINDOW(fileDialog));
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-		gtk_widget_destroy(GTK_WIDGET(dialog));
+		gtk_widget_destroy(GTK_WIDGET(fileDialog));
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 		return;
 	}
 
 	// Get the operation ID from the dialog.
-	const int id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(dialog), "RomDataView.romOp"));
+	const int id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(fileDialog), "RomDataView.romOp"));
 
 #if GTK_CHECK_VERSION(4,0,0)
 	// TODO: URIs?
 	gchar *out_filename = nullptr;
-	GFile *const get_file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(dialog));
+	GFile *const get_file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(fileDialog));
 	if (get_file) {
 		out_filename = g_file_get_path(get_file);
 		g_object_unref(get_file);
 	}
-	gtk_window_destroy(GTK_WINDOW(dialog));
+	gtk_window_destroy(GTK_WINDOW(fileDialog));
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-	gchar *const out_filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-	gtk_widget_destroy(GTK_WIDGET(dialog));
+	gchar *const out_filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fileDialog));
+	gtk_widget_destroy(GTK_WIDGET(fileDialog));
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	if (!out_filename) {
@@ -474,27 +475,28 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 	RomData::RomOpParams params;
 	const RomData::RomOp *op = &ops[id];
 	if (op->flags & RomData::RomOp::ROF_SAVE_FILE) {
-		GtkWidget *const dialog = gtk_file_chooser_dialog_new(
+		GtkWidget *const fileDialog = gtk_file_chooser_dialog_new(
 			op->sfi.title, parent, GTK_FILE_CHOOSER_ACTION_SAVE,
 			_("Cancel"), GTK_RESPONSE_CANCEL,
 			_("Save"), GTK_RESPONSE_ACCEPT,
 			nullptr);
+		gtk_widget_set_name(fileDialog, "fileDialog");
 
 #if !GTK_CHECK_VERSION(4,0,0)
 		// NOTE: GTK4 has *mandatory* overwrite confirmation.
 		// Reference: https://gitlab.gnome.org/GNOME/gtk/-/commit/063ad28b1a06328e14ed72cc4b99cd4684efed12
-		gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
+		gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(fileDialog), TRUE);
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 
 		// Set the filters.
-		rpFileDialogFilterToGtk(GTK_FILE_CHOOSER(dialog), op->sfi.filter);
+		rpFileDialogFilterToGtk(GTK_FILE_CHOOSER(fileDialog), op->sfi.filter);
 
 		// Add the "All Files" filter.
 		GtkFileFilter *const allFilesFilter = gtk_file_filter_new();
 		// tr: "All Files" filter (GTK+ file filter)
 		gtk_file_filter_set_name(allFilesFilter, C_("RomData", "All Files"));
 		gtk_file_filter_add_pattern(allFilesFilter, "*");
-		gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), allFilesFilter);
+		gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(fileDialog), allFilesFilter);
 
 		// Initial file and directory, based on the current file.
 		// NOTE: Not checking if it's a file or a directory. Assuming it's a file.
@@ -504,23 +506,23 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 			size_t slash_pos = initialFile.rfind(DIR_SEP_CHR);
 			if (slash_pos != string::npos) {
 				// Full path. Set the directory and filename separately.
-				gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), &initialFile[slash_pos + 1]);
+				gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(fileDialog), &initialFile[slash_pos + 1]);
 				initialFile.resize(slash_pos);
 
 #if GTK_CHECK_VERSION(4,0,0)
 				// TODO: URI?
 				GFile *const set_file = g_file_new_for_path(initialFile.c_str());
 				if (set_file) {
-					gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), set_file, nullptr);
+					gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fileDialog), set_file, nullptr);
 					g_object_unref(set_file);
 				}
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 				// FIXME: Do we need to prepend "file://"?
-				gtk_file_chooser_set_current_folder_uri(GTK_FILE_CHOOSER(dialog), initialFile.c_str());
+				gtk_file_chooser_set_current_folder_uri(GTK_FILE_CHOOSER(fileDialog), initialFile.c_str());
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 			} else {
 				// Not a full path. We can only set the filename.
-				gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), initialFile.c_str());
+				gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(fileDialog), initialFile.c_str());
 			}
 		}
 
@@ -529,18 +531,18 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 		// FIXME: Need to add a response signal like standard operations.
 		assert(!"GTK4 doesn't support gtk_dialog_run().");
 		// TODO: URIs?
-		GFile *const get_file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(dialog));
+		GFile *const get_file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(fileDialog));
 		if (get_file) {
 			save_filename = (get_file ? g_file_get_path(get_file) : nullptr);
 			g_object_unref(get_file);
 		}
-		gtk_window_destroy(GTK_WINDOW(dialog));
+		gtk_window_destroy(GTK_WINDOW(fileDialog));
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-		gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+		gint res = gtk_dialog_run(GTK_DIALOG(fileDialog));
 		save_filename = (res == GTK_RESPONSE_ACCEPT
-			? gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog))
+			? gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fileDialog))
 			: nullptr);
-		gtk_widget_destroy(dialog);
+		gtk_widget_destroy(fileDialog);
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 
 		params.save_filename = save_filename;

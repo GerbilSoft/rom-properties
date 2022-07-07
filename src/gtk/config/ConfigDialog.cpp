@@ -178,6 +178,7 @@ config_dialog_init(ConfigDialog *dialog)
 
 	// Create the GtkNotebook.
 	dialog->tabWidget = gtk_notebook_new();
+	gtk_widget_set_name(dialog->tabWidget, "tabWidget");
 #ifndef RP_USE_GTK_ALIGNMENT
 	// NOTE: This doesn't seem to be needed for GTK2.
 	// May be a theme-specific thing...
@@ -195,45 +196,60 @@ config_dialog_init(ConfigDialog *dialog)
 	// Create the tabs.
 	GtkWidget *const lblImageTypes = gtk_label_new_with_mnemonic(
 		convert_accel_to_gtk(C_("ConfigDialog", "&Image Types")).c_str());
+	gtk_widget_set_name(lblImageTypes, "lblImageTypes");
 	dialog->tabImageTypes = image_types_tab_new();
+	gtk_widget_set_name(dialog->tabImageTypes, "tabImageTypes");
 	g_signal_connect(dialog->tabImageTypes, "modified",
 		G_CALLBACK(config_dialog_tab_modified), dialog);
 
 	GtkWidget *const lblSystems = gtk_label_new_with_mnemonic(
 		convert_accel_to_gtk(C_("ConfigDialog", "&Systems")).c_str());
+	gtk_widget_set_name(lblSystems, "lblSystems");
 	dialog->tabSystems = systems_tab_new();
+	gtk_widget_set_name(dialog->tabSystems, "tabSystems");
 	g_signal_connect(dialog->tabSystems, "modified",
 		G_CALLBACK(config_dialog_tab_modified), dialog);
 
 	GtkWidget *const lblOptions = gtk_label_new_with_mnemonic(
 		convert_accel_to_gtk(C_("ConfigDialog", "&Options")).c_str());
+	gtk_widget_set_name(lblOptions, "lblOptions");
 	dialog->tabOptions = options_tab_new();
+	gtk_widget_set_name(dialog->tabOptions, "tabOptions");
 	g_signal_connect(dialog->tabOptions, "modified",
 		G_CALLBACK(config_dialog_tab_modified), dialog);
 
-	GtkWidget *const lblCache = gtk_label_new_with_mnemonic(C_("ConfigDialog", "Thumbnail Cache"));
+	GtkWidget *const lblCache = gtk_label_new_with_mnemonic(
+		C_("ConfigDialog", "Thumbnail Cache"));
+	gtk_widget_set_name(lblCache, "lblCache");
 	dialog->tabCache = cache_tab_new();
+	gtk_widget_set_name(dialog->tabCache, "tabCache");
 	gtk_widget_show(dialog->tabCache);
 	g_signal_connect(dialog->tabCache, "modified",
 		G_CALLBACK(config_dialog_tab_modified), dialog);
 
 	GtkWidget *const lblAchievements = gtk_label_new_with_mnemonic(
 		convert_accel_to_gtk(C_("ConfigDialog", "&Achievements")).c_str());
+	gtk_widget_set_name(lblAchievements, "lblAchievements");
 	dialog->tabAchievements = achievements_tab_new();
+	gtk_widget_set_name(dialog->tabAchievements, "tabAchievements");
 	g_signal_connect(dialog->tabAchievements, "modified",
 		G_CALLBACK(config_dialog_tab_modified), dialog);
 
 #ifdef ENABLE_DECRYPTION
 	GtkWidget *const lblKeyManager = gtk_label_new_with_mnemonic(
 		convert_accel_to_gtk(C_("ConfigDialog", "&Key Manager")).c_str());
+	gtk_widget_set_name(lblKeyManager, "lblKeyManager");
 	dialog->tabKeyManager = key_manager_tab_new();
+	gtk_widget_set_name(dialog->tabKeyManager, "tabKeyManager");
 	g_signal_connect(dialog->tabKeyManager, "modified",
 		G_CALLBACK(config_dialog_tab_modified), dialog);
 #endif /* ENABLE_DECRYPTION */
 
 	GtkWidget *const lblAbout = gtk_label_new_with_mnemonic(
 		convert_accel_to_gtk(C_("ConfigDialog", "Abou&t")).c_str());
+	gtk_widget_set_name(lblAbout, "lblAbout");
 	dialog->tabAbout = about_tab_new();
+	gtk_widget_set_name(dialog->tabAbout, "tabAbout");
 	g_signal_connect(dialog->tabAbout, "modified",
 		G_CALLBACK(config_dialog_tab_modified), dialog);
 
@@ -268,6 +284,13 @@ config_dialog_init(ConfigDialog *dialog)
 	GtkWidget *const alignAchievements = gtk_alignment_new(0.0f, 0.0f, 1.0f, 1.0f);
 	GtkWidget *const alignAbout = gtk_alignment_new(0.0f, 0.0f, 1.0f, 1.0f);
 
+	gtk_widget_set_name(alignImageTypes, "alignImageTypes");
+	gtk_widget_set_name(alignSystems, "alignSystems");
+	gtk_widget_set_name(alignOptions, "alignOptions");
+	gtk_widget_set_name(alignCache, "alignCache");
+	gtk_widget_set_name(alignAchievements, "alignAchievements");
+	gtk_widget_set_name(alignAbout, "alignAbout");
+
 	gtk_container_add(GTK_CONTAINER(alignImageTypes), dialog->tabImageTypes);
 	gtk_container_add(GTK_CONTAINER(alignSystems), dialog->tabSystems);
 	gtk_container_add(GTK_CONTAINER(alignOptions), dialog->tabOptions);
@@ -291,6 +314,7 @@ config_dialog_init(ConfigDialog *dialog)
 
 #  ifdef ENABLE_DECRYPTION
 	GtkWidget *const alignKeyManager = gtk_alignment_new(0.0f, 0.0f, 1.0f, 1.0f);
+	gtk_widget_set_name(alignKeyManager, "alignKeyManager");
 	gtk_container_add(GTK_CONTAINER(alignKeyManager), dialog->tabKeyManager);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignKeyManager), 8, 8, 8, 8);
 	gtk_widget_show(alignKeyManager);

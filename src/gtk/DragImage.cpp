@@ -55,7 +55,7 @@ struct _DragImage {
 	super __parent__;
 
 	// GtkImage child widget.
-	GtkImage *imageWidget;
+	GtkWidget *imageWidget;
 	// Current frame.
 	PIMGTYPE curFrame;
 
@@ -127,12 +127,13 @@ drag_image_init(DragImage *image)
 	image->anim = nullptr;
 
 	// Create the child GtkImage widget.
-	image->imageWidget = GTK_IMAGE(gtk_image_new());
-	gtk_widget_show(GTK_WIDGET(image->imageWidget));
+	image->imageWidget = gtk_image_new();
+	gtk_widget_set_name(image->imageWidget, "imageWidget");
+	gtk_widget_show(image->imageWidget);
 #if GTK_CHECK_VERSION(4,0,0)
-	gtk_box_append(GTK_BOX(image), GTK_WIDGET(image->imageWidget));
+	gtk_box_append(GTK_BOX(image), image->imageWidget);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-	gtk_container_add(GTK_CONTAINER(image), GTK_WIDGET(image->imageWidget));
+	gtk_container_add(GTK_CONTAINER(image), image->imageWidget);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 // FIXME: GTK4 has a new Drag & Drop API.
@@ -221,12 +222,12 @@ drag_image_update_pixmaps(DragImage *image)
 
 		// Show the first frame.
 		image->curFrame = PIMGTYPE_ref(anim->iconFrames[anim->iconAnimHelper.frameNumber()]);
-		gtk_image_set_from_PIMGTYPE(image->imageWidget, image->curFrame);
+		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), image->curFrame);
 		bRet = true;
 	} else if (image->img && image->img->isValid()) {
 		// Single image.
 		image->curFrame = rp_image_to_PIMGTYPE(image->img);
-		gtk_image_set_from_PIMGTYPE(image->imageWidget, image->curFrame);
+		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), image->curFrame);
 		bRet = true;
 	}
 
@@ -302,7 +303,7 @@ drag_image_set_rp_image(DragImage *image, const LibRpTexture::rp_image *img)
 
 	if (!img) {
 		if (!image->anim || !image->anim->iconAnimData) {
-			gtk_image_clear(image->imageWidget);
+			gtk_image_clear(GTK_IMAGE(image->imageWidget));
 		} else {
 			return drag_image_update_pixmaps(image);
 		}
@@ -349,7 +350,7 @@ drag_image_set_icon_anim_data(DragImage *image, const LibRpBase::IconAnimData *i
 		}
 
 		if (!image->img) {
-			gtk_image_clear(image->imageWidget);
+			gtk_image_clear(GTK_IMAGE(image->imageWidget));
 		} else {
 			return drag_image_update_pixmaps(image);
 		}
@@ -380,7 +381,7 @@ drag_image_clear(DragImage *image)
 	}
 
 	UNREF_AND_NULL(image->img);
-	gtk_image_clear(image->imageWidget);
+	gtk_image_clear(GTK_IMAGE(image->imageWidget));
 }
 
 /**
@@ -412,7 +413,7 @@ drag_image_anim_timer_func(DragImage *image)
 	if (frame != anim->last_frame_number) {
 		// New frame number.
 		// Update the icon.
-		gtk_image_set_from_PIMGTYPE(image->imageWidget, anim->iconFrames[frame]);
+		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), anim->iconFrames[frame]);
 		anim->last_frame_number = frame;
 	}
 

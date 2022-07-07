@@ -78,9 +78,9 @@ static void	options_menu_button_get_property(GObject	*object,
 						 GValue		*value,
 						 GParamSpec	*pspec);
 
-static gboolean	btnOptions_clicked_signal_handler(GtkButton	*button,
+static gboolean	menuButton_clicked_signal_handler(GtkButton	*button,
 						  OptionsMenuButton *widget);
-static gboolean	btnOptions_activate_signal_handler(GtkButton	*button,
+static gboolean	menuButton_activate_signal_handler(GtkButton	*button,
 						   OptionsMenuButton *widget);
 #ifndef USE_GTK_MENU_BUTTON
 static gboolean	btnOptions_event_signal_handler (GtkButton	*button,
@@ -108,7 +108,7 @@ struct _OptionsMenuButtonClass {
 // OptionsMenuButton instance.
 struct _OptionsMenuButton {
 	super __parent__;
-	GtkWidget *button;	// GtkMenuButton (or GtkButton)
+	GtkWidget *menuButton;	// GtkMenuButton (or GtkButton)
 
 #ifdef USE_G_MENU_MODEL
 	GMenu *menuModel;
@@ -196,16 +196,18 @@ options_menu_button_init(OptionsMenuButton *widget)
 
 	// Create the GtkMenuButton.
 #ifdef USE_GTK_MENU_BUTTON
-	widget->button = gtk_menu_button_new();
+	widget->menuButton = gtk_menu_button_new();
 #else /* !USE_GTK_MENU_BUTTON */
-	widget->button = gtk_button_new();
+	widget->menuButton = gtk_button_new();
 	widget->arrowType = (GtkArrowType)-1;	// force update
 #endif /* USE_GTK_MENU_BUTTON */
-	gtk_widget_show(widget->button);
+	gtk_widget_set_name(widget->menuButton, "menuButton");
+	gtk_widget_show(widget->menuButton);
 
 	// Initialize the direction image.
 #if !GTK_CHECK_VERSION(4,0,0)
 	widget->imgOptions = gtk_image_new();
+	gtk_widget_set_name(widget->imgOptions, "imgOptions");
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 	options_menu_button_set_direction(widget, GTK_ARROW_UP);
 
@@ -214,34 +216,36 @@ options_menu_button_init(OptionsMenuButton *widget)
 	gtk_menu_button_set_use_underline(GTK_MENU_BUTTON(widget), TRUE);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	GtkWidget *const lblOptions = gtk_label_new(nullptr);
+	gtk_widget_set_name(lblOptions, "lblOptions");
 	gtk_label_set_markup_with_mnemonic(GTK_LABEL(lblOptions), s_title.c_str());
 	gtk_widget_show(lblOptions);
 	GtkWidget *const hboxOptions = rp_gtk_hbox_new(4);
+	gtk_widget_set_name(hboxOptions, "hboxOptions");
 	gtk_widget_show(hboxOptions);
 
 	// Add the label and image to the GtkBox.
 	gtk_box_pack_start(GTK_BOX(hboxOptions), lblOptions, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(hboxOptions), widget->imgOptions, false, false, 0);
-	gtk_container_add(GTK_CONTAINER(widget->button), hboxOptions);
+	gtk_container_add(GTK_CONTAINER(widget->menuButton), hboxOptions);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Add the menu button to the container widget.
 #if GTK_CHECK_VERSION(4,0,0)
-	gtk_box_append(GTK_BOX(widget), widget->button);
+	gtk_box_append(GTK_BOX(widget), widget->menuButton);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-	gtk_container_add(GTK_CONTAINER(widget), widget->button);
+	gtk_container_add(GTK_CONTAINER(widget), widget->menuButton);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Connect the wrapper signals.
-	g_signal_connect(widget->button, "clicked", G_CALLBACK(btnOptions_clicked_signal_handler), widget);
-	g_signal_connect(widget->button, "activate", G_CALLBACK(btnOptions_activate_signal_handler), widget);
+	g_signal_connect(widget->menuButton, "clicked", G_CALLBACK(menuButton_clicked_signal_handler), widget);
+	g_signal_connect(widget->menuButton, "activate", G_CALLBACK(menuButton_activate_signal_handler), widget);
 
 #ifndef USE_GTK_MENU_BUTTON
 	// Connect the button's "event" signal.
 	// NOTE: We need to pass the event details. Otherwise, we'll
 	// end up with the menu getting "stuck" to the mouse.
 	// Reference: https://developer.gnome.org/gtk-tutorial/stable/x1577.html
-	g_signal_connect(widget->button, "event", G_CALLBACK(btnOptions_event_signal_handler), widget);
+	g_signal_connect(widget->menuButton, "event", G_CALLBACK(btnOptions_event_signal_handler), widget);
 #endif /* !USE_GTK_MENU_BUTTON */
 
 #if USE_G_MENU_MODEL
@@ -254,7 +258,7 @@ options_menu_button_dispose(GObject *object)
 {
 	OptionsMenuButton *const widget = OPTIONS_MENU_BUTTON(object);
 
-	// NOTE: widget->button is owned by the GtkBox,
+	// NOTE: widget->menuButton is owned by the GtkBox,
 	// so we don't have to delete it manually.
 
 #ifndef USE_GTK_MENU_BUTTON
@@ -330,7 +334,7 @@ options_menu_button_get_direction(OptionsMenuButton *widget)
 {
 	g_return_val_if_fail(IS_OPTIONS_MENU_BUTTON(widget), GTK_ARROW_UP);
 #ifdef USE_GTK_MENU_BUTTON
-	return gtk_menu_button_get_direction(GTK_MENU_BUTTON(widget->button));
+	return gtk_menu_button_get_direction(GTK_MENU_BUTTON(widget->menuButton));
 #else /* !USE_GTK_MENU_BUTTON */
 	return widget->arrowType;
 #endif /* USE_GTK_MENU_BUTTON */
@@ -341,7 +345,7 @@ options_menu_button_set_direction(OptionsMenuButton *widget, GtkArrowType arrowT
 {
 	g_return_if_fail(IS_OPTIONS_MENU_BUTTON(widget));
 #ifdef USE_GTK_MENU_BUTTON
-	if (gtk_menu_button_get_direction(GTK_MENU_BUTTON(widget->button)) == arrowType)
+	if (gtk_menu_button_get_direction(GTK_MENU_BUTTON(widget->menuButton)) == arrowType)
 		return;
 #else /* !USE_GTK_MENU_BUTTON */
 	if (widget->arrowType == arrowType)
@@ -370,14 +374,14 @@ options_menu_button_set_direction(OptionsMenuButton *widget, GtkArrowType arrowT
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 #ifdef USE_GTK_MENU_BUTTON
-	gtk_menu_button_set_direction(GTK_MENU_BUTTON(widget->button), arrowType);
+	gtk_menu_button_set_direction(GTK_MENU_BUTTON(widget->menuButton), arrowType);
 #else /* !USE_GTK_MENU_BUTTON */
 	widget->arrowType = arrowType;
 #endif /* USE_GTK_MENU_BUTTON */
 }
 
 static gboolean
-btnOptions_clicked_signal_handler(GtkButton *button, OptionsMenuButton *widget)
+menuButton_clicked_signal_handler(GtkButton *button, OptionsMenuButton *widget)
 {
 	RP_UNUSED(button);
 	g_return_val_if_fail(IS_OPTIONS_MENU_BUTTON(widget), FALSE);
@@ -386,7 +390,7 @@ btnOptions_clicked_signal_handler(GtkButton *button, OptionsMenuButton *widget)
 }
 
 static gboolean
-btnOptions_activate_signal_handler(GtkButton *button, OptionsMenuButton *widget)
+menuButton_activate_signal_handler(GtkButton *button, OptionsMenuButton *widget)
 {
 	RP_UNUSED(button);
 	g_return_val_if_fail(IS_OPTIONS_MENU_BUTTON(widget), FALSE);
@@ -577,10 +581,12 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 #else /* !USE_G_MENU_MODEL */
 	// Create a new GtkMenu.
 	GtkWidget *const menuOptions = gtk_menu_new();
+	gtk_widget_set_name(menuOptions, "menuOptions");
 
 	for (const option_menu_action_t &p : stdacts) {
 		GtkWidget *const menuItem = gtk_menu_item_new_with_label(
 			dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p.desc));
+		// NOTE: No name for this GtkWidget.
 		g_object_set_data(G_OBJECT(menuItem), "menuOptions_id", GINT_TO_POINTER(p.id));
 		g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), widget);
 		gtk_widget_show(menuItem);
@@ -594,6 +600,7 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 		// after converting everything over to GMenuModel.
 		// Obviously it won't work in this code path, though...
 		GtkWidget *menuItem = gtk_separator_menu_item_new();
+		// NOTE: No name for this GtkWidget.
 		gtk_widget_show(menuItem);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menuOptions), menuItem);
 
@@ -601,6 +608,7 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 		for (const RomData::RomOp &op : ops) {
 			const string desc = convert_accel_to_gtk(op.desc);
 			menuItem = gtk_menu_item_new_with_mnemonic(desc.c_str());
+			// NOTE: No name for this GtkWidget.
 			gtk_widget_set_sensitive(menuItem, !!(op.flags & RomData::RomOp::ROF_ENABLED));
 			g_object_set_data(G_OBJECT(menuItem), "menuOptions_id", GINT_TO_POINTER(i));
 			g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), widget);
@@ -617,9 +625,9 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 #ifdef USE_GTK_MENU_BUTTON
 	// NOTE: GtkMenuButton does NOT take ownership of the menu.
 #  ifdef USE_G_MENU_MODEL
-	gtk_menu_button_set_menu_model(GTK_MENU_BUTTON(widget->button), G_MENU_MODEL(menuModel));
+	gtk_menu_button_set_menu_model(GTK_MENU_BUTTON(widget->menuButton), G_MENU_MODEL(menuModel));
 #  else /* !USE_G_MENU_MODEL */
-	gtk_menu_button_set_popup(GTK_MENU_BUTTON(widget->button), GTK_WIDGET(menuOptions));
+	gtk_menu_button_set_popup(GTK_MENU_BUTTON(widget->menuButton), GTK_WIDGET(menuOptions));
 #  endif /* USE_G_MENU_MODEL */
 #endif /* USE_GTK_MENU_BUTTON */
 
