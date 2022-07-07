@@ -80,7 +80,8 @@ static const char ELFMachineTypes_strtbl[] =
 	"CSR Kalimba" "\x00" "Zilog Z80" "\x00" "Controls and Data Servic"
 	"es VISIUMcore" "\x00" "FTDI Chip FT32" "\x00" "Moxie processor" "\x00"
 	"AMD GPU" "\x00" "RISC-V" "\x00" "Lanai" "\x00" "Linux eBPF" "\x00"
-	"Netronome Flow Processor" "\x00" "NEC VE" "\x00" "C-SKY" "\x00";
+	"Netronome Flow Processor" "\x00" "NEC VE" "\x00" "C-SKY" "\x00" "L"
+	"oongArch" "\x00";
 
 static const uint16_t ELFMachineTypes_offtbl[] = {
 	/* ELF Machine Type 0 */
@@ -129,5 +130,8 @@ static const uint16_t ELFMachineTypes_offtbl[] = {
 	3316,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,
 	0,0,0,3324,3331,0,0,3337,
-	0,0,3348,3373,3380,
+	0,0,3348,3373,3380,0,0,0,
+
+	/* ELF Machine Type 256 */
+	0,0,3386,
 };

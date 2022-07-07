@@ -287,3 +287,4 @@
 250|Netronome Flow Processor
 251|NEC VE
 252|C-SKY
+258|LoongArch
