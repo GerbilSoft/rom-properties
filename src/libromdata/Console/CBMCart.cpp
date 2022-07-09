@@ -356,9 +356,9 @@ int CBMCart::loadFieldData(void)
 					// Identify the type based on the EXROM/GAME lines.
 					const uint8_t id = (romHeader->c64_game  != 0) |
 					                  ((romHeader->c64_exrom != 0) << 1);
-					static const char *const crt_types_c64_generic[] = {
+					static const char crt_types_c64_generic[][16] = {
 						"16 KB game", "8 KB game",
-						"UltiMax mode", "RAM/disabled,"
+						"UltiMax mode", "RAM/disabled"
 					};
 					s_type = crt_types_c64_generic[id & 3];
 					break;

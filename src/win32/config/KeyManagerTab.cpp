@@ -1678,7 +1678,7 @@ void KeyManagerTabPrivate::importKeysFromBin(KeyStoreUI::ImportFileID id)
 	    id > KeyStoreUI::ImportFileID::N3DSaeskeydb)
 		return;
 
-	static const char *const dialog_titles_tbl[] = {
+	static const char dialog_titles_tbl[][32] = {
 		// tr: Wii keys.bin dialog title
 		NOP_C_("KeyManagerTab", "Select Wii keys.bin File"),
 		// tr: Wii U otp.bin dialog title
@@ -1689,7 +1689,7 @@ void KeyManagerTabPrivate::importKeysFromBin(KeyStoreUI::ImportFileID id)
 		NOP_C_("KeyManagerTab", "Select 3DS aeskeydb.bin File"),
 	};
 
-	static const char *const file_filters_tbl[] = {
+	static const char file_filters_tbl[][88] = {
 		// tr: Wii keys.bin file filter (RP format)
 		NOP_C_("KeyManagerTab", "keys.bin|keys.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
 		// tr: Wii U otp.bin file filter (RP format)

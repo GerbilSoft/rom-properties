@@ -291,19 +291,20 @@ message_widget_set_message_type(MessageWidget *widget, GtkMessageType messageTyp
 	// Update the icon.
 	// Background colors based on KMessageWidget.
 	struct IconInfo_t {
-		const char *icon_name;	// XDG icon name
-		const char *css_class;	// CSS class (GTK+ 3.x only)
-		uint32_t border_color;	// from KMessageWidget
-		uint32_t bg_color;	// lightened version of border_color
+		const char icon_name[20];	// XDG icon name
+		const char css_class[20];	// CSS class (GTK+ 3.x only)
+		uint32_t border_color;		// from KMessageWidget
+		uint32_t bg_color;		// lightened version of border_color
 	};
-	static const IconInfo_t iconInfo[] = {
+	static const IconInfo_t iconInfo_tbl[] = {
 		{"dialog-information",	"gsrp_msgw_info",	0x3DAEE9, 0x7FD3FF},	// INFO
 		{"dialog-warning",	"gsrp_msgw_warning",	0xF67400, 0xFF9B41},	// WARNING
 		{"dialog-question",	"gsrp_msgw_question",	0x3DAEE9, 0x7FD3FF},	// QUESTION (same as INFO)
 		{"dialog-error",	"gsrp_msgw_error",	0xDA4453, 0xF77E8A},	// ERROR
+		{"",			"",			0x000000, 0x000000},	// OTHER
 	};
 
-	if (messageType < 0 || messageType >= ARRAY_SIZE(iconInfo)) {
+	if (messageType < 0 || messageType >= ARRAY_SIZE(iconInfo_tbl)) {
 		// Default to OTHER.
 		messageType = GTK_MESSAGE_OTHER;
 	}
@@ -313,10 +314,10 @@ message_widget_set_message_type(MessageWidget *widget, GtkMessageType messageTyp
 		return;
 	widget->messageType = messageType;
 
-	const IconInfo_t *const pIconInfo = &iconInfo[messageType];
+	const IconInfo_t *const pIconInfo = &iconInfo_tbl[messageType];
 
-	gtk_widget_set_visible(widget->image, (pIconInfo->icon_name != nullptr));
-	if (pIconInfo->icon_name) {
+	gtk_widget_set_visible(widget->image, (pIconInfo->icon_name[0] != '\0'));
+	if (pIconInfo->icon_name[0] != '\0') {
 #if GTK_CHECK_VERSION(4,0,0)
 		gtk_image_set_from_icon_name(GTK_IMAGE(widget->image), pIconInfo->icon_name);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
@@ -325,16 +326,22 @@ message_widget_set_message_type(MessageWidget *widget, GtkMessageType messageTyp
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 #if GTK_CHECK_VERSION(3,0,0)
+		// Dark CSS classes
+		static const char dark_css_class_tbl[][24] = {
+			"gsrp_msgw_info_dark",
+			"gsrp_msgw_warning_dark",
+			"gsrp_msgw_question_dark",
+			"gsrp_msgw_error_dark",
+		};
+
 		// Remove all of our CSS classes first.
 		GtkStyleContext *const context = gtk_widget_get_style_context(GTK_WIDGET(widget));
-		gtk_style_context_remove_class(context, "gsrp_msgw_info");
-		gtk_style_context_remove_class(context, "gsrp_msgw_warning");
-		gtk_style_context_remove_class(context, "gsrp_msgw_question");
-		gtk_style_context_remove_class(context, "gsrp_msgw_error");
-		gtk_style_context_remove_class(context, "gsrp_msgw_info_dark");
-		gtk_style_context_remove_class(context, "gsrp_msgw_warning_dark");
-		gtk_style_context_remove_class(context, "gsrp_msgw_question_dark");
-		gtk_style_context_remove_class(context, "gsrp_msgw_error_dark");
+		for (auto iconInfo : iconInfo_tbl) {
+			gtk_style_context_remove_class(context, iconInfo.css_class);
+		}
+		for (auto darkCssClass : dark_css_class_tbl) {
+			gtk_style_context_remove_class(context, darkCssClass);
+		}
 
 		// Get the text color. If its grayscale value is >= 0.75,
 		// assume we're using a dark theme.
@@ -348,14 +355,6 @@ message_widget_set_message_type(MessageWidget *widget, GtkMessageType messageTyp
 						 (color.blue  * 0.114f);
 			dark = (grayscale >= 0.750f);
 		}
-
-		// Dark CSS classes
-		static const char dark_css_class_tbl[][24] = {
-			"gsrp_msgw_info_dark",
-			"gsrp_msgw_warning_dark",
-			"gsrp_msgw_question_dark",
-			"gsrp_msgw_error_dark",
-		};
 
 		// Add the new CSS class.
 		gtk_style_context_add_class(context,
