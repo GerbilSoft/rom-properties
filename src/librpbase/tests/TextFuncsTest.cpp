@@ -762,12 +762,12 @@ TEST_F(TextFuncsTest, u16_strdup)
 		'a','z','y',' ','d','o','g','.',0
 	};
 
-	char16_t *u16_dup = u16_strdup(u16_str);
+	char16_t *const u16_dup = u16_strdup(u16_str);
 	ASSERT_TRUE(u16_dup != nullptr);
 
 	// Verify the NULL terminator.
-	EXPECT_EQ(0, u16_str[ARRAY_SIZE(u16_str)-1]);
-	if (u16_str[ARRAY_SIZE(u16_str)-1] != 0) {
+	EXPECT_EQ(0, u16_dup[ARRAY_SIZE(u16_str)-1]);
+	if (u16_dup[ARRAY_SIZE(u16_str)-1] != 0) {
 		// NULL terminator not found.
 		// u16_strlen() and u16_strcmp() may crash,
 		// so exit early.
