@@ -69,6 +69,8 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(QObject *parent, const QVar
 
 	// ROM is supported. Show the properties.
 	RomDataView *const romDataView = new RomDataView(romData, props);
+	romDataView->setObjectName(QLatin1String("romDataView"));
+
 	// tr: Tab title.
 	props->addPage(romDataView, U82Q(C_("RomDataView", "ROM Properties")));
 

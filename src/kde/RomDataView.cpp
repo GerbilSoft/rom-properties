@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KDE4/KF5)                         *
+ * ROM Properties Page shell extension. (KDE)                              *
  * RomDataView.cpp: RomData viewer.                                        *
  *                                                                         *
  * Copyright (c) 2016-2022 by David Korth.                                 *
@@ -105,6 +105,7 @@ void RomDataViewPrivate::createOptionsButton(void)
 
 	// Create the "Options" button.
 	btnOptions = new OptionsMenuButton();
+	btnOptions->setObjectName(QLatin1String("btnOptions"));
 	btnBox->addButton(btnOptions, QDialogButtonBox::ActionRole);
 	btnOptions->hide();
 
@@ -248,6 +249,7 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 	// String type.
 	Q_Q(RomDataView);
 	QLabel *lblString = new QLabel(q);
+	// NOTE: No name for this QObject.
 	if (field.desc.flags & RomFields::STRF_CREDITS) {
 		// Credits text. Enable formatting and center text.
 		lblString->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
@@ -360,7 +362,8 @@ void RomDataViewPrivate::initBitfield(QLabel *lblDesc,
 	if (count > 32)
 		count = 32;
 
-	QGridLayout *gridLayout = new QGridLayout();
+	QGridLayout *const gridLayout = new QGridLayout();
+	// NOTE: No name for this QObject.
 	int row = 0, col = 0;
 	uint32_t bitfield = field.data.bitfield;
 	const auto names_cend = bitfieldDesc.names->cend();
@@ -370,6 +373,7 @@ void RomDataViewPrivate::initBitfield(QLabel *lblDesc,
 			continue;
 
 		QCheckBox *const checkBox = new QCheckBox(q);
+		// NOTE: No name for this QObject.
 
 		// Disable automatic mnemonics.
 		KAcceleratorManager::setNoAccel(checkBox);
@@ -482,6 +486,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 	QTreeView *treeView;
 	if (hasIcons) {
 		treeView = new DragImageTreeView(q);
+		// NOTE: No name for this QObject.
 		treeView->setDragEnabled(true);
 		treeView->setDefaultDropAction(Qt::CopyAction);
 		treeView->setDragDropMode(QAbstractItemView::InternalMove);
@@ -490,6 +495,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 		treeView->setSelectionMode(QAbstractItemView::SingleSelection);
 	} else {
 		treeView = new QTreeView(q);
+		// NOTE: No name for this QObject.
 		treeView->setSelectionMode(QAbstractItemView::SingleSelection);
 	}
 	treeView->setRootIsDecorated(false);
@@ -503,7 +509,9 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 	// Item models.
 	// TODO: Subclass QSortFilterProxyModel for custom sorting methods.
 	ListDataModel *const listModel = new ListDataModel(q);
+	// NOTE: No name for this QObject.
 	ListDataSortProxyModel *const proxyModel = new ListDataSortProxyModel(q);
+	// NOTE: No name for this QObject.
 	proxyModel->setSortingMethods(listDataDesc.col_attrs.sorting);
 	proxyModel->setSourceModel(listModel);
 	treeView->setModel(proxyModel);
@@ -865,6 +873,7 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 		// Create the language combobox.
 		Q_Q(RomDataView);
 		cboLanguage = new LanguageComboBox(q);
+		cboLanguage->setObjectName(QLatin1String("cboLanguage"));
 		cboLanguage->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
 		ui.hboxHeaderRow->addWidget(cboLanguage);
 
@@ -958,13 +967,20 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 			}
 
 			auto &tab = tabs[i];
-			QWidget *widget = new QWidget(q);
+			QWidget *const widget = new QWidget(q);
+			char tab_name[32];
+			snprintf(tab_name, sizeof(tab_name), "tab%d", i);
+			widget->setObjectName(QLatin1String(tab_name));
 
 			// Layouts.
 			// NOTE: We shouldn't zero out the QVBoxLayout margins here.
 			// Otherwise, we end up with no margins.
 			tab.vbox = new QVBoxLayout(widget);
+			snprintf(tab_name, sizeof(tab_name), "vboxTab%d", i);
+			tab.vbox->setObjectName(QLatin1String(tab_name));
 			tab.form = new QFormLayout();
+			snprintf(tab_name, sizeof(tab_name), "formTab%d", i);
+			tab.form->setObjectName(QLatin1String(tab_name));
 			tab.vbox->addLayout(tab.form, 1);
 
 			// Add the tab.
@@ -981,9 +997,11 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 		// NOTE: Using ui.vboxLayout. We must ensure that
 		// this isn't deleted.
 		tab.vbox = ui.vboxLayout;
+		tab.vbox->setObjectName(QLatin1String("vboxTab0"));
 
 		// QFormLayout
 		tab.form = new QFormLayout();
+		tab.form->setObjectName(QLatin1String("formTab0"));
 		tab.vbox->addLayout(tab.form, 1);
 	}
 
@@ -1025,6 +1043,7 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 		// tr: Field description label.
 		string txt = rp_sprintf(desc_label_fmt, field.name.c_str());
 		QLabel *lblDesc = new QLabel(U82Q(txt), q);
+		// NOTE: No name for this QObject.
 		lblDesc->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 		lblDesc->setTextFormat(Qt::PlainText);
 

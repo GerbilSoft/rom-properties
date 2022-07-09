@@ -47,6 +47,7 @@ void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 
 	// Find rp_image* objects in the items.
 	QMimeData *const mimeData = new QMimeData;
+	mimeData->setObjectName(QLatin1String("mimeData"));
 	QIcon dragIcon;
 	bool hasOne = false;
 	for (const QModelIndex &index : items) {
@@ -109,6 +110,7 @@ void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 	}
 
 	QDrag *const drag = new QDrag(this);
+	drag->setObjectName(QLatin1String("drag"));
 	drag->setMimeData(mimeData);
 
 	QPixmap qpxm;

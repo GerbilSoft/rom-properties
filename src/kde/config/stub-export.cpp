@@ -57,8 +57,9 @@ Q_DECL_EXPORT int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 
 	// Create and run the ConfigDialog.
 	// TODO: Get the return value?
-	ConfigDialog *cfg = new ConfigDialog();
-	cfg->show();
+	ConfigDialog *const configDialog = new ConfigDialog();
+	configDialog->setObjectName(QLatin1String("configDialog"));
+	configDialog->show();
 
 	// Run the Qt UI.
 	// FIXME: May need changes if the main loop is already running.

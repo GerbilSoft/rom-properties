@@ -366,6 +366,7 @@ void RomDataView::btnOptions_triggered(int id)
 
 		if (!d->messageWidget) {
 			d->messageWidget = new KMessageWidget(this);
+			d->messageWidget->setObjectName(QLatin1String("messageWidget"));
 			d->messageWidget->setCloseButtonVisible(true);
 			d->messageWidget->setWordWrap(true);
 			d->ui.vboxLayout->addWidget(d->messageWidget);

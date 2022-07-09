@@ -320,6 +320,7 @@ KeyManagerTab::KeyManagerTab(QWidget *parent)
 
 	// Create the dropdown menu for the "Import" button.
 	QMenu *const menuImport = new QMenu(U82Q(C_("KeyManagerTab", "I&mport")), d->ui.btnImport);
+	menuImport->setObjectName(QLatin1String("menuImport"));
 	menuImport->addAction(d->ui.actionImportWiiKeysBin);
 	menuImport->addAction(d->ui.actionImportWiiUOtpBin);
 	menuImport->addAction(d->ui.actionImport3DSboot9bin);
@@ -332,6 +333,7 @@ KeyManagerTab::KeyManagerTab(QWidget *parent)
 #ifdef HAVE_KMESSAGEWIDGET
 	// KMessageWidget
 	d->messageWidget = new KMessageWidget(this);
+	d->messageWidget->setObjectName(QLatin1String("messageWidget"));
 	d->messageWidget->setCloseButtonVisible(true);
 	d->messageWidget->setWordWrap(true);
 	d->messageWidget->hide();

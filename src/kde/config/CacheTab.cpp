@@ -142,9 +142,11 @@ void CacheTabPrivate::clearCacheDir(CacheCleaner::CacheDir cacheDir)
 	// Create the QThread and CacheCleaner if necessary.
 	if (!thrCleaner) {
 		thrCleaner = new QThread(q);
+		thrCleaner->setObjectName(QLatin1String("thrCleaner"));
 	}
 	if (!ccCleaner) {
 		ccCleaner = new CacheCleaner(nullptr);
+		ccCleaner->setObjectName(QLatin1String("ccCleaner"));
 		ccCleaner->moveToThread(thrCleaner);
 
 		// Status slots.
