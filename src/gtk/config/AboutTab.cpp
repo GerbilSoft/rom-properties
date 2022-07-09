@@ -142,6 +142,12 @@ about_tab_init(AboutTab *tab)
 	GtkWidget *const tabWidget = gtk_notebook_new();
 	gtk_widget_set_name(tabWidget, "tabWidget");
 	//gtk_widget_set_margin_bottom(tabWidget, 8);
+#if GTK_CHECK_VERSION(2,91,1)
+	gtk_widget_set_halign(tabWidget, GTK_ALIGN_FILL);
+	gtk_widget_set_valign(tabWidget, GTK_ALIGN_FILL);
+	gtk_widget_set_hexpand(tabWidget, TRUE);
+	gtk_widget_set_vexpand(tabWidget, TRUE);
+#endif /* GTK_CHECK_VERSION(2,91,1) */
 
 	// Each tab contains a scroll area and a label.
 	// FIXME: GtkScrolledWindow seems to start at the label contents,
@@ -159,6 +165,8 @@ about_tab_init(AboutTab *tab)
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrlCredits),
 		GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 #if GTK_CHECK_VERSION(2,91,1)
+	gtk_widget_set_halign(scrlCredits, GTK_ALIGN_FILL);
+	gtk_widget_set_valign(scrlCredits, GTK_ALIGN_FILL);
 	gtk_widget_set_hexpand(scrlCredits, TRUE);
 	gtk_widget_set_vexpand(scrlCredits, TRUE);
 #endif /* GTK_CHECK_VERSION(2,91,1) */
@@ -188,6 +196,8 @@ about_tab_init(AboutTab *tab)
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrlLibraries),
 		GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 #if GTK_CHECK_VERSION(2,91,1)
+	gtk_widget_set_halign(scrlLibraries, GTK_ALIGN_FILL);
+	gtk_widget_set_valign(scrlLibraries, GTK_ALIGN_FILL);
 	gtk_widget_set_hexpand(scrlLibraries, TRUE);
 	gtk_widget_set_vexpand(scrlLibraries, TRUE);
 #endif /* GTK_CHECK_VERSION(2,91,1) */
@@ -217,6 +227,8 @@ about_tab_init(AboutTab *tab)
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrlSupport),
 		GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 #if GTK_CHECK_VERSION(2,91,1)
+	gtk_widget_set_halign(scrlSupport, GTK_ALIGN_FILL);
+	gtk_widget_set_valign(scrlSupport, GTK_ALIGN_FILL);
 	gtk_widget_set_hexpand(scrlSupport, TRUE);
 	gtk_widget_set_vexpand(scrlSupport, TRUE);
 #endif /* GTK_CHECK_VERSION(2,91,1) */
@@ -252,16 +264,6 @@ about_tab_init(AboutTab *tab)
 	GTK_WIDGET_HALIGN_CENTER(hboxTitle);
 	gtk_box_append(GTK_BOX(hboxTitle), tab->imgLogo);
 	gtk_box_append(GTK_BOX(hboxTitle), tab->lblTitle);
-
-	// FIXME: This isn't working; the GtkScrolledWindows are too small...
-	gtk_widget_set_halign(tabWidget, GTK_ALIGN_FILL);
-	gtk_widget_set_valign(tabWidget, GTK_ALIGN_FILL);
-	gtk_widget_set_halign(scrlCredits, GTK_ALIGN_FILL);
-	gtk_widget_set_valign(scrlCredits, GTK_ALIGN_FILL);
-	gtk_widget_set_halign(scrlLibraries, GTK_ALIGN_FILL);
-	gtk_widget_set_valign(scrlLibraries, GTK_ALIGN_FILL);
-	gtk_widget_set_halign(scrlSupport, GTK_ALIGN_FILL);
-	gtk_widget_set_valign(scrlSupport, GTK_ALIGN_FILL);
 
 	gtk_box_append(GTK_BOX(tab), hboxTitle);
 	gtk_box_append(GTK_BOX(tab), tabWidget);

@@ -1693,6 +1693,12 @@ rom_data_view_update_display(RomDataView *page)
 		tabs.resize(tabCount);
 		page->tabWidget = gtk_notebook_new();
 		gtk_widget_set_name(page->tabWidget, "tabWidget");
+#if GTK_CHECK_VERSION(2,91,1)
+		gtk_widget_set_halign(page->tabWidget, GTK_ALIGN_FILL);
+		gtk_widget_set_valign(page->tabWidget, GTK_ALIGN_FILL);
+		gtk_widget_set_hexpand(page->tabWidget, true);
+		gtk_widget_set_vexpand(page->tabWidget, true);
+#endif /* GTK_CHECK_VERSION(2,91,1) */
 
 		// Add spacing between the system info header and the table.
 		g_object_set(page, "spacing", 8, nullptr);
@@ -1746,10 +1752,6 @@ rom_data_view_update_display(RomDataView *page)
 		gtk_widget_show(page->tabWidget);
 
 #if GTK_CHECK_VERSION(4,0,0)
-		gtk_widget_set_halign(page->tabWidget, GTK_ALIGN_FILL);
-		gtk_widget_set_valign(page->tabWidget, GTK_ALIGN_FILL);
-		gtk_widget_set_hexpand(page->tabWidget, true);
-		gtk_widget_set_vexpand(page->tabWidget, true);
 		gtk_box_append(GTK_BOX(page), page->tabWidget);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 		gtk_box_pack_start(GTK_BOX(page), page->tabWidget, true, true, 0);

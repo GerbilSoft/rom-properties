@@ -96,6 +96,8 @@ achievements_tab_init(AchievementsTab *tab)
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledWindow),
 		GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 #if GTK_CHECK_VERSION(2,91,1)
+	gtk_widget_set_halign(scrolledWindow, GTK_ALIGN_FILL);
+	gtk_widget_set_valign(scrolledWindow, GTK_ALIGN_FILL);
 	gtk_widget_set_hexpand(scrolledWindow, TRUE);
 	gtk_widget_set_vexpand(scrolledWindow, TRUE);
 #endif /* GTK_CHECK_VERSION(2,91,1) */
@@ -137,10 +139,6 @@ achievements_tab_init(AchievementsTab *tab)
 
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_box_append(GTK_BOX(tab), scrolledWindow);
-
-	// FIXME: This isn't working; the GtkScrolledWindow is too small...
-	gtk_widget_set_halign(scrolledWindow, GTK_ALIGN_FILL);
-	gtk_widget_set_valign(scrolledWindow, GTK_ALIGN_FILL);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	gtk_box_pack_start(GTK_BOX(tab), scrolledWindow, true, true, 0);
 
