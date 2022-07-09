@@ -29,17 +29,24 @@
  * Reference: https://docs.microsoft.com/en-us/previous-versions/hh567368(v=vs.140)
  */
 
-#if (_MSC_VER < 1900)
+#if _MSC_VER < 1900
 /**
  * MSVC 2015 (14.0) added support for Unicode character types.
  * (char16_t, char32_t, related string types)
  */
-#define CXX11_COMPAT_CHARTYPES
+#define CXX11_COMPAT_CHARTYPES 1
 
 /**
  * MSVC 2015 also added support for constexpr.
  */
-#define CXX11_COMPAT_CONSTEXPR
+#define CXX11_COMPAT_CONSTEXPR 1
+#endif
+
+#if _MSC_VER < 1921
+/**
+ * MSVC 2019 Update 1 added support for char8_t.
+ */
+#define CXX20_COMPAT_CHAR8_T 1
 #endif
 
 #endif /* __cplusplus */

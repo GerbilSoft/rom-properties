@@ -44,6 +44,11 @@
 #  endif /* __cplusplus */
 #endif /* __clang_major__ */
 
+/* clang-7: char8_t */
+#if __clang_major__ < 7
+#  define CXX20_COMPAT_CHAR8_T 1
+#endif
+
 /* clang-3.1: constexpr */
 #if !__has_feature(cxx_constexpr)
 #  define CXX11_COMPAT_CONSTEXPR

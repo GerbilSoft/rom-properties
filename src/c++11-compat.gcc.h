@@ -33,25 +33,30 @@
 #  endif /* __cplusplus */
 #endif /* __GNUC__ */
 
+/* gcc-9: char8_t */
+#if __GNUC__ < 9
+#  define CXX20_COMPAT_CHAR8_T 1
+#endif
+
 /* gcc-4.7: Explicit virtual override */
 #if (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 7))
-#  define CXX11_COMPAT_OVERRIDE
+#  define CXX11_COMPAT_OVERRIDE 1
 #endif
 
 /* gcc-4.6: nullptr, constexpr */
 #if (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 6))
-#  define CXX11_COMPAT_NULLPTR
-#  define CXX11_COMPAT_CONSTEXPR
+#  define CXX11_COMPAT_NULLPTR 1
+#  define CXX11_COMPAT_CONSTEXPR 1
 #endif
 
 /* gcc-4.4: New character types */
 #if (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 4))
-#  define CXX11_COMPAT_CHARTYPES
+#  define CXX11_COMPAT_CHARTYPES 1
 #endif
 
 /* gcc-4.3: Static assertions (first version to support C++11) */
 #if (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 3))
-#  define CXX11_COMPAT_STATIC_ASSERT
+#  define CXX11_COMPAT_STATIC_ASSERT 1
 #endif
 
 #endif /* __cplusplus */

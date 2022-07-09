@@ -1,7 +1,7 @@
 /***************************************************************************
  * c++11-compat.h: C++ 2011 compatibility header.                          *
  *                                                                         *
- * Copyright (c) 2011-2020 by David Korth.                                 *
+ * Copyright (c) 2011-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,10 +21,11 @@
  *
  * NOTE: Don't use nullptr in C code. Use NULL instead.
  */
-/*#define CXX11_COMPAT_NULLPTR*/
-#define CXX11_COMPAT_CONSTEXPR
-#define CXX11_COMPAT_OVERRIDE
-#define CXX11_COMPAT_CHARTYPES
+/*#define CXX11_COMPAT_NULLPTR 1*/
+#define CXX11_COMPAT_CONSTEXPR 1
+#define CXX11_COMPAT_OVERRIDE 1
+#define CXX11_COMPAT_CHARTYPES 1
+#define CXX20_COMPAT_CHAR8_T 1
 
 // static_assert() is present in C11.
 #if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 201112L
@@ -65,18 +66,28 @@
 
 /* Unicode characters and strings. */
 #ifdef CXX11_COMPAT_CHARTYPES
-#include <stdint.h>
+#  include <stdint.h>
 typedef uint16_t char16_t;
 typedef uint32_t char32_t;
-
-#ifdef __cplusplus
-#include <string>
+#  ifdef __cplusplus
+#    include <string>
 namespace std {
 	typedef basic_string<char16_t> u16string;
 	typedef basic_string<char32_t> u32string;
 }
-#endif /* __cplusplus */
+#  endif /* __cplusplus */
 #endif /* CXX11_COMPAT_CHARTYPES */
+
+/* char8_t / std::u8string */
+#ifdef CXX20_COMPAT_CHAR8_T
+typedef char char8_t;
+#  ifdef __cplusplus
+#    include <string>
+namespace std {
+	typedef basic_string<char8_t> u8string;
+}
+#  endif /* __cplusplus */
+#endif /* CXX20_COMPAT_CHAR8_T */
 
 /* constexpr */
 /* NOTE: This might not work in all cases. */
