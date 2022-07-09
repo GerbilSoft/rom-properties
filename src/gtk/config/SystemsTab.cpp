@@ -124,19 +124,19 @@ systems_tab_init(SystemsTab *tab)
 	gtk_widget_set_name(lblSGB, "lblSGB");
 	gtk_widget_set_name(lblCGB, "lblCGB");
 
-	const string s_DMG = convert_accel_to_gtk(C_("SystemsTab", "Game Boy"));
-	const string s_SGB = convert_accel_to_gtk(C_("SystemsTab", "Super Game Boy"));
-	const string s_CGB = convert_accel_to_gtk(C_("SystemsTab", "Game Boy Color"));
+	const char *const s_DMG = C_("SystemsTab", "Game Boy");
+	const char *const s_SGB = C_("SystemsTab", "Super Game Boy");
+	const char *const s_CGB = C_("SystemsTab", "Game Boy Color");
 
 	// GtkListStore models for the combo boxes
 	GtkListStore *const lstDMG = gtk_list_store_new(1, G_TYPE_STRING);
-	gtk_list_store_insert_with_values(lstDMG, nullptr, 0, 0, s_DMG.c_str(), -1);
-	gtk_list_store_insert_with_values(lstDMG, nullptr, 1, 0, s_CGB.c_str(), -1);
+	gtk_list_store_insert_with_values(lstDMG, nullptr, 0, 0, s_DMG, -1);
+	gtk_list_store_insert_with_values(lstDMG, nullptr, 1, 0, s_CGB, -1);
 	// NOTE: SGB and CGB have the same lists.
 	GtkListStore *const lstSGB = gtk_list_store_new(1, G_TYPE_STRING);
-	gtk_list_store_insert_with_values(lstSGB, nullptr, 0, 0, s_DMG.c_str(), -1);
-	gtk_list_store_insert_with_values(lstSGB, nullptr, 1, 0, s_SGB.c_str(), -1);
-	gtk_list_store_insert_with_values(lstSGB, nullptr, 2, 0, s_CGB.c_str(), -1);
+	gtk_list_store_insert_with_values(lstSGB, nullptr, 0, 0, s_DMG, -1);
+	gtk_list_store_insert_with_values(lstSGB, nullptr, 1, 0, s_SGB, -1);
+	gtk_list_store_insert_with_values(lstSGB, nullptr, 2, 0, s_CGB, -1);
 
 	tab->cboDMG = gtk_combo_box_new_with_model(GTK_TREE_MODEL(lstDMG));
 	g_object_unref(lstDMG);	// TODO: Is this correct?
