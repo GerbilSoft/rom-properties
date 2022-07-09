@@ -89,6 +89,14 @@ namespace std {
 #  endif /* __cplusplus */
 #endif /* CXX20_COMPAT_CHAR8_T */
 
+/* MSVC doesn't define std::u8string unless using /std:c++20 */
+#if defined(_MSC_VER) && defined(__cplusplus) && __cplusplus < 202002L
+#  include <string>
+namespace std {
+	typedef basic_string<char8_t> u8string;
+}
+#endif /* defined(_MSC_VER) && defined(__cplusplus) && __cplusplus < 202002L */
+
 /* constexpr */
 /* NOTE: This might not work in all cases. */
 #ifdef CXX11_COMPAT_CONSTEXPR

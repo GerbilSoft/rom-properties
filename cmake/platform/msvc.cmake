@@ -57,21 +57,26 @@ UNSET(CFLAG_guard_cf)
 # Character type flags:
 # - wchar_t should be a distinct type. (MSVC 2002+)
 # - char8_t for C++20 (MSVC 2019 Update 1)
+# - proper __cplusplus version, since /Zc:char8_t doesn't enable std::u8string
 IF(MSVC_VERSION GREATER 1200)
 	SET(RP_C_FLAGS_WIN32 "${RP_C_FLAGS_WIN32} /Zc:wchar_t")
 ENDIF()
 INCLUDE(CheckCXXCompilerFlag)
-CHECK_CXX_COMPILER_FLAG("/Zc:char8_t" CXXFLAG_Zc_char8_t)
-IF(CXXFLAG_Zc_char8_t)
-	SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /Zc:char8_t")
-ENDIF(CXXFLAG_Zc_char8_t)
-UNSET(CXXFLAG_Zc_char8_t)
+FOREACH(FLAG_TEST "/Zc:char8_t" "/Zc:__cplusplus")
+	# CMake doesn't like certain characters in variable names.
+	STRING(REGEX REPLACE "/|:|=" "_" FLAG_TEST_VARNAME "${FLAG_TEST}")
+
+	CHECK_CXX_COMPILER_FLAG("${FLAG_TEST}" CXXFLAG_${FLAG_TEST_VARNAME})
+	IF(CXXFLAG_${FLAG_TEST_VARNAME})
+		SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} ${FLAG_TEST}")
+	ENDIF(CXXFLAG_${FLAG_TEST_VARNAME})
+	UNSET(CXXFLAG_${FLAG_TEST_VARNAME})
+ENDFOREACH()
 
 # "/Zc:throwingNew" is always enabled on clang-cl, and causes
 # warnings to be printed if it's specified.
 # NOTE: "/Zc:throwingNew" was added in MSVC 2015.
 IF(NOT CMAKE_CXX_COMPILER_ID STREQUAL Clang)
-	INCLUDE(CheckCXXCompilerFlag)
 	CHECK_CXX_COMPILER_FLAG("/Zc:throwingNew" CXXFLAG_Zc_throwingNew)
 	IF(CXXFLAG_Zc_throwingNew)
 		SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /Zc:throwingNew")
