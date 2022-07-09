@@ -114,7 +114,7 @@ config_dialog_init(ConfigDialog *dialog)
 
 	// Set the window icon.
 	// TODO: Redo icon if the icon theme changes?
-	const int icon_sizes[] = {16, 32, 48, 64, 128};
+	const uint8_t icon_sizes[] = {16, 32, 48, 64, 128};
 	GList *icon_list = nullptr;
 	for (int icon_size : icon_sizes) {
 		GdkPixbuf *const icon = gtk_icon_theme_load_icon(

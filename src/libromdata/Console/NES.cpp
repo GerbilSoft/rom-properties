@@ -1536,7 +1536,7 @@ int NES::loadFieldData(void)
 			d->fields->addField_string(mirroring_title, s_mirroring_int);
 
 			// Board type (Mapper)
-			static const char *const footer_mapper_tbl[] = {
+			static const char footer_mapper_tbl[][8] = {
 				"NROM", "CNROM", "UNROM", "GNROM", "MMCx"
 			};
 			const unsigned int footer_mapper = (footer.board_info & 0x7F);

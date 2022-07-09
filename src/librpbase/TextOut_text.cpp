@@ -563,21 +563,29 @@ public:
 			return os;
 		}
 
-		static const char *const formats[8] = {
-			"Invalid DateTime",	// No date or time.
-			"%x",			// Date
-			"%X",			// Time
-			"%x %X",		// Date Time
+		static const char formats_strtbl[] =
+			"\0"		// [0] No date or time
+			"%x\0"		// [1] Date
+			"%X\0"		// [4] Time
+			"%x %X\0"	// [7] Date Time
 
 			// TODO: Better localization here.
-			"Invalid DateTime",	// No date or time.
-			"%b %d",		// Date (no year)
-			"%X",			// Time
-			"%b %d %X",		// Date Time (no year)
-		};
+			"\0"		// [13] No date or time
+			"%b %d\0"	// [14] Date (no year)
+			"%X\0"		// [20] Time
+			"%b %d %X\0";	// [23] Date Time (no year)
+		static const uint8_t formats_offtbl[8] = {0, 1, 4, 7, 13, 14, 20, 23};
+		static_assert(sizeof(formats_strtbl) == 33, "formats_offtbl[] needs to be recalculated");
+
+		const unsigned int offset = (flags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK);
+		const char *format = &formats_strtbl[formats_offtbl[offset]];
+		assert(format[0] != '\0');
+		if (format[0] == '\0') {
+			format = "Invalid DateTime";
+		}
 
 		char str[128];
-		strftime(str, 128, formats[flags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK], &timestamp);
+		strftime(str, 128, format, &timestamp);
 		os << str;
 		return os;
 	}

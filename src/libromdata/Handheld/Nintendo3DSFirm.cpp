@@ -368,7 +368,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 		const uint32_t first4 = be32_to_cpu(*(reinterpret_cast<const uint32_t*>(firmHeader->signature)));
 		static const struct {
 			uint32_t first4;
-			const char *status;
+			char status[12];
 		} sighaxStatus_tbl[] = {
 			{0xB6724531,	"NAND retail"},		// SciresM
 			{0x6EFF209C,	"NAND retail"},		// sighax.com
