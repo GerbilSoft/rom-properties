@@ -35,7 +35,7 @@ class WiiWIBNPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -75,10 +75,10 @@ ROMDATA_IMPL_IMG(WiiWIBN)
 /* RomDataInfo */
 // NOTE: This will be handled using the same
 // settings as WiiSave.
-const char *const WiiWIBNPrivate::exts[] = {
+const char8_t *const WiiWIBNPrivate::exts[] = {
 	// Save banner is usually "banner.bin" in the save directory.
-	".bin",
-	".wibn",	// Custom
+	U8(".bin"),
+	U8(".wibn"),	// Custom
 
 	nullptr
 };

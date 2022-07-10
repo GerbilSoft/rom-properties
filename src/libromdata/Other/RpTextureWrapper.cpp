@@ -37,7 +37,7 @@ class RpTextureWrapperPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -54,7 +54,7 @@ ROMDATA_IMPL_IMG_TYPES(RpTextureWrapper)
 /* RomDataInfo */
 // NOTE: RomDataFactory queries extensions and MIME types from
 // FileFormatFactory directly, so these aren't used.
-const char *const RpTextureWrapperPrivate::exts[] = {
+const char8_t *const RpTextureWrapperPrivate::exts[] = {
 	nullptr
 };
 const char *const RpTextureWrapperPrivate::mimeTypes[] = {

@@ -37,7 +37,7 @@ class SAPPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -95,8 +95,8 @@ ROMDATA_IMPL(SAP)
 /** SAPPrivate **/
 
 /* RomDataInfo */
-const char *const SAPPrivate::exts[] = {
-	".sap",
+const char8_t *const SAPPrivate::exts[] = {
+	U8(".sap"),
 
 	nullptr
 };

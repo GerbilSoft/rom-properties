@@ -42,7 +42,7 @@ class GBSPrivate : public RomDataPrivate
 		AudioFormat audioFormat;
 
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -60,9 +60,9 @@ ROMDATA_IMPL(GBS)
 /** GBSPrivate **/
 
 /* RomDataInfo */
-const char *const GBSPrivate::exts[] = {
-	".gbs",
-	".gbr",
+const char8_t *const GBSPrivate::exts[] = {
+	U8(".gbs"),
+	U8(".gbr"),
 
 	nullptr
 };

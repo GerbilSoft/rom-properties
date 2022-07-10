@@ -39,7 +39,7 @@ class NintendoBadgePrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -104,12 +104,12 @@ ROMDATA_IMPL_IMG_TYPES(NintendoBadge)
 /** NintendoBadgePrivate **/
 
 /* RomDataInfo */
-const char *const NintendoBadgePrivate::exts[] = {
+const char8_t *const NintendoBadgePrivate::exts[] = {
 	// NOTE: These extensions may cause conflicts on
 	// Windows if fallback handling isn't working.
 
-	".prb",	// PRBS file
-	".cab",	// CABS file (NOTE: Conflicts with Microsoft CAB) [TODO: Unregister?]
+	U8(".prb"),	// PRBS file
+	U8(".cab"),	// CABS file (NOTE: Conflicts with Microsoft CAB) [TODO: Unregister?]
 
 	nullptr
 };

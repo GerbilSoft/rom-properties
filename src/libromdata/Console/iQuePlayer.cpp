@@ -51,7 +51,7 @@ class iQuePlayerPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -121,12 +121,12 @@ ROMDATA_IMPL_IMG(iQuePlayer)
 /** iQuePlayerPrivate **/
 
 /* RomDataInfo */
-const char *const iQuePlayerPrivate::exts[] = {
+const char8_t *const iQuePlayerPrivate::exts[] = {
 	// NOTE: These extensions may cause conflicts on
 	// Windows if fallback handling isn't working.
 
-	".cmd",		// NOTE: Conflicts with Windows NT batch files.
-	".dat",		// NOTE: Conflicts with lots of files.
+	U8(".cmd"),	// NOTE: Conflicts with Windows NT batch files.
+	U8(".dat"),	// NOTE: Conflicts with lots of files.
 
 	nullptr
 };

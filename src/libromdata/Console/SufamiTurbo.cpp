@@ -32,7 +32,7 @@ class SufamiTurboPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -59,9 +59,9 @@ ROMDATA_IMPL_IMG(SufamiTurbo)
 
 /* RomDataInfo */
 // NOTE: Handling Sufami Turbo ROMs as if they're Super NES.
-const char *const SufamiTurboPrivate::exts[] = {
+const char8_t *const SufamiTurboPrivate::exts[] = {
 	// NOTE: Not including ".smc" here.
-	".st",
+	U8(".st"),
 
 	nullptr
 };

@@ -33,7 +33,7 @@ class VirtualBoyPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -69,11 +69,11 @@ ROMDATA_IMPL(VirtualBoy)
 /** VirtualBoyPrivate **/
 
 /* RomDataInfo */
-const char *const VirtualBoyPrivate::exts[] = {
+const char8_t *const VirtualBoyPrivate::exts[] = {
 	// NOTE: These extensions may cause conflicts on
 	// Windows if fallback handling isn't working.
 
-	".vb",	// Visual Basic .NET source files
+	U8(".vb"),	// Visual Basic .NET source files
 
 	nullptr
 };

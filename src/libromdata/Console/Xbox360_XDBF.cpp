@@ -46,7 +46,7 @@ class Xbox360_XDBF_Private final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -271,10 +271,10 @@ ROMDATA_IMPL_IMG_SIZES(Xbox360_XDBF)
 
 /* RomDataInfo */
 // NOTE: Using the same image settings as Xbox360_XEX.
-const char *const Xbox360_XDBF_Private::exts[] = {
-	".xdbf",
-	".spa",		// XEX XDBF files
-	".gpd",		// Gamer Profile Data
+const char8_t *const Xbox360_XDBF_Private::exts[] = {
+	U8(".xdbf"),
+	U8(".spa"),	// XEX XDBF files
+	U8(".gpd"),	// Gamer Profile Data
 
 	nullptr
 };

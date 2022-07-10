@@ -32,7 +32,7 @@ class Atari7800Private final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -46,8 +46,8 @@ ROMDATA_IMPL(Atari7800)
 /** Atari7800Private **/
 
 /* RomDataInfo */
-const char *const Atari7800Private::exts[] = {
-	".a78",
+const char8_t *const Atari7800Private::exts[] = {
+	U8(".a78"),
 
 	nullptr
 };

@@ -31,7 +31,7 @@ class NSFPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -46,8 +46,8 @@ ROMDATA_IMPL(NSF)
 /** NSFPrivate **/
 
 /* RomDataInfo */
-const char *const NSFPrivate::exts[] = {
-	".nsf",
+const char8_t *const NSFPrivate::exts[] = {
+	U8(".nsf"),
 
 	nullptr
 };

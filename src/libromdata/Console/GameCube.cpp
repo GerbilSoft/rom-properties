@@ -62,7 +62,7 @@ class GameCubePrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -206,21 +206,21 @@ ROMDATA_IMPL_IMG(GameCube)
 /** GameCubePrivate **/
 
 /* RomDataInfo */
-const char *const GameCubePrivate::exts[] = {
-	".gcm", ".rvm",
-	".wbfs",
-	".ciso", ".cso",
-	".tgc",
-	".dec",	// .iso.dec
-	".gcz",
+const char8_t *const GameCubePrivate::exts[] = {
+	U8(".gcm"), U8(".rvm"),
+	U8(".wbfs"),
+	U8(".ciso"), U8(".cso"),
+	U8(".tgc"),
+	U8(".dec"),	// .iso.dec
+	U8(".gcz"),
 
 	// Partially supported. (Header only!)
-	".wia",
-	".rvz",	// based on WIA
+	U8(".wia"),
+	U8(".rvz"),	// based on WIA
 
 	// NOTE: May cause conflicts on Windows
 	// if fallback handling isn't working.
-	".iso",
+	U8(".iso"),
 
 	nullptr
 };

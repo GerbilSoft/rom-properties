@@ -53,7 +53,7 @@ class PowerVR3Private final : public FileFormatPrivate
 
 	public:
 		/** TextureInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const TextureInfo textureInfo;
 
@@ -122,8 +122,8 @@ FILEFORMAT_IMPL(PowerVR3)
 /** PowerVR3Private **/
 
 /* TextureInfo */
-const char *const PowerVR3Private::exts[] = {
-	".pvr",		// NOTE: Same as SegaPVR.
+const char8_t *const PowerVR3Private::exts[] = {
+	U8(".pvr"),	// NOTE: Same as SegaPVR.
 
 	nullptr
 };

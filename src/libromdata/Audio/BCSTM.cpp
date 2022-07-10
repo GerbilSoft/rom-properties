@@ -31,7 +31,7 @@ class BCSTMPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -86,10 +86,10 @@ ROMDATA_IMPL(BCSTM)
 /** BCSTMPrivate **/
 
 /* RomDataInfo */
-const char *const BCSTMPrivate::exts[] = {
-	".bcstm",
-	".bfstm",
-	".bcwav",
+const char8_t *const BCSTMPrivate::exts[] = {
+	U8(".bcstm"),
+	U8(".bfstm"),
+	U8(".bcwav"),
 
 	nullptr
 };

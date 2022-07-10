@@ -37,12 +37,11 @@ ROMDATA_IMPL_IMG(NintendoDS)
 /** NintendoDSPrivate **/
 
 /* RomDataInfo */
-// NOTE: Using the same image settings as Nintendo3DS.
-const char *const NintendoDSPrivate::exts[] = {
-	".nds",	// Nintendo DS
-	".dsi",	// Nintendo DSi (devkitARM r46)
-	".ids",	// iQue DS (no-intro)
-	".srl",	// Official SDK extension
+const char8_t *const NintendoDSPrivate::exts[] = {
+	U8(".nds"),	// Nintendo DS
+	U8(".dsi"),	// Nintendo DSi (devkitARM r46)
+	U8(".ids"),	// iQue DS (no-intro)
+	U8(".srl"),	// Official SDK extension
 
 	nullptr
 };

@@ -35,7 +35,7 @@ class SNESPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -120,15 +120,15 @@ ROMDATA_IMPL_IMG(SNES)
 /** SNESPrivate **/
 
 /* RomDataInfo */
-const char *const SNESPrivate::exts[] = {
-	".smc", ".swc", ".sfc",
-	".fig", ".ufo", ".mgd",
+const char8_t *const SNESPrivate::exts[] = {
+	U8(".smc"), U8(".swc"), U8(".sfc"),
+	U8(".fig"), U8(".ufo"), U8(".mgd"),
 
 	// BS-X
-	".bs", ".bsx",
+	U8(".bs"), U8(".bsx"),
 
 	// Nintendo Super System (MAME) (TODO)
-	//".ic1",
+	//U8(".ic1"),
 
 	nullptr
 };
@@ -985,10 +985,11 @@ int SNES::isRomSupported_static(const DetectInfo *info)
 	// SNES ROMs don't necessarily have a header at the start of the file.
 	// Therefore, we're using the file extension.
 	if (info->ext && info->ext[0] != 0) {
-		for (const char *const *ext = SNESPrivate::exts;
+		for (const char8_t *const *ext = SNESPrivate::exts;
 		     *ext != nullptr; ext++)
 		{
-			if (!strcasecmp(info->ext, *ext)) {
+			// FIXME: U8STRFIX
+			if (!strcasecmp(info->ext, reinterpret_cast<const char*>(*ext))) {
 				// File extension is supported.
 				if ((*ext)[1] == 'b') {
 					// BS-X extension.

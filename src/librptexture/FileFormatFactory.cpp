@@ -20,6 +20,7 @@ using namespace LibRpFile;
 
 // C++ STL classes.
 using std::string;
+using std::u8string;
 using std::unordered_set;
 using std::vector;
 
@@ -291,15 +292,15 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
  *
  * @return All supported file extensions, including the leading dot.
  */
-vector<const char*> FileFormatFactory::supportedFileExtensions(void)
+vector<const char8_t*> FileFormatFactory::supportedFileExtensions(void)
 {
 	// In order to handle multiple FileFormat subclasses
 	// that support the same extensions, we're using
-	// an unordered_set<string>.
+	// an unordered_set<u8string>.
 	//
 	// The actual data is stored in the vector<const char*>.
-	vector<const char*> vec_exts;
-	unordered_set<string> set_exts;
+	vector<const char8_t*> vec_exts;
+	unordered_set<u8string> set_exts;
 
 	static const size_t reserve_size = ARRAY_SIZE(FileFormatFactoryPrivate::FileFormatFns_magic);
 	vec_exts.reserve(reserve_size);
@@ -310,7 +311,7 @@ vector<const char*> FileFormatFactory::supportedFileExtensions(void)
 	const FileFormatFactoryPrivate::FileFormatFns *fns =
 		&FileFormatFactoryPrivate::FileFormatFns_magic[0];
 	for (; fns->textureInfo != nullptr; fns++) {
-		const char *const *sys_exts = fns->textureInfo()->exts;
+		const char8_t *const *sys_exts = fns->textureInfo()->exts;
 		if (!sys_exts)
 			continue;
 
@@ -326,7 +327,7 @@ vector<const char*> FileFormatFactory::supportedFileExtensions(void)
 	// Also handle FileFormat subclasses that have custom magic checks.
 	fns = &FileFormatFactoryPrivate::FileFormatFns_mime[0];
 	for (; fns->textureInfo != nullptr; fns++) {
-		const char *const *sys_exts = fns->textureInfo()->exts;
+		const char8_t *const *sys_exts = fns->textureInfo()->exts;
 		if (!sys_exts)
 			continue;
 

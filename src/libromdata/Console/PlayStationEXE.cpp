@@ -30,7 +30,7 @@ class PlayStationEXEPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -48,8 +48,8 @@ ROMDATA_IMPL(PlayStationEXE)
 /** PlayStationEXEPrivate **/
 
 /* RomDataInfo */
-const char *const PlayStationEXEPrivate::exts[] = {
-	".exe",	// NOTE: Conflicts with Windows executables.
+const char8_t *const PlayStationEXEPrivate::exts[] = {
+	U8(".exe"),	// NOTE: Conflicts with Windows executables.
 
 	nullptr
 };

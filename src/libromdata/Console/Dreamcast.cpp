@@ -49,7 +49,7 @@ class DreamcastPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -117,14 +117,14 @@ ROMDATA_IMPL_IMG_TYPES(Dreamcast)
 /** DreamcastPrivate **/
 
 /* RomDataInfo */
-const char *const DreamcastPrivate::exts[] = {
-	".iso",	// ISO-9660 (2048-byte)
-	".bin",	// Raw (2352-byte)
-	".gdi",	// GD-ROM cuesheet
+const char8_t *const DreamcastPrivate::exts[] = {
+	U8(".iso"),	// ISO-9660 (2048-byte)
+	U8(".bin"),	// Raw (2352-byte)
+	U8(".gdi"),	// GD-ROM cuesheet
 
 	// TODO: Add these formats?
-	//".cdi",	// DiscJuggler
-	//".nrg",	// Nero
+	//U8(".cdi"),	// DiscJuggler
+	//U8(".nrg"),	// Nero
 
 	nullptr
 };

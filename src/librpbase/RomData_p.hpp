@@ -34,9 +34,9 @@ class RomFields;
 class RomMetaData;
 
 struct RomDataInfo {
-	const char *className;		// Class name for user configuration (ASCII)
-	const char *const *exts;	// Supported file extensions
-	const char *const *mimeTypes;	// Supported MIME types
+	const char *className;		// Class name for user configuration [ASCII]
+	const char8_t *const *exts;	// Supported file extensions [UTF-8]
+	const char *const *mimeTypes;	// Supported MIME types [ASCII]
 };
 
 class RomDataPrivate

@@ -16,7 +16,7 @@ namespace LibRpFile {
 namespace LibRpTexture {
 
 struct TextureInfo {
-	const char *const *exts;	// Supported file extensions
+	const char8_t *const *exts;	// Supported file extensions
 	const char *const *mimeTypes;	// Supported MIME types
 };
 

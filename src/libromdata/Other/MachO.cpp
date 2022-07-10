@@ -36,7 +36,7 @@ class MachOPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -98,12 +98,12 @@ ROMDATA_IMPL(MachO)
 /** MachOPrivate **/
 
 /* RomDataInfo */
-const char *const MachOPrivate::exts[] = {
-	//".",		// FIXME: Does this work for files with no extension?
-	".bin",
-	".so",		// Shared libraries. (TODO: Versioned .so files.)
-	".dylib",	// Dynamic libraries. (TODO: Versioned .dylib files.)
-	".bundle",	// Bundles.
+const char8_t *const MachOPrivate::exts[] = {
+	//U8("."),	// FIXME: Does this work for files with no extension?
+	U8(".bin"),
+	U8(".so"),	// Shared libraries. (TODO: Versioned .so files.)
+	U8(".dylib"),	// Dynamic libraries. (TODO: Versioned .dylib files.)
+	U8(".bundle"),	// Bundles.
 	// TODO: More?
 
 	nullptr

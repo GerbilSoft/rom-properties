@@ -42,7 +42,7 @@ class TGAPrivate final : public FileFormatPrivate
 
 	public:
 		/** TextureInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const TextureInfo textureInfo;
 
@@ -108,8 +108,8 @@ FILEFORMAT_IMPL(TGA)
 /** TGAPrivate **/
 
 /* TextureInfo */
-const char *const TGAPrivate::exts[] = {
-	".tga",
+const char8_t *const TGAPrivate::exts[] = {
+	U8(".tga"),
 	// TODO: Other obsolete file extensions?
 
 	nullptr

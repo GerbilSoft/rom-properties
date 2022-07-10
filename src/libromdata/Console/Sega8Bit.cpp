@@ -32,7 +32,7 @@ class Sega8BitPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -74,9 +74,9 @@ ROMDATA_IMPL(Sega8Bit)
 /** Sega8BitPrivate **/
 
 /* RomDataInfo */
-const char *const Sega8BitPrivate::exts[] = {
-	".sms",	// Sega Master System
-	".gg",	// Sega Game Gear
+const char8_t *const Sega8BitPrivate::exts[] = {
+	U8(".sms"),	// Sega Master System
+	U8(".gg"),	// Sega Game Gear
 	// TODO: Other Sega 8-bit formats?
 
 	nullptr

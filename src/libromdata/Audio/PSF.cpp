@@ -36,7 +36,7 @@ class PSFPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -75,22 +75,22 @@ ROMDATA_IMPL(PSF)
 /** PSFPrivate **/
 
 /* RomDataInfo */
-const char *const PSFPrivate::exts[] = {
+const char8_t *const PSFPrivate::exts[] = {
 	// NOTE: The .*lib files are not listed, since they
 	// contain samples, not songs.
 
-	".psf", ".minipsf",
-	".psf1", ".minipsf1",
-	".psf2", ".minipsf2",
+	U8(".psf"), U8(".minipsf"),
+	U8(".psf1"), U8(".minipsf1"),
+	U8(".psf2"), U8(".minipsf2"),
 
-	".ssf", ".minissf",
-	".dsf", ".minidsf",
+	U8(".ssf"), U8(".minissf"),
+	U8(".dsf"), U8(".minidsf"),
 
-	".usf", ".miniusf",
-	".gsf", ".minigsf",
-	".snsf", ".minisnsf",
+	U8(".usf"), U8(".miniusf"),
+	U8(".gsf"), U8(".minigsf"),
+	U8(".snsf"), U8(".minisnsf"),
 
-	".qsf", ".miniqsf",
+	U8(".qsf"), U8(".miniqsf"),
 
 	nullptr
 };

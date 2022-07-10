@@ -271,7 +271,7 @@ class RomData : public RefBase
 		 *
 		 * @return NULL-terminated array of all supported file extensions, or nullptr on error.
 		 */
-		const char *const *supportedFileExtensions(void) const;
+		const char8_t *const *supportedFileExtensions(void) const;
 
 		/**
 		 * Get a list of all supported MIME types.

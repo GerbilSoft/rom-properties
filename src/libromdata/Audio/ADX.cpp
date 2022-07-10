@@ -31,7 +31,7 @@ class ADXPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -47,12 +47,12 @@ ROMDATA_IMPL(ADX)
 /** ADXPrivate **/
 
 /* RomDataInfo */
-const char *const ADXPrivate::exts[] = {
-	".adx",
-	".ahx",	// TODO: Is this used for AHX format?
+const char8_t *const ADXPrivate::exts[] = {
+	U8(".adx"),
+	U8(".ahx"),	// TODO: Is this used for AHX format?
 
 	// TODO: AAX is two ADXes glued together.
-	//".aax",
+	//U8(".aax"),
 
 	nullptr
 };

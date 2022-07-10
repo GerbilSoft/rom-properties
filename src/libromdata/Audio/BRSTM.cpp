@@ -31,7 +31,7 @@ class BRSTMPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -70,8 +70,8 @@ ROMDATA_IMPL(BRSTM)
 /** BRSTMPrivate **/
 
 /* RomDataInfo */
-const char *const BRSTMPrivate::exts[] = {
-	".brstm",
+const char8_t *const BRSTMPrivate::exts[] = {
+	U8(".brstm"),
 
 	nullptr
 };

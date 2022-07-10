@@ -49,7 +49,7 @@ class Xbox_XBE_Private final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -111,8 +111,8 @@ ROMDATA_IMPL(Xbox_XBE)
 /** Xbox_XBE_Private **/
 
 /* RomDataInfo */
-const char *const Xbox_XBE_Private::exts[] = {
-	".xbe",
+const char8_t *const Xbox_XBE_Private::exts[] = {
+	U8(".xbe"),
 
 	nullptr
 };

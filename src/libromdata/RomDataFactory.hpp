@@ -99,10 +99,10 @@ class RomDataFactory
 		static LibRpBase::RomData *create(const char8_t *filename, unsigned int attrs = 0);
 
 		struct ExtInfo {
-			const char *ext;
+			const char8_t *ext;
 			unsigned int attrs;
 
-			ExtInfo(const char *ext, unsigned int attrs)
+			ExtInfo(const char8_t *ext, unsigned int attrs)
 				: ext(ext)
 				, attrs(attrs)
 				{ }

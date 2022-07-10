@@ -38,7 +38,7 @@ class GameCubeSavePrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -111,10 +111,10 @@ ROMDATA_IMPL_IMG(GameCubeSave)
 /** GameCubeSavePrivate **/
 
 /* RomDataInfo */
-const char *const GameCubeSavePrivate::exts[] = {
-	".gci",	// USB Memory Adapter
-	".gcs",	// GameShark
-	".sav",	// MaxDrive (TODO: Too generic?)
+const char8_t *const GameCubeSavePrivate::exts[] = {
+	U8(".gci"),	// USB Memory Adapter
+	U8(".gcs"),	// GameShark
+	U8(".sav"),	// MaxDrive (TODO: Too generic?)
 
 	nullptr
 };

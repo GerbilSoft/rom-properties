@@ -50,10 +50,10 @@ ROMDATA_IMPL(WiiWAD)
 /** WiiWADPrivate **/
 
 /* RomDataInfo */
-const char *const WiiWADPrivate::exts[] = {
-	".wad",		// Nintendo WAD Format
-	".bwf",		// BroadOn WAD Format
-	".tad",		// DSi TAD (similar to Nintendo WAD)
+const char8_t *const WiiWADPrivate::exts[] = {
+	U8(".wad"),		// Nintendo WAD Format
+	U8(".bwf"),		// BroadOn WAD Format
+	U8(".tad"),		// DSi TAD (similar to Nintendo WAD)
 
 	nullptr
 };

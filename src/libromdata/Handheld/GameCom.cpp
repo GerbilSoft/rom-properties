@@ -34,7 +34,7 @@ class GameComPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -82,9 +82,9 @@ ROMDATA_IMPL(GameCom)
 /** GameComPrivate **/
 
 /* RomDataInfo */
-const char *const GameComPrivate::exts[] = {
-	".bin",	// Most common (only one supported by the official emulator)
-	".tgc",	// Less common
+const char8_t *const GameComPrivate::exts[] = {
+	U8(".bin"),	// Most common (only one supported by the official emulator)
+	U8(".tgc"),	// Less common
 
 	nullptr
 };

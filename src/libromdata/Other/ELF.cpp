@@ -49,7 +49,7 @@ class ELFPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -182,17 +182,17 @@ ROMDATA_IMPL(ELF)
 /** ELFPrivate **/
 
 /* RomDataInfo */
-const char *const ELFPrivate::exts[] = {
-	//".",		// FIXME: Does this work for files with no extension?
-	".elf",		// Common for Wii homebrew.
-	".so",		// Shared libraries. (TODO: Versioned .so files.)
-	".o",		// Relocatable object files.
-	".core",	// Core dumps.
-	".debug",	// Split debug files.
+const char8_t *const ELFPrivate::exts[] = {
+	//U8("."),	// FIXME: Does this work for files with no extension?
+	U8(".elf"),	// Common for Wii homebrew.
+	U8(".so"),	// Shared libraries. (TODO: Versioned .so files.)
+	U8(".o"),	// Relocatable object files.
+	U8(".core"),	// Core dumps.
+	U8(".debug"),	// Split debug files.
 
 	// Wii U
-	".rpx",		// Cafe OS executable
-	".rpl",		// Cafe OS library
+	U8(".rpx"),	// Cafe OS executable
+	U8(".rpl"),	// Cafe OS library
 
 	nullptr
 };

@@ -54,7 +54,7 @@ class MegaDrivePrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -216,16 +216,16 @@ ROMDATA_IMPL_IMG(MegaDrive)
 /** MegaDrivePrivate **/
 
 /* RomDataInfo */
-const char *const MegaDrivePrivate::exts[] = {
-	".gen", ".smd",
-	".32x", ".pco",
-	".sgd",	".68k", // Official extensions
+const char8_t *const MegaDrivePrivate::exts[] = {
+	U8(".gen"), U8(".smd"),
+	U8(".32x"), U8(".pco"),
+	U8(".sgd"), U8(".68k"), // Official extensions
 
 	// NOTE: These extensions may cause conflicts on
 	// Windows if fallback handling isn't working.
-	".md",	// conflicts with Markdown
-	".bin",	// too generic
-	".iso",	// too generic
+	U8(".md"),	// conflicts with Markdown
+	U8(".bin"),	// too generic
+	U8(".iso"),	// too generic
 
 	nullptr
 };

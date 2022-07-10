@@ -28,7 +28,7 @@ class LynxPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -42,8 +42,8 @@ ROMDATA_IMPL(Lynx)
 /** LynxPrivate **/
 
 /* RomDataInfo */
-const char *const LynxPrivate::exts[] = {
-	".lnx",
+const char8_t *const LynxPrivate::exts[] = {
+	U8(".lnx"),
 
 	nullptr
 };

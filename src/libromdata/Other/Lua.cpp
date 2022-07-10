@@ -28,7 +28,7 @@ class LuaPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -170,11 +170,11 @@ ROMDATA_IMPL(Lua)
 /** LuaPrivate **/
 
 /* RomDataInfo */
-const char *const LuaPrivate::exts[] = {
+const char8_t *const LuaPrivate::exts[] = {
 	// NOTE: These extensions may cause conflicts on
 	// Windows if fallback handling isn't working.
-	".lub", // Lua binary
-	".out", // from luac.out, the default output filename of luac.
+	U8(".lub"),	// Lua binary
+	U8(".out"),	// from luac.out, the default output filename of luac.
 
 	// TODO: Others?
 	nullptr

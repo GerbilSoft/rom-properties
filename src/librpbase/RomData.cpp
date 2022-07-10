@@ -652,7 +652,7 @@ const char *RomData::mimeType(void) const
  *
  * @return NULL-terminated array of all supported file extensions, or nullptr on error.
  */
-const char *const *RomData::supportedFileExtensions(void) const
+const char8_t *const *RomData::supportedFileExtensions(void) const
 {
 	RP_D(const RomData);
 	return d->pRomDataInfo->exts;

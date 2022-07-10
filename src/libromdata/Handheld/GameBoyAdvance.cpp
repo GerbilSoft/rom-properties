@@ -33,7 +33,7 @@ class GameBoyAdvancePrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -66,11 +66,11 @@ ROMDATA_IMPL_IMG(GameBoyAdvance)
 /** GameBoyAdvancePrivate **/
 
 /* RomDataInfo */
-const char *const GameBoyAdvancePrivate::exts[] = {
-	".gba",	// Most common
-	".agb",	// Less common
-	".mb",	// Multiboot (may conflict with AutoDesk Maya)
-	".srl",	// Official SDK extension
+const char8_t *const GameBoyAdvancePrivate::exts[] = {
+	U8(".gba"),	// Most common
+	U8(".agb"),	// Less common
+	U8(".mb"),	// Multiboot (may conflict with AutoDesk Maya)
+	U8(".srl"),	// Official SDK extension
 
 	nullptr
 };

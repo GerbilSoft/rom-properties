@@ -47,7 +47,7 @@ class PlayStationDiscPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -113,10 +113,10 @@ ROMDATA_IMPL(PlayStationDisc)
 /** PlayStationDiscPrivate **/
 
 /* RomDataInfo */
-const char *const PlayStationDiscPrivate::exts[] = {
-	".iso",		// ISO
-	".bin",		// BIN/CUE
-	".img",		// CCD/IMG
+const char8_t *const PlayStationDiscPrivate::exts[] = {
+	U8(".iso"),	// ISO
+	U8(".bin"),	// BIN/CUE
+	U8(".img"),	// CCD/IMG
 	// TODO: More?
 
 	nullptr

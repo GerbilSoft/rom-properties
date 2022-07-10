@@ -56,7 +56,7 @@ class WiiWADPrivate final : public LibRpBase::RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const LibRpBase::RomDataInfo romDataInfo;
 

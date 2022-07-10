@@ -37,7 +37,7 @@ class PlayStationSavePrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -85,10 +85,10 @@ ROMDATA_IMPL_IMG(PlayStationSave)
 /** PlayStationSavePrivate **/
 
 /* RomDataInfo */
-const char *const PlayStationSavePrivate::exts[] = {
-	".psv",
-	".mcb", ".mcx", ".pda", ".psx",
-	".mcs", ".ps1",
+const char8_t *const PlayStationSavePrivate::exts[] = {
+	U8(".psv"),
+	U8(".mcb"), U8(".mcx"), U8(".pda"), U8(".psx"),
+	U8(".mcs"), U8(".ps1"),
 
 	// TODO: support RAW?
 	nullptr

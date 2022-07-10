@@ -62,7 +62,7 @@ class Xbox360_XEX_Private final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -248,9 +248,9 @@ ROMDATA_IMPL(Xbox360_XEX)
 /** Xbox360_XEX_Private **/
 
 /* RomDataInfo */
-const char *const Xbox360_XEX_Private::exts[] = {
-	".xex",		// Executable
-	".xexp",	// Patch
+const char8_t *const Xbox360_XEX_Private::exts[] = {
+	U8(".xex"),	// Executable
+	U8(".xexp"),	// Patch
 
 	nullptr
 };

@@ -35,7 +35,7 @@ class ASTCPrivate final : public FileFormatPrivate
 
 	public:
 		/** TextureInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const TextureInfo textureInfo;
 
@@ -61,9 +61,9 @@ FILEFORMAT_IMPL(ASTC)
 /** ASTCPrivate **/
 
 /* TextureInfo */
-const char *const ASTCPrivate::exts[] = {
-	".astc",
-	".dds",	// Some .dds files are actually ASTC.
+const char8_t *const ASTCPrivate::exts[] = {
+	U8(".astc"),
+	U8(".dds"),	// Some .dds files are actually ASTC.
 
 	nullptr
 };

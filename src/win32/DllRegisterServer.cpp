@@ -256,11 +256,11 @@ static LONG UnregisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory
 
 /**
  * Get the user's overriden file association for the given file extension.
- * @param sid User SID.
- * @param ext File extension. (UTF-8)
+ * @param sid User SID
+ * @param ext File extension [UTF-8]
  * @return Overridden file association ProgID, or empty string if none.
  */
-static tstring GetUserFileAssoc(const tstring &sid, const char *ext)
+static tstring GetUserFileAssoc(const tstring &sid, const char8_t *ext)
 {
 	// Check if the user has already associated this file extension.
 	// TODO: Check all users.
@@ -332,10 +332,9 @@ static LONG RegisterUserFileType(const tstring &sid, const RomDataFactory::ExtIn
 	}
 
 	// Use an ExtInfo with the progID instead of the extension.
-	// FIXME: U8STRFIX
 	const u8string progID_u8 = T2U8(progID);
 	const RomDataFactory::ExtInfo progID_info(
-		reinterpret_cast<const char*>(progID_u8.c_str()),
+		progID_u8.c_str(),
 		ext_info.attrs
 	);
 
@@ -407,10 +406,9 @@ static LONG UnregisterUserFileType(const tstring &sid, const RomDataFactory::Ext
 	}
 
 	// Use an ExtInfo with the progID instead of the extension.
-	// FIXME: U8STRFIX
 	const u8string progID_u8 = T2U8(progID);
 	const RomDataFactory::ExtInfo progID_info(
-		reinterpret_cast<const char*>(progID_u8.c_str()),
+		progID_u8.c_str(),
 		ext_info.attrs
 	);
 

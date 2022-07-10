@@ -55,7 +55,7 @@ class KhronosKTXPrivate final : public FileFormatPrivate
 
 	public:
 		/** TextureInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const TextureInfo textureInfo;
 
@@ -105,8 +105,8 @@ FILEFORMAT_IMPL(KhronosKTX)
 /** KhronosKTXPrivate **/
 
 /* TextureInfo */
-const char *const KhronosKTXPrivate::exts[] = {
-	".ktx",
+const char8_t *const KhronosKTXPrivate::exts[] = {
+	U8(".ktx"),
 
 	nullptr
 };

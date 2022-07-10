@@ -39,7 +39,7 @@ class DMGPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -187,12 +187,12 @@ ROMDATA_IMPL(DMG)
 /** DMGPrivate **/
 
 /* RomDataInfo */
-const char *const DMGPrivate::exts[] = {
-	".gb",  ".sgb", ".sgb2",
-	".gbc", ".cgb",
+const char8_t *const DMGPrivate::exts[] = {
+	U8(".gb"),  U8(".sgb"), U8(".sgb2"),
+	U8(".gbc"), U8(".cgb"),
 
 	// ROMs with GBX footer.
-	".gbx",
+	U8(".gbx"),
 
 	nullptr
 };

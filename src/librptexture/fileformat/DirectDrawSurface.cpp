@@ -48,7 +48,7 @@ class DirectDrawSurfacePrivate final : public FileFormatPrivate
 
 	public:
 		/** TextureInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const TextureInfo textureInfo;
 
@@ -123,8 +123,8 @@ FILEFORMAT_IMPL(DirectDrawSurface)
 /** DirectDrawSurfacePrivate **/
 
 /* TextureInfo */
-const char *const DirectDrawSurfacePrivate::exts[] = {
-	".dds",	// DirectDraw Surface
+const char8_t *const DirectDrawSurfacePrivate::exts[] = {
+	U8(".dds"),	// DirectDraw Surface
 
 	nullptr
 };

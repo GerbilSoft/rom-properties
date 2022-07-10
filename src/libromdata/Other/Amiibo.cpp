@@ -32,7 +32,7 @@ class AmiiboPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -56,15 +56,15 @@ ROMDATA_IMPL_IMG(Amiibo)
 /** AmiiboPrivate **/
 
 /* RomDataInfo */
-const char *const AmiiboPrivate::exts[] = {
+const char8_t *const AmiiboPrivate::exts[] = {
 	// NOTE: These extensions may cause conflicts on
 	// Windows if fallback handling isn't working.
-	".bin",	// too generic
+	U8(".bin"),	// too generic
 
 	// NOTE: The following extensions are listed
 	// for testing purposes on Windows, and may
 	// be removed later.
-	".nfc", ".nfp",
+	U8(".nfc"), U8(".nfp"),
 
 	nullptr
 };

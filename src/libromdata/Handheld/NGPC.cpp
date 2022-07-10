@@ -31,7 +31,7 @@ class NGPCPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -60,8 +60,8 @@ ROMDATA_IMPL_IMG(NGPC)
 /** NGPCPrivate **/
 
 /* RomDataInfo */
-const char *const NGPCPrivate::exts[] = {
-	".ngp",  ".ngc", ".ngpc",
+const char8_t *const NGPCPrivate::exts[] = {
+	U8(".ngp"), U8(".ngc"), U8(".ngpc"),
 
 	nullptr
 };

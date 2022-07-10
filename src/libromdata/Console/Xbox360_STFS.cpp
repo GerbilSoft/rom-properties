@@ -46,7 +46,7 @@ class Xbox360_STFS_Private final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -155,10 +155,10 @@ ROMDATA_IMPL_IMG_TYPES(Xbox360_STFS)
 /** Xbox360_STFS_Private **/
 
 /* RomDataInfo */
-const char *const Xbox360_STFS_Private::exts[] = {
-	//".stfs",	// FIXME: Not actually used...
-	".fxs",		// Fallout
-	".exs",		// Skyrim
+const char8_t *const Xbox360_STFS_Private::exts[] = {
+	//U8(".stfs"),	// FIXME: Not actually used...
+	U8(".fxs"),	// Fallout
+	U8(".exs"),	// Skyrim
 
 	nullptr
 };

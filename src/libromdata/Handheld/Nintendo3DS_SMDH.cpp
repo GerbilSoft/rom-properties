@@ -41,7 +41,7 @@ class Nintendo3DS_SMDH_Private final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -86,8 +86,8 @@ ROMDATA_IMPL_IMG_SIZES(Nintendo3DS_SMDH)
 
 /* RomDataInfo */
 // NOTE: Using the same image settings as Nintendo3DS.
-const char *const Nintendo3DS_SMDH_Private::exts[] = {
-	".smdh",	// SMDH (icon) file.
+const char8_t *const Nintendo3DS_SMDH_Private::exts[] = {
+	U8(".smdh"),	// SMDH (icon) file.
 
 	nullptr
 };

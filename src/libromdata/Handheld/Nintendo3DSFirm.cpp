@@ -48,7 +48,7 @@ class Nintendo3DSFirmPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -63,9 +63,9 @@ ROMDATA_IMPL(Nintendo3DSFirm)
 /** Nintendo3DSFirmPrivate **/
 
 /* RomDataInfo */
-const char *const Nintendo3DSFirmPrivate::exts[] = {
-	".firm",	// boot9strap
-	".bin",		// older
+const char8_t *const Nintendo3DSFirmPrivate::exts[] = {
+	U8(".firm"),	// boot9strap
+	U8(".bin"),	// older
 
 	nullptr
 };

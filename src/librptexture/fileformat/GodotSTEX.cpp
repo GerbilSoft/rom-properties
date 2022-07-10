@@ -53,7 +53,7 @@ class GodotSTEXPrivate final : public FileFormatPrivate
 
 	public:
 		/** TextureInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const TextureInfo textureInfo;
 
@@ -115,8 +115,8 @@ FILEFORMAT_IMPL(GodotSTEX)
 /** GodotSTEXPrivate **/
 
 /* TextureInfo */
-const char *const GodotSTEXPrivate::exts[] = {
-	".stex",
+const char8_t *const GodotSTEXPrivate::exts[] = {
+	U8(".stex"),
 
 	nullptr
 };

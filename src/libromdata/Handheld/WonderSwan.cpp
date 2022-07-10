@@ -32,7 +32,7 @@ class WonderSwanPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -66,13 +66,13 @@ ROMDATA_IMPL(WonderSwan)
 /** WonderSwanPrivate **/
 
 /* RomDataInfo */
-const char *const WonderSwanPrivate::exts[] = {
+const char8_t *const WonderSwanPrivate::exts[] = {
 	// NOTE: These extensions may cause conflicts on
 	// Windows if fallback handling isn't working.
 
-	".ws",
-	".wsc",
-	".pc2",	// Pocket Challenge V2
+	U8(".ws"),
+	U8(".wsc"),
+	U8(".pc2"),	// Pocket Challenge V2
 
 	nullptr
 };

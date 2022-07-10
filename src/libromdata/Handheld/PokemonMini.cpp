@@ -32,7 +32,7 @@ class PokemonMiniPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -46,8 +46,8 @@ ROMDATA_IMPL(PokemonMini)
 /** PokemonMiniPrivate **/
 
 /* RomDataInfo */
-const char *const PokemonMiniPrivate::exts[] = {
-	".min",
+const char8_t *const PokemonMiniPrivate::exts[] = {
+	U8(".min"),
 
 	nullptr
 };

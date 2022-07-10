@@ -40,7 +40,7 @@ class SegaSaturnPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -128,13 +128,13 @@ class SegaSaturnPrivate final : public RomDataPrivate
 ROMDATA_IMPL(SegaSaturn)
 
 /* RomDataInfo */
-const char *const SegaSaturnPrivate::exts[] = {
-	".iso",	// ISO-9660 (2048-byte)
-	".bin",	// Raw (2352-byte)
+const char8_t *const SegaSaturnPrivate::exts[] = {
+	U8(".iso"),	// ISO-9660 (2048-byte)
+	U8(".bin"),	// Raw (2352-byte)
 
 	// TODO: Add these formats?
-	//".cdi",	// DiscJuggler
-	//".nrg",	// Nero
+	//U8(".cdi"),	// DiscJuggler
+	//U8(".nrg"),	// Nero
 
 	nullptr
 };

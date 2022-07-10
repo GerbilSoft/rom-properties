@@ -32,23 +32,23 @@ ROMDATA_IMPL(EXE)
 /** EXEPrivate **/
 
 /* RomDataInfo */
-const char *const EXEPrivate::exts[] = {
+const char8_t *const EXEPrivate::exts[] = {
 	// References:
 	// - https://en.wikipedia.org/wiki/Portable_Executable
 
 	// PE extensions
-	".exe", ".dll",
-	".acm", ".ax",
-	".cpl", ".drv",
-	".efi", ".mui",
-	".ocx", ".scr",
-	".sys", ".tsp",
+	U8(".exe"), U8(".dll"),
+	U8(".acm"), U8(".ax"),
+	U8(".cpl"), U8(".drv"),
+	U8(".efi"), U8(".mui"),
+	U8(".ocx"), U8(".scr"),
+	U8(".sys"), U8(".tsp"),
 
 	// NE extensions
-	".fon", ".icl",
+	U8(".fon"), U8(".icl"),
 
 	// LE extensions
-	".vxd", ".386",
+	U8(".vxd"), U8(".386"),
 
 	nullptr
 };

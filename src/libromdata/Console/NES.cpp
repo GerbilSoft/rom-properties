@@ -37,7 +37,7 @@ class NESPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -144,7 +144,7 @@ ROMDATA_IMPL(NES)
 /** NESPrivate **/
 
 /* RomDataInfo */
-const char *const NESPrivate::exts[] = {
+const char8_t *const NESPrivate::exts[] = {
 	// NOTE: .fds is missing block checksums.
 	// .qd has block checksums, as does .tds (which is basically
 	// a 16-byte header, FDS BIOS, and a .qd file).
@@ -153,11 +153,11 @@ const char *const NESPrivate::exts[] = {
 	// reading the header, but we'll need to take it into
 	// account if file access is added.
 
-	".nes",	// iNES
-	".nez",	// Compressed iNES?
-	".fds",	// Famicom Disk System
-	".qd",	// FDS (Animal Crossing)
-	".tds",	// FDS (3DS Virtual Console)
+	U8(".nes"),	// iNES
+	U8(".nez"),	// Compressed iNES?
+	U8(".fds"),	// Famicom Disk System
+	U8(".qd"),	// FDS (Animal Crossing)
+	U8(".tds"),	// FDS (3DS Virtual Console)
 
 	nullptr
 };

@@ -31,7 +31,7 @@ class N64Private final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -60,8 +60,8 @@ ROMDATA_IMPL(N64)
 /** N64Private **/
 
 /* RomDataInfo */
-const char *const N64Private::exts[] = {
-	".z64", ".n64", ".v64",
+const char8_t *const N64Private::exts[] = {
+	U8(".z64"), U8(".n64"), U8(".v64"),
 
 	nullptr
 };

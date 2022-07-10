@@ -42,7 +42,7 @@ class GameCubeBNRPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -93,8 +93,8 @@ ROMDATA_IMPL_IMG(GameCubeBNR)
 /* RomDataInfo */
 // NOTE: This will be handled using the same
 // settings as GameCube.
-const char *const GameCubeBNRPrivate::exts[] = {
-	".bnr",
+const char8_t *const GameCubeBNRPrivate::exts[] = {
+	U8(".bnr"),
 
 	nullptr
 };

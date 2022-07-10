@@ -45,7 +45,7 @@ class CBMCartPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -85,8 +85,8 @@ ROMDATA_IMPL_IMG(CBMCart)
 /** CBMCartPrivate **/
 
 /* RomDataInfo */
-const char *const CBMCartPrivate::exts[] = {
-	".crt",
+const char8_t *const CBMCartPrivate::exts[] = {
+	U8(".crt"),
 
 	nullptr
 };

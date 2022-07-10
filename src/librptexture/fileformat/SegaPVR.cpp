@@ -42,7 +42,7 @@ class SegaPVRPrivate final : public FileFormatPrivate
 
 	public:
 		/** TextureInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const TextureInfo textureInfo;
 
@@ -135,10 +135,10 @@ FILEFORMAT_IMPL(SegaPVR)
 /** SegaPVRPrivate **/
 
 /* TextureInfo */
-const char *const SegaPVRPrivate::exts[] = {
-	".pvr",	// Sega Dreamcast PVR
-	".gvr",	// GameCube GVR
-	".svr",	// PlayStation 2 SVR
+const char8_t *const SegaPVRPrivate::exts[] = {
+	U8(".pvr"),	// Sega Dreamcast PVR (NOTE: Same as PowerVR3)
+	U8(".gvr"),	// GameCube GVR
+	U8(".svr"),	// PlayStation 2 SVR
 
 	nullptr
 };

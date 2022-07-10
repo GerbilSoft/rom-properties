@@ -52,7 +52,7 @@ class DidjTexPrivate final : public FileFormatPrivate
 
 	public:
 		/** TextureInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const TextureInfo textureInfo;
 
@@ -88,9 +88,9 @@ FILEFORMAT_IMPL(DidjTex)
 /** DidjTexPrivate **/
 
 /* TextureInfo */
-const char *const DidjTexPrivate::exts[] = {
-	".tex",		// NOTE: Too generic...
-	".texs",	// NOTE: Has multiple textures.
+const char8_t *const DidjTexPrivate::exts[] = {
+	U8(".tex"),	// NOTE: Too generic...
+	U8(".texs"),	// NOTE: Has multiple textures.
 
 	nullptr
 };

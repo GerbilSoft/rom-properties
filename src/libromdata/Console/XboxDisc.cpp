@@ -44,7 +44,7 @@ class XboxDiscPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -125,9 +125,9 @@ ROMDATA_IMPL(XboxDisc)
 /** XboxDiscPrivate **/
 
 /* RomDataInfo */
-const char *const XboxDiscPrivate::exts[] = {
-	".iso",		// ISO
-	".xiso",	// Xbox ISO image
+const char8_t *const XboxDiscPrivate::exts[] = {
+	U8(".iso"),	// ISO
+	U8(".xiso"),	// Xbox ISO image
 	// TODO: More?
 
 	nullptr

@@ -45,7 +45,7 @@ class WiiSavePrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -88,8 +88,8 @@ ROMDATA_IMPL_IMG(WiiSave)
 /** WiiSavePrivate **/
 
 /* RomDataInfo */
-const char *const WiiSavePrivate::exts[] = {
-	".bin",
+const char8_t *const WiiSavePrivate::exts[] = {
+	U8(".bin"),
 	// TODO: Custom extension?
 
 	nullptr
@@ -331,10 +331,11 @@ int WiiSave::isRomSupported_static(const DetectInfo *info)
 	// read by RomDataFactory, so we ca'nt rely on it.
 	// Therefore, we're using the file extension.
 	if (info->ext && info->ext[0] != 0) {
-		for (const char *const *ext = WiiSavePrivate::exts;
+		for (const char8_t *const *ext = WiiSavePrivate::exts;
 		     *ext != nullptr; ext++)
 		{
-			if (!strcasecmp(info->ext, *ext)) {
+			// FIXME: U8STRFIX
+			if (!strcasecmp(info->ext, reinterpret_cast<const char*>(*ext))) {
 				// File extension is supported.
 				return 0;
 			}

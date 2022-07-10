@@ -46,7 +46,7 @@ class PSPPrivate final : public LibRpBase::RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -92,17 +92,17 @@ ROMDATA_IMPL_IMG_TYPES(PSP)
 /** PSPPrivate **/
 
 /* RomDataInfo */
-const char *const PSPPrivate::exts[] = {
-	".iso",			// ISO
-	".img",			// USER_L0.IMG on PSP dev DVD-Rs
-	".dax",			// DAX
-	".ciso", ".cso",	// CISO
+const char8_t *const PSPPrivate::exts[] = {
+	U8(".iso"),			// ISO
+	U8(".img"),			// USER_L0.IMG on PSP dev DVD-Rs
+	U8(".dax"),			// DAX
+	U8(".ciso"), U8(".cso"),	// CISO
 
 #ifdef HAVE_LZ4
-	".ziso", ".zso",		// ZISO
+	U8(".ziso"), U8(".zso"),	// ZISO
 #endif /* HAVE_LZ4 */
 
-	".jiso", ".jso",	// JISO (TODO)
+	U8(".jiso"), U8(".jso"),	// JISO
 
 	nullptr
 };

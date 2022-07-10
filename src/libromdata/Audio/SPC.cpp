@@ -34,7 +34,7 @@ class SPCPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -179,8 +179,8 @@ ROMDATA_IMPL(SPC)
 /** SPCPrivate **/
 
 /* RomDataInfo */
-const char *const SPCPrivate::exts[] = {
-	".spc",
+const char8_t *const SPCPrivate::exts[] = {
+	U8(".spc"),
 
 	nullptr
 };

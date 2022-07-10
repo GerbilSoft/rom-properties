@@ -33,7 +33,7 @@ class DreamcastSavePrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -181,8 +181,8 @@ ROMDATA_IMPL(DreamcastSave)
 /** DreamcastSavePrivate **/
 
 /* RomDataInfo */
-const char *const DreamcastSavePrivate::exts[] = {
-	".vms", ".vmi", ".dci",
+const char8_t *const DreamcastSavePrivate::exts[] = {
+	U8(".vms"), U8(".vmi"), U8(".dci"),
 
 	nullptr
 };

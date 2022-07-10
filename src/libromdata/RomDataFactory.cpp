@@ -701,15 +701,15 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 				// for file types that don't use this.
 				// TODO: Don't hard-code this.
 				// Use a pointer to supportedFileExtensions_static() instead?
-				static const char *const exts[] = {
-					".bin",		// generic .bin
-					".sms",		// Sega Master System
-					".gg",		// Game Gear
-					".tgc",		// game.com
-					".iso",		// ISO-9660
-					".img",		// CCD/IMG
-					".xiso",	// Xbox disc image
-					".min",		// Pokémon Mini
+				static const char8_t *const exts[] = {
+					U8(".bin"),	// generic .bin
+					U8(".sms"),	// Sega Master System
+					U8(".gg"),	// Game Gear
+					U8(".tgc"),	// game.com
+					U8(".iso"),	// ISO-9660
+					U8(".img"),	// CCD/IMG
+					U8(".xiso"),	// Xbox disc image
+					U8(".min"),	// Pokémon Mini
 					nullptr
 				};
 
@@ -720,8 +720,9 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 
 				// Check for a matching extension.
 				bool found = false;
-				for (const char *const *ext = exts; *ext != nullptr; ext++) {
-					if (!strcasecmp(info.ext, *ext)) {
+				for (const char8_t *const *ext = exts; *ext != nullptr; ext++) {
+					// FIXME: U8STRFIX
+					if (!strcasecmp(info.ext, reinterpret_cast<const char*>(*ext))) {
 						// Found a match!
 						found = true;
 					}
@@ -799,11 +800,11 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 
 		// Do we have a matching extension?
 		// FIXME: Instead of hard-coded, check romDataInfo()->exts.
-		static const char *const exts[] = {
-			".vb",		// VirtualBoy
-			".ws",		// WonderSwan
-			".wsc",		// WonderSwan Color
-			".pc2",		// Pocket Challenge v2 (WS-compatible)
+		static const char8_t *const exts[] = {
+			U8(".vb"),	// VirtualBoy
+			U8(".ws"),	// WonderSwan
+			U8(".wsc"),	// WonderSwan Color
+			U8(".pc2"),	// Pocket Challenge v2 (WS-compatible)
 			nullptr
 		};
 
@@ -814,8 +815,9 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 
 		// Check for a matching extension.
 		bool found = false;
-		for (const char *const *ext = exts; *ext != nullptr; ext++) {
-			if (!strcasecmp(info.ext, *ext)) {
+		for (const char8_t *const *ext = exts; *ext != nullptr; ext++) {
+			// FIXME: U8STRFIX
+			if (!strcasecmp(info.ext, reinterpret_cast<const char*>(*ext))) {
 				// Found a match!
 				found = true;
 			}
@@ -911,7 +913,7 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 	// then the thumbnail handlers will be registered.
 	//
 	// The actual data is stored in the vector<ExtInfo>.
-	unordered_map<string, unsigned int> map_exts;
+	unordered_map<u8string, unsigned int> map_exts;
 
 	static const size_t reserve_size =
 		(ARRAY_SIZE(romDataFns_magic) +
@@ -927,7 +929,7 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 	{
 		const RomDataFns *fns = *tblptr;
 		for (; fns->romDataInfo != nullptr; fns++) {
-			const char *const *sys_exts = fns->romDataInfo()->exts;
+			const char8_t *const *sys_exts = fns->romDataInfo()->exts;
 			if (!sys_exts)
 				continue;
 
@@ -949,8 +951,8 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 
 	// Get file extensions from FileFormatFactory.
 	static const unsigned int FFF_ATTRS = ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA;
-	vector<const char*> vec_exts_fileFormat = FileFormatFactory::supportedFileExtensions();
-	for (const char *ext : vec_exts_fileFormat) {
+	vector<const char8_t*> vec_exts_fileFormat = FileFormatFactory::supportedFileExtensions();
+	for (const char8_t *ext : vec_exts_fileFormat) {
 		auto iter = map_exts.find(ext);
 		if (iter != map_exts.end()) {
 			// We already had this extension.

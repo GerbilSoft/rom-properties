@@ -34,7 +34,7 @@ class ValveVTF3Private final : public FileFormatPrivate
 
 	public:
 		/** TextureInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const TextureInfo textureInfo;
 
@@ -75,9 +75,9 @@ FILEFORMAT_IMPL(ValveVTF3)
 /** ValveVTF3Private **/
 
 /* TextureInfo */
-const char *const ValveVTF3Private::exts[] = {
-	".vtf",
-	//".vtx",	// TODO: Some files might use the ".vtx" extension.
+const char8_t *const ValveVTF3Private::exts[] = {
+	U8(".vtf"),
+	//U8(".vtx"),	// TODO: Some files might use the ".vtx" extension.
 
 	nullptr
 };

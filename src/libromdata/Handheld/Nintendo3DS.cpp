@@ -56,17 +56,17 @@ ROMDATA_IMPL_IMG_SIZES(Nintendo3DS)
 /** Nintendo3DSPrivate **/
 
 /* RomDataInfo */
-const char *const Nintendo3DSPrivate::exts[] = {
-	".3dsx",	// Homebrew application.
-	".3ds",		// ROM image. (NOTE: Conflicts with 3DS Max.)
-	".3dz",		// ROM image. (with private header for Gateway 3DS)
-	".cci",		// ROM image.
-	".cia",		// CTR installable archive.
-	".ncch",	// NCCH file.
-	".app",		// NCCH file. (NOTE: May conflict with others...)
-	".cxi",		// CTR Executable Image (NCCH)
-	".cfa",		// CTR File Archive (NCCH)
-	".csu",		// CTR System Update (CCI)
+const char8_t *const Nintendo3DSPrivate::exts[] = {
+	U8(".3dsx"),	// Homebrew application
+	U8(".3ds"),	// ROM image (NOTE: Conflicts with 3DS Max)
+	U8(".3dz"),	// ROM image (with private header for Gateway 3DS)
+	U8(".cci"),	// ROM image
+	U8(".cia"),	// CTR installable archive.
+	U8(".ncch"),	// NCCH file
+	U8(".app"),	// NCCH file (NOTE: May conflict with others...)
+	U8(".cxi"),	// CTR Executable Image (NCCH)
+	U8(".cfa"),	// CTR File Archive (NCCH)
+	U8(".csu"),	// CTR System Update (CCI)
 
 	nullptr
 };

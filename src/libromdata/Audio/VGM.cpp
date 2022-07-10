@@ -34,7 +34,7 @@ class VGMPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -82,10 +82,10 @@ ROMDATA_IMPL(VGM)
 /** VGMPrivate **/
 
 /* RomDataInfo */
-const char *const VGMPrivate::exts[] = {
-	".vgm",
-	".vgz",	// gzipped
-	//".vgm.gz",	// NOTE: Windows doesn't support this.
+const char8_t *const VGMPrivate::exts[] = {
+	U8(".vgm"),
+	U8(".vgz"),	// gzipped
+	//U8(".vgm.gz"),	// NOTE: Windows doesn't support this.
 
 	nullptr
 };

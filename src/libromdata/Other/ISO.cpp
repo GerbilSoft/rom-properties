@@ -46,7 +46,7 @@ class ISOPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -195,12 +195,12 @@ ROMDATA_IMPL(ISO)
 /** ISOPrivate **/
 
 /* RomDataInfo */
-const char *const ISOPrivate::exts[] = {
-	".iso",		// ISO
-	".iso9660",	// ISO (listed in shared-mime-info)
-	".bin",		// BIN (2352-byte)
-	".xiso",	// Xbox ISO image
-	".img",		// CCD/IMG
+const char8_t *const ISOPrivate::exts[] = {
+	U8(".iso"),	// ISO
+	U8(".iso9660"),	// ISO (listed in shared-mime-info)
+	U8(".bin"),	// BIN (2352-byte)
+	U8(".xiso"),	// Xbox ISO image
+	U8(".img"),	// CCD/IMG
 	// TODO: More?
 	// TODO: Is there a separate extension for High Sierra or CD-i?
 
@@ -718,10 +718,11 @@ int ISO::isRomSupported_static(const DetectInfo *info)
 		return -1;
 	}
 
-	for (const char *const *ext = ISOPrivate::exts;
+	for (const char8_t *const *ext = ISOPrivate::exts;
 	     *ext != nullptr; ext++)
 	{
-		if (!strcasecmp(info->ext, *ext)) {
+		// FIXME: U8STRFIX
+		if (!strcasecmp(info->ext, reinterpret_cast<const char*>(*ext))) {
 			// Found a match.
 			return 0;
 		}

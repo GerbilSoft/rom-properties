@@ -44,7 +44,7 @@ class WiiUPrivate final : public RomDataPrivate
 
 	public:
 		/** RomDataInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
 
@@ -72,12 +72,12 @@ ROMDATA_IMPL_IMG(WiiU)
 /** WiiUPrivate **/
 
 /* RomDataInfo */
-const char *const WiiUPrivate::exts[] = {
-	".wud", ".wux",
+const char8_t *const WiiUPrivate::exts[] = {
+	U8(".wud"), U8(".wux"),
 
 	// NOTE: May cause conflicts on Windows
 	// if fallback handling isn't working.
-	".iso",
+	U8(".iso"),
 
 	nullptr
 };

@@ -36,7 +36,7 @@ class XboxXPRPrivate final : public FileFormatPrivate
 
 	public:
 		/** TextureInfo **/
-		static const char *const exts[];
+		static const char8_t *const exts[];
 		static const char *const mimeTypes[];
 		static const TextureInfo textureInfo;
 
@@ -154,8 +154,8 @@ FILEFORMAT_IMPL(XboxXPR)
 /** XboxXPRPrivate **/
 
 /* TextureInfo */
-const char *const XboxXPRPrivate::exts[] = {
-	".xbx", ".xpr",
+const char8_t *const XboxXPRPrivate::exts[] = {
+	U8(".xbx"), U8(".xpr"),
 
 	nullptr
 };
