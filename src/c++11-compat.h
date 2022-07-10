@@ -81,7 +81,7 @@ namespace std {
 /* char8_t / std::u8string */
 #ifdef CXX20_COMPAT_CHAR8_T
 typedef char char8_t;
-#  define U8(x) x
+#  define __U8(x) x
 #  ifdef __cplusplus
 #    include <string>
 namespace std {
@@ -89,8 +89,10 @@ namespace std {
 }
 #  endif /* __cplusplus */
 #else /* !CXX20_COMPAT_CHAR8_T */
-#  define U8(x) u8 ## x
+#  define __U8(x) u8 ## x
 #endif /* CXX20_COMPAT_CHAR8_T */
+
+#define U8(x) __U8(x)
 
 /* MSVC doesn't define std::u8string unless using /std:c++20 */
 #if defined(_MSC_VER) && defined(__cplusplus) && __cplusplus < 202002L
