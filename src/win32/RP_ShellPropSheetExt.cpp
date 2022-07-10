@@ -2247,11 +2247,8 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	u8filename = T2U8(tfilename, cchFilename);
 
 	// Check for "bad" file systems.
-	// FIXME: U8STRFIX
 	config = Config::instance();
-	if (FileSystem::isOnBadFS(reinterpret_cast<const char*>(u8filename.c_str()),
-	    config->enableThumbnailOnNetworkFS()))
-	{
+	if (FileSystem::isOnBadFS(u8filename.c_str(), config->enableThumbnailOnNetworkFS())) {
 		// This file is on a "bad" file system.
 		goto cleanup;
 	}

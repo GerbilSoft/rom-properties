@@ -106,8 +106,7 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::IsMemberOf(_In_ PCWSTR pwszPath, D
 
 	// Check for "bad" file systems.
 	// TODO: Combine with the above "slow" check?
-	// FIXME: U8STRFIX
-	if (FileSystem::isOnBadFS(reinterpret_cast<const char*>(u8filename.c_str()), config->enableThumbnailOnNetworkFS())) {
+	if (FileSystem::isOnBadFS(u8filename.c_str(), config->enableThumbnailOnNetworkFS())) {
 		// This file is on a "bad" file system.
 		return S_FALSE;
 	}

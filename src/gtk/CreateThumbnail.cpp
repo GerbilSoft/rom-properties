@@ -190,7 +190,7 @@ static int openFromFilenameOrURI(const char8_t *source_file, IRpFile **pp_file, 
 		if (source_filename) {
 			// It's a local filename.
 			// Check if it's on a "bad" filesystem.
-			if (FileSystem::isOnBadFS(source_filename, enableThumbnailOnNetworkFS)) {
+			if (FileSystem::isOnBadFS(reinterpret_cast<const char8_t*>(source_filename), enableThumbnailOnNetworkFS)) {
 				// It's on a "bad" filesystem.
 				g_free(source_filename);
 				return RPCT_SOURCE_FILE_BAD_FS;
@@ -216,8 +216,7 @@ static int openFromFilenameOrURI(const char8_t *source_file, IRpFile **pp_file, 
 		// needed to get the URI for the thumbnail.
 
 		// Check if it's on a "bad" filesystem.
-		// FIXME: U8STRFIX
-		if (FileSystem::isOnBadFS(reinterpret_cast<const char*>(source_file), enableThumbnailOnNetworkFS)) {
+		if (FileSystem::isOnBadFS(source_file, enableThumbnailOnNetworkFS)) {
 			// It's on a "bad" filesystem.
 			return RPCT_SOURCE_FILE_BAD_FS;
 		}

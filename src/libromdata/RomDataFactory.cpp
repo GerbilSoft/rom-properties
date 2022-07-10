@@ -878,8 +878,7 @@ RomData *RomDataFactory::create(const char8_t *filename, unsigned int attrs)
 	// Check if this is a file or a directory.
 	// If it's a file, we'll create an RpFile and then
 	// call create(IRpFile*,unsigned int).
-	// FIXME: U8STRFIX
-	if (!FileSystem::is_directory(reinterpret_cast<const char*>(filename))) {
+	if (!FileSystem::is_directory(filename)) {
 		// Not a directory.
 		RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
 		if (file->isOpen()) {

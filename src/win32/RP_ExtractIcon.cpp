@@ -99,9 +99,8 @@ IFACEMETHODIMP RP_ExtractIcon::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
 	d->filename = W2U8(pszFileName);
 
 	// Check for "bad" file systems.
-	// FIXME: U8STRFIX
 	const Config *const config = Config::instance();
-	if (FileSystem::isOnBadFS(reinterpret_cast<const char*>(d->filename.c_str()), config->enableThumbnailOnNetworkFS())) {
+	if (FileSystem::isOnBadFS(d->filename.c_str(), config->enableThumbnailOnNetworkFS())) {
 		// This file is on a "bad" file system.
 		return E_FAIL;
 	}

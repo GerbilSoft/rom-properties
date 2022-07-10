@@ -186,9 +186,10 @@ std::string replace_ext(const char *filename, const char *ext);
  * Symbolic links are NOT resolved; otherwise wouldn't check
  * if the specified file was a symlink itself.
  *
+ * @param filename Filename of the file to check
  * @return True if the file is a symbolic link; false if not.
  */
-bool is_symlink(const char *filename);
+bool is_symlink(const char8_t *filename);
 
 /**
  * Resolve a symbolic link.
@@ -196,19 +197,20 @@ bool is_symlink(const char *filename);
  * If the specified filename is not a symbolic link,
  * the filename will be returned as-is.
  *
- * @param filename Filename of symbolic link.
+ * @param filename Filename of the symbolic link
  * @return Resolved symbolic link, or empty string on error.
  */
-std::string resolve_symlink(const char *filename);
+std::u8string resolve_symlink(const char8_t *filename);
 
 /**
  * Check if the specified file is a directory.
  *
  * Symbolic links are resolved as per usual directory traversal.
  *
+ * @param filename Filename of the file to check
  * @return True if the file is a directory; false if not.
  */
-bool is_directory(const char *filename);
+bool is_directory(const char8_t *filename);
 
 /**
  * Is a file located on a "bad" file system?
@@ -216,13 +218,13 @@ bool is_directory(const char *filename);
  * We don't want to check files on e.g. procfs,
  * or on network file systems if the option is disabled.
  *
- * @param filename Filename.
+ * @param filename Filename of the file to check
  * @param netFS If true, allow network file systems.
  *
  * @return True if this file is on a "bad" file system; false if not.
  */
 RP_LIBROMDATA_PUBLIC
-bool isOnBadFS(const char *filename, bool netFS = false);
+bool isOnBadFS(const char8_t *filename, bool netFS = false);
 
 /**
  * Get a file's size and time.

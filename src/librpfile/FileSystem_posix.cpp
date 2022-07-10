@@ -43,6 +43,7 @@
 
 // C++ STL classes.
 using std::string;
+using std::u8string;
 using std::u16string;
 
 namespace LibRpFile { namespace FileSystem {
@@ -224,7 +225,7 @@ int delete_file(const char *filename)
  *
  * @return True if the file is a symbolic link; false if not.
  */
-bool is_symlink(const char *filename)
+bool is_symlink(const char8_t *filename)
 {
 	if (unlikely(!filename || filename[0] == 0)) {
 		return -EINVAL;
@@ -232,7 +233,7 @@ bool is_symlink(const char *filename)
 	
 #ifdef HAVE_STATX
 	struct statx sbx;
-	int ret = statx(AT_FDCWD, filename, AT_SYMLINK_NOFOLLOW, STATX_TYPE, &sbx);
+	int ret = statx(AT_FDCWD, reinterpret_cast<const char*>(filename), AT_SYMLINK_NOFOLLOW, STATX_TYPE, &sbx);
 	if (ret != 0 || !(sbx.stx_mask & STATX_TYPE)) {
 		// statx() failed and/or did not return the file type.
 		// Assume this is not a symlink.
@@ -241,7 +242,7 @@ bool is_symlink(const char *filename)
 	return !!S_ISLNK(sbx.stx_mode);
 #else /* !HAVE_STATX */
 	struct stat sb;
-	int ret = lstat(filename, &sb);
+	int ret = lstat(reinterpret_cast<const char*>(filename), &sb);
 	if (ret != 0) {
 		// lstat() failed.
 		// Assume this is not a symlink.
@@ -257,22 +258,23 @@ bool is_symlink(const char *filename)
  * If the specified filename is not a symbolic link,
  * the filename will be returned as-is.
  *
- * @param filename Filename of symbolic link.
+ * @param filename Filename of the symbolic link
  * @return Resolved symbolic link, or empty string on error.
  */
-string resolve_symlink(const char *filename)
+u8string resolve_symlink(const char8_t *filename)
 {
-	if (unlikely(!filename || filename[0] == 0))
-		return string();
+	u8string s_ret;
+	if (unlikely(!filename || filename[0] == 0)) {
+		return s_ret;
+	}
 
 	// NOTE: realpath() might not be available on some systems...
-	string ret;
-	char *const resolved_path = realpath(filename, nullptr);
+	char *const resolved_path = realpath(reinterpret_cast<const char*>(filename), nullptr);
 	if (resolved_path != nullptr) {
-		ret = resolved_path;
+		s_ret = reinterpret_cast<const char8_t*>(resolved_path);
 		free(resolved_path);
 	}
-	return ret;
+	return s_ret;
 }
 
 /**
@@ -280,9 +282,10 @@ string resolve_symlink(const char *filename)
  *
  * Symbolic links are resolved as per usual directory traversal.
  *
+ * @param filename Filename of the file to check
  * @return True if the file is a directory; false if not.
  */
-bool is_directory(const char *filename)
+bool is_directory(const char8_t *filename)
 {
 	if (unlikely(!filename || filename[0] == 0)) {
 		return -EINVAL;
@@ -290,7 +293,7 @@ bool is_directory(const char *filename)
 
 #ifdef HAVE_STATX
 	struct statx sbx;
-	int ret = statx(AT_FDCWD, filename, 0, STATX_TYPE, &sbx);
+	int ret = statx(AT_FDCWD, reinterpret_cast<const char*>(filename), 0, STATX_TYPE, &sbx);
 	if (ret != 0 || !(sbx.stx_mask & STATX_TYPE)) {
 		// statx() failed and/or did not return the file type.
 		// Assume this is not a directory.
@@ -299,7 +302,7 @@ bool is_directory(const char *filename)
 	return !!S_ISDIR(sbx.stx_mode);
 #else /* !HAVE_STATX */
 	struct stat sb;
-	int ret = stat(filename, &sb);
+	int ret = stat(reinterpret_cast<const char*>(filename), &sb);
 	if (ret != 0) {
 		// stat() failed.
 		// Assume this is not a directory.
@@ -315,12 +318,12 @@ bool is_directory(const char *filename)
  * We don't want to check files on e.g. procfs,
  * or on network file systems if the option is disabled.
  *
- * @param filename Filename.
+ * @param filename Filename of the file to check
  * @param netFS If true, allow network file systems.
  *
  * @return True if this file is on a "bad" file system; false if not.
  */
-bool isOnBadFS(const char *filename, bool netFS)
+bool isOnBadFS(const char8_t *filename, bool netFS)
 {
 	bool bRet = false;
 
@@ -328,7 +331,7 @@ bool isOnBadFS(const char *filename, bool netFS)
 	// TODO: Get the mount point, then look it up in /proc/mounts.
 
 	struct statfs sfbuf;
-	int ret = statfs(filename, &sfbuf);
+	int ret = statfs(reinterpret_cast<const char*>(filename), &sfbuf);
 	if (ret != 0) {
 		// statfs() failed.
 		// Assume this isn't a network file system.

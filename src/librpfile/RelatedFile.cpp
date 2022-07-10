@@ -94,15 +94,13 @@ IRpFile *openRelatedFile(const char8_t *filename, const char8_t *basename, const
 		}
 	}
 
-	// FIXME: U8STRFIX
-	if (!test_file && FileSystem::is_symlink(reinterpret_cast<const char*>(filename))) {
+	if (!test_file && FileSystem::is_symlink(filename)) {
 		// Could not open the related file, but the
 		// primary file is a symlink. Dereference the
 		// symlink and check the original directory.
-		string deref_filename = FileSystem::resolve_symlink(reinterpret_cast<const char*>(filename));
+		u8string deref_filename = FileSystem::resolve_symlink(filename);
 		if (!deref_filename.empty()) {
-			test_file = openRelatedFile(
-				reinterpret_cast<const char8_t*>(deref_filename.c_str()), basename, ext);
+			test_file = openRelatedFile(deref_filename.c_str(), basename, ext);
 		}
 	}
 	return test_file;

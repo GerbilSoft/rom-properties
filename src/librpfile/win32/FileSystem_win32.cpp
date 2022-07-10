@@ -326,15 +326,15 @@ int delete_file(const char *filename)
  * Symbolic links are NOT resolved; otherwise wouldn't check
  * if the specified file was a symlink itself.
  *
+ * @param filename Filename of the file to check
  * @return True if the file is a symbolic link; false if not.
  */
-bool is_symlink(const char *filename)
+bool is_symlink(const char8_t *filename)
 {
 	if (unlikely(!filename || filename[0] == 0)) {
 		return false;
 	}
-	// FIXME: U8STRFIX
-	const tstring tfilename = makeWinPath(reinterpret_cast<const char8_t*>(filename));
+	const tstring tfilename = makeWinPath(filename);
 
 	// Check the reparse point type.
 	// Reference: https://devblogs.microsoft.com/oldnewthing/20100212-00/?p=14963
@@ -396,24 +396,25 @@ static void LookupGetFinalPathnameByHandle(void)
  * If the specified filename is not a symbolic link,
  * the filename will be returned as-is.
  *
- * @param filename Filename of symbolic link.
+ * @param filename Filename of the symbolic link
  * @return Resolved symbolic link, or empty string on error.
  */
-string resolve_symlink(const char *filename)
+u8string resolve_symlink(const char8_t *filename)
 {
-	if (unlikely(!filename || filename[0] == 0))
-		return string();
+	u8string s_ret;
+	if (unlikely(!filename || filename[0] == 0)) {
+		return s_ret;
+	}
 
 	pthread_once(&once_gfpbh, LookupGetFinalPathnameByHandle);
 	if (!pfnGetFinalPathnameByHandle) {
 		// GetFinalPathnameByHandle() not available.
-		return string();
+		return s_ret;
 	}
 
 	// Reference: https://devblogs.microsoft.com/oldnewthing/20100212-00/?p=14963
 	// TODO: Enable write sharing in regular IRpFile?
-	// FIXME: U8STRFIX
-	const tstring tfilename = makeWinPath(reinterpret_cast<const char8_t*>(filename));
+	const tstring tfilename = makeWinPath(filename);
 	HANDLE hFile = CreateFile(tfilename.c_str(),
 		GENERIC_READ,
 		FILE_SHARE_READ|FILE_SHARE_WRITE,
@@ -423,7 +424,7 @@ string resolve_symlink(const char *filename)
 		nullptr);
 	if (!hFile || hFile == INVALID_HANDLE_VALUE) {
 		// Unable to open the file.
-		return string();
+		return s_ret;
 	}
 
 	// NOTE: GetFinalPathNameByHandle() always returns "\\\\?\\" paths.
@@ -431,7 +432,7 @@ string resolve_symlink(const char *filename)
 	if (cchDeref == 0) {
 		// Error...
 		CloseHandle(hFile);
-		return string();
+		return s_ret;
 	}
 
 	// NOTE: cchDeref may include the NULL terminator on ANSI systems.
@@ -444,11 +445,10 @@ string resolve_symlink(const char *filename)
 	}
 
 	// TODO: Add back the cchDeref parameter for explicit length in MiniU82T?
-	// FIXME: U8STRFIX
-	string ret = reinterpret_cast<const char*>(T2U8_c(szDeref).c_str());
+	s_ret = T2U8_c(szDeref);
 	delete[] szDeref;
 	CloseHandle(hFile);
-	return ret;
+	return s_ret;
 }
 
 /**
@@ -456,15 +456,15 @@ string resolve_symlink(const char *filename)
  *
  * Symbolic links are resolved as per usual directory traversal.
  *
+ * @param filename Filename of the file to check
  * @return True if the file is a directory; false if not.
  */
-bool is_directory(const char *filename)
+bool is_directory(const char8_t *filename)
 {
 	if (unlikely(!filename || filename[0] == 0)) {
 		return false;
 	}
-	// FIXME: U8STRFIX
-	const tstring tfilename = makeWinPath(reinterpret_cast<const char8_t*>(filename));
+	const tstring tfilename = makeWinPath(filename);
 
 	const DWORD attrs = GetFileAttributes(tfilename.c_str());
 	return (attrs != INVALID_FILE_ATTRIBUTES && (attrs & FILE_ATTRIBUTE_DIRECTORY));
@@ -476,12 +476,12 @@ bool is_directory(const char *filename)
  * We don't want to check files on e.g. procfs,
  * or on network file systems if the option is disabled.
  *
- * @param filename Filename.
+ * @param filename Filename of the file to check
  * @param netFS If true, allow network file systems.
  *
  * @return True if this file is on a "bad" file system; false if not.
  */
-bool isOnBadFS(const char *filename, bool netFS)
+bool isOnBadFS(const char8_t *filename, bool netFS)
 {
 	// TODO: More comprehensive check.
 	// For now, merely checking if it starts with "\\\\"
