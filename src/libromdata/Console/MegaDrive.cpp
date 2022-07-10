@@ -201,7 +201,7 @@ class MegaDrivePrivate final : public RomDataPrivate
 		 * @param pRomHeader ROM header to check.
 		 * @return Publisher, or "Unknown" if unknown.
 		 */
-		static string getPublisher(const MD_RomHeader *pRomHeader);
+		static u8string getPublisher(const MD_RomHeader *pRomHeader);
 
 		/**
 		 * Initialize zlib.
@@ -657,9 +657,9 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
  * @param pRomHeader ROM header to check.
  * @return Publisher, or "Unknown" if unknown.
  */
-string MegaDrivePrivate::getPublisher(const MD_RomHeader *pRomHeader)
+u8string MegaDrivePrivate::getPublisher(const MD_RomHeader *pRomHeader)
 {
-	string s_publisher;
+	u8string s_publisher;
 
 	// Determine the publisher.
 	// Formats in the copyright line:
@@ -670,7 +670,7 @@ string MegaDrivePrivate::getPublisher(const MD_RomHeader *pRomHeader)
 	unsigned int t_code = 0;
 	if (!memcmp(pRomHeader->copyright, "(C)SEGA", 7)) {
 		// Sega first-party game.
-		s_publisher = "Sega";
+		s_publisher = U8("Sega");
 	} else if (!memcmp(pRomHeader->copyright, "(C)T", 4)) {
 		// Third-party game.
 		int start = 4;
@@ -685,7 +685,7 @@ string MegaDrivePrivate::getPublisher(const MD_RomHeader *pRomHeader)
 		t_code = strtoul(buf, nullptr, 10);
 		if (t_code != 0) {
 			// Valid T-code. Look up the publisher.
-			const char *const publisher = SegaPublishers::lookup(t_code);
+			const char8_t *const publisher = SegaPublishers::lookup(t_code);
 			if (publisher) {
 				s_publisher = publisher;
 			}
@@ -695,14 +695,15 @@ string MegaDrivePrivate::getPublisher(const MD_RomHeader *pRomHeader)
 	if (s_publisher.empty()) {
 		// Publisher not identified.
 		// Check for a T-code.
+		// FIXME: U8STRFIX
 		if (t_code > 0) {
 			// Found a T-code.
 			char buf[16];
 			snprintf(buf, sizeof(buf), "T-%u", t_code);
-			s_publisher = buf;
+			s_publisher = reinterpret_cast<const char8_t*>(buf);
 		} else {
 			// Unknown publisher.
-			s_publisher = C_("RomData", "Unknown");
+			s_publisher = reinterpret_cast<const char8_t*>(C_("RomData", "Unknown"));
 		}
 	}
 

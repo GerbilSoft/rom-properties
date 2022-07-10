@@ -519,24 +519,36 @@ trimTitle:
  */
 u8string DMGPrivate::getPublisher(void) const
 {
-	const char* publisher;
-	string s_publisher;
+	u8string s_publisher;
+
+	const char8_t *publisher;
 	if (romHeader.old_publisher_code == 0x33) {
 		// New publisher code.
 		publisher = NintendoPublishers::lookup(romHeader.new_publisher_code);
 		if (publisher) {
 			s_publisher = publisher;
 		} else {
+			// FIXME: U8STRFIX - can't use rp_sprintf()
+			char buf[128];
+			int len;
+
 			if (ISALNUM(romHeader.new_publisher_code[0]) &&
 			    ISALNUM(romHeader.new_publisher_code[1]))
 			{
-				s_publisher = rp_sprintf(C_("RomData", "Unknown (%.2s)"),
+				len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%.2s)"),
 					romHeader.new_publisher_code);
 			} else {
-				s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
+				len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%02X %02X)"),
 					static_cast<uint8_t>(romHeader.new_publisher_code[0]),
 					static_cast<uint8_t>(romHeader.new_publisher_code[1]));
 			}
+
+			if (len < 0) {
+				len = 0;
+			} else if (len >= static_cast<int>(sizeof(buf))) {
+				len = sizeof(buf)-1;
+			}
+			s_publisher.assign(reinterpret_cast<const char8_t*>(buf), len);
 		}
 	} else {
 		// Old publisher code.
@@ -544,13 +556,23 @@ u8string DMGPrivate::getPublisher(void) const
 		if (publisher) {
 			s_publisher = publisher;
 		} else {
-			s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X)"),
+			// FIXME: U8STRFIX - can't use rp_sprintf()
+			char buf[128];
+			int len;
+
+			len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%02X)"),
 				romHeader.old_publisher_code);
+
+			if (len < 0) {
+				len = 0;
+			} else if (len >= static_cast<int>(sizeof(buf))) {
+				len = sizeof(buf)-1;
+			}
+			s_publisher.assign(reinterpret_cast<const char8_t*>(buf), len);
 		}
 	}
 
-	// FIXME: U8STRFIX
-	return u8string(reinterpret_cast<const char8_t*>(s_publisher.c_str()));
+	return s_publisher;
 }
 
 /** DMG **/

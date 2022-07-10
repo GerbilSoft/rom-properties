@@ -22,7 +22,7 @@ namespace LibRomData { namespace NintendoPublishers {
  * @param code Company code.
  * @return Publisher, or nullptr if not found.
  */
-const char *lookup(uint16_t code)
+const char8_t *lookup(uint16_t code)
 {
 	const char s_code[3] = {
 		(char)(code >> 8),
@@ -37,7 +37,7 @@ const char *lookup(uint16_t code)
  * @param code Company code.
  * @return Publisher, or nullptr if not found.
  */
-const char *lookup(const char *code)
+const char8_t *lookup(const char *code)
 {
 	// Code must be 2 characters.
 	// NOTE: Some callers, e.g. NintendoDS, might not have
@@ -81,7 +81,7 @@ const char *lookup(const char *code)
  * @param code Company code.
  * @return Publisher, or nullptr if not found.
  */
-const char *lookup_old(uint8_t code)
+const char8_t *lookup_old(uint8_t code)
 {
 	static const char hex_lookup[16] = {
 		'0','1','2','3','4','5','6','7',
@@ -101,7 +101,7 @@ const char *lookup_old(uint8_t code)
  * @param code Company code.
  * @return Publisher, or nullptr if not found.
  */
-const char *lookup_fds(uint8_t code)
+const char8_t *lookup_fds(uint8_t code)
 {
 	if (code >= ARRAY_SIZE(NintendoPublishers_FDS_offtbl)) {
 		return nullptr;

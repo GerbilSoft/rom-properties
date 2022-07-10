@@ -747,28 +747,32 @@ int NintendoBadge::loadFieldData(void)
 						le32_to_cpu(prbs->title_id.lo)));
 
 				// Check if this is a known system title.
-				const char *region = nullptr;
-				const char *title = Nintendo3DSSysTitles::lookup_sys_title(
+				const char *s_region = nullptr;
+				const char8_t *const s_title = Nintendo3DSSysTitles::lookup_sys_title(
 					le32_to_cpu(prbs->title_id.hi),
-					le32_to_cpu(prbs->title_id.lo), &region);
-				if (title) {
+					le32_to_cpu(prbs->title_id.lo), &s_region);
+				if (s_title) {
 					// Add optional fields.
+					// FIXME: U8STRFIX
 					string str;
 					bool isN3DS = !!(le32_to_cpu(prbs->title_id.lo) & 0x20000000);
 					if (isN3DS) {
-						if (region) {
+						if (s_region) {
 							// tr: %1$s == Title name, %2$s == Region
-							str = rp_sprintf_p(C_("NintendoBadge", "%1$s (New3DS) (%2$s)"), title, region);
+							str = rp_sprintf_p(C_("NintendoBadge", "%1$s (New3DS) (%2$s)"),
+								reinterpret_cast<const char*>(s_title), s_region);
 						} else {
 							// tr: Title name
-							str = rp_sprintf(C_("NintendoBadge", "%s (New3DS)"), title);
+							str = rp_sprintf(C_("NintendoBadge", "%s (New3DS)"),
+								reinterpret_cast<const char*>(s_title));
 						}
 					} else {
-						if (region) {
+						if (s_region) {
 							// tr: %1$s == Title name, %2$s == Region
-							str = rp_sprintf_p(C_("NintendoBadge", "%1$s (%2$s)"), title, region);
+							str = rp_sprintf_p(C_("NintendoBadge", "%1$s (%2$s)"),
+								reinterpret_cast<const char*>(s_title), s_region);
 						} else {
-							str = title;
+							str = reinterpret_cast<const char*>(s_title);
 						}
 					}
 					d->fields->addField_string(C_("NintendoBadge", "Launch Title Name"), str);

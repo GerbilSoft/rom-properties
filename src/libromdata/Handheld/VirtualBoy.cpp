@@ -334,23 +334,24 @@ int VirtualBoy::loadFieldData(void)
 	d->fields->addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id6));
 
 	// Look up the publisher.
-	const char *const publisher = NintendoPublishers::lookup(romFooter->publisher);
-	string s_publisher;
+	const char *const publisher_title = C_("RomData", "Publisher");
+	const char8_t *const publisher = NintendoPublishers::lookup(romFooter->publisher);
 	if (publisher) {
-		s_publisher = publisher;
+		d->fields->addField_string(publisher_title, publisher);
 	} else {
 		if (ISALNUM(romFooter->publisher[0]) &&
 		    ISALNUM(romFooter->publisher[1]))
 		{
-			s_publisher = rp_sprintf(C_("RomData", "Unknown (%.2s)"),
-				romFooter->publisher);
+			d->fields->addField_string(publisher_title,
+				rp_sprintf(C_("RomData", "Unknown (%.2s)"),
+					romFooter->publisher));
 		} else {
-			s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
-				static_cast<uint8_t>(romFooter->publisher[0]),
-				static_cast<uint8_t>(romFooter->publisher[1]));
+			d->fields->addField_string(publisher_title,
+				rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
+					static_cast<uint8_t>(romFooter->publisher[0]),
+					static_cast<uint8_t>(romFooter->publisher[1])));
 		}
 	}
-	d->fields->addField_string(C_("RomData", "Publisher"), s_publisher);
 
 	// Revision
 	d->fields->addField_string_numeric(C_("RomData", "Revision"),

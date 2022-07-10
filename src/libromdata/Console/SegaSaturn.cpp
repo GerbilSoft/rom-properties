@@ -255,10 +255,10 @@ unsigned int SegaSaturnPrivate::parseRegionCodes(const char *region_codes, int s
  */
 u8string SegaSaturnPrivate::getPublisher(void) const
 {
-	const char *publisher = nullptr;
+	const char8_t *publisher = nullptr;
 	if (!memcmp(discHeader.maker_id, SATURN_IP0000_BIN_MAKER_ID, sizeof(discHeader.maker_id))) {
 		// First-party Sega title.
-		publisher = "Sega";
+		publisher = U8("Sega");
 	} else if (!memcmp(discHeader.maker_id, "SEGA TP T-", 10)) {
 		// This may be a third-party T-code.
 		char *endptr;
@@ -276,8 +276,7 @@ u8string SegaSaturnPrivate::getPublisher(void) const
 
 	if (publisher) {
 		// Found the publisher.
-		// FIXME: U8STRFIX
-		return u8string((const char8_t*)publisher);
+		return publisher;
 	}
 
 	// Unknown publisher.

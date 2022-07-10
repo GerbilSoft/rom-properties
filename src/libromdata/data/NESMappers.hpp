@@ -16,14 +16,14 @@ namespace LibRomData { namespace NESMappers {
 
 /**
  * Look up an iNES mapper number.
- * @param mapper Mapper number.
+ * @param mapper Mapper number
  * @return Mapper name, or nullptr if not found.
  */
-const char *lookup_ines(int mapper);
+const char8_t *lookup_ines(int mapper);
 
 /**
  * Convert a TNES mapper number to iNES.
- * @param tnes_mapper TNES mapper number.
+ * @param tnes_mapper TNES mapper number
  * @return iNES mapper number, or -1 if unknown.
  */
 int tnesMapperToInesMapper(int tnes_mapper);
@@ -31,21 +31,21 @@ int tnesMapperToInesMapper(int tnes_mapper);
 /**
  * Look up an NES 2.0 submapper number.
  * TODO: Return the "depcrecated" value?
- * @param mapper Mapper number.
- * @param submapper Submapper number.
+ * @param mapper Mapper number
+ * @param submapper Submapper number
  * @return Submapper name, or nullptr if not found.
  */
-const char *lookup_nes2_submapper(int mapper, int submapper);
+const char8_t *lookup_nes2_submapper(int mapper, int submapper);
 
 /**
  * Look up a description of mapper mirroring behavior
- * @param mapper Mapper number.
- * @param submapper Submapper number.
+ * @param mapper Mapper number
+ * @param submapper Submapper number
  * @param vert Vertical bit in the iNES header
- * @param vert Four-screen bit in the iNES header
+ * @param four Four-screen bit in the iNES header
  * @return String describing the mirroring behavior
  */
-const char *lookup_ines_mirroring(int mapper, int submapper, bool vert, bool four);
+const char8_t *lookup_ines_mirroring(int mapper, int submapper, bool vert, bool four);
 
 } }
 

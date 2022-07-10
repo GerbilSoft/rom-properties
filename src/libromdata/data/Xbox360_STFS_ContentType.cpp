@@ -14,8 +14,14 @@ namespace LibRomData { namespace Xbox360_STFS_ContentType {
 
 struct ContentTypeEntry {
 	uint32_t id;
-	const char *contentType;
+	const char8_t *contentType;
 };
+
+// FIXME: U8STRFIX
+#ifdef NOP_C_
+#  undef NOP_C_
+#endif
+#define NOP_C_(ctx, str) reinterpret_cast<const char8_t*>(str)
 
 /**
  * Xbox 360 STFS content type list.
@@ -45,7 +51,7 @@ static const ContentTypeEntry contentTypeList[] = {
 	{STFS_CONTENT_TYPE_INSTALLER,		NOP_C_("Xbox360_STFS|ContentType", "Installer")},
 	{STFS_CONTENT_TYPE_GAME_TRAILER,	NOP_C_("Xbox360_STFS|ContentType", "Game Trailer")},
 	{STFS_CONTENT_TYPE_ARCADE_TITLE,	NOP_C_("Xbox360_STFS|ContentType", "Arcade Game")},
-	{STFS_CONTENT_TYPE_XNA,			"XNA"},	// NOT localizable!
+	{STFS_CONTENT_TYPE_XNA,			U8("XNA")},	// NOT localizable!
 	{STFS_CONTENT_TYPE_LICENSE_STORE,	NOP_C_("Xbox360_STFS|ContentType", "License Store")},
 	{STFS_CONTENT_TYPE_MOVIE,		NOP_C_("Xbox360_STFS|ContentType", "Movie")},
 	{STFS_CONTENT_TYPE_TV,			NOP_C_("Xbox360_STFS|ContentType", "TV")},
@@ -80,7 +86,7 @@ static int RP_C_API compar(const void *a, const void *b)
  * @param contentType Content type.
  * @return Content type, or nullptr if not found.
  */
-const char *lookup(uint32_t contentType)
+const char8_t *lookup(uint32_t contentType)
 {
 	// Do a binary search.
 	const ContentTypeEntry key = {contentType, nullptr};
@@ -90,9 +96,11 @@ const char *lookup(uint32_t contentType)
 			ARRAY_SIZE(contentTypeList)-1,
 			sizeof(ContentTypeEntry),
 			compar));
-	return (res
-		? dpgettext_expr(RP_I18N_DOMAIN, "Xbox360_STFS|ContentType", res->contentType)
-		: nullptr);
+	return (res)	// FIXME: U8STRFIX
+		? reinterpret_cast<const char8_t*>(
+			dpgettext_expr(RP_I18N_DOMAIN, "Xbox360_STFS|ContentType",
+				reinterpret_cast<const char*>(res->contentType)))
+		: nullptr;
 }
 
 } }

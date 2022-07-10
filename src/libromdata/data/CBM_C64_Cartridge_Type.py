@@ -95,7 +95,7 @@ else:
 f_out.write(
 	f"/** CBM C64 Cartridge Types (generated from {sys.argv[1]}) **/\n\n"
 	"#include <stdint.h>\n\n"
-	"static const char CBM_C64_cart_type_strtbl[] =\n"
+	"static const char8_t CBM_C64_cart_type_strtbl[] =\n"
 )
 
 # Print up to 64 characters per line, including NULL bytes.
@@ -104,29 +104,29 @@ f_out.write(
 # than 64 characters per line, depending on where they show up.
 string_table_len = len(string_table)
 i = 0
-f_out.write("\t\"")
+f_out.write("\tU8(\"")
 last_was_hex = False
 for c in string_table:
 	if i >= 64:
-		f_out.write("\"\n\t\"")
+		f_out.write("\")\n\tU8(\"")
 		last_was_hex = False
 		i = 0
 
 	if c < 32 or c >= 128:
 		if i != 0 and not last_was_hex:
-			f_out.write("\" \"")
-			i += 3
+			f_out.write("\") U8(\"")
+			i += 7
 		last_was_hex = True
 		f_out.write("\\x{0:0{1}x}".format(c, 2))
 		i += 4
 	else:
 		if last_was_hex:
-			f_out.write("\" \"")
-			i += 3
+			f_out.write("\") U8(\"")
+			i += 7
 		last_was_hex = False
 		f_out.write(chr(c))
 		i += 1
-f_out.write("\";\n\n")
+f_out.write("\");\n\n")
 
 f_out.write(f"static const {idx_type} CBM_C64_cart_type_offtbl[] = {{\n")
 

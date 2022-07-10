@@ -456,9 +456,9 @@ void EXEPrivate::addFields_LE(void)
 	// CPU.
 	const char *const cpu_title = C_("EXE", "CPU");
 	const uint16_t cpu_type = le16_to_cpu(hdr.le.cpu_type);
-	const char *const cpu = EXEData::lookup_le_cpu(cpu_type);
-	if (cpu) {
-		fields->addField_string(cpu_title, cpu);
+	const char8_t *const s_cpu = EXEData::lookup_le_cpu(cpu_type);
+	if (s_cpu) {
+		fields->addField_string(cpu_title, s_cpu);
 	} else {
 		fields->addField_string(cpu_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%04X)"), cpu_type));

@@ -15,7 +15,7 @@ namespace LibRomData { namespace Nintendo3DSSysTitles {
 // New3DS-specific is indicated by $x0000000, where x == 2.
 struct SysTitle {
 	uint32_t tid_lo[6];	// 6 regions. (If 0, not available.)
-	const char *desc;	// Description.
+	const char8_t *desc;	// Description.
 };
 
 /* TODO: Use this if more groups are added.
@@ -30,6 +30,12 @@ static const char regions[6][4] = {
 	"JPN", "USA", "EUR",
 	"CHN", "KOR", "TWN",
 };
+
+// FIXME: U8STRFIX
+#ifdef NOP_C_
+#  undef NOP_C_
+#endif
+#define NOP_C_(ctx, str) reinterpret_cast<const char8_t*>(str)
 
 /**
  * System applications (tid hi == 0x00040010)
@@ -95,7 +101,7 @@ static const SysTitle sys_title_00040030[] = {
  * @param pRegion	[out,opt] Output for region name
  * @return System title name, or nullptr on error.
  */
-const char *lookup_sys_title(uint32_t tid_hi, uint32_t tid_lo, const char **pRegion)
+const char8_t *lookup_sys_title(uint32_t tid_hi, uint32_t tid_lo, const char **pRegion)
 {
 	const SysTitle *titles;
 	int title_count;
@@ -132,7 +138,10 @@ const char *lookup_sys_title(uint32_t tid_hi, uint32_t tid_lo, const char **pReg
 				if (pRegion) {
 					*pRegion = regions[region];
 				}
-				return dpgettext_expr(RP_I18N_DOMAIN, "Nintendo3DSSysTitles", titles->desc);
+				// FIXME: U8STRFIX
+				return reinterpret_cast<const char8_t*>(
+					dpgettext_expr(RP_I18N_DOMAIN, "Nintendo3DSSysTitles",
+						reinterpret_cast<const char*>(titles->desc)));
 			}
 		}
 	}

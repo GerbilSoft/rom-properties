@@ -80,7 +80,7 @@ class KhronosKTXPrivate final : public FileFormatPrivate
 		rp_image *img;
 
 		// Invalid pixel format message.
-		char invalid_pixel_format[24];
+		char8_t invalid_pixel_format[24];
 
 		// Key/Value data.
 		// NOTE: Stored as vector<vector<string> > instead of
@@ -1076,19 +1076,21 @@ const char *KhronosKTX::pixelFormat(void) const
 		return nullptr;
 
 	// Using glInternalFormat.
-	const char *const glInternalFormat_str = GLenumStrings::lookup_glEnum(d->ktxHeader.glInternalFormat);
+	const char8_t *const glInternalFormat_str = GLenumStrings::lookup_glEnum(d->ktxHeader.glInternalFormat);
 	if (glInternalFormat_str) {
-		return glInternalFormat_str;
+		// FIXME: U8STRFIX
+		return reinterpret_cast<const char*>(glInternalFormat_str);
 	}
 
 	// Invalid pixel format.
+	// FIXME: U8STRFIX
 	if (d->invalid_pixel_format[0] == '\0') {
 		// TODO: Localization?
-		snprintf(const_cast<KhronosKTXPrivate*>(d)->invalid_pixel_format,
+		snprintf(reinterpret_cast<char*>(const_cast<KhronosKTXPrivate*>(d)->invalid_pixel_format),
 			sizeof(d->invalid_pixel_format),
 			"Unknown (0x%04X)", d->ktxHeader.glInternalFormat);
 	}
-	return d->invalid_pixel_format;
+	return reinterpret_cast<const char*>(d->invalid_pixel_format);
 }
 
 /**
@@ -1151,7 +1153,7 @@ int KhronosKTX::getFields(LibRpBase::RomFields *fields) const
 	// NOTE: GL field names should not be localized.
 
 	// glType
-	const char *const glType_str = GLenumStrings::lookup_glEnum(ktxHeader->glType);
+	const char8_t *const glType_str = GLenumStrings::lookup_glEnum(ktxHeader->glType);
 	if (glType_str) {
 		fields->addField_string("glType", glType_str);
 	} else {
@@ -1159,7 +1161,7 @@ int KhronosKTX::getFields(LibRpBase::RomFields *fields) const
 	}
 
 	// glFormat
-	const char *const glFormat_str = GLenumStrings::lookup_glEnum(ktxHeader->glFormat);
+	const char8_t *const glFormat_str = GLenumStrings::lookup_glEnum(ktxHeader->glFormat);
 	if (glFormat_str) {
 		fields->addField_string("glFormat", glFormat_str);
 	} else {
@@ -1167,7 +1169,7 @@ int KhronosKTX::getFields(LibRpBase::RomFields *fields) const
 	}
 
 	// glInternalFormat
-	const char *const glInternalFormat_str = GLenumStrings::lookup_glEnum(ktxHeader->glInternalFormat);
+	const char8_t *const glInternalFormat_str = GLenumStrings::lookup_glEnum(ktxHeader->glInternalFormat);
 	if (glInternalFormat_str) {
 		fields->addField_string("glInternalFormat", glInternalFormat_str);
 	} else {
@@ -1177,7 +1179,7 @@ int KhronosKTX::getFields(LibRpBase::RomFields *fields) const
 
 	// glBaseInternalFormat (only if != glFormat)
 	if (ktxHeader->glBaseInternalFormat != ktxHeader->glFormat) {
-		const char *const glBaseInternalFormat_str =
+		const char8_t *const glBaseInternalFormat_str =
 			GLenumStrings::lookup_glEnum(ktxHeader->glBaseInternalFormat);
 		if (glBaseInternalFormat_str) {
 			fields->addField_string("glBaseInternalFormat", glBaseInternalFormat_str);

@@ -18,7 +18,7 @@ namespace LibRpTexture { namespace DX10Formats {
  * @param dxgiFormat	[in] DXGI_FORMAT
  * @return String, or nullptr if not found.
  */
-const char *lookup_dxgiFormat(unsigned int dxgiFormat);
+const char8_t *lookup_dxgiFormat(unsigned int dxgiFormat);
 
 } }
 

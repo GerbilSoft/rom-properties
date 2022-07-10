@@ -21,7 +21,7 @@ namespace LibRomData { namespace WonderSwanPublishers {
  * @param id Company ID.
  * @return Publisher name, or nullptr if not found.
  */
-const char *lookup_name(uint8_t id);
+const char8_t *lookup_name(uint8_t id);
 
 /**
  * Look up a company code.

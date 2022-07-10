@@ -27,6 +27,7 @@ using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::string;
+using std::u8string;
 using std::vector;
 
 namespace LibRomData {
@@ -412,8 +413,8 @@ int WiiU::loadFieldData(void)
 	// Publisher.
 	// Look up the publisher ID.
 	char publisher_code[5];
-	const char *publisher = nullptr;
-	string s_publisher;
+	const char8_t *publisher = nullptr;
+	u8string s_publisher;
 
 	const uint32_t publisher_id = WiiUData::lookup_disc_publisher(d->discHeader.id4);
 	publisher_code[0] = (publisher_id >> 24) & 0xFF;
@@ -428,17 +429,28 @@ int WiiU::loadFieldData(void)
 	if (publisher) {
 		s_publisher = publisher;
 	} else {
+		// FIXME: U8STRFIX
+		char buf[128];
+		int len;
+
 		if (ISALNUM(publisher_code[0]) && ISALNUM(publisher_code[1]) &&
 		    ISALNUM(publisher_code[2]) && ISALNUM(publisher_code[3]))
 		{
-			s_publisher = rp_sprintf(C_("RomData", "Unknown (%.4s)"), publisher_code);
+			len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%.4s)"), publisher_code);
 		} else {
-			s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X %02X %02X %02X)"),
+			len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%02X %02X %02X %02X)"),
 				static_cast<uint8_t>(publisher_code[0]),
 				static_cast<uint8_t>(publisher_code[1]),
 				static_cast<uint8_t>(publisher_code[2]),
 				static_cast<uint8_t>(publisher_code[3]));
 		}
+
+		if (len < 0) {
+			len = 0;
+		} else if (len >= static_cast<int>(sizeof(buf))) {
+			len = sizeof(buf)-1;
+		}
+		s_publisher.assign(reinterpret_cast<const char8_t*>(buf), len);
 	}
 	d->fields->addField_string(C_("RomData", "Publisher"), s_publisher);
 

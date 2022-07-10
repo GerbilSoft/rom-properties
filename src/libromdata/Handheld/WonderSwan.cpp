@@ -457,14 +457,14 @@ int WonderSwan::loadFieldData(void)
 	d->fields->addField_string_numeric(C_("RomData", "Revision"), romFooter->revision);
 
 	// Publisher
-	const char *const publisher = WonderSwanPublishers::lookup_name(romFooter->publisher);
-	string s_publisher;
+	const char *const publisher_title = C_("RomData", "Publisher");
+	const char8_t *const publisher = WonderSwanPublishers::lookup_name(romFooter->publisher);
 	if (publisher) {
-		s_publisher = publisher;
+		d->fields->addField_string(publisher_title, publisher);
 	} else {
-		s_publisher = rp_sprintf(C_("RomData", "Unknown (0x%02X)"), romFooter->publisher);
+		d->fields->addField_string(publisher_title,
+			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), romFooter->publisher));
 	}
-	d->fields->addField_string(C_("RomData", "Publisher"), s_publisher);
 
 	// System
 	static const char *const system_bitfield_names[] = {
@@ -681,7 +681,7 @@ int WonderSwan::loadMetaData(void)
 	const WS_RomFooter *const romFooter = &d->romFooter;
 
 	// Publisher
-	const char *const publisher = WonderSwanPublishers::lookup_name(romFooter->publisher);
+	const char8_t *const publisher = WonderSwanPublishers::lookup_name(romFooter->publisher);
 	if (publisher) {
 		d->metaData->addMetaData_string(Property::Publisher, publisher);
 	}

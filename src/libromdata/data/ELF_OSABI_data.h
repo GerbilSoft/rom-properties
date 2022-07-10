@@ -2,13 +2,14 @@
 
 #include <stdint.h>
 
-static const char ELF_OSABI_strtbl[] =
-	"\x00" "UNIX System V" "\x00" "HP-UX" "\x00" "NetBSD" "\x00" "GNU"
-	"/Linux" "\x00" "GNU/Hurd" "\x00" "86Open" "\x00" "Solaris" "\x00"
-	"Monterey" "\x00" "IRIX" "\x00" "FreeBSD" "\x00" "Tru64" "\x00" "N"
-	"ovell Modesto" "\x00" "OpenBSD" "\x00" "OpenVMS" "\x00" "HP NonS"
-	"top Kernel" "\x00" "AROS Research Operating System" "\x00" "Feni"
-	"xOS" "\x00" "Nuxi CloudABI" "\x00";
+static const char8_t ELF_OSABI_strtbl[] =
+	U8("\x00") U8("UNIX System V") U8("\x00") U8("HP-UX") U8("\x00") U8("N")
+	U8("etBSD") U8("\x00") U8("GNU/Linux") U8("\x00") U8("GNU/Hurd") U8("\x00")
+	U8("86Open") U8("\x00") U8("Solaris") U8("\x00") U8("Monterey") U8("\x00")
+	U8("IRIX") U8("\x00") U8("FreeBSD") U8("\x00") U8("Tru64") U8("\x00") U8("N")
+	U8("ovell Modesto") U8("\x00") U8("OpenBSD") U8("\x00") U8("OpenVMS") U8("\x00")
+	U8("HP NonStop Kernel") U8("\x00") U8("AROS Research Operating Syste")
+	U8("m") U8("\x00") U8("FenixOS") U8("\x00") U8("Nuxi CloudABI") U8("\x00");
 
 static const uint8_t ELF_OSABI_offtbl[] = {
 	/* ELF OSABI 0 */

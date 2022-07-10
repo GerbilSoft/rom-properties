@@ -21,14 +21,14 @@ namespace LibRomData { namespace CBMData {
  * @param type Cartridge type
  * @return Cartridge type name, or nullptr if not found.
  */
-const char *lookup_C64_cart_type(uint16_t type);
+const char8_t *lookup_C64_cart_type(uint16_t type);
 
 /**
  * Look up a VIC-20 cartridge type.
  * @param type Cartridge type
  * @return Cartridge type name, or nullptr if not found.
  */
-const char *lookup_VIC20_cart_type(uint16_t type);
+const char8_t *lookup_VIC20_cart_type(uint16_t type);
 
 } }
 

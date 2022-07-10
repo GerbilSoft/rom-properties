@@ -15,13 +15,13 @@ namespace LibRomData { namespace CBMData {
 #include "CBM_C64_Cartridge_Type_data.h"
 
 // VIC-20 cartridge types
-static const char *const crt_types_vic20[] = {
-	"generic cartridge",
-	"Mega-Cart",
-	"Behr Bonz",
-	"Vic Flash Plugin",
-	"UltiMem",
-	"Final Expansion",
+static const char8_t *const crt_types_vic20[] = {
+	U8("generic cartridge"),
+	U8("Mega-Cart"),
+	U8("Behr Bonz"),
+	U8("Vic Flash Plugin"),
+	U8("UltiMem"),
+	U8("Final Expansion"),
 };
 
 /** Public functions **/
@@ -31,7 +31,7 @@ static const char *const crt_types_vic20[] = {
  * @param type Cartridge type
  * @return Cartridge type name, or nullptr if not found.
  */
-const char *lookup_C64_cart_type(uint16_t type)
+const char8_t *lookup_C64_cart_type(uint16_t type)
 {
 	if (unlikely(type > ARRAY_SIZE(CBM_C64_cart_type_offtbl))) {
 		return nullptr;
@@ -46,7 +46,7 @@ const char *lookup_C64_cart_type(uint16_t type)
  * @param type Cartridge type
  * @return Cartridge type name, or nullptr if not found.
  */
-const char *lookup_VIC20_cart_type(uint16_t type)
+const char8_t *lookup_VIC20_cart_type(uint16_t type)
 {
 	if (unlikely(type > ARRAY_SIZE(crt_types_vic20))) {
 		return nullptr;

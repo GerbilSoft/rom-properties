@@ -21,14 +21,14 @@ namespace LibRomData { namespace EXEData {
  * @param cpu PE machine type.
  * @return Machine type name, or nullptr if not found.
  */
-const char *lookup_pe_cpu(uint16_t cpu);
+const char8_t *lookup_pe_cpu(uint16_t cpu);
 
 /**
  * Look up an LE machine type. (CPU)
  * @param cpu LE machine type.
  * @return Machine type name, or nullptr if not found.
  */
-const char *lookup_le_cpu(uint16_t cpu);
+const char8_t *lookup_le_cpu(uint16_t cpu);
 
 } }
 

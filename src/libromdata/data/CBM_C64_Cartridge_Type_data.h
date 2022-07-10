@@ -2,34 +2,41 @@
 
 #include <stdint.h>
 
-static const char CBM_C64_cart_type_strtbl[] =
-	"\x00" "generic cartridge" "\x00" "Action Replay" "\x00" "KCS Pow"
-	"er Cartridge" "\x00" "Final Cartridge III" "\x00" "Simons' BASIC"
-	"\x00" "Ocean type 1" "\x00" "Expert Cartridge" "\x00" "Fun Play,"
-	" Power Play" "\x00" "Super Games" "\x00" "Atomic Power" "\x00" "E"
-	"pyx Fastload" "\x00" "Westermann Learning" "\x00" "Rex Utility" "\x00"
-	"Final Cartridge I" "\x00" "Magic Formel" "\x00" "C64 Game System"
-	", System 3" "\x00" "Warp Speed" "\x00" "Dinamic" "\x00" "Zaxxon "
-	"/ Super Zaxxon (Sega)" "\x00" "Magic Desk, Domark, HES Australia"
-	"\x00" "Super Snapshot V5" "\x00" "Comal-80" "\x00" "Structured B"
-	"ASIC" "\x00" "Ross" "\x00" "Dela EP64" "\x00" "Dela EP7x8" "\x00"
-	"Dela EP256" "\x00" "Rex EP256" "\x00" "Mikro Assembler" "\x00" "F"
-	"inal Cartridge Plus" "\x00" "Action Replay 4" "\x00" "Stardos" "\x00"
-	"EasyFlash" "\x00" "EasyFlash Xbank" "\x00" "Capture" "\x00" "Act"
-	"ion Replay 3" "\x00" "Retro Replay" "\x00" "MMC64" "\x00" "MMC R"
-	"eplay" "\x00" "IDE64" "\x00" "Super Snapshot V4" "\x00" "IEEE-48"
-	"8" "\x00" "Game Killer" "\x00" "Prophet64" "\x00" "EXOS" "\x00" "F"
-	"reeze Frame" "\x00" "Freeze Machine" "\x00" "Snapshot64" "\x00" "S"
-	"uper Explode V5.0" "\x00" "Magic Voice" "\x00" "Action Replay 2" "\x00"
-	"MACH 5" "\x00" "Diashow-Maker" "\x00" "Pagefox" "\x00" "Kingsoft"
-	"\x00" "Silverrock 128K Cartridge" "\x00" "Formel 64" "\x00" "RGC"
-	"D" "\x00" "RR-Net MK3" "\x00" "EasyCalc" "\x00" "GMod2" "\x00" "M"
-	"AX Basic" "\x00" "GMod3" "\x00" "ZIPP-CODE 48" "\x00" "Blackbox "
-	"V8" "\x00" "Blackbox V3" "\x00" "Blackbox V4" "\x00" "REX RAM-Fl"
-	"oppy" "\x00" "BIS-Plus" "\x00" "SD-BOX" "\x00" "MultiMAX" "\x00" "B"
-	"lackbox V9" "\x00" "Lt. Kernal Host Adaptor" "\x00" "RAMLink" "\x00"
-	"H.E.R.O." "\x00" "IEEE Flash! 64" "\x00" "Turtle Graphics II" "\x00"
-	"Freeze Frame MK2" "\x00";
+static const char8_t CBM_C64_cart_type_strtbl[] =
+	U8("\x00") U8("generic cartridge") U8("\x00") U8("Action Replay") U8("\x00")
+	U8("KCS Power Cartridge") U8("\x00") U8("Final Cartridge III") U8("\x00")
+	U8("Simons' BASIC") U8("\x00") U8("Ocean type 1") U8("\x00") U8("Exp")
+	U8("ert Cartridge") U8("\x00") U8("Fun Play, Power Play") U8("\x00") U8("S")
+	U8("uper Games") U8("\x00") U8("Atomic Power") U8("\x00") U8("Epyx F")
+	U8("astload") U8("\x00") U8("Westermann Learning") U8("\x00") U8("Re")
+	U8("x Utility") U8("\x00") U8("Final Cartridge I") U8("\x00") U8("Ma")
+	U8("gic Formel") U8("\x00") U8("C64 Game System, System 3") U8("\x00")
+	U8("Warp Speed") U8("\x00") U8("Dinamic") U8("\x00") U8("Zaxxon / Su")
+	U8("per Zaxxon (Sega)") U8("\x00") U8("Magic Desk, Domark, HES Austr")
+	U8("alia") U8("\x00") U8("Super Snapshot V5") U8("\x00") U8("Comal-8")
+	U8("0") U8("\x00") U8("Structured BASIC") U8("\x00") U8("Ross") U8("\x00")
+	U8("Dela EP64") U8("\x00") U8("Dela EP7x8") U8("\x00") U8("Dela EP25")
+	U8("6") U8("\x00") U8("Rex EP256") U8("\x00") U8("Mikro Assembler") U8("\x00")
+	U8("Final Cartridge Plus") U8("\x00") U8("Action Replay 4") U8("\x00")
+	U8("Stardos") U8("\x00") U8("EasyFlash") U8("\x00") U8("EasyFlash Xb")
+	U8("ank") U8("\x00") U8("Capture") U8("\x00") U8("Action Replay 3") U8("\x00")
+	U8("Retro Replay") U8("\x00") U8("MMC64") U8("\x00") U8("MMC Replay") U8("\x00")
+	U8("IDE64") U8("\x00") U8("Super Snapshot V4") U8("\x00") U8("IEEE-4")
+	U8("88") U8("\x00") U8("Game Killer") U8("\x00") U8("Prophet64") U8("\x00")
+	U8("EXOS") U8("\x00") U8("Freeze Frame") U8("\x00") U8("Freeze Machi")
+	U8("ne") U8("\x00") U8("Snapshot64") U8("\x00") U8("Super Explode V5")
+	U8(".0") U8("\x00") U8("Magic Voice") U8("\x00") U8("Action Replay 2")
+	U8("\x00") U8("MACH 5") U8("\x00") U8("Diashow-Maker") U8("\x00") U8("P")
+	U8("agefox") U8("\x00") U8("Kingsoft") U8("\x00") U8("Silverrock 128")
+	U8("K Cartridge") U8("\x00") U8("Formel 64") U8("\x00") U8("RGCD") U8("\x00")
+	U8("RR-Net MK3") U8("\x00") U8("EasyCalc") U8("\x00") U8("GMod2") U8("\x00")
+	U8("MAX Basic") U8("\x00") U8("GMod3") U8("\x00") U8("ZIPP-CODE 48") U8("\x00")
+	U8("Blackbox V8") U8("\x00") U8("Blackbox V3") U8("\x00") U8("Blackb")
+	U8("ox V4") U8("\x00") U8("REX RAM-Floppy") U8("\x00") U8("BIS-Plus") U8("\x00")
+	U8("SD-BOX") U8("\x00") U8("MultiMAX") U8("\x00") U8("Blackbox V9") U8("\x00")
+	U8("Lt. Kernal Host Adaptor") U8("\x00") U8("RAMLink") U8("\x00") U8("H")
+	U8(".E.R.O.") U8("\x00") U8("IEEE Flash! 64") U8("\x00") U8("Turtle ")
+	U8("Graphics II") U8("\x00") U8("Freeze Frame MK2") U8("\x00");
 
 static const uint16_t CBM_C64_cart_type_offtbl[] = {
 	/* CBM C64 cartridge type 0 */

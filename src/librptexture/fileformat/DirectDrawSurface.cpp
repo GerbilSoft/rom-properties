@@ -1370,10 +1370,15 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 
 	if (d->dxgi_format != 0) {
 		// DX10 texture format.
-		const char *const texFormat = DX10Formats::lookup_dxgiFormat(d->dxgi_format);
-		fields->addField_string(C_("DirectDrawSurface", "DX10 Format"),
-			(texFormat ? texFormat :
-				rp_sprintf(C_("FileFormat", "Unknown (0x%08X)"), d->dxgi_format)));
+		// FIXME: U8STRFIX
+		const char *const dx10_format_title = C_("DirectDrawSurface", "DX10 Format");
+		const char8_t *const texFormat = DX10Formats::lookup_dxgiFormat(d->dxgi_format);
+		if (texFormat) {
+			fields->addField_string(dx10_format_title, texFormat);
+		} else {
+			fields->addField_string(dx10_format_title, 
+				rp_sprintf(C_("FileFormat", "Unknown (0x%08X)"), d->dxgi_format));
+		}
 	}
 
 	// nVidia Texture Tools header

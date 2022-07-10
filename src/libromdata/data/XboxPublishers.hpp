@@ -21,14 +21,14 @@ namespace LibRomData { namespace XboxPublishers {
  * @param code Company code.
  * @return Publisher, or nullptr if not found.
  */
-const char *lookup(uint16_t code);
+const char8_t *lookup(uint16_t code);
 
 /**
  * Look up a company code.
  * @param code Company code.
  * @return Publisher, or nullptr if not found.
  */
-const char *lookup(const char *code);
+const char8_t *lookup(const char *code);
 
 } }
 

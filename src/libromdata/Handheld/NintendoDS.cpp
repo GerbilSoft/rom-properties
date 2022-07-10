@@ -1021,7 +1021,7 @@ int NintendoDS::loadFieldData(void)
 
 	// Publisher.
 	const char *const publisher_title = C_("RomData", "Publisher");
-	const char *const publisher = NintendoPublishers::lookup(romHeader->company);
+	const char8_t *const publisher = NintendoPublishers::lookup(romHeader->company);
 	if (publisher) {
 		d->fields->addField_string(publisher_title, publisher);
 	} else {
@@ -1368,10 +1368,13 @@ int NintendoDS::loadMetaData(void)
 
 	// Publisher.
 	// TODO: Use publisher from the full title?
-	const char *const publisher = NintendoPublishers::lookup(romHeader->company);
-	d->metaData->addMetaData_string(Property::Publisher,
-		publisher ? publisher :
+	const char8_t *const publisher = NintendoPublishers::lookup(romHeader->company);
+	if (publisher) {
+		d->metaData->addMetaData_string(Property::Publisher, publisher);
+	} else {
+		d->metaData->addMetaData_string(Property::Publisher,
 			rp_sprintf(C_("RomData", "Unknown (%.2s)"), romHeader->company));
+	}
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData->count());

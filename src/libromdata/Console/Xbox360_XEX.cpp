@@ -40,6 +40,7 @@ using LibRpTexture::rp_image;
 using std::array;
 using std::ostringstream;
 using std::string;
+using std::u8string;
 using std::unique_ptr;
 using std::unordered_map;
 using std::vector;
@@ -228,9 +229,9 @@ class Xbox360_XEX_Private final : public RomDataPrivate
 
 		/**
 		 * Get the publisher.
-		 * @return Publisher.
+		 * @return Publisher
 		 */
-		string getPublisher(void) const;
+		u8string getPublisher(void) const;
 
 #ifdef ENABLE_DECRYPTION
 	public:
@@ -1309,39 +1310,50 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 
 /**
  * Get the publisher.
- * @return Publisher.
+ * @return Publisher
  */
-string Xbox360_XEX_Private::getPublisher(void) const
+u8string Xbox360_XEX_Private::getPublisher(void) const
 {
 	if (!isExecutionIDLoaded) {
 		const_cast<Xbox360_XEX_Private*>(this)->getXdbfResInfo();
 		if (!isExecutionIDLoaded) {
 			// Unable to get the publisher.
-			return string();
+			return u8string();
 		}
 	}
 
 	uint16_t pub_id = ((unsigned int)executionID.title_id.a << 8) |
 	                  ((unsigned int)executionID.title_id.b);
-	const char *const publisher = XboxPublishers::lookup(pub_id);
+	const char8_t *const publisher = XboxPublishers::lookup(pub_id);
 	if (publisher) {
 		return publisher;
 	}
+
+	// FIXME: U8STRFIX - can't use rp_sprintf()
+	char buf[128];
+	int len;
 
 	// Unknown publisher.
 	if (ISALNUM(executionID.title_id.a) &&
 	    ISALNUM(executionID.title_id.b))
 	{
 		// Publisher ID is alphanumeric.
-		return rp_sprintf(C_("RomData", "Unknown (%c%c)"),
+		len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%c%c)"),
 			executionID.title_id.a,
 			executionID.title_id.b);
+	} else {
+		// Publisher ID is not alphanumeric.
+		len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%02X %02X)"),
+			static_cast<uint8_t>(executionID.title_id.a),
+			static_cast<uint8_t>(executionID.title_id.b));
 	}
 
-	// Publisher ID is not alphanumeric.
-	return rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
-		static_cast<uint8_t>(executionID.title_id.a),
-		static_cast<uint8_t>(executionID.title_id.b));
+	if (len < 0) {
+		len = 0;
+	} else if (len >= static_cast<int>(sizeof(buf))) {
+		len = sizeof(buf)-1;
+	}
+	return u8string(reinterpret_cast<const char8_t*>(buf), len);
 }
 
 /** Xbox360_XEX **/
@@ -1889,7 +1901,7 @@ int Xbox360_XEX::loadFieldData(void)
 			RomFields::STRF_MONOSPACE);
 
 		// Publisher
-		const string publisher = d->getPublisher();
+		const u8string publisher = d->getPublisher();
 		if (!publisher.empty()) {
 			d->fields->addField_string(C_("RomData", "Publisher"), publisher);
 		}

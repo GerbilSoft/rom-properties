@@ -20,7 +20,7 @@ namespace LibRomData { namespace SegaPublishers {
  * @param code Company code.
  * @return Publisher, or nullptr if not found.
  */
-const char *lookup(unsigned int code)
+const char8_t *lookup(unsigned int code)
 {
 	if (code > ARRAY_SIZE(SegaTCode_offtbl)) {
 		return nullptr;

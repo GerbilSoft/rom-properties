@@ -1159,9 +1159,9 @@ int ELF::loadFieldData(void)
 
 	// CPU.
 	const char *const cpu_title = C_("ELF", "CPU");
-	const char *const cpu = ELFData::lookup_cpu(primary->e_machine);
-	if (cpu) {
-		d->fields->addField_string(cpu_title, cpu);
+	const char8_t *const s_cpu = ELFData::lookup_cpu(primary->e_machine);
+	if (s_cpu) {
+		d->fields->addField_string(cpu_title, s_cpu);
 	} else {
 		d->fields->addField_string(cpu_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%04X)"), primary->e_machine));
@@ -1701,9 +1701,9 @@ int ELF::loadFieldData(void)
 
 	// OS ABI.
 	const char *const osabi_title = C_("ELF", "OS ABI");
-	const char *const osabi = ELFData::lookup_osabi(primary->e_osabi);
-	if (osabi) {
-		d->fields->addField_string(osabi_title, osabi);
+	const char8_t *const s_osabi = ELFData::lookup_osabi(primary->e_osabi);
+	if (s_osabi) {
+		d->fields->addField_string(osabi_title, s_osabi);
 	} else {
 		d->fields->addField_string(osabi_title,
 			rp_sprintf(C_("RomData", "Unknown (%u)"), primary->e_osabi));

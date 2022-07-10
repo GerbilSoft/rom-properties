@@ -91,199 +91,199 @@ struct NESSubmapperInfo {
 	uint8_t submapper;		// Submapper number.
 	uint8_t reserved;
 	uint16_t deprecated;
-	const char *desc;		// Description.
+	const char8_t *desc;		// Description.
 	NESMirroring mirroring;		// Mirroring behavior.
 };
 
 // Mapper 001: MMC1
 const struct NESSubmapperInfo mmc1_submappers[] = {
-	{1, 0,   1, "SUROM", NESMirroring::Unknown},
-	{2, 0,   1, "SOROM", NESMirroring::Unknown},
-	{3, 0, 155, "MMC1A", NESMirroring::Unknown},
-	{4, 0,   1, "SXROM", NESMirroring::Unknown},
-	{5, 0,   0, "SEROM, SHROM, SH1ROM", NESMirroring::Unknown},
+	{1, 0,   1, U8("SUROM"), NESMirroring::Unknown},
+	{2, 0,   1, U8("SOROM"), NESMirroring::Unknown},
+	{3, 0, 155, U8("MMC1A"), NESMirroring::Unknown},
+	{4, 0,   1, U8("SXROM"), NESMirroring::Unknown},
+	{5, 0,   0, U8("SEROM, SHROM, SH1ROM"), NESMirroring::Unknown},
 };
 
 // Discrete logic mappers: UxROM (002), CNROM (003), AxROM (007)
 const struct NESSubmapperInfo discrete_logic_submappers[] = {
-	{0, 0,   0, "Bus conflicts are unspecified", NESMirroring::Unknown},
-	{1, 0,   0, "Bus conflicts do not occur", NESMirroring::Unknown},
-	{2, 0,   0, "Bus conflicts occur, resulting in: bus AND rom", NESMirroring::Unknown},
+	{0, 0,   0, U8("Bus conflicts are unspecified"), NESMirroring::Unknown},
+	{1, 0,   0, U8("Bus conflicts do not occur"), NESMirroring::Unknown},
+	{2, 0,   0, U8("Bus conflicts occur, resulting in: bus AND rom"), NESMirroring::Unknown},
 };
 
 // Mapper 004: MMC3
 const struct NESSubmapperInfo mmc3_submappers[] = {
-	{0, 0,      0, "MMC3C", NESMirroring::Unknown},
-	{1, 0,      0, "MMC6", NESMirroring::Unknown},
-	{2, 0, 0xFFFF, "MMC3C with hard-wired mirroring", NESMirroring::Unknown},
-	{3, 0,      0, "MC-ACC", NESMirroring::Unknown},
-	{4, 0,      0, "MMC3A", NESMirroring::Unknown},
+	{0, 0,      0, U8("MMC3C"), NESMirroring::Unknown},
+	{1, 0,      0, U8("MMC6"), NESMirroring::Unknown},
+	{2, 0, 0xFFFF, U8("MMC3C with hard-wired mirroring"), NESMirroring::Unknown},
+	{3, 0,      0, U8("MC-ACC"), NESMirroring::Unknown},
+	{4, 0,      0, U8("MMC3A"), NESMirroring::Unknown},
 };
 
 // Mapper 006: Game Doctor Mode 1
 const struct NESSubmapperInfo mapper006_submappers[] = {
-	{0, 0,   0, "UNROM", NESMirroring::Unknown},
-	{1, 0,   0, "UN1ROM + CHRSW", NESMirroring::Unknown},
-	{2, 0,   0, "UOROM", NESMirroring::Unknown},
-	{3, 0,   0, "Reverse UOROM + CHRSW", NESMirroring::Unknown},
-	{4, 0,   0, "GNROM", NESMirroring::Unknown},
-	{5, 0,   0, "CNROM-256", NESMirroring::Unknown},
-	{6, 0,   0, "CNROM-128", NESMirroring::Unknown},
-	{7, 0,   0, "NROM-256", NESMirroring::Unknown},
+	{0, 0,   0, U8("UNROM"), NESMirroring::Unknown},
+	{1, 0,   0, U8("UN1ROM + CHRSW"), NESMirroring::Unknown},
+	{2, 0,   0, U8("UOROM"), NESMirroring::Unknown},
+	{3, 0,   0, U8("Reverse UOROM + CHRSW"), NESMirroring::Unknown},
+	{4, 0,   0, U8("GNROM"), NESMirroring::Unknown},
+	{5, 0,   0, U8("CNROM-256"), NESMirroring::Unknown},
+	{6, 0,   0, U8("CNROM-128"), NESMirroring::Unknown},
+	{7, 0,   0, U8("NROM-256"), NESMirroring::Unknown},
 };
 
 // Mapper 016: Bandai FCG-x
 const struct NESSubmapperInfo bandai_fcgx_submappers[] = {
-	{1, 0, 159, "LZ93D50 with 24C01", NESMirroring::Unknown},
-	{2, 0, 157, "Datach Joint ROM System", NESMirroring::Unknown},
-	{3, 0, 153, "8 KiB of WRAM instead of serial EEPROM", NESMirroring::Unknown},
-	{4, 0,   0, "FCG-1/2", NESMirroring::Unknown},
-	{5, 0,   0, "LZ93D50 with optional 24C02", NESMirroring::Unknown},
+	{1, 0, 159, U8("LZ93D50 with 24C01"), NESMirroring::Unknown},
+	{2, 0, 157, U8("Datach Joint ROM System"), NESMirroring::Unknown},
+	{3, 0, 153, U8("8 KiB of WRAM instead of serial EEPROM"), NESMirroring::Unknown},
+	{4, 0,   0, U8("FCG-1/2"), NESMirroring::Unknown},
+	{5, 0,   0, U8("LZ93D50 with optional 24C02"), NESMirroring::Unknown},
 };
 
 // Mapper 019: Namco 129, 163
 const struct NESSubmapperInfo namco_129_164_submappers[] = {
-	{0, 0,   0, "Expansion sound volume unspecified", NESMirroring::Unknown},
-	{1, 0,  19, "Internal RAM battery-backed; no expansion sound", NESMirroring::Unknown},
-	{2, 0,   0, "No expansion sound", NESMirroring::Unknown},
-	{3, 0,   0, "N163 expansion sound: 11.0-13.0 dB louder than NES APU", NESMirroring::Unknown},
-	{4, 0,   0, "N163 expansion sound: 16.0-17.0 dB louder than NES APU", NESMirroring::Unknown},
-	{5, 0,   0, "N163 expansion sound: 18.0-19.5 dB louder than NES APU", NESMirroring::Unknown},
+	{0, 0,   0, U8("Expansion sound volume unspecified"), NESMirroring::Unknown},
+	{1, 0,  19, U8("Internal RAM battery-backed; no expansion sound"), NESMirroring::Unknown},
+	{2, 0,   0, U8("No expansion sound"), NESMirroring::Unknown},
+	{3, 0,   0, U8("N163 expansion sound: 11.0-13.0 dB louder than NES APU"), NESMirroring::Unknown},
+	{4, 0,   0, U8("N163 expansion sound: 16.0-17.0 dB louder than NES APU"), NESMirroring::Unknown},
+	{5, 0,   0, U8("N163 expansion sound: 18.0-19.5 dB louder than NES APU"), NESMirroring::Unknown},
 };
 
 // Mapper 021: Konami VRC4c, VRC4c
 const struct NESSubmapperInfo vrc4a_vrc4c_submappers[] = {
-	{1, 0,   0, "VRC4a", NESMirroring::Unknown},
-	{2, 0,   0, "VRC4c", NESMirroring::Unknown},
+	{1, 0,   0, U8("VRC4a"), NESMirroring::Unknown},
+	{2, 0,   0, U8("VRC4c"), NESMirroring::Unknown},
 };
 
 // Mapper 023: Konami VRC4e, VRC4f, VRC2b
 const struct NESSubmapperInfo vrc4ef_vrc2b_submappers[] = {
-	{1, 0,   0, "VRC4f", NESMirroring::Unknown},
-	{2, 0,   0, "VRC4e", NESMirroring::Unknown},
-	{3, 0,   0, "VRC2b", NESMirroring::Unknown},
+	{1, 0,   0, U8("VRC4f"), NESMirroring::Unknown},
+	{2, 0,   0, U8("VRC4e"), NESMirroring::Unknown},
+	{3, 0,   0, U8("VRC2b"), NESMirroring::Unknown},
 };
 
 // Mapper 025: Konami VRC4b, VRC4d, VRC2c
 const struct NESSubmapperInfo vrc4bd_vrc2c_submappers[] = {
-	{1, 0,   0, "VRC4b", NESMirroring::Unknown},
-	{2, 0,   0, "VRC4d", NESMirroring::Unknown},
-	{3, 0,   0, "VRC2c", NESMirroring::Unknown},
+	{1, 0,   0, U8("VRC4b"), NESMirroring::Unknown},
+	{2, 0,   0, U8("VRC4d"), NESMirroring::Unknown},
+	{3, 0,   0, U8("VRC2c"), NESMirroring::Unknown},
 };
 
 // Mapper 032: Irem G101
 const struct NESSubmapperInfo irem_g101_submappers[] = {
-	{0, 0,   0, "Programmable mirroring", NESMirroring::Unknown},
-	{1, 0,   0, "Fixed one-screen mirroring", NESMirroring::OneScreen_B},
+	{0, 0,   0, U8("Programmable mirroring"), NESMirroring::Unknown},
+	{1, 0,   0, U8("Fixed one-screen mirroring"), NESMirroring::OneScreen_B},
 };
 
 // Mapper 034: BNROM / NINA-001
 // TODO: Distinguish between these two for iNES ROMs.
 const struct NESSubmapperInfo bnrom_nina001_submappers[] = {
-	{1, 0,   0, "NINA-001", NESMirroring::Unknown},
-	{2, 0,   0, "BNROM", NESMirroring::Unknown},
+	{1, 0,   0, U8("NINA-001"), NESMirroring::Unknown},
+	{2, 0,   0, U8("BNROM"), NESMirroring::Unknown},
 };
 
 // Mapper 068: Sunsoft-4
 const struct NESSubmapperInfo sunsoft4_submappers[] = {
-	{1, 0,   0, "Dual Cartridge System (NTB-ROM)", NESMirroring::Unknown},
+	{1, 0,   0, U8("Dual Cartridge System (NTB-ROM)"), NESMirroring::Unknown},
 };
 
 // Mapper 071: Codemasters
 const struct NESSubmapperInfo codemasters_submappers[] = {
-	{1, 0,   0, "Programmable one-screen mirroring (Fire Hawk)", NESMirroring::MapperAB},
+	{1, 0,   0, U8("Programmable one-screen mirroring (Fire Hawk)"), NESMirroring::MapperAB},
 };
 
 // Mapper 078: Cosmo Carrier / Holy Diver
 const struct NESSubmapperInfo mapper078_submappers[] = {
-	{1, 0,      0, "Programmable one-screen mirroring (Uchuusen: Cosmo Carrier)", NESMirroring::MapperAB},
-	{2, 0, 0xFFFF,  "Fixed vertical mirroring + WRAM", NESMirroring::Unknown},
-	{3, 0,      0, "Programmable H/V mirroring (Holy Diver)", NESMirroring::MapperHV},
+	{1, 0,      0, U8("Programmable one-screen mirroring (Uchuusen: Cosmo Carrier)"), NESMirroring::MapperAB},
+	{2, 0, 0xFFFF, U8("Fixed vertical mirroring + WRAM"), NESMirroring::Unknown},
+	{3, 0,      0, U8("Programmable H/V mirroring (Holy Diver)"), NESMirroring::MapperHV},
 };
 
 // Mapper 083: Cony/Yoko
 const struct NESSubmapperInfo cony_yoko_submappers[] = {
-	{0, 0,   0, "1 KiB CHR-ROM banking, no WRAM", NESMirroring::Unknown},
-	{1, 0,   0, "2 KiB CHR-ROM banking, no WRAM", NESMirroring::Unknown},
-	{2, 0,   0, "1 KiB CHR-ROM banking, 32 KiB banked WRAM", NESMirroring::Unknown},
+	{0, 0,   0, U8("1 KiB CHR-ROM banking, no WRAM"), NESMirroring::Unknown},
+	{1, 0,   0, U8("2 KiB CHR-ROM banking, no WRAM"), NESMirroring::Unknown},
+	{2, 0,   0, U8("1 KiB CHR-ROM banking, 32 KiB banked WRAM"), NESMirroring::Unknown},
 };
 
 // Mapper 108: FDS conversions
 const struct NESSubmapperInfo mapper108_submappers[] = {
-	{1, 0,   0, "DH-08: Bubble Bobble (LH31)", NESMirroring::Unknown},
-	{2, 0,   0, "Bubble Bobble (LH31) (CHR-RAM)", NESMirroring::Unknown},
-	{3, 0,   0, "Falsion (LH54); Meikyuu Jiin Dababa (LH28)", NESMirroring::Unknown},
-	{4, 0,   0, "Pro Wrestling (LE05)", NESMirroring::Unknown},
+	{1, 0,   0, U8("DH-08: Bubble Bobble (LH31)"), NESMirroring::Unknown},
+	{2, 0,   0, U8("Bubble Bobble (LH31) (CHR-RAM)"), NESMirroring::Unknown},
+	{3, 0,   0, U8("Falsion (LH54); Meikyuu Jiin Dababa (LH28)"), NESMirroring::Unknown},
+	{4, 0,   0, U8("Pro Wrestling (LE05)"), NESMirroring::Unknown},
 };
 
 // Mapper 114: Sugar Softec/Hosenkan
 const struct NESSubmapperInfo mapper114_submappers[] = {
-	{0, 0,   0, "MMC3 registers: 0,3,1,5,6,7,2,4", NESMirroring::Unknown},
-	{1, 0,   0, "MMC3 registers: 0,2,5,3,6,1,7,4", NESMirroring::Unknown},
+	{0, 0,   0, U8("MMC3 registers: 0,3,1,5,6,7,2,4"), NESMirroring::Unknown},
+	{1, 0,   0, U8("MMC3 registers: 0,2,5,3,6,1,7,4"), NESMirroring::Unknown},
 };
 
 // Mapper 197: Kǎshèng (MMC3 clone)
 const struct NESSubmapperInfo mapper197_submappers[] = {
-	{0, 0,   0, "Super Fighter III (PRG-ROM CRC32 0xC333F621)", NESMirroring::Unknown},
-	{1, 0,   0, "Super Fighter III (PRG-ROM CRC32 0x2091BEB2)", NESMirroring::Unknown},
-	{2, 0,   0, "Mortal Kombat III Special", NESMirroring::Unknown},
-	{3, 0,   0, "1995 Super 2-in-1", NESMirroring::Unknown},
+	{0, 0,   0, U8("Super Fighter III (PRG-ROM CRC32 0xC333F621)"), NESMirroring::Unknown},
+	{1, 0,   0, U8("Super Fighter III (PRG-ROM CRC32 0x2091BEB2)"), NESMirroring::Unknown},
+	{2, 0,   0, U8("Mortal Kombat III Special"), NESMirroring::Unknown},
+	{3, 0,   0, U8("1995 Super 2-in-1"), NESMirroring::Unknown},
 };
 
 // Mapper 210: Namcot 175, 340
 const struct NESSubmapperInfo namcot_175_340_submappers[] = {
-	{1, 0,   0, "Namcot 175 (fixed mirroring)",        NESMirroring::Header},
-	{2, 0,   0, "Namcot 340 (programmable mirroring)", NESMirroring::MapperHVAB},
+	{1, 0,   0, U8("Namcot 175 (fixed mirroring)"),        NESMirroring::Header},
+	{2, 0,   0, U8("Namcot 340 (programmable mirroring)"), NESMirroring::MapperHVAB},
 };
 
 // Mapper 215: Sugar Softec
 const struct NESSubmapperInfo sugar_softec_submappers[] = {
-	{0, 0,   0, "UNL-8237", NESMirroring::Unknown},
-	{1, 0,   0, "UNL-8237A", NESMirroring::Unknown},
+	{0, 0,   0, U8("UNL-8237"), NESMirroring::Unknown},
+	{1, 0,   0, U8("UNL-8237A"), NESMirroring::Unknown},
 };
 
 // Mapper 232: Codemasters Quattro
 const struct NESSubmapperInfo quattro_submappers[] = {
-	{1, 0,   0, "Aladdin Deck Enhancer", NESMirroring::Unknown},
+	{1, 0,   0, U8("Aladdin Deck Enhancer"), NESMirroring::Unknown},
 };
 
 // Mapper 256: OneBus Famiclones
 const struct NESSubmapperInfo onebus_submappers[] = {
-	{ 1, 0,   0, "Waixing VT03", NESMirroring::Unknown},
-	{ 2, 0,   0, "Power Joy Supermax", NESMirroring::Unknown},
-	{ 3, 0,   0, "Zechess/Hummer Team", NESMirroring::Unknown},
-	{ 4, 0,   0, "Sports Game 69-in-1", NESMirroring::Unknown},
-	{ 5, 0,   0, "Waixing VT02", NESMirroring::Unknown},
-	{14, 0,   0, "Karaoto", NESMirroring::Unknown},
-	{15, 0,   0, "Jungletac", NESMirroring::Unknown},
+	{ 1, 0,   0, U8("Waixing VT03"), NESMirroring::Unknown},
+	{ 2, 0,   0, U8("Power Joy Supermax"), NESMirroring::Unknown},
+	{ 3, 0,   0, U8("Zechess/Hummer Team"), NESMirroring::Unknown},
+	{ 4, 0,   0, U8("Sports Game 69-in-1"), NESMirroring::Unknown},
+	{ 5, 0,   0, U8("Waixing VT02"), NESMirroring::Unknown},
+	{14, 0,   0, U8("Karaoto"), NESMirroring::Unknown},
+	{15, 0,   0, U8("Jungletac"), NESMirroring::Unknown},
 };
 
 // Mapper 268: SMD132/SMD133
 const struct NESSubmapperInfo smd132_smd133_submappers[] = {
-	{0, 0,   0, "COOLBOY ($6000-$7FFF)", NESMirroring::Unknown},
-	{1, 0,   0, "MINDKIDS ($5000-$5FFF)", NESMirroring::Unknown},
+	{0, 0,   0, U8("COOLBOY ($6000-$7FFF)"), NESMirroring::Unknown},
+	{1, 0,   0, U8("MINDKIDS ($5000-$5FFF)"), NESMirroring::Unknown},
 };
 
 // Mapper 313: Reset-based multicart (MMC3)
 const struct NESSubmapperInfo mapper313_submappers[] = {
-	{0, 0,   0, "Game size: 128 KiB PRG, 128 KiB CHR", NESMirroring::Unknown},
-	{1, 0,   0, "Game size: 256 KiB PRG, 128 KiB CHR", NESMirroring::Unknown},
-	{2, 0,   0, "Game size: 128 KiB PRG, 256 KiB CHR", NESMirroring::Unknown},
-	{3, 0,   0, "Game size: 256 KiB PRG, 256 KiB CHR", NESMirroring::Unknown},
-	{4, 0,   0, "Game size: 256 KiB PRG (first game); 128 KiB PRG (other games); 128 KiB CHR", NESMirroring::Unknown},
+	{0, 0,   0, U8("Game size: 128 KiB PRG, 128 KiB CHR"), NESMirroring::Unknown},
+	{1, 0,   0, U8("Game size: 256 KiB PRG, 128 KiB CHR"), NESMirroring::Unknown},
+	{2, 0,   0, U8("Game size: 128 KiB PRG, 256 KiB CHR"), NESMirroring::Unknown},
+	{3, 0,   0, U8("Game size: 256 KiB PRG, 256 KiB CHR"), NESMirroring::Unknown},
+	{4, 0,   0, U8("Game size: 256 KiB PRG (first game); 128 KiB PRG (other games); 128 KiB CHR"), NESMirroring::Unknown},
 };
 
 // Mapper 407: Win, Lose, or Draw Plug-n-Play (VT03)
 const struct NESSubmapperInfo mapper407_submappers[] = {
-	{15, 0,   0, "Opcode encryption (see mapper 256, submapper 15)", NESMirroring::Unknown},
+	{15, 0,   0, U8("Opcode encryption (see mapper 256, submapper 15)"), NESMirroring::Unknown},
 };
 
 // Mapper 444: NC7000M multicart (MMC3-compatible)
 const struct NESSubmapperInfo mapper444_submappers[] = {
-	{0, 0,   0, "CHR A17 to $6000.0; CHR A18 to $6000.1", NESMirroring::Unknown},
-	{1, 0,   0, "CHR A17 to MMC3 CHR A17; CHR A18 to $6000.1", NESMirroring::Unknown},
-	{0, 0,   0, "CHR A17 to $6000.0; CHR A18 to $6000.4", NESMirroring::Unknown},
-	{1, 0,   0, "CHR A17 to MMC3 CHR A17; CHR A18 to $6000.4", NESMirroring::Unknown},
+	{0, 0,   0, U8("CHR A17 to $6000.0; CHR A18 to $6000.1"), NESMirroring::Unknown},
+	{1, 0,   0, U8("CHR A17 to MMC3 CHR A17; CHR A18 to $6000.1"), NESMirroring::Unknown},
+	{0, 0,   0, U8("CHR A17 to $6000.0; CHR A18 to $6000.4"), NESMirroring::Unknown},
+	{1, 0,   0, U8("CHR A17 to MMC3 CHR A17; CHR A18 to $6000.4"), NESMirroring::Unknown},
 };
 
 /**
@@ -368,7 +368,7 @@ static int RP_C_API NESSubmapperEntry_compar(const void *a, const void *b)
 
 /**
  * Look up an iNES mapper number.
- * @param mapper Mapper number.
+ * @param mapper Mapper number
  * @return Mapper info, or nullptr if not found.
  */
 const NESMapperEntry *lookup_ines_info(int mapper)
@@ -392,8 +392,8 @@ const NESMapperEntry *lookup_ines_info(int mapper)
 
 /**
  * Look up an NES 2.0 submapper number.
- * @param mapper Mapper number.
- * @param submapper Submapper number.
+ * @param mapper Mapper number
+ * @param submapper Submapper number
  * @return Submapper info, or nullptr if not found.
  */
 const NESSubmapperInfo *lookup_nes2_submapper_info(int mapper, int submapper)
@@ -435,7 +435,7 @@ const NESSubmapperInfo *lookup_nes2_submapper_info(int mapper, int submapper)
  * @param idx String table index
  * @return String, or nullptr if 0 or out of bounds.
  */
-static inline const char *get_from_strtbl(unsigned int idx)
+static inline const char8_t *get_from_strtbl(unsigned int idx)
 {
 	assert(idx < ARRAY_SIZE(NESMappers_strtbl));
 	if (idx == 0 || idx >= ARRAY_SIZE(NESMappers_strtbl))
@@ -448,10 +448,10 @@ static inline const char *get_from_strtbl(unsigned int idx)
 
 /**
  * Look up an iNES mapper number.
- * @param mapper Mapper number.
+ * @param mapper Mapper number
  * @return Mapper name, or nullptr if not found.
  */
-const char *lookup_ines(int mapper)
+const char8_t *lookup_ines(int mapper)
 {
 	const NESMapperEntry *const ent = lookup_ines_info(mapper);
 	return (ent ? get_from_strtbl(ent->name_idx) : nullptr);
@@ -459,7 +459,7 @@ const char *lookup_ines(int mapper)
 
 /**
  * Convert a TNES mapper number to iNES.
- * @param tnes_mapper TNES mapper number.
+ * @param tnes_mapper TNES mapper number
  * @return iNES mapper number, or -1 if unknown.
  */
 int tnesMapperToInesMapper(int tnes_mapper)
@@ -549,7 +549,7 @@ int tnesMapperToInesMapper(int tnes_mapper)
  * @param submapper Submapper number.
  * @return Submapper name, or nullptr if not found.
  */
-const char *lookup_nes2_submapper(int mapper, int submapper)
+const char8_t *lookup_nes2_submapper(int mapper, int submapper)
 {
 	const NESSubmapperInfo *const ent = lookup_nes2_submapper_info(mapper, submapper);
 	// TODO: Return the "deprecated" value?
@@ -558,13 +558,13 @@ const char *lookup_nes2_submapper(int mapper, int submapper)
 
 /**
  * Look up a description of mapper mirroring behavior
- * @param mapper Mapper number.
- * @param submapper Submapper number.
+ * @param mapper Mapper number
+ * @param submapper Submapper number
  * @param vert Vertical bit in the iNES header
- * @param vert Four-screen bit in the iNES header
+ * @param four Four-screen bit in the iNES header
  * @return String describing the mirroring behavior
  */
-const char *lookup_ines_mirroring(int mapper, int submapper, bool vert, bool four)
+const char8_t *lookup_ines_mirroring(int mapper, int submapper, bool vert, bool four)
 {
 	const NESMapperEntry *const ent1 = lookup_ines_info(mapper);
 	const NESSubmapperInfo *const ent2 = lookup_nes2_submapper_info(mapper, submapper);
@@ -617,27 +617,38 @@ const char *lookup_ines_mirroring(int mapper, int submapper, bool vert, bool fou
 			break;
 	}
 
-	// NOTE: to prevent useless noise like "Mapper: MMC5, Mirroring: MMC5-like", all of the weird
+	// NOTE: to prevent useless noise like "Mapper: MMC5, Mirroring: MMC5-like"), all of the weird
 	// mirroring types are grouped under "Mapper-controlled"
+	// FIXME: U8STRFIX
+	const char *s_ret;
 	switch (mirror) {
 		case NESMirroring::Header:
-			return vert ? C_("NES|Mirroring", "Vertical") : C_("NES|Mirroring", "Horizontal");
+			s_ret = (vert) ? C_("NES|Mirroring", "Vertical") : C_("NES|Mirroring", "Horizontal");
+			break;
 		case NESMirroring::Mapper:
 		default:
-			return C_("NES|Mirroring", "Mapper-controlled");
+			s_ret = C_("NES|Mirroring", "Mapper-controlled");
+			break;
 		case NESMirroring::MapperHVAB:
-			return C_("NES|Mirroring", "Mapper-controlled (H/V/A/B)");
+			s_ret = C_("NES|Mirroring", "Mapper-controlled (H/V/A/B)");
+			break;
 		case NESMirroring::MapperHV:
-			return C_("NES|Mirroring", "Mapper-controlled (H/V)");
+			s_ret = C_("NES|Mirroring", "Mapper-controlled (H/V)");
+			break;
 		case NESMirroring::MapperAB:
-			return C_("NES|Mirroring", "Mapper-controlled (A/B)");
+			s_ret = C_("NES|Mirroring", "Mapper-controlled (A/B)");
+			break;
 		case NESMirroring::OneScreen_A:
-			return C_("NES|Mirroring", "Single Screen (A)");
+			s_ret = C_("NES|Mirroring", "Single Screen (A)");
+			break;
 		case NESMirroring::OneScreen_B:
-			return C_("NES|Mirroring", "Single Screen (B)");
+			s_ret = C_("NES|Mirroring", "Single Screen (B)");
+			break;
 		case NESMirroring::FourScreen:
-			return C_("NES|Mirroring", "Four Screens");
+			s_ret = C_("NES|Mirroring", "Four Screens");
+			break;
 	}
+	return reinterpret_cast<const char8_t*>(s_ret);
 }
 
 } }

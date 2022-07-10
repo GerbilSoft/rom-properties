@@ -17,6 +17,7 @@ using namespace LibRpBase;
 
 // C++ STL classes.
 using std::string;
+using std::u8string;
 using std::unique_ptr;
 using std::unordered_set;
 using std::vector;
@@ -531,16 +532,18 @@ void EXEPrivate::addFields_PE(void)
 	}
 
 	// CPU. (Also .NET status.)
-	string s_cpu;
-	const char *const cpu = EXEData::lookup_pe_cpu(machine);
+	u8string s_cpu;
+	const char8_t *const cpu = EXEData::lookup_pe_cpu(machine);
 	if (cpu != nullptr) {
 		s_cpu = cpu;
 	} else {
-		s_cpu = rp_sprintf(C_("RomData", "Unknown (0x%04X)"), machine);
+		// FIXME: U8STRFIX
+		s_cpu = reinterpret_cast<const char8_t*>(
+			rp_sprintf(C_("RomData", "Unknown (0x%04X)"), machine).c_str());
 	}
 	if (dotnet) {
 		// .NET executable.
-		s_cpu += " (.NET)";
+		s_cpu += U8(" (.NET)");
 	}
 	fields->addField_string(C_("EXE", "CPU"), s_cpu);
 

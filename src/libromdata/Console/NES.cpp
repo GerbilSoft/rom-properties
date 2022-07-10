@@ -1132,16 +1132,19 @@ int NES::loadFieldData(void)
 		return static_cast<int>(d->fields->count());
 	}
 
+	// Mapper
 	const char *const mapper_title = C_("NES", "Mapper");
 	if (mapper >= 0) {
 		// Look up the mapper name.
+		// FIXME: U8STRFIX
 		string s_mapper;
 
-		const char *const mapper_name = NESMappers::lookup_ines(mapper);
+		const char8_t *const mapper_name = NESMappers::lookup_ines(mapper);
 		if (mapper_name) {
 			// tr: Print the mapper ID followed by the mapper name.
 			s_mapper = rp_sprintf_p(C_("NES|Mapper", "%1$u - %2$s"),
-				static_cast<unsigned int>(mapper), mapper_name);
+				static_cast<unsigned int>(mapper),
+				reinterpret_cast<const char*>(mapper_name));
 		} else {
 			// tr: Print only the mapper ID.
 			s_mapper = rp_sprintf("%u", static_cast<unsigned int>(mapper));
@@ -1159,16 +1162,18 @@ int NES::loadFieldData(void)
 	}
 
 	if (submapper >= 0) {
-		// Submapper. (NES 2.0 only)
+		// Submapper (NES 2.0 only)
+		// FIXME: U8STRFIX
 		string s_submapper;
 
 		// Look up the submapper name.
 		// TODO: Needs testing.
-		const char *const submapper_name = NESMappers::lookup_nes2_submapper(mapper, submapper);
+		const char8_t *const submapper_name = NESMappers::lookup_nes2_submapper(mapper, submapper);
 		if (submapper_name) {
 			// tr: Print the submapper ID followed by the submapper name.
 			s_submapper = rp_sprintf_p(C_("NES|Mapper", "%1$u - %2$s"),
-				static_cast<unsigned int>(submapper), submapper_name);
+				static_cast<unsigned int>(submapper),
+				reinterpret_cast<const char*>(submapper_name));
 		} else {
 			// tr: Print only the submapper ID.
 			s_submapper = rp_sprintf("%u", static_cast<unsigned int>(submapper));
@@ -1249,7 +1254,7 @@ int NES::loadFieldData(void)
 
 		// Publisher
 		const char *const publisher_title = C_("RomData", "Publisher");
-		const char *const publisher =
+		const char8_t *const publisher =
 			NintendoPublishers::lookup_fds(d->header.fds.publisher_code);
 		if (publisher) {
 			d->fields->addField_string(publisher_title, publisher);
@@ -1272,10 +1277,10 @@ int NES::loadFieldData(void)
 		// TODO: Disk Writer fields.
 	} else {
 		// Add non-FDS fields.
-		const char *s_mirroring = nullptr;
-		const char *s_vs_ppu = nullptr;
-		const char *s_vs_hw = nullptr;
-		const char *s_extd_ct = nullptr;
+		const char8_t *s_mirroring = nullptr;
+		const char8_t *s_vs_ppu = nullptr;
+		const char8_t *s_vs_hw = nullptr;
+		const char8_t *s_extd_ct = nullptr;
 		const char *s_exp_hw = nullptr;
 		unsigned int misc_roms = 0;
 		switch (d->romType & NESPrivate::ROM_FORMAT_MASK) {
@@ -1283,7 +1288,8 @@ int NES::loadFieldData(void)
 			case NESPrivate::ROM_FORMAT_INES:
 			case NESPrivate::ROM_FORMAT_NES2:
 				// Mirroring
-				s_mirroring = NESMappers::lookup_ines_mirroring(mapper, submapper == -1 ? 0 : submapper,
+				s_mirroring = NESMappers::lookup_ines_mirroring(mapper,
+					(submapper == -1) ? 0 : submapper,
 					d->header.ines.mapper_lo & INES_F6_MIRROR_VERT,
 					d->header.ines.mapper_lo & INES_F6_MIRROR_FOUR);
 
@@ -1293,14 +1299,14 @@ int NES::loadFieldData(void)
 				{
 					// Check the Vs. PPU type.
 					// NOTE: Not translatable!
-					static const char vs_ppu_types[][12] = {
-						"RP2C03B",     "RP2C03G",
-						"RP2C04-0001", "RP2C04-0002",
-						"RP2C04-0003", "RP2C04-0004",
-						"RP2C03B",     "RP2C03C",
-						"RP2C05-01",   "RP2C05-02",
-						"RP2C05-03",   "RP2C05-04",
-						"RP2C05-05"
+					static const char8_t vs_ppu_types[][12] = {
+						U8("RP2C03B"),     U8("RP2C03G"),
+						U8("RP2C04-0001"), U8("RP2C04-0002"),
+						U8("RP2C04-0003"), U8("RP2C04-0004"),
+						U8("RP2C03B"),     U8("RP2C03C"),
+						U8("RP2C05-01"),   U8("RP2C05-02"),
+						U8("RP2C05-03"),   U8("RP2C05-04"),
+						U8("RP2C05-05")
 					};
 					const unsigned int vs_ppu = (d->header.ines.nes2.vs_hw & 0x0F);
 					if (vs_ppu < ARRAY_SIZE(vs_ppu_types)) {
@@ -1309,14 +1315,14 @@ int NES::loadFieldData(void)
 
 					// Check the Vs. hardware type.
 					// NOTE: Not translatable!
-					static const char *const vs_hw_types[] = {
-						"Vs. Unisystem",
-						"Vs. Unisystem (RBI Baseball)",
-						"Vs. Unisystem (TKO Boxing)",
-						"Vs. Unisystem (Super Xevious)",
-						"Vs. Unisystem (Vs. Ice Climber Japan)",
-						"Vs. Dualsystem",
-						"Vs. Dualsystem (Raid on Bungeling Bay)",
+					static const char8_t *const vs_hw_types[] = {
+						U8("Vs. Unisystem"),
+						U8("Vs. Unisystem (RBI Baseball)"),
+						U8("Vs. Unisystem (TKO Boxing)"),
+						U8("Vs. Unisystem (Super Xevious)"),
+						U8("Vs. Unisystem (Vs. Ice Climber Japan)"),
+						U8("Vs. Dualsystem"),
+						U8("Vs. Dualsystem (Raid on Bungeling Bay)"),
 					};
 					const unsigned int vs_hw = (d->header.ines.nes2.vs_hw >> 4);
 					if (vs_hw < ARRAY_SIZE(vs_hw_types)) {
@@ -1328,19 +1334,20 @@ int NES::loadFieldData(void)
 				if ((d->romType & NESPrivate::ROM_FORMAT_MASK) == NESPrivate::ROM_FORMAT_NES2) {
 					if ((d->header.ines.mapper_hi & INES_F7_SYSTEM_MASK) == INES_F7_SYSTEM_EXTD) {
 						// NES 2.0 Extended Console Type
-						static const char *const ext_hw_types[] = {
-							"NES/Famicom/Dendy",	// Not normally used.
-							"Nintendo Vs. System",	// Not normally used.
-							"PlayChoice-10",	// Not normally used.
-							"Famiclone with BCD support",
-							"V.R. Technology VT01 with monochrome palette",
-							"V.R. Technology VT01 with red/cyan STN palette",
-							"V.R. Technology VT02",
-							"V.R. Technology VT03",
-							"V.R. Technology VT09",
-							"V.R. Technology VT32",
-							"V.R. Technology VT369",
-							"UMC UM6578",
+						// TODO: Localization?
+						static const char8_t *const ext_hw_types[] = {
+							U8("NES/Famicom/Dendy"),	// Not normally used.
+							U8("Nintendo Vs. System"),	// Not normally used.
+							U8("PlayChoice-10"),		// Not normally used.
+							U8("Famiclone with BCD support"),
+							U8("V.R. Technology VT01 with monochrome palette"),
+							U8("V.R. Technology VT01 with red/cyan STN palette"),
+							U8("V.R. Technology VT02"),
+							U8("V.R. Technology VT03"),
+							U8("V.R. Technology VT09"),
+							U8("V.R. Technology VT32"),
+							U8("V.R. Technology VT369"),
+							U8("UMC UM6578"),
 						};
 
 						const unsigned int extd_ct = (d->header.ines.nes2.vs_hw & 0x0F);
@@ -1418,24 +1425,25 @@ int NES::loadFieldData(void)
 
 			case NESPrivate::ROM_FORMAT_TNES:
 				// Mirroring
+				// FIXME: U8STRFIX
 				switch (d->header.tnes.mirroring) {
 					case TNES_MIRRORING_PROGRAMMABLE:
 						// For all mappers except AxROM, this is programmable.
 						// For AxROM, this is One Screen.
 						if (tnes_mapper == TNES_MAPPER_AxROM) {
-							s_mirroring = C_("NES|Mirroring", "One Screen");
+							s_mirroring = reinterpret_cast<const char8_t*>(C_("NES|Mirroring", "One Screen"));
 						} else {
-							s_mirroring = C_("NES|Mirroring", "Programmable");
+							s_mirroring = reinterpret_cast<const char8_t*>(C_("NES|Mirroring", "Programmable"));
 						}
 						break;
 					case TNES_MIRRORING_HORIZONTAL:
-						s_mirroring = C_("NES|Mirroring", "Horizontal");
+						s_mirroring = reinterpret_cast<const char8_t*>(C_("NES|Mirroring", "Horizontal"));
 						break;
 					case TNES_MIRRORING_VERTICAL:
-						s_mirroring = C_("NES|Mirroring", "Vertical");
+						s_mirroring = reinterpret_cast<const char8_t*>(C_("NES|Mirroring", "Vertical"));
 						break;
 					default:
-						s_mirroring = C_("RomData", "Unknown");
+						s_mirroring = reinterpret_cast<const char8_t*>(C_("RomData", "Unknown"));
 						break;
 				}
 				break;
@@ -1554,7 +1562,7 @@ int NES::loadFieldData(void)
 
 			// Publisher
 			const char *const publisher_title = C_("RomData", "Publisher");
-			const char *const publisher =
+			const char8_t *const publisher =
 				NintendoPublishers::lookup_old(footer.publisher_code);
 			if (publisher) {
 				d->fields->addField_string(publisher_title, publisher);

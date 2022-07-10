@@ -157,7 +157,7 @@ class GameCubePrivate final : public RomDataPrivate
 		 * Get the disc publisher.
 		 * @return Disc publisher.
 		 */
-		string getPublisher(void) const;
+		u8string getPublisher(void) const;
 
 		/**
 		 * Load opening.bnr. (GameCube only)
@@ -443,26 +443,36 @@ int GameCubePrivate::loadWiiPartitionTables(void)
  * Get the disc publisher.
  * @return Disc publisher.
  */
-string GameCubePrivate::getPublisher(void) const
+u8string GameCubePrivate::getPublisher(void) const
 {
-	const char *const publisher = NintendoPublishers::lookup(discHeader.company);
+	const char8_t *const publisher = NintendoPublishers::lookup(discHeader.company);
 	if (publisher) {
 		return publisher;
 	}
 
 	// Unknown publisher.
+	// FIXME: U8STRFIX - can't use rp_sprintf() here
+	char buf[128];
+	int len;
 	if (ISALNUM(discHeader.company[0]) &&
 	    ISALNUM(discHeader.company[1]))
 	{
 		// Disc ID is alphanumeric.
-		return rp_sprintf(C_("RomData", "Unknown (%.2s)"),
+		len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%.2s)"),
 			discHeader.company);
+	} else {
+		// Disc ID is not alphanumeric.
+		len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%02X %02X)"),
+			static_cast<uint8_t>(discHeader.company[0]),
+			static_cast<uint8_t>(discHeader.company[1]));
 	}
 
-	// Disc ID is not alphanumeric.
-	return rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
-		static_cast<uint8_t>(discHeader.company[0]),
-		static_cast<uint8_t>(discHeader.company[1]));
+	if (len < 0) {
+		len = 0;
+	} else if (len >= static_cast<int>(sizeof(buf))) {
+		len = sizeof(buf)-1;
+	}
+	return u8string(reinterpret_cast<const char8_t*>(buf), len);
 }
 
 /**

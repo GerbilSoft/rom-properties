@@ -2,278 +2,333 @@
 
 #include <stdint.h>
 
-static const char NESMappers_strtbl[] =
-	"\x00" "NROM" "\x00" "Nintendo" "\x00" "SxROM (MMC1)" "\x00" "UxR"
-	"OM" "\x00" "CNROM" "\x00" "TxROM (MMC3), HKROM (MMC6)" "\x00" "E"
-	"xROM (MMC5)" "\x00" "Front Fareast (Game Doctor) Magic Card 1M/2"
-	"M RAM cartridge" "\x00" "Bung/FFE" "\x00" "AxROM" "\x00" "Front "
-	"Fareast (Game Doctor) GxROM (clone of 006, submapper 4)" "\x00" "P"
-	"xROM, PEEOROM (MMC2)" "\x00" "FxROM (MMC4)" "\x00" "Color Dreams"
-	"\x00" "MMC3 variant" "\x00" "FFE" "\x00" "NES-CPROM" "\x00" "SL-"
-	"1632 (MMC3/VRC2 clone)" "\x00" "K-1029 (multicart)" "\x00" "FCG-"
-	"x" "\x00" "Bandai" "\x00" "FFE #17" "\x00" "SS 88006" "\x00" "Ja"
-	"leco" "\x00" "Namco 129/163" "\x00" "Namco" "\x00" "Famicom Disk"
-	" System" "\x00" "VRC4a, VRC4c" "\x00" "Konami" "\x00" "VRC2a" "\x00"
-	"VRC4e, VRC4f, VRC2b" "\x00" "VRC6a" "\x00" "VRC4b, VRC4d, VRC2c" "\x00"
-	"VRC6b" "\x00" "VRC4 variant" "\x00" "Action 53" "\x00" "Homebrew"
-	"\x00" "RET-CUFROM" "\x00" "Sealie Computing" "\x00" "UNROM 512" "\x00"
-	"RetroUSB" "\x00" "NSF Music Compilation" "\x00" "Irem G-101" "\x00"
-	"Irem" "\x00" "Taito TC0190" "\x00" "Taito" "\x00" "BNROM, NINA-0"
-	"01" "\x00" "J.Y. Company ASIC (8 KiB WRAM)" "\x00" "J.Y. Company"
-	"\x00" "TXC PCB 01-22000-400" "\x00" "TXC" "\x00" "MMC3 multicart"
-	"\x00" "GNROM variant" "\x00" "Bit Corp." "\x00" "BNROM variant" "\x00"
-	"NTDEC 2722 (FDS conversion)" "\x00" "NTDEC" "\x00" "Caltron 6-in"
-	"-1" "\x00" "Caltron" "\x00" "FDS conversion" "\x00" "TONY-I, YS-"
-	"612 (FDS conversion)" "\x00" "MMC3 multicart (GA23C)" "\x00" "Ru"
-	"mble Station 15-in-1" "\x00" "Taito TC0690" "\x00" "PCB 761214 ("
-	"FDS conversion)" "\x00" "N-32" "\x00" "11-in-1 Ball Games" "\x00"
-	"Supervision 16-in-1" "\x00" "Novel Diamond 9999999-in-1" "\x00" "B"
-	"TL-MARIO1-MALEE2" "\x00" "KS202 (unlicensed SMB3 reproduction)" "\x00"
-	"Multicart" "\x00" "(C)NROM-based multicart" "\x00" "BMC-T3H53/BM"
-	"C-D1038 multicart" "\x00" "Reset-based NROM-128 4-in-1 multicart"
-	"\x00" "20-in-1 multicart" "\x00" "Super 700-in-1 multicart" "\x00"
-	"Powerful 250-in-1 multicart" "\x00" "Tengen RAMBO-1" "\x00" "Ten"
-	"gen" "\x00" "Irem H3001" "\x00" "GxROM, MHROM" "\x00" "Sunsoft-3"
-	"\x00" "Sunsoft" "\x00" "Sunsoft-4" "\x00" "Sunsoft FME-7" "\x00" "F"
-	"amily Trainer" "\x00" "Codemasters (UNROM clone)" "\x00" "Codema"
-	"sters" "\x00" "Jaleco JF-17" "\x00" "VRC3" "\x00" "43-393/860908"
-	"C (MMC3 clone)" "\x00" "W" "\xc3\xa0" "ix" "\xc4\xab" "ng" "\x00"
-	"VRC1" "\x00" "NAMCOT-3446 (Namcot 108 variant)" "\x00" "Napoleon"
-	" Senki" "\x00" "Lenar" "\x00" "Holy Diver; Uchuusen - Cosmo Carr"
-	"ier" "\x00" "NINA-03, NINA-06" "\x00" "American Video Entertainm"
-	"ent" "\x00" "Taito X1-005" "\x00" "Super Gun" "\x00" "Taito X1-0"
-	"17 (incorrect PRG ROM bank ordering)" "\x00" "Cony/Yoko" "\x00" "P"
-	"C-SMB2J" "\x00" "VRC7" "\x00" "Jaleco JF-13" "\x00" "CNROM varia"
-	"nt" "\x00" "Namcot 118 variant" "\x00" "Sunsoft-2 (Sunsoft-3 boa"
-	"rd)" "\x00" "J.Y. Company (simple nametable control)" "\x00" "J."
-	"Y. Company (Super Fighter III)" "\x00" "Moero!! Pro" "\x00" "Sun"
-	"soft-2 (Sunsoft-3R board)" "\x00" "HVC-UN1ROM" "\x00" "NAMCOT-34"
-	"25" "\x00" "Oeka Kids" "\x00" "Irem TAM-S1" "\x00" "CNROM (Vs. S"
-	"ystem)" "\x00" "MMC3 variant (hacked ROMs)" "\x00" "Jaleco JF-10"
-	" (misdump)" "\x00" "Jaleceo" "\x00" "Drip" "\x00" "Doki Doki Pan"
-	"ic (FDS conversion)" "\x00" "PEGASUS 5 IN 1" "\x00" "NES-EVENT ("
-	"MMC1 variant) (Nintendo World Championships 1990)" "\x00" "Super"
-	" Mario Bros. 3 (bootleg)" "\x00" "Magic Dragon" "\x00" "Magicser"
-	"ies" "\x00" "FDS conversions" "\x00" "The Great Wall (Sachen 825"
-	"9D) (duplicate of 137)" "\x00" "Sachen" "\x00" "Honey Peach (Sac"
-	"hen SA-020A) (duplicate of 243)" "\x00" "Cheapocabra GTROM 512k "
-	"flash board" "\x00" "Membler Industries" "\x00" "NINA-03/06 mult"
-	"icart" "\x00" "MMC3 clone (scrambled registers)" "\x00" "K" "\xc7"
-	"\x8e" "sh" "\xc3\xa8" "ng SFC-02B/-03/-004 (MMC3 clone)" "\x00" "K"
-	"\xc7\x8e" "sh" "\xc3\xa8" "ng" "\x00" "SOMARI-P (Huang-1/Huang-2"
-	")" "\x00" "Gouder" "\x00" "Future Media" "\x00" "TxSROM" "\x00" "T"
-	"QROM" "\x00" "Tobidase Daisakusen (FDS conversion)" "\x00" "K" "\xc7"
-	"\x8e" "sh" "\xc3\xa8" "ng A9711 and A9713 (MMC3 clone)" "\x00" "S"
-	"unsoft-1 (duplicate of 184)" "\x00" "K" "\xc7\x8e" "sh" "\xc3\xa8"
-	"ng H2288 (MMC3 clone)" "\x00" "Super Game Mega Type III" "\x00" "M"
-	"onty no Doki Doki Daisass" "\xc5\x8d" " (FDS conversion)" "\x00" "W"
-	"hirlwind Manu" "\x00" "Double Dragon - The Revenge (Japan) (pira"
-	"ted version)" "\x00" "Super HiK 4-in-1 multicart" "\x00" "(C)NRO"
-	"M-based multicart (duplicate of 058)" "\x00" "7-in-1 (NS03) mult"
-	"icart (duplicate of 331)" "\x00" "MMC3 multicart (duplicate of 2"
-	"05)" "\x00" "TXC 05-00002-010 ASIC" "\x00" "Jovial Race" "\x00" "T"
-	"4A54A, WX-KB4K, BS-5652 (MMC3 clone)" "\x00" "Sachen 8259A varia"
-	"nt (duplicate of 141)" "\x00" "Sachen 3011" "\x00" "Sachen 8259D"
-	"\x00" "Sachen 8259B" "\x00" "Sachen 8259C" "\x00" "Jaleco JF-11,"
-	" JF-14 (GNROM variant)" "\x00" "Sachen 8259A" "\x00" "Kaiser KS2"
-	"02 (FDS conversions)" "\x00" "Kaiser" "\x00" "Copy-protected NRO"
-	"M" "\x00" "Death Race (Color Dreams variant)" "\x00" "American G"
-	"ame Cartridges" "\x00" "Sidewinder (CNROM clone)" "\x00" "Galact"
-	"ic Crusader (NINA-06 clone)" "\x00" "Sachen 3018" "\x00" "Sachen"
-	" SA-008-A, Tengen 800008" "\x00" "Sachen / Tengen" "\x00" "SA-00"
-	"36 (CNROM clone)" "\x00" "Sachen SA-015, SA-630" "\x00" "VRC1 (V"
-	"s. System)" "\x00" "Kaiser KS202 (FDS conversion)" "\x00" "Banda"
-	"i FCG: LZ93D50 with SRAM" "\x00" "NAMCOT-3453" "\x00" "MMC1A" "\x00"
-	"DIS23C01" "\x00" "Daou Infosys" "\x00" "Datach Joint ROM System" "\x00"
-	"Tengen 800037" "\x00" "Bandai LZ93D50 with 24C01" "\x00" "J.Y. C"
-	"ompany (simple nametable control) (duplicate of 090)" "\x00" "Ha"
-	"njuku Hero (MMC1) (should be 001)" "\x00" "W" "\xc3\xa0" "ix" "\xc4"
-	"\xab" "ng FS304" "\x00" "Nanjing" "\x00" "PEC-9588 Pyramid Educa"
-	"tional Computer" "\x00" "D" "\xc5\x8d" "ngd" "\xc3\xa1\x00" "Fir"
-	"e Emblem (unlicensed) (MMC2+MMC3 hybrid)" "\x00" "Subor (variant"
-	" 1)" "\x00" "Subor" "\x00" "Subor (variant 2)" "\x00" "Racermate"
-	" Challenge 2" "\x00" "Racermate, Inc." "\x00" "Yuxing" "\x00" "S"
-	"hiko Game Syu" "\x00" "Kaiser KS-7058" "\x00" "Super Mega P-4040"
-	"\x00" "Idea-Tek ET-xx" "\x00" "Idea-Tek" "\x00" "Kaiser 15-in-1 "
-	"multicart" "\x00" "W" "\xc3\xa0" "ix" "\xc4\xab" "ng multicart ("
-	"8025) (MMC3 clone)" "\x00" "H" "\xc3\xa9" "ngg" "\xc3\xa9" " Di" "\xc3"
-	"\xa0" "nz" "\xc7\x90\x00" "W" "\xc3\xa0" "ix" "\xc4\xab" "ng / N"
-	"anjing / Jncota / Henge Dianzi / GameStar" "\x00" "W" "\xc3\xa0" "i"
-	"x" "\xc4\xab" "ng multicart (8025) (MMC3 clone) (duplicate of 17"
-	"6)" "\x00" "Crazy Climber (UNROM clone)" "\x00" "Nichibutsu" "\x00"
-	"Seicross v2 (FCEUX hack)" "\x00" "MMC3 clone (scrambled register"
-	"s) (same as 114)" "\x00" "Suikan Pipe (VRC4e clone)" "\x00" "Sun"
-	"soft-1" "\x00" "CNROM with weak copy protection" "\x00" "Study B"
-	"ox" "\x00" "Fukutake Shoten" "\x00" "K" "\xc7\x8e" "sh" "\xc3\xa8"
-	"ng A98402 (MMC3 clone)" "\x00" "Bandai Karaoke Studio" "\x00" "T"
-	"hunder Warrior (MMC3 clone)" "\x00" "Magic Kid GooGoo" "\x00" "M"
-	"MC3 clone" "\x00" "NTDEC TC-112" "\x00" "W" "\xc3\xa0" "ix" "\xc4"
-	"\xab" "ng FS303 (MMC3 clone)" "\x00" "Mario bootleg (MMC3 clone)"
-	"\x00" "K" "\xc7\x8e" "sh" "\xc3\xa8" "ng (MMC3 clone)" "\x00" "T"
-	"\xc5\xab" "nsh" "\xc3\xad" " Ti" "\xc4\x81" "nd" "\xc3\xac" " - "
-	"S" "\xc4\x81" "ngu" "\xc3\xb3" " W" "\xc3\xa0" "izhu" "\xc3\xa0" "n"
-	"\x00" "W" "\xc3\xa0" "ix" "\xc4\xab" "ng (clone of either Mapper"
-	" 004 or 176)" "\x00" "NROM-256 multicart" "\x00" "150-in-1 multi"
-	"cart" "\x00" "35-in-1 multicart" "\x00" "DxROM (Tengen MIMIC-1, "
-	"Namcot 118)" "\x00" "Fudou Myouou Den" "\x00" "Street Fighter IV"
-	" (unlicensed) (MMC3 clone)" "\x00" "J.Y. Company (MMC2/MMC4 clon"
-	"e)" "\x00" "Namcot 175, 340" "\x00" "J.Y. Company (extended name"
-	"table control)" "\x00" "BMC Super HiK 300-in-1" "\x00" "(C)NROM-"
-	"based multicart (same as 058)" "\x00" "Super Gun 20-in-1 multica"
-	"rt" "\x00" "Sugar Softec (MMC3 clone)" "\x00" "Sugar Softec" "\x00"
-	"Bonza, Magic Jewelry II (Russian; Dendy)" "\x00" "500-in-1 / 200"
-	"0-in-1 multicart" "\x00" "Magic Floor" "\x00" "K" "\xc7\x8e" "sh"
-	"\xc3\xa8" "ng A9461 (MMC3 clone)" "\x00" "Summer Carnival '92 - "
-	"Recca" "\x00" "Naxat Soft" "\x00" "NTDEC N625092" "\x00" "CTC-31"
-	" (VRC2 + 74xx)" "\x00" "W" "\xc3\xa0" "ix" "\xc4\xab" "ng (clone"
-	" of either Mapper 004 or 176) (duplicate of 199)" "\x00" "Jncota"
-	" KT-008" "\x00" "Jncota" "\x00" "Active Enterprises" "\x00" "BMC"
-	" 31-IN-1" "\x00" "Codemasters Quattro" "\x00" "Maxi 15 multicart"
-	"\x00" "Golden Game 150-in-1 multicart" "\x00" "Realtec 8155" "\x00"
-	"Realtec" "\x00" "Teletubbies 420-in-1 multicart" "\x00" "Contra "
-	"Fighter (G.I. Joe w/ SF2 characters hack)" "\x00" "BNROM variant"
-	" (similar to 034)" "\x00" "Unlicensed" "\x00" "Sachen SA-020A" "\x00"
-	"Decathlon" "\x00" "C&E" "\x00" "F" "\xc4\x93" "ngsh" "\xc3\xa9" "n"
-	"b" "\xc7\x8e" "ng: F" "\xc3\xba" "m" "\xc3\xb3" " S" "\xc4\x81" "n"
-	" T" "\xc3\xa0" "iz" "\xc7\x90" " (C&E)" "\x00" "K" "\xc7\x8e" "s"
-	"h" "\xc3\xa8" "ng SFC-02B/-03/-004 (MMC3 clone) (incorrect assig"
-	"nment; should be 115)" "\x00" "W" "\xc3\xa0" "ix" "\xc4\xab" "ng"
-	" MMC3 TKROM clone with address scrambling" "\x00" "Nitra (MMC3 c"
-	"lone)" "\x00" "Nitra" "\x00" "MMC3 multicart (GA23C) (duplicate "
-	"of 045)" "\x00" "W" "\xc3\xa0" "ix" "\xc4\xab" "ng - Sangokushi" "\x00"
-	"Dragon Ball Z: Ky" "\xc5\x8d" "sh" "\xc5\xab" "! Saiya-jin (VRC4"
-	" clone)" "\x00" "Pikachu Y2K of crypted ROMs" "\x00" "110-in-1 m"
-	"ulticart (same as 225)" "\x00" "OneBus Famiclone" "\x00" "UNIF P"
-	"EC-586" "\x00" "UNIF 158B" "\x00" "UNIF F-15 (MMC3 multicart)" "\x00"
-	"HP10xx/HP20xx multicart" "\x00" "200-in-1 Elfland multicart" "\x00"
-	"Street Heroes (MMC3 clone)" "\x00" "King of Fighters '97 (MMC3 c"
-	"lone)" "\x00" "Cony/Yoko Fighting Games" "\x00" "T-262 multicart"
-	"\x00" "City Fighter IV" "\x00" "8-in-1 JY-119 multicart (MMC3 cl"
-	"one)" "\x00" "SMD132/SMD133 (MMC3 clone)" "\x00" "Multicart (MMC"
-	"3 clone)" "\x00" "Game Prince RS-16" "\x00" "TXC 4-in-1 multicar"
-	"t (MGC-026)" "\x00" "Akumaj" "\xc5\x8d" " Special: Boku Dracula-"
-	"kun (bootleg)" "\x00" "Gremlins 2 (bootleg)" "\x00" "Cartridge S"
-	"tory multicart" "\x00" "RCM Group" "\x00" "J.Y. Company Super Hi"
-	"K 3/4/5-in-1 multicart" "\x00" "J.Y. Company multicart" "\x00" "B"
-	"lock Family 6-in-1/7-in-1 multicart" "\x00" "A65AS multicart" "\x00"
-	"Benshieng multicart" "\x00" "Benshieng" "\x00" "4-in-1 multicart"
-	" (411120-C, 811120-C)" "\x00" "GKCX1 21-in-1 multicart" "\x00" "B"
-	"MC-60311C" "\x00" "Asder 20-in-1 multicart" "\x00" "Asder" "\x00"
-	"K" "\xc7\x8e" "sh" "\xc3\xa8" "ng 2-in-1 multicart (MK6)" "\x00" "D"
-	"ragon Fighter (unlicensed)" "\x00" "NewStar 12-in-1/76-in-1 mult"
-	"icart" "\x00" "T4A54A, WX-KB4K, BS-5652 (MMC3 clone) (same as 13"
-	"4)" "\x00" "J.Y. Company 13-in-1 multicart" "\x00" "FC Pocket RS"
-	"-20 / dreamGEAR My Arcade Gamer V" "\x00" "TXC 01-22110-000 mult"
-	"icart" "\x00" "Lethal Weapon (unlicensed) (VRC4 clone)" "\x00" "T"
-	"XC 6-in-1 multicart (MGC-023)" "\x00" "Golden 190-in-1 multicart"
-	"\x00" "GG1 multicart" "\x00" "Gyruss (FDS conversion)" "\x00" "A"
-	"lmana no Kiseki (FDS conversion)" "\x00" "Dracula II: Noroi no F"
-	"\xc5\xab" "in (FDS conversion)" "\x00" "Exciting Basket (FDS con"
-	"version)" "\x00" "Metroid (FDS conversion)" "\x00" "Batman (Suns"
-	"oft) (bootleg) (VRC2 clone)" "\x00" "Ai Senshi Nicol (FDS conver"
-	"sion)" "\x00" "Monty no Doki Doki Daisass" "\xc5\x8d" " (FDS con"
-	"version) (same as 125)" "\x00" "Super Mario Bros. 2 pirate cart "
-	"(duplicate of 043)" "\x00" "Highway Star (bootleg)" "\x00" "Rese"
-	"t-based multicart (MMC3)" "\x00" "Y2K multicart" "\x00" "820732C"
-	"- or 830134C- multicart" "\x00" "HP-898F / KD-7/9-E boards" "\x00"
-	"Super HiK 6-in-1 A-030 multicart" "\x00" "35-in-1 (K-3033) multi"
-	"cart" "\x00" "Farid's homebrew 8-in-1 SLROM multicart" "\x00" "F"
-	"arid's homebrew 8-in-1 UNROM multicart" "\x00" "Super Mali Splas"
-	"h Bomb (bootleg)" "\x00" "Contra/Gryzor (bootleg)" "\x00" "6-in-"
-	"1 multicart" "\x00" "Test Ver. 1.01 Dlya Proverki TV Pristavok t"
-	"est cartridge" "\x00" "Education Computer 2000" "\x00" "Sangokus"
-	"hi II: Ha" "\xc5\x8d" " no Tairiku (bootleg)" "\x00" "7-in-1 (NS"
-	"03) multicart" "\x00" "Super 40-in-1 multicart" "\x00" "New Star"
-	" Super 8-in-1 multicart" "\x00" "New Star" "\x00" "5/20-in-1 199"
-	"3 Copyright multicart" "\x00" "10-in-1 multicart" "\x00" "11-in-"
-	"1 multicart" "\x00" "12-in-1 Game Card multicart" "\x00" "16-in-"
-	"1, 200/300/600/1000-in-1 multicart" "\x00" "21-in-1 multicart" "\x00"
-	"Simple 4-in-1 multicart" "\x00" "COOLGIRL multicart (Homebrew)" "\x00"
-	"Kuai Da Jin Ka Zhong Ji Tiao Zhan 3-in-1 multicart" "\x00" "New "
-	"Star 6-in-1 Game Cartridge multicart" "\x00" "Zanac (FDS convers"
-	"ion)" "\x00" "Yume Koujou: Doki Doki Panic (FDS conversion)" "\x00"
-	"830118C" "\x00" "1994 Super HIK 14-in-1 (G-136) multicart" "\x00"
-	"Super 15-in-1 Game Card multicart" "\x00" "9-in-1 multicart" "\x00"
-	"J.Y. Company / Techline" "\x00" "Kaiser 4-in-1 multicart (KS106C"
-	")" "\x00" "92 Super Mario Family multicart" "\x00" "250-in-1 mul"
-	"ticart" "\x00\xe9\xbb\x83\xe4\xbf\xa1\xe7\xb6\xad" " 3D-BLOCK" "\x00"
-	"7-in-1 Rockman (JY-208)" "\x00" "4-in-1 (4602) multicart" "\x00" "S"
-	"B-5013 / GCL8050 / 841242C multicart" "\x00" "31-in-1 (3150) mul"
-	"ticart" "\x00" "YY841101C multicart (MMC3 clone)" "\x00" "830506"
-	"C multicart (VRC4f clone)" "\x00" "JY830832C multicart" "\x00" "A"
-	"sder PC-95 educational computer" "\x00" "GN-45 multicart (MMC3 c"
-	"lone)" "\x00" "7-in-1 multicart" "\x00" "Super Mario Bros. 2 (J)"
-	" (FDS conversion)" "\x00" "YUNG-08" "\x00" "N49C-300" "\x00" "F6"
-	"00" "\x00" "Spanish PEC-586 home computer cartridge" "\x00" "Don"
-	"gda" "\x00" "Rockman 1-6 (SFC-12) multicart" "\x00" "Super 4-in-"
-	"1 (SFC-13) multicart" "\x00" "Reset-based MMC1 multicart" "\x00" "1"
-	"35-in-1 (U)NROM multicart" "\x00" "YY841155C multicart" "\x00" "1"
-	"998 Super Game 8-in-1 (JY-111)" "\x00" "8-in-1 AxROM/UNROM multi"
-	"cart" "\x00" "35-in-1 NROM multicart" "\x00" "970630C" "\x00" "K"
-	"N-42" "\x00" "830928C" "\x00" "YY840708C (MMC3 clone)" "\x00" "L"
-	"1A16 (VRC4e clone)" "\x00" "NTDEC 2779" "\x00" "YY860729C" "\x00"
-	"YY850735C / YY850817C" "\x00" "YY841145C / YY850835C" "\x00" "Ca"
-	"ltron 9-in-1 multicart" "\x00" "Realtec 8031" "\x00" "NC7000M (M"
-	"MC3 clone)" "\x00" "Realtec HSK007 multicart" "\x00" "Realtec 82"
-	"10 multicart (MMC3-compatible)" "\x00" "YY850437C / Realtec GN-5"
-	"1 multicart" "\x00" "1996 Soccer 6-in-1 (JY-082)" "\x00" "YY8408"
-	"20C" "\x00" "Star Versus" "\x00" "8-BIT XMAS 2017" "\x00" "retro"
-	"USB" "\x00" "KC885 multicart" "\x00" "J-2282 multicart" "\x00" "8"
-	"9433" "\x00" "JY012005 MMC1-based multicart" "\x00" "Game design"
-	"ed for UMC UM6578" "\x00" "UMC" "\x00" "Haradius Zero" "\x00" "W"
-	"in, Lose, or Draw Plug-n-Play (VT03)" "\x00" "Konami Collector's"
-	" Series Advance Arcade Plug & Play" "\x00" "DPCMcart" "\x00" "Su"
-	"per 8-in-1 multicart (JY-302)" "\x00" "A88S-1 multicart (MMC3-co"
-	"mpatible)" "\x00" "Intellivision 10-in-1 Plug 'n Play 2nd Editio"
-	"n" "\x00" "Techno Source" "\x00" "Super Russian Roulette" "\x00" "9"
-	"999999-in-1 multicart" "\x00" "Lucky Rabbit (0353) (FDS conversi"
-	"on of Roger Rabbit)" "\x00" "4-in-1 multicart" "\x00" "Batman: T"
-	"he Video Game (Fine Studio bootleg)" "\x00" "Fine Studio" "\x00" "8"
-	"20106-C / 821007C (LH42)" "\x00" "TK-8007 MCU (VT03)" "\x00" "Ta"
-	"ikee" "\x00" "A971210" "\x00" "Kasheng" "\x00" "SC871115C" "\x00"
-	"BS-300 / BS-400 / BS-4040 multicarts" "\x00" "Lexibook Compact C"
-	"yber Arcade (VT369)" "\x00" "Lexibook" "\x00" "Lexibook Retro TV"
-	" Game Console (VT369)" "\x00" "Cube Tech VT369 handheld consoles"
-	"\x00" "Cube Tech" "\x00" "VT369-based handheld console with 256-"
-	"byte serial ROM" "\x00" "VT369-based handheld console with I" "\xc2"
-	"\xb2" "C protection chip" "\x00" "(C)NROM multicart" "\x00" "Mil"
-	"owork FCFC1 flash cartridge (A mode)" "\x00" "Milowork" "\x00" "8"
-	"31031C/T-308 multicart (MMC3-based)" "\x00" "Realtec GN-91B" "\x00"
-	"Realtec 8090 (MMC3-based)" "\x00" "NC-20MB PCB; 20-in-1 multicar"
-	"t (CA-006)" "\x00" "S-009" "\x00" "NC3000M multicart" "\x00" "NC"
-	"7000M multicart (MMC3-compatible)" "\x00" "Zh" "\xc5\x8d" "nggu" "\xc3"
-	"\xb3" " D" "\xc3\xa0" "h" "\xc4\x93" "ng" "\x00" "M" "\xc4\x9b" "i"
-	" Sh" "\xc3\xa0" "on" "\xc7\x9a" " M" "\xc3\xa8" "ng G" "\xc5\x8d"
-	"ngch" "\xc7\x8e" "ng III" "\x00" "Subor Karaoke" "\x00" "Family "
-	"Noraebang" "\x00" "Brilliant Com Cocoma Pack" "\x00" "EduBank" "\x00"
-	"Kkachi-wa Nolae Chingu" "\x00" "Subor multicart" "\x00" "UNL-EH8"
-	"813A" "\x00" "2-in-1 Datach multicart (VRC4e clone)" "\x00" "Kor"
-	"ean Igo" "\x00" "F" "\xc5\xab" "un Sh" "\xc5\x8d" "rinken (FDS c"
-	"onversion)" "\x00" "F" "\xc4\x93" "ngsh" "\xc3\xa9" "nb" "\xc7\x8e"
-	"ng: F" "\xc3\xba" "m" "\xc3\xb3" " S" "\xc4\x81" "n T" "\xc3\xa0"
-	"iz" "\xc7\x90" " (Jncota)" "\x00" "The Lord of King (Jaleco) (bo"
-	"otleg)" "\x00" "UNL-KS7021A (VRC2b clone)" "\x00" "Sangokushi: C"
-	"h" "\xc5\xab" "gen no Hasha (bootleg)" "\x00" "Fud" "\xc5\x8d" " "
-	"My" "\xc5\x8d\xc5\x8d" " Den (bootleg) (VRC2b clone)" "\x00" "19"
-	"95 New Series Super 2-in-1 multicart" "\x00" "Datach Dragon Ball"
-	" Z (bootleg) (VRC4e clone)" "\x00" "Super Mario Bros. Pocker Mal"
-	"i (VRC4f clone)" "\x00" "LittleCom PC-95" "\x00" "Sachen 3014" "\x00"
-	"2-in-1 Sudoku/Gomoku (NJ064) (MMC3 clone)" "\x00" "Nazo no Muras"
-	"amej" "\xc5\x8d" " (FDS conversion)" "\x00" "W" "\xc3\xa0" "ix" "\xc4"
-	"\xab" "ng FS303 (MMC3 clone) (same as 195)" "\x00" "60-1064-16L" "\x00"
-	"Kid Icarus (FDS conversion)" "\x00" "Master Fighter VI' hack (va"
-	"riant of 359)" "\x00" "LittleCom 160-in-1 multicart" "\x00" "Wor"
-	"ld Hero hack (VRC4 clone)" "\x00" "5-in-1 (CH-501) multicart (MM"
-	"C1 clone)" "\x00" "W" "\xc3\xa0" "ix" "\xc4\xab" "ng FS306" "\x00"
-	"Konami QTa adapter (VRC5)" "\x00" "CTC-15" "\x00" "Co Tung Co." "\x00"
-	"JY820845C" "\x00" "Jncota RPG re-release (variant of 178)" "\x00"
-	"Taito X1-017 (correct PRG ROM bank ordering)" "\x00" "Sachen 301"
-	"3" "\x00" "Kaiser KS-7010" "\x00" "Nintendo Campus Challenge 199"
-	"1 (RetroUSB version)" "\x00" "JY-215 multicart" "\x00" "Moero Tw"
-	"inBee: Cinnamon-hakase o Sukue! (FDS conversion)" "\x00" "YC-03-"
-	"09" "\x00" "Y" "\xc3\xa0" "nch" "\xc3\xa9" "ng" "\x00" "Bung Sup"
-	"er Game Doctor 2M/4M RAM cartridge" "\x00" "Venus Turbo Game Doc"
-	"tor 4+/6+/6M RAM cartridge" "\x00";
+static const char8_t NESMappers_strtbl[] =
+	U8("\x00") U8("NROM") U8("\x00") U8("Nintendo") U8("\x00") U8("SxROM")
+	U8(" (MMC1)") U8("\x00") U8("UxROM") U8("\x00") U8("CNROM") U8("\x00")
+	U8("TxROM (MMC3), HKROM (MMC6)") U8("\x00") U8("ExROM (MMC5)") U8("\x00")
+	U8("Front Fareast (Game Doctor) Magic Card 1M/2M RAM cartridge") U8("\x00")
+	U8("Bung/FFE") U8("\x00") U8("AxROM") U8("\x00") U8("Front Fareast (")
+	U8("Game Doctor) GxROM (clone of 006, submapper 4)") U8("\x00") U8("P")
+	U8("xROM, PEEOROM (MMC2)") U8("\x00") U8("FxROM (MMC4)") U8("\x00") U8("C")
+	U8("olor Dreams") U8("\x00") U8("MMC3 variant") U8("\x00") U8("FFE") U8("\x00")
+	U8("NES-CPROM") U8("\x00") U8("SL-1632 (MMC3/VRC2 clone)") U8("\x00") U8("K")
+	U8("-1029 (multicart)") U8("\x00") U8("FCG-x") U8("\x00") U8("Bandai")
+	U8("\x00") U8("FFE #17") U8("\x00") U8("SS 88006") U8("\x00") U8("Ja")
+	U8("leco") U8("\x00") U8("Namco 129/163") U8("\x00") U8("Namco") U8("\x00")
+	U8("Famicom Disk System") U8("\x00") U8("VRC4a, VRC4c") U8("\x00") U8("K")
+	U8("onami") U8("\x00") U8("VRC2a") U8("\x00") U8("VRC4e, VRC4f, VRC2")
+	U8("b") U8("\x00") U8("VRC6a") U8("\x00") U8("VRC4b, VRC4d, VRC2c") U8("\x00")
+	U8("VRC6b") U8("\x00") U8("VRC4 variant") U8("\x00") U8("Action 53") U8("\x00")
+	U8("Homebrew") U8("\x00") U8("RET-CUFROM") U8("\x00") U8("Sealie Com")
+	U8("puting") U8("\x00") U8("UNROM 512") U8("\x00") U8("RetroUSB") U8("\x00")
+	U8("NSF Music Compilation") U8("\x00") U8("Irem G-101") U8("\x00") U8("I")
+	U8("rem") U8("\x00") U8("Taito TC0190") U8("\x00") U8("Taito") U8("\x00")
+	U8("BNROM, NINA-001") U8("\x00") U8("J.Y. Company ASIC (8 KiB WRAM)") U8("\x00")
+	U8("J.Y. Company") U8("\x00") U8("TXC PCB 01-22000-400") U8("\x00") U8("T")
+	U8("XC") U8("\x00") U8("MMC3 multicart") U8("\x00") U8("GNROM varian")
+	U8("t") U8("\x00") U8("Bit Corp.") U8("\x00") U8("BNROM variant") U8("\x00")
+	U8("NTDEC 2722 (FDS conversion)") U8("\x00") U8("NTDEC") U8("\x00") U8("C")
+	U8("altron 6-in-1") U8("\x00") U8("Caltron") U8("\x00") U8("FDS conv")
+	U8("ersion") U8("\x00") U8("TONY-I, YS-612 (FDS conversion)") U8("\x00")
+	U8("MMC3 multicart (GA23C)") U8("\x00") U8("Rumble Station 15-in-1") U8("\x00")
+	U8("Taito TC0690") U8("\x00") U8("PCB 761214 (FDS conversion)") U8("\x00")
+	U8("N-32") U8("\x00") U8("11-in-1 Ball Games") U8("\x00") U8("Superv")
+	U8("ision 16-in-1") U8("\x00") U8("Novel Diamond 9999999-in-1") U8("\x00")
+	U8("BTL-MARIO1-MALEE2") U8("\x00") U8("KS202 (unlicensed SMB3 reprod")
+	U8("uction)") U8("\x00") U8("Multicart") U8("\x00") U8("(C)NROM-base")
+	U8("d multicart") U8("\x00") U8("BMC-T3H53/BMC-D1038 multicart") U8("\x00")
+	U8("Reset-based NROM-128 4-in-1 multicart") U8("\x00") U8("20-in-1 m")
+	U8("ulticart") U8("\x00") U8("Super 700-in-1 multicart") U8("\x00") U8("P")
+	U8("owerful 250-in-1 multicart") U8("\x00") U8("Tengen RAMBO-1") U8("\x00")
+	U8("Tengen") U8("\x00") U8("Irem H3001") U8("\x00") U8("GxROM, MHROM")
+	U8("\x00") U8("Sunsoft-3") U8("\x00") U8("Sunsoft") U8("\x00") U8("S")
+	U8("unsoft-4") U8("\x00") U8("Sunsoft FME-7") U8("\x00") U8("Family ")
+	U8("Trainer") U8("\x00") U8("Codemasters (UNROM clone)") U8("\x00") U8("C")
+	U8("odemasters") U8("\x00") U8("Jaleco JF-17") U8("\x00") U8("VRC3") U8("\x00")
+	U8("43-393/860908C (MMC3 clone)") U8("\x00") U8("W") U8("\xc3\xa0") U8("i")
+	U8("x") U8("\xc4\xab") U8("ng") U8("\x00") U8("VRC1") U8("\x00") U8("N")
+	U8("AMCOT-3446 (Namcot 108 variant)") U8("\x00") U8("Napoleon Senki") U8("\x00")
+	U8("Lenar") U8("\x00") U8("Holy Diver; Uchuusen - Cosmo Carrier") U8("\x00")
+	U8("NINA-03, NINA-06") U8("\x00") U8("American Video Entertainment") U8("\x00")
+	U8("Taito X1-005") U8("\x00") U8("Super Gun") U8("\x00") U8("Taito X")
+	U8("1-017 (incorrect PRG ROM bank ordering)") U8("\x00") U8("Cony/Yo")
+	U8("ko") U8("\x00") U8("PC-SMB2J") U8("\x00") U8("VRC7") U8("\x00") U8("J")
+	U8("aleco JF-13") U8("\x00") U8("CNROM variant") U8("\x00") U8("Namc")
+	U8("ot 118 variant") U8("\x00") U8("Sunsoft-2 (Sunsoft-3 board)") U8("\x00")
+	U8("J.Y. Company (simple nametable control)") U8("\x00") U8("J.Y. Co")
+	U8("mpany (Super Fighter III)") U8("\x00") U8("Moero!! Pro") U8("\x00")
+	U8("Sunsoft-2 (Sunsoft-3R board)") U8("\x00") U8("HVC-UN1ROM") U8("\x00")
+	U8("NAMCOT-3425") U8("\x00") U8("Oeka Kids") U8("\x00") U8("Irem TAM")
+	U8("-S1") U8("\x00") U8("CNROM (Vs. System)") U8("\x00") U8("MMC3 va")
+	U8("riant (hacked ROMs)") U8("\x00") U8("Jaleco JF-10 (misdump)") U8("\x00")
+	U8("Jaleceo") U8("\x00") U8("Drip") U8("\x00") U8("Doki Doki Panic (")
+	U8("FDS conversion)") U8("\x00") U8("PEGASUS 5 IN 1") U8("\x00") U8("N")
+	U8("ES-EVENT (MMC1 variant) (Nintendo World Championships 1990)") U8("\x00")
+	U8("Super Mario Bros. 3 (bootleg)") U8("\x00") U8("Magic Dragon") U8("\x00")
+	U8("Magicseries") U8("\x00") U8("FDS conversions") U8("\x00") U8("Th")
+	U8("e Great Wall (Sachen 8259D) (duplicate of 137)") U8("\x00") U8("S")
+	U8("achen") U8("\x00") U8("Honey Peach (Sachen SA-020A) (duplicate o")
+	U8("f 243)") U8("\x00") U8("Cheapocabra GTROM 512k flash board") U8("\x00")
+	U8("Membler Industries") U8("\x00") U8("NINA-03/06 multicart") U8("\x00")
+	U8("MMC3 clone (scrambled registers)") U8("\x00") U8("K") U8("\xc7\x8e")
+	U8("sh") U8("\xc3\xa8") U8("ng SFC-02B/-03/-004 (MMC3 clone)") U8("\x00")
+	U8("K") U8("\xc7\x8e") U8("sh") U8("\xc3\xa8") U8("ng") U8("\x00") U8("S")
+	U8("OMARI-P (Huang-1/Huang-2)") U8("\x00") U8("Gouder") U8("\x00") U8("F")
+	U8("uture Media") U8("\x00") U8("TxSROM") U8("\x00") U8("TQROM") U8("\x00")
+	U8("Tobidase Daisakusen (FDS conversion)") U8("\x00") U8("K") U8("\xc7")
+	U8("\x8e") U8("sh") U8("\xc3\xa8") U8("ng A9711 and A9713 (MMC3 clon")
+	U8("e)") U8("\x00") U8("Sunsoft-1 (duplicate of 184)") U8("\x00") U8("K")
+	U8("\xc7\x8e") U8("sh") U8("\xc3\xa8") U8("ng H2288 (MMC3 clone)") U8("\x00")
+	U8("Super Game Mega Type III") U8("\x00") U8("Monty no Doki Doki Dai")
+	U8("sass") U8("\xc5\x8d") U8(" (FDS conversion)") U8("\x00") U8("Whi")
+	U8("rlwind Manu") U8("\x00") U8("Double Dragon - The Revenge (Japan)")
+	U8(" (pirated version)") U8("\x00") U8("Super HiK 4-in-1 multicart") U8("\x00")
+	U8("(C)NROM-based multicart (duplicate of 058)") U8("\x00") U8("7-in")
+	U8("-1 (NS03) multicart (duplicate of 331)") U8("\x00") U8("MMC3 mul")
+	U8("ticart (duplicate of 205)") U8("\x00") U8("TXC 05-00002-010 ASIC")
+	U8("\x00") U8("Jovial Race") U8("\x00") U8("T4A54A, WX-KB4K, BS-5652")
+	U8(" (MMC3 clone)") U8("\x00") U8("Sachen 8259A variant (duplicate o")
+	U8("f 141)") U8("\x00") U8("Sachen 3011") U8("\x00") U8("Sachen 8259")
+	U8("D") U8("\x00") U8("Sachen 8259B") U8("\x00") U8("Sachen 8259C") U8("\x00")
+	U8("Jaleco JF-11, JF-14 (GNROM variant)") U8("\x00") U8("Sachen 8259")
+	U8("A") U8("\x00") U8("Kaiser KS202 (FDS conversions)") U8("\x00") U8("K")
+	U8("aiser") U8("\x00") U8("Copy-protected NROM") U8("\x00") U8("Deat")
+	U8("h Race (Color Dreams variant)") U8("\x00") U8("American Game Car")
+	U8("tridges") U8("\x00") U8("Sidewinder (CNROM clone)") U8("\x00") U8("G")
+	U8("alactic Crusader (NINA-06 clone)") U8("\x00") U8("Sachen 3018") U8("\x00")
+	U8("Sachen SA-008-A, Tengen 800008") U8("\x00") U8("Sachen / Tengen") U8("\x00")
+	U8("SA-0036 (CNROM clone)") U8("\x00") U8("Sachen SA-015, SA-630") U8("\x00")
+	U8("VRC1 (Vs. System)") U8("\x00") U8("Kaiser KS202 (FDS conversion)")
+	U8("\x00") U8("Bandai FCG: LZ93D50 with SRAM") U8("\x00") U8("NAMCOT")
+	U8("-3453") U8("\x00") U8("MMC1A") U8("\x00") U8("DIS23C01") U8("\x00")
+	U8("Daou Infosys") U8("\x00") U8("Datach Joint ROM System") U8("\x00")
+	U8("Tengen 800037") U8("\x00") U8("Bandai LZ93D50 with 24C01") U8("\x00")
+	U8("J.Y. Company (simple nametable control) (duplicate of 090)") U8("\x00")
+	U8("Hanjuku Hero (MMC1) (should be 001)") U8("\x00") U8("W") U8("\xc3")
+	U8("\xa0") U8("ix") U8("\xc4\xab") U8("ng FS304") U8("\x00") U8("Nan")
+	U8("jing") U8("\x00") U8("PEC-9588 Pyramid Educational Computer") U8("\x00")
+	U8("D") U8("\xc5\x8d") U8("ngd") U8("\xc3\xa1\x00") U8("Fire Emblem ")
+	U8("(unlicensed) (MMC2+MMC3 hybrid)") U8("\x00") U8("Subor (variant ")
+	U8("1)") U8("\x00") U8("Subor") U8("\x00") U8("Subor (variant 2)") U8("\x00")
+	U8("Racermate Challenge 2") U8("\x00") U8("Racermate, Inc.") U8("\x00")
+	U8("Yuxing") U8("\x00") U8("Shiko Game Syu") U8("\x00") U8("Kaiser K")
+	U8("S-7058") U8("\x00") U8("Super Mega P-4040") U8("\x00") U8("Idea-")
+	U8("Tek ET-xx") U8("\x00") U8("Idea-Tek") U8("\x00") U8("Kaiser 15-i")
+	U8("n-1 multicart") U8("\x00") U8("W") U8("\xc3\xa0") U8("ix") U8("\xc4")
+	U8("\xab") U8("ng multicart (8025) (MMC3 clone)") U8("\x00") U8("H") U8("\xc3")
+	U8("\xa9") U8("ngg") U8("\xc3\xa9") U8(" Di") U8("\xc3\xa0") U8("nz") U8("\xc7")
+	U8("\x90\x00") U8("W") U8("\xc3\xa0") U8("ix") U8("\xc4\xab") U8("ng")
+	U8(" / Nanjing / Jncota / Henge Dianzi / GameStar") U8("\x00") U8("W")
+	U8("\xc3\xa0") U8("ix") U8("\xc4\xab") U8("ng multicart (8025) (MMC3")
+	U8(" clone) (duplicate of 176)") U8("\x00") U8("Crazy Climber (UNROM")
+	U8(" clone)") U8("\x00") U8("Nichibutsu") U8("\x00") U8("Seicross v2")
+	U8(" (FCEUX hack)") U8("\x00") U8("MMC3 clone (scrambled registers) ")
+	U8("(same as 114)") U8("\x00") U8("Suikan Pipe (VRC4e clone)") U8("\x00")
+	U8("Sunsoft-1") U8("\x00") U8("CNROM with weak copy protection") U8("\x00")
+	U8("Study Box") U8("\x00") U8("Fukutake Shoten") U8("\x00") U8("K") U8("\xc7")
+	U8("\x8e") U8("sh") U8("\xc3\xa8") U8("ng A98402 (MMC3 clone)") U8("\x00")
+	U8("Bandai Karaoke Studio") U8("\x00") U8("Thunder Warrior (MMC3 clo")
+	U8("ne)") U8("\x00") U8("Magic Kid GooGoo") U8("\x00") U8("MMC3 clon")
+	U8("e") U8("\x00") U8("NTDEC TC-112") U8("\x00") U8("W") U8("\xc3\xa0")
+	U8("ix") U8("\xc4\xab") U8("ng FS303 (MMC3 clone)") U8("\x00") U8("M")
+	U8("ario bootleg (MMC3 clone)") U8("\x00") U8("K") U8("\xc7\x8e") U8("s")
+	U8("h") U8("\xc3\xa8") U8("ng (MMC3 clone)") U8("\x00") U8("T") U8("\xc5")
+	U8("\xab") U8("nsh") U8("\xc3\xad") U8(" Ti") U8("\xc4\x81") U8("nd") U8("\xc3")
+	U8("\xac") U8(" - S") U8("\xc4\x81") U8("ngu") U8("\xc3\xb3") U8(" W")
+	U8("\xc3\xa0") U8("izhu") U8("\xc3\xa0") U8("n") U8("\x00") U8("W") U8("\xc3")
+	U8("\xa0") U8("ix") U8("\xc4\xab") U8("ng (clone of either Mapper 00")
+	U8("4 or 176)") U8("\x00") U8("NROM-256 multicart") U8("\x00") U8("1")
+	U8("50-in-1 multicart") U8("\x00") U8("35-in-1 multicart") U8("\x00") U8("D")
+	U8("xROM (Tengen MIMIC-1, Namcot 118)") U8("\x00") U8("Fudou Myouou ")
+	U8("Den") U8("\x00") U8("Street Fighter IV (unlicensed) (MMC3 clone)")
+	U8("\x00") U8("J.Y. Company (MMC2/MMC4 clone)") U8("\x00") U8("Namco")
+	U8("t 175, 340") U8("\x00") U8("J.Y. Company (extended nametable con")
+	U8("trol)") U8("\x00") U8("BMC Super HiK 300-in-1") U8("\x00") U8("(")
+	U8("C)NROM-based multicart (same as 058)") U8("\x00") U8("Super Gun ")
+	U8("20-in-1 multicart") U8("\x00") U8("Sugar Softec (MMC3 clone)") U8("\x00")
+	U8("Sugar Softec") U8("\x00") U8("Bonza, Magic Jewelry II (Russian; ")
+	U8("Dendy)") U8("\x00") U8("500-in-1 / 2000-in-1 multicart") U8("\x00")
+	U8("Magic Floor") U8("\x00") U8("K") U8("\xc7\x8e") U8("sh") U8("\xc3")
+	U8("\xa8") U8("ng A9461 (MMC3 clone)") U8("\x00") U8("Summer Carniva")
+	U8("l '92 - Recca") U8("\x00") U8("Naxat Soft") U8("\x00") U8("NTDEC")
+	U8(" N625092") U8("\x00") U8("CTC-31 (VRC2 + 74xx)") U8("\x00") U8("W")
+	U8("\xc3\xa0") U8("ix") U8("\xc4\xab") U8("ng (clone of either Mappe")
+	U8("r 004 or 176) (duplicate of 199)") U8("\x00") U8("Jncota KT-008") U8("\x00")
+	U8("Jncota") U8("\x00") U8("Active Enterprises") U8("\x00") U8("BMC ")
+	U8("31-IN-1") U8("\x00") U8("Codemasters Quattro") U8("\x00") U8("Ma")
+	U8("xi 15 multicart") U8("\x00") U8("Golden Game 150-in-1 multicart") U8("\x00")
+	U8("Realtec 8155") U8("\x00") U8("Realtec") U8("\x00") U8("Teletubbi")
+	U8("es 420-in-1 multicart") U8("\x00") U8("Contra Fighter (G.I. Joe ")
+	U8("w/ SF2 characters hack)") U8("\x00") U8("BNROM variant (similar ")
+	U8("to 034)") U8("\x00") U8("Unlicensed") U8("\x00") U8("Sachen SA-0")
+	U8("20A") U8("\x00") U8("Decathlon") U8("\x00") U8("C&E") U8("\x00") U8("F")
+	U8("\xc4\x93") U8("ngsh") U8("\xc3\xa9") U8("nb") U8("\xc7\x8e") U8("n")
+	U8("g: F") U8("\xc3\xba") U8("m") U8("\xc3\xb3") U8(" S") U8("\xc4\x81")
+	U8("n T") U8("\xc3\xa0") U8("iz") U8("\xc7\x90") U8(" (C&E)") U8("\x00")
+	U8("K") U8("\xc7\x8e") U8("sh") U8("\xc3\xa8") U8("ng SFC-02B/-03/-0")
+	U8("04 (MMC3 clone) (incorrect assignment; should be 115)") U8("\x00")
+	U8("W") U8("\xc3\xa0") U8("ix") U8("\xc4\xab") U8("ng MMC3 TKROM clo")
+	U8("ne with address scrambling") U8("\x00") U8("Nitra (MMC3 clone)") U8("\x00")
+	U8("Nitra") U8("\x00") U8("MMC3 multicart (GA23C) (duplicate of 045)")
+	U8("\x00") U8("W") U8("\xc3\xa0") U8("ix") U8("\xc4\xab") U8("ng - S")
+	U8("angokushi") U8("\x00") U8("Dragon Ball Z: Ky") U8("\xc5\x8d") U8("s")
+	U8("h") U8("\xc5\xab") U8("! Saiya-jin (VRC4 clone)") U8("\x00") U8("P")
+	U8("ikachu Y2K of crypted ROMs") U8("\x00") U8("110-in-1 multicart (")
+	U8("same as 225)") U8("\x00") U8("OneBus Famiclone") U8("\x00") U8("U")
+	U8("NIF PEC-586") U8("\x00") U8("UNIF 158B") U8("\x00") U8("UNIF F-1")
+	U8("5 (MMC3 multicart)") U8("\x00") U8("HP10xx/HP20xx multicart") U8("\x00")
+	U8("200-in-1 Elfland multicart") U8("\x00") U8("Street Heroes (MMC3 ")
+	U8("clone)") U8("\x00") U8("King of Fighters '97 (MMC3 clone)") U8("\x00")
+	U8("Cony/Yoko Fighting Games") U8("\x00") U8("T-262 multicart") U8("\x00")
+	U8("City Fighter IV") U8("\x00") U8("8-in-1 JY-119 multicart (MMC3 c")
+	U8("lone)") U8("\x00") U8("SMD132/SMD133 (MMC3 clone)") U8("\x00") U8("M")
+	U8("ulticart (MMC3 clone)") U8("\x00") U8("Game Prince RS-16") U8("\x00")
+	U8("TXC 4-in-1 multicart (MGC-026)") U8("\x00") U8("Akumaj") U8("\xc5")
+	U8("\x8d") U8(" Special: Boku Dracula-kun (bootleg)") U8("\x00") U8("G")
+	U8("remlins 2 (bootleg)") U8("\x00") U8("Cartridge Story multicart") U8("\x00")
+	U8("RCM Group") U8("\x00") U8("J.Y. Company Super HiK 3/4/5-in-1 mul")
+	U8("ticart") U8("\x00") U8("J.Y. Company multicart") U8("\x00") U8("B")
+	U8("lock Family 6-in-1/7-in-1 multicart") U8("\x00") U8("A65AS multi")
+	U8("cart") U8("\x00") U8("Benshieng multicart") U8("\x00") U8("Bensh")
+	U8("ieng") U8("\x00") U8("4-in-1 multicart (411120-C, 811120-C)") U8("\x00")
+	U8("GKCX1 21-in-1 multicart") U8("\x00") U8("BMC-60311C") U8("\x00") U8("A")
+	U8("sder 20-in-1 multicart") U8("\x00") U8("Asder") U8("\x00") U8("K")
+	U8("\xc7\x8e") U8("sh") U8("\xc3\xa8") U8("ng 2-in-1 multicart (MK6)")
+	U8("\x00") U8("Dragon Fighter (unlicensed)") U8("\x00") U8("NewStar ")
+	U8("12-in-1/76-in-1 multicart") U8("\x00") U8("T4A54A, WX-KB4K, BS-5")
+	U8("652 (MMC3 clone) (same as 134)") U8("\x00") U8("J.Y. Company 13-")
+	U8("in-1 multicart") U8("\x00") U8("FC Pocket RS-20 / dreamGEAR My A")
+	U8("rcade Gamer V") U8("\x00") U8("TXC 01-22110-000 multicart") U8("\x00")
+	U8("Lethal Weapon (unlicensed) (VRC4 clone)") U8("\x00") U8("TXC 6-i")
+	U8("n-1 multicart (MGC-023)") U8("\x00") U8("Golden 190-in-1 multica")
+	U8("rt") U8("\x00") U8("GG1 multicart") U8("\x00") U8("Gyruss (FDS c")
+	U8("onversion)") U8("\x00") U8("Almana no Kiseki (FDS conversion)") U8("\x00")
+	U8("Dracula II: Noroi no F") U8("\xc5\xab") U8("in (FDS conversion)") U8("\x00")
+	U8("Exciting Basket (FDS conversion)") U8("\x00") U8("Metroid (FDS c")
+	U8("onversion)") U8("\x00") U8("Batman (Sunsoft) (bootleg) (VRC2 clo")
+	U8("ne)") U8("\x00") U8("Ai Senshi Nicol (FDS conversion)") U8("\x00")
+	U8("Monty no Doki Doki Daisass") U8("\xc5\x8d") U8(" (FDS conversion")
+	U8(") (same as 125)") U8("\x00") U8("Super Mario Bros. 2 pirate cart")
+	U8(" (duplicate of 043)") U8("\x00") U8("Highway Star (bootleg)") U8("\x00")
+	U8("Reset-based multicart (MMC3)") U8("\x00") U8("Y2K multicart") U8("\x00")
+	U8("820732C- or 830134C- multicart") U8("\x00") U8("HP-898F / KD-7/9")
+	U8("-E boards") U8("\x00") U8("Super HiK 6-in-1 A-030 multicart") U8("\x00")
+	U8("35-in-1 (K-3033) multicart") U8("\x00") U8("Farid's homebrew 8-i")
+	U8("n-1 SLROM multicart") U8("\x00") U8("Farid's homebrew 8-in-1 UNR")
+	U8("OM multicart") U8("\x00") U8("Super Mali Splash Bomb (bootleg)") U8("\x00")
+	U8("Contra/Gryzor (bootleg)") U8("\x00") U8("6-in-1 multicart") U8("\x00")
+	U8("Test Ver. 1.01 Dlya Proverki TV Pristavok test cartridge") U8("\x00")
+	U8("Education Computer 2000") U8("\x00") U8("Sangokushi II: Ha") U8("\xc5")
+	U8("\x8d") U8(" no Tairiku (bootleg)") U8("\x00") U8("7-in-1 (NS03) ")
+	U8("multicart") U8("\x00") U8("Super 40-in-1 multicart") U8("\x00") U8("N")
+	U8("ew Star Super 8-in-1 multicart") U8("\x00") U8("New Star") U8("\x00")
+	U8("5/20-in-1 1993 Copyright multicart") U8("\x00") U8("10-in-1 mult")
+	U8("icart") U8("\x00") U8("11-in-1 multicart") U8("\x00") U8("12-in-")
+	U8("1 Game Card multicart") U8("\x00") U8("16-in-1, 200/300/600/1000")
+	U8("-in-1 multicart") U8("\x00") U8("21-in-1 multicart") U8("\x00") U8("S")
+	U8("imple 4-in-1 multicart") U8("\x00") U8("COOLGIRL multicart (Home")
+	U8("brew)") U8("\x00") U8("Kuai Da Jin Ka Zhong Ji Tiao Zhan 3-in-1 ")
+	U8("multicart") U8("\x00") U8("New Star 6-in-1 Game Cartridge multic")
+	U8("art") U8("\x00") U8("Zanac (FDS conversion)") U8("\x00") U8("Yum")
+	U8("e Koujou: Doki Doki Panic (FDS conversion)") U8("\x00") U8("8301")
+	U8("18C") U8("\x00") U8("1994 Super HIK 14-in-1 (G-136) multicart") U8("\x00")
+	U8("Super 15-in-1 Game Card multicart") U8("\x00") U8("9-in-1 multic")
+	U8("art") U8("\x00") U8("J.Y. Company / Techline") U8("\x00") U8("Ka")
+	U8("iser 4-in-1 multicart (KS106C)") U8("\x00") U8("92 Super Mario F")
+	U8("amily multicart") U8("\x00") U8("250-in-1 multicart") U8("\x00\xe9")
+	U8("\xbb\x83\xe4\xbf\xa1\xe7\xb6\xad") U8(" 3D-BLOCK") U8("\x00") U8("7")
+	U8("-in-1 Rockman (JY-208)") U8("\x00") U8("4-in-1 (4602) multicart") U8("\x00")
+	U8("SB-5013 / GCL8050 / 841242C multicart") U8("\x00") U8("31-in-1 (")
+	U8("3150) multicart") U8("\x00") U8("YY841101C multicart (MMC3 clone")
+	U8(")") U8("\x00") U8("830506C multicart (VRC4f clone)") U8("\x00") U8("J")
+	U8("Y830832C multicart") U8("\x00") U8("Asder PC-95 educational comp")
+	U8("uter") U8("\x00") U8("GN-45 multicart (MMC3 clone)") U8("\x00") U8("7")
+	U8("-in-1 multicart") U8("\x00") U8("Super Mario Bros. 2 (J) (FDS co")
+	U8("nversion)") U8("\x00") U8("YUNG-08") U8("\x00") U8("N49C-300") U8("\x00")
+	U8("F600") U8("\x00") U8("Spanish PEC-586 home computer cartridge") U8("\x00")
+	U8("Dongda") U8("\x00") U8("Rockman 1-6 (SFC-12) multicart") U8("\x00")
+	U8("Super 4-in-1 (SFC-13) multicart") U8("\x00") U8("Reset-based MMC")
+	U8("1 multicart") U8("\x00") U8("135-in-1 (U)NROM multicart") U8("\x00")
+	U8("YY841155C multicart") U8("\x00") U8("1998 Super Game 8-in-1 (JY-")
+	U8("111)") U8("\x00") U8("8-in-1 AxROM/UNROM multicart") U8("\x00") U8("3")
+	U8("5-in-1 NROM multicart") U8("\x00") U8("970630C") U8("\x00") U8("K")
+	U8("N-42") U8("\x00") U8("830928C") U8("\x00") U8("YY840708C (MMC3 c")
+	U8("lone)") U8("\x00") U8("L1A16 (VRC4e clone)") U8("\x00") U8("NTDE")
+	U8("C 2779") U8("\x00") U8("YY860729C") U8("\x00") U8("YY850735C / Y")
+	U8("Y850817C") U8("\x00") U8("YY841145C / YY850835C") U8("\x00") U8("C")
+	U8("altron 9-in-1 multicart") U8("\x00") U8("Realtec 8031") U8("\x00")
+	U8("NC7000M (MMC3 clone)") U8("\x00") U8("Realtec HSK007 multicart") U8("\x00")
+	U8("Realtec 8210 multicart (MMC3-compatible)") U8("\x00") U8("YY8504")
+	U8("37C / Realtec GN-51 multicart") U8("\x00") U8("1996 Soccer 6-in-")
+	U8("1 (JY-082)") U8("\x00") U8("YY840820C") U8("\x00") U8("Star Vers")
+	U8("us") U8("\x00") U8("8-BIT XMAS 2017") U8("\x00") U8("retroUSB") U8("\x00")
+	U8("KC885 multicart") U8("\x00") U8("J-2282 multicart") U8("\x00") U8("8")
+	U8("9433") U8("\x00") U8("JY012005 MMC1-based multicart") U8("\x00") U8("G")
+	U8("ame designed for UMC UM6578") U8("\x00") U8("UMC") U8("\x00") U8("H")
+	U8("aradius Zero") U8("\x00") U8("Win, Lose, or Draw Plug-n-Play (VT")
+	U8("03)") U8("\x00") U8("Konami Collector's Series Advance Arcade Pl")
+	U8("ug & Play") U8("\x00") U8("DPCMcart") U8("\x00") U8("Super 8-in-")
+	U8("1 multicart (JY-302)") U8("\x00") U8("A88S-1 multicart (MMC3-com")
+	U8("patible)") U8("\x00") U8("Intellivision 10-in-1 Plug 'n Play 2nd")
+	U8(" Edition") U8("\x00") U8("Techno Source") U8("\x00") U8("Super R")
+	U8("ussian Roulette") U8("\x00") U8("9999999-in-1 multicart") U8("\x00")
+	U8("Lucky Rabbit (0353) (FDS conversion of Roger Rabbit)") U8("\x00") U8("4")
+	U8("-in-1 multicart") U8("\x00") U8("Batman: The Video Game (Fine St")
+	U8("udio bootleg)") U8("\x00") U8("Fine Studio") U8("\x00") U8("8201")
+	U8("06-C / 821007C (LH42)") U8("\x00") U8("TK-8007 MCU (VT03)") U8("\x00")
+	U8("Taikee") U8("\x00") U8("A971210") U8("\x00") U8("Kasheng") U8("\x00")
+	U8("SC871115C") U8("\x00") U8("BS-300 / BS-400 / BS-4040 multicarts") U8("\x00")
+	U8("Lexibook Compact Cyber Arcade (VT369)") U8("\x00") U8("Lexibook") U8("\x00")
+	U8("Lexibook Retro TV Game Console (VT369)") U8("\x00") U8("Cube Tec")
+	U8("h VT369 handheld consoles") U8("\x00") U8("Cube Tech") U8("\x00") U8("V")
+	U8("T369-based handheld console with 256-byte serial ROM") U8("\x00") U8("V")
+	U8("T369-based handheld console with I") U8("\xc2\xb2") U8("C protec")
+	U8("tion chip") U8("\x00") U8("(C)NROM multicart") U8("\x00") U8("Mi")
+	U8("lowork FCFC1 flash cartridge (A mode)") U8("\x00") U8("Milowork") U8("\x00")
+	U8("831031C/T-308 multicart (MMC3-based)") U8("\x00") U8("Realtec GN")
+	U8("-91B") U8("\x00") U8("Realtec 8090 (MMC3-based)") U8("\x00") U8("N")
+	U8("C-20MB PCB; 20-in-1 multicart (CA-006)") U8("\x00") U8("S-009") U8("\x00")
+	U8("NC3000M multicart") U8("\x00") U8("NC7000M multicart (MMC3-compa")
+	U8("tible)") U8("\x00") U8("Zh") U8("\xc5\x8d") U8("nggu") U8("\xc3\xb3")
+	U8(" D") U8("\xc3\xa0") U8("h") U8("\xc4\x93") U8("ng") U8("\x00") U8("M")
+	U8("\xc4\x9b") U8("i Sh") U8("\xc3\xa0") U8("on") U8("\xc7\x9a") U8(" ")
+	U8("M") U8("\xc3\xa8") U8("ng G") U8("\xc5\x8d") U8("ngch") U8("\xc7")
+	U8("\x8e") U8("ng III") U8("\x00") U8("Subor Karaoke") U8("\x00") U8("F")
+	U8("amily Noraebang") U8("\x00") U8("Brilliant Com Cocoma Pack") U8("\x00")
+	U8("EduBank") U8("\x00") U8("Kkachi-wa Nolae Chingu") U8("\x00") U8("S")
+	U8("ubor multicart") U8("\x00") U8("UNL-EH8813A") U8("\x00") U8("2-i")
+	U8("n-1 Datach multicart (VRC4e clone)") U8("\x00") U8("Korean Igo") U8("\x00")
+	U8("F") U8("\xc5\xab") U8("un Sh") U8("\xc5\x8d") U8("rinken (FDS co")
+	U8("nversion)") U8("\x00") U8("F") U8("\xc4\x93") U8("ngsh") U8("\xc3")
+	U8("\xa9") U8("nb") U8("\xc7\x8e") U8("ng: F") U8("\xc3\xba") U8("m") U8("\xc3")
+	U8("\xb3") U8(" S") U8("\xc4\x81") U8("n T") U8("\xc3\xa0") U8("iz") U8("\xc7")
+	U8("\x90") U8(" (Jncota)") U8("\x00") U8("The Lord of King (Jaleco) ")
+	U8("(bootleg)") U8("\x00") U8("UNL-KS7021A (VRC2b clone)") U8("\x00") U8("S")
+	U8("angokushi: Ch") U8("\xc5\xab") U8("gen no Hasha (bootleg)") U8("\x00")
+	U8("Fud") U8("\xc5\x8d") U8(" My") U8("\xc5\x8d\xc5\x8d") U8(" Den (")
+	U8("bootleg) (VRC2b clone)") U8("\x00") U8("1995 New Series Super 2-")
+	U8("in-1 multicart") U8("\x00") U8("Datach Dragon Ball Z (bootleg) (")
+	U8("VRC4e clone)") U8("\x00") U8("Super Mario Bros. Pocker Mali (VRC")
+	U8("4f clone)") U8("\x00") U8("LittleCom PC-95") U8("\x00") U8("Sach")
+	U8("en 3014") U8("\x00") U8("2-in-1 Sudoku/Gomoku (NJ064) (MMC3 clon")
+	U8("e)") U8("\x00") U8("Nazo no Murasamej") U8("\xc5\x8d") U8(" (FDS")
+	U8(" conversion)") U8("\x00") U8("W") U8("\xc3\xa0") U8("ix") U8("\xc4")
+	U8("\xab") U8("ng FS303 (MMC3 clone) (same as 195)") U8("\x00") U8("6")
+	U8("0-1064-16L") U8("\x00") U8("Kid Icarus (FDS conversion)") U8("\x00")
+	U8("Master Fighter VI' hack (variant of 359)") U8("\x00") U8("Little")
+	U8("Com 160-in-1 multicart") U8("\x00") U8("World Hero hack (VRC4 cl")
+	U8("one)") U8("\x00") U8("5-in-1 (CH-501) multicart (MMC1 clone)") U8("\x00")
+	U8("W") U8("\xc3\xa0") U8("ix") U8("\xc4\xab") U8("ng FS306") U8("\x00")
+	U8("Konami QTa adapter (VRC5)") U8("\x00") U8("CTC-15") U8("\x00") U8("C")
+	U8("o Tung Co.") U8("\x00") U8("JY820845C") U8("\x00") U8("Jncota RP")
+	U8("G re-release (variant of 178)") U8("\x00") U8("Taito X1-017 (cor")
+	U8("rect PRG ROM bank ordering)") U8("\x00") U8("Sachen 3013") U8("\x00")
+	U8("Kaiser KS-7010") U8("\x00") U8("Nintendo Campus Challenge 1991 (")
+	U8("RetroUSB version)") U8("\x00") U8("JY-215 multicart") U8("\x00") U8("M")
+	U8("oero TwinBee: Cinnamon-hakase o Sukue! (FDS conversion)") U8("\x00")
+	U8("YC-03-09") U8("\x00") U8("Y") U8("\xc3\xa0") U8("nch") U8("\xc3\xa9")
+	U8("ng") U8("\x00") U8("Bung Super Game Doctor 2M/4M RAM cartridge") U8("\x00")
+	U8("Venus Turbo Game Doctor 4+/6+/6M RAM cartridge") U8("\x00");
 
 typedef struct _NESMapperEntry {
 	uint16_t name_idx;

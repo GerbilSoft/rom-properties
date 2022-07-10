@@ -17,6 +17,7 @@ using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::string;
+using std::u8string;
 using std::vector;
 
 namespace LibRomData {
@@ -56,7 +57,7 @@ class GameBoyAdvancePrivate final : public RomDataPrivate
 		 * Get the publisher.
 		 * @return Publisher, or "Unknown (xxx)" if unknown.
 		 */
-		string getPublisher(void) const;
+		u8string getPublisher(void) const;
 };
 
 ROMDATA_IMPL(GameBoyAdvance)
@@ -95,23 +96,35 @@ GameBoyAdvancePrivate::GameBoyAdvancePrivate(GameBoyAdvance *q, IRpFile *file)
  * Get the publisher.
  * @return Publisher, or "Unknown (xxx)" if unknown.
  */
-string GameBoyAdvancePrivate::getPublisher(void) const
+u8string GameBoyAdvancePrivate::getPublisher(void) const
 {
-	const char *const publisher = NintendoPublishers::lookup(romHeader.company);
-	string s_publisher;
+	u8string s_publisher;
+
+	const char8_t *const publisher = NintendoPublishers::lookup(romHeader.company);
 	if (publisher) {
 		s_publisher = publisher;
 	} else {
+		// FIXME: U8STRFIX - can't use rp_sprintf()
+		char buf[128];
+		int len;
+
 		if (ISALNUM(romHeader.company[0]) &&
 		    ISALNUM(romHeader.company[1]))
 		{
-			s_publisher = rp_sprintf(C_("RomData", "Unknown (%.2s)"),
+			len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%.2s)"),
 				romHeader.company);
 		} else {
-			s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
+			len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%02X %02X)"),
 				static_cast<uint8_t>(romHeader.company[0]),
 				static_cast<uint8_t>(romHeader.company[1]));
 		}
+
+		if (len < 0) {
+			len = 0;
+		} else if (len >= static_cast<int>(sizeof(buf))) {
+			len = sizeof(buf)-1;
+		}
+		s_publisher.assign(reinterpret_cast<const char8_t*>(buf), len);
 	}
 
 	return s_publisher;

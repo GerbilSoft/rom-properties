@@ -21,7 +21,7 @@ namespace LibRomData { namespace MachOData {
  * @param cputype Mach-O CPU type.
  * @return CPU type name, or nullptr if not found.
  */
-const char *lookup_cpu_type(uint32_t cputype);
+const char8_t *lookup_cpu_type(uint32_t cputype);
 
 /**
  * Look up a Mach-O CPU subtype.
@@ -29,7 +29,7 @@ const char *lookup_cpu_type(uint32_t cputype);
  * @param cpusubtype Mach-O CPU subtype.
  * @return OS ABI name, or nullptr if not found.
  */
-const char *lookup_cpu_subtype(uint32_t cputype, uint32_t cpusubtype);
+const char8_t *lookup_cpu_subtype(uint32_t cputype, uint32_t cpusubtype);
 
 } }
 

@@ -23,7 +23,7 @@ namespace LibRomData { namespace Nintendo3DSSysTitles {
  * @param pRegion	[out,opt] Output buffer for pointer to region name
  * @return System title name, or nullptr on error.
  */
-const char *lookup_sys_title(uint32_t tid_hi, uint32_t tid_lo, const char **pRegion);
+const char8_t *lookup_sys_title(uint32_t tid_hi, uint32_t tid_lo, const char **pRegion);
 
 } }
 

@@ -2,129 +2,163 @@
 
 #include <stdint.h>
 
-static const char SegaTCode_strtbl[] =
-	"\x00" "Sega" "\x00" "Taito" "\x00" "Capcom" "\x00" "Data East" "\x00"
-	"Namco (Namcot)" "\x00" "Sun Electronics (Sunsoft)" "\x00" "Ma-Ba"
-	"\x00" "Dempa" "\x00" "Tecno Soft" "\x00" "Asmik" "\x00" "ASCII" "\x00"
-	"Micronet" "\x00" "VIC Tokai" "\x00" "Treco, Sammy" "\x00" "Nippo"
-	"n Computer Systems (Masaya)" "\x00" "Sigma Enterprises" "\x00" "T"
-	"oho" "\x00" "HOT-B" "\x00" "Kyugo" "\x00" "Video System" "\x00" "S"
-	"NK" "\x00" "Wolf Team" "\x00" "Kaneko" "\x00" "DreamWorks" "\x00"
-	"Seismic Software" "\x00" "Tecmo" "\x00" "Mediagenic" "\x00" "Toa"
-	"plan" "\x00" "UNIPACC" "\x00" "UPL" "\x00" "Human" "\x00" "Sanri"
-	"tsu (SIMS)" "\x00" "Game Arts" "\x00" "Kodansha Research Institu"
-	"te" "\x00" "Sage's Creation" "\x00" "Tengen (Time Warner Interac"
-	"tive)" "\x00" "Telenet Japan, Micro World" "\x00" "Electronic Ar"
-	"ts" "\x00" "Microcabin" "\x00" "SystemSoft (SystemSoft Alpha)" "\x00"
-	"Riverhillsoft" "\x00" "Face" "\x00" "Nuvision Entertainment" "\x00"
-	"Razorsoft" "\x00" "Jaleco" "\x00" "Visco" "\x00" "Victor Musical"
-	" Industries (Victor Entertainment, Victor Soft)" "\x00" "Toyo Re"
-	"cording Co. (Wonder Amusement Studio)" "\x00" "Sony Imagesoft" "\x00"
-	"Toshiba EMI" "\x00" "Information Global Service" "\x00" "Tsukuda"
-	" Ideal" "\x00" "Compile" "\x00" "Home Data (Magical)" "\x00" "CS"
-	"K Research Institute (CRI)" "\x00" "Arena Entertainment" "\x00" "V"
-	"irgin Interactive" "\x00" "Nihon Bussan (Nichibutsu)" "\x00" "Va"
-	"rie" "\x00" "Coconuts Japan, Soft Vision" "\x00" "PALSOFT" "\x00"
-	"Pony Canyon" "\x00" "Koei" "\x00" "Takeru (Sur De Wave)" "\x00" "U"
-	".S. Gold" "\x00" "Acclaim Entertainment, Flying Edge" "\x00" "Ga"
-	"meTek" "\x00" "Datawest" "\x00" "PCM Complete" "\x00" "Absolute "
-	"Entertainment" "\x00" "Mindscape (The Software Toolworks)" "\x00"
-	"Domark" "\x00" "Parker Brothers" "\x00" "Pack-In Video (Victor I"
-	"nteractive Software, Pack-In-Soft, Victor Soft)" "\x00" "Polydor"
-	" (Sandstorm)" "\x00" "Sony" "\x00" "Konami" "\x00" "Tradewest, W"
-	"illiams Entertainment, Midway Games" "\x00" "Success" "\x00" "TH"
-	"Q, Black Pearl Software)" "\x00" "TecMagik Entertainment" "\x00" "S"
-	"amsung" "\x00" "Takara" "\x00" "Shogakukan Production" "\x00" "E"
-	"lectronic Arts Victor" "\x00" "Electro Brain" "\x00" "Saddleback"
-	" Graphics" "\x00" "Dynamix (Simon & Schuster Interactive)" "\x00"
-	"American Laser Games" "\x00" "Hi-Tech Expressions" "\x00" "Psygn"
-	"osis" "\x00" "T&E Soft" "\x00" "Core Design" "\x00" "The Learnin"
-	"g Company" "\x00" "Accolade" "\x00" "Codemasters" "\x00" "ReadyS"
-	"oft" "\x00" "Gremlin Interactive" "\x00" "Spectrum Holobyte" "\x00"
-	"Interplay" "\x00" "Maxis" "\x00" "Working Designs" "\x00" "Activ"
-	"ision" "\x00" "Playmates Interactive Entertainment" "\x00" "Band"
-	"ai" "\x00" "CapDisc" "\x00" "ASC Games" "\x00" "Viacom New Media"
-	"\x00" "Toei Video" "\x00" "Hudson (Hudson Soft)" "\x00" "Atlus" "\x00"
-	"Sony Music Entertainment" "\x00" "Sansan" "\x00" "Nisshouiwai In"
-	"focom" "\x00" "Imagineer (Imadio)" "\x00" "Infogrames" "\x00" "D"
-	"avidson & Associates" "\x00" "Rocket Science Games" "\x00" "Tech"
-	"n" "\xc5\x8d" "s Japan" "\x00" "Angel" "\x00" "Mindscape" "\x00" "C"
-	"rystal Dynamics" "\x00" "Sales Curve Interactive" "\x00" "Fox In"
-	"teractive" "\x00" "Digital Pictures" "\x00" "Ocean Software" "\x00"
-	"Seta" "\x00" "Altron" "\x00" "ASK Kodansha" "\x00" "Athena" "\x00"
-	"Gakken" "\x00" "General Entertainment" "\x00" "EA Sports" "\x00" "G"
-	"lams" "\x00" "ASCII Something Good" "\x00" "Ubisoft" "\x00" "Hit"
-	"achi" "\x00" "BMG Interactive Entertainment (BMG Victor, BMG Jap"
-	"an)" "\x00" "Obunsha" "\x00" "Thinking Cap" "\x00" "Gaga Communi"
-	"cations" "\x00" "SoftBank (Game Bank)" "\x00" "Naxat Soft (Pione"
-	"soft)" "\x00" "Mizuki (Spike, Maxbet)" "\x00" "KAZe" "\x00" "Seg"
-	"a Yonezawa" "\x00" "We Net" "\x00" "Datam Polystar" "\x00" "KID" "\x00"
-	"Epoch" "\x00" "Ving" "\x00" "Yoshimoto Kogyo" "\x00" "NEC Interc"
-	"hannel (InterChannel)" "\x00" "Sonnet Computer Entertainment" "\x00"
-	"Game Studio" "\x00" "Psikyo" "\x00" "Media Entertainment" "\x00" "B"
-	"anpresto" "\x00" "Ecseco Development" "\x00" "Bullet-Proof Softw"
-	"are (BPS)" "\x00" "Sieg" "\x00" "Yanoman" "\x00" "Oz Club" "\x00"
-	"Nihon Create" "\x00" "Media Rings Corporation" "\x00" "Shoeisha" "\x00"
-	"OPeNBooK" "\x00" "Hakuhodo (Hamlet)" "\x00" "Aroma (Yumedia)" "\x00"
-	"Societa Daikanyama" "\x00" "Arc System Works" "\x00" "Climax Ent"
-	"ertainment" "\x00" "Pioneer LDC" "\x00" "Tokuma Shoten" "\x00" "I"
-	"'MAX" "\x00" "Shogakukan" "\x00" "Vantan International" "\x00" "T"
-	"itus" "\x00" "LucasArts" "\x00" "Pai" "\x00" "Ecole (Reindeer)" "\x00"
-	"Nayuta" "\x00" "Bandai Visual" "\x00" "Quintet" "\x00" "Disney I"
-	"nteractive" "\x00" "9003 (OpenBook9003)" "\x00" "Multisoft" "\x00"
-	"Sky Think System" "\x00" "OCC" "\x00" "Increment P (iPC)" "\x00" "K"
-	"ing Records" "\x00" "Fun House" "\x00" "Patra" "\x00" "Inner Bra"
-	"in" "\x00" "Make Software" "\x00" "GT Interactive Software" "\x00"
-	"Kodansha" "\x00" "Clef" "\x00" "C-Seven" "\x00" "Fujitsu Parex" "\x00"
-	"Xing Entertainment" "\x00" "Media Quest" "\x00" "Wooyoung System"
-	"\x00" "Nihon System" "\x00" "Scholar" "\x00" "Datt Japan" "\x00" "M"
-	"ediaWorks" "\x00" "Kadokawa Shoten" "\x00" "Elf" "\x00" "Tomy" "\x00"
-	"KSS" "\x00" "Mainichi Communications" "\x00" "Warashi" "\x00" "M"
-	"etro" "\x00" "Sai-Mate" "\x00" "Kokopeli Digital Studios" "\x00" "P"
-	"lanning Office Wada (POW)" "\x00" "Telstar" "\x00" "Warp, Kumon "
-	"Publishing" "\x00" "Masudaya" "\x00" "Soft Office" "\x00" "Empir"
-	"e Interactive" "\x00" "Genki (Sada Soft)" "\x00" "Neverland" "\x00"
-	"Shar Rock" "\x00" "Natsume" "\x00" "Nexus Interact" "\x00" "Apli"
-	"x Corporation" "\x00" "Omiya Soft" "\x00" "JVC" "\x00" "Zoom" "\x00"
-	"TEN Institute" "\x00" "Fujitsu" "\x00" "TGL" "\x00" "Red Company"
-	" (Red Entertainment)" "\x00" "Waka Manufacturing" "\x00" "Treasu"
-	"re" "\x00" "Tokuma Shoten Intermedia" "\x00" "Sonic! Software Pl"
-	"anning (Camelot)" "\x00" "Sting" "\x00" "Chunsoft" "\x00" "Aki" "\x00"
-	"From Software" "\x00" "Daiki" "\x00" "Aspect" "\x00" "Micro Visi"
-	"on" "\x00" "Gainax" "\x00" "FortyFive (45XLV)" "\x00" "Enix" "\x00"
-	"Ray Corporation" "\x00" "Tonkin House" "\x00" "Outrigger" "\x00" "B"
-	"-Factory" "\x00" "LayUp" "\x00" "Axela" "\x00" "WorkJam" "\x00" "N"
-	"ihon Syscom (Syscom Entertainment)" "\x00" "FOG (Full On Games)" "\x00"
-	"Eidos Interactive" "\x00" "UEP Systems" "\x00" "Shouei System" "\x00"
-	"GMF" "\x00" "ADK" "\x00" "Softstar Entertainment" "\x00" "Nexton"
-	"\x00" "Denshi Media Services" "\x00" "Takuyo" "\x00" "Starlight "
-	"Marry" "\x00" "Crystal Vision" "\x00" "Kamata and Partners" "\x00"
-	"AquaPlus" "\x00" "Media Gallop" "\x00" "Culture Brain" "\x00" "L"
-	"ocus" "\x00" "Entertainment Software Publishing (ESP)" "\x00" "N"
-	"EC Home Electronics" "\x00" "Pulse Interactive" "\x00" "Random H"
-	"ouse" "\x00" "Vivarium" "\x00" "Mebius" "\x00" "Panther Software"
-	"\x00" "TBS" "\x00" "NetVillage (Gamevillage)" "\x00" "Vision (No"
-	"isia)" "\x00" "Shangri-La" "\x00" "Crave Entertainment" "\x00" "M"
-	"etro3D" "\x00" "Majesco" "\x00" "Take-Two Interactive" "\x00" "H"
-	"asbro Interactive" "\x00" "Rage Software (Rage Games)" "\x00" "M"
-	"arvelous Entertainment" "\x00" "Bottom Up" "\x00" "Daikoku Denki"
-	"\x00" "Sunrise Interactive" "\x00" "Bimboosoft" "\x00" "UFO" "\x00"
-	"Mattel Interactive" "\x00" "CaramelPot" "\x00" "Vatical Entertai"
-	"nment" "\x00" "Ripcord Games" "\x00" "Sega Toys" "\x00" "Gatheri"
-	"ng of Developers" "\x00" "Rockstar Games" "\x00" "Winkysoft" "\x00"
-	"Cyberfront" "\x00" "DaZZ" "\x00" "Kobi" "\x00" "Fujicom" "\x00" "R"
-	"eal Vision" "\x00" "Visit" "\x00" "Global A Entertainment" "\x00"
-	"Studio Wonder Effect" "\x00" "Media Factory" "\x00" "Red" "\x00" "A"
-	"getec" "\x00" "Abel" "\x00" "Softmax" "\x00" "Isao" "\x00" "Kool"
-	" Kizz" "\x00" "GeneX" "\x00" "Xicat Interactive" "\x00" "Swing! "
-	"Entertainment" "\x00" "Yuke's" "\x00" "AAA Game" "\x00" "TV Asah"
-	"i" "\x00" "Crazy Games" "\x00" "Atmark" "\x00" "Hackberry" "\x00"
-	"AIA" "\x00" "Starfish-SD" "\x00" "Idea Factory" "\x00" "Broccoli"
-	"\x00" "Oaks (Princess Soft)" "\x00" "Bigben Interactive" "\x00" "G"
-	".rev" "\x00" "Symbio Planning" "\x00" "Alchemist" "\x00" "SNK Pl"
-	"aymore" "\x00" "D3Publisher" "\x00" "Rain Software (Charara)" "\x00"
-	"Good Navigate (GN Software)" "\x00" "Alfa System" "\x00" "Milest"
-	"one Inc." "\x00" "Triangle Service" "\x00";
+static const char8_t SegaTCode_strtbl[] =
+	U8("\x00") U8("Sega") U8("\x00") U8("Taito") U8("\x00") U8("Capcom") U8("\x00")
+	U8("Data East") U8("\x00") U8("Namco (Namcot)") U8("\x00") U8("Sun E")
+	U8("lectronics (Sunsoft)") U8("\x00") U8("Ma-Ba") U8("\x00") U8("Dem")
+	U8("pa") U8("\x00") U8("Tecno Soft") U8("\x00") U8("Asmik") U8("\x00")
+	U8("ASCII") U8("\x00") U8("Micronet") U8("\x00") U8("VIC Tokai") U8("\x00")
+	U8("Treco, Sammy") U8("\x00") U8("Nippon Computer Systems (Masaya)") U8("\x00")
+	U8("Sigma Enterprises") U8("\x00") U8("Toho") U8("\x00") U8("HOT-B") U8("\x00")
+	U8("Kyugo") U8("\x00") U8("Video System") U8("\x00") U8("SNK") U8("\x00")
+	U8("Wolf Team") U8("\x00") U8("Kaneko") U8("\x00") U8("DreamWorks") U8("\x00")
+	U8("Seismic Software") U8("\x00") U8("Tecmo") U8("\x00") U8("Mediage")
+	U8("nic") U8("\x00") U8("Toaplan") U8("\x00") U8("UNIPACC") U8("\x00")
+	U8("UPL") U8("\x00") U8("Human") U8("\x00") U8("Sanritsu (SIMS)") U8("\x00")
+	U8("Game Arts") U8("\x00") U8("Kodansha Research Institute") U8("\x00")
+	U8("Sage's Creation") U8("\x00") U8("Tengen (Time Warner Interactive")
+	U8(")") U8("\x00") U8("Telenet Japan, Micro World") U8("\x00") U8("E")
+	U8("lectronic Arts") U8("\x00") U8("Microcabin") U8("\x00") U8("Syst")
+	U8("emSoft (SystemSoft Alpha)") U8("\x00") U8("Riverhillsoft") U8("\x00")
+	U8("Face") U8("\x00") U8("Nuvision Entertainment") U8("\x00") U8("Ra")
+	U8("zorsoft") U8("\x00") U8("Jaleco") U8("\x00") U8("Visco") U8("\x00")
+	U8("Victor Musical Industries (Victor Entertainment, Victor Soft)") U8("\x00")
+	U8("Toyo Recording Co. (Wonder Amusement Studio)") U8("\x00") U8("So")
+	U8("ny Imagesoft") U8("\x00") U8("Toshiba EMI") U8("\x00") U8("Infor")
+	U8("mation Global Service") U8("\x00") U8("Tsukuda Ideal") U8("\x00") U8("C")
+	U8("ompile") U8("\x00") U8("Home Data (Magical)") U8("\x00") U8("CSK")
+	U8(" Research Institute (CRI)") U8("\x00") U8("Arena Entertainment") U8("\x00")
+	U8("Virgin Interactive") U8("\x00") U8("Nihon Bussan (Nichibutsu)") U8("\x00")
+	U8("Varie") U8("\x00") U8("Coconuts Japan, Soft Vision") U8("\x00") U8("P")
+	U8("ALSOFT") U8("\x00") U8("Pony Canyon") U8("\x00") U8("Koei") U8("\x00")
+	U8("Takeru (Sur De Wave)") U8("\x00") U8("U.S. Gold") U8("\x00") U8("A")
+	U8("cclaim Entertainment, Flying Edge") U8("\x00") U8("GameTek") U8("\x00")
+	U8("Datawest") U8("\x00") U8("PCM Complete") U8("\x00") U8("Absolute")
+	U8(" Entertainment") U8("\x00") U8("Mindscape (The Software Toolwork")
+	U8("s)") U8("\x00") U8("Domark") U8("\x00") U8("Parker Brothers") U8("\x00")
+	U8("Pack-In Video (Victor Interactive Software, Pack-In-Soft, Victor")
+	U8(" Soft)") U8("\x00") U8("Polydor (Sandstorm)") U8("\x00") U8("Son")
+	U8("y") U8("\x00") U8("Konami") U8("\x00") U8("Tradewest, Williams E")
+	U8("ntertainment, Midway Games") U8("\x00") U8("Success") U8("\x00") U8("T")
+	U8("HQ, Black Pearl Software)") U8("\x00") U8("TecMagik Entertainmen")
+	U8("t") U8("\x00") U8("Samsung") U8("\x00") U8("Takara") U8("\x00") U8("S")
+	U8("hogakukan Production") U8("\x00") U8("Electronic Arts Victor") U8("\x00")
+	U8("Electro Brain") U8("\x00") U8("Saddleback Graphics") U8("\x00") U8("D")
+	U8("ynamix (Simon & Schuster Interactive)") U8("\x00") U8("American ")
+	U8("Laser Games") U8("\x00") U8("Hi-Tech Expressions") U8("\x00") U8("P")
+	U8("sygnosis") U8("\x00") U8("T&E Soft") U8("\x00") U8("Core Design") U8("\x00")
+	U8("The Learning Company") U8("\x00") U8("Accolade") U8("\x00") U8("C")
+	U8("odemasters") U8("\x00") U8("ReadySoft") U8("\x00") U8("Gremlin I")
+	U8("nteractive") U8("\x00") U8("Spectrum Holobyte") U8("\x00") U8("I")
+	U8("nterplay") U8("\x00") U8("Maxis") U8("\x00") U8("Working Designs")
+	U8("\x00") U8("Activision") U8("\x00") U8("Playmates Interactive Ent")
+	U8("ertainment") U8("\x00") U8("Bandai") U8("\x00") U8("CapDisc") U8("\x00")
+	U8("ASC Games") U8("\x00") U8("Viacom New Media") U8("\x00") U8("Toe")
+	U8("i Video") U8("\x00") U8("Hudson (Hudson Soft)") U8("\x00") U8("A")
+	U8("tlus") U8("\x00") U8("Sony Music Entertainment") U8("\x00") U8("S")
+	U8("ansan") U8("\x00") U8("Nisshouiwai Infocom") U8("\x00") U8("Imag")
+	U8("ineer (Imadio)") U8("\x00") U8("Infogrames") U8("\x00") U8("Davi")
+	U8("dson & Associates") U8("\x00") U8("Rocket Science Games") U8("\x00")
+	U8("Techn") U8("\xc5\x8d") U8("s Japan") U8("\x00") U8("Angel") U8("\x00")
+	U8("Mindscape") U8("\x00") U8("Crystal Dynamics") U8("\x00") U8("Sal")
+	U8("es Curve Interactive") U8("\x00") U8("Fox Interactive") U8("\x00")
+	U8("Digital Pictures") U8("\x00") U8("Ocean Software") U8("\x00") U8("S")
+	U8("eta") U8("\x00") U8("Altron") U8("\x00") U8("ASK Kodansha") U8("\x00")
+	U8("Athena") U8("\x00") U8("Gakken") U8("\x00") U8("General Entertai")
+	U8("nment") U8("\x00") U8("EA Sports") U8("\x00") U8("Glams") U8("\x00")
+	U8("ASCII Something Good") U8("\x00") U8("Ubisoft") U8("\x00") U8("H")
+	U8("itachi") U8("\x00") U8("BMG Interactive Entertainment (BMG Victo")
+	U8("r, BMG Japan)") U8("\x00") U8("Obunsha") U8("\x00") U8("Thinking")
+	U8(" Cap") U8("\x00") U8("Gaga Communications") U8("\x00") U8("SoftB")
+	U8("ank (Game Bank)") U8("\x00") U8("Naxat Soft (Pionesoft)") U8("\x00")
+	U8("Mizuki (Spike, Maxbet)") U8("\x00") U8("KAZe") U8("\x00") U8("Se")
+	U8("ga Yonezawa") U8("\x00") U8("We Net") U8("\x00") U8("Datam Polys")
+	U8("tar") U8("\x00") U8("KID") U8("\x00") U8("Epoch") U8("\x00") U8("V")
+	U8("ing") U8("\x00") U8("Yoshimoto Kogyo") U8("\x00") U8("NEC Interc")
+	U8("hannel (InterChannel)") U8("\x00") U8("Sonnet Computer Entertain")
+	U8("ment") U8("\x00") U8("Game Studio") U8("\x00") U8("Psikyo") U8("\x00")
+	U8("Media Entertainment") U8("\x00") U8("Banpresto") U8("\x00") U8("E")
+	U8("cseco Development") U8("\x00") U8("Bullet-Proof Software (BPS)") U8("\x00")
+	U8("Sieg") U8("\x00") U8("Yanoman") U8("\x00") U8("Oz Club") U8("\x00")
+	U8("Nihon Create") U8("\x00") U8("Media Rings Corporation") U8("\x00")
+	U8("Shoeisha") U8("\x00") U8("OPeNBooK") U8("\x00") U8("Hakuhodo (Ha")
+	U8("mlet)") U8("\x00") U8("Aroma (Yumedia)") U8("\x00") U8("Societa ")
+	U8("Daikanyama") U8("\x00") U8("Arc System Works") U8("\x00") U8("Cl")
+	U8("imax Entertainment") U8("\x00") U8("Pioneer LDC") U8("\x00") U8("T")
+	U8("okuma Shoten") U8("\x00") U8("I'MAX") U8("\x00") U8("Shogakukan") U8("\x00")
+	U8("Vantan International") U8("\x00") U8("Titus") U8("\x00") U8("Luc")
+	U8("asArts") U8("\x00") U8("Pai") U8("\x00") U8("Ecole (Reindeer)") U8("\x00")
+	U8("Nayuta") U8("\x00") U8("Bandai Visual") U8("\x00") U8("Quintet") U8("\x00")
+	U8("Disney Interactive") U8("\x00") U8("9003 (OpenBook9003)") U8("\x00")
+	U8("Multisoft") U8("\x00") U8("Sky Think System") U8("\x00") U8("OCC")
+	U8("\x00") U8("Increment P (iPC)") U8("\x00") U8("King Records") U8("\x00")
+	U8("Fun House") U8("\x00") U8("Patra") U8("\x00") U8("Inner Brain") U8("\x00")
+	U8("Make Software") U8("\x00") U8("GT Interactive Software") U8("\x00")
+	U8("Kodansha") U8("\x00") U8("Clef") U8("\x00") U8("C-Seven") U8("\x00")
+	U8("Fujitsu Parex") U8("\x00") U8("Xing Entertainment") U8("\x00") U8("M")
+	U8("edia Quest") U8("\x00") U8("Wooyoung System") U8("\x00") U8("Nih")
+	U8("on System") U8("\x00") U8("Scholar") U8("\x00") U8("Datt Japan") U8("\x00")
+	U8("MediaWorks") U8("\x00") U8("Kadokawa Shoten") U8("\x00") U8("Elf")
+	U8("\x00") U8("Tomy") U8("\x00") U8("KSS") U8("\x00") U8("Mainichi C")
+	U8("ommunications") U8("\x00") U8("Warashi") U8("\x00") U8("Metro") U8("\x00")
+	U8("Sai-Mate") U8("\x00") U8("Kokopeli Digital Studios") U8("\x00") U8("P")
+	U8("lanning Office Wada (POW)") U8("\x00") U8("Telstar") U8("\x00") U8("W")
+	U8("arp, Kumon Publishing") U8("\x00") U8("Masudaya") U8("\x00") U8("S")
+	U8("oft Office") U8("\x00") U8("Empire Interactive") U8("\x00") U8("G")
+	U8("enki (Sada Soft)") U8("\x00") U8("Neverland") U8("\x00") U8("Sha")
+	U8("r Rock") U8("\x00") U8("Natsume") U8("\x00") U8("Nexus Interact") U8("\x00")
+	U8("Aplix Corporation") U8("\x00") U8("Omiya Soft") U8("\x00") U8("J")
+	U8("VC") U8("\x00") U8("Zoom") U8("\x00") U8("TEN Institute") U8("\x00")
+	U8("Fujitsu") U8("\x00") U8("TGL") U8("\x00") U8("Red Company (Red E")
+	U8("ntertainment)") U8("\x00") U8("Waka Manufacturing") U8("\x00") U8("T")
+	U8("reasure") U8("\x00") U8("Tokuma Shoten Intermedia") U8("\x00") U8("S")
+	U8("onic! Software Planning (Camelot)") U8("\x00") U8("Sting") U8("\x00")
+	U8("Chunsoft") U8("\x00") U8("Aki") U8("\x00") U8("From Software") U8("\x00")
+	U8("Daiki") U8("\x00") U8("Aspect") U8("\x00") U8("Micro Vision") U8("\x00")
+	U8("Gainax") U8("\x00") U8("FortyFive (45XLV)") U8("\x00") U8("Enix") U8("\x00")
+	U8("Ray Corporation") U8("\x00") U8("Tonkin House") U8("\x00") U8("O")
+	U8("utrigger") U8("\x00") U8("B-Factory") U8("\x00") U8("LayUp") U8("\x00")
+	U8("Axela") U8("\x00") U8("WorkJam") U8("\x00") U8("Nihon Syscom (Sy")
+	U8("scom Entertainment)") U8("\x00") U8("FOG (Full On Games)") U8("\x00")
+	U8("Eidos Interactive") U8("\x00") U8("UEP Systems") U8("\x00") U8("S")
+	U8("houei System") U8("\x00") U8("GMF") U8("\x00") U8("ADK") U8("\x00")
+	U8("Softstar Entertainment") U8("\x00") U8("Nexton") U8("\x00") U8("D")
+	U8("enshi Media Services") U8("\x00") U8("Takuyo") U8("\x00") U8("St")
+	U8("arlight Marry") U8("\x00") U8("Crystal Vision") U8("\x00") U8("K")
+	U8("amata and Partners") U8("\x00") U8("AquaPlus") U8("\x00") U8("Me")
+	U8("dia Gallop") U8("\x00") U8("Culture Brain") U8("\x00") U8("Locus")
+	U8("\x00") U8("Entertainment Software Publishing (ESP)") U8("\x00") U8("N")
+	U8("EC Home Electronics") U8("\x00") U8("Pulse Interactive") U8("\x00")
+	U8("Random House") U8("\x00") U8("Vivarium") U8("\x00") U8("Mebius") U8("\x00")
+	U8("Panther Software") U8("\x00") U8("TBS") U8("\x00") U8("NetVillag")
+	U8("e (Gamevillage)") U8("\x00") U8("Vision (Noisia)") U8("\x00") U8("S")
+	U8("hangri-La") U8("\x00") U8("Crave Entertainment") U8("\x00") U8("M")
+	U8("etro3D") U8("\x00") U8("Majesco") U8("\x00") U8("Take-Two Intera")
+	U8("ctive") U8("\x00") U8("Hasbro Interactive") U8("\x00") U8("Rage ")
+	U8("Software (Rage Games)") U8("\x00") U8("Marvelous Entertainment") U8("\x00")
+	U8("Bottom Up") U8("\x00") U8("Daikoku Denki") U8("\x00") U8("Sunris")
+	U8("e Interactive") U8("\x00") U8("Bimboosoft") U8("\x00") U8("UFO") U8("\x00")
+	U8("Mattel Interactive") U8("\x00") U8("CaramelPot") U8("\x00") U8("V")
+	U8("atical Entertainment") U8("\x00") U8("Ripcord Games") U8("\x00") U8("S")
+	U8("ega Toys") U8("\x00") U8("Gathering of Developers") U8("\x00") U8("R")
+	U8("ockstar Games") U8("\x00") U8("Winkysoft") U8("\x00") U8("Cyberf")
+	U8("ront") U8("\x00") U8("DaZZ") U8("\x00") U8("Kobi") U8("\x00") U8("F")
+	U8("ujicom") U8("\x00") U8("Real Vision") U8("\x00") U8("Visit") U8("\x00")
+	U8("Global A Entertainment") U8("\x00") U8("Studio Wonder Effect") U8("\x00")
+	U8("Media Factory") U8("\x00") U8("Red") U8("\x00") U8("Agetec") U8("\x00")
+	U8("Abel") U8("\x00") U8("Softmax") U8("\x00") U8("Isao") U8("\x00") U8("K")
+	U8("ool Kizz") U8("\x00") U8("GeneX") U8("\x00") U8("Xicat Interacti")
+	U8("ve") U8("\x00") U8("Swing! Entertainment") U8("\x00") U8("Yuke's")
+	U8("\x00") U8("AAA Game") U8("\x00") U8("TV Asahi") U8("\x00") U8("C")
+	U8("razy Games") U8("\x00") U8("Atmark") U8("\x00") U8("Hackberry") U8("\x00")
+	U8("AIA") U8("\x00") U8("Starfish-SD") U8("\x00") U8("Idea Factory") U8("\x00")
+	U8("Broccoli") U8("\x00") U8("Oaks (Princess Soft)") U8("\x00") U8("B")
+	U8("igben Interactive") U8("\x00") U8("G.rev") U8("\x00") U8("Symbio")
+	U8(" Planning") U8("\x00") U8("Alchemist") U8("\x00") U8("SNK Playmo")
+	U8("re") U8("\x00") U8("D3Publisher") U8("\x00") U8("Rain Software (")
+	U8("Charara)") U8("\x00") U8("Good Navigate (GN Software)") U8("\x00")
+	U8("Alfa System") U8("\x00") U8("Milestone Inc.") U8("\x00") U8("Tri")
+	U8("angle Service") U8("\x00");
 
 static const uint16_t SegaTCode_offtbl[] = {
 	/* Sega Third-Party Publisher 0 */

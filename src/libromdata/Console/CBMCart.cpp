@@ -347,7 +347,7 @@ int CBMCart::loadFieldData(void)
 	// Cartridge type
 	const unsigned int type = be16_to_cpu(romHeader->type);
 	bool b_noType = false;
-	const char *s_type = nullptr;
+	const char8_t *s_type = nullptr;
 	switch (d->romType) {
 		case CBMCartPrivate::RomType::C64:
 			switch (type) {
@@ -356,18 +356,18 @@ int CBMCart::loadFieldData(void)
 					// Identify the type based on the EXROM/GAME lines.
 					const uint8_t id = (romHeader->c64_game  != 0) |
 					                  ((romHeader->c64_exrom != 0) << 1);
-					static const char crt_types_c64_generic[][16] = {
-						"16 KB game", "8 KB game",
-						"UltiMax mode", "RAM/disabled"
+					static const char8_t crt_types_c64_generic[][16] = {
+						U8("16 KB game"), U8("8 KB game"),
+						U8("UltiMax mode"), U8("RAM/disabled")
 					};
 					s_type = crt_types_c64_generic[id & 3];
 					break;
 				}
 				case 36:
-					s_type = (romHeader->subtype == 1 ? "Nordic Replay" : "Retro Replay");
+					s_type = (romHeader->subtype == 1) ? U8("Nordic Replay") : U8("Retro Replay");
 					break;
 				case 57:
-					s_type = (romHeader->subtype == 1 ? "Hucky" : "RGCD");
+					s_type = (romHeader->subtype == 1) ? U8("Hucky") : U8("RGCD");
 					break;
 				default:
 					s_type = CBMData::lookup_C64_cart_type(type);
@@ -378,19 +378,19 @@ int CBMCart::loadFieldData(void)
 		case CBMCartPrivate::RomType::C128:
 			switch (type) {
 				case 0:
-					s_type = "generic cartridge";
+					s_type = U8("generic cartridge");
 					break;
 				case 1:
 					switch (romHeader->subtype) {
 						default:
 						case 0:
-							s_type = "Warpspeed128";
+							s_type = U8("Warpspeed128");
 							break;
 						case 1:
-							s_type = "Warpspeed128, REU support";
+							s_type = U8("Warpspeed128, REU support");
 							break;
 						case 2:
-							s_type = "Warpspeed128, REU support, with I/O and ROM banking";
+							s_type = U8("Warpspeed128, REU support, with I/O and ROM banking");
 							break;
 					}
 					break;

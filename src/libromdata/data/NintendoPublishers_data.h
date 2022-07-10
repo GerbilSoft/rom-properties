@@ -2,146 +2,186 @@
 
 #include <stdint.h>
 
-static const char NintendoPublishers_strtbl[] =
-	"\x00" "<unlicensed>" "\x00" "Nintendo" "\x00" "Rocket Games / Aj"
-	"inomoto" "\x00" "Imagineer-Zoom" "\x00" "Gray Matter" "\x00" "Za"
-	"muse" "\x00" "Falcom" "\x00" "Enix" "\x00" "Capcom" "\x00" "Hot "
-	"B Co." "\x00" "Jaleco" "\x00" "Coconuts Japan" "\x00" "Coconuts "
-	"Japan / G.X.Media" "\x00" "Micronet" "\x00" "Technos" "\x00" "Me"
-	"bio Software" "\x00" "Shouei System" "\x00" "Starfish" "\x00" "M"
-	"itsui Fudosan / Dentsu" "\x00" "Warashi Inc." "\x00" "Nowpro" "\x00"
-	"Game Village" "\x00" "IE Institute" "\x00" "Infocom" "\x00" "Ele"
-	"ctronic Arts Japan" "\x00" "Cobra Team" "\x00" "Human / Field" "\x00"
-	"KOEI" "\x00" "Hudson Soft" "\x00" "S.C.P." "\x00" "Yanoman" "\x00"
-	"Tecmo Products" "\x00" "Japan Glary Business" "\x00" "Forum / Op"
-	"enSystem" "\x00" "Virgin Games (Japan)" "\x00" "SMDE" "\x00" "Da"
-	"ikokudenki" "\x00" "Creatures Inc." "\x00" "TDK Deep Impresion" "\x00"
-	"Zoo" "\x00" "Sunsoft / Tokai Engineering" "\x00" "POW (Planning "
-	"Office Wada) / VR1 Japan" "\x00" "Micro World" "\x00" "San-X" "\x00"
-	"Loriciel / Electro Brain" "\x00" "Kemco Japan" "\x00" "Seta" "\x00"
-	"Culture Brain" "\x00" "Palsoft" "\x00" "Visit Co.,Ltd." "\x00" "I"
-	"ntec" "\x00" "System Sacom" "\x00" "Poppo" "\x00" "Ubisoft Japan"
-	"\x00" "Media Works" "\x00" "NEC InterChannel" "\x00" "Tam" "\x00"
-	"Jordan" "\x00" "Smilesoft / Rocket" "\x00" "Mediakite" "\x00" "V"
-	"iacom" "\x00" "Carrozzeria" "\x00" "Dynamic" "\x00" "Magifact" "\x00"
-	"Hect" "\x00" "Codemasters" "\x00" "Taito / GAGA Communications" "\x00"
-	"Laguna" "\x00" "Telstar / Event / Taito" "\x00" "Soedesco" "\x00"
-	"Arcade Zone Ltd" "\x00" "Entertainment International / Empire So"
-	"ftware" "\x00" "Loriciel" "\x00" "Gremlin Graphics" "\x00" "K.Am"
-	"usement Leasing Co." "\x00" "Seika Corp." "\x00" "Ubi Soft Enter"
-	"tainment" "\x00" "Sunsoft US" "\x00" "Life Fitness" "\x00" "Syst"
-	"em 3" "\x00" "Spectrum Holobyte" "\x00" "Irem" "\x00" "Gakken" "\x09"
-	"// FDS" "\x00" "Raya Systems" "\x00" "Renovation Products" "\x00"
-	"Malibu Games" "\x00" "Eidos" "\x00" "Playmates Interactive" "\x00"
-	"Fox Interactive" "\x00" "Time Warner Interactive" "\x00" "Disney"
-	" Interactive" "\x00" "Black Pearl" "\x00" "Advanced Productions" "\x00"
-	"GT Interactive" "\x00" "RARE" "\x00" "Crave Entertainment" "\x00"
-	"Absolute Entertainment" "\x00" "Acclaim" "\x00" "Activision" "\x00"
-	"American Sammy" "\x00" "Take 2 Interactive / GameTek" "\x00" "Hi"
-	" Tech" "\x00" "LJN LTD." "\x00" "Mattel" "\x00" "Mindscape / Red"
-	" Orb Entertainment" "\x00" "Romstar" "\x00" "Taxan" "\x00" "Midw"
-	"ay / Tradewest" "\x00" "American Softworks" "\x00" "Majesco Sale"
-	"s Inc" "\x00" "3DO" "\x00" "Hasbro" "\x00" "NewKidCo" "\x00" "Te"
-	"legames" "\x00" "Metro3D" "\x00" "Vatical Entertainment" "\x00" "L"
-	"EGO Media" "\x00" "Xicat Interactive" "\x00" "Cryo Interactive" "\x00"
-	"Red Storm Entertainment" "\x00" "Microids" "\x00" "Data Design /"
-	" Conspiracy / Swing" "\x00" "Titus" "\x00" "Virgin Interactive" "\x00"
-	"Maxis" "\x00" "LucasArts Entertainment" "\x00" "Ocean" "\x00" "B"
-	"ethesda Softworks" "\x00" "Electronic Arts" "\x00" "Laser Beam" "\x00"
-	"Elite Systems" "\x00" "Electro Brain" "\x00" "The Learning Compa"
-	"ny" "\x00" "BBC" "\x00" "Software 2000" "\x00" "UFO Interactive "
-	"Games" "\x00" "BAM! Entertainment" "\x00" "Studio 3" "\x00" "Cla"
-	"ssified Games" "\x00" "TDK Mediactive" "\x00" "DreamCatcher" "\x00"
-	"JoWood Produtions" "\x00" "Sega" "\x00" "Wannado Edition" "\x00" "L"
-	"SP (Light & Shadow Prod.)" "\x00" "ITE Media" "\x00" "Atari (Inf"
-	"ogrames)" "\x00" "Interplay" "\x00" "JVC (US)" "\x00" "Parker Br"
-	"others" "\x00" "Sales Curve (Storm / SCI)" "\x00" "THQ" "\x00" "A"
-	"ccolade" "\x00" "Triffix Entertainment" "\x00" "Microprose Softw"
-	"are" "\x00" "Sierra / Universal Interactive" "\x00" "Kemco" "\x00"
-	"Rage Software" "\x00" "Encore" "\x00" "Kiddinx" "\x00" "Simon & "
-	"Schuster Interactive" "\x00" "Asmik Ace Entertainment Inc." "\x00"
-	"Empire Interactive" "\x00" "Jester Interactive" "\x00" "Rockstar"
-	" Games" "\x00" "Scholastic" "\x00" "Ignition Entertainment" "\x00"
-	"Summitsoft" "\x00" "Stadlbauer" "\x00" "Misawa" "\x00" "Teichiku"
-	"\x00" "Namco Ltd." "\x00" "LOZC" "\x00" "Tokuma Shoten Intermedi"
-	"a" "\x00" "Tsukuda Original" "\x00" "DATAM-Polystar" "\x00" "Bul"
-	"letProof Software (BPS)" "\x00" "Vic Tokai Inc." "\x00" "Charact"
-	"er Soft" "\x00" "I'Max" "\x00" "Saurus" "\x00" "General Entertai"
-	"nment" "\x00" "Cyberfront Korea" "\x00" "Success" "\x00" "Sega J"
-	"apan" "\x00" "Takara Amusement" "\x00" "Chun Soft" "\x00" "Video"
-	" System /  Mc O' River" "\x00" "BEC" "\x00" "Varie" "\x00" "Yone"
-	"zawa / S'pal" "\x00" "Kaneko" "\x00" "Marvelous Entertainment" "\x00"
-	"Nichibutsu / Nihon Bussan" "\x00" "Tecmo" "\x00" "Imagineer" "\x00"
-	"Nova" "\x00" "Take2 / Den'Z / Global Star" "\x00" "Bottom Up" "\x00"
-	"TGL (Technical Group Laboratory)" "\x00" "Hasbro Japan" "\x00" "K"
-	"eynet Inc." "\x00" "Hands-On Entertainment" "\x00" "Telenet" "\x00"
-	"Hori" "\x00" "Scorpion Soft" "\x09" "// FDS" "\x00" "Konami" "\x00"
-	"Kawada Co., Ltd." "\x00" "Takara" "\x00" "Royal Industries" "\x09"
-	"// FDS" "\x00" "Technos Japan Corp." "\x00" "JVC / Victor" "\x00"
-	"Toei Animation" "\x00" "Toho" "\x00" "Namco" "\x00" "Media Rings"
-	" Corporation" "\x00" "J-Wing" "\x00" "Pioneer LDC" "\x00" "KID" "\x00"
-	"Mediafactory" "\x00" "Infogrames / Hudson" "\x00" "Kiratto. Ludi"
-	"c Inc" "\x00" "Yacht Club Games" "\x00" "Acclaim Japan" "\x00" "A"
-	"SCII Corporation" "\x00" "Bandai" "\x00" "Soft Pro Inc." "\x09" "/"
-	"/ FDS" "\x00" "HAL Laboratory" "\x00" "SNK" "\x00" "Pony Canyon" "\x00"
-	"Sunsoft" "\x00" "Toshiba EMI" "\x00" "Sony Imagesoft" "\x00" "Sa"
-	"mmy" "\x00" "Magical" "\x00" "Visco" "\x00" "Compile" "\x00" "MT"
-	"O Inc." "\x00" "Sunrise Interactive" "\x00" "Global A Entertainm"
-	"ent" "\x00" "Fuuki" "\x00" "Taito" "\x00" "Sunsoft / Ask Co., Lt"
-	"d." "\x09" "// FDS" "\x00" "Square" "\x00" "Tokuma Shoten" "\x00"
-	"Data East" "\x00" "Tonkin House / Tokyo Shoseki" "\x00" "East Cu"
-	"be" "\x09" "// FDS" "\x00" "Koei" "\x00" "Konami / Ultra / Palco"
-	"m" "\x00" "NTVIC / VAP" "\x00" "Use Co., Ltd." "\x00" "Meldac" "\x00"
-	"Pony Canyon / FCI" "\x00" "Angel / Sotsu Agency / Sunrise" "\x00"
-	"Yumedia / Aroma Co., Ltd" "\x00" "Boss" "\x00" "Axela / Crea-Tec"
-	"h" "\x00" "Sekaibunka-Sha / Sumire Kobo / Marigul Management Inc"
-	"." "\x00" "Konami Computer Entertainment Osaka" "\x00" "NEC Inte"
-	"rchannel" "\x00" "Enterbrain" "\x00" "From Software" "\x00" "Tai"
-	"to / Disco" "\x00" "Sofel" "\x00" "Quest / Bothtec" "\x00" "Sigm"
-	"a" "\x00" "Ask Kodansha" "\x00" "Naxat" "\x00" "Copya System" "\x00"
-	"Capcom Co., Ltd." "\x00" "Banpresto" "\x00" "Tomy" "\x00" "LJN J"
-	"apan" "\x00" "NCS" "\x00" "Human Entertainment" "\x00" "Altron" "\x00"
-	"Gaps Inc." "\x00" "Elf" "\x00" "Compile Heart" "\x00" "FarSight "
-	"Studios" "\x00" "Yutaka" "\x00" "T&ESoft" "\x00" "Epoch" "\x00" "A"
-	"thena" "\x00" "Asmik" "\x00" "Natsume" "\x00" "King Records" "\x00"
-	"Atlus" "\x00" "Epic / Sony Records" "\x00" "IGS (Information Glo"
-	"bal Service)" "\x00" "Chatnoir" "\x00" "Right Stuff" "\x00" "Spi"
-	"ke" "\x00" "Konami Computer Entertainment Tokyo" "\x00" "Alphadr"
-	"eam Corporation" "\x00" "Sting" "\x00" "Star-Fish" "\x00" "A Wav"
-	"e" "\x00" "Motown Software" "\x00" "Left Field Entertainment" "\x00"
-	"Extreme Ent. Grp." "\x00" "TecMagik" "\x00" "Cybersoft" "\x00" "P"
-	"sygnosis" "\x00" "Davidson / Western Tech." "\x00" "The Game Fac"
-	"tory" "\x00" "Hip Games" "\x00" "Aspyr" "\x00" "Mastiff" "\x00" "i"
-	"Que" "\x00" "Digital Tainment Pool" "\x00" "XS Games / Jack Of A"
-	"ll Games" "\x00" "Daewon Media" "\x00" "Alpha Unit" "\x00" "PCCW"
-	" Japan" "\x00" "Yuke's Media Creations" "\x00" "KiKi Co Ltd" "\x00"
-	"Open Sesame Inc" "\x00" "Sims" "\x00" "Broccoli" "\x00" "Avex" "\x00"
-	"D3 Publisher" "\x00" "Konami Computer Entertainment Japan" "\x00"
-	"Square-Enix" "\x00" "KSG" "\x00" "Micott & Basara Inc." "\x00" "O"
-	"3 Entertainment" "\x00" "Orbital Media" "\x00" "Detn8 Games" "\x00"
-	"Gameloft / Ubi Soft" "\x00" "Gamecock Media Group" "\x00" "Oxyge"
-	"n Games" "\x00" "505 Games" "\x00" "Treasure" "\x00" "Aruze" "\x00"
-	"Ertain" "\x00" "SNK Playmore" "\x00" "Level-5" "\x00" "Genius Pr"
-	"oducts" "\x00" "Reef Entertainment" "\x00" "Nordcurrent" "\x00" "Y"
-	"ojigen" "\x00" "AQ Interactive" "\x00" "Arc System Works" "\x00" "D"
-	"eep Silver" "\x00" "Atari" "\x00" "Nihon System" "\x00" "NIS Ame"
-	"rica" "\x00" "Purple Hills" "\x00" "Trend Verlag / East Entertai"
-	"nment" "\x00" "Legacy Interactive" "\x00" "SilverStar Games" "\x00"
-	"Mumbo Jumbo" "\x00" "Mindscape" "\x00" "Milestone / UFO Interact"
-	"ive" "\x00" "Blast !" "\x00" "Terabox" "\x00" "Nordic Games" "\x00"
-	"Neko Entertainment / Diffusion / Naps team" "\x00" "Nobilis" "\x00"
-	"Namco Bandai" "\x00" "Data Design / Destineer Studios" "\x00" "P"
-	"hoenix Games" "\x00" "Playlogic" "\x00" "Rondomedia" "\x00" "War"
-	"ner Bros. Interactive Entertainment Inc." "\x00" "RTL Games" "\x00"
-	"RealNetworks" "\x00" "Southpeak Interactive" "\x00" "Blade Inter"
-	"active Studios" "\x00" "SevenGames" "\x00" "Storm City" "\x00" "T"
-	"asuke / Works" "\x00" "Tivola" "\x00" "Metro 3D / Data Design" "\x00"
-	"Valcon Games" "\x00" "Virgin Play" "\x00" "Little Orbit" "\x00" "X"
-	"seed Games" "\x00" "Aksys Games" "\x00" "Fun Box Media" "\x00" "O"
-	"2 Games" "\x00" "Bergsala Lightweight" "\x00" "Barunson Creative"
-	"\x00" "Ntreev Soft" "\x00" "WBA Interactive" "\x00" "Internal En"
-	"gine" "\x00" "Zinkia" "\x00" "Judo Baby" "\x00" "Topware Interac"
-	"tive" "\x00";
+static const char8_t NintendoPublishers_strtbl[] =
+	U8("\x00") U8("<unlicensed>") U8("\x00") U8("Nintendo") U8("\x00") U8("R")
+	U8("ocket Games / Ajinomoto") U8("\x00") U8("Imagineer-Zoom") U8("\x00")
+	U8("Gray Matter") U8("\x00") U8("Zamuse") U8("\x00") U8("Falcom") U8("\x00")
+	U8("Enix") U8("\x00") U8("Capcom") U8("\x00") U8("Hot B Co.") U8("\x00")
+	U8("Jaleco") U8("\x00") U8("Coconuts Japan") U8("\x00") U8("Coconuts")
+	U8(" Japan / G.X.Media") U8("\x00") U8("Micronet") U8("\x00") U8("Te")
+	U8("chnos") U8("\x00") U8("Mebio Software") U8("\x00") U8("Shouei Sy")
+	U8("stem") U8("\x00") U8("Starfish") U8("\x00") U8("Mitsui Fudosan /")
+	U8(" Dentsu") U8("\x00") U8("Warashi Inc.") U8("\x00") U8("Nowpro") U8("\x00")
+	U8("Game Village") U8("\x00") U8("IE Institute") U8("\x00") U8("Info")
+	U8("com") U8("\x00") U8("Electronic Arts Japan") U8("\x00") U8("Cobr")
+	U8("a Team") U8("\x00") U8("Human / Field") U8("\x00") U8("KOEI") U8("\x00")
+	U8("Hudson Soft") U8("\x00") U8("S.C.P.") U8("\x00") U8("Yanoman") U8("\x00")
+	U8("Tecmo Products") U8("\x00") U8("Japan Glary Business") U8("\x00") U8("F")
+	U8("orum / OpenSystem") U8("\x00") U8("Virgin Games (Japan)") U8("\x00")
+	U8("SMDE") U8("\x00") U8("Daikokudenki") U8("\x00") U8("Creatures In")
+	U8("c.") U8("\x00") U8("TDK Deep Impresion") U8("\x00") U8("Zoo") U8("\x00")
+	U8("Sunsoft / Tokai Engineering") U8("\x00") U8("POW (Planning Offic")
+	U8("e Wada) / VR1 Japan") U8("\x00") U8("Micro World") U8("\x00") U8("S")
+	U8("an-X") U8("\x00") U8("Loriciel / Electro Brain") U8("\x00") U8("K")
+	U8("emco Japan") U8("\x00") U8("Seta") U8("\x00") U8("Culture Brain") U8("\x00")
+	U8("Palsoft") U8("\x00") U8("Visit Co.,Ltd.") U8("\x00") U8("Intec") U8("\x00")
+	U8("System Sacom") U8("\x00") U8("Poppo") U8("\x00") U8("Ubisoft Jap")
+	U8("an") U8("\x00") U8("Media Works") U8("\x00") U8("NEC InterChanne")
+	U8("l") U8("\x00") U8("Tam") U8("\x00") U8("Jordan") U8("\x00") U8("S")
+	U8("milesoft / Rocket") U8("\x00") U8("Mediakite") U8("\x00") U8("Vi")
+	U8("acom") U8("\x00") U8("Carrozzeria") U8("\x00") U8("Dynamic") U8("\x00")
+	U8("Magifact") U8("\x00") U8("Hect") U8("\x00") U8("Codemasters") U8("\x00")
+	U8("Taito / GAGA Communications") U8("\x00") U8("Laguna") U8("\x00") U8("T")
+	U8("elstar / Event / Taito") U8("\x00") U8("Soedesco") U8("\x00") U8("A")
+	U8("rcade Zone Ltd") U8("\x00") U8("Entertainment International / Em")
+	U8("pire Software") U8("\x00") U8("Loriciel") U8("\x00") U8("Gremlin")
+	U8(" Graphics") U8("\x00") U8("K.Amusement Leasing Co.") U8("\x00") U8("S")
+	U8("eika Corp.") U8("\x00") U8("Ubi Soft Entertainment") U8("\x00") U8("S")
+	U8("unsoft US") U8("\x00") U8("Life Fitness") U8("\x00") U8("System ")
+	U8("3") U8("\x00") U8("Spectrum Holobyte") U8("\x00") U8("Irem") U8("\x00")
+	U8("Gakken") U8("\x09") U8("// FDS") U8("\x00") U8("Raya Systems") U8("\x00")
+	U8("Renovation Products") U8("\x00") U8("Malibu Games") U8("\x00") U8("E")
+	U8("idos") U8("\x00") U8("Playmates Interactive") U8("\x00") U8("Fox")
+	U8(" Interactive") U8("\x00") U8("Time Warner Interactive") U8("\x00")
+	U8("Disney Interactive") U8("\x00") U8("Black Pearl") U8("\x00") U8("A")
+	U8("dvanced Productions") U8("\x00") U8("GT Interactive") U8("\x00") U8("R")
+	U8("ARE") U8("\x00") U8("Crave Entertainment") U8("\x00") U8("Absolu")
+	U8("te Entertainment") U8("\x00") U8("Acclaim") U8("\x00") U8("Activ")
+	U8("ision") U8("\x00") U8("American Sammy") U8("\x00") U8("Take 2 In")
+	U8("teractive / GameTek") U8("\x00") U8("Hi Tech") U8("\x00") U8("LJ")
+	U8("N LTD.") U8("\x00") U8("Mattel") U8("\x00") U8("Mindscape / Red ")
+	U8("Orb Entertainment") U8("\x00") U8("Romstar") U8("\x00") U8("Taxa")
+	U8("n") U8("\x00") U8("Midway / Tradewest") U8("\x00") U8("American ")
+	U8("Softworks") U8("\x00") U8("Majesco Sales Inc") U8("\x00") U8("3D")
+	U8("O") U8("\x00") U8("Hasbro") U8("\x00") U8("NewKidCo") U8("\x00") U8("T")
+	U8("elegames") U8("\x00") U8("Metro3D") U8("\x00") U8("Vatical Enter")
+	U8("tainment") U8("\x00") U8("LEGO Media") U8("\x00") U8("Xicat Inte")
+	U8("ractive") U8("\x00") U8("Cryo Interactive") U8("\x00") U8("Red S")
+	U8("torm Entertainment") U8("\x00") U8("Microids") U8("\x00") U8("Da")
+	U8("ta Design / Conspiracy / Swing") U8("\x00") U8("Titus") U8("\x00")
+	U8("Virgin Interactive") U8("\x00") U8("Maxis") U8("\x00") U8("Lucas")
+	U8("Arts Entertainment") U8("\x00") U8("Ocean") U8("\x00") U8("Bethe")
+	U8("sda Softworks") U8("\x00") U8("Electronic Arts") U8("\x00") U8("L")
+	U8("aser Beam") U8("\x00") U8("Elite Systems") U8("\x00") U8("Electr")
+	U8("o Brain") U8("\x00") U8("The Learning Company") U8("\x00") U8("B")
+	U8("BC") U8("\x00") U8("Software 2000") U8("\x00") U8("UFO Interacti")
+	U8("ve Games") U8("\x00") U8("BAM! Entertainment") U8("\x00") U8("St")
+	U8("udio 3") U8("\x00") U8("Classified Games") U8("\x00") U8("TDK Me")
+	U8("diactive") U8("\x00") U8("DreamCatcher") U8("\x00") U8("JoWood P")
+	U8("rodutions") U8("\x00") U8("Sega") U8("\x00") U8("Wannado Edition")
+	U8("\x00") U8("LSP (Light & Shadow Prod.)") U8("\x00") U8("ITE Media")
+	U8("\x00") U8("Atari (Infogrames)") U8("\x00") U8("Interplay") U8("\x00")
+	U8("JVC (US)") U8("\x00") U8("Parker Brothers") U8("\x00") U8("Sales")
+	U8(" Curve (Storm / SCI)") U8("\x00") U8("THQ") U8("\x00") U8("Accol")
+	U8("ade") U8("\x00") U8("Triffix Entertainment") U8("\x00") U8("Micr")
+	U8("oprose Software") U8("\x00") U8("Sierra / Universal Interactive") U8("\x00")
+	U8("Kemco") U8("\x00") U8("Rage Software") U8("\x00") U8("Encore") U8("\x00")
+	U8("Kiddinx") U8("\x00") U8("Simon & Schuster Interactive") U8("\x00")
+	U8("Asmik Ace Entertainment Inc.") U8("\x00") U8("Empire Interactive")
+	U8("\x00") U8("Jester Interactive") U8("\x00") U8("Rockstar Games") U8("\x00")
+	U8("Scholastic") U8("\x00") U8("Ignition Entertainment") U8("\x00") U8("S")
+	U8("ummitsoft") U8("\x00") U8("Stadlbauer") U8("\x00") U8("Misawa") U8("\x00")
+	U8("Teichiku") U8("\x00") U8("Namco Ltd.") U8("\x00") U8("LOZC") U8("\x00")
+	U8("Tokuma Shoten Intermedia") U8("\x00") U8("Tsukuda Original") U8("\x00")
+	U8("DATAM-Polystar") U8("\x00") U8("BulletProof Software (BPS)") U8("\x00")
+	U8("Vic Tokai Inc.") U8("\x00") U8("Character Soft") U8("\x00") U8("I")
+	U8("'Max") U8("\x00") U8("Saurus") U8("\x00") U8("General Entertainm")
+	U8("ent") U8("\x00") U8("Cyberfront Korea") U8("\x00") U8("Success") U8("\x00")
+	U8("Sega Japan") U8("\x00") U8("Takara Amusement") U8("\x00") U8("Ch")
+	U8("un Soft") U8("\x00") U8("Video System /  Mc O' River") U8("\x00") U8("B")
+	U8("EC") U8("\x00") U8("Varie") U8("\x00") U8("Yonezawa / S'pal") U8("\x00")
+	U8("Kaneko") U8("\x00") U8("Marvelous Entertainment") U8("\x00") U8("N")
+	U8("ichibutsu / Nihon Bussan") U8("\x00") U8("Tecmo") U8("\x00") U8("I")
+	U8("magineer") U8("\x00") U8("Nova") U8("\x00") U8("Take2 / Den'Z / ")
+	U8("Global Star") U8("\x00") U8("Bottom Up") U8("\x00") U8("TGL (Tec")
+	U8("hnical Group Laboratory)") U8("\x00") U8("Hasbro Japan") U8("\x00")
+	U8("Keynet Inc.") U8("\x00") U8("Hands-On Entertainment") U8("\x00") U8("T")
+	U8("elenet") U8("\x00") U8("Hori") U8("\x00") U8("Scorpion Soft") U8("\x09")
+	U8("// FDS") U8("\x00") U8("Konami") U8("\x00") U8("Kawada Co., Ltd.")
+	U8("\x00") U8("Takara") U8("\x00") U8("Royal Industries") U8("\x09") U8("/")
+	U8("/ FDS") U8("\x00") U8("Technos Japan Corp.") U8("\x00") U8("JVC ")
+	U8("/ Victor") U8("\x00") U8("Toei Animation") U8("\x00") U8("Toho") U8("\x00")
+	U8("Namco") U8("\x00") U8("Media Rings Corporation") U8("\x00") U8("J")
+	U8("-Wing") U8("\x00") U8("Pioneer LDC") U8("\x00") U8("KID") U8("\x00")
+	U8("Mediafactory") U8("\x00") U8("Infogrames / Hudson") U8("\x00") U8("K")
+	U8("iratto. Ludic Inc") U8("\x00") U8("Yacht Club Games") U8("\x00") U8("A")
+	U8("cclaim Japan") U8("\x00") U8("ASCII Corporation") U8("\x00") U8("B")
+	U8("andai") U8("\x00") U8("Soft Pro Inc.") U8("\x09") U8("// FDS") U8("\x00")
+	U8("HAL Laboratory") U8("\x00") U8("SNK") U8("\x00") U8("Pony Canyon")
+	U8("\x00") U8("Sunsoft") U8("\x00") U8("Toshiba EMI") U8("\x00") U8("S")
+	U8("ony Imagesoft") U8("\x00") U8("Sammy") U8("\x00") U8("Magical") U8("\x00")
+	U8("Visco") U8("\x00") U8("Compile") U8("\x00") U8("MTO Inc.") U8("\x00")
+	U8("Sunrise Interactive") U8("\x00") U8("Global A Entertainment") U8("\x00")
+	U8("Fuuki") U8("\x00") U8("Taito") U8("\x00") U8("Sunsoft / Ask Co.,")
+	U8(" Ltd.") U8("\x09") U8("// FDS") U8("\x00") U8("Square") U8("\x00")
+	U8("Tokuma Shoten") U8("\x00") U8("Data East") U8("\x00") U8("Tonkin")
+	U8(" House / Tokyo Shoseki") U8("\x00") U8("East Cube") U8("\x09") U8("/")
+	U8("/ FDS") U8("\x00") U8("Koei") U8("\x00") U8("Konami / Ultra / Pa")
+	U8("lcom") U8("\x00") U8("NTVIC / VAP") U8("\x00") U8("Use Co., Ltd.")
+	U8("\x00") U8("Meldac") U8("\x00") U8("Pony Canyon / FCI") U8("\x00") U8("A")
+	U8("ngel / Sotsu Agency / Sunrise") U8("\x00") U8("Yumedia / Aroma C")
+	U8("o., Ltd") U8("\x00") U8("Boss") U8("\x00") U8("Axela / Crea-Tech")
+	U8("\x00") U8("Sekaibunka-Sha / Sumire Kobo / Marigul Management Inc")
+	U8(".") U8("\x00") U8("Konami Computer Entertainment Osaka") U8("\x00")
+	U8("NEC Interchannel") U8("\x00") U8("Enterbrain") U8("\x00") U8("Fr")
+	U8("om Software") U8("\x00") U8("Taito / Disco") U8("\x00") U8("Sofe")
+	U8("l") U8("\x00") U8("Quest / Bothtec") U8("\x00") U8("Sigma") U8("\x00")
+	U8("Ask Kodansha") U8("\x00") U8("Naxat") U8("\x00") U8("Copya Syste")
+	U8("m") U8("\x00") U8("Capcom Co., Ltd.") U8("\x00") U8("Banpresto") U8("\x00")
+	U8("Tomy") U8("\x00") U8("LJN Japan") U8("\x00") U8("NCS") U8("\x00") U8("H")
+	U8("uman Entertainment") U8("\x00") U8("Altron") U8("\x00") U8("Gaps")
+	U8(" Inc.") U8("\x00") U8("Elf") U8("\x00") U8("Compile Heart") U8("\x00")
+	U8("FarSight Studios") U8("\x00") U8("Yutaka") U8("\x00") U8("T&ESof")
+	U8("t") U8("\x00") U8("Epoch") U8("\x00") U8("Athena") U8("\x00") U8("A")
+	U8("smik") U8("\x00") U8("Natsume") U8("\x00") U8("King Records") U8("\x00")
+	U8("Atlus") U8("\x00") U8("Epic / Sony Records") U8("\x00") U8("IGS ")
+	U8("(Information Global Service)") U8("\x00") U8("Chatnoir") U8("\x00")
+	U8("Right Stuff") U8("\x00") U8("Spike") U8("\x00") U8("Konami Compu")
+	U8("ter Entertainment Tokyo") U8("\x00") U8("Alphadream Corporation") U8("\x00")
+	U8("Sting") U8("\x00") U8("Star-Fish") U8("\x00") U8("A Wave") U8("\x00")
+	U8("Motown Software") U8("\x00") U8("Left Field Entertainment") U8("\x00")
+	U8("Extreme Ent. Grp.") U8("\x00") U8("TecMagik") U8("\x00") U8("Cyb")
+	U8("ersoft") U8("\x00") U8("Psygnosis") U8("\x00") U8("Davidson / We")
+	U8("stern Tech.") U8("\x00") U8("The Game Factory") U8("\x00") U8("H")
+	U8("ip Games") U8("\x00") U8("Aspyr") U8("\x00") U8("Mastiff") U8("\x00")
+	U8("iQue") U8("\x00") U8("Digital Tainment Pool") U8("\x00") U8("XS ")
+	U8("Games / Jack Of All Games") U8("\x00") U8("Daewon Media") U8("\x00")
+	U8("Alpha Unit") U8("\x00") U8("PCCW Japan") U8("\x00") U8("Yuke's M")
+	U8("edia Creations") U8("\x00") U8("KiKi Co Ltd") U8("\x00") U8("Ope")
+	U8("n Sesame Inc") U8("\x00") U8("Sims") U8("\x00") U8("Broccoli") U8("\x00")
+	U8("Avex") U8("\x00") U8("D3 Publisher") U8("\x00") U8("Konami Compu")
+	U8("ter Entertainment Japan") U8("\x00") U8("Square-Enix") U8("\x00") U8("K")
+	U8("SG") U8("\x00") U8("Micott & Basara Inc.") U8("\x00") U8("O3 Ent")
+	U8("ertainment") U8("\x00") U8("Orbital Media") U8("\x00") U8("Detn8")
+	U8(" Games") U8("\x00") U8("Gameloft / Ubi Soft") U8("\x00") U8("Gam")
+	U8("ecock Media Group") U8("\x00") U8("Oxygen Games") U8("\x00") U8("5")
+	U8("05 Games") U8("\x00") U8("Treasure") U8("\x00") U8("Aruze") U8("\x00")
+	U8("Ertain") U8("\x00") U8("SNK Playmore") U8("\x00") U8("Level-5") U8("\x00")
+	U8("Genius Products") U8("\x00") U8("Reef Entertainment") U8("\x00") U8("N")
+	U8("ordcurrent") U8("\x00") U8("Yojigen") U8("\x00") U8("AQ Interact")
+	U8("ive") U8("\x00") U8("Arc System Works") U8("\x00") U8("Deep Silv")
+	U8("er") U8("\x00") U8("Atari") U8("\x00") U8("Nihon System") U8("\x00")
+	U8("NIS America") U8("\x00") U8("Purple Hills") U8("\x00") U8("Trend")
+	U8(" Verlag / East Entertainment") U8("\x00") U8("Legacy Interactive")
+	U8("\x00") U8("SilverStar Games") U8("\x00") U8("Mumbo Jumbo") U8("\x00")
+	U8("Mindscape") U8("\x00") U8("Milestone / UFO Interactive") U8("\x00")
+	U8("Blast !") U8("\x00") U8("Terabox") U8("\x00") U8("Nordic Games") U8("\x00")
+	U8("Neko Entertainment / Diffusion / Naps team") U8("\x00") U8("Nobi")
+	U8("lis") U8("\x00") U8("Namco Bandai") U8("\x00") U8("Data Design /")
+	U8(" Destineer Studios") U8("\x00") U8("Phoenix Games") U8("\x00") U8("P")
+	U8("laylogic") U8("\x00") U8("Rondomedia") U8("\x00") U8("Warner Bro")
+	U8("s. Interactive Entertainment Inc.") U8("\x00") U8("RTL Games") U8("\x00")
+	U8("RealNetworks") U8("\x00") U8("Southpeak Interactive") U8("\x00") U8("B")
+	U8("lade Interactive Studios") U8("\x00") U8("SevenGames") U8("\x00") U8("S")
+	U8("torm City") U8("\x00") U8("Tasuke / Works") U8("\x00") U8("Tivol")
+	U8("a") U8("\x00") U8("Metro 3D / Data Design") U8("\x00") U8("Valco")
+	U8("n Games") U8("\x00") U8("Virgin Play") U8("\x00") U8("Little Orb")
+	U8("it") U8("\x00") U8("Xseed Games") U8("\x00") U8("Aksys Games") U8("\x00")
+	U8("Fun Box Media") U8("\x00") U8("O2 Games") U8("\x00") U8("Bergsal")
+	U8("a Lightweight") U8("\x00") U8("Barunson Creative") U8("\x00") U8("N")
+	U8("treev Soft") U8("\x00") U8("WBA Interactive") U8("\x00") U8("Int")
+	U8("ernal Engine") U8("\x00") U8("Zinkia") U8("\x00") U8("Judo Baby") U8("\x00")
+	U8("Topware Interactive") U8("\x00");
 
 static const uint16_t NintendoPublishers_offtbl[] = {
 	/* Nintendo Third-Party Publisher '00' */

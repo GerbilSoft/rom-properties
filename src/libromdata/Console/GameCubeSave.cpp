@@ -837,7 +837,7 @@ int GameCubeSave::loadFieldData(void)
 	const card_direntry *const direntry = &d->direntry;
 	d->fields->reserve(8);	// Maximum of 8 fields.
 
-	// Game ID.
+	// Game ID
 	// Replace any non-printable characters with underscores.
 	// (NDDEMO has ID6 "00\0E01".)
 	char id6[7];
@@ -849,18 +849,24 @@ int GameCubeSave::loadFieldData(void)
 	id6[6] = 0;
 	d->fields->addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id6, 6));
 
-	// Look up the publisher.
-	const char *publisher = NintendoPublishers::lookup(direntry->company);
-	d->fields->addField_string(C_("RomData", "Publisher"),
-		publisher ? publisher : C_("RomData", "Unknown"));
+	// Publisher
+	// TODO: Combine with GameCubePrivate::getPublisher().
+	// FIXME: U8STRFIX
+	const char *const publisher_title = C_("RomData", "Publisher");
+	const char8_t *publisher = NintendoPublishers::lookup(direntry->company);
+	if (publisher) {
+		d->fields->addField_string(publisher_title, publisher);
+	} else {
+		d->fields->addField_string(publisher_title, C_("RomData", "Unknown"));
+	}
 
-	// Filename.
+	// Filename
 	// TODO: Remove trailing spaces.
 	d->fields->addField_string(C_("GameCubeSave", "Filename"),
 		cp1252_sjis_to_utf8(
 			direntry->filename, sizeof(direntry->filename)));
 
-	// Description.
+	// Description
 	union {
 		struct {
 			char desc[32];
@@ -950,13 +956,14 @@ int GameCubeSave::loadMetaData(void)
 	d->metaData = new RomMetaData();
 	d->metaData->reserve(3);	// Maximum of 4 metadata properties.
 
-	// Look up the publisher.
-	const char *publisher = NintendoPublishers::lookup(direntry->company);
+	// Publisher
+	// FIXME: U8STRFIX
+	const char8_t *publisher = NintendoPublishers::lookup(direntry->company);
 	if (publisher) {
 		d->metaData->addMetaData_string(Property::Publisher, publisher);
 	}
 
-	// Description. (using this as the Title)
+	// Description (using this as the Title)
 	// TODO: Consolidate with loadFieldData()?
 	char desc_buf[64];
 	size_t size = d->file->seekAndRead(d->dataOffset + direntry->commentaddr,
@@ -988,7 +995,7 @@ int GameCubeSave::loadMetaData(void)
 		d->metaData->addMetaData_string(Property::Title, desc);
 	}
 
-	// Last Modified timestamp.
+	// Last Modified timestamp
 	// NOTE: Using "CreationDate".
 	// TODO: Adjust for local timezone, since it's UTC.
 	d->metaData->addMetaData_timestamp(Property::CreationDate,

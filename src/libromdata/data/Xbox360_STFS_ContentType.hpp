@@ -19,7 +19,7 @@ namespace LibRomData { namespace Xbox360_STFS_ContentType {
  * @param contentType Content type.
  * @return Content type, or nullptr if not found.
  */
-const char *lookup(uint32_t contentType);
+const char8_t *lookup(uint32_t contentType);
 
 } }
 

@@ -95,7 +95,7 @@ class SNESPrivate final : public RomDataPrivate
 		 * Get the publisher.
 		 * @return Publisher, or "Unknown (xxx)" if unknown.
 		 */
-		string getPublisher(void) const;
+		u8string getPublisher(void) const;
 
 		/**
 		 * Is a character a valid game ID character?
@@ -580,13 +580,16 @@ u8string SNESPrivate::getRomTitle(void) const
  * Get the publisher.
  * @return Publisher, or "Unknown (xxx)" if unknown.
  */
-string SNESPrivate::getPublisher(void) const
+u8string SNESPrivate::getPublisher(void) const
 {
-	const char* publisher;
-	string s_publisher;
+	const char8_t *publisher;
+	u8string s_publisher;
 
 	// NOTE: SNES and BS-X have the same addresses for both publisher codes.
 	// Hence, we only need to check SNES.
+
+	char buf[128];
+	int len;
 
 	// Publisher.
 	if (romHeader.snes.old_publisher_code == 0x33) {
@@ -595,16 +598,24 @@ string SNESPrivate::getPublisher(void) const
 		if (publisher) {
 			s_publisher = publisher;
 		} else {
+			// FIXME: U8STRFIX
 			if (ISALNUM(romHeader.snes.ext.new_publisher_code[0]) &&
 			    ISALNUM(romHeader.snes.ext.new_publisher_code[1]))
 			{
-				s_publisher = rp_sprintf(C_("RomData", "Unknown (%.2s)"),
+				len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%.2s)"),
 					romHeader.snes.ext.new_publisher_code);
 			} else {
-				s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
+				len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%02X %02X)"),
 					static_cast<uint8_t>(romHeader.snes.ext.new_publisher_code[0]),
 					static_cast<uint8_t>(romHeader.snes.ext.new_publisher_code[1]));
 			}
+
+			if (len < 0) {
+				len = 0;
+			} else if (len >= static_cast<int>(sizeof(buf))) {
+				len = sizeof(buf)-1;
+			}
+			s_publisher.assign(reinterpret_cast<const char8_t*>(buf), len);
 		}
 	} else {
 		// Old publisher code.
@@ -612,8 +623,15 @@ string SNESPrivate::getPublisher(void) const
 		if (publisher) {
 			s_publisher = publisher;
 		} else {
-			s_publisher = rp_sprintf(C_("RomData", "Unknown (%02X)"),
+			len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%02X)"),
 				romHeader.snes.old_publisher_code);
+
+			if (len < 0) {
+				len = 0;
+			} else if (len >= static_cast<int>(sizeof(buf))) {
+				len = sizeof(buf)-1;
+			}
+			s_publisher.assign(reinterpret_cast<const char8_t*>(buf), len);
 		}
 	}
 

@@ -21,14 +21,14 @@ namespace LibRomData { namespace ELFData {
  * @param cpu ELF machine type.
  * @return Machine type name, or nullptr if not found.
  */
-const char *lookup_cpu(uint16_t cpu);
+const char8_t *lookup_cpu(uint16_t cpu);
 
 /**
  * Look up an ELF OS ABI.
  * @param osabi ELF OS ABI.
  * @return OS ABI name, or nullptr if not found.
  */
-const char *lookup_osabi(uint8_t osabi);
+const char8_t *lookup_osabi(uint8_t osabi);
 
 } }
 

@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * NintendoPublishers.cpp: Nintendo third-party publishers list.           *
+ * NintendoPublishers.hpp: Nintendo third-party publishers list.           *
  *                                                                         *
  * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -21,14 +21,14 @@ namespace LibRomData { namespace NintendoPublishers {
  * @param code Company code.
  * @return Publisher, or nullptr if not found.
  */
-const char *lookup(uint16_t code);
+const char8_t *lookup(uint16_t code);
 
 /**
  * Look up a company code.
  * @param code Company code.
  * @return Publisher, or nullptr if not found.
  */
-const char *lookup(const char *code);
+const char8_t *lookup(const char *code);
 
 /**
  * Look up a company code.
@@ -37,7 +37,7 @@ const char *lookup(const char *code);
  * @param code Company code.
  * @return Publisher, or nullptr if not found.
  */
-const char *lookup_old(uint8_t code);
+const char8_t *lookup_old(uint8_t code);
 
 /**
  * Look up a company code for FDS titles.
@@ -45,7 +45,7 @@ const char *lookup_old(uint8_t code);
  * @param code Company code.
  * @return Publisher, or nullptr if not found.
  */
-const char *lookup_fds(uint8_t code);
+const char8_t *lookup_fds(uint8_t code);
 
 } }
 

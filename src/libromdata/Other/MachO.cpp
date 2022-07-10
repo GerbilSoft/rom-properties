@@ -473,7 +473,9 @@ int MachO::loadFieldData(void)
 		const MachOPrivate::Mach_Format machFormat = *fmtIter;
 
 		// Use the CPU name for the tab title.
-		const char *const s_cpu = MachOData::lookup_cpu_type(machHeader->cputype);
+		// FIXME: U8STRFIX
+		const char *const s_cpu = reinterpret_cast<const char*>(
+			MachOData::lookup_cpu_type(machHeader->cputype));
 
 		// TODO: Change addTab() behavior to set the first tab's name?
 		if (i == 0) {
@@ -484,7 +486,7 @@ int MachO::loadFieldData(void)
 				rp_sprintf("0x%08X", machHeader->cputype).c_str());
 		}
 
-		// Executable format.
+		// Executable format
 		static const char *const exec_type_tbl[] = {
 			NOP_C_("RomData|ExecType", "32-bit Little-Endian"),
 			NOP_C_("RomData|ExecType", "64-bit Little-Endian"),
@@ -513,7 +515,7 @@ int MachO::loadFieldData(void)
 		}
 
 		// CPU subtype.
-		const char *const s_cpu_subtype = MachOData::lookup_cpu_subtype(
+		const char8_t *const s_cpu_subtype = MachOData::lookup_cpu_subtype(
 			machHeader->cputype, machHeader->cpusubtype);
 		if (s_cpu_subtype) {
 			d->fields->addField_string(C_("MachO", "CPU Subtype"), s_cpu_subtype);

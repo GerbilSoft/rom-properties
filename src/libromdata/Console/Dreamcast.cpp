@@ -255,10 +255,10 @@ const rp_image *DreamcastPrivate::load0GDTEX(void)
  */
 u8string DreamcastPrivate::getPublisher(void) const
 {
-	const char *publisher = nullptr;
+	const char8_t *publisher = nullptr;
 	if (!memcmp(discHeader.publisher, DC_IP0000_BIN_MAKER_ID, sizeof(discHeader.publisher))) {
 		// First-party Sega title.
-		publisher = "Sega";
+		publisher = U8("Sega");
 	} else if (!memcmp(discHeader.publisher, "SEGA LC-T-", 10)) {
 		// This may be a third-party T-code.
 		char *endptr;

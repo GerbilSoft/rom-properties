@@ -13,7 +13,7 @@ namespace LibRomData { namespace WonderSwanPublishers {
 
 struct ThirdPartyEntry {
 	char code[4];		// 3-char code
-	const char *publisher;	// Publisher name
+	const char8_t *publisher;	// Publisher name
 };
 
 /**
@@ -23,67 +23,67 @@ struct ThirdPartyEntry {
  */
 static const ThirdPartyEntry thirdPartyList[] = {
 	// 0x00
-	{"",	"<unlicensed>"},
-	{"BAN",	"Bandai"},
-	{"TAT",	"Taito"},
-	{"TMY",	"Tomy"},
-	{"KEX",	"Koei"},
-	{"DTE",	"Data East"},
-	{"AAE",	"Asmik Ace"},
-	{"MDE", "Media Entertainment"},
-	{"NHB",	"Nichibutsu"},
+	{"",	U8("<unlicensed>")},
+	{"BAN",	U8("Bandai")},
+	{"TAT",	U8("Taito")},
+	{"TMY",	U8("Tomy")},
+	{"KEX",	U8("Koei")},
+	{"DTE",	U8("Data East")},
+	{"AAE",	U8("Asmik Ace")},
+	{"MDE",	U8("Media Entertainment")},
+	{"NHB",	U8("Nichibutsu")},
 	{"",	nullptr},
-	{"CCJ",	"Coconuts Japan"},
-	{"SUM",	"Sammy"},
-	{"SUN",	"Sunsoft"},
-	{"PAW",	"Mebius"},	// (?)
-	{"BPR",	"Banpresto"},
+	{"CCJ",	U8("Coconuts Japan")},
+	{"SUM",	U8("Sammy")},
+	{"SUN",	U8("Sunsoft")},
+	{"PAW",	U8("Mebius")},	// (?)
+	{"BPR",	U8("Banpresto")},
 	{"",	nullptr},
 
 	// 0x10
-	{"JLC",	"Jaleco"},
-	{"MGA",	"Imagineer"},
-	{"KNM",	"Konami"},
+	{"JLC",	U8("Jaleco")},
+	{"MGA",	U8("Imagineer")},
+	{"KNM",	U8("Konami")},
 	{"",	nullptr},
 	{"",	nullptr},
 	{"",	nullptr},
-	{"KBS",	"Kobunsha"},
-	{"BTM",	"Bottom Up"},
-	{"KGT",	"Kaga Tech"},
-	{"SRV",	"Sunrise"},
-	{"CFT",	"Cyber Front"},
-	{"MGH",	"Mega House"},
+	{"KBS",	U8("Kobunsha")},
+	{"BTM",	U8("Bottom Up")},
+	{"KGT",	U8("Kaga Tech")},
+	{"SRV",	U8("Sunrise")},
+	{"CFT",	U8("Cyber Front")},
+	{"MGH",	U8("Mega House")},
 	{"",	nullptr},
-	{"BEC",	"Interbec"},
-	{"NAP",	"Nihon Application"},
-	{"BVL",	"Bandai Visual"},
+	{"BEC",	U8("Interbec")},
+	{"NAP",	U8("Nihon Application")},
+	{"BVL",	U8("Bandai Visual")},
 
 	// 0x20
-	{"ATN",	"Athena"},
-	{"KDX",	"KID"},
-	{"HAL",	"HAL Corporation"},
-	{"YKE",	"Yuki Enterprise"},
-	{"OMM",	"Omega Micott"},
-	{"LAY",	"Layup"},
-	{"KDK",	"Kadokawa Shoten"},
-	{"SHL",	"Shall Luck"},
-	{"SQR",	"Squaresoft"},
+	{"ATN",	U8("Athena")},
+	{"KDX",	U8("KID")},
+	{"HAL",	U8("HAL Corporation")},
+	{"YKE",	U8("Yuki Enterprise")},
+	{"OMM",	U8("Omega Micott")},
+	{"LAY",	U8("Layup")},
+	{"KDK",	U8("Kadokawa Shoten")},
+	{"SHL",	U8("Shall Luck")},
+	{"SQR",	U8("Squaresoft")},
 	{"",	nullptr},
-	{"SCC",	"NTT Docomo"},	// Mobile Wonder Gate
-	{"TMC",	"Tom Create"},
+	{"SCC",	U8("NTT Docomo")},	// Mobile Wonder Gate
+	{"TMC",	U8("Tom Create")},
 	{"",	nullptr},
-	{"NMC",	"Namco"},
-	{"SES",	"Movic"},	// (?)
-	{"HTR",	"E3 Staff"},	// (?)
+	{"NMC",	U8("Namco")},
+	{"SES",	U8("Movic")},	// (?)
+	{"HTR",	U8("E3 Staff")},	// (?)
 
 	// 0x30
 	{"",	nullptr},
-	{"VGD",	"Vanguard"},
-	{"MGT",	"Megatron"},
-	{"WIZ",	"Wiz"},
+	{"VGD",	U8("Vanguard")},
+	{"MGT",	U8("Megatron")},
+	{"WIZ",	U8("Wiz")},
 	{"",	nullptr},
 	{"",	nullptr},
-	{"CAP",	"Capcom"},
+	{"CAP",	U8("Capcom")},
 	{"",	nullptr},
 	{"",	nullptr},
 	{"",	nullptr},
@@ -95,7 +95,7 @@ static const ThirdPartyEntry thirdPartyList[] = {
 	{"",	nullptr},
 
 	// 0x40
-	{"DDJ",	"Digital Dream"},	// FIXME: Not the actual publisher ID. (Cart has 0x00)
+	{"DDJ",	U8("Digital Dream")},	// FIXME: Not the actual publisher ID. (Cart has 0x00)
 };
 
 /** Public functions **/
@@ -105,7 +105,7 @@ static const ThirdPartyEntry thirdPartyList[] = {
  * @param id Company ID.
  * @return Publisher name, or nullptr if not found.
  */
-const char *lookup_name(uint8_t id)
+const char8_t *lookup_name(uint8_t id)
 {
 	if (id >= ARRAY_SIZE(thirdPartyList))
 		return nullptr;
@@ -114,7 +114,7 @@ const char *lookup_name(uint8_t id)
 }
 
 /**
- * Look up a company name.
+ * Look up a company code.
  * @param id Company ID.
  * @return Publisher code, or nullptr if not found.
  */
@@ -124,7 +124,7 @@ const char *lookup_code(uint8_t id)
 		return nullptr;
 
 	const char *code = thirdPartyList[id].code;
-	return (code[0] != '\0' ? code : nullptr);
+	return (code[0] != '\0') ? code : nullptr;
 }
 
 } }

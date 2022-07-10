@@ -83,7 +83,7 @@ class KhronosKTX2Private final : public FileFormatPrivate
 		vector<rp_image*> mipmaps;
 
 		// Invalid pixel format message.
-		char invalid_pixel_format[24];
+		char8_t invalid_pixel_format[24];
 
 		// Key/Value data.
 		// NOTE: Stored as vector<vector<string> > instead of
@@ -975,19 +975,21 @@ const char *KhronosKTX2::pixelFormat(void) const
 		return nullptr;
 
 	// Using vkFormat.
-	const char *const vkFormat_str = VkEnumStrings::lookup_vkFormat(d->ktx2Header.vkFormat);
+	const char8_t *const vkFormat_str = VkEnumStrings::lookup_vkFormat(d->ktx2Header.vkFormat);
 	if (vkFormat_str) {
-		return vkFormat_str;
+		// FIXME: U8STRFIX
+		return reinterpret_cast<const char*>(vkFormat_str);
 	}
 
 	// Invalid pixel format.
+	// FIXME: U8STRFIX
 	if (d->invalid_pixel_format[0] == '\0') {
 		// TODO: Localization?
-		snprintf(const_cast<KhronosKTX2Private*>(d)->invalid_pixel_format,
+		snprintf(reinterpret_cast<char*>(const_cast<KhronosKTX2Private*>(d)->invalid_pixel_format),
 			sizeof(d->invalid_pixel_format),
 			"Unknown (%u)", d->ktx2Header.vkFormat);
 	}
-	return d->invalid_pixel_format;
+	return reinterpret_cast<const char*>(d->invalid_pixel_format);
 }
 
 /**
@@ -1046,7 +1048,7 @@ int KhronosKTX2::getFields(LibRpBase::RomFields *fields) const
 	// NOTE: Vulkan field names should not be localized.
 
 	// vkFormat
-	const char *const vkFormat_str = VkEnumStrings::lookup_vkFormat(ktx2Header->vkFormat);
+	const char8_t *const vkFormat_str = VkEnumStrings::lookup_vkFormat(ktx2Header->vkFormat);
 	if (vkFormat_str) {
 		fields->addField_string("vkFormat", vkFormat_str);
 	} else {

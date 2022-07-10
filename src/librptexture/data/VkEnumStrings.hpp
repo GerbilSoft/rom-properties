@@ -18,7 +18,7 @@ namespace LibRpTexture { namespace VkEnumStrings {
  * @param vkFormat	[in] vkFormat enum
  * @return String, or nullptr if not found.
  */
-const char *lookup_vkFormat(unsigned int vkFormat);
+const char8_t *lookup_vkFormat(unsigned int vkFormat);
 
 } }
 

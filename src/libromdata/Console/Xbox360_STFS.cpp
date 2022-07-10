@@ -946,7 +946,7 @@ int Xbox360_STFS::loadFieldData(void)
 	}
 
 	// Content type
-	const char *const s_content_type = Xbox360_STFS_ContentType::lookup(
+	const char8_t *const s_content_type = Xbox360_STFS_ContentType::lookup(
 		be32_to_cpu(stfsMetadata->content_type));
 	if (s_content_type) {
 		d->fields->addField_string(C_("Xbox360_STFS", "Content Type"), s_content_type);

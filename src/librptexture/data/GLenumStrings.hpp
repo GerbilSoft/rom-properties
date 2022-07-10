@@ -18,7 +18,7 @@ namespace LibRpTexture { namespace GLenumStrings {
  * @param glEnum	[in] glEnum
  * @return String, or nullptr if not found.
  */
-const char *lookup_glEnum(unsigned int glEnum);
+const char8_t *lookup_glEnum(unsigned int glEnum);
 
 } }
 
