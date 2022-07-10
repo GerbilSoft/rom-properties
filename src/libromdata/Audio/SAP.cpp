@@ -599,7 +599,7 @@ int SAP::loadFieldData(void)
 		U8("NTSC"),
 		NOP_C_("SAP|Flags", "Stereo"),
 	};
-	vector<string> *const v_flags_names = RomFields::strArrayToVector_i18n(
+	vector<u8string> *const v_flags_names = RomFields::strArrayToVector_i18n(
 		U8("SAP|Flags"), flags_names, ARRAY_SIZE(flags_names));
 	// TODO: Use a bitfield in tags?
 	uint32_t flags = 0;
@@ -697,7 +697,7 @@ int SAP::loadFieldData(void)
 			NOP_C_("SAP|SongList", "Duration"),
 			NOP_C_("SAP|SongList", "Looping"),
 		};
-		vector<string> *const v_song_list_hdr = RomFields::strArrayToVector_i18n(
+		vector<u8string> *const v_song_list_hdr = RomFields::strArrayToVector_i18n(
 			U8("SAP|SongList"), song_list_hdr, ARRAY_SIZE(song_list_hdr));
 
 		RomFields::AFLD_PARAMS params;

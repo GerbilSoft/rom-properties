@@ -35,7 +35,7 @@ using LibRpFile::MemFile;
 using LibRpTexture::ImageSizeCalc::OpCode;
 
 // C++ STL classes
-using std::string;
+using std::u8string;
 using std::unique_ptr;
 using std::vector;
 
@@ -1038,7 +1038,7 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 				NOP_C_("GodotSTEX|Flags", "Cubemap"),
 				NOP_C_("GodotSTEX|Flags", "For Streaming"),
 			};
-			vector<string> *const v_flags_bitfield_names = RomFields::strArrayToVector_i18n(
+			vector<u8string> *const v_flags_bitfield_names = RomFields::strArrayToVector_i18n(
 				U8("GodotSTEX|Flags"), flags_bitfield_names, ARRAY_SIZE(flags_bitfield_names));
 			fields->addField_bitfield(C_("GodotSTEX", "Flags"),
 				v_flags_bitfield_names, 3, d->stexHeader.v3.flags);
@@ -1086,7 +1086,7 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 		NOP_C_("GodotSTEX|FormatFlags", "Detect Roughness"),
 	};
 
-	vector<string> *v_format_flags_bitfield_names = nullptr;
+	vector<u8string> *v_format_flags_bitfield_names = nullptr;
 	switch (d->stexVersion) {
 		default:
 			assert(!"Invalid STEX version.");

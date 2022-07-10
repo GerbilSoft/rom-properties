@@ -349,7 +349,7 @@ void EXEPrivate::addFields_NE(void)
 		NOP_C_("EXE|ProgFlags", "80386 insns"),
 		NOP_C_("EXE|ProgFlags", "FPU insns"),
 	};
-	vector<string> *const v_ProgFlags_names = RomFields::strArrayToVector_i18n(
+	vector<u8string> *const v_ProgFlags_names = RomFields::strArrayToVector_i18n(
 		U8("EXE|ProgFlags"), ProgFlags_names, ARRAY_SIZE(ProgFlags_names));
 	fields->addField_bitfield("Program Flags",
 		v_ProgFlags_names, 2, hdr.ne.ProgFlags);
@@ -389,7 +389,7 @@ void EXEPrivate::addFields_NE(void)
 		NOP_C_("EXE|ApplFlags", "Non-Conforming"),
 		NOP_C_("EXE|ApplFlags", "DLL"),
 	};
-	vector<string> *const v_ApplFlags_names = RomFields::strArrayToVector_i18n(
+	vector<u8string> *const v_ApplFlags_names = RomFields::strArrayToVector_i18n(
 		U8("EXE|ApplFlags"), ApplFlags_names, ARRAY_SIZE(ApplFlags_names));
 	fields->addField_bitfield(C_("EXE", "Application Flags"),
 		v_ApplFlags_names, 2, hdr.ne.ApplFlags);
@@ -406,7 +406,7 @@ void EXEPrivate::addFields_NE(void)
 		NOP_C_("EXE|OtherFlags", "Proportional Fonts"),
 		NOP_C_("EXE|OtherFlags", "Gangload Area"),
 	};
-	vector<string> *const v_OtherFlags_names = RomFields::strArrayToVector_i18n(
+	vector<u8string> *const v_OtherFlags_names = RomFields::strArrayToVector_i18n(
 		U8("EXE|OtherFlags"), OtherFlags_names, ARRAY_SIZE(OtherFlags_names));
 	fields->addField_bitfield(C_("EXE", "Other Flags"),
 		v_OtherFlags_names, 2, hdr.ne.OS2EXEFlags);

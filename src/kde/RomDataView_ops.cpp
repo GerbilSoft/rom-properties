@@ -31,7 +31,7 @@ using namespace LibRpFile;
 #include <sstream>
 using std::ofstream;
 using std::ostringstream;
-using std::string;
+using std::u8string;
 using std::vector;
 
 /**
@@ -149,7 +149,7 @@ int RomDataViewPrivate::updateField(int fieldIdx)
 			const auto names_cend = bitfieldDesc.names->cend();
 			int layoutIdx = 0;
 			for (auto iter = bitfieldDesc.names->cbegin(); iter != names_cend; ++iter, bitfield >>= 1) {
-				const string &name = *iter;
+				const u8string &name = *iter;
 				if (name.empty())
 					continue;
 

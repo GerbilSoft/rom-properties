@@ -33,6 +33,7 @@ using namespace LibRpFile;
 using std::ofstream;
 using std::ostringstream;
 using std::string;
+using std::u8string;
 using std::vector;
 
 /**
@@ -193,7 +194,7 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 			for (auto iter = bitfieldDesc.names->cbegin(); iter != names_cend && checkBox != nullptr;
 			     ++iter, checkBox = gtk_widget_get_next_sibling(checkBox), bitfield >>= 1)
 			{
-				const string &name = *iter;
+				const u8string &name = *iter;
 				if (name.empty())
 					continue;
 
@@ -223,7 +224,7 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 			for (auto iter = bitfieldDesc.names->cbegin(); iter != names_cend && checkBoxIter != nullptr;
 			     ++iter, checkBoxIter = checkBoxIter->prev, bitfield >>= 1)
 			{
-				const string &name = *iter;
+				const u8string &name = *iter;
 				if (name.empty())
 					continue;
 

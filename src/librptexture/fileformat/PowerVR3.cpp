@@ -35,7 +35,7 @@ using LibRpFile::IRpFile;
 #include "decoder/ImageDecoder_ASTC.hpp"
 
 // C++ STL classes.
-using std::string;
+using std::u8string;
 using std::unique_ptr;
 using std::vector;
 
@@ -1140,7 +1140,7 @@ int PowerVR3::getFields(LibRpBase::RomFields *fields) const
 		NOP_C_("PowerVR3|Flags", "Premultipled Alpha"),
 	};
 	// TODO: i18n
-	vector<string> *const v_flags_names = RomFields::strArrayToVector_i18n(
+	vector<u8string> *const v_flags_names = RomFields::strArrayToVector_i18n(
 		U8("PowerVR3|Flags"), flags_names, ARRAY_SIZE(flags_names));
 	fields->addField_bitfield(C_("PowerVR", "Flags"),
 		v_flags_names, 3, pvr3Header->flags);

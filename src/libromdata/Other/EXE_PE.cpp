@@ -632,7 +632,7 @@ void EXEPrivate::addFields_PE(void)
 		NOP_C_("EXE|PEFlags", "DLL"),
 		nullptr, nullptr,
 	};
-	vector<string> *const v_pe_flags_names = RomFields::strArrayToVector_i18n(
+	vector<u8string> *const v_pe_flags_names = RomFields::strArrayToVector_i18n(
 		U8("EXE|PEFlags"), pe_flags_names, ARRAY_SIZE(pe_flags_names));
 	fields->addField_bitfield(C_("EXE", "PE Flags"),
 		v_pe_flags_names, 3, pe_flags);
@@ -652,7 +652,7 @@ void EXEPrivate::addFields_PE(void)
 		NOP_C_("EXE|DLLFlags", "Control Flow Guard"),
 		NOP_C_("EXE|DLLFlags", "TS Aware"),
 	};
-	vector<string> *const v_dll_flags_names = RomFields::strArrayToVector_i18n(
+	vector<u8string> *const v_dll_flags_names = RomFields::strArrayToVector_i18n(
 		U8("EXE|DLLFlags"), dll_flags_names, ARRAY_SIZE(dll_flags_names));
 	fields->addField_bitfield(C_("EXE", "DLL Flags"),
 		v_dll_flags_names, 3, dll_flags);

@@ -19,6 +19,7 @@ using namespace LibRpTexture;
 
 // C++ STL classes.
 using std::string;
+using std::u8string;
 using std::vector;
 
 namespace LibRomData {
@@ -483,7 +484,7 @@ int WiiWIBN::loadFieldData(void)
 	static const char8_t *const flags_names[] = {
 		NOP_C_("WiiWIBN|Flags", "No Copy"),
 	};
-	vector<string> *const v_flags_names = RomFields::strArrayToVector_i18n(
+	vector<u8string> *const v_flags_names = RomFields::strArrayToVector_i18n(
 		U8("WiiWIBN|Flags"), flags_names, ARRAY_SIZE(flags_names));
 	d->fields->addField_bitfield(C_("WiiWIBN", "Flags"),
 		v_flags_names, 0, be32_to_cpu(wibnHeader->flags));

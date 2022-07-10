@@ -934,7 +934,7 @@ int SNDH::loadFieldData(void)
 				col_count = 1;
 			}
 
-			vector<string> *const v_subtune_list_hdr = RomFields::strArrayToVector_i18n(
+			vector<u8string> *const v_subtune_list_hdr = RomFields::strArrayToVector_i18n(
 				U8("SNDH|SubtuneList"), subtune_list_hdr, col_count);
 
 			RomFields::AFLD_PARAMS params;

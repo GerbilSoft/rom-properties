@@ -35,7 +35,7 @@ using std::u8string;
 using std::vector;
 
 // FIXME: U8STRFIX - RapidJson doesn't support u8string.
-#define U8S2C(str) (reinterpret_cast<const char*>(str.c_str()))
+#define U8S2C(str) (reinterpret_cast<const char*>((str).c_str()))
 #define U8C2C(str) (reinterpret_cast<const char*>(str))
 
 // TextOut_json isn't used by libromdata directly,
@@ -95,8 +95,7 @@ private:
 			const auto it_cend = it->cend();
 			for (auto jt = it->cbegin(); jt != it_cend; ++jt) {
 				// FIXME: RapidJson doesn't support u8string.
-				row_array.PushBack(StringRef(
-					reinterpret_cast<const char*>(jt->c_str())), allocator);
+				row_array.PushBack(StringRef(U8S2C(*jt)), allocator);
 			}
 
 			data_array.PushBack(row_array, allocator);
@@ -154,11 +153,11 @@ public:
 							count = 32;
 						const auto names_cend = bitfieldDesc.names->cend();
 						for (auto iter = bitfieldDesc.names->cbegin(); iter != names_cend; ++iter) {
-							const string &name = *iter;
+							const u8string &name = *iter;
 							if (name.empty())
 								continue;
 
-							names_array.PushBack(StringRef(name), allocator);
+							names_array.PushBack(StringRef(U8S2C(name)), allocator);
 						}
 						if (!names_array.Empty()) {
 							desc_obj.AddMember("names", names_array, allocator);
@@ -191,8 +190,8 @@ public:
 						for (auto iter = listDataDesc.names->cbegin();
 						     iter != names_cend; ++iter)
 						{
-							const string &name = *iter;
-							names_array.PushBack(StringRef(name), allocator);
+							const u8string &name = *iter;
+							names_array.PushBack(StringRef(U8S2C(name)), allocator);
 						}
 					}
 					desc_obj.AddMember("names", names_array, allocator);

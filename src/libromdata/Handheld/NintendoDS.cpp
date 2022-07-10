@@ -1045,7 +1045,7 @@ int NintendoDS::loadFieldData(void)
 		NOP_C_("NintendoDS|SecurityData", "Static Data"),
 		NOP_C_("NintendoDS|SecurityData", "Random Data"),
 	};
-	vector<string> *const v_nds_security_data_names = RomFields::strArrayToVector_i18n(
+	vector<u8string> *const v_nds_security_data_names = RomFields::strArrayToVector_i18n(
 		U8("NintendoDS|SecurityData"), nds_security_data_names, ARRAY_SIZE(nds_security_data_names));
 	d->fields->addField_bitfield(C_("NintendoDS", "Security Data"),
 		v_nds_security_data_names, 0, d->secData);
@@ -1065,10 +1065,10 @@ int NintendoDS::loadFieldData(void)
 		hw_type = NintendoDSPrivate::DS_HW_DS;
 	}
 
-	static const char *const hw_bitfield_names[] = {
-		"Nintendo DS", "Nintendo DSi"
+	static const char8_t *const hw_bitfield_names[] = {
+		U8("Nintendo DS"), U8("Nintendo DSi")
 	};
-	vector<string> *const v_hw_bitfield_names = RomFields::strArrayToVector(
+	vector<u8string> *const v_hw_bitfield_names = RomFields::strArrayToVector(
 		hw_bitfield_names, ARRAY_SIZE(hw_bitfield_names));
 	d->fields->addField_bitfield(C_("NintendoDS", "Hardware"),
 		v_hw_bitfield_names, 0, hw_type);
@@ -1094,7 +1094,7 @@ int NintendoDS::loadFieldData(void)
 		NOP_C_("Region", "South Korea"),
 		NOP_C_("Region", "China"),
 	};
-	vector<string> *const v_nds_region_bitfield_names = RomFields::strArrayToVector_i18n(
+	vector<u8string> *const v_nds_region_bitfield_names = RomFields::strArrayToVector_i18n(
 		U8("Region"), nds_region_bitfield_names, ARRAY_SIZE(nds_region_bitfield_names));
 	d->fields->addField_bitfield(C_("NintendoDS", "DS Region Code"),
 		v_nds_region_bitfield_names, 0, nds_region);
@@ -1196,7 +1196,7 @@ int NintendoDS::loadFieldData(void)
 		NOP_C_("Region", "China"),
 		NOP_C_("Region", "South Korea"),
 	};
-	vector<string> *const v_dsi_region_bitfield_names = RomFields::strArrayToVector_i18n(
+	vector<u8string> *const v_dsi_region_bitfield_names = RomFields::strArrayToVector_i18n(
 		U8("Region"), dsi_region_bitfield_names, ARRAY_SIZE(dsi_region_bitfield_names));
 	d->fields->addField_bitfield(region_code_name,
 		v_dsi_region_bitfield_names, 3, le32_to_cpu(romHeader->dsi.region_code));

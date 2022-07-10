@@ -544,7 +544,7 @@ void ListDataModel::setField(const RomFields::Field *pField)
 		d->headers.clear();
 		d->headers.reserve(columnCount);
 
-		for (const string &u8_str : *(listDataDesc.names)) {
+		for (const u8string &u8_str : *(listDataDesc.names)) {
 			d->headers.emplace_back(U82Q(u8_str));
 		}
 	} else {

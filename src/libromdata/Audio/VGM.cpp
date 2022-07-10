@@ -508,7 +508,7 @@ int VGM::loadFieldData(void)
 			NOP_C_("VGM|PSGFlags", "Stereo"),
 			NOP_C_("VGM|PSGFlags", "/8 Clock Divider"),
 		};
-		vector<string> *const v_psg_flags_bitfield_names = RomFields::strArrayToVector_i18n(
+		vector<u8string> *const v_psg_flags_bitfield_names = RomFields::strArrayToVector_i18n(
 			U8("VGM|PSGFlags"), psg_flags_bitfield_names, ARRAY_SIZE(psg_flags_bitfield_names));
 		d->fields->addField_bitfield(rp_sprintf(reinterpret_cast<const char*>(s_flags),
 			reinterpret_cast<const char*>(chip_name)).c_str(),
@@ -579,7 +579,7 @@ int VGM::loadFieldData(void)
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
 
 				// TODO: Is AY8910 type needed?
-				vector<string> *const v_ay8910_flags_bitfield_names = RomFields::strArrayToVector_i18n(
+				vector<u8string> *const v_ay8910_flags_bitfield_names = RomFields::strArrayToVector_i18n(
 					U8("VGM|AY8910Flags"), ay8910_flags_bitfield_names, ARRAY_SIZE(ay8910_flags_bitfield_names));
 				d->fields->addField_bitfield(rp_sprintf(reinterpret_cast<const char*>(s_flags), "YM2203 (AY8910)").c_str(),
 					v_ay8910_flags_bitfield_names, 2, vgmHeader->ym2203_ay8910_flags);
@@ -599,7 +599,7 @@ int VGM::loadFieldData(void)
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
 
 				// TODO: Is AY8910 type needed?
-				vector<string> *const v_ay8910_flags_bitfield_names = RomFields::strArrayToVector_i18n(
+				vector<u8string> *const v_ay8910_flags_bitfield_names = RomFields::strArrayToVector_i18n(
 					U8("VGM|AY8910Flags"), ay8910_flags_bitfield_names, ARRAY_SIZE(ay8910_flags_bitfield_names));
 				d->fields->addField_bitfield(rp_sprintf(reinterpret_cast<const char*>(s_flags), "YM2608 (AY8910)").c_str(),
 					v_ay8910_flags_bitfield_names, 2, vgmHeader->ym2608_ay8910_flags);
@@ -682,7 +682,7 @@ int VGM::loadFieldData(void)
 						reinterpret_cast<const char*>(chip_name)).c_str(),
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
 
-				vector<string> *const v_ay8910_flags_bitfield_names = RomFields::strArrayToVector_i18n(
+				vector<u8string> *const v_ay8910_flags_bitfield_names = RomFields::strArrayToVector_i18n(
 					U8("VGM|AY8910Flags"), ay8910_flags_bitfield_names, ARRAY_SIZE(ay8910_flags_bitfield_names));
 				d->fields->addField_bitfield(rp_sprintf(reinterpret_cast<const char*>(s_flags),
 					reinterpret_cast<const char*>(chip_name)).c_str(),

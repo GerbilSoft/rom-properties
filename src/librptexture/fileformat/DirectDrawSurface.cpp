@@ -31,7 +31,7 @@ using LibRpFile::IRpFile;
 #include "decoder/ImageDecoder_ASTC.hpp"
 
 // C++ STL classes.
-using std::string;
+using std::u8string;
 using std::vector;
 
 namespace LibRpTexture {
@@ -1415,7 +1415,7 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 		nullptr, nullptr, nullptr,
 		NOP_C_("DirectDrawSurface|dwFlags", "Depth"),
 	};
-	vector<string> *const v_dwFlags_names = RomFields::strArrayToVector_i18n(
+	vector<u8string> *const v_dwFlags_names = RomFields::strArrayToVector_i18n(
 		U8("DirectDrawSurface|dwFlags"), dwFlags_names, ARRAY_SIZE(dwFlags_names));
 	fields->addField_bitfield(C_("DirectDrawSurface", "Flags"),
 		v_dwFlags_names, 3, ddsHeader->dwFlags);
@@ -1438,7 +1438,7 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 		nullptr, nullptr,
 		NOP_C_("DirectDrawSurface|dwCaps", "Mipmap"),
 	};
-	vector<string> *const v_dwCaps_names = RomFields::strArrayToVector_i18n(
+	vector<u8string> *const v_dwCaps_names = RomFields::strArrayToVector_i18n(
 		U8("DirectDrawSurface|dwFlags"), dwCaps_names, ARRAY_SIZE(dwCaps_names));
 	fields->addField_bitfield(C_("DirectDrawSurface", "Caps"),
 		v_dwCaps_names, 3, ddsHeader->dwCaps);
@@ -1461,7 +1461,7 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 		nullptr,
 		NOP_C_("DirectDrawSurface|dwCaps2", "Volume"),
 	};
-	vector<string> *const v_dwCaps2_names = RomFields::strArrayToVector_i18n(
+	vector<u8string> *const v_dwCaps2_names = RomFields::strArrayToVector_i18n(
 		U8("DirectDrawSurface|dwCaps2"), dwCaps2_names, ARRAY_SIZE(dwCaps2_names));
 	fields->addField_bitfield(C_("DirectDrawSurface", "Caps2"),
 		v_dwCaps2_names, 4, (ddsHeader->dwCaps2 >> 8));

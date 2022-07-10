@@ -1609,11 +1609,11 @@ int GameCube::loadFieldData(void)
 					be32_to_cpu(tmdHeader->title_id.lo)));
 
 			// Access rights
-			// FIXME: U8STRFIX
-			vector<string> *const v_access_rights_hdr = new vector<string>();
+			// TODO: Use strArrayToVector_i18n()?
+			vector<u8string> *const v_access_rights_hdr = new vector<u8string>();
 			v_access_rights_hdr->reserve(2);
-			v_access_rights_hdr->emplace_back("AHBPROT");
-			v_access_rights_hdr->emplace_back(reinterpret_cast<const char*>(C_("Wii", "DVD Video")));
+			v_access_rights_hdr->emplace_back(U8("AHBPROT"));
+			v_access_rights_hdr->emplace_back(C_("Wii", "DVD Video"));
 			d->fields->addField_bitfield(C_("Wii", "Access Rights"),
 				v_access_rights_hdr, 0, be32_to_cpu(tmdHeader->access_rights));
 
@@ -1931,9 +1931,8 @@ int GameCube::loadFieldData(void)
 			// tr: Total size of the partition.
 			NOP_C_("Wii|Partition", "Total Size"),
 		};
-		// FIXME: U8STRFIX
-		vector<string> *const v_partitions_names = RomFields::strArrayToVector_i18n(
-			"Wii|Partition", reinterpret_cast<const char *const *>(partitions_names), ARRAY_SIZE(partitions_names));
+		vector<u8string> *const v_partitions_names = RomFields::strArrayToVector_i18n(
+			U8("Wii|Partition"), partitions_names, ARRAY_SIZE(partitions_names));
 
 		RomFields::AFLD_PARAMS params;
 		params.headers = v_partitions_names;

@@ -22,7 +22,7 @@ using LibRpFile::IRpFile;
 using namespace tinyxml2;
 
 // C++ STL classes.
-using std::string;
+using std::u8string;
 using std::unique_ptr;
 using std::vector;
 
@@ -315,7 +315,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 			ADD_SETTING(settings, windowsSettings, ultraHighResolutionScrollingAware);
 
 			// Show the bitfield.
-			vector<string> *const v_WindowsSettings_names = RomFields::strArrayToVector_i18n(
+			vector<u8string> *const v_WindowsSettings_names = RomFields::strArrayToVector_i18n(
 				U8("EXE|Manifest|WinSettings"), WindowsSettings_names, ARRAY_SIZE(WindowsSettings_names));
 			fields->addField_bitfield(C_("EXE|Manifest", "Settings"),
 				v_WindowsSettings_names, 2, settings);
@@ -399,7 +399,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 			}
 
 			// Show the bitfield.
-			vector<string> *const v_OS_Compatibility_names = RomFields::strArrayToVector_i18n(
+			vector<u8string> *const v_OS_Compatibility_names = RomFields::strArrayToVector_i18n(
 				U8("EXE|Manifest|OSCompatibility"), OS_Compatibility_names, ARRAY_SIZE(OS_Compatibility_names));
 			fields->addField_bitfield(C_("EXE|Manifest", "Compatibility"),
 				v_OS_Compatibility_names, 2, compat);

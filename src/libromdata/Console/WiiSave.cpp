@@ -29,6 +29,7 @@ using LibRpTexture::rp_image;
 // C++ STL classes.
 using std::array;
 using std::string;
+using std::u8string;
 using std::vector;
 
 namespace LibRomData {
@@ -508,7 +509,7 @@ int WiiSave::loadFieldData(void)
 		static const char8_t *const flags_names[] = {
 			NOP_C_("WiiSave|Flags", "No Copy from NAND"),
 		};
-		vector<string> *const v_flags_names = RomFields::strArrayToVector_i18n(
+		vector<u8string> *const v_flags_names = RomFields::strArrayToVector_i18n(
 			U8("WiiSave|Flags"), flags_names, ARRAY_SIZE(flags_names));
 		const uint32_t flags = (d->wibnData->isNoCopyFlagSet() ? 1 : 0);
 		d->fields->addField_bitfield(C_("WiiSave", "Flags"),

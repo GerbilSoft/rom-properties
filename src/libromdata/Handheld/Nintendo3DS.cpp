@@ -1845,7 +1845,7 @@ int Nintendo3DS::loadFieldData(void)
 
 		const char8_t *const *pt_types;
 		const uint8_t *keyslots = nullptr;
-		vector<string> *v_partitions_names;
+		vector<u8string> *v_partitions_names;
 		if (d->romType != Nintendo3DSPrivate::RomType::eMMC) {
 			// CCI (3DS cartridge dump)
 
@@ -2280,7 +2280,7 @@ int Nintendo3DS::loadFieldData(void)
 			NOP_C_("Nintendo3DS|CtNames", "Version"),
 			NOP_C_("Nintendo3DS|CtNames", "Size"),
 		};
-		vector<string> *const v_contents_names = RomFields::strArrayToVector_i18n(
+		vector<u8string> *const v_contents_names = RomFields::strArrayToVector_i18n(
 			U8("Nintendo3DS|CtNames"), contents_names, ARRAY_SIZE(contents_names));
 
 		RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 0);
@@ -2327,7 +2327,7 @@ int Nintendo3DS::loadFieldData(void)
 		static const char8_t *const exheader_flags_names[] = {
 			U8("CompressExefsCode"), U8("SDApplication")
 		};
-		vector<string> *const v_exheader_flags_names = RomFields::strArrayToVector(
+		vector<u8string> *const v_exheader_flags_names = RomFields::strArrayToVector(
 			exheader_flags_names, ARRAY_SIZE(exheader_flags_names));
 		d->fields->addField_bitfield("Flags",
 			v_exheader_flags_names, 0, le32_to_cpu(ncch_exheader->sci.flags));
@@ -2394,7 +2394,7 @@ int Nintendo3DS::loadFieldData(void)
 			NOP_C_("Nintendo3DS|N3DSCPUMode", "L2 Cache"),
 			NOP_C_("Nintendo3DS|N3DSCPUMode", "804 MHz"),
 		};
-		vector<string> *const v_new3ds_cpu_mode_names = RomFields::strArrayToVector_i18n(
+		vector<u8string> *const v_new3ds_cpu_mode_names = RomFields::strArrayToVector_i18n(
 			U8("Nintendo3DS|N3DSCPUMode"), new3ds_cpu_mode_names, ARRAY_SIZE(new3ds_cpu_mode_names));
 		d->fields->addField_bitfield("New3DS CPU Mode",
 			v_new3ds_cpu_mode_names, 0, ncch_exheader->aci.arm11_local.flags[0]);

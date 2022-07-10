@@ -517,7 +517,7 @@ int SegaSaturn::loadFieldData(void)
 		NOP_C_("Region", "USA"),
 		NOP_C_("Region", "Europe"),
 	};
-	vector<string> *const v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
+	vector<u8string> *const v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
 		U8("Region"), region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
 	d->fields->addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code_bitfield_names, 0, d->saturn_region);
@@ -552,7 +552,7 @@ int SegaSaturn::loadFieldData(void)
 		NOP_C_("SegaSaturn|Peripherals", "ROM Cartridge"),
 		NOP_C_("SegaSaturn|Peripherals", "MPEG Card"),
 	};
-	vector<string> *const v_peripherals_bitfield_names = RomFields::strArrayToVector_i18n(
+	vector<u8string> *const v_peripherals_bitfield_names = RomFields::strArrayToVector_i18n(
 		U8("SegaSaturn|Peripherals"), peripherals_bitfield_names, ARRAY_SIZE(peripherals_bitfield_names));
 	// Parse peripherals.
 	uint32_t peripherals = d->parsePeripherals(discHeader->peripherals, sizeof(discHeader->peripherals));

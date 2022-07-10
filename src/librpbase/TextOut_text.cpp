@@ -222,7 +222,7 @@ public:
 
 		// Determine the column widths.
 		unsigned int col = 0;
-		for (const string &name : *(bitfieldDesc.names)) {
+		for (const u8string &name : *(bitfieldDesc.names)) {
 			if (name.empty())
 				continue;
 
@@ -243,7 +243,7 @@ public:
 		uint32_t bitfield = romField.data.bitfield;
 		const auto names_cend = bitfieldDesc.names->cend();
 		for (auto iter = bitfieldDesc.names->cbegin(); iter != names_cend; ++iter, bitfield >>= 1) {
-			const string &name = *iter;
+			const u8string &name = *iter;
 			if (name.empty())
 				continue;
 
@@ -327,7 +327,7 @@ public:
 		size_t totalWidth = col_count + 1;
 		if (listDataDesc.names) {
 			int i = 0;
-			for (const string &name : *(listDataDesc.names)) {
+			for (const u8string &name : *(listDataDesc.names)) {
 				colSize[i] = name.size();
 				i++;
 			}

@@ -666,7 +666,7 @@ int Dreamcast::loadFieldData(void)
 		NOP_C_("Region", "USA"),
 		NOP_C_("Region", "Europe"),
 	};
-	vector<string> *const v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
+	vector<u8string> *const v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
 		U8("Region"), region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
 	d->fields->addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code_bitfield_names, 0, region_code);
@@ -733,7 +733,7 @@ int Dreamcast::loadFieldData(void)
 			nullptr, nullptr, nullptr,
 			NOP_C_("Dreamcast|OSSupport", "VGA Box"),
 		};
-		vector<string> *const v_os_bitfield_names = RomFields::strArrayToVector_i18n(
+		vector<u8string> *const v_os_bitfield_names = RomFields::strArrayToVector_i18n(
 			U8("Dreamcast|OSSupport"), os_bitfield_names, ARRAY_SIZE(os_bitfield_names));
 		d->fields->addField_bitfield(C_("Dreamcast", "OS Support"),
 			v_os_bitfield_names, 0, peripherals);
@@ -745,7 +745,7 @@ int Dreamcast::loadFieldData(void)
 			NOP_C_("Dreamcast|Expansion", "Microphone"),
 			NOP_C_("Dreamcast|Expansion", "VMU"),
 		};
-		vector<string> *const v_expansion_bitfield_names = RomFields::strArrayToVector_i18n(
+		vector<u8string> *const v_expansion_bitfield_names = RomFields::strArrayToVector_i18n(
 			U8("Dreamcast|Expansion"), expansion_bitfield_names, ARRAY_SIZE(expansion_bitfield_names));
 		d->fields->addField_bitfield(C_("Dreamcast", "Expansion Units"),
 			v_expansion_bitfield_names, 0, peripherals >> 8);
@@ -766,7 +766,7 @@ int Dreamcast::loadFieldData(void)
 			NOP_C_("Dreamcast|ReqCtrl", "Analog H2"),
 			NOP_C_("Dreamcast|ReqCtrl", "Analog V2"),
 		};
-		vector<string> *const v_req_controller_bitfield_names = RomFields::strArrayToVector_i18n(
+		vector<u8string> *const v_req_controller_bitfield_names = RomFields::strArrayToVector_i18n(
 			U8("Dreamcast|ReqCtrl"), req_controller_bitfield_names, ARRAY_SIZE(req_controller_bitfield_names));
 		// tr: Required controller features.
 		d->fields->addField_bitfield(C_("Dreamcast", "Req. Controller"),
@@ -778,7 +778,7 @@ int Dreamcast::loadFieldData(void)
 			NOP_C_("Dreamcast|OptCtrl", "Keyboard"),
 			NOP_C_("Dreamcast|OptCtrl", "Mouse"),
 		};
-		vector<string> *const v_opt_controller_bitfield_names = RomFields::strArrayToVector_i18n(
+		vector<u8string> *const v_opt_controller_bitfield_names = RomFields::strArrayToVector_i18n(
 			U8("Dreamcast|OptCtrl"), opt_controller_bitfield_names, ARRAY_SIZE(opt_controller_bitfield_names));
 		// tr: Optional controller features.
 		d->fields->addField_bitfield(C_("Dreamcast", "Opt. Controller"),

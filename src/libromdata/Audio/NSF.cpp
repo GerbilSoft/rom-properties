@@ -16,6 +16,7 @@ using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::string;
+using std::u8string;
 using std::vector;
 
 namespace LibRomData {
@@ -242,8 +243,8 @@ int NSF::loadFieldData(void)
 	// TV System.
 	// TODO: NTSC/PAL framerates?
 	// NOTE: NSF uses an enum, not a bitfield.
-	static const char *const tv_system_bitfield_names[] = {
-		"NTSC", "PAL",
+	static const char8_t *const tv_system_bitfield_names[] = {
+		U8("NTSC"), U8("PAL"),
 	};
 	uint32_t bfval = nsfHeader->tv_system;
 	if (bfval < NSF_TV_MAX) {
@@ -251,17 +252,17 @@ int NSF::loadFieldData(void)
 	} else {
 		bfval = 0;
 	}
-	vector<string> *const v_tv_system_bitfield_names = RomFields::strArrayToVector(
+	vector<u8string> *const v_tv_system_bitfield_names = RomFields::strArrayToVector(
 		tv_system_bitfield_names, ARRAY_SIZE(tv_system_bitfield_names));
 	d->fields->addField_bitfield(C_("NSF", "TV System"),
 		v_tv_system_bitfield_names, 0, bfval);
 
 	// Expansion audio.
-	static const char *const expansion_bitfield_names[] = {
-		"Konami VRC6", "Konami VRC7", "2C33 (FDS)",
-		"MMC5", "Namco N163", "Sunsoft 5B",
+	static const char8_t *const expansion_bitfield_names[] = {
+		U8("Konami VRC6"), U8("Konami VRC7"), U8("2C33 (FDS)"),
+		U8("MMC5"), U8("Namco N163"), U8("Sunsoft 5B"),
 	};
-	vector<string> *const v_expansion_bitfield_names = RomFields::strArrayToVector(
+	vector<u8string> *const v_expansion_bitfield_names = RomFields::strArrayToVector(
 		expansion_bitfield_names, ARRAY_SIZE(expansion_bitfield_names));
 	d->fields->addField_bitfield(C_("NSF", "Expansion"),
 		v_expansion_bitfield_names, 3, nsfHeader->expansion_audio);

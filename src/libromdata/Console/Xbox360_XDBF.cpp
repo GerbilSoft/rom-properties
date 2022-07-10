@@ -1021,7 +1021,7 @@ int Xbox360_XDBF_Private::addFields_achievements_SPA(void)
 		NOP_C_("Xbox360_XDBF|Achievements", "Description"),
 		NOP_C_("Xbox360_XDBF|Achievements", "Gamerscore"),
 	};
-	vector<string> *const v_xach_col_names = RomFields::strArrayToVector_i18n(
+	vector<u8string> *const v_xach_col_names = RomFields::strArrayToVector_i18n(
 		U8("Xbox360_XDBF|Achievements"), xach_col_names, ARRAY_SIZE(xach_col_names));
 
 	// Vectors.
@@ -1235,7 +1235,7 @@ int Xbox360_XDBF_Private::addFields_avatarAwards_SPA(void)
 		NOP_C_("Xbox360_XDBF|AvatarAwards", "ID"),
 		NOP_C_("Xbox360_XDBF|AvatarAwards", "Description"),
 	};
-	vector<string> *const v_xgaa_col_names = RomFields::strArrayToVector_i18n(
+	vector<u8string> *const v_xgaa_col_names = RomFields::strArrayToVector_i18n(
 		U8("Xbox360_XDBF|AvatarAwards"), xgaa_col_names, ARRAY_SIZE(xgaa_col_names));
 
 	// Vectors.
@@ -1418,7 +1418,7 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
 		NOP_C_("Xbox360_XDBF|Achievements", "Description"),
 		NOP_C_("Xbox360_XDBF|Achievements", "Gamerscore"),
 	};
-	vector<string> *const v_xach_col_names = RomFields::strArrayToVector_i18n(
+	vector<u8string> *const v_xach_col_names = RomFields::strArrayToVector_i18n(
 		U8("Xbox360_XDBF|Achievements"), xach_col_names, ARRAY_SIZE(xach_col_names));
 
 	RomFields::ListData_t *vv_xach = new RomFields::ListData_t();

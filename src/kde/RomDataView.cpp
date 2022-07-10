@@ -371,7 +371,7 @@ void RomDataViewPrivate::initBitfield(QLabel *lblDesc,
 	uint32_t bitfield = field.data.bitfield;
 	const auto names_cend = bitfieldDesc.names->cend();
 	for (auto iter = bitfieldDesc.names->cbegin(); iter != names_cend; ++iter, bitfield >>= 1) {
-		const string &name = *iter;
+		const u8string &name = *iter;
 		if (name.empty())
 			continue;
 

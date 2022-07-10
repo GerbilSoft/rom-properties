@@ -1068,11 +1068,11 @@ int WiiWAD::loadFieldData(void)
 		}
 
 		// Access rights
-		// FIXME: U8STRFIX
-		vector<string> *const v_access_rights_hdr = new vector<string>();
+		// TODO: Use strArrayToVector_i18n()?
+		vector<u8string> *const v_access_rights_hdr = new vector<u8string>();
 		v_access_rights_hdr->reserve(2);
-		v_access_rights_hdr->emplace_back("AHBPROT");
-		v_access_rights_hdr->emplace_back(reinterpret_cast<const char*>(C_("Wii", "DVD Video")));
+		v_access_rights_hdr->emplace_back(U8("AHBPROT"));
+		v_access_rights_hdr->emplace_back(C_("Wii", "DVD Video"));
 		d->fields->addField_bitfield(C_("Wii", "Access Rights"),
 			v_access_rights_hdr, 0, be32_to_cpu(tmdHeader->access_rights));
 

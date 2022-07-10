@@ -16,7 +16,7 @@ using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
 // C++ STL classes.
-using std::string;
+using std::u8string;
 using std::vector;
 
 // Uninitialized vector class.
@@ -544,7 +544,7 @@ int MachO::loadFieldData(void)
 			// 0x10000000
 			nullptr, nullptr, nullptr, U8("DylibInCache"),
 		};
-		vector<string> *const v_flags_bitfield_names = RomFields::strArrayToVector(
+		vector<u8string> *const v_flags_bitfield_names = RomFields::strArrayToVector(
 			flags_bitfield_names, ARRAY_SIZE(flags_bitfield_names));
 		d->fields->addField_bitfield(C_("MachO", "Flags"),
 			v_flags_bitfield_names, 3, machHeader->flags);

@@ -902,7 +902,7 @@ int DMG::loadFieldData(void)
 	static const char8_t *const system_bitfield_names[] = {
 		U8("DMG"), U8("SGB"), U8("CGB")
 	};
-	vector<string> *const v_system_bitfield_names = RomFields::strArrayToVector(
+	vector<u8string> *const v_system_bitfield_names = RomFields::strArrayToVector(
 		system_bitfield_names, ARRAY_SIZE(system_bitfield_names));
 	d->fields->addField_bitfield(C_("DMG", "System"),
 		v_system_bitfield_names, 0, dmg_system);
@@ -964,7 +964,7 @@ int DMG::loadFieldData(void)
 		NOP_C_("DMG|Features", "Rumble"),
 		NOP_C_("DMG|Features", "Tilt Sensor"),
 	};
-	vector<string> *const v_feature_bitfield_names = RomFields::strArrayToVector_i18n(
+	vector<u8string> *const v_feature_bitfield_names = RomFields::strArrayToVector_i18n(
 		U8("DMG|Features"), feature_bitfield_names, ARRAY_SIZE(feature_bitfield_names));
 	d->fields->addField_bitfield(C_("DMG", "Features"),
 		v_feature_bitfield_names, 3, DMGPrivate::CartType(romHeader->cart_type).features);
@@ -1167,7 +1167,7 @@ int DMG::loadFieldData(void)
 			NOP_C_("DMG|Features", "Rumble"),
 			NOP_C_("DMG|Features", "Timer"),
 		};
-		vector<string> *const v_gbx_feature_bitfield_names = RomFields::strArrayToVector_i18n(
+		vector<u8string> *const v_gbx_feature_bitfield_names = RomFields::strArrayToVector_i18n(
 			U8("DMG|Features"), gbx_feature_bitfield_names, ARRAY_SIZE(gbx_feature_bitfield_names));
 		d->fields->addField_bitfield(C_("DMG", "Features"),
 			v_gbx_feature_bitfield_names, 0, gbx_features);

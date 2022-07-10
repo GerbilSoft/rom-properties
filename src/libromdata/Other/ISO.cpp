@@ -30,7 +30,7 @@ using LibRpFile::IRpFile;
 // C++ includes.
 #include <string>
 #include <vector>
-using std::string;
+using std::u8string;
 using std::vector;
 
 namespace LibRomData {
@@ -809,10 +809,10 @@ int ISO::loadFieldData(void)
 				// TODO: More comprehensive boot catalog.
 				// For now, only showing boot platforms, and
 				// only if a boot catalog is present.
-				static const char *const boot_platforms_names[] = {
-					"x86", "EFI"
+				static const char8_t *const boot_platforms_names[] = {
+					U8("x86"), U8("EFI")
 				};
-				vector<string> *const v_boot_platforms_names = RomFields::strArrayToVector(
+				vector<u8string> *const v_boot_platforms_names = RomFields::strArrayToVector(
 					boot_platforms_names, ARRAY_SIZE(boot_platforms_names));
 				d->fields->addField_bitfield(C_("ISO", "Boot Platforms"),
 					v_boot_platforms_names, 0, d->boot_platforms);

@@ -15,7 +15,7 @@ using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
 // C++ STL classes.
-using std::string;
+using std::u8string;
 using std::vector;
 
 namespace LibRomData {
@@ -318,10 +318,10 @@ int NGPC::loadFieldData(void)
 		romHeader->version, RomFields::Base::Dec, 2);
 
 	// System
-	static const char *const system_bitfield_names[] = {
-		"NGP (Monochrome)", "NGP Color"
+	static const char8_t *const system_bitfield_names[] = {
+		U8("NGP (Monochrome)"), U8("NGP Color")
 	};
-	vector<string> *const v_system_bitfield_names = RomFields::strArrayToVector(
+	vector<u8string> *const v_system_bitfield_names = RomFields::strArrayToVector(
 		system_bitfield_names, ARRAY_SIZE(system_bitfield_names));
 	d->fields->addField_bitfield(C_("NGPC", "System"),
 		v_system_bitfield_names, 0,

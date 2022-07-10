@@ -43,7 +43,6 @@ using LibRomData::RomDataFactory;
 
 // C++ STL classes.
 using std::set;
-using std::string;
 using std::u8string;
 using std::unique_ptr;
 using std::vector;
@@ -597,7 +596,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 	// native Windows encoding once.
 	vector<tstring> tnames;
 	tnames.reserve(count);
-	for (const string &name : *(bitfieldDesc.names)) {
+	for (const u8string &name : *(bitfieldDesc.names)) {
 		if (name.empty()) {
 			// Skip U82T_s() for empty strings.
 			tnames.emplace_back(tstring());
@@ -877,7 +876,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 			lvColumn.mask = LVCF_TEXT | LVCF_FMT;
 			lvColumn.fmt = align_tbl[align & RomFields::TXA_MASK];
 
-			const string &str = *iter;
+			const u8string &str = *iter;
 			if (!str.empty()) {
 				// NOTE: pszText is LPTSTR, not LPCTSTR...
 				const tstring tstr = U82T_s(str);
@@ -1504,7 +1503,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 				// Measure header text widths.
 				auto iter = listDataDesc.names->cbegin();
 				for (int col = 0; col < colCount; ++iter, col++) {
-					const string &str = *iter;
+					const u8string &str = *iter;
 					if (str.empty())
 						continue;
 

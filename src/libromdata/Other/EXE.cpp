@@ -15,7 +15,7 @@ using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
 // C++ STL classes.
-using std::string;
+using std::u8string;
 using std::vector;
 
 // EXE data.
@@ -134,7 +134,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		NOP_C_("EXE|FileFlags", "Info Inferred"),
 		NOP_C_("EXE|FileFlags", "Special Build"),
 	};
-	vector<string> *const v_FileFlags_names = RomFields::strArrayToVector_i18n(
+	vector<u8string> *const v_FileFlags_names = RomFields::strArrayToVector_i18n(
 		U8("EXE|FileFlags"), FileFlags_names, ARRAY_SIZE(FileFlags_names));
 	fields->addField_bitfield(C_("EXE", "File Flags"),
 		v_FileFlags_names, 3, pVsFfi->dwFileFlags & pVsFfi->dwFileFlagsMask);
@@ -339,7 +339,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		NOP_C_("EXE|StringFileInfo", "Key"),
 		NOP_C_("EXE|StringFileInfo", "Value"),
 	};
-	vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
+	vector<u8string> *const v_field_names = RomFields::strArrayToVector_i18n(
 		U8("EXE|StringFileInfo"), field_names, ARRAY_SIZE(field_names));
 
 	// Add the StringFileInfo.

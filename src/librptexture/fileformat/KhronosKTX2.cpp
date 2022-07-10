@@ -39,7 +39,6 @@ using LibRpFile::IRpFile;
 #include "decoder/ImageDecoder_ASTC.hpp"
 
 // C++ STL classes.
-using std::string;
 using std::u8string;
 using std::unique_ptr;
 using std::vector;
@@ -1081,7 +1080,7 @@ int KhronosKTX2::getFields(LibRpBase::RomFields *fields) const
 
 		// NOTE: Making a copy.
 		RomFields::ListData_t *const p_kv_data = new RomFields::ListData_t(d->kv_data);
-		vector<string> *const v_kv_field_names = RomFields::strArrayToVector_i18n(
+		vector<u8string> *const v_kv_field_names = RomFields::strArrayToVector_i18n(
 			U8("KhronosKTX2|KeyValue"), kv_field_names, ARRAY_SIZE(kv_field_names));
 
 		RomFields::AFLD_PARAMS params;

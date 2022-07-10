@@ -17,6 +17,7 @@ using namespace LibRpFile;
 
 // C++ STL classes.
 using std::string;
+using std::u8string;
 using std::vector;
 
 namespace LibRomData {
@@ -472,7 +473,7 @@ int WonderSwan::loadFieldData(void)
 	static const char8_t *const system_bitfield_names[] = {
 		U8("WonderSwan"), U8("WonderSwan Color")
 	};
-	vector<string> *const v_system_bitfield_names = RomFields::strArrayToVector(
+	vector<u8string> *const v_system_bitfield_names = RomFields::strArrayToVector(
 		system_bitfield_names, ARRAY_SIZE(system_bitfield_names));
 	const uint32_t ws_system = (romFooter->system_id & 1 ? 3 : 1);
 	d->fields->addField_bitfield(C_("WonderSwan", "System"),
@@ -536,7 +537,7 @@ int WonderSwan::loadFieldData(void)
 	static const char8_t *const ws_feature_bitfield_names[] = {
 		NOP_C_("WonderSwan|Features", "RTC Present"),
 	};
-	vector<string> *const v_ws_feature_bitfield_names = RomFields::strArrayToVector_i18n(
+	vector<u8string> *const v_ws_feature_bitfield_names = RomFields::strArrayToVector_i18n(
 		U8("WonderSwan|Features"), ws_feature_bitfield_names, ARRAY_SIZE(ws_feature_bitfield_names));
 	d->fields->addField_bitfield(C_("WonderSwan", "Features"),
 		v_ws_feature_bitfield_names, 0, romFooter->rtc_present);

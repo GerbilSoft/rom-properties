@@ -270,7 +270,7 @@ class RomFields
 					// Bit flag names.
 					// Must be a vector of at least 'elements' strings.
 					// If a name is nullptr, that element is skipped.
-					const std::vector<std::string> *names;
+					const std::vector<std::u8string> *names;
 
 					// Bit flags per row. (3 or 4 is usually good)
 					int elemsPerRow;
@@ -279,7 +279,7 @@ class RomFields
 					// List field names. (headers)
 					// Must be a vector of at least 'fields' strings.
 					// If a name is nullptr, that field is skipped.
-					const std::vector<std::string> *names;
+					const std::vector<std::u8string> *names;
 
 					// Flags.
 					unsigned int flags;
@@ -521,9 +521,9 @@ class RomFields
 		 * This can be used for addField_bitfield() and addField_listData().
 		 * @param strArray Array of strings
 		 * @param count Number of strings (nullptrs will be handled as empty strings)
-		 * @return Allocated std::vector<std::string>.
+		 * @return Allocated std::vector<std::u8string>.
 		 */
-		static std::vector<std::string> *strArrayToVector(const char *const *strArray, size_t count);
+		static std::vector<std::u8string> *strArrayToVector(const char8_t *const *strArray, size_t count);
 
 		/**
 		 * Convert an array of char strings to a vector of std::string.
@@ -531,9 +531,9 @@ class RomFields
 		 * @param msgctxt i18n context
 		 * @param strArray Array of strings
 		 * @param count Number of strings (nullptrs will be handled as empty strings)
-		 * @return Allocated std::vector<std::string>.
+		 * @return Allocated std::vector<std::u8string>.
 		 */
-		static std::vector<std::string> *strArrayToVector_i18n(const char *msgctxt, const char *const *strArray, size_t count);
+		static std::vector<std::u8string> *strArrayToVector_i18n(const char8_t *msgctxt, const char8_t *const *strArray, size_t count);
 
 		enum TabOffset {
 			TabOffset_Ignore = -1,
@@ -667,7 +667,7 @@ class RomFields
 		 * @return Field index, or -1 on error.
 		 */
 		int addField_bitfield(const char *name,
-			const std::vector<std::string> *bit_names,
+			const std::vector<std::u8string> *bit_names,
 			int elemsPerRow, uint32_t bitfield);
 
 		/**
@@ -718,7 +718,7 @@ class RomFields
 			uint32_t def_lc;
 
 			// Data
-			const std::vector<std::string> *headers;
+			const std::vector<std::u8string> *headers;
 			union {
 				const ListData_t *single;
 				const ListDataMultiMap_t *multi;
@@ -813,34 +813,6 @@ class RomFields
 		inline int addTab(const char8_t *name)
 		{
 			return addTab(reinterpret_cast<const char*>(name));
-		}
-
-	public:
-		/**
-		 * Convert an array of char strings to a vector of std::string.
-		 * This can be used for addField_bitfield() and addField_listData().
-		 * @param strArray Array of strings
-		 * @param count Number of strings (nullptrs will be handled as empty strings)
-		 * @return Allocated std::vector<std::string>.
-		 */
-		static inline std::vector<std::string> *strArrayToVector(const char8_t *const *strArray, size_t count)
-		{
-			return strArrayToVector(reinterpret_cast<const char *const *>(strArray), count);
-		}
-
-		/**
-		 * Convert an array of char strings to a vector of std::string.
-		 * This can be used for addField_bitfield() and addField_listData().
-		 * @param msgctxt i18n context
-		 * @param strArray Array of strings
-		 * @param count Number of strings (nullptrs will be handled as empty strings)
-		 * @return Allocated std::vector<std::string>.
-		 */
-		static std::vector<std::string> *strArrayToVector_i18n(const char8_t *msgctxt, const char8_t *const *strArray, size_t count)
-		{
-			return strArrayToVector_i18n(
-				reinterpret_cast<const char*>(msgctxt),
-				reinterpret_cast<const char *const *>(strArray), count);
 		}
 
 	public:
@@ -963,7 +935,7 @@ class RomFields
 		 * @return Field index, or -1 on error.
 		 */
 		inline int addField_bitfield(const char8_t *name,
-			const std::vector<std::string> *bit_names,
+			const std::vector<std::u8string> *bit_names,
 			int elemsPerRow, uint32_t bitfield)
 		{
 			return addField_bitfield(reinterpret_cast<const char*>(name), bit_names, elemsPerRow, bitfield);

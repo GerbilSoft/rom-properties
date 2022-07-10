@@ -89,10 +89,10 @@ void RomFieldsPrivate::delete_data(void)
 				delete const_cast<string*>(field.data.str);
 				break;
 			case RomFields::RFT_BITFIELD:
-				delete const_cast<vector<string>*>(field.desc.bitfield.names);
+				delete const_cast<vector<u8string>*>(field.desc.bitfield.names);
 				break;
 			case RomFields::RFT_LISTDATA:
-				delete const_cast<vector<string>*>(field.desc.list_data.names);
+				delete const_cast<vector<u8string>*>(field.desc.list_data.names);
 				if (field.desc.list_data.flags & RomFields::RFT_LISTDATA_MULTI) {
 					delete const_cast<RomFields::ListDataMultiMap_t*>(field.data.list_data.data.multi);
 				} else {
@@ -622,11 +622,11 @@ void RomFields::reserve(int n)
  * This can be used for addField_bitfield() and addField_listData().
  * @param strArray Array of strings.
  * @param count Number of strings. (nullptrs will be handled as empty strings)
- * @return Allocated std::vector<std::string>.
+ * @return Allocated std::vector<std::u8string>.
  */
-vector<string> *RomFields::strArrayToVector(const char *const *strArray, size_t count)
+vector<u8string> *RomFields::strArrayToVector(const char8_t *const *strArray, size_t count)
 {
-	vector<string> *pVec = new vector<string>();
+	vector<u8string> *pVec = new vector<u8string>();
 	assert(count > 0);
 	if (count == 0) {
 		return pVec;
@@ -634,8 +634,8 @@ vector<string> *RomFields::strArrayToVector(const char *const *strArray, size_t 
 
 	for (; count > 0; strArray++, count--) {
 		// nullptr will be handled as empty strings.
-		const char* const str = *strArray;
-		pVec->emplace_back(str ? str : "");
+		const char8_t *const str = *strArray;
+		pVec->emplace_back(str ? str : U8(""));
 	}
 
 	return pVec;
@@ -649,14 +649,15 @@ vector<string> *RomFields::strArrayToVector(const char *const *strArray, size_t 
  * @param count Number of strings. (nullptrs will be handled as empty strings)
  * @return Allocated std::vector<std::string>.
  */
-vector<string> *RomFields::strArrayToVector_i18n(const char *msgctxt, const char *const *strArray, size_t count)
+vector<u8string> *RomFields::strArrayToVector_i18n(const char8_t *msgctxt, const char8_t *const *strArray, size_t count)
 {
 #ifndef ENABLE_NLS
-	// Mark msgctxt as unused here.
+	// No gettext(). We could just wrap around strArrayToVector_i18n(),
+	// but keeping this enabled helps to ensure it doesn't break.
 	RP_UNUSED(msgctxt);
 #endif /* ENABLE_NLS */
 
-	vector<string> *pVec = new vector<string>();
+	vector<u8string> *pVec = new vector<u8string>();
 	assert(count > 0);
 	if (count == 0) {
 		return pVec;
@@ -664,10 +665,14 @@ vector<string> *RomFields::strArrayToVector_i18n(const char *msgctxt, const char
 
 	for (; count > 0; strArray++, count--) {
 		// nullptr will be handled as empty strings.
-		const char* const str = *strArray;
+		// FIXME: U8STRFIX: dpgettext_expr()
+		const char8_t *const str = *strArray;
 		pVec->emplace_back(str
-			? dpgettext_expr(RP_I18N_DOMAIN, msgctxt, str)
-			: "");
+			? reinterpret_cast<const char8_t*>(
+				dpgettext_expr(RP_I18N_DOMAIN,
+					reinterpret_cast<const char*>(msgctxt),
+					reinterpret_cast<const char*>(str)))
+			: U8(""));
 	}
 
 	return pVec;
@@ -747,14 +752,14 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 				break;
 			case RFT_BITFIELD:
 				field_dest.desc.bitfield.names = (field_src.desc.bitfield.names
-						? new vector<string>(*(field_src.desc.bitfield.names))
+						? new vector<u8string>(*(field_src.desc.bitfield.names))
 						: nullptr);
 				field_dest.desc.bitfield.elemsPerRow = field_src.desc.bitfield.elemsPerRow;
 				field_dest.data.bitfield = field_src.data.bitfield;
 				break;
 			case RFT_LISTDATA:
 				field_dest.desc.list_data.names = (field_src.desc.list_data.names
-						? new vector<string>(*(field_src.desc.list_data.names))
+						? new vector<u8string>(*(field_src.desc.list_data.names))
 						: nullptr);
 				field_dest.desc.list_data.flags =
 					field_src.desc.list_data.flags;
@@ -1015,7 +1020,7 @@ int RomFields::addField_string_address_range(const char *name,
  * @return Field index, or -1 on error.
  */
 int RomFields::addField_bitfield(const char *name,
-	const vector<string> *bit_names,
+	const vector<u8string> *bit_names,
 	int elemsPerRow, uint32_t bitfield)
 {
 	assert(name != nullptr);

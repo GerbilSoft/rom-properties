@@ -794,11 +794,13 @@ rom_data_view_init_bitfield(RomDataView *page,
 	uint32_t bitfield = field.data.bitfield;
 	const auto names_cend = bitfieldDesc.names->cend();
 	for (auto iter = bitfieldDesc.names->cbegin(); iter != names_cend; ++iter, bitfield >>= 1) {
-		const string &name = *iter;
+		const u8string &name = *iter;
 		if (name.empty())
 			continue;
 
-		GtkWidget *checkBox = gtk_check_button_new_with_label(name.c_str());
+		// FIXME: U8STRFIX
+		GtkWidget *const checkBox = gtk_check_button_new_with_label(
+			reinterpret_cast<const char*>(name.c_str()));
 		// NOTE: No name for this GtkWidget.
 		gtk_widget_show(checkBox);
 		gboolean value = (bitfield & 1);
@@ -1067,9 +1069,12 @@ rom_data_view_init_listdata(RomDataView *page,
 
 		// NOTE: Not skipping empty column names.
 		// TODO: Hide them.
+		// FIXME: U8STRFIX
 		GtkTreeViewColumn *const column = gtk_tree_view_column_new();
 		gtk_tree_view_column_set_title(column,
-			(listDataDesc.names ? listDataDesc.names->at(i).c_str() : ""));
+			(listDataDesc.names)
+				? reinterpret_cast<const char*>(listDataDesc.names->at(i).c_str())
+				: "");
 
 		GtkCellRenderer *const renderer = gtk_cell_renderer_text_new();
 		if (col0_renderer != nullptr) {
