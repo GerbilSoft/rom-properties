@@ -140,11 +140,11 @@ off64_t filesize(const string &filename)
 
 /**
  * Set the modification timestamp of a file.
- * @param filename Filename.
- * @param mtime Modification time.
+ * @param filename Filename
+ * @param mtime Modification time
  * @return 0 on success; negative POSIX error code on error.
  */
-int set_mtime(const string &filename, time_t mtime)
+int set_mtime(const char *filename, time_t mtime)
 {
 	// FIXME: time_t is 32-bit on 32-bit Linux.
 	// TODO: Add a static_warning() macro?
@@ -152,18 +152,18 @@ int set_mtime(const string &filename, time_t mtime)
 	struct utimbuf utbuf;
 	utbuf.actime = time(nullptr);
 	utbuf.modtime = mtime;
-	int ret = utime(filename.c_str(), &utbuf);
+	int ret = utime(filename, &utbuf);
 
 	return (ret == 0 ? 0 : -errno);
 }
 
 /**
  * Get the modification timestamp of a file.
- * @param filename Filename.
- * @param pMtime Buffer for the modification timestamp.
+ * @param filename Filename
+ * @param pMtime Buffer for the modification timestamp
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_mtime(const string &filename, time_t *pMtime)
+int get_mtime(const char *filename, time_t *pMtime)
 {
 	assert(pMtime != nullptr);
 	if (!pMtime) {
@@ -176,7 +176,7 @@ int get_mtime(const string &filename, time_t *pMtime)
 
 #ifdef HAVE_STATX
 	struct statx sbx;
-	int ret = statx(AT_FDCWD, filename.c_str(), 0, STATX_MTIME, &sbx);
+	int ret = statx(AT_FDCWD, filename, 0, STATX_MTIME, &sbx);
 	if (ret != 0 || !(sbx.stx_mask & STATX_MTIME)) {
 		// statx() failed and/or did not return the modification time.
 		int ret = -errno;
@@ -185,7 +185,7 @@ int get_mtime(const string &filename, time_t *pMtime)
 	*pMtime = sbx.stx_mtime.tv_sec;
 #else /* !HAVE_STATX */
 	struct stat sb;
-	int ret = stat(filename.c_str(), &sb);
+	int ret = stat(filename, &sb);
 	if (ret != 0) {
 		// stat() failed.
 		int ret = -errno;

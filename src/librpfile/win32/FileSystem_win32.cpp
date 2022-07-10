@@ -228,11 +228,11 @@ off64_t filesize(const string &filename)
 
 /**
  * Set the modification timestamp of a file.
- * @param filename Filename.
- * @param mtime Modification time.
+ * @param filename Filename
+ * @param mtime Modification time
  * @return 0 on success; negative POSIX error code on error.
  */
-int set_mtime(const string &filename, time_t mtime)
+int set_mtime(const char *filename, time_t mtime)
 {
 	// TODO: Add a static_warning() macro?
 	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
@@ -251,11 +251,11 @@ int set_mtime(const string &filename, time_t mtime)
 
 /**
  * Get the modification timestamp of a file.
- * @param filename Filename.
- * @param pMtime Buffer for the modification timestamp.
+ * @param filename Filename
+ * @param pMtime Buffer for the modification timestamp
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_mtime(const string &filename, time_t *pMtime)
+int get_mtime(const char *filename, time_t *pMtime)
 {
 	assert(pMtime != nullptr);
 	if (!pMtime) {

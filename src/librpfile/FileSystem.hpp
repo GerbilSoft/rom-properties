@@ -98,19 +98,41 @@ const std::string &getConfigDirectory(void);
 
 /**
  * Set the modification timestamp of a file.
- * @param filename Filename.
- * @param mtime Modification time.
+ * @param filename Filename
+ * @param mtime Modification time
  * @return 0 on success; negative POSIX error code on error.
  */
-int set_mtime(const std::string &filename, time_t mtime);
+int set_mtime(const char *filename, time_t mtime);
+
+/**
+ * Set the modification timestamp of a file.
+ * @param filename Filename
+ * @param mtime Modification time
+ * @return 0 on success; negative POSIX error code on error.
+ */
+static inline int set_mtime(const std::string &filename, time_t mtime)
+{
+	return set_mtime(filename.c_str(), mtime);
+}
 
 /**
  * Get the modification timestamp of a file.
- * @param filename Filename.
- * @param pMtime Buffer for the modification timestamp.
+ * @param filename Filename
+ * @param pMtime Buffer for the modification timestamp
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_mtime(const std::string &filename, time_t *pMtime);
+int get_mtime(const char *filename, time_t *pMtime);
+
+/**
+ * Get the modification timestamp of a file.
+ * @param filename Filename
+ * @param pMtime Buffer for the modification timestamp
+ * @return 0 on success; negative POSIX error code on error.
+ */
+static inline int get_mtime(const std::string &filename, time_t *pMtime)
+{
+	return get_mtime(filename.c_str(), pMtime);
+}
 
 /**
  * Delete a file.
