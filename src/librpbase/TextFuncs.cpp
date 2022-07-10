@@ -203,6 +203,36 @@ static inline int calc_frac_part(T val, T mask)
 }
 
 /**
+ * Get the localized decimal point.
+ * @return Localized decimal point.
+ */
+static string localizedDecimalPoint(void)
+{
+#if defined(_WIN32)
+	// Use localeconv(). (Windows: Convert from UTF-16 to UTF-8.)
+#  if defined(HAVE_STRUCT_LCONV_WCHAR_T)
+	// MSVCRT: `struct lconv` has wchar_t fields.
+	return reinterpret_cast<const char*>(
+		utf16_to_utf8(reinterpret_cast<const char16_t*>(
+			localeconv()->_W_decimal_point), -1).c_str());
+#  else /* !HAVE_STRUCT_LCONV_WCHAR_T */
+	// MinGW v5,v6: `struct lconv` does not have wchar_t fields.
+	// NOTE: The `char` fields are ANSI.
+	return reinterpret_cast<const char*>(
+		ansi_to_utf8(localeconv()->decimal_point, -1).c_str());
+#  endif /* HAVE_STRUCT_LCONV_WCHAR_T */
+#elif defined(HAVE_NL_LANGINFO)
+	// Use nl_langinfo().
+	// Reference: https://www.gnu.org/software/libc/manual/html_node/The-Elegant-and-Fast-Way.html
+	// NOTE: RADIXCHAR is the portable version of DECIMAL_POINT.
+	return nl_langinfo(RADIXCHAR);
+#else
+	// Use localeconv(). (Assuming UTF-8)
+	return localeconv()->decimal_point;
+#endif
+}
+
+/**
  * Format a file size.
  * @param size File size.
  * @return Formatted file size.
@@ -271,29 +301,8 @@ string formatFileSize(off64_t size)
 			frac_digits = 1;
 		}
 
-		// Get the localized decimal point.
-#if defined(_WIN32)
-		// Use localeconv(). (Windows: Convert from UTF-16 to UTF-8.)
-#  if defined(HAVE_STRUCT_LCONV_WCHAR_T)
-		// MSVCRT: `struct lconv` has wchar_t fields.
-		s_value << utf16_to_utf8(
-			reinterpret_cast<const char16_t*>(localeconv()->_W_decimal_point), -1);
-#  else /* !HAVE_STRUCT_LCONV_WCHAR_T */
-		// MinGW v5,v6: `struct lconv` does not have wchar_t fields.
-		// NOTE: The `char` fields are ANSI.
-		s_value << ansi_to_utf8(localeconv()->decimal_point, -1);
-#  endif /* HAVE_STRUCT_LCONV_WCHAR_T */
-#elif defined(HAVE_NL_LANGINFO)
-		// Use nl_langinfo().
-		// Reference: https://www.gnu.org/software/libc/manual/html_node/The-Elegant-and-Fast-Way.html
-		// NOTE: RADIXCHAR is the portable version of DECIMAL_POINT.
-		s_value << nl_langinfo(RADIXCHAR);
-#else
-		// Use localeconv(). (Assuming UTF-8)
-		s_value << localeconv()->decimal_point;
-#endif
-
 		// Append the fractional part using the required number of digits.
+		s_value << localizedDecimalPoint();
 		s_value << std::setw(frac_digits) << std::setfill('0') << frac_part;
 	}
 
@@ -367,29 +376,8 @@ std::string formatFrequency(uint32_t frequency)
 		// Fractional part.
 		const int frac_digits = 2;
 
-		// Get the localized decimal point.
-#if defined(_WIN32)
-		// Use localeconv(). (Windows: Convert from UTF-16 to UTF-8.)
-#  if defined(HAVE_STRUCT_LCONV_WCHAR_T)
-		// MSVCRT: `struct lconv` has wchar_t fields.
-		s_value << utf16_to_utf8(
-			reinterpret_cast<const char16_t*>(localeconv()->_W_decimal_point), -1);
-#  else /* !HAVE_STRUCT_LCONV_WCHAR_T */
-		// MinGW v5,v6: `struct lconv` does not have wchar_t fields.
-		// NOTE: The `char` fields are ANSI.
-		s_value << ansi_to_utf8(localeconv()->decimal_point, -1);
-#  endif /* HAVE_STRUCT_LCONV_WCHAR_T */
-#elif defined(HAVE_NL_LANGINFO)
-		// Use nl_langinfo().
-		// Reference: https://www.gnu.org/software/libc/manual/html_node/The-Elegant-and-Fast-Way.html
-		// NOTE: RADIXCHAR is the portable version of DECIMAL_POINT.
-		s_value << nl_langinfo(RADIXCHAR);
-#else
-		// Use localeconv(). (Assuming UTF-8)
-		s_value << localeconv()->decimal_point;
-#endif
-
 		// Append the fractional part using the required number of digits.
+		s_value << localizedDecimalPoint();
 		s_value << std::setw(frac_digits) << std::setfill('0') << frac_part;
 	}
 
