@@ -222,7 +222,7 @@ config_dialog_init(ConfigDialog *dialog)
 		G_CALLBACK(config_dialog_tab_modified), dialog);
 
 	GtkWidget *const lblCache = gtk_label_new_with_mnemonic(
-		C_("ConfigDialog", "Thumbnail Cache"));
+		convert_accel_to_gtk(C_("ConfigDialog", "Thumbnail Cache")).c_str());
 	gtk_widget_set_name(lblCache, "lblCache");
 	dialog->tabCache = cache_tab_new();
 	gtk_widget_set_name(dialog->tabCache, "tabCache");
