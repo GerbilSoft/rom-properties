@@ -768,7 +768,7 @@ const char *ValveVTF::textureFormatName(void) const
  * Get the pixel format, e.g. "RGB888" or "DXT1".
  * @return Pixel format, or nullptr if unavailable.
  */
-const char *ValveVTF::pixelFormat(void) const
+const char8_t *ValveVTF::pixelFormat(void) const
 {
 	RP_D(const ValveVTF);
 	if (!d->isValid)
@@ -778,23 +778,24 @@ const char *ValveVTF::pixelFormat(void) const
 
 	if (fmt >= 0 && fmt < ARRAY_SIZE_I(d->img_format_tbl)) {
 		if (d->img_format_tbl[fmt] != nullptr) {
-			// FIXME: U8STRFIX - return `const char8_t*`
-			return reinterpret_cast<const char*>(d->img_format_tbl[fmt]);
+			return d->img_format_tbl[fmt];
 		}
 	} else if (fmt < 0) {
 		// Negative == none (usually -1)
-		return C_("ValveVTF|ImageFormat", "None");
+		// FIXME: U8STRFIX
+		return reinterpret_cast<const char8_t*>(C_("ValveVTF|ImageFormat", "None"));
 	}
 
 	// Invalid pixel format.
 	// FIXME: U8STRFIX - return `const char8_t*`
 	if (d->invalid_pixel_format[0] == '\0') {
 		// TODO: Localization?
+		// FIXME: U8STRFIX - snprintf()
 		snprintf(reinterpret_cast<char*>(const_cast<ValveVTFPrivate*>(d)->invalid_pixel_format),
 			sizeof(d->invalid_pixel_format),
 			"Unknown (%d)", fmt);
 	}
-	return reinterpret_cast<const char*>(d->invalid_pixel_format);
+	return d->invalid_pixel_format;
 }
 
 /**

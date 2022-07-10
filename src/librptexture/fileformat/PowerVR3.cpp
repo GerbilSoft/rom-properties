@@ -66,7 +66,7 @@ class PowerVR3Private final : public FileFormatPrivate
 		vector<rp_image*> mipmaps;
 
 		// Invalid pixel format message.
-		char invalid_pixel_format[40];
+		char8_t invalid_pixel_format[40];
 
 		// Is byteswapping needed?
 		// (PVR3 file has the opposite endianness.)
@@ -983,7 +983,7 @@ const char *PowerVR3::textureFormatName(void) const
  * Get the pixel format, e.g. "RGB888" or "DXT1".
  * @return Pixel format, or nullptr if unavailable.
  */
-const char *PowerVR3::pixelFormat(void) const
+const char8_t *PowerVR3::pixelFormat(void) const
 {
 	RP_D(const PowerVR3);
 	if (!d->isValid)
@@ -996,31 +996,31 @@ const char *PowerVR3::pixelFormat(void) const
 	// TODO: Localization?
 	if (d->pvr3Header.channel_depth == 0) {
 		// Compressed texture format.
-		static const char *const pvr3PxFmt_tbl[] = {
+		static const char8_t *const pvr3PxFmt_tbl[] = {
 			// 0
-			"PVRTC 2bpp RGB", "PVRTC 2bpp RGBA",
-			"PVRTC 4bpp RGB", "PVRTC 4bpp RGBA",
-			"PVRTC-II 2bpp", "PVRTC-II 4bpp",
-			"ETC1", "DXT1", "DXT2", "DXT3", "DXT4", "DXT5",
-			"BC4", "BC5", "BC6", "BC7",
+			U8("PVRTC 2bpp RGB"), U8("PVRTC 2bpp RGBA"),
+			U8("PVRTC 4bpp RGB"), U8("PVRTC 4bpp RGBA"),
+			U8("PVRTC-II 2bpp"), U8("PVRTC-II 4bpp"),
+			U8("ETC1"), U8("DXT1"), U8("DXT2"), U8("DXT3"), U8("DXT4"), U8("DXT5"),
+			U8("BC4"), U8("BC5"), U8("BC6"), U8("BC7"),
 
 			// 16
-			"UYVY", "YUY2", "BW1bpp", "R9G9B9E5 Shared Exponent",
-			"RGBG8888", "GRGB8888", "ETC2 RGB", "ETC2 RGBA",
-			"ETC2 RGB A1", "EAC R11", "EAC RG11",
+			U8("UYVY"), U8("YUY2"), U8("BW1bpp"), U8("R9G9B9E5 Shared Exponent"),
+			U8("RGBG8888"), U8("GRGB8888"), U8("ETC2 RGB"), U8("ETC2 RGBA"),
+			U8("ETC2 RGB A1"), U8("EAC R11"), U8("EAC RG11"),
 
 			// 27
-			"ASTC_4x4", "ASTC_5x4", "ASTC_5x5", "ASTC_6x5", "ATC_6x6",
+			U8("ASTC_4x4"), U8("ASTC_5x4"), U8("ASTC_5x5"), U8("ASTC_6x5"), U8("ATC_6x6"),
 
 			// 32
-			"ASTC_8x5", "ASTC_8x6", "ASTC_8x8", "ASTC_10x5",
-			"ASTC_10x6", "ASTC_10x8", "ASTC_10x10", "ASTC_12x10",
-			"ASTC_12x12",
+			U8("ASTC_8x5"), U8("ASTC_8x6"), U8("ASTC_8x8"), U8("ASTC_10x5"),
+			U8("ASTC_10x6"), U8("ASTC_10x8"), U8("ASTC_10x10"), U8("ASTC_12x10"),
+			U8("ASTC_12x12"),
 
 			// 41
-			"ASTC_3x3x3", "ASTC_4x3x3", "ASTC_4x4x3", "ASTC_4x4x4",
-			"ASTC_5x4x4", "ASTC_5x5x4", "ASTC_5x5x5", "ASTC_6x5x5",
-			"ASTC_6x6x5", "ASTC_6x6x6",
+			U8("ASTC_3x3x3"), U8("ASTC_4x3x3"), U8("ASTC_4x4x3"), U8("ASTC_4x4x4"),
+			U8("ASTC_5x4x4"), U8("ASTC_5x5x4"), U8("ASTC_5x5x5"), U8("ASTC_6x5x5"),
+			U8("ASTC_6x6x5"), U8("ASTC_6x6x6"),
 		};
 		static_assert(ARRAY_SIZE(pvr3PxFmt_tbl) == PVR3_PXF_MAX, "pvr3PxFmt_tbl[] needs to be updated!");
 
@@ -1029,7 +1029,8 @@ const char *PowerVR3::pixelFormat(void) const
 		}
 
 		// Not valid.
-		snprintf(const_cast<PowerVR3Private*>(d)->invalid_pixel_format,
+		// FIXME: U8STRFIX - snprintf()
+		snprintf(reinterpret_cast<char*>(const_cast<PowerVR3Private*>(d)->invalid_pixel_format),
 			sizeof(d->invalid_pixel_format),
 			"Unknown (Compressed: 0x%08X)", d->pvr3Header.pixel_format);
 		return d->invalid_pixel_format;
@@ -1060,12 +1061,13 @@ const char *PowerVR3::pixelFormat(void) const
 	*p_pxf = '\0';
 	*p_chcnt = '\0';
 
+	// FIXME: U8STRFIX - snprintf()
 	if (s_pxf[0] != '\0') {
-		snprintf(const_cast<PowerVR3Private*>(d)->invalid_pixel_format,
+		snprintf(reinterpret_cast<char*>(const_cast<PowerVR3Private*>(d)->invalid_pixel_format),
 			 sizeof(d->invalid_pixel_format),
 			 "%s%s", s_pxf, s_chcnt);
 	} else {
-		snprintf(const_cast<PowerVR3Private*>(d)->invalid_pixel_format,
+		snprintf(reinterpret_cast<char*>(const_cast<PowerVR3Private*>(d)->invalid_pixel_format),
 			 sizeof(d->invalid_pixel_format),
 			 "%s", (C_("RomData", "Unknown")));
 	}

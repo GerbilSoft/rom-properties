@@ -972,7 +972,7 @@ const char *KhronosKTX2::textureFormatName(void) const
  * Get the pixel format, e.g. "RGB888" or "DXT1".
  * @return Pixel format, or nullptr if unavailable.
  */
-const char *KhronosKTX2::pixelFormat(void) const
+const char8_t *KhronosKTX2::pixelFormat(void) const
 {
 	RP_D(const KhronosKTX2);
 	if (!d->isValid)
@@ -981,19 +981,18 @@ const char *KhronosKTX2::pixelFormat(void) const
 	// Using vkFormat.
 	const char8_t *const vkFormat_str = VkEnumStrings::lookup_vkFormat(d->ktx2Header.vkFormat);
 	if (vkFormat_str) {
-		// FIXME: U8STRFIX
-		return reinterpret_cast<const char*>(vkFormat_str);
+		return vkFormat_str;
 	}
 
 	// Invalid pixel format.
-	// FIXME: U8STRFIX
 	if (d->invalid_pixel_format[0] == '\0') {
 		// TODO: Localization?
+		// FIXME: U8STRFIX - snprintf()
 		snprintf(reinterpret_cast<char*>(const_cast<KhronosKTX2Private*>(d)->invalid_pixel_format),
 			sizeof(d->invalid_pixel_format),
 			"Unknown (%u)", d->ktx2Header.vkFormat);
 	}
-	return reinterpret_cast<const char*>(d->invalid_pixel_format);
+	return d->invalid_pixel_format;
 }
 
 /**

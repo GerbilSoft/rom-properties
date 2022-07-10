@@ -86,11 +86,11 @@ class GodotSTEXPrivate final : public FileFormatPrivate
 		vector<mipmap_data_t> mipmap_data;
 
 		// Invalid pixel format message
-		char invalid_pixel_format[24];
+		char8_t invalid_pixel_format[24];
 
 	public:
 		// Image format table
-		static const char *const img_format_tbl[];
+		static const char8_t *const img_format_tbl[];
 
 		// ImageSizeCalc opcode table
 		static const ImageSizeCalc::OpCode op_tbl[];
@@ -132,32 +132,32 @@ const TextureInfo GodotSTEXPrivate::textureInfo = {
 };
 
 // Image format table
-const char *const GodotSTEXPrivate::img_format_tbl[] = {
+const char8_t *const GodotSTEXPrivate::img_format_tbl[] = {
 	// 0x00
-	"L8", "LA8", "R8", "RG8",
-	"RGB8", "RGBA8", "RGBA4444", "RGB565",
+	U8("L8"), U8("LA8"), U8("R8"), U8("RG8"),
+	U8("RGB8"), U8("RGBA8"), U8("RGBA4444"), U8("RGB565"),
 
 	// 0x08
-	"RF", "RGF", "RGBF", "RGBAF",
-	"RH", "RGH", "RGBH", "RGBAH",
+	U8("RF"), U8("RGF"), U8("RGBF"), U8("RGBAF"),
+	U8("RH"), U8("RGH"), U8("RGBH"), U8("RGBAH"),
 
 	// 0x10
-	"RGBE9995", "DXT1", "DXT3", "DXT5",
-	"RGTC_R", "RGTC_RG", "BPTC_RGBA", "BPTC_RGBF",
+	U8("RGBE9995"), U8("DXT1"), U8("DXT3"), U8("DXT5"),
+	U8("RGTC_R"), U8("RGTC_RG"), U8("BPTC_RGBA"), U8("BPTC_RGBF"),
 
 	// 0x18
-	"BPTC_RGBFU", "PVRTC1_2", "PVRTC1_2A", "PVRTC1_4",
-	"PVRTC1_4A", "ETC", "ETC2_R11", "ETC2_R11S",
+	U8("BPTC_RGBFU"), U8("PVRTC1_2"), U8("PVRTC1_2A"), U8("PVRTC1_4"),
+	U8("PVRTC1_4A"), U8("ETC"), U8("ETC2_R11"), U8("ETC2_R11S"),
 
 	// 0x20
-	"ETC2_RG11", "ETC2_RG11S", "ETC2_RGB8", "ETC2_RGBA8",
-	"ETC2_RGB8A1",
+	U8("ETC2_RG11"), U8("ETC2_RG11S"), U8("ETC2_RGB8"), U8("ETC2_RGBA8"),
+	U8("ETC2_RGB8A1"),
 
 	// Proprietary formats used in Sonic Colors Ultimate.
 	// NOTE: There's extra formats here in Godot 4.0 that
 	// may conflict, so check the version number once
 	// Godot 4.0 is out.
-	"ASTC_8x8",
+	U8("ASTC_8x8"),
 };
 
 // ImageSizeCalc opcode table
@@ -914,7 +914,7 @@ const char *GodotSTEX::textureFormatName(void) const
  * Get the pixel format, e.g. "RGB888" or "DXT1".
  * @return Pixel format, or nullptr if unavailable.
  */
-const char *GodotSTEX::pixelFormat(void) const
+const char8_t *GodotSTEX::pixelFormat(void) const
 {
 	RP_D(const GodotSTEX);
 	if (!d->isValid)
@@ -947,7 +947,8 @@ const char *GodotSTEX::pixelFormat(void) const
 	// Invalid pixel format.
 	if (d->invalid_pixel_format[0] == '\0') {
 		// TODO: Localization?
-		snprintf(const_cast<GodotSTEXPrivate*>(d)->invalid_pixel_format,
+		// FIXME: U8STRFIX - snprintf()
+		snprintf(reinterpret_cast<char*>(const_cast<GodotSTEXPrivate*>(d)->invalid_pixel_format),
 			sizeof(d->invalid_pixel_format),
 			"Unknown (%d)", d->pixelFormat);
 	}

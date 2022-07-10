@@ -1073,7 +1073,7 @@ const char *KhronosKTX::textureFormatName(void) const
  * Get the pixel format, e.g. "RGB888" or "DXT1".
  * @return Pixel format, or nullptr if unavailable.
  */
-const char *KhronosKTX::pixelFormat(void) const
+const char8_t *KhronosKTX::pixelFormat(void) const
 {
 	RP_D(const KhronosKTX);
 	if (!d->isValid)
@@ -1082,19 +1082,18 @@ const char *KhronosKTX::pixelFormat(void) const
 	// Using glInternalFormat.
 	const char8_t *const glInternalFormat_str = GLenumStrings::lookup_glEnum(d->ktxHeader.glInternalFormat);
 	if (glInternalFormat_str) {
-		// FIXME: U8STRFIX - return `const char8_t*`
-		return reinterpret_cast<const char*>(glInternalFormat_str);
+		return glInternalFormat_str;
 	}
 
 	// Invalid pixel format.
-	// FIXME: U8STRFIX - return `const char8_t*`
 	if (d->invalid_pixel_format[0] == '\0') {
 		// TODO: Localization?
+		// FIXME: U8STRFIX - snprintf
 		snprintf(reinterpret_cast<char*>(const_cast<KhronosKTXPrivate*>(d)->invalid_pixel_format),
 			sizeof(d->invalid_pixel_format),
 			"Unknown (0x%04X)", d->ktxHeader.glInternalFormat);
 	}
-	return reinterpret_cast<const char*>(d->invalid_pixel_format);
+	return d->invalid_pixel_format;
 }
 
 /**

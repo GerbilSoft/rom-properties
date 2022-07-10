@@ -47,7 +47,7 @@ class ASTCPrivate final : public FileFormatPrivate
 		rp_image *img;
 
 		// Pixel format message
-		char pixel_format[20];
+		char8_t pixel_format[20];
 
 		/**
 		 * Load the image.
@@ -250,20 +250,21 @@ const char *ASTC::textureFormatName(void) const
  * Get the pixel format, e.g. "RGB888" or "DXT1".
  * @return Pixel format, or nullptr if unavailable.
  */
-const char *ASTC::pixelFormat(void) const
+const char8_t *ASTC::pixelFormat(void) const
 {
 	RP_D(const ASTC);
 	if (!d->isValid)
 		return nullptr;
 
+	// FIXME: U8STRFIX - snprintf()
 	if (d->pixel_format[0] == '\0') {
 		if (d->dimensions[2] <= 1) {
-			snprintf(const_cast<ASTCPrivate*>(d)->pixel_format,
+			snprintf(reinterpret_cast<char*>(const_cast<ASTCPrivate*>(d)->pixel_format),
 				sizeof(d->pixel_format),
 				"ASTC_%dx%d",
 				d->astcHeader.blockdimX, d->astcHeader.blockdimY);
 		} else {
-			snprintf(const_cast<ASTCPrivate*>(d)->pixel_format,
+			snprintf(reinterpret_cast<char*>(const_cast<ASTCPrivate*>(d)->pixel_format),
 				sizeof(d->pixel_format),
 				"ASTC_%dx%dx%d",
 				d->astcHeader.blockdimX, d->astcHeader.blockdimY, d->astcHeader.blockdimZ);

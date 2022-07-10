@@ -275,14 +275,14 @@ const char *ValveVTF3::textureFormatName(void) const
  * Get the pixel format, e.g. "RGB888" or "DXT1".
  * @return Pixel format, or nullptr if unavailable.
  */
-const char *ValveVTF3::pixelFormat(void) const
+const char8_t *ValveVTF3::pixelFormat(void) const
 {
 	RP_D(const ValveVTF3);
 	if (!d->isValid)
 		return nullptr;
 
 	// Only two formats are supported.
-	return (d->vtf3Header.flags & VTF3_FLAG_ALPHA) ? "DXT5" : "DXT1";
+	return (d->vtf3Header.flags & VTF3_FLAG_ALPHA) ? U8("DXT5") : U8("DXT1");
 }
 
 /**

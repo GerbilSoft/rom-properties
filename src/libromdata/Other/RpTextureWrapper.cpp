@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * RpTextureWrapper.hpp: librptexture file format wrapper.                 *
  *                                                                         *
- * Copyright (c) 2019-2021 by David Korth.                                 *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -285,7 +285,7 @@ int RpTextureWrapper::loadFieldData(void)
 	// NOTE: Godot 3 textures with embedded PNG/WebP doesn't
 	// have the pixel format field set. We could decode the
 	// image to find it, but that would be slow.
-	const char *const pixelFormat = texture->pixelFormat();
+	const char8_t *const pixelFormat = texture->pixelFormat();
 	if (pixelFormat) {
 		d->fields->addField_string(C_("RpTextureWrapper", "Pixel Format"), pixelFormat);
 	}

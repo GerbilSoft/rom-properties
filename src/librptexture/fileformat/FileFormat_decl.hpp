@@ -75,7 +75,7 @@ class klass final : public LibRpTexture::FileFormat { \
 		 * Get the pixel format, e.g. "RGB888" or "DXT1". \
 		 * @return Pixel format, or nullptr if unavailable. \
 		 */ \
-		const char *pixelFormat(void) const final; \
+		const char8_t *pixelFormat(void) const final; \
 		\
 		/** \
 		 * Get the mipmap count. \

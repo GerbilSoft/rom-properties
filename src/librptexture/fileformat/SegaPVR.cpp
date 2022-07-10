@@ -85,20 +85,20 @@ class SegaPVRPrivate final : public FileFormatPrivate
 		rp_image *img;
 
 		// Invalid pixel format message.
-		char invalid_pixel_format[24];
+		char8_t invalid_pixel_format[24];
 
 	public:
 		/**
 		 * Get the pixel format name.
 		 * @return Pixel format name, or nullptr if unknown.
 		 */
-		const char *pixelFormatName(void) const;
+		const char8_t *pixelFormatName(void) const;
 
 		/**
 		 * Get the image data type name.
 		 * @return Image data type name, or nullptr if unknown.
 		 */
-		const char *imageDataTypeName(void) const;
+		const char8_t *imageDataTypeName(void) const;
 
 	public:
 		/**
@@ -205,28 +205,28 @@ inline void SegaPVRPrivate::byteswap_gvr(PVR_Header *gvr)
  * Get the pixel format name.
  * @return Pixel format name, or nullptr if unknown.
  */
-const char *SegaPVRPrivate::pixelFormatName(void) const
+const char8_t *SegaPVRPrivate::pixelFormatName(void) const
 {
-	static const char *const pxfmt_tbl_pvr[] = {
+	static const char8_t *const pxfmt_tbl_pvr[] = {
 		// Sega Dreamcast (PVR)
-		"ARGB1555", "RGB565",		// 0x00-0x01
-		"ARGB4444", "YUV422",		// 0x02-0x03
-		"BUMP", "4-bit per pixel",	// 0x04-0x05
-		"8-bit per pixel", nullptr,	// 0x06-0x07
+		U8("ARGB1555"), U8("RGB565"),		// 0x00-0x01
+		U8("ARGB4444"), U8("YUV422"),		// 0x02-0x03
+		U8("BUMP"), U8("4-bit per pixel"),	// 0x04-0x05
+		U8("8-bit per pixel"), nullptr,	// 0x06-0x07
 
 		// Sony PlayStation 2 (SVR)
-		"BGR5A3", "BGR888_ABGR7888",	// 0x08-0x09
+		U8("BGR5A3"), U8("BGR888_ABGR7888"),	// 0x08-0x09
 	};
-	static const char *const pxfmt_tbl_gvr[] = {
+	static const char8_t *const pxfmt_tbl_gvr[] = {
 		// GameCube (GVR)
-		"IA8", "RGB565", "RGB5A3",	// 0x00-0x02
+		U8("IA8"), U8("RGB565"), U8("RGB5A3"),	// 0x00-0x02
 	};
-	static const char *const pxfmt_tbl_pvrx[] = {
+	static const char8_t *const pxfmt_tbl_pvrx[] = {
 		// Xbox (PVRX) (TODO)
 		nullptr,
 	};
 
-	static const char *const *const pxfmt_tbl_ptrs[(int)PVRType::Max] = {
+	static const char8_t *const *const pxfmt_tbl_ptrs[(int)PVRType::Max] = {
 		pxfmt_tbl_pvr,
 		pxfmt_tbl_gvr,
 		pxfmt_tbl_pvr,	// SVR
@@ -256,9 +256,9 @@ const char *SegaPVRPrivate::pixelFormatName(void) const
 	// NOTE: GameCube pxfmt makes no sense.
 	// Maybe we should use the image data type instead?
 	// For now, we'll end up returning nullptr here.
-	const char *pxfmt = nullptr;
+	const char8_t *pxfmt = nullptr;
 	if ((int)pvrType >= 0 && pvrType < PVRType::Max) {
-		const char *const *const p_pxfmt_tbl = pxfmt_tbl_ptrs[(int)pvrType];
+		const char8_t *const *const p_pxfmt_tbl = pxfmt_tbl_ptrs[(int)pvrType];
 		const uint8_t pxfmt_tbl_sz = pxfmt_tbl_sizes[(int)pvrType];
 
 		if (px_format < pxfmt_tbl_sz) {
@@ -273,70 +273,70 @@ const char *SegaPVRPrivate::pixelFormatName(void) const
  * Get the image data type name.
  * @return Image data type name, or nullptr if unknown.
  */
-const char *SegaPVRPrivate::imageDataTypeName(void) const
+const char8_t *SegaPVRPrivate::imageDataTypeName(void) const
 {
-	static const char *const idt_tbl_pvr[] = {
+	static const char8_t *const idt_tbl_pvr[] = {
 		// Sega Dreamcast (PVR)
 		nullptr,				// 0x00
-		"Square (Twiddled)",			// 0x01
-		"Square (Twiddled, Mipmap)",		// 0x02
-		"Vector Quantized",			// 0x03
-		"Vector Quantized (Mipmap)",		// 0x04
-		"8-bit Paletted (Twiddled)",		// 0x05
-		"4-bit Paletted (Twiddled)",		// 0x06
-		"8-bit (Twiddled)",			// 0x07
-		"4-bit (Twiddled)",			// 0x08
-		"Rectangle",				// 0x09
+		U8("Square (Twiddled)"),		// 0x01
+		U8("Square (Twiddled, Mipmap)"),	// 0x02
+		U8("Vector Quantized"),			// 0x03
+		U8("Vector Quantized (Mipmap)"),	// 0x04
+		U8("8-bit Paletted (Twiddled)"),	// 0x05
+		U8("4-bit Paletted (Twiddled)"),	// 0x06
+		U8("8-bit (Twiddled)"),			// 0x07
+		U8("4-bit (Twiddled)"),			// 0x08
+		U8("Rectangle"),			// 0x09
 		nullptr,				// 0x0A
-		"Rectangle (Stride)",			// 0x0B
+		U8("Rectangle (Stride)"),		// 0x0B
 		nullptr,				// 0x0C
-		"Rectangle (Twiddled)",			// 0x0D
+		U8("Rectangle (Twiddled)"),		// 0x0D
 		nullptr,				// 0x0E
 		nullptr,				// 0x0F
-		"Small VQ",				// 0x10
-		"Small VQ (Mipmap)",			// 0x11
-		"Square (Twiddled, Mipmap) (Alt)",	// 0x12
+		U8("Small VQ"),				// 0x10
+		U8("Small VQ (Mipmap)"),		// 0x11
+		U8("Square (Twiddled, Mipmap) (Alt)"),	// 0x12
 	};
-	static const char *const idt_tbl_svr[] = {
+	static const char8_t *const idt_tbl_svr[] = {
 		// Sony PlayStation 2 (SVR)
 		// NOTE: First index represents format 0x60.
-		"Rectangle",			// 0x60
-		"Rectangle (Swizzled)",		// 0x61
-		"8-bit (external palette)",	// 0x62
-		nullptr,			// 0x63
-		"8-bit (external palette)",	// 0x64
-		nullptr,			// 0x65
-		"4-bit (BGR5A3), Rectangle",	// 0x66
-		"4-bit (BGR5A3), Square",	// 0x67
-		"4-bit (ABGR8), Rectangle",	// 0x68
-		"4-bit (ABGR8), Square",	// 0x69
-		"8-bit (BGR5A3), Rectangle",	// 0x6A
-		"8-bit (BGR5A3), Square",	// 0x6B
-		"8-bit (ABGR8), Rectangle",	// 0x6C
-		"8-bit (ABGR8), Square",	// 0x6D
+		U8("Rectangle"),			// 0x60
+		U8("Rectangle (Swizzled)"),		// 0x61
+		U8("8-bit (external palette)"),		// 0x62
+		nullptr,				// 0x63
+		U8("8-bit (external palette)"),		// 0x64
+		nullptr,				// 0x65
+		U8("4-bit (BGR5A3), Rectangle"),	// 0x66
+		U8("4-bit (BGR5A3), Square"),		// 0x67
+		U8("4-bit (ABGR8), Rectangle"),		// 0x68
+		U8("4-bit (ABGR8), Square"),		// 0x69
+		U8("8-bit (BGR5A3), Rectangle"),	// 0x6A
+		U8("8-bit (BGR5A3), Square"),		// 0x6B
+		U8("8-bit (ABGR8), Rectangle"),		// 0x6C
+		U8("8-bit (ABGR8), Square"),		// 0x6D
 	};
-	static const char *const idt_tbl_gvr[] = {
+	static const char8_t *const idt_tbl_gvr[] = {
 		// GameCube (GVR)
-		"I4",			// 0x00
-		"I8",			// 0x01
-		"IA4",			// 0x02
-		"IA8",			// 0x03
-		"RGB565",		// 0x04
-		"RGB5A3",		// 0x05
-		"ARGB8888",		// 0x06
+		U8("I4"),		// 0x00
+		U8("I8"),		// 0x01
+		U8("IA4"),		// 0x02
+		U8("IA8"),		// 0x03
+		U8("RGB565"),		// 0x04
+		U8("RGB5A3"),		// 0x05
+		U8("ARGB8888"),		// 0x06
 		nullptr,		// 0x07
-		"CI4",			// 0x08
-		"CI8",			// 0x09
+		U8("CI4"),		// 0x08
+		U8("CI8"),		// 0x09
 		nullptr, nullptr,	// 0x0A,0x0B
 		nullptr, nullptr,	// 0x0C,0x0D
-		"DXT1",			// 0x0E
+		U8("DXT1"),		// 0x0E
 	};
-	static const char *const idt_tbl_pvrx[] = {
+	static const char8_t *const idt_tbl_pvrx[] = {
 		// Xbox (PVRX) (TODO)
 		nullptr
 	};
 
-	static const char *const *const idt_tbl_ptrs[(int)PVRType::Max] = {
+	static const char8_t *const *const idt_tbl_ptrs[(int)PVRType::Max] = {
 		idt_tbl_pvr,
 		idt_tbl_gvr,
 		idt_tbl_svr,
@@ -365,9 +365,9 @@ const char *SegaPVRPrivate::imageDataTypeName(void) const
 	}
 
 	// NOTE: For GameCube, this is essentially the pixel format.
-	const char *idt = nullptr;
+	const char8_t *idt = nullptr;
 	if ((int)pvrType >= 0 && pvrType < SegaPVRPrivate::PVRType::Max) {
-		const char *const *const p_idt_tbl = idt_tbl_ptrs[(int)pvrType];
+		const char8_t *const *const p_idt_tbl = idt_tbl_ptrs[(int)pvrType];
 		const uint8_t idt_tbl_sz = idt_tbl_sizes[(int)pvrType];
 
 		if (pvrType == SegaPVRPrivate::PVRType::SVR) {
@@ -1431,7 +1431,7 @@ const char *SegaPVR::textureFormatName(void) const
  * Get the pixel format, e.g. "RGB888" or "DXT1".
  * @return Pixel format, or nullptr if unavailable.
  */
-const char *SegaPVR::pixelFormat(void) const
+const char8_t *SegaPVR::pixelFormat(void) const
 {
 	RP_D(const SegaPVR);
 	if (!d->isValid || (int)d->pvrType < 0) {
@@ -1440,7 +1440,7 @@ const char *SegaPVR::pixelFormat(void) const
 	}
 
 	// Get the pixel format name.
-	const char *pxfmt = d->pixelFormatName();
+	const char8_t *pxfmt = d->pixelFormatName();
 	if (!pxfmt) {
 		// No pixel format name.
 		// Try the image data type instead.
@@ -1470,7 +1470,8 @@ const char *SegaPVR::pixelFormat(void) const
 				break;
 		}
 
-		snprintf(const_cast<SegaPVRPrivate*>(d)->invalid_pixel_format,
+		// FIXME: U8STRFIX - snprintf()
+		snprintf(reinterpret_cast<char*>(const_cast<SegaPVRPrivate*>(d)->invalid_pixel_format),
 			sizeof(d->invalid_pixel_format),
 			"Unknown (0x%02X)", val);
 	}
@@ -1515,9 +1516,9 @@ int SegaPVR::getFields(LibRpBase::RomFields *fields) const
 	// Image data type (for non-GCN)
 	if (d->pvrType != SegaPVRPrivate::PVRType::GVR) {
 		// Only if pxfmt is *not* nullptr.
-		const char *pxfmt = d->pixelFormatName();
+		const char8_t *pxfmt = d->pixelFormatName();
 		if (pxfmt != nullptr) {
-			const char *idt = d->imageDataTypeName();
+			const char8_t *idt = d->imageDataTypeName();
 			if (idt != nullptr) {
 				fields->addField_string(C_("SegaPVR", "Image Data Type"), idt);
 			}

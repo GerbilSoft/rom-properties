@@ -640,7 +640,7 @@ const char *TGA::textureFormatName(void) const
  * Get the pixel format, e.g. "RGB888" or "DXT1".
  * @return Pixel format, or nullptr if unavailable.
  */
-const char *TGA::pixelFormat(void) const
+const char8_t *TGA::pixelFormat(void) const
 {
 	RP_D(const TGA);
 	if (!d->isValid || (int)d->texType < 0) {
@@ -652,7 +652,8 @@ const char *TGA::pixelFormat(void) const
 	const bool hasAlpha = (d->alphaType >= TGA_ALPHATYPE_PRESENT) &&
 			      ((d->tgaHeader.img.attr_dir & 0x0F) > 0);
 
-	const char *fmt = nullptr;
+	// TODO: Localization?
+	const char8_t *fmt = nullptr;
 	switch (d->tgaHeader.image_type) {
 		case TGA_IMAGETYPE_COLORMAP:
 		case TGA_IMAGETYPE_RLE_COLORMAP:
@@ -661,18 +662,18 @@ const char *TGA::pixelFormat(void) const
 				// 8bpp
 				switch (d->tgaHeader.cmap.bpp) {
 					case 15:
-						fmt = "8bpp with RGB555 palette";
+						fmt = U8("8bpp with RGB555 palette");
 						break;
 					case 16:
-						fmt = hasAlpha ? "8bpp with ARGB1555 palette"
-						               : "8bpp with RGB555 palette";
+						fmt = hasAlpha ? U8("8bpp with ARGB1555 palette")
+						               : U8("8bpp with RGB555 palette");
 						break;
 					case 24:
-						fmt = "8bpp with RGB888 palette";
+						fmt = U8("8bpp with RGB888 palette");
 						break;
 					case 32:
-						fmt = hasAlpha ? "8bpp with ARGB8888 palette"
-						               : "8bpp with xRGB8888 palette";
+						fmt = hasAlpha ? U8("8bpp with ARGB8888 palette")
+						               : U8("8bpp with xRGB8888 palette");
 						break;
 					default:
 						break;
@@ -681,18 +682,18 @@ const char *TGA::pixelFormat(void) const
 				// 16bpp
 				switch (d->tgaHeader.cmap.bpp) {
 					case 15:
-						fmt = "16bpp with RGB555 palette";
+						fmt = U8("16bpp with RGB555 palette");
 						break;
 					case 16:
-						fmt = hasAlpha ? "16bpp with ARGB1555 palette"
-						               : "16bpp with RGB555 palette";
+						fmt = hasAlpha ? U8("16bpp with ARGB1555 palette")
+						               : U8("16bpp with RGB555 palette");
 						break;
 					case 24:
-						fmt = "16bpp with RGB888 palette";
+						fmt = U8("16bpp with RGB888 palette");
 						break;
 					case 32:
-						fmt = hasAlpha ? "16bpp with ARGB8888 palette"
-						               : "16bpp with xRGB8888 palette";
+						fmt = hasAlpha ? U8("16bpp with ARGB8888 palette")
+						               : U8("16bpp with xRGB8888 palette");
 						break;
 					default:
 						break;
@@ -705,13 +706,13 @@ const char *TGA::pixelFormat(void) const
 			// True color
 			switch (d->tgaHeader.img.bpp) {
 				case 16:
-					fmt = hasAlpha ? "ARGB1555" : "RGB555";
+					fmt = hasAlpha ? U8("ARGB1555") : U8("RGB555");
 					break;
 				case 24:
-					fmt = "RGB888";
+					fmt = U8("RGB888");
 					break;
 				case 32:
-					fmt = hasAlpha ? "ARGB8888" : "xRGB8888";
+					fmt = hasAlpha ? U8("ARGB8888") : U8("xRGB8888");
 					break;
 				default:
 					break;
@@ -723,11 +724,11 @@ const char *TGA::pixelFormat(void) const
 			// Grayscale
 			switch (d->tgaHeader.img.bpp) {
 				case 8:
-					fmt = "8bpp grayscale";
+					fmt = U8("8bpp grayscale");
 					break;
 				case 16:
 					if ((d->tgaHeader.img.attr_dir & 0x0F) == 8) {
-						fmt = "IA8";
+						fmt = U8("IA8");
 					}
 					break;
 				default:

@@ -74,7 +74,7 @@ class DidjTexPrivate final : public FileFormatPrivate
 		rp_image *img;
 
 		// Invalid pixel format message.
-		char invalid_pixel_format[24];
+		char8_t invalid_pixel_format[24];
 
 		/**
 		 * Load the DidjTex image.
@@ -432,7 +432,7 @@ const char *DidjTex::textureFormatName(void) const
  * Get the pixel format, e.g. "RGB888" or "DXT1".
  * @return Pixel format, or nullptr if unavailable.
  */
-const char *DidjTex::pixelFormat(void) const
+const char8_t *DidjTex::pixelFormat(void) const
 {
 	RP_D(const DidjTex);
 	if (!d->isValid || (int)d->texType < 0) {
@@ -441,12 +441,12 @@ const char *DidjTex::pixelFormat(void) const
 	}
 
 	// TODO: Verify other formats.
-	static const char *const pxfmt_tbl[] = {
+	static const char8_t *const pxfmt_tbl[] = {
 		nullptr,
 
-		"RGB565", nullptr, "RGBA4444",
-		"8bpp with RGB565 palette", nullptr, "8bpp with RGBA4444 palette",
-		"4bpp with RGB565 palette", nullptr, "4bpp with RGBA4444 palette",
+		U8("RGB565"), nullptr, U8("RGBA4444"),
+		U8("8bpp with RGB565 palette"), nullptr, U8("8bpp with RGBA4444 palette"),
+		U8("4bpp with RGB565 palette"), nullptr, U8("4bpp with RGBA4444 palette"),
 	};
 
 	if (d->texHeader.px_format < ARRAY_SIZE(pxfmt_tbl) &&
@@ -459,7 +459,8 @@ const char *DidjTex::pixelFormat(void) const
 	// Store an error message instead.
 	// TODO: Localization?
 	if (d->invalid_pixel_format[0] == '\0') {
-		snprintf(const_cast<DidjTexPrivate*>(d)->invalid_pixel_format,
+		// FIXME: U8STRFIX - snprintf()
+		snprintf(reinterpret_cast<char*>(const_cast<DidjTexPrivate*>(d)->invalid_pixel_format),
 			sizeof(d->invalid_pixel_format),
 			"Unknown (0x%08X)", d->texHeader.px_format);
 	}

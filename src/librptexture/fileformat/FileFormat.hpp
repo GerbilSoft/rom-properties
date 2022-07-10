@@ -144,7 +144,7 @@ class FileFormat : public RefBase
 		 * Get the pixel format, e.g. "RGB888" or "DXT1".
 		 * @return Pixel format, or nullptr if unavailable.
 		 */
-		virtual const char *pixelFormat(void) const = 0;
+		virtual const char8_t *pixelFormat(void) const = 0;
 
 		/**
 		 * Get the mipmap count.

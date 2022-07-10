@@ -59,7 +59,7 @@ class XboxXPRPrivate final : public FileFormatPrivate
 		rp_image *img;
 
 		// Invalid pixel format message.
-		char invalid_pixel_format[24];
+		char8_t invalid_pixel_format[24];
 
 		/**
 		 * Generate swizzle masks for unswizzling ARGB textures.
@@ -635,7 +635,7 @@ const char *XboxXPR::textureFormatName(void) const
  * Get the pixel format, e.g. "RGB888" or "DXT1".
  * @return Pixel format, or nullptr if unavailable.
  */
-const char *XboxXPR::pixelFormat(void) const
+const char8_t *XboxXPR::pixelFormat(void) const
 {
 	RP_D(const XboxXPR);
 	if (!d->isValid || (int)d->xprType < 0) {
@@ -643,45 +643,45 @@ const char *XboxXPR::pixelFormat(void) const
 		return nullptr;
 	}
 
-	static const char *const pxfmt_tbl[] = {
+	static const char8_t *const pxfmt_tbl[] = {
 		// 0x00
-		"L8", "AL8", "ARGB1555", "RGB555",
-		"ARGB4444", "RGB565", "ARGB8888", "xRGB8888",
+		U8("L8"), U8("AL8"), U8("ARGB1555"), U8("RGB555"),
+		U8("ARGB4444"), U8("RGB565"), U8("ARGB8888"), U8("xRGB8888"),
 
 		// 0x08
-		nullptr, nullptr, nullptr, "P8",
-		"DXT1", nullptr, "DXT2", "DXT4",
+		nullptr, nullptr, nullptr, U8("P8"),
+		U8("DXT1"), nullptr, U8("DXT2"), U8("DXT4"),
 
 		// 0x10
-		"Linear ARGB1555", "Linear RGB565",
-		"Linear ARGB8888", "Linear L8",
+		U8("Linear ARGB1555"), U8("Linear RGB565"),
+		U8("Linear ARGB8888"), U8("Linear L8"),
 		nullptr, nullptr,
-		"Linear R8B8", "Linear G8B8",
+		U8("Linear R8B8"), U8("Linear G8B8"),
 
 		// 0x18
-		nullptr, "A8", "A8L8", "Linear AL8",
-		"Linear RGB555", "Linear ARGB4444",
-		"Linear xRGB8888", "Linear A8",
+		nullptr, U8("A8"), U8("A8L8"), U8("Linear AL8"),
+		U8("Linear RGB555"), U8("Linear ARGB4444"),
+		U8("Linear xRGB8888"), U8("Linear A8"),
 
 		// 0x20
-		"Linear A8L8", nullptr, nullptr, nullptr,
-		"YUY2", "UYVY", nullptr, "L6V5U5",
+		U8("Linear A8L8"), nullptr, nullptr, nullptr,
+		U8("YUY2"), U8("UYVY"), nullptr, U8("L6V5U5"),
 
 		// 0x28
-		"V8U8", "R8B8", "D24S8", "F24S8",
-		"D16", "F16", "Linear D24S8", "Linear F24S8",
+		U8("V8U8"), U8("R8B8"), U8("D24S8"), U8("F24S8"),
+		U8("D16"), U8("F16"), U8("Linear D24S8"), U8("Linear F24S8"),
 
 		// 0x30
-		"Linear D16", "Linear F16", "L16", "V16U16",
-		nullptr, "Linear L16", "Linear V16U16", "Linear L6V5U5",
+		U8("Linear D16"), U8("Linear F16"), U8("L16"), U8("V16U16"),
+		nullptr, U8("Linear L16"), U8("Linear V16U16"), U8("Linear L6V5U5"),
 
 		// 0x38
-		"RGBA5551", "RGBA4444", "QWVU8888", "BGRA8888",
-		"RGBA8888", "Linear RGBA5551",
-		"Linear RGBA4444", "Linear ABGR8888",
+		U8("RGBA5551"), U8("RGBA4444"), U8("QWVU8888"), U8("BGRA8888"),
+		U8("RGBA8888"), U8("Linear RGBA5551"),
+		U8("Linear RGBA4444"), U8("Linear ABGR8888"),
 
 		// 0x40
-		"Linear BGRA8888", "Linear RGBA8888", nullptr, nullptr,
+		U8("Linear BGRA8888"), U8("Linear RGBA8888"), nullptr, nullptr,
 		nullptr, nullptr, nullptr, nullptr,
 
 		// 0x48
@@ -695,8 +695,8 @@ const char *XboxXPR::pixelFormat(void) const
 		nullptr, nullptr, nullptr, nullptr,
 
 		// 0x60
-		nullptr, nullptr, nullptr, "Vertex Data",
-		"Index16",
+		nullptr, nullptr, nullptr, U8("Vertex Data"),
+		U8("Index16"),
 	};
 
 	if (d->xpr0Header.pixel_format < ARRAY_SIZE(pxfmt_tbl)) {
@@ -707,7 +707,8 @@ const char *XboxXPR::pixelFormat(void) const
 	// Store an error message instead.
 	// TODO: Localization?
 	if (d->invalid_pixel_format[0] == '\0') {
-		snprintf(const_cast<XboxXPRPrivate*>(d)->invalid_pixel_format,
+		// FIXME: U8STRFIX - snprintf()
+		snprintf(reinterpret_cast<char*>(const_cast<XboxXPRPrivate*>(d)->invalid_pixel_format),
 			sizeof(d->invalid_pixel_format),
 			"Unknown (0x%02X)", d->xpr0Header.pixel_format);
 	}
