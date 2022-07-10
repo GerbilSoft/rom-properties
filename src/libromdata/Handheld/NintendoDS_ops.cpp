@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * NintendoDS.hpp: Nintendo DS(i) ROM reader. (ROM operations)             *
+ * NintendoDS_ops.cpp: Nintendo DS(i) ROM reader. (ROM operations)         *
  *                                                                         *
  * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
