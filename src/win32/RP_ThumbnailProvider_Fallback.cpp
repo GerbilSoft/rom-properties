@@ -114,7 +114,7 @@ HRESULT RP_ThumbnailProvider_Private::Fallback(UINT cx, HBITMAP *phbmp, WTS_ALPH
 
 	// Get the file extension.
 	// FIXME: U8STRFIX
-	const char *const filename = this->file->filename();
+	const char8_t *const filename = this->file->filename();
 	const char *const ext = FileSystem::file_ext(reinterpret_cast<const char*>(filename));
 	if (!filename || !ext) {
 		// Invalid or missing filename or extension.
