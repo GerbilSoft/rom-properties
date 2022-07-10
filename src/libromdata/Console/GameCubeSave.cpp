@@ -852,7 +852,7 @@ int GameCubeSave::loadFieldData(void)
 	// Publisher
 	// TODO: Combine with GameCubePrivate::getPublisher().
 	// FIXME: U8STRFIX
-	const char *const publisher_title = C_("RomData", "Publisher");
+	const char8_t *const publisher_title = C_("RomData", "Publisher");
 	const char8_t *publisher = NintendoPublishers::lookup(direntry->company);
 	if (publisher) {
 		d->fields->addField_string(publisher_title, publisher);

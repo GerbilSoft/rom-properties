@@ -124,7 +124,7 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 		 *                     Used to distinguish between old Windows and OS/2 executables.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int findNERuntimeDLL(std::string &refDesc, std::string &refLink, bool &refHasKernel);
+		int findNERuntimeDLL(std::u8string &refDesc, std::u8string &refLink, bool &refHasKernel);
 
 		/**
 		 * Add fields for NE executables.
@@ -176,7 +176,7 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 		 * @param refLink String to store the download link.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int findPERuntimeDLL(std::string &refDesc, std::string &refLink);
+		int findPERuntimeDLL(std::u8string &refDesc, std::u8string &refLink);
 
 		/**
 		 * Add fields for PE and PE32+ executables.
@@ -194,13 +194,13 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 		 * NOTE: DelayLoad must be checked by the caller, since it's
 		 * passing an XMLDocument reference to this function.
 		 *
-		 * @param doc		[in/out] XML document.
-		 * @param ppResName	[out,opt] Pointer to receive the loaded resource name. (statically-allocated string)
+		 * @param doc		[in/out] XML document
+		 * @param ppResName	[out,opt] Pointer to receive the loaded resource name (statically-allocated string)
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		ATTR_ACCESS(read_write, 2)
 		ATTR_ACCESS(write_only, 3)
-		int loadWin32ManifestResource(tinyxml2::XMLDocument &doc, const char **ppResName = nullptr) const;
+		int loadWin32ManifestResource(tinyxml2::XMLDocument &doc, const char8_t **ppResName = nullptr) const;
 
 	public:
 		/**

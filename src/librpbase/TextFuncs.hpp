@@ -617,7 +617,7 @@ static inline std::u16string utf16be_to_utf16(const char16_t *wcs, int len)
  * @param fileSize File size.
  * @return Formatted file size.
  */
-std::string formatFileSize(off64_t fileSize);
+std::u8string formatFileSize(off64_t fileSize);
 
 /**
  * Format a file size, in KiB.
@@ -628,14 +628,14 @@ std::string formatFileSize(off64_t fileSize);
  * @param size File size.
  * @return Formatted file size.
  */
-std::string formatFileSizeKiB(unsigned int size);
+std::u8string formatFileSizeKiB(unsigned int size);
 
 /**
  * Format a frequency.
  * @param frequency Frequency.
  * @return Formatted frequency.
  */
-std::string formatFrequency(uint32_t frequency);
+std::u8string formatFrequency(uint32_t frequency);
 
 /**
  * Remove trailing spaces from a string.

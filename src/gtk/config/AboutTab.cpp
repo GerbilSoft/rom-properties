@@ -21,6 +21,7 @@ using namespace LibRpBase;
 
 // C++ STL classes
 using std::string;
+using std::u8string;
 
 // Libraries
 #ifdef HAVE_ZLIB
@@ -383,24 +384,26 @@ about_tab_init_program_title_text(GtkWidget *imgLogo, GtkLabel *lblTitle)
 	const char *const gitVersion =
 		AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::GitVersion);
 
-	string sPrgTitle;
+	// FIXME: U8STRFIX - rp_sprintf()
+	u8string sPrgTitle;
 	sPrgTitle.reserve(1024);
 	// tr: Uses Pango's HTML subset for formatting.
 	sPrgTitle += C_("AboutTab", "<b>ROM Properties Page</b>\nShell Extension");
-	sPrgTitle += "\n\n";
-	sPrgTitle += rp_sprintf(C_("AboutTab", "Version %s"), programVersion);
+	sPrgTitle += U8("\n\n");
+	sPrgTitle += reinterpret_cast<const char8_t*>(rp_sprintf(
+		reinterpret_cast<const char*>(C_("AboutTab", "Version %s")), programVersion).c_str());
 	if (gitVersion) {
-		sPrgTitle += '\n';
-		sPrgTitle += gitVersion;
+		sPrgTitle += U8("\n");
+		sPrgTitle += reinterpret_cast<const char8_t*>(gitVersion);
 		const char *const gitDescription =
 			AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::GitDescription);
 		if (gitDescription) {
-			sPrgTitle += '\n';
-			sPrgTitle += gitDescription;
+			sPrgTitle += U8("\n");
+			sPrgTitle += reinterpret_cast<const char8_t*>(gitDescription);
 		}
 	}
 
-	gtk_label_set_markup(lblTitle, sPrgTitle.c_str());
+	gtk_label_set_markup(lblTitle, reinterpret_cast<const char*>(sPrgTitle.c_str()));
 }
 
 /**
@@ -410,9 +413,10 @@ about_tab_init_program_title_text(GtkWidget *imgLogo, GtkLabel *lblTitle)
 static void
 about_tab_init_credits_tab(GtkLabel *lblCredits)
 {
+	// FIXME: U8STRFIX - rp_sprintf()
 	// License name, with HTML formatting.
 	const string sPrgLicense = rp_sprintf("<a href='https://www.gnu.org/licenses/gpl-2.0.html'>%s</a>",
-		C_("AboutTabl|Credits", "GNU GPL v2"));
+		reinterpret_cast<const char*>(C_("AboutTabl|Credits", "GNU GPL v2")));
 
 	// lblCredits is RichText.
 	string sCredits;
@@ -422,7 +426,7 @@ about_tab_init_credits_tab(GtkLabel *lblCredits)
 	sCredits += '\n';
 	sCredits += rp_sprintf(
 		// tr: %s is the name of the license.
-		C_("AboutTab|Credits", "This program is licensed under the %s or later."),
+		reinterpret_cast<const char*>(C_("AboutTab|Credits", "This program is licensed under the %s or later.")),
 			sPrgLicense.c_str());
 
 	AboutTabText::CreditType lastCreditType = AboutTabText::CreditType::Continue;
@@ -437,13 +441,13 @@ about_tab_init_credits_tab(GtkLabel *lblCredits)
 
 			switch (creditsData->type) {
 				case AboutTabText::CreditType::Developer:
-					sCredits += C_("AboutTab|Credits", "Developers:");
+					sCredits += reinterpret_cast<const char*>(C_("AboutTab|Credits", "Developers:"));
 					break;
 				case AboutTabText::CreditType::Contributor:
-					sCredits += C_("AboutTab|Credits", "Contributors:");
+					sCredits += reinterpret_cast<const char*>(C_("AboutTab|Credits", "Contributors:"));
 					break;
 				case AboutTabText::CreditType::Translator:
-					sCredits += C_("AboutTab|Credits", "Translators:");
+					sCredits += reinterpret_cast<const char*>(C_("AboutTab|Credits", "Translators:"));
 					break;
 
 				case AboutTabText::CreditType::Continue:
@@ -475,7 +479,7 @@ about_tab_init_credits_tab(GtkLabel *lblCredits)
 		}
 		if (creditsData->sub) {
 			// tr: Sub-credit.
-			sCredits += rp_sprintf(C_("AboutTab|Credits", " (%s)"),
+			sCredits += rp_sprintf(reinterpret_cast<const char*>(C_("AboutTab|Credits", " (%s)")),
 				creditsData->sub);
 		}
 
@@ -501,15 +505,15 @@ about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 	// is changed at runtime.
 
 	// tr: Using an internal copy of a library.
-	const char *const sIntCopyOf = C_("AboutTab|Libraries", "Internal copy of %s.");
+	const char8_t *const sIntCopyOf = C_("AboutTab|Libraries", "Internal copy of %s.");
 	// tr: Compiled with a specific version of an external library.
-	const char *const sCompiledWith = C_("AboutTab|Libraries", "Compiled with %s.");
+	const char8_t *const sCompiledWith = C_("AboutTab|Libraries", "Compiled with %s.");
 	// tr: Using an external library, e.g. libpcre.so
-	const char *const sUsingDll = C_("AboutTab|Libraries", "Using %s.");
+	const char8_t *const sUsingDll = C_("AboutTab|Libraries", "Using %s.");
 	// tr: License: (libraries with only a single license)
-	const char *const sLicense = C_("AboutTab|Libraries", "License: %s");
+	const char8_t *const sLicense = C_("AboutTab|Libraries", "License: %s");
 	// tr: Licenses: (libraries with multiple licenses)
-	const char *const sLicenses = C_("AboutTab|Libraries", "Licenses: %s");
+	const char8_t *const sLicenses = C_("AboutTab|Libraries", "Licenses: %s");
 
 	// Suppress "unused variable" warnings.
 	// sIntCopyOf isn't used if no internal copies of libraries are needed.
@@ -527,9 +531,9 @@ about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 		(guint)GTK_MAJOR_VERSION, (guint)GTK_MINOR_VERSION,
 		(guint)GTK_MICRO_VERSION);
 #ifdef QT_IS_STATIC
-	sLibraries += rp_sprintf(sIntCopyOf, gtkVersion.c_str());
+	sLibraries += rp_sprintf(reinterpret_cast<const char*>(sIntCopyOf), gtkVersion.c_str());
 #else
-	sLibraries += rp_sprintf(sCompiledWith, gtkVersionCompiled.c_str()) + '\n';
+	sLibraries += rp_sprintf(reinterpret_cast<const char*>(sCompiledWith), gtkVersionCompiled.c_str()) + '\n';
 
 	// NOTE: Although the GTK+ 2.x headers export variables,
 	// the shared libraries for 2.24.33 do *not* export them,
@@ -540,7 +544,7 @@ about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 		(gtk_major >= 4 ? "" : "+"),
 		gtk_major, gtk_get_minor_version(),
 		gtk_get_micro_version());
-	sLibraries += rp_sprintf(sUsingDll, gtkVersionUsing.c_str());
+	sLibraries += rp_sprintf(reinterpret_cast<const char*>(sUsingDll), gtkVersionUsing.c_str());
 #endif /* GTK_CHECK_VERSION(2,90,7) */
 #endif /* QT_IS_STATIC */
 	sLibraries += '\n';
@@ -548,7 +552,7 @@ about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 		"Copyright (C) 1995-1997 Peter Mattis, Spencer Kimball and Josh MacDonald.\n"
 		"Copyright (C) 1995-2022 the GTK+ Team and others.\n"
 		"<a href='https://www.gtk.org/'>https://www.gtk.org/</a>\n";
-	sLibraries += rp_sprintf(sLicenses, "GNU LGPL v2.1+");
+	sLibraries += rp_sprintf(reinterpret_cast<const char*>(sLicenses), "GNU LGPL v2.1+");
 
 	/** zlib **/
 #ifdef HAVE_ZLIB
@@ -562,15 +566,15 @@ about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 #  endif /* ZLIBNG_VERSION */
 
 #if defined(USE_INTERNAL_ZLIB) && !defined(USE_INTERNAL_ZLIB_DLL)
-	sLibraries += rp_sprintf(sIntCopyOf, sZlibVersion.c_str());
+	sLibraries += rp_sprintf(reinterpret_cast<const char*>(sIntCopyOf), sZlibVersion.c_str());
 #else
 #  ifdef ZLIBNG_VERSION
-	sLibraries += rp_sprintf(sCompiledWith, "zlib-ng " ZLIBNG_VERSION);
+	sLibraries += rp_sprintf(reinterpret_cast<const char*>(sCompiledWith), "zlib-ng " ZLIBNG_VERSION);
 #  else /* !ZLIBNG_VERSION */
-	sLibraries += rp_sprintf(sCompiledWith, "zlib " ZLIB_VERSION);
+	sLibraries += rp_sprintf(reinterpret_cast<const char*>(sCompiledWith), "zlib " ZLIB_VERSION);
 #  endif /* ZLIBNG_VERSION */
 	sLibraries += '\n';
-	sLibraries += rp_sprintf(sUsingDll, sZlibVersion.c_str());
+	sLibraries += rp_sprintf(reinterpret_cast<const char*>(sUsingDll), sZlibVersion.c_str());
 #endif
 	sLibraries += '\n';
 	sLibraries +=
@@ -580,7 +584,7 @@ about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 	// TODO: Also if zlibVersion() contains "zlib-ng"?
 	sLibraries += "<a href='https://github.com/zlib-ng/zlib-ng'>https://github.com/zlib-ng/zlib-ng</a>\n";
 #  endif /* ZLIBNG_VERSION */
-	sLibraries += rp_sprintf(sLicense, "zlib license");
+	sLibraries += rp_sprintf(reinterpret_cast<const char*>(sLicense), "zlib license");
 #endif /* HAVE_ZLIB */
 
 	/** libpng **/
@@ -603,7 +607,7 @@ about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 
 	sLibraries += "\n\n";
 #if defined(USE_INTERNAL_PNG) && !defined(USE_INTERNAL_ZLIB_DLL)
-	sLibraries += rp_sprintf(sIntCopyOf, pngVersion);
+	sLibraries += rp_sprintf(reinterpret_cast<const char*>(sIntCopyOf), pngVersion);
 #else
 	// NOTE: Gentoo's libpng has "+apng" at the end of
 	// PNG_LIBPNG_VER_STRING if APNG is enabled.
@@ -626,9 +630,9 @@ about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 		fullPngVersionCompiled = rp_sprintf("%s (No APNG support)", pngVersionCompiled.c_str());
 	}
 
-	sLibraries += rp_sprintf(sCompiledWith, fullPngVersionCompiled.c_str());
+	sLibraries += rp_sprintf(reinterpret_cast<const char*>(sCompiledWith), fullPngVersionCompiled.c_str());
 	sLibraries += '\n';
-	sLibraries += rp_sprintf(sUsingDll, pngVersion);
+	sLibraries += rp_sprintf(reinterpret_cast<const char*>(sUsingDll), pngVersion);
 #endif
 
 	/**
@@ -643,10 +647,10 @@ about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 	sLibraries += "<a href='http://www.libpng.org/pub/png/libpng.html'>http://www.libpng.org/pub/png/libpng.html</a>\n";
 	sLibraries += "<a href='https://github.com/glennrp/libpng'>https://github.com/glennrp/libpng</a>\n";
 	if (APNG_is_supported) {
-		sLibraries += C_("AboutTab|Libraries", "APNG patch:");
+		sLibraries += reinterpret_cast<const char*>(C_("AboutTab|Libraries", "APNG patch:"));
 		sLibraries += " <a href='https://sourceforge.net/projects/libpng-apng/'>https://sourceforge.net/projects/libpng-apng/</a>\n";
 	}
-	sLibraries += rp_sprintf(sLicense, "libpng license");
+	sLibraries += rp_sprintf(reinterpret_cast<const char*>(sLicense), "libpng license");
 #endif /* HAVE_PNG */
 
 	/** nettle **/
@@ -657,35 +661,35 @@ about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 		"GNU Nettle %u.%u",
 			static_cast<unsigned int>(NETTLE_VERSION_MAJOR),
 			static_cast<unsigned int>(NETTLE_VERSION_MINOR));
-	sLibraries += rp_sprintf(sCompiledWith, sVerBuf);
+	sLibraries += rp_sprintf(reinterpret_cast<const char*>(sCompiledWith), sVerBuf);
 #    ifdef HAVE_NETTLE_VERSION_FUNCTIONS
 	snprintf(sVerBuf, sizeof(sVerBuf),
 		"GNU Nettle %u.%u",
 			static_cast<unsigned int>(nettle_version_major()),
 			static_cast<unsigned int>(nettle_version_minor()));
 	sLibraries += '\n';
-	sLibraries += rp_sprintf(sUsingDll, sVerBuf);
+	sLibraries += rp_sprintf(reinterpret_cast<const char*>(sUsingDll), sVerBuf);
 #    endif /* HAVE_NETTLE_VERSION_FUNCTIONS */
 	sLibraries += '\n';
 	sLibraries +=
 		"Copyright (C) 2001-2022 Niels Möller.\n"
 		"<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>\n";
-	sLibraries += rp_sprintf(sLicenses, "GNU LGPL v3+, GNU GPL v2+");
+	sLibraries += rp_sprintf(reinterpret_cast<const char*>(sLicenses), "GNU LGPL v3+, GNU GPL v2+");
 #  else /* !HAVE_NETTLE_VERSION_H */
 #    ifdef HAVE_NETTLE_3
-	sLibraries += rp_sprintf(sCompiledWith, "GNU Nettle 3.0");
+	sLibraries += rp_sprintf(reinterpret_cast<const char*>(sCompiledWith), "GNU Nettle 3.0");
 	sLibraries += '\n';
 	sLibraries +=
 		"Copyright (C) 2001-2014 Niels Möller.\n"
 		"<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>\n";
-	sLibraries += rp_sprintf(sLicenses, "GNU LGPL v3+, GNU GPL v2+");
+	sLibraries += rp_sprintf(reinterpret_cast<const char*>(sLicenses), "GNU LGPL v3+, GNU GPL v2+");
 #    else /* !HAVE_NETTLE_3 */
-	sLibraries += rp_sprintf(sCompiledWith, "GNU Nettle 2.x");
+	sLibraries += rp_sprintf(reinterpret_cast<const char*>(sCompiledWith), "GNU Nettle 2.x");
 	sLibraries += '\n';
 	sLibraries +=
 		"Copyright (C) 2001-2013 Niels Möller.\n"
 		"<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>\n";
-	sLibraries += rp_sprintf(sLicense, "GNU LGPL v2.1+");
+	sLibraries += rp_sprintf(reinterpret_cast<const char*>(sLicense), "GNU LGPL v2.1+");
 #    endif /* HAVE_NETTLE_3 */
 #  endif /* HAVE_NETTLE_VERSION_H */
 #endif /* ENABLE_DECRYPTION */
@@ -699,16 +703,16 @@ about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 		static_cast<unsigned int>(TIXML2_PATCH_VERSION));
 
 #  if defined(USE_INTERNAL_XML) && !defined(USE_INTERNAL_XML_DLL)
-	sLibraries += rp_sprintf(sIntCopyOf, sVerBuf);
+	sLibraries += rp_sprintf(reinterpret_cast<const char*>(sIntCopyOf), sVerBuf);
 #  else
 	// FIXME: Runtime version?
-	sLibraries += rp_sprintf(sCompiledWith, sVerBuf);
+	sLibraries += rp_sprintf(reinterpret_cast<const char*>(sCompiledWith), sVerBuf);
 #  endif
 	sLibraries += '\n';
 	sLibraries +=
 		"Copyright (C) 2000-2021 Lee Thomason\n"
 		"<a href='http://www.grinninglizard.com/'>http://www.grinninglizard.com/</a>\n";
-	sLibraries += rp_sprintf(sLicense, "zlib license");
+	sLibraries += rp_sprintf(reinterpret_cast<const char*>(sLicense), "zlib license");
 #endif /* ENABLE_XML */
 
 	/** GNU gettext **/
@@ -726,10 +730,10 @@ about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 			static_cast<unsigned int>((LIBINTL_VERSION >>  8) & 0xFF));
 	}
 #  ifdef _WIN32
-	sLibraries += rp_sprintf(sIntCopyOf, sVerBuf);
+	sLibraries += rp_sprintf(reinterpret_cast<const char*>(sIntCopyOf), sVerBuf);
 #  else /* _WIN32 */
 	// FIXME: Runtime version?
-	sLibraries += rp_sprintf(sCompiledWith, sVerBuf);
+	sLibraries += rp_sprintf(reinterpret_cast<const char*>(sCompiledWith), sVerBuf);
 #  endif /* _WIN32 */
 	sLibraries += '\n';
 	sLibraries +=
@@ -751,8 +755,8 @@ about_tab_init_support_tab(GtkLabel *lblSupport)
 {
 	string sSupport;
 	sSupport.reserve(4096);
-	sSupport = C_("AboutTab|Support",
-		"For technical support, you can visit the following websites:");
+	sSupport = reinterpret_cast<const char*>(C_("AboutTab|Support",
+		"For technical support, you can visit the following websites:"));
 	sSupport += '\n';
 
 	for (const AboutTabText::SupportSite_t *supportSite = AboutTabText::getSupportSites();
@@ -771,7 +775,7 @@ about_tab_init_support_tab(GtkLabel *lblSupport)
 
 	// Email the author.
 	sSupport += '\n';
-	sSupport += C_("AboutTab|Support", "You can also email the developer directly:");
+	sSupport += reinterpret_cast<const char*>(C_("AboutTab|Support", "You can also email the developer directly:"));
 	sSupport += '\n';
 	sSupport += sIndent;
 	sSupport += chrBullet;

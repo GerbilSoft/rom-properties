@@ -546,12 +546,6 @@ vector<uint16_t> NintendoDSPrivate::ndsRegionToGameTDB(
  */
 RomFields::ListData_t *NintendoDSPrivate::getDSiFlagsStringVector(void)
 {
-	// FIXME: U8STRFIX - NOP_C_ just for this function.
-#ifdef NOP_C_
-#  undef NOP_C_
-#endif
-#define NOP_C_(ctx, str) U8(str)
-
 	static const char8_t *const dsi_flags_bitfield_names[] = {
 		// tr: Uses the DSi-specific touchscreen protocol.
 		NOP_C_("NintendoDS|DSi_Flags", "DSi Touchscreen"),
@@ -579,8 +573,6 @@ RomFields::ListData_t *NintendoDSPrivate::getDSiFlagsStringVector(void)
 	}
 
 	return vv_dsi_flags;
-#undef NOP_C_
-#define NOP_C_(ctx, str) (str)
 }
 
 /** NintendoDS **/
@@ -1026,17 +1018,18 @@ int NintendoDS::loadFieldData(void)
 		latin1_to_utf8(romHeader->id6, ARRAY_SIZE_I(romHeader->id6)));
 
 	// Publisher.
-	const char *const publisher_title = C_("RomData", "Publisher");
+	const char8_t *const publisher_title = C_("RomData", "Publisher");
 	const char8_t *const publisher = NintendoPublishers::lookup(romHeader->company);
 	if (publisher) {
 		d->fields->addField_string(publisher_title, publisher);
 	} else {
+		// FIXME: U8STRFIX - rp_sprintf()
 		if (ISALNUM(romHeader->company[0]) && ISALNUM(romHeader->company[1])) {
 			d->fields->addField_string(publisher_title,
-				rp_sprintf(C_("RomData", "Unknown (%.2s)"), romHeader->company));
+				rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (%.2s)")), romHeader->company));
 		} else {
 			d->fields->addField_string(publisher_title,
-				rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
+				rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (%02X %02X)")),
 					static_cast<unsigned int>(romHeader->company[0]),
 					static_cast<unsigned int>(romHeader->company[1])));
 		}
@@ -1047,13 +1040,13 @@ int NintendoDS::loadFieldData(void)
 		romHeader->rom_version, RomFields::Base::Dec, 2);
 
 	// Is the security data present?
-	static const char *const nds_security_data_names[] = {
+	static const char8_t *const nds_security_data_names[] = {
 		NOP_C_("NintendoDS|SecurityData", "Blowfish Tables"),
 		NOP_C_("NintendoDS|SecurityData", "Static Data"),
 		NOP_C_("NintendoDS|SecurityData", "Random Data"),
 	};
 	vector<string> *const v_nds_security_data_names = RomFields::strArrayToVector_i18n(
-		"NintendoDS|SecurityData", nds_security_data_names, ARRAY_SIZE(nds_security_data_names));
+		U8("NintendoDS|SecurityData"), nds_security_data_names, ARRAY_SIZE(nds_security_data_names));
 	d->fields->addField_bitfield(C_("NintendoDS", "Security Data"),
 		v_nds_security_data_names, 0, d->secData);
 	d->fieldIdx_secData = static_cast<int>(d->fields->count()-1);
@@ -1096,13 +1089,13 @@ int NintendoDS::loadFieldData(void)
 		nds_region = NintendoDSPrivate::NDS_REGION_FREE;
 	}
 
-	static const char *const nds_region_bitfield_names[] = {
+	static const char8_t *const nds_region_bitfield_names[] = {
 		NOP_C_("Region", "Region-Free"),
 		NOP_C_("Region", "South Korea"),
 		NOP_C_("Region", "China"),
 	};
 	vector<string> *const v_nds_region_bitfield_names = RomFields::strArrayToVector_i18n(
-		"Region", nds_region_bitfield_names, ARRAY_SIZE(nds_region_bitfield_names));
+		U8("Region"), nds_region_bitfield_names, ARRAY_SIZE(nds_region_bitfield_names));
 	d->fields->addField_bitfield(C_("NintendoDS", "DS Region Code"),
 		v_nds_region_bitfield_names, 0, nds_region);
 
@@ -1135,7 +1128,7 @@ int NintendoDS::loadFieldData(void)
 	// DSi filetype.
 	static const struct {
 		uint8_t dsi_filetype;
-		const char *s_dsi_filetype;
+		const char8_t *s_dsi_filetype;
 	} dsi_filetype_lkup_tbl[] = {
 		// tr: DSi-enhanced or DSi-exclusive cartridge.
 		{DSi_FTYPE_CARTRIDGE,		NOP_C_("NintendoDS|DSiFileType", "Cartridge")},
@@ -1151,7 +1144,7 @@ int NintendoDS::loadFieldData(void)
 		{DSi_FTYPE_SYSTEM_MENU,		NOP_C_("NintendoDS|DSiFileType", "System Menu")},
 	};
 
-	const char *s_dsi_filetype = nullptr;
+	const char8_t *s_dsi_filetype = nullptr;
 	for (const auto &p : dsi_filetype_lkup_tbl) {
 		if (p.dsi_filetype == dsi_filetype) {
 			// Found a match.
@@ -1161,14 +1154,15 @@ int NintendoDS::loadFieldData(void)
 	}
 
 	// TODO: Is the field name too long?
-	const char *const dsi_rom_type_title = C_("NintendoDS", "DSi ROM Type");
+	// FIXME: U8STRFIX - dpgettext_expr(), rp_sprintf()
+	const char8_t *const dsi_rom_type_title = C_("NintendoDS", "DSi ROM Type");
 	if (s_dsi_filetype) {
 		d->fields->addField_string(dsi_rom_type_title,
-			dpgettext_expr(RP_I18N_DOMAIN, "NintendoDS|DSiFileType", s_dsi_filetype));
+			dpgettext_expr(RP_I18N_DOMAIN, "NintendoDS|DSiFileType", reinterpret_cast<const char*>(s_dsi_filetype)));
 	} else {
 		// Invalid file type.
 		d->fields->addField_string(dsi_rom_type_title,
-			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), dsi_filetype));
+			rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (0x%02X)")), dsi_filetype));
 	}
 
 	// Key index. Determined by title ID.
@@ -1188,13 +1182,13 @@ int NintendoDS::loadFieldData(void)
 	// There might be some indicator in the cartridge header...
 	d->fields->addField_string_numeric(C_("NintendoDS", "Key Index"), key_idx);
 
-	const char *const region_code_name = (d->cia
+	const char8_t *const region_code_name = (d->cia)
 			? C_("RomData", "Region Code")
-			: C_("NintendoDS", "DSi Region Code"));
+			: C_("NintendoDS", "DSi Region Code");
 
 	// DSi Region.
 	// Maps directly to the header field.
-	static const char *const dsi_region_bitfield_names[] = {
+	static const char8_t *const dsi_region_bitfield_names[] = {
 		NOP_C_("Region", "Japan"),
 		NOP_C_("Region", "USA"),
 		NOP_C_("Region", "Europe"),
@@ -1203,7 +1197,7 @@ int NintendoDS::loadFieldData(void)
 		NOP_C_("Region", "South Korea"),
 	};
 	vector<string> *const v_dsi_region_bitfield_names = RomFields::strArrayToVector_i18n(
-		"Region", dsi_region_bitfield_names, ARRAY_SIZE(dsi_region_bitfield_names));
+		U8("Region"), dsi_region_bitfield_names, ARRAY_SIZE(dsi_region_bitfield_names));
 	d->fields->addField_bitfield(region_code_name,
 		v_dsi_region_bitfield_names, 3, le32_to_cpu(romHeader->dsi.region_code));
 
@@ -1247,11 +1241,6 @@ int NintendoDS::loadFieldData(void)
 	// Permissions and flags.
 	d->fields->addTab("Permissions");
 
-	// FIXME: U8STRFIX - NOP_C_ just for Permissions.
-#ifdef NOP_C_
-#  undef NOP_C_
-#endif
-#define NOP_C_(ctx, str) U8(str)
 	// Permissions.
 	static const char8_t *const dsi_permissions_bitfield_names[] = {
 		NOP_C_("NintendoDS|DSi_Permissions", "Common Key"),
@@ -1293,8 +1282,6 @@ int NintendoDS::loadFieldData(void)
 			dpgettext_expr(RP_I18N_DOMAIN, "NintendoDS|DSi_Permissions",
 				reinterpret_cast<const char*>(dsi_permissions_bitfield_names[i]))));
 	}
-#undef NOP_C_
-#define NOP_C_(ctx, str) (str)
 
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_CHECKBOXES, rows_visible);
 	params.headers = nullptr;
@@ -1386,8 +1373,9 @@ int NintendoDS::loadMetaData(void)
 	if (publisher) {
 		d->metaData->addMetaData_string(Property::Publisher, publisher);
 	} else {
+		// FIXME: U8STRFIX - rp_sprintf()
 		d->metaData->addMetaData_string(Property::Publisher,
-			rp_sprintf(C_("RomData", "Unknown (%.2s)"), romHeader->company));
+			rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (%.2s)")), romHeader->company));
 	}
 
 	// Finished reading the metadata.

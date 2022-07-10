@@ -104,7 +104,8 @@ options_tab_init(OptionsTab *tab)
 
 	// Create the "Downloads" frame.
 	// FIXME: GtkFrame doesn't support mnemonics?
-	GtkWidget *const fraDownloads = gtk_frame_new(C_("OptionsTab", "Downloads"));
+	GtkWidget *const fraDownloads = gtk_frame_new(
+		reinterpret_cast<const char*>(C_("OptionsTab", "Downloads")));
 	gtk_widget_set_name(fraDownloads, "fraDownloads");
 	GtkWidget *const vboxDownloads = rp_gtk_vbox_new(6);
 	gtk_widget_set_name(vboxDownloads, "vboxDownloads");
@@ -121,23 +122,26 @@ options_tab_init(OptionsTab *tab)
 
 	// "Downloads" checkboxes.
 	tab->chkExtImgDownloadEnabled = gtk_check_button_new_with_label(
-		C_("OptionsTab", "Enable external image downloads."));
+		reinterpret_cast<const char*>(C_("OptionsTab", "Enable external image downloads.")));
 	gtk_widget_set_name(tab->chkExtImgDownloadEnabled, "chkExtImgDownloadEnabled");
 	tab->chkUseIntIconForSmallSizes = gtk_check_button_new_with_label(
-		C_("OptionsTab", "Always use the internal icon (if present) for small sizes."));
+		reinterpret_cast<const char*>(C_("OptionsTab", "Always use the internal icon (if present) for small sizes.")));
 	gtk_widget_set_name(tab->chkUseIntIconForSmallSizes, "chkUseIntIconForSmallSizes");
 	tab->chkDownloadHighResScans = gtk_check_button_new_with_label(
-		C_("OptionsTab", "Download high-resolution scans if viewing large thumbnails.\n"
-			"This may increase bandwidth usage."));
+		reinterpret_cast<const char*>(C_("OptionsTab",
+			"Download high-resolution scans if viewing large thumbnails.\n"
+			"This may increase bandwidth usage.")));
 	gtk_widget_set_name(tab->chkDownloadHighResScans, "chkDownloadHighResScans");
 	tab->chkStoreFileOriginInfo = gtk_check_button_new_with_label(
-		C_("OptionsTab", "Store cached file origin information using extended attributes.\n"
-			"This helps to identify where cached files were downloaded from."));
+		reinterpret_cast<const char*>(C_("OptionsTab",
+			"Store cached file origin information using extended attributes.\n"
+			"This helps to identify where cached files were downloaded from.")));
 
 	// GameTDB PAL hbox.
 	GtkWidget *const hboxGameTDBPAL = rp_gtk_hbox_new(6);
 	gtk_widget_set_name(hboxGameTDBPAL, "hboxGameTDBPAL");
-	GtkWidget *const lblGameTDBPAL = gtk_label_new(C_("OptionsTab", "Language for PAL titles on GameTDB:"));
+	GtkWidget *const lblGameTDBPAL = gtk_label_new(reinterpret_cast<const char*>(
+		C_("OptionsTab", "Language for PAL titles on GameTDB:")));
 	gtk_widget_set_name(lblGameTDBPAL, "lblGameTDBPAL");
 	tab->cboGameTDBPAL = language_combo_box_new();
 	gtk_widget_set_name(tab->cboGameTDBPAL, "cboGameTDBPAL");
@@ -146,7 +150,7 @@ options_tab_init(OptionsTab *tab)
 
 	// Create the "Options" frame.
 	// FIXME: GtkFrame doesn't support mnemonics?
-	GtkWidget *const fraOptions = gtk_frame_new(C_("OptionsTab", "Options"));
+	GtkWidget *const fraOptions = gtk_frame_new(reinterpret_cast<const char*>(C_("OptionsTab", "Options")));
 	gtk_widget_set_name(fraOptions, "fraOptions");
 	GtkWidget *const vboxOptions = rp_gtk_vbox_new(6);
 	gtk_widget_set_name(vboxOptions, "vboxOptions");
@@ -163,11 +167,13 @@ options_tab_init(OptionsTab *tab)
 
 	// "Options" checkboxes.
 	tab->chkShowDangerousPermissionsOverlayIcon = gtk_check_button_new_with_label(
-		C_("OptionsTab", "Show a security overlay icon for ROM images with\n\"dangerous\" permissions."));
+		reinterpret_cast<const char*>(C_("OptionsTab",
+			"Show a security overlay icon for ROM images with\n\"dangerous\" permissions.")));
 	gtk_widget_set_name(tab->chkShowDangerousPermissionsOverlayIcon, "chkShowDangerousPermissionsOverlayIcon");
 	tab->chkEnableThumbnailOnNetworkFS = gtk_check_button_new_with_label(
-		C_("OptionsTab", "Enable thumbnailing and metadata extraction on network\n"
-			"file systems. This may slow down file browsing."));
+		reinterpret_cast<const char*>(C_("OptionsTab",
+			"Enable thumbnailing and metadata extraction on network\n"
+			"file systems. This may slow down file browsing.")));
 	gtk_widget_set_name(tab->chkEnableThumbnailOnNetworkFS, "chkEnableThumbnailOnNetworkFS");
 
 	// Connect the signal handlers for the checkboxes.

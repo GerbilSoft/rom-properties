@@ -20,10 +20,10 @@ using LibRpTexture::rp_image;
 #include "librpbase/crypto/KeyManager.hpp"
 #include "disc/WiiPartition.hpp"	// for key information
 #ifdef ENABLE_DECRYPTION
-# include "librpbase/disc/CBCReader.hpp"
+#  include "librpbase/disc/CBCReader.hpp"
 // For sections delegated to other RomData subclasses.
-# include "librpbase/disc/PartitionFile.hpp"
-# include "WiiWIBN.hpp"
+#  include "librpbase/disc/PartitionFile.hpp"
+#  include "WiiWIBN.hpp"
 #endif /* ENABLE_DECRYPTION */
 
 // C++ STL classes.
@@ -505,11 +505,11 @@ int WiiSave::loadFieldData(void)
 	// NoCopy? (separate from permissions)
 	if (d->wibnData) {
 		// Flags bitfield.
-		static const char *const flags_names[] = {
+		static const char8_t *const flags_names[] = {
 			NOP_C_("WiiSave|Flags", "No Copy from NAND"),
 		};
 		vector<string> *const v_flags_names = RomFields::strArrayToVector_i18n(
-			"WiiSave|Flags", flags_names, ARRAY_SIZE(flags_names));
+			U8("WiiSave|Flags"), flags_names, ARRAY_SIZE(flags_names));
 		const uint32_t flags = (d->wibnData->isNoCopyFlagSet() ? 1 : 0);
 		d->fields->addField_bitfield(C_("WiiSave", "Flags"),
 			v_flags_names, 3, flags);

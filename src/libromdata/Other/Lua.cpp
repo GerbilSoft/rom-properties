@@ -669,7 +669,7 @@ int Lua::loadFieldData(void)
 	d->fields->reserve(10);	// Maximum of 10 fields.
 
 	if (d->endianness != LuaPrivate::Endianness::Unknown) {
-		const char *s_endianness = nullptr;
+		const char8_t *s_endianness = nullptr;
 		switch (d->endianness) {
 			case LuaPrivate::Endianness::BE:
 				s_endianness = C_("RomData", "Big-Endian");
@@ -696,7 +696,7 @@ int Lua::loadFieldData(void)
 	if (d->number_size != -1)
 		d->fields->addField_string_numeric(C_("Lua", "lua_Number size"), d->number_size);
 	if (d->is_integral != LuaPrivate::IntegralType::Unknown) {
-		const char *s_integral_type = nullptr;
+		const char8_t *s_integral_type = nullptr;
 		switch (d->is_integral) {
 			case LuaPrivate::IntegralType::Float:
 				s_integral_type = C_("Lua", "Floating-point");

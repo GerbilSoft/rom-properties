@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * wii_wad.h: Nintendo Wii WAD file data structures.                       *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -35,7 +35,10 @@ extern "C" {
 #define WII_WAD_TYPE_Bk	0x426B0000	// 'Bk\0\0'
 typedef struct _Wii_WAD_Header {
 	uint32_t header_size;		// [0x000] Header size. (0x0020)
-	uint32_t type;			// [0x004] Type. ('Is\0\0', 'ib\0\0', 'Bk\0\0')
+	union {
+		uint32_t type;		// [0x004] Type. ('Is\0\0', 'ib\0\0', 'Bk\0\0')
+		char type_c[4];
+	};
 	uint32_t cert_chain_size;	// [0x008] Certificate chain size.
 	uint32_t reserved;		// [0x00C] Reserved. (0)
 	uint32_t ticket_size;		// [0x010] Ticket size. (0x2A4)

@@ -27,8 +27,9 @@ using LibRpFile::IRpFile;
 #  include <cinttypes>
 #endif
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::u8string;
 using std::unique_ptr;
 using std::vector;
 
@@ -1137,18 +1138,20 @@ int ELF::loadFieldData(void)
 	// NOTE: Executable type is used as File Type.
 
 	// Bitness/Endianness. (consolidated as "format")
-	static const char *const exec_type_tbl[] = {
+	static const char8_t *const exec_type_tbl[] = {
 		NOP_C_("RomData|ExecType", "32-bit Little-Endian"),
 		NOP_C_("RomData|ExecType", "64-bit Little-Endian"),
 		NOP_C_("RomData|ExecType", "32-bit Big-Endian"),
 		NOP_C_("RomData|ExecType", "64-bit Big-Endian"),
 	};
-	const char *const format_title = C_("ELF", "Format");
+	const char8_t *const format_title = C_("ELF", "Format");
 	if (d->elfFormat > ELFPrivate::Elf_Format::Unknown &&
 	    (int)d->elfFormat < ARRAY_SIZE_I(exec_type_tbl))
 	{
+		// FIXME: U8STRFIX - dpgettext_expr()
 		d->fields->addField_string(format_title,
-			dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType", exec_type_tbl[(int)d->elfFormat]));
+			dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType",
+				reinterpret_cast<const char*>(exec_type_tbl[(int)d->elfFormat])));
 	}
 	else
 	{
@@ -1158,13 +1161,14 @@ int ELF::loadFieldData(void)
 	}
 
 	// CPU.
-	const char *const cpu_title = C_("ELF", "CPU");
+	const char8_t *const cpu_title = C_("ELF", "CPU");
 	const char8_t *const s_cpu = ELFData::lookup_cpu(primary->e_machine);
 	if (s_cpu) {
 		d->fields->addField_string(cpu_title, s_cpu);
 	} else {
+		// FIXME: U8STRFIX - rp_sprintf()
 		d->fields->addField_string(cpu_title,
-			rp_sprintf(C_("RomData", "Unknown (0x%04X)"), primary->e_machine));
+			rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (0x%04X)")), primary->e_machine));
 	}
 
 	// CPU flags.
@@ -1188,15 +1192,15 @@ int ELF::loadFieldData(void)
 			// Instruction set.
 			// NOTE: `file` can show both 68000 and CPU32
 			// at the same time, but that doesn't make sense.
-			const char *m68k_insn;
+			const char8_t *m68k_insn;
 			if (e_flags == 0) {
-				m68k_insn = "68020";
+				m68k_insn = U8("68020");
 			} else if (e_flags & 0x01000000) {
-				m68k_insn = "68000";
+				m68k_insn = U8("68000");
 			} else if ((e_flags & 0x00810000) == 0x00810000) {
-				m68k_insn = "CPU32";
+				m68k_insn = U8("CPU32");
 			} else if (e_flags & 0x02000000) {
-				m68k_insn = "Fido";
+				m68k_insn = U8("Fido");
 			} else {
 				m68k_insn = nullptr;
 			}
@@ -1224,19 +1228,20 @@ int ELF::loadFieldData(void)
 			}
 
 			// SPARC memory ordering.
-			static const char *const sparc_mm[] = {
+			static const char8_t *const sparc_mm[] = {
 				NOP_C_("ELF|SPARC_MM", "Total Store Ordering"),
 				NOP_C_("ELF|SPARC_MM", "Partial Store Ordering"),
 				NOP_C_("ELF|SPARC_MM", "Relaxed Memory Ordering"),
 				NOP_C_("ELF|SPARC_MM", "Invalid"),
 			};
+			// FIXME: U8STRFIX - dpgettext_expr()
 			d->fields->addField_string(C_("ELF", "Memory Ordering"),
-				dpgettext_expr(RP_I18N_DOMAIN, "ELF|SPARC_MM", sparc_mm[e_flags & 3]));
+				dpgettext_expr(RP_I18N_DOMAIN, "ELF|SPARC_MM", reinterpret_cast<const char*>(sparc_mm[e_flags & 3])));
 
 			// SPARC CPU flags. (rshifted by 8)
-			static const char *const sparc_flags_names[] = {
+			static const char8_t *const sparc_flags_names[] = {
 				// 0x100-0x800
-				"SPARC V8+", "UltraSPARC I", "HaL R1", "UltraSPARC III",
+				U8("SPARC V8+"), U8("UltraSPARC I"), U8("HaL R1"), U8("UltraSPARC III"),
 				// 0x1000-0x8000
 				nullptr, nullptr, nullptr, nullptr,
 				// 0x10000-0x80000
@@ -1247,7 +1252,7 @@ int ELF::loadFieldData(void)
 				NOP_C_("ELF|SPARCFlags", "LE Data")
 			};
 			vector<string> *const v_sparc_flags_names = RomFields::strArrayToVector_i18n(
-				"ELF|SPARCFlags", sparc_flags_names, ARRAY_SIZE(sparc_flags_names));
+				U8("ELF|SPARCFlags"), sparc_flags_names, ARRAY_SIZE(sparc_flags_names));
 			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
 				v_sparc_flags_names, 4, (e_flags >> 8));
 			break;
@@ -1262,38 +1267,39 @@ int ELF::loadFieldData(void)
 			}
 
 			// MIPS architecture level.
-			static const char mips_levels[][12] = {
-				"MIPS-I", "MIPS-II", "MIPS-III", "MIPS-IV",
-				"MIPS-V", "MIPS32", "MIPS64", "MIPS32 rel2",
-				"MIPS64 rel2", "MIPS32 rel6", "MIPS64 rel6"
+			static const char8_t mips_levels[][12] = {
+				U8("MIPS-I"), U8("MIPS-II"), U8("MIPS-III"), U8("MIPS-IV"),
+				U8("MIPS-V"), U8("MIPS32"), U8("MIPS64"), U8("MIPS32 rel2"),
+				U8("MIPS64 rel2"), U8("MIPS32 rel6"), U8("MIPS64 rel6")
 			};
 			const unsigned int level = (e_flags >> 28);
-			const char *const cpu_level_title = C_("ELF", "CPU Level");
+			const char8_t *const cpu_level_title = C_("ELF", "CPU Level");
 			if (level < ARRAY_SIZE(mips_levels)) {
 				d->fields->addField_string(cpu_level_title, mips_levels[level]);
 			} else {
+				// FIXME: U8STRFIX - rp_sprintf()
 				d->fields->addField_string(cpu_level_title,
-					rp_sprintf(C_("RomData", "Unknown (0x%02X)"), level));
+					rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (0x%02X)")), level));
 			}
 
 			// MIPS CPU flags.
 			// NOTE: Shifting ASE flags from bits 24-27 to bits 12-15.
 			const unsigned int mips_cpu_flags = (e_flags & 0xFFF) | ((e_flags >> 12) & 0xF000);
-			static const char *const mips_flags_names[] = {
+			static const char8_t *const mips_flags_names[] = {
 				// 0x1-0x8
 				NOP_C_("ELF|MIPSFlags", "No Reorder"),
-				"PIC", "CPIC", "XGOT",
+				U8("PIC"), U8("CPIC"), U8("XGOT"),
 				// 0x10-0x80
-				"UCODE", "ABI2", "ABI ON32",
+				U8("UCODE"), U8("ABI2"), U8("ABI ON32"),
 				NOP_C_("ELF|MIPSFlags", "Options First"),
 				// 0x100-0x400
-				"32-bit", "FP64", "NaN 2008",
+				U8("32-bit"), U8("FP64"), U8("NaN 2008"),
 				nullptr,
 				// 0x1000-0x8000 (shifted from 0x01000000-0x08000000)
-				nullptr, "MicroMIPS", "MIPS-16", "MDMX",
+				nullptr, U8("MicroMIPS"), U8("MIPS-16"), U8("MDMX"),
 			};
 			vector<string> *const v_mips_flags_names = RomFields::strArrayToVector_i18n(
-				"ELF|MIPSFlags", mips_flags_names, ARRAY_SIZE(mips_flags_names));
+				U8("ELF|MIPSFlags"), mips_flags_names, ARRAY_SIZE(mips_flags_names));
 			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
 				v_mips_flags_names, 4, mips_cpu_flags);
 			break;
@@ -1303,30 +1309,30 @@ int ELF::loadFieldData(void)
 			// binutils: include/elf/hppa.h
 
 			// PA-RISC version.
-			string parisc_version;
+			u8string parisc_version;
 			parisc_version.reserve(12);
 			switch (e_flags & 0xFFFF) {
 				default:
 				case 0x020B:
-					parisc_version = "1.0";
+					parisc_version = U8("1.0");
 					break;
 				case 0x0210:
-					parisc_version = "1.1";
+					parisc_version = U8("1.1");
 					break;
 				case 0x0214:
-					parisc_version = "2.0";
+					parisc_version = U8("2.0");
 					break;
 			}
 			if (e_flags & 0x0008) {
-				parisc_version += " (LP64)";
+				parisc_version += U8(" (LP64)");
 			}
 			d->fields->addField_string(C_("ELF", "PA-RISC Version"), parisc_version);
 
 			// PA-RISC CPU flags.
-			static const char *const parisc_flags_names[] = {
+			static const char8_t *const parisc_flags_names[] = {
 				// 0x1-0x8
 				NOP_C_("ELF|PARISCFlags", "Trap NULL"),
-				"EXT", "LSB",
+				U8("EXT"), U8("LSB"),
 				NOP_C_("ELF|PARISCFlags", "Wide"),
 				// 0x10-0x40
 				NOP_C_("ELF|PARISCFlags", "No KABP"),
@@ -1334,7 +1340,7 @@ int ELF::loadFieldData(void)
 				NOP_C_("ELF|PARISCFlags", "Lazy Swap"),
 			};
 			vector<string> *const v_parisc_flags_names = RomFields::strArrayToVector_i18n(
-				"ELF|PARISCFlags", parisc_flags_names, ARRAY_SIZE(parisc_flags_names));
+				U8("ELF|PARISCFlags"), parisc_flags_names, ARRAY_SIZE(parisc_flags_names));
 			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
 				v_parisc_flags_names, 4, ((e_flags >> 16) & 0x7F));
 			break;
@@ -1358,12 +1364,12 @@ int ELF::loadFieldData(void)
 
 			// ARM CPU flags.
 			// NOTE: Most of these are deprecated. (pre-EABI)
-			static const char *const arm_flags_names[] = {
+			static const char8_t *const arm_flags_names[] = {
 				// 0x1-0x8
-				"RelExec", nullptr, "Interwork", "APCS 26",
+				U8("RelExec"), nullptr, U8("Interwork"), U8("APCS 26"),
 				// 0x10-0x80
 				NOP_C_("ELF|ARMFlags", "APCS Float"),
-				"PIC",
+				U8("PIC"),
 				NOP_C_("ELF|ARMFlags", "Align8"),
 				NOP_C_("ELF|ARMFlags", "New ABI"),
 				// 0x100-0x800
@@ -1373,7 +1379,7 @@ int ELF::loadFieldData(void)
 				NOP_C_("ELF|ARMFlags", "Maverick Float"),
 			};
 			vector<string> *const v_arm_flags_names = RomFields::strArrayToVector_i18n(
-				"ELF|ARMFlags", arm_flags_names, ARRAY_SIZE(arm_flags_names));
+				U8("ELF|ARMFlags"), arm_flags_names, ARRAY_SIZE(arm_flags_names));
 			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
 				v_arm_flags_names, 4, (e_flags & 0xFFF));
 			break;
@@ -1384,13 +1390,13 @@ int ELF::loadFieldData(void)
 			// binutils: include/elf/alpha.h
 
 			// Alpha CPU flags.
-			static const char *const alpha_flags_names[] = {
+			static const char8_t *const alpha_flags_names[] = {
 				// 0x1-0x2
 				NOP_C_("ELF|AlphaFlags", "Addresses <= 2GB"),
 				NOP_C_("ELF|AlphaFlags", "Relaxed Code Movement"),
 			};
 			vector<string> *const v_alpha_flags_names = RomFields::strArrayToVector_i18n(
-				"ELF|AlphaFlags", alpha_flags_names, ARRAY_SIZE(alpha_flags_names));
+				U8("ELF|AlphaFlags"), alpha_flags_names, ARRAY_SIZE(alpha_flags_names));
 			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
 				v_alpha_flags_names, 2, (e_flags & 0x03));
 			break;
@@ -1400,19 +1406,19 @@ int ELF::loadFieldData(void)
 			// binutils: include/elf/sh.h
 
 			// CPU subtypes.
-			static const char *const superh_cpu_subtype_tbl[] = {
+			static const char8_t *const superh_cpu_subtype_tbl[] = {
 				// 0-15
-				nullptr, "SH-1", "SH-2", "SH-3",
-				"SH-DSP", "SH3-DSP", "SH4AL-DSP", nullptr,
-				"SH-3E", "SH-4", "SH-5", "SH-2E",
-				"SH-4A", "SH-2A", nullptr, nullptr,
+				nullptr, U8("SH-1"), U8("SH-2"), U8("SH-3"),
+				U8("SH-DSP"), U8("SH3-DSP"), U8("SH4AL-DSP"), nullptr,
+				U8("SH-3E"), U8("SH-4"), U8("SH-5"), U8("SH-2E"),
+				U8("SH-4A"), U8("SH-2A"), nullptr, nullptr,
 
 				// 16-24
-				"SH-4 (No FPU)", "SH-4A (No FPU)", "SH-4 (No MMU or FPU)", "SH-2A (No FPU)",
-				"SH-3 (No MMU)", "SH-2A/SH-4 (No FPU)", "SH-2A/SH-3 (No FPU)", "SH-2A/SH-4",
-				"SH-2A/SH-3E",
+				U8("SH-4 (No FPU)"), U8("SH-4A (No FPU)"), U8("SH-4 (No MMU or FPU)"), U8("SH-2A (No FPU)"),
+				U8("SH-3 (No MMU)"), U8("SH-2A/SH-4 (No FPU)"), U8("SH-2A/SH-3 (No FPU)"), U8("SH-2A/SH-4"),
+				U8("SH-2A/SH-3E")
 			};
-			const char *s_cpu_subtype = nullptr;
+			const char8_t *s_cpu_subtype = nullptr;
 			const uint8_t cpu_subtype = (e_flags & 0x1F);
 			if (cpu_subtype < ARRAY_SIZE(superh_cpu_subtype_tbl)) {
 				s_cpu_subtype = superh_cpu_subtype_tbl[cpu_subtype];
@@ -1422,12 +1428,12 @@ int ELF::loadFieldData(void)
 			}
 
 			// SuperH CPU flags. (rshifted by 8)
-			static const char *const superh_flags_names[] = {
+			static const char8_t *const superh_flags_names[] = {
 				// 0x100-0x800
-				"PIC", nullptr, nullptr, nullptr,
+				U8("PIC"), nullptr, nullptr, nullptr,
 
 				// 0x1000-0x8000
-				nullptr, nullptr, nullptr, "FDPIC",
+				nullptr, nullptr, nullptr, U8("FDPIC"),
 			};
 			vector<string> *const v_superh_flags_names = RomFields::strArrayToVector(
 				superh_flags_names, ARRAY_SIZE(superh_flags_names));
@@ -1441,12 +1447,12 @@ int ELF::loadFieldData(void)
 			// TODO: Other ARC variants?
 
 			// CPU subtypes.
-			static const char arc_cpu_subtypes[][8] = {
-				"", "", "ARC600", "ARC700",
-				"ARC601", "ARCv2EM", "ARCv2HS",
+			static const char8_t arc_cpu_subtypes[][8] = {
+				U8(""), U8(""), U8("ARC600"), U8("ARC700"),
+				U8("ARC601"), U8("ARCv2EM"), U8("ARCv2HS"),
 			};
 			const uint8_t cpu_subtype = (e_flags & 0xFF);
-			const char *s_cpu_subtype = nullptr;
+			const char8_t *s_cpu_subtype = nullptr;
 			if (cpu_subtype < ARRAY_SIZE(arc_cpu_subtypes) &&
 			    arc_cpu_subtypes[cpu_subtype][0] != '\0')
 			{
@@ -1464,9 +1470,9 @@ int ELF::loadFieldData(void)
 			}
 
 			// ARC CPU flags. (rshifted by 8)
-			static const char *const arc_flags_names[] = {
+			static const char8_t *const arc_flags_names[] = {
 				// 0x100
-				"PIC",
+				U8("PIC"),
 			};
 			vector<string> *const v_arc_flags_names = RomFields::strArrayToVector(
 				arc_flags_names, ARRAY_SIZE(arc_flags_names));
@@ -1491,23 +1497,23 @@ int ELF::loadFieldData(void)
 			}
 
 			// ISA
-			static const char *const cf_isa_tbl[] = {
+			static const char8_t *const cf_isa_tbl[] = {
 				nullptr,
-				"ISA A (no div)", "ISA A", "ISA A+",
-				"ISA B (no USP)", "ISA B",
-				"ISA C", "ISA C (no div)",
+				U8("ISA A (no div)"), U8("ISA A"), U8("ISA A+"),
+				U8("ISA B (no USP)"), U8("ISA B"),
+				U8("ISA C"), U8("ISA C (no div)"),
 			};
-			const char *cf_isa = nullptr;
+			const char8_t *cf_isa = nullptr;
 			const uint8_t cf_isa_flags = (e_flags & 0x0F);
 			if (cf_isa_flags < ARRAY_SIZE(cf_isa_tbl)) {
 				cf_isa = cf_isa_tbl[cf_isa_flags];
 			}
 
 			// MAC
-			static const char cf_mac_tbl[][8] = {
-				"MAC", "EMAC", "EMAC_B"
+			static const char8_t cf_mac_tbl[][8] = {
+				U8("MAC"), U8("EMAC"), U8("EMAC_B")
 			};
-			const char *cf_mac = nullptr;
+			const char8_t *cf_mac = nullptr;
 			const uint8_t cf_mac_flags = ((e_flags >> 4) & 0x03);
 			if (cf_mac_flags < ARRAY_SIZE(cf_mac_tbl) &&
 			    cf_mac_tbl[cf_mac_flags][0] != '\0')
@@ -1515,7 +1521,7 @@ int ELF::loadFieldData(void)
 				cf_mac = cf_mac_tbl[cf_mac_flags];
 			}
 
-			string s_cf_isa;
+			u8string s_cf_isa;
 			s_cf_isa.reserve(32);
 			if (cf_isa) {
 				s_cf_isa.assign(cf_isa);
@@ -1524,9 +1530,9 @@ int ELF::loadFieldData(void)
 				if (s_cf_isa.empty()) {
 					s_cf_isa.assign(cf_mac);
 				} else {
-					s_cf_isa += " (";
+					s_cf_isa += U8(" (");
 					s_cf_isa += cf_mac;
-					s_cf_isa += ')';
+					s_cf_isa += U8(")");
 				}
 			}
 
@@ -1564,22 +1570,22 @@ int ELF::loadFieldData(void)
 		case EM_M32R:
 		case EM_CYGNUS_M32R: {
 			// binutils: include/elf/m32r.h
-			static const char m32r_insn_set_tbl[][8] = {
-				"m32r", "m32rx", "m32r2"
+			static const char8_t m32r_insn_set_tbl[][8] = {
+				U8("m32r"), U8("m32rx"), U8("m32r2")
 			};
 			const unsigned int idx = (e_flags >> 28) & 0x03;
 			if (idx < ARRAY_SIZE(m32r_insn_set_tbl)) {
-				const char *const m32r_insn_set = m32r_insn_set_tbl[idx];
+				const char8_t *const m32r_insn_set = m32r_insn_set_tbl[idx];
 				d->fields->addField_string(C_("ELF", "Instruction Set"), m32r_insn_set);
 			}
 
 			// M32R new instructions field.
-			static const char *const m32r_flags_names[] = {
+			static const char8_t *const m32r_flags_names[] = {
 				// 0x1-0x8
-				"Parallel", "m32rx", "Bit Insns", "FP Insns",
+				U8("Parallel"), U8("m32rx"), U8("Bit Insns"), U8("FP Insns"),
 			};
 			vector<string> *const v_m32r_flags_names = RomFields::strArrayToVector_i18n(
-				"ELF|M32RFlags", m32r_flags_names, ARRAY_SIZE(m32r_flags_names));
+				U8("ELF|M32RFlags"), m32r_flags_names, ARRAY_SIZE(m32r_flags_names));
 			d->fields->addField_bitfield(C_("ELF", "M32R New Insns"),
 				v_m32r_flags_names, 4, ((e_flags >> 16) & 0x0FFF));
 
@@ -1612,15 +1618,15 @@ int ELF::loadFieldData(void)
 			// binutils: include/elf/bfin.h
 
 			// Blackfin CPU flags.
-			static const char *const blackfin_flags_names[] = {
+			static const char8_t *const blackfin_flags_names[] = {
 				// 0x1-0x8
-				"PIC", "FDPIC", nullptr, nullptr,
+				U8("PIC"), U8("FDPIC"), nullptr, nullptr,
 				// 0x10-0x20
 				NOP_C_("ELF|BlackfinFlags", "Code in L1"),
 				NOP_C_("ELF|BlackfinFlags", "Data in L1"),
 			};
 			vector<string> *const v_blackfin_flags_names = RomFields::strArrayToVector_i18n(
-				"ELF|BlackfinFlags", blackfin_flags_names, ARRAY_SIZE(blackfin_flags_names));
+				U8("ELF|BlackfinFlags"), blackfin_flags_names, ARRAY_SIZE(blackfin_flags_names));
 			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
 				v_blackfin_flags_names, 2, (e_flags & 0x33));
 			break;
@@ -1631,13 +1637,13 @@ int ELF::loadFieldData(void)
 		case EM_M32C_OLD: {
 			// binutils: include/elf/m32c.h
 			// NOTE: This might only be valid for EM_M32C_OLD.
-			const char *m32c_subtype;
+			const char8_t *m32c_subtype;
 			switch (e_flags & 0x7F) {
 				case 0x75:
-					m32c_subtype = "M16C";
+					m32c_subtype = U8("M16C");
 					break;
 				case 0x78:
-					m32c_subtype = "M32C";
+					m32c_subtype = U8("M32C");
 					break;
 				default:
 					m32c_subtype = nullptr;
@@ -1651,17 +1657,17 @@ int ELF::loadFieldData(void)
 
 		case EM_Z80: {
 			// binutils: include/elf/z80.h
-			static const char *const z80_insn_set_tbl[] = {
-				nullptr, "Z80", "Z180", "R800",
-				"eZ80 (Z80 mode)", "Sharp LR35902",
+			static const char8_t *const z80_insn_set_tbl[] = {
+				nullptr, U8("Z80"), U8("Z180"), U8("R800"),
+				U8("eZ80 (Z80 mode)"), U8("Sharp LR35902"),
 			};
 
-			const char *z80_insn_set = nullptr;
+			const char8_t *z80_insn_set = nullptr;
 			e_flags &= 0xFF;
 			if (e_flags < ARRAY_SIZE(z80_insn_set_tbl)) {
 				z80_insn_set = z80_insn_set_tbl[e_flags];
 			} else if (e_flags == 0x84) {
-				z80_insn_set = "eZ80 (ADL mode)";
+				z80_insn_set = U8("eZ80 (ADL mode)");
 			}
 			if (z80_insn_set) {
 				d->fields->addField_string(C_("ELF", "Instruction Set"), z80_insn_set);
@@ -1673,19 +1679,21 @@ int ELF::loadFieldData(void)
 			// binutils: include/elf/riscv.h
 
 			// Floating-point ABI in use.
-			static const char *const riscv_fpabi_tbl[] = {
+			static const char8_t *const riscv_fpabi_tbl[] = {
 				NOP_C_("ELF|RISCVFPABI", "Soft-Float"),
 				NOP_C_("ELF|RISCVFPABI", "Single-Float"),
 				NOP_C_("ELF|RISCVFPABI", "Double-Float"),
 				NOP_C_("ELF|RISCVFPABI", "Quad-Float"),
 			};
+			// FIXME: U8STRFIX - dpgettext_expr()
 			d->fields->addField_string(C_("ELF", "Floating-Point ABI"),
-				dpgettext_expr(RP_I18N_DOMAIN, "ELF|RISCVFPABI", riscv_fpabi_tbl[((e_flags & 0x0006) >> 1)]));
+				dpgettext_expr(RP_I18N_DOMAIN, "ELF|RISCVFPABI",
+					reinterpret_cast<const char*>(riscv_fpabi_tbl[((e_flags & 0x0006) >> 1)])));
 
 			// RISC-V CPU flags.
-			static const char *const riscv_flags_names[] = {
+			static const char8_t *const riscv_flags_names[] = {
 				// 0x1-0x8
-				"RVC", nullptr, nullptr, "RV32E",
+				U8("RVC"), nullptr, nullptr, U8("RV32E"),
 			};
 			vector<string> *const v_riscv_flags_names = RomFields::strArrayToVector(
 				riscv_flags_names, ARRAY_SIZE(riscv_flags_names));
@@ -1700,13 +1708,14 @@ int ELF::loadFieldData(void)
 	}
 
 	// OS ABI.
-	const char *const osabi_title = C_("ELF", "OS ABI");
+	const char8_t *const osabi_title = C_("ELF", "OS ABI");
 	const char8_t *const s_osabi = ELFData::lookup_osabi(primary->e_osabi);
 	if (s_osabi) {
 		d->fields->addField_string(osabi_title, s_osabi);
 	} else {
+		// FIXME: U8STRFIX - rp_sprintf()
 		d->fields->addField_string(osabi_title,
-			rp_sprintf(C_("RomData", "Unknown (%u)"), primary->e_osabi));
+			rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (%u)")), primary->e_osabi));
 	}
 
 	// ABI version.
@@ -1738,6 +1747,7 @@ int ELF::loadFieldData(void)
 	// NOTE: Formatting using 8 digits, since 64-bit executables
 	// usually have entry points within the first 4 GB.
 	if (d->fileType == FileType::Executable) {
+		// FIXME: U8STRFIX - rp_sprintf()
 		string entry_point;
 		if (primary->e_class == ELFCLASS64) {
 			entry_point = rp_sprintf("0x%08" PRIX64, d->Elf_Header.elf64.e_entry);
@@ -1746,7 +1756,7 @@ int ELF::loadFieldData(void)
 		}
 		if (d->isPie) {
 			// tr: Entry point, then "Position-Independent".
-			entry_point = rp_sprintf(C_("ELF", "%s (Position-Independent)"),
+			entry_point = rp_sprintf(reinterpret_cast<const char*>(C_("ELF", "%s (Position-Independent)")),
 				entry_point.c_str());
 		}
 		d->fields->addField_string(C_("ELF", "Entry Point"), entry_point);
@@ -1756,8 +1766,12 @@ int ELF::loadFieldData(void)
 	if (!d->build_id.empty()) {
 		// TODO: Put the build ID type in the field itself.
 		// Using field name for now.
-		const string fieldName = rp_sprintf("BuildID[%s]", (d->build_id_type ? d->build_id_type : "unknown"));
-		d->fields->addField_string_hexdump(fieldName.c_str(),
+		// FIXME: U8STRFIX - rp_sprintf()
+		char8_t fieldName[32];
+		snprintf(reinterpret_cast<char*>(fieldName), sizeof(fieldName), "BuildID[%s]",
+			(d->build_id_type) ? d->build_id_type : "unknown");
+
+		d->fields->addField_string_hexdump(fieldName,
 			d->build_id.data(), d->build_id.size(),
 			RomFields::STRF_HEX_LOWER | RomFields::STRF_HEXDUMP_NO_SPACES);
 	}

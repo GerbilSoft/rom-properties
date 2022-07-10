@@ -538,7 +538,7 @@ int PSP::loadFieldData(void)
 		const char *p = static_cast<const char*>(memchr(buf, '|', sizeof(buf)));
 		if (p) {
 			// Game ID field on UMD Video discs is the video title.
-			const char *const gameID_title =
+			const char8_t *const gameID_title =
 				(unlikely(d->discType == PSPPrivate::DiscType::UmdVideo)
 					? C_("RomData", "Video Title")
 					: C_("RomData", "Game ID"));

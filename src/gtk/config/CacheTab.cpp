@@ -154,23 +154,26 @@ cache_tab_init(CacheTab *tab)
 	gtk_box_set_spacing(GTK_BOX(tab), 8);
 
 	// FIXME: Better wrapping that doesn't require manual newlines.
-	tab->lblSysCache = gtk_label_new(
-		C_("CacheTab", "If any image type settings were changed, you will need\nto clear the system thumbnail cache."));
+	tab->lblSysCache = gtk_label_new(reinterpret_cast<const char*>(C_("CacheTab",
+		"If any image type settings were changed, you will need\n"
+		"to clear the system thumbnail cache.")));
 	gtk_widget_set_name(tab->lblSysCache, "lblSysCache");
 	GTK_LABEL_XALIGN_LEFT(tab->lblSysCache);
 	gtk_label_set_wrap(GTK_LABEL(tab->lblSysCache), TRUE);
 
-	tab->btnSysCache = gtk_button_new_with_label(C_("CacheTab", "Clear the System Thumbnail Cache"));
+	tab->btnSysCache = gtk_button_new_with_label(reinterpret_cast<const char*>(
+		C_("CacheTab", "Clear the System Thumbnail Cache")));
 	gtk_widget_set_name(tab->btnSysCache, "btnSysCache");
 
-	tab->lblRpCache = gtk_label_new(
-		C_("CacheTab", "ROM Properties Page maintains its own download cache for external images.\n"
-			       "Clearing this cache will force external images to be redownloaded."));
+	tab->lblRpCache = gtk_label_new(reinterpret_cast<const char*>(C_("CacheTab",
+		"ROM Properties Page maintains its own download cache for external images.\n"
+		"Clearing this cache will force external images to be redownloaded.")));
 	gtk_widget_set_name(tab->lblRpCache, "lblRpCache");
 	GTK_LABEL_XALIGN_LEFT(tab->lblRpCache);
 	gtk_label_set_wrap(GTK_LABEL(tab->lblRpCache), TRUE);
 
-	tab->btnRpCache  = gtk_button_new_with_label(C_("CacheTab", "Clear the ROM Properties Page Download Cache"));
+	tab->btnRpCache  = gtk_button_new_with_label(reinterpret_cast<const char*>(
+		C_("CacheTab", "Clear the ROM Properties Page Download Cache")));
 	gtk_widget_set_name(tab->btnRpCache, "btnRpCache");
 
 	tab->lblStatus = gtk_label_new(nullptr);
@@ -375,11 +378,12 @@ cache_tab_clear_cache_dir(CacheTab *tab, RpCacheDir cache_dir)
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(tab->pbStatus), 0.0);
 
 	// Set the label text.
-	const char *s_label;
+	const char8_t *s_label;
 	switch (cache_dir) {
 		default:
 			assert(!"Invalid cache directory specified.");
-			ccCleaner_error(tab->ccCleaner, C_("CacheTab", "Invalid cache directory specified."), tab);
+			ccCleaner_error(tab->ccCleaner,
+				reinterpret_cast<const char*>(C_("CacheTab", "Invalid cache directory specified.")), tab);
 			return;
 		case RP_CD_System:
 			s_label = C_("CacheTab", "Clearing the system thumbnail cache...");
@@ -388,7 +392,7 @@ cache_tab_clear_cache_dir(CacheTab *tab, RpCacheDir cache_dir)
 			s_label = C_("CacheTab", "Clearing the ROM Properties Page cache...");
 			break;
 	}
-	gtk_label_set_text(GTK_LABEL(tab->lblStatus), s_label);
+	gtk_label_set_text(GTK_LABEL(tab->lblStatus), reinterpret_cast<const char*>(s_label));
 
 #if !GTK_CHECK_VERSION(3,0,0)
 	// GTK2: Clear the styling immediately to prevent shenanigans.
@@ -480,7 +484,9 @@ ccCleaner_error(CacheCleaner *cleaner, const char *error, CacheTab *tab)
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(tab->pbStatus), 1.0);
 	gtk_progress_bar_set_error(GTK_PROGRESS_BAR(tab->pbStatus), TRUE);
 
-	const string s_msg = rp_sprintf(C_("CacheTab", "<b>ERROR:</b> %s"), error);
+	// FIXME: U8STRFIX - rp_sprintf()
+	const string s_msg = rp_sprintf(reinterpret_cast<const char*>(
+		C_("CacheTab", "<b>ERROR:</b> %s")), error);
 	gtk_label_set_markup(GTK_LABEL(tab->lblStatus), s_msg.c_str());
 	// FIXME: Causes crashes...
 	//MessageSound::play(GTK_MESSAGE_WARNING, s_msg.c_str(), GTK_WIDGET(tab));
@@ -499,7 +505,7 @@ ccCleaner_cacheIsEmpty(CacheCleaner *cleaner, RpCacheDir cache_dir, CacheTab *ta
 	g_return_if_fail(IS_CACHE_TAB(tab));
 	RP_UNUSED(cleaner);
 
-	const char *s_msg;
+	const char8_t *s_msg;
 	switch (cache_dir) {
 		default:
 			assert(!"Invalid cache directory specified.");
@@ -514,7 +520,7 @@ ccCleaner_cacheIsEmpty(CacheCleaner *cleaner, RpCacheDir cache_dir, CacheTab *ta
 	}
 
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(tab->pbStatus), 1.0);
-	gtk_label_set_text(GTK_LABEL(tab->lblStatus), s_msg);
+	gtk_label_set_text(GTK_LABEL(tab->lblStatus), reinterpret_cast<const char*>(s_msg));
 	// FIXME: Causes crashes...
 	//MessageSound::play(GTK_MESSAGE_WARNING, s_msg, GTK_WIDGET(tab));
 	gtk_process_main_event_loop();
@@ -534,8 +540,11 @@ ccCleaner_cacheCleared(CacheCleaner *cleaner, RpCacheDir cache_dir, unsigned int
 	RP_UNUSED(cleaner);
 
 	if (dirErrs > 0 || fileErrs > 0) {
-		const string s_msg = rp_sprintf(C_("CacheTab", "<b>ERROR:</b> %s"),
-			rp_sprintf_p(C_("CacheTab", "Unable to delete %1$u file(s) and/or %2$u dir(s)."),
+		// FIXME: U8STRFIX - rp_sprintf()
+		const string s_msg = rp_sprintf(
+			reinterpret_cast<const char*>(C_("CacheTab", "<b>ERROR:</b> %s")),
+			rp_sprintf_p(
+				reinterpret_cast<const char*>(C_("CacheTab", "Unable to delete %1$u file(s) and/or %2$u dir(s).")),
 				fileErrs, dirErrs).c_str());
 		gtk_label_set_markup(GTK_LABEL(tab->lblStatus), s_msg.c_str());
 		// FIXME: Causes crashes...
@@ -543,7 +552,7 @@ ccCleaner_cacheCleared(CacheCleaner *cleaner, RpCacheDir cache_dir, unsigned int
 		return;
 	}
 
-	const char *s_msg;
+	const char8_t *s_msg;
 	GtkMessageType icon;
 	switch (cache_dir) {
 		default:
@@ -561,7 +570,7 @@ ccCleaner_cacheCleared(CacheCleaner *cleaner, RpCacheDir cache_dir, unsigned int
 			break;
 	}
 
-	gtk_label_set_text(GTK_LABEL(tab->lblStatus), s_msg);
+	gtk_label_set_text(GTK_LABEL(tab->lblStatus), reinterpret_cast<const char*>(s_msg));
 	// FIXME: Causes crashes...
 	//MessageSound::play(icon, s_msg, GTK_WIDGET(tab));
 	RP_UNUSED(icon);

@@ -134,7 +134,7 @@ G_DEFINE_TYPE_EXTENDED(OptionsMenuButton, options_menu_button,
 
 /** Standard actions. **/
 struct option_menu_action_t {
-	const char *desc;
+	const char8_t *desc;
 	int id;
 };
 static const option_menu_action_t stdacts[] = {
@@ -546,8 +546,9 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 		g_action_map_add_action(G_ACTION_MAP(actionGroup), G_ACTION(action));
 
 		// Create the menu item.
+		// FIXME: U8STRFIX
 		snprintf(buf, sizeof(buf), "%s.%d", prefix, p.id);
-		g_menu_append(menuStdActs, dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p.desc), buf);
+		g_menu_append(menuStdActs, dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", (const char*)p.desc), buf);
 	}
 
 	/** ROM operations. **/
@@ -584,8 +585,9 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 	gtk_widget_set_name(menuOptions, "menuOptions");
 
 	for (const option_menu_action_t &p : stdacts) {
+		// FIXME: U8STRFIX
 		GtkWidget *const menuItem = gtk_menu_item_new_with_label(
-			dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p.desc));
+			dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", (const char*)p.desc));
 		// NOTE: No name for this GtkWidget.
 		g_object_set_data(G_OBJECT(menuItem), "menuOptions_id", GINT_TO_POINTER(p.id));
 		g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), widget);

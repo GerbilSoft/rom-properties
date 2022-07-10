@@ -80,12 +80,12 @@ class AchievementsPrivate
 		// Achievement information.
 		// Array index is the ID.
 		struct AchInfo_t {
-			const char *name;	// Name (NOP_C_, translatable)
-			const char *desc_unlk;	// Unlocked description (NOP_C_, translatable)
-			AchType type;		// Achievement type
-			uint8_t count;		// AT_COUNT: Number of times needed to unlock.
-						// AT_BITFIELD: Number of bits. (up to 64)
-						//              All bits must be 1 to unlock.
+			const char8_t *name;		// Name (NOP_C_, translatable)
+			const char8_t *desc_unlk;	// Unlocked description (NOP_C_, translatable)
+			AchType type;			// Achievement type
+			uint8_t count;			// AT_COUNT: Number of times needed to unlock.
+							// AT_BITFIELD: Number of bits. (up to 64)
+							//              All bits must be 1 to unlock.
 		};
 		static const AchInfo_t achInfo[];
 
@@ -976,7 +976,7 @@ time_t Achievements::isUnlocked(ID id) const
  * @param id Achievement ID.
  * @return Achievement description, or nullptr on error.
  */
-const char *Achievements::getName(ID id) const
+const char8_t *Achievements::getName(ID id) const
 {
 	assert((int)id >= 0);
 	assert(id < ID::Max);
@@ -987,7 +987,9 @@ const char *Achievements::getName(ID id) const
 
 	RP_D(const Achievements);
 	const AchievementsPrivate::AchInfo_t *const achInfo = &d->achInfo[(int)id];
-	return dpgettext_expr(RP_I18N_DOMAIN, "Achievements", achInfo->name);
+	// FIXME: U8STRFIX - dpgettext_expr()
+	return reinterpret_cast<const char8_t*>(
+		dpgettext_expr(RP_I18N_DOMAIN, "Achievements", reinterpret_cast<const char*>(achInfo->name)));
 }
 
 /**
@@ -995,7 +997,7 @@ const char *Achievements::getName(ID id) const
  * @param id Achievement ID.
  * @return Unlocked achievement description, or nullptr on error.
  */
-const char *Achievements::getDescUnlocked(ID id) const
+const char8_t *Achievements::getDescUnlocked(ID id) const
 {
 	assert((int)id >= 0);
 	assert(id < ID::Max);
@@ -1006,7 +1008,9 @@ const char *Achievements::getDescUnlocked(ID id) const
 
 	RP_D(const Achievements);
 	const AchievementsPrivate::AchInfo_t *const achInfo = &d->achInfo[(int)id];
-	return dpgettext_expr(RP_I18N_DOMAIN, "Achievements", achInfo->desc_unlk);
+	// FIXME: U8STRFIX - dpgettext_expr()
+	return reinterpret_cast<const char8_t*>(
+		dpgettext_expr(RP_I18N_DOMAIN, "Achievements", reinterpret_cast<const char*>(achInfo->desc_unlk)));
 }
 
 }

@@ -1135,7 +1135,7 @@ int KhronosKTX::getFields(LibRpBase::RomFields *fields) const
 
 	// Endianness.
 	// TODO: Save big vs. little in the constructor instead of just "needs byteswapping"?
-	const char *endian_str;
+	const char8_t *endian_str;
 	if (ktxHeader->endianness == KTX_ENDIAN_MAGIC) {
 		// Matches host-endian.
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
@@ -1207,7 +1207,7 @@ int KhronosKTX::getFields(LibRpBase::RomFields *fields) const
 	// Key/Value data.
 	d->loadKeyValueData();
 	if (!d->kv_data.empty()) {
-		static const char *const kv_field_names[] = {
+		static const char8_t *const kv_field_names[] = {
 			NOP_C_("KhronosKTX|KeyValue", "Key"),
 			NOP_C_("KhronosKTX|KeyValue", "Value"),
 		};
@@ -1215,7 +1215,7 @@ int KhronosKTX::getFields(LibRpBase::RomFields *fields) const
 		// NOTE: Making a copy.
 		RomFields::ListData_t *const p_kv_data = new RomFields::ListData_t(d->kv_data);
 		vector<string> *const v_kv_field_names = RomFields::strArrayToVector_i18n(
-			"KhronosKTX|KeyValue", kv_field_names, ARRAY_SIZE(kv_field_names));
+			U8("KhronosKTX|KeyValue"), kv_field_names, ARRAY_SIZE(kv_field_names));
 
 		RomFields::AFLD_PARAMS params;
 		params.headers = v_kv_field_names;

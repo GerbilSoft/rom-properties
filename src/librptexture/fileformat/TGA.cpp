@@ -788,13 +788,13 @@ int TGA::getFields(RomFields *fields) const
 	fields->addField_string(C_("TGA", "Orientation"), str);
 
 	// Compression
-	const char *s_compression;
+	const char8_t *s_compression;
 	if (tgaHeader->image_type == TGA_IMAGETYPE_HUFFMAN_COLORMAP) {
 		s_compression = C_("TGA|Compression", "Huffman+Delta");
 	} else if (tgaHeader->image_type == TGA_IMAGETYPE_HUFFMAN_4PASS_COLORMAP) {
 		s_compression = C_("TGA|Compression", "Huffman+Delta, 4-pass");
 	} else if (tgaHeader->image_type & TGA_IMAGETYPE_RLE_FLAG) {
-		s_compression = "RLE";
+		s_compression = U8("RLE");
 	} else {
 		s_compression = C_("TGA|Compression", "None");
 	}
@@ -802,15 +802,16 @@ int TGA::getFields(RomFields *fields) const
 
 	// Alpha channel
 	// TODO: dpgettext_expr()
-	const char *s_alphaType;
-	static const char *const alphaType_tbl[4] = {
+	static const char8_t *const alphaType_tbl[4] = {
 		NOP_C_("TGA|AlphaType", "Undefined (ignore)"),
 		NOP_C_("TGA|AlphaType", "Undefined (retain)"),
 		NOP_C_("TGA|AlphaType", "Present"),
 		NOP_C_("TGA|AlphaType", "Premultiplied"),
 	};
-	s_alphaType = alphaType_tbl[d->alphaType >= 0 && (int)d->alphaType < 4
-		? d->alphaType : TGA_ALPHATYPE_UNDEFINED_IGNORE];
+	const char8_t *const s_alphaType =
+		alphaType_tbl[(d->alphaType >= 0 && (int)d->alphaType < 4)
+			? d->alphaType
+			: TGA_ALPHATYPE_UNDEFINED_IGNORE];
 	fields->addField_string(C_("TGA", "Alpha Type"), s_alphaType);
 
 	/** Extension area fields **/

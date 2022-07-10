@@ -194,7 +194,7 @@ int EXEPrivate::loadPEResourceTypes(void)
  * @param refLink String to store the download link.
  * @return 0 on success; negative POSIX error code on error.
  */
-int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
+int EXEPrivate::findPERuntimeDLL(u8string &refDesc, u8string &refLink)
 {
 	refDesc.clear();
 	refLink.clear();
@@ -333,23 +333,23 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 	// TODO: Move somewhere else?
 	static const struct {
 		unsigned int dll_name_version;	// e.g. 140, 120
-		const char display_version[8];
-		const char *url_i386;	// i386 download link
-		const char *url_amd64;	// amd64 download link
+		const char8_t display_version[8];
+		const char8_t *url_i386;	// i386 download link
+		const char8_t *url_amd64;	// amd64 download link
 	} msvc_dll_tbl[] = {
-		{120,	"2013", "https://aka.ms/highdpimfc2013x86enu", "https://aka.ms/highdpimfc2013x64enu"},
-		{110,	"2012", "https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x86.exe", "https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe"},
-		{100,	"2010", "https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x86.exe", "https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x64.exe"},
-		{ 90,	"2008", "https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe", "https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x64.exe"},
-		{ 80,	"2005", "https://download.microsoft.com/download/8/B/4/8B42259F-5D70-43F4-AC2E-4B208FD8D66A/vcredist_x86.EXE", "https://download.microsoft.com/download/8/B/4/8B42259F-5D70-43F4-AC2E-4B208FD8D66A/vcredist_x64.EXE"},
-		{ 71,	"2003", nullptr, nullptr},
-		{ 70,	"2002", nullptr, nullptr},
-		{ 60,	 "6.0", nullptr, nullptr},	// NOTE: MSVC 6.0 uses "msvcrt.dll".
-		{ 50,	 "5.0", nullptr, nullptr},
-		{ 42,	 "4.2", nullptr, nullptr},
-		{ 40,	 "4.0", nullptr, nullptr},
-		{ 20,	 "2.0", nullptr, nullptr},
-		{ 10,	 "1.0", nullptr, nullptr},
+		{120,	U8("2013"), U8("https://aka.ms/highdpimfc2013x86enu"), U8("https://aka.ms/highdpimfc2013x64enu")},
+		{110,	U8("2012"), U8("https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x86.exe"), U8("https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe")},
+		{100,	U8("2010"), U8("https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x86.exe"), U8("https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x64.exe")},
+		{ 90,	U8("2008"), U8("https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe"), U8("https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x64.exe")},
+		{ 80,	U8("2005"), U8("https://download.microsoft.com/download/8/B/4/8B42259F-5D70-43F4-AC2E-4B208FD8D66A/vcredist_x86.EXE"), U8("https://download.microsoft.com/download/8/B/4/8B42259F-5D70-43F4-AC2E-4B208FD8D66A/vcredist_x64.EXE")},
+		{ 71,	U8("2003"), nullptr, nullptr},
+		{ 70,	U8("2002"), nullptr, nullptr},
+		{ 60,	 U8("6.0"), nullptr, nullptr},	// NOTE: MSVC 6.0 uses "msvcrt.dll".
+		{ 50,	 U8("5.0"), nullptr, nullptr},
+		{ 42,	 U8("4.2"), nullptr, nullptr},
+		{ 40,	 U8("4.0"), nullptr, nullptr},
+		{ 20,	 U8("2.0"), nullptr, nullptr},
+		{ 10,	 U8("1.0"), nullptr, nullptr},
 	};
 
 	// Visual Basic DLL version to display version table.
@@ -357,10 +357,10 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		uint8_t ver_major;
 		uint8_t ver_minor;
 		const char dll_name[13];
-		const char *url;
+		const char8_t *url;
 	} msvb_dll_tbl[] = {
-		{6,0, "msvbvm60.dll", "https://download.microsoft.com/download/5/a/d/5ad868a0-8ecd-4bb0-a882-fe53eb7ef348/VB6.0-KB290887-X86.exe"},
-		{5,0, "msvbvm50.dll", "https://download.microsoft.com/download/vb50pro/utility/1/win98/en-us/msvbvm50.exe"},
+		{6,0, "msvbvm60.dll", U8("https://download.microsoft.com/download/5/a/d/5ad868a0-8ecd-4bb0-a882-fe53eb7ef348/VB6.0-KB290887-X86.exe")},
+		{5,0, "msvbvm50.dll", U8("https://download.microsoft.com/download/vb50pro/utility/1/win98/en-us/msvbvm50.exe")},
 
 		// FIXME: Is it vbrun400.dll, vbrun432.dll, or both?
 		// TODO: Find a download link.
@@ -386,25 +386,29 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		// Check for MSVC 2015-2019. (vcruntime140.dll)
 		if (!strcmp(dll_name, "vcruntime140.dll")) {
 			// TODO: If host OS is Windows XP or earlier, limit it to 2017?
-			refDesc = rp_sprintf(
-				C_("EXE|Runtime", "Microsoft Visual C++ %s Runtime"), "2015-2022");
+			// FIXME: U8STRFIX - rp_sprintf()
+			refDesc = reinterpret_cast<const char8_t*>(rp_sprintf(
+				reinterpret_cast<const char*>(
+					C_("EXE|Runtime", "Microsoft Visual C++ %s Runtime")), "2015-2022").c_str());
 			switch (le16_to_cpu(hdr.pe.FileHeader.Machine)) {
 				case IMAGE_FILE_MACHINE_I386:
-					refLink = "https://aka.ms/vs/17/release/VC_redist.x86.exe";
+					refLink = U8("https://aka.ms/vs/17/release/VC_redist.x86.exe");
 					break;
 				case IMAGE_FILE_MACHINE_AMD64:
-					refLink = "https://aka.ms/vs/17/release/VC_redist.x64.exe";
+					refLink = U8("https://aka.ms/vs/17/release/VC_redist.x64.exe");
 					break;
 				case IMAGE_FILE_MACHINE_ARM64:
-					refLink = "https://aka.ms/vs/17/release/VC_redist.arm64.exe";
+					refLink = U8("https://aka.ms/vs/17/release/VC_redist.arm64.exe");
 					break;
 				default:
 					break;
 			}
 			break;
 		} else if (!strcmp(dll_name, "vcruntime140d.dll")) {
-			refDesc = rp_sprintf(
-				C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"), "2015-2022");
+			// FIXME: U8STRFIX - rp_sprintf()
+			refDesc = reinterpret_cast<const char8_t*>(rp_sprintf(
+				reinterpret_cast<const char*>(
+					C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime")), "2015-2022").c_str());
 			break;
 		}
 
@@ -423,9 +427,11 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 			for (const auto &p : msvc_dll_tbl) {
 				if (p.dll_name_version == dll_name_version) {
 					// Found a matching version.
-					refDesc = rp_sprintf(
-						C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"),
-						p.display_version);
+					// FIXME: U8STRFIX - rp_sprintf()
+					refDesc = reinterpret_cast<const char8_t*>(rp_sprintf(
+						reinterpret_cast<const char*>(
+							C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime")),
+							p.display_version).c_str());
 					found = true;
 					break;
 				}
@@ -441,9 +447,11 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 			for (const auto &p : msvc_dll_tbl) {
 				if (p.dll_name_version == dll_name_version) {
 					// Found a matching version.
-					refDesc = rp_sprintf(
-						C_("EXE|Runtime", "Microsoft Visual C++ %s Runtime"),
-						p.display_version);
+					// FIXME: U8STRFIX - rp_sprintf()
+					refDesc = reinterpret_cast<const char8_t*>(rp_sprintf(
+						reinterpret_cast<const char*>(
+							C_("EXE|Runtime", "Microsoft Visual C++ %s Runtime")),
+							p.display_version).c_str());
 					if (is64) {
 						if (p.url_amd64) {
 							refLink = p.url_amd64;
@@ -467,8 +475,10 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 			refDesc = C_("EXE|Runtime", "Microsoft System C++ Runtime");
 			break;
 		} else if (!strcmp(dll_name, "msvcrtd.dll")) {
-			refDesc = rp_sprintf(
-				C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"), "6.0");
+			// FIXME: U8STRFIX - rp_sprintf()
+			refDesc = reinterpret_cast<const char8_t*>(rp_sprintf(
+				reinterpret_cast<const char*>(
+					C_("EXE|Runtime", "Microsoft Visual C++ %s Runtime")), "6.0").c_str());
 			break;
 		}
 
@@ -478,8 +488,11 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		for (const auto &p : msvb_dll_tbl) {
 			if (!strcmp(dll_name, p.dll_name)) {
 				// Found a matching version.
-				refDesc = rp_sprintf(C_("EXE|Runtime", "Microsoft Visual Basic %u.%u Runtime"),
-					p.ver_major, p.ver_minor);
+				// FIXME: U8STRFIX - rp_sprintf()
+				refDesc = reinterpret_cast<const char8_t*>(rp_sprintf(
+					reinterpret_cast<const char*>(
+						C_("EXE|Runtime", "Microsoft Visual Basic %u.%u Runtime")),
+						p.ver_major, p.ver_minor).c_str());
 				refLink = p.url;
 				break;
 			}
@@ -538,8 +551,8 @@ void EXEPrivate::addFields_PE(void)
 		s_cpu = cpu;
 	} else {
 		// FIXME: U8STRFIX
-		s_cpu = reinterpret_cast<const char8_t*>(
-			rp_sprintf(C_("RomData", "Unknown (0x%04X)"), machine).c_str());
+		s_cpu = reinterpret_cast<const char8_t*>(rp_sprintf(
+			reinterpret_cast<const char*>(C_("RomData", "Unknown (0x%04X)")), machine).c_str());
 	}
 	if (dotnet) {
 		// .NET executable.
@@ -552,7 +565,7 @@ void EXEPrivate::addFields_PE(void)
 		rp_sprintf("%u.%u", os_ver_major, os_ver_minor));
 
 	// Subsystem names.
-	static const char *const subsysNames[IMAGE_SUBSYSTEM_XBOX+1] = {
+	static const char8_t *const subsysNames[IMAGE_SUBSYSTEM_XBOX+1] = {
 		// IMAGE_SUBSYSTEM_UNKNOWN
 		nullptr,
 		// tr: IMAGE_SUBSYSTEM_NATIVE
@@ -586,28 +599,29 @@ void EXEPrivate::addFields_PE(void)
 	};
 
 	// Subsystem name and version.
-	string subsystem_name;
+	// FIXME: U8STRFIX - dpgettext_expr(), rp_sprintf()
+	u8string subsystem_name;
 	if (pe_subsystem < ARRAY_SIZE(subsysNames) && subsysNames[pe_subsystem] != nullptr) {
-		subsystem_name = rp_sprintf("%s %u.%u",
-			dpgettext_expr(RP_I18N_DOMAIN, "EXE|Subsystem", subsysNames[pe_subsystem]),
-			subsystem_ver_major, subsystem_ver_minor);
+		subsystem_name = reinterpret_cast<const char8_t*>(rp_sprintf("%s %u.%u",
+			dpgettext_expr(RP_I18N_DOMAIN, "EXE|Subsystem", reinterpret_cast<const char*>(subsysNames[pe_subsystem])),
+			subsystem_ver_major, subsystem_ver_minor).c_str());
 	} else {
-		const char *const s_unknown = C_("RomData", "Unknown");
+		const char8_t *const s_unknown = C_("RomData", "Unknown");
 		if (pe_subsystem == IMAGE_SUBSYSTEM_UNKNOWN) {
-			subsystem_name = rp_sprintf("%s %u.%u",
-				s_unknown,
-				subsystem_ver_major, subsystem_ver_minor);
+			subsystem_name = reinterpret_cast<const char8_t*>(rp_sprintf("%s %u.%u",
+				reinterpret_cast<const char*>(s_unknown),
+				subsystem_ver_major, subsystem_ver_minor).c_str());
 		} else {
-			subsystem_name = rp_sprintf("%s (%u) %u.%u",
-				s_unknown, pe_subsystem,
-				subsystem_ver_major, subsystem_ver_minor);
+			subsystem_name = reinterpret_cast<const char8_t*>(rp_sprintf("%s (%u) %u.%u",
+				reinterpret_cast<const char*>(s_unknown), pe_subsystem,
+				subsystem_ver_major, subsystem_ver_minor).c_str());
 		}
 	}
 	fields->addField_string(C_("EXE", "Subsystem"), subsystem_name);
 
 	// PE flags. (characteristics)
 	// NOTE: Only important flags will be listed.
-	static const char *const pe_flags_names[] = {
+	static const char8_t *const pe_flags_names[] = {
 		nullptr,
 		NOP_C_("EXE|PEFlags", "Executable"),
 		nullptr, nullptr, nullptr,
@@ -619,12 +633,12 @@ void EXEPrivate::addFields_PE(void)
 		nullptr, nullptr,
 	};
 	vector<string> *const v_pe_flags_names = RomFields::strArrayToVector_i18n(
-		"EXE|PEFlags", pe_flags_names, ARRAY_SIZE(pe_flags_names));
+		U8("EXE|PEFlags"), pe_flags_names, ARRAY_SIZE(pe_flags_names));
 	fields->addField_bitfield(C_("EXE", "PE Flags"),
 		v_pe_flags_names, 3, pe_flags);
 
 	// DLL flags. (characteristics)
-	static const char *const dll_flags_names[] = {
+	static const char8_t *const dll_flags_names[] = {
 		nullptr, nullptr, nullptr, nullptr, nullptr,
 		NOP_C_("EXE|DLLFlags", "High Entropy VA"),
 		NOP_C_("EXE|DLLFlags", "Dynamic Base"),
@@ -639,7 +653,7 @@ void EXEPrivate::addFields_PE(void)
 		NOP_C_("EXE|DLLFlags", "TS Aware"),
 	};
 	vector<string> *const v_dll_flags_names = RomFields::strArrayToVector_i18n(
-		"EXE|DLLFlags", dll_flags_names, ARRAY_SIZE(dll_flags_names));
+		U8("EXE|DLLFlags"), dll_flags_names, ARRAY_SIZE(dll_flags_names));
 	fields->addField_bitfield(C_("EXE", "DLL Flags"),
 		v_dll_flags_names, 3, dll_flags);
 
@@ -647,7 +661,7 @@ void EXEPrivate::addFields_PE(void)
 	// TODO: Windows 10 modules have hashes here instead of timestamps.
 	// We should detect that by checking for obviously out-of-range values.
 	// TODO: time_t is signed, so values greater than 2^31-1 may be negative.
-	const char *const timestamp_title = C_("EXE", "Timestamp");
+	const char8_t *const timestamp_title = C_("EXE", "Timestamp");
 	uint32_t timestamp = le32_to_cpu(hdr.pe.FileHeader.TimeDateStamp);
 	if (timestamp != 0) {
 		fields->addField_dateTime(timestamp_title,
@@ -659,7 +673,7 @@ void EXEPrivate::addFields_PE(void)
 	}
 
 	// Runtime DLL.
-	string runtime_dll, runtime_link;
+	u8string runtime_dll, runtime_link;
 	int ret = findPERuntimeDLL(runtime_dll, runtime_link);
 	if (ret == 0 && !runtime_dll.empty()) {
 		// TODO: Show the link?

@@ -242,7 +242,7 @@ class RomData : public RefBase
 		 * @return General file type as a string, or nullptr if unknown.
 		 */
 		RP_LIBROMDATA_PUBLIC
-		const char *fileType_string(void) const;
+		const char8_t *fileType_string(void) const;
 
 		/**
 		 * Get the file's MIME type.
@@ -527,7 +527,7 @@ class RomData : public RefBase
 		 * @return String containing user-friendly name of an image type.
 		 */
 		RP_LIBROMDATA_PUBLIC
-		static const char *getImageTypeName(ImageType imageType);
+		static const char8_t *getImageTypeName(ImageType imageType);
 
 		/**
 		 * Get the animated icon data.

@@ -406,30 +406,30 @@ class RomFields
 		/**
 		 * Get the abbreviation of an age rating organization.
 		 * (TODO: Full name function?)
-		 * @param country Rating country.
+		 * @param country Rating country
 		 * @return Abbreviation, or nullptr if invalid.
 		 */
-		static const char *ageRatingAbbrev(AgeRatingsCountry country);
+		static const char8_t *ageRatingAbbrev(AgeRatingsCountry country);
 
 		/**
 		 * Decode an age rating into a human-readable string.
 		 * This does not include the name of the rating organization.
 		 *
-		 * @param country Rating country.
-		 * @param rating Rating value.
+		 * @param country Rating country
+		 * @param rating Rating value
 		 * @return Human-readable string, or empty string if the rating isn't active.
 		 */
-		static std::string ageRatingDecode(AgeRatingsCountry country, uint16_t rating);
+		static std::u8string ageRatingDecode(AgeRatingsCountry country, uint16_t rating);
 
 		/**
 		 * Decode all age ratings into a human-readable string.
 		 * This includes the names of the rating organizations.
-		 * @param age_ratings Age ratings.
+		 * @param age_ratings Age ratings
 		 * @param newlines If true, print newlines after every four ratings.
 		 * @return Human-readable string, or empty string if no ratings.
 		 */
 		RP_LIBROMDATA_PUBLIC
-		static std::string ageRatingsDecode(const age_ratings_t *age_ratings, bool newlines = true);
+		static std::u8string ageRatingsDecode(const age_ratings_t *age_ratings, bool newlines = true);
 
 	public:
 		/** Multi-language convenience functions. **/

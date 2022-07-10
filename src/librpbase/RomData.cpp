@@ -551,7 +551,7 @@ RomData::FileType RomData::fileType(void) const
  * Get the general file type as a string.
  * @return General file type as a string, or nullptr if unknown.
  */
-const char *RomData::fileType_string(void) const
+const char8_t *RomData::fileType_string(void) const
 {
 	RP_D(const RomData);
 	assert(d->fileType >= FileType::Unknown && d->fileType < FileType::Max);
@@ -559,7 +559,7 @@ const char *RomData::fileType_string(void) const
 		return C_("RomData|FileType", "(unknown file type)");
 	}
 
-	static const char *const fileType_names[] = {
+	static const char8_t *const fileType_names[] = {
 		// FileType::Unknown
 		NOP_C_("RomData|FileType", "(unknown file type)"),
 		// tr: FileType::ROM_Image
@@ -622,9 +622,11 @@ const char *RomData::fileType_string(void) const
 	static_assert(ARRAY_SIZE(fileType_names) == (int)FileType::Max,
 		"fileType_names[] needs to be updated.");
  
-	const char *const fileType = fileType_names[(int)d->fileType];
+	const char8_t *const fileType = fileType_names[(int)d->fileType];
 	if (fileType != nullptr) {
-		return dpgettext_expr(RP_I18N_DOMAIN, "RomData|FileType", fileType);
+		// FIXME: U8STRFIX - dpgettext_expr()
+		return reinterpret_cast<const char8_t*>(
+			dpgettext_expr(RP_I18N_DOMAIN, "RomData|FileType", reinterpret_cast<const char*>(fileType)));
 	}
 	return nullptr;
 }
@@ -876,13 +878,13 @@ int RomData::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) co
 * @param imageType Image type.
 * @return String containing user-friendly name of an image type.
 */
-const char *RomData::getImageTypeName(ImageType imageType) {
+const char8_t *RomData::getImageTypeName(ImageType imageType) {
 	assert(imageType >= IMG_INT_MIN && imageType <= IMG_EXT_MAX);
 	if (imageType < IMG_INT_MIN || imageType > IMG_EXT_MAX) {
 		return nullptr;
 	}
 
-	static const char *const imageType_names[] = {
+	static const char8_t *const imageType_names[] = {
 		/** Internal **/
 
 		// tr: IMG_INT_ICON
@@ -912,7 +914,9 @@ const char *RomData::getImageTypeName(ImageType imageType) {
 	static_assert(ARRAY_SIZE(imageType_names) == IMG_EXT_MAX + 1,
 		"imageType_names[] needs to be updated.");
 
-	return dpgettext_expr(RP_I18N_DOMAIN, "RomData|ImageType", imageType_names[imageType]);
+	// FIXME: U8STRFIX - dpgettext_expr()
+	return reinterpret_cast<const char8_t*>(
+		dpgettext_expr(RP_I18N_DOMAIN, "RomData|ImageType", reinterpret_cast<const char*>(imageType_names[imageType])));
 }
 
 /**
@@ -997,8 +1001,9 @@ int RomData::doRomOp(int id, RomOpParams *pParams)
 			if (ret == 0) {
 				ret = -EIO;
 			}
+			// FIXME: U8STRFIX - pParams
 			pParams->status = ret;
-			pParams->msg = C_("RomData", "Unable to reopen the file for writing.");
+			pParams->msg = reinterpret_cast<const char*>(C_("RomData", "Unable to reopen the file for writing."));
 			UNREF(file);
 			return ret;
 		}
@@ -1011,8 +1016,9 @@ int RomData::doRomOp(int id, RomOpParams *pParams)
 		// Writable file is required.
 		if (d->file->isCompressed()) {
 			// Cannot write to a compressed file.
+			// FIXME: U8STRFIX - pParams
 			pParams->status = -EIO;
-			pParams->msg = C_("RomData", "Cannot perform this ROM operation on a compressed file.");
+			pParams->msg = reinterpret_cast<const char*>(C_("RomData", "Cannot perform this ROM operation on a compressed file."));
 			if (closeFileAfter) {
 				UNREF_AND_NULL_NOCHK(d->file);
 			}
@@ -1024,8 +1030,9 @@ int RomData::doRomOp(int id, RomOpParams *pParams)
 			int ret = d->file->makeWritable();
 			if (ret != 0) {
 				// Error making the file writable.
+				// FIXME: U8STRFIX - pParams
 				pParams->status = ret;
-				pParams->msg = C_("RomData", "Cannot perform this ROM operation on a read-only file.");
+				pParams->msg = reinterpret_cast<const char*>(C_("RomData", "Cannot perform this ROM operation on a read-only file."));
 				if (closeFileAfter) {
 					UNREF_AND_NULL_NOCHK(d->file);
 				}
@@ -1063,8 +1070,9 @@ int RomData::doRomOp_int(int id, RomOpParams *pParams)
 {
 	// Default implementation has no ROM operations.
 	RP_UNUSED(id);
+	// FIXME: U8STRFIX - pParams
 	pParams->status = -ENOTSUP;
-	pParams->msg = C_("RomData", "RomData object does not support any ROM operations.");
+	pParams->msg = reinterpret_cast<const char*>(C_("RomData", "RomData object does not support any ROM operations."));
 	return -ENOTSUP;
 }
 

@@ -73,10 +73,10 @@ class TImageTypesConfig
 
 		/**
 		 * Get an image type name.
-		 * @param imageType Image type ID.
+		 * @param imageType Image type ID
 		 * @return Image type name, or nullptr if invalid.
 		 */
-		static inline const char *imageTypeName(unsigned int imageType)
+		static inline const char8_t *imageTypeName(unsigned int imageType)
 		{
 			return ImageTypesConfig::imageTypeName(imageType);
 		}
@@ -86,7 +86,7 @@ class TImageTypesConfig
 		 * @param sys System ID
 		 * @return System name, or nullptr if invalid.
 		 */
-		static inline const char *sysName(unsigned int sys)
+		static inline const char8_t *sysName(unsigned int sys)
 		{
 			return ImageTypesConfig::sysName(sys);
 		}
@@ -205,8 +205,8 @@ class TImageTypesConfig
 
 		/**
 		 * Write an ImageType configuration entry.
-		 * @param sysName System name.
-		 * @param imageTypeList Image type list, comma-separated.
+		 * @param sysName System name [ASCII]
+		 * @param imageTypeList Image type list, comma-separated [ASCII]
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		virtual int saveWriteEntry(const char *sysName, const char *imageTypeList) = 0;

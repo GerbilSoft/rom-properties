@@ -506,10 +506,10 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 		}
 	}
 
-	const char *const s_title_title = C_("Nintendo3DS", "Title");
-	const char *const s_full_title_title = C_("Nintendo3DS", "Full Title");
-	const char *const s_publisher_title = C_("Nintendo3DS", "Publisher");
-	const char *const s_unknown = C_("RomData", "Unknown");
+	const char8_t *const s_title_title = C_("Nintendo3DS", "Title");
+	const char8_t *const s_full_title_title = C_("Nintendo3DS", "Full Title");
+	const char8_t *const s_publisher_title = C_("Nintendo3DS", "Publisher");
+	const char8_t *const s_unknown = C_("RomData", "Unknown");
 
 	const uint32_t def_lc = d->getDefaultLC();
 	if (!pMap_desc_short->empty()) {
@@ -533,7 +533,7 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 
 	// Region code.
 	// Maps directly to the SMDH field.
-	static const char *const n3ds_region_bitfield_names[] = {
+	static const char8_t *const n3ds_region_bitfield_names[] = {
 		NOP_C_("Region", "Japan"),
 		NOP_C_("Region", "USA"),
 		NOP_C_("Region", "Europe"),
@@ -543,7 +543,7 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 		NOP_C_("Region", "Taiwan"),
 	};
 	vector<string> *const v_n3ds_region_bitfield_names = RomFields::strArrayToVector_i18n(
-		"Region", n3ds_region_bitfield_names, ARRAY_SIZE(n3ds_region_bitfield_names));
+		U8("Region"), n3ds_region_bitfield_names, ARRAY_SIZE(n3ds_region_bitfield_names));
 	d->fields->addField_bitfield(C_("RomData", "Region Code"),
 		v_n3ds_region_bitfield_names, 3, le32_to_cpu(smdhHeader->settings.region_code));
 

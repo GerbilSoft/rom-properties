@@ -334,20 +334,21 @@ int VirtualBoy::loadFieldData(void)
 	d->fields->addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id6));
 
 	// Look up the publisher.
-	const char *const publisher_title = C_("RomData", "Publisher");
+	const char8_t *const publisher_title = C_("RomData", "Publisher");
 	const char8_t *const publisher = NintendoPublishers::lookup(romFooter->publisher);
 	if (publisher) {
 		d->fields->addField_string(publisher_title, publisher);
 	} else {
+		// FIXME: U8STRFIX - rp_sprintf()
 		if (ISALNUM(romFooter->publisher[0]) &&
 		    ISALNUM(romFooter->publisher[1]))
 		{
 			d->fields->addField_string(publisher_title,
-				rp_sprintf(C_("RomData", "Unknown (%.2s)"),
+				rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (%.2s)")),
 					romFooter->publisher));
 		} else {
 			d->fields->addField_string(publisher_title,
-				rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
+				rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (%02X %02X)")),
 					static_cast<uint8_t>(romFooter->publisher[0]),
 					static_cast<uint8_t>(romFooter->publisher[1])));
 		}
@@ -358,7 +359,7 @@ int VirtualBoy::loadFieldData(void)
 		romFooter->version, RomFields::Base::Dec, 2);
 
 	// Region
-	const char *s_region;
+	const char8_t *s_region;
 	switch (romFooter->gameid[3]) {
 		case 'J':
 			s_region = C_("Region", "Japan");
@@ -373,8 +374,9 @@ int VirtualBoy::loadFieldData(void)
 	if (s_region) {
 		d->fields->addField_string(C_("RomData", "Region Code"), s_region);
 	} else {
+		// FIXME: U8STRFIX - rp_sprintf()
 		d->fields->addField_string(C_("RomData", "Region Code"),
-			rp_sprintf(C_("RomData", "Unknown (0x%02X)"),
+			rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (0x%02X)")),
 				static_cast<uint8_t>(romFooter->gameid[3])));
 	}
 

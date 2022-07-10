@@ -655,9 +655,9 @@ int NintendoBadge::loadFieldData(void)
 	int lang = NintendoLanguage::getN3DSLanguage();
 
 	// Type.
-	const char *const s_type_title = C_("NintendoBadge", "Type");
-	const char *const s_name_title = C_("NintendoBadge", "Name");
-	const char *const s_set_name_title = C_("NintendoBadge", "Set Name");
+	const char8_t *const s_type_title = C_("NintendoBadge", "Type");
+	const char8_t *const s_name_title = C_("NintendoBadge", "Name");
+	const char8_t *const s_set_name_title = C_("NintendoBadge", "Set Name");
 	switch (d->badgeType) {
 		case NintendoBadgePrivate::BadgeType::PRBS: {
 			d->fields->addField_string(s_type_title,
@@ -731,7 +731,7 @@ int NintendoBadge::loadFieldData(void)
 			}
 
 			// Title ID.
-			const char *const launch_title_id_title = C_("NintendoBadge", "Launch Title ID");
+			const char8_t *const launch_title_id_title = C_("NintendoBadge", "Launch Title ID");
 			if (prbs->title_id.id == cpu_to_le64(0xFFFFFFFFFFFFFFFFULL)) {
 				// No title ID.
 				d->fields->addField_string(launch_title_id_title,
@@ -756,17 +756,17 @@ int NintendoBadge::loadFieldData(void)
 					if (isN3DS) {
 						if (s_region) {
 							// tr: %1$s == Title name, %2$s == Region
-							str = rp_sprintf_p(C_("NintendoBadge", "%1$s (New3DS) (%2$s)"),
+							str = rp_sprintf_p(reinterpret_cast<const char*>(C_("NintendoBadge", "%1$s (New3DS) (%2$s)")),
 								reinterpret_cast<const char*>(s_title), s_region);
 						} else {
 							// tr: Title name
-							str = rp_sprintf(C_("NintendoBadge", "%s (New3DS)"),
+							str = rp_sprintf(reinterpret_cast<const char*>(C_("NintendoBadge", "%s (New3DS)")),
 								reinterpret_cast<const char*>(s_title));
 						}
 					} else {
 						if (s_region) {
 							// tr: %1$s == Title name, %2$s == Region
-							str = rp_sprintf_p(C_("NintendoBadge", "%1$s (%2$s)"),
+							str = rp_sprintf_p(reinterpret_cast<const char*>(C_("NintendoBadge", "%1$s (%2$s)")),
 								reinterpret_cast<const char*>(s_title), s_region);
 						} else {
 							str = reinterpret_cast<const char*>(s_title);

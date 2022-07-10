@@ -17,12 +17,6 @@ struct ContentTypeEntry {
 	const char8_t *contentType;
 };
 
-// FIXME: U8STRFIX - NOP_C_
-#ifdef NOP_C_
-#  undef NOP_C_
-#endif
-#define NOP_C_(ctx, str) U8(str)
-
 /**
  * Xbox 360 STFS content type list.
  * Reference: https://github.com/Free60Project/wiki/blob/master/STFS.md

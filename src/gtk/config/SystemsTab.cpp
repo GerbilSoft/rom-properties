@@ -91,7 +91,8 @@ systems_tab_init(SystemsTab *tab)
 
 	// Create the "Game Boy Title Screens" frame.
 	// FIXME: GtkFrame doesn't support mnemonics?
-	GtkWidget *const fraDMG = gtk_frame_new(C_("SystemsTab", "Game Boy Title Screens"));
+	GtkWidget *const fraDMG = gtk_frame_new(reinterpret_cast<const char*>(
+		C_("SystemsTab", "Game Boy Title Screens")));
 	gtk_widget_set_name(fraDMG, "fraDMG");
 	GtkWidget *const vboxDMG = rp_gtk_vbox_new(6);
 #if GTK_CHECK_VERSION(2,91,0)
@@ -107,8 +108,9 @@ systems_tab_init(SystemsTab *tab)
 #endif /* GTK_CHECK_VERSION(2,91,0) */
 
 	// FIXME: Better wrapping that doesn't require manual newlines.
-	GtkWidget *const lblDMGDescription = gtk_label_new(
-		C_("SystemsTab", "Select the Game Boy model to use for title screens for different types of\nGame Boy ROM images."));
+	GtkWidget *const lblDMGDescription = gtk_label_new(reinterpret_cast<const char*>(
+		C_("SystemsTab", "Select the Game Boy model to use for title screens for different types of\n"
+		                 "Game Boy ROM images.")));
 	gtk_widget_set_name(lblDMGDescription, "lblDMGDescription");
 	GTK_LABEL_XALIGN_LEFT(lblDMGDescription);
 	gtk_label_set_wrap(GTK_LABEL(lblDMGDescription), TRUE);
@@ -124,9 +126,9 @@ systems_tab_init(SystemsTab *tab)
 	gtk_widget_set_name(lblSGB, "lblSGB");
 	gtk_widget_set_name(lblCGB, "lblCGB");
 
-	const char *const s_DMG = C_("SystemsTab", "Game Boy");
-	const char *const s_SGB = C_("SystemsTab", "Super Game Boy");
-	const char *const s_CGB = C_("SystemsTab", "Game Boy Color");
+	const char *const s_DMG = reinterpret_cast<const char*>(C_("SystemsTab", "Game Boy"));
+	const char *const s_SGB = reinterpret_cast<const char*>(C_("SystemsTab", "Super Game Boy"));
+	const char *const s_CGB = reinterpret_cast<const char*>(C_("SystemsTab", "Game Boy Color"));
 
 	// GtkListStore models for the combo boxes
 	GtkListStore *const lstDMG = gtk_list_store_new(1, G_TYPE_STRING);

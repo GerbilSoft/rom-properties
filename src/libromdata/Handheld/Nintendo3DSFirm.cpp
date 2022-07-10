@@ -235,7 +235,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 	const Nintendo3DSFirmData::FirmBin_t *firmBin = nullptr;
 	const uint32_t arm11_entrypoint = le32_to_cpu(firmHeader->arm11_entrypoint);
 	const uint32_t arm9_entrypoint = le32_to_cpu(firmHeader->arm9_entrypoint);
-	const char *firmBinDesc = nullptr;
+	const char8_t *firmBinDesc = nullptr;
 	bool checkCustomFIRM = false;	// Check for a custom FIRM, e.g. Boot9Strap.
 	bool checkARM9 = false;		// Check for ARM9 homebrew.
 	if (arm11_entrypoint != 0 && arm9_entrypoint != 0) {
@@ -261,7 +261,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 			firmBin = Nintendo3DSFirmData::lookup_firmBin(crc);
 			if (firmBin != nullptr) {
 				// Official firmware binary.
-				firmBinDesc = (firmBin->isNew3DS ? "New3DS FIRM" : "Old3DS FIRM");
+				firmBinDesc = (firmBin->isNew3DS ? U8("New3DS FIRM") : U8("Old3DS FIRM"));
 			} else {
 				// Check for a custom FIRM.
 				checkCustomFIRM = true;
@@ -286,14 +286,14 @@ int Nintendo3DSFirm::loadFieldData(void)
 		// Check for "B9S" at 0x3D.
 		if (!memcmp(&firmHeader->reserved[0x2D], "B9S", 3)) {
 			// This is Boot9Strap.
-			firmBinDesc = "Boot9Strap";
+			firmBinDesc = U8("Boot9Strap");
 		} else if (firmBuf) {
 			// Check for sighax installer.
 			// NOTE: String has a NULL terminator.
 			static const char sighax_magic[] = "3DS BOOTHAX INS";
 			if (!memcmp(&firmBuf[0x208], sighax_magic, sizeof(sighax_magic))) {
 				// Found derrek's sighax installer.
-				firmBinDesc = "sighax installer";
+				firmBinDesc = U8("sighax installer");
 			}
 		}
 	}
@@ -368,20 +368,20 @@ int Nintendo3DSFirm::loadFieldData(void)
 		const uint32_t first4 = be32_to_cpu(*(reinterpret_cast<const uint32_t*>(firmHeader->signature)));
 		static const struct {
 			uint32_t first4;
-			char status[12];
+			char8_t status[12];
 		} sighaxStatus_tbl[] = {
-			{0xB6724531,	"NAND retail"},		// SciresM
-			{0x6EFF209C,	"NAND retail"},		// sighax.com
-			{0x88697CDC,	"NAND devkit"},		// SciresM
+			{0xB6724531,	U8("NAND retail")},		// SciresM
+			{0x6EFF209C,	U8("NAND retail")},		// sighax.com
+			{0x88697CDC,	U8("NAND devkit")},		// SciresM
 
-			{0x6CF52F89,	"NCSD retail"},
-			{0x53CB0E4E,	"NCSD devkit"},
+			{0x6CF52F89,	U8("NCSD retail")},
+			{0x53CB0E4E,	U8("NCSD devkit")},
 
-			{0x37E96B10,	"SPI retail"},
-			{0x18722BC7,	"SPI devkit"},
+			{0x37E96B10,	U8("SPI retail")},
+			{0x18722BC7,	U8("SPI devkit")},
 		};
 
-		const char *s_sighax_status = nullptr;
+		const char8_t *s_sighax_status = nullptr;
 		for (const auto &p : sighaxStatus_tbl) {
 			if (p.first4 == first4) {
 				s_sighax_status = p.status;

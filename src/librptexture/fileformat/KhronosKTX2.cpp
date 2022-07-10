@@ -1033,18 +1033,19 @@ int KhronosKTX2::getFields(LibRpBase::RomFields *fields) const
 	const KTX2_Header *const ktx2Header = &d->ktx2Header;
 
 	// Supercompression.
-	static const char *const supercompression_tbl[] = {
-		"None",			// TODO: Localize?
-		"BasisLZ",
-		"Zstandard",
-		"ZLIB",
+	static const char8_t *const supercompression_tbl[] = {
+		U8("None"),		// TODO: Localize?
+		U8("BasisLZ"),
+		U8("Zstandard"),
+		U8("ZLIB"),
 	};
 	if (ktx2Header->supercompressionScheme < ARRAY_SIZE(supercompression_tbl)) {
 		fields->addField_string(C_("KhronosKTX2", "Supercompression"),
 			supercompression_tbl[ktx2Header->supercompressionScheme]);
 	} else {
+		// FIXME: U8STRFIX - rp_sprintf()
 		fields->addField_string(C_("KhronosKTX2", "Supercompression"),
-			rp_sprintf(C_("RomData", "Unknown (%u)"),
+			rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (%u)")),
 				ktx2Header->supercompressionScheme));
 	}
 
@@ -1073,7 +1074,7 @@ int KhronosKTX2::getFields(LibRpBase::RomFields *fields) const
 	// Key/Value data.
 	d->loadKeyValueData();
 	if (!d->kv_data.empty()) {
-		static const char *const kv_field_names[] = {
+		static const char8_t *const kv_field_names[] = {
 			NOP_C_("KhronosKTX2|KeyValue", "Key"),
 			NOP_C_("KhronosKTX2|KeyValue", "Value"),
 		};
@@ -1081,7 +1082,7 @@ int KhronosKTX2::getFields(LibRpBase::RomFields *fields) const
 		// NOTE: Making a copy.
 		RomFields::ListData_t *const p_kv_data = new RomFields::ListData_t(d->kv_data);
 		vector<string> *const v_kv_field_names = RomFields::strArrayToVector_i18n(
-			"KhronosKTX2|KeyValue", kv_field_names, ARRAY_SIZE(kv_field_names));
+			U8("KhronosKTX2|KeyValue"), kv_field_names, ARRAY_SIZE(kv_field_names));
 
 		RomFields::AFLD_PARAMS params;
 		params.headers = v_kv_field_names;

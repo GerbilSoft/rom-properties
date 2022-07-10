@@ -899,7 +899,7 @@ int WiiWAD::loadFieldData(void)
 
 	if (d->key_status != KeyManager::VerifyResult::OK) {
 		// Unable to get the decryption key.
-		const char *err = KeyManager::verifyResultToString(d->key_status);
+		const char8_t *err = KeyManager::verifyResultToString(d->key_status);
 		if (!err) {
 			err = C_("WiiWAD", "Unknown error. (THIS IS A BUG!)");
 		}
@@ -908,25 +908,21 @@ int WiiWAD::loadFieldData(void)
 	}
 
 	// Type.
-	string s_wadType;
+	u8string s_wadType;
 	switch (d->wadType) {
 		case WiiWADPrivate::WadType::WAD: {
 			switch (be32_to_cpu(d->wadHeader.wad.type)) {
 				case WII_WAD_TYPE_Is:
-					s_wadType = "Installable";
+					s_wadType = U8("Installable");
 					break;
 				case WII_WAD_TYPE_ib:
-					s_wadType = "Boot2";
+					s_wadType = U8("Boot2");
 					break;
 				case WII_WAD_TYPE_Bk:
-					s_wadType = "Backup";
+					s_wadType = U8("Backup");
 					break;
 				default: {
-					char buf[4];
-					memcpy(buf, &d->wadHeader.wad.type, sizeof(buf));
-					buf[2] = '\0';
-					buf[3] = '\0';
-					s_wadType = string(buf, 2);
+					s_wadType.assign(reinterpret_cast<const char8_t*>(d->wadHeader.wad.type_c), 2);
 					break;
 				}
 			}
@@ -1022,9 +1018,9 @@ int WiiWAD::loadFieldData(void)
 		}
 
 		bool isDefault;
-		const char *const region =
+		const char8_t *const region =
 			GameCubeRegions::gcnRegionToString(gcnRegion, id4_region, &isDefault);
-		const char *const region_code_title = C_("RomData", "Region Code");
+		const char8_t *const region_code_title = C_("RomData", "Region Code");
 		if (region) {
 			// Append the GCN region name (USA/JPN/EUR/KOR) if
 			// the ID4 value differs.
@@ -1033,23 +1029,27 @@ int WiiWAD::loadFieldData(void)
 				suffix = GameCubeRegions::gcnRegionToAbbrevString(gcnRegion);
 			}
 
-			string s_region;
+			u8string s_region;
 			if (suffix) {
+				// FIXME: U8STRFIX - rp_sprintf_p()
 				// tr: %1%s == full region name, %2$s == abbreviation
-				s_region = rp_sprintf_p(C_("Wii", "%1$s (%2$s)"), region, suffix);
+				s_region = reinterpret_cast<const char8_t*>(
+					rp_sprintf_p(reinterpret_cast<const char*>(C_("Wii", "%1$s (%2$s)")),
+						reinterpret_cast<const char*>(region), suffix).c_str());
 			} else {
 				s_region = region;
 			}
 
 			d->fields->addField_string(region_code_title, s_region);
 		} else {
+			// FIXME: U8STRFIX - rp_sprintf()
 			d->fields->addField_string(region_code_title,
-				rp_sprintf(C_("RomData", "Unknown (0x%02X)"), gcnRegion));
+				rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (0x%02X)")), gcnRegion));
 		}
 
 		// Required IOS version.
 		if (sys_id <= NINTENDO_SYSID_RVL) {
-			const char *const ios_version_title = C_("Wii", "IOS Version");
+			const char8_t *const ios_version_title = C_("Wii", "IOS Version");
 			const uint32_t ios_lo = be32_to_cpu(tmdHeader->sys_version.lo);
 			if (tmdHeader->sys_version.hi == cpu_to_be32(0x00000001) &&
 			    ios_lo > 2 && ios_lo < 0x300)
@@ -1067,11 +1067,12 @@ int WiiWAD::loadFieldData(void)
 			}
 		}
 
-		// Access rights.
+		// Access rights
+		// FIXME: U8STRFIX
 		vector<string> *const v_access_rights_hdr = new vector<string>();
 		v_access_rights_hdr->reserve(2);
 		v_access_rights_hdr->emplace_back("AHBPROT");
-		v_access_rights_hdr->emplace_back(C_("Wii", "DVD Video"));
+		v_access_rights_hdr->emplace_back(reinterpret_cast<const char*>(C_("Wii", "DVD Video")));
 		d->fields->addField_bitfield(C_("Wii", "Access Rights"),
 			v_access_rights_hdr, 0, be32_to_cpu(tmdHeader->access_rights));
 
@@ -1116,7 +1117,7 @@ int WiiWAD::loadFieldData(void)
 
 	// Encryption key.
 	// TODO: WiiPartition function to get a key's "display name"?
-	static const char *const encKeyNames[] = {
+	static const char8_t *const encKeyNames[] = {
 		// Retail
 		NOP_C_("Wii|EncKey", "Retail"),
 		NOP_C_("Wii|EncKey", "Korean"),
@@ -1133,9 +1134,11 @@ int WiiWAD::loadFieldData(void)
 		NOP_C_("Wii|EncKey", "SD MD5"),
 	};
 	static_assert(ARRAY_SIZE(encKeyNames) == WiiPartition::Key_Max, "Update encKeyNames[]!");
-	const char *keyName;
+	const char8_t *keyName;
 	if (d->key_idx >= 0 && d->key_idx < WiiPartition::Key_Max) {
-		keyName = dpgettext_expr(RP_I18N_DOMAIN, "Wii|EncKey", encKeyNames[d->key_idx]);
+		// FIXME: U8STRFIX - dpgettext_expr()
+		keyName = reinterpret_cast<const char8_t*>(
+			dpgettext_expr(RP_I18N_DOMAIN, "Wii|EncKey", reinterpret_cast<const char*>(encKeyNames[d->key_idx])));
 	} else {
 		keyName = C_("WiiWAD", "Unknown");
 	}

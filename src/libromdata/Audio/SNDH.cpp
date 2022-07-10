@@ -829,22 +829,24 @@ int SNDH::loadFieldData(void)
 	// VBL *before* timers. We'll list it before timers.
 
 	// VBlank frequency.
-	const char *const s_hz = C_("SNDH", "%u Hz");
+	const char8_t *const s_hz = C_("SNDH", "%u Hz");
 	if (tags.vblank_freq != 0) {
+		// FIXME: U8STRFIX - rp_sprintf()
 		d->fields->addField_string(C_("SNDH", "VBlank Freq"),
-			rp_sprintf(s_hz, tags.vblank_freq));
+			rp_sprintf(reinterpret_cast<const char*>(s_hz), tags.vblank_freq));
 	}
 
 	// Timer frequencies.
 	// TODO: Use RFT_LISTDATA?
-	const char *const s_timer_freq = C_("SNDH", "Timer %c Freq");
+	const char8_t *const s_timer_freq = C_("SNDH", "Timer %c Freq");
 	for (int i = 0; i < ARRAY_SIZE_I(tags.timer_freq); i++) {
 		if (tags.timer_freq[i] == 0)
 			continue;
 
+		// FIXME: U8STRFIX - rp_sprintf()
 		d->fields->addField_string(
-			rp_sprintf(s_timer_freq, 'A'+i).c_str(),
-			rp_sprintf(s_hz, tags.timer_freq[i]));
+			rp_sprintf(reinterpret_cast<const char*>(s_timer_freq), 'A'+i).c_str(),
+			rp_sprintf(reinterpret_cast<const char*>(s_hz), tags.timer_freq[i]));
 	}
 
 	// Default subtune.
@@ -916,7 +918,7 @@ int SNDH::loadFieldData(void)
 			// No durations. Don't bother showing the list.
 			delete vv_subtune_list;
 		} else {
-			static const char *subtune_list_hdr[3] = {
+			static const char8_t *subtune_list_hdr[3] = {
 				NOP_C_("SNDH|SubtuneList", "#"),
 				nullptr, nullptr
 			};
@@ -933,7 +935,7 @@ int SNDH::loadFieldData(void)
 			}
 
 			vector<string> *const v_subtune_list_hdr = RomFields::strArrayToVector_i18n(
-				"SNDH|SubtuneList", subtune_list_hdr, col_count);
+				U8("SNDH|SubtuneList"), subtune_list_hdr, col_count);
 
 			RomFields::AFLD_PARAMS params;
 			params.headers = v_subtune_list_hdr;

@@ -28,6 +28,7 @@
 
 // C++ STL classes.
 using std::ostringstream;
+using std::u8ostringstream;
 using std::string;
 using std::u8string;
 using std::u16string;
@@ -207,30 +208,27 @@ static inline int calc_frac_part(T val, T mask)
  * Get the localized decimal point.
  * @return Localized decimal point.
  */
-static string localizedDecimalPoint(void)
+static u8string localizedDecimalPoint(void)
 {
-	// FIXME: U8STRFIX
 #if defined(_WIN32)
 	// Use localeconv(). (Windows: Convert from UTF-16 to UTF-8.)
 #  if defined(HAVE_STRUCT_LCONV_WCHAR_T)
 	// MSVCRT: `struct lconv` has wchar_t fields.
-	return reinterpret_cast<const char*>(
-		utf16_to_utf8(reinterpret_cast<const char16_t*>(
-			localeconv()->_W_decimal_point), -1).c_str());
+	return utf16_to_utf8(reinterpret_cast<const char16_t*>(
+			localeconv()->_W_decimal_point), -1);
 #  else /* !HAVE_STRUCT_LCONV_WCHAR_T */
 	// MinGW v5,v6: `struct lconv` does not have wchar_t fields.
 	// NOTE: The `char` fields are ANSI.
-	return reinterpret_cast<const char*>(
-		ansi_to_utf8(localeconv()->decimal_point, -1).c_str());
+	return ansi_to_utf8(localeconv()->decimal_point, -1);
 #  endif /* HAVE_STRUCT_LCONV_WCHAR_T */
 #elif defined(HAVE_NL_LANGINFO)
 	// Use nl_langinfo().
 	// Reference: https://www.gnu.org/software/libc/manual/html_node/The-Elegant-and-Fast-Way.html
 	// NOTE: RADIXCHAR is the portable version of DECIMAL_POINT.
-	return nl_langinfo(RADIXCHAR);
+	return reinterpret_cast<const char8_t*>(nl_langinfo(RADIXCHAR));
 #else
 	// Use localeconv(). (Assuming UTF-8)
-	return localeconv()->decimal_point;
+	return reinterpret_cast<const char8_t*>(localeconv()->decimal_point);
 #endif
 }
 
@@ -239,9 +237,9 @@ static string localizedDecimalPoint(void)
  * @param size File size.
  * @return Formatted file size.
  */
-string formatFileSize(off64_t size)
+u8string formatFileSize(off64_t size)
 {
-	const char *suffix;
+	const char8_t *suffix;
 	// frac_part is always 0 to 100.
 	// If whole_part >= 10, frac_part is divided by 10.
 	int whole_part, frac_part;
@@ -290,7 +288,7 @@ string formatFileSize(off64_t size)
 	}
 
 	// Localize the whole part.
-	ostringstream s_value;
+	u8ostringstream s_value;
 	s_value << whole_part;
 
 	if (size >= (2LL << 10)) {
@@ -305,20 +303,23 @@ string formatFileSize(off64_t size)
 
 		// Append the fractional part using the required number of digits.
 		s_value << localizedDecimalPoint();
-		s_value << std::setw(frac_digits) << std::setfill('0') << frac_part;
+		s_value << std::setw(frac_digits) << std::setfill((char8_t)'0') << frac_part;
 	}
 
 	if (suffix) {
+		// FIXME: U8STRFIX - rp_sprintf()
 		// tr: %1$s == localized value, %2$s == suffix (e.g. MiB)
-		return rp_sprintf_p(C_("TextFuncs|FileSize", "%1$s %2$s"),
-			s_value.str().c_str(), suffix);
+		return reinterpret_cast<const char8_t*>(
+			rp_sprintf_p(reinterpret_cast<const char*>(C_("TextFuncs|FileSize", "%1$s %2$s")),
+			reinterpret_cast<const char*>(s_value.str().c_str()),
+			reinterpret_cast<const char*>(suffix)).c_str());
 	} else {
 		return s_value.str();
 	}
 
 	// Should not get here...
 	assert(!"Invalid code path.");
-	return "QUACK";
+	return U8("QUACK");
 }
 
 /**
@@ -330,9 +331,12 @@ string formatFileSize(off64_t size)
  * @param size File size.
  * @return Formatted file size.
  */
-std::string formatFileSizeKiB(unsigned int size)
+std::u8string formatFileSizeKiB(unsigned int size)
 {
-	return rp_sprintf("%u %s", (size / 1024), C_("TextFuncs|FileSize", "KiB"));
+	// FIXME: U8STRFIX - rp_sprintf()
+	return reinterpret_cast<const char8_t*>(
+		rp_sprintf("%u %s", (size / 1024),
+			reinterpret_cast<const char*>(C_("TextFuncs|FileSize", "KiB"))).c_str());
 }
 
 /**
@@ -340,9 +344,9 @@ std::string formatFileSizeKiB(unsigned int size)
  * @param frequency Frequency.
  * @return Formatted frequency.
  */
-std::string formatFrequency(uint32_t frequency)
+std::u8string formatFrequency(uint32_t frequency)
 {
-	const char *suffix;
+	const char8_t *suffix;
 	// frac_part is always 0 to 1,000.
 	// If whole_part >= 10, frac_part is divided by 10.
 	int whole_part, frac_part;
@@ -371,7 +375,7 @@ std::string formatFrequency(uint32_t frequency)
 	}
 
 	// Localize the whole part.
-	ostringstream s_value;
+	u8ostringstream s_value;
 	s_value << whole_part;
 
 	if (frequency >= (2*1000)) {
@@ -380,20 +384,23 @@ std::string formatFrequency(uint32_t frequency)
 
 		// Append the fractional part using the required number of digits.
 		s_value << localizedDecimalPoint();
-		s_value << std::setw(frac_digits) << std::setfill('0') << frac_part;
+		s_value << std::setw(frac_digits) << std::setfill((char8_t)'0') << frac_part;
 	}
 
 	if (suffix) {
+		// FIXME: U8STRFIX - rp_sprintf()
 		// tr: %1$s == localized value, %2$s == suffix (e.g. MHz)
-		return rp_sprintf_p(C_("TextFuncs|Frequency", "%1$s %2$s"),
-			s_value.str().c_str(), suffix);
+		return reinterpret_cast<const char8_t*>(
+			rp_sprintf_p(reinterpret_cast<const char*>(C_("TextFuncs|Frequency", "%1$s %2$s")),
+			reinterpret_cast<const char*>(s_value.str().c_str()),
+			reinterpret_cast<const char*>(suffix)).c_str());
 	} else {
 		return s_value.str();
 	}
 
 	// Should not get here...
 	assert(!"Invalid code path.");
-	return "QUACK";
+	return U8("QUACK");
 }
 
 /**

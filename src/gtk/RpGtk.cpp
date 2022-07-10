@@ -27,10 +27,10 @@ using std::string;
  * so the GtkFileFilter objects can be added directly.
  *
  * @param fileChooser GtkFileChooser*
- * @param filter RP file dialog filter. (UTF-8, from gettext())
+ * @param filter RP file dialog filter (UTF-8, from gettext())
  * @return 0 on success; negative POSIX error code on error.
  */
-int rpFileDialogFilterToGtk(GtkFileChooser *fileChooser, const char *filter)
+int rpFileDialogFilterToGtk(GtkFileChooser *fileChooser, const char8_t *filter)
 {
 	assert(fileChooser != nullptr);
 	assert(filter != nullptr && filter[0] != '\0');
@@ -38,7 +38,8 @@ int rpFileDialogFilterToGtk(GtkFileChooser *fileChooser, const char *filter)
 		return -EINVAL;
 
 	// Temporary string so we can use strtok_r().
-	gchar *const tmpfilter = g_strdup(filter);
+	// FIXME: U8STRFIX - str*()
+	gchar *const tmpfilter = g_strdup(reinterpret_cast<const char*>(filter));
 	assert(tmpfilter != nullptr);
 	gchar *saveptr = nullptr;
 

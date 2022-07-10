@@ -225,11 +225,15 @@ int fstPrint(IFst *fst, ostream &os)
 	dircount << fc.dirs;
 	filecount << fc.files;
 
-	os << '\n' <<
-		// tr: Parameter is a number; it's formatted elsewhere.
-		rp_sprintf(NC_("FstPrint", "%s directory", "%s directories", fc.dirs), dircount.str().c_str()) << ", " <<
-		// tr: Parameter is a number; it's formatted elsewhere.
-		rp_sprintf(NC_("FstPrint", "%s file", "%s files", fc.files), filecount.str().c_str()) << '\n';
+	// FIXME: U8STRFIX - rp_sprintf()
+	// tr: Parameter is a number; it's formatted elsewhere.
+	os << '\n' << rp_sprintf(
+		reinterpret_cast<const char*>(NC_("FstPrint", "%s directory", "%s directories", fc.dirs)),
+			dircount.str().c_str()) << ", ";
+	// tr: Parameter is a number; it's formatted elsewhere.
+	os << rp_sprintf(
+		reinterpret_cast<const char*>(NC_("FstPrint", "%s file", "%s files", fc.files)),
+			filecount.str().c_str()) << '\n';
 
 	os.flush();
 	return 0;

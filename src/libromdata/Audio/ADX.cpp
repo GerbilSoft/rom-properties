@@ -15,7 +15,7 @@ using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
 // C++ STL classes.
-using std::ostringstream;
+using std::u8ostringstream;
 using std::string;
 
 namespace LibRomData {
@@ -255,25 +255,25 @@ int ADX::loadFieldData(void)
 	d->fields->reserve(8);	// Maximum of 8 fields.
 
 	// Format
-	const char *format;
+	const char8_t *format;
 	switch (adxHeader->format) {
 		case ADX_FORMAT_FIXED_COEFF_ADPCM:
 			format = C_("ADX|Format", "Fixed Coefficient ADPCM");
 			break;
 		case ADX_FORMAT_ADX:
 			// NOTE: Not translatable.
-			format = "ADX";
+			format = U8("ADX");
 			break;
 		case ADX_FORMAT_ADX_EXP_SCALE:
 			format = C_("ADX|Format", "ADX with Exponential Scale");
 			break;
 		case ADX_FORMAT_AHX_DC:
 			// NOTE: Not translatable.
-			format = "AHX (Dreamcast)";
+			format = U8("AHX (Dreamcast)");
 			break;
 		case ADX_FORMAT_AHX:
 			// NOTE: Not translatable.
-			format = "AHX";
+			format = U8("AHX");
 			break;
 		default:
 			// NOTE: This should not be reachable...
@@ -290,9 +290,9 @@ int ADX::loadFieldData(void)
 	const uint32_t sample_count = be32_to_cpu(adxHeader->sample_count);
 
 	// Sample rate
-	// NOTE: Using ostringstream for localized numeric formatting.
-	ostringstream oss;
-	oss << sample_rate << " Hz";
+	// NOTE: Using u8ostringstream for localized numeric formatting.
+	u8ostringstream oss;
+	oss << sample_rate << U8(" Hz");
 	d->fields->addField_string(C_("RomData|Audio", "Sample Rate"), oss.str());
 
 	// Length. (non-looping)
@@ -303,24 +303,24 @@ int ADX::loadFieldData(void)
 	// High-pass cutoff
 	// TODO: What does this value represent?
 	// FIXME: Disabling until I figure this out.
-	oss.str("");
-	oss << be16_to_cpu(adxHeader->high_pass_cutoff) << " Hz";
+	oss.str(U8(""));
+	oss << be16_to_cpu(adxHeader->high_pass_cutoff) << U8(" Hz");
 	d->fields->addField_string(C_("ADX", "High-Pass Cutoff"), oss.str());
 #endif
 
 	// Translated strings
-	const char *const s_yes = C_("RomData", "Yes");
-	const char *const s_no  = C_("RomData", "No");
+	const char8_t *const s_yes = C_("RomData", "Yes");
+	const char8_t *const s_no  = C_("RomData", "No");
 
 	// Encryption
 	d->fields->addField_string(C_("ADX", "Encrypted"),
-		(adxHeader->flags & ADX_FLAG_ENCRYPTED ? s_yes : s_no));
+		(adxHeader->flags & ADX_FLAG_ENCRYPTED) ? s_yes : s_no);
 
 	// Looping
 	const ADX_LoopData *const pLoopData = d->pLoopData;
 	const bool isLooping = (pLoopData && pLoopData->loop_flag != 0);
 	d->fields->addField_string(C_("ADX", "Looping"),
-		(isLooping ? s_yes : s_no));
+		(isLooping) ? s_yes : s_no);
 	if (isLooping) {
 		d->fields->addField_string(C_("ADX", "Loop Start"),
 			formatSampleAsTime(be32_to_cpu(pLoopData->start_sample), sample_rate));

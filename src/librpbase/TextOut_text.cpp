@@ -45,6 +45,27 @@ extern "C" {
 
 namespace LibRpBase {
 
+/**
+ * NOTE: MSVC and gcc don't detect these operator<<() functions unless
+ * they're defined within the namespace they're used in...
+ */
+
+/**
+ * ostream operator<<() for char8_t
+ */
+static inline ::std::ostream& operator<<(::std::ostream& os, const char8_t *str)
+{
+	return os << reinterpret_cast<const char*>(str);
+};
+
+/**
+ * ostream operator<<() for u8string
+ */
+static inline ::std::ostream& operator<<(::std::ostream& os, const std::u8string& str)
+{
+	return os << reinterpret_cast<const char*>(str.c_str());
+};
+
 class StreamStateSaver {
 	std::ios &stream;	// Stream being adjusted.
 	std::ios state;		// Copy of original flags.
@@ -722,7 +743,8 @@ public:
 				if (name) {
 					os << name;
 				} else {
-					os << rp_sprintf(C_("TextOut", "(tab %d)"), tabIdx);
+					// FIXME: U8STRFIX - rp_sprintf()
+					os << rp_sprintf(reinterpret_cast<const char*>(C_("TextOut", "(tab %d)")), tabIdx);
 				}
 				os << " -----" << '\n';
 			}
@@ -774,15 +796,16 @@ RP_LIBROMDATA_PUBLIC
 std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	auto romdata = fo.romdata;
 	const char *const systemName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
-	const char *const fileType = romdata->fileType_string();
+	const char8_t *const fileType = romdata->fileType_string();
 	assert(systemName != nullptr);
 	assert(fileType != nullptr);
 
 	// NOTE: RomDataView context is used for the "unknown" strings.
 	{
 		// tr: "[System] [FileType] detected."
-		const string detectMsg = rp_sprintf_p(C_("TextOut", "%1$s %2$s detected"),
-			(systemName ? systemName : C_("RomDataView", "(unknown system)")),
+		// FIXME: U8STRFIX
+		const string detectMsg = rp_sprintf_p(reinterpret_cast<const char*>(C_("TextOut", "%1$s %2$s detected")),
+			(systemName ? reinterpret_cast<const char8_t*>(systemName) : C_("RomDataView", "(unknown system)")),
 			(fileType ? fileType : C_("RomDataView", "(unknown filetype)")));
 
 		os << "-- " << detectMsg << '\n';
@@ -805,9 +828,11 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 
 				auto image = romdata->image((RomData::ImageType)i);
 				if (image && image->isValid()) {
+					// FIXME: U8STRFIX
 					// tr: Image Type name, followed by Image Type ID
-					os << "-- " << rp_sprintf_p(C_("TextOut", "%1$s is present (use -x%2$d to extract)"),
-						RomData::getImageTypeName((RomData::ImageType)i), i) << '\n';
+					os << "-- " << rp_sprintf_p(
+						reinterpret_cast<const char*>(C_("TextOut", "%1$s is present (use -x%2$d to extract)")),
+						reinterpret_cast<const char*>(RomData::getImageTypeName((RomData::ImageType)i)), i) << '\n';
 					// TODO: After localizing, add enough spaces for alignment.
 					os << "   Format : " << rp_image::getFormatName(image->format()) << '\n';
 					os << "   Size   : " << image->width() << " x " << image->height() << '\n';

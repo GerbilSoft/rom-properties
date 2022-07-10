@@ -429,7 +429,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 	}
 
 	// I/O support bitfield.
-	static const char *const io_bitfield_names[] = {
+	static const char8_t *const io_bitfield_names[] = {
 		NOP_C_("MegaDrive|I/O", "Joypad"),
 		NOP_C_("MegaDrive|I/O", "6-button"),
 		// tr: Use a locale-specific abbreviation for Sega Master System, e.g. MK3 or similar.
@@ -452,15 +452,18 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 	// NOTE: Using a plain text field because most games only support
 	// one or two devices, so we don't need to list them all.
 	uint32_t io_support = parseIOSupport(s_io_support, sizeof(pRomHeader->io_support));
-	string s_io_devices;
+	u8string s_io_devices;
 	s_io_devices.reserve(32);
 	uint32_t bit = 1U;
-	for (const char *name : io_bitfield_names) {
+	for (const char8_t *name : io_bitfield_names) {
 		if (io_support & bit) {
 			if (!s_io_devices.empty()) {
-				s_io_devices += ", ";
+				s_io_devices += U8(", ");
 			}
-			s_io_devices += dpgettext_expr(RP_I18N_DOMAIN, "MegaDrive|I/O", name);
+			// FIXME: U8STRFIX - dpgettext_expr()
+			s_io_devices += reinterpret_cast<const char8_t*>(
+				dpgettext_expr(RP_I18N_DOMAIN, "MegaDrive|I/O",
+					reinterpret_cast<const char*>(name)));
 		}
 
 		// Next bit.
@@ -486,14 +489,14 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 
 		// Check for external memory.
 		const uint32_t sram_info = be32_to_cpu(pRomHeader->sram_info);
-		const char *const sram_range_title = C_("MegaDrive", "SRAM Range");
+		const char8_t *const sram_range_title = C_("MegaDrive", "SRAM Range");
 		if ((sram_info & 0xFFFFA7FF) == 0x5241A020) {
 			// SRAM is present.
 			// Format: 'R', 'A', %1x1yz000, 0x20
 			// x == 1 for backup (SRAM), 0 for not backup
 			// yz == 10 for even addresses, 11 for odd addresses
 			// TODO: Print the 'x' bit.
-			const char *suffix;
+			const char8_t *suffix;
 			switch ((sram_info >> (8+3)) & 0x03) {
 				case 2:
 					// tr: SRAM format: Even bytes only.
@@ -543,14 +546,14 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 		? parseRegionCodes(pRomHeader)
 		: this->md_region;
 
-	static const char *const region_code_bitfield_names[] = {
+	static const char8_t *const region_code_bitfield_names[] = {
 		NOP_C_("Region", "Japan"),
 		NOP_C_("Region", "Asia"),
 		NOP_C_("Region", "USA"),
 		NOP_C_("Region", "Europe"),
 	};
 	vector<string> *const v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
-		"Region", region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
+		U8("Region"), region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
 	fields->addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code_bitfield_names, 0, md_region_check);
 
@@ -644,13 +647,13 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 		data_row.emplace_back(u8string(buf));
 	}
 
-	static const char *const vectors_headers[] = {
+	static const char8_t *const vectors_headers[] = {
 		NOP_C_("RomData|VectorTable", "#"),
 		NOP_C_("RomData|VectorTable", "Vector"),
 		NOP_C_("RomData|VectorTable", "Address"),
 	};
 	vector<string> *const v_vectors_headers = RomFields::strArrayToVector_i18n(
-		"RomData|VectorTable", vectors_headers, ARRAY_SIZE(vectors_headers));
+		U8("RomData|VectorTable"), vectors_headers, ARRAY_SIZE(vectors_headers));
 
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 8);
 	params.headers = v_vectors_headers;
@@ -709,7 +712,7 @@ u8string MegaDrivePrivate::getPublisher(const MD_RomHeader *pRomHeader)
 			s_publisher = reinterpret_cast<const char8_t*>(buf);
 		} else {
 			// Unknown publisher.
-			s_publisher = reinterpret_cast<const char8_t*>(C_("RomData", "Unknown"));
+			s_publisher = C_("RomData", "Unknown");
 		}
 	}
 

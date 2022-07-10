@@ -1027,7 +1027,7 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 			break;
 		case 3: {
 			// Flags (Godot 3 only)
-			static const char *const flags_bitfield_names[] = {
+			static const char8_t *const flags_bitfield_names[] = {
 				NOP_C_("GodotSTEX|Flags", "Mipmaps"),
 				NOP_C_("GodotSTEX|Flags", "Repeat"),
 				NOP_C_("GodotSTEX|Flags", "Filter"),
@@ -1039,26 +1039,27 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 				NOP_C_("GodotSTEX|Flags", "For Streaming"),
 			};
 			vector<string> *const v_flags_bitfield_names = RomFields::strArrayToVector_i18n(
-				"GodotSTEX|Flags", flags_bitfield_names, ARRAY_SIZE(flags_bitfield_names));
+				U8("GodotSTEX|Flags"), flags_bitfield_names, ARRAY_SIZE(flags_bitfield_names));
 			fields->addField_bitfield(C_("GodotSTEX", "Flags"),
 				v_flags_bitfield_names, 3, d->stexHeader.v3.flags);
 			break;
 		}
 		case 4: {
 			// Data Format (Godot 4 only)
-			static const char *const data_format_tbl[] = {
+			static const char8_t *const data_format_tbl[] = {
 				NOP_C_("GodotSTEX|DataFormat", "Image"),
-				"PNG", "WebP",	// Not translatable!
+				U8("PNG"), U8("WebP"),	// Not translatable!
 				NOP_C_("GodotSTEX|DataFormat", "Basis Universal"),
 			};
-			const char *const s_title = C_("GodotSTEX", "Data Format");
+			// FIXME: U8STRFIX - dpgettext_expr(), snprintf()
+			const char8_t *const s_title = C_("GodotSTEX", "Data Format");
 			if (d->stexHeader.v4.data_format < ARRAY_SIZE(data_format_tbl)) {
 				fields->addField_string(s_title,
 					dpgettext_expr(RP_I18N_DOMAIN, "GodotSTEX|DataFormat",
-						data_format_tbl[d->stexHeader.v4.data_format]));
+						reinterpret_cast<const char*>(data_format_tbl[d->stexHeader.v4.data_format])));
 			} else {
 				fields->addField_string(s_title,
-					rp_sprintf(C_("RomData", "Unknown (%u)"),
+					rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (%u)")),
 						d->stexHeader.v4.data_format));
 			}
 			break;
@@ -1066,7 +1067,7 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 	}
 
 	// Format flags (v3) (starting at bit 20)
-	static const char *const format_flags_bitfield_names_v3[] = {
+	static const char8_t *const format_flags_bitfield_names_v3[] = {
 		NOP_C_("GodotSTEX|FormatFlags", "Lossless"),
 		NOP_C_("GodotSTEX|FormatFlags", "Lossy"),
 		NOP_C_("GodotSTEX|FormatFlags", "Stream"),
@@ -1076,7 +1077,7 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 		NOP_C_("GodotSTEX|FormatFlags", "Detect Normal"),
 	};
 	// Format flags (v4) (starting at bit 22)
-	static const char *const format_flags_bitfield_names_v4[] = {
+	static const char8_t *const format_flags_bitfield_names_v4[] = {
 		NOP_C_("GodotSTEX|FormatFlags", "Stream"),
 		nullptr,
 		NOP_C_("GodotSTEX|FormatFlags", "Detect 3D"),
@@ -1092,12 +1093,12 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 			break;
 		case 3:
 			v_format_flags_bitfield_names = RomFields::strArrayToVector_i18n(
-				"GodotSTEX|FormatFlags", format_flags_bitfield_names_v3,
+				U8("GodotSTEX|FormatFlags"), format_flags_bitfield_names_v3,
 					ARRAY_SIZE(format_flags_bitfield_names_v3));
 			break;
 		case 4:
 			v_format_flags_bitfield_names = RomFields::strArrayToVector_i18n(
-				"GodotSTEX|FormatFlags", format_flags_bitfield_names_v4,
+				U8("GodotSTEX|FormatFlags"), format_flags_bitfield_names_v4,
 					ARRAY_SIZE(format_flags_bitfield_names_v4));
 			break;
 	}

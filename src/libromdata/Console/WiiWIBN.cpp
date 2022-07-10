@@ -480,11 +480,11 @@ int WiiWIBN::loadFieldData(void)
 	}
 
 	// Flags.
-	static const char *const flags_names[] = {
+	static const char8_t *const flags_names[] = {
 		NOP_C_("WiiWIBN|Flags", "No Copy"),
 	};
 	vector<string> *const v_flags_names = RomFields::strArrayToVector_i18n(
-		"WiiWIBN|Flags", flags_names, ARRAY_SIZE(flags_names));
+		U8("WiiWIBN|Flags"), flags_names, ARRAY_SIZE(flags_names));
 	d->fields->addField_bitfield(C_("WiiWIBN", "Flags"),
 		v_flags_names, 0, be32_to_cpu(wibnHeader->flags));
 

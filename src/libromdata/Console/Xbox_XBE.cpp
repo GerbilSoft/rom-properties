@@ -26,9 +26,9 @@ using LibRpTexture::XboxXPR;
 #include "Other/EXE.hpp"
 
 // C++ STL classes
-using std::ostringstream;
 using std::string;
 using std::u8string;
+using std::u8ostringstream;
 using std::unique_ptr;
 using std::vector;
 
@@ -385,7 +385,7 @@ u8string Xbox_XBE_Private::getPublisher(void) const
 	}
 
 	// FIXME: U8STRFIX - can't use rp_sprintf()
-	char buf[128];
+	char8_t buf[128];
 	int len;
 
 	// Unknown publisher.
@@ -393,14 +393,16 @@ u8string Xbox_XBE_Private::getPublisher(void) const
 	    ISALNUM(xbeCertificate.title_id.b))
 	{
 		// Publisher ID is alphanumeric.
-		len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%c%c)"),
-			xbeCertificate.title_id.a,
-			xbeCertificate.title_id.b);
+		len = snprintf(reinterpret_cast<char*>(buf), sizeof(buf),
+			reinterpret_cast<const char*>(C_("RomData", "Unknown (%c%c)")),
+				xbeCertificate.title_id.a,
+				xbeCertificate.title_id.b);
 	} else {
 		// Publisher ID is not alphanumeric.
-		len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%02X %02X)"),
-			static_cast<uint8_t>(xbeCertificate.title_id.a),
-			static_cast<uint8_t>(xbeCertificate.title_id.b));
+		len = snprintf(reinterpret_cast<char*>(buf), sizeof(buf),
+			reinterpret_cast<const char*>(C_("RomData", "Unknown (%02X %02X)")),
+				static_cast<uint8_t>(xbeCertificate.title_id.a),
+				static_cast<uint8_t>(xbeCertificate.title_id.b));
 	}
 
 	if (len < 0) {
@@ -408,7 +410,7 @@ u8string Xbox_XBE_Private::getPublisher(void) const
 	} else if (len >= static_cast<int>(sizeof(buf))) {
 		len = sizeof(buf)-1;
 	}
-	return u8string(reinterpret_cast<const char8_t*>(buf), len);
+	return u8string(buf, len);
 }
 
 /** Xbox_XBE **/
@@ -701,7 +703,7 @@ int Xbox_XBE::loadFieldData(void)
 	// Original PE filename
 	const uint32_t base_address = le32_to_cpu(d->xbeHeader.base_address);
 	const uint32_t filenameW_address = le32_to_cpu(d->xbeHeader.debug_filenameW_address);
-	const char *const s_filename_title = C_("Xbox_XBE", "PE Filename");
+	const char8_t *const s_filename_title = C_("Xbox_XBE", "PE Filename");
 	if (filenameW_address > base_address) {
 		char16_t pe_filename_W[260];
 		size_t size = d->file->seekAndRead(filenameW_address - base_address,
@@ -742,8 +744,9 @@ int Xbox_XBE::loadFieldData(void)
 		tid_str.append(hexbuf, 2);
 	}
 
+	// FIXME: U8STRFIX - rp_sprintf_p()
 	d->fields->addField_string(C_("Xbox_XBE", "Title ID"),
-		rp_sprintf_p(C_("Xbox_XBE", "%1$08X (%2$s-%3$03u)"),
+		rp_sprintf_p(reinterpret_cast<const char*>(C_("Xbox_XBE", "%1$08X (%2$s-%3$03u)")),
 			le32_to_cpu(xbeCertificate->title_id.u32),
 			tid_str.c_str(),
 			le16_to_cpu(xbeCertificate->title_id.u16)),
@@ -754,7 +757,7 @@ int Xbox_XBE::loadFieldData(void)
 
 	// Timestamp
 	// TODO: time_t is signed, so values greater than 2^31-1 may be negative.
-	const char *const s_timestamp_title = C_("Xbox_XBE", "Timestamp");
+	const char8_t *const s_timestamp_title = C_("Xbox_XBE", "Timestamp");
 	uint32_t timestamp = le32_to_cpu(xbeHeader->timestamp);
 	if (timestamp != 0) {
 		d->fields->addField_dateTime(s_timestamp_title,
@@ -769,7 +772,7 @@ int Xbox_XBE::loadFieldData(void)
 	// NOTE: Using a string instead of a bitfield because very rarely
 	// are all of these set, and in most cases, none are.
 	// TODO: RFT_LISTDATA?
-	static const char media_type_tbl[][12] = {
+	static const char8_t media_type_tbl[][12] = {
 		// 0
 		NOP_C_("Xbox_XBE", "Hard Disk"),
 		NOP_C_("Xbox_XBE", "XGD1"),
@@ -786,7 +789,7 @@ int Xbox_XBE::loadFieldData(void)
 		// TODO: Non-secure HDD
 	};
 
-	ostringstream oss;
+	u8ostringstream oss;
 	unsigned int found = 0;
 	uint32_t media_types = le32_to_cpu(xbeCertificate->allowed_media_types);
 	for (unsigned int i = 0; i < ARRAY_SIZE(media_type_tbl); i++, media_types >>= 1) {
@@ -805,19 +808,23 @@ int Xbox_XBE::loadFieldData(void)
 		oss << media_type_tbl[i];
 	}
 
-	d->fields->addField_string(C_("Xbox_XBE", "Media Types"),
-		found ? oss.str() : C_("Xbox_XBE", "None"));
+	const char8_t *const media_types_title = C_("Xbox_XBE", "Media Types");
+	if (found) {
+		d->fields->addField_string(media_types_title, oss.str());
+	} else {
+		d->fields->addField_string(media_types_title, C_("Xbox_XBE", "None"));
+	}
 
 	// Initialization flags
 	const uint32_t init_flags = le32_to_cpu(xbeHeader->init_flags);
-	static const char *const init_flags_tbl[] = {
+	static const char8_t *const init_flags_tbl[] = {
 		NOP_C_("Xbox_XBE|InitFlags", "Mount Utility Drive"),
 		NOP_C_("Xbox_XBE|InitFlags", "Format Utility Drive"),
 		NOP_C_("Xbox_XBE|InitFlags", "Limit RAM to 64 MB"),
 		NOP_C_("Xbox_XBE|InitFlags", "Don't Setup HDD"),
 	};
 	vector<string> *const v_init_flags = RomFields::strArrayToVector_i18n(
-		"Region", init_flags_tbl, ARRAY_SIZE(init_flags_tbl));
+		U8("Region"), init_flags_tbl, ARRAY_SIZE(init_flags_tbl));
 	d->fields->addField_bitfield(C_("Xbox_XBE", "Init Flags"),
 		v_init_flags, 2, init_flags);
 
@@ -829,14 +836,14 @@ int Xbox_XBE::loadFieldData(void)
 		region_code &= ~XBE_REGION_CODE_MANUFACTURING;
 		region_code |= 8;
 	}
-	static const char *const region_code_tbl[] = {
+	static const char8_t *const region_code_tbl[] = {
 		NOP_C_("Region", "North America"),
 		NOP_C_("Region", "Japan"),
 		NOP_C_("Region", "Rest of World"),
 		NOP_C_("Region", "Manufacturing"),
 	};
 	vector<string> *const v_region_code = RomFields::strArrayToVector_i18n(
-		"Region", region_code_tbl, ARRAY_SIZE(region_code_tbl));
+		U8("Region"), region_code_tbl, ARRAY_SIZE(region_code_tbl));
 	d->fields->addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code, 3, region_code);
 

@@ -70,8 +70,8 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 
 		/**
 		 * Write an ImageType configuration entry.
-		 * @param sysName System name.
-		 * @param imageTypeList Image type list, comma-separated.
+		 * @param sysName System name [ASCII]
+		 * @param imageTypeList Image type list, comma-separated [ASCII]
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int saveWriteEntry(const char *sysName, const char *imageTypeList) final;
@@ -445,8 +445,8 @@ int ImageTypesTabPrivate::saveStart(void)
 
 /**
  * Write an ImageType configuration entry.
- * @param sysName System name.
- * @param imageTypeList Image type list, comma-separated.
+ * @param sysName System name [ASCII]
+ * @param imageTypeList Image type list, comma-separated [ASCII]
  * @return 0 on success; negative POSIX error code on error.
  */
 int ImageTypesTabPrivate::saveWriteEntry(const char *sysName, const char *imageTypeList)

@@ -17,7 +17,7 @@ using std::vector;
 
 /** Standard actions. **/
 struct option_menu_action_t {
-	const char *desc;
+	const char8_t *desc;
 	int id;
 };
 static const option_menu_action_t stdacts[] = {
@@ -65,8 +65,9 @@ void OptionsMenuButton::reinitMenu(const LibRpBase::RomData *romData)
 
 	// Add the standard actions.
 	for (const option_menu_action_t &p : stdacts) {
+		// FIXME: U8STRFIX - dpgettext_expr()
 		QAction *const action = menuOptions->addAction(
-			U82Q(dpgettext_expr(RP_I18N_DOMAIN, "OptionsMenuButton", p.desc)));
+			U82Q(dpgettext_expr(RP_I18N_DOMAIN, "OptionsMenuButton", reinterpret_cast<const char*>(p.desc))));
 #ifdef RP_OMB_USE_LAMBDA_FUNCTIONS
 		// Qt5: Use a lambda function.
 		const int id = p.id;	// only capture id, not the whole reference

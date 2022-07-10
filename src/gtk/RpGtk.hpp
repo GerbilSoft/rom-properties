@@ -28,10 +28,10 @@ G_BEGIN_DECLS
  * so the GtkFileFilter objects can be added directly.
  *
  * @param fileChooser GtkFileChooser*
- * @param filter RP file dialog filter. (UTF-8, from gettext())
+ * @param filter RP file dialog filter (UTF-8, from gettext())
  * @return 0 on success; negative POSIX error code on error.
  */
-int rpFileDialogFilterToGtk(GtkFileChooser *fileChooser, const char *filter);
+int rpFileDialogFilterToGtk(GtkFileChooser *fileChooser, const char8_t *filter);
 
 G_END_DECLS
 
@@ -43,6 +43,17 @@ G_END_DECLS
  * @return String with '_' accelerator
  */
 std::string convert_accel_to_gtk(const char *str);
+
+/**
+ * Convert Win32/Qt-style accelerator notation ('&') to GTK-style ('_').
+ * NOTE: GTK+ uses char*, so we're returning an std::string, not std::u8string.
+ * @param str String with '&' accelerator
+ * @return String with '_' accelerator
+ */
+static inline std::string convert_accel_to_gtk(const char8_t *str)
+{
+	return convert_accel_to_gtk(reinterpret_cast<const char*>(str));
+}
 
 #endif /* __cplusplus */
 

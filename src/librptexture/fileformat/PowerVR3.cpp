@@ -1069,7 +1069,7 @@ const char8_t *PowerVR3::pixelFormat(void) const
 	} else {
 		snprintf(reinterpret_cast<char*>(const_cast<PowerVR3Private*>(d)->invalid_pixel_format),
 			 sizeof(d->invalid_pixel_format),
-			 "%s", (C_("RomData", "Unknown")));
+			 "%s", reinterpret_cast<const char*>(C_("RomData", "Unknown")));
 	}
 	return d->invalid_pixel_format;
 }
@@ -1114,7 +1114,7 @@ int PowerVR3::getFields(LibRpBase::RomFields *fields) const
 	fields->addField_string(C_("PowerVR3", "Version"), "3.0.0");
 
 	// Endianness.
-	const char *endian_str;
+	const char8_t *endian_str;
 	if (pvr3Header->version == PVR3_VERSION_HOST) {
 		// Matches host-endian.
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
@@ -1135,33 +1135,34 @@ int PowerVR3::getFields(LibRpBase::RomFields *fields) const
 	// Flags.
 	// NOTE: "Compressed" is listed in the PowerVR Native SDK,
 	// but I'm not sure what it's used for...
-	static const char *const flags_names[] = {
+	static const char8_t *const flags_names[] = {
 		NOP_C_("PowerVR3|Flags", "Compressed"),
 		NOP_C_("PowerVR3|Flags", "Premultipled Alpha"),
 	};
 	// TODO: i18n
-	vector<string> *const v_flags_names = RomFields::strArrayToVector(
-		/*"PowerVR3|Flags",*/ flags_names, ARRAY_SIZE(flags_names));
+	vector<string> *const v_flags_names = RomFields::strArrayToVector_i18n(
+		U8("PowerVR3|Flags"), flags_names, ARRAY_SIZE(flags_names));
 	fields->addField_bitfield(C_("PowerVR", "Flags"),
 		v_flags_names, 3, pvr3Header->flags);
 
 	// Color space.
-	static const char *const pvr3_colorspace_tbl[] = {
+	static const char8_t *const pvr3_colorspace_tbl[] = {
 		NOP_C_("PowerVR3|ColorSpace", "Linear RGB"),
 		NOP_C_("PowerVR3|ColorSpace", "sRGB"),
 	};
 	static_assert(ARRAY_SIZE(pvr3_colorspace_tbl) == PVR3_COLOR_SPACE_MAX, "pvr3_colorspace_tbl[] needs to be updated!");
 	if (pvr3Header->color_space < ARRAY_SIZE(pvr3_colorspace_tbl)) {
+		// FIXME: U8STRFIX - dpgettext_expr()
 		fields->addField_string(C_("PowerVR3", "Color Space"),
-			pvr3_colorspace_tbl[pvr3Header->color_space]);
-			//dpgettext_expr(RP_I18N_DOMAIN, "PowerVR3|ColorSpace", pvr3_colorspace[pvr3Header->color_space]));
+			dpgettext_expr(RP_I18N_DOMAIN, "PowerVR3|ColorSpace",
+				reinterpret_cast<const char*>(pvr3_colorspace_tbl[pvr3Header->color_space])));
 	} else {
 		fields->addField_string_numeric(C_("PowerVR3", "Color Space"),
 			pvr3Header->color_space);
 	}
 
 	// Channel type.
-	static const char *const pvr3_chtype_tbl[] = {
+	static const char8_t *const pvr3_chtype_tbl[] = {
 		NOP_C_("PowerVR3|ChannelType", "Unsigned Byte (normalized)"),
 		NOP_C_("PowerVR3|ChannelType", "Signed Byte (normalized)"),
 		NOP_C_("PowerVR3|ChannelType", "Unsigned Byte"),
@@ -1179,8 +1180,8 @@ int PowerVR3::getFields(LibRpBase::RomFields *fields) const
 	static_assert(ARRAY_SIZE(pvr3_chtype_tbl) == PVR3_CHTYPE_MAX, "pvr3_chtype_tbl[] needs to be updated!");
 	if (pvr3Header->channel_type < ARRAY_SIZE(pvr3_chtype_tbl)) {
 		fields->addField_string(C_("PowerVR3", "Channel Type"),
-			pvr3_chtype_tbl[pvr3Header->channel_type]);
-			//dpgettext_expr(RP_I18N_DOMAIN, "PowerVR3|ChannelType", pvr3_chtype_tbl[pvr3Header->channel_type]));
+			dpgettext_expr(RP_I18N_DOMAIN, "PowerVR3|ChannelType",
+				reinterpret_cast<const char*>(pvr3_chtype_tbl[pvr3Header->channel_type])));
 	} else {
 		fields->addField_string_numeric(C_("PowerVR3", "Channel Type"),
 			pvr3Header->channel_type);

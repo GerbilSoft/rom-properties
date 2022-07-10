@@ -594,21 +594,23 @@ rom_data_view_init_header_row(RomDataView *page)
 
 	// System name and file type.
 	// TODO: System logo and/or game title?
+	// FIXME: U8STRFIX - systemName should be char8_t
 	const char *systemName = romData->systemName(
 		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
-	const char *fileType = romData->fileType_string();
+	const char8_t *fileType = romData->fileType_string();
 	assert(systemName != nullptr);
 	assert(fileType != nullptr);
 	if (!systemName) {
-		systemName = C_("RomDataView", "(unknown system)");
+		systemName = (const char*)C_("RomDataView", "(unknown system)");
 	}
 	if (!fileType) {
 		fileType = C_("RomDataView", "(unknown filetype)");
 	}
 
+	// FIXME: U8STRFIX - rp_sprintf_p()
 	const string sysInfo = rp_sprintf_p(
 		// tr: %1$s == system name, %2$s == file type
-		C_("RomDataView", "%1$s\n%2$s"), systemName, fileType);
+		(const char*)C_("RomDataView", "%1$s\n%2$s"), systemName, (const char*)fileType);
 	gtk_label_set_text(GTK_LABEL(page->lblSysInfo), sysInfo.c_str());
 
 	// Supported image types.
@@ -1201,8 +1203,9 @@ rom_data_view_init_datetime(RomDataView *page,
 {
 	// Date/Time.
 	if (field.data.date_time == -1) {
+		// FIXME: U8STRFIX
 		// tr: Invalid date/time.
-		return rom_data_view_init_string(page, field, fieldIdx, C_("RomDataView", "Unknown"));
+		return rom_data_view_init_string(page, field, fieldIdx, (const char*)C_("RomDataView", "Unknown"));
 	}
 
 	GDateTime *dateTime;
@@ -1214,7 +1217,7 @@ rom_data_view_init_datetime(RomDataView *page,
 	assert(dateTime != nullptr);
 	if (!dateTime) {
 		// Unable to convert the timestamp.
-		return rom_data_view_init_string(page, field, fieldIdx, C_("RomDataView", "Unknown"));
+		return rom_data_view_init_string(page, field, fieldIdx, (const char*)C_("RomDataView", "Unknown"));
 	}
 
 	static const char formats_strtbl[] =
@@ -1263,13 +1266,15 @@ rom_data_view_init_age_ratings(RomDataView *page,
 	const RomFields::age_ratings_t *const age_ratings = field.data.age_ratings;
 	assert(age_ratings != nullptr);
 	if (!age_ratings) {
+		// FIXME: U8STRFIX
 		// tr: No age ratings data.
-		return rom_data_view_init_string(page, field, fieldIdx, C_("RomDataView", "ERROR"));
+		return rom_data_view_init_string(page, field, fieldIdx, (const char*)C_("RomDataView", "ERROR"));
 	}
 
 	// Convert the age ratings field to a string.
-	string str = RomFields::ageRatingsDecode(age_ratings);
-	return rom_data_view_init_string(page, field, fieldIdx, str.c_str());
+	// FIXME: U8STRFIX
+	const u8string str = RomFields::ageRatingsDecode(age_ratings);
+	return rom_data_view_init_string(page, field, fieldIdx, (const char*)str.c_str());
 }
 
 /**
@@ -1798,7 +1803,7 @@ rom_data_view_update_display(RomDataView *page)
 	vector<int> tabRowCount(tabs.size());
 
 	// tr: Field description label.
-	const char *const desc_label_fmt = C_("RomDataView", "%s:");
+	const char8_t *const desc_label_fmt = C_("RomDataView", "%s:");
 
 	// Create the data widgets.
 	int fieldIdx = 0;
@@ -1858,8 +1863,9 @@ rom_data_view_update_display(RomDataView *page)
 			// Add the widget to the table.
 			auto &tab = tabs.at(tabIdx);
 
+			// FIXME: U8STRFIX - rp_sprintf()
 			// tr: Field description label.
-			const string txt = rp_sprintf(desc_label_fmt, field.name.c_str());
+			const string txt = rp_sprintf((const char*)desc_label_fmt, field.name.c_str());
 			GtkWidget *lblDesc = gtk_label_new(txt.c_str());
 			// NOTE: No name for this GtkWidget.
 			gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);

@@ -410,12 +410,13 @@ int CBMCart::loadFieldData(void)
 	}
 
 	if (!b_noType) {
-		const char *const s_type_title = C_("RomData", "Type");
+		const char8_t *const s_type_title = C_("RomData", "Type");
 		if (s_type != nullptr) {
 			d->fields->addField_string(s_type_title, s_type);
 		} else {
+			// FIXME: U8STRFIX - rp_sprintf()
 			d->fields->addField_string(s_type_title,
-				rp_sprintf(C_("RomData", "Unknown (%u)"), type));
+				rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (%u)")), type));
 		}
 	}
 

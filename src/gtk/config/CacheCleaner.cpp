@@ -432,7 +432,7 @@ cache_cleaner_run(CacheCleaner *cleaner)
 	g_return_if_fail(IS_CACHE_CLEANER(cleaner));
 
 	string dir;
-	const char *s_err = nullptr;
+	const char8_t *s_err = nullptr;
 	switch (cleaner->cache_dir) {
 		default:
 			assert(!"Invalid cache directory specified.");
@@ -469,7 +469,7 @@ cache_cleaner_run(CacheCleaner *cleaner)
 	if (s_err != nullptr) {
 		// An error occurred trying to get the directory.
 		g_signal_emit(cleaner, signals[SIGNAL_PROGRESS], 0, 1, 1, TRUE);
-		g_signal_emit(cleaner, signals[SIGNAL_ERROR], 0, s_err);
+		g_signal_emit(cleaner, signals[SIGNAL_ERROR], 0, reinterpret_cast<const char*>(s_err));
 		g_signal_emit(cleaner, signals[SIGNAL_FINISHED], 0);
 		return;
 	}
@@ -481,7 +481,7 @@ cache_cleaner_run(CacheCleaner *cleaner)
 	int ret = recursiveScan(dir.c_str(), rlist);
 	if (ret != 0) {
 		// Non-image file found.
-		const char *s_err;
+		const char8_t *s_err;
 		switch (cleaner->cache_dir) {
 			default:
 				assert(!"Invalid cache directory specified.");
@@ -495,7 +495,7 @@ cache_cleaner_run(CacheCleaner *cleaner)
 				break;
 		}
 		g_signal_emit(cleaner, signals[SIGNAL_PROGRESS], 0, 1, 1, TRUE);
-		g_signal_emit(cleaner, signals[SIGNAL_ERROR], 0, s_err);
+		g_signal_emit(cleaner, signals[SIGNAL_ERROR], 0, reinterpret_cast<const char*>(s_err));
 		g_signal_emit(cleaner, signals[SIGNAL_FINISHED], 0);
 		return;
 	} else if (rlist.empty()) {

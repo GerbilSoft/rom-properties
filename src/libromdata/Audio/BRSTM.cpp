@@ -15,7 +15,7 @@ using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
 // C++ STL classes.
-using std::ostringstream;
+using std::u8ostringstream;
 using std::string;
 
 namespace LibRomData {
@@ -328,18 +328,19 @@ int BRSTM::loadFieldData(void)
 			: C_("RomData", "Little-Endian"));
 
 	// Codec
-	static const char *const codec_tbl[] = {
+	static const char8_t *const codec_tbl[] = {
 		NOP_C_("BRSTM|Codec", "Signed 8-bit PCM"),
 		NOP_C_("BRSTM|Codec", "Signed 16-bit PCM"),
-		"4-bit THP ADPCM",
+		U8("4-bit THP ADPCM"),
 	};
-	const char *const codec_title = C_("BRSTM", "Codec");
+	// FIXME: U8STRFIX - dpgettext_expr(), rp_sprintf()
+	const char8_t *const codec_title = C_("BRSTM", "Codec");
 	if (headChunk1->codec < ARRAY_SIZE(codec_tbl)) {
 		d->fields->addField_string(codec_title,
-			dpgettext_expr(RP_I18N_DOMAIN, "BRSTM|Codec", codec_tbl[headChunk1->codec]));
+			dpgettext_expr(RP_I18N_DOMAIN, "BRSTM|Codec", reinterpret_cast<const char*>(codec_tbl[headChunk1->codec])));
 	} else {
 		d->fields->addField_string(codec_title,
-			rp_sprintf(C_("RomData", "Unknown (%u)"), headChunk1->codec));
+			rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (%u)")), headChunk1->codec));
 	}
 
 	// Number of channels
@@ -350,9 +351,9 @@ int BRSTM::loadFieldData(void)
 	const uint32_t sample_count = d->brstm32_to_cpu(headChunk1->sample_count);
 
 	// Sample rate
-	// NOTE: Using ostringstream for localized numeric formatting.
-	ostringstream oss;
-	oss << sample_rate << " Hz";
+	// NOTE: Using u8ostringstream for localized numeric formatting.
+	u8ostringstream oss;
+	oss << sample_rate << U8(" Hz");
 	d->fields->addField_string(C_("RomData|Audio", "Sample Rate"), oss.str());
 
 	// Length (non-looping)

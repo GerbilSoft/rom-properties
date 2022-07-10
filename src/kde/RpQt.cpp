@@ -217,10 +217,10 @@ IRpFile *openQUrl(const QUrl &url, bool isThumbnail)
  * The "(*.bin; *.srl)" part is added to the display name if needed.
  * A third segment provides for semicolon-separated MIME types. (May be "-" for 'any'.)
  *
- * @param filter RP file dialog filter. (UTF-8, from gettext())
- * @return Qt file dialog filter.
+ * @param filter RP file dialog filter (UTF-8, from gettext())
+ * @return Qt file dialog filter
  */
-QString rpFileDialogFilterToQt(const char *filter)
+QString rpFileDialogFilterToQt(const char8_t *filter)
 {
 	QString qs_ret;
 	assert(filter != nullptr && filter[0] != '\0');
@@ -228,12 +228,13 @@ QString rpFileDialogFilterToQt(const char *filter)
 		return qs_ret;
 
 	// Temporary string so we can use strtok_r().
-	char *const tmpfilter = strdup(filter);
+	// FIXME: U8STRFIX - str*()
+	char *const tmpfilter = strdup(reinterpret_cast<const char*>(filter));
 	assert(tmpfilter != nullptr);
 	char *saveptr = nullptr;
 
 	// First strtok_r() call.
-	qs_ret.reserve(strlen(filter) + 32);
+	qs_ret.reserve(strlen(tmpfilter) + 32);
 	char *token = strtok_r(tmpfilter, "|", &saveptr);
 	do {
 		// Separator 1: Between display name and pattern.

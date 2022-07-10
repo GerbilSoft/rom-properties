@@ -500,6 +500,7 @@ int DidjTex::getFields(RomFields *fields) const
 
 	// Internal dimensions.
 	// Usually a power of two.
+	// FIXME: U8STRFIX - field name
 	fields->addField_dimensions(C_("DidjTex", "Display Size"),
 		le32_to_cpu(d->texHeader.width_disp), le32_to_cpu(d->texHeader.height_disp), 0);
 

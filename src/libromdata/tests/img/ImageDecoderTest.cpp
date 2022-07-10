@@ -197,7 +197,16 @@ static inline ::std::ostream& operator<<(::std::ostream& os, const ImageDecoderT
 };
 
 /**
- * ::testing::Message formatting function for u8string.
+ * ::testing::Message formatting function for char8_t
+ * TODO: Move to a common gtest header file?
+ */
+static inline ::testing::Message& operator<<(::testing::Message& msg, const char8_t *str)
+{
+	return msg << reinterpret_cast<const char*>(str);
+}
+
+/**
+ * ::testing::Message formatting function for u8string
  * TODO: Move to a common gtest header file?
  */
 static inline ::testing::Message& operator<<(::testing::Message& msg, const u8string& str)

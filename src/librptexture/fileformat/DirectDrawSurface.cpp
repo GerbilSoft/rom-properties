@@ -1291,30 +1291,30 @@ const char8_t *DirectDrawSurface::pixelFormat(void) const
 	if (ddspf.dwFlags & DDPF_RGB) {
 		// Uncompressed RGB data.
 		snprintf(reinterpret_cast<char*>(d_nc->pixel_format), sizeof(d_nc->pixel_format),
-			 "RGB (%u-bit)", ddspf.dwRGBBitCount);
+			"RGB (%u-bit)", ddspf.dwRGBBitCount);
 	} else if (ddspf.dwFlags & DDPF_ALPHA) {
 		// Alpha channel.
 		snprintf(reinterpret_cast<char*>(d_nc->pixel_format), sizeof(d_nc->pixel_format),
-			C_("DirectDrawSurface", "Alpha (%u-bit)"), ddspf.dwRGBBitCount);
+			reinterpret_cast<const char*>(C_("DirectDrawSurface", "Alpha (%u-bit)")), ddspf.dwRGBBitCount);
 	} else if (ddspf.dwFlags & DDPF_YUV) {
 		// YUV. (TODO: Determine the format.)
 		snprintf(reinterpret_cast<char*>(d_nc->pixel_format), sizeof(d_nc->pixel_format),
-			C_("DirectDrawSurface", "YUV (%u-bit)"), ddspf.dwRGBBitCount);
+			reinterpret_cast<const char*>(C_("DirectDrawSurface", "YUV (%u-bit)")), ddspf.dwRGBBitCount);
 	} else if (ddspf.dwFlags & DDPF_LUMINANCE) {
 		// Luminance.
 		if (ddspf.dwFlags & DDPF_ALPHAPIXELS) {
 			snprintf(reinterpret_cast<char*>(d_nc->pixel_format), sizeof(d_nc->pixel_format),
-				C_("DirectDrawSurface", "Luminance + Alpha (%u-bit)"),
+				reinterpret_cast<const char*>(C_("DirectDrawSurface", "Luminance + Alpha (%u-bit)")),
 				ddspf.dwRGBBitCount);
 		} else {
 			snprintf(reinterpret_cast<char*>(d_nc->pixel_format), sizeof(d_nc->pixel_format),
-				C_("DirectDrawSurface", "Luminance (%u-bit)"),
+				reinterpret_cast<const char*>(C_("DirectDrawSurface", "Luminance (%u-bit)")),
 				ddspf.dwRGBBitCount);
 		}
 	} else {
 		// Unknown pixel format.
 		strncpy(reinterpret_cast<char*>(d_nc->pixel_format),
-			C_("FileFormat", "Unknown"), sizeof(d_nc->pixel_format));
+			reinterpret_cast<const char*>(C_("FileFormat", "Unknown")), sizeof(d_nc->pixel_format));
 		d_nc->pixel_format[sizeof(d_nc->pixel_format)-1] = '\0';
 	}
 
@@ -1362,39 +1362,38 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 
 	// Pitch (uncompressed)
 	// Linear size (compressed)
-	const char *const pitch_name = (ddsHeader->dwFlags & DDSD_LINEARSIZE)
+	const char8_t *const pitch_name = (ddsHeader->dwFlags & DDSD_LINEARSIZE)
 		? C_("DirectDrawSurface", "Linear Size")
 		: C_("DirectDrawSurface", "Pitch");
-	fields->addField_string_numeric(
-		/*dpgettext_expr(RP_I18N_DOMAIN, "DirectDrawSurface", pitch_name),*/
-		pitch_name,
+	fields->addField_string_numeric(pitch_name,
 		ddsHeader->dwPitchOrLinearSize, RomFields::Base::Dec, 0);
 
 	if (d->dxgi_format != 0) {
 		// DX10 texture format.
-		// FIXME: U8STRFIX
-		const char *const dx10_format_title = C_("DirectDrawSurface", "DX10 Format");
+		const char8_t *const dx10_format_title = C_("DirectDrawSurface", "DX10 Format");
 		const char8_t *const texFormat = DX10Formats::lookup_dxgiFormat(d->dxgi_format);
+		// FIXME: U8STRFIX - field name, rp_sprintf()
 		if (texFormat) {
 			fields->addField_string(dx10_format_title, texFormat);
 		} else {
-			fields->addField_string(dx10_format_title, 
-				rp_sprintf(C_("FileFormat", "Unknown (0x%08X)"), d->dxgi_format));
+			fields->addField_string(dx10_format_title,
+				rp_sprintf(reinterpret_cast<const char*>(C_("FileFormat", "Unknown (0x%08X)")), d->dxgi_format));
 		}
 	}
 
 	// nVidia Texture Tools header
 	if (ddsHeader->nvtt.dwNvttMagic == cpu_to_be32(NVTT_MAGIC)) {
 		const uint32_t nvtt_version = le32_to_cpu(ddsHeader->nvtt.dwNvttVersion);
+		// FIXME: U8STRFIX
 		fields->addField_string(C_("DirectDrawSurface", "NVTT Version"),
-			rp_sprintf(C_("DirectDrawSurface", "%u.%u.%u"),
-				   (nvtt_version >> 16) & 0xFF,
-				   (nvtt_version >>  8) & 0xFF,
-				    nvtt_version        & 0xFF));
+			rp_sprintf(reinterpret_cast<const char*>(C_("DirectDrawSurface", "%u.%u.%u")),
+				(nvtt_version >> 16) & 0xFF,
+				(nvtt_version >>  8) & 0xFF,
+				 nvtt_version        & 0xFF).c_str());
 	}
 
 	// dwFlags
-	static const char *const dwFlags_names[] = {
+	static const char8_t *const dwFlags_names[] = {
 		// 0x1-0x8
 		NOP_C_("DirectDrawSurface|dwFlags", "Caps"),
 		NOP_C_("DirectDrawSurface|dwFlags", "Height"),
@@ -1417,12 +1416,12 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 		NOP_C_("DirectDrawSurface|dwFlags", "Depth"),
 	};
 	vector<string> *const v_dwFlags_names = RomFields::strArrayToVector_i18n(
-		"DirectDrawSurface|dwFlags", dwFlags_names, ARRAY_SIZE(dwFlags_names));
+		U8("DirectDrawSurface|dwFlags"), dwFlags_names, ARRAY_SIZE(dwFlags_names));
 	fields->addField_bitfield(C_("DirectDrawSurface", "Flags"),
 		v_dwFlags_names, 3, ddsHeader->dwFlags);
 
 	// dwCaps
-	static const char *const dwCaps_names[] = {
+	static const char8_t *const dwCaps_names[] = {
 		// 0x1-0x8
 		nullptr, nullptr, nullptr,
 		NOP_C_("DirectDrawSurface|dwCaps", "Complex"),
@@ -1440,12 +1439,12 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 		NOP_C_("DirectDrawSurface|dwCaps", "Mipmap"),
 	};
 	vector<string> *const v_dwCaps_names = RomFields::strArrayToVector_i18n(
-		"DirectDrawSurface|dwFlags", dwCaps_names, ARRAY_SIZE(dwCaps_names));
+		U8("DirectDrawSurface|dwFlags"), dwCaps_names, ARRAY_SIZE(dwCaps_names));
 	fields->addField_bitfield(C_("DirectDrawSurface", "Caps"),
 		v_dwCaps_names, 3, ddsHeader->dwCaps);
 
 	// dwCaps2 (rshifted by 8)
-	static const char *const dwCaps2_names[] = {
+	static const char8_t *const dwCaps2_names[] = {
 		// 0x100-0x800
 		nullptr,
 		NOP_C_("DirectDrawSurface|dwCaps2", "Cubemap"),
@@ -1463,7 +1462,7 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 		NOP_C_("DirectDrawSurface|dwCaps2", "Volume"),
 	};
 	vector<string> *const v_dwCaps2_names = RomFields::strArrayToVector_i18n(
-		"DirectDrawSurface|dwCaps2", dwCaps2_names, ARRAY_SIZE(dwCaps2_names));
+		U8("DirectDrawSurface|dwCaps2"), dwCaps2_names, ARRAY_SIZE(dwCaps2_names));
 	fields->addField_bitfield(C_("DirectDrawSurface", "Caps2"),
 		v_dwCaps2_names, 4, (ddsHeader->dwCaps2 >> 8));
 

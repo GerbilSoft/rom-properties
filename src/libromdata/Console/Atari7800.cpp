@@ -206,11 +206,11 @@ int Atari7800::loadFieldData(void)
 	// TV type
 	// NOTE: Two components, and values are mutually-exclusive.
 	// NOTE 2: Not indicating "composite" since that's the default.
-	const char *tv_type_title = C_("Atari7800", "TV Type");
+	const char8_t *const tv_type_title = C_("Atari7800", "TV Type");
 	if (!(romHeader->tv_type & ATARI_A78_TVType_Artifacts_Mask)) {
 		// Composite artifacting
 		d->fields->addField_string(tv_type_title,
-			(romHeader->tv_type & ATARI_A78_TVType_Format_Mask) ? "PAL" : "NTSC");
+			(romHeader->tv_type & ATARI_A78_TVType_Format_Mask) ? U8("PAL") : U8("NTSC"));
 	} else {
 		// Component: no artifacting
 		char s_tv_type[32];
@@ -221,7 +221,7 @@ int Atari7800::loadFieldData(void)
 	}
 
 	// Controllers
-	static const char *const controller_tbl[] = {
+	static const char8_t *const controller_tbl[] = {
 		// 0
 		NOP_C_("Atari7800|ControllerType", "None"),
 		NOP_C_("Atari7800|ControllerType", "Joystick (7800)"),
@@ -235,20 +235,24 @@ int Atari7800::loadFieldData(void)
 		NOP_C_("Atari7800|ControllerType", "Mouse (Amiga)"),
 
 		// 10
-		"AtariVox / SaveKey",
-		"SNES2Atari"
+		U8("AtariVox / SaveKey"),
+		U8("SNES2Atari"),
 	};
 	for (unsigned int i = 0; i < 2; i++) {
-		const string control_title = rp_sprintf(C_("Atari7800", "Controller %u"), i+1);
+		// FIXME: U8STRFIX - snprintf()
+		char8_t control_title[32];
+		snprintf(reinterpret_cast<char*>(control_title), sizeof(control_title),
+			reinterpret_cast<const char*>(C_("Atari7800", "Controller %u")), i+1);
 		const uint8_t control_type = romHeader->control_types[i];
 
 		if (control_type < ARRAY_SIZE(controller_tbl)) {
-			d->fields->addField_string(control_title.c_str(),
+			d->fields->addField_string(control_title,
 				dpgettext_expr(RP_I18N_DOMAIN, "Atari7800|ControllerType",
-					controller_tbl[control_type]));
+					reinterpret_cast<const char*>(controller_tbl[control_type])));
 		} else {
-			d->fields->addField_string(control_title.c_str(),
-				rp_sprintf(C_("RomData", "Unknown (%u)"), control_type));
+			// FIXME: U8STRFIX - rp_sprintf()
+			d->fields->addField_string(control_title,
+				rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (%u)")), control_type));
 		}
 	}
 

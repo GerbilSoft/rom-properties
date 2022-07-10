@@ -265,11 +265,12 @@ rom_data_view_doRomOp_stdop(RomDataView *page, int id)
 	if (!rom_filename)
 		return;
 
-	const char *title = nullptr;
-	const char *filter = nullptr;
-	const char *default_ext = nullptr;
+	const char8_t *title = nullptr;
+	const char8_t *filter = nullptr;
+	const char8_t *default_ext = nullptr;
 
 	// Check the standard operation.
+	// FIXME: U8STRFIX
 	switch (id) {
 		case OPTION_COPY_TEXT: {
 			const uint32_t sel_lc = page->cboLanguage
@@ -277,7 +278,7 @@ rom_data_view_doRomOp_stdop(RomDataView *page, int id)
 				: 0;
 
 			ostringstream oss;
-			oss << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
+			oss << "== " << rp_sprintf((const char*)C_("RomDataView", "File: '%s'"), (const char*)rom_filename) << std::endl;
 			ROMOutput ro(page->romData, sel_lc);
 			oss << ro;
 			rp_gtk_main_clipboard_set_text(oss.str().c_str());
@@ -297,13 +298,13 @@ rom_data_view_doRomOp_stdop(RomDataView *page, int id)
 		case OPTION_EXPORT_TEXT:
 			title = C_("RomDataView", "Export to Text File");
 			filter = C_("RomDataView", "Text Files|*.txt|text/plain|All Files|*.*|-");
-			default_ext = ".txt";
+			default_ext = U8(".txt");
 			break;
 
 		case OPTION_EXPORT_JSON:
 			title = C_("RomDataView", "Export to JSON File");
 			filter = C_("RomDataView", "JSON Files|*.json|application/json|All Files|*.*|-");
-			default_ext = ".json";
+			default_ext = U8(".json");
 			break;
 
 		default:
@@ -311,11 +312,12 @@ rom_data_view_doRomOp_stdop(RomDataView *page, int id)
 			return;
 	}
 
+	// FIXME: U8STRFIX
 	GtkWindow *const parent = gtk_widget_get_toplevel_window(GTK_WIDGET(page));
 	GtkWidget *const fileDialog = gtk_file_chooser_dialog_new(
-		title, parent, GTK_FILE_CHOOSER_ACTION_SAVE,
-		_("_Cancel"), GTK_RESPONSE_CANCEL,
-		_("_Save"), GTK_RESPONSE_ACCEPT,
+		(const char*)title, parent, GTK_FILE_CHOOSER_ACTION_SAVE,
+		(const char*)_("_Cancel"), GTK_RESPONSE_CANCEL,
+		(const char*)_("_Save"), GTK_RESPONSE_ACCEPT,
 		nullptr);
 	gtk_widget_set_name(fileDialog, "fileDialog");
 
@@ -351,7 +353,7 @@ rom_data_view_doRomOp_stdop(RomDataView *page, int id)
 	if (extpos != string::npos) {
 		defaultName.resize(extpos);
 	}
-	defaultName += default_ext;
+	defaultName += reinterpret_cast<const char*>(default_ext);
 	gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(fileDialog), defaultName.c_str());
 
 	// Prompt for a save file.
@@ -417,13 +419,15 @@ rom_data_view_doRomOp_stdop_response(GtkFileChooserDialog *fileDialog, gint resp
 		return;
 	}
 
+	// FIXME: U8STRFIX
 	switch (id) {
 		case OPTION_EXPORT_TEXT: {
 			const uint32_t sel_lc = page->cboLanguage
 				? language_combo_box_get_selected_lc(LANGUAGE_COMBO_BOX(page->cboLanguage))
 				: 0;
 
-			ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), page->romData->filename()) << std::endl;
+			ofs << "== " << rp_sprintf(reinterpret_cast<const char*>(C_("RomDataView", "File: '%s'")),
+				reinterpret_cast<const char*>(page->romData->filename())) << std::endl;
 			ROMOutput ro(page->romData, sel_lc);
 			ofs << ro;
 			break;
@@ -472,14 +476,15 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 		return;
 	}
 
+	// FIXME: U8STRFIX
 	gchar *save_filename = nullptr;
 	RomData::RomOpParams params;
 	const RomData::RomOp *op = &ops[id];
 	if (op->flags & RomData::RomOp::ROF_SAVE_FILE) {
 		GtkWidget *const fileDialog = gtk_file_chooser_dialog_new(
 			op->sfi.title, parent, GTK_FILE_CHOOSER_ACTION_SAVE,
-			_("Cancel"), GTK_RESPONSE_CANCEL,
-			_("Save"), GTK_RESPONSE_ACCEPT,
+			(const char*)_("Cancel"), GTK_RESPONSE_CANCEL,
+			(const char*)_("Save"), GTK_RESPONSE_ACCEPT,
 			nullptr);
 		gtk_widget_set_name(fileDialog, "fileDialog");
 
@@ -490,12 +495,13 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 
 		// Set the filters.
-		rpFileDialogFilterToGtk(GTK_FILE_CHOOSER(fileDialog), op->sfi.filter);
+		// FIXME: U8STRFIX
+		rpFileDialogFilterToGtk(GTK_FILE_CHOOSER(fileDialog), (const char8_t*)op->sfi.filter);
 
 		// Add the "All Files" filter.
 		GtkFileFilter *const allFilesFilter = gtk_file_filter_new();
 		// tr: "All Files" filter (GTK+ file filter)
-		gtk_file_filter_set_name(allFilesFilter, C_("RomData", "All Files"));
+		gtk_file_filter_set_name(allFilesFilter, (const char*)C_("RomData", "All Files"));
 		gtk_file_filter_add_pattern(allFilesFilter, "*");
 		gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(fileDialog), allFilesFilter);
 

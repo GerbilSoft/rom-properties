@@ -487,18 +487,19 @@ int MachO::loadFieldData(void)
 		}
 
 		// Executable format
-		static const char *const exec_type_tbl[] = {
+		static const char8_t *const exec_type_tbl[] = {
 			NOP_C_("RomData|ExecType", "32-bit Little-Endian"),
 			NOP_C_("RomData|ExecType", "64-bit Little-Endian"),
 			NOP_C_("RomData|ExecType", "32-bit Big-Endian"),
 			NOP_C_("RomData|ExecType", "64-bit Big-Endian"),
 		};
-		const char *const format_title = C_("MachO", "Format");
+		const char8_t *const format_title = C_("MachO", "Format");
 		if (machFormat > MachOPrivate::Mach_Format::Unknown &&
 		    (int)machFormat < ARRAY_SIZE_I(exec_type_tbl))
 		{
+			// FIXME: U8STRFIX - dpgettext_expr()
 			d->fields->addField_string(format_title,
-				dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType", exec_type_tbl[(int)machFormat]));
+				dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType", reinterpret_cast<const char*>(exec_type_tbl[(int)machFormat])));
 		} else {
 			// TODO: Show individual values.
 			// NOTE: This shouldn't happen...
@@ -506,12 +507,14 @@ int MachO::loadFieldData(void)
 		}
 
 		// CPU type.
-		const char *const cpu_title = C_("MachO", "CPU");
+		const char8_t *const cpu_title = C_("MachO", "CPU");
 		if (s_cpu) {
 			d->fields->addField_string(cpu_title, s_cpu);
 		} else {
+			// FIXME: U8STFIX - rp_sprintf()
 			d->fields->addField_string(cpu_title,
-				rp_sprintf(C_("RomData", "Unknown (%u)"), machHeader->cputype & 0xFFFFFF));
+				rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (%u)")),
+					machHeader->cputype & 0xFFFFFF));
 		}
 
 		// CPU subtype.
@@ -523,23 +526,23 @@ int MachO::loadFieldData(void)
 
 		// Flags.
 		// I/O support bitfield.
-		static const char *const flags_bitfield_names[] = {
+		static const char8_t *const flags_bitfield_names[] = {
 			// 0x00000000
-			"NoUndefs", "IncrLink", "DyldLink", "BindAtLoad",
+			U8("NoUndefs"), U8("IncrLink"), U8("DyldLink"), U8("BindAtLoad"),
 			// 0x00000010
-			"Prebound", "SplitSegs", "LazyInit", "TwoLevel",
+			U8("Prebound"), U8("SplitSegs"), U8("LazyInit"), U8("TwoLevel"),
 			// 0x00000100
-			"ForceFlat", "NoMultiDefs", "NoFixPrebinding", "Prebindable",
+			U8("ForceFlat"), U8("NoMultiDefs"), U8("NoFixPrebinding"), U8("Prebindable"),
 			// 0x00001000
-			"AllModsBound", "Subsections", "Canonical", "WeakDefines",
+			U8("AllModsBound"), U8("Subsections"), U8("Canonical"), U8("WeakDefines"),
 			// 0x00010000
-			"BindsToWeak", "StackExec", "RootSafe", "SetuidSafe",
+			U8("BindsToWeak"), U8("StackExec"), U8("RootSafe"), U8("SetuidSafe"),
 			// 0x00100000
-			"NoReexport", "PIE", "DeadStrip", "TLVDescriptors",
+			U8("NoReexport"), U8("PIE"), U8("DeadStrip"), U8("TLVDescriptors"),
 			// 0x01000000
-			"NoHeapExec", "AppExtSafe", "NListOutOfSync", "SimSupport",
+			U8("NoHeapExec"), U8("AppExtSafe"), U8("NListOutOfSync"), U8("SimSupport"),
 			// 0x10000000
-			nullptr, nullptr, nullptr, "DylibInCache",
+			nullptr, nullptr, nullptr, U8("DylibInCache"),
 		};
 		vector<string> *const v_flags_bitfield_names = RomFields::strArrayToVector(
 			flags_bitfield_names, ARRAY_SIZE(flags_bitfield_names));

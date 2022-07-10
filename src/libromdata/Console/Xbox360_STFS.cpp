@@ -898,7 +898,7 @@ int Xbox360_STFS::loadFieldData(void)
 	}
 
 	const uint32_t def_lc = d->getDefaultLC();
-	const char *const s_name_title = C_("RomData", "Name");
+	const char8_t *const s_name_title = C_("RomData", "Name");
 	if (!pMap_name->empty()) {
 		d->fields->addField_string_multi(s_name_title, pMap_name, def_lc);
 	} else {
@@ -927,7 +927,7 @@ int Xbox360_STFS::loadFieldData(void)
 
 	// File type
 	// TODO: Show console-specific information for 'CON '.
-	static const char *const file_type_tbl[] = {
+	static const char8_t *const file_type_tbl[] = {
 		NOP_C_("Xbox360_STFS|FileType", "Console-Specific Package"),
 		NOP_C_("Xbox360_STFS|FileType", "Non-Xbox Live Package"),
 		NOP_C_("Xbox360_STFS|FileType", "Xbox Live Package"),
@@ -935,9 +935,10 @@ int Xbox360_STFS::loadFieldData(void)
 	if (d->stfsType > Xbox360_STFS_Private::StfsType::Unknown &&
 	    d->stfsType < Xbox360_STFS_Private::StfsType::Max)
 	{
+		// FIXME: U8STRFIX - dpgettext_expr()
 		d->fields->addField_string(C_("Xbox360_STFS", "Package Type"),
 			dpgettext_expr(RP_I18N_DOMAIN, "Xbox360_STFS|FileType",
-				file_type_tbl[(int)d->stfsType]));
+				reinterpret_cast<const char*>(file_type_tbl[(int)d->stfsType])));
 	} else {
 		d->fields->addField_string(C_("Xbox360_STFS|RomData", "Type"),
 			C_("RomData", "Unknown"));
@@ -949,8 +950,9 @@ int Xbox360_STFS::loadFieldData(void)
 	if (s_content_type) {
 		d->fields->addField_string(C_("Xbox360_STFS", "Content Type"), s_content_type);
 	} else {
+		// FIXME: U8STRFIX - rp_sprintf()
 		d->fields->addField_string(C_("Xbox360_STFS", "Content Type"),
-			rp_sprintf(C_("RomData", "Unknown (0x%08X)"),
+			rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (0x%08X)")),
 				be32_to_cpu(stfsMetadata->content_type)));
 	}
 
@@ -982,7 +984,7 @@ int Xbox360_STFS::loadFieldData(void)
 	}
 
 	d->fields->addField_string(C_("Xbox360_XEX", "Title ID"),
-		rp_sprintf_p(C_("Xbox360_XEX", "%1$08X (%2$s-%3$04u)"),
+		rp_sprintf_p(reinterpret_cast<const char*>(C_("Xbox360_XEX", "%1$08X (%2$s-%3$04u)")),
 			be32_to_cpu(stfsMetadata->title_id.u32),
 			tid_str.c_str(),
 			be16_to_cpu(stfsMetadata->title_id.u16)),
@@ -1022,7 +1024,7 @@ int Xbox360_STFS::loadFieldData(void)
 				sizeof(stfsHeader->console.part_number)));
 
 		// Console type.
-		const char *s_console_type;
+		const char8_t *s_console_type;
 		switch (stfsHeader->console.console_type) {
 			case STFS_CONSOLE_TYPE_DEBUG:
 				s_console_type = C_("Xbox360_XEX|ConsoleType", "Debug");
@@ -1034,12 +1036,13 @@ int Xbox360_STFS::loadFieldData(void)
 				s_console_type = nullptr;
 				break;
 		}
-		const char *const s_console_type_title = C_("Xbox360_XEX", "Console Type");
+		const char8_t *const s_console_type_title = C_("Xbox360_XEX", "Console Type");
 		if (s_console_type) {
 			d->fields->addField_string(s_console_type_title, s_console_type);
 		} else {
 			d->fields->addField_string(s_console_type_title,
-				rp_sprintf(C_("RomData", "Unknown (%u)"), stfsHeader->console.console_type));
+				rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (%u)")),
+					stfsHeader->console.console_type));
 		}
 	}
 

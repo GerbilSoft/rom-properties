@@ -210,7 +210,7 @@ class NintendoDSPrivate final : public LibRpBase::RomDataPrivate
 		 * This uses the cached secArea value.
 		 * @return NDS Secure Area type string.
 		 */
-		const char *getNDSSecureAreaString(void);
+		const char8_t *getNDSSecureAreaString(void);
 
 		/**
 		 * Convert a Nintendo DS(i) region value to a GameTDB language code.

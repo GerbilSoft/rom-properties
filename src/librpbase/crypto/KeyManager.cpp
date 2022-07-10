@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * KeyManager.cpp: Encryption key manager.                                 *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -223,12 +223,12 @@ KeyManager::KeyManager()
 
 /**
  * Get a description for a VerifyResult.
- * @param res VerifyResult.
+ * @param res VerifyResult
  * @return Description, or nullptr if invalid.
  */
-const char *KeyManager::verifyResultToString(VerifyResult res)
+const char8_t *KeyManager::verifyResultToString(VerifyResult res)
 {
-	static const char *const errTbl[] = {
+	static const char8_t *const errTbl[] = {
 		// tr: VerifyResult::OK
 		NOP_C_("KeyManager|VerifyResult", "Something happened."),
 		// tr: VerifyResult::InvalidParams
@@ -256,9 +256,13 @@ const char *KeyManager::verifyResultToString(VerifyResult res)
 
 	assert(res >= (KeyManager::VerifyResult)0);
 	assert(res < (KeyManager::VerifyResult)ARRAY_SIZE(errTbl));
-	return ((res >= (KeyManager::VerifyResult)0 && res < (KeyManager::VerifyResult)ARRAY_SIZE(errTbl))
-		? dpgettext_expr(RP_I18N_DOMAIN, "KeyManager|VerifyResult", errTbl[(int)res])
-		: nullptr);
+
+	// FIXME: U8STRFIX - dpgettext_expr()
+	if (res >= (KeyManager::VerifyResult)0 && res < (KeyManager::VerifyResult)ARRAY_SIZE(errTbl)) {
+		return reinterpret_cast<const char8_t*>(
+			dpgettext_expr(RP_I18N_DOMAIN, "KeyManager|VerifyResult", reinterpret_cast<const char*>(errTbl[(int)res])));
+	}
+	return nullptr;
 }
 
 #ifdef ENABLE_DECRYPTION

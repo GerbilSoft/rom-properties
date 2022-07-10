@@ -105,18 +105,20 @@ u8string GameBoyAdvancePrivate::getPublisher(void) const
 		s_publisher = publisher;
 	} else {
 		// FIXME: U8STRFIX - can't use rp_sprintf()
-		char buf[128];
+		char8_t buf[128];
 		int len;
 
 		if (ISALNUM(romHeader.company[0]) &&
 		    ISALNUM(romHeader.company[1]))
 		{
-			len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%.2s)"),
-				romHeader.company);
+			len = snprintf(reinterpret_cast<char*>(buf), sizeof(buf),
+				reinterpret_cast<const char*>(C_("RomData", "Unknown (%.2s)")),
+					romHeader.company);
 		} else {
-			len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%02X %02X)"),
-				static_cast<uint8_t>(romHeader.company[0]),
-				static_cast<uint8_t>(romHeader.company[1]));
+			len = snprintf(reinterpret_cast<char*>(buf), sizeof(buf),
+				reinterpret_cast<const char*>(C_("RomData", "Unknown (%02X %02X)")),
+					static_cast<uint8_t>(romHeader.company[0]),
+					static_cast<uint8_t>(romHeader.company[1]));
 		}
 
 		if (len < 0) {
@@ -124,7 +126,7 @@ u8string GameBoyAdvancePrivate::getPublisher(void) const
 		} else if (len >= static_cast<int>(sizeof(buf))) {
 			len = sizeof(buf)-1;
 		}
-		s_publisher.assign(reinterpret_cast<const char8_t*>(buf), len);
+		s_publisher.assign(buf, len);
 	}
 
 	return s_publisher;
@@ -377,7 +379,7 @@ int GameBoyAdvance::loadFieldData(void)
 		romHeader->rom_version, RomFields::Base::Dec, 2);
 
 	// Entry point
-	const char *const entry_point_title = C_("GameBoyAdvance", "Entry Point");
+	const char8_t *const entry_point_title = C_("GameBoyAdvance", "Entry Point");
 	switch (d->romType) {
 		case GameBoyAdvancePrivate::RomType::GBA:
 		case GameBoyAdvancePrivate::RomType::GBA_PassThru:

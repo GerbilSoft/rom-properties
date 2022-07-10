@@ -171,7 +171,7 @@ class Xbox360_XDBF_Private final : public RomDataPrivate
 		 * Get the title type as a string.
 		 * @return Title type, or nullptr if not found.
 		 */
-		const char *getTitleType(void) const;
+		const char8_t *getTitleType(void) const;
 
 	private:
 		/**
@@ -819,7 +819,7 @@ const rp_image *Xbox360_XDBF_Private::loadIcon(void)
  * Get the title type as a string.
  * @return Title type, or nullptr if not found.
  */
-const char *Xbox360_XDBF_Private::getTitleType(void) const
+const char8_t *Xbox360_XDBF_Private::getTitleType(void) const
 {
 	// Get the XTHD struct.
 	// TODO: Cache it?
@@ -843,7 +843,7 @@ const char *Xbox360_XDBF_Private::getTitleType(void) const
 		return nullptr;
 	}
 
-	static const char *const title_type_tbl[] = {
+	static const char8_t *const title_type_tbl[] = {
 		NOP_C_("Xbox360_XDBF|TitleType", "System Title"),
 		NOP_C_("Xbox360_XDBF|TitleType", "Full Game"),
 		NOP_C_("Xbox360_XDBF|TitleType", "Demo"),
@@ -852,8 +852,10 @@ const char *Xbox360_XDBF_Private::getTitleType(void) const
 
 	const uint32_t title_type = be32_to_cpu(xthd.title_type);
 	if (title_type < ARRAY_SIZE(title_type_tbl)) {
-		return dpgettext_expr(RP_I18N_DOMAIN, "Xbox360_XDBF|TitleType",
-			title_type_tbl[title_type]);
+		// FIXME: U8STRFIX - dpgettext_expr()
+		return reinterpret_cast<const char8_t*>(
+			dpgettext_expr(RP_I18N_DOMAIN, "Xbox360_XDBF|TitleType",
+				reinterpret_cast<const char*>(title_type_tbl[title_type])));
 	}
 
 	// Not found...
@@ -914,7 +916,7 @@ int Xbox360_XDBF_Private::addFields_strings_SPA(RomFields *fields) const
 		pMap_title->emplace(lc, std::move(title_lang));
 	}
 
-	const char *const s_title_title = C_("RomData", "Title");
+	const char8_t *const s_title_title = C_("RomData", "Title");
 	if (!pMap_title->empty()) {
 		const uint32_t def_lc = getDefaultLC();
 		fields->addField_string_multi(s_title_title, pMap_title, def_lc);
@@ -924,7 +926,7 @@ int Xbox360_XDBF_Private::addFields_strings_SPA(RomFields *fields) const
 	}
 
 	// Title type
-	const char *const title_type = getTitleType();
+	const char8_t *const title_type = getTitleType();
 	fields->addField_string(C_("RomData", "Type"),
 		title_type ? title_type : C_("RomData", "Unknown"));
 
@@ -1014,13 +1016,13 @@ int Xbox360_XDBF_Private::addFields_achievements_SPA(void)
 	// a virtual column, much like checkboxes.
 
 	// Columns
-	static const char *const xach_col_names[] = {
+	static const char8_t *const xach_col_names[] = {
 		NOP_C_("Xbox360_XDBF|Achievements", "ID"),
 		NOP_C_("Xbox360_XDBF|Achievements", "Description"),
 		NOP_C_("Xbox360_XDBF|Achievements", "Gamerscore"),
 	};
 	vector<string> *const v_xach_col_names = RomFields::strArrayToVector_i18n(
-		"Xbox360_XDBF|Achievements", xach_col_names, ARRAY_SIZE(xach_col_names));
+		U8("Xbox360_XDBF|Achievements"), xach_col_names, ARRAY_SIZE(xach_col_names));
 
 	// Vectors.
 	array<RomFields::ListData_t*, XDBF_LANGUAGE_MAX> pvv_xach;
@@ -1229,12 +1231,12 @@ int Xbox360_XDBF_Private::addFields_avatarAwards_SPA(void)
 	// a virtual column, much like checkboxes.
 
 	// Columns
-	static const char *const xgaa_col_names[] = {
+	static const char8_t *const xgaa_col_names[] = {
 		NOP_C_("Xbox360_XDBF|AvatarAwards", "ID"),
 		NOP_C_("Xbox360_XDBF|AvatarAwards", "Description"),
 	};
 	vector<string> *const v_xgaa_col_names = RomFields::strArrayToVector_i18n(
-		"Xbox360_XDBF|AvatarAwards", xgaa_col_names, ARRAY_SIZE(xgaa_col_names));
+		U8("Xbox360_XDBF|AvatarAwards"), xgaa_col_names, ARRAY_SIZE(xgaa_col_names));
 
 	// Vectors.
 	array<RomFields::ListData_t*, XDBF_LANGUAGE_MAX> pvv_xgaa;
@@ -1373,7 +1375,7 @@ int Xbox360_XDBF_Private::addFields_strings_GPD(RomFields *fields) const
 	// NOTE: GPDs only have one language, so not using RFT_STRING_MULTI here.
 
 	// Title
-	const char *const s_title_title = C_("RomData", "Title");
+	const char8_t *const s_title_title = C_("RomData", "Title");
 	const u8string s_title = const_cast<Xbox360_XDBF_Private*>(this)->loadString_GPD(XDBF_ID_TITLE);
 	if (!s_title.empty()) {
 		fields->addField_string(s_title_title, s_title);
@@ -1411,13 +1413,13 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
 	// a virtual column, much like checkboxes.
 
 	// Columns
-	static const char *const xach_col_names[] = {
+	static const char8_t *const xach_col_names[] = {
 		NOP_C_("Xbox360_XDBF|Achievements", "ID"),
 		NOP_C_("Xbox360_XDBF|Achievements", "Description"),
 		NOP_C_("Xbox360_XDBF|Achievements", "Gamerscore"),
 	};
 	vector<string> *const v_xach_col_names = RomFields::strArrayToVector_i18n(
-		"Xbox360_XDBF|Achievements", xach_col_names, ARRAY_SIZE(xach_col_names));
+		U8("Xbox360_XDBF|Achievements"), xach_col_names, ARRAY_SIZE(xach_col_names));
 
 	RomFields::ListData_t *vv_xach = new RomFields::ListData_t();
 	auto vv_icons = new RomFields::ListDataIcons_t();

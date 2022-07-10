@@ -718,28 +718,29 @@ int SPC::loadFieldData(void)
 		const auto &data = iter->second;
 		assert(!data.isStrIdx);
 		if (!data.isStrIdx) {
-			const char *emu;
+			const char8_t *emu;
 			switch (data.uvalue) {
 				case SPC_EMULATOR_UNKNOWN:
 					emu = C_("SPC|Emulator", "Unknown");
 					break;
 				case SPC_EMULATOR_ZSNES:
-					emu = "ZSNES";
+					emu = U8("ZSNES");
 					break;
 				case SPC_EMULATOR_SNES9X:
-					emu = "Snes9x";
+					emu = U8("Snes9x");
 					break;
 				default:
 					emu = nullptr;
 					break;
 			}
 
-			const char *const emulator_used_title = C_("SPC", "Emulator Used");
+			const char8_t *const emulator_used_title = C_("SPC", "Emulator Used");
 			if (emu) {
 				d->fields->addField_string(emulator_used_title, emu);
 			} else {
+				// FIXME: U8STRFIX - rp_sprintf()
 				d->fields->addField_string(emulator_used_title,
-					rp_sprintf(C_("RomData", "Unknown (0x%02X)"), data.uvalue));
+					rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (0x%02X)")), data.uvalue));
 			}
 		}
 	}

@@ -191,9 +191,9 @@ LibRpFile::IRpFile *openQUrl(const QUrl &url, bool isThumbnail = false);
  * The "(*.bin; *.srl)" part is added to the display name if needed.
  * A third segment provides for semicolon-separated MIME types. (May be "-" for 'any'.)
  *
- * @param filter RP file dialog filter. (UTF-8, from gettext())
- * @return Qt file dialog filter.
+ * @param filter RP file dialog filter (UTF-8, from gettext())
+ * @return Qt file dialog filter
  */
-QString rpFileDialogFilterToQt(const char *filter);
+QString rpFileDialogFilterToQt(const char8_t *filter);
 
 #endif /* __ROMPROPERTIES_KDE_RPQT_HPP__ */

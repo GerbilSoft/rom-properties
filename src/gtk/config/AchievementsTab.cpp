@@ -111,7 +111,7 @@ achievements_tab_init(AchievementsTab *tab)
 
 	// Column 1: Icon
 	GtkTreeViewColumn *column = gtk_tree_view_column_new();
-	gtk_tree_view_column_set_title(column, C_("AchievementsTab", "Icon"));
+	gtk_tree_view_column_set_title(column, reinterpret_cast<const char*>(C_("AchievementsTab", "Icon")));
 	gtk_tree_view_column_set_resizable(column, FALSE);
 	GtkCellRenderer *renderer = gtk_cell_renderer_pixbuf_new();
 	gtk_tree_view_column_pack_start(column, renderer, FALSE);
@@ -120,7 +120,7 @@ achievements_tab_init(AchievementsTab *tab)
 	
 	// Column 2: Achievement
 	column = gtk_tree_view_column_new();
-	gtk_tree_view_column_set_title(column, C_("AchievementsTab", "Achievement"));
+	gtk_tree_view_column_set_title(column, reinterpret_cast<const char*>(C_("AchievementsTab", "Achievement")));
 	gtk_tree_view_column_set_resizable(column, TRUE);
 	renderer = gtk_cell_renderer_text_new();
 	gtk_tree_view_column_pack_start(column, renderer, FALSE);
@@ -130,7 +130,7 @@ achievements_tab_init(AchievementsTab *tab)
 	// Column 3: Unlock Time
 	// TODO: Store as a string, or as a GDateTime?
 	column = gtk_tree_view_column_new();
-	gtk_tree_view_column_set_title(column, C_("AchievementsTab", "Unlock Time"));
+	gtk_tree_view_column_set_title(column, reinterpret_cast<const char*>(C_("AchievementsTab", "Unlock Time")));
 	gtk_tree_view_column_set_resizable(column, TRUE);
 	renderer = gtk_cell_renderer_text_new();
 	gtk_tree_view_column_pack_start(column, renderer, FALSE);
@@ -203,8 +203,10 @@ achievements_tab_reset(AchievementsTab *tab)
 		assert(subIcon != nullptr);
 
 		// Get the name and description.
-		gchar *const s_ach_name = g_markup_escape_text(pAch->getName(id), -1);
-		gchar *const s_ach_desc_unlocked = g_markup_escape_text(pAch->getDescUnlocked(id), -1);
+		gchar *const s_ach_name = g_markup_escape_text(
+			reinterpret_cast<const char*>(pAch->getName(id)), -1);
+		gchar *const s_ach_desc_unlocked = g_markup_escape_text(
+			reinterpret_cast<const char*>(pAch->getDescUnlocked(id)), -1);
 		string s_ach = s_ach_name;
 		s_ach += span_start_line2;
 		// TODO: Locked description?

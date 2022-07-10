@@ -49,8 +49,8 @@ namespace Private {
 // problems if it's embedded inside of a templated class.
 typedef uint32_t (*pFnSupportedImageTypes)(void);
 struct SysData_t {
-	const char *className;			// Class name in Config. (ASCII)
-	pFnSupportedImageTypes getTypes;	// Get supported image types.
+	const char *className;			// Class name in Config [ASCII]
+	pFnSupportedImageTypes getTypes;	// Get supported image types
 };
 #define SysDataEntry(klass) \
 	{#klass, LibRomData::klass::supportedImageTypes_static}
@@ -73,7 +73,7 @@ static const SysData_t sysData[SYS_COUNT] = {
 
 /**
  * Get the number of image types that can be configured.
- * @return Image type count.
+ * @return Image type count
  */
 unsigned int imageTypeCount(void)
 {
@@ -82,13 +82,13 @@ unsigned int imageTypeCount(void)
 
 /**
  * Get an image type name.
- * @param imageType Image type ID.
+ * @param imageType Image type ID
  * @return Image type name, or nullptr if invalid.
  */
-const char *imageTypeName(unsigned int imageType)
+const char8_t *imageTypeName(unsigned int imageType)
 {
-	// Image type names.
-	static const char *const imageType_names[] = {
+	// Image type names
+	static const char8_t *const imageType_names[] = {
 		/** Internal **/
 
 		// tr: IMG_INT_ICON
@@ -118,15 +118,18 @@ const char *imageTypeName(unsigned int imageType)
 	static_assert(ARRAY_SIZE(imageType_names) == IMG_TYPE_COUNT,
 		"imageType_names[] needs to be updated.");
 
+	// FIXME: U8STRFIX - dpgettext_expr()
 	assert(imageType < IMG_TYPE_COUNT);
 	if (imageType >= IMG_TYPE_COUNT)
 		return nullptr;
-	return dpgettext_expr(RP_I18N_DOMAIN, "ImageTypesConfig|ImageTypeDisp", imageType_names[imageType]);
+	return reinterpret_cast<const char8_t*>(
+		dpgettext_expr(RP_I18N_DOMAIN, "ImageTypesConfig|ImageTypeDisp",
+			reinterpret_cast<const char*>(imageType_names[imageType])));
 }
 
 /**
  * Get the number of systems that can be configured.
- * @return System count.
+ * @return System count
  */
 unsigned int sysCount(void)
 {
@@ -135,13 +138,13 @@ unsigned int sysCount(void)
 
 /**
  * Get a system name.
- * @param sys System ID.
+ * @param sys System ID
  * @return System name, or nullptr if invalid.
  */
-const char *sysName(unsigned int sys)
+const char8_t *sysName(unsigned int sys)
 {
-	// System names.
-	static const char *const sysNames[] = {
+	// System names
+	static const char8_t *const sysNames[] = {
 		// tr: amiibo
 		NOP_C_("ImageTypesConfig|SysName", "amiibo"),
 		// tr: NintendoBadge
@@ -166,14 +169,17 @@ const char *sysName(unsigned int sys)
 	static_assert(ARRAY_SIZE(sysNames) == SYS_COUNT,
 		"sysNames[] needs to be updated.");
 
+	// FIXME: U8STRFIX - dpgettext_expr()
 	assert(sys < SYS_COUNT);
 	if (sys >= SYS_COUNT)
 		return nullptr;
-	return dpgettext_expr(RP_I18N_DOMAIN, "ImageTypesConfig|SysName", sysNames[sys]);
+	return reinterpret_cast<const char8_t*>(
+		dpgettext_expr(RP_I18N_DOMAIN, "ImageTypesConfig|SysName",
+			reinterpret_cast<const char*>(sysNames[sys])));
 }
 
 /**
- * Get a class name.
+ * Get a class name. [ASCII]
  * @param sys System ID
  * @return Class name, or nullptr if invalid.
  */

@@ -529,18 +529,20 @@ u8string DMGPrivate::getPublisher(void) const
 			s_publisher = publisher;
 		} else {
 			// FIXME: U8STRFIX - can't use rp_sprintf()
-			char buf[128];
+			char8_t buf[128];
 			int len;
 
 			if (ISALNUM(romHeader.new_publisher_code[0]) &&
 			    ISALNUM(romHeader.new_publisher_code[1]))
 			{
-				len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%.2s)"),
-					romHeader.new_publisher_code);
+				len = snprintf(reinterpret_cast<char*>(buf), sizeof(buf),
+					reinterpret_cast<const char*>(C_("RomData", "Unknown (%.2s)")),
+						romHeader.new_publisher_code);
 			} else {
-				len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%02X %02X)"),
-					static_cast<uint8_t>(romHeader.new_publisher_code[0]),
-					static_cast<uint8_t>(romHeader.new_publisher_code[1]));
+				len = snprintf(reinterpret_cast<char*>(buf), sizeof(buf),
+					reinterpret_cast<const char*>(C_("RomData", "Unknown (%02X %02X)")),
+						static_cast<uint8_t>(romHeader.new_publisher_code[0]),
+						static_cast<uint8_t>(romHeader.new_publisher_code[1]));
 			}
 
 			if (len < 0) {
@@ -548,7 +550,7 @@ u8string DMGPrivate::getPublisher(void) const
 			} else if (len >= static_cast<int>(sizeof(buf))) {
 				len = sizeof(buf)-1;
 			}
-			s_publisher.assign(reinterpret_cast<const char8_t*>(buf), len);
+			s_publisher.assign(buf, len);
 		}
 	} else {
 		// Old publisher code.
@@ -557,18 +559,19 @@ u8string DMGPrivate::getPublisher(void) const
 			s_publisher = publisher;
 		} else {
 			// FIXME: U8STRFIX - can't use rp_sprintf()
-			char buf[128];
+			char8_t buf[128];
 			int len;
 
-			len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%02X)"),
-				romHeader.old_publisher_code);
+			len = snprintf(reinterpret_cast<char*>(buf), sizeof(buf),
+				reinterpret_cast<const char*>(C_("RomData", "Unknown (%02X)")),
+					romHeader.old_publisher_code);
 
 			if (len < 0) {
 				len = 0;
 			} else if (len >= static_cast<int>(sizeof(buf))) {
 				len = sizeof(buf)-1;
 			}
-			s_publisher.assign(reinterpret_cast<const char8_t*>(buf), len);
+			s_publisher.assign(buf, len);
 		}
 	}
 
@@ -883,17 +886,21 @@ int DMG::loadFieldData(void)
 	// NOTE: These have to be handled at the same time because
 	// later games take bytes away from the title field to use
 	// for the CGB flag and the game ID.
+	const char8_t *const game_id_title = C_("RomData", "Game ID");
 	u8string s_title;
 	string s_gameID;
 	d->getTitleAndGameID(s_title, s_gameID);
 	d->fields->addField_string(C_("RomData", "Title"), s_title);
-	d->fields->addField_string(C_("RomData", "Game ID"),
-		!s_gameID.empty() ? s_gameID.c_str() : C_("RomData", "Unknown"));
+	if (!s_gameID.empty()) {
+		d->fields->addField_string(game_id_title, s_gameID);
+	} else {
+		d->fields->addField_string(game_id_title, C_("RomData", "Unknown"));
+	}
 
 	// System
 	const uint32_t dmg_system = d->systemID();
-	static const char *const system_bitfield_names[] = {
-		"DMG", "SGB", "CGB"
+	static const char8_t *const system_bitfield_names[] = {
+		U8("DMG"), U8("SGB"), U8("CGB")
 	};
 	vector<string> *const v_system_bitfield_names = RomFields::strArrayToVector(
 		system_bitfield_names, ARRAY_SIZE(system_bitfield_names));
@@ -910,7 +917,7 @@ int DMG::loadFieldData(void)
 	}
 
 	// Entry Point
-	const char *const entry_point_title = C_("DMG", "Entry Point");
+	const char8_t *const entry_point_title = C_("DMG", "Entry Point");
 	if ((romHeader->entry[0] == 0x00 ||	// NOP
 	     romHeader->entry[0] == 0xF3 ||	// DI
 	     romHeader->entry[0] == 0x7F ||	// LD A,A
@@ -950,7 +957,7 @@ int DMG::loadFieldData(void)
 		DMGPrivate::dmg_hardware_names[(int)DMGPrivate::CartType(romHeader->cart_type).hardware]);
 
 	// Features
-	static const char *const feature_bitfield_names[] = {
+	static const char8_t *const feature_bitfield_names[] = {
 		NOP_C_("DMG|Features", "RAM"),
 		NOP_C_("DMG|Features", "Battery"),
 		NOP_C_("DMG|Features", "Timer"),
@@ -958,30 +965,32 @@ int DMG::loadFieldData(void)
 		NOP_C_("DMG|Features", "Tilt Sensor"),
 	};
 	vector<string> *const v_feature_bitfield_names = RomFields::strArrayToVector_i18n(
-		"DMG|Features", feature_bitfield_names, ARRAY_SIZE(feature_bitfield_names));
+		U8("DMG|Features"), feature_bitfield_names, ARRAY_SIZE(feature_bitfield_names));
 	d->fields->addField_bitfield(C_("DMG", "Features"),
 		v_feature_bitfield_names, 3, DMGPrivate::CartType(romHeader->cart_type).features);
 
 	// ROM Size
-	const char *const rom_size_title = C_("DMG", "ROM Size");
+	const char8_t *const rom_size_title = C_("DMG", "ROM Size");
 	const int rom_size = DMGPrivate::RomSize(romHeader->rom_size);
 	if (rom_size < 0) {
 		d->fields->addField_string(rom_size_title, C_("DMG", "Unknown"));
 	} else {
+		// FIXME: U8STRFIX - rp_sprintf(), rp_sprintf_p()
 		if (rom_size > 32) {
 			const int banks = rom_size / 16;
 			d->fields->addField_string(rom_size_title,
-				rp_sprintf_p(NC_("DMG", "%1$u KiB (%2$u bank)", "%1$u KiB (%2$u banks)", banks),
+				rp_sprintf_p(reinterpret_cast<const char*>(NC_("DMG", "%1$u KiB (%2$u bank)", "%1$u KiB (%2$u banks)", banks)),
 					static_cast<unsigned int>(rom_size),
 					static_cast<unsigned int>(banks)));
 		} else {
 			d->fields->addField_string(rom_size_title,
-				rp_sprintf(C_("DMG", "%u KiB"), static_cast<unsigned int>(rom_size)));
+				rp_sprintf(reinterpret_cast<const char*>(C_("DMG", "%u KiB")),
+					static_cast<unsigned int>(rom_size)));
 		}
 	}
 
 	// RAM Size
-	const char *const ram_size_title = C_("DMG", "RAM Size");
+	const char8_t *const ram_size_title = C_("DMG", "RAM Size");
 	if (romHeader->ram_size >= ARRAY_SIZE(DMGPrivate::dmg_ram_size)) {
 		d->fields->addField_string(ram_size_title, C_("RomData", "Unknown"));
 	} else {
@@ -995,21 +1004,23 @@ int DMG::loadFieldData(void)
 		} else if(ram_size == 0) {
 			d->fields->addField_string(ram_size_title, C_("DMG", "No RAM"));
 		} else {
+			// FIXME: U8STRFIX - rp_sprintf_p(), rp_sprintf()
 			if (ram_size > 8) {
 				const int banks = ram_size / 8;
 				d->fields->addField_string(ram_size_title,
-					rp_sprintf_p(NC_("DMG", "%1$u KiB (%2$u bank)", "%1$u KiB (%2$u banks)", banks),
+					rp_sprintf_p(reinterpret_cast<const char*>(NC_("DMG", "%1$u KiB (%2$u bank)", "%1$u KiB (%2$u banks)", banks)),
 						static_cast<unsigned int>(ram_size),
 						static_cast<unsigned int>(banks)));
 			} else {
 				d->fields->addField_string(ram_size_title,
-					rp_sprintf(C_("DMG", "%u KiB"), static_cast<unsigned int>(ram_size)));
+					rp_sprintf(reinterpret_cast<const char*>(C_("DMG", "%u KiB")),
+						static_cast<unsigned int>(ram_size)));
 			}
 		}
 	}
 
 	// Region Code
-	const char *const region_code_title = C_("RomData", "Region Code");
+	const char8_t *const region_code_title = C_("RomData", "Region Code");
 	switch (romHeader->region) {
 		case 0:
 			d->fields->addField_string(region_code_title,
@@ -1021,8 +1032,9 @@ int DMG::loadFieldData(void)
 			break;
 		default:
 			// Invalid value.
+			// FIXME: U8STRFIX - rp_sprintf()
 			d->fields->addField_string(region_code_title,
-				rp_sprintf(C_("DMG", "0x%02X (INVALID)"), romHeader->region));
+				rp_sprintf(reinterpret_cast<const char*>(C_("DMG", "0x%02X (INVALID)")), romHeader->region));
 			break;
 	}
 
@@ -1040,14 +1052,15 @@ int DMG::loadFieldData(void)
 		checksum -= romHeader8[i];
 	}
 
-	const char *const checksum_title = C_("RomData", "Checksum");
+	// FIXME: U8STRFIX - rp_sprintf_p(), rp_sprintf()
+	const char8_t *const checksum_title = C_("RomData", "Checksum");
 	if (checksum - romHeader->header_checksum != 0) {
 		d->fields->addField_string(checksum_title,
-			rp_sprintf_p(C_("DMG", "0x%1$02X (INVALID; should be 0x%2$02X)"),
+			rp_sprintf_p(reinterpret_cast<const char*>(C_("DMG", "0x%1$02X (INVALID; should be 0x%2$02X)")),
 				romHeader->header_checksum, checksum));
 	} else {
 		d->fields->addField_string(checksum_title,
-			rp_sprintf(C_("DMG", "0x%02X (valid)"), checksum));
+			rp_sprintf(reinterpret_cast<const char*>(C_("DMG", "0x%02X (valid)")), checksum));
 	}
 
 	/** GBX footer. **/
@@ -1058,48 +1071,49 @@ int DMG::loadFieldData(void)
 
 		// GBX version.
 		// TODO: Do things based on the version number?
+		// FIXME: U8STRFIX - rp_sprintf_p()
 		d->fields->addField_string(C_("DMG", "GBX Version"),
-			rp_sprintf_p(C_("DMG", "%1$u.%2$u"),
+			rp_sprintf_p(reinterpret_cast<const char*>(C_("DMG", "%1$u.%2$u")),
 				be32_to_cpu(gbxFooter->version.major),
 				be32_to_cpu(gbxFooter->version.minor)));
 
 		// Mapper.
 		struct gbx_mapper_tbl_t {
 			GBX_Mapper_e mapper_id;	// Host-endian
-			const char *desc;
+			const char8_t *desc;
 		};
 
 		// TODO: Localization?
 		static const gbx_mapper_tbl_t gbx_mapper_tbl[] = {
 			// Nintendo
-			{GBX_MAPPER_ROM_ONLY,		"ROM only"},
-			{GBX_MAPPER_MBC1,		"Nintendo MBC1"},
-			{GBX_MAPPER_MBC2,		"Nintendo MBC2"},
-			{GBX_MAPPER_MBC3,		"Nintendo MBC3"},
-			{GBX_MAPPER_MBC5,		"Nintendo MBC5"},
-			{GBX_MAPPER_MBC7,		"Nintendo MBC7 (tilt sensor)"},
-			{GBX_MAPPER_MBC1_MULTICART,	"Nintendo MBC1 multicart"},
-			{GBX_MAPPER_MMM01,		"Nintendo/Mani MMM01"},
-			{GBX_MAPPER_POCKET_CAMERA,	"Nintendo Game Boy Camera"},
+			{GBX_MAPPER_ROM_ONLY,		U8("ROM only")},
+			{GBX_MAPPER_MBC1,		U8("Nintendo MBC1")},
+			{GBX_MAPPER_MBC2,		U8("Nintendo MBC2")},
+			{GBX_MAPPER_MBC3,		U8("Nintendo MBC3")},
+			{GBX_MAPPER_MBC5,		U8("Nintendo MBC5")},
+			{GBX_MAPPER_MBC7,		U8("Nintendo MBC7 (tilt sensor)")},
+			{GBX_MAPPER_MBC1_MULTICART,	U8("Nintendo MBC1 multicart")},
+			{GBX_MAPPER_MMM01,		U8("Nintendo/Mani MMM01")},
+			{GBX_MAPPER_POCKET_CAMERA,	U8("Nintendo Game Boy Camera")},
 
 			// Licensed third-party
-			{GBX_MAPPER_HuC1,		"Hudson HuC1"},
-			{GBX_MAPPER_HuC3,		"Hudson HuC3"},
-			{GBX_MAPPER_TAMA5,		"Bandai TAMA5"},
+			{GBX_MAPPER_HuC1,		U8("Hudson HuC1")},
+			{GBX_MAPPER_HuC3,		U8("Hudson HuC3")},
+			{GBX_MAPPER_TAMA5,		U8("Bandai TAMA5")},
 
 			// Unlicensed
-			{GBX_MAPPER_BBD,		"BBD"},
-			{GBX_MAPPER_HITEK,		"Hitek"},
-			{GBX_MAPPER_SINTAX,		"Sintax"},
-			{GBX_MAPPER_NT_OLDER_TYPE_1,	"NT older type 1"},
-			{GBX_MAPPER_NT_OLDER_TYPE_2,	"NT older type 2"},
-			{GBX_MAPPER_NT_NEWER,		"NT newer"},
-			{GBX_MAPPER_LI_CHENG,		"Li Cheng"},
-			{GBX_MAPPER_LAST_BIBLE,		"\"Last Bible\" multicart"},
-			{GBX_MAPPER_LIEBAO,		"Liebao Technology"},
+			{GBX_MAPPER_BBD,		U8("BBD")},
+			{GBX_MAPPER_HITEK,		U8("Hitek")},
+			{GBX_MAPPER_SINTAX,		U8("Sintax")},
+			{GBX_MAPPER_NT_OLDER_TYPE_1,	U8("NT older type 1")},
+			{GBX_MAPPER_NT_OLDER_TYPE_2,	U8("NT older type 2")},
+			{GBX_MAPPER_NT_NEWER,		U8("NT newer")},
+			{GBX_MAPPER_LI_CHENG,		U8("Li Cheng")},
+			{GBX_MAPPER_LAST_BIBLE,		U8("\"Last Bible\" multicart")},
+			{GBX_MAPPER_LIEBAO,		U8("Liebao Technology")},
 		};
 
-		const char *s_mapper = nullptr;
+		const char8_t *s_mapper = nullptr;
 		const uint32_t lkup = be32_to_cpu(gbxFooter->mapper_id);
 		for (const gbx_mapper_tbl_t &p : gbx_mapper_tbl) {
 			if (p.mapper_id == lkup) {
@@ -1148,13 +1162,13 @@ int DMG::loadFieldData(void)
 			gbx_features |= (1U << 2);
 		}
 
-		static const char *const gbx_feature_bitfield_names[] = {
+		static const char8_t *const gbx_feature_bitfield_names[] = {
 			NOP_C_("DMG|Features", "Battery"),
 			NOP_C_("DMG|Features", "Rumble"),
 			NOP_C_("DMG|Features", "Timer"),
 		};
 		vector<string> *const v_gbx_feature_bitfield_names = RomFields::strArrayToVector_i18n(
-			"DMG|Features", gbx_feature_bitfield_names, ARRAY_SIZE(gbx_feature_bitfield_names));
+			U8("DMG|Features"), gbx_feature_bitfield_names, ARRAY_SIZE(gbx_feature_bitfield_names));
 		d->fields->addField_bitfield(C_("DMG", "Features"),
 			v_gbx_feature_bitfield_names, 0, gbx_features);
 

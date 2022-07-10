@@ -136,12 +136,13 @@ void AboutTabPrivate::initProgramTitleText(void)
 	const char *const gitVersion =
 		AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::GitVersion);
 
+	// FIXME: U8STRFIX
 	string sPrgTitle;
 	sPrgTitle.reserve(1024);
 	// tr: Uses Qt's HTML subset for formatting.
-	sPrgTitle += C_("AboutTab", "<b>ROM Properties Page</b><br>Shell Extension");
+	sPrgTitle += (const char*)C_("AboutTab", "<b>ROM Properties Page</b><br>Shell Extension");
 	sPrgTitle += brbr;
-	sPrgTitle += rp_sprintf(C_("AboutTab", "Version %s"), programVersion);
+	sPrgTitle += rp_sprintf((const char*)C_("AboutTab", "Version %s"), programVersion);
 	if (gitVersion) {
 		sPrgTitle += br;
 		sPrgTitle += gitVersion;
@@ -162,8 +163,9 @@ void AboutTabPrivate::initProgramTitleText(void)
 void AboutTabPrivate::initCreditsTab(void)
 {
 	// License name, with HTML formatting.
+	// FIXME: U8STRFIX
 	const string sPrgLicense = rp_sprintf("<a href='https://www.gnu.org/licenses/gpl-2.0.html'>%s</a>",
-		C_("AboutTabl|Credits", "GNU GPL v2"));
+		(const char*)C_("AboutTabl|Credits", "GNU GPL v2"));
 
 	// lblCredits is RichText.
 	string sCredits;
@@ -173,7 +175,7 @@ void AboutTabPrivate::initCreditsTab(void)
 	sCredits += BR;
 	sCredits += rp_sprintf(
 		// tr: %s is the name of the license.
-		C_("AboutTab|Credits", "This program is licensed under the %s or later."),
+		(const char*)C_("AboutTab|Credits", "This program is licensed under the %s or later."),
 			sPrgLicense.c_str());
 
 	AboutTabText::CreditType lastCreditType = AboutTabText::CreditType::Continue;
@@ -189,13 +191,13 @@ void AboutTabPrivate::initCreditsTab(void)
 
 			switch (creditsData->type) {
 				case AboutTabText::CreditType::Developer:
-					sCredits += C_("AboutTab|Credits", "Developers:");
+					sCredits += (const char*)C_("AboutTab|Credits", "Developers:");
 					break;
 				case AboutTabText::CreditType::Contributor:
-					sCredits += C_("AboutTab|Credits", "Contributors:");
+					sCredits += (const char*)C_("AboutTab|Credits", "Contributors:");
 					break;
 				case AboutTabText::CreditType::Translator:
-					sCredits += C_("AboutTab|Credits", "Translators:");
+					sCredits += (const char*)C_("AboutTab|Credits", "Translators:");
 					break;
 
 				case AboutTabText::CreditType::Continue:
@@ -227,7 +229,7 @@ void AboutTabPrivate::initCreditsTab(void)
 		}
 		if (creditsData->sub) {
 			// tr: Sub-credit.
-			sCredits += rp_sprintf(C_("AboutTab|Credits", " (%s)"),
+			sCredits += rp_sprintf((const char*)C_("AboutTab|Credits", " (%s)"),
 				creditsData->sub);
 		}
 
@@ -250,16 +252,17 @@ void AboutTabPrivate::initLibrariesTab(void)
 	// Otherwise, they won't be retranslated if the UI language
 	// is changed at runtime.
 
+	// FIXME: U8STRFIX
 	// tr: Using an internal copy of a library.
-	const char *const sIntCopyOf = C_("AboutTab|Libraries", "Internal copy of %s.");
+	const char *const sIntCopyOf = (const char*)C_("AboutTab|Libraries", "Internal copy of %s.");
 	// tr: Compiled with a specific version of an external library.
-	const char *const sCompiledWith = C_("AboutTab|Libraries", "Compiled with %s.");
+	const char *const sCompiledWith = (const char*)C_("AboutTab|Libraries", "Compiled with %s.");
 	// tr: Using an external library, e.g. libpcre.so
-	const char *const sUsingDll = C_("AboutTab|Libraries", "Using %s.");
+	const char *const sUsingDll = (const char*)C_("AboutTab|Libraries", "Using %s.");
 	// tr: License: (libraries with only a single license)
-	const char *const sLicense = C_("AboutTab|Libraries", "License: %s");
+	const char *const sLicense = (const char*)C_("AboutTab|Libraries", "License: %s");
 	// tr: Licenses: (libraries with multiple licenses)
-	const char *const sLicenses = C_("AboutTab|Libraries", "Licenses: %s");
+	const char *const sLicenses = (const char*)C_("AboutTab|Libraries", "Licenses: %s");
 
 	// Suppress "unused variable" warnings.
 	// sIntCopyOf isn't used if no internal copies of libraries are needed.
@@ -402,7 +405,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += "<a href='http://www.libpng.org/pub/png/libpng.html'>http://www.libpng.org/pub/png/libpng.html</a>" BR;
 	sLibraries += "<a href='https://github.com/glennrp/libpng'>https://github.com/glennrp/libpng</a>\n";
 	if (APNG_is_supported) {
-		sLibraries += C_("AboutTab|Libraries", "APNG patch:");
+		sLibraries += (const char*)C_("AboutTab|Libraries", "APNG patch:");
 		sLibraries += " <a href='https://sourceforge.net/projects/libpng-apng/'>https://sourceforge.net/projects/libpng-apng/</a>" BR;
 	}
 	sLibraries += rp_sprintf(sLicense, "libpng license");
@@ -501,10 +504,11 @@ void AboutTabPrivate::initLibrariesTab(void)
  */
 void AboutTabPrivate::initSupportTab(void)
 {
+	// FIXME: U8STRFIX
 	// lblSupport is RichText.
 	string sSupport;
 	sSupport.reserve(4096);
-	sSupport = C_("AboutTab|Support",
+	sSupport = (const char*)C_("AboutTab|Support",
 		"For technical support, you can visit the following websites:");
 	sSupport += br;
 
@@ -525,7 +529,7 @@ void AboutTabPrivate::initSupportTab(void)
 
 	// Email the author.
 	sSupport += br;
-	sSupport += C_("AboutTab|Support", "You can also email the developer directly:");
+	sSupport += (const char*)C_("AboutTab|Support", "You can also email the developer directly:");
 	sSupport += br;
 	sSupport += sIndent;
 	sSupport += chrBullet;

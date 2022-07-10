@@ -46,7 +46,7 @@ class PSFPrivate final : public RomDataPrivate
 		PSF_Header psfHeader;
 
 		// Tags map
-		typedef unordered_map<string, u8string> psf_tags_t;
+		typedef unordered_map<u8string, u8string> psf_tags_t;
 
 		/**
 		 * Parse the tag section.
@@ -60,7 +60,7 @@ class PSFPrivate final : public RomDataPrivate
 		 * @param version PSF version.
 		 * @return "Ripped by" tag name.
 		 */
-		const char *getRippedByTagName(uint8_t version);
+		const char8_t *getRippedByTagName(uint8_t version);
 
 		/**
 		 * Convert a PSF length string to milliseconds.
@@ -146,7 +146,7 @@ PSFPrivate::psf_tags_t PSFPrivate::parseTags(off64_t tag_addr)
 	// decoding variables, we'll have to do character conversion
 	// *after* kv is populated.
 	const size_t data_len_sz = static_cast<size_t>(data_len);
-	unique_ptr<char[]> tag_data(new char[data_len_sz]);
+	unique_ptr<char8_t[]> tag_data(new char8_t[data_len_sz]);
 	size = file->read(tag_data.get(), data_len_sz);
 	if (size != data_len_sz) {
 		// Read error.
@@ -154,11 +154,11 @@ PSFPrivate::psf_tags_t PSFPrivate::parseTags(off64_t tag_addr)
 	}
 
 	bool isUtf8 = false;
-	const char *start = tag_data.get();
-	const char *const endptr = start + data_len;
-	for (const char *p = start; p < endptr; p++) {
+	const char8_t *start = tag_data.get();
+	const char8_t *const endptr = start + data_len;
+	for (const char8_t *p = start; p < endptr; p++) {
 		// Find the next newline.
-		const char *nl = static_cast<const char*>(memchr(p, '\n', endptr-p));
+		const char8_t *nl = static_cast<const char8_t*>(memchr(p, '\n', endptr-p));
 		if (!nl) {
 			// No newline. Assume this is the end of the tag section,
 			// and read up to the end.
@@ -170,7 +170,7 @@ PSFPrivate::psf_tags_t PSFPrivate::parseTags(off64_t tag_addr)
 		}
 
 		// Find the equals sign.
-		const char *eq = static_cast<const char*>(memchr(p, '=', nl-p));
+		const char8_t *eq = static_cast<const char8_t*>(memchr(p, '=', nl-p));
 		if (eq) {
 			// Found the equals sign.
 			int k_len = (int)(eq - p);
@@ -179,14 +179,14 @@ PSFPrivate::psf_tags_t PSFPrivate::parseTags(off64_t tag_addr)
 				// Key and value are valid.
 				// NOTE: Key is case-insensitive, so convert to lowercase.
 				// NOTE: Key *must* be ASCII.
-				string key(p, k_len);
+				u8string key(p, k_len);
 				std::transform(key.begin(), key.end(), key.begin(),
-					[](unsigned char c) { return std::tolower(c); });
+					[](char8_t c) { return std::tolower(c); });
 				kv.emplace(key, u8string(reinterpret_cast<const char8_t*>(eq)+1, v_len));
 
 				// Check for UTF-8.
 				// NOTE: v_len check is redundant...
-				if (key == "utf8" && v_len > 0) {
+				if (key == U8("utf8") && v_len > 0) {
 					// "utf8" key with non-empty value.
 					// This is UTF-8.
 					isUtf8 = true;
@@ -213,21 +213,21 @@ PSFPrivate::psf_tags_t PSFPrivate::parseTags(off64_t tag_addr)
  * @param version PSF version.
  * @return "Ripped by" tag name.
  */
-const char *PSFPrivate::getRippedByTagName(uint8_t version)
+const char8_t *PSFPrivate::getRippedByTagName(uint8_t version)
 {
 	static const struct {
 		uint8_t version;
-		char tag_name[7];
+		char8_t tag_name[7];
 	} psfby_lkup_tbl[] = {
-		{PSF_VERSION_PLAYSTATION,	"psfby"},
-		{PSF_VERSION_PLAYSTATION_2,	"psfby"},
-		{PSF_VERSION_SATURN,		"ssfby"},
-		{PSF_VERSION_DREAMCAST,		"dsfby"},
-		{PSF_VERSION_MEGA_DRIVE,	"msfby"}, // FIXME: May be incorrect.
-		{PSF_VERSION_N64,		"usfby"},
-		{PSF_VERSION_GBA,		"gsfby"},
-		{PSF_VERSION_SNES,		"snsfby"},
-		{PSF_VERSION_QSOUND,		"qsfby"},
+		{PSF_VERSION_PLAYSTATION,	U8("psfby")},
+		{PSF_VERSION_PLAYSTATION_2,	U8("psfby")},
+		{PSF_VERSION_SATURN,		U8("ssfby")},
+		{PSF_VERSION_DREAMCAST,		U8("dsfby")},
+		{PSF_VERSION_MEGA_DRIVE,	U8("msfby")}, // FIXME: May be incorrect.
+		{PSF_VERSION_N64,		U8("usfby")},
+		{PSF_VERSION_GBA,		U8("gsfby")},
+		{PSF_VERSION_SNES,		U8("snsfby")},
+		{PSF_VERSION_QSOUND,		U8("qsfby")},
 	};
 
 	for (const auto &p : psfby_lkup_tbl) {
@@ -507,7 +507,7 @@ int PSF::loadFieldData(void)
 	// System.
 	static const struct {
 		uint8_t version;
-		const char *sysname;
+		const char8_t *sysname;
 	} sysname_lkup_tbl[] = {
 		{PSF_VERSION_PLAYSTATION,	NOP_C_("PSF|System", "Sony PlayStation")},
 		{PSF_VERSION_PLAYSTATION_2,	NOP_C_("PSF|System", "Sony PlayStation 2")},
@@ -521,7 +521,7 @@ int PSF::loadFieldData(void)
 	};
 
 	const uint8_t psf_version = psfHeader->version;
-	const char *sysname = nullptr;
+	const char8_t *sysname = nullptr;
 	for (const auto &p : sysname_lkup_tbl) {
 		if (p.version == psf_version) {
 			// Found a match.
@@ -530,13 +530,14 @@ int PSF::loadFieldData(void)
 		}
 	}
 
-	const char *const system_title = C_("PSF", "System");
+	// FIXME: U8STRFIX - dpgettext_expr(), rp_sprintf()
+	const char8_t *const system_title = C_("PSF", "System");
 	if (sysname) {
 		d->fields->addField_string(system_title,
-			dpgettext_expr(RP_I18N_DOMAIN, "PSF|System", sysname));
+			dpgettext_expr(RP_I18N_DOMAIN, "PSF|System", reinterpret_cast<const char*>(sysname)));
 	} else {
 		d->fields->addField_string(system_title,
-			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), psf_version));
+			rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (0x%02X)")), psf_version));
 	}
 
 	// Parse the tags.
@@ -547,59 +548,59 @@ int PSF::loadFieldData(void)
 
 	if (!tags.empty()) {
 		// Title
-		auto iter = tags.find("title");
+		auto iter = tags.find(U8("title"));
 		if (iter != tags.end()) {
 			d->fields->addField_string(C_("RomData|Audio", "Title"), iter->second);
 		}
 
 		// Artist
-		iter = tags.find("artist");
+		iter = tags.find(U8("artist"));
 		if (iter != tags.end()) {
 			d->fields->addField_string(C_("RomData|Audio", "Artist"), iter->second);
 		}
 
 		// Game
-		iter = tags.find("game");
+		iter = tags.find(U8("game"));
 		if (iter != tags.end()) {
 			d->fields->addField_string(C_("PSF", "Game"), iter->second);
 		}
 
 		// Release Date
 		// NOTE: The tag is "year", but it may be YYYY-MM-DD.
-		iter = tags.find("year");
+		iter = tags.find(U8("year"));
 		if (iter != tags.end()) {
 			d->fields->addField_string(C_("RomData", "Release Date"), iter->second);
 		}
 
 		// Genre
-		iter = tags.find("genre");
+		iter = tags.find(U8("genre"));
 		if (iter != tags.end()) {
 			d->fields->addField_string(C_("RomData|Audio", "Genre"), iter->second);
 		}
 
 		// Copyright
-		iter = tags.find("copyright");
+		iter = tags.find(U8("copyright"));
 		if (iter != tags.end()) {
 			d->fields->addField_string(C_("RomData|Audio", "Copyright"), iter->second);
 		}
 
 		// Ripped By
 		// NOTE: The tag varies based on PSF version.
-		const char *const ripped_by_tag = d->getRippedByTagName(psfHeader->version);
-		const char *const ripped_by_title = C_("PSF", "Ripped By");
+		const char8_t *const ripped_by_tag = d->getRippedByTagName(psfHeader->version);
+		const char8_t *const ripped_by_title = C_("PSF", "Ripped By");
 		iter = tags.find(ripped_by_tag);
 		if (iter != tags.end()) {
 			d->fields->addField_string(ripped_by_title, iter->second);
 		} else {
 			// Try "psfby" if the system-specific one isn't there.
-			iter = tags.find("psfby");
+			iter = tags.find(U8("psfby"));
 			if (iter != tags.end()) {
 				d->fields->addField_string(ripped_by_title, iter->second);
 			}
 		}
 
 		// Volume (floating-point number)
-		iter = tags.find("volume");
+		iter = tags.find(U8("volume"));
 		if (iter != tags.end()) {
 			d->fields->addField_string(C_("PSF", "Volume"), iter->second);
 		}
@@ -613,20 +614,20 @@ int PSF::loadFieldData(void)
 		//
 		// Decimal may be omitted.
 		// Commas are also accepted.
-		iter = tags.find("length");
+		iter = tags.find(U8("length"));
 		if (iter != tags.end()) {
 			d->fields->addField_string(C_("RomData|Audio", "Duration"), iter->second);
 		}
 
 		// Fadeout duration
 		// Same format as duration.
-		iter = tags.find("fade");
+		iter = tags.find(U8("fade"));
 		if (iter != tags.end()) {
 			d->fields->addField_string(C_("PSF", "Fadeout Duration"), iter->second);
 		}
 
 		// Comment
-		iter = tags.find("comment");
+		iter = tags.find(U8("comment"));
 		if (iter != tags.end()) {
 			d->fields->addField_string(C_("RomData|Audio", "Comment"), iter->second);
 		}
@@ -674,19 +675,19 @@ int PSF::loadMetaData(void)
 	d->metaData->reserve(8);	// Maximum of 8 metadata properties.
 
 	// Title
-	auto iter = tags.find("title");
+	auto iter = tags.find(U8("title"));
 	if (iter != tags.end()) {
 		d->metaData->addMetaData_string(Property::Title, iter->second);
 	}
 
 	// Artist
-	iter = tags.find("artist");
+	iter = tags.find(U8("artist"));
 	if (iter != tags.end()) {
 		d->metaData->addMetaData_string(Property::Artist, iter->second);
 	}
 
 	// Game
-	iter = tags.find("game");
+	iter = tags.find(U8("game"));
 	if (iter != tags.end()) {
 		// NOTE: Not exactly "album"...
 		d->metaData->addMetaData_string(Property::Album, iter->second);
@@ -694,7 +695,7 @@ int PSF::loadMetaData(void)
 
 	// Release Date
 	// NOTE: The tag is "year", but it may be YYYY-MM-DD.
-	iter = tags.find("year");
+	iter = tags.find(U8("year"));
 	if (iter != tags.end()) {
 		// Parse the release date.
 		// NOTE: Only year is supported.
@@ -714,13 +715,13 @@ int PSF::loadMetaData(void)
 	}
 
 	// Genre
-	iter = tags.find("genre");
+	iter = tags.find(U8("genre"));
 	if (iter != tags.end()) {
 		d->metaData->addMetaData_string(Property::Genre, iter->second);
 	}
 
 	// Copyright
-	iter = tags.find("copyright");
+	iter = tags.find(U8("copyright"));
 	if (iter != tags.end()) {
 		d->metaData->addMetaData_string(Property::Copyright, iter->second);
 	}
@@ -729,14 +730,14 @@ int PSF::loadMetaData(void)
 	// FIXME: No property for this...
 	// Ripped By
 	// NOTE: The tag varies based on PSF version.
-	const char *const ripped_by_tag = d->getRippedByTagName(psfHeader->version);
+	const char8_t *const ripped_by_tag = d->getRippedByTagName(psfHeader->version);
 	iter = tags.find(ripped_by_tag);
 	if (iter != tags.end()) {
 		// FIXME: No property for this...
 		d->metaData->addMetaData_string(Property::RippedBy, iter->second);
 	} else {
 		// Try "psfby" if the system-specific one isn't there.
-		iter = tags.find("psfby");
+		iter = tags.find(U8("psfby"));
 		if (iter != tags.end()) {
 			// FIXME: No property for this...
 			d->metaData->addMetaData_string(Property::RippedBy, iter->second);
@@ -753,7 +754,7 @@ int PSF::loadMetaData(void)
 	//
 	// Decimal may be omitted.
 	// Commas are also accepted.
-	iter = tags.find("length");
+	iter = tags.find(U8("length"));
 	if (iter != tags.end()) {
 		// Convert the length string to milliseconds.
 		// FIXME: lengthToMs() can't easily be converted to use char8_t.
@@ -762,7 +763,7 @@ int PSF::loadMetaData(void)
 	}
 
 	// Comment
-	iter = tags.find("comment");
+	iter = tags.find(U8("comment"));
 	if (iter != tags.end()) {
 		// TODO: Property::Comment is assumed to be user-added
 		// on KDE Dolphin 18.08.1. Needs a description property.

@@ -45,9 +45,10 @@ vector<RomData::RomOp> Nintendo3DS::romOps_int(void) const
 		const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
 	}
 
+	// FIXME: U8STRFIX - op.sfi
 	RomOp op("E&xtract SRL...", RomOp::ROF_SAVE_FILE);
-	op.sfi.title = C_("Nintendo3DS|RomOps", "Extract Nintendo DS SRL File");
-	op.sfi.filter = C_("Nintendo3DS|RomOps", "Nintendo DS SRL Files|*.nds;*.srl|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom");
+	op.sfi.title = reinterpret_cast<const char*>(C_("Nintendo3DS|RomOps", "Extract Nintendo DS SRL File"));
+	op.sfi.filter = reinterpret_cast<const char*>(C_("Nintendo3DS|RomOps", "Nintendo DS SRL Files|*.nds;*.srl|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom"));
 	op.sfi.ext = ".nds";
 
 	// Check for a DSi SRL.
@@ -70,18 +71,19 @@ vector<RomData::RomOp> Nintendo3DS::romOps_int(void) const
 int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 {
 	RP_D(Nintendo3DS);
+	// FIXME: U8STRFIX - pParams
 
 	// Currently only one ROM operation.
 	if (id != 0) {
 		pParams->status = -EINVAL;
-		pParams->msg = C_("RomData", "ROM operation ID is invalid for this object.");
+		pParams->msg = reinterpret_cast<const char*>(C_("RomData", "ROM operation ID is invalid for this object."));
 		return -EINVAL;
 	}
 
 	assert(pParams->save_filename != nullptr);
 	if (!pParams->save_filename) {
 		pParams->status = -EINVAL;
-		pParams->msg = C_("RomData", "Save filename was not specified.");
+		pParams->msg = reinterpret_cast<const char*>(C_("RomData", "Save filename was not specified."));
 		return -EINVAL;
 	}
 
@@ -95,13 +97,13 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 		pParams->status = ret;
 		if (ret == -ENOENT) {
 			// Not a DSi SRL.
-			pParams->msg = C_("RomData", "ROM operation ID is invalid for this object.");
+			pParams->msg = reinterpret_cast<const char*>(C_("RomData", "ROM operation ID is invalid for this object."));
 		} else if (ret == -EIO) {
 			// Unable to open the DSi SRL.
-			pParams->msg = C_("Nintendo3DS", "Unable to open the SRL.");
+			pParams->msg = reinterpret_cast<const char*>(C_("Nintendo3DS", "Unable to open the SRL."));
 		} else {
 			// Unknown error...
-			pParams->msg = C_("Nintendo3DS", "An unknown error occurred attempting to open the SRL.");
+			pParams->msg = reinterpret_cast<const char*>(C_("Nintendo3DS", "An unknown error occurred attempting to open the SRL."));
 		}
 		return ret;
 	}
@@ -114,7 +116,7 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 			d->mainContent->close();
 		}
 		pParams->status = -EIO;
-		pParams->msg = C_("Nintendo3DS", "Unable to open the SRL.");
+		pParams->msg = reinterpret_cast<const char*>(C_("Nintendo3DS", "Unable to open the SRL."));
 		return -EIO;
 	}
 
@@ -126,7 +128,7 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 		// No source file...
 		// TODO: More useful message? (may need std::string)
 		pParams->status = -EIO;
-		pParams->msg = C_("Nintendo3DS", "Unable to open the SRL.");
+		pParams->msg = reinterpret_cast<const char*>(C_("Nintendo3DS", "Unable to open the SRL."));
 		goto out;
 	}
 
@@ -136,7 +138,7 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 	if (!destFile->isOpen()) {
 		// TODO: More useful message? (may need std::string)
 		pParams->status = -destFile->lastError();
-		pParams->msg = C_("Nintendo3DS", "Could not open output SRL file.");
+		pParams->msg = reinterpret_cast<const char*>(C_("Nintendo3DS", "Could not open output SRL file."));
 		goto out;
 	}
 
@@ -146,13 +148,13 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 	pParams->status = ret;
 	switch (ret) {
 		case 0:
-			pParams->msg = C_("Nintendo3DS", "SRL file extracted successfully.");
+			pParams->msg = reinterpret_cast<const char*>(C_("Nintendo3DS", "SRL file extracted successfully."));
 			break;
 		case -EIO:
-			pParams->msg = C_("Nintendo3DS", "An I/O error occurred while extracting the SRL.");
+			pParams->msg = reinterpret_cast<const char*>(C_("Nintendo3DS", "An I/O error occurred while extracting the SRL."));
 			break;
 		default:
-			pParams->msg = C_("Nintendo3DS", "An unknown error occurred while extracting the SRL.");
+			pParams->msg = reinterpret_cast<const char*>(C_("Nintendo3DS", "An unknown error occurred while extracting the SRL."));
 			break;
 	}
 

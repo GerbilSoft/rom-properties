@@ -289,7 +289,7 @@ int PokemonMini::loadFieldData(void)
 		// # (decimal)
 		// FIXME: U8STRFIX - rp_sprintf()
 		//data_row.emplace_back(rp_sprintf("%u", i));
-		char8_t buf[16];
+		char8_t buf[64];
 		snprintf(reinterpret_cast<char*>(buf), sizeof(buf), "%u", i);
 		data_row.emplace_back(buf);
 
@@ -297,43 +297,49 @@ int PokemonMini::loadFieldData(void)
 		data_row.emplace_back(vectors_names[i]);
 
 		// Address
-		// FIXME: U8STRFIX
-		string s_address;
+		// FIXME: U8STRFIX - can't use rp_sprintf()
+		int len;
 		if (!memcmp(&romHeader->irqs[i][0], vec_prefix, sizeof(vec_prefix))) {
 			// Standard vector jump opcode.
 			uint32_t offset = (romHeader->irqs[i][5] << 8) | romHeader->irqs[i][4];
 			offset += pc + 3 + 3 - 1;
-			s_address = rp_sprintf("0x%04X", offset);
+			len = snprintf(reinterpret_cast<char*>(buf), sizeof(buf), "0x%04X", offset);
 		} else if (romHeader->irqs[i][0] == 0xF3) {
 			// JMPW without MOV U.
 			// Seen in some homebrew.
 			uint32_t offset = (romHeader->irqs[i][2] << 8) | romHeader->irqs[i][1];
 			offset += pc + 3 - 1;
-			s_address = rp_sprintf("0x%04X", offset);
+			len = snprintf(reinterpret_cast<char*>(buf), sizeof(buf), "0x%04X", offset);
 		} else if (!memcmp(&romHeader->irqs[i][0], vec_empty_ff, sizeof(vec_empty_ff)) ||
 			   !memcmp(&romHeader->irqs[i][0], vec_empty_00, sizeof(vec_empty_00))) {
 			// Empty vector.
-			s_address = C_("RomData|VectorTable", "None");
+			len = snprintf(reinterpret_cast<char*>(buf), sizeof(buf), "%s",
+				reinterpret_cast<const char*>(C_("RomData|VectorTable", "None")));
 		} else {
 			// Not a standard jump opcode.
 			// Show the hexdump.
-			s_address = rp_sprintf("%02X %02X %02X %02X %02X %02X",
-				romHeader->irqs[i][0], romHeader->irqs[i][1],
-				romHeader->irqs[i][2], romHeader->irqs[i][3],
-				romHeader->irqs[i][4], romHeader->irqs[i][5]);
+			len = snprintf(reinterpret_cast<char*>(buf), sizeof(buf),
+				"%02X %02X %02X %02X %02X %02X",
+					romHeader->irqs[i][0], romHeader->irqs[i][1],
+					romHeader->irqs[i][2], romHeader->irqs[i][3],
+					romHeader->irqs[i][4], romHeader->irqs[i][5]);
 		}
-		// FIXME: U8STRFIX
-		//data_row.emplace_back(std::move(s_address));
-		data_row.emplace_back(reinterpret_cast<const char8_t*>(s_address.c_str()));
+
+		if (len < 0) {
+			len = 0;
+		} else if (len >= static_cast<int>(sizeof(buf))) {
+			len = sizeof(buf)-1;
+		}
+		data_row.emplace_back(u8string(buf, len));
 	}
 
-	static const char *const vectors_headers[] = {
+	static const char8_t *const vectors_headers[] = {
 		NOP_C_("RomData|VectorTable", "#"),
 		NOP_C_("RomData|VectorTable", "Vector"),
 		NOP_C_("RomData|VectorTable", "Address"),
 	};
 	vector<string> *const v_vectors_headers = RomFields::strArrayToVector_i18n(
-		"RomData|VectorTable", vectors_headers, ARRAY_SIZE(vectors_headers));
+		U8("RomData|VectorTable"), vectors_headers, ARRAY_SIZE(vectors_headers));
 
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 8);
 	params.headers = v_vectors_headers;

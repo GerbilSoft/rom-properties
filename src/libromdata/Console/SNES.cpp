@@ -588,9 +588,6 @@ u8string SNESPrivate::getPublisher(void) const
 	// NOTE: SNES and BS-X have the same addresses for both publisher codes.
 	// Hence, we only need to check SNES.
 
-	char buf[128];
-	int len;
-
 	// Publisher.
 	if (romHeader.snes.old_publisher_code == 0x33) {
 		// New publisher code.
@@ -598,16 +595,21 @@ u8string SNESPrivate::getPublisher(void) const
 		if (publisher) {
 			s_publisher = publisher;
 		} else {
-			// FIXME: U8STRFIX
+			// FIXME: U8STRFIX - snprintf()
+			char8_t buf[128];
+			int len;
+
 			if (ISALNUM(romHeader.snes.ext.new_publisher_code[0]) &&
 			    ISALNUM(romHeader.snes.ext.new_publisher_code[1]))
 			{
-				len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%.2s)"),
-					romHeader.snes.ext.new_publisher_code);
+				len = snprintf(reinterpret_cast<char*>(buf), sizeof(buf),
+					reinterpret_cast<const char*>(C_("RomData", "Unknown (%.2s)")),
+						romHeader.snes.ext.new_publisher_code);
 			} else {
-				len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%02X %02X)"),
-					static_cast<uint8_t>(romHeader.snes.ext.new_publisher_code[0]),
-					static_cast<uint8_t>(romHeader.snes.ext.new_publisher_code[1]));
+				len = snprintf(reinterpret_cast<char*>(buf), sizeof(buf),
+					reinterpret_cast<const char*>(C_("RomData", "Unknown (%02X %02X)")),
+						static_cast<uint8_t>(romHeader.snes.ext.new_publisher_code[0]),
+						static_cast<uint8_t>(romHeader.snes.ext.new_publisher_code[1]));
 			}
 
 			if (len < 0) {
@@ -615,7 +617,7 @@ u8string SNESPrivate::getPublisher(void) const
 			} else if (len >= static_cast<int>(sizeof(buf))) {
 				len = sizeof(buf)-1;
 			}
-			s_publisher.assign(reinterpret_cast<const char8_t*>(buf), len);
+			s_publisher.assign(buf, len);
 		}
 	} else {
 		// Old publisher code.
@@ -623,15 +625,18 @@ u8string SNESPrivate::getPublisher(void) const
 		if (publisher) {
 			s_publisher = publisher;
 		} else {
-			len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%02X)"),
-				romHeader.snes.old_publisher_code);
+			// FIXME: U8STRFIX - snprintf()
+			char8_t buf[128];
+			int len = snprintf(reinterpret_cast<char*>(buf), sizeof(buf),
+				reinterpret_cast<const char*>(C_("RomData", "Unknown (%02X)")),
+					romHeader.snes.old_publisher_code);
 
 			if (len < 0) {
 				len = 0;
 			} else if (len >= static_cast<int>(sizeof(buf))) {
 				len = sizeof(buf)-1;
 			}
-			s_publisher.assign(reinterpret_cast<const char8_t*>(buf), len);
+			s_publisher.assign(buf, len);
 		}
 	}
 
@@ -1216,26 +1221,26 @@ int SNES::loadFieldData(void)
 
 	// Cartridge HW.
 	// TODO: Make this translatable.
-	static const char *const hw_base_tbl[16] = {
+	static const char8_t *const hw_base_tbl[16] = {
 		// 0
-		"ROM", "ROM, RAM", "ROM, RAM, Battery", "ROM, ",
-		"ROM, RAM, ", "ROM, RAM, Battery, ", "ROM, Battery, ", nullptr,
+		U8("ROM"), U8("ROM, RAM"), U8("ROM, RAM, Battery"), U8("ROM, "),
+		U8("ROM, RAM, "), U8("ROM, RAM, Battery, "), U8("ROM, Battery, "), nullptr,
 
 		// 8
 		nullptr,
-		"ROM, RAM, Battery, RTC-4513, ",
-		"ROM, RAM, Battery, Overclocked ",
+		U8("ROM, RAM, Battery, RTC-4513, "),
+		U8("ROM, RAM, Battery, Overclocked "),
 		nullptr,
 		nullptr, nullptr, nullptr, nullptr
 	};
-	static const char *const hw_enh_tbl[16] = {
-		"DSP-1", "Super FX", "OBC-1", "SA-1",
-		"S-DD1", "S-RTC", "Unknown", "Unknown",
-		"Unknown", "Unknown", "Unknown", "Unknown",
-		"Unknown", "Unknown", "Other", "Custom Chip"
+	static const char8_t *const hw_enh_tbl[16] = {
+		U8("DSP-1"), U8("Super FX"), U8("OBC-1"), U8("SA-1"),
+		U8("S-DD1"), U8("S-RTC"), U8("Unknown"), U8("Unknown"),
+		U8("Unknown"), U8("Unknown"), U8("Unknown"), U8("Unknown"),
+		U8("Unknown"), U8("Unknown"), U8("Other"), U8("Custom Chip")
 	};
 
-	string cart_hw;
+	u8string cart_hw;
 	uint8_t rom_mapping;
 
 	// Get the field data based on ROM type.
@@ -1248,7 +1253,7 @@ int SNES::loadFieldData(void)
 			assert(rom_mapping != 0);
 
 			// Cartridge HW.
-			const char *const hw_base = hw_base_tbl[romHeader->snes.rom_type & SNES_ROMTYPE_ROM_MASK];
+			const char8_t *const hw_base = hw_base_tbl[romHeader->snes.rom_type & SNES_ROMTYPE_ROM_MASK];
 			if (hw_base) {
 				cart_hw = hw_base;
 				if ((romHeader->snes.rom_type & SNES_ROMTYPE_ROM_MASK) >= SNES_ROMTYPE_ROM_ENH) {
@@ -1256,19 +1261,19 @@ int SNES::loadFieldData(void)
 					const uint8_t enh = (romHeader->snes.rom_type & SNES_ROMTYPE_ENH_MASK);
 					if (enh == SNES_ROMTYPE_ENH_CUSTOM) {
 						// Check the chipset subtype.
-						const char *subtype;
+						const char8_t *subtype;
 						switch (romHeader->snes.ext.chipset_subtype) {
 							case SNES_CHIPSUBTYPE_SPC7110:
-								subtype = "SPC7110";
+								subtype = U8("SPC7110");
 								break;
 							case SNES_CHIPSUBTYPE_STO10_ST011:
-								subtype = "ST010/ST011";
+								subtype = U8("ST010/ST011");
 								break;
 							case SNES_CHIPSUBTYPE_STO18:
-								subtype = "ST018";
+								subtype = U8("ST018");
 								break;
 							case SNES_CHIPSUBTYPE_CX4:
-								subtype = "CX4";
+								subtype = U8("CX4");
 								break;
 							default:
 								subtype = hw_enh_tbl[SNES_ROMTYPE_ENH_CUSTOM >> 4];
@@ -1309,7 +1314,7 @@ int SNES::loadFieldData(void)
 	d->fields->addField_string(C_("RomData", "Title"), d->getRomTitle());
 
 	// Game ID
-	const char *const game_id_title = C_("RomData", "Game ID");
+	const char8_t *const game_id_title = C_("RomData", "Game ID");
 	const u8string gameID = d->getGameID();
 	if (!gameID.empty()) {
 		d->fields->addField_string(game_id_title, gameID);
@@ -1325,21 +1330,21 @@ int SNES::loadFieldData(void)
 	// NOTE: Not translatable!
 	static const struct {
 		uint8_t rom_mapping;
-		const char *s_rom_mapping;
+		const char8_t *s_rom_mapping;
 	} rom_mapping_tbl[] = {
-		{SNES_ROMMAPPING_LoROM,			"LoROM"},
-		{SNES_ROMMAPPING_HiROM,			"HiROM"},
-		{SNES_ROMMAPPING_LoROM_S_DD1,		"LoROM + S-DD1"},
-		{SNES_ROMMAPPING_LoROM_SA_1,		"LoROM + SA-1"},
-		{SNES_ROMMAPPING_ExHiROM,		"ExHiROM"},
-		{SNES_ROMMAPPING_LoROM_FastROM,		"LoROM + FastROM"},
-		{SNES_ROMMAPPING_HiROM_FastROM,		"HiROM + FastROM"},
-		{SNES_ROMMAPPING_ExLoROM_FastROM,	"ExLoROM + FastROM"},
-		{SNES_ROMMAPPING_ExHiROM_FastROM,	"ExHiROM + FastROM"},
-		{SNES_ROMMAPPING_HiROM_FastROM_SPC7110,	"HiROM + SPC7110"},
+		{SNES_ROMMAPPING_LoROM,			U8("LoROM")},
+		{SNES_ROMMAPPING_HiROM,			U8("HiROM")},
+		{SNES_ROMMAPPING_LoROM_S_DD1,		U8("LoROM + S-DD1")},
+		{SNES_ROMMAPPING_LoROM_SA_1,		U8("LoROM + SA-1")},
+		{SNES_ROMMAPPING_ExHiROM,		U8("ExHiROM")},
+		{SNES_ROMMAPPING_LoROM_FastROM,		U8("LoROM + FastROM")},
+		{SNES_ROMMAPPING_HiROM_FastROM,		U8("HiROM + FastROM")},
+		{SNES_ROMMAPPING_ExLoROM_FastROM,	U8("ExLoROM + FastROM")},
+		{SNES_ROMMAPPING_ExHiROM_FastROM,	U8("ExHiROM + FastROM")},
+		{SNES_ROMMAPPING_HiROM_FastROM_SPC7110,	U8("HiROM + SPC7110")},
 	};
 
-	const char *s_rom_mapping = nullptr;
+	const char8_t *s_rom_mapping = nullptr;
 	for (const auto &p : rom_mapping_tbl) {
 		if (p.rom_mapping == rom_mapping) {
 			// Found a match.
@@ -1348,13 +1353,14 @@ int SNES::loadFieldData(void)
 		}
 	}
 
-	const char *const rom_mapping_title = C_("SNES", "ROM Mapping");
+	const char8_t *const rom_mapping_title = C_("SNES", "ROM Mapping");
 	if (s_rom_mapping) {
 		d->fields->addField_string(rom_mapping_title, s_rom_mapping);
 	} else {
 		// Unknown ROM mapping.
+		// FIXME: U8STRFIX - rp_sprintf()
 		d->fields->addField_string(rom_mapping_title,
-			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), rom_mapping));
+			rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (0x%02X)")), rom_mapping));
 	}
 
 	// Cartridge HW
@@ -1364,7 +1370,7 @@ int SNES::loadFieldData(void)
 
 	// Region
 	// NOTE: Not listed for BS-X because BS-X is Japan only.
-	static const char *const region_tbl[0x15] = {
+	static const char8_t *const region_tbl[0x15] = {
 		NOP_C_("Region", "Japan"),
 		NOP_C_("Region", "North America"),
 		NOP_C_("Region", "Europe"),
@@ -1386,20 +1392,21 @@ int SNES::loadFieldData(void)
 		NOP_C_("Region", "Other"),
 		NOP_C_("Region", "Other"),
 	};
-	const char *const region_lkup = (romHeader->snes.destination_code < ARRAY_SIZE(region_tbl)
+	const char8_t *const region_lkup = (romHeader->snes.destination_code < ARRAY_SIZE(region_tbl))
 					? region_tbl[romHeader->snes.destination_code]
-					: nullptr);
+					: nullptr;
 
 	switch (d->romType) {
 		case SNESPrivate::RomType::SNES: {
 			// Region
-			const char *const region_title = C_("RomData", "Region Code");
+			// FIXME: U8STRFIX - dpgettext_expr(), rp_sprintf()
+			const char8_t *const region_title = C_("RomData", "Region Code");
 			if (region_lkup) {
 				d->fields->addField_string(region_title,
-					dpgettext_expr(RP_I18N_DOMAIN, "Region", region_lkup));
+					dpgettext_expr(RP_I18N_DOMAIN, "Region", reinterpret_cast<const char*>(region_lkup)));
 			} else {
 				d->fields->addField_string(region_title,
-					rp_sprintf(C_("RomData", "Unknown (0x%02X)"),
+					rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (0x%02X)")),
 						romHeader->snes.destination_code));
 			}
 
@@ -1449,10 +1456,10 @@ int SNES::loadFieldData(void)
 			);
 
 			// Program type
-			const char *program_type;
+			const char8_t *program_type;
 			switch (le32_to_cpu(romHeader->bsx.ext.program_type)) {
 				case SNES_BSX_PRG_65c816:
-					program_type = "65c816";
+					program_type = U8("65c816");
 					break;
 				case SNES_BSX_PRG_SCRIPT:
 					program_type = C_("SNES|ProgramType", "BS-X Script");
@@ -1464,13 +1471,14 @@ int SNES::loadFieldData(void)
 					program_type = nullptr;
 					break;
 			}
-			const char *const program_type_title = C_("SNES", "Program Type");
+			const char8_t *const program_type_title = C_("SNES", "Program Type");
+			// FIXME: U8STRFIX - dpgettext_expr(), rp_sprintf()
 			if (program_type) {
 				d->fields->addField_string(program_type_title,
-					dpgettext_expr(RP_I18N_DOMAIN, "SNES|ProgramType", program_type));
+					dpgettext_expr(RP_I18N_DOMAIN, "SNES|ProgramType", reinterpret_cast<const char*>(program_type)));
 			} else {
 				d->fields->addField_string(program_type_title,
-					rp_sprintf(C_("RomData", "Unknown (0x%08X)"),
+					rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (0x%08X)")),
 						le32_to_cpu(romHeader->bsx.ext.program_type)));
 			}
 
@@ -1483,7 +1491,7 @@ int SNES::loadFieldData(void)
 			// - Each bit counts as a playthrough, so up to 15
 			//   plays are possible. After bootup, the bits are
 			//   cleared in MSB to LSB order.
-			const char *const limited_starts_title = C_("SNES", "Limited Starts");
+			const char8_t *const limited_starts_title = C_("SNES", "Limited Starts");
 			const uint16_t limited_starts = le16_to_cpu(romHeader->bsx.limited_starts);
 			if (limited_starts & 0x8000U) {
 				// Limited.

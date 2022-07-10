@@ -456,8 +456,8 @@ Config *Config::instance(void)
 /**
  * Get the image type priority data for the specified class name.
  * NOTE: Call load() before using this function.
- * @param className	[in] Class name. (ASCII)
- * @param imgTypePrio	[out] Image type priority data.
+ * @param className	[in] Class name [ASCII]
+ * @param imgTypePrio	[out] Image type priority data
  * @return ImgTypeResult
  */
 Config::ImgTypeResult Config::getImgTypePrio(const char *className, ImgTypePrio_t *imgTypePrio) const

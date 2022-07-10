@@ -70,8 +70,8 @@ class RP_LIBROMDATA_PUBLIC Config : public ConfReader
 		/**
 		 * Get the image type priority data for the specified class name.
 		 * NOTE: Call load() before using this function.
-		 * @param className	[in] Class name. (ASCII)
-		 * @param imgTypePrio	[out] Image type priority data.
+		 * @param className	[in] Class name [ASCII]
+		 * @param imgTypePrio	[out] Image type priority data
 		 * @return ImgTypeResult
 		 */
 		ImgTypeResult getImgTypePrio(const char *className, ImgTypePrio_t *imgTypePrio) const;

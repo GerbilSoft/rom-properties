@@ -191,16 +191,16 @@ void RomDataViewPrivate::doRomOp_stdop(int id)
 		return;
 	const uint32_t sel_lc = (cboLanguage ? cboLanguage->selectedLC() : 0);
 
-	const char *title = nullptr;
-	const char *filter = nullptr;
-	const char *default_ext = nullptr;
+	const char8_t *title = nullptr;
+	const char8_t *filter = nullptr;
+	const char8_t *default_ext = nullptr;
 
 	// Check the standard operation.
 	// FIXME: U8STRFIX
 	switch (id) {
 		case OPTION_COPY_TEXT: {
 			ostringstream oss;
-			oss << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"),
+			oss << "== " << rp_sprintf(reinterpret_cast<const char*>(C_("RomDataView", "File: '%s'")),
 				reinterpret_cast<const char*>(rom_filename)) << std::endl;
 			ROMOutput ro(romData, sel_lc);
 			oss << ro;
@@ -221,13 +221,13 @@ void RomDataViewPrivate::doRomOp_stdop(int id)
 		case OPTION_EXPORT_TEXT:
 			title = C_("RomDataView", "Export to Text File");
 			filter = C_("RomDataView", "Text Files|*.txt|text/plain|All Files|*.*|-");
-			default_ext = ".txt";
+			default_ext = U8(".txt");
 			break;
 
 		case OPTION_EXPORT_JSON:
 			title = C_("RomDataView", "Export to JSON File");
 			filter = C_("RomDataView", "JSON Files|*.json|application/json|All Files|*.*|-");
-			default_ext = ".json";
+			default_ext = U8(".json");
 			break;
 
 		default:
@@ -243,7 +243,7 @@ void RomDataViewPrivate::doRomOp_stdop(int id)
 	}
 
 	QString defaultFileName = prevExportDir + QChar(L'/') + fi.completeBaseName();
-	defaultFileName += QLatin1String(default_ext);
+	defaultFileName += U82Q(default_ext);
 
 	// TODO: Rework so it's not application-modal.
 	Q_Q(RomDataView);
@@ -265,9 +265,12 @@ void RomDataViewPrivate::doRomOp_stdop(int id)
 		return;
 	}
 
+	// FIXME: U8STRFIX - rp_sprintf()
 	switch (id) {
 		case OPTION_EXPORT_TEXT: {
-			ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
+			ofs << "== " << rp_sprintf(reinterpret_cast<const char*>(
+				C_("RomDataView", "File: '%s'")),
+				reinterpret_cast<const char*>(rom_filename)) << std::endl;
 			ROMOutput ro(romData, sel_lc);
 			ofs << ro;
 			break;
@@ -317,7 +320,8 @@ void RomDataView::btnOptions_triggered(int id)
 	const RomData::RomOp *op = &ops[id];
 	if (op->flags & RomData::RomOp::ROF_SAVE_FILE) {
 		// Add "All Files" to the filter.
-		QString filter = rpFileDialogFilterToQt(op->sfi.filter);
+		// FIXME: U8STFIX - op.sfi
+		QString filter = rpFileDialogFilterToQt(reinterpret_cast<const char8_t*>(op->sfi.filter));
 		if (!filter.isEmpty()) {
 			filter += QLatin1String(";;");
 		}

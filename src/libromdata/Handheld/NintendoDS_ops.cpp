@@ -153,9 +153,9 @@ NintendoDSPrivate::NDS_SecureArea NintendoDSPrivate::checkNDSSecureArea(void)
  * This uses the cached secArea value.
  * @return NDS Secure Area type string.
  */
-const char *NintendoDSPrivate::getNDSSecureAreaString(void)
+const char8_t *NintendoDSPrivate::getNDSSecureAreaString(void)
 {
-	static const char *const nds_secure_area_type[] = {
+	static const char8_t *const nds_secure_area_type[] = {
 		nullptr,
 		NOP_C_("NintendoDS|SecureArea", "Homebrew"),
 		NOP_C_("NintendoDS|SecureArea", "Multiboot"),
@@ -166,8 +166,10 @@ const char *NintendoDSPrivate::getNDSSecureAreaString(void)
 	if (secArea >= NintendoDSPrivate::NDS_SECAREA_HOMEBREW &&
 	    secArea <= NintendoDSPrivate::NDS_SECAREA_ENCRYPTED)
 	{
-		return dpgettext_expr(RP_I18N_DOMAIN,
-			"NintendoDS|SecureArea", nds_secure_area_type[secArea]);
+		// FIXME: U8STRFIX - dpgettext_expr()
+		return reinterpret_cast<const char8_t*>(
+			dpgettext_expr(RP_I18N_DOMAIN, "NintendoDS|SecureArea",
+				reinterpret_cast<const char*>(nds_secure_area_type[secArea])));
 	}
 
 	return C_("RomData", "Unknown");
@@ -217,9 +219,10 @@ vector<RomData::RomOp> NintendoDS::romOps_int(void) const
 		// Empty ROM?
 		flags = 0;
 	}
+	// FIXME: U8STRFIX - op.sfi
 	ops[0].desc = showUntrim
-		? C_("NintendoDS|RomOps", "&Untrim ROM")
-		: C_("NintendoDS|RomOps", "&Trim ROM");
+		? reinterpret_cast<const char*>(C_("NintendoDS|RomOps", "&Untrim ROM"))
+		: reinterpret_cast<const char*>(C_("NintendoDS|RomOps", "&Trim ROM"));
 	ops[0].flags = flags;
 
 #ifdef ENABLE_DECRYPTION
@@ -240,8 +243,8 @@ vector<RomData::RomOp> NintendoDS::romOps_int(void) const
 			break;
 	}
 	ops[1].desc = showEncrypt
-		? C_("NintendoDS|RomOps", "Encrypt ROM")
-		: C_("NintendoDS|RomOps", "Decrypt ROM");
+		? reinterpret_cast<const char*>(C_("NintendoDS|RomOps", "Encrypt ROM"))
+		: reinterpret_cast<const char*>(C_("NintendoDS|RomOps", "Decrypt ROM"));
 	ops[1].flags = flags;
 #endif /* ENABLE_DECRYPTION */
 
@@ -259,6 +262,7 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 {
 	RP_D(NintendoDS);
 	int ret = 0;
+	// FIXME: U8STRFIX - pParams
 
 	switch (id) {
 		case 0: {
@@ -269,7 +273,7 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 			if (total_used_rom_size < 1024) {
 				// Invalid ROM size in header.
 				pParams->status = -EIO;
-				pParams->msg = C_("NintendoDS", "ROM header has an invalid \"Used ROM Size\" field.");
+				pParams->msg = reinterpret_cast<const char*>(C_("NintendoDS", "ROM header has an invalid \"Used ROM Size\" field."));
 				return -EIO;
 			}
 
@@ -282,7 +286,7 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 				if (next_pow2 <= total_used_rom_size) {
 					// Something screwed up here...
 					pParams->status = -EIO;
-					pParams->msg = C_("NintendoDS", "ROM size would not change if untrimmed.");
+					pParams->msg = reinterpret_cast<const char*>(C_("NintendoDS", "ROM size would not change if untrimmed."));
 					return -EIO;
 				}
 
@@ -299,7 +303,7 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 						ret = -EIO;
 					}
 					pParams->status = ret;
-					pParams->msg = C_("NintendoDS", "Seek error when attempting to untrim ROM.");
+					pParams->msg = reinterpret_cast<const char*>(C_("NintendoDS", "Seek error when attempting to untrim ROM."));
 					return ret;
 				}
 
@@ -316,7 +320,7 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 							ret = -EIO;
 						}
 						pParams->status = ret;
-						pParams->msg = C_("NintendoDS", "Write error when attempting to untrim ROM.");
+						pParams->msg = reinterpret_cast<const char*>(C_("NintendoDS", "Write error when attempting to untrim ROM."));
 						return ret;
 					}
 					pos += toWrite;
@@ -332,7 +336,7 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 							ret = -EIO;
 						}
 						pParams->status = ret;
-						pParams->msg = C_("NintendoDS", "Write error when attempting to untrim ROM.");
+						pParams->msg = reinterpret_cast<const char*>(C_("NintendoDS", "Write error when attempting to untrim ROM."));
 						return ret;
 					}
 				}
@@ -351,7 +355,7 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 						ret = -EIO;
 					}
 					pParams->status = ret;
-					pParams->msg = C_("NintendoDS", "Truncate failed when attempting to trim ROM.");
+					pParams->msg = reinterpret_cast<const char*>(C_("NintendoDS", "Truncate failed when attempting to trim ROM."));
 					return ret;
 				}
 				d->file->flush();
@@ -361,14 +365,14 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 				assert(!"ROM can't be trimmed or untrimmed; menu option should have been disabled.");
 				ret = -EIO;
 				pParams->status = EIO;
-				pParams->msg = C_("NintendoDS", "ROM can't be trimmed or untrimmed.");
+				pParams->msg = reinterpret_cast<const char*>(C_("NintendoDS", "ROM can't be trimmed or untrimmed."));
 				return ret;
 			}
 
 			pParams->status = 0;
 			pParams->msg = doTrim
-				? C_("NintendoDS", "ROM image trimmed successfully.")
-				: C_("NintendoDS", "ROM image untrimmed successfully.");
+				? reinterpret_cast<const char*>(C_("NintendoDS", "ROM image trimmed successfully."))
+				: reinterpret_cast<const char*>(C_("NintendoDS", "ROM image untrimmed successfully."));
 			break;
 		}
 
@@ -386,7 +390,7 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 				// Cannot perform this ROM operation.
 				ret = -ENOTSUP;
 				pParams->status = ret;
-				pParams->msg = C_("NintendoDS", "Secure area cannot be adjusted in this ROM.");
+				pParams->msg = reinterpret_cast<const char*>(C_("NintendoDS", "Secure area cannot be adjusted in this ROM."));
 				break;
 			}
 
@@ -426,8 +430,9 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 #endif /* ENABLE_DSi_SECURE_AREA */
 			if (ret < 0) {
 				pParams->status = ret;
-				pParams->msg = rp_sprintf_p(C_("RomData", "Could not open '%1$s': %2$s"),
-					filename, strerror(-ret));
+				pParams->msg = rp_sprintf_p(
+					reinterpret_cast<const char*>(C_("RomData", "Could not open '%1$s': %2$s")),
+						filename, strerror(-ret));
 				break;
 			} else if (ret > 0) {
 				pParams->status = -EIO;
@@ -436,13 +441,15 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 						// TODO: Show actual file size?
 						ostringstream oss_exp;
 						oss_exp << NDS_BLOWFISH_SIZE;
-						pParams->msg = rp_sprintf_p(C_("NintendoDS", "File '%1$s' has the wrong size. (should be %2$s bytes)"),
-							filename, oss_exp.str().c_str());
+						pParams->msg = rp_sprintf_p(
+							reinterpret_cast<const char*>(C_("NintendoDS", "File '%1$s' has the wrong size. (should be %2$s bytes)")),
+								filename, oss_exp.str().c_str());
 						break;
 					}
 					case 2:
 						// Wrong hash.
-						pParams->msg = rp_sprintf(C_("NintendoDS", "File '%s' has the wrong MD5 hash."), filename);
+						pParams->msg = rp_sprintf(
+							reinterpret_cast<const char*>(C_("NintendoDS", "File '%s' has the wrong MD5 hash.")), filename);
 						break;
 					default:
 						assert(!"Unhandled NDS Blowfish error code.");
@@ -468,7 +475,7 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 					ret = -EIO;
 				}
 				pParams->status = ret;
-				pParams->msg = C_("NintendoDS", "Could not read the NDS Secure Area.");
+				pParams->msg = reinterpret_cast<const char*>(C_("NintendoDS", "Could not read the NDS Secure Area."));
 				break;
 			}
 
@@ -480,8 +487,8 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 				// Error encrypting/decrypting.
 				pParams->status = -EIO;
 				pParams->msg = doEncrypt
-					? C_("NintendoDS", "Encrypting the NDS Secure Area failed.")
-					: C_("NintendoDS", "Decrypting the NDS Secure Area failed.");
+					? reinterpret_cast<const char*>(C_("NintendoDS", "Encrypting the NDS Secure Area failed."))
+					: reinterpret_cast<const char*>(C_("NintendoDS", "Decrypting the NDS Secure Area failed."));
 				break;
 			}
 
@@ -500,7 +507,7 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 						ret = -EIO;
 					}
 					pParams->status = ret;
-					pParams->msg = C_("NintendoDS", "Could not read the DSi Secure Area.");
+					pParams->msg = reinterpret_cast<const char*>(C_("NintendoDS", "Could not read the DSi Secure Area."));
 					break;
 				}
 
@@ -513,8 +520,8 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 					// Error encrypting/decrypting.
 					pParams->status = -EIO;
 					pParams->msg = doEncrypt
-						? C_("NintendoDS", "Encrypting the DSi Secure Area failed.")
-						: C_("NintendoDS", "Decrypting the DSi Secure Area failed.");
+						? reinterpret_cast<const char*>(C_("NintendoDS", "Encrypting the DSi Secure Area failed."))
+						: reinterpret_cast<const char*>(C_("NintendoDS", "Decrypting the DSi Secure Area failed."));
 					break;
 				}
 
@@ -527,7 +534,7 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 						ret = -EIO;
 					}
 					pParams->status = ret;
-					pParams->msg = C_("NintendoDS", "Could not write the updated DSi Secure Area.");
+					pParams->msg = reinterpret_cast<const char*>(C_("NintendoDS", "Could not write the updated DSi Secure Area."));
 					break;
 				}
 			}
@@ -543,7 +550,7 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 					ret = -EIO;
 				}
 				pParams->status = ret;
-				pParams->msg = C_("NintendoDS", "Could not write the updated NDS Secure Area.");
+				pParams->msg = reinterpret_cast<const char*>(C_("NintendoDS", "Could not write the updated NDS Secure Area."));
 				break;
 			}
 
@@ -564,11 +571,12 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 				}
 				if (d->fieldIdx_secArea >= 0) {
 					field = const_cast<RomFields::Field*>(d->fields->at(d->fieldIdx_secArea));
-					const char *const s_secArea = d->getNDSSecureAreaString();
+					const char8_t *const s_secArea = d->getNDSSecureAreaString();
+					// FIXME: U8STRFIX - RomField
 					if (field->data.str) {
-						const_cast<string*>(field->data.str)->assign(s_secArea);
+						const_cast<string*>(field->data.str)->assign(reinterpret_cast<const char*>(s_secArea));
 					} else {
-						field->data.str = new string(s_secArea);
+						field->data.str = new string(reinterpret_cast<const char*>(s_secArea));
 					}
 				}
 			}
@@ -579,10 +587,10 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 #endif /* ENABLE_DSi_SECURE_AREA */
 			pParams->status = 0;
 			pParams->msg = doEncrypt
-				? NC_("NintendoDS", "Secure Area encrypted successfully.",
-					"Secure Areas encrypted successfully.", (dsi ? 2 : 1))
-				: NC_("NintendoDS", "Secure Area decrypted successfully.",
-					"Secure Areas decrypted successfully.", (dsi ? 2 : 1));
+				? reinterpret_cast<const char*>(NC_("NintendoDS", "Secure Area encrypted successfully.",
+					"Secure Areas encrypted successfully.", (dsi ? 2 : 1)))
+				: reinterpret_cast<const char*>(NC_("NintendoDS", "Secure Area decrypted successfully.",
+					"Secure Areas decrypted successfully.", (dsi ? 2 : 1)));
 			pParams->fieldIdx.reserve(2);
 			if (d->fieldIdx_secData >= 0) {
 				pParams->fieldIdx.emplace_back(d->fieldIdx_secData);
@@ -597,7 +605,7 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 		default:
 			ret = -EINVAL;
 			pParams->status = -EINVAL;
-			pParams->msg = C_("RomData", "ROM operation ID is invalid for this object.");
+			pParams->msg = reinterpret_cast<const char*>(C_("RomData", "ROM operation ID is invalid for this object."));
 			break;
 	}
 

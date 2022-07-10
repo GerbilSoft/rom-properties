@@ -25,22 +25,22 @@ namespace LibRomData { namespace ImageTypesConfig {
 
 /**
  * Get the number of image types that can be configured.
- * @return Image type count.
+ * @return Image type count
  */
 RP_LIBROMDATA_PUBLIC
 unsigned int imageTypeCount(void);
 
 /**
  * Get an image type name.
- * @param imageType Image type ID.
+ * @param imageType Image type ID
  * @return Image type name, or nullptr if invalid.
  */
 RP_LIBROMDATA_PUBLIC
-const char *imageTypeName(unsigned int imageType);
+const char8_t *imageTypeName(unsigned int imageType);
 
 /**
  * Get the number of systems that can be configured.
- * @return System count.
+ * @return System count
  */
 RP_LIBROMDATA_PUBLIC
 unsigned int sysCount(void);
@@ -51,10 +51,10 @@ unsigned int sysCount(void);
  * @return System name, or nullptr if invalid.
  */
 RP_LIBROMDATA_PUBLIC
-const char *sysName(unsigned int sys);
+const char8_t *sysName(unsigned int sys);
 
 /**
- * Get a class name.
+ * Get a class name. [ASCII]
  * @param sys System ID
  * @return Class name, or nullptr if invalid.
  */

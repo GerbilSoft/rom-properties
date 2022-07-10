@@ -619,8 +619,7 @@ const char8_t *lookup_ines_mirroring(int mapper, int submapper, bool vert, bool 
 
 	// NOTE: to prevent useless noise like "Mapper: MMC5, Mirroring: MMC5-like"), all of the weird
 	// mirroring types are grouped under "Mapper-controlled"
-	// FIXME: U8STRFIX
-	const char *s_ret;
+	const char8_t *s_ret;
 	switch (mirror) {
 		case NESMirroring::Header:
 			s_ret = (vert) ? C_("NES|Mirroring", "Vertical") : C_("NES|Mirroring", "Horizontal");
@@ -648,7 +647,7 @@ const char8_t *lookup_ines_mirroring(int mapper, int submapper, bool vert, bool 
 			s_ret = C_("NES|Mirroring", "Four Screens");
 			break;
 	}
-	return reinterpret_cast<const char8_t*>(s_ret);
+	return s_ret;
 }
 
 } }

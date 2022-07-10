@@ -131,13 +131,13 @@ rp_nautilus_provider_get_pages(NautilusPropertyPageProvider *provider, GList *fi
 		gtk_widget_show(romDataView);
 		romData->unref();
 
-		// tr: Tab title.
-		const char *const tabTitle = C_("RomDataView", "ROM Properties");
+		// tr: Tab title
+		const char8_t *const tabTitle = C_("RomDataView", "ROM Properties");
 
 		// Create the NautilusPropertyPage.
 		NautilusPropertyPage *const page = nautilus_property_page_new(
 			"RomPropertiesPage::property_page",
-			gtk_label_new(tabTitle), romDataView);
+			gtk_label_new(reinterpret_cast<const char*>(tabTitle)), romDataView);
 
 		// Add the page to the pages provided by this plugin.
 		pages = g_list_prepend(pages, page);

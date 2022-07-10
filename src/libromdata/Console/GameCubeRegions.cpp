@@ -26,7 +26,7 @@ namespace LibRomData {
  * @param pIsDefault	[out,opt] Set to True if the region string represents the default region for the ID4.
  * @return String, or nullptr if the region value is invalid.
  */
-const char *GameCubeRegions::gcnRegionToString(unsigned int gcnRegion, char idRegion, bool *pIsDefault)
+const char8_t *GameCubeRegions::gcnRegionToString(unsigned int gcnRegion, char idRegion, bool *pIsDefault)
 {
 	/**
 	 * There are two region codes for GCN/Wii games:

@@ -456,10 +456,11 @@ void ISOPrivate::addPVDCommon(const T *pvd)
 	const uint16_t volume_seq_number = host16(pvd->volume_seq_number);
 	const uint16_t volume_set_size = host16(pvd->volume_set_size);
 	if (volume_seq_number != 0 && volume_set_size > 1) {
-		const char *const disc_number_title = C_("RomData", "Disc #");
+		// FIXME: U8STRFIX - rp_sprintf_p()
+		const char8_t *const disc_number_title = C_("RomData", "Disc #");
 		fields->addField_string(disc_number_title,
 			// tr: Disc X of Y (for multi-disc games)
-			rp_sprintf_p(C_("RomData|Disc", "%1$u of %2$u"),
+			rp_sprintf_p(reinterpret_cast<const char*>(C_("RomData|Disc", "%1$u of %2$u")),
 				volume_seq_number, volume_set_size));
 	}
 

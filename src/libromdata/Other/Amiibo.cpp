@@ -17,6 +17,7 @@ using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::string;
+using std::u8string;
 using std::vector;
 
 namespace LibRomData {
@@ -395,7 +396,7 @@ int Amiibo::loadFieldData(void)
 		RomFields::STRF_MONOSPACE);
 
 	// tr: amiibo type.
-	static const char *const amiibo_type_tbl[4] = {
+	static const char8_t *const amiibo_type_tbl[4] = {
 		// tr: NFP_TYPE_FIGURINE == standard amiibo
 		NOP_C_("Amiibo|Type", "Figurine"),
 		// tr: NFP_TYPE_CARD == amiibo card
@@ -405,19 +406,20 @@ int Amiibo::loadFieldData(void)
 		// tr: NFP_TYPE_BAND == Power-Up Band
 		NOP_C_("Amiibo|Type", "Power-Up Band"),
 	};
-	const char *const amiibo_type_title = C_("Amiibo", "amiibo Type");
+	// FIXME: U8STRFIX - dpgettext_expr(), rp_sprintf()
+	const char8_t *const amiibo_type_title = C_("Amiibo", "amiibo Type");
 	if ((char_id & 0xFF) < ARRAY_SIZE(amiibo_type_tbl)) {
 		d->fields->addField_string(amiibo_type_title,
-			dpgettext_expr(RP_I18N_DOMAIN, "Amiibo|Type", amiibo_type_tbl[char_id & 0xFF]));
+			dpgettext_expr(RP_I18N_DOMAIN, "Amiibo|Type", reinterpret_cast<const char*>(amiibo_type_tbl[char_id & 0xFF])));
 	} else {
 		// Invalid amiibo type.
 		d->fields->addField_string(amiibo_type_title,
-			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), (char_id & 0xFF)));
+			rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (0x%02X)")), (char_id & 0xFF)));
 	}
 
 	// Get the AmiiboData instance.
 	const AmiiboData *const pAmiiboData = AmiiboData::instance();
-	const char8_t *const s_unknown_value = reinterpret_cast<const char8_t*>(C_("RomData", "Unknown"));
+	const char8_t *const s_unknown_value = C_("RomData", "Unknown");
 
 	// Character series
 	const char8_t *const char_series = pAmiiboData->lookup_char_series_name(char_id);
@@ -447,10 +449,11 @@ int Amiibo::loadFieldData(void)
 		}
 	}
 
+	// FIXME: U8STRFIX - rp_sprintf()
 	// tr: Credits for amiibo image downloads.
-	const string credits = rp_sprintf(
-		C_("Amiibo", "amiibo images provided by %s,\nthe Unofficial amiibo Database."),
-		"<a href=\"https://amiibo.life/\">amiibo.life</a>");
+	const u8string credits = reinterpret_cast<const char8_t*>(rp_sprintf(
+		reinterpret_cast<const char*>(C_("Amiibo", "amiibo images provided by %s,\nthe Unofficial amiibo Database.")),
+			"<a href=\"https://amiibo.life/\">amiibo.life</a>").c_str());
 	d->fields->addField_string(C_("Amiibo", "Credits"), credits, RomFields::STRF_CREDITS);
 
 	// Finished reading the field data.

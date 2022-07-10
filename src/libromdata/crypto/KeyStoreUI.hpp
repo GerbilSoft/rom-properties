@@ -105,10 +105,10 @@ class RP_LIBROMDATA_PUBLIC KeyStoreUI
 
 		/**
 		 * Get a section name.
-		 * @param sectIdx Section index.
+		 * @param sectIdx Section index
 		 * @return Section name, or nullptr on error.
 		 */
-		const char *sectName(int sectIdx) const;
+		const char8_t *sectName(int sectIdx) const;
 
 		/**
 		 * Get the number of keys in a given section.

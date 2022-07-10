@@ -48,12 +48,6 @@ using std::u8string;
 using std::unique_ptr;
 using std::vector;
 
-// FIXME: U8STRFIX - NOP_C_
-#ifdef NOP_C_
-#  undef NOP_C_
-#endif
-#define NOP_C_(ctx, str) U8(str)
-
 namespace LibRomData {
 
 class GameCubePrivate final : public RomDataPrivate
@@ -203,7 +197,7 @@ class GameCubePrivate final : public RomDataPrivate
 		 * @param partition Partition to check.
 		 * @return nullptr if partition is readable; error message if not.
 		 */
-		const char *wii_getCryptoStatus(WiiPartition *partition);
+		const char8_t *wii_getCryptoStatus(WiiPartition *partition);
 };
 
 ROMDATA_IMPL(GameCube)
@@ -464,11 +458,13 @@ u8string GameCubePrivate::getPublisher(void) const
 	    ISALNUM(discHeader.company[1]))
 	{
 		// Disc ID is alphanumeric.
-		len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%.2s)"),
+		len = snprintf(buf, sizeof(buf),
+			reinterpret_cast<const char*>(C_("RomData", "Unknown (%.2s)")),
 			discHeader.company);
 	} else {
 		// Disc ID is not alphanumeric.
-		len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%02X %02X)"),
+		len = snprintf(buf, sizeof(buf),
+			reinterpret_cast<const char*>(C_("RomData", "Unknown (%02X %02X)")),
 			static_cast<uint8_t>(discHeader.company[0]),
 			static_cast<uint8_t>(discHeader.company[1]));
 	}
@@ -675,7 +671,7 @@ int GameCubePrivate::wii_addBannerName(void) const
  * @param partition Partition to check.
  * @return nullptr if partition is readable; error message if not.
  */
-const char *GameCubePrivate::wii_getCryptoStatus(WiiPartition *partition)
+const char8_t *GameCubePrivate::wii_getCryptoStatus(WiiPartition *partition)
 {
 	const KeyManager::VerifyResult res = partition->verifyResult();
 	if (res == KeyManager::VerifyResult::KeyNotFound) {
@@ -692,7 +688,7 @@ const char *GameCubePrivate::wii_getCryptoStatus(WiiPartition *partition)
 		return C_("Wii", "Incrementing values");
 	}
 
-	const char *err = KeyManager::verifyResultToString(res);
+	const char8_t *err = KeyManager::verifyResultToString(res);
 	if (!err) {
 		err = C_("GameCube", "ERROR: Unknown error. (THIS IS A BUG!)");
 	}
@@ -1499,7 +1495,7 @@ int GameCube::loadFieldData(void)
 
 	// Game title.
 	// TODO: Is Shift-JIS actually permissible here?
-	const char *const title_title = C_("RomData", "Title");
+	const char8_t *const title_title = C_("RomData", "Title");
 	switch (d->gcnRegion) {
 		case GCN_REGION_USA:
 		case GCN_REGION_EUR:
@@ -1507,8 +1503,7 @@ int GameCube::loadFieldData(void)
 		default:
 			// USA/PAL uses cp1252.
 			d->fields->addField_string(title_title,
-				cp1252_to_utf8(
-					discHeader->game_title, sizeof(discHeader->game_title)));
+				cp1252_to_utf8(discHeader->game_title, sizeof(discHeader->game_title)));
 			break;
 
 		case GCN_REGION_JPN:
@@ -1517,8 +1512,7 @@ int GameCube::loadFieldData(void)
 		case GCN_REGION_TWN:
 			// Japan uses Shift-JIS.
 			d->fields->addField_string(title_title,
-				cp1252_sjis_to_utf8(
-					discHeader->game_title, sizeof(discHeader->game_title)));
+				cp1252_sjis_to_utf8(discHeader->game_title, sizeof(discHeader->game_title)));
 			break;
 	}
 
@@ -1527,9 +1521,9 @@ int GameCube::loadFieldData(void)
 	// (GameCube NDDEMO has ID6 "00\0E01".)
 	char id6[7]; 
 	for (int i = 0; i < 6; i++) {
-		id6[i] = (ISPRINT(d->discHeader.id6[i])
+		id6[i] = ISPRINT(d->discHeader.id6[i])
 			? d->discHeader.id6[i]
-			: '_');
+			: '_';
 	}
 	d->fields->addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id6, 6));
 
@@ -1556,9 +1550,9 @@ int GameCube::loadFieldData(void)
 	// and the region code is stored in d->gcnRegion.
 	if (d->hasRegionCode) {
 		bool isDefault;
-		const char *const region =
+		const char8_t *const region =
 			GameCubeRegions::gcnRegionToString(d->gcnRegion, discHeader->id4[3], &isDefault);
-		const char *const region_code_title = C_("RomData", "Region Code");
+		const char8_t *const region_code_title = C_("RomData", "Region Code");
 		if (region) {
 			// Append the GCN region name (USA/JPN/EUR/KOR) if
 			// the ID4 value differs.
@@ -1567,10 +1561,13 @@ int GameCube::loadFieldData(void)
 				suffix = GameCubeRegions::gcnRegionToAbbrevString(d->gcnRegion);
 			}
 
-			string s_region;
+			u8string s_region;
 			if (suffix) {
+				// FIXME: U8STRFIX - rp_sprintf_p()
 				// tr: %1%s == full region name, %2$s == abbreviation
-				s_region = rp_sprintf_p(C_("Wii", "%1$s (%2$s)"), region, suffix);
+				s_region = reinterpret_cast<const char8_t*>(
+					rp_sprintf_p(reinterpret_cast<const char*>(C_("Wii", "%1$s (%2$s)")),
+						reinterpret_cast<const char*>(region), suffix).c_str());
 			} else {
 				s_region = region;
 			}
@@ -1578,8 +1575,9 @@ int GameCube::loadFieldData(void)
 			d->fields->addField_string(region_code_title, s_region);
 		} else {
 			// Invalid region code.
+			// FIXME: U8STRFIX - rp_sprintf()
 			d->fields->addField_string(region_code_title,
-				rp_sprintf(C_("RomData", "Unknown (0x%08X)"), d->gcnRegion));
+				rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (0x%08X)")), d->gcnRegion));
 		}
 
 		if ((d->discType & GameCubePrivate::DISC_SYSTEM_MASK) != GameCubePrivate::DISC_SYSTEM_WII) {
@@ -1610,17 +1608,18 @@ int GameCube::loadFieldData(void)
 					be32_to_cpu(tmdHeader->title_id.hi),
 					be32_to_cpu(tmdHeader->title_id.lo)));
 
-			// Access rights.
+			// Access rights
+			// FIXME: U8STRFIX
 			vector<string> *const v_access_rights_hdr = new vector<string>();
 			v_access_rights_hdr->reserve(2);
 			v_access_rights_hdr->emplace_back("AHBPROT");
-			v_access_rights_hdr->emplace_back(C_("Wii", "DVD Video"));
+			v_access_rights_hdr->emplace_back(reinterpret_cast<const char*>(C_("Wii", "DVD Video")));
 			d->fields->addField_bitfield(C_("Wii", "Access Rights"),
 				v_access_rights_hdr, 0, be32_to_cpu(tmdHeader->access_rights));
 
 			// Required IOS version.
 			// TODO: Is this the best place for it?
-			const char *const ios_version_title = C_("Wii", "IOS Version");
+			const char8_t *const ios_version_title = C_("Wii", "IOS Version");
 			const uint32_t ios_lo = be32_to_cpu(tmdHeader->sys_version.lo);
 			if (tmdHeader->sys_version.hi == cpu_to_be32(0x00000001) &&
 			    ios_lo > 2 && ios_lo < 0x300)
@@ -1631,10 +1630,12 @@ int GameCube::loadFieldData(void)
 			} else if (tmdHeader->sys_version.id != 0) {
 				// Non-standard IOS slot.
 				// Print the full title ID.
-				d->fields->addField_string(ios_version_title,
-					rp_sprintf("%08X-%08X",
-						be32_to_cpu(tmdHeader->sys_version.hi),
-						be32_to_cpu(tmdHeader->sys_version.lo)));
+				// FIXME: U8STRFIX - switched from rp_sprintf() 
+				char8_t buf[32];
+				snprintf(reinterpret_cast<char*>(buf), sizeof(buf), "%08X-%08X",
+					be32_to_cpu(tmdHeader->sys_version.hi),
+					be32_to_cpu(tmdHeader->sys_version.lo));
+				d->fields->addField_string(ios_version_title, buf);
 			}
 		}
 	}
@@ -1684,7 +1685,7 @@ int GameCube::loadFieldData(void)
 		if (ret != 0) {
 			// Unable to load the game name from opening.bnr.
 			// This might be because it's homebrew, a prototype, or a key error.
-			const char *const game_info_title = C_("GameCube", "Game Info");
+			const char8_t *const game_info_title = C_("GameCube", "Game Info");
 			if (!d->gamePartition) {
 				// No game partition.
 				if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) != GameCubePrivate::DISC_FORMAT_PARTITION) {
@@ -1693,15 +1694,16 @@ int GameCube::loadFieldData(void)
 				}
 			} else if (d->gamePartition->verifyResult() != KeyManager::VerifyResult::OK) {
 				// Key error.
-				const char *status = d->wii_getCryptoStatus(d->gamePartition);
+				// FIXME: U8STRFIX - rp_sprintf()
+				const char8_t *const status = d->wii_getCryptoStatus(d->gamePartition);
 				d->fields->addField_string(game_info_title,
-					rp_sprintf(C_("GameCube", "ERROR: %s"),
-						(status ? status : C_("GameCube", "Unknown"))));
+					rp_sprintf(reinterpret_cast<const char*>(C_("GameCube", "ERROR: %s")),
+						(status ? reinterpret_cast<const char*>(status) : reinterpret_cast<const char*>(C_("GameCube", "Unknown")))));
 			}
 		}
 
 		// Update version.
-		const char *sysMenu = nullptr;
+		const char8_t *sysMenu = nullptr;
 		unsigned int ios_slot = 0, ios_major = 0, ios_minor = 0;
 		unsigned int ios_retail_count = 0;
 		bool isDebugIOS = false;
@@ -1740,8 +1742,7 @@ int GameCube::loadFieldData(void)
 						int ret = sscanf(dirent->name, "RVL-WiiSystemmenu-v%u.wad", &version);
 						if (ret == 1) {
 							// Found a retail System Menu.
-							// FIXME: U8STRFIX
-							sysMenu = reinterpret_cast<const char*>(WiiSystemMenuVersion::lookup(version));
+							sysMenu = WiiSystemMenuVersion::lookup(version);
 							break;
 						}
 					}
@@ -1777,11 +1778,14 @@ int GameCube::loadFieldData(void)
 			}
 		}
 
-		const char *const update_title = C_("Nintendo", "Update");
+		const char8_t *const update_title = C_("Nintendo", "Update");
 		if (isDebugIOS || ios_retail_count == 1) {
-			d->fields->addField_string(update_title,
-				rp_sprintf("IOS%u %u.%u (v%u)", ios_slot, ios_major, ios_minor,
-					(ios_major << 8) | ios_minor));
+			// FIXME: U8STRFIX - using snprintf() instead of rp_sprintf()
+			char8_t buf[64];
+			snprintf(reinterpret_cast<char*>(buf), sizeof(buf),
+				"IOS%u %u.%u (v%u)", ios_slot, ios_major, ios_minor,
+				(ios_major << 8) | ios_minor);
+			d->fields->addField_string(update_title, buf);
 		} else {
 			if (!sysMenu) {
 				if (!d->updatePartition) {
@@ -1890,14 +1894,13 @@ int GameCube::loadFieldData(void)
 
 			const char8_t *s_key_name;
 			if ((int)encKey >= 0 && (int)encKey < ARRAY_SIZE_I(wii_key_tbl)) {
-				// FIXME: U8STRFIX
+				// FIXME: U8STRFIX - dpgettext_expr()
 				s_key_name = reinterpret_cast<const char8_t*>(
 					dpgettext_expr(RP_I18N_DOMAIN, "Wii|KeyIdx",
 						reinterpret_cast<const char*>(wii_key_tbl[(int)encKey])));
 			} else {
-				// FIXME: U8STRFIX
 				// tr: WiiPartition::EncKey::Unknown
-				s_key_name = reinterpret_cast<const char8_t*>(C_("RomData", "Unknown"));
+				s_key_name = C_("RomData", "Unknown");
 			}
 			data_row.emplace_back(s_key_name);
 
@@ -1905,17 +1908,14 @@ int GameCube::loadFieldData(void)
 			// FIXME: U8STRFIX
 			const off64_t used_size = entry.partition->partition_size_used();
 			if (used_size >= 0) {
-				data_row.emplace_back(
-					reinterpret_cast<const char8_t*>(LibRpBase::formatFileSize(used_size).c_str()));
+				data_row.emplace_back(LibRpBase::formatFileSize(used_size));
 			} else {
 				// tr: Unknown used size.
-				data_row.emplace_back(reinterpret_cast<const char8_t*>(C_("Wii|Partition", "Unknown")));
+				data_row.emplace_back(C_("Wii|Partition", "Unknown"));
 			}
 
 			// Partition size.
-			// FIXME: U8STRFIX
-			data_row.emplace_back(reinterpret_cast<const char8_t*>(
-				LibRpBase::formatFileSize(entry.partition->partition_size()).c_str()));
+			data_row.emplace_back(LibRpBase::formatFileSize(entry.partition->partition_size()));
 		}
 
 		// Fields.

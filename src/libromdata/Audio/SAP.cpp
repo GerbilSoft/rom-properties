@@ -594,13 +594,13 @@ int SAP::loadFieldData(void)
 	}
 
 	// Flags: NTSC/PAL, Stereo
-	static const char *const flags_names[] = {
+	static const char8_t *const flags_names[] = {
 		// tr: PAL is default; if set, the file is for NTSC.
-		"NTSC",
+		U8("NTSC"),
 		NOP_C_("SAP|Flags", "Stereo"),
 	};
 	vector<string> *const v_flags_names = RomFields::strArrayToVector_i18n(
-		"SAP|Flags", flags_names, ARRAY_SIZE(flags_names));
+		U8("SAP|Flags"), flags_names, ARRAY_SIZE(flags_names));
 	// TODO: Use a bitfield in tags?
 	uint32_t flags = 0;
 	if (tags.ntsc)   flags |= (1U << 0);
@@ -610,10 +610,9 @@ int SAP::loadFieldData(void)
 
 	// Type
 	// TODO: Verify that the type is valid?
-	const char *const type_title = C_("SAP", "Type");
+	const char8_t *const type_title = C_("SAP", "Type");
 	if (ISALPHA(tags.type)) {
-		d->fields->addField_string(type_title,
-			rp_sprintf("%c", tags.type));
+		d->fields->addField_string(type_title, rp_sprintf("%c", tags.type));
 	} else {
 		d->fields->addField_string(type_title,
 			rp_sprintf("0x%02X", static_cast<unsigned int>(tags.type)),
@@ -661,8 +660,8 @@ int SAP::loadFieldData(void)
 
 	// Song list.
 	if (!tags.durations.empty()) {
-		const char8_t *const s_loop_yes = reinterpret_cast<const char8_t*>(C_("RomData", "Yes"));
-		const char8_t *const s_loop_no  = reinterpret_cast<const char8_t*>(C_("RomData", "No"));
+		const char8_t *const s_loop_yes = C_("RomData", "Yes");
+		const char8_t *const s_loop_no  = C_("RomData", "No");
 
 		unsigned int song_num = 0;
 		auto song_list = new RomFields::ListData_t(tags.durations.size());
@@ -693,13 +692,13 @@ int SAP::loadFieldData(void)
 			data_row.emplace_back(src_iter->second ? s_loop_yes : s_loop_no);
 		}
 
-		static const char *const song_list_hdr[3] = {
+		static const char8_t *const song_list_hdr[3] = {
 			NOP_C_("SAP|SongList", "#"),
 			NOP_C_("SAP|SongList", "Duration"),
 			NOP_C_("SAP|SongList", "Looping"),
 		};
 		vector<string> *const v_song_list_hdr = RomFields::strArrayToVector_i18n(
-			"SAP|SongList", song_list_hdr, ARRAY_SIZE(song_list_hdr));
+			U8("SAP|SongList"), song_list_hdr, ARRAY_SIZE(song_list_hdr));
 
 		RomFields::AFLD_PARAMS params;
 		params.headers = v_song_list_hdr;

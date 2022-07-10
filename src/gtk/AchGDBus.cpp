@@ -175,8 +175,10 @@ int AchGDBusPrivate::notifyFunc(Achievements::ID id)
 
 	// Build the text.
 	// TODO: Better formatting?
-	char *const s_achName = g_markup_escape_text(pAch->getName(id), -1);
-	char *const s_achDescUnlocked = g_markup_escape_text(pAch->getDescUnlocked(id), -1);
+	char *const s_achName = g_markup_escape_text(
+		reinterpret_cast<const char*>(pAch->getName(id)), -1);
+	char *const s_achDescUnlocked = g_markup_escape_text(
+		reinterpret_cast<const char*>(pAch->getDescUnlocked(id)), -1);
 	string text = "<u>";
 	text += s_achName;
 	text += "</u>\n";
@@ -264,7 +266,7 @@ int AchGDBusPrivate::notifyFunc(Achievements::ID id)
 
 	GVariant *const hints = g_variant_builder_end(&b_hints);
 
-	const char *const s_summary = C_("Achievements", "Achievement Unlocked");
+	const char *const s_summary = reinterpret_cast<const char*>(C_("Achievements", "Achievement Unlocked"));
 	org_freedesktop_notifications_call_notify(
 		proxy,			// proxy
 		"rom-properties",	// app-name [s]

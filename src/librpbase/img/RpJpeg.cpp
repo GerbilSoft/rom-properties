@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpJpeg.cpp: JPEG image handler.                                         *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -75,11 +75,11 @@ void JPEGCALL RpJpegPrivate::my_output_message(j_common_ptr cinfo)
 	snprintf(txtbuf, sizeof(txtbuf), "libjpeg error: %s", buffer);
 	OutputDebugStringA(txtbuf);
 	OutputDebugStringA("\n");
-#else
+#else /* !_WIN32 */
 	// Print to stderr.
-	fprintf(stderr, C_("RpJpeg", "libjpeg error: %s"), buffer);
+	fprintf(stderr, "libjpeg error: %s", buffer);
 	fputc('\n', stderr);
-#endif
+#endif /* _WIN32 */
 }
 
 /** I/O functions. **/

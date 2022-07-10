@@ -727,26 +727,27 @@ int XboxDisc::loadFieldData(void)
 	d->fields->setTabName(0, s_tab_name);
 
 	// Disc type
-	const char *const s_disc_type = C_("XboxDisc", "Disc Type");
+	// FIXME: U8STRFIX - rp_sprintf()
+	const char8_t *const disc_type_title = C_("XboxDisc", "Disc Type");
 	// NOTE: Not translating "Xbox Game Disc".
 	switch (d->discType) {
 		case XboxDiscPrivate::DiscType::Extracted:
-			d->fields->addField_string(s_disc_type,
+			d->fields->addField_string(disc_type_title,
 				C_("XboxDisc", "Extracted XDVDFS"));
 			break;
 		case XboxDiscPrivate::DiscType::XGD1:
-			d->fields->addField_string(s_disc_type, "Xbox Game Disc 1");
+			d->fields->addField_string(disc_type_title, "Xbox Game Disc 1");
 			break;
 		case XboxDiscPrivate::DiscType::XGD2:
-			d->fields->addField_string(s_disc_type,
+			d->fields->addField_string(disc_type_title,
 				rp_sprintf("Xbox Game Disc 2 (Wave %u)", d->wave));
 			break;
 		case XboxDiscPrivate::DiscType::XGD3:
-			d->fields->addField_string(s_disc_type, "Xbox Game Disc 3");
+			d->fields->addField_string(disc_type_title, "Xbox Game Disc 3");
 			break;
 		default:
-			d->fields->addField_string(s_disc_type,
-				rp_sprintf(C_("RomData", "Unknown (%u)"), d->wave));
+			d->fields->addField_string(disc_type_title,
+				rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (%u)")), d->wave));
 			break;
 	}
 
@@ -762,13 +763,13 @@ int XboxDisc::loadFieldData(void)
 	RomData *const defaultExeData = d->openDefaultExe(&exeType);
 	if (defaultExeData) {
 		// Boot filename.
-		const char *s_boot_filename;
+		const char8_t *s_boot_filename;
 		switch (exeType) {
 			case XboxDiscPrivate::ExeType::XBE:
-				s_boot_filename = "default.xbe";
+				s_boot_filename = U8("default.xbe");
 				break;
 			case XboxDiscPrivate::ExeType::XEX:
-				s_boot_filename = "default.xex";
+				s_boot_filename = U8("default.xex");
 				break;
 			default:
 				s_boot_filename = nullptr;

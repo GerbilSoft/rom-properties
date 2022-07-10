@@ -34,6 +34,8 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
+// FIXME: U8STRFIX - rp_sprintf()
+
 /**
  * Simple implementation of KeyStoreUI with no signal handling.
  */
@@ -67,19 +69,19 @@ int VerifyKeys(void)
 		}
 		printedOne = true;
 
-		cout << "*** " << rp_sprintf(C_("rpcli", "Checking encryption keys: %s"), keyStore->sectName(sectIdx)) << '\n';
+		cout << "*** " << rp_sprintf((const char*)C_("rpcli", "Checking encryption keys: %s"), keyStore->sectName(sectIdx)) << '\n';
 		const int keyCount = keyStore->keyCount(sectIdx);
 		for (int keyIdx = 0; keyIdx < keyCount; keyIdx++) {
 			const KeyStoreUI::Key *const key = keyStore->getKey(sectIdx, keyIdx);
 			assert(key != nullptr);
 			if (!key) {
-				cout << rp_sprintf(C_("rpcli", "WARNING: Key [%d,%d] has no Key object. Skipping..."), sectIdx, keyIdx) << '\n';
+				cout << rp_sprintf((const char*)C_("rpcli", "WARNING: Key [%d,%d] has no Key object. Skipping..."), sectIdx, keyIdx) << '\n';
 				ret = 1;
 				continue;
 			}
 			assert(!key->name.empty());
 			if (key->name.empty()) {
-				cout << rp_sprintf(C_("rpcli", "WARNING: Key [%d,%d] has no name. Skipping..."), sectIdx, keyIdx) << '\n';
+				cout << rp_sprintf((const char*)C_("rpcli", "WARNING: Key [%d,%d] has no name. Skipping..."), sectIdx, keyIdx) << '\n';
 				ret = 1;
 				continue;
 			}
@@ -88,7 +90,7 @@ int VerifyKeys(void)
 			// TODO: Make this a function in KeyStoreUI?
 			// NOTE: Not a table because only 'OK' is valid; others are errors.
 			bool isOK = false;
-			const char *s_err = nullptr;
+			const char8_t *s_err = nullptr;
 			switch (key->status) {
 				case KeyStoreUI::Key::Status::Empty:
 					s_err = C_("rpcli|KeyVerifyStatus", "Empty key");
@@ -113,7 +115,7 @@ int VerifyKeys(void)
 			if (isOK) {
 				cout << s_err << '\n';
 			} else {
-				cout << rp_sprintf(C_("rpcli", "ERROR: %s"), s_err) << '\n';
+				cout << rp_sprintf((const char*)C_("rpcli", "ERROR: %s"), s_err) << '\n';
 				ret = 1;
 			}
 		}

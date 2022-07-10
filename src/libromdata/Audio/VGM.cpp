@@ -44,10 +44,10 @@ class VGMPrivate final : public RomDataPrivate
 		VGM_Header vgmHeader;
 
 		// Translated strings for addCommonSoundChip().
-		const char *s_clockrate;
-		const char *s_dualchip;
-		const char *s_yes;
-		const char *s_no;
+		const char8_t *s_clockrate;
+		const char8_t *s_dualchip;
+		const char8_t *s_yes;
+		const char8_t *s_no;
 
 	public:
 		// GD3 tags.
@@ -193,12 +193,13 @@ void VGMPrivate::addCommonSoundChip(unsigned int clk_full, const char *display, 
 	}
 
 	if (clk != 0) {
+		// FIXME: U8STRFIX - rp_sprintf()
 		fields->addField_string(
-			rp_sprintf(s_clockrate, display).c_str(),
+			rp_sprintf(reinterpret_cast<const char*>(s_clockrate), display).c_str(),
 			LibRpBase::formatFrequency(clk));
 		if (dual) {
 			fields->addField_string(
-				rp_sprintf(s_dualchip, display).c_str(),
+				rp_sprintf(reinterpret_cast<const char*>(s_dualchip), display).c_str(),
 					(clk_full & VGM_CLK_FLAG_DUALCHIP) ? s_yes : s_no);
 		}
 	}
@@ -340,9 +341,11 @@ int VGM::loadFieldData(void)
 	d->fields->setTabName(0, "VGM");
 
 	// Version number. (BCD)
+	// FIXME: U8STRFIX - rp_sprintf_p()
 	unsigned int vgm_version = le32_to_cpu(vgmHeader->version);
 	d->fields->addField_string(C_("VGM", "VGM Version"),
-		rp_sprintf_p(C_("VGM", "%1$x.%2$02x"), vgm_version >> 8, vgm_version & 0xFF));
+		rp_sprintf_p(reinterpret_cast<const char*>(C_("VGM", "%1$x.%2$02x")),
+			vgm_version >> 8, vgm_version & 0xFF));
 
 	// VGM data offset.
 	// Header fields must end before this offset.
@@ -373,15 +376,15 @@ int VGM::loadFieldData(void)
 			// Array of GD3 tag indexes and translatable strings.
 #ifdef ENABLE_NLS
 			struct gd3_tag_field_tbl_t {
-				const char *ctx;	// Translation context
-				const char *desc;	// Description
+				const char8_t *ctx;	// Translation context
+				const char8_t *desc;	// Description
 				GD3_TAG_ID idx;	// GD3 tag index
 			};
 #define GD3_TAG_FIELD_TBL_ENTRY(ctx, desc, idx) \
 			{(ctx), (desc), (idx)}
 #else /* !ENABLE_NLS */
 			struct gd3_tag_field_tbl_t {
-				const char *desc;	// Description
+				const char8_t *desc;	// Description
 				GD3_TAG_ID idx;	// GD3 tag index
 			};
 #define GD3_TAG_FIELD_TBL_ENTRY(ctx, desc, idx) \
@@ -390,21 +393,25 @@ int VGM::loadFieldData(void)
 
 			// TODO: Multiple composer handling.
 			static const gd3_tag_field_tbl_t gd3_tag_field_tbl[] = {
-				GD3_TAG_FIELD_TBL_ENTRY("RomData|Audio",	NOP_C_("RomData|Audio", "Track Name"),	GD3_TAG_TRACK_NAME_EN),
-				GD3_TAG_FIELD_TBL_ENTRY("VGM",			NOP_C_("VGM", "Game Name"),		GD3_TAG_GAME_NAME_EN),
-				GD3_TAG_FIELD_TBL_ENTRY("VGM",			NOP_C_("VGM", "System Name"),		GD3_TAG_SYSTEM_NAME_EN),
-				GD3_TAG_FIELD_TBL_ENTRY("RomData|Audio",	NOP_C_("RomData|Audio", "Composer"),	GD3_TAG_TRACK_AUTHOR_EN),
-				GD3_TAG_FIELD_TBL_ENTRY("RomData",		NOP_C_("RomData", "Release Date"),	GD3_TAG_DATE_GAME_RELEASE),
-				GD3_TAG_FIELD_TBL_ENTRY("VGM",			NOP_C_("VGM", "VGM Ripper"),		GD3_TAG_VGM_RIPPER),
-				GD3_TAG_FIELD_TBL_ENTRY("RomData|Audio",	NOP_C_("RomData|Audio", "Notes"),	GD3_TAG_NOTES),
+				GD3_TAG_FIELD_TBL_ENTRY(U8("RomData|Audio"),	NOP_C_("RomData|Audio", "Track Name"),	GD3_TAG_TRACK_NAME_EN),
+				GD3_TAG_FIELD_TBL_ENTRY(U8("VGM"),		NOP_C_("VGM", "Game Name"),		GD3_TAG_GAME_NAME_EN),
+				GD3_TAG_FIELD_TBL_ENTRY(U8("VGM"),		NOP_C_("VGM", "System Name"),		GD3_TAG_SYSTEM_NAME_EN),
+				GD3_TAG_FIELD_TBL_ENTRY(U8("RomData|Audio"),	NOP_C_("RomData|Audio", "Composer"),	GD3_TAG_TRACK_AUTHOR_EN),
+				GD3_TAG_FIELD_TBL_ENTRY(U8("RomData"),		NOP_C_("RomData", "Release Date"),	GD3_TAG_DATE_GAME_RELEASE),
+				GD3_TAG_FIELD_TBL_ENTRY(U8("VGM"),		NOP_C_("VGM", "VGM Ripper"),		GD3_TAG_VGM_RIPPER),
+				GD3_TAG_FIELD_TBL_ENTRY(U8("RomData|Audio"),	NOP_C_("RomData|Audio", "Notes"),	GD3_TAG_NOTES),
 			};
 
 			for (const auto &p : gd3_tag_field_tbl) {
 				const u8string &str = (*gd3_tags)[p.idx];
-				if (!str.empty()) {
-					d->fields->addField_string(
-						dpgettext_expr(RP_I18N_DOMAIN, p.ctx, p.desc), str);
-				}
+				if (str.empty())
+					continue;
+
+				// FIXME: U8STRFIX - dpgettext_expr()
+				d->fields->addField_string(
+					dpgettext_expr(RP_I18N_DOMAIN,
+						reinterpret_cast<const char*>(p.ctx),
+						reinterpret_cast<const char*>(p.desc)), str);
 			}
 
 			delete gd3_tags;
@@ -444,7 +451,7 @@ int VGM::loadFieldData(void)
 		d->s_no = C_("RomData", "No");
 	}
 	// Common strings not needed by subroutines.
-	const char *const s_flags = C_("VGM", "%s Flags");
+	const char8_t *const s_flags = C_("VGM", "%s Flags");
 
 	// SN76489 [1.00]
 	const uint32_t sn76489_clk = le32_to_cpu(vgmHeader->sn76489_clk);
@@ -453,14 +460,15 @@ int VGM::loadFieldData(void)
 
 		// Check for T6W28.
 		const bool isT6W28 = ((sn76489_clk & PSG_T6W28) == PSG_T6W28);
-		const char *const chip_name = (isT6W28 ? "T6W28" : "SN76489");
+		const char8_t *const chip_name = (isT6W28 ? U8("T6W28") : U8("SN76489"));
 
+		// FIXME: U8STRFIX - rp_sprintf()
 		d->fields->addField_string(
-			rp_sprintf(d->s_clockrate, chip_name).c_str(),
+			rp_sprintf(reinterpret_cast<const char*>(d->s_clockrate), reinterpret_cast<const char*>(chip_name)).c_str(),
 			LibRpBase::formatFrequency(sn76489_clk & ~PSG_T6W28));
 		if (!isT6W28) {
 			d->fields->addField_string(
-				rp_sprintf(d->s_dualchip, chip_name).c_str(),
+				rp_sprintf(reinterpret_cast<const char*>(d->s_dualchip), chip_name).c_str(),
 					(sn76489_clk & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
 		}
 
@@ -477,10 +485,12 @@ int VGM::loadFieldData(void)
 		}
 
 		d->fields->addField_string_numeric(
-			rp_sprintf(C_("VGM", "%s LFSR pattern"), chip_name).c_str(),
+			rp_sprintf(reinterpret_cast<const char*>(C_("VGM", "%s LFSR pattern")),
+				reinterpret_cast<const char*>(chip_name)).c_str(),
 			lfsr_feedback, RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 		d->fields->addField_string_numeric(
-			rp_sprintf(C_("VGM", "%s LFSR width"), chip_name).c_str(),
+			rp_sprintf(reinterpret_cast<const char*>(C_("VGM", "%s LFSR width")),
+				reinterpret_cast<const char*>(chip_name)).c_str(),
 			lfsr_width);
 
 		// Flags. [1.51]
@@ -492,15 +502,16 @@ int VGM::loadFieldData(void)
 			// No PSG flags.
 			psg_flags = 0;
 		}
-		static const char *const psg_flags_bitfield_names[] = {
+		static const char8_t *const psg_flags_bitfield_names[] = {
 			NOP_C_("VGM|PSGFlags", "Freq 0 is 0x400"),
 			NOP_C_("VGM|PSGFlags", "Output Negate"),
 			NOP_C_("VGM|PSGFlags", "Stereo"),
 			NOP_C_("VGM|PSGFlags", "/8 Clock Divider"),
 		};
 		vector<string> *const v_psg_flags_bitfield_names = RomFields::strArrayToVector_i18n(
-			"VGM|PSGFlags", psg_flags_bitfield_names, ARRAY_SIZE(psg_flags_bitfield_names));
-		d->fields->addField_bitfield(rp_sprintf(s_flags, chip_name).c_str(),
+			U8("VGM|PSGFlags"), psg_flags_bitfield_names, ARRAY_SIZE(psg_flags_bitfield_names));
+		d->fields->addField_bitfield(rp_sprintf(reinterpret_cast<const char*>(s_flags),
+			reinterpret_cast<const char*>(chip_name)).c_str(),
 			v_psg_flags_bitfield_names, 2, psg_flags);
 	}
 
@@ -534,10 +545,10 @@ int VGM::loadFieldData(void)
 			clk &= ~VGM_CLK_FLAG_ALTMODE;
 			if (clk != 0) {
 				d->fields->addField_string(
-					rp_sprintf(d->s_clockrate, "Sega PCM").c_str(),
+					rp_sprintf(reinterpret_cast<const char*>(d->s_clockrate), "Sega PCM").c_str(),
 					LibRpBase::formatFrequency(clk));
 				d->fields->addField_string_numeric(
-					rp_sprintf(C_("VGM", "%s IF reg"), "Sega PCM").c_str(),
+					rp_sprintf(reinterpret_cast<const char*>(C_("VGM", "%s IF reg")), "Sega PCM").c_str(),
 					le32_to_cpu(vgmHeader->sega_pcm_if_reg),
 					RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
 			}
@@ -548,7 +559,7 @@ int VGM::loadFieldData(void)
 
 		// AY8910 flags.
 		// Used for YM2203, YM2608, and AY8910.
-		static const char *const ay8910_flags_bitfield_names[] = {
+		static const char8_t *const ay8910_flags_bitfield_names[] = {
 			NOP_C_("VGM|AY8910Flags", "Legacy Output"),
 			NOP_C_("VGM|AY8910Flags", "Single Output"),
 			NOP_C_("VGM|AY8910Flags", "Discrete Output"),
@@ -561,16 +572,16 @@ int VGM::loadFieldData(void)
 			const unsigned int clk = clk_full & ~(VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP);
 			if (clk != 0) {
 				d->fields->addField_string(
-					rp_sprintf(d->s_clockrate, "YM2203").c_str(),
+					rp_sprintf(reinterpret_cast<const char*>(d->s_clockrate), "YM2203").c_str(),
 					LibRpBase::formatFrequency(clk));
 				d->fields->addField_string(
-					rp_sprintf(d->s_dualchip, "YM2203").c_str(),
+					rp_sprintf(reinterpret_cast<const char*>(d->s_dualchip), "YM2203").c_str(),
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
 
 				// TODO: Is AY8910 type needed?
 				vector<string> *const v_ay8910_flags_bitfield_names = RomFields::strArrayToVector_i18n(
-					"VGM|AY8910Flags", ay8910_flags_bitfield_names, ARRAY_SIZE(ay8910_flags_bitfield_names));
-				d->fields->addField_bitfield(rp_sprintf(s_flags, "YM2203 (AY8910)").c_str(),
+					U8("VGM|AY8910Flags"), ay8910_flags_bitfield_names, ARRAY_SIZE(ay8910_flags_bitfield_names));
+				d->fields->addField_bitfield(rp_sprintf(reinterpret_cast<const char*>(s_flags), "YM2203 (AY8910)").c_str(),
 					v_ay8910_flags_bitfield_names, 2, vgmHeader->ym2203_ay8910_flags);
 			}
 		}
@@ -581,16 +592,16 @@ int VGM::loadFieldData(void)
 			const unsigned int clk = clk_full & ~(VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP);
 			if (clk != 0) {
 				d->fields->addField_string(
-					rp_sprintf(d->s_clockrate, "YM2608").c_str(),
+					rp_sprintf(reinterpret_cast<const char*>(d->s_clockrate), "YM2608").c_str(),
 					LibRpBase::formatFrequency(clk));
 				d->fields->addField_string(
-					rp_sprintf(d->s_dualchip, "YM2608").c_str(),
+					rp_sprintf(reinterpret_cast<const char*>(d->s_dualchip), "YM2608").c_str(),
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
 
 				// TODO: Is AY8910 type needed?
 				vector<string> *const v_ay8910_flags_bitfield_names = RomFields::strArrayToVector_i18n(
-					"VGM|AY8910Flags", ay8910_flags_bitfield_names, ARRAY_SIZE(ay8910_flags_bitfield_names));
-				d->fields->addField_bitfield(rp_sprintf(s_flags, "YM2608 (AY8910)").c_str(),
+					U8("VGM|AY8910Flags"), ay8910_flags_bitfield_names, ARRAY_SIZE(ay8910_flags_bitfield_names));
+				d->fields->addField_bitfield(rp_sprintf(reinterpret_cast<const char*>(s_flags), "YM2608 (AY8910)").c_str(),
 					v_ay8910_flags_bitfield_names, 2, vgmHeader->ym2608_ay8910_flags);
 			}
 		}
@@ -604,10 +615,10 @@ int VGM::loadFieldData(void)
 					(clk_full & VGM_CLK_FLAG_ALTMODE) ? "YM2610B" : "YM2610";
 
 				d->fields->addField_string(
-					rp_sprintf(d->s_clockrate, chip_name).c_str(),
+					rp_sprintf(reinterpret_cast<const char*>(d->s_clockrate), chip_name).c_str(),
 					LibRpBase::formatFrequency(clk));
 				d->fields->addField_string(
-					rp_sprintf(d->s_dualchip, chip_name).c_str(),
+					rp_sprintf(reinterpret_cast<const char*>(d->s_dualchip), chip_name).c_str(),
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
 			}
 		}
@@ -663,15 +674,18 @@ int VGM::loadFieldData(void)
 				}
 
 				d->fields->addField_string(
-					rp_sprintf(d->s_clockrate, chip_name).c_str(),
-					LibRpBase::formatFrequency(clk));
+					rp_sprintf(reinterpret_cast<const char*>(d->s_clockrate),
+						reinterpret_cast<const char*>(chip_name)).c_str(),
+						LibRpBase::formatFrequency(clk));
 				d->fields->addField_string(
-					rp_sprintf(d->s_dualchip, chip_name).c_str(),
+					rp_sprintf(reinterpret_cast<const char*>(d->s_dualchip),
+						reinterpret_cast<const char*>(chip_name)).c_str(),
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
 
 				vector<string> *const v_ay8910_flags_bitfield_names = RomFields::strArrayToVector_i18n(
-					"VGM|AY8910Flags", ay8910_flags_bitfield_names, ARRAY_SIZE(ay8910_flags_bitfield_names));
-				d->fields->addField_bitfield(rp_sprintf(s_flags, chip_name).c_str(),
+					U8("VGM|AY8910Flags"), ay8910_flags_bitfield_names, ARRAY_SIZE(ay8910_flags_bitfield_names));
+				d->fields->addField_bitfield(rp_sprintf(reinterpret_cast<const char*>(s_flags),
+					reinterpret_cast<const char*>(chip_name)).c_str(),
 					v_ay8910_flags_bitfield_names, 2, vgmHeader->ay8910_flags);
 			}
 		}
@@ -687,18 +701,18 @@ int VGM::loadFieldData(void)
 			const unsigned int clk = clk_full & ~(VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP);
 			if (clk != 0) {
 				d->fields->addField_string(
-					rp_sprintf(d->s_clockrate, "NES APU").c_str(),
+					rp_sprintf(reinterpret_cast<const char*>(d->s_clockrate), "NES APU").c_str(),
 						LibRpBase::formatFrequency(clk));
 				d->fields->addField_string(
-					rp_sprintf(d->s_dualchip, "NES APU").c_str(),
+					rp_sprintf(reinterpret_cast<const char*>(d->s_dualchip), "NES APU").c_str(),
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
 
 				// Bit 31 indicates presence of FDS audio hardware.
-				const char *const nes_exp = (clk_full & VGM_CLK_FLAG_ALTMODE)
+				const char8_t *const nes_exp = (clk_full & VGM_CLK_FLAG_ALTMODE)
 					? C_("VGM|NESExpansion", "Famicom Disk System")
 					: C_("VGM|NESExpansion", "(none)");
 				d->fields->addField_string(
-					rp_sprintf(C_("VGM", "%s Expansions"), "NES APU").c_str(), nes_exp);
+					rp_sprintf(reinterpret_cast<const char*>(C_("VGM", "%s Expansions")), "NES APU").c_str(), nes_exp);
 			}
 		}
 
@@ -761,14 +775,14 @@ int VGM::loadFieldData(void)
 			const unsigned int clk = clk_full & ~(VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP);
 			if (clk != 0) {
 				d->fields->addField_string(
-					rp_sprintf(d->s_clockrate, "ES5503").c_str(),
+					rp_sprintf(reinterpret_cast<const char*>(d->s_clockrate), "ES5503").c_str(),
 						LibRpBase::formatFrequency(clk));
 				d->fields->addField_string(
-					rp_sprintf(d->s_dualchip, "ES5503").c_str(),
+					rp_sprintf(reinterpret_cast<const char*>(d->s_dualchip), "ES5503").c_str(),
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
 
 				d->fields->addField_string_numeric(
-					rp_sprintf(C_("VGM", "%s # of Channels"), "ES5503").c_str(),
+					rp_sprintf(reinterpret_cast<const char*>(C_("VGM", "%s # of Channels")), "ES5503").c_str(),
 						vgmHeader->es5503_num_ch);
 			}
 		}
@@ -778,19 +792,22 @@ int VGM::loadFieldData(void)
 			const unsigned int clk_full = le32_to_cpu(vgmHeader->es5505_clk);
 			const unsigned int clk = clk_full & ~(VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP);
 			if (clk != 0) {
-				const char *const chip_name = (clk_full & VGM_CLK_FLAG_ALTMODE)
-					? "ES5506"
-					: "ES5505";
+				const char8_t *const chip_name = (clk_full & VGM_CLK_FLAG_ALTMODE)
+					? U8("ES5506")
+					: U8("ES5505");
 
 				d->fields->addField_string(
-					rp_sprintf(d->s_clockrate, chip_name).c_str(),
+					rp_sprintf(reinterpret_cast<const char*>(d->s_clockrate),
+						reinterpret_cast<const char*>(chip_name)).c_str(),
 						LibRpBase::formatFrequency(clk));
 				d->fields->addField_string(
-					rp_sprintf(d->s_dualchip, chip_name).c_str(),
+					rp_sprintf(reinterpret_cast<const char*>(d->s_dualchip),
+						reinterpret_cast<const char*>(chip_name)).c_str(),
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
 
 				d->fields->addField_string_numeric(
-					rp_sprintf(C_("VGM", "%s # of Channels"), chip_name).c_str(),
+					rp_sprintf(reinterpret_cast<const char*>(C_("VGM", "%s # of Channels")),
+						reinterpret_cast<const char*>(chip_name)).c_str(),
 						vgmHeader->es5505_num_ch);
 			}
 		}
@@ -804,14 +821,14 @@ int VGM::loadFieldData(void)
 			const unsigned int clk = clk_full & ~(VGM_CLK_FLAG_ALTMODE | VGM_CLK_FLAG_DUALCHIP);
 			if (clk != 0) {
 				d->fields->addField_string(
-					rp_sprintf(d->s_clockrate, "C352").c_str(),
+					rp_sprintf(reinterpret_cast<const char*>(d->s_clockrate), "C352").c_str(),
 						LibRpBase::formatFrequency(clk));
 				d->fields->addField_string(
-					rp_sprintf(d->s_dualchip, "C352").c_str(),
+					rp_sprintf(reinterpret_cast<const char*>(d->s_dualchip), "C352").c_str(),
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
 
 				d->fields->addField_string_numeric(
-					rp_sprintf(C_("VGM", "%s Clock Divider"), "C352").c_str(),
+					rp_sprintf(reinterpret_cast<const char*>(C_("VGM", "%s Clock Divider")), "C352").c_str(),
 						vgmHeader->c352_clk_div * 4);
 			}
 		}

@@ -186,7 +186,7 @@ class NCCHReader : public LibRpBase::IPartition
 		 * Get the content type as a string.
 		 * @return Content type, or nullptr on error.
 		 */
-		const char *contentType(void) const;
+		const char8_t *contentType(void) const;
 
 		/**
 		 * Open a file. (read-only)

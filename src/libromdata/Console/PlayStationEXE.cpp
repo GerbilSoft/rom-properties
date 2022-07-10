@@ -290,7 +290,7 @@ int PlayStationEXE::loadFieldData(void)
 			s_region = "Europe";
 		}
 	}
-	const char *const s_region_title = C_("RomData", "Region");
+	const char8_t *const s_region_title = C_("RomData", "Region");
 	if (s_region) {
 		d->fields->addField_string(s_region_title, s_region);
 	} else {

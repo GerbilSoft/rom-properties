@@ -10,14 +10,6 @@
 #include "stdafx.h"
 #include "TextOut.hpp"
 
-// C includes. (C++ namespace)
-#include <cassert>
-
-// C++ includes.
-using std::ostream;
-using std::string;
-using std::vector;
-
 // librpbase
 #include "RomData.hpp"
 #include "RomFields.hpp"
@@ -32,6 +24,19 @@ using LibRpTexture::rp_image;
 #include "rapidjson/ostreamwrapper.h"
 #include "rapidjson/prettywriter.h"
 using namespace rapidjson;
+
+// C includes. (C++ namespace)
+#include <cassert>
+
+// C++ includes.
+using std::ostream;
+using std::string;
+using std::u8string;
+using std::vector;
+
+// FIXME: U8STRFIX - RapidJson doesn't support u8string.
+#define U8S2C(str) (reinterpret_cast<const char*>(str.c_str()))
+#define U8C2C(str) (reinterpret_cast<const char*>(str))
 
 // TextOut_json isn't used by libromdata directly,
 // so use some linker hax to force linkage.
@@ -271,18 +276,18 @@ public:
 							continue;
 
 						Value rating_obj(kObjectType);
-						const char *const abbrev = RomFields::ageRatingAbbrev((RomFields::AgeRatingsCountry)j);
+						const char8_t *const abbrev = RomFields::ageRatingAbbrev((RomFields::AgeRatingsCountry)j);
 						if (abbrev) {
-							rating_obj.AddMember("name", StringRef(abbrev), allocator);
+							rating_obj.AddMember("name", StringRef(U8C2C(abbrev)), allocator);
 						} else {
 							// Invalid age rating.
 							// Use the numeric index.
 							rating_obj.AddMember("name", j, allocator);
 						}
 
-						const string s_age_rating = RomFields::ageRatingDecode((RomFields::AgeRatingsCountry)j, rating);
+						const u8string s_age_rating = RomFields::ageRatingDecode((RomFields::AgeRatingsCountry)j, rating);
 						Value rating_val;
-						rating_val.SetString(s_age_rating, allocator);
+						rating_val.SetString(reinterpret_cast<const char*>(s_age_rating.c_str()), allocator);
 						rating_obj.AddMember("rating", rating_val, allocator);
 
 						data_array.PushBack(rating_obj, allocator);
@@ -322,9 +327,7 @@ public:
 					const auto pStr_multi_cend = pStr_multi->cend();
 					for (auto iter = pStr_multi->cbegin(); iter != pStr_multi_cend; ++iter) {
 						Value s_lc_name = lcToValue(iter->first, allocator);
-						// FIXME: RapidJson doesn't support u8string.
-						data_obj.AddMember(s_lc_name, StringRef(
-							reinterpret_cast<const char*>(iter->second.c_str())), allocator);
+						data_obj.AddMember(s_lc_name, StringRef(U8S2C(iter->second)), allocator);
 					}
 
 					field_obj.AddMember("data", data_obj, allocator);
@@ -359,7 +362,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	assert(romdata && romdata->isValid());
 
 	const char *const systemName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
-	const char *const fileType = romdata->fileType_string();
+	const char8_t *const fileType = romdata->fileType_string();
 	assert(systemName != nullptr);
 	assert(fileType != nullptr);
 
@@ -367,7 +370,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	document.SetObject();	// document should be an object, not an array
 	Document::AllocatorType& allocator = document.GetAllocator();
 	document.AddMember("system", StringRef(systemName ? systemName : "unknown"), allocator);
-	document.AddMember("filetype", StringRef(fileType ? fileType : "unknown"), allocator);
+	document.AddMember("filetype", StringRef(fileType ? U8C2C(fileType) : "unknown"), allocator);
 
 	// Fields
 	const RomFields *const fields = romdata->fields();
@@ -395,7 +398,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 					continue;
 
 				Value imgint_obj(kObjectType);
-				imgint_obj.AddMember("type", StringRef(RomData::getImageTypeName((RomData::ImageType)i)), allocator);
+				imgint_obj.AddMember("type", StringRef(U8C2C(RomData::getImageTypeName((RomData::ImageType)i))), allocator);
 				imgint_obj.AddMember("format", StringRef(rp_image::getFormatName(image->format())), allocator);
 
 				Value size_array(kArrayType);	// size
@@ -453,7 +456,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 				continue;
 
 			Value imgext_obj(kObjectType);
-			imgext_obj.AddMember("type", StringRef(RomData::getImageTypeName((RomData::ImageType)i)), allocator);
+			imgext_obj.AddMember("type", StringRef(U8C2C(RomData::getImageTypeName((RomData::ImageType)i))), allocator);
 
 			Value exturls_obj(kObjectType);
 			const auto extURLs_cend = extURLs.cend();

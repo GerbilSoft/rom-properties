@@ -74,11 +74,11 @@ do { } while (0)
  * NOTE: DelayLoad must be checked by the caller, since it's
  * passing an XMLDocument reference to this function.
  *
- * @param doc		[in/out] XML document.
- * @param ppResName	[out,opt] Pointer to receive the loaded resource name. (statically-allocated string)
+ * @param doc		[in/out] XML document
+ * @param ppResName	[out,opt] Pointer to receive the loaded resource name (statically-allocated string)
  * @return 0 on success; negative POSIX error code on error.
  */
-int EXEPrivate::loadWin32ManifestResource(XMLDocument &doc, const char **ppResName) const
+int EXEPrivate::loadWin32ManifestResource(XMLDocument &doc, const char8_t **ppResName) const
 {
 	// Make sure the resource directory is loaded.
 	int ret = const_cast<EXEPrivate*>(this)->loadPEResourceTypes();
@@ -88,17 +88,18 @@ int EXEPrivate::loadWin32ManifestResource(XMLDocument &doc, const char **ppResNa
 	}
 
 	// Manifest resource IDs
+	// TODO: Localization?
 	static const struct {
 		uint16_t id;
-		const char *name;
+		const char8_t *name;
 	} resource_ids[] = {
-		{CREATEPROCESS_MANIFEST_RESOURCE_ID, "CreateProcess"},
-		{ISOLATIONAWARE_MANIFEST_RESOURCE_ID, "Isolation-Aware"},
-		{ISOLATIONAWARE_NOSTATICIMPORT_MANIFEST_RESOURCE_ID, "Isolation-Aware, No Static Import"},
+		{CREATEPROCESS_MANIFEST_RESOURCE_ID, U8("CreateProcess")},
+		{ISOLATIONAWARE_MANIFEST_RESOURCE_ID, U8("Isolation-Aware")},
+		{ISOLATIONAWARE_NOSTATICIMPORT_MANIFEST_RESOURCE_ID, U8("Isolation-Aware, No Static Import")},
 
 		// Windows XP's explorer.exe uses resource ID 123.
 		// Reference: https://docs.microsoft.com/en-us/windows/desktop/Controls/cookbook-overview
-		{XP_VISUAL_STYLE_MANIFEST_RESOURCE_ID, "Visual Style"},
+		{XP_VISUAL_STYLE_MANIFEST_RESOURCE_ID, U8("Visual Style")},
 	};
 
 	// Search for a PE manifest resource.
@@ -204,7 +205,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	}
 #endif /* defined(_MSC_VER) && defined(XML_IS_DLL) */
 
-	const char *pResName = nullptr;
+	const char8_t *pResName = nullptr;
 	XMLDocument doc;
 	int ret = loadWin32ManifestResource(doc, &pResName);
 	if (ret != 0) {
@@ -216,7 +217,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 
 	// Manifest ID.
 	fields->addField_string(C_("EXE|Manifest", "Manifest ID"),
-		(pResName ? pResName : C_("RomData", "Unknown")));
+		(pResName) ? pResName : C_("RomData", "Unknown"));
 
 	// Assembly element.
 	const XMLElement *const assembly = doc.FirstChildElement("assembly");
@@ -275,7 +276,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 		Setting_ultraHighResolutionScrollingAware	= (1U << 6),
 	} WindowsSettings_t;
 
-	static const char *const WindowsSettings_names[] = {
+	static const char8_t *const WindowsSettings_names[] = {
 		NOP_C_("EXE|Manifest|WinSettings", "Auto Elevate"),
 		NOP_C_("EXE|Manifest|WinSettings", "Disable Theming"),
 		NOP_C_("EXE|Manifest|WinSettings", "Disable Window Filter"),
@@ -315,7 +316,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 
 			// Show the bitfield.
 			vector<string> *const v_WindowsSettings_names = RomFields::strArrayToVector_i18n(
-				"EXE|Manifest|WinSettings", WindowsSettings_names, ARRAY_SIZE(WindowsSettings_names));
+				U8("EXE|Manifest|WinSettings"), WindowsSettings_names, ARRAY_SIZE(WindowsSettings_names));
 			fields->addField_bitfield(C_("EXE|Manifest", "Settings"),
 				v_WindowsSettings_names, 2, settings);
 
@@ -346,12 +347,12 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	} OS_Compatibility_t;
 
 	// NOTE: OS names aren't translatable, but "Long Path Aware" is.
-	static const char *const OS_Compatibility_names[] = {
-		"Windows Vista",
-		"Windows 7",
-		"Windows 8",
-		"Windows 8.1",
-		"Windows 10",
+	static const char8_t *const OS_Compatibility_names[] = {
+		U8("Windows Vista"),
+		U8("Windows 7"),
+		U8("Windows 8"),
+		U8("Windows 8.1"),
+		U8("Windows 10"),
 		NOP_C_("EXE|Manifest|OSCompatibility", "Long Path Aware"),
 	};
 
@@ -399,7 +400,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 
 			// Show the bitfield.
 			vector<string> *const v_OS_Compatibility_names = RomFields::strArrayToVector_i18n(
-				"EXE|Manifest|OSCompatibility", OS_Compatibility_names, ARRAY_SIZE(OS_Compatibility_names));
+				U8("EXE|Manifest|OSCompatibility"), OS_Compatibility_names, ARRAY_SIZE(OS_Compatibility_names));
 			fields->addField_bitfield(C_("EXE|Manifest", "Compatibility"),
 				v_OS_Compatibility_names, 2, compat);
 		}

@@ -114,11 +114,11 @@ rp_thunar_provider_get_pages(ThunarxPropertyPageProvider *page_provider, GList *
 		romData->unref();
 		gtk_widget_show(romDataView);
 
-		// tr: Tab title.
-		const char *const tabTitle = C_("RomDataView", "ROM Properties");
+		// tr: Tab title
+		const char8_t *const tabTitle = C_("RomDataView", "ROM Properties");
 
 		// Create the ThunarxPropertyPage.
-		GtkWidget *const page = thunarx_property_page_new(tabTitle);
+		GtkWidget *const page = thunarx_property_page_new(reinterpret_cast<const char*>(tabTitle));
 		gtk_container_add(GTK_CONTAINER(page), romDataView);
 
 		// Add the page to the pages provided by this plugin.

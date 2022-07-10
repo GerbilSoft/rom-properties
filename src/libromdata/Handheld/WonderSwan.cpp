@@ -446,7 +446,7 @@ int WonderSwan::loadFieldData(void)
 	d->fields->reserve(10);	// Maximum of 10 fields.
 
 	// Game ID
-	const char *const game_id_title = C_("RomData", "Game ID");
+	const char8_t *const game_id_title = C_("RomData", "Game ID");
 	const string game_id = d->getGameID();
 	if (!game_id.empty()) {
 		d->fields->addField_string(game_id_title, game_id);
@@ -458,18 +458,19 @@ int WonderSwan::loadFieldData(void)
 	d->fields->addField_string_numeric(C_("RomData", "Revision"), romFooter->revision);
 
 	// Publisher
-	const char *const publisher_title = C_("RomData", "Publisher");
+	const char8_t *const publisher_title = C_("RomData", "Publisher");
 	const char8_t *const publisher = WonderSwanPublishers::lookup_name(romFooter->publisher);
 	if (publisher) {
 		d->fields->addField_string(publisher_title, publisher);
 	} else {
+		// FIXME: U8STRFIX - rp_sprintf()
 		d->fields->addField_string(publisher_title,
-			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), romFooter->publisher));
+			rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (0x%02X)")), romFooter->publisher));
 	}
 
 	// System
-	static const char *const system_bitfield_names[] = {
-		"WonderSwan", "WonderSwan Color"
+	static const char8_t *const system_bitfield_names[] = {
+		U8("WonderSwan"), U8("WonderSwan Color")
 	};
 	vector<string> *const v_system_bitfield_names = RomFields::strArrayToVector(
 		system_bitfield_names, ARRAY_SIZE(system_bitfield_names));
@@ -483,26 +484,28 @@ int WonderSwan::loadFieldData(void)
 		2048, 3072, 4096, 6144,
 		8192, 16384,
 	};
-	const char *const rom_size_title = C_("WonderSwan", "ROM Size");
+	// FIXME: U8STRFIX - rp_sprintf()
+	const char8_t *const rom_size_title = C_("WonderSwan", "ROM Size");
 	if (romFooter->rom_size < ARRAY_SIZE(rom_size_tbl)) {
 		d->fields->addField_string(rom_size_title,
 			// TODO: Format with commas?
-			rp_sprintf(C_("WonderSwan", "%u KiB"), rom_size_tbl[romFooter->rom_size]));
+			rp_sprintf(reinterpret_cast<const char*>(C_("WonderSwan", "%u KiB")), rom_size_tbl[romFooter->rom_size]));
 	} else {
 		d->fields->addField_string(rom_size_title,
-			rp_sprintf(C_("RomData", "Unknown (%u)"), romFooter->publisher));
+			rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (%u)")), romFooter->publisher));
 	}
 
 	// Save size and type
 	static const uint16_t sram_size_tbl[] = {
 		0, 8, 32, 128, 256, 512,
 	};
-	const char *const save_memory_title = C_("WonderSwan", "Save Memory");
+	// FIXME: U8STRFIX - rp_sprintf_p()
+	const char8_t *const save_memory_title = C_("WonderSwan", "Save Memory");
 	if (romFooter->save_type == 0) {
 		d->fields->addField_string(save_memory_title, C_("WonderSwan|SaveMemory", "None"));
 	} else if (romFooter->save_type < ARRAY_SIZE(sram_size_tbl)) {
 		d->fields->addField_string(save_memory_title,
-			rp_sprintf_p(C_("WonderSwan|SaveMemory", "%1$u KiB (%2$s)"),
+			rp_sprintf_p(reinterpret_cast<const char*>(C_("WonderSwan|SaveMemory", "%1$u KiB (%2$s)")),
 				sram_size_tbl[romFooter->save_type],
 				C_("WonderSwan|SaveMemory", "SRAM")));
 	} else {
@@ -517,7 +520,7 @@ int WonderSwan::loadFieldData(void)
 		if (eeprom_bytes == 0) {
 			d->fields->addField_string(save_memory_title, C_("WonderSwan|SaveMemory", "None"));
 		} else {
-			const char *fmtstr;
+			const char8_t *fmtstr;
 			if (eeprom_bytes >= 1024) {
 				fmtstr = C_("WonderSwan|SaveMemory", "%1$u KiB (%2$s)");
 				eeprom_bytes /= 1024;
@@ -525,16 +528,16 @@ int WonderSwan::loadFieldData(void)
 				fmtstr = C_("WonderSwan|SaveMemory", "%1$u bytes (%2$s)");
 			}
 			d->fields->addField_string(save_memory_title,
-				rp_sprintf_p(fmtstr, eeprom_bytes, C_("WonderSwan|SaveMemory", "EEPROM")));
+				rp_sprintf_p(reinterpret_cast<const char*>(fmtstr), eeprom_bytes, C_("WonderSwan|SaveMemory", "EEPROM")));
 		}
 	}
 
 	// Features (aka RTC Present)
-	static const char *const ws_feature_bitfield_names[] = {
+	static const char8_t *const ws_feature_bitfield_names[] = {
 		NOP_C_("WonderSwan|Features", "RTC Present"),
 	};
 	vector<string> *const v_ws_feature_bitfield_names = RomFields::strArrayToVector_i18n(
-		"WonderSwan|Features", ws_feature_bitfield_names, ARRAY_SIZE(ws_feature_bitfield_names));
+		U8("WonderSwan|Features"), ws_feature_bitfield_names, ARRAY_SIZE(ws_feature_bitfield_names));
 	d->fields->addField_bitfield(C_("WonderSwan", "Features"),
 		v_ws_feature_bitfield_names, 0, romFooter->rtc_present);
 

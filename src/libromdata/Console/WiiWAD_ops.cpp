@@ -45,9 +45,10 @@ vector<RomData::RomOp> WiiWAD::romOps_int(void) const
 		return ops;
 	}
 
+	// FIXME: U8STRFIX - op.sfi
 	RomOp op("E&xtract SRL...", RomOp::ROF_ENABLED | RomOp::ROF_SAVE_FILE);
-	op.sfi.title = C_("WiiWAD|RomOps", "Extract Nintendo DS SRL File");
-	op.sfi.filter = C_("WiiWAD|RomOps", "Nintendo DS SRL Files|*.nds;*.srl|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom");
+	op.sfi.title = reinterpret_cast<const char*>(C_("WiiWAD|RomOps", "Extract Nintendo DS SRL File"));
+	op.sfi.filter = reinterpret_cast<const char*>(C_("WiiWAD|RomOps", "Nintendo DS SRL Files|*.nds;*.srl|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom"));
 	op.sfi.ext = ".nds";
 #ifndef ENABLE_DECRYPTION
 	op.flags &= ~RomOp::ROF_ENABLED;
@@ -67,25 +68,26 @@ vector<RomData::RomOp> WiiWAD::romOps_int(void) const
 int WiiWAD::doRomOp_int(int id, RomOpParams *pParams)
 {
 	RP_D(WiiWAD);
+	// FIXME: U8STRFIX - pParams
 
 	// Currently only one ROM operation.
 	if (id != 0) {
 		pParams->status = -EINVAL;
-		pParams->msg = C_("RomData", "ROM operation ID is invalid for this object.");
+		pParams->msg = reinterpret_cast<const char*>(C_("RomData", "ROM operation ID is invalid for this object."));
 		return -EINVAL;
 	}
 
 	assert(pParams->save_filename != nullptr);
 	if (!pParams->save_filename) {
 		pParams->status = -EINVAL;
-		pParams->msg = C_("RomData", "Save filename was not specified.");
+		pParams->msg = reinterpret_cast<const char*>(C_("RomData", "Save filename was not specified."));
 		return -EINVAL;
 	}
 
 	if (be16_to_cpu(d->tmdHeader.title_id.sysID) != NINTENDO_SYSID_TWL) {
 		// We only have a ROM operation for DSi TADs right now.
 		pParams->status = -EINVAL;
-		pParams->msg = C_("WiiWAD", "SRL extraction is only supported for DSi TAD packages.");
+		pParams->msg = reinterpret_cast<const char*>(C_("WiiWAD", "SRL extraction is only supported for DSi TAD packages."));
 		return -EINVAL;
 	}
 
@@ -100,13 +102,13 @@ int WiiWAD::doRomOp_int(int id, RomOpParams *pParams)
 		pParams->status = ret;
 		if (ret == -ENOENT) {
 			// Not a DSi SRL.
-			pParams->msg = C_("RomData", "ROM operation ID is invalid for this object.");
+			pParams->msg = reinterpret_cast<const char*>(C_("RomData", "ROM operation ID is invalid for this object."));
 		} else if (ret == -EIO) {
 			// Unable to open the DSi SRL.
-			pParams->msg = C_("WiiWAD", "Unable to open the SRL.");
+			pParams->msg = reinterpret_cast<const char*>(C_("WiiWAD", "Unable to open the SRL."));
 		} else {
 			// Unknown error...
-			pParams->msg = C_("WiiWAD", "An unknown error occurred attempting to open the SRL.");
+			pParams->msg = reinterpret_cast<const char*>(C_("WiiWAD", "An unknown error occurred attempting to open the SRL."));
 		}
 		return ret;
 	}
@@ -119,7 +121,7 @@ int WiiWAD::doRomOp_int(int id, RomOpParams *pParams)
 			d->mainContent->close();
 		}
 		pParams->status = -EIO;
-		pParams->msg = C_("WiiWAD", "Unable to open the SRL.");
+		pParams->msg = reinterpret_cast<const char*>(C_("WiiWAD", "Unable to open the SRL."));
 		return -EIO;
 	}
 
@@ -131,7 +133,7 @@ int WiiWAD::doRomOp_int(int id, RomOpParams *pParams)
 		// No source file...
 		// TODO: More useful message? (may need std::string)
 		pParams->status = -EIO;
-		pParams->msg = C_("WiiWAD", "Unable to open the SRL.");
+		pParams->msg = reinterpret_cast<const char*>(C_("WiiWAD", "Unable to open the SRL."));
 		goto out;
 	}
 
@@ -141,7 +143,7 @@ int WiiWAD::doRomOp_int(int id, RomOpParams *pParams)
 	if (!destFile->isOpen()) {
 		// TODO: More useful message? (may need std::string)
 		pParams->status = -destFile->lastError();
-		pParams->msg = C_("WiiWAD", "Could not open output SRL file.");
+		pParams->msg = reinterpret_cast<const char*>(C_("WiiWAD", "Could not open output SRL file."));
 		goto out;
 	}
 
@@ -151,13 +153,13 @@ int WiiWAD::doRomOp_int(int id, RomOpParams *pParams)
 	pParams->status = ret;
 	switch (ret) {
 		case 0:
-			pParams->msg = C_("WiiWAD", "SRL file extracted successfully.");
+			pParams->msg = reinterpret_cast<const char*>(C_("WiiWAD", "SRL file extracted successfully."));
 			break;
 		case -EIO:
-			pParams->msg = C_("WiiWAD", "An I/O error occurred while extracting the SRL.");
+			pParams->msg = reinterpret_cast<const char*>(C_("WiiWAD", "An I/O error occurred while extracting the SRL."));
 			break;
 		default:
-			pParams->msg = C_("WiiWAD", "An unknown error occurred while extracting the SRL.");
+			pParams->msg = reinterpret_cast<const char*>(C_("WiiWAD", "An unknown error occurred while extracting the SRL."));
 			break;
 	}
 
@@ -170,7 +172,7 @@ out:
 	return pParams->status;
 #else /* !ENABLE_DECRYPTION */
 	pParams->status = -ENOTSUP;
-	pParams->msg = C_("WiiWAD", "SRL extraction is not supported in NoCrypto builds.");
+	pParams->msg = reinterpret_cast<const char*>(C_("WiiWAD", "SRL extraction is not supported in NoCrypto builds."));
 	return -ENOTSUP;
 #endif /* ENABLE_DECRYPTION */
 }

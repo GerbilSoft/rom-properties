@@ -59,11 +59,11 @@ class KeyManager : public ConfReader
 
 		/**
 		 * Get a description for a VerifyResult.
-		 * @param res VerifyResult.
+		 * @param res VerifyResult
 		 * @return Description, or nullptr if invalid.
 		 */
 		RP_LIBROMDATA_PUBLIC
-		static const char *verifyResultToString(VerifyResult res);
+		static const char8_t *verifyResultToString(VerifyResult res);
 
 #ifdef ENABLE_DECRYPTION
 	public:

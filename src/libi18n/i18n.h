@@ -23,25 +23,30 @@
 /**
  * i18n macros for gettext().
  * All strings should be compile-time constants.
+ *
+ * NOTE: This now uses U8() for char8_t/u8string.
  */
+#ifndef U8
+#  define U8(x) (x)
+#endif /* U8 */
 #ifdef HAVE_GETTEXT
 #  include "gettext.h"
-#  define _(msgid)				dgettext(RP_I18N_DOMAIN, msgid)
-#  define C_(msgctxt, msgid)			dpgettext(RP_I18N_DOMAIN, msgctxt, msgid)
-#  define N_(msgid1, msgid2, n)			dngettext(RP_I18N_DOMAIN, msgid1, msgid2, n)
-#  define NC_(msgctxt, msgid1, msgid2, n)	dnpgettext(RP_I18N_DOMAIN, msgctxt, msgid1, msgid2, n)
-#else
-#  define _(msgid)				(msgid)
-#  define C_(msgctxt, msgid)			(msgid)
-#  define N_(msgid1, msgid2, n)			((n) == 1 ? (msgid1) : (msgid2))
-#  define NC_(msgctxt, msgid1, msgid2, n)	((n) == 1 ? (msgid1) : (msgid2))
+#  define _(msgid)				(const char8_t*)dgettext(RP_I18N_DOMAIN, msgid)
+#  define C_(msgctxt, msgid)			(const char8_t*)dpgettext(RP_I18N_DOMAIN, msgctxt, msgid)
+#  define N_(msgid1, msgid2, n)			(const char8_t*)dngettext(RP_I18N_DOMAIN, msgid1, msgid2, n)
+#  define NC_(msgctxt, msgid1, msgid2, n)	(const char8_t*)dnpgettext(RP_I18N_DOMAIN, msgctxt, msgid1, msgid2, n)
+#else /* !HAVE_GETTEXT */
+#  define _(msgid)				(U8(msgid))
+#  define C_(msgctxt, msgid)			(U8(msgid))
+#  define N_(msgid1, msgid2, n)			((n) == 1 ? (U8(msgid1)) : (U8(msgid2)))
+#  define NC_(msgctxt, msgid1, msgid2, n)	((n) == 1 ? (U8(msgid1)) : (U8(msgid2)))
 #  define dpgettext_expr(domain, msgctxt, msgid)			(msgid)
 #  define dnpgettext_expr(domain, msgctxt, msgid1, msgid2, n)	((n) == 1 ? (msgid1) : (msgid2))
-#endif
+#endif /* HAVE_GETTEXT */
 
 /* No-op formats that are translated later. */
-#define NOP_(msgid)		(msgid)
-#define NOP_C_(msgctxt, msgid)	(msgid)
+#define NOP_(msgid)		(U8(msgid))
+#define NOP_C_(msgctxt, msgid)	(U8(msgid))
 
 #ifdef HAVE_GETTEXT
 #ifdef __cplusplus

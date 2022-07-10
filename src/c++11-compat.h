@@ -93,6 +93,14 @@ namespace std {
 #endif /* CXX20_COMPAT_CHAR8_T */
 
 #define U8(x) __U8(x)
+#ifdef __cplusplus
+#  include <sstream>
+namespace std {
+	typedef basic_stringstream<char8_t> u8stringstream;
+	typedef basic_istringstream<char8_t> u8istringstream;
+	typedef basic_ostringstream<char8_t> u8ostringstream;
+}
+#endif /* __cplusplus */
 
 /* MSVC doesn't define std::u8string unless using /std:c++20 */
 #if defined(_MSC_VER) && defined(__cplusplus) && __cplusplus < 202002L

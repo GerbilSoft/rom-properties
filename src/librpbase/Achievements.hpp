@@ -126,7 +126,7 @@ class Achievements
 		 * @return Achievement description, or nullptr on error.
 		 */
 		RP_LIBROMDATA_PUBLIC
-		const char *getName(ID id) const;
+		const char8_t *getName(ID id) const;
 
 		/**
 		 * Get an unlocked achievement description. (localized)
@@ -134,7 +134,7 @@ class Achievements
 		 * @return Unlocked achievement description, or nullptr on error.
 		 */
 		RP_LIBROMDATA_PUBLIC
-		const char *getDescUnlocked(ID id) const;
+		const char8_t *getDescUnlocked(ID id) const;
 };
 
 }

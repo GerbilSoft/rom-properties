@@ -402,14 +402,15 @@ int BCSTM::loadFieldData(void)
 	static const char type_tbl[][8] = {
 		"BCSTM", "BFSTM", "BCWAV"
 	};
-	const char *const type_title = C_("BCSTM", "Type");
+	const char8_t *const type_title = C_("BCSTM", "Type");
 	if (d->audioFormat > BCSTMPrivate::AudioFormat::Unknown &&
 	    (int)d->audioFormat < ARRAY_SIZE_I(type_tbl))
 	{
 		d->fields->addField_string(type_title, type_tbl[(int)d->audioFormat]);
 	} else {
+		// FIXME: U8STRFIX - rp_sprintf()
 		d->fields->addField_string(type_title,
-			rp_sprintf(C_("RomData", "Unknown (%d)"), (int)d->audioFormat));
+			rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (%d)")), (int)d->audioFormat));
 	}
 
 	// TODO: Show the version field?
@@ -465,18 +466,19 @@ int BCSTM::loadFieldData(void)
 	}
 
 	// Codec
-	static const char *const codec_tbl[] = {
+	static const char8_t *const codec_tbl[] = {
 		NOP_C_("BCSTM|Codec", "Signed 8-bit PCM"),
 		NOP_C_("BCSTM|Codec", "Signed 16-bit PCM"),
-		"DSP ADPCM", "IMA ADPCM",
+		U8("DSP ADPCM"), U8("IMA ADPCM"),
 	};
-	const char *const codec_title = C_("BCSTM", "Codec");
+	// FIXME: U8STRFIX - dpgettext_expr(), rp_sprintf()
+	const char8_t *const codec_title = C_("BCSTM", "Codec");
 	if (codec < ARRAY_SIZE(codec_tbl)) {
 		d->fields->addField_string(codec_title,
-			dpgettext_expr(RP_I18N_DOMAIN, "BCSTM|Codec", codec_tbl[codec]));
+			dpgettext_expr(RP_I18N_DOMAIN, "BCSTM|Codec", reinterpret_cast<const char*>(codec_tbl[codec])));
 	} else {
 		d->fields->addField_string(codec_title,
-			rp_sprintf(C_("RomData", "Unknown (%u)"), codec));
+			rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (%u)")), codec));
 	}
 
 	// Number of channels

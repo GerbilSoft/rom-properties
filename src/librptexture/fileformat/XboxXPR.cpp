@@ -747,16 +747,17 @@ int XboxXPR::getFields(LibRpBase::RomFields *fields) const
 	fields->reserve(initial_count + 1);	// Maximum of 1 field. (TODO)
 
 	// Type
-	static const char type_tbl[][8] = {
-		"XPR0", "XPR1", "XPR2"
+	static const char8_t type_tbl[][8] = {
+		U8("XPR0"), U8("XPR1"), U8("XPR2")
 	};
 	if (d->xprType > XboxXPRPrivate::XPRType::Unknown &&
 	    (int)d->xprType < ARRAY_SIZE_I(type_tbl))
 	{
 		fields->addField_string(C_("XboxXPR", "Type"), type_tbl[(int)d->xprType]);
 	} else {
+		// FIXME: U8STRFIX - rp_sprintf()
 		fields->addField_string(C_("XboxXPR", "Type"),
-			rp_sprintf(C_("RomData", "Unknown (%d)"), (int)d->xprType));
+			rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (%d)")), (int)d->xprType));
 	}
 
 	// Finished reading the field data.

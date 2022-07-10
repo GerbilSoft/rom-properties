@@ -36,10 +36,10 @@ using std::unique_ptr;
 #include "librpsecure/os-secure.h"
 
 #ifdef _WIN32
-# include "libwin32common/RpWin32_sdk.h"
-# include <io.h>
-# include "librpbase/TextFuncs.hpp"
-# include "librpbase/TextFuncs_wchar.hpp"
+#  include "libwin32common/RpWin32_sdk.h"
+#  include <io.h>
+#  include "librpbase/TextFuncs.hpp"
+#  include "librpbase/TextFuncs_wchar.hpp"
 using std::u16string;
 #endif /* _WIN32 */
 
@@ -57,12 +57,13 @@ int RP_C_API main(int argc, char *argv[])
 	locale::global(locale(""));
 
 	// Initialize i18n.
+	// FIXME: U8STRFIX - C_() for printf().
 	rp_i18n_init();
 
 	if (argc < 2 || argc > 3) {
-		printf(C_("GcnFstPrint", "Syntax: %s fst.bin [offsetShift]"), argv[0]);
+		printf((const char*)C_("GcnFstPrint", "Syntax: %s fst.bin [offsetShift]"), argv[0]);
 		putchar('\n');
-		puts(C_("GcnFstPrint", "offsetShift should be 0 for GameCube, 2 for Wii. (default is 0)"));
+		puts((const char*)C_("GcnFstPrint", "offsetShift should be 0 for GameCube, 2 for Wii. (default is 0)"));
 		return EXIT_FAILURE;
 	}
 
@@ -72,9 +73,9 @@ int RP_C_API main(int argc, char *argv[])
 		char *endptr = nullptr;
 		long ltmp = strtol(argv[2], &endptr, 10);
 		if (*endptr != '\0' || (ltmp != 0 && ltmp != 2)) {
-			printf(C_("GcnFstPrint", "Invalid offset shift '%s' specified."), argv[2]);
+			printf((const char*)C_("GcnFstPrint", "Invalid offset shift '%s' specified."), argv[2]);
 			putchar('\n');
-			puts(C_("GcnFstPrint", "offsetShift should be 0 for GameCube, 2 for Wii. (default is 0)"));
+			puts((const char*)C_("GcnFstPrint", "offsetShift should be 0 for GameCube, 2 for Wii. (default is 0)"));
 			return EXIT_FAILURE;
 		}
 		offsetShift = static_cast<uint8_t>(ltmp);
@@ -84,7 +85,7 @@ int RP_C_API main(int argc, char *argv[])
 	FILE *f = fopen(argv[1], "rb");
 	if (!f) {
 		// tr: %1$s == filename, %2$s == error message
-		printf_p(C_("GcnFstPrint", "Error opening '%1$s': '%2$s'"), argv[1], strerror(errno));
+		printf_p((const char*)C_("GcnFstPrint", "Error opening '%1$s': '%2$s'"), argv[1], strerror(errno));
 		putchar('\n');
 		return EXIT_FAILURE;
 	}
@@ -93,7 +94,7 @@ int RP_C_API main(int argc, char *argv[])
 	fseeko(f, 0, SEEK_END);
 	const off64_t fileSize_o = ftello(f);
 	if (fileSize_o > (16*1024*1024)) {
-		puts(C_("GcnFstPrint", "ERROR: FST is too big. (Maximum of 16 MB.)"));
+		puts((const char*)C_("GcnFstPrint", "ERROR: FST is too big. (Maximum of 16 MB.)"));
 		fclose(f);
 		return EXIT_FAILURE;
 	}
@@ -106,7 +107,7 @@ int RP_C_API main(int argc, char *argv[])
 	fclose(f);
 	if (rd_size != fileSize) {
 		// tr: %1$u == number of bytes read, %2$u == number of bytes expected to read
-		printf_p(C_("GcnFstPrint", "ERROR: Read %1$u bytes, expected %2$u bytes."),
+		printf_p((const char*)C_("GcnFstPrint", "ERROR: Read %1$u bytes, expected %2$u bytes."),
 			(unsigned int)rd_size, (unsigned int)fileSize);
 		putchar('\n');
 		return EXIT_FAILURE;
@@ -130,7 +131,7 @@ int RP_C_API main(int argc, char *argv[])
 	unique_ptr<GcnFst> fst(new GcnFst(&fstData[fst_start_offset],
 		static_cast<uint32_t>(fileSize - fst_start_offset), offsetShift));
 	if (!fst->isOpen()) {
-		puts(C_("GcnFstPrint", "*** ERROR: Could not open a GcnFst."));
+		puts((const char*)C_("GcnFstPrint", "*** ERROR: Could not open a GcnFst."));
 		return EXIT_FAILURE;
 	}
 
@@ -156,7 +157,7 @@ int RP_C_API main(int argc, char *argv[])
 
 	if (fst->hasErrors()) {
 		putchar('\n');
-		puts(C_("GcnFstPrint", "*** WARNING: FST has errors and may be unusable."));
+		puts((const char*)C_("GcnFstPrint", "*** WARNING: FST has errors and may be unusable."));
 	}
 
 	// Cleanup.

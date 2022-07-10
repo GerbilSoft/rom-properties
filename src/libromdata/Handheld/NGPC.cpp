@@ -333,7 +333,7 @@ int NGPC::loadFieldData(void)
 		entry_point, RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
 
 	// Debug enabled?
-	const char *s_debug = nullptr;
+	const char8_t *s_debug = nullptr;
 	switch (entry_point >> 24) {
 		case NGPC_DEBUG_MODE_OFF:
 			s_debug = C_("NGPC|DebugMode", "Off");
@@ -347,8 +347,9 @@ int NGPC::loadFieldData(void)
 	if (s_debug) {
 		d->fields->addField_string(C_("NGPC", "Debug Mode"), s_debug);
 	} else {
+		// FIXME: U8STRFIX - rp_sprintf()
 		d->fields->addField_string(C_("NGPC", "Debug Mode"),
-			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), entry_point >> 24));
+			rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (0x%02X)")), entry_point >> 24));
 	}
 
 	// Finished reading the field data.

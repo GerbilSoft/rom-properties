@@ -31,12 +31,6 @@ static const char regions[6][4] = {
 	"CHN", "KOR", "TWN",
 };
 
-// FIXME: U8STRFIX - NOP_C_
-#ifdef NOP_C_
-#  undef NOP_C_
-#endif
-#define NOP_C_(ctx, str) U8(str)
-
 /**
  * System applications (tid hi == 0x00040010)
  */

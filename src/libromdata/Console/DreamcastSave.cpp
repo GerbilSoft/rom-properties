@@ -1320,7 +1320,7 @@ int DreamcastSave::loadFieldData(void)
 	}
 
 	// File type.
-	const char *filetype;
+	const char8_t *filetype;
 	if (d->loaded_headers & DreamcastSavePrivate::DC_IS_ICONDATA_VMS) {
 		// tr: ICONDATA_VMS
 		filetype = C_("DreamcastSave", "Icon Data");
@@ -1360,20 +1360,21 @@ int DreamcastSave::loadFieldData(void)
 		}
 	}
 
-	const char *const filetype_title = C_("DreamcastSave", "File Type");
+	const char8_t *const filetype_title = C_("DreamcastSave", "File Type");
 	if (filetype) {
 		d->fields->addField_string(filetype_title, filetype);
 	} else {
 		// Unknown file type.
+		// FIXME: U8STRFIX - rp_sprintf()
 		d->fields->addField_string(filetype_title,
-			rp_sprintf(C_("RomData", "Unknown (0x%02X)"),
+			rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (0x%02X)")),
 				d->vms_dirent.filetype));
 	}
 
 	// DC VMS directory entry.
 	if (d->loaded_headers & DreamcastSavePrivate::DC_HAVE_DIR_ENTRY) {
 		// Copy protection.
-		const char *protect;
+		const char8_t *protect;
 		switch (d->vms_dirent.protect) {
 			case DC_VMS_DIRENT_PROTECT_COPY_OK:
 			default:
@@ -1385,13 +1386,15 @@ int DreamcastSave::loadFieldData(void)
 				break;
 		}
 
-		const char *const protect_title = C_("DreamcastSave", "Copy Protect");
+		const char8_t *const protect_title = C_("DreamcastSave", "Copy Protect");
 		if (protect) {
 			d->fields->addField_string(protect_title, protect);
 		} else {
 			// Unknown copy protection.
+			// FIXME: U8STRFIX - rp_sprintf()
 			d->fields->addField_string(protect_title,
-				rp_sprintf(C_("RomData", "Unknown (0x%02X)"), d->vms_dirent.protect));
+				rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (0x%02X)")),
+					d->vms_dirent.protect));
 		}
 
 		// Filename.
@@ -1407,7 +1410,7 @@ int DreamcastSave::loadFieldData(void)
 		);
 	}
 
-	const char *const vms_description_title = C_("DreamcastSave", "VMS Description");
+	const char8_t *const vms_description_title = C_("DreamcastSave", "VMS Description");
 	if (d->loaded_headers & DreamcastSavePrivate::DC_IS_ICONDATA_VMS) {
 		// DC ICONDATA_VMS header.
 		const DC_VMS_ICONDATA_Header *const icondata_vms = &d->vms_header.icondata_vms;

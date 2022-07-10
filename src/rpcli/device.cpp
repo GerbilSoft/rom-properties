@@ -33,6 +33,8 @@ using LibRpFile::RpFile;
 using std::string;
 using std::u8string;
 
+// FIXME: U8STRFIX - C_() for rp_sprintf()
+
 class StreamStateSaver {
 	std::ios &stream;	// Stream being adjusted.
 	std::ios state;		// Copy of original flags.
@@ -78,7 +80,7 @@ std::ostream& operator<<(std::ostream& os, const ScsiInquiry& si)
 	int ret = si.file->scsi_inquiry(&resp);
 	if (ret != 0) {
 		// TODO: Decode the error.
-		os << "-- " << rp_sprintf(C_("rpcli", "SCSI INQUIRY failed: %08X"),
+		os << "-- " << rp_sprintf((const char*)C_("rpcli", "SCSI INQUIRY failed: %08X"),
 			static_cast<unsigned int>(ret)) << '\n';
 		return os;
 	}
@@ -187,7 +189,7 @@ std::ostream& operator<<(std::ostream& os, const AtaIdentifyDevice& si)
 
 	if (ret != 0) {
 		// TODO: Decode the error.
-		os << "-- " << rp_sprintf(C_("rpcli", "ATA %s failed: %08X"),
+		os << "-- " << rp_sprintf((const char*)C_("rpcli", "ATA %s failed: %08X"),
 			(si.packet ? "IDENTIFY PACKET DEVICE" : "IDENTIFY DEVICE"),
 			static_cast<unsigned int>(ret)) << '\n';
 		return os;

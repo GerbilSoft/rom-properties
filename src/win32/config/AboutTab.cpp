@@ -826,8 +826,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += U8("}");
 
 	// Add the "Libraries" tab.
-	const tstring tsTabTitle = U82T_c(
-		reinterpret_cast<const char8_t*>(C_("AboutTab", "Libraries")));
+	const tstring tsTabTitle = U82T_c(C_("AboutTab", "Libraries"));
 	TCITEM tcItem;
 	tcItem.mask = TCIF_TEXT;
 	tcItem.pszText = const_cast<LPTSTR>(tsTabTitle.c_str());
@@ -846,8 +845,8 @@ void AboutTabPrivate::initSupportTab(void)
 	sSupport = RTF_START;
 
 	// FIXME: U8STRFIX
-	sSupport += rtfEscape(reinterpret_cast<const char8_t*>(C_("AboutTab|Support",
-		"For technical support, you can visit the following websites:")));
+	sSupport += rtfEscape(C_("AboutTab|Support",
+		"For technical support, you can visit the following websites:"));
 	sSupport += RTF_BR;
 
 	for (const AboutTabText::SupportSite_t *supportSite = AboutTabText::getSupportSites();
@@ -863,8 +862,7 @@ void AboutTabPrivate::initSupportTab(void)
 
 	// Email the author.
 	sSupport += RTF_BR;
-	sSupport += rtfEscape(reinterpret_cast<const char8_t*>(C_("AboutTab|Support",
-		"You can also email the developer directly:")));
+	sSupport += rtfEscape(C_("AboutTab|Support", "You can also email the developer directly:"));
 	sSupport += RTF_BR RTF_TAB RTF_BULLET U8(" David Korth <");
 	sSupport += rtfFriendlyLink(U8("mailto:gerbilsoft@gerbilsoft.com"), U8("gerbilsoft@gerbilsoft.com"));
 	sSupport += U8(">}");

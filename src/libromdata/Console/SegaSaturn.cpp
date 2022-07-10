@@ -511,14 +511,14 @@ int SegaSaturn::loadFieldData(void)
 	// compared to Dreamcast. The region code is parsed in the
 	// constructor, since it might be used for branding purposes
 	// later.
-	static const char *const region_code_bitfield_names[] = {
+	static const char8_t *const region_code_bitfield_names[] = {
 		NOP_C_("Region", "Japan"),
 		NOP_C_("Region", "Taiwan"),
 		NOP_C_("Region", "USA"),
 		NOP_C_("Region", "Europe"),
 	};
 	vector<string> *const v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
-		"Region", region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
+		U8("Region"), region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
 	d->fields->addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code_bitfield_names, 0, d->saturn_region);
 
@@ -526,15 +526,16 @@ int SegaSaturn::loadFieldData(void)
 	uint8_t disc_num, disc_total;
 	d->parseDiscNumber(disc_num, disc_total);
 	if (disc_num != 0 && disc_total > 1) {
-		const char *const disc_number_title = C_("RomData", "Disc #");
+		// FIXME: U8STRFIX - rp_sprintf_p()
+		const char8_t *const disc_number_title = C_("RomData", "Disc #");
 		d->fields->addField_string(disc_number_title,
 			// tr: Disc X of Y (for multi-disc games)
-			rp_sprintf_p(C_("RomData|Disc", "%1$u of %2$u"),
+			rp_sprintf_p(reinterpret_cast<const char*>(C_("RomData|Disc", "%1$u of %2$u")),
 				disc_num, disc_total));
 	}
 
 	// Peripherals.
-	static const char *const peripherals_bitfield_names[] = {
+	static const char8_t *const peripherals_bitfield_names[] = {
 		NOP_C_("SegaSaturn|Peripherals", "Control Pad"),
 		NOP_C_("SegaSaturn|Peripherals", "Analog Controller"),
 		NOP_C_("SegaSaturn|Peripherals", "Mouse"),
@@ -552,7 +553,7 @@ int SegaSaturn::loadFieldData(void)
 		NOP_C_("SegaSaturn|Peripherals", "MPEG Card"),
 	};
 	vector<string> *const v_peripherals_bitfield_names = RomFields::strArrayToVector_i18n(
-		"SegaSaturn|Peripherals", peripherals_bitfield_names, ARRAY_SIZE(peripherals_bitfield_names));
+		U8("SegaSaturn|Peripherals"), peripherals_bitfield_names, ARRAY_SIZE(peripherals_bitfield_names));
 	// Parse peripherals.
 	uint32_t peripherals = d->parsePeripherals(discHeader->peripherals, sizeof(discHeader->peripherals));
 	d->fields->addField_bitfield(C_("SegaSaturn", "Peripherals"),

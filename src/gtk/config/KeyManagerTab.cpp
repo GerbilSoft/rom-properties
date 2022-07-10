@@ -23,9 +23,10 @@ using namespace LibRpBase;
 
 // C++ STL classes
 using std::string;
+using std::u8string;
 
 // KeyStoreUI::ImportFileID
-static const char *const import_menu_actions[] = {
+static const char8_t *const import_menu_actions[] = {
 	NOP_C_("KeyManagerTab", "Wii keys.bin"),
 	NOP_C_("KeyManagerTab", "Wii U otp.bin"),
 	NOP_C_("KeyManagerTab", "3DS boot9.bin"),
@@ -198,7 +199,7 @@ key_manager_tab_init(KeyManagerTab *tab)
 
 	// Column 1: Key Name
 	GtkTreeViewColumn *column = gtk_tree_view_column_new();
-	gtk_tree_view_column_set_title(column, C_("KeyManagerTab", "Key Name"));
+	gtk_tree_view_column_set_title(column, reinterpret_cast<const char*>(C_("KeyManagerTab", "Key Name")));
 	gtk_tree_view_column_set_resizable(column, TRUE);
 	GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
 	gtk_tree_view_column_pack_start(column, renderer, FALSE);
@@ -210,7 +211,7 @@ key_manager_tab_init(KeyManagerTab *tab)
 	// TODO: Handle the cell editor's 'insert-text' signal and stop it
 	// if the entered text is non-hex. (with allowKanji support)
 	column = gtk_tree_view_column_new();
-	gtk_tree_view_column_set_title(column, C_("KeyManagerTab", "Value"));
+	gtk_tree_view_column_set_title(column, reinterpret_cast<const char*>(C_("KeyManagerTab", "Value")));
 	gtk_tree_view_column_set_resizable(column, TRUE);
 	renderer = gtk_cell_renderer_text_new();
 	g_object_set(renderer, "family", "Monospace", nullptr);
@@ -223,7 +224,7 @@ key_manager_tab_init(KeyManagerTab *tab)
 
 	// Column 3: Valid?
 	column = gtk_tree_view_column_new();
-	gtk_tree_view_column_set_title(column, C_("KeyManagerTab", "Valid?"));
+	gtk_tree_view_column_set_title(column, reinterpret_cast<const char*>(C_("KeyManagerTab", "Valid?")));
 	gtk_tree_view_column_set_resizable(column, FALSE);
 	renderer = gtk_cell_renderer_pixbuf_new();
 	g_object_set(renderer, "xalign", 0.5f, nullptr);	// FIXME: Not working on GTK2.
@@ -299,7 +300,7 @@ key_manager_tab_init(KeyManagerTab *tab)
 
 		// Create the menu item.
 		snprintf(buf, sizeof(buf), "%s.%d", prefix, i);
-		g_menu_append(tab->menuModel, import_menu_actions[i], buf);
+		g_menu_append(tab->menuModel, reinterpret_cast<const char*>(import_menu_actions[i]), buf);
 	}
 
 	gtk_widget_insert_action_group(GTK_WIDGET(tab->btnImport), prefix, G_ACTION_GROUP(tab->actionGroup));
@@ -307,7 +308,7 @@ key_manager_tab_init(KeyManagerTab *tab)
 	tab->menuImport = gtk_menu_new();
 	gtk_widget_set_name(tab->menuImport, "menuImport");
 	for (int i = 0; i < ARRAY_SIZE_I(import_menu_actions); i++) {
-		GtkWidget *const menuItem = gtk_menu_item_new_with_label(import_menu_actions[i]);
+		GtkWidget *const menuItem = gtk_menu_item_new_with_label(reinterpret_cast<const char*>(import_menu_actions[i]));
 		char menu_name[32];
 		snprintf(menu_name, sizeof(menu_name), "menuImport%d", i);
 		g_object_set_data(G_OBJECT(menuItem), "menuImport_id", GINT_TO_POINTER(i));
@@ -583,7 +584,7 @@ key_manager_tab_handle_menu_action(KeyManagerTab *tab, gint id)
 	    id > (int)KeyStoreUI::ImportFileID::N3DSaeskeydb)
 		return;
 
-	static const char dialog_titles_tbl[][32] = {
+	static const char8_t dialog_titles_tbl[][32] = {
 		// tr: Wii keys.bin dialog title
 		NOP_C_("KeyManagerTab", "Select Wii keys.bin File"),
 		// tr: Wii U otp.bin dialog title
@@ -594,7 +595,7 @@ key_manager_tab_handle_menu_action(KeyManagerTab *tab, gint id)
 		NOP_C_("KeyManagerTab", "Select 3DS aeskeydb.bin File"),
 	};
 
-	static const char file_filters_tbl[][88] = {
+	static const char8_t file_filters_tbl[][88] = {
 		// tr: Wii keys.bin file filter (RP format)
 		NOP_C_("KeyManagerTab", "keys.bin|keys.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
 		// tr: Wii U otp.bin file filter (RP format)
@@ -605,18 +606,19 @@ key_manager_tab_handle_menu_action(KeyManagerTab *tab, gint id)
 		NOP_C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
 	};
 
-	const char *const s_title = dpgettext_expr(
-		RP_I18N_DOMAIN, "KeyManagerTab", dialog_titles_tbl[id]);
-	const char *const s_filter = dpgettext_expr(
-		RP_I18N_DOMAIN, "KeyManagerTab", file_filters_tbl[id]);
+	// FIXME: U8STRFIX - dpgettext_expr()
+	const char8_t *const s_title = reinterpret_cast<const char8_t*>(dpgettext_expr(
+		RP_I18N_DOMAIN, "KeyManagerTab", reinterpret_cast<const char*>(dialog_titles_tbl[id])));
+	const char8_t *const s_filter = reinterpret_cast<const char8_t*>(dpgettext_expr(
+		RP_I18N_DOMAIN, "KeyManagerTab", reinterpret_cast<const char*>(file_filters_tbl[id])));
 
 	GtkWindow *const parent = gtk_widget_get_toplevel_window(GTK_WIDGET(tab));
 	GtkWidget *const fileDialog = gtk_file_chooser_dialog_new(
-		s_title,			// title
+		(const char*)s_title,		// title
 		parent,				// parent
 		GTK_FILE_CHOOSER_ACTION_OPEN,	// action
-		_("_Cancel"), GTK_RESPONSE_CANCEL,
-		_("_Open"), GTK_RESPONSE_ACCEPT,
+		(const char*)_("_Cancel"), GTK_RESPONSE_CANCEL,
+		(const char*)_("_Open"), GTK_RESPONSE_ACCEPT,
 		nullptr);
 	gtk_widget_set_name(fileDialog, "fileDialog");
 
@@ -669,7 +671,7 @@ key_manager_tab_show_key_import_return_status(KeyManagerTab	*tab,
 {
 	GtkMessageType type = GTK_MESSAGE_INFO;
 	bool showKeyStats = false;
-	string msg;
+	u8string msg;
 	msg.reserve(1024);
 
 	// Filename, minus directory. (must be g_free()'d later)
@@ -698,15 +700,15 @@ key_manager_tab_show_key_import_return_status(KeyManagerTab	*tab,
 
 		case KeyStoreUI::ImportStatus::OpenError:
 			if (iret.error_code != 0) {
-				msg = rp_sprintf_p(C_("KeyManagerTab",
+				msg = (const char8_t*)rp_sprintf_p((const char*)C_("KeyManagerTab",
 					// tr: %1$s == filename, %2$s == error message
 					"An error occurred while opening '%1$s': %2$s"),
-					fileNoPath, strerror(iret.error_code));
+					fileNoPath, strerror(iret.error_code)).c_str();
 			} else {
-				msg = rp_sprintf_p(C_("KeyManagerTab",
+				msg = (const char8_t*)rp_sprintf_p((const char*)C_("KeyManagerTab",
 					// tr: %s == filename
 					"An error occurred while opening '%s'."),
-					fileNoPath);
+					fileNoPath).c_str();
 			}
 			type = GTK_MESSAGE_ERROR;
 			break;
@@ -714,32 +716,32 @@ key_manager_tab_show_key_import_return_status(KeyManagerTab	*tab,
 		case KeyStoreUI::ImportStatus::ReadError:
 			// TODO: Error code for short reads.
 			if (iret.error_code != 0) {
-				msg = rp_sprintf_p(C_("KeyManagerTab",
+				msg = (const char8_t*)rp_sprintf_p((const char*)C_("KeyManagerTab",
 					// tr: %1$s == filename, %2$s == error message
 					"An error occurred while reading '%1$s': %2$s"),
-					fileNoPath, strerror(iret.error_code));
+					fileNoPath, strerror(iret.error_code)).c_str();
 			} else {
-				msg = rp_sprintf_p(C_("KeyManagerTab",
+				msg = (const char8_t*)rp_sprintf_p((const char*)C_("KeyManagerTab",
 					// tr: %s == filename
 					"An error occurred while reading '%s'."),
-					fileNoPath);
+					fileNoPath).c_str();
 			}
 			type = GTK_MESSAGE_ERROR;
 			break;
 
 		case KeyStoreUI::ImportStatus::InvalidFile:
-			msg = rp_sprintf_p(C_("KeyManagerTab",
+			msg = (const char8_t*)rp_sprintf_p((const char*)C_("KeyManagerTab",
 				// tr: %1$s == filename, %2$s == type of file
 				"The file '%1$s' is not a valid %2$s file."),
-				fileNoPath, keyType);
+				fileNoPath, keyType).c_str();
 			type = GTK_MESSAGE_WARNING;
 			break;
 
 		case KeyStoreUI::ImportStatus::NoKeysImported:
-			msg = rp_sprintf(C_("KeyManagerTab",
+			msg = (const char8_t*)rp_sprintf((const char*)C_("KeyManagerTab",
 				// tr: %s == filename
 				"No keys were imported from '%s'."),
-				fileNoPath);
+				fileNoPath).c_str();
 			type = GTK_MESSAGE_INFO;
 			showKeyStats = true;
 			break;
@@ -749,11 +751,11 @@ key_manager_tab_show_key_import_return_status(KeyManagerTab	*tab,
 			char buf[16];
 			snprintf(buf, sizeof(buf), "%'u", keyCount);
 
-			msg = rp_sprintf_p(NC_("KeyManagerTab",
+			msg = (const char8_t*)rp_sprintf_p((const char*)NC_("KeyManagerTab",
 				// tr: %1$s == number of keys (formatted), %2$u == filename
 				"%1$s key was imported from '%2$s'.",
 				"%1$s keys were imported from '%2$s'.",
-				keyCount), buf, fileNoPath);
+				keyCount), buf, fileNoPath).c_str();
 			type = GTK_MESSAGE_INFO;	// NOTE: No equivalent to KMessageWidget::Positive.
 			showKeyStats = true;
 			break;
@@ -761,7 +763,7 @@ key_manager_tab_show_key_import_return_status(KeyManagerTab	*tab,
 	}
 
 	// U+2022 (BULLET) == \xE2\x80\xA2
-	static const char nl_bullet[] = "\n\xE2\x80\xA2 ";
+	static const char8_t nl_bullet[] = U8("\n\xE2\x80\xA2 ");
 
 	if (showKeyStats) {
 		char buf[16];
@@ -769,55 +771,55 @@ key_manager_tab_show_key_import_return_status(KeyManagerTab	*tab,
 		if (iret.keysExist > 0) {
 			snprintf(buf, sizeof(buf), "%'d", iret.keysExist);
 			msg += nl_bullet;
-			msg += rp_sprintf(NC_("KeyManagerTab",
+			msg += (const char8_t*)rp_sprintf((const char*)NC_("KeyManagerTab",
 				// tr: %s == number of keys (formatted)
 				"%s key already exists in the Key Manager.",
 				"%s keys already exist in the Key Manager.",
-				iret.keysExist), buf);
+				iret.keysExist), buf).c_str();
 		}
 		if (iret.keysInvalid > 0) {
 			snprintf(buf, sizeof(buf), "%'d", iret.keysInvalid);
 			msg += nl_bullet;
-			msg += rp_sprintf(NC_("KeyManagerTab",
+			msg += (const char8_t*)rp_sprintf((const char*)NC_("KeyManagerTab",
 				// tr: %s == number of keys (formatted)
 				"%s key was not imported because it is incorrect.",
 				"%s keys were not imported because they are incorrect.",
-				iret.keysInvalid), buf);
+				iret.keysInvalid), buf).c_str();
 		}
 		if (iret.keysNotUsed > 0) {
 			snprintf(buf, sizeof(buf), "%'d", iret.keysNotUsed);
 			msg += nl_bullet;
-			msg += rp_sprintf(NC_("KeyManagerTab",
+			msg += (const char8_t*)rp_sprintf((const char*)NC_("KeyManagerTab",
 				// tr: %s == number of keys (formatted)
 				"%s key was not imported because it isn't used by rom-properties.",
 				"%s keys were not imported because they aren't used by rom-properties.",
-				iret.keysNotUsed), buf);
+				iret.keysNotUsed), buf).c_str();
 		}
 		if (iret.keysCantDecrypt > 0) {
 			snprintf(buf, sizeof(buf), "%'d", iret.keysCantDecrypt);
 			msg += nl_bullet;
-			msg += rp_sprintf(NC_("KeyManagerTab",
+			msg += (const char8_t*)rp_sprintf((const char*)NC_("KeyManagerTab",
 				// tr: %s == number of keys (formatted)
 				"%s key was not imported because it is encrypted and the master key isn't available.",
 				"%s keys were not imported because they are encrypted and the master key isn't available.",
-				iret.keysCantDecrypt), buf);
+				iret.keysCantDecrypt), buf).c_str();
 		}
 		if (iret.keysImportedVerify > 0) {
 			snprintf(buf, sizeof(buf), "%'d", iret.keysImportedVerify);
 			msg += nl_bullet;
-			msg += rp_sprintf(NC_("KeyManagerTab",
+			msg += (const char8_t*)rp_sprintf((const char*)NC_("KeyManagerTab",
 				// tr: %s == number of keys (formatted)
 				"%s key has been imported and verified as correct.",
 				"%s keys have been imported and verified as correct.",
-				iret.keysImportedVerify), buf);
+				iret.keysImportedVerify), buf).c_str();
 		}
 		if (iret.keysImportedNoVerify > 0) {
 			snprintf(buf, sizeof(buf), "%'d", iret.keysImportedNoVerify);
 			msg += nl_bullet;
-			msg += rp_sprintf(NC_("KeyManagerTab",
+			msg += (const char8_t*)rp_sprintf((const char*)NC_("KeyManagerTab",
 				"%s key has been imported without verification.",
 				"%s keys have been imported without verification.",
-				iret.keysImportedNoVerify), buf);
+				iret.keysImportedNoVerify), buf).c_str();
 		}
 	}
 
@@ -826,7 +828,7 @@ key_manager_tab_show_key_import_return_status(KeyManagerTab	*tab,
 	// (Or, remove the timeout code entirely?)
 	// TODO: MessageSound?
 	message_widget_set_message_type(MESSAGE_WIDGET(tab->messageWidget), type);
-	message_widget_set_text(MESSAGE_WIDGET(tab->messageWidget), msg.c_str());
+	message_widget_set_text(MESSAGE_WIDGET(tab->messageWidget), reinterpret_cast<const char*>(msg.c_str()));
 	gtk_widget_show(tab->messageWidget);
 }
 
@@ -877,8 +879,10 @@ key_manager_tab_menu_action_response(GtkFileChooserDialog *fileDialog, gint resp
 		reinterpret_cast<const char8_t*>(in_filename));
 
 	// TODO: Show the key import status in a MessageWidget.
+	// FIXME: U8STRFIX - dpgettext_expr()
 	key_manager_tab_show_key_import_return_status(tab, in_filename,
-		dpgettext_expr(RP_I18N_DOMAIN, "KeyManagerTab", import_menu_actions[(int)id]), iret);
+		dpgettext_expr(RP_I18N_DOMAIN, "KeyManagerTab",
+			reinterpret_cast<const char*>(import_menu_actions[(int)id])), iret);
 	g_free(in_filename);
 }
 

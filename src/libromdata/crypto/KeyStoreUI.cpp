@@ -861,10 +861,10 @@ int KeyStoreUI::sectCount(void) const
 
 /**
  * Get a section name.
- * @param sectIdx Section index.
+ * @param sectIdx Section index
  * @return Section name, or nullptr on error.
  */
-const char *KeyStoreUI::sectName(int sectIdx) const
+const char8_t *KeyStoreUI::sectName(int sectIdx) const
 {
 	RP_D(const KeyStoreUI);
 	assert(sectIdx >= 0);
@@ -876,7 +876,7 @@ const char *KeyStoreUI::sectName(int sectIdx) const
 		return nullptr;
 	}
 
-	static const char *const sectNames[] = {
+	static const char8_t *const sectNames[] = {
 		NOP_C_("KeyStoreUI|Section", "Nintendo Wii AES Keys"),
 		NOP_C_("KeyStoreUI|Section", "Nintendo 3DS Key Scrambler Constants"),
 		NOP_C_("KeyStoreUI|Section", "Nintendo 3DS AES Keys"),
@@ -885,7 +885,10 @@ const char *KeyStoreUI::sectName(int sectIdx) const
 	static_assert(ARRAY_SIZE(sectNames) == ARRAY_SIZE(d->encKeyFns),
 		"sectNames[] is out of sync with d->encKeyFns[].");
 
-	return dpgettext_expr(RP_I18N_DOMAIN, "KeyStoreUI|Section", sectNames[sectIdx]);
+	// FIXME: U8STRFIX - dpgettext_expr()
+	return reinterpret_cast<const char8_t*>(
+		dpgettext_expr(RP_I18N_DOMAIN, "KeyStoreUI|Section",
+			reinterpret_cast<const char*>(sectNames[sectIdx])));
 }
 
 /**

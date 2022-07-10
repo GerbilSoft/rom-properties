@@ -16,6 +16,7 @@ using namespace LibRpBase;
 
 // C++ STL classes.
 using std::string;
+using std::u8string;
 using std::unique_ptr;
 using std::vector;
 
@@ -108,7 +109,7 @@ int EXEPrivate::loadNEResourceTable(void)
  *                     Used to distinguish between old Windows and OS/2 executables.
  * @return 0 on success; negative POSIX error code on error.
  */
-int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasKernel)
+int EXEPrivate::findNERuntimeDLL(u8string &refDesc, u8string &refLink, bool &refHasKernel)
 {
 	refDesc.clear();
 	refLink.clear();
@@ -206,13 +207,13 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 		uint8_t ver_major;
 		uint8_t ver_minor;
 		const char dll_name[8];	// NOT NULL-terminated!
-		const char *url;
+		const char8_t *url;
 	} msvb_dll_tbl[] = {
 		{4,0, {'V','B','R','U','N','4','0','0'}, nullptr},
 		{4,0, {'V','B','R','U','N','4','1','6'}, nullptr},	// TODO: Is this a thing?
 		{3,0, {'V','B','R','U','N','3','0','0'}, nullptr},
 		{2,0, {'V','B','R','U','N','2','0','0'}, nullptr},
-		{1,0, {'V','B','R','U','N','1','0','0'}, "https://download.microsoft.com/download/vb30/sampleaa/1/w9xnt4/en-us/vbrun100.exe"},
+		{1,0, {'V','B','R','U','N','1','0','0'}, U8("https://download.microsoft.com/download/vb30/sampleaa/1/w9xnt4/en-us/vbrun100.exe")},
 	};
 
 	// FIXME: Alignment?
@@ -262,8 +263,11 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 			for (const auto &p : msvb_dll_tbl) {
 				if (!strncmp(pDllName, p.dll_name, sizeof(p.dll_name))) {
 					// Found a matching version.
-					refDesc = rp_sprintf(C_("EXE|Runtime", "Microsoft Visual Basic %u.%u Runtime"),
-						p.ver_major, p.ver_minor);
+					// FIXME: U8STRFIX - rp_sprintf()
+					refDesc = reinterpret_cast<const char8_t*>(
+						rp_sprintf(reinterpret_cast<const char*>(
+							C_("EXE|Runtime", "Microsoft Visual Basic %u.%u Runtime")),
+								p.ver_major, p.ver_minor).c_str());
 					refLink = p.url;
 					break;
 				}
@@ -271,7 +275,7 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 		}
 	}
 
-	return (!refDesc.empty() ? 0 : -ENOENT);
+	return (!refDesc.empty()) ? 0 : -ENOENT;
 }
 
 /**
@@ -287,7 +291,7 @@ void EXEPrivate::addFields_NE(void)
 	fields->setTabIndex(0);
 
 	// Get the runtime DLL and if KERNEL is imported.
-	string runtime_dll, runtime_link;
+	u8string runtime_dll, runtime_link;
 	bool hasKernel = false;
 	int ret = findNERuntimeDLL(runtime_dll, runtime_link, hasKernel);
 	if (ret != 0) {
@@ -315,26 +319,28 @@ void EXEPrivate::addFields_NE(void)
 		}
 	}
 
-	const char *const targetOS_title = C_("EXE", "Target OS");
+	const char8_t *const targetOS_title = C_("EXE", "Target OS");
 	if (targetOS) {
 		fields->addField_string(targetOS_title, targetOS);
 	} else {
+		// FIXME: U8STRFIX - rp_sprintf()
 		fields->addField_string(targetOS_title,
-			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), hdr.ne.targOS));
+			rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (0x%02X)")), hdr.ne.targOS));
 	}
 
 	// DGroup type.
-	static const char *const dgroupTypes[] = {
+	static const char8_t *const dgroupTypes[] = {
 		NOP_C_("EXE|DGroupType", "None"),
 		NOP_C_("EXE|DGroupType", "Single Shared"),
 		NOP_C_("EXE|DGroupType", "Multiple"),
 		NOP_C_("EXE|DGroupType", "(null)"),
 	};
+	// FIXME: U8STRFIX - dpgettext_expr()
 	fields->addField_string(C_("EXE", "DGroup Type"),
-		dpgettext_expr(RP_I18N_DOMAIN, "EXE|DGroupType", dgroupTypes[hdr.ne.ProgFlags & 3]));
+		dpgettext_expr(RP_I18N_DOMAIN, "EXE|DGroupType", reinterpret_cast<const char*>(dgroupTypes[hdr.ne.ProgFlags & 3])));
 
 	// Program flags.
-	static const char *const ProgFlags_names[] = {
+	static const char8_t *const ProgFlags_names[] = {
 		nullptr, nullptr,	// DGroup Type
 		NOP_C_("EXE|ProgFlags", "Global Init"),
 		NOP_C_("EXE|ProgFlags", "Protected Mode Only"),
@@ -344,15 +350,15 @@ void EXEPrivate::addFields_NE(void)
 		NOP_C_("EXE|ProgFlags", "FPU insns"),
 	};
 	vector<string> *const v_ProgFlags_names = RomFields::strArrayToVector_i18n(
-		"EXE|ProgFlags", ProgFlags_names, ARRAY_SIZE(ProgFlags_names));
+		U8("EXE|ProgFlags"), ProgFlags_names, ARRAY_SIZE(ProgFlags_names));
 	fields->addField_bitfield("Program Flags",
 		v_ProgFlags_names, 2, hdr.ne.ProgFlags);
 
 	// Application type.
-	const char *applType;
+	const char8_t *applType;
 	if (hdr.ne.targOS == NE_OS_OS2) {
 		// Only mentioning Presentation Manager for OS/2 executables.
-		static const char *const applTypes_OS2[] = {
+		static const char8_t *const applTypes_OS2[] = {
 			NOP_C_("EXE|ApplType", "None"),
 			NOP_C_("EXE|ApplType", "Full Screen (not aware of Presentation Manager)"),
 			NOP_C_("EXE|ApplType", "Presentation Manager compatible"),
@@ -361,7 +367,7 @@ void EXEPrivate::addFields_NE(void)
 		applType = applTypes_OS2[hdr.ne.ApplFlags & 3];
 	} else {
 		// Assume Windows for everything else.
-		static const char *const applTypes_Win[] = {
+		static const char8_t *const applTypes_Win[] = {
 			NOP_C_("EXE|ApplType", "None"),
 			NOP_C_("EXE|ApplType", "Full Screen (not aware of Windows)"),
 			NOP_C_("EXE|ApplType", "Windows compatible"),
@@ -369,11 +375,12 @@ void EXEPrivate::addFields_NE(void)
 		};
 		applType = applTypes_Win[hdr.ne.ApplFlags & 3];
 	}
+	// FIXME: U8STRFIX - dpgettext_expr()
 	fields->addField_string(C_("EXE", "Application Type"),
-		dpgettext_expr(RP_I18N_DOMAIN, "EXE|ApplType", applType));
+		dpgettext_expr(RP_I18N_DOMAIN, "EXE|ApplType", reinterpret_cast<const char*>(applType)));
 
 	// Application flags.
-	static const char *const ApplFlags_names[] = {
+	static const char8_t *const ApplFlags_names[] = {
 		nullptr, nullptr,	// Application type
 		nullptr,
 		NOP_C_("EXE|ApplFlags", "OS/2 Application"),
@@ -383,7 +390,7 @@ void EXEPrivate::addFields_NE(void)
 		NOP_C_("EXE|ApplFlags", "DLL"),
 	};
 	vector<string> *const v_ApplFlags_names = RomFields::strArrayToVector_i18n(
-		"EXE|ApplFlags", ApplFlags_names, ARRAY_SIZE(ApplFlags_names));
+		U8("EXE|ApplFlags"), ApplFlags_names, ARRAY_SIZE(ApplFlags_names));
 	fields->addField_bitfield(C_("EXE", "Application Flags"),
 		v_ApplFlags_names, 2, hdr.ne.ApplFlags);
 
@@ -393,14 +400,14 @@ void EXEPrivate::addFields_NE(void)
 	// References:
 	// - http://wiki.osdev.org/NE
 	// - http://www.program-transformation.org/Transform/PcExeFormat
-	static const char *const OtherFlags_names[] = {
+	static const char8_t *const OtherFlags_names[] = {
 		NOP_C_("EXE|OtherFlags", "Long File Names"),
 		NOP_C_("EXE|OtherFlags", "Protected Mode"),
 		NOP_C_("EXE|OtherFlags", "Proportional Fonts"),
 		NOP_C_("EXE|OtherFlags", "Gangload Area"),
 	};
 	vector<string> *const v_OtherFlags_names = RomFields::strArrayToVector_i18n(
-		"EXE|OtherFlags", OtherFlags_names, ARRAY_SIZE(OtherFlags_names));
+		U8("EXE|OtherFlags"), OtherFlags_names, ARRAY_SIZE(OtherFlags_names));
 	fields->addField_bitfield(C_("EXE", "Other Flags"),
 		v_OtherFlags_names, 2, hdr.ne.OS2EXEFlags);
 

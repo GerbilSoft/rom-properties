@@ -38,9 +38,9 @@ using LibRpTexture::rp_image;
 
 // C++ STL classes.
 using std::array;
-using std::ostringstream;
 using std::string;
 using std::u8string;
+using std::u8ostringstream;
 using std::unique_ptr;
 using std::unordered_map;
 using std::vector;
@@ -1330,7 +1330,7 @@ u8string Xbox360_XEX_Private::getPublisher(void) const
 	}
 
 	// FIXME: U8STRFIX - can't use rp_sprintf()
-	char buf[128];
+	char8_t buf[128];
 	int len;
 
 	// Unknown publisher.
@@ -1338,14 +1338,16 @@ u8string Xbox360_XEX_Private::getPublisher(void) const
 	    ISALNUM(executionID.title_id.b))
 	{
 		// Publisher ID is alphanumeric.
-		len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%c%c)"),
-			executionID.title_id.a,
-			executionID.title_id.b);
+		len = snprintf(reinterpret_cast<char*>(buf), sizeof(buf),
+			reinterpret_cast<const char*>(C_("RomData", "Unknown (%c%c)")),
+				executionID.title_id.a,
+				executionID.title_id.b);
 	} else {
 		// Publisher ID is not alphanumeric.
-		len = snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%02X %02X)"),
-			static_cast<uint8_t>(executionID.title_id.a),
-			static_cast<uint8_t>(executionID.title_id.b));
+		len = snprintf(reinterpret_cast<char*>(buf), sizeof(buf),
+			reinterpret_cast<const char*>(C_("RomData", "Unknown (%02X %02X)")),
+				static_cast<uint8_t>(executionID.title_id.a),
+				static_cast<uint8_t>(executionID.title_id.b));
 	}
 
 	if (len < 0) {
@@ -1353,7 +1355,7 @@ u8string Xbox360_XEX_Private::getPublisher(void) const
 	} else if (len >= static_cast<int>(sizeof(buf))) {
 		len = sizeof(buf)-1;
 	}
-	return u8string(reinterpret_cast<const char8_t*>(buf), len);
+	return u8string(buf, len);
 }
 
 /** Xbox360_XEX **/
@@ -1667,8 +1669,9 @@ int Xbox360_XEX::loadFieldData(void)
 			} else {
 				s_xexKeyID = "XEX2";
 			}
+			// FIXME: U8STRFIX - rp_sprintf()
 			d->fields->addField_string(C_("RomData", "Warning"),
-				rp_sprintf(C_("Xbox360_XEX", "The Xbox 360 %s encryption key is not available."), s_xexKeyID),
+				rp_sprintf(reinterpret_cast<const char*>(C_("Xbox360_XEX", "The Xbox 360 %s encryption key is not available.")), s_xexKeyID),
 				RomFields::STRF_WARNING);
 		}
 	}
@@ -1700,24 +1703,25 @@ int Xbox360_XEX::loadFieldData(void)
 	// tr: Minimum kernel version (i.e. dashboard)
 	//const char *const s_minver = C_("Xbox360_XEX", "Min. Kernel");
 	Xbox360_Version_t minver = d->getMinKernelVersion();
-	string s_minver;
+	u8string s_minver;
 	if (minver.u32 != 0) {
-		s_minver = rp_sprintf("%u.%u.%u.%u",
+		// FIXME: U8STRFIX - rp_sprintf()
+		s_minver = reinterpret_cast<const char8_t*>(rp_sprintf("%u.%u.%u.%u",
 			static_cast<unsigned int>(minver.major),
 			static_cast<unsigned int>(minver.minor),
 			static_cast<unsigned int>(minver.build),
-			static_cast<unsigned int>(minver.qfe));
+			static_cast<unsigned int>(minver.qfe)).c_str());
 	} else {
 		s_minver = C_("RomData", "Unknown");
 	}
 	if (d->xexType == Xbox360_XEX_Private::XexType::XEX1) {
 		// Indicate that an XEX1 kernel is needed.
-		s_minver += " (XEX1)";
+		s_minver += U8(" (XEX1)");
 	}
 	d->fields->addField_string(C_("Xbox360_XEX", "Min. Kernel"), s_minver);
 
 	// Module flags
-	static const char *const module_flags_tbl[] = {
+	static const char8_t *const module_flags_tbl[] = {
 		NOP_C_("Xbox360_XEX", "Title"),
 		NOP_C_("Xbox360_XEX", "Exports"),
 		NOP_C_("Xbox360_XEX", "Debugger"),
@@ -1728,7 +1732,7 @@ int Xbox360_XEX::loadFieldData(void)
 		NOP_C_("Xbox360_XEX", "User Mode"),
 	};
 	vector<string> *const v_module_flags = RomFields::strArrayToVector_i18n(
-		"Xbox360_XEX", module_flags_tbl, ARRAY_SIZE(module_flags_tbl));
+		U8("Xbox360_XEX"), module_flags_tbl, ARRAY_SIZE(module_flags_tbl));
 	d->fields->addField_bitfield(C_("Xbox360_XEX", "Module Flags"),
 		v_module_flags, 4, xex2Header->module_flags);
 
@@ -1745,7 +1749,7 @@ int Xbox360_XEX::loadFieldData(void)
 			C_("Xbox360_XEX", "Xbox Game Disc only"));
 	} else {
 		// Other types.
-		static const char *const media_type_tbl[] = {
+		static const char8_t *const media_type_tbl[] = {
 			// 0
 			NOP_C_("Xbox360_XEX", "Hard Disk"),
 			NOP_C_("Xbox360_XEX", "XGD1"),
@@ -1782,7 +1786,7 @@ int Xbox360_XEX::loadFieldData(void)
 				? d->secInfo.xex2.allowed_media_types
 				: d->secInfo.xex1.allowed_media_types));
 
-		ostringstream oss;
+		u8ostringstream oss;
 		unsigned int found = 0;
 		for (unsigned int i = 0; i < ARRAY_SIZE(media_type_tbl); i++, media_types >>= 1) {
 			if (!(media_types & 1))
@@ -1790,9 +1794,9 @@ int Xbox360_XEX::loadFieldData(void)
 
 			if (found > 0) {
 				if (found % 4 == 0) {
-					oss << ",\n";
+					oss << U8(",\n");
 				} else {
-					oss << ", ";
+					oss << U8(", ");
 				}
 			}
 			found++;
@@ -1804,13 +1808,17 @@ int Xbox360_XEX::loadFieldData(void)
 			}
 		}
 
-		d->fields->addField_string(C_("Xbox360_XEX", "Media Types"),
-			found ? oss.str() : C_("Xbox360_XEX", "None"));
+		const char8_t *const media_types_title = C_("Xbox360_XEX", "Media Types");
+		if (found) {
+			d->fields->addField_string(media_types_title, oss.str());
+		} else {
+			d->fields->addField_string(media_types_title, C_("Xbox360_XEX", "None"));
+		}
 	}
 
 	// Region code
 	// TODO: Special handling for region-free?
-	static const char *const region_code_tbl[] = {
+	static const char8_t *const region_code_tbl[] = {
 		NOP_C_("Region", "USA"),
 		NOP_C_("Region", "Japan"),
 		NOP_C_("Region", "China"),
@@ -1847,7 +1855,7 @@ int Xbox360_XEX::loadFieldData(void)
 	}
 
 	vector<string> *const v_region_code = RomFields::strArrayToVector_i18n(
-		"Region", region_code_tbl, ARRAY_SIZE(region_code_tbl));
+		U8("Region"), region_code_tbl, ARRAY_SIZE(region_code_tbl));
 	d->fields->addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code, 4, region_code);
 
@@ -1892,9 +1900,10 @@ int Xbox360_XEX::loadFieldData(void)
 				(uint8_t)d->executionID.title_id.b);
 			tid_str.append(hexbuf, 2);
 		}
-			
+
+		// FIXME: U8STRFIX - rp_sprintf_p()
 		d->fields->addField_string(C_("Xbox360_XEX", "Title ID"),
-			rp_sprintf_p(C_("Xbox360_XEX", "%1$08X (%2$s-%3$04u)"),
+			rp_sprintf_p(reinterpret_cast<const char*>(C_("Xbox360_XEX", "%1$08X (%2$s-%3$04u)")),
 				be32_to_cpu(d->executionID.title_id.u32),
 				tid_str.c_str(),
 				be16_to_cpu(d->executionID.title_id.u16)),
@@ -1910,8 +1919,9 @@ int Xbox360_XEX::loadFieldData(void)
 		// NOTE: Not shown for single-disc games.
 		if (d->executionID.disc_number != 0 && d->executionID.disc_count > 1) {
 			d->fields->addField_string(C_("RomData", "Disc #"),
+				// FIXME: U8STRFIX - rp_sprintf_p()
 				// tr: Disc X of Y (for multi-disc games)
-				rp_sprintf_p(C_("RomData|Disc", "%1$u of %2$u"),
+				rp_sprintf_p(reinterpret_cast<const char*>(C_("RomData|Disc", "%1$u of %2$u")),
 					d->executionID.disc_number,
 					d->executionID.disc_count));
 		}
@@ -1921,7 +1931,7 @@ int Xbox360_XEX::loadFieldData(void)
 	// Loaded by initPeReader(), which is called by initXDBF().
 
 	// Encryption key
-	const char *s_encryption_key;
+	const char8_t *s_encryption_key;
 	if (d->fileFormatInfo.encryption_type == cpu_to_be16(XEX2_ENCRYPTION_TYPE_NONE)) {
 		// No encryption.
 		s_encryption_key = C_("Xbox360_XEX|EncKey", "None");
@@ -1948,19 +1958,20 @@ int Xbox360_XEX::loadFieldData(void)
 	d->fields->addField_string(C_("Xbox360_XEX", "Encryption Key"), s_encryption_key);
 
 	// Compression
-	static const char *const compression_tbl[] = {
+	static const char8_t *const compression_tbl[] = {
 		NOP_C_("Xbox360_XEX|Compression", "None"),
 		NOP_C_("Xbox360_XEX|Compression", "Basic (Sparse)"),
 		NOP_C_("Xbox360_XEX|Compression", "Normal (LZX)"),
 		NOP_C_("Xbox360_XEX|Compression", "Delta"),
 	};
+	// FIXME: U8STRFIX - dpgettext_expr(), rp_sprintf()
 	if (d->fileFormatInfo.compression_type < ARRAY_SIZE(compression_tbl)) {
 		d->fields->addField_string(C_("Xbox360_XEX", "Compression"),
 			dpgettext_expr(RP_I18N_DOMAIN, "Xbox360_XEX|Compression",
-				compression_tbl[d->fileFormatInfo.compression_type]));
+				reinterpret_cast<const char*>(compression_tbl[d->fileFormatInfo.compression_type])));
 	} else {
 		d->fields->addField_string(C_("Xbox360_XEX", "Compression"),
-			rp_sprintf(C_("RomData", "Unknown (0x%02X)"),
+			rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (0x%02X)")),
 				d->fileFormatInfo.compression_type));
 	}
 

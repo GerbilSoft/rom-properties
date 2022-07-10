@@ -34,12 +34,6 @@ using LibRpTexture::ImageSizeCalc::OpCode;
 using std::string;
 using std::vector;
 
-// FIXME: U8STRFIX - NOP_C_
-#ifdef NOP_C_
-#  undef NOP_C_
-#endif
-#define NOP_C_(ctx, str) U8(str)
-
 namespace LibRpTexture {
 
 class ValveVTFPrivate final : public FileFormatPrivate
@@ -782,8 +776,7 @@ const char8_t *ValveVTF::pixelFormat(void) const
 		}
 	} else if (fmt < 0) {
 		// Negative == none (usually -1)
-		// FIXME: U8STRFIX
-		return reinterpret_cast<const char8_t*>(C_("ValveVTF|ImageFormat", "None"));
+		return C_("ValveVTF|ImageFormat", "None");
 	}
 
 	// Invalid pixel format.
@@ -902,10 +895,9 @@ int ValveVTF::getFields(LibRpBase::RomFields *fields) const
 		size_t j = vv_flags->size()+1;
 		vv_flags->resize(j);
 		auto &data_row = vv_flags->at(j-1);
-		// TODO: Localization.
-		//data_row.emplace_back(dpgettext_expr(RP_I18N_DOMAIN, "ValveVTF|Flags",
-		//	reinterpret_cast<const char*>(pFlagName)));
-		data_row.emplace_back(pFlagName);
+		data_row.emplace_back(reinterpret_cast<const char8_t*>(
+			dpgettext_expr(RP_I18N_DOMAIN, "ValveVTF|Flags",
+				reinterpret_cast<const char*>(pFlagName))));
 	}
 
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_CHECKBOXES, rows_visible);
@@ -945,7 +937,7 @@ int ValveVTF::getFields(LibRpBase::RomFields *fields) const
 		img_format = nullptr;
 	}
 
-	const char *const low_res_image_format_title = C_("ValveVTF", "Low-Res Image Format");
+	const char8_t *const low_res_image_format_title = C_("ValveVTF", "Low-Res Image Format");
 	if (img_format) {
 		// TODO: Localization.
 		fields->addField_string(low_res_image_format_title, img_format);
@@ -955,8 +947,10 @@ int ValveVTF::getFields(LibRpBase::RomFields *fields) const
 			vtfHeader->lowResImageWidth,
 			vtfHeader->lowResImageHeight);
 	} else {
+		// FIXME: U8STRFIX - rp_sprintf()
 		fields->addField_string(low_res_image_format_title,
-			rp_sprintf(C_("RomData", "Unknown (%d)"), vtfHeader->lowResImageFormat));
+			rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (%d)")),
+				vtfHeader->lowResImageFormat));
 	}
 
 	if (vtfHeader->version[0] > 7 ||

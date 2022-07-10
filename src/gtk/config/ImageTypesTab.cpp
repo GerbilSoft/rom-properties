@@ -71,8 +71,8 @@ class ImageTypesTabPrivate : public TImageTypesConfig<GtkComboBox*>
 
 		/**
 		 * Write an ImageType configuration entry.
-		 * @param sysName System name.
-		 * @param imageTypeList Image type list, comma-separated.
+		 * @param sysName System name [ASCII]
+		 * @param imageTypeList Image type list, comma-separated [ASCII]
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int saveWriteEntry(const char *sysName, const char *imageTypeList) final;
@@ -182,7 +182,8 @@ void ImageTypesTabPrivate::createGridLabels(void)
 			continue;
 		}
 
-		GtkWidget *const lblImageType = gtk_label_new(imageTypeName(i));
+		GtkWidget *const lblImageType = gtk_label_new(
+			reinterpret_cast<const char*>(imageTypeName(i)));
 		char lbl_name[32];
 		snprintf(lbl_name, sizeof(lbl_name), "lblImageType%u", i);
 		gtk_widget_set_name(lblImageType, lbl_name);
@@ -211,7 +212,8 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	// Create the system name labels.
 	const unsigned int sysCount = ImageTypesConfig::sysCount();
 	for (unsigned int sys = 0; sys < sysCount; sys++) {
-		GtkWidget *const lblSysName = gtk_label_new(sysName(sys));
+		GtkWidget *const lblSysName = gtk_label_new(
+			reinterpret_cast<const char*>(sysName(sys)));
 		char lbl_name[32];
 		snprintf(lbl_name, sizeof(lbl_name), "lblSysName%u", sys);
 		gtk_widget_set_name(lblSysName, lbl_name);
@@ -353,8 +355,8 @@ void ImageTypesTabPrivate::finishComboBoxes(void)
 
 /**
  * Write an ImageType configuration entry.
- * @param sysName System name.
- * @param imageTypeList Image type list, comma-separated.
+ * @param sysName System name [ASCII]
+ * @param imageTypeList Image type list, comma-separated [ASCII]
  * @return 0 on success; negative POSIX error code on error.
  */
 int ImageTypesTabPrivate::saveWriteEntry(const char *sysName, const char *imageTypeList)
@@ -425,11 +427,11 @@ image_types_tab_init(ImageTypesTab *tab)
 	gtk_box_set_spacing(GTK_BOX(tab), 8);
 
 	// Create the base widgets for the Image Types tab.
-	GtkWidget *const lblImageTypes = gtk_label_new(C_("ImageTypesTab",
+	GtkWidget *const lblImageTypes = gtk_label_new(reinterpret_cast<const char*>(C_("ImageTypesTab",
 		"Select the image types you would like to use for each system as its thumbnail image.\n"
 		"Internal images are contained within the ROM file.\n"
 		"External images are downloaded from an external image database.\n\n"
-		"1 = highest priority; 2 = second highest priority; No = ignore"));
+		"1 = highest priority; 2 = second highest priority; No = ignore")));
 	gtk_widget_set_name(lblImageTypes, "lblImageTypes");
 	GTK_LABEL_XALIGN_LEFT(lblImageTypes);
 
@@ -438,11 +440,11 @@ image_types_tab_init(ImageTypesTab *tab)
 	// tr: External image credits.
 	tab->lblCredits = gtk_label_new(nullptr);
 	gtk_widget_set_name(tab->lblCredits, "lblCredits");
-	gtk_label_set_markup(GTK_LABEL(tab->lblCredits), C_("ImageTypesTab",
+	gtk_label_set_markup(GTK_LABEL(tab->lblCredits), reinterpret_cast<const char*>(C_("ImageTypesTab",
 		"GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\n"
 		"are provided by <a href=\"https://www.gametdb.com/\">GameTDB</a>.\n"
 		"amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</a>,"
-		" the Unofficial amiibo Database."));
+		" the Unofficial amiibo Database.")));
 	GTK_LABEL_XALIGN_LEFT(tab->lblCredits);
 
 	// Create the GtkGrid/GtkTable.

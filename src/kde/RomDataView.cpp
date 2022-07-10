@@ -153,21 +153,23 @@ void RomDataViewPrivate::initHeaderRow(void)
 
 	// System name and file type.
 	// TODO: System logo and/or game title?
+	// FIXME: U8STRFIX - systemName should be char8_t
 	const char *systemName = romData->systemName(
 		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
-	const char *fileType = romData->fileType_string();
+	const char8_t *fileType = romData->fileType_string();
 	assert(systemName != nullptr);
 	assert(fileType != nullptr);
 	if (!systemName) {
-		systemName = C_("RomDataView", "(unknown system)");
+		systemName = reinterpret_cast<const char*>(C_("RomDataView", "(unknown system)"));
 	}
 	if (!fileType) {
 		fileType = C_("RomDataView", "(unknown filetype)");
 	}
 
-	QString sysInfo = U82Q(rp_sprintf_p(
+	// FIXME: U8STRFIX - rp_sprintf_p()
+	QString sysInfo = U82Q(reinterpret_cast<const char8_t*>(rp_sprintf_p(
 		// tr: %1$s == system name, %2$s == file type
-		C_("RomDataView", "%1$s\n%2$s"), systemName, fileType));
+		reinterpret_cast<const char*>(C_("RomDataView", "%1$s\n%2$s")), systemName, fileType).c_str()));
 	ui.lblSysInfo->setText(sysInfo);
 	ui.lblSysInfo->show();
 
@@ -1010,7 +1012,7 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 	// same width on all tabs.
 
 	// tr: Field description label.
-	const char *const desc_label_fmt = C_("RomDataView", "%s:");
+	const char8_t *const desc_label_fmt = C_("RomDataView", "%s:");
 
 	// Create the data widgets.
 	int prevTabIdx = 0;
@@ -1041,8 +1043,9 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 			prevTabIdx = tabIdx;
 		}
 
+		// FIXME: U8STRFIX - rp_sprintf()
 		// tr: Field description label.
-		string txt = rp_sprintf(desc_label_fmt, field.name.c_str());
+		string txt = rp_sprintf(reinterpret_cast<const char*>(desc_label_fmt), field.name.c_str());
 		QLabel *lblDesc = new QLabel(U82Q(txt), q);
 		// NOTE: No name for this QObject.
 		lblDesc->setAlignment(Qt::AlignLeft | Qt::AlignTop);

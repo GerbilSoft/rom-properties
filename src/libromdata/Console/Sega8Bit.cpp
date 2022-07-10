@@ -382,8 +382,8 @@ int Sega8Bit::loadFieldData(void)
 	d->fields->addField_string(C_("RomData", "Version"), bcdbuf);
 
 	// Region code and system ID.
-	const char *sysID;
-	const char *region;
+	const char8_t *sysID;
+	const char8_t *region;
 	switch ((tmr->region_and_size >> 4) & 0xF) {
 		case Sega8_SMS_Japan:
 			sysID = C_("Sega8Bit|SysID", "Sega Master System");

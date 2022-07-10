@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCubeRegions.hpp: Nintendo GameCube/Wii region code detection.       *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -32,7 +32,7 @@ class GameCubeRegions
 		 * @param pIsDefault	[out,opt] Set to True if the region string represents the default region for the ID4.
 		 * @return String, or nullptr if the region value is invalid.
 		 */
-		static const char *gcnRegionToString(unsigned int gcnRegion, char idRegion, bool *pIsDefault = nullptr);
+		static const char8_t *gcnRegionToString(unsigned int gcnRegion, char idRegion, bool *pIsDefault = nullptr);
 
 		/**
 		 * Convert a GCN region value (from GCN_Boot_Info or RVL_RegionSetting) to an abbreviation string.

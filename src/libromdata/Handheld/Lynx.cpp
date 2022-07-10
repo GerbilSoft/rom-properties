@@ -203,15 +203,20 @@ int Lynx::loadFieldData(void)
 	d->fields->addField_string(C_("Lynx", "Manufacturer"),
 		latin1_to_utf8(romHeader->manufname, sizeof(romHeader->manufname)));
 
-	static const char rotation_names[][8] = {
+	static const char8_t rotation_names[][8] = {
 		NOP_C_("Lynx|Rotation", "None"),
 		NOP_C_("Lynx|Rotation", "Left"),
 		NOP_C_("Lynx|Rotation", "Right"),
 	};
-	d->fields->addField_string(C_("Lynx", "Rotation"),
-		(romHeader->rotation < ARRAY_SIZE(rotation_names)
-			? dpgettext_expr(RP_I18N_DOMAIN, "Lynx|Rotation", rotation_names[romHeader->rotation])
-			: C_("RomData", "Unknown")));
+	const char8_t *const rotation_title = C_("Lynx", "Rotation");
+	if (romHeader->rotation < ARRAY_SIZE(rotation_names)) {
+		// FIXME: U8STRFIX - dpgettext_expr()
+		d->fields->addField_string(rotation_title,
+			dpgettext_expr(RP_I18N_DOMAIN, "Lynx|Rotation",
+				reinterpret_cast<const char*>(rotation_names[romHeader->rotation])));
+	} else {
+		d->fields->addField_string(rotation_title, C_("RomData", "Unknown"));
+	}
 
 	d->fields->addField_string(C_("Lynx", "Bank 0 Size"),
 		LibRpBase::formatFileSize(le16_to_cpu(romHeader->page_size_bank0) * 256));
