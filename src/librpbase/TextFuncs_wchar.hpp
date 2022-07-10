@@ -62,7 +62,7 @@
  */
 #define U82W_s(str) \
 	(reinterpret_cast<const wchar_t*>( \
-		LibRpBase::utf8_to_utf16(reinterpret_cast<const char8_t*>(str.c_str()), (int)str.size()).c_str()))
+		LibRpBase::utf8_to_utf16(reinterpret_cast<const char8_t*>((str).c_str()), (int)(str).size()).c_str()))
 
 /**
  * Convert UTF-16 const wchar_t* to std::u8string.
