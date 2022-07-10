@@ -104,7 +104,7 @@ options_tab_init(OptionsTab *tab)
 
 	// Create the "Downloads" frame.
 	// FIXME: GtkFrame doesn't support mnemonics?
-	GtkWidget *const fraDownloads = gtk_frame_new(C_("SystemsTab", "Downloads"));
+	GtkWidget *const fraDownloads = gtk_frame_new(C_("OptionsTab", "Downloads"));
 	gtk_widget_set_name(fraDownloads, "fraDownloads");
 	GtkWidget *const vboxDownloads = rp_gtk_vbox_new(6);
 	gtk_widget_set_name(vboxDownloads, "vboxDownloads");
@@ -146,7 +146,7 @@ options_tab_init(OptionsTab *tab)
 
 	// Create the "Options" frame.
 	// FIXME: GtkFrame doesn't support mnemonics?
-	GtkWidget *const fraOptions = gtk_frame_new(C_("SystemsTab", "Options"));
+	GtkWidget *const fraOptions = gtk_frame_new(C_("OptionsTab", "Options"));
 	gtk_widget_set_name(fraOptions, "fraOptions");
 	GtkWidget *const vboxOptions = rp_gtk_vbox_new(6);
 	gtk_widget_set_name(vboxOptions, "vboxOptions");
