@@ -158,7 +158,7 @@ static inline int delete_file(const std::string &filename)
  * @return File extension, including the leading dot; nullptr if no extension.
  */
 RP_LIBROMDATA_PUBLIC
-const char *file_ext(const char *filename);
+const char8_t *file_ext(const char8_t *filename);
 
 #ifdef _WIN32
 /**

@@ -379,11 +379,11 @@ DidjTex::DidjTex(IRpFile *file)
 	// We're only reading the first texture right now.
 	const off64_t filesize = d->file->size();
 	const char8_t *const filename = file->filename();
-	// FIXME: U8STRFIX
-	const char *const ext = LibRpFile::FileSystem::file_ext(reinterpret_cast<const char*>(filename));
+	const char8_t *const ext = LibRpFile::FileSystem::file_ext(filename);
 
 	const off64_t our_size = static_cast<off64_t>(le32_to_cpu(d->texHeader.compr_size) + sizeof(d->texHeader));
-	if (ext && !strcasecmp(ext, ".texs")) {
+	// FIXME: U8STRFIX
+	if (ext && !strcasecmp(reinterpret_cast<const char*>(ext), ".texs")) {
 		// .texs - allow the total filesize to be larger than the compressed size.
 		if (our_size > filesize) {
 			// Incorrect compressed filesize.

@@ -92,13 +92,16 @@ const string &getConfigDirectory(void)
  * @param filename Filename
  * @return File extension, including the leading dot; nullptr if no extension.
  */
-const char *file_ext(const char *filename)
+const char8_t *file_ext(const char8_t *filename)
 {
 	if (unlikely(!filename))
 		return nullptr;
 
-	const char *const dotpos = strrchr(filename, '.');
-	const char *const slashpos = strrchr(filename, DIR_SEP_CHR);
+	// FIXME: U8STRFIX
+	const char8_t *const dotpos = reinterpret_cast<const char8_t*>(
+		strrchr(reinterpret_cast<const char*>(filename), '.'));
+	const char8_t *const slashpos = reinterpret_cast<const char8_t*>(
+		strrchr(reinterpret_cast<const char*>(filename), DIR_SEP_CHR));
 	if (!dotpos || dotpos[1] == '\0' ||
 	    (slashpos && dotpos <= slashpos))
 	{

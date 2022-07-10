@@ -196,16 +196,16 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 	// NOTE: We're also checking the file extension due to
 	// conflicts with "WWF Raw" on SNES.
 	const char8_t *const filename = file->filename();
-	// FIXME: U8STRFIX
-	const char *const ext = FileSystem::file_ext(reinterpret_cast<const char*>(filename));
+	const char8_t *const ext = FileSystem::file_ext(filename);
 	bool ext_ok = false;
+	// FIXME: U8STRFIX
 	if (!ext || ext[0] == '\0') {
 		// No extension. Check for TGA anyway.
 		ext_ok = true;
-	} else if (!strcasecmp(ext, ".tga")) {
+	} else if (!strcasecmp(reinterpret_cast<const char*>(ext), ".tga")) {
 		// TGA extension.
 		ext_ok = true;
-	} else if (!strcasecmp(ext, ".gz")) {
+	} else if (!strcasecmp(reinterpret_cast<const char*>(ext), ".gz")) {
 		// Check if it's ".tga.gz".
 		const size_t filename_len = strlen(reinterpret_cast<const char*>(filename));
 		if (filename_len >= 7) {

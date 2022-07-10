@@ -350,10 +350,11 @@ Dreamcast::Dreamcast(IRpFile *file)
 	}
 
 	// Check if this disc image is supported.
+	// FIXME: U8STRFIX
 	const char8_t *const filename = file->filename();
 	const DetectInfo info = {
 		{0, static_cast<unsigned int>(size), reinterpret_cast<const uint8_t*>(&sector)},
-		FileSystem::file_ext(reinterpret_cast<const char*>(filename)),	// ext
+		reinterpret_cast<const char*>(FileSystem::file_ext(filename)),	// ext
 		0		// szFile (not needed for Dreamcast)
 	};
 	d->discType = static_cast<DreamcastPrivate::DiscType>(isRomSupported_static(&info));

@@ -173,8 +173,7 @@ WonderSwan::WonderSwan(IRpFile *file)
 
 	// File extension is needed.
 	const char8_t *const filename = file->filename();
-	// FIXME: U8STRFIX
-	const char *const ext = FileSystem::file_ext(reinterpret_cast<const char*>(filename));
+	const char8_t *const ext = FileSystem::file_ext(filename);
 	if (!ext) {
 		// Unable to get the file extension.
 		UNREF_AND_NULL_NOCHK(d->file);
@@ -182,10 +181,11 @@ WonderSwan::WonderSwan(IRpFile *file)
 	}
 
 	// Make sure this is actually a WonderSwan ROM.
+	// FIXME: U8STRFIX
 	const DetectInfo info = {
 		{footer_addr, sizeof(d->romFooter),
 			reinterpret_cast<const uint8_t*>(&d->romFooter)},
-		ext,		// ext
+		reinterpret_cast<const char*>(ext),		// ext
 		fileSize	// szFile
 	};
 	d->romType = static_cast<WonderSwanPrivate::RomType>(isRomSupported(&info));

@@ -27,6 +27,7 @@ using LibRpTexture::FileFormatFactory;
 
 // C++ STL classes.
 using std::string;
+using std::u8string;
 using std::unordered_map;
 using std::unordered_set;
 using std::vector;
@@ -598,7 +599,7 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 	}
 
 	// File extension.
-	string file_ext;	// temporary storage
+	u8string file_ext;	// temporary storage
 	info.ext = nullptr;
 	if (file->isDevice()) {
 		// Device file. Assume it's a CD-ROM.
@@ -608,11 +609,11 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 	} else {
 		// Get the actual file extension.
 		const char8_t *const filename = file->filename();
-		// FIXME: U8STRFIX
-		const char *const ext = FileSystem::file_ext(reinterpret_cast<const char*>(filename));
+		const char8_t *const ext = FileSystem::file_ext(filename);
 		if (ext) {
 			file_ext = ext;
-			info.ext = file_ext.c_str();
+			// FIXME: U8STRFIX
+			info.ext = reinterpret_cast<const char*>(file_ext.c_str());
 		}
 	}
 
