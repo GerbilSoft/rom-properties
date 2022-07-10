@@ -128,30 +128,21 @@ const char8_t *lookup_cpu_subtype(uint32_t cputype, uint32_t cpusubtype)
 						s_cpu_subtype = U8("Pentium");
 						break;
 
-					case CPU_SUBTYPE_INTEL(6, 0):
+					case CPU_SUBTYPE_INTEL(6, 0): {
 						// i686 class
-						switch (cpusubtype >> 4) {
-							default:
-							case 0:
-								s_cpu_subtype = U8("i686");
-								break;
-							case 1:
-								s_cpu_subtype = U8("Pentium Pro");
-								break;
-							case 2:
-								s_cpu_subtype = U8("Pentium II (M2)");
-								break;
-							case 3:
-								s_cpu_subtype = U8("Pentium II (M3)");
-								break;
-							case 4:
-								s_cpu_subtype = U8("Pentium II (M4)");
-								break;
-							case 5:
-								s_cpu_subtype = U8("Pentium II (M5)");
-								break;
+						static const char8_t *const i686_cpu_tbl[] = {
+							U8("i686"), U8("Pentium Pro"),
+							U8("Pentium II (M2)"), U8("Pentium II (M3)"),
+							U8("Pentium II (M4)"), U8("Pentium II (M5)")
+						};
+						const uint8_t i686_subtype = (cpusubtype >> 4);
+						if (i686_subtype < ARRAY_SIZE(i686_cpu_tbl)) {
+							s_cpu_subtype = i686_cpu_tbl[i686_subtype];
+						} else {
+							s_cpu_subtype = i686_cpu_tbl[0];
 						}
 						break;
+					}
 
 					case CPU_SUBTYPE_CELERON:
 						// Celeron
@@ -162,21 +153,20 @@ const char8_t *lookup_cpu_subtype(uint32_t cputype, uint32_t cpusubtype)
 						}
 						break;
 
-					case CPU_SUBTYPE_PENTIII:
+					case CPU_SUBTYPE_PENTIII: {
 						// Pentium III
-						switch (cpusubtype >> 4) {
-							default:
-							case 0:
-								s_cpu_subtype = U8("Pentium III");
-								break;
-							case 1:
-								s_cpu_subtype = U8("Pentium III-M");
-								break;
-							case 2:
-								s_cpu_subtype = U8("Pentium III Xeon");
-								break;
+						static const char8_t *const p3_cpu_tbl[] = {
+							U8("Pentium III"), U8("Pentium III-M"),
+							U8("Pentium III Xeon")
+						};
+						const uint8_t p3_subtype = (cpusubtype >> 4);
+						if (p3_subtype < ARRAY_SIZE(p3_cpu_tbl)) {
+							s_cpu_subtype = p3_cpu_tbl[p3_subtype];
+						} else {
+							s_cpu_subtype = p3_cpu_tbl[0];
 						}
 						break;
+					}
 
 					case CPU_SUBTYPE_PENTIUM_M:
 						s_cpu_subtype = U8("Pentium M");
