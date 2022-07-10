@@ -311,8 +311,8 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 		}
 
 		struct StdActsInfo_t {
-			const char *title;	// NOP_C_
-			const char *filter;	// NOP_C_
+			const char8_t *title;	// NOP_C_
+			const char8_t *filter;	// NOP_C_
 			TCHAR default_ext[7];
 			bool toClipboard;
 		};
@@ -379,9 +379,11 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 				defaultFileName += info->default_ext;
 			}
 
+			// FIXME: U8STRFIX - dpgettext_expr()
 			const tstring tfilename = LibWin32UI::getSaveFileName(hDlgSheet,
-				U82T_c(dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", info->title)),
-				dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", info->filter),
+				U82T_c(reinterpret_cast<const char8_t*>(
+					dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", reinterpret_cast<const char*>(info->title)))),
+				dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", reinterpret_cast<const char*>(info->filter)),
 				defaultFileName.c_str());
 			if (tfilename.empty())
 				return;
@@ -409,10 +411,12 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 
 		switch (menuId) {
 			case IDM_OPTIONS_MENU_EXPORT_TEXT: {
+				// FIXME: U8STRFIX - rp_sprintf()
 				const uint32_t lc = cboLanguage
 					? LanguageComboBox_GetSelectedLC(cboLanguage)
 					: 0;
-				ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << '\n';
+				ofs << "== " << rp_sprintf(reinterpret_cast<const char*>(C_("RomDataView", "File: '%s'")),
+					reinterpret_cast<const char*>(rom_filename)) << '\n';
 				ROMOutput ro(romData, lc);
 				ofs << ro;
 				ofs.flush();
@@ -431,7 +435,8 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 					? LanguageComboBox_GetSelectedLC(cboLanguage)
 					: 0;
 				ostringstream oss;
-				oss << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << '\n';
+				oss << "== " << rp_sprintf(reinterpret_cast<const char*>(C_("RomDataView", "File: '%s'")),
+					reinterpret_cast<const char*>(rom_filename)) << '\n';
 				ROMOutput ro(romData, lc);
 				oss << ro;
 				oss.flush();
@@ -477,6 +482,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 		return;
 	}
 
+	// FIXME: U8STRFIX - params, etc
 	string s_save_filename;
 	RomData::RomOpParams params;
 	const RomData::RomOp *op = &ops[id];
@@ -491,7 +497,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			filter += '|';
 		}
 		// tr: "All Files" filter (RP format)
-		filter += C_("RomData", "All Files|*.*|-");
+		filter += reinterpret_cast<const char*>(C_("RomData", "All Files|*.*|-"));
 
 		// Initial file and directory, based on the current file.
 		// FIXME: U8STRFIX

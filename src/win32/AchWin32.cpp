@@ -28,6 +28,7 @@ using LibRpTexture::rp_image;
 // C++ STL classes.
 using std::string;
 using std::tstring;
+using std::u8string;
 using std::unordered_map;
 
 class AchWin32Private
@@ -344,8 +345,8 @@ int AchWin32Private::notifyFunc(Achievements::ID id)
 
 	// Description text.
 	// TODO: Formatting?
-	string info = pAch->getName(id);
-	info += '\n';
+	u8string info = pAch->getName(id);
+	info += U8("\n");
 	info += pAch->getDescUnlocked(id);
 
 	// Show the balloon tip.

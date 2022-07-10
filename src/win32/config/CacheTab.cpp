@@ -355,9 +355,10 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 		// Error retrieving drive letters...
 		// NOTE: PBM_SETSTATE is Vista+, which is fine here because
 		// this is only run on Vista+.
+		// FIXME: U8STRFIX - snprintf()
 		DWORD dwErr = GetLastError();
-		snprintf(errbuf, sizeof(errbuf), C_("CacheTab|Win32",
-			"ERROR: GetLogicalDrives() failed. (GetLastError() == 0x%08X)"),
+		snprintf(errbuf, sizeof(errbuf), reinterpret_cast<const char*>(C_("CacheTab|Win32",
+			"ERROR: GetLogicalDrives() failed. (GetLastError() == 0x%08X)")),
 			static_cast<unsigned int>(dwErr));
 		SetWindowText(hStatusLabel, U82T_c(errbuf));
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
@@ -392,8 +393,9 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 	RegKey hKey(HKEY_LOCAL_MACHINE, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VolumeCaches\\Thumbnail Cache"), KEY_READ, false);
 	if (!hKey.isOpen()) {
 		// Failed to open the registry key.
-		snprintf(errbuf, sizeof(errbuf), C_("CacheTab|Win32",
-			"ERROR: Thumbnail Cache cleaner not found. (res == %ld)"),
+		// FIXME: U8STRFIX - snprintf()
+		snprintf(errbuf, sizeof(errbuf), reinterpret_cast<const char*>(C_("CacheTab|Win32",
+			"ERROR: Thumbnail Cache cleaner not found. (res == %ld)")),
 			hKey.lOpenRes());
 		SetWindowText(hStatusLabel, U82T_c(errbuf));
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
@@ -427,8 +429,9 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 		CLSCTX_INPROC_SERVER | CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&pCleaner));
 	if (FAILED(hr)) {
 		// Failed...
-		snprintf(errbuf, sizeof(errbuf), C_("CacheTab|Win32",
-			"ERROR: CoCreateInstance() failed. (hr == 0x%08X)"),
+		// FIXME: U8STRFIX - snprintf()
+		snprintf(errbuf, sizeof(errbuf), reinterpret_cast<const char*>(C_("CacheTab|Win32",
+			"ERROR: CoCreateInstance() failed. (hr == 0x%08X)")),
 			static_cast<unsigned int>(hr));
 		SetWindowText(hStatusLabel, U82T_c(errbuf));
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
@@ -487,8 +490,9 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 		} else if (hr != S_OK) {
 			// Some error occurred.
 			// TODO: Continue with other drives?
-			snprintf(errbuf, sizeof(errbuf), C_("CacheTab|Win32",
-				"ERROR: IEmptyVolumeCache::Initialize() failed on drive %c. (hr == 0x%08X)"),
+			// FIXME: U8STRFIX - snprintf()
+			snprintf(errbuf, sizeof(errbuf), reinterpret_cast<const char*>(C_("CacheTab|Win32",
+				"ERROR: IEmptyVolumeCache::Initialize() failed on drive %c. (hr == 0x%08X)")),
 				(char)szDrivePath[0], static_cast<unsigned int>(hr));
 			SetWindowText(hStatusLabel, U82T_c(errbuf));
 			SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
@@ -504,8 +508,9 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 		hr = pCleaner->Purge(-1LL, pCallback);
 		if (FAILED(hr)) {
 			// Cleanup failed. (TODO: Figure out why!)
-			snprintf(errbuf, sizeof(errbuf), C_("CacheTab|Win32",
-				"ERROR: IEmptyVolumeCache::Purge() failed on drive %c. (hr == 0x%08X)"),
+			// FIXME: U8STRFIX - snprintf()
+			snprintf(errbuf, sizeof(errbuf), reinterpret_cast<const char*>(C_("CacheTab|Win32",
+				"ERROR: IEmptyVolumeCache::Purge() failed on drive %c. (hr == 0x%08X)")),
 				(char)szDrivePath[0], static_cast<unsigned int>(hr));
 			SetWindowText(hStatusLabel, U82T_c(errbuf));
 			SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
@@ -524,7 +529,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 	}
 
 	// TODO: SPI_SETICONS to clear the icon cache?
-	const char *success_message;
+	const char8_t *success_message;
 	if (clearCount > 0) {
 		success_message = C_("CacheTab", "System thumbnail cache cleared successfully.");
 	} else {
@@ -635,8 +640,9 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 		[](TCHAR p) { return p == L'\\'; });
 
 	if (cacheDir.size() < 8 || bscount < 6) {
-		const string s_err = rp_sprintf(C_("CacheTab", "ERROR: %s"),
-			C_("CacheCleaner", "Unable to get the rom-properties cache directory."));
+		// FIXME: U8STRFIX - rp_sprintf()
+		const string s_err = rp_sprintf(reinterpret_cast<const char*>(C_("CacheTab", "ERROR: %s"),
+			C_("CacheCleaner", "Unable to get the rom-properties cache directory.")));
 		SetWindowText(hStatusLabel, U82T_s(s_err));
 		SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, 1));
 		SendMessage(hProgressBar, PBM_SETPOS, 1, 0);
@@ -676,8 +682,9 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	int ret = recursiveScan(cacheDirT.c_str(), rlist);
 	if (ret != 0) {
 		// Non-image file found.
-		const string s_err = rp_sprintf(C_("CacheTab", "ERROR: %s"),
-			C_("CacheCleaner", "rom-properties cache has unexpected files. Not clearing it."));
+		// FIXME: U8STRFIX - rp_sprintf()
+		const string s_err = rp_sprintf(reinterpret_cast<const char*>(C_("CacheTab", "ERROR: %s"),
+			C_("CacheCleaner", "rom-properties cache has unexpected files. Not clearing it.")));
 		SetWindowText(hStatusLabel, U82T_s(s_err));
 		SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, 1));
 		SendMessage(hProgressBar, PBM_SETPOS, 1, 0);
@@ -740,10 +747,12 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	}
 
 	if (dirErrs > 0 || fileErrs > 0) {
+		// FIXME: U8STRFIX - snprintf()
 		char buf[256];
-		snprintf(buf, sizeof(buf), C_("CacheTab", "Error: Unable to delete %u file(s) and/or %u dir(s)."),
+		snprintf(buf, sizeof(buf), reinterpret_cast<const char*>(
+			C_("CacheTab", "Error: Unable to delete %u file(s) and/or %u dir(s).")),
 			fileErrs, dirErrs);
-		const string s_err = rp_sprintf(C_("CacheTab", "ERROR: %s"), buf);
+		const string s_err = rp_sprintf(reinterpret_cast<const char*>(C_("CacheTab", "ERROR: %s"), buf));
 		SetWindowText(hStatusLabel, U82T_s(s_err));
 		MessageBeep(MB_ICONWARNING);
 	} else {

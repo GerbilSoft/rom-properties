@@ -228,22 +228,24 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
 
 	// System name and file type.
 	// TODO: System logo and/or game title?
+	// FIXME: U8STRFIX - systemName should be char8_t
 	const char *systemName = romData->systemName(
 		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
-	const char *fileType = romData->fileType_string();
+	const char8_t *fileType = romData->fileType_string();
 	assert(systemName != nullptr);
 	assert(fileType != nullptr);
 	if (!systemName) {
-		systemName = C_("RomDataView", "(unknown system)");
+		systemName = (const char*)C_("RomDataView", "(unknown system)");
 	}
 	if (!fileType) {
 		fileType = C_("RomDataView", "(unknown filetype)");
 	}
 
 	const tstring ts_sysInfo =
-		LibWin32UI::unix2dos(U82T_s(rp_sprintf_p(
+		LibWin32UI::unix2dos(U82T_c(reinterpret_cast<const char8_t*>(rp_sprintf_p(
 			// tr: %1$s == system name, %2$s == file type
-			C_("RomDataView", "%1$s\n%2$s"), systemName, fileType)));
+			reinterpret_cast<const char*>(C_("RomDataView", "%1$s\n%2$s")),
+			systemName, fileType).c_str())));
 
 	if (!ts_sysInfo.empty()) {
 		// Determine the appropriate label size.
@@ -1338,7 +1340,7 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg, HWND hWndTab,
 	}
 
 	// Convert the age ratings field to a string.
-	string str = RomFields::ageRatingsDecode(age_ratings);
+	const u8string str = RomFields::ageRatingsDecode(age_ratings);
 	// Initialize the string field.
 	return initString(hDlg, hWndTab, pt_start, size, field, fieldIdx, U82T_s(str));
 }
@@ -1726,7 +1728,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 	unique_ptr<int[]> a_max_text_width(new int[tabCount]());
 
 	// tr: Field description label.
-	const char *const desc_label_fmt = C_("RomDataView", "%s:");
+	const char8_t *const desc_label_fmt = C_("RomDataView", "%s:");
 	const auto pFields_cend = pFields->cend();
 	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter) {
 		const RomFields::Field &field = *iter;
@@ -1738,8 +1740,9 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 			continue;
 		}
 
-		tstring desc_text = U82T_s(rp_sprintf(
-			desc_label_fmt, field.name.c_str()));
+		// FIXME: U8STRFIX - rp_sprintf()
+		tstring desc_text = U82T_c(reinterpret_cast<const char8_t*>(rp_sprintf(
+			reinterpret_cast<const char*>(desc_label_fmt), field.name.c_str()).c_str()));
 
 		// Get the width of this specific entry.
 		// TODO: Use measureTextSize()?

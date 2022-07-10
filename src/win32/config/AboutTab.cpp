@@ -523,7 +523,8 @@ void AboutTabPrivate::initProgramTitleText(void)
 	const char *const gitVersion =
 		AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::GitVersion);
 
-	string s_version = rp_sprintf(C_("AboutTab", "Version %s"), programVersion);
+	// FIXME: U8STRFIX - rp_sprintf()
+	string s_version = rp_sprintf((const char*)C_("AboutTab", "Version %s"), programVersion);
 	s_version.reserve(1024);
 	if (gitVersion) {
 		s_version += "\r\n";
@@ -720,17 +721,18 @@ void AboutTabPrivate::initLibrariesTab(void)
 	// NOTE: These strings can NOT be static.
 	// Otherwise, they won't be retranslated if the UI language
 	// is changed at runtime.
+	// FIXME: U8STRFIX - rp_sprintf()
 
 	// tr: Using an internal copy of a library.
-	const char *const sIntCopyOf = C_("AboutTab|Libraries", "Internal copy of %s.");
+	const char8_t *const sIntCopyOf = C_("AboutTab|Libraries", "Internal copy of %s.");
 	// tr: Compiled with a specific version of an external library.
-	const char *const sCompiledWith = C_("AboutTab|Libraries", "Compiled with %s.");
+	const char8_t *const sCompiledWith = C_("AboutTab|Libraries", "Compiled with %s.");
 	// tr: Using an external library, e.g. libpcre.so
-	const char *const sUsingDll = C_("AboutTab|Libraries", "Using %s.");
+	const char8_t *const sUsingDll = C_("AboutTab|Libraries", "Using %s.");
 	// tr: License: (libraries with only a single license)
-	const char *const sLicense = C_("AboutTab|Libraries", "License: %s");
+	const char8_t *const sLicense = C_("AboutTab|Libraries", "License: %s");
 	// tr: Licenses: (libraries with multiple licenses)
-	const char *const sLicenses = C_("AboutTab|Libraries", "Licenses: %s");
+	const char8_t *const sLicenses = C_("AboutTab|Libraries", "Licenses: %s");
 
 	// NOTE: We're only showing the "compiled with" version here,
 	// since the DLLs are delay-loaded and might not be available.
@@ -739,11 +741,11 @@ void AboutTabPrivate::initLibrariesTab(void)
 #ifdef HAVE_ZLIB
 #  ifdef ZLIBNG_VERSION
 	sLibraries += reinterpret_cast<const char8_t*>(
-		rp_sprintf(sCompiledWith, "zlib-ng " ZLIBNG_VERSION).c_str());
+		rp_sprintf((const char*)sCompiledWith, "zlib-ng " ZLIBNG_VERSION).c_str());
 	sLibraries += RTF_BR;
 #  else /* !ZLIBNG_VERSION */
 	sLibraries += reinterpret_cast<const char8_t*>(
-		rp_sprintf(sCompiledWith, "zlib " ZLIB_VERSION).c_str());
+		rp_sprintf((const char*)sCompiledWith, "zlib " ZLIB_VERSION).c_str());
 	sLibraries += RTF_BR;
 #  endif /* ZLIBNG_VERSION */
 	sLibraries += U8("Copyright (C) 1995-2022 Jean-loup Gailly and Mark Adler.") RTF_BR
@@ -753,7 +755,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += U8("https://github.com/zlib-ng/zlib-ng") RTF_BR;
 #  endif /* ZLIBNG_VERSION */
 	sLibraries += reinterpret_cast<const char8_t*>(
-		rp_sprintf(sLicense, "zlib license").c_str());
+		rp_sprintf((const char*)sLicense, "zlib license").c_str());
 #endif /* HAVE_ZLIB */
 
 	/** libpng **/
@@ -762,7 +764,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 #ifdef HAVE_PNG
 	sLibraries += RTF_BR RTF_BR;
 	sLibraries += reinterpret_cast<const char8_t*>(
-		rp_sprintf(sCompiledWith, "libpng " PNG_LIBPNG_VER_STRING).c_str());
+		rp_sprintf((const char*)sCompiledWith, "libpng " PNG_LIBPNG_VER_STRING).c_str());
 	sLibraries += RTF_BR
 			U8("libpng version 1.6.37 - April 14, 2019") RTF_BR
 			U8("Copyright (c) 2018-2019 Cosmin Truta") RTF_BR
@@ -771,7 +773,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 			U8("Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.") RTF_BR
 			U8("http://www.libpng.org/pub/png/libpng.html") RTF_BR;
 	sLibraries += reinterpret_cast<const char8_t*>(
-		rp_sprintf(sLicense, "libpng license").c_str());
+		rp_sprintf((const char*)sLicense, "libpng license").c_str());
 #endif /* HAVE_PNG */
 
 	/** TinyXML2 **/
@@ -784,12 +786,12 @@ void AboutTabPrivate::initLibrariesTab(void)
 	// FIXME: Runtime version?
 	sLibraries += RTF_BR RTF_BR;
 	sLibraries += reinterpret_cast<const char8_t*>(
-		rp_sprintf(sCompiledWith, sVerBuf).c_str());
+		rp_sprintf((const char*)sCompiledWith, sVerBuf).c_str());
 	sLibraries += RTF_BR
 		U8("Copyright (C) 2000-2021 Lee Thomason") RTF_BR
 		U8("http://www.grinninglizard.com/") RTF_BR;
 	sLibraries += reinterpret_cast<const char8_t*>(
-		rp_sprintf(sLicense, "zlib license").c_str());
+		rp_sprintf((const char*)sLicense, "zlib license").c_str());
 #endif /* ENABLE_XML */
 
 	/** GNU gettext **/
@@ -810,17 +812,17 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += RTF_BR RTF_BR;
 #  ifdef _WIN32
 	sLibraries += reinterpret_cast<const char8_t*>(
-		rp_sprintf(sIntCopyOf, sVerBuf).c_str());
+		rp_sprintf((const char*)sIntCopyOf, sVerBuf).c_str());
 #  else /* _WIN32 */
 	// FIXME: Runtime version?
 	sLibraries += reinterpret_cast<const char8_t*>(
-		rp_sprintf(sCompiledWith, sVerBuf).c_str());
+		rp_sprintf((const char*)sCompiledWith, sVerBuf).c_str());
 #  endif /* _WIN32 */
 	sLibraries += RTF_BR
 		U8("Copyright (C) 1995-1997, 2000-2016, 2018-2020 Free Software Foundation, Inc.") RTF_BR
 		U8("https://www.gnu.org/software/gettext/") RTF_BR;
 	sLibraries += reinterpret_cast<const char8_t*>(
-		rp_sprintf(sLicense, "GNU LGPL v2.1+").c_str());
+		rp_sprintf((const char*)sLicense, "GNU LGPL v2.1+").c_str());
 #endif /* HAVE_GETTEXT && LIBINTL_VERSION */
 
 	sLibraries += U8("}");

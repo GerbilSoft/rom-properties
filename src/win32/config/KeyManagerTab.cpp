@@ -1682,7 +1682,7 @@ void KeyManagerTabPrivate::importKeysFromBin(KeyStoreUI::ImportFileID id)
 	    id > KeyStoreUI::ImportFileID::N3DSaeskeydb)
 		return;
 
-	static const char dialog_titles_tbl[][32] = {
+	static const char8_t dialog_titles_tbl[][32] = {
 		// tr: Wii keys.bin dialog title
 		NOP_C_("KeyManagerTab", "Select Wii keys.bin File"),
 		// tr: Wii U otp.bin dialog title
@@ -1693,7 +1693,7 @@ void KeyManagerTabPrivate::importKeysFromBin(KeyStoreUI::ImportFileID id)
 		NOP_C_("KeyManagerTab", "Select 3DS aeskeydb.bin File"),
 	};
 
-	static const char file_filters_tbl[][88] = {
+	static const char8_t file_filters_tbl[][88] = {
 		// tr: Wii keys.bin file filter (RP format)
 		NOP_C_("KeyManagerTab", "keys.bin|keys.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
 		// tr: Wii U otp.bin file filter (RP format)
@@ -1704,17 +1704,19 @@ void KeyManagerTabPrivate::importKeysFromBin(KeyStoreUI::ImportFileID id)
 		NOP_C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
 	};
 
-	const char *const s_title = dpgettext_expr(
-		RP_I18N_DOMAIN, "KeyManagerTab", dialog_titles_tbl[(int)id]);
-	const char *const s_filter = dpgettext_expr(
-		RP_I18N_DOMAIN, "KeyManagerTab", file_filters_tbl[(int)id]);
+	// FIXME: U8STRFIX - dpgettext_expr()
+	const char8_t *const s_title = reinterpret_cast<const char8_t*>(dpgettext_expr(
+		RP_I18N_DOMAIN, "KeyManagerTab", reinterpret_cast<const char*>(dialog_titles_tbl[(int)id])));
+	const char8_t *const s_filter = reinterpret_cast<const char8_t*>(dpgettext_expr(
+		RP_I18N_DOMAIN, "KeyManagerTab", reinterpret_cast<const char*>(file_filters_tbl[(int)id])));
 
 	assert(hWndPropSheet != nullptr);
 	if (!hWndPropSheet)
 		return;
 
+	// FIXME: U8STRFIX
 	const tstring tfilename = LibWin32UI::getOpenFileName(hWndPropSheet,
-		U82T_c(s_title), s_filter, ts_keyFileDir.c_str());
+		U82T_c(s_title), reinterpret_cast<const char*>(s_filter), ts_keyFileDir.c_str());
 	if (tfilename.empty())
 		return;
 
@@ -1722,16 +1724,17 @@ void KeyManagerTabPrivate::importKeysFromBin(KeyStoreUI::ImportFileID id)
 	updateKeyFileDir(tfilename);
 
 	// KeyStoreUI::ImportFileID
-	static const char *const import_menu_actions[] = {
+	static const char8_t *const import_menu_actions[] = {
 		NOP_C_("KeyManagerTab", "Wii keys.bin"),
 		NOP_C_("KeyManagerTab", "Wii U otp.bin"),
 		NOP_C_("KeyManagerTab", "3DS boot9.bin"),
 		NOP_C_("KeyManagerTab", "3DS aeskeydb.bin"),
 	};
 
+	// FIXME: U8STRFIX - dpgettext_expr()
 	KeyStoreWin32::ImportReturn iret = keyStore->importKeysFromBin(id, T2U8(tfilename).c_str());
 	showKeyImportReturnStatus(tfilename,
-		dpgettext_expr(RP_I18N_DOMAIN, "KeyManagerTab", import_menu_actions[(int)id]), iret);
+		dpgettext_expr(RP_I18N_DOMAIN, "KeyManagerTab", reinterpret_cast<const char*>(import_menu_actions[(int)id])), iret);
 }
 
 /** KeyManagerTab **/
