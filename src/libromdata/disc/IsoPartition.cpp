@@ -54,13 +54,17 @@ class IsoPartitionPrivate
 
 		/**
 		 * Find the last slash or backslash in a path.
-		 * @param path Path.
+		 * @param path Path
 		 * @return Last slash or backslash, or nullptr if not found.
 		 */
-		inline const char *findLastSlash(const char *path)
+		template<typename T>
+		inline const T *findLastSlash(const T *path)
 		{
-			const char *sl = strrchr(path, '/');
-			const char *const bs = strrchr(path, '\\');
+			static_assert(sizeof(T) == sizeof(char), "findLastSlash<T> is for 8-bit types only!");
+			const T *sl = reinterpret_cast<const T*>(
+				strrchr(reinterpret_cast<const char*>(path), '/'));
+			const T *const bs = reinterpret_cast<const T*>(
+				strrchr(reinterpret_cast<const char*>(path), '\\'));
 			if (sl && bs) {
 				if (bs > sl) {
 					sl = bs;
@@ -91,7 +95,7 @@ class IsoPartitionPrivate
 		 * @param filename Filename [UTF-8]
 		 * @return ISO directory entry.
 		 */
-		const ISO_DirEntry *lookup(const char *filename);
+		const ISO_DirEntry *lookup(const char8_t *filename);
 
 		/**
 		 * Parse an ISO-9660 timestamp.
@@ -395,7 +399,7 @@ const IsoPartitionPrivate::DirData_t *IsoPartitionPrivate::getDirectory(const ch
  * @param filename Filename [UTF-8]
  * @return ISO directory entry.
  */
-const ISO_DirEntry *IsoPartitionPrivate::lookup(const char *filename)
+const ISO_DirEntry *IsoPartitionPrivate::lookup(const char8_t *filename)
 {
 	assert(filename != nullptr);
 	assert(filename[0] != '\0');
@@ -416,7 +420,7 @@ const ISO_DirEntry *IsoPartitionPrivate::lookup(const char *filename)
 	const DirData_t *pDir;
 
 	// Is this file in a subdirectory?
-	const char *const sl = findLastSlash(filename);
+	const char8_t *const sl = findLastSlash(filename);
 	if (sl) {
 		// This file is in a subdirectory.
 		const string s_parentDir = utf8_to_cp1252(filename, static_cast<int>(sl - filename));
@@ -697,7 +701,8 @@ IRpFile *IsoPartition::open(const char *filename)
 
 	// TODO: File reference counter.
 	// This might be difficult to do because PartitionFile is a separate class.
-	const ISO_DirEntry *const dirEntry = d->lookup(filename);
+	// FIXME: U8STRFIX - function should take const char8_t.
+	const ISO_DirEntry *const dirEntry = d->lookup(reinterpret_cast<const char8_t*>(filename));
 	if (!dirEntry) {
 		// Not found.
 		return nullptr;
@@ -756,7 +761,8 @@ time_t IsoPartition::get_mtime(const char *filename)
 
 	// TODO: File reference counter.
 	// This might be difficult to do because PartitionFile is a separate class.
-	const ISO_DirEntry *const dirEntry = d->lookup(filename);
+	// FIXME: U8STRFIX - function should take const char8_t.
+	const ISO_DirEntry *const dirEntry = d->lookup(reinterpret_cast<const char8_t*>(filename));
 	if (!dirEntry) {
 		// Not found.
 		return -1;

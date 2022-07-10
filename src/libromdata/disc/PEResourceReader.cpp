@@ -13,8 +13,9 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::u8string;
 using std::unique_ptr;
 using std::unordered_map;
 using std::vector;
@@ -439,11 +440,13 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 	}
 
 	// Convert to UTF-8.
-	string str_langID = utf16le_to_utf8(s_langID, 8);
+	const u8string str_langID = utf16le_to_utf8(s_langID, 8);
 	// Parse using strtoul().
+	// NOTE: strtoul() doesn't support char8_t.
+	const char *const p_str_landID = reinterpret_cast<const char*>(str_langID.c_str());
 	char *endptr;
-	*langID = static_cast<unsigned int>(strtoul(str_langID.c_str(), &endptr, 16));
-	if (*langID == 0 || endptr != (str_langID.c_str() + 8)) {
+	*langID = static_cast<unsigned int>(strtoul(p_str_landID, &endptr, 16));
+	if (*langID == 0 || endptr != (p_str_landID + 8)) {
 		// Not valid.
 		// TODO: Better error code?
 		return -EIO;
@@ -523,11 +526,14 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 			return -EIO;
 		}
 
+		// FIXME: Change IResourceReader::StringTable to u8string.
+#define U8STRFIX(x) string((const char*)(x).c_str())
+
 		// NOTE: Only converting the value from DOS to UNIX line endings.
 		// The key shouldn't have newlines.
 		st.emplace_back(std::pair<string, string>(
-			utf16le_to_utf8(key, key_len),
-			dos2unix(utf16le_to_utf8(value, value_len))));
+			U8STRFIX(utf16le_to_utf8(key, key_len)),
+			dos2unix(U8STRFIX(utf16le_to_utf8(value, value_len)))));
 
 		// DWORD alignment is required here.
 		tblPos += wValueLength;

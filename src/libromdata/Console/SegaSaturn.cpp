@@ -22,8 +22,9 @@ using LibRpFile::IRpFile;
 // Other RomData subclasses
 #include "Other/ISO.hpp"
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::u8string;
 using std::vector;
 
 namespace LibRomData {
@@ -112,7 +113,7 @@ class SegaSaturnPrivate final : public RomDataPrivate
 		 * Get the disc publisher.
 		 * @return Disc publisher.
 		 */
-		string getPublisher(void) const;
+		u8string getPublisher(void) const;
 
 		/**
 		 * Parse the disc number portion of the device information field.
@@ -252,7 +253,7 @@ unsigned int SegaSaturnPrivate::parseRegionCodes(const char *region_codes, int s
  * Get the disc publisher.
  * @return Disc publisher.
  */
-string SegaSaturnPrivate::getPublisher(void) const
+u8string SegaSaturnPrivate::getPublisher(void) const
 {
 	const char *publisher = nullptr;
 	if (!memcmp(discHeader.maker_id, SATURN_IP0000_BIN_MAKER_ID, sizeof(discHeader.maker_id))) {
@@ -275,12 +276,13 @@ string SegaSaturnPrivate::getPublisher(void) const
 
 	if (publisher) {
 		// Found the publisher.
-		return publisher;
+		// FIXME: U8STRFIX
+		return u8string((const char8_t*)publisher);
 	}
 
 	// Unknown publisher.
 	// List the field as-is.
-	string s_ret = latin1_to_utf8(discHeader.maker_id, sizeof(discHeader.maker_id));
+	u8string s_ret = latin1_to_utf8(discHeader.maker_id, sizeof(discHeader.maker_id));
 	trimEnd(s_ret);
 	return s_ret;
 }

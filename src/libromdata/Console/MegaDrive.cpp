@@ -25,6 +25,7 @@ using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::string;
+using std::u8string;
 using std::vector;
 
 // zlib for crc32()
@@ -1477,7 +1478,7 @@ int MegaDrive::loadMetaData(void)
 	// Title
 	// TODO: Domestic vs. export; space elimination?
 	// Check domestic first. If empty, check overseas.
-	string s_title = cp1252_sjis_to_utf8(romHeader->title_export, sizeof(romHeader->title_export));
+	u8string s_title = cp1252_sjis_to_utf8(romHeader->title_export, sizeof(romHeader->title_export));
 	trimEnd(s_title);
 	if (s_title.empty()) {
 		s_title = cp1252_sjis_to_utf8(romHeader->title_domestic, sizeof(romHeader->title_domestic));
@@ -1627,7 +1628,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 	// If this is S&K plus a locked-on ROM, use the
 	// locked-on ROM's serial number with region "S&K".
 	char region_code[4];
-	string gameID;
+	u8string gameID;
 	if (d->pRomHeaderLockOn && rom_type == cpu_to_be16('GM')) {
 		// Use region code "S&K" for locked-on ROMs.
 		memcpy(region_code, "S&K", 4);
@@ -1651,7 +1652,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 		} else {
 			// Generic title screen only.
 			// TODO: If the locked-on ROM is >2 MB, show S&K?
-			gameID = "NO-WAY";
+			gameID = U8("NO-WAY");
 		}
 	} else {
 		// Using the MD hex region code.
@@ -1687,7 +1688,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 			    pRomHeader->title_domestic[0] == 'W' &&
 			    pRomHeader->title_domestic[6] == '-')
 			{
-				gameID += "-WM";
+				gameID += U8("-WM");
 				break;
 			}
 
@@ -1703,7 +1704,8 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 				region_code[2] = '\0';
 				char buf[16];
 				snprintf(buf, sizeof(buf), "%08X", d->gt_crc);
-				gameID = buf;
+				// FIXME: U8STRFIX
+				gameID = (const char8_t*)buf;
 				break;
 			}
 
@@ -1757,7 +1759,8 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 				// NOTE: Not supporting "early" ROM headers here.
 				char buf[16];
 				snprintf(buf, sizeof(buf), ".%04X", be16_to_cpu(pRomHeader->checksum));
-				gameID += buf;
+				// FIXME: U8STRFIX
+				gameID += (const char8_t*)buf;
 				break;
 			}
 			break;
@@ -1776,8 +1779,9 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 				// identical on all MCD discs, and all MCD32X discs.
 				if (ISDIGIT(d->mcd_hdr[0x1A])) {
 					// Append the disc number.
-					gameID += ".disc";
-					gameID += (char)d->mcd_hdr[0x1A];
+					// FIXME: U8STRFIX
+					gameID += U8(".disc");
+					gameID += static_cast<char8_t>(d->mcd_hdr[0x1A]);
 				}
 			} else {
 				switch (d->md_region) {
@@ -1790,8 +1794,8 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 							// which have different titles but the same serial number.
 							if (ISALPHA(pRomHeader->title_domestic[14])) {
 								// Append the first character of the region.
-								gameID += '.';
-								gameID += pRomHeader->title_domestic[14];
+								gameID += static_cast<char8_t>('.');
+								gameID += static_cast<char8_t>(pRomHeader->title_domestic[14]);
 							}
 						} else if (!memcmp(s_serial_number, "GM T-93185-00 ", 14)) {
 							// Sensible Soccer (EUR) - a demo version with a slightly
@@ -1799,7 +1803,7 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 							// It can be identified by an earlier build date in the
 							// MCD-specific header.
 							if (d->mcd_hdr[0x51] == '5') {
-								gameID += ".demo";
+								gameID += U8(".demo");
 							}
 						}
 						break;
@@ -1809,14 +1813,14 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 							// Ecco two-disc set (JPN) - both discs have the same
 							// serial number, but Ecco II has a '2' in the
 							// MCD-specific header.
-							gameID += ".disc";
+							gameID += U8(".disc");
 							gameID += (d->mcd_hdr[0x14] == '2' ? '2' : '1');
 						} else if (!memcmp(s_serial_number, "GM T-32024 -01", 14)) {
 							// Sega MultiMedia Studio Demo has the same
 							// serial number as Sol-Feace (JPN).
 							if (pRomHeader->title_domestic[0] == 'D') {
 								// Sega MultiMedia Studio Demo
-								gameID += ".mmstudio";
+								gameID += U8(".mmstudio");
 							}
 						}
 						break;
@@ -1832,10 +1836,10 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 							// to distinguish it.
 							if (pRomHeader->title_domestic[13] == 'D') {
 								// Dragon's Lair demo
-								gameID += ".demo";
+								gameID += U8(".demo");
 							} else if (d->file->size() < 10U*1024U*1024U) {
 								// Space Ace demo
-								gameID += ".sa-demo";
+								gameID += U8(".sa-demo");
 							}
 						}
 						break;
@@ -1872,10 +1876,11 @@ int MegaDrive::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) 
 	}
 
 	// Add the URLs.
+	// FIXME: U8STRFIX
 	pExtURLs->resize(1);
 	auto extURL_iter = pExtURLs->begin();
-	extURL_iter->url = d->getURL_RPDB(sys, imageTypeName, region_code, gameID.c_str(), ext);
-	extURL_iter->cache_key = d->getCacheKey_RPDB(sys, imageTypeName, region_code, gameID.c_str(), ext);
+	extURL_iter->url = d->getURL_RPDB(sys, imageTypeName, region_code, reinterpret_cast<const char*>(gameID.c_str()), ext);
+	extURL_iter->cache_key = d->getCacheKey_RPDB(sys, imageTypeName, region_code, reinterpret_cast<const char*>(gameID.c_str()), ext);
 	extURL_iter->width = sizeDefs[0].width;
 	extURL_iter->height = sizeDefs[0].height;
 	extURL_iter->high_res = (sizeDefs[0].index >= 2);

@@ -29,6 +29,7 @@
 // C++ STL classes.
 using std::ostringstream;
 using std::string;
+using std::u8string;
 using std::u16string;
 using std::unique_ptr;
 
@@ -272,16 +273,19 @@ string formatFileSize(off64_t size)
 		}
 
 		// Get the localized decimal point.
+		// FIXME: U8STRFIX
 #if defined(_WIN32)
 		// Use localeconv(). (Windows: Convert from UTF-16 to UTF-8.)
 #  if defined(HAVE_STRUCT_LCONV_WCHAR_T)
 		// MSVCRT: `struct lconv` has wchar_t fields.
-		s_value << utf16_to_utf8(
-			reinterpret_cast<const char16_t*>(localeconv()->_W_decimal_point), -1);
+		s_value << reinterpret_cast<const char*>(
+			utf16_to_utf8(reinterpret_cast<const char16_t*>(
+				localeconv()->_W_decimal_point), -1).c_str());
 #  else /* !HAVE_STRUCT_LCONV_WCHAR_T */
 		// MinGW v5,v6: `struct lconv` does not have wchar_t fields.
 		// NOTE: The `char` fields are ANSI.
-		s_value << ansi_to_utf8(localeconv()->decimal_point, -1);
+		s_value << reinterpret_cast<const char*>(
+			ansi_to_utf8(localeconv()->decimal_point, -1).c_str());
 #  endif /* HAVE_STRUCT_LCONV_WCHAR_T */
 #elif defined(HAVE_NL_LANGINFO)
 		// Use nl_langinfo().
@@ -368,16 +372,19 @@ std::string formatFrequency(uint32_t frequency)
 		const int frac_digits = 2;
 
 		// Get the localized decimal point.
+		// FIXME: U8STRFIX
 #if defined(_WIN32)
 		// Use localeconv(). (Windows: Convert from UTF-16 to UTF-8.)
 #  if defined(HAVE_STRUCT_LCONV_WCHAR_T)
 		// MSVCRT: `struct lconv` has wchar_t fields.
-		s_value << utf16_to_utf8(
-			reinterpret_cast<const char16_t*>(localeconv()->_W_decimal_point), -1);
+		s_value << reinterpret_cast<const char*>(
+			utf16_to_utf8(reinterpret_cast<const char16_t*>(
+				localeconv()->_W_decimal_point), -1).c_str());
 #  else /* !HAVE_STRUCT_LCONV_WCHAR_T */
 		// MinGW v5,v6: `struct lconv` does not have wchar_t fields.
 		// NOTE: The `char` fields are ANSI.
-		s_value << ansi_to_utf8(localeconv()->decimal_point, -1);
+		s_value << reinterpret_cast<const char*>(
+			ansi_to_utf8(localeconv()->decimal_point, -1).c_str());
 #  endif /* HAVE_STRUCT_LCONV_WCHAR_T */
 #elif defined(HAVE_NL_LANGINFO)
 		// Use nl_langinfo().
@@ -409,9 +416,10 @@ std::string formatFrequency(uint32_t frequency)
 /**
  * Remove trailing spaces from a string.
  * NOTE: This modifies the string *in place*.
- * @param str String.
+ * @param str String
  */
-void trimEnd(string &str)
+template<typename T>
+static void T_trimEnd(std::basic_string<T> &str)
 {
 	// NOTE: No str.empty() check because that's usually never the case here.
 	// TODO: Check for U+3000? (UTF-8: "\xE3\x80\x80")
@@ -424,6 +432,28 @@ void trimEnd(string &str)
 	}
 	str.resize(sz);
 }
+
+/**
+ * Remove trailing spaces from a string.
+ * NOTE: This modifies the string *in place*.
+ * @param str String
+ */
+void trimEnd(u8string &str)
+{
+	return T_trimEnd(str);
+}
+
+#ifndef CXX20_COMPAT_CHAR8_T
+/**
+ * Remove trailing spaces from a string.
+ * NOTE: This modifies the string *in place*.
+ * @param str String
+ */
+void trimEnd(string &str)
+{
+	return T_trimEnd(str);
+}
+#endif /* CXX20_COMPAT_CHAR8_T */
 
 /**
  * Convert DOS (CRLF) line endings to UNIX (LF) line endings.

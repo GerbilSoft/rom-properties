@@ -17,8 +17,9 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::u8string;
 using std::vector;
 
 namespace LibRomData {
@@ -86,9 +87,9 @@ class SNESPrivate final : public RomDataPrivate
 		 * The ROM title length depends on type, and encoding
 		 * depends on type and region.
 		 *
-		 * @return ROM title.
+		 * @return ROM title
 		 */
-		string getRomTitle(void) const;
+		u8string getRomTitle(void) const;
 
 		/**
 		 * Get the publisher.
@@ -110,7 +111,7 @@ class SNESPrivate final : public RomDataPrivate
 		 * @param doFake If true, return a fake ID using the ROM's title.
 		 * @return Game ID if available; empty string if not.
 		 */
-		string getGameID(bool doFake = false) const;
+		u8string getGameID(bool doFake = false) const;
 };
 
 ROMDATA_IMPL(SNES)
@@ -506,9 +507,9 @@ bool SNESPrivate::isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHi
  * The ROM title length depends on type, and encoding
  * depends on type and region.
  *
- * @return ROM title.
+ * @return ROM title
  */
-string SNESPrivate::getRomTitle(void) const
+u8string SNESPrivate::getRomTitle(void) const
 {
 	// NOTE: If the region code is JPN, the title might be encoded in Shift-JIS.
 	// NOTE: Some JPN ROMs have a 'J' game ID but not a JPN region code.
@@ -562,7 +563,7 @@ string SNESPrivate::getRomTitle(void) const
 		}
 	}
 
-	string s_title;
+	u8string s_title;
 	if (doSJIS) {
 		s_title = cp1252_sjis_to_utf8(title, static_cast<int>(len));
 	} else {
@@ -570,7 +571,7 @@ string SNESPrivate::getRomTitle(void) const
 	}
 	if (hasExtraChr) {
 		// Add the mapping byte as if it's an ASCII character.
-		s_title += static_cast<char>(romHeader.snes.rom_mapping);
+		s_title += static_cast<char8_t>(romHeader.snes.rom_mapping);
 	}
 	return s_title;
 }
@@ -625,9 +626,9 @@ string SNESPrivate::getPublisher(void) const
  * @param doFake If true, return a fake ID using the ROM's title.
  * @return Game ID if available; empty string if not.
  */
-string SNESPrivate::getGameID(bool doFake) const
+u8string SNESPrivate::getGameID(bool doFake) const
 {
-	string gameID;
+	u8string gameID;
 
 	// Game ID is only available for SNES, not BS-X.
 	// TODO: Are we sure this is the case?
@@ -722,13 +723,14 @@ string SNESPrivate::getGameID(bool doFake) const
 	// Do we have an ID2 or ID4?
 	if (id4[0] != '\0') {
 		// ID2/ID4 is present. Use it.
+		// FIXME: U8STRFIX
 		gameID.reserve(13);
-		gameID = prefix;
-		gameID += id4;
-		gameID += suffix;
+		gameID = reinterpret_cast<const char8_t*>(prefix);
+		gameID += reinterpret_cast<const char8_t*>(id4);
+		gameID += reinterpret_cast<const char8_t*>(suffix);
 	} else {
 		// ID2/ID4 is not present. Use the ROM title.
-		string s_title = getRomTitle();
+		u8string s_title = getRomTitle();
 		if (s_title.empty()) {
 			// No title...
 			return gameID;
@@ -750,9 +752,9 @@ string SNESPrivate::getGameID(bool doFake) const
 		}
 
 		gameID.reserve(5 + s_title.size() + 4);
-		gameID = prefix;
+		gameID = reinterpret_cast<const char8_t*>(prefix);
 		gameID += s_title;
-		gameID += suffix;
+		gameID += reinterpret_cast<const char8_t*>(suffix);
 	}
 
 	return gameID;
@@ -1289,7 +1291,7 @@ int SNES::loadFieldData(void)
 
 	// Game ID
 	const char *const game_id_title = C_("RomData", "Game ID");
-	string gameID = d->getGameID();
+	const u8string gameID = d->getGameID();
 	if (!gameID.empty()) {
 		d->fields->addField_string(game_id_title, gameID);
 	} else if (d->romType == SNESPrivate::RomType::SNES) {
@@ -1517,7 +1519,7 @@ int SNES::loadMetaData(void)
 	//const SNES_RomHeader *const romHeader = &d->romHeader;
 
 	// Title
-	string s_title = d->getRomTitle();
+	const u8string s_title = d->getRomTitle();
 	if (!s_title.empty()) {
 		d->metaData->addMetaData_string(Property::Title, s_title);
 	}
@@ -1580,7 +1582,7 @@ int SNES::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	}
 
 	// Get the game ID.
-	string gameID = d->getGameID(true);
+	const u8string gameID = d->getGameID(true);
 	if (gameID.empty()) {
 		// No game ID. Image is not available.
 		return -ENOENT;
@@ -1613,10 +1615,11 @@ int SNES::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	}
 
 	// Add the URLs.
+	// FIXME: U8STRFIX
 	pExtURLs->resize(1);
 	auto extURL_iter = pExtURLs->begin();
-	extURL_iter->url = d->getURL_RPDB("snes", imageTypeName, region_code, gameID.c_str(), ext);
-	extURL_iter->cache_key = d->getCacheKey_RPDB("snes", imageTypeName, region_code, gameID.c_str(), ext);
+	extURL_iter->url = d->getURL_RPDB("snes", imageTypeName, region_code, reinterpret_cast<const char*>(gameID.c_str()), ext);
+	extURL_iter->cache_key = d->getCacheKey_RPDB("snes", imageTypeName, region_code, reinterpret_cast<const char*>(gameID.c_str()) , ext);
 	extURL_iter->width = sizeDefs[0].width;
 	extURL_iter->height = sizeDefs[0].height;
 	extURL_iter->high_res = (sizeDefs[0].index >= 2);

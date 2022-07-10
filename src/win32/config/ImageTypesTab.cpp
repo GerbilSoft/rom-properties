@@ -437,8 +437,9 @@ int ImageTypesTabPrivate::saveStart(void)
 	}
 
 	// Store the configuration filename.
+	// FIXME: U8STRFIX
 	assert(tmp_conf_filename.empty());
-	tmp_conf_filename = U82T_s(filename);
+	tmp_conf_filename = U82T_c(reinterpret_cast<const char8_t*>(filename));
 	return 0;
 }
 

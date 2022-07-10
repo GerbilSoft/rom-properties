@@ -21,8 +21,9 @@ using namespace LibRpFile;
 #include "Audio/GBS.hpp"
 #include "Audio/gbs_structs.h"
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::u8string;
 using std::vector;
 
 namespace LibRomData {
@@ -169,16 +170,16 @@ class DMGPrivate final : public RomDataPrivate
 		 * later games take bytes away from the title field to use
 		 * for the CGB flag and the game ID.
 		 *
-		 * @param s_title	[out] Title.
-		 * @param s_gameID	[out] Game ID, or empty string if not available.
+		 * @param s_title	[out] Title
+		 * @param s_gameID	[out] Game ID, or empty string if not available
 		 */
-		void getTitleAndGameID(string &s_title, string &s_gameID) const;
+		void getTitleAndGameID(u8string &s_title, string &s_gameID) const;
 
 		/**
 		 * Get the publisher.
 		 * @return Publisher, or "Unknown (xxx)" if unknown.
 		 */
-		string getPublisher(void) const;
+		u8string getPublisher(void) const;
 };
 
 ROMDATA_IMPL(DMG)
@@ -385,10 +386,10 @@ const uint8_t DMGPrivate::dmg_nintendo[0x18] = {
  * later games take bytes away from the title field to use
  * for the CGB flag and the game ID.
  *
- * @param s_title	[out] Title.
- * @param s_gameID	[out] Game ID, or empty string if not available.
+ * @param s_title	[out] Title
+ * @param s_gameID	[out] Game ID, or empty string if not available
  */
-void DMGPrivate::getTitleAndGameID(string &s_title, string &s_gameID) const
+void DMGPrivate::getTitleAndGameID(u8string &s_title, string &s_gameID) const
 {
 	/**
 	 * NOTE: there are two approaches for doing this, when the 15 bytes are all used
@@ -516,7 +517,7 @@ trimTitle:
  * Get the publisher.
  * @return Publisher, or "Unknown (xxx)" if unknown.
  */
-string DMGPrivate::getPublisher(void) const
+u8string DMGPrivate::getPublisher(void) const
 {
 	const char* publisher;
 	string s_publisher;
@@ -548,7 +549,8 @@ string DMGPrivate::getPublisher(void) const
 		}
 	}
 
-	return s_publisher;
+	// FIXME: U8STRFIX
+	return u8string(reinterpret_cast<const char8_t*>(s_publisher.c_str()));
 }
 
 /** DMG **/
@@ -859,7 +861,8 @@ int DMG::loadFieldData(void)
 	// NOTE: These have to be handled at the same time because
 	// later games take bytes away from the title field to use
 	// for the CGB flag and the game ID.
-	string s_title, s_gameID;
+	u8string s_title;
+	string s_gameID;
 	d->getTitleAndGameID(s_title, s_gameID);
 	d->fields->addField_string(C_("RomData", "Title"), s_title);
 	d->fields->addField_string(C_("RomData", "Game ID"),
@@ -1218,7 +1221,8 @@ int DMG::loadMetaData(void)
 	// NOTE: We don't actually need the game ID right now,
 	// but the function retrieves both at the same time.
 	// TODO: Remove STRF_TRIM_END, since we're doing that ourselves?
-	string s_title, s_gameID;
+	u8string s_title;
+	string s_gameID;
 	d->getTitleAndGameID(s_title, s_gameID);
 	if (!s_title.empty()) {
 		d->metaData->addMetaData_string(Property::Title,
@@ -1259,7 +1263,8 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	}
 
 	// Check if we have a valid game ID or ROM title.
-	string s_title, s_gameID;
+	u8string s_title;
+	string s_gameID;
 	d->getTitleAndGameID(s_title, s_gameID);
 	if (s_gameID.empty() && s_title.empty()) {
 		// Empty IDs. Can't check this ROM image.
@@ -1506,7 +1511,9 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 
 		for (; p->title[0] != '\0'; p++) {
 			// Check the title.
-			if (s_title == p->title) {
+			// NOTE: Title is stored as char[], but is all ASCII,
+			// so it's directly convertible to char8_t[].
+			if (s_title == reinterpret_cast<const char8_t*>(p->title)) {
 				// Title matches.
 				if (p->publisher[0] == '\0' || !strcmp(pbcode, p->publisher)) {
 					// Publisher matches (or isn't being checked).

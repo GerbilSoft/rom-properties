@@ -356,11 +356,11 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const ch
 		return RPCT_OUTPUT_FILE_FAILED;
 	}
 
-	// Software.
-	static const char sw[] = "ROM Properties Page shell extension (" RP_KDE_UPPER ")";
+	// Software
+	static const char8_t sw[] = U8("ROM Properties Page shell extension (") U8(RP_KDE_UPPER) U8(")");
 	kv.emplace_back("Software", sw);
 
-	// Local filename.
+	// Local filename
 	QString qs_source_filename;
 	if (localUrl.scheme().isEmpty() || localUrl.isLocalFile()) {
 		qs_source_filename = localUrl.toLocalFile();
@@ -373,43 +373,52 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const ch
 		// Modification time.
 		int64_t mtime = fi_src.lastModified().toMSecsSinceEpoch() / 1000;
 		if (mtime > 0) {
-			kv.emplace_back("Thumb::MTime", rp_sprintf("%" PRId64, mtime));
+			// FIXME: U8STRFIX for rp_sprintf()
+			char buf[32];
+			snprintf(buf, sizeof(buf), "%" PRId64, mtime);
+			kv.emplace_back("Thumb::MTime", reinterpret_cast<const char8_t*>(buf));
 		}
 
 		// File size.
 		off64_t szFile = fi_src.size();
 		if (szFile > 0) {
-			kv.emplace_back("Thumb::Size", rp_sprintf("%" PRId64, szFile));
+			// FIXME: U8STRFIX for rp_sprintf()
+			char buf[32];
+			snprintf(buf, sizeof(buf), "%" PRId64, szFile);
+			kv.emplace_back("Thumb::Size", reinterpret_cast<const char8_t*>(buf));
 		}
 	}
 
-	// MIME type.
+	// MIME type
+	// FIXME: U8STRFIX
 	const char *const mimeType = romData->mimeType();
 	if (mimeType) {
-		kv.emplace_back("Thumb::Mimetype", mimeType);
+		kv.emplace_back("Thumb::Mimetype", reinterpret_cast<const char8_t*>(mimeType));
 	}
 
-	// Original image dimensions.
+	// Original image dimensions
 	if (outParams.fullSize.width > 0 && outParams.fullSize.height > 0) {
+		// FIXME: U8STRFIX
 		char imgdim_str[16];
 		snprintf(imgdim_str, sizeof(imgdim_str), "%d", outParams.fullSize.width);
-		kv.emplace_back("Thumb::Image::Width", imgdim_str);
+		kv.emplace_back("Thumb::Image::Width", reinterpret_cast<const char8_t*>(imgdim_str));
 		snprintf(imgdim_str, sizeof(imgdim_str), "%d", outParams.fullSize.height);
-		kv.emplace_back("Thumb::Image::Height", imgdim_str);
+		kv.emplace_back("Thumb::Image::Height", reinterpret_cast<const char8_t*>(imgdim_str));
 	}
 
-	// URI.
+	// URI
 	// NOTE: KDE desktops don't urlencode spaces or non-ASCII characters.
 	// GTK+ desktops *do* urlencode spaces and non-ASCII characters.
 	// FIXME: Do we want to store the local URI or the original URI?
-	kv.emplace_back("Thumb::URI", localUrl.toEncoded().constData());
+	// FIXME: U8STRFIX
+	kv.emplace_back("Thumb::URI", reinterpret_cast<const char8_t*>(localUrl.toEncoded().constData()));
 
 	// Write the tEXt chunks.
 	pngWriter->write_tEXt(kv);
 
 	/** IHDR **/
 
-	// CI8 palette.
+	// CI8 palette
 	// This will be an empty vector if the image isn't CI8.
 	// RpPngWriter will ignore the palette arguments in that case.
 	QVector<QRgb> colorTable = outParams.retImg.colorTable();
@@ -428,7 +437,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const ch
 
 	/** IDAT chunk. **/
 
-	// Initialize the row pointers.
+	// Initialize the row pointers
 	unique_ptr<const uint8_t*[]> row_pointers(new const uint8_t*[height]);
 	const uint8_t *bits = outParams.retImg.bits();
 	const int bytesPerLine = outParams.retImg.bytesPerLine();
@@ -436,7 +445,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const ch
 		row_pointers[y] = bits;
 	}
 
-	// Write the IDAT section.
+	// Write the IDAT section
 	pwRet = pngWriter->write_IDAT(row_pointers.get());
 	if (pwRet != 0) {
 		// Error writing IDAT.

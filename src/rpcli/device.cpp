@@ -29,6 +29,8 @@ using LibRpFile::RpFile;
 // C++ includes.
 #include <iomanip>
 #include <iostream>
+#include <string>
+using std::string;
 
 class StreamStateSaver {
 	std::ios &stream;	// Stream being adjusted.
@@ -146,10 +148,11 @@ std::ostream& operator<<(std::ostream& os, const ScsiInquiry& si)
 	// TODO: Verify AdditionalLength field?
 	// TODO: Flags.
 	// TODO: Trim spaces.
-	os << "Vendor ID:              " << latin1_to_utf8(resp.vendor_id, sizeof(resp.vendor_id)) << '\n';
-	os << "Product ID:             " << latin1_to_utf8(resp.product_id, sizeof(resp.product_id)) << '\n';
-	os << "Firmware version:       " << latin1_to_utf8(resp.product_revision_level, sizeof(resp.product_revision_level)) << '\n';
-	os << "Vendor notes:           " << latin1_to_utf8(resp.VendorSpecific, sizeof(resp.VendorSpecific)) << '\n';
+	// NOTE: Assuming strings are ASCII, so not doing UTF-8 conversion here.
+	os << "Vendor ID:              " << string(resp.vendor_id, sizeof(resp.vendor_id)) << '\n';
+	os << "Product ID:             " << string(resp.product_id, sizeof(resp.product_id)) << '\n';
+	os << "Firmware version:       " << string(resp.product_revision_level, sizeof(resp.product_revision_level)) << '\n';
+	os << "Vendor notes:           " << string(resp.VendorSpecific, sizeof(resp.VendorSpecific)) << '\n';
 
 	// TODO: Check supported media types for CD/DVD/BD-ROM drives?
 	// That's a bit more than an INQUIRY command...
@@ -185,12 +188,13 @@ std::ostream& operator<<(std::ostream& os, const AtaIdentifyDevice& si)
 	// TODO: Decode numeric values.
 	// TODO: Trim spaces?
 	// TODO: i18n?
+	// NOTE: Assuming strings are ASCII, so not doing UTF-8 conversion here.
 	StreamStateSaver state(os);
 	os << "-- ATA IDENTIFY " << (si.packet ? "PACKET " : "") << "DEVICE data for: " << si.file->filename() << '\n';
-	os << "Model number:          " << latin1_to_utf8(resp.model_number, sizeof(resp.model_number)) << '\n';
-	os << "Firmware version:      " << latin1_to_utf8(resp.firmware_revision, sizeof(resp.firmware_revision)) << '\n';
-	os << "Serial number:         " << latin1_to_utf8(resp.serial_number, sizeof(resp.serial_number)) << '\n';
-	os << "Media serial number:   " << latin1_to_utf8(resp.media_serial_number, sizeof(resp.media_serial_number)) << '\n';
+	os << "Model number:          " << string(resp.model_number, sizeof(resp.model_number)) << '\n';
+	os << "Firmware version:      " << string(resp.firmware_revision, sizeof(resp.firmware_revision)) << '\n';
+	os << "Serial number:         " << string(resp.serial_number, sizeof(resp.serial_number)) << '\n';
+	os << "Media serial number:   " << string(resp.media_serial_number, sizeof(resp.media_serial_number)) << '\n';
 	// TODO: Byte count.
 	os << "Sector count (28-bit): " << resp.total_sectors << '\n';
 	os << "Sector count (48-bit): " << resp.total_sectors_48 << '\n';

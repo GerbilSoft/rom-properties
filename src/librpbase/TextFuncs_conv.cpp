@@ -14,8 +14,8 @@
 // Code page tables
 #include "RP_CP_tbls.hpp"
 
-// C++ STL classes.
-using std::string;
+// C++ STL classes
+using std::u8string;
 
 namespace LibRpBase {
 
@@ -28,9 +28,9 @@ namespace LibRpBase {
  * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
-static string str8_to_utf8(const char16_t tbl[256], const char *str, int len)
+static u8string str8_to_utf8(const char16_t tbl[256], const char *str, int len)
 {
-	string s_utf8;
+	u8string s_utf8;
 
 	// NOTE: We can't use check_NULL_terminator here because
 	// 0x00 may be a valid character in some cases.
@@ -55,7 +55,7 @@ static string str8_to_utf8(const char16_t tbl[256], const char *str, int len)
 
 	if (len <= 0) {
 		// Nothing to do...
-		return string();
+		return s_utf8;
 	}
 
 	s_utf8.reserve(len + 8);
@@ -66,14 +66,14 @@ static string str8_to_utf8(const char16_t tbl[256], const char *str, int len)
 		char16_t ch16 = tbl[(uint8_t)*str];
 		// NOTE: Masks for the first byte might not be needed...
 		if (ch16 < 0x0080) {
-			s_utf8 += (char)(ch16 & 0x7F);
+			s_utf8 += (char8_t)(ch16 & 0x7F);
 		} else if (ch16 < 0x0800) {
-			s_utf8 += (char)(0xC0 | ((ch16 >>  6) & 0x1F));
-			s_utf8 += (char)(0x80 | ((ch16 >>  0) & 0x3F));
+			s_utf8 += (char8_t)(0xC0 | ((ch16 >>  6) & 0x1F));
+			s_utf8 += (char8_t)(0x80 | ((ch16 >>  0) & 0x3F));
 		} else /*if (ch16 < 0x10000)*/ {
-			s_utf8 += (char)(0xE0 | ((ch16 >> 12) & 0x0F));
-			s_utf8 += (char)(0x80 | ((ch16 >>  6) & 0x3F));
-			s_utf8 += (char)(0x80 | ((ch16 >>  0) & 0x3F));
+			s_utf8 += (char8_t)(0xE0 | ((ch16 >> 12) & 0x0F));
+			s_utf8 += (char8_t)(0x80 | ((ch16 >>  6) & 0x3F));
+			s_utf8 += (char8_t)(0x80 | ((ch16 >>  0) & 0x3F));
 		}
 	}
 
@@ -89,16 +89,16 @@ static string str8_to_utf8(const char16_t tbl[256], const char *str, int len)
  * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
-std::string cpRP_to_utf8(unsigned int cp, const char *str, int len)
+std::u8string cpRP_to_utf8(unsigned int cp, const char *str, int len)
 {
 	assert(cp & CP_RP_BASE);
 	if (!(cp & CP_RP_BASE))
-		return string();
+		return u8string();
 
 	cp &= ~CP_RP_BASE;
 	assert(cp < ARRAY_SIZE(CodePageTables::lkup_tbls));
 	if (cp >= ARRAY_SIZE(CodePageTables::lkup_tbls))
-		return string();
+		return u8string();
 
 	return str8_to_utf8(CodePageTables::lkup_tbls[cp], str, len);
 }

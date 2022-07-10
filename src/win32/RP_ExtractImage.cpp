@@ -105,14 +105,16 @@ IFACEMETHODIMP RP_ExtractImage::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
 	d->filename = W2U8(pszFileName);
 
 	// Check for "bad" file systems.
+	// FIXME: U8STRFIX
 	const Config *const config = Config::instance();
-	if (FileSystem::isOnBadFS(d->filename.c_str(), config->enableThumbnailOnNetworkFS())) {
+	if (FileSystem::isOnBadFS(reinterpret_cast<const char*>(d->filename.c_str()), config->enableThumbnailOnNetworkFS())) {
 		// This file is on a "bad" file system.
 		return E_FAIL;
 	}
 
 	// Attempt to open the ROM file.
-	RpFile *const file = new RpFile(d->filename, RpFile::FM_OPEN_READ_GZ);
+	// FIXME: U8STRFIX
+	RpFile *const file = new RpFile(reinterpret_cast<const char*>(d->filename.c_str()), RpFile::FM_OPEN_READ_GZ);
 	if (!file->isOpen()) {
 		// Unable to open the file.
 		file->unref();

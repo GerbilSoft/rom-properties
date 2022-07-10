@@ -248,8 +248,10 @@ int RP_ShellPropSheetExt_Private::updateField(int fieldIdx)
 				break;
 			}
 
+			// FIXME: U8STRFIX
 			if (field->data.str && !field->data.str->empty()) {
-				const tstring ts_text = LibWin32UI::unix2dos(U82T_s(*field->data.str));
+				const tstring ts_text = LibWin32UI::unix2dos(U82T_c(
+					reinterpret_cast<const char8_t*>((*field->data.str).c_str())));
 				SetWindowText(hLabel, ts_text.c_str());
 			} else {
 				SetWindowText(hLabel, _T(""));
@@ -497,7 +499,8 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			U82T_c(op->sfi.title), filter.c_str(), U82T_s(initialFile));
 		if (t_save_filename.empty())
 			return;
-		s_save_filename = T2U8(t_save_filename);
+		// FIXME: U8STRFIX
+		s_save_filename = reinterpret_cast<const char*>(T2U8(t_save_filename).c_str());
 		params.save_filename = s_save_filename.c_str();
 	}
 

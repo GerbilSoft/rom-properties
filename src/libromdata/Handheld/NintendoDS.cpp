@@ -23,9 +23,10 @@ using LibRpFile::IRpFile;
 using LibRpFile::RpFile;
 using namespace LibRpTexture;
 
-// C++ STL classes.
+// C++ STL classes
 using std::array;
 using std::string;
+using std::u8string;
 using std::vector;
 
 namespace LibRomData {
@@ -991,15 +992,18 @@ int NintendoDS::loadFieldData(void)
 				}
 			}
 
+			// FIXME: Change StringMultiMap to u8string.
+#define U8STRFIX(x) string((const char*)(x).c_str())
+
 			const uint32_t lc = NintendoLanguage::getNDSLanguageCode(langID, maxID);
 			assert(lc != 0);
 			if (lc == 0)
 				continue;
 
 			if (d->nds_icon_title.title[langID][0] != cpu_to_le16('\0')) {
-				pMap_full_title->emplace(lc, utf16le_to_utf8(
+				pMap_full_title->emplace(lc, U8STRFIX(utf16le_to_utf8(
 					d->nds_icon_title.title[langID],
-					ARRAY_SIZE(d->nds_icon_title.title[langID])));
+					ARRAY_SIZE(d->nds_icon_title.title[langID]))));
 			}
 		}
 
@@ -1322,7 +1326,7 @@ int NintendoDS::loadMetaData(void)
 	const NDS_RomHeader *const romHeader = &d->romHeader;
 
 	// Title.
-	string s_title;
+	u8string s_title;
 	if (!d->nds_icon_title_loaded) {
 		// Attempt to load the icon/title data.
 		const_cast<NintendoDSPrivate*>(d)->loadIconTitleData();

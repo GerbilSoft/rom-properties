@@ -198,7 +198,7 @@ class RP_LIBROMDATA_PUBLIC RpPngWriter
 		// Key/value pair.
 		// - Key: Must be Latin-1.
 		// - Value: May be UTF-8.
-		typedef std::vector<std::pair<const char*, std::string> > kv_vector;
+		typedef std::vector<std::pair<const char*, std::u8string> > kv_vector;
 
 		/**
 		 * Write an array of text chunks.

@@ -803,10 +803,10 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 
 /**
  * Add string field data.
- * @param name Field name.
- * @param str String.
- * @param flags Formatting flags.
- * @return Field index.
+ * @param name Field name
+ * @param str String
+ * @param flags Formatting flags
+ * @return Field index
  */
 int RomFields::addField_string(const char *name, const char *str, unsigned int flags)
 {
@@ -837,10 +837,10 @@ int RomFields::addField_string(const char *name, const char *str, unsigned int f
 
 /**
  * Add string field data.
- * @param name Field name.
- * @param str String.
- * @param flags Formatting flags.
- * @return Field index.
+ * @param name Field name
+ * @param str String
+ * @param flags Formatting flags
+ * @return Field index
  */
 int RomFields::addField_string(const char *name, const string &str, unsigned int flags)
 {
@@ -917,7 +917,7 @@ int RomFields::addField_string_hexdump(const char *name, const uint8_t *buf, siz
 		return -1;
 
 	if (size == 0) {
-		return addField_string(name, nullptr);
+		return addField_string(name, (const char*)nullptr);
 	}
 
 	// Reserve 3 characters per byte.

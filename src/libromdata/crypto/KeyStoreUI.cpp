@@ -24,8 +24,9 @@ using namespace LibRpFile;
 #include "../Console/Xbox360_XEX.hpp"
 using namespace LibRomData;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::u8string;
 using std::u16string;
 using std::unique_ptr;
 using std::vector;
@@ -109,10 +110,11 @@ class KeyStoreUIPrivate
 	public:
 		/**
 		 * Convert a string that may contain kanji to hexadecimal.
-		 * @param str String [NULL-terminated]
+		 * @param str UTF-8 string [NULL-terminated]
+		 * @return Converted string [ASCII], or empty string on error.
 		 * @return Converted string, or empty string on error.
 		 */
-		static string convertKanjiToHex(const char *str);
+		static string convertKanjiToHex(const char8_t *str);
 
 	public:
 		/**
@@ -288,7 +290,7 @@ KeyStoreUIPrivate::KeyStoreUIPrivate(KeyStoreUI *q)
 		keys.resize(totalKeyCount);
 		auto keyIter = keys.begin() + prevKeyCount;
 		for (int i = 0; i < keyCount; i++, ++keyIter) {
-			// Key name.
+			// Key name (ASCII)
 			const char *const keyName = encSys->pfnKeyName(i);
 			assert(keyName != nullptr);
 			if (!keyName) {
@@ -298,7 +300,7 @@ KeyStoreUIPrivate::KeyStoreUIPrivate(KeyStoreUI *q)
 			}
 
 			auto &key = *keyIter;
-			key.name = latin1_to_utf8(keyName, -1);
+			key.name = keyName;
 
 			// Key is empty initially.
 			key.status = KeyStoreUI::Key::Status::Empty;
@@ -632,15 +634,15 @@ int KeyStoreUIPrivate::getAesKeyDB_key(u128_t *pKey) const
 
 /**
  * Convert a string that may contain kanji to hexadecimal.
- * @param str String [NULL-terminated]
- * @return Converted string, or empty string on error.
+ * @param str UTF-8 string [NULL-terminated]
+ * @return Converted string [ASCII], or empty string on error.
  */
-string KeyStoreUIPrivate::convertKanjiToHex(const char *str)
+string KeyStoreUIPrivate::convertKanjiToHex(const char8_t *str)
 {
 	// Check for non-ASCII characters.
 	// TODO: Also check for non-hex digits?
 	bool hasNonAscii = false;
-	for (const char *p = str; *p != '\0'; p++) {
+	for (const char8_t *p = str; *p != '\0'; p++) {
 		// The following check works for both UTF-8 and UTF-16.
 		// If the character value is >= 128, it's non-ASCII.
 		if (static_cast<unsigned int>(*p) >= 128) {
@@ -652,7 +654,7 @@ string KeyStoreUIPrivate::convertKanjiToHex(const char *str)
 
 	if (!hasNonAscii) {
 		// No non-ASCII characters.
-		return str;
+		return string(reinterpret_cast<const char*>(str));
 	}
 
 	// We're expecting 7 kanji symbols,
@@ -991,7 +993,8 @@ int KeyStoreUI::setKey(int sectIdx, int keyIdx, const char *value)
 		// non-ASCII and cannot be converted properly, so valid hex
 		// strings will always return the original string.
 		if (value && value[0] != '\0') {
-			string convKey = d->convertKanjiToHex(value);
+			// FIXME: U8STRFIX - change value to char8_t.
+			string convKey = d->convertKanjiToHex(reinterpret_cast<const char8_t*>(value));
 			if (convKey.empty()) {
 				// Invalid kanji key.
 				return -EINVAL;

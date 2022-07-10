@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextFuncs_NULL.hpp: Text encoding functions. (NULL terminator checks)   *
  *                                                                         *
- * Copyright (c) 2009-2019 by David Korth.                                 *
+ * Copyright (c) 2009-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,12 +21,14 @@
 namespace LibRpBase {
 
 // Overloaded NULL terminator checks for ICONV_FUNCTION_*.
-static FORCEINLINE int check_NULL_terminator(const char *str, int len)
+template<typename T>
+static FORCEINLINE int check_NULL_terminator(const T *str, int len)
 {
+	static_assert(sizeof(T) == sizeof(char), "check_NULL_terminator<T> overload is for 8-bit types only!");
 	if (len < 0) {
-		return static_cast<int>(strlen(str));
+		return static_cast<int>(strlen(reinterpret_cast<const char*>(str)));
 	} else {
-		return static_cast<int>(strnlen(str, len));
+		return static_cast<int>(strnlen(reinterpret_cast<const char*>(str), len));
 	}
 }
 

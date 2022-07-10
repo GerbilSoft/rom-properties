@@ -14,8 +14,9 @@
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::u8string;
 using std::vector;
 
 namespace LibRomData {
@@ -208,7 +209,7 @@ int PokemonMini::loadFieldData(void)
 	d->fields->reserve(3);	// Maximum of 3 fields.
 
 	// Title.
-	string title;
+	u8string title;
 	if (romHeader->game_id[3] == 'J') {
 		// Japanese title. Assume it's Shift-JIS.
 		// TODO: Also Korea?
@@ -363,7 +364,7 @@ int PokemonMini::loadMetaData(void)
 	const PokemonMini_RomHeader *const romHeader = &d->romHeader;
 
 	// Title.
-	string title;
+	u8string title;
 	if (romHeader->game_id[3] == 'J') {
 		// Japanese title. Assume it's Shift-JIS.
 		// TODO: Also Korea?

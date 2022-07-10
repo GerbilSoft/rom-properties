@@ -26,6 +26,7 @@ using namespace LibRpBase;
 // C++ STL classes.
 using std::string;
 using std::wstring;
+using std::u8string;
 using std::u16string;
 
 // Maximum number of tabs.
@@ -61,10 +62,10 @@ using std::u16string;
 #endif
 
 // Useful RTF strings.
-#define RTF_START "{\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033\n"
-#define RTF_BR "\\par\n"
-#define RTF_TAB "\\tab "
-#define RTF_BULLET "\\bullet "
+#define RTF_START U8("{\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033\n")
+#define RTF_BR U8("\\par\n")
+#define RTF_TAB U8("\\tab ")
+#define RTF_BULLET U8("\\bullet ")
 
 class AboutTabPrivate
 {
@@ -117,17 +118,19 @@ class AboutTabPrivate
 	protected:
 		// Current RichText streaming context.
 		struct RTF_CTX {
-			const string *str;
+			const u8string *str;
 			size_t pos;
+
+			RTF_CTX() : str(nullptr), pos(0) { }
 		};
 		RTF_CTX rtfCtx;
 
 		/**
-		 * RTF EditStream callback.
-		 * @param dwCookie	[in] Pointer to RTF_CTX.
-		 * @param lpBuff	[out] Output buffer.
-		 * @param cb		[in] Number of bytes to write.
-		 * @param pcb		[out] Number of bytes actually written.
+		 * RTF EditStream callback
+		 * @param dwCookie	[in] Pointer to RTF_CTX
+		 * @param lpBuff	[out] Output buffer
+		 * @param cb		[in] Number of bytes to write
+		 * @param pcb		[out] Number of bytes actually written
 		 * @return 0 on success; non-zero on error.
 		 */
 		static DWORD CALLBACK EditStreamCallback(_In_ DWORD_PTR dwCookie,
@@ -138,7 +141,7 @@ class AboutTabPrivate
 		 * @param str UTF-8 string.
 		 * @return RTF-escaped text.
 		 */
-		static string rtfEscape(const char *str);
+		static u8string rtfEscape(const char8_t *str);
 
 		/**
 		 * Create an RTF "friendly link" if supported.
@@ -147,13 +150,13 @@ class AboutTabPrivate
 		 * @param title	[in] Link title.
 		 * @return RTF "friendly link", or title only.
 		 */
-		string rtfFriendlyLink(const char *link, const char *title);
+		u8string rtfFriendlyLink(const char8_t *link, const char8_t *title);
 
 	protected:
 		// Tab text. (RichText format)
-		string sCredits;
-		string sLibraries;
-		string sSupport;
+		u8string sCredits;
+		u8string sLibraries;
+		u8string sSupport;
 
 		// RichEdit control.
 		HWND hRichEdit;
@@ -200,8 +203,6 @@ AboutTabPrivate::AboutTabPrivate()
 	, bUseFriendlyLinks(false)
 	, hRichEdit(nullptr)
 {
-	memset(&rtfCtx, 0, sizeof(rtfCtx));
-
 	// Load the RichEdit DLLs.
 	// TODO: What if this fails?
 	hRichEd20_dll = LoadLibrary(_T("RICHED20.DLL"));
@@ -381,11 +382,11 @@ void AboutTabPrivate::initBoldFont(HFONT hFont)
 }
 
 /**
- * RTF EditStream callback.
- * @param dwCookie	[in] Pointer to RTF_CTX.
- * @param lpBuff	[out] Output buffer.
- * @param cb		[in] Number of bytes to write.
- * @param pcb		[out] Number of bytes actually written.
+ * RTF EditStream callback
+ * @param dwCookie	[in] Pointer to RTF_CTX
+ * @param lpBuff	[out] Output buffer
+ * @param cb		[in] Number of bytes to write
+ * @param pcb		[out] Number of bytes actually written
  * @return 0 on success; non-zero on error.
  */
 DWORD CALLBACK AboutTabPrivate::EditStreamCallback(
@@ -426,45 +427,45 @@ DWORD CALLBACK AboutTabPrivate::EditStreamCallback(
  * @param str UTF-8 string.
  * @return RTF-escaped text.
  */
-string AboutTabPrivate::rtfEscape(const char *str)
+u8string AboutTabPrivate::rtfEscape(const char8_t *str)
 {
+	u8string s_ret;
+
 	assert(str != nullptr);
 	if (unlikely(!str)) {
-		return string();
+		return s_ret;
 	}
 
 	// Convert the string to UTF-16 first.
 	const u16string u16str = utf8_to_utf16(str, -1);
 	const char16_t *wcs = u16str.c_str();
 
-	// RTF return string.
-	string ret;
-
 	// Reference: http://www.zopatista.com/python/2012/06/06/rtf-and-unicode/
 	char buf[12];	// Conversion buffer.
 	for (; *wcs != 0; wcs++) {
 		if (*wcs <= 0x00FF) {
 			// cp1252 is a superset of ISO-8859-1.
-			ret += (char)*wcs;
+			s_ret += (char8_t)*wcs;
 		} else {
 			// Convert to a signed 16-bit integer.
 			// Surrogate pairs are encoded as two separate characters.
+			// NOTE: snprintf() doesn't support char8_t.
 			snprintf(buf, sizeof(buf), "\\u%d?", (int16_t)*wcs);
-			ret += buf;
+			s_ret += reinterpret_cast<const char8_t*>(buf);
 		}
 	}
 
-	return ret;
+	return s_ret;
 }
 
 /**
  * Create an RTF "friendly link" if supported.
  * If not supported, returns the escaped link title.
- * @param link	[in] Link address.
- * @param title	[in] Link title.
+ * @param link	[in] Link address
+ * @param title	[in] Link title
  * @return RTF "friendly link", or title only.
  */
-string AboutTabPrivate::rtfFriendlyLink(const char *link, const char *title)
+u8string AboutTabPrivate::rtfFriendlyLink(const char8_t *link, const char8_t *title)
 {
 	assert(link != nullptr);
 	assert(title != nullptr);
@@ -472,8 +473,15 @@ string AboutTabPrivate::rtfFriendlyLink(const char *link, const char *title)
 	if (bUseFriendlyLinks) {
 		// Friendly links are available.
 		// Reference: https://docs.microsoft.com/en-us/archive/blogs/murrays/richedit-friendly-name-hyperlinks
-		return rp_sprintf("{\\field{\\*\\fldinst{HYPERLINK \"%s\"}}{\\fldrslt{%s}}}",
-			rtfEscape(link).c_str(), rtfEscape(title).c_str());
+		// FIXME: U8STRFIX for rp_sprintf().
+		/*return rp_sprintf("{\\field{\\*\\fldinst{HYPERLINK \"%s\"}}{\\fldrslt{%s}}}",
+			reinterpret_cast<const char*>(rtfEscape(link).c_str()),
+			reinterpret_cast<const char*>(rtfEscape(title).c_str()));*/
+		char buf[1024];
+		snprintf(buf, sizeof(buf), "{\\field{\\*\\fldinst{HYPERLINK \"%s\"}}{\\fldrslt{%s}}}",
+			reinterpret_cast<const char*>(rtfEscape(link).c_str()),
+			reinterpret_cast<const char*>(rtfEscape(title).c_str()));
+		return u8string(reinterpret_cast<const char8_t*>(buf));
 	} else {
 		// No friendly links.
 		return rtfEscape(title);
@@ -611,17 +619,20 @@ void AboutTabPrivate::initCreditsTab(void)
 	// FIXME: Figure out how to get links to work without
 	// resorting to manually adding CFE_LINK data...
 	// NOTE: Copyright is NOT localized.
-	sCredits += AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::Copyright);
+	// FIXME: U8STRFIX
+	sCredits += reinterpret_cast<const char8_t*>(
+		AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::Copyright));
 	sCredits += RTF_BR RTF_BR;
-	sCredits += rp_sprintf(
+	sCredits += reinterpret_cast<const char8_t*>(rp_sprintf(
 		// tr: %s is the name of the license.
-		rtfEscape(C_("AboutTab|Credits", "This program is licensed under the %s or later.")).c_str(),
-			rtfFriendlyLink(
-				"https://www.gnu.org/licenses/gpl-2.0.html",
-				C_("AboutTabl|Credits", "GNU GPL v2")).c_str());
+		reinterpret_cast<const char*>(rtfEscape(
+			(const char8_t*)C_("AboutTab|Credits", "This program is licensed under the %s or later.")).c_str()),
+		reinterpret_cast<const char*>(rtfFriendlyLink(
+			U8("https://www.gnu.org/licenses/gpl-2.0.html"),
+			(const char8_t*)C_("AboutTabl|Credits", "GNU GPL v2")).c_str())).c_str());
 	if (!bUseFriendlyLinks) {
 		sCredits += RTF_BR;
-		sCredits += "https://www.gnu.org/licenses/gpl-2.0.html";
+		sCredits += U8("https://www.gnu.org/licenses/gpl-2.0.html");
 	}
 
 	AboutTabText::CreditType lastCreditType = AboutTabText::CreditType::Continue;
@@ -633,17 +644,18 @@ void AboutTabPrivate::initCreditsTab(void)
 		{
 			// New credit type.
 			sCredits += RTF_BR RTF_BR;
-			sCredits += "\\b ";
+			sCredits += U8("\\b ");
 
+			// FIXME: U8STRFIX
 			switch (creditsData->type) {
 				case AboutTabText::CreditType::Developer:
-					sCredits += rtfEscape(C_("AboutTab|Credits", "Developers:"));
+					sCredits += rtfEscape((const char8_t*)C_("AboutTab|Credits", "Developers:"));;
 					break;
 				case AboutTabText::CreditType::Contributor:
-					sCredits += rtfEscape(C_("AboutTab|Credits", "Contributors:"));
+					sCredits += rtfEscape((const char8_t*)C_("AboutTab|Credits", "Contributors:"));
 					break;
 				case AboutTabText::CreditType::Translator:
-					sCredits += rtfEscape(C_("AboutTab|Credits", "Translators:"));
+					sCredits += rtfEscape((const char8_t*)C_("AboutTab|Credits", "Translators:"));
 					break;
 
 				case AboutTabText::CreditType::Continue:
@@ -653,26 +665,30 @@ void AboutTabPrivate::initCreditsTab(void)
 					break;
 			}
 
-			sCredits += "\\b0 ";
+			sCredits += U8("\\b0 ");
 		}
 
 		// Append the contributor's name.
-		sCredits += RTF_BR RTF_TAB RTF_BULLET " ";
-		sCredits += rtfEscape(creditsData->name);
+		// FIXME: U8STRFIX
+		sCredits += RTF_BR RTF_TAB RTF_BULLET U8(" ");
+		sCredits += rtfEscape((const char8_t*)creditsData->name).c_str();
 		if (creditsData->url) {
 			// FIXME: Figure out how to get hyperlinks working.
-			sCredits += " <";
+			sCredits += U8(" <");
 			if (creditsData->linkText) {
-				sCredits += rtfFriendlyLink(creditsData->url, creditsData->linkText);
+				sCredits += rtfFriendlyLink((const char8_t*)creditsData->url, (const char8_t*)creditsData->linkText);
 			} else {
-				sCredits += rtfFriendlyLink(creditsData->url, creditsData->url);
+				sCredits += rtfFriendlyLink((const char8_t*)creditsData->url, (const char8_t*)creditsData->url);
 			}
-			sCredits += '>';
+			sCredits += U8(">");
 		}
 		if (creditsData->sub) {
 			// Sub-credit.
-			sCredits += rp_sprintf(rtfEscape(C_("AboutTab|Credits", " (%s)")).c_str(),
-				rtfEscape(creditsData->sub).c_str());
+			sCredits += reinterpret_cast<const char8_t*>(
+				rp_sprintf(reinterpret_cast<const char*>(
+					rtfEscape((const char8_t*)C_("AboutTab|Credits", " (%s)")).c_str()),
+					reinterpret_cast<const char*>(
+						rtfEscape((const char8_t*)creditsData->sub).c_str())).c_str());
 		}
 
 		lastCreditType = creditsData->type;
@@ -681,7 +697,7 @@ void AboutTabPrivate::initCreditsTab(void)
 	sCredits += '}';
 
 	// Add the "Credits" tab.
-	const tstring tsTabTitle = U82T_c(C_("AboutTab", "Credits"));
+	const tstring tsTabTitle = U82T_c((const char8_t*)C_("AboutTab", "Credits"));
 	TCITEM tcItem;
 	tcItem.mask = TCIF_TEXT;
 	tcItem.pszText = const_cast<LPTSTR>(tsTabTitle.c_str());
@@ -722,17 +738,22 @@ void AboutTabPrivate::initLibrariesTab(void)
 	/** zlib **/
 #ifdef HAVE_ZLIB
 #  ifdef ZLIBNG_VERSION
-	sLibraries += rp_sprintf(sCompiledWith, "zlib-ng " ZLIBNG_VERSION) + RTF_BR;
+	sLibraries += reinterpret_cast<const char8_t*>(
+		rp_sprintf(sCompiledWith, "zlib-ng " ZLIBNG_VERSION).c_str());
+	sLibraries += RTF_BR;
 #  else /* !ZLIBNG_VERSION */
-	sLibraries += rp_sprintf(sCompiledWith, "zlib " ZLIB_VERSION) + RTF_BR;
+	sLibraries += reinterpret_cast<const char8_t*>(
+		rp_sprintf(sCompiledWith, "zlib " ZLIB_VERSION).c_str());
+	sLibraries += RTF_BR;
 #  endif /* ZLIBNG_VERSION */
-	sLibraries += "Copyright (C) 1995-2022 Jean-loup Gailly and Mark Adler." RTF_BR
-		"https://zlib.net/" RTF_BR;
+	sLibraries += U8("Copyright (C) 1995-2022 Jean-loup Gailly and Mark Adler.") RTF_BR
+		U8("https://zlib.net/") RTF_BR;
 #  ifdef ZLIBNG_VERSION
 	// TODO: Also if zlibVersion() contains "zlib-ng"?
-	sLibraries += "https://github.com/zlib-ng/zlib-ng" RTF_BR;
+	sLibraries += U8("https://github.com/zlib-ng/zlib-ng") RTF_BR;
 #  endif /* ZLIBNG_VERSION */
-	sLibraries += rp_sprintf(sLicense, "zlib license");
+	sLibraries += reinterpret_cast<const char8_t*>(
+		rp_sprintf(sLicense, "zlib license").c_str());
 #endif /* HAVE_ZLIB */
 
 	/** libpng **/
@@ -740,14 +761,17 @@ void AboutTabPrivate::initLibrariesTab(void)
 	// FIXME: Check for APNG.
 #ifdef HAVE_PNG
 	sLibraries += RTF_BR RTF_BR;
-	sLibraries += rp_sprintf(sCompiledWith, "libpng " PNG_LIBPNG_VER_STRING) + RTF_BR
-		"libpng version 1.6.37 - April 14, 2019" RTF_BR
-		"Copyright (c) 2018-2019 Cosmin Truta" RTF_BR
-		"Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson" RTF_BR
-		"Copyright (c) 1996-1997 Andreas Dilger" RTF_BR
-		"Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc." RTF_BR
-		"http://www.libpng.org/pub/png/libpng.html" RTF_BR;
-	sLibraries += rp_sprintf(sLicense, "libpng license");
+	sLibraries += reinterpret_cast<const char8_t*>(
+		rp_sprintf(sCompiledWith, "libpng " PNG_LIBPNG_VER_STRING).c_str());
+	sLibraries += RTF_BR
+			U8("libpng version 1.6.37 - April 14, 2019") RTF_BR
+			U8("Copyright (c) 2018-2019 Cosmin Truta") RTF_BR
+			U8("Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson") RTF_BR
+			U8("Copyright (c) 1996-1997 Andreas Dilger") RTF_BR
+			U8("Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.") RTF_BR
+			U8("http://www.libpng.org/pub/png/libpng.html") RTF_BR;
+	sLibraries += reinterpret_cast<const char8_t*>(
+		rp_sprintf(sLicense, "libpng license").c_str());
 #endif /* HAVE_PNG */
 
 	/** TinyXML2 **/
@@ -759,11 +783,13 @@ void AboutTabPrivate::initLibrariesTab(void)
 
 	// FIXME: Runtime version?
 	sLibraries += RTF_BR RTF_BR;
-	sLibraries += rp_sprintf(sCompiledWith, sVerBuf);
+	sLibraries += reinterpret_cast<const char8_t*>(
+		rp_sprintf(sCompiledWith, sVerBuf).c_str());
 	sLibraries += RTF_BR
-		"Copyright (C) 2000-2021 Lee Thomason" RTF_BR
-		"http://www.grinninglizard.com/" RTF_BR;
-	sLibraries += rp_sprintf(sLicense, "zlib license");
+		U8("Copyright (C) 2000-2021 Lee Thomason") RTF_BR
+		U8("http://www.grinninglizard.com/") RTF_BR;
+	sLibraries += reinterpret_cast<const char8_t*>(
+		rp_sprintf(sLicense, "zlib license").c_str());
 #endif /* ENABLE_XML */
 
 	/** GNU gettext **/
@@ -783,21 +809,25 @@ void AboutTabPrivate::initLibrariesTab(void)
 
 	sLibraries += RTF_BR RTF_BR;
 #  ifdef _WIN32
-	sLibraries += rp_sprintf(sIntCopyOf, sVerBuf);
+	sLibraries += reinterpret_cast<const char8_t*>(
+		rp_sprintf(sIntCopyOf, sVerBuf).c_str());
 #  else /* _WIN32 */
 	// FIXME: Runtime version?
-	sLibraries += rp_sprintf(sCompiledWith, sVerBuf);
+	sLibraries += reinterpret_cast<const char8_t*>(
+		rp_sprintf(sCompiledWith, sVerBuf).c_str());
 #  endif /* _WIN32 */
 	sLibraries += RTF_BR
-		"Copyright (C) 1995-1997, 2000-2016, 2018-2020 Free Software Foundation, Inc." RTF_BR
-		"https://www.gnu.org/software/gettext/" RTF_BR;
-	sLibraries += rp_sprintf(sLicense, "GNU LGPL v2.1+");
+		U8("Copyright (C) 1995-1997, 2000-2016, 2018-2020 Free Software Foundation, Inc.") RTF_BR
+		U8("https://www.gnu.org/software/gettext/") RTF_BR;
+	sLibraries += reinterpret_cast<const char8_t*>(
+		rp_sprintf(sLicense, "GNU LGPL v2.1+").c_str());
 #endif /* HAVE_GETTEXT && LIBINTL_VERSION */
 
-	sLibraries += "}";
+	sLibraries += U8("}");
 
 	// Add the "Libraries" tab.
-	const tstring tsTabTitle = U82T_c(C_("AboutTab", "Libraries"));
+	const tstring tsTabTitle = U82T_c(
+		reinterpret_cast<const char8_t*>(C_("AboutTab", "Libraries")));
 	TCITEM tcItem;
 	tcItem.mask = TCIF_TEXT;
 	tcItem.pszText = const_cast<LPTSTR>(tsTabTitle.c_str());
@@ -815,31 +845,32 @@ void AboutTabPrivate::initSupportTab(void)
 	// RTF starting sequence.
 	sSupport = RTF_START;
 
-	sSupport += rtfEscape(C_("AboutTab|Support",
-		"For technical support, you can visit the following websites:"));
+	// FIXME: U8STRFIX
+	sSupport += rtfEscape(reinterpret_cast<const char8_t*>(C_("AboutTab|Support",
+		"For technical support, you can visit the following websites:")));
 	sSupport += RTF_BR;
 
 	for (const AboutTabText::SupportSite_t *supportSite = AboutTabText::getSupportSites();
 	     supportSite->name != nullptr; supportSite++)
 	{
-		sSupport += RTF_TAB RTF_BULLET " ";
-		sSupport += rtfEscape(supportSite->name);
-		sSupport += " <";
-		sSupport += rtfEscape(supportSite->url);
-		sSupport += '>';
+		sSupport += RTF_TAB RTF_BULLET U8(" ");
+		sSupport += rtfEscape(reinterpret_cast<const char8_t*>(supportSite->name));
+		sSupport += U8(" <");
+		sSupport += rtfEscape(reinterpret_cast<const char8_t*>(supportSite->url));
+		sSupport += U8(">");
 		sSupport += RTF_BR;
 	}
 
 	// Email the author.
 	sSupport += RTF_BR;
-	sSupport += rtfEscape(C_("AboutTab|Support",
-		"You can also email the developer directly:"));
-	sSupport += RTF_BR RTF_TAB RTF_BULLET " David Korth <";
-	sSupport += rtfFriendlyLink("mailto:gerbilsoft@gerbilsoft.com", "gerbilsoft@gerbilsoft.com");
-	sSupport += ">}";
+	sSupport += rtfEscape(reinterpret_cast<const char8_t*>(C_("AboutTab|Support",
+		"You can also email the developer directly:")));
+	sSupport += RTF_BR RTF_TAB RTF_BULLET U8(" David Korth <");
+	sSupport += rtfFriendlyLink(U8("mailto:gerbilsoft@gerbilsoft.com"), U8("gerbilsoft@gerbilsoft.com"));
+	sSupport += U8(">}");
 
 	// Add the "Support" tab.
-	const tstring tsTabTitle = U82T_c(C_("AboutTab", "Support"));
+	const tstring tsTabTitle = U82T_c(reinterpret_cast<const char*>(C_("AboutTab", "Support")));
 	TCITEM tcItem;
 	tcItem.mask = TCIF_TEXT;
 	tcItem.pszText = const_cast<LPTSTR>(tsTabTitle.c_str());

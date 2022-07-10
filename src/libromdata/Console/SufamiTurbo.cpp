@@ -14,8 +14,9 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::u8string;
 using std::vector;
 
 namespace LibRomData {
@@ -46,9 +47,9 @@ class SufamiTurboPrivate final : public RomDataPrivate
 		 * The ROM title length depends on type, and encoding
 		 * depends on type and region.
 		 *
-		 * @return ROM title.
+		 * @return ROM title
 		 */
-		string getRomTitle(void) const;
+		u8string getRomTitle(void) const;
 };
 
 ROMDATA_IMPL(SufamiTurbo)
@@ -91,9 +92,9 @@ SufamiTurboPrivate::SufamiTurboPrivate(SufamiTurbo *q, IRpFile *file)
  * The ROM title length depends on type, and encoding
  * depends on type and region.
  *
- * @return ROM title.
+ * @return ROM title
  */
-string SufamiTurboPrivate::getRomTitle(void) const
+u8string SufamiTurboPrivate::getRomTitle(void) const
 {
 	// Find the start of the title.
 	size_t start;
@@ -103,7 +104,7 @@ string SufamiTurboPrivate::getRomTitle(void) const
 	}
 	if (start >= sizeof(romHeader.title)) {
 		// Empty title...
-		return string();
+		return u8string();
 	}
 
 	// Trim spaces at the end of the title.
@@ -126,7 +127,7 @@ string SufamiTurboPrivate::getRomTitle(void) const
 	}
 	if (len == 0) {
 		// Empty title...
-		return string();
+		return u8string();
 	}
 
 	// Convert the title from cp1252 and/or Shift-JIS.
@@ -464,7 +465,7 @@ int SufamiTurbo::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	// Region code is "ST".
 
 	// Filename is based on the title.
-	const string s_title = d->getRomTitle();
+	const u8string s_title = d->getRomTitle();
 	if (s_title.empty()) {
 		// Empty title...
 		return -ENOENT;
@@ -497,10 +498,11 @@ int SufamiTurbo::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	}
 
 	// Add the URLs.
+	// FIXME: U8STRFIX
 	pExtURLs->resize(1);
 	auto extURL_iter = pExtURLs->begin();
-	extURL_iter->url = d->getURL_RPDB("snes", imageTypeName, "ST", s_title.c_str(), ext);
-	extURL_iter->cache_key = d->getCacheKey_RPDB("snes", imageTypeName, "ST", s_title.c_str(), ext);
+	extURL_iter->url = d->getURL_RPDB("snes", imageTypeName, "ST", reinterpret_cast<const char*>(s_title.c_str()), ext);
+	extURL_iter->cache_key = d->getCacheKey_RPDB("snes", imageTypeName, "ST", reinterpret_cast<const char*>(s_title.c_str()), ext);
 	extURL_iter->width = sizeDefs[0].width;
 	extURL_iter->height = sizeDefs[0].height;
 	extURL_iter->high_res = (sizeDefs[0].index >= 2);

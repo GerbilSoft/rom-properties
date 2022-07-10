@@ -16,9 +16,10 @@
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
-// C++ STL classes.
+// C++ STL classes
 using std::pair;
 using std::string;
+using std::u8string;
 using std::unique_ptr;
 using std::unordered_map;
 using std::vector;
@@ -42,51 +43,51 @@ class SAPPrivate final : public RomDataPrivate
 
 	public:
 		// Parsed tags.
-		struct TagData {
+		struct psf_tags_t {
 			bool tags_read;		// True if tags were read successfully.
 
-			string author;		// Author.
-			string name;		// Song title.
-			string date;		// Date. TODO: Disambiguate year vs. date.
-			uint8_t songs;		// Number of songs in the file. (Default is 1)
-			uint8_t def_song;	// Default song. (zero-based; default is 0)
+			u8string author;	// Author
+			u8string name;		// Song title
+			u8string date;		// Date (TODO: Disambiguate year vs. date.)
+			uint8_t songs;		// Number of songs in the file (Default is 1)
+			uint8_t def_song;	// Default song (zero-based; default is 0)
 
 			// TODO: Use a bitfield for flags?
 			bool ntsc;		// True if NTSC tag is present.
 			bool stereo;		// True if STEREO tag is present. (dual POKEY)
 
 			char type;		// B, C, D, S
-			uint16_t fastplay;	// Number of scanlines between calls of the player routine.
+			uint16_t fastplay;	// Number of scanlines between calls of the player routine
 						// Default is one frame: 312 lines for PAL, 262 lines for NTSC.
-			uint16_t init_addr;	// Init address. (Required for Types B, D, and S; invalid for others.)
-			uint16_t music_addr;	// Music data address. (Required for Type C; invalid for others.)
-			uint16_t player_addr;	// Player address.
-			uint16_t covox_addr;	// COVOX hardware address. (If not specified, set to 0.)
+			uint16_t init_addr;	// Init address (Required for Types B, D, and S; invalid for others.)
+			uint16_t music_addr;	// Music data address (Required for Type C; invalid for others.)
+			uint16_t player_addr;	// Player address
+			uint16_t covox_addr;	// COVOX hardware address (If not specified, set to 0.)
 
 			// TIME tags.
 			// - first: Duration, in milliseconds.
 			// - second: Loop flag.
 			vector<pair<uint32_t, bool> > durations;
 
-			TagData() : tags_read(false), songs(1), def_song(0), ntsc(false), stereo(false)
+			psf_tags_t() : tags_read(false), songs(1), def_song(0), ntsc(false), stereo(false)
 				  , type('\0'), fastplay(0), init_addr(0), music_addr(0), player_addr(0)
 				  , covox_addr(0) { }
 		};
 
 		/**
 		 * Convert a duration to milliseconds + loop flag.
-		 * @param str	[in] Duration string.
-		 * @param pMs	[out] Milliseconds.
-		 * @param pLoop	[out] Loop flag.
+		 * @param str	[in] Duration string
+		 * @param pMs	[out] Milliseconds
+		 * @param pLoop	[out] Loop flag
 		 * @return 0 on success; non-zero on error.
 		 */
 		static int durationToMsLoop(const char *str, uint32_t *pMs, bool *pLoop);
 
 		/**
 		 * Parse the tags from the open SAP file.
-		 * @return TagData object.
+		 * @return psf_tags_t object.
 		 */
-		TagData parseTags(void);
+		psf_tags_t parseTags(void);
 };
 
 ROMDATA_IMPL(SAP)
@@ -115,9 +116,9 @@ SAPPrivate::SAPPrivate(SAP *q, IRpFile *file)
 
 /**
  * Convert a duration to milliseconds + loop flag.
- * @param str	[in] Duration string.
- * @param pMs	[out] Milliseconds.
- * @param pLoop	[out] Loop flag.
+ * @param str	[in] Duration string
+ * @param pMs	[out] Milliseconds
+ * @param pLoop	[out] Loop flag
  * @return 0 on success; non-zero on error.
  */
 int SAPPrivate::durationToMsLoop(const char *str, uint32_t *pMs, bool *pLoop)
@@ -221,11 +222,11 @@ int SAPPrivate::durationToMsLoop(const char *str, uint32_t *pMs, bool *pLoop)
 
 /**
  * Parse the tags from the open SAP file.
- * @return TagData object.
+ * @return psf_tags_t object.
  */
-SAPPrivate::TagData SAPPrivate::parseTags(void)
+SAPPrivate::psf_tags_t SAPPrivate::parseTags(void)
 {
-	TagData tags;
+	psf_tags_t tags;
 
 	// Read up to 4 KB from the beginning of the file.
 	// TODO: Support larger headers?
@@ -403,7 +404,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 					}
 					// Zero it out and take the string.
 					*dblq = '\0';
-					*(static_cast<string*>(kwd.ptr)) = latin1_to_utf8(params+1, -1);
+					*(static_cast<u8string*>(kwd.ptr)) = latin1_to_utf8(params+1, -1);
 					break;
 				}
 
@@ -560,7 +561,7 @@ int SAP::loadFieldData(void)
 	}
 
 	// Get the tags.
-	SAPPrivate::TagData tags = d->parseTags();
+	const SAPPrivate::psf_tags_t tags = d->parseTags();
 	if (!tags.tags_read) {
 		// No tags.
 		return 0;
@@ -720,7 +721,7 @@ int SAP::loadMetaData(void)
 	}
 
 	// Get the tags.
-	SAPPrivate::TagData tags = d->parseTags();
+	const SAPPrivate::psf_tags_t tags = d->parseTags();
 	if (!tags.tags_read) {
 		// No tags.
 		return 0;

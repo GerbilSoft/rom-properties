@@ -13,8 +13,9 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::u8string;
 using std::unique_ptr;
 using std::unordered_map;
 using std::vector;
@@ -447,7 +448,7 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 			return -EIO;
 		}
 
-		string key_utf8 = cpN_to_utf8(codepage, key, key_len);
+		u8string key_utf8 = cpN_to_utf8(codepage, key, key_len);
 		assert(!key_utf8.empty());
 		if (key_utf8.empty()) {
 			// Code page conversion failed.
@@ -455,7 +456,7 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 			key_utf8 = cp1252_to_utf8(key, key_len);
 		}
 
-		string value_utf8;
+		u8string value_utf8;
 		if (value_len > 0) {
 			value_utf8 = cpN_to_utf8(codepage, value, value_len);
 			assert(!value_utf8.empty());
@@ -466,9 +467,14 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 			}
 		}
 
+		// FIXME: Change IResourceReader::StringTable to u8string.
+#define U8STRFIX(x) string((const char*)(x).c_str())
+
 		// NOTE: Only converting the value from DOS to UNIX line endings.
 		// The key shouldn't have newlines.
-		st.emplace_back(std::pair<string, string>(std::move(key_utf8), dos2unix(value_utf8)));
+		st.emplace_back(std::pair<string, string>(
+			U8STRFIX(std::move(key_utf8)),
+			dos2unix(U8STRFIX(value_utf8))));
 
 		// DWORD alignment is required here.
 		tblPos += wValueLength;

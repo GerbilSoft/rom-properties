@@ -23,6 +23,7 @@ using LibRpTexture::rp_image;
 // C++ STL classes.
 using std::array;
 using std::string;
+using std::u8string;
 using std::unique_ptr;
 using std::unordered_map;
 using std::unordered_set;
@@ -127,18 +128,18 @@ class Xbox360_XDBF_Private final : public RomDataPrivate
 	public:
 		/**
 		 * Get a string from a string table. (SPA)
-		 * @param langID Language ID.
-		 * @param string_id String ID.
+		 * @param langID Language ID
+		 * @param string_id String ID
 		 * @return String, or empty string on error.
 		 */
-		string loadString_SPA(XDBF_Language_e langID, uint16_t string_id);
+		u8string loadString_SPA(XDBF_Language_e langID, uint16_t string_id);
 
 		/**
 		 * Get a string from the resource table. (GPD)
-		 * @param string_id String ID.
+		 * @param string_id String ID
 		 * @return String, or empty string on error.
 		 */
-		string loadString_GPD(uint16_t string_id);
+		u8string loadString_GPD(uint16_t string_id);
 
 		/**
 		 * Get the language ID to use for the title fields.
@@ -473,14 +474,14 @@ const ao::uvector<char> *Xbox360_XDBF_Private::loadStringTable_SPA(XDBF_Language
  * @param string_id String ID.
  * @return String, or empty string on error.
  */
-string Xbox360_XDBF_Private::loadString_SPA(XDBF_Language_e langID, uint16_t string_id)
+u8string Xbox360_XDBF_Private::loadString_SPA(XDBF_Language_e langID, uint16_t string_id)
 {
-	string ret;
+	u8string s_ret;
 
 	assert(langID >= 0);
 	assert(langID < XDBF_LANGUAGE_MAX);
 	if (langID < 0 || langID >= XDBF_LANGUAGE_MAX)
-		return ret;
+		return s_ret;
 
 	// Get the string table.
 	const ao::uvector<char> *vec = strTbls[langID];
@@ -488,7 +489,7 @@ string Xbox360_XDBF_Private::loadString_SPA(XDBF_Language_e langID, uint16_t str
 		vec = loadStringTable_SPA(langID);
 		if (!vec) {
 			// Unable to load the string table.
-			return ret;
+			return s_ret;
 		}
 	}
 
@@ -518,7 +519,8 @@ string Xbox360_XDBF_Private::loadString_SPA(XDBF_Language_e langID, uint16_t str
 				// Character set conversion isn't needed, since
 				// the string table is UTF-8, but we do need to
 				// convert from DOS to UNIX line endings.
-				ret = dos2unix(p_str, length);
+				// FIXME: U8STRFIX
+				s_ret = u8string((const char8_t*)(dos2unix(p_str, length).c_str()));
 			}
 			break;
 		} else {
@@ -528,7 +530,7 @@ string Xbox360_XDBF_Private::loadString_SPA(XDBF_Language_e langID, uint16_t str
 		}
 	}
 
-	return ret;
+	return s_ret;
 }
 
 /**
@@ -536,19 +538,19 @@ string Xbox360_XDBF_Private::loadString_SPA(XDBF_Language_e langID, uint16_t str
  * @param string_id String ID.
  * @return String, or empty string on error.
  */
-string Xbox360_XDBF_Private::loadString_GPD(uint16_t string_id)
+u8string Xbox360_XDBF_Private::loadString_GPD(uint16_t string_id)
 {
-	string ret;
+	u8string s_ret;
 
 	if (entryTable.empty()) {
 		// Entry table isn't loaded...
-		return ret;
+		return s_ret;
 	}
 
 	// Can we load the string?
 	if (!file || !isValid) {
 		// Can't load the string.
-		return ret;
+		return s_ret;
 	}
 
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
@@ -601,10 +603,10 @@ string Xbox360_XDBF_Private::loadString_GPD(uint16_t string_id)
 		}
 
 		// Convert from UTF-16BE.
-		ret = utf16be_to_utf8(sbuf.get(), length / 2);
+		s_ret = utf16be_to_utf8(sbuf.get(), length / 2);
 	}
 
-	return ret;
+	return s_ret;
 }
 
 /**
@@ -870,17 +872,20 @@ int Xbox360_XDBF_Private::addFields_strings_SPA(RomFields *fields) const
 	// Title: Check if English is valid.
 	// If it is, we'll de-duplicate the fields.
 	// NOTE: English is language 1, so we can start the loop at 2 (Japanese).
-	string title_en;
+	u8string title_en;
 	if (strTblIndexes[XDBF_LANGUAGE_ENGLISH] >= 0) {
 		title_en = const_cast<Xbox360_XDBF_Private*>(this)->loadString_SPA(
 			XDBF_LANGUAGE_ENGLISH, XDBF_ID_TITLE);
 	}
 	bool dedupe_titles = !title_en.empty();
 
-	// Title fields.
+	// FIXME: Change StringMultiMap to u8string.
+#define U8STRFIX(x) string((const char*)(x).c_str())
+
+	// Title fields
 	RomFields::StringMultiMap_t *const pMap_title = new RomFields::StringMultiMap_t();
 	if (!title_en.empty()) {
-		pMap_title->emplace('en', title_en);
+		pMap_title->emplace('en', U8STRFIX(title_en));
 	}
 	for (int langID = XDBF_LANGUAGE_JAPANESE; langID < XDBF_LANGUAGE_MAX; langID++) {
 		if (strTblIndexes[langID] < 0) {
@@ -888,7 +893,7 @@ int Xbox360_XDBF_Private::addFields_strings_SPA(RomFields *fields) const
 			continue;
 		}
 
-		string title_lang = const_cast<Xbox360_XDBF_Private*>(this)->loadString_SPA(
+		u8string title_lang = const_cast<Xbox360_XDBF_Private*>(this)->loadString_SPA(
 			(XDBF_Language_e)langID, XDBF_ID_TITLE);
 		if (title_lang.empty()) {
 			// Title is not available for this language.
@@ -909,7 +914,8 @@ int Xbox360_XDBF_Private::addFields_strings_SPA(RomFields *fields) const
 		if (lc == 0)
 			continue;
 
-		pMap_title->emplace(lc, std::move(title_lang));
+		//pMap_title->emplace(lc, std::move(title_lang));
+		pMap_title->emplace(lc, U8STRFIX(title_lang));
 	}
 
 	const char *const s_title_title = C_("RomData", "Title");
@@ -1059,7 +1065,7 @@ int Xbox360_XDBF_Private::addFields_achievements_SPA(void)
 			data_row.emplace_back(s_achievement_id);
 
 			// Title.
-			string desc = loadString_SPA((XDBF_Language_e)langID, name_id);
+			u8string desc = loadString_SPA((XDBF_Language_e)langID, name_id);
 			if (desc.empty() && langID != XDBF_LANGUAGE_ENGLISH) {
 				// String not found in this language. Try English.
 				desc = loadString_SPA(XDBF_LANGUAGE_ENGLISH, name_id);
@@ -1072,7 +1078,7 @@ int Xbox360_XDBF_Private::addFields_achievements_SPA(void)
 							? locked_desc_id
 							: unlocked_desc_id;
 
-			string lck_desc = loadString_SPA((XDBF_Language_e)langID, desc_id);
+			u8string lck_desc = loadString_SPA((XDBF_Language_e)langID, desc_id);
 			if (lck_desc.empty() && langID != XDBF_LANGUAGE_ENGLISH) {
 				// String not found in this language. Try English.
 				lck_desc = loadString_SPA(XDBF_LANGUAGE_ENGLISH, desc_id);
@@ -1088,7 +1094,8 @@ int Xbox360_XDBF_Private::addFields_achievements_SPA(void)
 			}
 
 			// TODO: Formatting value indicating that the first line should be bold.
-			data_row.emplace_back(std::move(desc));
+			//data_row.emplace_back(std::move(desc));
+			data_row.emplace_back(U8STRFIX(desc));
 
 			// Gamerscore
 			data_row.emplace_back(s_gamerscore);
@@ -1270,7 +1277,7 @@ int Xbox360_XDBF_Private::addFields_avatarAwards_SPA(void)
 			data_row.emplace_back(s_avatar_award_id);
 
 			// Title.
-			string desc = loadString_SPA((XDBF_Language_e)langID, name_id);
+			u8string desc = loadString_SPA((XDBF_Language_e)langID, name_id);
 			if (desc.empty() && langID != XDBF_LANGUAGE_ENGLISH) {
 				// String not found in this language. Try English.
 				desc = loadString_SPA(XDBF_LANGUAGE_ENGLISH, name_id);
@@ -1283,7 +1290,7 @@ int Xbox360_XDBF_Private::addFields_avatarAwards_SPA(void)
 							? locked_desc_id
 							: unlocked_desc_id;
 
-			string lck_desc = loadString_SPA((XDBF_Language_e)langID, desc_id);
+			u8string lck_desc = loadString_SPA((XDBF_Language_e)langID, desc_id);
 			if (lck_desc.empty() && langID != XDBF_LANGUAGE_ENGLISH) {
 				// String not found in this language. Try English.
 				lck_desc = loadString_SPA(XDBF_LANGUAGE_ENGLISH, desc_id);
@@ -1299,7 +1306,8 @@ int Xbox360_XDBF_Private::addFields_avatarAwards_SPA(void)
 			}
 
 			// TODO: Formatting value indicating that the first line should be bold.
-			data_row.emplace_back(std::move(desc));
+			//data_row.emplace_back(std::move(desc));
+			data_row.emplace_back(U8STRFIX(desc));
 		}
 	}
 
@@ -1368,7 +1376,7 @@ int Xbox360_XDBF_Private::addFields_strings_GPD(RomFields *fields) const
 
 	// Title
 	const char *const s_title_title = C_("RomData", "Title");
-	string s_title = const_cast<Xbox360_XDBF_Private*>(this)->loadString_GPD(XDBF_ID_TITLE);
+	const u8string s_title = const_cast<Xbox360_XDBF_Private*>(this)->loadString_GPD(XDBF_ID_TITLE);
 	if (!s_title.empty()) {
 		fields->addField_string(s_title_title, s_title);
 	} else {
@@ -1499,7 +1507,7 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
 
 		// TODO: Verify flags for achievement unlocked status.
 		// For now, assuming all achievements are unlocked.
-		string desc;
+		u8string desc;
 		if (pTitle) {
 			desc = utf16be_to_utf8(pTitle, -1);
 		}
@@ -1514,7 +1522,8 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
 		vector<string> data_row;
 		data_row.reserve(3);
 		data_row.emplace_back(s_achievement_id);
-		data_row.emplace_back(std::move(desc));
+		//data_row.emplace_back(std::move(desc));
+		data_row.emplace_back(U8STRFIX(desc));
 		data_row.emplace_back(s_gamerscore);
 		vv_xach->emplace_back(std::move(data_row));
 	}
@@ -1970,8 +1979,10 @@ int Xbox360_XDBF::addFields_strings(LibRpBase::RomFields *fields) const
  * @param property Property
  * @return String, or empty string if not found.
  */
-string Xbox360_XDBF::getString(LibRpBase::Property property) const
+u8string Xbox360_XDBF::getString(LibRpBase::Property property) const
 {
+	u8string s_ret;
+
 	uint16_t string_id = 0;
 	switch (property) {
 		case LibRpBase::Property::Title:
@@ -1984,11 +1995,10 @@ string Xbox360_XDBF::getString(LibRpBase::Property property) const
 	assert(string_id != 0);
 	if (string_id == 0) {
 		// Not supported.
-		return string();
+		return s_ret;
 	}
 
 	RP_D(Xbox360_XDBF);
-	string s_ret;
 	switch (d->xdbfType) {
 		default:
 			assert(!"Unsupported XDBF type.");

@@ -20,8 +20,9 @@ using namespace LibRpTexture;
 // for memmem() if it's not available in <string.h>
 #include "librpbase/TextFuncs_libc.h"
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::u8string;
 using std::vector;
 
 // zlib
@@ -82,7 +83,7 @@ class iQuePlayerPrivate final : public RomDataPrivate
 		 * @param isbn Output string for ISBN.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int getTitleAndISBN(string &title, string &isbn);
+		int getTitleAndISBN(u8string &title, u8string &isbn);
 
 	private:
 		/**
@@ -165,7 +166,7 @@ iQuePlayerPrivate::~iQuePlayerPrivate()
  * @param isbn Output string for ISBN.
  * @return 0 on success; non-zero on error.
  */
-int iQuePlayerPrivate::getTitleAndISBN(string &title, string &isbn)
+int iQuePlayerPrivate::getTitleAndISBN(u8string &title, u8string &isbn)
 {
 	// Stored immediately after the thumbnail and title images,
 	// and NULL-terminated.
@@ -646,7 +647,7 @@ int iQuePlayer::loadFieldData(void)
 
 	// Get the title and ISBN.
 	// TODO: Trim trailing newlines?
-	string rom_title, rom_isbn;
+	u8string rom_title, rom_isbn;
 	int ret = d->getTitleAndISBN(rom_title, rom_isbn);
 	if (ret == 0) {
 		// Title.
@@ -722,7 +723,7 @@ int iQuePlayer::loadMetaData(void)
 
 	// Get the title and ISBN.
 	// TODO: Trim trailing newlines?
-	string rom_title, rom_isbn;
+	u8string rom_title, rom_isbn;
 	int ret = d->getTitleAndISBN(rom_title, rom_isbn);
 	if (ret == 0) {
 		// Title.

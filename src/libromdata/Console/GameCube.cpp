@@ -41,9 +41,10 @@ using LibRpTexture::rp_image;
 // for strnlen() if it's not available in <string.h>
 #include "librpbase/TextFuncs_libc.h"
 
-// C++ STL classes.
+// C++ STL classes
 using std::array;
 using std::string;
+using std::u8string;
 using std::unique_ptr;
 using std::vector;
 
@@ -1792,7 +1793,7 @@ int GameCube::loadFieldData(void)
 			data_row.emplace_back(rp_sprintf("%dp%d", entry.vg, entry.pt));
 
 			// Partition type.
-			string s_ptype;
+			u8string s_ptype;
 			static const char *const part_type_tbl[3] = {
 				// tr: GameCubePrivate::RVL_PT_GAME (Game partition)
 				NOP_C_("Wii|Partition", "Game"),
@@ -1802,7 +1803,9 @@ int GameCube::loadFieldData(void)
 				NOP_C_("Wii|Partition", "Channel"),
 			};
 			if (entry.type <= RVL_PT_CHANNEL) {
-				s_ptype = dpgettext_expr(RP_I18N_DOMAIN, "Wii|Partition", part_type_tbl[entry.type]);
+				// FIXME: U8STRFIX
+				s_ptype = reinterpret_cast<const char8_t*>(
+					dpgettext_expr(RP_I18N_DOMAIN, "Wii|Partition", part_type_tbl[entry.type]));
 			} else {
 				// If all four bytes are ASCII letters and/or numbers,
 				// print it as-is. (SSBB demo channel)
@@ -1820,10 +1823,13 @@ int GameCube::loadFieldData(void)
 					s_ptype = latin1_to_utf8(part_type.chr, sizeof(part_type.chr));
 				} else {
 					// Non-ASCII data. Print the hex values instead.
-					s_ptype = rp_sprintf("%08X", entry.type);
+					// FIXME: U8STRFIX
+					s_ptype = u8string((const char8_t*)rp_sprintf("%08X", entry.type).c_str());
 				}
 			}
-			data_row.emplace_back(std::move(s_ptype));
+			// FIXME: U8STRFIX
+			//data_row.emplace_back(std::move(s_ptype));
+			data_row.emplace_back(string((const char*)s_ptype.c_str()));
 
 			// Encryption key.
 			// TODO: Use a string table?

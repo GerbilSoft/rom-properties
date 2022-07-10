@@ -14,8 +14,9 @@
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::u8string;
 using std::unique_ptr;
 using std::unordered_map;
 using std::vector;
@@ -43,10 +44,10 @@ class SPCPrivate final : public RomDataPrivate
 		SPC_Header spcHeader;
 
 		// Tag struct.
-		struct TagData {
+		struct spc_tags_t {
 			// Vector of strings.
 			// Contains all string data.
-			vector<string> strs;
+			vector<u8string> strs;
 
 			// Value struct.
 			// Contains an integer value, and a boolean
@@ -145,7 +146,7 @@ class SPCPrivate final : public RomDataPrivate
 			 * @param key Extended ID666 tag index.
 			 * @param str String value.
 			 */
-			inline void insertStr(SPC_xID6_Item_e key, const string &str)
+			inline void insertStr(SPC_xID6_Item_e key, const u8string &str)
 			{
 				val_t val((unsigned int)strs.size());
 				val.isStrIdx = true;
@@ -158,7 +159,7 @@ class SPCPrivate final : public RomDataPrivate
 			 * @param data val_t struct.
 			 * @return String.
 			 */
-			inline const string &getStr(const val_t &val) const
+			inline const u8string &getStr(const val_t &val) const
 			{
 				// NOTE: This will throw an exception if out of range.
 				assert(val.isStrIdx);
@@ -170,7 +171,7 @@ class SPCPrivate final : public RomDataPrivate
 		 * Parse the ID666 tags for the open SPC file.
 		 * @return Map containing key/value entries.
 		 */
-		TagData parseTags(void);
+		spc_tags_t parseTags(void);
 };
 
 ROMDATA_IMPL(SPC)
@@ -204,9 +205,9 @@ SPCPrivate::SPCPrivate(SPC *q, IRpFile *file)
  * Parse the tag section.
  * @return Map containing key/value entries.
  */
-SPCPrivate::TagData SPCPrivate::parseTags(void)
+SPCPrivate::spc_tags_t SPCPrivate::parseTags(void)
 {
-	TagData kv;
+	spc_tags_t kv;
 
 	if (spcHeader.has_id666 != 26) {
 		// No ID666 tags.

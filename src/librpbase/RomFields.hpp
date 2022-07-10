@@ -554,21 +554,50 @@ class RomFields
 
 		/**
 		 * Add string field data.
-		 * @param name Field name.
-		 * @param str String.
-		 * @param flags Formatting flags.
-		 * @return Field index.
+		 * @param name Field name
+		 * @param str String
+		 * @param flags Formatting flags
+		 * @return Field index
 		 */
 		int addField_string(const char *name, const char *str, unsigned int flags = 0);
 
 		/**
 		 * Add string field data.
-		 * @param name Field name.
-		 * @param str String.
-		 * @param flags Formatting flags.
-		 * @return Field index.
+		 * @param name Field name
+		 * @param str String
+		 * @param flags Formatting flags
+		 * @return Field index
 		 */
 		int addField_string(const char *name, const std::string &str, unsigned int flags = 0);
+
+		/** char8_t / u8string wrapper functions **/
+		/** TODO: Use u8string for the internal type and remove the non-u8 functions. **/
+
+#ifndef CXX20_COMPAT_CHAR8_T
+		/**
+		 * Add string field data.
+		 * @param name Field name
+		 * @param str String
+		 * @param flags Formatting flags
+		 * @return Field index
+		 */
+		inline int addField_string(const char *name, const char8_t *str, unsigned int flags = 0)
+		{
+			return addField_string(name, reinterpret_cast<const char*>(str), flags);
+		}
+
+		/**
+		 * Add string field data.
+		 * @param name Field name
+		 * @param str String
+		 * @param flags Formatting flags
+		 * @return Field index
+		 */
+		inline int addField_string(const char *name, const std::u8string &str, unsigned int flags = 0)
+		{
+			return addField_string(name, reinterpret_cast<const char*>(str.c_str()), flags);
+		}
+#endif /* CXX20_COMPAT_CHAR8_T */
 
 		enum class Base {
 			Dec,	// Decimal (Base 10)

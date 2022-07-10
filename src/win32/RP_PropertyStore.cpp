@@ -378,7 +378,9 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 				if (prop->type != PropertyType::String)
 					continue;
 				if (prop->data.str) {
-					InitPropVariantFromString(U82W_s(*prop->data.str), &prop_var);
+					// FIXME: U8STRFIX
+					InitPropVariantFromString(U82W_c(
+						reinterpret_cast<const char8_t*>((*prop->data.str).c_str())), &prop_var);
 					d->prop_key.emplace_back(conv.pkey);
 					d->prop_val.emplace_back(prop_var);
 				}
@@ -386,10 +388,13 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 
 			case VT_VECTOR|VT_BSTR: {
 				// For now, assuming an array with a single string.
+				// FIXME: U8STRFIX
 				assert(prop->type == PropertyType::String);
 				if (prop->type != PropertyType::String)
 					continue;
-				const wstring wstr = (prop->data.str ? U82W_s(*prop->data.str) : L"");
+				const wstring wstr = (prop->data.str)
+					? U82W_c(reinterpret_cast<const char*>((*prop->data.str).c_str()))
+					: L"";
 				const wchar_t *vstr[] = {wstr.c_str()};
 				InitPropVariantFromStringVector(vstr, 1, &prop_var);
 				d->prop_key.emplace_back(conv.pkey);

@@ -15,8 +15,9 @@
 // librpbase
 using namespace LibRpBase;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::u8string;
 using std::unordered_map;
 
 namespace LibRomData {
@@ -46,7 +47,7 @@ class GcnFstPrivate
 		// String table, converted to Unicode.
 		// - Key: String offset in the FST string table.
 		// - Value: string.
-		mutable unordered_map<uint32_t, string> u8_string_table;
+		mutable unordered_map<uint32_t, u8string> u8_string_table;
 
 		/**
 		 * Check if an fst_entry is a directory.
@@ -59,7 +60,7 @@ class GcnFstPrivate
 		 * @param fst_entry FST entry.
 		 * @return Name, or nullptr if an error occurred.
 		 */
-		inline const char *entry_name(const GCN_FST_Entry *fst_entry) const;
+		inline const char8_t *entry_name(const GCN_FST_Entry *fst_entry) const;
 
 		/**
 		 * Get an FST entry.
@@ -71,7 +72,7 @@ class GcnFstPrivate
 		 * @param ppszName	[out, opt] Entry name. (Do not free this!)
 		 * @return FST entry, or nullptr on error.
 		 */
-		const GCN_FST_Entry *entry(int idx, const char **ppszName = nullptr) const;
+		const GCN_FST_Entry *entry(int idx, const char8_t **ppszName = nullptr) const;
 
 		/**
 		 * Find a path.
@@ -157,7 +158,7 @@ inline bool GcnFstPrivate::is_dir(const GCN_FST_Entry *fst_entry)
  * @param fst_entry FST entry.
  * @return Name, or nullptr if an error occurred.
  */
-inline const char *GcnFstPrivate::entry_name(const GCN_FST_Entry *fst_entry) const
+inline const char8_t *GcnFstPrivate::entry_name(const GCN_FST_Entry *fst_entry) const
 {
 	// Get the name entry from the string table.
 	uint32_t offset = be32_to_cpu(fst_entry->file_type_name_offset) & 0xFFFFFF;
@@ -167,7 +168,7 @@ inline const char *GcnFstPrivate::entry_name(const GCN_FST_Entry *fst_entry) con
 	}
 
 	// Has this name already been converted to UTF-8?
-	unordered_map<uint32_t, string>::const_iterator iter = u8_string_table.find(offset);
+	unordered_map<uint32_t, u8string>::const_iterator iter = u8_string_table.find(offset);
 	if (iter != u8_string_table.end()) {
 		// Name has already been converted.
 		return iter->second.c_str();
@@ -177,7 +178,7 @@ inline const char *GcnFstPrivate::entry_name(const GCN_FST_Entry *fst_entry) con
 	// Do the conversion now.
 	const char *str = &string_table_ptr[offset];
 	int len = static_cast<int>(strlen(str));	// TODO: Bounds checking.
-	string u8str = cp1252_sjis_to_utf8(str, len);
+	u8string u8str = cp1252_sjis_to_utf8(str, len);
 	iter = u8_string_table.emplace(offset, u8str).first;
 	return iter->second.c_str();
 }
@@ -192,7 +193,7 @@ inline const char *GcnFstPrivate::entry_name(const GCN_FST_Entry *fst_entry) con
  * @param ppszName	[out, opt] Entry name. (Do not free this!)
  * @return FST entry, or nullptr on error.
  */
-const GCN_FST_Entry *GcnFstPrivate::entry(int idx, const char **ppszName) const
+const GCN_FST_Entry *GcnFstPrivate::entry(int idx, const char8_t **ppszName) const
 {
 	if (!fstData || idx < 0) {
 		// No FST, or idx is invalid.
@@ -294,7 +295,7 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const char *path) const
 		// Search this directory for a matching path component.
 		bool found = false;
 		for (; idx < last_fst_idx; idx++) {
-			const char *pName;
+			const char8_t *pName;
 			fst_entry = this->entry(idx, &pName);
 			if (!fst_entry) {
 				// Invalid path.
@@ -302,7 +303,8 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const char *path) const
 			}
 
 			// TODO: Is GCN/Wii case-sensitive?
-			if (pName && !strcmp(path_component.c_str(), pName)) {
+			// FIXME: strcmp() doesn't support char8_t*.
+			if (pName && !strcmp(path_component.c_str(), reinterpret_cast<const char*>(pName))) {
 				// Found a match.
 				found = true;
 				break;
@@ -417,7 +419,8 @@ IFst::Dir *GcnFst::opendir(const char *path)
 	// readdir() will automatically seek to the next entry.
 	dirp->entry.idx = dirp->dir_idx;
 	dirp->entry.type = DT_DIR;
-	dirp->entry.name = d->entry_name(fst_entry);
+	// FIXME: U8STRFIX
+	dirp->entry.name = reinterpret_cast<const char*>(d->entry_name(fst_entry));
 	// offset and size are not valid for directories.
 	dirp->entry.offset = 0;
 	dirp->entry.size = 0;
@@ -478,7 +481,7 @@ IFst::DirEnt *GcnFst::readdir(IFst::Dir *dirp)
 		return nullptr;
 	}
 
-	const char *pName;
+	const char8_t *pName;
 	fst_entry = d->entry(idx, &pName);
 	dirp->entry.idx = idx;
 	if (!fst_entry) {
@@ -498,7 +501,8 @@ IFst::DirEnt *GcnFst::readdir(IFst::Dir *dirp)
 	// Save the entry information.
 	const bool is_fst_dir = d->is_dir(fst_entry);
 	dirp->entry.type = is_fst_dir ? DT_DIR : DT_REG;
-	dirp->entry.name = pName;
+	// FIXME: U8STRFIX
+	dirp->entry.name = reinterpret_cast<const char*>(pName);
 	if (is_fst_dir) {
 		// offset and size are not valid for directories.
 		dirp->entry.offset = 0;
@@ -559,7 +563,8 @@ int GcnFst::find_file(const char *filename, DirEnt *dirent)
 	// Copy the relevant information to dirent.
 	const bool is_fst_dir = d->is_dir(fst_entry);
 	dirent->type = is_fst_dir ? DT_DIR : DT_REG;
-	dirent->name = d->entry_name(fst_entry);
+	// FIXME: U8STRFIX
+	dirent->name = reinterpret_cast<const char*>(d->entry_name(fst_entry));
 	if (is_fst_dir) {
 		// offset and size are not valid for directories.
 		dirent->offset = 0;

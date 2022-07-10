@@ -30,8 +30,9 @@ using namespace LibRpTexture;
 #include "disc/NCCHReader.hpp"
 #include "disc/CIAReader.hpp"
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::u8string;
 using std::unique_ptr;
 using std::vector;
 
@@ -736,10 +737,11 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 		int ret = NCCHReader::cryptoType_static(&cryptoType, ncch_header);
 		if (ret != 0 || !cryptoType.encrypted || cryptoType.keyslot >= 0x40) {
 			// Not encrypted, or not using a predefined keyslot.
-			fields->addField_string(s_encryption,
-				cryptoType.name
-					? latin1_to_utf8(cryptoType.name, -1)
-					: s_unknown);
+			if (cryptoType.name) {
+				fields->addField_string(s_encryption, latin1_to_utf8(cryptoType.name, -1));
+			} else {
+				fields->addField_string(s_encryption, s_unknown);
+			}
 		} else {
 			fields->addField_string(s_encryption,
 				rp_sprintf("%s%s (0x%02X)",
@@ -1186,7 +1188,8 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 		// TODO: Service descriptions?
 		vv_svc->resize(vv_svc->size()+1);
 		auto &data_row = vv_svc->at(vv_svc->size()-1);
-		data_row.emplace_back(latin1_to_utf8(svc, N3DS_SERVICE_LEN));
+		// FIXME: U8STRFIX
+		data_row.emplace_back(string((const char*)(latin1_to_utf8(svc, N3DS_SERVICE_LEN).c_str())));
 	}
 
 	if (likely(!vv_svc->empty())) {
@@ -1994,6 +1997,9 @@ int Nintendo3DS::loadFieldData(void)
 			const char *const s_ptype = (pt_types[i] ? pt_types[i] : s_unknown);
 			data_row.emplace_back(s_ptype);
 
+			// FIXME: Change vector<string> to u8string.
+#define U8STRFIX(x) string((const char*)(x).c_str())
+
 			if (d->romType != Nintendo3DSPrivate::RomType::eMMC) {
 				const N3DS_NCCH_Header_NoSig_t *const part_ncch_header =
 					(pNcch && pNcch->isOpen() ? pNcch->ncchHeader() : nullptr);
@@ -2004,7 +2010,7 @@ int Nintendo3DS::loadFieldData(void)
 					if (ret != 0 || !cryptoType.encrypted || cryptoType.keyslot >= 0x40) {
 						// Not encrypted, or not using a predefined keyslot.
 						if (cryptoType.name) {
-							data_row.emplace_back(latin1_to_utf8(cryptoType.name, -1));
+							data_row.emplace_back(U8STRFIX(latin1_to_utf8(cryptoType.name, -1)));
 						} else {
 							data_row.emplace_back(s_unknown);
 						}
@@ -2225,7 +2231,7 @@ int Nintendo3DS::loadFieldData(void)
 			if (!cryptoType.encrypted || cryptoType.keyslot >= 0x40) {
 				// Not encrypted, or not using a predefined keyslot.
 				if (cryptoType.name) {
-					data_row.emplace_back(latin1_to_utf8(cryptoType.name, -1));
+					data_row.emplace_back(U8STRFIX(latin1_to_utf8(cryptoType.name, -1)));
 				} else {
 					data_row.emplace_back(s_unknown);
 				}

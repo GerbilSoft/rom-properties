@@ -14,8 +14,9 @@
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::u8string;
 using std::vector;
 
 namespace LibRomData {
@@ -48,10 +49,10 @@ class Sega8BitPrivate final : public RomDataPrivate
 
 		/**
 		 * Get an SDSC string field.
-		 * @param ptr SDSC string pointer.
+		 * @param ptr SDSC string pointer
 		 * @return SDSC string on success; empty string on error.
 		 */
-		string getSdscString(uint16_t ptr);
+		u8string getSdscString(uint16_t ptr);
 
 		/**
 		 * Convert a Codemasters timestamp to a Unix timestamp.
@@ -100,22 +101,22 @@ Sega8BitPrivate::Sega8BitPrivate(Sega8Bit *q, IRpFile *file)
 
 /**
  * Get an SDSC string field.
- * @param ptr SDSC string pointer.
+ * @param ptr SDSC string pointer
  * @return SDSC string on success; empty string on error.
  */
-string Sega8BitPrivate::getSdscString(uint16_t ptr)
+u8string Sega8BitPrivate::getSdscString(uint16_t ptr)
 {
 	assert(file != nullptr);
 	assert(file->isOpen());
 	assert(isValid);
 	if (!file || !file->isOpen() || !isValid) {
 		// Can't add anything...
-		return string();
+		return u8string();
 	}
 
 	if (ptr == 0x0000 || ptr == 0xFFFF) {
 		// No string here...
-		return string();
+		return u8string();
 	}
 
 	char strbuf[256];
@@ -128,7 +129,7 @@ string Sega8BitPrivate::getSdscString(uint16_t ptr)
 	}
 
 	// Unable to read the string...
-	return string();
+	return u8string();
 }
 
 /**
@@ -537,7 +538,7 @@ int Sega8Bit::loadMetaData(void)
 		d->metaData->addMetaData_timestamp(Property::CreationDate, ctime);
 
 		// Author.
-		string str = d->getSdscString(le16_to_cpu(sdsc->author_ptr));
+		u8string str = d->getSdscString(le16_to_cpu(sdsc->author_ptr));
 		if (!str.empty()) {
 			d->metaData->addMetaData_string(Property::Author, str);
 		}

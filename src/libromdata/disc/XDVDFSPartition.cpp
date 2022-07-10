@@ -14,8 +14,9 @@
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::u8string;
 using std::unordered_map;
 
 namespace LibRomData {
@@ -50,11 +51,11 @@ class XDVDFSPartitionPrivate
 
 		/**
 		 * Get an entry within a specified directory table.
-		 * @param dirTable Directory table.
-		 * @param filename Filename to find, without subdirectories.
+		 * @param dirTable Directory table
+		 * @param filename Filename to find, without subdirectories
 		 * @return Pointer to XDVDFS_DirEntry within dirTable, or nullptr if not found.
 		 */
-		const XDVDFS_DirEntry *getDirEntry(const ao::uvector<uint8_t> *dirTable, const char *filename);
+		const XDVDFS_DirEntry *getDirEntry(const ao::uvector<uint8_t> *dirTable, const char8_t *filename);
 
 		/**
 		 * Get the specified directory.
@@ -162,11 +163,11 @@ int XDVDFSPartitionPrivate::xdvdfs_strcasecmp(const char *s1, const char *s2)
 
 /**
  * Get an entry within a specified directory table.
- * @param dirTable Directory table.
- * @param filename Filename to find, without subdirectories.
+ * @param dirTable Directory table
+ * @param filename Filename to find, without subdirectories
  * @return Pointer to XDVDFS_DirEntry within dirTable, or nullptr if not found.
  */
-const XDVDFS_DirEntry *XDVDFSPartitionPrivate::getDirEntry(const ao::uvector<uint8_t> *dirTable, const char *filename)
+const XDVDFS_DirEntry *XDVDFSPartitionPrivate::getDirEntry(const ao::uvector<uint8_t> *dirTable, const char8_t *filename)
 {
 	assert(dirTable != nullptr);
 	assert(filename != nullptr);
@@ -553,7 +554,8 @@ IRpFile *XDVDFSPartition::open(const char *filename)
 	}
 
 	// Find the file in the root directory.
-	const XDVDFS_DirEntry *const dirEntry = d->getDirEntry(dirTable, filename);
+	// FIXME: U8STRFIX - filename should be char8_t.
+	const XDVDFS_DirEntry *const dirEntry = d->getDirEntry(dirTable, reinterpret_cast<const char8_t*>(filename));
 	if (!dirEntry) {
 		// File not found.
 		// getDirEntry() has already set m_lastError.

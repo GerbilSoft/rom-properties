@@ -15,8 +15,9 @@
 // librpbase
 using namespace LibRpBase;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::u8string;
 
 namespace LibRomData {
 
@@ -93,13 +94,16 @@ RomFields::StringMultiMap_t *WiiCommon::getWiiBannerStrings(
 			// NOTE: The banner may have two lines.
 			// Each line is a maximum of 21 characters.
 			// Convert from UTF-16 BE and split into two lines at the same time.
-			string info = utf16be_to_utf8(pImet->names[langID][0], ARRAY_SIZE_I(pImet->names[langID][0]));
+			u8string info = utf16be_to_utf8(pImet->names[langID][0], ARRAY_SIZE_I(pImet->names[langID][0]));
 			if (pImet->names[langID][1][0] != cpu_to_be16('\0')) {
 				info += '\n';
 				info += utf16be_to_utf8(pImet->names[langID][1], ARRAY_SIZE_I(pImet->names[langID][1]));
 			}
 
-			pMap_bannerName->emplace(lc, std::move(info));
+			// FIXME: Change StringMultiMap to u8string.
+#define U8STRFIX(x) string((const char*)(x).c_str())
+			//pMap_bannerName->emplace(lc, std::move(info));
+			pMap_bannerName->emplace(lc, U8STRFIX(info));
 		}
 	}
 

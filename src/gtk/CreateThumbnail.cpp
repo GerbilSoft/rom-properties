@@ -349,10 +349,11 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const 
 	// KDE uses this order: Software, MTime, Mimetype, Size, URI
 	kv.reserve(5);
 
-	// Software.
-	kv.emplace_back("Software", "ROM Properties Page shell extension (GTK" GTK_MAJOR_STR ")");
+	// Software
+	static const char8_t sw[] = U8("ROM Properties Page shell extension (GTK") U8(GTK_MAJOR_STR) U8(")");
+	kv.emplace_back("Software", sw);
 
-	// Modification time and file size.
+	// Modification time and file size
 	mtime_str[0] = 0;
 	szFile_str[0] = 0;
 	f_src = g_file_new_for_uri(s_uri.c_str());
@@ -381,32 +382,34 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const 
 		g_object_unref(f_src);
 	}
 
-	// Modification time.
+	// FIXME: U8STRFIX
+
+	// Modification time
 	if (mtime_str[0] != 0) {
-		kv.emplace_back("Thumb::MTime", mtime_str);
+		kv.emplace_back("Thumb::MTime", reinterpret_cast<const char8_t*>(mtime_str));
 	}
 
-	// MIME type.
+	// MIME type
 	mimeType = romData->mimeType();
 	if (mimeType) {
-		kv.emplace_back("Thumb::Mimetype", mimeType);
+		kv.emplace_back("Thumb::Mimetype", reinterpret_cast<const char8_t*>(mimeType));
 	}
 
-	// File size.
+	// File size
 	if (szFile_str[0] != 0) {
-		kv.emplace_back("Thumb::Size", szFile_str);
+		kv.emplace_back("Thumb::Size", reinterpret_cast<const char8_t*>(szFile_str));
 	}
 
-	// Original image dimensions.
+	// Original image dimensions
 	if (outParams.fullSize.width > 0 && outParams.fullSize.height > 0) {
 		char imgdim_str[16];
 		snprintf(imgdim_str, sizeof(imgdim_str), "%d", outParams.fullSize.width);
-		kv.emplace_back("Thumb::Image::Width", imgdim_str);
+		kv.emplace_back("Thumb::Image::Width", reinterpret_cast<const char8_t*>(imgdim_str));
 		snprintf(imgdim_str, sizeof(imgdim_str), "%d", outParams.fullSize.height);
-		kv.emplace_back("Thumb::Image::Height", imgdim_str);
+		kv.emplace_back("Thumb::Image::Height", reinterpret_cast<const char8_t*>(imgdim_str));
 	}
 
-	// URI.
+	// URI
 	// NOTE: The Thumbnail Management Standard specification says spaces
 	// must be urlencoded: ' ' -> "%20"
 	// KDE4 and KF5 prior to 5.46 did not do this correctly.
@@ -414,9 +417,9 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const 
 	// References:
 	// - https://bugs.kde.org/show_bug.cgi?id=393015
 	// - https://specifications.freedesktop.org/thumbnail-spec/thumbnail-spec-latest.html
-	kv.emplace_back("Thumb::URI", s_uri.c_str());
+	kv.emplace_back("Thumb::URI", reinterpret_cast<const char8_t*>(s_uri.c_str()));
 
-	// Write the tEXt chunks.
+	// Write the tEXt chunks
 	pngWriter->write_tEXt(kv);
 
 	/** IHDR **/
@@ -433,7 +436,7 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const 
 
 	/** IDAT chunk. **/
 
-	// Initialize the row pointers.
+	// Initialize the row pointers
 	row_pointers.reset(new const uint8_t*[outParams.thumbSize.height]);
 	pixels = PIMGTYPE_get_image_data(outParams.retImg);
 	rowstride = PIMGTYPE_get_rowstride(outParams.retImg);
@@ -441,12 +444,12 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const 
 		row_pointers[y] = pixels;
 	}
 
-	// Write the IDAT section.
+	// Write the IDAT section
 #ifdef RP_GTK_USE_CAIRO
-	// Cairo uses ARGB32.
+	// Cairo uses ARGB32
 	static const bool is_abgr = false;
 #else /* !RP_GTK_USE_CAIRO */
-	// GdkPixbuf uses ABGR32.
+	// GdkPixbuf uses ABGR32
 	static const bool is_abgr = true;
 #endif
 	pwRet = pngWriter->write_IDAT(row_pointers.get(), is_abgr);

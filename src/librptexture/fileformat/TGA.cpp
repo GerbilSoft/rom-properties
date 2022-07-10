@@ -25,7 +25,7 @@ using LibRpFile::IRpFile;
 #include "decoder/ImageDecoder_Linear.hpp"
 
 // C++ STL classes.
-using std::string;
+using std::u8string;
 using std::unique_ptr;
 
 namespace LibRpTexture {
@@ -823,7 +823,7 @@ int TGA::getFields(RomFields *fields) const
 		}
 
 		// Comments
-		string s_comments;
+		u8string s_comments;
 		for (size_t i = 0; i < ARRAY_SIZE(tgaExtArea->author_comment); i++) {
 			if (tgaExtArea->author_comment[i][0] != '\0') {
 				if (!s_comments.empty()) {

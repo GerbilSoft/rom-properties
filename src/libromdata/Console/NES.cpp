@@ -18,8 +18,9 @@
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::u8string;
 using std::unique_ptr;
 using std::vector;
 
@@ -89,7 +90,7 @@ class NESPrivate final : public RomDataPrivate
 		NES_IntFooter footer;
 		bool hasCheckedIntFooter;	// True if we already checked.
 		uint8_t intFooterErrno;		// If checked: 0 if valid, positive errno on error.
-		string s_footerName;		// Name from the footer.
+		u8string s_footerName;		// Name from the footer.
 
 		/**
 		 * Convert an FDS BCD datestamp to Unix time.

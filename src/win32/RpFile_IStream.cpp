@@ -696,5 +696,6 @@ const char *RpFile_IStream::filename(void) const
 	}
 
 	// Return the filename.
-	return (!m_filename.empty() ? m_filename.c_str() : nullptr);
+	// FIXME: U8STRFIX
+	return (!m_filename.empty() ? reinterpret_cast<const char*>(m_filename.c_str()) : nullptr);
 }

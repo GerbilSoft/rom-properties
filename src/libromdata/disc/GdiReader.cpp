@@ -21,8 +21,9 @@ using namespace LibRpFile;
 // Other RomData subclasses
 #include "Other/ISO.hpp"
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::u8string;
 using std::unique_ptr;
 using std::vector;
 
@@ -50,7 +51,7 @@ class GdiReaderPrivate : public SparseDiscReaderPrivate {
 			uint8_t trackNumber;		// 01 through 99
 			uint8_t reserved;
 			// TODO: Data vs. audio?
-			string filename;		// Relative to the .gdi file. Cleared on error.
+			u8string filename;		// Relative to the .gdi file. Cleared on error.
 			IRpFile *file;
 		};
 		vector<BlockRange> blockRanges;
@@ -258,19 +259,22 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 	}
 
 	// Separate the file extension.
-	string basename = blockRange->filename;
-	string ext;
+	u8string basename = blockRange->filename;
+	u8string ext;
 	size_t dotpos = basename.find_last_of('.');
 	if (dotpos != string::npos) {
 		ext = basename.substr(dotpos);
 		basename.resize(dotpos);
 	} else {
 		// No extension. Add one based on sector size.
-		ext = (blockRange->sectorSize == 2048 ? ".iso" : ".bin");
+		ext = (blockRange->sectorSize == 2048 ? U8(".iso") : U8(".bin"));
 	}
 
 	// Open the related file.
-	IRpFile *const file = FileSystem::openRelatedFile(filename.c_str(), basename.c_str(), ext.c_str());
+	// FIXME: u8string
+	IRpFile *const file = FileSystem::openRelatedFile(filename.c_str(),
+		reinterpret_cast<const char*>(basename.c_str()),
+		reinterpret_cast<const char*>(ext.c_str()));
 	if (!file) {
 		// Unable to open the file.
 		// TODO: Return the actual error.

@@ -14,9 +14,10 @@
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
-// C++ STL classes.
+// C++ STL classes
 using std::array;
 using std::string;
+using std::u8string;
 using std::unique_ptr;
 using std::vector;
 
@@ -58,7 +59,7 @@ class VGMPrivate final : public RomDataPrivate
 
 		// GD3 tags.
 		// All strings must be in UTF-8 format.
-		typedef array<string, GD3_TAG_MAX> gd3_tags_t;
+		typedef array<u8string, GD3_TAG_MAX> gd3_tags_t;
 
 		/**
 		 * Load GD3 tags.
@@ -436,7 +437,7 @@ int VGM::loadFieldData(void)
 			};
 
 			for (const auto &p : gd3_tag_field_tbl) {
-				const string &str = (*gd3_tags)[p.idx];
+				const u8string &str = (*gd3_tags)[p.idx];
 				if (!str.empty()) {
 					d->fields->addField_string(
 						dpgettext_expr(RP_I18N_DOMAIN, p.ctx, p.desc), str);
@@ -919,7 +920,7 @@ int VGM::loadMetaData(void)
 			};
 
 			for (const auto &p : gd3_tag_prop_tbl) {
-				const string &str = (*gd3_tags)[p.idx];
+				const u8string &str = (*gd3_tags)[p.idx];
 				if (str.empty())
 					continue;
 
@@ -928,9 +929,12 @@ int VGM::loadMetaData(void)
 
 					// Parse the release date.
 					// NOTE: Only year is supported.
+					// NOTE: sscanf() doesn't support char8_t.
 					int year;
 					char chr;
-					int s = sscanf((*gd3_tags)[GD3_TAG_DATE_GAME_RELEASE].c_str(), "%04d%c", &year, &chr);
+					int s = sscanf(reinterpret_cast<const char*>(
+						(*gd3_tags)[GD3_TAG_DATE_GAME_RELEASE].c_str()),
+						"%04d%c", &year, &chr);
 					if (s == 1 || (s == 2 && (chr == '-' || chr == '/'))) {
 						// Year seems to be valid.
 						// Make sure the number is acceptable:

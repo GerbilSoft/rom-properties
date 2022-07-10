@@ -41,6 +41,7 @@ using LibRomData::RomDataFactory;
 // C++ STL classes
 using std::list;
 using std::string;
+using std::u8string;
 using std::vector;
 using std::wstring;
 
@@ -331,9 +332,10 @@ static LONG RegisterUserFileType(const tstring &sid, const RomDataFactory::ExtIn
 	}
 
 	// Use an ExtInfo with the progID instead of the extension.
-	const string progID_u8 = T2U8(progID);
+	// FIXME: U8STRFIX
+	const u8string progID_u8 = T2U8(progID);
 	const RomDataFactory::ExtInfo progID_info(
-		progID_u8.c_str(),
+		reinterpret_cast<const char*>(progID_u8.c_str()),
 		ext_info.attrs
 	);
 
@@ -405,9 +407,10 @@ static LONG UnregisterUserFileType(const tstring &sid, const RomDataFactory::Ext
 	}
 
 	// Use an ExtInfo with the progID instead of the extension.
-	const string progID_u8 = T2U8(progID);
+	// FIXME: U8STRFIX
+	const u8string progID_u8 = T2U8(progID);
 	const RomDataFactory::ExtInfo progID_info(
-		progID_u8.c_str(),
+		reinterpret_cast<const char*>(progID_u8.c_str()),
 		ext_info.attrs
 	);
 

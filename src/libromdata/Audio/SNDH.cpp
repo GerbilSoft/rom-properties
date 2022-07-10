@@ -20,15 +20,16 @@ using LibRpFile::IRpFile;
 
 // unice68
 #ifdef ENABLE_UNICE68
-# include "unice68.h"
+#  include "unice68.h"
 #endif
 
 // for memmem() if it's not available in <string.h>
 #include "librpbase/TextFuncs_libc.h"
 
-// C++ STL classes.
+// C++ STL classes
 using std::pair;
 using std::string;
+using std::u8string;
 using std::unique_ptr;
 using std::unordered_map;
 using std::vector;
@@ -55,10 +56,10 @@ class SNDHPrivate final : public RomDataPrivate
 		struct TagData {
 			bool tags_read;		// True if tags were read successfully.
 
-			string title;		// Song title.
-			string composer;	// Composer name.
-			string ripper;		// Ripper name.
-			string converter;	// Converter name.
+			u8string title;		// Song title.
+			u8string composer;	// Composer name.
+			u8string ripper;	// Ripper name.
+			u8string converter;	// Converter name.
 
 			unsigned int subtunes;		// Subtune count. (If 0 or 1, entire file is one song.)
 							// NOTE: 0 (or missing) means SNDHv1; 1 means SNDHv2.
@@ -69,7 +70,7 @@ class SNDHPrivate final : public RomDataPrivate
 
 			// TODO: Use std::pair<>?
 			// The SNDH format uses separate tags for each, though...
-			vector<string> subtune_names;		// Subtune names.
+			vector<u8string> subtune_names;		// Subtune names.
 			vector<unsigned int> subtune_lengths;	// Subtune lengths, in seconds.
 
 			TagData() : tags_read(false), subtunes(0), vblank_freq(0), year(0), def_subtune(0)
@@ -86,7 +87,7 @@ class SNDHPrivate final : public RomDataPrivate
 		 * @param p_err	[out] Set to true if the string is out of bounds.
 		 * @return ASCII string.
 		 */
-		static string readStrFromBuffer(const uint8_t **p, const uint8_t *p_end, bool *p_err);
+		static u8string readStrFromBuffer(const uint8_t **p, const uint8_t *p_end, bool *p_err);
 
 		/**
 		 * Read a NULL-terminated unsigned ASCII number from an arbitrary binary buffer.
@@ -136,19 +137,19 @@ SNDHPrivate::SNDHPrivate(SNDH *q, IRpFile *file)
  * @param p_err	[out] Set to true if the string is out of bounds.
  * @return ASCII string.
  */
-string SNDHPrivate::readStrFromBuffer(const uint8_t **p, const uint8_t *p_end, bool *p_err)
+u8string SNDHPrivate::readStrFromBuffer(const uint8_t **p, const uint8_t *p_end, bool *p_err)
 {
 	if (*p >= p_end) {
 		// Out of bounds.
 		*p_err = true;
-		return string();
+		return u8string();
 	}
 
 	const uint8_t *const s_end = reinterpret_cast<const uint8_t*>(memchr(*p, 0, p_end-*p));
 	if (!s_end) {
 		// Out of bounds.
 		*p_err = true;
-		return string();
+		return u8string();
 	}
 
 	*p_err = false;
@@ -163,7 +164,7 @@ string SNDHPrivate::readStrFromBuffer(const uint8_t **p, const uint8_t *p_end, b
 	}
 
 	// Empty string.
-	return string();
+	return u8string();
 }
 
 /**
@@ -381,7 +382,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				const uint8_t *p_next = nullptr;
 				for (unsigned int i = 0; i < subtunes; i++, p_tbl++) {
 					const uint8_t *p_str = p + be16_to_cpu(*p_tbl) + offset;
-					string str = readStrFromBuffer(&p_str, p_end, &err);
+					u8string str = readStrFromBuffer(&p_str, p_end, &err);
 					//assert(!err);	// FIXME: Breaks Johansen_Benny/Yahtzee.sndh.
 					if (err) {
 						// An error occured.
@@ -870,6 +871,9 @@ int SNDH::loadFieldData(void)
 		// TODO: Hide the third column if there are names but all zero durations?
 		uint64_t duration_total = 0;
 
+		// FIXME: Change RFT_LISTDATA u8string.
+#define U8STRFIX(x) string((const char*)(x).c_str())
+
 		const size_t count = std::max(tags.subtune_names.size(), tags.subtune_lengths.size());
 		auto vv_subtune_list = new RomFields::ListData_t(count);
 		unsigned int idx = 0;
@@ -879,7 +883,7 @@ int SNDH::loadFieldData(void)
 			data_row.emplace_back(rp_sprintf("%u", idx+1));	// NOTE: First subtune is 1, not 0.
 			if (has_SN) {
 				if (idx < tags.subtune_names.size()) {
-					data_row.emplace_back(tags.subtune_names.at(idx));
+					data_row.emplace_back(U8STRFIX(tags.subtune_names.at(idx)));
 				} else {
 					data_row.emplace_back("");
 				}

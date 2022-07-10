@@ -279,6 +279,40 @@ class RomMetaData
 		 */
 		int addMetaData_string(Property name, const std::string &str, unsigned int flags = 0);
 
+#ifndef CXX20_COMPAT_CHAR8_T
+		/**
+		 * Add a string metadata property.
+		 *
+		 * If a metadata property with the same name already exists,
+		 * it will be overwritten.
+		 *
+		 * @param name Property name
+		 * @param str String value
+		 * @param flags Formatting flags
+		 * @return Metadata index, or -1 on error.
+		 */
+		inline int addMetaData_string(Property name, const char8_t *str, unsigned int flags = 0)
+		{
+			return addMetaData_string(name, reinterpret_cast<const char*>(str), flags);
+		}
+
+		/**
+		 * Add a string metadata property.
+		 *
+		 * If a metadata property with the same name already exists,
+		 * it will be overwritten.
+		 *
+		 * @param name Property name
+		 * @param str String value
+		 * @param flags Formatting flags
+		 * @return Metadata index, or -1 on error.
+		 */
+		inline int addMetaData_string(Property name, const std::u8string &str, unsigned int flags = 0)
+		{
+			return addMetaData_string(name, reinterpret_cast<const char*>(str.c_str()), flags);
+		}
+#endif /* CXX20_COMPAT_CHAR8_T */
+
 		/**
 		 * Add a timestamp metadata property.
 		 *

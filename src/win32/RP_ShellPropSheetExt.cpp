@@ -44,6 +44,7 @@ using LibRomData::RomDataFactory;
 // C++ STL classes.
 using std::set;
 using std::string;
+using std::u8string;
 using std::unique_ptr;
 using std::vector;
 using std::wstring;	// for tstring
@@ -63,7 +64,7 @@ const CLSID CLSID_RP_ShellPropSheetExt =
 // This points to the RP_ShellPropSheetExt_Private::tab object.
 const TCHAR RP_ShellPropSheetExt_Private::TAB_PTR_PROP[] = _T("RP_ShellPropSheetExt_Private::tab");
 
-RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q, string &&filename)
+RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q, u8string &&filename)
 	: q_ptr(q)
 	, filename(std::move(filename))
 	, romData(nullptr)
@@ -347,8 +348,10 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 			return 0;
 
 		// NULL string == empty string
+		// FIXME: U8STRFIX
 		if (field.data.str) {
-			str_nl = LibWin32UI::unix2dos(U82T_s(*(field.data.str)), &lf_count);
+			str_nl = LibWin32UI::unix2dos(U82T_c(
+				reinterpret_cast<const char*>((*(field.data.str)).c_str())), &lf_count);
 		}
 	} else {
 		// Use the specified string.
@@ -1432,10 +1435,12 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 		}
 
 		// Get the string and update the text.
+		// FIXME: U8STRFIX
 		const string *const pStr = RomFields::getFromStringMulti(pStr_multi, def_lc, user_lc);
 		assert(pStr != nullptr);
 		if (pStr != nullptr) {
-			SetWindowText(lblString, U82T_s(*pStr));
+			//SetWindowText(lblString, U82T_s(*pStr));
+			SetWindowText(lblString, U82T_c(reinterpret_cast<const char*>(pStr->c_str())));
 		} else {
 			SetWindowText(lblString, _T(""));
 		}
@@ -1518,6 +1523,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 			for (; iter_ld_row != pListData_cend && iter_vvStr_row != vvStr_end;
 			     ++iter_ld_row, ++iter_vvStr_row)
 			{
+				// FIXME: U8STRFIX
 				const vector<string> &src_data_row = *iter_ld_row;
 				vector<tstring> &dest_data_row = *iter_vvStr_row;
 
@@ -1529,7 +1535,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 				for (; iter_sdr != src_data_row_cend && iter_ddr != dest_data_row_end;
 				     ++iter_sdr, ++iter_ddr, col++)
 				{
-					tstring tstr = U82T_s(*iter_sdr);
+					tstring tstr = U82T_c(reinterpret_cast<const char*>(iter_sdr->c_str()));
 					int width = LibWin32UI::measureStringForListView(hDC, tstr);
 					if (col < colCount) {
 						lvData.col_widths[col] = std::max(lvData.col_widths[col], width);
@@ -2211,7 +2217,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	RpFile *file = nullptr;
 	RomData *romData = nullptr;
 
-	string u8filename;
+	u8string u8filename;
 	const Config *config;
 
 	// Determine how many files are involved in this operation. This
@@ -2241,8 +2247,9 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	u8filename = T2U8(tfilename, cchFilename);
 
 	// Check for "bad" file systems.
+	// FIXME: U8STRFIX
 	config = Config::instance();
-	if (FileSystem::isOnBadFS(u8filename.c_str(),
+	if (FileSystem::isOnBadFS(reinterpret_cast<const char*>(u8filename.c_str()),
 	    config->enableThumbnailOnNetworkFS()))
 	{
 		// This file is on a "bad" file system.
@@ -2250,7 +2257,8 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	}
 
 	// Open the file.
-	file = new RpFile(u8filename.c_str(), RpFile::FM_OPEN_READ_GZ);
+	// FIXME: U8STRFIX
+	file = new RpFile(reinterpret_cast<const char*>(u8filename.c_str()), RpFile::FM_OPEN_READ_GZ);
 	if (!file->isOpen()) {
 		// Unable to open the file.
 		goto cleanup;
@@ -2792,7 +2800,8 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			}
 
 			// Open the RomData object.
-			RpFile *const file = new RpFile(d->filename, RpFile::FM_OPEN_READ_GZ);
+			// FIXME: U8STRFIX
+			RpFile *const file = new RpFile(reinterpret_cast<const char*>(d->filename.c_str()), RpFile::FM_OPEN_READ_GZ);
 			if (!file->isOpen()) {
 				// Unable to open the file.
 				file->unref();

@@ -16,8 +16,9 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 using LibRomData::RomDataFactory;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::u8string;
 
 // CLSID
 const CLSID CLSID_RP_ShellIconOverlayIdentifier =
@@ -101,19 +102,19 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::IsMemberOf(_In_ PCWSTR pwszPath, D
 	}
 
 	// Convert the filename to UTF-8.
-	const string u8filename = W2U8(pwszPath);
+	const u8string u8filename = W2U8(pwszPath);
 
 	// Check for "bad" file systems.
 	// TODO: Combine with the above "slow" check?
-	if (FileSystem::isOnBadFS(u8filename.c_str(),
-	    config->enableThumbnailOnNetworkFS()))
-	{
+	// FIXME: U8STRFIX
+	if (FileSystem::isOnBadFS(reinterpret_cast<const char*>(u8filename.c_str()), config->enableThumbnailOnNetworkFS())) {
 		// This file is on a "bad" file system.
 		return S_FALSE;
 	}
 
-	// Open the ROM file.
-	RpFile *const file = new RpFile(u8filename.c_str(), RpFile::FM_OPEN_READ_GZ);
+	// Attempt to open the ROM file.
+	// FIXME: U8STRFIX
+	RpFile *const file = new RpFile(reinterpret_cast<const char*>(u8filename.c_str()), RpFile::FM_OPEN_READ_GZ);
 	if (!file->isOpen()) {
 		// Error opening the ROM file.
 		file->unref();

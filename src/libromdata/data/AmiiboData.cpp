@@ -26,6 +26,7 @@ using namespace LibRpFile;
 // C++ includes.
 #include <string>
 using std::string;
+using std::u8string;
 using std::tstring;
 
 // Uninitialized vector class.
@@ -111,7 +112,7 @@ class AmiiboDataPrivate {
 		 * @param amiiboBinFileType AmiiboBinFileType
 		 * @return amiibo-data.bin filename, or empty string on error.
 		 */
-		string getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileType) const;
+		u8string getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileType) const;
 
 	public:
 		/**
@@ -180,9 +181,9 @@ AmiiboDataPrivate::AmiiboDataPrivate()
  * @param amiiboBinFileType AmiiboBinFileType
  * @return amiibo-data.bin filename, or empty string on error.
  */
-string AmiiboDataPrivate::getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileType) const
+u8string AmiiboDataPrivate::getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileType) const
 {
-	string filename;
+	u8string filename;
 
 	switch (amiiboBinFileType) {
 		default:
@@ -191,7 +192,7 @@ string AmiiboDataPrivate::getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileTy
 
 		case AmiiboBinFileType::System: {
 #if defined(DIR_INSTALL_SHARE)
-			filename = DIR_INSTALL_SHARE DIR_SEP_STR AMIIBO_BIN_FILENAME;
+			filename = U8(DIR_INSTALL_SHARE) U8(DIR_SEP_STR) U8(AMIIBO_BIN_FILENAME);
 #elif defined(_WIN32)
 			TCHAR dll_filename[MAX_PATH];
 			DWORD dwResult = GetModuleFileName(HINST_THISCOMPONENT,
@@ -232,13 +233,14 @@ string AmiiboDataPrivate::getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileTy
 		}
 
 		case AmiiboBinFileType::User:
-			filename = FileSystem::getConfigDirectory();
+			// FIXME: U8STRFIX
+			filename = u8string(reinterpret_cast<const char8_t*>(FileSystem::getConfigDirectory().c_str()));
 			if (!filename.empty()) {
 				if (filename.at(filename.size()-1) != DIR_SEP_CHR) {
 					filename += DIR_SEP_CHR;
 				}
 			}
-			filename += AMIIBO_BIN_FILENAME;
+			filename += U8(AMIIBO_BIN_FILENAME);
 			break;
 	}
 
@@ -252,7 +254,7 @@ string AmiiboDataPrivate::getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileTy
 int AmiiboDataPrivate::loadIfNeeded(void)
 {
 	// Determine the amiibo-data.bin file to load.
-	string filename;
+	u8string filename;
 
 	time_t now = time(nullptr);
 	if (!amiibo_bin_data.empty()) {
@@ -277,7 +279,8 @@ int AmiiboDataPrivate::loadIfNeeded(void)
 	filename = getAmiiboBinFilename(AmiiboBinFileType::User);
 	if (!filename.empty()) {
 		// Check the mtime to see if we need to reload it.
-		int ret = FileSystem::get_mtime(filename, &mtime);
+		// FIXME: U8STRFIX
+		int ret = FileSystem::get_mtime(reinterpret_cast<const char*>(filename.c_str()), &mtime);
 		if (ret == 0) {
 			if (mtime == this->amiibo_bin_file_ts) {
 				// User file exists, and the mtime matches the previous mtime.
@@ -299,7 +302,8 @@ int AmiiboDataPrivate::loadIfNeeded(void)
 		filename = getAmiiboBinFilename(AmiiboBinFileType::System);
 		if (!filename.empty()) {
 			// Check the mtime to see if we need to reload it.
-			int ret = FileSystem::get_mtime(filename, &mtime);
+			// FIXME: U8STRFIX
+			int ret = FileSystem::get_mtime(reinterpret_cast<const char*>(filename.c_str()), &mtime);
 			if (ret == 0) {
 				if (mtime == this->amiibo_bin_file_ts) {
 					// User file exists, and the mtime matches the previous mtime.
@@ -324,7 +328,8 @@ int AmiiboDataPrivate::loadIfNeeded(void)
 	}
 
 	// Load amiibo.bin.
-	RpFile *const pFile = new RpFile(filename, RpFile::FM_OPEN_READ);
+	// FIXME: U8STRFIX
+	RpFile *const pFile = new RpFile(reinterpret_cast<const char*>(filename.c_str()), RpFile::FM_OPEN_READ);
 	if (!pFile->isOpen()) {
 		// Unable to open the file.
 		int err = -pFile->lastError();

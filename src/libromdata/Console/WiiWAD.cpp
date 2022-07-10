@@ -37,8 +37,9 @@ using LibRpTexture::rp_image;
 #include "WiiWIBN.hpp"
 #include "Handheld/NintendoDS.hpp"
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::u8string;
 using std::unique_ptr;
 using std::vector;
 
@@ -107,7 +108,7 @@ WiiWADPrivate::~WiiWADPrivate()
  * Get the game information string from the banner.
  * @return Game information string, or empty string on error.
  */
-string WiiWADPrivate::getGameInfo(void)
+u8string WiiWADPrivate::getGameInfo(void)
 {
 	// TODO: Check for DSi SRL.
 
@@ -116,7 +117,7 @@ string WiiWADPrivate::getGameInfo(void)
 	// TODO: Read on demand instead of always reading in the constructor.
 	if (imet.magic != cpu_to_be32(WII_IMET_MAGIC)) {
 		// Not valid.
-		return string();
+		return u8string();
 	}
 
 	// TODO: Combine with GameCubePrivate::wii_getBannerName()?
@@ -135,7 +136,7 @@ string WiiWADPrivate::getGameInfo(void)
 	// NOTE: The banner may have two lines.
 	// Each line is a maximum of 21 characters.
 	// Convert from UTF-16 BE and split into two lines at the same time.
-	string info = utf16be_to_utf8(imet.names[lang][0], 21);
+	u8string info = utf16be_to_utf8(imet.names[lang][0], 21);
 	if (imet.names[lang][1][0] != 0) {
 		info += '\n';
 		info += utf16be_to_utf8(imet.names[lang][1], 21);
@@ -144,7 +145,7 @@ string WiiWADPrivate::getGameInfo(void)
 	return info;
 #else /* !ENABLE_DECRYPTION */
 	// Unable to decrypt the IMET header.
-	return string();
+	return u8string();
 #endif /* ENABLE_DECRYPTION */
 }
 
@@ -1219,12 +1220,12 @@ int WiiWAD::loadMetaData(void)
 	// NOTE: We can only get the title if the encryption key is valid.
 	// If we can't get the title, don't bother creating RomMetaData.
 	// TODO: Use WiiCommon for multi-language strings?
-	string gameInfo = d->getGameInfo();
+	u8string gameInfo = d->getGameInfo();
 	if (gameInfo.empty()) {
 		return -EIO;
 	}
 	const size_t nl_pos = gameInfo.find('\n');
-	if (nl_pos != string::npos) {
+	if (nl_pos != u8string::npos) {
 		gameInfo.resize(nl_pos);
 	}
 	if (gameInfo.empty()) {

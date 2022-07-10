@@ -18,10 +18,10 @@ using namespace LibRpBase;
 using LibRpFile::IRpFile;
 using namespace LibRpTexture;
 
-// C++ STL classes.
+// C++ STL classes
 #include <string>
 #include <vector>
-using std::string;
+using std::u8string;
 using std::vector;
 
 namespace LibRomData {
@@ -883,7 +883,7 @@ int GameCubeSave::loadFieldData(void)
 			// Found a NULL byte.
 			desc_len = null_pos - comment.desc;
 		}
-		string desc = cp1252_sjis_to_utf8(comment.desc, static_cast<int>(desc_len));
+		u8string desc = cp1252_sjis_to_utf8(comment.desc, static_cast<int>(desc_len));
 		desc += '\n';
 
 		// Check for a NULL byte in the file description.
@@ -974,7 +974,7 @@ int GameCubeSave::loadMetaData(void)
 			// Found a NULL byte.
 			desc_len = static_cast<int>(null_pos - desc_buf);
 		}
-		string desc = cp1252_sjis_to_utf8(desc_buf, desc_len);
+		u8string desc = cp1252_sjis_to_utf8(desc_buf, desc_len);
 		desc += '\n';
 
 		// Check for a NULL byte in the file description.

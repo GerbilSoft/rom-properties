@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * FstPrint.cpp: FST printer.                                              *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -44,6 +44,7 @@ using std::ostream;
 using std::ostringstream;
 using std::setw;
 using std::string;
+using std::u8string;
 using std::vector;
 
 namespace LibRomData {
@@ -148,7 +149,8 @@ static int fstPrint(IFst *fst, ostream &os, const string &path,
 			fc.files++;
 
 			// Save the filename.
-			string name = dirent->name;
+			// FIXME: U8STRFIX
+			u8string name = reinterpret_cast<const char8_t*>(dirent->name);
 
 			// Tree + name length.
 			// - Tree is 4 characters per level.
@@ -182,7 +184,8 @@ static int fstPrint(IFst *fst, ostream &os, const string &path,
 			os << "\xE2\x94\x80\xE2\x94\x80 ";
 
 			// Print the filename and attributes.
-			os << name << setw(attr_spaces) << ' ' << setw(0) << attrs << '\n';
+			// FIXME: U8STRFIX - no support for char8_t in ostringstream?
+			os << reinterpret_cast<const char*>(name.c_str()) << setw(attr_spaces) << ' ' << setw(0) << attrs << '\n';
 		}
 	}
 

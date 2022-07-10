@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpPngWriter.cpp: PNG image writer.                                      *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -48,11 +48,11 @@ using LibRpTexture::argb32_t;
 // PNGCAPI was added in libpng-1.5.0beta14.
 // Older versions will need this.
 #ifndef PNGCAPI
-# ifdef _MSC_VER
-#  define PNGCAPI __cdecl
-# else
-#  define PNGCAPI
-# endif
+#  ifdef _MSC_VER
+#    define PNGCAPI __cdecl
+#  else
+#    define PNGCAPI
+#  endif
 #endif /* !PNGCAPI */
 
 // libpng-1.5.0beta42 marked several function parameters as const.
@@ -71,7 +71,7 @@ using LibRpTexture::argb32_t;
 
 // libpng-1.5 doesn't define PNG_Z_DEFAULT_COMPRESSION.
 #ifndef PNG_Z_DEFAULT_COMPRESSION
-# define PNG_Z_DEFAULT_COMPRESSION (-1)
+#  define PNG_Z_DEFAULT_COMPRESSION (-1)
 #endif
 
 // C includes. (C++ namespace)
@@ -81,13 +81,14 @@ using LibRpTexture::argb32_t;
 using std::array;
 using std::string;
 using std::unique_ptr;
+using std::u8string;
 using std::vector;
 
 #if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 // Need zlib for delay-load checks.
-#include <zlib.h>
+#  include <zlib.h>
 // MSVC: Exception handling for /DELAYLOAD.
-#include "libwin32common/DelayLoadHelper.h"
+#  include "libwin32common/DelayLoadHelper.h"
 #endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
 
 namespace LibRpBase {
@@ -1268,7 +1269,7 @@ int RpPngWriter::write_IHDR(const rp_image::sBIT_t *sBIT, const uint32_t *palett
  * @param str UTF-8 string.
  * @return 0 if it's ASCII; 1 if it's Latin-1; 2 if it's not Latin-1.
  */
-static inline int u8strIsPngLatin1(const char *str)
+static inline int u8strIsPngLatin1(const char8_t *str)
 {
 	int ret = 0;
 	for (; *str != 0; str++) {
@@ -1354,7 +1355,7 @@ int RpPngWriter::write_tEXt(const kv_vector &kv)
 	const auto kv_cend = kv.cend();
 	for (auto iter = kv.cbegin(); iter != kv_cend; ++iter, ++pTxt) {
 		// Check if the string is ASCII, Latin-1, or other.
-		const string &value = iter->second;
+		const u8string &value = iter->second;
 		const bool compress = (value.size() >= 40);	// same as Qt
 
 		const int status = u8strIsPngLatin1(value.c_str());

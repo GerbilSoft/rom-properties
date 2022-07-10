@@ -16,8 +16,9 @@
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::u8string;
 using std::unique_ptr;
 using std::unordered_map;
 using std::vector;
@@ -40,16 +41,19 @@ class PSFPrivate final : public RomDataPrivate
 		static const RomDataInfo romDataInfo;
 
 	public:
-		// PSF header.
+		// PSF header
 		// NOTE: **NOT** byteswapped in memory.
 		PSF_Header psfHeader;
+
+		// Tags map
+		typedef unordered_map<string, u8string> psf_tags_t;
 
 		/**
 		 * Parse the tag section.
 		 * @param tag_addr Tag section starting address.
 		 * @return Map containing key/value entries.
 		 */
-		unordered_map<string, string> parseTags(off64_t tag_addr);
+		psf_tags_t parseTags(off64_t tag_addr);
 
 		/**
 		 * Get the "ripped by" tag name for the specified PSF version.
@@ -113,9 +117,9 @@ PSFPrivate::PSFPrivate(PSF *q, IRpFile *file)
  * @param tag_addr Tag section starting address.
  * @return Map containing key/value entries.
  */
-unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
+PSFPrivate::psf_tags_t PSFPrivate::parseTags(off64_t tag_addr)
 {
-	unordered_map<string, string> kv;
+	psf_tags_t kv;
 
 	// Read the tag magic first.
 	char tag_magic[sizeof(PSF_TAG_MAGIC)-1];
@@ -178,7 +182,7 @@ unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
 				string key(p, k_len);
 				std::transform(key.begin(), key.end(), key.begin(),
 					[](unsigned char c) { return std::tolower(c); });
-				kv.emplace(key, string(eq+1, v_len));
+				kv.emplace(key, u8string(reinterpret_cast<const char8_t*>(eq)+1, v_len));
 
 				// Check for UTF-8.
 				// NOTE: v_len check is redundant...
@@ -197,7 +201,7 @@ unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
 	// If we're not using UTF-8, convert the values.
 	if (!isUtf8) {
 		for (auto &p : kv) {
-			p.second = cp1252_sjis_to_utf8(p.second);
+			p.second = cp1252_sjis_to_utf8(reinterpret_cast<const char*>(p.second.c_str()));
 		}
 	}
 
@@ -539,7 +543,7 @@ int PSF::loadFieldData(void)
 	const off64_t tag_addr = (off64_t)sizeof(*psfHeader) +
 		le32_to_cpu(psfHeader->reserved_size) +
 		le32_to_cpu(psfHeader->compressed_prg_length);
-	unordered_map<string, string> tags = d->parseTags(tag_addr);
+	const PSFPrivate::psf_tags_t tags = d->parseTags(tag_addr);
 
 	if (!tags.empty()) {
 		// Title
@@ -658,7 +662,7 @@ int PSF::loadMetaData(void)
 	const off64_t tag_addr = (off64_t)sizeof(*psfHeader) +
 		le32_to_cpu(psfHeader->reserved_size) +
 		le32_to_cpu(psfHeader->compressed_prg_length);
-	unordered_map<string, string> tags = d->parseTags(tag_addr);
+	const PSFPrivate::psf_tags_t tags = d->parseTags(tag_addr);
 
 	if (tags.empty()) {
 		// No tags.
@@ -696,7 +700,8 @@ int PSF::loadMetaData(void)
 		// NOTE: Only year is supported.
 		int year;
 		char chr;
-		int s = sscanf(iter->second.c_str(), "%04d%c", &year, &chr);
+		// NOTE: sscanf() doesn't support char8_t.
+		int s = sscanf(reinterpret_cast<const char*>(iter->second.c_str()), "%04d%c", &year, &chr);
 		if (s == 1 || (s == 2 && (chr == '-' || chr == '/'))) {
 			// Year seems to be valid.
 			// Make sure the number is acceptable:
@@ -751,7 +756,8 @@ int PSF::loadMetaData(void)
 	iter = tags.find("length");
 	if (iter != tags.end()) {
 		// Convert the length string to milliseconds.
-		const unsigned int ms = d->lengthToMs(iter->second.c_str());
+		// FIXME: lengthToMs() can't easily be converted to use char8_t.
+		const unsigned int ms = d->lengthToMs(reinterpret_cast<const char*>(iter->second.c_str()));
 		d->metaData->addMetaData_integer(Property::Duration, ms);
 	}
 

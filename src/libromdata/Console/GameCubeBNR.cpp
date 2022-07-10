@@ -19,8 +19,9 @@ using namespace LibRpBase;
 using LibRpFile::IRpFile;
 using namespace LibRpTexture;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::u8string;
 using std::vector;
 
 // Uninitialized vector class.
@@ -78,10 +79,10 @@ class GameCubeBNRPrivate final : public RomDataPrivate
 		 * This is used for addField_gameInfo().
 		 *
 		 * @param comment gcn_banner_comment_t*
-		 * @param gcnRegion GameCube region for BNR1 encoding.
+		 * @param gcnRegion GameCube region for BNR1 encoding
 		 * @return Game information string, or empty string on error.
 		 */
-		static string getGameInfoString(const gcn_banner_comment_t *comment, uint32_t gcnRegion);
+		static u8string getGameInfoString(const gcn_banner_comment_t *comment, uint32_t gcnRegion);
 };
 
 ROMDATA_IMPL(GameCubeBNR)
@@ -155,10 +156,10 @@ const rp_image *GameCubeBNRPrivate::loadBanner(void)
  * This is used for addField_gameInfo().
  *
  * @param comment gcn_banner_comment_t*
- * @param gcnRegion GameCube region for BNR1 encoding.
+ * @param gcnRegion GameCube region for BNR1 encoding
  * @return Game information string, or empty string on error.
  */
-string GameCubeBNRPrivate::getGameInfoString(const gcn_banner_comment_t *comment, uint32_t gcnRegion)
+u8string GameCubeBNRPrivate::getGameInfoString(const gcn_banner_comment_t *comment, uint32_t gcnRegion)
 {
 	// Game info string.
 	string s_gameInfo;
@@ -206,6 +207,7 @@ string GameCubeBNRPrivate::getGameInfoString(const gcn_banner_comment_t *comment
 		s_gameInfo.resize(s_gameInfo.size()-1);
 	}
 
+	u8string s_u8gameInfo;
 	if (!s_gameInfo.empty()) {
 		// Convert from cp1252 or Shift-JIS.
 		switch (gcnRegion) {
@@ -214,7 +216,7 @@ string GameCubeBNRPrivate::getGameInfoString(const gcn_banner_comment_t *comment
 			case GCN_REGION_ALL:	// TODO: Assume JP?
 			default:
 				// USA/PAL uses cp1252.
-				s_gameInfo = cp1252_to_utf8(s_gameInfo);
+				s_u8gameInfo = cp1252_to_utf8(s_gameInfo);
 				break;
 
 			case GCN_REGION_JPN:
@@ -222,12 +224,12 @@ string GameCubeBNRPrivate::getGameInfoString(const gcn_banner_comment_t *comment
 			case GCN_REGION_CHN:
 			case GCN_REGION_TWN:
 				// Japan uses Shift-JIS.
-				s_gameInfo = cp1252_sjis_to_utf8(s_gameInfo);
+				s_u8gameInfo = cp1252_sjis_to_utf8(s_gameInfo);
 				break;
 		}
 	}
 
-	return s_gameInfo;
+	return s_u8gameInfo;
 }
 
 /** GameCubeBNR **/
@@ -556,33 +558,36 @@ int GameCubeBNR::loadFieldData(void)
 			if (lc == 0)
 				continue;
 
+			// FIXME: Change StringMultiMap to u8string.
+#define U8STRFIX(x) string((const char*)(x).c_str())
+
 			// Game name.
 			if (comment.gamename_full[0] != '\0') {
-				pMap_gamename->emplace(lc, cp1252_to_utf8(
+				pMap_gamename->emplace(lc, U8STRFIX(cp1252_to_utf8(
 					comment.gamename_full,
-					ARRAY_SIZE(comment.gamename_full)));
+					ARRAY_SIZE(comment.gamename_full))));
 			} else if (comment.gamename[0] != '\0') {
-				pMap_gamename->emplace(lc, cp1252_to_utf8(
+				pMap_gamename->emplace(lc, U8STRFIX(cp1252_to_utf8(
 					comment.gamename,
-					ARRAY_SIZE(comment.gamename)));
+					ARRAY_SIZE(comment.gamename))));
 			}
 
 			// Company.
 			if (comment.company_full[0] != '\0') {
-				pMap_company->emplace(lc, cp1252_to_utf8(
+				pMap_company->emplace(lc, U8STRFIX(cp1252_to_utf8(
 					comment.company_full,
-					ARRAY_SIZE(comment.company_full)));
+					ARRAY_SIZE(comment.company_full))));
 			} else if (comment.company[0] != '\0') {
-				pMap_company->emplace(lc, cp1252_to_utf8(
+				pMap_company->emplace(lc, U8STRFIX(cp1252_to_utf8(
 					comment.company,
-					ARRAY_SIZE(comment.company)));
+					ARRAY_SIZE(comment.company))));
 			}
 
 			// Game description.
 			if (comment.gamedesc[0] != '\0') {
-				pMap_gamedesc->emplace(lc, cp1252_to_utf8(
+				pMap_gamedesc->emplace(lc, U8STRFIX(cp1252_to_utf8(
 					comment.gamedesc,
-					ARRAY_SIZE(comment.gamedesc)));
+					ARRAY_SIZE(comment.gamedesc))));
 			}
 		}
 
@@ -796,7 +801,7 @@ int GameCubeBNR::addField_gameInfo(LibRpBase::RomFields *fields, uint32_t gcnReg
 		const gcn_banner_comment_t *const comment = &d->comments[0];
 
 		// Get the game info string.
-		string s_gameInfo = d->getGameInfoString(comment, gcnRegion);
+		u8string s_gameInfo = d->getGameInfoString(comment, gcnRegion);
 
 		// Add the field.
 		fields->addField_string(game_info_title, s_gameInfo);
@@ -841,7 +846,7 @@ int GameCubeBNR::addField_gameInfo(LibRpBase::RomFields *fields, uint32_t gcnReg
 			// Get the game info string.
 			// TODO: Always use GCN_REGION_EUR here instead of gcnRegion?
 			pMap_gameinfo->emplace(lc,
-				d->getGameInfoString(&d->comments[langID], gcnRegion));
+				U8STRFIX(d->getGameInfoString(&d->comments[langID], gcnRegion)));
 		}
 
 		// Add the field.

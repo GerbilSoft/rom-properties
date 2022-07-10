@@ -3,7 +3,7 @@
  * TextFuncs_wchar.hpp: wchar_t text conversion macros.                    *
  * Generally only used on Windows.                                         *
  *                                                                         *
- * Copyright (c) 2009-2020 by David Korth.                                 *
+ * Copyright (c) 2009-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -27,15 +27,15 @@
 #include "common.h"
 
 #ifdef _WIN32
-# include <tchar.h>
-# if defined(__cplusplus) && !defined(tstring)
+#  include <tchar.h>
+#  if defined(__cplusplus) && !defined(tstring)
 // NOTE: Can't use typedef due to std:: namespace.
-#  ifdef _UNICODE
-#   define tstring wstring
-#  else /* !_UNICODE */
-#   define tstring string
-#  endif /* _UNICODE */
-# endif /* defined(__cplusplus) && !defined(tstring) */
+#    ifdef _UNICODE
+#      define tstring wstring
+#    else /* !_UNICODE */
+#      define tstring string
+#    endif /* _UNICODE */
+#  endif /* defined(__cplusplus) && !defined(tstring) */
 #endif /* _WIN32 */
 
 #ifndef RP_WIS16
@@ -44,6 +44,8 @@
 
 /** wchar_t (Unicode) **/
 
+// FIXME: U8STRFIX
+
 /**
  * Convert UTF-8 const char* to UTF-16 const wchar_t*.
  * @param str UTF-8 const char*
@@ -51,35 +53,35 @@
  */
 #define U82W_c(str) \
 	(reinterpret_cast<const wchar_t*>( \
-		LibRpBase::utf8_to_utf16(str, -1).c_str()))
+		LibRpBase::utf8_to_utf16(reinterpret_cast<const char8_t*>(str), -1).c_str()))
 
 /**
- * Convert UTF-8 std::string to UTF-16 const wchar_t*.
- * @param str UTF-8 std::string
+ * Convert std::u8string to UTF-16 const wchar_t*.
+ * @param str std::u8string
  * @return UTF-16 const wchar_t*
  */
 #define U82W_s(str) \
 	(reinterpret_cast<const wchar_t*>( \
-		LibRpBase::utf8_to_utf16(str).c_str()))
+		LibRpBase::utf8_to_utf16(reinterpret_cast<const char8_t*>(str.c_str()), (int)str.size()).c_str()))
 
 /**
- * Convert UTF-16 const wchar_t* to UTF-8 std::string.
+ * Convert UTF-16 const wchar_t* to std::u8string.
  * @param wcs UTF-16 const wchar_t*
- * @param len Length. (If -1, assuming this is a C string.)
- * @return UTF-8 std::string.
+ * @param len Length (If -1, assuming this is a C string.)
+ * @return std::u8string
  */
-static inline std::string W2U8(const wchar_t *wcs, int len = -1)
+static inline std::u8string W2U8(const wchar_t *wcs, int len = -1)
 {
 	return LibRpBase::utf16_to_utf8(
 		reinterpret_cast<const char16_t*>(wcs), len);
 }
 
 /**
- * Convert UTF-16 std::wstring to UTF-8 std::string.
+ * Convert UTF-16 std::wstring to std::u8string.
  * @param wcs UTF-16 std::wstring
- * @return UTF-8 std::string
+ * @return std::u8string
  */
-static inline std::string W2U8(const std::wstring &wcs)
+static inline std::u8string W2U8(const std::wstring &wcs)
 {
 	return LibRpBase::utf16_to_utf8(
 		reinterpret_cast<const char16_t*>(
@@ -94,33 +96,33 @@ static inline std::string W2U8(const std::wstring &wcs)
  * @return ANSI const char*
  */
 #define U82A_c(str) \
-	(LibRpBase::utf8_to_ansi(str, -1).c_str())
+	(LibRpBase::utf8_to_ansi(reinterpret_cast<const char8_t*>(str), -1).c_str())
 
 /**
- * Convert UTF-8 std::string to ANSI const char*.
- * @param str UTF-8 std::string
+ * Convert std::u8string to ANSI const char*.
+ * @param str std::u8string
  * @return ANSI const char*
  */
 #define U82A_s(str) \
-	(LibRpBase::utf8_to_ansi(str).c_str())
+	(LibRpBase::utf8_to_ansi(reinterpret_cast<const char8_t*>(str.c_str()), (int)str.size()).c_str())
 
 /**
- * Convert ANSI const char* to UTF-8 std::string.
+ * Convert ANSI const char* to std::u8string.
  * @param str ANSI const char*
- * @param len Length. (If -1, assuming this is a C string.)
- * @return UTF-8 std::string.
+ * @param len Length (If -1, assuming this is a C string.)
+ * @return std::u8string
  */
-static inline std::string A2U8(const char *str, int len = -1)
+static inline std::u8string A2U8(const char *str, int len = -1)
 {
 	return LibRpBase::ansi_to_utf8(str, len);
 }
 
 /**
- * Convert ANSI std::string to UTF-8 std::string.
+ * Convert ANSI std::string to std::u8string.
  * @param str ANSI std::string
- * @return UTF-8 std::string
+ * @return std::u8string
  */
-static inline std::string A2U8(const std::string &str)
+static inline std::u8string A2U8(const std::string &str)
 {
 	return LibRpBase::ansi_to_utf8(
 		str.data(), static_cast<int>(str.size()));
@@ -150,8 +152,8 @@ static inline std::string A2U8(const std::string &str)
 /**
  * Convert UTF-16 const wchar_t* to ANSI std::string.
  * @param wcs UTF-16 const wchar_t*
- * @param len Length. (If -1, assuming this is a C string.)
- * @return ANSI std::string.
+ * @param len Length (If -1, assuming this is a C string.)
+ * @return ANSI std::string
  */
 static inline std::string W2A(const wchar_t *wcs, int len = -1)
 {
@@ -180,22 +182,22 @@ static inline std::string W2A(const std::wstring &wcs)
 #define U82T_s(tcs) U82W_s(tcs)
 
 /**
- * Convert const TCHAR* to UTF-8 std::string.
+ * Convert const TCHAR* to std::u8string.
  * @param tcs const TCHAR*
- * @param len Length. (If -1, assuming this is a C string.)
- * @return UTF-8 std::string.
+ * @param len Length (If -1, assuming this is a C string.)
+ * @return std::u8string
  */
-static inline std::string T2U8(const TCHAR *tcs, int len = -1)
+static inline std::u8string T2U8(const TCHAR *tcs, int len = -1)
 {
 	return W2U8(tcs, len);
 }
 
 /**
- * Convert TCHAR std::string to UTF-8 std::string.
+ * Convert std::tstring to std::u8string.
  * @param tcs TCHAR std::string
- * @return UTF-8 std::string
+ * @return std::u8string
  */
-static inline std::string T2U8(const std::tstring &tcs)
+static inline std::u8string T2U8(const std::tstring &tcs)
 {
 	return W2U8(tcs);
 }
@@ -206,22 +208,22 @@ static inline std::string T2U8(const std::tstring &tcs)
 #define U82T_s(tcs) U82A_s(tcs)
 
 /**
- * Convert const TCHAR* to UTF-8 std::string.
+ * Convert const TCHAR* to std::u8string.
  * @param str const TCHAR*
- * @param len Length. (If -1, assuming this is a C string.)
- * @return UTF-8 std::string.
+ * @param len Length (If -1, assuming this is a C string.)
+ * @return std::u8string
  */
-static inline std::string T2U8(const TCHAR *tcs, int len = -1)
+static inline std::u8string T2U8(const TCHAR *tcs, int len = -1)
 {
 	return A2U8(tcs, len);
 }
 
 /**
- * Convert TCHAR std::tstring to UTF-8 std::string.
+ * Convert std::tstring to std::u8string.
  * @param str TCHAR std::string
- * @return UTF-8 std::string
+ * @return std::u8string
  */
-static inline std::string T2U8(const std::tstring &tcs)
+static inline std::u8string T2U8(const std::tstring &tcs)
 {
 	return A2U8(tcs);
 }

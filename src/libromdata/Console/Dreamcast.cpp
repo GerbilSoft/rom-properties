@@ -30,8 +30,9 @@ using LibRpTexture::SegaPVR;
 // Other RomData subclasses
 #include "Other/ISO.hpp"
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::u8string;
 using std::vector;
 
 namespace LibRomData {
@@ -100,7 +101,7 @@ class DreamcastPrivate final : public RomDataPrivate
 		 * Get the disc publisher.
 		 * @return Disc publisher.
 		 */
-		string getPublisher(void) const;
+		u8string getPublisher(void) const;
 
 		/**
 		 * Parse the disc number portion of the device information field.
@@ -252,7 +253,7 @@ const rp_image *DreamcastPrivate::load0GDTEX(void)
  * Get the disc publisher.
  * @return Disc publisher.
  */
-string DreamcastPrivate::getPublisher(void) const
+u8string DreamcastPrivate::getPublisher(void) const
 {
 	const char *publisher = nullptr;
 	if (!memcmp(discHeader.publisher, DC_IP0000_BIN_MAKER_ID, sizeof(discHeader.publisher))) {
@@ -275,12 +276,13 @@ string DreamcastPrivate::getPublisher(void) const
 
 	if (publisher) {
 		// Found the publisher.
-		return publisher;
+		// FIXME: U8STRFIX
+		return u8string((const char8_t*)publisher);
 	}
 
 	// Unknown publisher.
 	// List the field as-is.
-	string s_ret = latin1_to_utf8(discHeader.publisher, sizeof(discHeader.publisher));
+	u8string s_ret = latin1_to_utf8(discHeader.publisher, sizeof(discHeader.publisher));
 	trimEnd(s_ret);
 	return s_ret;
 }

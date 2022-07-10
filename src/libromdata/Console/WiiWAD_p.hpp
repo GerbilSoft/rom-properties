@@ -125,7 +125,7 @@ class WiiWADPrivate final : public LibRpBase::RomDataPrivate
 		 * Get the game information string from the banner.
 		 * @return Game information string, or empty string on error.
 		 */
-		std::string getGameInfo(void);
+		std::u8string getGameInfo(void);
 
 #ifdef ENABLE_DECRYPTION
 		/**
