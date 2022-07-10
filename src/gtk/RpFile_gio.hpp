@@ -19,10 +19,10 @@ class RpFileGio final : public LibRpFile::IRpFile
 		/**
 		 * Open a file.
 		 * NOTE: Files are always opened as read-only in binary mode.
-		 * @param uri GVfs URI.
+		 * @param uri GVfs URI
 		 */
-		explicit RpFileGio(const char *uri);
-		explicit RpFileGio(const std::string &uri);
+		explicit RpFileGio(const char8_t *uri);
+		explicit RpFileGio(const std::u8string &uri);
 	private:
 		void init(void);
 	protected:
@@ -92,9 +92,9 @@ class RpFileGio final : public LibRpFile::IRpFile
 		/**
 		 * Get the filename.
 		 * NOTE: For RpFileGio, this returns a GVfs URI.
-		 * @return Filename. (May be nullptr if the filename is not available.)
+		 * @return Filename (May be nullptr if the filename is not available.)
 		 */
-		const char *filename(void) const final;
+		const char8_t *filename(void) const final;
 };
 
 #endif /* __ROMPROPERTIES_GTK_RPFILE_GIO_HPP__ */

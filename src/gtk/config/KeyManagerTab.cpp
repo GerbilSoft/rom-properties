@@ -873,7 +873,8 @@ key_manager_tab_menu_action_response(GtkFileChooserDialog *fileDialog, gint resp
 	}
 
 	KeyStoreUI *const keyStoreUI = key_store_gtk_get_key_store_ui(tab->keyStore);
-	KeyStoreUI::ImportReturn iret = keyStoreUI->importKeysFromBin(id, in_filename);
+	KeyStoreUI::ImportReturn iret = keyStoreUI->importKeysFromBin(id,
+		reinterpret_cast<const char8_t*>(in_filename));
 
 	// TODO: Show the key import status in a MessageWidget.
 	key_manager_tab_show_key_import_return_status(tab, in_filename,

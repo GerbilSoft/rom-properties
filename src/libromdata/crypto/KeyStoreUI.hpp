@@ -235,7 +235,7 @@ class RP_LIBROMDATA_PUBLIC KeyStoreUI
 		 * @param filename Filename
 		 * @return ImportReturn
 		 */
-		ImportReturn importKeysFromBin(ImportFileID fileID, const char *filename);
+		ImportReturn importKeysFromBin(ImportFileID fileID, const char8_t *filename);
 };
 
 }

@@ -386,7 +386,8 @@ bool KeyStoreModel::setData(const QModelIndex& index, const QVariant& value, int
 	// Edit the value.
 	// KeyStoreQt::setKey() will emit a signal if the value changes,
 	// which will cause KeyStoreModel to emit dataChanged().
-	d->keyStore->setKey(LOWORD(id), HIWORD(id), Q2U8(value.toString()));
+	// NOTE: setKey() takes `const char*`, not `const char8_t*`.
+	d->keyStore->setKey(LOWORD(id), HIWORD(id), reinterpret_cast<const char*>(Q2U8(value.toString())));
 	return true;
 }
 

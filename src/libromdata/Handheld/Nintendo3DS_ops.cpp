@@ -131,7 +131,8 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 	}
 
 	// Create the output file.
-	destFile = new RpFile(pParams->save_filename, RpFile::FM_CREATE_WRITE);
+	// FIXME: U8STRFIX
+	destFile = new RpFile(reinterpret_cast<const char8_t*>(pParams->save_filename), RpFile::FM_CREATE_WRITE);
 	if (!destFile->isOpen()) {
 		// TODO: More useful message? (may need std::string)
 		pParams->status = -destFile->lastError();

@@ -1729,9 +1729,7 @@ void KeyManagerTabPrivate::importKeysFromBin(KeyStoreUI::ImportFileID id)
 		NOP_C_("KeyManagerTab", "3DS aeskeydb.bin"),
 	};
 
-	// FIXME: U8STRFIX
-	KeyStoreWin32::ImportReturn iret = keyStore->importKeysFromBin(
-		id, reinterpret_cast<const char*>(T2U8(tfilename).c_str()));
+	KeyStoreWin32::ImportReturn iret = keyStore->importKeysFromBin(id, T2U8(tfilename).c_str());
 	showKeyImportReturnStatus(tfilename,
 		dpgettext_expr(RP_I18N_DOMAIN, "KeyManagerTab", import_menu_actions[(int)id]), iret);
 }

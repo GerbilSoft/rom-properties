@@ -672,9 +672,9 @@ off64_t RpFile_IStream::size(void)
 
 /**
  * Get the filename.
- * @return Filename. (May be nullptr if the filename is not available.)
+ * @return Filename (May be nullptr if the filename is not available.)
  */
-const char *RpFile_IStream::filename(void) const
+const char8_t *RpFile_IStream::filename(void) const
 {
 	if (m_filename.empty()) {
 		// Get the filename.
@@ -696,6 +696,5 @@ const char *RpFile_IStream::filename(void) const
 	}
 
 	// Return the filename.
-	// FIXME: U8STRFIX
-	return (!m_filename.empty() ? reinterpret_cast<const char*>(m_filename.c_str()) : nullptr);
+	return (!m_filename.empty()) ? m_filename.c_str() : nullptr;
 }

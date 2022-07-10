@@ -136,27 +136,27 @@ class RpPngWriterPrivate
 			init(file, iconAnimData);
 		}
 
-		RpPngWriterPrivate(const char *filename, int width, int height, rp_image::Format format)
+		RpPngWriterPrivate(const char8_t *filename, int width, int height, rp_image::Format format)
 			: lastError(0), file(nullptr), imageTag(ImageTag::Invalid)
 			, png_ptr(nullptr), info_ptr(nullptr), IHDR_written(false)
 		{
-			RpFile *const file = (filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr);
+			RpFile *const file = (filename) ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr;
 			init(file, width, height, format);
 			UNREF(file);
 		}
-		RpPngWriterPrivate(const char *filename, const rp_image *img)
+		RpPngWriterPrivate(const char8_t *filename, const rp_image *img)
 			: lastError(0), file(nullptr), imageTag(ImageTag::Invalid)
 			, png_ptr(nullptr), info_ptr(nullptr), IHDR_written(false)
 		{
-			RpFile *const file = (filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr);
+			RpFile *const file = (filename) ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr;
 			init(file, img);
 			UNREF(file);
 		}
-		RpPngWriterPrivate(const char *filename, const IconAnimData *iconAnimData)
+		RpPngWriterPrivate(const char8_t *filename, const IconAnimData *iconAnimData)
 			: lastError(0), file(nullptr), imageTag(ImageTag::Invalid)
 			, png_ptr(nullptr), info_ptr(nullptr), IHDR_written(false)
 		{
-			RpFile *const file = (filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr);
+			RpFile *const file = (filename) ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr;
 			init(file, iconAnimData);
 			UNREF(file);
 		}
@@ -962,7 +962,7 @@ int RpPngWriterPrivate::write_IDAT_APNG(void)
  * @param filename	[in] Filename.
  * @param img		[in] rp_image.
  */
-RpPngWriter::RpPngWriter(const char *filename, const rp_image *img)
+RpPngWriter::RpPngWriter(const char8_t *filename, const rp_image *img)
 	: d_ptr(new RpPngWriterPrivate(filename, img))
 { }
 
@@ -1006,7 +1006,7 @@ RpPngWriter::RpPngWriter(IRpFile *file, const rp_image *img)
  * @param file		[in] IRpFile open for writing.
  * @param iconAnimData	[in] Animated image data.
  */
-RpPngWriter::RpPngWriter(const char *filename, const IconAnimData *iconAnimData)
+RpPngWriter::RpPngWriter(const char8_t *filename, const IconAnimData *iconAnimData)
 	: d_ptr(new RpPngWriterPrivate(filename, iconAnimData))
 { }
 
@@ -1052,7 +1052,7 @@ RpPngWriter::RpPngWriter(IRpFile *file, const IconAnimData *iconAnimData)
  * @param height 	[in] Image height.
  * @param format 	[in] Image format.
  */
-RpPngWriter::RpPngWriter(const char *filename, int width, int height, rp_image::Format format)
+RpPngWriter::RpPngWriter(const char8_t *filename, int width, int height, rp_image::Format format)
 	: d_ptr(new RpPngWriterPrivate(filename, width, height, format))
 { }
 

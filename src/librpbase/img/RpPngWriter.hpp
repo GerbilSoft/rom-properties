@@ -46,7 +46,7 @@ class RP_LIBROMDATA_PUBLIC RpPngWriter
 		 * @param height 	[in] Image height.
 		 * @param format 	[in] Image format.
 		 */
-		RpPngWriter(const char *filename, int width, int height, LibRpTexture::rp_image::Format format);
+		RpPngWriter(const char8_t *filename, int width, int height, LibRpTexture::rp_image::Format format);
 
 		/**
 		 * Write a raw image to a PNG file.
@@ -83,7 +83,7 @@ class RP_LIBROMDATA_PUBLIC RpPngWriter
 		 * @param filename	[in] Filename.
 		 * @param img		[in] rp_image.
 		 */
-		RpPngWriter(const char *filename, const LibRpTexture::rp_image *img);
+		RpPngWriter(const char8_t *filename, const LibRpTexture::rp_image *img);
 
 		/**
 		 * Write an image to a PNG file.
@@ -123,7 +123,7 @@ class RP_LIBROMDATA_PUBLIC RpPngWriter
 		 * @param file		[in] IRpFile open for writing.
 		 * @param iconAnimData	[in] Animated image data.
 		 */
-		RpPngWriter(const char *filename, const IconAnimData *iconAnimData);
+		RpPngWriter(const char8_t *filename, const IconAnimData *iconAnimData);
 
 		/**
 		 * Write an animated image to an APNG file.

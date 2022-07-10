@@ -35,6 +35,7 @@ using LibRpThreads::MutexLocker;
 
 // C++ STL classes
 using std::string;
+using std::u8string;
 using std::unique_ptr;
 
 // Blowfish data.
@@ -61,10 +62,10 @@ static unique_ptr<uint8_t[]> blowfish_data[3];
  */
 int ndscrypt_load_blowfish_bin(BlowfishKey bfkey)
 {
-	static const char *const filenames[] = {
-		"nds-blowfish.bin",
-		"dsi-blowfish.bin",
-		"dsi-devel-blowfish.bin",
+	static const char8_t *const filenames[] = {
+		U8("nds-blowfish.bin"),
+		U8("dsi-blowfish.bin"),
+		U8("dsi-devel-blowfish.bin"),
 	};
 	assert(bfkey >= NDSCRYPT_BF_NDS);
 	assert(bfkey < NDSCRYPT_BF_MAX);
@@ -84,18 +85,20 @@ int ndscrypt_load_blowfish_bin(BlowfishKey bfkey)
 	}
 
 	// Get the filename.
-	string bin_filename = FileSystem::getConfigDirectory();
+	// FIXME: U8STRFIX
+	const string bin_filename = FileSystem::getConfigDirectory();
 	if (bin_filename.empty()) {
 		// Unable to get the configuration directory.
 		return -ENOENT;
 	}
-	if (bin_filename.at(bin_filename.size()-1) != DIR_SEP_CHR) {
-		bin_filename += DIR_SEP_CHR;
+	u8string u8_bin_filename = reinterpret_cast<const char8_t*>(bin_filename.c_str());
+	if (u8_bin_filename.at(u8_bin_filename.size()-1) != DIR_SEP_CHR) {
+		u8_bin_filename += DIR_SEP_CHR;
 	}
-	bin_filename += filenames[bfkey];
+	u8_bin_filename += filenames[bfkey];
 
 	// Open the file.
-	RpFile *const f_blowfish = new RpFile(bin_filename, RpFile::FM_OPEN_READ);
+	RpFile *const f_blowfish = new RpFile(u8_bin_filename, RpFile::FM_OPEN_READ);
 	if (!f_blowfish->isOpen()) {
 		// Unable to open the file.
 		int err = f_blowfish->lastError();

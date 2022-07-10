@@ -17,6 +17,7 @@ using namespace LibRpFile;
 
 // C++ STL classes.
 using std::string;
+using std::u8string;
 using std::unordered_map;
 
 // Uninitialized vector class.
@@ -177,17 +178,22 @@ class AchievementsPrivate
 		 * Get the achievements filename.
 		 * @return Achievements filename.
 		 */
-		string getFilename(void) const
+		u8string getFilename(void) const
 		{
-			string filename = FileSystem::getConfigDirectory();
-			if (filename.empty())
-				return filename;
+			u8string u8filename;
 
-			if (filename.at(filename.size()-1) != DIR_SEP_CHR) {
-				filename += DIR_SEP_CHR;
+			// FIXME: U8STRFIX
+			const string filename = FileSystem::getConfigDirectory();
+			if (filename.empty()) {
+				return u8filename;
 			}
-			filename += ACH_BIN_FILENAME;
-			return filename;
+
+			u8filename = reinterpret_cast<const char8_t*>(filename.c_str());
+			if (u8filename.at(u8filename.size()-1) != DIR_SEP_CHR) {
+				u8filename += DIR_SEP_CHR;
+			}
+			u8filename += U8(ACH_BIN_FILENAME);
+			return u8filename;
 		}
 
 		/**
@@ -459,12 +465,13 @@ int AchievementsPrivate::save(void) const
 #endif /* NDEBUG || FORCE_OBFUSCATE */
 
 	// Write the achievements file.
-	string filename = getFilename();
+	u8string filename = getFilename();
 	if (filename.empty()) {
 		// Unable to get the filename.
 		return -EIO;
 	}
 
+	// FIXME: U8STRFIX
 	RpFile *const file = new RpFile(filename, RpFile::FM_CREATE_WRITE);
 	if (!file->isOpen()) {
 		int ret = -file->lastError();
@@ -513,7 +520,7 @@ int AchievementsPrivate::load(void)
 	mapAchData.clear();
 
 	// Load the achievements file in memory.
-	string filename = getFilename();
+	u8string filename = getFilename();
 	if (filename.empty()) {
 		// Unable to get the filename.
 		return -EIO;

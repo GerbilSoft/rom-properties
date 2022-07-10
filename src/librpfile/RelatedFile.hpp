@@ -30,7 +30,7 @@ namespace LibRpFile { namespace FileSystem {
  * @param ext		[in] New extension, including leading dot.
  * @return IRpFile*, or nullptr if not found.
  */
-LibRpFile::IRpFile *openRelatedFile(const char *filename, const char *basename, const char *ext);
+LibRpFile::IRpFile *openRelatedFile(const char8_t *filename, const char8_t *basename, const char8_t *ext);
 
 } }
 

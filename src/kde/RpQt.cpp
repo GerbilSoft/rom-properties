@@ -19,8 +19,8 @@ using LibRpTexture::rp_image;
 // RpFileKio
 #include "RpFile_kio.hpp"
 
-// C++ STL classes.
-using std::string;
+// C++ STL classes
+using std::u8string;
 
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 #  include <QtCore/QStandardPaths>
@@ -159,9 +159,10 @@ IRpFile *openQUrl(const QUrl &url, bool isThumbnail)
 		return nullptr;
 	}
 
-	string s_local_filename;
+	u8string s_local_filename;
 	if (localUrl.scheme().isEmpty() || localUrl.isLocalFile()) {
-		s_local_filename = localUrl.toLocalFile().toUtf8().constData();
+		s_local_filename = reinterpret_cast<const char8_t*>(
+			localUrl.toLocalFile().toUtf8().constData());
 	}
 
 	if (isThumbnail) {
@@ -170,7 +171,8 @@ IRpFile *openQUrl(const QUrl &url, bool isThumbnail)
 		const bool enableThumbnailOnNetworkFS = config->enableThumbnailOnNetworkFS();
 		if (!s_local_filename.empty()) {
 			// This is a local file. Check if it's on a "bad" file system.
-			if (FileSystem::isOnBadFS(s_local_filename.c_str(), enableThumbnailOnNetworkFS)) {
+			// FIXME: U8STRFIX
+			if (FileSystem::isOnBadFS(reinterpret_cast<const char*>(s_local_filename.c_str()), enableThumbnailOnNetworkFS)) {
 				// This file is on a "bad" file system.
 				return nullptr;
 			}

@@ -24,6 +24,7 @@ using LibRomData::TCreateThumbnail;
 
 // C++ STL classes.
 using std::string;
+using std::u8string;
 using std::unique_ptr;
 
 // GTK+ major version.
@@ -168,7 +169,7 @@ string CreateThumbnailPrivate::proxyForUrl(const string &url) const
  * @param s_uri		[out] Normalized URI. (file:/ for a filename, etc.)
  * @return 0 on success; RPCT error code on error.
  */
-static int openFromFilenameOrURI(const char *source_file, IRpFile **pp_file, string &s_uri)
+static int openFromFilenameOrURI(const char8_t *source_file, IRpFile **pp_file, u8string &s_uri)
 {
 	// NOTE: Not checking these in Release builds.
 	assert(source_file != nullptr);
@@ -179,13 +180,13 @@ static int openFromFilenameOrURI(const char *source_file, IRpFile **pp_file, str
 	const bool enableThumbnailOnNetworkFS = Config::instance()->enableThumbnailOnNetworkFS();
 
 	IRpFile *file = nullptr;
-	char *const uri_scheme = g_uri_parse_scheme(source_file);
+	char *const uri_scheme = g_uri_parse_scheme(reinterpret_cast<const char*>(source_file));
 	if (uri_scheme != nullptr) {
 		// This is a URI.
 		s_uri = source_file;
 		g_free(uri_scheme);
 		// Check if it's a local filename.
-		gchar *const source_filename = g_filename_from_uri(source_file, nullptr, nullptr);
+		gchar *const source_filename = g_filename_from_uri(reinterpret_cast<const char*>(source_file), nullptr, nullptr);
 		if (source_filename) {
 			// It's a local filename.
 			// Check if it's on a "bad" filesystem.
@@ -196,7 +197,7 @@ static int openFromFilenameOrURI(const char *source_file, IRpFile **pp_file, str
 			}
 
 			// Open the file using RpFile.
-			file = new RpFile(source_filename, RpFile::FM_OPEN_READ_GZ);
+			file = new RpFile(reinterpret_cast<const char8_t*>(source_filename), RpFile::FM_OPEN_READ_GZ);
 			g_free(source_filename);
 		} else {
 			// Not a local filename.
@@ -215,17 +216,18 @@ static int openFromFilenameOrURI(const char *source_file, IRpFile **pp_file, str
 		// needed to get the URI for the thumbnail.
 
 		// Check if it's on a "bad" filesystem.
-		if (FileSystem::isOnBadFS(source_file, enableThumbnailOnNetworkFS)) {
+		// FIXME: U8STRFIX
+		if (FileSystem::isOnBadFS(reinterpret_cast<const char*>(source_file), enableThumbnailOnNetworkFS)) {
 			// It's on a "bad" filesystem.
 			return RPCT_SOURCE_FILE_BAD_FS;
 		}
 
 		// Check fi we have an absolute or relative path.
-		if (g_path_is_absolute(source_file)) {
+		if (g_path_is_absolute(reinterpret_cast<const char*>(source_file))) {
 			// We have an absolute path.
-			gchar *const source_uri = g_filename_to_uri(source_file, nullptr, nullptr);
+			gchar *const source_uri = g_filename_to_uri(reinterpret_cast<const char*>(source_file), nullptr, nullptr);
 			if (source_uri) {
-				s_uri = source_uri;
+				s_uri = reinterpret_cast<const char8_t*>(source_uri);
 				g_free(source_uri);
 			}
 		} else {
@@ -233,11 +235,11 @@ static int openFromFilenameOrURI(const char *source_file, IRpFile **pp_file, str
 			// Convert the filename to an absolute path.
 			GFile *curdir = g_file_new_for_path(".");
 			if (curdir) {
-				GFile *abspath = g_file_resolve_relative_path(curdir, source_file);
+				GFile *abspath = g_file_resolve_relative_path(curdir, reinterpret_cast<const char*>(source_file));
 				if (abspath) {
 					gchar *const source_uri = g_file_get_uri(abspath);
 					if (source_uri) {
-						s_uri = source_uri;
+						s_uri = reinterpret_cast<const char8_t*>(source_uri);
 						g_free(source_uri);
 					}
 					g_object_unref(abspath);
@@ -264,9 +266,13 @@ static int openFromFilenameOrURI(const char *source_file, IRpFile **pp_file, str
 
 /**
  * Thumbnail creator function for wrapper programs.
- * @param source_file Source file or URI. (UTF-8)
- * @param output_file Output file. (UTF-8)
- * @param maximum_size Maximum size.
+ *
+ * NOTE: This is exported as a C function. Keep it as `const char`.
+ * Do not change this to `const char8_t`.
+ *
+ * @param source_file Source file [UTF-8]
+ * @param output_file Output file [UTF-8]
+ * @param maximum_size Maximum size
  * @return 0 on success; non-zero on error.
  */
 extern "C"
@@ -288,8 +294,8 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const 
 
 	// Attempt to open the ROM file.
 	IRpFile *file = nullptr;
-	string s_uri;
-	int ret = openFromFilenameOrURI(source_file, &file, s_uri);
+	u8string s_uri;
+	int ret = openFromFilenameOrURI(reinterpret_cast<const char8_t*>(source_file), &file, s_uri);
 	if (ret != 0) {
 		// Error opening the file.
 		return ret;
@@ -332,7 +338,8 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const 
 	// gdk-pixbuf doesn't support CI8, so we'll assume all
 	// images are ARGB32. (Well, ABGR32, but close enough.)
 	// TODO: Verify channels, etc.?
-	unique_ptr<RpPngWriter> pngWriter(new RpPngWriter(output_file,
+	unique_ptr<RpPngWriter> pngWriter(new RpPngWriter(
+		reinterpret_cast<const char8_t*>(output_file),
 		outParams.thumbSize.width, outParams.thumbSize.height,
 		rp_image::Format::ARGB32));
 	if (!pngWriter->isOpen()) {
@@ -356,7 +363,7 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const 
 	// Modification time and file size
 	mtime_str[0] = 0;
 	szFile_str[0] = 0;
-	f_src = g_file_new_for_uri(s_uri.c_str());
+	f_src = g_file_new_for_uri(reinterpret_cast<const char*>(s_uri.c_str()));
 	if (f_src) {
 		GError *error = nullptr;
 		GFileInfo *const fi_src = g_file_query_info(f_src,

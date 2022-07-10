@@ -11,8 +11,9 @@
 #include "FileSystem.hpp"
 #include "RpFile.hpp"
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::u8string;
 
 namespace LibRpFile { namespace FileSystem {
 
@@ -31,7 +32,7 @@ namespace LibRpFile { namespace FileSystem {
  * @param ext		[in] New extension, including leading dot.
  * @return IRpFile*, or nullptr if not found.
  */
-IRpFile *openRelatedFile(const char *filename, const char *basename, const char *ext)
+IRpFile *openRelatedFile(const char8_t *filename, const char8_t *basename, const char8_t *ext)
 {
 	assert(filename != nullptr);
 	assert(ext != nullptr);
@@ -40,9 +41,9 @@ IRpFile *openRelatedFile(const char *filename, const char *basename, const char 
 	}
 
 	// Get the directory portion of the filename.
-	string s_dir = filename;
+	u8string s_dir = filename;
 	size_t slash_pos = s_dir.find_last_of(DIR_SEP_CHR);
-	if (slash_pos != string::npos) {
+	if (slash_pos != u8string::npos) {
 		s_dir.resize(slash_pos+1);
 	} else {
 		// No directory. Probably a filename in the
@@ -51,7 +52,7 @@ IRpFile *openRelatedFile(const char *filename, const char *basename, const char 
 	}
 
 	// Get the base name.
-	string s_basename;
+	u8string s_basename;
 	if (basename) {
 		s_basename = basename;
 	} else {
@@ -59,7 +60,7 @@ IRpFile *openRelatedFile(const char *filename, const char *basename, const char 
 
 		// Check for any dots.
 		size_t dot_pos = s_basename.find_last_of('.');
-		if (dot_pos != string::npos) {
+		if (dot_pos != u8string::npos) {
 			// Remove the extension.
 			s_basename.resize(dot_pos);
 		}
@@ -71,12 +72,12 @@ IRpFile *openRelatedFile(const char *filename, const char *basename, const char 
 	// on all platforms.
 
 	// Check for uppercase extensions first.
-	string s_ext = ext;
+	u8string s_ext = ext;
 	std::transform(s_ext.begin(), s_ext.end(), s_ext.begin(),
 		[](unsigned char c) { return std::toupper(c); });
 
 	// Attempt to open the related file.
-	string rel_filename = s_dir + s_basename + s_ext;
+	u8string rel_filename = s_dir + s_basename + s_ext;
 	IRpFile *test_file = new RpFile(rel_filename, RpFile::FM_OPEN_READ);
 	if (!test_file->isOpen()) {
 		// Error opening the related file.
@@ -93,13 +94,15 @@ IRpFile *openRelatedFile(const char *filename, const char *basename, const char 
 		}
 	}
 
-	if (!test_file && FileSystem::is_symlink(filename)) {
+	// FIXME: U8STRFIX
+	if (!test_file && FileSystem::is_symlink(reinterpret_cast<const char*>(filename))) {
 		// Could not open the related file, but the
 		// primary file is a symlink. Dereference the
 		// symlink and check the original directory.
-		string deref_filename = FileSystem::resolve_symlink(filename);
+		string deref_filename = FileSystem::resolve_symlink(reinterpret_cast<const char*>(filename));
 		if (!deref_filename.empty()) {
-			test_file = openRelatedFile(deref_filename.c_str(), basename, ext);
+			test_file = openRelatedFile(
+				reinterpret_cast<const char8_t*>(deref_filename.c_str()), basename, ext);
 		}
 	}
 	return test_file;

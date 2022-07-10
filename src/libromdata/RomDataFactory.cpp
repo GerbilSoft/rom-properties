@@ -408,27 +408,27 @@ RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
 	IRpFile *vmi_file;
 	IRpFile **other_file;	// Points to vms_file or vmi_file.
 
-	const char *rel_ext;
+	const char8_t *rel_ext;
 	if (has_dc_vms) {
 		// We have the VMS file.
 		// Find the VMI file.
 		vms_file = file;
 		vmi_file = nullptr;
 		other_file = &vmi_file;
-		rel_ext = ".VMI";
+		rel_ext = U8(".VMI");
 	} else /*if (has_dc_vmi)*/ {
 		// We have the VMI file.
 		// Find the VMS file.
 		vms_file = nullptr;
 		vmi_file = file;
 		other_file = &vms_file;
-		rel_ext = ".VMS";
+		rel_ext = U8(".VMS");
 	}
 
 	// Attempt to open the other file in the pair.
 	// TODO: Verify length.
 	// TODO: For .vmi, check the VMS resource name?
-	const char *const filename = file->filename();
+	const char8_t *const filename = file->filename();
 	*other_file = FileSystem::openRelatedFile(filename, nullptr, rel_ext);
 	if (!*other_file) {
 		// Can't open the other file.
@@ -607,8 +607,9 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 		attrs |= ATTR_SUPPORTS_DEVICES;
 	} else {
 		// Get the actual file extension.
-		const char *const filename = file->filename();
-		const char *const ext = FileSystem::file_ext(filename);
+		const char8_t *const filename = file->filename();
+		// FIXME: U8STRFIX
+		const char *const ext = FileSystem::file_ext(reinterpret_cast<const char*>(filename));
 		if (ext) {
 			file_ext = ext;
 			info.ext = file_ext.c_str();
@@ -872,12 +873,13 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
  * @param attrs RomDataAttr bitfield. If set, RomData subclass must have the specified attributes.
  * @return RomData subclass, or nullptr if the ROM isn't supported.
  */
-RomData *RomDataFactory::create(const char *filename, unsigned int attrs)
+RomData *RomDataFactory::create(const char8_t *filename, unsigned int attrs)
 {
 	// Check if this is a file or a directory.
 	// If it's a file, we'll create an RpFile and then
 	// call create(IRpFile*,unsigned int).
-	if (!FileSystem::is_directory(filename)) {
+	// FIXME: U8STRFIX
+	if (!FileSystem::is_directory(reinterpret_cast<const char*>(filename))) {
 		// Not a directory.
 		RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
 		if (file->isOpen()) {

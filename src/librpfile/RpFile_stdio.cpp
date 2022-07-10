@@ -10,16 +10,21 @@
 #include "config.librpfile.h"
 
 #ifdef _WIN32
-# error RpFile_stdio is not supported on Windows, use RpFile_win32.
+#  error RpFile_stdio is not supported on Windows, use RpFile_win32
 #endif /* _WIN32 */
 
 #include "RpFile.hpp"
 #include "RpFile_p.hpp"
 
-// C includes.
+// C includes
 #include <fcntl.h>	// AT_EMPTY_PATH
 #include <sys/stat.h>	// stat(), statx()
 #include <unistd.h>	// ftruncate()
+
+// C++ STL classes
+using std::string;
+using std::u8string;
+using std::vector;
 
 namespace LibRpFile {
 
@@ -75,7 +80,7 @@ int RpFilePrivate::reOpenFile(void)
 	if (file) {
 		fclose(file);
 	}
-	file = fopen(filename.c_str(), mode_str);
+	file = fopen(reinterpret_cast<const char*>(filename.c_str()), mode_str);
 
 	// If fopen() failed (and returned nullptr),
 	// return the non-zero error code.
@@ -164,7 +169,9 @@ int RpFilePrivate::reOpenFile(void)
 #ifndef NO_PATTERNS_FOR_THIS_OS
 		bool isMatch = false;
 		for (const auto &pattern : fileNamePatterns) {
-			if (!strncasecmp(filename.c_str(), &pattern[1], (uint8_t)pattern[0])) {
+			if (!strncasecmp(reinterpret_cast<const char*>(filename.c_str()),
+			    &pattern[1], (uint8_t)pattern[0]))
+			{
 				// Found a match!
 				isMatch = true;
 				break;
@@ -198,10 +205,10 @@ int RpFilePrivate::reOpenFile(void)
 /**
  * Open a file.
  * NOTE: Files are always opened in binary mode.
- * @param filename Filename.
- * @param mode File mode.
+ * @param filename Filename
+ * @param mode File mode
  */
-RpFile::RpFile(const char *filename, FileMode mode)
+RpFile::RpFile(const char8_t *filename, FileMode mode)
 	: super()
 	, d_ptr(new RpFilePrivate(this, filename, mode))
 {
@@ -211,10 +218,10 @@ RpFile::RpFile(const char *filename, FileMode mode)
 /**
  * Open a file.
  * NOTE: Files are always opened in binary mode.
- * @param filename Filename.
- * @param mode File mode.
+ * @param filename Filename
+ * @param mode File mode
  */
-RpFile::RpFile(const string &filename, FileMode mode)
+RpFile::RpFile(const u8string &filename, FileMode mode)
 	: super()
 	, d_ptr(new RpFilePrivate(this, filename, mode))
 {
@@ -583,12 +590,12 @@ off64_t RpFile::size(void)
 
 /**
  * Get the filename.
- * @return Filename. (May be nullptr if the filename is not available.)
+ * @return Filename (May be nullptr if the filename is not available.)
  */
-const char *RpFile::filename(void) const
+const char8_t *RpFile::filename(void) const
 {
 	RP_D(const RpFile);
-	return (!d->filename.empty() ? d->filename.c_str() : nullptr);
+	return (!d->filename.empty()) ? d->filename.c_str() : nullptr;
 }
 
 /** Extra functions **/
@@ -610,14 +617,14 @@ int RpFile::makeWritable(void)
 	RP_D(RpFile);
 	off64_t prev_pos = ftello(d->file);
 	fclose(d->file);
-	d->file = fopen(d->filename.c_str(), "rb+");
+	d->file = fopen(reinterpret_cast<const char*>(d->filename.c_str()), "rb+");
 	if (d->file) {
 		// File is now writable.
 		m_isWritable = true;
 	} else {
 		// Failed to open the file as writable.
 		// Try reopening as read-only.
-		d->file = fopen(d->filename.c_str(), "rb");
+		d->file = fopen(reinterpret_cast<const char*>(d->filename.c_str()), "rb");
 		if (d->file) {
 			fseeko(d->file, prev_pos, SEEK_SET);
 		}

@@ -113,8 +113,7 @@ IFACEMETHODIMP RP_ExtractImage::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
 	}
 
 	// Attempt to open the ROM file.
-	// FIXME: U8STRFIX
-	RpFile *const file = new RpFile(reinterpret_cast<const char*>(d->filename.c_str()), RpFile::FM_OPEN_READ_GZ);
+	RpFile *const file = new RpFile(d->filename, RpFile::FM_OPEN_READ_GZ);
 	if (!file->isOpen()) {
 		// Unable to open the file.
 		file->unref();

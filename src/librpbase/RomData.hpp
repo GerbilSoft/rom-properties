@@ -104,7 +104,7 @@ class RomData : public RefBase
 		 * @return Filename, or nullptr on error.
 		 */
 		RP_LIBROMDATA_PUBLIC
-		const char *filename(void) const;
+		const char8_t *filename(void) const;
 
 		/**
 		 * Is the file compressed? (transparent decompression)

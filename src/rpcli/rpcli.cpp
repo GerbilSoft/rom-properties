@@ -112,10 +112,10 @@ DELAYLOAD_TEST_FUNCTION_IMPL1(textdomain, nullptr);
 #endif /* _MSC_VER */
 
 struct ExtractParam {
-	const char* filename;	// Target filename. Can be null due to argv[argc]
-	int imageType;		// Image Type. -1 = iconAnimData, MUST be between -1 and IMG_INT_MAX
+	const char8_t* filename;	// Target filename. Can be null due to argv[argc]
+	int imageType;			// Image Type. -1 = iconAnimData, MUST be between -1 and IMG_INT_MAX
 
-	ExtractParam(const char *filename, int imageType)
+	ExtractParam(const char8_t *filename, int imageType)
 		: filename(filename), imageType(imageType) { }
 };
 
@@ -195,7 +195,7 @@ static void ExtractImages(const RomData *romData, vector<ExtractParam>& extract)
  * @param languageCode Language code. (0 for default)
  * @param skipInternalImages If true, skip internal image processing.
  */
-static void DoFile(const char *filename, bool json, vector<ExtractParam>& extract,
+static void DoFile(const char8_t *filename, bool json, vector<ExtractParam>& extract,
 	uint32_t languageCode = 0, bool skipInternalImages = false)
 {
 	cerr << "== " << rp_sprintf(C_("rpcli", "Reading file '%s'..."), filename) << endl;
@@ -283,7 +283,7 @@ static void PrintPathnames(void)
  * @param filename Device filename
  * @param json Is program running in json mode?
  */
-static void DoScsiInquiry(const char *filename, bool json)
+static void DoScsiInquiry(const char8_t *filename, bool json)
 {
 	cerr << "== " << rp_sprintf(C_("rpcli", "Opening device file '%s'..."), filename) << endl;
 	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
@@ -314,7 +314,7 @@ static void DoScsiInquiry(const char *filename, bool json)
  * @param json Is program running in json mode?
  * @param packet If true, use ATA IDENTIFY PACKET.
  */
-static void DoAtaIdentifyDevice(const char *filename, bool json, bool packet)
+static void DoAtaIdentifyDevice(const char8_t *filename, bool json, bool packet)
 {
 	cerr << "== " << rp_sprintf(C_("rpcli", "Opening device file '%s'..."), filename) << endl;
 	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
@@ -528,11 +528,11 @@ int RP_C_API main(int argc, char *argv[])
 					cerr << rp_sprintf(C_("rpcli", "Warning: skipping unknown image type %ld"), num) << endl;
 					i++; continue;
 				}
-				extract.emplace_back(ExtractParam(argv[++i], num));
+				extract.emplace_back(ExtractParam(reinterpret_cast<const char8_t*>(argv[++i]), num));
 				break;
 			}
 			case 'a':
-				extract.emplace_back(ExtractParam(argv[++i], -1));
+				extract.emplace_back(ExtractParam(reinterpret_cast<const char8_t*>(argv[++i]), -1));
 				break;
 			case 'j': // do nothing
 				break;
@@ -571,21 +571,22 @@ int RP_C_API main(int argc, char *argv[])
 			else if (json) cout << "," << endl;
 
 			// TODO: Return codes?
+			const char8_t *const u8_filename = reinterpret_cast<const char8_t*>(argv[i]);
 #ifdef RP_OS_SCSI_SUPPORTED
 			if (inq_scsi) {
 				// SCSI INQUIRY command.
-				DoScsiInquiry(argv[i], json);
+				DoScsiInquiry(u8_filename, json);
 			} else if (inq_ata) {
 				// ATA IDENTIFY DEVICE command.
-				DoAtaIdentifyDevice(argv[i], json, false);
+				DoAtaIdentifyDevice(u8_filename, json, false);
 			} else if (inq_ata_packet) {
 				// ATA IDENTIFY PACKET DEVICE command.
-				DoAtaIdentifyDevice(argv[i], json, true);
+				DoAtaIdentifyDevice(u8_filename, json, true);
 			} else
 #endif /* RP_OS_SCSI_SUPPORTED */
 			{
 				// Regular file.
-				DoFile(argv[i], json, extract, languageCode, skipInternalImages);
+				DoFile(u8_filename, json, extract, languageCode, skipInternalImages);
 			}
 
 #ifdef RP_OS_SCSI_SUPPORTED

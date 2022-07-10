@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                         *
  * SetFileOriginInfo_win32.cpp: setFileOriginInfo() function. (Win32 version) *
  *                                                                            *
- * Copyright (c) 2016-2021 by David Korth.                                    *
+ * Copyright (c) 2016-2022 by David Korth.                                    *
  * SPDX-License-Identifier: GPL-2.0-or-later                                  *
  ******************************************************************************/
 
@@ -46,7 +46,9 @@ static bool getStoreFileOriginInfo(void)
 	// Get the config filename.
 	// NOTE: Not cached, since rp-download downloads one file per run.
 	// NOTE: This is sitll readable even when running as Low integrity.
-	tstring conf_filename = U82T_s(LibWin32Common::getConfigDirectory());
+	// FIXME: U8STRFIX
+	tstring conf_filename = U82T_s(reinterpret_cast<const char8_t*>(
+		LibWin32Common::getConfigDirectory().c_str()));
 	if (conf_filename.empty()) {
 		// Empty filename...
 		return default_value;
@@ -119,12 +121,12 @@ int setFileOriginInfo(FILE *file, const TCHAR *filename, const TCHAR *url, time_
 			// NOTE: Assuming UTF-8 encoding.
 			// FIXME: Chromium has some shenanigans for Windows 10.
 			// Reference: https://github.com/chromium/chromium/blob/55f44515cd0b9e7739b434d1c62f4b7e321cd530/components/services/quarantine/quarantine_win.cc
-			static const char zoneID_hdr[] = "[ZoneTransfer]\r\nZoneID=3\r\nHostUrl=";
-			std::string s_zoneID;
+			static const char8_t zoneID_hdr[] = U8("[ZoneTransfer]\r\nZoneID=3\r\nHostUrl=");
+			std::u8string s_zoneID;
 			s_zoneID.reserve(sizeof(zoneID_hdr) + _tcslen(url) + 2);
 			s_zoneID = zoneID_hdr;
 			s_zoneID += T2U8_c(url);
-			s_zoneID += "\r\n";
+			s_zoneID += U8("\r\n");
 			DWORD dwBytesWritten = 0;
 			BOOL bRet = WriteFile(hAds, s_zoneID.data(),
 				static_cast<DWORD>(s_zoneID.size()),

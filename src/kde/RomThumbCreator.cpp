@@ -168,8 +168,9 @@ string RomThumbCreatorPrivate::proxyForUrl(const string &url) const
 		return string();
 	}
 
-	// Proxy is required..
-	return Q2U8(proxy);
+	// Proxy is required.
+	// FIXME: U8STRFIX
+	return reinterpret_cast<const char*>(Q2U8(proxy));
 }
 
 /** RomThumbCreator **/
@@ -270,9 +271,13 @@ ThumbCreator::Flags RomThumbCreator::flags(void) const
 
 /**
  * Thumbnail creator function for wrapper programs.
- * @param source_file Source file. (UTF-8)
- * @param output_file Output file. (UTF-8)
- * @param maximum_size Maximum size.
+ *
+ * NOTE: This is exported as a C function. Keep it as `const char`.
+ * Do not change this to `const char8_t`.
+ *
+ * @param source_file Source file [UTF-8]
+ * @param output_file Output file [UTF-8]
+ * @param maximum_size Maximum size
  * @return 0 on success; non-zero on error.
  */
 extern "C"
@@ -347,7 +352,8 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const ch
 			return RPCT_OUTPUT_FILE_FAILED;
 	}
 
-	RpPngWriter *pngWriter = new RpPngWriter(output_file,
+	RpPngWriter *pngWriter = new RpPngWriter(
+		reinterpret_cast<const char8_t*>(output_file),
 		outParams.retImg.width(), height, format);
 	if (!pngWriter->isOpen()) {
 		// Could not open the PNG writer.

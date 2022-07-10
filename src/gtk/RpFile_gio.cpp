@@ -14,13 +14,14 @@
 
 // C++ STL classes.
 using std::string;
+using std::u8string;
 
 class RpFileGioPrivate
 {
 	public:
-		explicit RpFileGioPrivate(const char *uri)
+		explicit RpFileGioPrivate(const char8_t *uri)
 			: stream(nullptr), uri(uri) { }
-		explicit RpFileGioPrivate(const string &uri)
+		explicit RpFileGioPrivate(const u8string &uri)
 			: stream(nullptr), uri(uri) { }
 		~RpFileGioPrivate();
 
@@ -28,8 +29,8 @@ class RpFileGioPrivate
 		RP_DISABLE_COPY(RpFileGioPrivate)
 
 	public:
-		GFileInputStream *stream;	// File input stream.
-		string uri;			// GVfs URI.
+		GFileInputStream *stream;	// File input stream
+		u8string uri;			// GVfs URI
 
 	public:
 		/**
@@ -74,9 +75,9 @@ int RpFileGioPrivate::gioerr_to_posix(gint gioerr)
 /**
  * Open a file.
  * NOTE: Files are always opened as read-only in binary mode.
- * @param uri GVfs URI.
+ * @param uri GVfs URI
  */
-RpFileGio::RpFileGio(const char *uri)
+RpFileGio::RpFileGio(const char8_t *uri)
 	: super()
 	, d_ptr(new RpFileGioPrivate(uri))
 {
@@ -86,9 +87,9 @@ RpFileGio::RpFileGio(const char *uri)
 /**
  * Open a file.
  * NOTE: Files are always opened as read-only in binary mode.
- * @param uri GVfs URI.
+ * @param uri GVfs URI
  */
-RpFileGio::RpFileGio(const string &uri)
+RpFileGio::RpFileGio(const u8string &uri)
 	: super()
 	, d_ptr(new RpFileGioPrivate(uri))
 {
@@ -105,7 +106,8 @@ void RpFileGio::init(void)
 	GError *err = nullptr;
 
 	// Open the file.
-	GFile *const file = g_file_new_for_uri(d->uri.c_str());
+	GFile *const file = g_file_new_for_uri(
+		reinterpret_cast<const char*>(d->uri.c_str()));
 	d->stream = g_file_read(file, nullptr, &err);
 	g_object_unref(file);
 	if (!d->stream || err != nullptr) {
@@ -289,8 +291,8 @@ off64_t RpFileGio::size(void)
  * NOTE: For RpFileGio, this returns a GVfs URI.
  * @return Filename. (May be nullptr if the filename is not available.)
  */
-const char *RpFileGio::filename(void) const
+const char8_t *RpFileGio::filename(void) const
 {
 	RP_D(const RpFileGio);
-	return (!d->uri.empty() ? d->uri.c_str() : nullptr);
+	return (!d->uri.empty()) ? d->uri.c_str() : nullptr;
 }

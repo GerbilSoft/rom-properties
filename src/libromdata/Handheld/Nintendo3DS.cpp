@@ -1243,10 +1243,10 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 	}
 
 	// Check if this ROM image is supported.
-	const char *const filename = file->filename();
+	const char8_t *const filename = file->filename();
 	const DetectInfo info = {
 		{0, sizeof(header), header},
-		FileSystem::file_ext(filename),	// ext
+		FileSystem::file_ext(reinterpret_cast<const char*>(filename)),	// ext
 		d->file->size()			// szFile (not needed for NGPC)
 	};
 	d->romType = static_cast<Nintendo3DSPrivate::RomType>(isRomSupported_static(&info));

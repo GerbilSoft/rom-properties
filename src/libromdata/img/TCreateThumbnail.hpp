@@ -57,9 +57,13 @@ typedef enum {
 /**
  * rp_create_thumbnail() function pointer.
  * Used for wrapper programs that don't link to libromdata directly.
- * @param source_file Source file. (UTF-8)
- * @param output_file Output file. (UTF-8)
- * @param maximum_size Maximum size.
+ *
+ * NOTE: This is a C function pointer. Keep it as `const char`.
+ * Do not change this to `const char8_t`.
+ *
+ * @param source_file Source file [UTF-8]
+ * @param output_file Output file [UTF-8]
+ * @param maximum_size Maximum size
  * @return 0 on success; non-zero on error.
  */
 typedef int (RP_C_API *PFN_RP_CREATE_THUMBNAIL)(const char *source_file, const char *output_file, int maximum_size);
@@ -164,7 +168,7 @@ class TCreateThumbnail
 		 * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
 		 * @return 0 on success; non-zero on error.
 		 */
-		int getThumbnail(const char *filename, int reqSize, GetThumbnailOutParams_t *pOutParams);
+		int getThumbnail(const char8_t *filename, int reqSize, GetThumbnailOutParams_t *pOutParams);
 
 	protected:
 		/**

@@ -164,6 +164,7 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 		}
 
 		// TODO: Have download() return the actual data and/or load the cached file.
+		// FIXME: U8STRFIX
 		std::string cache_filename;
 		if (download) {
 			// Attempt to download the image if it isn't already
@@ -178,7 +179,7 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 			continue;
 
 		// Attempt to load the image.
-		unique_RefBase<RpFile> file(new RpFile(cache_filename, RpFile::FM_OPEN_READ));
+		unique_RefBase<RpFile> file(new RpFile(reinterpret_cast<const char8_t*>(cache_filename.c_str()), RpFile::FM_OPEN_READ));
 		if (file->isOpen()) {
 			rp_image *const dl_img = RpImageLoader::load(file.get());
 			if (dl_img && dl_img->isValid()) {
@@ -535,7 +536,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(IRpFile *file, int reqSize, GetThum
  * @return 0 on success; non-zero on error.
  */
 template<typename ImgClass>
-int TCreateThumbnail<ImgClass>::getThumbnail(const char *filename, int reqSize, GetThumbnailOutParams_t *pOutParams)
+int TCreateThumbnail<ImgClass>::getThumbnail(const char8_t *filename, int reqSize, GetThumbnailOutParams_t *pOutParams)
 {
 	assert(filename != nullptr);
 	assert(reqSize > 0);

@@ -56,7 +56,7 @@ RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file, const RomDataInfo *pRo
 		this->file = file->ref();
 		this->isCompressed = file->isCompressed();
 
-		const char *const filename = file->filename();
+		const char8_t *const filename = file->filename();
 		if (filename) {
 			this->filename.assign(filename);
 		}
@@ -509,10 +509,10 @@ IRpFile *RomData::ref_file(void)
  * Get the filename that was loaded.
  * @return Filename, or nullptr on error.
  */
-const char *RomData::filename(void) const
+const char8_t *RomData::filename(void) const
 {
 	RP_D(const RomData);
-	return (!d->filename.empty() ? d->filename.c_str() : nullptr);
+	return (!d->filename.empty()) ? d->filename.c_str() : nullptr;
 }
 
 /**

@@ -299,7 +299,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 {
 	if (menuId < IDM_OPTIONS_MENU_BASE) {
 		// Export to text or JSON.
-		const char *const rom_filename = romData->filename();
+		const char8_t *const rom_filename = romData->filename();
 		if (!rom_filename)
 			return;
 
@@ -362,7 +362,8 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 
 			// Get the base name of the ROM.
 			tstring rom_basename;
-			const char *const bspos = strrchr(rom_filename, '\\');
+			// FIXME: U8STRFIX
+			const char *const bspos = strrchr(reinterpret_cast<const char*>(rom_filename), '\\');
 			if (bspos) {
 				rom_basename = U82T_c(bspos+1);
 			} else {
@@ -394,7 +395,8 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 
 #ifdef __GNUC__
 			// FIXME: MinGW doesn't have wchar_t overloads.
-			ofs.open(T2U8(tfilename).c_str(), ofstream::out);
+			// FIXME: U8STRFIX
+			ofs.open(reinterpret_cast<const char*>(T2U8(tfilename).c_str()), ofstream::out);
 #else /* !__GNUC__ */
 			ofs.open(tfilename.c_str(), ofstream::out);
 #endif /* __GNUC__ */
@@ -492,7 +494,9 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 		filter += C_("RomData", "All Files|*.*|-");
 
 		// Initial file and directory, based on the current file.
-		string initialFile = FileSystem::replace_ext(romData->filename(), op->sfi.ext);
+		// FIXME: U8STRFIX
+		string initialFile = FileSystem::replace_ext(
+			reinterpret_cast<const char*>(romData->filename()), op->sfi.ext);
 
 		// Prompt for a save file.
 		tstring t_save_filename = LibWin32UI::getSaveFileName(hDlgSheet,

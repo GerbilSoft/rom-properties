@@ -54,7 +54,7 @@ int save(LibRpFile::IRpFile *file, const LibRpTexture::rp_image *img);
  * @return 0 on success; negative POSIX error code on error.
  */
 RP_LIBROMDATA_PUBLIC
-int save(const char *filename, const LibRpTexture::rp_image *img);
+int save(const char8_t *filename, const LibRpTexture::rp_image *img);
 
 /**
  * Save an animated image in APNG format to an IRpFile.
@@ -93,7 +93,7 @@ int save(LibRpFile::IRpFile *file, const IconAnimData *iconAnimData);
  * @return 0 on success; negative POSIX error code on error.
  */
 RP_LIBROMDATA_PUBLIC
-int save(const char *filename, const IconAnimData *iconAnimData);
+int save(const char8_t *filename, const IconAnimData *iconAnimData);
 
 } }
 

@@ -16,11 +16,12 @@
 #include "libwin32common/w32err.h"
 using LibWin32Common::U82T_s;
 
-// C includes.
+// C includes
 #include <fcntl.h>
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+using std::u8string;
 using std::wstring;
 
 #ifdef _MSC_VER
@@ -135,7 +136,7 @@ int RpFilePrivate::reOpenFile(void)
 			// or if we have to resolve the physical device name.
 			// NOTE: filename is UTF-8, but we can use it as if
 			// it's ANSI for a drive letter.
-			const UINT driveType = GetDriveTypeA(filename.c_str());
+			const UINT driveType = GetDriveTypeA(reinterpret_cast<LPCSTR>(filename.c_str()));
 			switch (driveType) {
 				case DRIVE_CDROM:
 					// CD-ROM works.
@@ -266,10 +267,10 @@ int RpFilePrivate::reOpenFile(void)
 /**
  * Open a file.
  * NOTE: Files are always opened in binary mode.
- * @param filename Filename.
- * @param mode File mode.
+ * @param filename Filename
+ * @param mode File mode
  */
-RpFile::RpFile(const char *filename, FileMode mode)
+RpFile::RpFile(const char8_t *filename, FileMode mode)
 	: super()
 	, d_ptr(new RpFilePrivate(this, filename, mode))
 {
@@ -279,10 +280,10 @@ RpFile::RpFile(const char *filename, FileMode mode)
 /**
  * Open a file.
  * NOTE: Files are always opened in binary mode.
- * @param filename Filename.
- * @param mode File mode.
+ * @param filename Filename
+ * @param mode File mode
  */
-RpFile::RpFile(const string &filename, FileMode mode)
+RpFile::RpFile(const u8string &filename, FileMode mode)
 	: super()
 	, d_ptr(new RpFilePrivate(this, filename, mode))
 {
@@ -731,10 +732,10 @@ off64_t RpFile::size(void)
  * Get the filename.
  * @return Filename. (May be nullptr if the filename is not available.)
  */
-const char *RpFile::filename(void) const
+const char8_t *RpFile::filename(void) const
 {
 	RP_D(const RpFile);
-	return (!d->filename.empty() ? d->filename.c_str() : nullptr);
+	return (!d->filename.empty()) ? d->filename.c_str() : nullptr;
 }
 
 /** Extra functions **/

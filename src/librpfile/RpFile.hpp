@@ -49,13 +49,21 @@ class RpFile : public IRpFile
 		/**
 		 * Open a file.
 		 * NOTE: Files are always opened in binary mode.
-		 * @param filename Filename.
-		 * @param mode File mode.
+		 * @param filename Filename
+		 * @param mode File mode
 		 */
 		RP_LIBROMDATA_PUBLIC
-		RpFile(const char *filename, FileMode mode);
+		RpFile(const char8_t *filename, FileMode mode);
+
+		/**
+		 * Open a file.
+		 * NOTE: Files are always opened in binary mode.
+		 * @param filename Filename
+		 * @param mode File mode
+		 */
 		RP_LIBROMDATA_PUBLIC
-		RpFile(const std::string &filename, FileMode mode);
+		RpFile(const std::u8string &filename, FileMode mode);
+
 	private:
 		void init(void);
 	protected:
@@ -141,10 +149,10 @@ class RpFile : public IRpFile
 
 		/**
 		 * Get the filename.
-		 * @return Filename. (May be nullptr if the filename is not available.)
+		 * @return Filename (May be nullptr if the filename is not available.)
 		 */
 		RP_LIBROMDATA_PUBLIC
-		const char *filename(void) const final;
+		const char8_t *filename(void) const final;
 
 	public:
 		/** Extra functions **/

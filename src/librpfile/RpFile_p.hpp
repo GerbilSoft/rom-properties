@@ -12,14 +12,12 @@
 #include "config.librpfile.h"
 #include "RpFile.hpp"
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cassert>
 
-// C++ includes.
+// C++ includes
 #include <string>
 #include <vector>
-using std::string;
-using std::vector;
 
 // zlib for transparent gzip decompression.
 #include <zlib.h>
@@ -72,10 +70,10 @@ class RpFilePrivate
 		typedef FILE *FILE_TYPE;
 #endif /* _WIN32 */
 
-		RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode)
+		RpFilePrivate(RpFile *q, const char8_t *filename, RpFile::FileMode mode)
 			: q_ptr(q), file(INVALID_HANDLE_VALUE), filename(filename)
 			, mode(mode), gzfd(nullptr), gzsz(-1), devInfo(nullptr) { }
-		RpFilePrivate(RpFile *q, const string &filename, RpFile::FileMode mode)
+		RpFilePrivate(RpFile *q, const std::u8string &filename, RpFile::FileMode mode)
 			: q_ptr(q), file(INVALID_HANDLE_VALUE), filename(filename)
 			, mode(mode), gzfd(nullptr), gzsz(-1), devInfo(nullptr) { }
 		~RpFilePrivate();
@@ -85,25 +83,25 @@ class RpFilePrivate
 		RpFile *const q_ptr;
 
 	public:
-		FILE_TYPE file;		// File pointer.
-		string filename;	// Filename.
-		RpFile::FileMode mode;	// File mode.
+		FILE_TYPE file;		// File pointer
+		std::u8string filename;	// Filename
+		RpFile::FileMode mode;	// File mode
 
-		gzFile gzfd;		// Used for transparent gzip decompression.
-		off64_t gzsz;		// Uncompressed file size.
+		gzFile gzfd;		// Used for transparent gzip decompression
+		off64_t gzsz;		// Uncompressed file size
 
 		// Device information struct.
 		// Only used if the underlying file
 		// is a device node.
 		struct DeviceInfo {
-			off64_t device_pos;	// Device position.
-			off64_t device_size;	// Device size.
-			uint32_t sector_size;	// Sector size. (bytes per sector)
+			off64_t device_pos;	// Device position
+			off64_t device_size;	// Device size
+			uint32_t sector_size;	// Sector size (bytes per sector)
 			bool isKreonUnlocked;	// Is Kreon mode unlocked?
 
 			// Sector cache.
-			uint8_t *sector_cache;	// Sector cache.
-			uint32_t lba_cache;	// Last LBA cached.
+			uint8_t *sector_cache;	// Sector cache
+			uint32_t lba_cache;	// Last LBA cached
 
 			// OS-specific variables.
 #ifdef USING_FREEBSD_CAMLIB

@@ -566,7 +566,7 @@ int save(IRpFile *file, const rp_image *img)
  * @param img rp_image to save.
  * @return 0 on success; negative POSIX error code on error.
  */
-int save(const char *filename, const rp_image *img)
+int save(const char8_t *filename, const rp_image *img)
 {
 	assert(filename != nullptr);
 	assert(filename[0] != 0);
@@ -644,7 +644,7 @@ int save(IRpFile *file, const IconAnimData *iconAnimData)
  * @param iconAnimData Animated image data to save.
  * @return 0 on success; negative POSIX error code on error.
  */
-int save(const char *filename, const IconAnimData *iconAnimData)
+int save(const char8_t *filename, const IconAnimData *iconAnimData)
 {
 	assert(filename != nullptr);
 	assert(filename[0] != 0);

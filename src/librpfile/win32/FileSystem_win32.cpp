@@ -18,6 +18,7 @@
 
 // C++ STL classes.
 using std::string;
+using std::u8string;
 using std::u16string;
 using std::wstring;
 
@@ -44,9 +45,9 @@ namespace LibRpFile { namespace FileSystem {
  * @param filename Original Windows filename.
  * @return Windows filename with "\\\\?\\" prepended.
  */
-static inline wstring makeWinPath(const char *filename)
+static inline wstring makeWinPath(const char8_t *filename)
 {
-	if (unlikely(!filename || filename[0] == 0))
+	if (unlikely(!filename || filename[0] == '\0'))
 		return wstring();
 
 	// TODO: Don't bother if the filename is <= 240 characters?
@@ -71,9 +72,9 @@ static inline wstring makeWinPath(const char *filename)
  * @param filename Original Windows filename.
  * @return Windows filename with "\\\\?\\" prepended.
  */
-static inline wstring makeWinPath(const string &filename)
+static inline wstring makeWinPath(const u8string &filename)
 {
-	if (filename.empty())
+	if (unlikely(filename.empty()))
 		return wstring();
 
 	// TODO: Don't bother if the filename is <= 240 characters?
@@ -93,7 +94,7 @@ static inline wstring makeWinPath(const string &filename)
 }
 #else /* !UNICODE */
 /**
- * Convert a path from ANSI to UTF-8.
+ * Convert a path from UTF-8 to ANSI.
  *
  * Windows' ANSI functions doesn't support the use of
  * "\\\\?\\" for paths longer than MAX_PATH.
@@ -101,7 +102,7 @@ static inline wstring makeWinPath(const string &filename)
  * @param filename UTF-8 filename.
  * @return ANSI filename.
  */
-static inline tstring makeWinPath(const char *filename)
+static inline tstring makeWinPath(const char8_t *filename)
 {
 	return U82T_c(filename);
 }
@@ -115,7 +116,7 @@ static inline tstring makeWinPath(const char *filename)
  * @param filename UTF-8 filename.
  * @return ANSI filename.
  */
-static inline tstring makeWinPath(const string &filename)
+static inline tstring makeWinPath(const u8string &filename)
 {
 	return U82T_s(filename);
 }
@@ -140,7 +141,8 @@ int rmkdir(const string &path)
 	static_assert(sizeof(wchar_t) == sizeof(char16_t), "wchar_t is not 16-bit!");
 
 	// TODO: makeWinPath()?
-	tstring tpath = U82T_s(path);
+	// FIXME: U8STRFIX
+	tstring tpath = U82T_c(reinterpret_cast<const char8_t*>(path.c_str()));
 
 	if (tpath.size() == 3) {
 		// 3 characters. Root directory is always present.
@@ -186,7 +188,8 @@ int rmkdir(const string &path)
 int access(const string &pathname, int mode)
 {
 	// Windows doesn't recognize X_OK.
-	const tstring tpathname = makeWinPath(pathname);
+	// FIXME: U8STRFIX
+	const tstring tpathname = makeWinPath(reinterpret_cast<const char8_t*>(pathname.c_str()));
 	mode &= ~X_OK;
 	return ::_taccess(tpathname.c_str(), mode);
 }
@@ -198,7 +201,8 @@ int access(const string &pathname, int mode)
  */
 off64_t filesize(const string &filename)
 {
-	const tstring tfilename = makeWinPath(filename);
+	// FIXME: U8STRFIX
+	const tstring tfilename = makeWinPath(reinterpret_cast<const char8_t*>(filename.c_str()));
 
 	// TODO: Add a static_warning() macro?
 	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
@@ -239,7 +243,8 @@ int set_mtime(const char *filename, time_t mtime)
 #if _USE_32BIT_TIME_T
 # error 32-bit time_t is not supported. Get a newer compiler.
 #endif
-	const tstring tfilename = makeWinPath(filename);
+	// FIXME: U8STRFIX
+	const tstring tfilename = makeWinPath(reinterpret_cast<const char8_t*>(filename));
 
 	struct __utimbuf64 utbuf;
 	utbuf.actime = _time64(nullptr);
@@ -262,7 +267,8 @@ int get_mtime(const char *filename, time_t *pMtime)
 		return -EINVAL;
 	}
 
-	const tstring tfilename = makeWinPath(filename);
+	// FIXME: U8STRFIX
+	const tstring tfilename = makeWinPath(reinterpret_cast<const char8_t*>(filename));
 
 	// TODO: Add a static_warning() macro?
 	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
@@ -304,7 +310,8 @@ int delete_file(const char *filename)
 	}
 
 	int ret = 0;
-	const tstring tfilename = makeWinPath(filename);
+	// FIXME: U8STRFIX
+	const tstring tfilename = makeWinPath(reinterpret_cast<const char8_t*>(filename));
 	if (!DeleteFile(tfilename.c_str())) {
 		// Error deleting file.
 		ret = -w32err_to_posix(GetLastError());
@@ -326,7 +333,8 @@ bool is_symlink(const char *filename)
 	if (unlikely(!filename || filename[0] == 0)) {
 		return false;
 	}
-	const tstring tfilename = makeWinPath(filename);
+	// FIXME: U8STRFIX
+	const tstring tfilename = makeWinPath(reinterpret_cast<const char8_t*>(filename));
 
 	// Check the reparse point type.
 	// Reference: https://devblogs.microsoft.com/oldnewthing/20100212-00/?p=14963
@@ -404,7 +412,8 @@ string resolve_symlink(const char *filename)
 
 	// Reference: https://devblogs.microsoft.com/oldnewthing/20100212-00/?p=14963
 	// TODO: Enable write sharing in regular IRpFile?
-	const tstring tfilename = makeWinPath(filename);
+	// FIXME: U8STRFIX
+	const tstring tfilename = makeWinPath(reinterpret_cast<const char8_t*>(filename));
 	HANDLE hFile = CreateFile(tfilename.c_str(),
 		GENERIC_READ,
 		FILE_SHARE_READ|FILE_SHARE_WRITE,
@@ -435,7 +444,8 @@ string resolve_symlink(const char *filename)
 	}
 
 	// TODO: Add back the cchDeref parameter for explicit length in MiniU82T?
-	string ret = T2U8_c(szDeref);
+	// FIXME: U8STRFIX
+	string ret = reinterpret_cast<const char*>(T2U8_c(szDeref).c_str());
 	delete[] szDeref;
 	CloseHandle(hFile);
 	return ret;
@@ -453,7 +463,8 @@ bool is_directory(const char *filename)
 	if (unlikely(!filename || filename[0] == 0)) {
 		return false;
 	}
-	const tstring tfilename = makeWinPath(filename);
+	// FIXME: U8STRFIX
+	const tstring tfilename = makeWinPath(reinterpret_cast<const char8_t*>(filename));
 
 	const DWORD attrs = GetFileAttributes(tfilename.c_str());
 	return (attrs != INVALID_FILE_ATTRIBUTES && (attrs & FILE_ATTRIBUTE_DIRECTORY));
@@ -495,7 +506,8 @@ bool isOnBadFS(const char *filename, bool netFS)
  */
 int get_file_size_and_mtime(const string &filename, off64_t *pFileSize, time_t *pMtime)
 {
-	const tstring tfilename = makeWinPath(filename);
+	// FIXME: U8STRFIX
+	const tstring tfilename = makeWinPath(reinterpret_cast<const char8_t*>(filename.c_str()));
 
 	// TODO: Add a static_warning() macro?
 	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning

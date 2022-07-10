@@ -189,9 +189,9 @@ class IRpFile : public RefBase
 
 		/**
 		 * Get the filename.
-		 * @return Filename. (May be nullptr if the filename is not available.)
+		 * @return Filename (May be nullptr if the filename is not available.)
 		 */
-		virtual const char *filename(void) const
+		virtual const char8_t *filename(void) const
 		{
 			return nullptr;
 		}

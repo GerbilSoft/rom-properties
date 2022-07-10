@@ -195,8 +195,9 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 	// TGA 2.0 has an identifying footer as well.
 	// NOTE: We're also checking the file extension due to
 	// conflicts with "WWF Raw" on SNES.
-	const char *const filename = file->filename();
-	const char *const ext = FileSystem::file_ext(filename);
+	const char8_t *const filename = file->filename();
+	// FIXME: U8STRFIX
+	const char *const ext = FileSystem::file_ext(reinterpret_cast<const char*>(filename));
 	bool ext_ok = false;
 	if (!ext || ext[0] == '\0') {
 		// No extension. Check for TGA anyway.
@@ -206,9 +207,9 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 		ext_ok = true;
 	} else if (!strcasecmp(ext, ".gz")) {
 		// Check if it's ".tga.gz".
-		const size_t filename_len = strlen(filename);
+		const size_t filename_len = strlen(reinterpret_cast<const char*>(filename));
 		if (filename_len >= 7) {
-			if (!strncasecmp(&filename[filename_len-7], ".tga", 4)) {
+			if (!strncasecmp(reinterpret_cast<const char*>(&filename[filename_len-7]), ".tga", 4)) {
 				// It's ".tga.gz".
 				ext_ok = true;
 			}

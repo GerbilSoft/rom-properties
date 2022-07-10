@@ -115,11 +115,11 @@ class MemFile : public IRpFile
 
 		/**
 		 * Get the filename.
-		 * @return Filename. (May be nullptr if the filename is not available.)
+		 * @return Filename (May be nullptr if the filename is not available.)
 		 */
-		inline const char *filename(void) const final
+		inline const char8_t *filename(void) const final
 		{
-			return (!m_filename.empty() ? m_filename.c_str() : nullptr);
+			return (!m_filename.empty()) ? m_filename.c_str() : nullptr;
 		}
 
 	public:
@@ -129,7 +129,7 @@ class MemFile : public IRpFile
 		 * Set the filename.
 		 * @param filename Filename
 		 */
-		inline void setFilename(const char *filename)
+		inline void setFilename(const char8_t *filename)
 		{
 			m_filename = filename;
 		}
@@ -138,7 +138,7 @@ class MemFile : public IRpFile
 		 * Set the filename.
 		 * @param filename Filename
 		 */
-		inline void setFilename(const std::string &filename)
+		inline void setFilename(const std::u8string &filename)
 		{
 			m_filename = filename;
 		}
@@ -148,7 +148,7 @@ class MemFile : public IRpFile
 		size_t m_size;		// Size of memory buffer.
 		size_t m_pos;		// Current position.
 
-		std::string m_filename;	// Dummy filename.
+		std::u8string m_filename;	// Dummy filename.
 };
 
 }

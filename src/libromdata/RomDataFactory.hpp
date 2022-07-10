@@ -96,7 +96,7 @@ class RomDataFactory
 		 * @return RomData subclass, or nullptr if the ROM isn't supported.
 		 */
 		RP_LIBROMDATA_PUBLIC
-		static LibRpBase::RomData *create(const char *filename, unsigned int attrs = 0);
+		static LibRpBase::RomData *create(const char8_t *filename, unsigned int attrs = 0);
 
 		struct ExtInfo {
 			const char *ext;

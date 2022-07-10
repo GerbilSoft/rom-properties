@@ -186,7 +186,7 @@ int RomDataViewPrivate::updateField(int fieldIdx)
  */
 void RomDataViewPrivate::doRomOp_stdop(int id)
 {
-	const char *const rom_filename = romData->filename();
+	const char8_t *const rom_filename = romData->filename();
 	if (!rom_filename)
 		return;
 	const uint32_t sel_lc = (cboLanguage ? cboLanguage->selectedLC() : 0);
@@ -196,10 +196,12 @@ void RomDataViewPrivate::doRomOp_stdop(int id)
 	const char *default_ext = nullptr;
 
 	// Check the standard operation.
+	// FIXME: U8STRFIX
 	switch (id) {
 		case OPTION_COPY_TEXT: {
 			ostringstream oss;
-			oss << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), rom_filename) << std::endl;
+			oss << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"),
+				reinterpret_cast<const char*>(rom_filename)) << std::endl;
 			ROMOutput ro(romData, sel_lc);
 			oss << ro;
 			QApplication::clipboard()->setText(U82Q(oss.str()));
@@ -323,7 +325,9 @@ void RomDataView::btnOptions_triggered(int id)
 		filter += rpFileDialogFilterToQt(C_("RomData", "All Files|*|-"));
 
 		// Initial file and directory, based on the current file.
-		QString initialFile = U82Q(FileSystem::replace_ext(d->romData->filename(), op->sfi.ext));
+		// FIXME: U8STRFIX
+		QString initialFile = U82Q(FileSystem::replace_ext(
+			reinterpret_cast<const char*>(d->romData->filename()), op->sfi.ext));
 
 		// Prompt for a save file.
 		QString filename = QFileDialog::getSaveFileName(this,

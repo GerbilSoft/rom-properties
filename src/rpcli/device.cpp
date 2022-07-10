@@ -31,6 +31,7 @@ using LibRpFile::RpFile;
 #include <iostream>
 #include <string>
 using std::string;
+using std::u8string;
 
 class StreamStateSaver {
 	std::ios &stream;	// Stream being adjusted.
@@ -55,6 +56,14 @@ public:
 		// Restore the stream's state.
 		stream.copyfmt(state);
 	}
+};
+
+/**
+ * Formatting function for `const char8_t*`.
+ */
+static inline ::std::ostream& operator<<(::std::ostream& os, const char8_t *str)
+{
+	return os << reinterpret_cast<const char*>(str);
 };
 
 /** ScsiInquiry **/

@@ -13,7 +13,7 @@
 
 // C++ includes.
 #include <string>
-using std::string;
+using std::u8string;
 using std::wstring;
 
 namespace LibWin32Common {
@@ -24,9 +24,9 @@ namespace LibWin32Common {
  * @return UTF-8 C++ string.
  */
 #ifdef UNICODE
-string T2U8_c(const TCHAR *wcs)
+u8string T2U8_c(const TCHAR *wcs)
 {
-	string s_ret;
+	u8string s_ret;
 
 	// NOTE: cbMbs includes the NULL terminator.
 	int cbMbs = WideCharToMultiByte(CP_UTF8, 0, wcs, -1, nullptr, 0, nullptr, nullptr);
@@ -35,8 +35,8 @@ string T2U8_c(const TCHAR *wcs)
 	}
 	cbMbs--;
  
-	char *const mbs = new char[cbMbs];
-	WideCharToMultiByte(CP_UTF8, 0, wcs, -1, mbs, cbMbs, nullptr, nullptr);
+	char8_t *const mbs = new char8_t[cbMbs];
+	WideCharToMultiByte(CP_UTF8, 0, wcs, -1, reinterpret_cast<LPSTR>(mbs), cbMbs, nullptr, nullptr);
 	s_ret.assign(mbs, cbMbs);
 	delete[] mbs;
 	return s_ret;
@@ -48,19 +48,19 @@ string T2U8_c(const TCHAR *wcs)
  * @param mbs UTF-8 string.
  * @return UTF-16 C++ wstring.
  */
-wstring U82W_c(const char *mbs)
+wstring U82W_c(const char8_t *mbs)
 {
 	wstring ws_ret;
 
 	// NOTE: cchWcs includes the NULL terminator.
-	int cchWcs = MultiByteToWideChar(CP_UTF8, 0, mbs, -1, nullptr, 0);
+	int cchWcs = MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<LPCCH>(mbs), -1, nullptr, 0);
 	if (cchWcs <= 1) {
 		return ws_ret;
 	}
 	cchWcs--;
  
 	wchar_t *const wcs = new wchar_t[cchWcs];
-	MultiByteToWideChar(CP_UTF8, 0, mbs, -1, wcs, cchWcs);
+	MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<LPCCH>(mbs), -1, wcs, cchWcs);
 	ws_ret.assign(wcs, cchWcs);
 	delete[] wcs;
 	return ws_ret;

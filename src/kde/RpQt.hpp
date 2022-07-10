@@ -77,13 +77,36 @@ static inline QString U82Q(const char *str, int len = -1)
 	return QString::fromUtf8(str, len);
 }
 
+#ifndef CXX20_COMPAT_CHAR8_T
 /**
- * Get const char* from QString.
- * NOTE: This is temporary; assign to an std::string immediately.
- * @param qs QString
- * @return const char*
+ * Convert an std::u8string to QString.
+ * @param str std::u8string
+ * @return QString
  */
-#define Q2U8(qs) ((qs).toUtf8().constData())
+static inline QString U82Q(const std::u8string &str)
+{
+	return QString::fromUtf8(reinterpret_cast<const char*>(str.data()), static_cast<int>(str.size()));
+}
+
+/**
+ * Convert a const char* to a QString.
+ * @param str const char*
+ * @param len Length of str, in characters. (optional; -1 for C string)
+ * @return QString
+ */
+static inline QString U82Q(const char8_t *str, int len = -1)
+{
+	return QString::fromUtf8(reinterpret_cast<const char*>(str), len);
+}
+#endif /* CXX20_COMPAT_CHAR8_T */
+
+/**
+ * Get const char8_t* from QString.
+ * NOTE: This is temporary; assign to an std::u8string immediately.
+ * @param qs QString
+ * @return const char8_t*
+ */
+#define Q2U8(qs) (reinterpret_cast<const char8_t*>((qs).toUtf8().constData()))
 
 /**
  * Convert a language code to a QString.

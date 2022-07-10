@@ -104,9 +104,9 @@ class RpFile_IStream final : public LibRpFile::IRpFile
 
 		/**
 		 * Get the filename.
-		 * @return Filename. (May be nullptr if the filename is not available.)
+		 * @return Filename (May be nullptr if the filename is not available.)
 		 */
-		const char *filename(void) const final;
+		const char8_t *filename(void) const final;
 
 	public:
 		/** Extra functions **/

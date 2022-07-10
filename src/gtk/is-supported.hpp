@@ -19,7 +19,7 @@ namespace LibRomData {
 /**
  * Attempt to open a RomData object from the specified GVfs URI.
  * If it is, the RomData object will be opened.
- * @param uri URI rom e.g. nautilus_file_info_get_uri().
+ * @param uri URI from e.g. nautilus_file_info_get_uri() [UTF-8]
  * @return RomData object if supported; nullptr if not.
  */
 LibRpBase::RomData *rp_gtk_open_uri(const gchar *uri);

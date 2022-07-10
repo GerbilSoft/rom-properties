@@ -2257,8 +2257,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	}
 
 	// Open the file.
-	// FIXME: U8STRFIX
-	file = new RpFile(reinterpret_cast<const char*>(u8filename.c_str()), RpFile::FM_OPEN_READ_GZ);
+	file = new RpFile(u8filename, RpFile::FM_OPEN_READ_GZ);
 	if (!file->isOpen()) {
 		// Unable to open the file.
 		goto cleanup;
@@ -2800,8 +2799,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			}
 
 			// Open the RomData object.
-			// FIXME: U8STRFIX
-			RpFile *const file = new RpFile(reinterpret_cast<const char*>(d->filename.c_str()), RpFile::FM_OPEN_READ_GZ);
+			RpFile *const file = new RpFile(d->filename, RpFile::FM_OPEN_READ_GZ);
 			if (!file->isOpen()) {
 				// Unable to open the file.
 				file->unref();

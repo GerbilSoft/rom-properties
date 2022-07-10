@@ -172,8 +172,9 @@ WonderSwan::WonderSwan(IRpFile *file)
 	}
 
 	// File extension is needed.
-	const char *const filename = file->filename();
-	const char *const ext = FileSystem::file_ext(filename);
+	const char8_t *const filename = file->filename();
+	// FIXME: U8STRFIX
+	const char *const ext = FileSystem::file_ext(reinterpret_cast<const char*>(filename));
 	if (!ext) {
 		// Unable to get the file extension.
 		UNREF_AND_NULL_NOCHK(d->file);

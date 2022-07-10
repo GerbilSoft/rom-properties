@@ -22,7 +22,6 @@ using namespace LibRpFile;
 #include "Other/ISO.hpp"
 
 // C++ STL classes
-using std::string;
 using std::u8string;
 using std::unique_ptr;
 using std::vector;
@@ -39,8 +38,8 @@ class GdiReaderPrivate : public SparseDiscReaderPrivate {
 		RP_DISABLE_COPY(GdiReaderPrivate)
 
 	public:
-		// GDI filename.
-		string filename;
+		// GDI filename
+		u8string filename;
 
 		// Block range mapping.
 		// NOTE: This currently *only* contains data tracks.
@@ -262,7 +261,7 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 	u8string basename = blockRange->filename;
 	u8string ext;
 	size_t dotpos = basename.find_last_of('.');
-	if (dotpos != string::npos) {
+	if (dotpos != u8string::npos) {
 		ext = basename.substr(dotpos);
 		basename.resize(dotpos);
 	} else {
@@ -271,10 +270,8 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 	}
 
 	// Open the related file.
-	// FIXME: u8string
 	IRpFile *const file = FileSystem::openRelatedFile(filename.c_str(),
-		reinterpret_cast<const char*>(basename.c_str()),
-		reinterpret_cast<const char*>(ext.c_str()));
+		basename.c_str(), ext.c_str());
 	if (!file) {
 		// Unable to open the file.
 		// TODO: Return the actual error.
@@ -314,7 +311,7 @@ GdiReader::GdiReader(IRpFile *file)
 
 	// Save the filename for later.
 	RP_D(GdiReader);
-	const char *const filename = m_file->filename();
+	const char8_t *const filename = m_file->filename();
 	if (filename) {
 		d->filename = filename;
 	}

@@ -261,7 +261,7 @@ rom_data_view_doRomOp_stdop_response(GtkFileChooserDialog *fileDialog, gint resp
 static void
 rom_data_view_doRomOp_stdop(RomDataView *page, int id)
 {
-	const char *const rom_filename = page->romData->filename();
+	const char8_t *const rom_filename = page->romData->filename();
 	if (!rom_filename)
 		return;
 
@@ -342,7 +342,8 @@ rom_data_view_doRomOp_stdop(RomDataView *page, int id)
 	// Set the operation ID in the dialog.
 	g_object_set_data(G_OBJECT(fileDialog), "RomDataView.romOp", GINT_TO_POINTER(id));
 
-	gchar *const basename = g_path_get_basename(rom_filename);
+	gchar *const basename = g_path_get_basename(
+		reinterpret_cast<const char*>(rom_filename));
 	string defaultName = basename;
 	g_free(basename);
 	// Remove the extension, if present.
@@ -500,7 +501,9 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 
 		// Initial file and directory, based on the current file.
 		// NOTE: Not checking if it's a file or a directory. Assuming it's a file.
-		string initialFile = FileSystem::replace_ext(page->romData->filename(), op->sfi.ext);
+		// FIXME: U8STRFIX
+		string initialFile = FileSystem::replace_ext(
+			reinterpret_cast<const char*>(page->romData->filename()), op->sfi.ext);
 		if (!initialFile.empty()) {
 			// Split the directory and basename.
 			size_t slash_pos = initialFile.rfind(DIR_SEP_CHR);

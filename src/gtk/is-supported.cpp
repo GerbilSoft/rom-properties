@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * is-supported.hpp: Check if a URI is supported.                          *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,7 +19,7 @@ using LibRomData::RomDataFactory;
 /**
  * Attempt to open a RomData object from the specified GVfs URI.
  * If it is, the RomData object will be opened.
- * @param uri URI rom e.g. nautilus_file_info_get_uri().
+ * @param uri URI from e.g. nautilus_file_info_get_uri() [UTF-8]
  * @return RomData object if supported; nullptr if not.
  */
 LibRpBase::RomData *rp_gtk_open_uri(const gchar *uri)
@@ -34,11 +34,11 @@ LibRpBase::RomData *rp_gtk_open_uri(const gchar *uri)
 	gchar *const filename = g_filename_from_uri(uri, nullptr, nullptr);
 	if (filename) {
 		// Local file. Use RpFile.
-		file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
+		file = new RpFile(reinterpret_cast<const char8_t*>(filename), RpFile::FM_OPEN_READ_GZ);
 		g_free(filename);
 	} else {
 		// Not a local file. Use RpFileGio.
-		file = new RpFileGio(uri);
+		file = new RpFileGio(reinterpret_cast<const char8_t*>(uri));
 	}
 
 	// Open the ROM file.

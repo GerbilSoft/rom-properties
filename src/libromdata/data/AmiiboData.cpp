@@ -328,8 +328,7 @@ int AmiiboDataPrivate::loadIfNeeded(void)
 	}
 
 	// Load amiibo.bin.
-	// FIXME: U8STRFIX
-	RpFile *const pFile = new RpFile(reinterpret_cast<const char*>(filename.c_str()), RpFile::FM_OPEN_READ);
+	RpFile *const pFile = new RpFile(filename, RpFile::FM_OPEN_READ);
 	if (!pFile->isOpen()) {
 		// Unable to open the file.
 		int err = -pFile->lastError();

@@ -68,11 +68,11 @@ class RomDataPrivate
 	public:
 		/** These fields are set by RomData's own constructor. **/
 		bool isCompressed;		// True if the file is compressed. (transparent decompression)
-		std::string filename;		// Copy of the filename.
-		LibRpFile::IRpFile *file;	// Open file.
+		std::u8string filename;		// Copy of the filename
+		LibRpFile::IRpFile *file;	// Open file
 	public:
-		RomFields *const fields;	// ROM fields. (NOTE: allocated by the base class)
-		RomMetaData *metaData;		// ROM metadata. (NOTE: nullptr initially.)
+		RomFields *const fields;	// ROM fields (NOTE: allocated by the base class)
+		RomMetaData *metaData;		// ROM metadata (NOTE: nullptr initially.)
 
 	public:
 		/** Convenience functions. **/

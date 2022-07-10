@@ -203,31 +203,31 @@ class KeyStoreUIPrivate
 
 		/**
 		 * Import keys from Wii keys.bin. (BootMii format)
-		 * @param filename keys.bin filename.
-		 * @return Key import status.
+		 * @param filename keys.bin filename
+		 * @return Key import status
 		 */
-		KeyStoreUI::ImportReturn importWiiKeysBin(const char *filename);
+		KeyStoreUI::ImportReturn importWiiKeysBin(const char8_t *filename);
 
 		/**
 		 * Import keys from Wii U otp.bin.
-		 * @param filename otp.bin filename.
-		 * @return Key import status.
+		 * @param filename otp.bin filename
+		 * @return Key import status
 		 */
-		KeyStoreUI::ImportReturn importWiiUOtpBin(const char *filename);
+		KeyStoreUI::ImportReturn importWiiUOtpBin(const char8_t *filename);
 
 		/**
 		 * Import keys from 3DS boot9.bin.
-		 * @param filename boot9.bin filename.
-		 * @return Key import status.
+		 * @param filename boot9.bin filename
+		 * @return Key import status
 		 */
-		KeyStoreUI::ImportReturn importN3DSboot9bin(const char *filename);
+		KeyStoreUI::ImportReturn importN3DSboot9bin(const char8_t *filename);
 
 		/**
 		 * Import keys from 3DS aeskeydb.bin.
-		 * @param filename aeskeydb.bin filename.
-		 * @return Key import status.
+		 * @param filename aeskeydb.bin filename
+		 * @return Key import status
 		 */
-		KeyStoreUI::ImportReturn importN3DSaeskeydb(const char *filename);
+		KeyStoreUI::ImportReturn importN3DSaeskeydb(const char8_t *filename);
 };
 
 /** KeyStoreUIPrivate **/
@@ -1100,10 +1100,10 @@ bool KeyStoreUI::hasChanged(void) const
 
 /**
  * Import keys from Wii keys.bin. (BootMii format)
- * @param filename keys.bin filename.
- * @return Number of keys imported if the file is valid; negative POSIX error code on error.
+ * @param filename keys.bin filename
+ * @return Key import status
  */
-KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiKeysBin(const char *filename)
+KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiKeysBin(const char8_t *filename)
 {
 	KeyStoreUI::ImportReturn iret = {KeyStoreUI::ImportStatus::InvalidParams, 0, 0, 0, 0, 0, 0, 0};
 
@@ -1160,10 +1160,10 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiKeysBin(const char *filenam
 
 /**
  * Import keys from Wii U otp.bin.
- * @param filename otp.bin filename.
- * @return Key import status.
+ * @param filename otp.bin filename
+ * @return Key import status
  */
-KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiUOtpBin(const char *filename)
+KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiUOtpBin(const char8_t *filename)
 {
 	KeyStoreUI::ImportReturn iret = {KeyStoreUI::ImportStatus::InvalidParams, 0, 0, 0, 0, 0, 0, 0};
 
@@ -1257,10 +1257,10 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiUOtpBin(const char *filenam
 
 /**
  * Import keys from 3DS boot9.bin.
- * @param filename boot9.bin filename.
- * @return Number of keys imported if the file is valid; negative POSIX error code on error.
+ * @param filename boot9.bin filename
+ * @return Key import status
  */
-KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSboot9bin(const char *filename)
+KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSboot9bin(const char8_t *filename)
 {
 	KeyStoreUI::ImportReturn iret = {KeyStoreUI::ImportStatus::InvalidParams, 0, 0, 0, 0, 0, 0, 0};
 
@@ -1349,10 +1349,10 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSboot9bin(const char *filen
 
 /**
  * Import keys from 3DS aeskeydb.bin.
- * @param filename aeskeydb.bin filename.
- * @return Key import status.
+ * @param filename aeskeydb.bin filename
+ * @return Key import status
  */
-KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(const char *filename)
+KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(const char8_t *filename)
 {
 	KeyStoreUI::ImportReturn iret = {KeyStoreUI::ImportStatus::InvalidParams, 0, 0, 0, 0, 0, 0, 0};
 
@@ -1637,7 +1637,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(const char *filen
  * @param filename Filename
  * @return ImportReturn
  */
-KeyStoreUI::ImportReturn KeyStoreUI::importKeysFromBin(ImportFileID fileID, const char *filename)
+KeyStoreUI::ImportReturn KeyStoreUI::importKeysFromBin(ImportFileID fileID, const char8_t *filename)
 {
 	RP_D(KeyStoreUI);
 	switch (fileID) {

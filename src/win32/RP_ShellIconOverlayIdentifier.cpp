@@ -113,8 +113,7 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::IsMemberOf(_In_ PCWSTR pwszPath, D
 	}
 
 	// Attempt to open the ROM file.
-	// FIXME: U8STRFIX
-	RpFile *const file = new RpFile(reinterpret_cast<const char*>(u8filename.c_str()), RpFile::FM_OPEN_READ_GZ);
+	RpFile *const file = new RpFile(u8filename, RpFile::FM_OPEN_READ_GZ);
 	if (!file->isOpen()) {
 		// Error opening the ROM file.
 		file->unref();
