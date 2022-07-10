@@ -91,33 +91,35 @@ f_out.write(
 	"static const char8_t dxgiFormat_strtbl[] =\n"
 )
 
+# Convert back to UTF-8 for printing.
+string_table_utf8 = string_table.decode('UTF-8')
+
 # Print up to 64 characters per line, including NULL bytes.
-# Control codes and non-ASCII characters will be escaped.
+# Control characters will be escaped.
 # NOTE: Control characters may cause it to be slightly more
 # than 64 characters per line, depending on where they show up.
-string_table_len = len(string_table)
 i = 0
 f_out.write("\tU8(\"")
 last_was_hex = False
-for c in string_table:
+for c in string_table_utf8:
 	if i >= 64:
 		f_out.write("\")\n\tU8(\"")
 		last_was_hex = False
 		i = 0
 
-	if c < 32 or c >= 128:
+	if ord(c) < 32:
 		if i != 0 and not last_was_hex:
 			f_out.write("\") U8(\"")
 			i += 7
 		last_was_hex = True
-		f_out.write("\\x{0:0{1}x}".format(c, 2))
+		f_out.write("\\x{0:0{1}x}".format(ord(c), 2))
 		i += 4
 	else:
 		if last_was_hex:
 			f_out.write("\") U8(\"")
 			i += 7
 		last_was_hex = False
-		f_out.write(chr(c))
+		f_out.write(c)
 		i += 1
 f_out.write("\");\n\n")
 
