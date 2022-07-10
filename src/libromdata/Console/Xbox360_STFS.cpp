@@ -882,20 +882,18 @@ int Xbox360_STFS::loadFieldData(void)
 		if (lc == 0)
 			continue;
 
-		// FIXME: Change StringMultiMap to u8string.
-#define U8STRFIX(x) string((const char*)(x).c_str())
 		// Display name
 		if (stfsMetadata->display_name[langID_off][0] != 0) {
-			pMap_name->emplace(lc, U8STRFIX(utf16be_to_utf8(
+			pMap_name->emplace(lc, utf16be_to_utf8(
 				stfsMetadata->display_name[langID_off],
-				ARRAY_SIZE(stfsMetadata->display_name[langID_off]))));
+				ARRAY_SIZE(stfsMetadata->display_name[langID_off])));
 		}
 
 		// Description
 		if (stfsMetadata->display_description[langID_off][0] != 0) {
-			pMap_name->emplace(lc, U8STRFIX(utf16be_to_utf8(
+			pMap_name->emplace(lc, utf16be_to_utf8(
 				stfsMetadata->display_description[langID_off],
-				ARRAY_SIZE(stfsMetadata->display_description[langID_off]))));
+				ARRAY_SIZE(stfsMetadata->display_description[langID_off])));
 		}
 	}
 

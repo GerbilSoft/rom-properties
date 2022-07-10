@@ -20,6 +20,7 @@ using std::max;
 using std::ostream;
 using std::setw;
 using std::string;
+using std::u8string;
 using std::unique_ptr;
 using std::vector;
 
@@ -74,6 +75,7 @@ public:
 	}
 
 };
+
 class ColonPad {
 	size_t width;
 	const char* str;
@@ -85,39 +87,44 @@ public:
 		return os;
 	}
 };
+
+template<typename T>
 class SafeString {
-	const char *str;
+	const T *str;
 	size_t len;
 	size_t width;
 	bool quotes;
 public:
-	SafeString(const char *str, bool quotes = true, size_t width = 0)
+	SafeString(const T *str, bool quotes = true, size_t width = 0)
 		: str(str)
-		, len(str ? strlen(str) : 0)
+		, len(str ? strlen(reinterpret_cast<const char*>(str)) : 0)
 		, width(width)
 		, quotes(quotes) { }
 
-	SafeString(const char *str, size_t len, bool quotes = true, size_t width = 0)
+	SafeString(const T *str, size_t len, bool quotes = true, size_t width = 0)
 		: str(str)
 		, len(len)
 		, width(width)
 		, quotes(quotes) { }
 
-	SafeString(const string *str, bool quotes = true, size_t width = 0)
+	SafeString(const std::basic_string<T> *str, bool quotes = true, size_t width = 0)
 		: str(str ? str->c_str() : nullptr)
 		, len(str ? str->size() : 0)
 		, width(width)
 		, quotes(quotes) { }
 
-	SafeString(const string &str, bool quotes = true, size_t width = 0)
+	SafeString(const std::basic_string<T> &str, bool quotes = true, size_t width = 0)
 		: str(str.c_str())
 		, len(str.size())
 		, width(width)
 		, quotes(quotes) { }
 
 private:
+	// TODO: Return std::basic_string<T>?
 	static string process(const SafeString& cp)
 	{
+		static_assert(sizeof(T) == sizeof(char), "SafeString<T> is for 8-bit types only!");
+
 		// NOTE: We have to use a temporary string here because
 		// the caller might be using setw() for field padding.
 		// TODO: Try optimizing it out while preserving setw().
@@ -134,7 +141,7 @@ private:
 		}
 
 		size_t n = cp.len;
-		for (const char *p = cp.str; n > 0; p++, n--) {
+		for (const T *p = cp.str; n > 0; p++, n--) {
 			if (cp.width && *p == '\n') {
 				escaped += '\n';
 				escaped.append(cp.width + (cp.quotes ? 1 : 0), ' ');
@@ -155,6 +162,7 @@ private:
 	}
 
 public:
+	// TODO: U8(), and add a char8_t operator<< like in the unit tests?
 	friend ostream& operator<<(ostream& os, const SafeString& cp) {
 		if (!cp.str) {
 			return os << "(null)";
@@ -168,6 +176,8 @@ public:
 	}
 };
 
+/** Fields **/
+
 class StringField {
 	size_t width;
 	const RomFields::Field &romField;
@@ -179,7 +189,7 @@ public:
 		auto romField = field.romField;
 		os << ColonPad(field.width, romField.name.c_str());
 		if (romField.data.str) {
-			os << SafeString(romField.data.str, true, field.width);
+			os << SafeString<char>(romField.data.str, true, field.width);
 		} else {
 			// Empty string.
 			os << "''";
@@ -470,7 +480,7 @@ public:
 					string str;
 					if (nl_count[row] == 0) {
 						// No newlines. Print the string directly.
-						str = SafeString(*jt, false);
+						str = SafeString<char8_t>(*jt, false);
 					} else if (linePos[col] == (unsigned int)string::npos) {
 						// End of string.
 					} else {
@@ -478,11 +488,11 @@ public:
 						size_t nl_pos = jt->find('\n', linePos[col]);
 						if (nl_pos == string::npos) {
 							// No more newlines.
-							str = SafeString(jt->c_str() + linePos[col], false);
+							str = SafeString<char8_t>(jt->c_str() + linePos[col], false);
 							linePos[col] = (unsigned int)string::npos;
 						} else {
 							// Found a newline.
-							str = SafeString(jt->c_str() + linePos[col], nl_pos - linePos[col], false);
+							str = SafeString<char8_t>(jt->c_str() + linePos[col], nl_pos - linePos[col], false);
 							linePos[col] = (unsigned int)(nl_pos + 1);
 							if (linePos[col] > (unsigned int)jt->size()) {
 								// End of string.
@@ -656,9 +666,9 @@ public:
 		assert(!pStr_multi->empty());
 		if (pStr_multi && !pStr_multi->empty()) {
 			// Get the string and update the text.
-			const string *const pStr = RomFields::getFromStringMulti(pStr_multi, field.def_lc, field.user_lc);
+			const u8string *const pStr = RomFields::getFromStringMulti(pStr_multi, field.def_lc, field.user_lc);
 			assert(pStr != nullptr);
-			os << SafeString((pStr ? *pStr : ""), true, field.width);
+			os << SafeString<char8_t>((pStr ? *pStr : U8("")), true, field.width);
 		} else {
 			// Empty string.
 			os << "''";

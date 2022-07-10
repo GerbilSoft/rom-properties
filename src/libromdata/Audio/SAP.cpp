@@ -661,13 +661,16 @@ int SAP::loadFieldData(void)
 
 	// Song list.
 	if (!tags.durations.empty()) {
+		const char8_t *const s_loop_yes = reinterpret_cast<const char8_t*>(C_("RomData", "Yes"));
+		const char8_t *const s_loop_no  = reinterpret_cast<const char8_t*>(C_("RomData", "No"));
+
 		unsigned int song_num = 0;
 		auto song_list = new RomFields::ListData_t(tags.durations.size());
 		auto src_iter = tags.durations.cbegin();
 		auto dest_iter = song_list->begin();
 		const auto song_list_end = song_list->end();
 		for ( ; dest_iter != song_list_end; ++src_iter, ++dest_iter, song_num++) {
-			vector<string> &data_row = *dest_iter;
+			vector<u8string> &data_row = *dest_iter;
 			data_row.reserve(3);	// 3 fields per row.
 
 			// Format as m:ss.ddd.
@@ -676,11 +679,18 @@ int SAP::loadFieldData(void)
 			const uint32_t min = (duration / 1000) / 60;
 			const uint32_t sec = (duration / 1000) % 60;
 			const uint32_t ms =  (duration % 1000);
-			data_row.emplace_back(rp_sprintf("%u", song_num));
-			data_row.emplace_back(rp_sprintf("%u:%02u.%03u", min, sec, ms));
-			data_row.emplace_back(src_iter->second
-				? C_("RomData", "Yes")
-				: C_("RomData", "No"));
+
+			// FIXME: U8STRFIX - rp_sprintf()
+			//data_row.emplace_back(rp_sprintf("%u", song_num));
+			//data_row.emplace_back(rp_sprintf("%u:%02u.%03u", min, sec, ms));
+
+			char8_t buf[64];
+			snprintf(reinterpret_cast<char*>(buf), sizeof(buf), "%u", song_num);
+			data_row.emplace_back(buf);
+			snprintf(reinterpret_cast<char*>(buf), sizeof(buf), "%u:%02u.%03u", min, sec, ms);
+			data_row.emplace_back(buf);
+
+			data_row.emplace_back(src_iter->second ? s_loop_yes : s_loop_no);
 		}
 
 		static const char *const song_list_hdr[3] = {

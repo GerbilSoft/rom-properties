@@ -871,21 +871,23 @@ int SNDH::loadFieldData(void)
 		// TODO: Hide the third column if there are names but all zero durations?
 		uint64_t duration_total = 0;
 
-		// FIXME: Change RFT_LISTDATA u8string.
-#define U8STRFIX(x) string((const char*)(x).c_str())
-
 		const size_t count = std::max(tags.subtune_names.size(), tags.subtune_lengths.size());
 		auto vv_subtune_list = new RomFields::ListData_t(count);
 		unsigned int idx = 0;
-		for (vector<string> &data_row : *vv_subtune_list) {
+		for (vector<u8string> &data_row : *vv_subtune_list) {
 			data_row.reserve(col_count);	// 2 or 3 fields per row.
 
-			data_row.emplace_back(rp_sprintf("%u", idx+1));	// NOTE: First subtune is 1, not 0.
+			// FIXME: U8STRFIX - rp_sprintf()
+			//data_row.emplace_back(rp_sprintf("%u", idx+1));	// NOTE: First subtune is 1, not 0.
+			char8_t buf[32];
+			snprintf(reinterpret_cast<char*>(buf), sizeof(buf), "%u", idx+1);
+			data_row.emplace_back(buf);
+
 			if (has_SN) {
 				if (idx < tags.subtune_names.size()) {
-					data_row.emplace_back(U8STRFIX(tags.subtune_names.at(idx)));
+					data_row.emplace_back(tags.subtune_names.at(idx));
 				} else {
-					data_row.emplace_back("");
+					data_row.emplace_back(U8(""));
 				}
 			}
 
@@ -897,9 +899,12 @@ int SNDH::loadFieldData(void)
 					duration_total += duration;
 					const unsigned int min = duration / 60;
 					const unsigned int sec = duration % 60;
-					data_row.emplace_back(rp_sprintf("%u:%02u", min, sec));
+					// FIXME: U8STRFIX - rp_sprintf()
+					//data_row.emplace_back(rp_sprintf("%u:%02u", min, sec));
+					snprintf(reinterpret_cast<char*>(buf), sizeof(buf), "%u:%02u", min, sec);
+					data_row.emplace_back(buf);
 				} else {
-					data_row.emplace_back("");
+					data_row.emplace_back(U8(""));
 				}
 			}
 

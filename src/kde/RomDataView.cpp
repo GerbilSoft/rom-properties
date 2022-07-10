@@ -26,6 +26,7 @@ using LibRpTexture::rp_image;
 // C++ STL classes.
 using std::set;
 using std::string;
+using std::u8string;
 using std::vector;
 
 // Custom widgets
@@ -820,7 +821,7 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 		}
 
 		// Get the string and update the text.
-		const string *const pStr = RomFields::getFromStringMulti(pStr_multi, def_lc, user_lc);
+		const u8string *const pStr = RomFields::getFromStringMulti(pStr_multi, def_lc, user_lc);
 		assert(pStr != nullptr);
 		lblString->setText(pStr ? U82Q(*pStr) : QString());
 	}

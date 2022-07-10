@@ -489,22 +489,20 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 		if (lc == 0)
 			continue;
 
-		// FIXME: Change StringMultiMap to u8string.
-#define U8STRFIX(x) string((const char*)(x).c_str())
 		if (smdhHeader->titles[langID].desc_short[0] != cpu_to_le16('\0')) {
-			pMap_desc_short->emplace(lc, U8STRFIX(utf16le_to_utf8(
+			pMap_desc_short->emplace(lc, utf16le_to_utf8(
 				smdhHeader->titles[langID].desc_short,
-				ARRAY_SIZE(smdhHeader->titles[langID].desc_short))));
+				ARRAY_SIZE(smdhHeader->titles[langID].desc_short)));
 		}
 		if (smdhHeader->titles[langID].desc_long[0] != cpu_to_le16('\0')) {
-			pMap_desc_long->emplace(lc, U8STRFIX(utf16le_to_utf8(
+			pMap_desc_long->emplace(lc, utf16le_to_utf8(
 				smdhHeader->titles[langID].desc_long,
-				ARRAY_SIZE(smdhHeader->titles[langID].desc_long))));
+				ARRAY_SIZE(smdhHeader->titles[langID].desc_long)));
 		}
 		if (smdhHeader->titles[langID].publisher[0] != cpu_to_le16('\0')) {
-			pMap_publisher->emplace(lc, U8STRFIX(utf16le_to_utf8(
+			pMap_publisher->emplace(lc, utf16le_to_utf8(
 				smdhHeader->titles[langID].publisher,
-				ARRAY_SIZE(smdhHeader->titles[langID].publisher))));
+				ARRAY_SIZE(smdhHeader->titles[langID].publisher)));
 		}
 	}
 

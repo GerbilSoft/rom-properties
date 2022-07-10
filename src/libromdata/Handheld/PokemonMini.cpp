@@ -231,42 +231,42 @@ int PokemonMini::loadFieldData(void)
 	id4[4] = 0;
 	d->fields->addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id4, 4));
 
-	// Vector table.
-	static const char *const vectors_names[PokemonMini_IRQ_MAX] = {
+	// Vector table (TODO: Localization?)
+	static const char8_t *const vectors_names[PokemonMini_IRQ_MAX] = {
 		// 0
-		"Reset",
-		"PRC Frame Copy",
-		"PRC Render",
-		"Timer 2 Underflow (upper)",
-		"Timer 2 Underflow (lower)",
-		"Timer 1 Underflow (upper)",
-		"Timer 1 Underflow (lower)",
-		"Timer 3 Underflow (upper)",
+		U8("Reset"),
+		U8("PRC Frame Copy"),
+		U8("PRC Render"),
+		U8("Timer 2 Underflow (upper)"),
+		U8("Timer 2 Underflow (lower)"),
+		U8("Timer 1 Underflow (upper)"),
+		U8("Timer 1 Underflow (lower)"),
+		U8("Timer 3 Underflow (upper)"),
 
 		// 8
-		"Timer 3 Comparator",
-		"32 Hz Timer",
-		"8 Hz Timer",
-		"2 Hz Timer",
-		"1 Hz Timer",
-		"IR Receiver",
-		"Shake Sensor",
-		"Power Key",
+		U8("Timer 3 Comparator"),
+		U8("32 Hz Timer"),
+		U8("8 Hz Timer"),
+		U8("2 Hz Timer"),
+		U8("1 Hz Timer"),
+		U8("IR Receiver"),
+		U8("Shake Sensor"),
+		U8("Power Key"),
 
 		// 16
-		"Right Key",
-		"Left Key",
-		"Down Key",
-		"Up Key",
-		"C Key",
-		"B Key",
-		"A Key",
-		"Vector #23",	// undefined
+		U8("Right Key"),
+		U8("Left Key"),
+		U8("Down Key"),
+		U8("Up Key"),
+		U8("C Key"),
+		U8("B Key"),
+		U8("A Key"),
+		U8("Vector #23"),	// undefined
 
 		// 24
-		"Vector #24",	// undefined
-		"Vector #25",	// undefined
-		"Cartridge",
+		U8("Vector #24"),	// undefined
+		U8("Vector #25"),	// undefined
+		U8("Cartridge"),
 	};
 
 	// Vector format: CE C4 00 F3 nn nn
@@ -287,12 +287,17 @@ int PokemonMini::loadFieldData(void)
 		data_row.reserve(3);
 
 		// # (decimal)
-		data_row.emplace_back(rp_sprintf("%u", i));
+		// FIXME: U8STRFIX - rp_sprintf()
+		//data_row.emplace_back(rp_sprintf("%u", i));
+		char8_t buf[16];
+		snprintf(reinterpret_cast<char*>(buf), sizeof(buf), "%u", i);
+		data_row.emplace_back(buf);
 
 		// Vector name
 		data_row.emplace_back(vectors_names[i]);
 
 		// Address
+		// FIXME: U8STRFIX
 		string s_address;
 		if (!memcmp(&romHeader->irqs[i][0], vec_prefix, sizeof(vec_prefix))) {
 			// Standard vector jump opcode.
@@ -317,7 +322,9 @@ int PokemonMini::loadFieldData(void)
 				romHeader->irqs[i][2], romHeader->irqs[i][3],
 				romHeader->irqs[i][4], romHeader->irqs[i][5]);
 		}
-		data_row.emplace_back(std::move(s_address));
+		// FIXME: U8STRFIX
+		//data_row.emplace_back(std::move(s_address));
+		data_row.emplace_back(reinterpret_cast<const char8_t*>(s_address.c_str()));
 	}
 
 	static const char *const vectors_headers[] = {

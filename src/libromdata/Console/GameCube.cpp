@@ -48,6 +48,12 @@ using std::u8string;
 using std::unique_ptr;
 using std::vector;
 
+// FIXME: U8STRFIX - NOP_C_
+#ifdef NOP_C_
+#  undef NOP_C_
+#endif
+#define NOP_C_(ctx, str) U8(str)
+
 namespace LibRomData {
 
 class GameCubePrivate final : public RomDataPrivate
@@ -1794,18 +1800,21 @@ int GameCube::loadFieldData(void)
 		auto dest_iter = vv_partitions->begin();
 		const auto vv_partitions_end = vv_partitions->end();
 		for ( ; dest_iter != vv_partitions_end; ++src_iter, ++dest_iter) {
-			vector<string> &data_row = *dest_iter;
+			vector<u8string> &data_row = *dest_iter;
 			data_row.reserve(5);	// 5 fields per row.
 
 			// Partition entry.
 			const GameCubePrivate::WiiPartEntry &entry = *src_iter;
 
 			// Partition number.
-			data_row.emplace_back(rp_sprintf("%dp%d", entry.vg, entry.pt));
+			// FIXME: U8STRFIX - rp_sprintf()
+			char8_t buf[32];
+			snprintf(reinterpret_cast<char*>(buf), sizeof(buf),
+				"%dp%d", entry.vg, entry.pt);
 
 			// Partition type.
 			u8string s_ptype;
-			static const char *const part_type_tbl[3] = {
+			static const char8_t *const part_type_tbl[3] = {
 				// tr: GameCubePrivate::RVL_PT_GAME (Game partition)
 				NOP_C_("Wii|Partition", "Game"),
 				// tr: GameCubePrivate::RVL_PT_UPDATE (Update partition)
@@ -1816,7 +1825,8 @@ int GameCube::loadFieldData(void)
 			if (entry.type <= RVL_PT_CHANNEL) {
 				// FIXME: U8STRFIX
 				s_ptype = reinterpret_cast<const char8_t*>(
-					dpgettext_expr(RP_I18N_DOMAIN, "Wii|Partition", part_type_tbl[entry.type]));
+					dpgettext_expr(RP_I18N_DOMAIN, "Wii|Partition",
+						reinterpret_cast<const char*>(part_type_tbl[entry.type])));
 			} else {
 				// If all four bytes are ASCII letters and/or numbers,
 				// print it as-is. (SSBB demo channel)
@@ -1835,12 +1845,12 @@ int GameCube::loadFieldData(void)
 				} else {
 					// Non-ASCII data. Print the hex values instead.
 					// FIXME: U8STRFIX
-					s_ptype = u8string((const char8_t*)rp_sprintf("%08X", entry.type).c_str());
+					char8_t buf[16];
+					snprintf(reinterpret_cast<char*>(buf), sizeof(buf), "%08X", entry.type);
+					s_ptype = u8string(buf);
 				}
 			}
-			// FIXME: U8STRFIX
-			//data_row.emplace_back(std::move(s_ptype));
-			data_row.emplace_back(string((const char*)s_ptype.c_str()));
+			data_row.emplace_back(std::move(s_ptype));
 
 			// Encryption key.
 			// TODO: Use a string table?
@@ -1856,7 +1866,7 @@ int GameCube::loadFieldData(void)
 				encKey = entry.partition->encKey();
 			}
 
-			static const char *const wii_key_tbl[] = {
+			static const char8_t *const wii_key_tbl[] = {
 				// tr: WiiPartition::EncKey::RVL_Common - Retail encryption key.
 				NOP_C_("Wii|EncKey", "Retail"),
 				// tr: WiiPartition::EncKey::RVL_Korean - Korean encryption key.
@@ -1877,30 +1887,38 @@ int GameCube::loadFieldData(void)
 			static_assert(ARRAY_SIZE(wii_key_tbl) == (int)WiiPartition::EncKey::Max,
 				"wii_key_tbl[] size is incorrect.");
 
-			const char *s_key_name;
+			const char8_t *s_key_name;
 			if ((int)encKey >= 0 && (int)encKey < ARRAY_SIZE_I(wii_key_tbl)) {
-				s_key_name = dpgettext_expr(RP_I18N_DOMAIN, "Wii|KeyIdx", wii_key_tbl[(int)encKey]);
+				// FIXME: U8STRFIX
+				s_key_name = reinterpret_cast<const char8_t*>(
+					dpgettext_expr(RP_I18N_DOMAIN, "Wii|KeyIdx",
+						reinterpret_cast<const char*>(wii_key_tbl[(int)encKey])));
 			} else {
-				// WiiPartition::EncKey::Unknown
-				s_key_name = C_("RomData", "Unknown");
+				// FIXME: U8STRFIX
+				// tr: WiiPartition::EncKey::Unknown
+				s_key_name = reinterpret_cast<const char8_t*>(C_("RomData", "Unknown"));
 			}
 			data_row.emplace_back(s_key_name);
 
 			// Used size.
+			// FIXME: U8STRFIX
 			const off64_t used_size = entry.partition->partition_size_used();
 			if (used_size >= 0) {
-				data_row.emplace_back(LibRpBase::formatFileSize(used_size));
+				data_row.emplace_back(
+					reinterpret_cast<const char8_t*>(LibRpBase::formatFileSize(used_size).c_str()));
 			} else {
 				// tr: Unknown used size.
-				data_row.emplace_back(C_("Wii|Partition", "Unknown"));
+				data_row.emplace_back(reinterpret_cast<const char8_t*>(C_("Wii|Partition", "Unknown")));
 			}
 
 			// Partition size.
-			data_row.emplace_back(LibRpBase::formatFileSize(entry.partition->partition_size()));
+			// FIXME: U8STRFIX
+			data_row.emplace_back(reinterpret_cast<const char8_t*>(
+				LibRpBase::formatFileSize(entry.partition->partition_size()).c_str()));
 		}
 
 		// Fields.
-		static const char *const partitions_names[] = {
+		static const char8_t *const partitions_names[] = {
 			// tr: Partition number.
 			NOP_C_("Wii|Partition", "#"),
 			// tr: Partition type.
@@ -1912,8 +1930,9 @@ int GameCube::loadFieldData(void)
 			// tr: Total size of the partition.
 			NOP_C_("Wii|Partition", "Total Size"),
 		};
+		// FIXME: U8STRFIX
 		vector<string> *const v_partitions_names = RomFields::strArrayToVector_i18n(
-			"Wii|Partition", partitions_names, ARRAY_SIZE(partitions_names));
+			"Wii|Partition", reinterpret_cast<const char *const *>(partitions_names), ARRAY_SIZE(partitions_names));
 
 		RomFields::AFLD_PARAMS params;
 		params.headers = v_partitions_names;

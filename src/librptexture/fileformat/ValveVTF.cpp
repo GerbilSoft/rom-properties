@@ -34,6 +34,12 @@ using LibRpTexture::ImageSizeCalc::OpCode;
 using std::string;
 using std::vector;
 
+// FIXME: U8STRFIX - NOP_C_
+#ifdef NOP_C_
+#  undef NOP_C_
+#endif
+#define NOP_C_(ctx, str) U8(str)
+
 namespace LibRpTexture {
 
 class ValveVTFPrivate final : public FileFormatPrivate
@@ -75,11 +81,11 @@ class ValveVTFPrivate final : public FileFormatPrivate
 		vector<mipmap_data_t> mipmap_data;
 
 		// Invalid pixel format message.
-		char invalid_pixel_format[24];
+		char8_t invalid_pixel_format[24];
 
 	public:
 		// Image format table
-		static const char *const img_format_tbl[];
+		static const char8_t *const img_format_tbl[];
 
 		// ImageSizeCalc opcode table
 		static const ImageSizeCalc::OpCode op_tbl[];
@@ -151,34 +157,34 @@ const TextureInfo ValveVTFPrivate::textureInfo = {
 };
 
 // Image format table
-const char *const ValveVTFPrivate::img_format_tbl[] = {
-	"RGBA8888",
-	"ABGR8888",
-	"RGB888",
-	"BGR888",
-	"RGB565",
-	"I8",
-	"IA88",
-	"P8",
-	"A8",
-	"RGB888 (Bluescreen)",	// FIXME: Localize?
-	"BGR888 (Bluescreen)",	// FIXME: Localize?
-	"ARGB8888",
-	"BGRA8888",
-	"DXT1",
-	"DXT3",
-	"DXT5",
-	"BGRx8888",
-	"BGR565",
-	"BGRx5551",
-	"BGRA4444",
-	"DXT1_A1",
-	"BGRA5551",
-	"UV88",
-	"UVWQ8888",
-	"RGBA16161616F",
-	"RGBA16161616",
-	"UVLX8888",
+const char8_t *const ValveVTFPrivate::img_format_tbl[] = {
+	U8("RGBA8888"),
+	U8("ABGR8888"),
+	U8("RGB888"),
+	U8("BGR888"),
+	U8("RGB565"),
+	U8("I8"),
+	U8("IA88"),
+	U8("P8"),
+	U8("A8"),
+	U8("RGB888 (Bluescreen)"),	// FIXME: Localize?
+	U8("BGR888 (Bluescreen)"),	// FIXME: Localize?
+	U8("ARGB8888"),
+	U8("BGRA8888"),
+	U8("DXT1"),
+	U8("DXT3"),
+	U8("DXT5"),
+	U8("BGRx8888"),
+	U8("BGR565"),
+	U8("BGRx5551"),
+	U8("BGRA4444"),
+	U8("DXT1_A1"),
+	U8("BGRA5551"),
+	U8("UV88"),
+	U8("UVWQ8888"),
+	U8("RGBA16161616F"),
+	U8("RGBA16161616"),
+	U8("UVLX8888"),
 	nullptr
 };
 
@@ -772,7 +778,8 @@ const char *ValveVTF::pixelFormat(void) const
 
 	if (fmt >= 0 && fmt < ARRAY_SIZE_I(d->img_format_tbl)) {
 		if (d->img_format_tbl[fmt] != nullptr) {
-			return d->img_format_tbl[fmt];
+			// FIXME: U8STRFIX - return `const char8_t*`
+			return reinterpret_cast<const char*>(d->img_format_tbl[fmt]);
 		}
 	} else if (fmt < 0) {
 		// Negative == none (usually -1)
@@ -780,13 +787,14 @@ const char *ValveVTF::pixelFormat(void) const
 	}
 
 	// Invalid pixel format.
+	// FIXME: U8STRFIX - return `const char8_t*`
 	if (d->invalid_pixel_format[0] == '\0') {
 		// TODO: Localization?
-		snprintf(const_cast<ValveVTFPrivate*>(d)->invalid_pixel_format,
+		snprintf(reinterpret_cast<char*>(const_cast<ValveVTFPrivate*>(d)->invalid_pixel_format),
 			sizeof(d->invalid_pixel_format),
 			"Unknown (%d)", fmt);
 	}
-	return d->invalid_pixel_format;
+	return reinterpret_cast<const char*>(d->invalid_pixel_format);
 }
 
 /**
@@ -832,16 +840,16 @@ int ValveVTF::getFields(LibRpBase::RomFields *fields) const
 	const int initial_count = fields->count();
 	fields->reserve(initial_count + 9);	// Maximum of 9 fields.
 
-	// VTF header.
+	// VTF header
 	const VTFHEADER *const vtfHeader = &d->vtfHeader;
 
-	// VTF version.
+	// VTF version
 	fields->addField_string(C_("ValveVTF", "VTF Version"),
 		rp_sprintf("%u.%u", vtfHeader->version[0], vtfHeader->version[1]));
 
-	// Flags.
+	// Flags
 	// TODO: Show "deprecated" flags for older versions.
-	static const char *const flags_names[] = {
+	static const char8_t *const flags_names[] = {
 		// 0x1-0x8
 		NOP_C_("ValveVTF|Flags", "Point Sampling"),
 		NOP_C_("ValveVTF|Flags", "Trilinear Sampling"),
@@ -883,9 +891,10 @@ int ValveVTF::getFields(LibRpBase::RomFields *fields) const
 	};
 
 	// Convert to ListData_t for RFT_LISTDATA.
+	// TODO: Use RomFields::strArrayToVector_i18n()?
 	auto vv_flags = new RomFields::ListData_t();
 	vv_flags->reserve(ARRAY_SIZE(flags_names));
-	for (const char *pFlagName : flags_names) {
+	for (const char8_t *pFlagName : flags_names) {
 		if (!pFlagName)
 			continue;
 
@@ -893,7 +902,8 @@ int ValveVTF::getFields(LibRpBase::RomFields *fields) const
 		vv_flags->resize(j);
 		auto &data_row = vv_flags->at(j-1);
 		// TODO: Localization.
-		//data_row.emplace_back(dpgettext_expr(RP_I18N_DOMAIN, "ValveVTF|Flags", pFlagName));
+		//data_row.emplace_back(dpgettext_expr(RP_I18N_DOMAIN, "ValveVTF|Flags",
+		//	reinterpret_cast<const char*>(pFlagName)));
 		data_row.emplace_back(pFlagName);
 	}
 
@@ -921,7 +931,7 @@ int ValveVTF::getFields(LibRpBase::RomFields *fields) const
 		rp_sprintf("%0.1f", vtfHeader->bumpmapScale));
 
 	// Low-resolution image format.
-	const char *img_format;
+	const char8_t *img_format;
 	if (vtfHeader->lowResImageFormat >= 0 &&
 	    vtfHeader->lowResImageFormat < ARRAY_SIZE_I(d->img_format_tbl))
 	{

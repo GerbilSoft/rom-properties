@@ -18,6 +18,7 @@ using LibRpTexture::rp_image;
 // C++ STL classes
 using std::set;
 using std::string;
+using std::u8string;
 using std::unordered_map;
 using std::vector;
 
@@ -218,7 +219,7 @@ vector<QString> ListDataModelPrivate::convertListDataToVector(const RomFields::L
 	const int rowCount = list_data->size();
 
 	data.reserve(columnCount * rowCount);
-	for (const vector<string> &data_row : *list_data) {
+	for (const vector<u8string> &data_row : *list_data) {
 		if (hasCheckboxes && data_row.empty()) {
 			// Skip this row.
 			continue;
@@ -227,7 +228,7 @@ vector<QString> ListDataModelPrivate::convertListDataToVector(const RomFields::L
 		// Add item text.
 		assert((int)data_row.size() == columnCount);
 		int cols = columnCount;
-		for (const string &u8_str : data_row) {
+		for (const u8string &u8_str : data_row) {
 			data.emplace_back(U82Q(u8_str));
 
 			cols--;

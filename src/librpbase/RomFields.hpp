@@ -248,13 +248,14 @@ class RomFields
 		};
 
 		// Typedefs for various containers.
-		typedef std::map<uint32_t, std::string> StringMultiMap_t;
-		typedef std::vector<std::vector<std::string> > ListData_t;
+		typedef std::map<uint32_t, std::u8string> StringMultiMap_t;
+		typedef std::vector<std::vector<std::u8string> > ListData_t;
 		typedef std::map<uint32_t, ListData_t> ListDataMultiMap_t;
 		typedef std::vector<const LibRpTexture::rp_image*> ListDataIcons_t;
 
 		// ROM field struct.
 		// Dynamically allocated.
+		// TODO: Change std::string fields to std::u8string.
 		struct Field {
 			std::string name;	// Field name.
 			RomFieldType type;	// ROM field type.
@@ -436,18 +437,18 @@ class RomFields
 		/**
 		 * Get a string from an RFT_STRING_MULTI field.
 		 * @param pStr_multi StringMultiMap_t*
-		 * @param def_lc Default language code.
-		 * @param user_lc User-specified language code.
+		 * @param def_lc Default language code
+		 * @param user_lc User-specified language code
 		 * @return Pointer to string, or nullptr if not found.
 		 */
 		RP_LIBROMDATA_PUBLIC
-		static const std::string *getFromStringMulti(const StringMultiMap_t *pStr_multi, uint32_t def_lc, uint32_t user_lc);
+		static const std::u8string *getFromStringMulti(const StringMultiMap_t *pStr_multi, uint32_t def_lc, uint32_t user_lc);
 
 		/**
 		 * Get ListData_t from an RFT_LISTDATA_MULTI field.
 		 * @param pListData_multi ListDataMultiMap_t*
-		 * @param def_lc Default language code.
-		 * @param user_lc User-specified language code.
+		 * @param def_lc Default language code
+		 * @param user_lc User-specified language code
 		 * @return Pointer to ListData_t, or nullptr if not found.
 		 */
 		RP_LIBROMDATA_PUBLIC

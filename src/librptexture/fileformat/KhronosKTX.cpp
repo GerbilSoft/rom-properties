@@ -38,6 +38,7 @@ using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::string;
+using std::u8string;
 using std::unique_ptr;
 using std::vector;
 
@@ -83,10 +84,10 @@ class KhronosKTXPrivate final : public FileFormatPrivate
 		char8_t invalid_pixel_format[24];
 
 		// Key/Value data.
-		// NOTE: Stored as vector<vector<string> > instead of
-		// vector<pair<string, string> > for compatibility with
+		// NOTE: Stored as vector<vector<u8string> > instead of
+		// vector<pair<u8string, u8string> > for compatibility with
 		// RFT_LISTDATA.
-		vector<vector<string> > kv_data;
+		RomFields::ListData_t kv_data;
 
 		/**
 		 * Load the image.
@@ -827,7 +828,7 @@ void KhronosKTXPrivate::loadKeyValueData(void)
 	}
 
 	// Load the data.
-	unique_ptr<char[]> buf(new char[ktxHeader.bytesOfKeyValueData]);
+	unique_ptr<char8_t[]> buf(new char8_t[ktxHeader.bytesOfKeyValueData]);
 	size_t size = file->seekAndRead(sizeof(ktxHeader), buf.get(), ktxHeader.bytesOfKeyValueData);
 	if (size != ktxHeader.bytesOfKeyValueData) {
 		// Seek and/or read error.
@@ -838,8 +839,8 @@ void KhronosKTXPrivate::loadKeyValueData(void)
 	// - uint32_t: keyAndValueByteSize
 	// - Byte: keyAndValue[keyAndValueByteSize] (UTF-8)
 	// - Byte: valuePadding (4-byte alignment)
-	const char *p = buf.get();
-	const char *const p_end = p + ktxHeader.bytesOfKeyValueData;
+	const char8_t *p = buf.get();
+	const char8_t *const p_end = p + ktxHeader.bytesOfKeyValueData;
 	bool hasKTXorientation = false;
 
 	while (p < p_end-3) {
@@ -866,10 +867,11 @@ void KhronosKTXPrivate::loadKeyValueData(void)
 		// - value: Arbitrary data terminated by a NUL byte. (usually UTF-8)
 
 		// kv_end: Points past the end of the string.
-		const char *const kv_end = p + sz;
+		const char8_t *const kv_end = p + sz;
 
 		// Find the key.
-		const char *const k_end = static_cast<const char*>(memchr(p, 0, kv_end - p));
+		const char8_t *const k_end = static_cast<const char8_t*>(
+			memchr(p, 0, kv_end - p));
 		if (!k_end) {
 			// NUL byte not found.
 			// TODO: Show an error?
@@ -877,7 +879,8 @@ void KhronosKTXPrivate::loadKeyValueData(void)
 		}
 
 		// Make sure the value ends at kv_end - 1.
-		const char *const v_end = static_cast<const char*>(memchr(k_end + 1, 0, kv_end - k_end - 1));
+		const char8_t *const v_end = static_cast<const char8_t*>(
+			memchr(k_end + 1, 0, kv_end - k_end - 1));
 		if (v_end != kv_end - 1) {
 			// Either the NUL byte was not found,
 			// or it's not at the end of the value.
@@ -885,25 +888,26 @@ void KhronosKTXPrivate::loadKeyValueData(void)
 			break;
 		}
 
-		vector<string> data_row;
+		vector<u8string> data_row;
 		data_row.reserve(2);
-		data_row.emplace_back(string(p, k_end - p));
-		data_row.emplace_back(string(k_end + 1, kv_end - k_end - 2));
+		data_row.emplace_back(u8string(p, k_end - p));
+		data_row.emplace_back(u8string(k_end + 1, kv_end - k_end - 2));
 		kv_data.emplace_back(std::move(data_row));
 
 		// Check if this is KTXorientation.
 		// NOTE: Only the first instance is used.
 		// NOTE 2: Specification says it's case-sensitive, but some files
 		// have "KTXOrientation", so use a case-insensitive comparison.
-		if (!hasKTXorientation && !strcasecmp(p, "KTXorientation")) {
+		// FIXME: U8STRFIX - strcasecmp()
+		if (!hasKTXorientation && !strcasecmp(reinterpret_cast<const char*>(p), "KTXorientation")) {
 			hasKTXorientation = true;
 			// Check for known values.
 			// NOTE: Ignoring the R component.
 			// NOTE: str[7] does NOT have a NULL terminator.
-			const char *const v = k_end + 1;
+			const char8_t *const v = k_end + 1;
 
 			static const struct {
-				char str[7];
+				char8_t str[7];
 				rp_image::FlipOp flipOp;
 			} orientation_lkup_tbl[] = {
 				{{'S','=','r',',','T','=','d'}, rp_image::FLIP_NONE},
@@ -913,7 +917,7 @@ void KhronosKTXPrivate::loadKeyValueData(void)
 			};
 
 			for (const auto &p : orientation_lkup_tbl) {
-				if (!strncmp(v, p.str, 7)) {
+				if (!strncmp(reinterpret_cast<const char*>(v), reinterpret_cast<const char*>(p.str), 7)) {
 					// Found a match.
 					flipOp = p.flipOp;
 					break;
@@ -1078,12 +1082,12 @@ const char *KhronosKTX::pixelFormat(void) const
 	// Using glInternalFormat.
 	const char8_t *const glInternalFormat_str = GLenumStrings::lookup_glEnum(d->ktxHeader.glInternalFormat);
 	if (glInternalFormat_str) {
-		// FIXME: U8STRFIX
+		// FIXME: U8STRFIX - return `const char8_t*`
 		return reinterpret_cast<const char*>(glInternalFormat_str);
 	}
 
 	// Invalid pixel format.
-	// FIXME: U8STRFIX
+	// FIXME: U8STRFIX - return `const char8_t*`
 	if (d->invalid_pixel_format[0] == '\0') {
 		// TODO: Localization?
 		snprintf(reinterpret_cast<char*>(const_cast<KhronosKTXPrivate*>(d)->invalid_pixel_format),

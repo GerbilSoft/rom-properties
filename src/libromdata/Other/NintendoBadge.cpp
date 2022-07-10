@@ -654,9 +654,6 @@ int NintendoBadge::loadFieldData(void)
 	// TODO: Verify against the region code somehow?
 	int lang = NintendoLanguage::getN3DSLanguage();
 
-	// FIXME: Change StringMultiMap to u8string.
-#define U8STRFIX(x) string((const char*)(x).c_str())
-
 	// Type.
 	const char *const s_type_title = C_("NintendoBadge", "Type");
 	const char *const s_name_title = C_("NintendoBadge", "Name");
@@ -702,8 +699,8 @@ int NintendoBadge::loadFieldData(void)
 					continue;
 
 				if (prbs->name[langID][0] != cpu_to_le16('\0')) {
-					pMap_name->emplace(lc, U8STRFIX(utf16le_to_utf8(
-						prbs->name[langID], ARRAY_SIZE_I(prbs->name[langID]))));
+					pMap_name->emplace(lc, utf16le_to_utf8(
+						prbs->name[langID], ARRAY_SIZE_I(prbs->name[langID])));
 				}
 			}
 

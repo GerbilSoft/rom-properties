@@ -326,8 +326,9 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		const auto &st_row = st.at(i);
 		auto &data_row = vv_data->at(i);
 		data_row.reserve(2);
-		data_row.emplace_back(st_row.first);
-		data_row.emplace_back(st_row.second);
+		// FIXME: U8STRFIX - StringFileInfo should be u8string.
+		data_row.emplace_back(reinterpret_cast<const char8_t*>(st_row.first.c_str()));
+		data_row.emplace_back(reinterpret_cast<const char8_t*>(st_row.second.c_str()));
 	}
 
 	// Fields.

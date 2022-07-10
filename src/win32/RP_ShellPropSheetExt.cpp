@@ -1435,12 +1435,10 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 		}
 
 		// Get the string and update the text.
-		// FIXME: U8STRFIX
-		const string *const pStr = RomFields::getFromStringMulti(pStr_multi, def_lc, user_lc);
+		const u8string *const pStr = RomFields::getFromStringMulti(pStr_multi, def_lc, user_lc);
 		assert(pStr != nullptr);
 		if (pStr != nullptr) {
-			//SetWindowText(lblString, U82T_s(*pStr));
-			SetWindowText(lblString, U82T_c(reinterpret_cast<const char*>(pStr->c_str())));
+			SetWindowText(lblString, U82T_s(*pStr));
 		} else {
 			SetWindowText(lblString, _T(""));
 		}
@@ -1523,8 +1521,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 			for (; iter_ld_row != pListData_cend && iter_vvStr_row != vvStr_end;
 			     ++iter_ld_row, ++iter_vvStr_row)
 			{
-				// FIXME: U8STRFIX
-				const vector<string> &src_data_row = *iter_ld_row;
+				const vector<u8string> &src_data_row = *iter_ld_row;
 				vector<tstring> &dest_data_row = *iter_vvStr_row;
 
 				int col = 0;
@@ -1535,7 +1532,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 				for (; iter_sdr != src_data_row_cend && iter_ddr != dest_data_row_end;
 				     ++iter_sdr, ++iter_ddr, col++)
 				{
-					tstring tstr = U82T_c(reinterpret_cast<const char*>(iter_sdr->c_str()));
+					tstring tstr = U82T_s(*iter_sdr);
 					int width = LibWin32UI::measureStringForListView(hDC, tstr);
 					if (col < colCount) {
 						lvData.col_widths[col] = std::max(lvData.col_widths[col], width);

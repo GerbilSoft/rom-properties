@@ -574,32 +574,33 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 	// - Increase the height.
 	// - Show on a separate line?
 
-	static const char *const vectors_names[] = {
+	// TODO: Localize the vector names?
+	static const char8_t *const vectors_names[] = {
 		// $00
-		"Initial SP",
-		"Entry Point",
-		"Bus Error",
-		"Address Error",
+		U8("Initial SP"),
+		U8("Entry Point"),
+		U8("Bus Error"),
+		U8("Address Error"),
 		// $10
-		"Illegal Instruction",
-		"Division by Zero",
-		"CHK Exception",
-		"TRAPV Exception",
+		U8("Illegal Instruction"),
+		U8("Division by Zero"),
+		U8("CHK Exception"),
+		U8("TRAPV Exception"),
 		// $20
-		"Privilege Violation",
-		"TRACE Exception",
-		"Line A Emulator",
-		"Line F Emulator",
+		U8("Privilege Violation"),
+		U8("TRACE Exception"),
+		U8("Line A Emulator"),
+		U8("Line F Emulator"),
 		// $60
-		"Spurious Interrupt",
-		"IRQ1",
-		"IRQ2 (TH)",
-		"IRQ3",
+		U8("Spurious Interrupt"),
+		U8("IRQ1"),
+		U8("IRQ2 (TH)"),
+		U8("IRQ3"),
 		// $70
-		"IRQ4 (HBlank)",
-		"IRQ5",
-		"IRQ6 (VBlank)",
-		"IRQ7 (NMI)",
+		U8("IRQ4 (HBlank)"),
+		U8("IRQ5"),
+		U8("IRQ6 (VBlank)"),
+		U8("IRQ7 (NMI)"),
 
 		nullptr
 	};
@@ -629,13 +630,18 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 
 		// #
 		// NOTE: This is the byte address in the vector table.
-		data_row.emplace_back(rp_sprintf("$%02X", vector_index*4));
+		// FIXME: U8STRFIX - rp_sprintf()
+		char8_t buf[16];
+		snprintf(reinterpret_cast<char*>(buf), sizeof(buf), "$%02X", vector_index*4);
+		data_row.emplace_back(u8string(buf));
 
 		// Vector name
 		data_row.emplace_back(vectors_names[i]);
 
 		// Address
-		data_row.emplace_back(rp_sprintf("$%08X", be32_to_cpu(pVectors->vectors[vector_index])));
+		snprintf(reinterpret_cast<char*>(buf), sizeof(buf),
+			"$%08X", be32_to_cpu(pVectors->vectors[vector_index]));
+		data_row.emplace_back(u8string(buf));
 	}
 
 	static const char *const vectors_headers[] = {

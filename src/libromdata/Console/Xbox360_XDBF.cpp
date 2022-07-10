@@ -879,13 +879,10 @@ int Xbox360_XDBF_Private::addFields_strings_SPA(RomFields *fields) const
 	}
 	bool dedupe_titles = !title_en.empty();
 
-	// FIXME: Change StringMultiMap to u8string.
-#define U8STRFIX(x) string((const char*)(x).c_str())
-
 	// Title fields
 	RomFields::StringMultiMap_t *const pMap_title = new RomFields::StringMultiMap_t();
 	if (!title_en.empty()) {
-		pMap_title->emplace('en', U8STRFIX(title_en));
+		pMap_title->emplace('en', title_en);
 	}
 	for (int langID = XDBF_LANGUAGE_JAPANESE; langID < XDBF_LANGUAGE_MAX; langID++) {
 		if (strTblIndexes[langID] < 0) {
@@ -914,8 +911,7 @@ int Xbox360_XDBF_Private::addFields_strings_SPA(RomFields *fields) const
 		if (lc == 0)
 			continue;
 
-		//pMap_title->emplace(lc, std::move(title_lang));
-		pMap_title->emplace(lc, U8STRFIX(title_lang));
+		pMap_title->emplace(lc, std::move(title_lang));
 	}
 
 	const char *const s_title_title = C_("RomData", "Title");
@@ -1048,10 +1044,12 @@ int Xbox360_XDBF_Private::addFields_achievements_SPA(void)
 		const uint16_t unlocked_desc_id = be16_to_cpu(p->unlocked_desc_id);
 
 		// TODO: Localized numeric formatting?
-		char s_achievement_id[16];
-		snprintf(s_achievement_id, sizeof(s_achievement_id), "%u", be16_to_cpu(p->achievement_id));
-		char s_gamerscore[16];
-		snprintf(s_gamerscore, sizeof(s_gamerscore), "%u", be16_to_cpu(p->gamerscore));
+		// FIXME: U8STRFIX - snprintf()
+		char8_t s_achievement_id[16], s_gamerscore[16];
+		snprintf(reinterpret_cast<char*>(s_achievement_id), sizeof(s_achievement_id),
+			"%u", be16_to_cpu(p->achievement_id));
+		snprintf(reinterpret_cast<char*>(s_gamerscore), sizeof(s_gamerscore),
+			"%u", be16_to_cpu(p->gamerscore));
 
 		for (int langID = XDBF_LANGUAGE_ENGLISH; langID < XDBF_LANGUAGE_MAX; langID++) {
 			if (!pvv_xach[langID]) {
@@ -1094,8 +1092,7 @@ int Xbox360_XDBF_Private::addFields_achievements_SPA(void)
 			}
 
 			// TODO: Formatting value indicating that the first line should be bold.
-			//data_row.emplace_back(std::move(desc));
-			data_row.emplace_back(U8STRFIX(desc));
+			data_row.emplace_back(std::move(desc));
 
 			// Gamerscore
 			data_row.emplace_back(s_gamerscore);
@@ -1262,8 +1259,10 @@ int Xbox360_XDBF_Private::addFields_avatarAwards_SPA(void)
 
 		// TODO: Localized numeric formatting?
 		// FIXME: Should this be decimal instead of hex?
-		char s_avatar_award_id[16];
-		snprintf(s_avatar_award_id, sizeof(s_avatar_award_id), "%04X", be16_to_cpu(p->avatar_award_id));
+		// FIXME: U8STRFIX - snprintf()
+		char8_t s_avatar_award_id[16];
+		snprintf(reinterpret_cast<char*>(s_avatar_award_id), sizeof(s_avatar_award_id),
+			"%04X", be16_to_cpu(p->avatar_award_id));
 
 		for (int langID = XDBF_LANGUAGE_ENGLISH; langID < XDBF_LANGUAGE_MAX; langID++) {
 			if (!pvv_xgaa[langID]) {
@@ -1306,8 +1305,7 @@ int Xbox360_XDBF_Private::addFields_avatarAwards_SPA(void)
 			}
 
 			// TODO: Formatting value indicating that the first line should be bold.
-			//data_row.emplace_back(std::move(desc));
-			data_row.emplace_back(U8STRFIX(desc));
+			data_row.emplace_back(std::move(desc));
 		}
 	}
 
@@ -1473,10 +1471,12 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
 		vv_icons->push_back(loadImage(be32_to_cpu(pGPD->image_id)));
 
 		// TODO: Localized numeric formatting?
-		char s_achievement_id[16];
-		snprintf(s_achievement_id, sizeof(s_achievement_id), "%u", be32_to_cpu(pGPD->achievement_id));
-		char s_gamerscore[16];
-		snprintf(s_gamerscore, sizeof(s_gamerscore), "%u", be32_to_cpu(pGPD->gamerscore));
+		// FIXME: U8STRFIX - snprintf()
+		char8_t s_achievement_id[16], s_gamerscore[16];
+		snprintf(reinterpret_cast<char*>(s_achievement_id), sizeof(s_achievement_id),
+			"%u", be32_to_cpu(pGPD->achievement_id));
+		snprintf(reinterpret_cast<char*>(s_gamerscore), sizeof(s_gamerscore),
+			"%u", be32_to_cpu(pGPD->gamerscore));
 
 		// Get the strings.
 		const char16_t *pTitle = nullptr, *pUnlockedDesc = nullptr, *pLockedDesc = nullptr;
@@ -1519,11 +1519,10 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
 		}
 
 		// Add to RFT_LISTDATA.
-		vector<string> data_row;
+		vector<u8string> data_row;
 		data_row.reserve(3);
 		data_row.emplace_back(s_achievement_id);
-		//data_row.emplace_back(std::move(desc));
-		data_row.emplace_back(U8STRFIX(desc));
+		data_row.emplace_back(std::move(desc));
 		data_row.emplace_back(s_gamerscore);
 		vv_xach->emplace_back(std::move(data_row));
 	}

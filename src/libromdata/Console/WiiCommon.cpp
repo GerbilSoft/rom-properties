@@ -100,10 +100,7 @@ RomFields::StringMultiMap_t *WiiCommon::getWiiBannerStrings(
 				info += utf16be_to_utf8(pImet->names[langID][1], ARRAY_SIZE_I(pImet->names[langID][1]));
 			}
 
-			// FIXME: Change StringMultiMap to u8string.
-#define U8STRFIX(x) string((const char*)(x).c_str())
-			//pMap_bannerName->emplace(lc, std::move(info));
-			pMap_bannerName->emplace(lc, U8STRFIX(info));
+			pMap_bannerName->emplace(lc, std::move(info));
 		}
 	}
 

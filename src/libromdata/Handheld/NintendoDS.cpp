@@ -546,7 +546,13 @@ vector<uint16_t> NintendoDSPrivate::ndsRegionToGameTDB(
  */
 RomFields::ListData_t *NintendoDSPrivate::getDSiFlagsStringVector(void)
 {
-	static const char *const dsi_flags_bitfield_names[] = {
+	// FIXME: U8STRFIX - NOP_C_ just for this function.
+#ifdef NOP_C_
+#  undef NOP_C_
+#endif
+#define NOP_C_(ctx, str) U8(str)
+
+	static const char8_t *const dsi_flags_bitfield_names[] = {
 		// tr: Uses the DSi-specific touchscreen protocol.
 		NOP_C_("NintendoDS|DSi_Flags", "DSi Touchscreen"),
 		// tr: Game requires agreeing to the Nintendo online services agreement.
@@ -562,15 +568,19 @@ RomFields::ListData_t *NintendoDSPrivate::getDSiFlagsStringVector(void)
 	};
 
 	// Convert to RomFields::ListData_t for RFT_LISTDATA.
+	// TODO: Something like strArrayToVector() / strArrayToVector_i18n() but for ListData_t?
 	auto vv_dsi_flags = new RomFields::ListData_t(ARRAY_SIZE(dsi_flags_bitfield_names));
 	for (int i = ARRAY_SIZE(dsi_flags_bitfield_names)-1; i >= 0; i--) {
 		auto &data_row = vv_dsi_flags->at(i);
-		data_row.emplace_back(
+		// FIXME: U8STRFIX - dpgettext_expr
+		data_row.emplace_back(reinterpret_cast<const char8_t*>(
 			dpgettext_expr(RP_I18N_DOMAIN, "NintendoDS|DSi_Flags",
-				dsi_flags_bitfield_names[i]));
+				reinterpret_cast<const char*>(dsi_flags_bitfield_names[i]))));
 	}
 
 	return vv_dsi_flags;
+#undef NOP_C_
+#define NOP_C_(ctx, str) (str)
 }
 
 /** NintendoDS **/
@@ -991,18 +1001,15 @@ int NintendoDS::loadFieldData(void)
 				}
 			}
 
-			// FIXME: Change StringMultiMap to u8string.
-#define U8STRFIX(x) string((const char*)(x).c_str())
-
 			const uint32_t lc = NintendoLanguage::getNDSLanguageCode(langID, maxID);
 			assert(lc != 0);
 			if (lc == 0)
 				continue;
 
 			if (d->nds_icon_title.title[langID][0] != cpu_to_le16('\0')) {
-				pMap_full_title->emplace(lc, U8STRFIX(utf16le_to_utf8(
+				pMap_full_title->emplace(lc, utf16le_to_utf8(
 					d->nds_icon_title.title[langID],
-					ARRAY_SIZE(d->nds_icon_title.title[langID]))));
+					ARRAY_SIZE(d->nds_icon_title.title[langID])));
 			}
 		}
 
@@ -1240,8 +1247,13 @@ int NintendoDS::loadFieldData(void)
 	// Permissions and flags.
 	d->fields->addTab("Permissions");
 
+	// FIXME: U8STRFIX - NOP_C_ just for Permissions.
+#ifdef NOP_C_
+#  undef NOP_C_
+#endif
+#define NOP_C_(ctx, str) U8(str)
 	// Permissions.
-	static const char *const dsi_permissions_bitfield_names[] = {
+	static const char8_t *const dsi_permissions_bitfield_names[] = {
 		NOP_C_("NintendoDS|DSi_Permissions", "Common Key"),
 		NOP_C_("NintendoDS|DSi_Permissions", "AES Slot B"),
 		NOP_C_("NintendoDS|DSi_Permissions", "AES Slot C"),
@@ -1276,10 +1288,13 @@ int NintendoDS::loadFieldData(void)
 	auto vv_dsi_perm = new RomFields::ListData_t(ARRAY_SIZE(dsi_permissions_bitfield_names));
 	for (int i = ARRAY_SIZE(dsi_permissions_bitfield_names)-1; i >= 0; i--) {
 		auto &data_row = vv_dsi_perm->at(i);
-		data_row.emplace_back(
+		// FIXME: U8STRFIX - dpgettext_expr()
+		data_row.emplace_back(reinterpret_cast<const char8_t*>(
 			dpgettext_expr(RP_I18N_DOMAIN, "NintendoDS|DSi_Permissions",
-				dsi_permissions_bitfield_names[i]));
+				reinterpret_cast<const char*>(dsi_permissions_bitfield_names[i]))));
 	}
+#undef NOP_C_
+#define NOP_C_(ctx, str) (str)
 
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_CHECKBOXES, rows_visible);
 	params.headers = nullptr;

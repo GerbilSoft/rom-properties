@@ -89,7 +89,9 @@ private:
 
 			const auto it_cend = it->cend();
 			for (auto jt = it->cbegin(); jt != it_cend; ++jt) {
-				row_array.PushBack(StringRef(*jt), allocator);
+				// FIXME: RapidJson doesn't support u8string.
+				row_array.PushBack(StringRef(
+					reinterpret_cast<const char*>(jt->c_str())), allocator);
 			}
 
 			data_array.PushBack(row_array, allocator);
@@ -320,7 +322,9 @@ public:
 					const auto pStr_multi_cend = pStr_multi->cend();
 					for (auto iter = pStr_multi->cbegin(); iter != pStr_multi_cend; ++iter) {
 						Value s_lc_name = lcToValue(iter->first, allocator);
-						data_obj.AddMember(s_lc_name, StringRef(iter->second), allocator);
+						// FIXME: RapidJson doesn't support u8string.
+						data_obj.AddMember(s_lc_name, StringRef(
+							reinterpret_cast<const char*>(iter->second.c_str())), allocator);
 					}
 
 					field_obj.AddMember("data", data_obj, allocator);

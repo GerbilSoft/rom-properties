@@ -558,36 +558,33 @@ int GameCubeBNR::loadFieldData(void)
 			if (lc == 0)
 				continue;
 
-			// FIXME: Change StringMultiMap to u8string.
-#define U8STRFIX(x) string((const char*)(x).c_str())
-
 			// Game name.
 			if (comment.gamename_full[0] != '\0') {
-				pMap_gamename->emplace(lc, U8STRFIX(cp1252_to_utf8(
+				pMap_gamename->emplace(lc, cp1252_to_utf8(
 					comment.gamename_full,
-					ARRAY_SIZE(comment.gamename_full))));
+					ARRAY_SIZE(comment.gamename_full)));
 			} else if (comment.gamename[0] != '\0') {
-				pMap_gamename->emplace(lc, U8STRFIX(cp1252_to_utf8(
+				pMap_gamename->emplace(lc, cp1252_to_utf8(
 					comment.gamename,
-					ARRAY_SIZE(comment.gamename))));
+					ARRAY_SIZE(comment.gamename)));
 			}
 
 			// Company.
 			if (comment.company_full[0] != '\0') {
-				pMap_company->emplace(lc, U8STRFIX(cp1252_to_utf8(
+				pMap_company->emplace(lc, cp1252_to_utf8(
 					comment.company_full,
-					ARRAY_SIZE(comment.company_full))));
+					ARRAY_SIZE(comment.company_full)));
 			} else if (comment.company[0] != '\0') {
-				pMap_company->emplace(lc, U8STRFIX(cp1252_to_utf8(
+				pMap_company->emplace(lc, cp1252_to_utf8(
 					comment.company,
-					ARRAY_SIZE(comment.company))));
+					ARRAY_SIZE(comment.company)));
 			}
 
 			// Game description.
 			if (comment.gamedesc[0] != '\0') {
-				pMap_gamedesc->emplace(lc, U8STRFIX(cp1252_to_utf8(
+				pMap_gamedesc->emplace(lc, cp1252_to_utf8(
 					comment.gamedesc,
-					ARRAY_SIZE(comment.gamedesc))));
+					ARRAY_SIZE(comment.gamedesc)));
 			}
 		}
 
@@ -846,7 +843,7 @@ int GameCubeBNR::addField_gameInfo(LibRpBase::RomFields *fields, uint32_t gcnReg
 			// Get the game info string.
 			// TODO: Always use GCN_REGION_EUR here instead of gcnRegion?
 			pMap_gameinfo->emplace(lc,
-				U8STRFIX(d->getGameInfoString(&d->comments[langID], gcnRegion)));
+				d->getGameInfoString(&d->comments[langID], gcnRegion));
 		}
 
 		// Add the field.

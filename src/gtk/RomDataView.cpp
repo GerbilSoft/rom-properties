@@ -40,6 +40,7 @@ using LibRomData::RomDataFactory;
 // C++ STL classes
 using std::set;
 using std::string;
+using std::u8string;
 using std::vector;
 
 // References:
@@ -944,7 +945,7 @@ rom_data_view_init_listdata(RomDataView *page,
 	unsigned int row = 0;	// for icons [TODO: Use iterator?]
 	const auto list_data_cend = list_data->cend();
 	for (auto iter = list_data->cbegin(); iter != list_data_cend; ++iter, row++) {
-		const vector<string> &data_row = *iter;
+		const vector<u8string> &data_row = *iter;
 		// FIXME: Skip even if we don't have checkboxes?
 		// (also check other UI frontends)
 		if (hasCheckboxes && data_row.empty()) {
@@ -1357,9 +1358,9 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 		}
 
 		// Get the string and update the text.
-		const string *const pStr = RomFields::getFromStringMulti(pStr_multi, cxx->def_lc, user_lc);
+		const u8string *const pStr = RomFields::getFromStringMulti(pStr_multi, cxx->def_lc, user_lc);
 		assert(pStr != nullptr);
-		gtk_label_set_text(GTK_LABEL(lblString), (pStr ? pStr->c_str() : ""));
+		gtk_label_set_text(GTK_LABEL(lblString), pStr ? reinterpret_cast<const char*>(pStr->c_str()) : "");
 	}
 
 	// RFT_LISTDATA_MULTI

@@ -1100,30 +1100,30 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 	static const int rows_visible = 4;
 #endif
 
-	// FS access.
-	static const char *const perm_fs_access[] = {
-		"CategorySysApplication",
-		"CategoryHardwareCheck",
-		"CategoryFileSystemTool",
-		"Debug",
-		"TwlCardBackup",
-		"TwlNandData",
-		"Boss",
-		"DirectSdmc",
-		"Core",
-		"CtrNandRo",
-		"CtrNandRw",
-		"CtrNandRoWrite",
-		"CategorySystemSettings",
-		"Cardboard",
-		"ExportImportIvs",
-		"DirectSdmcWrite",
-		"SwitchCleanup",
-		"SaveDataMove",
-		"Shop",
-		"Shell",
-		"CategoryHomeMenu",
-		"SeedDB",
+	// FS access (NOT localized)
+	static const char8_t *const perm_fs_access[] = {
+		U8("CategorySysApplication"),
+		U8("CategoryHardwareCheck"),
+		U8("CategoryFileSystemTool"),
+		U8("Debug"),
+		U8("TwlCardBackup"),
+		U8("TwlNandData"),
+		U8("Boss"),
+		U8("DirectSdmc"),
+		U8("Core"),
+		U8("CtrNandRo"),
+		U8("CtrNandRw"),
+		U8("CtrNandRoWrite"),
+		U8("CategorySystemSettings"),
+		U8("Cardboard"),
+		U8("ExportImportIvs"),
+		U8("DirectSdmcWrite"),
+		U8("SwitchCleanup"),
+		U8("SaveDataMove"),
+		U8("Shop"),
+		U8("Shell"),
+		U8("CategoryHomeMenu"),
+		U8("SeedDB"),
 	};
 
 	// Convert to vector<vector<string> > for RFT_LISTDATA.
@@ -1139,18 +1139,18 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 	params.mxd.checkboxes = perm.fsAccess;
 	fields->addField_listData(C_("Nintendo3DS", "FS Access"), &params);
 
-	// ARM9 access.
-	static const char *const perm_arm9_access[] = {
-		"FsMountNand",
-		"FsMountNandRoWrite",
-		"FsMountTwln",
-		"FsMountWnand",
-		"FsMountCardSpi",
-		"UseSdif3",
-		"CreateSeed",
-		"UseCardSpi",
-		"SDApplication",
-		"FsMountSdmcWrite",	// implied by DirectSdmc
+	// ARM9 access (NOT localized)
+	static const char8_t *const perm_arm9_access[] = {
+		U8("FsMountNand"),
+		U8("FsMountNandRoWrite"),
+		U8("FsMountTwln"),
+		U8("FsMountWnand"),
+		U8("FsMountCardSpi"),
+		U8("UseSdif3"),
+		U8("CreateSeed"),
+		U8("UseCardSpi"),
+		U8("SDApplication"),
+		U8("FsMountSdmcWrite"),	// implied by DirectSdmc
 	};
 
 	// TODO: Other descriptor versions?
@@ -1188,8 +1188,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 		// TODO: Service descriptions?
 		vv_svc->resize(vv_svc->size()+1);
 		auto &data_row = vv_svc->at(vv_svc->size()-1);
-		// FIXME: U8STRFIX
-		data_row.emplace_back(string((const char*)(latin1_to_utf8(svc, N3DS_SERVICE_LEN).c_str())));
+		data_row.emplace_back(latin1_to_utf8(svc, N3DS_SERVICE_LEN));
 	}
 
 	if (likely(!vv_svc->empty())) {
@@ -1825,14 +1824,14 @@ int Nintendo3DS::loadFieldData(void)
 
 		// Partition type names.
 		// TODO: Translate?
-		static const char *const partition_types[2][8] = {
+		static const char8_t *const partition_types[2][8] = {
 			// CCI
-			{"Game", "Manual", "Download Play",
+			{U8("Game"), U8("Manual"), U8("Download Play"),
 			 nullptr, nullptr, nullptr,
-			 "N3DS Update", "O3DS Update"},
+			 U8("N3DS Update"), U8("O3DS Update")},
 			// eMMC
-			{"TWL NAND", "AGB SAVE",
-			 "FIRM0", "FIRM1", "CTR NAND",
+			{U8("TWL NAND"), U8("AGB SAVE"),
+			 U8("FIRM0"), U8("FIRM1"), U8("CTR NAND"),
 			 nullptr, nullptr, nullptr},
 		};
 
@@ -1844,7 +1843,7 @@ int Nintendo3DS::loadFieldData(void)
 			{0x03, 0x07, 0x06, 0x06, 0x05, 0x00, 0x00, 0x00},
 		};
 
-		const char *const *pt_types;
+		const char8_t *const *pt_types;
 		const uint8_t *keyslots = nullptr;
 		vector<string> *v_partitions_names;
 		if (d->romType != Nintendo3DSPrivate::RomType::eMMC) {
@@ -1990,16 +1989,18 @@ int Nintendo3DS::loadFieldData(void)
 			auto &data_row = vv_partitions->at(vidx);
 			data_row.reserve(5);
 
-			// Partition number.
-			data_row.emplace_back(rp_sprintf("%u", i));
+			// Partition number
+			// FIXME: U8STRFIX - rp_sprintf()
+			//data_row.emplace_back(rp_sprintf("%u", i));
+			char8_t buf[16];
+			snprintf(reinterpret_cast<char*>(buf), sizeof(buf), "%u", i);
+			data_row.emplace_back(buf);
 
-			// Partition type.
+			// Partition type
 			// TODO: Use the partition ID to determine the type?
-			const char *const s_ptype = (pt_types[i] ? pt_types[i] : s_unknown);
+			// FIXME: U8STRFIX - s_unknown
+			const char8_t *const s_ptype = (pt_types[i]) ? pt_types[i] : reinterpret_cast<const char8_t*>(s_unknown);
 			data_row.emplace_back(s_ptype);
-
-			// FIXME: Change vector<string> to u8string.
-#define U8STRFIX(x) string((const char*)(x).c_str())
 
 			if (d->romType != Nintendo3DSPrivate::RomType::eMMC) {
 				const N3DS_NCCH_Header_NoSig_t *const part_ncch_header =
@@ -2011,18 +2012,21 @@ int Nintendo3DS::loadFieldData(void)
 					if (ret != 0 || !cryptoType.encrypted || cryptoType.keyslot >= 0x40) {
 						// Not encrypted, or not using a predefined keyslot.
 						if (cryptoType.name) {
-							data_row.emplace_back(U8STRFIX(latin1_to_utf8(cryptoType.name, -1)));
+							data_row.emplace_back(latin1_to_utf8(cryptoType.name, -1));
 						} else {
-							data_row.emplace_back(s_unknown);
+							// FIXME: U8STRFIX
+							data_row.emplace_back(reinterpret_cast<const char8_t*>(s_unknown));
 						}
 					} else {
 						// TODO: Show an error if this should be NoCrypto.
 						// This is detected for the main NCCH in the initial
 						// NCSD check, but not here...
-						data_row.emplace_back(rp_sprintf("%s%s (0x%02X)",
-							(cryptoType.name ? cryptoType.name : s_unknown),
-							(cryptoType.seed ? "+Seed" : ""),
-							cryptoType.keyslot));
+						// FIXME: U8STRFIX - rp_sprintf()
+						data_row.emplace_back(reinterpret_cast<const char8_t*>(
+							rp_sprintf("%s%s (0x%02X)",
+								(cryptoType.name ? cryptoType.name : s_unknown),
+								(cryptoType.seed ? "+Seed" : ""),
+								cryptoType.keyslot).c_str()));
 					}
 
 					// Version.
@@ -2044,25 +2048,32 @@ int Nintendo3DS::loadFieldData(void)
 					if (isUpdate && version == 0x8000) {
 						// Early titles have a system update with version 0x8000 (32.0.0).
 						// This is usually 1.1.0, though some might be 1.0.0.
-						data_row.emplace_back("1.x.x");
+						data_row.emplace_back(U8("1.x.x"));
 					} else {
-						data_row.emplace_back(d->n3dsVersionToString(version));
+						// FIXME: U8STRFIX
+						data_row.emplace_back(reinterpret_cast<const char8_t*>(
+							d->n3dsVersionToString(version).c_str()));
 					}
 				} else {
 					// Unable to load the NCCH header.
-					data_row.emplace_back(s_unknown);	// Encryption
-					data_row.emplace_back(s_unknown);	// Version
+					// FIXME: U8STRFIX
+					data_row.emplace_back(reinterpret_cast<const char8_t*>(s_unknown));	// Encryption
+					data_row.emplace_back(reinterpret_cast<const char8_t*>(s_unknown));	// Version
 				}
 			}
 
 			if (keyslots) {
 				// Keyslot.
-				data_row.emplace_back(rp_sprintf("0x%02X", keyslots[i]));
+				// FIXME: U8STRFIX
+				data_row.emplace_back(reinterpret_cast<const char8_t*>(
+					rp_sprintf("0x%02X", keyslots[i]).c_str()));
 			}
 
 			// Partition size.
 			const off64_t length_bytes = static_cast<off64_t>(length) << d->media_unit_shift;
-			data_row.emplace_back(LibRpBase::formatFileSize(length_bytes));
+			// FIXME: U8STRFIX
+			data_row.emplace_back(reinterpret_cast<const char8_t*>(
+				LibRpBase::formatFileSize(length_bytes).c_str()));
 
 			UNREF(pNcch);
 		}
@@ -2157,12 +2168,16 @@ int Nintendo3DS::loadFieldData(void)
 			auto &data_row = vv_contents->at(vidx);
 			data_row.reserve(5);
 
-			// Content index.
-			data_row.emplace_back(rp_sprintf("%u", i));
+			// Content index
+			// FIXME: U8STRFIX - rp_sprintf()
+			//data_row.emplace_back(rp_sprintf("%u", i));
+			char8_t buf[16];
+			snprintf(reinterpret_cast<char*>(buf), sizeof(buf), "%u", i);
+			data_row.emplace_back(buf);
 
 			// TODO: Use content_chunk->index?
 			const N3DS_NCCH_Header_NoSig_t *content_ncch_header = nullptr;
-			const char *content_type = nullptr;
+			const char8_t *content_type = nullptr;
 			if (pNcch) {
 				if (pNcch->isOpen()) {
 					content_ncch_header = pNcch->ncchHeader();
@@ -2170,50 +2185,56 @@ int Nintendo3DS::loadFieldData(void)
 				// Get the content type regardless of whether or not
 				// the NCCH is open, since it might be a non-NCCH
 				// content that we still recognize.
-				content_type = pNcch->contentType();
+				// FIXME: U8STRFIX
+				content_type = reinterpret_cast<const char8_t*>(pNcch->contentType());
 			}
 			if (!content_ncch_header) {
 				// Invalid content index, or this content isn't an NCCH.
 				// TODO: Are there CIAs with discontiguous content indexes?
 				// (Themes, DLC...)
-				const char *crypto = nullptr;
+				const char8_t *crypto = nullptr;
 				if (iter->type & cpu_to_be16(N3DS_CONTENT_CHUNK_ENCRYPTED)) {
 					// CIA encryption.
-					crypto = "CIA";
+					crypto = U8("CIA");
 				}
 
 				if (i == 0 && d->mainContent) {
 					// This is an SRL.
 					if (!content_type) {
-						content_type = "SRL";
+						content_type = U8("SRL");
 					}
 					// TODO: Do SRLs have encryption besides CIA encryption?
 					if (!crypto) {
-						crypto = "NoCrypto";
+						crypto = U8("NoCrypto");
 					}
 				} else {
 					// Something else...
 					if (!content_type) {
-						content_type = s_unknown;
+						// FIXME: U8STRFIX
+						content_type = reinterpret_cast<const char8_t*>(s_unknown);
 					}
 				}
 				data_row.emplace_back(content_type);
 
-				// Encryption.
-				data_row.emplace_back(crypto ? crypto : s_unknown);
-				// Version.
-				data_row.emplace_back("");
+				// Encryption
+				// FIXME: U8STRFIX
+				data_row.emplace_back(crypto ? crypto : reinterpret_cast<const char8_t*>(s_unknown));
+				// Version
+				data_row.emplace_back(U8(""));
 
-				// Content size.
-				data_row.emplace_back(LibRpBase::formatFileSize(be64_to_cpu(iter->size)));
+				// Content size
+				// FIXME: U8STRFIX
+				data_row.emplace_back(reinterpret_cast<const char8_t*>(
+					LibRpBase::formatFileSize(be64_to_cpu(iter->size)).c_str()));
 				UNREF(pNcch);
 				continue;
 			}
 
-			// Content type.
-			data_row.emplace_back(content_type ? content_type : s_unknown);
+			// Content type
+			// FIXME: U8STRFIX
+			data_row.emplace_back(content_type ? content_type : reinterpret_cast<const char8_t*>(s_unknown));
 
-			// Encryption.
+			// Encryption
 			NCCHReader::CryptoType cryptoType;
 			bool isCIAcrypto = !!(iter->type & cpu_to_be16(N3DS_CONTENT_CHUNK_ENCRYPTED));
 			ret = NCCHReader::cryptoType_static(&cryptoType, content_ncch_header);
@@ -2232,25 +2253,32 @@ int Nintendo3DS::loadFieldData(void)
 			if (!cryptoType.encrypted || cryptoType.keyslot >= 0x40) {
 				// Not encrypted, or not using a predefined keyslot.
 				if (cryptoType.name) {
-					data_row.emplace_back(U8STRFIX(latin1_to_utf8(cryptoType.name, -1)));
+					data_row.emplace_back(latin1_to_utf8(cryptoType.name, -1));
 				} else {
-					data_row.emplace_back(s_unknown);
+					// FIXME: U8STRFIX
+					data_row.emplace_back(reinterpret_cast<const char8_t*>(s_unknown));
 				}
 			} else {
-				// Encrypted.
-				data_row.emplace_back(rp_sprintf("%s%s%s (0x%02X)",
-					(isCIAcrypto ? "CIA+" : ""),
-					(cryptoType.name ? cryptoType.name : s_unknown),
-					(cryptoType.seed ? "+Seed" : ""),
-					cryptoType.keyslot));
+				// Encrypted
+				// FIXME: U8STRFIX - rp_sprintf()
+				data_row.emplace_back(reinterpret_cast<const char8_t*>(
+					rp_sprintf("%s%s%s (0x%02X)",
+						(isCIAcrypto ? "CIA+" : ""),
+						(cryptoType.name ? cryptoType.name : s_unknown),
+						(cryptoType.seed ? "+Seed" : ""),
+						cryptoType.keyslot).c_str()));
 			}
 
-			// Version. [FIXME: Might not be right...]
-			data_row.emplace_back(d->n3dsVersionToString(
-				le16_to_cpu(content_ncch_header->version)));
+			// Version [FIXME: Might not be right...]
+			// FIXME: U8STRFIX
+			data_row.emplace_back(reinterpret_cast<const char8_t*>(
+				d->n3dsVersionToString(
+					le16_to_cpu(content_ncch_header->version)).c_str()));
 
-			// Content size.
-			data_row.emplace_back(LibRpBase::formatFileSize(pNcch->partition_size()));
+			// Content size
+			// FIXME: U8STRFIX
+			data_row.emplace_back(reinterpret_cast<const char8_t*>(
+				LibRpBase::formatFileSize(pNcch->partition_size()).c_str()));
 
 			UNREF(pNcch);
 		}
