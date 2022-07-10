@@ -1303,7 +1303,7 @@ const char *MegaDrive::systemName(unsigned int type) const
 				{"Samsung CD Aladdin Boy", "CD Aladdin Boy", "MCD", nullptr},
 				{"Samsung Super 32X", "Super 32X", "32X", nullptr},
 				{"Sega Mega CD 32X", "Sega Mega CD 32X", "MCD32X", nullptr},
-				{"Sega Pico", "Pico", "Pico", nullptr},
+				{"Samsung Pico", "Pico", "Pico", nullptr},
 				{"Sega Teradrive", "Teradrive", "Teradrive", nullptr}
 			};
 			return sysNames_KR[romSys][idx];
