@@ -1740,7 +1740,8 @@ int GameCube::loadFieldData(void)
 						int ret = sscanf(dirent->name, "RVL-WiiSystemmenu-v%u.wad", &version);
 						if (ret == 1) {
 							// Found a retail System Menu.
-							sysMenu = WiiSystemMenuVersion::lookup(version);
+							// FIXME: U8STRFIX
+							sysMenu = reinterpret_cast<const char*>(WiiSystemMenuVersion::lookup(version));
 							break;
 						}
 					}

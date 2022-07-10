@@ -18,7 +18,7 @@ namespace LibRomData { namespace WiiSystemMenuVersion {
  * @param version Version number.
  * @return Display version, or nullptr if not found.
  */
-const char *lookup(unsigned int version);
+const char8_t *lookup(unsigned int version);
 
 } }
 

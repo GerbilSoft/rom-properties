@@ -985,7 +985,7 @@ int WiiWAD::loadFieldData(void)
 			// IOS and/or System Menu.
 			if (tmdHeader->title_id.lo == cpu_to_be32(0x00000002)) {
 				// System Menu.
-				const char *ver = WiiSystemMenuVersion::lookup(title_version);
+				const char8_t *const ver = WiiSystemMenuVersion::lookup(title_version);
 				if (ver) {
 					switch (ver[3]) {
 						case 'J':
