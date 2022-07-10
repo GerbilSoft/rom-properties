@@ -60,14 +60,6 @@ public:
 	}
 };
 
-/**
- * Formatting function for `const char8_t*`.
- */
-static inline ::std::ostream& operator<<(::std::ostream& os, const char8_t *str)
-{
-	return os << reinterpret_cast<const char*>(str);
-};
-
 /** ScsiInquiry **/
 
 ScsiInquiry::ScsiInquiry(RpFile *file)

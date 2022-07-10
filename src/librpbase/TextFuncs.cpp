@@ -35,27 +35,6 @@ using std::unique_ptr;
 
 namespace LibRpBase {
 
-/**
- * NOTE: MSVC and gcc don't detect these operator<<() functions unless
- * they're defined within the namespace they're used in...
- */
-
-/**
- * ostream operator<<() for char8_t
- */
-static inline ::std::ostream& operator<<(::std::ostream& os, const char8_t *str)
-{
-	return os << reinterpret_cast<const char*>(str);
-};
-
-/**
- * ostream operator<<() for u8string
- */
-static inline ::std::ostream& operator<<(::std::ostream& os, const std::u8string& str)
-{
-	return os << reinterpret_cast<const char*>(str.c_str());
-};
-
 /** OS-independent text conversion functions. **/
 
 /**
