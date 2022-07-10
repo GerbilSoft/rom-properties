@@ -15,7 +15,7 @@ using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
 // C++ STL classes.
-using std::u8ostringstream;
+using std::ostringstream;
 using std::string;
 
 namespace LibRomData {
@@ -290,9 +290,9 @@ int ADX::loadFieldData(void)
 	const uint32_t sample_count = be32_to_cpu(adxHeader->sample_count);
 
 	// Sample rate
-	// NOTE: Using u8ostringstream for localized numeric formatting.
-	u8ostringstream oss;
-	oss << sample_rate << U8(" Hz");
+	// NOTE: Using ostringstream for localized numeric formatting.
+	ostringstream oss;
+	oss << sample_rate << " Hz";
 	d->fields->addField_string(C_("RomData|Audio", "Sample Rate"), oss.str());
 
 	// Length. (non-looping)

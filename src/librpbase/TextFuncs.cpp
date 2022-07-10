@@ -28,13 +28,33 @@
 
 // C++ STL classes.
 using std::ostringstream;
-using std::u8ostringstream;
 using std::string;
 using std::u8string;
 using std::u16string;
 using std::unique_ptr;
 
 namespace LibRpBase {
+
+/**
+ * NOTE: MSVC and gcc don't detect these operator<<() functions unless
+ * they're defined within the namespace they're used in...
+ */
+
+/**
+ * ostream operator<<() for char8_t
+ */
+static inline ::std::ostream& operator<<(::std::ostream& os, const char8_t *str)
+{
+	return os << reinterpret_cast<const char*>(str);
+};
+
+/**
+ * ostream operator<<() for u8string
+ */
+static inline ::std::ostream& operator<<(::std::ostream& os, const std::u8string& str)
+{
+	return os << reinterpret_cast<const char*>(str.c_str());
+};
 
 /** OS-independent text conversion functions. **/
 
@@ -288,8 +308,8 @@ u8string formatFileSize(off64_t size)
 	}
 
 	// Localize the whole part.
-	u8ostringstream s_value;
-	s_value << whole_part;
+	ostringstream oss;
+	oss << whole_part;
 
 	if (size >= (2LL << 10)) {
 		// Fractional part.
@@ -302,8 +322,8 @@ u8string formatFileSize(off64_t size)
 		}
 
 		// Append the fractional part using the required number of digits.
-		s_value << localizedDecimalPoint();
-		s_value << std::setw(frac_digits) << std::setfill((char8_t)'0') << frac_part;
+		oss << localizedDecimalPoint();
+		oss << std::setw(frac_digits) << std::setfill('0') << frac_part;
 	}
 
 	if (suffix) {
@@ -311,10 +331,10 @@ u8string formatFileSize(off64_t size)
 		// tr: %1$s == localized value, %2$s == suffix (e.g. MiB)
 		return reinterpret_cast<const char8_t*>(
 			rp_sprintf_p(reinterpret_cast<const char*>(C_("TextFuncs|FileSize", "%1$s %2$s")),
-			reinterpret_cast<const char*>(s_value.str().c_str()),
-			reinterpret_cast<const char*>(suffix)).c_str());
+			oss.str().c_str(), reinterpret_cast<const char*>(suffix)).c_str());
 	} else {
-		return s_value.str();
+		const string s_ret = oss.str();
+		return u8string(reinterpret_cast<const char8_t*>(s_ret.data()), s_ret.size());
 	}
 
 	// Should not get here...
@@ -375,16 +395,16 @@ std::u8string formatFrequency(uint32_t frequency)
 	}
 
 	// Localize the whole part.
-	u8ostringstream s_value;
-	s_value << whole_part;
+	ostringstream oss;
+	oss << whole_part;
 
 	if (frequency >= (2*1000)) {
 		// Fractional part.
 		const int frac_digits = 3;
 
 		// Append the fractional part using the required number of digits.
-		s_value << localizedDecimalPoint();
-		s_value << std::setw(frac_digits) << std::setfill((char8_t)'0') << frac_part;
+		oss << localizedDecimalPoint();
+		oss << std::setw(frac_digits) << std::setfill('0') << frac_part;
 	}
 
 	if (suffix) {
@@ -392,10 +412,10 @@ std::u8string formatFrequency(uint32_t frequency)
 		// tr: %1$s == localized value, %2$s == suffix (e.g. MHz)
 		return reinterpret_cast<const char8_t*>(
 			rp_sprintf_p(reinterpret_cast<const char*>(C_("TextFuncs|Frequency", "%1$s %2$s")),
-			reinterpret_cast<const char*>(s_value.str().c_str()),
-			reinterpret_cast<const char*>(suffix)).c_str());
+			oss.str().c_str(), reinterpret_cast<const char*>(suffix)).c_str());
 	} else {
-		return s_value.str();
+		const string s_ret = oss.str();
+		return u8string(reinterpret_cast<const char8_t*>(s_ret.data()), s_ret.size());
 	}
 
 	// Should not get here...

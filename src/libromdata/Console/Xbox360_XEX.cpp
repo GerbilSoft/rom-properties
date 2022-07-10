@@ -38,9 +38,9 @@ using LibRpTexture::rp_image;
 
 // C++ STL classes.
 using std::array;
+using std::ostringstream;
 using std::string;
 using std::u8string;
-using std::u8ostringstream;
 using std::unique_ptr;
 using std::unordered_map;
 using std::vector;
@@ -1786,7 +1786,7 @@ int Xbox360_XEX::loadFieldData(void)
 				? d->secInfo.xex2.allowed_media_types
 				: d->secInfo.xex1.allowed_media_types));
 
-		u8ostringstream oss;
+		ostringstream oss;
 		unsigned int found = 0;
 		for (unsigned int i = 0; i < ARRAY_SIZE(media_type_tbl); i++, media_types >>= 1) {
 			if (!(media_types & 1))
@@ -1794,9 +1794,9 @@ int Xbox360_XEX::loadFieldData(void)
 
 			if (found > 0) {
 				if (found % 4 == 0) {
-					oss << U8(",\n");
+					oss << ",\n";
 				} else {
-					oss << U8(", ");
+					oss << ", ";
 				}
 			}
 			found++;

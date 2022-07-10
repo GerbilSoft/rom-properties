@@ -26,9 +26,9 @@ using LibRpTexture::XboxXPR;
 #include "Other/EXE.hpp"
 
 // C++ STL classes
+using std::ostringstream;
 using std::string;
 using std::u8string;
-using std::u8ostringstream;
 using std::unique_ptr;
 using std::vector;
 
@@ -789,7 +789,7 @@ int Xbox_XBE::loadFieldData(void)
 		// TODO: Non-secure HDD
 	};
 
-	u8ostringstream oss;
+	ostringstream oss;
 	unsigned int found = 0;
 	uint32_t media_types = le32_to_cpu(xbeCertificate->allowed_media_types);
 	for (unsigned int i = 0; i < ARRAY_SIZE(media_type_tbl); i++, media_types >>= 1) {
