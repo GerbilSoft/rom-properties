@@ -79,7 +79,7 @@ class AmiiboDataPrivate {
 
 		// Convenience pointers to amiibo.bin structs.
 		const AmiiboBinHeader *pHeader;
-		const char *pStrTbl;
+		const char8_t *pStrTbl;
 		const uint32_t *pCSeriesTbl;
 		const CharTableEntry *pCharTbl;
 		const CharVariantTableEntry *pCharVarTbl;
@@ -133,7 +133,7 @@ class AmiiboDataPrivate {
 		 * @param idx String table index.
 		 * @return String, or nullptr on error.
 		 */
-		inline const char *strTbl_lookup(uint32_t idx) const;
+		inline const char8_t *strTbl_lookup(uint32_t idx) const;
 
 		/**
 		 * CharTableEntry bsearch() comparison function.
@@ -456,7 +456,7 @@ int AmiiboDataPrivate::loadIfNeeded(void)
 	amiiboBinFileType = bin_ft;
 
 	// Save the table values and offsets.
-	pStrTbl = reinterpret_cast<const char*>(&amiibo_bin_data[strtbl_offset]);
+	pStrTbl = reinterpret_cast<const char8_t*>(&amiibo_bin_data[strtbl_offset]);
 	pCSeriesTbl = reinterpret_cast<const uint32_t*>(&amiibo_bin_data[cseries_offset]);
 	pCharTbl = reinterpret_cast<const CharTableEntry*>(&amiibo_bin_data[char_offset]);
 	pCharVarTbl = reinterpret_cast<const CharVariantTableEntry*>(&amiibo_bin_data[cvar_offset]);
@@ -500,7 +500,7 @@ void AmiiboDataPrivate::clear(void)
  * @param idx String table index.
  * @return String, or nullptr on error.
  */
-inline const char *AmiiboDataPrivate::strTbl_lookup(uint32_t idx) const
+inline const char8_t *AmiiboDataPrivate::strTbl_lookup(uint32_t idx) const
 {
 	assert(strTbl_len > 0);
 	assert(idx < strTbl_len);
@@ -598,10 +598,10 @@ AmiiboData *AmiiboData::instance(void)
 
 /**
  * Look up a character series name.
- * @param char_id Character ID. (Page 21) [must be host-endian]
+ * @param char_id Character ID (Page 21) [must be host-endian]
  * @return Character series name, or nullptr if not found.
  */
-const char *AmiiboData::lookup_char_series_name(uint32_t char_id) const
+const char8_t *AmiiboData::lookup_char_series_name(uint32_t char_id) const
 {
 	RP_D(AmiiboData);
 	if (d->loadIfNeeded() != 0)
@@ -615,11 +615,11 @@ const char *AmiiboData::lookup_char_series_name(uint32_t char_id) const
 
 /**
  * Look up a character's name.
- * @param char_id Character ID. (Page 21) [must be host-endian]
+ * @param char_id Character ID (Page 21) [must be host-endian]
  * @return Character name. (If variant, the variant name is used.)
  * If an invalid character ID or variant, nullptr is returned.
  */
-const char *AmiiboData::lookup_char_name(uint32_t char_id) const
+const char8_t *AmiiboData::lookup_char_name(uint32_t char_id) const
 {
 	RP_D(AmiiboData);
 	if (d->loadIfNeeded() != 0)
@@ -641,7 +641,7 @@ const char *AmiiboData::lookup_char_name(uint32_t char_id) const
 	}
 
 	// Check for variants.
-	const char *name = nullptr;
+	const char8_t *name = nullptr;
 	if (le32_to_cpu(cres->char_id) & CHARTABLE_VARIANT_FLAG) {
 		// Do a binary search in the character variant table.
 		const uint8_t variant_id = (char_id >> 8) & 0xFF;
@@ -672,10 +672,10 @@ const char *AmiiboData::lookup_char_name(uint32_t char_id) const
 
 /**
  * Look up an amiibo series name.
- * @param amiibo_id	[in] amiibo ID. (Page 22) [must be host-endian]
+ * @param amiibo_id amiibo ID (Page 22) [must be host-endian]
  * @return amiibo series name, or nullptr if not found.
  */
-const char *AmiiboData::lookup_amiibo_series_name(uint32_t amiibo_id) const
+const char8_t *AmiiboData::lookup_amiibo_series_name(uint32_t amiibo_id) const
 {
 	RP_D(AmiiboData);
 	if (d->loadIfNeeded() != 0)
@@ -690,12 +690,12 @@ const char *AmiiboData::lookup_amiibo_series_name(uint32_t amiibo_id) const
 
 /**
  * Look up an amiibo's series identification.
- * @param amiibo_id	[in] amiibo ID. (Page 22) [must be host-endian]
- * @param pReleaseNo	[out,opt] Release number within series.
- * @param pWaveNo	[out,opt] Wave number within series.
+ * @param amiibo_id	[in] amiibo ID (Page 22) [must be host-endian]
+ * @param pReleaseNo	[out,opt] Release number within series
+ * @param pWaveNo	[out,opt] Wave number within series
  * @return amiibo series name, or nullptr if not found.
  */
-const char *AmiiboData::lookup_amiibo_series_data(uint32_t amiibo_id, int *pReleaseNo, int *pWaveNo) const
+const char8_t *AmiiboData::lookup_amiibo_series_data(uint32_t amiibo_id, int *pReleaseNo, int *pWaveNo) const
 {
 	RP_D(AmiiboData);
 	if (d->loadIfNeeded() != 0)

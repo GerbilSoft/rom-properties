@@ -417,25 +417,26 @@ int Amiibo::loadFieldData(void)
 
 	// Get the AmiiboData instance.
 	const AmiiboData *const pAmiiboData = AmiiboData::instance();
+	const char8_t *const s_unknown_value = reinterpret_cast<const char8_t*>(C_("RomData", "Unknown"));
 
 	// Character series
-	const char *const char_series = pAmiiboData->lookup_char_series_name(char_id);
+	const char8_t *const char_series = pAmiiboData->lookup_char_series_name(char_id);
 	d->fields->addField_string(C_("Amiibo", "Character Series"),
-		char_series ? char_series : C_("RomData", "Unknown"));
+		char_series ? char_series : s_unknown_value);
 
 	// Character name
-	const char *const char_name = pAmiiboData->lookup_char_name(char_id);
+	const char8_t *const char_name = pAmiiboData->lookup_char_name(char_id);
 	d->fields->addField_string(C_("Amiibo", "Character Name"),
-		char_name ? char_name : C_("RomData", "Unknown"));
+		char_name ? char_name : s_unknown_value);
 
 	// amiibo series
-	const char *const amiibo_series = pAmiiboData->lookup_amiibo_series_name(amiibo_id);
+	const char8_t *const amiibo_series = pAmiiboData->lookup_amiibo_series_name(amiibo_id);
 	d->fields->addField_string(C_("Amiibo", "amiibo Series"),
-		amiibo_series ? amiibo_series : C_("RomData", "Unknown"));
+		amiibo_series ? amiibo_series : s_unknown_value);
 
 	// amiibo name, wave number, and release number.
 	int wave_no, release_no;
-	const char *const amiibo_name = pAmiiboData->lookup_amiibo_series_data(amiibo_id, &release_no, &wave_no);
+	const char8_t *const amiibo_name = pAmiiboData->lookup_amiibo_series_data(amiibo_id, &release_no, &wave_no);
 	if (amiibo_name) {
 		d->fields->addField_string(C_("Amiibo", "amiibo Name"), amiibo_name);
 		if (wave_no != 0) {
