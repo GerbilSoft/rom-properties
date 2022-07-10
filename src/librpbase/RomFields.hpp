@@ -474,15 +474,15 @@ class RomFields
 		/**
 		 * Set a tab name.
 		 * NOTE: An empty tab name will hide the tab.
-		 * @param tabIdx Tab index.
-		 * @param name Tab name.
+		 * @param tabIdx Tab index
+		 * @param name Tab name
 		 */
 		void setTabName(int tabIdx, const char *name);
 
 		/**
 		 * Add a tab to the end and select it.
-		 * @param name Tab name.
-		 * @return Tab index.
+		 * @param name Tab name
+		 * @return Tab index
 		 */
 		int addTab(const char *name);
 
@@ -519,8 +519,8 @@ class RomFields
 		/**
 		 * Convert an array of char strings to a vector of std::string.
 		 * This can be used for addField_bitfield() and addField_listData().
-		 * @param strArray Array of strings.
-		 * @param count Number of strings. (nullptrs will be handled as empty strings)
+		 * @param strArray Array of strings
+		 * @param count Number of strings (nullptrs will be handled as empty strings)
 		 * @return Allocated std::vector<std::string>.
 		 */
 		static std::vector<std::string> *strArrayToVector(const char *const *strArray, size_t count);
@@ -528,9 +528,9 @@ class RomFields
 		/**
 		 * Convert an array of char strings to a vector of std::string.
 		 * This can be used for addField_bitfield() and addField_listData().
-		 * @param msgctxt i18n context.
-		 * @param strArray Array of strings.
-		 * @param count Number of strings. (nullptrs will be handled as empty strings)
+		 * @param msgctxt i18n context
+		 * @param strArray Array of strings
+		 * @param count Number of strings (nullptrs will be handled as empty strings)
 		 * @return Allocated std::vector<std::string>.
 		 */
 		static std::vector<std::string> *strArrayToVector_i18n(const char *msgctxt, const char *const *strArray, size_t count);
@@ -608,21 +608,21 @@ class RomFields
 
 		/**
 		 * Add string field data using a numeric value.
-		 * @param name Field name.
-		 * @param val Numeric value.
-		 * @param base Base. If not decimal, a prefix will be added.
-		 * @param digits Number of leading digits. (0 for none)
-		 * @param flags Formatting flags.
+		 * @param name Field name
+		 * @param val Numeric value
+		 * @param base Base (If not decimal, a prefix will be added.)
+		 * @param digits Number of leading digits (0 for none)
+		 * @param flags Formatting flags
 		 * @return Field index, or -1 on error.
 		 */
 		int addField_string_numeric(const char *name, uint32_t val, Base base = Base::Dec, int digits = 0, unsigned int flags = 0);
 
 		/**
 		 * Add a string field formatted like a hex dump
-		 * @param name Field name.
-		 * @param buf Input bytes.
-		 * @param size Byte count.
-		 * @param flags Formatting flags.
+		 * @param name Field name
+		 * @param buf Input bytes
+		 * @param size Byte count
+		 * @param flags Formatting flags
 		 * @return Field index, or -1 on error.
 		 */
 		ATTR_ACCESS_SIZE(read_only, 3, 4)
@@ -630,12 +630,12 @@ class RomFields
 
 		/**
 		 * Add a string field formatted for an address range.
-		 * @param name Field name.
-		 * @param start Start address.
-		 * @param end End address.
-		 * @param suffix Suffix string.
-		 * @param digits Number of leading digits. (default is 8 for 32-bit)
-		 * @param flags Formatting flags.
+		 * @param name Field name
+		 * @param start Start address
+		 * @param end End address
+		 * @param suffix Suffix string
+		 * @param digits Number of leading digits (default is 8 for 32-bit)
+		 * @param flags Formatting flags
 		 * @return Field index, or -1 on error.
 		 */
 		int addField_string_address_range(const char *name,
@@ -644,11 +644,11 @@ class RomFields
 
 		/**
 		 * Add a string field formatted for an address range.
-		 * @param name Field name.
-		 * @param start Start address.
-		 * @param end End address.
-		 * @param digits Number of leading digits. (default is 8 for 32-bit)
-		 * @param flags Formatting flags.
+		 * @param name Field name
+		 * @param start Start address
+		 * @param end End address
+		 * @param digits Number of leading digits (default is 8 for 32-bit)
+		 * @param flags Formatting flags
 		 * @return Field index, or -1 on error.
 		 */
 		inline int addField_string_address_range(const char *name,
@@ -660,10 +660,10 @@ class RomFields
 		/**
 		 * Add bitfield data.
 		 * NOTE: This object takes ownership of the vector.
-		 * @param name Field name.
-		 * @param bit_names Bit names.
-		 * @param elemsPerRow Number of elements per row.
-		 * @param bitfield Bitfield.
+		 * @param name Field name
+		 * @param bit_names Bit names
+		 * @param elemsPerRow Number of elements per row
+		 * @param bitfield Bitfield
 		 * @return Field index, or -1 on error.
 		 */
 		int addField_bitfield(const char *name,
@@ -739,8 +739,8 @@ class RomFields
 		/**
 		 * Add ListData.
 		 * NOTE: This object takes ownership of the vectors.
-		 * @param name Field name.
-		 * @param params Parameters.
+		 * @param name Field name
+		 * @param params Parameters
 		 *
 		 * NOTE: If headers is nullptr, the column count will be
 		 * determined using the first row in list_data.
@@ -751,9 +751,9 @@ class RomFields
 
 		/**
 		 * Add DateTime.
-		 * @param name Field name.
-		 * @param date_time Date/Time.
-		 * @param flags Date/Time flags.
+		 * @param name Field name
+		 * @param date_time Date/Time
+		 * @param flags Date/Time flags
 		 * @return Field index, or -1 on error.
 		 */
 		int addField_dateTime(const char *name, time_t date_time, unsigned int flags = 0);
@@ -761,18 +761,18 @@ class RomFields
 		/**
 		 * Add age ratings.
 		 * The array is copied into the RomFields struct.
-		 * @param name Field name.
-		 * @param age_ratings Pointer to age ratings array.
+		 * @param name Field name
+		 * @param age_ratings Pointer to age ratings array
 		 * @return Field index, or -1 on error.
 		 */
 		int addField_ageRatings(const char *name, const age_ratings_t &age_ratings);
 
 		/**
 		 * Add image dimensions.
-		 * @param name Field name.
-		 * @param dimX X dimension.
-		 * @param dimY Y dimension.
-		 * @param dimZ Z dimension.
+		 * @param name Field name
+		 * @param dimX X dimension
+		 * @param dimY Y dimension
+		 * @param dimZ Z dimension
 		 * @return Field index, or -1 on error.
 		 */
 		int addField_dimensions(const char *name, int dimX, int dimY = 0, int dimZ = 0);
@@ -780,14 +780,264 @@ class RomFields
 		/**
 		 * Add a multi-language string.
 		 * NOTE: This object takes ownership of the map.
-		 * @param name Field name.
-		 * @param str_multi Map of strings with language codes.
-		 * @param def_lc Default language code.
-		 * @param flags Formatting flags.
+		 * @param name Field name
+		 * @param str_multi Map of strings with language codes
+		 * @param def_lc Default language code
+		 * @param flags Formatting flags
 		 * @return Field index, or -1 on error.
 		 */
 		int addField_string_multi(const char *name, const StringMultiMap_t *str_multi,
 			uint32_t def_lc = 'en', unsigned int flags = 0);
+
+#ifndef CXX20_COMPAT_CHAR8_T
+	public:
+		/** TEMPORARY - inline wrapper functions with `const char8_t *name`. **/
+		/** The main functions will eventually be changed to `const char8_t*`. **/
+
+		/**
+		 * Set a tab name.
+		 * NOTE: An empty tab name will hide the tab.
+		 * @param tabIdx Tab index.
+		 * @param name Tab name.
+		 */
+		inline void setTabName(int tabIdx, const char8_t *name)
+		{
+			setTabName(tabIdx, reinterpret_cast<const char*>(name));
+		}
+
+		/**
+		 * Add a tab to the end and select it.
+		 * @param name Tab name
+		 * @return Tab index
+		 */
+		inline int addTab(const char8_t *name)
+		{
+			return addTab(reinterpret_cast<const char*>(name));
+		}
+
+	public:
+		/**
+		 * Convert an array of char strings to a vector of std::string.
+		 * This can be used for addField_bitfield() and addField_listData().
+		 * @param strArray Array of strings
+		 * @param count Number of strings (nullptrs will be handled as empty strings)
+		 * @return Allocated std::vector<std::string>.
+		 */
+		static inline std::vector<std::string> *strArrayToVector(const char8_t *const *strArray, size_t count)
+		{
+			return strArrayToVector(reinterpret_cast<const char *const *>(strArray), count);
+		}
+
+		/**
+		 * Convert an array of char strings to a vector of std::string.
+		 * This can be used for addField_bitfield() and addField_listData().
+		 * @param msgctxt i18n context
+		 * @param strArray Array of strings
+		 * @param count Number of strings (nullptrs will be handled as empty strings)
+		 * @return Allocated std::vector<std::string>.
+		 */
+		static std::vector<std::string> *strArrayToVector_i18n(const char8_t *msgctxt, const char8_t *const *strArray, size_t count)
+		{
+			return strArrayToVector_i18n(
+				reinterpret_cast<const char*>(msgctxt),
+				reinterpret_cast<const char *const *>(strArray), count);
+		}
+
+	public:
+		/**
+		 * Add string field data.
+		 * @param name Field name
+		 * @param str String
+		 * @param flags Formatting flags
+		 * @return Field index
+		 */
+		inline int addField_string(const char8_t *name, const char *str, unsigned int flags = 0)
+		{
+			return addField_string(reinterpret_cast<const char*>(name), str, flags);
+		}
+
+		/**
+		 * Add string field data.
+		 * @param name Field name
+		 * @param str String
+		 * @param flags Formatting flags
+		 * @return Field index
+		 */
+		inline int addField_string(const char8_t *name, const std::string &str, unsigned int flags = 0)
+		{
+			return addField_string(reinterpret_cast<const char*>(name), str, flags);
+		}
+
+		/**
+		 * Add string field data.
+		 * @param name Field name
+		 * @param str String
+		 * @param flags Formatting flags
+		 * @return Field index
+		 */
+		inline int addField_string(const char8_t *name, const char8_t *str, unsigned int flags = 0)
+		{
+			return addField_string(reinterpret_cast<const char*>(name), reinterpret_cast<const char*>(str), flags);
+		}
+
+		/**
+		 * Add string field data.
+		 * @param name Field name
+		 * @param str String
+		 * @param flags Formatting flags
+		 * @return Field index
+		 */
+		inline int addField_string(const char8_t *name, const std::u8string &str, unsigned int flags = 0)
+		{
+			return addField_string(reinterpret_cast<const char*>(name), reinterpret_cast<const char*>(str.c_str()), flags);
+		}
+
+		/**
+		 * Add string field data using a numeric value.
+		 * @param name Field name.
+		 * @param val Numeric value.
+		 * @param base Base (If not decimal, a prefix will be added.)
+		 * @param digits Number of leading digits. (0 for none)
+		 * @param flags Formatting flags.
+		 * @return Field index, or -1 on error.
+		 */
+		int addField_string_numeric(const char8_t *name, uint32_t val, Base base = Base::Dec, int digits = 0, unsigned int flags = 0)
+		{
+			return addField_string_numeric(reinterpret_cast<const char*>(name), val, base, digits, flags);
+		}
+
+		/**
+		 * Add a string field formatted like a hex dump
+		 * @param name Field name
+		 * @param buf Input bytes
+		 * @param size Byte count
+		 * @param flags Formatting flags
+		 * @return Field index, or -1 on error.
+		 */
+		ATTR_ACCESS_SIZE(read_only, 3, 4)
+		inline int addField_string_hexdump(const char8_t *name, const uint8_t *buf, size_t size, unsigned int flags = 0)
+		{
+			return addField_string_hexdump(reinterpret_cast<const char*>(name), buf, size, flags);
+		}
+
+		/**
+		 * Add a string field formatted for an address range.
+		 * @param name Field name
+		 * @param start Start address
+		 * @param end End address
+		 * @param suffix Suffix string
+		 * @param digits Number of leading digits (default is 8 for 32-bit)
+		 * @param flags Formatting flags
+		 * @return Field index, or -1 on error.
+		 */
+		inline int addField_string_address_range(const char8_t *name,
+			uint32_t start, uint32_t end,
+			const char8_t *suffix, int digits = 8, unsigned int flags = 0)
+		{
+			return addField_string_address_range(reinterpret_cast<const char*>(name),
+				start, end, reinterpret_cast<const char*>(suffix), digits, flags);
+		}
+
+		/**
+		 * Add a string field formatted for an address range.
+		 * @param name Field name
+		 * @param start Start address
+		 * @param end End address
+		 * @param digits Number of leading digits (default is 8 for 32-bit)
+		 * @param flags Formatting flags
+		 * @return Field index, or -1 on error.
+		 */
+		inline int addField_string_address_range(const char8_t *name,
+			uint32_t start, uint32_t end, int digits = 8, unsigned int flags = 0)
+		{
+			return addField_string_address_range(reinterpret_cast<const char*>(name), start, end, nullptr, digits, flags);
+		}
+
+		/**
+		 * Add bitfield data.
+		 * NOTE: This object takes ownership of the vector.
+		 * @param name Field name
+		 * @param bit_names Bit names
+		 * @param elemsPerRow Number of elements per row
+		 * @param bitfield Bitfield
+		 * @return Field index, or -1 on error.
+		 */
+		inline int addField_bitfield(const char8_t *name,
+			const std::vector<std::string> *bit_names,
+			int elemsPerRow, uint32_t bitfield)
+		{
+			return addField_bitfield(reinterpret_cast<const char*>(name), bit_names, elemsPerRow, bitfield);
+		}
+
+		/**
+		 * Add ListData.
+		 * NOTE: This object takes ownership of the vectors.
+		 * @param name Field name
+		 * @param params Parameters
+		 *
+		 * NOTE: If headers is nullptr, the column count will be
+		 * determined using the first row in list_data.
+		 *
+		 * @return Field index, or -1 on error.
+		 */
+		inline int addField_listData(const char8_t *name, const AFLD_PARAMS *params)
+		{
+			return addField_listData(reinterpret_cast<const char*>(name), params);
+		}
+
+		/**
+		 * Add DateTime.
+		 * @param name Field name
+		 * @param date_time Date/Time
+		 * @param flags Date/Time flags
+		 * @return Field index, or -1 on error.
+		 */
+		inline int addField_dateTime(const char8_t *name, time_t date_time, unsigned int flags = 0)
+		{
+			return addField_dateTime(reinterpret_cast<const char*>(name), date_time, flags);
+		}
+
+		/**
+		 * Add age ratings.
+		 * The array is copied into the RomFields struct.
+		 * @param name Field name
+		 * @param age_ratings Pointer to age ratings array
+		 * @return Field index, or -1 on error.
+		 */
+		inline int addField_ageRatings(const char8_t *name, const age_ratings_t &age_ratings)
+		{
+			return addField_ageRatings(reinterpret_cast<const char*>(name), age_ratings);
+		}
+
+		/**
+		 * Add image dimensions.
+		 * @param name Field name
+		 * @param dimX X dimension
+		 * @param dimY Y dimension
+		 * @param dimZ Z dimension
+		 * @return Field index, or -1 on error.
+		 */
+		inline int addField_dimensions(const char8_t *name, int dimX, int dimY = 0, int dimZ = 0)
+		{
+			return addField_dimensions(reinterpret_cast<const char*>(name), dimX, dimY, dimZ);
+		}
+
+		/**
+		 * Add a multi-language string.
+		 * NOTE: This object takes ownership of the map.
+		 * @param name Field name
+		 * @param str_multi Map of strings with language codes
+		 * @param def_lc Default language code
+		 * @param flags Formatting flags
+		 * @return Field index, or -1 on error.
+		 */
+		inline int addField_string_multi(const char8_t *name, const StringMultiMap_t *str_multi,
+			uint32_t def_lc = 'en', unsigned int flags = 0)
+		{
+			return addField_string_multi(reinterpret_cast<const char*>(name),
+				str_multi, def_lc, flags);
+		}
+#endif /* CXX20_COMPAT_CHAR8_T */
 };
 
 }
