@@ -343,7 +343,7 @@ std::string formatFileSizeKiB(unsigned int size)
 std::string formatFrequency(uint32_t frequency)
 {
 	const char *suffix;
-	// frac_part is always 0 to 100.
+	// frac_part is always 0 to 1,000.
 	// If whole_part >= 10, frac_part is divided by 10.
 	int whole_part, frac_part;
 
@@ -357,17 +357,17 @@ std::string formatFrequency(uint32_t frequency)
 		// tr: Kilohertz
 		suffix = C_("TextFuncs|Frequency", "kHz");
 		whole_part = frequency / 1000;
-		frac_part = calc_frac_part<uint32_t>(frequency, 1000);
+		frac_part = frequency % 1000;
 	} else if (frequency < (2*1000*1000*1000)) {
 		// tr: Megahertz
 		suffix = C_("TextFuncs|Frequency", "MHz");
 		whole_part = frequency / (1000*1000);
-		frac_part = calc_frac_part<uint32_t>(frequency, 1000*1000);
+		frac_part = (frequency / 1000) % 1000;
 	} else /*if (frequency < (2*1000*1000*1000*1000))*/ {
 		// tr: Gigahertz
 		suffix = C_("TextFuncs|Frequency", "GHz");
 		whole_part = frequency / (1000*1000*1000);
-		frac_part = calc_frac_part<uint32_t>(frequency, 1000*1000*1000);
+		frac_part = (frequency / (1000*1000)) % 1000;
 	}
 
 	// Localize the whole part.
@@ -376,7 +376,7 @@ std::string formatFrequency(uint32_t frequency)
 
 	if (frequency >= (2*1000)) {
 		// Fractional part.
-		const int frac_digits = 2;
+		const int frac_digits = 3;
 
 		// Append the fractional part using the required number of digits.
 		s_value << localizedDecimalPoint();

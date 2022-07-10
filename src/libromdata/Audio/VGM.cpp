@@ -50,13 +50,6 @@ class VGMPrivate final : public RomDataPrivate
 		const char *s_no;
 
 	public:
-		/**
-		 * Format an IC clock rate in Hz, kHz, MHz, or GHz.
-		 * @param clock_rate Clock rate.
-		 * @return IC clock rate, in Hz, kHz, MHz, or GHz. (Three decimal places.)
-		 */
-		string formatClockRate(unsigned int clock_rate);
-
 		// GD3 tags.
 		// All strings must be in UTF-8 format.
 		typedef array<u8string, GD3_TAG_MAX> gd3_tags_t;
@@ -108,36 +101,6 @@ VGMPrivate::VGMPrivate(VGM *q, IRpFile *file)
 {
 	// Clear the VGM header struct.
 	memset(&vgmHeader, 0, sizeof(vgmHeader));
-}
-
-/**
- * Format an IC clock rate in Hz, kHz, MHz, or GHz.
- * @param clock_rate Clock rate.
- * @return IC clock rate, in Hz, kHz, MHz, or GHz. (Three decimal places.)
- */
-string VGMPrivate::formatClockRate(unsigned int clock_rate)
-{
-	// TODO: Rounding?
-
-	if (clock_rate < 1000) {
-		// Hz
-		return rp_sprintf(C_("VGM", "%u Hz"), clock_rate);
-	} else if (clock_rate < 1000000) {
-		// kHz
-		const unsigned int whole = clock_rate / 1000;
-		const unsigned int frac = clock_rate % 1000;
-		return rp_sprintf_p(C_("VGM", "%1$u.%2$03u kHz"), whole, frac);
-	} else if (clock_rate < 1000000000) {
-		// MHz
-		const unsigned int whole = clock_rate / 1000000;
-		const unsigned int frac = (clock_rate / 1000) % 1000;
-		return rp_sprintf_p(C_("VGM", "%1$u.%2$03u MHz"), whole, frac);
-	} else {
-		// GHz
-		const unsigned int whole = clock_rate / 1000000000;
-		const unsigned int frac = (clock_rate / 1000000) % 1000;
-		return rp_sprintf_p(C_("VGM", "%1$u.%2$03u GHz"), whole, frac);
-	}
 }
 
 /**
@@ -232,7 +195,7 @@ void VGMPrivate::addCommonSoundChip(unsigned int clk_full, const char *display, 
 	if (clk != 0) {
 		fields->addField_string(
 			rp_sprintf(s_clockrate, display).c_str(),
-			formatClockRate(clk));
+			LibRpBase::formatFrequency(clk));
 		if (dual) {
 			fields->addField_string(
 				rp_sprintf(s_dualchip, display).c_str(),
@@ -494,7 +457,7 @@ int VGM::loadFieldData(void)
 
 		d->fields->addField_string(
 			rp_sprintf(d->s_clockrate, chip_name).c_str(),
-			d->formatClockRate(sn76489_clk & ~PSG_T6W28));
+			LibRpBase::formatFrequency(sn76489_clk & ~PSG_T6W28));
 		if (!isT6W28) {
 			d->fields->addField_string(
 				rp_sprintf(d->s_dualchip, chip_name).c_str(),
@@ -572,7 +535,7 @@ int VGM::loadFieldData(void)
 			if (clk != 0) {
 				d->fields->addField_string(
 					rp_sprintf(d->s_clockrate, "Sega PCM").c_str(),
-					d->formatClockRate(clk));
+					LibRpBase::formatFrequency(clk));
 				d->fields->addField_string_numeric(
 					rp_sprintf(C_("VGM", "%s IF reg"), "Sega PCM").c_str(),
 					le32_to_cpu(vgmHeader->sega_pcm_if_reg),
@@ -599,7 +562,7 @@ int VGM::loadFieldData(void)
 			if (clk != 0) {
 				d->fields->addField_string(
 					rp_sprintf(d->s_clockrate, "YM2203").c_str(),
-					d->formatClockRate(clk));
+					LibRpBase::formatFrequency(clk));
 				d->fields->addField_string(
 					rp_sprintf(d->s_dualchip, "YM2203").c_str(),
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
@@ -619,7 +582,7 @@ int VGM::loadFieldData(void)
 			if (clk != 0) {
 				d->fields->addField_string(
 					rp_sprintf(d->s_clockrate, "YM2608").c_str(),
-					d->formatClockRate(clk));
+					LibRpBase::formatFrequency(clk));
 				d->fields->addField_string(
 					rp_sprintf(d->s_dualchip, "YM2608").c_str(),
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
@@ -642,7 +605,7 @@ int VGM::loadFieldData(void)
 
 				d->fields->addField_string(
 					rp_sprintf(d->s_clockrate, chip_name).c_str(),
-					d->formatClockRate(clk));
+					LibRpBase::formatFrequency(clk));
 				d->fields->addField_string(
 					rp_sprintf(d->s_dualchip, chip_name).c_str(),
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
@@ -701,7 +664,7 @@ int VGM::loadFieldData(void)
 
 				d->fields->addField_string(
 					rp_sprintf(d->s_clockrate, chip_name).c_str(),
-					d->formatClockRate(clk));
+					LibRpBase::formatFrequency(clk));
 				d->fields->addField_string(
 					rp_sprintf(d->s_dualchip, chip_name).c_str(),
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
@@ -725,7 +688,7 @@ int VGM::loadFieldData(void)
 			if (clk != 0) {
 				d->fields->addField_string(
 					rp_sprintf(d->s_clockrate, "NES APU").c_str(),
-						d->formatClockRate(clk));
+						LibRpBase::formatFrequency(clk));
 				d->fields->addField_string(
 					rp_sprintf(d->s_dualchip, "NES APU").c_str(),
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
@@ -799,7 +762,7 @@ int VGM::loadFieldData(void)
 			if (clk != 0) {
 				d->fields->addField_string(
 					rp_sprintf(d->s_clockrate, "ES5503").c_str(),
-						d->formatClockRate(clk));
+						LibRpBase::formatFrequency(clk));
 				d->fields->addField_string(
 					rp_sprintf(d->s_dualchip, "ES5503").c_str(),
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
@@ -821,7 +784,7 @@ int VGM::loadFieldData(void)
 
 				d->fields->addField_string(
 					rp_sprintf(d->s_clockrate, chip_name).c_str(),
-						d->formatClockRate(clk));
+						LibRpBase::formatFrequency(clk));
 				d->fields->addField_string(
 					rp_sprintf(d->s_dualchip, chip_name).c_str(),
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
@@ -842,7 +805,7 @@ int VGM::loadFieldData(void)
 			if (clk != 0) {
 				d->fields->addField_string(
 					rp_sprintf(d->s_clockrate, "C352").c_str(),
-						d->formatClockRate(clk));
+						LibRpBase::formatFrequency(clk));
 				d->fields->addField_string(
 					rp_sprintf(d->s_dualchip, "C352").c_str(),
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
