@@ -577,10 +577,10 @@ int PlayStationDisc::isRomSupported_static(
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *PlayStationDisc::systemName(unsigned int type) const
+const char8_t *PlayStationDisc::systemName(unsigned int type) const
 {
 	RP_D(const PlayStationDisc);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -594,15 +594,15 @@ const char *PlayStationDisc::systemName(unsigned int type) const
 	switch (d->consoleType) {
 		default:
 		case PlayStationDiscPrivate::ConsoleType::PS1: {
-			static const char *const sysNames_PS1[4] = {
-				"Sony PlayStation", "PlayStation", "PS1", nullptr
+			static const char8_t *const sysNames_PS1[4] = {
+				U8("Sony PlayStation"), U8("PlayStation"), U8("PS1"), nullptr
 			};
 			return sysNames_PS1[type & SYSNAME_TYPE_MASK];
 		}
 
 		case PlayStationDiscPrivate::ConsoleType::PS2: {
-			static const char *const sysNames_PS2[4] = {
-				"Sony PlayStation 2", "PlayStation 2", "PS2", nullptr
+			static const char8_t *const sysNames_PS2[4] = {
+				U8("Sony PlayStation 2"), U8("PlayStation 2"), U8("PS2"), nullptr
 			};
 			return sysNames_PS2[type & SYSNAME_TYPE_MASK];
 		}

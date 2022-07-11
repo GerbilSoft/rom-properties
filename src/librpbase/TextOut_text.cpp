@@ -774,7 +774,7 @@ ROMOutput::ROMOutput(const RomData *romdata, uint32_t lc, bool skipInternalImage
 RP_LIBROMDATA_PUBLIC
 std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	auto romdata = fo.romdata;
-	const char *const systemName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
+	const char8_t *const systemName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
 	const char8_t *const fileType = romdata->fileType_string();
 	assert(systemName != nullptr);
 	assert(fileType != nullptr);
@@ -784,8 +784,8 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 		// tr: "[System] [FileType] detected."
 		// FIXME: U8STRFIX
 		const string detectMsg = rp_sprintf_p(reinterpret_cast<const char*>(C_("TextOut", "%1$s %2$s detected")),
-			(systemName ? reinterpret_cast<const char8_t*>(systemName) : C_("RomDataView", "(unknown system)")),
-			(fileType ? fileType : C_("RomDataView", "(unknown filetype)")));
+			reinterpret_cast<const char*>(systemName ? systemName : C_("RomDataView", "(unknown system)")),
+			reinterpret_cast<const char*>(fileType ? fileType : C_("RomDataView", "(unknown filetype)")));
 
 		os << "-- " << detectMsg << '\n';
 	}

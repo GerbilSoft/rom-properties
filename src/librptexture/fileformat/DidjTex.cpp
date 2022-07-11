@@ -416,16 +416,16 @@ DidjTex::DidjTex(IRpFile *file)
  * Get the texture format name.
  * @return Texture format name, or nullptr on error.
  */
-const char *DidjTex::textureFormatName(void) const
+const char8_t *DidjTex::textureFormatName(void) const
 {
 	RP_D(const DidjTex);
 	if (!d->isValid || (int)d->texType < 0)
 		return nullptr;
 
 	// TODO: Use an array?
-	return (d->texType == DidjTexPrivate::TexType::TEXS
-		? "Leapster Didj .texs"
-		: "Leapster Didj .tex");
+	return (d->texType == DidjTexPrivate::TexType::TEXS)
+		? U8("Leapster Didj .texs")
+		: U8("Leapster Didj .tex");
 }
 
 /**

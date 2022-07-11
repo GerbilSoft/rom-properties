@@ -1240,13 +1240,13 @@ int DirectDrawSurface::isRomSupported_static(const DetectInfo *info)
  * Get the texture format name.
  * @return Texture format name, or nullptr on error.
  */
-const char *DirectDrawSurface::textureFormatName(void) const
+const char8_t *DirectDrawSurface::textureFormatName(void) const
 {
 	RP_D(const DirectDrawSurface);
 	if (!d->isValid)
 		return nullptr;
 
-	return "DirectDraw Surface";
+	return U8("DirectDraw Surface");
 }
 
 /**

@@ -249,10 +249,10 @@ int CBMCart::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *CBMCart::systemName(unsigned int type) const
+const char8_t *CBMCart::systemName(unsigned int type) const
 {
 	RP_D(const CBMCart);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -261,12 +261,12 @@ const char *CBMCart::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"CBMCart::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames[][4] = {
-		{"Commodore 64", "C64", "C64", nullptr},
-		{"Commodore 128", "C128", "C128", nullptr},
-		{"Commodore CBM-II", "CBM-II", "CBM-II", nullptr},
-		{"Commodore VIC-20", "VIC-20", "VIC-20", nullptr},
-		{"Commodore Plus/4", "Plus/4", "Plus/4", nullptr},
+	static const char8_t *const sysNames[][4] = {
+		{U8("Commodore 64"),     U8("C64"),    U8("C64"),    nullptr},
+		{U8("Commodore 128"),    U8("C128"),   U8("C128"),   nullptr},
+		{U8("Commodore CBM-II"), U8("CBM-II"), U8("CBM-II"), nullptr},
+		{U8("Commodore VIC-20"), U8("VIC-20"), U8("VIC-20"), nullptr},
+		{U8("Commodore Plus/4"), U8("Plus/4"), U8("Plus/4"), nullptr},
 	};
 	static_assert(ARRAY_SIZE(sysNames) == static_cast<int>(CBMCartPrivate::RomType::Max),
 		"CBMCart: sysNames[] is missing entries!");

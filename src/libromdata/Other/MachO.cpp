@@ -410,10 +410,10 @@ int MachO::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *MachO::systemName(unsigned int type) const
+const char8_t *MachO::systemName(unsigned int type) const
 {
 	RP_D(const MachO);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -425,8 +425,8 @@ const char *MachO::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"MachO::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames[4] = {
-		"Mach Microkernel", "Mach", "Mach", nullptr
+	static const char8_t *const sysNames[4] = {
+		U8("Mach Microkernel"), U8("Mach"), U8("Mach"), nullptr
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];

@@ -735,10 +735,10 @@ int ISO::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *ISO::systemName(unsigned int type) const
+const char8_t *ISO::systemName(unsigned int type) const
 {
 	RP_D(const ISO);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -751,10 +751,10 @@ const char *ISO::systemName(unsigned int type) const
 		"ISO::systemName() array index optimization needs to be updated.");
 
 	// TODO: UDF, HFS, others?
-	static const char *const sysNames[3][4] = {
-		{"ISO-9660", "ISO", "ISO", nullptr},
-		{"High Sierra Format", "High Sierra", "HSF", nullptr},
-		{"Compact Disc Interactive", "CD-i", "CD-i", nullptr},
+	static const char8_t *const sysNames[3][4] = {
+		{U8("ISO-9660"), U8("ISO"), U8("ISO"), nullptr},
+		{U8("High Sierra Format"), U8("High Sierra"), U8("HSF"), nullptr},
+		{U8("Compact Disc Interactive"), U8("CD-i"), U8("CD-i"), nullptr},
 	};
 
 	unsigned int sysID = 0;

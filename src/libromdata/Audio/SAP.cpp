@@ -519,10 +519,10 @@ int SAP::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *SAP::systemName(unsigned int type) const
+const char8_t *SAP::systemName(unsigned int type) const
 {
 	RP_D(const SAP);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -534,8 +534,8 @@ const char *SAP::systemName(unsigned int type) const
 		"SAP::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
-		"Atari 8-bit SAP Audio", "SAP", "SAP", nullptr
+	static const char8_t *const sysNames[4] = {
+		U8("Atari 8-bit SAP Audio"), U8("SAP"), U8("SAP"), nullptr
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];

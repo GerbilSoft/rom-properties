@@ -58,10 +58,10 @@ class klass final : public LibRpBase::RomData { \
 		\
 		/** \
 		 * Get the name of the system the loaded ROM is designed for. \
-		 * @param type System name type. (See the SystemName enum.) \
+		 * @param type System name type (See the SystemName enum) \
 		 * @return System name, or nullptr if type is invalid. \
 		 */ \
-		const char *systemName(unsigned int type) const final; \
+		const char8_t *systemName(unsigned int type) const final; \
 		\
 		/** \
 		 * Get the static RomDataInfo for this class. \

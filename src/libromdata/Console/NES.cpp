@@ -889,10 +889,10 @@ int NES::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *NES::systemName(unsigned int type) const
+const char8_t *NES::systemName(unsigned int type) const
 {
 	RP_D(const NES);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -906,21 +906,21 @@ const char *NES::systemName(unsigned int type) const
 	switch (d->romType & NESPrivate::ROM_SYSTEM_MASK) {
 		case NESPrivate::ROM_SYSTEM_NES:
 		default: {
-			static const char *const sysNames_NES[3][4] = {
+			static const char8_t *const sysNames_NES[3][4] = {
 				// NES (International)
-				{"Nintendo Entertainment System",
-				 "Nintendo Entertainment System",
-				 "NES", nullptr},
+				{U8("Nintendo Entertainment System"),
+				 U8("Nintendo Entertainment System"),
+				 U8("NES"), nullptr},
 
 				// Famicom (Japan)
-				{"Nintendo Famicom",
-				 "Famicom",
-				 "FC", nullptr},
+				{U8("Nintendo Famicom"),
+				 U8("Famicom"),
+				 U8("FC"), nullptr},
 
 				// Hyundai Comboy (South Korea)
-				{"Hyundai Comboy",
-				 "Comboy",
-				 "CB", nullptr},
+				{U8("Hyundai Comboy"),
+				 U8("Comboy"),
+				 U8("CB"), nullptr},
 			};
 
 			if ((type & SYSNAME_REGION_MASK) == SYSNAME_REGION_GENERIC) {
@@ -940,28 +940,28 @@ const char *NES::systemName(unsigned int type) const
 		}
 
 		case NESPrivate::ROM_SYSTEM_FDS: {
-			static const char *const sysNames_FDS[] = {
-				"Nintendo Famicom Disk System",
-				"Famicom Disk System",
-				"FDS", nullptr
+			static const char8_t *const sysNames_FDS[] = {
+				U8("Nintendo Famicom Disk System"),
+				U8("Famicom Disk System"),
+				U8("FDS"), nullptr
 			};
 			return sysNames_FDS[idx];
 		}
 
 		case NESPrivate::ROM_SYSTEM_VS: {
-			static const char *const sysNames_VS[] = {
-				"Nintendo VS. System",
-				"VS. System",
-				"VS", nullptr
+			static const char8_t *const sysNames_VS[] = {
+				U8("Nintendo VS. System"),
+				U8("VS. System"),
+				U8("VS"), nullptr
 			};
 			return sysNames_VS[idx];
 		}
 
 		case NESPrivate::ROM_SYSTEM_PC10: {
-			static const char *const sysNames_PC10[] = {
-				"Nintendo PlayChoice-10",
-				"PlayChoice-10",
-				"PC10", nullptr
+			static const char8_t *const sysNames_PC10[] = {
+				U8("Nintendo PlayChoice-10"),
+				U8("PlayChoice-10"),
+				U8("PC10"), nullptr
 			};
 			return sysNames_PC10[idx];
 		}

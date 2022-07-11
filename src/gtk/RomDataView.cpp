@@ -594,14 +594,13 @@ rom_data_view_init_header_row(RomDataView *page)
 
 	// System name and file type.
 	// TODO: System logo and/or game title?
-	// FIXME: U8STRFIX - systemName should be char8_t
-	const char *systemName = romData->systemName(
+	const char8_t *systemName = romData->systemName(
 		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
 	const char8_t *fileType = romData->fileType_string();
 	assert(systemName != nullptr);
 	assert(fileType != nullptr);
 	if (!systemName) {
-		systemName = (const char*)C_("RomDataView", "(unknown system)");
+		systemName = C_("RomDataView", "(unknown system)");
 	}
 	if (!fileType) {
 		fileType = C_("RomDataView", "(unknown filetype)");
@@ -610,7 +609,8 @@ rom_data_view_init_header_row(RomDataView *page)
 	// FIXME: U8STRFIX - rp_sprintf_p()
 	const string sysInfo = rp_sprintf_p(
 		// tr: %1$s == system name, %2$s == file type
-		(const char*)C_("RomDataView", "%1$s\n%2$s"), systemName, (const char*)fileType);
+		(const char*)C_("RomDataView", "%1$s\n%2$s"),
+			(const char*)systemName, (const char*)fileType);
 	gtk_label_set_text(GTK_LABEL(page->lblSysInfo), sysInfo.c_str());
 
 	// Supported image types.

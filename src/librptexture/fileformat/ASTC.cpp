@@ -237,13 +237,13 @@ ASTC::ASTC(IRpFile *file)
  * Get the texture format name.
  * @return Texture format name, or nullptr on error.
  */
-const char *ASTC::textureFormatName(void) const
+const char8_t *ASTC::textureFormatName(void) const
 {
 	RP_D(const ASTC);
 	if (!d->isValid)
 		return nullptr;
 
-	return "ASTC";
+	return U8("ASTC");
 }
 
 /**

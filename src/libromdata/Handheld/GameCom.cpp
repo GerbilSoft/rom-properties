@@ -580,10 +580,10 @@ int GameCom::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *GameCom::systemName(unsigned int type) const
+const char8_t *GameCom::systemName(unsigned int type) const
 {
 	RP_D(const GameCom);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -594,10 +594,10 @@ const char *GameCom::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"GameCom::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames[4] = {
-		"Tiger game.com",
-		"game.com",
-		"game.com",
+	static const char8_t *const sysNames[4] = {
+		U8("Tiger game.com"),
+		U8("game.com"),
+		U8("game.com"),
 		nullptr
 	};
 

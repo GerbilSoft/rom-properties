@@ -589,10 +589,10 @@ int XboxDisc::isRomSupported_static(
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *XboxDisc::systemName(unsigned int type) const
+const char8_t *XboxDisc::systemName(unsigned int type) const
 {
 	RP_D(const XboxDisc);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -607,15 +607,15 @@ const char *XboxDisc::systemName(unsigned int type) const
 	switch (consoleType) {
 		default:
 		case XboxDiscPrivate::ConsoleType::Xbox: {
-			static const char *const sysNames_Xbox[4] = {
-				"Microsoft Xbox", "Xbox", "Xbox", nullptr
+			static const char8_t *const sysNames_Xbox[4] = {
+				U8("Microsoft Xbox"), U8("Xbox"), U8("Xbox"), nullptr
 			};
 			return sysNames_Xbox[type & SYSNAME_TYPE_MASK];
 		}
 
 		case XboxDiscPrivate::ConsoleType::Xbox360: {
-			static const char *const sysNames_X360[4] = {
-				"Microsoft Xbox 360", "Xbox 360", "X360", nullptr
+			static const char8_t *const sysNames_X360[4] = {
+				U8("Microsoft Xbox 360"), U8("Xbox 360"), U8("X360"), nullptr
 			};
 			return sysNames_X360[type & SYSNAME_TYPE_MASK];
 		}

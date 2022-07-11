@@ -418,10 +418,10 @@ int PSP::isRomSupported_static(
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *PSP::systemName(unsigned int type) const
+const char8_t *PSP::systemName(unsigned int type) const
 {
 	RP_D(const PSP);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -432,9 +432,9 @@ const char *PSP::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"PSP::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames[2][4] = {
-		{"Sony PlayStation Portable", "PlayStation Portable", "PSP", nullptr},
-		{"Universal Media Disc", "Universal Media Disc", "UMD", nullptr},
+	static const char8_t *const sysNames[2][4] = {
+		{U8("Sony PlayStation Portable"), U8("PlayStation Portable"), U8("PSP"), nullptr},
+		{U8("Universal Media Disc"), U8("Universal Media Disc"), U8("UMD"), nullptr},
 	};
 	return sysNames[(unsigned int)(d->discType) & 1][type & SYSNAME_TYPE_MASK];
 }

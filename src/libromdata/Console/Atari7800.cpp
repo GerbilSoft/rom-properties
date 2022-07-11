@@ -151,10 +151,10 @@ int Atari7800::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *Atari7800::systemName(unsigned int type) const
+const char8_t *Atari7800::systemName(unsigned int type) const
 {
 	RP_D(const Atari7800);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -166,8 +166,8 @@ const char *Atari7800::systemName(unsigned int type) const
 		"N64::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
-		"Atari 7800", "Atari 7800", "7800", nullptr
+	static const char8_t *const sysNames[4] = {
+		U8("Atari 7800"), U8("Atari 7800"), U8("7800"), nullptr
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];

@@ -158,10 +158,10 @@ int RpTextureWrapper::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *RpTextureWrapper::systemName(unsigned int type) const
+const char8_t *RpTextureWrapper::systemName(unsigned int type) const
 {
 	RP_D(const RpTextureWrapper);
 	if (!d->isValid || !isSystemNameTypeValid(type))

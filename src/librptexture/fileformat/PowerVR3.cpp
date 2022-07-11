@@ -970,13 +970,13 @@ PowerVR3::PowerVR3(IRpFile *file)
  * Get the texture format name.
  * @return Texture format name, or nullptr on error.
  */
-const char *PowerVR3::textureFormatName(void) const
+const char8_t *PowerVR3::textureFormatName(void) const
 {
 	RP_D(const PowerVR3);
 	if (!d->isValid)
 		return nullptr;
 
-	return "PowerVR";
+	return U8("PowerVR");
 }
 
 /**

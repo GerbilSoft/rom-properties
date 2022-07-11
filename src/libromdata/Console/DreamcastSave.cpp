@@ -1062,10 +1062,10 @@ int DreamcastSave::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *DreamcastSave::systemName(unsigned int type) const
+const char8_t *DreamcastSave::systemName(unsigned int type) const
 {
 	RP_D(const DreamcastSave);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -1077,8 +1077,8 @@ const char *DreamcastSave::systemName(unsigned int type) const
 		"DreamcastSave::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
-		"Sega Dreamcast", "Dreamcast", "DC", nullptr
+	static const char8_t *const sysNames[4] = {
+		U8("Sega Dreamcast"), U8("Dreamcast"), U8("DC"), nullptr
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];

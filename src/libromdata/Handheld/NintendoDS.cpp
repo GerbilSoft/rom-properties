@@ -724,10 +724,10 @@ int NintendoDS::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *NintendoDS::systemName(unsigned int type) const
+const char8_t *NintendoDS::systemName(unsigned int type) const
 {
 	RP_D(const NintendoDS);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -742,14 +742,14 @@ const char *NintendoDS::systemName(unsigned int type) const
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bit 2: 0 for NDS, 1 for DSi-exclusive.
 	// Bit 3: 0 for worldwide, 1 for China. (iQue DS)
-	static const char *const sysNames[16] = {
+	static const char8_t *const sysNames[16] = {
 		// Nintendo (worldwide)
-		"Nintendo DS", "Nintendo DS", "NDS", nullptr,
-		"Nintendo DSi", "Nintendo DSi", "DSi", nullptr,
+		U8("Nintendo DS"),  U8("Nintendo DS"),  U8("NDS"), nullptr,
+		U8("Nintendo DSi"), U8("Nintendo DSi"), U8("DSi"), nullptr,
 
 		// iQue (China)
-		"iQue DS", "iQue DS", "NDS", nullptr,
-		"iQue DSi", "iQue DSi", "DSi", nullptr
+		U8("iQue DS"),  U8("iQue DS"),  U8("NDS"), nullptr,
+		U8("iQue DSi"), U8("iQue DSi"), U8("DSi"), nullptr
 	};
 
 	// "iQue" is only used if the localized system name is requested

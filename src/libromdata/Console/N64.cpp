@@ -216,10 +216,10 @@ int N64::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *N64::systemName(unsigned int type) const
+const char8_t *N64::systemName(unsigned int type) const
 {
 	RP_D(const N64);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -231,8 +231,8 @@ const char *N64::systemName(unsigned int type) const
 		"N64::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
-		"Nintendo 64", "Nintendo 64", "N64", nullptr
+	static const char8_t *const sysNames[4] = {
+		U8("Nintendo 64"), U8("Nintendo 64"), U8("N64"), nullptr
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];

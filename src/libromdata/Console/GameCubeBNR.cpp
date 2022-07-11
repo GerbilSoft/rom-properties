@@ -362,10 +362,10 @@ int GameCubeBNR::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *GameCubeBNR::systemName(unsigned int type) const
+const char8_t *GameCubeBNR::systemName(unsigned int type) const
 {
 	RP_D(const GameCubeBNR);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -377,9 +377,9 @@ const char *GameCubeBNR::systemName(unsigned int type) const
 		"GameCubeBNR::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
-		// FIXME: "NGC" in Japan?
-		"Nintendo GameCube", "GameCube", "GCN", nullptr,
+	static const char8_t *const sysNames[4] = {
+		// FIXME: "NGC" in Japan? (GameCube class does this.)
+		U8("Nintendo GameCube"), U8("GameCube"), U8("GCN"), nullptr,
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];

@@ -176,10 +176,10 @@ int GBS::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *GBS::systemName(unsigned int type) const
+const char8_t *GBS::systemName(unsigned int type) const
 {
 	RP_D(const GBS);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -192,9 +192,9 @@ const char *GBS::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bit 2: GBS or GBR.
-	static const char *const sysNames[2][4] = {
-		{"Game Boy Sound System", "GBS", "GBS", nullptr},
-		{"Game Boy Ripped", "GBR", "GBR", nullptr},
+	static const char8_t *const sysNames[2][4] = {
+		{U8("Game Boy Sound System"), U8("GBS"), U8("GBS"), nullptr},
+		{U8("Game Boy Ripped"), U8("GBR"), U8("GBR"), nullptr},
 	};
 
 	return sysNames[((int)d->audioFormat) & 1][type & SYSNAME_TYPE_MASK];

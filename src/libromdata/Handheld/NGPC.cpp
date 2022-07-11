@@ -190,10 +190,10 @@ int NGPC::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *NGPC::systemName(unsigned int type) const
+const char8_t *NGPC::systemName(unsigned int type) const
 {
 	RP_D(const NGPC);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -208,9 +208,9 @@ const char *NGPC::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bit 2: Machine type. (0 == NGP, 1 == NGPC)
-	static const char *const sysNames[2][4] = {
-		{"Neo Geo Pocket", "NGP", "NGP", nullptr},
-		{"Neo Geo Pocket Color", "NGPC", "NGPC", nullptr}
+	static const char8_t *const sysNames[2][4] = {
+		{U8("Neo Geo Pocket"), U8("NGP"), U8("NGP"), nullptr},
+		{U8("Neo Geo Pocket Color"), U8("NGPC"), U8("NGPC"), nullptr}
 	};
 
 	// NOTE: This might return an incorrect system name if

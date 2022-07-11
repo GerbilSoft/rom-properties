@@ -621,14 +621,14 @@ XboxXPR::XboxXPR(IRpFile *file)
  * Get the texture format name.
  * @return Texture format name, or nullptr on error.
  */
-const char *XboxXPR::textureFormatName(void) const
+const char8_t *XboxXPR::textureFormatName(void) const
 {
 	RP_D(const XboxXPR);
 	if (!d->isValid)
 		return nullptr;
 
 	// TODO: XPR1/XPR2?
-	return "Microsoft Xbox XPR0";
+	return U8("Microsoft Xbox XPR0");
 }
 
 /**

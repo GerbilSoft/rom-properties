@@ -735,10 +735,10 @@ int DMG::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *DMG::systemName(unsigned int type) const
+const char8_t *DMG::systemName(unsigned int type) const
 {
 	RP_D(const DMG);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -754,9 +754,9 @@ const char *DMG::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bit 2: Game Boy Color. (DMG-specific)
-	static const char *const sysNames[2][4] = {
-		{"Nintendo Game Boy", "Game Boy", "GB", nullptr},
-		{"Nintendo Game Boy Color", "Game Boy Color", "GBC", nullptr}
+	static const char8_t *const sysNames[2][4] = {
+		{U8("Nintendo Game Boy"), U8("Game Boy"), U8("GB"), nullptr},
+		{U8("Nintendo Game Boy Color"), U8("Game Boy Color"), U8("GBC"), nullptr}
 	};
 
 	// NOTE: This might return an incorrect system name if

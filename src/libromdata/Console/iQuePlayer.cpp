@@ -525,10 +525,10 @@ int iQuePlayer::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *iQuePlayer::systemName(unsigned int type) const
+const char8_t *iQuePlayer::systemName(unsigned int type) const
 {
 	RP_D(const iQuePlayer);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -540,8 +540,8 @@ const char *iQuePlayer::systemName(unsigned int type) const
 		"iQuePlayer::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
-		"iQue Player", "iQue Player", "iQue", nullptr
+	static const char8_t *const sysNames[4] = {
+		U8("iQue Player"), U8("iQue Player"), U8("iQue"), nullptr
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];

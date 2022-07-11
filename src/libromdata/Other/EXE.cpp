@@ -738,10 +738,10 @@ int EXE::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *EXE::systemName(unsigned int type) const
+const char8_t *EXE::systemName(unsigned int type) const
 {
 	RP_D(const EXE);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -752,32 +752,32 @@ const char *EXE::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"EXE::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames_Windows[4] = {
-		"Microsoft Windows", "Windows", "Windows", nullptr
+	static const char8_t *const sysNames_Windows[4] = {
+		U8("Microsoft Windows"), U8("Windows"), U8("Windows"), nullptr
 	};
 
 	// New Executable (and Linear Executable) operating systems.
-	static const char *const sysNames_NE[6][4] = {
+	static const char8_t *const sysNames_NE[6][4] = {
 		// NE_OS_UNKNOWN
 		// NOTE: Windows 1.0 executables have this value.
-		{"Microsoft Windows", "Windows", "Windows", nullptr},
+		{U8("Microsoft Windows"), U8("Windows"), U8("Windows"), nullptr},
 		// NE_OS_OS2
-		{"IBM OS/2", "OS/2", "OS/2", nullptr},
+		{U8("IBM OS/2"), U8("OS/2"), U8("OS/2"), nullptr},
 		// NE_OS_WIN
-		{"Microsoft Windows", "Windows", "Windows", nullptr},
+		{U8("Microsoft Windows"), U8("Windows"), U8("Windows"), nullptr},
 		// NE_OS_DOS4
-		{"European MS-DOS 4.x", "EuroDOS 4.x", "EuroDOS 4.x", nullptr},
+		{U8("European MS-DOS 4.x"), U8("EuroDOS 4.x"), U8("EuroDOS 4.x"), nullptr},
 		// NE_OS_WIN386 (TODO)
-		{"Microsoft Windows", "Windows", "Windows", nullptr},
+		{U8("Microsoft Windows"), U8("Windows"), U8("Windows"), nullptr},
 		// NE_OS_BOSS
-		{"Borland Operating System Services", "BOSS", "BOSS", nullptr},
+		{U8("Borland Operating System Services"), U8("BOSS"), U8("BOSS"), nullptr},
 	};
 
 	switch (d->exeType) {
 		case EXEPrivate::ExeType::MZ: {
 			// DOS executable.
-			static const char *const sysNames_DOS[4] = {
-				"Microsoft MS-DOS", "MS-DOS", "DOS", nullptr
+			static const char8_t *const sysNames_DOS[4] = {
+				U8("Microsoft MS-DOS"), U8("MS-DOS"), U8("DOS"), nullptr
 			};
 			return sysNames_DOS[type & SYSNAME_TYPE_MASK];
 		}
@@ -787,9 +787,9 @@ const char *EXE::systemName(unsigned int type) const
 			if (d->hdr.ne.targOS > NE_OS_BOSS) {
 				// Check for Phar Lap 286 extenders.
 				// Reference: https://github.com/weheartwebsites/exeinfo/blob/master/exeinfo.cpp
-				static const char *const sysNames_NE_PharLap[2][4] = {
-					{"Phar Lap 286|DOS Extender, OS/2", "Phar Lap 286 OS/2", "Phar Lap 286 OS/2", nullptr},	// 0x81
-					{"Phar Lap 286|DOS Extender, Windows", "Phar Lap 286 Windows", "Phar Lap 286 Windows", nullptr},	// 0x82
+				static const char8_t *const sysNames_NE_PharLap[2][4] = {
+					{U8("Phar Lap 286|DOS Extender, OS/2"), U8("Phar Lap 286 OS/2"), U8("Phar Lap 286 OS/2"), nullptr},	// 0x81
+					{U8("Phar Lap 286|DOS Extender, Windows"), U8("Phar Lap 286 Windows"), U8("Phar Lap 286 Windows"), nullptr},	// 0x82
 				};
 				if (d->hdr.ne.targOS == 0x81) {
 					return sysNames_NE_PharLap[0][type & SYSNAME_TYPE_MASK];
@@ -797,8 +797,7 @@ const char *EXE::systemName(unsigned int type) const
 					return sysNames_NE_PharLap[1][type & SYSNAME_TYPE_MASK];
 				} else {
 					// Not Phar-Lap.
-					// FIXME: U8STRFIX - Return `const char8_t*`.
-					return reinterpret_cast<const char*>(C_("EXE", "Unknown NE"));
+					return C_("EXE", "Unknown NE");
 				}
 			}
 			return sysNames_NE[d->hdr.ne.targOS][type & SYSNAME_TYPE_MASK];
@@ -814,8 +813,7 @@ const char *EXE::systemName(unsigned int type) const
 			if (targOS <= NE_OS_WIN386) {
 				return sysNames_NE[targOS][type & SYSNAME_TYPE_MASK];
 			}
-			// FIXME: U8STRFIX - Return `const char8_t*`.
-			return reinterpret_cast<const char*>(C_("EXE", "Unknown LE/LX"));
+			return C_("EXE", "Unknown LE/LX");
 		}
 
 		case EXEPrivate::ExeType::W3: {
@@ -834,18 +832,18 @@ const char *EXE::systemName(unsigned int type) const
 				case IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER:
 				case IMAGE_SUBSYSTEM_EFI_ROM: {
 					// EFI executable.
-					static const char *const sysNames_EFI[4] = {
-						"Extensible Firmware Interface", "EFI", "EFI", nullptr
+					static const char8_t *const sysNames_EFI[4] = {
+						U8("Extensible Firmware Interface"), U8("EFI"), U8("EFI"), nullptr
 					};
 					return sysNames_EFI[type & SYSNAME_TYPE_MASK];
 				}
 
 				case IMAGE_SUBSYSTEM_XBOX: {
 					// Check the CPU type.
-					static const char *const sysNames_Xbox[3][4] = {
-						{"Microsoft Xbox", "Xbox", "Xbox", nullptr},
-						{"Microsoft Xbox 360", "Xbox 360", "X360", nullptr},
-						{"Microsoft Xbox One", "Xbox One", "Xbone", nullptr},
+					static const char8_t *const sysNames_Xbox[3][4] = {
+						{U8("Microsoft Xbox"),     U8("Xbox"),     U8("Xbox"),  nullptr},
+						{U8("Microsoft Xbox 360"), U8("Xbox 360"), U8("X360"),  nullptr},
+						{U8("Microsoft Xbox One"), U8("Xbox One"), U8("Xbone"), nullptr},
 					};
 					switch (le16_to_cpu(d->hdr.pe.FileHeader.Machine)) {
 						default:
@@ -872,8 +870,7 @@ const char *EXE::systemName(unsigned int type) const
 
 	// Should not get here...
 	assert(!"Unknown EXE type.");
-	// FIXME: U8STRFIX - Return `const char8_t*`.
-	return reinterpret_cast<const char*>(C_("EXE", "Unknown EXE"));
+	return C_("EXE", "Unknown EXE");
 }
 
 /**

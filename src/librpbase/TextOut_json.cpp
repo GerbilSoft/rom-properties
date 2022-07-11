@@ -360,7 +360,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	auto romdata = fo.romdata;
 	assert(romdata && romdata->isValid());
 
-	const char *const systemName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
+	const char8_t *const systemName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
 	const char8_t *const fileType = romdata->fileType_string();
 	assert(systemName != nullptr);
 	assert(fileType != nullptr);
@@ -368,7 +368,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	Document document;
 	document.SetObject();	// document should be an object, not an array
 	Document::AllocatorType& allocator = document.GetAllocator();
-	document.AddMember("system", StringRef(systemName ? systemName : "unknown"), allocator);
+	document.AddMember("system", StringRef(systemName ? U8C2C(systemName) : "unknown"), allocator);
 	document.AddMember("filetype", StringRef(fileType ? U8C2C(fileType) : "unknown"), allocator);
 
 	// Fields

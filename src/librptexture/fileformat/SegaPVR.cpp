@@ -1405,17 +1405,17 @@ int SegaPVR::isRomSupported_static(const DetectInfo *info)
  * Get the texture format name.
  * @return Texture format name, or nullptr on error.
  */
-const char *SegaPVR::textureFormatName(void) const
+const char8_t *SegaPVR::textureFormatName(void) const
 {
 	RP_D(const SegaPVR);
 	if (!d->isValid)
 		return nullptr;
 
-	static const char *const sysNames[(int)SegaPVRPrivate::PVRType::Max] = {
-		"Sega Dreamcast PVR",
-		"Sega GVR for GameCube",
-		"Sega SVR for PlayStation 2",
-		"Sega PVRX for Xbox",
+	static const char8_t *const sysNames[(int)SegaPVRPrivate::PVRType::Max] = {
+		U8("Sega Dreamcast PVR"),
+		U8("Sega GVR for GameCube"),
+		U8("Sega SVR for PlayStation 2"),
+		U8("Sega PVRX for Xbox"),
 	};
 
 	unsigned int idx = static_cast<unsigned int>(d->pvrType);

@@ -1760,10 +1760,10 @@ int Xbox360_XDBF::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *Xbox360_XDBF::systemName(unsigned int type) const
+const char8_t *Xbox360_XDBF::systemName(unsigned int type) const
 {
 	RP_D(const Xbox360_XDBF);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -1776,8 +1776,8 @@ const char *Xbox360_XDBF::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// TODO: XDBF-specific, or just use Xbox 360?
-	static const char *const sysNames[4] = {
-		"Microsoft Xbox 360", "Xbox 360", "X360", nullptr
+	static const char8_t *const sysNames[4] = {
+		U8("Microsoft Xbox 360"), U8("Xbox 360"), U8("X360"), nullptr
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];

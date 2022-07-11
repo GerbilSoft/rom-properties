@@ -324,10 +324,10 @@ int BCSTM::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *BCSTM::systemName(unsigned int type) const
+const char8_t *BCSTM::systemName(unsigned int type) const
 {
 	RP_D(const BCSTM);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -342,8 +342,8 @@ const char *BCSTM::systemName(unsigned int type) const
 		case BCSTMPrivate::AudioFormat::BCSTM:
 		case BCSTMPrivate::AudioFormat::BCWAV: {
 			// Nintendo 3DS
-			static const char *const sysNames_3DS[4] = {
-				"Nintendo 3DS", "Nintendo 3DS", "3DS", nullptr
+			static const char8_t *const sysNames_3DS[4] = {
+				U8("Nintendo 3DS"), U8("Nintendo 3DS"), U8("3DS"), nullptr
 			};
 			return sysNames_3DS[type & SYSNAME_TYPE_MASK];
 		}
@@ -352,14 +352,14 @@ const char *BCSTM::systemName(unsigned int type) const
 			// Wii U and/or Switch
 			if (d->bcstmHeader.bom == cpu_to_be16(BCSTM_BOM_HOST)) {
 				// Big-Endian
-				static const char *const sysNames_WiiU[4] = {
-					"Nintendo Wii U", "Wii U", "Wii U", nullptr
+				static const char8_t *const sysNames_WiiU[4] = {
+					U8("Nintendo Wii U"), U8("Wii U"), U8("Wii U"), nullptr
 				};
 				return sysNames_WiiU[type & SYSNAME_TYPE_MASK];
 			} else /*if (d->bcstmHeader.bom == cpu_to_le16(BCSTM_BOM_HOST))*/ {
 				// Little-Endian
-				static const char *const sysNames_Switch[4] = {
-					"Nintendo Switch", "Switch", "NSW", nullptr
+				static const char8_t *const sysNames_Switch[4] = {
+					U8("Nintendo Switch"), U8("Switch"), U8("NSW"), nullptr
 				};
 				return sysNames_Switch[type & SYSNAME_TYPE_MASK];
 			}

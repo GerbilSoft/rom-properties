@@ -333,10 +333,10 @@ int WiiWIBN::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *WiiWIBN::systemName(unsigned int type) const
+const char8_t *WiiWIBN::systemName(unsigned int type) const
 {
 	RP_D(const WiiWIBN);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -348,9 +348,9 @@ const char *WiiWIBN::systemName(unsigned int type) const
 		"WiiWIBN::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
+	static const char8_t *const sysNames[4] = {
 		// NOTE: Same as Wii.
-		"Nintendo Wii", "Wii", "Wii", nullptr
+		U8("Nintendo Wii"), U8("Wii"), U8("Wii"), nullptr
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];

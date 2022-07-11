@@ -613,9 +613,10 @@ int Lua::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @return System name, or nullptr if not supported.
+ * @param type System name type (See the SystemName enum)
+ * @return System name, or nullptr if type is invalid.
  */
-const char *Lua::systemName(unsigned int type) const
+const char8_t *Lua::systemName(unsigned int type) const
 {
 	RP_D(const Lua);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -626,17 +627,17 @@ const char *Lua::systemName(unsigned int type) const
 	static_assert((int)LuaPrivate::LuaVersion::Max == 10,
 		"Lua::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames[10][4] = {
-		{"PUC Lua 2.4", "Lua 2.4", "Lua", nullptr},
-		{"PUC Lua 2.5/3.0", "Lua 2.5/3.0", "Lua", nullptr},
-		{"PUC Lua 3.1", "Lua 3.1", "Lua", nullptr},
-		{"PUC Lua 3.2", "Lua 3.2", "Lua", nullptr},
-		{"PUC Lua 4.0", "Lua 4.0", "Lua", nullptr},
-		{"PUC Lua 5.0", "Lua 5.0", "Lua", nullptr},
-		{"PUC Lua 5.1", "Lua 5.1", "Lua", nullptr},
-		{"PUC Lua 5.2", "Lua 5.2", "Lua", nullptr},
-		{"PUC Lua 5.3", "Lua 5.3", "Lua", nullptr},
-		{"PUC Lua 5.4", "Lua 5.4", "Lua", nullptr},
+	static const char8_t *const sysNames[10][4] = {
+		{U8("PUC Lua 2.4"), U8("Lua 2.4"), U8("Lua"), nullptr},
+		{U8("PUC Lua 2.5/3.0"), U8("Lua 2.5/3.0"), U8("Lua"), nullptr},
+		{U8("PUC Lua 3.1"), U8("Lua 3.1"), U8("Lua"), nullptr},
+		{U8("PUC Lua 3.2"), U8("Lua 3.2"), U8("Lua"), nullptr},
+		{U8("PUC Lua 4.0"), U8("Lua 4.0"), U8("Lua"), nullptr},
+		{U8("PUC Lua 5.0"), U8("Lua 5.0"), U8("Lua"), nullptr},
+		{U8("PUC Lua 5.1"), U8("Lua 5.1"), U8("Lua"), nullptr},
+		{U8("PUC Lua 5.2"), U8("Lua 5.2"), U8("Lua"), nullptr},
+		{U8("PUC Lua 5.3"), U8("Lua 5.3"), U8("Lua"), nullptr},
+		{U8("PUC Lua 5.4"), U8("Lua 5.4"), U8("Lua"), nullptr},
 	};
 
 	const int i = (int)d->luaVersion;

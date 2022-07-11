@@ -1039,10 +1039,10 @@ int SNES::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *SNES::systemName(unsigned int type) const
+const char8_t *SNES::systemName(unsigned int type) const
 {
 	RP_D(const SNES);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -1057,20 +1057,20 @@ const char *SNES::systemName(unsigned int type) const
 	unsigned int idx = (type & SYSNAME_TYPE_MASK);
 
 	// Localized SNES/SFC system names.
-	static const char *const sysNames[16] = {
+	static const char8_t *const sysNames[16] = {
 		// Japan: Super Famicom
-		"Nintendo Super Famicom", "Super Famicom", "SFC", nullptr,
+		U8("Nintendo Super Famicom"), U8("Super Famicom"), U8("SFC"), nullptr,
 		// South Korea: Super Comboy
-		"Hyundai Super Comboy", "Super Comboy", "SCB", nullptr,
+		U8("Hyundai Super Comboy"), U8("Super Comboy"), U8("SCB"), nullptr,
 		// Worldwide: Super NES
-		"Super Nintendo Entertainment System", "Super NES", "SNES", nullptr,
+		U8("Super Nintendo Entertainment System"), U8("Super NES"), U8("SNES"), nullptr,
 		// Reserved.
 		nullptr, nullptr, nullptr, nullptr
 	};
 
 	// BS-X system names.
-	static const char *const sysNames_BSX[4] = {
-		"Satellaview BS-X", "Satellaview", "BS-X", nullptr
+	static const char8_t *const sysNames_BSX[4] = {
+		U8("Satellaview BS-X"), U8("Satellaview"), U8("BS-X"), nullptr
 	};
 
 	switch (d->romType) {

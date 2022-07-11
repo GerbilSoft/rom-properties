@@ -693,10 +693,10 @@ int GameCubeSave::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *GameCubeSave::systemName(unsigned int type) const
+const char8_t *GameCubeSave::systemName(unsigned int type) const
 {
 	RP_D(const GameCubeSave);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -708,8 +708,8 @@ const char *GameCubeSave::systemName(unsigned int type) const
 		"GameCubeSave::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
-		"Nintendo GameCube", "GameCube", "GCN", nullptr
+	static const char8_t *const sysNames[4] = {
+		U8("Nintendo GameCube"), U8("GameCube"), U8("GCN"), nullptr
 	};
 
 	// Special check for GCN abbreviation in Japan.
@@ -720,7 +720,7 @@ const char *GameCubeSave::systemName(unsigned int type) const
 			// If this is Japan or South Korea, use "NGC".
 			const uint32_t cc = SystemRegion::getCountryCode();
 			if (cc == 'JP' || cc == 'KR') {
-				return "NGC";
+				return U8("NGC");
 			}
 		}
 	}

@@ -1076,16 +1076,16 @@ int ELF::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *ELF::systemName(unsigned int type) const
+const char8_t *ELF::systemName(unsigned int type) const
 {
 	RP_D(const ELF);
 	if (!d->isValid || !isSystemNameTypeValid(type))
 		return nullptr;
 
-	// ELF has the sam names worldwide, so we can
+	// ELF has the same name worldwide, so we can
 	// ignore the region selection.
 	// TODO: Identify the OS, or list that in the fields instead?
 	static_assert(SYSNAME_TYPE_MASK == 3,
@@ -1095,15 +1095,15 @@ const char *ELF::systemName(unsigned int type) const
 
 	if (d->isWiiU) {
 		// This is a Wii U RPX/RPL executable.
-		static const char *const sysNames_WiiU[4] = {
-			"Nintendo Wii U", "Wii U", "Wii U", nullptr
+		static const char8_t *const sysNames_WiiU[4] = {
+			U8("Nintendo Wii U"), U8("Wii U"), U8("Wii U"), nullptr
 		};
 		return sysNames_WiiU[type];
 	}
 
-	// Standard ELF executable.
-	static const char *const sysNames[4] = {
-		"Executable and Linkable Format", "ELF", "ELF", nullptr
+	// Standard ELF executable
+	static const char8_t *const sysNames[4] = {
+		U8("Executable and Linkable Format"), U8("ELF"), U8("ELF"), nullptr
 	};
 
 	return sysNames[type];

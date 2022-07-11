@@ -958,13 +958,13 @@ int KhronosKTX2::isRomSupported_static(const DetectInfo *info)
  * Get the texture format name.
  * @return Texture format name, or nullptr on error.
  */
-const char *KhronosKTX2::textureFormatName(void) const
+const char8_t *KhronosKTX2::textureFormatName(void) const
 {
 	RP_D(const KhronosKTX2);
 	if (!d->isValid)
 		return nullptr;
 
-	return "Khronos KTX2";
+	return U8("Khronos KTX2");
 }
 
 /**

@@ -402,9 +402,10 @@ int WonderSwan::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @return System name, or nullptr if not supported.
+ * @param type System name type (See the SystemName enum)
+ * @return System name, or nullptr if type is invalid.
  */
-const char *WonderSwan::systemName(unsigned int type) const
+const char8_t *WonderSwan::systemName(unsigned int type) const
 {
 	RP_D(const WonderSwan);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -415,9 +416,9 @@ const char *WonderSwan::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"WonderSwan::systemName() array index optimization needs to be updated.");
 	
-	static const char *const sysNames[2][4] = {
-		{"Bandai WonderSwan", "WonderSwan", "WS", nullptr},
-		{"Bandai WonderSwan Color", "WonderSwan Color", "WSC", nullptr},
+	static const char8_t *const sysNames[2][4] = {
+		{U8("Bandai WonderSwan"),       U8("WonderSwan"),       U8("WS"),  nullptr},
+		{U8("Bandai WonderSwan Color"), U8("WonderSwan Color"), U8("WSC"), nullptr},
 	};
 
 	return sysNames[d->romFooter.system_id & 1][type & SYSNAME_TYPE_MASK];

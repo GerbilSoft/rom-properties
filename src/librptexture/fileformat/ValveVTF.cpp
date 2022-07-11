@@ -749,13 +749,13 @@ ValveVTF::ValveVTF(IRpFile *file)
  * Get the texture format name.
  * @return Texture format name, or nullptr on error.
  */
-const char *ValveVTF::textureFormatName(void) const
+const char8_t *ValveVTF::textureFormatName(void) const
 {
 	RP_D(const ValveVTF);
 	if (!d->isValid)
 		return nullptr;
 
-	return "Valve VTF";
+	return U8("Valve VTF");
 }
 
 /**

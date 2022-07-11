@@ -184,10 +184,10 @@ class RomData : public RefBase
 	public:
 		/**
 		 * Get the name of the system the loaded ROM is designed for.
-		 * @param type System name type. (See the SystemNameType enum.)
+		 * @param type System name type (See the SystemNameType enum)
 		 * @return System name, or nullptr if type is invalid.
 		 */
-		virtual const char *systemName(unsigned int type) const = 0;
+		virtual const char8_t *systemName(unsigned int type) const = 0;
 
 		/**
 		 * Get the class name for the user configuration.

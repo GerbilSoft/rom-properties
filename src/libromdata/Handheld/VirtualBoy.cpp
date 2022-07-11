@@ -281,9 +281,10 @@ int VirtualBoy::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @return System name, or nullptr if not supported.
+ * @param type System name type (See the SystemName enum)
+ * @return System name, or nullptr if type is invalid.
  */
-const char *VirtualBoy::systemName(unsigned int type) const
+const char8_t *VirtualBoy::systemName(unsigned int type) const
 {
 	RP_D(const VirtualBoy);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -294,8 +295,8 @@ const char *VirtualBoy::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"VirtualBoy::systemName() array index optimization needs to be updated.");
 	
-	static const char *const sysNames[4] = {
-		"Nintendo Virtual Boy", "Virtual Boy", "VB", nullptr,
+	static const char8_t *const sysNames[4] = {
+		U8("Nintendo Virtual Boy"), U8("Virtual Boy"), U8("VB"), nullptr,
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];

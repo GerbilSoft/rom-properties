@@ -260,10 +260,10 @@ int Amiibo::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *Amiibo::systemName(unsigned int type) const
+const char8_t *Amiibo::systemName(unsigned int type) const
 {
 	RP_D(const Amiibo);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -278,10 +278,10 @@ const char *Amiibo::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"Amiibo::systemName() array index optimization needs to be updated.");
 
-	static const char *const sysNames[4] = {
-		"Nintendo Figurine Platform",
-		"Nintendo Figurine Platform",
-		"NFP",
+	static const char8_t *const sysNames[4] = {
+		U8("Nintendo Figurine Platform"),
+		U8("Nintendo Figurine Platform"),
+		U8("NFP"),
 		nullptr
 	};
 

@@ -152,10 +152,10 @@ int Lynx::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *Lynx::systemName(unsigned int type) const
+const char8_t *Lynx::systemName(unsigned int type) const
 {
 	RP_D(const Lynx);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -167,8 +167,8 @@ const char *Lynx::systemName(unsigned int type) const
 		"Lynx::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
-		"Atari Lynx", "Lynx", "LNX", nullptr,
+	static const char8_t *const sysNames[4] = {
+		U8("Atari Lynx"), U8("Lynx"), U8("LNX"), nullptr,
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];

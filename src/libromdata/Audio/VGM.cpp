@@ -287,10 +287,10 @@ int VGM::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *VGM::systemName(unsigned int type) const
+const char8_t *VGM::systemName(unsigned int type) const
 {
 	RP_D(const VGM);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -302,8 +302,8 @@ const char *VGM::systemName(unsigned int type) const
 		"VGM::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
-		"Video Game Music", "VGM", "VGM", nullptr
+	static const char8_t *const sysNames[4] = {
+		U8("Video Game Music"), U8("VGM"), U8("VGM"), nullptr
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];

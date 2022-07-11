@@ -627,13 +627,13 @@ TGA::TGA(IRpFile *file)
  * Get the texture format name.
  * @return Texture format name, or nullptr on error.
  */
-const char *TGA::textureFormatName(void) const
+const char8_t *TGA::textureFormatName(void) const
 {
 	RP_D(const TGA);
 	if (!d->isValid || (int)d->texType < 0)
 		return nullptr;
 
-	return "TrueVision TGA";
+	return U8("TrueVision TGA");
 }
 
 /**

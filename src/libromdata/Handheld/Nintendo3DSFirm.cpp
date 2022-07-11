@@ -169,10 +169,10 @@ int Nintendo3DSFirm::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *Nintendo3DSFirm::systemName(unsigned int type) const
+const char8_t *Nintendo3DSFirm::systemName(unsigned int type) const
 {
 	RP_D(const Nintendo3DSFirm);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -185,8 +185,8 @@ const char *Nintendo3DSFirm::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// TODO: *New* Nintendo 3DS for N3DS-exclusive titles; iQue for China.
-	static const char *const sysNames[4] = {
-		"Nintendo 3DS", "Nintendo 3DS", "3DS", nullptr
+	static const char8_t *const sysNames[4] = {
+		U8("Nintendo 3DS"), U8("Nintendo 3DS"), U8("3DS"), nullptr
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];

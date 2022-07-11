@@ -98,7 +98,7 @@ class FileFormat : public RefBase
 		 * Get the texture format name.
 		 * @return Texture format name, or nullptr on error.
 		 */
-		virtual const char *textureFormatName(void) const = 0;
+		virtual const char8_t *textureFormatName(void) const = 0;
 
 		/**
 		 * Get the file's MIME type.

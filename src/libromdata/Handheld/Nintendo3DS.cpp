@@ -1438,10 +1438,10 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *Nintendo3DS::systemName(unsigned int type) const
+const char8_t *Nintendo3DS::systemName(unsigned int type) const
 {
 	RP_D(const Nintendo3DS);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -1480,14 +1480,14 @@ const char *Nintendo3DS::systemName(unsigned int type) const
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bit 2: *New* Nintendo 3DS
 	// Bit 3: iQue
-	static const char *const sysNames[4*4] = {
-		"Nintendo 3DS", "Nintendo 3DS", "3DS", nullptr,
-		"*New* Nintendo 3DS", "*New* Nintendo 3DS", "N3DS", nullptr,
+	static const char8_t *const sysNames[4*4] = {
+		U8("Nintendo 3DS"), U8("Nintendo 3DS"), U8("3DS"), nullptr,
+		U8("*New* Nintendo 3DS"), U8("*New* Nintendo 3DS"), U8("N3DS"), nullptr,
 
 		// iQue
 		// NOTE: *New* iQue 3DS wasn't actually released...
-		"iQue 3DS", "iQue 3DS", "3DS", nullptr,
-		"*New* iQue 3DS", "*New* iQue 3DS", "N3DS", nullptr,
+		U8("iQue 3DS"), U8("iQue 3DS"), U8("3DS"), nullptr,
+		U8("*New* iQue 3DS"), U8("*New* iQue 3DS"), U8("N3DS"), nullptr,
 	};
 
 	return sysNames[type];

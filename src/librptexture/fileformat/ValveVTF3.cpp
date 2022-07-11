@@ -262,13 +262,13 @@ ValveVTF3::ValveVTF3(IRpFile *file)
  * Get the texture format name.
  * @return Texture format name, or nullptr on error.
  */
-const char *ValveVTF3::textureFormatName(void) const
+const char8_t *ValveVTF3::textureFormatName(void) const
 {
 	RP_D(const ValveVTF3);
 	if (!d->isValid)
 		return nullptr;
 
-	return "Valve VTF3 (PS3)";
+	return U8("Valve VTF3 (PS3)");
 }
 
 /**

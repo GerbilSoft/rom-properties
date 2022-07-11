@@ -601,10 +601,10 @@ int WiiWAD::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *WiiWAD::systemName(unsigned int type) const
+const char8_t *WiiWAD::systemName(unsigned int type) const
 {
 	RP_D(const WiiWAD);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -622,8 +622,8 @@ const char *WiiWAD::systemName(unsigned int type) const
 		case NINTENDO_SYSID_IOS:
 		case NINTENDO_SYSID_RVL: {
 			// Wii
-			static const char *const sysNames_Wii[4] = {
-				"Nintendo Wii", "Wii", "Wii", nullptr
+			static const char8_t *const sysNames_Wii[4] = {
+				U8("Nintendo Wii"), U8("Wii"), U8("Wii"), nullptr
 			};
 			return sysNames_Wii[type];
 		}
@@ -631,8 +631,8 @@ const char *WiiWAD::systemName(unsigned int type) const
 		case NINTENDO_SYSID_TWL: {
 			// DSi
 			// TODO: iQue DSi for China?
-			static const char *const sysNames_DSi[4] = {
-				"Nintendo DSi", "DSi", "DSi", nullptr
+			static const char8_t *const sysNames_DSi[4] = {
+				U8("Nintendo DSi"), U8("DSi"), U8("DSi"), nullptr
 			};
 			return sysNames_DSi[type];
 		}

@@ -1325,10 +1325,10 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 
 /**
  * Get the name of the system the loaded ROM is designed for.
- * @param type System name type. (See the SystemName enum.)
+ * @param type System name type (See the SystemName enum)
  * @return System name, or nullptr if type is invalid.
  */
-const char *GameCube::systemName(unsigned int type) const
+const char8_t *GameCube::systemName(unsigned int type) const
 {
 	RP_D(const GameCube);
 	if (!d->isValid || !isSystemNameTypeValid(type))
@@ -1341,10 +1341,10 @@ const char *GameCube::systemName(unsigned int type) const
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	// Bits 2-3: DISC_SYSTEM_MASK (GCN, Wii, Triforce)
-	static const char *const sysNames[4][4] = {
-		{"Nintendo GameCube", "GameCube", "GCN", nullptr},
-		{"Nintendo/Sega/Namco Triforce", "Triforce", "TF", nullptr},
-		{"Nintendo Wii", "Wii", "Wii", nullptr},
+	static const char8_t *const sysNames[4][4] = {
+		{U8("Nintendo GameCube"), U8("GameCube"), U8("GCN"), nullptr},
+		{U8("Nintendo/Sega/Namco Triforce"), U8("Triforce"), U8("TF"), nullptr},
+		{U8("Nintendo Wii"), U8("Wii"), U8("Wii"), nullptr},
 		{nullptr, nullptr, nullptr, nullptr},
 	};
 
@@ -1358,7 +1358,7 @@ const char *GameCube::systemName(unsigned int type) const
 			// If this is Japan or South Korea, use "NGC".
 			const uint32_t cc = SystemRegion::getCountryCode();
 			if (cc == 'JP' || cc == 'KR') {
-				return "NGC";
+				return U8("NGC");
 			}
 		}
 	}

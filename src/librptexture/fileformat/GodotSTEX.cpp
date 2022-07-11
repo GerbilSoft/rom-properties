@@ -900,14 +900,14 @@ GodotSTEX::GodotSTEX(IRpFile *file)
  * Get the texture format name.
  * @return Texture format name, or nullptr on error.
  */
-const char *GodotSTEX::textureFormatName(void) const
+const char8_t *GodotSTEX::textureFormatName(void) const
 {
 	RP_D(const GodotSTEX);
 	if (!d->isValid)
 		return nullptr;
 
 	// TODO: Version disambiguation when Godot 4.0 is released.
-	return "Godot STEX";
+	return U8("Godot STEX");
 }
 
 /**
