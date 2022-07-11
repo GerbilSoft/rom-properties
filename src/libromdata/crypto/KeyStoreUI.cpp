@@ -109,8 +109,8 @@ class KeyStoreUIPrivate
 	public:
 		/**
 		 * Convert a string that may contain kanji to hexadecimal.
-		 * @param str String [NULL-terminated]
-		 * @return Converted string, or empty string on error.
+		 * @param str UTF-8 string [NULL-terminated]
+		 * @return Converted string [ASCII], or empty string on error.
 		 */
 		static string convertKanjiToHex(const char *str);
 
@@ -288,7 +288,7 @@ KeyStoreUIPrivate::KeyStoreUIPrivate(KeyStoreUI *q)
 		keys.resize(totalKeyCount);
 		auto keyIter = keys.begin() + prevKeyCount;
 		for (int i = 0; i < keyCount; i++, ++keyIter) {
-			// Key name.
+			// Key name (ASCII)
 			const char *const keyName = encSys->pfnKeyName(i);
 			assert(keyName != nullptr);
 			if (!keyName) {
@@ -632,8 +632,8 @@ int KeyStoreUIPrivate::getAesKeyDB_key(u128_t *pKey) const
 
 /**
  * Convert a string that may contain kanji to hexadecimal.
- * @param str String [NULL-terminated]
- * @return Converted string, or empty string on error.
+ * @param str UTF-8 string [NULL-terminated]
+ * @return Converted string [ASCII], or empty string on error.
  */
 string KeyStoreUIPrivate::convertKanjiToHex(const char *str)
 {

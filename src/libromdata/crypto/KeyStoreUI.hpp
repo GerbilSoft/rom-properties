@@ -35,16 +35,16 @@ class RP_LIBROMDATA_PUBLIC KeyStoreUI
 		/** Key struct. **/
 		struct Key {
 			enum class Status : uint8_t {
-				Empty = 0,	// Key is empty.
-				Unknown,	// Key status is unknown.
-				NotAKey,	// Not a key.
-				Incorrect,	// Key is incorrect.
-				OK,		// Key is OK.
+				Empty = 0,	// Key is empty
+				Unknown,	// Key status is unknown
+				NotAKey,	// Not a key
+				Incorrect,	// Key is incorrect
+				OK,		// Key is OK
 			};
 
-			std::string name;	// Key name.
-			std::string value;	// Key value. (as rp-string for display purposes)
-			Status status;		// Key status. (See the Status enum.)
+			std::string name;	// Key name [ASCII]
+			std::string value;	// Key value [ASCII, for display purposes]
+			Status status;		// Key status (See the Status enum)
 			bool modified;		// True if the key has been modified since last reset() or allKeysSaved().
 			bool allowKanji;	// Allow kanji for UTF-16LE + BOM.
 		};
