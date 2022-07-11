@@ -659,7 +659,7 @@ u8string SNESPrivate::getGameID(bool doFake) const
 		return gameID;
 	}
 
-	char id4[5];
+	char8_t id4[5];
 	id4[0] = '\0';
 
 	// NOTE: The game ID field is Only valid if the old publisher code is 0x33.
@@ -687,41 +687,41 @@ u8string SNESPrivate::getGameID(bool doFake) const
 
 	// Check the region value to determine the template.
 	// NOTE: BS-X might have BRA for some reason.
-	const char *prefix, *suffix;
+	const char8_t *prefix, *suffix;
 	const uint8_t region = ((romType != RomType::BSX)
 		? romHeader.snes.destination_code
 		: static_cast<uint8_t>(SNES_DEST_JAPAN));
 
 	// Prefix/suffix table.
 	struct PrefixSuffixTbl_t {
-		char prefix[8];
-		char suffix[8];
+		char8_t prefix[8];
+		char8_t suffix[8];
 	};
 	static const PrefixSuffixTbl_t region_ps[] = {
 		// 0x00
-		{"SHVC-", "-JPN"},	// Japan
-		{"SNS-",  "-USA"},	// North America
-		{"SNSP-", "-EUR"},	// Europe
-		{"SNSP-", "-SCN"},	// Scandinavia
-		{"",      ""},
-		{"",      ""},
-		{"SNSP-", "-FRA"},	// France
-		{"SNSP-", "-HOL"},	// Netherlands
+		{U8("SHVC-"), U8("-JPN")},	// Japan
+		{U8("SNS-"),  U8("-USA")},	// North America
+		{U8("SNSP-"), U8("-EUR")},	// Europe
+		{U8("SNSP-"), U8("-SCN")},	// Scandinavia
+		{U8(""),      U8("")},
+		{U8(""),      U8("")},
+		{U8("SNSP-"), U8("-FRA")},	// France
+		{U8("SNSP-"), U8("-HOL")},	// Netherlands
 
 		// 0x08
-		{"SNSP-", "-ESP"},	// Spain
-		{"SNSP-", "-NOE"},	// Germany
-		{"SNSP-", "-ITA"},	// Italy
-		{"SNSN-", "-ROC"},	// China
-		{"",      ""},
-		{"SNSN-", "-KOR"},	// South Korea
-		{"",      ""},		// ALL region?
-		{"SNS-",  "-CAN"},	// Canada
+		{U8("SNSP-"), U8("-ESP")},	// Spain
+		{U8("SNSP-"), U8("-NOE")},	// Germany
+		{U8("SNSP-"), U8("-ITA")},	// Italy
+		{U8("SNSN-"), U8("-ROC")},	// China
+		{U8(""),      U8("")},
+		{U8("SNSN-"), U8("-KOR")},	// South Korea
+		{U8(""),      U8("")},		// ALL region?
+		{U8("SNS-"),  U8("-CAN")},	// Canada
 
 		// 0x10
-		{"SNS-",  "-BRA"},	// Brazil
-		{"SNSP-", "-AUS"},	// Australia
-		{"SNSP-", "-SCN"},	// Scandinavia
+		{U8("SNS-"),  U8("-BRA")},	// Brazil
+		{U8("SNSP-"), U8("-AUS")},	// Australia
+		{U8("SNSP-"), U8("-SCN")},	// Scandinavia
 	};
 	if (romType == RomType::BSX) {
 		// Separate BS-X titles from regular SNES titles.
@@ -729,28 +729,27 @@ u8string SNESPrivate::getGameID(bool doFake) const
 		// prefix and suffix, but we're now only using this
 		// if the game ID is being used instead of the title.
 		if (id4[0] != '\0') {
-			prefix = "BSX-";
-			suffix = "-JPN";
+			prefix = U8("BSX-");
+			suffix = U8("-JPN");
 		} else {
-			prefix = "";
-			suffix = "";
+			prefix = U8("");
+			suffix = U8("");
 		}
 	} else if (region < ARRAY_SIZE(region_ps)) {
 		prefix = region_ps[region].prefix;
 		suffix = region_ps[region].suffix;
 	} else {
-		prefix = "";
-		suffix = "";
+		prefix = U8("");
+		suffix = U8("");
 	}
 
 	// Do we have an ID2 or ID4?
 	if (id4[0] != '\0') {
 		// ID2/ID4 is present. Use it.
-		// FIXME: U8STRFIX
 		gameID.reserve(13);
-		gameID = reinterpret_cast<const char8_t*>(prefix);
-		gameID += reinterpret_cast<const char8_t*>(id4);
-		gameID += reinterpret_cast<const char8_t*>(suffix);
+		gameID = prefix;
+		gameID += id4;
+		gameID += suffix;
 	} else {
 		// ID2/ID4 is not present. Use the ROM title.
 		u8string s_title = getRomTitle();
@@ -775,9 +774,9 @@ u8string SNESPrivate::getGameID(bool doFake) const
 		}
 
 		gameID.reserve(5 + s_title.size() + 4);
-		gameID = reinterpret_cast<const char8_t*>(prefix);
+		gameID = prefix;
 		gameID += s_title;
-		gameID += reinterpret_cast<const char8_t*>(suffix);
+		gameID += suffix;
 	}
 
 	return gameID;
