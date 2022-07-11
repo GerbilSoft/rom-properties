@@ -2180,8 +2180,7 @@ int Nintendo3DS::loadFieldData(void)
 				// Get the content type regardless of whether or not
 				// the NCCH is open, since it might be a non-NCCH
 				// content that we still recognize.
-				// FIXME: U8STRFIX
-				content_type = reinterpret_cast<const char8_t*>(pNcch->contentType());
+				content_type = pNcch->contentType();
 			}
 			if (!content_ncch_header) {
 				// Invalid content index, or this content isn't an NCCH.
