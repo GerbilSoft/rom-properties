@@ -86,7 +86,7 @@ class KhronosKTXPrivate final : public FileFormatPrivate
 		// NOTE: Stored as vector<vector<string> > instead of
 		// vector<pair<string, string> > for compatibility with
 		// RFT_LISTDATA.
-		vector<vector<string> > kv_data;
+		RomFields::ListData_t kv_data;
 
 		/**
 		 * Load the image.
