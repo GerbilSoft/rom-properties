@@ -1709,9 +1709,8 @@ void KeyManagerTabPrivate::importKeysFromBin(KeyStoreUI::ImportFileID id)
 	if (!hWndPropSheet)
 		return;
 
-	// FIXME: U8STRFIX
 	const tstring tfilename = LibWin32UI::getOpenFileName(hWndPropSheet,
-		U82T_c(s_title), reinterpret_cast<const char*>(s_filter), ts_keyFileDir.c_str());
+		U82T_c(s_title), s_filter, ts_keyFileDir.c_str());
 	if (tfilename.empty())
 		return;
 

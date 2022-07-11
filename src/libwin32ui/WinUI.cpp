@@ -343,16 +343,16 @@ DWORD isSystemRTL(void)
 #ifdef UNICODE
 /**
  * Get a filename using IFileDialog.
- * @param ts_ret	[out] Output filename. (Empty if none.)
- * @param bSave		[in] True for save; false for open.
- * @param hWnd		[in] Owner.
- * @param dlgTitle	[in] Dialog title.
- * @param filterSpec	[in] Filter specification. (pipe-delimited)
- * @param origFilename	[in,opt] Starting filename.
+ * @param ts_ret	[out] Output filename (Empty if none.)
+ * @param bSave		[in] True for save; false for open
+ * @param hWnd		[in] Owner
+ * @param dlgTitle	[in] Dialog title
+ * @param filterSpec	[in] Filter specification (pipe-delimited)
+ * @param origFilename	[in,opt] Starting filename
  * @return 0 on success; HRESULT on error.
  */
 static inline HRESULT getFileName_int_IFileDialog(tstring &ts_ret, bool bSave, HWND hWnd,
-	const TCHAR *dlgTitle, const char *filterSpec, const TCHAR *origFilename)
+	const TCHAR *dlgTitle, const char8_t *filterSpec, const TCHAR *origFilename)
 {
 	IFileDialogPtr pFileDlg;
 	HRESULT hr = CoCreateInstance(
@@ -368,7 +368,7 @@ static inline HRESULT getFileName_int_IFileDialog(tstring &ts_ret, bool bSave, H
 
 	// Convert '|' characters to NULL bytes.
 	// _tcstok_s() can do this for us.
-	tstring tmpfilter = U82T_c(filterSpec);
+	tstring tmpfilter = U82T_c(reinterpret_cast<const char*>(filterSpec));
 	TCHAR *saveptr = nullptr;
 	TCHAR *token = _tcstok_s(&tmpfilter[0], _T("|"), &saveptr);
 	while (token != nullptr) {
@@ -515,7 +515,7 @@ static inline HRESULT getFileName_int_IFileDialog(tstring &ts_ret, bool bSave, H
  * @param filter RP file dialog filter. (UTF-8, from gettext())
  * @return Win32 file dialog filter.
  */
-static tstring rpFileDialogFilterToWin32(const char *filter)
+static tstring rpFileDialogFilterToWin32(const char8_t *filter)
 {
 	tstring ts_ret;
 	assert(filter != nullptr && filter[0] != '\0');
@@ -526,12 +526,12 @@ static tstring rpFileDialogFilterToWin32(const char *filter)
 	// some temporary strings?
 
 	// Temporary string so we can use strtok_r().
-	char *const tmpfilter = strdup(filter);
+	char *const tmpfilter = strdup(reinterpret_cast<const char*>(filter));
 	assert(tmpfilter != nullptr);
 	char *saveptr = nullptr;
 
 	// First strtok_r() call.
-	ts_ret.reserve(strlen(filter) + 32);
+	ts_ret.reserve(strlen(tmpfilter) + 32);
 	char *token = strtok_s(tmpfilter, "|", &saveptr);
 	do {
 		// Separator 1: Between display name and pattern.
@@ -591,15 +591,15 @@ static tstring rpFileDialogFilterToWin32(const char *filter)
  * - Vista+: IOpenFileDialog / IFileSaveDialog
  * - XP: GetOpenFileName() / GetSaveFileName()
  *
- * @param bSave		[in] True for save; false for open.
- * @param hWnd		[in] Owner.
- * @param dlgTitle	[in] Dialog title.
- * @param filterSpec	[in] Filter specification. (RP format, UTF-8)
- * @param origFilename	[in,opt] Starting filename.
+ * @param bSave		[in] True for save; false for open
+ * @param hWnd		[in] Owner
+ * @param dlgTitle	[in] Dialog title
+ * @param filterSpec	[in] Filter specification (RP format, UTF-8)
+ * @param origFilename	[in,opt] Starting filename
  * @return Filename, or empty string on error.
  */
 static tstring getFileName_int(bool bSave, HWND hWnd,
-	const TCHAR *dlgTitle, const char *filterSpec, const TCHAR *origFilename)
+	const TCHAR *dlgTitle, const char8_t *filterSpec, const TCHAR *origFilename)
 {
 	assert(dlgTitle != nullptr);
 	assert(filterSpec != nullptr);
@@ -676,13 +676,14 @@ static tstring getFileName_int(bool bSave, HWND hWnd,
  * - Vista+: IFileOpenDialog
  * - XP: GetOpenFileName()
  *
- * @param hWnd		[in] Owner.
- * @param dlgTitle	[in] Dialog title.
- * @param filterSpec	[in] Filter specification. (RP format, UTF-8)
- * @param origFilename	[in,opt] Starting filename.
+ * @param hWnd		[in] Owner
+ * @param dlgTitle	[in] Dialog title
+ * @param filterSpec	[in] Filter specification (RP format, UTF-8)
+ * @param origFilename	[in,opt] Starting filename
  * @return Filename, or empty string on error.
  */
-tstring getOpenFileName(HWND hWnd, const TCHAR *dlgTitle, const char *filterSpec, const TCHAR *origFilename)
+tstring getOpenFileName(HWND hWnd, const TCHAR *dlgTitle,
+	const char8_t *filterSpec, const TCHAR *origFilename)
 {
 	return getFileName_int(false, hWnd, dlgTitle, filterSpec, origFilename);
 }
@@ -694,13 +695,14 @@ tstring getOpenFileName(HWND hWnd, const TCHAR *dlgTitle, const char *filterSpec
  * - Vista+: IFileSaveDialog
  * - XP: GetSaveFileName()
  *
- * @param hWnd		[in] Owner.
- * @param dlgTitle	[in] Dialog title.
- * @param filterSpec	[in] Filter specification. (RP format, UTF-8)
- * @param origFilename	[in,opt] Starting filename.
+ * @param hWnd		[in] Owner
+ * @param dlgTitle	[in] Dialog title
+ * @param filterSpec	[in] Filter specification (RP format, UTF-8)
+ * @param origFilename	[in,opt] Starting filename
  * @return Filename, or empty string on error.
  */
-tstring getSaveFileName(HWND hWnd, const TCHAR *dlgTitle, const char *filterSpec, const TCHAR *origFilename)
+tstring getSaveFileName(HWND hWnd, const TCHAR *dlgTitle,
+	const char8_t *filterSpec, const TCHAR *origFilename)
 {
 	return getFileName_int(true, hWnd, dlgTitle, filterSpec, origFilename);
 }

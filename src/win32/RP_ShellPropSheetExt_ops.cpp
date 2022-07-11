@@ -29,6 +29,7 @@ using namespace LibRpFile;
 using std::ofstream;
 using std::ostringstream;
 using std::string;
+using std::u8string;
 using std::vector;
 using std::wstring;	// for tstring
 
@@ -379,10 +380,9 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 				defaultFileName += info->default_ext;
 			}
 
-			// FIXME: U8STRFIX - filter param needs to be changed to char8_t
 			const tstring tfilename = LibWin32UI::getSaveFileName(hDlgSheet,
 				U82T_c(dpgettext_expr(RP_I18N_DOMAIN, U8("RomDataView"), info->title)),
-				(const char*)dpgettext_expr(RP_I18N_DOMAIN, U8("RomDataView"), info->filter),
+				dpgettext_expr(RP_I18N_DOMAIN, U8("RomDataView"), info->filter),
 				defaultFileName.c_str());
 			if (tfilename.empty())
 				return;
@@ -481,25 +481,25 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 		return;
 	}
 
-	// FIXME: U8STRFIX - params, etc
 	string s_save_filename;
 	RomData::RomOpParams params;
 	const RomData::RomOp *op = &ops[id];
 	if (op->flags & RomData::RomOp::ROF_SAVE_FILE) {
 		// Add the "All Files" filter.
-		string filter = op->sfi.filter;
+		// FIXME: U8STRFIX - op->sfi.filter
+		u8string filter = reinterpret_cast<const char8_t*>(op->sfi.filter);
 		if (!filter.empty()) {
 			// Make sure the last field isn't empty.
 			if (filter.at(filter.size()-1) == '|') {
-				filter += '-';
+				filter += U8("-");
 			}
-			filter += '|';
+			filter += U8("|");
 		}
 		// tr: "All Files" filter (RP format)
-		filter += reinterpret_cast<const char*>(C_("RomData", "All Files|*.*|-"));
+		filter += C_("RomData", "All Files|*.*|-");
 
 		// Initial file and directory, based on the current file.
-		// FIXME: U8STRFIX
+		// FIXME: U8STRFIX - FileSystem::replace_ext()
 		string initialFile = FileSystem::replace_ext(
 			reinterpret_cast<const char*>(romData->filename()), op->sfi.ext);
 
