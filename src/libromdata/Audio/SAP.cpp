@@ -42,7 +42,7 @@ class SAPPrivate final : public RomDataPrivate
 
 	public:
 		// Parsed tags.
-		struct TagData {
+		struct sap_tags_t {
 			bool tags_read;		// True if tags were read successfully.
 
 			string author;		// Author.
@@ -68,7 +68,7 @@ class SAPPrivate final : public RomDataPrivate
 			// - second: Loop flag.
 			vector<pair<uint32_t, bool> > durations;
 
-			TagData() : tags_read(false), songs(1), def_song(0), ntsc(false), stereo(false)
+			sap_tags_t() : tags_read(false), songs(1), def_song(0), ntsc(false), stereo(false)
 				  , type('\0'), fastplay(0), init_addr(0), music_addr(0), player_addr(0)
 				  , covox_addr(0) { }
 		};
@@ -86,7 +86,7 @@ class SAPPrivate final : public RomDataPrivate
 		 * Parse the tags from the open SAP file.
 		 * @return TagData object.
 		 */
-		TagData parseTags(void);
+		sap_tags_t parseTags(void);
 };
 
 ROMDATA_IMPL(SAP)
@@ -223,9 +223,9 @@ int SAPPrivate::durationToMsLoop(const char *str, uint32_t *pMs, bool *pLoop)
  * Parse the tags from the open SAP file.
  * @return TagData object.
  */
-SAPPrivate::TagData SAPPrivate::parseTags(void)
+SAPPrivate::sap_tags_t SAPPrivate::parseTags(void)
 {
-	TagData tags;
+	sap_tags_t tags;
 
 	// Read up to 4 KB from the beginning of the file.
 	// TODO: Support larger headers?
@@ -560,7 +560,7 @@ int SAP::loadFieldData(void)
 	}
 
 	// Get the tags.
-	SAPPrivate::TagData tags = d->parseTags();
+	SAPPrivate::sap_tags_t tags = d->parseTags();
 	if (!tags.tags_read) {
 		// No tags.
 		return 0;
@@ -720,7 +720,7 @@ int SAP::loadMetaData(void)
 	}
 
 	// Get the tags.
-	SAPPrivate::TagData tags = d->parseTags();
+	SAPPrivate::sap_tags_t tags = d->parseTags();
 	if (!tags.tags_read) {
 		// No tags.
 		return 0;

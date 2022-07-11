@@ -43,7 +43,7 @@ class SPCPrivate final : public RomDataPrivate
 		SPC_Header spcHeader;
 
 		// Tag struct.
-		struct TagData {
+		struct spc_tags_t {
 			// Vector of strings.
 			// Contains all string data.
 			vector<string> strs;
@@ -170,7 +170,7 @@ class SPCPrivate final : public RomDataPrivate
 		 * Parse the ID666 tags for the open SPC file.
 		 * @return Map containing key/value entries.
 		 */
-		TagData parseTags(void);
+		spc_tags_t parseTags(void);
 };
 
 ROMDATA_IMPL(SPC)
@@ -204,9 +204,9 @@ SPCPrivate::SPCPrivate(SPC *q, IRpFile *file)
  * Parse the tag section.
  * @return Map containing key/value entries.
  */
-SPCPrivate::TagData SPCPrivate::parseTags(void)
+SPCPrivate::spc_tags_t SPCPrivate::parseTags(void)
 {
-	TagData kv;
+	spc_tags_t kv;
 
 	if (spcHeader.has_id666 != 26) {
 		// No ID666 tags.
