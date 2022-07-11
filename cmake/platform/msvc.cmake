@@ -54,6 +54,19 @@ IF(CFLAG_guard_cf)
 ENDIF(CFLAG_guard_cf)
 UNSET(CFLAG_guard_cf)
 
+# MSVC 2002: wchar_t should be a distinct type.
+IF(MSVC_VERSION GREATER 1200)
+       SET(RP_C_FLAGS_WIN32 "${RP_C_FLAGS_WIN32} /Zc:wchar_t")
+ENDIF()
+
+# Make sure MSVC sets __cplusplus correctly.
+INCLUDE(CheckCXXCompilerFlag)
+CHECK_CXX_COMPILER_FLAG("/Zc:__cplusplus" CXXFLAG_Zc___cplusplus)
+IF(CXXFLAG_Zc___cplusplus)
+       SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /Zc:__cplusplus")
+ENDIF(CXXFLAG_Zc___cplusplus)
+UNSET(CXXFLAG_Zc___cplusplus)
+
 # "/Zc:throwingNew" is always enabled on clang-cl, and causes
 # warnings to be printed if it's specified.
 # NOTE: "/Zc:throwingNew" was added in MSVC 2015.
