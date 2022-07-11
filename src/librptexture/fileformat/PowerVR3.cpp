@@ -1151,8 +1151,8 @@ int PowerVR3::getFields(LibRpBase::RomFields *fields) const
 	static_assert(ARRAY_SIZE(pvr3_colorspace_tbl) == PVR3_COLOR_SPACE_MAX, "pvr3_colorspace_tbl[] needs to be updated!");
 	if (pvr3Header->color_space < ARRAY_SIZE(pvr3_colorspace_tbl)) {
 		fields->addField_string(C_("PowerVR3", "Color Space"),
-			pvr3_colorspace_tbl[pvr3Header->color_space]);
-			//dpgettext_expr(RP_I18N_DOMAIN, "PowerVR3|ColorSpace", pvr3_colorspace[pvr3Header->color_space]));
+			dpgettext_expr(RP_I18N_DOMAIN, "PowerVR3|ColorSpace",
+				pvr3_colorspace_tbl[pvr3Header->color_space]));
 	} else {
 		fields->addField_string_numeric(C_("PowerVR3", "Color Space"),
 			pvr3Header->color_space);
