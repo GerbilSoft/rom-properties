@@ -665,13 +665,9 @@ vector<u8string> *RomFields::strArrayToVector_i18n(const char8_t *msgctxt, const
 
 	for (; count > 0; strArray++, count--) {
 		// nullptr will be handled as empty strings.
-		// FIXME: U8STRFIX: dpgettext_expr()
 		const char8_t *const str = *strArray;
 		pVec->emplace_back(str
-			? reinterpret_cast<const char8_t*>(
-				dpgettext_expr(RP_I18N_DOMAIN,
-					reinterpret_cast<const char*>(msgctxt),
-					reinterpret_cast<const char*>(str)))
+			? dpgettext_expr(RP_I18N_DOMAIN, msgctxt, str)
 			: U8(""));
 	}
 

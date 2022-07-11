@@ -406,11 +406,11 @@ int Amiibo::loadFieldData(void)
 		// tr: NFP_TYPE_BAND == Power-Up Band
 		NOP_C_("Amiibo|Type", "Power-Up Band"),
 	};
-	// FIXME: U8STRFIX - dpgettext_expr(), rp_sprintf()
+	// FIXME: U8STRFIX - rp_sprintf()
 	const char8_t *const amiibo_type_title = C_("Amiibo", "amiibo Type");
 	if ((char_id & 0xFF) < ARRAY_SIZE(amiibo_type_tbl)) {
 		d->fields->addField_string(amiibo_type_title,
-			dpgettext_expr(RP_I18N_DOMAIN, "Amiibo|Type", reinterpret_cast<const char*>(amiibo_type_tbl[char_id & 0xFF])));
+			dpgettext_expr(RP_I18N_DOMAIN, U8("Amiibo|Type"), amiibo_type_tbl[char_id & 0xFF]));
 	} else {
 		// Invalid amiibo type.
 		d->fields->addField_string(amiibo_type_title,

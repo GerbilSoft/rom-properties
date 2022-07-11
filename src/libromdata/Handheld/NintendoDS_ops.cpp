@@ -166,10 +166,8 @@ const char8_t *NintendoDSPrivate::getNDSSecureAreaString(void)
 	if (secArea >= NintendoDSPrivate::NDS_SECAREA_HOMEBREW &&
 	    secArea <= NintendoDSPrivate::NDS_SECAREA_ENCRYPTED)
 	{
-		// FIXME: U8STRFIX - dpgettext_expr()
-		return reinterpret_cast<const char8_t*>(
-			dpgettext_expr(RP_I18N_DOMAIN, "NintendoDS|SecureArea",
-				reinterpret_cast<const char*>(nds_secure_area_type[secArea])));
+		return dpgettext_expr(RP_I18N_DOMAIN,
+			U8("NintendoDS|SecureArea"), nds_secure_area_type[secArea]);
 	}
 
 	return C_("RomData", "Unknown");

@@ -90,10 +90,8 @@ const char8_t *lookup(uint32_t contentType)
 			ARRAY_SIZE(contentTypeList)-1,
 			sizeof(ContentTypeEntry),
 			compar));
-	return (res)	// FIXME: U8STRFIX
-		? reinterpret_cast<const char8_t*>(
-			dpgettext_expr(RP_I18N_DOMAIN, "Xbox360_STFS|ContentType",
-				reinterpret_cast<const char*>(res->contentType)))
+	return (res)
+		? dpgettext_expr(RP_I18N_DOMAIN, U8("Xbox360_STFS|ContentType"), res->contentType)
 		: nullptr;
 }
 

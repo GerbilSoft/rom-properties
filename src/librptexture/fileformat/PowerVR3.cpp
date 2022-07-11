@@ -1152,10 +1152,9 @@ int PowerVR3::getFields(LibRpBase::RomFields *fields) const
 	};
 	static_assert(ARRAY_SIZE(pvr3_colorspace_tbl) == PVR3_COLOR_SPACE_MAX, "pvr3_colorspace_tbl[] needs to be updated!");
 	if (pvr3Header->color_space < ARRAY_SIZE(pvr3_colorspace_tbl)) {
-		// FIXME: U8STRFIX - dpgettext_expr()
 		fields->addField_string(C_("PowerVR3", "Color Space"),
-			dpgettext_expr(RP_I18N_DOMAIN, "PowerVR3|ColorSpace",
-				reinterpret_cast<const char*>(pvr3_colorspace_tbl[pvr3Header->color_space])));
+			dpgettext_expr(RP_I18N_DOMAIN, U8("PowerVR3|ColorSpace"),
+				pvr3_colorspace_tbl[pvr3Header->color_space]));
 	} else {
 		fields->addField_string_numeric(C_("PowerVR3", "Color Space"),
 			pvr3Header->color_space);
@@ -1180,8 +1179,8 @@ int PowerVR3::getFields(LibRpBase::RomFields *fields) const
 	static_assert(ARRAY_SIZE(pvr3_chtype_tbl) == PVR3_CHTYPE_MAX, "pvr3_chtype_tbl[] needs to be updated!");
 	if (pvr3Header->channel_type < ARRAY_SIZE(pvr3_chtype_tbl)) {
 		fields->addField_string(C_("PowerVR3", "Channel Type"),
-			dpgettext_expr(RP_I18N_DOMAIN, "PowerVR3|ChannelType",
-				reinterpret_cast<const char*>(pvr3_chtype_tbl[pvr3Header->channel_type])));
+			dpgettext_expr(RP_I18N_DOMAIN, U8("PowerVR3|ChannelType"),
+				pvr3_chtype_tbl[pvr3Header->channel_type]));
 	} else {
 		fields->addField_string_numeric(C_("PowerVR3", "Channel Type"),
 			pvr3Header->channel_type);

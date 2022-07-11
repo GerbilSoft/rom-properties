@@ -1136,9 +1136,7 @@ int WiiWAD::loadFieldData(void)
 	static_assert(ARRAY_SIZE(encKeyNames) == WiiPartition::Key_Max, "Update encKeyNames[]!");
 	const char8_t *keyName;
 	if (d->key_idx >= 0 && d->key_idx < WiiPartition::Key_Max) {
-		// FIXME: U8STRFIX - dpgettext_expr()
-		keyName = reinterpret_cast<const char8_t*>(
-			dpgettext_expr(RP_I18N_DOMAIN, "Wii|EncKey", reinterpret_cast<const char*>(encKeyNames[d->key_idx])));
+		keyName = dpgettext_expr(RP_I18N_DOMAIN, U8("Wii|EncKey"), encKeyNames[d->key_idx]);
 	} else {
 		keyName = C_("WiiWAD", "Unknown");
 	}

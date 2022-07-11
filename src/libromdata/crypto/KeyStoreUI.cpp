@@ -885,10 +885,7 @@ const char8_t *KeyStoreUI::sectName(int sectIdx) const
 	static_assert(ARRAY_SIZE(sectNames) == ARRAY_SIZE(d->encKeyFns),
 		"sectNames[] is out of sync with d->encKeyFns[].");
 
-	// FIXME: U8STRFIX - dpgettext_expr()
-	return reinterpret_cast<const char8_t*>(
-		dpgettext_expr(RP_I18N_DOMAIN, "KeyStoreUI|Section",
-			reinterpret_cast<const char*>(sectNames[sectIdx])));
+	return dpgettext_expr(RP_I18N_DOMAIN, U8("KeyStoreUI|Section"), sectNames[sectIdx]);
 }
 
 /**

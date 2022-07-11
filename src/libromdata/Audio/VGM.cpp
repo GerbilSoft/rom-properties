@@ -407,11 +407,7 @@ int VGM::loadFieldData(void)
 				if (str.empty())
 					continue;
 
-				// FIXME: U8STRFIX - dpgettext_expr()
-				d->fields->addField_string(
-					dpgettext_expr(RP_I18N_DOMAIN,
-						reinterpret_cast<const char*>(p.ctx),
-						reinterpret_cast<const char*>(p.desc)), str);
+				d->fields->addField_string(dpgettext_expr(RP_I18N_DOMAIN, p.ctx, p.desc), str);
 			}
 
 			delete gd3_tags;

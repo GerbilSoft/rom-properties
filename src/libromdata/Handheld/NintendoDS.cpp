@@ -566,10 +566,8 @@ RomFields::ListData_t *NintendoDSPrivate::getDSiFlagsStringVector(void)
 	auto vv_dsi_flags = new RomFields::ListData_t(ARRAY_SIZE(dsi_flags_bitfield_names));
 	for (int i = ARRAY_SIZE(dsi_flags_bitfield_names)-1; i >= 0; i--) {
 		auto &data_row = vv_dsi_flags->at(i);
-		// FIXME: U8STRFIX - dpgettext_expr
-		data_row.emplace_back(reinterpret_cast<const char8_t*>(
-			dpgettext_expr(RP_I18N_DOMAIN, "NintendoDS|DSi_Flags",
-				reinterpret_cast<const char*>(dsi_flags_bitfield_names[i]))));
+		data_row.emplace_back(dpgettext_expr(RP_I18N_DOMAIN,
+			U8("NintendoDS|DSi_Flags"), dsi_flags_bitfield_names[i]));
 	}
 
 	return vv_dsi_flags;
@@ -1154,11 +1152,11 @@ int NintendoDS::loadFieldData(void)
 	}
 
 	// TODO: Is the field name too long?
-	// FIXME: U8STRFIX - dpgettext_expr(), rp_sprintf()
+	// FIXME: U8STRFIX - rp_sprintf()
 	const char8_t *const dsi_rom_type_title = C_("NintendoDS", "DSi ROM Type");
 	if (s_dsi_filetype) {
 		d->fields->addField_string(dsi_rom_type_title,
-			dpgettext_expr(RP_I18N_DOMAIN, "NintendoDS|DSiFileType", reinterpret_cast<const char*>(s_dsi_filetype)));
+			dpgettext_expr(RP_I18N_DOMAIN, U8("NintendoDS|DSiFileType"), s_dsi_filetype));
 	} else {
 		// Invalid file type.
 		d->fields->addField_string(dsi_rom_type_title,
@@ -1277,10 +1275,8 @@ int NintendoDS::loadFieldData(void)
 	auto vv_dsi_perm = new RomFields::ListData_t(ARRAY_SIZE(dsi_permissions_bitfield_names));
 	for (int i = ARRAY_SIZE(dsi_permissions_bitfield_names)-1; i >= 0; i--) {
 		auto &data_row = vv_dsi_perm->at(i);
-		// FIXME: U8STRFIX - dpgettext_expr()
-		data_row.emplace_back(reinterpret_cast<const char8_t*>(
-			dpgettext_expr(RP_I18N_DOMAIN, "NintendoDS|DSi_Permissions",
-				reinterpret_cast<const char*>(dsi_permissions_bitfield_names[i]))));
+		data_row.emplace_back(dpgettext_expr(RP_I18N_DOMAIN,
+			U8("NintendoDS|DSi_Permissions"), dsi_permissions_bitfield_names[i]));
 	}
 
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_CHECKBOXES, rows_visible);

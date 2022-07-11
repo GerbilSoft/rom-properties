@@ -335,9 +335,8 @@ void EXEPrivate::addFields_NE(void)
 		NOP_C_("EXE|DGroupType", "Multiple"),
 		NOP_C_("EXE|DGroupType", "(null)"),
 	};
-	// FIXME: U8STRFIX - dpgettext_expr()
 	fields->addField_string(C_("EXE", "DGroup Type"),
-		dpgettext_expr(RP_I18N_DOMAIN, "EXE|DGroupType", reinterpret_cast<const char*>(dgroupTypes[hdr.ne.ProgFlags & 3])));
+		dpgettext_expr(RP_I18N_DOMAIN, U8("EXE|DGroupType"), dgroupTypes[hdr.ne.ProgFlags & 3]));
 
 	// Program flags.
 	static const char8_t *const ProgFlags_names[] = {
@@ -375,9 +374,8 @@ void EXEPrivate::addFields_NE(void)
 		};
 		applType = applTypes_Win[hdr.ne.ApplFlags & 3];
 	}
-	// FIXME: U8STRFIX - dpgettext_expr()
 	fields->addField_string(C_("EXE", "Application Type"),
-		dpgettext_expr(RP_I18N_DOMAIN, "EXE|ApplType", reinterpret_cast<const char*>(applType)));
+		dpgettext_expr(RP_I18N_DOMAIN, U8("EXE|ApplType"), applType));
 
 	// Application flags.
 	static const char8_t *const ApplFlags_names[] = {

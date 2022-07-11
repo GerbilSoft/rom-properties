@@ -247,8 +247,7 @@ int Atari7800::loadFieldData(void)
 
 		if (control_type < ARRAY_SIZE(controller_tbl)) {
 			d->fields->addField_string(control_title,
-				dpgettext_expr(RP_I18N_DOMAIN, "Atari7800|ControllerType",
-					reinterpret_cast<const char*>(controller_tbl[control_type])));
+				dpgettext_expr(RP_I18N_DOMAIN, U8("Atari7800|ControllerType"), controller_tbl[control_type]));
 		} else {
 			// FIXME: U8STRFIX - rp_sprintf()
 			d->fields->addField_string(control_title,

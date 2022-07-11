@@ -210,10 +210,9 @@ int Lynx::loadFieldData(void)
 	};
 	const char8_t *const rotation_title = C_("Lynx", "Rotation");
 	if (romHeader->rotation < ARRAY_SIZE(rotation_names)) {
-		// FIXME: U8STRFIX - dpgettext_expr()
 		d->fields->addField_string(rotation_title,
-			dpgettext_expr(RP_I18N_DOMAIN, "Lynx|Rotation",
-				reinterpret_cast<const char*>(rotation_names[romHeader->rotation])));
+			dpgettext_expr(RP_I18N_DOMAIN, U8("Lynx|Rotation"),
+				rotation_names[romHeader->rotation]));
 	} else {
 		d->fields->addField_string(rotation_title, C_("RomData", "Unknown"));
 	}

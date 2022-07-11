@@ -1051,12 +1051,12 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 				U8("PNG"), U8("WebP"),	// Not translatable!
 				NOP_C_("GodotSTEX|DataFormat", "Basis Universal"),
 			};
-			// FIXME: U8STRFIX - dpgettext_expr(), snprintf()
+			// FIXME: U8STRFIX - snprintf()
 			const char8_t *const s_title = C_("GodotSTEX", "Data Format");
 			if (d->stexHeader.v4.data_format < ARRAY_SIZE(data_format_tbl)) {
 				fields->addField_string(s_title,
-					dpgettext_expr(RP_I18N_DOMAIN, "GodotSTEX|DataFormat",
-						reinterpret_cast<const char*>(data_format_tbl[d->stexHeader.v4.data_format])));
+					dpgettext_expr(RP_I18N_DOMAIN, U8("GodotSTEX|DataFormat"),
+						data_format_tbl[d->stexHeader.v4.data_format]));
 			} else {
 				fields->addField_string(s_title,
 					rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (%u)")),

@@ -118,13 +118,10 @@ const char8_t *imageTypeName(unsigned int imageType)
 	static_assert(ARRAY_SIZE(imageType_names) == IMG_TYPE_COUNT,
 		"imageType_names[] needs to be updated.");
 
-	// FIXME: U8STRFIX - dpgettext_expr()
 	assert(imageType < IMG_TYPE_COUNT);
 	if (imageType >= IMG_TYPE_COUNT)
 		return nullptr;
-	return reinterpret_cast<const char8_t*>(
-		dpgettext_expr(RP_I18N_DOMAIN, "ImageTypesConfig|ImageTypeDisp",
-			reinterpret_cast<const char*>(imageType_names[imageType])));
+	return dpgettext_expr(RP_I18N_DOMAIN, U8("ImageTypesConfig|ImageTypeDisp"), imageType_names[imageType]);
 }
 
 /**
@@ -169,13 +166,10 @@ const char8_t *sysName(unsigned int sys)
 	static_assert(ARRAY_SIZE(sysNames) == SYS_COUNT,
 		"sysNames[] needs to be updated.");
 
-	// FIXME: U8STRFIX - dpgettext_expr()
 	assert(sys < SYS_COUNT);
 	if (sys >= SYS_COUNT)
 		return nullptr;
-	return reinterpret_cast<const char8_t*>(
-		dpgettext_expr(RP_I18N_DOMAIN, "ImageTypesConfig|SysName",
-			reinterpret_cast<const char*>(sysNames[sys])));
+	return dpgettext_expr(RP_I18N_DOMAIN, U8("ImageTypesConfig|SysName"), sysNames[sys]);
 }
 
 /**

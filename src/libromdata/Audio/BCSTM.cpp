@@ -471,11 +471,11 @@ int BCSTM::loadFieldData(void)
 		NOP_C_("BCSTM|Codec", "Signed 16-bit PCM"),
 		U8("DSP ADPCM"), U8("IMA ADPCM"),
 	};
-	// FIXME: U8STRFIX - dpgettext_expr(), rp_sprintf()
+	// FIXME: U8STRFIX rp_sprintf()
 	const char8_t *const codec_title = C_("BCSTM", "Codec");
 	if (codec < ARRAY_SIZE(codec_tbl)) {
 		d->fields->addField_string(codec_title,
-			dpgettext_expr(RP_I18N_DOMAIN, "BCSTM|Codec", reinterpret_cast<const char*>(codec_tbl[codec])));
+			dpgettext_expr(RP_I18N_DOMAIN, U8("BCSTM|Codec"), codec_tbl[codec]));
 	} else {
 		d->fields->addField_string(codec_title,
 			rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (%u)")), codec));

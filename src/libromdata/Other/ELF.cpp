@@ -1148,10 +1148,8 @@ int ELF::loadFieldData(void)
 	if (d->elfFormat > ELFPrivate::Elf_Format::Unknown &&
 	    (int)d->elfFormat < ARRAY_SIZE_I(exec_type_tbl))
 	{
-		// FIXME: U8STRFIX - dpgettext_expr()
 		d->fields->addField_string(format_title,
-			dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType",
-				reinterpret_cast<const char*>(exec_type_tbl[(int)d->elfFormat])));
+			dpgettext_expr(RP_I18N_DOMAIN, U8("RomData|ExecType"), exec_type_tbl[(int)d->elfFormat]));
 	}
 	else
 	{
@@ -1234,9 +1232,8 @@ int ELF::loadFieldData(void)
 				NOP_C_("ELF|SPARC_MM", "Relaxed Memory Ordering"),
 				NOP_C_("ELF|SPARC_MM", "Invalid"),
 			};
-			// FIXME: U8STRFIX - dpgettext_expr()
 			d->fields->addField_string(C_("ELF", "Memory Ordering"),
-				dpgettext_expr(RP_I18N_DOMAIN, "ELF|SPARC_MM", reinterpret_cast<const char*>(sparc_mm[e_flags & 3])));
+				dpgettext_expr(RP_I18N_DOMAIN, U8("ELF|SPARC_MM"), sparc_mm[e_flags & 3]));
 
 			// SPARC CPU flags. (rshifted by 8)
 			static const char8_t *const sparc_flags_names[] = {
@@ -1685,10 +1682,8 @@ int ELF::loadFieldData(void)
 				NOP_C_("ELF|RISCVFPABI", "Double-Float"),
 				NOP_C_("ELF|RISCVFPABI", "Quad-Float"),
 			};
-			// FIXME: U8STRFIX - dpgettext_expr()
 			d->fields->addField_string(C_("ELF", "Floating-Point ABI"),
-				dpgettext_expr(RP_I18N_DOMAIN, "ELF|RISCVFPABI",
-					reinterpret_cast<const char*>(riscv_fpabi_tbl[((e_flags & 0x0006) >> 1)])));
+				dpgettext_expr(RP_I18N_DOMAIN, U8("ELF|RISCVFPABI"), riscv_fpabi_tbl[((e_flags & 0x0006) >> 1)]));
 
 			// RISC-V CPU flags.
 			static const char8_t *const riscv_flags_names[] = {

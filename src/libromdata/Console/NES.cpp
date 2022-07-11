@@ -1199,10 +1199,8 @@ int NES::loadFieldData(void)
 		U8("Dendy (UMC 6527P)"),
 	};
 	if (tv_mode < ARRAY_SIZE(tv_mode_tbl)) {
-		// FIXME: U8STRFIX - dpgettext_expr()
 		d->fields->addField_string(C_("NES", "TV Mode"),
-			dpgettext_expr(RP_I18N_DOMAIN, "NES|TVMode",
-				reinterpret_cast<const char*>(tv_mode_tbl[tv_mode])));
+			dpgettext_expr(RP_I18N_DOMAIN, U8("NES|TVMode"), tv_mode_tbl[tv_mode]));
 	}
 
 	// ROM features
@@ -1425,10 +1423,7 @@ int NES::loadFieldData(void)
 
 					const unsigned int exp_hw = (d->header.ines.nes2.expansion & 0x3F);
 					if (exp_hw < ARRAY_SIZE(exp_hw_tbl)) {
-						// FIXME: U8STRFIX - dpgettext_expr()
-						s_exp_hw = reinterpret_cast<const char8_t*>(
-							dpgettext_expr(RP_I18N_DOMAIN, "NES|Expansion",
-								reinterpret_cast<const char*>(exp_hw_tbl[exp_hw])));
+						s_exp_hw = dpgettext_expr(RP_I18N_DOMAIN, U8("NES|Expansion"), exp_hw_tbl[exp_hw]);
 					}
 				}
 				break;

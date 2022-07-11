@@ -1964,11 +1964,11 @@ int Xbox360_XEX::loadFieldData(void)
 		NOP_C_("Xbox360_XEX|Compression", "Normal (LZX)"),
 		NOP_C_("Xbox360_XEX|Compression", "Delta"),
 	};
-	// FIXME: U8STRFIX - dpgettext_expr(), rp_sprintf()
+	// FIXME: U8STRFIX - rp_sprintf()
 	if (d->fileFormatInfo.compression_type < ARRAY_SIZE(compression_tbl)) {
 		d->fields->addField_string(C_("Xbox360_XEX", "Compression"),
-			dpgettext_expr(RP_I18N_DOMAIN, "Xbox360_XEX|Compression",
-				reinterpret_cast<const char*>(compression_tbl[d->fileFormatInfo.compression_type])));
+			dpgettext_expr(RP_I18N_DOMAIN, U8("Xbox360_XEX|Compression"),
+				compression_tbl[d->fileFormatInfo.compression_type]));
 	} else {
 		d->fields->addField_string(C_("Xbox360_XEX", "Compression"),
 			rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (0x%02X)")),

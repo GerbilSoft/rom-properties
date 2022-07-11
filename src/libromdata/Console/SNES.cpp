@@ -1399,11 +1399,11 @@ int SNES::loadFieldData(void)
 	switch (d->romType) {
 		case SNESPrivate::RomType::SNES: {
 			// Region
-			// FIXME: U8STRFIX - dpgettext_expr(), rp_sprintf()
+			// FIXME: U8STRFIX - rp_sprintf()
 			const char8_t *const region_title = C_("RomData", "Region Code");
 			if (region_lkup) {
 				d->fields->addField_string(region_title,
-					dpgettext_expr(RP_I18N_DOMAIN, "Region", reinterpret_cast<const char*>(region_lkup)));
+					dpgettext_expr(RP_I18N_DOMAIN, U8("Region"), region_lkup));
 			} else {
 				d->fields->addField_string(region_title,
 					rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (0x%02X)")),
@@ -1472,10 +1472,10 @@ int SNES::loadFieldData(void)
 					break;
 			}
 			const char8_t *const program_type_title = C_("SNES", "Program Type");
-			// FIXME: U8STRFIX - dpgettext_expr(), rp_sprintf()
+			// FIXME: U8STRFIX - rp_sprintf()
 			if (program_type) {
 				d->fields->addField_string(program_type_title,
-					dpgettext_expr(RP_I18N_DOMAIN, "SNES|ProgramType", reinterpret_cast<const char*>(program_type)));
+					dpgettext_expr(RP_I18N_DOMAIN, U8("SNES|ProgramType"), program_type));
 			} else {
 				d->fields->addField_string(program_type_title,
 					rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (0x%08X)")),

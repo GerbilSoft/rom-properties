@@ -26,22 +26,27 @@ QString GettextTranslator::translate(const char *context,
 	{
 		// NOTE: gettext() requires two message IDs for plurals.
 		// Qt only has one, since it does all plural processing in the translation.
-		const char *const txt = dnpgettext_expr(RP_I18N_DOMAIN, context, sourceText, sourceText, n);
-		if (txt == sourceText) {
+		const char8_t *const txt = dnpgettext_expr(
+			RP_I18N_DOMAIN, reinterpret_cast<const char8_t*>(context),
+			reinterpret_cast<const char8_t*>(sourceText),
+			reinterpret_cast<const char8_t*>(sourceText), n);
+		if (txt == reinterpret_cast<const char8_t*>(sourceText)) {
 			// No translation is available from gettext.
 			return QString();
 		}
-		return QString::fromUtf8(txt);
+		return QString::fromUtf8(reinterpret_cast<const char*>(txt));
 	}
 
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 	// Qt5: No plurals here.
-	const char *const txt = dpgettext_expr(RP_I18N_DOMAIN, context, sourceText);
-	if (txt == sourceText) {
+	const char8_t *const txt = dpgettext_expr(RP_I18N_DOMAIN,
+		reinterpret_cast<const char8_t*>(context),
+		reinterpret_cast<const char8_t*>(sourceText));
+	if (txt == reinterpret_cast<const char8_t*>(sourceText)) {
 		// No translation is available from gettext.
 		return QString();
 	}
-	return QString::fromUtf8(txt);
+	return QString::fromUtf8(reinterpret_cast<const char*>(txt));
 #endif
 }
 
@@ -52,11 +57,14 @@ QString GettextTranslator::translate(const char *context,
 	// FIXME: Make use of disambiguation.
 	Q_UNUSED(disambiguation)
 
-	const char *const txt = dpgettext_expr(RP_I18N_DOMAIN, context, sourceText);
-	if (txt == sourceText) {
+	const char8_t *const txt = dpgettext_expr(
+		RP_I18N_DOMAIN,
+		reinterpret_cast<const char8_t*>(context),
+		reinterpret_cast<const char8_t*>(sourceText));
+	if (txt == reinterpret_cast<const char8_t*>(sourceText)) {
 		// No translation is available from gettext.
 		return QString();
 	}
-	return QString::fromUtf8(txt);
+	return QString::fromUtf8(reinterpret_cast<const char*>(txt));
 }
 #endif

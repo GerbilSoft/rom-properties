@@ -132,10 +132,7 @@ const char8_t *lookup_sys_title(uint32_t tid_hi, uint32_t tid_lo, const char **p
 				if (pRegion) {
 					*pRegion = regions[region];
 				}
-				// FIXME: U8STRFIX
-				return reinterpret_cast<const char8_t*>(
-					dpgettext_expr(RP_I18N_DOMAIN, "Nintendo3DSSysTitles",
-						reinterpret_cast<const char*>(titles->desc)));
+				return dpgettext_expr(RP_I18N_DOMAIN, U8("Nintendo3DSSysTitles"), titles->desc);
 			}
 		}
 	}

@@ -935,10 +935,8 @@ int Xbox360_STFS::loadFieldData(void)
 	if (d->stfsType > Xbox360_STFS_Private::StfsType::Unknown &&
 	    d->stfsType < Xbox360_STFS_Private::StfsType::Max)
 	{
-		// FIXME: U8STRFIX - dpgettext_expr()
 		d->fields->addField_string(C_("Xbox360_STFS", "Package Type"),
-			dpgettext_expr(RP_I18N_DOMAIN, "Xbox360_STFS|FileType",
-				reinterpret_cast<const char*>(file_type_tbl[(int)d->stfsType])));
+			dpgettext_expr(RP_I18N_DOMAIN, U8("Xbox360_STFS|FileType"), file_type_tbl[(int)d->stfsType]));
 	} else {
 		d->fields->addField_string(C_("Xbox360_STFS|RomData", "Type"),
 			C_("RomData", "Unknown"));

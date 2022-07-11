@@ -257,10 +257,8 @@ const char8_t *KeyManager::verifyResultToString(VerifyResult res)
 	assert(res >= (KeyManager::VerifyResult)0);
 	assert(res < (KeyManager::VerifyResult)ARRAY_SIZE(errTbl));
 
-	// FIXME: U8STRFIX - dpgettext_expr()
 	if (res >= (KeyManager::VerifyResult)0 && res < (KeyManager::VerifyResult)ARRAY_SIZE(errTbl)) {
-		return reinterpret_cast<const char8_t*>(
-			dpgettext_expr(RP_I18N_DOMAIN, "KeyManager|VerifyResult", reinterpret_cast<const char*>(errTbl[(int)res])));
+		return dpgettext_expr(RP_I18N_DOMAIN, U8("KeyManager|VerifyResult"), errTbl[(int)res]);
 	}
 	return nullptr;
 }

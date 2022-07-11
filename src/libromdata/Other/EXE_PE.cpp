@@ -599,11 +599,11 @@ void EXEPrivate::addFields_PE(void)
 	};
 
 	// Subsystem name and version.
-	// FIXME: U8STRFIX - dpgettext_expr(), rp_sprintf()
+	// FIXME: U8STRFIX - rp_sprintf()
 	u8string subsystem_name;
 	if (pe_subsystem < ARRAY_SIZE(subsysNames) && subsysNames[pe_subsystem] != nullptr) {
 		subsystem_name = reinterpret_cast<const char8_t*>(rp_sprintf("%s %u.%u",
-			dpgettext_expr(RP_I18N_DOMAIN, "EXE|Subsystem", reinterpret_cast<const char*>(subsysNames[pe_subsystem])),
+			(const char*)dpgettext_expr(RP_I18N_DOMAIN, U8("EXE|Subsystem"), subsysNames[pe_subsystem]),
 			subsystem_ver_major, subsystem_ver_minor).c_str());
 	} else {
 		const char8_t *const s_unknown = C_("RomData", "Unknown");

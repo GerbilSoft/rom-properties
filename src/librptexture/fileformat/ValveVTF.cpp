@@ -895,9 +895,7 @@ int ValveVTF::getFields(LibRpBase::RomFields *fields) const
 		size_t j = vv_flags->size()+1;
 		vv_flags->resize(j);
 		auto &data_row = vv_flags->at(j-1);
-		data_row.emplace_back(reinterpret_cast<const char8_t*>(
-			dpgettext_expr(RP_I18N_DOMAIN, "ValveVTF|Flags",
-				reinterpret_cast<const char*>(pFlagName))));
+		data_row.emplace_back(dpgettext_expr(RP_I18N_DOMAIN, U8("ValveVTF|Flags"), pFlagName));
 	}
 
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_CHECKBOXES, rows_visible);
@@ -941,7 +939,7 @@ int ValveVTF::getFields(LibRpBase::RomFields *fields) const
 	if (img_format) {
 		// TODO: Localization.
 		fields->addField_string(low_res_image_format_title, img_format);
-			//dpgettext_expr(RP_I18N_DOMAIN, "ValveVTF|ImageFormat", img_format));
+			//dpgettext_expr(RP_I18N_DOMAIN, U8("ValveVTF|ImageFormat"), img_format));
 		// Low-res image size.
 		fields->addField_dimensions(C_("ValveVTF", "Low-Res Size"),
 			vtfHeader->lowResImageWidth,

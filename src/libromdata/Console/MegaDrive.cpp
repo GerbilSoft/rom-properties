@@ -460,10 +460,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 			if (!s_io_devices.empty()) {
 				s_io_devices += U8(", ");
 			}
-			// FIXME: U8STRFIX - dpgettext_expr()
-			s_io_devices += reinterpret_cast<const char8_t*>(
-				dpgettext_expr(RP_I18N_DOMAIN, "MegaDrive|I/O",
-					reinterpret_cast<const char*>(name)));
+			s_io_devices += dpgettext_expr(RP_I18N_DOMAIN, U8("MegaDrive|I/O"), name);
 		}
 
 		// Next bit.

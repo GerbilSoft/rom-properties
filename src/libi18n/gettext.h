@@ -22,10 +22,10 @@
 
 #if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 2))
 /* Disable -Wvla warnings enabled by KF5's extra-cmake-modules. */
-# if (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
-#  pragma GCC diagnostic push
-# endif
-# pragma GCC diagnostic ignored "-Wvla"
+#  if (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#    pragma GCC diagnostic push
+#  endif
+#  pragma GCC diagnostic ignored "-Wvla"
 #endif
 
 /* NLS can be disabled through the configure --disable-nls option
@@ -218,13 +218,13 @@ __inline
 inline
 #endif
 #endif
-static const char *
+static const char8_t *
 dcpgettext_expr (const char *domain,
-                 const char *msgctxt, const char *msgid,
+                 const char8_t *msgctxt, const char8_t *msgid,
                  int category)
 {
-  size_t msgctxt_len = strlen (msgctxt) + 1;
-  size_t msgid_len = strlen (msgid) + 1;
+  size_t msgctxt_len = strlen ((const char*)msgctxt) + 1;
+  size_t msgid_len = strlen ((const char*)msgid) + 1;
   const char *translation;
 #if _LIBGETTEXT_HAVE_VARIABLE_SIZE_ARRAYS
   char msg_ctxt_id[msgctxt_len + msgid_len];
@@ -248,7 +248,7 @@ dcpgettext_expr (const char *domain,
         free (msg_ctxt_id);
 #endif
       if (found_translation)
-        return translation;
+        return (const char8_t*)translation;
     }
   return msgid;
 }
@@ -265,14 +265,14 @@ __inline
 inline
 #endif
 #endif
-static const char *
+static const char8_t *
 dcnpgettext_expr (const char *domain,
-                  const char *msgctxt, const char *msgid,
-                  const char *msgid_plural, unsigned long int n,
+                  const char8_t *msgctxt, const char8_t *msgid,
+                  const char8_t *msgid_plural, unsigned long int n,
                   int category)
 {
-  size_t msgctxt_len = strlen (msgctxt) + 1;
-  size_t msgid_len = strlen (msgid) + 1;
+  size_t msgctxt_len = strlen ((const char*)msgctxt) + 1;
+  size_t msgid_len = strlen ((const char*)msgid) + 1;
   const char *translation;
 #if _LIBGETTEXT_HAVE_VARIABLE_SIZE_ARRAYS
   char msg_ctxt_id[msgctxt_len + msgid_len];
@@ -289,20 +289,20 @@ dcnpgettext_expr (const char *domain,
       memcpy (msg_ctxt_id, msgctxt, msgctxt_len - 1);
       msg_ctxt_id[msgctxt_len - 1] = '\004';
       memcpy (msg_ctxt_id + msgctxt_len, msgid, msgid_len);
-      translation = dcngettext (domain, msg_ctxt_id, msgid_plural, n, category);
-      found_translation = !(translation == msg_ctxt_id || translation == msgid_plural);
+      translation = dcngettext (domain, msg_ctxt_id, (const char*)msgid_plural, n, category);
+      found_translation = !(translation == msg_ctxt_id || translation == (const char*)msgid_plural);
 #if !_LIBGETTEXT_HAVE_VARIABLE_SIZE_ARRAYS
       if (msg_ctxt_id != buf)
         free (msg_ctxt_id);
 #endif
       if (found_translation)
-        return translation;
+        return (const char8_t*)translation;
     }
   return (n == 1 ? msgid : msgid_plural);
 }
 
 #if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
-# pragma GCC diagnostic pop
+#  pragma GCC diagnostic pop
 #endif
 
 #endif /* _LIBGETTEXT_H */

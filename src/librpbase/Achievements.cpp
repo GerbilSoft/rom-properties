@@ -987,9 +987,7 @@ const char8_t *Achievements::getName(ID id) const
 
 	RP_D(const Achievements);
 	const AchievementsPrivate::AchInfo_t *const achInfo = &d->achInfo[(int)id];
-	// FIXME: U8STRFIX - dpgettext_expr()
-	return reinterpret_cast<const char8_t*>(
-		dpgettext_expr(RP_I18N_DOMAIN, "Achievements", reinterpret_cast<const char*>(achInfo->name)));
+	return dpgettext_expr(RP_I18N_DOMAIN, U8("Achievements"), achInfo->name);
 }
 
 /**
@@ -1008,9 +1006,7 @@ const char8_t *Achievements::getDescUnlocked(ID id) const
 
 	RP_D(const Achievements);
 	const AchievementsPrivate::AchInfo_t *const achInfo = &d->achInfo[(int)id];
-	// FIXME: U8STRFIX - dpgettext_expr()
-	return reinterpret_cast<const char8_t*>(
-		dpgettext_expr(RP_I18N_DOMAIN, "Achievements", reinterpret_cast<const char*>(achInfo->desc_unlk)));
+	return dpgettext_expr(RP_I18N_DOMAIN, U8("Achievements"), achInfo->desc_unlk);
 }
 
 }

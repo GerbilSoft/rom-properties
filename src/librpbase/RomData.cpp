@@ -624,9 +624,7 @@ const char8_t *RomData::fileType_string(void) const
  
 	const char8_t *const fileType = fileType_names[(int)d->fileType];
 	if (fileType != nullptr) {
-		// FIXME: U8STRFIX - dpgettext_expr()
-		return reinterpret_cast<const char8_t*>(
-			dpgettext_expr(RP_I18N_DOMAIN, "RomData|FileType", reinterpret_cast<const char*>(fileType)));
+		return dpgettext_expr(RP_I18N_DOMAIN, U8("RomData|FileType"), fileType);
 	}
 	return nullptr;
 }
@@ -914,9 +912,7 @@ const char8_t *RomData::getImageTypeName(ImageType imageType) {
 	static_assert(ARRAY_SIZE(imageType_names) == IMG_EXT_MAX + 1,
 		"imageType_names[] needs to be updated.");
 
-	// FIXME: U8STRFIX - dpgettext_expr()
-	return reinterpret_cast<const char8_t*>(
-		dpgettext_expr(RP_I18N_DOMAIN, "RomData|ImageType", reinterpret_cast<const char*>(imageType_names[imageType])));
+	return dpgettext_expr(RP_I18N_DOMAIN, U8("RomData|ImageType"), imageType_names[imageType]);
 }
 
 /**

@@ -852,10 +852,8 @@ const char8_t *Xbox360_XDBF_Private::getTitleType(void) const
 
 	const uint32_t title_type = be32_to_cpu(xthd.title_type);
 	if (title_type < ARRAY_SIZE(title_type_tbl)) {
-		// FIXME: U8STRFIX - dpgettext_expr()
-		return reinterpret_cast<const char8_t*>(
-			dpgettext_expr(RP_I18N_DOMAIN, "Xbox360_XDBF|TitleType",
-				reinterpret_cast<const char*>(title_type_tbl[title_type])));
+		return dpgettext_expr(RP_I18N_DOMAIN,
+			U8("Xbox360_XDBF|TitleType"), title_type_tbl[title_type]);
 	}
 
 	// Not found...

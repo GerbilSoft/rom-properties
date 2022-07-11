@@ -379,11 +379,10 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 				defaultFileName += info->default_ext;
 			}
 
-			// FIXME: U8STRFIX - dpgettext_expr()
+			// FIXME: U8STRFIX - filter param needs to be changed to char8_t
 			const tstring tfilename = LibWin32UI::getSaveFileName(hDlgSheet,
-				U82T_c(reinterpret_cast<const char8_t*>(
-					dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", reinterpret_cast<const char*>(info->title)))),
-				dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", reinterpret_cast<const char*>(info->filter)),
+				U82T_c(dpgettext_expr(RP_I18N_DOMAIN, U8("RomDataView"), info->title)),
+				(const char*)dpgettext_expr(RP_I18N_DOMAIN, U8("RomDataView"), info->filter),
 				defaultFileName.c_str());
 			if (tfilename.empty())
 				return;

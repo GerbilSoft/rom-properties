@@ -606,11 +606,8 @@ key_manager_tab_handle_menu_action(KeyManagerTab *tab, gint id)
 		NOP_C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
 	};
 
-	// FIXME: U8STRFIX - dpgettext_expr()
-	const char8_t *const s_title = reinterpret_cast<const char8_t*>(dpgettext_expr(
-		RP_I18N_DOMAIN, "KeyManagerTab", reinterpret_cast<const char*>(dialog_titles_tbl[id])));
-	const char8_t *const s_filter = reinterpret_cast<const char8_t*>(dpgettext_expr(
-		RP_I18N_DOMAIN, "KeyManagerTab", reinterpret_cast<const char*>(file_filters_tbl[id])));
+	const char8_t *const s_title = dpgettext_expr(RP_I18N_DOMAIN, U8("KeyManagerTab"), dialog_titles_tbl[id]);
+	const char8_t *const s_filter = dpgettext_expr(RP_I18N_DOMAIN, U8("KeyManagerTab"), file_filters_tbl[id]);
 
 	GtkWindow *const parent = gtk_widget_get_toplevel_window(GTK_WIDGET(tab));
 	GtkWidget *const fileDialog = gtk_file_chooser_dialog_new(
@@ -666,7 +663,7 @@ key_manager_tab_handle_menu_action(KeyManagerTab *tab, gint id)
 static void
 key_manager_tab_show_key_import_return_status(KeyManagerTab	*tab,
 					      const char	*filename,
-					      const char	*keyType,
+					      const char8_t	*keyType,
 					      const KeyStoreUI::ImportReturn &iret)
 {
 	GtkMessageType type = GTK_MESSAGE_INFO;
@@ -733,7 +730,7 @@ key_manager_tab_show_key_import_return_status(KeyManagerTab	*tab,
 			msg = (const char8_t*)rp_sprintf_p((const char*)C_("KeyManagerTab",
 				// tr: %1$s == filename, %2$s == type of file
 				"The file '%1$s' is not a valid %2$s file."),
-				fileNoPath, keyType).c_str();
+				fileNoPath, (const char*)keyType).c_str();
 			type = GTK_MESSAGE_WARNING;
 			break;
 
@@ -878,11 +875,9 @@ key_manager_tab_menu_action_response(GtkFileChooserDialog *fileDialog, gint resp
 	KeyStoreUI::ImportReturn iret = keyStoreUI->importKeysFromBin(id,
 		reinterpret_cast<const char8_t*>(in_filename));
 
-	// TODO: Show the key import status in a MessageWidget.
-	// FIXME: U8STRFIX - dpgettext_expr()
+	// Show the key import status.
 	key_manager_tab_show_key_import_return_status(tab, in_filename,
-		dpgettext_expr(RP_I18N_DOMAIN, "KeyManagerTab",
-			reinterpret_cast<const char*>(import_menu_actions[(int)id])), iret);
+		dpgettext_expr(RP_I18N_DOMAIN, U8("KeyManagerTab"), import_menu_actions[(int)id]), iret);
 	g_free(in_filename);
 }
 

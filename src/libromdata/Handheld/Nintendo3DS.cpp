@@ -1938,12 +1938,12 @@ int Nintendo3DS::loadFieldData(void)
 				NOP_C_("Nintendo3DS|CDev", "None"),
 				NOP_C_("Nintendo3DS|CDev", "Bluetooth"),
 			};
-			// FIXME: U8STRFIX - dpgettext_expr(), rp_sprintf_p()
+			// FIXME: U8STRFIX - rp_sprintf_p()
 			const char8_t *const card_device_title = C_("Nintendo3DS", "Card Device");
 			if (card_dev_id >= 1 && card_dev_id < ARRAY_SIZE(card_dev_tbl)) {
 				d->fields->addField_string(card_device_title,
-					dpgettext_expr(RP_I18N_DOMAIN, "Nintendo3DS|CDev",
-						reinterpret_cast<const char*>(card_dev_tbl[card_dev_id])));
+					dpgettext_expr(RP_I18N_DOMAIN, U8("Nintendo3DS|CDev"),
+						card_dev_tbl[card_dev_id]));
 			} else {
 				d->fields->addField_string(card_device_title,
 					rp_sprintf_p(reinterpret_cast<const char*>(C_("Nintendo3DS|CDev", "Unknown (SDK2=0x%1$02X, SDK3=0x%2$02X)")),
@@ -2312,12 +2312,12 @@ int Nintendo3DS::loadFieldData(void)
 			// tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_OTHER
 			NOP_C_("Nintendo3DS|ApplType", "SysModule"),
 		};
-		// FIXME: U8STRFIX - dpgettext_expr(), rp_sprintf()
+		// FIXME: U8STRFIX - rp_sprintf()
 		const char8_t *const type_title = C_("Nintendo3DS", "Type");
 		const uint8_t appl_type = ncch_exheader->aci.arm11_local.res_limit_category;
 		if (appl_type < ARRAY_SIZE(appl_type_tbl)) {
 			d->fields->addField_string(type_title,
-				dpgettext_expr(RP_I18N_DOMAIN, "Nintendo3DS|ApplType", reinterpret_cast<const char*>(appl_type_tbl[appl_type])));
+				dpgettext_expr(RP_I18N_DOMAIN, U8("Nintendo3DS|ApplType"), appl_type_tbl[appl_type]));
 		} else {
 			d->fields->addField_string(type_title,
 				rp_sprintf(reinterpret_cast<const char*>(C_("Nintendo3DS", "Invalid (0x%02X)")), appl_type));

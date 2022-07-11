@@ -1828,10 +1828,7 @@ int GameCube::loadFieldData(void)
 				NOP_C_("Wii|Partition", "Channel"),
 			};
 			if (entry.type <= RVL_PT_CHANNEL) {
-				// FIXME: U8STRFIX
-				s_ptype = reinterpret_cast<const char8_t*>(
-					dpgettext_expr(RP_I18N_DOMAIN, "Wii|Partition",
-						reinterpret_cast<const char*>(part_type_tbl[entry.type])));
+				s_ptype = dpgettext_expr(RP_I18N_DOMAIN, U8("Wii|Partition"), part_type_tbl[entry.type]);
 			} else {
 				// If all four bytes are ASCII letters and/or numbers,
 				// print it as-is. (SSBB demo channel)
@@ -1894,10 +1891,7 @@ int GameCube::loadFieldData(void)
 
 			const char8_t *s_key_name;
 			if ((int)encKey >= 0 && (int)encKey < ARRAY_SIZE_I(wii_key_tbl)) {
-				// FIXME: U8STRFIX - dpgettext_expr()
-				s_key_name = reinterpret_cast<const char8_t*>(
-					dpgettext_expr(RP_I18N_DOMAIN, "Wii|KeyIdx",
-						reinterpret_cast<const char*>(wii_key_tbl[(int)encKey])));
+				s_key_name = dpgettext_expr(RP_I18N_DOMAIN, U8("Wii|KeyIdx"), wii_key_tbl[(int)encKey]);
 			} else {
 				// tr: WiiPartition::EncKey::Unknown
 				s_key_name = C_("RomData", "Unknown");

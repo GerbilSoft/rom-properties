@@ -497,9 +497,8 @@ int MachO::loadFieldData(void)
 		if (machFormat > MachOPrivate::Mach_Format::Unknown &&
 		    (int)machFormat < ARRAY_SIZE_I(exec_type_tbl))
 		{
-			// FIXME: U8STRFIX - dpgettext_expr()
 			d->fields->addField_string(format_title,
-				dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType", reinterpret_cast<const char*>(exec_type_tbl[(int)machFormat])));
+				dpgettext_expr(RP_I18N_DOMAIN, U8("RomData|ExecType"), exec_type_tbl[(int)machFormat]));
 		} else {
 			// TODO: Show individual values.
 			// NOTE: This shouldn't happen...

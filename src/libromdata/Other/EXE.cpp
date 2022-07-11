@@ -204,13 +204,13 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		// tr: VFT_STATIC_LIB
 		NOP_C_("EXE|FileType", "Static Library"),
 	};
-	// FIXME: U8STRFIX - dpgettext_expr(), rp_sprintf()
+	// FIXME: U8STRFIX - rp_sprintf()
 	const char8_t *const fileType_title = C_("EXE", "File Type");
 	if (pVsFfi->dwFileType < ARRAY_SIZE(fileTypes_tbl) &&
 	    fileTypes_tbl[pVsFfi->dwFileType] != nullptr)
 	{
 		fields->addField_string(fileType_title,
-			dpgettext_expr(RP_I18N_DOMAIN, "EXE|FileType", reinterpret_cast<const char*>(fileTypes_tbl[pVsFfi->dwFileType])));
+			dpgettext_expr(RP_I18N_DOMAIN, U8("EXE|FileType"), fileTypes_tbl[pVsFfi->dwFileType]));
 	} else {
 		if (pVsFfi->dwFileType == VFT_UNKNOWN) {
 			fields->addField_string(fileType_title, C_("RomData", "Unknown"));
@@ -287,7 +287,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		const char8_t *const fileSubType_title = C_("EXE", "File Subtype");
 		if (fileSubtype) {
 			fields->addField_string(fileSubType_title,
-				dpgettext_expr(RP_I18N_DOMAIN, "EXE|FileSubType", reinterpret_cast<const char*>(fileSubtype)));
+				dpgettext_expr(RP_I18N_DOMAIN, U8("EXE|FileSubType"), fileSubtype));
 		} else {
 			fields->addField_string(fileSubType_title,
 				rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (0x%02X)")), pVsFfi->dwFileSubtype));

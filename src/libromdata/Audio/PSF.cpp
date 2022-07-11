@@ -530,11 +530,11 @@ int PSF::loadFieldData(void)
 		}
 	}
 
-	// FIXME: U8STRFIX - dpgettext_expr(), rp_sprintf()
+	// FIXME: U8STRFIX - rp_sprintf()
 	const char8_t *const system_title = C_("PSF", "System");
 	if (sysname) {
 		d->fields->addField_string(system_title,
-			dpgettext_expr(RP_I18N_DOMAIN, "PSF|System", reinterpret_cast<const char*>(sysname)));
+			dpgettext_expr(RP_I18N_DOMAIN, U8("PSF|System"), sysname));
 	} else {
 		d->fields->addField_string(system_title,
 			rp_sprintf(reinterpret_cast<const char*>(C_("RomData", "Unknown (0x%02X)")), psf_version));

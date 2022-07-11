@@ -131,10 +131,9 @@ void OptionsMenuButtonPrivate::reinitMenu(const RomData *romData)
 	hMenuOptions = CreatePopupMenu();
 
 	// Add the standard actions.
-	// FIXME: U8STRFIX - dpgettext_expr()
 	for (const option_menu_action_t &p : stdacts) {
 		AppendMenu(hMenuOptions, MF_STRING, IDM_OPTIONS_MENU_BASE + p.id,
-			U82T_c(dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", (const char*)p.desc)));
+			U82T_c(dpgettext_expr(RP_I18N_DOMAIN, U8("RomDataView|Options"), p.desc)));
 	}
 
 	/** ROM operations. **/
