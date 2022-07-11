@@ -694,8 +694,8 @@ u8string SNESPrivate::getGameID(bool doFake) const
 
 	// Prefix/suffix table.
 	struct PrefixSuffixTbl_t {
-		char8_t prefix[8];
-		char8_t suffix[8];
+		char8_t prefix[6];
+		char8_t suffix[6];
 	};
 	static const PrefixSuffixTbl_t region_ps[] = {
 		// 0x00
