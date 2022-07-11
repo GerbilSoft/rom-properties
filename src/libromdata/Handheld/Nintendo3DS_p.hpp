@@ -235,14 +235,24 @@ class Nintendo3DSPrivate final : public LibRpBase::RomDataPrivate
 		 * @param version Version number.
 		 * @return String.
 		 */
-		static inline std::string n3dsVersionToString(uint16_t version)
+		static inline std::u8string n3dsVersionToString(uint16_t version)
 		{
 			// Reference: https://3dbrew.org/wiki/Titles
-			return LibRpBase::rp_sprintf("%u.%u.%u (v%u)",
+			// FIXME: U8STRFIX - was using rp_sprintf().
+			char8_t buf[64];
+			int len = snprintf(reinterpret_cast<char*>(buf), sizeof(buf),
+				"%u.%u.%u (v%u)",
 				(static_cast<unsigned int>(version) >> 10),
 				(static_cast<unsigned int>(version) >>  4) & 0x1F,
 				(static_cast<unsigned int>(version) & 0x0F),
 				 static_cast<unsigned int>(version));
+
+			if (len < 0) {
+				len = 0;
+			} else if (len >= static_cast<int>(sizeof(buf))) {
+				len = sizeof(buf)-1;
+			}
+			return std::u8string(buf, len);
 		}
 
 		/**

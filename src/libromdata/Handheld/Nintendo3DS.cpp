@@ -2050,9 +2050,7 @@ int Nintendo3DS::loadFieldData(void)
 						// This is usually 1.1.0, though some might be 1.0.0.
 						data_row.emplace_back(U8("1.x.x"));
 					} else {
-						// FIXME: U8STRFIX
-						data_row.emplace_back(reinterpret_cast<const char8_t*>(
-							d->n3dsVersionToString(version).c_str()));
+						data_row.emplace_back(d->n3dsVersionToString(version));
 					}
 				} else {
 					// Unable to load the NCCH header.
@@ -2261,10 +2259,8 @@ int Nintendo3DS::loadFieldData(void)
 			}
 
 			// Version [FIXME: Might not be right...]
-			// FIXME: U8STRFIX
-			data_row.emplace_back(reinterpret_cast<const char8_t*>(
-				d->n3dsVersionToString(
-					le16_to_cpu(content_ncch_header->version)).c_str()));
+			data_row.emplace_back(d->n3dsVersionToString(
+				le16_to_cpu(content_ncch_header->version)));
 
 			// Content size
 			data_row.emplace_back(LibRpBase::formatFileSize(pNcch->partition_size()));
