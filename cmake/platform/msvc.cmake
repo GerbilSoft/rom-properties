@@ -29,7 +29,7 @@ IF(NOT CMAKE_CXX_FLAGS MATCHES "/EHsc")
 ENDIF(NOT CMAKE_CXX_FLAGS MATCHES "/EHsc")
 
 # Test for MSVC-specific compiler flags.
-# /utf-8 and was added in MSVC 2015.
+# /utf-8 was added in MSVC 2015.
 INCLUDE(CheckCCompilerFlag)
 FOREACH(FLAG_TEST "/sdl" "/guard:cf" "/utf-8")
 	# CMake doesn't like certain characters in variable names.
