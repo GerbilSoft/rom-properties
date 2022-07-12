@@ -200,9 +200,7 @@ int PlayStationDiscPrivate::loadSystemCnf(IsoPartition *pt)
 				// Found PSX.EXE.
 				boot_filename = "PSX.EXE";
 				system_cnf.emplace("BOOT", boot_filename);
-				if (f_psx_exe) {
-					f_psx_exe->unref();
-				}
+				f_psx_exe->unref();
 				// Pretend that we did find SYSTEM.CNF.
 				return 0;
 			} else {
