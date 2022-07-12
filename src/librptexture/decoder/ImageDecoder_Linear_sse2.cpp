@@ -110,11 +110,8 @@ static inline void VECTORCALL T_RGB16_sse2(
 	sR = _mm_or_si128(sR, _mm_srli_epi16(sR, Rbits));
 
 	// Unpack R and GB into DWORDs.
-	__m128i px0 = _mm_or_si128(_mm_unpacklo_epi16(sB, sR), Mask32_A);
-	__m128i px1 = _mm_or_si128(_mm_unpackhi_epi16(sB, sR), Mask32_A);
-
-	_mm_store_si128(&xmm_dest[0], px0);
-	_mm_store_si128(&xmm_dest[1], px1);
+	_mm_store_si128(&xmm_dest[0], _mm_or_si128(_mm_unpacklo_epi16(sB, sR), Mask32_A));
+	_mm_store_si128(&xmm_dest[1], _mm_or_si128(_mm_unpackhi_epi16(sB, sR), Mask32_A));
 }
 
 /**
@@ -228,11 +225,8 @@ static inline void VECTORCALL T_ARGB16_sse2(
 	}
 
 	// Unpack AR and GB into DWORDs.
-	__m128i px0 = _mm_unpacklo_epi16(sB, sR);
-	__m128i px1 = _mm_unpackhi_epi16(sB, sR);
-
-	_mm_store_si128(&xmm_dest[0], px0);
-	_mm_store_si128(&xmm_dest[1], px1);
+	_mm_store_si128(&xmm_dest[0], _mm_unpacklo_epi16(sB, sR));
+	_mm_store_si128(&xmm_dest[1], _mm_unpackhi_epi16(sB, sR));
 }
 
 /**
