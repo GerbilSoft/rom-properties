@@ -171,6 +171,7 @@ static FORCEINLINE void cpuid(unsigned int level, unsigned int regs[4])
 #      error Cannot use inline assembly on 64-bit MSVC.
 #    endif
 	__asm {
+		mov	eax, level
 		cpuid
 		mov	regs[0 * TYPE int], eax
 		mov	regs[1 * TYPE int], ebx
