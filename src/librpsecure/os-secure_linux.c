@@ -112,6 +112,34 @@ int rp_secure_enable(rp_secure_param_t param)
 			SCMP_SYS(clone3),		// pthread_create() with glibc-2.34
 			SCMP_SYS(rseq),			// restartable sequences, glibc-2.35
 
+#ifdef __clang__
+			// LLVM/clang's OpenMP implementation (libomp) calls
+			// the following functions:
+			// - getuid() [__kmp_reg_status_name()]
+			// - ftruncate64() [__kmp_register_library_startup(); used on an SHM FD]
+			// - getdents64() [sysconf(), __kmp_get_xproc()]
+			// - getrlimit64() [prlimit64()] [__kmp_runtime_initialize()]
+			// - sysinfo() [get_phys_pages() -> qsort_r() -> __kmp_stg_init()]
+			// - sched_getaffinity() [__kmp_affinity_determine_capable()]
+			// - sched_setaffinity() [KMPNativeAffinity::Mask::set_system_affinity()]
+			// - sched_yield() [__kmp_wait_template<>]
+			// - unlink() [shm_unlink() -> __kmp_unregister_library()] [!!]
+			// - madvise() [called on shutdown for some reason if OpenMP is initialized]
+			// TODO: Only add these if compiling with OpenMP.
+			// TODO: Maybe allow the sched_() functions regardless of compiler?
+			// FIXME: For ftruncate() and unlink(), only allow use of the SHM FD.
+			SCMP_SYS(getuid),
+			SCMP_SYS(ftruncate), SCMP_SYS(ftruncate64),
+			SCMP_SYS(getdents), SCMP_SYS(getdents64),
+			SCMP_SYS(getrlimit), SCMP_SYS(prlimit64),
+			SCMP_SYS(sysinfo),
+			SCMP_SYS(sched_getaffinity),
+			SCMP_SYS(sched_setaffinity),
+			SCMP_SYS(sched_yield),
+			SCMP_SYS(unlink),
+			SCMP_SYS(madvise),
+#endif /* __clang__ */
+
 			-1	// End of whitelist
 		};
 
