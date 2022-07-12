@@ -1068,13 +1068,14 @@ rom_data_view_init_listdata(RomDataView *page,
 		gtk_tree_view_column_set_title(column,
 			(listDataDesc.names ? listDataDesc.names->at(i).c_str() : ""));
 
-		GtkCellRenderer *const renderer = gtk_cell_renderer_text_new();
 		if (col0_renderer != nullptr) {
 			// Prepend the icon/checkbox renderer.
 			gtk_tree_view_column_pack_start(column, col0_renderer, FALSE);
 			gtk_tree_view_column_add_attribute(column, col0_renderer, col0_attr_name, 0);
 			col0_renderer = nullptr;
 		}
+
+		GtkCellRenderer *const renderer = gtk_cell_renderer_text_new();
 		gtk_tree_view_column_pack_start(column, renderer, TRUE);
 		gtk_tree_view_column_add_attribute(column, renderer, "text", listStore_col_idx);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(treeView), column);
