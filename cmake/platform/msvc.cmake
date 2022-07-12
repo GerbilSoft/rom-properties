@@ -44,7 +44,7 @@ FOREACH(FLAG_TEST "/sdl" "/guard:cf" "/utf-8")
 ENDFOREACH()
 
 # "/guard:cf" must be added to linker flags in addition to CFLAGS.
-CHECK_C_COMPILER_FLAG("/guard:cf" CFLAG_guard_cf)
+CHECK_C_COMPILER_FLAG("/guard:cf" CFLAG__guard_cf)
 IF(CFLAG_guard_cf)
 	SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} /guard:cf")
 	SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /guard:cf")
