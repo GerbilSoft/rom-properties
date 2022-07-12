@@ -54,18 +54,31 @@ IF(CFLAG_guard_cf)
 ENDIF(CFLAG_guard_cf)
 UNSET(CFLAG_guard_cf)
 
-# MSVC 2002: wchar_t should be a distinct type.
-IF(MSVC_VERSION GREATER 1200)
-       SET(RP_C_FLAGS_WIN32 "${RP_C_FLAGS_WIN32} /Zc:wchar_t")
-ENDIF()
+# MSVC: C/C++ conformance settings
+FOREACH(FLAG_TEST "/Zc:wchar_t" "/Zc:inline")
+	# CMake doesn't like certain characters in variable names.
+	STRING(REGEX REPLACE "/|:|=" "_" FLAG_TEST_VARNAME "${FLAG_TEST}")
 
-# Make sure MSVC sets __cplusplus correctly.
+	CHECK_C_COMPILER_FLAG("${FLAG_TEST}" CFLAG_${FLAG_TEST_VARNAME})
+	IF(CFLAG_${FLAG_TEST_VARNAME})
+		SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} ${FLAG_TEST}")
+		SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} ${FLAG_TEST}")
+	ENDIF(CFLAG_${FLAG_TEST_VARNAME})
+	UNSET(CFLAG_${FLAG_TEST_VARNAME})
+ENDFOREACH()
+
+# MSVC: C++ conformance settings
 INCLUDE(CheckCXXCompilerFlag)
-CHECK_CXX_COMPILER_FLAG("/Zc:__cplusplus" CXXFLAG_Zc___cplusplus)
-IF(CXXFLAG_Zc___cplusplus)
-       SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /Zc:__cplusplus")
-ENDIF(CXXFLAG_Zc___cplusplus)
-UNSET(CXXFLAG_Zc___cplusplus)
+FOREACH(FLAG_TEST "/Zc:__cplusplus" "/Zc:externC" "/Zc:noexceptTypes" "/Zc:rvalueCast" "/Zc:ternary")
+	# CMake doesn't like certain characters in variable names.
+	STRING(REGEX REPLACE "/|:|=" "_" FLAG_TEST_VARNAME "${FLAG_TEST}")
+
+	CHECK_CXX_COMPILER_FLAG("${FLAG_TEST}" CXXFLAG_${FLAG_TEST_VARNAME})
+	IF(CXXFLAG_${FLAG_TEST_VARNAME})
+		SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} ${FLAG_TEST}")
+	ENDIF(CXXFLAG_${FLAG_TEST_VARNAME})
+	UNSET(CXXFLAG_${FLAG_TEST_VARNAME})
+ENDFOREACH()
 
 # "/Zc:throwingNew" is always enabled on clang-cl, and causes
 # warnings to be printed if it's specified.
