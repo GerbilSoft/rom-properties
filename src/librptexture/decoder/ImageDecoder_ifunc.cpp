@@ -13,6 +13,11 @@
 #include "ImageDecoder_Linear.hpp"
 using namespace LibRpTexture;
 
+// NOTE: llvm/clang 14.0.0 fails to detect the resolver functions
+// if they're marked static, even though the docs say this is okay.
+// In C code, it merely warns that the resolvers aren't used, but
+// in C++ code, the IFUNC_ATTR() attribute fails.
+
 // IFUNC attribute doesn't support C++ name mangling.
 extern "C" {
 
@@ -21,7 +26,7 @@ extern "C" {
  * IFUNC resolver function for fromLinear16().
  * @return Function pointer.
  */
-static __typeof__(&ImageDecoder::fromLinear16_cpp) fromLinear16_resolve(void)
+__typeof__(&ImageDecoder::fromLinear16_cpp) fromLinear16_resolve(void)
 {
 	// NOTE: Since libromdata is a shared library now, IFUNC resolvers
 	// cannot call PLT functions. Otherwise, it will crash.
@@ -43,7 +48,7 @@ static __typeof__(&ImageDecoder::fromLinear16_cpp) fromLinear16_resolve(void)
  * IFUNC resolver function for fromLinear24().
  * @return Function pointer.
  */
-static __typeof__(&ImageDecoder::fromLinear24_cpp) fromLinear24_resolve(void)
+__typeof__(&ImageDecoder::fromLinear24_cpp) fromLinear24_resolve(void)
 {
 #ifdef IMAGEDECODER_HAS_SSSE3
 	__builtin_cpu_init();
@@ -60,7 +65,7 @@ static __typeof__(&ImageDecoder::fromLinear24_cpp) fromLinear24_resolve(void)
  * IFUNC resolver function for fromLinear32().
  * @return Function pointer.
  */
-static __typeof__(&ImageDecoder::fromLinear32_cpp) fromLinear32_resolve(void)
+__typeof__(&ImageDecoder::fromLinear32_cpp) fromLinear32_resolve(void)
 {
 #ifdef IMAGEDECODER_HAS_SSSE3
 	if (RP_CPU_HasSSSE3()) {

@@ -15,6 +15,11 @@
 #include "SuperMagicDrive.hpp"
 using namespace LibRomData;
 
+// NOTE: llvm/clang 14.0.0 fails to detect the resolver functions
+// if they're marked static, even though the docs say this is okay.
+// In C code, it merely warns that the resolvers aren't used, but
+// in C++ code, the IFUNC_ATTR() attribute fails.
+
 // IFUNC attribute doesn't support C++ name mangling.
 extern "C" {
 
@@ -23,7 +28,7 @@ extern "C" {
  * IFUNC resolver function for decodeBlock().
  * @return Function pointer.
  */
-static __typeof__(&SuperMagicDrive::decodeBlock_cpp) decodeBlock_resolve(void)
+__typeof__(&SuperMagicDrive::decodeBlock_cpp) decodeBlock_resolve(void)
 {
 	// NOTE: Since libromdata is a shared library now, IFUNC resolvers
 	// cannot call PLT functions. Otherwise, it will crash.

@@ -14,6 +14,11 @@
 #include "GdkImageConv.hpp"
 using LibRpTexture::rp_image;
 
+// NOTE: llvm/clang 14.0.0 fails to detect the resolver functions
+// if they're marked static, even though the docs say this is okay.
+// In C code, it merely warns that the resolvers aren't used, but
+// in C++ code, the IFUNC_ATTR() attribute fails.
+
 // IFUNC attribute doesn't support C++ name mangling.
 extern "C" {
 
@@ -21,7 +26,7 @@ extern "C" {
  * IFUNC resolver function for rp_image_to_GdkPixbuf().
  * @return Function pointer.
  */
-static __typeof__(&GdkImageConv::rp_image_to_GdkPixbuf_cpp) rp_image_to_GdkPixbuf_resolve(void)
+__typeof__(&GdkImageConv::rp_image_to_GdkPixbuf_cpp) rp_image_to_GdkPixbuf_resolve(void)
 {
 	// NOTE: Since libromdata is a shared library now, IFUNC resolvers
 	// cannot call PLT functions. Otherwise, it will crash.

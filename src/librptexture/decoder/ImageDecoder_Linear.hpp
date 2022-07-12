@@ -333,7 +333,7 @@ RP_LIBROMDATA_PUBLIC
 IFUNC_STATIC_INLINE rp_image *fromLinear32(PixelFormat px_format,
 	int width, int height,
 	const uint32_t *RESTRICT img_buf, size_t img_siz, int stride = 0);
-#else
+#else /* !(HAVE_IFUNC && (RP_CPU_I386 || RP_CPU_AMD64)) */
 // System does not support IFUNC, or we aren't guaranteed to have
 // optimizations for these CPUs. Use standard inline dispatch.
 
@@ -360,7 +360,7 @@ static inline rp_image *fromLinear32(PixelFormat px_format,
 		return fromLinear32_cpp(px_format, width, height, img_buf, img_siz, stride);
 	}
 }
-#endif /* !HAVE_IFUNC || (!RP_CPU_I386 && !RP_CPU_AMD64) */
+#endif /* HAVE_IFUNC && (RP_CPU_I386 || RP_CPU_AMD64) */
 
 } }
 

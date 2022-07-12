@@ -93,7 +93,7 @@ static inline void decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT 
 // System does support IFUNC, and we have to use a dispatch function.
 void RP_LIBROMDATA_PUBLIC decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
 #  endif /* defined(SMD_ALWAYS_HAS_SSE2) */
-#else
+#else /* !(HAVE_IFUNC && (RP_CPU_I386 || RP_CPU_AMD64)) */
 
 // System does not have IFUNC, or is not i386/amd64.
 
@@ -125,7 +125,7 @@ static inline void decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT 
 #endif /* SMD_ALWAYS_HAS_SSE2 */
 }
 
-#endif /* defined(HAVE_IFUNC) && (defined(RP_CPU_I386) || defined(RP_CPU_AMD64)) */
+#endif /* HAVE_IFUNC && (RP_CPU_I386 || RP_CPU_AMD64) */
 
 } }
 

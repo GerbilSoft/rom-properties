@@ -11,6 +11,11 @@
 
 #ifdef HAVE_IFUNC
 
+// NOTE: llvm/clang 14.0.0 fails to detect the resolver functions
+// if they're marked static, even though the docs say this is okay.
+// In C code, it merely warns that the resolvers aren't used, but
+// in C++ code, the IFUNC_ATTR() attribute fails.
+
 /**
  * IFUNC resolver function for rp_byte_swap_16_array().
  * @return Function pointer.
@@ -51,7 +56,7 @@ static __typeof__(&rp_byte_swap_16_array_c) rp_byte_swap_16_array_resolve(void)
  * IFUNC resolver function for rp_byte_swap_32_array().
  * @return Function pointer.
  */
-static __typeof__(&rp_byte_swap_32_array_c) rp_byte_swap_32_array_resolve(void)
+__typeof__(&rp_byte_swap_32_array_c) rp_byte_swap_32_array_resolve(void)
 {
 	// NOTE: Since libromdata is a shared library now, IFUNC resolvers
 	// cannot call PLT functions. Otherwise, it will crash.
