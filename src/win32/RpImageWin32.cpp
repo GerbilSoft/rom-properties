@@ -224,14 +224,13 @@ HBITMAP toHBITMAP(const rp_image *image, uint32_t bgColor)
 /**
  * Convert an rp_image to HBITMAP.
  * This version resizes the image.
- * @param image		[in] rp_image.
+ * @param image		[in] rp_image
  * @param bgColor	[in] Background color for images with alpha transparency. (ARGB32 format)
  * @param size		[in] If non-zero, resize the image to this size.
  * @param nearest	[in] If true, use nearest-neighbor scaling.
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP toHBITMAP(const rp_image *image, uint32_t bgColor,
-		  const SIZE &size, bool nearest)
+HBITMAP toHBITMAP(const rp_image *image, uint32_t bgColor, SIZE size, bool nearest)
 {
 	assert(image != nullptr);
 	assert(image->isValid());
@@ -257,7 +256,7 @@ HBITMAP toHBITMAP(const rp_image *image, uint32_t bgColor,
 /**
  * Convert an rp_image to HBITMAP.
  * This version preserves the alpha channel.
- * @param image	[in] rp_image.
+ * @param image		[in] rp_image
  * @return HBITMAP, or nullptr on error.
  */
 HBITMAP toHBITMAP_alpha(const rp_image *image)
@@ -269,12 +268,12 @@ HBITMAP toHBITMAP_alpha(const rp_image *image)
 /**
  * Convert an rp_image to HBITMAP.
  * This version preserves the alpha channel and resizes the image.
- * @param image		[in] rp_image.
+ * @param image		[in] rp_image
  * @param size		[in] If non-zero, resize the image to this size.
  * @param nearest	[in] If true, use nearest-neighbor scaling.
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP toHBITMAP_alpha(const rp_image *image, const SIZE &size, bool nearest)
+HBITMAP toHBITMAP_alpha(const rp_image *image, SIZE size, bool nearest)
 {
 	assert(image != nullptr);
 	assert(image->isValid());

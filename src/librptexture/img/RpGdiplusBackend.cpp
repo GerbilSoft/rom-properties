@@ -538,7 +538,7 @@ HBITMAP RpGdiplusBackend::toHBITMAP(Gdiplus::ARGB bgColor)
  * @param nearest	[in] If true, use nearest-neighbor scaling.
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpGdiplusBackend::toHBITMAP(uint32_t bgColor, const SIZE &size, bool nearest)
+HBITMAP RpGdiplusBackend::toHBITMAP(uint32_t bgColor, SIZE size, bool nearest)
 {
 	// TODO: Check for errors?
 	unique_ptr<Gdiplus::Bitmap> pTmpBmp;
@@ -681,7 +681,7 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha(void)
  * @param nearest	[in] If true, use nearest-neighbor scaling.
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpGdiplusBackend::toHBITMAP_alpha(const SIZE &size, bool nearest)
+HBITMAP RpGdiplusBackend::toHBITMAP_alpha(SIZE size, bool nearest)
 {
 	// Convert the image to ARGB32 (if necessary) and resize it.
 	Gdiplus::Status status = Gdiplus::Status::GenericError;

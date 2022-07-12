@@ -164,7 +164,7 @@ class RpGdiplusBackend : public rp_image_backend
 		 * @return HBITMAP, or nullptr on error.
 		 */
 		RP_LIBROMDATA_PUBLIC
-		HBITMAP toHBITMAP(uint32_t bgColor, const SIZE &size, bool nearest);
+		HBITMAP toHBITMAP(uint32_t bgColor, SIZE size, bool nearest);
 
 		/**
 		 * Convert the GDI+ image to HBITMAP.
@@ -194,7 +194,7 @@ class RpGdiplusBackend : public rp_image_backend
 		 * @return HBITMAP, or nullptr on error.
 		 */
 		RP_LIBROMDATA_PUBLIC
-		HBITMAP toHBITMAP_alpha(const SIZE &size, bool nearest);
+		HBITMAP toHBITMAP_alpha(SIZE size, bool nearest);
 
 	protected:
 		/**

@@ -168,7 +168,7 @@ void RP_ShellPropSheetExt_Private::loadImages(void)
  * @param sz		[in/out] Image size.
  * @return True if nearest-neighbor scaling should be used (size was kept the same or enlarged); false if shrunken (so use interpolation).
  */
-bool RP_ShellPropSheetExt_Private::rescaleImage(const SIZE &req_sz, SIZE &sz)
+bool RP_ShellPropSheetExt_Private::rescaleImage(SIZE req_sz, SIZE &sz)
 {
 	// TODO: Adjust req_sz for DPI.
 	if (sz.cx == req_sz.cx && sz.cy == req_sz.cy) {
@@ -207,7 +207,7 @@ bool RP_ShellPropSheetExt_Private::rescaleImage(const SIZE &req_sz, SIZE &sz)
  * @param size		[in] Width and height for a full-width single line label.
  * @return Row height, in pixels.
  */
-int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_start, const SIZE &size)
+int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, POINT pt_start, SIZE size)
 {
 	if (!hDlg || !romData)
 		return 0;
@@ -325,7 +325,7 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(HWND hDlg, const POINT &pt_sta
  * @return Field height, in pixels.
  */
 int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
-	_In_ const POINT &pt_start, _In_ const SIZE &size,
+	_In_ POINT pt_start, _In_ SIZE size,
 	_In_ const RomFields::Field &field, _In_ int fieldIdx,
 	_In_ LPCTSTR str, _Outptr_opt_ HWND *pOutHWND)
 {
@@ -561,8 +561,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
  * @return Field height, in pixels.
  */
 int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
-	const POINT &pt_start,
-	const RomFields::Field &field, int fieldIdx)
+	POINT pt_start, const RomFields::Field &field, int fieldIdx)
 {
 	// Checkbox size.
 	// Reference: http://stackoverflow.com/questions/1164868/how-to-get-size-of-check-and-gap-in-check-box
@@ -741,7 +740,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
  * @return Field height, in pixels.
  */
 int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
-	const POINT &pt_start, const SIZE &size, bool doResize,
+	POINT pt_start, SIZE size, bool doResize,
 	const RomFields::Field &field, int fieldIdx)
 {
 	const auto &listDataDesc = field.desc.list_data;
@@ -1211,7 +1210,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
  * @return Field height, in pixels.
  */
 int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg, HWND hWndTab,
-	const POINT &pt_start, const SIZE &size,
+	POINT pt_start, SIZE size,
 	const RomFields::Field &field, int fieldIdx)
 {
 	if (field.data.date_time == -1) {
@@ -1323,7 +1322,7 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg, HWND hWndTab,
  * @return Field height, in pixels.
  */
 int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg, HWND hWndTab,
-	const POINT &pt_start, const SIZE &size,
+	POINT pt_start, SIZE size,
 	const RomFields::Field &field, int fieldIdx)
 {
 	const RomFields::age_ratings_t *const age_ratings = field.data.age_ratings;
@@ -1352,7 +1351,7 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg, HWND hWndTab,
  * @return Field height, in pixels.
  */
 int RP_ShellPropSheetExt_Private::initDimensions(HWND hDlg, HWND hWndTab,
-	const POINT &pt_start, const SIZE &size,
+	POINT pt_start, SIZE size,
 	const RomFields::Field &field, int fieldIdx)
 {
 	// TODO: 'x' or '×'? Using 'x' for now.
@@ -1385,7 +1384,7 @@ int RP_ShellPropSheetExt_Private::initDimensions(HWND hDlg, HWND hWndTab,
  * @return Field height, in pixels.
  */
 int RP_ShellPropSheetExt_Private::initStringMulti(HWND hDlg, HWND hWndTab,
-	const POINT &pt_start, const SIZE &size,
+	POINT pt_start, SIZE size,
 	const RomFields::Field &field, int fieldIdx)
 {
 	// Mutli-language string.

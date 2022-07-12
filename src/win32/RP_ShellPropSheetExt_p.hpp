@@ -185,7 +185,7 @@ class RP_ShellPropSheetExt_Private
 		 * @param sz		[in/out] Image size.
 		 * @return True if nearest-neighbor scaling should be used (size was kept the same or enlarged); false if shrunken (so use interpolation).
 		 */
-		static bool rescaleImage(const SIZE &req_sz, SIZE &sz);
+		static bool rescaleImage(SIZE req_sz, SIZE &sz);
 
 		/**
 		 * Create the header row.
@@ -194,7 +194,7 @@ class RP_ShellPropSheetExt_Private
 		 * @param size		[in] Width and height for a full-width single line label.
 		 * @return Row height, in pixels.
 		 */
-		int createHeaderRow(HWND hDlg, const POINT &pt_start, const SIZE &size);
+		int createHeaderRow(HWND hDlg, POINT pt_start, SIZE size);
 
 		/**
 		 * Initialize a string field. (Also used for Date/Time.)
@@ -209,7 +209,7 @@ class RP_ShellPropSheetExt_Private
 		 * @return Field height, in pixels.
 		 */
 		int initString(_In_ HWND hDlg, _In_ HWND hWndTab,
-			_In_ const POINT &pt_start, _In_ const SIZE &size,
+			_In_ POINT pt_start, _In_ SIZE size,
 			_In_ const LibRpBase::RomFields::Field &field, _In_ int fieldIdx,
 			_In_ LPCTSTR str = nullptr, _Outptr_opt_ HWND *pOutHWND = nullptr);
 
@@ -223,8 +223,7 @@ class RP_ShellPropSheetExt_Private
 		 * @return Field height, in pixels.
 		 */
 		int initBitfield(HWND hDlg, HWND hWndTab,
-			const POINT &pt_start,
-			const LibRpBase::RomFields::Field &field, int fieldIdx);
+			POINT pt_start, const LibRpBase::RomFields::Field &field, int fieldIdx);
 
 		/**
 		 * Initialize a ListData field.
@@ -238,7 +237,7 @@ class RP_ShellPropSheetExt_Private
 		 * @return Field height, in pixels.
 		 */
 		int initListData(HWND hDlg, HWND hWndTab,
-			const POINT &pt_start, const SIZE &size, bool doResize,
+			POINT pt_start, SIZE size, bool doResize,
 			const LibRpBase::RomFields::Field &field, int fieldIdx);
 
 		/**
@@ -253,7 +252,7 @@ class RP_ShellPropSheetExt_Private
 		 * @return Field height, in pixels.
 		 */
 		int initDateTime(HWND hDlg, HWND hWndTab,
-			const POINT &pt_start, const SIZE &size,
+			POINT pt_start, SIZE size,
 			const LibRpBase::RomFields::Field &field, int fieldIdx);
 
 		/**
@@ -268,7 +267,7 @@ class RP_ShellPropSheetExt_Private
 		 * @return Field height, in pixels.
 		 */
 		int initAgeRatings(HWND hDlg, HWND hWndTab,
-			const POINT &pt_start, const SIZE &size,
+			POINT pt_start, SIZE size,
 			const LibRpBase::RomFields::Field &field, int fieldIdx);
 
 		/**
@@ -283,7 +282,7 @@ class RP_ShellPropSheetExt_Private
 		 * @return Field height, in pixels.
 		 */
 		int initDimensions(HWND hDlg, HWND hWndTab,
-			const POINT &pt_start, const SIZE &size,
+			POINT pt_start, SIZE size,
 			const LibRpBase::RomFields::Field &field, int fieldIdx);
 
 		/**
@@ -297,7 +296,7 @@ class RP_ShellPropSheetExt_Private
 		 * @return Field height, in pixels.
 		 */
 		int initStringMulti(HWND hDlg, HWND hWndTab,
-			const POINT &pt_start, const SIZE &size,
+			POINT pt_start, SIZE size,
 			const LibRpBase::RomFields::Field &field, int fieldIdx);
 
 		/**

@@ -98,7 +98,7 @@ class DragImageLabelPrivate
 		 * @param sz		[in/out] Image size.
 		 * @return True if nearest-neighbor scaling should be used (size was kept the same or enlarged); false if shrunken (so use interpolation).
 		 */
-		static bool rescaleImage(const SIZE &req_sz, SIZE &sz);
+		static bool rescaleImage(SIZE req_sz, SIZE &sz);
 
 		/**
 		 * Update the bitmap(s).
@@ -161,7 +161,7 @@ DragImageLabelPrivate::~DragImageLabelPrivate()
  * @param sz		[in/out] Image size.
  * @return True if nearest-neighbor scaling should be used (size was kept the same or enlarged); false if shrunken (so use interpolation).
  */
-bool DragImageLabelPrivate::rescaleImage(const SIZE &req_sz, SIZE &sz)
+bool DragImageLabelPrivate::rescaleImage(SIZE req_sz, SIZE &sz)
 {
 	// TODO: Adjust req_sz for DPI.
 	if (sz.cx == req_sz.cx && sz.cy == req_sz.cy) {
@@ -369,7 +369,7 @@ SIZE DragImageLabel::requiredSize(void) const
 	return d->requiredSize;
 }
 
-void DragImageLabel::setRequiredSize(const SIZE &requiredSize)
+void DragImageLabel::setRequiredSize(SIZE requiredSize)
 {
 	RP_D(DragImageLabel);
 	if (d->requiredSize.cx != requiredSize.cx ||
@@ -404,7 +404,7 @@ POINT DragImageLabel::position(void) const
 	return d->position;
 }
 
-void DragImageLabel::setPosition(const POINT &position)
+void DragImageLabel::setPosition(POINT position)
 {
 	RP_D(DragImageLabel);
 	if (d->position.x != position.x ||
