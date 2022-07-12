@@ -48,7 +48,7 @@ namespace LibRpTexture { namespace ImageDecoder {
 template<uint8_t Rshift_W, uint8_t Gshift_W, uint8_t Bshift_W,
 	uint8_t Rbits, uint8_t Gbits, uint8_t Bbits, bool isBGR>
 static inline void T_RGB16_sse2(
-	const __m128i &Rmask, const __m128i &Gmask, const __m128i &Bmask,
+	__m128i Rmask, __m128i Gmask, __m128i Bmask,
 	const uint16_t *RESTRICT img_buf, uint32_t *RESTRICT px_dest)
 {
 	// Alpha mask.
@@ -122,7 +122,7 @@ static inline void T_RGB16_sse2(
 template<uint8_t Ashift_W, uint8_t Rshift_W, uint8_t Gshift_W, uint8_t Bshift_W,
 	uint8_t Abits, uint8_t Rbits, uint8_t Gbits, uint8_t Bbits, bool isBGR>
 static inline void T_ARGB16_sse2(
-	const __m128i &Amask, const __m128i &Rmask, const __m128i &Gmask, const __m128i &Bmask,
+	__m128i Amask, __m128i Rmask, __m128i Gmask, __m128i Bmask,
 	const uint16_t *RESTRICT img_buf, uint32_t *RESTRICT px_dest)
 {
 	static_assert(Ashift_W <= 17, "Ashift_W is invalid.");
