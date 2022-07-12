@@ -21,8 +21,27 @@ using namespace LibRpTexture::PixelConversion;
 // MSVC complains when the high bit is set in hex values
 // when setting SSE2 registers.
 #ifdef _MSC_VER
-# pragma warning(push)
-# pragma warning(disable: 4309)
+#  pragma warning(push)
+#  pragma warning(disable: 4309)
+#endif
+
+// MSVC 2013+: Use __vectorcall for the templated functions.
+// Other i386: Pass __m128i by const ref.
+// Other AMD64: Pass __m128i by value.
+// MSVC 2015 on AppVeyor fails if 4 or more __m128i are passed by value on 32-bit:
+// error C2719: 'Bmask': formal parameter with requested alignment of 16 won't be aligned
+// I'm not 100% sure if it'll be aligned properly even if there's only three,
+// so for now, I'll force `const __m128i&` on 32-bit.
+#if defined(_MSC_VER) && _MSC_VER >= 1800
+#  define VECTORCALL __vectorcall
+#  define __M128I_ARG 	__m128i
+#else
+#  define VECTORCALL
+#  if defined(_M_X64) || defined(_M_AMD64) || defined(__amd64__) || defined(__x86_64__)
+#    define __M128I_ARG 	__m128i
+#  else
+#    define __M128I_ARG 	const __m128i&
+#  endif
 #endif
 
 namespace LibRpTexture { namespace ImageDecoder {
@@ -47,8 +66,8 @@ namespace LibRpTexture { namespace ImageDecoder {
  */
 template<uint8_t Rshift_W, uint8_t Gshift_W, uint8_t Bshift_W,
 	uint8_t Rbits, uint8_t Gbits, uint8_t Bbits, bool isBGR>
-static inline void T_RGB16_sse2(
-	__m128i Rmask, __m128i Gmask, __m128i Bmask,
+static inline void VECTORCALL T_RGB16_sse2(
+	__M128I_ARG Rmask, __M128I_ARG Gmask, __M128I_ARG Bmask,
 	const uint16_t *RESTRICT img_buf, uint32_t *RESTRICT px_dest)
 {
 	// Alpha mask.
@@ -121,8 +140,8 @@ static inline void T_RGB16_sse2(
  */
 template<uint8_t Ashift_W, uint8_t Rshift_W, uint8_t Gshift_W, uint8_t Bshift_W,
 	uint8_t Abits, uint8_t Rbits, uint8_t Gbits, uint8_t Bbits, bool isBGR>
-static inline void T_ARGB16_sse2(
-	__m128i Amask, __m128i Rmask, __m128i Gmask, __m128i Bmask,
+static inline void VECTORCALL T_ARGB16_sse2(
+	__M128I_ARG Amask, __M128I_ARG Rmask, __M128I_ARG Gmask, __M128I_ARG Bmask,
 	const uint16_t *RESTRICT img_buf, uint32_t *RESTRICT px_dest)
 {
 	static_assert(Ashift_W <= 17, "Ashift_W is invalid.");
