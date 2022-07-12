@@ -45,6 +45,6 @@ void decodeBlock_sse2(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc)
 		p[2] = _mm_unpacklo_epi8(pSrc_even[1], pSrc_odd[1]);
 		p[3] = _mm_unpackhi_epi8(pSrc_even[1], pSrc_odd[1]);
 	}
-} }
-
 }
+
+} }
