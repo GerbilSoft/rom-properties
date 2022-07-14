@@ -1,10 +1,10 @@
 # Find ThunarX libraries and headers. (GTK+ 3.x version)
 # If found, the following variables will be defined:
-# - ThunarX2_FOUND: System has ThunarX.
-# - ThunarX2_INCLUDE_DIRS: ThunarX include directories.
-# - ThunarX2_LIBRARIES: ThunarX libraries.
-# - ThunarX2_DEFINITIONS: Compiler switches required for using ThunarX.
-# - ThunarX2_EXTENSIONS_DIR: Extensions directory. (for installation)
+# - ThunarX3_FOUND: System has ThunarX.
+# - ThunarX3_INCLUDE_DIRS: ThunarX include directories.
+# - ThunarX3_LIBRARIES: ThunarX libraries.
+# - ThunarX3_DEFINITIONS: Compiler switches required for using ThunarX.
+# - ThunarX3_EXTENSIONS_DIR: Extensions directory. (for installation)
 #
 # In addition, a target Xfce::thunarx-3 will be created with all of
 # these definitions.
@@ -27,5 +27,5 @@ FIND_LIBRARY_PKG_CONFIG(ThunarX3
 IF(ThunarX3_FOUND AND NOT ThunarX3_EXTENSIONS_DIR)
 	MESSAGE(WARNING "ThunarX3_EXTENSIONS_DIR is not set; using defaults.")
 	INCLUDE(DirInstallPaths)
-	SET(ThunarX2_EXTENSIONS_DIR "${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_LIB}/thunarx-3" CACHE INTERNAL "ThunarX3_EXTENSIONS_DIR")
+	SET(ThunarX3_EXTENSIONS_DIR "${CMAKE_INSTALL_PREFIX}/${DIR_INSTALL_LIB}/thunarx-3" CACHE INTERNAL "ThunarX3_EXTENSIONS_DIR")
 ENDIF(ThunarX3_FOUND AND NOT ThunarX3_EXTENSIONS_DIR)
