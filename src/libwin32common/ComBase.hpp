@@ -17,6 +17,8 @@
  * - http://stackoverflow.com/questions/17310733/how-do-i-re-use-an-interface-implementation-in-many-classes
  */
 
+#include <assert.h>
+
 // QISearch()
 #include "sdk/QITab.h"
 
@@ -40,10 +42,6 @@ bool ComBase_isReferenced(void);
 RP_LIBROMDATA_PUBLIC
 HRESULT WINAPI rp_QISearch(_Inout_ void *that, _In_ LPCQITAB pqit, _In_ REFIID riid, _COM_Outptr_ void **ppv);
 
-// IsThemeActive() [wrapper function for uxtheme.dll!IsThemeActive]
-RP_LIBROMDATA_PUBLIC
-bool isThemeActive(void);
-
 #define RP_COMBASE_IMPL(name) \
 { \
 	protected: \
@@ -55,7 +53,10 @@ bool isThemeActive(void);
 		{ \
 			incRpGlobalRefCount(); \
 		} \
-		virtual ~name() { } \
+		virtual ~name() \
+		{ \
+			assert(m_ulRefCount == 0); \
+		} \
 	\
 	public: \
 		/** IUnknown **/ \
@@ -68,6 +69,7 @@ bool isThemeActive(void);
 		\
 		IFACEMETHODIMP_(ULONG) Release(void) final \
 		{ \
+			assert(m_ulRefCount > 0); \
 			ULONG ulRefCount = InterlockedDecrement(&m_ulRefCount); \
 			if (ulRefCount == 0) { \
 				/* No more references. */ \
