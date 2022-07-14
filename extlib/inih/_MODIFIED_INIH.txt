@@ -1,9 +1,9 @@
-This copy of inih-r53 is a modified version of the original.
+This copy of inih-r56 is a modified version of the original.
 
-commit cb55f57d87ae840bd0f65dbe6bd22fa021a873a7
-meson: add static compile args to inih_dep (#126)
+commit 5e1d9e2625842dddb3f9c086a50f22e4f45dfc2b
+Bump up version to r56 for release
 
-Tag: r53
+Tag: r56
 
 The following changes have been made to the original:
 

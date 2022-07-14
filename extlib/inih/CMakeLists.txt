@@ -18,6 +18,9 @@ ADD_LIBRARY(inih STATIC ${inih_SRCS})
 TARGET_INCLUDE_DIRECTORIES(inih
 	INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}
 	)
+# inih is not exported by libromdata, so disable
+# its symbol visibility definitions.
+TARGET_COMPILE_DEFINITIONS(inih PUBLIC INI_API=)
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
 IF(UNIX AND NOT APPLE)
