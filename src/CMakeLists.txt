@@ -89,7 +89,7 @@ ENDIF(BUILD_GTK4)
 # Write the version number to config.version.h.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.version.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.version.h")
 
-# Write stdbool.h.
+# Write stdboolx.h.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/stdboolx.h.in" "${CMAKE_CURRENT_BINARY_DIR}/stdboolx.h")
 
 # Build certain libraries as shared libraries on Linux and Windows.
