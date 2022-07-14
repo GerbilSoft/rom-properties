@@ -1,3 +1,4 @@
+# Resources
 PROJECT(res)
 
 IF(BUILD_GTK2 OR BUILD_GTK3)

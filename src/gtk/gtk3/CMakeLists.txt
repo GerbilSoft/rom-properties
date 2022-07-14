@@ -3,7 +3,6 @@
 # - Caja 1.18 (MATE)
 # - Nemo (Cinnamon)
 # - Thunar 1.8 (XFCE)
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 CMAKE_POLICY(SET CMP0048 NEW)
 IF(POLICY CMP0063)
 	# CMake 3.3: Enable symbol visibility presets for all

@@ -1,5 +1,5 @@
 # ROM Properties Page Shell Extension
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.4)
 CMAKE_POLICY(SET CMP0048 NEW)
 
 # Read the project version.
