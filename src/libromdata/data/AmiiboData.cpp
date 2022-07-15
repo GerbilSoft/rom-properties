@@ -350,7 +350,6 @@ int AmiiboDataPrivate::loadIfNeeded(void)
 	const size_t fileSize = static_cast<size_t>(fileSize_o);
 	amiibo_bin_data.resize(fileSize);
 	size_t size = pFile->read(amiibo_bin_data.data(), fileSize);
-	pFile->unref();
 	if (size != fileSize) {
 		// Read error.
 		int err = -pFile->lastError();
@@ -358,8 +357,10 @@ int AmiiboDataPrivate::loadIfNeeded(void)
 			err = -EIO;
 		}
 		amiibo_bin_data.clear();
+		pFile->unref();
 		return err;
 	}
+	pFile->unref();
 
 	// Verify the header.
 	const AmiiboBinHeader *const pHeader_tmp =
