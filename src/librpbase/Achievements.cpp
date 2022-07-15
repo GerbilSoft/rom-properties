@@ -483,7 +483,7 @@ int AchievementsPrivate::save(void) const
 			ret = -EIO;
 		}
 		file->unref();
-		return -EIO;
+		return ret;
 	}
 	file->unref();
 
