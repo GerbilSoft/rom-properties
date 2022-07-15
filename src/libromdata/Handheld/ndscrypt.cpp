@@ -116,7 +116,6 @@ int ndscrypt_load_blowfish_bin(BlowfishKey bfkey)
 	// Read the file.
 	blowfish_data[bfkey].reset(new uint8_t[NDS_BLOWFISH_SIZE]);
 	size_t size = f_blowfish->read(blowfish_data[bfkey].get(), NDS_BLOWFISH_SIZE);
-	f_blowfish->unref();
 	if (size != NDS_BLOWFISH_SIZE) {
 		// Read error.
 		blowfish_data[bfkey].reset(nullptr);
@@ -124,8 +123,10 @@ int ndscrypt_load_blowfish_bin(BlowfishKey bfkey)
 		if (err == 0) {
 			err = EIO;
 		}
+		f_blowfish->unref();
 		return -err;
 	}
+	f_blowfish->unref();
 
 	// Verify the MD5.
 	uint8_t md5[16];
