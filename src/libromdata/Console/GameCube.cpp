@@ -498,8 +498,9 @@ int GameCubePrivate::gcn_loadOpeningBnr(void)
 	IRpFile *const f_opening_bnr = gcnPartition->open("/opening.bnr");
 	if (!f_opening_bnr) {
 		// Error opening "opening.bnr".
+		const int err = -gcnPartition->lastError();
 		gcnPartition->unref();
-		return -gcnPartition->lastError();
+		return err;
 	}
 
 	// Attempt to open a GameCubeBNR subclass.
