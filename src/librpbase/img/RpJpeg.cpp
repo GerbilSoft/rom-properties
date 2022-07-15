@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpJpeg.cpp: JPEG image handler.                                         *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,7 +22,7 @@ using LibRpTexture::rp_image;
 using LibRpTexture::argb32_t;
 
 #ifdef RPJPEG_HAS_SSSE3
-# include "librpcpu/cpuflags_x86.h"
+#  include "librpcpu/cpuflags_x86.h"
 #endif /* RPJPEG_HAS_SSSE3 */
 
 // C includes. (C++ namespace)
@@ -30,7 +30,7 @@ using LibRpTexture::argb32_t;
 
 #ifdef _WIN32
 // For OutputDebugStringA().
-#include <windows.h>
+#  include <windows.h>
 #endif /* _WIN32 */
 
 namespace LibRpBase {
@@ -75,11 +75,11 @@ void JPEGCALL RpJpegPrivate::my_output_message(j_common_ptr cinfo)
 	snprintf(txtbuf, sizeof(txtbuf), "libjpeg error: %s", buffer);
 	OutputDebugStringA(txtbuf);
 	OutputDebugStringA("\n");
-#else
+#else /* !_WIN32 */
 	// Print to stderr.
 	fprintf(stderr, C_("RpJpeg", "libjpeg error: %s"), buffer);
 	fputc('\n', stderr);
-#endif
+#endif /* _WIN32 */
 }
 
 /** I/O functions. **/
@@ -257,7 +257,7 @@ rp_image *RpJpeg::load(IRpFile *file)
 			// NOTE: buffer is allocated using JPEG allocation functions,
 			// so it's automatically freed when we destroy cinfo.
 			jpeg_destroy_decompress(&cinfo);
-			img->unref();
+			UNREF(img);
 			return nullptr;
 		}
 	}
