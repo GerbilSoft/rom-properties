@@ -2016,19 +2016,20 @@ rom_data_view_load_rom_data(RomDataView *page)
 	}
 
 	// Do we have a RomData object loaded already?
-	if (!page->romData) {
-		// No RomData object. Load the specified URI.
-		RomData *const romData = rp_gtk_open_uri(page->uri);
-		if (romData) {
-			// FIXME: If called from rom_data_view_set_property(), this might
-			// result in *two* notifications.
-			page->romData->unref();
-			page->romData = romData;
-			page->hasCheckedAchievements = false;
-			g_object_notify_by_pspec(G_OBJECT(page), props[PROP_SHOWING_DATA]);
-		}
-	} else {
-		// RomData object is already loaded.
+	if (page->romData) {
+		// Unload the existing RomData object.
+		page->romData->unref();
+		page->romData = nullptr;
+		page->hasCheckedAchievements = false;
+		g_object_notify_by_pspec(G_OBJECT(page), props[PROP_SHOWING_DATA]);
+	}
+
+	// Load the specified URI.
+	RomData *const romData = rp_gtk_open_uri(page->uri);
+	if (romData) {
+		// FIXME: If called from rom_data_view_set_property(), this might
+		// result in *two* notifications.
+		page->romData = romData;
 		page->hasCheckedAchievements = false;
 		g_object_notify_by_pspec(G_OBJECT(page), props[PROP_SHOWING_DATA]);
 	}
