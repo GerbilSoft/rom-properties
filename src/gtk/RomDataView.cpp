@@ -753,11 +753,7 @@ rom_data_view_init_bitfield(RomDataView *page,
 	// Bitfield type. Create a grid of checkboxes.
 	// TODO: Description label needs some padding on the top...
 	const auto &bitfieldDesc = field.desc.bitfield;
-
-	int count = (int)bitfieldDesc.names->size();
-	assert(count <= 32);
-	if (count > 32)
-		count = 32;
+	assert(bitfieldDesc.names->size() <= 32);
 
 #ifdef USE_GTK_GRID
 	GtkWidget *widget = gtk_grid_new();
@@ -765,6 +761,10 @@ rom_data_view_init_bitfield(RomDataView *page,
 	//gtk_grid_set_row_spacings(GTK_TABLE(widget), 2);
 	//gtk_grid_set_column_spacings(GTK_TABLE(widget), 8);
 #else /* !USE_GTK_GRID */
+	int count = (int)bitfieldDesc.names->size();
+	if (count > 32)
+		count = 32;
+
 	// Determine the total number of rows and columns.
 	int totalRows, totalCols;
 	if (bitfieldDesc.elemsPerRow == 0) {

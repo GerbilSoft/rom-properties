@@ -205,10 +205,7 @@ public:
 			(bitfieldDesc.elemsPerRow ? bitfieldDesc.elemsPerRow : 4));
 
 		unique_ptr<size_t[]> colSize(new size_t[perRow]());
-		unsigned int count = static_cast<unsigned int>(bitfieldDesc.names->size());
-		assert(count <= 32);
-		if (count > 32)
-			count = 32;
+		assert(bitfieldDesc.names->size() <= 32);
 
 		// Determine the column widths.
 		unsigned int col = 0;

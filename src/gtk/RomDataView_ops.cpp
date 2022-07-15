@@ -170,10 +170,6 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 			// Bits with a blank name aren't included, so we'll need to iterate
 			// over the bitfield description.
 			const auto &bitfieldDesc = field->desc.bitfield;
-			int count = (int)bitfieldDesc.names->size();
-			assert(count <= 32);
-			if (count > 32)
-				count = 32;
 
 #if GTK_CHECK_VERSION(4,0,0)
 			// Get the first child.

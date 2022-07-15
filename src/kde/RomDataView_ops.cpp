@@ -140,11 +140,6 @@ int RomDataViewPrivate::updateField(int fieldIdx)
 			// Bits with a blank name aren't included, so we'll need to iterate
 			// over the bitfield description.
 			const auto &bitfieldDesc = field->desc.bitfield;
-			int count = (int)bitfieldDesc.names->size();
-			assert(count <= 32);
-			if (count > 32)
-				count = 32;
-
 			uint32_t bitfield = field->data.bitfield;
 			const auto names_cend = bitfieldDesc.names->cend();
 			int layoutIdx = 0;

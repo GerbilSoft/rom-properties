@@ -537,7 +537,6 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 	size = file->seekAndRead(addr, content_chunks.data(), content_chunks_size);
 	if (size != content_chunks_size) {
 		// Seek and/or read error.
-		content_count = 0;
 		content_chunks.clear();
 		return -10;
 	}
