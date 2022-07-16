@@ -435,7 +435,7 @@ void LuaPrivate::parse4(uint8_t version, const uint8_t *p) {
 	// Some magic bytes for detecting transmission failures. Very similar to PNG magic.
 	// 5.2 had this at the end of the header.
 	if (version >= 0x53) {
-		if (memcmp(p, LUA_TAIL, sizeof(LUA_TAIL)-1)) {
+		if (memcmp(p, LUA_TAIL, sizeof(LUA_TAIL)-1) != 0) {
 			corrupted = true;
 			return;
 		}
@@ -523,7 +523,7 @@ void LuaPrivate::parse4(uint8_t version, const uint8_t *p) {
 	}
 
 	if (version == 0x52) {
-		if (memcmp(p, LUA_TAIL, sizeof(LUA_TAIL)-1)) {
+		if (memcmp(p, LUA_TAIL, sizeof(LUA_TAIL)-1) != 0) {
 			corrupted = true;
 		}
 		// End of header for 5.2
