@@ -2,7 +2,7 @@
 # Format: ID|Name
 # ID is always interpreted as decimal.
 
-# NOTE: IDs are relative to 1000156xxx for base.
+# NOTE: IDs are relative to 1000156000 for base.
 
 # 1000156000
 0|G8B8G8R8_422_UNORM
