@@ -394,7 +394,7 @@ int AchWin32Private::notifyFunc(Achievements::ID id)
 	nid.szInfoTitle[_countof(nid.szInfoTitle)-1] = _T('\0');
 
 	_tcsncpy(nid.szInfo, U82T_s(info), _countof(nid.szInfo));
-	nid.szInfo[_countof(nid.szInfo)] = _T('\0');
+	nid.szInfo[_countof(nid.szInfo)-1] = _T('\0');
 
 	bRet = Shell_NotifyIcon(NIM_MODIFY, &nid);
 	if (!bRet) {
