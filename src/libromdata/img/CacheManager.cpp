@@ -118,7 +118,7 @@ string CacheManager::download(const string &cache_key)
 	// Check if the file already exists.
 	off64_t filesize = 0;
 	time_t filemtime = 0;
-	int ret = FileSystem::get_file_size_and_mtime(cache_filename.c_str(), &filesize, &filemtime);
+	int ret = FileSystem::get_file_size_and_mtime(cache_filename, &filesize, &filemtime);
 	if (ret == 0) {
 		// Check if the file is 0 bytes.
 		// TODO: How should we handle errors?
