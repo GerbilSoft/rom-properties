@@ -367,7 +367,7 @@ void GcnFstTest::checkNoDuplicateFilenames(const char *subdir)
 		if (!path.empty() && path[path.size()-1] != '/') {
 			path += '/';
 		}
-		path += p.c_str();
+		path += p;
 		checkNoDuplicateFilenames(path.c_str());
 	}
 
