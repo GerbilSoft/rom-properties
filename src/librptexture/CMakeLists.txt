@@ -120,6 +120,12 @@ SET(${PROJECT_NAME}_H
 	data/DX10Formats_data.h
 	data/GLenumStrings.hpp
 	data/VkEnumStrings.hpp
+	data/vkEnum_base_data.h
+	data/vkEnum_1000156xxx_data.h
+	data/vkEnum_1000330xxx_data.h
+	data/vkEnum_1000340xxx_data.h
+	data/vkEnum_PVRTC_data.h
+	data/vkEnum_ASTC_data.h
 	)
 
 IF(WIN32)
