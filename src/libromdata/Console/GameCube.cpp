@@ -236,6 +236,7 @@ const char *const GameCubePrivate::mimeTypes[] = {
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-cso",		// technically a different format...
+	"application/x-compressed-iso",	// KDE detects CISO as this
 	"application/x-nasos-image",
 	"application/x-gcz-image",
 	"application/x-rvz-image",

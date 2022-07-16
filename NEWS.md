@@ -31,6 +31,8 @@
 * New parser features:
   * ELF: OSABI 102 (Cell LV2) is now detected.
   * DirectDrawSurface: Support non-standard ASTC FourCCs.
+  * GameCube, PSP: Add missing MIME types. Among other things, this fixes
+    missing metadata for GameCube CISO files.
 
 * Bug fixes:
   * Lua: Fix a crash on Windows where systemName() sometimes returned

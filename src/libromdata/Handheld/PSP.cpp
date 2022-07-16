@@ -107,9 +107,18 @@ const char *const PSPPrivate::exts[] = {
 	nullptr
 };
 const char *const PSPPrivate::mimeTypes[] = {
-	// Unofficial MIME types from FreeDesktop.org..
+	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-cd-image",
 	"application/x-iso9660-image",
+
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-psp-ciso-image",
+	"application/x-cso",		// technically a different format...
+	"application/x-compressed-iso",	// KDE detects CISO as this
+	"application/x-psp-dax-image",
+	"application/x-psp-jiso-image",
+	"application/x-psp-ziso-image",
 
 	// TODO: PSP?
 	nullptr
