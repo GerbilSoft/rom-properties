@@ -165,15 +165,17 @@ WiiU::WiiU(IRpFile *file)
 		case WiiUPrivate::DiscType::Unknown:
 		default:
 			// Disc image is invalid.
+			d->discReader = nullptr;
 			d->fileType = FileType::Unknown;
 			d->discType = WiiUPrivate::DiscType::Unknown;
 			UNREF_AND_NULL_NOCHK(d->file);
-			break;
+			return;
 	}
 
 	if (!d->discReader || !d->discReader->isOpen()) {
 		// Error opening the DiscReader.
 		UNREF_AND_NULL(d->discReader);
+		UNREF_AND_NULL_NOCHK(d->file);
 		d->fileType = FileType::Unknown;
 		d->discType = WiiUPrivate::DiscType::Unknown;
 		return;
