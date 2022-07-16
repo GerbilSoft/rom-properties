@@ -569,11 +569,9 @@ string Xbox360_XDBF_Private::loadString_GPD(uint16_t string_id)
 			continue;
 		}
 
-		// Check for Sync List or Sync Data entry.
-		if (p.resource_id == cpu_to_be64(XDBF_GPD_SYNC_LIST_ENTRY) ||
-		    p.resource_id == cpu_to_be64(XDBF_GPD_SYNC_DATA_ENTRY))
-		{
-			// Skip this entry.
+		// Check for a matching resource ID.
+		if (p.resource_id != string_id) {
+			// Not a match. Skip this entry.
 			continue;
 		}
 
@@ -600,8 +598,9 @@ string Xbox360_XDBF_Private::loadString_GPD(uint16_t string_id)
 			continue;
 		}
 
-		// Convert from UTF-16BE.
-		ret = utf16be_to_utf8(sbuf.get(), length / 2);
+		// Convert from UTF-16BE and DOS line endings.
+		ret = dos2unix(utf16be_to_utf8(sbuf.get(), length / 2));
+		break;
 	}
 
 	return ret;
@@ -1501,13 +1500,13 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
 		// For now, assuming all achievements are unlocked.
 		string desc;
 		if (pTitle) {
-			desc = utf16be_to_utf8(pTitle, -1);
+			desc = dos2unix(utf16be_to_utf8(pTitle, -1));
 		}
 		if (pUnlockedDesc) {
 			if (!desc.empty()) {
 				desc += '\n';
 			}
-			desc += utf16be_to_utf8(pUnlockedDesc, -1);
+			desc += dos2unix(utf16be_to_utf8(pUnlockedDesc, -1));
 		}
 
 		// Add to RFT_LISTDATA.
