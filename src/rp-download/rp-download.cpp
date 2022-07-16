@@ -677,7 +677,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	} else if (ret == -ENOENT) {
 		// File not found. We'll need to download it.
 		// Make sure the path structure exists.
-		int ret = rmkdir(cache_filename.c_str());
+		int ret = rmkdir(cache_filename);
 		if (ret != 0) {
 			SHOW_ERROR(_T("Error creating directory structure: %s"), _tcserror(-ret));
 			return EXIT_FAILURE;
