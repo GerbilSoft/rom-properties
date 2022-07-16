@@ -14,6 +14,8 @@ namespace LibRpTexture { namespace VkEnumStrings {
 
 #include "vkEnum_base_data.h"
 #include "vkEnum_1000156xxx_data.h"
+#include "vkEnum_1000330xxx_data.h"
+#include "vkEnum_1000340xxx_data.h"
 #include "vkEnum_PVRTC_data.h"
 #include "vkEnum_ASTC_data.h"
 
@@ -39,6 +41,18 @@ const char *lookup_vkFormat(unsigned int vkFormat)
 	{
 		tbl = vkEnum_1000156xxx_strtbl;
 		offset = vkEnum_1000156xxx_offtbl[vkFormat - VK_FORMAT_G8B8G8R8_422_UNORM];
+	}
+	else if (vkFormat >= VK_FORMAT_G8_B8R8_2PLANE_444_UNORM &&
+	         vkFormat <= VK_FORMAT_G16_B16R16_2PLANE_444_UNORM)
+	{
+		tbl = vkEnum_1000330xxx_strtbl;
+		offset = vkEnum_1000330xxx_offtbl[vkFormat - VK_FORMAT_G8_B8R8_2PLANE_444_UNORM];
+	}
+	else if (vkFormat >= VK_FORMAT_A4R4G4B4_UNORM_PACK16 &&
+	         vkFormat <= VK_FORMAT_A4B4G4R4_UNORM_PACK16)
+	{
+		tbl = vkEnum_1000340xxx_strtbl;
+		offset = vkEnum_1000340xxx_offtbl[vkFormat - VK_FORMAT_A4R4G4B4_UNORM_PACK16];
 	}
 	else if (vkFormat >= VK_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG &&
 	         vkFormat <= VK_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG)
