@@ -648,32 +648,65 @@ int GameCubeBNR::loadMetaData(void)
 		// TODO: Improve Shift-JIS detection to eliminate the
 		// false positive with Metroid Prime. (GM8E01)
 		const gcn_banner_comment_t &comment = d->comments.at(0);
+		string s_gameName, s_company, s_description;
+		bool hasCopyrightSymbol = false;
 
 		// Game name.
 		if (comment.gamename_full[0] != '\0') {
-			d->metaData->addMetaData_string(Property::Title,
-				cp1252_sjis_to_utf8(comment.gamename_full, sizeof(comment.gamename_full)));
+			s_gameName.assign(comment.gamename_full, sizeof(comment.gamename_full));
+			if ((uint8_t)comment.gamename_full[0] == 0xA9) {
+				hasCopyrightSymbol = true;
+			}
 		} else if (comment.gamename[0] != '\0') {
-			d->metaData->addMetaData_string(Property::Title,
-				cp1252_sjis_to_utf8(comment.gamename, sizeof(comment.gamename)));
+			s_gameName.assign(comment.gamename, sizeof(comment.gamename));
+			if ((uint8_t)comment.gamename[0] == 0xA9) {
+				hasCopyrightSymbol = true;
+			}
 		}
 
 		// Company.
 		if (comment.company_full[0] != '\0') {
-			d->metaData->addMetaData_string(Property::Publisher,
-				cp1252_sjis_to_utf8(comment.company_full, sizeof(comment.company_full)));
+			s_company.assign(comment.company_full, sizeof(comment.company_full));
+			if ((uint8_t)comment.company_full[0] == 0xA9) {
+				hasCopyrightSymbol = true;
+			}
 		} else if (comment.company[0] != '\0') {
-			d->metaData->addMetaData_string(Property::Publisher,
-				cp1252_sjis_to_utf8(comment.company, sizeof(comment.company)));
+			s_company.assign(comment.company, sizeof(comment.company));
+			if ((uint8_t)comment.company[0] == 0xA9) {
+				hasCopyrightSymbol = true;
+			}
 		}
 
 		// Game description.
 		if (comment.gamedesc[0] != '\0') {
+			s_description.assign(comment.gamedesc, sizeof(comment.gamedesc));
+			if ((uint8_t)comment.gamedesc[0] == 0xA9) {
+				hasCopyrightSymbol = true;
+			}
+		}
+
+		// FIXME: Determine if it's cp1252 or Shift-JIS.
+		// We don't have access to gcnRegion here.
+		// Assuming Shift-JIS with cp1252 fallback, unless the
+		// first character of any of the strings is '\xA9' (©).
+		if (hasCopyrightSymbol) {
+			// cp1252 only
+			d->metaData->addMetaData_string(Property::Title, cp1252_to_utf8(s_gameName));
+			d->metaData->addMetaData_string(Property::Publisher, cp1252_to_utf8(s_company));
+
 			// TODO: Property::Comment is assumed to be user-added
 			// on KDE Dolphin 18.08.1. Needs a description property.
 			// Also needs verification on Windows.
-			d->metaData->addMetaData_string(Property::Subject,
-				cp1252_sjis_to_utf8(comment.gamedesc, sizeof(comment.gamedesc)));
+			d->metaData->addMetaData_string(Property::Subject, cp1252_to_utf8(s_description));
+		} else {
+			// Shift-JIS with cp1252 fallback
+			d->metaData->addMetaData_string(Property::Title, cp1252_sjis_to_utf8(s_gameName));
+			d->metaData->addMetaData_string(Property::Publisher, cp1252_sjis_to_utf8(s_company));
+
+			// TODO: Property::Comment is assumed to be user-added
+			// on KDE Dolphin 18.08.1. Needs a description property.
+			// Also needs verification on Windows.
+			d->metaData->addMetaData_string(Property::Subject, cp1252_sjis_to_utf8(s_description));
 		}
 	} else {
 		// BNR2: Assuming cp1252.
