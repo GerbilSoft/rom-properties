@@ -60,11 +60,11 @@ const char *lookup_vkFormat(unsigned int vkFormat)
 		tbl = vkEnum_PVRTC_strtbl;
 		offset = vkEnum_PVRTC_offtbl[vkFormat - VK_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG];
 	}
-	else if (vkFormat >= VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK_EXT &&
-	         vkFormat <= VK_FORMAT_ASTC_12x12_SFLOAT_BLOCK_EXT)
+	else if (vkFormat >= VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK &&
+	         vkFormat <= VK_FORMAT_ASTC_12x12_SFLOAT_BLOCK)
 	{
 		tbl = vkEnum_ASTC_strtbl;
-		offset = vkEnum_ASTC_offtbl[vkFormat - VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK_EXT];
+		offset = vkEnum_ASTC_offtbl[vkFormat - VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK];
 	}
 
 	if (!tbl || offset == 0) {
