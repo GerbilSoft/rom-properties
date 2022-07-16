@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-# DirectX 10 Formats string table builder
+# Single-element string table builder
 #
-# Converts a text file containing a list of DirectX 10 formats
-# and prints a string table header.
+# Converts a text file containing a list of strings and prints a string
+# table header. "Single-element" means it's just a string array, not an
+# array of structs.
 #
-# Syntax: DX10Formats_parser.py infile outfile
+# Syntax: strtbl_parser.py prefix infile outfile
 #
-# File syntax: Number|Name
-# Number is always parsed as decimal.
+# File syntax: ID|Name
+# ID is always parsed as decimal.
 # Empty lines or lines starting with '#' are ignored.
 #
 
@@ -16,10 +17,14 @@
 
 import sys
 
-if len(sys.argv) != 3:
-	print('DirectX 10 Formats string table builder')
+if len(sys.argv) != 4:
+	print('Single-element string table builder')
 	print(f'Syntax: {sys.argv[0]} infile outfile')
 	sys.exit(1)
+
+prefix = sys.argv[1]
+infile = sys.argv[2]
+outfile = sys.argv[3]
 
 # String table. Starts with one string, an empty string.
 string_table = bytearray(b'\x00')
@@ -28,15 +33,15 @@ string_table = bytearray(b'\x00')
 string_dict = {"": 0}
 
 # Dictionary of entries.
-# - Key: DirectX 10 format number (DXGI)
+# - Key: String table index
 # - Value: Name
 # Name is an index into string_table.
-high_dx10fmt = 0	# highest valid DX10 format index
+high_idx = 0	# highest valid string table index
 entry_dict = { }
 
 # Read lines from the input file.
 line_number = 0
-with open(sys.argv[1], 'r') as f_in:
+with open(infile, 'r') as f_in:
 	line = f_in.readline()
 	while line:
 		line_number += 1
@@ -52,11 +57,11 @@ with open(sys.argv[1], 'r') as f_in:
 			raise ValueError(f'Incorrect number of splits on line {str(line_number)}.')
 
 		# Check if we have an existing entry.
-		dx10fmt = int(arr[0])
-		if dx10fmt in entry_dict:
-			raise ValueError(f'Duplicate entry for DX10Format {arr[0]}.')
-		if dx10fmt > high_dx10fmt:
-			high_dx10fmt = dx10fmt
+		key = int(arr[0])
+		if key in entry_dict:
+			raise ValueError(f'Duplicate entry for index {arr[0]}.')
+		if key > high_idx:
+			high_idx = key
 
 		# Check if Name is already in the string table.
 		# If it isn't, add it to the string table.
@@ -71,24 +76,31 @@ with open(sys.argv[1], 'r') as f_in:
 			string_dict[arr[1]] = name_idx
 
 		# Add the name to the dictionary.
-		entry_dict[dx10fmt] = name_idx
+		entry_dict[key] = name_idx
 
 		# Next line.
 		line = f_in.readline()
 
 # Open output file.
-f_out = open(sys.argv[2], 'w')
+f_out = open(outfile, 'w')
 
-# Create the struct.
-# If the maximum string index is less than 65536,
-# string table indexes will be uint16_t. Otherwise,
-# they will be uint32_t.
-idx_type = 'uint16_t' if len(string_table) < 65536 else 'uint32_t'
+# Create the arrays.
+# String table index type depends on the maximum string index:
+# - 255: uint8_t
+# - 65535: uint16_t
+# - otherwise: uint32_t
+idx_type = ''
+if len(string_table) < 256:
+	idx_type = 'uint8_t'
+elif len(string_table) < 65536:
+	idx_type = 'uint16_t'
+else:
+	idx_type = 'uint32_t'
 
 f_out.write(
-	f"/** DirectX 10 Formats (generated from {sys.argv[1]}) **/\n\n"
+	f"/** {prefix} (generated from {infile}) **/\n\n"
 	"#include <stdint.h>\n\n"
-	"static const char dxgiFormat_strtbl[] =\n"
+	f"static const char {prefix}_strtbl[] =\n"
 )
 
 # Print up to 64 characters per line, including NULL bytes.
@@ -121,18 +133,18 @@ for c in string_table:
 		i += 1
 f_out.write("\";\n\n")
 
-f_out.write(f"static const {idx_type} dxgiFormat_offtbl[] = {{\n")
+f_out.write(f"static const {idx_type} {prefix}_offtbl[] = {{\n")
 
-for dx10fmt in range(high_dx10fmt+1):
-	if dx10fmt % 32 == 0:
-		if dx10fmt != 0:
+for key in range(high_idx+1):
+	if key % 32 == 0:
+		if key != 0:
 			f_out.write("\n\n")
-		f_out.write(f"\t/* DX10 Format {str(dx10fmt)} */\n\t")
-	elif dx10fmt % 8 == 0:
+		f_out.write(f"\t/* {prefix} {str(key)} */\n\t")
+	elif key % 8 == 0:
 		f_out.write("\n\t")
 
 	try:
-		entry = entry_dict[dx10fmt]
+		entry = entry_dict[key]
 	except KeyError:
 		# No format. Print an empty entry.
 		f_out.write("0,")

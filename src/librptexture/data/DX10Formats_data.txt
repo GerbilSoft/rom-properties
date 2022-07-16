@@ -2,6 +2,7 @@
 # Format: Number|Name
 # Number is always interpreted as decimal.
 
+# 0
 0|
 1|R32G32B32A32_TYPELESS
 2|R32G32B32A32_FLOAT
