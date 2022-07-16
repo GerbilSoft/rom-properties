@@ -69,7 +69,11 @@ ENDFOREACH()
 
 # MSVC: C++ conformance settings
 INCLUDE(CheckCXXCompilerFlag)
-FOREACH(FLAG_TEST "/Zc:__cplusplus" "/Zc:externC" "/Zc:noexceptTypes" "/Zc:rvalueCast" "/Zc:ternary")
+SET(CXX_CONFORMANCE_FLAGS "/Zc:__cplusplus" "/Zc:rvalueCast" "/Zc:ternary")
+IF(NOT CMAKE_CXX_COMPILER_ID STREQUAL Clang)
+	SET(CXX_CONFORMANCE_FLAGS "/Zc:externC" "/Zc:noexceptTypes")
+ENDIF(NOT CMAKE_CXX_COMPILER_ID STREQUAL Clang)
+FOREACH(FLAG_TEST ${CXX_CONFORMANCE_FLAGS})
 	# CMake doesn't like certain characters in variable names.
 	STRING(REGEX REPLACE "/|:|=" "_" FLAG_TEST_VARNAME "${FLAG_TEST}")
 
