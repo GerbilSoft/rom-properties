@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * CreateThumbnail.cpp: Thumbnail creator for wrapper programs.            *
  *                                                                         *
- * Copyright (c) 2017-2021 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -102,7 +102,7 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE>
 		 * @param method Scaling method.
 		 * @return Rescaled ImgClass.
 		 */
-		inline PIMGTYPE rescaleImgClass(const PIMGTYPE &imgClass, const ImgSize &sz, ScalingMethod method = ScalingMethod::Nearest) const final
+		inline PIMGTYPE rescaleImgClass(const PIMGTYPE &imgClass, ImgSize sz, ScalingMethod method = ScalingMethod::Nearest) const final
 		{
 			return PIMGTYPE_scale(imgClass, sz.width, sz.height, (method == ScalingMethod::Bilinear));
 		}

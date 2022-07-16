@@ -173,7 +173,7 @@ class TCreateThumbnail
 		 * @param rs_size	[in,out] Original size, which will be rescaled.
 		 * @param tgt_size	[in] Target size.
 		 */
-		static inline void rescale_aspect(ImgSize &rs_size, const ImgSize &tgt_size);
+		static inline void rescale_aspect(ImgSize &rs_size, ImgSize tgt_size);
 
 	protected:
 		/** Pure virtual functions. **/
@@ -220,7 +220,7 @@ class TCreateThumbnail
 		 * @param method Scaling method.
 		 * @return Rescaled ImgClass.
 		 */
-		virtual ImgClass rescaleImgClass(const ImgClass &imgClass, const ImgSize &sz, ScalingMethod method = ScalingMethod::Nearest) const = 0;
+		virtual ImgClass rescaleImgClass(const ImgClass &imgClass, ImgSize sz, ScalingMethod method = ScalingMethod::Nearest) const = 0;
 
 		/**
 		 * Get the size of the specified ImgClass.

@@ -222,7 +222,7 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
  * @param tgt_size	[in] Target size.
  */
 template<typename ImgClass>
-inline void TCreateThumbnail<ImgClass>::rescale_aspect(ImgSize &rs_size, const ImgSize &tgt_size)
+inline void TCreateThumbnail<ImgClass>::rescale_aspect(ImgSize &rs_size, ImgSize tgt_size)
 {
 	// In the original QSize::scale():
 	// - rs_*: this

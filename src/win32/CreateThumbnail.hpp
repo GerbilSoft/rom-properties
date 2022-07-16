@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * CreateThumbnail.hpp: TCreateThumbnail<HBITMAP> implementation.          *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -70,7 +70,7 @@ class CreateThumbnail : public LibRomData::TCreateThumbnail<HBITMAP>
 		 * @param method Scaling method.
 		 * @return Rescaled ImgClass.
 		 */
-		HBITMAP rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz, ScalingMethod method = ScalingMethod::Nearest) const override;
+		HBITMAP rescaleImgClass(const HBITMAP &imgClass, ImgSize sz, ScalingMethod method = ScalingMethod::Nearest) const override;
 
 		/**
 		 * Get the size of the specified ImgClass.
@@ -124,7 +124,7 @@ class CreateThumbnailNoAlpha final : public CreateThumbnail
 		 * @param method Scaling method.
 		 * @return Rescaled ImgClass.
 		 */
-		HBITMAP rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz, ScalingMethod method = ScalingMethod::Nearest) const final;
+		HBITMAP rescaleImgClass(const HBITMAP &imgClass, ImgSize sz, ScalingMethod method = ScalingMethod::Nearest) const final;
 };
 
 #endif /* __ROMPROPERTIES_WIN32_CREATETHUMBNAIL_HPP__ */

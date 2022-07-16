@@ -80,7 +80,7 @@ HBITMAP CreateThumbnail::rpImageToImgClass(const rp_image *img) const
  * @param method Scaling method.
  * @return Rescaled ImgClass.
  */
-HBITMAP CreateThumbnail::rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz, ScalingMethod method) const
+HBITMAP CreateThumbnail::rescaleImgClass(const HBITMAP &imgClass, ImgSize sz, ScalingMethod method) const
 {
 	// Convert the HBITMAP to rp_image.
 	rp_image *const img = RpImageWin32::fromHBITMAP(imgClass);
@@ -160,7 +160,7 @@ HBITMAP CreateThumbnailNoAlpha::rpImageToImgClass(const rp_image *img) const
  * @param method Scaling method.
  * @return Rescaled ImgClass.
  */
-HBITMAP CreateThumbnailNoAlpha::rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz, ScalingMethod method) const
+HBITMAP CreateThumbnailNoAlpha::rescaleImgClass(const HBITMAP &imgClass, ImgSize sz, ScalingMethod method) const
 {
 	// Convert the HBITMAP to rp_image.
 	rp_image *const img = RpImageWin32::fromHBITMAP(imgClass);

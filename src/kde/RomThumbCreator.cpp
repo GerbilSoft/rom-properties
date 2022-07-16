@@ -115,7 +115,7 @@ class RomThumbCreatorPrivate : public TCreateThumbnail<QImage>
 		 * @param method Scaling method.
 		 * @return Rescaled ImgClass.
 		 */
-		inline QImage rescaleImgClass(const QImage &imgClass, const ImgSize &sz, ScalingMethod method = ScalingMethod::Nearest) const final
+		inline QImage rescaleImgClass(const QImage &imgClass, ImgSize sz, ScalingMethod method = ScalingMethod::Nearest) const final
 		{
 			Qt::TransformationMode mode;
 			switch (method) {
