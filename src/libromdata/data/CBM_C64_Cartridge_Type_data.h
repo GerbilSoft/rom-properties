@@ -1,4 +1,4 @@
-/** CBM C64 Cartridge Types (generated from CBM_C64_Cartridge_Type_data.txt) **/
+/** CBM_C64_cart_type (generated from CBM_C64_Cartridge_Type_data.txt) **/
 
 #include <stdint.h>
 
@@ -32,19 +32,19 @@ static const char CBM_C64_cart_type_strtbl[] =
 	"Freeze Frame MK2" "\x00";
 
 static const uint16_t CBM_C64_cart_type_offtbl[] = {
-	/* CBM C64 cartridge type 0 */
+	/* CBM_C64_cart_type 0 */
 	1,19,33,53,73,87,100,117,
 	138,150,163,177,197,209,227,240,
 	266,277,285,314,348,366,375,392,
 	397,407,418,429,439,455,476,492,
 
-	/* CBM C64 cartridge type 32 */
+	/* CBM_C64_cart_type 32 */
 	500,510,526,534,550,563,569,580,
 	586,604,613,625,635,640,653,668,
 	679,698,710,726,733,747,755,764,
 	790,800,805,816,825,831,841,847,
 
-	/* CBM C64 cartridge type 64 */
+	/* CBM_C64_cart_type 64 */
 	860,872,884,896,911,920,927,936,
 	948,972,980,989,1004,1023,
 };

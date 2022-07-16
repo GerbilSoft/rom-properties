@@ -1,4 +1,4 @@
-/** ELF OSABIs (generated from ELF_OSABI_data.txt) **/
+/** ELF_OSABI (generated from ELF_OSABI_data.txt) **/
 
 #include <stdint.h>
 
@@ -11,7 +11,7 @@ static const char ELF_OSABI_strtbl[] =
 	"xOS" "\x00" "Nuxi CloudABI" "\x00";
 
 static const uint8_t ELF_OSABI_offtbl[] = {
-	/* ELF OSABI 0 */
+	/* ELF_OSABI 0 */
 	1,15,21,28,38,47,54,62,
 	71,76,84,90,105,113,121,139,
 	170,178,
