@@ -26,6 +26,9 @@ namespace LibRpTexture {
 #include <QtCore/QUrl>
 #include <QtGui/QImage>
 
+#define CONCAT_FN(fn, suffix)		CONCAT_FN_INT(fn, suffix)
+#define CONCAT_FN_INT(fn, suffix)	fn ## suffix
+
 #if QT_VERSION >= QT_VERSION_CHECK(7,0,0)
 #  error Needs updating for Qt7
 #elif QT_VERSION >= QT_VERSION_CHECK(6,0,0)

@@ -6,7 +6,7 @@
  * multiple plugins, so this file acts as a KFileMetaData ExtractorPlugin, *
  * and then forwards the request to the main library.                      *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,7 +18,7 @@
 
 #include "RpQt.hpp"
 
-#define PFN_CREATEEXTRACTORPLUGINKDE_FN createExtractorPlugin ## RP_KDE_SUFFIX
+#define PFN_CREATEEXTRACTORPLUGINKDE_FN CONCAT_FN(createExtractorPlugin, RP_KDE_SUFFIX)
 #define PFN_CREATEEXTRACTORPLUGINKDE_NAME "createExtractorPlugin" RP_KDE_UPPER
 
 namespace RomPropertiesKDE {

@@ -18,7 +18,7 @@
 
 #include "RpQt.hpp"
 
-#define PFN_CREATEOVERLAYICONPLUGINKDE_FN createOverlayIconPlugin ## RP_KDE_SUFFIX
+#define PFN_CREATEOVERLAYICONPLUGINKDE_FN CONCAT_FN(createOverlayIconPlugin, RP_KDE_SUFFIX)
 #define PFN_CREATEOVERLAYICONPLUGINKDE_NAME "createOverlayIconPlugin" RP_KDE_UPPER
 
 namespace RomPropertiesKDE {
