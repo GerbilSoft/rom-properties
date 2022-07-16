@@ -165,7 +165,7 @@ int rp_get_process_name(pid_t pid, char *pidname, size_t len, pid_t *ppid)
  */
 static RP_Frontend walk_proc_tree(void)
 {
-	RP_Frontend ret = RP_FE_MAX;
+	RP_Frontend ret_fe = RP_FE_MAX;
 
 #ifdef __linux__
 	// Linux-specific: Walk through /proc.
@@ -186,12 +186,12 @@ static RP_Frontend walk_proc_tree(void)
 		// FIXME: Handle ksmserver...
 		if (!strcmp(process_name, "kdeinit5")) {
 			// Found kdeinit5.
-			ret = RP_FE_KF5;
+			ret_fe = RP_FE_KF5;
 			ppid = 0;
 			break;
 		} else if (!strcmp(process_name, "kdeinit4")) {
 			// Found kdeinit4.
-			ret = RP_FE_KDE4;
+			ret_fe = RP_FE_KDE4;
 			ppid = 0;
 			break;
 		} else if (!strcmp(process_name, "gnome-panel") ||
@@ -203,7 +203,7 @@ static RP_Frontend walk_proc_tree(void)
 		{
 			// GNOME, MATE, or Cinnamon session.
 			// TODO: Verify the Cinnamon process names.
-			ret = RP_FE_GTK3;
+			ret_fe = RP_FE_GTK3;
 			ppid = 0;
 			break;
 		}
@@ -212,7 +212,7 @@ static RP_Frontend walk_proc_tree(void)
 # warning walk_proc_tree() is not implemented for this OS.
 #endif
 
-	return ret;
+	return ret_fe;
 }
 
 /**

@@ -52,6 +52,9 @@
     * Display the ROM header clock rate. If 0, "default" will be shown.
   * ELF: Some byteswaps were missing, which may have broken reading certain
     big-endian ELFs on little-endian and vice-versa.
+  * Linux: Fix walking the process tree to detect the desktop environment.
+    This wasn't working properly due to two variables being named `ret`.
+    This has been broken since v1.7.
 
 ## v1.9 (released 2022/05/22)
 
