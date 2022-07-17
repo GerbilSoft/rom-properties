@@ -219,7 +219,7 @@ static void DoFile(const char *filename, bool json, vector<ExtractParam>& extrac
 		UNREF(romData);
 	} else {
 		cerr << "-- " << rp_sprintf(C_("rpcli", "Couldn't open file: %s"), strerror(file->lastError())) << endl;
-		if (json) cout << "{\"error\":\"couldn't open file\",\"code\":" << file->lastError() << "}" << endl;
+		if (json) cout << "{\"error\":\"couldn't open file\",\"code\":" << file->lastError() << '}' << endl;
 	}
 	file->unref();
 }
@@ -303,7 +303,7 @@ static void DoScsiInquiry(const char *filename, bool json)
 		}
 	} else {
 		cerr << "-- " << rp_sprintf(C_("rpcli", "Couldn't open file: %s"), strerror(file->lastError())) << endl;
-		if (json) cout << "{\"error\":\"couldn't open file\",\"code\":" << file->lastError() << "}" << endl;
+		if (json) cout << "{\"error\":\"couldn't open file\",\"code\":" << file->lastError() << '}' << endl;
 	}
 	file->unref();
 }
@@ -334,7 +334,7 @@ static void DoAtaIdentifyDevice(const char *filename, bool json, bool packet)
 		}
 	} else {
 		cerr << "-- " << rp_sprintf(C_("rpcli", "Couldn't open file: %s"), strerror(file->lastError())) << endl;
-		if (json) cout << "{\"error\":\"couldn't open file\",\"code\":" << file->lastError() << "}" << endl;
+		if (json) cout << "{\"error\":\"couldn't open file\",\"code\":" << file->lastError() << '}' << endl;
 	}
 	file->unref();
 }
@@ -568,7 +568,7 @@ int RP_C_API main(int argc, char *argv[])
 			}
 		} else {
 			if (first) first = false;
-			else if (json) cout << "," << endl;
+			else if (json) cout << ',' << endl;
 
 			// TODO: Return codes?
 #ifdef RP_OS_SCSI_SUPPORTED
