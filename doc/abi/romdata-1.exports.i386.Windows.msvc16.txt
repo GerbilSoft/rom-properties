@@ -38,13 +38,10 @@ bool __cdecl LibWin32Common::ComBase_isReferenced(void)
 int __cdecl LibRomData::CtrKeyScrambler::CtrScramble(union LibRomData::u128_t *,union LibRomData::u128_t const *,union LibRomData::u128_t const *,union LibRomData::u128_t const *)
 int __cdecl LibRomData::CtrKeyScrambler::CtrScramble(union LibRomData::u128_t *,union LibRomData::u128_t const *,union LibRomData::u128_t const *)
 unsigned long __cdecl GdiplusHelper::InitGDIPlus(void)
-long __stdcall LibWin32Common::ListViewNoDividerDblClickSubclassProc(struct HWND__ *,unsigned int,unsigned int,long,unsigned int,unsigned long)
-long __stdcall LibWin32Common::MultiLineEditProc(struct HWND__ *,unsigned int,unsigned int,long,unsigned int,unsigned long)
 public: static long __cdecl LibWin32Common::RegKey::RegisterApprovedExtension(struct _GUID const &,wchar_t const *)
-public: static long __cdecl LibWin32Common::RegKey::RegisterComObject(struct _GUID const &,wchar_t const *,wchar_t const *)
+public: static long __cdecl LibWin32Common::RegKey::RegisterComObject(struct HINSTANCE__ *,struct _GUID const &,wchar_t const *,wchar_t const *)
 public: static long __cdecl LibWin32Common::RegKey::RegisterFileType(wchar_t const *,class LibWin32Common::RegKey * *)
 void __cdecl GdiplusHelper::ShutdownGDIPlus(unsigned long)
-long __stdcall LibWin32Common::SingleLineEditProc(struct HWND__ *,unsigned int,unsigned int,long,unsigned int,unsigned long)
 public: static long __cdecl LibWin32Common::RegKey::UnregisterComObject(struct _GUID const &,wchar_t const *)
 public: void __thiscall LibWin32Common::RegKey::__autoclassinit2(unsigned int)
 public: static class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl LibRpBase::RomFields::ageRatingsDecode(class std::array<unsigned short,16> const *,bool)
@@ -107,7 +104,6 @@ class LibRpTexture::rp_image * __cdecl LibRpTexture::ImageDecoder::fromLinear24_
 class LibRpTexture::rp_image * __cdecl LibRpTexture::ImageDecoder::fromLinear24_ssse3(enum LibRpTexture::ImageDecoder::PixelFormat,int,int,unsigned char const * __restrict,unsigned int,int)
 class LibRpTexture::rp_image * __cdecl LibRpTexture::ImageDecoder::fromLinear32_cpp(enum LibRpTexture::ImageDecoder::PixelFormat,int,int,unsigned int const * __restrict,unsigned int,int)
 class LibRpTexture::rp_image * __cdecl LibRpTexture::ImageDecoder::fromLinear32_ssse3(enum LibRpTexture::ImageDecoder::PixelFormat,int,int,unsigned int const * __restrict,unsigned int,int)
-unsigned long __cdecl LibWin32Common::getAltRowColor(void)
 public: enum LibRpBase::KeyManager::VerifyResult __thiscall LibRpBase::KeyManager::getAndVerify(char const *,struct LibRpBase::KeyManager::KeyData_t *,unsigned char const *,unsigned int)const
 class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const & __cdecl LibRpFile::FileSystem::getCacheDirectory(void)
 class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl LibWin32Common::getCacheDirectory(void)
@@ -128,10 +124,8 @@ public: struct LibRomData::KeyStoreUI::Key const * __thiscall LibRomData::KeySto
 unsigned int __cdecl LibRpBase::SystemRegion::getLanguageCode(void)
 char const * __cdecl LibRpBase::SystemRegion::getLocalizedLanguageName(unsigned int)
 public: char const * __thiscall LibRpBase::Achievements::getName(enum LibRpBase::Achievements::ID)const
-class std::basic_string<wchar_t,struct std::char_traits<wchar_t>,class std::allocator<wchar_t> > __cdecl LibWin32Common::getOpenFileName(struct HWND__ *,wchar_t const *,char const *,wchar_t const *)
 char const * __cdecl LibRpBase::AboutTabText::getProgramInfoString(enum LibRpBase::AboutTabText::ProgramInfoStringID)
 enum LibRpBase::AboutTabText::ProgramInfoStringID __cdecl LibRpBase::AboutTabText::getProgramInfoStringCount(void)
-class std::basic_string<wchar_t,struct std::char_traits<wchar_t>,class std::allocator<wchar_t> > __cdecl LibWin32Common::getSaveFileName(struct HWND__ *,wchar_t const *,char const *,wchar_t const *)
 struct LibRpBase::AboutTabText::SupportSite_t const * __cdecl LibRpBase::AboutTabText::getSupportSites(void)
 public: int __thiscall LibRpTexture::rp_image::get_sBIT(struct LibRpTexture::rp_image::sBIT_t *)const
 public: struct HKEY__ * __thiscall LibWin32Common::RegKey::handle(void)const
@@ -148,7 +142,6 @@ void __cdecl LibWin32Common::incRpGlobalRefCount(void)
 public: static class LibRpBase::Achievements * __cdecl LibRpBase::Achievements::instance(void)
 public: static class LibRpBase::Config * __cdecl LibRpBase::Config::instance(void)
 public: static class LibRpBase::KeyManager * __cdecl LibRpBase::KeyManager::instance(void)
-bool __cdecl LibWin32Common::isComCtl32_v610(void)
 public: bool __thiscall LibRomData::KeyStoreUI::isEmpty(void)const
 public: bool __thiscall LibWin32Common::RegKey::isKeyEmpty(void)
 public: bool __thiscall LibRpBase::ConfReader::isLoaded(void)const
@@ -159,8 +152,6 @@ public: bool __thiscall LibRpBase::RomData::isOpen(void)const
 public: virtual bool __thiscall LibRpFile::RpFile::isOpen(void)const
 public: bool __thiscall LibRpBase::RpPngWriter::isOpen(void)const
 public: bool __thiscall LibRpTexture::rp_image::isSquare(void)const
-unsigned long __cdecl LibWin32Common::isSystemRTL(void)
-bool __cdecl LibWin32Common::isThemeActive(void)
 public: __int64 __thiscall LibRpBase::Achievements::isUnlocked(enum LibRpBase::Achievements::ID)const
 public: bool __thiscall LibRpBase::RomData::isValid(void)const
 public: bool __thiscall LibRpTexture::rp_image::isValid(void)const
@@ -173,9 +164,6 @@ class std::basic_string<wchar_t,struct std::char_traits<wchar_t>,class std::allo
 public: int __thiscall LibRpBase::ConfReader::load(bool)
 class LibRpTexture::rp_image * __cdecl LibRpBase::RpImageLoader::load(class LibRpFile::IRpFile *)
 class LibRpTexture::rp_image * __cdecl LibRpBase::RpPng::load(class LibRpFile::IRpFile *)
-int __cdecl LibWin32Common::measureStringForListView(struct HDC__ *,class std::basic_string<wchar_t,struct std::char_traits<wchar_t>,class std::allocator<wchar_t> > const &,int *)
-int __cdecl LibWin32Common::measureTextSize(struct HWND__ *,struct HFONT__ *,wchar_t const *,struct tagSIZE *)
-int __cdecl LibWin32Common::measureTextSizeLink(struct HWND__ *,struct HFONT__ *,wchar_t const *,struct tagSIZE *)
 public: class LibRpBase::RomMetaData const * __thiscall LibRpBase::RomData::metaData(void)const
 public: char const * __thiscall LibRpBase::RomData::mimeType(void)const
 public: int __thiscall LibRpBase::IconAnimHelper::nextFrame(int *)
@@ -199,6 +187,8 @@ public: int __thiscall LibRpTexture::rp_image::row_bytes(void)const
 long __stdcall LibWin32Common::rp_QISearch(void *,struct QITAB const *,struct _GUID const &,void * *)
 class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl LibRpBase::rp_vsprintf(char const *,char *)
 class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl LibRpBase::rp_vsprintf_p(char const *,char *)
+class std::basic_string<wchar_t,struct std::char_traits<wchar_t>,class std::allocator<wchar_t> > __cdecl LibRpBase::rp_vswprintf(wchar_t const *,char *)
+class std::basic_string<wchar_t,struct std::char_traits<wchar_t>,class std::allocator<wchar_t> > __cdecl LibRpBase::rp_vswprintf_p(wchar_t const *,char *)
 public: unsigned long __thiscall LibWin32Common::RegKey::samDesired(void)const
 int __cdecl LibRpBase::RpPng::save(char const *,struct LibRpBase::IconAnimData const *)
 int __cdecl LibRpBase::RpPng::save(char const *,class LibRpTexture::rp_image const *)
@@ -224,15 +214,14 @@ unsigned int __cdecl LibRomData::ImageTypesConfig::sysCount(void)
 char const * __cdecl LibRomData::ImageTypesConfig::sysName(unsigned int)
 public: int __thiscall LibRpBase::RomFields::tabCount(void)const
 public: char const * __thiscall LibRpBase::RomFields::tabName(int)const
-public: struct HBITMAP__ * __thiscall LibRpTexture::RpGdiplusBackend::toHBITMAP(unsigned int,struct tagSIZE const &,bool)
+public: struct HBITMAP__ * __thiscall LibRpTexture::RpGdiplusBackend::toHBITMAP(unsigned int,struct tagSIZE,bool)
 public: struct HBITMAP__ * __thiscall LibRpTexture::RpGdiplusBackend::toHBITMAP(unsigned long)
-public: struct HBITMAP__ * __thiscall LibRpTexture::RpGdiplusBackend::toHBITMAP_alpha(struct tagSIZE const &,bool)
+public: struct HBITMAP__ * __thiscall LibRpTexture::RpGdiplusBackend::toHBITMAP_alpha(struct tagSIZE,bool)
 public: struct HBITMAP__ * __thiscall LibRpTexture::RpGdiplusBackend::toHBITMAP_alpha(void)
 public: int __thiscall LibRomData::KeyStoreUI::totalKeyCount(void)const
 public: int __thiscall LibRpTexture::rp_image::tr_idx(void)const
 public: int __thiscall LibRpTexture::rp_image::un_premultiply_cpp(void)
 public: int __thiscall LibRpTexture::rp_image::un_premultiply_sse41(void)
-class std::basic_string<wchar_t,struct std::char_traits<wchar_t>,class std::allocator<wchar_t> > __cdecl LibWin32Common::unix2dos(wchar_t const *,int *)
 public: bool __thiscall LibRpBase::Config::useIntIconForSmallSizes(void)const
 class std::basic_string<char16_t,struct std::char_traits<char16_t>,class std::allocator<char16_t> > __cdecl LibRpBase::utf16_bswap(char16_t const *,int)
 class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl LibRpBase::utf16_to_cpN(unsigned int,char16_t const *,int)
@@ -255,7 +244,6 @@ InitPropVariantFromStringVector_xp
 RP_CPU_Flags
 RP_CPU_Flags_Init
 RP_CPU_InitCPUFlags
-rp_GetDpiForWindow
 rp_byte_swap_16_array_c
 rp_byte_swap_16_array_mmx
 rp_byte_swap_16_array_sse2

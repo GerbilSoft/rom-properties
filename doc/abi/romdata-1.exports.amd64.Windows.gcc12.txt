@@ -81,8 +81,8 @@ T LibRpBase::KeyManager::getAndVerify(char const*, LibRpBase::KeyManager::KeyDat
 T LibRpBase::KeyManager::instance()
 T LibRpBase::KeyManager::verifyResultToString(LibRpBase::KeyManager::VerifyResult)
 T LibRpBase::MD5Hash::calcHash(unsigned char*, unsigned long long, void const*, unsigned long long)
-T LibRpBase::operator<<(std::basic_ostream<char, std::char_traits<char> >&, LibRpBase::JSONROMOutput const&)
-T LibRpBase::operator<<(std::basic_ostream<char, std::char_traits<char> >&, LibRpBase::ROMOutput const&)
+T LibRpBase::operator<<(std::ostream&, LibRpBase::JSONROMOutput const&)
+T LibRpBase::operator<<(std::ostream&, LibRpBase::ROMOutput const&)
 T LibRpBase::RomData::className() const
 T LibRpBase::RomData::doRomOp(int, LibRpBase::RomData::RomOpParams*)
 T LibRpBase::RomData::fields() const
@@ -130,6 +130,8 @@ T LibRpBase::RpPngWriter::write_IHDR(LibRpTexture::rp_image::sBIT_t const*, unsi
 T LibRpBase::RpPngWriter::write_tEXt(std::vector<std::pair<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&)
 T LibRpBase::rp_vsprintf[abi:cxx11](char const*, char*)
 T LibRpBase::rp_vsprintf_p[abi:cxx11](char const*, char*)
+T LibRpBase::rp_vswprintf[abi:cxx11](wchar_t const*, char*)
+T LibRpBase::rp_vswprintf_p[abi:cxx11](wchar_t const*, char*)
 T LibRpBase::SystemRegion::getCountryCode()
 T LibRpBase::SystemRegion::getFlagPosition(unsigned int, int*, int*, bool)
 T LibRpBase::SystemRegion::getLanguageCode()
@@ -170,8 +172,8 @@ T LibRpTexture::ImageDecoder::fromLinear32_cpp(LibRpTexture::ImageDecoder::Pixel
 T LibRpTexture::ImageDecoder::fromLinear32_ssse3(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned int const*, unsigned long long, int)
 T LibRpTexture::RpGdiplusBackend::creator_fn(int, int, LibRpTexture::rp_image::Format)
 T LibRpTexture::RpGdiplusBackend::toHBITMAP_alpha()
-T LibRpTexture::RpGdiplusBackend::toHBITMAP_alpha(tagSIZE const&, bool)
-T LibRpTexture::RpGdiplusBackend::toHBITMAP(unsigned int, tagSIZE const&, bool)
+T LibRpTexture::RpGdiplusBackend::toHBITMAP_alpha(tagSIZE, bool)
+T LibRpTexture::RpGdiplusBackend::toHBITMAP(unsigned int, tagSIZE, bool)
 T LibRpTexture::RpGdiplusBackend::toHBITMAP(unsigned long)
 T LibRpTexture::rp_image_backend::clear_properties()
 T LibRpTexture::rp_image::backend() const
@@ -206,21 +208,10 @@ T LibRpTexture::rp_image::un_premultiply_sse41()
 T LibRpTexture::rp_image::width() const
 T LibWin32Common::ComBase_isReferenced()
 T LibWin32Common::decRpGlobalRefCount()
-T LibWin32Common::getAltRowColor()
 T LibWin32Common::getCacheDirectory[abi:cxx11]()
 T LibWin32Common::getConfigDirectory[abi:cxx11]()
 T LibWin32Common::getHomeDirectory[abi:cxx11]()
-T LibWin32Common::getOpenFileName[abi:cxx11](HWND__*, wchar_t const*, char const*, wchar_t const*)
-T LibWin32Common::getSaveFileName[abi:cxx11](HWND__*, wchar_t const*, char const*, wchar_t const*)
 T LibWin32Common::incRpGlobalRefCount()
-T LibWin32Common::isComCtl32_v610()
-T LibWin32Common::isSystemRTL()
-T LibWin32Common::isThemeActive()
-T LibWin32Common::ListViewNoDividerDblClickSubclassProc(HWND__*, unsigned int, unsigned long long, long long, unsigned long long, unsigned long long)
-T LibWin32Common::measureStringForListView(HDC__*, std::__cxx11::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> > const&, int*)
-T LibWin32Common::measureTextSize(HWND__*, HFONT__*, wchar_t const*, tagSIZE*)
-T LibWin32Common::measureTextSizeLink(HWND__*, HFONT__*, wchar_t const*, tagSIZE*)
-T LibWin32Common::MultiLineEditProc(HWND__*, unsigned int, unsigned long long, long long, unsigned long long, unsigned long long)
 T LibWin32Common::RegKey::close()
 T LibWin32Common::RegKey::deleteSubKey(HKEY__*, wchar_t const*)
 T LibWin32Common::RegKey::deleteValue(wchar_t const*)
@@ -230,7 +221,7 @@ T LibWin32Common::RegKey::read[abi:cxx11](wchar_t const*, unsigned long*) const
 T LibWin32Common::RegKey::read_dword(wchar_t const*, unsigned long*) const
 T LibWin32Common::RegKey::read_expand[abi:cxx11](wchar_t const*, unsigned long*) const
 T LibWin32Common::RegKey::RegisterApprovedExtension(_GUID const&, wchar_t const*)
-T LibWin32Common::RegKey::RegisterComObject(_GUID const&, wchar_t const*, wchar_t const*)
+T LibWin32Common::RegKey::RegisterComObject(HINSTANCE__*, _GUID const&, wchar_t const*, wchar_t const*)
 T LibWin32Common::RegKey::RegisterFileType(wchar_t const*, LibWin32Common::RegKey**)
 T LibWin32Common::RegKey::~RegKey()
 T LibWin32Common::RegKey::RegKey(HKEY__*, wchar_t const*, unsigned long, bool)
@@ -240,14 +231,11 @@ T LibWin32Common::RegKey::write_dword(wchar_t const*, unsigned long)
 T LibWin32Common::RegKey::write(wchar_t const*, std::__cxx11::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> > const&, unsigned long)
 T LibWin32Common::RegKey::write(wchar_t const*, wchar_t const*, unsigned long)
 T LibWin32Common::rp_QISearch(void*, QITAB const*, _GUID const&, void**)
-T LibWin32Common::SingleLineEditProc(HWND__*, unsigned int, unsigned long long, long long, unsigned long long, unsigned long long)
-T LibWin32Common::unix2dos[abi:cxx11](wchar_t const*, int*)
 T rp_byte_swap_16_array_sse2
 T rp_byte_swap_16_array_ssse3
 T rp_byte_swap_32_array_sse2
 T rp_byte_swap_32_array_ssse3
 T RP_CPU_InitCPUFlags
-T rp_GetDpiForWindow
 T rp_i18n_init
 T w32err_to_posix
 V typeinfo for LibRomData::KeyStoreUI
