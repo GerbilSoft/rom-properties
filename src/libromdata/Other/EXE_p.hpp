@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXE_p.hpp: DOS/Windows executable reader. (Private class)               *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -50,6 +50,8 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 
 			MZ = 0,		// DOS MZ
 			NE,		// 16-bit New Executable
+			COM_NE,		// 16-bit COM/NE hybrid
+					// (IBMDOS.COM from European DOS 4.0)
 			LE,		// Mixed 16/32-bit Linear Executable
 			W3,		// Collection of LE executables (WIN386.EXE)
 			LX,		// 32-bit Linear Executable

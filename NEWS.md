@@ -27,6 +27,8 @@
 
 * New parsers:
   * Atari7800: Atari 7800 ROM images with an A78 header.
+  * EXE: Detect hybrid COM/NE executables, i.e. Multitasking DOS 4.0's
+    IBMDOS.COM.
 
 * New parser features:
   * ELF: OSABI 102 (Cell LV2) is now detected.

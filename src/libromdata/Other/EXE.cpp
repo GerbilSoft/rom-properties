@@ -517,10 +517,11 @@ EXE::EXE(IRpFile *file)
 	const DetectInfo info = {
 		{0, sizeof(d->mz), reinterpret_cast<const uint8_t*>(&d->mz)},
 		nullptr,	// ext (not needed for EXE)
-		0		// szFile (not needed for EXE)
+		d->file->size()	// szFile (needed for COM/NE)
 	};
-	d->isValid = (isRomSupported_static(&info) >= 0);
+	d->exeType = static_cast<EXEPrivate::ExeType>(isRomSupported_static(&info));
 
+	d->isValid = ((int)d->exeType >= 0);
 	if (!d->isValid) {
 		// Not an MZ executable.
 		UNREF_AND_NULL_NOCHK(d->file);
@@ -530,6 +531,33 @@ EXE::EXE(IRpFile *file)
 	// NOTE: isRomSupported_static() only determines if the
 	// file has a DOS MZ executable stub. The actual executable
 	// type is determined here.
+
+	// Special check for 16-bit COM/NE hybrid executables.
+	// Only used by Multitasking MS-DOS 4.0's IBMDOS.COM.
+	if (d->exeType == EXEPrivate::ExeType::COM_NE) {
+		// Check for the NE header at 0x1190.
+		// TODO: Is there a way to determine the offset from the header?
+		size_t size = d->file->seekAndRead(0x1190, &d->hdr.ne, sizeof(d->hdr.ne));
+		if (size != sizeof(d->hdr.ne)) {
+			// Seek and/or read error.
+			d->exeType = EXEPrivate::ExeType::Unknown;
+			d->isValid = false;
+			return;
+		}
+
+		if (d->hdr.ne.sig == cpu_to_be16('NE')) {
+			// NE signature found.
+			d->exeType = EXEPrivate::ExeType::COM_NE;
+			d->fileType = FileType::Executable;
+		} else {
+			// No NE signature found.
+			// This might be a valid COM executable,
+			// but COMs don't have useful headers.
+			d->exeType = EXEPrivate::ExeType::Unknown;
+			d->isValid = false;
+		}
+		return;
+	}
 
 	// Check for MS-DOS executables:
 	// - Relocation table address less than 0x40
@@ -569,6 +597,7 @@ EXE::EXE(IRpFile *file)
 	if (hdr_addr < sizeof(d->mz) || hdr_addr >= (d->file->size() - sizeof(d->hdr))) {
 		// PE header address is out of range.
 		d->exeType = EXEPrivate::ExeType::MZ;
+		d->fileType = FileType::Executable;
 		return;
 	}
 
@@ -630,7 +659,7 @@ EXE::EXE(IRpFile *file)
 					break;
 			}
 		}
-	} else if (d->hdr.ne.sig == cpu_to_be16('NE') /* 'NE' */) {
+	} else if (d->hdr.ne.sig == cpu_to_be16('NE')) {
 		// New Executable.
 		d->exeType = EXEPrivate::ExeType::NE;
 
@@ -713,8 +742,9 @@ int EXE::isRomSupported_static(const DetectInfo *info)
 		return static_cast<int>(EXEPrivate::ExeType::Unknown);
 	}
 
+	const uint8_t *const pData = info->header.pData;
 	const IMAGE_DOS_HEADER *const pMZ =
-		reinterpret_cast<const IMAGE_DOS_HEADER*>(info->header.pData);
+		reinterpret_cast<const IMAGE_DOS_HEADER*>(pData);
 
 	// Check the magic number.
 	// This may be either 'MZ' or 'ZM'. ('ZM' is less common.)
@@ -724,6 +754,34 @@ int EXE::isRomSupported_static(const DetectInfo *info)
 		// This is a DOS "MZ" executable.
 		// Specific subtypes are checked later.
 		return static_cast<int>(EXEPrivate::ExeType::MZ);
+	}
+
+	// Check for an x86 jump instruction.
+	// If found, this could be a COM or COM/NE hybrid.
+	bool has_x86_jmp = false;
+	if (pData[0] == 0xEB) {
+		// JMP8
+		// Second byte must be a forward jump. (>= 0)
+		if (((int8_t)pData[1]) >= 0) {
+			has_x86_jmp = true;
+		}
+	} else if (pData[0] == 0xE9) {
+		// JMP16
+		// Offset must either be positive or wrap around to the
+		// end of the executable, and cannot be in the PSP.
+		int16_t offset = (pData[1] | (pData[2] << 8));
+		if (offset > 0 || offset < -259) {
+			uint16_t u_offset = (uint16_t)offset;
+			if (u_offset < info->szFile) {
+				has_x86_jmp = true;
+			}
+		}
+	}
+	if (has_x86_jmp) {
+		// Has a jump instruction.
+		// NOTE: Can't verify the NE header here,
+		// since it's at 0x1190.
+		return static_cast<int>(EXEPrivate::ExeType::COM_NE);
 	}
 
 	// Not supported.
@@ -795,6 +853,15 @@ const char *EXE::systemName(unsigned int type) const
 				}
 			}
 			return sysNames_NE[d->hdr.ne.targOS][type & SYSNAME_TYPE_MASK];
+		}
+
+		case EXEPrivate::ExeType::COM_NE: {
+			// 16-bit COM/NE hybrid.
+			// Used by Multitasking MS-DOS 4.0's IBMDOS.COM.
+			static const char *const sysNames_MultiDOS[4] = {
+				"Multitasking MS-DOS 4.0", "European DOS", "EuroDOS", nullptr
+			};
+			return sysNames_MultiDOS[type & SYSNAME_TYPE_MASK];
 		}
 
 		case EXEPrivate::ExeType::LE:
@@ -918,6 +985,7 @@ int EXE::loadFieldData(void)
 			break;
 
 		case EXEPrivate::ExeType::NE:
+		case EXEPrivate::ExeType::COM_NE:
 			d->addFields_NE();
 			break;
 
@@ -937,7 +1005,9 @@ int EXE::loadFieldData(void)
 	}
 
 	// Add MZ tab for non-MZ executables
-	if (d->exeType != EXEPrivate::ExeType::MZ) {
+	if (d->exeType != EXEPrivate::ExeType::MZ &&
+	    d->exeType != EXEPrivate::ExeType::COM_NE)
+	{
 		// NOTE: This doesn't actually create a separate tab for non-implemented types.
 		d->fields->addTab("MZ");
 		d->addFields_MZ();
