@@ -10,6 +10,7 @@
 #include "stdafx.h"
 #include "config.rpcli.h"
 #include "config.version.h"
+#include "librpbase/config.librpbase.h"
 #include "libromdata/config.libromdata.h"
 
 // OS-specific security options.
@@ -17,7 +18,6 @@
 
 // librpbase, librpcpu
 #include "librpcpu/byteswap_rp.h"
-#include "librpbase/config.librpbase.h"
 #include "librpbase/RomData.hpp"
 #include "librpbase/SystemRegion.hpp"
 #include "librpbase/TextFuncs_printf.hpp"
@@ -47,7 +47,7 @@ using LibRpTexture::rp_image;
 #endif /* _WIN32 */
 
 #ifdef ENABLE_DECRYPTION
-# include "verifykeys.hpp"
+#  include "verifykeys.hpp"
 #endif /* ENABLE_DECRYPTION */
 #include "device.hpp"
 
