@@ -1327,7 +1327,10 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 		return -EIO;
 	}
 
-	const uint16_t sys_id = be16_to_cpu(d->tmdHeader.title_id.sysID);
+	// TMD Header
+	const RVL_TMD_Header *const tmdHeader = &d->tmdHeader;
+
+	const uint16_t sys_id = be16_to_cpu(tmdHeader->title_id.sysID);
 	if (sys_id != NINTENDO_SYSID_TWL) {
 #ifdef ENABLE_DECRYPTION
 		if (d->mainContent) {
@@ -1340,7 +1343,7 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 			// If the first letter of the ID4 is lowercase,
 			// that means it's a DLC title. GameTDB doesn't
 			// have artwork for DLC titles.
-			const char firstID4 = be32_to_cpu(d->tmdHeader.title_id.lo) >> 24;
+			const char firstID4 = be32_to_cpu(tmdHeader->title_id.lo) >> 24;
 			if (ISLOWER(firstID4)) {
 				// It's lowercase.
 				return -ENOENT;
@@ -1348,15 +1351,12 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 		}
 	}
 
-	// TMD Header.
-	const RVL_TMD_Header *const tmdHeader = &d->tmdHeader;
-
 	// Check for a valid TID hi.
 	const char *sysDir;
 	switch (sys_id) {
 		case NINTENDO_SYSID_RVL:	// Wii
 			// Check for a valid LOWORD.
-			switch (be16_to_cpu(d->tmdHeader.title_id.catID)) {
+			switch (be16_to_cpu(tmdHeader->title_id.catID)) {
 				case NINTENDO_CATID_RVL_DISC:
 				case NINTENDO_CATID_RVL_DOWNLOADED:
 				case NINTENDO_CATID_RVL_SYSTEM:

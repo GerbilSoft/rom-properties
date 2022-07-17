@@ -58,10 +58,10 @@ class WiiUPrivate final : public RomDataPrivate
 		};
 		DiscType discType;
 
-		// Disc reader.
+		// Disc reader
 		IDiscReader *discReader;
 
-		// Disc header.
+		// Disc header
 		WiiU_DiscHeader discHeader;
 };
 
@@ -405,11 +405,12 @@ int WiiU::loadFieldData(void)
 	}
 
 	// Disc header is read in the constructor.
+	const WiiU_DiscHeader *const discHeader = &d->discHeader;
 	d->fields->reserve(4);	// Maximum of 4 fields.
 
-	// Game ID.
+	// Game ID
 	d->fields->addField_string(C_("RomData", "Game ID"),
-		latin1_to_utf8(d->discHeader.id, sizeof(d->discHeader.id)));
+		latin1_to_utf8(discHeader->id, sizeof(discHeader->id)));
 
 	// Publisher.
 	// Look up the publisher ID.
@@ -417,7 +418,7 @@ int WiiU::loadFieldData(void)
 	const char *publisher = nullptr;
 	string s_publisher;
 
-	const uint32_t publisher_id = WiiUData::lookup_disc_publisher(d->discHeader.id4);
+	const uint32_t publisher_id = WiiUData::lookup_disc_publisher(discHeader->id4);
 	publisher_code[0] = (publisher_id >> 24) & 0xFF;
 	publisher_code[1] = (publisher_id >> 16) & 0xFF;
 	publisher_code[2] = (publisher_id >>  8) & 0xFF;
@@ -447,20 +448,20 @@ int WiiU::loadFieldData(void)
 	// Game version.
 	// TODO: Validate the version characters.
 	d->fields->addField_string(C_("RomData", "Version"),
-		latin1_to_utf8(d->discHeader.version, sizeof(d->discHeader.version)));
+		latin1_to_utf8(discHeader->version, sizeof(discHeader->version)));
 
 	// OS version.
 	// TODO: Validate the version characters.
 	d->fields->addField_string(C_("WiiU", "OS Version"),
 		rp_sprintf("%c.%c.%c",
-			d->discHeader.os_version[0],
-			d->discHeader.os_version[1],
-			d->discHeader.os_version[2]));
+			discHeader->os_version[0],
+			discHeader->os_version[1],
+			discHeader->os_version[2]));
 
 	// Region.
 	// TODO: Compare against list of regions and show the fancy name.
 	d->fields->addField_string(C_("RomData", "Region Code"),
-		latin1_to_utf8(d->discHeader.region, sizeof(d->discHeader.region)));
+		latin1_to_utf8(discHeader->region, sizeof(discHeader->region)));
 
 	// Finished reading the field data.
 	return static_cast<int>(d->fields->count());
@@ -542,8 +543,11 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			return -ENOENT;
 	}
 
+	// Disc header is read in the constructor.
+	const WiiU_DiscHeader *const discHeader = &d->discHeader;
+
 	// Look up the publisher ID.
-	uint32_t publisher_id = WiiUData::lookup_disc_publisher(d->discHeader.id4);
+	uint32_t publisher_id = WiiUData::lookup_disc_publisher(discHeader->id4);
 	if (publisher_id == 0 || (publisher_id & 0xFFFF0000) != 0x30300000) {
 		// Either the publisher ID is unknown, or it's a
 		// 4-character ID, which isn't supported by
@@ -554,16 +558,16 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	// Determine the GameTDB language code(s).
 	// TODO: Figure out the actual Wii U region code.
 	// Using the game ID for now.
-	vector<uint16_t> tdb_lc = GameCubeRegions::gcnRegionToGameTDB(~0U, d->discHeader.id4[3]);
+	vector<uint16_t> tdb_lc = GameCubeRegions::gcnRegionToGameTDB(~0U, discHeader->id4[3]);
 
 	// Game ID.
 	// Replace any non-printable characters with underscores.
 	// (GameCube NDDEMO has ID6 "00\0E01".)
 	char id6[7];
 	for (int i = 0; i < 4; i++) {
-		id6[i] = (ISPRINT(d->discHeader.id4[i])
-			? d->discHeader.id4[i]
-			: '_');
+		id6[i] = (ISPRINT(discHeader->id4[i]))
+			? discHeader->id4[i]
+			: '_';
 	}
 
 	// Publisher ID.

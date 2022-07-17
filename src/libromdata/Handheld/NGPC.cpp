@@ -299,7 +299,7 @@ int NGPC::loadFieldData(void)
 		return -EIO;
 	}
 
-	// NGPC ROM header
+	// ROM header is read in the constructor.
 	const NGPC_RomHeader *const romHeader = &d->romHeader;
 	d->fields->reserve(6);	// Maximum of 6 fields.
 
@@ -378,7 +378,7 @@ int NGPC::loadMetaData(void)
 	d->metaData = new RomMetaData();
 	d->metaData->reserve(1);	// Maximum of 1 metadata property.
 
-	// NGPC ROM header
+	// ROM header is read in the constructor.
 	const NGPC_RomHeader *const romHeader = &d->romHeader;
 
 	// Title
@@ -443,10 +443,13 @@ int NGPC::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			return -ENOENT;
 	}
 
+	// ROM header is read in the constructor.
+	const NGPC_RomHeader *const romHeader = &d->romHeader;
+
 	// Game ID and subdirectory.
 	// For game ID, RPDB uses "NEOPxxxx" for NGPC.
 	// TODO: Special cases for duplicates?
-	const uint16_t id_code = (d->romHeader.id_code[1] << 8) | d->romHeader.id_code[0];
+	const uint16_t id_code = (romHeader->id_code[1] << 8) | romHeader->id_code[0];
 	const char *p_extra_subdir = nullptr;
 	char extra_subdir[12];
 	char game_id[13];	// original size is 12
@@ -461,7 +464,7 @@ int NGPC::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 		case 0x1234:	// Some samples
 			// Use the game ID as the extra subdirectory,
 			// and the ROM title as the game ID.
-			memcpy(game_id, d->romHeader.title, sizeof(d->romHeader.title));
+			memcpy(game_id, romHeader->title, sizeof(romHeader->title));
 			game_id[sizeof(game_id)-1] = '\0';
 			// Trim spaces from the game ID.
 			for (int i = (int)sizeof(game_id)-2; i > 0; i--) {

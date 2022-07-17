@@ -334,6 +334,7 @@ int CBMCart::loadFieldData(void)
 		return -EIO;
 	}
 
+	// ROM header is read in the constructor.
 	const CBM_CRTHeader *const romHeader = &d->romHeader;
 	d->fields->reserve(2);	// Maximum of 2 fields.
 
@@ -446,6 +447,7 @@ int CBMCart::loadMetaData(void)
 	d->metaData = new RomMetaData();
 	d->metaData->reserve(1);	// Maximum of 1 metadata property.
 
+	// ROM header is read in the constructor.
 	const CBM_CRTHeader *const romHeader = &d->romHeader;
 
 	// Title
@@ -493,6 +495,9 @@ int CBMCart::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) co
 		return -ENOENT;
 	const char *const sys = sys_tbl[(int)d->romType];
 
+	// ROM header is read in the constructor.
+	const CBM_CRTHeader *const romHeader = &d->romHeader;
+
 	// Image URL is the CRC32 of the first 16 KB of actual ROM data
 	// in the cartridge. If the cartridge has less than 16 KB ROM,
 	// then it's the CRC32 of whatever's available.
@@ -510,7 +515,7 @@ int CBMCart::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) co
 
 		// Read CHIP packets until we've read up to 16 KB of ROM data.
 		size_t sz_rd_total = 0;
-		off64_t addr = static_cast<off64_t>(be32_to_cpu(d->romHeader.hdr_len));
+		off64_t addr = static_cast<off64_t>(be32_to_cpu(romHeader->hdr_len));
 		int ret = d->file->seek(addr);
 		if (ret != 0) {
 			// Seek error.
@@ -605,7 +610,7 @@ int CBMCart::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) co
 	char s_subdir[16];
 	if (d->romType == CBMCartPrivate::RomType::C64) {
 		// TODO: Separate dir for UltiMax?
-		snprintf(s_subdir, sizeof(s_subdir), "crt/%u", be16_to_cpu(d->romHeader.type));
+		snprintf(s_subdir, sizeof(s_subdir), "crt/%u", be16_to_cpu(romHeader->type));
 	} else {
 		memcpy(s_subdir, "crt", 4);
 	}

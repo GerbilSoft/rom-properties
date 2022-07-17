@@ -339,7 +339,7 @@ int SufamiTurbo::loadFieldData(void)
 		return -EIO;
 	}
 
-	// ROM file header is read in the constructor.
+	// ROM header is read in the constructor.
 	const ST_RomHeader *const romHeader = &d->romHeader;
 	d->fields->reserve(4); // Maximum of 4 fields.
 
@@ -424,7 +424,7 @@ int SufamiTurbo::loadMetaData(void)
 	d->metaData = new RomMetaData();
 	d->metaData->reserve(1);	// Maximum of 1 metadata property.
 
-	// SufamiTurbo ROM header
+	// ROM header is read in the constructor.
 	//const ST_RomHeader *const romHeader = &d->romHeader;
 
 	// Title

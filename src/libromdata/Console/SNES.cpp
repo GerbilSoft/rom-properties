@@ -1189,7 +1189,7 @@ int SNES::loadFieldData(void)
 		return -EIO;
 	}
 
-	// ROM file header is read in the constructor.
+	// ROM header is read in the constructor.
 	const SNES_RomHeader *const romHeader = &d->romHeader;
 	d->fields->reserve(8); // Maximum of 8 fields.
 
@@ -1513,7 +1513,7 @@ int SNES::loadMetaData(void)
 	d->metaData = new RomMetaData();
 	d->metaData->reserve(2);	// Maximum of 2 metadata properties.
 
-	// SNES ROM header
+	// ROM header is read in the constructor.
 	//const SNES_RomHeader *const romHeader = &d->romHeader;
 
 	// Title
@@ -1555,6 +1555,9 @@ int SNES::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 		return -EIO;
 	}
 
+	// ROM header is read in the constructor.
+	const SNES_RomHeader *const romHeader = &d->romHeader;
+
 	// Determine the region code based on the destination code.
 	char region_code[4] = {'\0', '\0', '\0', '\0'};
 	static const char RegionCode_tbl[] = {
@@ -1566,9 +1569,9 @@ int SNES::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 		// BS-X. Use a separate "region".
 		region_code[0] = 'B';
 		region_code[1] = 'S';
-	} else if (d->romHeader.snes.destination_code < ARRAY_SIZE(RegionCode_tbl)) {
+	} else if (romHeader->snes.destination_code < ARRAY_SIZE(RegionCode_tbl)) {
 		// SNES region code is in range.
-		region_code[0] = RegionCode_tbl[d->romHeader.snes.destination_code];
+		region_code[0] = RegionCode_tbl[romHeader->snes.destination_code];
 	}
 
 	if (region_code[0] == '\0') {

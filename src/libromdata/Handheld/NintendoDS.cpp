@@ -909,7 +909,7 @@ int NintendoDS::loadFieldData(void)
 	static const int rows_visible = 4;
 #endif
 
-	// Nintendo DS ROM header.
+	// ROM header is read in the constructor.
 	const NDS_RomHeader *const romHeader = &d->romHeader;
 	const bool hasDSi = !!(romHeader->unitcode & NintendoDSPrivate::DS_HW_DSi);
 	if (hasDSi) {
@@ -1516,15 +1516,18 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 			return -ENOENT;
 	}
 
+	// ROM header is read in the constructor.
+	const NDS_RomHeader *const romHeader = &d->romHeader;
+
 	// Game ID. (GameTDB uses ID4 for Nintendo DS.)
 	// The ID4 cannot have non-printable characters.
 	char id4[5];
-	for (int i = ARRAY_SIZE(d->romHeader.id4)-1; i >= 0; i--) {
-		if (!ISPRINT(d->romHeader.id4[i])) {
+	for (int i = ARRAY_SIZE(romHeader->id4)-1; i >= 0; i--) {
+		if (!ISPRINT(romHeader->id4[i])) {
 			// Non-printable character found.
 			return -ENOENT;
 		}
-		id4[i] = d->romHeader.id4[i];
+		id4[i] = romHeader->id4[i];
 	}
 	// NULL-terminated ID4 is needed for the
 	// GameTDB URL functions.
@@ -1532,12 +1535,11 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 
 	// Determine the GameTDB language code(s).
 	vector<uint16_t> tdb_lc = d->ndsRegionToGameTDB(
-		d->romHeader.nds_region,
-		((d->romHeader.unitcode & NintendoDSPrivate::DS_HW_DSi)
-			? le32_to_cpu(d->romHeader.dsi.region_code)
-			: 0 /* not a DSi-enhanced/exclusive ROM */
-			),
-		d->romHeader.id4[3]);
+		romHeader->nds_region,
+		(romHeader->unitcode & NintendoDSPrivate::DS_HW_DSi)
+			? le32_to_cpu(romHeader->dsi.region_code)
+			: 0, /* not a DSi-enhanced/exclusive ROM */
+		romHeader->id4[3]);
 
 	// If we're downloading a "high-resolution" image (M or higher),
 	// also add the default image to ExtURLs in case the user has

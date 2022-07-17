@@ -2096,13 +2096,16 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 		return -ENOENT;
 	}
 
+	// Disc header is read in the constructor.
+	const GCN_DiscHeader *const discHeader = &d->discHeader;
+
 	// Check for known unusable game IDs.
 	// - RELSAB: Generic ID used for GCN prototypes and Wii update partitions.
 	// - RABAxx: Generic ID used for Wii prototypes and devkit updaters.
 	// - _INSZZ: Channel partition.
-	if (d->discHeader.id4[0] == '_' ||
-	    !memcmp(d->discHeader.id6, "RELSAB", 6) ||
-	    !memcmp(d->discHeader.id4, "RABA", 4))
+	if (discHeader->id4[0] == '_' ||
+	    !memcmp(discHeader->id6, "RELSAB", 6) ||
+	    !memcmp(discHeader->id4, "RABA", 4))
 	{
 		// Cannot download images for this game ID.
 		return -ENOENT;
@@ -2155,23 +2158,23 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 
 	// Determine the GameTDB region code(s).
 	vector<uint16_t> tdb_lc =
-		GameCubeRegions::gcnRegionToGameTDB(d->gcnRegion, d->discHeader.id4[3]);
+		GameCubeRegions::gcnRegionToGameTDB(d->gcnRegion, discHeader->id4[3]);
 
 	// Game ID.
 	// Replace any non-printable characters with underscores.
 	// (NDDEMO has ID6 "00\0E01".)
 	char id6[7];
 	for (int i = 0; i < 6; i++) {
-		id6[i] = (ISPRINT(d->discHeader.id6[i])
+		id6[i] = (ISPRINT(discHeader->id6[i]))
 			? d->discHeader.id6[i]
-			: '_');
+			: '_';
 	}
 	id6[6] = 0;
 
 	// External images with multiple discs must be handled differently.
 	const bool isDisc2 =
 		(imageType >= IMG_EXT_MIN && imageType <= IMG_EXT_MAX) &&
-		 d->discHeader.disc_number > 0;
+		 discHeader->disc_number > 0;
 
 	// ExtURLs.
 	// TODO: If multiple image sizes are added, add the
@@ -2196,7 +2199,7 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 		// Request the disc 2 image first.
 		char discName[20];
 		snprintf(discName, sizeof(discName), "%.16s%u",
-			 imageTypeName, static_cast<unsigned int>(d->discHeader.disc_number) + 1);
+			 imageTypeName, static_cast<unsigned int>(discHeader->disc_number) + 1);
 
 		for (auto tdb_iter = tdb_lc.cbegin();
 		     tdb_iter != tdb_lc_cend; ++tdb_iter, ++extURL_iter)
@@ -2261,9 +2264,9 @@ int GameCube::checkViewedAchievements(void) const
 	if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_NASOS) {
 		// NASOS disc image.
 		// If this would normally be an encrypted image, use encKeyReal().
-		encKey = (d->discHeader.disc_noCrypto == 0
+		encKey = (d->discHeader.disc_noCrypto == 0)
 			? pt->encKeyReal()
-			: pt->encKey());
+			: pt->encKey();
 	} else {
 		// Other disc image. Use encKey().
 		encKey = pt->encKey();

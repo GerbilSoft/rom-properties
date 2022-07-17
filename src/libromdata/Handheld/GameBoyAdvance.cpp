@@ -336,7 +336,7 @@ int GameBoyAdvance::loadFieldData(void)
 		return -EIO;
 	}
 
-	// GBA ROM header
+	// ROM header is read in the constructor.
 	const GBA_RomHeader *const romHeader = &d->romHeader;
 	d->fields->reserve(7);	// Maximum of 7 fields.
 
@@ -440,7 +440,7 @@ int GameBoyAdvance::loadMetaData(void)
 	d->metaData = new RomMetaData();
 	d->metaData->reserve(1);	// Maximum of 1 metadata property.
 
-	// GBA ROM header
+	// ROM header is read in the constructor.
 	const GBA_RomHeader *const romHeader = &d->romHeader;
 
 	// Title
@@ -512,6 +512,9 @@ int GameBoyAdvance::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int s
 			return -ENOENT;
 	}
 
+	// ROM header is read in the constructor.
+	const GBA_RomHeader *const romHeader = &d->romHeader;
+
 	// Region code
 	char region_code[8];
 	region_code[0] = '\0';
@@ -526,9 +529,9 @@ int GameBoyAdvance::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int s
 		'AGBJ', '    ', '____', 'RARE',
 		'0000', 'XXXX', 'XXXE',
 	};
-	if (d->romHeader.id4[0] == '\0') {
+	if (romHeader->id4[0] == '\0') {
 		// Empty ID4. Use the title.
-		name.assign(d->romHeader.title, sizeof(d->romHeader.title));
+		name.assign(romHeader->title, sizeof(romHeader->title));
 		size_t null_pos = name.find('\0');
 		if (null_pos != string::npos) {
 			name.resize(null_pos);
@@ -536,11 +539,11 @@ int GameBoyAdvance::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int s
 		trimEnd(name);
 		memcpy(region_code, "NoID", 5);
 	} else {
-		const uint32_t id4_32 = be32_to_cpu(d->romHeader.id4_32);
+		const uint32_t id4_32 = be32_to_cpu(romHeader->id4_32);
 		for (uint32_t p : common_ID4) {
 			if (id4_32 == p) {
 				// This ROM has a common ID4. Use the title.
-				name.assign(d->romHeader.title, sizeof(d->romHeader.title));
+				name.assign(romHeader->title, sizeof(romHeader->title));
 				size_t null_pos = name.find('\0');
 				if (null_pos != string::npos) {
 					name.resize(null_pos);
@@ -555,12 +558,12 @@ int GameBoyAdvance::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int s
 		// Not using the title. Use the ID6.
 		// The ID6 cannot have non-printable characters.
 		name.resize(6);
-		for (int i = ARRAY_SIZE(d->romHeader.id6)-1; i >= 0; i--) {
-			if (!ISPRINT(d->romHeader.id6[i])) {
+		for (int i = ARRAY_SIZE(romHeader->id6)-1; i >= 0; i--) {
+			if (!ISPRINT(romHeader->id6[i])) {
 				// Non-printable character found.
 				return -ENOENT;
 			}
-			name[i] = d->romHeader.id6[i];
+			name[i] = romHeader->id6[i];
 		}
 
 		// Region code is taken from the ID4.
