@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libunixcommon)                    *
  * userdirs.cpp: Find user directories.                                    *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,19 +12,21 @@
 // This is usually encoded as UTF-8.
 #include "userdirs.hpp"
 
-// C includes.
+// C includes
 #include <fcntl.h>	// AT_FDCWD
 #include <pwd.h>	// getpwuid_r()
 #include <sys/stat.h>	// stat(), statx(), S_ISDIR()
 #include <stdlib.h>
 #include <unistd.h>
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cassert>
 
-// C++ includes.
+// C++ includes
+#include <memory>
 #include <string>
 using std::string;
+using std::unique_ptr;
 
 namespace LibUnixCommon {
 
@@ -109,11 +111,12 @@ string getHomeDirectory(void)
 	// TODO: Can pwd_result be nullptr?
 	// TODO: Check for ENOMEM?
 	const char *pw_dir = nullptr;
-#if defined(HAVE_GETPWUID_R)
-	char buf[2048];
+#if defined(HAVE_GETPWUID_R) && defined(_SC_GETPW_R_SIZE_MAX)
+#  define GETPW_BUF_SIZE 16384
+	unique_ptr<char[]> buf(new char[GETPW_BUF_SIZE]);
 	struct passwd pwd;
 	struct passwd *pwd_result;
-	int ret = getpwuid_r(getuid(), &pwd, buf, sizeof(buf), &pwd_result);
+	int ret = getpwuid_r(getuid(), &pwd, buf.get(), GETPW_BUF_SIZE, &pwd_result);
 	if (ret != 0 || !pwd_result) {
 		// getpwuid_r() failed.
 		return string();
@@ -128,7 +131,7 @@ string getHomeDirectory(void)
 	}
 	pw_dir = pwd->pw_dir;
 #else
-# error No supported getpwuid() function.
+#  error No supported getpwuid() function.
 #endif
 
 	if (!pw_dir || pw_dir[0] == 0) {
