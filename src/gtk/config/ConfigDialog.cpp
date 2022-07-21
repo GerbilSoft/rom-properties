@@ -196,167 +196,59 @@ config_dialog_init(ConfigDialog *dialog)
 	gtk_box_pack_start(GTK_BOX(content_area), dialog->tabWidget, TRUE, TRUE, 0);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
+#if GTK_CHECK_VERSION(4,0,0)
+#  define GTK_WIDGET_SHOW_GTK3(widget)
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+#  define GTK_WIDGET_SHOW_GTK3(widget) gtk_widget_show(widget)
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+
 	// Create the tabs.
-	GtkWidget *const lblImageTypes = gtk_label_new_with_mnemonic(
-		convert_accel_to_gtk(C_("ConfigDialog", "&Image Types")).c_str());
-	gtk_widget_set_name(lblImageTypes, "lblImageTypes");
-	dialog->tabImageTypes = image_types_tab_new();
-	gtk_widget_set_name(dialog->tabImageTypes, "tabImageTypes");
-	g_signal_connect(dialog->tabImageTypes, "modified",
-		G_CALLBACK(config_dialog_tab_modified), dialog);
-
-	GtkWidget *const lblSystems = gtk_label_new_with_mnemonic(
-		convert_accel_to_gtk(C_("ConfigDialog", "&Systems")).c_str());
-	gtk_widget_set_name(lblSystems, "lblSystems");
-	dialog->tabSystems = systems_tab_new();
-	gtk_widget_set_name(dialog->tabSystems, "tabSystems");
-	g_signal_connect(dialog->tabSystems, "modified",
-		G_CALLBACK(config_dialog_tab_modified), dialog);
-
-	GtkWidget *const lblOptions = gtk_label_new_with_mnemonic(
-		convert_accel_to_gtk(C_("ConfigDialog", "&Options")).c_str());
-	gtk_widget_set_name(lblOptions, "lblOptions");
-	dialog->tabOptions = options_tab_new();
-	gtk_widget_set_name(dialog->tabOptions, "tabOptions");
-	g_signal_connect(dialog->tabOptions, "modified",
-		G_CALLBACK(config_dialog_tab_modified), dialog);
-
-	GtkWidget *const lblCache = gtk_label_new_with_mnemonic(
-		convert_accel_to_gtk(C_("ConfigDialog", "Thumbnail Cache")).c_str());
-	gtk_widget_set_name(lblCache, "lblCache");
-	dialog->tabCache = cache_tab_new();
-	gtk_widget_set_name(dialog->tabCache, "tabCache");
-	gtk_widget_show(dialog->tabCache);
-	g_signal_connect(dialog->tabCache, "modified",
-		G_CALLBACK(config_dialog_tab_modified), dialog);
-
-	GtkWidget *const lblAchievements = gtk_label_new_with_mnemonic(
-		convert_accel_to_gtk(C_("ConfigDialog", "&Achievements")).c_str());
-	gtk_widget_set_name(lblAchievements, "lblAchievements");
-	dialog->tabAchievements = achievements_tab_new();
-	gtk_widget_set_name(dialog->tabAchievements, "tabAchievements");
-	g_signal_connect(dialog->tabAchievements, "modified",
-		G_CALLBACK(config_dialog_tab_modified), dialog);
-
-#ifdef ENABLE_DECRYPTION
-	GtkWidget *const lblKeyManager = gtk_label_new_with_mnemonic(
-		convert_accel_to_gtk(C_("ConfigDialog", "&Key Manager")).c_str());
-	gtk_widget_set_name(lblKeyManager, "lblKeyManager");
-	dialog->tabKeyManager = key_manager_tab_new();
-	gtk_widget_set_name(dialog->tabKeyManager, "tabKeyManager");
-	g_signal_connect(dialog->tabKeyManager, "modified",
-		G_CALLBACK(config_dialog_tab_modified), dialog);
-#endif /* ENABLE_DECRYPTION */
-
-	GtkWidget *const lblAbout = gtk_label_new_with_mnemonic(
-		convert_accel_to_gtk(C_("ConfigDialog", "Abou&t")).c_str());
-	gtk_widget_set_name(lblAbout, "lblAbout");
-	dialog->tabAbout = about_tab_new();
-	gtk_widget_set_name(dialog->tabAbout, "tabAbout");
-	g_signal_connect(dialog->tabAbout, "modified",
-		G_CALLBACK(config_dialog_tab_modified), dialog);
-
-	// Add padding and append the pages.
 #ifndef RP_USE_GTK_ALIGNMENT
 	// GTK3/GTK4: Use the 'margin-*' properties and add the pages directly.
-	gtk_widget_set_margin(dialog->tabImageTypes, 8);
-	gtk_widget_set_margin(dialog->tabSystems, 8);
-	gtk_widget_set_margin(dialog->tabOptions, 8);
-	gtk_widget_set_margin(dialog->tabCache, 8);
-	gtk_widget_set_margin(dialog->tabAchievements, 8);
-#  ifdef ENABLE_DECRYPTION
-	gtk_widget_set_margin(dialog->tabKeyManager, 8);
-#  endif /* ENABLE_DECRYPTION */
-	gtk_widget_set_margin(dialog->tabAbout, 8);
-
-	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabImageTypes, lblImageTypes);
-	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabSystems, lblSystems);
-	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabOptions, lblOptions);
-	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabCache, lblCache);
-	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabAchievements, lblAchievements);
-#  ifdef ENABLE_DECRYPTION
-	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabKeyManager, lblKeyManager);
-#  endif /* ENABLE_DECRYPTION */
-	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tabAbout, lblAbout);
-#else /* RP_USE_GTK_ALIGNMENT */
+#define ADD_TAB(name) do { \
+		gtk_widget_set_margin(dialog->tab##name, 8); \
+		gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tab##name, lbl##name); \
+	} while (0)
+#else
 	// GTK2: Need to add GtkAlignment widgets for padding.
-	GtkWidget *const alignImageTypes = gtk_alignment_new(0.0f, 0.0f, 1.0f, 1.0f);
-	GtkWidget *const alignSystems = gtk_alignment_new(0.0f, 0.0f, 1.0f, 1.0f);
-	GtkWidget *const alignOptions = gtk_alignment_new(0.0f, 0.0f, 1.0f, 1.0f);
-	GtkWidget *const alignCache = gtk_alignment_new(0.0f, 0.0f, 1.0f, 1.0f);
-	GtkWidget *const alignAchievements = gtk_alignment_new(0.0f, 0.0f, 1.0f, 1.0f);
-	GtkWidget *const alignAbout = gtk_alignment_new(0.0f, 0.0f, 1.0f, 1.0f);
+#define ADD_TAB(name) do { \
+		GtkWidget *const align##name = gtk_alignment_new(0.0f, 0.0f, 1.0f, 1.0f); \
+		gtk_widget_set_name(align##name, "align" #name); \
+		gtk_alignment_set_padding(GTK_ALIGNMENT(align##name), 8, 8, 8, 8); \
+		gtk_container_add(GTK_CONTAINER(align##name), dialog->tab##name); \
+		GTK_WIDGET_SHOW_GTK3(align##name); \
+		\
+		gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), align##name, lbl##name); \
+	} while (0)
+#endif
 
-	gtk_widget_set_name(alignImageTypes, "alignImageTypes");
-	gtk_widget_set_name(alignSystems, "alignSystems");
-	gtk_widget_set_name(alignOptions, "alignOptions");
-	gtk_widget_set_name(alignCache, "alignCache");
-	gtk_widget_set_name(alignAchievements, "alignAchievements");
-	gtk_widget_set_name(alignAbout, "alignAbout");
+#define CREATE_TAB(name, label, fn) do { \
+		GtkWidget *const lbl##name = gtk_label_new_with_mnemonic( \
+			convert_accel_to_gtk(label).c_str()); \
+		gtk_widget_set_name(lbl##name, "lbl" #name); \
+		GTK_WIDGET_SHOW_GTK3(lbl##name); \
+		\
+		dialog->tab##name = fn(); \
+		gtk_widget_set_name(dialog->tab##name, "tab" #name); \
+		GTK_WIDGET_SHOW_GTK3(dialog->tab##name); \
+		g_signal_connect(dialog->tab##name, "modified", \
+			G_CALLBACK(config_dialog_tab_modified), dialog); \
+		\
+		ADD_TAB(name); \
+	} while (0)
 
-	gtk_container_add(GTK_CONTAINER(alignImageTypes), dialog->tabImageTypes);
-	gtk_container_add(GTK_CONTAINER(alignSystems), dialog->tabSystems);
-	gtk_container_add(GTK_CONTAINER(alignOptions), dialog->tabOptions);
-	gtk_container_add(GTK_CONTAINER(alignCache), dialog->tabCache);
-	gtk_container_add(GTK_CONTAINER(alignAchievements), dialog->tabAchievements);
-	gtk_container_add(GTK_CONTAINER(alignAbout), dialog->tabAbout);
+	CREATE_TAB(ImageTypes, C_("ConfigDialog", "&Image Types"), image_types_tab_new);
+	CREATE_TAB(Systems, C_("ConfigDialog", "&Systems"), systems_tab_new);
+	CREATE_TAB(Options, C_("ConfigDialog", "&Options"), options_tab_new);
+	CREATE_TAB(Cache, C_("ConfigDialog", "Thumbnail Cache"), cache_tab_new);
+	CREATE_TAB(Achievements, C_("ConfigDialog", "&Achievements"), achievements_tab_new);
+#ifdef ENABLE_DECRYPTION
+	CREATE_TAB(KeyManager, C_("ConfigDialog", "&Key Manager"), key_manager_tab_new);
+#endif /* ENABLE_DECRYPTION */
+	CREATE_TAB(About, C_("ConfigDialog", "Abou&t"), about_tab_new);
 
-	gtk_alignment_set_padding(GTK_ALIGNMENT(alignImageTypes), 8, 8, 8, 8);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(alignSystems), 8, 8, 8, 8);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(alignOptions), 8, 8, 8, 8);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(alignCache), 8, 8, 8, 8);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(alignAchievements), 8, 8, 8, 8);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(alignAbout), 8, 8, 8, 8);
-
-	gtk_widget_show(alignImageTypes);
-	gtk_widget_show(alignSystems);
-	gtk_widget_show(alignOptions);
-	gtk_widget_show(alignCache);
-	gtk_widget_show(alignAchievements);
-	gtk_widget_show(alignAbout);
-
-#  ifdef ENABLE_DECRYPTION
-	GtkWidget *const alignKeyManager = gtk_alignment_new(0.0f, 0.0f, 1.0f, 1.0f);
-	gtk_widget_set_name(alignKeyManager, "alignKeyManager");
-	gtk_container_add(GTK_CONTAINER(alignKeyManager), dialog->tabKeyManager);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(alignKeyManager), 8, 8, 8, 8);
-	gtk_widget_show(alignKeyManager);
-#  endif /* ENABLE_DECRYPTION */
-
-	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), alignImageTypes, lblImageTypes);
-	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), alignSystems, lblSystems);
-	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), alignOptions, lblOptions);
-	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), alignCache, lblCache);
-	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), alignAchievements, lblAchievements);
-#  ifdef ENABLE_DECRYPTION
-	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), alignKeyManager, lblKeyManager);
-#  endif /* ENABLE_DECRYPTION */
-	gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), alignAbout, lblAbout);
-#endif /* RP_USE_GTK_ALIGNMENT */
-
-#if !GTK_CHECK_VERSION(4,0,0)
-	// Show the GtkNotebook, tab labels, and actual tabs.
-	gtk_widget_show(dialog->tabWidget);
-
-	gtk_widget_show(lblImageTypes);
-	gtk_widget_show(lblSystems);
-	gtk_widget_show(lblOptions);
-	gtk_widget_show(lblCache);
-	gtk_widget_show(lblAchievements);
-	gtk_widget_show(lblAbout);
-
-	gtk_widget_show(dialog->tabImageTypes);
-	gtk_widget_show(dialog->tabSystems);
-	gtk_widget_show(dialog->tabAbout);
-	gtk_widget_show(dialog->tabCache);
-	gtk_widget_show(dialog->tabOptions);
-	gtk_widget_show(dialog->tabAchievements);
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
-
-#  ifdef ENABLE_DECRYPTION
-	gtk_widget_show(lblKeyManager);
-	gtk_widget_show(dialog->tabKeyManager);
-#  endif /* ENABLE_DECRYPTION */
+	// Show the GtkNotebook.
+	GTK_WIDGET_SHOW_GTK3(dialog->tabWidget);
 
 	// Reset button is disabled initially.
 	gtk_widget_set_sensitive(dialog->btnReset, FALSE);
