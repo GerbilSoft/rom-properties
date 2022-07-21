@@ -155,7 +155,7 @@ for publisher in range(high_publisher+1):
 		entry = entry_dict[publisher]
 	except KeyError:
 		# No format. Print an empty entry.
-		f_out.write("{0,0}, ")
+		f_out.write("{0,0},")
 		continue
 
 	# Print the entry.
