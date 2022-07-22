@@ -104,39 +104,25 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 	LanguageComboBoxRegister();
 
 	// Initialize the property sheet tabs.
-
-	// Image type priority.
 	tabs[0] = new ImageTypesTab();
-	hpsp[0] = tabs[0]->getHPropSheetPage();
-	// Systems
 	tabs[1] = new SystemsTab();
-	hpsp[1] = tabs[1]->getHPropSheetPage();
-	// Options
 	tabs[2] = new OptionsTab();
-	hpsp[2] = tabs[2]->getHPropSheetPage();
-	// Thumbnail cache
-	// References:
-	// - http://stackoverflow.com/questions/23677175/clean-windows-thumbnail-cache-programmatically
-	// - https://www.codeproject.com/Articles/2408/Clean-Up-Handler
 	tabs[3] = new CacheTab();
-	hpsp[3] = tabs[3]->getHPropSheetPage();
-	// Achievements
 	tabs[4] = new AchievementsTab();
-	hpsp[4] = tabs[4]->getHPropSheetPage();
 #ifdef ENABLE_DECRYPTION
-	// Key Manager
 	tabs[5] = new KeyManagerTab();
-	hpsp[5] = tabs[5]->getHPropSheetPage();
 #endif /* ENABLE_DECRYPTION */
-
-	// About
 	tabs[TAB_COUNT-1] = new AboutTab();
-	hpsp[TAB_COUNT-1] = tabs[TAB_COUNT-1]->getHPropSheetPage();
 
-	// "ROM chip" icon.
+	// Get the HPROPSHEETPAGEs.
+	for (unsigned int i = 0; i < TAB_COUNT; i++) {
+		hpsp[i] = tabs[i]->getHPropSheetPage();
+	}
+
+	// "ROM chip" icon
 	const PropSheetIcon *const psi = PropSheetIcon::instance();
 
-	// Create the property sheet.
+	// Create the property sheet
 	psh.dwSize = sizeof(psh);
 	psh.dwFlags = PSH_USECALLBACK | PSH_NOCONTEXTHELP | PSH_USEHICON;
 	psh.hwndParent = nullptr;
