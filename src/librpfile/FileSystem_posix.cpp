@@ -105,9 +105,9 @@ int rmkdir(const string &path)
  * @param mode Mode.
  * @return 0 if the file exists with the specified mode; non-zero if not.
  */
-int access(const string &pathname, int mode)
+int access(const char *pathname, int mode)
 {
-	return ::access(pathname.c_str(), mode);
+	return ::access(pathname, mode);
 }
 
 /**
@@ -115,11 +115,11 @@ int access(const string &pathname, int mode)
  * @param filename Filename.
  * @return Size on success; -1 on error.
  */
-off64_t filesize(const string &filename)
+off64_t filesize(const char *filename)
 {
 #ifdef HAVE_STATX
 	struct statx sbx;
-	int ret = statx(AT_FDCWD, filename.c_str(), 0, STATX_SIZE, &sbx);
+	int ret = statx(AT_FDCWD, filename, 0, STATX_SIZE, &sbx);
 	if (ret != 0 || !(sbx.stx_mask & STATX_SIZE)) {
 		// statx() failed and/or did not return the file size.
 		int ret = -errno;
@@ -128,7 +128,7 @@ off64_t filesize(const string &filename)
 	return sbx.stx_size;
 #else /* !HAVE_STATX */
 	struct stat sb;
-	int ret = stat(filename.c_str(), &sb);
+	int ret = stat(filename, &sb);
 	if (ret != 0) {
 		// stat() failed.
 		int ret = -errno;

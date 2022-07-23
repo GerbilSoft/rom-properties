@@ -227,7 +227,7 @@ CacheCleaner::CacheCleaner(QObject *parent, CacheCleaner::CacheDir cacheDir)
  */
 void CacheCleaner::run(void)
 {
-	string dir;
+	string cacheDir;
 	QString qs_err;
 	switch (m_cacheDir) {
 		default:
@@ -237,14 +237,14 @@ void CacheCleaner::run(void)
 
 		case CacheCleaner::CD_System:
 			// System thumbnails. (~/.cache/thumbnails)
-			dir = LibUnixCommon::getCacheDirectory();
-			if (dir.empty()) {
+			cacheDir = LibUnixCommon::getCacheDirectory();
+			if (cacheDir.empty()) {
 				qs_err = tr("Unable to get the XDG cache directory.");
 				break;
 			}
 			// Append "/thumbnails".
-			dir += "/thumbnails";
-			if (!LibUnixCommon::isWritableDirectory(dir.c_str())) {
+			cacheDir += "/thumbnails";
+			if (!LibUnixCommon::isWritableDirectory(cacheDir.c_str())) {
 				// Thumbnails subdirectory does not exist. (or is not writable)
 				// TODO: Check specifically if it's not writable or doesn't exist?
 				qs_err = tr("Thumbnails cache directory does not exist.");
@@ -254,11 +254,21 @@ void CacheCleaner::run(void)
 
 		case CacheCleaner::CD_RomProperties:
 			// rom-properties cache. (~/.cache/rom-properties)
-			dir = FileSystem::getCacheDirectory();
-			if (dir.empty()) {
+			cacheDir = FileSystem::getCacheDirectory();
+			if (cacheDir.empty()) {
 				qs_err = tr("Unable to get the rom-properties cache directory.");
 				break;
 			}
+
+			// Does the cache directory exist?
+			// If it doesn't, we'll act like it's empty.
+			if (FileSystem::access(cacheDir.c_str(), R_OK) != 0) {
+				emit progress(1, 1, false);
+				emit cacheIsEmpty(m_cacheDir);
+				emit finished();
+				return;
+			}
+
 			break;
 	}
 
@@ -274,7 +284,7 @@ void CacheCleaner::run(void)
 	// TODO: Do we really want to store everything in a list? (Wastes memory.)
 	// Maybe do a simple counting scan first, then delete.
 	list<pair<string, uint8_t> > rlist;
-	int ret = recursiveScan(dir.c_str(), rlist);
+	int ret = recursiveScan(cacheDir.c_str(), rlist);
 	if (ret != 0) {
 		// Non-image file found.
 		QString qs_err;
@@ -295,7 +305,8 @@ void CacheCleaner::run(void)
 		emit finished();
 		return;
 	} else if (rlist.empty()) {
-		emit progress(1, 1, true);
+		// Cache directory is empty.
+		emit progress(1, 1, false);
 		emit cacheIsEmpty(m_cacheDir);
 		emit finished();
 		return;

@@ -669,6 +669,20 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	SendMessage(hProgressBar, PBM_SETRANGE, 0, 1);
 	SendMessage(hProgressBar, PBM_SETPOS, 0, 0);
 
+	// Does the cache directory exist?
+	// If it doesn't, we'll act like it's empty.
+	if (FileSystem::taccess(cacheDirT.c_str(), R_OK) != 0) {
+		// Unable to read the directory. Assume it's missing.
+		SetWindowText(hStatusLabel, U82T_c(C_("CacheTab", "rom-properties cache is empty. Nothing to do.")));
+		SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, 1));
+		SendMessage(hProgressBar, PBM_SETPOS, 1, 0);
+		EnableWindow(hClearSysThumbs, TRUE);
+		EnableWindow(hClearRpDl, TRUE);
+		SetCursor(LoadCursor(NULL, IDC_ARROW));
+		MessageBeep(MB_ICONINFORMATION);
+		return 0;
+	}
+
 	// Recursively scan the cache directory.
 	// TODO: Do we really want to store everything in a list? (Wastes memory.)
 	// Maybe do a simple counting scan first, then delete.

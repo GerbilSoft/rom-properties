@@ -60,18 +60,39 @@ int rmkdir(const std::string &path);
 
 /**
  * Does a file exist?
- * @param pathname Pathname.
- * @param mode Mode.
+ * @param pathname Pathname
+ * @param mode Mode
  * @return 0 if the file exists with the specified mode; non-zero if not.
  */
-int access(const std::string &pathname, int mode);
+RP_LIBROMDATA_PUBLIC
+int access(const char *pathname, int mode);
+
+#ifdef _WIN32
+/**
+ * Does a file exist?
+ * @param pathname Pathname
+ * @param mode Mode
+ * @return 0 if the file exists with the specified mode; non-zero if not.
+ */
+RP_LIBROMDATA_PUBLIC
+int waccess(const wchar_t *pathname, int mode);
+#endif /* _WIN32 */
 
 /**
  * Get a file's size.
- * @param filename Filename.
+ * @param filename Filename
  * @return Size on success; -1 on error.
  */
-off64_t filesize(const std::string &filename);
+off64_t filesize(const char *filename);
+
+#ifdef _WIN32
+/**
+ * Get a file's size.
+ * @param filename Filename
+ * @return Size on success; -1 on error.
+ */
+off64_t wfilesize(const wchar_t *filename);
+#endif /* _WIN32 */
 
 /**
  * Get the user's cache directory.
@@ -210,6 +231,36 @@ bool isOnBadFS(const char *filename, bool netFS = false);
  * @return 0 on success; negative POSIX error code on error.
  */
 int get_file_size_and_mtime(const std::string &filename, off64_t *pFileSize, time_t *pMtime);
+
+/** TCHAR functions for Windows **/
+// NOTE: The `const char*` functions use UTF-8, not ANSI.
+
+#ifdef _UNICODE
+
+static inline int taccess(const wchar_t *pathname, int mode)
+{
+	return waccess(pathname, mode);
+}
+
+static inline off64_t tfilesize(const wchar_t *filename)
+{
+	return wfilesize(filename);
+}
+
+#else /* !_UNICODE */
+
+static inline int taccess(const char *pathname, int mode)
+{
+	return access(pathname, mode);
+}
+
+static inline off64_t tfilesize(const char *filename)
+{
+	return filesize(filename);
+}
+
+#endif /* !_UNICODE */
+
 
 } }
 

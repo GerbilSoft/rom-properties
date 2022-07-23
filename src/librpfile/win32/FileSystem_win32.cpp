@@ -46,7 +46,7 @@ namespace LibRpFile { namespace FileSystem {
  */
 static inline wstring makeWinPath(const char *filename)
 {
-	if (unlikely(!filename || filename[0] == 0))
+	if (unlikely(!filename || filename[0] == '\0'))
 		return wstring();
 
 	// TODO: Don't bother if the filename is <= 240 characters?
@@ -91,6 +91,60 @@ static inline wstring makeWinPath(const string &filename)
 	}
 	return filenameW;
 }
+
+/**
+ * Prepend "\\\\?\\" to an absolute Windows path.
+ * This is needed in order to support filenames longer than MAX_PATH.
+ * @param filename Original Windows filename.
+ * @return Windows filename with "\\\\?\\" prepended.
+ */
+static inline wstring makeWinPath(const wchar_t *filename)
+{
+	if (unlikely(!filename || filename[0] == L'\0'))
+		return wstring();
+
+	// TODO: Don't bother if the filename is <= 240 characters?
+	wstring filenameW;
+	if (ISASCII(filename[0]) && ISALPHA(filename[0]) &&
+	    filename[1] == ':' && filename[2] == '\\')
+	{
+		// Absolute path. Prepend "\\\\?\\" to the path.
+		filenameW = L"\\\\?\\";
+		filenameW += filename;
+	} else {
+		// Not an absolute path, or "\\\\?\\" is already
+		// prepended. Use it as-is.
+		filenameW = filename;
+	}
+	return filenameW;
+}
+
+/**
+ * Prepend "\\\\?\\" to an absolute Windows path.
+ * This is needed in order to support filenames longer than MAX_PATH.
+ * @param filename Original Windows filename.
+ * @return Windows filename with "\\\\?\\" prepended.
+ */
+static inline wstring makeWinPath(const wstring &filename)
+{
+	if (filename.empty())
+		return wstring();
+
+	// TODO: Don't bother if the filename is <= 240 characters?
+	wstring filenameW;
+	if (ISASCII(filename[0]) && ISALPHA(filename[0]) &&
+	    filename[1] == ':' && filename[2] == '\\')
+	{
+		// Absolute path. Prepend "\\?\" to the path.
+		filenameW = L"\\\\?\\";
+		filenameW += filename;
+	} else {
+		// Not an absolute path, or "\\?\" is already
+		// prepended. Use it as-is.
+		filenameW = filename;
+	}
+	return filenameW;
+}
 #else /* !UNICODE */
 /**
  * Convert a path from ANSI to UTF-8.
@@ -118,6 +172,34 @@ static inline tstring makeWinPath(const char *filename)
 static inline tstring makeWinPath(const string &filename)
 {
 	return U82T_s(filename);
+}
+
+/**
+ * Convert a path from ANSI to UTF-8.
+ *
+ * Windows' ANSI functions doesn't support the use of
+ * "\\\\?\\" for paths longer than MAX_PATH.
+ *
+ * @param filename UTF-8 filename.
+ * @return ANSI filename.
+ */
+static inline tstring makeWinPath(const wchar_t *filename)
+{
+	return W2U8(filename);
+}
+
+/**
+ * Convert a path from ANSI to UTF-8.
+ *
+ * Windows' ANSI functions doesn't support the use of
+ * "\\\\?\\" for paths longer than MAX_PATH.
+ *
+ * @param filename UTF-8 filename.
+ * @return ANSI filename.
+ */
+static inline tstring makeWinPath(const wstring &filename)
+{
+	return W2U8(filename);
 }
 #endif /* UNICODE */
 
@@ -179,11 +261,11 @@ int rmkdir(const string &path)
 
 /**
  * Does a file exist?
- * @param pathname Pathname.
- * @param mode Mode.
+ * @param pathname Pathname
+ * @param mode Mode
  * @return 0 if the file exists with the specified mode; non-zero if not.
  */
-int access(const string &pathname, int mode)
+int access(const char *pathname, int mode)
 {
 	// Windows doesn't recognize X_OK.
 	const tstring tpathname = makeWinPath(pathname);
@@ -192,14 +274,26 @@ int access(const string &pathname, int mode)
 }
 
 /**
- * Get a file's size.
- * @param filename Filename.
+ * Does a file exist?
+ * @param pathname Pathname
+ * @param mode Mode
+ * @return 0 if the file exists with the specified mode; non-zero if not.
+ */
+int waccess(const wchar_t *pathname, int mode)
+{
+	// Windows doesn't recognize X_OK.
+	const tstring tpathname = makeWinPath(pathname);
+	mode &= ~X_OK;
+	return ::_taccess(tpathname.c_str(), mode);
+}
+
+/**
+ * Get a file's size. (internal function)
+ * @param tfilename Filename
  * @return Size on success; -1 on error.
  */
-off64_t filesize(const string &filename)
+static off64_t filesize_int(const tstring &tfilename)
 {
-	const tstring tfilename = makeWinPath(filename);
-
 	// TODO: Add a static_warning() macro?
 	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
 #if _USE_32BIT_TIME_T
@@ -224,6 +318,26 @@ off64_t filesize(const string &filename)
 
 	// Return the file size.
 	return liFileSize.QuadPart;
+}
+
+/**
+ * Get a file's size.
+ * @param filename Filename
+ * @return Size on success; -1 on error.
+ */
+off64_t filesize(const char *filename)
+{
+	return filesize_int(makeWinPath(filename));
+}
+
+/**
+ * Get a file's size.
+ * @param filename Filename
+ * @return Size on success; -1 on error.
+ */
+off64_t wfilesize(const wchar_t *filename)
+{
+	return filesize_int(makeWinPath(filename));
 }
 
 /**

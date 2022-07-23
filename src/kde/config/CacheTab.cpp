@@ -289,7 +289,7 @@ void CacheTab::ccCleaner_cacheIsEmpty(CacheCleaner::CacheDir cacheDir)
 	d->ui.pbStatus->setMaximum(1);
 	d->ui.pbStatus->setValue(1);
 	d->ui.lblStatus->setText(qs_msg);
-	MessageSound::play(QMessageBox::Warning, qs_msg, this);
+	MessageSound::play(QMessageBox::Information, qs_msg, this);
 }
 
 /**

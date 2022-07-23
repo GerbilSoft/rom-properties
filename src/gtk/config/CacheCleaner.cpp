@@ -431,7 +431,7 @@ cache_cleaner_run(CacheCleaner *cleaner)
 {
 	g_return_if_fail(IS_CACHE_CLEANER(cleaner));
 
-	string dir;
+	string cacheDir;
 	const char *s_err = nullptr;
 	switch (cleaner->cache_dir) {
 		default:
@@ -441,14 +441,14 @@ cache_cleaner_run(CacheCleaner *cleaner)
 
 		case RP_CD_System:
 			// System thumbnails. (~/.cache/thumbnails)
-			dir = LibUnixCommon::getCacheDirectory();
-			if (dir.empty()) {
+			cacheDir = LibUnixCommon::getCacheDirectory();
+			if (cacheDir.empty()) {
 				s_err = C_("CacheCleaner", "Unable to get the XDG cache directory.");
 				break;
 			}
 			// Append "/thumbnails".
-			dir += "/thumbnails";
-			if (!LibUnixCommon::isWritableDirectory(dir.c_str())) {
+			cacheDir += "/thumbnails";
+			if (!LibUnixCommon::isWritableDirectory(cacheDir.c_str())) {
 				// Thumbnails subdirectory does not exist. (or is not writable)
 				// TODO: Check specifically if it's not writable or doesn't exist?
 				s_err = C_("CacheCleaner", "Thumbnails cache directory does not exist.");
@@ -458,11 +458,20 @@ cache_cleaner_run(CacheCleaner *cleaner)
 
 		case RP_CD_RomProperties:
 			// rom-properties cache. (~/.cache/rom-properties)
-			dir = FileSystem::getCacheDirectory();
-			if (dir.empty()) {
+			cacheDir = FileSystem::getCacheDirectory();
+			if (cacheDir.empty()) {
 				s_err = C_("CacheCleaner", "Unable to get the rom-properties cache directory.");
 				break;
 			}
+
+			// Does the cache directory exist?
+			// If it doesn't, we'll act like it's empty.
+			if (FileSystem::access(cacheDir.c_str(), R_OK) != 0) {
+				g_signal_emit(cleaner, signals[SIGNAL_CACHE_IS_EMPTY], 0, cleaner->cache_dir);
+				g_signal_emit(cleaner, signals[SIGNAL_FINISHED], 0);
+				return;
+			}
+
 			break;
 	}
 
@@ -478,7 +487,7 @@ cache_cleaner_run(CacheCleaner *cleaner)
 	// TODO: Do we really want to store everything in a list? (Wastes memory.)
 	// Maybe do a simple counting scan first, then delete.
 	list<pair<string, uint8_t> > rlist;
-	int ret = recursiveScan(dir.c_str(), rlist);
+	int ret = recursiveScan(cacheDir.c_str(), rlist);
 	if (ret != 0) {
 		// Non-image file found.
 		const char *s_err;
@@ -499,6 +508,7 @@ cache_cleaner_run(CacheCleaner *cleaner)
 		g_signal_emit(cleaner, signals[SIGNAL_FINISHED], 0);
 		return;
 	} else if (rlist.empty()) {
+		// Cache directory is empty.
 		g_signal_emit(cleaner, signals[SIGNAL_CACHE_IS_EMPTY], 0, cleaner->cache_dir);
 		g_signal_emit(cleaner, signals[SIGNAL_FINISHED], 0);
 		return;
