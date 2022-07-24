@@ -963,15 +963,18 @@ int EXE::loadFieldData(void)
 
 	// Executable type.
 	// NOTE: Not translatable.
-	static const char *const exeTypes[(int)EXEPrivate::ExeType::Max] = {
+	static const char *const exeTypes[] = {
 		"MS-DOS Executable",		// ExeType::MZ
 		"16-bit New Executable",	// ExeType::NE
+		"16-bit COM/NE Hybrid",		// ExeType::COM_NE
 		"Mixed-Mode Linear Executable",	// ExeType::LE
 		"Windows/386 Kernel",		// ExeType::W3
 		"32-bit Linear Executable",	// ExeType::LX
 		"32-bit Portable Executable",	// ExeType::PE
 		"64-bit Portable Executable",	// ExeType::PE32PLUS
 	};
+	static_assert(ARRAY_SIZE(exeTypes) == (int)EXEPrivate::ExeType::Max, "Update exeTypes[]!");
+
 	const char *const type_title = C_("EXE", "Type");
 	if (d->exeType >= EXEPrivate::ExeType::MZ && d->exeType < EXEPrivate::ExeType::Max) {
 		d->fields->addField_string(type_title, exeTypes[(int)d->exeType]);
