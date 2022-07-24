@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension installer. (svrplus)                *
  * resource.rc: Win32 resource script.                                     *
  *                                                                         *
- * Copyright (c) 2017-2021 by Egor.                                        *
+ * Copyright (c) 2017-2022 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -42,7 +42,7 @@ BEGIN
 			VALUE "FileDescription", "ROM Properties Page shell extension installer\0"
 			VALUE "FileVersion", "svrplus " Win32_RC_FileVersion "\0"
 			VALUE "InternalName", "svrplus\0"
-			VALUE "LegalCopyright", "Copyright (c) 2017-2020 by Egor.\0"
+			VALUE "LegalCopyright", "Copyright (c) 2017-2022 by Egor.\0"
 			//VALUE "LegalTrademarks", "\0"
 			//VALUE "OriginalFilename", "\0"
 			//VALUE "PrivateBuild", "\0"
