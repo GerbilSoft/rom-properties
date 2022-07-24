@@ -291,7 +291,7 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pEr
 	szModuleFn = GetModuleFileName(HINST_THISCOMPONENT, &args[14], MAX_PATH);
 	assert(szModuleFn != 0);
 	assert(szModuleFn < MAX_PATH);
-	if (szModuleFn == 0 || szModuleFn >= MAX_PATH) {
+	if (szModuleFn == 0 || szModuleFn >= MAX_PATH || GetLastError() != ERROR_SUCCESS) {
 		// TODO: add an error message for the MAX_PATH case?
 		return ISR_FATAL_ERROR;
 	}

@@ -74,7 +74,7 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
 			SetLastError(ERROR_SUCCESS);	// required for XP
 			DWORD dwResult = GetModuleFileName(hInstance,
 				dll_filename, _countof(dll_filename));
-			if (dwResult == 0 || GetLastError() != ERROR_SUCCESS) {
+			if (dwResult == 0 || dwResult >= _countof(dll_filename) || GetLastError() != ERROR_SUCCESS) {
 				// Cannot get the DLL filename.
 				// TODO: Windows XP doesn't SetLastError() if the
 				// filename is too big for the buffer.

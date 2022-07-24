@@ -108,7 +108,7 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 	SetLastError(ERROR_SUCCESS);	// required for XP
 	dwResult = GetModuleFileName(HINST_THISCOMPONENT,
 		dll_fullpath, _countof(dll_fullpath));
-	if (dwResult == 0 || GetLastError() != ERROR_SUCCESS) {
+	if (dwResult == 0 || dwResult >= _countof(dll_fullpath) || GetLastError() != ERROR_SUCCESS) {
 		// Cannot get the current module filename.
 		// TODO: Windows XP doesn't SetLastError() if the
 		// filename is too big for the buffer.

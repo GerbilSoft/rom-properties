@@ -65,8 +65,8 @@ static void rp_i18n_init_int(void)
 	// We'll assume it's ASCII and do a simple conversion to Unicode.
 	SetLastError(ERROR_SUCCESS);	// required for XP
 	dwResult = GetModuleFileName(HINST_THISCOMPONENT,
-		tpathname, ARRAY_SIZE(tpathname));
-	if (dwResult == 0 || GetLastError() != ERROR_SUCCESS) {
+		tpathname, _countof(tpathname));
+	if (dwResult == 0 || dwResult >= _countof(tpathname) || GetLastError() != ERROR_SUCCESS) {
 		// Cannot get the current module filename.
 		// TODO: Windows XP doesn't SetLastError() if the
 		// filename is too big for the buffer.
