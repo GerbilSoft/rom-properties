@@ -963,21 +963,25 @@ int EXE::loadFieldData(void)
 
 	// Executable type.
 	// NOTE: Not translatable.
-	static const char *const exeTypes[] = {
-		"MS-DOS Executable",		// ExeType::MZ
-		"16-bit New Executable",	// ExeType::NE
-		"16-bit COM/NE Hybrid",		// ExeType::COM_NE
-		"Mixed-Mode Linear Executable",	// ExeType::LE
-		"Windows/386 Kernel",		// ExeType::W3
-		"32-bit Linear Executable",	// ExeType::LX
-		"32-bit Portable Executable",	// ExeType::PE
-		"64-bit Portable Executable",	// ExeType::PE32PLUS
+	static const char exeTypes_strtbl[] = {
+		"MS-DOS Executable\0"			// ExeType::MZ
+		"16-bit New Executable\0"		// ExeType::NE
+		"16-bit COM/NE Hybrid\0"		// ExeType::COM_NE
+		"Mixed-Mode Linear Executable\0"	// ExeType::LE
+		"Windows/386 Kernel\0"			// ExeType::W3
+		"32-bit Linear Executable\0"		// ExeType::LX
+		"32-bit Portable Executable\0"		// ExeType::PE
+		"64-bit Portable Executable\0"		// ExeType::PE32PLUS
 	};
-	static_assert(ARRAY_SIZE(exeTypes) == (int)EXEPrivate::ExeType::Max, "Update exeTypes[]!");
+	static const uint8_t exeTypes_offtbl[] = {
+		0, 18, 40, 61, 90, 109, 134, 161
+	};
+	static_assert(ARRAY_SIZE(exeTypes_offtbl) == (int)EXEPrivate::ExeType::Max, "Update exeTypes[]!");
 
 	const char *const type_title = C_("EXE", "Type");
 	if (d->exeType >= EXEPrivate::ExeType::MZ && d->exeType < EXEPrivate::ExeType::Max) {
-		d->fields->addField_string(type_title, exeTypes[(int)d->exeType]);
+		const unsigned int offset = exeTypes_offtbl[(int)d->exeType];
+		d->fields->addField_string(type_title, &exeTypes_strtbl[offset]);
 	} else {
 		d->fields->addField_string(type_title, C_("EXE", "Unknown"));
 	}
