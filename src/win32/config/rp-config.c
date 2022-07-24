@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * rp-config.c: Configuration stub.                                        *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -76,7 +76,7 @@ static const TCHAR CLSIDs[5][40] = {
  * @param dll_filename DLL filename.
  */
 #define TRY_LOAD_DLL(dll_filename) do { \
-	HMODULE hRpDll = LoadLibrary(dll_filename); \
+	HMODULE hRpDll = LoadLibraryEx(dll_filename, NULL, LOAD_LIBRARY_SEARCH_SYSTEM32); \
 	if (hRpDll) { \
 		/* Find the rp_show_config_dialog() function. */ \
 		PFNRPSHOWCONFIGDIALOG pfn = (PFNRPSHOWCONFIGDIALOG)GetProcAddress(hRpDll, "rp_show_config_dialog"); \

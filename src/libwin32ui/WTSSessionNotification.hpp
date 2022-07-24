@@ -24,9 +24,8 @@ class WTSSessionNotification
 {
 	public:
 		inline WTSSessionNotification()
-		{
-			m_hWtsApi32_dll = LoadLibrary(_T("wtsapi32.dll"));
-		}
+			: m_hWtsApi32_dll(LoadLibraryEx(_T("wtsapi32.dll"), NULL, LOAD_LIBRARY_SEARCH_SYSTEM32))
+		{ }
 
 		inline ~WTSSessionNotification() {
 			if (m_hWtsApi32_dll) {

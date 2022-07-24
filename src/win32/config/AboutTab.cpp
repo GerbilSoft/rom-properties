@@ -204,9 +204,9 @@ AboutTabPrivate::AboutTabPrivate()
 
 	// Load the RichEdit DLLs.
 	// TODO: What if this fails?
-	hRichEd20_dll = LoadLibrary(_T("RICHED20.DLL"));
+	hRichEd20_dll = LoadLibraryEx(_T("RICHED20.DLL"), NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
 #ifdef MSFTEDIT_USE_41
-	hMsftEdit_dll = LoadLibrary(_T("MSFTEDIT.DLL"));
+	hMsftEdit_dll = LoadLibraryEx(_T("MSFTEDIT.DLL"), NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
 #endif /* MSFTEDIT_USE_41 */
 }
 

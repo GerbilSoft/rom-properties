@@ -61,6 +61,13 @@
     This has been broken since v1.7.
   * GameCube: Improve the text encoding heuristic for BNR1 metadata.
 
+* Other changes:
+  * Windows: DLL loading has been hardened by using LoadLibraryEx().
+    * This is supported on Windows 8 and later with no adjustments.
+    * On Windows Vista or Windows 7, this requires [KB2533623](https://support.microsoft.com/kb/2533623).
+    * Not supported on Windows XP, so it will fall back to the previous
+      DLL loading behavior.
+
 ## v1.9 (released 2022/05/22)
 
 * New features:

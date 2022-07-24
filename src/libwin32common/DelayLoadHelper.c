@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * DelayLoadHelper.c: DelayLoad helper functions and macros.               *
  *                                                                         *
- * Copyright (c) 2017-2021 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -134,7 +134,7 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 	*dest = 0;
 
 	// Attempt to load the DLL.
-	hDll = LoadLibrary(dll_fullpath);
+	hDll = LoadLibraryEx(dll_fullpath, NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
 	if (hDll != NULL) {
 		// DLL loaded successfully.
 		return hDll;
@@ -154,7 +154,7 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 	*dest = 0;
 
 	// Attempt to load the DLL.
-	return LoadLibrary(dll_fullpath);
+	return LoadLibraryEx(dll_fullpath, NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
 }
 
 /**

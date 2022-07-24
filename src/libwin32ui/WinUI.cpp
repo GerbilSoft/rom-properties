@@ -249,7 +249,7 @@ bool isThemeActive(void)
 	// uxtheme.dll!IsThemeActive
 	typedef BOOL (STDAPICALLTYPE* PFNISTHEMEACTIVE)(void);
 
-	HMODULE hUxTheme_dll = nullptr;hUxTheme_dll = LoadLibrary(_T("uxtheme.dll"));
+	HMODULE hUxTheme_dll = LoadLibraryEx(_T("uxtheme.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 	assert(hUxTheme_dll != nullptr);
 	if (!hUxTheme_dll)
 		return false;

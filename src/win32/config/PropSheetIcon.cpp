@@ -64,7 +64,7 @@ PropSheetIconPrivate::PropSheetIconPrivate()
 	};
 
 	for (const auto &p : iconDllData) {
-		HMODULE hDll = LoadLibrary(p.dll_filename);
+		HMODULE hDll = LoadLibraryEx(p.dll_filename, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 		if (!hDll)
 			continue;
 

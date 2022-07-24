@@ -181,7 +181,7 @@ int AesCAPI_NG_Private::load_bcrypt(void)
 	}
 
 	// Attempt to load bcrypt.dll.
-	hBcryptDll = LoadLibrary(_T("bcrypt.dll"));
+	hBcryptDll = LoadLibraryEx(_T("bcrypt.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 	if (!hBcryptDll) {
 		// bcrypt.dll not found.
 		return -ENOENT;
@@ -255,7 +255,7 @@ bool AesCAPI_NG::isUsable(void)
 	// so assume it works as long as bcrypt.dll is present and
 	// BCryptOpenAlgorithmProvider exists.
 	bool bRet = false;
-	HMODULE hBcryptDll = LoadLibrary(_T("bcrypt.dll"));
+	HMODULE hBcryptDll = LoadLibraryEx(_T("bcrypt.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 	if (hBcryptDll) {
 		bRet = (GetProcAddress(hBcryptDll, "BCryptOpenAlgorithmProvider") != nullptr);
 		FreeLibrary(hBcryptDll);

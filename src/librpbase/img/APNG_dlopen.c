@@ -88,12 +88,12 @@ static int init_apng(void)
 	// ensure that it's loaded before calling this function!
 	// Otherwise, this will fail.
 #ifndef NDEBUG
+	static const TCHAR libpng_dll_fmt[] = _T("libpng%ud.dll");
+#else /* !NDEBUG */
+	static const TCHAR libpng_dll_fmt[] = _T("libpng%u.dll");
+#endif /* NDEBUG */
 	_sntprintf(png_dll_filename, _countof(png_dll_filename),
-		_T("libpng%ud.dll"), (unsigned int)PNG_LIBPNG_VER_DLLNUM);
-#else
-	_sntprintf(png_dll_filename, _countof(png_dll_filename),
-		_T("libpng%u.dll"), (unsigned int)PNG_LIBPNG_VER_DLLNUM);
-#endif
+		libpng_dll_fmt, (unsigned int)PNG_LIBPNG_VER_DLLNUM);
 	png_dll_filename[_countof(png_dll_filename)-1] = _T('\0');
 	bRet = GetModuleHandleEx(0, png_dll_filename, &libpng_dll);
 	assert(bRet != FALSE);

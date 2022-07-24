@@ -86,7 +86,7 @@ static void rp_init_DPIQueryType(void)
 	}
 
 	// Try GetDpiForMonitor(). (Windows 8.1)
-	hShcore_dll = LoadLibrary(_T("shcore.dll"));
+	hShcore_dll = LoadLibraryEx(_T("shcore.dll"), NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
 	if (hShcore_dll) {
 		pfns.pfnGetDpiForMonitor = (PFN_GetDpiForMonitor)GetProcAddress(hShcore_dll, "GetDpiForMonitor");
 		if (pfns.pfnGetDpiForMonitor) {
