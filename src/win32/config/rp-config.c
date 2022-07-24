@@ -153,6 +153,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	exe_path = malloc(MAX_PATH*sizeof(TCHAR));
 	if (!exe_path)
 		FAIL_MESSAGE(_T("Failed to allocate memory for the EXE path."));
+	SetLastError(ERROR_SUCCESS);	// required for XP
 	exe_path_len = GetModuleFileName(hInstance, exe_path, EXE_PATH_LEN);
 	if (exe_path_len == 0 || exe_path_len >= EXE_PATH_LEN)
 		FAIL_MESSAGE(_T("Failed to get the EXE path."));

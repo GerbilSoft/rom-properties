@@ -669,6 +669,7 @@ LONG RegKey::RegisterComObject(HINSTANCE hInstance, REFCLSID rclsid,
 	// Set the default value to the filename of the specified DLL.
 	// TODO: Duplicated from win32/. Consolidate the two?
 	TCHAR dll_filename[MAX_PATH];
+	SetLastError(ERROR_SUCCESS);	// required for XP
 	DWORD dwResult = GetModuleFileName(hInstance, dll_filename, _countof(dll_filename));
 	if (dwResult == 0 || GetLastError() != ERROR_SUCCESS) {
 		// Cannot get the DLL filename.

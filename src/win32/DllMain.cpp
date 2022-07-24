@@ -71,7 +71,7 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
 	switch (dwReason) {
 		case DLL_PROCESS_ATTACH: {
 			// Get the DLL filename.
-			SetLastError(ERROR_SUCCESS);
+			SetLastError(ERROR_SUCCESS);	// required for XP
 			DWORD dwResult = GetModuleFileName(hInstance,
 				dll_filename, _countof(dll_filename));
 			if (dwResult == 0 || GetLastError() != ERROR_SUCCESS) {

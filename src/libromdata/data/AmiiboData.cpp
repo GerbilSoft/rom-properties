@@ -194,6 +194,7 @@ string AmiiboDataPrivate::getAmiiboBinFilename(AmiiboBinFileType amiiboBinFileTy
 			filename = DIR_INSTALL_SHARE DIR_SEP_STR AMIIBO_BIN_FILENAME;
 #elif defined(_WIN32)
 			TCHAR dll_filename[MAX_PATH];
+			SetLastError(ERROR_SUCCESS);	// required for XP
 			DWORD dwResult = GetModuleFileName(HINST_THISCOMPONENT,
 				dll_filename, _countof(dll_filename));
 			if (dwResult == 0 || GetLastError() != ERROR_SUCCESS) {

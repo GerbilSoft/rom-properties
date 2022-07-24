@@ -287,6 +287,7 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pEr
 
 	// Construct arguments
 	// Construct path to rom-properties.dll inside the arguments
+	SetLastError(ERROR_SUCCESS);	// required for XP
 	szModuleFn = GetModuleFileName(HINST_THISCOMPONENT, &args[14], MAX_PATH);
 	assert(szModuleFn != 0);
 	assert(szModuleFn < MAX_PATH);

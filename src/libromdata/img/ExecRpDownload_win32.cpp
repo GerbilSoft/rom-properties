@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ExecRpDownload_win32.cpp: Execute rp-download.exe. (Win32)              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -32,6 +32,7 @@ int CacheManager::execRpDownload(const string &filteredCacheKey)
 {
 	// The executable should be located in the DLL directory.
 	TCHAR dll_filename[MAX_PATH];
+	SetLastError(ERROR_SUCCESS);	// required for XP
 	DWORD dwResult = GetModuleFileName(HINST_THISCOMPONENT,
 		dll_filename, _countof(dll_filename));
 	if (dwResult == 0 || GetLastError() != ERROR_SUCCESS) {

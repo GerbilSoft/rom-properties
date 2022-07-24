@@ -63,7 +63,7 @@ static void rp_i18n_init_int(void)
 	// Get the current module filename.
 	// NOTE: Delay-load only supports ANSI module names.
 	// We'll assume it's ASCII and do a simple conversion to Unicode.
-	SetLastError(ERROR_SUCCESS);
+	SetLastError(ERROR_SUCCESS);	// required for XP
 	dwResult = GetModuleFileName(HINST_THISCOMPONENT,
 		tpathname, ARRAY_SIZE(tpathname));
 	if (dwResult == 0 || GetLastError() != ERROR_SUCCESS) {

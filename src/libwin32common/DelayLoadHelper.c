@@ -105,7 +105,7 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 
 	// NOTE: Delay-load only supports ANSI module names.
 	// We'll assume it's ASCII and do a simple conversion to Unicode.
-	SetLastError(ERROR_SUCCESS);
+	SetLastError(ERROR_SUCCESS);	// required for XP
 	dwResult = GetModuleFileName(HINST_THISCOMPONENT,
 		dll_fullpath, _countof(dll_fullpath));
 	if (dwResult == 0 || GetLastError() != ERROR_SUCCESS) {
