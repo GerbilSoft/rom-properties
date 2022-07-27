@@ -459,6 +459,7 @@ void GameCubeBNR::init(void)
 			break;
 		case GameCubeBNRPrivate::BannerType::BNR2:
 			// PAL: Six comments.
+			assert(d->gcnRegion == GCN_REGION_EUR || d->gcnRegion == ~0U);
 			num = 6;
 			break;
 	}
