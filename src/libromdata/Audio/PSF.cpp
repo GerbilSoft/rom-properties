@@ -758,10 +758,9 @@ int PSF::loadMetaData(void)
 	// Comment
 	iter = tags.find("comment");
 	if (iter != tags.end()) {
-		// TODO: Property::Comment is assumed to be user-added
-		// on KDE Dolphin 18.08.1. Needs a description property.
-		// Also needs verification on Windows.
-		d->metaData->addMetaData_string(Property::Subject, iter->second);
+		// NOTE: Property::Comment is assumed to be user-added
+		// on KDE Dolphin 18.08.1. Use Property::Description.
+		d->metaData->addMetaData_string(Property::Description, iter->second);
 	}
 
 	// Finished reading the metadata.

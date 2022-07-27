@@ -826,10 +826,7 @@ int GameCubeBNR::loadMetaData(void)
 	d->metaData->addMetaData_string(Property::Publisher, d->getCompanyString(comment));
 
 	// Game description
-	// TODO: Property::Comment is assumed to be user-added
-	// on KDE Dolphin 18.08.1. Needs a description property.
-	// Also needs verification on Windows.
-	d->metaData->addMetaData_string(Property::Subject, d->getGameDescriptionString(comment));
+	d->metaData->addMetaData_string(Property::Description, d->getGameDescriptionString(comment));
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData->count());

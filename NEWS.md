@@ -67,6 +67,8 @@
     * On Windows Vista or Windows 7, this requires [KB2533623](https://support.microsoft.com/kb/2533623).
     * Not supported on Windows XP, so it will fall back to the previous
       DLL loading behavior.
+  * Metadata: The Description property is now used for descriptions
+    instead of the Subject property where available.
 
 ## v1.9 (released 2022/05/22)
 

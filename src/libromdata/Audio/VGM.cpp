@@ -875,10 +875,9 @@ int VGM::loadMetaData(void)
 				{Property::ReleaseYear,	GD3_TAG_DATE_GAME_RELEASE},
 				//{Property::VGMRipper,	GD3_TAG_VGM_RIPPER},		// FIXME: No property for this...
 
-				// TODO: Property::Comment is assumed to be user-added
-				// on KDE Dolphin 18.08.1. Needs a description property.
-				// Also needs verification on Windows.
-				{Property::Subject,	GD3_TAG_NOTES},
+				// NOTE: Property::Comment is assumed to be user-added
+				// on KDE Dolphin 18.08.1. Use Property::Description.
+				{Property::Description,	GD3_TAG_NOTES},
 			};
 
 			for (const auto &p : gd3_tag_prop_tbl) {

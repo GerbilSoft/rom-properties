@@ -28,6 +28,7 @@ using std::vector;
 
 // KDE includes.
 #include <kfileitem.h>
+#include <kfilemetadata_version.h>
 #include <kfilemetadata/extractorplugin.h>
 #include <kfilemetadata/properties.h>
 using KFileMetaData::ExtractorPlugin;
@@ -129,9 +130,18 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 			}
 
 			case PropertyType::String: {
+				LibRpBase::Property prop_name = prop->name;
+#if KFILEMETADATA_VERSION < QT_VERSION_CHECK(5,53,0)
+				if (prop_name == LibRpBase::Property::Description) {
+					// KF5 5.53 added Description.
+					// Fall back to Subject since Description isn't available.
+					prop_name = LibRpBase::Property::Subject;
+				}
+#endif /* KFILEMETADATA_VERSION < QT_VERSION_CHECK(5,53,0) */
+
 				const string *str = prop->data.str;
 				if (str) {
-					result->add(static_cast<KFileMetaData::Property::Property>(prop->name),
+					result->add(static_cast<KFileMetaData::Property::Property>(prop_name),
 						QString::fromUtf8(str->data(), static_cast<int>(str->size())));
 				}
 				break;

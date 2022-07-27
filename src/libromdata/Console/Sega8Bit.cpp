@@ -532,29 +532,26 @@ int Sega8Bit::loadMetaData(void)
 		d->metaData->reserve(4);	// Maximum of 4 metadata properties.
 		const Sega8_SDSC_RomHeader *const sdsc = &d->romHeader.sdsc;
 
-		// Build date.
+		// Build date
 		time_t ctime = d->sdsc_date_to_unix_time(&sdsc->date);
 		d->metaData->addMetaData_timestamp(Property::CreationDate, ctime);
 
-		// Author.
+		// Author
 		string str = d->getSdscString(le16_to_cpu(sdsc->author_ptr));
 		if (!str.empty()) {
 			d->metaData->addMetaData_string(Property::Author, str);
 		}
 
-		// Name. (Title)
+		// Name (Title)
 		str = d->getSdscString(le16_to_cpu(sdsc->name_ptr));
 		if (!str.empty()) {
 			d->metaData->addMetaData_string(Property::Title, str);
 		}
 
-		// Description. (Comment)
-                // TODO: Property::Comment is assumed to be user-added
-                // on KDE Dolphin 18.08.1. Needs a description property.
-                // Also needs verification on Windows.
+		// Description
                 str = d->getSdscString(le16_to_cpu(sdsc->desc_ptr));
 		if (!str.empty()) {
-			d->metaData->addMetaData_string(Property::Subject, str);
+			d->metaData->addMetaData_string(Property::Description, str);
 		}
 	}
 
