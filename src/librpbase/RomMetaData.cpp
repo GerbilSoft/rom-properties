@@ -145,6 +145,19 @@ const PropertyType RomMetaDataPrivate::PropertyTypeMap[] = {
 	PropertyType::String,	// Label
 	PropertyType::String,	// Compilation
 	PropertyType::String,	// License
+
+	// Added in KF5 5.48
+	PropertyType::Integer,	// Rating
+	PropertyType::String,	// Lyrics
+
+	// Replay gain (KF5 5.51)
+	PropertyType::Double,	// ReplayGainAlbumPeak
+	PropertyType::Double,	// ReplayGainAlbumGain
+	PropertyType::Double,	// ReplayGainTrackPeak
+	PropertyType::Double,	// ReplayGainTrackGain
+
+	// Added in KF5 5.53
+	PropertyType::String,	// Description
 };
 
 RomMetaDataPrivate::RomMetaDataPrivate()
@@ -178,6 +191,7 @@ void RomMetaDataPrivate::delete_data(void)
 			case PropertyType::Integer:
 			case PropertyType::UnsignedInteger:
 			case PropertyType::Timestamp:
+			case PropertyType::Double:
 				// No data here.
 				break;
 			case PropertyType::String:
@@ -362,6 +376,9 @@ int RomMetaData::addMetaData_metaData(const RomMetaData *other)
 				break;
 			case PropertyType::Timestamp:
 				pDest->data.timestamp = pSrc->data.timestamp;
+				break;
+			case PropertyType::Double:
+				pDest->data.dvalue = pSrc->data.dvalue;
 				break;
 			default:
 				// ERROR!
@@ -558,6 +575,36 @@ int RomMetaData::addMetaData_timestamp(Property name, time_t timestamp)
 	}
 
 	pMetaData->data.timestamp = timestamp;
+	return static_cast<int>(d->map_metaData[(int)name]);
+}
+
+/**
+ * Add a double-precision floating point metadata property.
+ *
+ * If a metadata property with the same name already exists,
+ * it will be overwritten.
+ *
+ * @param name Property name
+ * @param dvalue Double value
+ * @return Metadata index, or -1 on error.
+ */
+int RomMetaData::addMetaData_double(Property name, double dvalue)
+{
+	RP_D(RomMetaData);
+	MetaData *const pMetaData = d->addProperty(name);
+	assert(pMetaData != nullptr);
+	if (!pMetaData)
+		return -1;
+
+	// Make sure this is a timestamp property.
+	assert(pMetaData->type == PropertyType::Double);
+	if (pMetaData->type != PropertyType::Double) {
+		// TODO: Delete the property in this case?
+		pMetaData->data.iptrvalue = 0;
+		return -1;
+	}
+
+	pMetaData->data.dvalue = dvalue;
 	return static_cast<int>(d->map_metaData[(int)name]);
 }
 

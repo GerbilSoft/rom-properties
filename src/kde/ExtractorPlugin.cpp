@@ -106,9 +106,17 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 		switch (prop->type) {
 			case PropertyType::Integer: {
 				int ivalue = prop->data.ivalue;
-				if (prop->name == LibRpBase::Property::Duration) {
-					// Duration needs to be converted from ms to seconds.
-					ivalue /= 1000;
+				switch (prop->name) {
+					case LibRpBase::Property::Duration:
+						// Duration needs to be converted from ms to seconds.
+						ivalue /= 1000;
+						break;
+					case LibRpBase::Property::Rating:
+						// Rating is [0,100]; needs to be converted to [0,10].
+						ivalue /= 10;
+						break;
+					default:
+						break;
 				}
 				result->add(static_cast<KFileMetaData::Property::Property>(prop->name), ivalue);
 				break;
@@ -140,6 +148,12 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 				dateTime.setMSecsSinceEpoch((qint64)prop->data.timestamp * 1000);
 				result->add(static_cast<KFileMetaData::Property::Property>(prop->name),
 					dateTime.date());
+				break;
+			}
+
+			case PropertyType::Double: {
+				result->add(static_cast<KFileMetaData::Property::Property>(prop->name),
+					    prop->data.dvalue);
 				break;
 			}
 

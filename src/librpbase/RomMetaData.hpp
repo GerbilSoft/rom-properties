@@ -120,6 +120,19 @@ enum class Property : int {
 	Compilation,		// string: compilation
 	License,		// string: license information
 
+	// Added in KF5 5.48
+	Rating,			// integer: [0,100]
+	Lyrics,			// string
+
+	// Replay gain (KF5 5.51)
+	ReplayGainAlbumPeak,	// double: dB
+	ReplayGainAlbumGain,	// double: dB
+	ReplayGainTrackPeak,	// double: dB
+	ReplayGainTrackGain,	// double: dB
+
+	// Added in KF5 5.53
+	Description,		// string
+
 	// TODO: More fields.
 	PropertyCount,
 	LastProperty = PropertyCount-1,
@@ -134,6 +147,7 @@ enum class PropertyType : uint8_t {
 	UnsignedInteger,	// Unsigned integer type
 	String,			// String type (UTF-8)
 	Timestamp,		// UNIX timestamp
+	Double,			// Double-precision floating point
 
 	PropertyTypeCount,
 	LastPropertyType = PropertyTypeCount-1,
@@ -172,6 +186,9 @@ class RomMetaData
 
 				// UNIX timestamp
 				time_t timestamp;
+
+				// Double-precision floating point value
+				double dvalue;
 			} data;
 		};
 
@@ -290,6 +307,18 @@ class RomMetaData
 		 * @return Metadata index, or -1 on error.
 		 */
 		int addMetaData_timestamp(Property name, time_t timestamp);
+
+		/**
+		 * Add a double-precision floating point metadata property.
+		 *
+		 * If a metadata property with the same name already exists,
+		 * it will be overwritten.
+		 *
+		 * @param name Property name
+		 * @param dvalue Double value
+		 * @return Metadata index, or -1 on error.
+		 */
+		int addMetaData_double(Property name, double dvalue);
 };
 
 }

@@ -133,6 +133,19 @@ const RP_PropertyStore_Private::MetaDataConv RP_PropertyStore_Private::metaDataC
 	{nullptr, VT_EMPTY},			// Label
 	{nullptr, VT_EMPTY},			// Compilation
 	{nullptr, VT_EMPTY},			// License
+
+	// Added in KF5 5.48
+	{&PKEY_Rating, VT_UI4},			// Rating: [0,100]; convert to [1,99] for Windows.
+	{&PKEY_Music_Lyrics, VT_BSTR},		// Lyrics
+
+	// Replay gain (KF5 5.51)
+	{nullptr, VT_DOUBLE},			// ReplayGainAlbumPeak
+	{nullptr, VT_DOUBLE},			// ReplayGainAlbumGain
+	{nullptr, VT_DOUBLE},			// ReplayGainTrackPeak
+	{nullptr, VT_DOUBLE},			// ReplayGainTrackGain
+
+	// Added in KF5 5.53
+	{&PKEY_FileDescription, VT_BSTR},	// Description
 };
 
 // Win32 SDK doesn't have this.
@@ -284,42 +297,56 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 		PROPVARIANT prop_var;
 		PropVariantInit(&prop_var);
 		switch (conv.vtype) {
-			case VT_UI8:
+			case VT_UI8: {
 				// FIXME: 64-bit values?
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
 				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
 
-				// NOTE: Converting duration from ms to 100ns.
-				if (prop->name == LibRpBase::Property::Duration) {
-					uint64_t duration_100ns = static_cast<uint64_t>(prop->data.uvalue) * 10000ULL;
-					InitPropVariantFromUInt64(duration_100ns, &prop_var);
-				} else {
-					// Use the value as-is.
-					InitPropVariantFromUInt64(static_cast<uint64_t>(prop->data.uvalue), &prop_var);
+				// Special handling for some properties.
+				uint64_t uvalue64 = static_cast<uint64_t>(prop->data.uvalue);
+				switch (prop->name) {
+					case LibRpBase::Property::Duration:
+						// Converting duration from ms to 100ns units.
+						uvalue64 *= 10000ULL;
+						break;
+					default:
+						break;
 				}
+
+				InitPropVariantFromUInt64(uvalue64, &prop_var);
 				break;
+			}
 
 			case VT_UI4:
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
 				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
 
-				InitPropVariantFromUInt32(static_cast<uint32_t>(prop->data.uvalue), &prop_var);
-
-				// Special handling for image dimensions.
+				// Special handling for some properties.
+				uint32_t uvalue = prop->data.uvalue;
 				switch (prop->name) {
 					case LibRpBase::Property::Width:
 						assert(dimensions.cx == 0);
-						dimensions.cx = static_cast<uint32_t>(prop->data.uvalue);
+						dimensions.cx = prop->data.uvalue;
 						break;
 					case LibRpBase::Property::Height:
 						assert(dimensions.cy == 0);
-						dimensions.cy = static_cast<uint32_t>(prop->data.uvalue);
+						dimensions.cy = prop->data.uvalue;
+						break;
+					case LibRpBase::Property::Rating:
+						// Constrain to [1,99].
+						if (uvalue < 1) {
+							uvalue = 1;
+						} else if (uvalue > 99) {
+							uvalue = 99;
+						}
 						break;
 					default:
 						break;
 				}
+
+				InitPropVariantFromUInt32(uvalue, &prop_var);
 				break;
 
 			case VT_UI2:
@@ -405,6 +432,24 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 				UnixTimeToFileTime(prop->data.timestamp, &ft);
 
 				InitPropVariantFromFileTime(&ft, &prop_var);
+				break;
+			}
+
+			case VT_DOUBLE: {
+				assert(prop->type == PropertyType::Double);
+				if (prop->type != PropertyType::Double)
+					continue;
+
+				InitPropVariantFromDouble(prop->data.dvalue, &prop_var);
+				break;
+			}
+
+			case VT_FLOAT: {
+				assert(prop->type == PropertyType::Double);
+				if (prop->type != PropertyType::Double)
+					continue;
+
+				InitPropVariantFromFloat(static_cast<float>(prop->data.dvalue), &prop_var);
 				break;
 			}
 
