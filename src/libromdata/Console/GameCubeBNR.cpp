@@ -32,7 +32,7 @@ namespace LibRomData {
 class GameCubeBNRPrivate final : public RomDataPrivate
 {
 	public:
-		GameCubeBNRPrivate(GameCubeBNR *q, IRpFile *file, uint32_t gcnRegion = ~0);
+		GameCubeBNRPrivate(GameCubeBNR *q, IRpFile *file, uint32_t gcnRegion = ~0U);
 		virtual ~GameCubeBNRPrivate();
 
 	private:
@@ -194,6 +194,12 @@ const rp_image *GameCubeBNRPrivate::loadBanner(void)
  */
 bool GameCubeBNRPrivate::shouldHandleStringAsShiftJIS(bool hasCopyrightSymbol) const
 {
+	if (bannerType == BannerType::BNR2) {
+		// BNR2 is always cp1252.
+		assert(this->gcnRegion == GCN_REGION_EUR || this->gcnRegion == ~0U);
+		return false;
+	}
+
 	bool isShiftJIS;
 
 	switch (this->gcnRegion) {

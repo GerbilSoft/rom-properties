@@ -265,7 +265,7 @@ GameCubePrivate::GameCubePrivate(GameCube *q, IRpFile *file)
 	, discReader(nullptr)
 	, hasRegionCode(false)
 	, wiiPtblLoaded(false)
-	, gcnRegion(~0)
+	, gcnRegion(~0U)
 	, updatePartition(nullptr)
 	, gamePartition(nullptr)
 {
