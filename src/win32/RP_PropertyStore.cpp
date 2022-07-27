@@ -139,10 +139,10 @@ const RP_PropertyStore_Private::MetaDataConv RP_PropertyStore_Private::metaDataC
 	{&PKEY_Music_Lyrics, VT_BSTR},		// Lyrics
 
 	// Replay gain (KF5 5.51)
-	{nullptr, VT_DOUBLE},			// ReplayGainAlbumPeak
-	{nullptr, VT_DOUBLE},			// ReplayGainAlbumGain
-	{nullptr, VT_DOUBLE},			// ReplayGainTrackPeak
-	{nullptr, VT_DOUBLE},			// ReplayGainTrackGain
+	{nullptr, VT_R8},			// ReplayGainAlbumPeak
+	{nullptr, VT_R8},			// ReplayGainAlbumGain
+	{nullptr, VT_R8},			// ReplayGainTrackPeak
+	{nullptr, VT_R8},			// ReplayGainTrackGain
 
 	// Added in KF5 5.53
 	{&PKEY_FileDescription, VT_BSTR},	// Description
@@ -435,7 +435,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 				break;
 			}
 
-			case VT_DOUBLE: {
+			case VT_R8: {
 				assert(prop->type == PropertyType::Double);
 				if (prop->type != PropertyType::Double)
 					continue;
@@ -444,7 +444,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 				break;
 			}
 
-			case VT_FLOAT: {
+			case VT_R4: {
 				assert(prop->type == PropertyType::Double);
 				if (prop->type != PropertyType::Double)
 					continue;
