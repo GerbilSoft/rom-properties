@@ -26,9 +26,12 @@ using LibRomData::RomDataFactory;
 using std::string;
 using std::vector;
 
-// KDE includes.
+// KDE includes
+// NOTE: kfilemetadata_version.h was added in 5.94.0, so we can't use it.
+// Using kcoreaddons_version.h instead.
 #include <kfileitem.h>
-#include <kfilemetadata_version.h>
+//#include <kfilemetadata_version.h>
+#include <kcoreaddons_version.h>
 #include <kfilemetadata/extractorplugin.h>
 #include <kfilemetadata/properties.h>
 using KFileMetaData::ExtractorPlugin;
@@ -131,13 +134,15 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 
 			case PropertyType::String: {
 				LibRpBase::Property prop_name = prop->name;
-#if KFILEMETADATA_VERSION < QT_VERSION_CHECK(5,53,0)
+				// NOTE: kfilemetadata_version.h was added in KF5 5.94.0.
+				// Using kcoreaddons_version.h instead.
+#if KCOREADDONS_VERSION < QT_VERSION_CHECK(5,53,0)
 				if (prop_name == LibRpBase::Property::Description) {
 					// KF5 5.53 added Description.
 					// Fall back to Subject since Description isn't available.
 					prop_name = LibRpBase::Property::Subject;
 				}
-#endif /* KFILEMETADATA_VERSION < QT_VERSION_CHECK(5,53,0) */
+#endif /* KCOREADDONS_VERSION < QT_VERSION_CHECK(5,53,0) */
 
 				const string *str = prop->data.str;
 				if (str) {
