@@ -505,7 +505,7 @@ int GameCubePrivate::gcn_loadOpeningBnr(void)
 	}
 
 	// Attempt to open a GameCubeBNR subclass.
-	GameCubeBNR *const bnr = new GameCubeBNR(f_opening_bnr);
+	GameCubeBNR *const bnr = new GameCubeBNR(f_opening_bnr, this->gcnRegion);
 	f_opening_bnr->unref();
 	if (!bnr->isOpen()) {
 		// Unable to open the subclass.
@@ -606,7 +606,7 @@ int GameCubePrivate::gcn_addGameInfo(void) const
 	}
 
 	// Add the field from the GameCubeBNR.
-	return opening_bnr.gcn.data->addField_gameInfo(this->fields, this->gcnRegion);
+	return opening_bnr.gcn.data->addField_gameInfo(this->fields);
 }
 
 /**
