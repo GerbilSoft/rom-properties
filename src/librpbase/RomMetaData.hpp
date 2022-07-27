@@ -69,8 +69,8 @@ enum class Property : int {
 	FrameRate,	// integer: number of frames per second
 
 	// Images
-	ImageMake,			// string
-	ImageModel,			// string
+	Manufacturer,			// string
+	Model,				// string
 	ImageDateTime,			// FIXME
 	ImageOrientation,		// FIXME
 	PhotoFlash,			// FIXME

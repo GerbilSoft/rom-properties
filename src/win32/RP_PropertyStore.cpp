@@ -83,8 +83,8 @@ const RP_PropertyStore_Private::MetaDataConv RP_PropertyStore_Private::metaDataC
 	{&PKEY_Video_FrameRate, VT_UI4},	// Framerate (NOTE: Frames per 1000 seconds)
 
 	// Images
-	{&PKEY_Devices_Manufacturer, VT_BSTR},	// ImageMake
-	{&PKEY_Devices_ModelName, VT_BSTR},	// ImageModel
+	{&PKEY_Devices_Manufacturer, VT_BSTR},	// Manufacturer
+	{&PKEY_Devices_ModelName, VT_BSTR},	// Model
 	{&PKEY_Photo_DateTaken, VT_DATE},	// ImageDateTime
 	{&PKEY_Photo_Orientation, VT_UI2},	// ImageOrientation
 	{&PKEY_Photo_Flash, VT_UI1},		// PhotoFlash
