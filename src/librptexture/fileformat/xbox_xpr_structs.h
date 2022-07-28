@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                      *
  * xbox_xpr0_structs.h: Microsoft Xbox XPR0 texture format data structures. *
  *                                                                          *
- * Copyright (c) 2019-2020 by David Korth.                                  *
+ * Copyright (c) 2019-2022 by David Korth.                                  *
  * SPDX-License-Identifier: GPL-2.0-or-later                                *
  ****************************************************************************/
 
@@ -15,6 +15,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+// References:
+// - https://xboxdevwiki.net/XPR
 
 /**
  * Microsoft Xbox XPR0: File header.
@@ -29,13 +32,25 @@ typedef struct _Xbox_XPR0_Header {
 	uint32_t magic;		// [0x000] 'XPR0'
 	uint32_t filesize;	// [0x004] Size of the entire file
 	uint32_t data_offset;	// [0x008] Offset to image data
-	uint32_t flags;		// [0x00C] Unknown flags
+	union {			// [0x00C] XPR type
+		uint32_t flags;
+		struct {
+			// TODO: Verify endian handling.
+			uint16_t ref_count;	// [0x00C] Reference count (should be 1)
+			uint16_t type;		// [0x00E] Type (3 bits; see Xbox_XPR0_Type_e)
+		};
+	};
 	uint8_t reserved1[8];	// [0x010]
 	uint8_t unknown;	// [0x018]
 	uint8_t pixel_format;	// [0x019] Pixel format (See XPR0_Pixel_Format_e)
 	uint8_t width_pow2;	// [0x01A] Width (high nybble) as a power of 2
 	uint8_t height_pow2;	// [0x01B] Height (low nybble) as a power of 2
-	uint32_t reserved2;	// [0x01C]
+	uint16_t reserved2;	// [0x01C]
+
+	// Some Forza XPRs have non-power-of-two sizes for linear ARGB32 textures.
+	// If the pow2 sizes are 0, use these npot sizes instead.
+	uint8_t height_npot;	// [0x01E] (h + 1) * 16 == actual height
+	uint8_t width_npot;	// [0x01F] (w + 1) * 16 == actual width
 
 	// 0x020-0x03F are garbage data, usually 0xFFFFFFFF
 	// followed by all 0xADADADAD.
@@ -43,7 +58,23 @@ typedef struct _Xbox_XPR0_Header {
 ASSERT_STRUCT(Xbox_XPR0_Header, 32);
 
 /**
- * Pixel format.
+ * XPR0 type
+ */
+typedef enum {
+	XPR0_TYPE_VERTEX_BUFFER		= 0,
+	XPR0_TYPE_INDEX_BUFFER		= 1,
+	XPR0_TYPE_UNKNOWN_2		= 2,
+	XPR0_TYPE_UNKNOWN_3		= 3,
+	XPR0_TYPE_TEXTURE		= 4,
+	XPR0_TYPE_UNKNOWN_5		= 5,
+	XPR0_TYPE_UNKNOWN_6		= 6,
+	XPR0_TYPE_UNKNOWN_7		= 7,
+
+	XPR0_TYPE_MASK			= 7
+} Xbox_XPR0_Type_e;
+
+/**
+ * Pixel format
  * Reference: https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/c709f9e3054ad8e1dae62816f25bef06248415c4/src/core/hle/D3D8/XbConvert.cpp#L871
  */
 typedef enum {

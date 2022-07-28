@@ -343,11 +343,11 @@ const rp_image *XboxXPRPrivate::loadXboxXPR0Image(void)
 	// Sanity check: Image dimensions must be non-zero.
 	// Not checking maximum; the 4-bit shift amount has a
 	// maximum of pow(2,15), which is 32768 (our maximum).
-	assert((xpr0Header.width_pow2 >> 4) > 0);
-	assert((xpr0Header.height_pow2 & 0x0F) > 0);
-	if ((xpr0Header.width_pow2 >> 4) == 0 ||
-	    (xpr0Header.height_pow2 & 0x0F) == 0)
-	{
+	const int width  = dimensions[0];
+	const int height = dimensions[1];
+	assert(width > 0);
+	assert(height > 0);
+	if (width == 0 || height == 0) {
 		// Invalid image dimensions.
 		return nullptr;
 	}
@@ -444,10 +444,8 @@ const rp_image *XboxXPRPrivate::loadXboxXPR0Image(void)
 	}
 
 	// Determine the expected size based on the pixel format.
-	const unsigned int area_shift = (xpr0Header.width_pow2 >> 4) +
-					(xpr0Header.height_pow2 & 0x0F);
 	const auto &mode = mode_tbl[xpr0Header.pixel_format];
-	const size_t expected_size = (1U << area_shift) * mode.bpp / 8U;
+	const size_t expected_size = width * height * mode.bpp / 8U;
 
 	if (expected_size > file_sz - data_offset) {
 		// File is too small.
@@ -462,8 +460,6 @@ const rp_image *XboxXPRPrivate::loadXboxXPR0Image(void)
 		return nullptr;
 	}
 
-	const int width  = 1 << (xpr0Header.width_pow2 >> 4);
-	const int height = 1 << (xpr0Header.height_pow2 & 0x0F);
 	if (mode.dxtn != 0) {
 		// DXTn
 		switch (mode.dxtn) {
@@ -604,14 +600,29 @@ XboxXPR::XboxXPR(IRpFile *file)
 		d->isValid = false;
 	}
 
+	// Make sure this is an XPR texture.
+	if ((d->xpr0Header.type & XPR0_TYPE_MASK) != XPR0_TYPE_TEXTURE) {
+		// Only textures are supported.
+		d->isValid = false;
+	}
+
 	if (!d->isValid) {
 		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
 	// Cache the texture dimensions.
-	d->dimensions[0] = 1 << (d->xpr0Header.width_pow2 >> 4);
-	d->dimensions[1] = 1 << (d->xpr0Header.height_pow2 & 0x0F);
+	const uint8_t xpr_w = (d->xpr0Header.width_pow2 >> 4);
+	const uint8_t xpr_h = (d->xpr0Header.height_pow2 & 0x0F);
+	if (likely(xpr_w != 0 && xpr_h != 0)) {
+		// Use the standard width and height.
+		d->dimensions[0] = 1 << xpr_w;
+		d->dimensions[1] = 1 << xpr_h;
+	} else {
+		// Either width or height are 0. Try the NPOT sizes instead.
+		d->dimensions[0] = (d->xpr0Header.width_npot + 1) * 16;
+		d->dimensions[1] = (d->xpr0Header.height_npot + 1) * 16;
+	}
 	d->dimensions[2] = 0;
 }
 

@@ -60,6 +60,11 @@
     This wasn't working properly due to two variables being named `ret`.
     This has been broken since v1.7.
   * GameCube: Improve the text encoding heuristic for BNR1 metadata.
+  * XboxXPR: Handle XPRs with non-power-of-two image dimensions. Forza
+    Motorsport (2005) uses these textures extensively. Some textures don't
+    have the usual image size fields filled in, resulting in no image; others
+    have incorrect values, resulting in a broken image.
+    * This was reported by Trash_Bandatcoot.
 
 * Other changes:
   * Windows: DLL loading has been hardened by using LoadLibraryEx().
