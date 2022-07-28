@@ -467,29 +467,35 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 		// Nintendo 3DS SMDH file
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gci.gz")) {
+	} else if (mode.dds_gz_filename.size() >= 7U &&
+		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gci.gz")) {
 		// Nintendo GameCube save file
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".VMS")) {
+	} else if (mode.dds_gz_filename.size() >= 4U &&
+		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".VMS")) {
 		// Sega Dreamcast save file
 		// NOTE: RomDataFactory and DreamcastSave don't support gzip at the moment.
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".PSV.gz")) {
+	} else if (mode.dds_gz_filename.size() >= 7U &&
+		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".PSV.gz")) {
 		// Sony PlayStation save file
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".nds.gz")) {
+	} else if (mode.dds_gz_filename.size() >= 7U &&
+		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".nds.gz")) {
 		// Nintendo DS ROM image
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".cab.gz") ||
-		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".prb.gz")) {
+	} else if (mode.dds_gz_filename.size() >= 7U &&
+		   (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".cab.gz") ||
+		    !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".prb.gz"))) {
 		// Nintendo Badge Arcade texture
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".tex")) {
+	} else if (mode.dds_gz_filename.size() >= 4U &&
+		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".tex")) {
 		// Leapster Didj texture
 		// NOTE: Increased iterations due to smaller files.
 		// NOTE: Using RpTextureWrapper.
@@ -1541,6 +1547,16 @@ INSTANTIATE_TEST_SUITE_P(STEX4, ImageDecoderTest,
 		ImageDecoderTest_mode("STEX4/gray.DXT1.stex.gz",	"STEX4/gray.DXT1.png"),
 		ImageDecoderTest_mode("STEX4/gray.ETC.stex.gz",		"STEX4/gray.ETC.png"),
 		ImageDecoderTest_mode("STEX4/gray.L8.stex.gz",		"gray-reference.png"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// Xbox XPR tests
+INSTANTIATE_TEST_SUITE_P(XPR, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode("XPR/bkgd_load9.xpr.gz"	,		"XPR/bkgd_load9.png"),
+		ImageDecoderTest_mode("XPR/bkgd_main.xpr.gz",			"XPR/bkgd_main.png"),
+		ImageDecoderTest_mode("XPR/bkgd_title.xpr.gz",			"XPR/bkgd_title.png"),
+		ImageDecoderTest_mode("XPR/SE-043.TitleImage.xbx.gz",		"XPR/SE-043.TitleImage.png"),
+		ImageDecoderTest_mode("XPR/SplashScreen_JunkieXl.xpr.gz",	"XPR/SplashScreen_JunkieXl.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // TODO: NPOT tests for compressed formats. (partial block sizes)
