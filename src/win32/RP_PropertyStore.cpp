@@ -318,7 +318,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 				break;
 			}
 
-			case VT_UI4:
+			case VT_UI4: {
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
 				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
@@ -348,6 +348,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 
 				InitPropVariantFromUInt32(uvalue, &prop_var);
 				break;
+			}
 
 			case VT_UI2:
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);

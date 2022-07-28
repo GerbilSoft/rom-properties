@@ -26,6 +26,10 @@
 // and we're not linking to shlwapi.dll.
 #define InitPropVariantFromString InitPropVariantFromString_noShlwapi
 
+// Functions not available on Windows 7.
+// This function is part of sensorsutils.h.
+#define InitPropVariantFromFloat InitPropVariantFromFloat_noSensorsUtils
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -84,6 +88,19 @@ static inline HRESULT InitPropVariantFromString_noShlwapi(_In_ PCWSTR psz, _Out_
 	memcpy(ppropvar->pwszVal, psz, byteCount);
 	ppropvar->vt = VT_LPWSTR;
 	return S_OK;
+}
+
+/**
+ * Initialize a PROPVARIANT from a float.
+ * @param fvalueIn     [in] float
+ * @param pPropVar     [out] PROPVARIANT
+ * @return HRESULT
+ */
+static inline HRESULT InitPropVariantFromFloat_noSensorsUtils(_In_ float fvalueIn, _Out_ PROPVARIANT *pPropVar)
+{
+       pPropVar->vt = VT_R4;
+       pPropVar->fltVal = fvalueIn;
+       return S_OK;
 }
 
 #ifdef __cplusplus
