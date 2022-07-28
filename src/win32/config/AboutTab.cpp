@@ -789,13 +789,29 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += rp_sprintf(sUsingDll, pngVersion);
 #endif
 
-	// TODO: Use RpPng::libpng_copyright_string().
-	sLibraries +=
-		"libpng version 1.6.37 - April 14, 2019" RTF_BR
-		"Copyright (c) 2018-2019 Cosmin Truta" RTF_BR
-		"Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson" RTF_BR
-		"Copyright (c) 1996-1997 Andreas Dilger" RTF_BR
-		"Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc." RTF_BR;
+	/**
+	 * NOTE: MSVC does not define __STDC__ by default.
+	 * If __STDC__ is not defined, the libpng copyright
+	 * will not have a leading newline, and all newlines
+	 * will be replaced with groups of 6 spaces.
+	 *
+	 * NOTE 2: This was changed in libpng-1.6.36, so it
+	 * always returns the __STDC__ copyright notice.
+	 */
+	// On Windows, assume we're using our own libpng,
+	// which always uses the __STDC__ copyright notice.
+
+	// Convert newlines to RTF_BR.
+	const char *const s_png_tmp = RpPng::libpng_copyright_string();
+	for (const char *p = s_png_tmp; *p != '\0'; p++) {
+		const char chr = *p;
+		if (unlikely(chr == '\n')) {
+			sLibraries += RTF_BR;
+		} else {
+			sLibraries += chr;
+		}
+	}
+
 	sLibraries +=
 		"http://www.libpng.org/pub/png/libpng.html" RTF_BR
 		"https://github.com/glennrp/libpng" RTF_BR;
