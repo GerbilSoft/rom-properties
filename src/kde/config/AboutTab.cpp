@@ -30,16 +30,10 @@ using std::string;
 // Other libraries.
 #ifdef HAVE_ZLIB
 #  include <zlib.h>
-#  ifdef ZLIBNG_VERSION
-// NOTE: Can't #include <zlib-ng.h> because zconf-ng.h isn't generated
-// when using the internal copy of zlib-ng.
-// Manually declare the version function.
-extern "C" const char *zlibng_version(void);
-#  endif /* ZLIBNG_VERSION */
 #endif /* HAVE_ZLIB */
 #ifdef HAVE_PNG
-#  include "librpbase/img/APNG_dlopen.h"
-#  include <png.h>
+#  include <png.h>	// PNG_LIBPNG_VER_STRING
+#  include "librpbase/img/RpPng.hpp"
 #endif
 // TODO: JPEG
 #if defined(ENABLE_DECRYPTION) && defined(HAVE_NETTLE_VERSION_H)
@@ -313,13 +307,9 @@ void AboutTabPrivate::initLibrariesTab(void)
 	/** zlib **/
 #ifdef HAVE_ZLIB
 	sLibraries += brbr;
-#  ifdef ZLIBNG_VERSION
-	string sZlibVersion = "zlib-ng ";
-	sZlibVersion += zlibng_version();
-#  else /* !ZLIBNG_VERSION */
-	string sZlibVersion = "zlib ";
-	sZlibVersion += zlibVersion();
-#  endif /* ZLIBNG_VERSION */
+	const bool zlib_is_ng = RpPng::zlib_is_ng();
+	string sZlibVersion = (zlib_is_ng ? "zlib-ng " : "zlib ");
+	sZlibVersion += RpPng::zlib_version_string();
 
 #if defined(USE_INTERNAL_ZLIB) && !defined(USE_INTERNAL_ZLIB_DLL)
 	sLibraries += rp_sprintf(sIntCopyOf, sZlibVersion.c_str());
@@ -335,24 +325,16 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += BR
 		"Copyright (C) 1995-2022 Jean-loup Gailly and Mark Adler." BR
 		"<a href='https://zlib.net/'>https://zlib.net/</a>" BR;
-#  ifdef ZLIBNG_VERSION
-	// TODO: Also if zlibVersion() contains "zlib-ng"?
-	sLibraries += "<a href='https://github.com/zlib-ng/zlib-ng'>https://github.com/zlib-ng/zlib-ng</a>" BR;
-#  endif /* ZLIBNG_VERSION */
+	if (zlib_is_ng) {
+		sLibraries += "<a href='https://github.com/zlib-ng/zlib-ng'>https://github.com/zlib-ng/zlib-ng</a>" BR;
+	}
 	sLibraries += rp_sprintf(sLicense, "zlib license");
 #endif /* HAVE_ZLIB */
 
 	/** libpng **/
 #ifdef HAVE_PNG
-	// APNG suffix.
-	const bool APNG_is_supported = (APNG_ref() == 0);
-	if (APNG_is_supported) {
-		// APNG is supported.
-		// Unreference it to prevent leaks.
-		APNG_unref();
-	}
-
-	const uint32_t png_version_number = png_access_version_number();
+	const bool APNG_is_supported = RpPng::libpng_has_APNG();
+	const uint32_t png_version_number = RpPng::libpng_version_number();
 	char pngVersion[48];
 	snprintf(pngVersion, sizeof(pngVersion), "libpng %u.%u.%u%s",
 		png_version_number / 10000,
@@ -368,12 +350,11 @@ void AboutTabPrivate::initLibrariesTab(void)
 	// PNG_LIBPNG_VER_STRING if APNG is enabled.
 	// We have our own "+ APNG", so remove Gentoo's.
 	string pngVersionCompiled = "libpng " PNG_LIBPNG_VER_STRING;
-	while (!pngVersionCompiled.empty()) {
-		size_t idx = pngVersionCompiled.size() - 1;
-		char chr = pngVersionCompiled[idx];
+	for (size_t i = pngVersionCompiled.size()-1; i > 6; i--) {
+		char chr = pngVersionCompiled[i];
 		if (ISDIGIT(chr))
 			break;
-		pngVersionCompiled.resize(idx);
+		pngVersionCompiled.resize(i);
 	}
 
 	string fullPngVersionCompiled;
@@ -390,17 +371,10 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += rp_sprintf(sUsingDll, pngVersion);
 #endif
 
-	/**
-	 * NOTE: MSVC does not define __STDC__ by default.
-	 * If __STDC__ is not defined, the libpng copyright
-	 * will not have a leading newline, and all newlines
-	 * will be replaced with groups of 6 spaces.
-	 */
-	// NOTE: Ignoring this for the GTK+ build, since it's
-	// only built for Linux systems.
-	sLibraries += png_get_copyright(nullptr);
-	sLibraries += "<a href='http://www.libpng.org/pub/png/libpng.html'>http://www.libpng.org/pub/png/libpng.html</a>" BR;
-	sLibraries += "<a href='https://github.com/glennrp/libpng'>https://github.com/glennrp/libpng</a>\n";
+	// FIXME: Need to convert newlines to "<br/>\n".
+	sLibraries += RpPng::libpng_copyright_string();
+	sLibraries += "<a href='http://www.libpng.org/pub/png/libpng.html'>http://www.libpng.org/pub/png/libpng.html</a>" BR
+		"<a href='https://github.com/glennrp/libpng'>https://github.com/glennrp/libpng</a>" BR;
 	if (APNG_is_supported) {
 		sLibraries += C_("AboutTab|Libraries", "APNG patch:");
 		sLibraries += " <a href='https://sourceforge.net/projects/libpng-apng/'>https://sourceforge.net/projects/libpng-apng/</a>" BR;

@@ -53,8 +53,8 @@ using std::u16string;
 #  include <zlib.h>
 #endif
 #ifdef HAVE_PNG
-#  include "librpbase/img/APNG_dlopen.h"
-#  include <png.h>
+#  include <png.h>	// PNG_LIBPNG_VER_STRING
+#  include "librpbase/img/RpPng.hpp"
 #endif
 #ifdef ENABLE_XML
 #  include "tinyxml2.h"
@@ -721,12 +721,24 @@ void AboutTabPrivate::initLibrariesTab(void)
 
 	/** zlib **/
 #ifdef HAVE_ZLIB
+	const bool zlib_is_ng = RpPng::zlib_is_ng();
+	string sZlibVersion = (zlib_is_ng ? "zlib-ng " : "zlib ");
+	sZlibVersion += RpPng::zlib_version_string();
+
+#if defined(USE_INTERNAL_ZLIB) && !defined(USE_INTERNAL_ZLIB_DLL)
+	sLibraries += rp_sprintf(sIntCopyOf, sZlibVersion.c_str());
+#else
 #  ifdef ZLIBNG_VERSION
-	sLibraries += rp_sprintf(sCompiledWith, "zlib-ng " ZLIBNG_VERSION) + RTF_BR;
+	sLibraries += rp_sprintf(sCompiledWith, "zlib-ng " ZLIBNG_VERSION);
 #  else /* !ZLIBNG_VERSION */
-	sLibraries += rp_sprintf(sCompiledWith, "zlib " ZLIB_VERSION) + RTF_BR;
+	sLibraries += rp_sprintf(sCompiledWith, "zlib " ZLIB_VERSION);
 #  endif /* ZLIBNG_VERSION */
-	sLibraries += "Copyright (C) 1995-2022 Jean-loup Gailly and Mark Adler." RTF_BR
+	sLibraries += RTF_BR;
+	sLibraries += rp_sprintf(sUsingDll, sZlibVersion.c_str());
+#endif
+	sLibraries += RTF_BR;
+	sLibraries +=
+		"Copyright (C) 1995-2022 Jean-loup Gailly and Mark Adler." RTF_BR
 		"https://zlib.net/" RTF_BR;
 #  ifdef ZLIBNG_VERSION
 	// TODO: Also if zlibVersion() contains "zlib-ng"?
@@ -739,14 +751,58 @@ void AboutTabPrivate::initLibrariesTab(void)
 	// FIXME: Use png_get_copyright().
 	// FIXME: Check for APNG.
 #ifdef HAVE_PNG
+	const bool APNG_is_supported = RpPng::libpng_has_APNG();
+	const uint32_t png_version_number = RpPng::libpng_version_number();
+	char pngVersion[48];
+	snprintf(pngVersion, sizeof(pngVersion), "libpng %u.%u.%u%s",
+		png_version_number / 10000,
+		(png_version_number / 100) % 100,
+		png_version_number % 100,
+		(APNG_is_supported ? " + APNG" : " (No APNG support)"));
+
 	sLibraries += RTF_BR RTF_BR;
-	sLibraries += rp_sprintf(sCompiledWith, "libpng " PNG_LIBPNG_VER_STRING) + RTF_BR
+#if defined(USE_INTERNAL_PNG) && !defined(USE_INTERNAL_ZLIB_DLL)
+	sLibraries += rp_sprintf(sIntCopyOf, pngVersion);
+#else
+	// NOTE: Gentoo's libpng has "+apng" at the end of
+	// PNG_LIBPNG_VER_STRING if APNG is enabled.
+	// We have our own "+ APNG", so remove Gentoo's.
+	string pngVersionCompiled = "libpng " PNG_LIBPNG_VER_STRING;
+	for (size_t i = pngVersionCompiled.size()-1; i > 6; i--) {
+		char chr = pngVersionCompiled[i];
+		if (ISDIGIT(chr))
+			break;
+		pngVersionCompiled.resize(i);
+	}
+
+	string fullPngVersionCompiled;
+	if (APNG_is_supported) {
+		// PNG version, with APNG support.
+		fullPngVersionCompiled = rp_sprintf("%s + APNG", pngVersionCompiled.c_str());
+	} else {
+		// PNG version, without APNG support.
+		fullPngVersionCompiled = rp_sprintf("%s (No APNG support)", pngVersionCompiled.c_str());
+	}
+
+	sLibraries += rp_sprintf(sCompiledWith, fullPngVersionCompiled.c_str());
+	sLibraries += RTF_BR;
+	sLibraries += rp_sprintf(sUsingDll, pngVersion);
+#endif
+
+	// TODO: Use RpPng::libpng_copyright_string().
+	sLibraries +=
 		"libpng version 1.6.37 - April 14, 2019" RTF_BR
 		"Copyright (c) 2018-2019 Cosmin Truta" RTF_BR
 		"Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson" RTF_BR
 		"Copyright (c) 1996-1997 Andreas Dilger" RTF_BR
-		"Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc." RTF_BR
-		"http://www.libpng.org/pub/png/libpng.html" RTF_BR;
+		"Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc." RTF_BR;
+	sLibraries +=
+		"http://www.libpng.org/pub/png/libpng.html" RTF_BR
+		"https://github.com/glennrp/libpng" RTF_BR;
+	if (APNG_is_supported) {
+		sLibraries += C_("AboutTab|Libraries", "APNG patch:");
+		sLibraries += " https://sourceforge.net/projects/libpng-apng/" RTF_BR;
+	}
 	sLibraries += rp_sprintf(sLicense, "libpng license");
 #endif /* HAVE_PNG */
 

@@ -95,6 +95,45 @@ int save(LibRpFile::IRpFile *file, const IconAnimData *iconAnimData);
 RP_LIBROMDATA_PUBLIC
 int save(const char *filename, const IconAnimData *iconAnimData);
 
+/** Version info wrapper functions **/
+
+/**
+ * Was rom-properties compiled using zlib-ng?
+ * @return True if zlib-ng; false if not.
+ */
+RP_LIBROMDATA_PUBLIC
+bool zlib_is_ng(void);
+
+/**
+ * Get the zlib version string.
+ * This is the runtime zlib version.
+ * @return Result from zlibVersion() or zlibng_version().
+ */
+RP_LIBROMDATA_PUBLIC
+const char *zlib_version_string(void);
+
+/**
+ * Does our libpng have APNG support?
+ * @return True if APNG is supported; false if not.
+ */
+RP_LIBROMDATA_PUBLIC
+bool libpng_has_APNG(void);
+
+/**
+ * Get the libpng version number.
+ * This is the runtime libpng version.
+ * @return Result from png_access_version_number()
+ */
+RP_LIBROMDATA_PUBLIC
+uint32_t libpng_version_number(void);
+
+/**
+ * Get the libpng copyright string.
+ * @return libpng copyright string [png_get_copyright()]
+ */
+RP_LIBROMDATA_PUBLIC
+const char *libpng_copyright_string(void);
+
 } }
 
 #endif /* __ROMPROPERTIES_LIBRPBASE_IMG_RPPNG_HPP__ */

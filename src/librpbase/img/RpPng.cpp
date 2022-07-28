@@ -23,15 +23,16 @@ using LibRpFile::IRpFile;
 using LibRpTexture::rp_image;
 using LibRpTexture::argb32_t;
 
-// PNG writer.
+// PNG writer
 #include "RpPngWriter.hpp"
 
-// C++ STL classes.
+// C++ STL classes
 using std::unique_ptr;
 
-// Image format libraries.
-#include <zlib.h>	// get_crc_table()
+// Image format libraries
+#include <zlib.h>		// get_crc_table()
 #include <png.h>
+#include "APNG_dlopen.h"	// for libpng_has_APNG()
 
 #if PNG_LIBPNG_VER < 10209 || \
     (PNG_LIBPNG_VER == 10209 && \
@@ -50,11 +51,11 @@ using std::unique_ptr;
 // PNGCAPI was added in libpng-1.5.0beta14.
 // Older versions will need this.
 #ifndef PNGCAPI
-# ifdef _MSC_VER
-#  define PNGCAPI __cdecl
-# else
-#  define PNGCAPI
-# endif
+#  ifdef _MSC_VER
+#    define PNGCAPI __cdecl
+#  else
+#    define PNGCAPI
+#  endif
 #endif /* !PNGCAPI */
 
 #if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
@@ -664,6 +665,140 @@ int save(const char *filename, const IconAnimData *iconAnimData)
 
 	// Write the PNG image data.
 	return pngWriter->write_IDAT();
+}
+
+/** Version info wrapper functions **/
+
+/**
+ * Was rom-properties compiled using zlib-ng?
+ * @return True if zlib-ng; false if not.
+ */
+bool zlib_is_ng(void)
+{
+#ifdef ZLIBNG_VERSION
+	return true;
+#else /* !ZLIBNG_VERSION */
+	return false;
+#endif /* ZLIBNG_VERSION */
+}
+
+// Use zlibng_version()?
+#ifdef ZLIBNG_VERSION
+// FIXME: zlibng_version() isn't exported on Windows
+// if building with ZLIB_COMPAT.
+#  ifdef _WIN32
+#    if defined(ZLIB_IS_DLL) && defined(ZLIB_COMPAT)
+       // zlib is a DLL, and ZLIB_COMPAT is enabled.
+#    else
+#      define USE_ZLIBNG_VERSION 1
+#    endif
+#  else /* !_WIN32 */
+#    define USE_ZLIBNG_VERSION 1
+#  endif /* _WIN32 */
+#endif /* ZLIBNG_VERSION */
+
+#ifdef USE_ZLIBNG_VERSION
+// NOTE: Can't #include <zlib-ng.h> because zconf-ng.h isn't generated
+// when using the internal copy of zlib-ng.
+// Manually declare the version function.
+// Also, MSVC doesn't like it when we put this in a function.
+// (gcc is fine with that...)
+extern "C" const char *zlibng_version(void);
+#endif /* USE_ZLIBNG_VERSION */
+
+/**
+ * Get the zlib version string.
+ * This is the runtime zlib version.
+ * @return Result from zlibVersion() or zlibng_version().
+ */
+const char *zlib_version_string(void)
+{
+#if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_zlib_and_png() != 0) {
+		// Delay load failed.
+		return "(DLL failed to load)";
+	}
+#endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
+
+#ifdef USE_ZLIBNG_VERSION
+	return zlibng_version();
+#else /* !USE_ZLIBNG_VERSION */
+	return zlibVersion();
+#endif /* USE_ZLIBNG_VERSION */
+}
+
+/**
+ * Does our libpng have APNG support?
+ * @return True if APNG is supported; false if not.
+ */
+RP_LIBROMDATA_PUBLIC
+bool libpng_has_APNG(void)
+{
+#if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_zlib_and_png() != 0) {
+		// Delay load failed.
+		return false;
+	}
+#endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
+
+	const bool APNG_is_supported = (APNG_ref() == 0);
+	if (APNG_is_supported) {
+		// APNG is supported.
+		// Unreference it to prevent leaks.
+		APNG_unref();
+	}
+
+	return APNG_is_supported;
+}
+
+/**
+ * Get the libpng version number.
+ * This is the runtime libpng version.
+ * @return Result from png_access_version_number()
+ */
+uint32_t libpng_version_number(void)
+{
+#if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_zlib_and_png() != 0) {
+		// Delay load failed.
+		return 0;
+	}
+#endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
+
+	return png_access_version_number();
+}
+
+/**
+ * Get the libpng copyright string.
+ * @return libpng copyright string [png_get_copyright()]
+ */
+const char *libpng_copyright_string(void)
+{
+#if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_zlib_and_png() != 0) {
+		// Delay load failed.
+		return "(DLL failed to load)";
+	}
+#endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
+
+	/**
+	 * NOTE: MSVC does not define __STDC__ by default.
+	 * If __STDC__ is not defined, the libpng copyright
+	 * will not have a leading newline, and all newlines
+	 * will be replaced with groups of 6 spaces.
+	 *
+	 * NOTE 2: This was changed in libpng-1.6.36, so it
+	 * always returns the __STDC__ copyright notice.
+	 */
+	return png_get_copyright(nullptr);
 }
 
 } }
