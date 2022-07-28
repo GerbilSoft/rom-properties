@@ -371,8 +371,17 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += rp_sprintf(sUsingDll, pngVersion);
 #endif
 
-	// FIXME: Need to convert newlines to "<br/>\n".
-	sLibraries += RpPng::libpng_copyright_string();
+	// Convert newlines to "<br/>\n".
+	const char *const s_png_tmp = RpPng::libpng_copyright_string();
+	for (const char *p = s_png_tmp; *p != '\0'; p++) {
+		const char chr = *p;
+		if (unlikely(chr == '\n')) {
+			sLibraries += BR;
+		} else {
+			sLibraries += chr;
+		}
+	}
+
 	sLibraries += "<a href='http://www.libpng.org/pub/png/libpng.html'>http://www.libpng.org/pub/png/libpng.html</a>" BR
 		"<a href='https://github.com/glennrp/libpng'>https://github.com/glennrp/libpng</a>" BR;
 	if (APNG_is_supported) {
