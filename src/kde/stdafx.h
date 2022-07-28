@@ -107,6 +107,7 @@
 #include "libi18n/i18n.h"
 
 // librpbase common headers
+#include "common.h"
 #include "aligned_malloc.h"
 #include "ctypex.h"
 

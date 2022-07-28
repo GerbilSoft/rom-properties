@@ -2,14 +2,16 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * AesCipherFactory.hpp: IAesCipher factory class.                         *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPBASE_CRYPTO_AESCIPHERFACTORY_HPP__
 #define __ROMPROPERTIES_LIBRPBASE_CRYPTO_AESCIPHERFACTORY_HPP__
 
+#include "config.librpbase.h"
 #include "common.h"
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 namespace LibRpBase {
 
@@ -24,7 +26,7 @@ class AesCipherFactory
 
 	public:
 		/**
-		 * Create an IAesCipher class.
+		 * Create an IAesCipher object.
 		 *
 		 * The implementation is chosen depending on the system
 		 * environment. The caller doesn't need to know what
@@ -33,6 +35,28 @@ class AesCipherFactory
 		 * @return IAesCipher class, or nullptr if decryption isn't supported
 		 */
 		static IAesCipher *create(void);
+
+	public:
+		enum class Implementation {
+#ifdef _WIN32
+			CAPI,
+			CAPI_NG,
+#endif /* _WIN32 */
+#ifdef HAVE_NETTLE
+			Nettle,
+#endif /* HAVE_NETTLE */
+		};
+
+		/**
+		 * Create an IAesCipher object.
+		 *
+		 * The implementation can be selected by the caller.
+		 * This is usually only used for test suites.
+		 *
+		 * @return IAesCipher class, or nullptr if decryption or the selected implementation isn't supported
+		 */
+		RP_LIBROMDATA_PUBLIC
+		static IAesCipher *create(Implementation implementation);
 };
 
 }

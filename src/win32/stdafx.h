@@ -112,6 +112,8 @@
 
 // librpbase common headers
 #include "common.h"
+#include "aligned_malloc.h"
+#include "ctypex.h"
 
 #ifdef __cplusplus
 // librpbase C++ headers

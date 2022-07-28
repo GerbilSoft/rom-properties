@@ -10,7 +10,6 @@
 #define __ROMPROPERTIES_LIBRPBASE_CRYPTO_AESCAPI_HPP__
 
 #include "IAesCipher.hpp"
-#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 namespace LibRpBase {
 
@@ -18,9 +17,7 @@ class AesCAPIPrivate;
 class AesCAPI : public IAesCipher
 {
 	public:
-		RP_LIBROMDATA_PUBLIC
 		AesCAPI();
-
 		virtual ~AesCAPI();
 
 	private:
