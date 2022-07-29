@@ -63,3 +63,36 @@ HRESULT WINAPI InitPropVariantFromStringVector_xp(_In_ PCWSTR *prgsz, ULONG cEle
 	pPropVar->cabstr.cElems = cElems;
 	return S_OK;
 }
+
+/**
+ * Initialize a PROPVARIANT from a string.
+ * @param psz		[in] String.
+ * @param ppropvar	[out] PROPVARIANT
+ */
+HRESULT WINAPI InitPropVariantFromString_noShlwapi(_In_ PCWSTR psz, _Out_ PROPVARIANT *ppropvar)
+{
+	// The standard InitPropVariantFromString() function, and the
+	// wine implementation, uses SHStrDupW(), which requires linking
+	// to shlwapi.dll. We'll use MSVCRT functions instead.
+	// Reference: https://github.com/wine-mirror/wine/blob/1bb953c6766c9cc4372ca23a7c5b7de101324218/include/propvarutil.h#L107
+	size_t byteCount;
+
+	assert(psz != NULL);
+	assert(ppropvar != NULL);
+	if (!psz) {
+		return E_INVALIDARG;
+	} else if (!ppropvar) {
+		return E_POINTER;
+	}
+
+	byteCount = (wcslen(psz) + 1) * sizeof(wchar_t);
+	ppropvar->pwszVal = (PWSTR)CoTaskMemAlloc(byteCount);
+	if (!ppropvar->pwszVal) {
+		PropVariantInit(ppropvar);
+		return E_OUTOFMEMORY;
+	}
+
+	memcpy(ppropvar->pwszVal, psz, byteCount);
+	ppropvar->vt = VT_LPWSTR;
+	return S_OK;
+}
