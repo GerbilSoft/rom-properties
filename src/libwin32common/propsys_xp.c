@@ -8,6 +8,9 @@
 
 #include "propsys_xp.h"
 
+// C includes
+#include <assert.h>
+
 // RpFile_windres isn't used by libromdata directly,
 // so use some linker hax to force linkage.
 extern uint8_t RP_LibWin32Common_propsys_xp_ForceLinkage;

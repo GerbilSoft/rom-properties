@@ -13,8 +13,7 @@
 #include <propvarutil.h>
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
-// C includes.
-#include <assert.h>
+// C includes
 #include <string.h>
 
 // Use our versions instead of the standard system versions,
