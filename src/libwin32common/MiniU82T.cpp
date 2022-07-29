@@ -19,12 +19,11 @@ using std::wstring;
 namespace LibWin32Common {
 
 /**
- * Mini T2U8() function.
- * @param wcs TCHAR string.
- * @return UTF-8 C++ string.
+ * Mini W2U8() function.
+ * @param wcs WCHAR string
+ * @return UTF-8 C++ string
  */
-#ifdef UNICODE
-string T2U8_c(const TCHAR *wcs)
+string W2U8_c(const wchar_t *wcs)
 {
 	string s_ret;
 
@@ -41,7 +40,6 @@ string T2U8_c(const TCHAR *wcs)
 	delete[] mbs;
 	return s_ret;
 }
-#endif /* UNICODE */
 
 /**
  * Mini U82W() function.
