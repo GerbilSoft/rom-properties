@@ -20,7 +20,7 @@ uint8_t RP_LibWin32Common_propsys_xp_ForceLinkage;
  * @param pPropVar	[out] PROPVARIANT
  * @return HRESULT
  */
-HRESULT InitPropVariantFromStringVector_xp(_In_ PCWSTR *prgsz, ULONG cElems, PROPVARIANT *pPropVar)
+HRESULT WINAPI InitPropVariantFromStringVector_xp(_In_ PCWSTR *prgsz, ULONG cElems, PROPVARIANT *pPropVar)
 {
 	ULONG i;
 

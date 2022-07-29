@@ -55,7 +55,7 @@ static inline HRESULT InitPropVariantFromFileTime_xp(_In_ const FILETIME *pftIn,
  * @return HRESULT
  */
 RP_LIBROMDATA_PUBLIC
-HRESULT InitPropVariantFromStringVector_xp(_In_ PCWSTR *prgsz, ULONG cElems, PROPVARIANT *pPropVar);
+HRESULT WINAPI InitPropVariantFromStringVector_xp(_In_ PCWSTR *prgsz, ULONG cElems, PROPVARIANT *pPropVar);
 
 /**
  * Initialize a PROPVARIANT from a string.
