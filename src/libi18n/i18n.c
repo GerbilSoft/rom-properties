@@ -18,6 +18,7 @@
 #include "i18n.h"
 #ifdef _WIN32
 #  include "libwin32common/RpWin32_sdk.h"
+#  include <stdlib.h>	// _countof() on 32-bit MinGW-w64
 #endif
 
 #include "common.h"
