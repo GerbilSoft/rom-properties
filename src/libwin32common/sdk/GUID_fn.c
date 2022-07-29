@@ -24,7 +24,7 @@
  * @param lpszClsidA	[out] Buffer for the CLSID string.
  * @param cchMax	[in] Length of lpszClsidA, in characters.
  */
-int StringFromGUID2A(_In_ REFGUID rclsid, _Out_writes_(cchMax) LPSTR lpszClsidA, _In_ int cchMax)
+int WINAPI StringFromGUID2A(_In_ REFGUID rclsid, _Out_writes_(cchMax) LPSTR lpszClsidA, _In_ int cchMax)
 {
 	// NOTE: This is only correct on little-endian systems.
 	// Windows only supports little-endian, so that's fine.
@@ -42,7 +42,7 @@ int StringFromGUID2A(_In_ REFGUID rclsid, _Out_writes_(cchMax) LPSTR lpszClsidA,
  * @param pclsid	[out] CLSID
  * @return S_OK on success; E_FAIL on error.
  */
-HRESULT CLSIDFromStringA(_In_ LPCSTR lpsz, _Out_ LPCLSID pclsid)
+HRESULT WINAPI CLSIDFromStringA(_In_ LPCSTR lpsz, _Out_ LPCLSID pclsid)
 {
 	// NOTE: This is only correct on little-endian systems.
 	// Windows only supports little-endian, so that's fine.
