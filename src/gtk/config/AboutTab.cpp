@@ -29,14 +29,14 @@ using std::string;
 #ifdef HAVE_PNG
 #  include <png.h>	// PNG_LIBPNG_VER_STRING
 #  include "librpbase/img/RpPng.hpp"
-#endif
+#endif /* HAVE_ZLIB */
 // TODO: JPEG
-#if defined(ENABLE_DECRYPTION) && defined(HAVE_NETTLE_VERSION_H)
-#  include <nettle/version.h>
-#endif
+#if defined(ENABLE_DECRYPTION) && defined(HAVE_NETTLE)
+#  include "librpbase/crypto/AesNettle.hpp"
+#endif /* ENABLE_DECRYPTION && HAVE_NETTLE */
 #ifdef ENABLE_XML
 #  include <tinyxml2.h>
-#endif
+#endif /* ENABLE_XML */
 
 #if GTK_CHECK_VERSION(3,0,0)
 typedef GtkBoxClass superclass;
@@ -624,45 +624,42 @@ about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 #endif /* HAVE_PNG */
 
 	/** nettle **/
-#ifdef ENABLE_DECRYPTION
+#if defined(ENABLE_DECRYPTION) && defined(HAVE_NETTLE)
 	sLibraries += "\n\n";
-#  ifdef HAVE_NETTLE_VERSION_H
-	snprintf(sVerBuf, sizeof(sVerBuf),
-		"GNU Nettle %u.%u",
-			static_cast<unsigned int>(NETTLE_VERSION_MAJOR),
-			static_cast<unsigned int>(NETTLE_VERSION_MINOR));
-	sLibraries += rp_sprintf(sCompiledWith, sVerBuf);
-#    ifdef HAVE_NETTLE_VERSION_FUNCTIONS
-	snprintf(sVerBuf, sizeof(sVerBuf),
-		"GNU Nettle %u.%u",
-			static_cast<unsigned int>(nettle_version_major()),
-			static_cast<unsigned int>(nettle_version_minor()));
-	sLibraries += '\n';
-	sLibraries += rp_sprintf(sUsingDll, sVerBuf);
-#    endif /* HAVE_NETTLE_VERSION_FUNCTIONS */
-	sLibraries += '\n';
-	sLibraries +=
-		"Copyright (C) 2001-2022 Niels Möller.\n"
-		"<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>\n";
-	sLibraries += rp_sprintf(sLicenses, "GNU LGPL v3+, GNU GPL v2+");
-#  else /* !HAVE_NETTLE_VERSION_H */
-#    ifdef HAVE_NETTLE_3
-	sLibraries += rp_sprintf(sCompiledWith, "GNU Nettle 3.0");
-	sLibraries += '\n';
-	sLibraries +=
-		"Copyright (C) 2001-2014 Niels Möller.\n"
-		"<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>\n";
-	sLibraries += rp_sprintf(sLicenses, "GNU LGPL v3+, GNU GPL v2+");
-#    else /* !HAVE_NETTLE_3 */
-	sLibraries += rp_sprintf(sCompiledWith, "GNU Nettle 2.x");
-	sLibraries += '\n';
-	sLibraries +=
-		"Copyright (C) 2001-2013 Niels Möller.\n"
-		"<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>\n";
-	sLibraries += rp_sprintf(sLicense, "GNU LGPL v2.1+");
-#    endif /* HAVE_NETTLE_3 */
-#  endif /* HAVE_NETTLE_VERSION_H */
-#endif /* ENABLE_DECRYPTION */
+	int nettle_major, nettle_minor;
+	int ret = AesNettle::get_nettle_compile_time_version(&nettle_major, &nettle_minor);
+	if (ret == 0) {
+		snprintf(sVerBuf, sizeof(sVerBuf), "GNU Nettle %d.%d",
+			nettle_major, nettle_minor);
+		sLibraries += rp_sprintf(sCompiledWith, sVerBuf);
+	}
+
+	ret = AesNettle::get_nettle_runtime_version(&nettle_major, &nettle_minor);
+	if (ret == 0) {
+		snprintf(sVerBuf, sizeof(sVerBuf), "GNU Nettle %d.%d",
+			nettle_major, nettle_minor);
+		sLibraries += rp_sprintf(sUsingDll, sVerBuf);
+	}
+
+	if (nettle_major >= 3) {
+		if (nettle_minor >= 1) {
+			sLibraries += "\n"
+				"Copyright (C) 2001-2022 Niels Möller.\n"
+				"<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>\n";
+		} else {
+			sLibraries += "\n"
+				"Copyright (C) 2001-2014 Niels Möller.\n"
+				"<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>\n";
+		}
+		sLibraries += rp_sprintf(sLicenses, "GNU LGPL v3+, GNU GPL v2+");
+	} else {
+		sLibraries += rp_sprintf(sCompiledWith, "GNU Nettle 2.x");
+		sLibraries += "\n"
+			"Copyright (C) 2001-2013 Niels Möller.\n"
+			"<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>\n";
+		sLibraries += rp_sprintf(sLicense, "GNU LGPL v2.1+");
+	}
+#endif /* ENABLE_DECRYPTION && HAVE_NETTLE */
 
 	/** TinyXML2 **/
 #ifdef ENABLE_XML

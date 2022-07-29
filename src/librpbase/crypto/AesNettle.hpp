@@ -79,6 +79,27 @@ class AesNettle : public IAesCipher
 		 */
 		ATTR_ACCESS_SIZE(read_write, 2, 3)
 		size_t decrypt(uint8_t *RESTRICT pData, size_t size) final;
+
+	public:
+		/**
+		 * Get the nettle compile-time version.
+		 * @param pMajor	[out] Pointer to store major version.
+		 * @param pMinor	[out] Pointer to store minor version.
+		 * @return 0 on success; non-zero on error.
+		 */
+		ATTR_ACCESS(write_only, 1)
+		ATTR_ACCESS(write_only, 2)
+		static int get_nettle_compile_time_version(int *pMajor, int *pMinor);
+
+		/**
+		 * Get the nettle runtime version.
+		 * @param pMajor	[out] Pointer to store major version.
+		 * @param pMinor	[out] Pointer to store minor version.
+		 * @return 0 on success; non-zero on error.
+		 */
+		ATTR_ACCESS(write_only, 1)
+		ATTR_ACCESS(write_only, 2)
+		static int get_nettle_runtime_version(int *pMajor, int *pMinor);
 };
 
 }
