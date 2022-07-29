@@ -693,10 +693,22 @@ ENDIF(BUILD_TESTING)
 ######################################
 
 IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
-	INSTALL(TARGETS ${PROJECT_NAME}
-		LIBRARY DESTINATION "${DIR_INSTALL_LIB}"
-		COMPONENT "lib"
-		)
+	IF(WIN32)
+		# NOTE: Don't install libraries.
+		# That installs the import library, and romdata-1.dll's
+		# ABI is not guaranteed to be stable.
+		INSTALL(TARGETS ${PROJECT_NAME}
+			RUNTIME DESTINATION "${DIR_INSTALL_EXE}"
+			LIBRARY DESTINATION "${DIR_INSTALL_DLL}"
+			#ARCHIVE DESTINATION "${DIR_INSTALL_LIB}"
+			COMPONENT "dll"
+			)
+	ELSE(WIN32)
+		INSTALL(TARGETS ${PROJECT_NAME}
+			LIBRARY DESTINATION "${DIR_INSTALL_LIB}"
+			COMPONENT "lib"
+			)
+	ENDIF(WIN32)
 
 	# Check if a split debug file should be installed.
 	IF(INSTALL_DEBUG)
