@@ -339,8 +339,6 @@ int AesNettle::get_nettle_compile_time_version(int *pMajor, int *pMinor)
  * @param pMinor	[out] Pointer to store minor version.
  * @return 0 on success; non-zero on error.
  */
-ATTR_ACCESS(write_only, 1)
-ATTR_ACCESS(write_only, 2)
 int AesNettle::get_nettle_runtime_version(int *pMajor, int *pMinor)
 {
 #if defined(HAVE_NETTLE_VERSION_H) && defined(HAVE_NETTLE_VERSION_FUNCTIONS)

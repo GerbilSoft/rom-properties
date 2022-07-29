@@ -89,6 +89,7 @@ class AesNettle : public IAesCipher
 		 */
 		ATTR_ACCESS(write_only, 1)
 		ATTR_ACCESS(write_only, 2)
+		RP_LIBROMDATA_PUBLIC
 		static int get_nettle_compile_time_version(int *pMajor, int *pMinor);
 
 		/**
@@ -99,6 +100,7 @@ class AesNettle : public IAesCipher
 		 */
 		ATTR_ACCESS(write_only, 1)
 		ATTR_ACCESS(write_only, 2)
+		RP_LIBROMDATA_PUBLIC
 		static int get_nettle_runtime_version(int *pMajor, int *pMinor);
 };
 
