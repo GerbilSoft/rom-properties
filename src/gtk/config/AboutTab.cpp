@@ -632,6 +632,7 @@ about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 		snprintf(sVerBuf, sizeof(sVerBuf), "GNU Nettle %d.%d",
 			nettle_major, nettle_minor);
 		sLibraries += rp_sprintf(sCompiledWith, sVerBuf);
+		sLibraries += '\n';
 	}
 
 	ret = AesNettle::get_nettle_runtime_version(&nettle_major, &nettle_minor);
@@ -639,16 +640,15 @@ about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 		snprintf(sVerBuf, sizeof(sVerBuf), "GNU Nettle %d.%d",
 			nettle_major, nettle_minor);
 		sLibraries += rp_sprintf(sUsingDll, sVerBuf);
+		sLibraries += '\n';
 	}
 
 	if (nettle_major >= 3) {
 		if (nettle_minor >= 1) {
-			sLibraries += "\n"
-				"Copyright (C) 2001-2022 Niels Möller.\n"
+			sLibraries += "Copyright (C) 2001-2022 Niels Möller.\n"
 				"<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>\n";
 		} else {
-			sLibraries += "\n"
-				"Copyright (C) 2001-2014 Niels Möller.\n"
+			sLibraries += "Copyright (C) 2001-2014 Niels Möller.\n"
 				"<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>\n";
 		}
 		sLibraries += rp_sprintf(sLicenses, "GNU LGPL v3+, GNU GPL v2+");

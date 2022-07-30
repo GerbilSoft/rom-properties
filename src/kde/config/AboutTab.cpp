@@ -400,6 +400,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 		snprintf(sVerBuf, sizeof(sVerBuf), "GNU Nettle %d.%d",
 			nettle_major, nettle_minor);
 		sLibraries += rp_sprintf(sCompiledWith, sVerBuf);
+		sLibraries += BR;
 	}
 
 	ret = AesNettle::get_nettle_runtime_version(&nettle_major, &nettle_minor);
@@ -407,16 +408,15 @@ void AboutTabPrivate::initLibrariesTab(void)
 		snprintf(sVerBuf, sizeof(sVerBuf), "GNU Nettle %d.%d",
 			nettle_major, nettle_minor);
 		sLibraries += rp_sprintf(sUsingDll, sVerBuf);
+		sLibraries += BR;
 	}
 
 	if (nettle_major >= 3) {
 		if (nettle_minor >= 1) {
-			sLibraries += BR
-				"Copyright (C) 2001-2022 Niels Möller." BR
+			sLibraries += "Copyright (C) 2001-2022 Niels Möller." BR
 				"<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>" BR;
 		} else {
-			sLibraries += BR
-				"Copyright (C) 2001-2014 Niels Möller." BR
+			sLibraries += "Copyright (C) 2001-2014 Niels Möller." BR
 				"<a href='https://www.lysator.liu.se/~nisse/nettle/'>https://www.lysator.liu.se/~nisse/nettle/</a>" BR;
 		}
 		sLibraries += rp_sprintf(sLicenses, "GNU LGPL v3+, GNU GPL v2+");
