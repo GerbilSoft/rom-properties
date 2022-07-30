@@ -1710,7 +1710,7 @@ void KeyManagerTabPrivate::importKeysFromBin(KeyStoreUI::ImportFileID id)
 		return;
 
 	const tstring tfilename = LibWin32UI::getOpenFileName(hWndPropSheet,
-		U82T_c(s_title), s_filter, ts_keyFileDir.c_str());
+		U82T_c(s_title), U82T_c(s_filter), ts_keyFileDir.c_str());
 	if (tfilename.empty())
 		return;
 

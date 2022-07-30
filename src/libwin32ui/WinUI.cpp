@@ -31,40 +31,6 @@ _COM_SMARTPTR_TYPEDEF(IShellItem, IID_IShellItem);
 
 namespace LibWin32UI {
 
-// NOTE: We can't easily link to LibWin32Common for U82T_c(),
-// so we'll define it here.
-
-/**
- * Mini U82W() function.
- * @param mbs UTF-8 string.
- * @return UTF-16 C++ wstring.
- */
-#ifdef UNICODE
-static wstring U82T_c(const char *mbs)
-{
-	tstring ts_ret;
-
-	// NOTE: cchWcs includes the NULL terminator.
-	int cchWcs = MultiByteToWideChar(CP_UTF8, 0, mbs, -1, nullptr, 0);
-	if (cchWcs <= 1) {
-		return ts_ret;
-	}
-	cchWcs--;
- 
-	wchar_t *const wcs = new wchar_t[cchWcs];
-	MultiByteToWideChar(CP_UTF8, 0, mbs, -1, wcs, cchWcs);
-	ts_ret.assign(wcs, cchWcs);
-	delete[] wcs;
-	return ts_ret;
-}
-#else /* !UNICODE */
-static inline string U82T_c(const char *mbs)
-{
-	// TODO: Convert UTF-8 to ANSI?
-	return string(mbs);
-}
-#endif /* UNICODE */
-
 /**
  * Convert UNIX line endings to DOS line endings.
  * @param tstr_unix	[in] String with UNIX line endings.
@@ -372,16 +338,16 @@ DWORD isSystemRTL(void)
 #ifdef UNICODE
 /**
  * Get a filename using IFileDialog.
- * @param ts_ret	[out] Output filename. (Empty if none.)
- * @param bSave		[in] True for save; false for open.
- * @param hWnd		[in] Owner.
- * @param dlgTitle	[in] Dialog title.
- * @param filterSpec	[in] Filter specification. (pipe-delimited)
- * @param origFilename	[in,opt] Starting filename.
+ * @param ts_ret	[out] Output filename (Empty if none)
+ * @param bSave		[in] True for save; false for open
+ * @param hWnd		[in] Owner
+ * @param dlgTitle	[in] Dialog title
+ * @param filterSpec	[in] RP file dialog filter (UTF-16, converted from gettext())
+ * @param origFilename	[in,opt] Starting filename
  * @return 0 on success; HRESULT on error.
  */
 static inline HRESULT getFileName_int_IFileDialog(tstring &ts_ret, bool bSave, HWND hWnd,
-	const TCHAR *dlgTitle, const char *filterSpec, const TCHAR *origFilename)
+	LPCTSTR dlgTitle, LPCTSTR filterSpec, LPCTSTR origFilename)
 {
 	IFileDialogPtr pFileDlg;
 	HRESULT hr = CoCreateInstance(
@@ -397,9 +363,10 @@ static inline HRESULT getFileName_int_IFileDialog(tstring &ts_ret, bool bSave, H
 
 	// Convert '|' characters to NULL bytes.
 	// _tcstok_s() can do this for us.
-	tstring tmpfilter = U82T_c(filterSpec);
+	const LPTSTR tmpfilter = _tcsdup(filterSpec);
+	assert(tmpfilter != nullptr);
 	TCHAR *saveptr = nullptr;
-	TCHAR *token = _tcstok_s(&tmpfilter[0], _T("|"), &saveptr);
+	const TCHAR *token = _tcstok_s(tmpfilter, _T("|"), &saveptr);
 	while (token != nullptr) {
 		COMDLG_FILTERSPEC cdfs;
 
@@ -408,6 +375,7 @@ static inline HRESULT getFileName_int_IFileDialog(tstring &ts_ret, bool bSave, H
 		assert(token != nullptr);
 		if (!token) {
 			// Missing token...
+			free(tmpfilter);
 			return E_INVALIDARG;
 		}
 		cdfs.pszName = token;
@@ -417,8 +385,11 @@ static inline HRESULT getFileName_int_IFileDialog(tstring &ts_ret, bool bSave, H
 		assert(token != nullptr);
 		if (!token) {
 			// Missing token...
+			free(tmpfilter);
 			return E_INVALIDARG;
 		}
+		// FIXME: Hide display name if pszName == pszSpec.
+		// Setting pszName = nullptr results in failure.
 		cdfs.pszSpec = token;
 		v_cdfs.emplace_back(std::move(cdfs));
 
@@ -434,11 +405,13 @@ static inline HRESULT getFileName_int_IFileDialog(tstring &ts_ret, bool bSave, H
 
 	if (v_cdfs.empty()) {
 		// No filter spec...
+		free(tmpfilter);
 		return E_INVALIDARG;
 	}
 
 	hr = pFileDlg->SetFileTypes(static_cast<int>(v_cdfs.size()), v_cdfs.data());
 	v_cdfs.clear();
+	free(tmpfilter);	// v_cdfs points within tmpfilter, so free tmpfilter after
 	if (FAILED(hr))
 		return hr;
 
@@ -541,27 +514,24 @@ static inline HRESULT getFileName_int_IFileDialog(tstring &ts_ret, bool bSave, H
  * The "(*.bin; *.srl)" part is added to the display name if needed.
  * A third segment provides for semicolon-separated MIME types. (May be "-" for 'any'.)
  *
- * @param filter RP file dialog filter. (UTF-8, from gettext())
+ * @param filter RP file dialog filter (UTF-16, converted from gettext())
  * @return Win32 file dialog filter.
  */
-static tstring rpFileDialogFilterToWin32(const char *filter)
+static tstring rpFileDialogFilterToWin32(const TCHAR *filter)
 {
 	tstring ts_ret;
 	assert(filter != nullptr && filter[0] != '\0');
 	if (!filter || filter[0] == '\0')
 		return ts_ret;
 
-	// TODO: Change `filter` to `const TCHAR*` to eliminate
-	// some temporary strings?
-
 	// Temporary string so we can use strtok_r().
-	char *const tmpfilter = strdup(filter);
+	const LPTSTR tmpfilter = _tcsdup(filter);
 	assert(tmpfilter != nullptr);
-	char *saveptr = nullptr;
+	TCHAR *saveptr = nullptr;
 
 	// First strtok_r() call.
-	ts_ret.reserve(strlen(filter) + 32);
-	char *token = strtok_s(tmpfilter, "|", &saveptr);
+	ts_ret.reserve(_tcslen(tmpfilter) + 32);
+	const TCHAR *token = _tcstok_s(tmpfilter, _T("|"), &saveptr);
 	do {
 		// Separator 1: Between display name and pattern.
 		// (strtok_r() call was done in the previous iteration.)
@@ -572,10 +542,10 @@ static tstring rpFileDialogFilterToWin32(const char *filter)
 			return tstring();
 		}
 		const size_t lastpos = ts_ret.size();
-		ts_ret += U82T_c(token);
+		ts_ret += token;
 
 		// Separator 2: Between pattern and MIME types.
-		token = strtok_s(nullptr, "|", &saveptr);
+		token = _tcstok_s(nullptr, _T("|"), &saveptr);
 		assert(token != nullptr);
 		if (!token) {
 			// Missing token...
@@ -586,26 +556,25 @@ static tstring rpFileDialogFilterToWin32(const char *filter)
 		// Don't append the pattern in parentheses if it's
 		// the same as the display name. (e.g. for specific
 		// files in KeyManagerTab)
-		const tstring ts_tmpstr = U82T_c(token);
-		if (ts_ret.compare(lastpos, string::npos, ts_tmpstr) != 0) {
+		if (ts_ret.compare(lastpos, string::npos, token) != 0) {
 			ts_ret += _T(" (");
-			ts_ret += ts_tmpstr;
+			ts_ret += token;
 			ts_ret += _T(')');
 		}
 		ts_ret += _T('\0');
 
 		// File filter.
-		ts_ret += ts_tmpstr;
+		ts_ret += token;
 		ts_ret += _T('\0');
 
 		// Separator 3: Between MIME types and the next display name.
 		// NOTE: May be missing if this is the end of the string
 		// and a MIME type isn't set.
 		// NOTE: Not used by Qt.
-		token = strtok_s(nullptr, "|", &saveptr);
+		token = _tcstok_s(nullptr, _T("|"), &saveptr);
 
 		// Next token.
-		token = strtok_s(nullptr, "|", &saveptr);
+		token = _tcstok_s(nullptr, _T("|"), &saveptr);
 	} while (token != nullptr);
 
 	free(tmpfilter);
@@ -628,7 +597,7 @@ static tstring rpFileDialogFilterToWin32(const char *filter)
  * @return Filename, or empty string on error.
  */
 static tstring getFileName_int(bool bSave, HWND hWnd,
-	const TCHAR *dlgTitle, const char *filterSpec, const TCHAR *origFilename)
+	LPCTSTR dlgTitle, LPCTSTR filterSpec, LPCTSTR origFilename)
 {
 	assert(dlgTitle != nullptr);
 	assert(filterSpec != nullptr);
@@ -711,7 +680,7 @@ static tstring getFileName_int(bool bSave, HWND hWnd,
  * @param origFilename	[in,opt] Starting filename.
  * @return Filename, or empty string on error.
  */
-tstring getOpenFileName(HWND hWnd, const TCHAR *dlgTitle, const char *filterSpec, const TCHAR *origFilename)
+tstring getOpenFileName(HWND hWnd, LPCTSTR dlgTitle, LPCTSTR filterSpec, LPCTSTR origFilename)
 {
 	return getFileName_int(false, hWnd, dlgTitle, filterSpec, origFilename);
 }
@@ -729,7 +698,7 @@ tstring getOpenFileName(HWND hWnd, const TCHAR *dlgTitle, const char *filterSpec
  * @param origFilename	[in,opt] Starting filename.
  * @return Filename, or empty string on error.
  */
-tstring getSaveFileName(HWND hWnd, const TCHAR *dlgTitle, const char *filterSpec, const TCHAR *origFilename)
+tstring getSaveFileName(HWND hWnd, LPCTSTR dlgTitle, LPCTSTR filterSpec, LPCTSTR origFilename)
 {
 	return getFileName_int(true, hWnd, dlgTitle, filterSpec, origFilename);
 }

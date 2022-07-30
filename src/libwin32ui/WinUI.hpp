@@ -150,13 +150,14 @@ DWORD isSystemRTL(void);
  * - Vista+: IFileOpenDialog
  * - XP: GetOpenFileName()
  *
- * @param hWnd		[in] Owner.
- * @param dlgTitle	[in] Dialog title.
- * @param filterSpec	[in] Filter specification. (RP format, UTF-8)
- * @param origFilename	[in,opt] Starting filename.
+ * @param hWnd		[in] Owner
+ * @param dlgTitle	[in] Dialog title
+ * @param filterSpec	[in] Filter specification (RP format, UTF-16)
+ * @param origFilename	[in,opt] Starting filename
  * @return Filename, or empty string on error.
  */
-std::tstring getOpenFileName(HWND hWnd, const TCHAR *dlgTitle, const char *filterSpec, const TCHAR *origFilename);
+std::tstring getOpenFileName(HWND hWnd, LPCTSTR dlgTitle,
+	LPCTSTR filterSpec, LPCTSTR origFilename);
 
 /**
  * Get a filename using the Save File Name dialog.
@@ -165,13 +166,14 @@ std::tstring getOpenFileName(HWND hWnd, const TCHAR *dlgTitle, const char *filte
  * - Vista+: IFileSaveDialog
  * - XP: GetSaveFileName()
  *
- * @param hWnd		[in] Owner.
- * @param dlgTitle	[in] Dialog title.
- * @param filterSpec	[in] Filter specification. (RP format, UTF-8)
- * @param origFilename	[in,opt] Starting filename.
+ * @param hWnd		[in] Owner
+ * @param dlgTitle	[in] Dialog title
+ * @param filterSpec	[in] Filter specification (RP format, UTF-16)
+ * @param origFilename	[in,opt] Starting filename
  * @return Filename, or empty string on error.
  */
-std::tstring getSaveFileName(HWND hWnd, const TCHAR *dlgTitle, const char *filterSpec, const TCHAR *origFilename);
+std::tstring getSaveFileName(HWND hWnd, LPCTSTR dlgTitle,
+	LPCTSTR filterSpec, LPCTSTR origFilename);
 
 /** Window procedure subclasses **/
 

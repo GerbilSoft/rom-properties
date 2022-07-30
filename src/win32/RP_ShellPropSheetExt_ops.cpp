@@ -378,7 +378,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 
 			const tstring tfilename = LibWin32UI::getSaveFileName(hDlgSheet,
 				U82T_c(dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", info->title)),
-				dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", info->filter),
+				U82T_c(dpgettext_expr(RP_I18N_DOMAIN, "RomDataView", info->filter)),
 				defaultFileName.c_str());
 			if (tfilename.empty())
 				return;
@@ -494,7 +494,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 
 		// Prompt for a save file.
 		tstring t_save_filename = LibWin32UI::getSaveFileName(hDlgSheet,
-			U82T_c(op->sfi.title), filter.c_str(), U82T_s(initialFile));
+			U82T_c(op->sfi.title), U82T_s(filter), U82T_s(initialFile));
 		if (t_save_filename.empty())
 			return;
 		s_save_filename = T2U8(t_save_filename);
