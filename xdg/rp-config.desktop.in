@@ -6,6 +6,7 @@ Terminal=false
 Type=Application
 Categories=System;Settings;
 SingleMainWindow=true
+StartupNotify=true
 StartupWMClass=rp-config
 Name=ROM Properties configurator
 Name[de]=ROM Properties konfigurator
