@@ -1,5 +1,3 @@
-public: __cdecl LibRpBase::AesCAPI::AesCAPI(void) __ptr64
-public: __cdecl LibRpBase::AesCAPI_NG::AesCAPI_NG(void) __ptr64
 protected: __cdecl LibRpBase::ConfReader::ConfReader(class LibRpBase::ConfReaderPrivate * __ptr64) __ptr64
 protected: __cdecl LibRpBase::Config::Config(void) __ptr64
 public: __cdecl LibRomData::GcnFst::GcnFst(unsigned char const * __ptr64,unsigned int,unsigned char) __ptr64
@@ -44,6 +42,7 @@ public: static long __cdecl LibWin32Common::RegKey::RegisterFileType(wchar_t con
 void __cdecl GdiplusHelper::ShutdownGDIPlus(unsigned __int64)
 public: static long __cdecl LibWin32Common::RegKey::UnregisterComObject(struct _GUID const & __ptr64,wchar_t const * __ptr64)
 public: void __cdecl LibWin32Common::RegKey::__autoclassinit2(unsigned __int64) __ptr64
+int __cdecl LibRpFile::FileSystem::access(char const * __ptr64,int)
 public: static class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl LibRpBase::RomFields::ageRatingsDecode(class std::array<unsigned short,16> const * __ptr64,bool)
 public: void __cdecl LibRomData::KeyStoreUI::allKeysSaved(void) __ptr64
 public: struct LibRpBase::RomFields::Field const * __ptr64 __cdecl LibRpBase::RomFields::at(int)const __ptr64
@@ -66,6 +65,7 @@ public: int __cdecl LibRpBase::RomFields::count(void)const __ptr64
 public: int __cdecl LibRpBase::RomMetaData::count(void)const __ptr64
 class std::basic_string<char16_t,struct std::char_traits<char16_t>,class std::allocator<char16_t> > __cdecl LibRpBase::cpN_to_utf16(unsigned int,char const * __ptr64,int,unsigned int)
 class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl LibRpBase::cpN_to_utf8(unsigned int,char const * __ptr64,int,unsigned int)
+public: static class LibRpBase::IAesCipher * __ptr64 __cdecl LibRpBase::AesCipherFactory::create(enum LibRpBase::AesCipherFactory::Implementation)
 public: static class LibRpBase::RomData * __ptr64 __cdecl LibRomData::RomDataFactory::create(class LibRpFile::IRpFile * __ptr64,unsigned int)
 public: static class LibRpBase::RomData * __ptr64 __cdecl LibRomData::RomDataFactory::create(char const * __ptr64,unsigned int)
 public: static class LibRpTexture::rp_image_backend * __ptr64 __cdecl LibRpTexture::RpGdiplusBackend::creator_fn(int,int,enum LibRpTexture::rp_image::Format)
@@ -160,6 +160,9 @@ public: long __cdecl LibWin32Common::RegKey::lOpenRes(void)const __ptr64
 public: int __cdecl LibRpBase::RpPngWriter::lastError(void)const __ptr64
 class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl LibRpBase::SystemRegion::lcToString(unsigned int)
 class std::basic_string<wchar_t,struct std::char_traits<wchar_t>,class std::allocator<wchar_t> > __cdecl LibRpBase::SystemRegion::lcToWString(unsigned int)
+char const * __ptr64 __cdecl LibRpBase::RpPng::libpng_copyright_string(void)
+bool __cdecl LibRpBase::RpPng::libpng_has_APNG(void)
+unsigned int __cdecl LibRpBase::RpPng::libpng_version_number(void)
 public: int __cdecl LibRpBase::ConfReader::load(bool) __ptr64
 class LibRpTexture::rp_image * __ptr64 __cdecl LibRpBase::RpImageLoader::load(class LibRpFile::IRpFile * __ptr64)
 class LibRpTexture::rp_image * __ptr64 __cdecl LibRpBase::RpPng::load(class LibRpFile::IRpFile * __ptr64)
@@ -228,6 +231,7 @@ class std::basic_string<char,struct std::char_traits<char>,class std::allocator<
 class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl LibRpBase::utf16le_to_utf8(char16_t const * __ptr64,int)
 class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl LibRpBase::utf8_to_cpN(unsigned int,char const * __ptr64,int)
 public: static char const * __ptr64 __cdecl LibRpBase::KeyManager::verifyResultToString(enum LibRpBase::KeyManager::VerifyResult)
+int __cdecl LibRpFile::FileSystem::waccess(wchar_t const * __ptr64,int)
 public: int __cdecl LibRpTexture::rp_image::width(void)const __ptr64
 public: long __cdecl LibWin32Common::RegKey::write(wchar_t const * __ptr64,wchar_t const * __ptr64,unsigned long) __ptr64
 public: long __cdecl LibWin32Common::RegKey::write(wchar_t const * __ptr64,class std::basic_string<wchar_t,struct std::char_traits<wchar_t>,class std::allocator<wchar_t> > const & __ptr64,unsigned long) __ptr64
@@ -237,9 +241,12 @@ public: int __cdecl LibRpBase::RpPngWriter::write_IHDR(struct LibRpTexture::rp_i
 public: int __cdecl LibRpBase::RpPngWriter::write_IHDR(void) __ptr64
 public: long __cdecl LibWin32Common::RegKey::write_dword(wchar_t const * __ptr64,unsigned long) __ptr64
 public: int __cdecl LibRpBase::RpPngWriter::write_tEXt(class std::vector<struct std::pair<char const * __ptr64,class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > >,class std::allocator<struct std::pair<char const * __ptr64,class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > > > > const & __ptr64) __ptr64
+bool __cdecl LibRpBase::RpPng::zlib_is_ng(void)
+char const * __ptr64 __cdecl LibRpBase::RpPng::zlib_version_string(void)
 APNG_ref
 APNG_unref
 InitPropVariantFromStringVector_xp
+InitPropVariantFromString_noShlwapi
 RP_CPU_Flags
 RP_CPU_Flags_Init
 RP_CPU_InitCPUFlags
