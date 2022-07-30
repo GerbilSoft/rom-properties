@@ -32,6 +32,11 @@ using LibWin32Common::U82W_s;
 using LibWin32Common::U82T_c;
 using LibWin32Common::U82T_s;
 
+#ifndef UNICODE
+using LibWin32Common::W2U8_c;
+using LibWin32Common::W2U8_s;
+#endif /* !UNICODE */
+
 // Windows includes.
 #include <direct.h>
 
@@ -185,7 +190,7 @@ static inline tstring makeWinPath(const string &filename)
  */
 static inline tstring makeWinPath(const wchar_t *filename)
 {
-	return W2U8(filename);
+	return W2U8_c(filename);
 }
 
 /**
@@ -199,7 +204,7 @@ static inline tstring makeWinPath(const wchar_t *filename)
  */
 static inline tstring makeWinPath(const wstring &filename)
 {
-	return W2U8(filename);
+	return W2U8_s(filename);
 }
 #endif /* UNICODE */
 
