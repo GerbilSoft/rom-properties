@@ -83,7 +83,7 @@ msgstr "Borrar la caché de descarga de la página de Rom properties"
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:90
 #: ../src/win32/config/ConfigDialog.cpp:246
 msgctxt "ConfigDialog"
-msgid "ROM Properties Page Configuration"
+msgid "ROM Properties Page configuration"
 msgstr "Configuración de ROM Properties"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:91

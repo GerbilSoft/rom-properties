@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>ROM Properties Page Configuration</string>
+   <string>ROM Properties Page configuration</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>

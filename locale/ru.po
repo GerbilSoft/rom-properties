@@ -111,7 +111,7 @@ msgstr ""
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:90
 #: ../src/win32/config/ConfigDialog.cpp:246
 msgctxt "ConfigDialog"
-msgid "ROM Properties Page Configuration"
+msgid "ROM Properties Page configuration"
 msgstr "Настройка ROM Properties Page"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:91

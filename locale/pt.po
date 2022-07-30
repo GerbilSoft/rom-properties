@@ -81,8 +81,8 @@ msgstr "Apagar a página de recebimento de cacê de rom-properties"
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:90
 #: ../src/win32/config/ConfigDialog.cpp:246
 msgctxt "ConfigDialog"
-msgid "ROM Properties Page Configuration"
-msgstr "Conf. de propriedades da ROM"
+msgid "ROM Properties Page configuration"
+msgstr "Conf. de Propriedades da ROM"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:91
 msgctxt "ConfigDialog"

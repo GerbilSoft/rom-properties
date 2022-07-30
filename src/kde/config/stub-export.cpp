@@ -59,7 +59,8 @@ Q_DECL_EXPORT int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 		app->setOrganizationDomain(QLatin1String("gerbilsoft.com"));
 		app->setOrganizationName(QLatin1String("GerbilSoft"));
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-		app->setApplicationDisplayName(QLatin1String("ROM Properties configurator"));
+		app->setApplicationDisplayName(QCoreApplication::translate(
+			"ConfigDialog", "ROM Properties Page configuration", nullptr));
 #  if QT_VERSION >= QT_VERSION_CHECK(5,7,0)
 		app->setDesktopFileName(QLatin1String("com.gerbilsoft.rom-properties.rp-config.desktop"));
 #  endif /* QT_VERSION >= QT_VERSION_CHECK(5,7,0) */

@@ -239,7 +239,7 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 			}
 
 			// tr: Dialog title.
-			const tstring tsTitle = U82T_c(C_("ConfigDialog", "ROM Properties Page Configuration"));
+			const tstring tsTitle = U82T_c(C_("ConfigDialog", "ROM Properties Page configuration"));
 			SetWindowText(hWnd, tsTitle.c_str());
 
 			// Create the "Reset" and "Defaults" buttons.

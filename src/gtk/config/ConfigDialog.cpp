@@ -102,7 +102,7 @@ config_dialog_init(ConfigDialog *dialog)
 {
 	// g_object_new() guarantees that all values are initialized to 0.
 	gtk_window_set_title(GTK_WINDOW(dialog),
-		C_("ConfigDialog", "ROM Properties Page Configuration"));
+		C_("ConfigDialog", "ROM Properties Page configuration"));
 	gtk_window_set_resizable(GTK_WINDOW(dialog), TRUE);
 
 	// TODO: Custom icon? For now, using "media-flash".
