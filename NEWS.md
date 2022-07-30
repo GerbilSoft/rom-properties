@@ -74,6 +74,10 @@
       DLL loading behavior.
   * Metadata: The Description property is now used for descriptions
     instead of the Subject property where available.
+  * Linux: Improved startup notification support. Tested and working with
+    KDE on X11 and Wayland, and GTK3/GTK4 on Wayland. GTK3/GTK4 on X11
+    doesn't seem to be handling it properly, but that might just be an
+    issue with it running on KDE instead of a GTK-based desktop environment.
 
 ## v1.9 (released 2022/05/22)
 
