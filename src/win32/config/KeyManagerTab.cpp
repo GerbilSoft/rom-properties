@@ -1357,7 +1357,7 @@ void KeyManagerTabPrivate::loadImages(void)
 {
 	// Get the current DPI.
 	const UINT dpi = rp_GetDpiForWindow(hWndPropSheet);
-	unsigned int iconSize_new;
+	int iconSize_new;
 	if (dpi < 120) {
 		// [96,120) dpi: Use 16x16.
 		iconSize_new = 16;
