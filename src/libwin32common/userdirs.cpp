@@ -10,48 +10,22 @@
 // This is usually encoded as UTF-8.
 #include "userdirs.hpp"
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cassert>
 #include <cstring>
 
-// C++ includes.
+// C++ includes
 #include <string>
 using std::string;
 
-// Windows SDK.
+// Windows SDK
 #include "RpWin32_sdk.h"
 #include <shlobj.h>
 
+// MiniU82T
+#include "MiniU82T.hpp"
+
 namespace LibWin32Common {
-
-/**
- * Internal W2U8() function.
- * @param wcs TCHAR string.
- * @return UTF-8 C++ string.
- */
-static inline string W2U8(const wchar_t *wcs)
-{
-	string s_ret;
-
-	// NOTE: cbMbs includes the NULL terminator.
-	int cbMbs = WideCharToMultiByte(CP_UTF8, 0, wcs, -1, nullptr, 0, nullptr, nullptr);
-	if (cbMbs <= 1) {
-		return s_ret;
-	}
-	cbMbs--;
- 
-	char *const mbs = new char[cbMbs];
-	WideCharToMultiByte(CP_UTF8, 0, wcs, -1, mbs, cbMbs, nullptr, nullptr);
-	s_ret.assign(mbs, cbMbs);
-	delete[] mbs;
-	return s_ret;
-}
-#ifdef UNICODE
-# define T2U8(wcs) W2U8(wcs)
-#else /* !UNICODE */
-// TODO: Convert ANSI to UTF-8?
-# define T2U8(mbs) (mbs)
-#endif /* UNICODE */
 
 /**
  * Get a CSIDL path using SHGetFolderPath().
@@ -65,7 +39,7 @@ static string getCSIDLPath(int csidl)
 
 	HRESULT hr = SHGetFolderPath(nullptr, csidl, nullptr, SHGFP_TYPE_CURRENT, path);
 	if (SUCCEEDED(hr)) {
-		s_path = T2U8(path);
+		s_path = T2U8_c(path);
 		if (!s_path.empty()) {
 			// Remove the trailing backslash if necessary.
 			if (s_path.at(s_path.size()-1) == '\\') {
@@ -136,7 +110,7 @@ string getCacheDirectory(void)
 			SHGFP_TYPE_CURRENT, nullptr, &pszPath);
 		if (SUCCEEDED(hr) && pszPath != nullptr) {
 			// Path obtained.
-			cache_dir = W2U8(pszPath);
+			cache_dir = W2U8_c(pszPath);
 		}
 		CoTaskMemFree(pszPath);
 		pszPath = nullptr;
@@ -150,7 +124,7 @@ string getCacheDirectory(void)
 				SHGFP_TYPE_CURRENT, nullptr, &pszPath);
 			if (SUCCEEDED(hr) && pszPath != nullptr) {
 				// Path obtained.
-				cache_dir = W2U8(pszPath);
+				cache_dir = W2U8_c(pszPath);
 			}
 			CoTaskMemFree(pszPath);
 			pszPath = nullptr;
@@ -164,7 +138,7 @@ string getCacheDirectory(void)
 		HRESULT hr = SHGetFolderPath(nullptr, CSIDL_LOCAL_APPDATA,
 			nullptr, SHGFP_TYPE_CURRENT, szPath);
 		if (SUCCEEDED(hr)) {
-			cache_dir = T2U8(szPath);
+			cache_dir = T2U8_c(szPath);
 		}
 	}
 
