@@ -47,7 +47,7 @@ OptionsMenuButton::OptionsMenuButton(QWidget *parent)
 #ifndef RP_OMB_USE_LAMBDA_FUNCTIONS
 	// Qt4: Create the QSignalMapper.
 	mapperOptionsMenu = new QSignalMapper(this);
-	mapperOptionsMenu->setObjectName(QLatin1String(mapperOptionsMenu));
+	mapperOptionsMenu->setObjectName(QLatin1String("mapperOptionsMenu"));
 	QObject::connect(mapperOptionsMenu, SIGNAL(mapped(int)),
 		this, SIGNAL(triggered(int)));
 #endif /* !RP_OMB_USE_LAMBDA_FUNCTIONS */
