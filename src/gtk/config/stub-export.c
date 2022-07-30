@@ -106,6 +106,9 @@ int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 	g_signal_connect(app, "activate", G_CALLBACK(app_activate), NULL);
 	status = g_application_run(G_APPLICATION(app), argc, argv);
 #else /* !GTK_CHECK_VERSION(2,90,2) */
+	// NOTE: GTK2 doesn't send a startup notification.
+	// Not going to implement the Startup Notification protocol manually
+	// because GTK2 desktops likely wouldn't support it, anyway.
 	gtk_init(NULL, NULL);
 	app_activate(NULL, 0);
 	gtk_main();
