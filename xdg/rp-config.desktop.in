@@ -7,7 +7,6 @@ Type=Application
 Categories=System;Settings;
 SingleMainWindow=true
 StartupNotify=true
-StartupWMClass=rp-config
 Name=ROM Properties configurator
 Name[de]=ROM Properties konfigurator
 Name[en_GB]=ROM Properties configurator
