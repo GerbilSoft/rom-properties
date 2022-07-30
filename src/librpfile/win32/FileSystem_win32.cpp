@@ -26,15 +26,12 @@ using std::wstring;
 #include "libwin32common/RpWin32_sdk.h"
 #include "libwin32common/w32err.h"
 #include "libwin32common/w32time.h"
-using LibWin32Common::T2U8_c;
-using LibWin32Common::U82W_c;
-using LibWin32Common::U82W_s;
-using LibWin32Common::U82T_c;
-using LibWin32Common::U82T_s;
+using LibWin32Common::T2U8;
+using LibWin32Common::U82W;
+using LibWin32Common::U82T;
 
 #ifndef UNICODE
-using LibWin32Common::W2U8_c;
-using LibWin32Common::W2U8_s;
+using LibWin32Common::W2U8;
 #endif /* !UNICODE */
 
 // Windows includes.
@@ -61,11 +58,11 @@ static inline wstring makeWinPath(const char *filename)
 	{
 		// Absolute path. Prepend "\\\\?\\" to the path.
 		filenameW = L"\\\\?\\";
-		filenameW += U82W_c(filename);
+		filenameW += U82W(filename);
 	} else {
 		// Not an absolute path, or "\\\\?\\" is already
 		// prepended. Use it as-is.
-		filenameW = U82W_c(filename);
+		filenameW = U82W(filename);
 	}
 	return filenameW;
 }
@@ -88,11 +85,11 @@ static inline wstring makeWinPath(const string &filename)
 	{
 		// Absolute path. Prepend "\\?\" to the path.
 		filenameW = L"\\\\?\\";
-		filenameW += U82W_s(filename);
+		filenameW += U82W(filename);
 	} else {
 		// Not an absolute path, or "\\?\" is already
 		// prepended. Use it as-is.
-		filenameW = U82W_s(filename);
+		filenameW = U82W(filename);
 	}
 	return filenameW;
 }
@@ -162,7 +159,7 @@ static inline wstring makeWinPath(const wstring &filename)
  */
 static inline tstring makeWinPath(const char *filename)
 {
-	return U82T_c(filename);
+	return U82T(filename);
 }
 
 /**
@@ -176,7 +173,7 @@ static inline tstring makeWinPath(const char *filename)
  */
 static inline tstring makeWinPath(const string &filename)
 {
-	return U82T_s(filename);
+	return U82T(filename);
 }
 
 /**
@@ -190,7 +187,7 @@ static inline tstring makeWinPath(const string &filename)
  */
 static inline tstring makeWinPath(const wchar_t *filename)
 {
-	return W2U8_c(filename);
+	return W2U8(filename);
 }
 
 /**
@@ -204,7 +201,7 @@ static inline tstring makeWinPath(const wchar_t *filename)
  */
 static inline tstring makeWinPath(const wstring &filename)
 {
-	return W2U8_s(filename);
+	return W2U8(filename);
 }
 #endif /* UNICODE */
 
@@ -227,7 +224,7 @@ int rmkdir(const string &path)
 	static_assert(sizeof(wchar_t) == sizeof(char16_t), "wchar_t is not 16-bit!");
 
 	// TODO: makeWinPath()?
-	tstring tpath = U82T_s(path);
+	tstring tpath = U82T(path);
 
 	if (tpath.size() == 3) {
 		// 3 characters. Root directory is always present.
@@ -554,7 +551,7 @@ string resolve_symlink(const char *filename)
 	}
 
 	// TODO: Add back the cchDeref parameter for explicit length in MiniU82T?
-	string ret = T2U8_c(szDeref);
+	string ret = T2U8(szDeref);
 	delete[] szDeref;
 	CloseHandle(hFile);
 	return ret;

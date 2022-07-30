@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * userdirs.cpp: Find user directories.                                    *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -39,7 +39,7 @@ static string getCSIDLPath(int csidl)
 
 	HRESULT hr = SHGetFolderPath(nullptr, csidl, nullptr, SHGFP_TYPE_CURRENT, path);
 	if (SUCCEEDED(hr)) {
-		s_path = T2U8_c(path);
+		s_path = T2U8(path);
 		if (!s_path.empty()) {
 			// Remove the trailing backslash if necessary.
 			if (s_path.at(s_path.size()-1) == '\\') {
@@ -110,7 +110,7 @@ string getCacheDirectory(void)
 			SHGFP_TYPE_CURRENT, nullptr, &pszPath);
 		if (SUCCEEDED(hr) && pszPath != nullptr) {
 			// Path obtained.
-			cache_dir = W2U8_c(pszPath);
+			cache_dir = W2U8(pszPath);
 		}
 		CoTaskMemFree(pszPath);
 		pszPath = nullptr;
@@ -124,7 +124,7 @@ string getCacheDirectory(void)
 				SHGFP_TYPE_CURRENT, nullptr, &pszPath);
 			if (SUCCEEDED(hr) && pszPath != nullptr) {
 				// Path obtained.
-				cache_dir = W2U8_c(pszPath);
+				cache_dir = W2U8(pszPath);
 			}
 			CoTaskMemFree(pszPath);
 			pszPath = nullptr;
@@ -138,7 +138,7 @@ string getCacheDirectory(void)
 		HRESULT hr = SHGetFolderPath(nullptr, CSIDL_LOCAL_APPDATA,
 			nullptr, SHGFP_TYPE_CURRENT, szPath);
 		if (SUCCEEDED(hr)) {
-			cache_dir = T2U8_c(szPath);
+			cache_dir = T2U8(szPath);
 		}
 	}
 

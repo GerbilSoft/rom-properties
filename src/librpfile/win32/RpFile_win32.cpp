@@ -14,7 +14,7 @@
 // libwin32common
 #include "libwin32common/MiniU82T.hpp"
 #include "libwin32common/w32err.h"
-using LibWin32Common::U82T_s;
+using LibWin32Common::U82T;
 
 // C includes.
 #include <fcntl.h>
@@ -161,16 +161,16 @@ int RpFilePrivate::reOpenFile(void)
 #ifdef UNICODE
 			// Unicode only: Prepend "\\?\" in order to support filenames longer than MAX_PATH.
 			tfilename = _T("\\\\?\\");
-			tfilename += U82T_s(filename);
+			tfilename += U82T(filename);
 #else /* !UNICODE */
 			// ANSI: Use the filename directly.
-			tfilename = U82T_s(filename);
+			tfilename = U82T(filename);
 #endif /* UNICODE */
 		}
 	} else {
 		// Not an absolute path, or "\\?\" is already
 		// prepended. Use it as-is.
-		tfilename = U82T_s(filename);
+		tfilename = U82T(filename);
 	}
 
 	if (q->m_fileType == DT_BLK) {

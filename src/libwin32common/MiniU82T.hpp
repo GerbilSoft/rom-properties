@@ -23,10 +23,10 @@ namespace LibWin32Common {
  * @param wcs WCHAR string
  * @return UTF-8 C++ string
  */
-std::string W2U8_c(const wchar_t *wcs);
-static inline std::string W2U8_s(const std::wstring &wcs)
+std::string W2U8(const wchar_t *wcs);
+static inline std::string W2U8(const std::wstring &wcs)
 {
-	return W2U8_c(wcs.c_str());
+	return W2U8(wcs.c_str());
 }
 
 /**
@@ -34,18 +34,18 @@ static inline std::string W2U8_s(const std::wstring &wcs)
  * @param wcs TCHAR string
  * @return UTF-8 C++ string
  */
-static inline std::string T2U8_c(const TCHAR *tcs)
+static inline std::string T2U8(const TCHAR *tcs)
 {
 #ifdef UNICODE
-	return W2U8_c(tcs);
+	return W2U8(tcs);
 #else /* !UNICODE */
 	// TODO: Convert ANSI to UTF-8?
 	return tcs;
 #endif /* UNICODE */
 }
-static inline std::string T2U8_s(const std::tstring &tcs)
+static inline std::string T2U8(const std::tstring &tcs)
 {
-	return T2U8_c(tcs.c_str());
+	return T2U8(tcs.c_str());
 }
 
 /**
@@ -53,10 +53,10 @@ static inline std::string T2U8_s(const std::tstring &tcs)
  * @param mbs UTF-8 string
  * @return UTF-16 C++ wstring
  */
-std::wstring U82W_c(const char *mbs);
-static inline std::wstring U82W_s(const std::string &mbs)
+std::wstring U82W(const char *mbs);
+static inline std::wstring U82W(const std::string &mbs)
 {
-	return U82W_c(mbs.c_str());
+	return U82W(mbs.c_str());
 }
 
 /**
@@ -64,18 +64,18 @@ static inline std::wstring U82W_s(const std::string &mbs)
  * @param mbs UTF-8 string
  * @return TCHAR C++ string
  */
-static inline std::tstring U82T_c(const char *mbs)
+static inline std::tstring U82T(const char *mbs)
 {
 #ifdef UNICODE
-	return U82W_c(mbs);
+	return U82W(mbs);
 #else /* !UNICODE */
 	// TODO: Convert UTF-8 to ANSI?
 	return mbs;
 #endif /* UNICODE */
 }
-static inline std::tstring U82T_s(const std::string &mbs)
+static inline std::tstring U82T(const std::string &mbs)
 {
-	return U82T_c(mbs.c_str());
+	return U82T(mbs.c_str());
 }
 
 }

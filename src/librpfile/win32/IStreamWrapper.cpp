@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * IStreamWrapper.cpp: IStream wrapper for IRpFile. (Win32)                *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,7 +11,7 @@
 
 // libwin32common
 #include "libwin32common/MiniU82T.hpp"
-using LibWin32Common::U82W_c;
+using LibWin32Common::U82W;
 
 // C++ STL classes.
 using std::wstring;
@@ -299,9 +299,8 @@ IFACEMETHODIMP IStreamWrapper::Stat(STATSTG *pstatstg, DWORD grfStatFlag)
 		// Copy the filename
 		// TODO: Is nullptr for empty filename allowed?
 		// For now, we'll just return an empty name.
-		// TODO: U82W_wc() that returns a wstring?
 		const char *const u8_filename = m_file->filename();
-		const wstring wfilename(u8_filename ? U82W_c(u8_filename) : L"");
+		const wstring wfilename(u8_filename ? U82W(u8_filename) : L"");
 		const size_t sz = (wfilename.size() + 1) * sizeof(wchar_t);
 		pstatstg->pwcsName = static_cast<LPOLESTR>(CoTaskMemAlloc(sz));
 		if (!pstatstg->pwcsName) {

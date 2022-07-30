@@ -23,7 +23,7 @@ namespace LibWin32Common {
  * @param wcs WCHAR string
  * @return UTF-8 C++ string
  */
-string W2U8_c(const wchar_t *wcs)
+string W2U8(const wchar_t *wcs)
 {
 	string s_ret;
 
@@ -46,7 +46,7 @@ string W2U8_c(const wchar_t *wcs)
  * @param mbs UTF-8 string.
  * @return UTF-16 C++ wstring.
  */
-wstring U82W_c(const char *mbs)
+wstring U82W(const char *mbs)
 {
 	wstring ws_ret;
 
