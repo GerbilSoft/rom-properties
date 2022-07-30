@@ -8,11 +8,11 @@
 	<extends>nemo.desktop</extends>
 	<metadata_license>FSFAP</metadata_license>
 	<project_license>GPL-2.0+</project_license>
-	<name>ROM Properties Page Shell Extension</name>
+	<name>ROM Properties Page shell extension</name>
 	<summary>Thumbnailer and properties page provider for various ROM, disc, and texture formats</summary>
 	<description>
 		<p>
-		ROM Properties Page Shell Extension contains thumbnailers and
+		ROM Properties Page shell extension contains thumbnailers and
 		property page providers for various ROM image, disc image, and
 		texture formats.
 		</p>
