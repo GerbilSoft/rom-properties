@@ -10,12 +10,13 @@
 #include "check-uid.h"
 #include "ConfigDialog.hpp"
 
-#if !GTK_CHECK_VERSION(3,0,0)
-// Make GtkApplication a generic pointer.
+#if !GTK_CHECK_VERSION(2,90,2)
+// GtkApplication was introduced in GTK3.
+// For GTK2, make it a generic opaque pointer.
 typedef void *GtkApplication;
-#endif /* !GTK_CHECK_VERSION(3,0,0) */
+#endif /* !GTK_CHECK_VERSION(2,90,2) */
 
-#if !GTK_CHECK_VERSION(4,0,0)
+#if !GTK_CHECK_VERSION(2,90,2)
 /**
  * ConfigDialog was closed by clicking the X button.
  * @param dialog ConfigDialog
@@ -35,7 +36,36 @@ config_dialog_delete_event(ConfigDialog *dialog, GdkEvent *event, gpointer user_
 	// Continue processing.
 	return FALSE;
 }
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+#endif /* !GTK_CHECK_VERSION(2,90,2) */
+
+/**
+ * GtkApplication activate() signal handler.
+ * Also used manually for GTK2.
+ * @param app GtkApplication (or nullptr on GTK2)
+ * @param user_data
+ */
+static void
+app_activate(GtkApplication *app, gpointer user_data)
+{
+	RP_UNUSED(user_data);
+
+	// Initialize base i18n.
+	rp_i18n_init();
+
+	// Create the ConfigDialog.
+	GtkWidget *const configDialog = config_dialog_new();
+	gtk_widget_set_name(configDialog, "configDialog");
+	gtk_widget_show(configDialog);
+#if GTK_CHECK_VERSION(2,90,2)
+	gtk_application_add_window(app, GTK_WINDOW(configDialog));
+#endif /* GTK_CHECK_VERSION(2,90,2) */
+
+#if !GTK_CHECK_VERSION(2,90,2)
+	// GTK2: No GtkApplication to manage the main loop, so we
+	// need to to ensure it exits when the window is closed.
+	g_signal_connect(configDialog, "delete-event", G_CALLBACK(config_dialog_delete_event), NULL);
+#endif /* !GTK_CHECK_VERSION(2,90,2) */
+}
 
 /**
  * Exported function for the rp-config stub.
@@ -53,11 +83,6 @@ int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 	RP_UNUSED(argc);
 	RP_UNUSED(argv);
 
-	// NOTE 2: Not using GtkApplication because it requires
-	// GtkApplicationWindow, and won't stay around if we're
-	// just using GtkDialog like we're doing with ConfigDialog.
-	// TODO: Single-instance?
-
 #if !GLIB_CHECK_VERSION(2,35,1)
         // g_type_init() is automatic as of glib-2.35.1
         // and is marked deprecated.
@@ -72,34 +97,20 @@ int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 #endif
 
 	CHECK_UID_RET(EXIT_FAILURE);
-#if GTK_CHECK_VERSION(4,0,0)
-	gtk_init();
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+	int status;
+#if GTK_CHECK_VERSION(2,90,2)
+	GtkApplication *const app = gtk_application_new(
+		"com.gerbilsoft.rom-properties.rp-config", G_APPLICATION_FLAGS_NONE);
+	// NOTE: GApplication is supposed to set this, but KDE isn't seeing it...
+	g_set_prgname("com.gerbilsoft.rom-properties.rp-config");
+	g_signal_connect(app, "activate", G_CALLBACK(app_activate), NULL);
+	status = g_application_run(G_APPLICATION(app), argc, argv);
+#else /* !GTK_CHECK_VERSION(2,90,2) */
 	gtk_init(NULL, NULL);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
-
-	// Initialize base i18n.
-	rp_i18n_init();
-
-	// Create the ConfigDialog.
-	GtkWidget *const configDialog = config_dialog_new();
-	gtk_widget_set_name(configDialog, "configDialog");
-	gtk_widget_show(configDialog);
-
-	// Connect signals.
-	// We need to ensure the GTK main loop exits when the window is closed.
-#if !GTK_CHECK_VERSION(4,0,0)
-	g_signal_connect(configDialog, "delete-event", G_CALLBACK(config_dialog_delete_event), NULL);
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
-
-	// TODO: Get the return value?
-#if GTK_CHECK_VERSION(4,0,0)
-	while (g_list_model_get_n_items(gtk_window_get_toplevels()) > 0) {
-		g_main_context_iteration(NULL, TRUE);
-	}
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+	app_activate(NULL, 0);
 	gtk_main();
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+	status = 0;
+#endif /* GTK_CHECK_VERSION(2,90,2) */
 
-	return 0;
+	return status;
 }
