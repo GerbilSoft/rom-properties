@@ -56,15 +56,6 @@ class AboutTabPrivate
 		Ui::AboutTab ui;
 
 	protected:
-		// Useful strings.
-		static const char br[];
-		static const char brbr[];
-		static const char b_start[];
-		static const char b_end[];
-		static const char sIndent[];
-		static const char chrBullet[];
-
-	protected:
 		/**
 		 * Initialize the program title text.
 		 */
@@ -95,13 +86,11 @@ class AboutTabPrivate
 /** AboutTabPrivate **/
 
 // Useful strings.
-#define BR "<br/>\n"
-const char AboutTabPrivate::br[] = BR;
-const char AboutTabPrivate::brbr[] = BR BR;
-const char AboutTabPrivate::b_start[] = "<b>";
-const char AboutTabPrivate::b_end[] = "</b>";
-const char AboutTabPrivate::sIndent[] = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-const char AboutTabPrivate::chrBullet[] = "\xE2\x80\xA2";	// U+2022: BULLET
+#define BR	"<br/>\n"
+#define B_START	"<b>"
+#define B_END	"</b>"
+#define INDENT	"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+#define BULLET	"\xE2\x80\xA2"	/* U+2022: BULLET */
 
 /**
  * Initialize the program title text.
@@ -134,15 +123,15 @@ void AboutTabPrivate::initProgramTitleText(void)
 	sPrgTitle.reserve(1024);
 	// tr: Uses Qt's HTML subset for formatting.
 	sPrgTitle += C_("AboutTab", "<b>ROM Properties Page</b><br>Shell Extension");
-	sPrgTitle += brbr;
+	sPrgTitle += BR BR;
 	sPrgTitle += rp_sprintf(C_("AboutTab", "Version %s"), programVersion);
 	if (gitVersion) {
-		sPrgTitle += br;
+		sPrgTitle += BR;
 		sPrgTitle += gitVersion;
 		const char *const gitDescription =
 			AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::GitDescription);
 		if (gitDescription) {
-			sPrgTitle += br;
+			sPrgTitle += BR;
 			sPrgTitle += gitDescription;
 		}
 	}
@@ -178,8 +167,7 @@ void AboutTabPrivate::initCreditsTab(void)
 		    creditsData->type != lastCreditType)
 		{
 			// New credit type.
-			sCredits += brbr;
-			sCredits += b_start;
+			sCredits += BR BR B_START;
 
 			switch (creditsData->type) {
 				case AboutTabText::CreditType::Developer:
@@ -199,14 +187,11 @@ void AboutTabPrivate::initCreditsTab(void)
 					break;
 			}
 
-			sCredits += b_end;
+			sCredits += B_END;
 		}
 
 		// Append the contributor's name.
-		sCredits += br;
-		sCredits += sIndent;
-		sCredits += chrBullet;
-		sCredits += ' ';
+		sCredits += BR INDENT BULLET " ";
 		sCredits += creditsData->name;
 		if (creditsData->url) {
 			sCredits += " &lt;<a href='";
@@ -271,7 +256,8 @@ void AboutTabPrivate::initLibrariesTab(void)
 #ifdef QT_IS_STATIC
 	sLibraries += rp_sprintf(sIntCopyOf, qtVersion.c_str());
 #else
-	sLibraries += rp_sprintf(sCompiledWith, "Qt " QT_VERSION_STR) + br;
+	sLibraries += rp_sprintf(sCompiledWith, "Qt " QT_VERSION_STR);
+	sLibraries += BR;
 	sLibraries += rp_sprintf(sUsingDll, qtVersion.c_str());
 #endif /* QT_IS_STATIC */
 	sLibraries += BR
@@ -285,7 +271,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 #endif /* QT_VERSION */
 
 	/** KDE **/
-	sLibraries += brbr;
+	sLibraries += BR BR;
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 	// NOTE: Can't obtain the runtime version for KF5 easily...
 	sLibraries += rp_sprintf(sCompiledWith, "KDE Frameworks " KIO_VERSION_STRING);
@@ -306,7 +292,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 
 	/** zlib **/
 #ifdef HAVE_ZLIB
-	sLibraries += brbr;
+	sLibraries += BR BR;
 	const bool zlib_is_ng = RpPng::zlib_is_ng();
 	string sZlibVersion = (zlib_is_ng ? "zlib-ng " : "zlib ");
 	sZlibVersion += RpPng::zlib_version_string();
@@ -319,7 +305,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 #  else /* !ZLIBNG_VERSION */
 	sLibraries += rp_sprintf(sCompiledWith, "zlib " ZLIB_VERSION);
 #  endif /* ZLIBNG_VERSION */
-	sLibraries += br;
+	sLibraries += BR;
 	sLibraries += rp_sprintf(sUsingDll, sZlibVersion.c_str());
 #endif
 	sLibraries += BR
@@ -342,7 +328,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 		png_version_number % 100,
 		(APNG_is_supported ? " + APNG" : " (No APNG support)"));
 
-	sLibraries += brbr;
+	sLibraries += BR BR;
 #if defined(USE_INTERNAL_PNG) && !defined(USE_INTERNAL_ZLIB_DLL)
 	sLibraries += rp_sprintf(sIntCopyOf, pngVersion);
 #else
@@ -367,7 +353,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	}
 
 	sLibraries += rp_sprintf(sCompiledWith, fullPngVersionCompiled.c_str());
-	sLibraries += br;
+	sLibraries += BR;
 	sLibraries += rp_sprintf(sUsingDll, pngVersion);
 #endif
 
@@ -393,7 +379,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 
 	/** nettle **/
 #if defined(ENABLE_DECRYPTION) && defined(HAVE_NETTLE)
-	sLibraries += brbr;
+	sLibraries += BR BR;
 	int nettle_major, nettle_minor;
 	int ret = AesNettle::get_nettle_compile_time_version(&nettle_major, &nettle_minor);
 	if (ret == 0) {
@@ -431,7 +417,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 
 	/** TinyXML2 **/
 #ifdef ENABLE_XML
-	sLibraries += brbr;
+	sLibraries += BR BR;
 	snprintf(sVerBuf, sizeof(sVerBuf), "TinyXML2 %u.%u.%u",
 		static_cast<unsigned int>(TIXML2_MAJOR_VERSION),
 		static_cast<unsigned int>(TIXML2_MINOR_VERSION),
@@ -489,31 +475,25 @@ void AboutTabPrivate::initSupportTab(void)
 	sSupport.reserve(4096);
 	sSupport = C_("AboutTab|Support",
 		"For technical support, you can visit the following websites:");
-	sSupport += br;
+	sSupport += BR;
 
 	for (const AboutTabText::SupportSite_t *supportSite = AboutTabText::getSupportSites();
 	     supportSite->name != nullptr; supportSite++)
 	{
-		sSupport += sIndent;
-		sSupport += chrBullet;
-		sSupport += ' ';
+		sSupport += INDENT BULLET " ";
 		sSupport += supportSite->name;
 		sSupport += " &lt;<a href='";
 		sSupport += supportSite->url;
 		sSupport += "'>";
 		sSupport += supportSite->url;
-		sSupport += "</a>&gt;";
-		sSupport += br;
+		sSupport += "</a>&gt;" BR;
 	}
 
 	// Email the author.
-	sSupport += br;
+	sSupport += BR;
 	sSupport += C_("AboutTab|Support", "You can also email the developer directly:");
-	sSupport += br;
-	sSupport += sIndent;
-	sSupport += chrBullet;
-	sSupport += ' ';
-	sSupport += "David Korth "
+	sSupport += BR INDENT BULLET " "
+		"David Korth "
 		"&lt;<a href=\"mailto:gerbilsoft@gerbilsoft.com\">"
 		"gerbilsoft@gerbilsoft.com</a>&gt;";
 

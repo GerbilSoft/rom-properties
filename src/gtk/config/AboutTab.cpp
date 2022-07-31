@@ -81,8 +81,8 @@ static void	about_tab_init_libraries_tab		(GtkLabel	*lblLibraries);
 static void	about_tab_init_support_tab		(GtkLabel	*lblSupport);
 
 // NOTE: Pango doesn't recognize "&nbsp;". Use U+00A0 instead.
-static const char sIndent[] = "\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0";
-static const char chrBullet[] = "\xE2\x80\xA2";	// U+2022: BULLET
+#define INDENT "\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0"
+#define BULLET "\xE2\x80\xA2"	/* U+2022: BULLET */
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
@@ -451,10 +451,7 @@ about_tab_init_credits_tab(GtkLabel *lblCredits)
 		}
 
 		// Append the contributor's name.
-		sCredits += '\n';
-		sCredits += sIndent;
-		sCredits += chrBullet;
-		sCredits += ' ';
+		sCredits += "\n" INDENT BULLET " ";
 		sCredits += creditsData->name;
 		if (creditsData->url) {
 			sCredits += " &lt;<a href='";
@@ -537,8 +534,7 @@ about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 	sLibraries += rp_sprintf(sUsingDll, gtkVersionUsing.c_str());
 #endif /* GTK_CHECK_VERSION(2,90,7) */
 #endif /* QT_IS_STATIC */
-	sLibraries += '\n';
-	sLibraries +=
+	sLibraries += "\n"
 		"Copyright (C) 1995-1997 Peter Mattis, Spencer Kimball and Josh MacDonald.\n"
 		"Copyright (C) 1995-2022 the GTK+ Team and others.\n"
 		"<a href='https://www.gtk.org/'>https://www.gtk.org/</a>\n";
@@ -562,8 +558,7 @@ about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 	sLibraries += '\n';
 	sLibraries += rp_sprintf(sUsingDll, sZlibVersion.c_str());
 #endif
-	sLibraries += '\n';
-	sLibraries +=
+	sLibraries += "\n"
 		"Copyright (C) 1995-2022 Jean-loup Gailly and Mark Adler.\n"
 		"<a href='https://zlib.net/'>https://zlib.net/</a>\n";
 #  ifdef ZLIBNG_VERSION
@@ -675,8 +670,7 @@ about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 	// FIXME: Runtime version?
 	sLibraries += rp_sprintf(sCompiledWith, sVerBuf);
 #  endif
-	sLibraries += '\n';
-	sLibraries +=
+	sLibraries += "\n"
 		"Copyright (C) 2000-2021 Lee Thomason\n"
 		"<a href='http://www.grinninglizard.com/'>http://www.grinninglizard.com/</a>\n";
 	sLibraries += rp_sprintf(sLicense, "zlib license");
@@ -702,8 +696,7 @@ about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 	// FIXME: Runtime version?
 	sLibraries += rp_sprintf(sCompiledWith, sVerBuf);
 #  endif /* _WIN32 */
-	sLibraries += '\n';
-	sLibraries +=
+	sLibraries += "\n"
 		"Copyright (C) 1995-1997, 2000-2016, 2018-2020 Free Software Foundation, Inc.\n"
 		"<a href='https://www.gnu.org/software/gettext/'>https://www.gnu.org/software/gettext/</a>\n";
 	sLibraries += rp_sprintf(sLicense, "GNU LGPL v2.1+");
@@ -729,9 +722,7 @@ about_tab_init_support_tab(GtkLabel *lblSupport)
 	for (const AboutTabText::SupportSite_t *supportSite = AboutTabText::getSupportSites();
 	     supportSite->name != nullptr; supportSite++)
 	{
-		sSupport += sIndent;
-		sSupport += chrBullet;
-		sSupport += ' ';
+		sSupport += INDENT BULLET " ";
 		sSupport += supportSite->name;
 		sSupport += " &lt;<a href='";
 		sSupport += supportSite->url;
@@ -743,11 +734,8 @@ about_tab_init_support_tab(GtkLabel *lblSupport)
 	// Email the author.
 	sSupport += '\n';
 	sSupport += C_("AboutTab|Support", "You can also email the developer directly:");
-	sSupport += '\n';
-	sSupport += sIndent;
-	sSupport += chrBullet;
-	sSupport += ' ';
-	sSupport += "David Korth "
+	sSupport += "\n" INDENT BULLET " "
+		"David Korth "
 		"&lt;<a href=\"mailto:gerbilsoft@gerbilsoft.com\">"
 		"gerbilsoft@gerbilsoft.com</a>&gt;";
 
