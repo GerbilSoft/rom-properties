@@ -620,8 +620,8 @@ void AboutTabPrivate::initCreditsTab(void)
 				"https://www.gnu.org/licenses/gpl-2.0.html",
 				C_("AboutTabl|Credits", "GNU GPL v2")).c_str());
 	if (!bUseFriendlyLinks) {
-		sCredits += RTF_BR;
-		sCredits += "https://www.gnu.org/licenses/gpl-2.0.html";
+		sCredits += RTF_BR
+			"https://www.gnu.org/licenses/gpl-2.0.html";
 	}
 
 	AboutTabText::CreditType lastCreditType = AboutTabText::CreditType::Continue;
@@ -632,8 +632,7 @@ void AboutTabPrivate::initCreditsTab(void)
 		    creditsData->type != lastCreditType)
 		{
 			// New credit type.
-			sCredits += RTF_BR RTF_BR;
-			sCredits += "\\b ";
+			sCredits += RTF_BR RTF_BR "\\b ";
 
 			switch (creditsData->type) {
 				case AboutTabText::CreditType::Developer:
@@ -736,8 +735,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += RTF_BR;
 	sLibraries += rp_sprintf(sUsingDll, sZlibVersion.c_str());
 #endif
-	sLibraries += RTF_BR;
-	sLibraries +=
+	sLibraries += RTF_BR
 		"Copyright (C) 1995-2022 Jean-loup Gailly and Mark Adler." RTF_BR
 		"https://zlib.net/" RTF_BR;
 #  ifdef ZLIBNG_VERSION
@@ -866,7 +864,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += rp_sprintf(sLicense, "GNU LGPL v2.1+");
 #endif /* HAVE_GETTEXT && LIBINTL_VERSION */
 
-	sLibraries += "}";
+	sLibraries += '}';
 
 	// Add the "Libraries" tab.
 	const tstring tsTabTitle = U82T_c(C_("AboutTab", "Libraries"));
@@ -904,8 +902,7 @@ void AboutTabPrivate::initSupportTab(void)
 
 	// Email the author.
 	sSupport += RTF_BR;
-	sSupport += rtfEscape(C_("AboutTab|Support",
-		"You can also email the developer directly:"));
+	sSupport += rtfEscape(C_("AboutTab|Support", "You can also email the developer directly:"));
 	sSupport += RTF_BR RTF_TAB RTF_BULLET " David Korth <";
 	sSupport += rtfFriendlyLink("mailto:gerbilsoft@gerbilsoft.com", "gerbilsoft@gerbilsoft.com");
 	sSupport += ">}";
