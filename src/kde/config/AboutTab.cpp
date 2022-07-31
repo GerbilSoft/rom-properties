@@ -275,7 +275,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries += rp_sprintf(sUsingDll, qtVersion.c_str());
 #endif /* QT_IS_STATIC */
 	sLibraries += BR
-		"Copyright (C) 1995-2021 The Qt Company Ltd. and/or its subsidiaries." BR
+		"Copyright (C) 1995-2022 The Qt Company Ltd. and/or its subsidiaries." BR
 		"<a href='https://www.qt.io/'>https://www.qt.io/</a>" BR;
 	// TODO: Check QT_VERSION at runtime?
 #if QT_VERSION >= QT_VERSION_CHECK(4,5,0)
@@ -290,7 +290,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	// NOTE: Can't obtain the runtime version for KF5 easily...
 	sLibraries += rp_sprintf(sCompiledWith, "KDE Frameworks " KIO_VERSION_STRING);
 	sLibraries += BR
-		"Copyright (C) 1996-2021 KDE contributors." BR
+		"Copyright (C) 1996-2022 KDE contributors." BR
 		"<a href='https://www.kde.org/'>https://www.kde.org/</a>" BR;
 	sLibraries += rp_sprintf(sLicense, "GNU LGPL v2.1+");
 #else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
