@@ -61,23 +61,26 @@ class MegaDrivePrivate final : public RomDataPrivate
 		/** RomFields **/
 
 		// I/O support. (RFT_BITFIELD)
-		enum MD_IO_Support_Bitfield {
-			MD_IOBF_JOYPAD_3	= (1U <<  0),	// 3-button joypad
-			MD_IOBF_JOYPAD_6	= (1U <<  1),	// 6-button joypad
-			MD_IOBF_JOYPAD_SMS	= (1U <<  2),	// 2-button joypad (SMS)
-			MD_IOBF_ANALOG		= (1U <<  3),	// Analog (XE-1 AP)
-			MD_IOBF_TEAM_PLAYER	= (1U <<  4),	// Team Player
-			MD_IOBF_LIGHT_GUN	= (1U <<  5),	// Light Gun (Menacer)
-			MD_IOBF_KEYBOARD	= (1U <<  6),	// Keyboard
-			MD_IOBF_SERIAL		= (1U <<  7),	// Serial (RS-232C)
-			MD_IOBF_PRINTER		= (1U <<  8),	// Printer
-			MD_IOBF_TABLET		= (1U <<  9),	// Tablet
-			MD_IOBF_TRACKBALL	= (1U << 10),	// Trackball
-			MD_IOBF_PADDLE		= (1U << 11),	// Paddle
-			MD_IOBF_FDD		= (1U << 12),	// Floppy Drive
-			MD_IOBF_CDROM		= (1U << 13),	// CD-ROM
-			MD_IOBF_ACTIVATOR	= (1U << 14),	// Activator
-			MD_IOBF_MEGA_MOUSE	= (1U << 15),	// Mega Mouse
+		// NOTE: These are bitshift values.
+		enum MD_IO_Support_Bitshift {
+			MD_IOSH_UNKNOWN		= -1,
+
+			MD_IOSH_JOYPAD_3	=  0,	// 3-button joypad
+			MD_IOSH_JOYPAD_6	=  1,	// 6-button joypad
+			MD_IOSH_JOYPAD_SMS	=  2,	// 2-button joypad (SMS)
+			MD_IOSH_ANALOG		=  3,	// Analog (XE-1 AP)
+			MD_IOSH_TEAM_PLAYER	=  4,	// Team Player
+			MD_IOSH_LIGHT_GUN	=  5,	// Light Gun (Menacer)
+			MD_IOSH_KEYBOARD	=  6,	// Keyboard
+			MD_IOSH_SERIAL		=  7,	// Serial (RS-232C)
+			MD_IOSH_PRINTER		=  8,	// Printer
+			MD_IOSH_TABLET		=  9,	// Tablet
+			MD_IOSH_TRACKBALL	= 10,	// Trackball
+			MD_IOSH_PADDLE		= 11,	// Paddle
+			MD_IOSH_FDD		= 12,	// Floppy Drive
+			MD_IOSH_CDROM		= 13,	// CD-ROM
+			MD_IOSH_ACTIVATOR	= 14,	// Activator
+			MD_IOSH_MEGA_MOUSE	= 15,	// Mega Mouse
 		};
 
 		/** Internal ROM data. **/
@@ -274,39 +277,33 @@ MegaDrivePrivate::~MegaDrivePrivate()
  */
 uint32_t MegaDrivePrivate::parseIOSupport(const char *io_support, int size)
 {
+	// Array mapping MD device characters to MD_IO_Support_Bitfield values.
+	// NOTE: Only 48 entries; starts at 0x30, ends at 0x5F.
+	// Index: Character
+	// Value: Bitfield value, or -1 if not applicable.
+	static const int8_t md_io_chr_map[0x30] = {
+		// 0x30 ['0'-'9']
+		MD_IOSH_JOYPAD_SMS, -1, -1, -1, MD_IO_TEAM_PLAYER, -1, MD_IOSH_JOYPAD_6, -1,
+		-1, -1, -1, -1, -1, -1, -1 ,-1,
+
+		// 0x40 ['@','A'-'O']
+		-1, MD_IOSH_ANALOG, MD_IOSH_TRACKBALL, MD_IOSH_CDROM, -1, -1, MD_IOSH_FDD, MD_IO_LIGHT_GUN,
+		-1, -1, MD_IOSH_JOYPAD_3, MD_IOSH_KEYBOARD, MD_IO_ACTIVATOR, MD_IOSH_MEGA_MOUSE, -1, -1,
+
+		// 0x50 ['P'-'Z']
+		MD_IOSH_PRINTER, -1, MD_IOSH_SERIAL, -1, MD_IO_TABLET, -1, MD_IO_PADDLE, -1,
+		-1, -1, -1, -1, -1, -1, -1, -1,
+	};
+
 	uint32_t ret = 0;
 	for (int i = size-1; i >= 0; i--) {
-		// TODO: Sort by character and use bsearch()?
-		#define MD_IO_SUPPORT_ENTRY(entry) {MD_IO_##entry, MD_IOBF_##entry}
-		static const char md_io_chr_tbl[] = {
-			// This MUST be in the same order as MD_IO_Support_Bitfield!
-			MD_IO_JOYPAD_3,
-			MD_IO_JOYPAD_6,
-			MD_IO_JOYPAD_SMS,
-			MD_IO_ANALOG,
-			MD_IO_TEAM_PLAYER,
-			MD_IO_LIGHT_GUN,
-			MD_IO_KEYBOARD,
-			MD_IO_SERIAL,
-			MD_IO_PRINTER,
-			MD_IO_TABLET,
-			MD_IO_TRACKBALL,
-			MD_IO_PADDLE,
-			MD_IO_FDD,
-			MD_IO_CDROM,
-			MD_IO_ACTIVATOR,
-			MD_IO_MEGA_MOUSE,
+		const uint8_t io_cur = static_cast<uint8_t>(io_support[i]);
+		if (io_cur < 0x30 || io_cur > 0x5F)
+			continue;
 
-			'\0'
-		};
-
-		const char io_cur = io_support[i];
-		uint32_t io_bit = 1;
-		for (const auto *p = md_io_chr_tbl; *p != '\0'; p++, io_bit <<= 1) {
-			if (*p == io_cur) {
-				ret |= io_bit;
-				break;
-			}
+		const int8_t io_bit = md_io_chr_map[io_cur - 0x30];
+		if (io_bit >= 0) {
+			ret |= (1U << io_bit);
 		}
 	}
 
