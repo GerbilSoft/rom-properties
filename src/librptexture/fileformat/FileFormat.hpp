@@ -18,7 +18,6 @@
 // Common macros
 #include "common.h"
 #include "RefBase.hpp"
-#include "d_type.h"
 
 // Common declarations
 #include "FileFormat_decl.hpp"
