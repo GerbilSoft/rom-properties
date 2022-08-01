@@ -96,7 +96,7 @@ class IRpFile : public RefBase
 		 * File types must be set by the IRpFile subclass.
 		 * @return DT_* file enumeration, or 0 if unknown.
 		 */
-		inline int fileType(void) const
+		inline uint8_t fileType(void) const
 		{
 			return m_fileType;
 		}
