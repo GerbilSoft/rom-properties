@@ -52,6 +52,7 @@ prefix##_module_initialize(GTypeModule *module) \
 { \
 	CHECK_UID(); \
 	SHOW_INIT_MESSAGE(); \
+	VERIFY_GTK_VERSION(); \
 \
 	assert(libextension_so == NULL); \
 	if (libextension_so != NULL) { \

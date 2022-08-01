@@ -65,6 +65,7 @@ thunar_extension_initialize(ThunarxProviderPlugin *plugin)
 {
 	CHECK_UID();
 	SHOW_INIT_MESSAGE();
+	VERIFY_GTK_VERSION();
 
 	assert(libextension_so == NULL);
 	if (libextension_so != NULL) {
