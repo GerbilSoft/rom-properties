@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension.                                    *
  * d_type.h: d_type enumeration.                                           *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,13 +22,16 @@
 extern "C" {
 #endif
 
-// Get DT_* values from struct stat::st_mode
-// and vice-versa.
+/* Convert between stat structure types and directory types.  */
 #ifndef S_IFMT
 #  define S_IFMT 00170000
 #endif
-#define DT2IF(dt) (((dt) << 12) & S_IFMT)
-#define IF2DT(sif) (((sif) & S_IFMT) >> 12)
+#ifndef IFTODT
+#  define IFTODT(mode)    (((mode) & 0170000) >> 12)
+#endif
+#ifndef DTTOIF
+#  define DTTOIF(dirtype) ((dirtype) << 12)
+#endif
 
 // Directory type values.
 // From glibc-2.23's dirent.h.

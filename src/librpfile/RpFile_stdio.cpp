@@ -16,7 +16,7 @@
 #include "RpFile.hpp"
 #include "RpFile_p.hpp"
 
-// C includes.
+// C includes
 #include <fcntl.h>	// AT_EMPTY_PATH
 #include <sys/stat.h>	// stat(), statx()
 #include <unistd.h>	// ftruncate()
@@ -96,7 +96,7 @@ int RpFilePrivate::reOpenFile(void)
 	if (ret == 0 && (sbx.stx_mask & STATX_TYPE)) {
 		// statx() succeeded.
 		hasFileMode = true;
-		fileType = IF2DT(sbx.stx_mode);
+		fileType = IFTODT(sbx.stx_mode);
 	}
 #else /* !HAVE_STATX */
 	struct stat sb;
@@ -104,7 +104,7 @@ int RpFilePrivate::reOpenFile(void)
 	if (ret == 0) {
 		// fstat() succeeded.
 		hasFileMode = true;
-		fileType = IF2DT(sb.st_mode);
+		fileType = IFTODT(sb.st_mode);
 	}
 #endif /* HAVE_STATX */
 
