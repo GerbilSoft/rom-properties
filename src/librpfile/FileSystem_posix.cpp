@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * FileSystem_posix.cpp: File system functions. (POSIX implementation)     *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,11 +10,14 @@
 #include "config.librpfile.h"
 #include "FileSystem.hpp"
 
-// C includes.
+// C includes
 #include <fcntl.h>	// AT_FDCWD
 #include <sys/stat.h>	// stat(), statx()
 #include <utime.h>
 #include <unistd.h>
+
+// DT_* enumeration
+#include "d_type.h"
 
 #ifdef __linux__
 // TODO: Remove once /proc/mounts parsing is implemented.
@@ -117,6 +120,12 @@ int access(const char *pathname, int mode)
  */
 off64_t filesize(const char *filename)
 {
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
+		return -1;
+	}
+
 #ifdef HAVE_STATX
 	struct statx sbx;
 	int ret = statx(AT_FDCWD, filename, 0, STATX_SIZE, &sbx);
@@ -204,8 +213,11 @@ int get_mtime(const string &filename, time_t *pMtime)
  */
 int delete_file(const char *filename)
 {
-	if (unlikely(!filename || filename[0] == 0))
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
 		return -EINVAL;
+	}
 
 	int ret = unlink(filename);
 	if (ret != 0) {
@@ -226,8 +238,10 @@ int delete_file(const char *filename)
  */
 bool is_symlink(const char *filename)
 {
-	if (unlikely(!filename || filename[0] == 0)) {
-		return -EINVAL;
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
+		return false;
 	}
 	
 #ifdef HAVE_STATX
@@ -262,8 +276,11 @@ bool is_symlink(const char *filename)
  */
 string resolve_symlink(const char *filename)
 {
-	if (unlikely(!filename || filename[0] == 0))
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
 		return string();
+	}
 
 	// NOTE: realpath() might not be available on some systems...
 	string ret;
@@ -284,8 +301,10 @@ string resolve_symlink(const char *filename)
  */
 bool is_directory(const char *filename)
 {
-	if (unlikely(!filename || filename[0] == 0)) {
-		return -EINVAL;
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
+		return false;
 	}
 
 #ifdef HAVE_STATX
@@ -395,8 +414,12 @@ bool isOnBadFS(const char *filename, bool netFS)
  */
 int get_file_size_and_mtime(const string &filename, off64_t *pFileSize, time_t *pMtime)
 {
+	assert(!filename.empty());
 	assert(pFileSize != nullptr);
 	assert(pMtime != nullptr);
+	if (unlikely(filename.empty() || !pFileSize || !pMtime)) {
+		return -EINVAL;
+	}
 
 	// FIXME: time_t is 32-bit on 32-bit Linux.
 	// TODO: Add a static_warning() macro?
@@ -441,6 +464,49 @@ int get_file_size_and_mtime(const string &filename, off64_t *pFileSize, time_t *
 #endif /* HAVE_STATX */
 
 	return 0;
+}
+
+/**
+ * Get a file's d_type.
+ * @param filename Filename
+ * @param deref If true, dereference symbolic links (lstat)
+ * @return File d_type
+ */
+uint8_t get_file_d_type(const char *filename, bool deref)
+{
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
+		return DT_UNKNOWN;
+	}
+
+	unsigned int mode;
+
+#ifdef HAVE_STATX
+	struct statx sbx;
+	const int flags = (unlikely(deref))
+		?  AT_FDCWD				// dereference symlinks
+		: (AT_FDCWD | AT_SYMLINK_NOFOLLOW);	// don't dereference symlinks
+	int ret = statx(flags, filename, 0, STATX_TYPE, &sbx);
+	if (ret != 0 || !(sbx.stx_mask & STATX_TYPE)) {
+		// statx() failed and/or did not return the file type.
+		return DT_UNKNOWN;
+	}
+	mode = sbx.stx_mode;
+#else /* !HAVE_STATX */
+	// TODO: statx() if it's available.
+	struct stat sb;
+	int ret = (unlikely(deref) ? stat(path, &sb) : lstat(path, &sb));
+	if (ret != 0) {
+		// stat() failed.
+		return DT_UNKNOWN;
+	}
+	mode = sb.st_mode;
+#endif /* HAVE_STATX */
+
+	// The type bits in struct stat's mode match the
+	// DT_* enumeration values.
+	return IFTODT(mode);
 }
 
 } }

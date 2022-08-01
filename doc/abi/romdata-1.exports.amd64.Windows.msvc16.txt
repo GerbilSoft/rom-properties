@@ -126,6 +126,7 @@ public: char const * __ptr64 __cdecl LibRpBase::Achievements::getName(enum LibRp
 char const * __ptr64 __cdecl LibRpBase::AboutTabText::getProgramInfoString(enum LibRpBase::AboutTabText::ProgramInfoStringID)
 enum LibRpBase::AboutTabText::ProgramInfoStringID __cdecl LibRpBase::AboutTabText::getProgramInfoStringCount(void)
 struct LibRpBase::AboutTabText::SupportSite_t const * __ptr64 __cdecl LibRpBase::AboutTabText::getSupportSites(void)
+unsigned char __cdecl LibRpFile::FileSystem::get_file_d_type(char const * __ptr64,bool)
 public: int __cdecl LibRpTexture::rp_image::get_sBIT(struct LibRpTexture::rp_image::sBIT_t * __ptr64)const __ptr64
 public: struct HKEY__ * __ptr64 __cdecl LibWin32Common::RegKey::handle(void)const __ptr64
 public: bool __cdecl LibRomData::KeyStoreUI::hasChanged(void)const __ptr64

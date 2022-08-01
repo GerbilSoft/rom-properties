@@ -232,6 +232,15 @@ bool isOnBadFS(const char *filename, bool netFS = false);
  */
 int get_file_size_and_mtime(const std::string &filename, off64_t *pFileSize, time_t *pMtime);
 
+/**
+ * Get a file's d_type.
+ * @param filename Filename
+ * @param deref If true, dereference symbolic links (lstat)
+ * @return File d_type
+ */
+RP_LIBROMDATA_PUBLIC
+uint8_t get_file_d_type(const char *filename, bool deref = false);
+
 /** TCHAR functions for Windows **/
 // NOTE: The `const char*` functions use UTF-8, not ANSI.
 

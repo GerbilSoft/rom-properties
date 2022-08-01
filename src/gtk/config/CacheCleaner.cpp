@@ -18,11 +18,6 @@
 #include "librpfile/FileSystem.hpp"
 using namespace LibRpFile;
 
-// C includes
-#include <dirent.h>
-#include <fcntl.h>	// AT_FDCWD
-#include <sys/stat.h>	// stat(), statx()
-
 // d_type compatibility values
 #include "d_type.h"
 
@@ -230,43 +225,6 @@ cache_cleaner_set_cache_dir(CacheCleaner *cleaner, RpCacheDir cache_dir)
 /** Internal functions **/
 
 /**
- * Get a file's type using stat().
- * TODO: Move to libunixcommon?
- * @param path File path
- * @param deref If true, dereference symbolic links (lstat)
- * @return File type
- */
-static uint8_t
-get_dtype_via_stat(const char *path, bool deref = false)
-{
-	// TODO: statx() if it's available.
-	struct stat sb;
-	int ret = (unlikely(deref) ? stat(path, &sb) : lstat(path, &sb));
-	if (ret != 0) {
-		// stat() failed.
-		return DT_UNKNOWN;
-	}
-
-	uint8_t d_type;
-	switch (sb.st_mode & S_IFMT) {
-		default:
-			// Not supported.
-			d_type = DT_UNKNOWN;
-			break;
-		case S_IFDIR:
-			d_type = DT_DIR;
-			break;
-		case S_IFREG:
-			d_type = DT_REG;
-			break;
-		case S_IFLNK:
-			d_type = DT_LNK;
-			break;
-	}
-	return d_type;
-}
-
-/**
  * Recursively scan a directory for files.
  * @param path	[in] Path to scan.
  * @param rlist	[in/out] Return list for filenames and file types. (d_type)
@@ -312,8 +270,14 @@ recursiveScan(const char *path, list<pair<tstring, uint8_t> > &rlist)
 
 			case DT_LNK:
 				// Symbolic link. Dereference it and check again.
-				d_type = get_dtype_via_stat(fullpath.c_str(), true);
+				d_type = FileSystem::get_file_d_type(fullpath.c_str(), true);
 				switch (d_type) {
+					default:
+						// Not supported.
+						// TODO: Better error message.
+						closedir(pdir);
+						return -EIO;
+
 					case DT_REG:
 					case DT_DIR:
 						// Supported.
@@ -323,18 +287,12 @@ recursiveScan(const char *path, list<pair<tstring, uint8_t> > &rlist)
 						// This is probably a dangling symlink.
 						// Delete it anyway.
 						break;
-
-					default:
-						// Not supported.
-						// TODO: Better error message.
-						closedir(pdir);
-						return -EIO;
 				}
 				break;
 
 			case DT_UNKNOWN:
 				// Unknown. Use stat().
-				d_type = get_dtype_via_stat(fullpath.c_str(), false);
+				d_type = FileSystem::get_file_d_type(fullpath.c_str(), false);
 				switch (d_type) {
 					default:
 						// Not supported.
@@ -349,8 +307,14 @@ recursiveScan(const char *path, list<pair<tstring, uint8_t> > &rlist)
 
 					case DT_LNK:
 						// Symbolic link. Dereference it and check again.
-						d_type = get_dtype_via_stat(fullpath.c_str(), true);
+						d_type = FileSystem::get_file_d_type(fullpath.c_str(), true);
 						switch (d_type) {
+							default:
+								// Not supported.
+								// TODO: Better error message.
+								closedir(pdir);
+								return -EIO;
+
 							case DT_REG:
 							case DT_DIR:
 								// Supported.
@@ -360,12 +324,6 @@ recursiveScan(const char *path, list<pair<tstring, uint8_t> > &rlist)
 								// This is probably a dangling symlink.
 								// Delete it anyway.
 								break;
-
-							default:
-								// Not supported.
-								// TODO: Better error message.
-								closedir(pdir);
-								return -EIO;
 						}
 						break;
 				}

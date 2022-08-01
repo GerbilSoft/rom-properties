@@ -12,9 +12,12 @@
 // librpthreads
 #include "librpthreads/pthread_once.h"
 
-// C includes.
+// C includes
 #include <sys/stat.h>
 #include <sys/utime.h>
+
+// DT_* enumeration
+#include "d_type.h"
 
 // C++ STL classes.
 using std::string;
@@ -48,8 +51,11 @@ namespace LibRpFile { namespace FileSystem {
  */
 static inline wstring makeWinPath(const char *filename)
 {
-	if (unlikely(!filename || filename[0] == '\0'))
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
 		return wstring();
+	}
 
 	// TODO: Don't bother if the filename is <= 240 characters?
 	wstring filenameW;
@@ -75,8 +81,10 @@ static inline wstring makeWinPath(const char *filename)
  */
 static inline wstring makeWinPath(const string &filename)
 {
-	if (filename.empty())
+	assert(!filename.empty());
+	if (unlikely(filename.empty())) {
 		return wstring();
+	}
 
 	// TODO: Don't bother if the filename is <= 240 characters?
 	wstring filenameW;
@@ -102,8 +110,11 @@ static inline wstring makeWinPath(const string &filename)
  */
 static inline wstring makeWinPath(const wchar_t *filename)
 {
-	if (unlikely(!filename || filename[0] == L'\0'))
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == L'\0')) {
 		return wstring();
+	}
 
 	// TODO: Don't bother if the filename is <= 240 characters?
 	wstring filenameW;
@@ -129,8 +140,10 @@ static inline wstring makeWinPath(const wchar_t *filename)
  */
 static inline wstring makeWinPath(const wstring &filename)
 {
-	if (filename.empty())
+	assert(!filename.empty());
+	if (unlikely(filename.empty())) {
 		return wstring();
+	}
 
 	// TODO: Don't bother if the filename is <= 240 characters?
 	wstring filenameW;
@@ -415,7 +428,8 @@ int get_mtime(const string &filename, time_t *pMtime)
 int delete_file(const char *filename)
 {
 	assert(filename != nullptr);
-	if (unlikely(!filename || filename[0] == 0)) {
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
 		return -EINVAL;
 	}
 
@@ -439,7 +453,9 @@ int delete_file(const char *filename)
  */
 bool is_symlink(const char *filename)
 {
-	if (unlikely(!filename || filename[0] == 0)) {
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
 		return false;
 	}
 	const tstring tfilename = makeWinPath(filename);
@@ -509,8 +525,11 @@ static void LookupGetFinalPathnameByHandle(void)
  */
 string resolve_symlink(const char *filename)
 {
-	if (unlikely(!filename || filename[0] == 0))
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
 		return string();
+	}
 
 	pthread_once(&once_gfpbh, LookupGetFinalPathnameByHandle);
 	if (!pfnGetFinalPathnameByHandle) {
@@ -566,7 +585,9 @@ string resolve_symlink(const char *filename)
  */
 bool is_directory(const char *filename)
 {
-	if (unlikely(!filename || filename[0] == 0)) {
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
 		return false;
 	}
 	const tstring tfilename = makeWinPath(filename);
@@ -611,6 +632,12 @@ bool isOnBadFS(const char *filename, bool netFS)
  */
 int get_file_size_and_mtime(const string &filename, off64_t *pFileSize, time_t *pMtime)
 {
+	assert(!filename.empty());
+	assert(pFileSize != nullptr);
+	assert(pMtime != nullptr);
+	if (unlikely(filename.empty() || !pFileSize || !pMtime)) {
+		return -EINVAL;
+	}
 	const tstring tfilename = makeWinPath(filename);
 
 	// TODO: Add a static_warning() macro?
@@ -648,6 +675,32 @@ int get_file_size_and_mtime(const string &filename, off64_t *pFileSize, time_t *
 
 	// We're done here.
 	return 0;
+}
+
+/**
+ * Get a file's d_type.
+ * @param filename Filename
+ * @param deref If true, dereference symbolic links (lstat)
+ * @return File d_type
+ */
+uint8_t get_file_d_type(const char *filename, bool deref)
+{
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
+		return DT_UNKNOWN;
+	}
+
+	// TODO: Handle dereferencing.
+	RP_UNUSED(deref);
+
+	const tstring tfilename = makeWinPath(filename);
+	const DWORD dwAttrs = GetFileAttributes(tfilename.c_str());
+	if (dwAttrs == INVALID_FILE_ATTRIBUTES)
+		return DT_UNKNOWN;
+
+	// TODO: More types.
+	return (dwAttrs & FILE_ATTRIBUTE_DIRECTORY) ? DT_DIR : DT_REG;
 }
 
 } }
