@@ -212,14 +212,12 @@ static string localizedDecimalPoint(void)
 	// Use localeconv(). (Windows: Convert from UTF-16 to UTF-8.)
 #  if defined(HAVE_STRUCT_LCONV_WCHAR_T)
 	// MSVCRT: `struct lconv` has wchar_t fields.
-	return reinterpret_cast<const char*>(
-		utf16_to_utf8(reinterpret_cast<const char16_t*>(
-			localeconv()->_W_decimal_point), -1).c_str());
+	return utf16_to_utf8(reinterpret_cast<const char16_t*>(
+		localeconv()->_W_decimal_point), -1);
 #  else /* !HAVE_STRUCT_LCONV_WCHAR_T */
 	// MinGW v5,v6: `struct lconv` does not have wchar_t fields.
 	// NOTE: The `char` fields are ANSI.
-	return reinterpret_cast<const char*>(
-		ansi_to_utf8(localeconv()->decimal_point, -1).c_str());
+	return ansi_to_utf8(localeconv()->decimal_point, -1);
 #  endif /* HAVE_STRUCT_LCONV_WCHAR_T */
 #elif defined(HAVE_NL_LANGINFO)
 	// Use nl_langinfo().
