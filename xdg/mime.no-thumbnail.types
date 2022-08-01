@@ -3,14 +3,11 @@
 # listed in the KDE .desktop files, not the GTK+ .thumbnailer files.
 
 # NOTES:
-# - all/all doesn't work; use application/octet-stream.
-#   - TODO: Remove application/octet-stream and only use more-specific types?
 # - MS CAB is listed for Nintendo Badge Arcade .cab files.
 # - model/x.stl-binary and image/x-3ds are listed for Nintendo 3DS files.
 # - Non-thumbnailable MIME types are only listed in KDE .desktop files.
 
 # Generic
-application/octet-stream
 application/x-cd-image
 application/x-iso9660-image
 

@@ -1,5 +1,4 @@
 [Desktop Entry]
-Version=@RP_DISPLAY_VERSION@
 Icon=media-flash
 Exec=rp-config
 Terminal=false
