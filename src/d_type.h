@@ -24,10 +24,10 @@ extern "C" {
 
 /* Convert between stat structure types and directory types.  */
 #ifndef S_IFMT
-#  define S_IFMT 00170000
+#  define S_IFMT 0170000
 #endif
 #ifndef IFTODT
-#  define IFTODT(mode)    (((mode) & 0170000) >> 12)
+#  define IFTODT(mode)    (((mode) & S_IFMT) >> 12)
 #endif
 #ifndef DTTOIF
 #  define DTTOIF(dirtype) ((dirtype) << 12)
