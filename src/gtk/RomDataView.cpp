@@ -92,15 +92,18 @@ static void	cboLanguage_lc_changed_signal_handler(GtkComboBox	*widget,
 						     RomDataView	*page);
 
 #if GTK_CHECK_VERSION(3,0,0)
-// libhandy function pointers.
-// Only initialized if libhandy is linked into the process.
-struct HdyHeaderBar;
+// libadwaita/libhandy function pointers.
+// Only initialized if libadwaita/libhandy is linked into the process.
+// NOTE: The function pointers are essentially the same, but
+// libhandy was renamed to libadwaita for the GTK4 conversion.
+// We'll use libadwaita terminology everywhere.
+struct AdwHeaderBar;
 typedef GType (*pfnGlibGetType_t)(void);
-typedef GType (*pfnHdyHeaderBarPackEnd_t)(HdyHeaderBar *self, GtkWidget *child);
-static bool has_checked_hdy = false;
-static pfnGlibGetType_t pfn_hdy_deck_get_type = nullptr;
-static pfnGlibGetType_t pfn_hdy_header_bar_get_type = nullptr;
-static pfnHdyHeaderBarPackEnd_t pfn_hdy_header_bar_pack_end = nullptr;
+typedef GType (*pfnAdwHeaderBarPackEnd_t)(AdwHeaderBar *self, GtkWidget *child);
+static bool has_checked_adw = false;
+static pfnGlibGetType_t pfn_adw_deck_get_type = nullptr;
+static pfnGlibGetType_t pfn_adw_header_bar_get_type = nullptr;
+static pfnAdwHeaderBarPackEnd_t pfn_adw_header_bar_pack_end = nullptr;
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -138,20 +141,33 @@ rom_data_view_class_init(RomDataViewClass *klass)
 	g_object_class_install_properties(gobject_class, PROP_LAST, props);
 
 #if GTK_CHECK_VERSION(3,0,0)
-	/** libhandy **/
+	/** libadwaita/libhandy **/
 
-	// Check if libhandy-1 is loaded in the process.
+	// Check if libadwaita-1 is loaded in the process.
 	// TODO: Verify that it is in fact 1.x if symbol versioning isn't available.
-	if (!has_checked_hdy) {
-		has_checked_hdy = true;
-		pfn_hdy_deck_get_type = (pfnGlibGetType_t)dlvsym(
+	if (!has_checked_adw) {
+		has_checked_adw = true;
+#  if GTK_CHECK_VERSION(4,0,0)
+		// GTK4: libadwaita
+		pfn_adw_deck_get_type = (pfnGlibGetType_t)dlvsym(
+			RTLD_DEFAULT, "adw_deck_get_type", "LIBADWAITA_1_0");
+		if (pfn_adw_deck_get_type) {
+			pfn_adw_header_bar_get_type = (pfnGlibGetType_t)dlvsym(
+				RTLD_DEFAULT, "adw_header_bar_get_type", "LIBADWAITA_1_0");
+			pfn_adw_header_bar_pack_end = (pfnAdwHeaderBarPackEnd_t)dlvsym(
+				RTLD_DEFAULT, "adw_header_bar_pack_end", "LIBADWAITA_1_0");
+		}
+#  else /* !GTK_CHECK_VERSION(4,0,0) */
+		// GTK3: libhandy
+		pfn_adw_deck_get_type = (pfnGlibGetType_t)dlvsym(
 			RTLD_DEFAULT, "hdy_deck_get_type", "LIBHANDY_1_0");
-		if (pfn_hdy_deck_get_type) {
-			pfn_hdy_header_bar_get_type = (pfnGlibGetType_t)dlvsym(
+		if (pfn_adw_deck_get_type) {
+			pfn_adw_header_bar_get_type = (pfnGlibGetType_t)dlvsym(
 				RTLD_DEFAULT, "hdy_header_bar_get_type", "LIBHANDY_1_0");
-			pfn_hdy_header_bar_pack_end = (pfnHdyHeaderBarPackEnd_t)dlvsym(
+			pfn_adw_header_bar_pack_end = (pfnAdwHeaderBarPackEnd_t)dlvsym(
 				RTLD_DEFAULT, "hdy_header_bar_pack_end", "LIBHANDY_1_0");
 		}
+#  endif /* GTK_CHECK_VERSION(4,0,0) */
 	}
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 }
@@ -1548,18 +1564,18 @@ rom_data_view_create_options_button(RomDataView *page)
 	parent = gtk_widget_get_parent(parent);
 
 #if GTK_CHECK_VERSION(3,0,0)
-	bool isLibHandy = false;
+	bool isLibAdwaita = false;
 	if (!GTK_IS_DIALOG(parent)) {
-		// NOTE: As of Nautilus 40, there may be an HdyDeck here.
-		// Check if it's HdyDeck using dynamically-loaded function pointers.
-		if (pfn_hdy_deck_get_type && G_OBJECT_TYPE(parent) == pfn_hdy_deck_get_type()) {
+		// NOTE: As of Nautilus 40, there may be an AdwDeck/HdyDeck here.
+		// Check if it's AdwDeck/HdyDeck using dynamically-loaded function pointers.
+		if (pfn_adw_deck_get_type && G_OBJECT_TYPE(parent) == pfn_adw_deck_get_type()) {
 			// Get the next parent widget.
-			isLibHandy = true;
+			isLibAdwaita = true;
 			parent = gtk_widget_get_parent(parent);
 		}
 	}
-	if (isLibHandy) {
-		// Main window is based on HdyWindow, which is derived from
+	if (isLibAdwaita) {
+		// Main window is based on AdwWindow/HdyWindow, which is derived from
 		// GtkWindow, not GtkDialog.
 		assert(GTK_IS_WINDOW(parent));
 		if (!GTK_IS_WINDOW(parent))
@@ -1580,12 +1596,12 @@ rom_data_view_create_options_button(RomDataView *page)
 	options_menu_button_set_direction(OPTIONS_MENU_BUTTON(page->btnOptions), GTK_ARROW_UP);
 
 #if GTK_CHECK_VERSION(3,0,0)
-	if (isLibHandy) {
-		// LibHandy version doesn't use GtkDialog.
+	if (isLibAdwaita) {
+		// LibAdwaita/LibHandy version doesn't use GtkDialog.
 	} else
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 	{
-		// Not using LibHandy, so add the widget to the GtkDialog.
+		// Not using LibAdwaita/LibHandy, so add the widget to the GtkDialog.
 		gtk_dialog_add_action_widget(GTK_DIALOG(parent), page->btnOptions, GTK_RESPONSE_NONE);
 
 		// Disconnect the "clicked" signal from the default GtkDialog response handler.
@@ -1604,21 +1620,21 @@ rom_data_view_create_options_button(RomDataView *page)
 
 #if GTK_CHECK_VERSION(3,11,5)
 	GtkWidget *headerBar = nullptr;
-	if (isLibHandy) {
-		// Nautilus 40 uses libhandy, which has a different arrangement of widgets.
+	if (isLibAdwaita) {
+		// Nautilus 40 uses libadwaita/libhandy, which has a different arrangement of widgets.
 		// NautilusPropertiesWindow
 		// |- GtkBox
-		//    |- HdyHeaderBar
+		//    |- AdwHeaderBar/HdyHeaderBar
 		GtkWidget *const gtkBox = gtk_widget_get_first_child(parent);
 		if (gtkBox && GTK_IS_BOX(gtkBox)) {
-			GtkWidget *const hdyHeaderBar = gtk_widget_get_first_child(gtkBox);
-			if (hdyHeaderBar && G_OBJECT_TYPE(hdyHeaderBar) == pfn_hdy_header_bar_get_type())
+			GtkWidget *const adwHeaderBar = gtk_widget_get_first_child(gtkBox);
+			if (adwHeaderBar && G_OBJECT_TYPE(adwHeaderBar) == pfn_adw_header_bar_get_type())
 			{
 				// Found the HdyHeaderBar.
 				// Pack the Options button at the end.
 				// NOTE: No type checking here...
-				pfn_hdy_header_bar_pack_end((HdyHeaderBar*)hdyHeaderBar, page->btnOptions);
-				headerBar = hdyHeaderBar;
+				pfn_adw_header_bar_pack_end((AdwHeaderBar*)adwHeaderBar, page->btnOptions);
+				headerBar = adwHeaderBar;
 			}
 		}
 	} else {
