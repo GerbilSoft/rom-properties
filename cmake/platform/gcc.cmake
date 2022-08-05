@@ -215,6 +215,39 @@ IF(NOT WIN32)
 	ENDFOREACH()
 ENDIF(NOT WIN32)
 
+# Check for -Wl,-z,pack-relative-relocs.
+# Requires glibc-2.36. (TODO: Check other Unix systems.)
+IF(UNIX AND NOT APPLE)
+	IF(_ld_out MATCHES "-z pack-relative-relocs")
+		IF(NOT DEFINED HAVE_DT_RELR)
+			MESSAGE(STATUS "Checking if the system supports DT_RELR")
+			# NOTE: ${CMAKE_MODULE_PATH} has two directories, macros/ and libs/,
+			# so we have to configure this manually.
+			SET(DT_RELR_SOURCE_PATH "${CMAKE_SOURCE_DIR}/cmake/platform")
+
+			# TODO: Better cross-compile handling.
+			TRY_RUN(TMP_DT_RELR_RUN TMP_DT_RELR_COMPILE
+				"${CMAKE_CURRENT_BINARY_DIR}"
+				"${DT_RELR_SOURCE_PATH}/DT_RELR_Test.c")
+			IF(TMP_DT_RELR_COMPILE AND (TMP_DT_RELR_RUN EQUAL 0))
+				SET(TMP_HAVE_DT_RELR TRUE)
+				MESSAGE(STATUS "Checking if the system supports DT_RELR - yes")
+			ELSE()
+				SET(TMP_HAVE_DT_RELR FALSE)
+				MESSAGE(STATUS "Checking if the system supports DT_RELR - no")
+			ENDIF()
+			SET(HAVE_DT_RELR ${TMP_HAVE_DT_RELR} CACHE INTERNAL "System supports DT_RELR")
+			UNSET(TMP_HAVE_DT_RELR)
+		ENDIF(NOT DEFINED HAVE_DT_RELR)
+
+		IF(HAVE_DT_RELR)
+			SET(RP_EXE_LINKER_FLAGS_COMMON    "${RP_EXE_LINKER_FLAGS_COMMON} -Wl,-z,pack-relative-relocs")
+			SET(RP_SHARED_LINKER_FLAGS_COMMON "${RP_SHARED_LINKER_FLAGS_COMMON} -Wl,-z,pack-relative-relocs")
+			SET(RP_MODULE_LINKER_FLAGS_COMMON "${RP_MODULE_LINKER_FLAGS_COMMON} -Wl,-z,pack-relative-relocs")
+		ENDIF(HAVE_DT_RELR)
+	ENDIF(_ld_out MATCHES "-z pack-relative-relocs")
+ENDIF(UNIX AND NOT APPLE)
+
 SET(RP_SHARED_LINKER_FLAGS_COMMON "${RP_EXE_LINKER_FLAGS_COMMON}")
 SET(RP_MODULE_LINKER_FLAGS_COMMON "${RP_EXE_LINKER_FLAGS_COMMON}")
 
