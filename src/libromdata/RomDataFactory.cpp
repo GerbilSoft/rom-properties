@@ -699,7 +699,7 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 				// for file types that don't use this.
 				// TODO: Don't hard-code this.
 				// Use a pointer to supportedFileExtensions_static() instead?
-				static const char *const exts[] = {
+				static const char exts[][8] = {
 					".bin",		// generic .bin
 					".sms",		// Sega Master System
 					".gg",		// Game Gear
@@ -708,7 +708,6 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 					".img",		// CCD/IMG
 					".xiso",	// Xbox disc image
 					".min",		// Pokémon Mini
-					nullptr
 				};
 
 				if (info.ext == nullptr) {
@@ -718,8 +717,8 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 
 				// Check for a matching extension.
 				bool found = false;
-				for (const char *const *ext = exts; *ext != nullptr; ext++) {
-					if (!strcasecmp(info.ext, *ext)) {
+				for (const char *ext : exts) {
+					if (!strcasecmp(info.ext, ext)) {
 						// Found a match!
 						found = true;
 					}
