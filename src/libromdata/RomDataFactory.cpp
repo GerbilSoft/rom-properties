@@ -796,12 +796,11 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 
 		// Do we have a matching extension?
 		// FIXME: Instead of hard-coded, check romDataInfo()->exts.
-		static const char *const exts[] = {
+		static const char exts[][8] = {
 			".vb",		// VirtualBoy
 			".ws",		// WonderSwan
 			".wsc",		// WonderSwan Color
 			".pc2",		// Pocket Challenge v2 (WS-compatible)
-			nullptr
 		};
 
 		if (info.ext == nullptr) {
@@ -811,8 +810,8 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 
 		// Check for a matching extension.
 		bool found = false;
-		for (const char *const *ext = exts; *ext != nullptr; ext++) {
-			if (!strcasecmp(info.ext, *ext)) {
+		for (const char *ext : exts) {
+			if (!strcasecmp(info.ext, ext)) {
 				// Found a match!
 				found = true;
 			}
