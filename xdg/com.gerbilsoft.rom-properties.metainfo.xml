@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<component type="desktop">
+<!-- Copyright 2016-2022 David Korth <gerbilsoft@gerbilsoft.com> -->
+
+<component type="addon">
 	<id>com.gerbilsoft.rom-properties</id>
 	<extends>org.kde.dolphin.desktop</extends>
 	<extends>org.xfce.Thunar</extends>
@@ -17,15 +19,17 @@
 		texture formats.
 		</p>
 	</description>
-	<url type="homepage">https://github.com/GerbilSoft/rom-properties</url>
+	<url type="homepage">https://gerbilsoft.com/</url>
 	<url type="bugtracker">https://github.com/GerbilSoft/rom-properties/issues</url>
-	<!-- NOTE: Not supported in appstream-glib 0.7.18. -->
-	<!--<url type="vcs-browser">https://github.com/GerbilSoft/rom-properties</url>-->
+	<url type="vcs-browser">https://github.com/GerbilSoft/rom-properties</url>
 	<project_group>KDE</project_group>
 	<provides>
 		<binary>rp-config</binary>
 	</provides>
 	<launchable type="desktop-id">com.gerbilsoft.rom-properties.rp-config.desktop</launchable>
+	<categories>
+		<category>Utility</category>
+	</categories>
 	<developer_name>David Korth</developer_name>
 	<update_contact>gerbilsoft@gerbilsoft.com</update_contact>
 	<icon type="stock">media-flash</icon>
