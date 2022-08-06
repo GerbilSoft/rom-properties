@@ -71,15 +71,15 @@ static int init_apng(void)
 {
 #ifdef _WIN32
 	BOOL bRet;
-	TCHAR png_dll_filename[16];
-#else /* !_WIN32 */
-	char png_so_filename[16];
 #endif /* _WIN32 */
 
 	if (libpng_dll) {
 		// APNG is already initialized.
 		return 0;
 	}
+
+#define xstr(a) str(a)
+#define str(a) #a
 
 #ifdef _WIN32
 	// Get the handle of the already-opened libpng.
@@ -88,14 +88,11 @@ static int init_apng(void)
 	// ensure that it's loaded before calling this function!
 	// Otherwise, this will fail.
 #ifndef NDEBUG
-	static const TCHAR libpng_dll_fmt[] = _T("libpng%ud.dll");
+	static const TCHAR libpng_dll_filename[] = _T("libpng") xstr(PNG_LIBPNG_VER_DLLNUM) _T("d.dll");
 #else /* !NDEBUG */
-	static const TCHAR libpng_dll_fmt[] = _T("libpng%u.dll");
+	static const TCHAR libpng_dll_filename[] = _T("libpng") xstr(PNG_LIBPNG_VER_DLLNUM) _T(".dll");
 #endif /* NDEBUG */
-	_sntprintf(png_dll_filename, _countof(png_dll_filename),
-		libpng_dll_fmt, (unsigned int)PNG_LIBPNG_VER_DLLNUM);
-	png_dll_filename[_countof(png_dll_filename)-1] = _T('\0');
-	bRet = GetModuleHandleEx(0, png_dll_filename, &libpng_dll);
+	bRet = GetModuleHandleEx(0, libpng_dll_filename, &libpng_dll);
 	assert(bRet != FALSE);
 	if (!bRet) {
 		libpng_dll = NULL;
@@ -104,9 +101,8 @@ static int init_apng(void)
 #else /* !_WIN32 */
 	// TODO: Get path of already-opened libpng?
 	// TODO: On Linux, __USE_GNU and RTLD_DEFAULT.
-	snprintf(png_so_filename, sizeof(png_so_filename),
-		"libpng%u.so", (unsigned int)PNG_LIBPNG_VER_SONUM);
-	libpng_dll = dlopen(png_so_filename, RTLD_LOCAL|RTLD_NOW);
+	static const char libpng_so_filename[] = "libpng" xstr(PNG_LIBPNG_VER_SONUM) ".so";
+	libpng_dll = dlopen(libpng_so_filename, RTLD_LOCAL|RTLD_NOW);
 	if (!libpng_dll)
 		return -1;
 #endif
