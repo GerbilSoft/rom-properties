@@ -146,9 +146,6 @@ ECHO - 64-bit: MSVC %MSVC64_YEAR% (%MSVC64_VERSION%)
 ECHO.
 
 :: MSVC 2017+ uses a different directory layout.
-:: NOTE: This must be set here, since you can't use a variable
-:: set in a block within the same block. (It'll have the previous
-:: value for some reason.)
 SET MSVC_CL=
 FOR %%I IN (2017 2019 2022) DO (
 	IF "%MSVC64_YEAR%" == "%%I" (
