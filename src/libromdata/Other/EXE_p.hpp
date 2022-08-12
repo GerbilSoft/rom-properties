@@ -217,6 +217,13 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 		 */
 		bool doesExeRequireAdministrator(void) const;
 #endif /* ENABLE_XML */
+
+	public:
+		/**
+		 * Add fields for PE export table.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int addFields_PE_Export(void);
 };
 
 }

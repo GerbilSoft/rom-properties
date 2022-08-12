@@ -4,6 +4,7 @@
  * 32-bit/64-bit Portable Executable format.                               *
  *                                                                         *
  * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2022 by Egor.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,6 +12,9 @@
 #include "EXE_p.hpp"
 #include "data/EXEData.hpp"
 #include "disc/PEResourceReader.hpp"
+
+// for strnlen() if it's not available in <string.h>
+#include "librpbase/TextFuncs_libc.h"
 
 // librpbase
 using namespace LibRpBase;
@@ -494,7 +498,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 void EXEPrivate::addFields_PE(void)
 {
 	// Up to 4 tabs.
-	fields->reserveTabs(4);
+	fields->reserveTabs(5);
 
 	// PE Header
 	fields->setTabName(0, "PE");
@@ -692,6 +696,233 @@ void EXEPrivate::addFields_PE(void)
 	// TODO: Support external manifests, e.g. program.exe.manifest?
 	addFields_PE_Manifest();
 #endif /* ENABLE_XML */
+
+	addFields_PE_Export();
+}
+
+/**
+ * Add fields for PE export table.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int EXEPrivate::addFields_PE_Export(void)
+{
+	if (!file || !file->isOpen()) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!isValid) {
+		// Unknown executable type.
+		return -EIO;
+	}
+
+	// Get the export table.
+	// NOTE: dataDir is 8 bytes, so we'll just copy it
+	// instead of using a pointer.
+	IMAGE_DATA_DIRECTORY dataDir;
+	switch (exeType) {
+		case ExeType::PE:
+			dataDir = hdr.pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_EXPORT_TABLE];
+			break;
+		case ExeType::PE32PLUS:
+			dataDir = hdr.pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_EXPORT_TABLE];
+			break;
+		default:
+			// Not a PE executable.
+			return -ENOTSUP;
+	}
+
+	if (dataDir.VirtualAddress == 0 || dataDir.Size == 0) {
+		// No export table.
+		return -ENOENT;
+	}
+
+	// Get the export table's physical address.
+	uint32_t exptbl_paddr = pe_vaddr_to_paddr(dataDir.VirtualAddress, dataDir.Size);
+	if (exptbl_paddr == 0) {
+		// Not found.
+		return -ENOENT;
+	}
+
+	// Found the section.
+	if (dataDir.Size < sizeof(IMAGE_EXPORT_DIRECTORY)) {
+		// Not enough space for the export table...
+		return -ENOENT;
+	} else if (dataDir.Size > 4*1024*1024) {
+		// Export table is larger than 4 MB...
+		// This might be data corruption.
+		return -EIO;
+	}
+
+	// Load the export directory table.
+	ao::uvector<uint8_t> expDirTbl;
+	expDirTbl.resize(dataDir.Size);
+	size_t size = file->seekAndRead(exptbl_paddr, expDirTbl.data(), expDirTbl.size());
+	if (size != expDirTbl.size()) {
+		// Seek and/or read error.
+		return -EIO;
+	}
+
+	const IMAGE_EXPORT_DIRECTORY *pExpDirTbl = reinterpret_cast<const IMAGE_EXPORT_DIRECTORY*>(expDirTbl.data());
+	uint32_t ordinalBase = le32_to_cpu(pExpDirTbl->Base);
+	if (ordinalBase > 65535)
+		return -ENOENT;
+
+	// Bounds checking function to ensure that the tables are located inside
+	// the export directory.
+	const uint32_t rvaMin = dataDir.VirtualAddress;
+	const uint32_t rvaMax = dataDir.VirtualAddress + dataDir.Size;
+	auto checkBounds = [&](uint32_t rva, uint32_t size) -> void * {
+		if (rva < rvaMin || rva > rvaMax)
+			return nullptr;
+		if (rva+size < rvaMin || rva+size > rvaMax)
+			return nullptr;
+		return expDirTbl.data() + (rva - rvaMin);
+	};
+
+	// Export Address Table
+	uint32_t rvaExpAddrTbl = le32_to_cpu(pExpDirTbl->AddressOfFunctions);
+	uint32_t szExpAddrTbl = le32_to_cpu(pExpDirTbl->NumberOfFunctions);
+	// Ignore ordinals greater than 65535
+	szExpAddrTbl = std::min(65536-ordinalBase, szExpAddrTbl);
+	const uint32_t *expAddrTbl = reinterpret_cast<const uint32_t*>(
+		checkBounds(rvaExpAddrTbl, szExpAddrTbl*sizeof(uint32_t)));
+	if (!expAddrTbl)
+		return -ENOENT;
+
+	// Export Name Table
+	uint32_t rvaExpNameTbl = le32_to_cpu(pExpDirTbl->AddressOfNames);
+	uint32_t szExpNameTbl = le32_to_cpu(pExpDirTbl->NumberOfNames);
+	const uint32_t *expNameTbl = reinterpret_cast<const uint32_t*>(
+		checkBounds(rvaExpNameTbl, szExpAddrTbl*sizeof(uint32_t)));
+	if (!expNameTbl)
+		return -ENOENT;
+
+	// Export Ordinal Table
+	uint32_t rvaExpOrdTbl = le32_to_cpu(pExpDirTbl->AddressOfNameOrdinals);
+	const uint16_t *expOrdTbl = reinterpret_cast<const uint16_t*>(
+		checkBounds(rvaExpOrdTbl, szExpAddrTbl*sizeof(uint16_t)));
+	if (!expOrdTbl)
+		return -ENOENT;
+
+	struct ExportEntry {
+		int ordinal;	// index in the address table + ordinal base
+		int hint;	// index in the name table (-1 if no name)
+		uint32_t vaddr;	// RVA of the symbol
+		uint32_t paddr; // corresponding file offset
+		string name;
+		string forwarder;
+	};
+	std::vector<ExportEntry> ents;
+	ents.reserve(std::max(szExpAddrTbl, szExpNameTbl));
+
+	// Read address table
+	for (uint32_t i = 0; i < szExpAddrTbl; i++) {
+		ExportEntry ent;
+		ent.ordinal = pExpDirTbl->Base + i;
+		ent.hint = -1;
+		ent.vaddr = le32_to_cpu(expAddrTbl[i]);
+		ent.paddr = pe_vaddr_to_paddr(ent.vaddr, 0);
+		if (ent.vaddr >= rvaMin && ent.vaddr < rvaMax) {
+			/* RVA points inside export directory, so this is
+			 * a forwarder RVA. It points to a NUL-terminated
+			 * string that looks like "dllname.symbol" or
+			 * "dllname.#123". */
+			const char *fwd = reinterpret_cast<const char *>(expDirTbl.data() + (ent.vaddr - rvaMin));
+			ent.forwarder = string(fwd, strnlen(fwd, rvaMax - ent.vaddr));
+		}
+		ents.push_back(std::move(ent));
+	}
+
+	// Read name table
+	for (uint32_t i = 0; i < szExpNameTbl; i++) {
+		uint32_t rvaName = le32_to_cpu(expNameTbl[i]);
+		uint16_t ord = le16_to_cpu(expOrdTbl[i]);
+		if (ord >= szExpAddrTbl) // out of bounds ordinal
+			continue;
+		if (rvaName < rvaMin || rvaName >= rvaMax)
+			continue;
+		const char *pName = reinterpret_cast<const char*>(expDirTbl.data() + (rvaName - rvaMin));
+		string name(pName, strnlen(pName, rvaMax - rvaName));
+		if (ents[ord].hint != -1) {
+			// This ordinal already has a name.
+			// Temporarily move the old name out to avoid a copy.
+			string oldname = std::move(ents[ord].name);
+			// Duplicate the entry, replace name and hint in the copy.
+			ExportEntry ent = ents[ord];
+			ents[ord].name = std::move(oldname);
+			ent.name = std::move(name);
+			ent.hint = i;
+			ents.push_back(std::move(ent));
+		} else {
+			ents[ord].name = std::move(name);
+			ents[ord].hint = i;
+		}
+		/* NOTE: We don't have to filter out duplicate names, because
+		 * they can be still accessed via hints. */
+	}
+
+	/* Sort by (hint, ordinal). This puts ordinal-only symbols at the top,
+	 * in ordinal order, followed by named symbols in lexicographic order.
+	 * ...unless your names aren't sorted, in which case your DLL is broken.
+	 * TODO: ExportEntries are quite thick (80 bytes), maybe it's worth
+	 * creating a pointer array and sort that instead? */
+	std::sort(ents.begin(), ents.end(),
+		[](const ExportEntry &lhs, const ExportEntry &rhs) -> bool {
+			return lhs.hint < rhs.hint
+				|| (lhs.hint == rhs.hint && lhs.ordinal < rhs.ordinal);
+		});
+
+	// Convert to ListData
+	auto vv_data = new RomFields::ListData_t();
+	vv_data->reserve(ents.size());
+	for (ExportEntry ent : ents) {
+		// Filter out any unused ordinals.
+		if (ent.hint == -1 && ent.vaddr == 0)
+			continue;
+		vv_data->emplace_back();
+		auto &row = vv_data->back();
+		row.reserve(5);
+		row.emplace_back(ent.name);
+		row.emplace_back(rp_sprintf("%d", ent.ordinal));
+		row.emplace_back(ent.hint != -1
+			? rp_sprintf("%d", ent.hint)
+			: C_("EXE|Exports", "None"));
+		if (ent.forwarder.size() != 0) {
+			row.emplace_back(ent.forwarder);
+			row.emplace_back("");
+		} else {
+			row.emplace_back(rp_sprintf("0x%08X", ent.vaddr));
+			if (ent.paddr)
+				row.emplace_back(rp_sprintf("0x%08X", ent.paddr));
+			else
+				row.emplace_back(""); // it's probably in the bss section
+		}
+	}
+
+	// Create the tab if we have any exports.
+	if (vv_data->size()) {
+		fields->addTab(C_("EXE", "Exports"));
+		fields->reserve(1);
+
+		static const char *const field_names[] = {
+			NOP_C_("EXE|Exports", "Name"),
+			NOP_C_("EXE|Exports", "Ordinal"),
+			NOP_C_("EXE|Exports", "Hint"),
+			NOP_C_("EXE|Exports", "Virtual Address"),
+			NOP_C_("EXE|Exports", "File Offset"),
+		};
+		vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
+			"EXE|Exports", field_names, ARRAY_SIZE(field_names));
+
+		RomFields::AFLD_PARAMS params;
+		params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;
+		params.headers = v_field_names;
+		params.data.single = vv_data;
+		fields->addField_listData(C_("EXE", "Exports"), &params);
+	} else {
+		delete vv_data;
+	}
+
+	return 0;
 }
 
 }
