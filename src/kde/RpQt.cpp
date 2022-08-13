@@ -23,10 +23,12 @@ using LibRpTexture::rp_image;
 using std::string;
 
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-# include <QtCore/QStandardPaths>
+#  include <QtCore/QStandardPaths>
 #else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
-# include <QtGui/QDesktopServices>
+#  include <QtGui/QDesktopServices>
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+
+/** Image conversion **/
 
 /**
  * Convert an rp_image to QImage.
@@ -50,12 +52,14 @@ QImage rpToQImage(const rp_image *image)
 	return backend->getQImage();
 }
 
+/** QUrl **/
+
 /**
  * Localize a QUrl.
  * This function automatically converts certain URL schemes, e.g. desktop:/, to local paths.
  *
  * @param qUrl QUrl.
- * @return Localize QUrl, or empty QUrl on error.
+ * @return Localized QUrl, or empty QUrl on error.
  */
 QUrl localizeQUrl(const QUrl &url)
 {

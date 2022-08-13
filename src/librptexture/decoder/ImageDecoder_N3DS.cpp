@@ -1,17 +1,20 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librptexture)                     *
- * ImageDecoder_GCN.cpp: Image decoding functions. (Nintendo 3DS)          *
+ * ImageDecoder_GCN.cpp: Image decoding functions: Nintendo 3DS            *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "ImageDecoder.hpp"
+#include "ImageDecoder_N3DS.hpp"
 #include "ImageDecoder_p.hpp"
 
 #include "PixelConversion.hpp"
 using namespace LibRpTexture::PixelConversion;
+
+// C++ STL classes.
+using std::array;
 
 namespace LibRpTexture { namespace ImageDecoder {
 
@@ -35,15 +38,15 @@ static const uint8_t N3DS_tile_order[] = {
  * @return rp_image, or nullptr on error.
  */
 rp_image *fromN3DSTiledRGB565(int width, int height,
-	const uint16_t *RESTRICT img_buf, int img_siz)
+	const uint16_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= ((width * height) * 2));
+	assert(img_siz >= (((size_t)width * (size_t)height) * 2));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((width * height) * 2))
+	    img_siz < (((size_t)width * (size_t)height) * 2))
 	{
 		return nullptr;
 	}
@@ -67,12 +70,12 @@ rp_image *fromN3DSTiledRGB565(int width, int height,
 	const unsigned int tilesY = static_cast<unsigned int>(height / 8);
 
 	// Temporary tile buffer.
-	uint32_t tileBuf[8*8];
+	array<uint32_t, 8*8> tileBuf;
 
 	for (unsigned int y = 0; y < tilesY; y++) {
 		for (unsigned int x = 0; x < tilesX; x++) {
 			// Convert each tile to ARGB32 manually.
-			for (unsigned int i = 0; i < 8*8; i += 2, img_buf += 2) {
+			for (size_t i = 0; i < tileBuf.size(); i += 2, img_buf += 2) {
 				tileBuf[N3DS_tile_order[i+0]] = RGB565_to_ARGB32(le16_to_cpu(img_buf[0]));
 				tileBuf[N3DS_tile_order[i+1]] = RGB565_to_ARGB32(le16_to_cpu(img_buf[1]));
 			}
@@ -101,19 +104,19 @@ rp_image *fromN3DSTiledRGB565(int width, int height,
  * @return rp_image, or nullptr on error.
  */
 rp_image *fromN3DSTiledRGB565_A4(int width, int height,
-	const uint16_t *RESTRICT img_buf, int img_siz,
-	const uint8_t *RESTRICT alpha_buf, int alpha_siz)
+	const uint16_t *RESTRICT img_buf, size_t img_siz,
+	const uint8_t *RESTRICT alpha_buf, size_t alpha_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(alpha_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= ((width * height) * 2));
-	assert(alpha_siz >= ((width * height) / 2));
+	assert(img_siz >= (((size_t)width * (size_t)height) * 2));
+	assert(alpha_siz >= (((size_t)width * (size_t)height) / 2));
 	if (!img_buf || !alpha_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((width * height) * 2) ||
-	    alpha_siz < ((width * height) / 2))
+	    img_siz < (((size_t)width * (size_t)height) * 2) ||
+	    alpha_siz < (((size_t)width * (size_t)height) / 2))
 	{
 		return nullptr;
 	}
@@ -137,14 +140,14 @@ rp_image *fromN3DSTiledRGB565_A4(int width, int height,
 	}
 
 	// Temporary tile buffer.
-	uint32_t tileBuf[8*8];
+	array<uint32_t, 8*8> tileBuf;
 
 	for (unsigned int y = 0; y < tilesY; y++) {
 		for (unsigned int x = 0; x < tilesX; x++) {
 			// Convert each tile to ARGB32 manually.
 			// FIXME: Nybble ordering for A4?
 			// Assuming LeftLSN, same as NDS CI4.
-			for (unsigned int i = 0; i < 8*8; i += 2, img_buf += 2, alpha_buf++) {
+			for (size_t i = 0; i < tileBuf.size(); i += 2, img_buf += 2, alpha_buf++) {
 				tileBuf[N3DS_tile_order[i+0]] = RGB565_A4_to_ARGB32(
 					le16_to_cpu(img_buf[0]), *alpha_buf & 0x0F);
 				tileBuf[N3DS_tile_order[i+1]] = RGB565_A4_to_ARGB32(

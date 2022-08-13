@@ -6,6 +6,11 @@
 # - https://github.com/powervr-graphics/Native_SDK
 PROJECT(PowerVR LANGUAGES CXX)
 
+# rom-properties: Hide symbols by default, since we don't want them
+# leaking from the static library to the plugins.
+INCLUDE(CheckHiddenVisibility)
+CHECK_HIDDEN_VISIBILITY()
+
 # Sources.
 SET(libpvrtc_SRCS PVRTDecompress.cpp)
 # Headers.

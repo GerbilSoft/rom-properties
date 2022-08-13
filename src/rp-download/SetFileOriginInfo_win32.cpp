@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                         *
  * SetFileOriginInfo_win32.cpp: setFileOriginInfo() function. (Win32 version) *
  *                                                                            *
- * Copyright (c) 2016-2020 by David Korth.                                    *
+ * Copyright (c) 2016-2022 by David Korth.                                    *
  * SPDX-License-Identifier: GPL-2.0-or-later                                  *
  ******************************************************************************/
 
@@ -18,8 +18,8 @@
 #include "libwin32common/userdirs.hpp"
 #include "libwin32common/w32err.h"
 #include "libwin32common/w32time.h"
-using LibWin32Common::T2U8_c;
-using LibWin32Common::U82T_s;
+using LibWin32Common::T2U8;
+using LibWin32Common::U82T;
 
 // C includes.
 #include <sys/utime.h>
@@ -46,7 +46,7 @@ static bool getStoreFileOriginInfo(void)
 	// Get the config filename.
 	// NOTE: Not cached, since rp-download downloads one file per run.
 	// NOTE: This is sitll readable even when running as Low integrity.
-	tstring conf_filename = U82T_s(LibWin32Common::getConfigDirectory());
+	tstring conf_filename = U82T(LibWin32Common::getConfigDirectory());
 	if (conf_filename.empty()) {
 		// Empty filename...
 		return default_value;
@@ -123,7 +123,7 @@ int setFileOriginInfo(FILE *file, const TCHAR *filename, const TCHAR *url, time_
 			std::string s_zoneID;
 			s_zoneID.reserve(sizeof(zoneID_hdr) + _tcslen(url) + 2);
 			s_zoneID = zoneID_hdr;
-			s_zoneID += T2U8_c(url);
+			s_zoneID += T2U8(url);
 			s_zoneID += "\r\n";
 			DWORD dwBytesWritten = 0;
 			BOOL bRet = WriteFile(hAds, s_zoneID.data(),
@@ -139,11 +139,9 @@ int setFileOriginInfo(FILE *file, const TCHAR *filename, const TCHAR *url, time_
 			CloseHandle(hAds);
 		} else {
 			// Error opening the ADS.
+			err = w32err_to_posix(GetLastError());
 			if (err == 0) {
-				err = w32err_to_posix(GetLastError());
-				if (err == 0) {
-					err = EIO;
-				}
+				err = EIO;
 			}
 		}
 	}

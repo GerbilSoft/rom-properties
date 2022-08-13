@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * nds_structs.h: Nintendo DS(i) data structures.                          *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,16 +25,18 @@ extern "C" {
  * All fields are little-endian.
  * NOTE: Strings are NOT null-terminated!
  */
-#pragma pack(1)
-typedef struct PACKED _NDS_RomHeader {
+typedef struct _NDS_RomHeader {
 	char title[12];
-	union {
+	// Some compilers pad this structure to a multiple of 4 bytes
+#pragma pack(1)
+	union PACKED {
 		char id6[6];	// Game code. (ID6)
-		struct {
+		struct PACKED {
 			char id4[4];		// Game code. (ID4)
 			char company[2];	// Company code.
 		};
 	};
+#pragma pack()
 
 	// 0x12
 	uint8_t unitcode;	// 00h == NDS, 02h == NDS+DSi, 03h == DSi only
@@ -188,7 +190,6 @@ typedef struct PACKED _NDS_RomHeader {
 		uint8_t rsa_sha1[0x80];		// RSA SHA1 signature on 0x000...0xDFF.
 	} dsi;
 } NDS_RomHeader;
-#pragma pack()
 ASSERT_STRUCT(NDS_RomHeader, 4096);
 
 /**

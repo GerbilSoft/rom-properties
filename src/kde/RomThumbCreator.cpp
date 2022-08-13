@@ -2,12 +2,13 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomThumbCreator.cpp: Thumbnail creator.                                 *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "config.kde.h"
+#include "check-uid.hpp"
 
 #include "RomThumbCreator.hpp"
 #include "RpQImageBackend.hpp"
@@ -36,17 +37,6 @@ using std::unique_ptr;
 // KDE protocol manager.
 // Used to find the KDE proxy settings.
 #include <kprotocolmanager.h>
-
-// Qt major version.
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-# error Needs updating for Qt6.
-#elif QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-# define QT_MAJOR_STR "5"
-#elif QT_VERSION >= QT_VERSION_CHECK(4,0,0)
-# define QT_MAJOR_STR "4"
-#else /* QT_VERSION < QT_VERSION_CHECK(4,0,0) */
-# error Qt is too old.
-#endif
 
 /**
  * Factory method.
@@ -125,7 +115,7 @@ class RomThumbCreatorPrivate : public TCreateThumbnail<QImage>
 		 * @param method Scaling method.
 		 * @return Rescaled ImgClass.
 		 */
-		inline QImage rescaleImgClass(const QImage &imgClass, const ImgSize &sz, ScalingMethod method = ScalingMethod::Nearest) const final
+		inline QImage rescaleImgClass(const QImage &imgClass, ImgSize sz, ScalingMethod method = ScalingMethod::Nearest) const final
 		{
 			Qt::TransformationMode mode;
 			switch (method) {
@@ -242,7 +232,26 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 	int ret = d->getThumbnail(file, width, &outParams);
 	if (ret == 0) {
 		img = outParams.retImg;
+		// FIXME: KF5 5.91, Dolphin 21.12.1
+		// If img.width() * bytespp != img.bytesPerLine(), the image
+		// pitch is incorrect. Test image: hi_mark_sq.ktx (145x130)
+		// The underlying QImage works perfectly fine, though...
+		int bytespp;
+		switch (img.format()) {
+			// TODO: Other formats?
+			case QImage::Format_Indexed8:
+				bytespp = 1;
+				break;
+			case QImage::Format_ARGB32:
+			default:
+				bytespp = 4;
+				break;
+		}
+		if (img.width() * bytespp != img.bytesPerLine()) {
+			img = img.copy();
+		}
 	}
+	file->unref();
 	return (ret == 0);
 }
 
@@ -272,11 +281,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const ch
 	// NOTE: TCreateThumbnail() has wrappers for opening the
 	// ROM file and getting RomData*, but we're doing it here
 	// in order to return better error codes.
-
-	if (getuid() == 0 || geteuid() == 0) {
-		qCritical("*** " RP_KDE_LOWER "%u does not support running as root.", QT_VERSION >> 16);
-		return RPCT_RUNNING_AS_ROOT;
-	}
+	CHECK_UID_RET(RPCT_RUNNING_AS_ROOT);
 
 	// Register RpQImageBackend.
 	// TODO: Static initializer somewhere?
@@ -352,7 +357,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const ch
 	}
 
 	// Software.
-	static const char sw[] = "ROM Properties Page shell extension (" RP_KDE_UPPER QT_MAJOR_STR ")";
+	static const char sw[] = "ROM Properties Page shell extension (" RP_KDE_UPPER ")";
 	kv.emplace_back("Software", sw);
 
 	// Local filename.

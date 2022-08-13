@@ -42,16 +42,9 @@ class AchievementsTab final : public ITab
 		void reset(void) final;
 
 		/**
-		 * Load the default configuration.
-		 * This does NOT save, and will only emit modified()
-		 * if it's different from the current configuration.
-		 */
-		void loadDefaults(void) final;
-
-		/**
 		 * Save the contents of this tab.
 		 */
-		void save(void) final;
+		void save(void) final { }		// Nothing to do here.
 };
 
 #endif /* __ROMPROPERTIES_WIN32_CONFIG_ACHIEVEMENTSTAB_HPP__ */

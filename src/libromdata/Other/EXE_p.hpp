@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXE_p.hpp: DOS/Windows executable reader. (Private class)               *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -38,12 +38,20 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 		RP_DISABLE_COPY(EXEPrivate)
 
 	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const LibRpBase::RomDataInfo romDataInfo;
+
+	public:
 		// Executable type.
 		enum class ExeType {
 			Unknown = -1,	// Unknown EXE type.
 
 			MZ = 0,		// DOS MZ
 			NE,		// 16-bit New Executable
+			COM_NE,		// 16-bit COM/NE hybrid
+					// (IBMDOS.COM from European DOS 4.0)
 			LE,		// Mixed 16/32-bit Linear Executable
 			W3,		// Collection of LE executables (WIN386.EXE)
 			LX,		// 32-bit Linear Executable
@@ -184,6 +192,9 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 		 *
 		 * The XML is loaded and parsed using the specified
 		 * TinyXML document.
+		 *
+		 * NOTE: DelayLoad must be checked by the caller, since it's
+		 * passing an XMLDocument reference to this function.
 		 *
 		 * @param doc		[in/out] XML document.
 		 * @param ppResName	[out,opt] Pointer to receive the loaded resource name. (statically-allocated string)

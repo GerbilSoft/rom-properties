@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * Achievements.cpp: Achievements class.                                   *
  *                                                                         *
- * Copyright (c) 2020 by David Korth.                                      *
+ * Copyright (c) 2020-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -43,7 +43,7 @@ namespace LibRpBase {
 
 #ifdef _MSC_VER
 // DelayLoad test implementation.
-DELAYLOAD_TEST_FUNCTION_IMPL0(zlibVersion);
+DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 #endif /* _MSC_VER */
 
 class AchievementsPrivate
@@ -65,9 +65,6 @@ class AchievementsPrivate
 		// Notification function.
 		Achievements::NotifyFunc notifyFunc;
 		intptr_t user_data;
-
-		// Have achievements been loaded from disk?
-		bool loaded;
 
 	public:
 		// Achievement types
@@ -112,6 +109,7 @@ class AchievementsPrivate
 		// Achievement map.
 		// TODO: Map vs. unordered_map for performance?
 		unordered_map<Achievements::ID, AchData_t, EnumClassHash> mapAchData;
+		bool loaded;	// Have achievements been loaded from disk?
 
 		// Achievements filename and magic number.
 #if defined(NDEBUG) || defined(FORCE_OBFUSCATE)
@@ -230,6 +228,11 @@ const struct AchievementsPrivate::AchInfo_t AchievementsPrivate::achInfo[] =
 		NOP_C_("Achievements", "Viewed a copy of Sonic & Knuckles locked on to Sonic & Knuckles."),
 		AT_COUNT, 1
 	},
+	{
+		NOP_C_("Achievements", "Link, mah boi..."),
+		NOP_C_("Achievements", "Viewed a CD-i disc image."),
+		AT_COUNT, 1
+	},
 };
 
 // Singleton instance.
@@ -346,11 +349,15 @@ int AchievementsPrivate::save(void) const
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 	// Delay load verification.
 	// TODO: Only if linked with /DELAYLOAD?
-	if (DelayLoad_test_zlibVersion() != 0) {
+	if (DelayLoad_test_get_crc_table() != 0) {
 		// Delay load failed.
 		// Can't calculate the CRC32.
 		return -ENOTSUP;
 	}
+#else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
+	// zlib isn't in a DLL, but we need to ensure that the
+	// CRC table is initialized anyway.
+	get_crc_table();
 #endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
 
 	// Create the achievements file in memory.
@@ -415,12 +422,14 @@ int AchievementsPrivate::save(void) const
 
 	// Length of achievement data.
 	// Includes count, but not crc32.
-	header->length = buf.size() - HeaderSizeMinusCount;
+	header->length = static_cast<uint32_t>(buf.size() - HeaderSizeMinusCount);
 
 	// CRC32 of achievement data.
 	// Includes count.
 	if (buf.size() > HeaderSizeMinusCount) {
-		header->crc32 = cpu_to_le32(crc32(0, &buf.data()[HeaderSizeMinusCount], buf.size() - HeaderSizeMinusCount));
+		header->crc32 = cpu_to_le32(
+			crc32(0, &buf.data()[HeaderSizeMinusCount],
+			      static_cast<uInt>(buf.size() - HeaderSizeMinusCount)));
 	}
 
 #if defined(NDEBUG) || defined(FORCE_OBFUSCATE)
@@ -474,7 +483,7 @@ int AchievementsPrivate::save(void) const
 			ret = -EIO;
 		}
 		file->unref();
-		return -EIO;
+		return ret;
 	}
 	file->unref();
 
@@ -492,7 +501,7 @@ int AchievementsPrivate::load(void)
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 	// Delay load verification.
 	// TODO: Only if linked with /DELAYLOAD?
-	if (DelayLoad_test_zlibVersion() != 0) {
+	if (DelayLoad_test_get_crc_table() != 0) {
 		// Delay load failed.
 		// Can't calculate the CRC32.
 		return -ENOTSUP;
@@ -519,7 +528,7 @@ int AchievementsPrivate::load(void)
 		return ret;
 	}
 
-	const int64_t fileSize = file->size();
+	const off64_t fileSize = file->size();
 	if (fileSize > 1*1024*1024) {
 		// 1 MB is probably way too much...
 		file->unref();
@@ -601,7 +610,7 @@ int AchievementsPrivate::load(void)
 	const uint8_t *p = &buf.data()[sizeof(AchBinHeader)];
 	const uint8_t *const p_end = &buf.data()[buf.size()];
 	uint32_t ach_count = le32_to_cpu(header->count);
-	for (; ok && p+3 < p_end && ach_count > 0; ach_count--) {
+	for (; ok && p < p_end-3 && ach_count > 0; ach_count--) {
 		// Achievement ID.
 		const uint16_t id = p[0] | (p[1] << 8);
 		bool isIDok = true;
@@ -782,7 +791,7 @@ int Achievements::unlock(ID id, int bit)
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 	// Delay load verification.
 	// TODO: Only if linked with /DELAYLOAD?
-	if (DelayLoad_test_zlibVersion() != 0) {
+	if (DelayLoad_test_get_crc_table() != 0) {
 		// Delay load failed.
 		// We won't be able to calculate CRC32s, so don't
 		// enable achievements at all.
@@ -807,16 +816,17 @@ int Achievements::unlock(ID id, int bit)
 
 	// Check the type.
 	bool unlocked = false;
-	const AchievementsPrivate::AchInfo_t *const achInfo = &d->achInfo[(int)id];
-	switch (achInfo->type) {
+	const AchievementsPrivate::AchInfo_t &achInfo = d->achInfo[(int)id];
+	AchievementsPrivate::AchData_t &achData = d->mapAchData[id];
+	switch (achInfo.type) {
 		default:
 			assert(!"Achievement type not supported.");
 			return -EINVAL;
 
 		case AchievementsPrivate::AT_COUNT: {
 			// Check if we've already reached the required count.
-			uint8_t count = d->mapAchData[id].count;
-			if (count >= achInfo->count) {
+			uint8_t count = achData.count;
+			if (count >= achInfo.count) {
 				// Count has been reached.
 				// Achievement is already unlocked.
 				return 0;
@@ -824,9 +834,9 @@ int Achievements::unlock(ID id, int bit)
 
 			// Increment the count.
 			count++;
-			d->mapAchData[id].count = count;
-			d->mapAchData[id].timestamp = time(nullptr);
-			if (count >= achInfo->count) {
+			achData.count = count;
+			achData.timestamp = time(nullptr);
+			if (count >= achInfo.count) {
 				// Achievement unlocked!
 				unlocked = true;
 			}
@@ -836,16 +846,16 @@ int Achievements::unlock(ID id, int bit)
 		case AchievementsPrivate::AT_BITFIELD: {
 			// Bitfield value.
 			assert(bit >= 0);
-			assert(bit < achInfo->count);
-			if (bit < 0 || bit >= achInfo->count) {
+			assert(bit < achInfo.count);
+			if (bit < 0 || bit >= achInfo.count) {
 				// Invalid bit index.
 				return -EINVAL;
 			}
 
 			// Check if we've already filled the bitfield.
 			// TODO: Verify 32-bit and 64-bit operation for values 32 and 64.
-			const uint64_t bf_filled = (1ULL << achInfo->count) - 1;
-			uint64_t bf_value = d->mapAchData[id].bitfield;
+			const uint64_t bf_filled = (1ULL << achInfo.count) - 1;
+			uint64_t bf_value = achData.bitfield;
 			if (bf_value == bf_filled) {
 				// Bitfield is already filled.
 				// Achievement is already unlocked.
@@ -859,8 +869,8 @@ int Achievements::unlock(ID id, int bit)
 				return 0;
 			}
 
-			d->mapAchData[id].bitfield = bf_new;
-			d->mapAchData[id].timestamp = time(nullptr);
+			achData.bitfield = bf_new;
+			achData.timestamp = time(nullptr);
 			if (bf_new == bf_filled) {
 				// Achievement unlocked!
 				unlocked = true;
@@ -892,7 +902,7 @@ time_t Achievements::isUnlocked(ID id) const
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 	// Delay load verification.
 	// TODO: Only if linked with /DELAYLOAD?
-	if (DelayLoad_test_zlibVersion() != 0) {
+	if (DelayLoad_test_get_crc_table() != 0) {
 		// Delay load failed.
 		// We won't be able to calculate CRC32s, so don't
 		// enable achievements at all.

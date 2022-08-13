@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image_ops.cpp: Image class. (operations)                             *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -62,7 +62,7 @@ rp_image *rp_image::dup(void) const
 
 	// If CI8, copy the palette.
 	if (format == rp_image::Format::CI8) {
-		int entries = std::min(img->palette_len(), backend->palette_len());
+		const unsigned int entries = std::min(img->palette_len(), backend->palette_len());
 		uint32_t *const dest_pal = img->palette();
 		memcpy(dest_pal, backend->palette(), entries * sizeof(uint32_t));
 		// Palette is zero-initialized, so we don't need to
@@ -481,7 +481,7 @@ rp_image *rp_image::resized(int width, int height, Alignment alignment, uint32_t
 
 	// If CI8, copy the palette.
 	if (format == rp_image::Format::CI8) {
-		int entries = std::min(img->palette_len(), backend->palette_len());
+		const unsigned int entries = std::min(img->palette_len(), backend->palette_len());
 		uint32_t *const dest_pal = img->palette();
 		memcpy(dest_pal, backend->palette(), entries * sizeof(uint32_t));
 		// Palette is zero-initialized, so we don't need to
@@ -673,7 +673,7 @@ rp_image *rp_image::flip(FlipOp op) const
 
 	// If CI8, copy the palette.
 	if (backend->format == rp_image::Format::CI8) {
-		int entries = std::min(flipimg->palette_len(), backend->palette_len());
+		const unsigned int entries = std::min(flipimg->palette_len(), backend->palette_len());
 		uint32_t *const dest_pal = flipimg->palette();
 		memcpy(dest_pal, backend->palette(), entries * sizeof(uint32_t));
 		// Palette is zero-initialized, so we don't need to
@@ -698,6 +698,74 @@ int rp_image::shrink(int width, int height)
 {
 	RP_D(rp_image);
 	return d->backend->shrink(width, height);
+}
+
+/**
+ * Swap Red and Blue channels in an ARGB32 image.
+ * Standard version using regular C++ code.
+ *
+ * NOTE: The image *must* be ARGB32.
+ *
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int rp_image::swapRB_cpp(void)
+{
+	RP_D(rp_image);
+	rp_image_backend *const backend = d->backend;
+
+	switch (backend->format) {
+		default:
+			// Unsupported image format.
+			assert(!"Unsupported rp_image::Format.");
+			return -EINVAL;
+
+		case rp_image::Format::ARGB32: {
+			const unsigned int diff = (backend->stride - this->row_bytes()) / sizeof(uint32_t);
+			argb32_t *img_buf = static_cast<argb32_t*>(backend->data());
+
+			for (unsigned int y = static_cast<unsigned int>(backend->height); y > 0; y--) {
+				unsigned int x = static_cast<unsigned int>(backend->width);
+				for (; x > 1; x -= 2, img_buf += 2) {
+					std::swap(img_buf[0].r, img_buf[0].b);
+					std::swap(img_buf[1].r, img_buf[1].b);
+				}
+
+				if (x == 1) {
+					std::swap(img_buf->r, img_buf->b);
+					img_buf++;
+				}
+
+				// Next row.
+				img_buf += diff;
+			}
+			break;
+		}
+
+		case rp_image::Format::CI8: {
+			argb32_t *pal = reinterpret_cast<argb32_t*>(backend->palette());
+			const unsigned int pal_len = backend->palette_len();
+			assert(pal != nullptr);
+			assert(pal_len > 0);
+			if (!pal || pal_len <= 0) {
+				return -EINVAL;
+			}
+
+			// Convert the palette.
+			unsigned int i;
+			for (i = 0; i+1 < pal_len; i += 2, pal += 2) {
+				std::swap(pal[i+1].r, pal[i+1].b);
+				std::swap(pal[i+1].r, pal[i+1].b);
+			}
+			for (; i < pal_len; i++, pal++) {
+				// Last color.
+				std::swap(pal[i].r, pal[i].b);
+			}
+			break;
+		}
+	}
+
+	// R and B channels swapped.
+	return 0;
 }
 
 }

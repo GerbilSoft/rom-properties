@@ -33,21 +33,68 @@ ENDIF(NOT CMAKE_CXX_FLAGS MATCHES "/EHsc")
 INCLUDE(CheckCCompilerFlag)
 FOREACH(FLAG_TEST "/sdl" "/guard:cf" "/utf-8")
 	# CMake doesn't like certain characters in variable names.
-	STRING(REGEX REPLACE "/|:" "_" FLAG_TEST_VARNAME "${FLAG_TEST}")
+	STRING(REGEX REPLACE "/|:|=" "_" FLAG_TEST_VARNAME "${FLAG_TEST}")
 
 	CHECK_C_COMPILER_FLAG("${FLAG_TEST}" CFLAG_${FLAG_TEST_VARNAME})
 	IF(CFLAG_${FLAG_TEST_VARNAME})
 		SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} ${FLAG_TEST}")
 		SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} ${FLAG_TEST}")
-		IF(FLAG_TEST STREQUAL "/guard:cf")
-			# "/guard:cf" must be added to linker flags as well.
-			SET(RP_EXE_LINKER_FLAGS_COMMON "${RP_EXE_LINKER_FLAGS_COMMON} ${FLAG_TEST}")
-			SET(RP_SHARED_LINKER_FLAGS_COMMON "${RP_SHARED_LINKER_FLAGS_COMMON} ${FLAG_TEST}")
-			SET(RP_MODULE_LINKER_FLAGS_COMMON "${RP_MODULE_LINKER_FLAGS_COMMON} ${FLAG_TEST}")
-		ENDIF(FLAG_TEST STREQUAL "/guard:cf")
 	ENDIF(CFLAG_${FLAG_TEST_VARNAME})
 	UNSET(CFLAG_${FLAG_TEST_VARNAME})
 ENDFOREACH()
+
+# "/guard:cf" must be added to linker flags in addition to CFLAGS.
+CHECK_C_COMPILER_FLAG("/guard:cf" CFLAG__guard_cf)
+IF(CFLAG_guard_cf)
+	SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} /guard:cf")
+	SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /guard:cf")
+	SET(RP_EXE_LINKER_FLAGS_COMMON "${RP_EXE_LINKER_FLAGS_COMMON} /guard:cf")
+	SET(RP_SHARED_LINKER_FLAGS_COMMON "${RP_SHARED_LINKER_FLAGS_COMMON} /guard:cf")
+	SET(RP_MODULE_LINKER_FLAGS_COMMON "${RP_MODULE_LINKER_FLAGS_COMMON} /guard:cf")
+ENDIF(CFLAG_guard_cf)
+UNSET(CFLAG_guard_cf)
+
+# MSVC: C/C++ conformance settings
+FOREACH(FLAG_TEST "/Zc:wchar_t" "/Zc:inline")
+	# CMake doesn't like certain characters in variable names.
+	STRING(REGEX REPLACE "/|:|=" "_" FLAG_TEST_VARNAME "${FLAG_TEST}")
+
+	CHECK_C_COMPILER_FLAG("${FLAG_TEST}" CFLAG_${FLAG_TEST_VARNAME})
+	IF(CFLAG_${FLAG_TEST_VARNAME})
+		SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} ${FLAG_TEST}")
+		SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} ${FLAG_TEST}")
+	ENDIF(CFLAG_${FLAG_TEST_VARNAME})
+	UNSET(CFLAG_${FLAG_TEST_VARNAME})
+ENDFOREACH()
+
+# MSVC: C++ conformance settings
+INCLUDE(CheckCXXCompilerFlag)
+SET(CXX_CONFORMANCE_FLAGS "/Zc:__cplusplus" "/Zc:rvalueCast" "/Zc:ternary")
+IF(NOT CMAKE_CXX_COMPILER_ID STREQUAL Clang)
+	SET(CXX_CONFORMANCE_FLAGS "/Zc:externC" "/Zc:noexceptTypes")
+ENDIF(NOT CMAKE_CXX_COMPILER_ID STREQUAL Clang)
+FOREACH(FLAG_TEST ${CXX_CONFORMANCE_FLAGS})
+	# CMake doesn't like certain characters in variable names.
+	STRING(REGEX REPLACE "/|:|=" "_" FLAG_TEST_VARNAME "${FLAG_TEST}")
+
+	CHECK_CXX_COMPILER_FLAG("${FLAG_TEST}" CXXFLAG_${FLAG_TEST_VARNAME})
+	IF(CXXFLAG_${FLAG_TEST_VARNAME})
+		SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} ${FLAG_TEST}")
+	ENDIF(CXXFLAG_${FLAG_TEST_VARNAME})
+	UNSET(CXXFLAG_${FLAG_TEST_VARNAME})
+ENDFOREACH()
+
+# "/Zc:throwingNew" is always enabled on clang-cl, and causes
+# warnings to be printed if it's specified.
+# NOTE: "/Zc:throwingNew" was added in MSVC 2015.
+IF(NOT CMAKE_CXX_COMPILER_ID STREQUAL Clang)
+	INCLUDE(CheckCXXCompilerFlag)
+	CHECK_CXX_COMPILER_FLAG("/Zc:throwingNew" CXXFLAG_Zc_throwingNew)
+	IF(CXXFLAG_Zc_throwingNew)
+		SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /Zc:throwingNew")
+	ENDIF(CXXFLAG_Zc_throwingNew)
+	UNSET(CXXFLAG_Zc_throwingNew)
+ENDIF(NOT CMAKE_CXX_COMPILER_ID STREQUAL Clang)
 
 # Disable warning C4996 (deprecated), then re-enable it.
 # Otherwise, it gets handled as an error due to /sdl.
@@ -89,16 +136,6 @@ IF(NOT CMAKE_SIZEOF_VOID_P)
 		SET(CMAKE_SIZEOF_VOID_P 4)
 	ENDIF()
 ENDIF(NOT CMAKE_SIZEOF_VOID_P)
-
-# Use stdcall on i386.
-# Applies to unexported functions only.
-# Exported functions must have explicit calling conventions.
-IF(CPU_i386 OR CPU_amd64)
-	IF(NOT CMAKE_CL_64)
-		SET(RP_C_FLAGS_COMMON   "${RP_C_FLAGS_COMMON} /Gz")
-		SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /Gz")
-	ENDIF(NOT CMAKE_CL_64)
-ENDIF(CPU_i386 OR CPU_amd64)
 
 # TODO: Code coverage checking for MSVC?
 IF(ENABLE_COVERAGE)

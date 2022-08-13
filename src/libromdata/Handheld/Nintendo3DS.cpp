@@ -3,7 +3,7 @@
  * Nintendo3DS.hpp: Nintendo 3DS ROM reader.                               *
  * Handles CCI/3DS, CIA, and SMDH files.                                   *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,7 +15,9 @@
 #include "n3ds_structs.h"
 
 // librpbase, librpfile, librptexture
+#include "librpbase/config/Config.hpp"
 #include "librpbase/Achievements.hpp"
+#include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using namespace LibRpTexture;
@@ -35,30 +37,56 @@ using std::vector;
 
 // zlib for crc32()
 #include <zlib.h>
+#ifdef _MSC_VER
+// MSVC: Exception handling for /DELAYLOAD.
+#  include "libwin32common/DelayLoadHelper.h"
+#endif /* _MSC_VER */
 
 namespace LibRomData {
+
+#ifdef _MSC_VER
+// DelayLoad test implementation.
+DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
+#endif /* _MSC_VER */
 
 ROMDATA_IMPL(Nintendo3DS)
 ROMDATA_IMPL_IMG_SIZES(Nintendo3DS)
 
 /** Nintendo3DSPrivate **/
 
-// MIME type table.
-// Ordering matches N3DS_RomType.
-const char *const Nintendo3DSPrivate::mimeType_tbl[] = {
-	// Unofficial MIME types.
-	// TODO: Get these upstreamed on FreeDesktop.org.
-	"application/x-nintendo-3ds-3dsx",
-	"application/x-nintendo-3ds-rom",
-	"application/x-nintendo-3ds-emmc",
-	"application/x-nintendo-3ds-cia",
-	"application/x-nintendo-3ds-ncch",
+/* RomDataInfo */
+const char *const Nintendo3DSPrivate::exts[] = {
+	".3dsx",	// Homebrew application.
+	".3ds",		// ROM image. (NOTE: Conflicts with 3DS Max.)
+	".3dz",		// ROM image. (with private header for Gateway 3DS)
+	".cci",		// ROM image.
+	".cia",		// CTR installable archive.
+	".ncch",	// NCCH file.
+	".app",		// NCCH file. (NOTE: May conflict with others...)
+	".cxi",		// CTR Executable Image (NCCH)
+	".cfa",		// CTR File Archive (NCCH)
+	".csu",		// CTR System Update (CCI)
 
 	nullptr
 };
+const char *const Nintendo3DSPrivate::mimeTypes[] = {
+	// NOTE: Ordering matches N3DS_RomType.
+
+	// Unofficial MIME types.
+	"application/x-nintendo-3ds-executable",	// on fd.o
+	"application/x-nintendo-3ds-rom",		// on fd.o
+	"application/x-nintendo-3ds-emmc",		// NOT on fd.o
+	"application/x-nintendo-3ds-cia",		// NOT on fd.o
+	"application/x-nintendo-3ds-ncch",		// NOT on fd.o
+
+	nullptr
+};
+const RomDataInfo Nintendo3DSPrivate::romDataInfo = {
+	"Nintendo3DS", exts, mimeTypes
+};
 
 Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, romType(RomType::Unknown)
 	, headers_loaded(0)
 	, media_unit_shift(9)	// default is 9 (512 bytes)
@@ -87,12 +115,10 @@ int Nintendo3DSPrivate::loadSMDH(void)
 		return 0;
 	}
 
-	// TODO: IRpFile implementation with offset/length, so we don't
-	// have to use both DiscReader and PartitionFile.
 	static const size_t N3DS_SMDH_Section_Size =
 		sizeof(N3DS_SMDH_Header_t) + sizeof(N3DS_SMDH_Icon_t);
 
-	IDiscReader *smdhReader = nullptr;
+	SubFile *smdhFile = nullptr;
 	switch (romType) {
 		default:
 			// Unsupported...
@@ -112,7 +138,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			}
 
 			// Open the SMDH section.
-			smdhReader = new DiscReader(this->file, le32_to_cpu(mxh.hb3dsx_header.smdh_offset), N3DS_SMDH_Section_Size);
+			smdhFile = new SubFile(this->file, le32_to_cpu(mxh.hb3dsx_header.smdh_offset), N3DS_SMDH_Section_Size);
 			break;
 		}
 
@@ -145,7 +171,7 @@ int Nintendo3DSPrivate::loadSMDH(void)
 
 				// Open the SMDH section.
 				// TODO: Verify that this works.
-				smdhReader = new DiscReader(this->file, addr, N3DS_SMDH_Section_Size);
+				smdhFile = new SubFile(this->file, addr, N3DS_SMDH_Section_Size);
 				break;
 			}
 
@@ -173,26 +199,17 @@ int Nintendo3DSPrivate::loadSMDH(void)
 				return -8;
 			}
 
-			// Create the SMDH reader.
-			smdhReader = new DiscReader(ncch_f_icon, 0, N3DS_SMDH_Section_Size);
+			// Create the SMDH subfile.
+			smdhFile = new SubFile(ncch_f_icon, 0, N3DS_SMDH_Section_Size);
 			ncch_f_icon->unref();
 			break;
 		}
 	}
 
-	if (!smdhReader || !smdhReader->isOpen()) {
-		// Unable to open the SMDH reader.
-		UNREF(smdhReader);
+	if (!smdhFile || !smdhFile->isOpen()) {
+		// Unable to open the SMDH subfile.
+		UNREF(smdhFile);
 		return -9;
-	}
-
-	// Open the SMDH file.
-	PartitionFile *const smdhFile = new PartitionFile(smdhReader, 0, N3DS_SMDH_Section_Size);
-	smdhReader->unref();
-	if (!smdhFile->isOpen()) {
-		// Unable to open the SMDH file.
-		smdhFile->unref();
-		return -10;
 	}
 
 	// Open the SMDH RomData subclass.
@@ -245,12 +262,9 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 
 			// Determine the content start position.
 			// Need to add all content chunk sizes, algined to 64 bytes.
-			const auto content_chunks_cend = content_chunks.cend();
-			for (auto iter = content_chunks.cbegin();
-			     iter != content_chunks_cend; ++iter)
-			{
-				const uint32_t cur_size = static_cast<uint32_t>(be64_to_cpu(iter->size));
-				if (be16_to_cpu(iter->index) == idx) {
+			for (const N3DS_Content_Chunk_Record_t &p : content_chunks) {
+				const uint32_t cur_size = static_cast<uint32_t>(be64_to_cpu(p.size));
+				if (be16_to_cpu(p.index) == idx) {
 					// Found the content chunk.
 					length = cur_size;
 					break;
@@ -316,14 +330,11 @@ int Nintendo3DSPrivate::loadNCCH(int idx, NCCHReader **pOutNcchReader)
 		// Check if this content is encrypted.
 		// If it is, we'll need to create a CIAReader.
 		N3DS_Ticket_t *ticket = nullptr;
-		const auto content_chunks_cend = content_chunks.cend();
-		for (auto iter = content_chunks.cbegin();
-		     iter != content_chunks_cend; ++iter)
-		{
-			const uint16_t content_index = be16_to_cpu(iter->index);
+		for (const N3DS_Content_Chunk_Record_t &p : content_chunks) {
+			const uint16_t content_index = be16_to_cpu(p.index);
 			if (content_index == idx) {
 				// Found the content index.
-				if (iter->type & cpu_to_be16(N3DS_CONTENT_CHUNK_ENCRYPTED)) {
+				if (p.type & cpu_to_be16(N3DS_CONTENT_CHUNK_ENCRYPTED)) {
 					// Content is encrypted.
 					ticket = &mxh.ticket;
 				}
@@ -526,7 +537,6 @@ int Nintendo3DSPrivate::loadTicketAndTMD(void)
 	size = file->seekAndRead(addr, content_chunks.data(), content_chunks_size);
 	if (size != content_chunks_size) {
 		// Seek and/or read error.
-		content_count = 0;
 		content_chunks.clear();
 		return -10;
 	}
@@ -670,11 +680,11 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 		tid_lo = le32_to_cpu(mxh.ncsd_header.media_id.lo);
 		tid_hi = le32_to_cpu(mxh.ncsd_header.media_id.hi);
 	} else if ((headers_loaded & Nintendo3DSPrivate::HEADER_TMD) || loadTicketAndTMD() == 0) {
-		tid_desc = C_("Nintendo3DS", "Title ID");
+		tid_desc = C_("Nintendo", "Title ID");
 		tid_hi = be32_to_cpu(mxh.tmd_header.title_id.hi);
 		tid_lo = be32_to_cpu(mxh.tmd_header.title_id.lo);
 	} else if (ncch_header) {
-		tid_desc = C_("Nintendo3DS", "Title ID");
+		tid_desc = C_("Nintendo", "Title ID");
 		tid_lo = le32_to_cpu(ncch_header->title_id.lo);
 		tid_hi = le32_to_cpu(ncch_header->title_id.hi);
 	}
@@ -746,11 +756,29 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 	if (f_logo) {
 		const off64_t szFile = f_logo->size();
 		if (szFile == 8192) {
-			// Calculate the CRC32.
-			unique_ptr<uint8_t[]> buf(new uint8_t[static_cast<unsigned int>(szFile)]);
-			size_t size = f_logo->read(buf.get(), static_cast<unsigned int>(szFile));
-			if (size == static_cast<unsigned int>(szFile)) {
-				crc = crc32(0, buf.get(), static_cast<unsigned int>(szFile));
+#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
+			// Delay load verification.
+			// TODO: Only if linked with /DELAYLOAD?
+			bool has_zlib = true;
+			if (DelayLoad_test_get_crc_table() != 0) {
+				// Delay load failed.
+				// Can't calculate the CRC32.
+				has_zlib = false;
+			}
+#else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
+			// zlib isn't in a DLL, but we need to ensure that the
+			// CRC table is initialized anyway.
+			static const bool has_zlib = true;
+			get_crc_table();
+#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
+
+			if (has_zlib) {
+				// Calculate the CRC32.
+				unique_ptr<uint8_t[]> buf(new uint8_t[static_cast<unsigned int>(szFile)]);
+				size_t size = f_logo->read(buf.get(), static_cast<unsigned int>(szFile));
+				if (size == static_cast<unsigned int>(szFile)) {
+					crc = crc32(0, buf.get(), static_cast<unsigned int>(szFile));
+				}
 			}
 		} else if (szFile > 0) {
 			// Some other custom logo.
@@ -759,11 +787,10 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 		f_logo->unref();
 	}
 
-	struct logo_crc_tbl_t {
+	static const struct {
 		uint32_t crc;
 		const char *name;
-	};
-	static const logo_crc_tbl_t logo_crc_tbl[] = {
+	} logo_crc_tbl[] = {
 		// Official logos
 		// NOTE: Not translatable!
 		{0xCFD0EB8BU,	"Nintendo"},
@@ -783,8 +810,6 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 		// Uses the Homebrew Launcher theme.
 		// Reference: https://gbatemp.net/threads/release-default-homebrew-custom-logo-bin.457611/
 		{0xF257BD67U,	"Homebrew (animated)"},
-
-		{0U, nullptr}
 	};
 
 	// If CRC is zero, we don't have a valid logo section.
@@ -792,10 +817,10 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 	const char *logo_name = nullptr;
 	if (crc != 0) {
 		// Search for a matching logo.
-		for (const logo_crc_tbl_t *pLogo = logo_crc_tbl; pLogo->crc != 0; pLogo++) {
-			if (pLogo->crc == crc) {
+		for (const auto &p : logo_crc_tbl) {
+			if (p.crc == crc) {
 				// Found a matching logo.
-				logo_name = pLogo->name;
+				logo_name = p.name;
 				break;
 			}
 		}
@@ -812,18 +837,18 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 }
 
 /**
- * Convert a Nintendo 3DS region value to a GameTDB region code.
+ * Convert a Nintendo 3DS region value to a GameTDB language code.
  * @param smdhRegion Nintendo 3DS region. (from SMDH)
  * @param idRegion Game ID region.
  *
- * NOTE: Mulitple GameTDB region codes may be returned, including:
- * - User-specified fallback region. [TODO]
- * - General fallback region.
+ * NOTE: Mulitple GameTDB language codes may be returned, including:
+ * - User-specified fallback language code for PAL.
+ * - General fallback language code.
  *
- * @return GameTDB region code(s), or empty vector if the region value is invalid.
+ * @return GameTDB language code(s), or empty vector if the region value is invalid.
+ * NOTE: The language code may need to be converted to uppercase!
  */
-vector<const char*> Nintendo3DSPrivate::n3dsRegionToGameTDB(
-	uint32_t smdhRegion, char idRegion)
+vector<uint16_t> Nintendo3DSPrivate::n3dsRegionToGameTDB(uint32_t smdhRegion, char idRegion)
 {
 	/**
 	 * There are up to two region codes for Nintendo DS games:
@@ -839,41 +864,42 @@ vector<const char*> Nintendo3DSPrivate::n3dsRegionToGameTDB(
 	 * Game ID reference:
 	 * - https://github.com/dolphin-emu/dolphin/blob/4c9c4568460df91a38d40ac3071d7646230a8d0f/Source/Core/DiscIO/Enums.cpp
 	 */
-	vector<const char*> ret;
+	vector<uint16_t> ret;
+	ret.reserve(3);
 
 	int fallback_region = 0;
 	switch (smdhRegion) {
 		case N3DS_REGION_JAPAN:
-			ret.emplace_back("JA");
+			ret.push_back('JA');
 			return ret;
 		case N3DS_REGION_USA:
-			ret.emplace_back("US");
+			ret.push_back('US');
 			return ret;
 		case N3DS_REGION_EUROPE:
 		case N3DS_REGION_EUROPE | N3DS_REGION_AUSTRALIA:
-			// Process the game ID and use "EN" as a fallback.
+			// Process the game ID and use 'EN' as a fallback.
 			fallback_region = 1;
 			break;
 		case N3DS_REGION_AUSTRALIA:
-			// Process the game ID and use "AU","EN" as fallbacks.
+			// Process the game ID and use 'AU','EN' as fallbacks.
 			fallback_region = 2;
 			break;
 		case N3DS_REGION_CHINA:
-			// NOTE: GameTDB only has "ZH" for boxart, not "ZHCN" or "ZHTW".
-			ret.emplace_back("ZH");
-			ret.emplace_back("JA");
-			ret.emplace_back("EN");
+			// NOTE: GameTDB only has 'ZH' for boxart, not 'ZHCN' or 'ZHTW'.
+			ret.push_back('ZH');
+			ret.push_back('JA');
+			ret.push_back('EN');
 			return ret;
 		case N3DS_REGION_SOUTH_KOREA:
-			ret.emplace_back("KO");
-			ret.emplace_back("JA");
-			ret.emplace_back("EN");
+			ret.push_back('KO');
+			ret.push_back('JA');
+			ret.push_back('EN');
 			return ret;
 		case N3DS_REGION_TAIWAN:
-			// NOTE: GameTDB only has "ZH" for boxart, not "ZHCN" or "ZHTW".
-			ret.emplace_back("ZH");
-			ret.emplace_back("JA");
-			ret.emplace_back("EN");
+			// NOTE: GameTDB only has 'ZH' for boxart, not 'ZHCN' or 'ZHTW'.
+			ret.push_back('ZH');
+			ret.push_back('JA');
+			ret.push_back('EN');
 			return ret;
 		case 0:
 		default:
@@ -891,41 +917,53 @@ vector<const char*> Nintendo3DSPrivate::n3dsRegionToGameTDB(
 			fallback_region = 3;
 			break;
 		case 'E':	// USA
-			ret.emplace_back("US");
+			ret.push_back('US');
 			break;
 		case 'J':	// Japan
-			ret.emplace_back("JA");
+			ret.push_back('JA');
 			break;
 		case 'P':	// PAL
 		case 'X':	// Multi-language release
 		case 'Y':	// Multi-language release
 		case 'L':	// Japanese import to PAL regions
 		case 'M':	// Japanese import to PAL regions
-		default:
-			if (fallback_region == 0) {
-				// Use the fallback region.
+		default: {
+			// Generic PAL release.
+			// Use the user-specified fallback.
+			const Config *const config = Config::instance();
+			const uint32_t lc = config->palLanguageForGameTDB();
+			if (lc != 0 && lc < 65536) {
+				ret.emplace_back(static_cast<uint16_t>(lc));
+				// Don't add English again if that's what the
+				// user-specified fallback language is.
+				if (lc != 'en' && lc != 'EN') {
+					fallback_region = 1;
+				}
+			} else {
+				// Invalid. Use 'EN'.
 				fallback_region = 1;
 			}
 			break;
+		}
 
 		// European regions.
 		case 'D':	// Germany
-			ret.emplace_back("DE");
+			ret.push_back('DE');
 			break;
 		case 'F':	// France
-			ret.emplace_back("FR");
+			ret.push_back('FR');
 			break;
 		case 'H':	// Netherlands
-			ret.emplace_back("NL");
+			ret.push_back('NL');
 			break;
 		case 'I':	// Italy
-			ret.emplace_back("IT");
+			ret.push_back('IT');
 			break;
 		case 'R':	// Russia
-			ret.emplace_back("RU");
+			ret.push_back('RU');
 			break;
 		case 'S':	// Spain
-			ret.emplace_back("ES");
+			ret.push_back('ES');
 			break;
 		case 'U':	// Australia
 			if (fallback_region == 0) {
@@ -939,18 +977,18 @@ vector<const char*> Nintendo3DSPrivate::n3dsRegionToGameTDB(
 	switch (fallback_region) {
 		case 1:
 			// Europe
-			ret.emplace_back("EN");
+			ret.push_back('EN');
 			break;
 		case 2:
 			// Australia
-			ret.emplace_back("AU");
-			ret.emplace_back("EN");
+			ret.push_back('AU');
+			ret.push_back('EN');
 			break;
 
 		case 3:
 			// TODO: Check the host system region.
 			// For now, assuming US.
-			ret.emplace_back("US");
+			ret.push_back('US');
 			break;
 
 		case 0:	// None
@@ -1183,7 +1221,6 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 	// This class handles several different types of files,
 	// so we'll initialize d->fileType later.
 	RP_D(Nintendo3DS);
-	d->className = "Nintendo3DS";
 	d->fileType = FileType::Unknown;
 
 	if (!d->file) {
@@ -1202,13 +1239,12 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 	}
 
 	// Check if this ROM image is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(header);
-	info.header.pData = reinterpret_cast<const uint8_t*>(header);
-	const string filename = file->filename();
-	info.ext = FileSystem::file_ext(filename);
-	info.szFile = d->file->size();
+	const char *const filename = file->filename();
+	const DetectInfo info = {
+		{0, sizeof(header), header},
+		FileSystem::file_ext(filename),	// ext
+		d->file->size()			// szFile (not needed for NGPC)
+	};
 	d->romType = static_cast<Nintendo3DSPrivate::RomType>(isRomSupported_static(&info));
 
 	// Determine what kind of file this is.
@@ -1262,7 +1298,7 @@ Nintendo3DS::Nintendo3DS(IRpFile *file)
 	}
 
 	// Set the MIME type.
-	d->mimeType = d->mimeType_tbl[(int)d->romType];
+	d->mimeType = d->mimeTypes[(int)d->romType];
 
 	// File is valid.
 	d->isValid = true;
@@ -1451,53 +1487,6 @@ const char *Nintendo3DS::systemName(unsigned int type) const
 	};
 
 	return sysNames[type];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Nintendo3DS::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".3dsx",	// Homebrew application.
-		".3ds",		// ROM image. (NOTE: Conflicts with 3DS Max.)
-		".3dz",		// ROM image. (with private header for Gateway 3DS)
-		".cci",		// ROM image.
-		".cia",		// CTR installable archive.
-		".ncch",	// NCCH file.
-		".app",		// NCCH file. (NOTE: May conflict with others...)
-		".cxi",		// CTR Executable Image (NCCH)
-		".cfa",		// CTR File Archive (NCCH)
-		".csu",		// CTR System Update (CCI)
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Nintendo3DS::supportedMimeTypes_static(void)
-{
-	return Nintendo3DSPrivate::mimeType_tbl;
 }
 
 /**
@@ -1777,11 +1766,10 @@ int Nintendo3DS::loadFieldData(void)
 	// Is the NCSD header loaded?
 	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_NCSD) {
 		// Display the NCSD header.
+		bool addTID = false;
 		if (haveSeparateSMDHTab) {
 			d->fields->addTab("NCSD");
-			// Add the title ID and product code fields here.
-			// (Content type is listed in the NCSD partition table.)
-			d->addTitleIdAndProductCodeFields(false);
+			addTID = true;
 		} else {
 			d->fields->setTabName(0, "NCSD");
 		}
@@ -1810,6 +1798,21 @@ int Nintendo3DS::loadFieldData(void)
 					err, RomFields::STRF_WARNING);
 				shownWarning = true;
 			}
+		} else if (ncch->isForceNoCrypto()) {
+			// NCSD is decrypted but has incorrect encryption flags.
+			// TODO: Show in the SMDH tab if it's visible?
+			if (!shownWarning) {
+				d->fields->addField_string(C_("RomData", "Warning"),
+					C_("Nintendo3DS", "NCCH encryption flags are incorrect. Use GodMode9 to fix."),
+                                       RomFields::STRF_WARNING);
+				shownWarning = true;
+			}
+		}
+
+		if (addTID) {
+			// Add the title ID and product code fields here.
+			// (Content type is listed in the NCSD partition table.)
+			d->addTitleIdAndProductCodeFields(false);
 		}
 
 		// TODO: Add more fields?
@@ -2005,6 +2008,9 @@ int Nintendo3DS::loadFieldData(void)
 							data_row.emplace_back(s_unknown);
 						}
 					} else {
+						// TODO: Show an error if this should be NoCrypto.
+						// This is detected for the main NCCH in the initial
+						// NCSD check, but not here...
 						data_row.emplace_back(rp_sprintf("%s%s (0x%02X)",
 							(cryptoType.name ? cryptoType.name : s_unknown),
 							(cryptoType.seed ? "+Seed" : ""),
@@ -2127,7 +2133,7 @@ int Nintendo3DS::loadFieldData(void)
 
 		// Process the contents.
 		// TODO: Content types?
-		int i = 0;
+		unsigned int i = 0;
 		const auto content_chunks_cend = d->content_chunks.cend();
 		for (auto iter = d->content_chunks.cbegin();
 		     iter != content_chunks_cend; ++iter, ++i)
@@ -2271,7 +2277,7 @@ int Nintendo3DS::loadFieldData(void)
 			latin1_to_utf8(ncch_exheader->sci.title, sizeof(ncch_exheader->sci.title)));
 
 		// Application type. (resource limit category)
-		static const char *const appl_type_tbl[4] = {
+		static const char appl_type_tbl[4][16] = {
 			// tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_APPLICATION
 			NOP_C_("Nintendo3DS|ApplType", "Application"),
 			// tr: N3DS_NCCH_EXHEADER_ACI_ResLimit_Categry_SYS_APPLET
@@ -2683,8 +2689,8 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	// SMDH contains a region code bitfield.
 	uint32_t smdhRegion = const_cast<Nintendo3DSPrivate*>(d)->getSMDHRegionCode();
 
-	// Determine the GameTDB region code(s).
-	vector<const char*> tdb_regions = d->n3dsRegionToGameTDB(smdhRegion, id4[3]);
+	// Determine the GameTDB language code(s).
+	vector<uint16_t> tdb_lc = d->n3dsRegionToGameTDB(smdhRegion, id4[3]);
 
 	// If we're downloading a "high-resolution" image (M or higher),
 	// also add the default image to ExtURLs in case the user has
@@ -2702,9 +2708,9 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	}
 
 	// Add the URLs.
-	pExtURLs->resize(szdef_count * tdb_regions.size());
+	pExtURLs->resize(szdef_count * tdb_lc.size());
 	auto extURL_iter = pExtURLs->begin();
-	const auto tdb_regions_cend = tdb_regions.cend();
+	const auto tdb_lc_cend = tdb_lc.cend();
 	for (unsigned int i = 0; i < szdef_count; i++) {
 		// Current image type.
 		char imageTypeName[16];
@@ -2712,11 +2718,12 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 			 imageTypeName_base, (szdefs_dl[i]->name ? szdefs_dl[i]->name : ""));
 
 		// Add the images.
-		for (auto tdb_iter = tdb_regions.cbegin();
-		     tdb_iter != tdb_regions_cend; ++tdb_iter, ++extURL_iter)
+		for (auto tdb_iter = tdb_lc.cbegin();
+		     tdb_iter != tdb_lc_cend; ++tdb_iter, ++extURL_iter)
 		{
-			extURL_iter->url = d->getURL_GameTDB("3ds", imageTypeName, *tdb_iter, id4, ext);
-			extURL_iter->cache_key = d->getCacheKey_GameTDB("3ds", imageTypeName, *tdb_iter, id4, ext);
+			const string lc_str = SystemRegion::lcToStringUpper(*tdb_iter);
+			extURL_iter->url = d->getURL_GameTDB("3ds", imageTypeName, lc_str.c_str(), id4, ext);
+			extURL_iter->cache_key = d->getCacheKey_GameTDB("3ds", imageTypeName, lc_str.c_str(), id4, ext);
 			extURL_iter->width = szdefs_dl[i]->width;
 			extURL_iter->height = szdefs_dl[i]->height;
 			extURL_iter->high_res = (szdefs_dl[i]->index >= 2);

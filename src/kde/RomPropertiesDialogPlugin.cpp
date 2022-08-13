@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomPropertiesDialogPlugin.cpp: KPropertiesDialogPlugin.                 *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,6 +15,7 @@
  */
 
 #include "stdafx.h"
+#include "check-uid.hpp"
 #include "RomPropertiesDialogPlugin.hpp"
 #include "RomDataView.hpp"
 
@@ -26,11 +27,21 @@ using LibRpFile::IRpFile;
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
 
-RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, const QVariantList&)
-	: super(props)
+/**
+ * Instantiate a RomDataView for the given KPropertiesDialog.
+ * @param parent KPropertiesDialog (NOTE: QObject* is used for registerPlugin() compatibility.)
+ * @param args
+ */
+RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(QObject *parent, const QVariantList &args)
+	: super(qobject_cast<KPropertiesDialog*>(parent))
 {
-	if (getuid() == 0 || geteuid() == 0) {
-		qCritical("*** rom-properties-" RP_KDE_LOWER "%u does not support running as root.", QT_VERSION >> 16);
+	Q_UNUSED(args)
+	CHECK_UID();
+
+	KPropertiesDialog *const props = qobject_cast<KPropertiesDialog*>(parent);
+	assert(props != nullptr);
+	if (!props) {
+		// Parent *must* be KPropertiesDialog.
 		return;
 	}
 
@@ -58,6 +69,8 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(KPropertiesDialog *props, c
 
 	// ROM is supported. Show the properties.
 	RomDataView *const romDataView = new RomDataView(romData, props);
+	romDataView->setObjectName(QLatin1String("romDataView"));
+
 	// tr: Tab title.
 	props->addPage(romDataView, U82Q(C_("RomDataView", "ROM Properties")));
 

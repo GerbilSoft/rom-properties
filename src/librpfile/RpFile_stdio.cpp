@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_stdio.cpp: Standard file object. (stdio implementation)          *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,7 +16,7 @@
 #include "RpFile.hpp"
 #include "RpFile_p.hpp"
 
-// C includes.
+// C includes
 #include <fcntl.h>	// AT_EMPTY_PATH
 #include <sys/stat.h>	// stat(), statx()
 #include <unistd.h>	// ftruncate()
@@ -88,16 +88,15 @@ int RpFilePrivate::reOpenFile(void)
 	}
 
 	// Check if this is a device.
-	bool isDevice = false;
 	bool hasFileMode = false;
-	uint16_t fileMode = 0;
+	uint8_t fileType = 0;
 #ifdef HAVE_STATX
 	struct statx sbx;
 	int ret = statx(fileno(file), "", AT_EMPTY_PATH, STATX_TYPE, &sbx);
 	if (ret == 0 && (sbx.stx_mask & STATX_TYPE)) {
 		// statx() succeeded.
 		hasFileMode = true;
-		fileMode = sbx.stx_mode;
+		fileType = IFTODT(sbx.stx_mode);
 	}
 #else /* !HAVE_STATX */
 	struct stat sb;
@@ -105,20 +104,20 @@ int RpFilePrivate::reOpenFile(void)
 	if (ret == 0) {
 		// fstat() succeeded.
 		hasFileMode = true;
-		fileMode = sb.st_mode;
+		fileType = IFTODT(sb.st_mode);
 	}
 #endif /* HAVE_STATX */
 
 	// Did we get the file mode from statx() or stat()?
 	if (hasFileMode) {
-		if (S_ISDIR(fileMode)) {
+		if (fileType == DT_DIR) {
 			// This is a directory.
 			fclose(file);
 			file = nullptr;
 			q->m_lastError = EISDIR;
 			return -EISDIR;
 		}
-		isDevice = (S_ISBLK(fileMode) || S_ISCHR(fileMode));
+		q->m_fileType = fileType;
 	}
 
 	// NOTE: Opening certain device files can cause crashes
@@ -126,16 +125,15 @@ int RpFilePrivate::reOpenFile(void)
 	// that match certain patterns.
 	// TODO: May need updates for *BSD, Mac OS X, etc.
 	// TODO: Check if a block device is a CD-ROM or something else.
-	if (isDevice) {
+	if (q->isDevice()) {
 		// NOTE: Some Unix systems use character devices for "raw"
 		// block devices. Linux does not, so on Linux, we'll only
 		// allow block devices and not character devices.
 #ifdef __linux__
-		if (S_ISCHR(fileMode)) {
+		if (fileType == DT_CHR) {
 			// Character device. Not supported.
 			fclose(file);
 			file = nullptr;
-			isDevice = false;
 			q->m_lastError = ENOTSUP;
 			return -ENOTSUP;
 		}
@@ -158,15 +156,15 @@ int RpFilePrivate::reOpenFile(void)
 			"\x07" "/dev/cd",
 			"\x08" "/dev/rcd",
 #else
-# define NO_PATTERNS_FOR_THIS_OS 1
+#  define NO_PATTERNS_FOR_THIS_OS 1
 			"\x00"
 #endif
 		};
 
 #ifndef NO_PATTERNS_FOR_THIS_OS
 		bool isMatch = false;
-		for (int i = 0; i < ARRAY_SIZE(fileNamePatterns); i++) {
-			if (!strncasecmp(filename.c_str(), &fileNamePatterns[i][1], (uint8_t)fileNamePatterns[i][0])) {
+		for (const auto &pattern : fileNamePatterns) {
+			if (!strncasecmp(filename.c_str(), &pattern[1], (uint8_t)pattern[0])) {
 				// Found a match!
 				isMatch = true;
 				break;
@@ -176,7 +174,6 @@ int RpFilePrivate::reOpenFile(void)
 			// Not a match.
 			fclose(file);
 			file = nullptr;
-			isDevice = false;
 			q->m_lastError = ENOTSUP;
 			return -ENOTSUP;
 		}
@@ -250,54 +247,58 @@ void RpFile::init(void)
 	// Check if this is a gzipped file.
 	// If it is, use transparent decompression.
 	// Reference: https://www.forensicswiki.org/wiki/Gzip
-	if (d->mode == FM_OPEN_READ_GZ) {
+	const bool tryGzip = (d->mode == FM_OPEN_READ_GZ);
+	if (tryGzip) { do {
 		uint16_t gzmagic;
 		size_t size = fread(&gzmagic, 1, sizeof(gzmagic), d->file);
-		if (size == sizeof(gzmagic) && gzmagic == be16_to_cpu(0x1F8B)) {
-			// This is a gzipped file.
-			// Get the uncompressed size at the end of the file.
-			fseeko(d->file, 0, SEEK_END);
-			off64_t real_sz = ftello(d->file);
-			if (real_sz > 10+8) {
-				int ret = fseeko(d->file, real_sz-4, SEEK_SET);
-				if (!ret) {
-					uint32_t uncomp_sz;
-					size = fread(&uncomp_sz, 1, sizeof(uncomp_sz), d->file);
-					uncomp_sz = le32_to_cpu(uncomp_sz);
-					if (size == sizeof(uncomp_sz) /*&& uncomp_sz >= real_sz-(10+8)*/) {
-						// NOTE: Uncompressed size might be smaller than the real filesize
-						// in cases where gzip doesn't help much.
-						// TODO: Add better verification heuristics?
-						d->gzsz = (off64_t)uncomp_sz;
+		if (size != sizeof(gzmagic) || gzmagic != be16_to_cpu(0x1F8B))
+			break;
 
-						// Make sure the CRC32 table is initialized.
-						get_crc_table();
+		// This is a gzipped file.
+		// Get the uncompressed size at the end of the file.
+		fseeko(d->file, 0, SEEK_END);
+		off64_t real_sz = ftello(d->file);
+		if (real_sz <= 10+8)
+			break;
 
-						// Open the file with gzdopen().
-						::rewind(d->file);
-						::fflush(d->file);
-						int gzfd_dup = ::dup(fileno(d->file));
-						if (gzfd_dup >= 0) {
-							d->gzfd = gzdopen(gzfd_dup, "r");
-							if (d->gzfd) {
-								m_isCompressed = true;
-							} else {
-								// gzdopen() failed.
-								// Close the dup()'d handle to prevent a leak.
-								::close(gzfd_dup);
-							}
-						}
-					}
-				}
+		if (fseeko(d->file, real_sz-4, SEEK_SET) != 0)
+			break;
+
+		uint32_t uncomp_sz;
+		size = fread(&uncomp_sz, 1, sizeof(uncomp_sz), d->file);
+		uncomp_sz = le32_to_cpu(uncomp_sz);
+		if (size != sizeof(uncomp_sz) /*|| uncomp_sz < real_sz-(10+8)*/)
+			break;
+
+		// NOTE: Uncompressed size might be smaller than the real filesize
+		// in cases where gzip doesn't help much.
+		// TODO: Add better verification heuristics?
+		d->gzsz = (off64_t)uncomp_sz;
+
+		// Make sure the CRC32 table is initialized.
+		get_crc_table();
+
+		// Open the file with gzdopen().
+		::rewind(d->file);
+		::fflush(d->file);
+		int gzfd_dup = ::dup(fileno(d->file));
+		if (gzfd_dup >= 0) {
+			d->gzfd = gzdopen(gzfd_dup, "r");
+			if (d->gzfd) {
+				m_isCompressed = true;
+			} else {
+				// gzdopen() failed.
+				// Close the dup()'d handle to prevent a leak.
+				::close(gzfd_dup);
 			}
 		}
+	} while (0); }
 
-		if (!d->gzfd) {
-			// Not a gzipped file.
-			// Rewind and flush the file.
-			::rewind(d->file);
-			::fflush(d->file);
-		}
+	if (tryGzip && !d->gzfd) {
+		// Not a gzipped file.
+		// Rewind and flush the file.
+		::rewind(d->file);
+		::fflush(d->file);
 	}
 }
 
@@ -582,12 +583,12 @@ off64_t RpFile::size(void)
 
 /**
  * Get the filename.
- * @return Filename. (May be empty if the filename is not available.)
+ * @return Filename. (May be nullptr if the filename is not available.)
  */
-string RpFile::filename(void) const
+const char *RpFile::filename(void) const
 {
 	RP_D(const RpFile);
-	return d->filename;
+	return (!d->filename.empty() ? d->filename.c_str() : nullptr);
 }
 
 /** Extra functions **/
@@ -627,18 +628,6 @@ int RpFile::makeWritable(void)
 	fseeko(d->file, prev_pos, SEEK_SET);
 	d->mode = (RpFile::FileMode)(d->mode | FM_WRITE);
 	return 0;
-}
-
-/** Device file functions **/
-
-/**
- * Is this a device file?
- * @return True if this is a device file; false if not.
- */
-bool RpFile::isDevice(void) const
-{
-	RP_D(const RpFile);
-	return d->devInfo;
 }
 
 }

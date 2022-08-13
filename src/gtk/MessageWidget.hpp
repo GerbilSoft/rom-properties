@@ -35,8 +35,6 @@ const gchar*	message_widget_get_text		(MessageWidget *widget);
 void		message_widget_set_message_type	(MessageWidget *widget, GtkMessageType messageType);
 GtkMessageType	message_widget_get_message_type	(MessageWidget *widget);
 
-void		message_widget_show_with_timeout(MessageWidget *widget);
-
 G_END_DECLS
 
 #endif /* __ROMPROPERTIES_GTK_MESSAGEWIDGET_HPP__ */

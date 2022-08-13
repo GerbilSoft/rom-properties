@@ -1,0 +1,2055 @@
+# amiibo data
+# This is compiled to amiibo.bin.
+RPNFPB10
+
+### Character series (CS) [p.21]
+# CS Fields: ID, Name
+# ID must be a multiple of 4.
+CS:0x000:Super Mario Bros.
+CS:0x008:Yoshi
+CS:0x00C:Donkey Kong
+CS:0x010:The Legend of Zelda
+CS:0x014:The Legend of Zelda
+
+CS:0x018:Animal Crossing
+CS:0x01C:Animal Crossing
+CS:0x020:Animal Crossing
+CS:0x024:Animal Crossing
+CS:0x028:Animal Crossing
+CS:0x02C:Animal Crossing
+CS:0x030:Animal Crossing
+CS:0x034:Animal Crossing
+CS:0x038:Animal Crossing
+CS:0x03C:Animal Crossing
+CS:0x040:Animal Crossing
+CS:0x044:Animal Crossing
+CS:0x048:Animal Crossing
+CS:0x04C:Animal Crossing
+CS:0x050:Animal Crossing
+
+CS:0x058:Star Fox
+CS:0x05C:Metroid
+CS:0x060:F-Zero
+CS:0x064:Pikmin
+CS:0x06C:Punch-Out!!
+CS:0x070:Wii Fit
+CS:0x074:Kid Icarus
+CS:0x078:Classic Nintendo
+CS:0x07C:Mii
+CS:0x080:Splatoon
+CS:0x09C:Mario Sports Superstars
+
+CS:0x0A0:Animal Crossing
+CS:0x0A4:Arms
+
+CS:0x190:Pokémon
+CS:0x194:Pokémon
+CS:0x198:Pokémon
+CS:0x19C:Pokémon
+CS:0x1A0:Pokémon
+CS:0x1A4:Pokémon
+CS:0x1A8:Pokémon
+CS:0x1AC:Pokémon
+CS:0x1B0:Pokémon
+CS:0x1B4:Pokémon
+CS:0x1B8:Pokémon
+CS:0x1BC:Pokémon
+
+# Pokémon (special characters)
+CS:0x1D0:Pokémon
+CS:0x1D4:Pokémon
+
+CS:0x1F0:Kirby
+CS:0x1F4:BoxBoy!
+CS:0x210:Fire Emblem
+CS:0x224:Xenoblade
+CS:0x228:Earthbound
+CS:0x22C:Chibi-Robo!
+
+CS:0x320:Sonic the Hedgehog
+CS:0x324:Bayonetta
+CS:0x334:Pac-Man
+CS:0x338:Dark Souls
+CS:0x348:Mega Man
+CS:0x34C:Street Fighter
+CS:0x350:Monster Hunter
+CS:0x35C:Shovel Knight
+CS:0x360:Final Fantasy
+CS:0x364:Dragon Quest
+CS:0x374:Cereal
+CS:0x378:Metal Gear
+CS:0x37C:Castlevania
+CS:0x380:Jikkyou Powerful Pro Baseball
+CS:0x384:Yu-Gi-Oh!
+CS:0x38C:Diablo
+CS:0x3A0:Persona
+
+CS:0x3B4:Banjo & Kazooie
+CS:0x3C8:Fatal Fury
+
+### Character IDs (C) [p.21]
+# C Fields: ID, Name
+#
+# If a character has more than one variant,
+# CV commands must be specified afterwards.
+# CV Fields: ID, VarID, Name
+
+# Super Mario Bros. (character series == 0x000)
+C:0x0000:Mario
+CV:0x0000:0x00:Mario
+CV:0x0000:0x01:Dr. Mario
+CV:0x0000:0x03:Cat Mario
+C:0x0001:Luigi
+C:0x0002:Peach
+CV:0x0002:0x00:Peach
+CV:0x0002:0x01:Cat Peach
+C:0x0003:Yoshi
+CV:0x0003:0x00:Yoshi
+CV:0x0003:0x01:Yarn Yoshi
+C:0x0004:Rosalina
+CV:0x0004:0x00:Rosalina
+CV:0x0004:0x01:Rosalina & Luma
+C:0x0005:Bowser
+CV:0x0005:0x00:Bowser
+# NOTE: Cannot distinguish between regular and dark
+# variants in amiibo mode.
+CV:0x0005:0xFF:Hammer Slam Bowser
+#CV:0x0005:0xFF:Dark Hammer Slam Bowser
+C:0x0006:Bowser Jr.
+C:0x0007:Wario
+C:0x0008:Donkey Kong
+CV:0x0008:0x00:Donkey Kong
+# NOTE: Cannot distinguish between regular and dark
+# variants in amiibo mode.
+CV:0x0008:0xFF:Turbo Charge Donkey Kong
+#CV:0x0008:0xFF:Dark Turbo Charge Donkey Kong
+C:0x0009:Diddy Kong
+C:0x000A:Toad
+C:0x0013:Daisy
+C:0x0014:Waluigi
+C:0x0015:Goomba
+C:0x0017:Boo
+C:0x0023:Koopa Troopa
+C:0x0024:Piranha Plant
+
+# Yoshi (character series == 0x008)
+C:0x0080:Poochy
+# NOTE: Variant 0 isn't used.
+CV:0x0080:0x01:Yarn Poochy
+
+# Donkey Kong (character series == 0x00C)
+C:0x00C0:King K. Rool
+
+# The Legend of Zelda (character series == 0x010)
+C:0x0100:Link
+CV:0x0100:0x00:Link
+CV:0x0100:0x01:Toon Link
+C:0x0101:Zelda
+CV:0x0101:0x00:Zelda
+CV:0x0101:0x01:Sheik
+CV:0x0101:0x03:Zelda & Loftwing
+C:0x0102:Ganondorf
+# NOTE: Variant 0 isn't used.
+CV:0x0102:0x01:Ganondorf
+C:0x0103:Midna & Wolf Link
+C:0x0105:Daruk
+C:0x0106:Urbosa
+C:0x0107:Mipha
+C:0x0108:Revali
+
+# The Legend of Zelda [enemies] (character series == 0x014)
+C:0x0140:Guardian
+C:0x0141:Bokoblin
+
+# Animal Crossing (character series == 0x018)
+C:0x0180:Villager
+C:0x0181:Isabelle
+CV:0x0181:0x00:Isabelle (Summer Outfit)
+CV:0x0181:0x01:Isabelle (Winter Outfit)
+CV:0x0181:0x02:Isabelle (Series 3)
+CV:0x0181:0x03:Isabelle (Series 4)
+CV:0x0181:0x04:Isabelle (Series 5)
+CV:0x0181:0x05:Isabelle (Sweater)
+C:0x0182:K.K. Slider
+CV:0x0182:0x00:K.K. Slider
+CV:0x0182:0x01:DJ K.K.
+C:0x0183:Tom Nook
+CV:0x0183:0x00:Tom Nook
+CV:0x0183:0x01:Tom Nook (Series 3)
+CV:0x0183:0x02:Tom Nook (Series 5)
+CV:0x0183:0x03:Tom Nook (Coat)
+C:0x0184:Timmy & Tommy
+CV:0x0184:0x05:Timmy & Tommy (Series 5)
+C:0x0185:Timmy
+CV:0x0185:0x00:Timmy
+CV:0x0185:0x02:Timmy (Series 3)
+CV:0x0185:0x04:Timmy (Series 4)
+C:0x0186:Tommy
+# NOTE: Variant 0 isn't used.
+CV:0x0186:0x01:Tommy (Series 2)
+CV:0x0186:0x03:Tommy (Series 4)
+C:0x0187:Sable
+C:0x0188:Mabel
+C:0x0189:Labelle
+CV:0x0189:0x01:Label (Series 5)
+C:0x018A:Reese
+C:0x018B:Cyrus
+C:0x018C:Digby
+CV:0x018C:0x00:Digby
+CV:0x018C:0x01:Digby (Series 3)
+C:0x018D:Rover
+C:0x018E:Resetti
+CV:0x018E:0x00:Resetti
+CV:0x018E:0x01:Resetti (Series 4)
+C:0x018F:Don Resetti
+CV:0x018F:0x00:Don Resetti (Series 2)
+CV:0x018F:0x01:Don Resetti (Series 3)
+C:0x0190:Brewster
+C:0x0191:Harriet
+C:0x0192:Blathers
+C:0x0193:Celeste
+C:0x0194:Kicks
+C:0x0195:Porter
+C:0x0196:Kapp'n
+C:0x0197:Leilani
+C:0x0198:Lelia
+C:0x0199:Grams
+C:0x019A:Chip
+C:0x019B:Nat
+C:0x019C:Phineas
+C:0x019D:Copper
+C:0x019E:Booker
+C:0x019F:Pete
+C:0x01A0:Pelly
+C:0x01A1:Phyllis
+C:0x01A2:Gulliver
+C:0x01A3:Joan
+C:0x01A4:Pascal
+C:0x01A5:Katrina
+C:0x01A6:Sahara
+C:0x01A7:Wendell
+C:0x01A8:Redd
+CV:0x01A8:0x00:Redd
+CV:0x01A8:0x01:Redd (Series 4)
+C:0x01A9:Gracie
+C:0x01AA:Lyle
+C:0x01AB:Pave
+C:0x01AC:Zipper
+C:0x01AD:Jack
+C:0x01AE:Franklin
+C:0x01AF:Jingle
+C:0x01B0:Tortimer
+C:0x01B1:Dr. Shrunk
+CV:0x01B1:0x00:Dr. Shrunk
+CV:0x01B1:0x01:Shrunk
+C:0x01B3:Blanca
+C:0x01B4:Leif
+C:0x01B5:Luna
+C:0x01B6:Katie
+C:0x01C1:Lottie
+CV:0x01C1:0x00:Lottie
+CV:0x01C1:0x01:Lottie (Series 4)
+CV:0x01C1:0x02:Lottie (Island)
+C:0x0200:Cyrano
+C:0x0201:Antonio
+C:0x0202:Pango
+C:0x0203:Anabelle
+C:0x0206:Snooty
+C:0x0208:Annalisa
+C:0x0209:Olaf
+C:0x0214:Teddy
+C:0x0215:Pinky
+C:0x0216:Curt
+C:0x0217:Chow
+C:0x0219:Nate
+C:0x021A:Groucho
+C:0x021B:Tutu
+C:0x021C:Ursala
+C:0x021D:Grizzly
+C:0x021E:Paula
+C:0x021F:Ike
+C:0x0220:Charlise
+C:0x0221:Beardo
+C:0x0222:Klaus
+C:0x022D:Jay
+C:0x022E:Robin
+C:0x022F:Anchovy
+C:0x0230:Twiggy
+C:0x0231:Jitters
+C:0x0232:Piper
+C:0x0233:Admiral
+C:0x0235:Midge
+C:0x0238:Jacob
+C:0x023C:Lucha
+C:0x023D:Jacques
+C:0x023E:Peck
+C:0x023F:Sparro
+C:0x024A:Angus
+C:0x024B:Rodeo
+C:0x024D:Stu
+C:0x024F:T-Bone
+C:0x0251:Coach
+C:0x0252:Vic
+C:0x025D:Bob
+C:0x025E:Mitzi
+# Rosie: amiibo Festival variant is in Page 22, amiibo series.
+C:0x025F:Rosie
+C:0x0260:Olivia
+C:0x0261:Kiki
+C:0x0262:Tangy
+C:0x0263:Punchy
+C:0x0264:Purrl
+C:0x0265:Moe
+C:0x0266:Kabuki
+C:0x0267:Kid Cat
+C:0x0268:Monique
+C:0x0269:Tabby
+C:0x026A:Stinky
+C:0x026B:Kitty
+C:0x026C:Tom
+C:0x026D:Merry
+C:0x026E:Felicity
+C:0x026F:Lolly
+C:0x0270:Ankha
+C:0x0271:Rudy
+C:0x0272:Katt
+C:0x027D:Bluebear
+C:0x027E:Maple
+C:0x027F:Poncho
+C:0x0280:Pudge
+C:0x0281:Kody
+# Stitches: amiibo Festival variant is in Page 22, amiibo series.
+C:0x0282:Stitches
+C:0x0283:Vladimir
+C:0x0284:Murphy
+C:0x0286:Olive
+C:0x0287:Cheri
+C:0x028A:June
+C:0x028B:Pekoe
+C:0x028C:Chester
+C:0x028D:Barold
+C:0x028E:Tammy
+C:0x028F:Marty
+# NOTE: Variant 0 isn't used.
+CV:0x028F:0x01:Marty (Sanrio)
+C:0x0299:Goose
+C:0x029A:Benedict
+C:0x029B:Egbert
+C:0x029E:Ava
+C:0x02A2:Becky
+C:0x02A3:Plucky
+C:0x02A4:Knox
+C:0x02A5:Broffina
+C:0x02A6:Ken
+C:0x02B1:Patty
+C:0x02B2:Tipper
+C:0x02B7:Norma
+C:0x02B8:Naomi
+C:0x02C3:Alfonso
+C:0x02C4:Alli
+C:0x02C5:Boots
+C:0x02C7:Del
+C:0x02C9:Sly
+C:0x02CA:Gayle
+C:0x02CB:Drago
+C:0x02D6:Fauna
+C:0x02D7:Bam
+C:0x02D8:Zell
+C:0x02D9:Bruce
+C:0x02DA:Deirdre
+C:0x02DB:Lopez
+C:0x02DC:Fuchsia
+C:0x02DD:Beau
+C:0x02DE:Diana
+C:0x02DF:Erik
+C:0x02E0:Chelsea
+# NOTE: Variant 0 isn't used.
+CV:0x02E0:0x01:Chelsea (Sanrio)
+# Goldie: amiibo Festival variant is in Page 22, amiibo series.
+C:0x02EA:Goldie
+C:0x02EB:Butch
+C:0x02EC:Lucky
+C:0x02ED:Biskit
+C:0x02EE:Bones
+C:0x02EF:Portia
+C:0x02F0:Walker
+C:0x02F1:Daisy
+C:0x02F2:Cookie
+C:0x02F3:Maddie
+C:0x02F4:Bea
+C:0x02F8:Mac
+C:0x02F9:Marcel
+C:0x02FA:Benjamin
+C:0x02FB:Cherry
+C:0x02FC:Shep
+C:0x0307:Bill
+C:0x0308:Joey
+C:0x0309:Pate
+C:0x030A:Maelle
+C:0x030B:Deena
+C:0x030C:Pompom
+C:0x030D:Mallary
+C:0x030E:Freckles
+C:0x030F:Derwin
+C:0x0310:Drake
+C:0x0311:Scoot
+C:0x0312:Weber
+C:0x0313:Miranda
+C:0x0314:Ketchup
+C:0x0316:Gloria
+C:0x0317:Molly
+C:0x0318:Quillson
+C:0x0323:Opal
+C:0x0324:Dizzy
+C:0x0325:Big Top
+C:0x0326:Eloise
+C:0x0327:Margie
+C:0x0328:Paolo
+C:0x0329:Axel
+C:0x032A:Ellie
+C:0x032C:Tucker
+C:0x032D:Tia
+C:0x032E:Chai
+# NOTE: Variant 0 isn't used.
+CV:0x032E:0x01:Chai (Sanrio)
+C:0x0338:Lily
+C:0x0339:Ribbot
+C:0x033A:Frobert
+C:0x033B:Camofrog
+C:0x033C:Drift
+C:0x033D:Wart Jr.
+C:0x033E:Puddles
+C:0x033F:Jeremiah
+C:0x0341:Tad
+C:0x0342:Cousteau
+C:0x0343:Huck
+C:0x0344:Prince
+C:0x0345:Jambette
+C:0x0347:Raddle
+C:0x0348:Gigi
+C:0x0349:Croque
+C:0x034A:Diva
+C:0x034B:Henry
+C:0x0356:Chevre
+C:0x0357:Nan
+C:0x0358:Billy
+C:0x035A:Gruff
+C:0x035C:Velma
+C:0x035D:Kidd
+C:0x035E:Pashmina
+C:0x0369:Cesar
+C:0x036A:Peewee
+C:0x036B:Boone
+C:0x036D:Louie
+C:0x036E:Boyd
+C:0x0370:Violet
+C:0x0371:Al
+C:0x0372:Rocket
+C:0x0373:Hans
+C:0x0374:Rilla
+# NOTE: Variant 0 isn't used.
+CV:0x0374:0x01:Rilla (Sanrio)
+C:0x037E:Hamlet
+C:0x037F:Apple
+C:0x0380:Graham
+C:0x0381:Rodney
+C:0x0382:Soleil
+C:0x0383:Clay
+C:0x0384:Flurry
+C:0x0385:Hamphrey
+C:0x0390:Rocco
+C:0x0392:Bubbles
+C:0x0393:Bertha
+C:0x0394:Biff
+C:0x0395:Bitty
+C:0x0398:Harry
+C:0x0399:Hippeux
+C:0x03A4:Buck
+C:0x03A5:Victoria
+C:0x03A6:Savannah
+C:0x03A7:Elmer
+C:0x03A8:Rosco
+C:0x03A9:Winnie
+C:0x03AA:Ed
+C:0x03AB:Cleo
+C:0x03AC:Peaches
+C:0x03AD:Annalise
+C:0x03AE:Clyde
+C:0x03AF:Colton
+C:0x03B0:Papi
+C:0x03B1:Julian
+C:0x03BC:Yuka
+C:0x03BD:Alice
+C:0x03BE:Melba
+C:0x03BF:Sydney
+C:0x03C0:Gonzo
+C:0x03C1:Ozzie
+C:0x03C4:Canberra
+C:0x03C5:Lyman
+C:0x03C6:Eugene
+C:0x03D1:Kitt
+C:0x03D2:Mathilda
+C:0x03D3:Carrie
+C:0x03D6:Astrid
+C:0x03D7:Sylvia
+C:0x03D9:Walt
+C:0x03DA:Rooney
+C:0x03DB:Marcie
+C:0x03E6:Bud
+C:0x03E7:Elvis
+C:0x03E8:Rex
+C:0x03EA:Leopold
+C:0x03EC:Mott
+C:0x03ED:Rory
+C:0x03EE:Lionel
+C:0x03FA:Nana
+C:0x03FB:Simon
+C:0x03FC:Tammi
+C:0x03FD:Monty
+C:0x03FE:Elise
+C:0x03FF:Flip
+C:0x0400:Shari
+C:0x0401:Deli
+C:0x040C:Dora
+C:0x040D:Limberg
+C:0x040E:Bella
+C:0x040F:Bree
+C:0x0410:Samson
+C:0x0411:Rod
+C:0x0414:Candi
+C:0x0415:Rizzo
+C:0x0416:Anicotti
+C:0x0418:Broccolo
+C:0x041A:Moose
+C:0x041B:Bettina
+C:0x041C:Greta
+C:0x041D:Penelope
+C:0x041E:Chadder
+C:0x0429:Octavian
+C:0x042A:Marina
+C:0x042B:Zucker
+C:0x0436:Queenie
+C:0x0437:Gladys
+C:0x0438:Sandy
+C:0x0439:Sprocket
+C:0x043B:Julia
+C:0x043C:Cranston
+C:0x043D:Phil
+C:0x043E:Blanche
+C:0x043F:Flora
+C:0x0440:Phoebe
+C:0x044B:Apollo
+C:0x044C:Amelia
+C:0x044D:Pierce
+C:0x044E:Buzz
+C:0x0450:Avery
+C:0x0451:Frank
+C:0x0452:Sterling
+C:0x0453:Keaton
+C:0x0454:Celia
+C:0x045F:Aurora
+C:0x0460:Roald
+C:0x0461:Cube
+C:0x0462:Hopper
+C:0x0463:Friga
+C:0x0464:Gwen
+C:0x0465:Puck
+C:0x0468:Wade
+C:0x0469:Boomer
+C:0x046A:Iggly
+C:0x046B:Tex
+C:0x046C:Flo
+C:0x046D:Sprinkle
+C:0x0478:Curly
+C:0x0479:Truffles
+C:0x047A:Rasher
+C:0x047B:Hugh
+C:0x047C:Lucy
+C:0x047D:Spork/Crackle
+C:0x0480:Cobb
+C:0x0481:Boris
+C:0x0482:Maggie
+C:0x0483:Peggy
+C:0x0485:Gala
+C:0x0486:Chops
+C:0x0487:Kevin
+C:0x0488:Pancetti
+C:0x0489:Agnes
+C:0x0494:Bunnie
+C:0x0495:Dotty
+C:0x0496:Coco
+C:0x0497:Snake
+C:0x0498:Gaston
+C:0x0499:Gabi
+C:0x049A:Pippy
+C:0x049B:Tiffany
+C:0x049C:Genji
+C:0x049D:Ruby
+C:0x049E:Doc
+C:0x049F:Claude
+C:0x04A0:Francine
+C:0x04A1:Chrissy
+C:0x04A2:Hopkins
+C:0x04A3:OHare
+C:0x04A4:Carmen
+C:0x04A5:Bonbon
+C:0x04A6:Cole
+C:0x04A7:Mira
+C:0x04A8:Toby
+# NOTE: Variant 0 isn't used.
+CV:0x04A8:0x01:Toby (Sanrio)
+C:0x04B2:Tank
+C:0x04B3:Rhonda
+C:0x04B4:Spike
+C:0x04B6:Hornsby
+C:0x04B9:Merengue
+C:0x04BA:Renée
+C:0x04C5:Vesta
+C:0x04C6:Baabara
+C:0x04C7:Eunice
+C:0x04C8:Stella
+C:0x04C9:Cashmere
+C:0x04CC:Willow
+C:0x04CD:Curlos
+C:0x04CE:Wendy
+C:0x04CF:Timbra
+C:0x04D0:Frita
+C:0x04D1:Muffy
+C:0x04D2:Pietro
+C:0x04D3:Étoile
+# NOTE: Variant 0 isn't used.
+CV:0x04D3:0x01:Étoile (Sanrio)
+C:0x04DD:Peanut
+C:0x04DE:Blaire
+C:0x04DF:Filbert
+C:0x04E0:Pecan
+C:0x04E1:Nibbles
+C:0x04E2:Agent S
+C:0x04E3:Caroline
+C:0x04E4:Sally
+C:0x04E5:Static
+C:0x04E6:Mint
+C:0x04E7:Ricky
+C:0x04E8:Cally
+C:0x04EA:Tasha
+C:0x04EB:Sylvana
+C:0x04EC:Poppy
+C:0x04ED:Sheldon
+C:0x04EE:Marshal
+C:0x04EF:Hazel
+C:0x04FA:Rolf
+C:0x04FB:Rowan
+C:0x04FC:Tybalt
+C:0x04FD:Bangle
+C:0x04FE:Leonardo
+C:0x04FF:Claudia
+C:0x0500:Bianca
+C:0x050B:Chief
+C:0x050C:Lobo
+C:0x050D:Wolfgang
+C:0x050E:Whitney
+C:0x050F:Dobie
+C:0x0510:Freya
+C:0x0511:Fang
+C:0x0513:Vivian
+C:0x0514:Skye
+C:0x0515:Kyle
+
+# Star Fox (character series == 0x058)
+C:0x0580:Fox
+C:0x0581:Falco
+# TODO: 0x0582, 0x0583
+C:0x0584:Wolf
+
+# Metroid (character series == 0x05C)
+C:0x05C0:Samus
+CV:0x05C0:0x00:Samus
+CV:0x05C0:0x01:Zero Suit Samus
+CV:0x05C0:0x02:Samus Aran
+C:0x05C1:Metroid
+C:0x05C2:Ridley
+C:0x05C3:Dark Samus
+C:0x05C4:E.M.M.I.
+
+# F-Zero (character series == 0x060)
+C:0x0600:Captain Falcon
+
+# Pikmin (character series == 0x064)
+C:0x0640:Olimar
+# NOTE: Variant 0 isn't used.
+CV:0x0640:0x01:Olimar
+C:0x0642:Pikmin
+
+# Punch-Out!! (character series == 0x06C)
+C:0x06C0:Little Mac
+
+# Wii Fit (character series == 0x070)
+C:0x0700:Wii Fit Trainer
+
+# Kid Icarus (character series == 0x074)
+C:0x0740:Pit
+C:0x0741:Dark Pit
+C:0x0742:Palutena
+
+# Classic Nintendo (character series == 0x078)
+C:0x0780:Mr. Game & Watch
+# R.O.B.: NES/Famicom variant is in Page 22, amiibo series.
+C:0x0781:R.O.B.
+C:0x0782:Duck Hunt
+C:0x078F:Ice Climbers
+
+# Mii (character series == 0x07C)
+C:0x07C0:Mii Fighter
+CV:0x07C0:0x00:Mii Brawler
+CV:0x07C0:0x01:Mii Swordfighter
+CV:0x07C0:0x02:Mii Gunner
+
+# Splatoon (character series == 0x080)
+C:0x0800:Inkling
+# NOTE: Variant 0 isn't actually assigned.
+CV:0x0800:0x00:Inkling
+CV:0x0800:0x01:Inkling Girl
+CV:0x0800:0x02:Inkling Boy
+CV:0x0800:0x03:Inkling Squid
+C:0x0801:Callie
+C:0x0802:Marie
+C:0x0803:Pearl
+C:0x0804:Marina
+C:0x0805:Octoling
+# NOTE: Variant 0 is not actually assigned.
+CV:0x0805:0x00:Octoling
+CV:0x0805:0x01:Octoling Girl
+CV:0x0805:0x02:Octoling Boy
+CV:0x0805:0x03:Octoling Octopus
+
+# Mario Sports Superstars (character series == 0x09C)
+C:0x09C0:Mario
+CV:0x09C0:0x00:Mario
+CV:0x09C0:0x01:Mario (Soccer)
+CV:0x09C0:0x02:Mario (Baseball)
+CV:0x09C0:0x03:Mario (Tennis)
+CV:0x09C0:0x04:Mario (Golf)
+CV:0x09C0:0x05:Mario (Horse Racing)
+C:0x09C1:Luigi
+CV:0x09C1:0x00:Luigi
+CV:0x09C1:0x01:Luigi (Soccer)
+CV:0x09C1:0x02:Luigi (Baseball)
+CV:0x09C1:0x03:Luigi (Tennis)
+CV:0x09C1:0x04:Luigi (Golf)
+CV:0x09C1:0x05:Luigi (Horse Racing)
+C:0x09C2:Peach
+CV:0x09C2:0x00:Peach
+CV:0x09C2:0x01:Peach (Soccer)
+CV:0x09C2:0x02:Peach (Baseball)
+CV:0x09C2:0x03:Peach (Tennis)
+CV:0x09C2:0x04:Peach (Golf)
+CV:0x09C2:0x05:Peach (Horse Racing)
+C:0x09C3:Daisy
+CV:0x09C3:0x00:Daisy
+CV:0x09C3:0x01:Daisy (Soccer)
+CV:0x09C3:0x02:Daisy (Baseball)
+CV:0x09C3:0x03:Daisy (Tennis)
+CV:0x09C3:0x04:Daisy (Golf)
+CV:0x09C3:0x05:Daisy (Horse Racing)
+C:0x09C4:Yoshi
+CV:0x09C4:0x00:Yoshi
+CV:0x09C4:0x01:Yoshi (Soccer)
+CV:0x09C4:0x02:Yoshi (Baseball)
+CV:0x09C4:0x03:Yoshi (Tennis)
+CV:0x09C4:0x04:Yoshi (Golf)
+CV:0x09C4:0x05:Yoshi (Horse Racing)
+C:0x09C5:Wario
+CV:0x09C5:0x00:Wario
+CV:0x09C5:0x01:Wario (Soccer)
+CV:0x09C5:0x02:Wario (Baseball)
+CV:0x09C5:0x03:Wario (Tennis)
+CV:0x09C5:0x04:Wario (Golf)
+CV:0x09C5:0x05:Wario (Horse Racing)
+C:0x09C6:Waluigi
+CV:0x09C6:0x00:Waluigi
+CV:0x09C6:0x01:Waluigi (Soccer)
+CV:0x09C6:0x02:Waluigi (Baseball)
+CV:0x09C6:0x03:Waluigi (Tennis)
+CV:0x09C6:0x04:Waluigi (Golf)
+CV:0x09C6:0x05:Waluigi (Horse Racing)
+C:0x09C7:Donkey Kong
+CV:0x09C7:0x00:Donkey Kong
+CV:0x09C7:0x01:Donkey Kong (Soccer)
+CV:0x09C7:0x02:Donkey Kong (Baseball)
+CV:0x09C7:0x03:Donkey Kong (Tennis)
+CV:0x09C7:0x04:Donkey Kong (Golf)
+CV:0x09C7:0x05:Donkey Kong (Horse Racing)
+C:0x09C8:Diddy Kong
+CV:0x09C8:0x00:Diddy Kong
+CV:0x09C8:0x01:Diddy Kong (Soccer)
+CV:0x09C8:0x02:Diddy Kong (Baseball)
+CV:0x09C8:0x03:Diddy Kong (Tennis)
+CV:0x09C8:0x04:Diddy Kong (Golf)
+CV:0x09C8:0x05:Diddy Kong (Horse Racing)
+C:0x09C9:Bowser
+CV:0x09C9:0x00:Bowser
+CV:0x09C9:0x01:Bowser (Soccer)
+CV:0x09C9:0x02:Bowser (Baseball)
+CV:0x09C9:0x03:Bowser (Tennis)
+CV:0x09C9:0x04:Bowser (Golf)
+CV:0x09C9:0x05:Bowser (Horse Racing)
+C:0x09CA:Bowser Jr.
+CV:0x09CA:0x00:Bowser Jr.
+CV:0x09CA:0x01:Bowser Jr. (Soccer)
+CV:0x09CA:0x02:Bowser Jr. (Baseball)
+CV:0x09CA:0x03:Bowser Jr. (Tennis)
+CV:0x09CA:0x04:Bowser Jr. (Golf)
+CV:0x09CA:0x05:Bowser Jr. (Horse Racing)
+C:0x09CB:Boo
+CV:0x09CB:0x00:Boo
+CV:0x09CB:0x01:Boo (Soccer)
+CV:0x09CB:0x02:Boo (Baseball)
+CV:0x09CB:0x03:Boo (Tennis)
+CV:0x09CB:0x04:Boo (Golf)
+CV:0x09CB:0x05:Boo (Horse Racing)
+C:0x09CC:Baby Mario
+CV:0x09CC:0x00:Baby Mario
+CV:0x09CC:0x01:Baby Mario (Soccer)
+CV:0x09CC:0x02:Baby Mario (Baseball)
+CV:0x09CC:0x03:Baby Mario (Tennis)
+CV:0x09CC:0x04:Baby Mario (Golf)
+CV:0x09CC:0x05:Baby Mario (Horse Racing)
+C:0x09CD:Baby Luigi
+CV:0x09CD:0x00:Baby Luigi
+CV:0x09CD:0x01:Baby Luigi (Soccer)
+CV:0x09CD:0x02:Baby Luigi (Baseball)
+CV:0x09CD:0x03:Baby Luigi (Tennis)
+CV:0x09CD:0x04:Baby Luigi (Golf)
+CV:0x09CD:0x05:Baby Luigi (Horse Racing)
+C:0x09CE:Birdo
+CV:0x09CE:0x00:Birdo
+CV:0x09CE:0x01:Birdo (Soccer)
+CV:0x09CE:0x02:Birdo (Baseball)
+CV:0x09CE:0x03:Birdo (Tennis)
+CV:0x09CE:0x04:Birdo (Golf)
+CV:0x09CE:0x05:Birdo (Horse Racing)
+C:0x09CF:Rosalina
+CV:0x09CF:0x00:Rosalina
+CV:0x09CF:0x01:Rosalina (Soccer)
+CV:0x09CF:0x02:Rosalina (Baseball)
+CV:0x09CF:0x03:Rosalina (Tennis)
+CV:0x09CF:0x04:Rosalina (Golf)
+CV:0x09CF:0x05:Rosalina (Horse Racing)
+C:0x09D0:Metal Mario
+CV:0x09D0:0x00:Metal Mario
+CV:0x09D0:0x01:Metal Mario (Soccer)
+CV:0x09D0:0x02:Metal Mario (Baseball)
+CV:0x09D0:0x03:Metal Mario (Tennis)
+CV:0x09D0:0x04:Metal Mario (Golf)
+CV:0x09D0:0x05:Metal Mario (Horse Racing)
+C:0x09D1:Pink Gold Peach
+CV:0x09D1:0x00:Pink Gold Peach
+CV:0x09D1:0x01:Pink Gold Peach (Soccer)
+CV:0x09D1:0x02:Pink Gold Peach (Baseball)
+CV:0x09D1:0x03:Pink Gold Peach (Tennis)
+CV:0x09D1:0x04:Pink Gold Peach (Golf)
+CV:0x09D1:0x05:Pink Gold Peach (Horse Racing)
+
+# Animal Crossing (character series == 0x0A0)
+C:0x0A00:Orville
+C:0x0A01:Wilbur
+C:0x0A02:C.J.
+C:0x0A03:Flick
+C:0x0A04:Daisy Mae
+C:0x0A05:Harvey
+C:0x0A06:Wisp
+C:0x0A07:Niko
+C:0x0A08:Wardell
+C:0x0A09:Sherb
+C:0x0A0A:Megan
+C:0x0A0B:Dom
+C:0x0A0C:Audie
+C:0x0A0D:Cyd
+C:0x0A0E:Judy
+C:0x0A0F:Raymond
+C:0x0A10:Reneigh
+C:0x0A11:Sasha
+C:0x0A12:Ione
+C:0x0A13:Tiansheng
+C:0x0A14:Shino
+C:0x0A15:Marlo
+C:0x0A16:Petri
+C:0x0A17:Cephalobot
+C:0x0A18:Quinn
+C:0x0A19:Chabwick
+C:0x0A1A:Zoe
+C:0x0A1B:Ace
+C:0x0A1C:Rio
+C:0x0A1D:Frett
+C:0x0A1E:Azalea
+C:0x0A1F:Roswell
+C:0x0A20:Faith
+
+# Arms (character series == 0x0A4)
+C:0x0A40:Min Min
+
+# Pokémon (character series == 0x190 - 0x1BC)
+# NOTE: IDs are 0x1900 + National Pokédex number.
+C:0x1902:Ivysaur
+C:0x1906:Charizard
+C:0x1907:Squirtle
+C:0x1919:Pikachu
+C:0x1927:Jigglypuff
+C:0x1996:Mewtwo
+C:0x19AC:Pichu
+C:0x1AC0:Lucario
+C:0x1B92:Greninja
+C:0x1BD7:Incineroar
+
+# Pokémon (special characters) (character series == 0x1D0 - 0x1D4)
+C:0x1D00:Shadow Mewtwo
+C:0x1D01:Detective Pikachu
+C:0x1D40:Pokémon Trainer
+
+# Kirby (character series == 0x1F0)
+C:0x1F00:Kirby
+C:0x1F01:Meta Knight
+C:0x1F02:King Dedede
+C:0x1F03:Waddle Dee
+
+# BoxBoy! (character series == 0x1F4)
+C:0x1F40:Qbby
+
+# Fire Emblem (character series == 0x210)
+C:0x2100:Marth
+C:0x2101:Ike
+C:0x2102:Lucina
+C:0x2103:Robin
+C:0x2104:Roy
+C:0x2105:Corrin
+CV:0x2105:0x00:Corrin
+CV:0x2105:0x01:Corrin (Player 2)
+C:0x2106:Alm
+C:0x2107:Celica
+C:0x2108:Chrom
+C:0x2109:Tiki
+C:0x210B:Byleth
+
+# Xenoblade (character series == 0x224)
+C:0x2240:Shulk
+
+# Earthbound (character series == 0x228)
+C:0x2280:Ness
+C:0x2281:Lucas
+
+# Chibi-Robo! (character series == 0x22C)
+C:0x22C0:Chibi Robo
+
+# Sonic the Hedgehog (character series == 0x320)
+C:0x3200:Sonic
+
+# Bayonetta (character series == 0x324)
+C:0x3240:Bayonetta
+CV:0x3240:0x00:Bayonetta
+CV:0x3240:0x01:Bayonetta (Player 2)
+
+# Pac-Man (character series == 0x334)
+C:0x3340:Pac-Man
+
+# Dark Souls (character series == 0x338)
+C:0x3380:Solaire of Astora
+
+# Mega Man (character series == 0x348)
+C:0x3480:Mega Man
+
+# Street Fighter (character series == 0x34C)
+C:0x34C0:Ryu
+C:0x34C1:Ken
+
+# Monster Hunter (character series == 0x350)
+C:0x3500:One-Eyed Rathalos and Rider
+# NOTE: Variant 0 isn't actually assigned.
+CV:0x3500:0x00:One-Eyed Rathalos and Rider
+CV:0x3500:0x01:One-Eyed Rathalos and Rider (Male)
+CV:0x3500:0x02:One-Eyed Rathalos and Rider (Female)
+C:0x3501:Nabiru
+C:0x3502:Rathian and Cheval
+# NOTE: Variant 0 isn't actually assigned.
+CV:0x3502:0x00:Rathian and Cheval
+CV:0x3502:0x01:Rathian and Cheval
+C:0x3503:Barioth and Ayuria
+# NOTE: Variant 0 isn't actually assigned.
+CV:0x3503:0x00:Barioth and Ayuria
+CV:0x3503:0x01:Barioth and Ayuria
+C:0x3504:Qurupeco and Dan
+# NOTE: Variant 0 isn't actually assigned.
+CV:0x3504:0x00:Qurupeco and Dan
+CV:0x3504:0x01:Qurupeco and Dan
+C:0x3505:Razewing Ratha
+C:0x3506:Ena
+C:0x3507:Tsukino
+C:0x3508:Magnamalo
+C:0x3509:Palico
+CV:0x3509:0x00:Palico
+CV:0x3509:0x01:Palico "Felyne Malzeno X"
+C:0x350A:Palamute
+CV:0x350A:0x00:Palamute
+CV:0x350A:0x01:Palamute "Canyne Malzeno X"
+C:0x350B:Malzeno
+
+# Shovel Knight (character series == 0x35C)
+C:0x35C0:Shovel Knight
+C:0x35C1:Plague Knight
+C:0x35C2:Specter Knight
+C:0x35C3:King Knight
+
+# Final Fantasy (character series == 0x360)
+C:0x3600:Cloud
+CV:0x3600:0x00:Cloud
+CV:0x3600:0x01:Cloud (Player 2)
+
+# Dragon Quest (character series == 0x364)
+C:0x3640:Hero
+
+# Cereal (character series == 0x374)
+C:0x3740:Super Mario Cereal
+# NOTE: Variant 0 isn't actually assigned.
+CV:0x3740:0x00:Super Mario Cereal
+CV:0x3740:0x01:Super Mario Cereal
+
+# Metal Gear (character series == 0x378)
+C:0x3780:Snake
+
+# Castlevania (character series == 0x37C)
+C:0x37C0:Simon
+C:0x37C1:Richter
+
+# Jikkyou Powerful Pro Baseball (character series == 0x380)
+# FIXME: All of these have character variant = 0x01.
+C:0x3800:Pawapuro
+C:0x3801:Ikari
+C:0x3802:Daijobu
+C:0x3803:Hayakawa
+C:0x3804:Yabe
+C:0x3805:Ganda
+
+# Yu-Gi-Oh! (character series == 0x384)
+C:0x3840:Yuga Oudou
+C:0x3841:Tatsuhisa “Luke” Kamijō
+C:0x3842:Gakuto Sōgetsu
+C:0x3843:Romin Kirishima
+C:0x3844:Roa Kirishima
+C:0x3845:Nail Saionji
+C:0x3846:Asana Mutsuba
+
+# Diablo (character series == 0x38C)
+C:0x38C0:Loot Goblin
+
+# Persona (character series == 0x3A0)
+C:0x3A00:Joker
+
+# Banjo & Kazooie (character series == 0x3B4)
+C:0x3B40:Banjo & Kazooie
+
+# Fatal Fury (character series == 0x3C8)
+C:0x3C80:Terry
+
+### amiibo series (AS) [p.22]
+# AS Fields: ID, Name
+AS:0x00:Super Smash Bros.
+AS:0x01:Super Mario Bros.
+AS:0x02:Chibi Robo!
+AS:0x03:Yarn Yoshi
+AS:0x04:Splatoon
+AS:0x05:Animal Crossing
+AS:0x06:Super Mario Bros. 30th Anniversary
+AS:0x07:Skylanders
+AS:0x09:The Legend of Zelda
+AS:0x0A:Shovel Knight
+AS:0x0C:Kirby
+AS:0x0D:Special Pokémon
+AS:0x0E:Mario Sports Superstars
+AS:0x0F:Monster Hunter
+AS:0x10:BoxBoy!
+AS:0x11:Pikmin
+AS:0x12:Fire Emblem
+AS:0x13:Metroid
+AS:0x14:Other
+AS:0x15:Mega Man
+AS:0x16:Diablo
+AS:0x17:Jikkyou Powerful Pro Baseball
+AS:0x18:Monster Hunter
+AS:0x19:Yu-Gi-Oh!
+AS:0xFF:Super Nintendo World
+
+### amiibo IDs (A) [p.22]
+# A Fields: ID, Release No., Wave, Name
+
+# SSB: Wave 1 [0x0000-0x000B]
+A:0x0000:1:1:Mario
+A:0x0001:2:1:Peach:
+A:0x0002:3:1:Yoshi
+A:0x0003:4:1:Donkey Kong
+A:0x0004:5:1:Link
+A:0x0005:6:1:Fox
+A:0x0006:7:1:Samus
+A:0x0007:8:1:Wii Fit Trainer
+A:0x0008:9:1:Villager
+A:0x0009:10:1:Pikachu
+A:0x000A:11:1:Kirby
+A:0x000B:12:1:Marth
+
+# SSB: Wave 2 [0x000C-0x0012]
+A:0x000E:13:2:Zelda
+A:0x000D:14:2:Diddy Kong
+A:0x000C:15:2:Luigi
+A:0x000F:16:2:Little Mac
+A:0x0010:17:2:Pit
+A:0x0012:18:2:Captain Falcon
+
+# SSB: Waves 3+ [0x0013-0x0033]
+A:0x0013:19:3:Rosalina & Luma
+A:0x0014:20:3:Bowser
+A:0x0011:21:3:Lucario
+A:0x0016:22:3:Toon Link
+A:0x0017:23:3:Sheik
+A:0x0018:24:3:Ike
+A:0x002B:25:3:Shulk
+A:0x0030:26:3:Sonic
+A:0x0031:27:3:Mega Man
+A:0x0028:28:3:King Dedede
+A:0x0027:29:3:Meta Knight
+A:0x002A:30:4:Robin
+A:0x0029:31:4:Lucina
+A:0x001A:32:4:Wario
+A:0x0024:33:4:Charizard
+A:0x002C:34:4:Ness
+A:0x0032:35:4:Pac-Man
+A:0x0025:36:4:Greninja
+A:0x0026:37:4:Jigglypuff
+A:0x001F:38:5:Palutena
+A:0x0020:39:5:Dark Pit
+A:0x001D:40:6:Zero Suit Samus
+A:0x001B:41:6:Ganondorf
+A:0x0019:42:6:Dr. Mario
+A:0x0015:43:6:Bowser Jr.
+A:0x001E:44:6:Olimar
+A:0x002D:45:6:Mr. Game & Watch
+# TODO: Localized release numbers.
+A:0x0033:46:6:R.O.B. (NES)
+A:0x002F:47:6:Duck Hunt
+A:0x0021:48:7:Mii Brawler
+A:0x0022:49:7:Mii Swordfighter
+A:0x0023:50:7:Mii Gunner
+A:0x023D:51:7:Mewtwo
+A:0x001C:52:7:Falco
+
+# SSB: DLC characters (Waves 8+)
+A:0x0251:53:8:Lucas
+A:0x0252:55:9:Roy
+A:0x0253:56:9:Ryu
+
+# SSB: Wave 9
+# TODO: Localized release numbers.
+A:0x002E:54:9:R.O.B. (Famicom)
+
+# SSB: Special amiibo [0x0258]
+A:0x0258:0:0:Mega Man (Gold Edition)
+
+# SSB: Wave 10 [0x0259-0x025B]
+A:0x0259:57:10:Cloud
+A:0x025A:58:10:Corrin
+A:0x025B:59:10:Bayonetta
+
+# SSB: Wave 10 [0x0362-0x0364]
+A:0x0362:60:10:Cloud (Player 2)
+A:0x0363:61:10:Corrin (Player 2)
+A:0x0364:62:10:Bayonetta (Player 2)
+
+# SSBU: Wave 11 [0x037E-0x037F, 0x0382]
+A:0x0382:63:11:Inkling
+A:0x037F:64:11:Ridley
+A:0x037E:65:11:Wolf
+
+# SSBU: Wave 12 [0x037B, 0x0381, 0x038D]
+A:0x037B:66:12:King K. Rool
+A:0x0381:67:12:Ice Climbers
+A:0x038D:68:12:Piranha Plant
+
+# SSBU: Wave 13 [0x037A, 0x037C-0x037D, 0x0380, 0x0383-0x038B]
+A:0x037A:69:13:Daisy
+A:0x037D:70:13:Isabelle
+A:0x0385:71:13:Pichu
+A:0x0389:72:13:Ken
+A:0x037C:73:13:Young Link
+A:0x0387:74:13:Pokémon Trainer
+A:0x038A:75:13:Snake
+A:0x0383:76:13:Ivysaur
+A:0x0384:77:13:Squirtle
+A:0x038B:78:13:Simon
+A:0x0386:79:13:Incineroar
+A:0x0388:80:13:Chrom
+A:0x0380:81:13:Dark Samus
+A:0x038C:82:13:Richter
+
+# SMB: Wave 1 [0x0034-0x0039]
+A:0x0034:1:1:Mario
+A:0x0036:2:1:Peach
+A:0x0038:3:1:Toad
+A:0x0035:4:1:Luigi
+A:0x0037:5:1:Yoshi
+A:0x0039:6:1:Bowser
+
+# SMB: Wave 1: Special Editions [0x003C-0x003D]
+A:0x003C:7:1:Mario (Gold Edition)
+A:0x003D:8:1:Mario (Silver Edition)
+
+# SMB: Wave 2 [0x0262-0x0268]
+A:0x0263:9:2:Wario
+A:0x0267:10:2:Waluigi
+A:0x0266:11:2:Daisy
+A:0x0262:12:2:Rosalina
+A:0x0264:13:2:Donkey Kong
+A:0x0265:14:2:Diddy Kong
+A:0x0268:15:2:Boo
+
+# SMB: Wave 3 [0x0367-0x0368]
+A:0x0367:16:3:Goomba
+A:0x0368:17:3:Koopa Troopa
+
+# SMB: Wave 4 (Super Mario Odyssey) [0x0371-0x0373]
+A:0x0371:18:4:Mario - Wedding
+A:0x0372:19:4:Peach - Wedding
+A:0x0373:20:4:Bowser - Wedding
+
+# Chibi-Robo!
+A:0x003A:0:0:Chibi Robo
+
+# Splatoon: Wave 1 [0x003E-0x0040]
+A:0x003E:0:1:Inkling Girl
+A:0x003F:0:1:Inkling Boy
+A:0x0040:0:1:Inkling Squid
+
+# Splatoon: Wave 2 [0x025D-0x0261]
+A:0x025D:0:2:Callie
+A:0x025E:0:2:Marie
+A:0x025F:0:2:Inkling Girl (Lime Green)
+A:0x0260:0:2:Inkling Boy (Purple)
+A:0x0261:0:2:Inkling Squid (Orange)
+
+# Splatoon: Wave 3 [0x0369-0x036B]
+A:0x0369:0:3:Inkling Girl (Neon Pink)
+A:0x036A:0:3:Inkling Boy (Neon Green)
+A:0x036B:0:3:Inkling Squid (Neon Purple)
+
+# Splatoon: Wave 4 [0x0376-0x0377]
+A:0x0376:0:4:Pearl
+A:0x0377:0:4:Marina
+
+# Splatoon: Wave 5 [0x038E-0x0390]
+A:0x038E:0:5:Octoling Girl
+A:0x038F:0:5:Octoling Boy
+A:0x0390:0:5:Octoling Octopus
+
+# Diablo [0x0391]
+A:0x0391:0:0:Loot Goblin
+
+# Yarn Yoshi [0x0041-0x0043]
+A:0x0041:1:0:Green Yarn Yoshi
+A:0x0042:2:0:Pink Yarn Yoshi
+A:0x0043:3:0:Light Blue Yarn Yoshi
+# Yarn Yoshi: Mega Yarn Yoshi [0x023E]
+A:0x023E:4:0:Mega Yarn Yoshi
+# Yarn Yoshi: Poochy [0x035D]
+A:0x035D:5:0:Poochy
+
+# Animal Crossing Cards: Series 1 [0x0044-0x00A7]
+A:0x0044:1:1:Isabelle
+A:0x0045:2:1:Tom Nook
+A:0x0046:3:1:DJ K.K.
+A:0x0047:4:1:Sable
+A:0x0048:5:1:Kapp'n
+A:0x0049:6:1:Resetti
+A:0x004A:7:1:Joan
+A:0x004B:8:1:Timmy
+A:0x004C:9:1:Digby
+A:0x004D:10:1:Pascal
+A:0x004E:11:1:Harriet
+A:0x004F:12:1:Redd
+A:0x0050:13:1:Sahara
+A:0x0051:14:1:Luna
+A:0x0052:15:1:Tortimer
+A:0x0053:16:1:Lyle
+A:0x0054:17:1:Lottie
+A:0x0055:18:1:Bob
+A:0x0056:19:1:Fauna
+A:0x0057:20:1:Curt
+A:0x0058:21:1:Portia
+A:0x0059:22:1:Leonardo
+A:0x005A:23:1:Cheri
+A:0x005B:24:1:Kyle
+A:0x005C:25:1:Al
+A:0x005D:26:1:Renée
+A:0x005E:27:1:Lopez
+A:0x005F:28:1:Jambette
+A:0x0060:29:1:Rasher
+A:0x0061:30:1:Tiffany
+A:0x0062:31:1:Sheldon
+A:0x0063:32:1:Bluebear
+A:0x0064:33:1:Bill
+A:0x0065:34:1:Kiki
+A:0x0066:35:1:Deli
+A:0x0067:36:1:Alli
+A:0x0068:37:1:Kabuki
+A:0x0069:38:1:Patty
+A:0x006A:39:1:Jitters
+A:0x006B:40:1:Gigi
+A:0x006C:41:1:Quillson
+A:0x006D:42:1:Marcie
+A:0x006E:43:1:Puck
+A:0x006F:44:1:Shari
+A:0x0070:45:1:Octavian
+A:0x0071:46:1:Winnie
+A:0x0072:47:1:Knox
+A:0x0073:48:1:Sterling
+A:0x0074:49:1:Bonbon
+A:0x0075:50:1:Punchy
+A:0x0076:51:1:Opal
+A:0x0077:52:1:Poppy
+A:0x0078:53:1:Limberg
+A:0x0079:54:1:Deena
+A:0x007A:55:1:Snake
+A:0x007B:56:1:Bangle
+A:0x007C:57:1:Phil
+A:0x007D:58:1:Monique
+A:0x007E:59:1:Nate
+A:0x007F:60:1:Samson
+A:0x0080:61:1:Tutu
+A:0x0081:62:1:T-Bone
+A:0x0082:63:1:Mint
+A:0x0083:64:1:Pudge
+A:0x0084:65:1:Midge
+A:0x0085:66:1:Gruff
+A:0x0086:67:1:Flurry
+A:0x0087:68:1:Clyde
+A:0x0088:69:1:Bella
+A:0x0089:70:1:Biff
+A:0x008A:71:1:Yuka
+A:0x008B:72:1:Lionel
+A:0x008C:73:1:Flo
+A:0x008D:74:1:Cobb
+A:0x008E:75:1:Amelia
+A:0x008F:76:1:Jeremiah
+A:0x0090:77:1:Cherry
+A:0x0091:78:1:Rosco
+A:0x0092:79:1:Truffles
+A:0x0093:80:1:Eugene
+A:0x0094:81:1:Eunice
+A:0x0095:82:1:Goose
+A:0x0096:83:1:Annalisa
+A:0x0097:84:1:Benjamin
+A:0x0098:85:1:Pancetti
+A:0x0099:86:1:Chief
+A:0x009A:87:1:Bunnie
+A:0x009B:88:1:Clay
+A:0x009C:89:1:Diana
+A:0x009D:90:1:Axel
+A:0x009E:91:1:Muffy
+A:0x009F:92:1:Henry
+A:0x00A0:93:1:Bertha
+A:0x00A1:94:1:Cyrano
+A:0x00A2:95:1:Peanut
+A:0x00A3:96:1:Cole
+A:0x00A4:97:1:Willow
+A:0x00A5:98:1:Roald
+A:0x00A6:99:1:Molly
+A:0x00A7:100:1:Walker
+
+# Animal Crossing Cards: Series 2 [0x00A8-0x010B]
+A:0x00A8:101:2:K.K. Slider
+A:0x00A9:102:2:Reese
+A:0x00AA:103:2:Kicks
+A:0x00AB:104:2:Labelle
+A:0x00AC:105:2:Copper
+A:0x00AD:106:2:Booker
+A:0x00AE:107:2:Katie
+A:0x00AF:108:2:Tommy
+A:0x00B0:109:2:Porter
+A:0x00B1:110:2:Lelia
+A:0x00B2:111:2:Dr. Shrunk
+A:0x00B3:112:2:Don Resetti
+A:0x00B4:113:2:Isabelle (Autumn Outfit)
+A:0x00B5:114:2:Blanca
+A:0x00B6:115:2:Nat
+A:0x00B7:116:2:Chip
+A:0x00B8:117:2:Jack
+A:0x00B9:118:2:Poncho
+A:0x00BA:119:2:Felicity
+A:0x00BB:120:2:Ozzie
+A:0x00BC:121:2:Tia
+A:0x00BD:122:2:Lucha
+A:0x00BE:123:2:Fuchsia
+A:0x00BF:124:2:Harry
+A:0x00C0:125:2:Gwen
+A:0x00C1:126:2:Coach
+A:0x00C2:127:2:Kitt
+A:0x00C3:128:2:Tom
+A:0x00C4:129:2:Tipper
+A:0x00C5:130:2:Prince
+A:0x00C6:131:2:Pate
+A:0x00C7:132:2:Vladimir
+A:0x00C8:133:2:Savannah
+A:0x00C9:134:2:Kidd
+A:0x00CA:135:2:Phoebe
+A:0x00CB:136:2:Egbert
+A:0x00CC:137:2:Cookie
+A:0x00CD:138:2:Sly
+A:0x00CE:139:2:Blaire
+A:0x00CF:140:2:Avery
+A:0x00D0:141:2:Nana
+A:0x00D1:142:2:Peck
+A:0x00D2:143:2:Olivia
+A:0x00D3:144:2:Cesar
+A:0x00D4:145:2:Carmen
+A:0x00D5:146:2:Rodney
+A:0x00D6:147:2:Scoot
+A:0x00D7:148:2:Whitney
+A:0x00D8:149:2:Broccolo
+A:0x00D9:150:2:Coco
+A:0x00DA:151:2:Groucho
+A:0x00DB:152:2:Wendy
+A:0x00DC:153:2:Alfonso
+A:0x00DD:154:2:Rhonda
+A:0x00DE:155:2:Butch
+A:0x00DF:156:2:Gabi
+A:0x00E0:157:2:Moose
+A:0x00E1:158:2:Timbra
+A:0x00E2:159:2:Zell
+A:0x00E3:160:2:Pekoe
+A:0x00E4:161:2:Teddy
+A:0x00E5:162:2:Mathilda
+A:0x00E6:163:2:Ed
+A:0x00E7:164:2:Bianca
+A:0x00E8:165:2:Filbert
+A:0x00E9:166:2:Kitty
+A:0x00EA:167:2:Beau
+A:0x00EB:168:2:Nan
+A:0x00EC:169:2:Bud
+A:0x00ED:170:2:Ruby
+A:0x00EE:171:2:Benedict
+A:0x00EF:172:2:Agnes
+A:0x00F0:173:2:Julian
+A:0x00F1:174:2:Bettina
+A:0x00F2:175:2:Jay
+A:0x00F3:176:2:Sprinkle
+A:0x00F4:177:2:Flip
+A:0x00F5:178:2:Hugh
+A:0x00F6:179:2:Hopper
+A:0x00F7:180:2:Pecan
+A:0x00F8:181:2:Drake
+A:0x00F9:182:2:Alice
+A:0x00FA:183:2:Camofrog
+A:0x00FB:184:2:Anicotti
+A:0x00FC:185:2:Chops
+A:0x00FD:186:2:Charlise
+A:0x00FE:187:2:Vic
+A:0x00FF:188:2:Ankha
+A:0x0100:189:2:Drift
+A:0x0101:190:2:Vesta
+A:0x0102:191:2:Marcel
+A:0x0103:192:2:Pango
+A:0x0104:193:2:Keaton
+A:0x0105:194:2:Gladys
+A:0x0106:195:2:Hamphrey
+A:0x0107:196:2:Freya
+A:0x0108:197:2:Kid Cat
+A:0x0109:198:2:Agent S
+A:0x010A:199:2:Big Top
+A:0x010B:200:2:Rocket
+
+# Animal Crossing Cards: Series 3 [0x010C-0x016F]
+A:0x010C:201:3:Rover
+A:0x010D:202:3:Blathers
+A:0x010E:203:3:Tom Nook
+A:0x010F:204:3:Pelly
+A:0x0110:205:3:Phyllis
+A:0x0111:206:3:Pete
+A:0x0112:207:3:Mabel
+A:0x0113:208:3:Leif
+A:0x0114:209:3:Wendell
+A:0x0115:210:3:Cyrus
+A:0x0116:211:3:Grams
+A:0x0117:212:3:Timmy
+A:0x0118:213:3:Digby
+A:0x0119:214:3:Don Resetti
+A:0x011A:215:3:Isabelle
+A:0x011B:216:3:Franklin
+A:0x011C:217:3:Jingle
+A:0x011D:218:3:Lily
+A:0x011E:219:3:Anchovy
+A:0x011F:220:3:Tabby
+A:0x0120:221:3:Kody
+A:0x0121:222:3:Miranda
+A:0x0122:223:3:Del
+A:0x0123:224:3:Paula
+A:0x0124:225:3:Ken
+A:0x0125:226:3:Mitzi
+A:0x0126:227:3:Rodeo
+A:0x0127:228:3:Bubbles
+A:0x0128:229:3:Cousteau
+A:0x0129:230:3:Velma
+A:0x012A:231:3:Elvis
+A:0x012B:232:3:Canberra
+A:0x012C:233:3:Colton
+A:0x012D:234:3:Marina
+A:0x012E:235:3:Spork/Crackle
+A:0x012F:236:3:Freckles
+A:0x0130:237:3:Bam
+A:0x0131:238:3:Friga
+A:0x0132:239:3:Ricky
+A:0x0133:240:3:Deirdre
+A:0x0134:241:3:Hans
+A:0x0135:242:3:Chevre
+A:0x0136:243:3:Drago
+A:0x0137:244:3:Tangy
+A:0x0138:245:3:Mac
+A:0x0139:246:3:Eloise
+A:0x013A:247:3:Wart Jr.
+A:0x013B:248:3:Hazel
+A:0x013C:249:3:Beardo
+A:0x013D:250:3:Ava
+A:0x013E:251:3:Chester
+A:0x013F:252:3:Merry
+A:0x0140:253:3:Genji
+A:0x0141:254:3:Greta
+A:0x0142:255:3:Wolfgang
+A:0x0143:256:3:Diva
+A:0x0144:257:3:Klaus
+A:0x0145:258:3:Daisy
+A:0x0146:259:3:Stinky
+A:0x0147:260:3:Tammi
+A:0x0148:261:3:Tucker
+A:0x0149:262:3:Blanche
+A:0x014A:263:3:Gaston
+A:0x014B:264:3:Marshal
+A:0x014C:265:3:Gala
+A:0x014D:266:3:Joey
+A:0x014E:267:3:Pippy
+A:0x014F:268:3:Buck
+A:0x0150:269:3:Bree
+A:0x0151:270:3:Rooney
+A:0x0152:271:3:Curlos
+A:0x0153:272:3:Skye
+A:0x0154:273:3:Moe
+A:0x0155:274:3:Flora
+A:0x0156:275:3:Hamlet
+A:0x0157:276:3:Astrid
+A:0x0158:277:3:Monty
+A:0x0159:278:3:Dora
+A:0x015A:279:3:Biskit
+A:0x015B:280:3:Victoria
+A:0x015C:281:3:Lyman
+A:0x015D:282:3:Violet
+A:0x015E:283:3:Frank
+A:0x015F:284:3:Chadder
+A:0x0160:285:3:Merengue
+A:0x0161:286:3:Cube
+A:0x0162:287:3:Claudia
+A:0x0163:288:3:Curly
+A:0x0164:289:3:Boomer
+A:0x0165:290:3:Caroline
+A:0x0166:291:3:Sparro
+A:0x0167:292:3:Baabara
+A:0x0168:293:3:Rolf
+A:0x0169:294:3:Maple
+A:0x016A:295:3:Antonio
+A:0x016B:296:3:Soleil
+A:0x016C:297:3:Apollo
+A:0x016D:298:3:Derwin
+A:0x016E:299:3:Francine
+A:0x016F:300:3:Chrissy
+
+# Animal Crossing Cards: Series 4 [0x0170-0x01D3]
+A:0x0170:301:4:Isabelle
+A:0x0171:302:4:Brewster
+A:0x0172:303:4:Katrina
+A:0x0173:304:4:Phineas
+A:0x0174:305:4:Celeste
+A:0x0175:306:4:Tommy
+A:0x0176:307:4:Gracie
+A:0x0177:308:4:Leilani
+A:0x0178:309:4:Resetti
+A:0x0179:310:4:Timmy
+A:0x017A:311:4:Lottie
+A:0x017B:312:4:Shrunk
+A:0x017C:313:4:Pave
+A:0x017D:314:4:Gulliver
+A:0x017E:315:4:Redd
+A:0x017F:316:4:Zipper
+A:0x0180:317:4:Goldie
+A:0x0181:318:4:Stitches
+A:0x0182:319:4:Pinky
+A:0x0183:320:4:Mott
+A:0x0184:321:4:Mallary
+A:0x0185:322:4:Rocco
+A:0x0186:323:4:Katt
+A:0x0187:324:4:Graham
+A:0x0188:325:4:Peaches
+A:0x0189:326:4:Dizzy
+A:0x018A:327:4:Penelope
+A:0x018B:328:4:Boone
+A:0x018C:329:4:Broffina
+A:0x018D:330:4:Croque
+A:0x018E:331:4:Pashmina
+A:0x018F:332:4:Shep
+A:0x0190:333:4:Lolly
+A:0x0191:334:4:Erik
+A:0x0192:335:4:Dotty
+A:0x0193:336:4:Pierce
+A:0x0194:337:4:Queenie
+A:0x0195:338:4:Fang
+A:0x0196:339:4:Frita
+A:0x0197:340:4:Tex
+A:0x0198:341:4:Melba
+A:0x0199:342:4:Bones
+A:0x019A:343:4:Anabelle
+A:0x019B:344:4:Rudy
+A:0x019C:345:4:Naomi
+A:0x019D:346:4:Peewee
+A:0x019E:347:4:Tammy
+A:0x019F:348:4:Olaf
+A:0x01A0:349:4:Lucy
+A:0x01A1:350:4:Elmer
+A:0x01A2:351:4:Puddles
+A:0x01A3:352:4:Rory
+A:0x01A4:353:4:Elise
+A:0x01A5:354:4:Walt
+A:0x01A6:355:4:Mira
+A:0x01A7:356:4:Pietro
+A:0x01A8:357:4:Aurora
+A:0x01A9:358:4:Papi
+A:0x01AA:359:4:Apple
+A:0x01AB:360:4:Rod
+A:0x01AC:361:4:Purrl
+A:0x01AD:362:4:Static
+A:0x01AE:363:4:Celia
+A:0x01AF:364:4:Zucker
+A:0x01B0:365:4:Peggy
+A:0x01B1:366:4:Ribbot
+A:0x01B2:367:4:Annalise
+A:0x01B3:368:4:Chow
+A:0x01B4:369:4:Sylvia
+A:0x01B5:370:4:Jacques
+A:0x01B6:371:4:Sally
+A:0x01B7:372:4:Doc
+A:0x01B8:373:4:Pompom
+A:0x01B9:374:4:Tank
+A:0x01BA:375:4:Becky
+A:0x01BB:376:4:Rizzo
+A:0x01BC:377:4:Sydney
+A:0x01BD:378:4:Barold
+A:0x01BE:379:4:Nibbles
+A:0x01BF:380:4:Kevin
+A:0x01C0:381:4:Gloria
+A:0x01C1:382:4:Lobo
+A:0x01C2:383:4:Hippeux
+A:0x01C3:384:4:Margie
+A:0x01C4:385:4:Lucky
+A:0x01C5:386:4:Rosie
+A:0x01C6:387:4:Rowan
+A:0x01C7:388:4:Maelle
+A:0x01C8:389:4:Bruce
+A:0x01C9:390:4:OHare
+A:0x01CA:391:4:Gayle
+A:0x01CB:392:4:Cranston
+A:0x01CC:393:4:Frobert
+A:0x01CD:394:4:Grizzly
+A:0x01CE:395:4:Cally
+A:0x01CF:396:4:Simon
+A:0x01D0:397:4:Iggly
+A:0x01D1:398:4:Angus
+A:0x01D2:399:4:Twiggy
+A:0x01D3:400:4:Robin
+
+# Animal Crossing: Character Parfait, Amiibo Festival
+A:0x01D4:401:5:Isabelle (Parfait)
+A:0x01D5:402:5:Goldie (amiibo Festival)
+A:0x01D6:403:5:Stitches (amiibo Festival)
+A:0x01D7:404:5:Rosie (amiibo Festival)
+A:0x01D8:405:5:K.K. Slider (Parfait)
+
+# Animal Crossing x Sanrio Series [0x0319-0x031E]
+A:0x0319:1:6:Rilla
+A:0x031A:2:6:Marty
+A:0x031B:3:6:Étoile
+A:0x031C:4:6:Chai
+A:0x031D:5:6:Chelsea
+A:0x031E:6:6:Toby
+
+# Animal Crossing: Welcome Amiibo Series [0x02E8-0x031E]
+A:0x02E7:1:7:Vivian
+A:0x02E8:2:7:Hopkins
+A:0x02E9:3:7:June
+A:0x02EA:4:7:Piper
+A:0x02EB:5:7:Paolo
+A:0x02EC:6:7:Hornsby
+A:0x02ED:7:7:Stella
+A:0x02EE:8:7:Tybalt
+A:0x02EF:9:7:Huck
+A:0x02F0:10:7:Sylvana
+A:0x02F1:11:7:Boris
+A:0x02F2:12:7:Wade
+A:0x02F3:13:7:Carrie
+A:0x02F4:14:7:Ketchup
+A:0x02F5:15:7:Rex
+A:0x02F6:16:7:Stu
+A:0x02F7:17:7:Ursala
+A:0x02F8:18:7:Jacob
+A:0x02F9:19:7:Maddie
+A:0x02FA:20:7:Billy
+A:0x02FB:21:7:Boyd
+A:0x02FC:22:7:Bitty
+A:0x02FD:23:7:Maggie
+A:0x02FE:24:7:Murphy
+A:0x02FF:25:7:Plucky
+A:0x0300:26:7:Sandy
+A:0x0301:27:7:Claude
+A:0x0302:28:7:Raddle
+A:0x0303:29:7:Julia
+A:0x0304:30:7:Louie
+A:0x0305:31:7:Bea
+A:0x0306:32:7:Admiral
+A:0x0307:33:7:Ellie
+A:0x0308:34:7:Boots
+A:0x0309:35:7:Weber
+A:0x030A:36:7:Candi
+A:0x030B:37:7:Leopold
+A:0x030C:38:7:Spike
+A:0x030D:39:7:Cashmere
+A:0x030E:40:7:Tad
+A:0x030F:41:7:Norma
+A:0x0310:42:7:Gonzo
+A:0x0311:43:7:Sprocket
+A:0x0312:44:7:Snooty
+A:0x0313:45:7:Olive
+A:0x0314:46:7:Dobie
+A:0x0315:47:7:Buzz
+A:0x0316:48:7:Cleo
+A:0x0317:49:7:Ike
+A:0x0318:50:7:Tasha
+
+# SMB 30th Anniversary [0x0238-0x0239]
+A:0x0238:1:1:8-bit Mario (Classic Color)
+A:0x0239:2:1:8-bit Mario (Modern Color)
+
+# Skylanders Series [0x023A-0x023B]
+A:0x023A:1:0:Hammer Slam Bowser
+A:0x023B:2:0:Turbo Charge Donkey Kong
+# NOTE: Cannot distinguish between regular and dark
+# variants in amiibo mode.
+#A:0x023A:3:0:Dark Hammer Slam Bowser
+#A:0x023B:4:0:Dark Turbo Charge Donkey Kong
+
+# Animal Crossing Figurines: Wave 1 [0x023F-0x0246]
+A:0x023F:0:1:Isabelle
+A:0x0240:0:1:K.K. Slider
+A:0x0241:0:1:Mabel
+A:0x0242:0:1:Tom Nook
+A:0x0243:0:1:Digby
+A:0x0244:0:1:Lottie
+A:0x0245:0:1:Reese
+A:0x0246:0:1:Cyrus
+
+# Animal Crossing Figurines: Wave 2 [0x0247-0x024A]
+A:0x0247:0:2:Blathers
+A:0x0248:0:2:Celeste
+A:0x0249:0:2:Resetti
+A:0x024A:0:2:Kicks
+
+# Animal Crossing Figurines: Wave 4 (out of order) [0x024B]
+A:0x024B:0:4:Isabelle (Summer Outfit)
+
+# Animal Crossing Figurines: Wave 3 [0x024C-0x024E]
+A:0x024C:0:3:Rover
+A:0x024D:0:3:Timmy & Tommy
+A:0x024E:0:3:Kapp'n
+
+# The Legend of Zelda: Twilight Princess [0x024F]
+A:0x024F:0:1:Midna & Wolf Link
+
+# Shovel Knight [0x0250]
+A:0x0250:0:0:Shovel Knight
+# Shovel Knight [0x36C-0x036E]
+A:0x036C:0:0:Plague Knight
+A:0x036D:0:0:Specter Knight
+A:0x036E:0:0:King Knight
+# Shovel Knight [0x0392]
+A:0x0392:0:0:Shovel Knight (Gold Edition)
+
+# Kirby [0x0254-0x0257]
+A:0x0254:0:0:Kirby
+A:0x0255:0:0:Meta Knight
+A:0x0256:0:0:King Dedede
+A:0x0257:0:0:Waddle Dee
+
+# Special Pokémon [0x025C]
+A:0x025C:0:0:Shadow Mewtwo
+# Special Pokémon [0x0375]
+A:0x0375:0:0:Detective Pikachu
+
+# Mario Sports Superstars Cards [0x0269-0x02C2]
+A:0x0269:1:1:Mario (Soccer)
+A:0x026A:2:1:Mario (Baseball)
+A:0x026B:3:1:Mario (Tennis)
+A:0x026C:4:1:Mario (Golf)
+A:0x026D:5:1:Mario (Horse Racing)
+A:0x026E:6:1:Luigi (Soccer)
+A:0x026F:7:1:Luigi (Baseball)
+A:0x0270:8:1:Luigi (Tennis)
+A:0x0271:9:1:Luigi (Golf)
+A:0x0272:10:1:Luigi (Horse Racing)
+A:0x0273:11:1:Peach (Soccer)
+A:0x0274:12:1:Peach (Baseball)
+A:0x0275:13:1:Peach (Tennis)
+A:0x0276:14:1:Peach (Golf)
+A:0x0277:15:1:Peach (Horse Racing)
+A:0x0278:16:1:Daisy (Soccer)
+A:0x0279:17:1:Daisy (Baseball)
+A:0x027A:18:1:Daisy (Tennis)
+A:0x027B:19:1:Daisy (Golf)
+A:0x027C:20:1:Daisy (Horse Racing)
+A:0x027D:21:1:Yoshi (Soccer)
+A:0x027E:22:1:Yoshi (Baseball)
+A:0x027F:23:1:Yoshi (Tennis)
+A:0x0280:24:1:Yoshi (Golf)
+A:0x0281:25:1:Yoshi (Horse Racing)
+A:0x0282:26:1:Wario (Soccer)
+A:0x0283:27:1:Wario (Baseball)
+A:0x0284:28:1:Wario (Tennis)
+A:0x0285:29:1:Wario (Golf)
+A:0x0286:30:1:Wario (Horse Racing)
+A:0x0287:31:1:Waluigi (Soccer)
+A:0x0288:32:1:Waluigi (Baseball)
+A:0x0289:33:1:Waluigi (Tennis)
+A:0x028A:34:1:Waluigi (Golf)
+A:0x028B:35:1:Waluigi (Horse Racing)
+A:0x028C:36:1:Donkey Kong (Soccer)
+A:0x028D:37:1:Donkey Kong (Baseball)
+A:0x028E:38:1:Donkey Kong (Tennis)
+A:0x028F:39:1:Donkey Kong (Golf)
+A:0x0290:40:1:Donkey Kong (Horse Racing)
+A:0x0291:41:1:Diddy Kong (Soccer)
+A:0x0292:42:1:Diddy Kong (Baseball)
+A:0x0293:43:1:Diddy Kong (Tennis)
+A:0x0294:44:1:Diddy Kong (Golf)
+A:0x0295:45:1:Diddy Kong (Horse Racing)
+A:0x0296:46:1:Bowser (Soccer)
+A:0x0297:47:1:Bowser (Baseball)
+A:0x0298:48:1:Bowser (Tennis)
+A:0x0299:49:1:Bowser (Golf)
+A:0x029A:50:1:Bowser (Horse Racing)
+A:0x029B:51:1:Bowser Jr. (Soccer)
+A:0x029C:52:1:Bowser Jr. (Baseball)
+A:0x029D:53:1:Bowser Jr. (Tennis)
+A:0x029E:54:1:Bowser Jr. (Golf)
+A:0x029F:55:1:Bowser Jr. (Horse Racing)
+A:0x02A0:56:1:Boo (Soccer)
+A:0x02A1:57:1:Boo (Baseball)
+A:0x02A2:58:1:Boo (Tennis)
+A:0x02A3:59:1:Boo (Golf)
+A:0x02A4:60:1:Boo (Horse Racing)
+A:0x02A5:61:1:Baby Mario (Soccer)
+A:0x02A6:62:1:Baby Mario (Baseball)
+A:0x02A7:63:1:Baby Mario (Tennis)
+A:0x02A8:64:1:Baby Mario (Golf)
+A:0x02A9:65:1:Baby Mario (Horse Racing)
+A:0x02AA:66:1:Baby Luigi (Soccer)
+A:0x02AB:67:1:Baby Luigi (Baseball)
+A:0x02AC:68:1:Baby Luigi (Tennis)
+A:0x02AD:69:1:Baby Luigi (Golf)
+A:0x02AE:70:1:Baby Luigi (Horse Racing)
+A:0x02AF:71:1:Birdo (Soccer)
+A:0x02B0:72:1:Birdo (Baseball)
+A:0x02B1:73:1:Birdo (Tennis)
+A:0x02B2:74:1:Birdo (Golf)
+A:0x02B3:75:1:Birdo (Horse Racing)
+A:0x02B4:76:1:Rosalina (Soccer)
+A:0x02B5:77:1:Rosalina (Baseball)
+A:0x02B6:78:1:Rosalina (Tennis)
+A:0x02B7:79:1:Rosalina (Golf)
+A:0x02B8:80:1:Rosalina (Horse Racing)
+A:0x02B9:81:1:Metal Mario (Soccer)
+A:0x02BA:82:1:Metal Mario (Baseball)
+A:0x02BB:83:1:Metal Mario (Tennis)
+A:0x02BC:84:1:Metal Mario (Golf)
+A:0x02BD:85:1:Metal Mario (Horse Racing)
+A:0x02BE:86:1:Pink Gold Peach (Soccer)
+A:0x02BF:87:1:Pink Gold Peach (Baseball)
+A:0x02C0:88:1:Pink Gold Peach (Tennis)
+A:0x02C1:89:1:Pink Gold Peach (Golf)
+A:0x02C2:90:1:Pink Gold Peach (Horse Racing)
+
+# Monster Hunter Stories (Wave 1) [0x02E1-0x02E6]
+A:0x02E2:1:1:One-Eyed Rathalos and Rider (Male)
+A:0x02E1:2:1:One-Eyed Rathalos and Rider (Female)
+A:0x02E3:3:1:Nabiru
+A:0x02E4:4:2:Rathian and Cheval
+A:0x02E5:5:2:Barioth and Ayuria
+A:0x02E6:6:2:Qurupeco and Dan
+
+# The Legend of Zelda: 30th Anniversary Series [0x034B-0x0352]
+A:0x034B:0:2:Link (Ocarina of Time)
+A:0x034C:0:4:Link (Majora's Mask)
+A:0x034D:0:4:Link (Twilight Princess)
+A:0x034E:0:4:Link (Skyward Sword)
+A:0x034F:0:2:Link (8-bit)
+A:0x0350:0:2:Toon Link (The Wind Waker)
+A:0x0352:0:2:Toon Zelda (The Wind Waker)
+
+# The Legend of Zelda: Breath of the Wild Series [0x0353-0x0356, 0x035C]
+A:0x0353:0:3:Link (Archer)
+A:0x0354:0:3:Link (Rider)
+A:0x0355:0:3:Guardian
+A:0x0356:0:3:Zelda
+A:0x035C:0:3:Bokoblin
+
+# The Legend of Zelda: Breath of the Wild Series (Champions) [0x0358-0x035B]
+A:0x0358:0:4:Daruk
+A:0x0359:0:4:Urbosa
+A:0x035A:0:4:Mipha
+A:0x035B:0:4:Revali
+
+# BoxBoy!: Qbby [0x035E]
+A:0x035E:0:0:Qbby
+
+# Pikmin [0x035F]
+A:0x035F:0:0:Pikmin
+
+# Fire Emblem [0x0360-0x0361]
+A:0x0360:1:0:Alm
+A:0x0361:2:0:Celica
+# Fire Emblem [0x036F-0x0370]
+A:0x036F:3:0:Chrom
+A:0x0370:4:0:Tiki
+
+# Metroid [0x365-0x366]
+A:0x0365:1:1:Samus Aran
+A:0x0366:2:1:Metroid
+
+# Cereal [0x374]
+A:0x0374:0:0:Super Mario Cereal
+
+# Dark Souls [0x0378]
+A:0x0378:0:0:Solaire of Astora
+
+# Mega Man [0x0379]
+A:0x0379:0:0:Mega Man
+
+# Jikkyou Powerful Pro Baseball [0x0393-0x0398]
+A:0x0393:1:0:Pawapuro
+A:0x0394:2:0:Ikari
+A:0x0397:3:0:Yabe
+A:0x0396:4:0:Hayakawa
+A:0x0398:5:0:Ganda
+A:0x0395:6:0:Daijobu
+
+# The Legend of Zelda: Link's Awakening Series [0x0399]
+A:0x0399:0:0:Link
+
+# Super Nintendo World: Power-Up Bands [0x039B-0x039F]
+A:0x039B:1:1:Mario Power-Up Band
+A:0x039C:2:1:Luigi Power-Up Band
+A:0x039D:3:1:Peach Power-Up Band
+A:0x039E:4:1:Daisy Power-Up Band
+A:0x03A0:5:1:Toad Power-Up Band
+A:0x039F:6:1:Yoshi Power-Up Band
+
+# SSBU: Wave 14 (Ultimate Fighter Pass 1) [0x03A1-0x03A5]
+A:0x03A1:83:14:Joker
+A:0x03A2:84:14:Hero
+A:0x03A3:85:14:Banjo & Kazooie
+A:0x03A4:86:14:Terry
+A:0x03A5:87:14:Byleth
+
+# SMB: Wave 5 (Super Mario 3D World + Bowser's Fury) [0x03A6-0x03A7]
+A:0x03A6:21:5:Cat Mario
+A:0x03A7:22:5:Cat Peach
+
+# Animal Crossing Cards: Series 5 [0x03A8-0x03D7]
+A:0x03A8:401:8:Tom Nook
+A:0x03A9:402:8:Timmy & Tommy
+A:0x03AA:403:8:Isabelle
+A:0x03AB:404:8:Orville
+A:0x03AC:405:8:Wilbur
+A:0x03AD:406:8:Blathers
+A:0x03AE:407:8:Celeste
+A:0x03AF:408:8:Mabel
+A:0x03B0:409:8:Sable
+A:0x03B1:410:8:Label
+A:0x03B2:411:8:K.K. Slider
+A:0x03B3:412:8:C.J.
+A:0x03B4:413:8:Flick
+A:0x03B5:414:8:Daisy Mae
+A:0x03B6:415:8:Kicks
+A:0x03B7:416:8:Saharah
+A:0x03B8:417:8:Harvey
+A:0x03B9:418:8:Gulliver
+A:0x03BA:419:8:Wisp
+A:0x03BB:420:8:Lottie (Island)
+A:0x03BC:421:8:Niko
+A:0x03BD:422:8:Wardell
+A:0x03BE:423:8:Tom Nook (Coat)
+A:0x03BF:424:8:Isabelle (Sweater)
+A:0x03C0:425:8:Sherb
+A:0x03C1:426:8:Megan
+A:0x03C2:427:8:Dom
+A:0x03C3:428:8:Audie
+A:0x03C4:429:8:Cyd
+A:0x03C5:430:8:Judy
+A:0x03C6:431:8:Raymond
+A:0x03C7:432:8:Reneigh
+A:0x03C8:433:8:Sasha
+A:0x03C9:434:8:Ione
+A:0x03CA:435:8:Tiansheng
+A:0x03CB:436:8:Shino
+A:0x03CC:437:8:Marlo
+A:0x03CD:438:8:Petri
+A:0x03CE:439:8:Cephalobot
+A:0x03CF:440:8:Quinn
+A:0x03D0:441:8:Chabwick
+A:0x03D1:442:8:Zoe
+A:0x03D2:443:8:Ace
+A:0x03D3:444:8:Rio
+A:0x03D4:445:8:Frett
+A:0x03D5:446:8:Azalea
+A:0x03D6:447:8:Roswell
+A:0x03D7:448:8:Faith
+
+# Monster Hunter Stories (Wave 2) [0x040C-0x040E]
+A:0x040C:8:2:Razewing Ratha
+A:0x040D:7:2:Ena
+A:0x040E:9:2:Tsukino
+
+# Monster Hunter Rise (Wave 1) [0x040F-0x0411]
+A:0x040F:0:1:Magnamalo
+A:0x0410:0:1:Palico
+A:0x0411:0:1:Palamute
+
+# Metroid Dread [0x412-0x413]
+A:0x0412:0:0:Samus (Metroid Dread)
+A:0x0413:0:0:E.M.M.I.
+
+# The Legend of Zelda: Skyward Sword Series [0x414]
+A:0x0414:0:0:Zelda & Loftwing
+
+# SSBU: Wave 15 (Ultimate Fighter Pass 2) [0x041D]
+A:0x041D:88:15:Min Min
+
+# Yu-Gi-Oh! [0x424-0x42A]
+A:0x0424:0:0:Yuga Oudou
+A:0x0425:0:0:Tatsuhisa “Luke” Kamijō
+A:0x0426:0:0:Gakuto Sōgetsu
+A:0x0427:0:0:Romin Kirishima
+A:0x0428:0:0:Roa Kirishima
+A:0x0429:0:0:Nail Saionji
+A:0x042A:0:0:Asana Mutsuba
+
+# Monster Hunter Rise (Wave 2) [0x042B-0x042D]
+A:0x042B:0:2:Palico "Felyne Malzeno X"
+A:0x042C:0:2:Palamute "Canyne Malzeno X"
+A:0x042D:0:2:Malzeno

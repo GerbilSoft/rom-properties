@@ -620,6 +620,10 @@ if(PNG_SHARED)
 endif()
 
 if(PNG_STATIC)
+  # rom-properties: Hide all symbols so they're not exported by libromdata.
+  INCLUDE(CheckHiddenVisibility)
+  CHECK_HIDDEN_VISIBILITY()
+
   # does not work without changing name
   set(PNG_LIB_NAME_STATIC png_static)
   add_library(png_static STATIC ${libpng_sources})

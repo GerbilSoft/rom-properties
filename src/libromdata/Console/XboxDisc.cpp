@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * XboxDisc.cpp: Microsoft Xbox disc image parser.                         *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -32,8 +32,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(XboxDisc)
-
 class XboxDiscPrivate final : public RomDataPrivate
 {
 	public:
@@ -43,6 +41,12 @@ class XboxDiscPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(XboxDiscPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// Disc type.
@@ -57,13 +61,13 @@ class XboxDiscPrivate final : public RomDataPrivate
 			Max
 		};
 		DiscType discType;
-		uint8_t wave;
+		uint8_t wave;	// XGD2: Wave number
+		bool isKreon;	// Are we using a Kreon drive?
 
 		// XDVDFS starting address.
 		off64_t xdvdfs_addr;
 
 		// XDVDFSPartition
-		DiscReader *discReader;
 		XDVDFSPartition *xdvdfsPartition;
 
 		// default.xbe / default.xex
@@ -105,9 +109,6 @@ class XboxDiscPrivate final : public RomDataPrivate
 		 */
 		ConsoleType getConsoleType(void) const;
 
-		// Are we using a Kreon drive?
-		bool isKreon;
-
 		/**
 		 * Unlock the Kreon drive.
 		 */
@@ -119,18 +120,39 @@ class XboxDiscPrivate final : public RomDataPrivate
 		inline void lockKreonDrive(void);
 };
 
+ROMDATA_IMPL(XboxDisc)
+
 /** XboxDiscPrivate **/
 
+/* RomDataInfo */
+const char *const XboxDiscPrivate::exts[] = {
+	".iso",		// ISO
+	".xiso",	// Xbox ISO image
+	// TODO: More?
+
+	nullptr
+};
+const char *const XboxDiscPrivate::mimeTypes[] = {
+	// Unofficial MIME types from FreeDesktop.org..
+	"application/x-cd-image",
+	"application/x-iso9660-image",
+
+	// TODO: XDVDFS?
+	nullptr
+};
+const RomDataInfo XboxDiscPrivate::romDataInfo = {
+	"XboxDisc", exts, mimeTypes
+};
+
 XboxDiscPrivate::XboxDiscPrivate(XboxDisc *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, wave(0)
+	, isKreon(false)
 	, xdvdfs_addr(0)
-	, discReader(nullptr)
 	, xdvdfsPartition(nullptr)
 	, defaultExeData(nullptr)
 	, exeType(ExeType::Unknown)
-	, isKreon(false)
 {
 }
 
@@ -142,7 +164,6 @@ XboxDiscPrivate::~XboxDiscPrivate()
 
 	UNREF(defaultExeData);
 	UNREF(xdvdfsPartition);
-	UNREF(discReader);
 }
 
 /**
@@ -291,7 +312,6 @@ XboxDisc::XboxDisc(IRpFile *file)
 {
 	// This class handles disc images.
 	RP_D(XboxDisc);
-	d->className = "XboxDisc";
 	d->mimeType = "application/x-cd-image";	// unofficial
 	d->fileType = FileType::DiscImage;
 
@@ -319,6 +339,8 @@ XboxDisc::XboxDisc(IRpFile *file)
 			d->xdvdfs_addr = XDVDFS_LBA_OFFSET_XGD1 * XDVDFS_BLOCK_SIZE;
 			break;
 		case XboxDiscPrivate::DiscType::XGD2:
+			// NOTE: May be XGD3.
+			// If XDVDFS is not present at the XGD2 offset, try XGD3.
 			d->xdvdfs_addr = XDVDFS_LBA_OFFSET_XGD2 * XDVDFS_BLOCK_SIZE;
 			break;
 		case XboxDiscPrivate::DiscType::XGD3:
@@ -364,28 +386,52 @@ XboxDisc::XboxDisc(IRpFile *file)
 		}
 	}
 
-	// Create the DiscReader and XDVDFSPartition.
-	d->discReader = new DiscReader(d->file);
-	if (!d->discReader->isOpen()) {
+	// Open the XDVDFSPartition.
+	DiscReader *const discReader = new DiscReader(d->file);
+	if (!discReader->isOpen()) {
 		// Unable to open the discReader.
-		UNREF_AND_NULL_NOCHK(d->discReader);
+		discReader->unref();
 		UNREF_AND_NULL_NOCHK(d->file);
 		d->lockKreonDrive();
 		d->isKreon = false;
 		return;
 	}
-	d->xdvdfsPartition = new XDVDFSPartition(d->discReader, d->xdvdfs_addr, d->file->size() - d->xdvdfs_addr);
+	d->xdvdfsPartition = new XDVDFSPartition(discReader, d->xdvdfs_addr, d->file->size() - d->xdvdfs_addr);
 	if (!d->xdvdfsPartition->isOpen()) {
 		// Unable to open the XDVDFSPartition.
 		UNREF_AND_NULL_NOCHK(d->xdvdfsPartition);
-		UNREF_AND_NULL_NOCHK(d->discReader);
-		UNREF_AND_NULL_NOCHK(d->file);
-		d->lockKreonDrive();
-		d->isKreon = false;
-		return;
+
+		// If this is XGD2, try the XGD3 offset in case this happens
+		// to be an edge case where it's an XGD3 disc that has a video
+		// partition that matches an XGD2 timestamp.
+		if (d->discType == XboxDiscPrivate::DiscType::XGD2) {
+			static const off64_t xgd3_offset = XDVDFS_LBA_OFFSET_XGD3 * XDVDFS_BLOCK_SIZE;
+			d->xdvdfs_addr = XDVDFS_LBA_OFFSET_XGD3 * XDVDFS_BLOCK_SIZE;
+			d->xdvdfsPartition = new XDVDFSPartition(discReader,
+				xgd3_offset, d->file->size() - xgd3_offset);
+			if (d->xdvdfsPartition->isOpen()) {
+				// It's an XGD3.
+				d->discType = XboxDiscPrivate::DiscType::XGD3;
+				d->wave = 0;
+				d->xdvdfs_addr = xgd3_offset;
+			} else {
+				// It's not an XGD3.
+				UNREF_AND_NULL_NOCHK(d->xdvdfsPartition);
+			}
+		}
+
+		if (!d->xdvdfsPartition) {
+			// Unable to open the XDVDFSPartition.
+			discReader->unref();
+			UNREF_AND_NULL_NOCHK(d->file);
+			d->lockKreonDrive();
+			d->isKreon = false;
+			return;
+		}
 	}
 
 	// XDVDFS partition is open.
+	discReader->unref();	// XDVDFSPartition has this referenced.
 	if (d->discType <= XboxDiscPrivate::DiscType::Unknown) {
 		// This is an extracted XDVDFS.
 		d->discType = XboxDiscPrivate::DiscType::Extracted;
@@ -410,7 +456,6 @@ void XboxDisc::close(void)
 	}
 
 	UNREF_AND_NULL(d->xdvdfsPartition);
-	UNREF_AND_NULL(d->discReader);
 
 	// Call the superclass function.
 	super::close();
@@ -505,17 +550,15 @@ int XboxDisc::isRomSupported_static(
 		// - Hour and TZ:
 		//   - 17, -07:00
 		//   - 16, -08:00
-
-		{0, 0, 0}
 	};
 
-	for (const xgd_pvd_t *pXgd = xgd_tbl; pXgd->xgd != 0; pXgd++) {
-		if (pXgd->btime == btime) {
+	for (const xgd_pvd_t &p : xgd_tbl) {
+		if (p.btime == btime) {
 			// Found a match!
 			if (pWave) {
-				*pWave = pXgd->wave;
+				*pWave = p.wave;
 			}
-			return pXgd->xgd;
+			return p.xgd;
 		}
 	}
 
@@ -581,54 +624,6 @@ const char *XboxDisc::systemName(unsigned int type) const
 	// Should not get here...
 	assert(!"XboxDisc::systemName(): Invalid system name.");
 	return nullptr;
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *XboxDisc::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".iso",		// ISO
-		".xiso",	// Xbox ISO image
-		// TODO: More?
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *XboxDisc::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org..
-		"application/x-cd-image",
-		"application/x-iso9660-image",
-
-		// TODO: XDVDFS?
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

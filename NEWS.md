@@ -1,6 +1,186 @@
 # Changes
 
-## v1.8 (released 2020/??/??)
+## v2.0 (released 2022/??/??)
+
+* New features:
+  * The configuration UI has been ported to GTK. Users of GTK-based
+    desktops will no longer need to install the KDE4 or KF5 UI frontends
+    in order to use rp-config.
+  * libromdata is now compiled as a shared library on Windows and Linux.
+    This means an extra DLL (romdata-1.dll) or SO (libromdata.so.1) will
+    be included with the distribution. The advantage of splitting it out
+    is that all the UI frontends are now significantly smaller.
+    * WARNING: Binary compatibility between releases is NOT guaranteed.
+      The SOVERSION (-1, .1) will be incremented if the ABI is known to
+      have broken between releases, but I can't guarantee that it will
+      always remain compatible.
+    * IFUNC resolvers now use gcc's built-in CPU flag functions because
+      the regular rom-properties functions aren't available due to PLT
+      shenanigans. IFUNC now requires gcc-4.8+ or clang-6.0+.
+  * Many large string tables have been converted from arrays of C strings
+    to a single string with an offset table using Python scripts. This
+    reduces memory usage by eliminating one pointer per string, and it
+    reduces the number of relocations, which improves startup time.
+    * DirectDrawSurface formats were previously converted manually, but
+      there were errors in the ASTC formats, so DDS has been converted to
+      use a Python script and these errors are fixed.
+
+* New parsers:
+  * Atari7800: Atari 7800 ROM images with an A78 header.
+  * EXE: Detect hybrid COM/NE executables, i.e. Multitasking DOS 4.0's
+    IBMDOS.COM.
+
+* New parser features:
+  * ELF: OSABI 102 (Cell LV2) is now detected.
+  * DirectDrawSurface: Support non-standard ASTC FourCCs.
+  * GameCube, PSP: Add missing MIME types. Among other things, this fixes
+    missing metadata for GameCube CISO files.
+
+* Bug fixes:
+  * Lua: Fix a crash on Windows where systemName() sometimes returned
+    an invalid pointer when using the GUI frontend.
+  * Nintendo3DS:
+    * Fixed NCCH detection for CFAs with an "icon" file but no ".code" file,
+      which is usually the case for DLC CIAs.
+    * Handle badly-decrypted NCSD/CCI images that don't set the NoCrypto flag.
+      * https://github.com/d0k3/GodMode9/commit/98c1b25bb0ebb1e35a7387ee34714d5fcf4b29df
+      * https://github.com/d0k3/GodMode9/issues/575
+  * N64:
+    * OS versions are major.minor, e.g. 2.0, not 20. In addition, there should
+      not be a space between "OS" and the number, e.g. "OS2.0K".
+      * Fixes #339, reported by @slp32.
+    * Don't check the clock rate when checking the magic number.
+      * Fixes detection of e.g. Star Fox 64 and Cruis'n USA, which have a
+        value set for clock rate instead of using the system default.
+      * Fixes #340, reported by @slp32.
+    * Display the ROM header clock rate. If 0, "default" will be shown.
+  * ELF: Some byteswaps were missing, which may have broken reading certain
+    big-endian ELFs on little-endian and vice-versa.
+  * Linux: Fix walking the process tree to detect the desktop environment.
+    This wasn't working properly due to two variables being named `ret`.
+    This has been broken since v1.7.
+  * GameCube: Improve the text encoding heuristic for BNR1 metadata.
+  * XboxXPR: Handle XPRs with non-power-of-two image dimensions. Forza
+    Motorsport (2005) uses these textures extensively. Some textures don't
+    have the usual image size fields filled in, resulting in no image; others
+    have incorrect values, resulting in a broken image.
+    * This was reported by Trash_Bandatcoot.
+
+* Other changes:
+  * Windows: DLL loading has been hardened by using LoadLibraryEx().
+    * This is supported on Windows 8 and later with no adjustments.
+    * On Windows Vista or Windows 7, this requires [KB2533623](https://support.microsoft.com/kb/2533623).
+    * Not supported on Windows XP, so it will fall back to the previous
+      DLL loading behavior.
+  * Metadata: The Description property is now used for descriptions
+    instead of the Subject property where available.
+  * Linux: Improved startup notification support. Tested and working with
+    KDE on X11 and Wayland, and GTK3/GTK4 on Wayland. GTK3/GTK4 on X11
+    doesn't seem to be handling it properly, but that might just be an
+    issue with it running on KDE instead of a GTK-based desktop environment.
+
+## v1.9 (released 2022/05/22)
+
+* New features:
+  * OpenMP can now be used to improve decoding performance for some image
+    codecs, including ASTC and BC7.
+  * A .desktop file has been added for rp-config on Linux systems, which
+    adds it to the applications menu on most desktop environments.
+
+* New parsers:
+  * GodotSTEX: Godot 3 and 4 texture files. Supports most linear encodings,
+    S3TC, BC4, BC5, RGTC, BC7, PVRTC-I, ETC1, ETC2, and ASTC. Note that
+    ASTC isn't officially supported; the format value 0x25 is used by
+    Sonic Colors Ultimate. (0x25 is used for a Basis Universal format in
+    Godot 4.)
+  * ASTC: ASTC texture format. This is a minimal header format for textures
+    encoded using ASTC.
+  * CBMCart: Commodore ROM cartridges, using VICE 3.0's .CRT format. Supports
+    external title screen images for C64 and C128 cartridges.
+  * Lua: PUC LUA binary format (.lub).
+
+* New parser features:
+  * Added ASTC decoding. All texture formats that support ASTC have been
+    updated to allow decoding ASTC textures. (HDR is not supported, and
+    the LDR decoder is rather slow.)
+  * The GBS parser now partially supports the older GBR format.
+  * GameCube: IOS version is now shown for Wii discs.
+  * EXE: Parse timestamps in early NE executables.
+  * Xbox_XBE: Display "Init Flags".
+  * NES: Improved nametable mirroring display.
+
+* New compressed texture formats:
+  * EAC R11 and RG11, which uses ETC2's alpha channel compression for
+    1-channel and 2-channel textures. Note that the channels are truncated
+    from 11-bit to 8-bit for display purposes, and signed int versions
+    might not be displayed correctly.
+
+* Bug fixes:
+  * EXE:
+    * Improve runtime DLL detection in some cases.
+    * Improve detection of certain EFI executables.
+  * SNES: Fix detection of games that declare usage of the S-RTC chip
+    in the ROM header. (sd2snes menu)
+  * Windows: Don't edit registered Applications when adding icon handling
+    registry keys. If a program is associated with an emulator filetype,
+    that program's icon will be used for IExtractIcon, but the rom-properties
+    thumbnail will still be used for thumbnail previews. This should fix
+    some issues with Windows 8/10/11 file associations.
+    * See issues: #241, #318, #319
+  * Windows: Don't square images before returning them for IExtractImage and
+    IThumbnailProviders. Icons are still squared for IExtractIcon, since
+    Windows doesn't really like non-square icons.
+  * PVRTC-I requires power-of-2 textures. We're currently using a
+    slightly-modified PVRTC-I decoder for PVRTC-II as well, so we have to
+    enforce power-of-2 textures for PVRTC-II for now.
+  * DXT3 decoding now always uses the 4-color (c0 > c1) palette. Previously,
+    I implemented this as (c0 ≤ c1) due to misleading documentation, which
+    didn't work correctly, so I disabled it entirely. Implementing it as
+    (c0 > c1) works correctly with the existing test images.
+  * KDE: Work around a KIO issue where thumbnails with a stride not equal
+    to width * bytespp are broken. Usually only shows up in 24-bit images
+    with unusual widths, e.g. hi_mark_sq.ktx .
+
+* Other changes:
+  * Significantly improved the peformance of the RGB9_E5 decoder.
+
+## v1.8.3 (released 2021/08/03)
+
+* Bug fixes:
+  * Fix a division by zero when reading PSP CISO/CSO images.
+    This bug was reported by @NotaInutilis in issue #286.
+  * Fix a crash in the BC7 and PVRTC image decoders if the image dimensions
+    were not a multiple of the tile size.
+  * rp-download: Allow clone3(), which is needed on systems that have
+    by glibc-2.34.
+
+* Other changes:
+  * GTK+ frontends now use libgsound if available.
+  * Experimental support for GTK4 has been added. It's not available by
+    default (configuration is commented out in CMake), since none of the
+    major file browsers support GTK4 yet.
+
+## v1.8.2 (released 2021/07/19)
+
+* Bug fixes:
+  * rp-download: Allow the rt_sigprocmask() syscall. This is needed on
+    Ubuntu 20.04 and later, and possibly other systems that use systemd.
+    * This was reported by gold lightning.
+
+## v1.8.1 (released 2021/07/19)
+
+* Bug fixes:
+  * Fix svrplus.exe not detecting the MSVC runtime at all.
+    * Fixes #312, reported by @SCOTT0852.
+  * Fix tinyxml2.dll packaging in the Windows build.
+    * Fixes #313, reported by @ccawley2011.
+  * Fix delay-loading of tinyxml2.dll when viewing Windows executables.
+    * Fixes #313, reported by @ccawley2011.
+
+* Other changes:
+  * Updated the amiibo database to be current as of 2021/07/14.
+
+## v1.8 (released 2021/07/18)
 
 * New features:
   * An achievements system has been added. By viewing certain types of files
@@ -12,6 +192,22 @@
       default sizing function, which doesn't work properly for strings that
       have multiple lines.
     * GTK+: Combined the icon/checkbox column with column 0.
+  * CD-ROM: Added support for 2448-byte sector images. Currently supported by
+    the generic ISO parser and PlayStationDisc. Support for other systems may
+    be added later on, but subchannels generally aren't used on Sega Mega CD,
+    Sega Saturn, Sega Dreamcast, or PlayStation Portable.
+  * New Spanish translation (es_ES), contributed by @Amnesia1000.
+  * KDE: rp-config now has a Thumbnail Cache tab, similar to the Windows
+    version.
+  * rp-config: The default language for images for PAL titles downloaded from
+    GameTDB can now be set.
+
+* New parsers:
+  * WonderSwan: Bandai WonderSwan (Color) ROM images. Supports external title
+    screens using RPDB.
+  * TGA: TrueVision TARGA image format. Most encodings are supported; some
+    have alpha channel issues. Thumbnailing is enabled on Windows but not
+    Linux, since most Linux desktop environments support TGA.
 
 * New parser features:
   * NGPC: Added external title screens using RPDB.
@@ -25,16 +221,66 @@
   * GameCom: Added support for RLE-compressed icons. "Game.com Internet"
     and "Tiger Web Link" are the only two titles known to use them.
     * Fixes #278, reported by @simontime.
-  * MegaDrive: Handle the 'W' region code as used by EverDrive OS ROMs.
+  * MegaDrive:
+    * Detect Teradrive ROMs. Some extensions are also detected, but are
+      not displayed at the moment.
+    * Handle the 'W' region code as used by EverDrive OS ROMs.
+    * Significantly improved Sega Pico detection, including handling
+      non-standard system names and region codes.
+    * Added more I/O devices. The I/O device field is now a string instead
+      of a bitfield, since most games only support one or two devices.
+    * Handle some more unusual ROM headers, including "early" headers
+      that have 32 bytes for titles instead of 48, and some incorrect
+      region code offsets.
+    * Support for external title screens has been added using RPDB.
+    * Added metadata properties. Currently supports publisher and title.
+      Domestic title is used if available; otherwise, export title is used.
+    * Improved detection of Sega Pico ROM images.
+  * Amiibo: Split the database out of the C++ code and into a database file.
+  * Xbox360_STFS: Add two more file extensions for some Bethesda games:
+    * Fallout: `.fxs`
+    * Skyrim: `.exs`
+    * Fixes #303, reported by @60fpshacksrock.
+  * KhronosKTX, KhronosKTX2: Fix thumbnailing registration on Windows.
+  * ISO:
+    * Basic support for CD-i images. (PVD only)
+    * Basic support for El Torito boot image detection. Currently only
+      displays if x86 and/or EFI boot images are present, but not any
+      specifics.
 
 * Bug fixes:
   * GameCube: Detect incrementing values partitions in encrypted images.
     * Fixes #269, reported by @Masamune3210.
-  * KDE: Ensure the "Thumb::URI" value is urlencoded.
+  * KDE:
+    * Ensure the "Thumb::URI" value is urlencoded.
+    * Fixed a massive file handle leak. Affects v1.5 and later.
   * Fixed a potential crash when loading an invalid PNG image.
   * Windows: Fixed a column sizing issue that caused XDBF Gamerscore columns
     to be too wide.
   * Xbox360_STFS: Fixed a crash that happened in some cases.
+  * XboxDisc: Fix an edge case where XGD3 discs that have a video partition
+    whose timestamp matches an XGD2 timestamp are not handled correctly.
+    * Affects: "Kinect Rush a Disney Pixar Adventure" (4D5309B6)
+    * Fixes #291, reported by @Masamune3210.
+  * EXE: Don't show the "dangerous permission" overlay for Win32 executables
+    that don't have a manifest.
+  * NintendoDS:
+    * Add "EN" fallback for external artwork from GameTDB.
+    * Preserve the RSA key area for "cloneboot" when trimming ROMs.
+  * Re-enabled localization for texture parsers. This was broken with the
+    conversion to librptexture in v1.5.
+  * rpcli: Fix a segfault with JSON output on MD ROMs that have empty
+    string fields.
+  * NES: Improved internal footer detection.
+
+* Security Notes:
+  * pngcheck-2.3.0 was previously used to validate PNG images before loading
+    them with libpng. New security fixes for pngcheck were released in December
+    2020 with the caveat that because the code was crufty and unmaintained,
+    there may still be security issues. Because of this, pngcheck has been
+    removed entirely. Other security hardening methods, such as running image
+    decoders in a separate low-privilege process, may be implemented in the
+    future.
 
 ## v1.7.3 (released 2020/09/25)
 

@@ -1,17 +1,20 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librptexture)                     *
- * ImageDecoder_GCN.cpp: Image decoding functions. (Nintendo DS)           *
+ * ImageDecoder_GCN.cpp: Image decoding functions: Nintendo DS             *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "ImageDecoder.hpp"
+#include "ImageDecoder_NDS.hpp"
 #include "ImageDecoder_p.hpp"
 
 #include "PixelConversion.hpp"
 using namespace LibRpTexture::PixelConversion;
+
+// C++ STL classes.
+using std::array;
 
 namespace LibRpTexture { namespace ImageDecoder {
 
@@ -26,18 +29,18 @@ namespace LibRpTexture { namespace ImageDecoder {
  * @return rp_image, or nullptr on error.
  */
 rp_image *fromNDS_CI4(int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz,
-	const uint16_t *RESTRICT pal_buf, int pal_siz)
+	const uint8_t *RESTRICT img_buf, size_t img_siz,
+	const uint16_t *RESTRICT pal_buf, size_t pal_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
 	assert(pal_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= ((width * height) / 2));
+	assert(img_siz >= (((size_t)width * (size_t)height) / 2));
 	assert(pal_siz >= 16*2);
 	if (!img_buf || !pal_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((width * height) / 2) || pal_siz < 16*2)
+	    img_siz < (((size_t)width * (size_t)height) / 2) || pal_siz < 16*2)
 	{
 		return nullptr;
 	}
@@ -81,11 +84,14 @@ rp_image *fromNDS_CI4(int width, int height,
 	const unsigned int tilesX = static_cast<unsigned int>(width / 8);
 	const unsigned int tilesY = static_cast<unsigned int>(height / 8);
 
+	// Tile pointer.
+	const array<uint8_t, 8*8/2> *pTileBuf = reinterpret_cast<const array<uint8_t, 8*8/2>*>(img_buf);
+
 	for (unsigned int y = 0; y < tilesY; y++) {
 		for (unsigned int x = 0; x < tilesX; x++) {
 			// Blit the tile to the main image buffer.
-			ImageDecoderPrivate::BlitTile_CI4_LeftLSN<8, 8>(img, img_buf, x, y);
-			img_buf += ((8 * 8) / 2);
+			ImageDecoderPrivate::BlitTile_CI4_LeftLSN<8, 8>(img, *pTileBuf, x, y);
+			pTileBuf++;
 		}
 	}
 

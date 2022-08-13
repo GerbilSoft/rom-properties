@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * DMG.hpp: Virtual Boy ROM reader.                                        *
+ * VirtualBoy.hpp: Nintendo Virtual Boy ROM reader.                        *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/

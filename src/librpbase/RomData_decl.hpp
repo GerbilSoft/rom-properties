@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomData_decl.hpp: ROM data base class. (Subclass macros)                *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -17,11 +17,16 @@
 // for loadInternalImage() implementation macros
 #include <cerrno>
 
+namespace LibRpBase {
+	struct RomDataInfo;
+}
+
 /** Macros for RomData subclasses. **/
 
 /**
  * Initial declaration for a RomData subclass.
  * Declares functions common to all RomData subclasses.
+ * @param klass Class name
  */
 #define ROMDATA_DECL_BEGIN(klass) \
 class klass##Private; \
@@ -29,6 +34,7 @@ class klass final : public LibRpBase::RomData { \
 	public: \
 		explicit klass(LibRpFile::IRpFile *file); \
 	protected: \
+		RP_LIBROMDATA_LOCAL \
 		virtual ~klass() { } \
 	private: \
 		typedef RomData super; \
@@ -58,58 +64,10 @@ class klass final : public LibRpBase::RomData { \
 		const char *systemName(unsigned int type) const final; \
 		\
 		/** \
-		 * Get a list of all supported file extensions. \
-		 * This is to be used for file type registration; \
-		 * subclasses don't explicitly check the extension. \
-		 * \
-		 * NOTE: The extensions include the leading dot, \
-		 * e.g. ".bin" instead of "bin". \
-		 * \
-		 * NOTE 2: The array and the strings in the array should \
-		 * *not* be freed by the caller. \
-		 * \
-		 * @return NULL-terminated array of all supported file extensions, or nullptr on error. \
+		 * Get the static RomDataInfo for this class. \
+		 * @return Static RomDataInfo \
 		 */ \
-		static const char *const *supportedFileExtensions_static(void); \
-		\
-		/** \
-		 * Get a list of all supported file extensions. \
-		 * This is to be used for file type registration; \
-		 * subclasses don't explicitly check the extension. \
-		 * \
-		 * NOTE: The extensions include the leading dot, \
-		 * e.g. ".bin" instead of "bin". \
-		 * \
-		 * NOTE 2: The array and the strings in the array should \
-		 * *not* be freed by the caller. \
-		 * \
-		 * @return NULL-terminated array of all supported file extensions, or nullptr on error. \
-		 */ \
-		const char *const *supportedFileExtensions(void) const final; \
-		\
-		/** \
-		 * Get a list of all supported MIME types. \
-		 * This is to be used for metadata extractors that \
-		 * must indicate which MIME types they support. \
-		 * \
-		 * NOTE: The array and the strings in the array should \
-		 * *not* be freed by the caller. \
-		 * \
-		 * @return NULL-terminated array of all supported file extensions, or nullptr on error. \
-		 */ \
-		static const char *const *supportedMimeTypes_static(void); \
-		\
-		/** \
-		 * Get a list of all supported MIME types. \
-		 * This is to be used for metadata extractors that \
-		 * must indicate which MIME types they support. \
-		 * \
-		 * NOTE: The array and the strings in the array should \
-		 * *not* be freed by the caller. \
-		 * \
-		 * @return NULL-terminated array of all supported file extensions, or nullptr on error. \
-		 */ \
-		const char *const *supportedMimeTypes(void) const final; \
+		static const LibRpBase::RomDataInfo *romDataInfo(void); \
 	\
 	protected: \
 		/** \
@@ -117,6 +75,7 @@ class klass final : public LibRpBase::RomData { \
 		 * Called by RomData::fields() if the field data hasn't been loaded yet. \
 		 * @return 0 on success; negative POSIX error code on error. \
 		 */ \
+		RP_LIBROMDATA_LOCAL \
 		int loadFieldData(void) final;
 
 /**
@@ -129,6 +88,7 @@ class klass final : public LibRpBase::RomData { \
 		 * Called by RomData::metaData() if the field data hasn't been loaded yet. \
 		 * @return Number of metadata properties read on success; negative POSIX error code on error. \
 		 */ \
+		RP_LIBROMDATA_LOCAL \
 		int loadMetaData(void) final;
 
 /**
@@ -266,6 +226,7 @@ class klass final : public LibRpBase::RomData { \
 		 * Internal function; called by RomData::romOps(). \
 		 * @return List of operations. \
 		 */ \
+		RP_LIBROMDATA_LOCAL \
 		std::vector<RomOp> romOps_int(void) const final; \
 		\
 		/** \
@@ -275,6 +236,7 @@ class klass final : public LibRpBase::RomData { \
 		 * @param pParams	[in/out] Parameters and results. (for e.g. UI updates) \
 		 * @return 0 on success; negative POSIX error code on error.
 		 */ \
+		RP_LIBROMDATA_LOCAL \
 		int doRomOp_int(int id, RomOpParams *pParams) final;
 
 /**
@@ -322,36 +284,12 @@ int klass::isRomSupported(const DetectInfo *info) const \
 } \
 \
 /** \
- * Get a list of all supported file extensions. \
- * This is to be used for file type registration; \
- * subclasses don't explicitly check the extension. \
- * \
- * NOTE: The extensions include the leading dot, \
- * e.g. ".bin" instead of "bin". \
- * \
- * NOTE 2: The array and the strings in the array should \
- * *not* be freed by the caller. \
- * \
- * @return NULL-terminated array of all supported file extensions, or nullptr on error. \
+ * Get the static RomDataInfo for this class. \
+ * @return Static RomDataInfo \
  */ \
-const char *const *klass::supportedFileExtensions(void) const \
+const LibRpBase::RomDataInfo *klass::romDataInfo(void) \
 { \
-	return klass::supportedFileExtensions_static(); \
-} \
-\
-/** \
- * Get a list of all supported MIME types. \
- * This is to be used for metadata extractors that \
- * must indicate which MIME types they support. \
- * \
- * NOTE: The array and the strings in the array should \
- * *not* be freed by the caller. \
- * \
- * @return NULL-terminated array of all supported file extensions, or nullptr on error. \
- */ \
-const char *const *klass::supportedMimeTypes(void) const \
-{ \
-	return klass::supportedMimeTypes_static(); \
+	return &klass##Private::romDataInfo; \
 }
 
 /**

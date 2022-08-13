@@ -23,7 +23,7 @@ class AchQtDBus
 		 * pointer to the class using instance().
 		 */
 		AchQtDBus();
-		virtual ~AchQtDBus();
+		~AchQtDBus();
 
 	private:
 		RP_DISABLE_COPY(AchQtDBus);

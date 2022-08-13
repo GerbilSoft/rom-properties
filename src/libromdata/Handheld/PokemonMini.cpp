@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PokemonMini.cpp: Pokémon Mini ROM reader.                               *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,8 +20,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(PokemonMini)
-
 class PokemonMiniPrivate final : public RomDataPrivate
 {
 	public:
@@ -32,14 +30,39 @@ class PokemonMiniPrivate final : public RomDataPrivate
 		RP_DISABLE_COPY(PokemonMiniPrivate)
 
 	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
+
+	public:
 		// ROM header.
 		PokemonMini_RomHeader romHeader;
 };
 
+ROMDATA_IMPL(PokemonMini)
+
 /** PokemonMiniPrivate **/
 
+/* RomDataInfo */
+const char *const PokemonMiniPrivate::exts[] = {
+	".min",
+
+	nullptr
+};
+const char *const PokemonMiniPrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-pokemon-mini-rom",
+
+	nullptr
+};
+const RomDataInfo PokemonMiniPrivate::romDataInfo = {
+	"PokemonMini", exts, mimeTypes
+};
+
 PokemonMiniPrivate::PokemonMiniPrivate(PokemonMini *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
@@ -64,7 +87,6 @@ PokemonMini::PokemonMini(IRpFile *file)
 	: super(new PokemonMiniPrivate(this, file))
 {
 	RP_D(PokemonMini);
-	d->className = "PokemonMini";
 	d->mimeType = "application/x-pokemon-mini-rom";	// unofficial, not on fd.o
 
 	if (!d->file) {
@@ -80,12 +102,12 @@ PokemonMini::PokemonMini(IRpFile *file)
 	}
 
 	// Check if this ROM image is supported.
-	DetectInfo info;
-	info.header.addr = POKEMONMINI_HEADER_ADDRESS;
-	info.header.size = sizeof(d->romHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
-	info.ext = nullptr;	// Not needed for Pokémon Mini.
-	info.szFile = 0;	// Not needed for Pokémon Mini.
+	const DetectInfo info = {
+		{POKEMONMINI_HEADER_ADDRESS, sizeof(d->romHeader),
+			reinterpret_cast<const uint8_t*>(&d->romHeader)},
+		nullptr,	// ext (not needed for PokemonMini)
+		0		// szFile (not needed for PokemonMini)
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
@@ -160,51 +182,6 @@ const char *PokemonMini::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *PokemonMini::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".min",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *PokemonMini::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-pokemon-mini-rom",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

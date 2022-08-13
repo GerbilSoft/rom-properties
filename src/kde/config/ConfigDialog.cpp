@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * ConfigDialog.cpp: Configuration dialog.                                 *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,8 +15,8 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 
 #ifdef ENABLE_DECRYPTION
-# include "KeyManagerTab.hpp"
-# include "librpbase/crypto/KeyManager.hpp"
+#  include "KeyManagerTab.hpp"
+#  include "librpbase/crypto/KeyManager.hpp"
 using LibRpBase::KeyManager;
 #endif
 
@@ -173,9 +173,9 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 	// This is needed in order to track focus in case
 	// the "Apply" button is clicked.
 	QList<QWidget*> widgets = this->findChildren<QWidget*>();
-	std::for_each(widgets.begin(), widgets.end(), [this](QWidget *widget) {
+	for (QWidget *widget : widgets) {
 		widget->installEventFilter(this);
-	});
+	}
 }
 
 /**
@@ -324,12 +324,14 @@ void ConfigDialog::reset(void)
 {
 	// Reset all tabs.
 	Q_D(ConfigDialog);
-	d->ui.tabImageTypes->reset();
-	d->ui.tabSystems->reset();
-	d->ui.tabOptions->reset();
-#ifdef ENABLE_DECRYPTION
-	d->tabKeyManager->reset();
-#endif /* ENABLE_DECRYPTION */
+	const int tabCount = d->ui.tabWidget->count();
+	for (int i = 0; i < tabCount; i++) {
+		ITab *const tab = qobject_cast<ITab*>(d->ui.tabWidget->widget(i));
+		assert(tab != nullptr);
+		if (tab) {
+			tab->reset();
+		}
+	}
 
 	// Set the focus to the last-focused widget.
 	// Otherwise, it ends up focusing the "Cancel" button.
@@ -348,19 +350,10 @@ void ConfigDialog::reset(void)
 void ConfigDialog::loadDefaults(void)
 {
 	Q_D(ConfigDialog);
-	switch (d->ui.tabWidget->currentIndex()) {
-		case 0:
-			d->ui.tabImageTypes->loadDefaults();
-			break;
-		case 1:
-			d->ui.tabSystems->loadDefaults();
-			break;
-		case 2:
-			d->ui.tabOptions->loadDefaults();
-			break;
-		default:
-			assert(!"Unrecognized tab index.");
-			break;
+	ITab *const tab = qobject_cast<ITab*>(d->ui.tabWidget->currentWidget());
+	assert(tab != nullptr);
+	if (tab) {
+		tab->loadDefaults();
 	}
 }
 
@@ -369,7 +362,7 @@ void ConfigDialog::loadDefaults(void)
  */
 void ConfigDialog::tabModified(void)
 {
-	// Disable the "Apply" and "Reset" buttons.
+	// Enable the "Apply" and "Reset" buttons.
 	Q_D(ConfigDialog);
 	d->btnApply->setEnabled(true);
 	d->btnReset->setEnabled(true);

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * DualFile.cpp: Special wrapper for handling a split file as one.         *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -129,7 +129,7 @@ size_t DualFile::read(void *ptr, size_t size)
 	// Read crosses the boundary between file 0 and file 1.
 
 	// File 0 portion.
-	const size_t file0_sz = m_size[0] - m_pos;
+	const size_t file0_sz = static_cast<size_t>(m_size[0] - m_pos);
 	size_t sz0_read = m_file[0]->seekAndRead(m_pos, ptr8, file0_sz);
 	m_lastError = m_file[0]->lastError();
 	m_pos += sz0_read;
@@ -203,21 +203,6 @@ off64_t DualFile::tell(void)
 	return m_pos;
 }
 
-/**
- * Truncate the file.
- * (NOTE: Not valid for DualFile; this will always return -1.)
- * @param size New size. (default is 0)
- * @return 0 on success; -1 on error.
- */
-int DualFile::truncate(off64_t size)
-{
-	// Not supported.
-	// TODO: Writable DualFile?
-	RP_UNUSED(size);
-	m_lastError = ENOTSUP;
-	return -1;
-}
-
 /** File properties **/
 
 /**
@@ -232,16 +217,6 @@ off64_t DualFile::size(void)
 	}
 
 	return m_fullSize;
-}
-
-/**
- * Get the filename.
- * @return Filename. (May be empty if the filename is not available.)
- */
-string DualFile::filename(void) const
-{
-	// TODO: Implement this?
-	return string();
 }
 
 }

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+)                             *
  * AchGDBus.hpp: GDBus notifications for achievements.                     *
  *                                                                         *
- * Copyright (c) 2020 by David Korth.                                      *
+ * Copyright (c) 2020-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -23,7 +23,7 @@ class AchGDBus
 		 * pointer to the class using instance().
 		 */
 		AchGDBus();
-		virtual ~AchGDBus();
+		~AchGDBus();
 
 	private:
 		RP_DISABLE_COPY(AchGDBus);

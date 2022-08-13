@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomData.hpp: ROM data base class.                                       *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,6 +10,7 @@
 #define __ROMPROPERTIES_LIBRPBASE_ROMDATA_HPP__
 
 #include "common.h"
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 #include "RefBase.hpp"
 #include "RomData_decl.hpp"
 
@@ -49,21 +50,6 @@ class RomData : public RefBase
 		 *
 		 * NOTE: Check isValid() to determine if this is a valid ROM.
 		 *
-		 * @param file ROM file.
-		 */
-		explicit RomData(LibRpFile::IRpFile *file);
-
-		/**
-		 * ROM data base class.
-		 *
-		 * A ROM file must be opened by the caller. The file handle
-		 * will be ref()'d and must be kept open in order to load
-		 * data from the ROM.
-		 *
-		 * To close the file, either delete this object or call close().
-		 *
-		 * NOTE: Check isValid() to determine if this is a valid ROM.
-		 *
 		 * @param d RomDataPrivate subclass.
 		 */
 		explicit RomData(RomDataPrivate *d);
@@ -92,12 +78,14 @@ class RomData : public RefBase
 		 * Is this ROM valid?
 		 * @return True if it is; false if it isn't.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		bool isValid(void) const;
 
 		/**
 		 * Is the file open?
 		 * @return True if the file is open; false if it isn't.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		bool isOpen(void) const;
 
 		/**
@@ -115,6 +103,7 @@ class RomData : public RefBase
 		 * Get the filename that was loaded.
 		 * @return Filename, or nullptr on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const char *filename(void) const;
 
 		/**
@@ -204,6 +193,7 @@ class RomData : public RefBase
 		 * Get the class name for the user configuration.
 		 * @return Class name. (ASCII) (nullptr on error)
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const char *className(void) const;
 
 		enum class FileType {
@@ -251,12 +241,14 @@ class RomData : public RefBase
 		 * Get the general file type as a string.
 		 * @return General file type as a string, or nullptr if unknown.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const char *fileType_string(void) const;
 
 		/**
 		 * Get the file's MIME type.
 		 * @return MIME type, or nullptr if unknown.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const char *mimeType(void) const;
 
 		// TODO:
@@ -279,7 +271,7 @@ class RomData : public RefBase
 		 *
 		 * @return NULL-terminated array of all supported file extensions, or nullptr on error.
 		 */
-		virtual const char *const *supportedFileExtensions(void) const = 0;
+		const char *const *supportedFileExtensions(void) const;
 
 		/**
 		 * Get a list of all supported MIME types.
@@ -291,7 +283,7 @@ class RomData : public RefBase
 		 *
 		 * @return NULL-terminated array of all supported file extensions, or nullptr on error.
 		 */
-		virtual const char *const *supportedMimeTypes(void) const = 0;
+		const char *const *supportedMimeTypes(void) const;
 
 		/**
 		 * Image types supported by a RomData subclass.
@@ -372,6 +364,13 @@ class RomData : public RefBase
 			// This is for Super NES, and only applies to images
 			// with 256px and 512px widths.
 			IMGPF_RESCALE_ASPECT_8to7	= (1U << 4),
+
+			// Image should be rescaled to the size specified by
+			// the second RFT_DIMENSIONS field. (for e.g. ETC2
+			// textures that have a power-of-2 size but should
+			// be rendered with a smaller size)
+			// FIXME: Better way to get the rescale size.
+			IMGPF_RESCALE_RFT_DIMENSIONS_2	= (1U << 5),
 		};
 
 		struct ImageSizeDef {
@@ -438,12 +437,14 @@ class RomData : public RefBase
 		 * Get the ROM Fields object.
 		 * @return ROM Fields object.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const RomFields *fields(void) const;
 
 		/**
 		 * Get the ROM Metadata object.
 		 * @return ROM Metadata object.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const RomMetaData *metaData(void) const;
 
 	private:
@@ -464,6 +465,7 @@ class RomData : public RefBase
 		 * @param imageType Image type to load.
 		 * @return Internal image, or nullptr if the ROM doesn't have one.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const LibRpTexture::rp_image *image(ImageType imageType) const;
 
 		/**
@@ -520,20 +522,11 @@ class RomData : public RefBase
 		virtual int extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs, int size = IMAGE_SIZE_DEFAULT) const;
 
 		/**
-		 * Scrape an image URL from a downloaded HTML page.
-		 * Needed if IMGPF_EXTURL_NEEDS_HTML_SCRAPING is set.
-		 * @param html HTML data.
-		 * @param size Size of HTML data.
-		 * @return Image URL, or empty string if not found or not supported.
-		 */
-		ATTR_ACCESS_SIZE(read_only, 2, 3)
-		virtual std::string scrapeImageURL(const char *html, size_t size) const;
-
-		/**
 		 * Get name of an image type
 		 * @param imageType Image type.
 		 * @return String containing user-friendly name of an image type.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static const char *getImageTypeName(ImageType imageType);
 
 		/**
@@ -559,16 +552,6 @@ class RomData : public RefBase
 
 	public:
 		/**
-		 * ROF_SAVE_FILE information.
-		 * `const char*` fields are owned by the RomData subclass.
-		 */
-		struct RomOpSaveFileInfo {
-			const char *title;		// Dialog title.
-			const char *filter;		// Filename filter. (Windows style, with '|' delimiters.)
-			std::string def_filename;	// Default filename. (without path)
-		};
-
-		/**
 		 * ROM operation struct.
 		 * `const char*` fields are owned by the RomData subclass.
 		 */
@@ -592,7 +575,14 @@ class RomData : public RefBase
 				} sfi;
 			};
 
-			RomOp() { }
+			RomOp()
+				: desc(nullptr), flags(0)
+			{
+				sfi.title = nullptr;
+				sfi.filter = nullptr;
+				sfi.ext = nullptr;
+			}
+
 			RomOp(const char *desc, uint32_t flags)
 				: desc(desc), flags(flags)
 			{
@@ -620,6 +610,7 @@ class RomData : public RefBase
 		 * Get the list of operations that can be performed on this ROM.
 		 * @return List of operations.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		std::vector<RomOp> romOps(void) const;
 
 		/**
@@ -628,6 +619,7 @@ class RomData : public RefBase
 		 * @param pParams	[in/out] Parameters and results. (for e.g. UI updates)
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int doRomOp(int id, RomOpParams *pParams);
 
 	protected:

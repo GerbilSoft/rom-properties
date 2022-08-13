@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CisoPspReader.cpp: PlayStation Portable CISO disc image reader.         *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -50,7 +50,7 @@ namespace LibRomData {
 
 #ifdef _MSC_VER
 // DelayLoad test implementation.
-DELAYLOAD_TEST_FUNCTION_IMPL0(zlibVersion);
+DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 #  ifdef HAVE_LZ4
 DELAYLOAD_TEST_FUNCTION_IMPL0(LZ4_versionNumber);
 #  endif /* HAVE_LZ4 */
@@ -96,13 +96,6 @@ class CisoPspReaderPrivate : public SparseDiscReaderPrivate {
 		// - v2: If set, block is compressed using LZ4; otherwise, deflate.
 		ao::uvector<uint32_t> indexEntries;
 
-		// DAX: Size and NC area tables.
-		ao::uvector<uint16_t> daxSizeTable;
-		std::vector<uint8_t> daxNCTable;	// 0 = compressed; 1 = not compressed
-
-		bool isDaxWithoutNCTable;	// Convenience variable.
-		uint8_t index_shift;		// Index shift value.
-
 		// Block cache.
 		ao::uvector<uint8_t> blockCache;
 		uint32_t blockCacheIdx;
@@ -110,6 +103,13 @@ class CisoPspReaderPrivate : public SparseDiscReaderPrivate {
 		// Decompression buffer.
 		// (Same size as blockCache.)
 		ao::uvector<uint8_t> z_buffer;
+
+		// DAX: Size and NC area tables.
+		ao::uvector<uint16_t> daxSizeTable;
+		std::vector<uint8_t> daxNCTable;	// 0 = compressed; 1 = not compressed
+
+		uint8_t index_shift;		// Index shift value.
+		bool isDaxWithoutNCTable;	// Convenience variable.
 
 		/**
 		 * Get the compressed size of a block.
@@ -124,9 +124,9 @@ class CisoPspReaderPrivate : public SparseDiscReaderPrivate {
 CisoPspReaderPrivate::CisoPspReaderPrivate(CisoPspReader *q)
 	: super(q)
 	, cisoType(CisoType::Unknown)
-	, isDaxWithoutNCTable(false)
-	, index_shift(0)
 	, blockCacheIdx(~0U)
+	, index_shift(0)
+	, isDaxWithoutNCTable(false)
 {
 	// Clear the header structs.
 	memset(&header, 0, sizeof(header));
@@ -224,10 +224,8 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 	}
 
 	unsigned int indexEntryTblPos;
+	bool isZlib = false;	// If zlib, we have to call get_crc_table().
 #ifdef _MSC_VER
-#  ifdef ZLIB_IS_DLL
-	bool isZlib = false;
-#  endif /* ZLIB_IS_DLL */
 #  if defined(HAVE_LZ4) && defined(LZ4_IS_DLL)
 	bool isLZ4 = false;
 #  endif /* HAVE_LZ4 && LZ4_IS_DLL */
@@ -244,10 +242,9 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 			return;
 
 		case CisoPspReaderPrivate::CisoType::CISO:
-#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 			isZlib = true;
-#endif /* _MSC_VER && ZLIB_IS_DLL */
 #ifdef HAVE_LZ4
+			// fall-through
 		case CisoPspReaderPrivate::CisoType::ZISO:
 #endif /* HAVE_LZ4 */
 #if SYS_BYTEORDER != SYS_LIL_ENDIAN
@@ -304,11 +301,9 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 					isLZO = true;
 					break;
 #  endif /* HAVE_LZO && LZO_IS_DLL */
-#  ifdef ZLIB_IS_DLL
 				case JISO_METHOD_ZLIB:
 					isZlib = true;
 					break;
-#  endif /* ZLIB_IS_DLL */
 			}
 #endif /* _MSC_VER */
 
@@ -319,9 +314,7 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 			break;
 
 		case CisoPspReaderPrivate::CisoType::DAX:
-#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 			isZlib = true;
-#endif /* _MSC_VER && ZLIB_IS_DLL */
 #if SYS_BYTEORDER != SYS_LIL_ENDIAN
 			// Byteswap the header.
 			d->header.dax.magic		= le32_to_cpu(d->header.dax.magic);
@@ -342,7 +335,7 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 	// TODO: Only if linked with /DELAYLOAD?
 #  ifdef ZLIB_IS_DLL
 	if (isZlib) {
-		if (DelayLoad_test_zlibVersion() != 0) {
+		if (DelayLoad_test_get_crc_table() != 0) {
 			// Delay load for zlib failed.
 			UNREF_AND_NULL_NOCHK(m_file);
 			return;
@@ -368,6 +361,14 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 	}
 #  endif /* HAVE_LZ4 && LZ4_IS_DLL */
 #endif /* _MSC_VER */
+
+#if !defined(_MSC_VER) || !defined(ZLIB_IS_DLL)
+	if (isZlib) {
+		// zlib isn't in a DLL, but we need to ensure that the
+		// CRC table is initialized anyway.
+		get_crc_table();
+	}
+#endif /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
 
 	// Calculate the number of blocks.
 	const uint32_t num_blocks = static_cast<uint32_t>(d->disc_size / d->block_size);
@@ -450,10 +451,9 @@ CisoPspReader::CisoPspReader(IRpFile *file)
 
 			// Process the NC areas.
 			d->daxNCTable.resize(num_blocks);
-			const auto nc_areas_end = nc_areas.cend();
-			for (auto iter = nc_areas.cbegin(); iter != nc_areas_end; ++iter) {
-				uint32_t i = le32_to_cpu(iter->start);
-				const uint32_t end = i + le32_to_cpu(iter->count);
+			for (const DaxNCArea &p : nc_areas) {
+				uint32_t i = le32_to_cpu(p.start);
+				const uint32_t end = i + le32_to_cpu(p.count);
 				if (end > num_blocks) {
 					// Out of range...
 					m_lastError = EIO;
@@ -505,7 +505,7 @@ int CisoPspReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeade
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 	// Delay load verification.
 	// TODO: Only if linked with /DELAYLOAD?
-	if (DelayLoad_test_zlibVersion() != 0) {
+	if (DelayLoad_test_get_crc_table() != 0) {
 		// Delay load failed.
 		// GCZ is not supported without zlib.
 		return -1;
@@ -753,7 +753,7 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 	if (blockIdx == d->blockCacheIdx) {
 		// Block is cached.
 		memcpy(ptr, &d->blockCache[pos], size);
-		return size;
+		return static_cast<int>(size);
 	}
 
 	// Get the physical address first.
@@ -993,11 +993,11 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 			}
 
 			// Decompress the data.
-			int size = LZ4_decompress_safe(
+			int sz_rd = LZ4_decompress_safe(
 				reinterpret_cast<const char*>(d->z_buffer.data()),
 				reinterpret_cast<char*>(d->blockCache.data()),
 				z_block_size, d->block_size);
-			if (size != (int)d->block_size) {
+			if (sz_rd != (int)d->block_size) {
 				// Decompression error.
 				// TODO: Print warnings and/or more comprehensive error codes.
 				d->blockCacheIdx = ~0U;
@@ -1066,7 +1066,7 @@ int CisoPspReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 	// Block has been loaded into the cache.
 	memcpy(ptr, &d->blockCache[pos], size);
 	d->blockCacheIdx = blockIdx;
-	return size;
+	return static_cast<int>(size);
 }
 
 }

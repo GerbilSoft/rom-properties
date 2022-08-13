@@ -3,7 +3,7 @@
  * RP_ShellIconOverlayIdentifier_Register.cpp: IShellIconOverlayIdentifier *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -29,7 +29,8 @@ LONG RP_ShellIconOverlayIdentifier::RegisterCLSID(void)
 	static const TCHAR description[] = _T("ROM Properties Page - Shell Icon Overlay Identifier");
 
 	// Register the COM object.
-	LONG lResult = RegKey::RegisterComObject(__uuidof(RP_ShellIconOverlayIdentifier), RP_ProgID, description);
+	LONG lResult = RegKey::RegisterComObject(HINST_THISCOMPONENT,
+		__uuidof(RP_ShellIconOverlayIdentifier), RP_ProgID, description);
 	if (lResult != ERROR_SUCCESS) {
 		return lResult;
 	}

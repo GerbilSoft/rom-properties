@@ -1,0 +1,27 @@
+This copy of minizip-ng 3.0.6 is a modified version of the original.
+
+commit 47b8449fec2c7a575a506ecbe6399ad0603b5992
+Version 3.0.6.
+
+Tag: 3.0.6
+
+The following changes have been made to the original:
+
+- cmake_minimum_required() has been disabled. The project-wide values
+  will be used instead.
+
+- Certain compile definitions are exported as part of the libminizip
+  target, since they're needed in order to prevent build errors in
+  other projects.
+
+- mz_os_win32.c: #define FSCTL_GET_REPARSE_POINT if it isn't defined.
+
+- Fixed a -Wformat warning.
+
+- Some other functionality not needed by rom-properties has been disabled.
+
+To obtain the original minizip-ng 3.0.6, visit:
+https://github.com/zlib-ng/minizip-ng
+
+To obtain the original minizip-1.1, visit:
+http://www.winimage.com/zLibDll/minizip.html

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * KeyManager.cpp: Encryption key manager.                                 *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -204,7 +204,7 @@ int KeyManagerPrivate::processConfigLine(const char *section, const char *name, 
 	// Value parsed successfully.
 	uint32_t keyIdx = vKeys_start_pos;
 	keyIdx |= (len << 24);
-	mapKeyNames.insert(std::make_pair(string(name), keyIdx));
+	mapKeyNames.emplace(string(name), keyIdx);
 	return 1;
 #else /* !ENABLE_DECRYPTION */
 	RP_UNUSED(section);

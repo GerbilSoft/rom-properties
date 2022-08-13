@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * config.libwin32common.h.in: Win32 configuration. (source file)          *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,9 +11,6 @@
 
 /* Define to 1 if you want to support older (pre-WinXP) versions of Windows. */
 #cmakedefine ENABLE_OLDWINCOMPAT 1
-
-/* Define to 1 if you have the <shellscalingapi.h> header file. */
-#cmakedefine HAVE_SHELLSCALINGAPI_H
 
 /** C++ standard library **/
 

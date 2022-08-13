@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextFuncs.hpp: Text encoding functions.                                 *
  *                                                                         *
- * Copyright (c) 2009-2020 by David Korth.                                 *
+ * Copyright (c) 2009-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,8 +13,8 @@
 // Conversions to UTF-16 always use host-endian.
 #include "librpcpu/byteorder.h"
 
-// Common definitions, including function attributes.
 #include "common.h"
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 // C includes.
 #include <stddef.h>	/* size_t */
@@ -44,6 +44,7 @@ static inline size_t u16_strlen(const char16_t *wcs)
 	return wcslen(reinterpret_cast<const wchar_t*>(wcs));
 }
 #else /* !RP_WIS16 */
+RP_LIBROMDATA_PUBLIC
 size_t u16_strlen(const char16_t *wcs);
 #endif /* RP_WIS16 */
 
@@ -75,6 +76,7 @@ static inline char16_t *u16_strdup(const char16_t *wcs)
 		wcsdup(reinterpret_cast<const wchar_t*>(wcs)));
 }
 #else /* !RP_WIS16 */
+RP_LIBROMDATA_PUBLIC
 char16_t *u16_strdup(const char16_t *wcs);
 #endif /* RP_WIS16 */
 
@@ -91,6 +93,7 @@ static inline int u16_strcmp(const char16_t *wcs1, const char16_t *wcs2)
 	              reinterpret_cast<const wchar_t*>(wcs2));
 }
 #else /* !RP_WIS16 */
+RP_LIBROMDATA_PUBLIC
 int u16_strcmp(const char16_t *wcs1, const char16_t *wcs2);
 #endif /* RP_WIS16 */
 
@@ -127,6 +130,7 @@ static inline int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2)
 	                  reinterpret_cast<const wchar_t*>(wcs2));
 }
 #else /* !RP_WIS16 */
+RP_LIBROMDATA_PUBLIC
 int u16_strcasecmp(const char16_t *wcs1, const char16_t *wcs2);
 #endif /* RP_WIS16 */
 
@@ -178,6 +182,13 @@ static inline char16_t *u16_memchr(char16_t *wcs, char16_t c, size_t n)
 # define CP_GB2312 936
 #endif
 
+// Specialized code pages.
+#define CP_RP_BASE			0x10000
+#define CP_RP_ATARIST			(CP_RP_BASE | 0)
+#define CP_RP_ATASCII			(CP_RP_BASE | 1)
+#define CP_RP_PETSCII_Unshifted		(CP_RP_BASE | 2)
+#define CP_RP_PETSCII_Shifted		(CP_RP_BASE | 3)
+
 // Text conversion flags.
 typedef enum {
 	// Enable cp1252 fallback if the text fails to
@@ -197,7 +208,19 @@ typedef enum {
  * @param flags	[in] Flags. (See TextConv_Flags_e.)
  * @return UTF-8 string.
  */
+RP_LIBROMDATA_PUBLIC
 std::string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int flags = 0);
+
+/**
+ * Convert 8-bit text to UTF-8 using an RP-custom code page.
+ * Code page number must be CP_RP_*.
+ *
+ * @param cp	[in] Code page number.
+ * @param str	[in] 8-bit text.
+ * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
+ * @return UTF-8 string.
+ */
+std::string cpRP_to_utf8(unsigned int cp, const char *str, int len);
 
 /**
  * Convert 8-bit text to UTF-16.
@@ -211,6 +234,7 @@ std::string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int 
  * @param flags	[in] Flags. (See TextConv_Flags_e.)
  * @return UTF-16 string.
  */
+RP_LIBROMDATA_PUBLIC
 std::u16string cpN_to_utf16(unsigned int cp, const char *str, int len, unsigned int flags = 0);
 
 /**
@@ -225,6 +249,7 @@ std::u16string cpN_to_utf16(unsigned int cp, const char *str, int len, unsigned 
  * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
  * @return 8-bit text.
  */
+RP_LIBROMDATA_PUBLIC
 std::string utf8_to_cpN(unsigned int cp, const char *str, int len);
 
 /**
@@ -239,6 +264,7 @@ std::string utf8_to_cpN(unsigned int cp, const char *str, int len);
  * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
  * @return 8-bit text.
  */
+RP_LIBROMDATA_PUBLIC
 std::string utf16_to_cpN(unsigned int cp, const char16_t *wcs, int len);
 
 /** Inline wrappers for text conversion functions **/
@@ -499,6 +525,7 @@ static inline std::u16string utf8_to_utf16(const std::string &str)
  * @param len	[in] Length of wcs, in characters. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
+RP_LIBROMDATA_PUBLIC
 std::string utf16le_to_utf8(const char16_t *wcs, int len);
 
 /**
@@ -508,6 +535,7 @@ std::string utf16le_to_utf8(const char16_t *wcs, int len);
  * @param len	[in] Length of wcs, in characters. (-1 for NULL-terminated string)
  * @return UTF-8 string.
  */
+RP_LIBROMDATA_PUBLIC
 std::string utf16be_to_utf8(const char16_t *wcs, int len);
 
 /**
@@ -534,6 +562,7 @@ static inline std::string utf16_to_utf8(const char16_t *wcs, int len)
  * @param len Length of wcs, in characters. (-1 for NULL-terminated string)
  * @return Byteswapped UTF-16 string.
  */
+RP_LIBROMDATA_PUBLIC
 std::u16string utf16_bswap(const char16_t *wcs, int len);
 
 /**
@@ -581,120 +610,6 @@ static inline std::u16string utf16be_to_utf16(const char16_t *wcs, int len)
 #endif
 }
 
-/** Specialized text conversion functions **/
-
-/**
- * Convert Atari ST text to UTF-8.
- * Trailing NULL bytes will be removed.
- * @param str	[in] Atari ST text.
- * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
- * @return UTF-8 string.
- */
-std::string atariST_to_utf8(const char *str, int len);
-
-/**
- * Convert Atari ATASCII text to UTF-8.
- * Trailing NULL bytes will be removed.
- * @param str	[in] Atari ATASCII text.
- * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
- * @return UTF-8 string.
- */
-std::string atascii_to_utf8(const char *str, int len);
-
-/**
- * Convert Commodore PETSCII text (C64 variant) to UTF-8.
- * Trailing NULL bytes will be removed.
- * @param str	[in] Commodore PETSCII text.
- * @param len	[in] Length of str, in bytes. (-1 for NULL-terminated string)
- * @param shifted [in] False for unshifted (uppercase+graphics); true for shifted (lowercase+uppercase).
- * @return UTF-8 string.
- */
-std::string petscii_to_utf8(const char *str, int len, bool shifted = false);
-
-/** sprintf() **/
-
-/**
- * vsprintf()-style function for std::string.
- *
- * @param fmt Format string
- * @param ap Arguments
- * @return std::string
- */
-ATTR_PRINTF(1, 0)
-std::string rp_vsprintf(const char *fmt, va_list ap);
-
-/**
- * sprintf()-style function for std::string.
- *
- * @param fmt Format string
- * @param ... Arguments
- * @return std::string
- */
-ATTR_PRINTF(1, 2)
-static inline std::string rp_sprintf(const char *fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	std::string s_ret = rp_vsprintf(fmt, ap);
-	va_end(ap);
-	return s_ret;
-}
-
-#if defined(_MSC_VER) || defined(__MINGW32__)
-/**
- * sprintf()-style function for std::string.
- * This version supports positional format string arguments.
- *
- * MSVCRT doesn't support positional arguments in the standard
- * printf() functions. Instead, it has printf_p().
- *
- * @param fmt Format string
- * @param ap Arguments
- * @return std::string
- */
-ATTR_PRINTF(1, 0)
-std::string rp_vsprintf_p(const char *fmt, va_list ap);
-
-/**
- * sprintf()-style function for std::string.
- * This version supports positional format string arguments.
- *
- * MSVCRT doesn't support positional arguments in the standard
- * printf() functions. Instead, it has printf_p().
- *
- * @param fmt Format string
- * @param ... Arguments
- * @return std::string
- */
-ATTR_PRINTF(1, 2)
-static inline std::string rp_sprintf_p(const char *fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	std::string s_ret = rp_vsprintf_p(fmt, ap);
-	va_end(ap);
-	return s_ret;
-}
-
-#else /* !_MSC_VER && !__MINGW32__ */
-
-// glibc supports positional format string arguments
-// in the standard printf() functions.
-static inline std::string rp_vsprintf_p(const char *fmt, va_list ap)
-{
-	return rp_vsprintf(fmt, ap);
-}
-
-static inline std::string rp_sprintf_p(const char *fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	std::string s_ret = rp_vsprintf(fmt, ap);
-	va_end(ap);
-	return s_ret;
-}
-#endif /* _MSC_VER && __MINGW32__ */
-
 /** Other useful text functions **/
 
 /**
@@ -714,6 +629,13 @@ std::string formatFileSize(off64_t fileSize);
  * @return Formatted file size.
  */
 std::string formatFileSizeKiB(unsigned int size);
+
+/**
+ * Format a frequency.
+ * @param frequency Frequency.
+ * @return Formatted frequency.
+ */
+std::string formatFrequency(uint32_t frequency);
 
 /**
  * Remove trailing spaces from a string.

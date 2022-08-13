@@ -2,26 +2,25 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * AchievementsItemDelegate.hpp: Achievements item delegate for rp-config. *
  *                                                                         *
- * Copyright (c) 2013-2020 by David Korth.                                 *
+ * Copyright (c) 2013-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "AchievementsItemDelegate.hpp"
 
-// Qt includes.
+// Qt includes
 #include <QtGui/QPainter>
 #include <QApplication>
 #include <QtGui/QFont>
 #include <QtGui/QFontMetrics>
 #include <QStyle>
 
-// C++ STL includes.
+// C++ STL includes
+using std::array;
 using std::vector;
 
-#ifdef _WIN32
-#  include <windows.h>
-#endif /* _WIN32 */
+#define LINE_COUNT 2
 
 class AchievementsItemDelegatePrivate
 {
@@ -38,32 +37,13 @@ class AchievementsItemDelegatePrivate
 		// Font retrieval.
 		QFont fontName(const QWidget *widget = 0) const;
 		QFont fontDesc(const QWidget *widget = 0) const;
-
-#ifdef _WIN32
-		// Win32: Theming functions.
-	private:
-		// HACK: Mark this as mutable so const functions can update it.
-		mutable bool m_isXPTheme;
-		static bool resolveSymbols(void);
-	public:
-		bool isXPTheme(bool update = false) const;
-		bool isVistaTheme(void) const;
-#endif /* _WIN32 */
 };
 
 /** AchievementsItemDelegatePrivate **/
 
 AchievementsItemDelegatePrivate::AchievementsItemDelegatePrivate(AchievementsItemDelegate *q)
 	: q_ptr(q)
-#ifdef _WIN32
-	, m_isXPTheme(false)
-#endif /* _WIN32 */
-{
-#ifdef _WIN32
-	// Update the XP theming info.
-	isXPTheme(true);
-#endif /* _WIN32 */
-}
+{ }
 
 QFont AchievementsItemDelegatePrivate::fontName(const QWidget *widget) const
 {
@@ -90,77 +70,12 @@ QFont AchievementsItemDelegatePrivate::fontDesc(const QWidget *widget) const
 	return font;
 }
 
-#ifdef _WIN32
-typedef bool (WINAPI *PtrIsAppThemed)(void);
-typedef bool (WINAPI *PtrIsThemeActive)(void);
-
-static HMODULE pUxThemeDll = nullptr;
-static PtrIsAppThemed pIsAppThemed = nullptr;
-static PtrIsThemeActive pIsThemeActive = nullptr;
-
-/**
- * Resolve symbols for XP/Vista theming.
- * Based on QWindowsXPStyle::resolveSymbols(). (qt-4.8.5)
- * @return True on success; false on failure.
- */
-bool AchievementsItemDelegatePrivate::resolveSymbols(void)
-{
-	static bool tried = false;
-	if (!tried) {
-		pUxThemeDll = LoadLibraryW(L"uxtheme");
-		if (pUxThemeDll) {
-			pIsAppThemed = (PtrIsAppThemed)GetProcAddress(pUxThemeDll, "IsAppThemed");
-			if (pIsAppThemed) {
-				pIsThemeActive = (PtrIsThemeActive)GetProcAddress(pUxThemeDll, "IsThemeActive");
-			}
-		}
-		tried = true;
-	}
-
-	return (pIsAppThemed != nullptr);
-}
-
-/**
- * Check if a Windows XP theme is in use.
- * Based on QWindowsXPStyle::useXP(). (qt-4.8.5)
- * @param update Update the system theming status.
- * @return True if a Windows XP theme is in use; false if not.
- */
-bool AchievementsItemDelegatePrivate::isXPTheme(bool update) const
-{
-	if (!update)
-		return m_isXPTheme;
-
-	m_isXPTheme = (resolveSymbols() && pIsThemeActive() &&
-		       (pIsAppThemed() || !QApplication::instance()));
-	return m_isXPTheme;
-}
-
-/**
- * Check if a Windows Vista theme is in use.
- * Based on QWindowsVistaStyle::useVista(). (qt-4.8.5)
- * @return True if a Windows Vista theme is in use; false if not.
- */
-bool AchievementsItemDelegatePrivate::isVistaTheme(void) const
-{
-	return (isXPTheme() &&
-		QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA &&
-		(QSysInfo::WindowsVersion & QSysInfo::WV_NT_based));
-}
-#endif /* _WIN32 */
-
 /** AchievementsItemDelegate **/
 
 AchievementsItemDelegate::AchievementsItemDelegate(QObject *parent)
 	: super(parent)
 	, d_ptr(new AchievementsItemDelegatePrivate(this))
-{
-#ifdef _WIN32
-	// Connect the "themeChanged" signal.
-	connect(qApp, SIGNAL(themeChanged()),
-		this, SLOT(themeChanged_slot()));
-#endif /* _WIN32 */
-}
+{ }
 
 AchievementsItemDelegate::~AchievementsItemDelegate()
 {
@@ -192,9 +107,11 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 		super::paint(painter, option, index);
 		return;
 	}
-	QStringList sl;
-	sl.append(s_ach.left(nl_pos));
-	sl.append(s_ach.mid(nl_pos + 1));
+
+	array<QString, LINE_COUNT> sl = {
+		s_ach.left(nl_pos),
+		s_ach.mid(nl_pos + 1)
+	};
 
 	// Alignment flags.
 	static const int HALIGN_FLAGS =
@@ -209,10 +126,12 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 
 	// Get the text alignment.
 	int textAlignment = 0;
-	if (index.data(Qt::TextAlignmentRole).canConvert(QVariant::Int))
+	if (index.data(Qt::TextAlignmentRole).canConvert<int>()) {
 		textAlignment = index.data(Qt::TextAlignmentRole).toInt();
-	if (textAlignment == 0)
+	}
+	if (textAlignment == 0) {
 		textAlignment = option.displayAlignment;
+	}
 
 	QRect textRect = option.rect;
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
@@ -243,20 +162,16 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 	int textHeight = 0;
 
 	// Text boundaries.
-	vector<QRect> v_rect;
-	v_rect.resize(sl.size());
+	array<QRect, LINE_COUNT> v_rect;
 
-	for (int i = 0; i < sl.size(); i++) {
+	for (size_t i = 0; i < sl.size(); i++) {
 		// Name uses the normal font.
 		// Description lines use a slightly smaller font.
-		QString &line = sl[i];
-		QRect &rect = v_rect[i];
-
 		const QFontMetrics fm(i == 0 ? fontName : fontDesc);
-		line = fm.elidedText(line, Qt::ElideRight, textRect.width()-1);
+		sl[i] = fm.elidedText(sl[i], Qt::ElideRight, textRect.width()-1);
 		QRect tmpRect(textRect.x(), textRect.y() + textHeight, textRect.width(), fm.height());
 		textHeight += fm.height();
-		rect = fm.boundingRect(tmpRect, (textAlignment & HALIGN_FLAGS), line);
+		v_rect[i] = fm.boundingRect(tmpRect, (textAlignment & HALIGN_FLAGS), sl[i]);
 	}
 
 	// Adjust for vertical alignment.
@@ -280,11 +195,9 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 	}
 
 	if (diff != 0) {
-		std::for_each(v_rect.begin(), v_rect.end(),
-			[diff](QRect &rect) {
-				rect.translate(0, diff);
-			}
-		);
+		for (QRect &rect : v_rect) {
+			rect.translate(0, diff);
+		}
 	}
 
 	painter->save();
@@ -304,18 +217,6 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 	style->drawControl(QStyle::CE_ItemViewItem, &bgOption, painter, bgOption.widget);
 	bgOption.backgroundBrush = QBrush();
 
-#ifdef _WIN32
-	// Adjust the palette for Vista themes.
-	if (d->isVistaTheme()) {
-		// Vista theme uses a slightly different palette.
-		// See: qwindowsvistastyle.cpp::drawControl(), line 1524 (qt-4.8.5)
-		QPalette *palette = &bgOption.palette;
-                palette->setColor(QPalette::All, QPalette::HighlightedText, palette->color(QPalette::Active, QPalette::Text));
-                // Note that setting a saturated color here results in ugly XOR colors in the focus rect
-                palette->setColor(QPalette::All, QPalette::Highlight, palette->base().color().darker(108));
-	}
-#endif
-
 	// Font color.
 	if (bgOption.state & QStyle::State_Selected) {
 		painter->setPen(bgOption.palette.highlightedText().color());
@@ -325,14 +226,11 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 
 	// Draw the text lines.
 	painter->setFont(fontName);
-	int i = 0;
-	auto iter_rect = v_rect.cbegin();
-	const auto sl_end = sl.end();
-	for (auto iter_sl = sl.begin(); iter_sl != sl_end; ++iter_sl, ++iter_rect, ++i) {
+	for (size_t i = 0; i < sl.size(); i++) {
 		if (i == 1) {
 			painter->setFont(fontDesc);
 		}
-		painter->drawText(*iter_rect, *iter_sl);
+		painter->drawText(v_rect[i], sl[i]);
 	}
 
 	painter->restore();
@@ -359,9 +257,11 @@ QSize AchievementsItemDelegate::sizeHint(const QStyleOptionViewItem &option,
 		// Use the default sizeHint().
 		return super::sizeHint(option, index);
 	}
-	QStringList sl;
-	sl.append(s_ach.left(nl_pos));
-	sl.append(s_ach.mid(nl_pos + 1));
+
+	const array<QString, LINE_COUNT> sl = {
+		s_ach.left(nl_pos),
+		s_ach.mid(nl_pos + 1)
+	};
 
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 	const QStyleOptionViewItem &bgOption = option;
@@ -376,13 +276,11 @@ QSize AchievementsItemDelegate::sizeHint(const QStyleOptionViewItem &option,
 	QFont fontDesc = d->fontDesc(bgOption.widget);
 
 	QSize sz;
-	for (int i = 0; i < sl.size(); i++) {
+	for (size_t i = 0; i < sl.size(); i++) {
 		// Name uses the normal font.
 		// Description lines use a slightly smaller font.
-		const QString &line = sl[i];
-
 		const QFontMetrics fm(i == 0 ? fontName : fontDesc);
-		QSize szLine = fm.size(0, line);
+		QSize szLine = fm.size(0, sl[i]);
 		sz.setHeight(sz.height() + szLine.height());
 
 		if (szLine.width() > sz.width()) {
@@ -393,22 +291,9 @@ QSize AchievementsItemDelegate::sizeHint(const QStyleOptionViewItem &option,
 	// Increase width by 1 to prevent accidental eliding.
 	// NOTE: We can't just remove the "-1" from paint(),
 	// because that still causes weird wordwrapping.
-	if (sz.width() > 0)
+	if (sz.width() > 0) {
 		sz.setWidth(sz.width() + 1);
+	}
 
 	return sz;
-}
-
-/** Slots. **/
-
-/**
- * The system theme has changed.
- */
-void AchievementsItemDelegate::themeChanged_slot(void)
-{
-#ifdef _WIN32
-	// Update the XP theming info.
-	Q_D(AchievementsItemDelegate);
-	d->isXPTheme(true);
-#endif
 }

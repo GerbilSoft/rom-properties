@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ELF.cpp: Executable and Linkable Format reader.                         *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,17 +18,13 @@ using LibRpFile::IRpFile;
 // cinttypes was added in MSVC 2013.
 // For older versions, we'll need to manually define PRIX64.
 // TODO: Split into a separate header file?
-// FIXME: MinGW v6:
-// ELF.cpp:1209:72: warning: unknown conversion type character ‘l’ in format [-Wformat=]
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
-# include <cinttypes>
-#else
-# ifndef PRIx64
-#  define PRIx64 "I64x"
-# endif
-# ifndef PRIX64
+#if defined(_MSC_VER) && _MSC_VER < 1700
+// MSVC 2013 added cinttypes.h.
+// Older versions don't have it.
 #  define PRIX64 "I64X"
-# endif
+#else
+#  define __STDC_FORMAT_MACROS
+#  include <cinttypes>
 #endif
 
 // C++ STL classes.
@@ -42,8 +38,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(ELF)
-
 class ELFPrivate final : public RomDataPrivate
 {
 	public:
@@ -52,6 +46,12 @@ class ELFPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(ELFPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// ELF format.
@@ -83,6 +83,13 @@ class ELFPrivate final : public RomDataPrivate
 		};
 		Elf_Format elfFormat;
 
+		bool hasCheckedPH;	// Have we checked program headers yet?
+		bool hasCheckedSH;	// Have we checked section headers yet?
+
+		// Basic Program Header information
+		bool isPie;		// Is this a position-independent executable?
+		bool isWiiU;		// Is this a Wii U executable?
+
 		// ELF header.
 		union {
 			Elf_PrimaryEhdr primary;
@@ -103,22 +110,29 @@ class ELFPrivate final : public RomDataPrivate
 		 */
 		hdr_info_t readProgramHeader(const uint8_t *phbuf);
 
-		// Program Header information.
-		bool hasCheckedPH;	// Have we checked program headers yet?
-		bool isPie;		// Is this a position-independent executable?
-		bool isWiiU;		// Is this a Wii U executable?
-
+		// Program Header information
 		string interpreter;	// PT_INTERP value
 
 		// PT_DYNAMIC
 		hdr_info_t pt_dynamic;	// If addr == 0, not dynamic.
 
-		// Section Header information.
-		bool hasCheckedSH;	// Have we checked section headers yet?
+		// Section Header information
 		string osVersion;	// Operating system version.
 
 		ao::uvector<uint8_t> build_id;	// GNU `ld` build ID. (raw data)
 		const char *build_id_type;	// Build ID type.
+
+		/**
+		 * Byteswap a uint16_t value from ELF to CPU.
+		 * @param x Value to swap.
+		 * @return Swapped value.
+		 */
+		inline uint16_t elf16_to_cpu(uint16_t x)
+		{
+			return (Elf_Header.primary.e_data == ELFDATAHOST)
+				? x
+				: __swab16(x);
+		}
 
 		/**
 		 * Byteswap a uint32_t value from ELF to CPU.
@@ -163,15 +177,45 @@ class ELFPrivate final : public RomDataPrivate
 		int addPtDynamicFields(void);
 };
 
+ROMDATA_IMPL(ELF)
+
 /** ELFPrivate **/
 
+/* RomDataInfo */
+const char *const ELFPrivate::exts[] = {
+	//".",		// FIXME: Does this work for files with no extension?
+	".elf",		// Common for Wii homebrew.
+	".so",		// Shared libraries. (TODO: Versioned .so files.)
+	".o",		// Relocatable object files.
+	".core",	// Core dumps.
+	".debug",	// Split debug files.
+
+	// Wii U
+	".rpx",		// Cafe OS executable
+	".rpl",		// Cafe OS library
+
+	nullptr
+};
+const char *const ELFPrivate::mimeTypes[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-object",
+	"application/x-executable",
+	"application/x-sharedlib",
+	"application/x-core",
+
+	nullptr
+};
+const RomDataInfo ELFPrivate::romDataInfo = {
+	"ELF", exts, mimeTypes
+};
+
 ELFPrivate::ELFPrivate(ELF *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, elfFormat(Elf_Format::Unknown)
 	, hasCheckedPH(false)
+	, hasCheckedSH(false)
 	, isPie(false)
 	, isWiiU(false)
-	, hasCheckedSH(false)
 	, build_id_type(nullptr)
 {
 	// Clear the structs.
@@ -235,12 +279,22 @@ int ELFPrivate::checkProgramHeaders(void)
 	uint8_t phbuf[sizeof(Elf64_Phdr)];
 
 	if (Elf_Header.primary.e_class == ELFCLASS64) {
-		e_phoff = static_cast<off64_t>(Elf_Header.elf64.e_phoff);
-		e_phnum = Elf_Header.elf64.e_phnum;
+		if (Elf_Header.primary.e_data == ELFDATAHOST) {
+			e_phoff = static_cast<off64_t>(Elf_Header.elf64.e_phoff);
+			e_phnum = Elf_Header.elf64.e_phnum;
+		} else {
+			e_phoff = static_cast<off64_t>(__swab64(Elf_Header.elf64.e_phoff));
+			e_phnum = __swab16(Elf_Header.elf64.e_phnum);
+		}
 		phsize = sizeof(Elf64_Phdr);
 	} else {
-		e_phoff = static_cast<off64_t>(Elf_Header.elf32.e_phoff);
-		e_phnum = Elf_Header.elf32.e_phnum;
+		if (Elf_Header.primary.e_data == ELFDATAHOST) {
+			e_phoff = static_cast<off64_t>(Elf_Header.elf32.e_phoff);
+			e_phnum = Elf_Header.elf32.e_phnum;
+		} else {
+			e_phoff = static_cast<off64_t>(__swab32(Elf_Header.elf32.e_phoff));
+			e_phnum = __swab16(Elf_Header.elf32.e_phnum);
+		}
 		phsize = sizeof(Elf32_Phdr);
 	}
 
@@ -274,7 +328,7 @@ int ELFPrivate::checkProgramHeaders(void)
 		switch (p_type) {
 			case PT_INTERP: {
 				// If the file type is ET_DYN, this is a PIE executable.
-				isPie = (Elf_Header.primary.e_type == ET_DYN);
+				isPie = (elf16_to_cpu(Elf_Header.primary.e_type) == ET_DYN);
 
 				// Get the interpreter name.
 				hdr_info_t info = readProgramHeader(phbuf);
@@ -301,7 +355,7 @@ int ELFPrivate::checkProgramHeaders(void)
 					}
 
 					if (info.size > 0) {
-						interpreter.assign(buf, info.size);
+						interpreter.assign(buf, static_cast<size_t>(info.size));
 					}
 				}
 
@@ -344,12 +398,22 @@ int ELFPrivate::checkSectionHeaders(void)
 	uint8_t shbuf[sizeof(Elf64_Shdr)];
 
 	if (Elf_Header.primary.e_class == ELFCLASS64) {
-		e_shoff = static_cast<off64_t>(Elf_Header.elf64.e_shoff);
-		e_shnum = Elf_Header.elf64.e_shnum;
+		if (Elf_Header.primary.e_data == ELFDATAHOST) {
+			e_shoff = static_cast<off64_t>(Elf_Header.elf64.e_shoff);
+			e_shnum = Elf_Header.elf64.e_shnum;
+		} else {
+			e_shoff = static_cast<off64_t>(__swab64(Elf_Header.elf64.e_shoff));
+			e_shnum = __swab16(Elf_Header.elf64.e_shnum);
+		}
 		shsize = sizeof(Elf64_Shdr);
 	} else {
-		e_shoff = static_cast<off64_t>(Elf_Header.elf32.e_shoff);
-		e_shnum = Elf_Header.elf32.e_shnum;
+		if (Elf_Header.primary.e_data == ELFDATAHOST) {
+			e_shoff = static_cast<off64_t>(Elf_Header.elf32.e_shoff);
+			e_shnum = Elf_Header.elf32.e_shnum;
+		} else {
+			e_shoff = static_cast<off64_t>(__swab32(Elf_Header.elf32.e_shoff));
+			e_shnum = __swab16(Elf_Header.elf32.e_shnum);
+		}
 		shsize = sizeof(Elf32_Shdr);
 	}
 
@@ -469,7 +533,7 @@ int ELFPrivate::checkSectionHeaders(void)
 					memcpy(desc, pData, sizeof(desc));
 
 					const uint32_t os_id = elf32_to_cpu(desc[0]);
-					static const char *const os_tbl[] = {
+					static const char os_tbl[][12] = {
 						"Linux", "Hurd", "Solaris", "kFreeBSD", "kNetBSD"
 					};
 
@@ -752,7 +816,6 @@ ELF::ELF(IRpFile *file)
 	// This class handles different types of files.
 	// d->fileType will be set later.
 	RP_D(ELF);
-	d->className = "ELF";
 	d->fileType = FileType::Unknown;
 
 	if (!d->file) {
@@ -771,12 +834,11 @@ ELF::ELF(IRpFile *file)
 	}
 
 	// Check if this executable is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->Elf_Header);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->Elf_Header);
-	info.ext = nullptr;	// Not needed for ELF.
-	info.szFile = 0;	// Not needed for ELF.
+	const DetectInfo info = {
+		{0, sizeof(d->Elf_Header), reinterpret_cast<const uint8_t*>(&d->Elf_Header)},
+		nullptr,	// ext (not needed for ELF)
+		0		// szFile (not needed for ELF)
+	};
 	d->elfFormat = static_cast<ELFPrivate::Elf_Format>(isRomSupported_static(&info));
 
 	d->isValid = ((int)d->elfFormat >= 0);
@@ -908,7 +970,9 @@ ELF::ELF(IRpFile *file)
 				break;
 
 			// Special cases
-			case 0xFF80: {
+			// TODO: Add more PlayStation variants.
+			case ET_SCE_IOPRELEXEC:
+			case ET_SCE_IOPRELEXEC2: {
 				// PS2 IOP Relocatable Executable
 				// This is basically a shared library.
 				// TODO: Use something like "isWiiU"?
@@ -1045,62 +1109,6 @@ const char *ELF::systemName(unsigned int type) const
 }
 
 /**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *ELF::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		//".",		// FIXME: Does this work for files with no extension?
-		".elf",		// Common for Wii homebrew.
-		".so",		// Shared libraries. (TODO: Versioned .so files.)
-		".o",		// Relocatable object files.
-		".core",	// Core dumps.
-		".debug",	// Split debug files.
-
-		// Wii U
-		".rpx",		// Cafe OS executable
-		".rpl",		// Cafe OS library
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *ELF::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org.
-		"application/x-object",
-		"application/x-executable",
-		"application/x-sharedlib",
-		"application/x-core",
-
-		nullptr
-	};
-	return mimeTypes;
-}
-
-/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -1137,7 +1145,7 @@ int ELF::loadFieldData(void)
 	};
 	const char *const format_title = C_("ELF", "Format");
 	if (d->elfFormat > ELFPrivate::Elf_Format::Unknown &&
-	    (int)d->elfFormat < ARRAY_SIZE(exec_type_tbl))
+	    (int)d->elfFormat < ARRAY_SIZE_I(exec_type_tbl))
 	{
 		d->fields->addField_string(format_title,
 			dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType", exec_type_tbl[(int)d->elfFormat]));
@@ -1254,7 +1262,7 @@ int ELF::loadFieldData(void)
 			}
 
 			// MIPS architecture level.
-			static const char *const mips_levels[] = {
+			static const char mips_levels[][12] = {
 				"MIPS-I", "MIPS-II", "MIPS-III", "MIPS-IV",
 				"MIPS-V", "MIPS32", "MIPS64", "MIPS32 rel2",
 				"MIPS64 rel2", "MIPS32 rel6", "MIPS64 rel6"
@@ -1433,13 +1441,15 @@ int ELF::loadFieldData(void)
 			// TODO: Other ARC variants?
 
 			// CPU subtypes.
-			static const char *const arc_cpu_subtypes[] = {
-				nullptr, nullptr, "ARC600", "ARC700",
+			static const char arc_cpu_subtypes[][8] = {
+				"", "", "ARC600", "ARC700",
 				"ARC601", "ARCv2EM", "ARCv2HS",
 			};
 			const uint8_t cpu_subtype = (e_flags & 0xFF);
 			const char *s_cpu_subtype = nullptr;
-			if (cpu_subtype < ARRAY_SIZE(arc_cpu_subtypes)) {
+			if (cpu_subtype < ARRAY_SIZE(arc_cpu_subtypes) &&
+			    arc_cpu_subtypes[cpu_subtype][0] != '\0')
+			{
 				s_cpu_subtype = arc_cpu_subtypes[cpu_subtype];
 			}
 			if (s_cpu_subtype) {
@@ -1494,16 +1504,19 @@ int ELF::loadFieldData(void)
 			}
 
 			// MAC
-			static const char *const cf_mac_tbl[] = {
-				nullptr, "MAC", "EMAC", "EMAC_B"
+			static const char cf_mac_tbl[][8] = {
+				"MAC", "EMAC", "EMAC_B"
 			};
 			const char *cf_mac = nullptr;
 			const uint8_t cf_mac_flags = ((e_flags >> 4) & 0x03);
-			if (cf_mac_flags < ARRAY_SIZE(cf_mac_tbl)) {
+			if (cf_mac_flags < ARRAY_SIZE(cf_mac_tbl) &&
+			    cf_mac_tbl[cf_mac_flags][0] != '\0')
+			{
 				cf_mac = cf_mac_tbl[cf_mac_flags];
 			}
 
 			string s_cf_isa;
+			s_cf_isa.reserve(32);
 			if (cf_isa) {
 				s_cf_isa.assign(cf_isa);
 			}
@@ -1551,11 +1564,12 @@ int ELF::loadFieldData(void)
 		case EM_M32R:
 		case EM_CYGNUS_M32R: {
 			// binutils: include/elf/m32r.h
-			static const char *const m32r_insn_set_tbl[] = {
-				"m32r", "m32rx", "m32r2", nullptr
+			static const char m32r_insn_set_tbl[][8] = {
+				"m32r", "m32rx", "m32r2"
 			};
-			const char *const m32r_insn_set = m32r_insn_set_tbl[(e_flags >> 28) & 0x03];
-			if (m32r_insn_set) {
+			const unsigned int idx = (e_flags >> 28) & 0x03;
+			if (idx < ARRAY_SIZE(m32r_insn_set_tbl)) {
+				const char *const m32r_insn_set = m32r_insn_set_tbl[idx];
 				d->fields->addField_string(C_("ELF", "Instruction Set"), m32r_insn_set);
 			}
 

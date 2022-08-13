@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * AchievementsTab.cpp: Achievements tab for rp-config.                    *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,8 +16,7 @@
 #include "librpbase/img/RpPng.hpp"
 #include "librpfile/win32/RpFile_windres.hpp"
 #include "librptexture/img/rp_image.hpp"
-using LibRpBase::Achievements;
-using LibRpBase::RpPng;
+using namespace LibRpBase;
 using LibRpFile::RpFile_windres;
 using LibRpTexture::rp_image;
 
@@ -25,9 +24,9 @@ using LibRpTexture::rp_image;
 using std::tstring;
 using std::unique_ptr;
 
-// libwin32common
-#include "libwin32common/AutoGetDC.hpp"
-using LibWin32Common::AutoGetDC;
+// libwin32ui
+#include "libwin32ui/AutoGetDC.hpp"
+using LibWin32UI::AutoGetDC;
 
 class AchievementsTabPrivate
 {
@@ -61,11 +60,11 @@ class AchievementsTabPrivate
 		HPROPSHEETPAGE hPropSheetPage;
 		HWND hWndPropSheet;
 
-		// Alternate row color.
-		COLORREF colorAltRow;
-
 		// Image list for achievement icons.
 		HIMAGELIST himglAch;
+
+		// Alternate row color.
+		COLORREF colorAltRow;
 
 	public:
 		/**
@@ -96,8 +95,8 @@ class AchievementsTabPrivate
 AchievementsTabPrivate::AchievementsTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
-	, colorAltRow(0)
 	, himglAch(nullptr)
+	, colorAltRow(0)
 { }
 
 AchievementsTabPrivate::~AchievementsTabPrivate()
@@ -116,6 +115,8 @@ AchievementsTabPrivate::~AchievementsTabPrivate()
  */
 INT_PTR CALLBACK AchievementsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	RP_UNUSED(wParam);
+
 	switch (uMsg) {
 		case WM_INITDIALOG: {
 			// Get the pointer to the property sheet page object. This is 
@@ -191,6 +192,9 @@ INT_PTR CALLBACK AchievementsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wP
  */
 UINT CALLBACK AchievementsTabPrivate::callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp)
 {
+	RP_UNUSED(hWnd);
+	RP_UNUSED(ppsp);
+
 	switch (uMsg) {
 		case PSPCB_CREATE: {
 			// Must return TRUE to enable the page to be created.
@@ -226,7 +230,7 @@ void AchievementsTabPrivate::updateListViewStyle(void)
 	ListView_SetExtendedListViewStyle(hListView, lvsExStyle);
 
 	// If the alt row color changed, redo the ImageList.
-	COLORREF colorAltRow = LibWin32Common::getAltRowColor();
+	COLORREF colorAltRow = LibWin32UI::getAltRowColor();
 	if (colorAltRow != this->colorAltRow) {
 		this->colorAltRow = colorAltRow;
 		updateImageList();
@@ -279,7 +283,7 @@ void AchievementsTabPrivate::updateImageList(void)
 		return;
 	}
 
-	imgAchSheet = RpPng::loadUnchecked(f_res);
+	imgAchSheet = RpPng::load(f_res);
 	f_res->unref();
 	assert(imgAchSheet != nullptr);
 	if (!imgAchSheet)
@@ -301,7 +305,7 @@ void AchievementsTabPrivate::updateImageList(void)
 		return;
 	}
 
-	imgAchGraySheet = RpPng::loadUnchecked(f_res);
+	imgAchGraySheet = RpPng::load(f_res);
 	f_res->unref();
 	assert(imgAchGraySheet != nullptr);
 	if (!imgAchGraySheet) {
@@ -456,12 +460,10 @@ void AchievementsTabPrivate::reset(void)
 
 	// Add the achievements.
 	// TODO: Copy over CustomDraw from RP_ShellPropSheetExt for newline handling?
-	LVITEM item;
 	const Achievements *const pAch = Achievements::instance();
 	for (int i = 0; i < (int)Achievements::ID::Max; i++) {
 		const Achievements::ID id = (Achievements::ID)i;
 		const time_t timestamp = pAch->isUnlocked(id);
-		const bool unlocked = (timestamp != -1);
 
 		// Get the name and description.
 		tstring ts_ach = U82T_c(pAch->getName(id));
@@ -470,12 +472,13 @@ void AchievementsTabPrivate::reset(void)
 		ts_ach += U82T_c(pAch->getDescUnlocked(id));
 
 		// Measure the text width.
-		int col1Width_cur = LibWin32Common::measureStringForListView(hDC, ts_ach);
+		int col1Width_cur = LibWin32UI::measureStringForListView(hDC, ts_ach);
 		if (col1Width_cur > col1Width) {
 			col1Width = col1Width_cur;
 		}
 
 		// Column 0: Achievement
+		LVITEM item;
 		item.mask = LVIF_TEXT | LVIF_IMAGE;
 		item.iItem = i;
 		item.iSubItem = 0;
@@ -599,22 +602,4 @@ void AchievementsTab::reset(void)
 {
 	RP_D(AchievementsTab);
 	d->reset();
-}
-
-/**
- * Load the default configuration.
- * This does NOT save, and will only emit modified()
- * if it's different from the current configuration.
- */
-void AchievementsTab::loadDefaults(void)
-{
-	// Nothing to load here...
-}
-
-/**
- * Save the contents of this tab.
- */
-void AchievementsTab::save(void)
-{
-	// Nothing to save here...
 }

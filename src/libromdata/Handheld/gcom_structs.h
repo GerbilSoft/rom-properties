@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * gcom_structs.h: Tiger game.com data structures.                         *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -42,15 +42,16 @@ extern "C" {
  * NOTE: Strings are NOT null-terminated!
  */
 #define GCOM_SYS_ID "TigerDMGC"
-#pragma pack(1)
-typedef struct PACKED _Gcom_RomHeader {
+typedef struct _Gcom_RomHeader {
 	uint8_t rom_size;		// [0x000] ROM size?
 	uint8_t entry_point_bank;	// [0x001] Entry point: Bank number.
 	uint16_t entry_point;		// [0x002] Entry point
 	uint8_t flags;			// [0x004] Flags (See Gcom_Flags_e)
 	char sys_id[9];			// [0x005] System identifier
 
-	struct {
+	// Some compilers pad this structure to a multiple of 4 bytes
+#pragma pack(1)
+	struct PACKED {
 		/**
 		 * game.com ROM images are divided into 16 KB banks,
 		 * each of which makes up a 2bpp 256x256 bitmap.
@@ -68,13 +69,13 @@ typedef struct PACKED _Gcom_RomHeader {
 		uint8_t x;	// [0x00F] X coordinate within the bank.
 		uint8_t y;	// [0x010] Y coordinate within the bank.
 	} icon;
+#pragma pack()
 
 	char title[9];			// [0x011] Game title.
 	uint16_t game_id;		// [0x01A] Game ID.
 	uint8_t security_code;		// [0x01C] Security code.
 	uint8_t padding[3];		// [0x01D] Padding.
 } Gcom_RomHeader;
-#pragma pack()
 ASSERT_STRUCT(Gcom_RomHeader, 32);
 
 /**

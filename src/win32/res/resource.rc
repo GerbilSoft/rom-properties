@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * resource.rc: Win32 resource script. (Common resources)                  *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,32 +17,32 @@
 #include <prsht.h>
 #undef APSTUDIO_HIDDEN_SYMBOLS
 
-/** Manifest. **/
-ISOLATIONAWARE_MANIFEST_RESOURCE_ID	RT_MANIFEST	"res\\rom-properties.dll.manifest"
+/** Manifest **/
+ISOLATIONAWARE_MANIFEST_RESOURCE_ID	RT_MANIFEST	"res/rom-properties.dll.manifest"
 
-/** Icons. **/
-IDI_KEY_VALID	ICON	"res\\dialog-ok-apply.ico"
+/** Icons **/
+IDI_KEY_VALID	ICON	"res/dialog-ok-apply.ico"
 
-/** PNG images. **/
-IDP_FLAGS_16x16	RT_PNG	"..\\..\\res\\flags\\flags-16x16.png"
-IDP_FLAGS_24x24	RT_PNG	"..\\..\\res\\flags\\flags-24x24.png"
-IDP_FLAGS_32x32	RT_PNG	"..\\..\\res\\flags\\flags-32x32.png"
+/** PNG images **/
+IDP_FLAGS_16x16	RT_PNG	"../../res/flags/flags-16x16.png"
+IDP_FLAGS_24x24	RT_PNG	"../../res/flags/flags-24x24.png"
+IDP_FLAGS_32x32	RT_PNG	"../../res/flags/flags-32x32.png"
 
-IDP_ACH_16x16	RT_PNG	"..\\..\\res\\ach\\ach-16x16.png"
-IDP_ACH_24x24	RT_PNG	"..\\..\\res\\ach\\ach-24x24.png"
-IDP_ACH_32x32	RT_PNG	"..\\..\\res\\ach\\ach-32x32.png"
-IDP_ACH_64x64	RT_PNG	"..\\..\\res\\ach\\ach-64x64.png"
+IDP_ACH_16x16	RT_PNG	"../../res/ach/ach-16x16.png"
+IDP_ACH_24x24	RT_PNG	"../../res/ach/ach-24x24.png"
+IDP_ACH_32x32	RT_PNG	"../../res/ach/ach-32x32.png"
+IDP_ACH_64x64	RT_PNG	"../../res/ach/ach-64x64.png"
 
-IDP_ACH_GRAY_16x16	RT_PNG	"..\\..\\res\\ach\\ach-gray-16x16.png"
-IDP_ACH_GRAY_24x24	RT_PNG	"..\\..\\res\\ach\\ach-gray-24x24.png"
-IDP_ACH_GRAY_32x32	RT_PNG	"..\\..\\res\\ach\\ach-gray-32x32.png"
-IDP_ACH_GRAY_64x64	RT_PNG	"..\\..\\res\\ach\\ach-gray-64x64.png"
+IDP_ACH_GRAY_16x16	RT_PNG	"../../res/ach/ach-gray-16x16.png"
+IDP_ACH_GRAY_24x24	RT_PNG	"../../res/ach/ach-gray-24x24.png"
+IDP_ACH_GRAY_32x32	RT_PNG	"../../res/ach/ach-gray-32x32.png"
+IDP_ACH_GRAY_64x64	RT_PNG	"../../res/ach/ach-gray-64x64.png"
 
 // TODO: The git version gets cut off on Windows 7, since it uses
 // a ListView instead of separate ListBox and Edit controls like
 // on Windows XP.
 
-/** Application version. **/
+/** Application version **/
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 VS_VERSION_INFO VERSIONINFO
 	FILEVERSION RP_VERSION_WIN32
@@ -60,10 +60,10 @@ BEGIN
 		BEGIN
 			//VALUE "Comments", "\0"
 			//VALUE "CompanyName", "\0"
-			VALUE "FileDescription", "ROM Properties Page shell extension\0"
+			VALUE "FileDescription", "ROM Properties Win32 UI frontend\0"
 			VALUE "FileVersion", "rom-properties " Win32_RC_FileVersion "\0"
 			VALUE "InternalName", "rom-properties\0"
-			VALUE "LegalCopyright", "Copyright (c) 2016-2020 by David Korth.\0"
+			VALUE "LegalCopyright", "Copyright (c) 2016-2022 by David Korth.\0"
 			//VALUE "LegalTrademarks", "\0"
 			//VALUE "OriginalFilename", "\0"
 			//VALUE "PrivateBuild", "\0"
@@ -78,7 +78,7 @@ BEGIN
 	END
 END
 
-/** Generic dialogs. **/
+/** Generic dialogs **/
 
 /**
  * Generic property sheet.
@@ -106,3 +106,21 @@ EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
 END
+
+#ifdef ENABLE_DECRYPTION
+/**
+ * Configuration: Key Manager ("Import" popup menu)
+ * NOTE: The popup menu's title isn't seen by the user.
+ */
+LANGUAGE LANG_NEUTRAL, LANG_NEUTRAL
+IDR_KEYMANAGER_IMPORT MENU
+BEGIN
+    POPUP "Import"
+    BEGIN
+        MENUITEM "Wii keys.bin", IDM_KEYMANAGER_IMPORT_WII_KEYS_BIN
+        MENUITEM "Wii U otp.bin", IDM_KEYMANAGER_IMPORT_WIIU_OTP_BIN
+        MENUITEM "3DS boot9.bin", IDM_KEYMANAGER_IMPORT_3DS_BOOT9_BIN
+        MENUITEM "3DS aeskeydb.bin", IDM_KEYMANAGER_IMPORT_3DS_AESKEYDB
+    END
+END
+#endif /* ENABLE_DECRYPTION */

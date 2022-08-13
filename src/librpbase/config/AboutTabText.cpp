@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * AboutTabText.hpp: About tab for rp-config. (Common text)                *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,23 +11,62 @@
 #include "config.version.h"
 #include "git.h"
 
-namespace LibRpBase {
+// AboutTabText isn't used by libromdata directly,
+// so use some linker hax to force linkage.
+extern "C" {
+	extern uint8_t RP_LibRpBase_AboutTabText_ForceLinkage;
+	uint8_t RP_LibRpBase_AboutTabText_ForceLinkage;
+}
 
-// Program version string.
-const char AboutTabText::prg_version[] = RP_VERSION_STRING;
+namespace LibRpBase { namespace AboutTabText {
 
-// git versions.
+static const char *const ProgramInfoString_tbl[] = {
+	"rom-properties",				// ProgramName
+	"ROM Properties Page Shell Extension",		// ProgramFullName
+	"Copyright (c) 2016-2022 by David Korth.",	// Copyright
+	RP_VERSION_STRING,
+
+	// GitVersion
 #ifdef RP_GIT_VERSION
-const char AboutTabText::git_version[] = RP_GIT_VERSION;
-# ifdef RP_GIT_DESCRIBE
-const char AboutTabText::git_describe[] = RP_GIT_DESCRIBE;
-# else
-const char AboutTabText::git_describe[] = "";
-# endif
-#else
-const char AboutTabText::git_version[] = "";
-const char AboutTabText::git_describe[] = "";
-#endif
+	RP_GIT_VERSION,
+#else /* !RP_GIT_VERSION */
+	nullptr,
+#endif /* RP_GIT_VERSION */
+
+	// GitDescription
+#if defined(RP_GIT_VERSION) && defined(RP_GIT_DESCRIBE)
+	RP_GIT_DESCRIBE,
+#else /* !(RP_GIT_VERSION && RP_GIT_DESCRIBE) */
+	nullptr,
+#endif /* RP_GIT_VERSION && RP_GIT_DESCRIBE */
+};
+
+/**
+ * Get a program information string.
+ * @param id String ID
+ * @return String, or nullptr if not available.
+ */
+RP_LIBROMDATA_PUBLIC
+const char *getProgramInfoString(ProgramInfoStringID id)
+{
+	assert(static_cast<int>(id) >= 0);
+	assert(id < ProgramInfoStringID::Max);
+	if (static_cast<int>(id) < 0 || id >= ProgramInfoStringID::Max) {
+		return nullptr;
+	}
+
+	return ProgramInfoString_tbl[static_cast<int>(id)];
+}
+
+/**
+ * Get the program information string count.
+ * @return Highest program information string ID.
+ */
+RP_LIBROMDATA_PUBLIC
+ProgramInfoStringID getProgramInfoStringCount(void)
+{
+	return ProgramInfoStringID::Max;
+}
 
 /** Credits **/
 
@@ -35,7 +74,7 @@ const char AboutTabText::git_describe[] = "";
  * Credits data.
  * Ends with CreditType::Max.
  */
-const AboutTabText::CreditsData_t AboutTabText::CreditsData[] = {
+static const CreditsData_t creditsData[] = {
 	// Developers
 	{CreditType::Developer,		"David Korth", "mailto:gerbilsoft@gerbilsoft.com", "gerbilsoft@gerbilsoft.com", nullptr},
 	{CreditType::Continue,		"Egor", "mailto:egor@opensrc.club", "egor@opensrc.club", nullptr},
@@ -43,6 +82,7 @@ const AboutTabText::CreditsData_t AboutTabText::CreditsData[] = {
 	// Translators
 	{CreditType::Translator,	"Egor", "mailto:egor@opensrc.club", "egor@opensrc.club", "ru, uk"},
 	{CreditType::Continue,		"Null Magic", nullptr, nullptr, "pt_BR"},
+	{CreditType::Continue,		"Amnesia1000", nullptr, nullptr, "es"},
 
 	// Contributors
 	{CreditType::Contributor,	"CheatFreak47", nullptr, nullptr, nullptr},
@@ -51,13 +91,23 @@ const AboutTabText::CreditsData_t AboutTabText::CreditsData[] = {
 	{CreditType::Max, nullptr, nullptr, nullptr, nullptr}
 };
 
+/**
+ * Get the credits data.
+ * Ends with CreditType::Max.
+ * @return Credits data
+ */
+const CreditsData_t *getCreditsData(void)
+{
+	return creditsData;
+}
+
 /** Support **/
 
 /**
  * Support sites.
  * Ends with nullptr.
  */
-const AboutTabText::SupportSite_t AboutTabText::SupportSites[] = {
+static const SupportSite_t supportSites[] = {
 	{"GitHub: GerbilSoft/rom-properties", "https://github.com/GerbilSoft/rom-properties"},
 	{"Sonic Retro", "https://forums.sonicretro.org/index.php?showtopic=35692"},
 	{"GBAtemp", "https://gbatemp.net/threads/rom-properties-page-shell-extension.442424/"},
@@ -65,4 +115,14 @@ const AboutTabText::SupportSite_t AboutTabText::SupportSites[] = {
 	{nullptr, nullptr}
 };
 
+/**
+ * Get the support sites.
+ * Ends with nullptr entries.
+ * @return Support sites
+ */
+const SupportSite_t *getSupportSites(void)
+{
+	return supportSites;
 }
+
+} }

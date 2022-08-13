@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PEResourceReader.cpp: Portable Executable resource reader.              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -37,13 +37,13 @@ class PEResourceReaderPrivate
 		PEResourceReader *const q_ptr;
 
 	public:
-		// .rsrc section.
+		// Read position
+		off64_t pos;
+
+		// .rsrc section
 		uint32_t rsrc_addr;
 		uint32_t rsrc_size;
 		uint32_t rsrc_va;
-
-		// Read position.
-		off64_t pos;
 
 		// Resource directory entry.
 		struct ResDirEntry {
@@ -125,10 +125,10 @@ PEResourceReaderPrivate::PEResourceReaderPrivate(
 		uint32_t rsrc_addr, uint32_t rsrc_size,
 		uint32_t rsrc_va)
 	: q_ptr(q)
+	, pos(0)
 	, rsrc_addr(rsrc_addr)
 	, rsrc_size(rsrc_size)
 	, rsrc_va(rsrc_va)
-	, pos(0)
 {
 	if (!q->m_file) {
 		q->m_lastError = -EBADF;
@@ -271,7 +271,7 @@ const PEResourceReaderPrivate::rsrc_dir_t *PEResourceReaderPrivate::getTypeDir(u
 	}
 
 	// Load the directory.
-	auto iter_type = type_dirs.insert(std::make_pair(type, rsrc_dir_t()));
+	auto iter_type = type_dirs.emplace(type, rsrc_dir_t());
 	if (!iter_type.second) {
 		// Error adding to the map.
 		return nullptr;
@@ -326,7 +326,7 @@ const PEResourceReaderPrivate::rsrc_dir_t *PEResourceReaderPrivate::getTypeIdDir
 	}
 
 	// Load the directory.
-	auto iter_type_and_id = type_and_id_dirs.insert(std::make_pair(type_and_id, rsrc_dir_t()));
+	auto iter_type_and_id = type_and_id_dirs.emplace(type_and_id, rsrc_dir_t());
 	if (!iter_type_and_id.second) {
 		// Error adding to the map.
 		return nullptr;
@@ -408,8 +408,8 @@ int PEResourceReaderPrivate::load_VS_VERSION_INFO_header(IRpFile *file, const ch
 int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::StringTable &st, uint32_t *langID)
 {
 	// References:
-	// - String: https://msdn.microsoft.com/en-us/library/windows/desktop/ms646987(v=vs.85).aspx
-	// - StringTable: https://msdn.microsoft.com/en-us/library/windows/desktop/ms646992(v=vs.85).aspx
+	// - String: https://docs.microsoft.com/en-us/windows/win32/menurc/string-str
+	// - StringTable: https://docs.microsoft.com/en-us/windows/win32/menurc/stringtable
 
 	// Read fields.
 	const off64_t pos_start = file->tell();
@@ -856,7 +856,7 @@ int PEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *p
 	ret = PEResourceReaderPrivate::load_StringTable(f_ver.get(), st, &langID);
 	if (ret == 0) {
 		// String table read successfully.
-		pVsSfi->insert(std::make_pair(langID, std::move(st)));
+		pVsSfi->emplace(langID, std::move(st));
 	}
 
 	// Version information read successfully.

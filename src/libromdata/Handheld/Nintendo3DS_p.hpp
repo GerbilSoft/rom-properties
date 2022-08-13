@@ -3,7 +3,7 @@
  * Nintendo3DS.hpp: Nintendo 3DS ROM reader. (Private class)               *
  * Handles CCI/3DS, CIA, and SMDH files.                                   *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -27,7 +27,7 @@ namespace LibRpFile {
 
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector
-#include "librpbase/uvector.h"
+#include "uvector.h"
 
 namespace LibRomData {
 
@@ -46,6 +46,12 @@ class Nintendo3DSPrivate final : public LibRpBase::RomDataPrivate
 		RP_DISABLE_COPY(Nintendo3DSPrivate)
 
 	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const LibRpBase::RomDataInfo romDataInfo;
+
+	public:
 		// ROM type.
 		enum class RomType {
 			Unknown = -1,
@@ -59,10 +65,6 @@ class Nintendo3DSPrivate final : public LibRpBase::RomDataPrivate
 			Max
 		};
 		RomType romType;
-
-		// MIME type table.
-		// Ordering matches N3DS_RomType.
-		static const char *const mimeType_tbl[];
 
 	public:
 		// What stuff do we have?
@@ -215,18 +217,18 @@ class Nintendo3DSPrivate final : public LibRpBase::RomDataPrivate
 		void addTitleIdAndProductCodeFields(bool showContentType);
 
 		/**
-		 * Convert a Nintendo 3DS region value to a GameTDB region code.
+		 * Convert a Nintendo 3DS region value to a GameTDB language code.
 		 * @param smdhRegion Nintendo 3DS region. (from SMDH)
 		 * @param idRegion Game ID region.
 		 *
-		 * NOTE: Mulitple GameTDB region codes may be returned, including:
-		 * - User-specified fallback region. [TODO]
-		 * - General fallback region.
+		 * NOTE: Mulitple GameTDB language codes may be returned, including:
+		 * - User-specified fallback language code for PAL.
+		 * - General fallback language code.
 		 *
-		 * @return GameTDB region code(s), or empty vector if the region value is invalid.
+		 * @return GameTDB language code(s), or empty vector if the region value is invalid.
+		 * NOTE: The language code may need to be converted to uppercase!
 		 */
-		static std::vector<const char*> n3dsRegionToGameTDB(
-			uint32_t smdhRegion, char idRegion);
+		static std::vector<uint16_t> n3dsRegionToGameTDB(uint32_t smdhRegion, char idRegion);
 
 		/**
 		 * Convert a Nintendo 3DS version number field to a string.
@@ -237,10 +239,10 @@ class Nintendo3DSPrivate final : public LibRpBase::RomDataPrivate
 		{
 			// Reference: https://3dbrew.org/wiki/Titles
 			return LibRpBase::rp_sprintf("%u.%u.%u (v%u)",
-				(version >> 10),
-				(version >>  4) & 0x1F,
-				(version & 0x0F),
-				version);
+				(static_cast<unsigned int>(version) >> 10),
+				(static_cast<unsigned int>(version) >>  4) & 0x1F,
+				(static_cast<unsigned int>(version) & 0x0F),
+				 static_cast<unsigned int>(version));
 		}
 
 		/**

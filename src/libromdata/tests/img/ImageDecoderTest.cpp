@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * ImageDecoderTest.cpp: ImageDecoder class test.                          *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,7 +17,7 @@
 // zlib and libpng
 #include <zlib.h>
 #ifdef HAVE_PNG
-# include <png.h>
+#  include <png.h>
 #endif /* HAVE_PNG */
 
 // gzclose_r() and gzclose_w() were introduced in zlib-1.2.4.
@@ -32,29 +32,24 @@
 
 // librpbase, librpfile
 #include "common.h"
-#include "librpbase/img/RpImageLoader.hpp"
+#include "librpbase/img/RpPng.hpp"
+#include "librpbase/RomData.hpp"
 #include "librpfile/RpFile.hpp"
-#include "librpfile/RpMemFile.hpp"
+#include "librpfile/MemFile.hpp"
 #include "librpfile/FileSystem.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 
 // librptexture
 #include "librptexture/img/rp_image.hpp"
-#include "librptexture/decoder/ImageDecoder.hpp"
+#ifdef _WIN32
+// rp_image backend registration.
+#  include "librptexture/img/RpGdiplusBackend.hpp"
+#endif /* _WIN32 */
 using namespace LibRpTexture;
 
-// TODO: Separate out the actual DDS texture loader
-// from the RomData subclass?
-#include "Other/RpTextureWrapper.hpp"
-
-// ROM images. Used for console-specific image formats.
-#include "Console/DreamcastSave.hpp"
-#include "Console/GameCubeSave.hpp"
-#include "Console/PlayStationSave.hpp"
-#include "Handheld/NintendoDS.hpp"
-#include "Handheld/Nintendo3DS_SMDH.hpp"
-#include "Other/NintendoBadge.hpp"
+// RomDataFactory to load test files.
+#include "RomDataFactory.hpp"
 
 // C includes.
 #include <stdint.h>
@@ -122,7 +117,13 @@ class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 			, m_gzDds(nullptr)
 			, m_f_dds(nullptr)
 			, m_romData(nullptr)
-		{ }
+		{
+#ifdef _WIN32
+			// Register RpGdiplusBackend.
+			// TODO: Static initializer somewhere?
+			rp_image::setBackendCreatorFn(RpGdiplusBackend::creator_fn);
+#endif /* _WIN32 */
+		}
 
 		void SetUp(void) final;
 		void TearDown(void) final;
@@ -154,9 +155,9 @@ class ImageDecoderTest : public ::testing::TestWithParam<ImageDecoderTest_mode>
 
 		// RomData class pointer for .dds.gz.
 		// Placed here so it can be freed by TearDown() if necessary.
-		// The underlying RpMemFile is here as well, since we can't
+		// The underlying MemFile is here as well, since we can't
 		// delete it before deleting the RomData object.
-		RpMemFile *m_f_dds;
+		MemFile *m_f_dds;
 		RomData *m_romData;
 
 	public:
@@ -201,11 +202,7 @@ inline ::std::ostream& operator<<(::std::ostream& os, const ImageDecoderTest_mod
 inline void ImageDecoderTest::replace_slashes(string &path)
 {
 #ifdef _WIN32
-	std::for_each(path.begin(), path.end(), [](char &p) {
-		if (p == '/') {
-			p = '\\';
-		}
-	});
+	std::replace(path.begin(), path.end(), '/', '\\');
 #else
 	// Nothing to do here...
 	RP_UNUSED(path);
@@ -232,8 +229,7 @@ void ImageDecoderTest::SetUp(void)
 	path += mode.dds_gz_filename;
 	replace_slashes(path);
 	m_gzDds = gzopen(path.c_str(), "rb");
-	ASSERT_TRUE(m_gzDds != nullptr) << "gzopen() failed to open the DDS file: "
-		<< mode.dds_gz_filename;
+	ASSERT_TRUE(m_gzDds != nullptr) << "gzopen() failed to open the test file.";
 
 	// Get the decompressed file size.
 	// gzseek() does not support SEEK_END.
@@ -253,10 +249,10 @@ void ImageDecoderTest::SetUp(void)
 	/* FIXME: Per-type minimum sizes.
 	 * This fails on some very small SVR files.
 	ASSERT_GT(ddsSize, 4+sizeof(DDS_HEADER))
-		<< "DDS test image is too small.";
+		<< "DDS image is too small.";
 	*/
 	ASSERT_LE(ddsSize, MAX_DDS_IMAGE_FILESIZE)
-		<< "DDS test image is too big.";
+		<< "DDS image is too big.";
 
 	// Read the DDS image into memory.
 	m_dds_buf.resize(ddsSize);
@@ -265,27 +261,24 @@ void ImageDecoderTest::SetUp(void)
 	gzclose_r(m_gzDds);
 	m_gzDds = nullptr;
 
-	ASSERT_EQ(ddsSize, (uint32_t)sz) << "Error loading DDS image file: " <<
-		mode.dds_gz_filename << " - short read";
+	ASSERT_EQ(ddsSize, (uint32_t)sz) << "Error loading DDS image file: short read";
 
 	// Open the PNG image file being tested.
 	path.resize(18);	// Back to "ImageDecoder_data/".
 	path += mode.png_filename;
 	replace_slashes(path);
 	unique_RefBase<RpFile> file(new RpFile(path, RpFile::FM_OPEN_READ));
-	ASSERT_TRUE(file->isOpen()) << "Error loading PNG image file: " <<
-		mode.png_filename << " - " << strerror(file->lastError());
+	ASSERT_TRUE(file->isOpen()) << "Error loading PNG image file: " << strerror(file->lastError());
 
 	// Maximum image size.
-	ASSERT_LE(file->size(), MAX_PNG_IMAGE_FILESIZE) << "PNG test image is too big.";
+	ASSERT_LE(file->size(), MAX_PNG_IMAGE_FILESIZE) << "PNG image is too big.";
 
 	// Read the PNG image into memory.
 	const size_t pngSize = static_cast<size_t>(file->size());
 	m_png_buf.resize(pngSize);
 	ASSERT_EQ(pngSize, m_png_buf.size());
 	size_t readSize = file->read(m_png_buf.data(), pngSize);
-	ASSERT_EQ(pngSize, readSize) << "Error loading PNG image file: " <<
-		mode.png_filename << " - short read";
+	ASSERT_EQ(pngSize, readSize) << "Error loading PNG image file: short read";
 }
 
 /**
@@ -397,96 +390,26 @@ void ImageDecoderTest::decodeTest_internal(void)
 	const ImageDecoderTest_mode &mode = GetParam();
 
 	// Load the PNG image.
-	unique_RefBase<RpMemFile> f_png(new RpMemFile(m_png_buf.data(), m_png_buf.size()));
-	ASSERT_TRUE(f_png->isOpen()) << "Could not create RpMemFile for the PNG image.";
-	unique_ptr<rp_image, RpImageUnrefDeleter> img_png(RpImageLoader::load(f_png.get()), RpImageUnrefDeleter());
+	unique_RefBase<MemFile> f_png(new MemFile(m_png_buf.data(), m_png_buf.size()));
+	ASSERT_TRUE(f_png->isOpen()) << "Could not create MemFile for the PNG image.";
+	unique_ptr<rp_image, RpImageUnrefDeleter> img_png(RpPng::load(f_png.get()), RpImageUnrefDeleter());
 	ASSERT_TRUE(img_png != nullptr) << "Could not load the PNG image as rp_image.";
 	ASSERT_TRUE(img_png->isValid()) << "Could not load the PNG image as rp_image.";
 
 	// Open the image as an IRpFile.
-	m_f_dds = new RpMemFile(m_dds_buf.data(), m_dds_buf.size());
-	ASSERT_TRUE(m_f_dds->isOpen()) << "Could not create RpMemFile for the DDS image.";
+	m_f_dds = new MemFile(m_dds_buf.data(), m_dds_buf.size());
+	ASSERT_TRUE(m_f_dds->isOpen()) << "Could not create MemFile for the DDS image.";
+	m_f_dds->setFilename(mode.dds_gz_filename);
 
-	// Determine the image type by checking the last 7 characters of the filename.
-	const char *filetype = nullptr;
-	ASSERT_GT(mode.dds_gz_filename.size(), 7U);
-	if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".dds.gz") ||
-	    !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".dds")) {
-		// DDS image
-		// NOTE: Using RpTextureWrapper.
-		filetype = "DDS";
-		m_romData = new RpTextureWrapper(m_f_dds);
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".pvr.gz") ||
-		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gvr.gz") ||
-		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".svr.gz")) {
-		// PVR/GVR/SVR image
-		// NOTE: Using RpTextureWrapper.
-		// NOTE: May be PowerVR3.
-		filetype = "PVR";
-		m_romData = new RpTextureWrapper(m_f_dds);
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".ktx.gz")) {
-		// Khronos KTX image
-		// TODO: Use .zktx format instead of .ktx.gz.
-		// NOTE: Using RpTextureWrapper.
-		filetype = "KTX";
-		m_romData = new RpTextureWrapper(m_f_dds);
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-8, 8, ".ktx2.gz")) {
-		// Khronos KTX2 image
-		// TODO: Use .zktx2 format instead of .ktx2.gz.
-		// NOTE: Using RpTextureWrapper.
-		filetype = "KTX2";
-		m_romData = new RpTextureWrapper(m_f_dds);
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".ps3.vtf.gz")) {
-		// Valve Texture File (PS3)
-		// NOTE: Using RpTextureWrapper.
-		filetype = "VTF3";
-		m_romData = new RpTextureWrapper(m_f_dds);
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".vtf.gz")) {
-		// Valve Texture File
-		// NOTE: Using RpTextureWrapper.
-		filetype = "VTF";
-		m_romData = new RpTextureWrapper(m_f_dds);
-	} else if (mode.dds_gz_filename.size() >= 8U &&
-		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-8, 8, ".smdh.gz"))
-	{
-		// Nintendo 3DS SMDH file
-		filetype = "SMDH";
-		m_romData = new Nintendo3DS_SMDH(m_f_dds);
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gci.gz")) {
-		// Nintendo GameCube save file
-		filetype = "GCI";
-		m_romData = new GameCubeSave(m_f_dds);
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".VMS.gz")) {
-		// Sega Dreamcast save file
-		filetype = "VMS";
-		m_romData = new DreamcastSave(m_f_dds);
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".PSV.gz")) {
-		// Sony PlayStation save file
-		filetype = "PSV";
-		m_romData = new PlayStationSave(m_f_dds);
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".nds.gz")) {
-		// Nintendo DS ROM image
-		filetype = "NDS";
-		m_romData = new NintendoDS(m_f_dds);
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".cab.gz") ||
-		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".prb.gz")) {
-		// Nintendo Badge Arcade texture
-		filetype = "NintendoBadge";
-		m_romData = new NintendoBadge(m_f_dds);
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".tex")) {
-		// Leapster Didj texture
-		// NOTE: Using RpTextureWrapper.
-		filetype = "DidjTex";
-		m_romData = new RpTextureWrapper(m_f_dds);
-	} else {
-		ASSERT_TRUE(false) << "Unknown image type.";
-	}
-	ASSERT_TRUE(m_romData->isValid()) << "Could not load the " << filetype << " image.";
-	ASSERT_TRUE(m_romData->isOpen()) << "Could not load the " << filetype << " image.";
+	// Load the image file.
+	m_romData = RomDataFactory::create(m_f_dds);
+	ASSERT_TRUE(m_romData != nullptr) << "Could not load the DDS image.";
+	ASSERT_TRUE(m_romData->isValid()) << "Could not load the DDS image.";
+	ASSERT_TRUE(m_romData->isOpen()) << "Could not load the DDS image.";
 
 	// Get the DDS image as an rp_image.
 	const rp_image *const img_dds = m_romData->image(mode.imgType);
-	ASSERT_TRUE(img_dds != nullptr) << "Could not load the " << filetype << " image as rp_image.";
+	ASSERT_TRUE(img_dds != nullptr) << "Could not load the DDS image as rp_image.";
 
 	// Get the image again.
 	// The pointer should be identical to the first one.
@@ -514,8 +437,9 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 	const ImageDecoderTest_mode &mode = GetParam();
 
 	// Open the image as an IRpFile.
-	m_f_dds = new RpMemFile(m_dds_buf.data(), m_dds_buf.size());
-	ASSERT_TRUE(m_f_dds->isOpen()) << "Could not create RpMemFile for the DDS image.";
+	m_f_dds = new MemFile(m_dds_buf.data(), m_dds_buf.size());
+	ASSERT_TRUE(m_f_dds->isOpen()) << "Could not create MemFile for the DDS image.";
+	m_f_dds->setFilename(mode.dds_gz_filename);
 
 	// NOTE: We can't simply decode the image multiple times.
 	// We have to reopen the RomData subclass every time.
@@ -531,95 +455,63 @@ void ImageDecoderTest::decodeBenchmark_internal(void)
 		max_iterations = BENCHMARK_ITERATIONS;
 	}
 
-	// Constructor function.
-	std::function<RomData*(IRpFile*)> fn_ctor;
+	// Load the image file.
+	// TODO: RomDataFactory function to retrieve a constructor function?
+	auto fn_ctor = [](IRpFile *file) { return RomDataFactory::create(file); };
 
-	// Determine the image type by checking the last 7 characters of the filename.
-	ASSERT_GT(mode.dds_gz_filename.size(), 7U);
-	if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".dds.gz") ||
-	    !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".dds")) {
-		// DDS image
-		// NOTE: Using RpTextureWrapper.
-		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".pvr.gz") ||
-		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gvr.gz") ||
-		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".svr.gz")) {
-		// PVR/GVR/SVR image
-		// NOTE: Using RpTextureWrapper.
-		// NOTE: May be PowerVR3.
-		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".ktx.gz")) {
-		// Khronos KTX image
-		// TODO: Use .zktx format instead of .ktx.gz?
-		// NOTE: Using RpTextureWrapper.
-		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-8, 8, ".ktx2.gz")) {
-		// Khronos KTX image
-		// TODO: Use .zktx2 format instead of .ktx2.gz?
-		// NOTE: Using RpTextureWrapper.
-		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-11, 11, ".ps3.vtf.gz")) {
-		// Valve Texture File (PS3)
-		// NOTE: Using RpTextureWrapper.
-		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".vtf.gz")) {
-		// Valve Texture File
-		// NOTE: Using RpTextureWrapper.
-		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
-	} else if (mode.dds_gz_filename.size() >= 8U &&
-		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-8, 8, ".smdh.gz"))
+	// For certain types, increase the number of iterations.
+	ASSERT_GT(mode.dds_gz_filename.size(), 4U);
+	if (mode.dds_gz_filename.size() >= 8U &&
+	    !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-8, 8, ".smdh.gz"))
 	{
 		// Nintendo 3DS SMDH file
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
-		fn_ctor = [](IRpFile *file) { return new Nintendo3DS_SMDH(file); };
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gci.gz")) {
+	} else if (mode.dds_gz_filename.size() >= 7U &&
+		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".gci.gz")) {
 		// Nintendo GameCube save file
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
-		fn_ctor = [](IRpFile *file) { return new GameCubeSave(file); };
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".VMS.gz")) {
+	} else if (mode.dds_gz_filename.size() >= 4U &&
+		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".VMS")) {
 		// Sega Dreamcast save file
+		// NOTE: RomDataFactory and DreamcastSave don't support gzip at the moment.
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
-		fn_ctor = [](IRpFile *file) { return new DreamcastSave(file); };
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".PSV.gz")) {
+	} else if (mode.dds_gz_filename.size() >= 7U &&
+		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".PSV.gz")) {
 		// Sony PlayStation save file
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
-		fn_ctor = [](IRpFile *file) { return new PlayStationSave(file); };
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".nds.gz")) {
+	} else if (mode.dds_gz_filename.size() >= 7U &&
+		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".nds.gz")) {
 		// Nintendo DS ROM image
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
-		fn_ctor = [](IRpFile *file) { return new NintendoDS(file); };
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".cab.gz") ||
-		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".prb.gz")) {
+	} else if (mode.dds_gz_filename.size() >= 7U &&
+		   (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".cab.gz") ||
+		    !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-7, 7, ".prb.gz"))) {
 		// Nintendo Badge Arcade texture
 		// NOTE: Increased iterations due to smaller files.
 		max_iterations *= 10;
-		fn_ctor = [](IRpFile *file) { return new NintendoBadge(file); };
-	} else if (!mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".tex")) {
+	} else if (mode.dds_gz_filename.size() >= 4U &&
+		   !mode.dds_gz_filename.compare(mode.dds_gz_filename.size()-4, 4, ".tex")) {
 		// Leapster Didj texture
 		// NOTE: Increased iterations due to smaller files.
 		// NOTE: Using RpTextureWrapper.
 		max_iterations *= 10;
-		fn_ctor = [](IRpFile *file) { return new RpTextureWrapper(file); };
-	} else {
-		ASSERT_TRUE(false) << "Unknown image type.";
 	}
-
-	ASSERT_TRUE(fn_ctor) << "Unable to get a constructor function.";
 
 	for (unsigned int i = max_iterations; i > 0; i--) {
 		m_romData = fn_ctor(m_f_dds);
-		ASSERT_TRUE(m_romData->isValid()) << "Could not load the source image.";
-		ASSERT_TRUE(m_romData->isOpen()) << "Could not load the source image.";
+		ASSERT_TRUE(m_romData != nullptr) << "Could not load the DDS image.";
+		ASSERT_TRUE(m_romData->isValid()) << "Could not load the DDS image.";
+		ASSERT_TRUE(m_romData->isOpen()) << "Could not load the DDS image.";
 
-		// Get the source image as an rp_image.
+		// Get the DDS image as an rp_image.
 		// TODO: imgType to string?
 		const rp_image *const img_dds = m_romData->image(mode.imgType);
-		ASSERT_TRUE(img_dds != nullptr) << "Could not load the source image as rp_image.";
+		ASSERT_TRUE(img_dds != nullptr) << "Could not load the DDS image as rp_image.";
 
 		UNREF_AND_NULL_NOCHK(m_romData);
 	}
@@ -644,15 +536,8 @@ string ImageDecoderTest::test_case_suffix_generator(const ::testing::TestParamIn
 
 	// Replace all non-alphanumeric characters with '_'.
 	// See gtest-param-util.h::IsValidParamName().
-	std::for_each(suffix.begin(), suffix.end(),
-		[](char &c) {
-			// NOTE: Not checking for '_' because that
-			// wastes a branch.
-			if (!ISALNUM(c)) {
-				c = '_';
-			}
-		}
-	);
+	std::replace_if(suffix.begin(), suffix.end(),
+		[](char c) { return !ISALNUM(c); }, '_');
 
 	// Append the image type to allow checking multiple types
 	// of images in the same file.
@@ -671,9 +556,9 @@ string ImageDecoderTest::test_case_suffix_generator(const ::testing::TestParamIn
 	return suffix;
 }
 
-// Test cases.
+/** Test cases **/
 
-// DirectDrawSurface tests. (S3TC)
+// DirectDrawSurface tests (S3TC)
 INSTANTIATE_TEST_SUITE_P(DDS_S3TC, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
@@ -711,7 +596,7 @@ INSTANTIATE_TEST_SUITE_P(DDS_S3TC, ImageDecoderTest,
 			"S3TC/bc5.s3tc.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// DirectDrawSurface tests. (Uncompressed 16-bit RGB)
+// DirectDrawSurface tests (Uncompressed 16-bit RGB)
 INSTANTIATE_TEST_SUITE_P(DDS_RGB16, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
@@ -722,7 +607,7 @@ INSTANTIATE_TEST_SUITE_P(DDS_RGB16, ImageDecoderTest,
 			"RGB/xRGB4444.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// DirectDrawSurface tests. (Uncompressed 16-bit ARGB)
+// DirectDrawSurface tests (Uncompressed 16-bit ARGB)
 INSTANTIATE_TEST_SUITE_P(DDS_ARGB16, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
@@ -736,7 +621,7 @@ INSTANTIATE_TEST_SUITE_P(DDS_ARGB16, ImageDecoderTest,
 			"ARGB/ARGB8332.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// DirectDrawSurface tests. (Uncompressed 15-bit RGB)
+// DirectDrawSurface tests (Uncompressed 15-bit RGB)
 INSTANTIATE_TEST_SUITE_P(DDS_RGB15, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
@@ -744,7 +629,7 @@ INSTANTIATE_TEST_SUITE_P(DDS_RGB15, ImageDecoderTest,
 			"RGB/RGB565.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// DirectDrawSurface tests. (Uncompressed 24-bit RGB)
+// DirectDrawSurface tests (Uncompressed 24-bit RGB)
 INSTANTIATE_TEST_SUITE_P(DDS_RGB24, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
@@ -752,7 +637,7 @@ INSTANTIATE_TEST_SUITE_P(DDS_RGB24, ImageDecoderTest,
 			"RGB/RGB888.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// DirectDrawSurface tests. (Uncompressed 32-bit RGB)
+// DirectDrawSurface tests (Uncompressed 32-bit RGB)
 INSTANTIATE_TEST_SUITE_P(DDS_RGB32, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
@@ -768,7 +653,7 @@ INSTANTIATE_TEST_SUITE_P(DDS_RGB32, ImageDecoderTest,
 			"RGB/G16R16.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// DirectDrawSurface tests. (Uncompressed 32-bit ARGB)
+// DirectDrawSurface tests (Uncompressed 32-bit ARGB)
 INSTANTIATE_TEST_SUITE_P(DDS_ARGB32, ImageDecoderTest,
 	::testing::Values(
 		// 32-bit
@@ -788,7 +673,7 @@ INSTANTIATE_TEST_SUITE_P(DDS_ARGB32, ImageDecoderTest,
 			"ARGB/A2B10G10R10.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// DirectDrawSurface tests. (Luminance)
+// DirectDrawSurface tests (Luminance)
 INSTANTIATE_TEST_SUITE_P(DDS_Luma, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
@@ -805,7 +690,7 @@ INSTANTIATE_TEST_SUITE_P(DDS_Luma, ImageDecoderTest,
 			"Luma/A8L8.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// DirectDrawSurface tests. (Alpha)
+// DirectDrawSurface tests (Alpha)
 INSTANTIATE_TEST_SUITE_P(DDS_Alpha, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
@@ -813,7 +698,7 @@ INSTANTIATE_TEST_SUITE_P(DDS_Alpha, ImageDecoderTest,
 			"Alpha/A8.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// PVR tests. (square twiddled)
+// PVR tests (square twiddled)
 INSTANTIATE_TEST_SUITE_P(PVR_SqTwiddled, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
@@ -821,7 +706,7 @@ INSTANTIATE_TEST_SUITE_P(PVR_SqTwiddled, ImageDecoderTest,
 			"PVR/bg_00.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// PVR tests. (VQ)
+// PVR tests (VQ)
 INSTANTIATE_TEST_SUITE_P(PVR_VQ, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
@@ -829,7 +714,7 @@ INSTANTIATE_TEST_SUITE_P(PVR_VQ, ImageDecoderTest,
 			"PVR/mr_128k_huti.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// PVR tests. (Small VQ)
+// PVR tests (Small VQ)
 INSTANTIATE_TEST_SUITE_P(PVR_SmallVQ, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
@@ -843,7 +728,7 @@ INSTANTIATE_TEST_SUITE_P(PVR_SmallVQ, ImageDecoderTest,
 			"PVR/sp_blue.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// GVR tests. (RGB5A3)
+// GVR tests (RGB5A3)
 INSTANTIATE_TEST_SUITE_P(GVR_RGB5A3, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
@@ -851,7 +736,7 @@ INSTANTIATE_TEST_SUITE_P(GVR_RGB5A3, ImageDecoderTest,
 			"GVR/zanki_sonic.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// GVR tests. (DXT1, S3TC)
+// GVR tests (DXT1, S3TC)
 INSTANTIATE_TEST_SUITE_P(GVR_DXT1_S3TC, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
@@ -865,7 +750,7 @@ INSTANTIATE_TEST_SUITE_P(GVR_DXT1_S3TC, ImageDecoderTest,
 			"GVR/weeklytitle.s3tc.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// KTX tests.
+// KTX tests
 #define KTX_IMAGE_TEST(file) ImageDecoderTest_mode( \
 			"KTX/" file ".ktx.gz", \
 			"KTX/" file ".png")
@@ -908,14 +793,20 @@ INSTANTIATE_TEST_SUITE_P(KTX, ImageDecoderTest,
 		KTX_IMAGE_TEST("hi_mark"),
 		KTX_IMAGE_TEST("hi_mark_sq"),
 
-		// RGBA reference image.
+		// EAC
+		KTX_IMAGE_TEST("conftestimage_R11_EAC"),
+		KTX_IMAGE_TEST("conftestimage_RG11_EAC"),
+		KTX_IMAGE_TEST("conftestimage_SIGNED_R11_EAC"),
+		KTX_IMAGE_TEST("conftestimage_SIGNED_RG11_EAC"),
+
+		// RGBA reference image
 		ImageDecoderTest_mode(
 			"KTX/rgba-reference.ktx.gz",
 			"KTX/rgba.png"))
 
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// KTX2 tests.
+// KTX2 tests
 #define KTX2_IMAGE_TEST(file) ImageDecoderTest_mode( \
 			"KTX2/" file ".ktx2.gz", \
 			"KTX2/" file ".png")
@@ -932,7 +823,7 @@ INSTANTIATE_TEST_SUITE_P(KTX2, ImageDecoderTest,
 		KTX2_IMAGE_TEST("texturearray_etc2_unorm"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// Valve VTF tests. (all formats)
+// Valve VTF tests (all formats)
 INSTANTIATE_TEST_SUITE_P(VTF, ImageDecoderTest,
 	::testing::Values(
 		// NOTE: VTF channel ordering is usually backwards from ImageDecoder.
@@ -1010,7 +901,7 @@ INSTANTIATE_TEST_SUITE_P(VTF, ImageDecoderTest,
 			"Alpha/A8.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// Valve VTF tests. (S3TC)
+// Valve VTF tests (S3TC)
 INSTANTIATE_TEST_SUITE_P(VTF_S3TC, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
@@ -1027,7 +918,7 @@ INSTANTIATE_TEST_SUITE_P(VTF_S3TC, ImageDecoderTest,
 			"VTF/DXT5.s3tc.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// Valve VTF3 tests. (S3TC)
+// Valve VTF3 tests (S3TC)
 INSTANTIATE_TEST_SUITE_P(VTF3_S3TC, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
@@ -1050,7 +941,7 @@ INSTANTIATE_TEST_SUITE_P(TCtest, ImageDecoderTest,
 			"tctest/example-etc2.ktx.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// texture-compressor tests. (S3TC)
+// texture-compressor tests (S3TC)
 INSTANTIATE_TEST_SUITE_P(TCtest_S3TC, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
@@ -1065,7 +956,7 @@ INSTANTIATE_TEST_SUITE_P(TCtest_S3TC, ImageDecoderTest,
 	, ImageDecoderTest::test_case_suffix_generator);
 
 #ifdef ENABLE_PVRTC
-// texture-compressor tests. (PVRTC)
+// texture-compressor tests (PVRTC)
 INSTANTIATE_TEST_SUITE_P(TCtest_PVRTC, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
@@ -1080,7 +971,17 @@ INSTANTIATE_TEST_SUITE_P(TCtest_PVRTC, ImageDecoderTest,
 	, ImageDecoderTest::test_case_suffix_generator);
 #endif /* ENABLE_PVRTC */
 
-// BC7 tests.
+#ifdef ENABLE_ASTC
+// texture-compressor tests (ASTC)
+INSTANTIATE_TEST_SUITE_P(TCtest_ASTC, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode(
+			"tctest/example-astc.dds.gz",
+			"tctest/example-astc.png"))
+	, ImageDecoderTest::test_case_suffix_generator);
+#endif /* ENABLE_ASTC */
+
+// BC7 tests
 INSTANTIATE_TEST_SUITE_P(BC7, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
@@ -1109,7 +1010,7 @@ INSTANTIATE_TEST_SUITE_P(BC7, ImageDecoderTest,
 			"BC7/w5_wood503_prm.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// SMDH tests.
+// SMDH tests
 // From *New* Nintendo 3DS 9.2.0-20J.
 #define SMDH_TEST(file) ImageDecoderTest_mode( \
 			"SMDH/" file ".smdh.gz", \
@@ -1140,7 +1041,7 @@ INSTANTIATE_TEST_SUITE_P(SMDH, ImageDecoderTest,
 		SMDH_TEST("0004003020008802"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// GCI tests.
+// GCI tests
 // TODO: Use something like GcnFstTest that uses an array of filenames
 // to generate tests at runtime instead of compile-time?
 #define GCI_ICON_TEST(file) ImageDecoderTest_mode( \
@@ -1296,20 +1197,20 @@ INSTANTIATE_TEST_SUITE_P(GCI_Banner_2, ImageDecoderTest,
 		GCI_BANNER_TEST("AF-GPME-PACMANFEVER"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// VMS tests.
+// VMS tests
 INSTANTIATE_TEST_SUITE_P(VMS, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
-			"Misc/BIOS002.VMS.gz",
+			"Misc/BIOS002.VMS",
 			"Misc/BIOS002.png",
 			RomData::IMG_INT_ICON),
 		ImageDecoderTest_mode(
-			"Misc/SONIC2C.VMS.gz",
+			"Misc/SONIC2C.VMS",
 			"Misc/SONIC2C.png",
 			RomData::IMG_INT_ICON))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// PSV tests.
+// PSV tests
 INSTANTIATE_TEST_SUITE_P(PSV, ImageDecoderTest,
 	::testing::Values(
 		ImageDecoderTest_mode(
@@ -1322,7 +1223,7 @@ INSTANTIATE_TEST_SUITE_P(PSV, ImageDecoderTest,
 			RomData::IMG_INT_ICON))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// NDS tests.
+// NDS tests
 // TODO: Use something like GcnFstTest that uses an array of filenames
 // to generate tests at runtime instead of compile-time?
 #define NDS_ICON_TEST(file) ImageDecoderTest_mode( \
@@ -1362,7 +1263,7 @@ INSTANTIATE_TEST_SUITE_P(NDS, ImageDecoderTest,
 		NDS_ICON_TEST("YWSE8P"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// NintendoBadge tests.
+// NintendoBadge tests
 // TODO: Use something like GcnFstTest that uses an array of filenames
 // to generate tests at runtime instead of compile-time?
 #define BADGE_IMAGE_ONLY_TEST(file) ImageDecoderTest_mode( \
@@ -1386,7 +1287,7 @@ INSTANTIATE_TEST_SUITE_P(NintendoBadge, ImageDecoderTest,
 		BADGE_ICON_IMAGE_TEST("Pr_FcRemix_2_punch_char01_3_Sep.prb"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
-// SVR tests.
+// SVR tests
 // TODO: Use something like GcnFstTest that uses an array of filenames
 // to generate tests at runtime instead of compile-time?
 // FIXME: Puyo Tools doesn't support format 0x61.
@@ -1537,7 +1438,7 @@ INSTANTIATE_TEST_SUITE_P(DidjTex, ImageDecoderTest,
 	, ImageDecoderTest::test_case_suffix_generator);
 
 #ifdef ENABLE_PVRTC
-// PowerVR3 tests.
+// PowerVR3 tests
 #define PowerVR3_IMAGE_TEST(file) ImageDecoderTest_mode( \
 			"PowerVR3/" file ".pvr.gz", \
 			"PowerVR3/" file ".pvr.png")
@@ -1553,6 +1454,112 @@ INSTANTIATE_TEST_SUITE_P(PowerVR3, ImageDecoderTest,
 		)
 	, ImageDecoderTest::test_case_suffix_generator);
 #endif /* ENABLE_PVRTC */
+
+// TGA tests
+#define TGA_IMAGE_TEST(file) ImageDecoderTest_mode( \
+			"TGA/" file ".tga.gz", \
+			"TGA/" file ".png")
+INSTANTIATE_TEST_SUITE_P(TGA, ImageDecoderTest,
+	::testing::Values(
+		// Reference images.
+		ImageDecoderTest_mode("TGA/TGA_1_CM24_IM8.tga.gz", "CI8-reference.png"),
+		ImageDecoderTest_mode("TGA/TGA_1_CM32_IM8.tga.gz", "CI8a-reference.png"),
+		ImageDecoderTest_mode("TGA/TGA_2_24.tga.gz", "rgb-reference.png"),
+		ImageDecoderTest_mode("TGA/TGA_2_32.tga.gz", "argb-reference.png"),
+		ImageDecoderTest_mode("TGA/TGA_3_8.tga.gz", "gray-reference.png"),
+		ImageDecoderTest_mode("TGA/TGA_9_CM24_IM8.tga.gz", "CI8-reference.png"),
+		ImageDecoderTest_mode("TGA/TGA_9_CM32_IM8.tga.gz", "CI8a-reference.png"),
+		ImageDecoderTest_mode("TGA/TGA_10_24.tga.gz", "rgb-reference.png"),
+		ImageDecoderTest_mode("TGA/TGA_10_32.tga.gz", "argb-reference.png"),
+		ImageDecoderTest_mode("TGA/TGA_11_8.tga.gz", "gray-reference.png"),
+
+		// TGA 2.0 conformance test suite
+		// FIXME: utc16, utc32 have incorrect alpha values?
+		// Both gimp and imagemagick interpret them as completely transparent.
+		TGA_IMAGE_TEST("conformance/cbw8"),
+		TGA_IMAGE_TEST("conformance/ccm8"),
+		TGA_IMAGE_TEST("conformance/ctc24"),
+		TGA_IMAGE_TEST("conformance/ubw8"),
+		TGA_IMAGE_TEST("conformance/ucm8"),
+		//TGA_IMAGE_TEST("conformance/utc16"),
+		TGA_IMAGE_TEST("conformance/utc24"),
+		//TGA_IMAGE_TEST("conformance/utc32"),
+
+		// Test images from tga-go
+		// https://github.com/ftrvxmtrx/tga
+		// FIXME: Some incorrect alpha values...
+		// NOTE: The rgb24/rgb32 colormap images use .1.png; others use .0.png.
+		//ImageDecoderTest_mode("TGA/tga-go/ctc16.tga.gz", "TGA/tga-go/color.png"),
+		ImageDecoderTest_mode("TGA/tga-go/monochrome8_bottom_left_rle.tga.gz", "TGA/tga-go/monochrome8.png"),
+		ImageDecoderTest_mode("TGA/tga-go/monochrome8_bottom_left.tga.gz", "TGA/tga-go/monochrome8.png"),
+		//ImageDecoderTest_mode("TGA/tga-go/monochrome16_bottom_left_rle.tga.gz", "TGA/tga-go/monochrome16.png"),
+		//ImageDecoderTest_mode("TGA/tga-go/monochrome16_bottom_left.tga.gz", "TGA/tga-go/monochrome16.png"),
+		ImageDecoderTest_mode("TGA/tga-go/rgb24_bottom_left_rle.tga.gz", "TGA/tga-go/rgb24.0.png"),
+		ImageDecoderTest_mode("TGA/tga-go/rgb24_top_left_colormap.tga.gz", "TGA/tga-go/rgb24.1.png"),
+		ImageDecoderTest_mode("TGA/tga-go/rgb24_top_left.tga.gz", "TGA/tga-go/rgb24.0.png"),
+		ImageDecoderTest_mode("TGA/tga-go/rgb32_bottom_left.tga.gz", "TGA/tga-go/rgb32.0.png"),
+		//ImageDecoderTest_mode("TGA/tga-go/rgb32_top_left_rle_colormap.tga.gz", "TGA/tga-go/rgb32.1.png"),
+		ImageDecoderTest_mode("TGA/tga-go/rgb32_top_left_rle.tga.gz", "TGA/tga-go/rgb32.0.png"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// Godot STEX3 tests
+INSTANTIATE_TEST_SUITE_P(STEX3, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode("STEX3/argb.BPTC_RGBA.stex.gz",	"STEX3/argb.BPTC_RGBA.png"),
+		ImageDecoderTest_mode("STEX3/argb.DXT5.stex.gz",	"STEX3/argb.DXT5.png"),
+		ImageDecoderTest_mode("STEX3/argb.ETC2_RGBA8.stex.gz",	"STEX3/argb.ETC2_RGBA8.png"),
+		ImageDecoderTest_mode("STEX3/argb.PVRTC1_4A.stex.gz",	"STEX3/argb.PVRTC1_4A.png"),
+		ImageDecoderTest_mode("STEX3/argb.RGBA4444.stex.gz",	"STEX3/argb.RGBA4444.png"),
+		ImageDecoderTest_mode("STEX3/argb.RGBA8.stex.gz",	"argb-reference.png"),
+
+		ImageDecoderTest_mode("STEX3/rgb.BPTC_RGBA.stex.gz",	"STEX3/rgb.BPTC_RGBA.png"),
+		ImageDecoderTest_mode("STEX3/rgb.DXT1.stex.gz",		"STEX3/rgb.DXT1.png"),
+		ImageDecoderTest_mode("STEX3/rgb.ETC2_RGB8.stex.gz",	"STEX3/rgb.ETC2_RGB8.png"),
+		ImageDecoderTest_mode("STEX3/rgb.ETC.stex.gz",		"STEX3/rgb.ETC.png"),
+		ImageDecoderTest_mode("STEX3/rgb.PVRTC1_4.stex.gz",	"STEX3/rgb.PVRTC1_4.png"),
+		ImageDecoderTest_mode("STEX3/rgb.RGB8.stex.gz",		"rgb-reference.png"),
+
+		ImageDecoderTest_mode("STEX3/gray.BPTC_RGBA.stex.gz",	"STEX3/gray.BPTC_RGBA.png"),
+		ImageDecoderTest_mode("STEX3/gray.DXT1.stex.gz",	"STEX3/gray.DXT1.png"),
+		ImageDecoderTest_mode("STEX3/gray.ETC2_RGBA8.stex.gz",	"STEX3/gray.ETC2_RGBA8.png"),
+		ImageDecoderTest_mode("STEX3/gray.ETC.stex.gz",		"STEX3/gray.ETC.png"),
+		ImageDecoderTest_mode("STEX3/gray.PVRTC1_4.stex.gz",	"STEX3/gray.PVRTC1_4.png"),
+		ImageDecoderTest_mode("STEX3/gray.L8.stex.gz",		"gray-reference.png"),
+
+		ImageDecoderTest_mode("STEX3/TEST_RR_areaMap-bg.tga-RGBE9995.stex.gz",
+		                      "STEX3/TEST_RR_areaMap-bg.tga-RGBE9995.png"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// Godot STEX4 tests
+// NOTE: Godot 4 uses different encoders for DXTn and ETCn,
+// so the decompressed images will not match STEX3.
+INSTANTIATE_TEST_SUITE_P(STEX4, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode("STEX4/argb.DXT5.stex.gz",	"STEX4/argb.DXT5.png"),
+		ImageDecoderTest_mode("STEX4/argb.ETC2_RGBA8.stex.gz",	"STEX4/argb.ETC2_RGBA8.png"),
+		ImageDecoderTest_mode("STEX4/argb.RGBA8.stex.gz",	"argb-reference.png"),
+
+		// Godot 4 encodes rgb-reference.png using DXT5 instead of DXT1 for some reason.
+		ImageDecoderTest_mode("STEX4/rgb.DXT5.stex.gz",		"STEX4/rgb.DXT5.png"),
+		ImageDecoderTest_mode("STEX4/rgb.ETC2_RGB8.stex.gz",	"STEX4/rgb.ETC2_RGB8.png"),
+		ImageDecoderTest_mode("STEX4/rgb.RGB8.stex.gz",		"rgb-reference.png"),
+
+		ImageDecoderTest_mode("STEX4/gray.DXT1.stex.gz",	"STEX4/gray.DXT1.png"),
+		ImageDecoderTest_mode("STEX4/gray.ETC.stex.gz",		"STEX4/gray.ETC.png"),
+		ImageDecoderTest_mode("STEX4/gray.L8.stex.gz",		"gray-reference.png"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// Xbox XPR tests
+INSTANTIATE_TEST_SUITE_P(XPR, ImageDecoderTest,
+	::testing::Values(
+		ImageDecoderTest_mode("XPR/bkgd_load9.xpr.gz"	,		"XPR/bkgd_load9.png"),
+		ImageDecoderTest_mode("XPR/bkgd_main.xpr.gz",			"XPR/bkgd_main.png"),
+		ImageDecoderTest_mode("XPR/bkgd_title.xpr.gz",			"XPR/bkgd_title.png"),
+		ImageDecoderTest_mode("XPR/SE-043.TitleImage.xbx.gz",		"XPR/SE-043.TitleImage.png"),
+		ImageDecoderTest_mode("XPR/SplashScreen_JunkieXl.xpr.gz",	"XPR/SplashScreen_JunkieXl.png"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// TODO: NPOT tests for compressed formats. (partial block sizes)
 
 } }
 

@@ -1,0 +1,49 @@
+# Nintendo Third-Party Publishers (Famicom Disk System)
+# Format: ID|NameEN|NameJP
+# ID is a two-digit hexadecimal value.
+
+# References:
+# - https://wiki.nesdev.com/w/index.php/Family_Computer_Disk_System#Manufacturer_codes
+
+#\x00\x00|<unlicensed>|<非公認>	# Not supported by parser; script will add this manually.
+00|<unlicensed>|<非公認>
+01|Nintendo|任天堂
+08|Capcom|カプコン
+0A|Jaleco|ジャレコ
+18|Hudson Soft|ハドソン
+49|Irem|アイレム
+4A|Gakken|学習研究社
+8B|BulletProof Software (BPS)|BPS
+99|Pack-In-Video|パックインビデオ
+9B|Tecmo|テクモ
+9C|Imagineer|イマジニア
+A2|Scorpion Soft|スコーピオンソフト
+A4|Konami|コナミ
+A6|Kawada Co., Ltd.|河田
+A7|Takara|タカラ
+A8|Royal Industries|ロイヤル工業
+AC|Toei Animation|東映動画
+AF|Namco|ナムコ
+B1|ASCII Corporation|アスキー
+B2|Bandai|バンダイ
+B3|Soft Pro Inc.|ソフトプロ
+B6|HAL Laboratory|HAL研究所
+BB|Sunsoft|サンソフト
+BC|Toshiba EMI|東芝EMI
+C0|Taito|タイトー
+C1|Sunsoft / Ask Co., Ltd.|サンソフト アスク講談社
+C2|Kemco|ケムコ
+C3|Square|スクウェア
+C4|Tokuma Shoten|徳間書店
+C5|Data East|データイースト
+C6|Tonkin House / Tokyo Shoseki|トンキンハウス
+C7|East Cube|イーストキューブ
+CA|Konami / Ultra / Palcom|コナミ
+CB|NTVIC / VAP|バップ
+CC|Use Co., Ltd.|ユース
+CE|Pony Canyon / FCI|ポニーキャニオン
+D1|Sofel|ソフエル
+D2|Bothtec, Inc.|ボーステック
+DB|Hiro Co., Ltd.|ヒロ
+E7|Athena|アテナ
+EB|Atlus|アトラス

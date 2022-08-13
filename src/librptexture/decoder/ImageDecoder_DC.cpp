@@ -1,17 +1,18 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librptexture)                     *
- * ImageDecoder_DC.cpp: Image decoding functions. (Dreamcast)              *
+ * ImageDecoder_DC.cpp: Image decoding functions: Dreamcast                *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // Reference: https://github.com/nickworonekin/puyotools/blob/548a52684fd48d936526fd91e8ead8e52aa33eb3/Libraries/VrSharp/PvrTexture/PvrDataCodec.cs
 
 #include "stdafx.h"
-#include "ImageDecoder.hpp"
-#include "ImageDecoder_p.hpp"
+#include "ImageDecoder_DC.hpp"
 
+// librptexture
+#include "img/rp_image.hpp"
 #include "PixelConversion.hpp"
 using namespace LibRpTexture::PixelConversion;
 
@@ -29,10 +30,11 @@ namespace LibRpTexture { namespace ImageDecoder {
  *
  * Supports textures up to 4096x4096.
  */
-static unsigned int dc_tmap[4096];
+#define DC_TMAP_SIZE 4096
+static unique_ptr<unsigned int[]> dc_tmap;
 
 // pthread_once() control variable.
-static pthread_once_t once_control = PTHREAD_ONCE_INIT;
+static pthread_once_t dc_tmap_once_control = PTHREAD_ONCE_INIT;
 
 /**
  * Initialize the Dreamcast twiddle map.
@@ -42,10 +44,13 @@ static pthread_once_t once_control = PTHREAD_ONCE_INIT;
  */
 static void initDreamcastTwiddleMap_int(void)
 {
-	for (unsigned int i = 0; i < ARRAY_SIZE(dc_tmap); i++) {
-		dc_tmap[i] = 0;
+	dc_tmap.reset(new unsigned int[DC_TMAP_SIZE]);
+	unsigned int *const p_tmap = dc_tmap.get();
+
+	for (unsigned int i = 0; i < DC_TMAP_SIZE; i++) {
+		p_tmap[i] = 0;
 		for (unsigned int j = 0, k = 1; k <= i; j++, k <<= 1) {
-			dc_tmap[i] |= ((i & k) << j);
+			p_tmap[i] |= ((i & k) << j);
 		}
 	}
 }
@@ -56,7 +61,7 @@ static void initDreamcastTwiddleMap_int(void)
  */
 static FORCEINLINE void initDreamcastTwiddleMap(void)
 {
-	pthread_once(&once_control, initDreamcastTwiddleMap_int);
+	pthread_once(&dc_tmap_once_control, initDreamcastTwiddleMap_int);
 }
 
 /**
@@ -70,7 +75,7 @@ static FORCEINLINE void initDreamcastTwiddleMap(void)
  */
 rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
 	int width, int height,
-	const uint16_t *RESTRICT img_buf, int img_siz)
+	const uint16_t *RESTRICT img_buf, size_t img_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -78,16 +83,17 @@ rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
 	assert(height > 0);
 	assert(width == height);
 	assert(width <= 4096);
-	assert(img_siz >= ((width * height) * 2));
+	assert(img_siz >= (((size_t)width * (size_t)height) * 2));
 	if (!img_buf || width <= 0 || height <= 0 ||
 	    width != height || width > 4096 ||
-	    img_siz < ((width * height) * 2))
+	    img_siz < (((size_t)width * (size_t)height) * 2))
 	{
 		return nullptr;
 	}
 
 	// Initialize the twiddle map.
 	initDreamcastTwiddleMap();
+	const unsigned int *const p_tmap = dc_tmap.get();
 
 	// Create an rp_image.
 	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
@@ -104,7 +110,7 @@ rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
 		case PixelFormat::ARGB1555: {
 			for (unsigned int y = 0; y < static_cast<unsigned int>(height); y++) {
 				for (unsigned int x = 0; x < static_cast<unsigned int>(width); x++) {
-					const unsigned int srcIdx = ((dc_tmap[x] << 1) | dc_tmap[y]);
+					const unsigned int srcIdx = ((p_tmap[x] << 1) | p_tmap[y]);
 					*px_dest = ARGB1555_to_ARGB32(le16_to_cpu(img_buf[srcIdx]));
 					px_dest++;
 				}
@@ -119,7 +125,7 @@ rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
 		case PixelFormat::RGB565: {
 			for (unsigned int y = 0; y < static_cast<unsigned int>(height); y++) {
 				for (unsigned int x = 0; x < static_cast<unsigned int>(width); x++) {
-					const unsigned int srcIdx = ((dc_tmap[x] << 1) | dc_tmap[y]);
+					const unsigned int srcIdx = ((p_tmap[x] << 1) | p_tmap[y]);
 					*px_dest = RGB565_to_ARGB32(le16_to_cpu(img_buf[srcIdx]));
 					px_dest++;
 				}
@@ -134,7 +140,7 @@ rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
 		case PixelFormat::ARGB4444: {
 			for (unsigned int y = 0; y < static_cast<unsigned int>(height); y++) {
 				for (unsigned int x = 0; x < static_cast<unsigned int>(width); x++) {
-					const unsigned int srcIdx = ((dc_tmap[x] << 1) | dc_tmap[y]);
+					const unsigned int srcIdx = ((p_tmap[x] << 1) | p_tmap[y]);
 					*px_dest = ARGB4444_to_ARGB32(le16_to_cpu(img_buf[srcIdx]));
 					px_dest++;
 				}
@@ -172,8 +178,8 @@ rp_image *fromDreamcastSquareTwiddled16(PixelFormat px_format,
 rp_image *fromDreamcastVQ16(PixelFormat px_format,
 	bool smallVQ, bool hasMipmaps,
 	int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz,
-	const uint16_t *RESTRICT pal_buf, int pal_siz)
+	const uint8_t *RESTRICT img_buf, size_t img_siz,
+	const uint16_t *RESTRICT pal_buf, size_t pal_siz)
 {
 	// Verify parameters.
 	assert(img_buf != nullptr);
@@ -202,9 +208,9 @@ rp_image *fromDreamcastVQ16(PixelFormat px_format,
 	}
 
 	assert(pal_entry_count % 2 == 0);
-	assert(pal_entry_count * 2 >= pal_siz);
+	assert((size_t)pal_entry_count * 2 >= pal_siz);
 	if ((pal_entry_count % 2 != 0) ||
-	    (pal_entry_count * 2 < pal_siz))
+	    ((size_t)pal_entry_count * 2 < pal_siz))
 	{
 		// Palette isn't large enough,
 		// or palette isn't an even multiple.
@@ -213,6 +219,7 @@ rp_image *fromDreamcastVQ16(PixelFormat px_format,
 
 	// Initialize the twiddle map.
 	initDreamcastTwiddleMap();
+	const unsigned int *const p_tmap = dc_tmap.get();
 
 	// Create an rp_image.
 	rp_image *const img = new rp_image(width, height, rp_image::Format::ARGB32);
@@ -227,8 +234,8 @@ rp_image *fromDreamcastVQ16(PixelFormat px_format,
 	switch (px_format) {
 		case PixelFormat::ARGB1555: {
 			for (unsigned int i = 0; i < static_cast<unsigned int>(pal_entry_count); i += 2) {
-				palette[i+0] = ARGB1555_to_ARGB32(pal_buf[i+0]);
-				palette[i+1] = ARGB1555_to_ARGB32(pal_buf[i+1]);
+				palette[i+0] = ARGB1555_to_ARGB32(le16_to_cpu(pal_buf[i+0]));
+				palette[i+1] = ARGB1555_to_ARGB32(le16_to_cpu(pal_buf[i+1]));
 			}
 			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {5,5,5,0,1};
@@ -238,8 +245,8 @@ rp_image *fromDreamcastVQ16(PixelFormat px_format,
 
 		case PixelFormat::RGB565: {
 			for (unsigned int i = 0; i < static_cast<unsigned int>(pal_entry_count); i += 2) {
-				palette[i+0] = RGB565_to_ARGB32(pal_buf[i+0]);
-				palette[i+1] = RGB565_to_ARGB32(pal_buf[i+1]);
+				palette[i+0] = RGB565_to_ARGB32(le16_to_cpu(pal_buf[i+0]));
+				palette[i+1] = RGB565_to_ARGB32(le16_to_cpu(pal_buf[i+1]));
 			}
 			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {5,6,5,0,0};
@@ -249,8 +256,8 @@ rp_image *fromDreamcastVQ16(PixelFormat px_format,
 
 		case PixelFormat::ARGB4444: {
 			for (unsigned int i = 0; i < static_cast<unsigned int>(pal_entry_count); i += 2) {
-				palette[i+0] = ARGB4444_to_ARGB32(pal_buf[i+0]);
-				palette[i+1] = ARGB4444_to_ARGB32(pal_buf[i+1]);
+				palette[i+0] = ARGB4444_to_ARGB32(le16_to_cpu(pal_buf[i+0]));
+				palette[i+1] = ARGB4444_to_ARGB32(le16_to_cpu(pal_buf[i+1]));
 			}
 			// Set the sBIT metadata.
 			static const rp_image::sBIT_t sBIT = {4,4,4,0,4};
@@ -271,7 +278,7 @@ rp_image *fromDreamcastVQ16(PixelFormat px_format,
 	const int dest_stride_adj = dest_stride + dest_stride - img->width();
 	for (unsigned int y = 0; y < static_cast<unsigned int>(height); y += 2, px_dest += dest_stride_adj) {
 	for (unsigned int x = 0; x < static_cast<unsigned int>(width); x += 2, px_dest += 2) {
-		const unsigned int srcIdx = ((dc_tmap[x >> 1] << 1) | dc_tmap[y >> 1]);
+		const unsigned int srcIdx = ((p_tmap[x >> 1] << 1) | p_tmap[y >> 1]);
 		assert(srcIdx < (unsigned int)img_siz);
 		if (srcIdx >= static_cast<unsigned int>(img_siz)) {
 			// Out of bounds.

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * gba_structs.h: Nintendo Game Boy Advance data structures.               *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,21 +25,24 @@ extern "C" {
  *
  * NOTE: Strings are NOT null-terminated!
  */
-#pragma pack(1)
-typedef struct PACKED _GBA_RomHeader {
+typedef struct _GBA_RomHeader {
 	union {
-		uint32_t entry_point;	// 32-bit ARM branch opcode.
+		uint32_t entry_point;	// 32-bit ARM branch opcode
 		uint8_t entry_point_bytes[4];
 	};
-	uint8_t nintendo_logo[0x9C];	// Compressed logo.
+	uint8_t nintendo_logo[0x9C];	// Compressed logo
 	char title[12];
-	union {
-		char id6[6];	// Game code. (ID6)
-		struct {
-			char id4[4];		// Game code. (ID4)
-			char company[2];	// Company code.
+	// Some compilers pad this structure to a multiple of 4 bytes
+#pragma pack(1)
+	union PACKED {
+		char id6[6];		// Game code (ID6)
+		uint32_t id4_32;	// Game code (ID4, 32-bit)
+		struct PACKED {
+			char id4[4];		// Game code (ID4)
+			char company[2];	// Company code
 		};
 	};
+#pragma pack()
 	uint8_t fixed_96h;	// Fixed value. (Must be 0x96)
 	uint8_t unit_code;	// 0x00 for all GBA models.
 	uint8_t device_type;	// 0x00. (bit 7 for debug?)
@@ -48,7 +51,6 @@ typedef struct PACKED _GBA_RomHeader {
 	uint8_t checksum;
 	uint8_t reserved2[2];
 } GBA_RomHeader;
-#pragma pack()
 ASSERT_STRUCT(GBA_RomHeader, 192);
 
 #ifdef __cplusplus

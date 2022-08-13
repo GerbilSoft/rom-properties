@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpQt.hpp: Qt wrappers for some libromdata functionality.                *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-202 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,21 +19,38 @@ namespace LibRpTexture {
 // C++ includes.
 #include <string>
 
-// Qt includes.
+// Qt includes
+#include <qglobal.h>
+#include <QtCore/QObject>
 #include <QtCore/QString>
 #include <QtCore/QUrl>
 #include <QtGui/QImage>
 
-// KDE Frameworks prefix. (KDE4/KF5)
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-# define RP_KDE_UPPER "KF"
-# define RP_KDE_LOWER "kf"
-#else /* !QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
-# define RP_KDE_UPPER "KDE"
-# define RP_KDE_LOWER "kde"
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+#define CONCAT_FN(fn, suffix)		CONCAT_FN_INT(fn, suffix)
+#define CONCAT_FN_INT(fn, suffix)	fn ## suffix
 
-/** Text conversion. **/
+#if QT_VERSION >= QT_VERSION_CHECK(7,0,0)
+#  error Needs updating for Qt7
+#elif QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+#  define RP_KDE_SUFFIX KF6
+#  define RP_KDE_UPPER "KF6"
+#  define RP_KDE_LOWER "kf6"
+#  define RomPropertiesKDE RomPropertiesKF6
+#elif QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#  define RP_KDE_SUFFIX KF5
+#  define RP_KDE_UPPER "KF5"
+#  define RP_KDE_LOWER "kf5"
+#  define RomPropertiesKDE RomPropertiesKF5
+#elif QT_VERSION >= QT_VERSION_CHECK(4,0,0)
+#  define RP_KDE_SUFFIX KDE4
+#  define RP_KDE_UPPER "KDE4"
+#  define RP_KDE_LOWER "kde4"
+#  define RomPropertiesKDE RomPropertiesKDE4
+#else /* QT_VERSION < QT_VERSION_CHECK(4,0,0) */
+#  error Qt version is too old
+#endif
+
+/** Text conversion **/
 
 /**
  * NOTE: Some of the UTF-8 functions return toUtf8().constData()
@@ -49,7 +66,7 @@ namespace LibRpTexture {
  */
 static inline QString U82Q(const std::string &str)
 {
-	return QString::fromUtf8(str.data(), (int)str.size());
+	return QString::fromUtf8(str.data(), static_cast<int>(str.size()));
 }
 
 /**
@@ -69,9 +86,52 @@ static inline QString U82Q(const char *str, int len = -1)
  * @param qs QString
  * @return const char*
  */
-#define Q2U8(qs) (reinterpret_cast<const char*>(((qs).toUtf8().constData())))
+#define Q2U8(qs) ((qs).toUtf8().constData())
 
-/** Image conversion. **/
+/**
+ * Convert a language code to a QString.
+ * @param lc Language code.
+ * @return QString.
+ */
+static inline QString lcToQString(uint32_t lc)
+{
+	QString s_lc;
+	s_lc.reserve(4);
+	for (; lc != 0; lc <<= 8) {
+		ushort chr = (ushort)(lc >> 24);
+		if (chr != 0) {
+			s_lc += QChar(chr);
+		}
+	}
+	return s_lc;
+}
+
+/** QObject **/
+
+/**
+ * Find direct child widgets only.
+ * @param T Type.
+ * @param aName Name to match, or empty string for any object of type T.
+ */
+template<typename T>
+static inline T findDirectChild(QObject *obj, const QString &aName = QString())
+{
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+	return obj->findChild<T>(aName, Qt::FindDirectChildrenOnly);
+#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
+	foreach(QObject *child, obj->children()) {
+		T qchild = qobject_cast<T>(child);
+		if (qchild != nullptr) {
+			if (aName.isEmpty() || qchild->objectName() == aName) {
+				return qchild;
+			}
+		}
+	}
+	return nullptr;
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+}
+
+/** Image conversion **/
 
 /**
  * Convert an rp_image to QImage.
@@ -80,12 +140,14 @@ static inline QString U82Q(const char *str, int len = -1)
  */
 QImage rpToQImage(const LibRpTexture::rp_image *image);
 
+/** QUrl **/
+
 /**
  * Localize a QUrl.
  * This function automatically converts certain URL schemes, e.g. desktop:/, to local paths.
  *
  * @param qUrl QUrl.
- * @return Localize QUrl, or empty QUrl on error.
+ * @return Localized QUrl, or empty QUrl on error.
  */
 QUrl localizeQUrl(const QUrl &url);
 

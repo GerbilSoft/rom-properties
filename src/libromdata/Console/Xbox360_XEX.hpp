@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Xbox360_XEX.hpp: Microsoft Xbox 360 executable reader.                  *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 

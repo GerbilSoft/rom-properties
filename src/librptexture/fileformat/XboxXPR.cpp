@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * XboxXPR.cpp: Microsoft Xbox XPR0 texture reader.                        *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,16 +13,16 @@
 #include "xbox_xpr_structs.h"
 
 // librpbase, librpfile
+#include "libi18n/i18n.h"
 using LibRpBase::rp_sprintf;
 using LibRpFile::IRpFile;
 
 // librptexture
 #include "img/rp_image.hpp"
-#include "decoder/ImageDecoder.hpp"
+#include "decoder/ImageDecoder_Linear.hpp"
+#include "decoder/ImageDecoder_S3TC.hpp"
 
 namespace LibRpTexture {
-
-FILEFORMAT_IMPL(XboxXPR)
 
 class XboxXPRPrivate final : public FileFormatPrivate
 {
@@ -33,6 +33,12 @@ class XboxXPRPrivate final : public FileFormatPrivate
 	private:
 		typedef FileFormatPrivate super;
 		RP_DISABLE_COPY(XboxXPRPrivate)
+
+	public:
+		/** TextureInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const TextureInfo textureInfo;
 
 	public:
 		enum class XPRType {
@@ -143,10 +149,30 @@ class XboxXPRPrivate final : public FileFormatPrivate
 		const rp_image *loadXboxXPR0Image(void);
 };
 
+FILEFORMAT_IMPL(XboxXPR)
+
 /** XboxXPRPrivate **/
 
+/* TextureInfo */
+const char *const XboxXPRPrivate::exts[] = {
+	".xbx", ".xpr",
+
+	nullptr
+};
+const char *const XboxXPRPrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	// TODO: Add additional MIME types for XPR1/XPR2. (archive files)
+	"image/x-xbox-xpr0",
+
+	nullptr
+};
+const TextureInfo XboxXPRPrivate::textureInfo = {
+	exts, mimeTypes
+};
+
 XboxXPRPrivate::XboxXPRPrivate(XboxXPR *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &textureInfo)
 	, xprType(XPRType::Unknown)
 	, img(nullptr)
 {
@@ -317,11 +343,11 @@ const rp_image *XboxXPRPrivate::loadXboxXPR0Image(void)
 	// Sanity check: Image dimensions must be non-zero.
 	// Not checking maximum; the 4-bit shift amount has a
 	// maximum of pow(2,15), which is 32768 (our maximum).
-	assert((xpr0Header.width_pow2 >> 4) > 0);
-	assert((xpr0Header.height_pow2 & 0x0F) > 0);
-	if ((xpr0Header.width_pow2 >> 4) == 0 ||
-	    (xpr0Header.height_pow2 & 0x0F) == 0)
-	{
+	const int width  = dimensions[0];
+	const int height = dimensions[1];
+	assert(width > 0);
+	assert(height > 0);
+	if (width == 0 || height == 0) {
 		// Invalid image dimensions.
 		return nullptr;
 	}
@@ -418,10 +444,8 @@ const rp_image *XboxXPRPrivate::loadXboxXPR0Image(void)
 	}
 
 	// Determine the expected size based on the pixel format.
-	const unsigned int area_shift = (xpr0Header.width_pow2 >> 4) +
-					(xpr0Header.height_pow2 & 0x0F);
 	const auto &mode = mode_tbl[xpr0Header.pixel_format];
-	const uint32_t expected_size = (1U << area_shift) * mode.bpp / 8U;
+	const size_t expected_size = width * height * mode.bpp / 8U;
 
 	if (expected_size > file_sz - data_offset) {
 		// File is too small.
@@ -436,8 +460,6 @@ const rp_image *XboxXPRPrivate::loadXboxXPR0Image(void)
 		return nullptr;
 	}
 
-	const int width  = 1 << (xpr0Header.width_pow2 >> 4);
-	const int height = 1 << (xpr0Header.height_pow2 & 0x0F);
 	if (mode.dxtn != 0) {
 		// DXTn
 		switch (mode.dxtn) {
@@ -578,63 +600,30 @@ XboxXPR::XboxXPR(IRpFile *file)
 		d->isValid = false;
 	}
 
+	// Make sure this is an XPR texture.
+	if ((d->xpr0Header.type & XPR0_TYPE_MASK) != XPR0_TYPE_TEXTURE) {
+		// Only textures are supported.
+		d->isValid = false;
+	}
+
 	if (!d->isValid) {
 		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
 	// Cache the texture dimensions.
-	d->dimensions[0] = 1 << (d->xpr0Header.width_pow2 >> 4);
-	d->dimensions[1] = 1 << (d->xpr0Header.height_pow2 & 0x0F);
+	const uint8_t xpr_w = (d->xpr0Header.width_pow2 >> 4);
+	const uint8_t xpr_h = (d->xpr0Header.height_pow2 & 0x0F);
+	if (likely(xpr_w != 0 && xpr_h != 0)) {
+		// Use the standard width and height.
+		d->dimensions[0] = 1 << xpr_w;
+		d->dimensions[1] = 1 << xpr_h;
+	} else {
+		// Either width or height are 0. Try the NPOT sizes instead.
+		d->dimensions[0] = (d->xpr0Header.width_npot + 1) * 16;
+		d->dimensions[1] = (d->xpr0Header.height_npot + 1) * 16;
+	}
 	d->dimensions[2] = 0;
-}
-
-/** Class-specific functions that can be used even if isValid() is false. **/
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *XboxXPR::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".xbx", ".xpr",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *XboxXPR::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		// TODO: Add additional MIME types for XPR1/XPR2. (archive files)
-		"image/x-xbox-xpr0",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /** Property accessors **/
@@ -754,10 +743,6 @@ int XboxXPR::mipmapCount(void) const
  */
 int XboxXPR::getFields(LibRpBase::RomFields *fields) const
 {
-	// TODO: Localization.
-#define C_(ctx, str) str
-#define NOP_C_(ctx, str) str
-
 	assert(fields != nullptr);
 	if (!fields)
 		return 0;
@@ -776,7 +761,7 @@ int XboxXPR::getFields(LibRpBase::RomFields *fields) const
 		"XPR0", "XPR1", "XPR2"
 	};
 	if (d->xprType > XboxXPRPrivate::XPRType::Unknown &&
-	    (int)d->xprType < ARRAY_SIZE(type_tbl))
+	    (int)d->xprType < ARRAY_SIZE_I(type_tbl))
 	{
 		fields->addField_string(C_("XboxXPR", "Type"), type_tbl[(int)d->xprType]);
 	} else {

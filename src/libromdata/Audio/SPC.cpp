@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SPC.hpp: SPC audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,8 +22,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(SPC)
-
 class SPCPrivate final : public RomDataPrivate
 {
 	public:
@@ -34,12 +32,18 @@ class SPCPrivate final : public RomDataPrivate
 		RP_DISABLE_COPY(SPCPrivate)
 
 	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
+
+	public:
 		// SPC header.
 		// NOTE: **NOT** byteswapped in memory.
 		SPC_Header spcHeader;
 
 		// Tag struct.
-		struct TagData {
+		struct spc_tags_t {
 			// Vector of strings.
 			// Contains all string data.
 			vector<string> strs;
@@ -111,7 +115,7 @@ class SPCPrivate final : public RomDataPrivate
 			 */
 			inline void insertInt(SPC_xID6_Item_e key, int ivalue)
 			{
-				map.insert(std::make_pair(key, val_t(ivalue)));
+				map.emplace(key, val_t(ivalue));
 			}
 
 			/**
@@ -121,7 +125,7 @@ class SPCPrivate final : public RomDataPrivate
 			 */
 			inline void insertUInt(SPC_xID6_Item_e key, unsigned int uvalue)
 			{
-				map.insert(std::make_pair(key, val_t(uvalue)));
+				map.emplace(key, val_t(uvalue));
 			}
 
 			/**
@@ -133,7 +137,7 @@ class SPCPrivate final : public RomDataPrivate
 			{
 				val_t val;
 				val.timestamp = timestamp;
-				map.insert(std::make_pair(key, val));
+				map.emplace(key, val);
 			}
 
 			/**
@@ -146,7 +150,7 @@ class SPCPrivate final : public RomDataPrivate
 				val_t val((unsigned int)strs.size());
 				val.isStrIdx = true;
 				strs.emplace_back(str);
-				map.insert(std::make_pair(key, val));
+				map.emplace(key, val);
 			}
 
 			/**
@@ -166,13 +170,31 @@ class SPCPrivate final : public RomDataPrivate
 		 * Parse the ID666 tags for the open SPC file.
 		 * @return Map containing key/value entries.
 		 */
-		TagData parseTags(void);
+		spc_tags_t parseTags(void);
 };
+
+ROMDATA_IMPL(SPC)
 
 /** SPCPrivate **/
 
+/* RomDataInfo */
+const char *const SPCPrivate::exts[] = {
+	".spc",
+
+	nullptr
+};
+const char *const SPCPrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+	"audio/x-spc",
+
+	nullptr
+};
+const RomDataInfo SPCPrivate::romDataInfo = {
+	"SPC", exts, mimeTypes
+};
+
 SPCPrivate::SPCPrivate(SPC *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 {
 	// Clear the SPC header struct.
 	memset(&spcHeader, 0, sizeof(spcHeader));
@@ -182,9 +204,9 @@ SPCPrivate::SPCPrivate(SPC *q, IRpFile *file)
  * Parse the tag section.
  * @return Map containing key/value entries.
  */
-SPCPrivate::TagData SPCPrivate::parseTags(void)
+SPCPrivate::spc_tags_t SPCPrivate::parseTags(void)
 {
-	TagData kv;
+	spc_tags_t kv;
 
 	if (spcHeader.has_id666 != 26) {
 		// No ID666 tags.
@@ -498,7 +520,6 @@ SPC::SPC(IRpFile *file)
 	: super(new SPCPrivate(this, file))
 {
 	RP_D(SPC);
-	d->className = "SPC";
 	d->mimeType = "audio/x-spc";	// unofficial
 	d->fileType = FileType::AudioFile;
 
@@ -516,12 +537,11 @@ SPC::SPC(IRpFile *file)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->spcHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->spcHeader);
-	info.ext = nullptr;	// Not needed for SPC.
-	info.szFile = 0;	// Not needed for SPC.
+	const DetectInfo info = {
+		{0, sizeof(d->spcHeader), reinterpret_cast<const uint8_t*>(&d->spcHeader)},
+		nullptr,	// ext (not needed for SPC)
+		0		// szFile (not needed for SPC)
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
@@ -583,50 +603,6 @@ const char *SPC::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *SPC::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".spc",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *SPC::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		"audio/x-spc",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**
@@ -918,10 +894,9 @@ int SPC::loadMetaData(void)
 		const auto &data = iter->second;
 		assert(data.isStrIdx);
 		if (data.isStrIdx) {
-			// TODO: Property::Comment is assumed to be user-added
-			// on KDE Dolphin 18.08.1. Needs a description property.
-			// Also needs verification on Windows.
-			d->metaData->addMetaData_string(Property::Subject, kv.getStr(data));
+			// NOTE: Property::Comment is assumed to be user-added
+			// on KDE Dolphin 18.08.1. Use Property::Description.
+			d->metaData->addMetaData_string(Property::Description, kv.getStr(data));
 		}
 	}
 

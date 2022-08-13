@@ -36,13 +36,13 @@ class DragImageLabel
 
 	public:
 		SIZE requiredSize(void) const;
-		void setRequiredSize(const SIZE &requiredSize);
+		void setRequiredSize(SIZE requiredSize);
 		void setRequiredSize(int width, int height);
 
 		SIZE actualSize(void) const;
 
 		POINT position(void) const;
-		void setPosition(const POINT &position);
+		void setPosition(POINT position);
 		void setPosition(int x, int y);
 
 		/**

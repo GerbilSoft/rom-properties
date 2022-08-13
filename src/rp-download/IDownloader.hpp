@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * IDownloader.hpp: Downloader interface.                                  *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,9 +18,6 @@
 // C includes. (C++ namespace)
 #include <cstddef>
 #include <ctime>
-
-// C++ includes.
-#include <string>
 
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector

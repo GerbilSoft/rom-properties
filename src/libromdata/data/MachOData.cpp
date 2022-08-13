@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * MachOData.cpp: Mach-O executable format data.                           *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,21 +10,21 @@
 #include "MachOData.hpp"
 #include "Other/macho_structs.h"
 
-namespace LibRomData {
+namespace LibRomData { namespace MachOData {
 
 /**
  * Look up a Mach-O CPU type.
  * @param cputype Mach-O CPU type.
  * @return CPU type name, or nullptr if not found.
  */
-const char *MachOData::lookup_cpu_type(uint32_t cputype)
+const char *lookup_cpu_type(uint32_t cputype)
 {
 	const unsigned int abi = (cputype >> 24);
 	const unsigned int cpu = (cputype & 0xFFFFFF);
 
-	static const char *const cpu_tbl_32[19] = {
+	static const char cpu_tbl_32[19][8] = {
 		// 32-bit CPUs
-		nullptr, "VAX", nullptr, "ROMP",
+		"", "VAX", "", "ROMP",
 		"NS32032", "NS32332", "MC680x0", "i386",
 		"MIPS", "NS32532", "MC98000", "HPPA",
 		"ARM", "MC88000", "SPARC", "i860",
@@ -67,6 +67,9 @@ const char *MachOData::lookup_cpu_type(uint32_t cputype)
 			break;
 	};
 
+	if (s_cpu && s_cpu[0] == '\0') {
+		s_cpu = nullptr;
+	}
 	return s_cpu;
 }
 
@@ -76,7 +79,7 @@ const char *MachOData::lookup_cpu_type(uint32_t cputype)
  * @param cpusubtype Mach-O CPU subtype.
  * @return OS ABI name, or nullptr if not found.
  */
-const char *MachOData::lookup_cpu_subtype(uint32_t cputype, uint32_t cpusubtype)
+const char *lookup_cpu_subtype(uint32_t cputype, uint32_t cpusubtype)
 {
 	const unsigned int abi = (cputype >> 24) & 1;
 	cpusubtype &= 0xFFFFFF;
@@ -125,30 +128,21 @@ const char *MachOData::lookup_cpu_subtype(uint32_t cputype, uint32_t cpusubtype)
 						s_cpu_subtype = "Pentium";
 						break;
 
-					case CPU_SUBTYPE_INTEL(6, 0):
+					case CPU_SUBTYPE_INTEL(6, 0): {
 						// i686 class
-						switch (cpusubtype >> 4) {
-							default:
-							case 0:
-								s_cpu_subtype = "i686";
-								break;
-							case 1:
-								s_cpu_subtype = "Pentium Pro";
-								break;
-							case 2:
-								s_cpu_subtype = "Pentium II (M2)";
-								break;
-							case 3:
-								s_cpu_subtype = "Pentium II (M3)";
-								break;
-							case 4:
-								s_cpu_subtype = "Pentium II (M4)";
-								break;
-							case 5:
-								s_cpu_subtype = "Pentium II (M5)";
-								break;
+						static const char *const i686_cpu_tbl[] = {
+							"i686", "Pentium Pro",
+							"Pentium II (M2)", "Pentium II (M3)",
+							"Pentium II (M4)", "Pentium II (M5)"
+						};
+						const uint8_t i686_subtype = (cpusubtype >> 4);
+						if (i686_subtype < ARRAY_SIZE(i686_cpu_tbl)) {
+							s_cpu_subtype = i686_cpu_tbl[i686_subtype];
+						} else {
+							s_cpu_subtype = i686_cpu_tbl[0];
 						}
 						break;
+					}
 
 					case CPU_SUBTYPE_CELERON:
 						// Celeron
@@ -159,21 +153,20 @@ const char *MachOData::lookup_cpu_subtype(uint32_t cputype, uint32_t cpusubtype)
 						}
 						break;
 
-					case CPU_SUBTYPE_PENTIII:
+					case CPU_SUBTYPE_PENTIII: {
 						// Pentium III
-						switch (cpusubtype >> 4) {
-							default:
-							case 0:
-								s_cpu_subtype = "Pentium III";
-								break;
-							case 1:
-								s_cpu_subtype = "Pentium III-M";
-								break;
-							case 2:
-								s_cpu_subtype = "Pentium III Xeon";
-								break;
+						static const char *const p3_cpu_tbl[] = {
+							"Pentium III", "Pentium III-M",
+							"Pentium III Xeon"
+						};
+						const uint8_t p3_subtype = (cpusubtype >> 4);
+						if (p3_subtype < ARRAY_SIZE(p3_cpu_tbl)) {
+							s_cpu_subtype = p3_cpu_tbl[p3_subtype];
+						} else {
+							s_cpu_subtype = p3_cpu_tbl[0];
 						}
 						break;
+					}
 
 					case CPU_SUBTYPE_PENTIUM_M:
 						s_cpu_subtype = "Pentium M";
@@ -293,4 +286,4 @@ const char *MachOData::lookup_cpu_subtype(uint32_t cputype, uint32_t cpusubtype)
 	return s_cpu_subtype;
 }
 
-}
+} }

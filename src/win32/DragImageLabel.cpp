@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * DragImageLabel.cpp: Drag & Drop image label.                            *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -41,7 +41,6 @@ class DragImageLabelPrivate
 
 	public:
 		HWND hwndParent;
-		bool useNearestNeighbor;
 
 		// Position.
 		POINT position;
@@ -59,16 +58,16 @@ class DragImageLabelPrivate
 
 		// Animated icon data.
 		struct anim_vars {
-			HWND m_hwndParent;
 			const LibRpBase::IconAnimData *iconAnimData;
+			std::array<HBITMAP, IconAnimData::MAX_FRAMES> iconFrames;
+			IconAnimHelper iconAnimHelper;
+			HWND m_hwndParent;
 			UINT_PTR animTimerID;
-			std::array<HBITMAP, LibRpBase::IconAnimData::MAX_FRAMES> iconFrames;
-			LibRpBase::IconAnimHelper iconAnimHelper;
 			int last_frame_number;		// Last frame number.
 
 			anim_vars(HWND hwndParent)
-				: m_hwndParent(hwndParent)
-				, iconAnimData(nullptr)
+				: iconAnimData(nullptr)
+				, m_hwndParent(hwndParent)
 				, animTimerID(0)
 				, last_frame_number(0)
 			{
@@ -79,13 +78,18 @@ class DragImageLabelPrivate
 				if (animTimerID) {
 					KillTimer(m_hwndParent, animTimerID);
 				}
-				std::for_each(iconFrames.cbegin(), iconFrames.cend(),
-					[](HBITMAP hbmp) { if (hbmp) { DeleteBitmap(hbmp); } }
-				);
+				for (HBITMAP hbmp : iconFrames) {
+					if (hbmp) {
+						DeleteBitmap(hbmp);
+					}
+				}
 				UNREF(iconAnimData);
 			}
 		};
 		anim_vars *anim;
+
+		// Use nearest-neighbor scaling?
+		bool useNearestNeighbor;
 
 	public:
 		/**
@@ -94,7 +98,7 @@ class DragImageLabelPrivate
 		 * @param sz		[in/out] Image size.
 		 * @return True if nearest-neighbor scaling should be used (size was kept the same or enlarged); false if shrunken (so use interpolation).
 		 */
-		static bool rescaleImage(const SIZE &req_sz, SIZE &sz);
+		static bool rescaleImage(SIZE req_sz, SIZE &sz);
 
 		/**
 		 * Update the bitmap(s).
@@ -122,10 +126,10 @@ class DragImageLabelPrivate
 
 DragImageLabelPrivate::DragImageLabelPrivate(HWND hwndParent)
 	: hwndParent(hwndParent)
-	, useNearestNeighbor(false)
 	, img(nullptr)
 	, hbmpImg(nullptr)
 	, anim(nullptr)
+	, useNearestNeighbor(false)
 {
 	// TODO: Set rect/size as parameters?
 	requiredSize.cx = DIL_REQ_IMAGE_SIZE;
@@ -157,7 +161,7 @@ DragImageLabelPrivate::~DragImageLabelPrivate()
  * @param sz		[in/out] Image size.
  * @return True if nearest-neighbor scaling should be used (size was kept the same or enlarged); false if shrunken (so use interpolation).
  */
-bool DragImageLabelPrivate::rescaleImage(const SIZE &req_sz, SIZE &sz)
+bool DragImageLabelPrivate::rescaleImage(SIZE req_sz, SIZE &sz)
 {
 	// TODO: Adjust req_sz for DPI.
 	if (sz.cx == req_sz.cx && sz.cy == req_sz.cy) {
@@ -207,17 +211,12 @@ bool DragImageLabelPrivate::updateBitmaps(void)
 	// TODO: Get the actual background color of the window.
 	// TODO: Use DrawThemeBackground:
 	// - http://www.codeproject.com/Articles/5978/Correctly-drawn-themed-dialogs-in-WinXP
-	// - https://blogs.msdn.microsoft.com/dsui_team/2013/06/26/using-theme-apis-to-draw-the-border-of-a-control/
-	// - https://blogs.msdn.microsoft.com/pareshj/2011/11/03/draw-the-background-of-static-control-with-gradient-fill-when-theme-is-enabled/
-	int colorIndex;
-	if (LibWin32Common::pfnIsThemeActive && LibWin32Common::pfnIsThemeActive()) {
-		// Theme is active.
-		colorIndex = COLOR_WINDOW;
-	} else {
-		// Theme is not active.
-		colorIndex = COLOR_3DFACE;
-	}
-	const Gdiplus::ARGB gdipBgColor = LibWin32Common::GetSysColor_ARGB32(colorIndex);
+	// - https://docs.microsoft.com/en-us/archive/blogs/dsui_team/using-theme-apis-to-draw-the-border-of-a-control
+	// - https://docs.microsoft.com/en-us/archive/blogs/pareshj/draw-the-background-of-static-control-with-gradient-fill-when-theme-is-enabled
+	const int colorIndex = LibWin32UI::isThemeActive()
+		? COLOR_WINDOW	// active theme
+		: COLOR_3DFACE;	// no theme
+	const Gdiplus::ARGB gdipBgColor = LibWin32UI::GetSysColor_ARGB32(colorIndex);
 
 	// Return value.
 	bool bRet = false;
@@ -370,7 +369,7 @@ SIZE DragImageLabel::requiredSize(void) const
 	return d->requiredSize;
 }
 
-void DragImageLabel::setRequiredSize(const SIZE &requiredSize)
+void DragImageLabel::setRequiredSize(SIZE requiredSize)
 {
 	RP_D(DragImageLabel);
 	if (d->requiredSize.cx != requiredSize.cx ||
@@ -405,7 +404,7 @@ POINT DragImageLabel::position(void) const
 	return d->position;
 }
 
-void DragImageLabel::setPosition(const POINT &position)
+void DragImageLabel::setPosition(POINT position)
 {
 	RP_D(DragImageLabel);
 	if (d->position.x != position.x ||

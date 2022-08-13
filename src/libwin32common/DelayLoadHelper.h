@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * DelayLoadHelper.h: DelayLoad helper functions and macros.               *
  *                                                                         *
- * Copyright (c) 2017-2018 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,7 +10,7 @@
 #define __ROMPROPERTIES_LIBWIN32COMMON_DELAYLOADHELPER_HPP__
 
 #if !defined(_WIN32) || !defined(_MSC_VER)
-#error DelayLoadHelper.h is MSVC and Win32 only at the moment.
+#  error DelayLoadHelper.h is MSVC and Win32 only at the moment.
 #endif
 
 // MSVC: Exception handling for /DELAYLOAD.
@@ -23,7 +23,7 @@
 // This isn't defined if compiling with MSVC 2012+
 // when using the Windows 7 SDK.
 #ifndef FACILITY_VISUALCPP
-#define FACILITY_VISUALCPP 109
+#  define FACILITY_VISUALCPP 109
 #endif
 
 /**

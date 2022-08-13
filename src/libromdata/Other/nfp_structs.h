@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * nfp_structs.h: Nintendo amiibo data structures.                         *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -96,6 +96,7 @@ typedef enum {
 	NFP_TYPE_FIGURINE	= 0x00,
 	NFP_TYPE_CARD		= 0x01,
 	NFP_TYPE_YARN		= 0x02,
+	NFP_TYPE_BAND		= 0x03,
 } NFP_Type_t;
 
 #ifdef __cplusplus

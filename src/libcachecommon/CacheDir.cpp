@@ -2,17 +2,13 @@
  * ROM Properties Page shell extension. (libcachecommon)                   *
  * CacheDir.cpp: Cache directory handler.                                  *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "CacheDir.hpp"
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 
 // librpthreads
@@ -20,20 +16,20 @@ using std::string;
 
 // OS-specific userdirs
 #ifdef _WIN32
-# include "libwin32common/userdirs.hpp"
-# define OS_NAMESPACE LibWin32Common
-# define DIR_SEP_CHR '\\'
+#  include "libwin32common/userdirs.hpp"
+#  define OS_NAMESPACE LibWin32Common
+#  define DIR_SEP_CHR '\\'
 #else
-# include "libunixcommon/userdirs.hpp"
-# define OS_NAMESPACE LibUnixCommon
-# define DIR_SEP_CHR '/'
+#  include "libunixcommon/userdirs.hpp"
+#  define OS_NAMESPACE LibUnixCommon
+#  define DIR_SEP_CHR '/'
 #endif
 
 namespace LibCacheCommon {
 
 /** Configuration directories. **/
 // pthread_once() control variable.
-static pthread_once_t once_control = PTHREAD_ONCE_INIT;
+static pthread_once_t cache_dir_once_control = PTHREAD_ONCE_INIT;
 // User's cache directory.
 static string cache_dir;
 
@@ -70,7 +66,7 @@ static void initCacheDirectory(void)
  */
 const std::string &getCacheDirectory(void)
 {
-	pthread_once(&once_control, initCacheDirectory);
+	pthread_once(&cache_dir_once_control, initCacheDirectory);
 	return cache_dir;
 }
 

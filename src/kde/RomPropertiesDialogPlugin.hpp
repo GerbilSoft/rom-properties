@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomPropertiesDialogPlugin.hpp: KPropertiesDialogPlugin.                 *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,10 +16,21 @@ class Q_DECL_EXPORT RomPropertiesDialogPlugin : public KPropertiesDialogPlugin
 	Q_OBJECT
 
 	public:
-		explicit RomPropertiesDialogPlugin(KPropertiesDialog *props, const QVariantList & = QVariantList());
+		/**
+		 * Instantiate a RomDataView for the given KPropertiesDialog.
+		 * @param parent KPropertiesDialog (NOTE: QObject* is used for registerPlugin() compatibility.)
+		 * @param args
+		 */
+		explicit RomPropertiesDialogPlugin(QObject *parent, const QVariantList &args = QVariantList());
+
+	private:
+		// Disable these constructors.
+		explicit RomPropertiesDialogPlugin(QObject *parent);
+		explicit RomPropertiesDialogPlugin(KPropertiesDialog *_props);
 
 	private:
 		typedef KPropertiesDialogPlugin super;
+		Q_DISABLE_COPY(RomPropertiesDialogPlugin)
 };
 
 #endif /* __ROMPROPERTIES_KDE_ROMPROPERTIESDIALOGPLUGIN_HPP__ */

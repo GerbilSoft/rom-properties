@@ -6,15 +6,16 @@
  * multiple plugins, so this file acts as a KFileMetaData ExtractorPlugin, *
  * and then forwards the request to the main library.                      *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "config.kf5.h"
+#include "../check-uid.hpp"
+#include "../RpQt.hpp"
 
 #include "ExtractorPluginForwarder.hpp"
-#include "ExtractorPlugin.hpp"
-#include "../RpQt.hpp"
+#include "../ExtractorPlugin.hpp"
 
 // C includes.
 #include <dlfcn.h>
@@ -37,10 +38,7 @@ ExtractorPluginForwarder::ExtractorPluginForwarder(QObject *parent)
 	, hRpKdeSo(nullptr)
 	, fwd_plugin(nullptr)
 {
-	if (getuid() == 0 || geteuid() == 0) {
-		qCritical("*** kfilemetadata_rom_properties_" RP_KDE_LOWER "%u does not support running as root.", QT_VERSION >> 16);
-		return;
-	}
+	CHECK_UID();
 
 	// FIXME: Check the .desktop file?
 	QString pluginPath(QString::fromUtf8(KF5_PLUGIN_INSTALL_DIR));

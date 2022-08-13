@@ -1,12 +1,11 @@
 # rom-properties file handling library
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 CMAKE_POLICY(SET CMP0048 NEW)
 IF(POLICY CMP0063)
 	# CMake 3.3: Enable symbol visibility presets for all
 	# target types, including static libraries and executables.
 	CMAKE_POLICY(SET CMP0063 NEW)
 ENDIF(POLICY CMP0063)
-PROJECT(librpfile LANGUAGES CXX)
+PROJECT(rpfile LANGUAGES CXX)
 
 # Check for C library functions.
 IF(NOT WIN32)
@@ -19,10 +18,10 @@ IF(NOT WIN32)
 ENDIF(NOT WIN32)
 
 # Sources.
-SET(librpfile_SRCS
+SET(${PROJECT_NAME}_SRCS
 	IRpFile.cpp
-	RpMemFile.cpp
-	RpVectorFile.cpp
+	MemFile.cpp
+	VectorFile.cpp
 	FileSystem_common.cpp
 	RelatedFile.cpp
 	DualFile.cpp
@@ -30,15 +29,16 @@ SET(librpfile_SRCS
 	scsi/RpFile_scsi.cpp
 	)
 # Headers.
-SET(librpfile_H
+SET(${PROJECT_NAME}_H
 	IRpFile.hpp
 	RpFile.hpp
 	RpFile_p.hpp
-	RpMemFile.hpp
-	RpVectorFile.hpp
+	MemFile.hpp
+	VectorFile.hpp
 	FileSystem.hpp
 	RelatedFile.hpp
 	DualFile.hpp
+	SubFile.hpp
 	scsi/ata_protocol.h
 	scsi/scsi_protocol.h
 	scsi/scsi_ata_cmds.h
@@ -46,15 +46,15 @@ SET(librpfile_H
 
 # SCSI implementation for Kreon disc drive support.
 IF(WIN32)
-	SET(librpfile_SRCS ${librpfile_SRCS} scsi/RpFile_scsi_win32.cpp)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} scsi/RpFile_scsi_win32.cpp)
 	SET(RP_OS_SCSI_SUPPORTED 1)
 ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-	SET(librpfile_SRCS ${librpfile_SRCS} scsi/RpFile_scsi_linux.cpp)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} scsi/RpFile_scsi_linux.cpp)
 	SET(RP_OS_SCSI_SUPPORTED 1)
 ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR CMAKE_SYSTEM_NAME STREQUAL "Dragonfly")
 	# FIXME: Not working properly. (SCSI ILLEGAL REQUEST errors)
 	# NOTE: The file is still needed for rereadDeviceSizeOS().
-	SET(librpfile_SRCS ${librpfile_SRCS} scsi/RpFile_scsi_freebsd.cpp)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} scsi/RpFile_scsi_freebsd.cpp)
 
 	IF(0) # FIXME
 	# TODO: Check for header files. CHECK_INCLUDE_FILE() doesn't work
@@ -72,109 +72,123 @@ ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR CMAKE_SYSTEM_NAME STREQUAL "Drago
 	ENDIF()
 	ENDIF(0) # FIXME
 ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "NetBSD" OR CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
-	SET(librpfile_SRCS ${librpfile_SRCS} scsi/RpFile_scsi_netbsd.cpp)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} scsi/RpFile_scsi_netbsd.cpp)
 	SET(RP_OS_SCSI_SUPPORTED 1)
 ELSE()
 	# Dummy implementation for RpFile::rereadDeviceSizeOS().
-	SET(librpfile_SRCS ${librpfile_SRCS} scsi/RpFile_scsi_dummy.cpp)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} scsi/RpFile_scsi_dummy.cpp)
 ENDIF()
 
 IF(WIN32)
-	SET(librpfile_OS_SRCS
+	SET(${PROJECT_NAME}_OS_SRCS
 		win32/FileSystem_win32.cpp
 		win32/RpFile_win32.cpp
 		win32/IStreamWrapper.cpp
-		Win32/RpFile_windres.cpp
+		win32/RpFile_windres.cpp
 		)
-	SET(librpfile_OS_H
+	SET(${PROJECT_NAME}_OS_H
 		win32/IStreamWrapper.hpp
-		Win32/RpFile_windres.hpp
+		win32/RpFile_windres.hpp
 		)
 ELSE(WIN32)
-	SET(librpfile_OS_SRCS
+	SET(${PROJECT_NAME}_OS_SRCS
 		FileSystem_posix.cpp
 		RpFile_stdio.cpp
 		)
 ENDIF(WIN32)
 
 # Write the config.h files.
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.librpfile.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.librpfile.h")
-
-IF(ENABLE_PCH)
-	# Precompiled headers.
-	INCLUDE(PrecompiledHeader)
-	SET(librpfile_PCH_CXX stdafx.cpp)
-	SET(librpfile_PCH_SRC ${librpfile_PCH_CXX})
-	SET(librpfile_PCH_H stdafx.h)
-ENDIF(ENABLE_PCH)
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.lib${PROJECT_NAME}.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.lib${PROJECT_NAME}.h")
 
 ######################
 # Build the library. #
 ######################
 
-ADD_LIBRARY(rpfile STATIC
-	${librpfile_PCH_SRC} ${librpfile_PCH_H}
-	${librpfile_SRCS} ${librpfile_H}
-	${librpfile_OS_SRCS} ${librpfile_OS_H}
-	)
-IF(ENABLE_PCH)
-	ADD_PRECOMPILED_HEADER(rpfile ${librpfile_PCH_H}
-		SOURCE_CXX ${librpfile_PCH_CXX}
+# NOTE: ${PROJECT_NAME} is the original target.
+# ${PROJECT_NAME}-dll is the target with dllimport/dllexport for libromdata.
+IF(RP_LIBROMDATA_IS_DLL AND WIN32)
+	# On Win32, the dll target needs dllimport/dllexport.
+	SET(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}-dll)
+ELSE()
+	# On other platforms, the dll target will be an alias to the regular target.
+	# That will be set up later, since the regular target doesn't exist yet.
+	SET(TARGETS ${PROJECT_NAME})
+ENDIF()
+
+FOREACH(_target ${TARGETS})
+	ADD_LIBRARY(${_target} STATIC
+		${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
+		${${PROJECT_NAME}_OS_SRCS} ${${PROJECT_NAME}_OS_H}
 		)
-ENDIF(ENABLE_PCH)
-INCLUDE(SetMSVCDebugPath)
-SET_MSVC_DEBUG_PATH(rpfile)
+	IF(ENABLE_PCH)
+		TARGET_PRECOMPILE_HEADERS(${_target} PRIVATE
+			"${RP_CONFIG_LIBC_H}" "${RP_CXX11_COMPAT_H}"
+			stdafx.h
+			)
+	ENDIF(ENABLE_PCH)
+	INCLUDE(SetMSVCDebugPath)
+	SET_MSVC_DEBUG_PATH(${_target})
+	# Exclude from ALL builds.
+	SET_TARGET_PROPERTIES(${_target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+	# Make sure git_version.h is created before compiling this target.
+	IF(TARGET git_version)
+		ADD_DEPENDENCIES(${_target} git_version)
+	ENDIF(TARGET git_version)
 
-# rpthreads is needed for atomic functions.
-TARGET_LINK_LIBRARIES(rpfile PRIVATE rpcpu rpthreads)
-IF(WIN32)
-	# for MiniU82T
-	TARGET_LINK_LIBRARIES(rpfile PRIVATE win32common)
-ENDIF(WIN32)
+	# DLL targets need the appropriate macros.
+	IF(${_target} MATCHES "-dll$")
+		SET(_target_suffix "-dll")
+		TARGET_COMPILE_DEFINITIONS(${_target}
+			PUBLIC		RP_BUILDING_FOR_DLL=1
+			PRIVATE		RP_BUILDING_LIBROMDATA=1
+			)
+	ELSE()
+		UNSET(_target_suffix)
+	ENDIF()
 
-# Include paths:
-# - Public: Current source and binary directories.
-# - Private: Parent source and binary directories,
-#            and top-level binary directory for git_version.h.
-TARGET_INCLUDE_DIRECTORIES(rpfile
-	PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# librpfile
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# librpfile
-	PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# src
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# src
-		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# build
-	)
-IF(NOT ZLIB_LIBRARY)
-	MESSAGE(FATAL_ERROR "ZLIB_LIBRARY has not been set by CheckZLIB.cmake.")
-ENDIF(NOT ZLIB_LIBRARY)
-TARGET_LINK_LIBRARIES(rpfile PRIVATE ${ZLIB_LIBRARY})
-IF(MSVC)
-	TARGET_LINK_LIBRARIES(rpfile PRIVATE delayimp)
-ENDIF(MSVC)
-# Exclude from ALL builds.
-SET_TARGET_PROPERTIES(rpfile PROPERTIES EXCLUDE_FROM_ALL TRUE)
-# Make sure git_version.h is created before compiling this target.
-IF(TARGET git_version)
-	ADD_DEPENDENCIES(rpfile git_version)
-ENDIF(TARGET git_version)
+	# rpthreads is needed for atomic functions.
+	TARGET_LINK_LIBRARIES(${_target} PRIVATE rpcpu${_target_suffix} rpthreads${_target_suffix})
+	TARGET_LINK_LIBRARIES(${_target} PRIVATE cachecommon${_target_suffix})
+	IF(WIN32)
+		# for MiniU82T
+		TARGET_LINK_LIBRARIES(${_target} PRIVATE win32common${_target_suffix})
+	ENDIF(WIN32)
 
-# Other libraries.
-TARGET_LINK_LIBRARIES(rpfile PRIVATE rptexture inih rpthreads cachecommon)
-IF(ZLIB_FOUND)
-	TARGET_LINK_LIBRARIES(rpfile PRIVATE ${ZLIB_LIBRARIES})
-	TARGET_INCLUDE_DIRECTORIES(rpfile PRIVATE ${ZLIB_INCLUDE_DIRS})
-	TARGET_COMPILE_DEFINITIONS(rpfile PRIVATE ${ZLIB_DEFINITIONS})
-ENDIF(ZLIB_FOUND)
-#IF(WIN32)
-#	# libwin32common
-#	TARGET_LINK_LIBRARIES(rpfile PRIVATE win32common)
-#ELSE(WIN32)
-#	# libunixcommon
-#	TARGET_LINK_LIBRARIES(rpfile PRIVATE unixcommon)
-#ENDIF(WIN32)
-IF(SCSI_LIBRARY)
-	# An extra library is needed for SCSI support.
-	TARGET_LINK_LIBRARIES(rpfile PRIVATE ${SCSI_LIBRARY})
-ENDIF(SCSI_LIBRARY)
+	# Include paths:
+	# - Public: Current source and binary directories.
+	# - Private: Parent source and binary directories,
+	#            and top-level binary directory for git_version.h.
+	TARGET_INCLUDE_DIRECTORIES(${_target}
+		PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# librpfile
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# librpfile
+		PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# src
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# src
+			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>			# build
+		)
+
+	IF(MSVC)
+		TARGET_LINK_LIBRARIES(${_target} PRIVATE delayimp)
+	ENDIF(MSVC)
+
+	# Other libraries.
+	IF(ZLIB_FOUND)
+		TARGET_LINK_LIBRARIES(${_target} PRIVATE ${ZLIB_LIBRARIES})
+		TARGET_INCLUDE_DIRECTORIES(${_target} PRIVATE ${ZLIB_INCLUDE_DIRS})
+		TARGET_COMPILE_DEFINITIONS(${_target} PRIVATE ${ZLIB_DEFINITIONS})
+	ELSE(ZLIB_FOUND)
+		MESSAGE(FATAL_ERROR "ZLIB_LIBRARIES has not been set by CheckZLIB.cmake.")
+	ENDIF(ZLIB_FOUND)
+	IF(SCSI_LIBRARY)
+		# An extra library is needed for SCSI support.
+		TARGET_LINK_LIBRARIES(${_target} PRIVATE ${SCSI_LIBRARY})
+	ENDIF(SCSI_LIBRARY)
+ENDFOREACH(_target)
+UNSET(_target_suffix)
+
+IF(NOT TARGET ${PROJECT_NAME}-dll)
+	# On other platforms, the dll target will be an alias to the regular target.
+	ADD_LIBRARY(${PROJECT_NAME}-dll ALIAS ${PROJECT_NAME})
+ENDIF()
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
 IF(UNIX AND NOT APPLE)

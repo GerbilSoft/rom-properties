@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * wii_structs.h: Nintendo Wii data structures.                            *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -100,7 +100,7 @@ typedef struct PACKED _RVL_Ticket {
 	uint32_t permitted_titles_mask;	// [0x1E8] Permitted titles mask.
 	uint32_t permit_mask;		// [0x1EC] Permit mask.
 	uint8_t title_export;		// [0x1F0] Title Export allowed using PRNG key. (1 == yes, 0 == no)
-	uint8_t common_key_index;	// [0x1F1] Common Key index. (0 == default, 1 == Korean)
+	uint8_t common_key_index;	// [0x1F1] Common Key index. (0 == default, 1 == Korean, 2 == vWii)
 	uint8_t unknown3[0x30];		// [0x1F2] Unknown. (VC related?)
 	uint8_t content_access_perm[0x40];	// [0x222] Content access permissions. (1 bit per content)
 	uint8_t padding2[2];		// [0x262] Padding. (always 0)
@@ -170,8 +170,8 @@ typedef struct PACKED _RVL_Content_Entry {
 	uint64_t size;			// [0x008] Size
 	uint8_t sha1_hash[20];		// [0x010] SHA-1 hash of the content (installed) or H3 table (disc).
 } RVL_Content_Entry;
-#pragma pack()
 ASSERT_STRUCT(RVL_Content_Entry, 0x24);
+#pragma pack()
 
 /**
  * Content type (bitfield)
@@ -232,7 +232,7 @@ typedef enum {
  * Reference: https://wiibrew.org/wiki/Wii_Disc#Region_setting
  */
 #define RVL_RegionSetting_ADDRESS 0x4E000
-typedef struct PACKED _RVL_RegionSetting {
+typedef struct _RVL_RegionSetting {
 	uint32_t region_code;	// Region code. (See GCN_Region_Code.)
 	uint32_t disc_count;	// Number of game discs.
 	uint8_t reserved[8];

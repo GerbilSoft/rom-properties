@@ -3,7 +3,7 @@
  * Nintendo3DS_SMDH.hpp: Nintendo 3DS SMDH reader.                         *
  * Handles SMDH files and SMDH sections.                                   *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,6 +14,7 @@
 #include "data/NintendoLanguage.hpp"
 
 // librpbase, librpfile, librptexture
+#include "librptexture/decoder/ImageDecoder_N3DS.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 using namespace LibRpTexture;
@@ -24,10 +25,6 @@ using std::string;
 using std::vector;
 
 namespace LibRomData {
-
-ROMDATA_IMPL(Nintendo3DS_SMDH)
-ROMDATA_IMPL_IMG_TYPES(Nintendo3DS_SMDH)
-ROMDATA_IMPL_IMG_SIZES(Nintendo3DS_SMDH)
 
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define Nintendo3DS_SMDHPrivate Nintendo3DS_SMDH_Private
@@ -41,6 +38,12 @@ class Nintendo3DS_SMDH_Private final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(Nintendo3DS_SMDH_Private)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// Internal images.
@@ -75,10 +78,32 @@ class Nintendo3DS_SMDH_Private final : public RomDataPrivate
 		inline uint32_t getDefaultLC(void) const;
 };
 
+ROMDATA_IMPL(Nintendo3DS_SMDH)
+ROMDATA_IMPL_IMG_TYPES(Nintendo3DS_SMDH)
+ROMDATA_IMPL_IMG_SIZES(Nintendo3DS_SMDH)
+
 /** Nintendo3DS_SMDH_Private **/
 
+/* RomDataInfo */
+// NOTE: Using the same image settings as Nintendo3DS.
+const char *const Nintendo3DS_SMDH_Private::exts[] = {
+	".smdh",	// SMDH (icon) file.
+
+	nullptr
+};
+const char *const Nintendo3DS_SMDH_Private::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-nintendo-3ds-smdh",
+
+	nullptr
+};
+const RomDataInfo Nintendo3DS_SMDH_Private::romDataInfo = {
+	"Nintendo3DS", exts, mimeTypes
+};
+
 Nintendo3DS_SMDH_Private::Nintendo3DS_SMDH_Private(Nintendo3DS_SMDH *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 {
 	// Clear img_icon.
 	img_icon.fill(nullptr);
@@ -90,7 +115,9 @@ Nintendo3DS_SMDH_Private::Nintendo3DS_SMDH_Private(Nintendo3DS_SMDH *q, IRpFile 
 Nintendo3DS_SMDH_Private::~Nintendo3DS_SMDH_Private()
 {
 	// Delete any loaded icons.
-	std::for_each(img_icon.begin(), img_icon.end(), [](rp_image *img) { UNREF(img); });
+	for (rp_image *img : img_icon) {
+		UNREF(img);
+	}
 }
 
 /**
@@ -225,8 +252,8 @@ Nintendo3DS_SMDH::Nintendo3DS_SMDH(IRpFile *file)
 	: super(new Nintendo3DS_SMDH_Private(this, file))
 {
 	// This class handles SMDH files and/or sections only.
+	// NOTE: Using the same image settings as Nintendo3DS.
 	RP_D(Nintendo3DS_SMDH);
-	d->className = "Nintendo3DS";	// Using the same image settings as Nintendo3DS.
 	d->mimeType = "application/x-nintendo-3ds-smdh";	// unofficial, not on fd.o
 	d->fileType = FileType::IconFile;
 
@@ -246,12 +273,11 @@ Nintendo3DS_SMDH::Nintendo3DS_SMDH(IRpFile *file)
 	}
 
 	// Check if this ROM image is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->smdh);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->smdh);
-	info.ext = nullptr;	// Not needed for Nintendo3DS_SMDH.
-	info.szFile = 0;	// Not needed for Nintendo3DS_SMDH.
+	const DetectInfo info = {
+		{0, sizeof(d->smdh), reinterpret_cast<const uint8_t*>(&d->smdh)},
+		nullptr,	// ext (not needed for Nintendo3DS_SMDH)
+		0		// szFile (not needed for Nintendo3DS_SMDH)
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
@@ -330,51 +356,6 @@ const char *Nintendo3DS_SMDH::systemName(unsigned int type) const
 	};
 
 	return sysNames[idx];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Nintendo3DS_SMDH::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".smdh",	// SMDH (icon) file.
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Nintendo3DS_SMDH::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-nintendo-3ds-smdh",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**
@@ -509,22 +490,19 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 			continue;
 
 		if (smdhHeader->titles[langID].desc_short[0] != cpu_to_le16('\0')) {
-			pMap_desc_short->insert(std::make_pair(lc,
-				utf16le_to_utf8(
-					smdhHeader->titles[langID].desc_short,
-					ARRAY_SIZE(smdhHeader->titles[langID].desc_short))));
+			pMap_desc_short->emplace(lc, utf16le_to_utf8(
+				smdhHeader->titles[langID].desc_short,
+				ARRAY_SIZE(smdhHeader->titles[langID].desc_short)));
 		}
 		if (smdhHeader->titles[langID].desc_long[0] != cpu_to_le16('\0')) {
-			pMap_desc_long->insert(std::make_pair(lc,
-				utf16le_to_utf8(
-					smdhHeader->titles[langID].desc_long,
-					ARRAY_SIZE(smdhHeader->titles[langID].desc_long))));
+			pMap_desc_long->emplace(lc, utf16le_to_utf8(
+				smdhHeader->titles[langID].desc_long,
+				ARRAY_SIZE(smdhHeader->titles[langID].desc_long)));
 		}
 		if (smdhHeader->titles[langID].publisher[0] != cpu_to_le16('\0')) {
-			pMap_publisher->insert(std::make_pair(lc,
-				utf16le_to_utf8(
-					smdhHeader->titles[langID].publisher,
-					ARRAY_SIZE(smdhHeader->titles[langID].publisher))));
+			pMap_publisher->emplace(lc, utf16le_to_utf8(
+				smdhHeader->titles[langID].publisher,
+				ARRAY_SIZE(smdhHeader->titles[langID].publisher)));
 		}
 	}
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * GcnFstTest.cpp: GameCube/Wii FST test.                                  *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -215,10 +215,10 @@ unzFile GcnFstTest::openZip(const char *filename)
 	path += filename;
 
 #ifdef _WIN32
-	// NOTE: MiniZip 2.2.3's compatibility functions
+	// NOTE: MiniZip 3.0.2's compatibility functions
 	// take UTF-8 on Windows, not UTF-16.
 	zlib_filefunc64_def ffunc;
-	fill_win32_filefunc64W(&ffunc);
+	fill_win32_filefunc64(&ffunc);
 	return unzOpen2_64(path.c_str(), &ffunc);
 #else /* !_WIN32 */
 	return unzOpen(path.c_str());
@@ -362,13 +362,12 @@ void GcnFstTest::checkNoDuplicateFilenames(const char *subdir)
 	}
 
 	// Check subdirectories.
-	const auto subdirs_cend = subdirs.cend();
-	for (auto iter = subdirs.cbegin(); iter != subdirs_cend; ++iter) {
+	for (const string &p : subdirs) {
 		string path = subdir;
 		if (!path.empty() && path[path.size()-1] != '/') {
 			path += '/';
 		}
-		path += iter->c_str();
+		path += p;
 		checkNoDuplicateFilenames(path.c_str());
 	}
 
@@ -543,7 +542,7 @@ std::vector<GcnFstTest_mode> GcnFstTest::ReadTestCasesFromDisk(uint8_t offsetShi
 			// NOTE: Filename might not be NULL-terminated,
 			// so use the explicit length.
 			GcnFstTest_mode mode(string(filename, file_info.size_filename), offsetShift);
-			files.emplace_back(mode);
+			files.emplace_back(std::move(mode));
 		}
 
 		// Next file.
@@ -571,15 +570,8 @@ string GcnFstTest::test_case_suffix_generator(const ::testing::TestParamInfo<Gcn
 
 	// Replace all non-alphanumeric characters with '_'.
 	// See gtest-param-util.h::IsValidParamName().
-	std::for_each(suffix.begin(), suffix.end(),
-		[](char &c) {
-			// NOTE: Not checking for '_' because that
-			// wastes a branch.
-			if (!ISALNUM(c)) {
-				c = '_';
-			}
-		}
-	);
+	std::replace_if(suffix.begin(), suffix.end(),
+		[](char c) { return !ISALNUM(c); }, '_');
 
 	return suffix;
 }

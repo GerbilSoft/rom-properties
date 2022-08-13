@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * DragImage.cpp: Drag & Drop image.                                       *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,9 +13,9 @@
 // librpbase, librpfile, librptexture
 #include "librpbase/img/IconAnimData.hpp"
 #include "librpbase/img/IconAnimHelper.hpp"
-#include "librpfile/RpVectorFile.hpp"
+#include "librpfile/VectorFile.hpp"
 using namespace LibRpBase;
-using LibRpFile::RpVectorFile;
+using LibRpFile::VectorFile;
 using LibRpTexture::rp_image;
 
 // C++ STL classes.
@@ -25,23 +25,37 @@ using std::vector;
 #define DIL_MIN_IMAGE_SIZE 32
 
 static void	drag_image_dispose	(GObject	*object);
-static void	drag_image_finalize	(GObject	*object);
 
 // Signal handlers
+// FIXME: GTK4 has a new Drag & Drop API.
+#if !GTK_CHECK_VERSION(4,0,0)
 static void	drag_image_drag_begin(DragImage *image, GdkDragContext *context, gpointer user_data);
 static void	drag_image_drag_data_get(DragImage *image, GdkDragContext *context, GtkSelectionData *data, guint info, guint time, gpointer user_data);
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
+
+// GTK4 no longer needs GtkEventBox, since
+// all widgets receive events.
+#if GTK_CHECK_VERSION(4,0,0)
+typedef GtkBoxClass superclass;
+typedef GtkBox super;
+#  define GTK_TYPE_SUPER GTK_TYPE_BOX
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+typedef GtkEventBoxClass superclass;
+typedef GtkEventBox super;
+#  define GTK_TYPE_SUPER GTK_TYPE_EVENT_BOX
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 // DragImage class.
 struct _DragImageClass {
-	GtkEventBoxClass __parent__;
+	superclass __parent__;
 };
 
 // DragImage instance.
 struct _DragImage {
-	GtkEventBox __parent__;
+	super __parent__;
 
 	// GtkImage child widget.
-	GtkImage *imageWidget;
+	GtkWidget *imageWidget;
 	// Current frame.
 	PIMGTYPE curFrame;
 
@@ -57,10 +71,10 @@ struct _DragImage {
 	// Animated icon data.
 	struct anim_vars {
 		const IconAnimData *iconAnimData;
-		guint tmrIconAnim;	// Timer ID
-		int last_delay;		// Last delay value.
 		std::array<PIMGTYPE, IconAnimData::MAX_FRAMES> iconFrames;
 		IconAnimHelper iconAnimHelper;
+		guint tmrIconAnim;	// Timer ID
+		int last_delay;		// Last delay value.
 		int last_frame_number;	// Last frame number.
 
 		anim_vars()
@@ -76,11 +90,11 @@ struct _DragImage {
 				g_source_remove(tmrIconAnim);
 			}
 
-			std::for_each(iconFrames.begin(), iconFrames.end(), [](PIMGTYPE frame) {
+			for (PIMGTYPE frame : iconFrames) {
 				if (frame) {
 					PIMGTYPE_destroy(frame);
 				}
-			});
+			}
 
 			UNREF(iconAnimData);
 		}
@@ -91,18 +105,17 @@ struct _DragImage {
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
 G_DEFINE_TYPE_EXTENDED(DragImage, drag_image,
-	GTK_TYPE_EVENT_BOX, static_cast<GTypeFlags>(0), {});
+	GTK_TYPE_SUPER, static_cast<GTypeFlags>(0), {});
 
 static void
 drag_image_class_init(DragImageClass *klass)
 {
-	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
+	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
 	gobject_class->dispose = drag_image_dispose;
-	gobject_class->finalize = drag_image_finalize;
 
 	// TODO
-	//gobject_class->get_property = drag_image_get_property;
 	//gobject_class->set_property = drag_image_set_property;
+	//gobject_class->get_property = drag_image_get_property;
 }
 
 static void
@@ -114,14 +127,22 @@ drag_image_init(DragImage *image)
 	image->anim = nullptr;
 
 	// Create the child GtkImage widget.
-	image->imageWidget = GTK_IMAGE(gtk_image_new());
-	gtk_widget_show(GTK_WIDGET(image->imageWidget));
-	gtk_container_add(GTK_CONTAINER(image), GTK_WIDGET(image->imageWidget));
+	image->imageWidget = gtk_image_new();
+	gtk_widget_set_name(image->imageWidget, "imageWidget");
+	gtk_widget_show(image->imageWidget);
+#if GTK_CHECK_VERSION(4,0,0)
+	gtk_box_append(GTK_BOX(image), image->imageWidget);
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+	gtk_container_add(GTK_CONTAINER(image), image->imageWidget);
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
+// FIXME: GTK4 has a new Drag & Drop API.
+#if !GTK_CHECK_VERSION(4,0,0)
 	g_signal_connect(G_OBJECT(image), "drag-begin",
 		G_CALLBACK(drag_image_drag_begin), (gpointer)0);
 	g_signal_connect(G_OBJECT(image), "drag-data-get",
 		G_CALLBACK(drag_image_drag_data_get), (gpointer)0);
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
 }
 
 static void
@@ -145,17 +166,6 @@ drag_image_dispose(GObject *object)
 
 	// Call the superclass dispose() function.
 	G_OBJECT_CLASS(drag_image_parent_class)->dispose(object);
-}
-
-static void
-drag_image_finalize(GObject *object)
-{
-	//DragImage *const image = DRAG_IMAGE(object);
-
-	// Nothing to do here right now...
-
-	// Call the superclass finalize() function.
-	G_OBJECT_CLASS(drag_image_parent_class)->finalize(object);
 }
 
 GtkWidget*
@@ -212,15 +222,17 @@ drag_image_update_pixmaps(DragImage *image)
 
 		// Show the first frame.
 		image->curFrame = PIMGTYPE_ref(anim->iconFrames[anim->iconAnimHelper.frameNumber()]);
-		gtk_image_set_from_PIMGTYPE(image->imageWidget, image->curFrame);
+		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), image->curFrame);
 		bRet = true;
 	} else if (image->img && image->img->isValid()) {
 		// Single image.
 		image->curFrame = rp_image_to_PIMGTYPE(image->img);
-		gtk_image_set_from_PIMGTYPE(image->imageWidget, image->curFrame);
+		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), image->curFrame);
 		bRet = true;
 	}
 
+	// FIXME: GTK4 has a new Drag & Drop API.
+#if !GTK_CHECK_VERSION(4,0,0)
 	if (bRet) {
 		// Image or animated icon data was set.
 		// Set a drag source.
@@ -237,6 +249,8 @@ drag_image_update_pixmaps(DragImage *image)
 		// Unset the drag source.
 		gtk_drag_source_unset(GTK_WIDGET(image));
 	}
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
+
 	return bRet;
 }
 
@@ -289,7 +303,7 @@ drag_image_set_rp_image(DragImage *image, const LibRpTexture::rp_image *img)
 
 	if (!img) {
 		if (!image->anim || !image->anim->iconAnimData) {
-			gtk_image_clear(image->imageWidget);
+			gtk_image_clear(GTK_IMAGE(image->imageWidget));
 		} else {
 			return drag_image_update_pixmaps(image);
 		}
@@ -336,7 +350,7 @@ drag_image_set_icon_anim_data(DragImage *image, const LibRpBase::IconAnimData *i
 		}
 
 		if (!image->img) {
-			gtk_image_clear(image->imageWidget);
+			gtk_image_clear(GTK_IMAGE(image->imageWidget));
 		} else {
 			return drag_image_update_pixmaps(image);
 		}
@@ -367,7 +381,7 @@ drag_image_clear(DragImage *image)
 	}
 
 	UNREF_AND_NULL(image->img);
-	gtk_image_clear(image->imageWidget);
+	gtk_image_clear(GTK_IMAGE(image->imageWidget));
 }
 
 /**
@@ -399,7 +413,7 @@ drag_image_anim_timer_func(DragImage *image)
 	if (frame != anim->last_frame_number) {
 		// New frame number.
 		// Update the icon.
-		gtk_image_set_from_PIMGTYPE(image->imageWidget, anim->iconFrames[frame]);
+		gtk_image_set_from_PIMGTYPE(GTK_IMAGE(image->imageWidget), anim->iconFrames[frame]);
 		anim->last_frame_number = frame;
 	}
 
@@ -496,6 +510,8 @@ drag_image_reset_anim_frame(DragImage *image)
 
 /** Signal handlers **/
 
+// FIXME: GTK4 has a new Drag & Drop API.
+#if !GTK_CHECK_VERSION(4,0,0)
 static void
 drag_image_drag_begin(DragImage *image, GdkDragContext *context, gpointer user_data)
 {
@@ -522,7 +538,7 @@ drag_image_drag_data_get(DragImage *image, GdkDragContext *context, GtkSelection
 	auto *const anim = image->anim;
 	const bool isAnimated = (anim && anim->iconAnimData && anim->iconAnimHelper.isAnimated());
 
-	RpVectorFile *const pngData = new RpVectorFile();
+	VectorFile *const pngData = new VectorFile();
 	RpPngWriter *pngWriter;
 	if (isAnimated) {
 		// Animated icon.
@@ -574,3 +590,4 @@ drag_image_drag_data_get(DragImage *image, GdkDragContext *context, GtkSelection
 	// We're done here.
 	pngData->unref();
 }
+#endif /* !GTK_CHECK_VERSION(4,0,0) */

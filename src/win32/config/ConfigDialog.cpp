@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * ConfigDialog.cpp: Configuration dialog.                                 *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,12 +14,15 @@
 // librpbase
 using namespace LibRpBase;
 
-// libwin32common
-#include "libwin32common/SubclassWindow.h"
+// libwin32ui
+#include "libwin32ui/SubclassWindow.h"
 
 // Property sheet icon.
 // Extracted from imageres.dll or shell32.dll.
 #include "PropSheetIcon.hpp"
+
+// Controls for registration.
+#include "LanguageComboBox.hpp"
 
 // C++ STL classes.
 using std::array;
@@ -85,7 +88,7 @@ class ConfigDialogPrivate
 ConfigDialogPrivate::ConfigDialogPrivate()
 {
 	// Make sure we have all required window classes available.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb775507(v=vs.85).aspx
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/api/commctrl/ns-commctrl-initcommoncontrolsex
 	INITCOMMONCONTROLSEX initCommCtrl;
 	initCommCtrl.dwSize = sizeof(initCommCtrl);
 	initCommCtrl.dwICC =
@@ -97,40 +100,29 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 	// TODO: Also ICC_STANDARD_CLASSES on XP+?
 	InitCommonControlsEx(&initCommCtrl);
 
+	// Initialize our custom controls.
+	LanguageComboBoxRegister();
+
 	// Initialize the property sheet tabs.
-
-	// Image type priority.
 	tabs[0] = new ImageTypesTab();
-	hpsp[0] = tabs[0]->getHPropSheetPage();
-	// Systems
 	tabs[1] = new SystemsTab();
-	hpsp[1] = tabs[1]->getHPropSheetPage();
-	// Options
 	tabs[2] = new OptionsTab();
-	hpsp[2] = tabs[2]->getHPropSheetPage();
-	// Thumbnail cache
-	// References:
-	// - http://stackoverflow.com/questions/23677175/clean-windows-thumbnail-cache-programmatically
-	// - https://www.codeproject.com/Articles/2408/Clean-Up-Handler
 	tabs[3] = new CacheTab();
-	hpsp[3] = tabs[3]->getHPropSheetPage();
-	// Achievements
 	tabs[4] = new AchievementsTab();
-	hpsp[4] = tabs[4]->getHPropSheetPage();
 #ifdef ENABLE_DECRYPTION
-	// Key Manager
 	tabs[5] = new KeyManagerTab();
-	hpsp[5] = tabs[5]->getHPropSheetPage();
 #endif /* ENABLE_DECRYPTION */
-
-	// About
 	tabs[TAB_COUNT-1] = new AboutTab();
-	hpsp[TAB_COUNT-1] = tabs[TAB_COUNT-1]->getHPropSheetPage();
 
-	// "ROM chip" icon.
+	// Get the HPROPSHEETPAGEs.
+	for (unsigned int i = 0; i < TAB_COUNT; i++) {
+		hpsp[i] = tabs[i]->getHPropSheetPage();
+	}
+
+	// "ROM chip" icon
 	const PropSheetIcon *const psi = PropSheetIcon::instance();
 
-	// Create the property sheet.
+	// Create the property sheet
 	psh.dwSize = sizeof(psh);
 	psh.dwFlags = PSH_USECALLBACK | PSH_NOCONTEXTHELP | PSH_USEHICON;
 	psh.hwndParent = nullptr;
@@ -151,7 +143,9 @@ ConfigDialogPrivate::ConfigDialogPrivate()
 ConfigDialogPrivate::~ConfigDialogPrivate()
 {
 	// Delete the tabs.
-	std::for_each(tabs.begin(), tabs.end(), [](ITab *pTab) { delete pTab; });
+	for (ITab *pTab : tabs) {
+		delete pTab;
+	}
 }
 
 /**
@@ -163,6 +157,8 @@ ConfigDialogPrivate::~ConfigDialogPrivate()
  */
 int CALLBACK ConfigDialogPrivate::callbackProc(HWND hDlg, UINT uMsg, LPARAM lParam)
 {
+	RP_UNUSED(lParam);
+
 	switch (uMsg) {
 		case PSCB_INITIALIZED: {
 			// Property sheet has been initialized.
@@ -224,10 +220,18 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 	WPARAM wParam, LPARAM lParam,
 	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
+	RP_UNUSED(dwRefData);
+
 	switch (uMsg) {
+		case WM_NCDESTROY:
+			// Remove the window subclass.
+			// Reference: https://devblogs.microsoft.com/oldnewthing/20031111-00/?p=41883
+			RemoveWindowSubclass(hWnd, subclassProc, uIdSubclass);
+			break;
+
 		case WM_SHOWWINDOW: {
 			// Check for RTL.
-			if (LibWin32Common::isSystemRTL() != 0) {
+			if (LibWin32UI::isSystemRTL() != 0) {
 				// Set the dialog to allow automatic right-to-left adjustment.
 				LONG_PTR lpExStyle = GetWindowLongPtr(hWnd, GWL_EXSTYLE);
 				lpExStyle |= WS_EX_LAYOUTRTL;
@@ -235,7 +239,7 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 			}
 
 			// tr: Dialog title.
-			const tstring tsTitle = U82T_c(C_("ConfigDialog", "ROM Properties Page Configuration"));
+			const tstring tsTitle = U82T_c(C_("ConfigDialog", "ROM Properties Page configuration"));
 			SetWindowText(hWnd, tsTitle.c_str());
 
 			// Create the "Reset" and "Defaults" buttons.
@@ -384,12 +388,6 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 			EnableWindow(GetDlgItem(hWnd, IDC_RP_RESET), TRUE);
 			break;
 
-		case WM_NCDESTROY:
-			// Remove the window subclass.
-			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
-			RemoveWindowSubclass(hWnd, subclassProc, uIdSubclass);
-			break;
-
 		case WM_RP_PROP_SHEET_ENABLE_DEFAULTS:
 			// Enable/disable the "Defaults" button.
 			EnableWindow(GetDlgItem(hWnd, IDC_RP_DEFAULTS), (BOOL)wParam);
@@ -435,7 +433,9 @@ extern "C"
 int CALLBACK rp_show_config_dialog(
 	HWND hWnd, HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
 {
-	// TODO: nCmdShow.
+	// TODO: Handle hWnd and nCmdShow?
+	RP_UNUSED(hInstance);
+	RP_UNUSED(pszCmdLine);
 
 #if defined(_MSC_VER) && defined(ENABLE_NLS)
 	// Delay load verification.

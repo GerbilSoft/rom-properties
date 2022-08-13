@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ThumbnailProvider.hpp: IThumbnailProvider implementation.            *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,6 +18,9 @@
 
 // IThumbnailProvider
 #include "thumbcache-wrapper.hpp"
+
+// CLSID common macros
+#include "clsid_common.hpp"
 
 // CLSID
 extern "C" {
@@ -49,44 +52,18 @@ RP_ThumbnailProvider final : public LibWin32Common::ComBase2<IInitializeWithStre
 		RP_ThumbnailProvider_Private *const d_ptr;
 
 	public:
+		CLSID_DECL(RP_ThumbnailProvider)
+		FILETYPE_HANDLER_DECL(RP_ThumbnailProvider)
+
+	public:
 		// IUnknown
-		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
+		IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
 
-	public:
-		/**
-		 * Register the COM object.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG RegisterCLSID(void);
-
-		/**
-		 * Register the file type handler.
-		 * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
-		 * @param ext File extension, including the leading dot.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG RegisterFileType(LibWin32Common::RegKey &hkcr, LPCTSTR ext);
-
-		/**
-		 * Unregister the COM object.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG UnregisterCLSID(void);
-
-		/**
-		 * Unregister the file type handler.
-		 * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
-		 * @param ext File extension, including the leading dot.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG UnregisterFileType(LibWin32Common::RegKey &hkcr, LPCTSTR ext);
-
-	public:
 		// IInitializeWithStream
-		IFACEMETHODIMP Initialize(IStream *pstream, DWORD grfMode) final;
+		IFACEMETHODIMP Initialize(_In_ IStream *pstream, DWORD grfMode) final;
 
 		// IThumbnailProvider
-		IFACEMETHODIMP GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_ALPHATYPE *pdwAlpha) final;
+		IFACEMETHODIMP GetThumbnail(UINT cx, _Outptr_ HBITMAP *phbmp, _Out_ WTS_ALPHATYPE *pdwAlpha) final;
 };
 
 #ifdef __CRT_UUID_DECL

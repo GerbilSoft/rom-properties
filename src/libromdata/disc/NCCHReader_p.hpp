@@ -3,7 +3,7 @@
  * NCCHReader_p.hpp: Nintendo 3DS NCCH reader.                             *
  * Private class declaration.                                              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -53,36 +53,14 @@ class NCCHReaderPrivate
 		const uint32_t ncch_length;	// NCCH length, in bytes.
 		const uint8_t media_unit_shift;
 
-		// Current read position within the NCCH.
-		// pos = 0 indicates the beginning of the NCCH header.
-		// NOTE: This cannot be more than 4 GB,
-		// so we're using uint32_t.
-		uint32_t pos;
-
-		// Loaded headers.
-		enum HeadersPresent {
-			HEADER_NONE	= 0,
-			HEADER_NCCH	= (1U << 0),
-			HEADER_EXHEADER	= (1U << 1),
-			HEADER_EXEFS	= (1U << 2),
-		};
-		uint32_t headers_loaded;	// HeadersPresent
-
-		// NCCH header.
-		N3DS_NCCH_Header_t ncch_header;
-		// NCCH ExHeader.
-		N3DS_NCCH_ExHeader_t ncch_exheader;
-		// ExeFS header.
-		N3DS_ExeFS_Header_t exefs_header;
-
-		// Encryption key verification result.
-		LibRpBase::KeyManager::VerifyResult verifyResult;
+		// Are we forcing NoCrypto due to incorrect flags?
+		bool forceNoCrypto;
 
 		// Non-NCCH content type.
 		// We won't extract any information from them,
 		// other than the type and the fact that they're
 		// not encrypted.
-		enum class NonNCCHContentType {
+		enum class NonNCCHContentType : uint8_t {
 			Unknown	= 0,
 
 			NDHT,	// Nintendo DS Cart Whitelist
@@ -91,6 +69,31 @@ class NCCHReaderPrivate
 			Max
 		};
 		NonNCCHContentType nonNcchContentType;
+
+		// Loaded headers.
+		enum HeadersPresent {
+			HEADER_NONE	= 0,
+			HEADER_NCCH	= (1U << 0),
+			HEADER_EXHEADER	= (1U << 1),
+			HEADER_EXEFS	= (1U << 2),
+		};
+		uint8_t headers_loaded;	// HeadersPresent
+
+		// Current read position within the NCCH.
+		// pos = 0 indicates the beginning of the NCCH header.
+		// NOTE: This cannot be more than 4 GB,
+		// so we're using uint32_t.
+		uint32_t pos;
+
+		// Encryption key verification result.
+		LibRpBase::KeyManager::VerifyResult verifyResult;
+
+		// NCCH header.
+		N3DS_NCCH_Header_t ncch_header;
+		// NCCH ExHeader.
+		N3DS_NCCH_ExHeader_t ncch_exheader;
+		// ExeFS header.
+		N3DS_ExeFS_Header_t exefs_header;
 
 		/**
 		 * Read data from the underlying ROM image.
@@ -111,16 +114,28 @@ class NCCHReaderPrivate
 		 */
 		int loadExHeader(void);
 
+		/**
+		 * Verify a decrypted ExeFS header.
+		 * This checks for known filenames in the header.
+		 * @param pExefsHeader ExeFS header.
+		 * @return True if valid; false if not.
+		 */
+		static inline bool verifyExefsHeader(const N3DS_ExeFS_Header_t *pExefsHeader)
+		{
+			// Check the first filename.
+			// It should be ".code" for CXIs.
+			// It might be "icon" for CFAs.
+			return (!strcmp(pExefsHeader->files[0].name, ".code") ||
+				!strcmp(pExefsHeader->files[0].name, "icon"));
+		}
+
 #ifdef ENABLE_DECRYPTION
-		// Title ID. Used for AES-CTR initialization.
-		// (Big-endian format)
-		uint64_t tid_be;
+		uint64_t tid_be;		// Title ID (for AES-CTR init)
+		u128_t ncch_keys[2];		// Encryption keys
+		LibRpBase::IAesCipher *cipher;	// NCCH cipher
 
-		// Encryption keys.
-		u128_t ncch_keys[2];
-
-		// NCCH cipher.
-		LibRpBase::IAesCipher *cipher;
+		uint16_t tmd_content_index;
+		bool isDebug;			// Are we using debug keys?
 
 		// Encrypted section addresses.
 		struct EncSection {
@@ -155,12 +170,6 @@ class NCCHReaderPrivate
 		 * @return Index in encSections, or -1 if not encrypted.
 		 */
 		int findEncSection(uint32_t address) const;
-
-		// TMD content index.
-		uint16_t tmd_content_index;
-
-		// Are we using debug keys?
-		bool isDebug;
 #endif /* ENABLE_DECRYPTION */
 
 		/**

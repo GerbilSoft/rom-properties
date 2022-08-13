@@ -183,6 +183,7 @@ int WinInetDownloader::download(void)
 		m_data.reserve((256*1024) + BUF_SIZE_INCREMENT);
 		cur_increment = BUF_SIZE_INCREMENT;
 	}
+
 	bool done = false;
 	do {
 		// Read the current buffer size increment.
@@ -235,6 +236,7 @@ int WinInetDownloader::download(void)
 	InternetCloseHandle(hURL);
 	InternetCloseHandle(hConnection);
 	// Return an error if no data was received.
+	// TODO: Check `done`?
 	return (m_data.empty() ? -ENOENT : 0);
 }
 

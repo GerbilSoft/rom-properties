@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile.hpp: Standard file object.                                       *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -52,7 +52,9 @@ class RpFile : public IRpFile
 		 * @param filename Filename.
 		 * @param mode File mode.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		RpFile(const char *filename, FileMode mode);
+		RP_LIBROMDATA_PUBLIC
 		RpFile(const std::string &filename, FileMode mode);
 	private:
 		void init(void);
@@ -72,11 +74,13 @@ class RpFile : public IRpFile
 		 * This usually only returns false if an error occurred.
 		 * @return True if the file is open; false if it isn't.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		bool isOpen(void) const final;
 
 		/**
 		 * Close the file.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		void close(void) final;
 
 		/**
@@ -86,6 +90,7 @@ class RpFile : public IRpFile
 		 * @return Number of bytes read.
 		 */
 		ATTR_ACCESS_SIZE(write_only, 2, 3)
+		RP_LIBROMDATA_PUBLIC
 		size_t read(void *ptr, size_t size) final;
 
 		/**
@@ -131,13 +136,15 @@ class RpFile : public IRpFile
 		 * Get the file size.
 		 * @return File size, or negative on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		off64_t size(void) final;
 
 		/**
 		 * Get the filename.
-		 * @return Filename. (May be empty if the filename is not available.)
+		 * @return Filename. (May be nullptr if the filename is not available.)
 		 */
-		std::string filename(void) const final;
+		RP_LIBROMDATA_PUBLIC
+		const char *filename(void) const final;
 
 	public:
 		/** Extra functions **/
@@ -150,12 +157,6 @@ class RpFile : public IRpFile
 
 	public:
 		/** Device file functions **/
-
-		/**
-		 * Is this a device file?
-		 * @return True if this is a device file; false if not.
-		 */
-		bool isDevice(void) const final;
 
 		/**
 		 * Re-read device size using the native OS API.
@@ -182,6 +183,7 @@ class RpFile : public IRpFile
 		 * @param pResp Response buffer.
 		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int scsi_inquiry(struct _SCSI_RESP_INQUIRY_STD *pResp);
 
 		/**
@@ -189,6 +191,7 @@ class RpFile : public IRpFile
 		 * @param pResp Response buffer.
 		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int ata_identify_device(struct _ATA_RESP_IDENTIFY_DEVICE *pResp);
 
 		/**
@@ -196,6 +199,7 @@ class RpFile : public IRpFile
 		 * @param pResp Response buffer.
 		 * @return 0 on success, positive for SCSI sense key, negative for POSIX error code.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int ata_identify_packet_device(struct _ATA_RESP_IDENTIFY_DEVICE *pResp);
 
 	private:

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * ImageTypesTab.cpp: Image Types tab for rp-config.                       *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,7 +13,7 @@
 // TImageTypesConfig is a templated class,
 // so we have to #include the .cpp file here.
 #include "libromdata/config/TImageTypesConfig.cpp"
-using LibRomData::TImageTypesConfig;
+using namespace LibRomData;
 
 #include "ui_ImageTypesTab.h"
 class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
@@ -31,7 +31,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 		Ui::ImageTypesTab ui;
 
 	protected:
-		/** TImageTypesConfig functions. (protected) **/
+		/** TImageTypesConfig functions (protected) **/
 
 		/**
 		 * Create the labels in the grid.
@@ -81,7 +81,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 		int saveFinish(void) final;
 
 	protected:
-		/** TImageTypesConfig functions. (public) **/
+		/** TImageTypesConfig functions (public) **/
 
 		/**
 		 * Set a ComboBox's current index.
@@ -92,6 +92,14 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 		void cboImageType_setPriorityValue(unsigned int cbid, unsigned int prio) final;
 
 	public:
+		/** Other ImageTypesTabPrivate functions **/
+
+		/**
+		 * Initialize strings.
+		 */
+		void initStrings(void);
+
+	public:
 		// Last ComboBox added.
 		// Needed in order to set the correct
 		// tab order for the credits label.
@@ -100,11 +108,6 @@ class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
 		// Temporary QSettings object.
 		// Set and cleared by ImageTypesTab::save();
 		QSettings *pSettings;
-
-#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
-		// QSignalMapper for the QComboBoxes.
-		QSignalMapper *mapperCboImageType;
-#endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 };
 
 /** ImageTypesTabPrivate **/
@@ -113,16 +116,7 @@ ImageTypesTabPrivate::ImageTypesTabPrivate(ImageTypesTab* q)
 	: q_ptr(q)
 	, cboImageType_lastAdded(nullptr)
 	, pSettings(nullptr)
-#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
-	, mapperCboImageType(new QSignalMapper(q))
-#endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
-{
-#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
-	// Connect the QSignalMapper to the ImageTypesTab.
-	QObject::connect(mapperCboImageType, SIGNAL(mapped(int)),
-		q, SLOT(cboImageType_currentIndexChanged(int)));
-#endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
-}
+{ }
 
 ImageTypesTabPrivate::~ImageTypesTabPrivate()
 {
@@ -135,7 +129,7 @@ ImageTypesTabPrivate::~ImageTypesTabPrivate()
 	assert(pSettings == nullptr);
 }
 
-/** TImageTypesConfig functions. (protected) **/
+/** TImageTypesConfig functions (protected) **/
 
 /**
  * Create the labels in the grid.
@@ -149,7 +143,8 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	// Create the image type labels.
 	const QString cssImageType = QLatin1String(
 		"QLabel { margin-left: 0.2em; margin-right: 0.2em; margin-bottom: 0.1em; }");
-	for (unsigned int i = 0; i < IMG_TYPE_COUNT; i++) {
+	const unsigned int imageTypeCount = ImageTypesConfig::imageTypeCount();
+	for (unsigned int i = 0; i < imageTypeCount; i++) {
 		// TODO: Decrement the column number for >IMG_INT_MEDIA?
 		if (i == RomData::IMG_INT_MEDIA) {
 			// No INT MEDIA boxes, so eliminate the column.
@@ -157,6 +152,10 @@ void ImageTypesTabPrivate::createGridLabels(void)
 		}
 
 		QLabel *const lblImageType = new QLabel(U82Q(imageTypeName(i)), q);
+		char lbl_name[32];
+		snprintf(lbl_name, sizeof(lbl_name), "lblImageType%u", i);
+		lblImageType->setObjectName(QLatin1String(lbl_name));
+
 		lblImageType->setAlignment(Qt::AlignTop|Qt::AlignHCenter);
 		lblImageType->setStyleSheet(cssImageType);
 		ui.gridImageTypes->addWidget(lblImageType, 0, i+1);
@@ -165,8 +164,13 @@ void ImageTypesTabPrivate::createGridLabels(void)
 	// Create the system name labels.
 	const QString cssSysName = QLatin1String(
 		"QLabel { margin-right: 0.25em; }");
-	for (unsigned int sys = 0; sys < SYS_COUNT; sys++) {
+	const unsigned int sysCount = ImageTypesConfig::sysCount();
+	for (unsigned int sys = 0; sys < sysCount; sys++) {
 		QLabel *const lblSysName = new QLabel(U82Q(sysName(sys)), q);
+		char lbl_name[32];
+		snprintf(lbl_name, sizeof(lbl_name), "lblSysName%u", sys);
+		lblSysName->setObjectName(QLatin1String(lbl_name));
+
 		lblSysName->setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
 		lblSysName->setStyleSheet(cssSysName);
 		ui.gridImageTypes->addWidget(lblSysName, sys+1, 0);
@@ -190,23 +194,21 @@ void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
 		return;
 	}
 
+	SysData_t &sysData = v_sysData[sys];
+
 	// Create the ComboBox.
 	Q_Q(ImageTypesTab);
 	QComboBox *const cbo = new QComboBox(q);
+	char cbo_name[32];
+	snprintf(cbo_name, sizeof(cbo_name), "cbo%04X", cbid);
+	cbo->setObjectName(QLatin1String(cbo_name));
 	ui.gridImageTypes->addWidget(cbo, sys+1, imageType+1);
-	cboImageType[sys][imageType] = cbo;
+	sysData.cboImageType[imageType] = cbo;
 
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-	// Connect the signal to the slot with the appropriate value.
-	QObject::connect(cbo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-		[q, cbid] { q->cboImageType_currentIndexChanged(cbid); }
-	);
-#else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
-	// Connect the signal to the QSignalMapper.
+	// Connect the signal handler.
+	cbo->setProperty("rp-config.cbid", cbid);
 	QObject::connect(cbo, SIGNAL(currentIndexChanged(int)),
-		mapperCboImageType, SLOT(map()));
-	mapperCboImageType->setMapping(cbo, (int)cbid);
-#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+			 q, SLOT(cboImageType_currentIndexChanged()));
 
 	// Adjust the tab order.
 	if (cboImageType_lastAdded) {
@@ -226,20 +228,23 @@ void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 	const unsigned int imageType = imageTypeFromCbid(cbid);
 	if (!validateSysImageType(sys, imageType))
 		return;
+	const SysData_t &sysData = v_sysData[sys];
 
-	QComboBox *const cbo = cboImageType[sys][imageType];
+	QComboBox *const cbo = sysData.cboImageType[imageType];
 	assert(cbo != nullptr);
 	if (!cbo)
 		return;
 
 	// NOTE: Need to add one more than the total number,
 	// since "No" counts as an entry.
-	assert(max_prio <= IMG_TYPE_COUNT);
+	assert(max_prio <= static_cast<int>(ImageTypesConfig::imageTypeCount()));
+	const bool blockCbo = cbo->blockSignals(true);
 	cbo->addItem(U82Q(C_("ImageTypesTab|Values", "No")));
 	for (int i = 1; i <= max_prio; i++) {
 		cbo->addItem(QString::number(i));
 	}
 	cbo->setCurrentIndex(0);
+	cbo->blockSignals(blockCbo);
 }
 
 /**
@@ -310,7 +315,7 @@ int ImageTypesTabPrivate::saveFinish(void)
 	return 0;
 }
 
-/** TImageTypesConfig functions. (public) **/
+/** TImageTypesConfig functions (public) **/
 
 /**
  * Set a ComboBox's current index.
@@ -324,12 +329,36 @@ void ImageTypesTabPrivate::cboImageType_setPriorityValue(unsigned int cbid, unsi
 	const unsigned int imageType = imageTypeFromCbid(cbid);
 	if (!validateSysImageType(sys, imageType))
 		return;
+	SysData_t &sysData = v_sysData[sys];
 
-	QComboBox *const cbo = cboImageType[sys][imageType];
+	QComboBox *const cbo = sysData.cboImageType[imageType];
 	assert(cbo != nullptr);
 	if (cbo) {
-		cbo->setCurrentIndex(prio < IMG_TYPE_COUNT ? prio+1 : 0);
+		const bool blockCbo = cbo->blockSignals(true);
+		cbo->setCurrentIndex(prio < ImageTypesConfig::imageTypeCount() ? prio+1 : 0);
+		cbo->blockSignals(blockCbo);
 	}
+}
+
+/** Other ImageTypesTabPrivate functions **/
+
+/**
+ * Initialize strings.
+ */
+void ImageTypesTabPrivate::initStrings(void)
+{
+	QString sCredits = U82Q(
+		// tr: External image credits.
+		C_("ImageTypesTab",
+			"GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\n"
+			"are provided by <a href=\"https://www.gametdb.com/\">GameTDB</a>.\n"
+			"amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</a>,"
+			" the Unofficial amiibo Database.")
+		);
+
+	// Replace "\n" with "<br/>".
+	sCredits.replace(QChar(L'\n'), QLatin1String("<br/>"));
+	ui.lblCredits->setText(sCredits);
 }
 
 /** ImageTypesTab **/
@@ -340,6 +369,9 @@ ImageTypesTab::ImageTypesTab(QWidget *parent)
 {
 	Q_D(ImageTypesTab);
 	d->ui.setupUi(this);
+
+	// Initialize strings.
+	d->initStrings();
 
 	// Create the control grid.
 	d->createGrid();
@@ -360,6 +392,7 @@ void ImageTypesTab::changeEvent(QEvent *event)
 		// Retranslate the UI.
 		Q_D(ImageTypesTab);
 		d->ui.retranslateUi(this);
+		d->initStrings();
 	}
 
 	// Pass the event to the base class.
@@ -383,8 +416,7 @@ void ImageTypesTab::reset(void)
 void ImageTypesTab::loadDefaults(void)
 {
 	Q_D(ImageTypesTab);
-	bool bRet = d->loadDefaults();
-	if (bRet) {
+	if (d->loadDefaults()) {
 		// Configuration has been changed.
 		emit modified();
 	}
@@ -402,29 +434,32 @@ void ImageTypesTab::save(QSettings *pSettings)
 
 	// Save the configuration.
 	Q_D(ImageTypesTab);
-	if (d->changed) {
-		d->pSettings = pSettings;
-		d->save();
-		d->pSettings = nullptr;
+	if (!d->changed) {
+		// Configuration was not changed.
+		return;
 	}
+
+	d->pSettings = pSettings;
+	d->save();
+	d->pSettings = nullptr;
+
+	// Configuration saved.
+	d->changed = false;
 }
 
 /**
  * A QComboBox index has changed.
- * @param cbid ComboBox ID.
+ * Check the QComboBox's "rp-config.cbid" property for the cbid.
  */
-void ImageTypesTab::cboImageType_currentIndexChanged(int cbid)
+void ImageTypesTab::cboImageType_currentIndexChanged(void)
 {
 	Q_D(ImageTypesTab);
-	const unsigned int sys = d->sysFromCbid((unsigned int)cbid);
-	const unsigned int imageType = d->imageTypeFromCbid((unsigned int)cbid);
-	if (!d->validateSysImageType(sys, imageType))
-		return;
-
-	QComboBox *cbo = d->cboImageType[sys][imageType];
+	QComboBox *const cbo = qobject_cast<QComboBox*>(QObject::sender());
 	assert(cbo != nullptr);
 	if (!cbo)
 		return;
+
+	const unsigned int cbid = cbo->property("rp-config.cbid").toUInt();
 
 	const int idx = cbo->currentIndex();
 	const unsigned int prio = (unsigned int)(idx <= 0 ? 0xFF : idx-1);

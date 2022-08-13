@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2016-2022 David Korth <gerbilsoft@gerbilsoft.com> -->
+
+<component type="addon">
+	<id>com.gerbilsoft.rom-properties</id>
+	<extends>org.kde.dolphin.desktop</extends>
+	<extends>org.xfce.Thunar</extends>
+	<extends>nautilus.desktop</extends>
+	<extends>caja.desktop</extends>
+	<extends>nemo.desktop</extends>
+	<metadata_license>FSFAP</metadata_license>
+	<project_license>GPL-2.0+</project_license>
+	<name>ROM Properties Page shell extension</name>
+	<summary>Thumbnailer and properties page provider for various ROM, disc, and texture formats</summary>
+	<description>
+		<p>
+		ROM Properties Page shell extension contains thumbnailers and
+		property page providers for various ROM image, disc image, and
+		texture formats.
+		</p>
+	</description>
+	<url type="homepage">https://gerbilsoft.com/</url>
+	<url type="bugtracker">https://github.com/GerbilSoft/rom-properties/issues</url>
+	<url type="vcs-browser">https://github.com/GerbilSoft/rom-properties</url>
+	<project_group>KDE</project_group>
+	<provides>
+		<binary>rp-config</binary>
+	</provides>
+	<launchable type="desktop-id">com.gerbilsoft.rom-properties.rp-config.desktop</launchable>
+	<categories>
+		<category>Utility</category>
+	</categories>
+	<developer_name>David Korth</developer_name>
+	<update_contact>gerbilsoft@gerbilsoft.com</update_contact>
+	<icon type="stock">media-flash</icon>
+	<content_rating type="oars-1.1"/>
+	<releases>
+		<release version="1.9" date="2022-05-22"/>
+		<release version="1.8.3" date="2021-08-03"/>
+		<release version="1.8.2" date="2021-07-19"/>
+		<release version="1.8.1" date="2021-07-19"/>
+		<release version="1.8" date="2021-07-18"/>
+		<release version="1.7.3" date="2020-09-25"/>
+		<release version="1.7.2" date="2020-09-24"/>
+		<release version="1.7.1" date="2020-09-21"/>
+		<release version="1.7" date="2020-09-20"/>
+		<release version="1.6.1" date="2020-07-13"/>
+		<release version="1.6" date="2020-07-12"/>
+		<release version="1.5" date="2020-03-13"/>
+		<release version="1.4.3" date="2019-09-16"/>
+		<release version="1.4.2" date="2019-09-16"/>
+		<release version="1.4.1" date="2019-09-07"/>
+		<release version="1.4" date="2019-08-04"/>
+		<release version="1.3.3" date="2018-08-25"/>
+		<release version="1.3.2" date="2018-06-30"/>
+		<release version="1.3.1" date="2018-06-12"/>
+		<release version="1.3" date="2018-06-02"/>
+		<release version="1.2" date="2017-11-12"/>
+		<release version="1.1" date="2017-07-04"/>
+		<release version="1.0" date="2017-05-20"/>
+		<release version="0.9" date="2017-02-07"/>
+		<release version="0.8.1" date="2016-10-24"/>
+		<release version="0.8" date="2016-10-23"/>
+	</releases>
+</component>

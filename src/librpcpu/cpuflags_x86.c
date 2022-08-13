@@ -2,15 +2,13 @@
  * ROM Properties Page shell extension. (librpcpu)                         *
  * cpuflags_x86.h: x86 CPU flags detection.                                *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "byteswap_rp.h"
-
 #if !defined(__i386__) && !defined(__amd64__) && !defined(__x86_64__) && \
     !defined(_M_IX86) && !defined(_M_X64)
-#error Do not compile byteswap_x86.c on non-x86 CPUs!
+#  error Do not compile byteswap_x86.c on non-x86 CPUs!
 #endif
 
 #include "cpuflags_x86.h"
@@ -19,7 +17,7 @@
 #include "librpthreads/pthread_once.h"
 
 #if defined(_MSC_VER) && _MSC_VER >= 1400
-# include <intrin.h>
+#  include <intrin.h>
 #endif
 
 // IA32 CPU flags
@@ -122,7 +120,7 @@ static FORCEINLINE int is_cpuid_supported(void)
 	}
 	return __eax;
 #elif !defined(__GNUC__) && !defined(_MSC_VER)
-# error Missing is_cpuid_supported() asm implementation for this compiler.
+#  error Missing is_cpuid_supported() asm implementation for this compiler.
 #else
 	// AMD64. CPUID is always supported.
 	return 1;
@@ -131,9 +129,9 @@ static FORCEINLINE int is_cpuid_supported(void)
 
 // gcc-5.0 no longer permanently reserves %ebx for PIC.
 #if defined(__GNUC__) && !defined(__clang__) && defined(__i386__)
-# if __GNUC__ < 5 && defined(__PIC__)
-#  define ASM_RESERVE_EBX 1
-# endif
+#  if __GNUC__ < 5 && defined(__PIC__)
+#    define ASM_RESERVE_EBX 1
+#  endif
 #endif
 
 /**
@@ -146,7 +144,7 @@ static FORCEINLINE void cpuid(unsigned int level, unsigned int regs[4])
 #if defined(__GNUC__)
 	// CPUID macro with PIC support.
 	// See http://gcc.gnu.org/ml/gcc-patches/2007-09/msg00324.html
-# ifdef ASM_RESERVE_EBX
+#  ifdef ASM_RESERVE_EBX
 	__asm__ (
 		"xchgl	%%ebx, %1\n"
 		"cpuid\n"
@@ -154,34 +152,35 @@ static FORCEINLINE void cpuid(unsigned int level, unsigned int regs[4])
 		: "=a" (regs[0]), "=r" (regs[1]), "=c" (regs[2]), "=d" (regs[3])
 		: "0" (level)
 		);
-# else /* !ASM_RESERVE_EBX */
+#  else /* !ASM_RESERVE_EBX */
 	__asm__ (
 		"cpuid\n"
 		: "=a" (regs[0]), "=b" (regs[1]), "=c" (regs[2]), "=d" (regs[3])
 		: "0" (level)
 		);
-# endif
+#  endif
 #elif defined(_MSC_VER)
-# if _MSC_VER >= 1400
+#  if _MSC_VER >= 1400
 	// CPUID for MSVC 2005+
 	// Uses the __cpuid() intrinsic.
 	__cpuid((int*)regs, level);
-# else /* _MSC_VER < 1400 */
+#  else /* _MSC_VER < 1400 */
 	// CPUID for old MSVC that doesn't support intrinsics.
 	// (TODO: Check MSVC 2002 and 2003?)
-#  if defined(_M_X64)
-#   error Cannot use inline assembly on 64-bit MSVC.
-#  endif
+#    if defined(_M_X64)
+#      error Cannot use inline assembly on 64-bit MSVC.
+#    endif
 	__asm {
+		mov	eax, level
 		cpuid
 		mov	regs[0 * TYPE int], eax
 		mov	regs[1 * TYPE int], ebx
 		mov	regs[2 * TYPE int], ecx
 		mov	regs[3 * TYPE int], edx
 	}
-# endif
+#  endif
 #else
-# error Missing 'cpuid' asm implementation for this compiler.
+#  error Missing 'cpuid' asm implementation for this compiler.
 #endif
 }
 
@@ -248,37 +247,37 @@ static void RP_CPU_InitCPUFlags_int(void)
 			if (regs[REG_EDX] & CPUFLAG_IA32_EDX_FXSAVE) {
 				// CPU supports FXSAVE.
 
-# ifdef _WIN32
+#  ifdef _WIN32
 				// Windows 95 does not support SSE.
 				// Windows NT 4.0 supports SSE if the
 				// appropriate driver is installed.
 
 				// Check if CR0.EM == 0.
 				unsigned int __smsw;
-#  if defined(__GNUC__)
+#    if defined(__GNUC__)
 				__asm__ (
 					"smsw	%0"
 					: "=r" (__smsw)
 					);
-#  elif defined(_MSC_VER)
+#    elif defined(_MSC_VER)
 				// TODO: Optimize the MSVC version to
 				// not use the stack?
 				__asm	smsw	__smsw
-#  else
-#   error Missing 'smsw' asm implementation for this compiler.
-#  endif
+#    else
+#      error Missing 'smsw' asm implementation for this compiler.
+#    endif
 				if (!(__smsw & IA32_CR0_EM)) {
 					// FPU emulation is disabled.
 					// SSE is enabled by the OS.
 					can_FXSAVE = 1;
 				}
-# else /* !_WIN32 */
+#  else /* !_WIN32 */
 				// For non-Windows operating systems, we'll assume
 				// the OS supports SSE. Valgrind doesn't like the
 				// 'smsw' instruction, so we can't do memory debugging
 				// with Valgrind if we use 'smsw'.
 				can_FXSAVE = 1;
-# endif /* _WIN32 */
+#  endif /* _WIN32 */
 			}
 		}
 
@@ -317,8 +316,8 @@ static void RP_CPU_InitCPUFlags_int(void)
 /**
  * Initialize RP_CPU_Flags.
  */
-void RP_CPU_InitCPUFlags(void)
+void RP_C_API RP_CPU_InitCPUFlags(void)
 {
-	static pthread_once_t once_control = PTHREAD_ONCE_INIT;
-	pthread_once(&once_control, RP_CPU_InitCPUFlags_int);
+	static pthread_once_t cpu_once_control = PTHREAD_ONCE_INIT;
+	pthread_once(&cpu_once_control, RP_CPU_InitCPUFlags_int);
 }

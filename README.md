@@ -10,20 +10,16 @@ video game ROM and disc images.
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/GerbilSoft/rom-properties.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/GerbilSoft/rom-properties/alerts/)
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/GerbilSoft/rom-properties.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/GerbilSoft/rom-properties/context:cpp)
 
-## v1.7
+## v1.9
 
-This release adds a ton of new features, including "ROM operations", 3DS sighax
-detection, and support for PlayStation Portable disc images:
+This release adds a ton of new features, including ASTC and Godot textures,
+Commodore ROM cartridge images, and various performance improvements.
 
-![PlayStation Portable disc image](doc/img/v1.7/rp.kde5.PSP.png)
-
-Other improvements in this release include several file handle leak fixes,
-addition of a vertical scrollbar on Windows property pages if needed, and
-improved ROM image detection for several supported formats.
+![Godot 3 textures from Sonic Colors Ultimate](doc/img/rp-v1.9-kde5.GodotSTEX.SCU.png)
 
 Translators needed; file an issue if you'd like to get started on a new translation, or submit a Pull Request if you have a translation ready to go.
 
-See [`NEWS.md`](NEWS.md) for a full list of changes in v1.7.
+See [`NEWS.md`](NEWS.md) for a full list of changes in v1.9.
 
 ## Feedback
 
@@ -46,11 +42,15 @@ following platforms:
 
 The following platforms are still compatible, but may not receive as much support:
 * KDE 4.x
-* Windows XP, Windows Vista
+* Windows XP, Windows Server 2003, Windows Vista
 
-On Windows, you will need the MSVC 2015-2019 runtime:
-* 32-bit: https://aka.ms/vs/16/release/vc_redist.x86.exe
-* 64-bit: https://aka.ms/vs/16/release/vc_redist.x64.exe
+On Windows Vista and later, you will need the MSVC 2015-2022 runtime:
+* 32-bit: https://aka.ms/vs/17/release/VC_redist.x86.exe
+* 64-bit: https://aka.ms/vs/17/release/VC_redist.x64.exe
+
+On Windows XP/2003 and earlier, you will need the MSVC 2015-2017 runtime:
+* 32-bit: https://aka.ms/vs/15/release/VC_redist.x86.exe
+* 64-bit: https://aka.ms/vs/15/release/VC_redist.x64.exe
 
 For instructions on compiling from source, see doc/COMPILING.md .
 
@@ -89,14 +89,15 @@ button.
 
 |           System          | Properties Tab | Metadata | Internal Images | External Images |
 |:-------------------------:|:--------------:|:--------:|:---------------:|:---------------:|
-| NES                       |       Yes      |    No    |       N/A       |        No       |
-| Super NES                 |       Yes      |    Yes   |       N/A       |      Title     |
+| Commodore 64/128 .CRT     |       Yes      |    Yes   |       N/A       |      Title      |
+| iQue Player ticket files  |       Yes      |    Yes   |   Icon, Banner  |        No       |
 | Microsoft Xbox (XBE)      |       Yes      |    Yes   |       Icon      |        No       |
 | Microsoft Xbox 360 (XEX)  |       Yes      |    Yes   |       Icon      |        No       |
 | Microsoft Xbox 360 (STFS) |       Yes      |    Yes   |       Icon      |        No       |
 | Microsoft Xbox Game Discs |       Yes      |    Yes   |       Icon      |        No       |
+| NES                       |       Yes      |    No    |       N/A       |        No       |
+| Super NES                 |       Yes      |    Yes   |       N/A       |      Title      |
 | Nintendo 64               |       Yes      |    Yes   |       N/A       |        No       |
-| iQue Player ticket files  |       Yes      |    Yes   |   Icon, Banner  |        No       |
 | Nintendo GameCube Discs   |       Yes      |    Yes   |      Banner     |   Disc, Covers  |
 | Nintendo GameCube Banners |       Yes      |    Yes   |      Banner     |        No       |
 | Nintendo GameCube Saves   |       Yes      |    Yes   |       Icon      |       N/A       |
@@ -105,7 +106,7 @@ button.
 | Nintendo Wii Saves        |       Yes      |    No    |       Yes       |       N/A       |
 | Nintendo Wii U            |       Yes      |    No    |        No       |   Disc, Covers  |
 | Sega 8-bit (SMS, GG)      |       Yes      |    Yes   |       N/A       |        No       |
-| Sega Mega Drive           |       Yes      |    No    |       N/A       |        No       |
+| Sega Mega Drive           |       Yes      |    Yes   |       N/A       |      Title      |
 | Sega Dreamcast            |       Yes      |    Yes   |      Media      |        No       |
 | Sega Dreamcast Saves      |       Yes      |    Yes   |   Icon, Banner  |        No       |
 | Sega Saturn               |       Yes      |    Yes   |       N/A       |        No       |
@@ -114,13 +115,15 @@ button.
 | Sony PlayStation Saves    |       Yes      |    Yes   |       Icon      |       N/A       |
 | Sony PlayStation 2 Discs  |       Yes      |    Yes   |       N/A       |        No       |
 
-\* Internal images are only present in Wii DLC WADs.
+\* Internal images are only present in Wii DLC WADs.<br>
+\* Sega Mega Drive includes Sega CD, 32X, and Pico.
 
 ### Handhelds
 
 |             System            | Properties Tab | Metadata | Internal Images | External Images |
 |:-----------------------------:|:--------------:|:--------:|:---------------:|:---------------:|
 | Atari Lynx                    |       Yes      |    No    |       N/A       |        No       |
+| Bandai WonderSwan (Color)     |       Yes      |    Yes   |       N/A       |      Title      |
 | Neo Geo Pocket (Color)        |       Yes      |    Yes   |       N/A       |      Title      |
 | Nintendo Game Boy (Color)     |       Yes      |    Yes   |       N/A       |      Title      |
 | Nintendo Virtual Boy          |       Yes      |    No    |       N/A       |        No       |
@@ -134,25 +137,29 @@ button.
 
 \* The Nintendo DSi TAD parser supports development TADs that are normally
    imported using DSi Nmenu. It does not currently support DSi exports from
-   retail systems.
+   retail systems.<br>
 \* The PSP parser supports both PSP game and UMD video discs, as well as
    several compressed disc formats: CISOv1, CISOv2, ZISO, JISO, and DAX.
 
 ### Texture Formats
 
-|             System            | Properties Tab | Metadata | Internal Images | External Scans |
-|:-----------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
-| Leapster Didj .tex textures   |       Yes      |    Yes   |      Image      |       N/A      |
-| Khronos KTX Textures          |       Yes      |    Yes   |      Image      |       N/A      |
-| Khronos KTX2 Textures         |       Yes      |    Yes   |      Image      |       N/A      |
-| Microsoft DirectDraw Surface  |       Yes      |    Yes   |      Image      |       N/A      |
-| Microsoft Xbox XPR Textures   |       Yes      |    Yes   |      Image      |       N/A      |
-| PowerVR 3.0.0 Textures        |       Yes      |    Yes   |      Image      |       N/A      |
-| Sega PVR/GVR/SVR Textures     |       Yes      |    Yes   |      Image      |       N/A      |
-| Valve VTF Textures            |       Yes      |    Yes   |      Image      |       N/A      |
-| Valve VTF3 (PS3) Textures     |       Yes      |    Yes   |      Image      |       N/A      |
+|      Texture Format      | Properties Tab | Metadata | Internal Images | External Scans |
+|:------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
+| ASTC container           |       Yes      |    Yes   |      Image      |       N/A      |
+| Godot 3,4 .stex          |       Yes      |    Yes   |      Image      |       N/A      |
+| Leapster Didj .tex       |       Yes      |    Yes   |      Image      |       N/A      |
+| Khronos KTX              |       Yes      |    Yes   |      Image      |       N/A      |
+| Khronos KTX2             |       Yes      |    Yes   |      Image      |       N/A      |
+| Microsoft DirectDraw DDS |       Yes      |    Yes   |      Image      |       N/A      |
+| Microsoft Xbox XPR       |       Yes      |    Yes   |      Image      |       N/A      |
+| PowerVR 3.0.0            |       Yes      |    Yes   |      Image      |       N/A      |
+| Sega PVR/GVR/SVR         |       Yes      |    Yes   |      Image      |       N/A      |
+| TrueVision TGA           |       Yes      |    Yes   |      Image      |       N/A      |
+| Valve VTF                |       Yes      |    Yes   |      Image      |       N/A      |
+| Valve VTF3 (PS3)         |       Yes      |    Yes   |      Image      |       N/A      |
 
 #### Texture Codecs
+
 * Assorted linear RGB formats, including 15-bit, 16-bit, 24-bit and 32-bit per pixel.
   * Most of these formats have SSE2 and/or SSSE3-optimized decoders.
   * RGB9_E5 is supported, though it is currently converted to ARGB32 for
@@ -162,13 +169,14 @@ button.
 * Nintendo 3DS: Tiled and twiddled RGB565
 * GameCube: Tiled RGB5A3 and CI8 with RGB5A3 palette
 * S3TC: DXT1, DXT2, DXT3, DXT4, DXT5, BC4, and BC5 codecs.
-  * Supported file formats: DDS, KTX, KTX2, VTF, VTF3, XPR
   * GameCube 2x2-tiled DXT1 is supported in GVR texture files.
-* BC7: Supported in DDS, KTX, KTX2, and PowerVR 3.0.0 texture files.
+* ETCn: ETC1, ETC2 (RGB, RGBA, RGB_A1), EAC
+* BC7: Supported in multiple texture file formats.
   * The implementation is somewhat slow. (Contributions welcome.)
-* PVRTC: Supported in DDS, KTX, KTX2, and PowerVR 3.0.0 texture files.
+* PVRTC: Supported in multiple texture file formats.
   * PVRTC-II: Partially supported. The hard transition flag and images
     that aren't a multiple of the tile size are not supported.
+* ASTC: Supported in multiple texture file formats.
 
 ### Audio Formats
 
@@ -179,6 +187,7 @@ button.
 | CRI ADX ADPCM                 |       Yes      |    Yes   |       N/A       |       N/A      |
 | Commodore 64 SID Music        |       Yes      |    Yes   |       N/A       |       N/A      |
 | Game Boy Sound System         |       Yes      |    Yes   |       N/A       |       N/A      |
+| Game Boy Ripped               |       Yes      |    N/A   |       N/A       |       N/A      |
 | Nintendo 3DS BCSTM and BCWAV  |       Yes      |    Yes   |       N/A       |       N/A      |
 | Nintendo Sound Format         |       Yes      |    Yes   |       N/A       |       N/A      |
 | Nintendo Wii BRSTM            |       Yes      |    Yes   |       N/A       |       N/A      |
@@ -193,6 +202,7 @@ button.
 |:------------------------------:|:--------------:|:--------:|:---------------:|:--------------:|
 | Executable and Linkable Format |       Yes      |    No    |       N/A       |       N/A      |
 | ISO-9660 Disc Images           |       Yes      |   Yes    |        No       |       N/A      |
+| PUC Lua binaries               |       Yes      |    No    |       N/A       |       N/A      |
 | Mach-O Binaries                |       Yes      |    No    |       N/A       |       N/A      |
 | Nintendo amiibo                |       Yes      |    No    |       N/A       |      Media     |
 | Nintendo Badge Arcade          |       Yes      |    No    |      Image      |       N/A      |
@@ -361,3 +371,10 @@ https://github.com/GerbilSoft/rom-properties/issues
 * [maxcso](https://github.com/unknownbrackets/maxcso) for documentation on the
   compressed formats used by unofficial Sony PlayStation Portable disc image
   loaders.
+* [Basis Universal](https://github.com/BinomialLLC/basis_universal) for the ASTC
+  decoder, which was derived from the [Android Open Source Project](https://source.android.com/).
+* [Godot Engine](https://github.com/godotengine/godot) for documentation on
+  Godot's own .stex format.
+* [Vulkan SDK for Android](https://arm-software.github.io/vulkan-sdk/_a_s_t_c.html)
+  for the ASTC file format header.
+* [NEZ Plug](http://nezplug.sourceforge.net/) for basic GBR specifications.

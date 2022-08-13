@@ -1,12 +1,11 @@
 # Threading wrapper library
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 CMAKE_POLICY(SET CMP0048 NEW)
 IF(POLICY CMP0063)
 	# CMake 3.3: Enable symbol visibility presets for all
 	# target types, including static libraries and executables.
 	CMAKE_POLICY(SET CMP0063 NEW)
 ENDIF(POLICY CMP0063)
-PROJECT(librpthreads LANGUAGES C CXX)
+PROJECT(rpthreads LANGUAGES C CXX)
 
 # Find the system threading library.
 # NOTE: If using Windows, always assume we're using Windows threads.
@@ -20,8 +19,8 @@ ELSE(WIN32)
 ENDIF(WIN32)
 
 # Threading implementation.
-SET(librpthreads_SRCS dummy.cpp)
-SET(librpthreads_H
+SET(${PROJECT_NAME}_SRCS dummy.cpp)
+SET(${PROJECT_NAME}_H
 	Atomics.h
 	Semaphore.hpp
 	Mutex.hpp
@@ -29,7 +28,7 @@ SET(librpthreads_H
 	)
 IF(CMAKE_USE_WIN32_THREADS_INIT)
 	SET(HAVE_WIN32_THREADS 1)
-	SET(librpthreads_SRCS ${librpthreads_SRCS} pthread_once.c)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} pthread_once.c)
 ELSEIF(CMAKE_USE_PTHREADS_INIT)
 	SET(HAVE_PTHREADS 1)
 ELSE()
@@ -37,26 +36,56 @@ ELSE()
 ENDIF()
 
 # Write the config.h file.
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.librpthreads.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.librpthreads.h")
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.lib${PROJECT_NAME}.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.lib${PROJECT_NAME}.h")
 
 ######################
 # Build the library. #
 ######################
 
-# FIXME: May need a dummy file on Linux?
-ADD_LIBRARY(rpthreads STATIC
-	${librpthreads_SRCS}
-	${librpthreads_H}
-	)
+# NOTE: ${PROJECT_NAME} is the original target.
+# ${PROJECT_NAME}-dll is the target with dllimport/dllexport for libromdata.
+IF(RP_LIBROMDATA_IS_DLL AND WIN32)
+	# On Win32, the dll target needs dllimport/dllexport.
+	SET(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}-dll)
+ELSE()
+	# On other platforms, the dll target will be an alias to the regular target.
+	# That will be set up later, since the regular target doesn't exist yet.
+	SET(TARGETS ${PROJECT_NAME})
+ENDIF()
 
-TARGET_INCLUDE_DIRECTORIES(rpthreads
-	PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-	)
+FOREACH(_target ${TARGETS})
+	# FIXME: May need a dummy file on Linux?
+	ADD_LIBRARY(${_target} STATIC
+		${${PROJECT_NAME}_SRCS}
+		${${PROJECT_NAME}_H}
+		)
+	INCLUDE(SetMSVCDebugPath)
+	SET_MSVC_DEBUG_PATH(${_target})
+	# Exclude from ALL builds.
+	SET_TARGET_PROPERTIES(${_target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
-IF(CMAKE_THREAD_LIBS_INIT)
-	TARGET_LINK_LIBRARIES(rpthreads PUBLIC ${CMAKE_THREAD_LIBS_INIT})
-ENDIF(CMAKE_THREAD_LIBS_INIT)
+	# DLL targets need the appropriate macros.
+	IF(${_target} MATCHES "-dll$")
+		TARGET_COMPILE_DEFINITIONS(${_target}
+			PUBLIC		RP_BUILDING_FOR_DLL=1
+			PRIVATE		RP_BUILDING_LIBROMDATA=1
+			)
+	ENDIF()
+
+	TARGET_INCLUDE_DIRECTORIES(${_target}
+		PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+		)
+
+	IF(CMAKE_THREAD_LIBS_INIT)
+		TARGET_LINK_LIBRARIES(${_target} PUBLIC ${CMAKE_THREAD_LIBS_INIT})
+	ENDIF(CMAKE_THREAD_LIBS_INIT)
+ENDFOREACH(_target)
+
+IF(NOT TARGET ${PROJECT_NAME}-dll)
+	# On other platforms, the dll target will be an alias to the regular target.
+	ADD_LIBRARY(${PROJECT_NAME}-dll ALIAS ${PROJECT_NAME})
+ENDIF()
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
 IF(UNIX AND NOT APPLE)

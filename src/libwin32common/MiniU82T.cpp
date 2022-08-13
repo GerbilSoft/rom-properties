@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * MiniU82T.cpp: Minimal U82T()/T2U8() functions.                          *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,12 +19,11 @@ using std::wstring;
 namespace LibWin32Common {
 
 /**
- * Mini T2U8() function.
- * @param wcs TCHAR string.
- * @return UTF-8 C++ string.
+ * Mini W2U8() function.
+ * @param wcs WCHAR string
+ * @return UTF-8 C++ string
  */
-#ifdef UNICODE
-string T2U8_c(const TCHAR *wcs)
+string W2U8(const wchar_t *wcs)
 {
 	string s_ret;
 
@@ -41,29 +40,28 @@ string T2U8_c(const TCHAR *wcs)
 	delete[] mbs;
 	return s_ret;
 }
-#endif /* UNICODE */
 
 /**
  * Mini U82W() function.
  * @param mbs UTF-8 string.
  * @return UTF-16 C++ wstring.
  */
-wstring U82W_c(const char *mbs)
+wstring U82W(const char *mbs)
 {
-	tstring ts_ret;
+	wstring ws_ret;
 
 	// NOTE: cchWcs includes the NULL terminator.
 	int cchWcs = MultiByteToWideChar(CP_UTF8, 0, mbs, -1, nullptr, 0);
 	if (cchWcs <= 1) {
-		return ts_ret;
+		return ws_ret;
 	}
 	cchWcs--;
  
 	wchar_t *const wcs = new wchar_t[cchWcs];
 	MultiByteToWideChar(CP_UTF8, 0, mbs, -1, wcs, cchWcs);
-	ts_ret.assign(wcs, cchWcs);
+	ws_ret.assign(wcs, cchWcs);
 	delete[] wcs;
-	return ts_ret;
+	return ws_ret;
 }
 
 }

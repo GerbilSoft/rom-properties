@@ -162,9 +162,9 @@ class DragImageLabel : public QLabel
 		// Animated icon data.
 		struct anim_vars {
 			const LibRpBase::IconAnimData *iconAnimData;
-			QTimer *tmrIconAnim;
 			std::array<QPixmap, LibRpBase::IconAnimData::MAX_FRAMES> iconFrames;
 			LibRpBase::IconAnimHelper iconAnimHelper;
+			QTimer *tmrIconAnim;
 			int last_frame_number;		// Last frame number.
 			bool anim_running;		// Animation is running.
 

@@ -2,12 +2,14 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * RegKey.hpp: Registry key wrapper.                                       *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBWIN32COMMON_REGKEY_HPP__
 #define __ROMPROPERTIES_LIBWIN32COMMON_REGKEY_HPP__
+
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 // C++ includes.
 #include <string>
@@ -18,7 +20,7 @@
 
 namespace LibWin32Common {
 
-class RegKey
+class RP_LIBROMDATA_PUBLIC RegKey
 {
 	public:
 		/**
@@ -194,26 +196,28 @@ class RegKey
 		static LONG RegisterFileType(LPCTSTR fileType, RegKey **pHkey_Assoc);
 
 		/**
-		 * Register a COM object in this DLL.
-		 * @param rclsid CLSID.
-		 * @param progID ProgID.
-		 * @param description Description of the COM object.
+		 * Register a COM object in a DLL.
+		 * @param hInstance DLL to be used for registration
+		 * @param rclsid CLSID
+		 * @param progID ProgID
+		 * @param description Description of the COM object
 		 * @return ERROR_SUCCESS on success; WinAPI error on error.
 		 */
-		static LONG RegisterComObject(REFCLSID rclsid, LPCTSTR progID, LPCTSTR description);
+		static LONG RegisterComObject(HINSTANCE hInstance, REFCLSID rclsid,
+			LPCTSTR progID, LPCTSTR description);
 
 		/**
 		 * Register a shell extension as an approved extension.
-		 * @param rclsid CLSID.
-		 * @param description Description of the shell extension.
+		 * @param rclsid CLSID
+		 * @param description Description of the shell extension
 		 * @return ERROR_SUCCESS on success; WinAPI error on error.
 		 */
 		static LONG RegisterApprovedExtension(REFCLSID rclsid, LPCTSTR description);
 
 		/**
-		 * Unregister a COM object in this DLL.
-		 * @param rclsid CLSID.
-		 * @param progID ProgID.
+		 * Unregister a COM object.
+		 * @param rclsid CLSID
+		 * @param progID ProgID
 		 * @return ERROR_SUCCESS on success; WinAPI error on error.
 		 */
 		static LONG UnregisterComObject(REFCLSID rclsid, LPCTSTR progID);

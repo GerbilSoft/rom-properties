@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RpFile_IStream.hpp: IRpFile using an IStream*.                          *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,6 +11,12 @@
 
 #include "librpfile/IRpFile.hpp"
 #include <objidl.h>
+
+// MinGW-w64's comdefsp.h only works properly with MSVC,
+// since it uses __uuidof().
+#ifndef _MSC_VER
+_COM_SMARTPTR_TYPEDEF(IStream, IID_IStream);
+#endif /* _MSC_VER */
 
 // zlib
 struct z_stream_s;
@@ -98,9 +104,9 @@ class RpFile_IStream final : public LibRpFile::IRpFile
 
 		/**
 		 * Get the filename.
-		 * @return Filename. (May be empty if the filename is not available.)
+		 * @return Filename. (May be nullptr if the filename is not available.)
 		 */
-		std::string filename(void) const final;
+		const char *filename(void) const final;
 
 	public:
 		/** Extra functions **/
@@ -117,7 +123,7 @@ class RpFile_IStream final : public LibRpFile::IRpFile
 		}
 
 	protected:
-		IStream *m_pStream;
+		IStreamPtr m_pStream;
 		std::string m_filename;
 
 		// zlib

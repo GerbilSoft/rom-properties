@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * FileSystem_posix.cpp: File system functions. (POSIX implementation)     *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,35 +10,38 @@
 #include "config.librpfile.h"
 #include "FileSystem.hpp"
 
-// C includes.
+// C includes
 #include <fcntl.h>	// AT_FDCWD
 #include <sys/stat.h>	// stat(), statx()
 #include <utime.h>
 #include <unistd.h>
 
+// DT_* enumeration
+#include "d_type.h"
+
 #ifdef __linux__
 // TODO: Remove once /proc/mounts parsing is implemented.
-# include <sys/vfs.h>
-# include <linux/magic.h>
+#  include <sys/vfs.h>
+#  include <linux/magic.h>
 // from `man 2 fstatfs`, but not present in linux/magic.h on 4.14-r1
-# ifndef MQUEUE_MAGIC
-#  define MQUEUE_MAGIC 0x19800202
-# endif /* MQUEUE_MAGIC */
-# ifndef TRACEFS_MAGIC
-#  define TRACEFS_MAGIC 0x74726163
-# endif /* TRACEFS_MAGIC */
-# ifndef CIFS_MAGIC_NUMBER
-#  define CIFS_MAGIC_NUMBER 0xff534d42
-# endif /* CIFS_MAGIC_NUMBER */
-# ifndef COH_SUPER_MAGIC
-#  define COH_SUPER_MAGIC 0x012ff7b7
-# endif /* COH_SUPER_MAGIC */
-# ifndef FUSE_SUPER_MAGIC
-#  define FUSE_SUPER_MAGIC 0x65735546
-# endif /* FUSE_SUPER_MAGIC */
-# ifndef OCFS2_SUPER_MAGIC
-#  define OCFS2_SUPER_MAGIC 0x7461636f
-# endif /* OCFS2_SUPER_MAGIC */
+#  ifndef MQUEUE_MAGIC
+#    define MQUEUE_MAGIC 0x19800202
+#  endif /* MQUEUE_MAGIC */
+#  ifndef TRACEFS_MAGIC
+#    define TRACEFS_MAGIC 0x74726163
+#  endif /* TRACEFS_MAGIC */
+#  ifndef CIFS_MAGIC_NUMBER
+#    define CIFS_MAGIC_NUMBER 0xff534d42
+#  endif /* CIFS_MAGIC_NUMBER */
+#  ifndef COH_SUPER_MAGIC
+#    define COH_SUPER_MAGIC 0x012ff7b7
+#  endif /* COH_SUPER_MAGIC */
+#  ifndef FUSE_SUPER_MAGIC
+#    define FUSE_SUPER_MAGIC 0x65735546
+#  endif /* FUSE_SUPER_MAGIC */
+#  ifndef OCFS2_SUPER_MAGIC
+#    define OCFS2_SUPER_MAGIC 0x7461636f
+#  endif /* OCFS2_SUPER_MAGIC */
 #endif /* __linux__ */
 
 // C++ STL classes.
@@ -105,9 +108,9 @@ int rmkdir(const string &path)
  * @param mode Mode.
  * @return 0 if the file exists with the specified mode; non-zero if not.
  */
-int access(const string &pathname, int mode)
+int access(const char *pathname, int mode)
 {
-	return ::access(pathname.c_str(), mode);
+	return ::access(pathname, mode);
 }
 
 /**
@@ -115,11 +118,17 @@ int access(const string &pathname, int mode)
  * @param filename Filename.
  * @return Size on success; -1 on error.
  */
-off64_t filesize(const string &filename)
+off64_t filesize(const char *filename)
 {
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
+		return -1;
+	}
+
 #ifdef HAVE_STATX
 	struct statx sbx;
-	int ret = statx(AT_FDCWD, filename.c_str(), 0, STATX_SIZE, &sbx);
+	int ret = statx(AT_FDCWD, filename, 0, STATX_SIZE, &sbx);
 	if (ret != 0 || !(sbx.stx_mask & STATX_SIZE)) {
 		// statx() failed and/or did not return the file size.
 		int ret = -errno;
@@ -128,7 +137,7 @@ off64_t filesize(const string &filename)
 	return sbx.stx_size;
 #else /* !HAVE_STATX */
 	struct stat sb;
-	int ret = stat(filename.c_str(), &sb);
+	int ret = stat(filename, &sb);
 	if (ret != 0) {
 		// stat() failed.
 		int ret = -errno;
@@ -204,8 +213,11 @@ int get_mtime(const string &filename, time_t *pMtime)
  */
 int delete_file(const char *filename)
 {
-	if (unlikely(!filename || filename[0] == 0))
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
 		return -EINVAL;
+	}
 
 	int ret = unlink(filename);
 	if (ret != 0) {
@@ -218,12 +230,19 @@ int delete_file(const char *filename)
 
 /**
  * Check if the specified file is a symbolic link.
+ *
+ * Symbolic links are NOT resolved; otherwise wouldn't check
+ * if the specified file was a symlink itself.
+ *
  * @return True if the file is a symbolic link; false if not.
  */
 bool is_symlink(const char *filename)
 {
-	if (unlikely(!filename || filename[0] == 0))
-		return -EINVAL;
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
+		return false;
+	}
 	
 #ifdef HAVE_STATX
 	struct statx sbx;
@@ -257,8 +276,11 @@ bool is_symlink(const char *filename)
  */
 string resolve_symlink(const char *filename)
 {
-	if (unlikely(!filename || filename[0] == 0))
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
 		return string();
+	}
 
 	// NOTE: realpath() might not be available on some systems...
 	string ret;
@@ -268,6 +290,42 @@ string resolve_symlink(const char *filename)
 		free(resolved_path);
 	}
 	return ret;
+}
+
+/**
+ * Check if the specified file is a directory.
+ *
+ * Symbolic links are resolved as per usual directory traversal.
+ *
+ * @return True if the file is a directory; false if not.
+ */
+bool is_directory(const char *filename)
+{
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
+		return false;
+	}
+
+#ifdef HAVE_STATX
+	struct statx sbx;
+	int ret = statx(AT_FDCWD, filename, 0, STATX_TYPE, &sbx);
+	if (ret != 0 || !(sbx.stx_mask & STATX_TYPE)) {
+		// statx() failed and/or did not return the file type.
+		// Assume this is not a directory.
+		return false;
+	}
+	return !!S_ISDIR(sbx.stx_mode);
+#else /* !HAVE_STATX */
+	struct stat sb;
+	int ret = stat(filename, &sb);
+	if (ret != 0) {
+		// stat() failed.
+		// Assume this is not a directory.
+		return false;
+	}
+	return !!S_ISDIR(sb.st_mode);
+#endif /* HAVE_STATX */
 }
 
 /**
@@ -356,8 +414,12 @@ bool isOnBadFS(const char *filename, bool netFS)
  */
 int get_file_size_and_mtime(const string &filename, off64_t *pFileSize, time_t *pMtime)
 {
+	assert(!filename.empty());
 	assert(pFileSize != nullptr);
 	assert(pMtime != nullptr);
+	if (unlikely(filename.empty() || !pFileSize || !pMtime)) {
+		return -EINVAL;
+	}
 
 	// FIXME: time_t is 32-bit on 32-bit Linux.
 	// TODO: Add a static_warning() macro?
@@ -402,6 +464,49 @@ int get_file_size_and_mtime(const string &filename, off64_t *pFileSize, time_t *
 #endif /* HAVE_STATX */
 
 	return 0;
+}
+
+/**
+ * Get a file's d_type.
+ * @param filename Filename
+ * @param deref If true, dereference symbolic links (lstat)
+ * @return File d_type
+ */
+uint8_t get_file_d_type(const char *filename, bool deref)
+{
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
+		return DT_UNKNOWN;
+	}
+
+	unsigned int mode;
+
+#ifdef HAVE_STATX
+	struct statx sbx;
+	const int flags = (unlikely(deref))
+		?  AT_FDCWD				// dereference symlinks
+		: (AT_FDCWD | AT_SYMLINK_NOFOLLOW);	// don't dereference symlinks
+	int ret = statx(flags, filename, 0, STATX_TYPE, &sbx);
+	if (ret != 0 || !(sbx.stx_mask & STATX_TYPE)) {
+		// statx() failed and/or did not return the file type.
+		return DT_UNKNOWN;
+	}
+	mode = sbx.stx_mode;
+#else /* !HAVE_STATX */
+	// TODO: statx() if it's available.
+	struct stat sb;
+	int ret = (unlikely(deref) ? stat(path, &sb) : lstat(path, &sb));
+	if (ret != 0) {
+		// stat() failed.
+		return DT_UNKNOWN;
+	}
+	mode = sb.st_mode;
+#endif /* HAVE_STATX */
+
+	// The type bits in struct stat's mode match the
+	// DT_* enumeration values.
+	return IFTODT(mode);
 }
 
 } }

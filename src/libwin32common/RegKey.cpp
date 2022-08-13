@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * RegKey.hpp: Registry key wrapper.                                       *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -23,6 +23,13 @@ using std::tstring;
 // Windows SDK.
 #include <objbase.h>
 #include "sdk/GUID_fn.h"
+
+// RegKey isn't used by libromdata directly,
+// so use some linker hax to force linkage.
+extern "C" {
+	extern uint8_t RP_LibWin32Common_RegKey_ForceLinkage;
+	uint8_t RP_LibWin32Common_RegKey_ForceLinkage;
+}
 
 namespace LibWin32Common {
 
@@ -184,6 +191,9 @@ tstring RegKey::read(LPCTSTR lpValueName, LPDWORD lpType) const
  */
 tstring RegKey::read_expand(LPCTSTR lpValueName, LPDWORD lpType) const
 {
+	// Local buffer optimization to reduce memory allocation.
+	TCHAR locbuf[128];
+
 	DWORD dwType = 0;
 	tstring wstr = read(lpValueName, &dwType);
 	if (wstr.empty() || dwType != REG_EXPAND_SZ) {
@@ -206,6 +216,26 @@ tstring RegKey::read_expand(LPCTSTR lpValueName, LPDWORD lpType) const
 		return tstring();
 	}
 
+	if (cchExpand <= _countof(locbuf)) {
+		// The expanded string fits in the local buffer.
+		cchExpand = ExpandEnvironmentStrings(wstr.c_str(), locbuf, cchExpand);
+		if (cchExpand == 0) {
+			// Error expanding the strings.
+			if (lpType) {
+				*lpType = 0;
+			}
+			return tstring();
+		}
+
+		// String has been expanded.
+		if (lpType) {
+			*lpType = REG_EXPAND_SZ;
+		}
+		return tstring(locbuf, cchExpand-1);
+	}
+
+	// Temporarily allocate a buffer large enough for the string,
+	// then call ExpandEnvironmentStrings() again.
 	unique_ptr<TCHAR[]> tbuf(new TCHAR[cchExpand]);
 	cchExpand = ExpandEnvironmentStrings(wstr.c_str(), tbuf.get(), cchExpand);
 	if (cchExpand == 0) {
@@ -377,7 +407,7 @@ LONG RegKey::deleteValue(LPCTSTR lpValueName)
  */
 LONG RegKey::deleteSubKey(HKEY hKeyRoot, LPCTSTR lpSubKey)
 {
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/ms724235(v=vs.85).aspx
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/sysinfo/deleting-a-key-with-subkeys
 	if (!hKeyRoot || !lpSubKey || !lpSubKey[0]) {
 		// nullptr specified, or lpSubKey is empty.
 		return ERROR_INVALID_PARAMETER;
@@ -482,8 +512,8 @@ LONG RegKey::enumSubKeys(list<tstring> &lstSubKeys)
 	// cMaxSubKeyLen doesn't include the NULL terminator.
 	cMaxSubKeyLen++;
 
-	// https://msdn.microsoft.com/en-us/library/windows/desktop/ms724872(v=vs.85).aspx says
-	// key names are limited to 255 characters, but who knows...
+	// https://docs.microsoft.com/en-us/windows/win32/sysinfo/registry-element-size-limits
+	// says key names are limited to 255 characters, but who knows...
 	unique_ptr<TCHAR[]> szName(new TCHAR[cMaxSubKeyLen]);
 
 	// Initialize the vector.
@@ -589,13 +619,15 @@ LONG RegKey::RegisterFileType(LPCTSTR fileType, RegKey **pHkey_Assoc)
 }
 
 /**
- * Register a COM object in this DLL.
- * @param rclsid CLSID.
- * @param progID ProgID.
- * @param description Description of the COM object.
+ * Register a COM object in a DLL.
+ * @param hInstance DLL to be used for registration
+ * @param rclsid CLSID
+ * @param progID ProgID
+ * @param description Description of the COM object
  * @return ERROR_SUCCESS on success; WinAPI error on error.
  */
-LONG RegKey::RegisterComObject(REFCLSID rclsid, LPCTSTR progID, LPCTSTR description)
+LONG RegKey::RegisterComObject(HINSTANCE hInstance, REFCLSID rclsid,
+	LPCTSTR progID, LPCTSTR description)
 {
 	TCHAR szClsid[40];
 	LONG lResult = StringFromGUID2(rclsid, szClsid, _countof(szClsid));
@@ -630,14 +662,16 @@ LONG RegKey::RegisterComObject(REFCLSID rclsid, LPCTSTR progID, LPCTSTR descript
 
 	// Create an InprocServer32 subkey.
 	RegKey hkcr_InprocServer32(hkcr_Obj_CLSID, _T("InprocServer32"), KEY_WRITE, true);
-	if (!hkcr_InprocServer32.isOpen())
+	if (!hkcr_InprocServer32.isOpen()) {
 		return hkcr_InprocServer32.lOpenRes();
-	// Set the default value to the DLL filename.
-	// TODO: Get this once and save it?
+	}
+
+	// Set the default value to the filename of the specified DLL.
 	// TODO: Duplicated from win32/. Consolidate the two?
 	TCHAR dll_filename[MAX_PATH];
-	DWORD dwResult = GetModuleFileName(HINST_THISCOMPONENT, dll_filename, _countof(dll_filename));
-	if (dwResult == 0 || GetLastError() != ERROR_SUCCESS) {
+	SetLastError(ERROR_SUCCESS);	// required for XP
+	DWORD dwResult = GetModuleFileName(hInstance, dll_filename, _countof(dll_filename));
+	if (dwResult == 0 || dwResult >= _countof(dll_filename) || GetLastError() != ERROR_SUCCESS) {
 		// Cannot get the DLL filename.
 		// TODO: Windows XP doesn't SetLastError() if the
 		// filename is too big for the buffer.
@@ -653,7 +687,7 @@ LONG RegKey::RegisterComObject(REFCLSID rclsid, LPCTSTR progID, LPCTSTR descript
 	}
 
 	// Set the threading model to Apartment.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/cc144110%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/shell/reg-shell-exts
 	lResult = hkcr_InprocServer32.write(_T("ThreadingModel"), _T("Apartment"));
 	if (lResult != ERROR_SUCCESS)
 		return lResult;
@@ -668,8 +702,8 @@ LONG RegKey::RegisterComObject(REFCLSID rclsid, LPCTSTR progID, LPCTSTR descript
 
 /**
  * Register a shell extension as an approved extension.
- * @param rclsid CLSID.
- * @param description Description of the shell extension.
+ * @param rclsid CLSID
+ * @param description Description of the shell extension
  * @return ERROR_SUCCESS on success; WinAPI error on error.
  */
 LONG RegKey::RegisterApprovedExtension(REFCLSID rclsid, LPCTSTR description)
@@ -694,8 +728,8 @@ LONG RegKey::RegisterApprovedExtension(REFCLSID rclsid, LPCTSTR description)
 
 /**
  * Unregister a COM object in this DLL.
- * @param rclsid CLSID.
- * @param progID ProgID.
+ * @param rclsid CLSID
+ * @param progID ProgID
  * @return ERROR_SUCCESS on success; WinAPI error on error.
  */
 LONG RegKey::UnregisterComObject(REFCLSID rclsid, LPCTSTR progID)

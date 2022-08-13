@@ -39,18 +39,29 @@ UNSET(RP_C11_CFLAG)
 UNSET(RP_CXX11_CXXFLAG)
 
 # Test for common CFLAGS and CXXFLAGS.
-FOREACH(FLAG_TEST "-Wall" "-Wextra" "-Wno-multichar" "-fstrict-aliasing" "-fno-common" "-Werror=return-type")
-	CHECK_C_COMPILER_FLAG("${FLAG_TEST}" CFLAG_${FLAG_TEST})
-	IF(CFLAG_${FLAG_TEST})
-		SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} ${FLAG_TEST}")
-	ENDIF(CFLAG_${FLAG_TEST})
-	UNSET(CFLAG_${FLAG_TEST})
+# NOTE: Not adding -Werror=format-nonliteral because there are some
+# legitimate uses of non-literal format strings.
+SET(CFLAGS_WARNINGS -Wall -Wextra -Wno-multichar -Werror=return-type)
+SET(CFLAGS_WERROR_FORMAT -Werror=format -Werror=format-security -Werror=format-signedness -Werror=format-truncation -Werror=format-y2k)
+IF(MINGW)
+	# MinGW: Ignore warnings caused by casting from GetProcAddress().
+	SET(CFLAGS_WARNINGS ${CFLAGS_WARNINGS} -Wno-cast-function-type)
+ENDIF(MINGW)
+FOREACH(FLAG_TEST ${CFLAGS_WARNINGS} ${CFLAGS_WERROR_FORMAT} "-fstrict-aliasing" "-fno-common" "-fcf-protection")
+	# CMake doesn't like certain characters in variable names.
+	STRING(REGEX REPLACE "/|:|=" "_" FLAG_TEST_VARNAME "${FLAG_TEST}")
 
-	CHECK_CXX_COMPILER_FLAG("${FLAG_TEST}" CXXFLAG_${FLAG_TEST})
-	IF(CXXFLAG_${FLAG_TEST})
+	CHECK_C_COMPILER_FLAG("${FLAG_TEST}" CFLAG_${FLAG_TEST_VARNAME})
+	IF(CFLAG_${FLAG_TEST_VARNAME})
+		SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} ${FLAG_TEST}")
+	ENDIF(CFLAG_${FLAG_TEST_VARNAME})
+	UNSET(CFLAG_${FLAG_TEST_VARNAME})
+
+	CHECK_CXX_COMPILER_FLAG("${FLAG_TEST}" CXXFLAG_${FLAG_TEST_VARNAME})
+	IF(CXXFLAG_${FLAG_TEST_VARNAME})
 		SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} ${FLAG_TEST}")
-	ENDIF(CXXFLAG_${FLAG_TEST})
-	UNSET(CXXFLAG_${FLAG_TEST})
+	ENDIF(CXXFLAG_${FLAG_TEST_VARNAME})
+	UNSET(CXXFLAG_${FLAG_TEST_VARNAME})
 ENDFOREACH()
 
 # -Wimplicit-function-declaration should be an error. (C only)
@@ -59,6 +70,18 @@ IF(CFLAG_IMPLFUNC)
 	SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} -Werror=implicit-function-declaration")
 ENDIF(CFLAG_IMPLFUNC)
 UNSET(CFLAG_IMPLFUNC)
+
+# Enable "suggest override" if available. (C++ only)
+# NOTE: If gcc, only enable on 9.2 and later, since earlier versions
+# will warn if a function is marked 'final' but not 'override'
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=78010
+IF(NOT CMAKE_COMPILER_IS_GNUCC OR (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 9.1))
+	CHECK_CXX_COMPILER_FLAG("-Wsuggest-override" CXXFLAG_SUGGEST_OVERRIDE)
+	IF(CXXFLAG_SUGGEST_OVERRIDE)
+		SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} -Wsuggest-override -Wno-error=suggest-override")
+	ENDIF(CXXFLAG_SUGGEST_OVERRIDE)
+	UNSET(CXXFLAG_SUGGEST_OVERRIDE)
+ENDIF(NOT CMAKE_COMPILER_IS_GNUCC OR (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 9.1))
 
 # Code coverage checking.
 IF(ENABLE_COVERAGE)
@@ -81,7 +104,7 @@ IF(ENABLE_COVERAGE)
 	SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} ${RP_C_FLAGS_COVERAGE}")
 
 	# Link gcov to all targets.
-	SET(GCOV_LIBRARY "-lgcov")
+	SET(GCOV_LIBRARY "gcov")
 	FOREACH(VAR "" C_ CXX_)
 		IF(CMAKE_${VAR}STANDARD_LIBRARIES)
 			SET(CMAKE_${VAR}STANDARD_LIBRARIES "${CMAKE_${VAR}STANDARD_LIBRARIES} ${GCOV_LIBRARY}")
@@ -113,7 +136,7 @@ EXECUTE_PROCESS(COMMAND ${CMAKE_LINKER} --help
 	OUTPUT_VARIABLE _ld_out
 	ERROR_QUIET)
 
-FOREACH(FLAG_TEST "--sort-common" "--as-needed" "--build-id")
+FOREACH(FLAG_TEST "--sort-common" "--as-needed" "--build-id" "-Bsymbolic-functions")
 	IF(NOT DEFINED LDFLAG_${FLAG_TEST})
 		MESSAGE(STATUS "Checking if ld supports ${FLAG_TEST}")
 		IF(_ld_out MATCHES "${FLAG_TEST}")
@@ -191,6 +214,40 @@ IF(NOT WIN32)
 		ENDIF(LDFLAG_${FLAG_TEST})
 	ENDFOREACH()
 ENDIF(NOT WIN32)
+
+# Check for -Wl,-z,pack-relative-relocs.
+# Requires binutils-2.38 and glibc-2.36. (TODO: Check other Unix systems.)
+IF(UNIX AND NOT APPLE)
+	IF(NOT DEFINED HAVE_DT_RELR)
+		MESSAGE(STATUS "Checking if the system supports DT_RELR")
+		IF(_ld_out MATCHES "-z pack-relative-relocs")
+			# NOTE: ${CMAKE_MODULE_PATH} has two directories, macros/ and libs/,
+			# so we have to configure this manually.
+			SET(DT_RELR_SOURCE_PATH "${CMAKE_SOURCE_DIR}/cmake/platform")
+
+			# TODO: Better cross-compile handling.
+			TRY_RUN(TMP_DT_RELR_RUN TMP_DT_RELR_COMPILE
+				"${CMAKE_CURRENT_BINARY_DIR}"
+				"${DT_RELR_SOURCE_PATH}/DT_RELR_Test.c")
+			IF(TMP_DT_RELR_COMPILE AND (TMP_DT_RELR_RUN EQUAL 0))
+				SET(TMP_HAVE_DT_RELR TRUE)
+				MESSAGE(STATUS "Checking if the system supports DT_RELR - yes")
+			ELSE()
+				SET(TMP_HAVE_DT_RELR FALSE)
+				MESSAGE(STATUS "Checking if the system supports DT_RELR - no, needs glibc-2.36 or later")
+			ENDIF()
+			UNSET(TMP_HAVE_DT_RELR)
+		ELSE(_ld_out MATCHES "-z pack-relative-relocs")
+			SET(TMP_HAVE_DT_RELR FALSE)
+			MESSAGE(STATUS "Checking if the system supports DT_RELR - no, needs binutils-2.38 or later")
+		ENDIF(_ld_out MATCHES "-z pack-relative-relocs")
+		SET(HAVE_DT_RELR ${TMP_HAVE_DT_RELR} CACHE INTERNAL "System supports DT_RELR")
+	ENDIF(NOT DEFINED HAVE_DT_RELR)
+
+	IF(HAVE_DT_RELR)
+		SET(RP_EXE_LINKER_FLAGS_COMMON "${RP_EXE_LINKER_FLAGS_COMMON} -Wl,-z,pack-relative-relocs")
+	ENDIF(HAVE_DT_RELR)
+ENDIF(UNIX AND NOT APPLE)
 
 SET(RP_SHARED_LINKER_FLAGS_COMMON "${RP_EXE_LINKER_FLAGS_COMMON}")
 SET(RP_MODULE_LINKER_FLAGS_COMMON "${RP_EXE_LINKER_FLAGS_COMMON}")

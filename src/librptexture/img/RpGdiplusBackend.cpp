@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * RpGdiplusBackend.hpp: rp_image_backend using GDI+.                      *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,7 +11,7 @@
 
 #include "stdafx.h"
 #include "RpGdiplusBackend.hpp"
-#include "librpbase/aligned_malloc.h"
+#include "aligned_malloc.h"
 
 // C++ STL classes.
 using std::unique_ptr;
@@ -285,11 +285,11 @@ const uint32_t *RpGdiplusBackend::palette(void) const
 	return reinterpret_cast<const uint32_t*>(m_pGdipPalette->Entries);
 }
 
-int RpGdiplusBackend::palette_len(void) const
+unsigned int RpGdiplusBackend::palette_len(void) const
 {
 	if (!m_pGdipPalette)
 		return 0;
-	return static_cast<int>(m_pGdipPalette->Count);
+	return m_pGdipPalette->Count;
 }
 
 /**
@@ -538,7 +538,7 @@ HBITMAP RpGdiplusBackend::toHBITMAP(Gdiplus::ARGB bgColor)
  * @param nearest	[in] If true, use nearest-neighbor scaling.
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpGdiplusBackend::toHBITMAP(uint32_t bgColor, const SIZE &size, bool nearest)
+HBITMAP RpGdiplusBackend::toHBITMAP(uint32_t bgColor, SIZE size, bool nearest)
 {
 	// TODO: Check for errors?
 	unique_ptr<Gdiplus::Bitmap> pTmpBmp;
@@ -681,7 +681,7 @@ HBITMAP RpGdiplusBackend::toHBITMAP_alpha(void)
  * @param nearest	[in] If true, use nearest-neighbor scaling.
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpGdiplusBackend::toHBITMAP_alpha(const SIZE &size, bool nearest)
+HBITMAP RpGdiplusBackend::toHBITMAP_alpha(SIZE size, bool nearest)
 {
 	// Convert the image to ARGB32 (if necessary) and resize it.
 	Gdiplus::Status status = Gdiplus::Status::GenericError;
@@ -806,7 +806,7 @@ HBITMAP RpGdiplusBackend::convBmpData_ARGB32(const Gdiplus::BitmapData *pBmpData
 	BITMAPINFOHEADER *const bmiHeader = &bmi.bmiHeader;
 
 	// Initialize the BITMAPINFOHEADER.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183376%28v=vs.85%29.aspx
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-bitmapinfoheader
 	bmiHeader->biSize = sizeof(BITMAPINFOHEADER);
 	bmiHeader->biWidth = pBmpData->Width;
 	bmiHeader->biHeight = -static_cast<int>(pBmpData->Height);	// Top-down
@@ -844,7 +844,7 @@ HBITMAP RpGdiplusBackend::convBmpData_ARGB32(const Gdiplus::BitmapData *pBmpData
 			pvBits += row_bytes;
 			gdip_px += gdip_stride;
 		}
-	}	
+	}
 
 	// Bitmap is ready.
 	return hBitmap;
@@ -868,7 +868,7 @@ HBITMAP RpGdiplusBackend::convBmpData_CI8(const Gdiplus::BitmapData *pBmpData)
 	BITMAPINFOHEADER *bmiHeader = &bmi->bmiHeader;
 
 	// Initialize the BITMAPINFOHEADER.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183376%28v=vs.85%29.aspx
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-bitmapinfoheader
 	bmiHeader->biSize = sizeof(BITMAPINFOHEADER);
 	bmiHeader->biWidth = pBmpData->Width;
 	bmiHeader->biHeight = -static_cast<int>(pBmpData->Height);	// Top-down

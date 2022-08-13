@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                         *
  * RpNautilusProvider.cpp: Nautilus (and forks) Provider Definition.       *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,6 +21,9 @@
 #include "is-supported.hpp"
 
 #include "../RomDataView.hpp"
+
+#include "librpbase/RomData.hpp"
+using LibRpBase::RomData;
 
 // NautilusPropertyPageProviderInterface definition.
 extern "C"
@@ -118,13 +121,15 @@ rp_nautilus_provider_get_pages(NautilusPropertyPageProvider *provider, GList *fi
 		return nullptr;
 	}
 
-	// TODO: Maybe we should just open the RomData here
-	// and pass it to the RomDataView.
-	if (G_LIKELY(rp_gtk3_is_uri_supported(uri))) {
+	// Attempt to open the URI.
+	RomData *const romData = rp_gtk_open_uri(uri);
+	if (G_LIKELY(romData != nullptr)) {
 		// Create the RomDataView.
 		// TODO: Add some extra padding to the top...
-		GtkWidget *const romDataView = rom_data_view_new_with_uri(uri, RP_DFT_GNOME);
+		GtkWidget *const romDataView = rom_data_view_new_with_romData(uri, romData, RP_DFT_GNOME);
+		gtk_widget_set_name(romDataView, "romDataView");
 		gtk_widget_show(romDataView);
+		romData->unref();
 
 		// tr: Tab title.
 		const char *const tabTitle = C_("RomDataView", "ROM Properties");

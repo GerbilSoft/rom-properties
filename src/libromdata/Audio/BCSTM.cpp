@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * BCSTM.cpp: Nintendo 3DS BCSTM and Nintendo Wii U BFSTM audio reader.    *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,8 +20,6 @@ using std::string;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(BCSTM)
-
 class BCSTMPrivate final : public RomDataPrivate
 {
 	public:
@@ -30,6 +28,12 @@ class BCSTMPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(BCSTMPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// Audio format.
@@ -43,10 +47,6 @@ class BCSTMPrivate final : public RomDataPrivate
 			Max
 		};
 		AudioFormat audioFormat;
-
-		// MIME type table.
-		// Ordering matches AudioFormat.
-		static const char *const mimeType_tbl[];
 
 	public:
 		// BCSTM headers.
@@ -81,11 +81,21 @@ class BCSTMPrivate final : public RomDataPrivate
 		}
 };
 
+ROMDATA_IMPL(BCSTM)
+
 /** BCSTMPrivate **/
 
-// MIME type table.
-// Ordering matches AudioFormat.
-const char *const BCSTMPrivate::mimeType_tbl[] = {
+/* RomDataInfo */
+const char *const BCSTMPrivate::exts[] = {
+	".bcstm",
+	".bfstm",
+	".bcwav",
+
+	nullptr
+};
+const char *const BCSTMPrivate::mimeTypes[] = {
+	// NOTE: Ordering matches AudioFormat.
+
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"audio/x-bcstm",
@@ -94,9 +104,12 @@ const char *const BCSTMPrivate::mimeType_tbl[] = {
 
 	nullptr
 };
+const RomDataInfo BCSTMPrivate::romDataInfo = {
+	"BCSTM", exts, mimeTypes
+};
 
 BCSTMPrivate::BCSTMPrivate(BCSTM *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, audioFormat(AudioFormat::Unknown)
 	, needsByteswap(false)
 {
@@ -124,7 +137,6 @@ BCSTM::BCSTM(IRpFile *file)
 	: super(new BCSTMPrivate(this, file))
 {
 	RP_D(BCSTM);
-	d->className = "BCSTM";
 	d->fileType = FileType::AudioFile;
 
 	if (!d->file) {
@@ -141,19 +153,18 @@ BCSTM::BCSTM(IRpFile *file)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->bcstmHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->bcstmHeader);
-	info.ext = nullptr;	// Not needed for BCSTM.
-	info.szFile = 0;	// Not needed for BCSTM.
+	const DetectInfo info = {
+		{0, sizeof(d->bcstmHeader), reinterpret_cast<const uint8_t*>(&d->bcstmHeader)},
+		nullptr,	// ext (not needed for BCSTM)
+		0		// szFile (not needed for BCSTM)
+	};
 	d->audioFormat = static_cast<BCSTMPrivate::AudioFormat>(isRomSupported_static(&info));
 
 	if ((int)d->audioFormat < 0) {
 		UNREF_AND_NULL_NOCHK(d->file);
 		return;
-	} else if ((int)d->audioFormat < ARRAY_SIZE(d->mimeType_tbl)-1) {
-		d->mimeType = d->mimeType_tbl[(int)d->audioFormat];
+	} else if ((int)d->audioFormat < ARRAY_SIZE_I(d->mimeTypes)-1) {
+		d->mimeType = d->mimeTypes[(int)d->audioFormat];
 	}
 
 	// Is byteswapping needed?
@@ -364,46 +375,6 @@ const char *BCSTM::systemName(unsigned int type) const
 }
 
 /**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *BCSTM::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".bcstm",
-		".bfstm",
-		".bcwav",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *BCSTM::supportedMimeTypes_static(void)
-{
-	return BCSTMPrivate::mimeType_tbl;
-}
-
-/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -431,12 +402,13 @@ int BCSTM::loadFieldData(void)
 	static const char type_tbl[][8] = {
 		"BCSTM", "BFSTM", "BCWAV"
 	};
+	const char *const type_title = C_("BCSTM", "Type");
 	if (d->audioFormat > BCSTMPrivate::AudioFormat::Unknown &&
-	    (int)d->audioFormat < ARRAY_SIZE(type_tbl))
+	    (int)d->audioFormat < ARRAY_SIZE_I(type_tbl))
 	{
-		d->fields->addField_string(C_("BCSTM", "Type"), type_tbl[(int)d->audioFormat]);
+		d->fields->addField_string(type_title, type_tbl[(int)d->audioFormat]);
 	} else {
-		d->fields->addField_string(C_("BCSTM", "Type"),
+		d->fields->addField_string(type_title,
 			rp_sprintf(C_("RomData", "Unknown (%d)"), (int)d->audioFormat));
 	}
 
@@ -498,11 +470,12 @@ int BCSTM::loadFieldData(void)
 		NOP_C_("BCSTM|Codec", "Signed 16-bit PCM"),
 		"DSP ADPCM", "IMA ADPCM",
 	};
+	const char *const codec_title = C_("BCSTM", "Codec");
 	if (codec < ARRAY_SIZE(codec_tbl)) {
-		d->fields->addField_string(C_("BCSTM", "Codec"),
+		d->fields->addField_string(codec_title,
 			dpgettext_expr(RP_I18N_DOMAIN, "BCSTM|Codec", codec_tbl[codec]));
 	} else {
-		d->fields->addField_string(C_("BCSTM", "Codec"),
+		d->fields->addField_string(codec_title,
 			rp_sprintf(C_("RomData", "Unknown (%u)"), codec));
 	}
 

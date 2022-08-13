@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXE.cpp: DOS/Windows executable reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -31,6 +31,41 @@ ROMDATA_IMPL(EXE)
 
 /** EXEPrivate **/
 
+/* RomDataInfo */
+const char *const EXEPrivate::exts[] = {
+	// References:
+	// - https://en.wikipedia.org/wiki/Portable_Executable
+
+	// PE extensions
+	".exe", ".dll",
+	".acm", ".ax",
+	".cpl", ".drv",
+	".efi", ".mui",
+	".ocx", ".scr",
+	".sys", ".tsp",
+
+	// NE extensions
+	".fon", ".icl",
+
+	// LE extensions
+	".vxd", ".386",
+
+	nullptr
+};
+const char *const EXEPrivate::mimeTypes[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-ms-dos-executable",
+
+	// Unofficial MIME types from Microsoft.
+	// Reference: https://technet.microsoft.com/en-us/library/cc995276.aspx?f=255&MSPPError=-2147217396
+	"application/x-msdownload",
+
+	nullptr
+};
+const RomDataInfo EXEPrivate::romDataInfo = {
+	"EXE", exts, mimeTypes
+};
+
 // NE target OSes.
 // Also used for LE.
 const char *const EXEPrivate::NE_TargetOSes[6] = {
@@ -43,7 +78,7 @@ const char *const EXEPrivate::NE_TargetOSes[6] = {
 };
 
 EXEPrivate::EXEPrivate(EXE *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, exeType(ExeType::Unknown)
 	, rsrcReader(nullptr)
 	, pe_subsystem(IMAGE_SUBSYSTEM_UNKNOWN)
@@ -69,7 +104,7 @@ EXEPrivate::~EXEPrivate()
  */
 void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const IResourceReader::StringFileInfo *pVsSfi)
 {
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/ms646997(v=vs.85).aspx
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/api/verrsrc/ns-verrsrc-vs_fixedfileinfo
 	assert(pVsFfi != nullptr);
 	if (!pVsFfi)
 		return;
@@ -129,16 +164,14 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		{VOS_OS216_PM16,	"OS/2 with Presentation Manager (16-bit)"},
 		{VOS_OS232_PM32,	"OS/2 with Presentation Manager (32-bit)"},
 		{VOS_NT_WINDOWS32,	"Windows NT"},
-
-		{0, nullptr}
 	};
 
 	const uint32_t dwFileOS = pVsFfi->dwFileOS;
 	const char *s_fileOS = nullptr;
-	for (const auto *p = fileOS_lkup_tbl; p->dwFileOS != 0; p++) {
-		if (p->dwFileOS == dwFileOS) {
+	for (const auto &p : fileOS_lkup_tbl) {
+		if (p.dwFileOS == dwFileOS) {
 			// Found a match.
-			s_fileOS = p->s_fileOS;
+			s_fileOS = p.s_fileOS;
 			break;
 		}
 	}
@@ -319,22 +352,88 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
  */
 void EXEPrivate::addFields_MZ(void)
 {
-	// Program image size
-	uint32_t program_size = le16_to_cpu(mz.e_cp) * 512;
-	if (mz.e_cblp != 0) {
-		program_size -= 512 - le16_to_cpu(mz.e_cblp);
-	}
+	/* MS-DOS allocation algorithm (all sizes in paragraphs):
+	 *     progsize = e_cp*512/16 - e_cparhdr
+	 *     if maxfreeblock < 0x10 + progsize:
+	 *         error
+	 *     if e_maxalloc == 0:
+	 *         allocate(maxfreeblock)
+	 *         load_high
+	 *         return
+	 *     if maxfreeblock < 0x10 + progsize + e_minalloc:
+	 *         error
+	 *     allocate(min(0x10 + progsize + e_maxalloc, maxfreeblock))
+	 *     load_low
+	 *
+	 * e_cblp doesn't seem to be used by MS-DOS at all. The documentation says
+	 * that its meant for overlays. However, overlay or not, the loader just
+	 * keeps reading until it reads progsize paragraphs, or gets a short read.
+	 * With the above in mind, progsize seems to be the most useful metric
+	 * to display, since e_cp/e_cblp is supposed to be the same as the filesize.
+	 */
+
+	// Header and program size
+	fields->addField_string(C_("EXE", "Header Size"), formatFileSize(le16_to_cpu(mz.e_cparhdr) * 16));
+	uint32_t program_size = le16_to_cpu(mz.e_cp) * 512 - le16_to_cpu(mz.e_cparhdr) * 16;
 	fields->addField_string(C_("EXE", "Program Size"), formatFileSize(program_size));
 
+	// File size warnings
+	// Only show them if it's an MZ-only executable and if e_cblp is sane
+	bool shownWarning = false;
+	if (exeType == EXEPrivate::ExeType::MZ && le16_to_cpu(mz.e_cblp) > 511) {
+		off64_t file_size = file->size();
+		if (file_size != -1) {
+			off64_t image_size = le16_to_cpu(mz.e_cp)*512;
+			if (mz.e_cblp != 0)
+				image_size -= 512 - le16_to_cpu(mz.e_cblp);
+			if (file_size < image_size) {
+				fields->addField_string(C_("RomData", "Warning"),
+					C_("EXE", "Program image truncated"), RomFields::STRF_WARNING);
+				shownWarning = true;
+			} else if (file_size > image_size) {
+				fields->addField_string(C_("RomData", "Warning"),
+					C_("EXE", "Extra data after end of file"), RomFields::STRF_WARNING);
+				shownWarning = true;
+			}
+		}
+	}
+
 	// Min/Max allocated memory
-	fields->addField_string(C_("EXE", "Min. Memory"), formatFileSize(le16_to_cpu(mz.e_minalloc) * 16));
-	fields->addField_string(C_("EXE", "Max. Memory"), formatFileSize(le16_to_cpu(mz.e_maxalloc) * 16));
+	if (mz.e_maxalloc != 0) {
+		fields->addField_string(C_("EXE", "Min. Memory"), formatFileSize(le16_to_cpu(mz.e_minalloc) * 16));
+		fields->addField_string(C_("EXE", "Max. Memory"),
+			mz.e_maxalloc == 0xFFFF ? C_("EXE", "All") : formatFileSize(le16_to_cpu(mz.e_maxalloc) * 16));
+	} else {
+		/* NOTE: A "high" load means the program it at the end of the allocated
+		 * area, with extra pragraphs being between PSP and the program.
+		 * Not to be confused with "LOADHIGH" which loads programs into UMB.
+		 */
+		fields->addField_string(C_("EXE", "Load Type"), C_("EXE", "High"));
+	}
 
 	// Initial CS:IP/SS:SP
 	fields->addField_string(C_("EXE", "Initial CS:IP"),
 		rp_sprintf("%04X:%04X", le16_to_cpu(mz.e_cs), le16_to_cpu(mz.e_ip)), RomFields::STRF_MONOSPACE);
 	fields->addField_string(C_("EXE", "Initial SS:SP"),
 		rp_sprintf("%04X:%04X", le16_to_cpu(mz.e_ss), le16_to_cpu(mz.e_sp)), RomFields::STRF_MONOSPACE);
+
+	/* Linkers will happily put 0:0 in SS:SP if the stack is not defined.
+	 * In this case, at least DOS 5 and later will do the following hacks:
+	 * - If progsize < 64k-256, add 256 to it.
+	 * - If allocation size < 64k, set SP to allocation size - 256 (size of PSP)
+	 * The idea is that if a <64k program specifies 0:0 as the stack, it likely
+	 * expects to own 0:FFFF, as that's where the first push will go. Now, the
+	 * default maxalloc is FFFF, so unless you have <64k free memory, it'll
+	 * work fine. This hack improves compatibility with such programs when
+	 * you're low on memory.
+	 * I think this warrants a warning.
+	 */
+	if (mz.e_ss == 0 && mz.e_sp == 0) {
+		if (!shownWarning) {
+			fields->addField_string(C_("RomData", "Warning"),
+				C_("EXE", "No stack"), RomFields::STRF_WARNING);
+		}
+	}
 }
 
 /** LE/LX-specific **/
@@ -398,7 +497,6 @@ EXE::EXE(IRpFile *file)
 	// This class handles different types of files.
 	// d->fileType will be set later.
 	RP_D(EXE);
-	d->className = "EXE";
 	d->mimeType = "application/x-ms-dos-executable";	// unofficial (TODO: More types?)
 	d->fileType = FileType::Unknown;
 
@@ -416,14 +514,14 @@ EXE::EXE(IRpFile *file)
 	}
 
 	// Check if this executable is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->mz);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->mz);
-	info.ext = nullptr;	// Not needed for EXE.
-	info.szFile = 0;	// Not needed for EXE.
-	d->isValid = (isRomSupported_static(&info) >= 0);
+	const DetectInfo info = {
+		{0, sizeof(d->mz), reinterpret_cast<const uint8_t*>(&d->mz)},
+		nullptr,	// ext (not needed for EXE)
+		d->file->size()	// szFile (needed for COM/NE)
+	};
+	d->exeType = static_cast<EXEPrivate::ExeType>(isRomSupported_static(&info));
 
+	d->isValid = ((int)d->exeType >= 0);
 	if (!d->isValid) {
 		// Not an MZ executable.
 		UNREF_AND_NULL_NOCHK(d->file);
@@ -434,16 +532,62 @@ EXE::EXE(IRpFile *file)
 	// file has a DOS MZ executable stub. The actual executable
 	// type is determined here.
 
+	// Special check for 16-bit COM/NE hybrid executables.
+	// Only used by Multitasking MS-DOS 4.0's IBMDOS.COM.
+	if (d->exeType == EXEPrivate::ExeType::COM_NE) {
+		// Check for the NE header at 0x1190.
+		// TODO: Is there a way to determine the offset from the header?
+		size_t size = d->file->seekAndRead(0x1190, &d->hdr.ne, sizeof(d->hdr.ne));
+		if (size != sizeof(d->hdr.ne)) {
+			// Seek and/or read error.
+			d->exeType = EXEPrivate::ExeType::Unknown;
+			d->isValid = false;
+			return;
+		}
+
+		if (d->hdr.ne.sig == cpu_to_be16('NE')) {
+			// NE signature found.
+			d->exeType = EXEPrivate::ExeType::COM_NE;
+			d->fileType = FileType::Executable;
+		} else {
+			// No NE signature found.
+			// This might be a valid COM executable,
+			// but COMs don't have useful headers.
+			d->exeType = EXEPrivate::ExeType::Unknown;
+			d->isValid = false;
+		}
+		return;
+	}
+
 	// Check for MS-DOS executables:
 	// - Relocation table address less than 0x40
 	// - Magic number is 'ZM' (Windows only accepts 'MZ')
 	if (le16_to_cpu(d->mz.e_lfarlc) < 0x40 ||
-	    d->mz.e_magic == cpu_to_be16('ZM')) {
+	    d->mz.e_magic == cpu_to_be16('ZM'))
+	{
 		// MS-DOS executable.
-		d->exeType = EXEPrivate::ExeType::MZ;
-		// TODO: Check for MS-DOS device drivers?
-		d->fileType = FileType::Executable;
-		return;
+		// NOTE: Some EFI executables have a 0 offset for the
+		// relocation table. Check some other fields, and if
+		// they're all zero, assume it's *not* MS-DOS.
+		// NOTE 2: Byteswapping isn't needed for 0 checks.
+		bool isDOS = true;
+		if (d->mz.e_lfarlc == 0) {
+			if (d->mz.e_cp == 0 &&
+			    d->mz.e_cs == 0 && d->mz.e_ip == 0 &&
+			    d->mz.e_ss == 0 && d->mz.e_sp == 0)
+			{
+				// Zero program size, CS:IP, and SS:SP.
+				// This is *not* an MS-DOS executable.
+				isDOS = false;
+			}
+		}
+
+		if (isDOS) {
+			d->exeType = EXEPrivate::ExeType::MZ;
+			// TODO: Check for MS-DOS device drivers?
+			d->fileType = FileType::Executable;
+			return;
+		}
 	}
 
 	// Load the secondary header. (NE/LE/LX/PE)
@@ -453,6 +597,7 @@ EXE::EXE(IRpFile *file)
 	if (hdr_addr < sizeof(d->mz) || hdr_addr >= (d->file->size() - sizeof(d->hdr))) {
 		// PE header address is out of range.
 		d->exeType = EXEPrivate::ExeType::MZ;
+		d->fileType = FileType::Executable;
 		return;
 	}
 
@@ -514,7 +659,7 @@ EXE::EXE(IRpFile *file)
 					break;
 			}
 		}
-	} else if (d->hdr.ne.sig == cpu_to_be16('NE') /* 'NE' */) {
+	} else if (d->hdr.ne.sig == cpu_to_be16('NE')) {
 		// New Executable.
 		d->exeType = EXEPrivate::ExeType::NE;
 
@@ -597,8 +742,9 @@ int EXE::isRomSupported_static(const DetectInfo *info)
 		return static_cast<int>(EXEPrivate::ExeType::Unknown);
 	}
 
+	const uint8_t *const pData = info->header.pData;
 	const IMAGE_DOS_HEADER *const pMZ =
-		reinterpret_cast<const IMAGE_DOS_HEADER*>(info->header.pData);
+		reinterpret_cast<const IMAGE_DOS_HEADER*>(pData);
 
 	// Check the magic number.
 	// This may be either 'MZ' or 'ZM'. ('ZM' is less common.)
@@ -608,6 +754,34 @@ int EXE::isRomSupported_static(const DetectInfo *info)
 		// This is a DOS "MZ" executable.
 		// Specific subtypes are checked later.
 		return static_cast<int>(EXEPrivate::ExeType::MZ);
+	}
+
+	// Check for an x86 jump instruction.
+	// If found, this could be a COM or COM/NE hybrid.
+	bool has_x86_jmp = false;
+	if (pData[0] == 0xEB) {
+		// JMP8
+		// Second byte must be a forward jump. (>= 0)
+		if (((int8_t)pData[1]) >= 0) {
+			has_x86_jmp = true;
+		}
+	} else if (pData[0] == 0xE9) {
+		// JMP16
+		// Offset must either be positive or wrap around to the
+		// end of the executable, and cannot be in the PSP.
+		int16_t offset = (pData[1] | (pData[2] << 8));
+		if (offset > 0 || offset < -259) {
+			uint16_t u_offset = (uint16_t)offset;
+			if (u_offset < info->szFile) {
+				has_x86_jmp = true;
+			}
+		}
+	}
+	if (has_x86_jmp) {
+		// Has a jump instruction.
+		// NOTE: Can't verify the NE header here,
+		// since it's at 0x1190.
+		return static_cast<int>(EXEPrivate::ExeType::COM_NE);
 	}
 
 	// Not supported.
@@ -675,10 +849,19 @@ const char *EXE::systemName(unsigned int type) const
 					return sysNames_NE_PharLap[1][type & SYSNAME_TYPE_MASK];
 				} else {
 					// Not Phar-Lap.
-					return nullptr;
+					return C_("EXE", "Unknown NE");
 				}
 			}
 			return sysNames_NE[d->hdr.ne.targOS][type & SYSNAME_TYPE_MASK];
+		}
+
+		case EXEPrivate::ExeType::COM_NE: {
+			// 16-bit COM/NE hybrid.
+			// Used by Multitasking MS-DOS 4.0's IBMDOS.COM.
+			static const char *const sysNames_MultiDOS[4] = {
+				"Multitasking MS-DOS 4.0", "European DOS", "EuroDOS", nullptr
+			};
+			return sysNames_MultiDOS[type & SYSNAME_TYPE_MASK];
 		}
 
 		case EXEPrivate::ExeType::LE:
@@ -691,7 +874,7 @@ const char *EXE::systemName(unsigned int type) const
 			if (targOS <= NE_OS_WIN386) {
 				return sysNames_NE[targOS][type & SYSNAME_TYPE_MASK];
 			}
-			return nullptr;
+			return C_("EXE", "Unknown LE/LX");
 		}
 
 		case EXEPrivate::ExeType::W3: {
@@ -748,69 +931,7 @@ const char *EXE::systemName(unsigned int type) const
 
 	// Should not get here...
 	assert(!"Unknown EXE type.");
-	return "Unknown EXE type";
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *EXE::supportedFileExtensions_static(void)
-{
-	// References:
-	// - https://en.wikipedia.org/wiki/Portable_Executable
-	static const char *const exts[] = {
-		// PE extensions
-		".exe", ".dll",
-		".acm", ".ax",
-		".cpl", ".drv",
-		".efi", ".mui",
-		".ocx", ".scr",
-		".sys", ".tsp",
-
-		// NE extensions
-		".fon", ".icl",
-
-		// LE extensions
-		".vxd", ".386",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *EXE::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org.
-		"application/x-ms-dos-executable",
-
-		// Unofficial MIME types from Microsoft.
-		// Reference: https://technet.microsoft.com/en-us/library/cc995276.aspx?f=255&MSPPError=-2147217396
-		"application/x-msdownload",
-
-		nullptr
-	};
-	return mimeTypes;
+	return C_("EXE", "Unknown EXE");
 }
 
 /**
@@ -833,26 +954,34 @@ int EXE::loadFieldData(void)
 	}
 
 	// Maximum number of fields:
-	// - NE: 6
+	// - MZ: 7
+	// - NE: 9
 	// - PE: 8
 	//   - PE Version: +6
 	//   - PE Manifest: +12
-	d->fields->reserve(26);
+	d->fields->reserve(27);
 
 	// Executable type.
 	// NOTE: Not translatable.
-	static const char *const exeTypes[(int)EXEPrivate::ExeType::Max] = {
-		"MS-DOS Executable",		// ExeType::MZ
-		"16-bit New Executable",	// ExeType::NE
-		"Mixed-Mode Linear Executable",	// ExeType::LE
-		"Windows/386 Kernel",		// ExeType::W3
-		"32-bit Linear Executable",	// ExeType::LX
-		"32-bit Portable Executable",	// ExeType::PE
-		"64-bit Portable Executable",	// ExeType::PE32PLUS
+	static const char exeTypes_strtbl[] = {
+		"MS-DOS Executable\0"			// ExeType::MZ
+		"16-bit New Executable\0"		// ExeType::NE
+		"16-bit COM/NE Hybrid\0"		// ExeType::COM_NE
+		"Mixed-Mode Linear Executable\0"	// ExeType::LE
+		"Windows/386 Kernel\0"			// ExeType::W3
+		"32-bit Linear Executable\0"		// ExeType::LX
+		"32-bit Portable Executable\0"		// ExeType::PE
+		"64-bit Portable Executable\0"		// ExeType::PE32PLUS
 	};
+	static const uint8_t exeTypes_offtbl[] = {
+		0, 18, 40, 61, 90, 109, 134, 161
+	};
+	static_assert(ARRAY_SIZE(exeTypes_offtbl) == (int)EXEPrivate::ExeType::Max, "Update exeTypes[]!");
+
 	const char *const type_title = C_("EXE", "Type");
 	if (d->exeType >= EXEPrivate::ExeType::MZ && d->exeType < EXEPrivate::ExeType::Max) {
-		d->fields->addField_string(type_title, exeTypes[(int)d->exeType]);
+		const unsigned int offset = exeTypes_offtbl[(int)d->exeType];
+		d->fields->addField_string(type_title, &exeTypes_strtbl[offset]);
 	} else {
 		d->fields->addField_string(type_title, C_("EXE", "Unknown"));
 	}
@@ -863,6 +992,7 @@ int EXE::loadFieldData(void)
 			break;
 
 		case EXEPrivate::ExeType::NE:
+		case EXEPrivate::ExeType::COM_NE:
 			d->addFields_NE();
 			break;
 
@@ -882,7 +1012,9 @@ int EXE::loadFieldData(void)
 	}
 
 	// Add MZ tab for non-MZ executables
-	if (d->exeType != EXEPrivate::ExeType::MZ) {
+	if (d->exeType != EXEPrivate::ExeType::MZ &&
+	    d->exeType != EXEPrivate::ExeType::COM_NE)
+	{
 		// NOTE: This doesn't actually create a separate tab for non-implemented types.
 		d->fields->addTab("MZ");
 		d->addFields_MZ();
@@ -899,9 +1031,8 @@ int EXE::loadFieldData(void)
  */
 bool EXE::hasDangerousPermissions(void) const
 {
-	RP_D(const EXE);
-
 #ifdef ENABLE_XML
+	RP_D(const EXE);
 	// PE executables only.
 	if (d->exeType != EXEPrivate::ExeType::PE &&
 	    d->exeType != EXEPrivate::ExeType::PE32PLUS)

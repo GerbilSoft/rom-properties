@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractIcon_p.hpp: IExtractIcon implementation. (PRIVATE CLASS)      *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -84,7 +84,16 @@ class RP_ExtractIcon_Private
 			HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize);
 
 		/**
+		 * Get the icon index from an icon resource specification,
+		 * e.g. "C:\\Windows\\Some.DLL,1" .
+		 * @param szIconSpec Icon resource specification
+		 * @return Icon index, or 0 (default) if unknown.
+		 */
+		static int getIconIndexFromSpec(LPCTSTR szIconSpec);
+
+		/**
 		 * Fallback icon handler function. (internal)
+		 * This function reads the RP_Fallback key for fallback data.
 		 * @param hkey_Assoc File association key to check.
 		 * @param phiconLarge Large icon.
 		 * @param phiconSmall Small icon.

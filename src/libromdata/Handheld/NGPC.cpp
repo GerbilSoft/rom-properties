@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NGPC.cpp: Neo Geo Pocket (Color) ROM reader.                            *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,9 +20,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(NGPC)
-ROMDATA_IMPL_IMG(NGPC)
-
 class NGPCPrivate final : public RomDataPrivate
 {
 	public:
@@ -31,6 +28,12 @@ class NGPCPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(NGPCPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		/** RomFields **/
@@ -46,29 +49,37 @@ class NGPCPrivate final : public RomDataPrivate
 		};
 		RomType romType;
 
-		// MIME type table.
-		// Ordering matches RomType.
-		static const char *const mimeType_tbl[];
-
 	public:
 		// ROM header.
 		NGPC_RomHeader romHeader;
 };
 
+ROMDATA_IMPL(NGPC)
+ROMDATA_IMPL_IMG(NGPC)
+
 /** NGPCPrivate **/
 
-// MIME type table.
-// Ordering matches RomType.
-const char *const NGPCPrivate::mimeType_tbl[] = {
+/* RomDataInfo */
+const char *const NGPCPrivate::exts[] = {
+	".ngp",  ".ngc", ".ngpc",
+
+	nullptr
+};
+const char *const NGPCPrivate::mimeTypes[] = {
+	// NOTE: Ordering matches RomType.
+
 	// Unofficial MIME types from FreeDesktop.org.
 	"application/x-neo-geo-pocket-rom",
 	"application/x-neo-geo-pocket-color-rom",
 
 	nullptr
 };
+const RomDataInfo NGPCPrivate::romDataInfo = {
+	"NGPC", exts, mimeTypes
+};
 
 NGPCPrivate::NGPCPrivate(NGPC *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, romType(RomType::Unknown)
 {
 	// Clear the various structs.
@@ -94,8 +105,6 @@ NGPC::NGPC(IRpFile *file)
 	: super(new NGPCPrivate(this, file))
 {
 	RP_D(NGPC);
-	d->className = "NGPC";
-
 	if (!d->file) {
 		// Could not ref() the file handle.
 		return;
@@ -113,12 +122,11 @@ NGPC::NGPC(IRpFile *file)
 	}
 
 	// Check if this ROM is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->romHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
-	info.ext = nullptr;	// Not needed for NGPC.
-	info.szFile = 0;	// Not needed for NGPC.
+	const DetectInfo info = {
+		{0, sizeof(d->romHeader), reinterpret_cast<const uint8_t*>(&d->romHeader)},
+		nullptr,	// ext (not needed for NGPC)
+		0		// szFile (not needed for NGPC)
+	};
 	d->romType = static_cast<NGPCPrivate::RomType>(isRomSupported_static(&info));
 	d->isValid = ((int)d->romType >= 0);
 
@@ -128,8 +136,8 @@ NGPC::NGPC(IRpFile *file)
 	}
 
 	// Set the MIME type.
-	if ((int)d->romType < ARRAY_SIZE(d->mimeType_tbl)-1) {
-		d->mimeType = d->mimeType_tbl[(int)d->romType];
+	if ((int)d->romType < ARRAY_SIZE_I(d->mimeTypes)-1) {
+		d->mimeType = d->mimeTypes[(int)d->romType];
 	}
 }
 
@@ -208,44 +216,6 @@ const char *NGPC::systemName(unsigned int type) const
 	// NOTE: This might return an incorrect system name if
 	// d->romType is RomType::TYPE_UNKNOWN.
 	return sysNames[(int)d->romType & 1][type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *NGPC::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".ngp",  ".ngc", ".ngpc",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *NGPC::supportedMimeTypes_static(void)
-{
-	return NGPCPrivate::mimeType_tbl;
 }
 
 /**
@@ -329,7 +299,7 @@ int NGPC::loadFieldData(void)
 		return -EIO;
 	}
 
-	// NGPC ROM header
+	// ROM header is read in the constructor.
 	const NGPC_RomHeader *const romHeader = &d->romHeader;
 	d->fields->reserve(6);	// Maximum of 6 fields.
 
@@ -408,7 +378,7 @@ int NGPC::loadMetaData(void)
 	d->metaData = new RomMetaData();
 	d->metaData->reserve(1);	// Maximum of 1 metadata property.
 
-	// NGPC ROM header
+	// ROM header is read in the constructor.
 	const NGPC_RomHeader *const romHeader = &d->romHeader;
 
 	// Title
@@ -473,10 +443,13 @@ int NGPC::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			return -ENOENT;
 	}
 
+	// ROM header is read in the constructor.
+	const NGPC_RomHeader *const romHeader = &d->romHeader;
+
 	// Game ID and subdirectory.
 	// For game ID, RPDB uses "NEOPxxxx" for NGPC.
 	// TODO: Special cases for duplicates?
-	const uint16_t id_code = (d->romHeader.id_code[1] << 8) | d->romHeader.id_code[0];
+	const uint16_t id_code = (romHeader->id_code[1] << 8) | romHeader->id_code[0];
 	const char *p_extra_subdir = nullptr;
 	char extra_subdir[12];
 	char game_id[13];	// original size is 12
@@ -491,7 +464,7 @@ int NGPC::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 		case 0x1234:	// Some samples
 			// Use the game ID as the extra subdirectory,
 			// and the ROM title as the game ID.
-			memcpy(game_id, d->romHeader.title, sizeof(d->romHeader.title));
+			memcpy(game_id, romHeader->title, sizeof(romHeader->title));
 			game_id[sizeof(game_id)-1] = '\0';
 			// Trim spaces from the game ID.
 			for (int i = (int)sizeof(game_id)-2; i > 0; i--) {

@@ -1,5 +1,4 @@
 # KDE Frameworks 5.x UI frontend
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 CMAKE_POLICY(SET CMP0048 NEW)
 IF(POLICY CMP0063)
 	# CMake 3.3: Enable symbol visibility presets for all
@@ -97,10 +96,10 @@ ENDIF()
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.kf5.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.kf5.h")
 
 # Sources and headers. (common)
-STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kf5_SRCS "${rom-properties-kde_SRCS}")
-STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kf5_H    "${rom-properties-kde_H}")
-STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kf5_UIS  "${rom-properties-kde_UIS}")
-STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kf5_RCC_SRCS "${rom-properties-kde_RCC_SRCS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_SRCS "${rom-properties-kde_SRCS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_H    "${rom-properties-kde_H}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_UIS  "${rom-properties-kde_UIS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_RCC_SRCS "${rom-properties-kde_RCC_SRCS}")
 
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kio5_SRCS "${rom-properties-kio_SRCS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kio5_H    "${rom-properties-kio_H}")
@@ -111,51 +110,43 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/../config.kde.h.in" "${CMAKE_CURRENT
 # Sources and headers. (KF5-specific)
 IF(Qt5Core_FOUND)
 	QT5_ADD_RESOURCES(
-		rom-properties-kf5_RCC_O ${rom-properties-kf5_RCC_SRCS}
+		${PROJECT_NAME}_RCC_O ${${PROJECT_NAME}_RCC_SRCS}
 		OPTIONS -no-compress
 		)
 ENDIF(Qt5Core_FOUND)
 IF(HAVE_QtDBus_NOTIFY)
-	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kf5-notify_SRCS "${rom-properties-kde-notify_SRCS}")
-	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kf5-notify_H    "${rom-properties-kde-notify_H}")
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_SRCS "${rom-properties-kde-notify_SRCS}")
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_H    "${rom-properties-kde-notify_H}")
 
 	# QtDBus wrappers
-	QT5_ADD_DBUS_INTERFACES(rom-properties-kf5_DBUS_IFACE_SRCS
+	QT5_ADD_DBUS_INTERFACES(${PROJECT_NAME}_DBUS_IFACE_SRCS
 		"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.Notifications.xml"
 		)
 ENDIF(HAVE_QtDBus_NOTIFY)
 
-SET(rom-properties-kf5_SRCS
-	${rom-properties-kf5_SRCS}
+SET(${PROJECT_NAME}_SRCS
+	${${PROJECT_NAME}_SRCS}
 	${rom-properties-kio5_SRCS}
-	${rom-properties-kf5-notify_SRCS}
-	${rom-properties-kf5_DBUS_IFACE_SRCS}
-	${rom-properties-kf5_RCC_O}
+	${${PROJECT_NAME}-notify_SRCS}
+	${${PROJECT_NAME}_DBUS_IFACE_SRCS}
+	${${PROJECT_NAME}_RCC_O}
 	RomPropertiesDialogPluginFactoryKF5.cpp
-	ExtractorPlugin.cpp
-	OverlayIconPlugin.cpp
+	../ExtractorPlugin.cpp
+	../OverlayIconPlugin.cpp
 	)
-SET(rom-properties-kf5_H
-	${rom-properties-kf5_H}
+SET(${PROJECT_NAME}_H
+	${${PROJECT_NAME}_H}
 	${rom-properties-kio5_H}
-	${rom-properties-kf5-notify_H}
-	ExtractorPlugin.hpp
-	OverlayIconPlugin.hpp
+	${${PROJECT_NAME}-notify_H}
+	../ExtractorPlugin.hpp
+	../OverlayIconPlugin.hpp
 	)
 
 IF(COMMAND QT5_WRAP_UI)
 	# Wrap UI files.
-	QT5_WRAP_UI(rom-properties-kf5_UIS_H ${rom-properties-kf5_UIS})
-	ADD_CUSTOM_TARGET(kf5_generate_ui_h DEPENDS ${rom-properties-kf5_UIS_H})
+	QT5_WRAP_UI(${PROJECT_NAME}_UIS_H ${${PROJECT_NAME}_UIS})
+	ADD_CUSTOM_TARGET(kf5_generate_ui_h DEPENDS ${${PROJECT_NAME}_UIS_H})
 ENDIF(COMMAND QT5_WRAP_UI)
-
-IF(ENABLE_PCH)
-	# Precompiled headers.
-	INCLUDE(PrecompiledHeader)
-	SET(rom-properties-kf5_PCH_CXX ../stdafx.cpp)
-	SET(rom-properties-kf5_PCH_SRC ${rom-properties-kde4_PCH_CXX})
-	SET(rom-properties-kf5_PCH_H ../stdafx.h)
-ENDIF(ENABLE_PCH)
 
 #####################
 # Build the plugin. #
@@ -163,20 +154,20 @@ ENDIF(ENABLE_PCH)
 
 IF(BUILD_KF5)
 	# Reference: https://community.kde.org/Frameworks/Porting_Notes
-	ADD_LIBRARY(rom-properties-kf5 MODULE
-		${rom-properties-kf5_PCH_SRC} ${rom-properties-kf5_PCH_H}
-		${rom-properties-kf5_SRCS}
-		${rom-properties-kf5_H}
-		${rom-properties-kf5_UIS_H}
+	ADD_LIBRARY(${PROJECT_NAME} MODULE
+		${${PROJECT_NAME}_SRCS}
+		${${PROJECT_NAME}_H}
+		${${PROJECT_NAME}_UIS_H}
 		)
 	IF(ENABLE_PCH)
-		ADD_PRECOMPILED_HEADER(rom-properties-kf5 ${rom-properties-kf5_PCH_H}
-			SOURCE_CXX ${rom-properties-kf5_PCH_CXX}
+		TARGET_PRECOMPILE_HEADERS(${PROJECT_NAME} PRIVATE
+			"${RP_CONFIG_LIBC_H}" "${RP_CXX11_COMPAT_H}"
+			../stdafx.h
 			)
 	ENDIF(ENABLE_PCH)
-	SET_TARGET_PROPERTIES(rom-properties-kf5 PROPERTIES PREFIX "")
-	DO_SPLIT_DEBUG(rom-properties-kf5)
-	TARGET_INCLUDE_DIRECTORIES(rom-properties-kf5
+	SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES PREFIX "")
+	DO_SPLIT_DEBUG(${PROJECT_NAME})
+	TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
 		PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# kf5
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# kf5
 		PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# kde
@@ -184,54 +175,44 @@ IF(BUILD_KF5)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>	# src
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# src
 		)
-	TARGET_LINK_LIBRARIES(rom-properties-kf5 PRIVATE romdata rpfile rpbase unixcommon)
-	IF(ENABLE_NLS)
-		TARGET_LINK_LIBRARIES(rom-properties-kf5 PRIVATE i18n)
-	ENDIF(ENABLE_NLS)
-	TARGET_LINK_LIBRARIES(rom-properties-kf5 PRIVATE ${ZLIB_LIBRARY})
-	TARGET_LINK_LIBRARIES(rom-properties-kf5 PUBLIC KF5::KIOCore KF5::KIOWidgets KF5::WidgetsAddons KF5::FileMetaData)
-	TARGET_LINK_LIBRARIES(rom-properties-kf5 PUBLIC Qt5::Widgets Qt5::Gui Qt5::Core)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE romdata)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC KF5::KIOCore KF5::KIOWidgets KF5::WidgetsAddons KF5::FileMetaData)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC Qt5::Widgets Qt5::Gui Qt5::Core)
 	IF(HAVE_QtDBus_NOTIFY)
-		TARGET_LINK_LIBRARIES(rom-properties-kf5 PUBLIC Qt5::DBus)
+		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC Qt5::DBus)
 	ENDIF(HAVE_QtDBus_NOTIFY)
 
-	# Add zlib and png directories for the About tab.
-	IF(HAVE_ZLIB)
-		TARGET_INCLUDE_DIRECTORIES(rom-properties-kf5 PRIVATE ${ZLIB_INCLUDE_DIRS})
-	ENDIF(HAVE_ZLIB)
-	IF(HAVE_PNG)
-		TARGET_INCLUDE_DIRECTORIES(rom-properties-kf5 PRIVATE ${PNG_INCLUDE_DIRS})
-	ENDIF(HAVE_PNG)
-
 	# ExtractorPluginForwarder
-	ADD_LIBRARY(kfilemetadata_rom-properties-kf5 MODULE
+	ADD_LIBRARY(kfilemetadata_${PROJECT_NAME} MODULE
 		ExtractorPluginForwarder.cpp
 		ExtractorPluginForwarder.hpp
 		)
-	SET_TARGET_PROPERTIES(kfilemetadata_rom-properties-kf5 PROPERTIES PREFIX "")
-	DO_SPLIT_DEBUG(kfilemetadata_rom-properties-kf5)
-	TARGET_LINK_LIBRARIES(kfilemetadata_rom-properties-kf5 PRIVATE KF5::KIOCore KF5::FileMetaData)
+	SET_TARGET_PROPERTIES(kfilemetadata_${PROJECT_NAME} PROPERTIES PREFIX "")
+	DO_SPLIT_DEBUG(kfilemetadata_${PROJECT_NAME})
+	TARGET_LINK_LIBRARIES(kfilemetadata_${PROJECT_NAME} PRIVATE KF5::KIOCore KF5::FileMetaData)
+	TARGET_LINK_LIBRARIES(kfilemetadata_${PROJECT_NAME} PRIVATE Qt5::Core)
 
 	# Link in libdl if it's required for dlopen().
 	IF(CMAKE_DL_LIBS)
-		TARGET_LINK_LIBRARIES(kfilemetadata_rom-properties-kf5 PRIVATE ${CMAKE_DL_LIBS})
+		TARGET_LINK_LIBRARIES(kfilemetadata_${PROJECT_NAME} PRIVATE ${CMAKE_DL_LIBS})
 	ENDIF(CMAKE_DL_LIBS)
 
 	# OverlayIconPluginForwarder
 	# TODO: Use kcoreaddons_add_plugin() for the JSON?
 	# https://github.com/owncloud/client/blob/master/shell_integration/dolphin/CMakeLists.txt
 	# TODO: Better name.
-	ADD_LIBRARY(overlayiconplugin_rom-properties-kf5 MODULE
+	ADD_LIBRARY(overlayiconplugin_${PROJECT_NAME} MODULE
 		OverlayIconPluginForwarder.cpp
 		OverlayIconPluginForwarder.hpp
 		)
-	SET_TARGET_PROPERTIES(overlayiconplugin_rom-properties-kf5 PROPERTIES PREFIX "")
-	DO_SPLIT_DEBUG(overlayiconplugin_rom-properties-kf5)
-	TARGET_LINK_LIBRARIES(overlayiconplugin_rom-properties-kf5 PRIVATE KF5::KIOCore KF5::KIOWidgets)
+	SET_TARGET_PROPERTIES(overlayiconplugin_${PROJECT_NAME} PROPERTIES PREFIX "")
+	DO_SPLIT_DEBUG(overlayiconplugin_${PROJECT_NAME})
+	TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE KF5::KIOCore KF5::KIOWidgets)
+	TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE Qt5::Core)
 
 	# Link in libdl if it's required for dlopen().
 	IF(CMAKE_DL_LIBS)
-		TARGET_LINK_LIBRARIES(overlayiconplugin_rom-properties-kf5 PRIVATE ${CMAKE_DL_LIBS})
+		TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE ${CMAKE_DL_LIBS})
 	ENDIF(CMAKE_DL_LIBS)
 
 	# FIXME: Workaround for gcc-5.4.0 LTO bug.
@@ -252,6 +233,7 @@ ENDIF(BUILD_KF5)
 
 IF(BUILD_KF5)
 	# Process MIME types for the .desktop and .json files.
+	# FIXME: Need to add a dependency to ensure these files are regenerated if the XDG files are changed.
 	INCLUDE(ParseMimeTypes)
 	PARSE_MIME_TYPES(MIMETYPES_THUMBONLY
 		"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
@@ -264,26 +246,26 @@ IF(BUILD_KF5)
 		"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
 		"${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types"
 		)
-	CONFIGURE_FILE(rom-properties-kf5.KPropertiesDialog.desktop.in rom-properties-kf5.KPropertiesDialog.desktop @ONLY)
-	CONFIGURE_FILE(rom-properties-kf5.ThumbCreator.desktop.in      rom-properties-kf5.ThumbCreator.desktop @ONLY)
-	CONFIGURE_FILE(rom-properties-kf5.json.in                      rom-properties-kf5.json    @ONLY)
+	CONFIGURE_FILE(${PROJECT_NAME}.KPropertiesDialog.desktop.in ${PROJECT_NAME}.KPropertiesDialog.desktop @ONLY)
+	CONFIGURE_FILE(${PROJECT_NAME}.ThumbCreator.desktop.in      ${PROJECT_NAME}.ThumbCreator.desktop @ONLY)
+	CONFIGURE_FILE(${PROJECT_NAME}.json.in                      ${PROJECT_NAME}.json    @ONLY)
 
 	# FIXME: Installing the main plugin into ${KF5_PRPD_PLUGIN_INSTALL_DIR}
 	# breaks thumbnails. We might need to make a KPropertiesDialog forwarder.
-	INSTALL(TARGETS rom-properties-kf5
+	INSTALL(TARGETS ${PROJECT_NAME}
 		LIBRARY DESTINATION "${KF5_PLUGIN_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
-	INSTALL(TARGETS kfilemetadata_rom-properties-kf5
+	INSTALL(TARGETS kfilemetadata_${PROJECT_NAME}
 		LIBRARY DESTINATION "${KF5_KFMD_PLUGIN_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
-	INSTALL(TARGETS overlayiconplugin_rom-properties-kf5
+	INSTALL(TARGETS overlayiconplugin_${PROJECT_NAME}
 		LIBRARY DESTINATION "${KF5_KOVI_PLUGIN_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
-	INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/rom-properties-kf5.KPropertiesDialog.desktop"
-		      "${CMAKE_CURRENT_BINARY_DIR}/rom-properties-kf5.ThumbCreator.desktop"
+	INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.KPropertiesDialog.desktop"
+		      "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.ThumbCreator.desktop"
 		DESTINATION "${SERVICES_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
@@ -292,7 +274,7 @@ IF(BUILD_KF5)
 	# Check if a split debug file should be installed.
 	IF(INSTALL_DEBUG)
 		# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
-		GET_TARGET_PROPERTY(DEBUG_FILENAME rom-properties-kf5 PDB)
+		GET_TARGET_PROPERTY(DEBUG_FILENAME ${PROJECT_NAME} PDB)
 		IF(DEBUG_FILENAME)
 			INSTALL(FILES "${DEBUG_FILENAME}"
 				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${KF5_PLUGIN_INSTALL_DIR}"
@@ -300,7 +282,7 @@ IF(BUILD_KF5)
 				)
 		ENDIF(DEBUG_FILENAME)
 
-		GET_TARGET_PROPERTY(DEBUG_FILENAME kfilemetadata_rom-properties-kf5 PDB)
+		GET_TARGET_PROPERTY(DEBUG_FILENAME kfilemetadata_${PROJECT_NAME} PDB)
 		IF(DEBUG_FILENAME)
 			INSTALL(FILES "${DEBUG_FILENAME}"
 				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${KF5_KFMD_PLUGIN_INSTALL_DIR}"
@@ -308,7 +290,7 @@ IF(BUILD_KF5)
 				)
 		ENDIF(DEBUG_FILENAME)
 
-		GET_TARGET_PROPERTY(DEBUG_FILENAME overlayiconplugin_rom-properties-kf5 PDB)
+		GET_TARGET_PROPERTY(DEBUG_FILENAME overlayiconplugin_${PROJECT_NAME} PDB)
 		IF(DEBUG_FILENAME)
 			INSTALL(FILES "${DEBUG_FILENAME}"
 				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${KF5_KOVI_PLUGIN_INSTALL_DIR}"

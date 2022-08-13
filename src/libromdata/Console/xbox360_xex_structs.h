@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * xbox360_xex_structs.h: Microsoft Xbox 360 executable data structures.   *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -450,10 +450,11 @@ ASSERT_STRUCT(XEX2_Execution_ID, 24);
  * NOTE: This field is supposed to be 10 DWORDs,
  * but only 14 rating regions have been assigned.
  */
+// Some compilers pad this structure to a multiple of 4 bytes
 #pragma pack(1)
 typedef union PACKED _XEX2_Game_Ratings {
 	uint8_t ratings[14];
-	struct {
+	struct PACKED {
 		uint8_t esrb;		// [0x000] See XEX2_Game_Ratings_ESRB_e
 		uint8_t pegi;		// [0x001] See XEX2_Game_Ratings_PEGI_e
 		uint8_t pegi_fi;	// [0x002] See XEX2_Game_Ratings_PEGI_FI_e
@@ -470,8 +471,8 @@ typedef union PACKED _XEX2_Game_Ratings {
 		uint8_t singapore;	// [0x00D]
 	};
 } XEX2_Game_Ratings;
-#pragma pack()
 ASSERT_STRUCT(XEX2_Game_Ratings, 14);
+#pragma pack()
 
 /**
  * XEX2: ESRB ratings value.

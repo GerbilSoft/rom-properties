@@ -56,14 +56,26 @@ FUNCTION(CHECK_64BIT_TIME_SUPPORT)
 			ELSE()
 				# Try adding 64-bit time_t macros.
 				# Reference: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign?rev=115
+				# NOTE: Requires LFS.
+				INCLUDE(CheckLargeFileSupport)
+				CHECK_LARGE_FILE_SUPPORT()
 				SET(TMP_TIME64_DEFINITIONS -D_TIME_BITS=64)
 				TRY_COMPILE(TMP_TIME64_FOUND "${CMAKE_BINARY_DIR}"
 					"${TIME64_SOURCE_PATH}/64BitTimeSupport.c"
-					COMPILE_DEFINITIONS ${TMP_TIME64_DEFINITIONS})
+					COMPILE_DEFINITIONS ${LFS_DEFINITIONS} ${TMP_TIME64_DEFINITIONS})
 				IF(TMP_TIME64_FOUND)
 					# TIME64 macros work.
-					MESSAGE(STATUS "Checking if time_t is 64-bit - yes, using -D_TIME_BITS=64")
-					SET(TMP_TIME64_FOUND_TIME_BITS 1)
+					# FIXME: glibc-2.34's fcntl()/ioctl() redirection is broken in C++ mode.
+					TRY_COMPILE(TMP_TIME64_FCNTL_OK "${CMAKE_BINARY_DIR}"
+						"${TIME64_SOURCE_PATH}/64BitTimeSupportFcntl.cpp"
+						COMPILE_DEFINITIONS ${LFS_DEFINITIONS} ${TMP_TIME64_DEFINITIONS})
+					IF(TMP_TIME64_FCNTL_OK)
+						MESSAGE(STATUS "Checking if time_t is 64-bit - yes, using -D_TIME_BITS=64")
+						SET(TMP_TIME64_FOUND_TIME_BITS 1)
+					ELSE()
+						MESSAGE(STATUS "Checking if time_t is 64-bit - no, redirection is broken in C++")
+						SET(TMP_TIME64_FOUND_TIME_BITS 1)
+					ENDIF()
 				ELSE()
 					# TIME64 macros failed.
 					MESSAGE(STATUS "Checking if time_t is 64-bit - no")

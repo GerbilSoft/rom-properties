@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * userdirs.cpp: Find user directories.                                    *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,48 +10,22 @@
 // This is usually encoded as UTF-8.
 #include "userdirs.hpp"
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cassert>
 #include <cstring>
 
-// C++ includes.
+// C++ includes
 #include <string>
 using std::string;
 
-// Windows SDK.
+// Windows SDK
 #include "RpWin32_sdk.h"
 #include <shlobj.h>
 
+// MiniU82T
+#include "MiniU82T.hpp"
+
 namespace LibWin32Common {
-
-/**
- * Internal W2U8() function.
- * @param wcs TCHAR string.
- * @return UTF-8 C++ string.
- */
-static inline string W2U8(const wchar_t *wcs)
-{
-	string s_ret;
-
-	// NOTE: cbMbs includes the NULL terminator.
-	int cbMbs = WideCharToMultiByte(CP_UTF8, 0, wcs, -1, nullptr, 0, nullptr, nullptr);
-	if (cbMbs <= 1) {
-		return s_ret;
-	}
-	cbMbs--;
- 
-	char *const mbs = new char[cbMbs];
-	WideCharToMultiByte(CP_UTF8, 0, wcs, -1, mbs, cbMbs, nullptr, nullptr);
-	s_ret.assign(mbs, cbMbs);
-	delete[] mbs;
-	return s_ret;
-}
-#ifdef UNICODE
-# define T2U8(wcs) W2U8(wcs)
-#else /* !UNICODE */
-// TODO: Convert ANSI to UTF-8?
-# define T2U8(mbs) (mbs)
-#endif /* UNICODE */
 
 /**
  * Get a CSIDL path using SHGetFolderPath().
@@ -138,10 +112,8 @@ string getCacheDirectory(void)
 			// Path obtained.
 			cache_dir = W2U8(pszPath);
 		}
-		if (pszPath) {
-			CoTaskMemFree(pszPath);
-			pszPath = nullptr;
-		}
+		CoTaskMemFree(pszPath);
+		pszPath = nullptr;
 
 		if (cache_dir.empty()) {
 			// SHGetKnownFolderPath(FOLDERID_LocalAppDataLow) failed.
@@ -154,10 +126,8 @@ string getCacheDirectory(void)
 				// Path obtained.
 				cache_dir = W2U8(pszPath);
 			}
-			if (pszPath) {
-				CoTaskMemFree(pszPath);
-				pszPath = nullptr;
-			}
+			CoTaskMemFree(pszPath);
+			pszPath = nullptr;
 		}
 	}
 

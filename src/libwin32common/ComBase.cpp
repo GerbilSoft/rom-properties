@@ -8,13 +8,10 @@
 
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
 #include "ComBase.hpp"
-#include "HiDPI.h"
 
 // C includes. (C++ namespace)
 #include <cassert>
-
-// librpthreads
-#include "librpthreads/pthread_once.h"
+#include <stdio.h>
 
 // IUnknown
 #include <unknwn.h>
@@ -22,62 +19,25 @@
 namespace LibWin32Common {
 
 // References of all objects.
-volatile ULONG RP_ulTotalRefCount = 0;
-
-/** Dynamically loaded common functions **/
-static volatile pthread_once_t once_control = PTHREAD_ONCE_INIT;
-
-// IsThemeActive()
-static HMODULE hUxTheme_dll = nullptr;
-PFNISTHEMEACTIVE pfnIsThemeActive = nullptr;
-
-static void initFnPtrs(void)
-{
-	// UXTHEME.DLL!IsThemeActive
-	hUxTheme_dll = LoadLibrary(_T("uxtheme.dll"));
-	assert(hUxTheme_dll != nullptr);
-	if (hUxTheme_dll) {
-		pfnIsThemeActive = reinterpret_cast<PFNISTHEMEACTIVE>(GetProcAddress(hUxTheme_dll, "IsThemeActive"));
-		if (!pfnIsThemeActive) {
-			FreeLibrary(hUxTheme_dll);
-			hUxTheme_dll = nullptr;
-		}
-	}
-}
+static volatile ULONG RP_ulTotalRefCount = 0;
 
 void incRpGlobalRefCount(void)
 {
-	ULONG ulRefCount = InterlockedIncrement(&RP_ulTotalRefCount);
-
-	// Make sure the function pointers are initialized.
-	pthread_once((pthread_once_t*)&once_control, initFnPtrs);
+	InterlockedIncrement(&RP_ulTotalRefCount);
 }
 
 void decRpGlobalRefCount(void)
 {
-	ULONG ulRefCount = InterlockedDecrement(&RP_ulTotalRefCount);
-	if (ulRefCount != 0)
-		return;
+	InterlockedDecrement(&RP_ulTotalRefCount);
+}
 
-	// Last Release(). Unload the function pointers.
-	// NOTE: once_control should not be PTHREAD_ONCE_INIT here.
-	assert(once_control != PTHREAD_ONCE_INIT);
-	// This is always correct for our pthread_once() implementation.
-	while (once_control != 1) {
-		SwitchToThread();
-	}
-
-	if (hUxTheme_dll) {
-		pfnIsThemeActive = nullptr;
-		FreeLibrary(hUxTheme_dll);
-		hUxTheme_dll = nullptr;
-	}
-
-	// Unload modules needed for High-DPI, if necessary.
-	rp_DpiUnloadModules();
-
-	// Finished unloading function pointers.
-	once_control = PTHREAD_ONCE_INIT;
+/**
+ * Is an RP_ComBase object referenced?
+ * @return True if RP_ulTotalRefCount > 0; false if not.
+ */
+bool ComBase_isReferenced(void)
+{
+	return (RP_ulTotalRefCount > 0);
 }
 
 /**

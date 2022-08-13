@@ -8,7 +8,7 @@
 
 #include "seccomp-debug.h"
 
-#ifndef NDEBUG
+#ifdef ENABLE_SECCOMP_DEBUG
 
 #include <seccomp.h>
 
@@ -137,4 +137,4 @@ void seccomp_debug_install_sigsys(void)
 	sigaction(SIGSYS, &act, NULL);
 }
 
-#endif /* !NDEBUG */
+#endif /* !ENABLE_SECCOMP_DEBUG */

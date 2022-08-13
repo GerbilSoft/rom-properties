@@ -1,0 +1,18 @@
+{
+    "KPlugin": {
+        "MimeTypes": [
+@MIMETYPES_ALL_JSON_ARRAY@
+        ],
+        "Name": "rom-properties-kf6",
+        "Description": "ROM Properties Page for KDE Frameworks 6",
+        "ServiceTypes": [
+            "KPropertiesDialog/Plugin"
+        ]
+    },
+    "MimeType": "@MIMETYPES_ALL@",
+    "X-KDE-Protocol": "file",
+    "X-KDE-Protocols": [
+        "file",
+        "desktop"
+    ]
+}

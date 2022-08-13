@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * AesCipherTest.cpp: AesCipher class test.                                *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,12 +12,7 @@
 
 // AesCipher
 #include "../crypto/IAesCipher.hpp"
-#ifdef _WIN32
-# include "../crypto/AesCAPI.hpp"
-# include "../crypto/AesCAPI_NG.hpp"
-#else /* !_WIN32 */
-# include "../crypto/AesNettle.hpp"
-#endif /* _WIN32 */
+#include "../crypto/AesCipherFactory.hpp"
 
 // C includes. (C++ namespace)
 #include <cstdio>
@@ -651,7 +646,7 @@ static const uint8_t aes256ctr_ciphertext[64] = {
 
 #define AesDecryptTestSet(klass, isRequired) \
 static IAesCipher *createIAesCipher_##klass(void) { \
-	return new Aes##klass(); \
+	return AesCipherFactory::create(AesCipherFactory::Implementation::klass); \
 } \
 INSTANTIATE_TEST_SUITE_P(AesDecryptTest_##klass, AesCipherTest, \
 	::testing::Values( \
@@ -700,9 +695,10 @@ INSTANTIATE_TEST_SUITE_P(AesDecryptTest_##klass, AesCipherTest, \
 #ifdef _WIN32
 AesDecryptTestSet(CAPI, true)
 AesDecryptTestSet(CAPI_NG, false)
-#else /* !_WIN32 */
-AesDecryptTestSet(Nettle, true)
 #endif /* _WIN32 */
+#ifdef HAVE_NETTLE
+AesDecryptTestSet(Nettle, true)
+#endif /* HAVE_NETTLE */
 
 } }
 

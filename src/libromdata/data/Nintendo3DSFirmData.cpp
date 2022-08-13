@@ -2,45 +2,20 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Nintendo3DSFirmData.cpp: Nintendo 3DS firmware data.                    *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "Nintendo3DSFirmData.hpp"
 
-namespace LibRomData {
-
-class Nintendo3DSFirmDataPrivate {
-	private:
-		// Static class.
-		Nintendo3DSFirmDataPrivate();
-		~Nintendo3DSFirmDataPrivate();
-		RP_DISABLE_COPY(Nintendo3DSFirmDataPrivate)
-
-	public:
-		/**
-		 * Firmware binary version information.
-		 * NOTE: Sorted by CRC32 for bsearch().
-		 */
-		static const Nintendo3DSFirmData::FirmBin_t firmBins[];
-
-		/**
-		 * Comparison function for bsearch().
-		 * @param a
-		 * @param b
-		 * @return
-		 */
-		static int RP_C_API compar(const void *a, const void *b);
-};
-
-/** Nintendo3DSFirmDataPrivate **/
+namespace LibRomData { namespace Nintendo3DSFirmData {
 
 /**
  * Firmware binary version information.
  * NOTE: Sorted by CRC32 for bsearch().
  */
-const Nintendo3DSFirmData::FirmBin_t Nintendo3DSFirmDataPrivate::firmBins[] = {
+static const FirmBin_t firmBins[] = {
 	{0x0FD41774, {2,27, 0}, { 1,0}, false},
 	{0x104F1A22, {2,50, 9}, {10,2}, true},
 	{0x11A9A4BA, {2,36, 0}, { 5,1}, false},
@@ -95,31 +70,31 @@ const Nintendo3DSFirmData::FirmBin_t Nintendo3DSFirmDataPrivate::firmBins[] = {
  * @param b
  * @return
  */
-int RP_C_API Nintendo3DSFirmDataPrivate::compar(const void *a, const void *b)
+static int RP_C_API compar(const void *a, const void *b)
 {
-	uint32_t crc_1 = static_cast<const Nintendo3DSFirmData::FirmBin_t*>(a)->crc;
-	uint32_t crc_2 = static_cast<const Nintendo3DSFirmData::FirmBin_t*>(b)->crc;
+	uint32_t crc_1 = static_cast<const FirmBin_t*>(a)->crc;
+	uint32_t crc_2 = static_cast<const FirmBin_t*>(b)->crc;
 	if (crc_1 < crc_2) return -1;
 	if (crc_1 > crc_2) return 1;
 	return 0;
 }
 
-/** Nintendo3DSFirmData **/
+/** Public functions **/
 
 /**
  * Look up a Nintendo 3DS firmware binary.
  * @param Firmware binary CRC32.
  * @return Firmware binary data, or nullptr if not found.
  */
-const Nintendo3DSFirmData::FirmBin_t *Nintendo3DSFirmData::lookup_firmBin(const uint32_t crc)
+const FirmBin_t *lookup_firmBin(const uint32_t crc)
 {
 	// Do a binary search.
 	const FirmBin_t key = {crc, {0,0,0}, {0,0}, false};
 	return static_cast<const FirmBin_t*>(bsearch(&key,
-			Nintendo3DSFirmDataPrivate::firmBins,
-			ARRAY_SIZE(Nintendo3DSFirmDataPrivate::firmBins)-1,
+			firmBins,
+			ARRAY_SIZE(firmBins)-1,
 			sizeof(FirmBin_t),
-			Nintendo3DSFirmDataPrivate::compar));
+			compar));
 }
 
-}
+} }

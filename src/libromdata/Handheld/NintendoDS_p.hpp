@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoDS.hpp: Nintendo DS(i) ROM reader. (Private class)              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -38,6 +38,12 @@ class NintendoDSPrivate final : public LibRpBase::RomDataPrivate
 	private:
 		typedef LibRpBase::RomDataPrivate super;
 		RP_DISABLE_COPY(NintendoDSPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const LibRpBase::RomDataInfo romDataInfo;
 
 	public:
 		// Animated icon data.
@@ -150,9 +156,23 @@ class NintendoDSPrivate final : public LibRpBase::RomDataPrivate
 		 */
 		inline uint32_t totalUsedRomSize(void) const
 		{
-			return likely(romType < RomType::DSi_Enhanced)
-				? le32_to_cpu(romHeader.total_used_rom_size)
-				: le32_to_cpu(romHeader.dsi.total_used_rom_size);
+			if (likely(romType < RomType::DSi_Enhanced)) {
+				// NDS ROM. Return the NDS total used ROM size.
+				// NOTE: 0x88 is added for the "cloneplay" RSA key.
+				// References:
+				// - https://github.com/d0k3/GodMode9/issues/721
+				// - https://github.com/DS-Homebrew/GodMode9i/commit/43f440c9fa449ac953ad27798df5b31b2b903157
+				// - https://github.com/DS-Homebrew/nds-bootstrap/commit/24243ff4ad6a9bf9c47c16b3e285dc85266b9372
+				// - https://github.com/DS-Homebrew/nds-bootstrap/releases/tag/v0.44.2
+				const uint32_t nds_rom_size = le32_to_cpu(romHeader.total_used_rom_size) + 0x88;
+				return (static_cast<off64_t>(nds_rom_size) < this->romSize
+					? nds_rom_size
+					: static_cast<uint32_t>(this->romSize));
+			}
+
+			// DSi ROM. Return the DSi total used ROM size.
+			// NOTE: "cloneplay" RSA key is included in here.
+			return le32_to_cpu(romHeader.dsi.total_used_rom_size);
 		}
 
 		/**
@@ -193,18 +213,19 @@ class NintendoDSPrivate final : public LibRpBase::RomDataPrivate
 		const char *getNDSSecureAreaString(void);
 
 		/**
-		 * Convert a Nintendo DS(i) region value to a GameTDB region code.
+		 * Convert a Nintendo DS(i) region value to a GameTDB language code.
 		 * @param ndsRegion Nintendo DS region.
 		 * @param dsiRegion Nintendo DSi region.
 		 * @param idRegion Game ID region.
 		 *
-		 * NOTE: Mulitple GameTDB region codes may be returned, including:
-		 * - User-specified fallback region. [TODO]
-		 * - General fallback region.
+		 * NOTE: Mulitple GameTDB language codes may be returned, including:
+		 * - User-specified fallback language code for PAL.
+		 * - General fallback language code.
 		 *
-		 * @return GameTDB region code(s), or empty vector if the region value is invalid.
+		 * @return GameTDB language code(s), or empty vector if the region value is invalid.
+		 * NOTE: The language code may need to be converted to uppercase!
 		 */
-		static std::vector<const char*> ndsRegionToGameTDB(
+		static std::vector<uint16_t> ndsRegionToGameTDB(
 			uint8_t ndsRegion, uint32_t dsiRegion, char idRegion);
 
 		/**
@@ -230,7 +251,7 @@ class NintendoDSPrivate final : public LibRpBase::RomDataPrivate
 		 * Get the default language code for the multi-string fields.
 		 * @return Language code, e.g. 'en' or 'es'.
 		 */
-		inline uint32_t getDefaultLC(void) const;
+		uint32_t getDefaultLC(void) const;
 };
 
 }

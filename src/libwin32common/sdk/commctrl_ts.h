@@ -1315,7 +1315,7 @@ static FORCEINLINE BOOL Edit_HideBalloonTip(_In_ HWND hwnd)
 
 #if _WIN32_WINNT >= 0x0600
 // NOTE: Not actually used for anything.
-// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20071025-00/?p=24693
+// Reference: https://devblogs.microsoft.com/oldnewthing/20071025-00/?p=24693
 #undef Edit_SetHilite
 static FORCEINLINE void Edit_SetHilite(_In_ HWND hwndCtl, _In_ int ichStart, _In_ int ichEnd)
 	{ (void)SNDMSG(hwndCtl, EM_SETHILITE, STATIC_CAST(WPARAM)(ichStart), STATIC_CAST(LPARAM)(ichEnd)); }

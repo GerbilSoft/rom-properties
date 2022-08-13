@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SID.hpp: SID audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,8 +20,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(SID)
-
 class SIDPrivate final : public RomDataPrivate
 {
 	public:
@@ -32,15 +30,39 @@ class SIDPrivate final : public RomDataPrivate
 		RP_DISABLE_COPY(SIDPrivate)
 
 	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
+
+	public:
 		// SID header.
 		// NOTE: **NOT** byteswapped in memory.
 		SID_Header sidHeader;
 };
 
+ROMDATA_IMPL(SID)
+
 /** SIDPrivate **/
 
+/* RomDataInfo */
+const char *const SIDPrivate::exts[] = {
+	".sid", ".psid",
+
+	nullptr
+};
+const char *const SIDPrivate::mimeTypes[] = {
+	// Official MIME types.
+	"audio/prs.sid",
+
+	nullptr
+};
+const RomDataInfo SIDPrivate::romDataInfo = {
+	"SID", exts, mimeTypes
+};
+
 SIDPrivate::SIDPrivate(SID *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 {
 	// Clear the SID header struct.
 	memset(&sidHeader, 0, sizeof(sidHeader));
@@ -65,7 +87,6 @@ SID::SID(IRpFile *file)
 	: super(new SIDPrivate(this, file))
 {
 	RP_D(SID);
-	d->className = "SID";
 	d->mimeType = "audio/prs.sid";	// official
 	d->fileType = FileType::AudioFile;
 
@@ -83,12 +104,11 @@ SID::SID(IRpFile *file)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->sidHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->sidHeader);
-	info.ext = nullptr;	// Not needed for SID.
-	info.szFile = 0;	// Not needed for SID.
+	const DetectInfo info = {
+		{0, sizeof(d->sidHeader), reinterpret_cast<const uint8_t*>(&d->sidHeader)},
+		nullptr,	// ext (not needed for SID)
+		0		// szFile (not needed for SID)
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
@@ -153,50 +173,6 @@ const char *SID::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *SID::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".sid", ".psid",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *SID::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Official MIME types.
-		"audio/prs.sid",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

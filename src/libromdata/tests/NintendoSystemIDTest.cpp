@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata/tests)                 *
- * CtrKeyScramblerTest.cpp: CtrKeyScrambler class test.                    *
+ * NintendoSystemIDTest.cpp: Nintendo System ID structs test.              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -63,7 +63,7 @@ TEST_F(NintendoSystemIDTest, leTest)
  */
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-	fprintf(stderr, "LibRomData test suite: NintendoSystemIDTest tests.\n\n");
+	fprintf(stderr, "LibRomData test suite: NintendoSystemID tests.\n\n");
 	fflush(nullptr);
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.

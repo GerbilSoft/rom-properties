@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyStoreItemDelegate.cpp: KeyStore item delegate for QListView.         *
  *                                                                         *
- * Copyright (c) 2013-2020 by David Korth.                                 *
+ * Copyright (c) 2013-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -53,6 +53,8 @@ KeyStoreItemDelegate::KeyStoreItemDelegate(QObject *parent)
 	m_validHexKeyOrKanji = new QRegExpValidator(
 		QRegExp(QLatin1String(regex_validHexKeyOrKanji)), this);
 #endif
+	m_validHexKey->setObjectName(QLatin1String("validHexKey"));
+	m_validHexKeyOrKanji->setObjectName(QLatin1String("validHexKeyOrKanji"));
 }
 
 QWidget *KeyStoreItemDelegate::createEditor(QWidget *parent,
@@ -61,8 +63,7 @@ QWidget *KeyStoreItemDelegate::createEditor(QWidget *parent,
 {
 	Q_UNUSED(option);
 	Q_UNUSED(index);
-	QLineEdit *editor = new QLineEdit(parent);
-	return editor;
+	return new QLineEdit(parent);
 }
 
 void KeyStoreItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const

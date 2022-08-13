@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ADX.hpp: CRI ADX audio reader.                                          *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,8 +20,6 @@ using std::string;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(ADX)
-
 class ADXPrivate final : public RomDataPrivate
 {
 	public:
@@ -32,16 +30,45 @@ class ADXPrivate final : public RomDataPrivate
 		RP_DISABLE_COPY(ADXPrivate)
 
 	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
+
+	public:
 		// ADX header.
 		// NOTE: **NOT** byteswapped in memory.
 		ADX_Header adxHeader;
 		const ADX_LoopData *pLoopData;
 };
 
+ROMDATA_IMPL(ADX)
+
 /** ADXPrivate **/
 
+/* RomDataInfo */
+const char *const ADXPrivate::exts[] = {
+	".adx",
+	".ahx",	// TODO: Is this used for AHX format?
+
+	// TODO: AAX is two ADXes glued together.
+	//".aax",
+
+	nullptr
+};
+const char *const ADXPrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"audio/x-adx",
+
+	nullptr
+};
+const RomDataInfo ADXPrivate::romDataInfo = {
+	"ADX", exts, mimeTypes
+};
+
 ADXPrivate::ADXPrivate(ADX *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, pLoopData(nullptr)
 {
 	// Clear the ADX header struct.
@@ -67,7 +94,6 @@ ADX::ADX(IRpFile *file)
 	: super(new ADXPrivate(this, file))
 {
 	RP_D(ADX);
-	d->className = "ADX";
 	d->mimeType = "audio/x-adx";	// unofficial, not on fd.o
 	d->fileType = FileType::AudioFile;
 
@@ -87,12 +113,11 @@ ADX::ADX(IRpFile *file)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(header);
-	info.header.pData = header;
-	info.ext = nullptr;	// Not needed for ADX.
-	info.szFile = 0;	// Not needed for ADX.
+	const DetectInfo info = {
+		{0, sizeof(header), header},
+		nullptr,	// ext (not needed for ADX)
+		0		// szFile (not needed for ADX)
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
@@ -207,55 +232,6 @@ const char *ADX::systemName(unsigned int type) const
 }
 
 /**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *ADX::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".adx",
-		".ahx",	// TODO: Is this used for AHX format?
-
-		// TODO: AAX is two ADXes glued together.
-		//".aax",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *ADX::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"audio/x-adx",
-
-		nullptr
-	};
-	return mimeTypes;
-}
-
-/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -333,8 +309,8 @@ int ADX::loadFieldData(void)
 #endif
 
 	// Translated strings
-	const char *const s_yes = C_("ADX", "Yes");
-	const char *const s_no  = C_("ADX", "No");
+	const char *const s_yes = C_("RomData", "Yes");
+	const char *const s_no  = C_("RomData", "No");
 
 	// Encryption
 	d->fields->addField_string(C_("ADX", "Encrypted"),

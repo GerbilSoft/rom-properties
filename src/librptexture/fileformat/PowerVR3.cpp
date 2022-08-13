@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * PowerVR3.cpp: PowerVR 3.0.0 texture image reader.                       *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,12 +20,19 @@
 #include "pvr3_structs.h"
 
 // librpbase, librpfile
+#include "libi18n/i18n.h"
 using LibRpBase::RomFields;
 using LibRpFile::IRpFile;
 
 // librptexture
 #include "img/rp_image.hpp"
-#include "decoder/ImageDecoder.hpp"
+#include "decoder/ImageSizeCalc.hpp"
+#include "decoder/ImageDecoder_Linear.hpp"
+#include "decoder/ImageDecoder_PVRTC.hpp"
+#include "decoder/ImageDecoder_ETC1.hpp"
+#include "decoder/ImageDecoder_S3TC.hpp"
+#include "decoder/ImageDecoder_BC7.hpp"
+#include "decoder/ImageDecoder_ASTC.hpp"
 
 // C++ STL classes.
 using std::string;
@@ -33,8 +40,6 @@ using std::unique_ptr;
 using std::vector;
 
 namespace LibRpTexture {
-
-FILEFORMAT_IMPL(PowerVR3)
 
 class PowerVR3Private final : public FileFormatPrivate
 {
@@ -45,6 +50,12 @@ class PowerVR3Private final : public FileFormatPrivate
 	private:
 		typedef FileFormatPrivate super;
 		RP_DISABLE_COPY(PowerVR3Private)
+
+	public:
+		/** TextureInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const TextureInfo textureInfo;
 
 	public:
 		// PVR3 header.
@@ -106,7 +117,26 @@ class PowerVR3Private final : public FileFormatPrivate
 		int loadPvr3Metadata(void);
 };
 
+FILEFORMAT_IMPL(PowerVR3)
+
 /** PowerVR3Private **/
+
+/* TextureInfo */
+const char *const PowerVR3Private::exts[] = {
+	".pvr",		// NOTE: Same as SegaPVR.
+
+	nullptr
+};
+const char *const PowerVR3Private::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"image/x-pvr",
+
+	nullptr
+};
+const TextureInfo PowerVR3Private::textureInfo = {
+	exts, mimeTypes
+};
 
 // Uncompressed format lookup table. (UBYTE, UBYTE_NORM)
 const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl_U8[] = {
@@ -138,7 +168,7 @@ const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl_U8[] = {
 	// TODO: "Weird" formats.
 	{   'abgr', 0x10101010, ImageDecoder::PixelFormat::A16B16G16R16,	64},
 	{  '\0bgr', 0x00101010, ImageDecoder::PixelFormat::B16G16R16,		48},
-	{  '\0rgb', 0x000B0B0A, ImageDecoder::PixelFormat::R11G11B10,		32},
+	{  '\0rgb', 0x000B0B0A, ImageDecoder::PixelFormat::R11G11B10,		32},	// NOTE: May be float.
 #endif
 
 	{0, 0, ImageDecoder::PixelFormat::Unknown, 0}
@@ -172,7 +202,7 @@ const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl_U32[] = {
 };
 
 PowerVR3Private::PowerVR3Private(PowerVR3 *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &textureInfo)
 	, isByteswapNeeded(false)
 	, flipOp(rp_image::FLIP_NONE)
 	, orientation_valid(false)
@@ -186,7 +216,9 @@ PowerVR3Private::PowerVR3Private(PowerVR3 *q, IRpFile *file)
 
 PowerVR3Private::~PowerVR3Private()
 {
-	std::for_each(mipmaps.begin(), mipmaps.end(), [](rp_image *img) { UNREF(img); });
+	for (rp_image *img : mipmaps) {
+		UNREF(img);
+	}
 }
 
 /**
@@ -277,7 +309,7 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 	int height = (pvr3Header.height > 0 ? pvr3Header.height : 1);
 
 	// Calculate the expected size.
-	uint32_t expected_size;
+	size_t expected_size;
 	const FmtLkup_t *fmtLkup = nullptr;
 	if (pvr3Header.channel_depth != 0) {
 		// Uncompressed format.
@@ -319,27 +351,33 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 			case PVR3_PXF_PVRTC_2bpp_RGB:
 			case PVR3_PXF_PVRTC_2bpp_RGBA:
 				// 2bpp formats (PVRTC)
-				expected_size = width * height / 4;
+				// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
+				expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<true>(width, height);
 				break;
 
 			case PVR3_PXF_PVRTCII_2bpp:
 				// 2bpp formats (PVRTC-II)
 				// NOTE: Width and height must be rounded to the nearest tile. (8x4)
-				expected_size = ALIGN_BYTES(8, width) *
-				                ALIGN_BYTES(4, height) / 4;
+				// FIXME: Our PVRTC-II decoder requires power-of-2 textures right now.
+				//expected_size = ALIGN_BYTES(8, width) *
+				//                ALIGN_BYTES(4, height) / 4;
+				expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<true>(width, height);
 				break;
 
 			case PVR3_PXF_PVRTC_4bpp_RGB:
 			case PVR3_PXF_PVRTC_4bpp_RGBA:
 				// 4bpp formats (PVRTC)
-				expected_size = width * height / 2;
+				// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
+				expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<false>(width, height);
 				break;
 
 			case PVR3_PXF_PVRTCII_4bpp:
 				// 4bpp formats (PVRTC-II)
 				// NOTE: Width and height must be rounded to the nearest tile. (4x4)
-				expected_size = ALIGN_BYTES(4, width) *
-				                ALIGN_BYTES(4, height) / 2;
+				// FIXME: Our PVRTC-II decoder requires power-of-2 textures right now.
+				//expected_size = ALIGN_BYTES(4, width) *
+				//                ALIGN_BYTES(4, height) / 2;
+				expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<false>(width, height);
 				break;
 #endif /* ENABLE_PVRTC */
 
@@ -374,8 +412,55 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 				expected_size = width * height * 4;
 				break;
 
+#ifdef ENABLE_ASTC
+			case PVR3_PXF_ASTC_4x4:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 4, 4);
+				break;
+			case PVR3_PXF_ASTC_5x4:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 5, 4);
+				break;
+			case PVR3_PXF_ASTC_5x5:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 5, 5);
+				break;
+			case PVR3_PXF_ASTC_6x5:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 6, 5);
+				break;
+			case PVR3_PXF_ASTC_6x6:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 6, 6);
+				break;
+			case PVR3_PXF_ASTC_8x5:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 8, 5);
+				break;
+			case PVR3_PXF_ASTC_8x6:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 8, 6);
+				break;
+			case PVR3_PXF_ASTC_8x8:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 8, 8);
+				break;
+			case PVR3_PXF_ASTC_10x5:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 10, 5);
+				break;
+			case PVR3_PXF_ASTC_10x6:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 10, 6);
+				break;
+			case PVR3_PXF_ASTC_10x8:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 10, 8);
+				break;
+			case PVR3_PXF_ASTC_10x10:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 10, 10);
+				break;
+			case PVR3_PXF_ASTC_12x10:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 12, 10);
+				break;
+			case PVR3_PXF_ASTC_12x12:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 12, 12);
+				break;
+
+			// TODO: PVR3 ASTC 3D formats.
+#endif /* ENABLE_ASTC */
+
 			default:
-				// TODO: ASTC, other formats that aren't actually compressed.
+				// TODO: Other formats that aren't actually compressed.
 				//assert(!"Unsupported PowerVR3 compressed format.");
 				return nullptr;
 		}
@@ -545,6 +630,16 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 				img = ImageDecoder::fromETC2_RGBA(width, height, buf.get(), expected_size);
 				break;
 
+			case PVR3_PXF_EAC_R11:
+				// EAC-compressed R11 texture.
+				img = ImageDecoder::fromEAC_R11(width, height, buf.get(), expected_size);
+				break;
+
+			case PVR3_PXF_EAC_RG11:
+				// EAC-compressed RG11 texture.
+				img = ImageDecoder::fromEAC_RG11(width, height, buf.get(), expected_size);
+				break;
+
 			case PVR3_PXF_DXT1:
 				// DXT1-compressed texture.
 				img = ImageDecoder::fromDXT1(width, height, buf.get(), expected_size);
@@ -592,8 +687,55 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 					reinterpret_cast<const uint32_t*>(buf.get()), expected_size);
 				break;
 
+#ifdef ENABLE_ASTC
+			case PVR3_PXF_ASTC_4x4:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 4, 4);
+				break;
+			case PVR3_PXF_ASTC_5x4:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 5, 4);
+				break;
+			case PVR3_PXF_ASTC_5x5:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 5, 5);
+				break;
+			case PVR3_PXF_ASTC_6x5:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 6, 5);
+				break;
+			case PVR3_PXF_ASTC_6x6:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 6, 6);
+				break;
+			case PVR3_PXF_ASTC_8x5:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 8, 5);
+				break;
+			case PVR3_PXF_ASTC_8x6:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 8, 6);
+				break;
+			case PVR3_PXF_ASTC_8x8:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 8, 8);
+				break;
+			case PVR3_PXF_ASTC_10x5:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 10, 5);
+				break;
+			case PVR3_PXF_ASTC_10x6:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 10, 6);
+				break;
+			case PVR3_PXF_ASTC_10x8:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 10, 8);
+				break;
+			case PVR3_PXF_ASTC_10x10:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 10, 10);
+				break;
+			case PVR3_PXF_ASTC_12x10:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 12, 10);
+				break;
+			case PVR3_PXF_ASTC_12x12:
+				img = ImageDecoder::fromASTC(width, height, buf.get(), expected_size, 12, 12);
+				break;
+
+			// TODO: PVR3 ASTC 3D formats.
+#endif /* ENABLE_ASTC */
+
 			default:
-				// TODO: ASTC, other formats that aren't actually compressed.
+				// TODO: Other formats that aren't actually compressed.
 				//assert(!"Unsupported PowerVR3 compressed format.");
 				return nullptr;
 		}
@@ -603,8 +745,7 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 	// TODO: Handle premultiplied alpha, aside from DXT2 and DXT4.
 
 	// Post-processing: Check if a flip is needed.
-	if (img && (flipOp != rp_image::FLIP_NONE) && height > 1) {
-		// TODO: Assert that img dimensions match ktxHeader?
+	if (img && flipOp != rp_image::FLIP_NONE) {
 		rp_image *const flipimg = img->flip(flipOp);
 		if (flipimg) {
 			img->unref();
@@ -646,8 +787,7 @@ int PowerVR3Private::loadPvr3Metadata(void)
 
 	uint8_t *p = buf.get();
 	uint8_t *const p_end = p + pvr3Header.metadata_size;
-	// FIXME: Might overflow...
-	while (p + sizeof(PowerVR3_Metadata_Block_Header_t) < p_end) {
+	while (p < p_end - sizeof(PowerVR3_Metadata_Block_Header_t)) {
 		PowerVR3_Metadata_Block_Header_t *const pHdr =
 			reinterpret_cast<PowerVR3_Metadata_Block_Header_t*>(p);
 		p += sizeof(*pHdr);
@@ -670,7 +810,7 @@ int PowerVR3Private::loadPvr3Metadata(void)
 		switch (pHdr->key) {
 			case PVR3_META_ORIENTATION: {
 				// Logical orientation.
-				if (p + sizeof(orientation) > p_end) {
+				if (p > p_end - sizeof(orientation)) {
 					// Out of bounds...
 					p = p_end;
 					break;
@@ -747,18 +887,30 @@ PowerVR3::PowerVR3(IRpFile *file)
 	if (d->pvr3Header.version == PVR3_VERSION_HOST) {
 		// Host-endian. Byteswapping is not needed.
 		d->isByteswapNeeded = false;
+
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+		// Pixel format and channel depth need to be swapped if this is
+		// a big-endian file, since it's technically a 64-bit field.
+		std::swap(d->pvr3Header.pixel_format, d->pvr3Header.channel_depth);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 	} else if (d->pvr3Header.version == PVR3_VERSION_SWAP) {
 		// Swap-endian. Byteswapping is needed.
 		// NOTE: Keeping `version` unswapped in case
 		// the actual image data needs to be byteswapped.
 		d->pvr3Header.flags		= __swab32(d->pvr3Header.flags);
 
-		// Pixel format is technically 64-bit, so we have to
-		// byteswap *and* swap both DWORDs.
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+		// Pixel format and channel depth need to be swapped if this is
+		// a big-endian file, since it's technically a 64-bit field.
 		const uint32_t channel_depth	= __swab32(d->pvr3Header.pixel_format);
 		const uint32_t pixel_format	= __swab32(d->pvr3Header.channel_depth);
 		d->pvr3Header.pixel_format	= pixel_format;
 		d->pvr3Header.channel_depth	= channel_depth;
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+		// Little-endian file. Simply byteswap the two fields.
+		d->pvr3Header.pixel_format	= __swab32(d->pvr3Header.pixel_format);
+		d->pvr3Header.channel_depth	= __swab32(d->pvr3Header.channel_depth);
+#endif
 
 		d->pvr3Header.color_space	= __swab32(d->pvr3Header.color_space);
 		d->pvr3Header.channel_type	= __swab32(d->pvr3Header.channel_type);
@@ -812,52 +964,6 @@ PowerVR3::PowerVR3(IRpFile *file)
 	}
 }
 
-/** Class-specific functions that can be used even if isValid() is false. **/
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *PowerVR3::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".pvr",		// NOTE: Same as SegaPVR.
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *PowerVR3::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"image/x-pvr",
-
-		nullptr
-	};
-	return mimeTypes;
-}
-
 /** Property accessors **/
 
 /**
@@ -879,10 +985,6 @@ const char *PowerVR3::textureFormatName(void) const
  */
 const char *PowerVR3::pixelFormat(void) const
 {
-	// TODO: Localization.
-#define C_(ctx, str) str
-#define NOP_C_(ctx, str) str
-
 	RP_D(const PowerVR3);
 	if (!d->isValid)
 		return nullptr;
@@ -963,7 +1065,9 @@ const char *PowerVR3::pixelFormat(void) const
 			 sizeof(d->invalid_pixel_format),
 			 "%s%s", s_pxf, s_chcnt);
 	} else {
-		strcpy(const_cast<PowerVR3Private*>(d)->invalid_pixel_format, C_("RomData", "Unknown"));
+		snprintf(const_cast<PowerVR3Private*>(d)->invalid_pixel_format,
+			 sizeof(d->invalid_pixel_format),
+			 "%s", (C_("RomData", "Unknown")));
 	}
 	return d->invalid_pixel_format;
 }
@@ -990,10 +1094,6 @@ int PowerVR3::mipmapCount(void) const
  */
 int PowerVR3::getFields(LibRpBase::RomFields *fields) const
 {
-	// TODO: Localization.
-#define C_(ctx, str) str
-#define NOP_C_(ctx, str) str
-
 	assert(fields != nullptr);
 	if (!fields)
 		return 0;
@@ -1051,8 +1151,8 @@ int PowerVR3::getFields(LibRpBase::RomFields *fields) const
 	static_assert(ARRAY_SIZE(pvr3_colorspace_tbl) == PVR3_COLOR_SPACE_MAX, "pvr3_colorspace_tbl[] needs to be updated!");
 	if (pvr3Header->color_space < ARRAY_SIZE(pvr3_colorspace_tbl)) {
 		fields->addField_string(C_("PowerVR3", "Color Space"),
-			pvr3_colorspace_tbl[pvr3Header->color_space]);
-			//dpgettext_expr(RP_I18N_DOMAIN, "PowerVR3|ColorSpace", pvr3_colorspace[pvr3Header->color_space]));
+			dpgettext_expr(RP_I18N_DOMAIN, "PowerVR3|ColorSpace",
+				pvr3_colorspace_tbl[pvr3Header->color_space]));
 	} else {
 		fields->addField_string_numeric(C_("PowerVR3", "Color Space"),
 			pvr3Header->color_space);

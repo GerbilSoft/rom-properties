@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * sega8_structs.h: Sega 8-bit (SMS/GG) data structures.                   *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -71,6 +71,7 @@ typedef enum {
  * NOTE: Fields are in BCD.
  * Reference: http://www.smspower.org/Development/CodemastersHeader
  */
+// Some compilers pad this structure to a multiple of 4 bytes
 #pragma pack(1)
 typedef struct PACKED _Sega8_Codemasters_Timestamp {
 	uint8_t day;
@@ -79,8 +80,8 @@ typedef struct PACKED _Sega8_Codemasters_Timestamp {
 	uint8_t hour;
 	uint8_t minute;
 } Sega8_Codemasters_Timestamp;
-#pragma pack()
 ASSERT_STRUCT(Sega8_Codemasters_Timestamp, 5);
+#pragma pack()
 
 /**
  * Codemasters ROM header.
@@ -129,6 +130,7 @@ typedef struct PACKED _Sega8_SDSC_RomHeader {
 	uint8_t version[2];	// [0x004] Program version, in BCD.
 				//         [0] = major version
 				//         [1] = minor version
+	// Some compilers add padding here
 	Sega8_SDSC_Date date;	// [0x006] Build date.
 
 	// The following are pointers to ASCII C-strings in the ROM image.
@@ -137,8 +139,8 @@ typedef struct PACKED _Sega8_SDSC_RomHeader {
 	uint16_t name_ptr;	// [0x00C] Program name.
 	uint16_t desc_ptr;	// [0x00E] Program description.
 } Sega8_SDSC_RomHeader;
-#pragma pack()
 ASSERT_STRUCT(Sega8_SDSC_RomHeader, 16);
+#pragma pack()
 
 #ifdef __cplusplus
 }

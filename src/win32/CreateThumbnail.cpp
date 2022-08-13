@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * CreateThumbnail.cpp: TCreateThumbnail<HBITMAP> implementation.          *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -80,7 +80,7 @@ HBITMAP CreateThumbnail::rpImageToImgClass(const rp_image *img) const
  * @param method Scaling method.
  * @return Rescaled ImgClass.
  */
-HBITMAP CreateThumbnail::rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz, ScalingMethod method) const
+HBITMAP CreateThumbnail::rescaleImgClass(const HBITMAP &imgClass, ImgSize sz, ScalingMethod method) const
 {
 	// Convert the HBITMAP to rp_image.
 	rp_image *const img = RpImageWin32::fromHBITMAP(imgClass);
@@ -141,24 +141,6 @@ HBITMAP CreateThumbnailNoAlpha::rpImageToImgClass(const rp_image *img) const
 		return nullptr;
 	}
 
-	// Windows doesn't like non-square icons.
-	// Add extra transparent columns/rows before
-	// converting to HBITMAP.
-	rp_image *tmp_img = nullptr;
-	if (!img->isSquare()) {
-		// Image is non-square.
-		tmp_img = img->squared();
-		assert(tmp_img != nullptr);
-		if (tmp_img) {
-			const RpGdiplusBackend *const tmp_backend =
-				dynamic_cast<const RpGdiplusBackend*>(tmp_img->backend());
-			assert(tmp_backend != nullptr);
-			if (tmp_backend) {
-				backend = tmp_backend;
-			}
-		}
-	}
-
 	// Convert to HBITMAP.
 	// TODO: Const-ness stuff.
 
@@ -167,8 +149,7 @@ HBITMAP CreateThumbnailNoAlpha::rpImageToImgClass(const rp_image *img) const
 	// most part, at least with Windows Explorer, but the cached
 	// Thumbs.db images won't reflect color scheme changes.
 	HBITMAP hbmp = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP(
-		LibWin32Common::GetSysColor_ARGB32(COLOR_WINDOW));
-	UNREF(tmp_img);
+		LibWin32UI::GetSysColor_ARGB32(COLOR_WINDOW));
 	return hbmp;
 }
 
@@ -179,7 +160,7 @@ HBITMAP CreateThumbnailNoAlpha::rpImageToImgClass(const rp_image *img) const
  * @param method Scaling method.
  * @return Rescaled ImgClass.
  */
-HBITMAP CreateThumbnailNoAlpha::rescaleImgClass(const HBITMAP &imgClass, const ImgSize &sz, ScalingMethod method) const
+HBITMAP CreateThumbnailNoAlpha::rescaleImgClass(const HBITMAP &imgClass, ImgSize sz, ScalingMethod method) const
 {
 	// Convert the HBITMAP to rp_image.
 	rp_image *const img = RpImageWin32::fromHBITMAP(imgClass);
@@ -197,7 +178,7 @@ HBITMAP CreateThumbnailNoAlpha::rescaleImgClass(const HBITMAP &imgClass, const I
 	// TODO: "nearest" parameter.
 	const SIZE win_sz = {sz.width, sz.height};
 	HBITMAP hbmp = RpImageWin32::toHBITMAP(img,
-		LibWin32Common::GetSysColor_ARGB32(COLOR_WINDOW),
+		LibWin32UI::GetSysColor_ARGB32(COLOR_WINDOW),
 		win_sz, (method == ScalingMethod::Nearest));
 	img->unref();
 	return hbmp;

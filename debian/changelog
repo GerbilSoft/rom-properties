@@ -1,3 +1,33 @@
+rom-properties (1.9-1ppa1~xenial2) xenial; urgency=medium
+
+  * Fix undefined 'nullptr' in gtk-compat.h in C PCH builds.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 22 May 2022 14:37:00 -0400
+
+rom-properties (1.9-1ppa1~xenial1) xenial; urgency=medium
+
+  * 1.9 release.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 22 May 2022 13:37:00 -0400
+
+rom-properties (1.8.3-1ppa1~xenial1) xenial; urgency=medium
+
+  * 1.8.3 release.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Tue, 03 Aug 2021 21:22:40 -0400
+
+rom-properties (1.8.2-1ppa1~xenial1) xenial; urgency=medium
+
+  * 1.8.2 release.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Mon, 19 Jul 2021 22:59:10 -0400
+
+rom-properties (1.8-1ppa1~xenial1) xenial; urgency=medium
+
+  * 1.8 release.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sun, 18 Jul 2021 16:52:58 -0400
+
 rom-properties (1.7.3-1ppa1~xenial1) xenial; urgency=medium
 
   * 1.7.3 release.

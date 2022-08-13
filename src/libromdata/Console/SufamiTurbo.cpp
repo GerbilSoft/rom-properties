@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SufamiTurbo.cpp: Sufami Turbo ROM image reader.                         *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,7 +11,6 @@
 #include "st_structs.h"
 
 // librpbase, librpfile
-#include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 
@@ -21,9 +20,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(SufamiTurbo)
-ROMDATA_IMPL_IMG(SufamiTurbo)
-
 class SufamiTurboPrivate final : public RomDataPrivate
 {
 	public:
@@ -32,6 +28,12 @@ class SufamiTurboPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(SufamiTurboPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// ROM header.
@@ -49,10 +51,35 @@ class SufamiTurboPrivate final : public RomDataPrivate
 		string getRomTitle(void) const;
 };
 
+ROMDATA_IMPL(SufamiTurbo)
+ROMDATA_IMPL_IMG(SufamiTurbo)
+
 /** SufamiTurboPrivate **/
 
+/* RomDataInfo */
+// NOTE: Handling Sufami Turbo ROMs as if they're Super NES.
+const char *const SufamiTurboPrivate::exts[] = {
+	// NOTE: Not including ".smc" here.
+	".st",
+
+	nullptr
+};
+const char *const SufamiTurboPrivate::mimeTypes[] = {
+	// Vendor-specific MIME types from FreeDesktop.org.
+	"application/vnd.nintendo.snes.rom",
+
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-snes-rom",
+	"application/x-sufami-turbo-rom",
+
+	nullptr
+};
+const RomDataInfo SufamiTurboPrivate::romDataInfo = {
+	"SNES", exts, mimeTypes
+};
+
 SufamiTurboPrivate::SufamiTurboPrivate(SufamiTurbo *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
@@ -103,7 +130,7 @@ string SufamiTurboPrivate::getRomTitle(void) const
 	}
 
 	// Convert the title from cp1252 and/or Shift-JIS.
-	return cp1252_sjis_to_utf8(&romHeader.title[start], len);
+	return cp1252_sjis_to_utf8(&romHeader.title[start], static_cast<int>(len));
 }
 
 /** SufamiTurbo **/
@@ -124,9 +151,8 @@ string SufamiTurboPrivate::getRomTitle(void) const
 SufamiTurbo::SufamiTurbo(IRpFile *file)
 	: super(new SufamiTurboPrivate(this, file))
 {
-	RP_D(SufamiTurbo);
 	// NOTE: Handling Sufami Turbo ROMs as if they're Super NES.
-	d->className = "SNES";
+	RP_D(SufamiTurbo);
 	d->mimeType = "application/x-sufami-turbo-rom";	// unofficial, not on fd.o
 
 	if (!d->file) {
@@ -146,12 +172,11 @@ SufamiTurbo::SufamiTurbo(IRpFile *file)
 	}
 
 	// Check if this ROM is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->romHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
-	info.ext = nullptr;	// Not needed for SufamiTurbo.
-	info.szFile = 0;	// Not needed for SufamiTurbo.
+	const DetectInfo info = {
+		{0, sizeof(d->romHeader), reinterpret_cast<const uint8_t*>(&d->romHeader)},
+		nullptr,	// ext (not needed for SufamiTurbo)
+		0		// szFile (not needed for SufamiTurbo)
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
@@ -221,7 +246,7 @@ const char *SufamiTurbo::systemName(unsigned int type) const
 	// Sufami Turbo was only released in Japan, so we can
 	// ignore the region selection.
 	static_assert(SYSNAME_TYPE_MASK == 3,
-		"NGPC::systemName() array index optimization needs to be updated.");
+		"SufamiTurbo::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
 	static const char *const sysNames[4] = {
@@ -229,55 +254,6 @@ const char *SufamiTurbo::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *SufamiTurbo::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		// NOTE: Not including ".smc" here.
-		".st",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *SufamiTurbo::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Vendor-specific MIME types from FreeDesktop.org.
-		"application/vnd.nintendo.snes.rom",
-
-		// Unofficial MIME types from FreeDesktop.org.
-		"application/x-snes-rom",
-		"application/x-sufami-turbo-rom",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**
@@ -363,7 +339,7 @@ int SufamiTurbo::loadFieldData(void)
 		return -EIO;
 	}
 
-	// ROM file header is read in the constructor.
+	// ROM header is read in the constructor.
 	const ST_RomHeader *const romHeader = &d->romHeader;
 	d->fields->reserve(4); // Maximum of 4 fields.
 
@@ -408,15 +384,15 @@ int SufamiTurbo::loadFieldData(void)
 			features |= (1U << 3);
 			break;
 	}
-	d->fields->addField_bitfield(C_("NGPC", "Features"),
+	d->fields->addField_bitfield(C_("SufamiTurbo", "Features"),
 		v_features_bitfield_names, 4, features);
 
 	// ROM size
-	d->fields->addField_string(C_("NGPC", "ROM Size"),
+	d->fields->addField_string(C_("SufamiTurbo", "ROM Size"),
 		formatFileSizeKiB(romHeader->rom_size * 128*1024));
 
 	// RAM size
-	d->fields->addField_string(C_("NGPC", "SRAM Size"),
+	d->fields->addField_string(C_("SufamiTurbo", "SRAM Size"),
 		formatFileSizeKiB(romHeader->sram_size * 2*1024));
 
 	// TODO: Get the Sufami Turbo game code?
@@ -448,7 +424,7 @@ int SufamiTurbo::loadMetaData(void)
 	d->metaData = new RomMetaData();
 	d->metaData->reserve(1);	// Maximum of 1 metadata property.
 
-	// SufamiTurbo ROM header
+	// ROM header is read in the constructor.
 	//const ST_RomHeader *const romHeader = &d->romHeader;
 
 	// Title

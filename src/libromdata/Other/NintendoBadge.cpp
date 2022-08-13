@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoBadge.hpp: Nintendo Badge Arcade image reader.                  *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,7 +13,8 @@
 #include "data/Nintendo3DSSysTitles.hpp"
 #include "data/NintendoLanguage.hpp"
 
-// librpbase, librpfile, librptexture
+// librpbase, librpcpu, librpfile, librptexture
+#include "librptexture/decoder/ImageDecoder_N3DS.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 using namespace LibRpTexture;
@@ -25,9 +26,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(NintendoBadge)
-ROMDATA_IMPL_IMG_TYPES(NintendoBadge)
-
 class NintendoBadgePrivate final : public RomDataPrivate
 {
 	public:
@@ -37,6 +35,12 @@ class NintendoBadgePrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(NintendoBadgePrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		enum class BadgeType {
@@ -62,12 +66,9 @@ class NintendoBadgePrivate final : public RomDataPrivate
 		// Is this a mega badge? (>1x1)
 		bool megaBadge;
 
-		// MIME type table.
-		// Ordering matches BadgeType.
-		static const char *const mimeType_tbl[];
-
 	public:
 		// Badge header.
+		// Byteswapped to host-endian on load, except `magic` and `title_id`.
 		union {
 			Badge_PRBS_Header prbs;
 			Badge_CABS_Header cabs;
@@ -96,11 +97,24 @@ class NintendoBadgePrivate final : public RomDataPrivate
 		inline uint32_t getDefaultLC(void) const;
 };
 
+ROMDATA_IMPL(NintendoBadge)
+ROMDATA_IMPL_IMG_TYPES(NintendoBadge)
+
 /** NintendoBadgePrivate **/
 
-// MIME type table.
-// Ordering matches BadgeType.
-const char *const NintendoBadgePrivate::mimeType_tbl[] = {
+/* RomDataInfo */
+const char *const NintendoBadgePrivate::exts[] = {
+	// NOTE: These extensions may cause conflicts on
+	// Windows if fallback handling isn't working.
+
+	".prb",	// PRBS file
+	".cab",	// CABS file (NOTE: Conflicts with Microsoft CAB) [TODO: Unregister?]
+
+	nullptr
+};
+const char *const NintendoBadgePrivate::mimeTypes[] = {
+	// NOTE: Ordering matches BadgeType.
+
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"application/x-nintendo-badge",
@@ -108,9 +122,12 @@ const char *const NintendoBadgePrivate::mimeType_tbl[] = {
 
 	nullptr
 };
+const RomDataInfo NintendoBadgePrivate::romDataInfo = {
+	"NintendoBadge", exts, mimeTypes
+};
 
 NintendoBadgePrivate::NintendoBadgePrivate(NintendoBadge *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, badgeType(BadgeType::Unknown)
 	, megaBadge(false)
 {
@@ -128,11 +145,9 @@ NintendoBadgePrivate::~NintendoBadgePrivate()
 	static_assert(static_cast<unsigned int>(BadgeIndex_PRBS::Max) == ARRAY_SIZE(img_badges),
 		"BadgeIndex_PRBS::Max != ARRAY_SIZE(img)");
 
-	std::for_each(img_badges.begin(), img_badges.end(),
-		[](rp_image *img) {
-			UNREF(img);
-		}
-	);
+	for (rp_image *img : img_badges) {
+		UNREF(img);
+	}
 }
 
 /**
@@ -238,7 +253,7 @@ const rp_image *NintendoBadgePrivate::loadImage(int idx)
 
 	// TODO: Multiple internal image sizes.
 	// For now, 64x64 only.
-	const unsigned int badge_sz = badge_rgb_sz + badge_a4_sz;
+	const size_t badge_sz = badge_rgb_sz + badge_a4_sz;
 	auto badgeData = aligned_uptr<uint8_t>(16, badge_sz);
 
 	rp_image *img = nullptr;
@@ -397,7 +412,6 @@ NintendoBadge::NintendoBadge(IRpFile *file)
 {
 	// This class handles texture files.
 	RP_D(NintendoBadge);
-	d->className = "NintendoBadge";
 	d->fileType = FileType::TextureFile;
 
 	if (!d->file) {
@@ -416,12 +430,11 @@ NintendoBadge::NintendoBadge(IRpFile *file)
 	}
 
 	// Check if this badge is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->badgeHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->badgeHeader);
-	info.ext = nullptr;	// Not needed for badges.
-	info.szFile = 0;	// Not needed for badges.
+	const DetectInfo info = {
+		{0, sizeof(d->badgeHeader), reinterpret_cast<const uint8_t*>(&d->badgeHeader)},
+		nullptr,	// ext (not needed for NintendoBadge)
+		0		// szFile (not needed for NintendoBadge)
+	};
 	d->badgeType = static_cast<NintendoBadgePrivate::BadgeType>(isRomSupported_static(&info));
 	d->isValid = ((int)d->badgeType >= 0);
 	d->megaBadge = false;	// check later
@@ -433,16 +446,24 @@ NintendoBadge::NintendoBadge(IRpFile *file)
 
 	// Check for mega badge.
 	if (d->badgeType == NintendoBadgePrivate::BadgeType::PRBS) {
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+		d->badgeHeader.prbs.badge_id	= le32_to_cpu(d->badgeHeader.prbs.badge_id);
+		d->badgeHeader.prbs.mb_width	= le32_to_cpu(d->badgeHeader.prbs.mb_width);
+		d->badgeHeader.prbs.mb_height	= le32_to_cpu(d->badgeHeader.prbs.mb_height);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 		d->megaBadge = (d->badgeHeader.prbs.mb_width > 1 ||
 				d->badgeHeader.prbs.mb_height > 1);
 	} else {
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+		d->badgeHeader.cabs.set_id	= le32_to_cpu(d->badgeHeader.cabs.set_id);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 		// CABS is a set icon, so no mega badge here.
 		d->megaBadge = false;
 	}
 
 	// Set the MIME type.
-	if ((int)d->badgeType < ARRAY_SIZE(d->mimeType_tbl)-1) {
-		d->mimeType = d->mimeType_tbl[(int)d->badgeType];
+	if ((int)d->badgeType < ARRAY_SIZE_I(d->mimeTypes)-1) {
+		d->mimeType = d->mimeTypes[(int)d->badgeType];
 	}
 }
 
@@ -505,45 +526,6 @@ const char *NintendoBadge::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *NintendoBadge::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".prb",	// PRBS file
-		".cab",	// CABS file (NOTE: Conflicts with Microsoft CAB) [TODO: Unregister?]
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *NintendoBadge::supportedMimeTypes_static(void)
-{
-	return NintendoBadgePrivate::mimeType_tbl;
 }
 
 /**
@@ -716,8 +698,8 @@ int NintendoBadge::loadFieldData(void)
 					continue;
 
 				if (prbs->name[langID][0] != cpu_to_le16('\0')) {
-					pMap_name->insert(std::make_pair(lc,
-						utf16le_to_utf8(prbs->name[langID], ARRAY_SIZE(prbs->name[langID]))));
+					pMap_name->emplace(lc, utf16le_to_utf8(
+						prbs->name[langID], ARRAY_SIZE_I(prbs->name[langID])));
 				}
 			}
 
@@ -817,13 +799,13 @@ int NintendoBadge::loadFieldData(void)
 				}
 			}
 			// NOTE: There aer 16 name entries, but only 12 languages...
-			if (lang >= 0 && lang < ARRAY_SIZE(cabs->name)) {
+			if (lang >= 0 && lang < ARRAY_SIZE_I(cabs->name)) {
 				d->fields->addField_string(s_name_title,
 					utf16le_to_utf8(cabs->name[lang], sizeof(cabs->name[lang])));
 			}
 
 			// Badge ID.
-			d->fields->addField_string_numeric(C_("NintendoBadge", "Set ID"), le32_to_cpu(cabs->set_id));
+			d->fields->addField_string_numeric(C_("NintendoBadge", "Set ID"), cabs->set_id);
 
 			// Set name.
 			d->fields->addField_string(s_set_name_title,

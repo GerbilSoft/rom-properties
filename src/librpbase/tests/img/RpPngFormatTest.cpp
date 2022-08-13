@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpbase/tests)                  *
- * RpPngFormatTest.cpp: RpImageLoader PNG format test.                     *
+ * RpPngFormatTest.cpp: RpPng format test.                                 *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,7 +15,7 @@
 #include "bmp.h"
 
 #ifdef HAVE_PNG
-#include <png.h>
+#  include <png.h>
 #endif /* HAVE_PNG */
 
 // gzclose_r() and gzclose_w() were introduced in zlib-1.2.4.
@@ -29,18 +29,18 @@
 #endif
 
 // librpcpu, librpbase
-#include "librpcpu/byteswap_rp.h"
 #include "common.h"
 #include "uvector.h"
-#include "img/RpImageLoader.hpp"
+#include "tcharx.h"	// for DIR_SEP_CHR
+#include "librpcpu/byteswap_rp.h"
 
 // librpfile
 #include "librpfile/RpFile.hpp"
-#include "librpfile/RpMemFile.hpp"
-#include "librpfile/FileSystem.hpp"
+#include "librpfile/MemFile.hpp"
 using namespace LibRpFile;
 
 // librptexture
+#include "img/RpPng.hpp"
 #include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
 
@@ -64,8 +64,7 @@ namespace LibRpBase { namespace Tests {
 // tRNS chunk for CI8 paletted images.
 // BMP format doesn't support alpha values
 // in the color table.
-struct tRNS_CI8_t
-{
+struct tRNS_CI8_t {
 	uint8_t alpha[256];
 };
 
@@ -208,7 +207,7 @@ class RpPngFormatTest : public ::testing::TestWithParam<RpPngFormatTest_mode>
 			const rp_image *img,
 			const uint32_t *pBmpPalette,
 			const tRNS_CI8_t *pBmpAlpha = nullptr,
-			int bmpColorTableSize = 256,
+			unsigned int bmpColorTableSize = 256U,
 			int biClrUsed = -1);
 
 		/**
@@ -593,7 +592,7 @@ void RpPngFormatTest::Compare_Palettes(
 	const rp_image *img,
 	const uint32_t *pBmpPalette,
 	const tRNS_CI8_t *pBmpAlpha,
-	int bmpColorTableSize,
+	unsigned int bmpColorTableSize,
 	int biClrUsed)
 {
 	const uint32_t *pSrcPalette = img->palette();
@@ -602,7 +601,9 @@ void RpPngFormatTest::Compare_Palettes(
 	}
 
 	uint32_t xor_result = 0;
-	for (int i = 0; i < biClrUsed; i++, pSrcPalette++, pBmpPalette++) {
+	for (unsigned int i = 0; i < static_cast<unsigned int>(biClrUsed);
+	     i++, pSrcPalette++, pBmpPalette++)
+	{
 		uint32_t bmp32 = le32_to_cpu(*pBmpPalette) & 0x00FFFFFF;
 		if (pBmpAlpha) {
 			// BMP tRNS chunk is specified.
@@ -616,18 +617,22 @@ void RpPngFormatTest::Compare_Palettes(
 	EXPECT_EQ(0U, xor_result) << "CI8 rp_image's palette doesn't match BMP.";
 
 	// Make sure the unused colors in the rp_image are all 0.
-	if (biClrUsed < img->palette_len()) {
+	if (static_cast<unsigned int>(biClrUsed) < img->palette_len()) {
 		uint32_t or_result = 0;
-		for (int i = img->palette_len(); i > biClrUsed; i--, pSrcPalette++) {
+		for (unsigned int i = img->palette_len(); i > static_cast<unsigned int>(biClrUsed);
+		     i--, pSrcPalette++)
+		{
 			or_result |= *pSrcPalette;
 		}
 		EXPECT_EQ(0U, or_result) << "CI8 rp_image's palette doesn't have unused entries set to 0.";
 	}
 
 	// Make sure the unused colors in the BMP are all 0.
-	if (biClrUsed < bmpColorTableSize) {
+	if (static_cast<unsigned int>(biClrUsed) < bmpColorTableSize) {
 		uint32_t or_result = 0;
-		for (int i = img->palette_len(); i > biClrUsed; i--, pBmpPalette++) {
+		for (unsigned int i = img->palette_len(); i > static_cast<unsigned int>(biClrUsed);
+		     i--, pBmpPalette++)
+		{
 			or_result |= *pBmpPalette;
 		}
 		EXPECT_EQ(0U, or_result) << "BMP's palette doesn't have unused entries set to 0.";
@@ -658,7 +663,7 @@ void RpPngFormatTest::Compare_CI8_BMP8(
 	uint32_t xor_result = 0;
 
 	// Check the palette.
-	ASSERT_NO_FATAL_FAILURE(Compare_Palettes(img, pBmpPalette, pBmpAlpha, 256, biClrUsed));
+	ASSERT_NO_FATAL_FAILURE(Compare_Palettes(img, pBmpPalette, pBmpAlpha, 256U, biClrUsed));
 
 	// 256-color BMP images always have an internal width that's
 	// a multiple of 8px. If the image isn't a multiple of 8px,
@@ -848,7 +853,7 @@ void RpPngFormatTest::Compare_CI8_BMP1(
 }
 
 /**
- * Run an RpImageLoader test.
+ * Run an RpPngFormat test.
  */
 TEST_P(RpPngFormatTest, loadTest)
 {
@@ -876,13 +881,13 @@ TEST_P(RpPngFormatTest, loadTest)
 	EXPECT_EQ(mode.ihdr.filter_method,	ihdr.filter_method);
 	EXPECT_EQ(mode.ihdr.interlace_method,	ihdr.interlace_method);
 
-	// Create an RpMemFile.
-	unique_RefBase<RpMemFile> png_mem_file(new RpMemFile(m_png_buf.data(), m_png_buf.size()));
+	// Create a MemFile.
+	unique_RefBase<MemFile> png_mem_file(new MemFile(m_png_buf.data(), m_png_buf.size()));
 	ASSERT_TRUE(png_mem_file->isOpen());
 
 	// Load the PNG image from memory.
-	m_img = RpImageLoader::load(png_mem_file.get());
-	ASSERT_NE(nullptr, m_img) << "RpImageLoader failed to load the image.";
+	m_img = RpPng::load(png_mem_file.get());
+	ASSERT_NE(nullptr, m_img) << "RpPng failed to load the image.";
 
 	// Check the rp_image parameters.
 	EXPECT_EQ((int)mode.ihdr.width, m_img->width()) << "rp_image width is incorrect.";
@@ -939,7 +944,7 @@ TEST_P(RpPngFormatTest, loadTest)
 			// 256-color image. Get the palette.
 			// NOTE: rp_image's palette length is always 256, which may be
 			// greater than the used colors in the BMP.
-			ASSERT_GE(m_img->palette_len(), (int)bih.biClrUsed)
+			ASSERT_GE(m_img->palette_len(), bih.biClrUsed)
 				<< "BMP palette is larger than the rp_image palette.";
 
 			// NOTE: Palette has 32-bit entries, but the alpha channel is ignored.
@@ -959,13 +964,13 @@ TEST_P(RpPngFormatTest, loadTest)
 
 			// NOTE: The color table does have two colors, so we should
 			// compare it to the rp_image palette.
-			ASSERT_GE(m_img->palette_len(), (int)bih.biClrUsed)
+			ASSERT_GE(m_img->palette_len(), bih.biClrUsed)
 				<< "BMP palette is larger than the rp_image palette.";
 
 			// 256-color image. Get the palette.
 			// NOTE: rp_image's palette length is always 256, which may be
 			// greater than the used colors in the BMP.
-			ASSERT_GE(m_img->palette_len(), (int)bih.biClrUsed)
+			ASSERT_GE(m_img->palette_len(), bih.biClrUsed)
 				<< "BMP palette is larger than the rp_image palette.";
 
 			// NOTE: Palette has 32-bit entries, but the alpha channel is ignored.
@@ -996,15 +1001,8 @@ string RpPngFormatTest::test_case_suffix_generator(const ::testing::TestParamInf
 
 	// Replace all non-alphanumeric characters with '_'.
 	// See gtest-param-util.h::IsValidParamName().
-	std::for_each(suffix.begin(), suffix.end(),
-		[](char &c) {
-			// NOTE: Not checking for '_' because that
-			// wastes a branch.
-			if (!ISALNUM(c)) {
-				c = '_';
-			}
-		}
-	);
+	std::replace_if(suffix.begin(), suffix.end(),
+		[](char c) { return !ISALNUM(c); }, '_');
 
 	return suffix;
 }
@@ -1316,3 +1314,20 @@ INSTANTIATE_TEST_SUITE_P(happy_mac_mono_png, RpPngFormatTest,
 	, RpPngFormatTest::test_case_suffix_generator);
 
 } }
+
+/**
+ * Test suite main function.
+ * Called by gtest_init.c.
+ */
+extern "C" int gtest_main(int argc, TCHAR *argv[])
+{
+	fprintf(stderr, "LibRpBase test suite: RpPng format test.\n\n");
+	fflush(nullptr);
+
+	// Make sure the CRC32 table is initialized.
+	get_crc_table();
+
+	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.
+	::testing::InitGoogleTest(&argc, argv);
+	return RUN_ALL_TESTS();
+}

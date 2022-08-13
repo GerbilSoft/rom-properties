@@ -100,7 +100,7 @@ int ini_parse_stream(ini_reader reader, void* stream, ini_handler handler,
     /* Uses a fair bit of stack (use heap instead if you need to) */
 #if INI_USE_STACK
     char line[INI_MAX_LINE];
-    int max_line = INI_MAX_LINE;
+    size_t max_line = INI_MAX_LINE;
 #else
     char* line;
     size_t max_line = INI_INITIAL_ALLOC;
@@ -171,6 +171,12 @@ int ini_parse_stream(ini_reader reader, void* stream, ini_handler handler,
         }
 #if INI_ALLOW_MULTILINE
         else if (*prev_name && *start && start > line) {
+#if INI_ALLOW_INLINE_COMMENTS
+            end = find_chars_or_comment(start, NULL);
+            if (*end)
+                *end = '\0';
+            rstrip(start);
+#endif
             /* Non-blank line with leading whitespace, treat as continuation
                of previous name's value (as per Python configparser). */
             if (!HANDLER(user, section, prev_name, start) && !error)

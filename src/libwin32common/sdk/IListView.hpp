@@ -17,11 +17,13 @@
 # error Windows Vista SDK or later is required.
 #endif
 
-// Interface IDs.
+// Interface IDs
 extern "C" {
-	extern const IID IID_IListView_WinVista;
-	extern const IID IID_IListView_Win7;
-};
+	static const IID IID_IListView_WinVista =
+		{0x2FFE2979, 0x5928, 0x4386, {0x9C, 0xDB, 0x8E, 0x1F, 0x15, 0xB7, 0x2F, 0xB4}};
+	static const IID IID_IListView_Win7 =
+		{0xE5B16AF2, 0x3990, 0x4681, {0xA6, 0x09, 0x1F, 0x06, 0x0C, 0xD1, 0x42, 0x69}};
+}
 
 // ListView message to get the IListView interface.
 #define LVM_QUERYINTERFACE (LVM_FIRST + 189)

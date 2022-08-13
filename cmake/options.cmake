@@ -25,8 +25,10 @@ IF(UNIX AND NOT APPLE)
 	# Reference: https://cmake.org/pipermail/cmake/2016-October/064342.html
 	OPTION_UI(KDE4 "Build the KDE4 plugin.")
 	OPTION_UI(KF5 "Build the KDE Frameworks 5 plugin.")
+	#OPTION_UI(KF6 "Build the KDE Frameworks 6 plugin. (EXPERIMENTAL)")	# NOTE: Only enable if debugging!
 	OPTION_UI(XFCE "Build the XFCE (GTK+ 2.x) plugin.")
 	OPTION_UI(GTK3 "Build the GTK+ 3.x plugin.")
+	#OPTION_UI(GTK4 "Build the GTK 4.x plugin. (EXPERIMENTAL)")	# NOTE: Only enable if debugging!
 
 	# NOTE: The GTK+ 2.x plugin is XFCE only right now.
 	SET(BUILD_GTK2 "${BUILD_XFCE}")
@@ -86,14 +88,21 @@ OPTION(ENABLE_LIBMSPACK "Enable libmspack-xenia for Xbox 360 executables." ON)
 # Enable the PowerVR Native SDK subset for PVRTC decompression.
 OPTION(ENABLE_PVRTC "Enable the PowerVR Native SDK subset for PVRTC decompression." ON)
 
+# Enable the ASTC decoder from Basis Universal.
+OPTION(ENABLE_ASTC "Enable ASTC decoding using the Basis Universal decoder." ON)
+
 # Enable precompiled headers.
-# FIXME: Not working properly on older gcc. Use cmake-3.16.0's built-in PCH?
-IF(MSVC)
-	SET(PCH_DEFAULT ON)
+# NOTE: Requires CMake 3.16.0.
+IF(NOT (CMAKE_VERSION VERSION_LESS 3.16.0))
+	IF(MSVC)
+		SET(PCH_DEFAULT ON)
+	ELSE()
+		SET(PCH_DEFAULT OFF)
+	ENDIF()
+	OPTION(ENABLE_PCH "Enable precompiled headers for faster builds." ${PCH_DEFAULT})
 ELSE()
-	SET(PCH_DEFAULT OFF)
+	SET(ENABLE_PCH OFF CACHE INTERNAL "Enable precompiled headers for faster builds." FORCE)
 ENDIF()
-OPTION(ENABLE_PCH "Enable precompiled headers for faster builds." ${PCH_DEFAULT})
 
 # Link-time optimization.
 # FIXME: Not working in clang builds and Ubuntu's gcc...

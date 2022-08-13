@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * AboutTabText.hpp: About tab for rp-config. (Common text)                *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,64 +11,76 @@
 
 #include "common.h"
 
-namespace LibRpBase {
+namespace LibRpBase { namespace AboutTabText {
 
-class AboutTabText {
-	private:
-		// Static class.
-		AboutTabText();
-		~AboutTabText();
-		RP_DISABLE_COPY(AboutTabText);
+enum class ProgramInfoStringID {
+	ProgramName = 0,
+	ProgramFullName,
+	Copyright,
+	ProgramVersion,
+	GitVersion,
+	GitDescription,
 
-	public:
-		// Program version string.
-		static const char prg_version[];
-
-		// git version, or empty string if git was not present.
-		static const char git_version[];
-		// git description, or empty string if git was not present.
-		static const char git_describe[];
-
-	public:
-		/** Credits **/
-
-		enum class CreditType {
-			Continue = 0,	// Continue previous type.
-			Developer,	// Developer
-			Contributor,	// Contributor
-			Translator,	// Translator (TODO)
-
-			Max
-		};
-
-		struct CreditsData_t {
-			CreditType type;
-			const char *name;
-			const char *url;
-			const char *linkText;
-			const char *sub;
-		};
-
-		/**
-		 * Credits data.
-		 * Ends with CT_MAX.
-		 */
-		static const CreditsData_t CreditsData[];
-
-		/** Support **/
-
-		struct SupportSite_t {
-			const char *name;
-			const char *url;
-		};
-
-		/**
-		 * Support sites.
-		 * Ends with nullptr.
-		 */
-		static const SupportSite_t SupportSites[];
+	Max	// NOTE: May change in future releases.
 };
 
-}
+/**
+ * Get a program information string.
+ * @param id String ID
+ * @return String, or nullptr if not available.
+ */
+RP_LIBROMDATA_PUBLIC
+const char *getProgramInfoString(ProgramInfoStringID id);
+
+/**
+ * Get the program information string count.
+ * @return Highest program information string ID.
+ */
+RP_LIBROMDATA_PUBLIC
+ProgramInfoStringID getProgramInfoStringCount(void);
+
+/** Credits **/
+
+enum class CreditType {
+	Continue = 0,	// Continue previous type.
+	Developer,	// Developer
+	Contributor,	// Contributor
+	Translator,	// Translator (TODO)
+
+	Max
+};
+
+struct CreditsData_t {
+	CreditType type;
+	const char *name;
+	const char *url;
+	const char *linkText;
+	const char *sub;
+};
+
+/**
+ * Get the credits data.
+ * Ends with CreditType::Max.
+ * @return Credits data
+ */
+RP_LIBROMDATA_PUBLIC
+const CreditsData_t *getCreditsData(void);
+
+/** Support **/
+
+struct SupportSite_t {
+	const char *name;
+	const char *url;
+};
+
+/**
+ * Get the support sites.
+ * Ends with nullptr entries.
+ * @return Support sites
+ */
+RP_LIBROMDATA_PUBLIC
+const SupportSite_t *getSupportSites(void);
+
+} }
 
 #endif /* __ROMPROPERTIES_LIBRPBASE_CONFIG_ABOUTTABTEXT_HPP__ */

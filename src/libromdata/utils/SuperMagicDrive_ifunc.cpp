@@ -2,18 +2,23 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * SuperMagicDrive_ifunc.cpp: SuperMagicDrive IFUNC resolution functions.  *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "config.librpbase.h"
-#include "librpcpu/cpu_dispatch.h"
+#include "config.librpcpu.h"
 
-#ifdef RP_HAS_IFUNC
+#ifdef HAVE_IFUNC
 
 #include "SuperMagicDrive.hpp"
-using LibRomData::SuperMagicDrive;
+using namespace LibRomData;
+
+// NOTE: llvm/clang 14.0.0 fails to detect the resolver functions
+// if they're marked static, even though the docs say this is okay.
+// In C code, it merely warns that the resolvers aren't used, but
+// in C++ code, the IFUNC_ATTR() attribute fails.
 
 // IFUNC attribute doesn't support C++ name mangling.
 extern "C" {
@@ -23,15 +28,24 @@ extern "C" {
  * IFUNC resolver function for decodeBlock().
  * @return Function pointer.
  */
-static __typeof__(&SuperMagicDrive::decodeBlock_cpp) decodeBlock_resolve(void)
+__typeof__(&SuperMagicDrive::decodeBlock_cpp) decodeBlock_resolve(void)
 {
+	// NOTE: Since libromdata is a shared library now, IFUNC resolvers
+	// cannot call PLT functions. Otherwise, it will crash.
+	// We'll use gcc's built-in CPU ID functions instead.
+	// Requires gcc-4.8 or later, or clang-6.0 or later.
+
+#if defined(SMD_HAS_SSE2) || defined(SMD_HAS_MMX)
+	__builtin_cpu_init();
+#endif
+
 #ifdef SMD_HAS_SSE2
-	if (RP_CPU_HasSSE2()) {
+	if (__builtin_cpu_supports("sse2")) {
 		return &SuperMagicDrive::decodeBlock_sse2;
 	} else
 #endif /* SMD_HAS_SSE2 */
 #ifdef SMD_HAS_MMX
-	if (RP_CPU_HasMMX()) {
+	if (__builtin_cpu_supports("mmx")) {
 		return &SuperMagicDrive::decodeBlock_mmx;
 	} else
 #endif /* SMD_HAS_MMX */
@@ -48,4 +62,4 @@ void SuperMagicDrive::decodeBlock(uint8_t *RESTRICT pDest, const uint8_t *RESTRI
 	IFUNC_ATTR(decodeBlock_resolve);
 #endif /* SMD_ALWAYS_HAS_SSE2 */
 
-#endif /* RP_HAS_IFUNC */
+#endif /* HAVE_IFUNC */

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * RomDataFactory.hpp: RomData factory class.                              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -69,11 +69,34 @@ class RomDataFactory
 		 * types must be supported by the RomData subclass in order to
 		 * be returned.
 		 *
-		 * @param file ROM file.
+		 * @param file ROM file
 		 * @param attrs RomDataAttr bitfield. If set, RomData subclass must have the specified attributes.
 		 * @return RomData subclass, or nullptr if the ROM isn't supported.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static LibRpBase::RomData *create(LibRpFile::IRpFile *file, unsigned int attrs = 0);
+
+		/**
+		 * Create a RomData subclass for the specified ROM file.
+		 *
+		 * This version creates a base RpFile for the RomData object.
+		 * It does not support extended virtual filesystems like GVfs
+		 * or KIO, but it does support directories.
+		 *
+		 * NOTE: RomData::isValid() is checked before returning a
+		 * created RomData instance, so returned objects can be
+		 * assumed to be valid as long as they aren't nullptr.
+		 *
+		 * If imgbf is non-zero, at least one of the specified image
+		 * types must be supported by the RomData subclass in order to
+		 * be returned.
+		 *
+		 * @param filename ROM filename
+		 * @param attrs RomDataAttr bitfield. If set, RomData subclass must have the specified attributes.
+		 * @return RomData subclass, or nullptr if the ROM isn't supported.
+		 */
+		RP_LIBROMDATA_PUBLIC
+		static LibRpBase::RomData *create(const char *filename, unsigned int attrs = 0);
 
 		struct ExtInfo {
 			const char *ext;
@@ -95,6 +118,7 @@ class RomDataFactory
 		 *
 		 * @return All supported file extensions, including the leading dot.
 		 */
+		RP_LIBROMDATA_PUBLIC	/* TODO: Export on Windows only? */
 		static const std::vector<ExtInfo> &supportedFileExtensions(void);
 
 		/**
@@ -103,6 +127,7 @@ class RomDataFactory
 		 *
 		 * @return All supported MIME types.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static const std::vector<const char*> &supportedMimeTypes(void);
 };
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PSF.hpp: PSF audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -24,8 +24,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(PSF)
-
 class PSFPrivate final : public RomDataPrivate
 {
 	public:
@@ -34,6 +32,12 @@ class PSFPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(PSFPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// PSF header.
@@ -62,10 +66,43 @@ class PSFPrivate final : public RomDataPrivate
 		static unsigned int lengthToMs(const char *str);
 };
 
+ROMDATA_IMPL(PSF)
+
 /** PSFPrivate **/
 
+/* RomDataInfo */
+const char *const PSFPrivate::exts[] = {
+	// NOTE: The .*lib files are not listed, since they
+	// contain samples, not songs.
+
+	".psf", ".minipsf",
+	".psf1", ".minipsf1",
+	".psf2", ".minipsf2",
+
+	".ssf", ".minissf",
+	".dsf", ".minidsf",
+
+	".usf", ".miniusf",
+	".gsf", ".minigsf",
+	".snsf", ".minisnsf",
+
+	".qsf", ".miniqsf",
+
+	nullptr
+};
+const char *const PSFPrivate::mimeTypes[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"audio/x-psf",
+	"audio/x-minipsf",
+
+	nullptr
+};
+const RomDataInfo PSFPrivate::romDataInfo = {
+	"PSF", exts, mimeTypes
+};
+
 PSFPrivate::PSFPrivate(PSF *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 {
 	// Clear the PSF header struct.
 	memset(&psfHeader, 0, sizeof(psfHeader));
@@ -141,7 +178,7 @@ unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
 				string key(p, k_len);
 				std::transform(key.begin(), key.end(), key.begin(),
 					[](unsigned char c) { return std::tolower(c); });
-				kv.insert(std::make_pair(key, string(eq+1, v_len)));
+				kv.emplace(key, string(eq+1, v_len));
 
 				// Check for UTF-8.
 				// NOTE: v_len check is redundant...
@@ -159,11 +196,9 @@ unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
 
 	// If we're not using UTF-8, convert the values.
 	if (!isUtf8) {
-		std::for_each(kv.begin(), kv.end(),
-			[](unordered_map<string, string>::value_type &p) {
-				p.second = cp1252_sjis_to_utf8(p.second);
-			}
-		);
+		for (auto &p : kv) {
+			p.second = cp1252_sjis_to_utf8(p.second);
+		}
 	}
 
 	return kv;
@@ -189,14 +224,12 @@ const char *PSFPrivate::getRippedByTagName(uint8_t version)
 		{PSF_VERSION_GBA,		"gsfby"},
 		{PSF_VERSION_SNES,		"snsfby"},
 		{PSF_VERSION_QSOUND,		"qsfby"},
-
-		{0, ""}
 	};
 
-	for (const auto *p = psfby_lkup_tbl; p->version != 0; p++) {
-		if (p->version == version) {
+	for (const auto &p : psfby_lkup_tbl) {
+		if (p.version == version) {
 			// Found a match.
-			return p->tag_name;
+			return p.tag_name;
 		}
 	}
 
@@ -355,7 +388,6 @@ PSF::PSF(IRpFile *file)
 	: super(new PSFPrivate(this, file))
 {
 	RP_D(PSF);
-	d->className = "PSF";
 	d->mimeType = "audio/x-psf";	// unofficial (TODO: x-minipsf?)
 	d->fileType = FileType::AudioFile;
 
@@ -373,12 +405,11 @@ PSF::PSF(IRpFile *file)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->psfHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->psfHeader);
-	info.ext = nullptr;	// Not needed for PSF.
-	info.szFile = 0;	// Not needed for PSF.
+	const DetectInfo info = {
+		{0, sizeof(d->psfHeader), reinterpret_cast<const uint8_t*>(&d->psfHeader)},
+		nullptr,	// ext (not needed for PSF)
+		0		// szFile (not needed for PSF)
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
@@ -443,64 +474,6 @@ const char *PSF::systemName(unsigned int type) const
 }
 
 /**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *PSF::supportedFileExtensions_static(void)
-{
-	// NOTE: The .*lib files are not listed, since they
-	// contain samples, not songs.
-	static const char *const exts[] = {
-		".psf", ".minipsf",
-		".psf1", ".minipsf1",
-		".psf2", ".minipsf2",
-
-		".ssf", ".minissf",
-		".dsf", ".minidsf",
-
-		".usf", ".miniusf",
-		".gsf", ".minigsf",
-		".snsf", ".minisnsf",
-
-		".qsf", ".miniqsf",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *PSF::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org.
-		"audio/x-psf",
-		"audio/x-minipsf",
-
-		nullptr
-	};
-	return mimeTypes;
-}
-
-/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -541,16 +514,14 @@ int PSF::loadFieldData(void)
 		{PSF_VERSION_GBA,		NOP_C_("PSF|System", "Game Boy Advance")},
 		{PSF_VERSION_SNES,		NOP_C_("PSF|System", "Super NES")},
 		{PSF_VERSION_QSOUND,		NOP_C_("PSF|System", "Capcom QSound")},
-
-		{0, nullptr}
 	};
 
 	const uint8_t psf_version = psfHeader->version;
 	const char *sysname = nullptr;
-	for (const auto *p = sysname_lkup_tbl; p->version != 0; p++) {
-		if (p->version == psf_version) {
+	for (const auto &p : sysname_lkup_tbl) {
+		if (p.version == psf_version) {
 			// Found a match.
-			sysname = p->sysname;
+			sysname = p.sysname;
 			break;
 		}
 	}
@@ -787,10 +758,9 @@ int PSF::loadMetaData(void)
 	// Comment
 	iter = tags.find("comment");
 	if (iter != tags.end()) {
-		// TODO: Property::Comment is assumed to be user-added
-		// on KDE Dolphin 18.08.1. Needs a description property.
-		// Also needs verification on Windows.
-		d->metaData->addMetaData_string(Property::Subject, iter->second);
+		// NOTE: Property::Comment is assumed to be user-added
+		// on KDE Dolphin 18.08.1. Use Property::Description.
+		d->metaData->addMetaData_string(Property::Description, iter->second);
 	}
 
 	// Finished reading the metadata.

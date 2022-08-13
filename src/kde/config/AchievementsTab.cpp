@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (KDE)                              *
- * Achievements.cpp: Achievements tab for rp-config.                       *
+ * AchievementsTab.cpp: Achievements tab for rp-config.                    *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -149,24 +149,4 @@ void AchievementsTab::reset(void)
 		treeWidget->resizeColumnToContents(i);
 	}
 #endif
-}
-
-/**
- * Load the default configuration.
- * This does NOT save, and will only emit modified()
- * if it's different from the current configuration.
- */
-void AchievementsTab::loadDefaults(void)
-{
-	// Nothing to do here.
-}
-
-/**
- * Save the configuration.
- * @param pSettings QSettings object.
- */
-void AchievementsTab::save(QSettings *pSettings)
-{
-	// Nothing to do here.
-	Q_UNUSED(pSettings)
 }

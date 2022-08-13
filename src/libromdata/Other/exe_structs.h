@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * exe_structs.h: DOS/Windows executable structures.                       *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,7 +11,7 @@
 // - https://github.com/MaxKellermann/w32api/blob/440c229960e782831d01c6638661f1c40cadbeb5/include/winnt.h
 // - https://github.com/MaxKellermann/w32api/blob/440c229960e782831d01c6638661f1c40cadbeb5/include/winver.h
 // - http://www.brokenthorn.com/Resources/OSDevPE.html
-// - https://msdn.microsoft.com/en-us/library/windows/desktop/ms648009(v=vs.85).aspx
+// - https://docs.microsoft.com/en-us/windows/win32/menurc/resource-types
 // - http://sandsprite.com/CodeStuff/Understanding_imports.html
 // - https://docs.microsoft.com/en-us/windows/win32/debug/pe-format
 
@@ -185,7 +185,7 @@ ASSERT_STRUCT(IMAGE_FILE_HEADER, IMAGE_SIZEOF_FILE_HEADER);
 
 /**
  * PE image data directory indexes.
- * Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/ms680305(v=vs.85).aspx
+ * Reference: https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-image_data_directory
  */
 typedef enum {
 	IMAGE_DATA_DIRECTORY_EXPORT_TABLE		= 0,
@@ -513,7 +513,7 @@ typedef enum {
 	ISOLATIONAWARE_NOSTATICIMPORT_MANIFEST_RESOURCE_ID = 3,
 
 	// Windows XP's explorer.exe uses resource ID 123.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb773175(v=vs.85).aspx
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/controls/cookbook-overview
 	XP_VISUAL_STYLE_MANIFEST_RESOURCE_ID = 123,
 } PE_ManifestID;
 

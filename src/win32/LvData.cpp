@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * LvData.cpp: ListView data internal implementation.                      *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,9 +12,9 @@
 // librpbase
 using LibRpBase::RomFields;
 
-// libwin32common
-#include "libwin32common/AutoGetDC.hpp"
-using LibWin32Common::AutoGetDC;
+// libwin32ui
+#include "libwin32ui/AutoGetDC.hpp"
+using LibWin32UI::AutoGetDC;
 
 // C++ STL classes.
 using std::tstring;
@@ -43,18 +43,17 @@ vector<int> LvData::measureColumnWidths(int *p_nl_max) const
 
 	AutoGetDC hDC(hListView);
 
-	const auto vvStr_cend = vvStr.cend();
-	for (auto iter_vvStr = vvStr.cbegin(); iter_vvStr != vvStr_cend; ++iter_vvStr) {
-		const auto &data_row = *iter_vvStr;
+	for (const auto &data_row : vvStr) {
 		col_widths.resize(data_row.size());
 
 		int col = 0;
-		const auto data_row_cend = data_row.cend();
-		for (auto iter = data_row.cbegin(); iter != data_row_cend; ++iter, col++) {
+		for (const auto &data_item : data_row) {
 			int nl_count = 0;
-			int width = LibWin32Common::measureStringForListView(hDC, *iter, &nl_count);
+			int width = LibWin32UI::measureStringForListView(hDC, data_item, &nl_count);
 			col_widths[col] = std::max(col_widths[col], width);
 			nl_max = std::max(nl_max, nl_count);
+
+			col++;
 		}
 	}
 
@@ -152,13 +151,11 @@ BOOL LvData::toggleSortColumn(int iSubItem)
 			// Set the arrow to Up if not set; flip it if set.
 			if (hdi.fmt & HDF_SORTUP) {
 				// Currently Up.
-				hdi.fmt &= ~HDF_SORTUP;
-				hdi.fmt |=  HDF_SORTDOWN;
+				hdi.fmt ^= (HDF_SORTUP | HDF_SORTDOWN);
 				direction = RomFields::COLSORTORDER_DESCENDING;
 			} else if (hdi.fmt & HDF_SORTDOWN) {
 				// Currently Down.
-				hdi.fmt &= ~HDF_SORTDOWN;
-				hdi.fmt |=  HDF_SORTUP;
+				hdi.fmt ^= (HDF_SORTUP | HDF_SORTDOWN);
 			} else {
 				// Not set. Set it to Up.
 				hdi.fmt |=  HDF_SORTUP;
@@ -242,7 +239,7 @@ void LvData::doSort(int column, RomFields::ColSortOrder direction)
 		assert(b >= 0);
 		assert(b < (int)vvStr.size());
 		if (a < 0 || a >= (int)vvStr.size() ||
-		    b < 0 || a >= (int)vvStr.size())
+		    b < 0 || b >= (int)vvStr.size())
 		{
 			return false;
 		}

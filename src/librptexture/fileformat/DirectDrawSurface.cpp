@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DirectDrawSurface.hpp: DirectDraw Surface image reader.                 *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,21 +16,25 @@
 #include "data/DX10Formats.hpp"
 
 // librpbase, librpfile
+#include "libi18n/i18n.h"
 using LibRpBase::rp_sprintf;
 using LibRpBase::RomFields;
 using LibRpFile::IRpFile;
 
 // librptexture
 #include "img/rp_image.hpp"
-#include "decoder/ImageDecoder.hpp"
+#include "decoder/ImageSizeCalc.hpp"
+#include "decoder/ImageDecoder_Linear.hpp"
+#include "decoder/ImageDecoder_S3TC.hpp"
+#include "decoder/ImageDecoder_BC7.hpp"
+#include "decoder/ImageDecoder_PVRTC.hpp"
+#include "decoder/ImageDecoder_ASTC.hpp"
 
 // C++ STL classes.
 using std::string;
 using std::vector;
 
 namespace LibRpTexture {
-
-FILEFORMAT_IMPL(DirectDrawSurface)
 
 class DirectDrawSurfacePrivate final : public FileFormatPrivate
 {
@@ -41,6 +45,12 @@ class DirectDrawSurfacePrivate final : public FileFormatPrivate
 	private:
 		typedef FileFormatPrivate super;
 		RP_DISABLE_COPY(DirectDrawSurfacePrivate)
+
+	public:
+		/** TextureInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const TextureInfo textureInfo;
 
 	public:
 		// DDS header.
@@ -108,7 +118,29 @@ class DirectDrawSurfacePrivate final : public FileFormatPrivate
 		int updatePixelFormat(void);
 };
 
+FILEFORMAT_IMPL(DirectDrawSurface)
+
 /** DirectDrawSurfacePrivate **/
+
+/* TextureInfo */
+const char *const DirectDrawSurfacePrivate::exts[] = {
+	".dds",	// DirectDraw Surface
+
+	nullptr
+};
+const char *const DirectDrawSurfacePrivate::mimeTypes[] = {
+	// Vendor-specific MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"image/vnd.ms-dds",
+
+	// Unofficial MIME types from FreeDesktop.org.
+	"image/x-dds",
+
+	nullptr
+};
+const TextureInfo DirectDrawSurfacePrivate::textureInfo = {
+	exts, mimeTypes
+};
 
 // Supported 16-bit uncompressed RGB formats.
 const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_16[] = {
@@ -322,14 +354,19 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 			{DDPF_FOURCC_PTC2, DXGI_FORMAT_FAKE_PVRTC_2bpp, DDS_ALPHA_MODE_STRAIGHT},
 			{DDPF_FOURCC_PTC4, DXGI_FORMAT_FAKE_PVRTC_4bpp, DDS_ALPHA_MODE_STRAIGHT},
 
-			{0, 0, 0}
+			{DDPF_FOURCC_ASTC4x4, DXGI_FORMAT_ASTC_4X4_UNORM, DDS_ALPHA_MODE_STRAIGHT},
+			{DDPF_FOURCC_ASTC5x5, DXGI_FORMAT_ASTC_5X5_UNORM, DDS_ALPHA_MODE_STRAIGHT},
+			{DDPF_FOURCC_ASTC6x6, DXGI_FORMAT_ASTC_6X6_UNORM, DDS_ALPHA_MODE_STRAIGHT},
+			{DDPF_FOURCC_ASTC8x5, DXGI_FORMAT_ASTC_8X5_UNORM, DDS_ALPHA_MODE_STRAIGHT},
+			{DDPF_FOURCC_ASTC8x6, DXGI_FORMAT_ASTC_8X6_UNORM, DDS_ALPHA_MODE_STRAIGHT},
+			{DDPF_FOURCC_ASTC10x5, DXGI_FORMAT_ASTC_10X5_UNORM, DDS_ALPHA_MODE_STRAIGHT},
 		};
 
-		for (const auto *p = fourCC_dxgi_lkup_tbl; p->dwFourCC != 0; p++) {
-			if (ddspf.dwFourCC == p->dwFourCC) {
+		for (const auto &p : fourCC_dxgi_lkup_tbl) {
+			if (ddspf.dwFourCC == p.dwFourCC) {
 				// Found a match.
-				dxgi_format = p->dxgi_format;
-				dxgi_alpha = p->dxgi_alpha;
+				dxgi_format = p.dxgi_format;
+				dxgi_alpha = p.dxgi_alpha;
 				break;
 			}
 		}
@@ -386,17 +423,15 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 				{DXGI_FORMAT_B8G8R8X8_UNORM_SRGB,	ImageDecoder::PixelFormat::xRGB8888, 4},
 
 				{DXGI_FORMAT_B4G4R4A4_UNORM,		ImageDecoder::PixelFormat::ARGB4444, 2},
-
-				{0, ImageDecoder::PixelFormat::Unknown, 0}
 			};
 
 			// If the dxgi_format is not listed in the table, we'll use it
 			// as-is, assuming it's compressed.
-			for (const auto *p = dx10_lkup_tbl; p->dxgi_format != 0; p++) {
-				if (dxgi_format == p->dxgi_format) {
+			for (const auto &p : dx10_lkup_tbl) {
+				if (dxgi_format == p.dxgi_format) {
 					// Found a match.
-					pxf_uncomp = p->pxf_uncomp;
-					bytespp = p->bytespp;
+					pxf_uncomp = p.pxf_uncomp;
+					bytespp = p.bytespp;
 				}
 			}
 		}
@@ -472,7 +507,7 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 }
 
 DirectDrawSurfacePrivate::DirectDrawSurfacePrivate(DirectDrawSurface *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &textureInfo)
 	, texDataStartAddr(0)
 	, img(nullptr)
 	, pxf_uncomp(ImageDecoder::PixelFormat::Unknown)
@@ -545,6 +580,8 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 	// that have an alpha channel, except for DXT2 and DXT4,
 	// which use premultiplied alpha.
 
+	// TODO: Handle sRGB.
+
 	// NOTE: Mipmaps are stored *after* the main image.
 	// Hence, no mipmap processing is necessary.
 	if (dxgi_format != 0) {
@@ -552,17 +589,21 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 
 		// NOTE: dwPitchOrLinearSize is not necessarily correct.
 		// Calculate the expected size.
-		uint32_t expected_size;
+		size_t expected_size;
 		switch (dxgi_format) {
 #ifdef ENABLE_PVRTC
 			case DXGI_FORMAT_FAKE_PVRTC_2bpp:
 				// 32 pixels compressed into 64 bits. (2bpp)
-				expected_size = (ddsHeader.dwWidth * ddsHeader.dwHeight) / 4;
+				// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
+				expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<true>(
+					ddsHeader.dwWidth, ddsHeader.dwHeight);
 				break;
 
 			case DXGI_FORMAT_FAKE_PVRTC_4bpp:
 				// 16 pixels compressed into 64 bits. (4bpp)
-				expected_size = (ddsHeader.dwWidth * ddsHeader.dwHeight) / 2;
+				// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
+				expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<false>(
+					ddsHeader.dwWidth, ddsHeader.dwHeight);
 				break;
 #endif /* ENABLE_PVRTC */
 
@@ -600,6 +641,93 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 				// Uncompressed "special" 32bpp formats.
 				expected_size = ddsHeader.dwWidth * ddsHeader.dwHeight * 4;
 				break;
+
+#ifdef ENABLE_ASTC
+			case DXGI_FORMAT_ASTC_4X4_TYPELESS:
+			case DXGI_FORMAT_ASTC_4X4_UNORM:
+			case DXGI_FORMAT_ASTC_4X4_UNORM_SRGB:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 4, 4);
+				break;
+			case DXGI_FORMAT_ASTC_5X4_TYPELESS:
+			case DXGI_FORMAT_ASTC_5X4_UNORM:
+			case DXGI_FORMAT_ASTC_5X4_UNORM_SRGB:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 5, 4);
+				break;
+			case DXGI_FORMAT_ASTC_5X5_TYPELESS:
+			case DXGI_FORMAT_ASTC_5X5_UNORM:
+			case DXGI_FORMAT_ASTC_5X5_UNORM_SRGB:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 5, 5);
+				break;
+			case DXGI_FORMAT_ASTC_6X5_TYPELESS:
+			case DXGI_FORMAT_ASTC_6X5_UNORM:
+			case DXGI_FORMAT_ASTC_6X5_UNORM_SRGB:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 6, 5);
+				break;
+			case DXGI_FORMAT_ASTC_6X6_TYPELESS:
+			case DXGI_FORMAT_ASTC_6X6_UNORM:
+			case DXGI_FORMAT_ASTC_6X6_UNORM_SRGB:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 6, 6);
+				break;
+			case DXGI_FORMAT_ASTC_8X5_TYPELESS:
+			case DXGI_FORMAT_ASTC_8X5_UNORM:
+			case DXGI_FORMAT_ASTC_8X5_UNORM_SRGB:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 8, 5);
+				break;
+			case DXGI_FORMAT_ASTC_8X6_TYPELESS:
+			case DXGI_FORMAT_ASTC_8X6_UNORM:
+			case DXGI_FORMAT_ASTC_8X6_UNORM_SRGB:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 8, 6);
+				break;
+			case DXGI_FORMAT_ASTC_8X8_TYPELESS:
+			case DXGI_FORMAT_ASTC_8X8_UNORM:
+			case DXGI_FORMAT_ASTC_8X8_UNORM_SRGB:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 8, 8);
+				break;
+			case DXGI_FORMAT_ASTC_10X5_TYPELESS:
+			case DXGI_FORMAT_ASTC_10X5_UNORM:
+			case DXGI_FORMAT_ASTC_10X5_UNORM_SRGB:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 10, 5);
+				break;
+			case DXGI_FORMAT_ASTC_10X6_TYPELESS:
+			case DXGI_FORMAT_ASTC_10X6_UNORM:
+			case DXGI_FORMAT_ASTC_10X6_UNORM_SRGB:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 10, 6);
+				break;
+			case DXGI_FORMAT_ASTC_10X8_TYPELESS:
+			case DXGI_FORMAT_ASTC_10X8_UNORM:
+			case DXGI_FORMAT_ASTC_10X8_UNORM_SRGB:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 10, 8);
+				break;
+			case DXGI_FORMAT_ASTC_10X10_TYPELESS:
+			case DXGI_FORMAT_ASTC_10X10_UNORM:
+			case DXGI_FORMAT_ASTC_10X10_UNORM_SRGB:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 10, 10);
+				break;
+			case DXGI_FORMAT_ASTC_12X10_TYPELESS:
+			case DXGI_FORMAT_ASTC_12X10_UNORM:
+			case DXGI_FORMAT_ASTC_12X10_UNORM_SRGB:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 12, 10);
+				break;
+			case DXGI_FORMAT_ASTC_12X12_TYPELESS:
+			case DXGI_FORMAT_ASTC_12X12_UNORM:
+			case DXGI_FORMAT_ASTC_12X12_UNORM_SRGB:
+				expected_size = ImageSizeCalc::calcImageSizeASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight, 12, 12);
+				break;
+#endif /* ENABLE_ASTC */
 
 			default:
 				// Not supported.
@@ -721,6 +849,107 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 					expected_size);
 				break;
 
+#ifdef ENABLE_ASTC
+			case DXGI_FORMAT_ASTC_4X4_TYPELESS:
+			case DXGI_FORMAT_ASTC_4X4_UNORM:
+			case DXGI_FORMAT_ASTC_4X4_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 4, 4);
+				break;
+			case DXGI_FORMAT_ASTC_5X4_TYPELESS:
+			case DXGI_FORMAT_ASTC_5X4_UNORM:
+			case DXGI_FORMAT_ASTC_5X4_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 5, 4);
+				break;
+			case DXGI_FORMAT_ASTC_5X5_TYPELESS:
+			case DXGI_FORMAT_ASTC_5X5_UNORM:
+			case DXGI_FORMAT_ASTC_5X5_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 5, 5);
+				break;
+			case DXGI_FORMAT_ASTC_6X5_TYPELESS:
+			case DXGI_FORMAT_ASTC_6X5_UNORM:
+			case DXGI_FORMAT_ASTC_6X5_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 6, 5);
+				break;
+			case DXGI_FORMAT_ASTC_6X6_TYPELESS:
+			case DXGI_FORMAT_ASTC_6X6_UNORM:
+			case DXGI_FORMAT_ASTC_6X6_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 6, 6);
+				break;
+			case DXGI_FORMAT_ASTC_8X5_TYPELESS:
+			case DXGI_FORMAT_ASTC_8X5_UNORM:
+			case DXGI_FORMAT_ASTC_8X5_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 8, 5);
+				break;
+			case DXGI_FORMAT_ASTC_8X6_TYPELESS:
+			case DXGI_FORMAT_ASTC_8X6_UNORM:
+			case DXGI_FORMAT_ASTC_8X6_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 8, 6);
+				break;
+			case DXGI_FORMAT_ASTC_8X8_TYPELESS:
+			case DXGI_FORMAT_ASTC_8X8_UNORM:
+			case DXGI_FORMAT_ASTC_8X8_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 8, 8);
+				break;
+			case DXGI_FORMAT_ASTC_10X5_TYPELESS:
+			case DXGI_FORMAT_ASTC_10X5_UNORM:
+			case DXGI_FORMAT_ASTC_10X5_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 10, 5);
+				break;
+			case DXGI_FORMAT_ASTC_10X6_TYPELESS:
+			case DXGI_FORMAT_ASTC_10X6_UNORM:
+			case DXGI_FORMAT_ASTC_10X6_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 10, 6);
+				break;
+			case DXGI_FORMAT_ASTC_10X8_TYPELESS:
+			case DXGI_FORMAT_ASTC_10X8_UNORM:
+			case DXGI_FORMAT_ASTC_10X8_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 10, 8);
+				break;
+			case DXGI_FORMAT_ASTC_10X10_TYPELESS:
+			case DXGI_FORMAT_ASTC_10X10_UNORM:
+			case DXGI_FORMAT_ASTC_10X10_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 10, 10);
+				break;
+			case DXGI_FORMAT_ASTC_12X10_TYPELESS:
+			case DXGI_FORMAT_ASTC_12X10_UNORM:
+			case DXGI_FORMAT_ASTC_12X10_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 12, 10);
+				break;
+			case DXGI_FORMAT_ASTC_12X12_TYPELESS:
+			case DXGI_FORMAT_ASTC_12X12_UNORM:
+			case DXGI_FORMAT_ASTC_12X12_UNORM_SRGB:
+				img = ImageDecoder::fromASTC(
+					ddsHeader.dwWidth, ddsHeader.dwHeight,
+					buf.get(), expected_size, 12, 12);
+				break;
+#endif /* ENABLE_ASTC */
+
 			default:
 				// Not supported.
 				break;
@@ -752,7 +981,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			// Stride is too large.
 			return nullptr;
 		}
-		const unsigned int expected_size = ddsHeader.dwHeight * stride;
+		const size_t expected_size = (size_t)ddsHeader.dwHeight * stride;
 
 		// Verify file size.
 		if (expected_size >= file_sz + texDataStartAddr) {
@@ -846,12 +1075,11 @@ DirectDrawSurface::DirectDrawSurface(IRpFile *file)
 	}
 
 	// Check if this DDS texture is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = static_cast<uint32_t>(size);
-	info.header.pData = header;
-	info.ext = nullptr;	// Not needed for DDS.
-	info.szFile = file->size();
+	const DetectInfo info = {
+		{0, static_cast<uint32_t>(size), header},
+		nullptr,	// ext (not needed for DirectDrawSurface)
+		file->size()	// szFile
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
@@ -1006,55 +1234,6 @@ int DirectDrawSurface::isRomSupported_static(const DetectInfo *info)
 	return -1;
 }
 
-/** Class-specific functions that can be used even if isValid() is false. **/
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *DirectDrawSurface::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".dds",	// DirectDraw Surface
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *DirectDrawSurface::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Vendor-specific MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"image/vnd.ms-dds",
-
-		// Unofficial MIME types from FreeDesktop.org.
-		"image/x-dds",
-
-		nullptr
-	};
-	return mimeTypes;
-}
-
 /** Property accessors **/
 
 /**
@@ -1076,10 +1255,6 @@ const char *DirectDrawSurface::textureFormatName(void) const
  */
 const char *DirectDrawSurface::pixelFormat(void) const
 {
-	// TODO: Localization.
-#define C_(ctx, str) str
-#define NOP_C_(ctx, str) str
-
 	RP_D(const DirectDrawSurface);
 	if (!d->isValid)
 		return nullptr;
@@ -1094,48 +1269,45 @@ const char *DirectDrawSurface::pixelFormat(void) const
 	const DDS_PIXELFORMAT &ddspf = d->ddsHeader.ddspf;
 	if (ddspf.dwFlags & DDPF_FOURCC) {
 		// Compressed RGB data.
+		// NOTE: If DX10, see dxgi_format.
 		d_nc->pixel_format[0] = (ddspf.dwFourCC >> 24) & 0xFF;
 		d_nc->pixel_format[1] = (ddspf.dwFourCC >> 16) & 0xFF;
 		d_nc->pixel_format[2] = (ddspf.dwFourCC >>  8) & 0xFF;
 		d_nc->pixel_format[3] =  ddspf.dwFourCC        & 0xFF;
 		d_nc->pixel_format[4] = '\0';
-	} else if (ddspf.dwFlags & DDPF_RGB) {
+		return d_nc->pixel_format;
+	}
+
+	const char *const pxfmt = d->getPixelFormatName(ddspf);
+	if (pxfmt) {
+		// Got the pixel format name.
+		strcpy(d_nc->pixel_format, pxfmt);
+		return d_nc->pixel_format;
+	}
+
+	// Manually determine the pixel format.
+	if (ddspf.dwFlags & DDPF_RGB) {
 		// Uncompressed RGB data.
-		const char *const pxfmt = d->getPixelFormatName(ddspf);
-		if (pxfmt) {
-			strcpy(d_nc->pixel_format, pxfmt);
-		} else {
-			snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
-				 "RGB (%u-bit)", ddspf.dwRGBBitCount);
-		}
+		snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
+			 "RGB (%u-bit)", ddspf.dwRGBBitCount);
 	} else if (ddspf.dwFlags & DDPF_ALPHA) {
 		// Alpha channel.
-		const char *const pxfmt = d->getPixelFormatName(ddspf);
-		if (pxfmt) {
-			strcpy(d_nc->pixel_format, pxfmt);
-		} else {
-			snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
-				C_("DirectDrawSurface", "Alpha (%u-bit)"), ddspf.dwRGBBitCount);
-		}
+		snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
+			C_("DirectDrawSurface", "Alpha (%u-bit)"), ddspf.dwRGBBitCount);
 	} else if (ddspf.dwFlags & DDPF_YUV) {
 		// YUV. (TODO: Determine the format.)
 		snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
 			C_("DirectDrawSurface", "YUV (%u-bit)"), ddspf.dwRGBBitCount);
 	} else if (ddspf.dwFlags & DDPF_LUMINANCE) {
 		// Luminance.
-		const char *const pxfmt = d->getPixelFormatName(ddspf);
-		if (pxfmt) {
-			strcpy(d_nc->pixel_format, pxfmt);
+		if (ddspf.dwFlags & DDPF_ALPHAPIXELS) {
+			snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
+				C_("DirectDrawSurface", "Luminance + Alpha (%u-bit)"),
+				ddspf.dwRGBBitCount);
 		} else {
-			if (ddspf.dwFlags & DDPF_ALPHAPIXELS) {
-				snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
-					C_("DirectDrawSurface", "Luminance + Alpha (%u-bit)"),
-					ddspf.dwRGBBitCount);
-			} else {
-				snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
-					C_("DirectDrawSurface", "Luminance (%u-bit)"),
-					ddspf.dwRGBBitCount);
-			}
+			snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
+				C_("DirectDrawSurface", "Luminance (%u-bit)"),
+				ddspf.dwRGBBitCount);
 		}
 	} else {
 		// Unknown pixel format.
@@ -1170,10 +1342,6 @@ int DirectDrawSurface::mipmapCount(void) const
  */
 int DirectDrawSurface::getFields(RomFields *fields) const
 {
-	// TODO: Localization.
-#define C_(ctx, str) str
-#define NOP_C_(ctx, str) str
-
 	assert(fields != nullptr);
 	if (!fields)
 		return 0;

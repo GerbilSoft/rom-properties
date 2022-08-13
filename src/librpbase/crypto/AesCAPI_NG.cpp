@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * AesCAPI_NG.cpp: AES decryption class using Win32 CryptoAPI NG.          *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,14 +16,14 @@
 #include "librpthreads/Atomics.h"
 
 // References:
-// - https://msdn.microsoft.com/en-us/library/windows/desktop/aa376234%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
+// - https://docs.microsoft.com/en-us/windows/win32/seccng/encrypting-data-with-cng
 #include <bcrypt.h>
 #include <winternl.h>
 
 // Function pointer macro.
-#define DECL_FUNCPTR(f) typeof(f) * p##f
-#define DEF_FUNCPTR(f) typeof(f) * AesCAPI_NG_Private::p##f = nullptr
-#define LOAD_FUNCPTR(f) AesCAPI_NG_Private::p##f = (typeof(f)*)GetProcAddress(hBcryptDll, #f)
+#define DECL_FUNCPTR(f) __typeof__(f) * p##f
+#define DEF_FUNCPTR(f) __typeof__(f) * AesCAPI_NG_Private::p##f = nullptr
+#define LOAD_FUNCPTR(f) AesCAPI_NG_Private::p##f = (__typeof__(f)*)GetProcAddress(hBcryptDll, #f)
 
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define AesCAPI_NGPrivate AesCAPI_NG_Private
@@ -181,7 +181,7 @@ int AesCAPI_NG_Private::load_bcrypt(void)
 	}
 
 	// Attempt to load bcrypt.dll.
-	hBcryptDll = LoadLibrary(_T("bcrypt.dll"));
+	hBcryptDll = LoadLibraryEx(_T("bcrypt.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 	if (!hBcryptDll) {
 		// bcrypt.dll not found.
 		return -ENOENT;
@@ -255,7 +255,7 @@ bool AesCAPI_NG::isUsable(void)
 	// so assume it works as long as bcrypt.dll is present and
 	// BCryptOpenAlgorithmProvider exists.
 	bool bRet = false;
-	HMODULE hBcryptDll = LoadLibrary(_T("bcrypt.dll"));
+	HMODULE hBcryptDll = LoadLibraryEx(_T("bcrypt.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 	if (hBcryptDll) {
 		bRet = (GetProcAddress(hBcryptDll, "BCryptOpenAlgorithmProvider") != nullptr);
 		FreeLibrary(hBcryptDll);
@@ -309,7 +309,7 @@ int AesCAPI_NG::setKey(const uint8_t *RESTRICT pKey, size_t size)
 		return -EINVAL;
 	}
 
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa376234%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/seccng/encrypting-data-with-cng
 
 	// Calculate the buffer size for the key object.
 	ULONG cbKeyObject;

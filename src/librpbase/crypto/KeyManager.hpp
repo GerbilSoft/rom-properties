@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * KeyManager.hpp: Encryption key manager.                                 *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,6 +11,7 @@
 
 #include "librpbase/config.librpbase.h"
 #include "../config/ConfReader.hpp"
+#include "common.h"
 
 // C includes.
 #include <stdint.h>
@@ -61,6 +62,7 @@ class KeyManager : public ConfReader
 		 * @param res VerifyResult.
 		 * @return Description, or nullptr if invalid.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static const char *verifyResultToString(VerifyResult res);
 
 #ifdef ENABLE_DECRYPTION
@@ -69,6 +71,7 @@ class KeyManager : public ConfReader
 		 * Get the KeyManager instance.
 		 * @return KeyManager instance.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static KeyManager *instance(void);
 
 	public:
@@ -103,6 +106,7 @@ class KeyManager : public ConfReader
 		 * @return VerifyResult.
 		 */
 		ATTR_ACCESS_SIZE(read_only, 4, 5)
+		RP_LIBROMDATA_PUBLIC
 		VerifyResult getAndVerify(const char *keyName, KeyData_t *pKeyData,
 			const uint8_t *pVerifyData, unsigned int verifyLen) const;
 

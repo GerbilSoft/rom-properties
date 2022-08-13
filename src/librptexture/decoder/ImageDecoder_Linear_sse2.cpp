@@ -1,27 +1,47 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librptexture)                     *
- * ImageDecoder_Linear.cpp: Image decoding functions. (Linear)             *
+ * ImageDecoder_Linear.cpp: Image decoding functions: Linear               *
  * SSE2-optimized version.                                                 *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "ImageDecoder.hpp"
-#include "ImageDecoder_p.hpp"
+#include "ImageDecoder_Linear.hpp"
 
+// librptexture
+#include "img/rp_image.hpp"
 #include "PixelConversion.hpp"
 using namespace LibRpTexture::PixelConversion;
 
-// SSE2 intrinsics.
+// SSE2 intrinsics
 #include <emmintrin.h>
 
 // MSVC complains when the high bit is set in hex values
 // when setting SSE2 registers.
 #ifdef _MSC_VER
-# pragma warning(push)
-# pragma warning(disable: 4309)
+#  pragma warning(push)
+#  pragma warning(disable: 4309)
+#endif
+
+// MSVC 2013+: Use __vectorcall for the templated functions.
+// Other i386: Pass __m128i by const ref.
+// Other AMD64: Pass __m128i by value.
+// MSVC 2015 on AppVeyor fails if 4 or more __m128i are passed by value on 32-bit:
+// error C2719: 'Bmask': formal parameter with requested alignment of 16 won't be aligned
+// I'm not 100% sure if it'll be aligned properly even if there's only three,
+// so for now, I'll force `const __m128i&` on 32-bit.
+#if defined(_MSC_VER) && _MSC_VER >= 1800
+#  define VECTORCALL __vectorcall
+#  define __M128I_ARG 	__m128i
+#else
+#  define VECTORCALL
+#  if defined(_M_X64) || defined(_M_AMD64) || defined(__amd64__) || defined(__x86_64__)
+#    define __M128I_ARG 	__m128i
+#  else
+#    define __M128I_ARG 	const __m128i&
+#  endif
 #endif
 
 namespace LibRpTexture { namespace ImageDecoder {
@@ -46,8 +66,8 @@ namespace LibRpTexture { namespace ImageDecoder {
  */
 template<uint8_t Rshift_W, uint8_t Gshift_W, uint8_t Bshift_W,
 	uint8_t Rbits, uint8_t Gbits, uint8_t Bbits, bool isBGR>
-static inline void T_RGB16_sse2(
-	const __m128i &Rmask, const __m128i &Gmask, const __m128i &Bmask,
+static inline void VECTORCALL T_RGB16_sse2(
+	__M128I_ARG Rmask, __M128I_ARG Gmask, __M128I_ARG Bmask,
 	const uint16_t *RESTRICT img_buf, uint32_t *RESTRICT px_dest)
 {
 	// Alpha mask.
@@ -90,11 +110,8 @@ static inline void T_RGB16_sse2(
 	sR = _mm_or_si128(sR, _mm_srli_epi16(sR, Rbits));
 
 	// Unpack R and GB into DWORDs.
-	__m128i px0 = _mm_or_si128(_mm_unpacklo_epi16(sB, sR), Mask32_A);
-	__m128i px1 = _mm_or_si128(_mm_unpackhi_epi16(sB, sR), Mask32_A);
-
-	_mm_store_si128(&xmm_dest[0], px0);
-	_mm_store_si128(&xmm_dest[1], px1);
+	_mm_store_si128(&xmm_dest[0], _mm_or_si128(_mm_unpacklo_epi16(sB, sR), Mask32_A));
+	_mm_store_si128(&xmm_dest[1], _mm_or_si128(_mm_unpackhi_epi16(sB, sR), Mask32_A));
 }
 
 /**
@@ -120,8 +137,8 @@ static inline void T_RGB16_sse2(
  */
 template<uint8_t Ashift_W, uint8_t Rshift_W, uint8_t Gshift_W, uint8_t Bshift_W,
 	uint8_t Abits, uint8_t Rbits, uint8_t Gbits, uint8_t Bbits, bool isBGR>
-static inline void T_ARGB16_sse2(
-	const __m128i &Amask, const __m128i &Rmask, const __m128i &Gmask, const __m128i &Bmask,
+static inline void VECTORCALL T_ARGB16_sse2(
+	__M128I_ARG Amask, __M128I_ARG Rmask, __M128I_ARG Gmask, __M128I_ARG Bmask,
 	const uint16_t *RESTRICT img_buf, uint32_t *RESTRICT px_dest)
 {
 	static_assert(Ashift_W <= 17, "Ashift_W is invalid.");
@@ -208,11 +225,8 @@ static inline void T_ARGB16_sse2(
 	}
 
 	// Unpack AR and GB into DWORDs.
-	__m128i px0 = _mm_unpacklo_epi16(sB, sR);
-	__m128i px1 = _mm_unpackhi_epi16(sB, sR);
-
-	_mm_store_si128(&xmm_dest[0], px0);
-	_mm_store_si128(&xmm_dest[1], px1);
+	_mm_store_si128(&xmm_dest[0], _mm_unpacklo_epi16(sB, sR));
+	_mm_store_si128(&xmm_dest[1], _mm_unpackhi_epi16(sB, sR));
 }
 
 /**
@@ -228,7 +242,7 @@ static inline void T_ARGB16_sse2(
  */
 rp_image *fromLinear16_sse2(PixelFormat px_format,
 	int width, int height,
-	const uint16_t *RESTRICT img_buf, int img_siz, int stride)
+	const uint16_t *RESTRICT img_buf, size_t img_siz, int stride)
 {
 	ASSERT_ALIGNMENT(16, img_buf);
 	static const int bytespp = 2;
@@ -254,9 +268,9 @@ rp_image *fromLinear16_sse2(PixelFormat px_format,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= ((width * height) * bytespp));
+	assert(img_siz >= (((size_t)width * (size_t)height) * bytespp));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((width * height) * bytespp))
+	    img_siz < (((size_t)width * (size_t)height) * bytespp))
 	{
 		return nullptr;
 	}

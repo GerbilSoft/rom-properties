@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PSP.hpp: PlayStation Portable disc image reader.                        *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,10 +13,8 @@
 
 // librpbase, librpfile, librptexture
 #include "librpbase/img/RpPng.hpp"
-#include "librpfile/RpFile.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
-using LibRpFile::RpFile;
 using namespace LibRpTexture;
 
 // DiscReader
@@ -36,18 +34,21 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(PSP)
-ROMDATA_IMPL_IMG_TYPES(PSP)
-
 class PSPPrivate final : public LibRpBase::RomDataPrivate
 {
 	public:
-		PSPPrivate(PSP *q, LibRpFile::IRpFile *file);
+		PSPPrivate(PSP *q, IRpFile *file);
 		virtual ~PSPPrivate();
 
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(PSPPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		enum class DiscType {
@@ -85,10 +86,49 @@ class PSPPrivate final : public LibRpBase::RomDataPrivate
 		RomData *openBootExe(void);
 };
 
+ROMDATA_IMPL(PSP)
+ROMDATA_IMPL_IMG_TYPES(PSP)
+
 /** PSPPrivate **/
 
+/* RomDataInfo */
+const char *const PSPPrivate::exts[] = {
+	".iso",			// ISO
+	".img",			// USER_L0.IMG on PSP dev DVD-Rs
+	".dax",			// DAX
+	".ciso", ".cso",	// CISO
+
+#ifdef HAVE_LZ4
+	".ziso", ".zso",		// ZISO
+#endif /* HAVE_LZ4 */
+
+	".jiso", ".jso",	// JISO (TODO)
+
+	nullptr
+};
+const char *const PSPPrivate::mimeTypes[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-cd-image",
+	"application/x-iso9660-image",
+
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-psp-ciso-image",
+	"application/x-cso",		// technically a different format...
+	"application/x-compressed-iso",	// KDE detects CISO as this
+	"application/x-psp-dax-image",
+	"application/x-psp-jiso-image",
+	"application/x-psp-ziso-image",
+
+	// TODO: PSP?
+	nullptr
+};
+const RomDataInfo PSPPrivate::romDataInfo = {
+	"PSP", exts, mimeTypes
+};
+
 PSPPrivate::PSPPrivate(PSP *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, discReader(nullptr)
 	, isoPartition(nullptr)
@@ -198,7 +238,6 @@ PSP::PSP(IRpFile *file)
 {
 	// This class handles disc images.
 	RP_D(PSP);
-	d->className = "PSP";
 	d->mimeType = "application/x-cd-image";	// unofficial
 	d->fileType = FileType::DiscImage;
 
@@ -407,61 +446,6 @@ const char *PSP::systemName(unsigned int type) const
 		{"Universal Media Disc", "Universal Media Disc", "UMD", nullptr},
 	};
 	return sysNames[(unsigned int)(d->discType) & 1][type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *PSP::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".iso",			// ISO
-		".img",			// USER_L0.IMG on PSP dev DVD-Rs
-		".dax",			// DAX
-		".ciso", ".cso",	// CISO
-
-#ifdef HAVE_LZ4
-		".ziso", ".zso",		// ZISO
-#endif /* HAVE_LZ4 */
-
-		".jiso", ".jso",	// JISO (TODO)
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *PSP::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org..
-		"application/x-cd-image",
-		"application/x-iso9660-image",
-
-		// TODO: PS1/PS2?
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

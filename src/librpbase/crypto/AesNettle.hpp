@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * AesNettle.hpp: AES decryption class using GNU Nettle.                   *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -79,6 +79,29 @@ class AesNettle : public IAesCipher
 		 */
 		ATTR_ACCESS_SIZE(read_write, 2, 3)
 		size_t decrypt(uint8_t *RESTRICT pData, size_t size) final;
+
+	public:
+		/**
+		 * Get the nettle compile-time version.
+		 * @param pMajor	[out] Pointer to store major version.
+		 * @param pMinor	[out] Pointer to store minor version.
+		 * @return 0 on success; non-zero on error.
+		 */
+		ATTR_ACCESS(write_only, 1)
+		ATTR_ACCESS(write_only, 2)
+		RP_LIBROMDATA_PUBLIC
+		static int get_nettle_compile_time_version(int *pMajor, int *pMinor);
+
+		/**
+		 * Get the nettle runtime version.
+		 * @param pMajor	[out] Pointer to store major version.
+		 * @param pMinor	[out] Pointer to store minor version.
+		 * @return 0 on success; non-zero on error.
+		 */
+		ATTR_ACCESS(write_only, 1)
+		ATTR_ACCESS(write_only, 2)
+		RP_LIBROMDATA_PUBLIC
+		static int get_nettle_runtime_version(int *pMajor, int *pMinor);
 };
 
 }

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXE_manifest.cpp: DOS/Windows executable reader. (PE manifest reader)   *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -71,22 +71,15 @@ do { } while (0)
  * The XML is loaded and parsed using the specified
  * TinyXML document.
  *
+ * NOTE: DelayLoad must be checked by the caller, since it's
+ * passing an XMLDocument reference to this function.
+ *
  * @param doc		[in/out] XML document.
  * @param ppResName	[out,opt] Pointer to receive the loaded resource name. (statically-allocated string)
  * @return 0 on success; negative POSIX error code on error.
  */
 int EXEPrivate::loadWin32ManifestResource(XMLDocument &doc, const char **ppResName) const
 {
-#if defined(_MSC_VER) && defined(XML_IS_DLL)
-	// Delay load verification.
-	// TODO: Only if linked with /DELAYLOAD?
-	int ret_dl = DelayLoad_test_TinyXML2();
-	if (ret_dl != 0) {
-		// Delay load failed.
-		return ret_dl;
-	}
-#endif /* defined(_MSC_VER) && defined(XML_IS_DLL) */
-
 	// Make sure the resource directory is loaded.
 	int ret = const_cast<EXEPrivate*>(this)->loadPEResourceTypes();
 	if (ret != 0) {
@@ -201,6 +194,16 @@ int EXEPrivate::loadWin32ManifestResource(XMLDocument &doc, const char **ppResNa
  */
 int EXEPrivate::addFields_PE_Manifest(void)
 {
+#if defined(_MSC_VER) && defined(XML_IS_DLL)
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	int ret_dl = DelayLoad_test_TinyXML2();
+	if (ret_dl != 0) {
+		// Delay load failed.
+		return ret_dl;
+	}
+#endif /* defined(_MSC_VER) && defined(XML_IS_DLL) */
+
 	const char *pResName = nullptr;
 	XMLDocument doc;
 	int ret = loadWin32ManifestResource(doc, &pResName);
@@ -243,7 +246,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 
 	// Trust info.
 	// TODO: Fine-grained permissions?
-	// Reference: https://msdn.microsoft.com/en-us/library/6ad1fshk.aspx
+	// Reference: https://docs.microsoft.com/en-us/visualstudio/deployment/trustinfo-element-clickonce-application
 	FIRST_CHILD_ELEMENT_NS(trustInfo, assembly, "trustInfo", "asmv2");
 	if (trustInfo) {
 		FIRST_CHILD_ELEMENT_NS(security, trustInfo, "security", "asmv2");
@@ -260,7 +263,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	}
 
 	// windowsSettings bitfield.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa375635(v=vs.85).aspx
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/sbscs/manifest-file-schema
 	// TODO: Ordering.
 	typedef enum {
 		Setting_autoElevate				= (1U << 0),
@@ -319,7 +322,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 			// DPI Aware.
 			// TODO: Test 10/1607 and improve descriptions.
 			// TODO: Decode strings to more useful values.
-			// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa374191(v=vs.85).aspx
+			// Reference: https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifests
 			ADD_TEXT(windowsSettings, "dpiAware", C_("EXE|Manifest", "DPI Aware"));
 			// DPI Awareness. (Win10/1607)
 			ADD_TEXT(windowsSettings, "dpiAwareness", C_("EXE|Manifest", "DPI Awareness"));
@@ -327,7 +330,9 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	}
 
 	// Operating system compatibility.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa374191(v=vs.85).aspx
+	// References:
+	// - https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifests
+	// - https://docs.microsoft.com/en-us/windows/win32/sysinfo/targeting-your-application-at-windows-8-1
 	typedef enum {
 		OS_WinVista		= (1U << 0),
 		OS_Win7			= (1U << 1),
@@ -376,6 +381,8 @@ int EXEPrivate::addFields_PE_Manifest(void)
 				} else if (!strcasecmp(Id, "{1f676c76-80e1-4239-95bb-83d0f6d0da78}")) {
 					compat |= OS_Win81;
 				} else if (!strcasecmp(Id, "{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}")) {
+					// NOTE: Also used for Windows 11.
+					// Reference: https://stackoverflow.com/questions/68240304/whats-the-supportedos-guid-for-windows-11
 					compat |= OS_Win10;
 				}
 			}
@@ -419,9 +426,9 @@ bool EXEPrivate::doesExeRequireAdministrator(void) const
 #endif /* defined(_MSC_VER) && defined(XML_IS_DLL) */
 
 	XMLDocument doc;
-	int ret = loadWin32ManifestResource(doc);
-	if (ret != 0) {
-		return ret;
+	if (loadWin32ManifestResource(doc) != 0) {
+		// No Win32 manifest resource.
+		return false;
 	}
 
 	// Assembly element.

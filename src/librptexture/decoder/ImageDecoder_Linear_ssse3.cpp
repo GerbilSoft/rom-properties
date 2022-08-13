@@ -1,20 +1,21 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librptexture)                     *
- * ImageDecoder_Linear.cpp: Image decoding functions. (Linear)             *
+ * ImageDecoder_Linear.cpp: Image decoding functions: Linear               *
  * SSSE3-optimized version.                                                *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "ImageDecoder.hpp"
-#include "ImageDecoder_p.hpp"
+#include "ImageDecoder_Linear.hpp"
 
+// librptexture
+#include "img/rp_image.hpp"
 #include "PixelConversion.hpp"
 using namespace LibRpTexture::PixelConversion;
 
-// SSSE3 headers.
+// SSSE3 intrinsics
 #include <emmintrin.h>
 #include <tmmintrin.h>
 
@@ -33,7 +34,7 @@ namespace LibRpTexture { namespace ImageDecoder {
  */
 rp_image *fromLinear24_ssse3(PixelFormat px_format,
 	int width, int height,
-	const uint8_t *RESTRICT img_buf, int img_siz, int stride)
+	const uint8_t *RESTRICT img_buf, size_t img_siz, int stride)
 {
 	ASSERT_ALIGNMENT(16, img_buf);
 	static const int bytespp = 3;
@@ -42,9 +43,9 @@ rp_image *fromLinear24_ssse3(PixelFormat px_format,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= ((width * height) * bytespp));
+	assert(img_siz >= (((size_t)width * (size_t)height) * bytespp));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((width * height) * bytespp))
+	    img_siz < (((size_t)width * (size_t)height) * bytespp))
 	{
 		return nullptr;
 	}
@@ -185,7 +186,7 @@ rp_image *fromLinear24_ssse3(PixelFormat px_format,
  */
 rp_image *fromLinear32_ssse3(PixelFormat px_format,
 	int width, int height,
-	const uint32_t *RESTRICT img_buf, int img_siz, int stride)
+	const uint32_t *RESTRICT img_buf, size_t img_siz, int stride)
 {
 	ASSERT_ALIGNMENT(16, img_buf);
 	static const int bytespp = 4;
@@ -206,9 +207,9 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= ((width * height) * bytespp));
+	assert(img_siz >= (((size_t)width * (size_t)height) * bytespp));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < ((width * height) * bytespp))
+	    img_siz < (((size_t)width * (size_t)height) * bytespp))
 	{
 		return nullptr;
 	}

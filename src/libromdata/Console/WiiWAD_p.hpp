@@ -29,7 +29,7 @@
 
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector
-#include "librpbase/uvector.h"
+#include "uvector.h"
 
 namespace LibRpBase {
 #ifdef ENABLE_DECRYPTION
@@ -53,6 +53,12 @@ class WiiWADPrivate final : public LibRpBase::RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(WiiWADPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const LibRpBase::RomDataInfo romDataInfo;
 
 	public:
 		// WAD type.

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * snes_structs.h: Super Nintendo data structures.                         *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,8 +21,6 @@ extern "C" {
  * - http://problemkaputt.de/fullsnes.htm
  * - http://satellaview.wikia.com/wiki/Satellaview_ROM_header
  */
-
-#pragma pack(1)
 
 /**
  * ROM mapping. (SNES_RomHeader.rom_mapping)
@@ -114,7 +112,7 @@ typedef enum {
  *
  * NOTE: Strings are NOT null-terminated!
  */
-typedef struct PACKED _SNES_RomHeader {
+typedef struct _SNES_RomHeader {
 	union {
 		// SNES header format.
 		struct {
@@ -132,7 +130,7 @@ typedef struct PACKED _SNES_RomHeader {
 			/** Standard SNES header. **/
 			char title[21];			// [0x7FC0] NOTE: May be Shift-JIS?
 			uint8_t rom_mapping;		// [0x7FD5] LoROM, HiROM
-			uint8_t rom_type;		// [0x7FD6]
+			uint8_t rom_type;		// [0x7FD6] ROM type. (enhancements)
 			uint8_t rom_size;		// [0x7FD7] ROM size. (1024 << rom_size)
 			uint8_t sram_size;		// [0x7FD8] SRAM size. (1024 << sram_size);
 			uint8_t destination_code;	// [0x7FD9] Destination code. (TODO: Enum?)
@@ -150,20 +148,25 @@ typedef struct PACKED _SNES_RomHeader {
 		struct {
 			/** Extended header **/
 			// NOTE: Invalid if 0x7FDB == 0x01
-			struct {
+#pragma pack(1)
+			struct PACKED {
 				char new_publisher_code[2];	// [0x7FB0]
 				uint32_t program_type;		// [0x7FB2] See SNES_BSX_Program_Type.
 				uint8_t reserved[10];		// [0x7FB6] Usually 0x00.
 			} ext;
+#pragma pack()
 
 			/** Standard SNES header. **/
 			char title[16];			// [0x7FC0] Shift-JIS
 			uint32_t block_alloc;		// [0x7FD0] Block allocation flags.
 			uint16_t limited_starts;	// [0x7FD4] Limited starts
-			struct {
+			// Some compilers pad this structure to a multiple of 4 bytes
+#pragma pack(1)
+			struct PACKED {
 				uint8_t month;		// [0x7FD6] Month
 				uint8_t day;		// [0x7FD7] Day
 			} date;
+#pragma pack()
 			uint8_t rom_mapping;		// [0x7FD8] LoROM, HiROM
 			uint8_t file_type;		// [0x7FD9] File/Execution type
 			uint8_t old_publisher_code;	// [0x7FDA] 0x33 if valid; 0x00 if deleted.
@@ -191,12 +194,15 @@ typedef struct PACKED _SNES_RomHeader {
 			uint16_t abort;		// [0x7FF8]
 			uint16_t nmi;		// [0x7FFA]
 			uint16_t res;		// [0x7FFC]
-			union {
+			// Some compilers pad this structure to a multiple of 4 bytes
+#pragma pack(1)
+			union PACKED {
 				// IRQ/BRK share the same vector
 				// in 6502 emulation mode.
 				uint16_t irq;	// [0x7FFE]
 				uint16_t brk;
 			};
+#pragma pack()
 		} emulation;
 	} vectors;
 } SNES_RomHeader;
@@ -234,8 +240,6 @@ typedef enum {
 	SNES_BSX_PRG_SCRIPT	= 0x00000100,	// BS-X script
 	SNES_BSX_PRG_SA_1	= 0x00000200,	// SA-1 program
 } SNES_BSX_Program_Type;
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

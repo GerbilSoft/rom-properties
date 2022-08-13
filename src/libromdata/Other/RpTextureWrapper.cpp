@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * RpTextureWrapper.hpp: librptexture file format wrapper.                 *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,9 +25,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(RpTextureWrapper)
-ROMDATA_IMPL_IMG_TYPES(RpTextureWrapper)
-
 class RpTextureWrapperPrivate final : public RomDataPrivate
 {
 	public:
@@ -39,14 +36,36 @@ class RpTextureWrapperPrivate final : public RomDataPrivate
 		RP_DISABLE_COPY(RpTextureWrapperPrivate)
 
 	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
+
+	public:
 		// librptexture file format object.
 		FileFormat *texture;
 };
 
+ROMDATA_IMPL(RpTextureWrapper)
+ROMDATA_IMPL_IMG_TYPES(RpTextureWrapper)
+
 /** RpTextureWrapperPrivate **/
 
+/* RomDataInfo */
+// NOTE: RomDataFactory queries extensions and MIME types from
+// FileFormatFactory directly, so these aren't used.
+const char *const RpTextureWrapperPrivate::exts[] = {
+	nullptr
+};
+const char *const RpTextureWrapperPrivate::mimeTypes[] = {
+	nullptr
+};
+const RomDataInfo RpTextureWrapperPrivate::romDataInfo = {
+	"RpTextureWrapper", exts, mimeTypes
+};
+
 RpTextureWrapperPrivate::RpTextureWrapperPrivate(RpTextureWrapper *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, texture(nullptr)
 { }
 
@@ -75,7 +94,6 @@ RpTextureWrapper::RpTextureWrapper(IRpFile *file)
 {
 	// This class handles texture files.
 	RP_D(RpTextureWrapper);
-	d->className = "RpTextureWrapper";
 	d->fileType = FileType::TextureFile;
 
 	if (!d->file) {
@@ -154,45 +172,6 @@ const char *RpTextureWrapper::systemName(unsigned int type) const
 }
 
 /**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *RpTextureWrapper::supportedFileExtensions_static(void)
-{
-	// Not used anymore.
-	// RomDataFactory queries extensions from FileFormatFactory directly.
-	static const char *const exts[] = { nullptr };
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *RpTextureWrapper::supportedMimeTypes_static(void)
-{
-	// Not used anymore.
-	// RomDataFactory queries MIME types from FileFormatFactory directly.
-	static const char *const mimeTypes[] = { nullptr };
-	return mimeTypes;
-}
-
-/**
  * Get a bitfield of image types this class can retrieve.
  * @return Bitfield of supported image types. (ImageTypesBF)
  */
@@ -250,6 +229,13 @@ uint32_t RpTextureWrapper::imgpf(ImageType imageType) const
 		// 64x64 or smaller.
 		ret = IMGPF_RESCALE_NEAREST;
 	}
+
+	// Are rescale dimensions specified?
+	int rescale_dimensions[2];
+	if (d->texture->getRescaleDimensions(rescale_dimensions) == 0) {
+		ret |= IMGPF_RESCALE_RFT_DIMENSIONS_2;
+	}
+
 	return ret;
 }
 
@@ -274,7 +260,7 @@ int RpTextureWrapper::loadFieldData(void)
 
 	// RpTextureWrapper header
 	const FileFormat *const texture = d->texture;
-	d->fields->reserve(3);	// Maximum of 3 fields.
+	d->fields->reserve(4);	// Maximum of 4 fields.
 
 	// Dimensions
 	int dimensions[3];
@@ -282,10 +268,27 @@ int RpTextureWrapper::loadFieldData(void)
 	if (ret == 0) {
 		d->fields->addField_dimensions(C_("RpTextureWrapper", "Dimensions"),
 			dimensions[0], dimensions[1], dimensions[2]);
+
+		// Rescale dimensions (may not be present)
+		// TODO: 3D rescaling?
+		int rescale_dimensions[2];
+		ret = texture->getRescaleDimensions(rescale_dimensions);
+		if (ret == 0 && (rescale_dimensions[0] != dimensions[0] ||
+		                 rescale_dimensions[1] != dimensions[1]))
+		{
+			d->fields->addField_dimensions(C_("RpTextureWrapper", "Rescale To"),
+				rescale_dimensions[0], rescale_dimensions[1]);
+		}
 	}
 
 	// Pixel format
-	d->fields->addField_string(C_("RpTextureWrapper", "Pixel Format"), texture->pixelFormat());
+	// NOTE: Godot 3 textures with embedded PNG/WebP doesn't
+	// have the pixel format field set. We could decode the
+	// image to find it, but that would be slow.
+	const char *const pixelFormat = texture->pixelFormat();
+	if (pixelFormat) {
+		d->fields->addField_string(C_("RpTextureWrapper", "Pixel Format"), pixelFormat);
+	}
 
 	// Mipmap count
 	int mipmapCount = texture->mipmapCount();

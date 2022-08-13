@@ -1,17 +1,13 @@
-This copy of inih-r52 is a modified version of the original.
+This copy of inih-r56 is a modified version of the original.
 
-commit 1e80a47dffbda813604f0913e2ad68c7054c14e4
-Add INI_CUSTOM_ALLOCATOR to allow using a custom memory allocator (#119)
+commit 5e1d9e2625842dddb3f9c086a50f22e4f45dfc2b
+Bump up version to r56 for release
 
-Tag: r52
+Tag: r56
 
 The following changes have been made to the original:
 
 - INI files are opened in binary mode instead of text mode.
-
-- Callback functions have explicit __cdecl annotations to ensure
-  they work properly if compiling with 32-bit MSVC using /Gz.
-  (default stdcall)
 
 - The Meson build scripts have been removed.
 

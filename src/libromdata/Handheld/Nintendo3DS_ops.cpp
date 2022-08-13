@@ -1,14 +1,13 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * Nintendo3DS.hpp: Nintendo 3DS ROM reader. (ROM operations)              *
+ * Nintendo3DS_ops.cpp: Nintendo 3DS ROM reader. (ROM operations)          *
  * Handles CCI/3DS, CIA, and SMDH files.                                   *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "config.librpbase.h"
 
 #include "Nintendo3DS.hpp"
 #include "Nintendo3DS_p.hpp"

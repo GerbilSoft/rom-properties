@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libcachecommon/tests)             *
  * FilterCacheKeyTest.cpp: CacheManager::filterCacheKey() test.            *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,13 +10,14 @@
 #include "gtest/gtest.h"
 #include "tcharx.h"
 
-// libromdata
-#include "librpbase/TextFuncs.hpp"
-
 // libcachecommon
 #include "../CacheKeys.hpp"
 
-// C++ includes.
+// C includes (C++ namespace)
+#include <cerrno>
+#include <cstdio>
+
+// C++ includes
 #include <string>
 using std::string;
 

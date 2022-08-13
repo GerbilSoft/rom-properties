@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * CacheTab.cpp: Thumbnail Cache tab for rp-config.                        *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,11 +10,11 @@
 #include "CacheTab.hpp"
 #include "res/resource.h"
 
-// librpbase, librpfile, libwin32common
+// librpbase, librpfile, libwin32common, libwin32ui
 using namespace LibRpBase;
 using namespace LibRpFile;
 using LibWin32Common::RegKey;
-using LibWin32Common::WTSSessionNotification;
+using LibWin32UI::WTSSessionNotification;
 
 // IEmptyVolumeCacheCallBack implementation.
 #include "RP_EmptyVolumeCacheCallback.hpp"
@@ -23,11 +23,12 @@ using LibWin32Common::WTSSessionNotification;
 #include <devguid.h>
 
 // COM smart pointer typedefs.
+_COM_SMARTPTR_TYPEDEF(IImageList, IID_IImageList);
 _COM_SMARTPTR_TYPEDEF(IEmptyVolumeCache, IID_IEmptyVolumeCache);
 
 #ifdef __CRT_UUID_DECL
 // FIXME: MSYS2/MinGW-w64 (gcc-9.2.0-2, MinGW-w64 7.0.0.5524.2346384e-1)
-// doesn't declare the UUID for IEmptyVolumeCacheCallBack for __uuidof() emulation.
+// doesn't declare the UUID for IEmptyVolumeCache for __uuidof() emulation.
 __CRT_UUID_DECL(IEmptyVolumeCache, __MSABI_LONG(0x8fce5227), 0x04da, 0x11d1, 0xa0,0x04, 0x00, 0x80, 0x5f, 0x8a, 0xbe, 0x06)
 #endif
 
@@ -44,7 +45,6 @@ class CacheTabPrivate
 {
 	public:
 		CacheTabPrivate();
-		~CacheTabPrivate();
 
 	private:
 		RP_DISABLE_COPY(CacheTabPrivate)
@@ -111,19 +111,17 @@ class CacheTabPrivate
 
 		// Function pointer for SHGetImageList.
 		// This function is not exported by name prior to Windows XP.
-		typedef HRESULT (STDAPICALLTYPE *PFNSHGETIMAGELIST)(_In_ int iImageList, _In_ REFIID riid, _Outptr_result_nullonfailure_ void **ppvObj);
+		typedef HRESULT (STDAPICALLTYPE *PFNSHGETIMAGELIST)(
+			_In_ int iImageList, _In_ REFIID riid, _Outptr_result_nullonfailure_ void **ppvObj);
 
 		// Image list for the XP drive list.
-		IImageList *pImageList;
-
-		// XP drive update mask.
-		DWORD dwUnitmaskXP;
-
-		// Is this Windows Vista or later?
-		bool isVista;
+		IImageListPtr pImageList;
 
 		// wtsapi32.dll for Remote Desktop status. (WinXP and later)
 		WTSSessionNotification wts;
+
+		DWORD dwUnitmaskXP;	// XP drive update mask
+		bool isVista;		// Is this Windows Vista or later?
 };
 
 /** CacheTabPrivate **/
@@ -131,7 +129,6 @@ class CacheTabPrivate
 CacheTabPrivate::CacheTabPrivate()
 	: hPropSheetPage(nullptr)
 	, hWndPropSheet(nullptr)
-	, pImageList(nullptr)
 	, dwUnitmaskXP(0)
 	, isVista(false)
 {
@@ -149,13 +146,6 @@ CacheTabPrivate::CacheTabPrivate()
 		// "There is no disk in the drive." message when
 		// a CD-ROM is removed and we call SHGetFileInfo().
 		SetErrorMode(SEM_FAILCRITICALERRORS);
-	}
-}
-
-CacheTabPrivate::~CacheTabPrivate()
-{
-	if (pImageList) {
-		pImageList->Release();
 	}
 }
 
@@ -202,7 +192,7 @@ void CacheTabPrivate::initDialog(void)
 			// release/destroy it when we're done using it.
 			HRESULT hr = pfnSHGetImageList(SHIL_SMALL, IID_PPV_ARGS(&pImageList));
 			if (SUCCEEDED(hr)) {
-				ListView_SetImageList(hListView, reinterpret_cast<HIMAGELIST>(pImageList), LVSIL_SMALL);
+				ListView_SetImageList(hListView, reinterpret_cast<HIMAGELIST>(pImageList.GetInterfacePtr()), LVSIL_SMALL);
 			}
 		}
 	}
@@ -367,7 +357,8 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 		// this is only run on Vista+.
 		DWORD dwErr = GetLastError();
 		snprintf(errbuf, sizeof(errbuf), C_("CacheTab|Win32",
-			"ERROR: GetLogicalDrives() failed. (GetLastError() == 0x%08X)"), dwErr);
+			"ERROR: GetLogicalDrives() failed. (GetLastError() == 0x%08X)"),
+			static_cast<unsigned int>(dwErr));
 		SetWindowText(hStatusLabel, U82T_c(errbuf));
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 		return 1;
@@ -437,7 +428,8 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 	if (FAILED(hr)) {
 		// Failed...
 		snprintf(errbuf, sizeof(errbuf), C_("CacheTab|Win32",
-			"ERROR: CoCreateInstance() failed. (hr == 0x%08X)"), hr);
+			"ERROR: CoCreateInstance() failed. (hr == 0x%08X)"),
+			static_cast<unsigned int>(hr));
 		SetWindowText(hStatusLabel, U82T_c(errbuf));
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 		return 6;
@@ -457,7 +449,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 	SendMessage(hProgressBar, PBM_SETPOS, 0, 0);
 
 	// Thumbnail cache callback.
-	RP_EmptyVolumeCacheCallback *pCallback = new RP_EmptyVolumeCacheCallback(hWndPropSheet);
+	RP_EmptyVolumeCacheCallback *const pCallback = new RP_EmptyVolumeCacheCallback(hWndPropSheet);
 
 	// NOTE: IEmptyVolumeCache only supports Unicode strings.
 #ifdef UNICODE
@@ -483,12 +475,8 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 
 		// Free the display name and description,
 		// since we don't need them.
-		if (pwszDisplayName) {
-			CoTaskMemFree(pwszDisplayName);
-		}
-		if (pwszDescription) {
-			CoTaskMemFree(pwszDescription);
-		}
+		CoTaskMemFree(pwszDisplayName);
+		CoTaskMemFree(pwszDescription);
 
 		// Did initialization succeed?
 		if (hr == S_FALSE) {
@@ -501,7 +489,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 			// TODO: Continue with other drives?
 			snprintf(errbuf, sizeof(errbuf), C_("CacheTab|Win32",
 				"ERROR: IEmptyVolumeCache::Initialize() failed on drive %c. (hr == 0x%08X)"),
-				(char)szDrivePath[0], hr);
+				(char)szDrivePath[0], static_cast<unsigned int>(hr));
 			SetWindowText(hStatusLabel, U82T_c(errbuf));
 			SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 			pCallback->Release();
@@ -518,7 +506,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 			// Cleanup failed. (TODO: Figure out why!)
 			snprintf(errbuf, sizeof(errbuf), C_("CacheTab|Win32",
 				"ERROR: IEmptyVolumeCache::Purge() failed on drive %c. (hr == 0x%08X)"),
-				(char)szDrivePath[0], hr);
+				(char)szDrivePath[0], static_cast<unsigned int>(hr));
 			SetWindowText(hStatusLabel, U82T_c(errbuf));
 			SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 			pCallback->Release();
@@ -580,22 +568,19 @@ int CacheTabPrivate::recursiveScan(const TCHAR *path, list<pair<tstring, DWORD> 
 
 		// Make sure we should delete this file.
 		if (!(findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-			size_t len;
-			TCHAR *pExt;
-
 			// Thumbs.db files can be deleted.
 			if (!_tcsicmp(findFileData.cFileName, _T("Thumbs.db")))
 				goto isok;
 
 			// Check the extension.
-			len = _tcslen(findFileData.cFileName);
+			size_t len = _tcslen(findFileData.cFileName);
 			if (len <= 4) {
 				// Filename is too short. This is bad.
 				FindClose(hFindFile);
 				return -EIO;
 			}
 
-			pExt = &findFileData.cFileName[len-4];
+			const TCHAR *pExt = &findFileData.cFileName[len-4];
 			if (_tcsicmp(pExt, _T(".png")) != 0 &&
 			    _tcsicmp(pExt, _T(".jpg")) != 0)
 			{
@@ -619,8 +604,7 @@ int CacheTabPrivate::recursiveScan(const TCHAR *path, list<pair<tstring, DWORD> 
 		}
 
 		// Add the filename and attributes.
-		// NOTE: emplace_back() doesn't support implicit std::make_pair on MSVC 2010.
-		rlist.emplace_back(std::make_pair(std::move(fullFileName), findFileData.dwFileAttributes));
+		rlist.emplace_back(std::move(fullFileName), findFileData.dwFileAttributes);
 	} while (FindNextFile(hFindFile, &findFileData));
 	FindClose(hFindFile);
 
@@ -647,14 +631,13 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	// Cache directory.
 	// Sanity check: Must be at least 8 characters.
 	const string cacheDir = FileSystem::getCacheDirectory();
-	size_t bscount = 0;
-	const auto cacheDir_cend = cacheDir.cend();
-	for (auto iter = cacheDir.cbegin(); iter != cacheDir_cend; ++iter) {
-		if (*iter == L'\\')
-			bscount++;
-	}
+	const size_t bscount = std::count_if(cacheDir.cbegin(), cacheDir.cend(),
+		[](TCHAR p) { return p == L'\\'; });
+
 	if (cacheDir.size() < 8 || bscount < 6) {
-		SetWindowText(hStatusLabel, U82T_c(C_("CacheTab", "ERROR: Unable to get the cache directory path.")));
+		const string s_err = rp_sprintf(C_("CacheTab", "ERROR: %s"),
+			C_("CacheCleaner", "Unable to get the rom-properties cache directory."));
+		SetWindowText(hStatusLabel, U82T_s(s_err));
 		SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, 1));
 		SendMessage(hProgressBar, PBM_SETPOS, 1, 0);
 		// FIXME: Not working...
@@ -686,6 +669,20 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	SendMessage(hProgressBar, PBM_SETRANGE, 0, 1);
 	SendMessage(hProgressBar, PBM_SETPOS, 0, 0);
 
+	// Does the cache directory exist?
+	// If it doesn't, we'll act like it's empty.
+	if (FileSystem::taccess(cacheDirT.c_str(), R_OK) != 0) {
+		// Unable to read the directory. Assume it's missing.
+		SetWindowText(hStatusLabel, U82T_c(C_("CacheTab", "rom-properties cache is empty. Nothing to do.")));
+		SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, 1));
+		SendMessage(hProgressBar, PBM_SETPOS, 1, 0);
+		EnableWindow(hClearSysThumbs, TRUE);
+		EnableWindow(hClearRpDl, TRUE);
+		SetCursor(LoadCursor(NULL, IDC_ARROW));
+		MessageBeep(MB_ICONINFORMATION);
+		return 0;
+	}
+
 	// Recursively scan the cache directory.
 	// TODO: Do we really want to store everything in a list? (Wastes memory.)
 	// Maybe do a simple counting scan first, then delete.
@@ -693,7 +690,9 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	int ret = recursiveScan(cacheDirT.c_str(), rlist);
 	if (ret != 0) {
 		// Non-image file found.
-		SetWindowText(hStatusLabel, U82T_c(C_("CacheTab", "ERROR: rom-properties cache has unexpected files. Not clearing it.")));
+		const string s_err = rp_sprintf(C_("CacheTab", "ERROR: %s"),
+			C_("CacheCleaner", "rom-properties cache has unexpected files. Not clearing it."));
+		SetWindowText(hStatusLabel, U82T_s(s_err));
 		SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELONG(0, 1));
 		SendMessage(hProgressBar, PBM_SETPOS, 1, 0);
 		EnableWindow(hClearSysThumbs, TRUE);
@@ -720,11 +719,10 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	SendMessage(hProgressBar, PBM_SETPOS, 2, 0);
 	unsigned int count = 0;
 	unsigned int dirErrs = 0, fileErrs = 0;
-	const auto rlist_cend = rlist.cend();
-	for (auto iter = rlist.cbegin(); iter != rlist_cend; ++iter) {
-		if (iter->second & FILE_ATTRIBUTE_DIRECTORY) {
+	for (const auto &p : rlist) {
+		if (p.second & FILE_ATTRIBUTE_DIRECTORY) {
 			// Remove the directory.
-			BOOL bRet = RemoveDirectory(iter->first.c_str());
+			BOOL bRet = RemoveDirectory(p.first.c_str());
 			if (!bRet) {
 				dirErrs++;
 				SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
@@ -732,16 +730,16 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 		} else {
 			// Delete the file.
 			BOOL bRet = TRUE;
-			if (iter->second & FILE_ATTRIBUTE_READONLY) {
+			if (p.second & FILE_ATTRIBUTE_READONLY) {
 				// Need to remove the read-only attribute.
-				bRet = SetFileAttributes(iter->first.c_str(), (iter->second & ~FILE_ATTRIBUTE_READONLY));
+				bRet = SetFileAttributes(p.first.c_str(), (p.second & ~FILE_ATTRIBUTE_READONLY));
 			}
 			if (!bRet) {
 				// Error removing the read-only attribute.
 				fileErrs++;
 				SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 			} else {
-				bRet = DeleteFile(iter->first.c_str());
+				bRet = DeleteFile(p.first.c_str());
 				if (!bRet) {
 					// Error deleting the file.
 					fileErrs++;
@@ -756,10 +754,11 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	}
 
 	if (dirErrs > 0 || fileErrs > 0) {
-		// TODO: Localize this string.
-		SetWindowText(hStatusLabel, U82T_s(
-			rp_sprintf("Error: Unable to delete %u file(s) and/or %u dir(s).",
-				fileErrs, dirErrs)));
+		char buf[256];
+		snprintf(buf, sizeof(buf), C_("CacheTab", "Error: Unable to delete %u file(s) and/or %u dir(s)."),
+			fileErrs, dirErrs);
+		const string s_err = rp_sprintf(C_("CacheTab", "ERROR: %s"), buf);
+		SetWindowText(hStatusLabel, U82T_s(s_err));
 		MessageBeep(MB_ICONWARNING);
 	} else {
 		SetWindowText(hStatusLabel, U82T_c(C_("CacheTab", "rom-properties cache cleared successfully.")));
@@ -952,6 +951,9 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
  */
 UINT CALLBACK CacheTabPrivate::callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp)
 {
+	RP_UNUSED(hWnd);
+	RP_UNUSED(ppsp);
+
 	switch (uMsg) {
 		case PSPCB_CREATE: {
 			// Must return TRUE to enable the page to be created.
@@ -1020,30 +1022,4 @@ HPROPSHEETPAGE CacheTab::getHPropSheetPage(void)
 
 	d->hPropSheetPage = CreatePropertySheetPage(&psp);
 	return d->hPropSheetPage;
-}
-
-/**
- * Reset the contents of this tab.
- */
-void CacheTab::reset(void)
-{
-	// Nothing to reset here...
-}
-
-/**
- * Load the default configuration.
- * This does NOT save, and will only emit modified()
- * if it's different from the current configuration.
- */
-void CacheTab::loadDefaults(void)
-{
-	// Nothing to load here...
-}
-
-/**
- * Save the contents of this tab.
- */
-void CacheTab::save(void)
-{
-	// Nothing to save here...
 }

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * DragImageTreeView.cpp: Drag & Drop QTreeView subclass.                  *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -34,11 +34,11 @@ void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 	// NOTE: Each column is technically considered an item.
 	// Find the first item with a valid RpImageRole.
 	QModelIndexList items;
-	for (auto iter = indexes.begin(); iter != indexes.end(); ++iter) {
-		void *img = iter->data(RpImageRole).value<void*>();
+	for (const QModelIndex &p : indexes) {
+		void *img = p.data(RpImageRole).value<void*>();
 		if (img != nullptr) {
 			// Index has a valid image.
-			items.append(*iter);
+			items.append(p);
 		}
 	}
 
@@ -47,11 +47,10 @@ void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 
 	// Find rp_image* objects in the items.
 	QMimeData *const mimeData = new QMimeData;
+	mimeData->setObjectName(QLatin1String("mimeData"));
 	QIcon dragIcon;
 	bool hasOne = false;
-	const auto items_end = items.end();
-	for (auto iter = items.begin(); iter != items_end; ++iter) {
-		const QModelIndex &index = *iter;
+	for (const QModelIndex &index : items) {
 		const rp_image *const img = static_cast<const rp_image*>(index.data(RpImageRole).value<void*>());
 		if (!img)
 			continue;
@@ -87,7 +86,6 @@ void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 		delete pngWriter;
 
 		// Set the PNG data.
-		QByteArray ba = pngData->qByteArray();
 		mimeData->setData(QLatin1String("image/png"), pngData->qByteArray());
 		pngData->unref();
 
@@ -112,6 +110,7 @@ void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 	}
 
 	QDrag *const drag = new QDrag(this);
+	drag->setObjectName(QLatin1String("drag"));
 	drag->setMimeData(mimeData);
 
 	QPixmap qpxm;

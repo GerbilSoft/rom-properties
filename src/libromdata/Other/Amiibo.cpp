@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Amiibo.cpp: Nintendo amiibo NFC dump reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,9 +21,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(Amiibo)
-ROMDATA_IMPL_IMG(Amiibo)
-
 class AmiiboPrivate final : public RomDataPrivate
 {
 	public:
@@ -34,25 +31,56 @@ class AmiiboPrivate final : public RomDataPrivate
 		RP_DISABLE_COPY(AmiiboPrivate)
 
 	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
+
+	public:
 		// NFC data.
 		// TODO: Use nfpSize to determine an "nfpType" value?
 		int nfpSize;		// NFP_File_Size
 		NFP_Data_t nfpData;
 
 		/**
-		 * Calculate the check bytes from an NTAG215 serial number.
+		 * Verify the check bytes in an NTAG215 serial number.
 		 * @param serial	[in] NTAG215 serial number. (9 bytes)
-		 * @param pCb0		[out] Check byte 0. (calculated)
-		 * @param pCb1		[out] Check byte 1. (calculated)
 		 * @return True if the serial number has valid check bytes; false if not.
 		 */
-		static bool calcCheckBytes(const uint8_t *serial, uint8_t *pCb0, uint8_t *pCb1);
+		static bool verifyCheckBytes(const uint8_t *serial);
 };
+
+ROMDATA_IMPL(Amiibo)
+ROMDATA_IMPL_IMG(Amiibo)
 
 /** AmiiboPrivate **/
 
+/* RomDataInfo */
+const char *const AmiiboPrivate::exts[] = {
+	// NOTE: These extensions may cause conflicts on
+	// Windows if fallback handling isn't working.
+	".bin",	// too generic
+
+	// NOTE: The following extensions are listed
+	// for testing purposes on Windows, and may
+	// be removed later.
+	".nfc", ".nfp",
+
+	nullptr
+};
+const char *const AmiiboPrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-nintendo-amiibo",
+
+	nullptr
+};
+const RomDataInfo AmiiboPrivate::romDataInfo = {
+	"Amiibo", exts, mimeTypes
+};
+
 AmiiboPrivate::AmiiboPrivate(Amiibo *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, nfpSize(0)
 {
 	// Clear the NFP data struct.
@@ -60,20 +88,20 @@ AmiiboPrivate::AmiiboPrivate(Amiibo *q, IRpFile *file)
 }
 
 /**
- * Calculate the check bytes from an NTAG215 serial number.
+ * Verify the check bytes in an NTAG215 serial number.
  * @param serial	[in] NTAG215 serial number. (9 bytes)
  * @param pCb0		[out] Check byte 0. (calculated)
  * @param pCb1		[out] Check byte 1. (calculated)
  * @return True if the serial number has valid check bytes; false if not.
  */
-bool AmiiboPrivate::calcCheckBytes(const uint8_t *serial, uint8_t *pCb0, uint8_t *pCb1)
+bool AmiiboPrivate::verifyCheckBytes(const uint8_t *serial)
 {
 	// Check Byte 0 = CT ^ SN0 ^ SN1 ^ SN2
 	// Check Byte 1 = SN3 ^ SN4 ^ SN5 ^ SN6
 	// NTAG215 uses Cascade Level 2, so CT = 0x88.
-	*pCb0 = 0x88 ^ serial[0] ^ serial[1] ^ serial[2];
-	*pCb1 = serial[4] ^ serial[5] ^ serial[6] ^ serial[7];
-	return (*pCb0 == serial[3] && *pCb1 == serial[8]);
+	const uint8_t cb0 = 0x88 ^ serial[0] ^ serial[1] ^ serial[2];
+	const uint8_t cb1 = serial[4] ^ serial[5] ^ serial[6] ^ serial[7];
+	return (cb0 == serial[3] && cb1 == serial[8]);
 }
 
 /** Amiibo **/
@@ -96,7 +124,6 @@ Amiibo::Amiibo(IRpFile *file)
 {
 	// This class handles NFC dumps.
 	RP_D(Amiibo);
-	d->className = "Amiibo";
 	d->mimeType = "application/x-nintendo-amiibo";	// unofficial, not on fd.o
 	d->fileType = FileType::NFC_Dump;
 
@@ -133,12 +160,11 @@ Amiibo::Amiibo(IRpFile *file)
 	}
 
 	// Check if the NFC data is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->nfpData);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->nfpData);
-	info.ext = nullptr;	// Not needed for NFP.
-	info.szFile = d->file->size();
+	const DetectInfo info = {
+		{0, sizeof(d->nfpData), reinterpret_cast<const uint8_t*>(&d->nfpData)},
+		nullptr,	// ext (not needed for Amiibo)
+		d->file->size()	// szFile
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
@@ -191,8 +217,7 @@ int Amiibo::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Validate the UID check bytes.
-	uint8_t cb0, cb1;
-	if (!AmiiboPrivate::calcCheckBytes(nfpData->serial, &cb0, &cb1)) {
+	if (!AmiiboPrivate::verifyCheckBytes(nfpData->serial)) {
 		// Check bytes are invalid.
 		// These are read-only, so something went wrong
 		// when the tag was being dumped.
@@ -260,58 +285,6 @@ const char *Amiibo::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Amiibo::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		// NOTE: These extensions may cause conflicts on
-		// Windows if fallback handling isn't working.
-		".bin",	// too generic
-
-		// NOTE: The following extensions are listed
-		// for testing purposes on Windows, and may
-		// be removed later.
-		".nfc", ".nfp",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Amiibo::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-nintendo-amiibo",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**
@@ -422,13 +395,15 @@ int Amiibo::loadFieldData(void)
 		RomFields::STRF_MONOSPACE);
 
 	// tr: amiibo type.
-	static const char *const amiibo_type_tbl[3] = {
+	static const char *const amiibo_type_tbl[4] = {
 		// tr: NFP_TYPE_FIGURINE == standard amiibo
 		NOP_C_("Amiibo|Type", "Figurine"),
 		// tr: NFP_TYPE_CARD == amiibo card
 		NOP_C_("Amiibo|Type", "Card"),
 		// tr: NFP_TYPE_YARN == yarn amiibo
 		NOP_C_("Amiibo|Type", "Yarn"),
+		// tr: NFP_TYPE_BAND == Power-Up Band
+		NOP_C_("Amiibo|Type", "Power-Up Band"),
 	};
 	const char *const amiibo_type_title = C_("Amiibo", "amiibo Type");
 	if ((char_id & 0xFF) < ARRAY_SIZE(amiibo_type_tbl)) {
@@ -440,24 +415,27 @@ int Amiibo::loadFieldData(void)
 			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), (char_id & 0xFF)));
 	}
 
+	// Get the AmiiboData instance.
+	const AmiiboData *const pAmiiboData = AmiiboData::instance();
+
 	// Character series
-	const char *const char_series = AmiiboData::lookup_char_series_name(char_id);
+	const char *const char_series = pAmiiboData->lookup_char_series_name(char_id);
 	d->fields->addField_string(C_("Amiibo", "Character Series"),
 		char_series ? char_series : C_("RomData", "Unknown"));
 
 	// Character name
-	const char *const char_name = AmiiboData::lookup_char_name(char_id);
+	const char *const char_name = pAmiiboData->lookup_char_name(char_id);
 	d->fields->addField_string(C_("Amiibo", "Character Name"),
 		char_name ? char_name : C_("RomData", "Unknown"));
 
 	// amiibo series
-	const char *const amiibo_series = AmiiboData::lookup_amiibo_series_name(amiibo_id);
+	const char *const amiibo_series = pAmiiboData->lookup_amiibo_series_name(amiibo_id);
 	d->fields->addField_string(C_("Amiibo", "amiibo Series"),
 		amiibo_series ? amiibo_series : C_("RomData", "Unknown"));
 
 	// amiibo name, wave number, and release number.
 	int wave_no, release_no;
-	const char *const amiibo_name = AmiiboData::lookup_amiibo_series_data(amiibo_id, &release_no, &wave_no);
+	const char *const amiibo_name = pAmiiboData->lookup_amiibo_series_data(amiibo_id, &release_no, &wave_no);
 	if (amiibo_name) {
 		d->fields->addField_string(C_("Amiibo", "amiibo Name"), amiibo_name);
 		if (wave_no != 0) {

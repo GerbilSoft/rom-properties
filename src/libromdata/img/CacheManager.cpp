@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CacheManager.cpp: Local cache manager.                                  *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,6 +14,7 @@
 #include "librpbase/TextFuncs.hpp"
 #include "librpfile/RpFile.hpp"
 #include "librpfile/FileSystem.hpp"
+#include "librpthreads/Semaphore.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using LibRpThreads::Semaphore;
@@ -24,15 +25,8 @@ using LibRpThreads::SemaphoreLocker;
 
 // OS-specific includes.
 #ifdef _WIN32
-# include "libwin32common/RpWin32_sdk.h"
-# include "librpbase/TextFuncs_wchar.hpp"
-#else /* !_WIN32 */
-# include <sys/types.h>
-# include <sys/wait.h>
-# include <unistd.h>
-# ifdef HAVE_POSIX_SPAWN
-#  include <spawn.h>
-# endif /* HAVE_POSIX_SPAWN */
+#  include "libwin32common/RpWin32_sdk.h"
+#  include "librpbase/TextFuncs_wchar.hpp"
 #endif /* _WIN32 */
 
 // C includes. (C++ namespace)
@@ -124,7 +118,7 @@ string CacheManager::download(const string &cache_key)
 	// Check if the file already exists.
 	off64_t filesize = 0;
 	time_t filemtime = 0;
-	int ret = FileSystem::get_file_size_and_mtime(cache_filename.c_str(), &filesize, &filemtime);
+	int ret = FileSystem::get_file_size_and_mtime(cache_filename, &filesize, &filemtime);
 	if (ret == 0) {
 		// Check if the file is 0 bytes.
 		// TODO: How should we handle errors?
@@ -192,7 +186,7 @@ string CacheManager::findInCache(const string &cache_key)
 	}
 
 	// Return the filename if the file exists.
-	if (FileSystem::access(cache_filename, R_OK) != 0) {
+	if (FileSystem::access(cache_filename.c_str(), R_OK) != 0) {
 		// Unable to read the cache file.
 		cache_filename.clear();
 	}

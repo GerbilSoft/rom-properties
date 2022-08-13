@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Xbox360_STFS.cpp: Microsoft Xbox 360 package reader.                    *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,12 +19,9 @@
 
 // librpbase, librpfile, librptexture
 #include "librpbase/img/RpPng.hpp"
-#include "librpbase/disc/DiscReader.hpp"
-#include "librpbase/disc/PartitionFile.hpp"
-#include "librpfile/RpMemFile.hpp"
+#include "librpfile/MemFile.hpp"
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
-using LibRpFile::RpMemFile;
+using namespace LibRpFile;
 using namespace LibRpTexture;
 
 // C++ STL classes.
@@ -32,9 +29,6 @@ using std::string;
 using std::vector;
 
 namespace LibRomData {
-
-ROMDATA_IMPL(Xbox360_STFS)
-ROMDATA_IMPL_IMG_TYPES(Xbox360_STFS)
 
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define Xbox360_STFSPrivate Xbox360_STFS_Private
@@ -48,6 +42,12 @@ class Xbox360_STFS_Private final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(Xbox360_STFS_Private)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// STFS type.
@@ -148,10 +148,32 @@ class Xbox360_STFS_Private final : public RomDataPrivate
 		Xbox360_XEX *openDefaultXex(void);
 };
 
+ROMDATA_IMPL(Xbox360_STFS)
+ROMDATA_IMPL_IMG_TYPES(Xbox360_STFS)
+
 /** Xbox360_STFS_Private **/
 
+/* RomDataInfo */
+const char *const Xbox360_STFS_Private::exts[] = {
+	//".stfs",	// FIXME: Not actually used...
+	".fxs",		// Fallout
+	".exs",		// Skyrim
+
+	nullptr
+};
+const char *const Xbox360_STFS_Private::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-xbox360-stfs",
+
+	nullptr
+};
+const RomDataInfo Xbox360_STFS_Private::romDataInfo = {
+	"Xbox360_STFS", exts, mimeTypes
+};
+
 Xbox360_STFS_Private::Xbox360_STFS_Private(Xbox360_STFS *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, stfsType(StfsType::Unknown)
 	, img_icon(nullptr)
 	, headers_loaded(0)
@@ -211,9 +233,9 @@ const rp_image *Xbox360_STFS_Private::loadIcon(void)
 		iconSize = sizeof(stfsThumbnails.mdv2.title_thumbnail_image);
 	}
 
-	// Create an RpMemFile and decode the image.
+	// Create a MemFile and decode the image.
 	// TODO: For rpcli, shortcut to extract the PNG directly.
-	RpMemFile *f_mem = new RpMemFile(pIconData, iconSize);
+	MemFile *f_mem = new MemFile(pIconData, iconSize);
 	rp_image *img = RpPng::load(f_mem);
 	f_mem->unref();
 
@@ -230,7 +252,7 @@ const rp_image *Xbox360_STFS_Private::loadIcon(void)
 			iconSize = sizeof(stfsThumbnails.mdv2.thumbnail_image);
 		}
 
-		f_mem = new RpMemFile(pIconData, iconSize);
+		f_mem = new MemFile(pIconData, iconSize);
 		img = RpPng::load(f_mem);
 		f_mem->unref();
 	}
@@ -454,31 +476,30 @@ Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
 	// Find default.xex or default.xexp and load it.
 	// TODO: Handle subdirectories?
 	const STFS_DirEntry_t *dirEntry = nullptr;
-	const auto fileTable_cend = fileTable.cend();
-	for (auto iter = fileTable.cbegin(); iter != fileTable_cend; ++iter) {
+	for (const STFS_DirEntry_t &p : fileTable) {
 		// Make sure this isn't a subdirectory.
-		if (iter->flags_len & 0x80) {
+		if (p.flags_len & 0x80) {
 			// It's a subdirectory.
 			continue;
 		}
 
 		// "default.xex" is 11 characters.
 		// "default.xexp" is 12 characters.
-		switch (iter->flags_len & 0x3F) {
+		switch (p.flags_len & 0x3F) {
 			case 11:
 				// Check for default.xex.
-				if (!strncasecmp("default.xex", iter->filename, 12)) {
+				if (!strncasecmp("default.xex", p.filename, 12)) {
 					// Found default.xex.
-					dirEntry = &(*iter);
+					dirEntry = &p;
 					break;
 				}
 				break;
 
 			case 12:
 				// Check for default.xexp.
-				if (!strncasecmp("default.xexp", iter->filename, 13)) {
+				if (!strncasecmp("default.xexp", p.filename, 13)) {
 					// Found default.xexp.
-					dirEntry = &(*iter);
+					dirEntry = &p;
 					break;
 				}
 				break;
@@ -505,20 +526,16 @@ Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
 	// Load default.xexp.
 	// FIXME: Maybe add a reader class to handle the hashes,
 	// though we only need the XEX header right now.
-	DiscReader *discReader = new DiscReader(this->file);
-	if (discReader->isOpen()) {
-		PartitionFile *const xexFile_tmp = new PartitionFile(discReader, offset, filesize);
-		if (xexFile_tmp->isOpen()) {
-			Xbox360_XEX *const xex_tmp = new Xbox360_XEX(xexFile_tmp);
-			if (xex_tmp->isOpen()) {
-				this->xex = xex_tmp;
-			} else {
-				xex_tmp->unref();
-			}
+	SubFile *const xexFile_tmp = new SubFile(this->file, offset, filesize);
+	if (xexFile_tmp->isOpen()) {
+		Xbox360_XEX *const xex_tmp = new Xbox360_XEX(xexFile_tmp);
+		if (xex_tmp->isOpen()) {
+			this->xex = xex_tmp;
+		} else {
+			xex_tmp->unref();
 		}
-		xexFile_tmp->unref();
 	}
-	UNREF(discReader);
+	xexFile_tmp->unref();
 
 	return this->xex;
 }
@@ -544,7 +561,6 @@ Xbox360_STFS::Xbox360_STFS(IRpFile *file)
 	// This class handles application packages.
 	// TODO: Change to Save File if the content is a save file.
 	RP_D(Xbox360_STFS);
-	d->className = "Xbox360_STFS";
 	d->mimeType = "application/x-xbox360-stfs";	// unofficial, not on fd.o
 	d->fileType = FileType::ApplicationPackage;
 
@@ -563,12 +579,11 @@ Xbox360_STFS::Xbox360_STFS(IRpFile *file)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->stfsHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->stfsHeader);
-	info.ext = nullptr;	// Not needed for STFS.
-	info.szFile = 0;	// Not needed for STFS.
+	const DetectInfo info = {
+		{0, sizeof(d->stfsHeader), reinterpret_cast<const uint8_t*>(&d->stfsHeader)},
+		nullptr,	// ext (not needed for Xbox360_STFS)
+		0		// szFile (not needed for Xbox360_STFS)
+	};
 	d->stfsType = static_cast<Xbox360_STFS_Private::StfsType>(isRomSupported_static(&info));
 	d->isValid = ((int)d->stfsType >= 0);
 
@@ -724,51 +739,6 @@ const char *Xbox360_STFS::systemName(unsigned int type) const
 }
 
 /**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Xbox360_STFS::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		//".stfs",	// FIXME: Not actually used...
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Xbox360_STFS::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-xbox360-stfs",
-
-		nullptr
-	};
-	return mimeTypes;
-}
-
-/**
  * Get a bitfield of image types this class can retrieve.
  * @return Bitfield of supported image types. (ImageTypesBF)
  */
@@ -913,16 +883,16 @@ int Xbox360_STFS::loadFieldData(void)
 
 		// Display name
 		if (stfsMetadata->display_name[langID_off][0] != 0) {
-			pMap_name->insert(std::make_pair(lc,
-				utf16be_to_utf8(stfsMetadata->display_name[langID_off],
-					ARRAY_SIZE(stfsMetadata->display_name[langID_off]))));
+			pMap_name->emplace(lc, utf16be_to_utf8(
+				stfsMetadata->display_name[langID_off],
+				ARRAY_SIZE(stfsMetadata->display_name[langID_off])));
 		}
 
 		// Description
 		if (stfsMetadata->display_description[langID_off][0] != 0) {
-			pMap_name->insert(std::make_pair(lc,
-				utf16be_to_utf8(stfsMetadata->display_description[langID_off],
-					ARRAY_SIZE(stfsMetadata->display_description[langID_off]))));
+			pMap_name->emplace(lc, utf16be_to_utf8(
+				stfsMetadata->display_description[langID_off],
+				ARRAY_SIZE(stfsMetadata->display_description[langID_off])));
 		}
 	}
 
@@ -993,7 +963,7 @@ int Xbox360_STFS::loadFieldData(void)
 	// TODO: Consolidate implementations into a shared function.
 	string tid_str;
 	char hexbuf[4];
-	if (stfsMetadata->title_id.a >= 0x20) {
+	if (ISUPPER(stfsMetadata->title_id.a)) {
 		tid_str += (char)stfsMetadata->title_id.a;
 	} else {
 		tid_str += "\\x";
@@ -1001,7 +971,7 @@ int Xbox360_STFS::loadFieldData(void)
 			(uint8_t)stfsMetadata->title_id.a);
 		tid_str.append(hexbuf, 2);
 	}
-	if (stfsMetadata->title_id.b >= 0x20) {
+	if (ISUPPER(stfsMetadata->title_id.b)) {
 		tid_str += (char)stfsMetadata->title_id.b;
 	} else {
 		tid_str += "\\x";
@@ -1024,10 +994,16 @@ int Xbox360_STFS::loadFieldData(void)
 	basever.u32 = be32_to_cpu(stfsMetadata->base_version.u32);
 	d->fields->addField_string(C_("Xbox360_XEX", "Version"),
 		rp_sprintf("%u.%u.%u.%u",
-			ver.major, ver.minor, ver.build, ver.qfe));
+			static_cast<unsigned int>(ver.major),
+			static_cast<unsigned int>(ver.minor),
+			static_cast<unsigned int>(ver.build),
+			static_cast<unsigned int>(ver.qfe)));
 	d->fields->addField_string(C_("Xbox360_XEX", "Base Version"),
 		rp_sprintf("%u.%u.%u.%u",
-			basever.major, basever.minor, basever.build, basever.qfe));
+			static_cast<unsigned int>(basever.major),
+			static_cast<unsigned int>(basever.minor),
+			static_cast<unsigned int>(basever.build),
+			static_cast<unsigned int>(basever.qfe)));
 
 	// Console-specific packages.
 	if (stfsHeader->magic == cpu_to_be32(STFS_MAGIC_CON)) {

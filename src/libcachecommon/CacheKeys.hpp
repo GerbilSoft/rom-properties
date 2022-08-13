@@ -2,12 +2,14 @@
  * ROM Properties Page shell extension. (libcachecommon)                   *
  * CacheKeys.cpp: Cache key handling functions.                            *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBCACHECOMMON_CACHEKEYS_HPP__
 #define __ROMPROPERTIES_LIBCACHECOMMON_CACHEKEYS_HPP__
+
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 // C++ includes.
 #include <string>
@@ -20,6 +22,7 @@ namespace LibCacheCommon {
  * @param cacheKey Cache key. (Must be UTF-8, NULL-terminated.)
  * @return 0 on success; negative POSIX error code on error.
  */
+RP_LIBROMDATA_PUBLIC
 int filterCacheKey(char *pCacheKey);
 
 /**

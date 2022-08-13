@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * DidjTex.hpp: Leapster Didj .tex reader.                                 *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,13 +13,14 @@
 #include "didj_tex_structs.h"
 
 // librpbase, librpfile
+#include "libi18n/i18n.h"
 using LibRpBase::rp_sprintf;
 using LibRpBase::RomFields;
 using LibRpFile::IRpFile;
 
 // librptexture
 #include "img/rp_image.hpp"
-#include "decoder/ImageDecoder.hpp"
+#include "decoder/ImageDecoder_Linear.hpp"
 
 // zlib
 #include <zlib.h>
@@ -34,11 +35,9 @@ using std::unique_ptr;
 
 namespace LibRpTexture {
 
-FILEFORMAT_IMPL(DidjTex)
-
 #ifdef _MSC_VER
 // DelayLoad test implementation.
-DELAYLOAD_TEST_FUNCTION_IMPL0(zlibVersion);
+DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 #endif /* _MSC_VER */
 
 class DidjTexPrivate final : public FileFormatPrivate
@@ -50,6 +49,12 @@ class DidjTexPrivate final : public FileFormatPrivate
 	private:
 		typedef FileFormatPrivate super;
 		RP_DISABLE_COPY(DidjTexPrivate)
+
+	public:
+		/** TextureInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const TextureInfo textureInfo;
 
 	public:
 		enum class TexType {
@@ -78,10 +83,30 @@ class DidjTexPrivate final : public FileFormatPrivate
 		const rp_image *loadDidjTexImage(void);
 };
 
+FILEFORMAT_IMPL(DidjTex)
+
 /** DidjTexPrivate **/
 
+/* TextureInfo */
+const char *const DidjTexPrivate::exts[] = {
+	".tex",		// NOTE: Too generic...
+	".texs",	// NOTE: Has multiple textures.
+
+	nullptr
+};
+const char *const DidjTexPrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"image/x-didj-texture",
+
+	nullptr
+};
+const TextureInfo DidjTexPrivate::textureInfo = {
+	exts, mimeTypes
+};
+
 DidjTexPrivate::DidjTexPrivate(DidjTex *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &textureInfo)
 	, texType(TexType::Unknown)
 	, img(nullptr)
 {
@@ -123,11 +148,15 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 	// Delay load verification.
 	// TODO: Only if linked with /DELAYLOAD?
-	if (DelayLoad_test_zlibVersion() != 0) {
+	if (DelayLoad_test_get_crc_table() != 0) {
 		// Delay load failed.
 		// Can't decompress the thumbnail image.
 		return nullptr;
 	}
+#else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
+	// zlib isn't in a DLL, but we need to ensure that the
+	// CRC table is initialized anyway.
+	get_crc_table();
 #endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
 
 	// Load the compressed data.
@@ -191,9 +220,9 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 	switch (le32_to_cpu(texHeader.px_format)) {
 		case DIDJ_PIXEL_FORMAT_RGB565: {
 			// RGB565
-			const int img_siz = width * height * sizeof(uint16_t);
-			assert(static_cast<unsigned int>(img_siz) == uncompr_size);
-			if (static_cast<unsigned int>(img_siz) != uncompr_size) {
+			const size_t img_siz = (size_t)width * (size_t)height * sizeof(uint16_t);
+			assert(img_siz == uncompr_size);
+			if (img_siz != uncompr_size) {
 				// Incorrect size.
 				return nullptr;
 			}
@@ -206,9 +235,9 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 
 		case DIDJ_PIXEL_FORMAT_RGBA4444: {
 			// RGBA4444
-			const int img_siz = width * height * sizeof(uint16_t);
-			assert(static_cast<unsigned int>(img_siz) == uncompr_size);
-			if (static_cast<unsigned int>(img_siz) != uncompr_size) {
+			const size_t img_siz = (size_t)width * (size_t)height * sizeof(uint16_t);
+			assert(img_siz == uncompr_size);
+			if (img_siz != uncompr_size) {
 				// Incorrect size.
 				return nullptr;
 			}
@@ -221,10 +250,10 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 
 		case DIDJ_PIXEL_FORMAT_8BPP_RGB565: {
 			// 8bpp with RGB565 palette.
-			const int pal_siz = static_cast<int>(256 * sizeof(uint16_t));
-			const int img_siz = width * height;
-			assert(static_cast<unsigned int>(pal_siz + img_siz) == uncompr_size);
-			if (static_cast<unsigned int>(pal_siz + img_siz) != uncompr_size) {
+			const size_t pal_siz = 256U * sizeof(uint16_t);
+			const size_t img_siz = (size_t)width * (size_t)height;
+			assert(pal_siz + img_siz == uncompr_size);
+			if (pal_siz + img_siz != uncompr_size) {
 				// Incorrect size.
 				return nullptr;
 			}
@@ -239,10 +268,10 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 
 		case DIDJ_PIXEL_FORMAT_8BPP_RGBA4444: {
 			// 8bpp with RGBA4444 palette.
-			const int pal_siz = static_cast<int>(256 * sizeof(uint16_t));
-			const int img_siz = width * height;
-			assert(static_cast<unsigned int>(pal_siz + img_siz) == uncompr_size);
-			if (static_cast<unsigned int>(pal_siz + img_siz) != uncompr_size) {
+			const size_t pal_siz = 256U * sizeof(uint16_t);
+			const size_t img_siz = (size_t)width * (size_t)height;
+			assert(pal_siz + img_siz == uncompr_size);
+			if (pal_siz + img_siz != uncompr_size) {
 				// Incorrect size.
 				return nullptr;
 			}
@@ -257,10 +286,10 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 
 		case DIDJ_PIXEL_FORMAT_4BPP_RGB565: {
 			// 4bpp with RGB565 palette.
-			const int pal_siz = static_cast<int>(16 * sizeof(uint16_t));
-			const int img_siz = (width * height) / 2;
-			assert(static_cast<unsigned int>(pal_siz + img_siz) == uncompr_size);
-			if (static_cast<unsigned int>(pal_siz + img_siz) != uncompr_size) {
+			const size_t pal_siz = 16U * sizeof(uint16_t);
+			const size_t img_siz = ((size_t)width * (size_t)height) / 2;
+			assert(pal_siz + img_siz == uncompr_size);
+			if (pal_siz + img_siz != uncompr_size) {
 				// Incorrect size.
 				return nullptr;
 			}
@@ -275,10 +304,10 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 
 		case DIDJ_PIXEL_FORMAT_4BPP_RGBA4444: {
 			// 4bpp with RGBA4444 palette.
-			const int pal_siz = static_cast<int>(16 * sizeof(uint16_t));
-			const int img_siz = (width * height) / 2;
-			assert(static_cast<unsigned int>(pal_siz + img_siz) == uncompr_size);
-			if (static_cast<unsigned int>(pal_siz + img_siz) != uncompr_size) {
+			const size_t pal_siz = 16U * sizeof(uint16_t);
+			const size_t img_siz = ((size_t)width * (size_t)height) / 2;
+			assert(pal_siz + img_siz == uncompr_size);
+			if (pal_siz + img_siz != uncompr_size) {
 				// Incorrect size.
 				return nullptr;
 			}
@@ -349,14 +378,11 @@ DidjTex::DidjTex(IRpFile *file)
 	// stored as concatenated .tex files.
 	// We're only reading the first texture right now.
 	const off64_t filesize = d->file->size();
-	const string filename = file->filename();
-	const char *pExt = nullptr;
-	if (!filename.empty()) {
-		pExt = LibRpFile::FileSystem::file_ext(filename);
-	}
+	const char *const filename = file->filename();
+	const char *const ext = LibRpFile::FileSystem::file_ext(filename);
 
 	const off64_t our_size = static_cast<off64_t>(le32_to_cpu(d->texHeader.compr_size) + sizeof(d->texHeader));
-	if (pExt && !strcasecmp(pExt, ".texs")) {
+	if (ext && !strcasecmp(ext, ".texs")) {
 		// .texs - allow the total filesize to be larger than the compressed size.
 		if (our_size > filesize) {
 			// Incorrect compressed filesize.
@@ -381,54 +407,6 @@ DidjTex::DidjTex(IRpFile *file)
 	d->dimensions[0] = le32_to_cpu(d->texHeader.width);
 	d->dimensions[1] = le32_to_cpu(d->texHeader.height);
 	d->dimensions[2] = 0;
-}
-
-/** Class-specific functions that can be used even if isValid() is false. **/
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *DidjTex::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".tex",		// NOTE: Too generic...
-		".texs",	// NOTE: Has multiple textures.
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *DidjTex::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"image/x-didj-texture",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /** Property accessors **/
@@ -505,10 +483,6 @@ int DidjTex::mipmapCount(void) const
  */
 int DidjTex::getFields(RomFields *fields) const
 {
-	// TODO: Localization.
-#define C_(ctx, str) str
-#define NOP_C_(ctx, str) str
-
 	assert(fields != nullptr);
 	if (!fields)
 		return 0;

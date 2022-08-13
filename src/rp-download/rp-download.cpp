@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * rp-download.cpp: Standalone cache downloader.                           *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,19 +14,19 @@
 
 // C includes.
 #ifndef _WIN32
-# include <fcntl.h>
-# include <sys/stat.h>
-# include <unistd.h>
+#  include <fcntl.h>
+#  include <sys/stat.h>
+#  include <unistd.h>
 #endif /* _WIN32 */
 
 #ifndef __S_ISTYPE
-# define __S_ISTYPE(mode, mask) (((mode) & S_IFMT) == (mask))
+#  define __S_ISTYPE(mode, mask) (((mode) & S_IFMT) == (mask))
 #endif
 #if defined(__S_IFDIR) && !defined(S_IFDIR)
-# define S_IFDIR __S_IFDIR
+#  define S_IFDIR __S_IFDIR
 #endif
 #ifndef S_ISDIR
-# define S_ISDIR(mode) __S_ISTYPE((mode), S_IFDIR)
+#  define S_ISDIR(mode) __S_ISTYPE((mode), S_IFDIR)
 #endif /* !S_ISTYPE */
 
 // C includes. (C++ namespace)
@@ -42,9 +42,9 @@ using std::unique_ptr;
 
 #ifdef _WIN32
 // libwin32common
-# include "libwin32common/RpWin32_sdk.h"
-# include "libwin32common/w32err.h"
-# include "libwin32common/w32time.h"
+#  include "libwin32common/RpWin32_sdk.h"
+#  include "libwin32common/w32err.h"
+#  include "libwin32common/w32time.h"
 #endif /* _WIN32 */
 
 // libcachecommon
@@ -52,21 +52,21 @@ using std::unique_ptr;
 #include "libcachecommon/CacheKeys.hpp"
 
 #ifdef _WIN32
-# include <direct.h>
-# define _TMKDIR(dirname) _tmkdir(dirname)
+#  include <direct.h>
+#  define _TMKDIR(dirname) _tmkdir(dirname)
 #else /* !_WIN32 */
-# define _TMKDIR(dirname) _tmkdir((dirname), 0777)
+#  define _TMKDIR(dirname) _tmkdir((dirname), 0777)
 #endif /* _WIN32 */
 
 #ifndef _countof
-# define _countof(x) (sizeof(x)/sizeof(x[0]))
+#  define _countof(x) (sizeof(x)/sizeof(x[0]))
 #endif
 
 // TODO: IDownloaderFactory?
 #ifdef _WIN32
-# include "WinInetDownloader.hpp"
+#  include "WinInetDownloader.hpp"
 #else
-# include "CurlDownloader.hpp"
+#  include "CurlDownloader.hpp"
 #endif
 #include "SetFileOriginInfo.hpp"
 using namespace RpDownload;
@@ -320,15 +320,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		// TODO: Add more syscalls.
 		// FIXME: glibc-2.31 uses 64-bit time syscalls that may not be
 		// defined in earlier versions, including Ubuntu 14.04.
-
-		// NOTE: Special case for clone(). If it's the first syscall
-		// in the list, it has a parameter restriction added that
-		// ensures it can only be used to create threads.
-		SCMP_SYS(clone),
-		// Other multi-threading syscalls
-		SCMP_SYS(set_robust_list),
-
-		SCMP_SYS(access), SCMP_SYS(clock_gettime),
+		SCMP_SYS(access),
+		SCMP_SYS(clock_gettime),
 #if defined(__SNR_clock_gettime64) || defined(__NR_clock_gettime64)
 		SCMP_SYS(clock_gettime64),
 #endif /* __SNR_clock_gettime64 || __NR_clock_gettime64 */
@@ -389,14 +382,21 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(setsockopt), SCMP_SYS(socket),
 		SCMP_SYS(socketcall),	// FIXME: Enhanced filtering? [cURL+GnuTLS only?]
 		SCMP_SYS(socketpair), SCMP_SYS(sysinfo),
+		SCMP_SYS(rt_sigprocmask),	// Ubuntu 20.04: __GI_getaddrinfo() ->
+						// gaih_inet() ->
+						// _nss_myhostname_gethostbyname4_r()
 
 		// libnss_resolve.so (systemd-resolved)
 		SCMP_SYS(geteuid),
 		SCMP_SYS(sendmsg),	// libpthread.so [_nss_resolve_gethostbyname4_r() from libnss_resolve.so]
 
+		// FIXME: Manjaro is using these syscalls for some reason...
+		SCMP_SYS(prctl), SCMP_SYS(mremap), SCMP_SYS(ppoll),
+
 		-1	// End of whitelist
 	};
 	param.syscall_wl = syscall_wl;
+	param.threading = true;		// libcurl uses multi-threading.
 #elif defined(HAVE_PLEDGE)
 	// Promises:
 	// - stdio: General stdio functionality.
@@ -474,6 +474,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// - snes:   https://rpdb.gerbilsoft.com/snes/[key]
 	// - ngp:    https://rpdb.gerbilsoft.com/ngp/[key]
 	// - ngpc:   https://rpdb.gerbilsoft.com/ngpc/[key]
+	// - ws:     https://rpdb.gerbilsoft.com/ws/[key]
+	// - c64:
 	const TCHAR *slash_pos = _tcschr(cache_key, _T('/'));
 	if (slash_pos == nullptr || slash_pos == cache_key ||
 		slash_pos[1] == '\0')
@@ -513,17 +515,18 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	slash_pos = _tcschr(cache_key_urlencode.data(), _T('/'));
 
 	// Determine the full URL based on the cache key.
+	bool ok = false;
 	TCHAR full_url[256];
-	if ((prefix_len == 3 && !_tcsncmp(cache_key, _T("wii"), 3)) ||
+	if ((prefix_len == 3 && (!_tcsncmp(cache_key, _T("wii"), 3) || !_tcsncmp(cache_key, _T("3ds"), 3))) ||
 	    (prefix_len == 4 && !_tcsncmp(cache_key, _T("wiiu"), 4)) ||
-	    (prefix_len == 3 && !_tcsncmp(cache_key, _T("3ds"), 3)) ||
 	    (prefix_len == 2 && !_tcsncmp(cache_key, _T("ds"), 2)))
 	{
-		// Wii, Wii U, Nintendo 3DS, Nintendo DS
+		// GameTDB: Wii, Wii U, Nintendo 3DS, Nintendo DS
+		ok = true;
 		_sntprintf(full_url, _countof(full_url),
 			_T("https://art.gametdb.com/%s"), cache_key_urlencode.c_str());
 	} else if (prefix_len == 6 && !_tcsncmp(cache_key, _T("amiibo"), 6)) {
-		// amiibo.
+		// amiibo.life: amiibo images
 		// NOTE: We need to remove the file extension.
 		size_t filename_len = _tcslen(slash_pos+1);
 		if (filename_len <= 4) {
@@ -533,17 +536,64 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		}
 		filename_len -= 4;
 
+		ok = true;
 		_sntprintf(full_url, _countof(full_url),
 			_T("https://amiibo.life/nfc/%.*s/image"),
 			static_cast<int>(filename_len), slash_pos+1);
-	} else if ((prefix_len == 3 && !_tcsncmp(cache_key, _T("gba"), 3)) ||
-		   (prefix_len == 2 && !_tcsncmp(cache_key, _T("gb"), 2)) ||
-		   (prefix_len == 4 && (!_tcsncmp(cache_key, _T("snes"), 4) || !_tcsncmp(cache_key, _T("ngpc"), 4)))) {
-		// Game Boy, Game Boy Color, Game Boy Advance, Super NES,
-		// Neo Geo Pocket, Neo Geo Pocket Color
-		_sntprintf(full_url, _countof(full_url),
-			_T("https://rpdb.gerbilsoft.com/%s"), cache_key_urlencode.c_str());
 	} else {
+		// RPDB: Title screen images for various systems.
+		switch (prefix_len) {
+			default:
+				break;
+			case 2:
+				if (!_tcsncmp(cache_key, _T("gb"), 2) ||
+				    !_tcsncmp(cache_key, _T("ws"), 2) ||
+				    !_tcsncmp(cache_key, _T("md"), 2))
+				{
+					ok = true;
+				}
+				break;
+			case 3:
+				if (!_tcsncmp(cache_key, _T("gba"), 3) ||
+				    !_tcsncmp(cache_key, _T("mcd"), 3) ||
+				    !_tcsncmp(cache_key, _T("32x"), 3) ||
+				    !_tcsncmp(cache_key, _T("c64"), 3))
+				{
+					ok = true;
+				}
+				break;
+			case 4:
+				if (!_tcsncmp(cache_key, _T("snes"), 4) ||
+				    !_tcsncmp(cache_key, _T("ngpc"), 4) ||
+				    !_tcsncmp(cache_key, _T("pico"), 4) ||
+				    !_tcsncmp(cache_key, _T("tera"), 4) ||
+				    !_tcsncmp(cache_key, _T("c128"), 4))
+				{
+					ok = true;
+				}
+				break;
+			case 5:
+				if (!_tcsncmp(cache_key, _T("cbmII"), 5) ||
+				    !_tcsncmp(cache_key, _T("vic20"), 5) ||
+				    !_tcsncmp(cache_key, _T("plus4"), 5))
+				{
+					ok = true;
+				}
+				break;
+			case 6:
+				if (!_tcsncmp(cache_key, _T("mcd32x"), 6)) {
+					ok = true;
+				}
+				break;
+		}
+
+		if (ok) {
+			_sntprintf(full_url, _countof(full_url),
+				_T("https://rpdb.gerbilsoft.com/%s"), cache_key_urlencode.c_str());
+		}
+	}
+
+	if (!ok) {
 		// Prefix is not supported.
 		SHOW_ERROR(_T("Cache key '%s' has an unsupported prefix."), cache_key);
 		return EXIT_FAILURE;
@@ -627,7 +677,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	} else if (ret == -ENOENT) {
 		// File not found. We'll need to download it.
 		// Make sure the path structure exists.
-		int ret = rmkdir(cache_filename.c_str());
+		int ret = rmkdir(cache_filename);
 		if (ret != 0) {
 			SHOW_ERROR(_T("Error creating directory structure: %s"), _tcserror(-ret));
 			return EXIT_FAILURE;

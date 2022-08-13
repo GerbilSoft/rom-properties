@@ -2,12 +2,12 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RomDataView.hpp: RomData viewer widget.                                 *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_ROMDATA_VIEW_HPP__
-#define __ROMPROPERTIES_GTK_ROMDATA_VIEW_HPP__
+#ifndef __ROMPROPERTIES_GTK_ROMDATAVIEW_HPP__
+#define __ROMPROPERTIES_GTK_ROMDATAVIEW_HPP__
 
 #include <gtk/gtk.h>
 
@@ -51,4 +51,13 @@ gboolean	rom_data_view_is_showing_data	(RomDataView	*page) G_GNUC_INTERNAL;
 
 G_END_DECLS
 
-#endif /* __ROMPROPERTIES_GTK_ROMDATA_VIEW_HPP__ */
+#ifdef __cplusplus
+namespace LibRpBase {
+	class RomData;
+};
+GtkWidget	*rom_data_view_new_with_romData	(const gchar *uri,
+						 LibRpBase::RomData *romData,
+						 RpDescFormatType desc_format_type) G_GNUC_INTERNAL G_GNUC_MALLOC;
+#endif /* __cplusplus */
+
+#endif /* __ROMPROPERTIES_GTK_ROMDATAVIEW_HPP__ */

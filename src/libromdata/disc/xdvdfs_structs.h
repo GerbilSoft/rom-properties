@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * xdvdfs_structs.h: Xbox XDVDFS structs.                                  *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -70,8 +70,8 @@ ASSERT_STRUCT(XDVDFS_Header, XDVDFS_BLOCK_SIZE);
  *
  * All fields are in little-endian.
  */
-#pragma pack(1)
-typedef struct _XDVDFS_DirEntry {
+#pragma pack(2)
+typedef struct PACKED _XDVDFS_DirEntry {
 	uint16_t left_offset;		// [0x000] Offset to left subtree entry, in DWORDs. (0 for none)
 	uint16_t right_offset;		// [0x002] Offset to right subtree entry, in DWORDs. (0 for none)
 	uint32_t start_sector;		// [0x004] Starting sector

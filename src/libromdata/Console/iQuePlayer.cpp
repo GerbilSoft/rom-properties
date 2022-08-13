@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * iQuePlayer.cpp: iQue Player .cmd reader.                                *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -33,12 +33,9 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(iQuePlayer)
-ROMDATA_IMPL_IMG(iQuePlayer)
-
 #ifdef _MSC_VER
 // DelayLoad test implementation.
-DELAYLOAD_TEST_FUNCTION_IMPL0(zlibVersion);
+DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 #endif /* _MSC_VER */
 
 class iQuePlayerPrivate final : public RomDataPrivate
@@ -50,6 +47,12 @@ class iQuePlayerPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(iQuePlayerPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// File type.
@@ -111,10 +114,35 @@ class iQuePlayerPrivate final : public RomDataPrivate
 		const rp_image *loadTitleImage(void);
 };
 
+ROMDATA_IMPL(iQuePlayer)
+ROMDATA_IMPL_IMG(iQuePlayer)
+
 /** iQuePlayerPrivate **/
 
+/* RomDataInfo */
+const char *const iQuePlayerPrivate::exts[] = {
+	// NOTE: These extensions may cause conflicts on
+	// Windows if fallback handling isn't working.
+
+	".cmd",		// NOTE: Conflicts with Windows NT batch files.
+	".dat",		// NOTE: Conflicts with lots of files.
+
+	nullptr
+};
+const char *const iQuePlayerPrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-ique-cmd",
+	"application/x-ique-dat",
+
+	nullptr
+};
+const RomDataInfo iQuePlayerPrivate::romDataInfo = {
+	"iQuePlayer", exts, mimeTypes
+};
+
 iQuePlayerPrivate::iQuePlayerPrivate(iQuePlayer *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, iQueFileType(IQueFileType::Unknown)
 	, img_thumbnail(nullptr)
 	, img_title(nullptr)
@@ -144,10 +172,10 @@ int iQuePlayerPrivate::getTitleAndISBN(string &title, string &isbn)
 	static const size_t title_buf_sz = IQUE_PLAYER_BBCONTENTMETADATAHEAD_ADDRESS - sizeof(contentDesc);
 	std::unique_ptr<char[]> title_buf(new char[title_buf_sz]);
 
-	const off64_t title_addr = sizeof(contentDesc) +
+	const unsigned int title_addr = sizeof(contentDesc) +
 		be16_to_cpu(contentDesc.thumb_image_size) +
 		be16_to_cpu(contentDesc.title_image_size);
-	if (title_addr >= (off64_t)title_buf_sz) {
+	if (title_addr >= title_buf_sz) {
 		// Out of range.
 		return 1;
 	}
@@ -232,11 +260,15 @@ rp_image *iQuePlayerPrivate::loadImage(off64_t address, size_t z_size, size_t un
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 	// Delay load verification.
 	// TODO: Only if linked with /DELAYLOAD?
-	if (DelayLoad_test_zlibVersion() != 0) {
+	if (DelayLoad_test_get_crc_table() != 0) {
 		// Delay load failed.
 		// Can't decompress the thumbnail image.
 		return nullptr;
 	}
+#else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
+	// zlib isn't in a DLL, but we need to ensure that the
+	// CRC table is initialized anyway.
+	get_crc_table();
 #endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
 
 	// Read the compressed thumbnail image.
@@ -283,13 +315,13 @@ rp_image *iQuePlayerPrivate::loadImage(off64_t address, size_t z_size, size_t un
 	if (byteswap) {
 		// Byteswap the image first.
 		// TODO: Integrate this into image decoding?
-		__byte_swap_16_array(img_buf.get(), unz_size);
+		rp_byte_swap_16_array(img_buf.get(), unz_size);
 	}
 #endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
 	// Convert the image.
 	return ImageDecoder::fromLinear16(px_format,
-		w, h, img_buf.get(), static_cast<int>(unz_size));
+		w, h, img_buf.get(), unz_size);
 }
 
 /**
@@ -378,7 +410,6 @@ iQuePlayer::iQuePlayer(IRpFile *file)
 	: super(new iQuePlayerPrivate(this, file))
 {
 	RP_D(iQuePlayer);
-	d->className = "iQuePlayer";
 	d->fileType = FileType::MetadataFile;
 
 	if (!d->file) {
@@ -388,9 +419,9 @@ iQuePlayer::iQuePlayer(IRpFile *file)
 
 	// Check the filesize.
 	// TODO: Identify CMD vs. Ticket and display ticket-specific information?
-	const off64_t filesize = file->size();
-	if (filesize != IQUE_PLAYER_CMD_FILESIZE &&
-	    filesize != IQUE_PLAYER_DAT_FILESIZE)
+	const off64_t fileSize = file->size();
+	if (fileSize != IQUE_PLAYER_CMD_FILESIZE &&
+	    fileSize != IQUE_PLAYER_DAT_FILESIZE)
 	{
 		// Incorrect filesize.
 		UNREF_AND_NULL_NOCHK(d->file);
@@ -406,12 +437,11 @@ iQuePlayer::iQuePlayer(IRpFile *file)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->contentDesc);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->contentDesc);
-	info.ext = nullptr;	// Not needed for iQuePlayer.
-	info.szFile = filesize;
+	const DetectInfo info = {
+		{0, sizeof(d->contentDesc), reinterpret_cast<const uint8_t*>(&d->contentDesc)},
+		nullptr,	// ext (not needed for iQuePlayer)
+		fileSize	// szFile
+	};
 	d->iQueFileType = static_cast<iQuePlayerPrivate::IQueFileType>(isRomSupported_static(&info));
 	d->isValid = ((int)d->iQueFileType >= 0);
 
@@ -514,53 +544,6 @@ const char *iQuePlayer::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *iQuePlayer::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".cmd",		// NOTE: Conflicts with Windows NT batch files.
-		".dat",		// NOTE: Conflicts with lots of files.
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *iQuePlayer::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-ique-cmd",
-		"application/x-ique-dat",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

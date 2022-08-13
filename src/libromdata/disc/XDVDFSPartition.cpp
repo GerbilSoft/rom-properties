@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * XDVDFSPartition.cpp: Microsoft Xbox XDVDFS partition reader.            *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -120,9 +120,9 @@ XDVDFSPartitionPrivate::XDVDFSPartitionPrivate(XDVDFSPartition *q,
 
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
 	// Byteswap the fields.
-	d->xdvdfsHeader.root_dir_sector	= le32_to_cpu(d->xdvdfsHeader.root_dir_sector);
-	d->xdvdfsHeader.root_dir_size	= le32_to_cpu(d->xdvdfsHeader.root_dir_size);
-	d->xdvdfsHeader.timestamp	= le64_to_cpu(d->xdvdfsHeader.timestamp);
+	xdvdfsHeader.root_dir_sector	= le32_to_cpu(xdvdfsHeader.root_dir_sector);
+	xdvdfsHeader.root_dir_size	= le32_to_cpu(xdvdfsHeader.root_dir_size);
+	xdvdfsHeader.timestamp		= le64_to_cpu(xdvdfsHeader.timestamp);
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
 	// Load the root directory.
@@ -199,7 +199,6 @@ const XDVDFS_DirEntry *XDVDFSPartitionPrivate::getDirEntry(const ao::uvector<uin
 		s_entry_filename.assign(entry_filename, dirEntry->name_length);
 
 		// Check the filename.
-		// TODO: Use non-locale-specific case-insensitive check? (only letters)
 		uint16_t subtree_offset = 0;
 		int cmp = xdvdfs_strcasecmp(s_filename.c_str(), s_entry_filename.c_str());
 		if (cmp == 0) {
@@ -315,7 +314,7 @@ const ao::uvector<uint8_t> *XDVDFSPartitionPrivate::getDirectory(const char *pat
 	}
 
 	// Save the directory table for later.
-	auto ins_iter = dirTables.insert(std::make_pair(path, std::move(dirTable)));
+	auto ins_iter = dirTables.emplace(path, std::move(dirTable));
 
 	// Root directory loaded.
 	return &(ins_iter.first->second);

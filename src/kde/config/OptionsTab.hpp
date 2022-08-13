@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * OptionsTab.hpp: Options tab for rp-config.                              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -51,9 +51,9 @@ class OptionsTab : public ITab
 
 	protected slots:
 		/**
-		 * A checkbox was clicked.
+		 * An option was changed.
 		 */
-		void checkBox_clicked(void);
+		void optionChanged_slot(void);
 };
 
 #endif /* __ROMPROPERTIES_KDE_CONFIG_OPTIONSTAB_HPP__ */

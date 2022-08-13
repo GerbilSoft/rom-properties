@@ -50,7 +50,12 @@
 #cmakedefine HAVE_NL_LANGINFO 1
 
 /* Define to 1 if `struct lconv` has wchar_t fields. */
-#cmakedefine HAVE_STRUCT_LCONV_WCHAR_T 1
+// NOTE: Some versions of MinGW have this, but only with MSVCRT 10.0 or Windows 7 or later.
+#if defined(_WIN32)
+#  if defined(_MSC_VER) || (__MSVCRT_VERSION__ >= 0xA00 || _WIN32_WINNT >= 0x601)
+#    cmakedefine HAVE_STRUCT_LCONV_WCHAR_T 1
+#  endif
+#endif
 
 /* Define to 1 if decryption should be enabled. */
 #cmakedefine ENABLE_DECRYPTION 1
@@ -81,20 +86,6 @@
 # define XML_IS_DLL 1
 #endif
 
-/** Aligned malloc() functions. **/
-
-/* Define to 1 if you have the MSVC-specific `_aligned_malloc` function. */
-#cmakedefine HAVE_MSVC_ALIGNED_MALLOC 1
-
-/* Define to 1 if you have the `aligned_alloc` function. */
-#cmakedefine HAVE_ALIGNED_ALLOC 1
-
-/* Define to 1 if you have the `posix_memalign` function. */
-#cmakedefine HAVE_POSIX_MEMALIGN 1
-
-/* Define to 1 if you have the `memalign` function. */
-#cmakedefine HAVE_MEMALIGN 1
-
 /** iconv **/
 
 /* Define to 1 if you have iconv() in either libc or libiconv. */
@@ -102,32 +93,6 @@
 
 /* Define to 1 if iconv() is defined in libiconv. */
 #cmakedefine HAVE_ICONV_LIBICONV 1
-
-/** Time functions **/
-
-/* Define to 1 if you have the `gmtime_r` function. */
-#cmakedefine HAVE_GMTIME_R 1
-
-/* Define to 1 if you have the `gmtime_s` function. */
-#cmakedefine HAVE_GMTIME_S 1
-
-/* Define to 1 if you have the `localtime_r' function. */
-#cmakedefine HAVE_LOCALTIME_R 1
-
-/* Define to 1 if you have the `localtime_s' function. */
-#cmakedefine HAVE_LOCALTIME_S 1
-
-/* Define to 1 if you have the `timegm' function. */
-#cmakedefine HAVE_TIMEGM 1
-
-/* Define to 1 if you have the `_mkgmtime' function. */
-#cmakedefine HAVE__MKGMTIME 1
-
-/* Define to 1 if you have the `_mkgmtime32' function. */
-#cmakedefine HAVE__MKGMTIME32 1
-
-/* Define to 1 if you have the `_mkgmtime64' function. */
-#cmakedefine HAVE__MKGMTIME64 1
 
 /** C++ standard library **/
 

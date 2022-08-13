@@ -25,6 +25,8 @@ void LanguageComboBoxUnregister(void);
 #define WM_LCB_SET_SELECTED_LC		(WM_USER + 3)	// wParam == lc
 #define WM_LCB_GET_SELECTED_LC		(WM_USER + 4)	// return == selected LC
 #define WM_LCB_GET_MIN_SIZE		(WM_USER + 5)	// return == packed width/height (use GET_?_LPARAM)
+#define WM_LCB_SET_FORCE_PAL		(WM_USER + 6)	// wParam == forcePAL (must set LCs afterwards)
+#define WM_LCB_GET_FORCE_PAL		(WM_USER + 7)	// return == forcePAL
 
 // TODO: Intercept ComboBoxEx's WM_NOTIFY somehow.
 //#define LCBN_FIRST			(NM_LAST - 2600U)
@@ -48,6 +50,16 @@ static inline uint32_t LanguageComboBox_GetSelectedLC(HWND hWnd)
 static inline LPARAM LanguageComboBox_GetMinSize(HWND hWnd)
 {
 	return SendMessage(hWnd, WM_LCB_GET_MIN_SIZE, 0, 0);
+}
+
+static inline bool LanguageComboBox_SetForcePAL(HWND hWnd, bool forcePAL)
+{
+	return static_cast<bool>(SendMessage(hWnd, WM_LCB_SET_FORCE_PAL, static_cast<WPARAM>(forcePAL), 0));
+}
+
+static inline bool LanguageComboBox_GetForcePAL(HWND hWnd)
+{
+	return static_cast<bool>(SendMessage(hWnd, WM_LCB_GET_FORCE_PAL, 0, 0));
 }
 
 #ifdef __cplusplus

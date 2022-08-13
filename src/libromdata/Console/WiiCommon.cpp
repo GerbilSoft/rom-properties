@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * WiiCommon.hpp: Nintendo Wii common functions.                           *
+ * WiiCommon.cpp: Nintendo Wii common functions.                           *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -93,13 +93,13 @@ RomFields::StringMultiMap_t *WiiCommon::getWiiBannerStrings(
 			// NOTE: The banner may have two lines.
 			// Each line is a maximum of 21 characters.
 			// Convert from UTF-16 BE and split into two lines at the same time.
-			string info = utf16be_to_utf8(pImet->names[langID][0], ARRAY_SIZE(pImet->names[langID][0]));
+			string info = utf16be_to_utf8(pImet->names[langID][0], ARRAY_SIZE_I(pImet->names[langID][0]));
 			if (pImet->names[langID][1][0] != cpu_to_be16('\0')) {
 				info += '\n';
-				info += utf16be_to_utf8(pImet->names[langID][1], ARRAY_SIZE(pImet->names[langID][1]));
+				info += utf16be_to_utf8(pImet->names[langID][1], ARRAY_SIZE_I(pImet->names[langID][1]));
 			}
 
-			pMap_bannerName->insert(std::make_pair(lc, std::move(info)));
+			pMap_bannerName->emplace(lc, std::move(info));
 		}
 	}
 

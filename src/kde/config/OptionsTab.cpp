@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * OptionsTab.cpp: Options tab for rp-config.                              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -27,9 +27,19 @@ class OptionsTabPrivate
 	public:
 		// Has the user changed anything?
 		bool changed;
+
+		// PAL language codes for GameTDB.
+		static const uint32_t pal_lc[];
+		static const int pal_lc_idx_def;	// Default index in pal_lc[].
 };
 
 /** OptionsTabPrivate **/
+
+// PAL language codes for GameTDB.
+// NOTE: 'au' is technically not a language code, but
+// GameTDB handles it as a separate language.
+const uint32_t OptionsTabPrivate::pal_lc[] = {'au', 'de', 'en', 'es', 'fr', 'it', 'nl', 'pt', 'ru'};
+const int OptionsTabPrivate::pal_lc_idx_def = 2;
 
 OptionsTabPrivate::OptionsTabPrivate()
 	: changed(false)
@@ -43,6 +53,10 @@ OptionsTab::OptionsTab(QWidget *parent)
 {
 	Q_D(OptionsTab);
 	d->ui.setupUi(this);
+
+	// Initialize the PAL language dropdown.
+	d->ui.cboGameTDBPAL->setForcePAL(true);
+	d->ui.cboGameTDBPAL->setLCs(OptionsTabPrivate::pal_lc, ARRAY_SIZE(OptionsTabPrivate::pal_lc));
 
 	// Load the current configuration.
 	reset();
@@ -78,12 +92,31 @@ void OptionsTab::reset(void)
 	const Config *const config = Config::instance();
 
 	Q_D(OptionsTab);
+
+	// Downloads
 	d->ui.chkExtImgDownloadEnabled->setChecked(config->extImgDownloadEnabled());
 	d->ui.chkUseIntIconForSmallSizes->setChecked(config->useIntIconForSmallSizes());
 	d->ui.chkDownloadHighResScans->setChecked(config->downloadHighResScans());
 	d->ui.chkStoreFileOriginInfo->setChecked(config->storeFileOriginInfo());
+
+	// Options
 	d->ui.chkShowDangerousPermissionsOverlayIcon->setChecked(config->showDangerousPermissionsOverlayIcon());
 	d->ui.chkEnableThumbnailOnNetworkFS->setChecked(config->enableThumbnailOnNetworkFS());
+
+	// PAL language code
+	const uint32_t lc = config->palLanguageForGameTDB();
+	int idx = 0;
+	for (; idx < ARRAY_SIZE_I(d->pal_lc); idx++) {
+		if (d->pal_lc[idx] == lc)
+			break;
+	}
+	if (idx >= ARRAY_SIZE_I(d->pal_lc)) {
+		// Out of range. Default to 'en'.
+		idx = d->pal_lc_idx_def;
+	}
+	d->ui.cboGameTDBPAL->setCurrentIndex(idx);
+
+	d->changed = false;
 }
 
 /**
@@ -95,15 +128,23 @@ void OptionsTab::loadDefaults(void)
 {
 	// TODO: Get the defaults from Config.
 	// For now, hard-coding everything here.
+
+	// Downloads
 	static const bool extImgDownloadEnabled_default = true;
 	static const bool useIntIconForSmallSizes_default = true;
 	static const bool downloadHighResScans_default = true;
 	static const bool storeFileOriginInfo_default = true;
+	static const int palLanguageForGameTDB_default =
+		OptionsTabPrivate::pal_lc_idx_def;	// cboGameTDBPAL index ('en')
+
+	// Options
 	static const bool showDangerousPermissionsOverlayIcon_default = true;
-	static const bool enableThumbnailOnNetworkFS = false;
+	static const bool enableThumbnailOnNetworkFS_default = false;
 	bool isDefChanged = false;
 
 	Q_D(OptionsTab);
+
+	// Downloads
 	if (d->ui.chkExtImgDownloadEnabled->isChecked() != extImgDownloadEnabled_default) {
 		d->ui.chkExtImgDownloadEnabled->setChecked(extImgDownloadEnabled_default);
 		isDefChanged = true;
@@ -120,6 +161,12 @@ void OptionsTab::loadDefaults(void)
 		d->ui.chkStoreFileOriginInfo->setChecked(storeFileOriginInfo_default);
 		isDefChanged = true;
 	}
+	if (d->ui.cboGameTDBPAL->currentIndex() != palLanguageForGameTDB_default) {
+		d->ui.cboGameTDBPAL->setCurrentIndex(palLanguageForGameTDB_default);
+		isDefChanged = true;
+	}
+
+	// Options
 	if (d->ui.chkShowDangerousPermissionsOverlayIcon->isChecked() !=
 		showDangerousPermissionsOverlayIcon_default)
 	{
@@ -127,8 +174,8 @@ void OptionsTab::loadDefaults(void)
 			showDangerousPermissionsOverlayIcon_default);
 		isDefChanged = true;
 	}
-	if (d->ui.chkEnableThumbnailOnNetworkFS->isChecked() != enableThumbnailOnNetworkFS) {
-		d->ui.chkEnableThumbnailOnNetworkFS->setChecked(enableThumbnailOnNetworkFS);
+	if (d->ui.chkEnableThumbnailOnNetworkFS->isChecked() != enableThumbnailOnNetworkFS_default) {
+		d->ui.chkEnableThumbnailOnNetworkFS->setChecked(enableThumbnailOnNetworkFS_default);
 		isDefChanged = true;
 	}
 
@@ -148,8 +195,15 @@ void OptionsTab::save(QSettings *pSettings)
 	if (!pSettings)
 		return;
 
+	Q_D(OptionsTab);
+	if (!d->changed) {
+		// Configuration was not changed.
+		return;
+	}
+
 	// Save the configuration.
-	Q_D(const OptionsTab);
+
+	// Downloads
 	pSettings->beginGroup(QLatin1String("Downloads"));
 	pSettings->setValue(QLatin1String("ExtImageDownload"),
 		d->ui.chkExtImgDownloadEnabled->isChecked());
@@ -159,20 +213,27 @@ void OptionsTab::save(QSettings *pSettings)
 		d->ui.chkDownloadHighResScans->isChecked());
 	pSettings->setValue(QLatin1String("StoreFileOriginInfo"),
 		d->ui.chkStoreFileOriginInfo->isChecked());
+	// NOTE: QComboBox::currentData() was added in Qt 5.2.
+	pSettings->setValue(QLatin1String("PalLanguageForGameTDB"),
+		lcToQString(d->ui.cboGameTDBPAL->itemData(d->ui.cboGameTDBPAL->currentIndex()).toUInt()));
 	pSettings->endGroup();
 
+	// Options
 	pSettings->beginGroup(QLatin1String("Options"));
 	pSettings->setValue(QLatin1String("ShowDangerousPermissionsOverlayIcon"),
 		d->ui.chkShowDangerousPermissionsOverlayIcon->isChecked());
 	pSettings->setValue(QLatin1String("EnableThumbnailOnNetworkFS"),
 		d->ui.chkEnableThumbnailOnNetworkFS->isChecked());
 	pSettings->endGroup();
+
+	// Configuration saved.
+	d->changed = false;
 }
 
 /**
- * A checkbox was clicked.
+ * An option was changed.
  */
-void OptionsTab::checkBox_clicked(void)
+void OptionsTab::optionChanged_slot(void)
 {
 	// Configuration has been changed.
 	Q_D(OptionsTab);

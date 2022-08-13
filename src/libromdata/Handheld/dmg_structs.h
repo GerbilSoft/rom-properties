@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * dmg_structs.h: Game Boy (DMG/CGB/SGB) data structures.                  *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * Copyright (c) 2016 by Egor.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -26,10 +26,10 @@ extern "C" {
  * 
  * NOTE: Strings are NOT null-terminated!
  */
-#pragma pack(1)
-typedef struct PACKED _DMG_RomHeader {
-	uint8_t entry[4];
-	uint8_t nintendo[0x30];
+#define DMG_ROMHEADER_ADDRESS 0x100
+typedef struct _DMG_RomHeader {
+	uint8_t entry[4];		// [0x100] Entry point
+	uint8_t nintendo[0x30];		// [0x104] Nintendo logo
 
 	/**
 	 * There are 3 variations on the next 16 bytes:
@@ -40,32 +40,34 @@ typedef struct PACKED _DMG_RomHeader {
 	 * In all three cases, title is NULL-padded.
 	 */
 	union {
-		char title16[16];
+		char title16[16];	// [0x134] Title
 		struct {
-			union {
+			// Some compilers pad this structure to a multiple of 4 bytes
+#pragma pack(1)
+			union PACKED {
 				char title15[15];
-				struct {
+				struct PACKED {
 					char title11[11];
 					char id4[4];
 				};
 			};
+#pragma pack()
 			uint8_t cgbflag;
 		};
 	};
 
-	char new_publisher_code[2];
-	uint8_t sgbflag;
-	uint8_t cart_type;
-	uint8_t rom_size;
-	uint8_t ram_size;
-	uint8_t region;
-	uint8_t old_publisher_code;
-	uint8_t version;
+	char new_publisher_code[2];	// [0x144] New publisher code
+	uint8_t sgbflag;		// [0x146] SGB flag (0x03 if SGB is supported)
+	uint8_t cart_type;		// [0x147] Cartridge type
+	uint8_t rom_size;		// [0x148] ROM size
+	uint8_t ram_size;		// [0x149] RAM size
+	uint8_t region;			// [0x14A] Region (0 == Japan; 1 == other)
+	uint8_t old_publisher_code;	// [0x14B] Old publisher code (if 0x33, use new publisher code)
+	uint8_t version;		// [0x14C] ROM version
 
-	uint8_t header_checksum; // checked by bootrom
-	uint16_t rom_checksum;   // checked by no one
+	uint8_t header_checksum;	// [0x14D] checked by bootrom
+	uint16_t rom_checksum;		// [0x14E] checked by no one
 } DMG_RomHeader;
-#pragma pack()
 ASSERT_STRUCT(DMG_RomHeader, 80);
 
 /**

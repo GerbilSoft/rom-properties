@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_PropertyStore.cpp: IPropertyStore implementation.                    *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -83,8 +83,8 @@ const RP_PropertyStore_Private::MetaDataConv RP_PropertyStore_Private::metaDataC
 	{&PKEY_Video_FrameRate, VT_UI4},	// Framerate (NOTE: Frames per 1000 seconds)
 
 	// Images
-	{&PKEY_Devices_Manufacturer, VT_BSTR},	// ImageMake
-	{&PKEY_Devices_ModelName, VT_BSTR},	// ImageModel
+	{&PKEY_Devices_Manufacturer, VT_BSTR},	// Manufacturer
+	{&PKEY_Devices_ModelName, VT_BSTR},	// Model
 	{&PKEY_Photo_DateTaken, VT_DATE},	// ImageDateTime
 	{&PKEY_Photo_Orientation, VT_UI2},	// ImageOrientation
 	{&PKEY_Photo_Flash, VT_UI1},		// PhotoFlash
@@ -133,6 +133,19 @@ const RP_PropertyStore_Private::MetaDataConv RP_PropertyStore_Private::metaDataC
 	{nullptr, VT_EMPTY},			// Label
 	{nullptr, VT_EMPTY},			// Compilation
 	{nullptr, VT_EMPTY},			// License
+
+	// Added in KF5 5.48
+	{&PKEY_Rating, VT_UI4},			// Rating: [0,100]; convert to [1,99] for Windows.
+	{&PKEY_Music_Lyrics, VT_BSTR},		// Lyrics
+
+	// Replay gain (KF5 5.51)
+	{nullptr, VT_R8},			// ReplayGainAlbumPeak
+	{nullptr, VT_R8},			// ReplayGainAlbumGain
+	{nullptr, VT_R8},			// ReplayGainTrackPeak
+	{nullptr, VT_R8},			// ReplayGainTrackGain
+
+	// Added in KF5 5.53
+	{&PKEY_FileDescription, VT_BSTR},	// Description
 };
 
 // Win32 SDK doesn't have this.
@@ -153,9 +166,9 @@ static inline HRESULT InitPropVariantFromInt8(_In_ CHAR iVal, _Out_ PROPVARIANT 
 
 RP_PropertyStore_Private::RP_PropertyStore_Private()
 	: file(nullptr)
+	, romData(nullptr)
 	, pstream(nullptr)
 	, grfMode(0)
-	, romData(nullptr)
 { }
 
 RP_PropertyStore_Private::~RP_PropertyStore_Private()
@@ -167,9 +180,9 @@ RP_PropertyStore_Private::~RP_PropertyStore_Private()
 	UNREF(file);
 
 	// Clear property variants.
-	std::for_each(prop_val.begin(), prop_val.end(),
-		[](PROPVARIANT &pv) { PropVariantClear(&pv); }
-	);
+	for (PROPVARIANT &pv : prop_val) {
+		PropVariantClear(&pv);
+	}
 }
 
 /** RP_PropertyStore **/
@@ -184,9 +197,9 @@ RP_PropertyStore::~RP_PropertyStore()
 }
 
 /** IUnknown **/
-// Reference: https://msdn.microsoft.com/en-us/library/office/cc839627.aspx
+// Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus
 
-IFACEMETHODIMP RP_PropertyStore::QueryInterface(REFIID riid, LPVOID *ppvObj)
+IFACEMETHODIMP RP_PropertyStore::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj)
 {
 #ifdef _MSC_VER
 # pragma warning(push)
@@ -205,9 +218,9 @@ IFACEMETHODIMP RP_PropertyStore::QueryInterface(REFIID riid, LPVOID *ppvObj)
 }
 
 /** IInitializeWithStream **/
-// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb761812(v=vs.85).aspx [Initialize()]
+// Reference: https://docs.microsoft.com/en-us/windows/win32/api/propsys/nf-propsys-iinitializewithstream-initialize [Initialize()]
 
-IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
+IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode)
 {
 	// Ignoring grfMode for now. (always read-only)
 	RP_UNUSED(grfMode);
@@ -282,61 +295,75 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 		// FIXME: UIx should only accept PropertyType::UnsignedInteger,
 		// and Ix should only accept PropertyType::Integer.
 		PROPVARIANT prop_var;
+		PropVariantInit(&prop_var);
 		switch (conv.vtype) {
-			case VT_UI8:
+			case VT_UI8: {
 				// FIXME: 64-bit values?
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
 				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
-				// NOTE: Converting duration from ms to 100ns.
-				if (prop->name == LibRpBase::Property::Duration) {
-					uint64_t duration_100ns = static_cast<uint64_t>(prop->data.uvalue) * 10000ULL;
-					InitPropVariantFromUInt64(duration_100ns, &prop_var);
-				} else {
-					// Use the value as-is.
-					InitPropVariantFromUInt64(static_cast<uint64_t>(prop->data.uvalue), &prop_var);
-				}
-				d->prop_key.emplace_back(conv.pkey);
-				d->prop_val.emplace_back(prop_var);
-				break;
-			case VT_UI4:
-				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
-				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
-					continue;
-				InitPropVariantFromUInt32(static_cast<uint32_t>(prop->data.uvalue), &prop_var);
-				d->prop_key.emplace_back(conv.pkey);
-				d->prop_val.emplace_back(prop_var);
 
-				// Special handling for image dimensions.
+				// Special handling for some properties.
+				uint64_t uvalue64 = static_cast<uint64_t>(prop->data.uvalue);
 				switch (prop->name) {
-					case LibRpBase::Property::Width:
-						assert(dimensions.cx == 0);
-						dimensions.cx = static_cast<uint32_t>(prop->data.uvalue);
-						break;
-					case LibRpBase::Property::Height:
-						assert(dimensions.cy == 0);
-						dimensions.cy = static_cast<uint32_t>(prop->data.uvalue);
+					case LibRpBase::Property::Duration:
+						// Converting duration from ms to 100ns units.
+						uvalue64 *= 10000ULL;
 						break;
 					default:
 						break;
 				}
+
+				InitPropVariantFromUInt64(uvalue64, &prop_var);
 				break;
+			}
+
+			case VT_UI4: {
+				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
+				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
+					continue;
+
+				// Special handling for some properties.
+				uint32_t uvalue = prop->data.uvalue;
+				switch (prop->name) {
+					case LibRpBase::Property::Width:
+						assert(dimensions.cx == 0);
+						dimensions.cx = prop->data.uvalue;
+						break;
+					case LibRpBase::Property::Height:
+						assert(dimensions.cy == 0);
+						dimensions.cy = prop->data.uvalue;
+						break;
+					case LibRpBase::Property::Rating:
+						// Constrain to [1,99].
+						if (uvalue < 1) {
+							uvalue = 1;
+						} else if (uvalue > 99) {
+							uvalue = 99;
+						}
+						break;
+					default:
+						break;
+				}
+
+				InitPropVariantFromUInt32(uvalue, &prop_var);
+				break;
+			}
+
 			case VT_UI2:
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
 				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
+
 				InitPropVariantFromUInt16(static_cast<uint16_t>(prop->data.uvalue), &prop_var);
-				d->prop_key.emplace_back(conv.pkey);
-				d->prop_val.emplace_back(prop_var);
 				break;
+
 			case VT_UI1:
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
 				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
 
 				InitPropVariantFromUInt8(static_cast<uint8_t>(prop->data.uvalue), &prop_var);
-				d->prop_key.emplace_back(conv.pkey);
-				d->prop_val.emplace_back(prop_var);
 				break;
 
 			case VT_I8:
@@ -344,33 +371,32 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
 				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
+
 				InitPropVariantFromInt64(static_cast<int64_t>(prop->data.ivalue), &prop_var);
-				d->prop_key.emplace_back(conv.pkey);
-				d->prop_val.emplace_back(prop_var);
 				break;
+
 			case VT_I4:
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
 				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
+
 				InitPropVariantFromInt32(static_cast<int32_t>(prop->data.ivalue), &prop_var);
-				d->prop_key.emplace_back(conv.pkey);
-				d->prop_val.emplace_back(prop_var);
 				break;
+
 			case VT_I2:
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
 				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
+
 				InitPropVariantFromInt16(static_cast<int16_t>(prop->data.ivalue), &prop_var);
-				d->prop_key.emplace_back(conv.pkey);
-				d->prop_val.emplace_back(prop_var);
 				break;
+
 			case VT_I1:
 				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
 				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
 					continue;
+
 				InitPropVariantFromInt8(static_cast<int8_t>(prop->data.ivalue), &prop_var);
-				d->prop_key.emplace_back(conv.pkey);
-				d->prop_val.emplace_back(prop_var);
 				break;
 
 			case VT_BSTR:
@@ -379,8 +405,6 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 					continue;
 				if (prop->data.str) {
 					InitPropVariantFromString(U82W_s(*prop->data.str), &prop_var);
-					d->prop_key.emplace_back(conv.pkey);
-					d->prop_val.emplace_back(prop_var);
 				}
 				break;
 
@@ -391,12 +415,13 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 					continue;
 				const wstring wstr = (prop->data.str ? U82W_s(*prop->data.str) : L"");
 				const wchar_t *vstr[] = {wstr.c_str()};
+
 				InitPropVariantFromStringVector(vstr, 1, &prop_var);
-				d->prop_key.emplace_back(conv.pkey);
-				d->prop_val.emplace_back(prop_var);
 				break;
 			}
 
+			// FIXME: This is VT_FILETIME, not VT_DATE.
+			// Add a proper VT_DATE handler.
 			case VT_DATE: {
 				assert(prop->type == PropertyType::Timestamp);
 				if (prop->type != PropertyType::Timestamp)
@@ -406,9 +431,26 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 				// TODO: Verify timezone handling.
 				FILETIME ft;
 				UnixTimeToFileTime(prop->data.timestamp, &ft);
+
 				InitPropVariantFromFileTime(&ft, &prop_var);
-				d->prop_key.emplace_back(conv.pkey);
-				d->prop_val.emplace_back(prop_var);
+				break;
+			}
+
+			case VT_R8: {
+				assert(prop->type == PropertyType::Double);
+				if (prop->type != PropertyType::Double)
+					continue;
+
+				InitPropVariantFromDouble(prop->data.dvalue, &prop_var);
+				break;
+			}
+
+			case VT_R4: {
+				assert(prop->type == PropertyType::Double);
+				if (prop->type != PropertyType::Double)
+					continue;
+
+				InitPropVariantFromFloat(static_cast<float>(prop->data.dvalue), &prop_var);
 				break;
 			}
 
@@ -417,6 +459,11 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 				// FIXME: Not supported.
 				assert(!"Unsupported PROPVARIANT type.");
 				break;
+		}
+
+		if (prop_var.vt != VT_EMPTY) {
+			d->prop_key.emplace_back(conv.pkey);
+			d->prop_val.emplace_back(std::move(prop_var));
 		}
 	}
 
@@ -435,7 +482,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 }
 
 /** IPropertyStore **/
-// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb761474(v=vs.85).aspx
+// Reference: https://docs.microsoft.com/en-us/windows/win32/api/propsys/nn-propsys-ipropertystore
 
 IFACEMETHODIMP RP_PropertyStore::Commit(void)
 {
@@ -498,7 +545,7 @@ IFACEMETHODIMP RP_PropertyStore::SetValue(_In_ REFPROPERTYKEY key, _In_ REFPROPV
 }
 
 /** IPropertyStoreCapabilities **/
-// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb761452(v=vs.85).aspx
+// Reference: https://docs.microsoft.com/en-us/windows/win32/api/propsys/nn-propsys-ipropertystorecapabilities
 
 IFACEMETHODIMP RP_PropertyStore::IsPropertyWritable(REFPROPERTYKEY key)
 {

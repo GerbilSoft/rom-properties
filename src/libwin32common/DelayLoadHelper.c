@@ -2,13 +2,14 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * DelayLoadHelper.c: DelayLoad helper functions and macros.               *
  *                                                                         *
- * Copyright (c) 2017-2018 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // Reference: http://otb.manusoft.com/2013/01/using-delayload-to-specify-dependent-dll-path.htm
 #include "stdafx.h"
 #include "DelayLoadHelper.h"
+#include "libromdata/config.libromdata.h"
 
 // C includes.
 #include <stdlib.h>
@@ -17,24 +18,24 @@
 #include "stdboolx.h"
 
 // ImageBase for GetModuleFileName().
-// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20041025-00/?p=37483
+// Reference: https://devblogs.microsoft.com/oldnewthing/20041025-00/?p=37483
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 #define HINST_THISCOMPONENT ((HINSTANCE)&__ImageBase)
 
 // Architecture-specific subdirectory.
-#if defined(__i386__) || defined(_M_IX86)
+#if defined(_M_IX86) || defined(__i386__)
 static const TCHAR rp_subdir[] = _T("i386\\");
-#elif defined(__amd64__) || defined(_M_X64)
+#elif defined(_M_X64) || defined(_M_AMD64) || defined(__amd64__) || defined(__x86_64__)
 static const TCHAR rp_subdir[] = _T("amd64\\");
-#elif defined(__ia64__) || defined(_M_IA64)
+#elif defined(_M_IA64) || defined(__ia64__)
 static const TCHAR rp_subdir[] = _T("ia64\\");
-#elif defined(__aarch64__) || defined(_M_ARM64)
-static const TCHAR rp_subdir[] = _T("arm64\\");
-#elif defined(__arm__) || defined(__thumb__) || \
-      defined(_M_ARM) || defined(_M_ARMT)
+#elif defined(_M_ARM) || defined(__arm__) || \
+      defined(_M_ARMT) || defined(__thumb__)
 static const TCHAR rp_subdir[] = _T("arm\\");
+#elif defined(_M_ARM64) || defined(__aarch64__)
+static const TCHAR rp_subdir[] = _T("arm64\\");
 #else
-# error Unsupported CPU architecture.
+#  error Unsupported CPU architecture.
 #endif
 
 /**
@@ -46,18 +47,32 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 {
 	// We only want to handle DLLs included with rom-properties.
 	// System DLLs should be handled normally.
+
+	// libromdata DLL is "romdata-X.dll" (MSVC) or "libromdata-X.dll" (MinGW).
+#ifdef _MSC_VER
+#  define ROMDATA_PREFIX
+#else
+#  define ROMDATA_PREFIX "lib"
+#endif
+
 	static const char *const dll_whitelist[] = {
 #ifdef NDEBUG
+#  ifdef RP_LIBROMDATA_IS_DLL
+		ROMDATA_PREFIX "romdata-" LIBROMDATA_SOVERSION_STR ".dll",
+#  endif /* RP_LIBROMDATA_IS_DLL */
 		"zlib1.dll",
 		"libpng16.dll",
-		"tinyxml2.dll",
+		"tinyxml2-9.dll",
 		"zstd.dll",
 		"lz4.dll",
 		"minilzo.dll",
 #else /* !NDEBUG */
+#  ifdef RP_LIBROMDATA_IS_DLL
+		ROMDATA_PREFIX "romdata-" LIBROMDATA_SOVERSION_STR "d.dll",
+#  endif /* RP_LIBROMDATA_IS_DLL */
 		"zlib1d.dll",
 		"libpng16d.dll",
-		"tinyxml2d.dll",
+		"tinyxml2-9d.dll",
 		"zstdd.dll",
 		"lz4d.dll",
 		"minilzod.dll",
@@ -90,10 +105,10 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 
 	// NOTE: Delay-load only supports ANSI module names.
 	// We'll assume it's ASCII and do a simple conversion to Unicode.
-	SetLastError(ERROR_SUCCESS);
+	SetLastError(ERROR_SUCCESS);	// required for XP
 	dwResult = GetModuleFileName(HINST_THISCOMPONENT,
 		dll_fullpath, _countof(dll_fullpath));
-	if (dwResult == 0 || GetLastError() != ERROR_SUCCESS) {
+	if (dwResult == 0 || dwResult >= _countof(dll_fullpath) || GetLastError() != ERROR_SUCCESS) {
 		// Cannot get the current module filename.
 		// TODO: Windows XP doesn't SetLastError() if the
 		// filename is too big for the buffer.
@@ -119,7 +134,7 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 	*dest = 0;
 
 	// Attempt to load the DLL.
-	hDll = LoadLibrary(dll_fullpath);
+	hDll = LoadLibraryEx(dll_fullpath, NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
 	if (hDll != NULL) {
 		// DLL loaded successfully.
 		return hDll;
@@ -139,7 +154,7 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 	*dest = 0;
 
 	// Attempt to load the DLL.
-	return LoadLibrary(dll_fullpath);
+	return LoadLibraryEx(dll_fullpath, NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
 }
 
 /**

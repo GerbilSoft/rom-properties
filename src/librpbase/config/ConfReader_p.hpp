@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * ConfReader_p.hpp: Configuration reader base class.(Private class)       *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -46,9 +46,9 @@ class ConfReaderPrivate
 		std::string conf_filename;		// alloc()'d in load()
 
 		// rom-properties.conf status.
-		bool conf_was_found;
 		time_t conf_mtime;
 		time_t conf_last_checked;
+		bool conf_was_found;
 
 	public:
 		/**
@@ -66,7 +66,7 @@ class ConfReaderPrivate
 		 * @param value Value.
 		 * @return 1 on success; 0 on error.
 		 */
-		static int INIHCALL processConfigLine_static(void *user,
+		static int processConfigLine_static(void *user,
 			const char *section, const char *name, const char *value);
 
 		/**

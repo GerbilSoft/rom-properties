@@ -2,33 +2,32 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * gtest_init.c: Google Test initialization.                               *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
-
-#include "librpbase/config.librpbase.h"
-
-// C includes. (C++ namespace)
-#include <cstdlib>
 
 // C++ includes.
 #include <locale>
 using std::locale;
 
-#include "common.h"
+#include "dll-macros.h"
 #include "tcharx.h"
 
 // librpsecure
 #include "librpsecure/os-secure.h"
 
 #ifdef _WIN32
-// rp_image backend registration.
+// GDI+ initialization.
+// NOTE: Not linking to librptexture (libromdata).
 #  include "libwin32common/RpWin32_sdk.h"
-#  include "librptexture/img/GdiplusHelper.hpp"
-#  include "librptexture/img/RpGdiplusBackend.hpp"
-#  include "librptexture/img/rp_image.hpp"
-using LibRpTexture::RpGdiplusBackend;
-using LibRpTexture::rp_image;
+// NOTE: Gdiplus requires min/max.
+#  include <algorithm>
+namespace Gdiplus {
+        using std::min;
+        using std::max;
+}
+#  include <olectl.h>
+#  include <gdiplus.h>
 #endif /* _WIN32 */
 
 extern "C" int gtest_main(int argc, TCHAR *argv[]);
@@ -41,10 +40,14 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	param.bHighSec = FALSE;
 #elif defined(HAVE_SECCOMP)
 	static const int syscall_wl[] = {
-		// Syscalls used by rp-download.
+		// Syscalls used by rom-properties unit tests.
 		// TODO: Add more syscalls.
 		// FIXME: glibc-2.31 uses 64-bit time syscalls that may not be
 		// defined in earlier versions, including Ubuntu 14.04.
+		SCMP_SYS(clock_gettime),
+#if defined(__SNR_clock_gettime64) || defined(__NR_clock_gettime64)
+		SCMP_SYS(clock_gettime64),
+#endif /* __SNR_clock_gettime64 || __NR_clock_gettime64 */
 		SCMP_SYS(fcntl),     SCMP_SYS(fcntl64),		// gcc profiling
 		SCMP_SYS(fstat),     SCMP_SYS(fstat64),		// __GI___fxstat() [printf()]
 		SCMP_SYS(fstatat64), SCMP_SYS(newfstatat),	// Ubuntu 19.10 (32-bit)
@@ -55,6 +58,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(mprotect),	// iconv_open()
 		SCMP_SYS(munmap),	// free() [in some cases]
 		SCMP_SYS(lseek), SCMP_SYS(_llseek),
+		SCMP_SYS(lstat), SCMP_SYS(lstat64),		// LibRpBase::FileSystem::is_symlink(), resolve_symlink()
 		SCMP_SYS(open),		// Ubuntu 16.04
 		SCMP_SYS(openat),	// glibc-2.31
 #if defined(__SNR_openat2)
@@ -84,6 +88,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		-1	// End of whitelist
 	};
 	param.syscall_wl = syscall_wl;
+	param.threading = true;		// FIXME: Only if OpenMP is enabled?
 #elif defined(HAVE_PLEDGE)
 	// Promises:
 	// - stdio: General stdio functionality.
@@ -98,16 +103,21 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 #ifdef _WIN32
 	// Initialize GDI+.
-	const ULONG_PTR gdipToken = GdiplusHelper::InitGDIPlus();
-	assert(gdipToken != 0);
-	if (gdipToken == 0) {
+	// NOTE: Not linking to librptexture (libromdata),
+	// so we have to do the initialization here.
+	Gdiplus::GdiplusStartupInput gdipSI;
+	gdipSI.GdiplusVersion = 1;
+	gdipSI.DebugEventCallback = nullptr;
+	gdipSI.SuppressBackgroundThread = FALSE;
+	gdipSI.SuppressExternalCodecs = FALSE;
+	ULONG_PTR gdipToken;
+	Gdiplus::Status status = GdiplusStartup(&gdipToken, &gdipSI, nullptr);
+	if (status != Gdiplus::Status::Ok) {
 		fprintf(stderr, "*** ERROR: GDI+ initialization failed.\n");
 		return EXIT_FAILURE;
 	}
 
-	// Register RpGdiplusBackend.
-	// TODO: Static initializer somewhere?
-	rp_image::setBackendCreatorFn(RpGdiplusBackend::creator_fn);
+	// RpGdiplusBackend will be set up by tests that use it.
 #endif /* _WIN32 */
 
 	// Set the C and C++ locales.
@@ -122,7 +132,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	int ret = gtest_main(argc, argv);
 #ifdef _WIN32
 	// Shut down GDI+.
-	GdiplusHelper::ShutdownGDIPlus(gdipToken);
+	Gdiplus::GdiplusShutdown(gdipToken);
 #endif /* _WIN32 */
 	return ret;
 }

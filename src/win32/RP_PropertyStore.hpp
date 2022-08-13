@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_PropertyStore.hpp: IPropertyStore implementation.                    *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,6 +15,9 @@
 
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
 #include "libwin32common/ComBase.hpp"
+
+// CLSID common macros
+#include "clsid_common.hpp"
 
 // CLSID
 extern "C" {
@@ -43,8 +46,8 @@ RP_PropertyStore final : public LibWin32Common::ComBase3<IInitializeWithStream, 
 		RP_PropertyStore_Private *const d_ptr;
 
 	public:
-		// IUnknown
-		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
+		CLSID_DECL(RP_PropertyStore)
+		FILETYPE_HANDLER_HKLM_DECL(RP_PropertyStore)
 
 	private:
 		/**
@@ -66,39 +69,11 @@ RP_PropertyStore final : public LibWin32Common::ComBase3<IInitializeWithStream, 
 		static std::tstring GetFullDetailsString();
 
 	public:
-		/**
-		 * Register the COM object.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG RegisterCLSID(void);
+		// IUnknown
+		IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
 
-		/**
-		 * Register the file type handler.
-		 * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
-		 * @param pHklm HKEY_LOCAL_MACHINE or user-specific root, or nullptr to skip.
-		 * @param ext File extension, including the leading dot.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG RegisterFileType(LibWin32Common::RegKey &hkcr, LibWin32Common::RegKey *pHklm, LPCTSTR ext);
-
-		/**
-		 * Unregister the COM object.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG UnregisterCLSID(void);
-
-		/**
-		 * Unregister the file type handler.
-		 * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
-		 * @param pHklm HKEY_LOCAL_MACHINE or user-specific root, or nullptr to skip.
-		 * @param ext File extension, including the leading dot.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG UnregisterFileType(LibWin32Common::RegKey &hkcr, LibWin32Common::RegKey *pHklm, LPCTSTR ext);
-
-	public:
 		// IInitializeWithStream
-		IFACEMETHODIMP Initialize(IStream *pstream, DWORD grfMode) final;
+		IFACEMETHODIMP Initialize(_In_ IStream *pstream, DWORD grfMode) final;
 
 		// IPropertyStore
 		IFACEMETHODIMP Commit(void) final;

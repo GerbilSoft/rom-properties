@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_win32.cpp: Standard file object. (Win32 implementation)          *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,7 +14,7 @@
 // libwin32common
 #include "libwin32common/MiniU82T.hpp"
 #include "libwin32common/w32err.h"
-using LibWin32Common::U82T_s;
+using LibWin32Common::U82T;
 
 // C includes.
 #include <fcntl.h>
@@ -32,7 +32,7 @@ namespace LibRpFile {
 
 #ifdef _MSC_VER
 // DelayLoad test implementation.
-DELAYLOAD_TEST_FUNCTION_IMPL0(zlibVersion);
+DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 #endif /* _MSC_VER */
 
 /** RpFilePrivate **/
@@ -123,7 +123,6 @@ int RpFilePrivate::reOpenFile(void)
 	}
 
 	// Check if the path starts with a drive letter.
-	bool isDevice = false;
 	if (filename.size() >= 3 &&
 	    ISASCII(filename[0]) && ISALPHA(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
@@ -156,47 +155,26 @@ int RpFilePrivate::reOpenFile(void)
 			// Reference: https://support.microsoft.com/en-us/help/138434/how-win32-based-applications-read-cd-rom-sectors-in-windows-nt
 			tfilename = _T("\\\\.\\X:");
 			tfilename[4] = filename[0];
-			isDevice = true;
+			q->m_fileType = DT_BLK;	// this is a device
 		} else {
 			// Absolute path.
 #ifdef UNICODE
 			// Unicode only: Prepend "\\?\" in order to support filenames longer than MAX_PATH.
 			tfilename = _T("\\\\?\\");
-			tfilename += U82T_s(filename);
+			tfilename += U82T(filename);
 #else /* !UNICODE */
 			// ANSI: Use the filename directly.
-			tfilename = U82T_s(filename);
+			tfilename = U82T(filename);
 #endif /* UNICODE */
 		}
 	} else {
 		// Not an absolute path, or "\\?\" is already
 		// prepended. Use it as-is.
-		tfilename = U82T_s(filename);
+		tfilename = U82T(filename);
 	}
 
-	if (!isDevice) {
-		// Make sure this isn't a directory.
-		// TODO: Other checks?
-		DWORD dwAttr = GetFileAttributes(tfilename.c_str());
-		if (dwAttr == INVALID_FILE_ATTRIBUTES) {
-			// File cannot be opened.
-			// This is okay if creating a new file, but not if we're
-			// opening an existing file.
-			if (!(mode & RpFile::FM_CREATE)) {
-				RP_Q(RpFile);
-				q->m_lastError = EIO;
-				return -EIO;
-			}
-		} else if (dwAttr & FILE_ATTRIBUTE_DIRECTORY) {
-			// File is a directory.
-			RP_Q(RpFile);
-			q->m_lastError = EISDIR;
-			return -EISDIR;
-		}
-	}
-
-	if (isDevice) {
-		// Allocate devInfo.
+	if (q->m_fileType == DT_BLK) {
+		// This is a device. Allocate devInfo.
 		// NOTE: This is kept around until RpFile is deleted,
 		// even if the device can't be opeend for some reason.
 		devInfo = new DeviceInfo();
@@ -210,6 +188,27 @@ int RpFilePrivate::reOpenFile(void)
 		// DeviceIoControl() to function properly.
 		dwDesiredAccess = GENERIC_READ | GENERIC_WRITE;
 		dwShareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
+	} else {
+		// Not a device. Make sure this isn't a directory.
+		// TODO: Other checks?
+		DWORD dwAttr = GetFileAttributes(tfilename.c_str());
+		if (dwAttr == INVALID_FILE_ATTRIBUTES) {
+			// File cannot be opened.
+			// This is okay if creating a new file, but not if we're
+			// opening an existing file.
+			if (!(mode & RpFile::FM_CREATE)) {
+				RP_Q(RpFile);
+				q->m_fileType = DT_UNKNOWN;
+				q->m_lastError = EIO;
+				return -EIO;
+			}
+		} else if (dwAttr & FILE_ATTRIBUTE_DIRECTORY) {
+			// File is a directory.
+			RP_Q(RpFile);
+			q->m_fileType = DT_DIR;
+			q->m_lastError = EISDIR;
+			return -EISDIR;
+		}
 	}
 
 	// Open the file.
@@ -224,7 +223,7 @@ int RpFilePrivate::reOpenFile(void)
 		dwCreationDisposition,	// dwCreationDisposition
 		FILE_ATTRIBUTE_NORMAL,	// dwFlagsAndAttributes
 		nullptr);		// hTemplateFile
-	if (isDevice) {
+	if (q->m_fileType == DT_BLK) {
 		if (!file || file == INVALID_HANDLE_VALUE) {
 			// Try again without WRITE permission.
 			file = CreateFile(
@@ -243,7 +242,7 @@ int RpFilePrivate::reOpenFile(void)
 		return -q->m_lastError;
 	}
 
-	if (isDevice) {
+	if (q->m_fileType == DT_BLK) {
 		// Get the disk space.
 		int ret = q->rereadDeviceSizeOS();
 		if (ret != 0) {
@@ -316,91 +315,95 @@ void RpFile::init(void)
 	// Check if this is a gzipped file.
 	// If it is, use transparent decompression.
 	// Reference: https://www.forensicswiki.org/wiki/Gzip
-	if (!d->devInfo && d->mode == FM_OPEN_READ_GZ) {
+	const bool tryGzip = (!d->devInfo && d->mode == FM_OPEN_READ_GZ);
+	if (tryGzip) { do {
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 		// Delay load verification.
 		// TODO: Only if linked with /DELAYLOAD?
-		if (DelayLoad_test_zlibVersion() != 0) {
+		if (DelayLoad_test_get_crc_table() != 0) {
 			// Delay load failed.
 			// Don't do any gzip checking.
 			return;
 		}
+#else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
+		// zlib isn't in a DLL, but we need to ensure that the
+		// CRC table is initialized anyway.
+		get_crc_table();
 #endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
 
 		DWORD bytesRead;
-		BOOL bRet;
-
 		uint16_t gzmagic;
-		bRet = ReadFile(d->file, &gzmagic, sizeof(gzmagic), &bytesRead, nullptr);
-		if (bRet && bytesRead == sizeof(gzmagic) && gzmagic == be16_to_cpu(0x1F8B)) {
-			// This is a gzipped file.
-			// Get the uncompressed size at the end of the file.
-			LARGE_INTEGER liFileSize;
-			bRet = GetFileSizeEx(d->file, &liFileSize);
-			if (bRet && liFileSize.QuadPart > 10+8) {
-				LARGE_INTEGER liSeekPos;
-				liSeekPos.QuadPart = liFileSize.QuadPart - 4;
-				bRet = SetFilePointerEx(d->file, liSeekPos, nullptr, FILE_BEGIN);
-				if (bRet) {
-					uint32_t uncomp_sz;
-					bRet = ReadFile(d->file, &uncomp_sz, sizeof(uncomp_sz), &bytesRead, nullptr);
-					uncomp_sz = le32_to_cpu(uncomp_sz);
-					if (bRet && bytesRead == sizeof(uncomp_sz) /*&& uncomp_sz >= liFileSize.QuadPart-(10+8)*/) {
-						// NOTE: Uncompressed size might be smaller than the real filesize
-						// in cases where gzip doesn't help much.
-						// TODO: Add better verification heuristics?
-						d->gzsz = (off64_t)uncomp_sz;
+		BOOL bRet = ReadFile(d->file, &gzmagic, sizeof(gzmagic), &bytesRead, nullptr);
+		if (!bRet || bytesRead != sizeof(gzmagic) || gzmagic != be16_to_cpu(0x1F8B))
+			break;
 
-						liSeekPos.QuadPart = 0;
-						SetFilePointerEx(d->file, liSeekPos, nullptr, FILE_BEGIN);
-						// NOTE: Not sure if this is needed on Windows.
-						FlushFileBuffers(d->file);
+		// This is a gzipped file.
+		// Get the uncompressed size at the end of the file.
+		LARGE_INTEGER liFileSize;
+		bRet = GetFileSizeEx(d->file, &liFileSize);
+		if (!bRet || liFileSize.QuadPart <= 10+8)
+			break;
 
-						// Open the file with gzdopen().
-						HANDLE hGzDup;
-						BOOL bRet = DuplicateHandle(
-							GetCurrentProcess(),	// hSourceProcessHandle
-							d->file,		// hSourceHandle
-							GetCurrentProcess(),	// hTargetProcessHandle
-							&hGzDup,		// lpTargetHandle
-							0,			// dwDesiredAccess
-							FALSE,			// bInheritHandle
-							DUPLICATE_SAME_ACCESS);	// dwOptions
-						if (bRet) {
-							// NOTE: close() on gzfd_dup() will close the
-							// underlying Windows handle.
-							int gzfd_dup = _open_osfhandle((intptr_t)hGzDup, _O_RDONLY);
-							if (gzfd_dup >= 0) {
-								// Make sure the CRC32 table is initialized.
-								get_crc_table();
+		LARGE_INTEGER liSeekPos;
+		liSeekPos.QuadPart = liFileSize.QuadPart - 4;
+		if (!SetFilePointerEx(d->file, liSeekPos, nullptr, FILE_BEGIN))
+			break;
 
-								d->gzfd = gzdopen(gzfd_dup, "r");
-								if (d->gzfd) {
-									m_isCompressed = true;
-								} else {
-									// gzdopen() failed.
-									// Close the dup()'d handle to prevent a leak.
-									_close(gzfd_dup);
-								}
-							} else {
-								// Unable to open an fd.
-								CloseHandle(hGzDup);
-							}
-						}
-					}
-				}
+		uint32_t uncomp_sz;
+		bRet = ReadFile(d->file, &uncomp_sz, sizeof(uncomp_sz), &bytesRead, nullptr);
+		uncomp_sz = le32_to_cpu(uncomp_sz);
+		if (!bRet || bytesRead != sizeof(uncomp_sz) /*|| uncomp_sz < liFileSize.QuadPart-(10+8)*/)
+			break;
+
+		// NOTE: Uncompressed size might be smaller than the real filesize
+		// in cases where gzip doesn't help much.
+		// TODO: Add better verification heuristics?
+		d->gzsz = (off64_t)uncomp_sz;
+
+		liSeekPos.QuadPart = 0;
+		SetFilePointerEx(d->file, liSeekPos, nullptr, FILE_BEGIN);
+		// NOTE: Not sure if this is needed on Windows.
+		FlushFileBuffers(d->file);
+
+		// Open the file with gzdopen().
+		HANDLE hGzDup;
+		bRet = DuplicateHandle(
+			GetCurrentProcess(),	// hSourceProcessHandle
+			d->file,		// hSourceHandle
+			GetCurrentProcess(),	// hTargetProcessHandle
+			&hGzDup,		// lpTargetHandle
+			0,			// dwDesiredAccess
+			FALSE,			// bInheritHandle
+			DUPLICATE_SAME_ACCESS);	// dwOptions
+		if (!bRet)
+			break;
+
+		// NOTE: close() on gzfd_dup() will close the
+		// underlying Windows handle.
+		int gzfd_dup = _open_osfhandle((intptr_t)hGzDup, _O_RDONLY);
+		if (gzfd_dup >= 0) {
+			d->gzfd = gzdopen(gzfd_dup, "r");
+			if (d->gzfd) {
+				m_isCompressed = true;
+			} else {
+				// gzdopen() failed.
+				// Close the dup()'d handle to prevent a leak.
+				_close(gzfd_dup);
 			}
+		} else {
+			// Unable to open an fd.
+			CloseHandle(hGzDup);
 		}
+	} while (0); }
 
-		if (!d->gzfd) {
-			// Not a gzipped file.
-			// Rewind and flush the file.
-			LARGE_INTEGER liSeekPos;
-			liSeekPos.QuadPart = 0;
-			SetFilePointerEx(d->file, liSeekPos, nullptr, FILE_BEGIN);
-			// NOTE: Not sure if this is needed on Windows.
-			FlushFileBuffers(d->file);
-		}
+	if (tryGzip && !d->gzfd) {
+		// Not a gzipped file.
+		// Rewind and flush the file.
+		LARGE_INTEGER liSeekPos;
+		liSeekPos.QuadPart = 0;
+		SetFilePointerEx(d->file, liSeekPos, nullptr, FILE_BEGIN);
+		// NOTE: Not sure if this is needed on Windows.
+		FlushFileBuffers(d->file);
 	}
 }
 
@@ -726,12 +729,12 @@ off64_t RpFile::size(void)
 
 /**
  * Get the filename.
- * @return Filename. (May be empty if the filename is not available.)
+ * @return Filename. (May be nullptr if the filename is not available.)
  */
-string RpFile::filename(void) const
+const char *RpFile::filename(void) const
 {
 	RP_D(const RpFile);
-	return d->filename;
+	return (!d->filename.empty() ? d->filename.c_str() : nullptr);
 }
 
 /** Extra functions **/
@@ -771,18 +774,6 @@ int RpFile::makeWritable(void)
 	// Restore the seek position.
 	this->seek(prev_pos);
 	return 0;
-}
-
-/** Device file functions **/
-
-/**
- * Is this a device file?
- * @return True if this is a device file; false if not.
- */
-bool RpFile::isDevice(void) const
-{
-	RP_D(const RpFile);
-	return d->devInfo;
 }
 
 }

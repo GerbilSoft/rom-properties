@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractIcon.hpp: IExtractIcon implementation.                        *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,6 +15,9 @@
 
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
 #include "libwin32common/ComBase.hpp"
+
+// CLSID common macros
+#include "clsid_common.hpp"
 
 // CLSID
 extern "C" {
@@ -43,53 +46,28 @@ RP_ExtractIcon final : public LibWin32Common::ComBase3<IPersistFile, IExtractIco
 		RP_ExtractIcon_Private *const d_ptr;
 
 	public:
+		CLSID_DECL(RP_ExtractIcon)
+		FILETYPE_HANDLER_DECL(RP_ExtractIcon)
+
+	public:
 		// IUnknown
-		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
+		IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
 
-	public:
-		/**
-		 * Register the COM object.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG RegisterCLSID(void);
-
-		/**
-		 * Register the file type handler.
-		 * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
-		 * @param ext File extension, including the leading dot.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG RegisterFileType(LibWin32Common::RegKey &hkcr, LPCTSTR ext);
-
-		/**
-		 * Unregister the COM object.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG UnregisterCLSID(void);
-
-		/**
-		 * Unregister the file type handler.
-		 * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
-		 * @param ext File extension, including the leading dot.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG UnregisterFileType(LibWin32Common::RegKey &hkcr, LPCTSTR ext);
-
-	public:
 		// IPersist (IPersistFile base class)
-		IFACEMETHODIMP GetClassID(CLSID *pClassID) final;
+		IFACEMETHODIMP GetClassID(_Out_ CLSID *pClassID) final;
 		// IPersistFile
 		IFACEMETHODIMP IsDirty(void) final;
-		IFACEMETHODIMP Load(LPCOLESTR pszFileName, DWORD dwMode) final;
-		IFACEMETHODIMP Save(LPCOLESTR pszFileName, BOOL fRemember) final;
-		IFACEMETHODIMP SaveCompleted(LPCOLESTR pszFileName) final;
-		IFACEMETHODIMP GetCurFile(LPOLESTR *ppszFileName) final;
+		IFACEMETHODIMP Load(_In_ LPCOLESTR pszFileName, DWORD dwMode) final;
+		IFACEMETHODIMP Save(_In_ LPCOLESTR pszFileName, BOOL fRemember) final;
+		IFACEMETHODIMP SaveCompleted(_In_ LPCOLESTR pszFileName) final;
+		IFACEMETHODIMP GetCurFile(_In_ LPOLESTR *ppszFileName) final;
 
 		// IExtractIconW
-		IFACEMETHODIMP GetIconLocation(UINT uFlags, LPWSTR pszIconFile,
-			UINT cchMax, int *piIndex, UINT *pwFlags) final;
-		IFACEMETHODIMP Extract(LPCWSTR pszFile, UINT nIconIndex,
-			HICON *phiconLarge, HICON *phiconSmall,
+		IFACEMETHODIMP GetIconLocation(UINT uFlags,
+			_Out_writes_(cchMax) LPWSTR pszIconFile, UINT cchMax,
+			_Out_ int *piIndex, _Out_ UINT *pwFlags) final;
+		IFACEMETHODIMP Extract(_In_ LPCWSTR pszFile, UINT nIconIndex,
+			_Outptr_ HICON *phiconLarge, _Outptr_ HICON *phiconSmall,
 			UINT nIconSize) final;
 
 		// IExtractIconA

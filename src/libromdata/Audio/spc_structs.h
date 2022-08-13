@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * spc_structs.h: SPC audio data structures.                               *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,8 +19,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 /**
  * ID666 tag format.
  * All fields are little-endian.
@@ -33,13 +31,15 @@ extern "C" {
  * NOTE: The ID666 tag is always located at 0x02E.
  * Both the relative and absolute addresses are listed.
  */
+// Some compilers pad this structure to a multiple of 4 bytes
+#pragma pack(1)
 typedef struct PACKED _SPC_ID666 {
 	char song_title[32];	// [0x000, 0x02E] Song title.
 	char game_title[32];	// [0x020, 0x04E] Game title.
 	char dumper_name[16];	// [0x040, 0x06E] Name of dumper.
 	char comments[32];	// [0x050, 0x07E] Comments.
 
-	union {
+	union PACKED {
 		struct {
 			char dump_date[11];		// [0x070, 0x09E] Date SPC was dumped. (MM/DD/YYYY)
 			char seconds_before_fade[3];	// [0x07B, 0x0A9] Seconds to play before fading out.
@@ -66,6 +66,7 @@ typedef struct PACKED _SPC_ID666 {
 	};
 } SPC_ID666;
 ASSERT_STRUCT(SPC_ID666, 210);
+#pragma pack()
 
 /**
  * Emulator used to dump the SPC file.
@@ -81,6 +82,7 @@ typedef enum {
  * All fields are little-endian.
  */
 #define SPC_MAGIC "SNES-SPC700 Sound File Data v0.30"
+#pragma pack(1)
 typedef struct PACKED _SPC_Header {
 	char magic[sizeof(SPC_MAGIC)-1];// [0x000] SPC_MAGIC
 	uint8_t d26[2];			// [0x021] 26, 26 (TODO: Include as part of SPC_MAGIC?)
@@ -102,6 +104,7 @@ typedef struct PACKED _SPC_Header {
 	SPC_ID666 id666;		// [0x02E]
 } SPC_Header;
 ASSERT_STRUCT(SPC_Header, 256);
+#pragma pack()
 
 /**
  * Extended ID666: Item IDs.
@@ -148,13 +151,11 @@ typedef enum {
  */
 #define SPC_xID6_MAGIC 'xid6'
 #define SPC_xID6_ADDRESS 0x10200
-typedef struct PACKED _SPC_xID6_Header {
+typedef struct _SPC_xID6_Header {
 	uint32_t magic;		// [0x000] 'xid6'
 	uint32_t size;		// [0x004] Size, not including the header.
 } SPC_xID6_Header;
 ASSERT_STRUCT(SPC_xID6_Header, 8);
-
-#pragma pack()
 
 #ifdef __cplusplus
 }

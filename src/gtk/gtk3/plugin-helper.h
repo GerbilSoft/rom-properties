@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                         *
  * plugin-helper.h: Plugin helper macros.                                  *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,22 +13,33 @@
 #include <dlfcn.h>
 
 #include <glib.h>
+#include "check-uid.h"
 
 G_BEGIN_DECLS
 
 #ifdef G_ENABLE_DEBUG
-# define SHOW_INIT_MESSAGE() g_message("Initializing " G_LOG_DOMAIN " extension")
+#  define SHOW_INIT_MESSAGE() g_message("Initializing " G_LOG_DOMAIN " extension")
 #else
-# define SHOW_INIT_MESSAGE() do { } while (0)
+#  define SHOW_INIT_MESSAGE() do { } while (0)
 #endif
 
-#define CHECK_UID() do { \
-	if (getuid() == 0 || geteuid() == 0) { \
-		g_critical("*** " G_LOG_DOMAIN " does not support running as root."); \
+#if GTK_CHECK_VERSION(3,0,0)
+#  define VERIFY_GTK_VERSION() do { \
+	/** \
+	 * Make sure the correct GTK version is loaded. \
+	 * NOTE: Can only do this for GTK3/GTK4, since GTK2 doesn't \
+	 * have an easily-accessible runtime version function. \
+	 */ \
+	const guint gtk_major = gtk_get_major_version(); \
+	if (gtk_major != GTK_MAJOR_VERSION) { \
+		g_critical("expected GTK%u, found GTK%u; not registering", \
+			(unsigned int)GTK_MAJOR_VERSION, gtk_major); \
 		return; \
 	} \
-	SHOW_INIT_MESSAGE(); \
 } while (0)
+#else /* !GTK_CHECK_VERSION(3,0,0) */
+#  define VERIFY_GTK_VERSION() do { } while (0)
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 
 #define DLSYM(symvar, symdlopen) do { \
 	pfn_##symvar = (__typeof__(pfn_##symvar))dlsym(libextension_so, #symdlopen); \

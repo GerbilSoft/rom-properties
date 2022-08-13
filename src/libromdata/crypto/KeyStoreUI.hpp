@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * KeyStoreUI.hpp: Key store UI base class.                                *
  *                                                                         *
- * Copyright (c) 2012-2020 by David Korth.                                 *
+ * Copyright (c) 2012-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,7 +20,7 @@
 namespace LibRomData {
 
 class KeyStoreUIPrivate;
-class KeyStoreUI
+class RP_LIBROMDATA_PUBLIC KeyStoreUI
 {
 	public:
 		KeyStoreUI();
@@ -35,16 +35,16 @@ class KeyStoreUI
 		/** Key struct. **/
 		struct Key {
 			enum class Status : uint8_t {
-				Empty = 0,	// Key is empty.
-				Unknown,	// Key status is unknown.
-				NotAKey,	// Not a key.
-				Incorrect,	// Key is incorrect.
-				OK,		// Key is OK.
+				Empty = 0,	// Key is empty
+				Unknown,	// Key status is unknown
+				NotAKey,	// Not a key
+				Incorrect,	// Key is incorrect
+				OK,		// Key is OK
 			};
 
-			std::string name;	// Key name.
-			std::string value;	// Key value. (as rp-string for display purposes)
-			Status status;		// Key status. (See the Status enum.)
+			std::string name;	// Key name [ASCII]
+			std::string value;	// Key value [ASCII, for display purposes]
+			Status status;		// Key status (See the Status enum)
 			bool modified;		// True if the key has been modified since last reset() or allKeysSaved().
 			bool allowKanji;	// Allow kanji for UTF-16LE + BOM.
 		};
@@ -150,23 +150,23 @@ class KeyStoreUI
 		 * If successful, and the new value is different,
 		 * keyChanged() will be emitted.
 		 *
-		 * @param sectIdx Section index.
-		 * @param keyIdx Key index.
-		 * @param value New value.
+		 * @param sectIdx Section index
+		 * @param keyIdx Key index
+		 * @param value New value [NULL-terminated UTF-8 string]
 		 * @return 0 on success; non-zero on error.
 		 */
-		int setKey(int sectIdx, int keyIdx, const std::string &value);
+		int setKey(int sectIdx, int keyIdx, const char *value);
 
 		/**
 		 * Set a key's value.
 		 * If successful, and the new value is different,
 		 * keyChanged() will be emitted.
 		 *
-		 * @param idx Flat key index.
-		 * @param value New value.
+		 * @param idx Flat key index
+		 * @param value New value [NULL-terminated UTF-8 string]
 		 * @return 0 on success; non-zero on error.
 		 */
-		int setKey(int idx, const std::string &value);
+		int setKey(int idx, const char *value);
 
 	public /*slots*/:
 		/**
@@ -197,6 +197,7 @@ class KeyStoreUI
 	public:
 		enum class ImportStatus : uint8_t {
 			InvalidParams = 0,	// Invalid parameters. (Should not happen!)
+			UnknownKeyID,		// Unknown key ID. (Should not happen!)
 			OpenError,		// Could not open the file. (TODO: More info?)
 			ReadError,		// Could not read the file. (TODO: More info?)
 			InvalidFile,		// File is not the correct type.
@@ -219,32 +220,22 @@ class KeyStoreUI
 		};
 
 		/**
-		 * Import keys from Wii keys.bin. (BootMii format)
-		 * @param filename keys.bin filename.
-		 * @return Key import status.
+		 * Import file ID
 		 */
-		ImportReturn importWiiKeysBin(const char *filename);
+		enum class ImportFileID {
+			WiiKeysBin = 0,
+			WiiUOtpBin,
+			N3DSboot9bin,
+			N3DSaeskeydb,
+		};
 
 		/**
-		 * Import keys from Wii U otp.bin.
-		 * @param filename otp.bin filename.
-		 * @return Key import status.
+		 * Import keys from a binary file.
+		 * @param fileID Type of file
+		 * @param filename Filename
+		 * @return ImportReturn
 		 */
-		ImportReturn importWiiUOtpBin(const char *filename);
-
-		/**
-		 * Import keys from 3DS boot9.bin.
-		 * @param filename boot9.bin filename.
-		 * @return Key import status.
-		 */
-		ImportReturn import3DSboot9bin(const char *filename);
-
-		/**
-		 * Import keys from 3DS aeskeydb.bin.
-		 * @param filename aeskeydb.bin filename.
-		 * @return Key import status.
-		 */
-		ImportReturn import3DSaeskeydb(const char *filename);
+		ImportReturn importKeysFromBin(ImportFileID fileID, const char *filename);
 };
 
 }

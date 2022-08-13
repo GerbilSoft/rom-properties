@@ -3,7 +3,7 @@
  * EXE_NE.cpp: DOS/Windows executable reader.                              *
  * 16-bit New Executable format.                                           *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -201,6 +201,20 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 		}
 	}
 
+	// Visual Basic DLL version to display version table.
+	static const struct {
+		uint8_t ver_major;
+		uint8_t ver_minor;
+		const char dll_name[8];	// NOT NULL-terminated!
+		const char *url;
+	} msvb_dll_tbl[] = {
+		{4,0, {'V','B','R','U','N','4','0','0'}, nullptr},
+		{4,0, {'V','B','R','U','N','4','1','6'}, nullptr},	// TODO: Is this a thing?
+		{3,0, {'V','B','R','U','N','3','0','0'}, nullptr},
+		{2,0, {'V','B','R','U','N','2','0','0'}, nullptr},
+		{1,0, {'V','B','R','U','N','1','0','0'}, "https://download.microsoft.com/download/vb30/sampleaa/1/w9xnt4/en-us/vbrun100.exe"},
+	};
+
 	// FIXME: Alignment?
 	const uint16_t *pModRef = pModRefTable;
 	const uint16_t *const pModRefEnd = &pModRef[modRefs];
@@ -242,28 +256,17 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 					break;
 			}
 		} else if (count == 8) {
-			// FIXME: Is it VBRUN400 or VBRUN416 for 16-bit?
-			if (!strncmp(pDllName, "VBRUN400", 8) || !strncmp(pDllName, "VBRUN416", 8)) {
-				refDesc = rp_sprintf(
-					C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "4.0");
-				if (refHasKernel)
+			// Check for Visual Basic DLLs.
+			// NOTE: There's only three 32-bit versions of Visual Basic,
+			// and .NET versions don't count.
+			for (const auto &p : msvb_dll_tbl) {
+				if (!strncmp(pDllName, p.dll_name, sizeof(p.dll_name))) {
+					// Found a matching version.
+					refDesc = rp_sprintf(C_("EXE|Runtime", "Microsoft Visual Basic %u.%u Runtime"),
+						p.ver_major, p.ver_minor);
+					refLink = p.url;
 					break;
-			} else if (!strncmp(pDllName, "VBRUN300", 8)) {
-				refDesc = rp_sprintf(
-					C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "3.0");
-				if (refHasKernel)
-					break;
-			} else if (!strncmp(pDllName, "VBRUN200", 8)) {
-				refDesc = rp_sprintf(
-					C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "2.0");
-				if (refHasKernel)
-					break;
-			} else if (!strncmp(pDllName, "VBRUN100", 8)) {
-				refDesc = rp_sprintf(
-					C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "1.0");
-				refLink = "https://download.microsoft.com/download/vb30/sampleaa/1/w9xnt4/en-us/vbrun100.exe";
-				if (refHasKernel)
-					break;
+				}
 			}
 		}
 	}
@@ -400,6 +403,42 @@ void EXEPrivate::addFields_NE(void)
 		"EXE|OtherFlags", OtherFlags_names, ARRAY_SIZE(OtherFlags_names));
 	fields->addField_bitfield(C_("EXE", "Other Flags"),
 		v_OtherFlags_names, 2, hdr.ne.OS2EXEFlags);
+
+	// Timestamp (Early NE executables; pre-Win1.01)
+	// NOTE: Uses the same field as CRC, so use
+	// heuristics to determine if it's valid.
+	// High 16 bits == date; low 16 bits = time
+	// Reference: https://docs.microsoft.com/en-us/cpp/c-runtime-library/32-bit-windows-time-date-formats?view=msvc-170
+	// TODO: Also add to metadata?
+	const uint32_t ne_dos_time = le32_to_cpu(hdr.ne.FileLoadCRC);
+	struct tm ne_tm;
+	// tm_year is year - 1900; DOS timestamp starts at 1980.
+	// NOTE: Only allowing 1983-1985.
+	ne_tm.tm_year = ((ne_dos_time >> 25) & 0x7F) + 80;
+	if (ne_tm.tm_year >= 83 && ne_tm.tm_year <= 85) {
+		ne_tm.tm_mon	= ((ne_dos_time >> 21) & 0x0F) - 1;	// DOS is 1-12; Unix is 0-11
+		ne_tm.tm_mday	= ((ne_dos_time >> 16) & 0x1F);
+		ne_tm.tm_hour	= ((ne_dos_time >> 11) & 0x1F);
+		ne_tm.tm_min	= ((ne_dos_time >>  5) & 0x3F);
+		ne_tm.tm_sec	=  (ne_dos_time & 0x1F) * 2;
+
+		// tm_wday and tm_yday are output variables.
+		ne_tm.tm_wday = 0;
+		ne_tm.tm_yday = 0;
+		ne_tm.tm_isdst = 0;
+
+		// Verify ranges.
+		if (ne_tm.tm_mon <= 11 && ne_tm.tm_mday <= 31 &&
+		    ne_tm.tm_hour <= 23 && ne_tm.tm_min <= 60 && ne_tm.tm_sec <= 59)
+		{
+			// In range.
+			const time_t ne_time = timegm(&ne_tm);
+			fields->addField_dateTime(C_("EXE", "Timestamp"), ne_time,
+				RomFields::RFT_DATETIME_HAS_DATE |
+				RomFields::RFT_DATETIME_HAS_TIME |
+				RomFields::RFT_DATETIME_IS_UTC);	// no timezone
+		}
+	}
 
 	// Expected Windows version.
 	// TODO: Is this used in OS/2 executables?

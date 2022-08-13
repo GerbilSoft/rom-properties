@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DMG.hpp: Game Boy (DMG/CGB/SGB) ROM reader.                             *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -15,7 +15,7 @@
 // librpbase, librpfile
 #include "librpbase/config/Config.hpp"
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using namespace LibRpFile;
 
 // For sections delegated to other RomData subclasses.
 #include "Audio/GBS.hpp"
@@ -27,8 +27,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(DMG)
-
 class DMGPrivate final : public RomDataPrivate
 {
 	public:
@@ -37,6 +35,12 @@ class DMGPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(DMGPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		/** RomFields **/
@@ -177,7 +181,30 @@ class DMGPrivate final : public RomDataPrivate
 		string getPublisher(void) const;
 };
 
+ROMDATA_IMPL(DMG)
+
 /** DMGPrivate **/
+
+/* RomDataInfo */
+const char *const DMGPrivate::exts[] = {
+	".gb",  ".sgb", ".sgb2",
+	".gbc", ".cgb",
+
+	// ROMs with GBX footer.
+	".gbx",
+
+	nullptr
+};
+const char *const DMGPrivate::mimeTypes[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-gameboy-rom",
+	"application/x-gameboy-color-rom",
+
+	nullptr
+};
+const RomDataInfo DMGPrivate::romDataInfo = {
+	"DMG", exts, mimeTypes
+};
 
 /** Internal ROM data. **/
 
@@ -245,7 +272,7 @@ const DMGPrivate::dmg_cart_type DMGPrivate::dmg_cart_types_end[] = {
 };
 
 DMGPrivate::DMGPrivate(DMG *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, romType(RomType::Unknown)
 {
 	// Clear the various structs.
@@ -399,13 +426,14 @@ void DMGPrivate::getTitleAndGameID(string &s_title, string &s_gameID) const
 			case 'K':	// tilt sensor
 			case 'V':	// rumble
 				switch (romHeader.title15[14]) {
-					case 'A': case 'D':
-					case 'E': case 'F':
-					case 'G': case 'H':
-					case 'I': case 'J':
-					case 'K': case 'P':
-					case 'S': case 'U':
-					case 'X': case 'Y':
+					case 'A': case 'B':	// B == Brazil
+					case 'D': case 'E':
+					case 'F': case 'G':
+					case 'H': case 'I':
+					case 'J': case 'K':
+					case 'P': case 'S':
+					case 'U': case 'X':
+					case 'Y': case 'Z':
 						// Region byte is valid.
 						break;
 
@@ -542,8 +570,6 @@ DMG::DMG(IRpFile *file)
 	: super(new DMGPrivate(this, file))
 {
 	RP_D(DMG);
-	d->className = "DMG";
-
 	if (!d->file) {
 		// Could not ref() the file handle.
 		return;
@@ -569,12 +595,11 @@ DMG::DMG(IRpFile *file)
 	}
 
 	// Check if this ROM is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = size;
-	info.header.pData = header.u8;
-	info.ext = nullptr;	// Not needed for DMG.
-	info.szFile = 0;	// Not needed for DMG.
+	const DetectInfo info = {
+		{0, static_cast<unsigned int>(size), header.u8},
+		nullptr,	// ext (not needed for DMG)
+		0		// szFile (not needed for DMG)
+	};
 	d->romType = static_cast<DMGPrivate::RomType>(isRomSupported_static(&info));
 
 	d->isValid = ((int)d->romType >= 0);
@@ -713,55 +738,6 @@ const char *DMG::systemName(unsigned int type) const
 }
 
 /**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *DMG::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".gb",  ".sgb", ".sgb2",
-		".gbc", ".cgb",
-
-		// ROMs with GBX footer.
-		".gbx",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *DMG::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org.
-		"application/x-gameboy-rom",
-		"application/x-gameboy-color-rom",
-
-		nullptr
-	};
-	return mimeTypes;
-}
-
-/**
  * Get a bitfield of image types this class can retrieve.
  * @return Bitfield of supported image types. (ImageTypesBF)
  */
@@ -887,7 +863,7 @@ int DMG::loadFieldData(void)
 	d->getTitleAndGameID(s_title, s_gameID);
 	d->fields->addField_string(C_("RomData", "Title"), s_title);
 	d->fields->addField_string(C_("RomData", "Game ID"),
-		s_gameID.empty() ? s_gameID.c_str() : C_("RomData", "Unknown"));
+		!s_gameID.empty() ? s_gameID.c_str() : C_("RomData", "Unknown"));
 
 	// System
 	const uint32_t dmg_system = d->systemID();
@@ -1096,16 +1072,15 @@ int DMG::loadFieldData(void)
 			{GBX_MAPPER_LI_CHENG,		"Li Cheng"},
 			{GBX_MAPPER_LAST_BIBLE,		"\"Last Bible\" multicart"},
 			{GBX_MAPPER_LIEBAO,		"Liebao Technology"},
-
-			{(GBX_Mapper_e)0, nullptr}
 		};
 
 		const char *s_mapper = nullptr;
 		const uint32_t lkup = be32_to_cpu(gbxFooter->mapper_id);
-		for (const gbx_mapper_tbl_t *pMapper = gbx_mapper_tbl; pMapper->mapper_id != 0; pMapper++) {
-			if (pMapper->mapper_id == lkup) {
+		for (const gbx_mapper_tbl_t &p : gbx_mapper_tbl) {
+			if (p.mapper_id == lkup) {
 				// Found the mapper.
-				s_mapper = pMapper->desc;
+				s_mapper = p.desc;
+				break;
 			}
 		}
 
@@ -1188,29 +1163,23 @@ int DMG::loadFieldData(void)
 				// Found the GBS magic number.
 				// Open the GBS.
 				const off64_t fileSize = d->file->size();
-				DiscReader *const reader = new DiscReader(d->file, 0, fileSize);
-				if (reader->isOpen()) {
-					// Create a PartitionFile.
-					const off64_t length = fileSize - jp_addr;
-					PartitionFile *const ptFile = new PartitionFile(reader, jp_addr, length);
-					if (ptFile->isOpen()) {
-						// Open the GBS.
-						GBS *const gbs = new GBS(ptFile);
-						if (gbs->isOpen()) {
-							// Add the fields.
-							const RomFields *const gbsFields = gbs->fields();
-							assert(gbsFields != nullptr);
-							assert(!gbsFields->empty());
-							if (gbsFields && !gbsFields->empty()) {
-								d->fields->addFields_romFields(gbsFields,
-									RomFields::TabOffset_AddTabs);
-							}
+				SubFile *const gbsFile = new SubFile(d->file, jp_addr, fileSize - jp_addr);
+				if (gbsFile->isOpen()) {
+					// Open the GBS.
+					GBS *const gbs = new GBS(gbsFile);
+					if (gbs->isOpen()) {
+						// Add the fields.
+						const RomFields *const gbsFields = gbs->fields();
+						assert(gbsFields != nullptr);
+						assert(!gbsFields->empty());
+						if (gbsFields && !gbsFields->empty()) {
+							d->fields->addFields_romFields(gbsFields,
+								RomFields::TabOffset_AddTabs);
 						}
-						gbs->unref();
 					}
-					ptFile->unref();
+					gbs->unref();
 				}
-				reader->unref();
+				gbsFile->unref();
 			}
 		}
 	}
@@ -1390,9 +1359,8 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 
 		// Manually filter out characters that are rejected by CacheKeys.
 		img_filename.reserve(s_title.size() + 8);
-		const auto s_title_cend = s_title.cend();
-		for (auto iter = s_title.cbegin(); iter != s_title_cend; ++iter) {
-			switch (*iter) {
+		for (char p : s_title) {
+			switch (p) {
 				case ':':
 				case '/':
 				case '\\':
@@ -1401,7 +1369,7 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 					img_filename += '_';
 					break;
 				default:
-					img_filename += *iter;
+					img_filename += p;
 					break;
 			}
 		}
@@ -1600,19 +1568,17 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	}
 
 	// Check for invalid characters and replace them with '_'.
-	std::for_each(img_filename.begin(), img_filename.end(),
-		[](char &c) {
-			switch (c) {
-				case '/':
-				case '*':
-				case '?':
-				case ':':
-					c = '_';
-				default:
-					break;
-			}
+	for (char &c : img_filename) {
+		switch (c) {
+			case '/':
+			case '*':
+			case '?':
+			case ':':
+				c = '_';
+			default:
+				break;
 		}
-	);
+	}
 
 	RP_UNUSED(size);
 	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * Achievements.hpp: Achievements class.                                   *
  *                                                                         *
- * Copyright (c) 2020 by David Korth.                                      *
+ * Copyright (c) 2020-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,10 +10,6 @@
 #define __ROMPROPERTIES_LIBRPBASE_ACHIEVEMENTS_HPP__
 
 #include "common.h"
-
-namespace LibRpTexture {
-	class rp_image;
-}
 
 namespace LibRpBase {
 
@@ -45,6 +41,7 @@ class Achievements
 		 *
 		 * @return Achievements instance.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		static Achievements *instance(void);
 
 	public:
@@ -52,18 +49,21 @@ class Achievements
 		 * Achievement identifiers.
 		 */
 		enum class ID {
-			// Debug-encrypted file. (devkits)
+			// Debug-encrypted file (devkits)
 			ViewedDebugCryptedFile		= 0,
 
-			// Non-x86/x64 PE executable.
-			// Does not include Xbox 360 executables.
+			// Non-x86/x64 PE executable
+			// Does not include Xbox 360 executables
 			ViewedNonX86PE			= 1,
 
-			// BroadOn WAD file format for Wii.
+			// BroadOn WAD file format for Wii
 			ViewedBroadOnWADFile		= 2,
 
 			// Sonic & Knuckles locked on to Sonic & Knuckles
 			ViewedMegaDriveSKwithSK		= 3,
+
+			// CD-i disc image
+			ViewedCDiDiscImage		= 4,
 
 			Max
 		};
@@ -87,6 +87,7 @@ class Achievements
 		 * @param func Notification function.
 		 * @param user_data User data.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		void setNotifyFunction(NotifyFunc func, intptr_t user_data);
 
 		/**
@@ -98,6 +99,7 @@ class Achievements
 		 * @param func Notification function.
 		 * @param user_data User data.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		void clearNotifyFunction(NotifyFunc func, intptr_t user_data);
 
 	public:
@@ -114,6 +116,7 @@ class Achievements
 		 * @param id Achievement ID.
 		 * @return UNIX time value if unlocked; -1 if not.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		time_t isUnlocked(ID id) const;
 
 	public:
@@ -122,6 +125,7 @@ class Achievements
 		 * @param id Achievement ID.
 		 * @return Achievement description, or nullptr on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const char *getName(ID id) const;
 
 		/**
@@ -129,6 +133,7 @@ class Achievements
 		 * @param id Achievement ID.
 		 * @return Unlocked achievement description, or nullptr on error.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const char *getDescUnlocked(ID id) const;
 };
 

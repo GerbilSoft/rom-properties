@@ -1,12 +1,6 @@
 # Win32-specific CFLAGS/CXXFLAGS.
 # For Microsoft Visual C++ compilers.
 
-# Basic platform flags for MSVC:
-# - wchar_t should be a distinct type. (MSVC 2002+)
-IF(MSVC_VERSION GREATER 1200)
-	SET(RP_C_FLAGS_WIN32 "${RP_C_FLAGS_WIN32} /Zc:wchar_t")
-ENDIF()
-
 # If ENABLE_OLDWINCOMPAT, check for incompatible build settings.
 # If found, show a warning and disable ENABLE_OLDWINCOMPAT.
 IF(ENABLE_OLDWINCOMPAT)
@@ -44,6 +38,7 @@ ENDIF(ENABLE_OLDWINCOMPAT)
 # NOTE: MS_ENH_RSA_AES_PROV is only available starting with
 # Windows XP. Because we're actually using some XP-specific
 # functionality now, the minimum version is now Windows XP.
+INCLUDE(CPUInstructionSetFlags)
 IF(CPU_amd64)
 	# amd64 (64-bit), Unicode Windows only. (MSVC)
 	# (There is no amd64 ANSI Windows.)

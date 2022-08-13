@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * rp-config.c: Configuration stub.                                        *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -40,19 +40,19 @@
 typedef int (CALLBACK *PFNRPSHOWCONFIGDIALOG)(HWND hWnd, HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow);
 
 // Architecture-specific subdirectory.
-#if defined(__i386__) || defined(_M_IX86)
+#if defined(_M_IX86) || defined(__i386__)
 static const TCHAR rp_subdir[] = _T("i386\\");
-#elif defined(__amd64__) || defined(_M_X64)
+#elif defined(_M_X64) || defined(_M_AMD64) || defined(__amd64__) || defined(__x86_64__)
 static const TCHAR rp_subdir[] = _T("amd64\\");
-#elif defined(__ia64__) || defined(_M_IA64)
+#elif defined(_M_IA64) || defined(__ia64__)
 static const TCHAR rp_subdir[] = _T("ia64\\");
-#elif defined(__aarch64__) || defined(_M_ARM64)
-static const TCHAR rp_subdir[] = _T("arm64\\");
-#elif defined(__arm__) || defined(__thumb__) || \
-      defined(_M_ARM) || defined(_M_ARMT)
+#elif defined(_M_ARM) || defined(__arm__) || \
+      defined(_M_ARMT) || defined(__thumb__)
 static const TCHAR rp_subdir[] = _T("arm\\");
+#elif defined(_M_ARM64) || defined(__aarch64__)
+static const TCHAR rp_subdir[] = _T("arm64\\");
 #else
-# error Unsupported CPU architecture.
+#  error Unsupported CPU architecture.
 #endif
 
 // NOTE: We're using strings because we have to use strings when
@@ -76,7 +76,7 @@ static const TCHAR CLSIDs[5][40] = {
  * @param dll_filename DLL filename.
  */
 #define TRY_LOAD_DLL(dll_filename) do { \
-	HMODULE hRpDll = LoadLibrary(dll_filename); \
+	HMODULE hRpDll = LoadLibraryEx(dll_filename, NULL, LOAD_LIBRARY_SEARCH_SYSTEM32); \
 	if (hRpDll) { \
 		/* Find the rp_show_config_dialog() function. */ \
 		PFNRPSHOWCONFIGDIALOG pfn = (PFNRPSHOWCONFIGDIALOG)GetProcAddress(hRpDll, "rp_show_config_dialog"); \
@@ -153,8 +153,9 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	exe_path = malloc(MAX_PATH*sizeof(TCHAR));
 	if (!exe_path)
 		FAIL_MESSAGE(_T("Failed to allocate memory for the EXE path."));
+	SetLastError(ERROR_SUCCESS);	// required for XP
 	exe_path_len = GetModuleFileName(hInstance, exe_path, EXE_PATH_LEN);
-	if (exe_path_len == 0 || exe_path_len >= EXE_PATH_LEN)
+	if (exe_path_len == 0 || exe_path_len >= EXE_PATH_LEN || GetLastError() != ERROR_SUCCESS)
 		FAIL_MESSAGE(_T("Failed to get the EXE path."));
 
 	// Find the last backslash.

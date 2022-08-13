@@ -5,3 +5,8 @@ PowerPC_logo.svg:
 Startupdisc002.png:
 - https://wiki.mariocube.com/images/e/e5/Startupdisc002.png
 - https://wiki.mariocube.com/index.php/Wii_Startup_Discs
+
+CDIlogo.svg:
+- https://upload.wikimedia.org/wikipedia/en/a/a0/CDIlogo.svg
+- https://en.wikipedia.org/wiki/File:CDIlogo.svg
+- https://en.wikipedia.org/wiki/CD-i

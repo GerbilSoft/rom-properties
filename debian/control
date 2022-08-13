@@ -30,13 +30,10 @@ Build-Depends:
  libcairo2-dev,
  libnautilus-extension-dev,
  libnemo-extension-dev,
- libbsd-dev,
  gettext,
  liblz4-dev,
  liblzo2-dev,
- libcanberra-dev,
- libcanberra-gtk-dev,
- libcanberra-gtk3-dev
+ libgsound-dev
 Standards-Version: 3.9.8
 Homepage: https://github.com/GerbilSoft/rom-properties
 Vcs-Git: https://github.com/GerbilSoft/rom-properties
@@ -44,7 +41,7 @@ Vcs-Browser: https://github.com/GerbilSoft/rom-properties
 
 Package: rom-properties-all
 Architecture: any
-Depends: rom-properties-kde4, rom-properties-kf5, rom-properties-xfce, rom-properties-gtk3, rom-properties-cli, rom-properties-utils, rom-properties-lang, rom-properties-thumbnailer-dbus, ${misc:Depends}
+Depends: ${misc:Depends}, libromdata1, rom-properties-kde4, rom-properties-kf5, rom-properties-xfce, rom-properties-gtk3, rom-properties-cli, rom-properties-utils, rom-properties-lang, rom-properties-thumbnailer-dbus
 Description: ROM Properties Page shell extension
  This shell extension provides thumbnailing and property page functionality
  for ROM images, disc images, and save files for various game consoles,
@@ -52,9 +49,20 @@ Description: ROM Properties Page shell extension
  .
  This is a meta-package that installs all rom-properties packages.
 
+Package: libromdata1
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, rom-properties-data
+Description: ROM Properties Page shell extension
+ This shell extension provides thumbnailing and property page functionality
+ for ROM images, disc images, and save files for various game consoles,
+ including Nintendo GameCube and Wii.
+ .
+ This package contains the shared library containing common functionality
+ used by all the UI frontends.
+
 Package: rom-properties-kde4
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, rom-properties-utils
+Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata1, rom-properties-utils, rom-properties-xdg
 Recommends: rom-properties-lang
 Description: ROM Properties Page shell extension
  This shell extension provides thumbnailing and property page functionality
@@ -65,7 +73,7 @@ Description: ROM Properties Page shell extension
 
 Package: rom-properties-kf5
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, rom-properties-utils
+Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata1, rom-properties-utils, rom-properties-xdg
 Recommends: rom-properties-lang
 Conflicts: rom-properties-kde5
 Replaces: rom-properties-kde5
@@ -78,7 +86,7 @@ Description: ROM Properties Page shell extension
 
 Package: rom-properties-xfce
 Architecture: any
-Depends: rom-properties-thumbnailer-dbus, ${shlibs:Depends}, ${misc:Depends}, rom-properties-utils
+Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata1, rom-properties-utils, rom-properties-xdg, rom-properties-thumbnailer-dbus
 Recommends: rom-properties-lang
 Description: ROM Properties Page shell extension
  This shell extension provides thumbnailing and property page functionality
@@ -92,7 +100,7 @@ Description: ROM Properties Page shell extension
 
 Package: rom-properties-gtk3
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, rom-properties-utils, rom-properties-thumbnailer-dbus
+Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata1, rom-properties-utils, rom-properties-xdg, rom-properties-thumbnailer-dbus
 Recommends: rom-properties-lang
 Conflicts: rom-properties-gnome, rom-properties-mate, rom-properties-cinnamon, rom-properties-gtk3-common
 Replaces: rom-properties-gnome, rom-properties-mate, rom-properties-cinnamon, rom-properties-gtk3-common
@@ -111,7 +119,7 @@ Description: ROM Properties Page shell extension
 
 Package: rom-properties-cli
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata1
 Recommends: rom-properties-lang
 Description: ROM Properties Page shell extension
  This shell extension provides thumbnailing and property page functionality
@@ -167,3 +175,14 @@ Description: ROM Properties Page shell extension
  .
  This package contains the MIME package for files supported by rom-properties
  that aren't currently listed in FreeDesktop.org's shared-mime-info database.
+
+Package: rom-properties-data
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: ROM Properties Page shell extension
+ This shell extension provides thumbnailing and property page functionality
+ for ROM images, disc images, and save files for various game consoles,
+ including Nintendo GameCube and Wii.
+ .
+ This package contains data files used for various parsers, e.g. the
+ Nintendo amiibo parser.

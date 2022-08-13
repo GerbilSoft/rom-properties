@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * LanguageComboBox.cpp: Language ComboBoxEx superclass.                   *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,8 +15,7 @@
 #include "librpbase/SystemRegion.hpp"
 #include "librpbase/img/RpPng.hpp"
 #include "librpfile/win32/RpFile_windres.hpp"
-using LibRpBase::SystemRegion;
-using LibRpBase::RpPng;
+using namespace LibRpBase;
 using LibRpFile::RpFile_windres;
 using LibRpTexture::rp_image;
 
@@ -33,7 +32,8 @@ class LanguageComboBoxPrivate
 		LanguageComboBoxPrivate(HWND hWnd)
 			: hWnd(hWnd)
 			, himglFlags(nullptr)
-			, dwExStyleRTL(LibWin32Common::isSystemRTL())
+			, dwExStyleRTL(LibWin32UI::isSystemRTL())
+			, forcePAL(false)
 		{
 			minSize.cx = 0;
 			minSize.cy = 0;
@@ -74,11 +74,12 @@ class LanguageComboBoxPrivate
 		HWND hWnd;		// LanguageComboBox control
 		HIMAGELIST himglFlags;	// ImageList for flag icons
 
-		SIZE minSize;		// Minimum size required
-
 		// Is the UI locale right-to-left?
 		// If so, this will be set to WS_EX_LAYOUTRTL.
 		DWORD dwExStyleRTL;
+
+		SIZE minSize;		// Minimum size required
+		bool forcePAL;		// Force PAL region flags?
 };
 
 /**
@@ -139,8 +140,11 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 	rp_image *imgFlagsSheet = nullptr;
 	RpFile_windres *const f_res = new RpFile_windres(HINST_THISCOMPONENT,
 		MAKEINTRESOURCE(resID), MAKEINTRESOURCE(RT_PNG));
-	if (f_res->isOpen()) {
-		imgFlagsSheet = RpPng::loadUnchecked(f_res);
+	if (f_res->isOpen()) do {
+		imgFlagsSheet = RpPng::load(f_res);
+		if (!imgFlagsSheet)
+			break;
+
 		// Make sure the bitmap has the expected size.
 		assert(imgFlagsSheet->width() == (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_COLS));
 		assert(imgFlagsSheet->height() == (iconSize * SystemRegion::FLAGS_SPRITE_SHEET_ROWS));
@@ -150,9 +154,10 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 			// Incorrect size. We can't use it.
 			imgFlagsSheet->unref();
 			imgFlagsSheet = nullptr;
+			break;
 		}
 
-		if (imgFlagsSheet != nullptr && dwExStyleRTL != 0) {
+		if (dwExStyleRTL != 0) {
 			// WS_EX_LAYOUTRTL will flip bitmaps in the dropdown box.
 			// ILC_MIRROR mirrors the bitmaps if the process is mirrored,
 			// but we can't rely on that being the case, and this option
@@ -165,7 +170,7 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 				imgFlagsSheet = flipimg;
 			}
 		}
-	}
+	} while (0);
 	UNREF(f_res);
 
 	// Create the ImageList.
@@ -206,20 +211,13 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 		tstring s_lc;
 		if (lc_str) {
 			s_lc = U82T_c(lc_str);
-		}
-		else {
+		} else {
 			// Invalid language code.
-			s_lc.reserve(4);
-			for (uint32_t tmp_lc = lc; tmp_lc != 0; tmp_lc <<= 8) {
-				TCHAR chr = (TCHAR)(tmp_lc >> 24);
-				if (chr != 0) {
-					s_lc += chr;
-				}
-			}
+			s_lc = SystemRegion::lcToTString(lc);
 		}
 
 		SIZE size;
-		if (!LibWin32Common::measureTextSize(hWnd, hFont, s_lc.c_str(), &size)) {
+		if (!LibWin32UI::measureTextSize(hWnd, hFont, s_lc.c_str(), &size)) {
 			minSize.cx = std::max(minSize.cx, size.cx);
 			minSize.cy = std::max(minSize.cy, size.cy);
 		}
@@ -227,7 +225,7 @@ LRESULT LanguageComboBoxPrivate::setLCs(const uint32_t *lcs_array)
 		if (imgFlagsSheet) {
 			// Add the image.
 			int col, row;
-			int ret = SystemRegion::getFlagPosition(lc, &col, &row);
+			int ret = SystemRegion::getFlagPosition(lc, &col, &row, forcePAL);
 			assert(ret == 0);
 			if (ret != 0) {
 				// Icon not found. Use a blank icon to prevent issues.
@@ -375,17 +373,33 @@ LanguageComboBoxWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 
 		case WM_LCB_GET_SELECTED_LC: {
-			LanguageComboBoxPrivate *const d = reinterpret_cast<LanguageComboBoxPrivate*>(
+			const LanguageComboBoxPrivate *const d = reinterpret_cast<const LanguageComboBoxPrivate*>(
 				GetWindowLongPtr(hWnd, GWLP_USERDATA));
 			return d->getSelectedLC();
 		}
 
 		case WM_LCB_GET_MIN_SIZE: {
-			LanguageComboBoxPrivate *const d = reinterpret_cast<LanguageComboBoxPrivate*>(
+			const LanguageComboBoxPrivate *const d = reinterpret_cast<const LanguageComboBoxPrivate*>(
 				GetWindowLongPtr(hWnd, GWLP_USERDATA));
 
 			// Pack the minimum size into an LPARAM.
 			return (short)d->minSize.cx | (((short)d->minSize.cy) << 16);
+		}
+
+		case WM_LCB_SET_FORCE_PAL: {
+			LanguageComboBoxPrivate *const d = reinterpret_cast<LanguageComboBoxPrivate*>(
+				GetWindowLongPtr(hWnd, GWLP_USERDATA));
+
+			// TODO: Update icons. For now, LCs must be set
+			// after setting forcePAL.
+			d->forcePAL = static_cast<bool>(wParam);
+			return TRUE;
+		}
+
+		case WM_LCB_GET_FORCE_PAL: {
+			const LanguageComboBoxPrivate *const d = reinterpret_cast<const LanguageComboBoxPrivate*>(
+				GetWindowLongPtr(hWnd, GWLP_USERDATA));
+			return d->forcePAL;
 		}
 	}
 

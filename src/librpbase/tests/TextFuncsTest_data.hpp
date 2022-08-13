@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * TextFuncsTest_data.hpp: Data for TextFuncsTest.                         *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -66,8 +66,8 @@ const uint8_t TextFuncsTest::cp1252_data[250] = {
 /**
  * cp1252 to UTF-8 test string.
  * Contains the expected result from:
- * - cp1252_to_utf8(cp1252_data, ARRAY_SIZE(cp1252_data))
- * - cp1252_sjis_to_utf8(cp1252_data, ARRAY_SIZE(cp1252_data))
+ * - cp1252_to_utf8(cp1252_data, ARRAY_SIZE_I(cp1252_data))
+ * - cp1252_sjis_to_utf8(cp1252_data, ARRAY_SIZE_I(cp1252_data))
  */
 const uint8_t TextFuncsTest::cp1252_utf8_data[388] = {
 	0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,
@@ -124,8 +124,8 @@ const uint8_t TextFuncsTest::cp1252_utf8_data[388] = {
 /**
  * cp1252 to UTF-16 test string.
  * Contains the expected result from:
- * - cp1252_to_utf16(cp1252_data, ARRAY_SIZE(cp1252_data))
- * - cp1252_sjis_to_utf16(cp1252_data, ARRAY_SIZE(cp1252_data))
+ * - cp1252_to_utf16(cp1252_data, ARRAY_SIZE_I(cp1252_data))
+ * - cp1252_sjis_to_utf16(cp1252_data, ARRAY_SIZE_I(cp1252_data))
  */
 const char16_t TextFuncsTest::cp1252_utf16_data[250] =
 {
@@ -181,7 +181,7 @@ const uint8_t TextFuncsTest::sjis_data[36] = {
 /**
  * Shift-JIS to UTF-8 test string.
  * Contains the expected result from:
- * - cp1252_sjis_to_utf8(sjis_data, ARRAY_SIZE(sjis_data))
+ * - cp1252_sjis_to_utf8(sjis_data, ARRAY_SIZE_I(sjis_data))
  */
 const uint8_t TextFuncsTest::sjis_utf8_data[53] = {
 	0xE3,0x83,0x9D,0xE3,0x82,0xB1,0xE3,0x83,
@@ -196,7 +196,7 @@ const uint8_t TextFuncsTest::sjis_utf8_data[53] = {
 /**
  * Shift-JIS to UTF-16 test string.
  * Contains the expected result from:
- * - cp1252_sjis_to_utf16(sjis_data, ARRAY_SIZE(sjis_data))
+ * - cp1252_sjis_to_utf16(sjis_data, ARRAY_SIZE_I(sjis_data))
  */
 const char16_t TextFuncsTest::sjis_utf16_data[19] = {
     0x30DD, 0x30B1, 0x30E2, 0x30F3, 0x30B3, 0x30ED, 0x30B7, 0x30A2,
@@ -454,7 +454,7 @@ const uint8_t TextFuncsTest::utf16be_data[558] = {
 /**
  * Latin-1 to UTF-8 test string.
  * Contains the expected result from:
- * - latin1_to_utf8(cp1252_data, ARRAY_SIZE(cp1252_data))
+ * - latin1_to_utf8(cp1252_data, ARRAY_SIZE_I(cp1252_data))
  *
  * This includes the C1 control codes, as per the Unicode Latin-1 Supplement:
  * https://en.wikipedia.org/wiki/Latin-1_Supplement_(Unicode_block)
@@ -512,7 +512,7 @@ const uint8_t TextFuncsTest::latin1_utf8_data[371+1] = {
 /**
  * Latin-1 to UTF-16 test string.
  * Contains the expected result from:
- * - latin1_to_utf16(cp1252_data, ARRAY_SIZE(cp1252_data))
+ * - latin1_to_utf16(cp1252_data, ARRAY_SIZE_I(cp1252_data))
  *
  * This includes the C1 control codes, as per the Unicode Latin-1 Supplement:
  * https://en.wikipedia.org/wiki/Latin-1_Supplement_(Unicode_block)
@@ -588,7 +588,7 @@ const char TextFuncsTest::atariST_data[236+1] =
 /**
  * Atari ST to UTF-16 test string.
  * Contains the expected result from:
- * - utf8_to_utf16(atariST_to_utf8(atariST_data, ARRAY_SIZE(atariST_data)))
+ * - utf8_to_utf16(atariST_to_utf8(atariST_data, ARRAY_SIZE_I(atariST_data)))
  */
 const char16_t TextFuncsTest::atariST_utf16_data[236+1] =
 {
@@ -668,7 +668,7 @@ const char TextFuncsTest::atascii_data[229+1] =
 /**
  * Atari ATASCII to UTF-16 test string.
  * Contains the expected result from:
- * - utf8_to_utf16(atascii_to_utf8(atascii_data, ARRAY_SIZE(atascii_data)-1))
+ * - utf8_to_utf16(atascii_to_utf8(atascii_data, ARRAY_SIZE_I(atascii_data)-1))
  */
 const char16_t TextFuncsTest::atascii_utf16_data[229+1] =
 {

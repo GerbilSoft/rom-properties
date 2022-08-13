@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * dds_structs.h: DirectDraw Surface texture format data structures.       *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,11 +18,11 @@ extern "C" {
 
 /**
  * References:
- * - https://msdn.microsoft.com/en-us/library/windows/desktop/bb943990(v=vs.85).aspx
- * - https://msdn.microsoft.com/en-us/library/windows/desktop/bb943992(v=vs.85).aspx
- * - https://msdn.microsoft.com/en-us/library/windows/desktop/bb943982(v=vs.85).aspx (DDS_HEADER)
- * - https://msdn.microsoft.com/en-us/library/windows/desktop/bb943983(v=vs.85).aspx (DDS_HEADER_DX10)
- * - https://msdn.microsoft.com/en-us/library/windows/desktop/bb943984(v=vs.85).aspx (DDS_PIXELFORMAT)
+ * - https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dx-graphics-dds
+ * - https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dx-graphics-dds-reference
+ * - https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dds-header
+ * - https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dds-header-dxt10
+ * - https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dds-pixelformat
  * - https://github.com/Microsoft/DirectXTK/wiki/XboxDDSTextureLoader (DDS_HEADER_XBOX)
  * - https://github.com/Microsoft/DirectXTex
  */
@@ -31,7 +31,7 @@ extern "C" {
 
 /**
  * DirectDraw Surface: Pixel format.
- * Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb943984(v=vs.85).aspx
+ * Reference: https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dds-pixelformat
  *
  * All fields are in little-endian.
  */
@@ -79,6 +79,14 @@ typedef enum {
 	DDPF_FOURCC_PTC2	= 'PTC2',	// PVRTC 2bpp (RGBA)
 	DDPF_FOURCC_PTC4	= 'PTC4',	// PVRTC 4bpp (RGBA)
 
+	// ASTC (non-standard)
+	DDPF_FOURCC_ASTC4x4	= 'AS44',
+	DDPF_FOURCC_ASTC5x5	= 'AS55',
+	DDPF_FOURCC_ASTC6x6	= 'AS66',
+	DDPF_FOURCC_ASTC8x5	= 'AS85',
+	DDPF_FOURCC_ASTC8x6	= 'AS86',
+	DDPF_FOURCC_ASTC10x5	= 'AS:5',
+
 	DDPF_FOURCC_DX10	= 'DX10',
 	DDPF_FOURCC_XBOX	= 'XBOX',
 } DDS_PIXELFORMAT_FOURCC;
@@ -105,7 +113,7 @@ ASSERT_STRUCT(DDS_NVTT_Header, 11*sizeof(uint32_t));
 /**
  * DirectDraw Surface: File header.
  * This does NOT include the 'DDS ' magic.
- * Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb943982(v=vs.85).aspx
+ * Reference: https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dds-header
  *
  * All fields are in little-endian.
  */
@@ -164,7 +172,7 @@ typedef enum {
 
 /**
  * DirectX 10 data format enum.
- * Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb173059(v=vs.85).aspx
+ * Reference: https://docs.microsoft.com/en-us/windows/win32/api/dxgiformat/ne-dxgiformat-dxgi_format
  */
 typedef enum {
 	DXGI_FORMAT_UNKNOWN			= 0,
@@ -299,7 +307,52 @@ typedef enum {
 	DXGI_FORMAT_V408			= 132,
 	DXGI_FORMAT_FORCE_UINT			= 0xffffffff,
 
-	// Additional Xbox One formats.
+	// ASTC formats.
+	// Reference: https://github.com/bkaradzic/bgfx/blob/master/src/renderer_d3d.h
+	DXGI_FORMAT_ASTC_4X4_TYPELESS		= 133,
+	DXGI_FORMAT_ASTC_4X4_UNORM		= 134,
+	DXGI_FORMAT_ASTC_4X4_UNORM_SRGB		= 135,
+	DXGI_FORMAT_ASTC_5X4_TYPELESS		= 137,
+	DXGI_FORMAT_ASTC_5X4_UNORM		= 138,
+	DXGI_FORMAT_ASTC_5X4_UNORM_SRGB		= 139,
+	DXGI_FORMAT_ASTC_5X5_TYPELESS		= 141,
+	DXGI_FORMAT_ASTC_5X5_UNORM		= 142,
+	DXGI_FORMAT_ASTC_5X5_UNORM_SRGB		= 143,
+	DXGI_FORMAT_ASTC_6X5_TYPELESS		= 145,
+	DXGI_FORMAT_ASTC_6X5_UNORM		= 146,
+	DXGI_FORMAT_ASTC_6X5_UNORM_SRGB		= 147,
+	DXGI_FORMAT_ASTC_6X6_TYPELESS		= 149,
+	DXGI_FORMAT_ASTC_6X6_UNORM		= 150,
+	DXGI_FORMAT_ASTC_6X6_UNORM_SRGB		= 151,
+	DXGI_FORMAT_ASTC_8X5_TYPELESS		= 153,
+	DXGI_FORMAT_ASTC_8X5_UNORM		= 154,
+	DXGI_FORMAT_ASTC_8X5_UNORM_SRGB		= 155,
+	DXGI_FORMAT_ASTC_8X6_TYPELESS		= 157,
+	DXGI_FORMAT_ASTC_8X6_UNORM		= 158,
+	DXGI_FORMAT_ASTC_8X6_UNORM_SRGB		= 159,
+	DXGI_FORMAT_ASTC_8X8_TYPELESS		= 161,
+	DXGI_FORMAT_ASTC_8X8_UNORM		= 162,
+	DXGI_FORMAT_ASTC_8X8_UNORM_SRGB		= 163,
+	DXGI_FORMAT_ASTC_10X5_TYPELESS		= 165,
+	DXGI_FORMAT_ASTC_10X5_UNORM		= 166,
+	DXGI_FORMAT_ASTC_10X5_UNORM_SRGB	= 167,
+	DXGI_FORMAT_ASTC_10X6_TYPELESS		= 169,
+	DXGI_FORMAT_ASTC_10X6_UNORM		= 170,
+	DXGI_FORMAT_ASTC_10X6_UNORM_SRGB	= 171,
+	DXGI_FORMAT_ASTC_10X8_TYPELESS		= 173,
+	DXGI_FORMAT_ASTC_10X8_UNORM		= 174,
+	DXGI_FORMAT_ASTC_10X8_UNORM_SRGB	= 175,
+	DXGI_FORMAT_ASTC_10X10_TYPELESS		= 177,
+	DXGI_FORMAT_ASTC_10X10_UNORM		= 178,
+	DXGI_FORMAT_ASTC_10X10_UNORM_SRGB	= 179,
+	DXGI_FORMAT_ASTC_12X10_TYPELESS		= 181,
+	DXGI_FORMAT_ASTC_12X10_UNORM		= 182,
+	DXGI_FORMAT_ASTC_12X10_UNORM_SRGB	= 183,
+	DXGI_FORMAT_ASTC_12X12_TYPELESS		= 185,
+	DXGI_FORMAT_ASTC_12X12_UNORM		= 186,
+	DXGI_FORMAT_ASTC_12X12_UNORM_SRGB	= 187,
+
+	// Additional Xbox One formats
 	// Reference: https://github.com/Microsoft/DirectXTex/blob/master/DirectXTex/DirectXTexP.h
 	XBOX_DXGI_FORMAT_R10G10B10_SNORM_A2_UNORM	= 189,
 	XBOX_DXGI_FORMAT_R4G4_UNORM			= 190,
@@ -315,7 +368,7 @@ typedef enum {
 
 /**
  * DirectX 10 resource dimension enum.
- * Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb172411(v=vs.85).aspx
+ * Reference: https://docs.microsoft.com/en-us/windows/win32/api/d3d10/ne-d3d10-d3d10_resource_dimension
  */
 typedef enum {
 	D3D10_RESOURCE_DIMENSION_UNKNOWN	= 0,
@@ -328,7 +381,7 @@ typedef enum {
 /**
  * DirectDraw Surface: DX10 header.
  * This is present after DDS_HEADER if ddspf.dwFourCC == 'DX10'.
- * Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb943983(v=vs.85).aspx
+ * Reference: https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dds-header-dxt10
  *
  * All fields are in little-endian.
  */

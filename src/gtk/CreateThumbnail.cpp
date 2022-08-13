@@ -2,11 +2,12 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * CreateThumbnail.cpp: Thumbnail creator for wrapper programs.            *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "check-uid.h"
 
 // librpbase, librptexture
 using namespace LibRpBase;
@@ -28,14 +29,16 @@ using std::unique_ptr;
 // GTK+ major version.
 // We can't simply use GTK_MAJOR_VERSION because
 // that has parentheses.
-#if GTK_CHECK_VERSION(4,0,0)
-# error Needs updating for GTK4.
+#if GTK_CHECK_VERSION(5,0,0)
+#  error Needs updating for GTK5.
+#elif GTK_CHECK_VERSION(4,0,0)
+#  define GTK_MAJOR_STR "4"
 #elif GTK_CHECK_VERSION(3,0,0)
-# define GTK_MAJOR_STR "3"
+#  define GTK_MAJOR_STR "3"
 #elif GTK_CHECK_VERSION(2,0,0)
-# define GTK_MAJOR_STR "2"
+#  define GTK_MAJOR_STR "2"
 #else
-# error GTK+ is too old.
+#  error GTK+ is too old.
 #endif
 
 /** CreateThumbnailPrivate **/
@@ -99,7 +102,7 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE>
 		 * @param method Scaling method.
 		 * @return Rescaled ImgClass.
 		 */
-		inline PIMGTYPE rescaleImgClass(const PIMGTYPE &imgClass, const ImgSize &sz, ScalingMethod method = ScalingMethod::Nearest) const final
+		inline PIMGTYPE rescaleImgClass(const PIMGTYPE &imgClass, ImgSize sz, ScalingMethod method = ScalingMethod::Nearest) const final
 		{
 			return PIMGTYPE_scale(imgClass, sz.width, sz.height, (method == ScalingMethod::Bilinear));
 		}
@@ -271,15 +274,11 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const 
 {
 	// Some of this is based on the GNOME Thumbnailer skeleton project.
 	// https://github.com/hadess/gnome-thumbnailer-skeleton/blob/master/gnome-thumbnailer-skeleton.c
-
-	if (getuid() == 0 || geteuid() == 0) {
-		g_critical("*** " G_LOG_DOMAIN " does not support running as root.");
-		return RPCT_RUNNING_AS_ROOT;
-	}
+	CHECK_UID_RET(RPCT_RUNNING_AS_ROOT);
 
 	// Make sure glib is initialized.
-	// NOTE: This is a no-op as of glib-2.36.
-#if !GLIB_CHECK_VERSION(2,36,0)
+	// NOTE: This is a no-op as of glib-2.35.1.
+#if !GLIB_CHECK_VERSION(2,35,1)
 	g_type_init();
 #endif
 
@@ -311,11 +310,8 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const 
 	unique_ptr<CreateThumbnailPrivate> d(new CreateThumbnailPrivate());
 	CreateThumbnailPrivate::GetThumbnailOutParams_t outParams;
 	ret = d->getThumbnail(romData, maximum_size, &outParams);
-	if (ret != 0 || !d->isImgClassValid(outParams.retImg)) {
+	if (ret != 0) {
 		// No image.
-		if (outParams.retImg) {
-			d->freeImgClass(outParams.retImg);
-		}
 		romData->unref();
 		return RPCT_SOURCE_FILE_NO_IMAGE;
 	}

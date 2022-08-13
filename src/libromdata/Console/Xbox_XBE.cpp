@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Xbox_XBE.cpp: Microsoft Xbox executable reader.                         *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,6 +15,7 @@
 #include "librpbase/img/RpPng.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
+using LibRpFile::SubFile;
 
 // librptexture
 #include "librptexture/fileformat/XboxXPR.hpp"
@@ -32,8 +33,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(Xbox_XBE)
-
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define Xbox_XBEPrivate Xbox_XBE_Private
 
@@ -48,6 +47,12 @@ class Xbox_XBE_Private final : public RomDataPrivate
 		RP_DISABLE_COPY(Xbox_XBE_Private)
 
 	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
+
+	public:
 		// XBE header
 		// NOTE: **NOT** byteswapped.
 		XBE_Header xbeHeader;
@@ -58,18 +63,17 @@ class Xbox_XBE_Private final : public RomDataPrivate
 
 		// RomData subclasses.
 		// TODO: Also get the save image? ($$XSIMAGE)
-		DiscReader *discReader;	// Common DiscReader
 		EXE *pe_exe;		// PE executable
 
 		// Title image.
 		// NOTE: May be a PNG image on some discs.
 		struct {
-			bool isInit;
-			bool isPng;
 			union {
 				XboxXPR *xpr0;
 				rp_image *png;
 			};
+			bool isInit;
+			bool isPng;
 		} xtImage;
 
 	public:
@@ -101,11 +105,29 @@ class Xbox_XBE_Private final : public RomDataPrivate
 		string getPublisher(void) const;
 };
 
+ROMDATA_IMPL(Xbox_XBE)
+
 /** Xbox_XBE_Private **/
 
+/* RomDataInfo */
+const char *const Xbox_XBE_Private::exts[] = {
+	".xbe",
+
+	nullptr
+};
+const char *const Xbox_XBE_Private::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-xbox-executable",
+
+	nullptr
+};
+const RomDataInfo Xbox_XBE_Private::romDataInfo = {
+	"Xbox_XBE", exts, mimeTypes
+};
+
 Xbox_XBE_Private::Xbox_XBE_Private(Xbox_XBE *q, IRpFile *file)
-	: super(q, file)
-	, discReader(nullptr)
+	: super(q, file, &romDataInfo)
 	, pe_exe(nullptr)
 {
 	// Clear the XBE structs.
@@ -129,8 +151,6 @@ Xbox_XBE_Private::~Xbox_XBE_Private()
 			UNREF(xtImage.png);
 		}
 	}
-
-	UNREF(discReader);
 }
 
 /**
@@ -248,37 +268,26 @@ int Xbox_XBE_Private::initXPR0_xtImage(void)
 		return -ENOENT;
 	}
 
-	// Create the DiscReader if it isn't open already.
-	if (!discReader) {
-		DiscReader *const discReader_tmp = new DiscReader(this->file);
-		if (!discReader_tmp->isOpen()) {
-			// Unable to open the DiscReader.
-			discReader_tmp->unref();
-			return -EIO;
-		}
-		discReader = discReader_tmp;
-	}
-
 	// Open the XPR0 image.
 	// paddr/psize have absolute addresses.
 	ret = 0;
-	IRpFile *const ptFile = new PartitionFile(discReader,
+	SubFile *const subFile = new SubFile(this->file,
 		hdr_xtImage.paddr, hdr_xtImage.psize);
-	if (ptFile->isOpen()) {
+	if (subFile->isOpen()) {
 		// $$XTIMAGE is usually an XPR0 image.
 		// The Burger King games, wihch have both Xbox and Xbox 360
 		// executables, incorrectly use PNG format here.
 		uint32_t magic = 0;
-		size_t size = ptFile->read(&magic, sizeof(magic));
+		size_t size = subFile->read(&magic, sizeof(magic));
 		if (size != sizeof(magic)) {
 			// Read error.
-			ptFile->unref();
+			subFile->unref();
 			return -EIO;
 		}
-		ptFile->rewind();
+		subFile->rewind();
 
 		if (magic == cpu_to_be32('XPR0')) {
-			XboxXPR *const xpr0 = new XboxXPR(ptFile);
+			XboxXPR *const xpr0 = new XboxXPR(subFile);
 			if (xpr0->isOpen()) {
 				// XPR0 image opened.
 				xtImage.isInit = true;
@@ -291,7 +300,7 @@ int Xbox_XBE_Private::initXPR0_xtImage(void)
 			}
 		} else if (magic == cpu_to_be32(0x89504E47U)) {	// '\x89PNG'
 			// PNG image.
-			rp_image *const img = RpPng::load(ptFile);
+			rp_image *const img = RpPng::load(subFile);
 			if (img->isValid()) {
 				// PNG image opened.
 				xtImage.isInit = true;
@@ -303,15 +312,14 @@ int Xbox_XBE_Private::initXPR0_xtImage(void)
 				ret = -EIO;
 			}
 		}
-		ptFile->unref();
+		subFile->unref();
 	} else {
 		// Unable to open the file.
 		ret = -EIO;
-		ptFile->unref();
+		subFile->unref();
 	}
 
-	// Image loaded.
-	return 0;
+	return ret;
 }
 
 /**
@@ -340,23 +348,12 @@ const EXE *Xbox_XBE_Private::initEXE(void)
 		return nullptr;
 	}
 
-	// Create the DiscReader if it isn't open already.
-	if (!discReader) {
-		DiscReader *const discReader_tmp = new DiscReader(this->file);
-		if (!discReader_tmp->isOpen()) {
-			// Unable to open the DiscReader.
-			discReader_tmp->unref();
-			return nullptr;
-		}
-		discReader = discReader_tmp;
-	}
-
 	// Open the EXE file.
-	IRpFile *const ptFile = new PartitionFile(discReader,
+	SubFile *const subFile = new SubFile(this->file,
 		exe_address, fileSize - exe_address);
-	if (ptFile->isOpen()) {
-		EXE *const pe_exe_tmp = new EXE(ptFile);
-		ptFile->unref();
+	if (subFile->isOpen()) {
+		EXE *const pe_exe_tmp = new EXE(subFile);
+		subFile->unref();
 		if (pe_exe_tmp->isOpen()) {
 			// EXE opened.
 			this->pe_exe = pe_exe_tmp;
@@ -366,7 +363,7 @@ const EXE *Xbox_XBE_Private::initEXE(void)
 		}
 	} else {
 		// Unable to open the file.
-		ptFile->unref();
+		subFile->unref();
 	}
 
 	// EXE loaded.
@@ -422,7 +419,6 @@ Xbox_XBE::Xbox_XBE(IRpFile *file)
 {
 	// This class handles executables.
 	RP_D(Xbox_XBE);
-	d->className = "Xbox_XBE";
 	d->mimeType = "application/x-xbox-executable";	// unofficial, not on fd.o
 	d->fileType = FileType::Executable;
 
@@ -441,12 +437,11 @@ Xbox_XBE::Xbox_XBE(IRpFile *file)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->xbeHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->xbeHeader);
-	info.ext = nullptr;	// Not needed for XBE.
-	info.szFile = 0;	// Not needed for XBE.
+	const DetectInfo info = {
+		{0, sizeof(d->xbeHeader), reinterpret_cast<const uint8_t*>(&d->xbeHeader)},
+		nullptr,	// ext (not needed for Xbox_XBE)
+		0		// szFile (not needed for Xbox_XBE)
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
@@ -488,8 +483,6 @@ void Xbox_XBE::close(void)
 			d->xtImage.xpr0->close();
 		}
 	}
-
-	UNREF_AND_NULL(d->discReader);
 
 	// Call the superclass function.
 	super::close();
@@ -550,51 +543,6 @@ const char *Xbox_XBE::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Xbox_XBE::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".xbe",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Xbox_XBE::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-xbox-executable",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**
@@ -730,13 +678,13 @@ int Xbox_XBE::loadFieldData(void)
 		return 0;
 	}
 
-	// Maximum of 12 fields.
-	d->fields->reserve(12);
+	// Maximum of 13 fields.
+	d->fields->reserve(13);
 	d->fields->setTabName(0, "XBE");
 
 	// Game name
 	d->fields->addField_string(C_("RomData", "Title"),
-		utf16le_to_utf8(xbeCertificate->title_name, ARRAY_SIZE(xbeCertificate->title_name)));
+		utf16le_to_utf8(xbeCertificate->title_name, ARRAY_SIZE_I(xbeCertificate->title_name)));
 
 	// Original PE filename
 	const uint32_t base_address = le32_to_cpu(d->xbeHeader.base_address);
@@ -749,7 +697,7 @@ int Xbox_XBE::loadFieldData(void)
 		if (size == sizeof(pe_filename_W)) {
 			// Convert to UTF-8.
 			pe_filename_W[ARRAY_SIZE(pe_filename_W)-1] = 0;
-			string pe_filename = utf16_to_utf8(pe_filename_W, -1);
+			string pe_filename = utf16le_to_utf8(pe_filename_W, -1);
 			if (!pe_filename.empty()) {
 				d->fields->addField_string(s_filename_title, pe_filename);
 			} else {
@@ -765,7 +713,7 @@ int Xbox_XBE::loadFieldData(void)
 	// TODO: Consolidate implementations into a shared function.
 	string tid_str;
 	char hexbuf[4];
-	if (xbeCertificate->title_id.a >= 0x20) {
+	if (ISUPPER(xbeCertificate->title_id.a)) {
 		tid_str += (char)xbeCertificate->title_id.a;
 	} else {
 		tid_str += "\\x";
@@ -773,7 +721,7 @@ int Xbox_XBE::loadFieldData(void)
 			(uint8_t)xbeCertificate->title_id.a);
 		tid_str.append(hexbuf, 2);
 	}
-	if (xbeCertificate->title_id.b >= 0x20) {
+	if (ISUPPER(xbeCertificate->title_id.b)) {
 		tid_str += (char)xbeCertificate->title_id.b;
 	} else {
 		tid_str += "\\x";
@@ -809,7 +757,7 @@ int Xbox_XBE::loadFieldData(void)
 	// NOTE: Using a string instead of a bitfield because very rarely
 	// are all of these set, and in most cases, none are.
 	// TODO: RFT_LISTDATA?
-	static const char *const media_type_tbl[] = {
+	static const char media_type_tbl[][12] = {
 		// 0
 		NOP_C_("Xbox_XBE", "Hard Disk"),
 		NOP_C_("Xbox_XBE", "XGD1"),
@@ -842,15 +790,24 @@ int Xbox_XBE::loadFieldData(void)
 		}
 		found++;
 
-		if (media_type_tbl[i]) {
-			oss << media_type_tbl[i];
-		} else {
-			oss << i;
-		}
+		oss << media_type_tbl[i];
 	}
 
 	d->fields->addField_string(C_("Xbox_XBE", "Media Types"),
 		found ? oss.str() : C_("Xbox_XBE", "None"));
+
+	// Initialization flags
+	const uint32_t init_flags = le32_to_cpu(xbeHeader->init_flags);
+	static const char *const init_flags_tbl[] = {
+		NOP_C_("Xbox_XBE|InitFlags", "Mount Utility Drive"),
+		NOP_C_("Xbox_XBE|InitFlags", "Format Utility Drive"),
+		NOP_C_("Xbox_XBE|InitFlags", "Limit RAM to 64 MB"),
+		NOP_C_("Xbox_XBE|InitFlags", "Don't Setup HDD"),
+	};
+	vector<string> *const v_init_flags = RomFields::strArrayToVector_i18n(
+		"Region", init_flags_tbl, ARRAY_SIZE(init_flags_tbl));
+	d->fields->addField_bitfield(C_("Xbox_XBE", "Init Flags"),
+		v_init_flags, 2, init_flags);
 
 	// Region code
 	uint32_t region_code = le32_to_cpu(xbeCertificate->region_code);
@@ -914,7 +871,7 @@ int Xbox_XBE::loadMetaData(void)
 
 	// Title
 	d->metaData->addMetaData_string(Property::Title,
-		utf16le_to_utf8(xbeCertificate->title_name, ARRAY_SIZE(xbeCertificate->title_name)));
+		utf16le_to_utf8(xbeCertificate->title_name, ARRAY_SIZE_I(xbeCertificate->title_name)));
 
 	// Publisher
 	d->metaData->addMetaData_string(Property::Publisher, d->getPublisher());

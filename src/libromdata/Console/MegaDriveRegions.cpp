@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * MegaDriveRegions.cpp: Sega Mega Drive region code detection.            *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,6 +11,9 @@
 #include "librpbase/SystemRegion.hpp"
 
 namespace LibRomData {
+
+// TODO: Separate parser function for Pico,
+// since Pico doesn't have worldwide releases.
 
 /**
  * Parse the region codes field from an MD ROM header.
@@ -52,7 +55,18 @@ unsigned int MegaDriveRegions::parseRegionCodes(const char *region_codes, int si
 			ret = MD_REGION_JAPAN | MD_REGION_ASIA |
 			      MD_REGION_USA | MD_REGION_EUROPE;
 		}
-	} else if (region_codes[0] < 16) {
+	}
+	else if ((region_codes[0] == '8' || region_codes[0] == 'E') &&
+	         (region_codes[2] == 0 || ISSPACE(region_codes[2])))
+	{
+		// Some Pico games have unusual European region codes,
+		// e.g. '8F' or 'EF' for France. Handle it here:
+		// - '8F' would be parsed as "no regions".
+		// - 'EF' might be parsed as "all regions" due to 'F'.
+		ret = MD_REGION_EUROPE;
+	}
+	else if (region_codes[0] < 16)
+	{
 		// Hex code not mapped to ASCII.
 		ret = region_codes[0];
 	}
@@ -75,16 +89,23 @@ unsigned int MegaDriveRegions::parseRegionCodes(const char *region_codes, int si
 			// Check for old-style JUE region codes.
 			// (J counts as both Japan and Asia.)
 			for (int i = 0; i < size; i++) {
-				if (region_codes[i] == 0 || ISSPACE(region_codes[i]))
+				// Allow spaces in the first three characters.
+				// "Psy-O-Blade (Japan)" has "  J".
+				if (i >= 3 && (region_codes[i] == 0 || ISSPACE(region_codes[i])))
 					break;
+
 				switch (region_codes[i]) {
 					case 'J':
+					case 'K':	// Korea (Tiny Toon Adventures)
 						ret |= MD_REGION_JAPAN | MD_REGION_ASIA;
 						break;
 					case 'U':
 						ret |= MD_REGION_USA;
 						break;
 					case 'E':
+					//case 'F':	// France (Pico) (CONFLICTS WITH HEX)
+					case 'G':	// Germany (Pico)
+					case 'S':	// Spain (Pico)
 						ret |= MD_REGION_EUROPE;
 						break;
 					default:

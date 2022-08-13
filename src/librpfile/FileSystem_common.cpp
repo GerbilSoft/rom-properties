@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * FileSystem_common.cpp: File system functions. (Common functions)        *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -31,7 +31,7 @@ namespace LibRpFile { namespace FileSystem {
 
 /** Configuration directories. **/
 // pthread_once() control variable.
-static pthread_once_t once_control = PTHREAD_ONCE_INIT;
+static pthread_once_t cfgdir_once_control = PTHREAD_ONCE_INIT;
 // User's configuration directory.
 static string config_dir;
 
@@ -82,30 +82,59 @@ const string &getCacheDirectory(void)
 const string &getConfigDirectory(void)
 {
 	// TODO: Handle errors.
-	pthread_once(&once_control, initConfigDirectories);
+	pthread_once(&cfgdir_once_control, initConfigDirectories);
 	return config_dir;
 }
 
 /**
  * Get the file extension from a filename or pathname.
- * @param filename Filename.
- * @return File extension, including the leading dot. (pointer to within the filename) [nullptr if no extension]
+ * NOTE: Returned value points into the specified filename.
+ * @param filename Filename
+ * @return File extension, including the leading dot; nullptr if no extension.
  */
-const char *file_ext(const string &filename)
+const char *file_ext(const char *filename)
 {
-	size_t dotpos = filename.find_last_of('.');
-	size_t slashpos = filename.find_last_of(DIR_SEP_CHR);
-	if (dotpos == string::npos ||
-	    dotpos >= filename.size()-1 ||
-	    (slashpos != string::npos && dotpos <= slashpos))
+	if (unlikely(!filename))
+		return nullptr;
+
+	const char *const dotpos = strrchr(filename, '.');
+	const char *const slashpos = strrchr(filename, DIR_SEP_CHR);
+	if (!dotpos || dotpos[1] == '\0' ||
+	    (slashpos && dotpos <= slashpos))
 	{
 		// Invalid or missing file extension.
 		return nullptr;
 	}
 
 	// Return the file extension. (pointer to within the filename)
-	return &filename[dotpos];
+	return dotpos;
 }
+
+#ifdef _WIN32
+/**
+ * Get the file extension from a filename or pathname. (wchar_t version)
+ * NOTE: Returned value points into the specified filename.
+ * @param filename Filename
+ * @return File extension, including the leading dot; nullptr if no extension.
+ */
+const wchar_t *file_ext(const wchar_t *filename)
+{
+	if (unlikely(!filename))
+		return nullptr;
+
+	const wchar_t *const dotpos = wcsrchr(filename, '.');
+	const wchar_t *const slashpos = wcsrchr(filename, DIR_SEP_CHR);
+	if (!dotpos || dotpos[1] == L'\0' ||
+	    (slashpos && dotpos <= slashpos))
+	{
+		// Invalid or missing file extension.
+		return nullptr;
+	}
+
+	// Return the file extension. (pointer to within the filename)
+	return dotpos;
+}
+#endif /* _WIN32 */
 
 /**
  * Replace the file extension from a filename.

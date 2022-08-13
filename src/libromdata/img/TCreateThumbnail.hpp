@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * TCreateThumbnail.hpp: Thumbnail creator template.                       *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -133,35 +133,35 @@ class TCreateThumbnail
 		 * getThumbnail() output parameters.
 		 */
 		struct GetThumbnailOutParams_t {
+			ImgClass retImg;			// [out] Returned image.
 			ImgSize thumbSize;			// [out] Thumbnail size.
 			ImgSize fullSize;			// [out] Full image size.
 			LibRpTexture::rp_image::sBIT_t sBIT;	// [out] sBIT metadata.
-			ImgClass retImg;			// [out] Returned image.
 		};
 
 		/**
 		 * Create a thumbnail for the specified ROM file.
-		 * @param romData	[in] RomData object.
-		 * @param reqSize	[in] Requested image size. (single dimension; assuming square image)
-		 * @param pOutParams	[out] Output parameters.
+		 * @param romData	[in] RomData object
+		 * @param reqSize	[in] Requested image size (single dimension; assuming square image)
+		 * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
 		 * @return 0 on success; non-zero on error.
 		 */
 		int getThumbnail(const LibRpBase::RomData *romData, int reqSize, GetThumbnailOutParams_t *pOutParams);
 
 		/**
 		 * Create a thumbnail for the specified ROM file.
-		 * @param file		[in] Open IRpFile object.
-		 * @param reqSize	[in] Requested image size. (single dimension; assuming square image)
-		 * @param pOutParams	[out] Output parameters.
+		 * @param file		[in] Open IRpFile object
+		 * @param reqSize	[in] Requested image size (single dimension; assuming square image)
+		 * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
 		 * @return 0 on success; non-zero on error.
 		 */
 		int getThumbnail(LibRpFile::IRpFile *file, int reqSize, GetThumbnailOutParams_t *pOutParams);
 
 		/**
 		 * Create a thumbnail for the specified ROM file.
-		 * @param filename	[in] ROM file.
-		 * @param reqSize	[in] Requested image size. (single dimension; assuming square image)
-		 * @param pOutParams	[out] Output parameters.
+		 * @param filename	[in] ROM file
+		 * @param reqSize	[in] Requested image size (single dimension; assuming square image)
+		 * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
 		 * @return 0 on success; non-zero on error.
 		 */
 		int getThumbnail(const char *filename, int reqSize, GetThumbnailOutParams_t *pOutParams);
@@ -173,7 +173,7 @@ class TCreateThumbnail
 		 * @param rs_size	[in,out] Original size, which will be rescaled.
 		 * @param tgt_size	[in] Target size.
 		 */
-		static inline void rescale_aspect(ImgSize &rs_size, const ImgSize &tgt_size);
+		static inline void rescale_aspect(ImgSize &rs_size, ImgSize tgt_size);
 
 	protected:
 		/** Pure virtual functions. **/
@@ -220,7 +220,7 @@ class TCreateThumbnail
 		 * @param method Scaling method.
 		 * @return Rescaled ImgClass.
 		 */
-		virtual ImgClass rescaleImgClass(const ImgClass &imgClass, const ImgSize &sz, ScalingMethod method = ScalingMethod::Nearest) const = 0;
+		virtual ImgClass rescaleImgClass(const ImgClass &imgClass, ImgSize sz, ScalingMethod method = ScalingMethod::Nearest) const = 0;
 
 		/**
 		 * Get the size of the specified ImgClass.

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * BRSTM.cpp: Nintendo Wii BRSTM audio reader.                             *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,8 +20,6 @@ using std::string;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(BRSTM)
-
 class BRSTMPrivate final : public RomDataPrivate
 {
 	public:
@@ -30,6 +28,12 @@ class BRSTMPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(BRSTMPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// BRSTM headers.
@@ -61,10 +65,29 @@ class BRSTMPrivate final : public RomDataPrivate
 		}
 };
 
+ROMDATA_IMPL(BRSTM)
+
 /** BRSTMPrivate **/
 
+/* RomDataInfo */
+const char *const BRSTMPrivate::exts[] = {
+	".brstm",
+
+	nullptr
+};
+const char *const BRSTMPrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"audio/x-brstm",
+
+	nullptr
+};
+const RomDataInfo BRSTMPrivate::romDataInfo = {
+	"BRSTM", exts, mimeTypes
+};
+
 BRSTMPrivate::BRSTMPrivate(BRSTM *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, needsByteswap(false)
 {
 	// Clear the BRSTM header structs.
@@ -91,7 +114,6 @@ BRSTM::BRSTM(IRpFile *file)
 	: super(new BRSTMPrivate(this, file))
 {
 	RP_D(BRSTM);
-	d->className = "BRSTM";
 	d->mimeType = "audio/x-brstm";	// unofficial, not on fd.o
 	d->fileType = FileType::AudioFile;
 
@@ -109,12 +131,11 @@ BRSTM::BRSTM(IRpFile *file)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->brstmHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->brstmHeader);
-	info.ext = nullptr;	// Not needed for BRSTM.
-	info.szFile = 0;	// Not needed for BRSTM.
+	const DetectInfo info = {
+		{0, sizeof(d->brstmHeader), reinterpret_cast<const uint8_t*>(&d->brstmHeader)},
+		nullptr,	// ext (not needed for BRSTM)
+		0		// szFile (not needed for BRSTM)
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
@@ -267,51 +288,6 @@ const char *BRSTM::systemName(unsigned int type) const
 }
 
 /**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *BRSTM::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".brstm",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *BRSTM::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"audio/x-brstm",
-
-		nullptr
-	};
-	return mimeTypes;
-}
-
-/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -357,11 +333,12 @@ int BRSTM::loadFieldData(void)
 		NOP_C_("BRSTM|Codec", "Signed 16-bit PCM"),
 		"4-bit THP ADPCM",
 	};
+	const char *const codec_title = C_("BRSTM", "Codec");
 	if (headChunk1->codec < ARRAY_SIZE(codec_tbl)) {
-		d->fields->addField_string(C_("BRSTM", "Codec"),
+		d->fields->addField_string(codec_title,
 			dpgettext_expr(RP_I18N_DOMAIN, "BRSTM|Codec", codec_tbl[headChunk1->codec]));
 	} else {
-		d->fields->addField_string(C_("BRSTM", "Codec"),
+		d->fields->addField_string(codec_title,
 			rp_sprintf(C_("RomData", "Unknown (%u)"), headChunk1->codec));
 	}
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Nintendo3DSFirm.hpp: Nintendo 3DS firmware reader.                      *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,10 +25,17 @@ using std::vector;
 
 // zlib for crc32()
 #include <zlib.h>
+#ifdef _MSC_VER
+// MSVC: Exception handling for /DELAYLOAD.
+#  include "libwin32common/DelayLoadHelper.h"
+#endif /* _MSC_VER */
 
 namespace LibRomData {
 
-ROMDATA_IMPL(Nintendo3DSFirm)
+#ifdef _MSC_VER
+// DelayLoad test implementation.
+DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
+#endif /* _MSC_VER */
 
 class Nintendo3DSFirmPrivate final : public RomDataPrivate
 {
@@ -40,15 +47,41 @@ class Nintendo3DSFirmPrivate final : public RomDataPrivate
 		RP_DISABLE_COPY(Nintendo3DSFirmPrivate)
 
 	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
+
+	public:
 		// Firmware header.
 		// NOTE: Must be byteswapped on access.
 		N3DS_FIRM_Header_t firmHeader;
 };
 
+ROMDATA_IMPL(Nintendo3DSFirm)
+
 /** Nintendo3DSFirmPrivate **/
 
+/* RomDataInfo */
+const char *const Nintendo3DSFirmPrivate::exts[] = {
+	".firm",	// boot9strap
+	".bin",		// older
+
+	nullptr
+};
+const char *const Nintendo3DSFirmPrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-nintendo-3ds-firm",
+
+	nullptr
+};
+const RomDataInfo Nintendo3DSFirmPrivate::romDataInfo = {
+	"Nintendo3DSFirm", exts, mimeTypes
+};
+
 Nintendo3DSFirmPrivate::Nintendo3DSFirmPrivate(Nintendo3DSFirm *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 {
 	// Clear the various structs.
 	memset(&firmHeader, 0, sizeof(firmHeader));
@@ -73,7 +106,6 @@ Nintendo3DSFirm::Nintendo3DSFirm(IRpFile *file)
 	: super(new Nintendo3DSFirmPrivate(this, file))
 {
 	RP_D(Nintendo3DSFirm);
-	d->className = "Nintendo3DSFirm";
 	d->mimeType = "application/x-nintendo-3ds-firm";	// unofficial, not on fd.o
 	d->fileType = FileType::FirmwareBinary;
 
@@ -91,12 +123,11 @@ Nintendo3DSFirm::Nintendo3DSFirm(IRpFile *file)
 	}
 
 	// Check if this firmware binary is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->firmHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->firmHeader);
-	info.ext = nullptr;	// Not needed for N3DS FIRM.
-	info.szFile = 0;	// Not needed for N3DS FIRM.
+	const DetectInfo info = {
+		{0, sizeof(d->firmHeader), reinterpret_cast<const uint8_t*>(&d->firmHeader)},
+		nullptr,	// ext (not needed for Nintendo3DSFirm)
+		0		// szFile (not needed for Nintendo3DSFirm)
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
@@ -162,52 +193,6 @@ const char *Nintendo3DSFirm::systemName(unsigned int type) const
 }
 
 /**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Nintendo3DSFirm::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".firm",	// boot9strap
-		".bin",		// older
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Nintendo3DSFirm::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-nintendo-3ds-firm",
-
-		nullptr
-	};
-	return mimeTypes;
-}
-
-/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -254,8 +239,24 @@ int Nintendo3DSFirm::loadFieldData(void)
 	bool checkCustomFIRM = false;	// Check for a custom FIRM, e.g. Boot9Strap.
 	bool checkARM9 = false;		// Check for ARM9 homebrew.
 	if (arm11_entrypoint != 0 && arm9_entrypoint != 0) {
+#if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
+		// Delay load verification.
+		// TODO: Only if linked with /DELAYLOAD?
+		bool has_zlib = true;
+		if (DelayLoad_test_get_crc_table() != 0) {
+			// Delay load failed.
+			// Can't calculate the CRC32.
+			has_zlib = false;
+		}
+#else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
+		// zlib isn't in a DLL, but we need to ensure that the
+		// CRC table is initialized anyway.
+		static const bool has_zlib = true;
+		get_crc_table();
+#endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
+
 		// Calculate the CRC32 and look it up.
-		if (firmBuf) {
+		if (has_zlib && firmBuf) {
 			const uint32_t crc = crc32(0, firmBuf.get(), static_cast<unsigned int>(szFile));
 			firmBin = Nintendo3DSFirmData::lookup_firmBin(crc);
 			if (firmBin != nullptr) {
@@ -314,12 +315,11 @@ int Nintendo3DSFirm::loadFieldData(void)
 		// Check for ARM9 homebrew.
 
 		// Version strings.
-		struct Arm9VerStr_t {
+		static const struct {
 			const char *title;	// Application title.
 			const char *searchstr;	// Search string.
 			unsigned int searchlen;	// Search string length, without the NULL terminator.
-		};
-		static const Arm9VerStr_t arm9VerStr[] = {
+		} arm9VerStr_tbl[] = {
 			{"Luma3DS",		"Luma3DS v", 9},
 			{"GodMode9",		"GodMode9 Explorer v", 19},	// Older versions
 			{"GodMode9",		"GodMode9 v", 10},		// Newer versions (v1.9.1; TODO check for first one?)
@@ -329,22 +329,20 @@ int Nintendo3DSFirm::loadFieldData(void)
 			{"SafeB9SInstaller",	"SafeB9SInstaller v", 18},
 			{"OpenFirmInstaller",	"OpenFirmInstaller v", 19},
 			{"fastboot3DS",		"fastboot3DS v", 13},
-
-			{nullptr, nullptr, 0}
 		};
 
 		const char *arm9VerStr_title = nullptr;
 		string s_verstr;
-		for (const Arm9VerStr_t *p = arm9VerStr; p->title != nullptr; p++) {
+		for (const auto &p : arm9VerStr_tbl) {
 			const char *verstr = static_cast<const char*>(memmem(
-				firmBuf.get(), szFile, p->searchstr, p->searchlen));
+				firmBuf.get(), szFile, p.searchstr, p.searchlen));
 			if (!verstr)
 				continue;
 
-			arm9VerStr_title = p->title;
+			arm9VerStr_title = p.title;
 
 			// Version does NOT include the 'v' character.
-			verstr += p->searchlen;
+			verstr += p.searchlen;
 			const char *end = (const char*)firmBuf.get() + szFile;
 			int count = 0;
 			while (verstr < end && count < 32 && verstr[count] != 0 &&
@@ -368,11 +366,10 @@ int Nintendo3DSFirm::loadFieldData(void)
 		// TODO: If it's SPI, we need to decrypt the FIRM contents.
 		// Reference: https://github.com/TuxSH/firmtool/blob/master/firmtool/__main__.py
 		const uint32_t first4 = be32_to_cpu(*(reinterpret_cast<const uint32_t*>(firmHeader->signature)));
-		struct SighaxStatus_t {
+		static const struct {
 			uint32_t first4;
-			const char *status;
-		};
-		static const SighaxStatus_t sighaxStatus[] = {
+			char status[12];
+		} sighaxStatus_tbl[] = {
 			{0xB6724531,	"NAND retail"},		// SciresM
 			{0x6EFF209C,	"NAND retail"},		// sighax.com
 			{0x88697CDC,	"NAND devkit"},		// SciresM
@@ -382,14 +379,12 @@ int Nintendo3DSFirm::loadFieldData(void)
 
 			{0x37E96B10,	"SPI retail"},
 			{0x18722BC7,	"SPI devkit"},
-
-			{0, nullptr}
 		};
 
 		const char *s_sighax_status = nullptr;
-		for (const SighaxStatus_t *p = sighaxStatus; p->first4 != 0; p++) {
-			if (p->first4 == first4) {
-				s_sighax_status = p->status;
+		for (const auto &p : sighaxStatus_tbl) {
+			if (p.first4 == first4) {
+				s_sighax_status = p.status;
 				break;
 			}
 		}

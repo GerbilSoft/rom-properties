@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpPngWriter.cpp: PNG image writer.                                      *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -28,6 +28,7 @@ using LibRpTexture::argb32_t;
 #include "APNG_dlopen.h"
 
 // libpng
+#include <zlib.h>	// get_crc_table()
 #include <png.h>
 
 #if PNG_LIBPNG_VER < 10209 || \
@@ -99,7 +100,7 @@ static int DelayLoad_test_zlib_and_png(void)
 	static bool success = false;
 	if (!success) {
 		__try {
-			zlibVersion();
+			get_crc_table();
 			png_access_version_number();
 		} __except (DelayLoad_filter_zlib_and_png(GetExceptionCode())) {
 			return -ENOTSUP;
@@ -197,7 +198,7 @@ class RpPngWriterPrivate
 			rp_image::Format format;
 
 			// Palette for CI8 images.
-			int palette_len;
+			unsigned int palette_len;
 			const uint32_t *palette;
 
 #ifdef PNG_sBIT_SUPPORTED
@@ -373,6 +374,10 @@ void RpPngWriterPrivate::init(IRpFile *file, int width, int height, rp_image::Fo
 		lastError = ENOTSUP;
 		return;
 	}
+#else /* !defined(_MSC_VER) || (!defined(ZLIB_IS_DLL) && !defined(PNG_IS_DLL)) */
+	// zlib isn't in a DLL, but we need to ensure that the
+	// CRC table is initialized anyway.
+	get_crc_table();
 #endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
 
 	if (!file->isOpen()) {
@@ -675,7 +680,7 @@ int RpPngWriterPrivate::write_CI8_palette(void)
 	// have different widths, heights, and/or formats.
 	// Also, does PNG support separate palettes per frame?
 	// If not, the frames may need to be converted to ARGB32.
-	if (cache.palette_len <= 0 || cache.palette_len > 256)
+	if (cache.palette_len == 0 || cache.palette_len > 256)
 		return -EINVAL;
 
 	// Maximum size.
@@ -687,7 +692,7 @@ int RpPngWriterPrivate::write_CI8_palette(void)
 	const argb32_t *p_img_pal = reinterpret_cast<const argb32_t*>(cache.palette);
 	png_color *p_png_pal = png_pal.data();
 	uint8_t *p_png_tRNS = png_tRNS.data();
-	for (int i = cache.palette_len; i > 0; i--, p_img_pal++, p_png_pal++, p_png_tRNS++) {
+	for (unsigned int i = cache.palette_len; i > 0; i--, p_img_pal++, p_png_pal++, p_png_tRNS++) {
 		// NOTE: Shifting method is actually more
 		// efficient on gcc, but MSVC handles both
 		// the same as gcc with argb32_t. (movzx)
@@ -747,23 +752,31 @@ int RpPngWriterPrivate::write_IDAT(const png_byte *const *row_pointers, bool is_
 	}
 #endif /* PNG_SETJMP_SUPPORTED */
 
-	// TODO: Byteswap image data on big-endian systems?
-	//png_set_swap(png_ptr);
-
-	// TODO: What format on big-endian?
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	if (!is_abgr) {
 		png_set_bgr(png_ptr);
 	}
-
-	if (cache.skip_alpha && cache.format == rp_image::Format::ARGB32) {
-		// Need to skip the alpha bytes.
-		// Assuming 'after' on LE, 'before' on BE.
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
-		static const int flags = PNG_FILLER_AFTER;
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-		static const int flags = PNG_FILLER_BEFORE;
+	if (is_abgr) {
+		png_set_bgr(png_ptr);
+	}
 #endif
-		png_set_filler(png_ptr, 0xFF, flags);
+
+	if (cache.format == rp_image::Format::ARGB32) {
+		if (cache.skip_alpha) {
+			// Need to skip the alpha bytes.
+			// Assuming 'after' on LE, 'before' on BE.
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+			png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+			png_set_filler(png_ptr, 0xFF, PNG_FILLER_BEFORE);
+#endif
+		} else {
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+			// Swap the alpha position on BE.
+			png_set_swap_alpha(png_ptr);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+		}
 	}
 
 	// Write the image data.
@@ -863,10 +876,26 @@ int RpPngWriterPrivate::write_IDAT_APNG(void)
 	}
 #endif /* PNG_SETJMP_SUPPORTED */
 
-	// TODO: Byteswap image data on big-endian systems?
-	//ppng_set_swap(png_ptr);
-	// TODO: What format on big-endian?
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	png_set_bgr(png_ptr);
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+
+	if (cache.format == rp_image::Format::ARGB32) {
+		if (cache.skip_alpha) {
+			// Need to skip the alpha bytes.
+			// Assuming 'after' on LE, 'before' on BE.
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+			png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+			png_set_filler(png_ptr, 0xFF, PNG_FILLER_BEFORE);
+#endif
+		} else {
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+			// Swap the alpha position on BE.
+			png_set_swap_alpha(png_ptr);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+		}
+	}
 
 	// Allocate the row pointers.
 	row_pointers = static_cast<const png_byte**>(
@@ -1201,7 +1230,7 @@ int RpPngWriter::write_IHDR(void)
  * @param palette_len	[in,opt] Number of entries in `palette`.
  * @return 0 on success; negative POSIX error code on error.
  */
-int RpPngWriter::write_IHDR(const rp_image::sBIT_t *sBIT, const uint32_t *palette, int palette_len)
+int RpPngWriter::write_IHDR(const rp_image::sBIT_t *sBIT, const uint32_t *palette, unsigned int palette_len)
 {
 	RP_D(RpPngWriter);
 	assert(d->imageTag == RpPngWriterPrivate::ImageTag::Raw);

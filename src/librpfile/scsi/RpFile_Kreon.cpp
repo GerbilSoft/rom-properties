@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_Kreon.cpp: Standard file object. (Kreon-specific functions)      *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -84,21 +84,20 @@ bool RpFile::isKreonDriveModel(void)
 	// NOTE: Vendor strings MUST be 8 characters long.
 	// NOTE: Strings in product ID tables MUST be 16 characters long.
 	static const struct {
-		const char *vendor;
+		char vendor[8];
 		const char *const *product_id_tbl;
 	} vendor_tbl[] = {
-		{"TSSTcorp", TSSTcorp_product_tbl},
-		{"PBDS    ", PBDS_product_tbl},
-		{"HL-DT-ST", HLDTST_product_tbl},
-		{nullptr, nullptr}
+		{{'T','S','S','T','c','o','r','p'}, TSSTcorp_product_tbl},
+		{{'P','B','D','S',' ',' ',' ',' '}, PBDS_product_tbl},
+		{{'H','L','-','D','T','-','S','T'}, HLDTST_product_tbl},
 	};
 
 	// Find the vendor.
 	const char *const *pProdTbl = nullptr;
-	for (auto *pVendorTbl = vendor_tbl; pVendorTbl->vendor != nullptr; pVendorTbl++) {
-		if (!memcmp(resp.vendor_id, pVendorTbl->vendor, 8)) {
+	for (const auto &pVendorTbl : vendor_tbl) {
+		if (!memcmp(resp.vendor_id, pVendorTbl.vendor, 8)) {
 			// Found a match.
-			pProdTbl = pVendorTbl->product_id_tbl;
+			pProdTbl = pVendorTbl.product_id_tbl;
 			break;
 		}
 	}
@@ -149,12 +148,10 @@ vector<RpFile::KreonFeature> RpFile::getKreonFeatureList(void)
 	}
 
 	vec.reserve(feature_buf.size());
-	const auto feature_buf_cend = feature_buf.cend();
-	for (auto iter = feature_buf.cbegin(); iter != feature_buf_cend; ++iter) {
-		const uint16_t feature = be16_to_cpu(*iter);
+	for (const uint16_t feature : feature_buf) {
 		if (feature == 0)
 			break;
-		vec.emplace_back(static_cast<KreonFeature>(feature));
+		vec.emplace_back(static_cast<KreonFeature>(be16_to_cpu(feature)));
 	}
 
 	if (vec.size() < 2 ||

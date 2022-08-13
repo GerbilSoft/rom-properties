@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextFuncs_iconv.cpp: Text encoding functions. (iconv version)           *
  *                                                                         *
- * Copyright (c) 2009-2019 by David Korth.                                 *
+ * Copyright (c) 2009-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -201,6 +201,11 @@ static inline void codePageToEncName(char *enc_name, size_t len, unsigned int cp
  */
 string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int flags)
 {
+	if (cp & CP_RP_BASE) {
+		// RP-custom code page.
+		return cpRP_to_utf8(cp, str, len);
+	}
+
 	len = check_NULL_terminator(str, len);
 
 	// Get the encoding name for the primary code page.
@@ -303,14 +308,10 @@ u16string cpN_to_utf16(unsigned int cp, const char *str, int len, unsigned int f
 
 #ifdef HAVE_ICONV_LIBICONV
 		if (cp == CP_SJIS) {
-			// libiconv's cp932 maps Shift-JIS 8160 to U+301C. This is expected
-			// behavior for Shift-JIS, but cp932 should map it to U+FF5E.
-			std::for_each(ret.begin(), ret.end(), [](char16_t &p) {
-				if (p == 0x301C) {
-					// Found a wave dash.
-					p = (char16_t)0xFF5E;
-				}
-			});
+			// libiconv's cp932 maps Shift-JIS 8160 (Wave Dash) to U+301C.
+			// This is expected behavior for Shift-JIS, but cp932 should
+			// map it to U+FF5E.
+			std::replace(ret.begin(), ret.end(), (char16_t)0x301C, (char16_t)0xFF5E);
 		}
 #endif /* HAVE_ICONV_LIBICONV */
 	}

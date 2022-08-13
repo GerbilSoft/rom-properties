@@ -107,7 +107,8 @@
 #include "libi18n/i18n.h"
 
 // librpbase common headers
-#include "librpbase/aligned_malloc.h"
+#include "common.h"
+#include "aligned_malloc.h"
 #include "ctypex.h"
 
 #ifdef __cplusplus
@@ -116,6 +117,7 @@
 #include "librpbase/RomFields.hpp"
 #include "librpbase/RomMetaData.hpp"
 #include "librpbase/TextFuncs.hpp"
+#include "librpbase/TextFuncs_printf.hpp"
 #include "librpbase/config/Config.hpp"
 #include "librpbase/SystemRegion.hpp"
 #include "librpbase/img/RpPngWriter.hpp"

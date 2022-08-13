@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpthreads)                     *
  * MutexWin32.cpp: Win32 mutex implementation.                             *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -76,7 +76,7 @@ class Mutex
 inline Mutex::Mutex()
 	: m_isInit(false)
 {
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/ms686908(v=vs.85).aspx
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/sync/using-critical-section-objects
 	if (!InitializeCriticalSectionAndSpinCount(&m_criticalSection, 0x400)) {
 		// FIXME: Do something if an error occurred here...
 		return;

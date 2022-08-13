@@ -2,100 +2,53 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * SystemRegion.cpp: Get the system country code.                          *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "SystemRegion.hpp"
+#include "ctypex.h"
 
 // librpthreads
 #include "librpthreads/pthread_once.h"
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <clocale>
 
+// C++ STL classes
+using std::string;
 #ifdef _WIN32
-# include "libwin32common/RpWin32_sdk.h"
+using std::wstring;
 #endif /* _WIN32 */
 
-namespace LibRpBase {
+#ifdef _WIN32
+#  include "libwin32common/RpWin32_sdk.h"
+#endif /* _WIN32 */
 
-class SystemRegionPrivate
-{
-	private:
-		// SystemRegion is a static class.
-		SystemRegionPrivate();
-		~SystemRegionPrivate();
-		RP_DISABLE_COPY(SystemRegionPrivate)
+namespace LibRpBase { namespace SystemRegion {
 
-	public:
-		// Country and language codes.
-		static uint32_t cc;
-		static uint32_t lc;
-
-		/** TODO: Combine the initialization functions so they retrieve **
-		 ** both country code and language code at the same time.       **/
-
-		// One-time initialization variable and functions.
-		static pthread_once_t once_control;
-
-		/**
-		 * Get the LC_MESSAGES or LC_ALL environment variable.
-		 * @return Value, or nullptr if not found.
-		 */
-		static const char *get_LC_MESSAGES(void);
-
-		/**
-		 * Get the system region information from a Unix-style language code.
-		 *
-		 * @param locale LC_MESSAGES value.
-		 * @return 0 on success; non-zero on error.
-		 *
-		 * Country code will be stored in 'cc'.
-		 * Language code will be stored in 'lc'.
-		 */
-		static int getSystemRegion_LC_MESSAGES(const char *locale);
-
-		/**
-		 * Get the system region information.
-		 * Called by pthread_once().
-		 * Country code will be stored in 'cc'.
-		 * Language code will be stored in 'lc'.
-		 */
-		static void getSystemRegion(void);
-
-		/** Language names **/
-
-		struct LangName_t {
-			uint32_t lc;
-			const char *name;
-		};
-
-		// Language name mapping.
-		static const LangName_t langNames[];
-
-		/**
-		 * LangName_t bsearch() comparison function.
-		 * @param a
-		 * @param b
-		 * @return
-		 */
-		static int RP_C_API LangName_t_compar(const void *a, const void *b);
-};
+/** TODO: Combine the initialization functions so they retrieve **
+ ** both country code and language code at the same time.       **/
 
 // Country and language codes.
-uint32_t SystemRegionPrivate::cc = 0;
-uint32_t SystemRegionPrivate::lc = 0;
+static uint32_t cc = 0;
+static uint32_t lc = 0;
 
 // pthread_once() control variable.
-pthread_once_t SystemRegionPrivate::once_control = PTHREAD_ONCE_INIT;
+static pthread_once_t system_region_once_control = PTHREAD_ONCE_INIT;
+
+struct LangName_t {
+	uint32_t lc;
+	const char *name;
+};
 
 // Language name mapping.
 // NOTE: This MUST be sorted by 'lc'!
 // NOTE: Names MUST be in UTF-8!
 // Reference: https://www.omniglot.com/language/names.htm
-const SystemRegionPrivate::LangName_t SystemRegionPrivate::langNames[] = {
+static const LangName_t langNames[] = {
+	{'au',	"English (AU)"}, // GameTDB only
 	{'de',	"Deutsch"},
 	{'en',	"English"},
 	{'es',	"Español"},
@@ -117,7 +70,7 @@ const SystemRegionPrivate::LangName_t SystemRegionPrivate::langNames[] = {
  * @param b
  * @return
  */
-int RP_C_API SystemRegionPrivate::LangName_t_compar(const void *a, const void *b)
+static int RP_C_API LangName_t_compar(const void *a, const void *b)
 {
 	uint32_t lc1 = static_cast<const LangName_t*>(a)->lc;
 	uint32_t lc2 = static_cast<const LangName_t*>(b)->lc;
@@ -130,7 +83,7 @@ int RP_C_API SystemRegionPrivate::LangName_t_compar(const void *a, const void *b
  * Get the LC_MESSAGES or LC_ALL environment variable.
  * @return Value, or nullptr if not found.
  */
-const char *SystemRegionPrivate::get_LC_MESSAGES(void)
+static const char *get_LC_MESSAGES(void)
 {
 	// TODO: Check the C++ locale if this fails?
 	// TODO: On Windows startup in main() functions, get LC_ALL/LC_MESSAGES vars if msvc doesn't?
@@ -167,7 +120,7 @@ const char *SystemRegionPrivate::get_LC_MESSAGES(void)
  * Country code will be stored in 'cc'.
  * Language code will be stored in 'lc'.
  */
-int SystemRegionPrivate::getSystemRegion_LC_MESSAGES(const char *locale)
+static int getSystemRegion_LC_MESSAGES(const char *locale)
 {
 	if (!locale || locale[0] == '\0') {
 		// No locale...
@@ -260,7 +213,7 @@ int SystemRegionPrivate::getSystemRegion_LC_MESSAGES(const char *locale)
  * Country code will be stored in 'cc'.
  * Language code will be stored in 'lc'.
  */
-void SystemRegionPrivate::getSystemRegion(void)
+static void getSystemRegion(void)
 {
 	TCHAR locale[16];
 	int ret;
@@ -282,7 +235,7 @@ void SystemRegionPrivate::getSystemRegion(void)
 	}
 
 	// References:
-	// - https://msdn.microsoft.com/en-us/library/windows/desktop/dd318101(v=vs.85).aspx
+	// - https://docs.microsoft.com/en-us/windows/win32/api/winnls/nf-winnls-getlocaleinfow
 
 	// NOTE: LOCALE_SISO3166CTRYNAME might not work on some old versions
 	// of Windows, but our minimum is Windows XP.
@@ -349,11 +302,13 @@ void SystemRegionPrivate::getSystemRegion(void)
  * Country code will be stored in 'cc'.
  * Language code will be stored in 'lc'.
  */
-inline void SystemRegionPrivate::getSystemRegion(void)
+static inline void getSystemRegion(void)
 {
 	getSystemRegion_LC_MESSAGES(get_LC_MESSAGES());
 }
 #endif /* _WIN32 */
+
+/** Public functions **/
 
 /**
  * Get the system country code. (ISO-3166)
@@ -365,11 +320,10 @@ inline void SystemRegionPrivate::getSystemRegion(void)
  *
  * @return ISO-3166 country code as a uint32_t, or 0 on error.
  */
-uint32_t SystemRegion::getCountryCode(void)
+uint32_t getCountryCode(void)
 {
-	pthread_once(&SystemRegionPrivate::once_control,
-		SystemRegionPrivate::getSystemRegion);
-	return SystemRegionPrivate::cc;
+	pthread_once(&system_region_once_control, getSystemRegion);
+	return cc;
 }
 
 /**
@@ -382,11 +336,10 @@ uint32_t SystemRegion::getCountryCode(void)
  *
  * @return ISO-639 language code as a uint32_t, or 0 on error.
  */
-uint32_t SystemRegion::getLanguageCode(void)
+uint32_t getLanguageCode(void)
 {
-	pthread_once(&SystemRegionPrivate::once_control,
-		SystemRegionPrivate::getSystemRegion);
-	return SystemRegionPrivate::lc;
+	pthread_once(&system_region_once_control, getSystemRegion);
+	return lc;
 }
 
 /**
@@ -396,27 +349,28 @@ uint32_t SystemRegion::getLanguageCode(void)
  * @param lc Language code.
  * @return Localized name, or nullptr if not found.
  */
-const char *SystemRegion::getLocalizedLanguageName(uint32_t lc)
+const char *getLocalizedLanguageName(uint32_t lc)
 {
 	// Do a binary search.
-	const SystemRegionPrivate::LangName_t key = {lc, nullptr};
-	const SystemRegionPrivate::LangName_t *res =
-		static_cast<const SystemRegionPrivate::LangName_t*>(bsearch(&key,
-			SystemRegionPrivate::langNames,
-			ARRAY_SIZE(SystemRegionPrivate::langNames),
-			sizeof(SystemRegionPrivate::LangName_t),
-			SystemRegionPrivate::LangName_t_compar));
+	const LangName_t key = {lc, nullptr};
+	const LangName_t *res =
+		static_cast<const LangName_t*>(bsearch(&key,
+			langNames,
+			ARRAY_SIZE(langNames),
+			sizeof(LangName_t),
+			LangName_t_compar));
 	return (res ? res->name : nullptr);
 }
 
 /**
  * Get the position of a language code's flag icon in the flags sprite sheet.
- * @param lc	[in] Language code.
- * @param pCol	[out] Pointer to store the column value. (-1 if not found)
- * @param pRow	[out] Pointer to store the row value. (-1 if not found)
+ * @param lc		[in] Language code.
+ * @param pCol		[out] Pointer to store the column value. (-1 if not found)
+ * @param pRow		[out] Pointer to store the row value. (-1 if not found)
+ * @param forcePAL	[in,opt] If true, force PAL regions, e.g. always use the 'gb' flag for English.
  * @return 0 on success; negative POSIX error code on error.
  */
-int SystemRegion::getFlagPosition(uint32_t lc, int *pCol, int *pRow)
+int getFlagPosition(uint32_t lc, int *pCol, int *pRow, bool forcePAL)
 {
 	int ret = -ENOENT;
 
@@ -430,6 +384,7 @@ int SystemRegion::getFlagPosition(uint32_t lc, int *pCol, int *pRow)
 	static const flagpos_t flagpos[] = {
 		{'hans',	0, 0},
 		{'hant',	0, 0},
+		{'au',		1, 3},	// GameTDB only
 		{'de',		1, 0},
 		{'es',		2, 0},
 		{'fr',		3, 0},
@@ -450,7 +405,8 @@ int SystemRegion::getFlagPosition(uint32_t lc, int *pCol, int *pRow)
 		// Special case for English:
 		// Use the 'us' flag if the country code is US,
 		// and the 'gb' flag for everywhere else.
-		if (getCountryCode() == 'US') {
+		// EXCEPTION: If forcing PAL mode, always use 'gb'.
+		if (!forcePAL && getCountryCode() == 'US') {
 			*pCol = 3;
 			*pRow = 2;
 		} else {
@@ -476,4 +432,82 @@ int SystemRegion::getFlagPosition(uint32_t lc, int *pCol, int *pRow)
 	return ret;
 }
 
+/**
+ * Convert a language code to a string.
+ * NOTE: The language code will be converted to lowercase if necessary.
+ * @param lc Language code.
+ * @return String.
+ */
+string lcToString(uint32_t lc)
+{
+	string s_lc;
+	s_lc.reserve(4);
+	for (; lc != 0; lc <<= 8) {
+		uint8_t chr = (uint8_t)(lc >> 24);
+		if (chr != 0) {
+			s_lc += TOLOWER(chr);
+		}
+	}
+	return s_lc;
 }
+
+/**
+ * Convert a language code to a string.
+ * NOTE: The language code will be converted to uppercase.
+ * @param lc Language code.
+ * @return String.
+ */
+string lcToStringUpper(uint32_t lc)
+{
+	string s_lc;
+	s_lc.reserve(4);
+	for (; lc != 0; lc <<= 8) {
+		uint8_t chr = (uint8_t)(lc >> 24);
+		if (chr != 0) {
+			s_lc += TOUPPER(chr);
+		}
+	}
+	return s_lc;
+}
+
+#ifdef _WIN32
+/**
+ * Convert a language code to a wide string.
+ * NOTE: The language code will be converted to lowercase if necessary.
+ * @param lc Language code.
+ * @return Wide string.
+ */
+wstring lcToWString(uint32_t lc)
+{
+	wstring ws_lc;
+	ws_lc.reserve(4);
+	for (; lc != 0; lc <<= 8) {
+		uint8_t chr = (uint8_t)(lc >> 24);
+		if (chr != 0) {
+			ws_lc += towlower(chr);
+		}
+	}
+	return ws_lc;
+}
+
+/**
+ * Convert a language code to a wide string.
+ * NOTE: The language code will be converted to uppercase.
+ * @param lc Language code.
+ * @return Wide string.
+ */
+wstring lcToWStringUpper(uint32_t lc)
+{
+	wstring ws_lc;
+	ws_lc.reserve(4);
+	for (; lc != 0; lc <<= 8) {
+		uint8_t chr = (uint8_t)(lc >> 24);
+		if (chr != 0) {
+			ws_lc += towupper(chr);
+		}
+	}
+	return ws_lc;
+}
+#endif /* _WIN32 */
+
+} }

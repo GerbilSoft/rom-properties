@@ -17,6 +17,10 @@
 #include <nettle/cbc.h>
 #include <nettle/ctr.h>
 
+#ifdef HAVE_NETTLE_VERSION_H
+#  include <nettle/version.h>
+#endif /* HAVE_NETTLE_VERSION_H */
+
 namespace LibRpBase {
 
 class AesNettlePrivate
@@ -305,6 +309,47 @@ size_t AesNettle::decrypt(uint8_t *RESTRICT pData, size_t size)
 #endif /* HAVE_NETTLE_3 */
 
 	return size;
+}
+
+/**
+ * Get the nettle compile-time version.
+ * @param pMajor	[out] Pointer to store major version.
+ * @param pMinor	[out] Pointer to store minor version.
+ * @return 0 on success; non-zero on error.
+ */
+int AesNettle::get_nettle_compile_time_version(int *pMajor, int *pMinor)
+{
+#if defined(HAVE_NETTLE_VERSION_H)
+	*pMajor = NETTLE_VERSION_MAJOR;
+	*pMinor = NETTLE_VERSION_MINOR;
+#elif defined(HAVE_NETTLE_3)
+	*pMajor = 3;
+	*pMinor = 0;
+#else
+	*pMajor = 2;
+	*pMinor = 0;	// NOTE: handle as "2.x"
+#endif
+
+	return 0;
+}
+
+/**
+ * Get the nettle runtime version.
+ * @param pMajor	[out] Pointer to store major version.
+ * @param pMinor	[out] Pointer to store minor version.
+ * @return 0 on success; non-zero on error.
+ */
+int AesNettle::get_nettle_runtime_version(int *pMajor, int *pMinor)
+{
+#if defined(HAVE_NETTLE_VERSION_H) && defined(HAVE_NETTLE_VERSION_FUNCTIONS)
+	*pMajor = nettle_version_major();
+	*pMinor = nettle_version_minor();
+	return 0;
+#else /* !(HAVE_NETTLE_VERSION_H && HAVE_NETTLE_VERSION_FUNCTIONS) */
+	RP_UNUSED(pMajor);
+	RP_UNUSED(pMinor);
+	return -ENOTSUP;
+#endif /* HAVE_NETTLE_VERSION_H && HAVE_NETTLE_VERSION_FUNCTIONS */
 }
 
 }

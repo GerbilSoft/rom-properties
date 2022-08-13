@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameBoyAdvance.hpp: Nintendo Game Boy Advance ROM reader.               *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,9 +21,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(GameBoyAdvance)
-ROMDATA_IMPL_IMG(GameBoyAdvance)
-
 class GameBoyAdvancePrivate final : public RomDataPrivate
 {
 	public:
@@ -32,6 +29,12 @@ class GameBoyAdvancePrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(GameBoyAdvancePrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		enum class RomType {
@@ -56,10 +59,32 @@ class GameBoyAdvancePrivate final : public RomDataPrivate
 		string getPublisher(void) const;
 };
 
+ROMDATA_IMPL(GameBoyAdvance)
+ROMDATA_IMPL_IMG(GameBoyAdvance)
+
 /** GameBoyAdvancePrivate **/
 
+/* RomDataInfo */
+const char *const GameBoyAdvancePrivate::exts[] = {
+	".gba",	// Most common
+	".agb",	// Less common
+	".mb",	// Multiboot (may conflict with AutoDesk Maya)
+	".srl",	// Official SDK extension
+
+	nullptr
+};
+const char *const GameBoyAdvancePrivate::mimeTypes[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-gba-rom",
+
+	nullptr
+};
+const RomDataInfo GameBoyAdvancePrivate::romDataInfo = {
+	"GameBoyAdvance", exts, mimeTypes
+};
+
 GameBoyAdvancePrivate::GameBoyAdvancePrivate(GameBoyAdvance *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, romType(RomType::Unknown)
 {
 	// Clear the ROM header struct.
@@ -111,7 +136,6 @@ GameBoyAdvance::GameBoyAdvance(IRpFile *file)
 	: super(new GameBoyAdvancePrivate(this, file))
 {
 	RP_D(GameBoyAdvance);
-	d->className = "GameBoyAdvance";
 	d->mimeType = "application/x-gba-rom";	// unofficial
 
 	if (!d->file) {
@@ -128,12 +152,11 @@ GameBoyAdvance::GameBoyAdvance(IRpFile *file)
 	}
 
 	// Check if this ROM image is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->romHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
-	info.ext = nullptr;	// Not needed for GBA.
-	info.szFile = 0;	// Not needed for GBA.
+	const DetectInfo info = {
+		{0, sizeof(d->romHeader), reinterpret_cast<const uint8_t*>(&d->romHeader)},
+		nullptr,	// ext (not needed for GameBoyAdvance)
+		0		// szFile (not needed for GameBoyAdvance)
+	};
 	d->romType = static_cast<GameBoyAdvancePrivate::RomType>(isRomSupported_static(&info));
 
 	d->isValid = ((int)d->romType >= 0);
@@ -233,53 +256,6 @@ const char *GameBoyAdvance::systemName(unsigned int type) const
 }
 
 /**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *GameBoyAdvance::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".gba",	// Most common
-		".agb",	// Less common
-		".mb",	// Multiboot (may conflict with AutoDesk Maya)
-		".srl",	// Official SDK extension
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *GameBoyAdvance::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org.
-		"application/x-gba-rom",
-
-		nullptr
-	};
-	return mimeTypes;
-}
-
-/**
  * Get a bitfield of image types this class can retrieve.
  * @return Bitfield of supported image types. (ImageTypesBF)
  */
@@ -360,7 +336,7 @@ int GameBoyAdvance::loadFieldData(void)
 		return -EIO;
 	}
 
-	// GBA ROM header
+	// ROM header is read in the constructor.
 	const GBA_RomHeader *const romHeader = &d->romHeader;
 	d->fields->reserve(7);	// Maximum of 7 fields.
 
@@ -432,9 +408,9 @@ int GameBoyAdvance::loadFieldData(void)
 		d->fields->addField_string(C_("GameBoyAdvance", "Enable Debug"),
 			(debug_enable & 0xA5) == 0xA5
 				// tr: Debugging is enabled.
-				? C_("GameBoyAdvance", "Yes")
+				? C_("RomData", "Yes")
 				// tr: Debugging is disabled.
-				: C_("GameBoyAdvance", "No"));
+				: C_("RomData", "No"));
 	}
 
 	// Finished reading the field data.
@@ -464,7 +440,7 @@ int GameBoyAdvance::loadMetaData(void)
 	d->metaData = new RomMetaData();
 	d->metaData->reserve(1);	// Maximum of 1 metadata property.
 
-	// GBA ROM header
+	// ROM header is read in the constructor.
 	const GBA_RomHeader *const romHeader = &d->romHeader;
 
 	// Title
@@ -504,14 +480,6 @@ int GameBoyAdvance::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int s
 	if (!d->isValid || (int)d->romType < 0) {
 		// ROM image isn't valid.
 		return -EIO;
-	} else if (!memcmp(d->romHeader.id4, "AGBJ", 4) ||
-	           !memcmp(d->romHeader.id4, "    ", 4) ||
-	           !memcmp(d->romHeader.id4, "____", 4))
-	{
-		// This is a prototype.
-		// No external images are available.
-		// TODO: CRC32-based images?
-		return -ENOENT;
 	} else if (d->romType == GameBoyAdvancePrivate::RomType::NDS_Expansion) {
 		// This is a Nintendo DS expansion cartridge.
 		// No external images are available.
@@ -544,28 +512,74 @@ int GameBoyAdvance::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int s
 			return -ENOENT;
 	}
 
-	// Game ID. (RPDB uses ID6 for Game Boy Advance.)
-	// The ID6 cannot have non-printable characters.
-	char id6[7];
-	for (int i = ARRAY_SIZE(d->romHeader.id6)-1; i >= 0; i--) {
-		if (!ISPRINT(d->romHeader.id6[i])) {
-			// Non-printable character found.
-			return -ENOENT;
-		}
-		id6[i] = d->romHeader.id6[i];
-	}
-	// NULL-terminated ID6 is needed for the
-	// RPDB URL functions.
-	id6[6] = 0;
+	// ROM header is read in the constructor.
+	const GBA_RomHeader *const romHeader = &d->romHeader;
 
-	// Region code is id6[3].
-	const char region_code[2] = {id6[3], '\0'};
+	// Region code
+	char region_code[8];
+	region_code[0] = '\0';
+
+	// If the game ID is known to be used for multiple ROMs,
+	// e.g. prototypes, use the ROM title instead.
+	// NOTE: Interpreting the ID4 as BE32 because we're using
+	// multi-character constants.
+	string name;
+	name.reserve(12);
+	static const uint32_t common_ID4[] = {
+		'AGBJ', '    ', '____', 'RARE',
+		'0000', 'XXXX', 'XXXE',
+	};
+	if (romHeader->id4[0] == '\0') {
+		// Empty ID4. Use the title.
+		name.assign(romHeader->title, sizeof(romHeader->title));
+		size_t null_pos = name.find('\0');
+		if (null_pos != string::npos) {
+			name.resize(null_pos);
+		}
+		trimEnd(name);
+		memcpy(region_code, "NoID", 5);
+	} else {
+		const uint32_t id4_32 = be32_to_cpu(romHeader->id4_32);
+		for (uint32_t p : common_ID4) {
+			if (id4_32 == p) {
+				// This ROM has a common ID4. Use the title.
+				name.assign(romHeader->title, sizeof(romHeader->title));
+				size_t null_pos = name.find('\0');
+				if (null_pos != string::npos) {
+					name.resize(null_pos);
+				}
+				trimEnd(name);
+				memcpy(region_code, "NoID", 5);
+				break;
+			}
+		}
+	}
+	if (name.empty()) {
+		// Not using the title. Use the ID6.
+		// The ID6 cannot have non-printable characters.
+		name.resize(6);
+		for (int i = ARRAY_SIZE(romHeader->id6)-1; i >= 0; i--) {
+			if (!ISPRINT(romHeader->id6[i])) {
+				// Non-printable character found.
+				return -ENOENT;
+			}
+			name[i] = romHeader->id6[i];
+		}
+
+		// Region code is taken from the ID4.
+		region_code[0] = name[3];
+		region_code[1] = '\0';
+	}
+	if (name.empty()) {
+		// Title is empty. Can't get the title screenshot.
+		return -ENOENT;
+	}
 
 	// Add the URLs.
 	pExtURLs->resize(1);
 	auto extURL_iter = pExtURLs->begin();
-	extURL_iter->url = d->getURL_RPDB("gba", imageTypeName, region_code, id6, ext);
-	extURL_iter->cache_key = d->getCacheKey_RPDB("gba", imageTypeName, region_code, id6, ext);
+	extURL_iter->url = d->getURL_RPDB("gba", imageTypeName, region_code, name.c_str(), ext);
+	extURL_iter->cache_key = d->getCacheKey_RPDB("gba", imageTypeName, region_code, name.c_str(), ext);
 	extURL_iter->width = sizeDefs[0].width;
 	extURL_iter->height = sizeDefs[0].height;
 	extURL_iter->high_res = (sizeDefs[0].index >= 2);

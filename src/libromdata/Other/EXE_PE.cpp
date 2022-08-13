@@ -3,7 +3,7 @@
  * EXE_PE.cpp: DOS/Windows executable reader.                              *
  * 32-bit/64-bit Portable Executable format.                               *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -110,12 +110,11 @@ uint32_t EXEPrivate::pe_vaddr_to_paddr(uint32_t vaddr, uint32_t size)
 		}
 	}
 
-	const auto pe_sections_cend = pe_sections.cend();
-	for (auto iter = pe_sections.cbegin(); iter != pe_sections_cend; ++iter) {
-		if (iter->VirtualAddress <= vaddr) {
-			if ((iter->VirtualAddress + iter->SizeOfRawData) >= (vaddr+size)) {
+	for (const IMAGE_SECTION_HEADER &p : pe_sections) {
+		if (p.VirtualAddress <= vaddr) {
+			if ((p.VirtualAddress + p.SizeOfRawData) >= (vaddr+size)) {
 				// Found the section. Adjust the address.
-				return (vaddr - iter->VirtualAddress) + iter->PointerToRawData;
+				return (vaddr - p.VirtualAddress) + p.PointerToRawData;
 			}
 		}
 	}
@@ -275,7 +274,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 	const IMAGE_IMPORT_DIRECTORY *pImpDirTbl = reinterpret_cast<const IMAGE_IMPORT_DIRECTORY*>(impDirTbl.data());
 	const IMAGE_IMPORT_DIRECTORY *const pImpDirTblEnd = pImpDirTbl + (impDirTbl.size() / sizeof(IMAGE_IMPORT_DIRECTORY));
 	for (; pImpDirTbl < pImpDirTblEnd; pImpDirTbl++) {
-		if (pImpDirTbl->rvaImportLookupTable == 0 || pImpDirTbl->rvaModuleName == 0) {
+		if (pImpDirTbl->rvaModuleName == 0) {
 			// End of table.
 			break;
 		}
@@ -288,6 +287,10 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		if (rvaModuleName > dll_vaddr_high) {
 			dll_vaddr_high = rvaModuleName;
 		}
+	}
+	if (dll_vaddr_low == ~0U || dll_vaddr_high == 0) {
+		// No imports...
+		return -ENOENT;
 	}
 
 	// NOTE: Since the DLL names are NULL-terminated, we'll have to guess
@@ -346,8 +349,22 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		{ 40,	 "4.0", nullptr, nullptr},
 		{ 20,	 "2.0", nullptr, nullptr},
 		{ 10,	 "1.0", nullptr, nullptr},
+	};
 
-		{  0,	    "", nullptr, nullptr}
+	// Visual Basic DLL version to display version table.
+	static const struct {
+		uint8_t ver_major;
+		uint8_t ver_minor;
+		const char dll_name[13];
+		const char *url;
+	} msvb_dll_tbl[] = {
+		{6,0, "msvbvm60.dll", "https://download.microsoft.com/download/5/a/d/5ad868a0-8ecd-4bb0-a882-fe53eb7ef348/VB6.0-KB290887-X86.exe"},
+		{5,0, "msvbvm50.dll", "https://download.microsoft.com/download/vb50pro/utility/1/win98/en-us/msvbvm50.exe"},
+
+		// FIXME: Is it vbrun400.dll, vbrun432.dll, or both?
+		// TODO: Find a download link.
+		{4,0, "vbrun400.dll", nullptr},
+		{4,0, "vbrun432.dll", nullptr},
 	};
 
 	// Check all of the DLL names.
@@ -367,17 +384,26 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 
 		// Check for MSVC 2015-2019. (vcruntime140.dll)
 		if (!strcmp(dll_name, "vcruntime140.dll")) {
+			// TODO: If host OS is Windows XP or earlier, limit it to 2017?
 			refDesc = rp_sprintf(
-				C_("EXE|Runtime", "Microsoft Visual C++ %s Runtime"), "2015-2019");
-			if (is64) {
-				refLink = "https://aka.ms/vs/16/release/vc_redist.x64.exe";
-			} else {
-				refLink = "https://aka.ms/vs/16/release/vc_redist.x86.exe";
+				C_("EXE|Runtime", "Microsoft Visual C++ %s Runtime"), "2015-2022");
+			switch (le16_to_cpu(hdr.pe.FileHeader.Machine)) {
+				case IMAGE_FILE_MACHINE_I386:
+					refLink = "https://aka.ms/vs/17/release/VC_redist.x86.exe";
+					break;
+				case IMAGE_FILE_MACHINE_AMD64:
+					refLink = "https://aka.ms/vs/17/release/VC_redist.x64.exe";
+					break;
+				case IMAGE_FILE_MACHINE_ARM64:
+					refLink = "https://aka.ms/vs/17/release/VC_redist.arm64.exe";
+					break;
+				default:
+					break;
 			}
 			break;
 		} else if (!strcmp(dll_name, "vcruntime140d.dll")) {
 			refDesc = rp_sprintf(
-				C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"), "2015-2019");
+				C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"), "2015-2022");
 			break;
 		}
 
@@ -393,11 +419,12 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 			&c_or_cpp, &dll_name_version, &is_debug, &last_char);
 		if (n == 4 && (c_or_cpp == 'p' || c_or_cpp == 'r') && is_debug == 'd' && last_char == 'l') {
 			// Found an MSVC debug DLL.
-			for (const auto *p = &msvc_dll_tbl[0]; p->dll_name_version != 0; p++) {
-				if (p->dll_name_version == dll_name_version) {
+			for (const auto &p : msvc_dll_tbl) {
+				if (p.dll_name_version == dll_name_version) {
 					// Found a matching version.
 					refDesc = rp_sprintf(
-						C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"), p->display_version);
+						C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"),
+						p.display_version);
 					found = true;
 					break;
 				}
@@ -410,18 +437,19 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		n = sscanf(dll_name, "msvc%c%u.dl%c", &c_or_cpp, &dll_name_version, &last_char);
 		if (n == 3 && (c_or_cpp == 'p' || c_or_cpp == 'r') && last_char == 'l') {
 			// Found an MSVC release DLL.
-			for (auto *p = &msvc_dll_tbl[0]; p->dll_name_version != 0; p++) {
-				if (p->dll_name_version == dll_name_version) {
+			for (const auto &p : msvc_dll_tbl) {
+				if (p.dll_name_version == dll_name_version) {
 					// Found a matching version.
 					refDesc = rp_sprintf(
-						C_("EXE|Runtime", "Microsoft Visual C++ %s Runtime"), p->display_version);
+						C_("EXE|Runtime", "Microsoft Visual C++ %s Runtime"),
+						p.display_version);
 					if (is64) {
-						if (p->url_amd64) {
-							refLink = p->url_amd64;
+						if (p.url_amd64) {
+							refLink = p.url_amd64;
 						}
 					} else {
-						if (p->url_i386) {
-							refLink = p->url_i386;
+						if (p.url_i386) {
+							refLink = p.url_i386;
 						}
 					}
 					found = true;
@@ -446,22 +474,14 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		// Check for Visual Basic DLLs.
 		// NOTE: There's only three 32-bit versions of Visual Basic,
 		// and .NET versions don't count.
-		if (!strcmp(dll_name, "msvbvm60.dll")) {
-			refDesc = rp_sprintf(
-				C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "6.0");
-			refLink = "https://download.microsoft.com/download/5/a/d/5ad868a0-8ecd-4bb0-a882-fe53eb7ef348/VB6.0-KB290887-X86.exe";
-			break;
-		} else if (!strcmp(dll_name, "msvbvm50.dll")) {
-			refDesc = rp_sprintf(
-				C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "5.0");
-			refLink = "https://download.microsoft.com/download/vb50pro/utility/1/win98/en-us/msvbvm50.exe";
-			break;
-		} else if (!strcmp(dll_name, "vbrun400.dll") || !strcmp(dll_name, "vbrun432.dll")) {
-			// FIXME: Is it vbrun400.dll, vbrun432.dll, or both?
-			refDesc = rp_sprintf(
-				C_("EXE|Runtime", "Microsoft Visual Basic %s Runtime"), "4.0");
-			// TODO: Find a download link.
-			break;
+		for (const auto &p : msvb_dll_tbl) {
+			if (!strcmp(dll_name, p.dll_name)) {
+				// Found a matching version.
+				refDesc = rp_sprintf(C_("EXE|Runtime", "Microsoft Visual Basic %u.%u Runtime"),
+					p.ver_major, p.ver_minor);
+				refLink = p.url;
+				break;
+			}
 		}
 	}
 
@@ -489,23 +509,25 @@ void EXEPrivate::addFields_PE(void)
 	uint16_t dll_flags;
 	bool dotnet;
 	if (exeType == EXEPrivate::ExeType::PE) {
-		os_ver_major = le16_to_cpu(hdr.pe.OptionalHeader.opt32.MajorOperatingSystemVersion);
-		os_ver_minor = le16_to_cpu(hdr.pe.OptionalHeader.opt32.MinorOperatingSystemVersion);
-		subsystem_ver_major = le16_to_cpu(hdr.pe.OptionalHeader.opt32.MajorSubsystemVersion);
-		subsystem_ver_minor = le16_to_cpu(hdr.pe.OptionalHeader.opt32.MinorSubsystemVersion);
-		dll_flags = le16_to_cpu(hdr.pe.OptionalHeader.opt32.DllCharacteristics);
+		const auto &opthdr = hdr.pe.OptionalHeader.opt32;
+		os_ver_major = le16_to_cpu(opthdr.MajorOperatingSystemVersion);
+		os_ver_minor = le16_to_cpu(opthdr.MinorOperatingSystemVersion);
+		subsystem_ver_major = le16_to_cpu(opthdr.MajorSubsystemVersion);
+		subsystem_ver_minor = le16_to_cpu(opthdr.MinorSubsystemVersion);
+		dll_flags = le16_to_cpu(opthdr.DllCharacteristics);
 		// TODO: Check VirtualAddress, Size, or both?
 		// 'file' checks VirtualAddress.
-		dotnet = (hdr.pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_CLR_HEADER].Size != 0);
+		dotnet = (opthdr.DataDirectory[IMAGE_DATA_DIRECTORY_CLR_HEADER].Size != 0);
 	} else /*if (exeType == EXEPrivate::ExeType::PE32PLUS)*/ {
-		os_ver_major = le16_to_cpu(hdr.pe.OptionalHeader.opt64.MajorOperatingSystemVersion);
-		os_ver_minor = le16_to_cpu(hdr.pe.OptionalHeader.opt64.MinorOperatingSystemVersion);
-		subsystem_ver_major = le16_to_cpu(hdr.pe.OptionalHeader.opt64.MajorSubsystemVersion);
-		subsystem_ver_minor = le16_to_cpu(hdr.pe.OptionalHeader.opt64.MinorSubsystemVersion);
-		dll_flags = le16_to_cpu(hdr.pe.OptionalHeader.opt64.DllCharacteristics);
+		const auto &opthdr = hdr.pe.OptionalHeader.opt64;
+		os_ver_major = le16_to_cpu(opthdr.MajorOperatingSystemVersion);
+		os_ver_minor = le16_to_cpu(opthdr.MinorOperatingSystemVersion);
+		subsystem_ver_major = le16_to_cpu(opthdr.MajorSubsystemVersion);
+		subsystem_ver_minor = le16_to_cpu(opthdr.MinorSubsystemVersion);
+		dll_flags = le16_to_cpu(opthdr.DllCharacteristics);
 		// TODO: Check VirtualAddress, Size, or both?
 		// 'file' checks VirtualAddress.
-		dotnet = (hdr.pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_CLR_HEADER].Size != 0);
+		dotnet = (opthdr.DataDirectory[IMAGE_DATA_DIRECTORY_CLR_HEADER].Size != 0);
 	}
 
 	// CPU. (Also .NET status.)

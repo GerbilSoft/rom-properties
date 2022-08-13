@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * FileSystem_win32.cpp: File system functions. (Win32 implementation)     *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,9 +12,12 @@
 // librpthreads
 #include "librpthreads/pthread_once.h"
 
-// C includes.
+// C includes
 #include <sys/stat.h>
 #include <sys/utime.h>
+
+// DT_* enumeration
+#include "d_type.h"
 
 // C++ STL classes.
 using std::string;
@@ -26,10 +29,13 @@ using std::wstring;
 #include "libwin32common/RpWin32_sdk.h"
 #include "libwin32common/w32err.h"
 #include "libwin32common/w32time.h"
-using LibWin32Common::T2U8_c;
-using LibWin32Common::U82W_c;
-using LibWin32Common::U82W_s;
-using LibWin32Common::U82T_s;
+using LibWin32Common::T2U8;
+using LibWin32Common::U82W;
+using LibWin32Common::U82T;
+
+#ifndef UNICODE
+using LibWin32Common::W2U8;
+#endif /* !UNICODE */
 
 // Windows includes.
 #include <direct.h>
@@ -45,8 +51,11 @@ namespace LibRpFile { namespace FileSystem {
  */
 static inline wstring makeWinPath(const char *filename)
 {
-	if (unlikely(!filename || filename[0] == 0))
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
 		return wstring();
+	}
 
 	// TODO: Don't bother if the filename is <= 240 characters?
 	wstring filenameW;
@@ -55,11 +64,11 @@ static inline wstring makeWinPath(const char *filename)
 	{
 		// Absolute path. Prepend "\\\\?\\" to the path.
 		filenameW = L"\\\\?\\";
-		filenameW += U82W_c(filename);
+		filenameW += U82W(filename);
 	} else {
 		// Not an absolute path, or "\\\\?\\" is already
 		// prepended. Use it as-is.
-		filenameW = U82W_c(filename);
+		filenameW = U82W(filename);
 	}
 	return filenameW;
 }
@@ -72,8 +81,10 @@ static inline wstring makeWinPath(const char *filename)
  */
 static inline wstring makeWinPath(const string &filename)
 {
-	if (filename.empty())
+	assert(!filename.empty());
+	if (unlikely(filename.empty())) {
 		return wstring();
+	}
 
 	// TODO: Don't bother if the filename is <= 240 characters?
 	wstring filenameW;
@@ -82,11 +93,70 @@ static inline wstring makeWinPath(const string &filename)
 	{
 		// Absolute path. Prepend "\\?\" to the path.
 		filenameW = L"\\\\?\\";
-		filenameW += U82W_s(filename);
+		filenameW += U82W(filename);
 	} else {
 		// Not an absolute path, or "\\?\" is already
 		// prepended. Use it as-is.
-		filenameW = U82W_s(filename);
+		filenameW = U82W(filename);
+	}
+	return filenameW;
+}
+
+/**
+ * Prepend "\\\\?\\" to an absolute Windows path.
+ * This is needed in order to support filenames longer than MAX_PATH.
+ * @param filename Original Windows filename.
+ * @return Windows filename with "\\\\?\\" prepended.
+ */
+static inline wstring makeWinPath(const wchar_t *filename)
+{
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == L'\0')) {
+		return wstring();
+	}
+
+	// TODO: Don't bother if the filename is <= 240 characters?
+	wstring filenameW;
+	if (ISASCII(filename[0]) && ISALPHA(filename[0]) &&
+	    filename[1] == ':' && filename[2] == '\\')
+	{
+		// Absolute path. Prepend "\\\\?\\" to the path.
+		filenameW = L"\\\\?\\";
+		filenameW += filename;
+	} else {
+		// Not an absolute path, or "\\\\?\\" is already
+		// prepended. Use it as-is.
+		filenameW = filename;
+	}
+	return filenameW;
+}
+
+/**
+ * Prepend "\\\\?\\" to an absolute Windows path.
+ * This is needed in order to support filenames longer than MAX_PATH.
+ * @param filename Original Windows filename.
+ * @return Windows filename with "\\\\?\\" prepended.
+ */
+static inline wstring makeWinPath(const wstring &filename)
+{
+	assert(!filename.empty());
+	if (unlikely(filename.empty())) {
+		return wstring();
+	}
+
+	// TODO: Don't bother if the filename is <= 240 characters?
+	wstring filenameW;
+	if (ISASCII(filename[0]) && ISALPHA(filename[0]) &&
+	    filename[1] == ':' && filename[2] == '\\')
+	{
+		// Absolute path. Prepend "\\?\" to the path.
+		filenameW = L"\\\\?\\";
+		filenameW += filename;
+	} else {
+		// Not an absolute path, or "\\?\" is already
+		// prepended. Use it as-is.
+		filenameW = filename;
 	}
 	return filenameW;
 }
@@ -102,7 +172,7 @@ static inline wstring makeWinPath(const string &filename)
  */
 static inline tstring makeWinPath(const char *filename)
 {
-	return utf8_to_ansi(filename);
+	return U82T(filename);
 }
 
 /**
@@ -116,7 +186,35 @@ static inline tstring makeWinPath(const char *filename)
  */
 static inline tstring makeWinPath(const string &filename)
 {
-	return utf8_to_ansi(filename);
+	return U82T(filename);
+}
+
+/**
+ * Convert a path from ANSI to UTF-8.
+ *
+ * Windows' ANSI functions doesn't support the use of
+ * "\\\\?\\" for paths longer than MAX_PATH.
+ *
+ * @param filename UTF-8 filename.
+ * @return ANSI filename.
+ */
+static inline tstring makeWinPath(const wchar_t *filename)
+{
+	return W2U8(filename);
+}
+
+/**
+ * Convert a path from ANSI to UTF-8.
+ *
+ * Windows' ANSI functions doesn't support the use of
+ * "\\\\?\\" for paths longer than MAX_PATH.
+ *
+ * @param filename UTF-8 filename.
+ * @return ANSI filename.
+ */
+static inline tstring makeWinPath(const wstring &filename)
+{
+	return W2U8(filename);
 }
 #endif /* UNICODE */
 
@@ -139,7 +237,7 @@ int rmkdir(const string &path)
 	static_assert(sizeof(wchar_t) == sizeof(char16_t), "wchar_t is not 16-bit!");
 
 	// TODO: makeWinPath()?
-	tstring tpath = U82T_s(path);
+	tstring tpath = U82T(path);
 
 	if (tpath.size() == 3) {
 		// 3 characters. Root directory is always present.
@@ -178,11 +276,11 @@ int rmkdir(const string &path)
 
 /**
  * Does a file exist?
- * @param pathname Pathname.
- * @param mode Mode.
+ * @param pathname Pathname
+ * @param mode Mode
  * @return 0 if the file exists with the specified mode; non-zero if not.
  */
-int access(const string &pathname, int mode)
+int access(const char *pathname, int mode)
 {
 	// Windows doesn't recognize X_OK.
 	const tstring tpathname = makeWinPath(pathname);
@@ -191,14 +289,26 @@ int access(const string &pathname, int mode)
 }
 
 /**
- * Get a file's size.
- * @param filename Filename.
+ * Does a file exist?
+ * @param pathname Pathname
+ * @param mode Mode
+ * @return 0 if the file exists with the specified mode; non-zero if not.
+ */
+int waccess(const wchar_t *pathname, int mode)
+{
+	// Windows doesn't recognize X_OK.
+	const tstring tpathname = makeWinPath(pathname);
+	mode &= ~X_OK;
+	return ::_taccess(tpathname.c_str(), mode);
+}
+
+/**
+ * Get a file's size. (internal function)
+ * @param tfilename Filename
  * @return Size on success; -1 on error.
  */
-off64_t filesize(const string &filename)
+static off64_t filesize_int(const tstring &tfilename)
 {
-	const tstring tfilename = makeWinPath(filename);
-
 	// TODO: Add a static_warning() macro?
 	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
 #if _USE_32BIT_TIME_T
@@ -223,6 +333,26 @@ off64_t filesize(const string &filename)
 
 	// Return the file size.
 	return liFileSize.QuadPart;
+}
+
+/**
+ * Get a file's size.
+ * @param filename Filename
+ * @return Size on success; -1 on error.
+ */
+off64_t filesize(const char *filename)
+{
+	return filesize_int(makeWinPath(filename));
+}
+
+/**
+ * Get a file's size.
+ * @param filename Filename
+ * @return Size on success; -1 on error.
+ */
+off64_t wfilesize(const wchar_t *filename)
+{
+	return filesize_int(makeWinPath(filename));
 }
 
 /**
@@ -298,7 +428,8 @@ int get_mtime(const string &filename, time_t *pMtime)
 int delete_file(const char *filename)
 {
 	assert(filename != nullptr);
-	if (unlikely(!filename || filename[0] == 0)) {
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
 		return -EINVAL;
 	}
 
@@ -314,16 +445,23 @@ int delete_file(const char *filename)
 
 /**
  * Check if the specified file is a symbolic link.
+ *
+ * Symbolic links are NOT resolved; otherwise wouldn't check
+ * if the specified file was a symlink itself.
+ *
  * @return True if the file is a symbolic link; false if not.
  */
 bool is_symlink(const char *filename)
 {
-	if (unlikely(!filename || filename[0] == 0))
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
 		return false;
+	}
 	const tstring tfilename = makeWinPath(filename);
 
 	// Check the reparse point type.
-	// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20100212-00/?p=14963
+	// Reference: https://devblogs.microsoft.com/oldnewthing/20100212-00/?p=14963
 	WIN32_FIND_DATA findFileData;
 	HANDLE hFind = FindFirstFile(tfilename.c_str(), &findFileData);
 	if (!hFind || hFind == INVALID_HANDLE_VALUE) {
@@ -356,11 +494,11 @@ typedef DWORD (WINAPI *PFNGETFINALPATHNAMEBYHANDLEW)(
 	_In_  DWORD  dwFlags
 );
 #ifdef UNICODE
-# define PFNGETFINALPATHNAMEBYHANDLE PFNGETFINALPATHNAMEBYHANDLEW
-# define GETFINALPATHNAMEBYHANDLE_FN "GetFinalPathNameByHandleW"
+#  define PFNGETFINALPATHNAMEBYHANDLE PFNGETFINALPATHNAMEBYHANDLEW
+#  define GETFINALPATHNAMEBYHANDLE_FN "GetFinalPathNameByHandleW"
 #else /* !UNICODE */
-# define PFNGETFINALPATHNAMEBYHANDLE PFNGETFINALPATHNAMEBYHANDLEA
-# define GETFINALPATHNAMEBYHANDLE_FN "GetFinalPathNameByHandleA"
+#  define PFNGETFINALPATHNAMEBYHANDLE PFNGETFINALPATHNAMEBYHANDLEA
+#  define GETFINALPATHNAMEBYHANDLE_FN "GetFinalPathNameByHandleA"
 #endif /* UNICODE */
 static PFNGETFINALPATHNAMEBYHANDLE pfnGetFinalPathnameByHandle = nullptr;
 
@@ -387,8 +525,11 @@ static void LookupGetFinalPathnameByHandle(void)
  */
 string resolve_symlink(const char *filename)
 {
-	if (unlikely(!filename || filename[0] == 0))
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
 		return string();
+	}
 
 	pthread_once(&once_gfpbh, LookupGetFinalPathnameByHandle);
 	if (!pfnGetFinalPathnameByHandle) {
@@ -396,7 +537,7 @@ string resolve_symlink(const char *filename)
 		return string();
 	}
 
-	// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20100212-00/?p=14963
+	// Reference: https://devblogs.microsoft.com/oldnewthing/20100212-00/?p=14963
 	// TODO: Enable write sharing in regular IRpFile?
 	const tstring tfilename = makeWinPath(filename);
 	HANDLE hFile = CreateFile(tfilename.c_str(),
@@ -429,10 +570,30 @@ string resolve_symlink(const char *filename)
 	}
 
 	// TODO: Add back the cchDeref parameter for explicit length in MiniU82T?
-	string ret = T2U8_c(szDeref);
+	string ret = T2U8(szDeref);
 	delete[] szDeref;
 	CloseHandle(hFile);
 	return ret;
+}
+
+/**
+ * Check if the specified file is a directory.
+ *
+ * Symbolic links are resolved as per usual directory traversal.
+ *
+ * @return True if the file is a directory; false if not.
+ */
+bool is_directory(const char *filename)
+{
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
+		return false;
+	}
+	const tstring tfilename = makeWinPath(filename);
+
+	const DWORD attrs = GetFileAttributes(tfilename.c_str());
+	return (attrs != INVALID_FILE_ATTRIBUTES && (attrs & FILE_ATTRIBUTE_DIRECTORY));
 }
 
 /**
@@ -471,6 +632,12 @@ bool isOnBadFS(const char *filename, bool netFS)
  */
 int get_file_size_and_mtime(const string &filename, off64_t *pFileSize, time_t *pMtime)
 {
+	assert(!filename.empty());
+	assert(pFileSize != nullptr);
+	assert(pMtime != nullptr);
+	if (unlikely(filename.empty() || !pFileSize || !pMtime)) {
+		return -EINVAL;
+	}
 	const tstring tfilename = makeWinPath(filename);
 
 	// TODO: Add a static_warning() macro?
@@ -508,6 +675,32 @@ int get_file_size_and_mtime(const string &filename, off64_t *pFileSize, time_t *
 
 	// We're done here.
 	return 0;
+}
+
+/**
+ * Get a file's d_type.
+ * @param filename Filename
+ * @param deref If true, dereference symbolic links (lstat)
+ * @return File d_type
+ */
+uint8_t get_file_d_type(const char *filename, bool deref)
+{
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
+		return DT_UNKNOWN;
+	}
+
+	// TODO: Handle dereferencing.
+	RP_UNUSED(deref);
+
+	const tstring tfilename = makeWinPath(filename);
+	const DWORD dwAttrs = GetFileAttributes(tfilename.c_str());
+	if (dwAttrs == INVALID_FILE_ATTRIBUTES)
+		return DT_UNKNOWN;
+
+	// TODO: More types.
+	return (dwAttrs & FILE_ATTRIBUTE_DIRECTORY) ? DT_DIR : DT_REG;
 }
 
 } }

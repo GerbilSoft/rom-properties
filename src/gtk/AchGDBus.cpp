@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+)                             *
  * AchGDBus.cpp: GDBus notifications for achievements.                     *
  *                                                                         *
- * Copyright (c) 2020 by David Korth.                                      *
+ * Copyright (c) 2020-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,9 +10,15 @@
 #include "AchGDBus.hpp"
 using LibRpBase::Achievements;
 
+// librptexture
+using LibRpTexture::argb32_t;
+
 // GDBus
 #include <glib-object.h>
 #include "Notifications.h"
+
+// Achievement spritesheets
+#include "AchSpritesheet.hpp"
 
 // C++ STL classes.
 using std::string;
@@ -37,7 +43,8 @@ class AchGDBusPrivate
 
 	public:
 		/**
-		 * Load the specified sprite sheet.
+		 * Load the specified Achievements icon sprite sheet.
+		 * The sprite sheet will be cached in map_imgAchSheet.
 		 * @param iconSize Icon size. (16, 24, 32, 64)
 		 * @return PIMGTYPE, or nullptr on error.
 		 */
@@ -88,22 +95,19 @@ AchGDBusPrivate::~AchGDBusPrivate()
 	}
 
 	// Delete the achievements sprite sheets.
-	std::for_each(map_imgAchSheet.begin(), map_imgAchSheet.end(),
-		[](std::pair<int, PIMGTYPE> pair) {
-			PIMGTYPE_destroy(pair.second);
-		}
-	);
+	for (const auto &pair : map_imgAchSheet) {
+		PIMGTYPE_destroy(pair.second);
+	}
 }
 
 /**
- * Load the specified sprite sheet.
+ * Load the specified Achievements icon sprite sheet.
+ * The sprite sheet will be cached in map_imgAchSheet.
  * @param iconSize Icon size. (16, 24, 32, 64)
  * @return PIMGTYPE, or nullptr on error.
  */
 PIMGTYPE AchGDBusPrivate::loadSpriteSheet(int iconSize)
 {
-	assert(iconSize == 16 || iconSize == 24 || iconSize == 32 || iconSize == 64);
-
 	// Check if the sprite sheet is already loaded.
 	auto iter = map_imgAchSheet.find(iconSize);
 	if (iter != map_imgAchSheet.end()) {
@@ -111,64 +115,16 @@ PIMGTYPE AchGDBusPrivate::loadSpriteSheet(int iconSize)
 		return iter->second;
 	}
 
-	char ach_filename[64];
-	snprintf(ach_filename, sizeof(ach_filename),
-		"/com/gerbilsoft/rom-properties/ach/ach-%dx%d.png",
-		iconSize, iconSize);
-	PIMGTYPE imgAchSheet = PIMGTYPE_load_png_from_gresource(ach_filename);
+	// Load the sprite sheet.
+	PIMGTYPE imgAchSheet = AchSpritesheet::load(iconSize);
 	assert(imgAchSheet != nullptr);
 	if (!imgAchSheet) {
 		// Unable to load the achievements sprite sheet.
 		return nullptr;
 	}
 
-	// Make sure the bitmap has the expected size.
-	assert(PIMGTYPE_size_check(imgAchSheet,
-		(int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS),
-		(int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS)));
-	if (!PIMGTYPE_size_check(imgAchSheet,
-	     (int)(iconSize * Achievements::ACH_SPRITE_SHEET_COLS),
-	     (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS)))
-	{
-		// Incorrect size. We can't use it.
-		PIMGTYPE_destroy(imgAchSheet);
-		return nullptr;
-	}
-
-#ifdef RP_GTK_USE_CAIRO
-	// Cairo: Swap the R and B channels in place.
-	int width, height;
-	PIMGTYPE_get_size(imgAchSheet, &width, &height);
-	uint32_t *bits = reinterpret_cast<uint32_t*>(PIMGTYPE_get_image_data(imgAchSheet));
-	int strideDiff = (PIMGTYPE_get_rowstride(imgAchSheet) / sizeof(uint32_t)) - width;
-	for (unsigned int y = (unsigned int)height; y > 0; y--) {
-		unsigned int x;
-		for (x = (unsigned int)width; x > 1; x -= 2) {
-			// Swap the R and B channels.
-			bits[0] = (bits[0] & 0xFF00FF00) |
-				 ((bits[0] & 0x00FF0000) >> 16) |
-				 ((bits[0] & 0x000000FF) << 16);
-			bits[1] = (bits[1] & 0xFF00FF00) |
-				 ((bits[1] & 0x00FF0000) >> 16) |
-				 ((bits[1] & 0x000000FF) << 16);
-			bits += 2;
-		}
-		if (x == 1) {
-			// Last pixel.
-			*bits = (*bits & 0xFF00FF00) |
-			       ((*bits & 0x00FF0000) >> 16) |
-			       ((*bits & 0x000000FF) << 16);
-			bits++;
-		}
-
-		// Next line.
-		bits += strideDiff;
-	}
-	PIMGTYPE_mark_dirty(imgAchSheet);
-#endif /* RP_GTK_USE_CAIRO */
-
-	// Sprite sheet is correct.
-	map_imgAchSheet.emplace(std::make_pair(iconSize, imgAchSheet));
+	// Cache it and return it.
+	map_imgAchSheet.emplace(iconSize, imgAchSheet);
 	return imgAchSheet;
 }
 
@@ -239,7 +195,7 @@ int AchGDBusPrivate::notifyFunc(Achievements::ID id)
 	// Get the icon.
 	// FIXME: Icon size. Using 32px for now.
 	static const int iconSize = 32;
-	PIMGTYPE imgspr = loadSpriteSheet(iconSize);
+	PIMGTYPE imgspr = AchSpritesheet::load(iconSize);
 	PIMGTYPE subIcon = nullptr;
 	if (imgspr != nullptr) {
 		// Determine row and column.
@@ -249,6 +205,34 @@ int AchGDBusPrivate::notifyFunc(Achievements::ID id)
 		// Extract the sub-icon.
 		subIcon = PIMGTYPE_get_subsurface(imgspr, col*iconSize, row*iconSize, iconSize, iconSize);
 		assert(subIcon != nullptr);
+
+#ifdef RP_GTK_USE_CAIRO
+		// NOTE: The R and B channels need to be swapped for XDG notifications.
+		// Cairo: Swap the R and B channels in place.
+		// TODO: SSSE3-optimized version?
+		int width, height;
+		PIMGTYPE_get_size(subIcon, &width, &height);
+		argb32_t *bits = reinterpret_cast<argb32_t*>(PIMGTYPE_get_image_data(subIcon));
+		int strideDiff = (PIMGTYPE_get_rowstride(subIcon) / sizeof(argb32_t)) - width;
+		for (unsigned int y = (unsigned int)height; y > 0; y--) {
+			unsigned int x;
+			for (x = (unsigned int)width; x > 1; x -= 2) {
+				// Swap the R and B channels
+				std::swap(bits[0].r, bits[0].b);
+				std::swap(bits[1].r, bits[1].b);
+				bits += 2;
+			}
+			if (x == 1) {
+				// Last pixel
+				std::swap(bits->r, bits->b);
+				bits++;
+			}
+
+			// Next line.
+			bits += strideDiff;
+		}
+		PIMGTYPE_mark_dirty(subIcon);
+#endif /* RP_GTK_USE_CAIRO */
 
 		size_t imgDataLen = 0;
 		const uint8_t *const pImgData = PIMGTYPE_get_image_data(subIcon, &imgDataLen);

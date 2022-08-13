@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiWIBN.hpp: Nintendo Wii save file banner reader.                      *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,6 +12,7 @@
 #include "wii_banner.h"
 
 // librpbase, librpfile, librptexture
+#include "librptexture/decoder/ImageDecoder_GCN.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 using namespace LibRpTexture;
@@ -22,9 +23,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(WiiWIBN)
-ROMDATA_IMPL_IMG(WiiWIBN)
-
 class WiiWIBNPrivate final : public RomDataPrivate
 {
 	public:
@@ -34,6 +32,12 @@ class WiiWIBNPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(WiiWIBNPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// Internal images.
@@ -63,10 +67,34 @@ class WiiWIBNPrivate final : public RomDataPrivate
 		const rp_image *loadBanner(void);
 };
 
+ROMDATA_IMPL(WiiWIBN)
+ROMDATA_IMPL_IMG(WiiWIBN)
+
 /** WiiWIBNPrivate **/
 
+/* RomDataInfo */
+// NOTE: This will be handled using the same
+// settings as WiiSave.
+const char *const WiiWIBNPrivate::exts[] = {
+	// Save banner is usually "banner.bin" in the save directory.
+	".bin",
+	".wibn",	// Custom
+
+	nullptr
+};
+const char *const WiiWIBNPrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-wii-wibn",	// .wibn
+
+	nullptr
+};
+const RomDataInfo WiiWIBNPrivate::romDataInfo = {
+	"WiiSave", exts, mimeTypes
+};
+
 WiiWIBNPrivate::WiiWIBNPrivate(WiiWIBN *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, img_banner(nullptr)
 	, iconAnimData(nullptr)
 {
@@ -102,7 +130,14 @@ const rp_image *WiiWIBNPrivate::loadIcon(void)
 	// Read up to 8 icons.
 	static const unsigned int iconstartaddr = BANNER_WIBN_STRUCT_SIZE;
 	static const unsigned int iconsizetotal = BANNER_WIBN_ICON_SIZE*CARD_MAXICONS;
+	// FIXME: Some compilers are reporting that `icondata.get()` is NULL here,
+	// which results in an error due to -Werror=nonnull.
 	auto icondata = aligned_uptr<uint8_t>(16, iconsizetotal);
+	assert(icondata.get() != nullptr);
+	if (!icondata.get()) {
+		// Memory allocation failed somehow...
+		return nullptr;
+	}
 	size_t size = file->seekAndRead(iconstartaddr, icondata.get(), iconsizetotal);
 	if (size < BANNER_WIBN_ICON_SIZE) {
 		// Unable to read *any* icons.
@@ -228,11 +263,10 @@ const rp_image *WiiWIBNPrivate::loadBanner(void)
 WiiWIBN::WiiWIBN(IRpFile *file)
 	: super(new WiiWIBNPrivate(this, file))
 {
-	// This class handles save files.
+	// This class handles banner files.
 	// NOTE: This will be handled using the same
 	// settings as WiiSave.
 	RP_D(WiiWIBN);
-	d->className = "WiiSave";
 	d->mimeType = "application/x-wii-wibn";	// unofficial, not on fd.o
 	d->fileType = FileType::BannerFile;
 
@@ -250,12 +284,11 @@ WiiWIBN::WiiWIBN(IRpFile *file)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->wibnHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->wibnHeader);
-	info.ext = nullptr;	// Not needed for Wii save banner files.
-	info.szFile = d->file->size();
+	const DetectInfo info = {
+		{0, sizeof(d->wibnHeader), reinterpret_cast<const uint8_t*>(&d->wibnHeader)},
+		nullptr,	// ext (not needed for WiiWIBN)
+		d->file->size()	// szFile
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
@@ -320,53 +353,6 @@ const char *WiiWIBN::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *WiiWIBN::supportedFileExtensions_static(void)
-{
-	// Save banner is usually "banner.bin" in the save directory.
-	static const char *const exts[] = {
-		".bin",
-		".wibn",	// Custom
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *WiiWIBN::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-wii-wibn",	// .wibn
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**
@@ -482,7 +468,7 @@ int WiiWIBN::loadFieldData(void)
 
 	// Title.
 	d->fields->addField_string(C_("WiiWIBN", "Title"),
-		utf16be_to_utf8(wibnHeader->gameTitle, ARRAY_SIZE(wibnHeader->gameTitle)));
+		utf16be_to_utf8(wibnHeader->gameTitle, ARRAY_SIZE_I(wibnHeader->gameTitle)));
 
 	// Subtitle.
 	// NOTE: Skipping empty subtitles.
@@ -490,7 +476,7 @@ int WiiWIBN::loadFieldData(void)
 	const char16_t chr2 = wibnHeader->gameSubTitle[1];
 	if (chr1 != 0 && (chr1 != ' ' && chr2 != 0)) {
 		d->fields->addField_string(C_("WiiWIBN", "Subtitle"),
-			utf16be_to_utf8(wibnHeader->gameSubTitle, ARRAY_SIZE(wibnHeader->gameSubTitle)));
+			utf16be_to_utf8(wibnHeader->gameSubTitle, ARRAY_SIZE_I(wibnHeader->gameSubTitle)));
 	}
 
 	// Flags.

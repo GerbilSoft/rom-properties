@@ -12,7 +12,7 @@
 
 // SuperMagicDrive
 #include "libromdata/utils/SuperMagicDrive.hpp"
-#include "librpbase/aligned_malloc.h"
+#include "aligned_malloc.h"
 
 // C includes. (C++ namespace)
 #include <cstdio>

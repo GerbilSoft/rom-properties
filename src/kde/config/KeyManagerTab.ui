@@ -57,22 +57,22 @@
   </layout>
   <action name="actionImportWiiKeysBin">
    <property name="text">
-    <string>Wii keys.bin</string>
+    <string notr="true">Wii keys.bin</string>
    </property>
   </action>
   <action name="actionImportWiiUOtpBin">
    <property name="text">
-    <string>Wii U otp.bin</string>
+    <string notr="true">Wii U otp.bin</string>
    </property>
   </action>
   <action name="actionImport3DSboot9bin">
    <property name="text">
-    <string>3DS boot9.bin</string>
+    <string notr="true">3DS boot9.bin</string>
    </property>
   </action>
   <action name="actionImport3DSaeskeydb">
    <property name="text">
-    <string>3DS aeskeydb.bin</string>
+    <string notr="true">3DS aeskeydb.bin</string>
    </property>
   </action>
  </widget>

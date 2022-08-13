@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiSave.cpp: Nintendo Wii save game file reader.                        *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -33,9 +33,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(WiiSave)
-ROMDATA_IMPL_IMG(WiiSave)
-
 class WiiSavePrivate final : public RomDataPrivate
 {
 	public:
@@ -45,6 +42,12 @@ class WiiSavePrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(WiiSavePrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// Save game structs.
@@ -71,14 +74,36 @@ class WiiSavePrivate final : public RomDataPrivate
 		// CBC reader for the main data area.
 		CBCReader *cbcReader;
 		WiiWIBN *wibnData;
-#endif /* ENABLE_DECRYPTION */
+
 		// Key indexes. (0 == AES, 1 == IV)
 		std::array<WiiPartition::EncryptionKeys, 2> key_idx;
 		// Key status.
 		std::array<KeyManager::VerifyResult, 2> key_status;
+#endif /* ENABLE_DECRYPTION */
 };
 
+ROMDATA_IMPL(WiiSave)
+ROMDATA_IMPL_IMG(WiiSave)
+
 /** WiiSavePrivate **/
+
+/* RomDataInfo */
+const char *const WiiSavePrivate::exts[] = {
+	".bin",
+	// TODO: Custom extension?
+
+	nullptr
+};
+const char *const WiiSavePrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-wii-save",
+
+	nullptr
+};
+const RomDataInfo WiiSavePrivate::romDataInfo = {
+	"WiiSave", exts, mimeTypes
+};
 
 // Wii_Bk_Header_t magic.
 const uint8_t WiiSavePrivate::bk_header_magic[8] = {
@@ -86,7 +111,7 @@ const uint8_t WiiSavePrivate::bk_header_magic[8] = {
 };
 
 WiiSavePrivate::WiiSavePrivate(WiiSave *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, svLoaded(false)
 #ifdef ENABLE_DECRYPTION
 	, cbcReader(nullptr)
@@ -97,8 +122,10 @@ WiiSavePrivate::WiiSavePrivate(WiiSave *q, IRpFile *file)
 	memset(&svHeader, 0, sizeof(svHeader));
 	memset(&bkHeader, 0, sizeof(bkHeader));
 
+#ifdef ENABLE_DECRYPTION
 	key_idx.fill(WiiPartition::Key_Max);
 	key_status.fill(KeyManager::VerifyResult::Unknown);
+#endif /* ENABLE_DECRYPTION */
 }
 
 WiiSavePrivate::~WiiSavePrivate()
@@ -125,9 +152,8 @@ WiiSavePrivate::~WiiSavePrivate()
 WiiSave::WiiSave(IRpFile *file)
 	: super(new WiiSavePrivate(this, file))
 {
-	// This class handles application packages.
+	// This class handles save files.
 	RP_D(WiiSave);
-	d->className = "WiiSave";
 	d->mimeType = "application/x-wii-save";	// unofficial, not on fd.o
 	d->fileType = FileType::SaveFile;
 
@@ -184,6 +210,7 @@ WiiSave::WiiSave(IRpFile *file)
 	// Found the Bk header.
 	d->isValid = true;
 
+#ifdef ENABLE_DECRYPTION
 	// Get the decryption keys.
 	// NOTE: Continuing even if the keys can't be loaded,
 	// since we can still show the Bk header fields.
@@ -192,9 +219,7 @@ WiiSave::WiiSave(IRpFile *file)
 	d->key_idx[0] = WiiPartition::Key_Rvl_SD_AES;
 	d->key_idx[1] = WiiPartition::Key_Rvl_SD_IV;
 
-#ifdef ENABLE_DECRYPTION
 	// Initialize the CBC reader for the main data area.
-
 	// TODO: WiiVerifyKeys class.
 	KeyManager *const keyManager = KeyManager::instance();
 	assert(keyManager != nullptr);
@@ -259,10 +284,6 @@ WiiSave::WiiSave(IRpFile *file)
 		}
 		ptFile->unref();
 	}
-#else /* !ENABLE_DECRYPTION */
-	// Cannot decrypt anything...
-	d->key_status[0] = KeyManager::VerifyResult::NoSupport;
-	d->key_status[1] = KeyManager::VerifyResult::NoSupport;
 #endif /* ENABLE_DECRYPTION */
 }
 
@@ -310,13 +331,10 @@ int WiiSave::isRomSupported_static(const DetectInfo *info)
 	// read by RomDataFactory, so we ca'nt rely on it.
 	// Therefore, we're using the file extension.
 	if (info->ext && info->ext[0] != 0) {
-		const char *const *exts = supportedFileExtensions_static();
-		if (!exts) {
-			// Should not happen...
-			return -1;
-		}
-		for (; *exts != nullptr; exts++) {
-			if (!strcasecmp(info->ext, *exts)) {
+		for (const char *const *ext = WiiSavePrivate::exts;
+		     *ext != nullptr; ext++)
+		{
+			if (!strcasecmp(info->ext, *ext)) {
 				// File extension is supported.
 				return 0;
 			}
@@ -348,52 +366,6 @@ const char *WiiSave::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *WiiSave::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".bin",
-		// TODO: Custom extension?
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *WiiSave::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-wii-save",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**
@@ -510,15 +482,19 @@ int WiiSave::loadFieldData(void)
 	if (isSvValid) {
 		// Unix-style permissions field.
 		char s_perms[] = "----------";
-		uint8_t perms = svHeader->permissions;
-		for (char *p = &s_perms[1]; p < s_perms + sizeof(s_perms); p += 3, perms <<= 2) {
-			if (perms & 0x20) {
-				p[0] = 'r';
-			}
-			if (perms & 0x10) {
-				p[1] = 'w';
-			}
-		}
+		const uint8_t perms = svHeader->permissions;
+		if (perms & 0x20)
+			s_perms[1] = 'r';
+		if (perms & 0x10)
+			s_perms[2] = 'w';
+		if (perms & 0x08)
+			s_perms[4] = 'r';
+		if (perms & 0x04)
+			s_perms[5] = 'w';
+		if (perms & 0x02)
+			s_perms[7] = 'r';
+		if (perms & 0x01)
+			s_perms[8] = 'w';
 
 		d->fields->addField_string(C_("WiiSave", "Permissions"), s_perms,
 			RomFields::STRF_MONOSPACE);

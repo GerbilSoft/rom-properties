@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * bmp.h: BMP image format definitions.                                    *
  *                                                                         *
- * Copyright (c) 2016 by David Korth.                                      *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -60,7 +60,7 @@ ASSERT_STRUCT(BITMAPFILEHEADER, BITMAPFILEHEADER_SIZE);
 /**
  * BITMAPINFOHEADER
  * All fields are little-endian.
- * Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183375(v=vs.85).aspx
+ * Reference: https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-bitmapinfo
  */
 typedef struct tagBITMAPINFOHEADER {
 	uint32_t biSize;

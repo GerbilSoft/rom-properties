@@ -2,25 +2,39 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyManagerTab.cpp: Key Manager tab for rp-config.                       *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "KeyManagerTab.hpp"
 
-// librpbase
-using namespace LibRpBase;
-
 #include "KeyStoreQt.hpp"
 #include "KeyStoreModel.hpp"
 #include "KeyStoreItemDelegate.hpp"
 
+// librpbase, libromdata
+using namespace LibRpBase;
+using namespace LibRomData;
+
 // C++ STL classes.
 using std::string;
 
-// KDE includes.
-#include <kmessagewidget.h>
+// KDE4/KF5 includes.
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+#  define HAVE_KMESSAGEWIDGET 1
+#  define HAVE_KMESSAGEWIDGET_SETICON 1
+#  include <KWidgetsAddons/kmessagewidget.h>
+#else /* !QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+#  include <kdeversion.h>
+#  if (KDE_VERSION_MAJOR > 4) || (KDE_VERSION_MAJOR == 4 && KDE_VERSION_MINOR >= 7)
+#    define HAVE_KMESSAGEWIDGET 1
+#    include <kmessagewidget.h>
+#    if (KDE_VERSION_MAJOR > 4) || (KDE_VERSION_MAJOR == 4 && KDE_VERSION_MINOR >= 11)
+#      define HAVE_KMESSAGEWIDGET_SETICON 1
+#    endif
+#  endif
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 
 #include "ui_KeyManagerTab.h"
 class KeyManagerTabPrivate
@@ -38,10 +52,15 @@ class KeyManagerTabPrivate
 		Ui::KeyManagerTab ui;
 
 	public:
-		// KeyStore.
+		// KeyStore
 		KeyStoreQt *keyStore;
-		// KeyStoreModel.
+		// KeyStoreModel
 		KeyStoreModel *keyStoreModel;
+
+#ifdef HAVE_KMESSAGEWIDGET
+		// KMessageWidget for key import
+		KMessageWidget *messageWidget;
+#endif /* HAVE_KMESSAGEWIDGET */
 
 		// Starting directory for importing keys.
 		// TODO: Save this in the configuration file?
@@ -54,12 +73,12 @@ class KeyManagerTabPrivate
 
 		/**
 		 * Show key import return status.
-		 * @param filename Filename.
-		 * @param keyType Key type.
-		 * @param iret ImportReturn.
+		 * @param filename Filename
+		 * @param keyType Key type
+		 * @param iret ImportReturn
 		 */
 		void showKeyImportReturnStatus(const QString &filename,
-			const QString &keyType, const KeyStoreQt::ImportReturn &iret);
+			const QString &keyType, const KeyStoreUI::ImportReturn &iret);
 };
 
 /** KeyManagerTabPrivate **/
@@ -68,6 +87,9 @@ KeyManagerTabPrivate::KeyManagerTabPrivate(KeyManagerTab* q)
 	: q_ptr(q)
 	, keyStore(new KeyStoreQt(q))
 	, keyStoreModel(new KeyStoreModel(q))
+#ifdef HAVE_KMESSAGEWIDGET
+	, messageWidget(nullptr)
+#endif /* HAVE_KMESSAGEWIDGET */
 {
 	// Set the KeyStoreModel's KeyStore.
 	keyStoreModel->setKeyStore(keyStore);
@@ -94,14 +116,14 @@ void KeyManagerTabPrivate::resizeColumnsToContents(void)
 
 /**
  * Show key import return status.
- * @param filename Filename.
- * @param keyType Key type.
- * @param iret ImportReturn.
+ * @param filename Filename
+ * @param keyType Key type
+ * @param iret ImportReturn
  */
 void KeyManagerTabPrivate::showKeyImportReturnStatus(
 	const QString &filename,
 	const QString &keyType,
-	const KeyStoreQt::ImportReturn &iret)
+	const KeyStoreUI::ImportReturn &iret)
 {
 	KMessageWidget::MessageType type = KMessageWidget::Information;
 	QStyle::StandardPixmap icon = QStyle::SP_MessageBoxInformation;
@@ -117,7 +139,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 	// TODO: Thread-safe strerror()?
 
 	switch (iret.status) {
-		case KeyStoreQt::ImportStatus::InvalidParams:
+		case KeyStoreUI::ImportStatus::InvalidParams:
 		default:
 			msg = C_("KeyManagerTab",
 				"An invalid parameter was passed to the key importer.\n"
@@ -126,7 +148,15 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			icon = QStyle::SP_MessageBoxCritical;
 			break;
 
-		case KeyStoreQt::ImportStatus::OpenError:
+		case KeyStoreUI::ImportStatus::UnknownKeyID:
+			msg = C_("KeyManagerTab",
+				"An unknown key ID was passed to the key importer.\n"
+				"THIS IS A BUG; please report this to the developers!");
+			type = KMessageWidget::Error;
+			icon = QStyle::SP_MessageBoxCritical;
+			break;
+
+		case KeyStoreUI::ImportStatus::OpenError:
 			if (iret.error_code != 0) {
 				msg = rp_sprintf_p(C_("KeyManagerTab",
 					// tr: %1$s == filename, %2$s == error message
@@ -143,7 +173,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			icon = QStyle::SP_MessageBoxCritical;
 			break;
 
-		case KeyStoreQt::ImportStatus::ReadError:
+		case KeyStoreUI::ImportStatus::ReadError:
 			// TODO: Error code for short reads.
 			if (iret.error_code != 0) {
 				msg = rp_sprintf_p(C_("KeyManagerTab",
@@ -161,7 +191,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			icon = QStyle::SP_MessageBoxCritical;
 			break;
 
-		case KeyStoreQt::ImportStatus::InvalidFile:
+		case KeyStoreUI::ImportStatus::InvalidFile:
 			msg = rp_sprintf_p(C_("KeyManagerTab",
 				// tr: %1$s == filename, %2$s == type of file
 				"The file '%1$s' is not a valid %2$s file."),
@@ -171,7 +201,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			icon = QStyle::SP_MessageBoxWarning;
 			break;
 
-		case KeyStoreQt::ImportStatus::NoKeysImported:
+		case KeyStoreUI::ImportStatus::NoKeysImported:
 			msg = rp_sprintf(C_("KeyManagerTab",
 				// tr: %s == filename
 				"No keys were imported from '%s'."),
@@ -181,7 +211,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			showKeyStats = true;
 			break;
 
-		case KeyStoreQt::ImportStatus::KeysImported: {
+		case KeyStoreUI::ImportStatus::KeysImported: {
 			const unsigned int keyCount = iret.keysImportedVerify + iret.keysImportedNoVerify;
 			msg = rp_sprintf_p(NC_("KeyManagerTab",
 				// tr: %1$s == number of keys (formatted), %2$u == filename
@@ -256,18 +286,12 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 		}
 	}
 
-	Q_Q(KeyManagerTab);
-	KMessageWidget *const widget = new KMessageWidget(q);
-	widget->setCloseButtonVisible(true);
-	widget->setWordWrap(true);
-	widget->setMessageType(type);
-	widget->setIcon(qApp->style()->standardIcon(icon, nullptr, widget));
-	widget->setText(U82Q(msg));
-	QObject::connect(widget, SIGNAL(hideAnimationFinished()),
-			 widget, SLOT(deleteLater()));
-
-	ui.vboxMain->insertWidget(0, widget);
-	widget->animatedShow();
+	// Display the message.
+	// TODO: If it's already visible, animateHide(), then animateShow()?
+	messageWidget->setMessageType(type);
+	messageWidget->setIcon(qApp->style()->standardIcon(icon, nullptr, messageWidget));
+	messageWidget->setText(U82Q(msg));
+	messageWidget->animatedShow();
 }
 
 /** KeyManagerTab **/
@@ -296,6 +320,7 @@ KeyManagerTab::KeyManagerTab(QWidget *parent)
 
 	// Create the dropdown menu for the "Import" button.
 	QMenu *const menuImport = new QMenu(U82Q(C_("KeyManagerTab", "I&mport")), d->ui.btnImport);
+	menuImport->setObjectName(QLatin1String("menuImport"));
 	menuImport->addAction(d->ui.actionImportWiiKeysBin);
 	menuImport->addAction(d->ui.actionImportWiiUOtpBin);
 	menuImport->addAction(d->ui.actionImport3DSboot9bin);
@@ -304,6 +329,16 @@ KeyManagerTab::KeyManagerTab(QWidget *parent)
 
 	// Connect KeyStore's modified() signal to our modified() signal.
 	connect(d->keyStore, SIGNAL(modified()), this, SIGNAL(modified()));
+
+#ifdef HAVE_KMESSAGEWIDGET
+	// KMessageWidget
+	d->messageWidget = new KMessageWidget(this);
+	d->messageWidget->setObjectName(QLatin1String("messageWidget"));
+	d->messageWidget->setCloseButtonVisible(true);
+	d->messageWidget->setWordWrap(true);
+	d->messageWidget->hide();
+	d->ui.vboxMain->insertWidget(0, d->messageWidget);
+#endif /* HAVE_KMESSAGEWIDGET */
 }
 
 KeyManagerTab::~KeyManagerTab()
@@ -317,10 +352,25 @@ KeyManagerTab::~KeyManagerTab()
  */
 void KeyManagerTab::changeEvent(QEvent *event)
 {
-	if (event->type() == QEvent::LanguageChange) {
-		// Retranslate the UI.
-		Q_D(KeyManagerTab);
-		d->ui.retranslateUi(this);
+	Q_D(KeyManagerTab);
+	switch (event->type()) {
+		case QEvent::LanguageChange:
+			// Retranslate the UI.
+			d->ui.retranslateUi(this);
+			break;
+		case QEvent::FontChange:
+			// Update the KeyStoreModel fonts.
+			d->keyStoreModel->systemFontChanged();
+			break;
+		case QEvent::PaletteChange:
+			// Update the KeyStoreModel icons.
+			// NOTE: This only handles light vs. dark.
+			// FIXME: Find a notification for the system icon theme changing entirely,
+			// e.g. Breeze -> Oxygen.
+			d->keyStoreModel->systemPaletteChanged();
+			break;
+		default:
+			break;
 	}
 
 	// Pass the event to the base class.
@@ -367,13 +417,13 @@ void KeyManagerTab::save(QSettings *pSettings)
 	// Save the keys.
 	const int totalKeyCount = d->keyStore->totalKeyCount();
 	for (int i = 0; i < totalKeyCount; i++) {
-		const KeyStoreQt::Key *const pKey = d->keyStore->getKey(i);
-		assert(pKey != nullptr);
-		if (!pKey || !pKey->modified)
+		const KeyStoreQt::Key *const key = d->keyStore->getKey(i);
+		assert(key != nullptr);
+		if (!key || !key->modified)
 			continue;
 
 		// Save this key.
-		pSettings->setValue(U82Q(pKey->name), U82Q(pKey->value));
+		pSettings->setValue(U82Q(key->name), U82Q(key->value));
 	}
 
 	// End of [Keys]
@@ -385,6 +435,8 @@ void KeyManagerTab::save(QSettings *pSettings)
 
 /** Actions. **/
 
+/** TODO: Combine into a single function by storing an ID in the QActions. **/
+
 /**
  * Import keys from Wii keys.bin. (BootMii format)
  */
@@ -392,17 +444,18 @@ void KeyManagerTab::on_actionImportWiiKeysBin_triggered(void)
 {
 	Q_D(KeyManagerTab);
 	QString filename = QFileDialog::getOpenFileName(this,
-		// tr: Wii keys.bin dialog title.
+		// tr: Wii keys.bin dialog title
 		U82Q(C_("KeyManagerTab", "Select Wii keys.bin File")),
 		d->keyFileDir,	// dir
-		// tr: Wii keys.bin file filter. (RP format)
+		// tr: Wii keys.bin file filter (RP format)
 		rpFileDialogFilterToQt(
 			C_("KeyManagerTab", "keys.bin|keys.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-")));
 	if (filename.isEmpty())
 		return;
 	d->keyFileDir = QFileInfo(filename).canonicalPath();
 
-	KeyStoreQt::ImportReturn iret = d->keyStore->importWiiKeysBin(Q2U8(filename));
+	KeyStoreQt::ImportReturn iret = d->keyStore->importKeysFromBin(
+		KeyStoreUI::ImportFileID::WiiKeysBin, Q2U8(filename));
 	d->showKeyImportReturnStatus(filename, QLatin1String("Wii keys.bin"), iret);
 }
 
@@ -413,17 +466,18 @@ void KeyManagerTab::on_actionImportWiiUOtpBin_triggered(void)
 {
 	Q_D(KeyManagerTab);
 	QString filename = QFileDialog::getOpenFileName(this,
-		// tr: Wii U otp.bin dialog title.
+		// tr: Wii U otp.bin dialog title
 		U82Q(C_("KeyManagerTab", "Select Wii U otp.bin File")),
 		d->keyFileDir,	// dir
-		// tr: Wii U otp.bin file filter. (RP format)
+		// tr: Wii U otp.bin file filter (RP format)
 		rpFileDialogFilterToQt(
 			C_("KeyManagerTab", "otp.bin|otp.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-")));
 	if (filename.isEmpty())
 		return;
 	d->keyFileDir = QFileInfo(filename).canonicalPath();
 
-	KeyStoreQt::ImportReturn iret = d->keyStore->importWiiUOtpBin(Q2U8(filename));
+	KeyStoreQt::ImportReturn iret = d->keyStore->importKeysFromBin(
+		KeyStoreUI::ImportFileID::WiiUOtpBin, Q2U8(filename));
 	d->showKeyImportReturnStatus(filename, QLatin1String("Wii U otp.bin"), iret);
 }
 
@@ -434,17 +488,18 @@ void KeyManagerTab::on_actionImport3DSboot9bin_triggered(void)
 {
 	Q_D(KeyManagerTab);
 	QString filename = QFileDialog::getOpenFileName(this,
-		// tr: 3DS boot9.bin dialog title.
+		// tr: Nintendo 3DS boot9.bin dialog title
 		U82Q(C_("KeyManagerTab", "Select 3DS boot9.bin File")),
 		d->keyFileDir,	// dir
-		// tr: 3DS boot9.bin file filter. (RP format)
+		// tr: Nintendo 3DS boot9.bin file filter (RP format)
 		rpFileDialogFilterToQt(
 			C_("KeyManagerTab", "boot9.bin|boot9.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-")));
 	if (filename.isEmpty())
 		return;
 	d->keyFileDir = QFileInfo(filename).canonicalPath();
 
-	KeyStoreQt::ImportReturn iret = d->keyStore->import3DSboot9bin(Q2U8(filename));
+	KeyStoreQt::ImportReturn iret = d->keyStore->importKeysFromBin(
+		KeyStoreUI::ImportFileID::N3DSboot9bin, Q2U8(filename));
 	d->showKeyImportReturnStatus(filename, QLatin1String("3DS boot9.bin"), iret);
 }
 
@@ -455,16 +510,17 @@ void KeyManagerTab::on_actionImport3DSaeskeydb_triggered(void)
 {
 	Q_D(KeyManagerTab);
 	QString filename = QFileDialog::getOpenFileName(this,
-		// tr: 3DS aeskeydb.bin dialog title.
+		// tr: Nintendo 3DS aeskeydb.bin dialog title
 		U82Q(C_("KeyManagerTab", "Select 3DS aeskeydb.bin File")),
 		d->keyFileDir,	// dir
-		// tr: 3DS aeskeydb.bin file filter. (RP format)
+		// tr: Nintendo 3DS aeskeydb.bin file filter (RP format)
 		rpFileDialogFilterToQt(
 			C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-")));
 	if (filename.isEmpty())
 		return;
 	d->keyFileDir = QFileInfo(filename).canonicalPath();
 
-	KeyStoreQt::ImportReturn iret = d->keyStore->import3DSaeskeydb(Q2U8(filename));
+	KeyStoreQt::ImportReturn iret = d->keyStore->importKeysFromBin(
+		KeyStoreUI::ImportFileID::N3DSaeskeydb, Q2U8(filename));
 	d->showKeyImportReturnStatus(filename, QLatin1String("3DS aeskeydb.bin"), iret);
 }

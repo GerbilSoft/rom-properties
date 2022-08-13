@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Xbox360_XEX.cpp: Microsoft Xbox 360 executable reader.                  *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,21 +19,21 @@
 // librpbase, librpfile, librptexture
 #include "librpbase/Achievements.hpp"
 #include "librpbase/disc/CBCReader.hpp"
-#include "librpfile/RpMemFile.hpp"
+#include "librpfile/MemFile.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
-using LibRpFile::RpMemFile;
+using LibRpFile::MemFile;
 using LibRpTexture::rp_image;
 
 #ifdef ENABLE_DECRYPTION
-# include "librpbase/crypto/IAesCipher.hpp"
-# include "librpbase/crypto/AesCipherFactory.hpp"
-# include "librpbase/crypto/KeyManager.hpp"
+#  include "librpbase/crypto/IAesCipher.hpp"
+#  include "librpbase/crypto/AesCipherFactory.hpp"
+#  include "librpbase/crypto/KeyManager.hpp"
 #endif /* ENABLE_DECRYPTION */
 
 #ifdef ENABLE_LIBMSPACK
-# include "mspack.h"
-# include "xenia_lzx.h"
+#  include "mspack.h"
+#  include "xenia_lzx.h"
 #endif /* ENABLE_LIBMSPACK */
 
 // C++ STL classes.
@@ -45,8 +45,6 @@ using std::unordered_map;
 using std::vector;
 
 namespace LibRomData {
-
-ROMDATA_IMPL(Xbox360_XEX)
 
 // Workaround for RP_D() expecting the no-underscore naming convention.
 #define Xbox360_XEXPrivate Xbox360_XEX_Private
@@ -60,6 +58,12 @@ class Xbox360_XEX_Private final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(Xbox360_XEX_Private)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// XEX type.
@@ -238,6 +242,29 @@ class Xbox360_XEX_Private final : public RomDataPrivate
 #endif
 };
 
+ROMDATA_IMPL(Xbox360_XEX)
+
+/** Xbox360_XEX_Private **/
+
+/* RomDataInfo */
+const char *const Xbox360_XEX_Private::exts[] = {
+	".xex",		// Executable
+	".xexp",	// Patch
+
+	nullptr
+};
+const char *const Xbox360_XEX_Private::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-xbox360-executable",
+	"application/x-xbox360-patch",
+
+	nullptr
+};
+const RomDataInfo Xbox360_XEX_Private::romDataInfo = {
+	"Xbox360_XEX", exts, mimeTypes
+};
+
 #ifdef ENABLE_DECRYPTION
 // Verification key names.
 const char *const Xbox360_XEX_Private::EncryptionKeyNames[Xbox360_XEX::Key_Max] = {
@@ -259,10 +286,8 @@ const uint8_t Xbox360_XEXPrivate::EncryptionKeyVerifyData[Xbox360_XEX::Key_Max][
 };
 #endif /* ENABLE_DECRYPTION */
 
-/** Xbox360_XEX_Private **/
-
 Xbox360_XEX_Private::Xbox360_XEX_Private(Xbox360_XEX *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, xexType(XexType::Unknown)
 	, isExecutionIDLoaded(false)
 	, keyInUse(-1)
@@ -521,7 +546,7 @@ const XEX2_Resource_Info *Xbox360_XEX_Private::getXdbfResInfo(const char *resour
 		return nullptr;
 	}
 
-	auto ins_iter = mapResInfo.insert(std::make_pair(resource_id, res));
+	auto ins_iter = mapResInfo.emplace(resource_id, res);
 	return &(ins_iter.first->second);
 }
 
@@ -1153,7 +1178,7 @@ Xbox360_Version_t Xbox360_XEX_Private::getMinKernelVersion(void)
 	// Skip the string table.
 	p += sizeof(*pLibHdr) + be32_to_cpu(pLibHdr->str_tbl_size);
 
-	while (p + sizeof(XEX2_Import_Library_Entry) < p_end) {
+	while (p < p_end - sizeof(XEX2_Import_Library_Entry)) {
 		// Check the minimum version of this import library.
 		const XEX2_Import_Library_Entry *const entry =
 			reinterpret_cast<const XEX2_Import_Library_Entry*>(p);
@@ -1194,7 +1219,7 @@ const EXE *Xbox360_XEX_Private::initEXE(void)
 	IRpFile *peFile_tmp;
 #ifdef ENABLE_LIBMSPACK
 	if (!lzx_peHeader.empty()) {
-		peFile_tmp = new RpMemFile(lzx_peHeader.data(), lzx_peHeader.size());
+		peFile_tmp = new MemFile(lzx_peHeader.data(), lzx_peHeader.size());
 	} else
 #endif /* ENABLE_LIBMSPACK */
 	{
@@ -1234,7 +1259,7 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 	IRpFile *peFile_tmp;
 #ifdef ENABLE_LIBMSPACK
 	if (!lzx_xdbfSection.empty()) {
-		peFile_tmp = new RpMemFile(lzx_xdbfSection.data(), lzx_xdbfSection.size());
+		peFile_tmp = new MemFile(lzx_xdbfSection.data(), lzx_xdbfSection.size());
 	} else
 #endif /* ENABLE_LIBMSPACK */
 	{
@@ -1255,16 +1280,13 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 		if (fileFormatInfo.compression_type == XEX2_COMPRESSION_TYPE_BASIC) {
 			// File has zero padding removed.
 			// Determine the actual physical address.
-			const auto basicZDataSegments_cend = basicZDataSegments.cend();
-			for (auto iter = basicZDataSegments.cbegin();
-			     iter != basicZDataSegments_cend; ++iter)
-			{
-				if (xdbf_physaddr >= iter->vaddr &&
-				    xdbf_physaddr < (iter->vaddr + iter->length))
+			for (const BasicZDataSeg_t &p : basicZDataSegments) {
+				if (xdbf_physaddr >= p.vaddr &&
+				    xdbf_physaddr < (p.vaddr + p.length))
 				{
 					// Found the correct segment.
 					// Adjust the physical address.
-					xdbf_physaddr -= (iter->vaddr - iter->physaddr);
+					xdbf_physaddr -= (p.vaddr - p.physaddr);
 					break;
 				}
 			}
@@ -1342,7 +1364,6 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 {
 	// This class handles executables.
 	RP_D(Xbox360_XEX);
-	d->className = "Xbox360_XEX";
 	d->mimeType = "application/x-xbox360-executable";	// unofficial, not on fd.o
 	d->fileType = FileType::Executable;
 
@@ -1364,12 +1385,11 @@ Xbox360_XEX::Xbox360_XEX(IRpFile *file)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(header);
-	info.header.pData = header;
-	info.ext = nullptr;	// Not needed for XEX.
-	info.szFile = 0;	// Not needed for XEX.
+	const DetectInfo info = {
+		{0, sizeof(header), header},
+		nullptr,	// ext (not needed for Xbox360_XEX)
+		0		// szFile (not needed for Xbox360_XEX)
+	};
 	d->xexType = static_cast<Xbox360_XEX_Private::XexType>(isRomSupported_static(&info));
 	d->isValid = ((int)d->xexType >= 0);
 
@@ -1518,53 +1538,6 @@ const char *Xbox360_XEX::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Xbox360_XEX::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".xex",		// Executable
-		".xexp",	// Patch
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Xbox360_XEX::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-xbox360-executable",
-		"application/x-xbox360-patch",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**
@@ -1718,7 +1691,10 @@ int Xbox360_XEX::loadFieldData(void)
 	string s_minver;
 	if (minver.u32 != 0) {
 		s_minver = rp_sprintf("%u.%u.%u.%u",
-			minver.major, minver.minor, minver.build, minver.qfe);
+			static_cast<unsigned int>(minver.major),
+			static_cast<unsigned int>(minver.minor),
+			static_cast<unsigned int>(minver.build),
+			static_cast<unsigned int>(minver.qfe));
 	} else {
 		s_minver = C_("RomData", "Unknown");
 	}
@@ -1888,7 +1864,7 @@ int Xbox360_XEX::loadFieldData(void)
 		// TODO: Consolidate implementations into a shared function.
 		string tid_str;
 		char hexbuf[4];
-		if (d->executionID.title_id.a >= 0x20) {
+		if (ISUPPER(d->executionID.title_id.a)) {
 			tid_str += (char)d->executionID.title_id.a;
 		} else {
 			tid_str += "\\x";
@@ -1896,7 +1872,7 @@ int Xbox360_XEX::loadFieldData(void)
 				(uint8_t)d->executionID.title_id.a);
 			tid_str.append(hexbuf, 2);
 		}
-		if (d->executionID.title_id.b >= 0x20) {
+		if (ISUPPER(d->executionID.title_id.b)) {
 			tid_str += (char)d->executionID.title_id.b;
 		} else {
 			tid_str += "\\x";

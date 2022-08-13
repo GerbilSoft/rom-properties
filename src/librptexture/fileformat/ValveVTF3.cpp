@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ValveVTF3.hpp: Valve VTF3 (PS3) image reader.                           *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,11 +18,9 @@ using LibRpFile::IRpFile;
 
 // librptexture
 #include "img/rp_image.hpp"
-#include "decoder/ImageDecoder.hpp"
+#include "decoder/ImageDecoder_S3TC.hpp"
 
 namespace LibRpTexture {
-
-FILEFORMAT_IMPL(ValveVTF3)
 
 class ValveVTF3Private final : public FileFormatPrivate
 {
@@ -33,6 +31,12 @@ class ValveVTF3Private final : public FileFormatPrivate
 	private:
 		typedef FileFormatPrivate super;
 		RP_DISABLE_COPY(ValveVTF3Private)
+
+	public:
+		/** TextureInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const TextureInfo textureInfo;
 
 	public:
 		// VTF3 header.
@@ -66,10 +70,30 @@ class ValveVTF3Private final : public FileFormatPrivate
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 };
 
+FILEFORMAT_IMPL(ValveVTF3)
+
 /** ValveVTF3Private **/
 
+/* TextureInfo */
+const char *const ValveVTF3Private::exts[] = {
+	".vtf",
+	//".vtx",	// TODO: Some files might use the ".vtx" extension.
+
+	nullptr
+};
+const char *const ValveVTF3Private::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"image/x-vtf3",
+
+	nullptr
+};
+const TextureInfo ValveVTF3Private::textureInfo = {
+	exts, mimeTypes
+};
+
 ValveVTF3Private::ValveVTF3Private(ValveVTF3 *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &textureInfo)
 	, img(nullptr)
 {
 	// Clear the VTF3 header struct.
@@ -118,7 +142,7 @@ const rp_image *ValveVTF3Private::loadImage(void)
 	const int height = (vtf3Header.height > 0 ? vtf3Header.height : 1);
 
 	// Calculate the expected size.
-	unsigned int expected_size = vtf3Header.width * height;
+	size_t expected_size = vtf3Header.width * height;
 	if (!(vtf3Header.flags & VTF3_FLAG_ALPHA)) {
 		// Image does not have an alpha channel,
 		// which means it's DXT1 and thus 4bpp.
@@ -230,53 +254,6 @@ ValveVTF3::ValveVTF3(IRpFile *file)
 	// Cache the dimensions for the FileFormat base class.
 	d->dimensions[0] = d->vtf3Header.width;
 	d->dimensions[1] = d->vtf3Header.height;
-}
-
-/** Class-specific functions that can be used even if isValid() is false. **/
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *ValveVTF3::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".vtf",
-		//".vtx",	// TODO: Some files might use the ".vtx" extension.
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *ValveVTF3::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"image/x-vtf3",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /** Property accessors **/

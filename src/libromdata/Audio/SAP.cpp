@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SAP.cpp: Atari 8-bit SAP audio reader.                                  *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,8 +25,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(SAP)
-
 class SAPPrivate final : public RomDataPrivate
 {
 	public:
@@ -37,8 +35,14 @@ class SAPPrivate final : public RomDataPrivate
 		RP_DISABLE_COPY(SAPPrivate)
 
 	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
+
+	public:
 		// Parsed tags.
-		struct TagData {
+		struct sap_tags_t {
 			bool tags_read;		// True if tags were read successfully.
 
 			string author;		// Author.
@@ -64,7 +68,7 @@ class SAPPrivate final : public RomDataPrivate
 			// - second: Loop flag.
 			vector<pair<uint32_t, bool> > durations;
 
-			TagData() : tags_read(false), songs(1), def_song(0), ntsc(false), stereo(false)
+			sap_tags_t() : tags_read(false), songs(1), def_song(0), ntsc(false), stereo(false)
 				  , type('\0'), fastplay(0), init_addr(0), music_addr(0), player_addr(0)
 				  , covox_addr(0) { }
 		};
@@ -82,13 +86,31 @@ class SAPPrivate final : public RomDataPrivate
 		 * Parse the tags from the open SAP file.
 		 * @return TagData object.
 		 */
-		TagData parseTags(void);
+		sap_tags_t parseTags(void);
 };
+
+ROMDATA_IMPL(SAP)
 
 /** SAPPrivate **/
 
+/* RomDataInfo */
+const char *const SAPPrivate::exts[] = {
+	".sap",
+
+	nullptr
+};
+const char *const SAPPrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+	"audio/x-sap",
+
+	nullptr
+};
+const RomDataInfo SAPPrivate::romDataInfo = {
+	"SAP", exts, mimeTypes
+};
+
 SAPPrivate::SAPPrivate(SAP *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 { }
 
 /**
@@ -201,9 +223,9 @@ int SAPPrivate::durationToMsLoop(const char *str, uint32_t *pMs, bool *pLoop)
  * Parse the tags from the open SAP file.
  * @return TagData object.
  */
-SAPPrivate::TagData SAPPrivate::parseTags(void)
+SAPPrivate::sap_tags_t SAPPrivate::parseTags(void)
 {
-	TagData tags;
+	sap_tags_t tags;
 
 	// Read up to 4 KB from the beginning of the file.
 	// TODO: Support larger headers?
@@ -272,7 +294,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 		// NOTE: String encoding is the common subset of ASCII and ATASCII.
 		// TODO: ascii_to_utf8()?
 		// TODO: Check for duplicate keywords?
-		enum class KeywordType {
+		enum class KeywordType : uint8_t {
 			Unknown = 0,
 
 			Bool,		// bool: Keyword presence sets the value to true.
@@ -283,7 +305,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 			TimeLoop,	// time+loop: Parameter is a duration, plus an optional "LOOP" setting.
 		};
 		struct KeywordDef {
-			const char *keyword;	// Keyword, e.g. "AUTHOR".
+			char keyword[15];	// Keyword, e.g. "AUTHOR".
 			KeywordType type;	// Keyword type.
 			void *ptr;		// Data pointer.
 		};
@@ -304,26 +326,24 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 			{"COVOX",	KeywordType::UInt16_Hex,	&tags.covox_addr},
 			// TIME is handled separately.
 			{"TIME",	KeywordType::TimeLoop,		nullptr},
-
-			{nullptr, KeywordType::Unknown, nullptr}
 		};
 
 		// TODO: Show errors for unsupported tags?
 		// TODO: Print errors?
-		for (const KeywordDef *kwd = &kwds[0]; kwd->keyword != nullptr; kwd++) {
-			if (strcasecmp(kwd->keyword, token) != 0) {
+		for (const KeywordDef &kwd : kwds) {
+			if (strcasecmp(kwd.keyword, token) != 0) {
 				// Not a match. Keep going.
 				continue;
 			}
 
-			switch (kwd->type) {
+			switch (kwd.type) {
 				default:
 					assert(!"Unsupported keyword type.");
 					break;
 
 				case KeywordType::Bool:
 					// Presence of this keyword sets the value to true.
-					*(static_cast<bool*>(kwd->ptr)) = true;
+					*(static_cast<bool*>(kwd.ptr)) = true;
 					break;
 
 				case KeywordType::UInt16_Dec: {
@@ -334,7 +354,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 					char *endptr = nullptr;
 					long val = strtol(params, &endptr, 10);
 					if (endptr > params && (*endptr == '\0' || ISSPACE(*endptr))) {
-						*(static_cast<uint16_t*>(kwd->ptr)) = static_cast<uint16_t>(val);
+						*(static_cast<uint16_t*>(kwd.ptr)) = static_cast<uint16_t>(val);
 					}
 					break;
 				}
@@ -347,7 +367,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 					char *endptr = nullptr;
 					long val = strtol(params, &endptr, 16);
 					if (endptr > params && (*endptr == '\0' || ISSPACE(*endptr))) {
-						*(static_cast<uint16_t*>(kwd->ptr)) = static_cast<uint16_t>(val);
+						*(static_cast<uint16_t*>(kwd.ptr)) = static_cast<uint16_t>(val);
 					}
 					break;
 				}
@@ -359,7 +379,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 
 					if (!ISSPACE(params[0] && (params[1] == '\0' || ISSPACE(params[1])))) {
 						// Single character.
-						*(static_cast<char*>(kwd->ptr)) = params[0];
+						*(static_cast<char*>(kwd.ptr)) = params[0];
 					}
 					break;
 				}
@@ -383,7 +403,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 					}
 					// Zero it out and take the string.
 					*dblq = '\0';
-					*(static_cast<string*>(kwd->ptr)) = latin1_to_utf8(params+1, -1);
+					*(static_cast<string*>(kwd.ptr)) = latin1_to_utf8(params+1, -1);
 					break;
 				}
 
@@ -399,7 +419,7 @@ SAPPrivate::TagData SAPPrivate::parseTags(void)
 					bool loop_flag;
 					if (!durationToMsLoop(params, &duration, &loop_flag)) {
 						// Parsed successfully.
-						tags.durations.emplace_back(std::make_pair(duration, loop_flag));
+						tags.durations.emplace_back(duration, loop_flag);
 					}
 					break;
 				}
@@ -434,7 +454,6 @@ SAP::SAP(IRpFile *file)
 	: super(new SAPPrivate(this, file))
 {
 	RP_D(SAP);
-	d->className = "SAP";
 	d->mimeType = "audio/x-sap";	// unofficial
 	d->fileType = FileType::AudioFile;
 
@@ -453,12 +472,11 @@ SAP::SAP(IRpFile *file)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(buf);
-	info.header.pData = buf;
-	info.ext = nullptr;	// Not needed for SAP.
-	info.szFile = 0;	// Not needed for SAP.
+	const DetectInfo info = {
+		{0, sizeof(buf), buf},
+		nullptr,	// ext (not needed for SAP)
+		0		// szFile (not needed for SAP)
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
@@ -523,50 +541,6 @@ const char *SAP::systemName(unsigned int type) const
 }
 
 /**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *SAP::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".sap",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *SAP::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		"audio/x-sap",
-
-		nullptr
-	};
-	return mimeTypes;
-}
-
-/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -586,7 +560,7 @@ int SAP::loadFieldData(void)
 	}
 
 	// Get the tags.
-	SAPPrivate::TagData tags = d->parseTags();
+	SAPPrivate::sap_tags_t tags = d->parseTags();
 	if (!tags.tags_read) {
 		// No tags.
 		return 0;
@@ -641,7 +615,7 @@ int SAP::loadFieldData(void)
 			rp_sprintf("%c", tags.type));
 	} else {
 		d->fields->addField_string(type_title,
-			rp_sprintf("0x%02X", tags.type),
+			rp_sprintf("0x%02X", static_cast<unsigned int>(tags.type)),
 			RomFields::STRF_MONOSPACE);
 	}
 
@@ -704,8 +678,8 @@ int SAP::loadFieldData(void)
 			data_row.emplace_back(rp_sprintf("%u", song_num));
 			data_row.emplace_back(rp_sprintf("%u:%02u.%03u", min, sec, ms));
 			data_row.emplace_back(src_iter->second
-				? C_("SAP|SongList|Looping", "Yes")
-				: C_("SAP|SongList|Looping", "No"));
+				? C_("RomData", "Yes")
+				: C_("RomData", "No"));
 		}
 
 		static const char *const song_list_hdr[3] = {
@@ -746,7 +720,7 @@ int SAP::loadMetaData(void)
 	}
 
 	// Get the tags.
-	SAPPrivate::TagData tags = d->parseTags();
+	SAPPrivate::sap_tags_t tags = d->parseTags();
 	if (!tags.tags_read) {
 		// No tags.
 		return 0;

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libunixcommon)                    *
  * dll-search.c: Function to search for a usable rom-properties library.   *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,7 +22,7 @@
 // OpenBSD 6.5 doesn't have the static_assert() macro,
 // even though it *does* use LLVM/Clang 7.0.1.
 #ifndef static_assert
-# define static_assert _Static_assert
+#  define static_assert _Static_assert
 #endif
 
 // Supported rom-properties frontends.
@@ -31,6 +31,7 @@ typedef enum {
 	RP_FE_KF5,
 	RP_FE_GTK2,	// XFCE (Thunar 1.6)
 	RP_FE_GTK3,	// GNOME, MATE, Cinnamon, XFCE (Thunar 1.8)
+	RP_FE_GTK4,	// not used yet
 
 	RP_FE_MAX
 } RP_Frontend;
@@ -52,8 +53,14 @@ static const char *const RP_Extension_Path[RP_FE_MAX] = {
 #else
 	NULL,
 #endif
+	// FIXME: libnautilus-extension 3 and 4 cannot be installed at the same time.
 #ifdef LibNautilusExtension_EXTENSION_DIR
 	LibNautilusExtension_EXTENSION_DIR "/rom-properties-gtk3.so",
+#else
+	NULL,
+#endif
+#ifdef LibNautilusExtension_EXTENSION_DIR
+	LibNautilusExtension_EXTENSION_DIR "/rom-properties-gtk4.so",
 #else
 	NULL,
 #endif
@@ -63,10 +70,11 @@ static const char *const RP_Extension_Path[RP_FE_MAX] = {
 // - Index: Current desktop environment. (RP_Frontend)
 // - Value: Plugin to use. (RP_Frontend)
 static const uint8_t plugin_prio[RP_FE_MAX][RP_FE_MAX] = {
-	{RP_FE_KDE4, RP_FE_KF5, RP_FE_GTK2, RP_FE_GTK3},	// RP_FE_KDE4
-	{RP_FE_KF5, RP_FE_KDE4, RP_FE_GTK3, RP_FE_GTK2},	// RP_FE_KF5
-	{RP_FE_GTK2, RP_FE_GTK3, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_GTK2
-	{RP_FE_GTK3, RP_FE_GTK2, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_GTK3
+	{RP_FE_KDE4, RP_FE_KF5, RP_FE_GTK2, RP_FE_GTK3, RP_FE_GTK4},	// RP_FE_KDE4
+	{RP_FE_KF5, RP_FE_KDE4, RP_FE_GTK4, RP_FE_GTK3, RP_FE_GTK2},	// RP_FE_KF5
+	{RP_FE_GTK2, RP_FE_GTK3, RP_FE_GTK4, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_GTK2
+	{RP_FE_GTK3, RP_FE_GTK4, RP_FE_GTK2, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_GTK3
+	{RP_FE_GTK4, RP_FE_GTK3, RP_FE_GTK2, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_GTK4
 };
 
 /**
@@ -157,7 +165,7 @@ int rp_get_process_name(pid_t pid, char *pidname, size_t len, pid_t *ppid)
  */
 static RP_Frontend walk_proc_tree(void)
 {
-	RP_Frontend ret = RP_FE_MAX;
+	RP_Frontend ret_fe = RP_FE_MAX;
 
 #ifdef __linux__
 	// Linux-specific: Walk through /proc.
@@ -178,12 +186,12 @@ static RP_Frontend walk_proc_tree(void)
 		// FIXME: Handle ksmserver...
 		if (!strcmp(process_name, "kdeinit5")) {
 			// Found kdeinit5.
-			ret = RP_FE_KF5;
+			ret_fe = RP_FE_KF5;
 			ppid = 0;
 			break;
 		} else if (!strcmp(process_name, "kdeinit4")) {
 			// Found kdeinit4.
-			ret = RP_FE_KDE4;
+			ret_fe = RP_FE_KDE4;
 			ppid = 0;
 			break;
 		} else if (!strcmp(process_name, "gnome-panel") ||
@@ -195,7 +203,7 @@ static RP_Frontend walk_proc_tree(void)
 		{
 			// GNOME, MATE, or Cinnamon session.
 			// TODO: Verify the Cinnamon process names.
-			ret = RP_FE_GTK3;
+			ret_fe = RP_FE_GTK3;
 			ppid = 0;
 			break;
 		}
@@ -204,7 +212,7 @@ static RP_Frontend walk_proc_tree(void)
 # warning walk_proc_tree() is not implemented for this OS.
 #endif
 
-	return ret;
+	return ret_fe;
 }
 
 /**
@@ -244,14 +252,18 @@ static inline RP_Frontend check_xdg_desktop_name(const char *name)
 		return RP_FE_GTK3;
 	}
 
-	// NOTE: "KDE4", "KDE5", and "KF5" are not actually used.
+	// NOTE: The following desktop names are not actually used.
 	// They're used here for debugging purposes only.
 	if (!strcasecmp(name, "KF5") || !strcasecmp(name, "KDE5")) {
-		// KF5.
 		return RP_FE_KF5;
 	} else if (!strcasecmp(name, "KDE4")) {
-		// KDE4.
 		return RP_FE_KDE4;
+	} else if (!strcasecmp(name, "GTK4")) {
+		return RP_FE_GTK4;
+	} else if (!strcasecmp(name, "GTK3")) {
+		return RP_FE_GTK3;
+	} else if (!strcasecmp(name, "GTK2")) {
+		return RP_FE_GTK2;
 	}
 
 	// Unknown desktop name.
@@ -331,9 +343,9 @@ int rp_dll_search(const char *symname, void **ppDll, void **ppfn, PFN_RP_DLL_DEB
 
 	// Debug: Print the active desktop environment.
 	if (pfnDebug) {
-		static const char *const de_name_tbl[] = {
+		static const char de_name_tbl[][8] = {
 			"KDE4", "KF5",
-			"GTK2", "GTK3",
+			"GTK2", "GTK3", "GTK4",
 		};
 		static_assert(sizeof(de_name_tbl)/sizeof(de_name_tbl[0]) == RP_FE_MAX,
 			"de_name_tbl[] needs to be updated.");
@@ -363,7 +375,8 @@ int rp_dll_search(const char *symname, void **ppDll, void **ppfn, PFN_RP_DLL_DEB
 		}
 		*ppDll = dlopen(plugin_path, RTLD_LOCAL|RTLD_LAZY);
 		if (!*ppDll) {
-			// Library not found.
+			// Library not found, or unable to open the library.
+			pfnDebug(LEVEL_DEBUG, "*** dlopen() failed: %s", dlerror());
 			continue;
 		}
 
@@ -374,6 +387,7 @@ int rp_dll_search(const char *symname, void **ppDll, void **ppfn, PFN_RP_DLL_DEB
 		*ppfn = dlsym(*ppDll, symname);
 		if (!*ppfn) {
 			// Symbol not found.
+			pfnDebug(LEVEL_DEBUG, "*** dlsym() failed: %s", dlerror());
 			dlclose(*ppDll);
 			*ppDll = NULL;
 			continue;

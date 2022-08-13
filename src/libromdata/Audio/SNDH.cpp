@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SNDH.hpp: Atari ST SNDH audio reader.                                   *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -35,8 +35,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(SNDH)
-
 class SNDHPrivate final : public RomDataPrivate
 {
 	public:
@@ -45,6 +43,12 @@ class SNDHPrivate final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(SNDHPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// Parsed tags.
@@ -100,10 +104,29 @@ class SNDHPrivate final : public RomDataPrivate
 		TagData parseTags(void);
 };
 
+ROMDATA_IMPL(SNDH)
+
 /** SNDHPrivate **/
 
+/* RomDataInfo */
+const char *const SNDHPrivate::exts[] = {
+	".sndh",
+
+	nullptr
+};
+const char *const SNDHPrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"audio/x-sndh",
+
+	nullptr
+};
+const RomDataInfo SNDHPrivate::romDataInfo = {
+	"SNDH", exts, mimeTypes
+};
+
 SNDHPrivate::SNDHPrivate(SNDH *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 { }
 
 /**
@@ -136,7 +159,7 @@ string SNDHPrivate::readStrFromBuffer(const uint8_t **p, const uint8_t *p_end, b
 		// Reference: https://en.wikipedia.org/wiki/Atari_ST_character_set
 		const uint8_t *const p_old = *p;
 		*p = s_end + 1;
-		return atariST_to_utf8(reinterpret_cast<const char*>(p_old), (int)(s_end-p_old));
+		return cpN_to_utf8(CP_RP_ATARIST, reinterpret_cast<const char*>(p_old), (int)(s_end-p_old));
 	}
 
 	// Empty string.
@@ -204,10 +227,12 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 		// Decompress the data.
 		// FIXME: unice68_depacker() only supports decompressing the entire file.
 		// Add a variant that supports buffer sizes.
-		const off64_t fileSize = file->size();
-		if (fileSize < 16) {
+		const off64_t fileSize_o = file->size();
+		if (fileSize_o < 16) {
 			return tags;
 		}
+
+		const size_t fileSize = static_cast<size_t>(fileSize_o);
 		unique_ptr<uint8_t[]> inbuf(new uint8_t[fileSize]);
 		sz = file->seekAndRead(0, inbuf.get(), fileSize);
 		if (sz != (size_t)fileSize) {
@@ -404,11 +429,8 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 
 				const uint16_t *p_tbl = reinterpret_cast<const uint16_t*>(p + 4);
 				tags.subtune_lengths.resize(subtunes);
-				const auto tags_subtune_lengths_end = tags.subtune_lengths.end();
-				for (auto iter = tags.subtune_lengths.begin();
-				     iter != tags_subtune_lengths_end; ++iter, p_tbl++)
-				{
-					*iter = be16_to_cpu(*p_tbl);
+				for (unsigned int &pSubtuneLength : tags.subtune_lengths) {
+					pSubtuneLength = be16_to_cpu(*p_tbl++);
 				}
 
 				p = p_next;
@@ -424,14 +446,14 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				// NOTE: The data format for some of these seems to be
 				// two bytes per subtune, two more bytes, then two NULL bytes.
 				bool handled = false;
-				if (p + 4+2 < p_end) {
+				if (p < p_end - 4+2) {
 					if (p[4+2] == 0 && ISUPPER(p[4+2+1])) {
 						p += 4+2+1;
 						handled = true;
 					}
 				}
 
-				if (!handled && p + 4+3 < p_end) {
+				if (!handled && p < p_end - 4+3) {
 					if (p[4+3] == 0 && ISUPPER(p[4+3+1])) {
 						p += 4+3+1;
 						handled = true;
@@ -439,7 +461,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				}
 
 				// Check for the 5-byte version.
-				if (!handled && (p + 4+5+1 < p_end)) {
+				if (!handled && (p < p_end - 4+5+1)) {
 					// Might not have a NULL terminator.
 					if (p[4+5] != 0 && ISUPPER(p[4+5+1])) {
 						// No NULL terminator.
@@ -456,7 +478,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 
 				// Search for `00 00`.
 				if (!handled) {
-					for (p += 4; p+1 < p_end; p += 2) {
+					for (p += 4; p < p_end-1; p += 2) {
 						if (p[0] == 0 && p[1] == 0) {
 							// Found it!
 							p += 2;
@@ -500,8 +522,8 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
 				// NOTE: Digits might not be NULL-terminated,
 				// so instead of using readAsciiNumberFromBuffer(),
 				// parse the two digits manually.
-				assert(p + 4 <= p_end);
-				if (p + 4 > p_end) {
+				assert(p <= p_end - 4);
+				if (p > p_end - 4) {
 					// Out of bounds.
 					p = p_end;
 					break;
@@ -611,7 +633,6 @@ SNDH::SNDH(IRpFile *file)
 	: super(new SNDHPrivate(this, file))
 {
 	RP_D(SNDH);
-	d->className = "SNDH";
 	d->mimeType = "audio/x-sndh";	// unofficial, not on fd.o
 	d->fileType = FileType::AudioFile;
 
@@ -636,12 +657,11 @@ SNDH::SNDH(IRpFile *file)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = static_cast<uint32_t>(size);
-	info.header.pData = buf;
-	info.ext = nullptr;	// Not needed for SNDH.
-	info.szFile = 0;	// Not needed for SNDH.
+	const DetectInfo info = {
+		{0, static_cast<uint32_t>(size), buf},
+		nullptr,	// ext (not needed for SNDH)
+		0		// szFile (not needed for SNDH)
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
@@ -696,13 +716,10 @@ int SNDH::isRomSupported_static(const DetectInfo *info)
 				{4, {'C','O','N','V'}},
 				{4, {'R','I','P','P'}},
 				{4, {'H','D','N','S'}},
-				{0, {0,0,0,0}}
 			};
 
-			for (const struct _sndh_fragment_t *fragment = fragments;
-			     fragment->len != 0; fragment++)
-			{
-				void *p = memmem(&info->header.pData[12], sz, fragment->data, fragment->len);
+			for (const auto &fragment : fragments) {
+				void *p = memmem(&info->header.pData[12], sz, fragment.data, fragment.len);
 				if (p) {
 					// Found a matching fragment.
 					// TODO: Use a constant to indicate ICE-compressed?
@@ -739,51 +756,6 @@ const char *SNDH::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *SNDH::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".sndh",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *SNDH::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"audio/x-sndh",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**
@@ -865,7 +837,7 @@ int SNDH::loadFieldData(void)
 	// Timer frequencies.
 	// TODO: Use RFT_LISTDATA?
 	const char *const s_timer_freq = C_("SNDH", "Timer %c Freq");
-	for (unsigned int i = 0; i < (unsigned int)ARRAY_SIZE(tags.timer_freq); i++) {
+	for (int i = 0; i < ARRAY_SIZE_I(tags.timer_freq); i++) {
 		if (tags.timer_freq[i] == 0)
 			continue;
 
@@ -898,13 +870,10 @@ int SNDH::loadFieldData(void)
 		// TODO: Hide the third column if there are names but all zero durations?
 		uint64_t duration_total = 0;
 
-		unsigned int idx = 0;
 		const size_t count = std::max(tags.subtune_names.size(), tags.subtune_lengths.size());
 		auto vv_subtune_list = new RomFields::ListData_t(count);
-		auto dest_iter = vv_subtune_list->begin();
-		const auto vv_subtune_list_end = vv_subtune_list->end();
-		for (; dest_iter != vv_subtune_list_end; ++dest_iter, idx++) {
-			vector<string> &data_row = *dest_iter;
+		unsigned int idx = 0;
+		for (vector<string> &data_row : *vv_subtune_list) {
 			data_row.reserve(col_count);	// 2 or 3 fields per row.
 
 			data_row.emplace_back(rp_sprintf("%u", idx+1));	// NOTE: First subtune is 1, not 0.
@@ -929,6 +898,9 @@ int SNDH::loadFieldData(void)
 					data_row.emplace_back("");
 				}
 			}
+
+			// Next row.
+			idx++;
 		}
 
 		if (!has_SN && has_TIME && duration_total == 0) {

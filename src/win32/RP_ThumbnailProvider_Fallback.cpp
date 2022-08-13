@@ -3,7 +3,7 @@
  * RP_ThumbnailProvider_Fallback.cpp: IThumbnailProvider implementation.   *
  * Fallback functions for unsupported files.                               *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -54,7 +54,7 @@ HRESULT RP_ThumbnailProvider_Private::Fallback_int(RegKey &hkey_Assoc,
 
 	// Parse the CLSID string.
 	// TODO: Use IIDFromString() instead to skip ProgID handling?
-	// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20151015-00/?p=91351
+	// Reference: https://devblogs.microsoft.com/oldnewthing/20151015-00/?p=91351
 	CLSID clsidThumbnailProvider;
 	HRESULT hr = CLSIDFromString(clsid_reg.c_str(), &clsidThumbnailProvider);
 	if (FAILED(hr)) {
@@ -113,18 +113,15 @@ HRESULT RP_ThumbnailProvider_Private::Fallback(UINT cx, HBITMAP *phbmp, WTS_ALPH
 	// TODO: Check HKCU first.
 
 	// Get the file extension.
-	const string filename = this->file->filename();
-	if (filename.empty()) {
-		return E_INVALIDARG;
-	}
-	const char *file_ext = FileSystem::file_ext(filename);
-	if (!file_ext) {
-		// Invalid or missing file extension.
+	const char *const filename = this->file->filename();
+	const char *const ext = FileSystem::file_ext(filename);
+	if (!filename || !ext) {
+		// Invalid or missing filename or extension.
 		return E_INVALIDARG;
 	}
 
 	// Open the filetype key in HKCR.
-	RegKey hkey_Assoc(HKEY_CLASSES_ROOT, U82T_c(file_ext), KEY_READ, false);
+	RegKey hkey_Assoc(HKEY_CLASSES_ROOT, U82T_c(ext), KEY_READ, false);
 	if (!hkey_Assoc.isOpen()) {
 		return hkey_Assoc.lOpenRes();
 	}

@@ -2,11 +2,13 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * iso9660.h: ISO-9660 structs for CD-ROM images.                          *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-// Reference: http://wiki.osdev.org/ISO_9660
+// References:
+// - http://wiki.osdev.org/ISO_9660
+// - https://github.com/roysmeding/cditools/blob/master/cdi.py
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_ISO9660_H__
 #define __ROMPROPERTIES_LIBROMDATA_ISO9660_H__
@@ -14,7 +16,7 @@
 #include <stdint.h>
 
 #include "common.h"
-#include "librpcpu/byteorder.h"
+#include "librpcpu/byteswap_rp.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,19 +40,19 @@ extern "C" {
  */
 typedef union _uint16_lsb_msb_t {
 	struct {
-		uint16_t le;
-		uint16_t be;
+		uint16_t le;	// Little-endian
+		uint16_t be;	// Big-endian
 	};
 	// Host-endian value.
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	struct {
-		uint16_t he;
-		uint16_t x;
+		uint16_t he;	// Host-endian
+		uint16_t se;	// Swap-endian
 	};
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 	struct {
-		uint16_t x;
-		uint16_t he;
+		uint16_t se;	// Swap-endian
+		uint16_t he;	// Host-endian
 	};
 #endif
 } uint16_lsb_msb_t;
@@ -61,19 +63,19 @@ ASSERT_STRUCT(uint16_lsb_msb_t, 4);
  */
 typedef union _uint32_lsb_msb_t {
 	struct {
-		uint32_t le;
-		uint32_t be;
+		uint32_t le;	// Little-endian
+		uint32_t be;	// Big-endian
 	};
 	// Host-endian value.
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	struct {
-		uint32_t he;
-		uint32_t x;
+		uint32_t he;	// Host-endian
+		uint32_t se;	// Swap-endian
 	};
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 	struct {
-		uint32_t x;
-		uint32_t he;
+		uint32_t se;	// Swap-endian
+		uint32_t he;	// Host-endian
 	};
 #endif
 } uint32_lsb_msb_t;
@@ -86,10 +88,11 @@ ASSERT_STRUCT(uint32_lsb_msb_t, 8);
  * For an unspecified time, all text fields contain '0' (ASCII zero)
  * and tz_offset is binary zero.
  */
+// Some compilers pad this structure to a multiple of 4 bytes
 #pragma pack(1)
 typedef struct PACKED _ISO_PVD_DateTime_t {
 	union {
-		char full[16];
+		char full[17];
 		struct {
 			char year[4];		// Year, from 1 to 9999.
 			char month[2];		// Month, from 1 to 12.
@@ -98,19 +101,20 @@ typedef struct PACKED _ISO_PVD_DateTime_t {
 			char minute[2];		// Minute, from 0 to 59.
 			char second[2];		// Second, from 0 to 59.
 			char csecond[2];	// Centiseconds, from 0 to 99.
+
+			// Timezone offset, in 15-minute intervals.
+			// Range: [-48 (GMT-1200), +52 (GMT+1300)]
+			int8_t tz_offset;
 		};
 	};
-
-	// Timezone offset, in 15-minute intervals.
-	// Range: [-48 (GMT-1200), +52 (GMT+1300)]
-	int8_t tz_offset;
 } ISO_PVD_DateTime_t;
-#pragma pack()
 ASSERT_STRUCT(ISO_PVD_DateTime_t, 17);
+#pragma pack()
 
 /**
  * ISO-9660 Directory Entry date/time struct.
  */
+// Some compilers pad this structure to a multiple of 4 bytes
 #pragma pack(1)
 typedef struct PACKED _ISO_Dir_DateTime_t {
 	uint8_t year;		// Number of years since 1900.
@@ -124,8 +128,8 @@ typedef struct PACKED _ISO_Dir_DateTime_t {
 	// Range: [-48 (GMT-1200), +52 (GMT+1300)]
 	int8_t tz_offset;
 } ISO_Dir_DateTime_t;
-#pragma pack()
 ASSERT_STRUCT(ISO_Dir_DateTime_t, 7);
+#pragma pack()
 
 /**
  * Directory entry, excluding the variable-length file identifier.
@@ -159,14 +163,15 @@ typedef enum {
 /**
  * Volume descriptor header.
  */
+// Some compilers pad this structure to a multiple of 4 bytes
 #pragma pack(1)
 typedef struct PACKED _ISO_Volume_Descriptor_Header {
 	uint8_t type;		// Volume descriptor type code. (See ISO_Volume_Descriptor_Type.)
 	char identifier[5];	// (strA) "CD001"
 	uint8_t version;	// Volume descriptor version. (0x01)
 } ISO_Volume_Descriptor_Header;
-#pragma pack()
 ASSERT_STRUCT(ISO_Volume_Descriptor_Header, 7);
+#pragma pack()
 
 /**
  * Boot volume descriptor.
@@ -181,16 +186,15 @@ typedef struct PACKED _ISO_Boot_Volume_Descriptor {
 		uint8_t boot_system_use[1977];
 	};
 } ISO_Boot_Volume_Descriptor;
-#pragma pack()
 ASSERT_STRUCT(ISO_Boot_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
+#pragma pack()
 
 /**
  * Primary volume descriptor.
  *
  * NOTE: All fields are space-padded. (0x20, ' ')
  */
-#pragma pack(1)
-typedef struct PACKED _ISO_Primary_Volume_Descriptor {
+typedef struct _ISO_Primary_Volume_Descriptor {
 	ISO_Volume_Descriptor_Header header;
 
 	uint8_t reserved1;			// [0x007] 0x00
@@ -238,7 +242,6 @@ typedef struct PACKED _ISO_Primary_Volume_Descriptor {
 	uint8_t iso_reserved[653];		// [0x573] Reserved by ISO.
 } ISO_Primary_Volume_Descriptor;
 ASSERT_STRUCT(ISO_Primary_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
-#pragma pack()
 
 /**
  * Volume descriptor.
@@ -251,8 +254,7 @@ ASSERT_STRUCT(ISO_Primary_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
 #define ISO_PVD_ADDRESS_2048	(ISO_PVD_LBA * ISO_SECTOR_SIZE_MODE1_COOKED)
 #define ISO_PVD_ADDRESS_2352	(ISO_PVD_LBA * ISO_SECTOR_SIZE_MODE1_RAW)
 #define ISO_PVD_ADDRESS_2448	(ISO_PVD_LBA * ISO_SECTOR_SIZE_MODE1_RAW_SUBCHAN)
-#pragma pack(1)
-typedef union PACKED _ISO_Volume_Descriptor {
+typedef union _ISO_Volume_Descriptor {
 	ISO_Volume_Descriptor_Header header;
 
 	struct {
@@ -264,7 +266,6 @@ typedef union PACKED _ISO_Volume_Descriptor {
 	ISO_Primary_Volume_Descriptor pri;
 } ISO_Volume_Descriptor;
 ASSERT_STRUCT(ISO_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
-#pragma pack()
 
 /**
  * Volume descriptor type.
@@ -288,6 +289,99 @@ typedef enum {
 #define UDF_VD_NSR03 "NSR03"	/* UDF 2.00 */
 #define UDF_VD_BOOT2 "BOOT2"
 #define UDF_VD_TEA01 "TEA01"
+
+/**
+ * CD-i information.
+ * Reference: https://github.com/roysmeding/cditools/blob/master/cdi.py
+ */
+#define CDi_VD_MAGIC "CD-I "
+#define CDi_VD_VERSION 0x01
+
+/** El Torito boot specification **/
+
+// ISO_Boot_Volume_Descriptor sysID
+#define ISO_EL_TORITO_BOOT_SYSTEM_ID "EL TORITO SPECIFICATION"
+
+/**
+ * Section header entry.
+ * The first header entry has extra fields filled in.
+ *
+ * All fields are in little-endian.
+ */
+typedef struct _ISO_Boot_Section_Header_Entry {
+	uint8_t header_id;	// [0x000] Header ID (See ISO_Boot_Section_Header_ID_e)
+	uint8_t platform_id;	// [0x001] Platform ID (See ISO_Boot_Platform_ID_e)
+	uint16_t entries;	// [0x002] Number of section entries following this header
+				//         This is 0 for the initial header, which always
+				//         has 1 entry.
+	char id_string[24];	// [0x004] Identifies the manufacturer of the CD
+	uint16_t checksum;	// [0x01C] Checksum (all 16-bit LE WORDs must add up to 0)
+	uint8_t key_55;		// [0x01E] Key byte: 0x55
+	uint8_t key_AA;		// [0x01F] Key byte: 0xAA
+} ISO_Boot_Section_Header_Entry;
+ASSERT_STRUCT(ISO_Boot_Section_Header_Entry, 32);
+
+/**
+ * Section header entry: ID
+ */
+typedef enum {
+	ISO_BOOT_SECTION_HEADER_ID_FIRST	= 0x01,	// First header
+	ISO_BOOT_SECTION_HEADER_ID_NEXT		= 0x90,	// Subsequent headers
+	ISO_BOOT_SECTION_HEADER_ID_FINAL	= 0x91,	// Final header
+} ISO_Boot_Section_Header_ID_e;
+
+/**
+ * Platform ID
+ */
+typedef enum {
+	ISO_BOOT_PLATFORM_80x86		= 0x00,	// PC-compatible (x86)
+	ISO_BOOT_PLATFORM_PowerPC	= 0x01,	// PowerPC
+	ISO_BOOT_PLATFORM_Macintosh	= 0x02,	// Macintosh (not used?)
+	ISO_BOOT_PLATFORM_EFI		= 0xEF,
+} ISO_Boot_Platform_ID_e;
+
+/**
+ * Section entry.
+ * All fields are in little-endian.
+ */
+typedef struct _ISO_Boot_Section_Entry {
+	uint8_t boot_indicator;		// [0x000] Boot indicator (See ISO_Boot_Indicator_e)
+	uint8_t boot_media_type;	// [0x001] Boot media type (See ISO_Boot_Media_Type_e)
+	uint16_t load_segment;		// [0x002] Load segment (If 0, assume 0x07C0)
+	uint8_t system_type;		// [0x004] System type (byte 5 from partition table in image)
+	uint8_t unused;			// [0x005]
+	uint16_t sector_count;		// [0x006] Number of sectors to load
+	uint32_t load_rba;		// [0x008] Start address of the virtual disk
+	uint8_t selection_criteria[20];	// [0x00C] For entries other than the first entry,
+					//         contains selection criteria.
+} ISO_Boot_Section_Entry;
+ASSERT_STRUCT(ISO_Boot_Section_Entry, 32);
+
+/**
+ * Boot indicator
+ */
+typedef enum {
+	ISO_BOOT_INDICATOR_IS_BOOTABLE	= 0x88,
+	ISO_BOOT_INDICATOR_NOT_BOOTABLE	= 0x00,
+} ISO_Boot_Indicator_e;
+
+/**
+ * Boot media type
+ */
+typedef enum {
+	ISO_BOOT_MEDIA_TYPE_NO_EMULATION	= 0,	// No Emulation
+	ISO_BOOT_MEDIA_TYPE_FLOPPY_1_2_MB	= 1,	// 1.2 MB floppy disk
+	ISO_BOOT_MEDIA_TYPE_FLOPPY_1_44_MB	= 2,	// 1.44 MB floppy disk
+	ISO_BOOT_MEDIA_TYPE_FLOPPY_2_88_MB	= 3,	// 2.88 MB floppy disk
+	ISO_BOOT_MEDIA_TYPE_FLOPPY_HDD		= 4,	// Hard Disk Drive
+	ISO_BOOT_MEDIA_TYPE_MASK		= 0x0F,	// Mask
+
+	// For all entries other than the first entry,
+	// the following bits may be set:
+	ISO_BOOT_MEDIA_TYPE_CONTINUATION_ENTRY_FOLLOWS	= (1U << 5),
+	ISO_BOOT_MEDIA_TYPE_CONTAINS_ATAPI_DRIVER	= (1U << 6),
+	ISO_BOOT_MEDIA_TYPE_CONTAINS_SCSI_DRIVERS	= (1U << 7),
+} ISO_Boot_Media_Type_e;
 
 #ifdef __cplusplus
 }

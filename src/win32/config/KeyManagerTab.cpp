@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * KeyManagerTab.hpp: Key Manager tab for rp-config.                       *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,6 +10,7 @@
 #include "KeyManagerTab.hpp"
 #include "res/resource.h"
 #include "../FontHandler.hpp"
+#include "../MessageWidget.hpp"
 
 // KeyStore
 #include "KeyStoreWin32.hpp"
@@ -18,9 +19,9 @@
 #include "libwin32common/sdk/IListView.hpp"
 #include "KeyStore_OwnerDataCallback.hpp"
 
-// libwin32common
-#include "libwin32common/SubclassWindow.h"
-using LibWin32Common::WTSSessionNotification;
+// libwin32ui
+#include "libwin32ui/SubclassWindow.h"
+using LibWin32UI::WTSSessionNotification;
 
 // librpbase, librpfile
 #include "librpbase/crypto/KeyManager.hpp"
@@ -28,13 +29,13 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 
 // libromdata
-#include "libromdata/disc/WiiPartition.hpp"
-#include "libromdata/crypto/CtrKeyScrambler.hpp"
-#include "libromdata/crypto/N3DSVerifyKeys.hpp"
 using namespace LibRomData;
 
 // C++ STL classes.
+using std::locale;
+using std::ostringstream;
 using std::string;
+using std::wostringstream;
 using std::wstring;
 
 class KeyManagerTabPrivate
@@ -127,6 +128,14 @@ class KeyManagerTabPrivate
 		// Font Handler.
 		FontHandler fontHandler;
 
+		// wtsapi32.dll for Remote Desktop status. (WinXP and later)
+		WTSSessionNotification wts;
+
+		// MessageWidget for ROM operation notifications.
+		HWND hMessageWidget;
+		POINT ptListView;	// Original ListView position
+		SIZE szListView;	// Original ListView size
+
 		// EDIT box for ListView.
 		HWND hEditBox;
 		int iEditItem;		// Item being edited. (-1 for none)
@@ -135,9 +144,6 @@ class KeyManagerTabPrivate
 
 		// Is this COMCTL32.dll v6.10 or later?
 		bool isComCtl32_v610;
-
-		// wtsapi32.dll for Remote Desktop status. (WinXP and later)
-		WTSSessionNotification wts;
 
 		// Icons for the "Valid?" column.
 		// NOTE: "?" and "X" are copies from User32.
@@ -198,24 +204,19 @@ class KeyManagerTabPrivate
 		}
 
 		/**
-		 * Import keys from Wii keys.bin. (BootMii format)
+		 * Show key import return status.
+		 * @param filename Filename
+		 * @param keyType Key type
+		 * @param iret ImportReturn
 		 */
-		void importWiiKeysBin(void);
+		void showKeyImportReturnStatus(const tstring &filename,
+			const char *keyType, const KeyStoreUI::ImportReturn &iret);
 
 		/**
-		 * Import keys from Wii U otp.bin.
+		 * Import keys from a binary file.
+		 * @param fileID Type of file
 		 */
-		void importWiiUOtpBin(void);
-
-		/**
-		 * Import keys from 3DS boot9.bin.
-		 */
-		void import3DSboot9bin(void);
-
-		/**
-		 * Import keys from 3DS aeskeydb.bin.
-		 */
-		void import3DSaeskeydb(void);
+		void importKeysFromBin(KeyStoreUI::ImportFileID id);
 };
 
 /** KeyManagerTabPrivate **/
@@ -227,6 +228,7 @@ KeyManagerTabPrivate::KeyManagerTabPrivate()
 	, keyStore(new KeyStoreWin32(nullptr))
 	, keyStore_ownerDataCallback(nullptr)
 	, fontHandler(nullptr)
+	, hMessageWidget(nullptr)
 	, hEditBox(nullptr)
 	, iEditItem(-1)
 	, bCancelEdit(false)
@@ -243,11 +245,11 @@ KeyManagerTabPrivate::KeyManagerTabPrivate()
 	loadImages();
 
 	// Initialize the alternate row color.
-	colorAltRow = LibWin32Common::getAltRowColor();
+	colorAltRow = LibWin32UI::getAltRowColor();
 	hbrAltRow = CreateSolidBrush(colorAltRow);
 
 	// Check the COMCTL32.DLL version.
-	isComCtl32_v610 = LibWin32Common::isComCtl32_v610();
+	isComCtl32_v610 = LibWin32UI::isComCtl32_v610();
 }
 
 KeyManagerTabPrivate::~KeyManagerTabPrivate()
@@ -420,7 +422,7 @@ void KeyManagerTabPrivate::initUI(void)
 	// NOTE: ListView_GetStringWidth() doesn't adjust for the monospaced font.
 	SIZE szValue;
 	HFONT hFontMono = fontHandler.monospacedFont();
-	int ret = LibWin32Common::measureTextSize(hListView, hFontMono, _T("0123456789ABCDEF0123456789ABCDEF"), &szValue);
+	int ret = LibWin32UI::measureTextSize(hListView, hFontMono, _T("0123456789ABCDEF0123456789ABCDEF"), &szValue);
 	assert(ret == 0);
 	if (ret == 0) {
 		column_width[1] = szValue.cx + column_padding[1];
@@ -440,7 +442,7 @@ void KeyManagerTabPrivate::initUI(void)
 		column_width[0] = std::max(column_width[0], tmp_width[0]);
 		//column_width[1] = std::max(column_width[1], tmp_width[1]);
 
-		ret = LibWin32Common::measureTextSize(hListView, hFontMono, U82T_s(key->value), &szValue);
+		ret = LibWin32UI::measureTextSize(hListView, hFontMono, U82T_s(key->value), &szValue);
 		assert(ret == 0);
 		if (ret == 0) {
 			column_width[1] = std::max(column_width[1], (int)szValue.cx + column_padding[1]);
@@ -451,6 +453,17 @@ void KeyManagerTabPrivate::initUI(void)
 
 	// Auto-size the "Valid?" column.
 	ListView_SetColumnWidth(hListView, 2, LVSCW_AUTOSIZE_USEHEADER);
+
+	// Get the ListView's initial position and size.
+	// This will be needed to adjust the ListView when
+	// displaying the MessageWidget.
+	RECT rectListView;
+	GetWindowRect(hListView, &rectListView);
+	MapWindowPoints(HWND_DESKTOP, hWndPropSheet, (LPPOINT)&rectListView, 2);
+	ptListView.x = rectListView.left;
+	ptListView.y = rectListView.top;
+	szListView.cx = rectListView.right - rectListView.left;
+	szListView.cy = rectListView.bottom - rectListView.top;
 
 	// Subclass the ListView.
 	// TODO: Error handling?
@@ -584,6 +597,11 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 					d->save();
 					break;
 
+				case PSN_SETACTIVE:
+					// Disable the "Defaults" button.
+					RpPropSheet_EnableDefaults(GetParent(hDlg), false);
+					break;
+
 				case LVN_GETDISPINFO: {
 					// Get data for an LVS_OWNERDRAW ListView.
 					if (!d->keyStore || pHdr->idFrom != IDC_KEYMANAGER_LIST)
@@ -607,10 +625,16 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 					return true;
 				}
 
-				case PSN_SETACTIVE:
-					// Disable the "Defaults" button.
-					RpPropSheet_EnableDefaults(GetParent(hDlg), false);
+				case MSGWN_CLOSED: {
+					// MessageWidget's Close button was pressed.
+					HWND hListView = GetDlgItem(hDlg, IDC_KEYMANAGER_LIST);
+					assert(hListView != nullptr);
+					SetWindowPos(hListView, nullptr,
+						d->ptListView.x, d->ptListView.y,
+						d->szListView.cx, d->szListView.cy,
+						SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 					break;
+				}
 
 				default:
 					break;
@@ -648,16 +672,16 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				}
 
 				case IDM_KEYMANAGER_IMPORT_WII_KEYS_BIN:
-					d->importWiiKeysBin();
+					d->importKeysFromBin(KeyStoreUI::ImportFileID::WiiKeysBin);
 					return true;
 				case IDM_KEYMANAGER_IMPORT_WIIU_OTP_BIN:
-					d->importWiiUOtpBin();
+					d->importKeysFromBin(KeyStoreUI::ImportFileID::WiiUOtpBin);
 					return true;
 				case IDM_KEYMANAGER_IMPORT_3DS_BOOT9_BIN:
-					d->import3DSboot9bin();
+					d->importKeysFromBin(KeyStoreUI::ImportFileID::N3DSboot9bin);
 					break;
 				case IDM_KEYMANAGER_IMPORT_3DS_AESKEYDB:
-					d->import3DSaeskeydb();
+					d->importKeysFromBin(KeyStoreUI::ImportFileID::N3DSaeskeydb);
 					break;
 
 				default:
@@ -684,7 +708,7 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 			auto *const d = reinterpret_cast<KeyManagerTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
 			if (d) {
 				// Reinitialize the alternate row color.
-				d->colorAltRow = LibWin32Common::getAltRowColor();
+				d->colorAltRow = LibWin32UI::getAltRowColor();
 				if (d->hbrAltRow) {
 					DeleteBrush(d->hbrAltRow);
 				}
@@ -811,6 +835,9 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
  */
 UINT CALLBACK KeyManagerTabPrivate::callbackProc(HWND hWnd, UINT uMsg, LPPROPSHEETPAGE ppsp)
 {
+	RP_UNUSED(hWnd);
+	RP_UNUSED(ppsp);
+
 	switch (uMsg) {
 		case PSPCB_CREATE: {
 			// Must return true to enable the page to be created.
@@ -911,7 +938,7 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewSubclassProc(
 
 		case WM_NCDESTROY:
 			// Remove the window subclass.
-			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
+			// Reference: https://devblogs.microsoft.com/oldnewthing/20031111-00/?p=41883
 			RemoveWindowSubclass(hWnd, ListViewSubclassProc, uIdSubclass);
 			break;
 
@@ -965,7 +992,7 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 			TCHAR tbuf[128];
 			tbuf[0] = 0;
 			GetWindowText(hWnd, tbuf, _countof(tbuf));
-			d->keyStore->setKey(d->iEditItem, T2U8(tbuf));
+			d->keyStore->setKey(d->iEditItem, T2U8(tbuf).c_str());
 
 			// Item is no longer being edited.
 			d->iEditItem = -1;
@@ -1113,7 +1140,7 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 
 		case WM_NCDESTROY:
 			// Remove the window subclass.
-			// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20031111-00/?p=41883
+			// Reference: https://devblogs.microsoft.com/oldnewthing/20031111-00/?p=41883
 			RemoveWindowSubclass(hWnd, ListViewSubclassProc, uIdSubclass);
 			break;
 
@@ -1330,7 +1357,7 @@ void KeyManagerTabPrivate::loadImages(void)
 {
 	// Get the current DPI.
 	const UINT dpi = rp_GetDpiForWindow(hWndPropSheet);
-	unsigned int iconSize_new;
+	int iconSize_new;
 	if (dpi < 120) {
 		// [96,120) dpi: Use 16x16.
 		iconSize_new = 16;
@@ -1386,110 +1413,321 @@ void KeyManagerTabPrivate::loadImages(void)
 		iconSize_new, iconSize_new, 0);
 }
 
-/** "Import" menu actions. **/
-
 /**
- * Import keys from Wii keys.bin. (BootMii format)
+ * Show key import return status.
+ * @param filename Filename
+ * @param keyType Key type
+ * @param iret ImportReturn
  */
-void KeyManagerTabPrivate::importWiiKeysBin(void)
+void KeyManagerTabPrivate::showKeyImportReturnStatus(
+	const tstring &filename,
+	const char *keyType,
+	const KeyStoreUI::ImportReturn &iret)
 {
-	assert(hWndPropSheet != nullptr);
-	if (!hWndPropSheet)
-		return;
+	unsigned int type = MB_ICONINFORMATION;
+	bool showKeyStats = false;
+	tstring msg;
+	msg.reserve(1024);
 
-	const tstring tfilename = LibWin32Common::getOpenFileName(hWndPropSheet,
-		// tr: Wii keys.bin dialog title.
-		U82T_c(C_("KeyManagerTab", "Select Wii keys.bin File")),
-		// tr: Wii keys.bin file filter. (RP format)
-		C_("KeyManagerTab", "keys.bin|keys.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
-		ts_keyFileDir.c_str());
-	if (tfilename.empty())
-		return;
+	// Filename, minus directory.
+	tstring fileNoPath;
+	size_t bs_pos = filename.rfind(_T('\\'));
+	if (bs_pos != tstring::npos && bs_pos != fileNoPath.size()-1) {
+		fileNoPath = filename.substr(bs_pos + 1);
+	} else {
+		fileNoPath = filename;
+	}
 
-	// Update ts_keyFileDir using the returned filename.
-	updateKeyFileDir(tfilename);
 
-	KeyStoreWin32::ImportReturn iret = keyStore->importWiiKeysBin(T2U8(tfilename).c_str());
-	// TODO: Port showKeyImportReturnStatus from the KDE version.
-	//d->showKeyImportReturnStatus(filename, U82T_c(C_("KeyManagerTab", "Wii keys.bin")), iret);
+	// Using ostringstream for numeric formatting.
+	// (MSVCRT doesn't support the apostrophe printf specifier.)
+	tostringstream toss;
+	toss.imbue(std::locale(""));
+
+	// TODO: Localize POSIX error messages?
+	// TODO: Thread-safe _wcserror()?
+
+	switch (iret.status) {
+		case KeyStoreUI::ImportStatus::InvalidParams:
+		default:
+			msg = LibWin32UI::unix2dos(U82T_s(C_("KeyManagerTab",
+				"An invalid parameter was passed to the key importer.\n"
+				"THIS IS A BUG; please report this to the developers!")));
+			type = MB_ICONSTOP;
+			break;
+
+		case KeyStoreUI::ImportStatus::UnknownKeyID:
+			msg = LibWin32UI::unix2dos(U82T_s(C_("KeyManagerTab",
+				"An unknown key ID was passed to the key importer.\n"
+				"THIS IS A BUG; please report this to the developers!")));
+			type = MB_ICONSTOP;
+			break;
+
+		case KeyStoreUI::ImportStatus::OpenError:
+			if (iret.error_code != 0) {
+				msg = rp_stprintf_p(U82T_c(C_("KeyManagerTab",
+					// tr: %1$s == filename, %2$s == error message
+					"An error occurred while opening '%1$s': %2$s")),
+					fileNoPath.c_str(), _wcserror(iret.error_code));
+			} else {
+				msg = rp_stprintf_p(U82T_c(C_("KeyManagerTab",
+					// tr: %s == filename
+					"An error occurred while opening '%s'.")),
+					fileNoPath.c_str());
+			}
+			type = MB_ICONSTOP;
+			break;
+
+		case KeyStoreUI::ImportStatus::ReadError:
+			// TODO: Error code for short reads.
+			if (iret.error_code != 0) {
+				msg = rp_stprintf_p(U82T_c(C_("KeyManagerTab",
+					// tr: %1$s == filename, %2$s == error message
+					"An error occurred while reading '%1$s': %2$s")),
+					fileNoPath, _wcserror(iret.error_code));
+			} else {
+				msg = rp_stprintf_p(U82T_c(C_("KeyManagerTab",
+					// tr: %s == filename
+					"An error occurred while reading '%s'.")),
+					fileNoPath.c_str());
+			}
+			type = MB_ICONSTOP;
+			break;
+
+		case KeyStoreUI::ImportStatus::InvalidFile:
+			msg = rp_stprintf_p(U82T_c(C_("KeyManagerTab",
+				// tr: %1$s == filename, %2$s == type of file
+				"The file '%1$s' is not a valid %2$s file.")),
+				fileNoPath.c_str(), U82T_c(keyType));
+			type = MB_ICONWARNING;
+			break;
+
+		case KeyStoreUI::ImportStatus::NoKeysImported:
+			msg = rp_stprintf(U82T_c(C_("KeyManagerTab",
+				// tr: %s == filename
+				"No keys were imported from '%s'.")),
+				fileNoPath.c_str());
+			type = MB_ICONINFORMATION;
+			showKeyStats = true;
+			break;
+
+		case KeyStoreUI::ImportStatus::KeysImported: {
+			const unsigned int keyCount = iret.keysImportedVerify + iret.keysImportedNoVerify;
+			toss << keyCount;
+			msg = rp_stprintf_p(U82T_c(NC_("KeyManagerTab",
+				// tr: %1$s == number of keys (formatted), %2$u == filename
+				"%1$s key was imported from '%2$s'.",
+				"%1$s keys were imported from '%2$s'.",
+				keyCount)),
+				toss.str().c_str(), fileNoPath.c_str());
+			type = MB_ICONINFORMATION;
+			showKeyStats = true;
+			break;
+		}
+	}
+
+	// U+2022 (BULLET) == \xE2\x80\xA2
+#ifdef _UNICODE
+	static const wchar_t nl_bullet[] = L"\r\n\x2022 ";
+#else /* !_UNICODE */
+	// NOTE: Windows doesn't support UTF-8 as "ANSI", except on recent
+	// versions of Windows 10 (1903) with a manifest setting.
+	static const char nl_bullet[] = "\r\n* ";
+#endif /* _UNICODE */
+
+	// TODO: Numeric formatting.
+	if (showKeyStats) {
+		if (iret.keysExist > 0) {
+			toss.str(_T(""));
+			toss.clear();
+			toss << iret.keysExist;
+			msg += nl_bullet;
+			msg += rp_stprintf(U82T_c(NC_("KeyManagerTab",
+				// tr: %s == number of keys (formatted)
+				"%s key already exists in the Key Manager.",
+				"%s keys already exist in the Key Manager.",
+				iret.keysExist)),
+				toss.str().c_str());
+		}
+		if (iret.keysInvalid > 0) {
+			toss.str(_T(""));
+			toss.clear();
+			toss << iret.keysInvalid;
+			msg += nl_bullet;
+			msg += rp_stprintf(U82T_c(NC_("KeyManagerTab",
+				// tr: %s == number of keys (formatted)
+				"%s key was not imported because it is incorrect.",
+				"%s keys were not imported because they are incorrect.",
+				iret.keysInvalid)),
+				toss.str().c_str());
+		}
+		if (iret.keysNotUsed > 0) {
+			toss.str(_T(""));
+			toss.clear();
+			toss << iret.keysNotUsed;
+			msg += nl_bullet;
+			msg += rp_stprintf(U82T_c(NC_("KeyManagerTab",
+				// tr: %s == number of keys (formatted)
+				"%s key was not imported because it isn't used by rom-properties.",
+				"%s keys were not imported because they aren't used by rom-properties.",
+				iret.keysNotUsed)),
+				toss.str().c_str());
+		}
+		if (iret.keysCantDecrypt > 0) {
+			toss.str(_T(""));
+			toss.clear();
+			toss << iret.keysCantDecrypt;
+			msg += nl_bullet;
+			msg += rp_stprintf(U82T_c(NC_("KeyManagerTab",
+				// tr: %s == number of keys (formatted)
+				"%s key was not imported because it is encrypted and the master key isn't available.",
+				"%s keys were not imported because they are encrypted and the master key isn't available.",
+				iret.keysCantDecrypt)),
+				toss.str().c_str());
+		}
+		if (iret.keysImportedVerify > 0) {
+			toss.str(_T(""));
+			toss.clear();
+			toss << iret.keysImportedVerify;
+			msg += nl_bullet;
+			msg += rp_stprintf(U82T_c(NC_("KeyManagerTab",
+				// tr: %s == number of keys (formatted)
+				"%s key has been imported and verified as correct.",
+				"%s keys have been imported and verified as correct.",
+				iret.keysImportedVerify)),
+				toss.str().c_str());
+		}
+		if (iret.keysImportedNoVerify > 0) {
+			toss.str(_T(""));
+			toss.clear();
+			toss << iret.keysImportedVerify;
+			msg += nl_bullet;
+			msg += rp_stprintf(U82T_c(NC_("KeyManagerTab",
+				"%s key has been imported without verification.",
+				"%s keys have been imported without verification.",
+				iret.keysImportedNoVerify)),
+				toss.str().c_str());
+		}
+	}
+
+	RECT winRect;
+	GetClientRect(hWndPropSheet, &winRect);
+	// NOTE: We need to move left by 1px.
+	OffsetRect(&winRect, -1, 0);
+
+	// Count the number of newlines and increase the MessageWidget height.
+	const int nl_count = std::count_if(msg.cbegin(), msg.cend(),
+		[](TCHAR chr) { return (chr == _T('\n')); }
+	);
+
+	// Determine the size.
+	// TODO: Update on DPI change.
+	const int cySmIcon = GetSystemMetrics(SM_CYSMICON);
+	const SIZE szMsgw = {
+		winRect.right - winRect.left,
+		(cySmIcon * (nl_count + 1)) + 8
+	};
+
+	if (!hMessageWidget) {
+		// Create the MessageWidget.
+		MessageWidgetRegister();
+
+		// Determine the position.
+		const POINT ptMsgw = {winRect.left, winRect.top};
+
+		const DWORD dwExStyleRTL = LibWin32UI::isSystemRTL();
+		hMessageWidget = CreateWindowEx(
+			WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | dwExStyleRTL,
+			WC_MESSAGEWIDGET, nullptr,
+			WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+			ptMsgw.x, ptMsgw.y, szMsgw.cx, szMsgw.cy,
+			hWndPropSheet, nullptr,
+			HINST_THISCOMPONENT, nullptr);
+		SetWindowFont(hMessageWidget, GetWindowFont(hWndPropSheet), false);
+	} else {
+		// Adjust the MessageWidget height.
+		SetWindowPos(hMessageWidget, nullptr, 0, 0, szMsgw.cx, szMsgw.cy,
+			SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOMOVE);
+	}
+
+	// Adjust the ListView positioning and size.
+	HWND hListView = GetDlgItem(hWndPropSheet, IDC_KEYMANAGER_LIST);
+	assert(hListView != nullptr);
+	SetWindowPos(hListView, nullptr,
+		ptListView.x, ptListView.y + szMsgw.cy,
+		szListView.cx, szListView.cy - szMsgw.cy,
+		SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+
+	// Show the message widget.
+	// TODO: Adjust the ListView positioning and size?
+	MessageBeep(type);
+	MessageWidget_SetMessageType(hMessageWidget, type);
+	SetWindowText(hMessageWidget, msg.c_str());
+	ShowWindow(hMessageWidget, SW_SHOW);
 }
 
 /**
- * Import keys from Wii U otp.bin.
+ * Import keys from a binary file.
+ * @param id Type of file
  */
-void KeyManagerTabPrivate::importWiiUOtpBin(void)
+void KeyManagerTabPrivate::importKeysFromBin(KeyStoreUI::ImportFileID id)
 {
+	assert(id >= KeyStoreUI::ImportFileID::WiiKeysBin);
+	assert(id <= KeyStoreUI::ImportFileID::N3DSaeskeydb);
+	if (id < KeyStoreUI::ImportFileID::WiiKeysBin ||
+	    id > KeyStoreUI::ImportFileID::N3DSaeskeydb)
+		return;
+
+	static const char dialog_titles_tbl[][32] = {
+		// tr: Wii keys.bin dialog title
+		NOP_C_("KeyManagerTab", "Select Wii keys.bin File"),
+		// tr: Wii U otp.bin dialog title
+		NOP_C_("KeyManagerTab", "Select Wii U otp.bin File"),
+		// tr: Nintendo 3DS boot9.bin dialog title
+		NOP_C_("KeyManagerTab", "Select 3DS boot9.bin File"),
+		// tr: Nintendo 3DS aeskeydb.bin dialog title
+		NOP_C_("KeyManagerTab", "Select 3DS aeskeydb.bin File"),
+	};
+
+	static const char file_filters_tbl[][88] = {
+		// tr: Wii keys.bin file filter (RP format)
+		NOP_C_("KeyManagerTab", "keys.bin|keys.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
+		// tr: Wii U otp.bin file filter (RP format)
+		NOP_C_("KeyManagerTab", "otp.bin|otp.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
+		// tr: Nintendo 3DS boot9.bin file filter (RP format)
+		NOP_C_("KeyManagerTab", "boot9.bin|boot9.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
+		// tr: Nintendo 3DS aeskeydb.bin file filter (RP format)
+		NOP_C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
+	};
+
+	const char *const s_title = dpgettext_expr(
+		RP_I18N_DOMAIN, "KeyManagerTab", dialog_titles_tbl[(int)id]);
+	const char *const s_filter = dpgettext_expr(
+		RP_I18N_DOMAIN, "KeyManagerTab", file_filters_tbl[(int)id]);
+
 	assert(hWndPropSheet != nullptr);
 	if (!hWndPropSheet)
 		return;
 
-	const tstring tfilename = LibWin32Common::getOpenFileName(hWndPropSheet,
-		// tr: Wii U otp.bin dialog title.
-		U82T_c(C_("KeyManagerTab", "Select Wii U otp.bin File")),
-		// tr: Wii U otp.bin file filter. (RP format)
-		C_("KeyManagerTab", "otp.bin|otp.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
-		ts_keyFileDir.c_str());
+	const tstring tfilename = LibWin32UI::getOpenFileName(hWndPropSheet,
+		U82T_c(s_title), U82T_c(s_filter), ts_keyFileDir.c_str());
 	if (tfilename.empty())
 		return;
 
 	// Update ts_keyFileDir using the returned filename.
 	updateKeyFileDir(tfilename);
 
-	KeyStoreWin32::ImportReturn iret = keyStore->importWiiUOtpBin(T2U8(tfilename).c_str());
-	// TODO: Port showKeyImportReturnStatus from the KDE version.
-	//d->showKeyImportReturnStatus(filename, U82T_c(C_("KeyManagerTab", "Wii U otp.bin"), iret);
-}
+	// KeyStoreUI::ImportFileID
+	static const char *const import_menu_actions[] = {
+		NOP_C_("KeyManagerTab", "Wii keys.bin"),
+		NOP_C_("KeyManagerTab", "Wii U otp.bin"),
+		NOP_C_("KeyManagerTab", "3DS boot9.bin"),
+		NOP_C_("KeyManagerTab", "3DS aeskeydb.bin"),
+	};
 
-/**
- * Import keys from 3DS boot9.bin.
- */
-void KeyManagerTabPrivate::import3DSboot9bin(void)
-{
-	assert(hWndPropSheet != nullptr);
-	if (!hWndPropSheet)
-		return;
-
-	const tstring tfilename = LibWin32Common::getOpenFileName(hWndPropSheet,
-		// tr: 3DS boot9.bin dialog title.
-		U82T_c(C_("KeyManagerTab", "Select 3DS boot9.bin File")),
-		// tr: 3DS boot9.bin file filter. (RP format)
-		C_("KeyManagerTab", "boot9.bin|boot9.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
-		ts_keyFileDir.c_str());
-	if (tfilename.empty())
-		return;
-
-	// Update ts_keyFileDir using the returned filename.
-	updateKeyFileDir(tfilename);
-
-	KeyStoreWin32::ImportReturn iret = keyStore->import3DSboot9bin(T2U8(tfilename).c_str());
-	// TODO: Port showKeyImportReturnStatus from the KDE version.
-	//d->showKeyImportReturnStatus(filename, U82T_c(C_("KeyManagerTab", "3DS boot9.bin"), iret);
-}
-
-/**
- * Import keys from 3DS aeskeydb.bin.
- */
-void KeyManagerTabPrivate::import3DSaeskeydb(void)
-{
-	assert(hWndPropSheet != nullptr);
-	if (!hWndPropSheet)
-		return;
-
-	const tstring tfilename = LibWin32Common::getOpenFileName(hWndPropSheet,
-		// tr: aeskeydb.bin dialog title.
-		U82T_c(C_("KeyManagerTab", "Select 3DS aeskeydb.bin File")),
-		// tr: aeskeydb.bin file filter. (RP format)
-		C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-"),
-		ts_keyFileDir.c_str());
-	if (tfilename.empty())
-		return;
-
-	// Update ts_keyFileDir using the returned filename.
-	updateKeyFileDir(tfilename);
-
-	KeyStoreWin32::ImportReturn iret = keyStore->import3DSaeskeydb(T2U8(tfilename).c_str());
-	// TODO: Port showKeyImportReturnStatus from the KDE version.
-	//d->showKeyImportReturnStatus(filename, U82T_c(C_("KeyManagerTab", "3DS aeskeydb.bin"), iret);
+	KeyStoreWin32::ImportReturn iret = keyStore->importKeysFromBin(id, T2U8(tfilename).c_str());
+	showKeyImportReturnStatus(tfilename,
+		dpgettext_expr(RP_I18N_DOMAIN, "KeyManagerTab", import_menu_actions[(int)id]), iret);
 }
 
 /** KeyManagerTab **/
@@ -1546,16 +1784,6 @@ void KeyManagerTab::reset(void)
 {
 	RP_D(KeyManagerTab);
 	d->reset();
-}
-
-/**
- * Load the default configuration.
- * This does NOT save, and will only emit modified()
- * if it's different from the current configuration.
- */
-void KeyManagerTab::loadDefaults(void)
-{
-	// Not implemented for this tab.
 }
 
 /**

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomFields.cpp: ROM fields class.                                        *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,9 +10,6 @@
 #include "RomFields.hpp"
 
 #include "libi18n/i18n.h"
-
-// librpthreads
-#include "librpthreads/Atomics.h"
 
 // C++ STL classes.
 using std::map;
@@ -37,10 +34,11 @@ class RomFieldsPrivate
 		// ROM field structs.
 		vector<RomFields::Field> fields;
 
-		// Current tab index.
-		uint8_t tabIdx;
 		// Tab names.
 		vector<string> tabNames;
+
+		// Current tab index.
+		uint8_t tabIdx;
 
 		// Default language code.
 		// Set by the first call to addField_string_multi()
@@ -73,50 +71,48 @@ RomFieldsPrivate::~RomFieldsPrivate()
 void RomFieldsPrivate::delete_data(void)
 {
 	// Delete all of the allocated objects in this->fields.
-	std::for_each(fields.begin(), fields.end(),
-		[](RomFields::Field &field) {
-			if (!field.isValid) {
-				// No data here.
-				return;
-			}
-
-			switch (field.type) {
-				case RomFields::RFT_INVALID:
-				case RomFields::RFT_DATETIME:
-				case RomFields::RFT_DIMENSIONS:
-					// No data here.
-					break;
-
-				case RomFields::RFT_STRING:
-					delete const_cast<string*>(field.data.str);
-					break;
-				case RomFields::RFT_BITFIELD:
-					delete const_cast<vector<string>*>(field.desc.bitfield.names);
-					break;
-				case RomFields::RFT_LISTDATA:
-					delete const_cast<vector<string>*>(field.desc.list_data.names);
-					if (field.desc.list_data.flags & RomFields::RFT_LISTDATA_MULTI) {
-						delete const_cast<RomFields::ListDataMultiMap_t*>(field.data.list_data.data.multi);
-					} else {
-						delete const_cast<RomFields::ListData_t*>(field.data.list_data.data.single);
-					}
-					if (field.desc.list_data.flags & RomFields::RFT_LISTDATA_ICONS) {
-						delete const_cast<RomFields::ListDataIcons_t*>(field.data.list_data.mxd.icons);
-					}
-					break;
-				case RomFields::RFT_AGE_RATINGS:
-					delete const_cast<RomFields::age_ratings_t*>(field.data.age_ratings);
-					break;
-				case RomFields::RFT_STRING_MULTI:
-					delete const_cast<RomFields::StringMultiMap_t*>(field.data.str_multi);
-					break;
-				default:
-					// ERROR!
-					assert(!"Unsupported RomFields::RomFieldsType.");
-					break;
-			}
+	for (RomFields::Field &field : fields) {
+		if (!field.isValid) {
+			// No data here.
+			return;
 		}
-	);
+
+		switch (field.type) {
+			case RomFields::RFT_INVALID:
+			case RomFields::RFT_DATETIME:
+			case RomFields::RFT_DIMENSIONS:
+				// No data here.
+				break;
+
+			case RomFields::RFT_STRING:
+				delete const_cast<string*>(field.data.str);
+				break;
+			case RomFields::RFT_BITFIELD:
+				delete const_cast<vector<string>*>(field.desc.bitfield.names);
+				break;
+			case RomFields::RFT_LISTDATA:
+				delete const_cast<vector<string>*>(field.desc.list_data.names);
+				if (field.desc.list_data.flags & RomFields::RFT_LISTDATA_MULTI) {
+					delete const_cast<RomFields::ListDataMultiMap_t*>(field.data.list_data.data.multi);
+				} else {
+					delete const_cast<RomFields::ListData_t*>(field.data.list_data.data.single);
+				}
+				if (field.desc.list_data.flags & RomFields::RFT_LISTDATA_ICONS) {
+					delete const_cast<RomFields::ListDataIcons_t*>(field.data.list_data.mxd.icons);
+				}
+				break;
+			case RomFields::RFT_AGE_RATINGS:
+				delete const_cast<RomFields::age_ratings_t*>(field.data.age_ratings);
+				break;
+			case RomFields::RFT_STRING_MULTI:
+				delete const_cast<RomFields::StringMultiMap_t*>(field.data.str_multi);
+				break;
+			default:
+				// ERROR!
+				assert(!"Unsupported RomFields::RomFieldsType.");
+				break;
+		}
+	}
 
 	// Clear the fields vector.
 	this->fields.clear();
@@ -151,9 +147,11 @@ const char *RomFields::ageRatingAbbrev(AgeRatingsCountry country)
 		"PEGI", "MEKU", "PEGI-PT", "BBFC",
 		"ACB",  "GRB",  "CGSRR",
 	};
+	static_assert(ARRAY_SIZE_I(abbrevs) == (int)AgeRatingsCountry::Taiwan+1,
+		"Age Ratings abbrevations needs to be updated!");
 
-	assert((int)country >= 0 && (int)country < ARRAY_SIZE(abbrevs));
-	if ((int)country < 0 || (int)country >= ARRAY_SIZE(abbrevs)) {
+	assert((int)country >= 0 && (int)country < ARRAY_SIZE_I(abbrevs));
+	if ((int)country < 0 || (int)country >= ARRAY_SIZE_I(abbrevs)) {
 		// Index is out of range.
 		return nullptr;
 	}
@@ -285,7 +283,8 @@ string RomFields::ageRatingDecode(AgeRatingsCountry country, uint16_t rating)
 	} else {
 		// No string rating.
 		// Print the numeric value.
-		str = rp_sprintf("%u", rating & RomFields::AGEBF_MIN_AGE_MASK);
+		str = rp_sprintf("%u",
+			static_cast<unsigned int>(rating) & RomFields::AGEBF_MIN_AGE_MASK);
 	}
 
 	if (rating & RomFields::AGEBF_ONLINE_PLAY) {
@@ -336,7 +335,7 @@ string RomFields::ageRatingsDecode(const age_ratings_t *age_ratings, bool newlin
 		} else {
 			// Invalid age rating organization.
 			// Use the numeric index.
-			str += rp_sprintf("%d", i);
+			str += rp_sprintf("%u", i);
 		}
 		str += '=';
 		str += ageRatingDecode((AgeRatingsCountry)i, rating);
@@ -507,7 +506,7 @@ void RomFields::reserveTabs(int n)
 void RomFields::setTabIndex(int tabIdx)
 {
 	RP_D(RomFields);
-	d->tabIdx = tabIdx;
+	d->tabIdx = static_cast<uint8_t>(tabIdx);
 	if (static_cast<int>(d->tabNames.size()) < tabIdx+1) {
 		// Need to resize tabNames.
 		d->tabNames.resize(tabIdx+1);
@@ -544,7 +543,7 @@ int RomFields::addTab(const char *name)
 {
 	RP_D(RomFields);
 	d->tabNames.emplace_back(name);
-	d->tabIdx = static_cast<int>(d->tabNames.size() - 1);
+	d->tabIdx = static_cast<uint8_t>(d->tabNames.size() - 1);
 	return d->tabIdx;
 }
 
@@ -707,7 +706,7 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 		tabOffset = d->tabIdx + 1;
 
 		// Set the final tab index.
-		d->tabIdx = static_cast<int>(d->tabNames.size() - 1);
+		d->tabIdx = static_cast<uint8_t>(d->tabNames.size() - 1);
 	}
 
 	// Copy the default language code if it hasn't been set yet.
@@ -739,20 +738,20 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 				field_dest.data.str = (field_src.data.str ? new string(*field_src.data.str) : nullptr);
 				break;
 			case RFT_BITFIELD:
-				field_dest.desc.bitfield.elemsPerRow = field_src.desc.bitfield.elemsPerRow;
 				field_dest.desc.bitfield.names = (field_src.desc.bitfield.names
 						? new vector<string>(*(field_src.desc.bitfield.names))
 						: nullptr);
+				field_dest.desc.bitfield.elemsPerRow = field_src.desc.bitfield.elemsPerRow;
 				field_dest.data.bitfield = field_src.data.bitfield;
 				break;
 			case RFT_LISTDATA:
+				field_dest.desc.list_data.names = (field_src.desc.list_data.names
+						? new vector<string>(*(field_src.desc.list_data.names))
+						: nullptr);
 				field_dest.desc.list_data.flags =
 					field_src.desc.list_data.flags;
 				field_dest.desc.list_data.rows_visible =
 					field_src.desc.list_data.rows_visible;
-				field_dest.desc.list_data.names = (field_src.desc.list_data.names
-						? new vector<string>(*(field_src.desc.list_data.names))
-						: nullptr);
 				field_dest.desc.list_data.col_attrs =
 					field_src.desc.list_data.col_attrs;
 				if (field_src.desc.list_data.flags & RFT_LISTDATA_MULTI) {
@@ -1024,8 +1023,8 @@ int RomFields::addField_bitfield(const char *name,
 
 	field.name = name;
 	field.type = RFT_BITFIELD;
-	field.desc.bitfield.elemsPerRow = elemsPerRow;
 	field.desc.bitfield.names = bit_names;
+	field.desc.bitfield.elemsPerRow = elemsPerRow;
 	field.data.bitfield = bitfield;
 	field.tabIdx = d->tabIdx;
 	field.isValid = true;

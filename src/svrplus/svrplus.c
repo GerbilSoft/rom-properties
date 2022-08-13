@@ -3,7 +3,7 @@
  * svrplus.c: Win32 installer for rom-properties.                          *
  *                                                                         *
  * Copyright (c) 2017-2021 by Egor.                                        *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -299,10 +299,11 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, HANDLE *pH
 
 	// Construct arguments
 	// Construct path to rom-properties.dll inside the arguments
+	SetLastError(ERROR_SUCCESS);	// required for XP
 	szModuleFn = GetModuleFileName(HINST_THISCOMPONENT, &args[14], MAX_PATH);
 	assert(szModuleFn != 0);
 	assert(szModuleFn < MAX_PATH);
-	if (szModuleFn == 0 || szModuleFn >= MAX_PATH) {
+	if (szModuleFn == 0 || szModuleFn >= MAX_PATH || GetLastError() != ERROR_SUCCESS) {
 		// TODO: add an error message for the MAX_PATH case?
 		return ISR_FATAL_ERROR;
 	}
@@ -672,7 +673,13 @@ static void InitDialog(HWND hDlg)
 	HWND hStatus1, hExclaim;
 	HMODULE hUser32;
 	bool bHasMsvc32, bErr;
-	const TCHAR *line1 = NULL, *line2 = NULL;
+	TCHAR line1[80], line2[512];
+	line1[0] = _T('\0');
+	line2[0] = _T('\0');
+
+	// OS version check.
+	OSVERSIONINFO osvi;
+	unsigned int vcyear, vcver;
 
 	if (hIconDialog) {
 		SendMessage(hDlg, WM_SETICON, ICON_BIG, (LPARAM)hIconDialog);
@@ -728,16 +735,32 @@ static void InitDialog(HWND hDlg)
 	// message and disable the buttons.
 	bHasMsvc32 = CheckMsvc(false);
 
+	// MSVC 2022 runtime requires Windows Vista or later.
+	osvi.dwOSVersionInfoSize = sizeof(osvi);
+	if (GetVersionEx(&osvi) != 0 && osvi.dwMajorVersion >= 6) {
+		// Windows Vista or later. Use MSVC 2019.
+		vcyear = 2022;
+		vcver = 17;
+	} else {
+		// Windows XP/2003 or earlier, or GetVersionEx() failed.
+		// Use MSVC 2017.
+		vcyear = 2017;
+		vcver = 15;
+	}
+
 	// Go through the various permutations.
 #ifndef _WIN64
 	if (!g_is64bit) {
 		// 32-bit system.
 		if (!bHasMsvc32) {
 			// 32-bit MSVCRT is missing.
-			line1 = _T("The 32-bit MSVC 2015-2019 runtime is not installed.");
-			line2 = _T("You can download the 32-bit MSVC 2015-2019 runtime at:\n")
-				BULLET _T(" <a href=\"https://aka.ms/vs/16/release/vc_redist.x86.exe\">")
-					_T("https://aka.ms/vs/16/release/vc_redist.x86.exe</a>");
+			_sntprintf(line1, _countof(line1),
+				_T("The 32-bit MSVC 2015-%u runtime is not installed."), vcyear);
+			_sntprintf(line2, _countof(line2),
+				_T("You can download the 32-bit MSVC 2015-%u runtime at:\n")
+				BULLET _T(" <a href=\"https://aka.ms/vs/%u/release/VC_redist.x86.exe\">")
+					_T("https://aka.ms/vs/%u/release/VC_redist.x86.exe</a>"),
+				vcyear, vcver, vcver);
 		}
 	} else
 #endif /* !_WIN64 */
@@ -746,31 +769,40 @@ static void InitDialog(HWND hDlg)
 		const bool bHasMsvc64 = CheckMsvc(true);
 		if (!bHasMsvc32 && !bHasMsvc64) {
 			// Both 32-bit and 64-bit MSVCRT are missing.
-			line1 = _T("The 32-bit and 64-bit MSVC 2015-2019 runtimes are not installed.");
-			line2 = _T("You can download the MSVC 2015-2019 runtime at:\n")
-				BULLET _T(" 32-bit: <a href=\"https://aka.ms/vs/16/release/vc_redist.x86.exe\">")
-					_T("https://aka.ms/vs/16/release/vc_redist.x86.exe</a>\n")
-				BULLET _T(" 64-bit: <a href=\"https://aka.ms/vs/16/release/vc_redist.x64.exe\">")
-					_T("https://aka.ms/vs/16/release/vc_redist.x64.exe</a>");
+			_sntprintf(line1, _countof(line1),
+				_T("The 32-bit and 64-bit MSVC 2015-%u runtimes are not installed."), vcyear);
+			_sntprintf(line2, _countof(line2),
+				_T("You can download the MSVC 2015-%u runtime at:\n")
+				BULLET _T(" 32-bit: <a href=\"https://aka.ms/vs/%u/release/VC_redist.x86.exe\">")
+					_T("https://aka.ms/vs/%u/release/VC_redist.x86.exe</a>\n")
+				BULLET _T(" 64-bit: <a href=\"https://aka.ms/vs/%u/release/VC_redist.x64.exe\">")
+					_T("https://aka.ms/vs/%u/release/VC_redist.x64.exe</a>"),
+				vcyear, vcver, vcver, vcver, vcver);
 		} else if (!bHasMsvc32 && bHasMsvc64) {
 			// 32-bit MSVCRT is missing.
-			line1 = _T("The 32-bit MSVC 2015-2019 runtime is not installed.");
-			line2 = _T("You can download the 32-bit MSVC 2015-2019 runtime at:\n")
-				BULLET _T(" <a href=\"https://aka.ms/vs/16/release/vc_redist.x86.exe\">")
-					_T("https://aka.ms/vs/16/release/vc_redist.x86.exe</a>");
+			_sntprintf(line1, _countof(line1),
+				_T("The 32-bit MSVC 2015-%u runtime is not installed."), vcyear);
+			_sntprintf(line2, _countof(line2),
+				_T("You can download the 32-bit MSVC 2015-%u runtime at:\n")
+				BULLET _T(" <a href=\"https://aka.ms/vs/%u/release/VC_redist.x86.exe\">")
+					_T("https://aka.ms/vs/%u/release/VC_redist.x86.exe</a>"),
+				vcyear, vcver, vcver);
 		} else if (bHasMsvc32 && !bHasMsvc64) {
 			// 64-bit MSVCRT is missing.
-			line1 = _T("The 64-bit MSVC 2015-2019 runtime is not installed.");
-			line2 = _T("You can download the 64-bit MSVC 2015-2019 runtime at:\n")
-				BULLET _T(" <a href=\"https://aka.ms/vs/16/release/vc_redist.x64.exe\">")
-					_T("https://aka.ms/vs/16/release/vc_redist.x64.exe</a>");
+			_sntprintf(line1, _countof(line1),
+				_T("The 64-bit MSVC 2015-%u runtime is not installed."), vcyear);
+			_sntprintf(line2, _countof(line2),
+				_T("You can download the 64-bit MSVC 2015-%u runtime at:\n")
+				BULLET _T(" <a href=\"https://aka.ms/vs/%u/release/VC_redist.x64.exe\">")
+					_T("https://aka.ms/vs/%u/release/VC_redist.x64.exe</a>"),
+				vcyear, vcver, vcver);
 		}
 	}
 
 	// Show the status message.
 	// If line1 is set, an error occurred, so we should
 	// show the exclamation icon and disable the buttons.
-	bErr = (line1 != NULL);
+	bErr = (line1[0] != _T('\0'));
 	ShowStatusMessage(hDlg, line1, line2, (bErr ? MB_ICONEXCLAMATION : 0));
 	EnableButtons(hDlg, !bErr);
 }
@@ -867,8 +899,8 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 					// This is a SysLink control.
 					// Open the URL.
 					// ShellExecute return value references:
-					// - https://msdn.microsoft.com/en-us/library/windows/desktop/bb762153(v=vs.85).aspx
-					// - https://blogs.msdn.microsoft.com/oldnewthing/20061108-05/?p=29083
+					// - https://docs.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shellexecutew
+					// - https://devblogs.microsoft.com/oldnewthing/20061108-05/?p=29083
 					pNMLink = (const NMLINK*)pHdr;
 					ret = (INT_PTR)ShellExecute(NULL, _T("open"), pNMLink->item.szUrl, NULL, NULL, SW_SHOW);
 					if (ret <= 32) {
@@ -1013,8 +1045,9 @@ int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	param.bHighSec = FALSE;
 	rp_secure_enable(param);
 
-	// Unused parameters. (Win16 baggage)
+	// Unused parameters
 	((void)hPrevInstance);
+	((void)lpCmdLine);
 
 	// Check if another instance of svrplus is already running.
 	// References:

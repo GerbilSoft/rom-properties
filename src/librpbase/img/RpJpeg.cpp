@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpJpeg.cpp: JPEG image handler.                                         *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,7 +22,7 @@ using LibRpTexture::rp_image;
 using LibRpTexture::argb32_t;
 
 #ifdef RPJPEG_HAS_SSSE3
-# include "librpcpu/cpuflags_x86.h"
+#  include "librpcpu/cpuflags_x86.h"
 #endif /* RPJPEG_HAS_SSSE3 */
 
 // C includes. (C++ namespace)
@@ -30,7 +30,7 @@ using LibRpTexture::argb32_t;
 
 #ifdef _WIN32
 // For OutputDebugStringA().
-#include <windows.h>
+#  include <windows.h>
 #endif /* _WIN32 */
 
 namespace LibRpBase {
@@ -75,11 +75,11 @@ void JPEGCALL RpJpegPrivate::my_output_message(j_common_ptr cinfo)
 	snprintf(txtbuf, sizeof(txtbuf), "libjpeg error: %s", buffer);
 	OutputDebugStringA(txtbuf);
 	OutputDebugStringA("\n");
-#else
+#else /* !_WIN32 */
 	// Print to stderr.
 	fprintf(stderr, C_("RpJpeg", "libjpeg error: %s"), buffer);
 	fputc('\n', stderr);
-#endif
+#endif /* _WIN32 */
 }
 
 /** I/O functions. **/
@@ -207,14 +207,10 @@ void RpJpegPrivate::jpeg_IRpFile_src(j_decompress_ptr cinfo, IRpFile *infile)
 
 /**
  * Load a JPEG image from an IRpFile.
- *
- * This image is NOT checked for issues; do not use
- * with untrusted images!
- *
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */
-rp_image *RpJpeg::loadUnchecked(IRpFile *file)
+rp_image *RpJpeg::load(IRpFile *file)
 {
 	if (!file)
 		return nullptr;
@@ -261,7 +257,7 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 			// NOTE: buffer is allocated using JPEG allocation functions,
 			// so it's automatically freed when we destroy cinfo.
 			jpeg_destroy_decompress(&cinfo);
-			img->unref();
+			UNREF(img);
 			return nullptr;
 		}
 	}
@@ -359,7 +355,8 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 				return nullptr;
 			}
 
-			for (int i = 0; i < std::min(256, img->palette_len());
+			const unsigned int img_palette_len = img->palette_len();
+			for (unsigned int i = 0; i < std::min(256U, img_palette_len);
 				i++, img_palette++)
 			{
 				uint8_t gray = static_cast<uint8_t>(i);
@@ -367,12 +364,10 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 				*img_palette |= 0xFF000000;
 			}
 
-			if (img->palette_len() > 256) {
+			if (img_palette_len > 256) {
 				// Clear the rest of the palette.
 				// (NOTE: 0 == fully transparent.)
-				for (int i = img->palette_len()-256; i > 0;
-					i--, img_palette++)
-				{
+				for (unsigned i = img_palette_len-256; i > 0; i--, img_palette++) {
 					*img_palette = 0;
 				}
 			}
@@ -587,24 +582,6 @@ rp_image *RpJpeg::loadUnchecked(IRpFile *file)
 
 	// Return the image.
 	return img;
-}
-
-/**
- * Load a JPEG image from an IRpFile.
- *
- * This image is verified with various tools to ensure
- * it doesn't have any errors.
- *
- * @param file IRpFile to load from.
- * @return rp_image*, or nullptr on error.
- */
-rp_image *RpJpeg::load(IRpFile *file)
-{
-	if (!file)
-		return nullptr;
-
-	// FIXME: Add a JPEG equivalent of pngcheck().
-	return loadUnchecked(file);
 }
 
 }

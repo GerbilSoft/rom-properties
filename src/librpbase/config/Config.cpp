@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * Config.cpp: Configuration manager.                                      *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,6 +11,7 @@
 
 #include "Config.hpp"
 #include "ConfReader_p.hpp"
+#include "ctypex.h"
 
 // C++ STL classes.
 using std::string;
@@ -81,6 +82,7 @@ class ConfigPrivate : public ConfReaderPrivate
 		bool useIntIconForSmallSizes;
 		bool downloadHighResScans;
 		bool storeFileOriginInfo;
+		uint32_t palLanguageForGameTDB;
 
 		// DMG title screen mode. [index is ROM type]
 		Config::DMG_TitleScreen_Mode dmgTSMode[Config::DMG_TitleScreen_Mode::DMG_TS_MAX];
@@ -122,6 +124,7 @@ ConfigPrivate::ConfigPrivate()
 	, useIntIconForSmallSizes(true)
 	, downloadHighResScans(true)
 	, storeFileOriginInfo(true)
+	, palLanguageForGameTDB('en')
 	/* Overlay icon */
 	, showDangerousPermissionsOverlayIcon(true)
 	/* Enable thumbnailing and metadata on network FS */
@@ -188,7 +191,7 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 
 	// Which section are we in?
 	if (!strcasecmp(section, "Downloads")) {
-		// Downloads. Check for one of the three boolean options.
+		// Downloads. Check for one of the boolean options.
 		bool *param;
 		if (!strcasecmp(name, "ExtImageDownload")) {
 			param = &extImgDownloadEnabled;
@@ -198,6 +201,16 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 			param = &downloadHighResScans;
 		} else if (!strcasecmp(name, "StoreFileOriginInfo")) {
 			param = &storeFileOriginInfo;
+		} else if (!strcasecmp(name, "PalLanguageForGameTDB")) {
+			// PAL language. Parse the language code.
+			// NOTE: Converting to lowercase.
+			// TODO: Only allow valid language codes?
+			palLanguageForGameTDB = 0;
+			for (unsigned int i = 0; i < 4 && *value != '\0'; i++, value++) {
+				palLanguageForGameTDB <<= 8;
+				palLanguageForGameTDB |= TOLOWER(*value);
+			}
+			return 1;
 		} else {
 			// Invalid option.
 			return 1;
@@ -352,7 +365,7 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 			static_assert(ARRAY_SIZE(imageTypeNames) == RomData::IMG_EXT_MAX+1, "imageTypeNames[] is the wrong size.");
 
 			RomData::ImageType imgType = static_cast<RomData::ImageType>(-1);
-			for (int i = 0; i < ARRAY_SIZE(imageTypeNames); i++) {
+			for (size_t i = 0; i < ARRAY_SIZE(imageTypeNames); i++) {
 				if (static_cast<size_t>(imageTypeNames[i][0]) == len &&
 				    !strncasecmp(pos, &imageTypeNames[i][1], len))
 				{
@@ -404,7 +417,7 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 			// Add the class name information to the map.
 			uint32_t keyIdx = static_cast<uint32_t>(vStartPos);
 			keyIdx |= (count << 24);
-			mapImgTypePrio.insert(std::make_pair(className, keyIdx));
+			mapImgTypePrio.emplace(className, keyIdx);
 		}
 	}
 
@@ -555,6 +568,16 @@ bool Config::storeFileOriginInfo(void) const
 {
 	RP_D(const Config);
 	return d->storeFileOriginInfo;
+}
+
+/**
+ * Language code for PAL titles on GameTDB.
+ * @return Language code.
+ */
+uint32_t Config::palLanguageForGameTDB(void) const
+{
+	RP_D(const Config);
+	return d->palLanguageForGameTDB;
 }
 
 /** DMG title screen mode **/

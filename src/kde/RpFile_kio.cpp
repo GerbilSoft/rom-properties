@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpFile_kio.cpp: IRpFile implementation using KIO.                       *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -265,7 +265,7 @@ size_t RpFileKio::read(void *ptr, size_t size)
 
 /**
  * Write data to the file.
- * (NOTE: Not valid for RpMemFile; this will always return 0.)
+ * (NOTE: Not valid for RpFileKio; this will always return 0.)
  * @param ptr Input data buffer.
  * @param size Amount of data to read, in bytes.
  * @return Number of bytes written.
@@ -313,20 +313,6 @@ off64_t RpFileKio::tell(void)
 	return d->pos;
 }
 
-/**
- * Truncate the file.
- * @param size New size. (default is 0)
- * @return 0 on success; -1 on error.
- */
-int RpFileKio::truncate(off64_t size)
-{
-	// Not supported.
-	// TODO: Writable RpFileKio?
-	RP_UNUSED(size);
-	m_lastError = ENOTSUP;
-	return -1;
-}
-
 /** File properties **/
 
 /**
@@ -348,10 +334,10 @@ off64_t RpFileKio::size(void)
 /**
  * Get the filename.
  * NOTE: For RpFileKio, this returns a KIO URI.
- * @return Filename. (May be empty if the filename is not available.)
+ * @return Filename. (May be nullptr if the filename is not available.)
  */
-string RpFileKio::filename(void) const
+const char *RpFileKio::filename(void) const
 {
 	RP_D(const RpFileKio);
-	return d->uri.toString().toUtf8().constData();
+	return (!d->uri.isEmpty() ? d->uri.toString().toUtf8().constData() : nullptr);
 }

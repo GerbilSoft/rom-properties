@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpcpu/tests)                   *
  * ByteswapTest.cpp: Byteswap functions test.                              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,7 +12,7 @@
 
 // Byteswap functions.
 #include "librpcpu/byteswap_rp.h"
-#include "librpbase/aligned_malloc.h"
+#include "aligned_malloc.h"
 
 // C includes. (C++ namespace)
 #include <cstdio>
@@ -119,7 +119,7 @@ TEST_F(ByteswapTest, hostEndianMacroTest)
 	EXPECT_EQ(0x0123456789ABCDEFULL, be64_to_cpu(0x0123456789ABCDEFULL));
 	EXPECT_EQ(0x0123U, cpu_to_be16(0x0123U));
 	EXPECT_EQ(0x01234567U, cpu_to_be32(0x01234567U));
-	EXPECT_EQ(0x0123456789ABCDEFULL, cpu_to_le64(0x0123456789ABCDEFULL));
+	EXPECT_EQ(0x0123456789ABCDEFULL, cpu_to_be64(0x0123456789ABCDEFULL));
 #endif
 }
 
@@ -145,8 +145,8 @@ TEST_F(ByteswapTest, nonHostEndianMacroTest)
 #endif
 }
 
-#define __byte_swap_16_array_dispatch(ptr, n) __byte_swap_16_array(ptr, n)
-#define __byte_swap_32_array_dispatch(ptr, n) __byte_swap_32_array(ptr, n)
+#define rp_byte_swap_16_array_dispatch(ptr, n) rp_byte_swap_16_array(ptr, n)
+#define rp_byte_swap_32_array_dispatch(ptr, n) rp_byte_swap_32_array(ptr, n)
 
 /**
  * Macro for testing a 16-bit byteswap function.
@@ -155,13 +155,13 @@ TEST_F(ByteswapTest, nonHostEndianMacroTest)
  * @param errmsg	Error message to display if the optimization cannot be used.
  */
 #define DO_ARRAY_16_TEST(opt, expr, errmsg) \
-TEST_F(ByteswapTest, __byte_swap_16_array_##opt##_test) \
+TEST_F(ByteswapTest, rp_byte_swap_16_array_##opt##_test) \
 { \
 	if (!(expr)) { \
 		fputs(errmsg, stderr); \
 		return; \
 	} \
-	__byte_swap_16_array_##opt(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE); \
+	rp_byte_swap_16_array_##opt(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE); \
 	uint8_t *ptr = align_buf; \
 	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) { \
 		EXPECT_EQ(0, memcmp(ptr, bswap_16b, TEST_ARRAY_SIZE)); \
@@ -176,14 +176,14 @@ TEST_F(ByteswapTest, __byte_swap_16_array_##opt##_test) \
  * @param errmsg	Error message to display if the optimization cannot be used.
  */
 #define DO_ARRAY_16_BENCHMARK(opt, expr, errmsg) \
-TEST_F(ByteswapTest, __byte_swap_16_array_##opt##_benchmark) \
+TEST_F(ByteswapTest, rp_byte_swap_16_array_##opt##_benchmark) \
 { \
 	if (!(expr)) { \
 		fputs(errmsg, stderr); \
 		return; \
 	} \
 	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) { \
-		__byte_swap_16_array_##opt(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE); \
+		rp_byte_swap_16_array_##opt(reinterpret_cast<uint16_t*>(align_buf), ALIGN_BUF_SIZE); \
 	} \
 }
 
@@ -198,13 +198,13 @@ TEST_F(ByteswapTest, __byte_swap_16_array_##opt##_benchmark) \
  * @param errmsg	Error message to display if the optimization cannot be used.
  */
 #define DO_ARRAY_16_unDWORD_TEST(opt, expr, errmsg) \
-TEST_F(ByteswapTest, __byte_swap_16_array_unDWORD_##opt##_test) \
+TEST_F(ByteswapTest, rp_byte_swap_16_array_unDWORD_##opt##_test) \
 { \
 	if (!(expr)) { \
 		fputs(errmsg, stderr); \
 		return; \
 	} \
-	__byte_swap_16_array_##opt(reinterpret_cast<uint16_t*>(&align_buf[2]), ALIGN_BUF_SIZE-6); \
+	rp_byte_swap_16_array_##opt(reinterpret_cast<uint16_t*>(&align_buf[2]), ALIGN_BUF_SIZE-6); \
 	uint8_t *ptr = &align_buf[2]; \
 	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 6; i--) { \
 		EXPECT_EQ(0, memcmp(ptr, &bswap_16b[2], TEST_ARRAY_SIZE-6)); \
@@ -223,14 +223,14 @@ TEST_F(ByteswapTest, __byte_swap_16_array_unDWORD_##opt##_test) \
  * @param errmsg	Error message to display if the optimization cannot be used.
  */
 #define DO_ARRAY_16_unDWORD_BENCHMARK(opt, expr, errmsg) \
-TEST_F(ByteswapTest, __byte_swap_16_array_unDWORD_##opt##_benchmark) \
+TEST_F(ByteswapTest, rp_byte_swap_16_array_unDWORD_##opt##_benchmark) \
 { \
 	if (!(expr)) { \
 		fputs(errmsg, stderr); \
 		return; \
 	} \
 	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) { \
-		__byte_swap_16_array_##opt(reinterpret_cast<uint16_t*>(&align_buf[2]), ALIGN_BUF_SIZE-6); \
+		rp_byte_swap_16_array_##opt(reinterpret_cast<uint16_t*>(&align_buf[2]), ALIGN_BUF_SIZE-6); \
 	} \
 }
 
@@ -241,13 +241,13 @@ TEST_F(ByteswapTest, __byte_swap_16_array_unDWORD_##opt##_benchmark) \
  * @param errmsg	Error message to display if the optimization cannot be used.
  */
 #define DO_ARRAY_32_TEST(opt, expr, errmsg) \
-TEST_F(ByteswapTest, __byte_swap_32_array_##opt##_test) \
+TEST_F(ByteswapTest, rp_byte_swap_32_array_##opt##_test) \
 { \
 	if (!(expr)) { \
 		fputs(errmsg, stderr); \
 		return; \
 	} \
-	__byte_swap_32_array_##opt(reinterpret_cast<uint32_t*>(align_buf), ALIGN_BUF_SIZE); \
+	rp_byte_swap_32_array_##opt(reinterpret_cast<uint32_t*>(align_buf), ALIGN_BUF_SIZE); \
 	uint8_t *ptr = align_buf; \
 	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 0; i--) { \
 		EXPECT_EQ(0, memcmp(ptr, bswap_32b, TEST_ARRAY_SIZE)); \
@@ -262,14 +262,14 @@ TEST_F(ByteswapTest, __byte_swap_32_array_##opt##_test) \
  * @param errmsg	Error message to display if the optimization cannot be used.
  */
 #define DO_ARRAY_32_BENCHMARK(opt, expr, errmsg) \
-TEST_F(ByteswapTest, __byte_swap_32_array_##opt##_benchmark) \
+TEST_F(ByteswapTest, rp_byte_swap_32_array_##opt##_benchmark) \
 { \
 	if (!(expr)) { \
 		fputs(errmsg, stderr); \
 		return; \
 	} \
 	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) { \
-		__byte_swap_32_array_##opt(reinterpret_cast<uint32_t*>(align_buf), ALIGN_BUF_SIZE); \
+		rp_byte_swap_32_array_##opt(reinterpret_cast<uint32_t*>(align_buf), ALIGN_BUF_SIZE); \
 	} \
 }
 
@@ -284,13 +284,13 @@ TEST_F(ByteswapTest, __byte_swap_32_array_##opt##_benchmark) \
  * @param errmsg	Error message to display if the optimization cannot be used.
  */
 #define DO_ARRAY_32_unQWORD_TEST(opt, expr, errmsg) \
-TEST_F(ByteswapTest, __byte_swap_32_array_unQWORD_##opt##_test) \
+TEST_F(ByteswapTest, rp_byte_swap_32_array_unQWORD_##opt##_test) \
 { \
 	if (!(expr)) { \
 		fputs(errmsg, stderr); \
 		return; \
 	} \
-	__byte_swap_32_array_##opt(reinterpret_cast<uint32_t*>(&align_buf[4]), ALIGN_BUF_SIZE-8); \
+	rp_byte_swap_32_array_##opt(reinterpret_cast<uint32_t*>(&align_buf[4]), ALIGN_BUF_SIZE-8); \
 	uint8_t *ptr = &align_buf[4]; \
 	for (unsigned int i = ALIGN_BUF_SIZE / TEST_ARRAY_SIZE; i > 8; i--) { \
 		EXPECT_EQ(0, memcmp(ptr, &bswap_32b[4], TEST_ARRAY_SIZE-8)); \
@@ -309,14 +309,14 @@ TEST_F(ByteswapTest, __byte_swap_32_array_unQWORD_##opt##_test) \
  * @param errmsg	Error message to display if the optimization cannot be used.
  */
 #define DO_ARRAY_32_unQWORD_BENCHMARK(opt, expr, errmsg) \
-TEST_F(ByteswapTest, __byte_swap_32_array_unQWORD_##opt##_benchmark) \
+TEST_F(ByteswapTest, rp_byte_swap_32_array_unQWORD_##opt##_benchmark) \
 { \
 	if (!(expr)) { \
 		fputs(errmsg, stderr); \
 		return; \
 	} \
 	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) { \
-		__byte_swap_32_array_##opt(reinterpret_cast<uint32_t*>(&align_buf[4]), ALIGN_BUF_SIZE-8); \
+		rp_byte_swap_32_array_##opt(reinterpret_cast<uint32_t*>(&align_buf[4]), ALIGN_BUF_SIZE-8); \
 	} \
 }
 

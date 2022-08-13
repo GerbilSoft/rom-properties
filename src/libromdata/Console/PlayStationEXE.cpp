@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PlayStationEXE.cpp: PlayStation PS-X executable reader.                 *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,8 +19,6 @@ using std::string;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(PlayStationEXE)
-
 class PlayStationEXEPrivate final : public RomDataPrivate
 {
 	public:
@@ -31,6 +29,12 @@ class PlayStationEXEPrivate final : public RomDataPrivate
 		RP_DISABLE_COPY(PlayStationEXEPrivate)
 
 	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
+
+	public:
 		// PS-X EXE header.
 		// NOTE: **NOT** byteswapped.
 		PS1_EXE_Header psxHeader;
@@ -39,10 +43,29 @@ class PlayStationEXEPrivate final : public RomDataPrivate
 		uint32_t sp_override;
 };
 
+ROMDATA_IMPL(PlayStationEXE)
+
 /** PlayStationEXEPrivate **/
 
+/* RomDataInfo */
+const char *const PlayStationEXEPrivate::exts[] = {
+	".exe",	// NOTE: Conflicts with Windows executables.
+
+	nullptr
+};
+const char *const PlayStationEXEPrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"application/x-ps1-executable",
+
+	nullptr
+};
+const RomDataInfo PlayStationEXEPrivate::romDataInfo = {
+	"PlayStationEXE", exts, mimeTypes
+};
+
 PlayStationEXEPrivate::PlayStationEXEPrivate(PlayStationEXE *q, IRpFile *file, uint32_t sp_override)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, sp_override(sp_override)
 {
 	// Clear the structs.
@@ -69,7 +92,6 @@ PlayStationEXE::PlayStationEXE(IRpFile *file)
 {
 	// This class handles executables.
 	RP_D(PlayStationEXE);
-	d->className = "PlayStationEXE";
 	d->mimeType = "application/x-ps1-executable";	// unofficial, not on fd.o
 	d->fileType = FileType::Executable;
 
@@ -100,7 +122,6 @@ PlayStationEXE::PlayStationEXE(IRpFile *file, uint32_t sp_override)
 {
 	// This class handles executables.
 	RP_D(PlayStationEXE);
-	d->className = "PlayStationEXE";
 	d->mimeType = "application/x-ps1-executable";	// unofficial, not on fd.o
 	d->fileType = FileType::Executable;
 
@@ -129,12 +150,11 @@ void PlayStationEXE::init(void)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->psxHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->psxHeader);
-	info.ext = nullptr;	// Not needed for XBE.
-	info.szFile = 0;	// Not needed for XBE.
+	const DetectInfo info = {
+		{0, sizeof(d->psxHeader), reinterpret_cast<const uint8_t*>(&d->psxHeader)},
+		nullptr,	// ext (not needed for PlayStationEXE)
+		0		// szFile (not needed for PlayStationEXE)
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
@@ -198,54 +218,6 @@ const char *PlayStationEXE::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *PlayStationEXE::supportedFileExtensions_static(void)
-{
-	// NOTE: The boot filename is generally named after a game ID
-	// and doesn't have a common file extension.
-
-	static const char *const exts[] = {
-		".exe",	// NOTE: Conflicts with Windows executables.
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *PlayStationEXE::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		// TODO: Get these upstreamed on FreeDesktop.org.
-		"application/x-ps1-executable",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

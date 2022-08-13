@@ -3,7 +3,7 @@
  * RP_ShellPropSheetExt_Register.cpp: IShellPropSheetExt implementation.   *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,31 +17,9 @@ using LibWin32Common::RegKey;
 using std::tstring;
 
 #define CLSID_RP_ShellPropSheetExt_String	TEXT("{2443C158-DF7C-4352-B435-BC9F885FFD52}")
+CLSID_IMPL(RP_ShellPropSheetExt, _T("ROM Properties Page - Property Sheet"))
+
 extern const TCHAR RP_ProgID[];
-
-/**
- * Register the COM object.
- * @return ERROR_SUCCESS on success; Win32 error code on error.
- */
-LONG RP_ShellPropSheetExt::RegisterCLSID(void)
-{
-	static const TCHAR description[] = _T("ROM Properties Page - Property Sheet");
-
-	// Register the COM object.
-	LONG lResult = RegKey::RegisterComObject(__uuidof(RP_ShellPropSheetExt), RP_ProgID, description);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
-	// Register as an "approved" shell extension.
-	lResult = RegKey::RegisterApprovedExtension(__uuidof(RP_ShellPropSheetExt), description);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
-	// COM object registered.
-	return ERROR_SUCCESS;
-}
 
 /**
  * Register the file type handler.
@@ -77,11 +55,11 @@ LONG RP_ShellPropSheetExt::RegisterFileType_int(RegKey &hkey_Assoc)
 
 /**
  * Register the file type handler.
- * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
- * @param ext File extension, including the leading dot.
+ * @param hkcr	[in] HKEY_CLASSES_ROOT or user-specific classes root.
+ * @param ext	[in] File extension, including the leading dot.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ShellPropSheetExt::RegisterFileType(RegKey &hkcr, LPCTSTR ext)
+LONG RP_ShellPropSheetExt::RegisterFileType(RegKey &hkcr, _In_ LPCTSTR ext)
 {
 	// Open the file extension key.
 	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, true);
@@ -115,22 +93,6 @@ LONG RP_ShellPropSheetExt::RegisterFileType(RegKey &hkcr, LPCTSTR ext)
 
 	// File type handler registered.
 	return lResult;
-}
-
-/**
- * Unregister the COM object.
- * @return ERROR_SUCCESS on success; Win32 error code on error.
- */
-LONG RP_ShellPropSheetExt::UnregisterCLSID(void)
-{
-	// Unegister the COM object.
-	LONG lResult = RegKey::UnregisterComObject(__uuidof(RP_ShellPropSheetExt), RP_ProgID);
-	if (lResult != ERROR_SUCCESS) {
-		return lResult;
-	}
-
-	// TODO
-	return ERROR_SUCCESS;
 }
 
 /**
@@ -211,12 +173,22 @@ LONG RP_ShellPropSheetExt::UnregisterFileType_int(RegKey &hkey_Assoc)
 
 /**
  * Unregister the file type handler.
- * @param hkcr HKEY_CLASSES_ROOT or user-specific classes root.
- * @param ext File extension, including the leading dot.
+ * @param hkcr	[in] HKEY_CLASSES_ROOT or user-specific classes root.
+ * @param ext	[in,opt] File extension, including the leading dot.
+ *
+ * NOTE: ext can be NULL, in which case, hkcr is assumed to be
+ * the registered file association.
+ *
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ShellPropSheetExt::UnregisterFileType(RegKey &hkcr, LPCTSTR ext)
+LONG RP_ShellPropSheetExt::UnregisterFileType(RegKey &hkcr, _In_opt_ LPCTSTR ext)
 {
+	// NOTE: NULL ext isn't needed for RP_ShellPropSheetExt.
+	assert(ext != nullptr);
+	if (!ext) {
+		return ERROR_FILE_NOT_FOUND;
+	}
+
 	// Open the file extension key.
 	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, false);
 	if (!hkcr_ext.isOpen()) {

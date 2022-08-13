@@ -3,20 +3,17 @@
  * SuperMagicDrive_sse2.cpp: Super Magic Drive deinterleaving function.    *
  * SSE2-optimized version.                                                 *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "SuperMagicDrive.hpp"
 
-// C includes. (C++ namespace)
-#include <cassert>
-
-// SSE2 intrinsics.
+// SSE2 intrinsics
 #include <emmintrin.h>
 
-namespace LibRomData {
+namespace LibRomData { namespace SuperMagicDrive {
 
 /**
  * Decode a Super Magic Drive interleaved block.
@@ -25,7 +22,7 @@ namespace LibRomData {
  * @param pDest	[out] Destination block. (Must be 16 KB.)
  * @param pSrc	[in] Source block. (Must be 16 KB.)
  */
-void SuperMagicDrive::decodeBlock_sse2(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc)
+void decodeBlock_sse2(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc)
 {
 	// NOTE: MSVC 2017 generates `movdqu` instead of `movdqa`.
 	// https://developercommunity.visualstudio.com/content/problem/48123/perf-regression-movdqu-instructions-are-generated.html
@@ -50,4 +47,4 @@ void SuperMagicDrive::decodeBlock_sse2(uint8_t *RESTRICT pDest, const uint8_t *R
 	}
 }
 
-}
+} }

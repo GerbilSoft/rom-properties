@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpPng.cpp: PNG image handler.                                           *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,8 +11,11 @@
 
 #include "RpPng.hpp"
 
+// librpcpu
+#include "librpcpu/byteorder.h"
+
 // librpfile
-#include "librpfile/RpFile.hpp"
+#include "librpfile/IRpFile.hpp"
 using LibRpFile::IRpFile;
 
 // librptexture
@@ -20,14 +23,16 @@ using LibRpFile::IRpFile;
 using LibRpTexture::rp_image;
 using LibRpTexture::argb32_t;
 
-// PNG writer.
+// PNG writer
 #include "RpPngWriter.hpp"
 
-// C++ STL classes.
+// C++ STL classes
 using std::unique_ptr;
 
-// Image format libraries.
+// Image format libraries
+#include <zlib.h>		// get_crc_table()
 #include <png.h>
+#include "APNG_dlopen.h"	// for libpng_has_APNG()
 
 #if PNG_LIBPNG_VER < 10209 || \
     (PNG_LIBPNG_VER == 10209 && \
@@ -46,15 +51,12 @@ using std::unique_ptr;
 // PNGCAPI was added in libpng-1.5.0beta14.
 // Older versions will need this.
 #ifndef PNGCAPI
-# ifdef _MSC_VER
-#  define PNGCAPI __cdecl
-# else
-#  define PNGCAPI
-# endif
+#  ifdef _MSC_VER
+#    define PNGCAPI __cdecl
+#  else
+#    define PNGCAPI
+#  endif
 #endif /* !PNGCAPI */
-
-// pngcheck()
-#include "pngcheck/pngcheck.hpp"
 
 #if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 // Need zlib for delay-load checks.
@@ -63,7 +65,7 @@ using std::unique_ptr;
 #include "libwin32common/DelayLoadHelper.h"
 #endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
 
-namespace LibRpBase {
+namespace LibRpBase { namespace RpPng {
 
 #if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
 // DelayLoad test implementation.
@@ -73,7 +75,7 @@ static int DelayLoad_test_zlib_and_png(void)
 	static bool success = false;
 	if (!success) {
 		__try {
-			zlibVersion();
+			get_crc_table();
 			png_access_version_number();
 		} __except (DelayLoad_filter_zlib_and_png(GetExceptionCode())) {
 			return -ENOTSUP;
@@ -84,79 +86,9 @@ static int DelayLoad_test_zlib_and_png(void)
 }
 #endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
 
-class RpPngPrivate
-{
-	private:
-		// RpPngPrivate is a static class.
-		RpPngPrivate();
-		~RpPngPrivate();
-		RP_DISABLE_COPY(RpPngPrivate)
-
-	public:
-		/** I/O functions. **/
-
-		/**
-		 * libpng I/O read handler for IRpFile.
-		 * @param png_ptr	[in]  PNG pointer.
-		 * @param data		[out] Buffer for the data to read.
-		 * @param length	[in]  Size of data.
-		 */
-		static void PNGCAPI png_io_IRpFile_read(png_structp png_ptr, png_bytep data, png_size_t length);
-
-		/**
-		 * libpng I/O write handler for IRpFile.
-		 * @param png_ptr	[in] PNG pointer.
-		 * @param data		[in] Data to write.
-		 * @param length	[in] Size of data.
-		 */
-		static void PNGCAPI png_io_IRpFile_write(png_structp png_ptr, png_bytep data, png_size_t length);
-
-		/**
-		 * libpng I/O flush handler for IRpFile.
-		 * @param png_ptr	[in] PNG pointer.
-		 */
-		static void PNGCAPI png_io_IRpFile_flush(png_structp png_ptr);
-
-		/** Error handler functions. **/
-
-#ifdef PNG_WARNINGS_SUPPORTED
-		/**
-		 * libpng warning handler function that simply ignores warnings.
-		 *
-		 * Certain PNG images have "known incorrect" sRGB profiles,
-		 * and we don't want libpng to spam stderr with warnings
-		 * about them.
-		 *
-		 * @param png_ptr	[in] PNG pointer.
-		 * @param msg		[in] Warning message.
-		 */
-		static void PNGCAPI png_warning_fn(png_structp png_ptr, png_const_charp msg);
-#endif /* PNG_WARNINGS_SUPPORTED */
-
-		/** Read functions. **/
-
-		/**
-		 * Read the palette for a CI8 image.
-		 * @param png_ptr png_structp
-		 * @param info_ptr png_infop
-		 * @param color_type PNG color type.
-		 * @param img rp_image to store the palette in.
-		 */
-		static void Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
-					     int color_type, rp_image *img);
-
-		/**
-		 * Load a PNG image from an opened PNG handle.
-		 * @param png_ptr png_structp
-		 * @param info_ptr png_infop
-		 * @return rp_image*, or nullptr on error.
-		 */
-		static rp_image *loadPng(png_structp png_ptr, png_infop info_ptr);
-};
-
 /** RpPngPrivate **/
 
-/** I/O functions. **/
+/** I/O functions **/
 
 /**
  * libpng I/O handler for IRpFile.
@@ -164,7 +96,7 @@ class RpPngPrivate
  * @param data		[out] Buffer for the data to read.
  * @param length	[in]  Size of data.
  */
-void PNGCAPI RpPngPrivate::png_io_IRpFile_read(png_structp png_ptr, png_bytep data, png_size_t length)
+static void PNGCAPI png_io_IRpFile_read(png_structp png_ptr, png_bytep data, png_size_t length)
 {
 	// Assuming io_ptr is an IRpFile*.
 	IRpFile *file = static_cast<IRpFile*>(png_get_io_ptr(png_ptr));
@@ -184,38 +116,6 @@ void PNGCAPI RpPngPrivate::png_io_IRpFile_read(png_structp png_ptr, png_bytep da
 	}
 }
 
-/**
- * libpng I/O write handler for IRpFile.
- * @param png_ptr	[in] PNG pointer.
- * @param data		[in] Data to write.
- * @param length	[in] Size of data.
- */
-void PNGCAPI RpPngPrivate::png_io_IRpFile_write(png_structp png_ptr, png_bytep data, png_size_t length)
-{
-	// Assuming io_ptr is an IRpFile*.
-	IRpFile *file = static_cast<IRpFile*>(png_get_io_ptr(png_ptr));
-	if (!file)
-		return;
-
-	// Write data to the IRpFile.
-	// TODO: Error handling?
-	file->write(data, length);
-}
-
-/**
- * libpng I/O flush handler for IRpFile.
- * @param png_ptr	[in] PNG pointer.
- */
-void PNGCAPI RpPngPrivate::png_io_IRpFile_flush(png_structp png_ptr)
-{
-	// Assuming io_ptr is an IRpFile*.
-	IRpFile *const file = static_cast<IRpFile*>(png_get_io_ptr(png_ptr));
-	if (!file)
-		return;
-
-	// TODO: IRpFile::flush()
-}
-
 #ifdef PNG_WARNINGS_SUPPORTED
 /**
  * libpng warning handler function that simply ignores warnings.
@@ -227,7 +127,7 @@ void PNGCAPI RpPngPrivate::png_io_IRpFile_flush(png_structp png_ptr)
  * @param png_ptr	[in] PNG pointer.
  * @param msg		[in] Warning message.
  */
-void PNGCAPI RpPngPrivate::png_warning_fn(png_structp png_ptr, png_const_charp msg)
+static void PNGCAPI png_warning_fn(png_structp png_ptr, png_const_charp msg)
 {
 	// Nothing to do here...
 	RP_UNUSED(png_ptr);
@@ -235,7 +135,7 @@ void PNGCAPI RpPngPrivate::png_warning_fn(png_structp png_ptr, png_const_charp m
 }
 #endif /* PNG_WARNINGS_SUPPORTED */
 
-/** Read functions. **/
+/** Read functions **/
 
 /**
  * Read the palette for a CI8 image.
@@ -244,8 +144,8 @@ void PNGCAPI RpPngPrivate::png_warning_fn(png_structp png_ptr, png_const_charp m
  * @param color_type PNG color type.
  * @param img rp_image to store the palette in.
  */
-void RpPngPrivate::Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
-				    int color_type, rp_image *img)
+static void Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
+			     int color_type, rp_image *img)
 {
 	png_colorp png_palette;
 	png_bytep trans;
@@ -257,18 +157,21 @@ void RpPngPrivate::Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
 
 	// rp_image's palette data.
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-	const int palette_len = img->palette_len();
+	const unsigned int palette_len = img->palette_len();
 	uint32_t *img_palette = img->palette();
 	assert(palette_len > 0);
 	assert(palette_len <= 256);
 	assert(img_palette != nullptr);
-	if (!img_palette || palette_len <= 0 || palette_len > 256)
+	if (!img_palette || palette_len == 0 || palette_len > 256)
 		return;
 
 	switch (color_type) {
 		case PNG_COLOR_TYPE_PALETTE:
 			// Get the palette from the PNG image.
 			if (png_get_PLTE(png_ptr, info_ptr, &png_palette, &num_palette) != PNG_INFO_PLTE)
+				break;
+			assert(num_palette > 0);
+			if (num_palette <= 0)
 				break;
 
 			// Check if there's a tRNS chunk.
@@ -278,7 +181,7 @@ void RpPngPrivate::Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
 			}
 
 			// Combine the 24-bit RGB palette with the transparency information.
-			for (int i = std::min(num_palette, palette_len);
+			for (unsigned int i = std::min(static_cast<unsigned int>(num_palette), palette_len);
 			     i > 0; i--, img_palette++, png_palette++)
 			{
 				argb32_t color;
@@ -298,7 +201,7 @@ void RpPngPrivate::Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
 				*img_palette = color.u32;
 			}
 
-			if (num_palette < palette_len) {
+			if (static_cast<unsigned int>(num_palette) < palette_len) {
 				// Clear the rest of the palette.
 				// (NOTE: 0 == fully transparent.)
 				memset(img_palette, 0, (palette_len - num_palette) * sizeof(uint32_t));
@@ -311,7 +214,7 @@ void RpPngPrivate::Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
 			// the grayscale values will be incorrect.
 			// TODO: Handle the tRNS chunk?
 			uint32_t gray = 0xFF000000;
-			for (int i = 0; i < std::min(256, palette_len);
+			for (unsigned int i = 0; i < std::min(256U, palette_len);
 			     i++, img_palette++, gray += 0x010101)
 			{
 				// TODO: tRNS chunk handling.
@@ -332,7 +235,7 @@ void RpPngPrivate::Read_CI8_Palette(png_structp png_ptr, png_infop info_ptr,
  * @param info_ptr png_infop
  * @return rp_image*, or nullptr on error.
  */
-rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
+static rp_image *loadPng(png_structp png_ptr, png_infop info_ptr)
 {
 	// Row pointers. (NOTE: Allocated after IHDR is read.)
 	const png_byte **row_pointers = nullptr;
@@ -417,6 +320,9 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 			// TODO: Does this work with 1, 2, and 4-bit grayscale?
 			fmt = rp_image::Format::ARGB32;
 			png_set_gray_to_rgb(png_ptr);
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+			png_set_swap_alpha(png_ptr);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 			if (!has_sBIT) {
 				const uint8_t bits = static_cast<uint8_t>(bit_depth > 8 ? 8 : bit_depth);
 				png_sBIT_fake.red = 0;
@@ -469,6 +375,9 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 		case PNG_COLOR_TYPE_RGB_ALPHA:
 			// 32-bit ARGB.
 			fmt = rp_image::Format::ARGB32;
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+			png_set_swap_alpha(png_ptr);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 			if (!has_sBIT) {
 				const uint8_t bits = static_cast<uint8_t>(bit_depth > 8 ? 8 : bit_depth);
 				png_sBIT_fake.red = bits;
@@ -497,11 +406,17 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 		// rp_image doesn't support 24-bit color.
 		// Expand it by having libpng fill the alpha channel
 		// with 0xFF (opaque).
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
 		png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+		png_set_filler(png_ptr, 0xFF, PNG_FILLER_BEFORE);
+#endif
 	}
 
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	// We're using "BGR" color.
 	png_set_bgr(png_ptr);
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
 	// Update the PNG info.
 	png_read_update_info(png_ptr, info_ptr);
@@ -559,14 +474,10 @@ rp_image *RpPngPrivate::loadPng(png_structp png_ptr, png_infop info_ptr)
 
 /**
  * Load a PNG image from an IRpFile.
- *
- * This image is NOT checked for issues; do not use
- * with untrusted images!
- *
  * @param file IRpFile to load from.
  * @return rp_image*, or nullptr on error.
  */
-rp_image *RpPng::loadUnchecked(IRpFile *file)
+rp_image *load(IRpFile *file)
 {
 	if (!file)
 		return nullptr;
@@ -578,6 +489,10 @@ rp_image *RpPng::loadUnchecked(IRpFile *file)
 		// Delay load failed.
 		return nullptr;
 	}
+#else /* !defined(_MSC_VER) || (!defined(ZLIB_IS_DLL) && !defined(PNG_IS_DLL)) */
+	// zlib isn't in a DLL, but we need to ensure that the
+	// CRC table is initialized anyway.
+	get_crc_table();
 #endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
 
 	// Rewind the file.
@@ -599,47 +514,18 @@ rp_image *RpPng::loadUnchecked(IRpFile *file)
 
 #ifdef PNG_WARNINGS_SUPPORTED
 	// Initialize the custom warning handler.
-	png_set_error_fn(png_ptr, nullptr, nullptr, RpPngPrivate::png_warning_fn);
+	png_set_error_fn(png_ptr, nullptr, nullptr, png_warning_fn);
 #endif /* PNG_WARNINGS_SUPPORTED */
 
 	// Initialize the custom I/O handler for IRpFile.
-	png_set_read_fn(png_ptr, file, RpPngPrivate::png_io_IRpFile_read);
+	png_set_read_fn(png_ptr, file, png_io_IRpFile_read);
 
 	// Call the actual PNG image reading function.
-	rp_image *img = RpPngPrivate::loadPng(png_ptr, info_ptr);
+	rp_image *img = loadPng(png_ptr, info_ptr);
 
 	// Free the PNG structs.
 	png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 	return img;
-}
-
-/**
- * Load a PNG image from an IRpFile.
- *
- * This image is verified with various tools to ensure
- * it doesn't have any errors.
- *
- * @param file IRpFile to load from.
- * @return rp_image*, or nullptr on error.
- */
-rp_image *RpPng::load(IRpFile *file)
-{
-	if (!file)
-		return nullptr;
-
-	// Check the image with pngcheck() first.
-	file->rewind();
-	int ret = pngcheck(file);
-	// NOTE: BK Pocket Bike Racer's icon is missing the IEND chunk.
-	// pngcheck returns kMinorError in that case.
-	// TODO: Make it a special exception?
-	if (ret != kOK && ret != kMinorError) {
-		// PNG image has major errors.
-		return nullptr;
-	}
-
-	// PNG image has been validated.
-	return loadUnchecked(file);
 }
 
 /**
@@ -653,7 +539,7 @@ rp_image *RpPng::load(IRpFile *file)
  * @param img rp_image to save.
  * @return 0 on success; negative POSIX error code on error.
  */
-int RpPng::save(IRpFile *file, const rp_image *img)
+int save(IRpFile *file, const rp_image *img)
 {
 	assert(file != nullptr);
 	assert(img != nullptr);
@@ -681,7 +567,7 @@ int RpPng::save(IRpFile *file, const rp_image *img)
  * @param img rp_image to save.
  * @return 0 on success; negative POSIX error code on error.
  */
-int RpPng::save(const char *filename, const rp_image *img)
+int save(const char *filename, const rp_image *img)
 {
 	assert(filename != nullptr);
 	assert(filename[0] != 0);
@@ -722,7 +608,7 @@ int RpPng::save(const char *filename, const rp_image *img)
  * @param iconAnimData Animated image data to save.
  * @return 0 on success; negative POSIX error code on error.
  */
-int RpPng::save(IRpFile *file, const IconAnimData *iconAnimData)
+int save(IRpFile *file, const IconAnimData *iconAnimData)
 {
 	assert(file != nullptr);
 	assert(iconAnimData != nullptr);
@@ -759,7 +645,7 @@ int RpPng::save(IRpFile *file, const IconAnimData *iconAnimData)
  * @param iconAnimData Animated image data to save.
  * @return 0 on success; negative POSIX error code on error.
  */
-int RpPng::save(const char *filename, const IconAnimData *iconAnimData)
+int save(const char *filename, const IconAnimData *iconAnimData)
 {
 	assert(filename != nullptr);
 	assert(filename[0] != 0);
@@ -781,4 +667,138 @@ int RpPng::save(const char *filename, const IconAnimData *iconAnimData)
 	return pngWriter->write_IDAT();
 }
 
+/** Version info wrapper functions **/
+
+/**
+ * Was rom-properties compiled using zlib-ng?
+ * @return True if zlib-ng; false if not.
+ */
+bool zlib_is_ng(void)
+{
+#ifdef ZLIBNG_VERSION
+	return true;
+#else /* !ZLIBNG_VERSION */
+	return false;
+#endif /* ZLIBNG_VERSION */
 }
+
+// Use zlibng_version()?
+#ifdef ZLIBNG_VERSION
+// FIXME: zlibng_version() isn't exported on Windows
+// if building with ZLIB_COMPAT.
+#  ifdef _WIN32
+#    if defined(ZLIB_IS_DLL) && defined(ZLIB_COMPAT)
+       // zlib is a DLL, and ZLIB_COMPAT is enabled.
+#    else
+#      define USE_ZLIBNG_VERSION 1
+#    endif
+#  else /* !_WIN32 */
+#    define USE_ZLIBNG_VERSION 1
+#  endif /* _WIN32 */
+#endif /* ZLIBNG_VERSION */
+
+#ifdef USE_ZLIBNG_VERSION
+// NOTE: Can't #include <zlib-ng.h> because zconf-ng.h isn't generated
+// when using the internal copy of zlib-ng.
+// Manually declare the version function.
+// Also, MSVC doesn't like it when we put this in a function.
+// (gcc is fine with that...)
+extern "C" const char *zlibng_version(void);
+#endif /* USE_ZLIBNG_VERSION */
+
+/**
+ * Get the zlib version string.
+ * This is the runtime zlib version.
+ * @return Result from zlibVersion() or zlibng_version().
+ */
+const char *zlib_version_string(void)
+{
+#if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_zlib_and_png() != 0) {
+		// Delay load failed.
+		return "(DLL failed to load)";
+	}
+#endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
+
+#ifdef USE_ZLIBNG_VERSION
+	return zlibng_version();
+#else /* !USE_ZLIBNG_VERSION */
+	return zlibVersion();
+#endif /* USE_ZLIBNG_VERSION */
+}
+
+/**
+ * Does our libpng have APNG support?
+ * @return True if APNG is supported; false if not.
+ */
+RP_LIBROMDATA_PUBLIC
+bool libpng_has_APNG(void)
+{
+#if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_zlib_and_png() != 0) {
+		// Delay load failed.
+		return false;
+	}
+#endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
+
+	const bool APNG_is_supported = (APNG_ref() == 0);
+	if (APNG_is_supported) {
+		// APNG is supported.
+		// Unreference it to prevent leaks.
+		APNG_unref();
+	}
+
+	return APNG_is_supported;
+}
+
+/**
+ * Get the libpng version number.
+ * This is the runtime libpng version.
+ * @return Result from png_access_version_number()
+ */
+uint32_t libpng_version_number(void)
+{
+#if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_zlib_and_png() != 0) {
+		// Delay load failed.
+		return 0;
+	}
+#endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
+
+	return png_access_version_number();
+}
+
+/**
+ * Get the libpng copyright string.
+ * @return libpng copyright string [png_get_copyright()]
+ */
+const char *libpng_copyright_string(void)
+{
+#if defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL))
+	// Delay load verification.
+	// TODO: Only if linked with /DELAYLOAD?
+	if (DelayLoad_test_zlib_and_png() != 0) {
+		// Delay load failed.
+		return "(DLL failed to load)";
+	}
+#endif /* defined(_MSC_VER) && (defined(ZLIB_IS_DLL) || defined(PNG_IS_DLL)) */
+
+	/**
+	 * NOTE: MSVC does not define __STDC__ by default.
+	 * If __STDC__ is not defined, the libpng copyright
+	 * will not have a leading newline, and all newlines
+	 * will be replaced with groups of 6 spaces.
+	 *
+	 * NOTE 2: This was changed in libpng-1.6.36, so it
+	 * always returns the __STDC__ copyright notice.
+	 */
+	return png_get_copyright(nullptr);
+}
+
+} }

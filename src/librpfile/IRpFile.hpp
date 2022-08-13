@@ -2,34 +2,39 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * IRpFile.hpp: File wrapper interface.                                    *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPFILE_IRPFILE_HPP__
 #define __ROMPROPERTIES_LIBRPFILE_IRPFILE_HPP__
 
-// C includes.
+// C includes
 #include <stdint.h>
+#include <sys/types.h>	// for off64_t
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cerrno>
-#include <cstddef>	/* for size_t */
+#include <cstddef>	// for size_t
 
-// C++ includes.
+// C++ includes
 #include <string>
 #include <type_traits>
 
-// common macros
+// Common macros
 #include "common.h"
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 #include "RefBase.hpp"
+#include "d_type.h"
 
 namespace LibRpFile {
 
 class IRpFile : public RefBase
 {
 	protected:
+		RP_LIBROMDATA_PUBLIC
 		IRpFile();
+
 		virtual ~IRpFile() { }	// call unref() instead
 
 	private:
@@ -48,6 +53,23 @@ class IRpFile : public RefBase
 		 * @return True if the file is open; false if it isn't.
 		 */
 		virtual bool isOpen(void) const = 0;
+
+		/**
+		 * Get the last error.
+		 * @return Last POSIX error, or 0 if no error.
+		 */
+		inline int lastError(void) const
+		{
+			return m_lastError;
+		}
+
+		/**
+		 * Clear the last error.
+		 */
+		inline void clearError(void)
+		{
+			m_lastError = 0;
+		}
 
 		/**
 		 * Is the file compressed?
@@ -70,20 +92,22 @@ class IRpFile : public RefBase
 		}
 
 		/**
-		 * Get the last error.
-		 * @return Last POSIX error, or 0 if no error.
+		 * Get the file type.
+		 * File types must be set by the IRpFile subclass.
+		 * @return DT_* file enumeration, or 0 if unknown.
 		 */
-		inline int lastError(void) const
+		inline uint8_t fileType(void) const
 		{
-			return m_lastError;
+			return m_fileType;
 		}
 
 		/**
-		 * Clear the last error.
+		 * Is this file a device?
+		 * @return True if this is a device; false if not.
 		 */
-		inline void clearError(void)
+		inline bool isDevice(void) const
 		{
-			m_lastError = 0;
+			return (m_fileType == DT_BLK || m_fileType == DT_CHR);
 		}
 
 	public:
@@ -136,7 +160,13 @@ class IRpFile : public RefBase
 		 * @param size New size. (default is 0)
 		 * @return 0 on success; -1 on error.
 		 */
-		virtual int truncate(off64_t size = 0) = 0;
+		virtual int truncate(off64_t size = 0)
+		{
+			// Not supported.
+			RP_UNUSED(size);
+			m_lastError = ENOTSUP;
+			return -1;
+		}
 
 		/**
 		 * Flush buffers.
@@ -159,9 +189,12 @@ class IRpFile : public RefBase
 
 		/**
 		 * Get the filename.
-		 * @return Filename. (May be empty if the filename is not available.)
+		 * @return Filename. (May be nullptr if the filename is not available.)
 		 */
-		virtual std::string filename(void) const = 0;
+		virtual const char *filename(void) const
+		{
+			return nullptr;
+		}
 
 	public:
 		/** Extra functions **/
@@ -173,19 +206,6 @@ class IRpFile : public RefBase
 		virtual int makeWritable(void)
 		{
 			return -ENOTSUP;
-		}
-
-	public:
-		/** Device file functions **/
-
-		/**
-		 * Is this a device file?
-		 * @return True if this is a device file; false if not.
-		 */
-		virtual bool isDevice(void) const
-		{
-			// Default is standard file.
-			return false;
 		}
 
 	public:
@@ -258,9 +278,10 @@ class IRpFile : public RefBase
 			off64_t *pcbRead = nullptr, off64_t *pcbWritten = nullptr);
 
 	protected:
-		int m_lastError;
-		bool m_isWritable;
-		bool m_isCompressed;
+		int m_lastError;	// Last error number (errno)
+		bool m_isWritable;	// Is this file writable?
+		bool m_isCompressed;	// Is this file compressed?
+		uint8_t m_fileType;	// File type (see d_type.h)
 };
 
 }

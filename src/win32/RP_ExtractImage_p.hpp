@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractImage_p.hpp: IExtractImage implementation. (PRIVATE CLASS)    *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -34,13 +34,13 @@ class RP_ExtractImage_Private
 		// RomData object. Loaded in IPersistFile::Load().
 		LibRpBase::RomData *romData;
 
+		// CreateThumbnail instance.
+		CreateThumbnailNoAlpha thumbnailer;
+
 		// Data from IExtractImage::GetLocation().
 		SIZE rgSize;
 		DWORD dwRecClrDepth;
 		DWORD dwFlags;
-
-		// CreateThumbnail instance.
-		CreateThumbnailNoAlpha thumbnailer;
 
 	public:
 		/**

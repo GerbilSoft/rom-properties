@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RpImageWin32.cpp: rp_image to Win32 conversion functions.               *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -28,12 +28,14 @@ namespace Gdiplus {
 #include <gdiplus.h>
 #include "librptexture/img/GdiplusHelper.hpp"
 
+namespace RpImageWin32 {
+
 /**
  * Convert an rp_image to a HBITMAP for use as an icon mask.
  * @param image rp_image.
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpImageWin32::toHBITMAP_mask(const rp_image *image)
+static HBITMAP toHBITMAP_mask(const rp_image *image)
 {
 	assert(image != nullptr);
 	assert(image->isValid());
@@ -52,8 +54,8 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const rp_image *image)
 	 * 0 == transparent pixel
 	 *
 	 * References:
-	 * - https://msdn.microsoft.com/en-us/library/windows/desktop/ms648059%28v=vs.85%29.aspx
-	 * - https://msdn.microsoft.com/en-us/library/windows/desktop/ms648052%28v=vs.85%29.aspx
+	 * - https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createicon
+	 * - https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-iconinfo
 	 */
 
 	// NOTE: Monochrome bitmaps have a stride of 32px. (4 bytes)
@@ -69,7 +71,7 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const rp_image *image)
 	BITMAPINFOHEADER *bmiHeader = &bmi.bmiHeader;
 
 	// Initialize the BITMAPINFOHEADER.
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183376%28v=vs.85%29.aspx
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-bitmapinfoheader
 	bmiHeader->biSize = sizeof(BITMAPINFOHEADER);
 	bmiHeader->biWidth = width;
 	bmiHeader->biHeight = image->height();	// FIXME: Top-down isn't working for monochrome...
@@ -196,7 +198,7 @@ HBITMAP RpImageWin32::toHBITMAP_mask(const rp_image *image)
  * @param bgColor Background color for images with alpha transparency. (ARGB32 format)
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpImageWin32::toHBITMAP(const rp_image *image, uint32_t bgColor)
+HBITMAP toHBITMAP(const rp_image *image, uint32_t bgColor)
 {
 	assert(image != nullptr);
 	assert(image->isValid());
@@ -222,14 +224,13 @@ HBITMAP RpImageWin32::toHBITMAP(const rp_image *image, uint32_t bgColor)
 /**
  * Convert an rp_image to HBITMAP.
  * This version resizes the image.
- * @param image		[in] rp_image.
+ * @param image		[in] rp_image
  * @param bgColor	[in] Background color for images with alpha transparency. (ARGB32 format)
  * @param size		[in] If non-zero, resize the image to this size.
  * @param nearest	[in] If true, use nearest-neighbor scaling.
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpImageWin32::toHBITMAP(const rp_image *image, uint32_t bgColor,
-				const SIZE &size, bool nearest)
+HBITMAP toHBITMAP(const rp_image *image, uint32_t bgColor, SIZE size, bool nearest)
 {
 	assert(image != nullptr);
 	assert(image->isValid());
@@ -255,10 +256,10 @@ HBITMAP RpImageWin32::toHBITMAP(const rp_image *image, uint32_t bgColor,
 /**
  * Convert an rp_image to HBITMAP.
  * This version preserves the alpha channel.
- * @param image	[in] rp_image.
+ * @param image		[in] rp_image
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpImageWin32::toHBITMAP_alpha(const rp_image *image)
+HBITMAP toHBITMAP_alpha(const rp_image *image)
 {
 	static const SIZE size = {0, 0};
 	return toHBITMAP_alpha(image, size, false);
@@ -267,12 +268,12 @@ HBITMAP RpImageWin32::toHBITMAP_alpha(const rp_image *image)
 /**
  * Convert an rp_image to HBITMAP.
  * This version preserves the alpha channel and resizes the image.
- * @param image		[in] rp_image.
+ * @param image		[in] rp_image
  * @param size		[in] If non-zero, resize the image to this size.
  * @param nearest	[in] If true, use nearest-neighbor scaling.
  * @return HBITMAP, or nullptr on error.
  */
-HBITMAP RpImageWin32::toHBITMAP_alpha(const rp_image *image, const SIZE &size, bool nearest)
+HBITMAP toHBITMAP_alpha(const rp_image *image, SIZE size, bool nearest)
 {
 	assert(image != nullptr);
 	assert(image->isValid());
@@ -306,7 +307,7 @@ HBITMAP RpImageWin32::toHBITMAP_alpha(const rp_image *image, const SIZE &size, b
  * @param image rp_image.
  * @return HICON, or nullptr on error.
  */
-HICON RpImageWin32::toHICON(const rp_image *image)
+HICON toHICON(const rp_image *image)
 {
 	HBITMAP hBitmap = nullptr;
 	HBITMAP hbmMask = nullptr;
@@ -317,6 +318,18 @@ HICON RpImageWin32::toHICON(const rp_image *image)
 	if (!image || !image->isValid()) {
 		// Invalid image.
 		return nullptr;
+	}
+
+	// Windows doesn't like non-square icons.
+	// Add extra transparent columns/rows before
+	// converting to HBITMAP.
+	rp_image *tmp_img = nullptr;
+	if (!image->isSquare()) {
+		// Image is non-square.
+		tmp_img = image->squared();
+		if (tmp_img) {
+			image = tmp_img;
+		}
 	}
 
 	// We should be using the RpGdiplusBackend.
@@ -356,6 +369,7 @@ cleanup:
 		DeleteBitmap(hBitmap);
 	if (hbmMask)
 		DeleteBitmap(hbmMask);
+	UNREF(tmp_img);
 	return hIcon;
 }
 
@@ -364,7 +378,7 @@ cleanup:
  * @param hBitmap HBITMAP.
  * @return rp_image.
  */
-rp_image *RpImageWin32::fromHBITMAP(HBITMAP hBitmap)
+rp_image *fromHBITMAP(HBITMAP hBitmap)
 {
 	BITMAP bm;
 	if (!GetObject(hBitmap, sizeof(bm), &bm)) {
@@ -395,7 +409,7 @@ rp_image *RpImageWin32::fromHBITMAP(HBITMAP hBitmap)
 
 	// TODO: Copy the palette for 8-bit.
 
-	// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183402(v=vs.85).aspx
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/gdi/capturing-an-image
 	const int height = abs(bm.bmHeight);
 	BITMAPINFOHEADER bi;
 	bi.biSize = sizeof(bi);
@@ -454,7 +468,7 @@ rp_image *RpImageWin32::fromHBITMAP(HBITMAP hBitmap)
  * @param hBitmap HBITMAP.
  * @return HICON, or nullptr on error.
  */
-HICON RpImageWin32::toHICON(HBITMAP hBitmap)
+HICON toHICON(HBITMAP hBitmap)
 {
 	assert(hBitmap != nullptr);
 	if (!hBitmap) {
@@ -467,10 +481,37 @@ HICON RpImageWin32::toHICON(HBITMAP hBitmap)
 	// NOTE: Windows doesn't seem to have any way to get
 	// direct access to the HBITMAP's pixels, so this step
 	// step is required. (GetDIBits() copies the pixels.)
-	rp_image *const img = fromHBITMAP(hBitmap);
+	rp_image *img = fromHBITMAP(hBitmap);
 	if (!img) {
 		// Error converting to rp_image.
 		return nullptr;
+	}
+
+	// Windows doesn't like non-square icons.
+	// Add extra transparent columns/rows before
+	// converting to HBITMAP.
+	HBITMAP hBmpTmp = nullptr;
+	if (!img->isSquare()) {
+		// Image is non-square.
+		rp_image *const tmp_img = img->squared();
+		if (tmp_img) {
+			UNREF(img);
+			img = tmp_img;
+		}
+
+		// Create a new temporary bitmap.
+		const RpGdiplusBackend* backend =
+			dynamic_cast<const RpGdiplusBackend*>(img->backend());
+		assert(backend != nullptr);
+		if (!backend) {
+			// Incorrect backend set.
+			UNREF(img);
+			return nullptr;
+		}
+		hBmpTmp = const_cast<RpGdiplusBackend*>(backend)->toHBITMAP_alpha();
+		if (hBmpTmp) {
+			hBitmap = hBmpTmp;
+		}
 	}
 
 	// Convert the image to an icon mask.
@@ -478,6 +519,9 @@ HICON RpImageWin32::toHICON(HBITMAP hBitmap)
 	if (!hbmMask) {
 		// Failed to create the icon mask.
 		img->unref();
+		if (hBmpTmp) {
+			DeleteBitmap(hBmpTmp);
+		}
 		return nullptr;
 	}
 
@@ -493,8 +537,11 @@ HICON RpImageWin32::toHICON(HBITMAP hBitmap)
 	// Create the icon.
 	HICON hIcon = CreateIconIndirect(&ii);
 
-	// Delete the icon mask bitmap and we're done.
+	// Delete the bitmaps and we're done.
 	DeleteBitmap(hbmMask);
+	if (hBmpTmp) {
+		DeleteBitmap(hBmpTmp);
+	}
 	img->unref();
 	return hIcon;
 }
@@ -510,7 +557,7 @@ HICON RpImageWin32::toHICON(HBITMAP hBitmap)
  * @param dpi			[in,opt] DPI value.
  * @return Sub-bitmap, or nullptr on error.
  */
-HBITMAP RpImageWin32::getSubBitmap(const rp_image *imgSpriteSheet, int x, int y, int width, int height, UINT dpi)
+HBITMAP getSubBitmap(const rp_image *imgSpriteSheet, int x, int y, int width, int height, UINT dpi)
 {
 	// TODO: CI8?
 	assert(imgSpriteSheet->format() == rp_image::Format::ARGB32);
@@ -568,4 +615,6 @@ HBITMAP RpImageWin32::getSubBitmap(const rp_image *imgSpriteSheet, int x, int y,
 
 	ReleaseDC(nullptr, hDC);
 	return hbmIcon;
+}
+
 }

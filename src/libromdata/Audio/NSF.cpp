@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NSF.hpp: NSF audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,8 +20,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(NSF)
-
 class NSFPrivate final : public RomDataPrivate
 {
 	public:
@@ -32,15 +30,39 @@ class NSFPrivate final : public RomDataPrivate
 		RP_DISABLE_COPY(NSFPrivate)
 
 	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
+
+	public:
 		// NSF header.
 		// NOTE: **NOT** byteswapped in memory.
 		NSF_Header nsfHeader;
 };
 
+ROMDATA_IMPL(NSF)
+
 /** NSFPrivate **/
 
+/* RomDataInfo */
+const char *const NSFPrivate::exts[] = {
+	".nsf",
+
+	nullptr
+};
+const char *const NSFPrivate::mimeTypes[] = {
+	// Unofficial MIME types.
+	"audio/x-nsf",
+
+	nullptr
+};
+const RomDataInfo NSFPrivate::romDataInfo = {
+	"NSF", exts, mimeTypes
+};
+
 NSFPrivate::NSFPrivate(NSF *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 {
 	// Clear the NSF header struct.
 	memset(&nsfHeader, 0, sizeof(nsfHeader));
@@ -65,7 +87,6 @@ NSF::NSF(IRpFile *file)
 	: super(new NSFPrivate(this, file))
 {
 	RP_D(NSF);
-	d->className = "NSF";
 	d->mimeType = "audio/x-nsf";	// unofficial
 	d->fileType = FileType::AudioFile;
 
@@ -83,12 +104,11 @@ NSF::NSF(IRpFile *file)
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->nsfHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->nsfHeader);
-	info.ext = nullptr;	// Not needed for NSF.
-	info.szFile = 0;	// Not needed for NSF.
+	const DetectInfo info = {
+		{0, sizeof(d->nsfHeader), reinterpret_cast<const uint8_t*>(&d->nsfHeader)},
+		nullptr,	// ext (not needed for NSF)
+		0		// szFile (not needed for NSF)
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
@@ -150,50 +170,6 @@ const char *NSF::systemName(unsigned int type) const
 	};
 
 	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *NSF::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".nsf",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *NSF::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		"audio/x-nsf",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

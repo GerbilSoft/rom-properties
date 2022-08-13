@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * IsoPartition.cpp: ISO-9660 partition reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -37,20 +37,20 @@ class IsoPartitionPrivate
 		off64_t partition_offset;
 		off64_t partition_size;		// Calculated partition size.
 
-		// ISO start offset. (in blocks)
-		// -1 == unknown
-		int iso_start_offset;
-
 		// ISO primary volume descriptor.
 		ISO_Primary_Volume_Descriptor pvd;
 
 		// Directories.
-		// - Key: Directory name, WITHOUT leading slash. (Root == empty string)
+		// - Key: Directory name, WITHOUT leading slash. (Root == empty string) [cp1252]
 		// - Value: Directory entries.
 		// NOTE: Directory entries are variable-length, so this
 		// is a byte array, not an ISO_DirEntry array.
 		typedef ao::uvector<uint8_t> DirData_t;
 		unordered_map<string, DirData_t> dir_data;
+
+		// ISO start offset. (in blocks)
+		// -1 == unknown
+		int iso_start_offset;
 
 		/**
 		 * Find the last slash or backslash in a path.
@@ -71,8 +71,8 @@ class IsoPartitionPrivate
 
 		/**
 		 * Look up a directory entry from a base filename and directory.
-		 * @param pDir		[in] Directory.
-		 * @param filename	[in] Base filename. (cp1252)
+		 * @param pDir		[in] Directory
+		 * @param filename	[in] Base filename [cp1252]
 		 * @param bFindDir	[in] True to find a subdirectory; false to find a file.
 		 * @return ISO directory entry.
 		 */
@@ -80,7 +80,7 @@ class IsoPartitionPrivate
 
 		/**
 		 * Get a directory.
-		 * @param path		[in] Pathname. (cp1252) (For root, specify "" or "/".)
+		 * @param path		[in] Pathname [cp1252] (For root, specify "" or "/".)
 		 * @param pError	[out] POSIX error code on error.
 		 * @return Directory on success; nullptr on error.
 		 */
@@ -88,7 +88,7 @@ class IsoPartitionPrivate
 
 		/**
 		 * Look up a directory entry from a filename.
-		 * @param filename Filename. (UTF-8)
+		 * @param filename Filename [UTF-8]
 		 * @return ISO directory entry.
 		 */
 		const ISO_DirEntry *lookup(const char *filename);
@@ -156,8 +156,8 @@ IsoPartitionPrivate::~IsoPartitionPrivate()
 
 /**
  * Look up a directory entry from a base filename and directory.
- * @param pDir		[in] Directory.
- * @param filename	[in] Base filename. (cp1252)
+ * @param pDir		[in] Directory
+ * @param filename	[in] Base filename [cp1252]
  * @param bFindDir	[in] True to find a subdirectory; false to find a file.
  * @return ISO directory entry.
  */
@@ -231,7 +231,7 @@ const ISO_DirEntry *IsoPartitionPrivate::lookup_int(const DirData_t *pDir, const
 
 /**
  * Get a directory.
- * @param path		[in] Pathname. (cp1252) (For root, specify "" or "/".)
+ * @param path		[in] Pathname [cp1252] (For root, specify "" or "/".)
  * @param pError	[out] POSIX error code on error.
  * @return Directory on success; nullptr on error.
  */
@@ -357,8 +357,7 @@ const IsoPartitionPrivate::DirData_t *IsoPartitionPrivate::getDirectory(const ch
 	}
 
 	// Find this directory.
-	string s_subdir(utf8_to_cp1252(path, -1));
-	const ISO_DirEntry *const entry = lookup_int(pDir, s_subdir.c_str(), true);
+	const ISO_DirEntry *const entry = lookup_int(pDir, path, true);
 	if (!entry) {
 		// Not found.
 		// lookup_int() already set q->lastError().
@@ -387,13 +386,13 @@ const IsoPartitionPrivate::DirData_t *IsoPartitionPrivate::getDirectory(const ch
 	}
 
 	// Subdirectory loaded.
-	auto ins = dir_data.emplace(std::move(s_subdir), std::move(dir));
+	auto ins = dir_data.emplace(path, std::move(dir));
 	return &(ins.first->second);
 }
 
 /**
  * Look up a directory entry from a filename.
- * @param filename Filename. (UTF-8)
+ * @param filename Filename [UTF-8]
  * @return ISO directory entry.
  */
 const ISO_DirEntry *IsoPartitionPrivate::lookup(const char *filename)
@@ -420,7 +419,7 @@ const ISO_DirEntry *IsoPartitionPrivate::lookup(const char *filename)
 	const char *const sl = findLastSlash(filename);
 	if (sl) {
 		// This file is in a subdirectory.
-		string s_parentDir = utf8_to_cp1252(filename, static_cast<int>(sl - filename));
+		const string s_parentDir = utf8_to_cp1252(filename, static_cast<int>(sl - filename));
 		filename = sl + 1;
 		pDir = getDirectory(s_parentDir.c_str());
 	} else {
@@ -436,7 +435,7 @@ const ISO_DirEntry *IsoPartitionPrivate::lookup(const char *filename)
 	}
 
 	// Find the file in the directory.
-	string s_filename = utf8_to_cp1252(filename, -1);
+	const string s_filename = utf8_to_cp1252(filename, -1);
 	return lookup_int(pDir, s_filename.c_str(), false);
 }
 

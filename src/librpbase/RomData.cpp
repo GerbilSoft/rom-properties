@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomData.cpp: ROM data base class.                                       *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth                                  *
+ * Copyright (c) 2016-2022 by David Korth                                  *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,7 +20,6 @@ using std::string;
 using std::vector;
 
 // librpfile, librptexture
-#include "librptexture/img/rp_image.hpp"
 using LibRpFile::IRpFile;
 using LibRpFile::RpFile;
 using LibRpTexture::rp_image;
@@ -32,28 +31,35 @@ namespace LibRpBase {
 /**
  * Initialize a RomDataPrivate storage class.
  *
- * @param q RomData class.
- * @param file ROM file.
+ * @param q RomData class
+ * @param file ROM file
+ * @param pRomDataInfo RomData subclass information
  */
-RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file)
+RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file, const RomDataInfo *pRomDataInfo)
 	: q_ptr(q)
+	, pRomDataInfo(pRomDataInfo)
+	, mimeType(nullptr)
+	, fileType(RomData::FileType::ROM_Image)
 	, isValid(false)
 	, isCompressed(false)
 	, file(nullptr)
 	, fields(new RomFields())
 	, metaData(nullptr)
-	, className(nullptr)
-	, mimeType(nullptr)
-	, fileType(RomData::FileType::ROM_Image)
 {
+	assert(pRomDataInfo != nullptr);
+
 	// Initialize i18n.
 	rp_i18n_init();
 
 	if (file) {
 		// Reference the file.
 		this->file = file->ref();
-		this->filename = this->file->filename();
-		this->isCompressed = this->file->isCompressed();
+		this->isCompressed = file->isCompressed();
+
+		const char *const filename = file->filename();
+		if (filename) {
+			this->filename.assign(filename);
+		}
 	}
 }
 
@@ -123,21 +129,9 @@ string RomDataPrivate::getURL_RPDB(
 {
 	// Game ID may need to be urlencoded.
 	string gameID_urlencode = LibCacheCommon::urlencode(gameID);
-
-	string url;
-	url.reserve(64+32);
-	url.assign("https://rpdb.gerbilsoft.com/");
-	url += system;
-	url += '/';
-	url += type;
-	url += '/';
-	if (region) {
-		url += region;
-		url += '/';
-	}
-	url += gameID_urlencode;
-	url += ext;
-	return url;
+	return rp_sprintf("https://rpdb.gerbilsoft.com/%s/%s/%s%s%s%s",
+		system, type, (region ? region : ""), (region ? "/" : ""),
+		gameID_urlencode.c_str(), ext);
 }
 
 /**
@@ -155,19 +149,9 @@ string RomDataPrivate::getCacheKey_RPDB(
 	const char *region, const char *gameID,
 	const char *ext)
 {
-	string cacheKey;
-	cacheKey.reserve(64);
-	cacheKey  = system;
-	cacheKey += '/';
-	cacheKey += type;
-	cacheKey += '/';
-	if (region) {
-		cacheKey += region;
-		cacheKey += '/';
-	}
-	cacheKey += gameID;
-	cacheKey += ext;
-	return cacheKey;
+	return rp_sprintf("%s/%s/%s%s%s%s",
+		system, type, (region ? region : ""), (region ? "/" : ""),
+		gameID, ext);
 }
 
 /**
@@ -468,21 +452,6 @@ time_t RomDataPrivate::pvd_time_to_unix_time(const char pvd_time[16], int8_t tz_
  *
  * To close the file, either delete this object or call close().
  *
- * @param file ROM file.
- */
-RomData::RomData(IRpFile *file)
-	: d_ptr(new RomDataPrivate(this, file))
-{ }
-
-/**
- * ROM data base class.
- *
- * A ROM file must be opened by the caller. The file handle
- * will be ref()'d and must be kept open in order to load
- * data from the ROM.
- *
- * To close the file, either delete this object or call close().
- *
  * NOTE: Check isValid() to determine if this is a valid ROM.
  *
  * @param d RomDataPrivate subclass.
@@ -564,8 +533,7 @@ bool RomData::isCompressed(void) const
 const char *RomData::className(void) const
 {
 	RP_D(const RomData);
-	assert(d->className != nullptr);
-	return d->className;
+	return d->pRomDataInfo->className;
 }
 
 /**
@@ -669,6 +637,41 @@ const char *RomData::mimeType(void) const
 {
 	RP_D(const RomData);
 	return d->mimeType;
+}
+
+/**
+ * Get a list of all supported file extensions.
+ * This is to be used for file type registration;
+ * subclasses don't explicitly check the extension.
+ *
+ * NOTE: The extensions include the leading dot,
+ * e.g. ".bin" instead of "bin".
+ *
+ * NOTE 2: The array and the strings in the array should
+ * *not* be freed by the caller.
+ *
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
+ */
+const char *const *RomData::supportedFileExtensions(void) const
+{
+	RP_D(const RomData);
+	return d->pRomDataInfo->exts;
+}
+
+/**
+ * Get a list of all supported MIME types.
+ * This is to be used for metadata extractors that
+ * must indicate which MIME types they support.
+ *
+ * NOTE: The array and the strings in the array should
+ * *not* be freed by the caller.
+ *
+ * @return NULL-terminated array of all supported file extensions, or nullptr on error.
+ */
+const char *const *RomData::supportedMimeTypes(void) const
+{
+	RP_D(const RomData);
+	return d->pRomDataInfo->mimeTypes;
 }
 
 /**
@@ -826,8 +829,10 @@ const rp_image *RomData::image(ImageType imageType) const
 	assert((ret == 0 && img != nullptr) ||
 	       (ret != 0 && img == nullptr));
 
+#ifdef _DEBUG // Must be guarded with this in case neither `_DEBUG` nor `NDEBUG` are defined
 	// SANITY CHECK: `img` must not be -1LL.
 	assert(img != INVALID_IMG_PTR);
+#endif
 
 	return (ret == 0 ? img : nullptr);
 }
@@ -864,21 +869,6 @@ int RomData::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) co
 	RP_UNUSED(size);
 	pExtURLs->clear();
 	return -ENOENT;
-}
-
-/**
- * Scrape an image URL from a downloaded HTML page.
- * Needed if IMGPF_EXTURL_NEEDS_HTML_SCRAPING is set.
- * @param html HTML data.
- * @param size Size of HTML data.
- * @return Image URL, or empty string if not found or not supported.
- */
-string RomData::scrapeImageURL(const char *html, size_t size) const
-{
-	// Not supported in the base class.
-	RP_UNUSED(html);
-	RP_UNUSED(size);
-	return string();
 }
 
 /**
@@ -966,13 +956,11 @@ vector<RomData::RomOp> RomData::romOps(void) const
 		// Some RomOps can't be run on a compressed file.
 		// Disable those that can't.
 		// TODO: Indicate why they're disabled?
-		std::for_each(v_ops.begin(), v_ops.end(),
-			[](RomData::RomOp &op) {
-				if (op.flags & RomOp::ROF_REQ_WRITABLE) {
-					op.flags &= ~RomOp::ROF_ENABLED;
-				}
+		for (RomData::RomOp &op : v_ops) {
+			if (op.flags & RomOp::ROF_REQ_WRITABLE) {
+				op.flags &= ~RomOp::ROF_ENABLED;
 			}
-		);
+		}
 	}
 
 	return v_ops;

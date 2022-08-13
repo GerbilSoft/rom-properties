@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                         *
  * RpThunarProvider.cpp: ThunarX Provider Definition.                      *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,6 +11,9 @@
 #include "is-supported.hpp"
 
 #include "../RomDataView.hpp"
+
+#include "librpbase/RomData.hpp"
+using LibRpBase::RomData;
 
 // thunarx.h mini replacement
 #include "thunarx-mini.h"
@@ -102,11 +105,13 @@ rp_thunar_provider_get_pages(ThunarxPropertyPageProvider *page_provider, GList *
 		return nullptr;
 	}
 
-	// TODO: Maybe we should just open the RomData here
-	// and pass it to the RomDataView.
-	if (G_LIKELY(rp_gtk3_is_uri_supported(uri))) {
+	// Attempt to open the URI.
+	RomData *const romData = rp_gtk_open_uri(uri);
+	if (G_LIKELY(romData != nullptr)) {
 		// Create the RomDataView.
-		GtkWidget *const romDataView = rom_data_view_new_with_uri(uri, RP_DFT_XFCE);
+		GtkWidget *const romDataView = rom_data_view_new_with_romData(uri, romData, RP_DFT_XFCE);
+		gtk_widget_set_name(romDataView, "romDataView");
+		romData->unref();
 		gtk_widget_show(romDataView);
 
 		// tr: Tab title.

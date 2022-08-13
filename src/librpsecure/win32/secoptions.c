@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpsecure/win32)                *
  * secoptions.c: Security options for executables.                         *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -32,28 +32,28 @@ typedef NTSTATUS (WINAPI *PFNNTSETINFORMATIONPROCESS)(
 	_In_ PVOID ProcessInformation,
 	_In_ ULONG ProcessInformationLength);
 #ifndef MEM_EXECUTE_OPTION_DISABLE
-# define MEM_EXECUTE_OPTION_DISABLE 2
+#  define MEM_EXECUTE_OPTION_DISABLE 2
 #endif
 #ifndef MEM_EXECUTE_OPTION_ATL7_THUNK_EMULATION
-# define MEM_EXECUTE_OPTION_ATL7_THUNK_EMULATION 4
+#  define MEM_EXECUTE_OPTION_ATL7_THUNK_EMULATION 4
 #endif
 #ifndef MEM_EXECUTE_OPTION_PERMANENT
-# define MEM_EXECUTE_OPTION_PERMANENT 8
+#  define MEM_EXECUTE_OPTION_PERMANENT 8
 #endif
 // NOTE: ProcessExecuteFlags might be defined in an enum in newer
 // versions of the Windows SDK and/or MinGW-w64. We'll use a macro
 // instead of an enum value.
 #ifndef ProcessExecuteFlags
-# define ProcessExecuteFlags 0x22
+#  define ProcessExecuteFlags 0x22
 #endif
 
 // DEP policy. (Vista SP1; later backported to XP SP3)
 typedef BOOL (WINAPI *PFNSETPROCESSDEPPOLICY)(_In_ DWORD dwFlags);
 #ifndef PROCESS_DEP_ENABLE
-#define PROCESS_DEP_ENABLE 0x1
+#  define PROCESS_DEP_ENABLE 0x1
 #endif
 #ifndef PROCESS_DEP_DISABLE_ATL_THUNK_EMULATION
-#define PROCESS_DEP_DISABLE_ATL_THUNK_EMULATION 0x2
+#  define PROCESS_DEP_DISABLE_ATL_THUNK_EMULATION 0x2
 #endif
 
 #endif /* _WIN64 */
@@ -64,19 +64,19 @@ typedef BOOL (WINAPI *PFNSETDLLDIRECTORYW)(_In_opt_ LPCWSTR lpPathName);
 // SetDefaultDllDirectories() (Win8; later backported to Vista and Win7)
 typedef BOOL (WINAPI *PFNSETDEFAULTDLLDIRECTORIES)(_In_ DWORD DirectoryFlags);
 #ifndef LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR
-#define LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR    0x00000100
+#  define LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR    0x00000100
 #endif
 #ifndef LOAD_LIBRARY_SEARCH_APPLICATION_DIR
-#define LOAD_LIBRARY_SEARCH_APPLICATION_DIR 0x00000200
+#  define LOAD_LIBRARY_SEARCH_APPLICATION_DIR 0x00000200
 #endif
 #ifndef LOAD_LIBRARY_SEARCH_USER_DIRS
-#define LOAD_LIBRARY_SEARCH_USER_DIRS       0x00000400
+#  define LOAD_LIBRARY_SEARCH_USER_DIRS       0x00000400
 #endif
 #ifndef LOAD_LIBRARY_SEARCH_SYSTEM32
-#define LOAD_LIBRARY_SEARCH_SYSTEM32        0x00000800
+#  define LOAD_LIBRARY_SEARCH_SYSTEM32        0x00000800
 #endif
 #ifndef LOAD_LIBRARY_SEARCH_DEFAULT_DIRS
-#define LOAD_LIBRARY_SEARCH_DEFAULT_DIRS    0x00001000
+#  define LOAD_LIBRARY_SEARCH_DEFAULT_DIRS    0x00001000
 #endif
 
 // HeapSetInformation() (WinXP)
@@ -206,7 +206,7 @@ out:
  * rom-properties Windows executable initialization.
  * This sets various security options.
  * References:
- * - https://msdn.microsoft.com/en-us/library/bb430720.aspx
+ * - https://docs.microsoft.com/en-us/previous-versions/bb430720(v=msdn.10)
  * - https://chromium.googlesource.com/chromium/src/+/441d852dbcb7b9b31328393c7e31562b1e268399/sandbox/win/src/process_mitigations.cc
  * - https://chromium.googlesource.com/chromium/src/+/refs/heads/master/sandbox/win/src/process_mitigations.cc
  * - https://github.com/chromium/chromium/blob/master/sandbox/win/src/process_mitigations.cc
@@ -312,7 +312,7 @@ int rp_secure_win32_secoptions_init(int bHighSec)
 		// On Windows XP SP2, we can use NtSetInformationProcess.
 		// Reference: http://www.uninformed.org/?v=2&a=4
 		// FIXME: Do SetDllDirectory() first if available?
-		HMODULE hNtdll = LoadLibrary(_T("ntdll.dll"));
+		HMODULE hNtdll = LoadLibraryEx(_T("ntdll.dll"), NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
 		if (hNtdll) {
 			PFNNTSETINFORMATIONPROCESS pfnNtSetInformationProcess =
 				(PFNNTSETINFORMATIONPROCESS)GetProcAddress(hNtdll, "NtSetInformationProcess");
@@ -392,7 +392,7 @@ int rp_secure_win32_secoptions_init(int bHighSec)
 
 	// Set extension point disable policy.
 	// Extension point DLLs are some weird MFC-specific thing.
-	// https://msdn.microsoft.com/en-us/library/h5f7ck28.aspx
+	// https://docs.microsoft.com/en-us/cpp/build/extension-dlls
 	{
 		PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY extension_point_disable = { 0 };
 		extension_point_disable.DisableExtensionPoints = TRUE;

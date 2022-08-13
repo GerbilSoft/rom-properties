@@ -1,0 +1,99 @@
+# CBM C64 Cartridge Types
+# Format: ID|Name
+
+# References:
+# - https://github.com/VICE-Team/svn-mirror/blob/main/vice/src/cartridge.h
+
+# 0
+0|generic cartridge
+1|Action Replay
+2|KCS Power Cartridge
+3|Final Cartridge III
+4|Simons' BASIC
+5|Ocean type 1
+6|Expert Cartridge
+7|Fun Play, Power Play
+8|Super Games
+9|Atomic Power
+
+# 10
+10|Epyx Fastload
+11|Westermann Learning
+12|Rex Utility
+13|Final Cartridge I
+14|Magic Formel
+15|C64 Game System, System 3
+16|Warp Speed
+17|Dinamic
+18|Zaxxon / Super Zaxxon (Sega)
+19|Magic Desk, Domark, HES Australia
+
+# 20
+20|Super Snapshot V5
+21|Comal-80
+22|Structured BASIC
+23|Ross
+24|Dela EP64
+25|Dela EP7x8
+26|Dela EP256
+27|Rex EP256
+28|Mikro Assembler
+29|Final Cartridge Plus
+
+# 30
+30|Action Replay 4
+31|Stardos
+32|EasyFlash
+33|EasyFlash Xbank
+34|Capture
+35|Action Replay 3
+36|Retro Replay
+37|MMC64
+38|MMC Replay
+39|IDE64
+
+# 40
+40|Super Snapshot V4
+41|IEEE-488
+42|Game Killer
+43|Prophet64
+44|EXOS
+45|Freeze Frame
+46|Freeze Machine
+47|Snapshot64
+48|Super Explode V5.0
+49|Magic Voice
+
+# 50
+50|Action Replay 2
+51|MACH 5
+52|Diashow-Maker
+53|Pagefox
+54|Kingsoft
+55|Silverrock 128K Cartridge
+56|Formel 64
+57|RGCD
+58|RR-Net MK3
+59|EasyCalc
+
+# 60
+60|GMod2
+61|MAX Basic
+62|GMod3
+63|ZIPP-CODE 48
+64|Blackbox V8
+65|Blackbox V3
+66|Blackbox V4
+67|REX RAM-Floppy
+68|BIS-Plus
+69|SD-BOX
+
+# 70
+70|MultiMAX
+71|Blackbox V9
+72|Lt. Kernal Host Adaptor
+73|RAMLink
+74|H.E.R.O.
+75|IEEE Flash! 64
+76|Turtle Graphics II
+77|Freeze Frame MK2

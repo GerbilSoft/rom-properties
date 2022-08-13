@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RpGtk.hpp: glib/gtk+ wrappers for some libromdata functionality.        *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -29,10 +29,21 @@ G_BEGIN_DECLS
  *
  * @param fileChooser GtkFileChooser*
  * @param filter RP file dialog filter. (UTF-8, from gettext())
- * @return Qt file dialog filter.
+ * @return 0 on success; negative POSIX error code on error.
  */
 int rpFileDialogFilterToGtk(GtkFileChooser *fileChooser, const char *filter);
 
 G_END_DECLS
+
+#ifdef __cplusplus
+
+/**
+ * Convert Win32/Qt-style accelerator notation ('&') to GTK-style ('_').
+ * @param str String with '&' accelerator
+ * @return String with '_' accelerator
+ */
+std::string convert_accel_to_gtk(const char *str);
+
+#endif /* __cplusplus */
 
 #endif /* __ROMPROPERTIES_GTK_RPGTK_HPP__ */

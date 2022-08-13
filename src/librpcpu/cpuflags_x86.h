@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpcpu)                         *
  * cpuflags_x86.h: x86 CPU flags detection.                                *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,14 +11,15 @@
 
 #include <stdint.h>
 #include "common.h"
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* CPU flags (IA32/x86_64) */
-#if defined(__i386__) || defined(__amd64__) || defined(__x86_64__) || \
-    defined(_M_IX86) || defined(_M_X64)
+#if defined(_M_IX86) || defined(__i386__) || \
+    defined(_M_X64) || defined(_M_AMD64) || defined(__amd64__) || defined(__x86_64__)
 
 // Set of CPU flags we check for right now.
 // More flags will be added if needed.
@@ -30,16 +31,17 @@ extern "C" {
 #define RP_CPUFLAG_X86_SSE41		((uint32_t)(1U << 5))
 #define RP_CPUFLAG_X86_SSE42		((uint32_t)(1U << 6))
 
-#endif /* defined(__i386__) || defined(__amd64__) || defined(__x86_64__) */
+#endif /* _M_IX86) || __i386__ || _M_X64 || _M_AMD64 || __amd64__ || __x86_64__ */
 
 // Don't modify these!
-extern uint32_t RP_CPU_Flags;
-extern int RP_CPU_Flags_Init;	// 1 if RP_CPU_Flags has been initialized.
+RP_LIBROMDATA_PUBLIC extern uint32_t RP_CPU_Flags;
+RP_LIBROMDATA_PUBLIC extern int RP_CPU_Flags_Init;	// 1 if RP_CPU_Flags has been initialized.
 
 /**
  * Initialize RP_CPU_Flags.
  */
-void RP_CPU_InitCPUFlags(void);
+RP_LIBROMDATA_PUBLIC
+void RP_C_API RP_CPU_InitCPUFlags(void);
 
 /**
  * Check if the CPU supports MMX.

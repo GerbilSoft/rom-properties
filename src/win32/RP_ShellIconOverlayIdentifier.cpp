@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ShellIconOverlayIdentifier.cpp: IShellIconOverlayIdentifier          *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,11 +15,6 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 using LibRomData::RomDataFactory;
-
-// from DllMain.cpp
-extern "C" {
-	extern TCHAR dll_filename[];
-}
 
 // C++ STL classes.
 using std::string;
@@ -41,7 +36,7 @@ RP_ShellIconOverlayIdentifier_Private::RP_ShellIconOverlayIdentifier_Private()
 	, pfnSHGetStockIconInfo(nullptr)
 {
 	// Get SHGetStockIconInfo().
-	hShell32_dll = LoadLibrary(_T("shell32.dll"));
+	hShell32_dll = LoadLibraryEx(_T("shell32.dll"), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 	if (hShell32_dll) {
 		pfnSHGetStockIconInfo = (PFNSHGETSTOCKICONINFO)GetProcAddress(hShell32_dll, "SHGetStockIconInfo");
 	}
@@ -66,9 +61,9 @@ RP_ShellIconOverlayIdentifier::~RP_ShellIconOverlayIdentifier()
 }
 
 /** IUnknown **/
-// Reference: https://msdn.microsoft.com/en-us/library/office/cc839627.aspx
+// Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus
 
-IFACEMETHODIMP RP_ShellIconOverlayIdentifier::QueryInterface(REFIID riid, LPVOID *ppvObj)
+IFACEMETHODIMP RP_ShellIconOverlayIdentifier::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj)
 {
 #ifdef _MSC_VER
 # pragma warning(push)
@@ -174,6 +169,11 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::GetOverlayInfo(_Out_writes_(cchMax
 		// same size as the regular icon, but with transparency.
 		hr = E_FAIL;
 #if 0
+		// from DllMain.cpp [TODO: Removed; rework this when needed.]
+		extern "C" {
+			extern TCHAR dll_filename[];
+		}
+
 		wcscpy_s(pwszIconFile, cchMax, dll_filename);
 		*pIndex = -IDI_SHIELD;
 		*pdwFlags = ISIOI_ICONFILE | ISIOI_ICONINDEX;

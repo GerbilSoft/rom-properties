@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Lynx.hpp: Atari Lynx ROM reader.                                        *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * Copyright (c) 2017-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -17,8 +17,6 @@ using LibRpFile::IRpFile;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(Lynx)
-
 class LynxPrivate final : public RomDataPrivate
 {
 	public:
@@ -29,14 +27,38 @@ class LynxPrivate final : public RomDataPrivate
 		RP_DISABLE_COPY(LynxPrivate)
 
 	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
+
+	public:
 		// ROM header.
 		Lynx_RomHeader romHeader;
 };
 
+ROMDATA_IMPL(Lynx)
+
 /** LynxPrivate **/
 
+/* RomDataInfo */
+const char *const LynxPrivate::exts[] = {
+	".lnx",
+
+	nullptr
+};
+const char *const LynxPrivate::mimeTypes[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-atari-lynx-rom",
+
+	nullptr
+};
+const RomDataInfo LynxPrivate::romDataInfo = {
+	"Lynx", exts, mimeTypes
+};
+
 LynxPrivate::LynxPrivate(Lynx *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
@@ -61,7 +83,6 @@ Lynx::Lynx(IRpFile *file)
 	: super(new LynxPrivate(this, file))
 {
 	RP_D(Lynx);
-	d->className = "Lynx";
 	d->mimeType = "application/x-atari-lynx-rom";	// unofficial
 
 	if (!d->file) {
@@ -81,12 +102,11 @@ Lynx::Lynx(IRpFile *file)
 	}
 
 	// Check if this ROM is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(header);
-	info.header.pData = header;
-	info.ext = nullptr;	// Not needed for Lynx.
-	info.szFile = 0;	// Not needed for Lynx.
+	const DetectInfo info = {
+		{0, sizeof(header), header},
+		nullptr,	// ext (not needed for Lynx)
+		0		// szFile (not needed for Lynx)
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (d->isValid) {
@@ -151,56 +171,7 @@ const char *Lynx::systemName(unsigned int type) const
 		"Atari Lynx", "Lynx", "LNX", nullptr,
 	};
 
-	unsigned int idx = (type & SYSNAME_TYPE_MASK);
-	if (idx >= ARRAY_SIZE(sysNames)) {
-		// Invalid index...
-		idx &= SYSNAME_TYPE_MASK;
-	}
-
-	return sysNames[idx];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Lynx::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".lnx",
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *Lynx::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org.
-		"application/x-atari-lynx-rom",
-
-		nullptr
-	};
-	return mimeTypes;
+	return sysNames[type & SYSNAME_TYPE_MASK];
 }
 
 /**
@@ -232,7 +203,7 @@ int Lynx::loadFieldData(void)
 	d->fields->addField_string(C_("Lynx", "Manufacturer"),
 		latin1_to_utf8(romHeader->manufname, sizeof(romHeader->manufname)));
 
-	static const char *const rotation_names[] = {
+	static const char rotation_names[][8] = {
 		NOP_C_("Lynx|Rotation", "None"),
 		NOP_C_("Lynx|Rotation", "Left"),
 		NOP_C_("Lynx|Rotation", "Right"),

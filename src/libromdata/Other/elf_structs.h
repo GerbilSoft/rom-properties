@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * elf_structs.h: Executable and Linkable Format structures.               *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,6 +11,10 @@
 // - http://www.mcs.anl.gov/OpenAD/OpenADFortTkExtendedDox/elf_8h_source.html
 // - https://github.com/file/file/blob/master/magic/Magdir/elf
 // - http://www.sco.com/developers/gabi/latest/ch5.pheader.html
+// - https://github.com/torvalds/linux/blob/master/include/uapi/linux/elf-em.h
+
+// For Sony PS3 SELFs:
+// - https://www.psdevwiki.com/ps3/SELF_-_SPRX
 
 #ifndef __ROMPROPERTIES_LIBROMDATA_ELF_STRUCTS_H__
 #define __ROMPROPERTIES_LIBROMDATA_ELF_STRUCTS_H__
@@ -114,6 +118,7 @@ typedef enum {
 	ELFOSABI_OPENBSD	= 12,	/* OpenBSD.  */
 	ELFOSABI_ARM_AEABI	= 64,	/* ARM EABI */
 	ELFOSABI_ARM		= 97,	/* ARM */
+	ELFOSABI_CELL_LV2	= 102,	/* Cell LV2 */
 	ELFOSABI_CAFEOS		= 202,	/* Nintendo Wii U */
 	ELFOSABI_STANDALONE	= 255,	/* Standalone (embedded) application */
 } Elf_OSABI;
@@ -133,6 +138,22 @@ typedef enum {
 	ET_HIOS		= 0xFEFF,	/* OS-specific range end */
 	ET_LOPROC	= 0xFF00,	/* Processor-specific range start */
 	ET_HIPROC	= 0xFFFF,	/* Processor-specific range end */
+
+	// Sony PS3 SELFs
+	// Reference: https://www.psdevwiki.com/ps3/SELF_-_SPRX
+	ET_SCE_EXEC		= 0xFE00,	/* SCE Executable - PRX2 */
+	ET_SCE_RELEXEC		= 0xFE04,	/* SCE Relocatable Executable - PRX2 */
+	ET_SCE_STUBLIB		= 0xFE0C,	/* SCE SDK Stubs */
+	ET_SCE_DYNEXEC		= 0xFE10,	/* SCE EXEC_ASLR (PS4 Executable with ASLR) */
+	ET_SCE_DYNAMIC		= 0xFE18,	/* ? */
+	ET_SCE_IOPRELEXEC	= 0xFF80,	/* SCE IOP Relocatable Executable */
+	ET_SCE_IOPRELEXEC2	= 0xFF81,	/* SCE IOP Relocatable Executable Version 2 */
+	ET_SCE_EERELEXEC	= 0xFF90,	/* SCE EE Relocatable Executable */
+	ET_SCE_EERELEXEC2	= 0xFF91,	/* SCE EE Relocatable Executable Version 2 */
+	ET_SCE_PSPRELEXEC	= 0xFFA0,	/* SCE PSP Relocatable Executable */
+	ET_SCE_PPURELEXEC	= 0xFFA4,	/* SCE PPU Relocatable Executable */
+	ET_SCE_ARMRELEXEC	= 0xFFA5,	/* ?SCE ARM Relocatable Executable (PSVita FW <=0.931) */
+	ET_SCE_PSPOVERLAY	= 0xFFA8,	/* ? */
 } Elf_Type;
 
 /**
@@ -147,10 +168,12 @@ typedef enum {
 	EM_68K		= 4,	/* Motorola m68k family */
 	EM_88K		= 5,	/* Motorola m88k family */
 	EM_IAMCU	= 6,	/* Intel MCU */
+	EM_486		= 6,	/* Intel 80486 (not used?) */
 	EM_860		= 7,	/* Intel 80860 */
 	EM_MIPS		= 8,	/* MIPS R3000 big-endian */
 	EM_S370		= 9,	/* IBM System/370 */
 	EM_MIPS_RS3_LE	= 10,	/* MIPS R3000 little-endian */
+	EM_MIPS_RS4_BE	= 10,	/* MIPS R4000 big-endian */
 	EM_OLD_SPARCV9	= 11,	/* SPARC v9 (deprecated) */
 				/* reserved 11-14 */
 	EM_PARISC	= 15,	/* HPPA */
@@ -160,7 +183,7 @@ typedef enum {
 	EM_960		= 19,	/* Intel 80960 */
 	EM_PPC		= 20,	/* PowerPC */
 	EM_PPC64	= 21,	/* PowerPC 64-bit */
-	EM_S390		= 22,	/* IBM S390 */
+	EM_S390		= 22,	/* IBM S/390 */
 	EM_SPU		= 23,	/* IBM SPU/SPC */
 	EM_V800		= 36,	/* NEC V800 series */
 	EM_FR20		= 37,	/* Fujitsu FR20 */
@@ -173,19 +196,44 @@ typedef enum {
 	EM_SPARCV9	= 43,	/* SPARC v9 64-bit */
 
 	EM_ARC		= 45,	/* ARC cores */
+	EM_H8_800	= 46,	/* Renesas H8/300 */
+	EM_IA_64	= 50,	/* HP/Intel IA-64 */
 	EM_COLDFIRE	= 52,	/* Motorola Coldfire */
+	EM_X86_64	= 62,	/* AMD x86-64 */
+	EM_CRIS		= 76,	/* Axis Communications 32-bit embedded processor */
 	EM_AVR		= 83,	/* Atmel AVR 8-bit microcontroller */
 	EM_M32R		= 88,	/* Renesas M32R (formerly Mitsubishi M32R) */
+	EM_MN10300	= 89,	/* Panasonic/MEI MN10300, AM33 */
+	EM_OPENRISC	= 92,	/* OpenRISC 32-bit embedded processor */
+	EM_ARCOMPACT	= 93,	/* ARCompact processor */
+	EM_XTENSA	= 94,	/* Altera Nios II soft-core processor */
 	EM_MSP430	= 105,	/* TI msp430 micro controller */
 	EM_BLACKFIN	= 106,	/* ADI Blackfin */
+	EM_UNICORE	= 110,	/* UniCore-32 */
+	EM_ALTERA_NIOS2	= 113,	/* Altera Nios II soft-core processor */
 	EM_M16C		= 117,	/* Renesas M16C */
+	EM_TI_C6000	= 140,	/* TI C6X DSPs */
+	EM_HEXAGON	= 164,	/* QUALCOMM Hexagon */
+	EM_NDS32	= 167,	/* Andes Technology compact code size
+				   embedded RISC processor family */
+	EM_AARCH64	= 183,	/* ARM 64 bit */
+	EM_TILEPRO	= 188,	/* Tilera TILEPro */
+	EM_MICROBLAZE	= 189,	/* Xilinx MicroBlaze */
+	EM_TILEGX	= 191,	/* Tilera TILE-Gx */
+	EM_ARCV2	= 195,	/* ARCv2 Cores */
 	EM_M32C		= 120,	/* Renesas M32C */
 	EM_Z80		= 220,	/* Zilog Z80 */
 	EM_RISCV	= 243,	/* RISC-V */
+	EM_BBF		= 247,	/* Linux BPF */
+	EM_CSKY		= 252,	/* C-SKY */
+	EM_LOONGARCH	= 258,	/* LoongArch */
 
 	EM_AVR_OLD	= 0x1057,	/* Atmel AVR 8-bit microcontroller (unofficial) */
+	EM_FRV		= 0x5441,	/* Fujitsu FR-V */
 	EM_ALPHA	= 0x9026,	/* DEC Alpha (unofficial) */
 	EM_CYGNUS_M32R	= 0x9041,	/* Renesas M32R (unofficial) (formerly Mitsubishi M32R) */
+	EM_S390_OLD	= 0xA390,	/* IBM S/390 (old) */
+	EM_CYGNUS_MN10300 = 0xBEEF,	/* Also Panasonic/MEI MN10300, AM33 */
 	EM_M32C_OLD	= 0xFEB0,	/* Renesas M32C and M16C (unofficial) */
 } Elf_Machine;
 

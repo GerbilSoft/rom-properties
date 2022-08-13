@@ -54,6 +54,14 @@
       <match value="GBS\x01" type="string" offset="0"/>
     </magic>
   </mime-type>
+  <mime-type type="audio/x-gbr">
+    <comment>Game Boy Ripped audio</comment>
+    <generic-icon name="audio-x-generic"/>
+    <glob pattern="*.gbr"/>
+    <magic priority="50">
+      <match value="GBRF" type="string" offset="0"/>
+    </magic>
+  </mime-type>
 
   <!-- NSF -->
   <mime-type type="audio/x-nsf">
@@ -113,6 +121,48 @@
 
   <!-- *** Console *** -->
 
+  <!-- CBMCart -->
+  <mime-type type="application/x-c64-cartridge">
+    <comment>Commodore 64 ROM cartridge</comment>
+    <sub-class-of type="application/x-executable"/>
+    <generic-icon name="application-x-executable"/>
+    <magic priority="70">
+      <match value="C64 CARTRIDGE   " type="string" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-c128-cartridge">
+    <comment>Commodore 128 ROM cartridge</comment>
+    <sub-class-of type="application/x-executable"/>
+    <generic-icon name="application-x-executable"/>
+    <magic priority="70">
+      <match value="C128 CARTRIDGE  " type="string" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-cbm2-cartridge">
+    <comment>Commodore CBM-II ROM cartridge</comment>
+    <sub-class-of type="application/x-executable"/>
+    <generic-icon name="application-x-executable"/>
+    <magic priority="70">
+      <match value="CBM2 CARTRIDGE  " type="string" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-vic20-cartridge">
+    <comment>Commodore VIC-20 ROM cartridge</comment>
+    <sub-class-of type="application/x-executable"/>
+    <generic-icon name="application-x-executable"/>
+    <magic priority="70">
+      <match value="VIC20 CARTRIDGE " type="string" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-plus4-cartridge">
+    <comment>Commodore Plus/4 ROM cartridge</comment>
+    <sub-class-of type="application/x-executable"/>
+    <generic-icon name="application-x-executable"/>
+    <magic priority="70">
+      <match value="PLUS4 CARTRIDGE " type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
   <!-- Dreamcast -->
   <mime-type type="application/x-dreamcast-rom">
     <comment>Dreamcast disc image</comment>
@@ -125,8 +175,8 @@
       <match value="SEGA SEGAKATANA" type="string" offset="16"/>
     </magic>
   </mime-type>
-  <mime-type type="application/x-dreamcast-cuesheet">
-    <comment>Dreamcast cuesheet</comment>
+  <mime-type type="application/x-gd-rom-cue">
+    <comment>GD-ROM image cuesheet</comment>
     <sub-class-of type="application/x-cd-image"/>
     <generic-icon name="application-x-cd-image"/>
     <glob pattern="*.gdi"/>
@@ -263,7 +313,7 @@
   </mime-type>
 
   <!-- MegaDrive -->
-  <mime-type type="application/x-sega-cd-rom">
+  <mime-type type="application/x-sega-cd-32x-rom">
     <!-- Translate this to Mega-CD if the console was known as such in your locale
          Should be Mega-CD in all but en_US, Mexico, Canada and Brazil: https://en.wikipedia.org/wiki/Sega_CD -->
     <comment>Sega CD 32X disc image</comment>
@@ -280,6 +330,27 @@
       </match>
     </magic>
     <glob pattern="*.iso"/>
+  </mime-type>
+  <mime-type type="application/x-sega-pico-rom">
+    <!-- Translate this to Kids Computer Pico if the console was known as such in your locale
+         Should be Sega Pico in all but Japan: https://en.wikipedia.org/wiki/Sega_Pico -->
+    <comment>Sega Pico ROM</comment>
+    <generic-icon name="application-x-executable"/>
+    <magic priority="50">
+      <match type="string" value="SEGA PICO" offset="256"/>
+      <match type="string" value="SAMSUNG PICO" offset="256"/>
+      <match type="string" value="SEGATOYS PICO" offset="256"/>
+      <match type="string" value="IMA IKUNOUJYUKU" offset="256"/>
+    </magic>
+    <glob pattern="*.pco"/>
+  </mime-type>
+  <mime-type type="application/x-sega-teradrive-rom">
+    <comment>Sega Teradrive ROM</comment>
+    <generic-icon name="application-x-executable"/>
+    <magic priority="50">
+      <match type="string" value="SEGA TERA68K" offset="256"/>
+      <match type="string" value="SEGA TERA286" offset="256"/>
+    </magic>
   </mime-type>
 
   <!-- NES -->
@@ -338,6 +409,14 @@
     <magic priority="50">
       <match value="\0VSP\0\0\0\0" type="string" offset="0"/>
     </magic>
+  </mime-type>
+
+  <!-- SNES (SatellaView from no-intro) -->
+  <mime-type type="application/x-satellaview-rom">
+    <comment>Satellaview ROM</comment>
+    <sub-class-of type="application/vnd.nintendo.snes.rom"/>
+    <generic-icon name="application-x-executable"/>
+    <glob pattern="*.bs"/>
   </mime-type>
 
   <!-- SufamiTurbo (handled as SNES, sort of) -->
@@ -420,6 +499,8 @@
     <comment>Xbox 360 package</comment>
     <sub-class-of type="application/x-archive"/>
     <generic-icon name="package-x-generic"/>
+    <glob pattern="*.fxs"/>	<!-- Fallout -->
+    <glob pattern="*.exs"/>	<!-- Skyrim -->
     <magic priority="50">
       <match value="CON " type="string" offset="0"/>
       <match value="LIVE" type="string" offset="0"/>
@@ -490,7 +571,7 @@
   </mime-type>
 
   <!-- Nintendo3DS -->
-  <mime-type type="application/x-nintendo-3ds-3dsx">
+  <mime-type type="application/x-nintendo-3ds-executable">
     <comment>Nintendo 3DS homebrew application</comment>
     <sub-class-of type="application/x-executable"/>
     <generic-icon name="application-x-executable"/>
@@ -506,6 +587,7 @@
     <glob pattern="*.3ds"/>
     <glob pattern="*.3dz"/>
     <glob pattern="*.cci"/>
+    <glob pattern="*.csu"/>
     <magic priority="50">
       <match value="NCSD" type="string" offset="256">
         <match value="\x00\x00\x00\x00\x00\x00\x00\x00" type="string" offset="272"/>
@@ -561,9 +643,10 @@
   </mime-type>
 
   <!-- NintendoDS -->
-  <mime-type type="application/x-nintendo-ds-rom">
+  <mime-type type="application/vnd.nintendo.nitro.rom">
     <comment>Nintendo DS ROM</comment>
     <generic-icon name="application-x-executable"/>
+    <alias type="application/x-nintendo-ds-rom"/>
     <glob pattern="*.nds"/>
     <glob pattern="*.dsi"/>
     <glob pattern="*.ids"/>
@@ -634,6 +717,14 @@
     </magic>
   </mime-type>
 
+  <!-- WonderSwan -->
+  <mime-type type="application/x-pocket-challenge-v2-rom">
+    <comment>Pocket Challenge v2 ROM</comment>
+    <sub-class-of type="application/x-wonderswan-rom"/>
+    <generic-icon name="application-x-executable"/>
+    <glob pattern="*.pc2"/>
+  </mime-type>
+
   <!-- *** Other *** -->
 
   <!-- Amiibo -->
@@ -642,6 +733,15 @@
     <generic-icon name="application-x-executable"/>
     <glob pattern="*.nfc"/>
     <glob pattern="*.nfp"/>
+  </mime-type>
+
+  <!-- Lua -->
+  <mime-type type="application/x-lua">
+    <comment>PUC Lua bytecode file</comment>
+    <glob pattern="*.lub"/>
+    <magic priority="50">
+      <match value="\x1BLua" type="string" offset="0"/>
+    </magic>
   </mime-type>
 
   <!-- Mach-O -->
@@ -805,6 +905,29 @@
 
   <!-- *** Texture *** -->
 
+  <!-- ASTC -->
+  <mime-type type="image/astc">
+    <comment>ASTC texture image</comment>
+    <sub-class-of type="image/x-generic"/>
+    <glob pattern="*.astc"/>
+    <generic-icon name="image-x-generic"/>
+    <magic priority="80">
+      <match type="little32" value="0x5CA1AB1E" offset="0"/>
+    </magic>
+  </mime-type>
+
+  <!-- GodotSTEX -->
+  <mime-type type="image/x-godot-stex">
+    <comment>Godot STEX texture image</comment>
+    <sub-class-of type="image/x-generic"/>
+    <glob pattern="*.stex"/>
+    <generic-icon name="image-x-generic"/>
+    <magic priority="80">
+      <match value="GDST" type="string" offset="0"/>
+      <match value="GST2" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
   <!-- KhronosKTX2 -->
   <!-- NOTE: Upstream has KTX1. -->
   <mime-type type="image/ktx2">
@@ -871,6 +994,24 @@
       <match value="GCIX" type="string" offset="0">
         <match value="PVRX" type="string" offset="12"/>
         <match value="PVRX" type="string" offset="16"/>
+      </match>
+    </magic>
+  </mime-type>
+  <mime-type type="image/x-sega-svr">
+    <comment>Sega SVR for PlayStation 2 texture file</comment>
+    <sub-class-of type="image/x-generic"/>
+    <generic-icon name="image-x-generic"/>
+    <glob pattern="*.svr"/>
+    <magic priority="75">
+      <!-- FIXME: Also check for SVR-specific format IDs. -->
+      <match value="PVRT" type="string" offset="0"/>
+      <match value="GBIX" type="string" offset="0">
+        <match value="PVRT" type="string" offset="12"/>
+        <match value="PVRT" type="string" offset="16"/>
+      </match>
+      <match value="GCIX" type="string" offset="0">
+        <match value="PVRT" type="string" offset="12"/>
+        <match value="PVRT" type="string" offset="16"/>
       </match>
     </magic>
   </mime-type>

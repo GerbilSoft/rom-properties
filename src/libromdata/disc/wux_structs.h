@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * wux_structs.h: Wii U .wux format structs.                               *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,9 +19,9 @@
 extern "C" {
 #endif /* __cplusplus */
 
-// Magic numbers are stored in little-endian format.
-#define WUX_MAGIC_0	'0XUW'
-#define WUX_MAGIC_1	0x1099D02E
+// Magic numbers (big-endian format)
+#define WUX_MAGIC_0	'WUX0'
+#define WUX_MAGIC_1	0x2ED09910
 
 // 256 bytes minimum block size
 // 128 MB maximum block size

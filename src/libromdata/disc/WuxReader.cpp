@@ -76,8 +76,8 @@ WuxReader::WuxReader(IRpFile *file)
 	}
 
 	// Verify the .wux header.
-	if (d->wuxHeader.magic[0] != cpu_to_le32(WUX_MAGIC_0) ||
-	    d->wuxHeader.magic[1] != cpu_to_le32(WUX_MAGIC_1))
+	if (d->wuxHeader.magic[0] != cpu_to_be32(WUX_MAGIC_0) ||
+	    d->wuxHeader.magic[1] != cpu_to_be32(WUX_MAGIC_1))
 	{
 		// Invalid magic.
 		UNREF_AND_NULL_NOCHK(m_file);
@@ -145,8 +145,8 @@ int WuxReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeader)
 
 	// Check the .wux magic.
 	const wuxHeader_t *const wuxHeader = reinterpret_cast<const wuxHeader_t*>(pHeader);
-	if (wuxHeader->magic[0] != cpu_to_le32(WUX_MAGIC_0) ||
-	    wuxHeader->magic[1] != cpu_to_le32(WUX_MAGIC_1))
+	if (wuxHeader->magic[0] != cpu_to_be32(WUX_MAGIC_0) ||
+	    wuxHeader->magic[1] != cpu_to_be32(WUX_MAGIC_1))
 	{
 		// Invalid magic.
 		return -1;

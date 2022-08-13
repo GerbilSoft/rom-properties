@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * N64.cpp: Nintendo 64 ROM image reader.                                  *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,8 +20,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(N64)
-
 class N64Private final : public RomDataPrivate
 {
 	public:
@@ -30,6 +28,12 @@ class N64Private final : public RomDataPrivate
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(N64Private)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		// ROM image type.
@@ -51,10 +55,28 @@ class N64Private final : public RomDataPrivate
 		N64_RomHeader romHeader;
 };
 
+ROMDATA_IMPL(N64)
+
 /** N64Private **/
 
+/* RomDataInfo */
+const char *const N64Private::exts[] = {
+	".z64", ".n64", ".v64",
+
+	nullptr
+};
+const char *const N64Private::mimeTypes[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-n64-rom",
+
+	nullptr
+};
+const RomDataInfo N64Private::romDataInfo = {
+	"N64", exts, mimeTypes
+};
+
 N64Private::N64Private(N64 *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, romType(RomType::Unknown)
 {
 	// Clear the ROM header struct.
@@ -80,7 +102,6 @@ N64::N64(IRpFile *file)
 	: super(new N64Private(this, file))
 {
 	RP_D(N64);
-	d->className = "N64";
 	d->mimeType = "application/x-n64-rom";	// unofficial
 
 	if (!d->file) {
@@ -97,12 +118,11 @@ N64::N64(IRpFile *file)
 	}
 
 	// Check if this ROM image is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->romHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->romHeader);
-	info.ext = nullptr;	// Not needed for N64.
-	info.szFile = 0;	// Not needed for N64.
+	const DetectInfo info = {
+		{0, sizeof(d->romHeader), reinterpret_cast<const uint8_t*>(&d->romHeader)},
+		nullptr,	// ext (not needed for N64)
+		0		// szFile (not needed for N64)
+	};
 	d->romType = static_cast<N64Private::RomType>(isRomSupported_static(&info));
 
 	switch (d->romType) {
@@ -113,14 +133,14 @@ N64::N64(IRpFile *file)
 		case N64Private::RomType::V64:
 			// V64 format. (16-bit byteswapped)
 			// Convert the header to Z64 first.
-			__byte_swap_16_array(d->romHeader.u16, sizeof(d->romHeader.u16));
+			rp_byte_swap_16_array(d->romHeader.u16, sizeof(d->romHeader.u16));
 			break;
 
 		case N64Private::RomType::SWAP2:
 			// swap2 format. (wordswapped)
 			// Convert the header to Z64 first.
 			#define UNSWAP2(x) (uint32_t)(((x) >> 16) | ((x) << 16))
-			for (int i = 0; i < ARRAY_SIZE(d->romHeader.u32); i++) {
+			for (size_t i = 0; i < ARRAY_SIZE(d->romHeader.u32); i++) {
 				d->romHeader.u32[i] = UNSWAP2(d->romHeader.u32[i]);
 			}
 			break;
@@ -131,7 +151,7 @@ N64::N64(IRpFile *file)
 			// TODO: Optimize by not converting the non-text fields
 			// if the host system is little-endian?
 			// FIXME: Untested - ucon64 doesn't support it.
-			__byte_swap_32_array(d->romHeader.u32, sizeof(d->romHeader.u32));
+			rp_byte_swap_32_array(d->romHeader.u32, sizeof(d->romHeader.u32));
 			break;
 
 		default:
@@ -144,11 +164,13 @@ N64::N64(IRpFile *file)
 	d->isValid = true;
 
 	// Byteswap the header from Z64 format.
+#if SYS_BYTEORDER != SYS_BIG_ENDIAN
 	d->romHeader.init_pi	= be32_to_cpu(d->romHeader.init_pi);
 	d->romHeader.clockrate	= be32_to_cpu(d->romHeader.clockrate);
 	d->romHeader.entrypoint	= be32_to_cpu(d->romHeader.entrypoint);
 	d->romHeader.crc[0]     = be32_to_cpu(d->romHeader.crc[0]);
 	d->romHeader.crc[1]     = be32_to_cpu(d->romHeader.crc[1]);
+#endif /* SYS_BYTEORDER != SYS_BIG_ENDIAN */
 }
 
 /** ROM detection functions. **/
@@ -179,13 +201,13 @@ int N64::isRomSupported_static(const DetectInfo *info)
 	// NOTE: This technically isn't a "magic number",
 	// but it appears to be the same for all N64 ROMs.
 	N64Private::RomType romType = N64Private::RomType::Unknown;
-	if (romHeader->magic64 == cpu_to_be64(N64_Z64_MAGIC)) {
+	if ((romHeader->magic64 & cpu_to_be64(N64_Z64_MAGIC_MASK)) == cpu_to_be64(N64_Z64_MAGIC)) {
 		romType = N64Private::RomType::Z64;
-	} else if (romHeader->magic64 == cpu_to_be64(N64_V64_MAGIC)) {
+	} else if ((romHeader->magic64 & cpu_to_be64(N64_V64_MAGIC_MASK)) == cpu_to_be64(N64_V64_MAGIC)) {
 		romType = N64Private::RomType::V64;
-	} else if (romHeader->magic64 == cpu_to_be64(N64_SWAP2_MAGIC)) {
+	} else if ((romHeader->magic64 & cpu_to_be64(N64_SWAP2_MAGIC_MASK)) == cpu_to_be64(N64_SWAP2_MAGIC)) {
 		romType = N64Private::RomType::SWAP2;
-	} else if (romHeader->magic64 == cpu_to_be64(N64_LE32_MAGIC)) {
+	} else if ((romHeader->magic64 & cpu_to_be64(N64_LE32_MAGIC_MASK)) == cpu_to_be64(N64_LE32_MAGIC)) {
 		romType = N64Private::RomType::LE32;
 	}
 
@@ -217,49 +239,6 @@ const char *N64::systemName(unsigned int type) const
 }
 
 /**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *N64::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".z64", ".n64", ".v64",
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *N64::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org.
-		"application/x-n64-rom",
-
-		nullptr
-	};
-	return mimeTypes;
-}
-
-/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -284,7 +263,7 @@ int N64::loadFieldData(void)
 	// ROM file header is read and byteswapped in the constructor.
 	// TODO: Indicate the byteswapping format?
 	const N64_RomHeader *const romHeader = &d->romHeader;
-	d->fields->reserve(6);	// Maximum of 6 fields.
+	d->fields->reserve(7);	// Maximum of 7 fields.
 
 	// Title.
 	// TODO: Space elimination.
@@ -319,14 +298,28 @@ int N64::loadFieldData(void)
 	    romHeader->os_version[1] == 0x00 &&
 	    ISALPHA(romHeader->os_version[3]))
 	{
-		snprintf(buf, sizeof(buf), "OS %u%c",
-			romHeader->os_version[2], romHeader->os_version[3]);
+		snprintf(buf, sizeof(buf), "OS%u.%u%c",
+			romHeader->os_version[2] / 10,
+			romHeader->os_version[2] % 10,
+			romHeader->os_version[3]);
 		d->fields->addField_string(os_version_title, buf);
 	} else {
 		// Unrecognized Release field.
 		d->fields->addField_string_hexdump(os_version_title,
 			romHeader->os_version, sizeof(romHeader->os_version),
 			RomFields::STRF_MONOSPACE);
+	}
+
+	// Clock rate.
+	// NOTE: Lower 0xF is masked.
+	const char *clockrate_title = C_("N64", "Clock Rate");
+	const uint32_t clockrate = (romHeader->clockrate & ~0xFU);
+	if (clockrate == 0) {
+		d->fields->addField_string(clockrate_title,
+			C_("N64|ClockRate", "0 (default)"));
+	} else {
+		d->fields->addField_string(clockrate_title,
+			formatFrequency(clockrate));
 	}
 
 	// CRCs.

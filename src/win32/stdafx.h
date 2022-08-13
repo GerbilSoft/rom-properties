@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * stdafx.h: Common definitions and includes for COM.                      *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -70,10 +70,12 @@
 #include <algorithm>
 #include <array>
 #include <list>
+#include <locale>
 #include <memory>
 #include <numeric>
 #include <set>
 #include <string>
+#include <sstream>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -91,16 +93,18 @@
 #endif /* __cplusplus */
 
 // libwin32common C headers
-#include "libwin32common/HiDPI.h"
 #include "libwin32common/w32time.h"
 #include "libwin32common/sdk/GUID_fn.h"
+// libwin32ui C headers
+#include "libwin32ui/HiDPI.h"
 
 #ifdef __cplusplus
 // libwin32common C++ headers
 #include "libwin32common/ComBase.hpp"
 #include "libwin32common/RegKey.hpp"
-#include "libwin32common/WinUI.hpp"
-#include "libwin32common/WTSSessionNotification.hpp"
+// libwin32ui C++ headers
+#include "libwin32ui/WinUI.hpp"
+#include "libwin32ui/WTSSessionNotification.hpp"
 #endif /* __cplusplus */
 
 // libi18n
@@ -108,11 +112,14 @@
 
 // librpbase common headers
 #include "common.h"
+#include "aligned_malloc.h"
+#include "ctypex.h"
 
 #ifdef __cplusplus
 // librpbase C++ headers
 #include "librpbase/RomData.hpp"
 #include "librpbase/TextFuncs.hpp"
+#include "librpbase/TextFuncs_printf.hpp"
 #include "librpbase/TextFuncs_wchar.hpp"
 #include "librpbase/config/Config.hpp"
 

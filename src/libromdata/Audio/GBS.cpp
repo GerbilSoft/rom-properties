@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GBS.hpp: GBS audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,8 +20,6 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(GBS)
-
 class GBSPrivate : public RomDataPrivate
 {
 	public:
@@ -32,18 +30,62 @@ class GBSPrivate : public RomDataPrivate
 		RP_DISABLE_COPY(GBSPrivate)
 
 	public:
+		// Audio format.
+		enum class AudioFormat {
+			Unknown = -1,
+
+			GBS = 0,
+			GBR = 1,
+
+			Max
+		};
+		AudioFormat audioFormat;
+
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
+
+	public:
 		// GBS header.
 		// NOTE: **NOT** byteswapped in memory.
-		GBS_Header gbsHeader;
+		union {
+			GBS_Header gbs;
+			GBR_Header gbr;
+		} header;
 };
+
+ROMDATA_IMPL(GBS)
 
 /** GBSPrivate **/
 
+/* RomDataInfo */
+const char *const GBSPrivate::exts[] = {
+	".gbs",
+	".gbr",
+
+	nullptr
+};
+const char *const GBSPrivate::mimeTypes[] = {
+	// NOTE: Ordering matches AudioFormat.
+
+	// Unofficial MIME types.
+	// TODO: Get these upstreamed on FreeDesktop.org.
+	"audio/x-gbs",
+	"audio/x-gbr",
+
+	nullptr
+};
+const RomDataInfo GBSPrivate::romDataInfo = {
+	"GBS", exts, mimeTypes
+};
+
 GBSPrivate::GBSPrivate(GBS *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
+	, audioFormat(AudioFormat::Unknown)
 {
-	// Clear the GBS header struct.
-	memset(&gbsHeader, 0, sizeof(gbsHeader));
+	// Clear the header struct.
+	memset(&header, 0, sizeof(header));
 }
 
 /** GBS **/
@@ -65,8 +107,6 @@ GBS::GBS(IRpFile *file)
 	: super(new GBSPrivate(this, file))
 {
 	RP_D(GBS);
-	d->className = "GBS";
-	d->mimeType = "audio/x-gbs";	// unofficial
 	d->fileType = FileType::AudioFile;
 
 	if (!d->file) {
@@ -76,23 +116,26 @@ GBS::GBS(IRpFile *file)
 
 	// Read the GBS header.
 	d->file->rewind();
-	size_t size = d->file->read(&d->gbsHeader, sizeof(d->gbsHeader));
-	if (size != sizeof(d->gbsHeader)) {
+	size_t size = d->file->read(&d->header, sizeof(d->header));
+	if (size != sizeof(d->header)) {
 		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
 	// Check if this file is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->gbsHeader);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->gbsHeader);
-	info.ext = nullptr;	// Not needed for GBS.
-	info.szFile = 0;	// Not needed for GBS.
-	d->isValid = (isRomSupported_static(&info) >= 0);
+	const DetectInfo info = {
+		{0, sizeof(d->header), reinterpret_cast<const uint8_t*>(&d->header)},
+		nullptr,	// ext (not needed for GBS)
+		0		// szFile (not needed for GBS)
+	};
+	d->audioFormat = static_cast<GBSPrivate::AudioFormat>(isRomSupported_static(&info));
 
-	if (!d->isValid) {
+	if ((int)d->audioFormat < 0) {
 		UNREF_AND_NULL_NOCHK(d->file);
+		return;
+	} else if ((int)d->audioFormat < ARRAY_SIZE_I(d->mimeTypes)-1) {
+		d->mimeType = d->mimeTypes[(int)d->audioFormat];
+		d->isValid = true;
 	}
 }
 
@@ -112,7 +155,7 @@ int GBS::isRomSupported_static(const DetectInfo *info)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
-		return -1;
+		return static_cast<int>(GBSPrivate::AudioFormat::Unknown);
 	}
 
 	const GBS_Header *const gbsHeader =
@@ -121,11 +164,14 @@ int GBS::isRomSupported_static(const DetectInfo *info)
 	// Check the GBS magic number.
 	if (gbsHeader->magic == cpu_to_be32(GBS_MAGIC)) {
 		// Found the GBS magic number.
-		return 0;
+		return static_cast<int>(GBSPrivate::AudioFormat::GBS);
+	} else if (gbsHeader->magic == cpu_to_be32(GBR_MAGIC)) {
+		// Found the GBR magic number.
+		return static_cast<int>(GBSPrivate::AudioFormat::GBR);
 	}
 
 	// Not suported.
-	return -1;
+	return static_cast<int>(GBSPrivate::AudioFormat::Unknown);
 }
 
 /**
@@ -145,55 +191,13 @@ const char *GBS::systemName(unsigned int type) const
 		"GBS::systemName() array index optimization needs to be updated.");
 
 	// Bits 0-1: Type. (long, short, abbreviation)
-	static const char *const sysNames[4] = {
-		"Game Boy Sound System", "GBS", "GBS", nullptr
+	// Bit 2: GBS or GBR.
+	static const char *const sysNames[2][4] = {
+		{"Game Boy Sound System", "GBS", "GBS", nullptr},
+		{"Game Boy Ripped", "GBR", "GBR", nullptr},
 	};
 
-	return sysNames[type & SYSNAME_TYPE_MASK];
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *GBS::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".gbs",
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *GBS::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types.
-		"audio/x-gbs",
-
-		nullptr
-	};
-	return mimeTypes;
+	return sysNames[((int)d->audioFormat) & 1][type & SYSNAME_TYPE_MASK];
 }
 
 /**
@@ -215,59 +219,95 @@ int GBS::loadFieldData(void)
 		return -EIO;
 	}
 
-	// GBS header.
-	const GBS_Header *const gbsHeader = &d->gbsHeader;
-	d->fields->reserve(9);	// Maximum of 9 fields.
-	d->fields->setTabName(0, "GBS");
+	// TODO: Does GBR have titles?
+	switch (d->audioFormat) {
+		default:
+			assert(!"GBS: Invalid audio format.");
+			break;
 
-	// NOTE: The GBS specification says ASCII, but I'm assuming
-	// the text is cp1252 and/or Shift-JIS.
+		case GBSPrivate::AudioFormat::GBS: {
+			// GBS header.
+			const GBS_Header *const gbs = &d->header.gbs;
 
-	// Title.
-	if (gbsHeader->title[0] != 0) {
-		d->fields->addField_string(C_("RomData|Audio", "Title"),
-			cp1252_sjis_to_utf8(gbsHeader->title, sizeof(gbsHeader->title)));
+			d->fields->reserve(9);	// Maximum of 9 fields.
+			d->fields->setTabName(0, "GBS");
+
+			// NOTE: The GBS specification says ASCII, but I'm assuming
+			// the text is cp1252 and/or Shift-JIS.
+
+			// Title
+			if (gbs->title[0] != 0) {
+				d->fields->addField_string(C_("RomData|Audio", "Title"),
+					cp1252_sjis_to_utf8(gbs->title, sizeof(gbs->title)));
+			}
+
+			// Composer
+			if (gbs->composer[0] != 0) {
+				d->fields->addField_string(C_("RomData|Audio", "Composer"),
+					cp1252_sjis_to_utf8(gbs->composer, sizeof(gbs->composer)));
+			}
+
+			// Copyright
+			if (gbs->copyright[0] != 0) {
+				d->fields->addField_string(C_("RomData|Audio", "Copyright"),
+					cp1252_sjis_to_utf8(gbs->copyright, sizeof(gbs->copyright)));
+			}
+
+			// Number of tracks
+			d->fields->addField_string_numeric(C_("RomData|Audio", "Track Count"),
+				gbs->track_count);
+
+			// Default track number
+			d->fields->addField_string_numeric(C_("RomData|Audio", "Default Track #"),
+				gbs->default_track);
+
+			// Load address
+			d->fields->addField_string_numeric(C_("GBS", "Load Address"),
+				le16_to_cpu(gbs->load_address),
+				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
+
+			// Init address
+			d->fields->addField_string_numeric(C_("GBS", "Init Address"),
+				le16_to_cpu(gbs->init_address),
+				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
+
+			// Play address
+			d->fields->addField_string_numeric(C_("GBS", "Play Address"),
+				le16_to_cpu(gbs->play_address),
+				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
+
+			// Play address
+			d->fields->addField_string_numeric(C_("GBS", "Stack Pointer"),
+				le16_to_cpu(gbs->stack_pointer),
+				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
+			break;
+		}
+
+		case GBSPrivate::AudioFormat::GBR: {
+			// GBR header.
+			// TODO: Does GBR support text fields?
+			const GBR_Header *const gbr = &d->header.gbr;
+
+			d->fields->reserve(3);	// Maximum of 3 fields.
+			d->fields->setTabName(0, "GBR");
+
+			// Init address
+			d->fields->addField_string_numeric(C_("GBS", "Init Address"),
+				le16_to_cpu(gbr->init_address),
+				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
+
+			// VSync address
+			d->fields->addField_string_numeric(C_("GBS", "VSync Address"),
+				le16_to_cpu(gbr->vsync_address),
+				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
+
+			// Timer address
+			d->fields->addField_string_numeric(C_("GBS", "Timer Address"),
+				le16_to_cpu(gbr->timer_address),
+				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
+			break;
+		}
 	}
-
-	// Composer.
-	if (gbsHeader->composer[0] != 0) {
-		d->fields->addField_string(C_("RomData|Audio", "Composer"),
-			cp1252_sjis_to_utf8(gbsHeader->composer, sizeof(gbsHeader->composer)));
-	}
-
-	// Copyright.
-	if (gbsHeader->copyright[0] != 0) {
-		d->fields->addField_string(C_("RomData|Audio", "Copyright"),
-			cp1252_sjis_to_utf8(gbsHeader->copyright, sizeof(gbsHeader->copyright)));
-	}
-
-	// Number of tracks.
-	d->fields->addField_string_numeric(C_("RomData|Audio", "Track Count"),
-		gbsHeader->track_count);
-
-	// Default track number.
-	d->fields->addField_string_numeric(C_("RomData|Audio", "Default Track #"),
-		gbsHeader->default_track);
-
-	// Load address.
-	d->fields->addField_string_numeric(C_("GBS", "Load Address"),
-		le16_to_cpu(gbsHeader->load_address),
-		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
-
-	// Init address.
-	d->fields->addField_string_numeric(C_("GBS", "Init Address"),
-		le16_to_cpu(gbsHeader->init_address),
-		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
-
-	// Play address.
-	d->fields->addField_string_numeric(C_("GBS", "Play Address"),
-		le16_to_cpu(gbsHeader->play_address),
-		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
-
-	// Play address.
-	d->fields->addField_string_numeric(C_("GBS", "Stack Pointer"),
-		le16_to_cpu(gbsHeader->stack_pointer),
-		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// TODO: Timer modulo and control?
 
@@ -294,29 +334,34 @@ int GBS::loadMetaData(void)
 		return -EIO;
 	}
 
+	// NOTE: Metadata isn't currently supported for GBR.
+	if (d->audioFormat != GBSPrivate::AudioFormat::GBS) {
+		return -ENOENT;
+	}
+
 	// Create the metadata object.
 	d->metaData = new RomMetaData();
 	d->metaData->reserve(3);	// Maximum of 3 metadata properties.
 
 	// GBS header.
-	const GBS_Header *const gbsHeader = &d->gbsHeader;
+	const GBS_Header *const gbs = &d->header.gbs;
 
 	// Title.
-	if (gbsHeader->title[0] != 0) {
+	if (gbs->title[0] != 0) {
 		d->metaData->addMetaData_string(Property::Title,
-			cp1252_sjis_to_utf8(gbsHeader->title, sizeof(gbsHeader->title)));
+			cp1252_sjis_to_utf8(gbs->title, sizeof(gbs->title)));
 	}
 
 	// Composer.
-	if (gbsHeader->composer[0] != 0) {
+	if (gbs->composer[0] != 0) {
 		d->metaData->addMetaData_string(Property::Composer,
-			cp1252_sjis_to_utf8(gbsHeader->composer, sizeof(gbsHeader->composer)));
+			cp1252_sjis_to_utf8(gbs->composer, sizeof(gbs->composer)));
 	}
 
 	// Copyright.
-	if (gbsHeader->copyright[0] != 0) {
+	if (gbs->copyright[0] != 0) {
 		d->metaData->addMetaData_string(Property::Copyright,
-			cp1252_sjis_to_utf8(gbsHeader->copyright, sizeof(gbsHeader->copyright)));
+			cp1252_sjis_to_utf8(gbs->copyright, sizeof(gbs->copyright)));
 	}
 
 	// Finished reading the metadata.

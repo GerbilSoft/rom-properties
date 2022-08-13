@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NEResourceReader.cpp: New Executable resource reader.                   *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -219,7 +219,7 @@ int NEResourceReaderPrivate::loadResTbl(void)
 		}
 
 		// Create a new vector for the resource type.
-		auto iter_type = res_types.insert(std::make_pair(rtTypeID, rsrc_dir_t()));
+		auto iter_type = res_types.emplace(rtTypeID, rsrc_dir_t());
 		assert(iter_type.second);
 		if (!iter_type.second) {
 			// Error adding to the map.
@@ -328,12 +328,12 @@ int NEResourceReaderPrivate::load_VS_VERSION_INFO_header(IRpFile *file, const ch
 int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::StringTable &st, uint32_t *langID)
 {
 	// References:
-	// - String: https://msdn.microsoft.com/en-us/library/windows/desktop/ms646987(v=vs.85).aspx
-	// - StringTable: https://msdn.microsoft.com/en-us/library/windows/desktop/ms646992(v=vs.85).aspx
+	// - String: https://docs.microsoft.com/en-us/windows/win32/menurc/string-str
+	// - StringTable: https://docs.microsoft.com/en-us/windows/win32/menurc/stringtable
 
 	// NOTE: 16-bit version resources use DWORD alignment, not WORD alignment.
 	// I'm guessing this is because it was originally developed for Windows NT.
-	// Reference: https://blogs.msdn.microsoft.com/oldnewthing/20061220-15/?p=28653
+	// Reference: https://devblogs.microsoft.com/oldnewthing/20061220-15/?p=28653
 
 	// Read fields.
 	const off64_t pos_start = file->tell();
@@ -468,7 +468,7 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 
 		// NOTE: Only converting the value from DOS to UNIX line endings.
 		// The key shouldn't have newlines.
-		st.emplace_back(std::pair<string, string>(key_utf8, dos2unix(value_utf8)));
+		st.emplace_back(std::pair<string, string>(std::move(key_utf8), dos2unix(value_utf8)));
 
 		// DWORD alignment is required here.
 		tblPos += wValueLength;
@@ -769,7 +769,7 @@ int NEResourceReader::load_VS_VERSION_INFO(int id, int lang, VS_FIXEDFILEINFO *p
 	ret = NEResourceReaderPrivate::load_StringTable(f_ver.get(), st, &langID);
 	if (ret == 0) {
 		// String table read successfully.
-		pVsSfi->insert(std::make_pair(langID, std::move(st)));
+		pVsSfi->emplace(langID, std::move(st));
 	}
 
 	// Version information read successfully.

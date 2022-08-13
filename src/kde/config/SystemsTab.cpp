@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * SystemsTab.cpp: Systems tab for rp-config.                              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -168,26 +168,26 @@ void SystemsTab::save(QSettings *pSettings)
 	Q_D(const SystemsTab);
 	pSettings->beginGroup(QLatin1String("DMGTitleScreenMode"));
 
-	const char s_dmg_dmg[][4] = {"DMG", "CGB"};
+	static const char s_dmg_dmg[][4] = {"DMG", "CGB"};
 	const int idxDMG = d->ui.cboDMG->currentIndex();
 	assert(idxDMG >= 0);
-	assert(idxDMG < ARRAY_SIZE(s_dmg_dmg));
-	if (idxDMG >= 0 && idxDMG < ARRAY_SIZE(s_dmg_dmg)) {
+	assert(idxDMG < ARRAY_SIZE_I(s_dmg_dmg));
+	if (idxDMG >= 0 && idxDMG < ARRAY_SIZE_I(s_dmg_dmg)) {
 		pSettings->setValue(QLatin1String("DMG"), QLatin1String(s_dmg_dmg[idxDMG]));
 	}
 
-	const char s_dmg_other[][4] = {"DMG", "SGB", "CGB"};
+	static const char s_dmg_other[][4] = {"DMG", "SGB", "CGB"};
 	const int idxSGB = d->ui.cboSGB->currentIndex();
 	const int idxCGB = d->ui.cboCGB->currentIndex();
 
 	assert(idxSGB >= 0);
-	assert(idxSGB < ARRAY_SIZE(s_dmg_other));
-	if (idxSGB >= 0 && idxSGB < ARRAY_SIZE(s_dmg_other)) {
+	assert(idxSGB < ARRAY_SIZE_I(s_dmg_other));
+	if (idxSGB >= 0 && idxSGB < ARRAY_SIZE_I(s_dmg_other)) {
 		pSettings->setValue(QLatin1String("SGB"), QLatin1String(s_dmg_other[idxSGB]));
 	}
 	assert(idxCGB >= 0);
-	assert(idxCGB < ARRAY_SIZE(s_dmg_other));
-	if (idxCGB >= 0 && idxCGB < ARRAY_SIZE(s_dmg_other)) {
+	assert(idxCGB < ARRAY_SIZE_I(s_dmg_other));
+	if (idxCGB >= 0 && idxCGB < ARRAY_SIZE_I(s_dmg_other)) {
 		pSettings->setValue(QLatin1String("CGB"), QLatin1String(s_dmg_other[idxCGB]));
 	}
 

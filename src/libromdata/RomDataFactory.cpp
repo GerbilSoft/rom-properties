@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * RomDataFactory.cpp: RomData factory class.                              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,6 +11,7 @@
 #include "libromdata/config.libromdata.h"
 
 #include "RomDataFactory.hpp"
+#include "RomData_p.hpp"	// for RomDataInfo
 
 // librpbase, librpfile
 #include "librpfile/RelatedFile.hpp"
@@ -31,6 +32,8 @@ using std::unordered_set;
 using std::vector;
 
 // RomData subclasses: Consoles
+#include "Console/Atari7800.hpp"
+#include "Console/CBMCart.hpp"
 #include "Console/Dreamcast.hpp"
 #include "Console/DreamcastSave.hpp"
 #include "Console/GameCube.hpp"
@@ -75,6 +78,7 @@ using std::vector;
 #include "Handheld/PokemonMini.hpp"
 #include "Handheld/PSP.hpp"
 #include "Handheld/VirtualBoy.hpp"
+#include "Handheld/WonderSwan.hpp"
 
 // RomData subclasses: Audio
 #include "Audio/ADX.hpp"
@@ -97,6 +101,7 @@ using std::vector;
 #include "Other/MachO.hpp"
 #include "Other/NintendoBadge.hpp"
 #include "Other/RpTextureWrapper.hpp"
+#include "Other/Lua.hpp"
 
 // Special case for Dreamcast save files.
 #include "Console/dc_structs.h"
@@ -114,15 +119,13 @@ class RomDataFactoryPrivate
 
 	public:
 		typedef int (*pfnIsRomSupported_t)(const RomData::DetectInfo *info);
-		typedef const char *const * (*pfnSupportedFileExtensions_t)(void);
-		typedef const char *const * (*pfnSupportedMimeTypes_t)(void);
+		typedef const RomDataInfo * (*pfnRomDataInfo_t)(void);
 		typedef RomData* (*pfnNewRomData_t)(IRpFile *file);
 
 		struct RomDataFns {
 			pfnIsRomSupported_t isRomSupported;
 			pfnNewRomData_t newRomData;
-			pfnSupportedFileExtensions_t supportedFileExtensions;
-			pfnSupportedMimeTypes_t supportedMimeTypes;
+			pfnRomDataInfo_t romDataInfo;
 			unsigned int attrs;
 
 			// Extra fields for files whose headers
@@ -136,7 +139,7 @@ class RomDataFactoryPrivate
 		 * @param klass Class name.
 		 */
 		template<typename klass>
-		static LibRpBase::RomData *RomData_ctor(LibRpFile::IRpFile *file)
+		static LibRpBase::RomData *RomData_ctor(IRpFile *file)
 		{
 			return new klass(file);
 		}
@@ -144,16 +147,14 @@ class RomDataFactoryPrivate
 #define GetRomDataFns(sys, attrs) \
 	{sys::isRomSupported_static, \
 	 RomDataFactoryPrivate::RomData_ctor<sys>, \
-	 sys::supportedFileExtensions_static, \
-	 sys::supportedMimeTypes_static, \
-	 attrs, 0, 0}
+	 sys::romDataInfo, \
+	 (attrs), 0, 0}
 
 #define GetRomDataFns_addr(sys, attrs, address, size) \
 	{sys::isRomSupported_static, \
 	 RomDataFactoryPrivate::RomData_ctor<sys>, \
-	 sys::supportedFileExtensions_static, \
-	 sys::supportedMimeTypes_static, \
-	 attrs, address, size}
+	 sys::romDataInfo, \
+	 (attrs), (address), (size)}
 
 		// RomData subclasses that use a header at 0 and
 		// definitely have a 32-bit magic number in the header.
@@ -185,9 +186,9 @@ class RomDataFactoryPrivate
 		// We want to collect them once per session instead of
 		// repeatedly collecting them, since the caller might
 		// not cache them.
-		// pthread_once() control variable.
 		static vector<RomDataFactory::ExtInfo> vec_exts;
 		static vector<const char*> vec_mimeTypes;
+		// pthread_once() control variables
 		static pthread_once_t once_exts;
 		static pthread_once_t once_mimeTypes;
 
@@ -243,8 +244,11 @@ pthread_once_t RomDataFactoryPrivate::once_mimeTypes = PTHREAD_ONCE_INIT;
 // TODO: Add support for multiple magic numbers per class.
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[] = {
 	// Consoles
+	GetRomDataFns_addr(Atari7800, ATTR_HAS_METADATA, 4, 'RI78'),	// "ATARI7800"
 	GetRomDataFns_addr(PlayStationEXE, 0, 0, 'PS-X'),
 	GetRomDataFns_addr(SufamiTurbo, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 8, 'FC-A'),	// Less common than "BAND"
+	GetRomDataFns_addr(WiiU, ATTR_HAS_THUMBNAIL | ATTR_SUPPORTS_DEVICES, 0, 'WUP-'),
+	GetRomDataFns_addr(WiiU, ATTR_HAS_THUMBNAIL | ATTR_SUPPORTS_DEVICES, 0, 'WUX0'),
 	GetRomDataFns_addr(WiiWIBN, ATTR_HAS_THUMBNAIL, 0, 'WIBN'),
 	GetRomDataFns_addr(Xbox_XBE, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XBEH'),
 	GetRomDataFns_addr(Xbox360_XDBF, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'XDBF'),
@@ -272,13 +276,15 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 
 	// Audio
 	GetRomDataFns_addr(BRSTM, ATTR_HAS_METADATA, 0, 'RSTM'),
-	GetRomDataFns_addr(GBS, ATTR_HAS_METADATA, 0, 0x47425301),	// 'GBS\x01'
+	GetRomDataFns_addr(GBS, ATTR_HAS_METADATA, 0, 0x47425301U),	// 'GBS\x01'
+	GetRomDataFns_addr(GBS, ATTR_HAS_METADATA, 0, 0x47425246U),	// 'GBRF'
 	GetRomDataFns_addr(NSF, ATTR_HAS_METADATA, 0, 'NESM'),
 	GetRomDataFns_addr(SPC, ATTR_HAS_METADATA, 0, 'SNES'),
 	GetRomDataFns_addr(VGM, ATTR_HAS_METADATA, 0, 'Vgm '),
 
 	// Other
 	GetRomDataFns_addr(ELF, ATTR_NONE, 0, 0x7F454C46),		// '\177ELF'
+	GetRomDataFns_addr(Lua, ATTR_NONE, 0, 0x1B4C7561),		// '\033Lua'
 
 	// Consoles: Xbox 360 STFS
 	// Moved here to prevent conflicts with the Nintendo DS ROM image
@@ -287,7 +293,15 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_magic[
 	GetRomDataFns_addr(Xbox360_STFS, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'PIRS'),
 	GetRomDataFns_addr(Xbox360_STFS, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'LIVE'),
 
-	{nullptr, nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
+	// Consoles: CBMCart
+	// Moved here because they're less common.
+	GetRomDataFns_addr(CBMCart, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'C64 '),
+	GetRomDataFns_addr(CBMCart, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'C128'),
+	GetRomDataFns_addr(CBMCart, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'CBM2'),
+	GetRomDataFns_addr(CBMCart, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'VIC2'),
+	GetRomDataFns_addr(CBMCart, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA, 0, 'PLUS'),
+
+	{nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
 };
 
 // RomData subclasses that use a header.
@@ -301,13 +315,13 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(GameCubeBNR, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(GameCubeSave, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(iQuePlayer, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
-	GetRomDataFns(MegaDrive, ATTR_SUPPORTS_DEVICES),	// ATTR_SUPPORTS_DEVICES for Sega CD
+	// MegaDrive: ATTR_SUPPORTS_DEVICES for Sega CD
+	GetRomDataFns(MegaDrive, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
 	GetRomDataFns(N64, ATTR_HAS_METADATA),
 	GetRomDataFns(NES, ATTR_NONE),
 	GetRomDataFns(SNES, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 	GetRomDataFns(SegaSaturn, ATTR_NONE | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES),
 	GetRomDataFns(WiiSave, ATTR_HAS_THUMBNAIL),
-	GetRomDataFns(WiiU, ATTR_HAS_THUMBNAIL | ATTR_SUPPORTS_DEVICES),
 	GetRomDataFns(WiiWAD, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
 
 	// Handhelds
@@ -349,13 +363,14 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	// NOTE: ATTR_HAS_THUMBNAIL is needed for Xbox 360.
 	GetRomDataFns_addr(ISO, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA | ATTR_SUPPORTS_DEVICES | ATTR_CHECK_ISO, 0x40000, 0x20),
 
-	{nullptr, nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
+	{nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
 };
 
 // RomData subclasses that use a footer.
 const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_footer[] = {
 	GetRomDataFns(VirtualBoy, ATTR_NONE),
-	{nullptr, nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
+	GetRomDataFns(WonderSwan, ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA),
+	{nullptr, nullptr, nullptr, ATTR_NONE, 0, 0}
 };
 
 // Table of pointers to tables.
@@ -413,8 +428,8 @@ RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
 	// Attempt to open the other file in the pair.
 	// TODO: Verify length.
 	// TODO: For .vmi, check the VMS resource name?
-	const string filename = file->filename();
-	*other_file = FileSystem::openRelatedFile(filename.c_str(), nullptr, rel_ext);
+	const char *const filename = file->filename();
+	*other_file = FileSystem::openRelatedFile(filename, nullptr, rel_ext);
 	if (!*other_file) {
 		// Can't open the other file.
 		return nullptr;
@@ -453,17 +468,20 @@ RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
 		return nullptr;
 	}
 
+	bool is2048;
 	const ISO_Primary_Volume_Descriptor *pvd = nullptr;
 	int discType = ISO::checkPVD(sector.m1.data);
 	if (discType >= 0) {
 		// Found a PVD with 2048-byte sectors.
 		pvd = reinterpret_cast<const ISO_Primary_Volume_Descriptor*>(sector.m1.data);
+		is2048 = true;
 	} else {
 		// Check for a PVD with 2352-byte or 2448-byte sectors.
-		static const unsigned int sector_sizes[] = {2352, 2448, 0};
+		static const unsigned int sector_sizes[] = {2352, 2448};
+		is2048 = false;
 
-		for (const unsigned int *p = sector_sizes; *p != 0; p++) {
-			size_t size = file->seekAndRead(*p * ISO_PVD_LBA, &sector, sizeof(sector));
+		for (unsigned int p : sector_sizes) {
+			size_t size = file->seekAndRead(p * ISO_PVD_LBA, &sector, sizeof(sector));
 			if (size != sizeof(sector)) {
 				// Unable to read the PVD.
 				return nullptr;
@@ -483,10 +501,38 @@ RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
 		return nullptr;
 	}
 
-	// Xbox / Xbox 360
-	bool mayBeXbox = (XboxDisc::isRomSupported_static(pvd) >= 0);
-	if (!mayBeXbox) {
-		// This might be an extracted XDVDFS.
+	// Console/Handheld disc formats.
+	typedef int (*pfnIsRomSupported_ISO_t)(const ISO_Primary_Volume_Descriptor *pvd);
+	struct RomDataFns_ISO {
+		pfnIsRomSupported_ISO_t isRomSupported;
+		pfnNewRomData_t newRomData;
+	};
+#define GetRomDataFns_ISO(sys) \
+	{sys::isRomSupported_static, \
+	 RomDataFactoryPrivate::RomData_ctor<sys>}
+	static const RomDataFns_ISO romDataFns_ISO[] = {
+		GetRomDataFns_ISO(PlayStationDisc),
+		GetRomDataFns_ISO(PSP),
+		GetRomDataFns_ISO(XboxDisc),
+
+		{nullptr, nullptr}
+	};
+
+	const RomDataFns_ISO *fns = &romDataFns_ISO[0];
+	for (; fns->isRomSupported != nullptr; fns++) {
+		if (fns->isRomSupported(pvd) >= 0) {
+			// This might be the correct RomData subclass.
+			RomData *const romData = fns->newRomData(file);
+			if (romData->isValid()) {
+				// Found the correct RomData subclass.
+				return romData;
+			}
+			romData->unref();
+		}
+	}
+
+	// Check for extracted XDVDFS. (2048-byte sector images only)
+	if (is2048) {
 		// Check for the magic number at the base offset.
 		XDVDFS_Header xdvdfsHeader;
 		size = file->seekAndRead(XDVDFS_HEADER_LBA_OFFSET * XDVDFS_BLOCK_SIZE,
@@ -496,41 +542,15 @@ RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
 			if (!memcmp(xdvdfsHeader.magic, XDVDFS_MAGIC, sizeof(xdvdfsHeader.magic)) &&
 			    !memcmp(xdvdfsHeader.magic_footer, XDVDFS_MAGIC, sizeof(xdvdfsHeader.magic_footer)))
 			{
-				// It's a match!
-				mayBeXbox = true;
+				// It's a match! Try opening as XboxDisc.
+				RomData *const romData = new XboxDisc(file);
+				if (romData->isValid()) {
+					// Found the correct RomData subclass.
+					return romData;
+				}
+				romData->unref();
 			}
 		}
-	}
-
-	if (mayBeXbox) {
-		RomData *const romData = new XboxDisc(file);
-		if (romData->isValid()) {
-			// Got an Xbox disc.
-			return romData;
-		}
-		romData->unref();
-	}
-
-	// PlayStation 1 and 2
-	if (PlayStationDisc::isRomSupported_static(pvd) >= 0) {
-		// This might be a PS1 or PS2 disc.
-		RomData *const romData = new PlayStationDisc(file);
-		if (romData->isValid()) {
-			// Got a PS1 or PS2 disc.
-			return romData;
-		}
-		romData->unref();
-	}
-
-	// PlayStation Portable
-	if (PSP::isRomSupported_static(pvd) >= 0) {
-		// This might be a PSP disc.
-		RomData *const romData = new PSP(file);
-		if (romData->isValid()) {
-			// Got a PSP disc.
-			return romData;
-		}
-		romData->unref();
 	}
 
 	// Not a game-specific file system.
@@ -587,13 +607,11 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 		attrs |= ATTR_SUPPORTS_DEVICES;
 	} else {
 		// Get the actual file extension.
-		const string filename = file->filename();
-		if (!filename.empty()) {
-			const char *pExt = FileSystem::file_ext(filename);
-			if (pExt) {
-				file_ext = pExt;
-				info.ext = file_ext.c_str();
-			}
+		const char *const filename = file->filename();
+		const char *const ext = FileSystem::file_ext(filename);
+		if (ext) {
+			file_ext = ext;
+			info.ext = file_ext.c_str();
 		}
 	}
 
@@ -621,7 +639,7 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 	// and definitely have a 32-bit magic number in the header.
 	const RomDataFactoryPrivate::RomDataFns *fns =
 		&RomDataFactoryPrivate::romDataFns_magic[0];
-	for (; fns->supportedFileExtensions != nullptr; fns++) {
+	for (; fns->romDataInfo != nullptr; fns++) {
 		if ((fns->attrs & attrs) != attrs) {
 			// This RomData subclass doesn't have the
 			// required attributes.
@@ -665,7 +683,7 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 	// but don't have a simple 32-bit magic number check.
 	fns = &RomDataFactoryPrivate::romDataFns_header[0];
 	bool checked_exts = false;
-	for (; fns->supportedFileExtensions != nullptr; fns++) {
+	for (; fns->romDataInfo != nullptr; fns++) {
 		if ((fns->attrs & attrs) != attrs) {
 			// This RomData subclass doesn't have the
 			// required attributes.
@@ -681,16 +699,15 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 				// for file types that don't use this.
 				// TODO: Don't hard-code this.
 				// Use a pointer to supportedFileExtensions_static() instead?
-				static const char *const exts[] = {
-					".bin",		/* generic .bin */
-					".sms",		/* Sega Master System */
-					".gg",		/* Game Gear */
-					".tgc",		/* game.com */
-					".iso",		/* ISO-9660 */
-					".img",		/* CCD/IMG */
-					".xiso",	/* Xbox disc image */
-					".min",		/* Pokémon Mini */
-					nullptr
+				static const char exts[][8] = {
+					".bin",		// generic .bin
+					".sms",		// Sega Master System
+					".gg",		// Game Gear
+					".tgc",		// game.com
+					".iso",		// ISO-9660
+					".img",		// CCD/IMG
+					".xiso",	// Xbox disc image
+					".min",		// Pokémon Mini
 				};
 
 				if (info.ext == nullptr) {
@@ -700,8 +717,8 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 
 				// Check for a matching extension.
 				bool found = false;
-				for (const char *const *ext = exts; *ext != nullptr; ext++) {
-					if (!strcasecmp(info.ext, *ext)) {
+				for (const char *ext : exts) {
+					if (!strcasecmp(info.ext, ext)) {
 						// Found a match!
 						found = true;
 					}
@@ -770,7 +787,7 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 
 	bool readFooter = false;
 	fns = &RomDataFactoryPrivate::romDataFns_footer[0];
-	for (; fns->supportedFileExtensions != nullptr; fns++) {
+	for (; fns->romDataInfo != nullptr; fns++) {
 		if ((fns->attrs & attrs) != attrs) {
 			// This RomData subclass doesn't have the
 			// required attributes.
@@ -778,11 +795,30 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 		}
 
 		// Do we have a matching extension?
-		// FIXME: Instead of hard-coded, check supportedFileExtensions.
-		// Currently only supports VirtualBoy.
-		if (!info.ext || strcasecmp(info.ext, ".vb") != 0) {
-			// Extension doesn't match.
-			continue;
+		// FIXME: Instead of hard-coded, check romDataInfo()->exts.
+		static const char exts[][8] = {
+			".vb",		// VirtualBoy
+			".ws",		// WonderSwan
+			".wsc",		// WonderSwan Color
+			".pc2",		// Pocket Challenge v2 (WS-compatible)
+		};
+
+		if (info.ext == nullptr) {
+			// No file extension...
+			break;
+		}
+
+		// Check for a matching extension.
+		bool found = false;
+		for (const char *ext : exts) {
+			if (!strcasecmp(info.ext, ext)) {
+				// Found a match!
+				found = true;
+			}
+		}
+		if (!found) {
+			// No match.
+			break;
 		}
 
 		// Make sure we've read the footer.
@@ -812,6 +848,44 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 	}
 
 	// Not supported.
+	return nullptr;
+}
+
+/**
+ * Create a RomData subclass for the specified ROM file.
+ *
+ * This version creates a base RpFile for the RomData object.
+ * It does not support extended virtual filesystems like GVfs
+ * or KIO, but it does support directories.
+ *
+ * NOTE: RomData::isValid() is checked before returning a
+ * created RomData instance, so returned objects can be
+ * assumed to be valid as long as they aren't nullptr.
+ *
+ * If imgbf is non-zero, at least one of the specified image
+ * types must be supported by the RomData subclass in order to
+ * be returned.
+ *
+ * @param filename ROM filename
+ * @param attrs RomDataAttr bitfield. If set, RomData subclass must have the specified attributes.
+ * @return RomData subclass, or nullptr if the ROM isn't supported.
+ */
+RomData *RomDataFactory::create(const char *filename, unsigned int attrs)
+{
+	// Check if this is a file or a directory.
+	// If it's a file, we'll create an RpFile and then
+	// call create(IRpFile*,unsigned int).
+	if (!FileSystem::is_directory(filename)) {
+		// Not a directory.
+		RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
+		if (file->isOpen()) {
+			RomData *const romData = create(file, attrs);
+			file->unref();
+			return romData;
+		}
+	}
+
+	// TODO: Check for RomData subclasses that support directories.
 	return nullptr;
 }
 
@@ -848,8 +922,8 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 	     *tblptr != nullptr; tblptr++)
 	{
 		const RomDataFns *fns = *tblptr;
-		for (; fns->supportedFileExtensions != nullptr; fns++) {
-			const char *const *sys_exts = fns->supportedFileExtensions();
+		for (; fns->romDataInfo != nullptr; fns++) {
+			const char *const *sys_exts = fns->romDataInfo()->exts;
 			if (!sys_exts)
 				continue;
 
@@ -872,27 +946,23 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 	// Get file extensions from FileFormatFactory.
 	static const unsigned int FFF_ATTRS = ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA;
 	vector<const char*> vec_exts_fileFormat = FileFormatFactory::supportedFileExtensions();
-	std::for_each(vec_exts_fileFormat.cbegin(), vec_exts_fileFormat.cend(),
-		[&map_exts](const char *ext) {
-			auto iter = map_exts.find(ext);
-			if (iter != map_exts.end()) {
-				// We already had this extension.
-				// Update its attributes.
-				iter->second |= FFF_ATTRS;
-			} else {
-				// First time encountering this extension.
-				map_exts[ext] = FFF_ATTRS;
-				vec_exts.emplace_back(RomDataFactory::ExtInfo(ext, FFF_ATTRS));
-			}
+	for (const char *ext : vec_exts_fileFormat) {
+		auto iter = map_exts.find(ext);
+		if (iter != map_exts.end()) {
+			// We already had this extension.
+			// Update its attributes.
+			iter->second |= FFF_ATTRS;
+		} else {
+			// First time encountering this extension.
+			map_exts[ext] = FFF_ATTRS;
+			vec_exts.emplace_back(RomDataFactory::ExtInfo(ext, FFF_ATTRS));
 		}
-	);
+	}
 
 	// Make sure the vector's attributes fields are up to date.
-	std::for_each(vec_exts.begin(), vec_exts.end(),
-		[&map_exts](RomDataFactory::ExtInfo &extInfo) {
-			extInfo.attrs = map_exts[extInfo.ext];
-		}
-	);
+	for (RomDataFactory::ExtInfo &extInfo : vec_exts) {
+		extInfo.attrs = map_exts[extInfo.ext];
+	}
 }
 
 /**
@@ -940,8 +1010,8 @@ void RomDataFactoryPrivate::init_supportedMimeTypes(void)
 	     *tblptr != nullptr; tblptr++)
 	{
 		const RomDataFns *fns = *tblptr;
-		for (; fns->supportedFileExtensions != nullptr; fns++) {
-			const char *const *sys_mimeTypes = fns->supportedMimeTypes();
+		for (; fns->romDataInfo != nullptr; fns++) {
+			const char *const *sys_mimeTypes = fns->romDataInfo()->mimeTypes;
 			if (!sys_mimeTypes)
 				continue;
 
@@ -957,15 +1027,13 @@ void RomDataFactoryPrivate::init_supportedMimeTypes(void)
 
 	// Get MIME types from FileFormatFactory.
 	vector<const char*> vec_mimeTypes_fileFormat = FileFormatFactory::supportedMimeTypes();
-	std::for_each(vec_mimeTypes_fileFormat.cbegin(), vec_mimeTypes_fileFormat.cend(),
-		[&set_mimeTypes](const char *mimeType) {
-			auto iter = set_mimeTypes.find(mimeType);
-			if (iter == set_mimeTypes.end()) {
-				set_mimeTypes.insert(mimeType);
-				vec_mimeTypes.emplace_back(mimeType);
-			}
+	for (const char *mimeType : vec_mimeTypes_fileFormat) {
+		auto iter = set_mimeTypes.find(mimeType);
+		if (iter == set_mimeTypes.end()) {
+			set_mimeTypes.emplace(mimeType);
+			vec_mimeTypes.emplace_back(mimeType);
 		}
-	);
+	}
 }
 
 /**

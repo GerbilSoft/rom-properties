@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * TImageTypesConfig.cpp: Image Types editor template.                     *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,39 +22,13 @@ using namespace LibRpBase;
 // libi18n
 #include "libi18n/i18n.h"
 
-// RomData subclasses with images.
-// Does not include texture files, since those are always
-// thumbnailed using IMG_INT_IMAGE.
-#include "Other/Amiibo.hpp"
-#include "Console/DreamcastSave.hpp"
-#include "Console/GameCube.hpp"
-#include "Console/GameCubeSave.hpp"
-#include "Other/NintendoBadge.hpp"
-#include "Handheld/NintendoDS.hpp"
-#include "Handheld/Nintendo3DS.hpp"
-#include "Console/PlayStationSave.hpp"
-#include "Console/WiiU.hpp"
-#include "Console/WiiWAD.hpp"
+// C includes (C++ namespace)
+#include <cassert>
 
-// C++ includes.
+// C++ includes
 #include <string>
 
 namespace LibRomData {
-
-// System data.
-template<typename ComboBox>
-const SysData_t TImageTypesConfig<ComboBox>::sysData[] = {
-	SysDataEntry(Amiibo),
-	SysDataEntry(NintendoBadge),
-	SysDataEntry(DreamcastSave),
-	SysDataEntry(GameCube),
-	SysDataEntry(GameCubeSave),
-	SysDataEntry(NintendoDS),
-	SysDataEntry(Nintendo3DS),
-	SysDataEntry(PlayStationSave),
-	SysDataEntry(WiiU),
-	SysDataEntry(WiiWAD),
-};
 
 template<typename ComboBox>
 TImageTypesConfig<ComboBox>::TImageTypesConfig()
@@ -62,11 +36,15 @@ TImageTypesConfig<ComboBox>::TImageTypesConfig()
 {
 	static_assert(std::is_pointer<ComboBox>::value, "TImageTypesConfig template parameter must be a pointer.");
 
-	// Clear the arrays.
-	memset(cboImageType, 0, sizeof(cboImageType));
-	memset(imageTypes, 0xFF, sizeof(imageTypes));
-	memset(validImageTypes, 0, sizeof(validImageTypes));
-	memset(sysIsDefault, 0, sizeof(sysIsDefault));
+	// Resize the v_sysData vector to handle all supported systems.
+	const int imageTypes = ImageTypesConfig::imageTypeCount();
+	v_sysData.resize(ImageTypesConfig::sysCount());
+	for (auto &sys : v_sysData) {
+		// Resize the image types arrays.
+		sys.cboImageType.resize(imageTypes);
+		sys.imageTypes.resize(imageTypes);
+		std::fill(sys.imageTypes.begin(), sys.imageTypes.end(), 0xFF);
+	}
 }
 
 template<typename ComboBox>
@@ -84,14 +62,21 @@ void TImageTypesConfig<ComboBox>::createGrid(void)
 	// Create the grid labels.
 	createGridLabels();
 
+	// NOTE: These should match v_sysData.
+	const unsigned int sysCount = ImageTypesConfig::sysCount();
+	const unsigned int imageTypeCount = ImageTypesConfig::imageTypeCount();
+	assert(sysCount == static_cast<unsigned int>(v_sysData.size()));
+
 	// Create the ComboBoxes.
-	for (unsigned int sys = 0; sys < SYS_COUNT; sys++) {
+	for (unsigned int sys = 0; sys < sysCount; sys++) {
+		SysData_t &sysData = v_sysData[sys];
+
 		// Get supported image types.
-		uint32_t imgbf = sysData[sys].getTypes();
+		uint32_t imgbf = ImageTypesConfig::supportedImageTypes(sys);
 		assert(imgbf != 0);
 
-		validImageTypes[sys] = 0;
-		for (unsigned int imageType = 0; imgbf != 0 && imageType < IMG_TYPE_COUNT; imageType++, imgbf >>= 1) {
+		uint32_t validImageTypes = 0;
+		for (unsigned int imageType = 0; imgbf != 0 && imageType < imageTypeCount; imageType++, imgbf >>= 1) {
 			if (!(imgbf & 1)) {
 				// Current image type is not supported.
 				continue;
@@ -100,22 +85,26 @@ void TImageTypesConfig<ComboBox>::createGrid(void)
 			// Create the ComboBox.
 			createComboBox(sysAndImageTypeToCbid(sys, imageType));
 			// Increment the valid image types counter.
-			validImageTypes[sys]++;
+			validImageTypes++;
 		}
+		sysData.validImageTypes = validImageTypes;
 
 		// Add strings to the ComboBoxes.
-		for (int imageType = IMG_TYPE_COUNT-1; imageType >= 0; imageType--) {
-			if (cboImageType[sys][imageType] != nullptr) {
-				addComboBoxStrings(sysAndImageTypeToCbid(sys, imageType), validImageTypes[sys]);
+		assert(imageTypeCount == static_cast<unsigned int>(sysData.cboImageType.size()));
+		for (unsigned int imageType = 0; imageType < imageTypeCount; imageType++) {
+			if (sysData.cboImageType[imageType] != nullptr) {
+				addComboBoxStrings(sysAndImageTypeToCbid(sys, imageType), validImageTypes);
 			}
 		}
 
 		// ComboBox finalization, if necessary.
 		finishComboBoxes();
+
+		// Initial image types configuration is empty.
+		std::fill(sysData.imageTypes.begin(), sysData.imageTypes.end(), 0xFF);
 	}
 
 	// Load the configuration.
-	memset(imageTypes, 0xFF, sizeof(imageTypes));
 	reset();
 }
 
@@ -129,35 +118,49 @@ bool TImageTypesConfig<ComboBox>::reset_int(bool loadDefaults)
 {
 	bool hasChanged = false;
 
-	// Which ComboBoxes need to be reset to "No"?
-	bool cbo_needsReset[SYS_COUNT][IMG_TYPE_COUNT];
-	memset(cbo_needsReset, true, sizeof(cbo_needsReset));
+	// CBID map of ComboBoxes that have had a priority set.
+	// NOTE: Will need expansion if either sysCount or imageTypeCount exceed 4 bits.
+	bool cbid_needsReset[256];
+	memset(cbid_needsReset, true, sizeof(cbid_needsReset));
 
 	const Config *const config = Config::instance();
-
 	Config::ImgTypePrio_t imgTypePrio;
 	if (loadDefaults) {
 		// Use the default image priority for all types.
-		memset(sysIsDefault, true, sizeof(sysIsDefault));
+		for (SysData_t &sysData : v_sysData) {
+			sysData.sysIsDefault = true;
+		}
 		config->getDefImgTypePrio(&imgTypePrio);
 	}
 
-	for (int sys = SYS_COUNT-1; sys >= 0; sys--) {
+	// Keep track of image types set for each system.
+	// Elements are set to true once an image type priority is read.
+	// This vector is cleared to false after iterating over each system.
+	// NOTE: Not using vector<bool>.
+	const unsigned int imageTypeCount = ImageTypesConfig::imageTypeCount();
+	std::vector<uint8_t> imageTypeSet;
+	imageTypeSet.resize(imageTypeCount);
+
+	const unsigned int sysCount = ImageTypesConfig::sysCount();
+	for (unsigned int sys = 0; sys < sysCount; sys++) {
+		SysData_t &sysData = v_sysData[sys];
+
 		if (!loadDefaults) {
 			// Get the image priority.
-			Config::ImgTypeResult res = config->getImgTypePrio(sysData[sys].className, &imgTypePrio);
+			const char *const className = ImageTypesConfig::className(sys);
+			Config::ImgTypeResult res = config->getImgTypePrio(className, &imgTypePrio);
 			bool no_thumbs = false;
 			switch (res) {
 				case Config::ImgTypeResult::Success:
 					// Image type priority received successfully.
-					sysIsDefault[sys] = false;
+					sysData.sysIsDefault = false;
 					break;
 				case Config::ImgTypeResult::SuccessDefaults:
 					// Image type priority received successfully.
 					// ImgTypeResult::SuccessDefaults indicates the returned
 					// data is the default priority, since a custom configuration
 					// was not found for this class.
-					sysIsDefault[sys] = true;
+					sysData.sysIsDefault = true;
 					break;
 				case Config::ImgTypeResult::Disabled:
 					// Thumbnails are disabled for this class.
@@ -174,42 +177,41 @@ bool TImageTypesConfig<ComboBox>::reset_int(bool loadDefaults)
 		}
 
 		int nextPrio = 0;	// Next priority value to use.
-		bool imageTypeSet[IMG_TYPE_COUNT];	// Element set to true once an image type priority is read.
-		memset(imageTypeSet, 0, sizeof(imageTypeSet));
+		std::fill(imageTypeSet.begin(), imageTypeSet.end(), false);
 
-		ComboBox *p_cboImageType = &cboImageType[sys][0];
-		for (unsigned int i = 0; i < imgTypePrio.length && nextPrio <= validImageTypes[sys]; i++)
-		{
+		for (unsigned int i = 0; i < imgTypePrio.length && nextPrio <= sysData.validImageTypes; i++) {
 			uint8_t imageType = imgTypePrio.imgTypes[i];
-			assert(imageType < IMG_TYPE_COUNT);
-			if (imageType >= IMG_TYPE_COUNT) {
+			assert(imageType < imageTypeCount);
+			if (imageType >= imageTypeCount) {
 				// Invalid image type.
 				// NOTE: 0xFF (no image) should not be encountered here.
 				continue;
 			}
 
-			if (p_cboImageType[imageType] && !imageTypeSet[imageType]) {
+			if (sysData.cboImageType[imageType] && !imageTypeSet[imageType]) {
 				// Set the image type.
 				imageTypeSet[imageType] = true;
-				if (imageTypes[sys][imageType] != nextPrio) {
-					imageTypes[sys][imageType] = nextPrio;
+				if (sysData.imageTypes[imageType] != nextPrio) {
+					sysData.imageTypes[imageType] = nextPrio;
 					hasChanged = true;
 
 					// NOTE: Using the actual priority value, not the ComboBox index.
 					cboImageType_setPriorityValue(sysAndImageTypeToCbid(sys, imageType), nextPrio);
 				}
-				cbo_needsReset[sys][imageType] = false;
+				const unsigned int cbid = sysAndImageTypeToCbid(sys, imageType);
+				cbid_needsReset[cbid] = false;
 				nextPrio++;
 			}
 		}
 	}
 
 	// Set ComboBoxes that don't have a priority to "No".
-	for (int sys = SYS_COUNT-1; sys >= 0; sys--) {
-		unsigned int cbid = sysAndImageTypeToCbid(static_cast<unsigned int>(sys), IMG_TYPE_COUNT-1);
-		for (int imageType = IMG_TYPE_COUNT-1; imageType >= 0; imageType--, cbid--) {
-			if (cbo_needsReset[sys][imageType] && cboImageType[sys][imageType]) {
-				if (imageTypes[sys][imageType] != 0xFF) {
+	for (unsigned int sys = 0; sys < sysCount; sys++) {
+		const SysData_t &sysData = v_sysData[sys];
+		unsigned int cbid = sysAndImageTypeToCbid(sys, 0);
+		for (unsigned int imageType = 0; imageType < imageTypeCount; imageType++, cbid++) {
+			if (cbid_needsReset[cbid] && sysData.cboImageType[imageType]) {
+				if (sysData.imageTypes[imageType] != 0xFF) {
 					hasChanged = true;
 					cboImageType_setPriorityValue(cbid, 0xFF);
 				}
@@ -263,43 +265,46 @@ int TImageTypesConfig<ComboBox>::save(void)
 	if (ret != 0)
 		return ret;
 
-	// Image types are stored in the imageTypes[] array.
-	const uint8_t *pImageTypes = imageTypes[0];
+	const unsigned int sysCount = ImageTypesConfig::sysCount();
+	const unsigned int imageTypeCount = ImageTypesConfig::imageTypeCount();
+
+	// Format of imageTypes[]:
+	// - Index: Image type.
+	// - Value: Priority.
+	// We need to swap index and value.
+	std::vector<uint8_t> imgTypePrio;
+	imgTypePrio.resize(imageTypeCount);
 
 	std::string imageTypeList;
 	imageTypeList.reserve(128);	// TODO: Optimal reservation?
-	for (unsigned int sys = 0; sys < SYS_COUNT; sys++) {
+	for (unsigned int sys = 0; sys < sysCount; sys++) {
+		const SysData_t &sysData = v_sysData[sys];
+		const char *const className = ImageTypesConfig::className(sys);
+
 		// Is this system using the default configuration?
-		if (sysIsDefault[sys]) {
+		if (sysData.sysIsDefault) {
 			// Default configuration. Write an empty string.
-			ret = saveWriteEntry(sysData[sys].className, "");
+			ret = saveWriteEntry(className, "");
 			if (ret != 0) {
 				// Error...
 				saveFinish();
 				return ret;
 			}
-			pImageTypes += ARRAY_SIZE(imageTypes[0]);
 			continue;
 		}
 
 		// Clear the imageTypeList.
 		imageTypeList.clear();
-
-		// Format of imageTypes[]:
-		// - Index: Image type.
-		// - Value: Priority.
-		// We need to swap index and value.
-		uint8_t imgTypePrio[IMG_TYPE_COUNT];
-		memset(imgTypePrio, 0xFF, sizeof(imgTypePrio));
-		for (unsigned int imageType = 0; imageType < IMG_TYPE_COUNT;
-		     imageType++, pImageTypes++)
-		{
-			if (*pImageTypes >= IMG_TYPE_COUNT) {
+		std::fill(imgTypePrio.begin(), imgTypePrio.end(), 0xFF);
+		assert(imageTypeCount == static_cast<unsigned int>(sysData.imageTypes.size()));
+		for (unsigned int imageType = 0; imageType < imageTypeCount; imageType++) {
+			const unsigned int imgt = sysData.imageTypes[imageType];
+			if (imgt >= imageTypeCount) {
 				// Image type is either not valid for this system
 				// or is set to "No".
 				continue;
 			}
-			imgTypePrio[*pImageTypes] = imageType;
+			imgTypePrio[imgt] = imageType;
 		}
 
 		// Convert the image type priority to strings.
@@ -316,12 +321,10 @@ int TImageTypesConfig<ComboBox>::save(void)
 			"ExtBox",
 			"ExtTitleScreen",
 		};
-		static_assert(ARRAY_SIZE(conf_imageTypeNames) == IMG_TYPE_COUNT, "conf_imageTypeNames[] is the wrong size.");
 
 		bool hasOne = false;
-		for (unsigned int i = 0; i < ARRAY_SIZE(imgTypePrio); i++) {
-			const uint8_t imageType = imgTypePrio[i];
-			if (imageType < IMG_TYPE_COUNT) {
+		for (uint8_t &imageType : imgTypePrio) {
+			if (imageType < imageTypeCount) {
 				if (hasOne)
 					imageTypeList += ',';
 				hasOne = true;
@@ -331,10 +334,10 @@ int TImageTypesConfig<ComboBox>::save(void)
 
 		if (hasOne) {
 			// At least one image type is enabled.
-			ret = saveWriteEntry(sysData[sys].className, imageTypeList.c_str());
+			ret = saveWriteEntry(className, imageTypeList.c_str());
 		} else {
 			// All image types are disabled.
-			ret = saveWriteEntry(sysData[sys].className, "No");
+			ret = saveWriteEntry(className, "No");
 		}
 		if (ret != 0) {
 			// Error...
@@ -352,85 +355,6 @@ int TImageTypesConfig<ComboBox>::save(void)
 }
 
 /**
- * Get an image type name.
- * @param imageType Image type ID.
- * @return Image type name, or nullptr if invalid.
- */
-template<typename ComboBox>
-const char *TImageTypesConfig<ComboBox>::imageTypeName(unsigned int imageType)
-{
-	// Image type names.
-	static const char *const imageType_names[] = {
-		/** Internal **/
-
-		// tr: IMG_INT_ICON
-		NOP_C_("TImageTypesConfig|ImageTypeDisp", "Internal\nIcon"),
-		// tr: IMG_INT_BANNER
-		NOP_C_("TImageTypesConfig|ImageTypeDisp", "Internal\nBanner"),
-		// tr: IMG_INT_MEDIA
-		NOP_C_("TImageTypesConfig|ImageTypeDisp", "Internal\nMedia"),
-		// tr: IMG_INT_IMAGE
-		NOP_C_("TImageTypesConfig|ImageTypeDisp", "Internal\nImage"),
-
-		/** External **/
-
-		// tr: IMG_EXT_MEDIA
-		NOP_C_("TImageTypesConfig|ImageTypeDisp", "External\nMedia"),
-		// tr: IMG_EXT_COVER
-		NOP_C_("TImageTypesConfig|ImageTypeDisp", "External\nCover"),
-		// tr: IMG_EXT_COVER_3D
-		NOP_C_("TImageTypesConfig|ImageTypeDisp", "External\n3D Cover"),
-		// tr: IMG_EXT_COVER_FULL
-		NOP_C_("TImageTypesConfig|ImageTypeDisp", "External\nFull Cover"),
-		// tr: IMG_EXT_BOX
-		NOP_C_("TImageTypesConfig|ImageTypeDisp", "External\nBox"),
-		// tr: IMG_EXT_TITLE_SCREEN
-		NOP_C_("TImageTypesConfig|ImageTypeDisp", "External\nTitle Screen"),
-	};
-	static_assert(ARRAY_SIZE(imageType_names) == IMG_TYPE_COUNT,
-		"imageType_names[] needs to be updated.");
-
-	return dpgettext_expr(RP_I18N_DOMAIN, "TImageTypesConfig|ImageTypeDisp", imageType_names[imageType]);
-}
-
-/**
- * Get a system name.
- * @param sys System ID.
- * @return System name, or nullptr if invalid.
- */
-template<typename ComboBox>
-const char *TImageTypesConfig<ComboBox>::sysName(unsigned int sys)
-{
-	// System names.
-	static const char *const sysNames[] = {
-		// tr: amiibo
-		NOP_C_("TImageTypesConfig|SysName", "amiibo"),
-		// tr: NintendoBadge
-		NOP_C_("TImageTypesConfig|SysName", "Badge Arcade"),
-		// tr: DreamcastSave
-		NOP_C_("TImageTypesConfig|SysName", "Dreamcast Saves"),
-		// tr: GameCube
-		NOP_C_("TImageTypesConfig|SysName", "GameCube / Wii"),
-		// tr: GameCubeSave
-		NOP_C_("TImageTypesConfig|SysName", "GameCube Saves"),
-		// tr: NintendoDS
-		NOP_C_("TImageTypesConfig|SysName", "Nintendo DS(i)"),
-		// tr: Nintendo3DS
-		NOP_C_("TImageTypesConfig|SysName", "Nintendo 3DS"),
-		// tr: PlayStationSave
-		NOP_C_("TImageTypesConfig|SysName", "PlayStation Saves"),
-		// tr: WiiU
-		NOP_C_("TImageTypesConfig|SysName", "Wii U"),
-		// tr: WiiWAD
-		NOP_C_("TImageTypesConfig|SysName", "Wii WAD Files"),
-	};
-	static_assert(ARRAY_SIZE(sysNames) == SYS_COUNT,
-		"sysNames[] needs to be updated.");
-
-	return dpgettext_expr(RP_I18N_DOMAIN, "TImageTypesConfig|SysName", sysNames[sys]);
-}
-
-/**
  * A ComboBox index was changed by the user.
  * @param cbid ComboBox ID.
  * @param prio New priority value. (0xFF == no)
@@ -444,7 +368,8 @@ bool TImageTypesConfig<ComboBox>::cboImageType_priorityValueChanged(unsigned int
 	if (!validateSysImageType(sys, imageType))
 		return false;
 
-	const uint8_t prev_prio = imageTypes[sys][imageType];
+	SysData_t &sysData = v_sysData[sys];
+	const uint8_t prev_prio = sysData.imageTypes[imageType];
 	if (prev_prio == prio) {
 		// No change.
 		return false;
@@ -452,12 +377,13 @@ bool TImageTypesConfig<ComboBox>::cboImageType_priorityValueChanged(unsigned int
 
 	if (prio >= 0 && prio != 0xFF) {
 		// Check for any image types that have the new priority.
-		for (int i = IMG_TYPE_COUNT-1; i >= 0; i--) {
-			if (static_cast<unsigned int>(i) == imageType)
+		const unsigned int imageTypeCount = ImageTypesConfig::imageTypeCount();
+		for (unsigned int i = 0; i < imageTypeCount; i++) {
+			if (i == imageType)
 				continue;
-			if (cboImageType[sys][i] != nullptr && imageTypes[sys][i] == static_cast<uint8_t>(prio)) {
+			if (sysData.cboImageType[i] != nullptr && sysData.imageTypes[i] == static_cast<uint8_t>(prio)) {
 				// Found a match! Swap the priority.
-				imageTypes[sys][i] = prev_prio;
+				sysData.imageTypes[i] = prev_prio;
 				cboImageType_setPriorityValue(sysAndImageTypeToCbid(sys, i), prev_prio);
 				break;
 			}
@@ -465,9 +391,9 @@ bool TImageTypesConfig<ComboBox>::cboImageType_priorityValueChanged(unsigned int
 	}
 
 	// Save the image priority value.
-	imageTypes[sys][imageType] = prio;
+	sysData.imageTypes[imageType] = prio;
 	// Mark this configuration as no longer being default.
-	sysIsDefault[sys] = false;
+	sysData.sysIsDefault = false;
 	// Configuration has been changed.
 	changed = true;
 	return true;

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GczReader.cpp: GameCube/Wii GCZ disc image reader.                      *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -35,7 +35,7 @@ namespace LibRomData {
 
 #ifdef _MSC_VER
 // DelayLoad test implementation.
-DELAYLOAD_TEST_FUNCTION_IMPL0(zlibVersion);
+DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 #endif /* _MSC_VER */
 
 class GczReaderPrivate : public SparseDiscReaderPrivate {
@@ -56,13 +56,13 @@ class GczReaderPrivate : public SparseDiscReaderPrivate {
 		ao::uvector<uint64_t> blockPointers;
 		ao::uvector<uint32_t> hashes;
 
-		// Block cache.
-		ao::uvector<uint8_t> blockCache;
-		uint32_t blockCacheIdx;
-
 		// Decompression buffer.
 		// (Same size as blockCache.)
 		ao::uvector<uint8_t> z_buffer;
+
+		// Block cache.
+		ao::uvector<uint8_t> blockCache;
+		uint32_t blockCacheIdx;
 
 		// Starting offset of the data area.
 		// This offset must be added to the blockPointers value.
@@ -73,7 +73,7 @@ class GczReaderPrivate : public SparseDiscReaderPrivate {
 		 * @param blockNum Block number.
 		 * @return Block's compressed size, or 0 on error.
 		 */
-		uint32_t getBlockCompressedSize(uint64_t blockNum) const;
+		uint32_t getBlockCompressedSize(uint32_t blockNum) const;
 };
 
 /** GczReaderPrivate **/
@@ -92,7 +92,7 @@ GczReaderPrivate::GczReaderPrivate(GczReader *q)
  * @param blockNum Block number.
  * @return Block's compressed size, or 0 on error.
  */
-uint32_t GczReaderPrivate::getBlockCompressedSize(uint64_t blockNum) const
+uint32_t GczReaderPrivate::getBlockCompressedSize(uint32_t blockNum) const
 {
 	assert(blockNum < blockPointers.size());
 	if (blockNum >= blockPointers.size()) {
@@ -124,12 +124,16 @@ GczReader::GczReader(IRpFile *file)
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 	// Delay load verification.
 	// TODO: Only if linked with /DELAYLOAD?
-	if (DelayLoad_test_zlibVersion() != 0) {
+	if (DelayLoad_test_get_crc_table() != 0) {
 		// Delay load failed.
 		// GCZ is not supported without zlib.
 		UNREF_AND_NULL_NOCHK(m_file);
 		return;
 	}
+#else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
+		// zlib isn't in a DLL, but we need to ensure that the
+		// CRC table is initialized anyway.
+		get_crc_table();
 #endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
 
 	// Read the GCZ header.
@@ -248,7 +252,7 @@ GczReader::GczReader(IRpFile *file)
 	}
 
 	// Data offset is the current read position.
-	int64_t pos = m_file->tell();
+	off64_t pos = m_file->tell();
 	if (pos <= 0 || pos >= 1LL*1024*1024*1024) {
 		// tell() failed...
 		m_lastError = m_file->lastError();
@@ -289,11 +293,15 @@ int GczReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeader)
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 	// Delay load verification.
 	// TODO: Only if linked with /DELAYLOAD?
-	if (DelayLoad_test_zlibVersion() != 0) {
+	if (DelayLoad_test_get_crc_table() != 0) {
 		// Delay load failed.
 		// GCZ is not supported without zlib.
 		return -1;
 	}
+#else /* !defined(_MSC_VER) || !defined(ZLIB_IS_DLL) */
+	// zlib isn't in a DLL, but we need to ensure that the
+	// CRC table is initialized anyway.
+	get_crc_table();
 #endif /* defined(_MSC_VER) && defined(ZLIB_IS_DLL) */
 
 	// Check the GCZ magic.
@@ -408,7 +416,7 @@ int GczReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 	if (blockIdx == d->blockCacheIdx) {
 		// Block is cached.
 		memcpy(ptr, &d->blockCache[pos], size);
-		return size;
+		return static_cast<int>(size);
 	}
 
 	// NOTE: If this is the last block, then we might have
@@ -505,7 +513,7 @@ int GczReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 	// Block has been loaded into the cache.
 	memcpy(ptr, &d->blockCache[pos], size);
 	d->blockCacheIdx = blockIdx;
-	return size;
+	return static_cast<int>(size);
 }
 
 }

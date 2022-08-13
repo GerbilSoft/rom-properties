@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXEData.cpp: DOS/Windows executable data.                               *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,35 +10,16 @@
 #include "EXEData.hpp"
 #include "Other/exe_structs.h"
 
-namespace LibRomData {
+namespace LibRomData { namespace EXEData {
 
-class EXEDataPrivate {
-	private:
-		// Static class.
-		EXEDataPrivate();
-		~EXEDataPrivate();
-		RP_DISABLE_COPY(EXEDataPrivate)
-
-	public:
-		struct MachineType {
-			uint16_t cpu;
-			const char *name;
-		};
-		static const MachineType machineTypes_PE[];
-		static const MachineType machineTypes_LE[];
-
-		/**
-		 * bsearch() comparison function for MachineType.
-		 * @param a
-		 * @param b
-		 * @return
-		 */
-		static int RP_C_API MachineType_compar(const void *a, const void *b);
+struct MachineType {
+	uint16_t cpu;
+	const char *name;
 };
 
 // PE machine types.
 // NOTE: The cpu field *must* be sorted in ascending order.
-const EXEDataPrivate::MachineType EXEDataPrivate::machineTypes_PE[] = {
+static const MachineType machineTypes_PE[] = {
 	{IMAGE_FILE_MACHINE_I386,	"Intel i386"},
 	{IMAGE_FILE_MACHINE_R3000_BE,	"MIPS R3000 (big-endian)"},
 	{IMAGE_FILE_MACHINE_R3000,	"MIPS R3000"},
@@ -81,7 +62,7 @@ const EXEDataPrivate::MachineType EXEDataPrivate::machineTypes_PE[] = {
 
 // LE machine types.
 // NOTE: The cpu field *must* be sorted in ascending order.
-const EXEDataPrivate::MachineType EXEDataPrivate::machineTypes_LE[] = {
+static const MachineType machineTypes_LE[] = {
 	{LE_CPU_80286,		"Intel i286"},
 	{LE_CPU_80386,		"Intel i386"},
 	{LE_CPU_80486,		"Intel i486"},
@@ -101,7 +82,7 @@ const EXEDataPrivate::MachineType EXEDataPrivate::machineTypes_LE[] = {
  * @param b
  * @return
  */
-int RP_C_API EXEDataPrivate::MachineType_compar(const void *a, const void *b)
+static int RP_C_API MachineType_compar(const void *a, const void *b)
 {
 	const uint16_t cpu1 = static_cast<const MachineType*>(a)->cpu;
 	const uint16_t cpu2 = static_cast<const MachineType*>(b)->cpu;
@@ -110,21 +91,23 @@ int RP_C_API EXEDataPrivate::MachineType_compar(const void *a, const void *b)
 	return 0;
 }
 
+/** Public functions **/
+
 /**
  * Look up a PE machine type. (CPU)
  * @param cpu PE machine type.
  * @return Machine type name, or nullptr if not found.
  */
-const char *EXEData::lookup_pe_cpu(uint16_t cpu)
+const char *lookup_pe_cpu(uint16_t cpu)
 {
 	// Do a binary search.
-	const EXEDataPrivate::MachineType key = {cpu, nullptr};
-	const EXEDataPrivate::MachineType *res =
-		static_cast<const EXEDataPrivate::MachineType*>(bsearch(&key,
-			EXEDataPrivate::machineTypes_PE,
-			ARRAY_SIZE(EXEDataPrivate::machineTypes_PE)-1,
-			sizeof(EXEDataPrivate::MachineType),
-			EXEDataPrivate::MachineType_compar));
+	const MachineType key = {cpu, nullptr};
+	const MachineType *res =
+		static_cast<const MachineType*>(bsearch(&key,
+			machineTypes_PE,
+			ARRAY_SIZE(machineTypes_PE)-1,
+			sizeof(MachineType),
+			MachineType_compar));
 	return (res ? res->name : nullptr);
 }
 
@@ -133,17 +116,17 @@ const char *EXEData::lookup_pe_cpu(uint16_t cpu)
  * @param cpu LE machine type.
  * @return Machine type name, or nullptr if not found.
  */
-const char *EXEData::lookup_le_cpu(uint16_t cpu)
+const char *lookup_le_cpu(uint16_t cpu)
 {
 	// Do a binary search.
-	const EXEDataPrivate::MachineType key = {cpu, nullptr};
-	const EXEDataPrivate::MachineType *res =
-		static_cast<const EXEDataPrivate::MachineType*>(bsearch(&key,
-			EXEDataPrivate::machineTypes_LE,
-			ARRAY_SIZE(EXEDataPrivate::machineTypes_LE)-1,
-			sizeof(EXEDataPrivate::MachineType),
-			EXEDataPrivate::MachineType_compar));
+	const MachineType key = {cpu, nullptr};
+	const MachineType *res =
+		static_cast<const MachineType*>(bsearch(&key,
+			machineTypes_LE,
+			ARRAY_SIZE(machineTypes_LE)-1,
+			sizeof(MachineType),
+			MachineType_compar));
 	return (res ? res->name : nullptr);
 }
 
-}
+} }

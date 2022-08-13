@@ -206,21 +206,30 @@ int CurlDownloader::download(void)
 	// Set the User-Agent.
 	curl_easy_setopt(curl, CURLOPT_USERAGENT, m_userAgent.c_str());
 
-	// TODO: Set the User-Agent?
+	// Download the file.
 	CURLcode res = curl_easy_perform(curl);
 	curl_easy_cleanup(curl);
-	if (res != CURLE_OK) {
-		// Error downloading the file.
-		// Check if we have an HTTP response code.
-		// NOTE: GameTDB sometimes returns nothing instead of 404...
-		long response_code = 0;
-		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
-		if (response_code <= 0) {
-			// No HTTP response code.
-			// TODO: Return a cURL error code and/or message...
-			return -EIO;
-		}
-		return (int)response_code;
+	switch (res) {
+		case CURLE_OK:
+			// File downloaded successfully.
+			break;
+
+		case CURLE_OPERATION_TIMEDOUT:
+			// Operation timed out.
+			return -ETIMEDOUT;
+
+		default:
+			// Some other error downloading the file.
+			// Check if we have an HTTP response code.
+			// NOTE: GameTDB sometimes returns nothing instead of 404...
+			long response_code = 0;
+			curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
+			if (response_code <= 0) {
+				// No HTTP response code.
+				// TODO: Return a cURL error code and/or message...
+				return -EIO;
+			}
+			return (int)response_code;
 	}
 
 	// Check if we have data.

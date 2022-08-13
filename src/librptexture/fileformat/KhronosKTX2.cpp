@@ -2,17 +2,14 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * KhronosKTX2.cpp: Khronos KTX2 image reader.                             *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 /**
  * References:
  * - https://github.khronos.org/KTX-Specification/
- *
- * WARNING: The specification is still in draft stages.
- * (2.0.rc4 as of 2020/06/17) It is subject to change
- * prior to finalization.
+ * - https://github.com/KhronosGroup/KTX-Specification
  */
 
 #include "stdafx.h"
@@ -26,12 +23,20 @@
 #include "data/VkEnumStrings.hpp"
 
 // librpbase, librpfile
+#include "libi18n/i18n.h"
+using LibRpBase::rp_sprintf;
 using LibRpBase::RomFields;
 using LibRpFile::IRpFile;
 
 // librptexture
 #include "img/rp_image.hpp"
-#include "decoder/ImageDecoder.hpp"
+#include "decoder/ImageSizeCalc.hpp"
+#include "decoder/ImageDecoder_Linear.hpp"
+#include "decoder/ImageDecoder_S3TC.hpp"
+#include "decoder/ImageDecoder_ETC1.hpp"
+#include "decoder/ImageDecoder_BC7.hpp"
+#include "decoder/ImageDecoder_PVRTC.hpp"
+#include "decoder/ImageDecoder_ASTC.hpp"
 
 // C++ STL classes.
 using std::string;
@@ -40,12 +45,9 @@ using std::vector;
 
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector
-// FIXME: Move out of librpbase?
-#include "librpbase/uvector.h"
+#include "uvector.h"
 
 namespace LibRpTexture {
-
-FILEFORMAT_IMPL(KhronosKTX2)
 
 class KhronosKTX2Private final : public FileFormatPrivate
 {
@@ -56,6 +58,12 @@ class KhronosKTX2Private final : public FileFormatPrivate
 	private:
 		typedef FileFormatPrivate super;
 		RP_DISABLE_COPY(KhronosKTX2Private)
+
+	public:
+		/** TextureInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const TextureInfo textureInfo;
 
 	public:
 		// KTX2 header.
@@ -81,7 +89,7 @@ class KhronosKTX2Private final : public FileFormatPrivate
 		// NOTE: Stored as vector<vector<string> > instead of
 		// vector<pair<string, string> > for compatibility with
 		// RFT_LISTDATA.
-		vector<vector<string> > kv_data;
+		RomFields::ListData_t kv_data;
 
 		/**
 		 * Load the image.
@@ -96,10 +104,29 @@ class KhronosKTX2Private final : public FileFormatPrivate
 		void loadKeyValueData(void);
 };
 
+FILEFORMAT_IMPL(KhronosKTX2)
+
 /** KhronosKTX2Private **/
 
+/* TextureInfo */
+const char *const KhronosKTX2Private::exts[] = {
+	// TODO: Include ".ktx" too?
+	".ktx2",
+
+	nullptr
+};
+const char *const KhronosKTX2Private::mimeTypes[] = {
+	// Official MIME types.
+	"image/ktx2",
+
+	nullptr
+};
+const TextureInfo KhronosKTX2Private::textureInfo = {
+	exts, mimeTypes
+};
+
 KhronosKTX2Private::KhronosKTX2Private(KhronosKTX2 *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &textureInfo)
 	, flipOp(rp_image::FLIP_V)
 {
 	// Clear the KTX2 header struct.
@@ -109,7 +136,9 @@ KhronosKTX2Private::KhronosKTX2Private(KhronosKTX2 *q, IRpFile *file)
 
 KhronosKTX2Private::~KhronosKTX2Private()
 {
-	std::for_each(mipmaps.begin(), mipmaps.end(), [](rp_image *img) { UNREF(img); });
+	for (rp_image *img : mipmaps) {
+		UNREF(img);
+	}
 }
 
 /**
@@ -207,7 +236,7 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 	// Calculate the expected size.
 	// NOTE: Scanlines are 4-byte aligned.
 	// TODO: Differences between UNORM, UINT, SRGB; handle SNORM, SINT.
-	uint32_t expected_size;
+	size_t expected_size;
 	int stride = 0;
 	switch (ktx2Header.vkFormat) {
 		case VK_FORMAT_R8G8B8_UNORM:
@@ -250,36 +279,6 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 		// NOTE: These were handled separately in KTX1 due to OpenGL
 		// differentiating between "format" and "internal format".
 
-#ifdef ENABLE_PVRTC
-		case VK_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG:
-		case VK_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG:
-			// 32 pixels compressed into 64 bits. (2bpp)
-			expected_size = (width * height) / 4;
-			break;
-
-		case VK_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG:
-		case VK_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG:
-			// 32 pixels compressed into 64 bits. (2bpp)
-			// NOTE: Width and height must be rounded to the nearest tile. (8x4)
-			expected_size = ALIGN_BYTES(8, width) *
-			                ALIGN_BYTES(4, height) / 4;
-			break;
-
-		case VK_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG:
-		case VK_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG:
-			// 16 pixels compressed into 64 bits. (4bpp)
-			expected_size = (width * height) / 2;
-			break;
-
-		case VK_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG:
-		case VK_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG:
-			// 16 pixels compressed into 64 bits. (4bpp)
-			// NOTE: Width and height must be rounded to the nearest tile. (8x4)
-			expected_size = ALIGN_BYTES(4, width) *
-			                ALIGN_BYTES(4, height) / 2;
-			break;
-#endif /* ENABLE_PVRTC */
-
 		case VK_FORMAT_BC1_RGB_UNORM_BLOCK:
 		case VK_FORMAT_BC1_RGB_SRGB_BLOCK:
 		case VK_FORMAT_BC1_RGBA_UNORM_BLOCK:
@@ -311,6 +310,101 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 			expected_size = ALIGN_BYTES(4, width) *
 					ALIGN_BYTES(4, (int)height);
 			break;
+
+#ifdef ENABLE_PVRTC
+		case VK_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG:
+		case VK_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG:
+			// 32 pixels compressed into 64 bits. (2bpp)
+			// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
+			expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<true>(width, height);
+			break;
+
+		case VK_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG:
+		case VK_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG:
+			// 32 pixels compressed into 64 bits. (2bpp)
+			// NOTE: Width and height must be rounded to the nearest tile. (8x4)
+			// FIXME: Our PVRTC-II decoder requires power-of-2 textures right now.
+			//expected_size = ALIGN_BYTES(8, width) *
+			//                ALIGN_BYTES(4, height) / 4;
+			expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<true>(width, height);
+			break;
+
+		case VK_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG:
+		case VK_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG:
+			// 16 pixels compressed into 64 bits. (4bpp)
+			// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
+			expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<false>(width, height);
+			break;
+
+		case VK_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG:
+		case VK_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG:
+			// 16 pixels compressed into 64 bits. (4bpp)
+			// NOTE: Width and height must be rounded to the nearest tile. (8x4)
+			// FIXME: Our PVRTC-II decoder requires power-of-2 textures right now.
+			//expected_size = ALIGN_BYTES(4, width) *
+			//                ALIGN_BYTES(4, height) / 2;
+			expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<false>(width, height);
+			break;
+#endif /* ENABLE_PVRTC */
+
+#ifdef ENABLE_ASTC
+		case VK_FORMAT_ASTC_4x4_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_4x4_SRGB_BLOCK:
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 4, 4);
+			break;
+		case VK_FORMAT_ASTC_5x4_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_5x4_SRGB_BLOCK:
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 5, 4);
+			break;
+		case VK_FORMAT_ASTC_5x5_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_5x5_SRGB_BLOCK:
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 5, 5);
+			break;
+		case VK_FORMAT_ASTC_6x5_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_6x5_SRGB_BLOCK:
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 6, 5);
+			break;
+		case VK_FORMAT_ASTC_6x6_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_6x6_SRGB_BLOCK:
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 6, 6);
+			break;
+		case VK_FORMAT_ASTC_8x5_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_8x5_SRGB_BLOCK:
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 8, 5);
+			break;
+		case VK_FORMAT_ASTC_8x6_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_8x6_SRGB_BLOCK:
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 8, 6);
+			break;
+		case VK_FORMAT_ASTC_8x8_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_8x8_SRGB_BLOCK:
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 8, 8);
+			break;
+		case VK_FORMAT_ASTC_10x5_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_10x5_SRGB_BLOCK:
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 10, 5);
+			break;
+		case VK_FORMAT_ASTC_10x6_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_10x6_SRGB_BLOCK:
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 10, 6);
+			break;
+		case VK_FORMAT_ASTC_10x8_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_10x8_SRGB_BLOCK:
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 10, 8);
+			break;
+		case VK_FORMAT_ASTC_10x10_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_10x10_SRGB_BLOCK:
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 10, 10);
+			break;
+		case VK_FORMAT_ASTC_12x10_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_12x10_SRGB_BLOCK:
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 12, 10);
+			break;
+		case VK_FORMAT_ASTC_12x12_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_12x12_SRGB_BLOCK:
+			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 12, 12);
+			break;
+#endif /* ENABLE_ASTC */
 
 		default:
 			// Not supported.
@@ -381,9 +475,8 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 		case VK_FORMAT_R8_UINT:
 		case VK_FORMAT_R8_SRGB:
 			// 8-bit (red).
-			// FIXME: Decode as red, not as L8.
 			img = ImageDecoder::fromLinear8(
-				ImageDecoder::PixelFormat::L8, width, height,
+				ImageDecoder::PixelFormat::R8, width, height,
 				buf.get(), expected_size, stride);
 			break;
 
@@ -459,6 +552,24 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 				buf.get(), expected_size);
 			break;
 
+		case VK_FORMAT_EAC_R11_UNORM_BLOCK:
+		case VK_FORMAT_EAC_R11_SNORM_BLOCK:
+			// EAC-compressed R11 texture.
+			// TODO: Does the signed version get decoded differently?
+			img = ImageDecoder::fromEAC_R11(
+				width, height,
+				buf.get(), expected_size);
+			break;
+
+		case VK_FORMAT_EAC_R11G11_UNORM_BLOCK:
+		case VK_FORMAT_EAC_R11G11_SNORM_BLOCK:
+			// EAC-compressed RG11 texture.
+			// TODO: Does the signed version get decoded differently?
+			img = ImageDecoder::fromEAC_RG11(
+				width, height,
+				buf.get(), expected_size);
+			break;
+
 		case VK_FORMAT_BC7_UNORM_BLOCK:
 		case VK_FORMAT_BC7_SRGB_BLOCK:
 			// BPTC-compressed RGBA texture. (BC7)
@@ -505,13 +616,87 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 			break;
 #endif /* ENABLE_PVRTC */
 
+#ifdef ENABLE_ASTC
+		// TODO: sRGB handling?
+		case VK_FORMAT_ASTC_4x4_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_4x4_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 4, 4);
+			break;
+		case VK_FORMAT_ASTC_5x4_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_5x4_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 5, 4);
+			break;
+		case VK_FORMAT_ASTC_5x5_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_5x5_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 5, 5);
+			break;
+		case VK_FORMAT_ASTC_6x5_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_6x5_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 6, 5);
+			break;
+		case VK_FORMAT_ASTC_6x6_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_6x6_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 6, 6);
+			break;
+		case VK_FORMAT_ASTC_8x5_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_8x5_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 8, 5);
+			break;
+		case VK_FORMAT_ASTC_8x6_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_8x6_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 8, 6);
+			break;
+		case VK_FORMAT_ASTC_8x8_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_8x8_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 8, 8);
+			break;
+		case VK_FORMAT_ASTC_10x5_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_10x5_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 10, 5);
+			break;
+		case VK_FORMAT_ASTC_10x6_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_10x6_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 10, 6);
+			break;
+		case VK_FORMAT_ASTC_10x8_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_10x8_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 10, 8);
+			break;
+		case VK_FORMAT_ASTC_10x10_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_10x10_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 10, 10);
+			break;
+		case VK_FORMAT_ASTC_12x10_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_12x10_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 12, 10);
+			break;
+		case VK_FORMAT_ASTC_12x12_UNORM_BLOCK:
+		case VK_FORMAT_ASTC_12x12_SRGB_BLOCK:
+			img = ImageDecoder::fromASTC(width, height,
+				buf.get(), expected_size, 12, 12);
+			break;
+#endif /* ENABLE_ASTC */
+
 		default:
 			// Not supported.
 			break;
 	}
 
 	// Post-processing: Check if a flip is needed.
-	if (img && (flipOp != rp_image::FLIP_NONE) && height > 1) {
+	if (img && flipOp != rp_image::FLIP_NONE) {
 		// TODO: Assert that img dimensions match ktx2Header?
 		rp_image *const flipimg = img->flip(flipOp);
 		if (flipimg) {
@@ -559,14 +744,14 @@ void KhronosKTX2Private::loadKeyValueData(void)
 	const char *const p_end = p + ktx2Header.kvdByteLength;
 	bool hasKTXorientation = false;
 
-	while (p < p_end) {
+	while (p < p_end-3) {
 		// Check the next key/value size.
 		const uint32_t sz = le32_to_cpu(*((const uint32_t*)p));
 		if (sz < 2) {
 			// Must be at least 2 bytes for an empty key and its NULL terminator.
 			// TODO: Show an error?
 			break;
-		} else if (p + 4 + sz > p_end) {
+		} else if ((p_end - p) < 4+static_cast<intptr_t>(sz)) {
 			// Out of range.
 			// TODO: Show an error?
 			break;
@@ -602,7 +787,7 @@ void KhronosKTX2Private::loadKeyValueData(void)
 		data_row.reserve(2);
 		data_row.emplace_back(string(p, k_end - p));
 		data_row.emplace_back(string(k_end + 1, kv_end - k_end - 2));
-		kv_data.emplace_back(data_row);
+		kv_data.emplace_back(std::move(data_row));
 
 		// Check if this is KTXorientation.
 		// NOTE: Only the first instance is used.
@@ -665,12 +850,11 @@ KhronosKTX2::KhronosKTX2(IRpFile *file)
 	}
 
 	// Check if this KTX2 texture is supported.
-	DetectInfo info;
-	info.header.addr = 0;
-	info.header.size = sizeof(d->ktx2Header);
-	info.header.pData = reinterpret_cast<const uint8_t*>(&d->ktx2Header);
-	info.ext = nullptr;	// Not needed for KTX.
-	info.szFile = file->size();
+	const DetectInfo info = {
+		{0, sizeof(d->ktx2Header), reinterpret_cast<const uint8_t*>(&d->ktx2Header)},
+		nullptr,	// ext (not needed for KhronosKTX2)
+		file->size()	// szFile
+	};
 	d->isValid = (isRomSupported_static(&info) >= 0);
 
 	if (!d->isValid) {
@@ -714,11 +898,11 @@ KhronosKTX2::KhronosKTX2(IRpFile *file)
 		return;
 	}
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
-	std::for_each(d->mipmap_data.begin(), d->mipmap_data.end(), [](KTX2_Mipmap_Index &mipdata) {
+	for (KTX2_Mipmap_Index &mipdata : d->mipmap_data) {
 		mipdata.byteOffset = le64_to_cpu(mipdata.byteOffset);
 		mipdata.byteLength = le64_to_cpu(mipdata.byteLength);
 		mipdata.uncompressedByteLength = le64_to_cpu(mipdata.uncompressedByteLength);
-	});
+	}
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 
 	// Load key/value data.
@@ -763,52 +947,6 @@ int KhronosKTX2::isRomSupported_static(const DetectInfo *info)
 
 	// Not supported.
 	return -1;
-}
-
-/** Class-specific functions that can be used even if isValid() is false. **/
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions include the leading dot,
- * e.g. ".bin" instead of "bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *KhronosKTX2::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		// TODO: Include ".ktx" too?
-		".ktx2",
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *KhronosKTX2::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Official MIME types.
-		"image/ktx2",
-
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /** Property accessors **/
@@ -873,10 +1011,6 @@ int KhronosKTX2::mipmapCount(void) const
  */
 int KhronosKTX2::getFields(LibRpBase::RomFields *fields) const
 {
-	// TODO: Localization.
-#define C_(ctx, str) str
-#define NOP_C_(ctx, str) str
-
 	assert(fields != nullptr);
 	if (!fields)
 		return 0;
@@ -904,10 +1038,9 @@ int KhronosKTX2::getFields(LibRpBase::RomFields *fields) const
 		fields->addField_string(C_("KhronosKTX2", "Supercompression"),
 			supercompression_tbl[ktx2Header->supercompressionScheme]);
 	} else {
-		// TODO: rp_sprintf()?
-		char buf[32];
-		snprintf(buf, sizeof(buf), C_("RomData", "Unknown (%d)"), ktx2Header->supercompressionScheme);
-		fields->addField_string(C_("KhronosKTX2", "Supercompression"), buf);
+		fields->addField_string(C_("KhronosKTX2", "Supercompression"),
+			rp_sprintf(C_("RomData", "Unknown (%u)"),
+				ktx2Header->supercompressionScheme));
 	}
 
 	// NOTE: Vulkan field names should not be localized.

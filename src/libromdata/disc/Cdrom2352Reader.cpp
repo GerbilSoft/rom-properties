@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Cdrom2352Reader.hpp: CD-ROM reader for 2352-byte sector images.         *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,7 +25,7 @@ namespace LibRomData {
 
 class Cdrom2352ReaderPrivate : public SparseDiscReaderPrivate {
 	public:
-		Cdrom2352ReaderPrivate(Cdrom2352Reader *q, unsigned int physBlockSize = 2352);
+		explicit Cdrom2352ReaderPrivate(Cdrom2352Reader *q, unsigned int physBlockSize = 2352);
 
 	private:
 		typedef SparseDiscReaderPrivate super;
@@ -206,7 +206,7 @@ int Cdrom2352Reader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t siz
 	// NOTE: Sector user data area position depends on the sector mode.
 	const uint8_t *const data = cdromSectorDataPtr(&sector);
 	memcpy(ptr, &data[pos], size);
-	return size;
+	return static_cast<int>(size);
 }
 
 }

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormat.hpp: Texture file format base class.                         *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,10 +10,16 @@
 #define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_FILEFORMAT_HPP__
 
 #include "librptexture/config.librptexture.h"
+
+// C includes.
+#include <stdint.h>
+#include <sys/types.h>	// for off64_t
+
+// Common macros
 #include "common.h"
 #include "RefBase.hpp"
 
-// Common declarations.
+// Common declarations
 #include "FileFormat_decl.hpp"
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
@@ -21,9 +27,6 @@ namespace LibRpBase {
 	class RomFields;
 }
 #endif /* ENABLE_LIBRPBASE_ROMFIELDS */
-
-// C includes.
-#include <stdint.h>
 
 namespace LibRpTexture {
 
@@ -88,36 +91,6 @@ class FileFormat : public RefBase
 		};
 
 	public:
-		/** Class-specific functions that can be used even if isValid() is false. **/
-
-		/**
-		 * Get a list of all supported file extensions.
-		 * This is to be used for file type registration;
-		 * subclasses don't explicitly check the extension.
-		 *
-		 * NOTE: The extensions include the leading dot,
-		 * e.g. ".bin" instead of "bin".
-		 *
-		 * NOTE 2: The array and the strings in the array should
-		 * *not* be freed by the caller.
-		 *
-		 * @return NULL-terminated array of all supported file extensions, or nullptr on error.
-		 */
-		virtual const char *const *supportedFileExtensions(void) const = 0;
-
-		/**
-		 * Get a list of all supported MIME types.
-		 * This is to be used for metadata extractors that
-		 * must indicate which MIME types they support.
-		 *
-		 * NOTE: The array and the strings in the array should
-		 * *not* be freed by the caller.
-		 *
-		 * @return NULL-terminated array of all supported file extensions, or nullptr on error.
-		 */
-		virtual const char *const *supportedMimeTypes(void) const = 0;
-
-	public:
 		/** Property accessors **/
 
 		/**
@@ -153,6 +126,18 @@ class FileFormat : public RefBase
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int getDimensions(int pBuf[3]) const;
+
+		/**
+		 * Get the image rescale dimensions.
+		 *
+		 * This is for e.g. ETC2 textures that are stored as
+		 * a power-of-2 size but should be rendered with a
+		 * smaller size.
+		 *
+		 * @param pBuf Two-element array for [x, y].
+		 * @return 0 on success; -ENOENT if no rescale dimensions; negative POSIX error code on error.
+		 */
+		int getRescaleDimensions(int pBuf[2]) const;
 
 		/**
 		 * Get the pixel format, e.g. "RGB888" or "DXT1".

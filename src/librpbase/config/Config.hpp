@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * Config.hpp: Configuration manager.                                      *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,7 +16,7 @@
 
 namespace LibRpBase {
 
-class Config : public ConfReader
+class RP_LIBROMDATA_PUBLIC Config : public ConfReader
 {
 	protected:
 		/**
@@ -114,6 +114,12 @@ class Config : public ConfReader
 		 * @return True if we should; false if not.
 		 */
 		bool storeFileOriginInfo(void) const;
+
+		/**
+		 * Language code for PAL titles on GameTDB.
+		 * @return Language code.
+		 */
+		uint32_t palLanguageForGameTDB(void) const;
 
 		/** DMG title screen mode **/
 

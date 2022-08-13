@@ -6,7 +6,7 @@
  * a generic list, RomMetaData stores specific properties that can be used *
  * by the desktop environment's indexer.                                   *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -28,7 +28,7 @@ namespace LibRpBase {
 
 // Properties.
 // This matches KFileMetaData::Property.
-enum class Property : int8_t {
+enum class Property : int {
 	Invalid = -1,
 	FirstProperty = 0,
 	Empty = 0,
@@ -69,8 +69,8 @@ enum class Property : int8_t {
 	FrameRate,	// integer: number of frames per second
 
 	// Images
-	ImageMake,			// string
-	ImageModel,			// string
+	Manufacturer,			// string
+	Model,				// string
 	ImageDateTime,			// FIXME
 	ImageOrientation,		// FIXME
 	PhotoFlash,			// FIXME
@@ -120,6 +120,19 @@ enum class Property : int8_t {
 	Compilation,		// string: compilation
 	License,		// string: license information
 
+	// Added in KF5 5.48
+	Rating,			// integer: [0,100]
+	Lyrics,			// string
+
+	// Replay gain (KF5 5.51)
+	ReplayGainAlbumPeak,	// double: dB
+	ReplayGainAlbumGain,	// double: dB
+	ReplayGainTrackPeak,	// double: dB
+	ReplayGainTrackGain,	// double: dB
+
+	// Added in KF5 5.53
+	Description,		// string
+
 	// TODO: More fields.
 	PropertyCount,
 	LastProperty = PropertyCount-1,
@@ -134,6 +147,7 @@ enum class PropertyType : uint8_t {
 	UnsignedInteger,	// Unsigned integer type
 	String,			// String type (UTF-8)
 	Timestamp,		// UNIX timestamp
+	Double,			// Double-precision floating point
 
 	PropertyTypeCount,
 	LastPropertyType = PropertyTypeCount-1,
@@ -172,6 +186,9 @@ class RomMetaData
 
 				// UNIX timestamp
 				time_t timestamp;
+
+				// Double-precision floating point value
+				double dvalue;
 			} data;
 		};
 
@@ -195,19 +212,22 @@ class RomMetaData
 		 * Get the number of metadata properties.
 		 * @return Number of metadata properties.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		int count(void) const;
 
 		/**
 		 * Get a metadata property.
-		 * @param idx Field index.
+		 * @param idx Metadata index
 		 * @return Metadata property, or nullptr if the index is invalid.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		const MetaData *prop(int idx) const;
 
 		/**
 		 * Is this RomMetaData empty?
 		 * @return True if empty; false if not.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		bool empty(void) const;
 
 	public:
@@ -215,7 +235,7 @@ class RomMetaData
 
 		/**
 		 * Reserve space for metadata.
-		 * @param n Desired capacity.
+		 * @param n Desired capacity
 		 */
 		void reserve(int n);
 
@@ -225,7 +245,7 @@ class RomMetaData
 		 * If metadata properties with the same names already exist,
 		 * they will be overwritten.
 		 *
-		 * @param other Source RomMetaData object.
+		 * @param other Source RomMetaData object
 		 * @return Metadata index of the last metadata added.
 		 */
 		int addMetaData_metaData(const RomMetaData *other);
@@ -236,16 +256,16 @@ class RomMetaData
 		 * If a metadata property with the same name already exists,
 		 * it will be overwritten.
 		 *
-		 * @param name Metadata name.
-		 * @param val Integer value.
+		 * @param name Property name
+		 * @param val Integer value
 		 * @return Metadata index, or -1 on error.
 		 */
 		int addMetaData_integer(Property name, int value);
 
 		/**
 		 * Add an unsigned integer metadata property.
-		 * @param name Metadata name.
-		 * @param val Unsigned integer value.
+		 * @param name Property name
+		 * @param val Unsigned integer value
 		 * @return Metadata index, or -1 on error.
 		 */
 		int addMetaData_uint(Property name, unsigned int value);
@@ -256,9 +276,9 @@ class RomMetaData
 		 * If a metadata property with the same name already exists,
 		 * it will be overwritten.
 		 *
-		 * @param name Metadata name.
-		 * @param str String value.
-		 * @param flags Formatting flags.
+		 * @param name Property name
+		 * @param str String value
+		 * @param flags Formatting flags
 		 * @return Metadata index, or -1 on error.
 		 */
 		int addMetaData_string(Property name, const char *str, unsigned int flags = 0);
@@ -269,9 +289,9 @@ class RomMetaData
 		 * If a metadata property with the same name already exists,
 		 * it will be overwritten.
 		 *
-		 * @param name Metadata name.
-		 * @param str String value.
-		 * @param flags Formatting flags.
+		 * @param name Property name
+		 * @param str String value
+		 * @param flags Formatting flags
 		 * @return Metadata index, or -1 on error.
 		 */
 		int addMetaData_string(Property name, const std::string &str, unsigned int flags = 0);
@@ -282,11 +302,23 @@ class RomMetaData
 		 * If a metadata property with the same name already exists,
 		 * it will be overwritten.
 		 *
-		 * @param name Metadata name.
-		 * @param timestamp UNIX timestamp.
+		 * @param name Metadata name
+		 * @param timestamp UNIX timestamp
 		 * @return Metadata index, or -1 on error.
 		 */
 		int addMetaData_timestamp(Property name, time_t timestamp);
+
+		/**
+		 * Add a double-precision floating point metadata property.
+		 *
+		 * If a metadata property with the same name already exists,
+		 * it will be overwritten.
+		 *
+		 * @param name Property name
+		 * @param dvalue Double value
+		 * @return Metadata index, or -1 on error.
+		 */
+		int addMetaData_double(Property name, double dvalue);
 };
 
 }

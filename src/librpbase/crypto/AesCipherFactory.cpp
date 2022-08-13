@@ -7,16 +7,15 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "config.librpbase.h"
-
 #include "AesCipherFactory.hpp"
 
 // IAesCipher implementations.
-#if defined(_WIN32)
-# include "AesCAPI.hpp"
-# include "AesCAPI_NG.hpp"
-#elif defined(HAVE_NETTLE)
-# include "AesNettle.hpp"
+#ifdef _WIN32
+#  include "AesCAPI.hpp"
+#  include "AesCAPI_NG.hpp"
+#endif
+#ifdef HAVE_NETTLE
+#  include "AesNettle.hpp"
 #endif
 
 namespace LibRpBase {
@@ -32,6 +31,8 @@ namespace LibRpBase {
  */
 IAesCipher *AesCipherFactory::create(void)
 {
+#ifdef ENABLE_DECRYPTION
+
 #if defined(_WIN32)
 	// Windows: Use CryptoAPI NG if available.
 	// If not, fall back to CryptoAPI.
@@ -58,8 +59,48 @@ IAesCipher *AesCipherFactory::create(void)
 	return new AesNettle();
 #endif
 
+#endif /* ENABLE_DECRYPTION */
+
 	// Decryption is not supported.
 	return nullptr;
+}
+
+/**
+ * Create an IAesCipher object.
+ *
+ * The implementation can be selected by the caller.
+ * This is usually only used for test suites.
+ *
+ * @return IAesCipher class, or nullptr if decryption or the selected implementation isn't supported
+ */
+IAesCipher *AesCipherFactory::create(Implementation implementation)
+{
+	IAesCipher *cipher = nullptr;
+
+#ifdef ENABLE_DECRYPTION
+	switch (implementation) {
+		default:
+			break;
+
+#ifdef _WIN32
+		case Implementation::CAPI:
+			cipher = new AesCAPI();
+			break;
+		case Implementation::CAPI_NG:
+			if (AesCAPI_NG::isUsable()) {
+				cipher = new AesCAPI_NG();
+			}
+			break;
+#endif /* _WIN32 */
+#ifdef HAVE_NETTLE
+		case Implementation::Nettle:
+			cipher = new AesNettle();
+			break;
+#endif /* HAVE_NETTLE */
+	}
+#endif /* ENABLE_DECRYPTION */
+
+	return cipher;
 }
 
 }

@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (KDE)                              *
- * Achievements.hpp: Achievements tab for rp-config.                       *
+ * AchievementsTab.hpp: Achievements tab for rp-config.                    *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -49,17 +49,14 @@ class AchievementsTab : public ITab
 		void reset(void) final;
 
 		/**
-		 * Load the default configuration.
-		 * This does NOT save, and will only emit modified()
-		 * if it's different from the current configuration.
-		 */
-		void loadDefaults(void) final;
-
-		/**
 		 * Save the configuration.
 		 * @param pSettings QSettings object.
 		 */
-		void save(QSettings *pSettings) final;
+		void save(QSettings *pSettings) final
+		{
+			// Nothing to do here.
+			Q_UNUSED(pSettings)
+		}
 };
 
 #endif /* __ROMPROPERTIES_KDE_CONFIG_ACHIEVEMENTSTAB_HPP__ */

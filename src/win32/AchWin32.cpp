@@ -2,22 +2,23 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * AchWin32.hpp: Win32 notifications for achievements.                     *
  *                                                                         *
- * Copyright (c) 2020 by David Korth.                                      *
+ * Copyright (c) 2020-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "AchWin32.hpp"
+
 #include "RpImageWin32.hpp"
 #include "res/resource.h"
+#include "dll-macros.h"
 
 // librpbase, librpfile, librptexture
 #include "librpbase/TextFuncs_wchar.hpp"
 #include "librpbase/img/RpPng.hpp"
 #include "librpfile/win32/RpFile_windres.hpp"
 #include "librptexture/img/rp_image.hpp"
-using LibRpBase::Achievements;
-using LibRpBase::RpPng;
+using namespace LibRpBase;
 using LibRpFile::RpFile_windres;
 using LibRpTexture::rp_image;
 
@@ -151,7 +152,6 @@ AchWin32Private::AchWin32Private()
 
 	// Register the window class.
 	atomWindowClass = RegisterClassEx(&wndClass);
-	DWORD dwErr = GetLastError();
 }
 
 AchWin32Private::~AchWin32Private()
@@ -162,28 +162,24 @@ AchWin32Private::~AchWin32Private()
 	}
 
 	// TODO: Verify that the threads are still valid.
-	std::for_each(map_tidToHWND.cbegin(), map_tidToHWND.cend(),
-		[](const auto &pair) {
-			// Zero out the user data to prevent WM_NCDESTROY from
-			// attempting to modify the maps.
-			HWND hWnd = pair.second;
-			SetWindowLongPtr(hWnd, GWLP_USERDATA, 0);
+	for (const auto &pair : map_tidToHWND) {
+		// Zero out the user data to prevent WM_NCDESTROY from
+		// attempting to modify the maps.
+		HWND hWnd = pair.second;
+		SetWindowLongPtr(hWnd, GWLP_USERDATA, 0);
 
-			// Now destroy the window.
-			DestroyWindow(hWnd);
-		}
-	);
+		// Now destroy the window.
+		DestroyWindow(hWnd);
+	}
 
 	if (atomWindowClass > 0) {
 		UnregisterClass(MAKEINTATOM(atomWindowClass), HINST_THISCOMPONENT);
 	}
 
 	// Delete the achievements sprite sheets.
-	std::for_each(map_imgAchSheet.begin(), map_imgAchSheet.end(),
-		[](std::pair<int, rp_image*> pair) {
-			pair.second->unref();
-		}
-	);
+	for (auto &pair : map_imgAchSheet) {
+		pair.second->unref();
+	}
 }
 
 /**
@@ -230,7 +226,7 @@ const rp_image *AchWin32Private::loadSpriteSheet(int iconSize)
 		return nullptr;
 	}
 
-	rp_image *const imgAchSheet = RpPng::loadUnchecked(f_res);
+	rp_image *const imgAchSheet = RpPng::load(f_res);
 	f_res->unref();
 	if (!imgAchSheet) {
 		// Unable to load the achievements sprite sheet.
@@ -249,7 +245,7 @@ const rp_image *AchWin32Private::loadSpriteSheet(int iconSize)
 	}
 
 	// Sprite sheet is correct.
-	map_imgAchSheet.emplace(std::make_pair(iconSize, imgAchSheet));
+	map_imgAchSheet.emplace(iconSize, imgAchSheet);
 	return imgAchSheet;
 }
 
@@ -284,7 +280,11 @@ int AchWin32Private::notifyFunc(Achievements::ID id)
 	const DWORD tid = GetCurrentThreadId();
 	auto iter = map_tidToHWND.find(tid);
 	if (iter != map_tidToHWND.end()) {
-		hNotifyWnd = iter->second;
+		// FIXME: Multiple achievements at once.
+		// On Win7, this doesn't work and we end up
+		// showing *no* achievements.
+		//hNotifyWnd = iter->second;
+		return 0;
 	} else {
 		// No notification window. We'll need to create it.
 		hNotifyWnd = CreateWindow(
@@ -296,8 +296,8 @@ int AchWin32Private::notifyFunc(Achievements::ID id)
 			nullptr, nullptr,	// hWndParent, hMenu
 			nullptr, this);		// hInstance, lpParam
 		SetWindowLongPtr(hNotifyWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
-		map_tidToHWND.emplace(std::make_pair(tid, hNotifyWnd));
-		map_hWndToTID.emplace(std::make_pair(hNotifyWnd, tid));
+		map_tidToHWND.emplace(tid, hNotifyWnd);
+		map_hWndToTID.emplace(hNotifyWnd, tid);
 	}
 
 	// FIXME: Notification window procedure.
@@ -393,8 +393,8 @@ int AchWin32Private::notifyFunc(Achievements::ID id)
 	_tcsncpy(nid.szInfoTitle, ts_summary.c_str(), _countof(nid.szInfoTitle));
 	nid.szInfoTitle[_countof(nid.szInfoTitle)-1] = _T('\0');
 
-	_tcsncpy(nid.szInfo, U82W_s(info), _countof(nid.szInfo));
-	nid.szInfo[_countof(nid.szInfo)] = _T('\0');
+	_tcsncpy(nid.szInfo, U82T_s(info), _countof(nid.szInfo));
+	nid.szInfo[_countof(nid.szInfo)-1] = _T('\0');
 
 	bRet = Shell_NotifyIcon(NIM_MODIFY, &nid);
 	if (!bRet) {

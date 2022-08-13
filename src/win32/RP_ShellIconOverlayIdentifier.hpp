@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ShellIconOverlayIdentifier.cpp: IShellIconOverlayIdentifier          *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,6 +15,9 @@
 
 // Reference: http://www.codeproject.com/Articles/338268/COM-in-C
 #include "libwin32common/ComBase.hpp"
+
+// CLSID common macros
+#include "clsid_common.hpp"
 
 // CLSID
 extern "C" {
@@ -43,27 +46,16 @@ RP_ShellIconOverlayIdentifier final : public LibWin32Common::ComBase<IShellIconO
 		RP_ShellIconOverlayIdentifier_Private *const d_ptr;
 
 	public:
+		CLSID_DECL_NOINLINE(RP_ShellIconOverlayIdentifier)
+
+	public:
 		// IUnknown
-		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObj) final;
+		IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj) final;
 
-	public:
-		/**
-		 * Register the COM object.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG RegisterCLSID(void);
-
-		/**
-		 * Unregister the COM object.
-		 * @return ERROR_SUCCESS on success; Win32 error code on error.
-		 */
-		static LONG UnregisterCLSID(void);
-
-	public:
 		// IShellIconOverlayIdentifier
 		IFACEMETHODIMP IsMemberOf(_In_ PCWSTR pwszPath, DWORD dwAttrib) final;
-		IFACEMETHODIMP GetOverlayInfo(_Out_writes_(cchMax) PWSTR pwszIconFile, int cchMax, _Out_ int *pIndex, _Out_ DWORD *pdwFlags);
-		IFACEMETHODIMP GetPriority(_Out_ int *pPriority);
+		IFACEMETHODIMP GetOverlayInfo(_Out_writes_(cchMax) PWSTR pwszIconFile, int cchMax, _Out_ int *pIndex, _Out_ DWORD *pdwFlags) final;
+		IFACEMETHODIMP GetPriority(_Out_ int *pPriority) final;
 };
 
 #ifdef __CRT_UUID_DECL

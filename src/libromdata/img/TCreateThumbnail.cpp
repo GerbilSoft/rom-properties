@@ -16,6 +16,7 @@
 
 // librpbase, librpfile
 #include "librpbase/RomData.hpp"
+#include "librpbase/RomFields.hpp"
 #include "librpbase/config/Config.hpp"
 #include "librpbase/img/RpImageLoader.hpp"
 #include "librpfile/RpFile.hpp"
@@ -221,7 +222,7 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
  * @param tgt_size	[in] Target size.
  */
 template<typename ImgClass>
-inline void TCreateThumbnail<ImgClass>::rescale_aspect(ImgSize &rs_size, const ImgSize &tgt_size)
+inline void TCreateThumbnail<ImgClass>::rescale_aspect(ImgSize &rs_size, ImgSize tgt_size)
 {
 	// In the original QSize::scale():
 	// - rs_*: this
@@ -244,9 +245,9 @@ inline void TCreateThumbnail<ImgClass>::rescale_aspect(ImgSize &rs_size, const I
 
 /**
  * Create a thumbnail for the specified ROM file.
- * @param romData	[in] RomData object.
- * @param reqSize	[in] Requested image size. (single dimension; assuming square image)
- * @param pOutParams	[out] Output parameters.
+ * @param romData	[in] RomData object
+ * @param reqSize	[in] Requested image size (single dimension; assuming square image)
+ * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
  * @return 0 on success; non-zero on error.
  */
 template<typename ImgClass>
@@ -360,6 +361,42 @@ skip_image_check:
 		return RPCT_SOURCE_FILE_ERROR;
 	}
 
+	if (imgpf & RomData::IMGPF_RESCALE_RFT_DIMENSIONS_2) {
+		// Find the second RFT_DIMENSIONS field.
+		const RomFields *const fields = romData->fields();
+		const RomFields::Field *field[2] = {nullptr, nullptr};
+		const auto iter_end = fields->cend();
+		for (auto iter = fields->cbegin(); iter != iter_end; ++iter) {
+			if (iter->type != RomFields::RFT_DIMENSIONS)
+				continue;
+			// Found an RFT_DIMENSIONS.
+			if (!field[0]) {
+				field[0] = &(*iter);
+			} else {
+				field[1] = &(*iter);
+				break;
+			}
+		}
+
+		if (field[1]) {
+			// Found dimensions.
+			ImgSize rescaleSize = {
+				field[1]->data.dimensions[0],
+				field[1]->data.dimensions[1],
+			};
+			ImgClass scaled_img = rescaleImgClass(pOutParams->retImg, rescaleSize);
+			if (isImgClassValid(scaled_img)) {
+				freeImgClass(pOutParams->retImg);
+				pOutParams->retImg = scaled_img;
+				pOutParams->fullSize = rescaleSize;
+
+				// Disable nearest-neighbor scaling, since we already lost
+				// pixel-perfect sharpness with the rescale.
+				imgpf &= ~RomData::IMGPF_RESCALE_NEAREST;
+			}
+		}
+	}
+
 	if (imgpf & RomData::IMGPF_RESCALE_ASPECT_8to7) {
 		// If the image width is 256 or 512, rescale to an 8:7 pixel aspect ratio.
 		int scaleW = 0;
@@ -376,8 +413,14 @@ skip_image_check:
 		if (scaleW != 0) {
 			pOutParams->fullSize.width = scaleW;
 			ImgClass scaled_img = rescaleImgClass(pOutParams->retImg, pOutParams->fullSize);
-			freeImgClass(pOutParams->retImg);
-			pOutParams->retImg = scaled_img;
+			if (isImgClassValid(scaled_img)) {
+				freeImgClass(pOutParams->retImg);
+				pOutParams->retImg = scaled_img;
+
+				// Disable nearest-neighbor scaling, since we already lost
+				// pixel-perfect sharpness with the 8:7 rescale.
+				imgpf &= ~RomData::IMGPF_RESCALE_NEAREST;
+			}
 		}
 	}
 
@@ -426,10 +469,15 @@ skip_image_check:
 			// may result in 0x0, which is no good. If this happens,
 			// skip the rescaling entirely.
 			if (rescale_sz.width > 0 && rescale_sz.height > 0) {
-				pOutParams->thumbSize = rescale_sz;
 				ImgClass scaled_img = rescaleImgClass(pOutParams->retImg, rescale_sz);
-				freeImgClass(pOutParams->retImg);
-				pOutParams->retImg = scaled_img;
+				if (isImgClassValid(scaled_img)) {
+					freeImgClass(pOutParams->retImg);
+					pOutParams->retImg = scaled_img;
+					pOutParams->thumbSize = rescale_sz;
+				} else {
+					// Rescale failed. Use the full image size.
+					pOutParams->thumbSize = pOutParams->fullSize;
+				}
 			} else {
 				// Unable to rescale. Use the full image size.
 				pOutParams->thumbSize = pOutParams->fullSize;
@@ -449,9 +497,9 @@ skip_image_check:
 
 /**
  * Create a thumbnail for the specified ROM file.
- * @param file		[in] Open IRpFile object.
- * @param reqSize	[in] Requested image size. (single dimension; assuming square image)
- * @param pOutParams	[out] Output parameters.
+ * @param file		[in] Open IRpFile object
+ * @param reqSize	[in] Requested image size (single dimension; assuming square image)
+ * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
  * @return 0 on success; non-zero on error.
  */
 template<typename ImgClass>
@@ -481,9 +529,9 @@ int TCreateThumbnail<ImgClass>::getThumbnail(IRpFile *file, int reqSize, GetThum
 
 /**
  * Create a thumbnail for the specified ROM file.
- * @param filename	[in] ROM file.
- * @param reqSize	[in] Requested image size. (single dimension; assuming square image)
- * @param pOutParams	[out] Output parameters.
+ * @param filename	[in] ROM file
+ * @param reqSize	[in] Requested image size (single dimension; assuming square image)
+ * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
  * @return 0 on success; non-zero on error.
  */
 template<typename ImgClass>

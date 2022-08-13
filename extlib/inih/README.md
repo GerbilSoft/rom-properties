@@ -1,6 +1,6 @@
 # inih (INI Not Invented Here)
 
-[![TravisCI Build](https://travis-ci.org/benhoyt/inih.svg)](https://travis-ci.org/benhoyt/inih)
+[![Tests](https://github.com/benhoyt/inih/actions/workflows/tests.yml/badge.svg)](https://github.com/benhoyt/inih/actions/workflows/tests.yml)
 
 **inih (INI Not Invented Here)** is a simple [.INI file](http://en.wikipedia.org/wiki/INI_file) parser written in C. It's only a couple of pages of code, and it was designed to be _small and simple_, so it's good for embedded systems. It's also more or less compatible with Python's [ConfigParser](http://docs.python.org/library/configparser.html) style of .INI files, including RFC 822-style multi-line syntax and `name: value` entries.
 
@@ -132,13 +132,30 @@ Some differences between inih and Python's [ConfigParser](http://docs.python.org
 ## Meson notes ##
 
 * The `meson.build` file is not required to use or compile inih, its main purpose is for distributions.
-* By default Meson only creates a static library for inih, but Meson can be used to configure this behavior:
-* with `-Ddefault_library=shared` a shared library is build.
-* with `-Ddistro_install=true` the library will be installed with the header and a pkg-config entry, you may want to set `-Ddefault_library=shared` when using this.
-* with `-Dwith_INIReader` you can build (and install if selected) the C++ library.
-* all compile-time options are implemented in Meson as well, you can take a look at [meson_options.txt](https://github.com/benhoyt/inih/blob/master/meson_options.txt) for their definition. These won't work if `distro_install` is set to `true`.
+* By default Meson is set up for distro installation, but this behavior can be configured for embedded use cases:
+  * with `-Ddefault_library=static` static libraries are built.
+  * with `-Ddistro_install=false` libraries, headers and pkg-config files won't be installed.
+  * with `-Dwith_INIReader=false` you can disable building the C++ library.
+* All compile-time options are implemented in Meson as well, you can take a look at [meson_options.txt](https://github.com/benhoyt/inih/blob/master/meson_options.txt) for their definition. These won't work if `distro_install` is set to `true`.
 * If you want to use inih for programs which may be shipped in a distro, consider linking against the shared libraries. The pkg-config entries are `inih` and `INIReader`.
-* In case you use inih as a subproject, you can use the `inih_dep` and `INIReader_dep` dependency variables.
+* In case you use inih as a Meson subproject, you can use the `inih_dep` and `INIReader_dep` dependency variables. You might want to set `default_library=static` and `distro_install=false` for the subproject. An official Wrap is provided on [WrapDB](https://wrapdb.mesonbuild.com/inih).
+* For packagers: if you want to tag the version in the pkg-config file, you will need to do this downstream. Add `version : '<version_as_int>',` after the `license` tag in the `project()` function and `version : meson.project_version(),` after the `soversion` tag in both `library()` functions.
+
+## Using inih with tipi.build
+
+`inih` can be easily used in [tipi.build](https://tipi.build) projects simply by adding the following entry to your `.tipi/deps` (replace `r56` with the latest version tag):
+
+```json
+{
+    "benhoyt/inih": { "@": "r56" }
+}
+```
+
+The required include path in your project is:
+
+```c
+#include <ini.h>
+```
 
 ## Building from vcpkg ##
 

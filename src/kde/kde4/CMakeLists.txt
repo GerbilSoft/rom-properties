@@ -1,5 +1,4 @@
 # KDE 4.x UI frontend
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 CMAKE_POLICY(SET CMP0048 NEW)
 IF(POLICY CMP0063)
 	# CMake 3.3: Enable symbol visibility presets for all
@@ -38,10 +37,10 @@ ELSE(QT4_FOUND)
 ENDIF(QT4_FOUND)
 
 # Sources and headers. (common)
-STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4_SRCS "${rom-properties-kde_SRCS}")
-STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4_H "${rom-properties-kde_H}")
-STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4_UIS "${rom-properties-kde_UIS}")
-STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4_RCC_SRCS "${rom-properties-kde_RCC_SRCS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_SRCS "${rom-properties-kde_SRCS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_H "${rom-properties-kde_H}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_UIS "${rom-properties-kde_UIS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_RCC_SRCS "${rom-properties-kde_RCC_SRCS}")
 
 # Write the config.h file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/../config.kde.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.kde.h")
@@ -49,64 +48,56 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/../config.kde.h.in" "${CMAKE_CURRENT
 # Sources and headers. (KDE4-specific)
 IF(QT4_FOUND)
 	QT4_ADD_RESOURCES(
-		rom-properties-kde4_RCC_O ${rom-properties-kde4_RCC_SRCS}
+		${PROJECT_NAME}_RCC_O ${${PROJECT_NAME}_RCC_SRCS}
 		OPTIONS -no-compress
 		)
 ENDIF(QT4_FOUND)
 IF(HAVE_QtDBus_NOTIFY)
-	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4-notify_SRCS "${rom-properties-kde-notify_SRCS}")
-	STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kde4-notify_H    "${rom-properties-kde-notify_H}")
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_SRCS "${rom-properties-kde-notify_SRCS}")
+	STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_H    "${rom-properties-kde-notify_H}")
 
 	# QtDBus wrappers
-	QT4_ADD_DBUS_INTERFACES(rom-properties-kde4_DBUS_IFACE_SRCS
+	QT4_ADD_DBUS_INTERFACES(${PROJECT_NAME}_DBUS_IFACE_SRCS
 		"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.Notifications.xml"
 		)
 ENDIF(HAVE_QtDBus_NOTIFY)
 
-SET(rom-properties-kde4_SRCS
-	${rom-properties-kde4_SRCS}
-	${rom-properties-kde4-notify_SRCS}
-	${rom-properties-kde4_DBUS_IFACE_SRCS}
-	${rom-properties-kde4_RCC_O}
+SET(${PROJECT_NAME}_SRCS
+	${${PROJECT_NAME}_SRCS}
+	${${PROJECT_NAME}-notify_SRCS}
+	${${PROJECT_NAME}_DBUS_IFACE_SRCS}
+	${${PROJECT_NAME}_RCC_O}
 	RomPropertiesDialogPluginFactoryKDE4.cpp
 	)
-SET(rom-properties-kde4_H
-	${rom-properties-kde4_H}
-	${rom-properties-kde4-notify_H}
+SET(${PROJECT_NAME}_H
+	${${PROJECT_NAME}_H}
+	${${PROJECT_NAME}-notify_H}
 	)
 
 IF(COMMAND QT4_WRAP_UI)
 	# Wrap UI files.
-	QT4_WRAP_UI(rom-properties-kde4_UIS_H ${rom-properties-kde4_UIS})
-	ADD_CUSTOM_TARGET(kde4_generate_ui_h DEPENDS ${rom-properties-kde4_UIS_H})
+	QT4_WRAP_UI(${PROJECT_NAME}_UIS_H ${${PROJECT_NAME}_UIS})
+	ADD_CUSTOM_TARGET(kde4_generate_ui_h DEPENDS ${${PROJECT_NAME}_UIS_H})
 ENDIF(COMMAND QT4_WRAP_UI)
-
-IF(ENABLE_PCH)
-	# Precompiled headers.
-	INCLUDE(PrecompiledHeader)
-	SET(rom-properties-kde4_PCH_CXX ../stdafx.cpp)
-	SET(rom-properties-kde4_PCH_SRC ${rom-properties-kde4_PCH_CXX})
-	SET(rom-properties-kde4_PCH_H ../stdafx.h)
-ENDIF(ENABLE_PCH)
 
 #####################
 # Build the plugin. #
 #####################
 
 IF(BUILD_KDE4)
-	KDE4_ADD_PLUGIN(rom-properties-kde4
-		${rom-properties-kde4_PCH_SRC} ${rom-properties-kde4_PCH_H}
-		${rom-properties-kde4_SRCS}
-		${rom-properties-kde4_H}
-		${rom-properties-kde4_UIS_H}
+	KDE4_ADD_PLUGIN(${PROJECT_NAME}
+		${${PROJECT_NAME}_SRCS}
+		${${PROJECT_NAME}_H}
+		${${PROJECT_NAME}_UIS_H}
 		)
 	IF(ENABLE_PCH)
-		ADD_PRECOMPILED_HEADER(rom-properties-kde4 ${rom-properties-kde4_PCH_H}
-			SOURCE_CXX ${rom-properties-kde4_PCH_CXX}
+		TARGET_PRECOMPILE_HEADERS(${PROJECT_NAME} PRIVATE
+			"${RP_CONFIG_LIBC_H}" "${RP_CXX11_COMPAT_H}"
+			../stdafx.h
 			)
 	ENDIF(ENABLE_PCH)
-	DO_SPLIT_DEBUG(rom-properties-kde4)
-	TARGET_INCLUDE_DIRECTORIES(rom-properties-kde4
+	DO_SPLIT_DEBUG(${PROJECT_NAME})
+	TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
 		PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# kde4
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# kde4
 		PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# kde
@@ -114,25 +105,13 @@ IF(BUILD_KDE4)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>	# src
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# src
 		)
-	TARGET_LINK_LIBRARIES(rom-properties-kde4 PRIVATE romdata rpfile rpbase unixcommon)
-	IF(ENABLE_NLS)
-		TARGET_LINK_LIBRARIES(rom-properties-kde4 PRIVATE i18n)
-	ENDIF(ENABLE_NLS)
-	TARGET_LINK_LIBRARIES(rom-properties-kde4 PRIVATE ${ZLIB_LIBRARY})
-	TARGET_LINK_LIBRARIES(rom-properties-kde4 PUBLIC ${KDE4_KFILE_LIBRARY} ${KDE4_KDEUI_LIBRARY})
-	TARGET_LINK_LIBRARIES(rom-properties-kde4 PUBLIC Qt4::QtGui Qt4::QtCore)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE romdata)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${KDE4_KFILE_LIBRARY} ${KDE4_KDEUI_LIBRARY})
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC Qt4::QtGui Qt4::QtCore)
 	TARGET_INCLUDE_DIRECTORIES(rom-properties-kde4 PUBLIC ${KDE4_INCLUDE_DIR})
 	IF(HAVE_QtDBus_NOTIFY)
 		TARGET_LINK_LIBRARIES(rom-properties-kde4 PUBLIC Qt4::QtDBus)
 	ENDIF(HAVE_QtDBus_NOTIFY)
-
-	# Add zlib and png directories for the About tab.
-	IF(HAVE_ZLIB)
-		TARGET_INCLUDE_DIRECTORIES(rom-properties-kde4 PRIVATE ${ZLIB_INCLUDE_DIRS})
-	ENDIF(HAVE_ZLIB)
-	IF(HAVE_PNG)
-		TARGET_INCLUDE_DIRECTORIES(rom-properties-kde4 PRIVATE ${PNG_INCLUDE_DIRS})
-	ENDIF(HAVE_PNG)
 ENDIF(BUILD_KDE4)
 
 #######################

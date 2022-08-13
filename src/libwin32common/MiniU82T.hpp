@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * MiniU82T.cpp: Minimal U82T()/T2U8() functions.                          *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,52 +19,63 @@
 namespace LibWin32Common {
 
 /**
- * Mini T2U8() function.
- * @param wcs TCHAR string.
- * @return UTF-8 C++ string.
+ * Mini W2U8() function.
+ * @param wcs WCHAR string
+ * @return UTF-8 C++ string
  */
-#ifdef UNICODE
-std::string T2U8_c(const TCHAR *wcs);
-#else /* !UNICODE */
-static inline std::string T2U8_c(const TCHAR *mbs)
+std::string W2U8(const wchar_t *wcs);
+static inline std::string W2U8(const std::wstring &wcs)
 {
-	// TODO: Convert ANSI to UTF-8?
-	return mbs;
+	return W2U8(wcs.c_str());
 }
-#endif /* UNICODE */
-static inline std::string T2U8_s(const std::tstring &mbs)
+
+/**
+ * Mini T2U8() function.
+ * @param wcs TCHAR string
+ * @return UTF-8 C++ string
+ */
+static inline std::string T2U8(const TCHAR *tcs)
 {
-	return T2U8_c(mbs.c_str());
+#ifdef UNICODE
+	return W2U8(tcs);
+#else /* !UNICODE */
+	// TODO: Convert ANSI to UTF-8?
+	return tcs;
+#endif /* UNICODE */
+}
+static inline std::string T2U8(const std::tstring &tcs)
+{
+	return T2U8(tcs.c_str());
 }
 
 /**
  * Mini U82W() function.
- * @param mbs UTF-8 string.
- * @return UTF-16 C++ wstring.
+ * @param mbs UTF-8 string
+ * @return UTF-16 C++ wstring
  */
-std::wstring U82W_c(const char *mbs);
-static inline std::wstring U82W_s(const std::string &mbs)
+std::wstring U82W(const char *mbs);
+static inline std::wstring U82W(const std::string &mbs)
 {
-	return U82W_c(mbs.c_str());
+	return U82W(mbs.c_str());
 }
 
 /**
  * Mini U82T() function.
- * @param mbs UTF-8 string.
- * @return TCHAR C++ string.
+ * @param mbs UTF-8 string
+ * @return TCHAR C++ string
  */
-static inline std::tstring U82T_c(const char *mbs)
+static inline std::tstring U82T(const char *mbs)
 {
 #ifdef UNICODE
-	return U82W_c(mbs);
+	return U82W(mbs);
 #else /* !UNICODE */
 	// TODO: Convert UTF-8 to ANSI?
 	return mbs;
 #endif /* UNICODE */
 }
-static inline std::tstring U82T_s(const std::string &mbs)
+static inline std::tstring U82T(const std::string &mbs)
 {
-	return U82T_c(mbs.c_str());
+	return U82T(mbs.c_str());
 }
 
 }

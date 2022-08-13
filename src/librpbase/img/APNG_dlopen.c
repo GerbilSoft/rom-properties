@@ -2,26 +2,28 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * APNG_dlopen.c: APNG dlopen()'d function pointers.                       *
  *                                                                         *
- * Copyright (c) 2014-2019 by David Korth.                                 *
+ * Copyright (c) 2014-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include <png.h>
 
+#include <png.h>
 #include "APNG_dlopen.h"
+
+#if !defined(USE_INTERNAL_PNG) || defined(USE_INTERNAL_PNG_DLL)
 
 // librpthreads
 #include "librpthreads/Atomics.h"
 
 #ifndef _WIN32
 // Unix dlopen()
-# include <dlfcn.h>
+#  include <dlfcn.h>
 #else
 // Windows LoadLibrary()
-# include "libwin32common/RpWin32_sdk.h"
-# define dlsym(handle, symbol)	((void*)GetProcAddress(handle, symbol))
-# define dlclose(handle)	FreeLibrary(handle)
+#  include "libwin32common/RpWin32_sdk.h"
+#  define dlsym(handle, symbol)	((void*)GetProcAddress(handle, symbol))
+#  define dlclose(handle)	FreeLibrary(handle)
 #endif
 
 // DLL handle.
@@ -53,10 +55,13 @@ APNG_png_set_progressive_frame_fn_t APNG_png_set_progressive_frame_fn = NULL;
 APNG_png_write_frame_head_t APNG_png_write_frame_head = NULL;
 APNG_png_write_frame_tail_t APNG_png_write_frame_tail = NULL;
 
+// Internal PNG (statically-linked) always has APNG.
+// System PNG (or bundled DLL) might not.
+
 /**
  * APNG reference couner.
  */
-static volatile int ref_cnt = 0;
+static volatile int APNG_ref_cnt = 0;
 
 /**
  * Check if the PNG library supports APNG.
@@ -66,15 +71,15 @@ static int init_apng(void)
 {
 #ifdef _WIN32
 	BOOL bRet;
-	TCHAR png_dll_filename[16];
-#else /* !_WIN32 */
-	char png_so_filename[16];
 #endif /* _WIN32 */
 
 	if (libpng_dll) {
 		// APNG is already initialized.
 		return 0;
 	}
+
+#define xstr(a) str(a)
+#define str(a) #a
 
 #ifdef _WIN32
 	// Get the handle of the already-opened libpng.
@@ -83,14 +88,11 @@ static int init_apng(void)
 	// ensure that it's loaded before calling this function!
 	// Otherwise, this will fail.
 #ifndef NDEBUG
-	_sntprintf(png_dll_filename, _countof(png_dll_filename),
-		_T("libpng%ud.dll"), PNG_LIBPNG_VER_DLLNUM);
-#else
-	_sntprintf(png_dll_filename, _countof(png_dll_filename),
-		_T("libpng%u.dll"), PNG_LIBPNG_VER_DLLNUM);
-#endif
-	png_dll_filename[_countof(png_dll_filename)-1] = _T('\0');
-	bRet = GetModuleHandleEx(0, png_dll_filename, &libpng_dll);
+	static const TCHAR libpng_dll_filename[] = _T("libpng") xstr(PNG_LIBPNG_VER_DLLNUM) _T("d.dll");
+#else /* !NDEBUG */
+	static const TCHAR libpng_dll_filename[] = _T("libpng") xstr(PNG_LIBPNG_VER_DLLNUM) _T(".dll");
+#endif /* NDEBUG */
+	bRet = GetModuleHandleEx(0, libpng_dll_filename, &libpng_dll);
 	assert(bRet != FALSE);
 	if (!bRet) {
 		libpng_dll = NULL;
@@ -99,9 +101,8 @@ static int init_apng(void)
 #else /* !_WIN32 */
 	// TODO: Get path of already-opened libpng?
 	// TODO: On Linux, __USE_GNU and RTLD_DEFAULT.
-	snprintf(png_so_filename, sizeof(png_so_filename),
-		"libpng%u.so", PNG_LIBPNG_VER_SONUM);
-	libpng_dll = dlopen(png_so_filename, RTLD_LOCAL|RTLD_NOW);
+	static const char libpng_so_filename[] = "libpng" xstr(PNG_LIBPNG_VER_SONUM) ".so";
+	libpng_dll = dlopen(libpng_so_filename, RTLD_LOCAL|RTLD_NOW);
 	if (!libpng_dll)
 		return -1;
 #endif
@@ -140,6 +141,7 @@ static int init_apng(void)
 	APNG_png_write_frame_tail = dlsym(libpng_dll, "png_write_frame_tail");
 	return 0;
 }
+#endif /* !USE_INTERNAL_PNG || USE_INTERNAL_PNG_DLL */
 
 /**
  * Load APNG and increment the reference counter.
@@ -150,10 +152,13 @@ static int init_apng(void)
  *
  * @return 0 on success; non-zero on error.
  */
-int APNG_ref(void)
+int RP_C_API APNG_ref(void)
 {
-	assert(ref_cnt >= 0);
-	if (ATOMIC_INC_FETCH(&ref_cnt) == 1) {
+#if !defined(USE_INTERNAL_PNG) || defined(USE_INTERNAL_PNG_DLL)
+	// Internal PNG (statically-linked) always has APNG.
+	// System PNG (or bundled DLL) might not.
+	assert(APNG_ref_cnt >= 0);
+	if (ATOMIC_INC_FETCH(&APNG_ref_cnt) == 1) {
 		// First APNG reference.
 		// Attempt to load APNG.
 		if (init_apng() != 0) {
@@ -164,6 +169,7 @@ int APNG_ref(void)
 			return -1;
 		}
 	}
+#endif /* !USE_INTERNAL_PNG || USE_INTERNAL_PNG_DLL */
 	return 0;
 }
 
@@ -171,10 +177,13 @@ int APNG_ref(void)
  * Decrement the APNG reference counter.
  * @return Non-zero if APNG is supported, 0 if not supported.
  */
-void APNG_unref(void)
+void RP_C_API APNG_unref(void)
 {
-	assert(ref_cnt > 0);
-	if (ATOMIC_DEC_FETCH(&ref_cnt) == 0) {
+#if !defined(USE_INTERNAL_PNG) || defined(USE_INTERNAL_PNG_DLL)
+	// Internal PNG (statically-linked) always has APNG.
+	// System PNG (or bundled DLL) might not.
+	assert(APNG_ref_cnt > 0);
+	if (ATOMIC_DEC_FETCH(&APNG_ref_cnt) == 0) {
 		// Unload APNG.
 		// TODO: Clear the function pointers?
 		if (libpng_dll) {
@@ -182,6 +191,7 @@ void APNG_unref(void)
 			libpng_dll = NULL;
 		}
 	}
+#endif /* !USE_INTERNAL_PNG || USE_INTERNAL_PNG_DLL */
 }
 
 /**
@@ -190,13 +200,17 @@ void APNG_unref(void)
  */
 void APNG_force_unload(void)
 {
-	if (ref_cnt > 0) {
+#if !defined(USE_INTERNAL_PNG) || defined(USE_INTERNAL_PNG_DLL)
+	// Internal PNG (statically-linked) always has APNG.
+	// System PNG (or bundled DLL) might not.
+	if (APNG_ref_cnt > 0) {
 		// Unload APNG.
 		// TODO: Clear the function pointers?
 		if (libpng_dll) {
 			dlclose(libpng_dll);
 			libpng_dll = NULL;
 		}
-		ref_cnt = 0;
+		APNG_ref_cnt = 0;
 	}
+#endif /* !USE_INTERNAL_PNG || USE_INTERNAL_PNG_DLL */
 }

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_scsi.cpp: General SCSI functions.                                *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -333,13 +333,13 @@ int RpFilePrivate::scsi_read_capacity(off64_t *pDeviceSize, uint32_t *pSectorSiz
 #ifdef RP_OS_SCSI_SUPPORTED
 	// SCSI command buffers.
 	union {
-		SCSI_CDB_READ_CAPACITY_10 cdb10;
-		SCSI_CDB_READ_CAPACITY_16 cdb16;
-	};
+		SCSI_CDB_READ_CAPACITY_10 read10;
+		SCSI_CDB_READ_CAPACITY_16 read16;
+	} cdb;
 	union {
-		SCSI_RESP_READ_CAPACITY_10 resp10;
-		SCSI_RESP_READ_CAPACITY_16 resp16;
-	};
+		SCSI_RESP_READ_CAPACITY_10 read10;
+		SCSI_RESP_READ_CAPACITY_16 read16;
+	} resp;
 	ASSERT_STRUCT(SCSI_CDB_READ_CAPACITY_10, 10);
 	ASSERT_STRUCT(SCSI_CDB_READ_CAPACITY_16, 16);
 	// TODO: Define these somewhere in scsi_protocol.h.
@@ -349,54 +349,60 @@ int RpFilePrivate::scsi_read_capacity(off64_t *pDeviceSize, uint32_t *pSectorSiz
 	// NOTE: The returned LBA is the *last* LBA,
 	// not the total number of LBAs. Hence, we'll
 	// need to add one.
+	memset(&resp, 0, sizeof(resp));
 
 	// Try READ CAPACITY(10) first.
-	cdb10.OpCode = SCSI_OP_READ_CAPACITY_10;
-	cdb10.RelAdr = 0;
-	cdb10.LBA = 0;
-	cdb10.Reserved[0] = 0;
-	cdb10.Reserved[1] = 0;
-	cdb10.PMI = 0;
-	cdb10.Control = 0;
+	cdb.read10.OpCode = SCSI_OP_READ_CAPACITY_10;
+	cdb.read10.RelAdr = 0;
+	cdb.read10.LBA = 0;
+	cdb.read10.Reserved[0] = 0;
+	cdb.read10.Reserved[1] = 0;
+	cdb.read10.PMI = 0;
+	cdb.read10.Control = 0;
 
-	int ret = scsi_send_cdb(&cdb10, sizeof(cdb10), &resp10, sizeof(resp10), RpFilePrivate::ScsiDirection::In);
+	int ret = scsi_send_cdb(&cdb.read10, sizeof(cdb.read10),
+		&resp.read10, sizeof(resp.read10),
+		RpFilePrivate::ScsiDirection::In);
 	if (ret != 0) {
 		// SCSI command failed.
 		return ret;
 	}
 
-	if (resp10.LBA != be32_to_cpu(0xFFFFFFFF)) {
+	if (resp.read10.LBA != be32_to_cpu(0xFFFFFFFF)) {
 		// READ CAPACITY(10) has the full capacity.
-		const uint32_t sector_size = be32_to_cpu(resp10.BlockLen);
+		const uint32_t sector_size = be32_to_cpu(resp.read10.BlockLen);
 		if (pSectorSize) {
 			*pSectorSize = sector_size;
 		}
-		*pDeviceSize = (static_cast<off64_t>(be32_to_cpu(resp10.LBA)) + 1) *
+		*pDeviceSize = (static_cast<off64_t>(be32_to_cpu(resp.read10.LBA)) + 1) *
 				static_cast<off64_t>(sector_size);
 		return 0;
 	}
 
 	// READ CAPACITY(10) is truncated.
 	// Try READ CAPACITY(16).
-	cdb16.OpCode = SCSI_OP_SERVICE_ACTION_IN_16;
-	cdb16.SAIn_OpCode = SCSI_SAIN_OP_READ_CAPACITY_16;
-	cdb16.LBA = 0;
-	cdb16.AllocLen = 0;
-	cdb16.Reserved = 0;
-	cdb16.Control = 0;
+	memset(&cdb, 0, sizeof(cdb));
+	cdb.read16.OpCode = SCSI_OP_SERVICE_ACTION_IN_16;
+	cdb.read16.SAIn_OpCode = SCSI_SAIN_OP_READ_CAPACITY_16;
+	cdb.read16.LBA = 0;
+	cdb.read16.AllocLen = 0;
+	cdb.read16.Reserved = 0;
+	cdb.read16.Control = 0;
 
-	ret = scsi_send_cdb(&cdb16, sizeof(cdb16), &resp16, sizeof(resp16), RpFilePrivate::ScsiDirection::In);
+	ret = scsi_send_cdb(&cdb.read16, sizeof(cdb.read16),
+		&resp.read16, sizeof(resp.read16),
+		RpFilePrivate::ScsiDirection::In);
 	if (ret != 0) {
 		// SCSI command failed.
 		// TODO: Return 0xFFFFFFFF+1 blocks anyway?
 		return ret;
 	}
 
-	const uint32_t sector_size = be32_to_cpu(resp16.BlockLen);
+	const uint32_t sector_size = be32_to_cpu(resp.read16.BlockLen);
 	if (pSectorSize) {
 		*pSectorSize = sector_size;
 	}
-	*pDeviceSize = (static_cast<off64_t>(be64_to_cpu(resp16.LBA)) + 1) *
+	*pDeviceSize = (static_cast<off64_t>(be64_to_cpu(resp.read16.LBA)) + 1) *
 			static_cast<off64_t>(sector_size);
 	return 0;
 #else /* !RP_OS_SCSI_SUPPORTED */
@@ -599,17 +605,17 @@ int RpFile::ata_identify_device_int(struct _ATA_RESP_IDENTIFY_DEVICE *pResp, boo
 	// so byteswap the whole thing. This will also handle
 	// byteswapping the string fields.
 	// TODO: NAA/OUI/WWN and other >16-bit fields.
-	__byte_swap_16_array(reinterpret_cast<uint16_t*>(pResp), sizeof(*pResp));
+	rp_byte_swap_16_array(reinterpret_cast<uint16_t*>(pResp), sizeof(*pResp));
 #else /* SYS_BYTE_ORDER == SYS_LIL_ENDIAN */
 	// String fields are always "swapped" regardless of
 	// host endian, so we'll have to unswap those.
-	__byte_swap_16_array(reinterpret_cast<uint16_t*>(pResp->serial_number),
+	rp_byte_swap_16_array(reinterpret_cast<uint16_t*>(pResp->serial_number),
 		sizeof(pResp->serial_number));
-	__byte_swap_16_array(reinterpret_cast<uint16_t*>(pResp->firmware_revision),
+	rp_byte_swap_16_array(reinterpret_cast<uint16_t*>(pResp->firmware_revision),
 		sizeof(pResp->firmware_revision));
-	__byte_swap_16_array(reinterpret_cast<uint16_t*>(pResp->model_number),
+	rp_byte_swap_16_array(reinterpret_cast<uint16_t*>(pResp->model_number),
 		sizeof(pResp->model_number));
-	__byte_swap_16_array(reinterpret_cast<uint16_t*>(pResp->media_serial_number),
+	rp_byte_swap_16_array(reinterpret_cast<uint16_t*>(pResp->media_serial_number),
 		sizeof(pResp->media_serial_number));
 #endif
 

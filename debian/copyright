@@ -5,7 +5,7 @@ Upstream-Contact: https://github.com/GerbilSoft/rom-properties
 Files-Excluded:
 
 Files: *
-Copyright: 2016-2017, David Korth <gerbilsoft@gerbilsoft.com>
+Copyright: 2016-2021, David Korth <gerbilsoft@gerbilsoft.com>
 License: GPL-2+
 Comment:
 
@@ -18,58 +18,59 @@ Comment:
 Files:
  src/librpbase/uvector.h
 Copyright:
- 2013, André Offringa
+ 2013-2017, André Offringa
 License: GPL-3
 Comment:
 
 Files:
- src/librpbase/timegm.c
-Copyright:
- (C) Copyright Howard Hinnant
- (C) Copyright 2010-2011 Vicente J. Botet Escriba
-License: BSL-1.0
-
-Files:
- src/libromdata/DMG.cpp
- src/libromdata/DMG.hpp
- src/libromdata/NES.cpp
- src/libromdata/NES.hpp
+ src/libromdata/Console/NES.cpp
+ src/libromdata/Console/NES.hpp
+ src/libromdata/Handheld/DMG.cpp
+ src/libromdata/Handheld/DMG.hpp
+ src/libromdata/Handheld/VirtualBoy.cpp
+ src/libromdata/Handheld/VirtualBoy.hpp
  src/libromdata/data/NESMappers.cpp
  src/libromdata/data/NESMappers.hpp
- src/libromdata/VirtualBoy.cpp
- src/libromdata/VirtualBoy.hpp
 Copyright:
- 2016-2017, David Korth <gerbilsoft@gerbilsoft.com>
- 2016-2017, Egor
+ 2016-2021, David Korth <gerbilsoft@gerbilsoft.com>
+ 2016-2018, Egor
 License: GPL-2+
+Comment:
+
+Files:
+ src/libromdata/tests/img/ImageDecoder_data/TGA/conformance/*
+Copyright:
+ (C) TrueVision, Inc.
+License: TGA-2.0
 Comment:
 
 Files:
  src/svrplus/*
 Copyright:
- 2017, Egor
- 2017, David Korth <gerbilsoft@gerbilsoft.com>
+ 2017-2021, Egor
+ 2017-2021, David Korth <gerbilsoft@gerbilsoft.com>
 License: GPL-2+
 Comment:
 
 Files:
  extlib/googletest/*
-Copyright: 2008-2016, Google Inc.
+Copyright: 2008-2021, Google Inc.
 License: BSD-3-clause
 
 Files:
- extlib/minizip/*
+ extlib/minizip-ng/*
 Copyright:
  1998-2010, Gilles Vollant
  2010, Mathias Svensson
- 2010-2019, Nathan Moinvaziri
+ 2010-2021, Nathan Moinvaziri
 License: Zlib
 
 Files:
- extlib/zlib/*
+ extlib/zlib-ng/*
 Copyright:
  1995-2017, Jean-loup Gailly
  1995-2017, Mark Adler
+ 2016-2021, Nathan Moinvaziri
 License: Zlib
 
 Files:
@@ -93,33 +94,23 @@ Copyright: 1996, 1997 Andreas Dilger
 License: libpng
 
 Files:
- extlib/libjpeg-turbo/*
-Copyright: 1991-2010 Thomas G. Lane
-           1991-2011 Guido Vollbeding
-           1999-2006 MIYASAKA Masaru
-           2009-2019 D. R. Commander
-           2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
-           2009-2011 Nokia Corporation and/or its subsidiary(-ies)
-License: BSD-BY-LC-NE
-
-Files:
  extlib/inih/*
-Copyright: (c) 2009-2019, Ben Hoyt
+Copyright: (c) 2009-2021, Ben Hoyt
 License: BSD-3-clause
 
 Files:
  extlib/tinyxml2/*
-Copyright: 2011-2018 Lee Thomason (www.grinninglizard.com)
+Copyright: 2011-2021 Lee Thomason (www.grinninglizard.com)
 License: Zlib
 
 Files:
  extlib/gettext.win32/*
-Copyright: (c) 1995-2019 GNU gettext authors
+Copyright: (c) 1995-2020 GNU gettext authors
 License: GPL-3+
 
 Files:
  src/libi18n/gettext.h
-Copyright: (c) 1995-2018 GNU gettext authors
+Copyright: (c) 1995-2020 GNU gettext authors
 License: LGPL-2.1+
 
 Files:
@@ -129,7 +120,7 @@ License: GPL-3+
 
 Files:
  extlib/libmspack-xenia/*
-Copyright: (C) 2003-2018 Stuart Caie
+Copyright: (C) 2003-2020 Stuart Caie
 License: LGPL-2.1
 
 Files:
@@ -167,6 +158,11 @@ Files:
  extlib/minilzo/*
 Copyright: Copyright (C) 1996-2017 Markus Franz Xaver Johannes Oberhumer
 License: GPL-2+
+
+Files:
+ extlib/basisu_astc/*
+Copyright: Copyright 2016 The Android Open Source Project
+License: Apache-2.0
 
 License: BSD-2-clause
  All rights reserved.
@@ -456,112 +452,6 @@ License: libpng
  source code in a product, acknowledgment is not required but would be
  appreciated.
 
-License: BSD-BY-LC-NE
- In plain English:
- .
- 1. We don't promise that this software works.  (But if you find any bugs,
-    please let us know!)
- 2. You can use this software for whatever you want.  You don't have to pay us.
- 3. You may not pretend that you wrote this software.  If you use it in a
-    program, you must acknowledge somewhere in your documentation that
-    you've used the IJG code.
- .
- In legalese:
- .
- The authors make NO WARRANTY or representation, either express or implied,
- with respect to this software, its quality, accuracy, merchantability, or
- fitness for a particular purpose.  This software is provided "AS IS", and you,
- its user, assume the entire risk as to its quality and accuracy.
- .
- This software is copyright (C) 1991-2010, Thomas G. Lane, Guido Vollbeding.
- All Rights Reserved except as specified below.
- .
- Permission is hereby granted to use, copy, modify, and distribute this
- software (or portions thereof) for any purpose, without fee, subject to these
- conditions:
- (1) If any part of the source code for this software is distributed, then this
- README file must be included, with this copyright and no-warranty notice
- unaltered; and any additions, deletions, or changes to the original files
- must be clearly indicated in accompanying documentation.
- (2) If only executable code is distributed, then the accompanying
- documentation must state that "this software is based in part on the work of
- the Independent JPEG Group".
- (3) Permission for use of this software is granted only if the user accepts
- full responsibility for any undesirable consequences; the authors accept
- NO LIABILITY for damages of any kind.
- .
- These conditions apply to any software derived from or based on the IJG code,
- not just to the unmodified library.  If you use our work, you ought to
- acknowledge us.
- .
- Permission is NOT granted for the use of any IJG author's name or company name
- in advertising or publicity relating to this software or products derived from
- it.  This software may be referred to only as "the Independent JPEG Group's
- software".
- .
- We specifically permit and encourage the use of this software as the basis of
- commercial products, provided that all warranty or liability claims are
- assumed by the product vendor.
- .
- ansi2knr.c is included in this distribution by permission of L. Peter Deutsch,
- sole proprietor of its copyright holder, Aladdin Enterprises of Menlo Park, CA.
- ansi2knr.c is NOT covered by the above copyright and conditions, but instead
- by the usual distribution terms of the Free Software Foundation; principally,
- that you must include source code if you redistribute it.  (See the file
- ansi2knr.c for full details.)  However, since ansi2knr.c is not needed as part
- of any program generated from the IJG code, this does not limit you more than
- the foregoing paragraphs do.
- .
- The Unix configuration script "configure" was produced with GNU Autoconf.
- It is copyright by the Free Software Foundation but is freely distributable.
- The same holds for its supporting scripts (config.guess, config.sub,
- ltmain.sh).  Another support script, install-sh, is copyright by X Consortium
- but is also freely distributable.
- .
- The IJG distribution formerly included code to read and write GIF files.
- To avoid entanglement with the Unisys LZW patent, GIF reading support has
- been removed altogether, and the GIF writer has been simplified to produce
- "uncompressed GIFs".  This technique does not use the LZW algorithm; the
- resulting GIF files are larger than usual, but are readable by all standard
- GIF decoders.
- .
- We are required to state that
-     "The Graphics Interchange Format(c) is the Copyright property of
-     CompuServe Incorporated.  GIF(sm) is a Service Mark property of
-     CompuServe Incorporated."
- .
- The complete text can be found in README, supplied with the source.
- .
- libjpeg-turbo is licensed under a non-restrictive, BSD-style license
- (see README.) The TurboJPEG/OSS wrapper (both C and Java versions) and
- associated test programs bear a similar license, which is reproduced below:
- .
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
- .
- - Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
- - Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
- - Neither the name of the libjpeg-turbo Project nor the names of its
-   contributors may be used to endorse or promote products derived from this
-   software without specific prior written permission.
- .
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS",
- AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
- LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- POSSIBILITY OF SUCH DAMAGE.
- .
- The complete text can be found in README-turbo.txt, supplied with the source.
-
 License: MIT
  The MIT License (MIT)
  Copyright (c) <YEAR> <COPYRIGHT HOLDER>
@@ -584,27 +474,39 @@ License: MIT
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 
-License: BSL-1.0
- Boost Software License - Version 1.0 - August 17th, 2003
+License: TGA-2.0
+ TrueVision TGA (a.k.a. Targa) 2.0 conformance suite
  .
- Permission is hereby granted, free of charge, to any person or organization
- obtaining a copy of the software and accompanying documentation covered by
- this license (the "Software") to use, reproduce, display, distribute,
- execute, and transmit the Software, and to prepare derivative works of the
- Software, and to permit third-parties to whom the Software is furnished to
- do so, all subject to the following:
+ Official format specification, sample images and utilitiesriginally been publicly available, free of
+ charge and under no specific licensing terms, from TrueVision, Inc.'s  FTP
+ server at the following URL:
  .
- The copyright notices in the Software and this entire statement, including
- the above license grant, this restriction and the following disclaimer,
- must be included in all copies of the Software, in whole or in part, and
- all derivative works of the Software, unless such copies or derivative
- works are solely in the form of machine-executable object code generated by
- a source language processor.
+ ftp://ftp.truevision.com/pub/TGA.File.Format.Spec/PC.Version/
  .
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- DEALINGS IN THE SOFTWARE.
+ All of the material contained here is therefore copyright to TrueVision, Inc.,
+ unless otherwise stated.
+ .
+ But has been removed in the proceedings of Pinnacle Systems' acquisition of
+ TrueVision, Inc., as outdated. However, a back-up of these files is available
+ here:
+ .
+ http://googlesites.inequation.org/tgautilities
+
+License: Apache-2.0
+ Licensed to the Apache Software Foundation (ASF) under one or more
+ contributor license agreements.  See the NOTICE file distributed with
+ this work for additional information regarding copyright ownership.
+ The ASF licenses this file to You under the Apache License, Version 2.0
+ (the "License"); you may not use this file except in compliance with
+ the License.  You may obtain a copy of the License at
+ .
+      https://www.apache.org/licenses/LICENSE-2.0
+ .
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ .
+ On Debian systems, the full text of the Apache Software License version 2 can
+ be found in the file `/usr/share/common-licenses/Apache-2.0'.

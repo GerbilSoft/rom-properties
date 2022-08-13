@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiUData.hpp: Nintendo Wii U publisher data.                            *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,30 +19,20 @@
 // C includes.
 #include <stdint.h>
 
-namespace LibRomData {
+namespace LibRomData { namespace WiiUData {
 
-class WiiUData
-{
-	private:
-		// Static class.
-		WiiUData();
-		~WiiUData();
-		RP_DISABLE_COPY(WiiUData)
+/**
+ * Look up a Wii U retail disc publisher.
+ *
+ * NOTE: Wii U uses 4-character publisher IDs.
+ * If the first two characters are "00", then it's
+ * equivalent to a 2-character publisher ID.
+ *
+ * @param Wii U retail disc ID4.
+ * @return Packed publisher ID, or 0 if not found.
+ */
+uint32_t lookup_disc_publisher(const char *id4);
 
-	public:
-		/**
-		 * Look up a Wii U retail disc publisher.
-		 *
-		 * NOTE: Wii U uses 4-character publisher IDs.
-		 * If the first two characters are "00", then it's
-		 * equivalent to a 2-character publisher ID.
-		 *
-		 * @param Wii U retail disc ID4.
-		 * @return Packed publisher ID, or 0 if not found.
-		 */
-		static uint32_t lookup_disc_publisher(const char *id4);
-};
-
-}
+} }
 
 #endif /* __ROMPROPERTIES_LIBROMDATA_WIIUDATA_HPP__ */

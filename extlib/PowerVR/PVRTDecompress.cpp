@@ -16,14 +16,37 @@
 #include <cassert>
 #include <vector>
 
+// rom-properties: Use librpcpu's byteorder macros.
+// NOTE: Not able to detect built-in byteswapping intrinsics here.
+#include "../../src/librpcpu/byteorder.h"
+#define __swab32(x) \
+	((uint32_t)((((uint32_t)x) << 24) | (((uint32_t)x) >> 24) | \
+		((((uint32_t)x) & 0x0000FF00UL) << 8) | \
+		((((uint32_t)x) & 0x00FF0000UL) >> 8)))
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+#  define le32_to_cpu(x) (x)
+#  define cpu_to_le32(x) (x)
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+#  define le32_to_cpu(x) __swab32(x)
+#  define cpu_to_le32(x) __swab32(x)
+#endif
+
 namespace pvr {
 struct Pixel32
 {
-#ifdef PVRTC_SWAP_R_B_CHANNELS
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+#  ifdef PVRTC_SWAP_R_B_CHANNELS
 	uint8_t blue, green, red, alpha;
-#else /* !PVRTC_SWAP_R_B_CHANNELS */
+#  else /* !PVRTC_SWAP_R_B_CHANNELS */
 	uint8_t red, green, blue, alpha;
-#endif /* PVRTC_SWAP_R_B_CHANNELS */
+#  endif /* PVRTC_SWAP_R_B_CHANNELS */
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+#  ifdef PVRTC_SWAP_R_B_CHANNELS
+	uint8_t alpha, red, green, blue;
+#  else /* !PVRTC_SWAP_R_B_CHANNELS */
+	uint8_t alpha, blue, green, red;
+#  endif /* PVRTC_SWAP_R_B_CHANNELS */
+#endif
 };
 
 struct Pixel128S
@@ -323,7 +346,7 @@ static int32_t getModulationValues(int32_t modulationValues[16][8], int32_t modu
 {
 	if (bpp == 2)
 	{
-		const int32_t RepVals0[4] = { 0, 3, 5, 8 };
+		static const uint8_t RepVals0[4] = { 0, 3, 5, 8 };
 
 		// extract the modulation value. If a simple encoding
 		if (modulationModes[xPos][yPos] == 0) { return RepVals0[modulationValues[xPos][yPos]]; }
@@ -562,14 +585,14 @@ static uint32_t pvrtcDecompress(uint8_t* pCompressedData, Pixel32* pDecompressed
 
 			// Access individual elements to fill out PVRTCWord
 			PVRTCWord P, Q, R, S;
-			P.colorData = static_cast<uint32_t>(pWordMembers[WordOffsets[0] + 1]);
-			P.modulationData = static_cast<uint32_t>(pWordMembers[WordOffsets[0]]);
-			Q.colorData = static_cast<uint32_t>(pWordMembers[WordOffsets[1] + 1]);
-			Q.modulationData = static_cast<uint32_t>(pWordMembers[WordOffsets[1]]);
-			R.colorData = static_cast<uint32_t>(pWordMembers[WordOffsets[2] + 1]);
-			R.modulationData = static_cast<uint32_t>(pWordMembers[WordOffsets[2]]);
-			S.colorData = static_cast<uint32_t>(pWordMembers[WordOffsets[3] + 1]);
-			S.modulationData = static_cast<uint32_t>(pWordMembers[WordOffsets[3]]);
+			P.colorData = static_cast<uint32_t>(le32_to_cpu(pWordMembers[WordOffsets[0] + 1]));
+			P.modulationData = static_cast<uint32_t>(le32_to_cpu(pWordMembers[WordOffsets[0]]));
+			Q.colorData = static_cast<uint32_t>(le32_to_cpu(pWordMembers[WordOffsets[1] + 1]));
+			Q.modulationData = static_cast<uint32_t>(le32_to_cpu(pWordMembers[WordOffsets[1]]));
+			R.colorData = static_cast<uint32_t>(le32_to_cpu(pWordMembers[WordOffsets[2] + 1]));
+			R.modulationData = static_cast<uint32_t>(le32_to_cpu(pWordMembers[WordOffsets[2]]));
+			S.colorData = static_cast<uint32_t>(le32_to_cpu(pWordMembers[WordOffsets[3] + 1]));
+			S.modulationData = static_cast<uint32_t>(le32_to_cpu(pWordMembers[WordOffsets[3]]));
 
 			// assemble 4 words into struct to get decompressed pixels from
 			pvrtcGetDecompressedPixels<PVRTCII>(P, Q, R, S, pPixels.data(), bpp);
@@ -593,6 +616,9 @@ static uint32_t PVRTDecompressPVRTC_int(const void* pCompressedData, uint32_t Do
 	uint32_t YTrueDim = std::max(YDim, 8u);
 
 	// If the dimensions aren't correct, we need to create a new buffer instead of just using the provided one, as the buffer will overrun otherwise.
+	// rom-properties: make sure we don't hit this case
+	assert(XTrueDim == XDim);
+	assert(YTrueDim == YDim);
 	if (XTrueDim != XDim || YTrueDim != YDim) { pDecompressedData = new Pixel32[XTrueDim * YTrueDim]; }
 
 	// Decompress the surface.

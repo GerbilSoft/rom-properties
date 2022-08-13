@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ExecRpDownload_win32.cpp: Execute rp-download.exe. (Win32)              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,11 +21,6 @@
 using std::string;
 using std::wstring;
 
-// Defined in win32/DllMain.cpp.
-extern "C" {
-	extern TCHAR dll_filename[];
-}
-
 namespace LibRomData {
 
 /**
@@ -36,6 +31,17 @@ namespace LibRomData {
 int CacheManager::execRpDownload(const string &filteredCacheKey)
 {
 	// The executable should be located in the DLL directory.
+	TCHAR dll_filename[MAX_PATH];
+	SetLastError(ERROR_SUCCESS);	// required for XP
+	DWORD dwResult = GetModuleFileName(HINST_THISCOMPONENT,
+		dll_filename, _countof(dll_filename));
+	if (dwResult == 0 || dwResult >= _countof(dll_filename) || GetLastError() != ERROR_SUCCESS) {
+		// Cannot get the DLL filename.
+		// TODO: Windows XP doesn't SetLastError() if the
+		// filename is too big for the buffer.
+		return -EINVAL;
+	}
+
 	tstring rp_download_exe = dll_filename;
 	tstring::size_type bs = rp_download_exe.rfind(_T('\\'));
 	if (bs == tstring::npos) {

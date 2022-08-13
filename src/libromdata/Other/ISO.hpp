@@ -39,6 +39,7 @@ ROMDATA_DECL_BEGIN(ISO)
 		static void addMetaData_PVD(LibRpBase::RomMetaData *metaData, const struct _ISO_Primary_Volume_Descriptor *pvd);
 
 ROMDATA_DECL_METADATA()
+ROMDATA_DECL_VIEWED_ACHIEVEMENTS()
 ROMDATA_DECL_END()
 
 }

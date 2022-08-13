@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * CBCReader.hpp: AES-128-CBC data reader class.                           *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,9 +12,8 @@
 
 // librpbase
 #ifdef ENABLE_DECRYPTION
-# include "crypto/AesCipherFactory.hpp"
-# include "crypto/IAesCipher.hpp"
-# include "crypto/KeyManager.hpp"
+#  include "crypto/AesCipherFactory.hpp"
+#  include "crypto/IAesCipher.hpp"
 #endif
 
 // librpfile
@@ -44,9 +43,9 @@ class CBCReaderPrivate
 
 #ifdef ENABLE_DECRYPTION
 		// Encryption cipher.
+		LibRpBase::IAesCipher *cipher;
 		uint8_t key[16];
 		uint8_t iv[16];
-		LibRpBase::IAesCipher *cipher;
 #endif /* ENABLE_DECRYPTION */
 };
 
@@ -204,7 +203,7 @@ size_t CBCReader::read(void *ptr, size_t size)
 	// TODO: Check for overflow.
 	if (d->pos + (off64_t)size > d->length) {
 		// Reduce size so it doesn't go out of bounds.
-		size = d->length - d->pos;
+		size = static_cast<size_t>(d->length - d->pos);
 	}
 
 	uint8_t iv[16];

@@ -10,6 +10,7 @@
 #define __ROMPROPERTIES_LIBRPSECURE_OS_SECURE_H__
 
 #include "config.librpsecure.h"
+#include "stdboolx.h"
 
 #ifdef ENABLE_EXTRA_SECURITY
 #  ifdef _WIN32
@@ -55,6 +56,7 @@ typedef struct _rp_secure_param_t {
 	int bHighSec;		// High security mode
 #elif defined(HAVE_SECCOMP)
 	const int *syscall_wl;	// Array of allowed syscalls. (-1 terminated)
+	bool threading;		// Set to true to enable multi-threading.
 #elif defined(HAVE_PLEDGE)
 	const char *promises;	// pledge() promises
 #elif defined(HAVE_TAME)

@@ -211,7 +211,7 @@ static int lzxd_read_lens(struct lzxd_stream *lzx, unsigned char *lens,
  * position_base[0] = 0
  * position_base[i] = position_base[i-1] + (1 << extra_bits[i-1])
  */
-static const unsigned int position_slots[11] = {
+static const unsigned short position_slots[11] = {
     30, 32, 34, 36, 38, 42, 50, 66, 98, 162, 290
 };
 static const unsigned char extra_bits[36] = {
@@ -436,7 +436,7 @@ int lzxd_decompress(struct lzxd_stream *lzx, off_t out_bytes) {
     if (lzx->reset_interval && ((lzx->frame % lzx->reset_interval) == 0)) {
       if (lzx->block_remaining) {
         /* this is a file format error, we can make a best effort to extract what we can */
-        D(("%d bytes remaining at reset interval", lzx->block_remaining))
+        D(("%u bytes remaining at reset interval", lzx->block_remaining))
         if (!warned) {
           lzx->sys->message(NULL, "WARNING; invalid reset interval detected during LZX decompression");
           warned++;
@@ -799,7 +799,7 @@ int lzxd_decompress(struct lzxd_stream *lzx, off_t out_bytes) {
       /* did the final match overrun our desired this_run length? */
       if (this_run < 0) {
         if ((unsigned int)(-this_run) > lzx->block_remaining) {
-          D(("overrun went past end of block by %d (%d remaining)",
+          D(("overrun went past end of block by %d (%u remaining)",
              -this_run, lzx->block_remaining ))
           return lzx->error = MSPACK_ERR_DECRUNCH;
         }
@@ -809,7 +809,7 @@ int lzxd_decompress(struct lzxd_stream *lzx, off_t out_bytes) {
 
     /* streams don't extend over frame boundaries */
     if ((window_posn - lzx->frame_posn) != frame_size) {
-      D(("decode beyond output frame limits! %d != %d",
+      D(("decode beyond output frame limits! %u != %u",
          window_posn - lzx->frame_posn, frame_size))
       return lzx->error = MSPACK_ERR_DECRUNCH;
     }
@@ -820,7 +820,7 @@ int lzxd_decompress(struct lzxd_stream *lzx, off_t out_bytes) {
 
     /* check that we've used all of the previous frame first */
     if (lzx->o_ptr != lzx->o_end) {
-      D(("%ld avail bytes, new %d frame",
+      D(("%ld avail bytes, new %u frame",
           (long)(lzx->o_end - lzx->o_ptr), frame_size))
       return lzx->error = MSPACK_ERR_DECRUNCH;
     }

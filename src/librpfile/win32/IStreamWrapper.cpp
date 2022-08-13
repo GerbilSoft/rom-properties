@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * IStreamWrapper.cpp: IStream wrapper for IRpFile. (Win32)                *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,7 +11,7 @@
 
 // libwin32common
 #include "libwin32common/MiniU82T.hpp"
-using LibWin32Common::U82W_s;
+using LibWin32Common::U82W;
 
 // C++ STL classes.
 using std::wstring;
@@ -71,7 +71,7 @@ void IStreamWrapper::setFile(IRpFile *file)
 }
 
 /** IUnknown **/
-// Reference: https://msdn.microsoft.com/en-us/library/office/cc839627.aspx
+// Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus
 
 IFACEMETHODIMP IStreamWrapper::QueryInterface(REFIID riid, LPVOID *ppvObj)
 {
@@ -90,7 +90,7 @@ IFACEMETHODIMP IStreamWrapper::QueryInterface(REFIID riid, LPVOID *ppvObj)
 }
 
 /** ISequentialStream **/
-// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa380010(v=vs.85).aspx
+// Reference: https://docs.microsoft.com/en-us/windows/win32/api/objidl/nn-objidl-isequentialstream
 
 IFACEMETHODIMP IStreamWrapper::Read(void *pv, ULONG cb, ULONG *pcbRead)
 {
@@ -123,7 +123,7 @@ IFACEMETHODIMP IStreamWrapper::Write(const void *pv, ULONG cb, ULONG *pcbWritten
 }
 
 /** IStream **/
-// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa380034(v=vs.85).aspx
+// Reference: https://docs.microsoft.com/en-us/windows/win32/api/objidl/nn-objidl-istream
 
 IFACEMETHODIMP IStreamWrapper::Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGER *plibNewPosition)
 {
@@ -299,14 +299,14 @@ IFACEMETHODIMP IStreamWrapper::Stat(STATSTG *pstatstg, DWORD grfStatFlag)
 		// Copy the filename
 		// TODO: Is nullptr for empty filename allowed?
 		// For now, we'll just return an empty name.
-		// TODO: U82W_ss() that returns a wstring?
-		wstring filename = U82W_s(m_file->filename());
-		const size_t sz = (filename.size() + 1) * sizeof(wchar_t);
+		const char *const u8_filename = m_file->filename();
+		const wstring wfilename(u8_filename ? U82W(u8_filename) : L"");
+		const size_t sz = (wfilename.size() + 1) * sizeof(wchar_t);
 		pstatstg->pwcsName = static_cast<LPOLESTR>(CoTaskMemAlloc(sz));
 		if (!pstatstg->pwcsName) {
 			return E_OUTOFMEMORY;
 		}
-		memcpy(pstatstg->pwcsName, filename.c_str(), sz);
+		memcpy(pstatstg->pwcsName, wfilename.c_str(), sz);
 	}
 
 	pstatstg->type = STGTY_STREAM;	// TODO: or STGTY_STORAGE?

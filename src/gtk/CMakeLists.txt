@@ -1,5 +1,4 @@
 # GTK+ UI frontends
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 CMAKE_POLICY(SET CMP0048 NEW)
 IF(POLICY CMP0063)
 	# CMake 3.3: Enable symbol visibility presets for all
@@ -23,24 +22,22 @@ SET(GTK_ALL_DEPRECATED_FLAGS "${GLIB_DEPRECATED_FLAGS} ${GDK_DEPRECATED_FLAGS} $
 SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${GTK_ALL_DEPRECATED_FLAGS}")
 SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${GTK_ALL_DEPRECATED_FLAGS}")
 
-# CPU-specific and optimized sources.
-IF(CPU_i386 OR CPU_amd64)
-	# IFUNC requires glibc.
-	# We're not checking for glibc here, but we do have preprocessor
-	# checks, so even if this does get compiled on a non-glibc system,
-	# it won't do anything.
-	# TODO: Might be supported on other Unix-like operating systems...
-	IF(UNIX AND NOT APPLE)
-		SET(rom-properties-gtk2_IFUNC_SRCS GdkImageConv_ifunc.cpp)
-	ENDIF(UNIX AND NOT APPLE)
-
-	# NOTE: SSSE3 flags are set in subprojects, not here.
-	SET(rom-properties-gtk2_SSSE3_SRCS GdkImageConv_ssse3.cpp)
-ENDIF(CPU_i386 OR CPU_amd64)
+# Check if dlvsym() is available.
+INCLUDE(CheckSymbolExists)
+SET(OLD_CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES})
+SET(OLD_CMAKE_REQUIRED_DEFINITIONS ${CMAKE_REQUIRED_DEFINITIONS})
+SET(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} ${CMAKE_DL_LIBS})
+SET(CMAKE_REQUIRED_DEFINITIONS ${CMAKE_REQUIRED_DEFINITIONS} -D_GNU_SOURCE)
+CHECK_SYMBOL_EXISTS(dlvsym "dlfcn.h" HAVE_DLVSYM)
+SET(CMAKE_REQUIRED_LIBRARIES ${OLD_CMAKE_REQUIRED_LIBRARIES})
+SET(CMAKE_REQUIRED_DEFINITIONS ${OLD_CMAKE_REQUIRED_DEFINITIONS})
+UNSET(OLD_CMAKE_REQUIRED_LIBRARIES)
+UNSET(OLD_CMAKE_REQUIRED_DEFINITIONS)
 
 # Sources and headers.
-SET(rom-properties-gtk_SRCS
+SET(${PROJECT_NAME}_SRCS
 	RomDataView.cpp
+	RomDataView_ops.cpp
 	DragImage.cpp
 	CreateThumbnail.cpp
 	PIMGTYPE.cpp
@@ -50,37 +47,69 @@ SET(rom-properties-gtk_SRCS
 	RpGtk.cpp
 	sort_funcs.c
 	LanguageComboBox.cpp
+	OptionsMenuButton.cpp
+	is-supported.cpp
+	AchSpritesheet.cpp
+	config/stub-export.c
+	config/ConfigDialog.cpp
+	config/RpConfigTab.cpp
+	config/ImageTypesTab.cpp
+	config/SystemsTab.cpp
+	config/OptionsTab.cpp
+	config/CacheTab.cpp
+	config/CacheCleaner.cpp
+	config/AchievementsTab.cpp
+	config/AboutTab.cpp
 	)
-SET(rom-properties-gtk_H
+SET(${PROJECT_NAME}_H
 	RomDataView.hpp
+	RomDataView_p.hpp
 	DragImage.hpp
-	GdkImageConv.hpp
 	PIMGTYPE.hpp
 	rp-gtk-enums.h
 	RpFile_gio.hpp
 	MessageWidget.hpp
 	RpGtk.hpp
 	sort_funcs.h
+	gtk-compat.h
 	LanguageComboBox.hpp
+	OptionsMenuButton.hpp
+	check-uid.h
+	is-supported.hpp
+	AchSpritesheet.hpp
+	config/ConfigDialog.hpp
+	config/RpConfigTab.h
+	config/ImageTypesTab.hpp
+	config/SystemsTab.hpp
+	config/OptionsTab.hpp
+	config/CacheTab.hpp
+	config/CacheCleaner.hpp
+	config/AchievementsTab.hpp
+	config/AboutTab.hpp
 	)
 
-# GTK2 sources and headers.
-SET(rom-properties-gtk2_SRCS GdkImageConv.cpp)
-SET(rom-properties-gtk2_H GdkImageConv.hpp)
-
-# GTK3 sources and headers.
-SET(rom-properties-gtk3_SRCS CairoImageConv.cpp)
-SET(rom-properties-gtk3_H CairoImageConv.hpp)
+IF(ENABLE_DECRYPTION)
+	SET(${PROJECT_NAME}_SRCS
+		${${PROJECT_NAME}_SRCS}
+		config/KeyManagerTab.cpp
+		config/KeyStoreGTK.cpp
+		)
+	SET(${PROJECT_NAME}_H
+		${${PROJECT_NAME}_H}
+		config/KeyManagerTab.hpp
+		config/KeyStoreGTK.hpp
+		)
+ENDIF(ENABLE_DECRYPTION)
 
 IF(ENABLE_ACHIEVEMENTS)
 	# D-Bus notification for achievements
-	SET(rom-properties-gtk-notify_SRCS AchGDBus.cpp)
-	SET(rom-properties-gtk-notify_H    AchGDBus.hpp)
+	SET(${PROJECT_NAME}-notify_SRCS AchGDBus.cpp)
+	SET(${PROJECT_NAME}-notify_H    AchGDBus.hpp)
 ENDIF(ENABLE_ACHIEVEMENTS)
 
 # Common libraries required for both GTK+ 2.x and 3.x.
-FIND_PACKAGE(GLib2 2.26.0)
-FIND_PACKAGE(GObject2 2.26.0)
+FIND_PACKAGE(GLib2 ${GLIB_MIN_VERSION})
+FIND_PACKAGE(GObject2 ${GLIB_MIN_VERSION})
 IF(GLib2_FOUND AND GObject2_FOUND)
 	# Check for version-specific image libraries.
 	FIND_PACKAGE(GdkPixbuf2)
@@ -90,14 +119,43 @@ IF(GLib2_FOUND AND GObject2_FOUND)
 	ENDIF(NOT GdkPixbuf2_FOUND)
 	FIND_PACKAGE(Cairo)
 	IF(NOT Cairo_FOUND)
-		# Cannot build GTK3 frontends.
+		# Cannot build GTK3 or GTK4 frontends.
 		SET(BUILD_GTK3 OFF CACHE INTERNAL "Build the GTK+ 3.x plugin." FORCE)
+		SET(BUILD_GTK4 OFF CACHE INTERNAL "Build the GTK 4.x plugin." FORCE)
 	ENDIF(NOT Cairo_FOUND)
 ELSE(GLib2_FOUND AND GObject2_FOUND)
 	# Cannot build any GTK+ frontends.
 	SET(BUILD_GTK2 OFF CACHE INTERNAL "Build the GTK+ 2.x plugin." FORCE)
 	SET(BUILD_GTK3 OFF CACHE INTERNAL "Check for GTK+ 3.x plugin." FORCE)
+	SET(BUILD_GTK4 OFF CACHE INTERNAL "Check for GTK 4.x plugin." FORCE)
 ENDIF(GLib2_FOUND AND GObject2_FOUND)
+
+# LibCanberra and related packages.
+# TODO: Add an OPTION() to allow the user to disable this?
+FIND_PACKAGE(GSound)
+IF(GSound_FOUND)
+	SET(HAVE_GSOUND 1)
+ELSE(GSound_FOUND)
+	FIND_PACKAGE(LibCanberra)
+	IF(LibCanberra_FOUND)
+		SET(HAVE_LIBCANBERRA 1)
+		IF(BUILD_GTK2)
+			FIND_PACKAGE(LibCanberraGtk2)
+			IF(LibCanberraGtk2_FOUND)
+				SET(HAVE_LIBCANBERRA_GTK2 1)
+			ENDIF(LibCanberraGtk2_FOUND)
+		ENDIF(BUILD_GTK2)
+		IF(BUILD_GTK3)
+			FIND_PACKAGE(LibCanberraGtk3)
+			IF(LibCanberraGtk3_FOUND)
+				SET(HAVE_LIBCANBERRA_GTK3 1)
+			ENDIF(LibCanberraGtk3_FOUND)
+		ENDIF(BUILD_GTK3)
+	ENDIF(LibCanberra_FOUND)
+ENDIF(GSound_FOUND)
+
+# Write the config.h file.
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.gtk.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.gtk.h")
 
 # Build GTK+ 2.x frontends.
 IF(BUILD_GTK2)
@@ -116,24 +174,36 @@ IF(BUILD_GTK3)
 	FIND_PACKAGE(GTK3 3.10.0 ${REQUIRE_GTK3})
 	IF(GTK3_FOUND)
 		ADD_SUBDIRECTORY(gtk3)
-
-		# Process the .thumbnailer file.
-		INCLUDE(DirInstallPaths)
-		INCLUDE(ParseMimeTypes)
-		PARSE_MIME_TYPES(MIMETYPES_THUMBONLY "${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types")
-		CONFIGURE_FILE(rom-properties.thumbnailer.in rom-properties.thumbnailer @ONLY)
-		INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/rom-properties.thumbnailer"
-			DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/thumbnailers"
-			COMPONENT "plugin"
-			)
 	ELSE(GTK3_FOUND)
 		SET(BUILD_GTK3 OFF CACHE INTERNAL "Build the GTK+ 3.x plugin." FORCE)
 	ENDIF(GTK3_FOUND)
 ENDIF(BUILD_GTK3)
 
+# Build GTK 4.x frontends.
+IF(BUILD_GTK4)
+	FIND_PACKAGE(GTK4 ${REQUIRE_GTK4})
+	IF(GTK4_FOUND)
+		ADD_SUBDIRECTORY(gtk4)
+	ELSE(GTK4_FOUND)
+		SET(BUILD_GTK4 OFF CACHE INTERNAL "Build the GTK 4.x plugin." FORCE)
+	ENDIF(GTK4_FOUND)
+ENDIF(BUILD_GTK4)
+
+IF(GTK3_FOUND OR GTK4_FOUND)
+	# Process the .thumbnailer file.
+	INCLUDE(DirInstallPaths)
+	INCLUDE(ParseMimeTypes)
+	PARSE_MIME_TYPES(MIMETYPES_THUMBONLY "${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types")
+	CONFIGURE_FILE(rom-properties.thumbnailer.in rom-properties.thumbnailer @ONLY)
+	INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/rom-properties.thumbnailer"
+		DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/thumbnailers"
+		COMPONENT "plugin"
+		)
+ENDIF(GTK3_FOUND OR GTK4_FOUND)
+
 # Build the D-Bus thumbnailer.
 # Required for XFCE.
-IF(BUILD_GTK2 OR BUILD_GTK3)
+IF(BUILD_GTK2 OR BUILD_GTK3 OR BUILD_GTK4)
 	SET(BUILD_THUMBNAILER_DBUS ON CACHE INTERNAL "Build the D-Bus thumbnailer." FORCE)
 	ADD_SUBDIRECTORY(thumbnailer-dbus)
-ENDIF(BUILD_GTK2 OR BUILD_GTK3)
+ENDIF(BUILD_GTK2 OR BUILD_GTK3 OR BUILD_GTK4)

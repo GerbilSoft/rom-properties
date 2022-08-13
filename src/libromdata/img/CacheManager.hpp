@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CacheManager.hpp: Local cache manager.                                  *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,7 +12,9 @@
 #include "common.h"
 
 // librpthreads
-#include "librpthreads/Semaphore.hpp"
+namespace LibRpThreads {
+	class Semaphore;
+}
 
 // C++ includes.
 #include <string>
@@ -43,6 +45,7 @@ class CacheManager
 		 * Set the proxy server.
 		 * @param proxyUrl Proxy server URL. (Use nullptr or blank string for default settings.)
 		 */
+		RP_LIBROMDATA_PUBLIC
 		void setProxyUrl(const char *proxyUrl);
 
 		/**
@@ -68,6 +71,7 @@ class CacheManager
 		 *
 		 * @return Absolute path to the cached file.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		std::string download(const std::string &cache_key);
 
 		/**
@@ -75,6 +79,7 @@ class CacheManager
 		 * @param cache_key Cache key.
 		 * @return Filename in the cache, or empty string if not found.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		std::string findInCache(const std::string &cache_key);
 
 	protected:

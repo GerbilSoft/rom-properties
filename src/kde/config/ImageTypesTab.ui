@@ -65,10 +65,6 @@ External images are downloaded from an external image database.
      <property name="focusPolicy">
       <enum>Qt::StrongFocus</enum>
      </property>
-     <property name="text">
-      <string>GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images&lt;br/&gt;are provided by &lt;a href=&quot;http://www.gametdb.com/&quot;&gt;GameTDB&lt;/a&gt;.&lt;br/&gt;
-amiibo images are provided by &lt;a href=&quot;https://amiibo.life/&quot;&gt;amiibo.life&lt;/a&gt;, the Unofficial amiibo Database.</string>
-     </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>
      </property>

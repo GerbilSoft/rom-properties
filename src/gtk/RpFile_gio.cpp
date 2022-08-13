@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpFile_gio.cpp: IRpFile implementation using GIO/GVfs.                  *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -44,9 +44,7 @@ class RpFileGioPrivate
 
 RpFileGioPrivate::~RpFileGioPrivate()
 {
-	if (stream) {
-		g_object_unref(stream);
-	}
+	g_clear_object(&stream);
 }
 
 /**
@@ -120,10 +118,7 @@ void RpFileGio::init(void)
 			m_lastError = EIO;
 		}
 
-		if (d->stream) {
-			g_object_unref(d->stream);
-			d->stream = nullptr;
-		}
+		g_clear_object(&d->stream);
 		return;
 	}
 
@@ -153,10 +148,7 @@ bool RpFileGio::isOpen(void) const
 void RpFileGio::close(void)
 {
 	RP_D(RpFileGio);
-	if (d->stream) {
-		g_object_unref(d->stream);
-		d->stream = nullptr;
-	}
+	g_clear_object(&d->stream);
 }
 
 /**
@@ -193,7 +185,7 @@ size_t RpFileGio::read(void *ptr, size_t size)
 
 /**
  * Write data to the file.
- * (NOTE: Not valid for RpMemFile; this will always return 0.)
+ * (NOTE: Not valid for RpFileGio; this will always return 0.)
  * @param ptr Input data buffer.
  * @param size Amount of data to read, in bytes.
  * @return Number of bytes written.
@@ -254,20 +246,6 @@ off64_t RpFileGio::tell(void)
 	return g_seekable_tell(G_SEEKABLE(d->stream));
 }
 
-/**
- * Truncate the file.
- * @param size New size. (default is 0)
- * @return 0 on success; -1 on error.
- */
-int RpFileGio::truncate(off64_t size)
-{
-	// Not supported.
-	// TODO: Writable RpFileGio?
-	RP_UNUSED(size);
-	m_lastError = ENOTSUP;
-	return -1;
-}
-
 /** File properties **/
 
 /**
@@ -296,9 +274,7 @@ off64_t RpFileGio::size(void)
 			m_lastError = EIO;
 		}
 
-		if (fileInfo) {
-			g_object_unref(fileInfo);
-		}
+		g_clear_object(&fileInfo);
 		return -1;
 	}
 
@@ -311,10 +287,10 @@ off64_t RpFileGio::size(void)
 /**
  * Get the filename.
  * NOTE: For RpFileGio, this returns a GVfs URI.
- * @return Filename. (May be empty if the filename is not available.)
+ * @return Filename. (May be nullptr if the filename is not available.)
  */
-string RpFileGio::filename(void) const
+const char *RpFileGio::filename(void) const
 {
 	RP_D(const RpFileGio);
-	return d->uri;
+	return (!d->uri.empty() ? d->uri.c_str() : nullptr);
 }

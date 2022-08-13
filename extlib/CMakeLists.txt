@@ -29,13 +29,8 @@ IF(CPU_i386 OR CPU_amd64)
 	ENDIF()
 ENDIF(CPU_i386 OR CPU_amd64)
 
-# FIXME: zlib-1.2.9's asm optimizations break on 32-bit Windows...
-# Reference:  https://github.com/madler/zlib/issues/41
-UNSET(AMD64)
-UNSET(ASM686)
-
 # Don't install any of these libraries by default.
-# zlib and libpng will be installed if they're
+# zlib-ng and libpng will be installed if they're
 # built as shared libraries.
 SET(SKIP_INSTALL_LIBRARIES ON)
 SET(SKIP_INSTALL_HEADERS ON)
@@ -48,7 +43,7 @@ SET(INSTALL_BIN_DIR "${DIR_INSTALL_DLL}")
 SET(INSTALL_LIB_DIR "${DIR_INSTALL_LIB}")
 
 IF(USE_INTERNAL_ZLIB)
-	# Use the internal copy of zlib.
+	# Use the internal copy of zlib-ng.
 	# On Windows and Mac OS X, this will build DLLs.
 	# On other systems, this will be statically-linked.
 	IF(WIN32 OR APPLE)
@@ -62,7 +57,38 @@ IF(USE_INTERNAL_ZLIB)
 		SET(BUILD_SHARED_LIBS OFF)
 		SET(BUILD_STATIC_LIBS ON)
 	ENDIF()
-	ADD_SUBDIRECTORY(zlib)
+
+	# zlib-ng options
+	SET(WITH_GZFILEOP ON)
+	SET(ZLIB_COMPAT ON)
+	SET(ZLIB_ENABLE_TESTS OFF)
+	SET(ZLIB_DUAL_LINK OFF)
+	SET(WITH_SANITIZER OFF)
+	SET(WITH_FUZZERS OFF)
+	SET(WITH_OPTIM ON)
+	SET(WITH_NEW_STRATEGIES ON)
+	SET(WITH_NATIVE_INSTRUCTIONS OFF)
+	SET(WITH_MAINTAINER_WARNINGS OFF)
+	SET(WITH_CODE_COVERAGE OFF)
+	SET(WITH_INFLATE_STRICT OFF)
+	SET(WITH_INFLATE_ALLOW_INVALID_DIST OFF)
+	SET(WITH_UNALIGNED ON)
+
+	# CPU-specific optimizations
+	SET(WITH_ACLE ON)
+	SET(WITH_NEON ON)
+	SET(WITH_POWER8 ON)
+	SET(WITH_DFLTCC_DEFLATE OFF)
+	SET(WITH_DFLTCC_INFLATE OFF)
+	SET(WITH_AVX2 ON)
+	SET(WITH_SSE2 ON)
+	SET(WITH_SSSE3 ON)
+	SET(WITH_SSE4 ON)
+	SET(WITH_PCLMULQDQ ON)
+
+	SET(INSTALL_UTILS OFF)
+
+	ADD_SUBDIRECTORY(zlib-ng)
 	# NOTE: Cannot remove targets from all builds
 	# if they're being installed.
 	#SET_EXTLIB_PROPERTIES(zlib)
@@ -123,7 +149,7 @@ IF(USE_INTERNAL_ZSTD)
 	SET_EXTLIB_PROPERTIES(zstdstatic)
 ENDIF(USE_INTERNAL_ZSTD)
 
-# MiniZip
+# minizip-ng
 SET(SKIP_INSTALL_LIBRARIES ON)
 SET(SKIP_INSTALL_ALL ON)
 SET(BUILD_SHARED_LIBS OFF)
@@ -145,12 +171,12 @@ SET(MZ_ICONV OFF)
 SET(MZ_SIGNING OFF)
 SET(MZ_COMPRESS_ONLY OFF)
 SET(MZ_DECOMPRESS_ONLY OFF)
-SET(MZ_BUILD_TEST ON)	# Allow manually building test executables.
-SET(MZ_BUILD_UNIT_TEST OFF)
-SET(MZ_BUILD_FUZZ_TEST OFF)
+SET(MZ_BUILD_TESTS ON)	# Allow manually building test executables.
+SET(MZ_BUILD_UNIT_TESTS OFF)
+SET(MZ_BUILD_FUZZ_TESTS OFF)
 SET(MZ_CODE_COVERAGE OFF)
 SET(MZ_FILE32_API OFF)
-ADD_SUBDIRECTORY(minizip)
+ADD_SUBDIRECTORY(minizip-ng)
 SET_EXTLIB_PROPERTIES(minizip)
 SET_EXTLIB_PROPERTIES(minigzip_cmd)
 SET_EXTLIB_PROPERTIES(minizip_cmd)
@@ -245,7 +271,7 @@ IF(USE_INTERNAL_LZ4)
 		SET(BUILD_SHARED_LIBS OFF)
 		SET(BUILD_STATIC_LIBS ON)
 	ENDIF()
-	ADD_SUBDIRECTORY(lz4/contrib/cmake_unofficial)
+	ADD_SUBDIRECTORY(lz4/build/cmake)
 	# NOTE: Cannot remove targets from all builds
 	# if they're being installed.
 	#SET_EXTLIB_PROPERTIES(lz4_shared)
@@ -317,3 +343,8 @@ IF(BUILD_TESTING)
 		TARGET_COMPILE_DEFINITIONS(gtest_main INTERFACE GTEST_LINKED_AS_SHARED_LIBRARY=1)
 	ENDIF(WIN32)
 ENDIF(BUILD_TESTING)
+
+# Basis Universal ASTC decoder
+IF(ENABLE_ASTC)
+	ADD_SUBDIRECTORY(basisu_astc)
+ENDIF(ENABLE_ASTC)

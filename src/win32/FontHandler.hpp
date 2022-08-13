@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * FontHandler.hpp: Font handler.                                          *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -39,6 +39,12 @@ class FontHandler
 		void setWindow(HWND hWnd);
 
 	public:
+		/**
+		 * Get the bold font.
+		 * @return Bold font, or nullptr on error.
+		 */
+		HFONT boldFont(void) const;
+
 		/**
 		 * Get the monospaced font.
 		 * Needed in some cases, e.g. for ListView.

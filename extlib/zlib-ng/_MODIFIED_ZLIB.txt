@@ -1,0 +1,40 @@
+This copy of zlib-ng 2.0.6 is a modified version of the original.
+
+commit b56a2fd0b126cfe5f13e68ab9090cd4f6a773286
+Version 2.0.6
+ - Fix hangs on macOS #1031
+ - Fix minideflate write buffers being overwritten #1060
+ - Fix deflateBound and compressBound returning too small size estimates #1049 #1071
+ - Fix incorrect function declaration warning #1080
+ - Fix build problems when building outside of source dir #1049
+ - Fix build problems on arm2-7 #1030
+ - Fixed some compile warnings #1020 #1036 #1037 #1048
+ - Improved posix memalign support #888
+ - Improvements to testing #637 #1026 #1032 #1035 #1049 #1051 #1056 #1063 #1067 #1079
+ - Improvements for integration into other projects #1022 #1042
+ - Code style fixes #637 #1040 #1050 #1075
+
+Tag: 2.0.6
+
+The following changes have been made to the original:
+
+- CMakeLists.txt has been edited to prevent building the Win32 resource
+  data when being built as a shared library.
+
+- Example binaries are no longer built.
+
+- CMakeLists.txt now sets the target compile definitions to -DZLIB_CONST
+  and sets the target include directories. This allows all targets
+  that depend on zlib/zlibstatic to automatically pick up the compile
+  definitions and include directories.
+
+- cmake_minimum_required() is disabled, since it interfered with
+  policies set by the main build infrastructure.
+
+- Some other functionality not needed by rom-properties has been disabled.
+
+To obtain the original zlib-ng v2.0.6, visit:
+https://github.com/zlib-ng/zlib-ng
+
+To obtain the original zlib-1.2.11, visit:
+http://www.zlib.net

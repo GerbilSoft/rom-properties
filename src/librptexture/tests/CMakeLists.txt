@@ -1,5 +1,4 @@
 # librptexture test suite
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 CMAKE_POLICY(SET CMP0048 NEW)
 IF(POLICY CMP0063)
 	# CMake 3.3: Enable symbol visibility presets for all
@@ -15,8 +14,9 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../..)
 # ImageDecoderLinear test
 # TODO: Move to libromdata, or move libromdata stuff here?
 ADD_EXECUTABLE(ImageDecoderLinearTest ImageDecoderLinearTest.cpp)
-TARGET_LINK_LIBRARIES(ImageDecoderLinearTest PRIVATE rptest rpcpu romdata rptexture)
-TARGET_LINK_LIBRARIES(ImageDecoderLinearTest PRIVATE gtest ${ZLIB_LIBRARY})
+TARGET_LINK_LIBRARIES(ImageDecoderLinearTest PRIVATE rptest romdata)
+TARGET_COMPILE_DEFINITIONS(ImageDecoderLinearTest PRIVATE RP_BUILDING_FOR_DLL=1)
+TARGET_LINK_LIBRARIES(ImageDecoderLinearTest PRIVATE gtest ${ZLIB_LIBRARIES})
 TARGET_INCLUDE_DIRECTORIES(ImageDecoderLinearTest PRIVATE ${ZLIB_INCLUDE_DIRS})
 TARGET_COMPILE_DEFINITIONS(ImageDecoderLinearTest PRIVATE ${ZLIB_DEFINITIONS})
 IF(PNG_LIBRARY)
@@ -31,7 +31,8 @@ ADD_TEST(NAME ImageDecoderLinearTest COMMAND ImageDecoderLinearTest "--gtest_fil
 
 # UnPremultiplyTest
 ADD_EXECUTABLE(UnPremultiplyTest UnPremultiplyTest.cpp)
-TARGET_LINK_LIBRARIES(UnPremultiplyTest PRIVATE rptest rpcpu rptexture)
+TARGET_LINK_LIBRARIES(UnPremultiplyTest PRIVATE rptest romdata)
+TARGET_COMPILE_DEFINITIONS(UnPremultiplyTest PRIVATE RP_BUILDING_FOR_DLL=1)
 TARGET_LINK_LIBRARIES(UnPremultiplyTest PRIVATE gtest)
 DO_SPLIT_DEBUG(UnPremultiplyTest)
 SET_WINDOWS_SUBSYSTEM(UnPremultiplyTest CONSOLE)

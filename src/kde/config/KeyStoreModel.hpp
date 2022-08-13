@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyStoreModel.hpp: QAbstractListModel for KeyStore.                     *
  *                                                                         *
- * Copyright (c) 2012-2020 by David Korth.                                 *
+ * Copyright (c) 2012-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,7 +12,7 @@
 // Qt includes.
 #include <QtCore/QAbstractItemModel>
 
-class KeyStoreQt;
+#include "KeyStoreQt.hpp"
 
 class KeyStoreModelPrivate;
 class KeyStoreModel : public QAbstractItemModel
@@ -93,10 +93,23 @@ class KeyStoreModel : public QAbstractItemModel
 		 */
 		void keyStore_allKeysChanged_slot(void);
 
+	public slots:
 		/**
-		 * The system theme has changed.
+		 * System font has changed.
+		 *
+		 * Call this from the parent widget's changeEvent() function
+		 * on QEvent::FontChange.
 		 */
-		void themeChanged_slot(void);
+		void systemFontChanged(void);
+
+		/**
+		 * System color scheme has changed.
+		 * Icons may need to be re-cached.
+		 *
+		 * Call this from the parent widget's changeEvent() function
+		 * on QEvent::PaletteChange.
+		 */
+		void systemPaletteChanged(void);
 };
 
 #endif /* __ROMPROPERTIES_KDE_CONFIG_KEYSTOREMODEL_HPP__ */

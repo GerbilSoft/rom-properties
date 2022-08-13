@@ -6,7 +6,7 @@
  * a generic list, RomMetaData stores specific properties that can be used *
  * by the desktop environment's indexer.                                   *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -42,20 +42,20 @@ class RomMetaDataPrivate
 		 */
 		void delete_data(void);
 
-		// Property type mapping.
+		// Property type mapping
 		static const PropertyType PropertyTypeMap[];
 
 		/**
 		 * Add or overwrite a Property.
-		 * @param name Property name.
-		 * @return Metadata property.
+		 * @param name Property name
+		 * @return Metadata property
 		 */
 		RomMetaData::MetaData *addProperty(Property name);
 };
 
 /** RomMetaDataPrivate **/
 
-// Property type mapping.
+// Property type mapping
 const PropertyType RomMetaDataPrivate::PropertyTypeMap[] = {
 	PropertyType::FirstPropertyType,	// first type is invalid
 
@@ -145,6 +145,19 @@ const PropertyType RomMetaDataPrivate::PropertyTypeMap[] = {
 	PropertyType::String,	// Label
 	PropertyType::String,	// Compilation
 	PropertyType::String,	// License
+
+	// Added in KF5 5.48
+	PropertyType::Integer,	// Rating
+	PropertyType::String,	// Lyrics
+
+	// Replay gain (KF5 5.51)
+	PropertyType::Double,	// ReplayGainAlbumPeak
+	PropertyType::Double,	// ReplayGainAlbumGain
+	PropertyType::Double,	// ReplayGainTrackPeak
+	PropertyType::Double,	// ReplayGainTrackGain
+
+	// Added in KF5 5.53
+	PropertyType::String,	// Description
 };
 
 RomMetaDataPrivate::RomMetaDataPrivate()
@@ -165,10 +178,7 @@ RomMetaDataPrivate::~RomMetaDataPrivate()
 void RomMetaDataPrivate::delete_data(void)
 {
 	// Delete all of the allocated strings in this->metaData.
-	const auto metaData_end = metaData.end();
-	for (auto iter = this->metaData.begin(); iter != metaData_end; ++iter) {
-		RomMetaData::MetaData &metaData = *iter;
-
+	for (RomMetaData::MetaData &metaData : this->metaData) {
 		assert(metaData.name > Property::FirstProperty);
 		assert(metaData.name < Property::PropertyCount);
 		if (metaData.name <= Property::FirstProperty ||
@@ -181,6 +191,7 @@ void RomMetaDataPrivate::delete_data(void)
 			case PropertyType::Integer:
 			case PropertyType::UnsignedInteger:
 			case PropertyType::Timestamp:
+			case PropertyType::Double:
 				// No data here.
 				break;
 			case PropertyType::String:
@@ -199,8 +210,8 @@ void RomMetaDataPrivate::delete_data(void)
 
 /**
  * Add or overwrite a Property.
- * @param name Property name.
- * @return Metadata property.
+ * @param name Property name
+ * @return Metadata property
  */
 RomMetaData::MetaData *RomMetaDataPrivate::addProperty(Property name)
 {
@@ -271,7 +282,7 @@ int RomMetaData::count(void) const
 
 /**
  * Get a metadata property.
- * @param idx Metadata index.
+ * @param idx Metadata index
  * @return Metadata property, or nullptr if the index is invalid.
  */
 const RomMetaData::MetaData *RomMetaData::prop(int idx) const
@@ -296,7 +307,7 @@ bool RomMetaData::empty(void) const
 
 /**
  * Reserve space for metadata.
- * @param n Desired capacity.
+ * @param n Desired capacity
  */
 void RomMetaData::reserve(int n)
 {
@@ -366,6 +377,9 @@ int RomMetaData::addMetaData_metaData(const RomMetaData *other)
 			case PropertyType::Timestamp:
 				pDest->data.timestamp = pSrc->data.timestamp;
 				break;
+			case PropertyType::Double:
+				pDest->data.dvalue = pSrc->data.dvalue;
+				break;
 			default:
 				// ERROR!
 				assert(!"Unsupported RomMetaData PropertyType.");
@@ -383,8 +397,8 @@ int RomMetaData::addMetaData_metaData(const RomMetaData *other)
  * If a metadata property with the same name already exists,
  * it will be overwritten.
  *
- * @param name Metadata name.
- * @param val Integer value.
+ * @param name Property name
+ * @param val Integer value
  * @return Metadata index, or -1 on error.
  */
 int RomMetaData::addMetaData_integer(Property name, int value)
@@ -413,8 +427,8 @@ int RomMetaData::addMetaData_integer(Property name, int value)
  * If a metadata property with the same name already exists,
  * it will be overwritten.
  *
- * @param name Metadata name.
- * @param val Unsigned integer value.
+ * @param name Property name
+ * @param val Unsigned integer value
  * @return Metadata index, or -1 on error.
  */
 int RomMetaData::addMetaData_uint(Property name, unsigned int value)
@@ -443,9 +457,9 @@ int RomMetaData::addMetaData_uint(Property name, unsigned int value)
  * If a metadata property with the same name already exists,
  * it will be overwritten.
  *
- * @param name Metadata name.
- * @param str String value.
- * @param flags Formatting flags.
+ * @param name Property name
+ * @param str String value
+ * @param flags Formatting flags
  * @return Metadata index, or -1 on error.
  */
 int RomMetaData::addMetaData_string(Property name, const char *str, unsigned int flags)
@@ -490,9 +504,9 @@ int RomMetaData::addMetaData_string(Property name, const char *str, unsigned int
  * If a metadata property with the same name already exists,
  * it will be overwritten.
  *
- * @param name Metadata name.
- * @param str String value.
- * @param flags Formatting flags.
+ * @param name Property name
+ * @param str String value
+ * @param flags Formatting flags
  * @return Metadata index, or -1 on error.
  */
 int RomMetaData::addMetaData_string(Property name, const string &str, unsigned int flags)
@@ -540,8 +554,8 @@ int RomMetaData::addMetaData_string(Property name, const string &str, unsigned i
  * If a metadata property with the same name already exists,
  * it will be overwritten.
  *
- * @param name Metadata name.
- * @param timestamp UNIX timestamp.
+ * @param name Property name
+ * @param timestamp UNIX timestamp
  * @return Metadata index, or -1 on error.
  */
 int RomMetaData::addMetaData_timestamp(Property name, time_t timestamp)
@@ -561,6 +575,36 @@ int RomMetaData::addMetaData_timestamp(Property name, time_t timestamp)
 	}
 
 	pMetaData->data.timestamp = timestamp;
+	return static_cast<int>(d->map_metaData[(int)name]);
+}
+
+/**
+ * Add a double-precision floating point metadata property.
+ *
+ * If a metadata property with the same name already exists,
+ * it will be overwritten.
+ *
+ * @param name Property name
+ * @param dvalue Double value
+ * @return Metadata index, or -1 on error.
+ */
+int RomMetaData::addMetaData_double(Property name, double dvalue)
+{
+	RP_D(RomMetaData);
+	MetaData *const pMetaData = d->addProperty(name);
+	assert(pMetaData != nullptr);
+	if (!pMetaData)
+		return -1;
+
+	// Make sure this is a timestamp property.
+	assert(pMetaData->type == PropertyType::Double);
+	if (pMetaData->type != PropertyType::Double) {
+		// TODO: Delete the property in this case?
+		pMetaData->data.iptrvalue = 0;
+		return -1;
+	}
+
+	pMetaData->data.dvalue = dvalue;
 	return static_cast<int>(d->map_metaData[(int)name]);
 }
 

@@ -1,12 +1,11 @@
 # Internationalization support code.
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 CMAKE_POLICY(SET CMP0048 NEW)
 IF(POLICY CMP0063)
 	# CMake 3.3: Enable symbol visibility presets for all
 	# target types, including static libraries and executables.
 	CMAKE_POLICY(SET CMP0063 NEW)
 ENDIF(POLICY CMP0063)
-PROJECT(libi18n LANGUAGES C)
+PROJECT(i18n LANGUAGES C)
 
 # NOTE: This subdirectory is always built, even if NLS is disabled,
 # since config.libi18n.h is included by i18n.h.
@@ -18,28 +17,62 @@ ENDIF(ENABLE_NLS)
 
 # Write the config.h file.
 INCLUDE(DirInstallPaths)
-CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.libi18n.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.libi18n.h")
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.lib${PROJECT_NAME}.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.lib${PROJECT_NAME}.h")
 
 ######################
 # Build the library. #
 ######################
 
-IF(ENABLE_NLS)
-	ADD_LIBRARY(i18n STATIC i18n.c i18n.h)
-	INCLUDE(SetMSVCDebugPath)
-	SET_MSVC_DEBUG_PATH(i18n)
-	# Exclude from ALL builds.
-	SET_TARGET_PROPERTIES(i18n PROPERTIES EXCLUDE_FROM_ALL TRUE)
+# NOTE: ${PROJECT_NAME} is the original target.
+# ${PROJECT_NAME}-dll is the target with dllimport/dllexport for libromdata.
+IF(RP_LIBROMDATA_IS_DLL AND WIN32)
+	# On Win32, the dll target needs dllimport/dllexport.
+	SET(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}-dll)
+ELSE()
+	# On other platforms, the dll target will be an alias to the regular target.
+	# That will be set up later, since the regular target doesn't exist yet.
+	SET(TARGETS ${PROJECT_NAME})
+ENDIF()
 
-	TARGET_LINK_LIBRARIES(i18n PUBLIC ${Intl_LIBRARIES})
-	TARGET_INCLUDE_DIRECTORIES(i18n
+IF(NOT ENABLE_NLS)
+	# NLS is disabled. Don't build anything.
+	UNSET(TARGETS)
+ENDIF(NOT ENABLE_NLS)
+
+FOREACH(_target ${TARGETS})
+	ADD_LIBRARY(${_target} STATIC i18n.c i18n.h)
+	INCLUDE(SetMSVCDebugPath)
+	SET_MSVC_DEBUG_PATH(${_target})
+	# Exclude from ALL builds.
+	SET_TARGET_PROPERTIES(${_target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+
+	# DLL targets need the appropriate macros.
+	IF(${_target} MATCHES "-dll$")
+		SET(_target_suffix "-dll")
+		TARGET_COMPILE_DEFINITIONS(${_target}
+			PUBLIC		RP_BUILDING_FOR_DLL=1
+			PRIVATE		RP_BUILDING_LIBROMDATA=1
+			)
+	ELSE()
+		UNSET(_target_suffix)
+	ENDIF()
+
+	TARGET_LINK_LIBRARIES(${_target} PUBLIC ${Intl_LIBRARIES})
+	TARGET_LINK_LIBRARIES(${_target} PRIVATE rpthreads${_target_suffix})
+	TARGET_INCLUDE_DIRECTORIES(${_target}
 		PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 			${Intl_INCLUDE_DIR}
 		PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>
 		)
-ENDIF(ENABLE_NLS)
+ENDFOREACH(_target)
+UNSET(_target_suffix)
+
+IF(TARGET ${PROJECT_NAME} AND NOT TARGET ${PROJECT_NAME}-dll)
+	# On other platforms, the dll target will be an alias to the regular target.
+	ADD_LIBRARY(${PROJECT_NAME}-dll ALIAS ${PROJECT_NAME})
+ENDIF()
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
 IF(UNIX AND NOT APPLE)

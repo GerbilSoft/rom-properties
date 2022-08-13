@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * ListDataModel.cpp: QAbstractListModel for RFT_LISTDATA.                 *
  *                                                                         *
- * Copyright (c) 2012-2020 by David Korth.                                 *
+ * Copyright (c) 2012-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -52,8 +52,15 @@ class ListDataModelPrivate
 		// Flat array of QStrings.
 		// Size should always be columnCount*rowCount.
 		// Ordering is per-row. (row0, col0; row0, col1; row0, col2; row1, col0; etc)
-		// Points to an element in lc_data.
+		// Points to an element in map_data.
 		const vector<QString> *pData;
+
+		// Icons.
+		// NOTE: References to rp_image* are kept in case
+		// the icon size is changed.
+		std::vector<QPixmap> icons;
+		std::vector<const rp_image*> icons_rp;
+		QSize iconSize;
 
 		// Qt::ItemFlags
 		Qt::ItemFlags itemFlags;
@@ -65,13 +72,6 @@ class ListDataModelPrivate
 		// Checkboxes.
 		uint32_t checkboxes;
 		bool hasCheckboxes;
-
-		// Icons.
-		// NOTE: References to rp_image* are kept in case
-		// the icon size is changed.
-		std::vector<QPixmap> icons;
-		std::vector<const rp_image*> icons_rp;
-		QSize iconSize;
 
 		// Current language code.
 		uint32_t lc;
@@ -130,12 +130,12 @@ ListDataModelPrivate::ListDataModelPrivate(ListDataModel *q)
 	, columnCount(0)
 	, rowCount(0)
 	, pData(nullptr)
+	, iconSize(QSize(32, 32))
 	, itemFlags(Qt::NoItemFlags)
 	, align_headers(0)
 	, align_data(0)
 	, checkboxes(0)
 	, hasCheckboxes(false)
-	, iconSize(QSize(32, 32))
 	, lc('en')
 {
 	// TODO: Better default icon size?
@@ -144,11 +144,9 @@ ListDataModelPrivate::ListDataModelPrivate(ListDataModel *q)
 ListDataModelPrivate::~ListDataModelPrivate()
 {
 	// Unreference rp_images.
-	std::for_each(icons_rp.cbegin(), icons_rp.cend(),
-		[](const rp_image *img) {
-			UNREF(img);
-		}
-	);
+	for (const rp_image *img : icons_rp) {
+		UNREF(img);
+	}
 }
 
 /**
@@ -168,11 +166,9 @@ void ListDataModelPrivate::clearData(void)
 	// Clear icons.
 	icons.clear();
 	// Unreference rp_images.
-	std::for_each(icons_rp.cbegin(), icons_rp.cend(),
-		[](const rp_image *img) {
-			UNREF(img);
-		}
-	);
+	for (const rp_image *img : icons_rp) {
+		UNREF(img);
+	}
 	icons_rp.clear();
 }
 
@@ -184,9 +180,7 @@ void ListDataModelPrivate::updateIconPixmaps(void)
 	icons.clear();
 	icons.reserve(icons_rp.size());
 
-	const auto icons_rp_cend = icons_rp.cend();
-	for (auto iter = icons_rp.cbegin(); iter != icons_rp_cend; ++iter) {
-		const rp_image *const img = *iter;
+	for (const rp_image *img : icons_rp) {
 		if (!img) {
 			icons.emplace_back(QPixmap());
 			continue;
@@ -202,7 +196,7 @@ void ListDataModelPrivate::updateIconPixmaps(void)
 			pixmap = pixmap.scaled(iconSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 		}
 
-		icons.emplace_back(pixmap);
+		icons.emplace_back(std::move(pixmap));
 	}
 }
 
@@ -224,9 +218,7 @@ vector<QString> ListDataModelPrivate::convertListDataToVector(const RomFields::L
 	const int rowCount = list_data->size();
 
 	data.reserve(columnCount * rowCount);
-	const auto list_data_cend = list_data->cend();
-	for (auto iter = list_data->cbegin(); iter != list_data_cend; ++iter) {
-		const vector<string> &data_row = *iter;
+	for (const vector<string> &data_row : *list_data) {
 		if (hasCheckboxes && data_row.empty()) {
 			// Skip this row.
 			continue;
@@ -235,9 +227,13 @@ vector<QString> ListDataModelPrivate::convertListDataToVector(const RomFields::L
 		// Add item text.
 		assert((int)data_row.size() == columnCount);
 		int cols = columnCount;
-		const auto data_row_cend = data_row.cend();
-		for (auto iter = data_row.cbegin(); iter != data_row_cend && cols > 0; ++iter, cols--) {
-			data.emplace_back(U82Q(*iter));
+		for (const string &u8_str : data_row) {
+			data.emplace_back(U82Q(u8_str));
+
+			cols--;
+			if (cols <= 0) {
+				break;
+			}
 		}
 		// If there's fewer columns in the data row than we have allocated,
 		// add blank QStrings.
@@ -461,16 +457,14 @@ void ListDataModel::setField(const RomFields::Field *pField)
 	// Remove data if it's already set.
 	if (d->rowCount > 0) {
 		// Notify the view that we're about to remove all rows and columns.
-		const int rowCount = d->rowCount;
-		if (rowCount > 0) {
-			beginRemoveRows(QModelIndex(), 0, (rowCount - 1));
+		if (d->rowCount > 0) {
+			beginRemoveRows(QModelIndex(), 0, (d->rowCount - 1));
 			d->rowCount = 0;
 			endRemoveRows();
 		}
 
-		const int columnCount = d->columnCount;
-		if (columnCount > 0) {
-			beginRemoveColumns(QModelIndex(), 0, (columnCount - 1));
+		if (d->columnCount > 0) {
+			beginRemoveColumns(QModelIndex(), 0, (d->columnCount - 1));
 			d->columnCount = 0;
 			endRemoveColumns();
 		}
@@ -480,6 +474,12 @@ void ListDataModel::setField(const RomFields::Field *pField)
 
 	if (!pField) {
 		// NULL field. Nothing to do here.
+		return;
+	}
+
+	assert(pField->type == RomFields::RFT_LISTDATA);
+	if (pField->type != RomFields::RFT_LISTDATA) {
+		// Not an RFT_LISTDATA field.
 		return;
 	}
 
@@ -543,13 +543,13 @@ void ListDataModel::setField(const RomFields::Field *pField)
 		d->headers.clear();
 		d->headers.reserve(columnCount);
 
-		const auto names_cend = listDataDesc.names->cend();
-		for (auto iter = listDataDesc.names->cbegin(); iter != names_cend; ++iter) {
-			d->headers.emplace_back(U82Q(*iter));
+		for (const string &u8_str : *(listDataDesc.names)) {
+			d->headers.emplace_back(U82Q(u8_str));
 		}
 	} else {
 		// No column headers.
 		// Use the first row for the column count.
+		d->headers.clear();
 		columnCount = static_cast<int>(list_data->at(0).size());
 	}
 	beginInsertColumns(QModelIndex(), 0, (columnCount - 1));
@@ -575,15 +575,13 @@ void ListDataModel::setField(const RomFields::Field *pField)
 		// RFT_LISTDATA_MULTI: Multiple languages.
 		const auto *const multi = pField->data.list_data.data.multi;
 		// NOTE: Assuming all languages have the same number of rows.
-		auto iter = multi->cbegin();
-		rowCount = static_cast<int>(iter->second.size());
+		rowCount = static_cast<int>(multi->cbegin()->second.size());
 
-		const auto multi_cend = multi->cend();
-		for (; iter != multi_cend; ++iter) {
-			assert(static_cast<int>(iter->second.size()) == rowCount);
-			auto pair = d->map_data.emplace(std::make_pair(iter->first,
-				d->convertListDataToVector(&iter->second, hasCheckboxes)));
-			if (!d->pData && iter->first == d->lc) {
+		for (auto &pdm : *multi) {
+			assert(static_cast<int>(pdm.second.size()) == rowCount);
+			auto pair = d->map_data.emplace(pdm.first,
+				d->convertListDataToVector(&(pdm.second), hasCheckboxes));
+			if (!d->pData && pdm.first == d->lc) {
 				d->pData = &(pair.first->second);
 			}
 		}
@@ -596,8 +594,8 @@ void ListDataModel::setField(const RomFields::Field *pField)
 	} else {
 		// RFT_LISTDATA: Single language.
 		rowCount = static_cast<int>(list_data->size());
-		auto pair = d->map_data.emplace(std::make_pair(0,
-			d->convertListDataToVector(list_data, hasCheckboxes)));
+		auto pair = d->map_data.emplace(0,
+			d->convertListDataToVector(list_data, hasCheckboxes));
 		d->pData = &(pair.first->second);
 	}
 
@@ -607,9 +605,7 @@ void ListDataModel::setField(const RomFields::Field *pField)
 		// Also, we can assume all rows are present, since
 		// icons and checkboxes are mutually exclusive.
 		d->icons.reserve(rowCount);
-		const auto icons_cend = pField->data.list_data.mxd.icons->cend();
-		for (auto iter = pField->data.list_data.mxd.icons->cbegin(); iter != icons_cend; ++iter) {
-			const rp_image *const icon = *iter;
+		for (const rp_image *icon : *(pField->data.list_data.mxd.icons)) {
 			d->icons_rp.emplace_back(icon ? icon->ref() : nullptr);
 		}
 		// Update the icons pixmap vector.
@@ -625,6 +621,7 @@ void ListDataModel::setField(const RomFields::Field *pField)
 		} else {
 			d->rowCount = static_cast<int>(d->pData->size() / d->columnCount);
 		}
+
 		endInsertRows();
 	}
 }
@@ -685,9 +682,8 @@ set<uint32_t> ListDataModel::getLCs(void) const
 		}
 	}
 
-	const auto map_data_cend = d->map_data.cend();
-	for (auto iter = d->map_data.cbegin(); iter != map_data_cend; ++iter) {
-		set_lc.insert(iter->first);
+	for (const auto &pmd : d->map_data) {
+		set_lc.insert(pmd.first);
 	}
 	return set_lc;
 }

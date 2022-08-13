@@ -3,6 +3,11 @@
 # unice68
 project(unice68 C)
 
+# rom-properties: Hide symbols by default, since we don't want them
+# leaking from the static library to the plugins.
+INCLUDE(CheckHiddenVisibility)
+CHECK_HIDDEN_VISIBILITY()
+
 # ======================================================================
 # cmake setup
 
@@ -152,13 +157,6 @@ if (BUILD_UNICE68_CLI)
   CHECK_INCLUDE_FILE (unistd.h HAVE_UNISTD_H)
   CHECK_INCLUDE_FILE (fcntl.h HAVE_FCNTL_H)
   CHECK_INCLUDE_FILE (io.h HAVE_IO_H)
-
-  # rom-properties: 32-bit MSVC gets messed up here due to /Gz.
-  # TODO: Use check_symbol_exists() instead?
-  if (MSVC)
-    set(OLD_CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS}")
-    set(CMAKE_REQUIRED_FLAGS "/Gd")
-  endif (MSVC)
 
   check_function_exists (basename HAVE_BASENAME)
   check_function_exists (setmode HAVE_SETMODE)

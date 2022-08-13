@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * resource.rc: Win32 resource script. (en_US)                             *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,6 +10,7 @@
 #pragma code_page(65001)
 
 #include "resource.h"
+#define WC_LANGUAGECOMBOBOX	"rp-LanguageComboBox"
 
 #define APSTUDIO_HIDDEN_SYMBOLS
 #include <windows.h>
@@ -30,7 +31,7 @@ FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
     LTEXT           "Select the image types you would like to use for each system as its thumbnail image.\nInternal images are contained within the ROM file.\nExternal images are downloaded from an external image database.", IDC_IMAGETYPES_DESC1, 7, 7, 397, 30, SS_LEFT, WS_EX_LEFT
     LTEXT           "1 = highest priority; 2 = second highest priority; No = ignore", IDC_IMAGETYPES_DESC2, 7, 37, 397, 8, SS_LEFT, WS_EX_LEFT
-    CONTROL         "GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\nare provided by <a href=""http://www.gametdb.com/"">GameTDB</a>.\namiibo images are provided by <a href=""https://amiibo.life/"">amiibo.life</a>, the Unofficial amiibo Database.", IDC_IMAGETYPES_CREDITS, "SysLink", 0x50010000, 7, 209, 397, 24, 0x00000000
+    CONTROL         "IDC_IMAGETYPES_CREDITS", IDC_IMAGETYPES_CREDITS, "SysLink", 0x50010000, 7, 209, 397, 24, 0x00000000
 END
 
 /**
@@ -45,11 +46,11 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "Game Boy Title Screens", IDC_STATIC, 7, 7, 397, 74
     LTEXT           "Select the Game Boy model to use for title screens for different types of Game Boy ROM images.", IDC_STATIC, 15, 18, 381, 8
-    LTEXT           "Game Boy:",IDC_STATIC, 15, 30, 80, 9
+    LTEXT           "Game Boy:", IDC_STATIC, 15, 30, 80, 9
     COMBOBOX        IDC_SYSTEMS_DMGTS_DMG, 77, 29, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Super Game Boy:",IDC_STATIC, 15, 45, 80, 9
+    LTEXT           "Super Game Boy:", IDC_STATIC, 15, 45, 80, 9
     COMBOBOX        IDC_SYSTEMS_DMGTS_SGB, 77, 44, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Game Boy Color:",IDC_STATIC, 15, 60, 80, 9
+    LTEXT           "Game Boy Color:", IDC_STATIC, 15, 60, 80, 9
     COMBOBOX        IDC_SYSTEMS_DMGTS_CGB, 77, 59, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
@@ -62,15 +63,18 @@ STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_T
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
-    GROUPBOX        "&Downloads", IDC_STATIC, 7, 7, 397, 84, BS_GROUPBOX, WS_EX_TRANSPARENT
+    GROUPBOX        "&Downloads", IDC_STATIC, 7, 7, 397, 105, BS_GROUPBOX, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Enable external image downloads.", IDC_EXTIMGDL, 15, 19, 381, 8, 0, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Always use the internal icon (if present) for small sizes.", IDC_INTICONSMALL, 15, 33, 381, 8, 0, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Download high-resolution scans if viewing large thumbnails.\nThis may increase bandwidth usage.", IDC_HIGHRESDL, 15, 47, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
     AUTOCHECKBOX    "Store cached file origin information using extended attributes.\nThis helps to identify where cached files were downloaded from.", IDC_STOREFILEORIGININFO, 15, 68, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    LTEXT           "Language for PAL titles on GameTDB:", IDC_STATIC, 15, 92, 120, 8, 0, WS_EX_TRANSPARENT
+    // FIXME: Determine best height. (Compare to RP_ShellPropSheetExt for multi-language.)
+    CONTROL         "", IDC_PALLANGUAGEFORGAMETDB, WC_LANGUAGECOMBOBOX, CBS_DROPDOWNLIST | WS_CHILD | WS_TABSTOP | WS_VISIBLE, 138, 89, 68, 128, WS_EX_LEFT
 
-    GROUPBOX        "&Options", IDC_STATIC, 7, 92, 397, 50, BS_GROUPBOX, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "Show a security overlay icon for ROM images with\n""dangerous"" permissions.", IDC_DANGEROUSPERMISSIONS, 15, 103, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
-    AUTOCHECKBOX    "Enable thumbnailing and metadata extraction on network\nfile systems. This may slow down file browsing.", IDC_ENABLETHUMBNAILONNETWORKFS, 15, 120, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    GROUPBOX        "&Options", IDC_STATIC, 7, 113, 397, 54, BS_GROUPBOX, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Show a security overlay icon for ROM images with\n""dangerous"" permissions.", IDC_DANGEROUSPERMISSIONS, 15, 124, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
+    AUTOCHECKBOX    "Enable thumbnailing and metadata extraction on network\nfile systems. This may slow down file browsing.", IDC_ENABLETHUMBNAILONNETWORKFS, 15, 145, 381, 16, BS_MULTILINE, WS_EX_TRANSPARENT
 END
 
 /**
@@ -86,8 +90,8 @@ BEGIN
     PUSHBUTTON      "Clear the System Thumbnail Cache", IDC_CACHE_CLEAR_SYS_THUMBS, 7, 20, 398, 28, 0, WS_EX_LEFT
     LTEXT           "ROM Properties Page maintains its own download cache for external images.\nClearing this cache will force external images to be redownloaded.", IDC_STATIC, 7, 55, 397, 17, SS_LEFT, WS_EX_TRANSPARENT
     PUSHBUTTON      "Clear the ROM Properties Page Download Cache", IDC_CACHE_CLEAR_RP_DL, 7, 75, 398, 28, 0, WS_EX_LEFT
-    LTEXT           "Clearing the cache...", IDC_CACHE_STATUS, 7, 191, 397, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
-    CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 202, 397, 16, WS_EX_LEFT
+    LTEXT           "Clearing the cache...", IDC_CACHE_STATUS, 7, 205, 397, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
+    CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 216, 397, 16, WS_EX_LEFT
 END
 
 /**
@@ -108,8 +112,8 @@ BEGIN
     PUSHBUTTON      "Find and Remove Thumbs.db Files", IDC_CACHE_XP_CLEAR_SYS_THUMBS, 7, 95, 398, 20, WS_DISABLED | BS_MULTILINE, WS_EX_LEFT
     LTEXT           "ROM Properties Page maintains its own download cache for external images. Clearing this cache will force external images to be redownloaded.", IDC_STATIC, 7, 125, 313, 20, SS_LEFT, WS_EX_TRANSPARENT
     PUSHBUTTON      "Clear", IDC_CACHE_CLEAR_RP_DL, 323, 127, 82, 15, 0, WS_EX_LEFT
-    LTEXT           "Clearing the cache...", IDC_CACHE_STATUS, 7, 191, 397, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
-    CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 202, 397, 16, WS_EX_LEFT
+    LTEXT           "Clearing the cache...", IDC_CACHE_STATUS, 7, 205, 397, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
+    CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 216, 397, 16, WS_EX_LEFT
 END
 
 /**
@@ -141,21 +145,6 @@ BEGIN
     // EDIT control is created as a child control of the ListView.
     //EDITTEXT        IDC_KEYMANAGER_EDIT, 0, 0, 0, 0, NOT WS_VISIBLE | ES_AUTOHSCROLL | ES_WANTRETURN, WS_EX_LEFT
     PUSHBUTTON      "I&mport", IDC_KEYMANAGER_IMPORT, 7, 219, 50, 14, 0, WS_EX_LEFT
-END
-
-/**
- * Configuration: Key Manager ("Import" popup menu)
- */
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-IDR_KEYMANAGER_IMPORT MENU
-BEGIN
-    POPUP "Import"
-    BEGIN
-        MENUITEM "Wii keys.bin", IDM_KEYMANAGER_IMPORT_WII_KEYS_BIN
-        MENUITEM "Wii U otp.bin", IDM_KEYMANAGER_IMPORT_WIIU_OTP_BIN
-        MENUITEM "3DS boot9.bin", IDM_KEYMANAGER_IMPORT_3DS_BOOT9_BIN
-        MENUITEM "3DS aeskeydb.bin", IDM_KEYMANAGER_IMPORT_3DS_AESKEYDB
-    END
 END
 #endif /* ENABLE_DECRYPTION */
 

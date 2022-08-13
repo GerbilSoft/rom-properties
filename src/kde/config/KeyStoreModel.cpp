@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyStoreModel.cpp: QAbstractListModel for KeyStore.                     *
  *                                                                         *
- * Copyright (c) 2012-2020 by David Korth.                                 *
+ * Copyright (c) 2012-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -31,12 +31,17 @@ class KeyStoreModelPrivate
 
 		// Style variables.
 		struct style_t {
-			style_t() { init(); }
+			style_t() { init_fonts(); init_icons(); }
 
 			/**
-			 * Initialize the style variables.
+			 * Initialize the fonts.
 			 */
-			void init(void);
+			void init_fonts(void);
+
+			/**
+			 * Initialize the icons.
+			 */
+			void init_icons(void);
 
 			// Monospace font.
 			QFont fntMonospace;
@@ -44,13 +49,15 @@ class KeyStoreModelPrivate
 
 			// Pixmaps for Column::IsValid.
 			// TODO: Hi-DPI support.
-			static const int pxmIsValid_width = 16;
-			static const int pxmIsValid_height = 16;
+			static const int pxmIsValid_size = 16;
 			QPixmap pxmIsValid_unknown;
 			QPixmap pxmIsValid_invalid;
 			QPixmap pxmIsValid_good;
 		};
 		style_t style;
+
+		// Translated column names.
+		array<QString, 3> columnNames;
 
 		/**
 		 * Cached copy of keyStore->sectCount().
@@ -59,9 +66,6 @@ class KeyStoreModelPrivate
 		 * slot might be run *after* the KeyStore is deleted.
 		 */
 		int sectCount;
-
-		// Translated column names.
-		array<QString, 3> columnNames;
 };
 
 // Windows-style LOWORD()/HIWORD()/MAKELONG() functions.
@@ -96,9 +100,9 @@ KeyStoreModelPrivate::KeyStoreModelPrivate(KeyStoreModel *q)
 }
 
 /**
- * Initialize the style variables.
+ * Initialize the fonts.
  */
-void KeyStoreModelPrivate::style_t::init(void)
+void KeyStoreModelPrivate::style_t::init_fonts(void)
 {
 	// Monospace font.
 	fntMonospace = QApplication::font();
@@ -110,17 +114,23 @@ void KeyStoreModelPrivate::style_t::init(void)
 	QFontMetrics fm(fntMonospace);
 	szValueHint = fm.size(Qt::TextSingleLine,
 		QLatin1String("0123456789ABCDEF0123456789ABCDEF "));
+}
 
+/**
+ * Initialize the icons.
+ */
+void KeyStoreModelPrivate::style_t::init_icons(void)
+{
 	// Initialize the Column::IsValid pixmaps.
 	// TODO: Handle SP_MessageBoxQuestion on non-Windows systems,
 	// which usually have an 'i' icon here (except for GNOME).
 	QStyle *const style = QApplication::style();
 	pxmIsValid_unknown = style->standardIcon(QStyle::SP_MessageBoxQuestion)
-				.pixmap(pxmIsValid_width, pxmIsValid_height);
+				.pixmap(pxmIsValid_size, pxmIsValid_size);
 	pxmIsValid_invalid = style->standardIcon(QStyle::SP_MessageBoxCritical)
-				.pixmap(pxmIsValid_width, pxmIsValid_height);
+				.pixmap(pxmIsValid_size, pxmIsValid_size);
 	pxmIsValid_good    = style->standardIcon(QStyle::SP_DialogApplyButton)
-				.pixmap(pxmIsValid_width, pxmIsValid_height);
+				.pixmap(pxmIsValid_size, pxmIsValid_size);
 }
 
 /** KeyStoreModel **/
@@ -336,8 +346,8 @@ QVariant KeyStoreModel::data(const QModelIndex& index, int role) const
 					return d->style.szValueHint;
 				case (int)Column::IsValid:
 					// Increase row height by 4px.
-					return QSize(d->style.pxmIsValid_width,
-						(d->style.pxmIsValid_height + 4));
+					return QSize(d->style.pxmIsValid_size,
+						(d->style.pxmIsValid_size + 4));
 				default:
 					break;
 			}
@@ -503,7 +513,7 @@ KeyStoreQt *KeyStoreModel::keyStore(void) const
 	return d->keyStore;
 }
 
-/** Private slots. **/
+/** Private slots **/
 
 /**
  * KeyStore object was destroyed.
@@ -560,14 +570,35 @@ void KeyStoreModel::keyStore_allKeysChanged_slot(void)
 	emit dataChanged(qmi_left, qmi_right);
 }
 
+/** Public slots **/
+
 /**
- * The system theme has changed.
+ * System font has changed.
+ *
+ * Call this from the parent widget's changeEvent() function
+ * on QEvent::FontChange.
  */
-void KeyStoreModel::themeChanged_slot(void)
+void KeyStoreModel::systemFontChanged(void)
 {
-	// Reinitialize the style.
+	// Reinitialize the fonts.
 	Q_D(KeyStoreModel);
 	emit layoutAboutToBeChanged();
-	d->style.init();
+	d->style.init_fonts();
+	emit layoutChanged();
+}
+
+/**
+ * System color scheme has changed.
+ * Icons may need to be re-cached.
+ *
+ * Call this from the parent widget's changeEvent() function
+ * on QEvent::PaletteChange.
+ */
+void KeyStoreModel::systemPaletteChanged(void)
+{
+	// Reinitialize the icons.
+	Q_D(KeyStoreModel);
+	emit layoutAboutToBeChanged();
+	d->style.init_icons();
 	emit layoutChanged();
 }

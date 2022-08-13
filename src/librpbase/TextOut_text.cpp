@@ -2,19 +2,18 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextOut.hpp: Text output for RomData. (User-readable text)              *
  *                                                                         *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
- * Copyright (c) 2016-2020 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "TextOut.hpp"
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cassert>
-#include "ctypex.h"
 
-// C++ includes.
+// C++ STL classes
 using std::flush;
 using std::left;
 using std::max;
@@ -24,15 +23,24 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
+// libi18n
+#include "libi18n/i18n.h"
+
 // librpbase
 #include "RomData.hpp"
 #include "RomFields.hpp"
 #include "TextFuncs.hpp"
-#include "img/IconAnimData.hpp"
 
 // librptexture
 #include "librptexture/img/rp_image.hpp"
 using LibRpTexture::rp_image;
+
+// TextOut_text isn't used by libromdata directly,
+// so use some linker hax to force linkage.
+extern "C" {
+	extern uint8_t RP_LibRpBase_TextOut_text_ForceLinkage;
+	uint8_t RP_LibRpBase_TextOut_text_ForceLinkage;
+}
 
 namespace LibRpBase {
 
@@ -80,32 +88,32 @@ public:
 class SafeString {
 	const char *str;
 	size_t len;
-	bool quotes;
 	size_t width;
+	bool quotes;
 public:
 	SafeString(const char *str, bool quotes = true, size_t width = 0)
 		: str(str)
 		, len(str ? strlen(str) : 0)
-		, quotes(quotes)
-		, width(width) { }
+		, width(width)
+		, quotes(quotes) { }
 
 	SafeString(const char *str, size_t len, bool quotes = true, size_t width = 0)
 		: str(str)
 		, len(len)
-		, quotes(quotes)
-		, width(width) { }
+		, width(width)
+		, quotes(quotes) { }
 
 	SafeString(const string *str, bool quotes = true, size_t width = 0)
 		: str(str ? str->c_str() : nullptr)
 		, len(str ? str->size() : 0)
-		, quotes(quotes)
-		, width(width) { }
+		, width(width)
+		, quotes(quotes) { }
 
 	SafeString(const string &str, bool quotes = true, size_t width = 0)
 		: str(str.c_str())
 		, len(str.size())
-		, quotes(quotes)
-		, width(width) { }
+		, width(width)
+		, quotes(quotes) { }
 
 private:
 	static string process(const SafeString& cp)
@@ -197,16 +205,11 @@ public:
 			(bitfieldDesc.elemsPerRow ? bitfieldDesc.elemsPerRow : 4));
 
 		unique_ptr<size_t[]> colSize(new size_t[perRow]());
-		unsigned int count = static_cast<unsigned int>(bitfieldDesc.names->size());
-		assert(count <= 32);
-		if (count > 32)
-			count = 32;
+		assert(bitfieldDesc.names->size() <= 32);
 
 		// Determine the column widths.
 		unsigned int col = 0;
-		const auto names_cend = bitfieldDesc.names->cend();
-		for (auto iter = bitfieldDesc.names->cbegin(); iter != names_cend; ++iter) {
-			const string &name = *iter;
+		for (const string &name : *(bitfieldDesc.names)) {
 			if (name.empty())
 				continue;
 
@@ -218,11 +221,14 @@ public:
 		}
 
 		// Print the bits.
-		os << ColonPad(field.width, romField.name.c_str());
+		// FIXME: Why do we need to subtract 1 here to correctly align
+		// the first-row boxes? Maybe it should be somewhere else...
+		os << ColonPad(field.width-1, romField.name.c_str());
 		StreamStateSaver state(os);
 		os << left;
 		col = 0;
 		uint32_t bitfield = romField.data.bitfield;
+		const auto names_cend = bitfieldDesc.names->cend();
 		for (auto iter = bitfieldDesc.names->cbegin(); iter != names_cend; ++iter, bitfield >>= 1) {
 			const string &name = *iter;
 			if (name.empty())
@@ -235,9 +241,11 @@ public:
 			if (col == perRow) {
 				os << '\n' << Pad(field.width);
 				col = 0;
+			} else {
+				os << ' ';
 			}
 
-			os << " [" << ((bitfield & 1) ? '*' : ' ') << "] " <<
+			os << '[' << ((bitfield & 1) ? '*' : ' ') << "] " <<
 				setw(colSize[col]) << name;
 			col++;
 		}
@@ -306,9 +314,9 @@ public:
 		size_t totalWidth = col_count + 1;
 		if (listDataDesc.names) {
 			int i = 0;
-			const auto names_cend = listDataDesc.names->cend();
-			for (auto it = listDataDesc.names->cbegin(); it != names_cend; ++it, ++i) {
-				colSize[i] = it->size();
+			for (const string &name : *(listDataDesc.names)) {
+				colSize[i] = name.size();
+				i++;
 			}
 		}
 
@@ -531,7 +539,7 @@ public:
 
 		if (romField.data.date_time == -1) {
 			// Invalid date/time.
-			os << "Unknown";
+			os << C_("RomData", "Unknown");
 			return os;
 		}
 
@@ -552,21 +560,29 @@ public:
 			return os;
 		}
 
-		static const char *const formats[8] = {
-			"Invalid DateTime",	// No date or time.
-			"%x",			// Date
-			"%X",			// Time
-			"%x %X",		// Date Time
+		static const char formats_strtbl[] =
+			"\0"		// [0] No date or time
+			"%x\0"		// [1] Date
+			"%X\0"		// [4] Time
+			"%x %X\0"	// [7] Date Time
 
 			// TODO: Better localization here.
-			"Invalid DateTime",	// No date or time.
-			"%b %d",		// Date (no year)
-			"%X",			// Time
-			"%b %d %X",		// Date Time (no year)
-		};
+			"\0"		// [13] No date or time
+			"%b %d\0"	// [14] Date (no year)
+			"%X\0"		// [20] Time
+			"%b %d %X\0";	// [23] Date Time (no year)
+		static const uint8_t formats_offtbl[8] = {0, 1, 4, 7, 13, 14, 20, 23};
+		static_assert(sizeof(formats_strtbl) == 33, "formats_offtbl[] needs to be recalculated");
+
+		const unsigned int offset = (flags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK);
+		const char *format = &formats_strtbl[formats_offtbl[offset]];
+		assert(format[0] != '\0');
+		if (format[0] == '\0') {
+			format = "Invalid DateTime";
+		}
 
 		char str[128];
-		strftime(str, 128, formats[flags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK], &timestamp);
+		strftime(str, 128, format, &timestamp);
 		os << str;
 		return os;
 	}
@@ -693,7 +709,7 @@ public:
 				if (name) {
 					os << name;
 				} else {
-					os << "(tab " << tabIdx << ')';
+					os << rp_sprintf(C_("TextOut", "(tab %d)"), tabIdx);
 				}
 				os << " -----" << '\n';
 			}
@@ -737,9 +753,11 @@ public:
 };
 
 
-ROMOutput::ROMOutput(const RomData *romdata, uint32_t lc)
+ROMOutput::ROMOutput(const RomData *romdata, uint32_t lc, bool skipInternalImages)
 	: romdata(romdata)
-	, lc(lc) { }
+	, lc(lc)
+	, skipInternalImages(skipInternalImages) { }
+RP_LIBROMDATA_PUBLIC
 std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	auto romdata = fo.romdata;
 	const char *const systemName = romdata->systemName(RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
@@ -747,54 +765,69 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	assert(systemName != nullptr);
 	assert(fileType != nullptr);
 
-	os << "-- " << (systemName ? systemName : "(unknown system)") <<
-	      ' ' << (fileType ? fileType : "(unknown filetype)") <<
-	      " detected" << '\n';
+	// NOTE: RomDataView context is used for the "unknown" strings.
+	{
+		// tr: "[System] [FileType] detected."
+		const string detectMsg = rp_sprintf_p(C_("TextOut", "%1$s %2$s detected"),
+			(systemName ? systemName : C_("RomDataView", "(unknown system)")),
+			(fileType ? fileType : C_("RomDataView", "(unknown filetype)")));
+
+		os << "-- " << detectMsg << '\n';
+	}
+
+	// Fields
 	const RomFields *const fields = romdata->fields();
 	assert(fields != nullptr);
 	if (fields) {
 		os << FieldsOutput(*fields, fo.lc) << '\n';
 	}
 
-	const int supported = romdata->supportedImageTypes();
+	const uint32_t imgbf = romdata->supportedImageTypes();
+	if (imgbf != 0) {
+		// Internal images
+		if (!fo.skipInternalImages) {
+			for (int i = RomData::IMG_INT_MIN; i <= RomData::IMG_INT_MAX; i++) {
+				if (!(imgbf & (1U << i)))
+					continue;
 
-	for (int i = RomData::IMG_INT_MIN; i <= RomData::IMG_INT_MAX; i++) {
-		if (!(supported & (1U << i)))
-			continue;
-
-		auto image = romdata->image((RomData::ImageType)i);
-		if (image && image->isValid()) {
-			os << "-- " << RomData::getImageTypeName((RomData::ImageType)i) << " is present (use -x" << i << " to extract)" << '\n';
-			os << "   Format : " << rp_image::getFormatName(image->format()) << '\n';
-			os << "   Size   : " << image->width() << " x " << image->height() << '\n';
-			if (romdata->imgpf((RomData::ImageType) i)  & RomData::IMGPF_ICON_ANIMATED) {
-				os << "   Animated icon present (use -a to extract)" << '\n';
+				auto image = romdata->image((RomData::ImageType)i);
+				if (image && image->isValid()) {
+					// tr: Image Type name, followed by Image Type ID
+					os << "-- " << rp_sprintf_p(C_("TextOut", "%1$s is present (use -x%2$d to extract)"),
+						RomData::getImageTypeName((RomData::ImageType)i), i) << '\n';
+					// TODO: After localizing, add enough spaces for alignment.
+					os << "   Format : " << rp_image::getFormatName(image->format()) << '\n';
+					os << "   Size   : " << image->width() << " x " << image->height() << '\n';
+					if (romdata->imgpf((RomData::ImageType) i)  & RomData::IMGPF_ICON_ANIMATED) {
+						os << "   " << C_("TextOut", "Animated icon is present (use -a to extract)") << '\n';
+					}
+				}
 			}
 		}
-	}
 
-	std::vector<RomData::ExtURL> extURLs;
-	for (int i = RomData::IMG_EXT_MIN; i <= RomData::IMG_EXT_MAX; i++) {
-		if (!(supported & (1U << i)))
-			continue;
+		// External image URLs
+		// NOTE: IMGPF_ICON_ANIMATED won't ever appear in external images.
+		std::vector<RomData::ExtURL> extURLs;
+		for (int i = RomData::IMG_EXT_MIN; i <= RomData::IMG_EXT_MAX; i++) {
+			if (!(imgbf & (1U << i)))
+				continue;
 
-		// NOTE: extURLs may be empty even though the class supports it.
-		// Check extURLs before doing anything else.
+			// NOTE: extURLs may be empty even though the class supports it.
+			// Check extURLs before doing anything else.
 
-		extURLs.clear();	// NOTE: May not be needed...
-		// TODO: Customize the image size parameter?
-		// TODO: Option to retrieve supported image size?
-		int ret = romdata->extURLs((RomData::ImageType)i, &extURLs, RomData::IMAGE_SIZE_DEFAULT);
-		if (ret != 0 || extURLs.empty())
-			continue;
+			extURLs.clear();	// NOTE: May not be needed...
+			// TODO: Customize the image size parameter?
+			// TODO: Option to retrieve supported image size?
+			int ret = romdata->extURLs((RomData::ImageType)i, &extURLs, RomData::IMAGE_SIZE_DEFAULT);
+			if (ret != 0 || extURLs.empty())
+				continue;
 
-		std::for_each(extURLs.cbegin(), extURLs.cend(),
-			[i, &os](const RomData::ExtURL &extURL) {
+			for (const RomData::ExtURL &extURL : extURLs) {
 				os << "-- " <<
 					RomData::getImageTypeName((RomData::ImageType)i) << ": " << urlPartialUnescape(extURL.url) <<
 					" (cache_key: " << extURL.cache_key << ')' << '\n';
 			}
-		);
+		}
 	}
 
 	os.flush();

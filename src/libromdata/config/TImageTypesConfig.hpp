@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * TImageTypesConfig.hpp: Image Types editor template.                     *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,22 +16,15 @@
  */
 
 #include "common.h"
-#include "librpbase/RomData.hpp"
+#include "ImageTypesConfig.hpp"
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cassert>
 
-namespace LibRomData {
+// C++ includes
+#include <vector>
 
-// NOTE: SysData_t is defined here because it causes
-// problems if it's embedded inside of a templated class.
-typedef uint32_t (*pFnSupportedImageTypes)(void);
-struct SysData_t {
-	const char *className;			// Class name in Config. (ASCII)
-	pFnSupportedImageTypes getTypes;	// Get supported image types.
-};
-#define SysDataEntry(klass) \
-	{#klass, LibRomData::klass::supportedImageTypes_static}
+namespace LibRomData {
 
 template<typename ComboBox>
 class TImageTypesConfig
@@ -43,11 +36,6 @@ class TImageTypesConfig
 		RP_DISABLE_COPY(TImageTypesConfig)
 
 	public:
-		// Number of image types. (columns)
-		static const int IMG_TYPE_COUNT = LibRpBase::RomData::IMG_EXT_MAX+1;
-		// Number of systems. (rows)
-		static const int SYS_COUNT = 10;
-
 		/**
 		 * Create the grid of labels and ComboBoxes.
 		 */
@@ -81,22 +69,27 @@ class TImageTypesConfig
 		int save(void);
 
 	public:
+		/** ImageTypesConfig wrapper functions **/
+
 		/**
 		 * Get an image type name.
 		 * @param imageType Image type ID.
 		 * @return Image type name, or nullptr if invalid.
 		 */
-		static const char *imageTypeName(unsigned int imageType);
-
-		// System data. (SYS_COUNT)
-		static const SysData_t sysData[];
+		static inline const char *imageTypeName(unsigned int imageType)
+		{
+			return ImageTypesConfig::imageTypeName(imageType);
+		}
 
 		/**
 		 * Get a system name.
-		 * @param sys System ID.
+		 * @param sys System ID
 		 * @return System name, or nullptr if invalid.
 		 */
-		static const char *sysName(unsigned int sys);
+		static inline const char *sysName(unsigned int sys)
+		{
+			return ImageTypesConfig::sysName(sys);
+		}
 
 	public:
 		/**
@@ -107,8 +100,9 @@ class TImageTypesConfig
 		 */
 		static inline unsigned int sysAndImageTypeToCbid(unsigned int sys, unsigned int imageType)
 		{
-			assert(sys < SYS_COUNT);
-			assert(imageType < IMG_TYPE_COUNT);
+			// NOTE: Shifting may need changes if either index exceeds 15.
+			assert(sys < ImageTypesConfig::sysCount());
+			assert(imageType < ImageTypesConfig::imageTypeCount());
 			return (sys << 4) | imageType;
 		}
 
@@ -119,8 +113,8 @@ class TImageTypesConfig
 		 */
 		static inline unsigned int imageTypeFromCbid(unsigned int cbid)
 		{
-			assert(cbid < (SYS_COUNT << 4));
-			assert((cbid & 15) < IMG_TYPE_COUNT);
+			assert(cbid < (ImageTypesConfig::sysCount() << 4));
+			assert((cbid & 15) < ImageTypesConfig::imageTypeCount());
 			return (cbid & 15);
 		}
 
@@ -131,8 +125,8 @@ class TImageTypesConfig
 		 */
 		static inline unsigned int sysFromCbid(unsigned int cbid)
 		{
-			assert(cbid < (SYS_COUNT << 4));
-			assert((cbid & 15) < IMG_TYPE_COUNT);
+			assert(cbid < (ImageTypesConfig::sysCount() << 4));
+			assert((cbid & 15) < ImageTypesConfig::imageTypeCount());
 			return (cbid >> 4);
 		}
 
@@ -144,9 +138,10 @@ class TImageTypesConfig
 		 */
 		static inline bool validateSysImageType(unsigned int sys, unsigned int imageType)
 		{
-			assert(sys < SYS_COUNT);
-			assert(imageType < IMG_TYPE_COUNT);
-			return (sys < SYS_COUNT && imageType < IMG_TYPE_COUNT);
+			assert(sys < ImageTypesConfig::sysCount());
+			assert(imageType < ImageTypesConfig::imageTypeCount());
+			// TODO: Make this not inline so it doesn't have to call functions?
+			return (sys < ImageTypesConfig::sysCount() && imageType < ImageTypesConfig::imageTypeCount());
 		}
 
 		/**
@@ -156,10 +151,11 @@ class TImageTypesConfig
 		 */
 		static inline bool validateCbid(unsigned int cbid)
 		{
-			assert(sysFromCbid(cbid) < SYS_COUNT);
-			assert(imageTypeFromCbid(cbid) < IMG_TYPE_COUNT);
-			return (sysFromCbid(cbid) < SYS_COUNT &&
-				imageTypeFromCbid(cbid) < IMG_TYPE_COUNT);
+			// TODO: Make this not inline so it doesn't have to call functions?
+			assert(sysFromCbid(cbid) < ImageTypesConfig::sysCount());
+			assert(imageTypeFromCbid(cbid) < ImageTypesConfig::imageTypeCount());
+			return (sysFromCbid(cbid) < ImageTypesConfig::sysCount() &&
+				imageTypeFromCbid(cbid) < ImageTypesConfig::imageTypeCount());
 		}
 
 	public:
@@ -174,7 +170,7 @@ class TImageTypesConfig
 		bool cboImageType_priorityValueChanged(unsigned int cbid, unsigned int prio);
 
 	protected:
-		/** Pure virtual functions. (protected) **/
+		/** Pure virtual functions (protected) **/
 
 		/**
 		 * Create the labels in the grid.
@@ -205,7 +201,7 @@ class TImageTypesConfig
 		 * must be opened with an appropriate writer class.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int saveStart(void) = 0;
+		virtual int saveStart(void) { return 0; }
 
 		/**
 		 * Write an ImageType configuration entry.
@@ -221,10 +217,10 @@ class TImageTypesConfig
 		 * must be opened with an appropriate writer class.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		virtual int saveFinish(void) = 0;
+		virtual int saveFinish(void) { return 0; }
 
 	public:
-		/** Pure virtual functions. (public) **/
+		/** Pure virtual functions (public) **/
 
 		/**
 		 * Set a ComboBox's current index.
@@ -238,26 +234,35 @@ class TImageTypesConfig
 		// Has the user changed anything?
 		bool changed;
 
-		// Combo box array.
-		// NOTE: This is a square array, but no system supports
-		// *all* image types, so most of these will be nullptr.
-		// NOTE: Elements can be checked for nullptr, but the
-		// pure virtual functions must be used to check the
-		// actual contents.
-		ComboBox cboImageType[SYS_COUNT][IMG_TYPE_COUNT];
+		// Array of items for systems.
+		// NOTE: Although the system count and image type count are
+		// static, we're using a dynamic vector because ImageTypesConfig
+		// does not publicly declare the static size to prevent ABI
+		// breakages later on.
+		struct SysData_t {
+			// Vector of comboboxes for image types.
+			// NOTE: No system supports *all* image types,
+			// so most of these will be nullptr.
+			// NOTE: Elements can be checked for nullptr, but the
+			// pure virtual functions must be used to check the
+			// actual contents.
+			std::vector<ComboBox> cboImageType;
 
-		// Image types. (0xFF == No; others == priority)
-		// NOTE: We need to store them here in order to handle
-		// duplicate prevention, since ComboBox signals usually
-		// don't include the "previous" index.
-		uint8_t imageTypes[SYS_COUNT][IMG_TYPE_COUNT];
+			// Image types. (0xFF = No; others = priority)
+			// NOTE: We need to store them here in order to handle
+			// duplicate prevention, since ComboBox signals usually
+			// don't include the "previous" index.
+			std::vector<uint8_t> imageTypes;
 
-		// Number of valid image types per system.
-		uint8_t validImageTypes[SYS_COUNT];
+			// Number of valid image types.
+			uint8_t validImageTypes;
 
-		// Which systems have the default configuration?
-		// These ones will be saved with a blank value.
-		bool sysIsDefault[SYS_COUNT];
+			// Does this system have the default configuration?
+			// If it does, it will be saved with a blank value.
+			bool sysIsDefault;
+		};
+
+		std::vector<SysData_t> v_sysData;
 };
 
 }

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ThumbnailProvider.hpp: IThumbnailProvider implementation.            *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2021 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -56,9 +56,9 @@ RP_ThumbnailProvider::~RP_ThumbnailProvider()
 }
 
 /** IUnknown **/
-// Reference: https://msdn.microsoft.com/en-us/library/office/cc839627.aspx
+// Reference: https://docs.microsoft.com/en-us/office/client-developer/outlook/mapi/implementing-iunknown-in-c-plus-plus
 
-IFACEMETHODIMP RP_ThumbnailProvider::QueryInterface(REFIID riid, LPVOID *ppvObj)
+IFACEMETHODIMP RP_ThumbnailProvider::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj)
 {
 #ifdef _MSC_VER
 # pragma warning(push)
@@ -76,9 +76,9 @@ IFACEMETHODIMP RP_ThumbnailProvider::QueryInterface(REFIID riid, LPVOID *ppvObj)
 }
 
 /** IInitializeWithStream **/
-// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb761812(v=vs.85).aspx [Initialize()]
+// Reference: https://docs.microsoft.com/en-us/windows/win32/api/propsys/nf-propsys-iinitializewithstream-initialize [Initialize()]
 
-IFACEMETHODIMP RP_ThumbnailProvider::Initialize(IStream *pstream, DWORD grfMode)
+IFACEMETHODIMP RP_ThumbnailProvider::Initialize(_In_ IStream *pstream, DWORD grfMode)
 {
 	// Ignoring grfMode for now. (always read-only)
 	RP_UNUSED(grfMode);
@@ -105,9 +105,9 @@ IFACEMETHODIMP RP_ThumbnailProvider::Initialize(IStream *pstream, DWORD grfMode)
 }
 
 /** IThumbnailProvider **/
-// Reference: https://msdn.microsoft.com/en-us/library/windows/desktop/bb774612(v=vs.85).aspx [GetThumbnail()]
+// Reference: https://docs.microsoft.com/en-us/windows/win32/api/thumbcache/nf-thumbcache-ithumbnailprovider-getthumbnail [GetThumbnail()]
 
-IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_ALPHATYPE *pdwAlpha)
+IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, _Outptr_ HBITMAP *phbmp, _Out_ WTS_ALPHATYPE *pdwAlpha)
 {
 	// Verify parameters:
 	// - A stream must have been set by calling IInitializeWithStream::Initialize().
@@ -119,13 +119,9 @@ IFACEMETHODIMP RP_ThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_A
 	*phbmp = nullptr;
 
 	CreateThumbnail::GetThumbnailOutParams_t outParams;
-	outParams.retImg = nullptr;
 	int ret = d->thumbnailer.getThumbnail(d->file, cx, &outParams);
-	if (ret != 0 || !outParams.retImg) {
+	if (ret != 0) {
 		// ROM is not supported. Use the fallback.
-		if (outParams.retImg) {
-			DeleteBitmap(outParams.retImg);
-		}
 		return d->Fallback(cx, phbmp, pdwAlpha);
 	}
 

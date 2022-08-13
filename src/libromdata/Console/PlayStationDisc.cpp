@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PlayStationDisc.cpp: PlayStation 1 and 2 disc image reader.             *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,10 +11,8 @@
 #include "ps2_structs.h"
 
 // librpbase, librpfile
-#include "librpfile/RpFile.hpp"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
-using LibRpFile::RpFile;
 
 // IsoPartition
 #include "../cdrom_structs.h"
@@ -37,17 +35,21 @@ using std::vector;
 
 namespace LibRomData {
 
-ROMDATA_IMPL(PlayStationDisc)
-
 class PlayStationDiscPrivate final : public RomDataPrivate
 {
 	public:
-		PlayStationDiscPrivate(PlayStationDisc *q, LibRpFile::IRpFile *file);
+		PlayStationDiscPrivate(PlayStationDisc *q, IRpFile *file);
 		virtual ~PlayStationDiscPrivate();
 
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(PlayStationDiscPrivate)
+
+	public:
+		/** RomDataInfo **/
+		static const char *const exts[];
+		static const char *const mimeTypes[];
+		static const RomDataInfo romDataInfo;
 
 	public:
 		ISO_Primary_Volume_Descriptor pvd;
@@ -64,7 +66,7 @@ class PlayStationDiscPrivate final : public RomDataPrivate
 		 * @param value		[in] Value
 		 * @return 0 to continue; 1 to stop.
 		 */
-		static int INIHCALL parse_system_cnf(void *user, const char *section, const char *name, const char *value);
+		static int parse_system_cnf(void *user, const char *section, const char *name, const char *value);
 
 		/**
 		 * Load SYSTEM.CNF.
@@ -106,10 +108,33 @@ class PlayStationDiscPrivate final : public RomDataPrivate
 		ConsoleType consoleType;
 };
 
+ROMDATA_IMPL(PlayStationDisc)
+
 /** PlayStationDiscPrivate **/
 
+/* RomDataInfo */
+const char *const PlayStationDiscPrivate::exts[] = {
+	".iso",		// ISO
+	".bin",		// BIN/CUE
+	".img",		// CCD/IMG
+	// TODO: More?
+
+	nullptr
+};
+const char *const PlayStationDiscPrivate::mimeTypes[] = {
+	// Unofficial MIME types from FreeDesktop.org.
+	"application/x-cd-image",
+	"application/x-iso9660-image",
+
+	// TODO: PS1/PS2?
+	nullptr
+};
+const RomDataInfo PlayStationDiscPrivate::romDataInfo = {
+	"PlayStationDisc", exts, mimeTypes
+};
+
 PlayStationDiscPrivate::PlayStationDiscPrivate(PlayStationDisc *q, IRpFile *file)
-	: super(q, file)
+	: super(q, file, &romDataInfo)
 	, discReader(nullptr)
 	, isoPartition(nullptr)
 	, bootExeData(nullptr)
@@ -134,7 +159,7 @@ PlayStationDiscPrivate::~PlayStationDiscPrivate()
  * @param value		[in] Value
  * @return 0 to continue; 1 to stop.
  */
-int INIHCALL PlayStationDiscPrivate::parse_system_cnf(void *user, const char *section, const char *name, const char *value)
+int PlayStationDiscPrivate::parse_system_cnf(void *user, const char *section, const char *name, const char *value)
 {
 	if (section[0] != '\0') {
 		// Sections aren't expected here...
@@ -147,7 +172,7 @@ int INIHCALL PlayStationDiscPrivate::parse_system_cnf(void *user, const char *se
 		[](unsigned char c) { return std::toupper(c); });
 
 	PlayStationDiscPrivate *const d = static_cast<PlayStationDiscPrivate*>(user);
-	auto ret = d->system_cnf.emplace(std::make_pair(std::move(s_name), value));
+	auto ret = d->system_cnf.emplace(std::move(s_name), value);
 	return (ret.second ? 0 : 1);
 }
 
@@ -174,10 +199,8 @@ int PlayStationDiscPrivate::loadSystemCnf(IsoPartition *pt)
 			if (f_psx_exe && f_psx_exe->isOpen()) {
 				// Found PSX.EXE.
 				boot_filename = "PSX.EXE";
-				system_cnf.emplace(std::make_pair("BOOT", boot_filename));
-				if (f_psx_exe) {
-					f_psx_exe->unref();
-				}
+				system_cnf.emplace("BOOT", boot_filename);
+				f_psx_exe->unref();
 				// Pretend that we did find SYSTEM.CNF.
 				return 0;
 			} else {
@@ -197,7 +220,7 @@ int PlayStationDiscPrivate::loadSystemCnf(IsoPartition *pt)
 	}
 
 	// CNF file should be less than 2048 bytes.
-	const int64_t fileSize = f_system_cnf->size();
+	const off64_t fileSize = f_system_cnf->size();
 	if (fileSize > 2048) {
 		f_system_cnf->unref();
 		return -ENOMEM;
@@ -305,7 +328,6 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 {
 	// This class handles disc images.
 	RP_D(PlayStationDisc);
-	d->className = "PlayStationDisc";
 	d->mimeType = "application/x-cd-image";	// unofficial
 	d->fileType = FileType::DiscImage;
 
@@ -327,11 +349,11 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 		discReader = new DiscReader(d->file);
 	} else {
 		// Check for a PVD with 2352-byte or 2448-byte sectors.
-		static const unsigned int sector_sizes[] = {2352, 2448, 0};
+		static const unsigned int sector_sizes[] = {2352, 2448};
 		CDROM_2352_Sector_t sector;
 
-		for (const unsigned int *p = sector_sizes; *p != 0; p++) {
-			size_t size = d->file->seekAndRead(*p * ISO_PVD_LBA, &sector, sizeof(sector));
+		for (auto p : sector_sizes) {
+			size_t size = d->file->seekAndRead(p * ISO_PVD_LBA, &sector, sizeof(sector));
 			if (size != sizeof(d->pvd)) {
 				UNREF_AND_NULL_NOCHK(d->file);
 				return;
@@ -341,7 +363,7 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 			if (ISO::checkPVD(pData) >= 0) {
 				// Found the correct sector size.
 				memcpy(&d->pvd, pData, sizeof(d->pvd));
-				discReader = new Cdrom2352Reader(d->file, *p);
+				discReader = new Cdrom2352Reader(d->file, p);
 				break;
 			}
 		}
@@ -587,55 +609,6 @@ const char *PlayStationDisc::systemName(unsigned int type) const
 	// Should not get here...
 	assert(!"PlayStationDisc::systemName(): Invalid system name.");
 	return nullptr;
-}
-
-/**
- * Get a list of all supported file extensions.
- * This is to be used for file type registration;
- * subclasses don't explicitly check the extension.
- *
- * NOTE: The extensions do not include the leading dot,
- * e.g. "bin" instead of ".bin".
- *
- * NOTE 2: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *PlayStationDisc::supportedFileExtensions_static(void)
-{
-	static const char *const exts[] = {
-		".iso",		// ISO
-		".bin",		// BIN/CUE
-		".img",		// CCD/IMG
-		// TODO: More?
-
-		nullptr
-	};
-	return exts;
-}
-
-/**
- * Get a list of all supported MIME types.
- * This is to be used for metadata extractors that
- * must indicate which MIME types they support.
- *
- * NOTE: The array and the strings in the array should
- * *not* be freed by the caller.
- *
- * @return NULL-terminated array of all supported file extensions, or nullptr on error.
- */
-const char *const *PlayStationDisc::supportedMimeTypes_static(void)
-{
-	static const char *const mimeTypes[] = {
-		// Unofficial MIME types from FreeDesktop.org..
-		"application/x-cd-image",
-		"application/x-iso9660-image",
-
-		// TODO: PS1/PS2?
-		nullptr
-	};
-	return mimeTypes;
 }
 
 /**

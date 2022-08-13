@@ -24,7 +24,7 @@ using LibRpFile::IRpFile;
 // C++ STL classes.
 using std::unique_ptr;
 
-#include "GcnPartitionPrivate.hpp"
+#include "GcnPartition_p.hpp"
 namespace LibRomData {
 
 #define SECTOR_SIZE_ENCRYPTED 0x8000
@@ -898,6 +898,16 @@ const RVL_TMD_Header *WiiPartition::tmdHeader(void) const
 	return (tmdHeader->signature_type != 0
 		? tmdHeader
 		: nullptr);
+}
+
+/**
+ * Get the title ID. (NOT BYTESWAPPED)
+ * @return Title ID. (0-0 if unavailable)
+ */
+Nintendo_TitleID_BE_t WiiPartition::titleID(void) const
+{
+	RP_D(const WiiPartition);
+	return d->partitionHeader.ticket.title_id;
 }
 
 #ifdef ENABLE_DECRYPTION
