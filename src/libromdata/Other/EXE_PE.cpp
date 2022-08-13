@@ -1017,10 +1017,13 @@ int EXEPrivate::addFields_PE_Import(void)
 		const string *dllname;
 		bool is_ordinal;
 		uint32_t value; // rva to hint/name or ordinal
-		IltIterator(const uint32_t *end) {
-			dir_index = 0;
-			ilt = end;
-		}
+		IltIterator(const uint32_t *end)
+			: dir_index(0)
+			, ilt(end)
+			, dllname(nullptr)
+			, is_ordinal(false)
+			, value(0)
+		{ }
 	};
 	auto iltAdvance = [this, ilt_buf, ilt_end, dll_ilt_base, is64](IltIterator &it) -> bool {
 		auto &dir_index = it.dir_index;
