@@ -192,6 +192,72 @@ int EXEPrivate::loadPEResourceTypes(void)
 }
 
 /**
+ * Read PE import/export directory
+ * @param dataDir RVA/Size of directory will be stored here.
+ * @param type One of IMAGE_DATA_DIRECTORY_{EXPORT,IMPORT}_TABLE
+ * @param minSize Minimum direcrory size
+ * @param maxSize Maximum directory size
+ * @param dirTbl Vector into which the directory will be read.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int EXEPrivate::readPEImpExpDir(IMAGE_DATA_DIRECTORY &dataDir, int type,
+	size_t minSize, size_t maxSize, ao::uvector<uint8_t> &dirTbl)
+{
+	if (!file || !file->isOpen()) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!isValid) {
+		// Unknown executable type.
+		return -EIO;
+	}
+
+	// Check the import/export table.
+	// NOTE: dataDir is 8 bytes, so we'll just copy it
+	// instead of using a pointer.
+	switch (exeType) {
+		case ExeType::PE:
+			dataDir = hdr.pe.OptionalHeader.opt32.DataDirectory[type];
+			break;
+		case ExeType::PE32PLUS:
+			dataDir = hdr.pe.OptionalHeader.opt64.DataDirectory[type];
+			break;
+		default:
+			// Not a PE executable.
+			return -ENOTSUP;
+	}
+
+	if (dataDir.VirtualAddress == 0 || dataDir.Size == 0) {
+		// No import/export table.
+		return -ENOENT;
+	}
+
+	// Get the import/export table's physical address.
+	uint32_t tbl_paddr = pe_vaddr_to_paddr(dataDir.VirtualAddress, dataDir.Size);
+	if (tbl_paddr == 0) {
+		// Not found.
+		return -ENOENT;
+	}
+
+	// Found the section.
+	if (dataDir.Size < minSize) {
+		// Not enough space for the import table...
+		return -ENOENT;
+	} else if (dataDir.Size > maxSize) {
+		// Import/export table is larger than 4 MB...
+		// This might be data corruption.
+		return -EIO;
+	}
+
+	// Load the import/export directory table.
+	dirTbl.resize(dataDir.Size);
+	size_t size = file->seekAndRead(tbl_paddr, dirTbl.data(), dirTbl.size());
+	if (size != dirTbl.size()) {
+		// Seek and/or read error.
+		return -EIO;
+	}
+	return 0;
+}
+/**
  * Find the runtime DLL. (PE version)
  * @param refDesc String to store the description.
  * @param refLink String to store the download link.
@@ -202,72 +268,27 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 	refDesc.clear();
 	refLink.clear();
 
-	if (!file || !file->isOpen()) {
-		// File isn't open.
-		return -EBADF;
-	} else if (!isValid) {
-		// Unknown executable type.
-		return -EIO;
-	}
-
-	// Check the import table.
-	// NOTE: dataDir is 8 bytes, so we'll just copy it
-	// instead of using a pointer.
-	IMAGE_DATA_DIRECTORY dataDir;
-	bool is64 = false;
-	switch (exeType) {
-		case ExeType::PE:
-			dataDir = hdr.pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_IMPORT_TABLE];
-			break;
-		case ExeType::PE32PLUS:
-			dataDir = hdr.pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_IMPORT_TABLE];
-			is64 = true;
-			break;
-		default:
-			// Not a PE executable.
-			return -ENOTSUP;
-	}
-
-	if (dataDir.VirtualAddress == 0 || dataDir.Size == 0) {
-		// No import table.
-		return -ENOENT;
-	}
-
-	// Get the import table's physical address.
-	uint32_t imptbl_paddr = pe_vaddr_to_paddr(dataDir.VirtualAddress, dataDir.Size);
-	if (imptbl_paddr == 0) {
-		// Not found.
-		return -ENOENT;
-	}
-
-	// Found the section.
 	// NOTE: There appears to be two copies of the DLL listing.
 	// There's one in the file header before any sections, and
 	// one in the import directory table area. This code uses
 	// the import directory table area, though it might be
 	// easier to use the first copy...
-	if (dataDir.Size < sizeof(IMAGE_IMPORT_DIRECTORY)) {
-		// Not enough space for the import table...
-		return -ENOENT;
-	} else if (dataDir.Size > 4*1024*1024) {
-		// Import table is larger than 4 MB...
-		// This might be data corruption.
-		return -EIO;
-	}
 
-	// Load the import directory table.
 	// NOTE: The DLL filename strings may be included in the import
 	// directory table area (MinGW), or they might be located before
 	// the import directory table (MSVC 2017). The import directory
 	// table size might not be an exact multiple of
 	// IMAGE_IMPORT_DIRECTORY in the former case.
+
+
+	IMAGE_DATA_DIRECTORY dataDir;
 	ao::uvector<uint8_t> impDirTbl;
-	impDirTbl.resize(dataDir.Size);
-	size_t size = file->seekAndRead(imptbl_paddr, impDirTbl.data(), impDirTbl.size());
-	if (size != impDirTbl.size()) {
-		// Seek and/or read error.
-		return -EIO;
-	}
+	bool is64 = exeType == ExeType::PE32PLUS;
+
+	int res = readPEImpExpDir(dataDir, IMAGE_DATA_DIRECTORY_IMPORT_TABLE,
+		sizeof(IMAGE_IMPORT_DIRECTORY), 4*1024*1024, impDirTbl);
+	if (res)
+		return res;
 
 	// Set containing all of the DLL name VAs.
 	unordered_set<uint32_t> set_dll_vaddrs;
@@ -706,60 +727,13 @@ void EXEPrivate::addFields_PE(void)
  */
 int EXEPrivate::addFields_PE_Export(void)
 {
-	if (!file || !file->isOpen()) {
-		// File isn't open.
-		return -EBADF;
-	} else if (!isValid) {
-		// Unknown executable type.
-		return -EIO;
-	}
-
-	// Get the export table.
-	// NOTE: dataDir is 8 bytes, so we'll just copy it
-	// instead of using a pointer.
 	IMAGE_DATA_DIRECTORY dataDir;
-	switch (exeType) {
-		case ExeType::PE:
-			dataDir = hdr.pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_EXPORT_TABLE];
-			break;
-		case ExeType::PE32PLUS:
-			dataDir = hdr.pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_EXPORT_TABLE];
-			break;
-		default:
-			// Not a PE executable.
-			return -ENOTSUP;
-	}
-
-	if (dataDir.VirtualAddress == 0 || dataDir.Size == 0) {
-		// No export table.
-		return -ENOENT;
-	}
-
-	// Get the export table's physical address.
-	uint32_t exptbl_paddr = pe_vaddr_to_paddr(dataDir.VirtualAddress, dataDir.Size);
-	if (exptbl_paddr == 0) {
-		// Not found.
-		return -ENOENT;
-	}
-
-	// Found the section.
-	if (dataDir.Size < sizeof(IMAGE_EXPORT_DIRECTORY)) {
-		// Not enough space for the export table...
-		return -ENOENT;
-	} else if (dataDir.Size > 4*1024*1024) {
-		// Export table is larger than 4 MB...
-		// This might be data corruption.
-		return -EIO;
-	}
-
-	// Load the export directory table.
 	ao::uvector<uint8_t> expDirTbl;
-	expDirTbl.resize(dataDir.Size);
-	size_t size = file->seekAndRead(exptbl_paddr, expDirTbl.data(), expDirTbl.size());
-	if (size != expDirTbl.size()) {
-		// Seek and/or read error.
-		return -EIO;
-	}
+
+	int res = readPEImpExpDir(dataDir, IMAGE_DATA_DIRECTORY_EXPORT_TABLE,
+		sizeof(IMAGE_EXPORT_DIRECTORY), 4*1024*1024, expDirTbl);
+	if (res)
+		return res;
 
 	const IMAGE_EXPORT_DIRECTORY *pExpDirTbl = reinterpret_cast<const IMAGE_EXPORT_DIRECTORY*>(expDirTbl.data());
 	uint32_t ordinalBase = le32_to_cpu(pExpDirTbl->Base);

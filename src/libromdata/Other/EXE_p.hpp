@@ -172,6 +172,20 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 		 */
 		int loadPEResourceTypes(void);
 
+	private:
+		/**
+		 * Read PE import/export directory
+		 * @param dataDir RVA/Size of directory will be stored here.
+		 * @param type One of IMAGE_DATA_DIRECTORY_{EXPORT,IMPORT}_TABLE
+		 * @param minSize Minimum direcrory size
+		 * @param maxSize Maximum directory size
+		 * @param dirTbl Vector into which the directory will be read.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int readPEImpExpDir(IMAGE_DATA_DIRECTORY &dataDir, int type,
+			size_t minSize, size_t maxSize, ao::uvector<uint8_t> &dirTbl);
+
+	public:
 		/**
 		 * Find the runtime DLL. (PE version)
 		 * @param refDesc String to store the description.
