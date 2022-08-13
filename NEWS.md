@@ -36,6 +36,10 @@
   * GameCube, PSP: Add missing MIME types. Among other things, this fixes
     missing metadata for GameCube CISO files.
   * EXE: List DLL exports and imports. (PE executables only for now)
+    * Fixes #348: Add an dll import/export function tab?
+      Reported by @vaualbus.
+    * Merged #349: EXE PE: Exports/Imports tabs
+      Submitted by @DankRank.
 
 * Bug fixes:
   * Lua: Fix a crash on Windows where systemName() sometimes returned
