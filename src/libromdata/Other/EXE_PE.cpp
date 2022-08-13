@@ -258,6 +258,46 @@ int EXEPrivate::readPEImpExpDir(IMAGE_DATA_DIRECTORY &dataDir, int type,
 	return 0;
 }
 /**
+ * Read a block of null-terminated strings, where the length of the
+ * last one isn't known in advance.
+ *
+ * The amount that will be read is:
+ * (high - low) + minExtra + maxExtra
+ * Which must be in the range [minMax; minMax + maxExtra]
+ *
+ * @param low RVA of first string.
+ * @param high RVA of last string.
+ * @param minExtra Last string must be at least this long.
+ * @param minMax The minimum size of the block must be smaller than this.
+ * @param maxExtra How many extra bytes can be read.
+ * @param outPtr Resulting array.
+ * @param outSize How much data was read.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int EXEPrivate::readPENullBlock(uint32_t low, uint32_t high, uint32_t minExtra,
+	uint32_t minMax, uint32_t maxExtra, std::unique_ptr<char[]> &outPtr,
+	size_t &outSize)
+{
+	const uint32_t sizeMin = high - low + minExtra;
+	if (sizeMin > minMax) {
+		return -EIO;
+	}
+	uint32_t paddr = pe_vaddr_to_paddr(low, sizeMin);
+	if (paddr == 0) {
+		// Invalid VAs...
+		return -ENOENT;
+	}
+
+	const uint32_t sizeMax = sizeMin + maxExtra;
+	outPtr.reset(new char[sizeMax]);
+	outSize = file->seekAndRead(paddr, reinterpret_cast<uint8_t*>(outPtr.get()), sizeMax);
+	if (outSize < sizeMin || outSize > sizeMax) {
+		// Seek and/or read error.
+		return -EIO;
+	}
+	return 0;
+}
+/**
  * Read PE Import Directory (peImportDir) and DLL names (peImportNames).
  * @return 0 on success; negative POSIX error code on error.
  */
@@ -310,30 +350,24 @@ int EXEPrivate::readPEImportDir(void)
 		return -ENOENT;
 	}
 
+	unique_ptr<char[]> dll_name_data;
+	size_t dll_size_read;
 	// NOTE: Since the DLL names are NULL-terminated, we'll have to guess
 	// with the last one. It's unlikely that it'll be at EOF, but we'll
 	// allow for 'short reads'.
-	const uint32_t dll_size_min = dll_vaddr_high - dll_vaddr_low + 1;
-	if (dll_size_min > 1*1024*1024) {
+	res = readPENullBlock(dll_vaddr_low, dll_vaddr_high,
+		1, // minExtra
 		// More than 1 MB of DLL names is highly unlikely.
 		// There's probably some corruption in the import table.
-		return -EIO;
-	}
-	uint32_t dll_paddr = pe_vaddr_to_paddr(dll_vaddr_low, dll_size_min);
-	if (dll_paddr == 0) {
-		// Invalid VAs...
-		return -ENOENT;
-	}
+		1*1024*1024, // minMax
+		// MAX_PATH
+		260, // maxExtra
+		dll_name_data, dll_size_read);
+	if (res)
+		return res;
 
-	const uint32_t dll_size_max = dll_size_min + 260;	// MAX_PATH
-	unique_ptr<char[]> dll_name_data(new char[dll_size_max]);
-	size_t dll_size_read = file->seekAndRead(dll_paddr, reinterpret_cast<uint8_t*>(dll_name_data.get()), dll_size_max);
-	if (dll_size_read < dll_size_min || dll_size_read > dll_size_max) {
-		// Seek and/or read error.
-		return -EIO;
-	}
 	// Ensure the end of the buffer is NULL-terminated.
-	dll_name_data[dll_size_max-1] = '\0';
+	dll_name_data[dll_size_read-1] = '\0';
 
 	// Copy to peImportDir
 	peImportDir.clear();
@@ -534,8 +568,8 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
  */
 void EXEPrivate::addFields_PE(void)
 {
-	// Up to 4 tabs.
-	fields->reserveTabs(5);
+	// Up to 6 tabs.
+	fields->reserveTabs(6);
 
 	// PE Header
 	fields->setTabName(0, "PE");
@@ -734,7 +768,9 @@ void EXEPrivate::addFields_PE(void)
 	addFields_PE_Manifest();
 #endif /* ENABLE_XML */
 
+	// Add exports / imports
 	addFields_PE_Export();
+	addFields_PE_Import();
 }
 
 /**
@@ -912,6 +948,184 @@ int EXEPrivate::addFields_PE_Export(void)
 		delete vv_data;
 	}
 
+	return 0;
+}
+
+/**
+ * Add fields for PE import table.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int EXEPrivate::addFields_PE_Import(void)
+{
+	bool is64 = exeType == ExeType::PE32PLUS;
+
+	int res = readPEImportDir();
+	if (res)
+		return res;
+
+	unique_ptr<char[]> dll_ilt_data;
+	uint32_t dll_ilt_base;
+	size_t dll_ilt_read;
+	// Read Import Lookup Table
+	{
+		// Find the lowest and highest ImportLookupTable RVAs
+		if (peImportDir.empty()) {
+			// No imports...
+			return -ENOENT;
+		}
+		uint32_t dll_vaddr_low;
+		uint32_t dll_vaddr_high;
+		dll_vaddr_low = dll_vaddr_high = le32_to_cpu(peImportDir[0].rvaImportLookupTable);
+		for (const auto &ent : peImportDir) {
+			const uint32_t rvaImportLookupTable = le32_to_cpu(ent.rvaImportLookupTable);
+			if ((rvaImportLookupTable - dll_vaddr_low) & (is64?7:3)) {
+				/* Bad alignment. This check is mostly so that
+				 * I don't have to think what is the correct
+				 * "end" pointer after we type-pun to uint32.
+				 * Relative alignment is enough, though. */
+				return -ENOENT;
+			}
+			if (rvaImportLookupTable < dll_vaddr_low) {
+				dll_vaddr_low = rvaImportLookupTable;
+			}
+			if (rvaImportLookupTable > dll_vaddr_high) {
+				dll_vaddr_high = rvaImportLookupTable;
+			}
+		}
+		res = readPENullBlock(dll_vaddr_low, dll_vaddr_high,
+			// ILTs are terminated by NULL-pointer, so we need at
+			// least size_t extra bytes for the last table.
+			(is64?8:4), // minExtra
+			// 1 MB is 128 K imports at 64-bits.
+			1*1024*1024, // minMax
+			// 128 KB is 16 K imports at 64-bits.
+			128*1024, // maxExtra
+			dll_ilt_data, dll_ilt_read);
+		if (res)
+			return res;
+		dll_ilt_base = dll_vaddr_low;
+	}
+
+	// Iterator for import entries
+	const uint32_t *ilt_buf = reinterpret_cast<const uint32_t*>(dll_ilt_data.get());
+	const uint32_t *ilt_end;
+	if (is64)
+		ilt_end = ilt_buf + dll_ilt_read/8*2;
+	else
+		ilt_end = ilt_buf + dll_ilt_read/4;
+	struct IltIterator {
+		unsigned dir_index; // next DLL to read
+		const uint32_t *ilt; // next ilt entry to read
+		const string *dllname;
+		bool is_ordinal;
+		uint32_t value; // rva to hint/name or ordinal
+		IltIterator(const uint32_t *end) {
+			dir_index = 0;
+			ilt = end;
+		}
+	};
+	auto iltAdvance = [this, ilt_buf, ilt_end, dll_ilt_base, is64](IltIterator &it) -> bool {
+		auto &dir_index = it.dir_index;
+		auto &ilt = it.ilt;
+		auto &dllname = it.dllname;
+		auto &is_ordinal = it.is_ordinal;
+		auto &value = it.value;
+		while (ilt >= ilt_end) {
+			// read next directory entry
+			if (dir_index == peImportDir.size())
+				return false;
+			ilt = &ilt_buf[(le32_to_cpu(peImportDir[dir_index].rvaImportLookupTable) - dll_ilt_base)/4];
+			dllname = &peImportNames[dir_index];
+			dir_index++;
+			// check for NULL entry
+			if (!ilt[0] && (!is64 || !ilt[1]))
+				ilt = ilt_end;
+		}
+		// parse ILT entry
+		is_ordinal = le32_to_cpu(ilt[is64 ? 1 : 0]) & 0x80000000;
+		value = le32_to_cpu(ilt[0]) & (is_ordinal ? 0xFFFF : 0x7FFFFFFF);
+		// advance ILT pointer
+		ilt += is64 ? 2 : 1;
+		// check for NULL entry
+		if (!ilt[0] && (!is64 || !ilt[1]))
+			ilt = ilt_end;
+		return true;
+	};
+
+	// Read Name/Hint Table
+	unique_ptr<char[]> dll_hint_data;
+	uint32_t dll_hint_base;
+	size_t dll_hint_read;
+	int import_count = 0;
+	{
+		// Find the lowest and highest hint/name RVAs
+		uint32_t dll_vaddr_low = ~0U;
+		uint32_t dll_vaddr_high = 0U;
+		for (IltIterator it(ilt_end); iltAdvance(it); ) {
+			import_count++;
+			if (it.is_ordinal)
+				continue;
+			if (it.value < dll_vaddr_low)
+				dll_vaddr_low = it.value;
+			if (it.value > dll_vaddr_high)
+				dll_vaddr_high = it.value;
+		}
+		if (dll_vaddr_low == ~0U || dll_vaddr_high == 0) {
+			// No imports...
+			return -ENOENT;
+		}
+
+		res = readPENullBlock(dll_vaddr_low, dll_vaddr_high,
+			// 2-byte hint + NUL terminator
+			3, // minExtra
+			// 4 MB for all symbol names
+			4*1024*1024, // minMax
+			// Those C++ symbols can get quite long...
+			8*1024, // maxExtra
+			dll_hint_data, dll_hint_read);
+		if (res)
+			return res;
+		dll_hint_data[dll_hint_read-1] = '\0';
+		dll_hint_base = dll_vaddr_low;
+	}
+
+	// Generate list data
+	auto vv_data = new RomFields::ListData_t();
+	vv_data->reserve(import_count);
+	for (IltIterator it(ilt_end); iltAdvance(it); ) {
+		vv_data->emplace_back();
+		auto &row = vv_data->back();
+		row.reserve(3);
+		if (it.is_ordinal) {
+			row.emplace_back(rp_sprintf(C_("EXE|Exports", "Ordinal #%u"), it.value));
+			row.emplace_back("");
+		} else {
+			// RVA to hint number followed by NUL terminated name.
+			auto ent = &dll_hint_data[it.value - dll_hint_base];
+			row.emplace_back(ent+2);
+			row.emplace_back(rp_sprintf("%u", *reinterpret_cast<const uint16_t*>(ent)));
+		}
+		row.emplace_back(*it.dllname);
+	}
+
+	// Add the tab
+	fields->addTab(C_("EXE", "Imports"));
+	fields->reserve(1);
+
+	// Intentionally sharing the translation context with the exports tab.
+	static const char *const field_names[] = {
+		NOP_C_("EXE|Exports", "Name"),
+		NOP_C_("EXE|Exports", "Hint"),
+		NOP_C_("EXE|Exports", "Module"),
+	};
+	vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
+		"EXE|Exports", field_names, ARRAY_SIZE(field_names));
+
+	RomFields::AFLD_PARAMS params;
+	params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;
+	params.headers = v_field_names;
+	params.data.single = vv_data;
+	fields->addField_listData(C_("EXE", "Imports"), &params);
 	return 0;
 }
 
