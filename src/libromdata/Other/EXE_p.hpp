@@ -172,6 +172,54 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 		 */
 		int loadPEResourceTypes(void);
 
+	private:
+		/**
+		 * Read PE import/export directory
+		 * @param dataDir RVA/Size of directory will be stored here.
+		 * @param type One of IMAGE_DATA_DIRECTORY_{EXPORT,IMPORT}_TABLE
+		 * @param minSize Minimum direcrory size
+		 * @param maxSize Maximum directory size
+		 * @param dirTbl Vector into which the directory will be read.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int readPEImpExpDir(IMAGE_DATA_DIRECTORY &dataDir, int type,
+			size_t minSize, size_t maxSize, ao::uvector<uint8_t> &dirTbl);
+
+		/**
+		 * Read a block of null-terminated strings, where the length of the
+		 * last one isn't known in advance.
+		 *
+		 * The amount that will be read is:
+		 * (high - low) + minExtra + maxExtra
+		 * Which must be in the range [minMax; minMax + maxExtra]
+		 *
+		 * @param low RVA of first string.
+		 * @param high RVA of last string.
+		 * @param minExtra Last string must be at least this long.
+		 * @param minMax The minimum size of the block must be smaller than this.
+		 * @param maxExtra How many extra bytes can be read.
+		 * @param outPtr Resulting array.
+		 * @param outSize How much data was read.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int readPENullBlock(uint32_t low, uint32_t high, uint32_t minExtra,
+			uint32_t minMax, uint32_t maxExtra, std::unique_ptr<char[]> &outPtr,
+			size_t &outSize);
+
+		// PE Import Directory
+		std::vector<IMAGE_IMPORT_DIRECTORY> peImportDir;
+		// PE Import DLL Names (same order as the directory)
+		std::vector<std::string> peImportNames;
+		// Whether peImportDir and peImportNames were already loaded.
+		bool peImportDirLoaded = false;
+
+		/**
+		 * Read PE Import Directory (peImportDir) and DLL names (peImportNames).
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int readPEImportDir(void);
+
+	public:
 		/**
 		 * Find the runtime DLL. (PE version)
 		 * @param refDesc String to store the description.
@@ -217,6 +265,19 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 		 */
 		bool doesExeRequireAdministrator(void) const;
 #endif /* ENABLE_XML */
+
+	public:
+		/**
+		 * Add fields for PE export table.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int addFields_PE_Export(void);
+
+		/**
+		 * Add fields for PE import table.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int addFields_PE_Import(void);
 };
 
 }

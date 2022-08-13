@@ -335,6 +335,25 @@ typedef struct _IMAGE_SECTION_HEADER {
 } IMAGE_SECTION_HEADER;
 ASSERT_STRUCT(IMAGE_SECTION_HEADER, IMAGE_SIZEOF_SECTION_HEADER);
 
+/**
+ * Export directory.
+ * Reference: https://docs.microsoft.com/en-us/windows/win32/debug/pe-format#export-directory-table
+ */
+typedef struct _IMAGE_EXPORT_DIRECTORY {
+	uint32_t Characteristics;	// Reserved
+	uint32_t TimeDateStamp;		// UNIX timestamp
+	uint16_t MajorVersion;
+	uint16_t MinorVersion;
+	uint32_t Name;			// DLL name
+	uint32_t Base;			// The starting ordinal number
+	uint32_t NumberOfFunctions;	// Size of address table
+	uint32_t NumberOfNames;		// Size of name table
+	uint32_t AddressOfFunctions;	// RVA of address table
+	uint32_t AddressOfNames;	// RVA of name table
+	uint32_t AddressOfNameOrdinals;	// RVA of name-to-ordinal table
+} IMAGE_EXPORT_DIRECTORY;
+ASSERT_STRUCT(IMAGE_EXPORT_DIRECTORY, 10*sizeof(uint32_t));
+
 /** Import table. **/
 // Reference: http://sandsprite.com/CodeStuff/Understanding_imports.html
 

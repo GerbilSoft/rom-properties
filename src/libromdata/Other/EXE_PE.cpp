@@ -4,6 +4,7 @@
  * 32-bit/64-bit Portable Executable format.                               *
  *                                                                         *
  * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2022 by Egor.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,6 +12,9 @@
 #include "EXE_p.hpp"
 #include "data/EXEData.hpp"
 #include "disc/PEResourceReader.hpp"
+
+// for strnlen() if it's not available in <string.h>
+#include "librpbase/TextFuncs_libc.h"
 
 // librpbase
 using namespace LibRpBase;
@@ -188,16 +192,17 @@ int EXEPrivate::loadPEResourceTypes(void)
 }
 
 /**
- * Find the runtime DLL. (PE version)
- * @param refDesc String to store the description.
- * @param refLink String to store the download link.
+ * Read PE import/export directory
+ * @param dataDir RVA/Size of directory will be stored here.
+ * @param type One of IMAGE_DATA_DIRECTORY_{EXPORT,IMPORT}_TABLE
+ * @param minSize Minimum direcrory size
+ * @param maxSize Maximum directory size
+ * @param dirTbl Vector into which the directory will be read.
  * @return 0 on success; negative POSIX error code on error.
  */
-int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
+int EXEPrivate::readPEImpExpDir(IMAGE_DATA_DIRECTORY &dataDir, int type,
+	size_t minSize, size_t maxSize, ao::uvector<uint8_t> &dirTbl)
 {
-	refDesc.clear();
-	refLink.clear();
-
 	if (!file || !file->isOpen()) {
 		// File isn't open.
 		return -EBADF;
@@ -206,18 +211,15 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		return -EIO;
 	}
 
-	// Check the import table.
+	// Check the import/export table.
 	// NOTE: dataDir is 8 bytes, so we'll just copy it
 	// instead of using a pointer.
-	IMAGE_DATA_DIRECTORY dataDir;
-	bool is64 = false;
 	switch (exeType) {
 		case ExeType::PE:
-			dataDir = hdr.pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_IMPORT_TABLE];
+			dataDir = hdr.pe.OptionalHeader.opt32.DataDirectory[type];
 			break;
 		case ExeType::PE32PLUS:
-			dataDir = hdr.pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_IMPORT_TABLE];
-			is64 = true;
+			dataDir = hdr.pe.OptionalHeader.opt64.DataDirectory[type];
 			break;
 		default:
 			// Not a PE executable.
@@ -225,62 +227,117 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 	}
 
 	if (dataDir.VirtualAddress == 0 || dataDir.Size == 0) {
-		// No import table.
+		// No import/export table.
 		return -ENOENT;
 	}
 
-	// Get the import table's physical address.
-	uint32_t imptbl_paddr = pe_vaddr_to_paddr(dataDir.VirtualAddress, dataDir.Size);
-	if (imptbl_paddr == 0) {
+	// Get the import/export table's physical address.
+	uint32_t tbl_paddr = pe_vaddr_to_paddr(dataDir.VirtualAddress, dataDir.Size);
+	if (tbl_paddr == 0) {
 		// Not found.
 		return -ENOENT;
 	}
 
 	// Found the section.
+	if (dataDir.Size < minSize) {
+		// Not enough space for the import table...
+		return -ENOENT;
+	} else if (dataDir.Size > maxSize) {
+		// Import/export table is larger than 4 MB...
+		// This might be data corruption.
+		return -EIO;
+	}
+
+	// Load the import/export directory table.
+	dirTbl.resize(dataDir.Size);
+	size_t size = file->seekAndRead(tbl_paddr, dirTbl.data(), dirTbl.size());
+	if (size != dirTbl.size()) {
+		// Seek and/or read error.
+		return -EIO;
+	}
+	return 0;
+}
+/**
+ * Read a block of null-terminated strings, where the length of the
+ * last one isn't known in advance.
+ *
+ * The amount that will be read is:
+ * (high - low) + minExtra + maxExtra
+ * Which must be in the range [minMax; minMax + maxExtra]
+ *
+ * @param low RVA of first string.
+ * @param high RVA of last string.
+ * @param minExtra Last string must be at least this long.
+ * @param minMax The minimum size of the block must be smaller than this.
+ * @param maxExtra How many extra bytes can be read.
+ * @param outPtr Resulting array.
+ * @param outSize How much data was read.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int EXEPrivate::readPENullBlock(uint32_t low, uint32_t high, uint32_t minExtra,
+	uint32_t minMax, uint32_t maxExtra, std::unique_ptr<char[]> &outPtr,
+	size_t &outSize)
+{
+	const uint32_t sizeMin = high - low + minExtra;
+	if (sizeMin > minMax) {
+		return -EIO;
+	}
+	uint32_t paddr = pe_vaddr_to_paddr(low, sizeMin);
+	if (paddr == 0) {
+		// Invalid VAs...
+		return -ENOENT;
+	}
+
+	const uint32_t sizeMax = sizeMin + maxExtra;
+	outPtr.reset(new char[sizeMax]);
+	outSize = file->seekAndRead(paddr, reinterpret_cast<uint8_t*>(outPtr.get()), sizeMax);
+	if (outSize < sizeMin || outSize > sizeMax) {
+		// Seek and/or read error.
+		return -EIO;
+	}
+	return 0;
+}
+/**
+ * Read PE Import Directory (peImportDir) and DLL names (peImportNames).
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int EXEPrivate::readPEImportDir(void)
+{
+	if (peImportDirLoaded)
+		return 0;
+
 	// NOTE: There appears to be two copies of the DLL listing.
 	// There's one in the file header before any sections, and
 	// one in the import directory table area. This code uses
 	// the import directory table area, though it might be
 	// easier to use the first copy...
-	if (dataDir.Size < sizeof(IMAGE_IMPORT_DIRECTORY)) {
-		// Not enough space for the import table...
-		return -ENOENT;
-	} else if (dataDir.Size > 4*1024*1024) {
-		// Import table is larger than 4 MB...
-		// This might be data corruption.
-		return -EIO;
-	}
 
-	// Load the import directory table.
 	// NOTE: The DLL filename strings may be included in the import
 	// directory table area (MinGW), or they might be located before
 	// the import directory table (MSVC 2017). The import directory
 	// table size might not be an exact multiple of
 	// IMAGE_IMPORT_DIRECTORY in the former case.
-	ao::uvector<uint8_t> impDirTbl;
-	impDirTbl.resize(dataDir.Size);
-	size_t size = file->seekAndRead(imptbl_paddr, impDirTbl.data(), impDirTbl.size());
-	if (size != impDirTbl.size()) {
-		// Seek and/or read error.
-		return -EIO;
-	}
 
-	// Set containing all of the DLL name VAs.
-	unordered_set<uint32_t> set_dll_vaddrs;
+	IMAGE_DATA_DIRECTORY dataDir;
+	ao::uvector<uint8_t> impDirTbl;
+	int res = readPEImpExpDir(dataDir, IMAGE_DATA_DIRECTORY_IMPORT_TABLE,
+		sizeof(IMAGE_IMPORT_DIRECTORY), 4*1024*1024, impDirTbl);
+	if (res)
+		return res;
 
 	// Find the lowest and highest DLL name VAs in the import directory table.
 	uint32_t dll_vaddr_low = ~0U;
 	uint32_t dll_vaddr_high = 0U;
 	const IMAGE_IMPORT_DIRECTORY *pImpDirTbl = reinterpret_cast<const IMAGE_IMPORT_DIRECTORY*>(impDirTbl.data());
 	const IMAGE_IMPORT_DIRECTORY *const pImpDirTblEnd = pImpDirTbl + (impDirTbl.size() / sizeof(IMAGE_IMPORT_DIRECTORY));
-	for (; pImpDirTbl < pImpDirTblEnd; pImpDirTbl++) {
-		if (pImpDirTbl->rvaModuleName == 0) {
+	const IMAGE_IMPORT_DIRECTORY *p = pImpDirTbl;
+	for (; p < pImpDirTblEnd; p++) {
+		if (p->rvaModuleName == 0) {
 			// End of table.
 			break;
 		}
 
-		const uint32_t rvaModuleName = le32_to_cpu(pImpDirTbl->rvaModuleName);
-		set_dll_vaddrs.insert(rvaModuleName);
+		const uint32_t rvaModuleName = le32_to_cpu(p->rvaModuleName);
 		if (rvaModuleName < dll_vaddr_low) {
 			dll_vaddr_low = rvaModuleName;
 		}
@@ -293,38 +350,65 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		return -ENOENT;
 	}
 
+	unique_ptr<char[]> dll_name_data;
+	size_t dll_size_read;
 	// NOTE: Since the DLL names are NULL-terminated, we'll have to guess
 	// with the last one. It's unlikely that it'll be at EOF, but we'll
 	// allow for 'short reads'.
-	const uint32_t dll_size_min = dll_vaddr_high - dll_vaddr_low + 1;
-	if (dll_size_min > 1*1024*1024) {
+	res = readPENullBlock(dll_vaddr_low, dll_vaddr_high,
+		1, // minExtra
 		// More than 1 MB of DLL names is highly unlikely.
 		// There's probably some corruption in the import table.
-		return -EIO;
-	}
-	uint32_t dll_paddr = pe_vaddr_to_paddr(dll_vaddr_low, dll_size_min);
-	if (dll_paddr == 0) {
-		// Invalid VAs...
-		return -ENOENT;
-	}
+		1*1024*1024, // minMax
+		// MAX_PATH
+		260, // maxExtra
+		dll_name_data, dll_size_read);
+	if (res)
+		return res;
 
-	const uint32_t dll_size_max = dll_size_min + 260;	// MAX_PATH
-	unique_ptr<char[]> dll_name_data(new char[dll_size_max]);
-	size_t dll_size_read = file->seekAndRead(dll_paddr, reinterpret_cast<uint8_t*>(dll_name_data.get()), dll_size_max);
-	if (dll_size_read < dll_size_min || dll_size_read > dll_size_max) {
-		// Seek and/or read error.
-		return -EIO;
-	}
 	// Ensure the end of the buffer is NULL-terminated.
-	dll_name_data[dll_size_max-1] = '\0';
+	dll_name_data[dll_size_read-1] = '\0';
 
-	// Convert the entire buffer to lowercase. (ASCII characters only)
-	{
-		char *const p_end = &dll_name_data[dll_size_max];
-		for (char *p = dll_name_data.get(); p < p_end; p++) {
-			if (*p >= 'A' && *p <= 'Z') *p |= 0x20;
+	// Copy to peImportDir
+	peImportDir.clear();
+	peImportDir.insert(peImportDir.begin(), pImpDirTbl, p);
+
+	// Fill peImportNames
+	peImportNames.clear();
+	peImportNames.reserve(peImportDir.size());
+	for(auto &ent : peImportDir) {
+		uint32_t vaddr = le32_to_cpu(ent.rvaModuleName);
+		assert(vaddr >= dll_vaddr_low);
+		assert(vaddr <= dll_vaddr_high);
+		if (vaddr < dll_vaddr_low || vaddr > dll_vaddr_high) {
+			// Out of bounds? This shouldn't have happened...
+			return -ENOENT;
 		}
+
+		// Current DLL name from the import table.
+		const char *const dll_name = &dll_name_data[vaddr - dll_vaddr_low];
+		peImportNames.emplace_back(dll_name);
 	}
+
+	peImportDirLoaded = true;
+	return 0;
+}
+/**
+ * Find the runtime DLL. (PE version)
+ * @param refDesc String to store the description.
+ * @param refLink String to store the download link.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
+{
+	refDesc.clear();
+	refLink.clear();
+
+	bool is64 = exeType == ExeType::PE32PLUS;
+
+	int res = readPEImportDir();
+	if (res)
+		return res;
 
 	// MSVC runtime DLL version to display version table.
 	// Reference: https://matthew-brett.github.io/pydagogue/python_msvc.html
@@ -369,21 +453,13 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 
 	// Check all of the DLL names.
 	bool found = false;
-	const auto set_dll_vaddrs_cend = set_dll_vaddrs.cend();
-	for (auto iter = set_dll_vaddrs.cbegin(); iter != set_dll_vaddrs_cend && !found; ++iter) {
-		uint32_t vaddr = *iter;
-		assert(vaddr >= dll_vaddr_low);
-		assert(vaddr <= dll_vaddr_high);
-		if (vaddr < dll_vaddr_low || vaddr > dll_vaddr_high) {
-			// Out of bounds? This shouldn't have happened...
-			break;
-		}
-
+	const auto peImportNames_cend = peImportNames.cend();
+	for (auto iter = peImportNames.cbegin(); iter != peImportNames_cend && !found; ++iter) {
 		// Current DLL name from the import table.
-		const char *const dll_name = &dll_name_data[vaddr - dll_vaddr_low];
+		const char *const dll_name = iter->c_str();
 
 		// Check for MSVC 2015-2019. (vcruntime140.dll)
-		if (!strcmp(dll_name, "vcruntime140.dll")) {
+		if (!strcasecmp(dll_name, "vcruntime140.dll")) {
 			// TODO: If host OS is Windows XP or earlier, limit it to 2017?
 			refDesc = rp_sprintf(
 				C_("EXE|Runtime", "Microsoft Visual C++ %s Runtime"), "2015-2022");
@@ -401,7 +477,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 					break;
 			}
 			break;
-		} else if (!strcmp(dll_name, "vcruntime140d.dll")) {
+		} else if (!strcasecmp(dll_name, "vcruntime140d.dll")) {
 			refDesc = rp_sprintf(
 				C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"), "2015-2022");
 			break;
@@ -410,62 +486,61 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		// NOTE: MSVCP*.dll is usually listed first in executables
 		// that use C++, so check for both P and R.
 
-		// Check for MSVCR debug build patterns.
-		unsigned int dll_name_version = 0;
-		char c_or_cpp = '\0';
-		char is_debug = '\0';
-		char last_char = '\0';
-		int n = sscanf(dll_name, "msvc%c%u%c.dl%c",
-			&c_or_cpp, &dll_name_version, &is_debug, &last_char);
-		if (n == 4 && (c_or_cpp == 'p' || c_or_cpp == 'r') && is_debug == 'd' && last_char == 'l') {
-			// Found an MSVC debug DLL.
-			for (const auto &p : msvc_dll_tbl) {
-				if (p.dll_name_version == dll_name_version) {
-					// Found a matching version.
-					refDesc = rp_sprintf(
-						C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"),
-						p.display_version);
-					found = true;
-					break;
-				}
-			}
-		}
-		if (found)
-			break;
-
-		// Check for MSVCR release build patterns.
-		n = sscanf(dll_name, "msvc%c%u.dl%c", &c_or_cpp, &dll_name_version, &last_char);
-		if (n == 3 && (c_or_cpp == 'p' || c_or_cpp == 'r') && last_char == 'l') {
-			// Found an MSVC release DLL.
-			for (const auto &p : msvc_dll_tbl) {
-				if (p.dll_name_version == dll_name_version) {
-					// Found a matching version.
-					refDesc = rp_sprintf(
-						C_("EXE|Runtime", "Microsoft Visual C++ %s Runtime"),
-						p.display_version);
-					if (is64) {
-						if (p.url_amd64) {
-							refLink = p.url_amd64;
-						}
-					} else {
-						if (p.url_i386) {
-							refLink = p.url_i386;
-						}
+		if (!strncasecmp(dll_name, "msvcp", 5) || !strncasecmp(dll_name, "msvcr", 5)) {
+			unsigned int dll_name_version = 0;
+			char after_char = '\0';
+			int n = sscanf(dll_name+5, "%u%c", &dll_name_version, &after_char);
+			// Check for MSVCR debug build patterns.
+			if (n == 2 && !strcasecmp(strchr(dll_name+5, after_char), "d.dll")) {
+				// Found an MSVC debug DLL.
+				for (const auto &p : msvc_dll_tbl) {
+					if (p.dll_name_version == dll_name_version) {
+						// Found a matching version.
+						refDesc = rp_sprintf(
+							C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"),
+							p.display_version);
+						found = true;
+						break;
 					}
-					found = true;
-					break;
+				}
+			}
+			if (found)
+				break;
+
+			// Check for MSVCR release build patterns.
+			if (n == 2 && !strcasecmp(strchr(dll_name+5, after_char), ".dll")) {
+				// Found an MSVC release DLL.
+				for (const auto &p : msvc_dll_tbl) {
+					if (p.dll_name_version == dll_name_version) {
+						// Found a matching version.
+						refDesc = rp_sprintf(
+							C_("EXE|Runtime", "Microsoft Visual C++ %s Runtime"),
+							p.display_version);
+						if (is64) {
+							if (p.url_amd64) {
+								refLink = p.url_amd64;
+							}
+						} else {
+							if (p.url_i386) {
+								refLink = p.url_i386;
+							}
+						}
+						found = true;
+						break;
+					}
 				}
 			}
 		}
+
 
 		// Check for MSVCRT.DLL.
 		// FIXME: This is used by both 5.0 and 6.0.
-		if (!strcmp(dll_name, "msvcrt.dll")) {
+		if (!strcasecmp(dll_name, "msvcrt.dll")) {
 			// NOTE: Conflict between MSVC 6.0 and the "system" MSVCRT.
 			// TODO: Other heuristics to figure this out. (Check for msvcp60.dll?)
 			refDesc = C_("EXE|Runtime", "Microsoft System C++ Runtime");
 			break;
-		} else if (!strcmp(dll_name, "msvcrtd.dll")) {
+		} else if (!strcasecmp(dll_name, "msvcrtd.dll")) {
 			refDesc = rp_sprintf(
 				C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"), "6.0");
 			break;
@@ -475,7 +550,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		// NOTE: There's only three 32-bit versions of Visual Basic,
 		// and .NET versions don't count.
 		for (const auto &p : msvb_dll_tbl) {
-			if (!strcmp(dll_name, p.dll_name)) {
+			if (!strcasecmp(dll_name, p.dll_name)) {
 				// Found a matching version.
 				refDesc = rp_sprintf(C_("EXE|Runtime", "Microsoft Visual Basic %u.%u Runtime"),
 					p.ver_major, p.ver_minor);
@@ -493,8 +568,8 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
  */
 void EXEPrivate::addFields_PE(void)
 {
-	// Up to 4 tabs.
-	fields->reserveTabs(4);
+	// Up to 6 tabs.
+	fields->reserveTabs(6);
 
 	// PE Header
 	fields->setTabName(0, "PE");
@@ -692,6 +767,366 @@ void EXEPrivate::addFields_PE(void)
 	// TODO: Support external manifests, e.g. program.exe.manifest?
 	addFields_PE_Manifest();
 #endif /* ENABLE_XML */
+
+	// Add exports / imports
+	addFields_PE_Export();
+	addFields_PE_Import();
+}
+
+/**
+ * Add fields for PE export table.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int EXEPrivate::addFields_PE_Export(void)
+{
+	IMAGE_DATA_DIRECTORY dataDir;
+	ao::uvector<uint8_t> expDirTbl;
+
+	int res = readPEImpExpDir(dataDir, IMAGE_DATA_DIRECTORY_EXPORT_TABLE,
+		sizeof(IMAGE_EXPORT_DIRECTORY), 4*1024*1024, expDirTbl);
+	if (res)
+		return res;
+
+	const IMAGE_EXPORT_DIRECTORY *pExpDirTbl = reinterpret_cast<const IMAGE_EXPORT_DIRECTORY*>(expDirTbl.data());
+	uint32_t ordinalBase = le32_to_cpu(pExpDirTbl->Base);
+	if (ordinalBase > 65535)
+		return -ENOENT;
+
+	// Bounds checking function to ensure that the tables are located inside
+	// the export directory.
+	const uint32_t rvaMin = dataDir.VirtualAddress;
+	const uint32_t rvaMax = dataDir.VirtualAddress + dataDir.Size;
+	auto checkBounds = [&](uint32_t rva, uint32_t size) -> void * {
+		if (rva < rvaMin || rva > rvaMax)
+			return nullptr;
+		if (rva+size < rvaMin || rva+size > rvaMax)
+			return nullptr;
+		return expDirTbl.data() + (rva - rvaMin);
+	};
+
+	// Export Address Table
+	uint32_t rvaExpAddrTbl = le32_to_cpu(pExpDirTbl->AddressOfFunctions);
+	uint32_t szExpAddrTbl = le32_to_cpu(pExpDirTbl->NumberOfFunctions);
+	// Ignore ordinals greater than 65535
+	szExpAddrTbl = std::min(65536-ordinalBase, szExpAddrTbl);
+	const uint32_t *expAddrTbl = reinterpret_cast<const uint32_t*>(
+		checkBounds(rvaExpAddrTbl, szExpAddrTbl*sizeof(uint32_t)));
+	if (!expAddrTbl)
+		return -ENOENT;
+
+	// Export Name Table
+	uint32_t rvaExpNameTbl = le32_to_cpu(pExpDirTbl->AddressOfNames);
+	uint32_t szExpNameTbl = le32_to_cpu(pExpDirTbl->NumberOfNames);
+	const uint32_t *expNameTbl = reinterpret_cast<const uint32_t*>(
+		checkBounds(rvaExpNameTbl, szExpAddrTbl*sizeof(uint32_t)));
+	if (!expNameTbl)
+		return -ENOENT;
+
+	// Export Ordinal Table
+	uint32_t rvaExpOrdTbl = le32_to_cpu(pExpDirTbl->AddressOfNameOrdinals);
+	const uint16_t *expOrdTbl = reinterpret_cast<const uint16_t*>(
+		checkBounds(rvaExpOrdTbl, szExpAddrTbl*sizeof(uint16_t)));
+	if (!expOrdTbl)
+		return -ENOENT;
+
+	struct ExportEntry {
+		int ordinal;	// index in the address table + ordinal base
+		int hint;	// index in the name table (-1 if no name)
+		uint32_t vaddr;	// RVA of the symbol
+		uint32_t paddr; // corresponding file offset
+		string name;
+		string forwarder;
+	};
+	std::vector<ExportEntry> ents;
+	ents.reserve(std::max(szExpAddrTbl, szExpNameTbl));
+
+	// Read address table
+	for (uint32_t i = 0; i < szExpAddrTbl; i++) {
+		ExportEntry ent;
+		ent.ordinal = pExpDirTbl->Base + i;
+		ent.hint = -1;
+		ent.vaddr = le32_to_cpu(expAddrTbl[i]);
+		ent.paddr = pe_vaddr_to_paddr(ent.vaddr, 0);
+		if (ent.vaddr >= rvaMin && ent.vaddr < rvaMax) {
+			/* RVA points inside export directory, so this is
+			 * a forwarder RVA. It points to a NUL-terminated
+			 * string that looks like "dllname.symbol" or
+			 * "dllname.#123". */
+			const char *fwd = reinterpret_cast<const char *>(expDirTbl.data() + (ent.vaddr - rvaMin));
+			ent.forwarder = string(fwd, strnlen(fwd, rvaMax - ent.vaddr));
+		}
+		ents.push_back(std::move(ent));
+	}
+
+	// Read name table
+	for (uint32_t i = 0; i < szExpNameTbl; i++) {
+		uint32_t rvaName = le32_to_cpu(expNameTbl[i]);
+		uint16_t ord = le16_to_cpu(expOrdTbl[i]);
+		if (ord >= szExpAddrTbl) // out of bounds ordinal
+			continue;
+		if (rvaName < rvaMin || rvaName >= rvaMax)
+			continue;
+		const char *pName = reinterpret_cast<const char*>(expDirTbl.data() + (rvaName - rvaMin));
+		string name(pName, strnlen(pName, rvaMax - rvaName));
+		if (ents[ord].hint != -1) {
+			// This ordinal already has a name.
+			// Temporarily move the old name out to avoid a copy.
+			string oldname = std::move(ents[ord].name);
+			// Duplicate the entry, replace name and hint in the copy.
+			ExportEntry ent = ents[ord];
+			ents[ord].name = std::move(oldname);
+			ent.name = std::move(name);
+			ent.hint = i;
+			ents.push_back(std::move(ent));
+		} else {
+			ents[ord].name = std::move(name);
+			ents[ord].hint = i;
+		}
+		/* NOTE: We don't have to filter out duplicate names, because
+		 * they can be still accessed via hints. */
+	}
+
+	/* Sort by (hint, ordinal). This puts ordinal-only symbols at the top,
+	 * in ordinal order, followed by named symbols in lexicographic order.
+	 * ...unless your names aren't sorted, in which case your DLL is broken.
+	 * TODO: ExportEntries are quite thick (80 bytes), maybe it's worth
+	 * creating a pointer array and sort that instead? */
+	std::sort(ents.begin(), ents.end(),
+		[](const ExportEntry &lhs, const ExportEntry &rhs) -> bool {
+			return lhs.hint < rhs.hint
+				|| (lhs.hint == rhs.hint && lhs.ordinal < rhs.ordinal);
+		});
+
+	// Convert to ListData
+	auto vv_data = new RomFields::ListData_t();
+	vv_data->reserve(ents.size());
+	for (ExportEntry ent : ents) {
+		// Filter out any unused ordinals.
+		if (ent.hint == -1 && ent.vaddr == 0)
+			continue;
+		vv_data->emplace_back();
+		auto &row = vv_data->back();
+		row.reserve(5);
+		row.emplace_back(ent.name);
+		row.emplace_back(rp_sprintf("%d", ent.ordinal));
+		row.emplace_back(ent.hint != -1
+			? rp_sprintf("%d", ent.hint)
+			: C_("EXE|Exports", "None"));
+		if (ent.forwarder.size() != 0) {
+			row.emplace_back(ent.forwarder);
+			row.emplace_back("");
+		} else {
+			row.emplace_back(rp_sprintf("0x%08X", ent.vaddr));
+			if (ent.paddr)
+				row.emplace_back(rp_sprintf("0x%08X", ent.paddr));
+			else
+				row.emplace_back(""); // it's probably in the bss section
+		}
+	}
+
+	// Create the tab if we have any exports.
+	if (vv_data->size()) {
+		fields->addTab(C_("EXE", "Exports"));
+		fields->reserve(1);
+
+		static const char *const field_names[] = {
+			NOP_C_("EXE|Exports", "Name"),
+			NOP_C_("EXE|Exports", "Ordinal"),
+			NOP_C_("EXE|Exports", "Hint"),
+			NOP_C_("EXE|Exports", "Virtual Address"),
+			NOP_C_("EXE|Exports", "File Offset"),
+		};
+		vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
+			"EXE|Exports", field_names, ARRAY_SIZE(field_names));
+
+		RomFields::AFLD_PARAMS params;
+		params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;
+		params.headers = v_field_names;
+		params.data.single = vv_data;
+		fields->addField_listData(C_("EXE", "Exports"), &params);
+	} else {
+		delete vv_data;
+	}
+
+	return 0;
+}
+
+/**
+ * Add fields for PE import table.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int EXEPrivate::addFields_PE_Import(void)
+{
+	bool is64 = exeType == ExeType::PE32PLUS;
+
+	int res = readPEImportDir();
+	if (res)
+		return res;
+
+	unique_ptr<char[]> dll_ilt_data;
+	uint32_t dll_ilt_base;
+	size_t dll_ilt_read;
+	// Read Import Lookup Table
+	{
+		// Find the lowest and highest ImportLookupTable RVAs
+		if (peImportDir.empty()) {
+			// No imports...
+			return -ENOENT;
+		}
+		uint32_t dll_vaddr_low;
+		uint32_t dll_vaddr_high;
+		dll_vaddr_low = dll_vaddr_high = le32_to_cpu(peImportDir[0].rvaImportLookupTable);
+		for (const auto &ent : peImportDir) {
+			const uint32_t rvaImportLookupTable = le32_to_cpu(ent.rvaImportLookupTable);
+			if ((rvaImportLookupTable - dll_vaddr_low) & (is64?7:3)) {
+				/* Bad alignment. This check is mostly so that
+				 * I don't have to think what is the correct
+				 * "end" pointer after we type-pun to uint32.
+				 * Relative alignment is enough, though. */
+				return -ENOENT;
+			}
+			if (rvaImportLookupTable < dll_vaddr_low) {
+				dll_vaddr_low = rvaImportLookupTable;
+			}
+			if (rvaImportLookupTable > dll_vaddr_high) {
+				dll_vaddr_high = rvaImportLookupTable;
+			}
+		}
+		res = readPENullBlock(dll_vaddr_low, dll_vaddr_high,
+			// ILTs are terminated by NULL-pointer, so we need at
+			// least size_t extra bytes for the last table.
+			(is64?8:4), // minExtra
+			// 1 MB is 128 K imports at 64-bits.
+			1*1024*1024, // minMax
+			// 128 KB is 16 K imports at 64-bits.
+			128*1024, // maxExtra
+			dll_ilt_data, dll_ilt_read);
+		if (res)
+			return res;
+		dll_ilt_base = dll_vaddr_low;
+	}
+
+	// Iterator for import entries
+	const uint32_t *ilt_buf = reinterpret_cast<const uint32_t*>(dll_ilt_data.get());
+	const uint32_t *ilt_end;
+	if (is64)
+		ilt_end = ilt_buf + dll_ilt_read/8*2;
+	else
+		ilt_end = ilt_buf + dll_ilt_read/4;
+	struct IltIterator {
+		unsigned dir_index; // next DLL to read
+		const uint32_t *ilt; // next ilt entry to read
+		const string *dllname;
+		bool is_ordinal;
+		uint32_t value; // rva to hint/name or ordinal
+		IltIterator(const uint32_t *end) {
+			dir_index = 0;
+			ilt = end;
+		}
+	};
+	auto iltAdvance = [this, ilt_buf, ilt_end, dll_ilt_base, is64](IltIterator &it) -> bool {
+		auto &dir_index = it.dir_index;
+		auto &ilt = it.ilt;
+		auto &dllname = it.dllname;
+		auto &is_ordinal = it.is_ordinal;
+		auto &value = it.value;
+		while (ilt >= ilt_end) {
+			// read next directory entry
+			if (dir_index == peImportDir.size())
+				return false;
+			ilt = &ilt_buf[(le32_to_cpu(peImportDir[dir_index].rvaImportLookupTable) - dll_ilt_base)/4];
+			dllname = &peImportNames[dir_index];
+			dir_index++;
+			// check for NULL entry
+			if (!ilt[0] && (!is64 || !ilt[1]))
+				ilt = ilt_end;
+		}
+		// parse ILT entry
+		is_ordinal = le32_to_cpu(ilt[is64 ? 1 : 0]) & 0x80000000;
+		value = le32_to_cpu(ilt[0]) & (is_ordinal ? 0xFFFF : 0x7FFFFFFF);
+		// advance ILT pointer
+		ilt += is64 ? 2 : 1;
+		// check for NULL entry
+		if (!ilt[0] && (!is64 || !ilt[1]))
+			ilt = ilt_end;
+		return true;
+	};
+
+	// Read Name/Hint Table
+	unique_ptr<char[]> dll_hint_data;
+	uint32_t dll_hint_base;
+	size_t dll_hint_read;
+	int import_count = 0;
+	{
+		// Find the lowest and highest hint/name RVAs
+		uint32_t dll_vaddr_low = ~0U;
+		uint32_t dll_vaddr_high = 0U;
+		for (IltIterator it(ilt_end); iltAdvance(it); ) {
+			import_count++;
+			if (it.is_ordinal)
+				continue;
+			if (it.value < dll_vaddr_low)
+				dll_vaddr_low = it.value;
+			if (it.value > dll_vaddr_high)
+				dll_vaddr_high = it.value;
+		}
+		if (dll_vaddr_low == ~0U || dll_vaddr_high == 0) {
+			// No imports...
+			return -ENOENT;
+		}
+
+		res = readPENullBlock(dll_vaddr_low, dll_vaddr_high,
+			// 2-byte hint + NUL terminator
+			3, // minExtra
+			// 4 MB for all symbol names
+			4*1024*1024, // minMax
+			// Those C++ symbols can get quite long...
+			8*1024, // maxExtra
+			dll_hint_data, dll_hint_read);
+		if (res)
+			return res;
+		dll_hint_data[dll_hint_read-1] = '\0';
+		dll_hint_base = dll_vaddr_low;
+	}
+
+	// Generate list data
+	auto vv_data = new RomFields::ListData_t();
+	vv_data->reserve(import_count);
+	for (IltIterator it(ilt_end); iltAdvance(it); ) {
+		vv_data->emplace_back();
+		auto &row = vv_data->back();
+		row.reserve(3);
+		if (it.is_ordinal) {
+			row.emplace_back(rp_sprintf(C_("EXE|Exports", "Ordinal #%u"), it.value));
+			row.emplace_back("");
+		} else {
+			// RVA to hint number followed by NUL terminated name.
+			auto ent = &dll_hint_data[it.value - dll_hint_base];
+			row.emplace_back(ent+2);
+			row.emplace_back(rp_sprintf("%u", *reinterpret_cast<const uint16_t*>(ent)));
+		}
+		row.emplace_back(*it.dllname);
+	}
+
+	// Add the tab
+	fields->addTab(C_("EXE", "Imports"));
+	fields->reserve(1);
+
+	// Intentionally sharing the translation context with the exports tab.
+	static const char *const field_names[] = {
+		NOP_C_("EXE|Exports", "Name"),
+		NOP_C_("EXE|Exports", "Hint"),
+		NOP_C_("EXE|Exports", "Module"),
+	};
+	vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
+		"EXE|Exports", field_names, ARRAY_SIZE(field_names));
+
+	RomFields::AFLD_PARAMS params;
+	params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;
+	params.headers = v_field_names;
+	params.data.single = vv_data;
+	fields->addField_listData(C_("EXE", "Imports"), &params);
+	return 0;
 }
 
 }
