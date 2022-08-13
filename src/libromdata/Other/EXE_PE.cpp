@@ -740,33 +740,24 @@ void EXEPrivate::addFields_PE(void)
 
 	// Load resources.
 	ret = loadPEResourceTypes();
-	if (ret != 0 || !rsrcReader) {
-		// Unable to load resources.
-		// We're done here.
-		return;
-	}
-
-	// Load the version resource.
-	// NOTE: load_VS_VERSION_INFO loads it in host-endian.
-	VS_FIXEDFILEINFO vsffi;
-	IResourceReader::StringFileInfo vssfi;
-	ret = rsrcReader->load_VS_VERSION_INFO(VS_VERSION_INFO, -1, &vsffi, &vssfi);
-	if (ret != 0) {
-		// Unable to load the version resource.
-		// We're done here.
-		return;
-	}
-
-	// Add the version fields.
-	fields->setTabName(1, C_("EXE", "Version"));
-	fields->setTabIndex(1);
-	addFields_VS_VERSION_INFO(&vsffi, &vssfi);
+	if (ret == 0 && rsrcReader != nullptr) {
+		// Load the version resource.
+		// NOTE: load_VS_VERSION_INFO loads it in host-endian.
+		VS_FIXEDFILEINFO vsffi;
+		IResourceReader::StringFileInfo vssfi;
+		if (rsrcReader->load_VS_VERSION_INFO(VS_VERSION_INFO, -1, &vsffi, &vssfi) == 0) {
+			// Add the version fields.
+			fields->setTabName(1, C_("EXE", "Version"));
+			fields->setTabIndex(1);
+			addFields_VS_VERSION_INFO(&vsffi, &vssfi);
+		}
 
 #ifdef ENABLE_XML
-	// Parse the manifest if it's present.
-	// TODO: Support external manifests, e.g. program.exe.manifest?
-	addFields_PE_Manifest();
+		// Parse the manifest if it's present.
+		// TODO: Support external manifests, e.g. program.exe.manifest?
+		addFields_PE_Manifest();
 #endif /* ENABLE_XML */
+	}
 
 	// Add exports / imports
 	addFields_PE_Export();
