@@ -880,10 +880,16 @@ int EXEPrivate::addFields_PE_Export(void)
 	/* Sort by (hint, ordinal). This puts ordinal-only symbols at the top,
 	 * in ordinal order, followed by named symbols in lexicographic order.
 	 * ...unless your names aren't sorted, in which case your DLL is broken.
-	 * TODO: ExportEntries are quite thick (80 bytes), maybe it's worth
-	 * creating a pointer array and sort that instead? */
-	std::sort(ents.begin(), ents.end(),
-		[](const ExportEntry &lhs, const ExportEntry &rhs) -> bool {
+	 * NOTE: ExportEntry is 80 bytes on 64-bit, so we'll use a sort index map. */
+	std::unique_ptr<unsigned int[]> sortIndexMap(new unsigned int[ents.size()]);
+	for (unsigned int i = 0; i < static_cast<unsigned int>(ents.size()); i++) {
+		sortIndexMap[i] = i;
+	}
+
+	std::sort(sortIndexMap.get(), sortIndexMap.get() + ents.size(),
+		[&ents](unsigned int idx_lhs, unsigned int idx_rhs) -> bool {
+			const ExportEntry &lhs = ents[idx_lhs];
+			const ExportEntry &rhs = ents[idx_rhs];
 			return lhs.hint < rhs.hint
 				|| (lhs.hint == rhs.hint && lhs.ordinal < rhs.ordinal);
 		});
@@ -891,7 +897,9 @@ int EXEPrivate::addFields_PE_Export(void)
 	// Convert to ListData
 	auto vv_data = new RomFields::ListData_t();
 	vv_data->reserve(ents.size());
-	for (ExportEntry ent : ents) {
+	for (unsigned int i = 0; i < static_cast<unsigned int>(ents.size()); i++) {
+		const ExportEntry &ent = ents[i];
+
 		// Filter out any unused ordinals.
 		if (ent.hint == -1 && ent.vaddr == 0)
 			continue;
