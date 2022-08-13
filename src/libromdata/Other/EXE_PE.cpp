@@ -258,15 +258,13 @@ int EXEPrivate::readPEImpExpDir(IMAGE_DATA_DIRECTORY &dataDir, int type,
 	return 0;
 }
 /**
- * Find the runtime DLL. (PE version)
- * @param refDesc String to store the description.
- * @param refLink String to store the download link.
+ * Read PE Import Directory (peImportDir) and DLL names (peImportNames).
  * @return 0 on success; negative POSIX error code on error.
  */
-int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
+int EXEPrivate::readPEImportDir(void)
 {
-	refDesc.clear();
-	refLink.clear();
+	if (peImportDirLoaded)
+		return 0;
 
 	// NOTE: There appears to be two copies of the DLL listing.
 	// There's one in the file header before any sections, and
@@ -280,32 +278,26 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 	// table size might not be an exact multiple of
 	// IMAGE_IMPORT_DIRECTORY in the former case.
 
-
 	IMAGE_DATA_DIRECTORY dataDir;
 	ao::uvector<uint8_t> impDirTbl;
-	bool is64 = exeType == ExeType::PE32PLUS;
-
 	int res = readPEImpExpDir(dataDir, IMAGE_DATA_DIRECTORY_IMPORT_TABLE,
 		sizeof(IMAGE_IMPORT_DIRECTORY), 4*1024*1024, impDirTbl);
 	if (res)
 		return res;
-
-	// Set containing all of the DLL name VAs.
-	unordered_set<uint32_t> set_dll_vaddrs;
 
 	// Find the lowest and highest DLL name VAs in the import directory table.
 	uint32_t dll_vaddr_low = ~0U;
 	uint32_t dll_vaddr_high = 0U;
 	const IMAGE_IMPORT_DIRECTORY *pImpDirTbl = reinterpret_cast<const IMAGE_IMPORT_DIRECTORY*>(impDirTbl.data());
 	const IMAGE_IMPORT_DIRECTORY *const pImpDirTblEnd = pImpDirTbl + (impDirTbl.size() / sizeof(IMAGE_IMPORT_DIRECTORY));
-	for (; pImpDirTbl < pImpDirTblEnd; pImpDirTbl++) {
-		if (pImpDirTbl->rvaModuleName == 0) {
+	const IMAGE_IMPORT_DIRECTORY *p = pImpDirTbl;
+	for (; p < pImpDirTblEnd; p++) {
+		if (p->rvaModuleName == 0) {
 			// End of table.
 			break;
 		}
 
-		const uint32_t rvaModuleName = le32_to_cpu(pImpDirTbl->rvaModuleName);
-		set_dll_vaddrs.insert(rvaModuleName);
+		const uint32_t rvaModuleName = le32_to_cpu(p->rvaModuleName);
 		if (rvaModuleName < dll_vaddr_low) {
 			dll_vaddr_low = rvaModuleName;
 		}
@@ -343,13 +335,46 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 	// Ensure the end of the buffer is NULL-terminated.
 	dll_name_data[dll_size_max-1] = '\0';
 
-	// Convert the entire buffer to lowercase. (ASCII characters only)
-	{
-		char *const p_end = &dll_name_data[dll_size_max];
-		for (char *p = dll_name_data.get(); p < p_end; p++) {
-			if (*p >= 'A' && *p <= 'Z') *p |= 0x20;
+	// Copy to peImportDir
+	peImportDir.clear();
+	peImportDir.insert(peImportDir.begin(), pImpDirTbl, p);
+
+	// Fill peImportNames
+	peImportNames.clear();
+	peImportNames.reserve(peImportDir.size());
+	for(auto &ent : peImportDir) {
+		uint32_t vaddr = le32_to_cpu(ent.rvaModuleName);
+		assert(vaddr >= dll_vaddr_low);
+		assert(vaddr <= dll_vaddr_high);
+		if (vaddr < dll_vaddr_low || vaddr > dll_vaddr_high) {
+			// Out of bounds? This shouldn't have happened...
+			return -ENOENT;
 		}
+
+		// Current DLL name from the import table.
+		const char *const dll_name = &dll_name_data[vaddr - dll_vaddr_low];
+		peImportNames.emplace_back(dll_name);
 	}
+
+	peImportDirLoaded = true;
+	return 0;
+}
+/**
+ * Find the runtime DLL. (PE version)
+ * @param refDesc String to store the description.
+ * @param refLink String to store the download link.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
+{
+	refDesc.clear();
+	refLink.clear();
+
+	bool is64 = exeType == ExeType::PE32PLUS;
+
+	int res = readPEImportDir();
+	if (res)
+		return res;
 
 	// MSVC runtime DLL version to display version table.
 	// Reference: https://matthew-brett.github.io/pydagogue/python_msvc.html
@@ -394,21 +419,13 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 
 	// Check all of the DLL names.
 	bool found = false;
-	const auto set_dll_vaddrs_cend = set_dll_vaddrs.cend();
-	for (auto iter = set_dll_vaddrs.cbegin(); iter != set_dll_vaddrs_cend && !found; ++iter) {
-		uint32_t vaddr = *iter;
-		assert(vaddr >= dll_vaddr_low);
-		assert(vaddr <= dll_vaddr_high);
-		if (vaddr < dll_vaddr_low || vaddr > dll_vaddr_high) {
-			// Out of bounds? This shouldn't have happened...
-			break;
-		}
-
+	const auto peImportNames_cend = peImportNames.cend();
+	for (auto iter = peImportNames.cbegin(); iter != peImportNames_cend && !found; ++iter) {
 		// Current DLL name from the import table.
-		const char *const dll_name = &dll_name_data[vaddr - dll_vaddr_low];
+		const char *const dll_name = iter->c_str();
 
 		// Check for MSVC 2015-2019. (vcruntime140.dll)
-		if (!strcmp(dll_name, "vcruntime140.dll")) {
+		if (!strcasecmp(dll_name, "vcruntime140.dll")) {
 			// TODO: If host OS is Windows XP or earlier, limit it to 2017?
 			refDesc = rp_sprintf(
 				C_("EXE|Runtime", "Microsoft Visual C++ %s Runtime"), "2015-2022");
@@ -426,7 +443,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 					break;
 			}
 			break;
-		} else if (!strcmp(dll_name, "vcruntime140d.dll")) {
+		} else if (!strcasecmp(dll_name, "vcruntime140d.dll")) {
 			refDesc = rp_sprintf(
 				C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"), "2015-2022");
 			break;
@@ -435,62 +452,61 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		// NOTE: MSVCP*.dll is usually listed first in executables
 		// that use C++, so check for both P and R.
 
-		// Check for MSVCR debug build patterns.
-		unsigned int dll_name_version = 0;
-		char c_or_cpp = '\0';
-		char is_debug = '\0';
-		char last_char = '\0';
-		int n = sscanf(dll_name, "msvc%c%u%c.dl%c",
-			&c_or_cpp, &dll_name_version, &is_debug, &last_char);
-		if (n == 4 && (c_or_cpp == 'p' || c_or_cpp == 'r') && is_debug == 'd' && last_char == 'l') {
-			// Found an MSVC debug DLL.
-			for (const auto &p : msvc_dll_tbl) {
-				if (p.dll_name_version == dll_name_version) {
-					// Found a matching version.
-					refDesc = rp_sprintf(
-						C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"),
-						p.display_version);
-					found = true;
-					break;
-				}
-			}
-		}
-		if (found)
-			break;
-
-		// Check for MSVCR release build patterns.
-		n = sscanf(dll_name, "msvc%c%u.dl%c", &c_or_cpp, &dll_name_version, &last_char);
-		if (n == 3 && (c_or_cpp == 'p' || c_or_cpp == 'r') && last_char == 'l') {
-			// Found an MSVC release DLL.
-			for (const auto &p : msvc_dll_tbl) {
-				if (p.dll_name_version == dll_name_version) {
-					// Found a matching version.
-					refDesc = rp_sprintf(
-						C_("EXE|Runtime", "Microsoft Visual C++ %s Runtime"),
-						p.display_version);
-					if (is64) {
-						if (p.url_amd64) {
-							refLink = p.url_amd64;
-						}
-					} else {
-						if (p.url_i386) {
-							refLink = p.url_i386;
-						}
+		if (!strncasecmp(dll_name, "msvcp", 5) || !strncasecmp(dll_name, "msvcr", 5)) {
+			unsigned int dll_name_version = 0;
+			char after_char = '\0';
+			int n = sscanf(dll_name+5, "%u%c", &dll_name_version, &after_char);
+			// Check for MSVCR debug build patterns.
+			if (n == 2 && !strcasecmp(strchr(dll_name+5, after_char), "d.dll")) {
+				// Found an MSVC debug DLL.
+				for (const auto &p : msvc_dll_tbl) {
+					if (p.dll_name_version == dll_name_version) {
+						// Found a matching version.
+						refDesc = rp_sprintf(
+							C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"),
+							p.display_version);
+						found = true;
+						break;
 					}
-					found = true;
-					break;
+				}
+			}
+			if (found)
+				break;
+
+			// Check for MSVCR release build patterns.
+			if (n == 2 && !strcasecmp(strchr(dll_name+5, after_char), ".dll")) {
+				// Found an MSVC release DLL.
+				for (const auto &p : msvc_dll_tbl) {
+					if (p.dll_name_version == dll_name_version) {
+						// Found a matching version.
+						refDesc = rp_sprintf(
+							C_("EXE|Runtime", "Microsoft Visual C++ %s Runtime"),
+							p.display_version);
+						if (is64) {
+							if (p.url_amd64) {
+								refLink = p.url_amd64;
+							}
+						} else {
+							if (p.url_i386) {
+								refLink = p.url_i386;
+							}
+						}
+						found = true;
+						break;
+					}
 				}
 			}
 		}
+
 
 		// Check for MSVCRT.DLL.
 		// FIXME: This is used by both 5.0 and 6.0.
-		if (!strcmp(dll_name, "msvcrt.dll")) {
+		if (!strcasecmp(dll_name, "msvcrt.dll")) {
 			// NOTE: Conflict between MSVC 6.0 and the "system" MSVCRT.
 			// TODO: Other heuristics to figure this out. (Check for msvcp60.dll?)
 			refDesc = C_("EXE|Runtime", "Microsoft System C++ Runtime");
 			break;
-		} else if (!strcmp(dll_name, "msvcrtd.dll")) {
+		} else if (!strcasecmp(dll_name, "msvcrtd.dll")) {
 			refDesc = rp_sprintf(
 				C_("EXE|Runtime", "Microsoft Visual C++ %s Debug Runtime"), "6.0");
 			break;
@@ -500,7 +516,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 		// NOTE: There's only three 32-bit versions of Visual Basic,
 		// and .NET versions don't count.
 		for (const auto &p : msvb_dll_tbl) {
-			if (!strcmp(dll_name, p.dll_name)) {
+			if (!strcasecmp(dll_name, p.dll_name)) {
 				// Found a matching version.
 				refDesc = rp_sprintf(C_("EXE|Runtime", "Microsoft Visual Basic %u.%u Runtime"),
 					p.ver_major, p.ver_minor);

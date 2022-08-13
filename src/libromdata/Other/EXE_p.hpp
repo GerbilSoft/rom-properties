@@ -185,6 +185,19 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 		int readPEImpExpDir(IMAGE_DATA_DIRECTORY &dataDir, int type,
 			size_t minSize, size_t maxSize, ao::uvector<uint8_t> &dirTbl);
 
+		// PE Import Directory
+		std::vector<IMAGE_IMPORT_DIRECTORY> peImportDir;
+		// PE Import DLL Names (same order as the directory)
+		std::vector<std::string> peImportNames;
+		// Whether peImportDir and peImportNames were already loaded.
+		bool peImportDirLoaded = false;
+
+		/**
+		 * Read PE Import Directory (peImportDir) and DLL names (peImportNames).
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int readPEImportDir(void);
+
 	public:
 		/**
 		 * Find the runtime DLL. (PE version)
