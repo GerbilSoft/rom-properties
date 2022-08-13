@@ -1104,8 +1104,40 @@ int EXEPrivate::addFields_PE_Import(void)
 			row.emplace_back(ent+2);
 			row.emplace_back(rp_sprintf("%u", *reinterpret_cast<const uint16_t*>(ent)));
 		}
-		row.emplace_back(*it.dllname);
+		row.emplace_back(*(it.dllname));
 	}
+
+	// Sort the list data by (module, name, hint).
+	std::sort(vv_data->begin(), vv_data->end(),
+		[](vector<string> &lhs, vector<string> &rhs) -> bool {
+			// Vector index 0: Name
+			// Vector index 1: Hint
+			// Vector index 2: Module
+			int res = strcasecmp(lhs[2].c_str(), rhs[2].c_str());
+			if (res < 0)
+				return true;
+			else if (res > 0)
+				return false;
+
+			res = strcasecmp(lhs[0].c_str(), rhs[0].c_str());
+			if (res < 0)
+				return true;
+			else if (res > 0)
+				return false;
+
+			// Hint is numeric, so convert it to a number first.
+			unsigned long hint_lhs, hint_rhs;
+			char *endptr_lhs, *endptr_rhs;
+			hint_lhs = strtoul(lhs[1].c_str(), &endptr_lhs, 10);
+			hint_rhs = strtoul(lhs[1].c_str(), &endptr_rhs, 10);
+			if (!endptr_lhs || *endptr_lhs == '\0' || !endptr_rhs || *endptr_rhs == '\0') {
+				// Invalid numeric value. Do a string comparison instead.
+				return (strcasecmp(lhs[1].c_str(), rhs[1].c_str()) < 0);
+			}
+
+			// Numeric conversion succeeded.
+			return (hint_lhs < hint_rhs);
+		});
 
 	// Add the tab
 	fields->addTab(C_("EXE", "Imports"));
