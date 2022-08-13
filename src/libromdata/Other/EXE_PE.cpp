@@ -882,11 +882,10 @@ int EXEPrivate::addFields_PE_Export(void)
 	 * ...unless your names aren't sorted, in which case your DLL is broken.
 	 * NOTE: ExportEntry is 80 bytes on 64-bit, so we'll use a sort index map. */
 	std::unique_ptr<unsigned int[]> sortIndexMap(new unsigned int[ents.size()]);
-	for (unsigned int i = 0; i < static_cast<unsigned int>(ents.size()); i++) {
-		sortIndexMap[i] = i;
-	}
+	const auto sortIndexMap_end = sortIndexMap.get() + ents.size();
+	std::iota(sortIndexMap.get(), sortIndexMap_end, 0);
 
-	std::sort(sortIndexMap.get(), sortIndexMap.get() + ents.size(),
+	std::sort(sortIndexMap.get(), sortIndexMap_end,
 		[&ents](unsigned int idx_lhs, unsigned int idx_rhs) -> bool {
 			const ExportEntry &lhs = ents[idx_lhs];
 			const ExportEntry &rhs = ents[idx_rhs];
