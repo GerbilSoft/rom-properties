@@ -306,7 +306,15 @@ tstring IDownloader::getOSRelease(void)
 		return tstring();
 	}
 
-	s_os_release.assign(ctx.ret_value);
+	// Remove leading and trailing double-quotes, if present.
+	const char *os_release = ctx.ret_value;
+	if (os_release[0] == '\"') {
+		os_release++;
+	}
+	s_os_release.assign(os_release);
+	if (!s_os_release.empty() && s_os_release[s_os_release.size()-1] == '\"') {
+		s_os_release.resize(s_os_release.size()-1);
+	}
 #endif
 
 	return s_os_release;
