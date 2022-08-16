@@ -10,13 +10,9 @@
 # LZ4's CMake support is maintained by Evan Nemerson; when filing
 # bugs please mention @nemequ to make sure I see it.
 
-set(LZ4_TOP_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
+cmake_minimum_required(VERSION 2.8.12)
 
-# rom-properties: Always disabled.
-#option(LZ4_BUILD_CLI "Build lz4 program" ON)
-#option(LZ4_BUILD_LEGACY_LZ4C "Build lz4c progam with legacy argument support" ON)
-set(LZ4_BUILD_CLI OFF)
-set(LZ4_BUILD_LEGACY_LZ4C OFF)
+set(LZ4_TOP_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 
 # Parse version information
 file(STRINGS "${LZ4_TOP_SOURCE_DIR}/lib/lz4.h" LZ4_VERSION_MAJOR REGEX "^#define LZ4_VERSION_MAJOR +([0-9]+) +.*$")
@@ -37,7 +33,12 @@ else()
     LANGUAGES C)
 endif()
 
-cmake_minimum_required (VERSION 2.8.6)
+IF(0) # rom-properties: Always disabled.
+option(LZ4_BUILD_CLI "Build lz4 program" ON)
+option(LZ4_BUILD_LEGACY_LZ4C "Build lz4c program with legacy argument support" ON)
+ENDIF(0) # rom-properties
+set(LZ4_BUILD_CLI OFF)
+set(LZ4_BUILD_LEGACY_LZ4C OFF)
 
 # If LZ4 is being bundled in another project, we don't want to
 # install anything.  However, we want to let people override this, so
@@ -69,10 +70,11 @@ endif(NOT LZ4_BUNDLED_MODE AND NOT CPack_CMake_INCLUDED)
 # Allow people to choose whether to build shared or static libraries
 # via the BUILD_SHARED_LIBS option unless we are in bundled mode, in
 # which case we always use static libraries.
-# rom-properties: Disable this; we'll control it ourserlves in extlib.
-#include(CMakeDependentOption)
-#CMAKE_DEPENDENT_OPTION(BUILD_SHARED_LIBS "Build shared libraries" ON "NOT LZ4_BUNDLED_MODE" OFF)
-#CMAKE_DEPENDENT_OPTION(BUILD_STATIC_LIBS "Build static libraries" OFF "BUILD_SHARED_LIBS" ON)
+IF(0) # rom-properties: Disable this; we'll control it ourserlves in extlib.
+include(CMakeDependentOption)
+CMAKE_DEPENDENT_OPTION(BUILD_SHARED_LIBS "Build shared libraries" ON "NOT LZ4_BUNDLED_MODE" OFF)
+CMAKE_DEPENDENT_OPTION(BUILD_STATIC_LIBS "Build static libraries" OFF "BUILD_SHARED_LIBS" ON)
+ENDIF(0) # rom-properties
 
 if(NOT BUILD_SHARED_LIBS AND NOT BUILD_STATIC_LIBS)
   message(FATAL_ERROR "Both BUILD_SHARED_LIBS and BUILD_STATIC_LIBS have been disabled")
@@ -101,8 +103,9 @@ set(LZ4_CLI_SOURCES
 # Whether to use position independent code for the static library.  If
 # we're building a shared library this is ignored and PIC is always
 # used.
-# rom-properties: Always enable this.
-#option(LZ4_POSITION_INDEPENDENT_LIB "Use position independent code for static library (if applicable)" ON)
+IF(0) # rom-properties: Always enable this.
+option(LZ4_POSITION_INDEPENDENT_LIB "Use position independent code for static library (if applicable)" ON)
+ENDIF(0) # rom-properties
 set(LZ4_POSITION_INDEPENDENT_LIB ON)
 
 # rom-properties
@@ -117,8 +120,12 @@ if(BUILD_SHARED_LIBS)
   IF(WIN32)
     # rom-properties: Add the Win32 resource file.
     SET(LZ4_RC_FILE "${LZ4_TOP_SOURCE_DIR}/build/VS2017/liblz4-dll/liblz4-dll.rc")
+    SET(LZ4_SOURCES ${LZ4_SOURCES} ${LZ4_RC_FILE})
   ENDIF(WIN32)
-  add_library(lz4_shared SHARED ${LZ4_SOURCES} ${LZ4_RC_FILE})
+  add_library(lz4_shared SHARED ${LZ4_SOURCES})
+  target_include_directories(lz4_shared
+    PUBLIC $<BUILD_INTERFACE:${LZ4_LIB_SOURCE_DIR}>
+    INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
   set_target_properties(lz4_shared PROPERTIES
     OUTPUT_NAME lz4
     SOVERSION "${LZ4_VERSION_MAJOR}"
@@ -141,13 +148,18 @@ if(BUILD_STATIC_LIBS)
   INCLUDE(CheckHiddenVisibility)
   CHECK_HIDDEN_VISIBILITY()
 
+  set(STATIC_LIB_NAME lz4)
+  if (MSVC AND BUILD_SHARED_LIBS)
+    set(STATIC_LIB_NAME lz4_static)
+  endif()
   add_library(lz4_static STATIC ${LZ4_SOURCES})
+  target_include_directories(lz4_static
+    PUBLIC $<BUILD_INTERFACE:${LZ4_LIB_SOURCE_DIR}>
+    INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
   set_target_properties(lz4_static PROPERTIES
-    OUTPUT_NAME lz4
+    OUTPUT_NAME ${STATIC_LIB_NAME}
     POSITION_INDEPENDENT_CODE ${LZ4_POSITION_INDEPENDENT_LIB})
   list(APPEND LZ4_LIBRARIES_BUILT lz4_static)
-  # rom-properties: Add the include directory.
-  target_include_directories(lz4_static PUBLIC "${LZ4_LIB_SOURCE_DIR}")
   # rom-properties: Hide all symbols so they're not exported by libromdata.
   target_compile_definitions(lz4_static PUBLIC LZ4LIB_VISIBILITY=)
 endif()
@@ -155,6 +167,7 @@ endif()
 # link to shared whenever possible, to static otherwise
 if(BUILD_SHARED_LIBS)
   set(LZ4_LINK_LIBRARY lz4_shared)
+  list(APPEND LZ4_CLI_SOURCES ${LZ4_SOURCES})
 else()
   set(LZ4_LINK_LIBRARY lz4_static)
 endif()
@@ -164,7 +177,9 @@ if (LZ4_BUILD_CLI)
   set(LZ4_PROGRAMS_BUILT lz4cli)
   add_executable(lz4cli ${LZ4_CLI_SOURCES})
   set_target_properties(lz4cli PROPERTIES OUTPUT_NAME lz4)
-  target_link_libraries(lz4cli ${LZ4_LINK_LIBRARY})
+  if (BUILD_STATIC_LIBS)
+    target_link_libraries(lz4cli ${LZ4_LINK_LIBRARY})
+  endif()
 endif()
 
 # lz4c
@@ -172,7 +187,9 @@ if (LZ4_BUILD_LEGACY_LZ4C)
   list(APPEND LZ4_PROGRAMS_BUILT lz4c)
   add_executable(lz4c ${LZ4_CLI_SOURCES})
   set_target_properties(lz4c PROPERTIES COMPILE_DEFINITIONS "ENABLE_LZ4C_LEGACY_OPTIONS")
-  target_link_libraries(lz4c ${LZ4_LINK_LIBRARY})
+  if (BUILD_STATIC_LIBS)
+    target_link_libraries(lz4c ${LZ4_LINK_LIBRARY})
+  endif()
 endif()
 
 # Extra warning flags
@@ -213,6 +230,7 @@ if(NOT LZ4_BUNDLED_MODE)
     BUNDLE	DESTINATION "${CMAKE_INSTALL_BINDIR}"
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
   install(TARGETS ${LZ4_LIBRARIES_BUILT}
+    EXPORT lz4Targets
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
@@ -225,6 +243,30 @@ if(NOT LZ4_BUNDLED_MODE)
     DESTINATION "${CMAKE_INSTALL_MANDIR}/man1")
   install(FILES "${CMAKE_CURRENT_BINARY_DIR}/liblz4.pc"
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+
+  include(CMakePackageConfigHelpers)
+  write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/lz4ConfigVersion.cmake"
+    VERSION ${LZ4_VERSION_STRING}
+    COMPATIBILITY SameMajorVersion)
+
+  set(LZ4_PKG_INSTALLDIR "${CMAKE_INSTALL_LIBDIR}/cmake/lz4")
+  configure_package_config_file(
+    "${CMAKE_CURRENT_LIST_DIR}/lz4Config.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/lz4Config.cmake"
+    INSTALL_DESTINATION ${LZ4_PKG_INSTALLDIR})
+  export(EXPORT lz4Targets
+    FILE ${CMAKE_CURRENT_BINARY_DIR}/lz4Targets.cmake
+    NAMESPACE LZ4::)
+
+  install(EXPORT lz4Targets
+    FILE lz4Targets.cmake
+    NAMESPACE LZ4::
+    DESTINATION ${LZ4_PKG_INSTALLDIR})
+  install(FILES
+      ${CMAKE_CURRENT_BINARY_DIR}/lz4Config.cmake
+      ${CMAKE_CURRENT_BINARY_DIR}/lz4ConfigVersion.cmake
+    DESTINATION ${LZ4_PKG_INSTALLDIR})
 
   # install lz4cat and unlz4 symlinks on *nix
   if(UNIX AND LZ4_BUILD_CLI)
