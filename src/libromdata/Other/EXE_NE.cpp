@@ -126,53 +126,37 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 	const uint32_t ne_hdr_addr = le32_to_cpu(mz.e_lfanew);
 
 	// Load the module references and imported names tables.
-	// NOTE: Imported names table has counted strings, and
-	// since Win3.1 used 8.3 filenames (and extensions are
-	// not present here), there's a maximum of 9*ModRefs
-	// bytes to be read.
-	// NOTE 2: There might be some extra empty strings at
-	// the beginning, so read some extra data in case.
+	// NOTE: The order of the tables in the resident part of NE header is
+	// fixed, with module reference, import name, and entry tables being
+	// the last three tables within the resident area.
 	const unsigned int modRefs = le16_to_cpu(hdr.ne.ModRefs);
 	const unsigned int modRefTable_addr = ne_hdr_addr + le16_to_cpu(hdr.ne.ModRefTable);
 	const unsigned int importNameTable_addr = ne_hdr_addr + le16_to_cpu(hdr.ne.ImportNameTable);
+	const unsigned int entryTable_addr = ne_hdr_addr + le16_to_cpu(hdr.ne.EntryTableOffset);
 
 	if (modRefs == 0) {
 		// No module references.
 		return -ENOENT;
-	} else if (modRefTable_addr < ne_hdr_addr || importNameTable_addr < ne_hdr_addr) {
+	} else if (modRefTable_addr < ne_hdr_addr || importNameTable_addr < ne_hdr_addr || entryTable_addr < ne_hdr_addr) {
 		// One of the addresses is out of range.
 		return -EIO;
 	}
 
-	// TODO: Check for overlapping tables?
-
-	// Determine the low address.
-	// ModRefTable is usually first, but we can't be certain.
-	uint32_t read_low_addr;
-	uint32_t read_size;
-	uint32_t nameTable_size;
-	if (modRefTable_addr < importNameTable_addr) {
-		// ModRefTable is first.
-		// Add 256 bytes for the nametable, since we can't determine how
-		// big the nametable actually is without reading it.
-		read_low_addr = modRefTable_addr;
-		nameTable_size = (9 * (static_cast<uint32_t>(modRefs) + 2)) + 256;
-		read_size = (importNameTable_addr - modRefTable_addr) + nameTable_size;
-	} else {
-		// ImportNameTable is first.
-		read_low_addr = importNameTable_addr;
-		nameTable_size = (modRefTable_addr - importNameTable_addr);
-		read_size = nameTable_size + (modRefs * static_cast<uint32_t>(sizeof(uint16_t)));
-	}
-
-	if (read_size > 128*1024) {
-		// Shouldn't be more than 128 KB...
-		// (Actually, it probably shouldn't be more than 64 KB.)
+	// Check for overlapping tables
+	if (modRefTable_addr + modRefs*2 > importNameTable_addr)
 		return -EIO;
-	}
+
+	// Check ordering
+	if (modRefTable_addr > importNameTable_addr)
+		return -EIO;
+	if (importNameTable_addr > entryTable_addr)
+		return -EIO;
+
+	const uint32_t nameTable_size = entryTable_addr - modRefTable_addr;
+	const uint32_t read_size = entryTable_addr - modRefTable_addr;
 
 	unique_ptr<uint8_t[]> tbls(new uint8_t[read_size]);
-	size_t size = file->seekAndRead(read_low_addr, tbls.get(), read_size);
+	size_t size = file->seekAndRead(modRefTable_addr, tbls.get(), read_size);
 	if (size != read_size) {
 		// Error reading the tables.
 		// NOTE: Even with the extra padding, this shouldn't happen,
