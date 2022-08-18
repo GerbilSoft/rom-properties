@@ -279,8 +279,8 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
  */
 void EXEPrivate::addFields_NE(void)
 {
-	// Up to 3 tabs.
-	fields->reserveTabs(3);
+	// Up to 4 tabs.
+	fields->reserveTabs(4);
 
 	// NE Header
 	fields->setTabName(0, "NE");
@@ -456,27 +456,262 @@ void EXEPrivate::addFields_NE(void)
 
 	// Load resources.
 	ret = loadNEResourceTable();
-	if (ret != 0 || !rsrcReader) {
-		// Unable to load resources.
-		// We're done here.
-		return;
+	if (ret == 0 && rsrcReader) {
+		// Load the version resource.
+		// NOTE: load_VS_VERSION_INFO loads it in host-endian.
+		VS_FIXEDFILEINFO vsffi;
+		IResourceReader::StringFileInfo vssfi;
+		ret = rsrcReader->load_VS_VERSION_INFO(VS_VERSION_INFO, -1, &vsffi, &vssfi);
+		if (ret == 0) {
+			// Add the version fields.
+			fields->setTabName(1, C_("EXE", "Version"));
+			fields->setTabIndex(1);
+			addFields_VS_VERSION_INFO(&vsffi, &vssfi);
+		}
 	}
 
-	// Load the version resource.
-	// NOTE: load_VS_VERSION_INFO loads it in host-endian.
-	VS_FIXEDFILEINFO vsffi;
-	IResourceReader::StringFileInfo vssfi;
-	ret = rsrcReader->load_VS_VERSION_INFO(VS_VERSION_INFO, -1, &vsffi, &vssfi);
-	if (ret != 0) {
-		// Unable to load the version resource.
-		// We're done here.
-		return;
+	// Add entries
+	addFields_NE_Entry();
+}
+
+/**
+ * Add fields for NE entry table.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int EXEPrivate::addFields_NE_Entry(void)
+{
+	if (!file || !file->isOpen()) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!isValid) {
+		// Unknown executable type.
+		return -EIO;
 	}
 
-	// Add the version fields.
-	fields->setTabName(1, C_("EXE", "Version"));
-	fields->setTabIndex(1);
-	addFields_VS_VERSION_INFO(&vsffi, &vssfi);
+	// Offsets in the NE header are relative to the start of the header.
+	const uint32_t ne_hdr_addr = le32_to_cpu(mz.e_lfanew);
+	const uint32_t enttab_off = ne_hdr_addr + le16_to_cpu(hdr.ne.EntryTableOffset);
+	const uint16_t enttab_len = le16_to_cpu(hdr.ne.EntryTableLength);
+
+	ao::uvector<uint8_t> enttab;
+	enttab.resize(enttab_len);
+	size_t nread = file->seekAndRead(enttab_off, enttab.data(), enttab.size());
+	if (nread != enttab.size())
+		return -EIO; // Short read
+
+	const uint32_t restab_off = ne_hdr_addr + le16_to_cpu(hdr.ne.ResidNamTable);
+	const uint16_t restab_len = le16_to_cpu(hdr.ne.ModRefTable) - le16_to_cpu(hdr.ne.ResidNamTable);
+	ao::uvector<uint8_t> restab;
+	restab.resize(restab_len);
+	nread = file->seekAndRead(restab_off, restab.data(), restab.size());
+	if (nread != restab.size())
+		return -EIO; // Short read
+
+	const uint32_t nrestab_off = le32_to_cpu(hdr.ne.OffStartNonResTab);
+	const uint16_t nrestab_len = le16_to_cpu(hdr.ne.NoResNamesTabSiz);
+	ao::uvector<uint8_t> nrestab;
+	nrestab.resize(nrestab_len);
+	nread = file->seekAndRead(nrestab_off, nrestab.data(), nrestab.size());
+	if (nread != nrestab.size())
+		return -EIO; // Short read
+
+	struct Entry {
+		uint16_t ordinal;
+		uint8_t flags;
+		uint8_t segment;
+		uint16_t offset;
+		bool is_movable;
+		bool is_resident;
+		bool has_name;
+		string name;
+	};
+	vector<Entry> ents;
+
+	// Read entry table
+	auto p = enttab.begin();
+	for (int ordinal = 1;;) {
+		// Entry table consists of bundles of symbols
+		// Each bundle is starts with count and segment of the symbols
+		if (p >= enttab.end())
+			return -ENOENT;
+		uint16_t bundle_count = *p++;
+		if (bundle_count == 0)
+			break; // end of table
+		if (p >= enttab.end())
+			return -ENOENT;
+		uint16_t bundle_segment = *p++;
+		switch (bundle_segment) {
+		case 0:
+			// Segment value 0 is used for skipping over unused ordinal values.
+			ordinal += bundle_count;
+			break;
+		default:
+			/* Segment values 0x01-0xFE are used for fixed segments.
+			 * - DB flags
+			 * - DW offset
+			 * 0xFE is used for constants.*/
+			if (p + bundle_count*3 > enttab.end())
+				return -ENOENT;
+			for (int i = 0; i < bundle_count; i++) {
+				Entry ent;
+				ent.ordinal = ordinal++;
+				ent.flags = p[0];
+				ent.segment = bundle_segment;
+				ent.offset = p[1] | p[2]<<8;
+				ent.is_movable = false;
+				ents.push_back(ent);
+				p += 3;
+			}
+			break;
+		case 0xFF:
+			/* Segment value 0xFF is used for movable segments.
+			 * - DB flags
+			 * - DW INT 3F
+			 * - DB segment
+			 * - DW offset */
+			if (p + bundle_count*6 > enttab.end())
+				return -ENOENT;
+			for (int i = 0; i < bundle_count; i++) {
+				if (p[1] != 0xCD && p[2] != 0x3F) // INT 3Fh
+					return -ENOENT;
+				Entry ent;
+				ent.ordinal = ordinal++;
+				ent.flags = p[0];
+				ent.segment = p[3];
+				ent.offset = p[4] | p[5]<<8;
+				ent.is_movable = true;
+				ents.push_back(ent);
+				p += 6;
+			}
+			break;
+		}
+	}
+
+	/* Currently ents is sorted by ordinal. For duplicate names we'll add
+	 * more entries, so we must remember the original size so we can do
+	 * a binary search. */
+	size_t last = ents.size();
+	auto readNames = [&](const uint8_t *p, const uint8_t *end, bool is_resident) -> int {
+		if (p == end)
+			return -ENOENT;
+		/* Skip first string. For resident strings it's module name, and
+		 * for non-resident strings it's module description. */
+		p += *p + 3;
+		if (p >= end)
+			return -ENOENT;
+
+		while (*p) {
+			uint8_t len = *p++;
+			if (p + len + 2 >= end) // next length byte >= end
+				return -ENOENT;
+			string name(reinterpret_cast<const char *>(p), len);
+			uint16_t ordinal = p[len] | p[len+1]<<8;
+
+			// binary search for the ordinal
+			auto it = std::lower_bound(ents.begin(), ents.begin()+last, ordinal,
+				[](const Entry &lhs, uint16_t rhs) {
+					return lhs.ordinal < rhs;
+				});
+			if (it == ents.begin()+last || it->ordinal != ordinal) {
+				// name points to non-existent ordinal
+				return -ENOENT;
+			}
+
+			if (it->has_name) {
+				// This ordinal already has a name.
+				// Temporarily move the old name out to avoid a copy.
+				string oldname = std::move(it->name);
+				// Duplicate the entry, replace name in the copy.
+				Entry ent = *it;
+				it->name = std::move(oldname);
+				ent.name = std::move(name);
+				ent.is_resident = is_resident;
+				ents.push_back(std::move(ent)); // `it` is invalidated here
+			} else {
+				it->has_name = true;
+				it->name = std::move(name);
+				it->is_resident = is_resident;
+			}
+
+			p += len + 2;
+		}
+		return 0;
+	};
+
+	// Read names
+	int res;
+	res = readNames(restab.begin(), restab.end(), true);
+	if (res)
+		return res;
+	res = readNames(nrestab.begin(), nrestab.end(), false);
+	if (res)
+		return res;
+
+	auto vv_data = new RomFields::ListData_t();
+	vv_data->reserve(ents.size());
+	for (unsigned int i = 0; i < static_cast<unsigned int>(ents.size()); i++) {
+		const Entry &ent = ents[i];
+		vv_data->emplace_back();
+		auto &row = vv_data->back();
+		row.reserve(4);
+		/* NODATA and RESIDENTNAME are from DEF files. EXPORT and PARAMS
+		 * are names I made up (in DEF files you can't specify internal
+		 * entries, and parameter count is specified by just a number).
+		 * Typical flags values are 3 for exports, 0 for internal
+		 * entries. */
+		string flags;
+		if (ent.flags & 1)
+			flags = " EXPORT";
+		if (!(ent.flags & 2))
+			flags += " NODATA";
+		if (ent.flags & 4)
+			flags += " (bit 2)";
+		/* Parameter count. I haven't found any module where this is
+		 * actually used. */
+		if (ent.flags & 0xF8)
+			flags += rp_sprintf(" PARAMS=%d", ent.flags>>3);
+		if (ent.is_resident)
+			flags += " RESIDENTNAME";
+		flags.erase(0, 1);
+
+		row.emplace_back(rp_sprintf("%d", ent.ordinal));
+		row.emplace_back(ent.has_name ? ent.name : C_("EXE|Exports", "(No name)"));
+		if (ent.is_movable)
+			row.emplace_back(rp_sprintf(C_("EXE|Exports", "%02X:%04X (Movable)"),
+				ent.segment, ent.offset));
+		else if (ent.segment != 0xFE)
+			row.emplace_back(rp_sprintf(C_("EXE|Exports", "%02X:%04X (Fixed)"),
+				ent.segment, ent.offset));
+		else
+			row.emplace_back(rp_sprintf(C_("EXE|Exports", "%04X (Constant)"),
+				ent.offset));
+		row.emplace_back(flags);
+	}
+
+	// tr: this is the EXE NE equivalent of EXE PE export table
+	fields->addTab(C_("EXE", "Entries"));
+	fields->reserve(1);
+
+	// Create the tab if we have any exports.
+	if (vv_data->size()) {
+		static const char *const field_names[] = {
+			NOP_C_("EXE|Exports", "Ordinal"),
+			NOP_C_("EXE|Exports", "Name"),
+			NOP_C_("EXE|Exports", "Address"),
+			NOP_C_("EXE|Exports", "Flags"),
+		};
+		vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
+			"EXE|Exports", field_names, ARRAY_SIZE(field_names));
+
+		RomFields::AFLD_PARAMS params;
+		params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;
+		params.headers = v_field_names;
+		params.data.single = vv_data;
+		fields->addField_listData(C_("EXE", "Entries"), &params);
+	} else {
+		delete vv_data;
+	}
+	return 0;
 }
 
 }
