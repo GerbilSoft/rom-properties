@@ -70,6 +70,9 @@
     have the usual image size fields filled in, resulting in no image; others
     have incorrect values, resulting in a broken image.
     * This was reported by Trash_Bandatcoot.
+  * Linux: Don't attempt to fopen() a pipe or socket. This can hang, since
+    fopen() doesn't pass O_NONBLOCK.
+    * Fixes #351, reported by @IntriguingTiles.
 
 * Other changes:
   * Windows: DLL loading has been hardened by using LoadLibraryEx().

@@ -74,25 +74,20 @@ int RpFilePrivate::reOpenFile(void)
 	// Linux: Use UTF-8 filenames directly.
 	if (file) {
 		fclose(file);
+		file = nullptr;
 	}
-	file = fopen(filename.c_str(), mode_str);
 
-	// If fopen() failed (and returned nullptr),
-	// return the non-zero error code.
-	if (!file) {
-		q->m_lastError = errno;
-		if (q->m_lastError == 0) {
-			q->m_lastError = EIO;
-		}
-		return q->m_lastError;
-	}
+	// NOTE: Need to call stat() before fopen(), since if the file
+	// in question is a pipe, fopen() will hang. (No O_NONBLOCK).
+	// This *can* lead to a race condition, but we can't do much
+	// about that...
 
 	// Check if this is a device.
 	bool hasFileMode = false;
 	uint8_t fileType = 0;
 #ifdef HAVE_STATX
 	struct statx sbx;
-	int ret = statx(fileno(file), "", AT_EMPTY_PATH, STATX_TYPE, &sbx);
+	int ret = statx(AT_FDCWD, filename.c_str(), 0, STATX_TYPE, &sbx);
 	if (ret == 0 && (sbx.stx_mask & STATX_TYPE)) {
 		// statx() succeeded.
 		hasFileMode = true;
@@ -100,7 +95,7 @@ int RpFilePrivate::reOpenFile(void)
 	}
 #else /* !HAVE_STATX */
 	struct stat sb;
-	int ret = fstat(fileno(file), &sb);
+	int ret = stat(filename.c_str(), &sb);
 	if (ret == 0) {
 		// fstat() succeeded.
 		hasFileMode = true;
@@ -110,12 +105,30 @@ int RpFilePrivate::reOpenFile(void)
 
 	// Did we get the file mode from statx() or stat()?
 	if (hasFileMode) {
-		if (fileType == DT_DIR) {
-			// This is a directory.
-			fclose(file);
-			file = nullptr;
-			q->m_lastError = EISDIR;
-			return -EISDIR;
+		q->m_lastError = 0;
+		switch (fileType) {
+			case DT_DIR:
+				// This is a directory.
+				// TODO: How to handle NUS packages?
+				q->m_lastError = EISDIR;
+				break;
+
+			case DT_REG:
+#ifndef __linux__
+			case DT_CHR:
+#endif /* !__linux__ */
+			case DT_BLK:
+				// This is a regular file or device file.
+				break;
+
+			default:
+				// Other file types aren't supported.
+				q->m_lastError = EBADF;
+				break;
+		}
+
+		if (q->m_lastError != 0) {
+			return -q->m_lastError;
 		}
 		q->m_fileType = fileType;
 	}
@@ -132,8 +145,6 @@ int RpFilePrivate::reOpenFile(void)
 #ifdef __linux__
 		if (fileType == DT_CHR) {
 			// Character device. Not supported.
-			fclose(file);
-			file = nullptr;
 			q->m_lastError = ENOTSUP;
 			return -ENOTSUP;
 		}
@@ -172,15 +183,27 @@ int RpFilePrivate::reOpenFile(void)
 		}
 		if (!isMatch) {
 			// Not a match.
-			fclose(file);
-			file = nullptr;
 			q->m_lastError = ENOTSUP;
 			return -ENOTSUP;
 		}
 #else
 		RP_UNUSED(fileNamePatterns);
 #endif /* NO_PATTERNS_FOR_THIS_OS */
+	}
 
+	file = fopen(filename.c_str(), mode_str);
+
+	// If fopen() failed (and returned nullptr),
+	// return the non-zero error code.
+	if (!file) {
+		q->m_lastError = errno;
+		if (q->m_lastError == 0) {
+			q->m_lastError = EIO;
+		}
+		return q->m_lastError;
+	}
+
+	if (q->isDevice()) {
 		// Allocate devInfo.
 		// NOTE: This is kept around until RpFile is deleted,
 		// even if the device can't be opeend for some reason.
