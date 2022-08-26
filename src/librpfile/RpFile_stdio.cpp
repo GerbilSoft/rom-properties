@@ -21,11 +21,6 @@
 #include <sys/stat.h>	// stat(), statx()
 #include <unistd.h>	// ftruncate()
 
-#ifndef O_NONBLOCK
-#  warning O_NONBLOCK not defined
-#  define O_NONBLOCK 0
-#endif /* !O_NONBLOCK */
-
 namespace LibRpFile {
 
 /** RpFilePrivate **/
@@ -63,27 +58,6 @@ inline const char *RpFilePrivate::mode_to_str(RpFile::FileMode mode)
 }
 
 /**
- * Convert an RpFile::FileMode to an open() mode.
- * @param mode	[in] FileMode
- * @return open() mode.
- */
-static inline int mode_to_open_mode(RpFile::FileMode mode)
-{
-	switch (mode & RpFile::FM_MODE_MASK) {
-		case RpFile::FM_OPEN_READ:
-			return O_RDONLY;
-		case RpFile::FM_OPEN_WRITE:
-			return O_RDWR;
-		case RpFile::FM_CREATE|RpFile::FM_READ /*RpFile::FM_CREATE_READ*/ :
-		case RpFile::FM_CREATE_WRITE:
-			return O_RDWR | O_CREAT | O_TRUNC;
-		default:
-			// Invalid mode.
-			return 0;
-	}
-}
-
-/**
  * (Re-)Open the main file.
  *
  * INTERNAL FUNCTION. This does NOT affect gzfd.
@@ -95,6 +69,7 @@ static inline int mode_to_open_mode(RpFile::FileMode mode)
 int RpFilePrivate::reOpenFile(void)
 {
 	RP_Q(RpFile);
+	const char *const mode_str = mode_to_str(mode);
 
 	// Linux: Use UTF-8 filenames directly.
 	if (file) {
@@ -102,21 +77,18 @@ int RpFilePrivate::reOpenFile(void)
 		file = nullptr;
 	}
 
-	int fd = ::open(filename.c_str(), mode_to_open_mode(mode) | O_NONBLOCK, 0777);
-	if (fd < 0) {
-		q->m_lastError = errno;
-		if (q->m_lastError == 0) {
-			q->m_lastError = EIO;
-		}
-		return q->m_lastError;
-	}
+	// NOTE: Need to call stat() before fopen(), since if the file
+	// in question is a pipe, fopen() will hang. (No O_NONBLOCK).
+	// This *can* lead to a race condition, but we can't do much
+	// about that...
+	// TODO: Use open() with O_NONBLOCK and then fdopen()?
 
 	// Check if this is a device.
 	bool hasFileMode = false;
 	uint8_t fileType = 0;
 #ifdef HAVE_STATX
 	struct statx sbx;
-	int ret = statx(fd, "", AT_EMPTY_PATH, STATX_TYPE, &sbx);
+	int ret = statx(AT_FDCWD, filename.c_str(), 0, STATX_TYPE, &sbx);
 	if (ret == 0 && (sbx.stx_mask & STATX_TYPE)) {
 		// statx() succeeded.
 		hasFileMode = true;
@@ -124,7 +96,7 @@ int RpFilePrivate::reOpenFile(void)
 	}
 #else /* !HAVE_STATX */
 	struct stat sb;
-	int ret = fstat(fd, &sb);
+	int ret = stat(filename.c_str(), &sb);
 	if (ret == 0) {
 		// fstat() succeeded.
 		hasFileMode = true;
@@ -157,7 +129,6 @@ int RpFilePrivate::reOpenFile(void)
 		}
 
 		if (q->m_lastError != 0) {
-			::close(fd);
 			return -q->m_lastError;
 		}
 		q->m_fileType = fileType;
@@ -175,7 +146,6 @@ int RpFilePrivate::reOpenFile(void)
 #ifdef __linux__
 		if (fileType == DT_CHR) {
 			// Character device. Not supported.
-			::close(fd);
 			q->m_lastError = ENOTSUP;
 			return -ENOTSUP;
 		}
@@ -214,7 +184,6 @@ int RpFilePrivate::reOpenFile(void)
 		}
 		if (!isMatch) {
 			// Not a match.
-			::close(fd);
 			q->m_lastError = ENOTSUP;
 			return -ENOTSUP;
 		}
@@ -223,21 +192,16 @@ int RpFilePrivate::reOpenFile(void)
 #endif /* NO_PATTERNS_FOR_THIS_OS */
 	}
 
-	// Open the file for stdio.
-	file = ::fdopen(fd, mode_to_str(mode));
+	file = fopen(filename.c_str(), mode_str);
+
+	// If fopen() failed (and returned nullptr),
+	// return the non-zero error code.
 	if (!file) {
 		q->m_lastError = errno;
 		if (q->m_lastError == 0) {
 			q->m_lastError = EIO;
 		}
-		::close(fd);
 		return q->m_lastError;
-	}
-
-	// Unset O_NONBLOCK.
-	int oldfl = fcntl(fd, F_GETFL);
-	if (oldfl != -1) {
-		fcntl(fd, F_SETFL, oldfl & ~O_NONBLOCK);
 	}
 
 	if (q->isDevice()) {
