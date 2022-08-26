@@ -73,3 +73,16 @@ program uses the following security features:
 * Linux: seccomp(), AppArmor
 * OpenBSD: pledge()
 * Windows: Low-integrity process (on Vista+)
+
+## GameTDB.com Privacy Policy
+
+GameTDB.com's privacy policy can be read here: https://www.gametdb.com/Main/Legal
+
+## rpdb.gerbilsoft.com Privacy Policy
+
+As with most web servers, accessing rpdb.gerbilsoft.com does result in user
+information, such as IP addresses, being stored in a server log file. This
+log file is used for aggregate statistical purposes as well as identifying
+images missing from the server so they can be added in. No personally
+identifying information will ever be released, and this information will
+not be sold to third-parties.
