@@ -81,7 +81,6 @@ int RpFilePrivate::reOpenFile(void)
 	// in question is a pipe, fopen() will hang. (No O_NONBLOCK).
 	// This *can* lead to a race condition, but we can't do much
 	// about that...
-	// TODO: Use open() with O_NONBLOCK and then fdopen()?
 
 	// Check if this is a device.
 	bool hasFileMode = false;
