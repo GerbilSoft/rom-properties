@@ -13,6 +13,9 @@
 #include "config.librpbase.h"
 #ifdef HAVE_WCWIDTH
 #  include <wchar.h>
+#else /* !HAVE_WCWIDTH */
+#  include "uniwidth.h"
+#  define wcwidth(c) uc_width(c)
 #endif /* HAVE_WCWIDTH */
 
 namespace LibRpBase {
@@ -87,13 +90,7 @@ size_t utf8_disp_strlen(const char *str, size_t max_len)
 		}
 
 		// Check the character width.
-#ifdef HAVE_WCWIDTH
 		len += wcwidth(uchr);
-#else /* !HAVE_WCWIDTH */
-		// wcwidth() isn't available.
-		// TODO: Add gnulib's wcwidth().
-		len++;
-#endif /* HAVE_WCWIDTH */
 	}
 
 	return len;

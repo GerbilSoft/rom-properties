@@ -1,0 +1,18 @@
+This copy of uniwidth is a modified subset of gnulib.
+
+commit 044bf893acee0a55b22b4be0ede0e3ce010c480a
+tempname: simplify by omitting _LIBC code
+
+The following changes have been made to the original:
+
+- Only the uniwidth subset is included.
+
+- A CMake build system has been added.
+
+- .in.h files have been changed to .h.
+
+- CJK encoding checks have been removed, since we're only
+  using UTF-8.
+
+To obtain the original gnulib, visit:
+https://www.gnu.org/software/gnulib/
