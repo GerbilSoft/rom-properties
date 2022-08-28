@@ -30,14 +30,14 @@ _COM_SMARTPTR_TYPEDEF(IPersistFile,  IID_IPersistFile);
 
 /**
  * Use IExtractIconW from a fallback icon handler.
- * @param pExtractIconW Pointer to IExtractIconW interface.
- * @param phiconLarge Large icon.
- * @param phiconSmall Small icon.
- * @param nIconSize Icon sizes.
+ * @param pExtractIconA	[in] Pointer to IExtractIconW interface
+ * @param phiconLarge	[out,opt] Large icon
+ * @param phiconSmall	[out,opt] Small icon
+ * @param nIconSize	[in] Icon size
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractIcon_Private::DoExtractIconW(IExtractIconW *pExtractIconW,
-	HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize)
+LONG RP_ExtractIcon_Private::DoExtractIconW(_In_ IExtractIconW *pExtractIconW,
+	_Outptr_opt_ HICON *phiconLarge, _Outptr_opt_ HICON *phiconSmall, UINT nIconSize)
 {
 	// Get the IPersistFile interface.
 	IPersistFilePtr pPersistFile;
@@ -90,22 +90,39 @@ LONG RP_ExtractIcon_Private::DoExtractIconW(IExtractIconW *pExtractIconW,
 		}
 
 		// At least one icon was extracted.
-		*phiconLarge = hIcons[0];
-		*phiconSmall = hIcons[1];
+		if (uRet >= 1) {
+			if (phiconLarge) {
+				*phiconLarge = hIcons[0];
+			} else if (hIcons[0]) {
+				DestroyIcon(hIcons[0]);
+			}
+		} else if (phiconLarge) {
+			*phiconLarge = nullptr;
+		}
+
+		if (uRet >= 2) {
+			if (phiconSmall) {
+				*phiconSmall = hIcons[1];
+			} else if (hIcons[1]) {
+				DestroyIcon(hIcons[1]);
+			}
+		} else if (phiconSmall) {
+			*phiconSmall = nullptr;
+		}
 	}
 	return ERROR_SUCCESS;
 }
 
 /**
  * Use IExtractIconA from an old fallback icon handler.
- * @param pExtractIconA Pointer to IExtractIconW interface.
- * @param phiconLarge Large icon.
- * @param phiconSmall Small icon.
- * @param nIconSize Icon sizes.
+ * @param pExtractIconA	[in] Pointer to IExtractIconA interface
+ * @param phiconLarge	[out,opt] Large icon
+ * @param phiconSmall	[out,opt] Small icon
+ * @param nIconSize	[in] Icon size
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ExtractIcon_Private::DoExtractIconA(IExtractIconA *pExtractIconA,
-	HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize)
+LONG RP_ExtractIcon_Private::DoExtractIconA(_In_ IExtractIconA *pExtractIconA,
+	_Outptr_opt_ HICON *phiconLarge, _Outptr_opt_ HICON *phiconSmall, UINT nIconSize)
 {
 	// TODO: Verify that LPCOLESTR is still Unicode in IExtractIconA.
 	// TODO: Needs testing.
@@ -161,8 +178,25 @@ LONG RP_ExtractIcon_Private::DoExtractIconA(IExtractIconA *pExtractIconA,
 		}
 
 		// At least one icon was extracted.
-		*phiconLarge = hIcons[0];
-		*phiconSmall = hIcons[1];
+		if (uRet >= 1) {
+			if (phiconLarge) {
+				*phiconLarge = hIcons[0];
+			} else if (hIcons[0]) {
+				DestroyIcon(hIcons[0]);
+			}
+		} else if (phiconLarge) {
+			*phiconLarge = nullptr;
+		}
+
+		if (uRet >= 2) {
+			if (phiconSmall) {
+				*phiconSmall = hIcons[1];
+			} else if (hIcons[1]) {
+				DestroyIcon(hIcons[1]);
+			}
+		} else if (phiconSmall) {
+			*phiconSmall = nullptr;
+		}
 	}
 	return ERROR_SUCCESS;
 }
@@ -207,14 +241,14 @@ int RP_ExtractIcon_Private::getIconIndexFromSpec(LPCTSTR szIconSpec)
 /**
  * Fallback icon handler function. (internal)
  * This function reads the RP_Fallback key for fallback data.
- * @param hkey_Assoc File association key to check.
- * @param phiconLarge Large icon.
- * @param phiconSmall Small icon.
- * @param nIconSize Icon sizes.
+ * @param hkey_Assoc	[in] File association key to check
+ * @param phiconLarge	[out,opt] Large icon
+ * @param phiconSmall	[out,opt] Small icon
+ * @param nIconSize	[in] Icon sizes
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
 LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
-	HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize)
+	_Outptr_opt_ HICON *phiconLarge, _Outptr_opt_ HICON *phiconSmall, UINT nIconSize)
 {
 	// Is RP_Fallback present?
 	RegKey hkey_RP_Fallback(hkey_Assoc, _T("RP_Fallback"), KEY_READ, false);
@@ -306,8 +340,26 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 	}
 
 	// At least one icon was extracted.
-	*phiconLarge = hIcons[0];
-	*phiconSmall = hIcons[1];
+	if (uRet >= 1) {
+		if (phiconLarge) {
+			*phiconLarge = hIcons[0];
+		} else if (hIcons[0]) {
+			DestroyIcon(hIcons[0]);
+		}
+	} else if (phiconLarge) {
+		*phiconLarge = nullptr;
+	}
+
+	if (uRet >= 2) {
+		if (phiconSmall) {
+			*phiconSmall = hIcons[1];
+		} else if (hIcons[1]) {
+			DestroyIcon(hIcons[1]);
+		}
+	} else if (phiconSmall) {
+		*phiconSmall = nullptr;
+	}
+
 	return ERROR_SUCCESS;
 }
 

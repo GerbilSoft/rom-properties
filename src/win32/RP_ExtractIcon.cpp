@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractIcon.cpp: IExtractIcon implementation.                        *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -192,7 +192,7 @@ IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 }
 
 IFACEMETHODIMP RP_ExtractIcon::Extract(_In_ LPCWSTR pszFile, UINT nIconIndex,
-	_Outptr_ HICON *phiconLarge, _Outptr_ HICON *phiconSmall, UINT nIconSize)
+	_Outptr_opt_ HICON *phiconLarge, _Outptr_opt_ HICON *phiconSmall, UINT nIconSize)
 {
 	// NOTE: pszFile and nIconIndex were set in GetIconLocation().
 	// TODO: Validate them to make sure they're the same values
@@ -289,7 +289,7 @@ IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 }
 
 IFACEMETHODIMP RP_ExtractIcon::Extract(_In_ LPCSTR pszFile, UINT nIconIndex,
-	_Outptr_ HICON *phiconLarge, _Outptr_ HICON *phiconSmall, UINT nIconSize)
+	_Outptr_opt_ HICON *phiconLarge, _Outptr_opt_ HICON *phiconSmall, UINT nIconSize)
 {
 	// NOTE: The IExtractIconW interface doesn't use pszFile,
 	// so no conversion is necessary.

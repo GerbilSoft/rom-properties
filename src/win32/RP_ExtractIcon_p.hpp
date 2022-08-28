@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractIcon_p.hpp: IExtractIcon implementation. (PRIVATE CLASS)      *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -63,25 +63,25 @@ class RP_ExtractIcon_Private
 	private:
 		/**
 		 * Use IExtractIconW from a fallback icon handler.
-		 * @param pExtractIconW Pointer to IExtractIconW interface.
-		 * @param phiconLarge Large icon.
-		 * @param phiconSmall Small icon.
-		 * @param nIconSize Icon sizes.
+		 * @param pExtractIconW	[in] Pointer to IExtractIconW interface
+		 * @param phiconLarge	[out,opt] Large icon
+		 * @param phiconSmall	[out,opt] Small icon
+		 * @param nIconSize	[in] Icon size
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		LONG DoExtractIconW(IExtractIconW *pExtractIconW,
-			HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize);
+		LONG DoExtractIconW(_In_ IExtractIconW *pExtractIconW,
+			_Outptr_opt_ HICON *phiconLarge, _Outptr_opt_ HICON *phiconSmall, UINT nIconSize);
 
 		/**
 		 * Use IExtractIconA from an old fallback icon handler.
-		 * @param pExtractIconA Pointer to IExtractIconW interface.
-		 * @param phiconLarge Large icon.
-		 * @param phiconSmall Small icon.
-		 * @param nIconSize Icon sizes.
+		 * @param pExtractIconA	[in] Pointer to IExtractIconW interface
+		 * @param phiconLarge	[out,opt] Large icon
+		 * @param phiconSmall	[out,opt] Small icon
+		 * @param nIconSize	[in] Icon size
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		LONG DoExtractIconA(IExtractIconA *pExtractIconA,
-			HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize);
+		LONG DoExtractIconA(_In_ IExtractIconA *pExtractIconA,
+			_Outptr_opt_ HICON *phiconLarge, _Outptr_opt_ HICON *phiconSmall, UINT nIconSize);
 
 		/**
 		 * Get the icon index from an icon resource specification,
@@ -94,14 +94,14 @@ class RP_ExtractIcon_Private
 		/**
 		 * Fallback icon handler function. (internal)
 		 * This function reads the RP_Fallback key for fallback data.
-		 * @param hkey_Assoc File association key to check.
-		 * @param phiconLarge Large icon.
-		 * @param phiconSmall Small icon.
-		 * @param nIconSize Icon sizes.
+		 * @param hkey_Assoc	[in] File association key to check
+		 * @param phiconLarge	[out,opt] Large icon
+		 * @param phiconSmall	[out,opt] Small icon
+		 * @param nIconSize	[in] Icon sizes
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
 		LONG Fallback_int(LibWin32Common::RegKey &hkey_Assoc,
-			HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize);
+			_Outptr_opt_ HICON *phiconLarge, _Outptr_opt_ HICON *phiconSmall, UINT nIconSize);
 
 	public:
 		/**

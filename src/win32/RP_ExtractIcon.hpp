@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractIcon.hpp: IExtractIcon implementation.                        *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -67,14 +67,15 @@ RP_ExtractIcon final : public LibWin32Common::ComBase3<IPersistFile, IExtractIco
 			_Out_writes_(cchMax) LPWSTR pszIconFile, UINT cchMax,
 			_Out_ int *piIndex, _Out_ UINT *pwFlags) final;
 		IFACEMETHODIMP Extract(_In_ LPCWSTR pszFile, UINT nIconIndex,
-			_Outptr_ HICON *phiconLarge, _Outptr_ HICON *phiconSmall,
+			_Outptr_opt_ HICON *phiconLarge, _Outptr_opt_ HICON *phiconSmall,
 			UINT nIconSize) final;
 
 		// IExtractIconA
-		IFACEMETHODIMP GetIconLocation(UINT uFlags, LPSTR pszIconFile,
-			UINT cchMax, int *piIndex, UINT *pwFlags) final;
-		IFACEMETHODIMP Extract(LPCSTR pszFile, UINT nIconIndex,
-			HICON *phiconLarge, HICON *phiconSmall,
+		IFACEMETHODIMP GetIconLocation(UINT uFlags,
+			_Out_writes_(cchMax) LPSTR pszIconFile, UINT cchMax,
+			_Out_ int *piIndex, _Out_ UINT *pwFlags) final;
+		IFACEMETHODIMP Extract(_In_ LPCSTR pszFile, UINT nIconIndex,
+			_Outptr_opt_ HICON *phiconLarge, _Outptr_opt_ HICON *phiconSmall,
 			UINT nIconSize) final;
 };
 

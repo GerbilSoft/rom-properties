@@ -73,6 +73,9 @@
   * Linux: Don't attempt to fopen() a pipe or socket. This can hang, since
     fopen() doesn't pass O_NONBLOCK.
     * Fixes #351, reported by @IntriguingTiles.
+  * Windows: Fixed a crash in Java applications when using Java's file open
+    dialog in some cases, e.g. Ghidra.
+    * Fixes #352, reported by @RibShark.
 
 * Other changes:
   * Windows: DLL loading has been hardened by using LoadLibraryEx().
