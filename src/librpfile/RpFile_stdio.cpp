@@ -114,16 +114,22 @@ int RpFilePrivate::reOpenFile(void)
 				break;
 
 			case DT_REG:
-#ifndef __linux__
-			case DT_CHR:
-#endif /* !__linux__ */
 			case DT_BLK:
 				// This is a regular file or device file.
 				break;
 
+#ifdef __linux__
+			case DT_CHR:
+				// NOTE: Some Unix systems use character devices for "raw"
+				// block devices. Linux does not, so on Linux, we'll only
+				// allow block devices and not character devices.
+				q->m_lastError = ENOTSUP;
+				break;
+#endif /* !__linux__ */
+
 			default:
 				// Other file types aren't supported.
-				q->m_lastError = EBADF;
+				q->m_lastError = ENOTSUP;
 				break;
 		}
 
@@ -139,17 +145,6 @@ int RpFilePrivate::reOpenFile(void)
 	// TODO: May need updates for *BSD, Mac OS X, etc.
 	// TODO: Check if a block device is a CD-ROM or something else.
 	if (q->isDevice()) {
-		// NOTE: Some Unix systems use character devices for "raw"
-		// block devices. Linux does not, so on Linux, we'll only
-		// allow block devices and not character devices.
-#ifdef __linux__
-		if (fileType == DT_CHR) {
-			// Character device. Not supported.
-			q->m_lastError = ENOTSUP;
-			return -ENOTSUP;
-		}
-#endif /* __linux__ */
-
 		// Check the filename pattern.
 		// TODO: More systems.
 		// NOTE: "\x08ExtMedia" is interpreted as a 0x8E byte by both
