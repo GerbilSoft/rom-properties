@@ -78,6 +78,7 @@ SET(${PROJECT_NAME}_SRCS
 	TextFuncs_conv.cpp
 	TextFuncs_libc.c
 	TextFuncs_printf.cpp
+	TextFuncs_strlen.cpp
 	RomData.cpp
 	RomFields.cpp
 	RomMetaData.cpp
@@ -106,6 +107,7 @@ SET(${PROJECT_NAME}_H
 	TextFuncs.hpp
 	TextFuncs_libc.h
 	TextFuncs_printf.hpp
+	TextFuncs_strlen.hpp
 	TextFuncs_wchar.hpp
 	RP_CP_tbls.hpp
 	RomData.hpp
