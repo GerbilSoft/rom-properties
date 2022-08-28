@@ -76,6 +76,9 @@
   * Windows: Fixed a crash in Java applications when using Java's file open
     dialog in some cases, e.g. Ghidra.
     * Fixes #352, reported by @RibShark.
+  * rpcli: Fix table widths when printing strings that contain Unicode code
+    points over U+0080 and/or fullwidth characters.
+    * Fixes #353, reported by @DankRank.
 
 * Other changes:
   * Windows: DLL loading has been hardened by using LoadLibraryEx().
