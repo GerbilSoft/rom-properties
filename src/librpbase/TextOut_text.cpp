@@ -44,6 +44,82 @@ extern "C" {
 
 namespace LibRpBase {
 
+/**
+ * Determine the display length of a UTF-8 string.
+ * This is used for monospaced console/text output only.
+ * NOTE: Assuming the string is valid UTF-8.
+ * @param str UTF-8 string
+ * @param max_len Maximum length to check
+ * @return Display length
+ */
+static size_t utf8_disp_strlen(const char *str, size_t max_len = string::npos)
+{
+	size_t len = 0;
+	for (const uint8_t *u8str = reinterpret_cast<const uint8_t*>(str);
+	     *u8str != 0 && max_len > 0; u8str++, max_len--) {
+		len++;
+		if (u8str[0] < 0x80) {
+			// 1-byte UTF-8 sequence
+		} else if ((u8str[0] & 0xE0) == 0xC0) {
+			// 2-byte UTF-8 sequence
+			if ((u8str[1] & 0xC0) == 0x80) {
+				// Valid sequence
+				u8str++;
+			} else if (u8str[1] == 0) {
+				assert(!"Invalid 2-byte UTF-8 sequence");
+				break;
+			} else {
+				assert(!"Invalid 2-byte UTF-8 sequence");
+			}
+		} else if ((u8str[0] & 0xF0) == 0xE0) {
+			// 3-byte UTF-8 sequence
+			if (((u8str[1] & 0xC0) == 0x80) &&
+			    ((u8str[2] & 0xC0) == 0x80))
+			{
+				// Valid sequence
+				u8str += 2;
+			} else if (u8str[1] == 0 || u8str[2] == 0) {
+				assert(!"Invalid 3-byte UTF-8 sequence");
+				break;
+			} else {
+				assert(!"Invalid 3-byte UTF-8 sequence");
+			}
+		} else if ((u8str[0] & 0xF1) == 0xF0) {
+			// 4-byte UTF-8 sequence
+			if (((u8str[1] & 0xC0) == 0x80) &&
+			    ((u8str[2] & 0xC0) == 0x80) &&
+			    ((u8str[3] & 0xC0) == 0x80))
+			{
+				// Valid sequence
+				u8str += 3;
+			} else if (u8str[1] == 0 || u8str[2] == 0 || u8str[3] == 0) {
+				assert(!"Invalid 4-byte UTF-8 sequence");
+				break;
+			} else {
+				assert(!"Invalid 4-byte UTF-8 sequence");
+			}
+		} else {
+			assert(!"Invalid UTF-8 sequence");
+			break;
+		}
+	}
+
+	return len;
+}
+
+/**
+ * Determine the display length of a UTF-8 string.
+ * This is used for monospaced console/text output only.
+ * NOTE: Assuming the string is valid UTF-8.
+ * @param str UTF-8 string
+ * @param max_len Maximum length to check
+ * @return Display length
+ */
+static inline size_t utf8_disp_strlen(const string &str, size_t max_len = string::npos)
+{
+	return utf8_disp_strlen(str.c_str(), max_len);
+}
+
 class StreamStateSaver {
 	std::ios &stream;	// Stream being adjusted.
 	std::ios state;		// Copy of original flags.
@@ -315,7 +391,7 @@ public:
 		if (listDataDesc.names) {
 			int i = 0;
 			for (const string &name : *(listDataDesc.names)) {
-				colSize[i] = name.size();
+				colSize[i] = utf8_disp_strlen(name);
 				i++;
 			}
 		}
@@ -334,18 +410,21 @@ public:
 				size_t prev_pos = 0;
 				size_t cur_pos;
 				do {
-					size_t cur_sz;
+					size_t cur_sz;	// in bytes
+					size_t col_sz;	// in UTF-8 characters
 					cur_pos = jt->find('\n', prev_pos);
 					if (cur_pos == string::npos) {
 						// End of string.
 						cur_sz = str_sz - prev_pos;
+						col_sz = utf8_disp_strlen(&(*jt)[prev_pos], cur_sz);
 					} else {
 						// Found a newline.
 						cur_sz = cur_pos - prev_pos;
+						col_sz = utf8_disp_strlen(&(*jt)[prev_pos], cur_sz);
 						prev_pos = cur_pos + 1;
 						nl_row++;
 					}
-					colSize[col] = max(cur_sz, colSize[col]);
+					colSize[col] = max(col_sz, colSize[col]);
 				} while (cur_pos != string::npos && prev_pos < str_sz);
 
 				// Update the newline count for this row.
@@ -379,13 +458,17 @@ public:
 			const auto names_cend = listDataDesc.names->cend();
 			for (auto it = listDataDesc.names->cbegin(); it != names_cend; ++it, ++col, align >>= 2) {
 				// FIXME: What was this used for?
+				// FIXME: setw() is not UTF-8 aware.
 				totalWidth += colSize[col]; // this could be in a separate loop, but whatever
-				os << setw(0) << '|';
+				os << '|';
+				size_t str_sz = utf8_disp_strlen(*it);
 				switch (align & 3) {
 					case TXA_L:
 						// Left alignment
-						os << setw(colSize[col]) << std::left;
 						os << *it;
+						for (size_t x = str_sz; x < colSize[col]; x++) {
+							os << ' ';
+						}
 						break;
 					default:
 					case TXA_D:
@@ -393,18 +476,21 @@ public:
 						// Center alignment (default)
 						// For odd sizes, the extra space
 						// will be on the right.
-						const size_t spc = colSize[col] - it->size();
-						os << setw(spc/2);
-						os << "";
-						os << setw(0);
+						const size_t spc = colSize[col] - str_sz;
+						for (size_t x = spc/2; x > 0; x--) {
+							os << ' ';
+						}
 						os << *it;
-						os << setw((spc/2) + (spc%2));
-						os << "";
+						for (size_t x = (spc/2) + (spc%2); x > 0; x--) {
+							os << ' ';
+						}
 						break;
 					}
 					case TXA_R:
 						// Right alignment
-						os << setw(colSize[col]) << std::right;
+						for (size_t x = str_sz; x < colSize[col]; x++) {
+							os << ' ';
+						}
 						os << *it;
 						break;
 				}
@@ -489,34 +575,40 @@ public:
 					}
 
 					// Align the data.
+					size_t str_sz = utf8_disp_strlen(str);
 					switch (align & 3) {
 						default:
 						case TXA_D:
 						case TXA_L:
 							// Left alignment (default)
-							os << setw(colSize[col]) << std::left;
 							os << str;
+							for (size_t x = str_sz; x < colSize[col]; x++) {
+								os << ' ';
+							}
 							break;
 						case TXA_C: {
 							// Center alignment
 							// For odd sizes, the extra space
 							// will be on the right.
-							const size_t spc = colSize[col] - str.size();
-							os << setw(spc/2);
-							os << "";
-							os << setw(0);
+							const size_t spc = colSize[col] - str_sz;
+							for (size_t x = spc/2; x > 0; x--) {
+								os << ' ';
+							}
 							os << str;
-							os << setw((spc/2) + (spc%2));
-							os << "";
+							for (size_t x = (spc/2) + (spc%2); x > 0; x--) {
+								os << ' ';
+							}
 							break;
 						}
 						case TXA_R:
 							// Right alignment
-							os << setw(colSize[col]) << std::right;
-							os << str;
+							for (size_t x = str_sz; x < colSize[col]; x++) {
+								os << ' ';
+							}
+							os << setw(colSize[col]);
 							break;
 					}
-					os << setw(0) << std::right << '|';
+					os << '|';
 				}
 			}
 		}
