@@ -15,10 +15,8 @@
 
 // C++ STL classes
 using std::flush;
-using std::left;
 using std::max;
 using std::ostream;
-using std::setw;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -70,7 +68,9 @@ public:
 	explicit Pad(size_t width) :width(width) {}
 	friend ostream& operator<<(ostream& os, const Pad& pad) {
 		StreamStateSaver state(os);
-		os << setw(pad.width) << "";
+		for (size_t x = pad.width; x > 0; x--) {
+			os << ' ';
+		}
 		return os;
 	}
 
@@ -82,7 +82,11 @@ public:
 	ColonPad(size_t width, const char* str) :width(width), str(str) {}
 	friend ostream& operator<<(ostream& os, const ColonPad& cp) {
 		StreamStateSaver state(os);
-		os << cp.str << left << setw(max(0, (signed)(cp.width - strlen(cp.str)))) << ':';
+		const size_t str_sz = utf8_disp_strlen(cp.str);
+		os << cp.str << ':';
+		for (size_t x = str_sz; x < cp.width-1; x++) {
+			os << ' ';
+		}
 		return os;
 	}
 };
@@ -214,7 +218,7 @@ public:
 			if (name.empty())
 				continue;
 
-			colSize[col] = max(name.size(), colSize[col]);
+			colSize[col] = max(utf8_disp_strlen(name), colSize[col]);
 			col++;
 			if (col == perRow) {
 				col = 0;
@@ -226,7 +230,6 @@ public:
 		// the first-row boxes? Maybe it should be somewhere else...
 		os << ColonPad(field.width-1, romField.name.c_str());
 		StreamStateSaver state(os);
-		os << left;
 		col = 0;
 		uint32_t bitfield = romField.data.bitfield;
 		const auto names_cend = bitfieldDesc.names->cend();
@@ -246,8 +249,11 @@ public:
 				os << ' ';
 			}
 
-			os << '[' << ((bitfield & 1) ? '*' : ' ') << "] " <<
-				setw(colSize[col]) << name;
+			const size_t str_sz = utf8_disp_strlen(name);
+			os << '[' << ((bitfield & 1) ? '*' : ' ') << "] " << name;
+			for (size_t x = str_sz; x < colSize[col]; x++) {
+				os << ' ';
+			}
 			col++;
 		}
 		return os;
@@ -383,7 +389,6 @@ public:
 			const auto names_cend = listDataDesc.names->cend();
 			for (auto it = listDataDesc.names->cbegin(); it != names_cend; ++it, ++col, align >>= 2) {
 				// FIXME: What was this used for?
-				// FIXME: setw() is not UTF-8 aware.
 				totalWidth += colSize[col]; // this could be in a separate loop, but whatever
 				os << '|';
 				size_t str_sz = utf8_disp_strlen(*it);
@@ -420,7 +425,6 @@ public:
 						break;
 				}
 			}
-			os << setw(0) << std::right;
 			os << '|' << '\n';
 
 			// Separator between the headers and the data.
