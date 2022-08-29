@@ -530,7 +530,7 @@ public:
 							for (size_t x = str_sz; x < colSize[col]; x++) {
 								os << ' ';
 							}
-							os << setw(colSize[col]);
+							os << str;
 							break;
 					}
 					os << '|';
