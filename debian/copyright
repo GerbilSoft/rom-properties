@@ -167,12 +167,27 @@ License: Apache-2.0
 Files:
  extlib/uniwidth/bitmap.h
  extlib/uniwidth/cjk.h
- extlib/uniwidth/CMakeLists.txt
- extlib/uniwidth/_MODIFIED_GNULIB.txt
+Copyright: Copyright (C) 2000-2002, 2005-2007, 2009-2022 Free Software Foundation, Inc.
+License: LGPL-2.1+
+
+Files:
  extlib/uniwidth/unitypes.h
+Copyright: Copyright (C) 2002, 2005-2006, 2009-2022 Free Software Foundation, Inc.
+License: LGPL-2.1+
+
+Files:
  extlib/uniwidth/uniwidth.h
+Copyright: Copyright (C) 2001-2002, 2005, 2007, 2009-2022 Free Software Foundation, Inc.
+License: LGPL-2.1+
+
+Files:
  extlib/uniwidth/width.c
 Copyright: Copyright (C) 2001-2002, 2006-2022 Free Software Foundation, Inc.
+License: LGPL-2.1+
+
+Files:
+ extlib/uniwidth/streq.h
+Copyright: Copyright (C) 2001-2002, 2007, 2009-2022 Free Software Foundation, Inc.
 License: LGPL-2.1+
 
 Files:
