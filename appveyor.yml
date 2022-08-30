@@ -1,11 +1,6 @@
 # AppVeyor configuration file.
 version: '1.9.0.{build}'
 
-# Build worker image (VM template)
-image:
-  - Visual Studio 2015
-  - Ubuntu
-
 # scripts that are called at very beginning, before repo cloning
 init:
   - git config --global core.autocrlf input
