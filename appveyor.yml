@@ -40,23 +40,23 @@ before_build:
 # then build again with optional features turned on.
 build_script:
   - cmd: cd %APPVEYOR_BUILD_FOLDER%\build
-  - cmd: cmake --build . --config %configuration%
+  - cmd: cmake --build . --config %CONFIGURATION%
   - cmd: cd ..
   - cmd: appveyor.cmd ON
   - cmd: cd %APPVEYOR_BUILD_FOLDER%\build
-  - cmd: cmake --build . --config %configuration%
+  - cmd: cmake --build . --config %CONFIGURATION%
   - sh: cd ${APPVEYOR_BUILD_FOLDER}/build
-  - sh: cmake --build . --config ${configuration}
+  - sh: cmake --build . --config ${CONFIGURATION}
   - sh: cd ..
   - sh: ./appveyor.sh ON
   - sh: cd ${APPVEYOR_BUILD_FOLDER}/build
-  - sh: cmake --build . --config ${configuration}
+  - sh: cmake --build . --config ${CONFIGURATION}
 
 test_script:
   - cmd: cd %APPVEYOR_BUILD_FOLDER%\build
-  - cmd: ctest -V -C %configuration%
+  - cmd: ctest -V -C %CONFIGURATION%
   - sh: cd ${APPVEYOR_BUILD_FOLDER}/build
-  - sh: ctest -V -C ${configuration}
+  - sh: ctest -V -C ${CONFIGURATION}
 
 after_test:
   - cmd: cd %APPVEYOR_BUILD_FOLDER%\build
