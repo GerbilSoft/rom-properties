@@ -283,7 +283,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	string kdeVersion = "KDE Libraries ";
 	kdeVersion += KDE::versionString();
 	sLibraries += rp_sprintf(sCompiledWith, "KDE Libraries " KDE_VERSION_STRING);
-	sLibraries += br;
+	sLibraries += BR;
 	sLibraries += rp_sprintf(sUsingDll, kdeVersion.c_str());
 	sLibraries += BR
 		"Copyright (C) 1996-2017 KDE contributors." BR;
