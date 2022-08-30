@@ -495,7 +495,7 @@ uint8_t get_file_d_type(const char *filename, bool deref)
 	mode = sbx.stx_mode;
 #else /* !HAVE_STATX */
 	struct stat sb;
-	int ret = (unlikely(deref) ? stat(filename, &sb) : lstat(path, &sb));
+	int ret = (unlikely(deref) ? stat(filename, &sb) : lstat(filename, &sb));
 	if (ret != 0) {
 		// stat() failed.
 		return DT_UNKNOWN;
