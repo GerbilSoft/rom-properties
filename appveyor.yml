@@ -18,9 +18,6 @@ platform:
 init:
   - git config --global core.autocrlf input
 
-# clone directory
-clone_folder: c:\projects\rom-properties
-
 # Don't build if source files aren't modified.
 only_commits:
   files:
