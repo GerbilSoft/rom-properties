@@ -1,6 +1,19 @@
 # AppVeyor configuration file.
 version: '1.9.0.{build}'
 
+# Build worker image (VM template)
+image:
+  #- Visual Studio 2015
+  - Ubuntu
+configuration:
+  - Debug
+  - Release
+platform:
+  - x86
+  - x64
+
+# TODO: Re-add MinGW-w64 compiler for Windows builds.
+
 # scripts that are called at very beginning, before repo cloning
 init:
   - git config --global core.autocrlf input
@@ -17,43 +30,6 @@ only_commits:
     - '**/*.sh'
     - extlib/**/*
     - src/**/*
-
-environment:
-  matrix:
-    - image: Visual Studio 2015
-      platform: x86
-      configuration: Debug
-      compiler: msvc2015
-
-    #- image: Visual Studio 2015
-    #  platform: x86
-    #  configuration: Release
-    #  compiler: msvc2015
-
-    #- image: Visual Studio 2015
-    #  platform: x64
-    #  configuration: Debug
-    #  compiler: msvc2015
-
-    #- image: Visual Studio 2015
-    #  platform: x64
-    #  configuration: Release
-    #  compiler: msvc2015
-
-    # NOTE: This one stays disabled after finishing Ubuntu testing.
-    #- image: Visual Studio 2015
-    #  platform: x86
-    #  configuration: Debug
-    #  compiler: mingw-w64
-
-    #- image: Visual Studio 2015
-    #  platform: x64
-    #  configuration: Debug
-    #  compiler: mingw-w64
-
-    - image: Ubuntu
-      platform: x64
-      configuration: Release
 
 # Run CMake with optional features turned off initially.
 before_build:
