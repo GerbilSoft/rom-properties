@@ -484,19 +484,18 @@ uint8_t get_file_d_type(const char *filename, bool deref)
 
 #ifdef HAVE_STATX
 	struct statx sbx;
-	const int flags = (unlikely(deref))
+	const int dirfd = (unlikely(deref))
 		?  AT_FDCWD				// dereference symlinks
 		: (AT_FDCWD | AT_SYMLINK_NOFOLLOW);	// don't dereference symlinks
-	int ret = statx(flags, filename, 0, STATX_TYPE, &sbx);
+	int ret = statx(dirfd, filename, 0, STATX_TYPE, &sbx);
 	if (ret != 0 || !(sbx.stx_mask & STATX_TYPE)) {
 		// statx() failed and/or did not return the file type.
 		return DT_UNKNOWN;
 	}
 	mode = sbx.stx_mode;
 #else /* !HAVE_STATX */
-	// TODO: statx() if it's available.
 	struct stat sb;
-	int ret = (unlikely(deref) ? stat(path, &sb) : lstat(path, &sb));
+	int ret = (unlikely(deref) ? stat(filename, &sb) : lstat(filename, &sb));
 	if (ret != 0) {
 		// stat() failed.
 		return DT_UNKNOWN;

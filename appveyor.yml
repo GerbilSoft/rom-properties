@@ -2,19 +2,25 @@
 version: '1.9.0.{build}'
 
 # Build worker image (VM template)
-image: Visual Studio 2015
+image:
+  - Visual Studio 2015
+  - Ubuntu
+configuration:
+  - Debug
+  - Release
+platform:
+  - x86
+  - x64
+
+# TODO: Re-add MinGW-w64 compiler for Windows builds.
 
 # scripts that are called at very beginning, before repo cloning
 init:
   - git config --global core.autocrlf input
 
-# clone directory
-clone_folder: c:\projects\rom-properties
-
 # Don't build if source files aren't modified.
 only_commits:
   files:
-    - appveyor.cmd
     - appveyor.yml
     - '**/CMakeLists.txt'
     - '**/*.cmd'
@@ -22,51 +28,36 @@ only_commits:
     - extlib/**/*
     - src/**/*
 
-environment:
-  matrix:
-    - platform: x86
-      configuration: Debug
-      compiler: msvc2015
-
-    - platform: x86
-      configuration: Release
-      compiler: msvc2015
-
-    - platform: x64
-      configuration: Debug
-      compiler: msvc2015
-
-    - platform: x64
-      configuration: Release
-      compiler: msvc2015
-
-    #- platform: x86
-    #  configuration: Debug
-    #  compiler: mingw-w64
-
-    - platform: x64
-      configuration: Debug
-      compiler: mingw-w64
-
 # Run CMake with optional features turned off initially.
 before_build:
-  - cd %APPVEYOR_BUILD_FOLDER%
-  - appveyor.cmd OFF
+  - cmd: cd %APPVEYOR_BUILD_FOLDER%
+  - cmd: appveyor.cmd OFF
+  - sh: cd ${APPVEYOR_BUILD_FOLDER}
+  - sh: sudo ./appveyor-dpkg.sh
+  - sh: ./appveyor.sh OFF
 
 # Build once with optional features turned off,
 # then build again with optional features turned on.
 build_script:
-  - cd %APPVEYOR_BUILD_FOLDER%\build
-  - cmake --build . --config %configuration%
-  - cd ..
-  - appveyor.cmd ON
-  - cd %APPVEYOR_BUILD_FOLDER%\build
-  - cmake --build . --config %configuration%
+  - cmd: cd %APPVEYOR_BUILD_FOLDER%\build
+  - cmd: cmake --build . --config %CONFIGURATION%
+  - cmd: cd ..
+  - cmd: appveyor.cmd ON
+  - cmd: cd %APPVEYOR_BUILD_FOLDER%\build
+  - cmd: cmake --build . --config %CONFIGURATION%
+  - sh: cd ${APPVEYOR_BUILD_FOLDER}/build
+  - sh: cmake --build . --config ${CONFIGURATION}
+  - sh: cd ..
+  - sh: ./appveyor.sh ON
+  - sh: cd ${APPVEYOR_BUILD_FOLDER}/build
+  - sh: cmake --build . --config ${CONFIGURATION}
 
 test_script:
-  - cd %APPVEYOR_BUILD_FOLDER%\build
-  - ctest -V -C %configuration%
+  - cmd: cd %APPVEYOR_BUILD_FOLDER%\build
+  - cmd: ctest -V -C %CONFIGURATION%
+  - sh: cd ${APPVEYOR_BUILD_FOLDER}/build
+  - sh: LD_LIBRARY_PATH=${APPVEYOR_BUILD_FOLDER}/build/lib ctest -V -C ${CONFIGURATION}
 
 after_test:
-  - cd %APPVEYOR_BUILD_FOLDER%\build
-  - ..\appveyor-artifacts.cmd
+  - cmd: cd %APPVEYOR_BUILD_FOLDER%\build
+  - cmd: ..\appveyor-artifacts.cmd
