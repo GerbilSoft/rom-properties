@@ -3,7 +3,7 @@ version: '1.9.0.{build}'
 
 # Build worker image (VM template)
 image:
-  #- Visual Studio 2015
+  - Visual Studio 2015
   - Ubuntu
 configuration:
   - Debug
