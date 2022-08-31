@@ -9,6 +9,10 @@ if "%1" == "OFF" (
 )
 set "OPTFEAT=-DENABLE_EXTRA_SECURITY=%OPTEN% -DENABLE_JPEG=%OPTEN% -DENABLE_XML=%OPTEN% -DENABLE_DECRYPTION=%OPTEN% -DENABLE_UNICE68=%OPTEN% -DENABLE_LIBMSPACK=%OPTEN% -DENABLE_PVRTC=%OPTEN% -DENABLE_ZSTD=%OPTEN% -DENABLE_LZ4=%OPTEN% -DENABLE_LZO=%OPTEN%"
 
+:: FIXME: Get multiple compilers working again.
+:: For now, it's MSVC only for the Windows build.
+goto :msvc2015
+
 if "%compiler%" == "msvc2015" goto :msvc2015
 if "%compiler%" == "mingw-w64" goto :mingw-w64
 echo *** ERROR: Unsupported compiler '%compiler%'.
