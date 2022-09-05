@@ -17,10 +17,10 @@ ECHO rom-properties packaging script for Windows
 ECHO.
 
 :: Check for a file known to be in the top-level source directory.
-IF NOT EXIST travis.sh (
+IF NOT EXIST appveyor.yml (
 	:: Maybe we're running from the scripts directory?
 	CD ..
-	IF NOT EXIST travis.sh (
+	IF NOT EXIST appveyor.yml (
 		ECHO *** ERROR: This batch file must be run from either the
 		ECHO top-level source directory or from the scripts directory.
 		ECHO.
