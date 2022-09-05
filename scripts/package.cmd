@@ -1,12 +1,12 @@
 @ECHO OFF
-SETLOCAL ENABLEEXTENSIONS
-CD /D "%~dp0"
+SETLOCAL ENABLEDELAYEDEXPANSION ENABLEEXTENSIONS
+CD /D "%~dp0\.."
 
 :: Packaging script for rom-properties, Windows version.
 :: Requires the following:
 :: - CMake 3.0.0 or later
 :: - MSVC 2012, 2013, 2015, or 2017 with 32-bit and 64-bit compilers
-:: - MSVC 2019 with v141_xp toolchain is also supported.
+:: - MSVC 2019, 2022 with v141_xp toolchain is also supported.
 :: - Windows 7 SDK
 :: - zip.exe and unzip.exe in %PATH%
 ::
@@ -15,24 +15,6 @@ CD /D "%~dp0"
 ECHO.
 ECHO rom-properties packaging script for Windows
 ECHO.
-
-:: Check for a file known to be in the top-level source directory.
-IF NOT EXIST appveyor.yml (
-	:: Maybe we're running from the scripts directory?
-	CD ..
-	IF NOT EXIST appveyor.yml (
-		ECHO *** ERROR: This batch file must be run from either the
-		ECHO top-level source directory or from the scripts directory.
-		ECHO.
-		ECHO Change to the top-level source directory and rerun this
-		ECHO batch file by typing:
-		ECHO.
-		ECHO scripts\package.cmd
-		ECHO.
-		PAUSE
-		EXIT /B 1
-	)
-)
 
 :: Determine the 32-bit "Program Files" directory.
 IF NOT "%ProgramFiles(x86)%" == "" (
@@ -46,139 +28,95 @@ SET MSVC32_VERSION=
 SET MSVC32_YEAR=
 SET CMAKE32_GENERATOR=
 SET CMAKE32_TOOLSET=
+SET CMAKE32_ARCH=
 
 SET MSVC64_DIR=
 SET MSVC64_VERSION=
 SET MSVC64_YEAR=
 SET CMAKE64_GENERATOR=
 SET CMAKE64_TOOLSET=
+SET CMAKE64_ARCH=
 
 :: Check for supported MSVC versions.
-IF EXIST "%PRGFILES%\Microsoft Visual Studio 11.0\VC\bin\cl.exe" (
-	SET "MSVC32_DIR=%PRGFILES%\Microsoft Visual Studio 11.0"
-	SET "MSVC32_VERSION=11.0"
-	SET "MSVC32_YEAR=2012"
-	SET "CMAKE32_GENERATOR=11 2012"
-	SET "CMAKE32_TOOLSET=v110_xp"
+:: MSVC 2012/2013/2015
+FOR %%I IN (2012.11 2013.12 2015.14) DO (
+	SET "J=%%I"
+	SET "YEAR=!J:~0,4!"
+	SET "V=!J:~5,2!"
+	IF EXIST "%PRGFILES%\Microsoft Visual Studio !V!.0\VC\bin\cl.exe" (
+		SET "MSVC32_DIR=%PRGFILES%\Microsoft Visual Studio !V!.0"
+		SET "MSVC32_VERSION=!V!.0"
+		SET "MSVC32_YEAR=!YEAR!"
+		SET "CMAKE32_GENERATOR=!V! !YEAR!"
+		SET "CMAKE32_TOOLSET=v!V!0_xp"
 
-	SET "MSVC64_DIR=%PRGFILES%\Microsoft Visual Studio 11.0"
-	SET "MSVC64_VERSION=11.0"
-	SET "MSVC64_YEAR=2012"
-	SET "CMAKE64_GENERATOR=11 2012"
-	SET "CMAKE64_TOOLSET=v110"
-)
-IF EXIST "%PRGFILES%\Microsoft Visual Studio 12.0\VC\bin\cl.exe" (
-	SET "MSVC32_DIR=%PRGFILES%\Microsoft Visual Studio 12.0"
-	SET "MSVC32_VERSION=12.0"
-	SET "MSVC32_YEAR=2013"
-	SET "CMAKE32_GENERATOR=12 2013"
-	SET "CMAKE32_TOOLSET=v120_xp"
-
-	SET "MSVC64_DIR=%PRGFILES%\Microsoft Visual Studio 12.0"
-	SET "MSVC64_VERSION=12.0"
-	SET "MSVC64_YEAR=2013"
-	SET "CMAKE64_GENERATOR=12 2013"
-	SET "CMAKE64_TOOLSET=v120"
-)
-IF EXIST "%PRGFILES%\Microsoft Visual Studio 14.0\VC\bin\cl.exe" (
-	SET "MSVC32_DIR=%PRGFILES%\Microsoft Visual Studio 14.0"
-	SET "MSVC32_VERSION=14.0"
-	SET "MSVC32_YEAR=2015"
-	SET "CMAKE32_GENERATOR=14 2015"
-	SET "CMAKE32_TOOLSET=v140_xp"
-
-	SET "MSVC64_DIR=%PRGFILES%\Microsoft Visual Studio 14.0"
-	SET "MSVC64_VERSION=14.0"
-	SET "MSVC64_YEAR=2015"
-	SET "CMAKE64_GENERATOR=14 2015"
-	SET "CMAKE64_TOOLSET=v140"
+		SET "MSVC64_DIR=%PRGFILES%\Microsoft Visual Studio !V!.0"
+		SET "MSVC64_VERSION=!V!.0"
+		SET "MSVC64_YEAR=!YEAR!"
+		SET "CMAKE64_GENERATOR=!V! !YEAR! Win64"
+		SET "CMAKE64_TOOLSET=v!V!0"
+	)
 )
 
 :: MSVC 2017
-IF EXIST "%PRGFILES%\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\bin\HostX86\x86\cl.exe" (
-	SET "MSVC32_DIR=%PRGFILES%\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023"
-	SET "MSVC32_VERSION=14.16"
-	SET "MSVC32_YEAR=2017"
-	SET "CMAKE32_GENERATOR=15 2017"
-	SET "CMAKE32_TOOLSET=v141_xp"
+FOR %%I IN (Community Professional Enterprise) DO (
+	IF EXIST "%PRGFILES%\Microsoft Visual Studio\2017\%%I\VC\Tools\MSVC\14.16.27023\bin\HostX86\x86\cl.exe" (
+		SET "MSVC32_DIR=%PRGFILES%\Microsoft Visual Studio\2017\%%I\VC\Tools\MSVC\14.16.27023"
+		SET "MSVC32_VERSION=14.16"
+		SET "MSVC32_YEAR=2017"
+		SET "CMAKE32_GENERATOR=15 2017"
+		SET "CMAKE32_TOOLSET=v141_xp"
 
-	SET "MSVC64_DIR=%PRGFILES%\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023"
-	SET "MSVC64_VERSION=14.16"
-	SET "MSVC64_YEAR=2017"
-	SET "CMAKE64_GENERATOR=15 2017"
-	SET "CMAKE64_TOOLSET=v141"
-)
-IF EXIST "%PRGFILES%\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.16.27023\bin\HostX86\x86\cl.exe" (
-	SET "MSVC32_DIR=%PRGFILES%\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.16.27023"
-	SET "MSVC32_VERSION=14.16"
-	SET "MSVC32_YEAR=2017"
-	SET "CMAKE32_GENERATOR=15 2017"
-	SET "CMAKE32_TOOLSET=v141_xp"
-
-	SET "MSVC64_DIR=%PRGFILES%\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.16.27023"
-	SET "MSVC64_VERSION=14.16"
-	SET "MSVC64_YEAR=2017"
-	SET "CMAKE64_GENERATOR=15 2017"
-	SET "CMAKE64_TOOLSET=v141"
-)
-IF EXIST "%PRGFILES%\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.16.27023\bin\HostX86\x86\cl.exe" (
-	SET "MSVC32_DIR=%PRGFILES%\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.16.27023"
-	SET "MSVC32_VERSION=14.16"
-	SET "MSVC32_YEAR=2017"
-	SET "CMAKE32_GENERATOR=15 2017"
-	SET "CMAKE32_TOOLSET=v141_xp"
-
-	SET "MSVC64_DIR=%PRGFILES%\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.16.27023"
-	SET "MSVC64_VERSION=14.16"
-	SET "MSVC64_YEAR=2017"
-	SET "CMAKE64_GENERATOR=15 2017"
-	SET "CMAKE64_TOOLSET=v141"
+		SET "MSVC64_DIR=%PRGFILES%\Microsoft Visual Studio\2017\%%I\VC\Tools\MSVC\14.16.27023"
+		SET "MSVC64_VERSION=14.16"
+		SET "MSVC64_YEAR=2017"
+		SET "CMAKE64_GENERATOR=15 2017 Win64"
+		SET "CMAKE64_TOOLSET=v141"
+	)
 )
 
 :: MSVC 2019: Use the 2017 (14.1x) compiler for 32-bit in order to maintain WinXP compatibilty.
-IF EXIST "%PRGFILES%\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\bin\HostX86\x86\cl.exe" (
-	SET "MSVC32_DIR=%PRGFILES%\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.16.27023"
-	SET "MSVC32_VERSION=14.16"
-	SET "MSVC32_YEAR=2019"
-	SET "CMAKE32_GENERATOR=16 2019"
-	SET "CMAKE32_TOOLSET=v141_xp"
+FOR %%I IN (Community Professional Enterprise) DO (
+	IF EXIST "%PRGFILES%\Microsoft Visual Studio\2019\%%I\VC\Tools\MSVC\14.29.30133\bin\HostX86\x86\cl.exe" (
+		SET "MSVC32_DIR=%PRGFILES%\Microsoft Visual Studio\2019\%%I\VC\Tools\MSVC\14.16.27023"
+		SET "MSVC32_VERSION=14.16"
+		SET "MSVC32_YEAR=2019"
+		SET "CMAKE32_GENERATOR=16 2019"
+		SET "CMAKE32_TOOLSET=v141_xp"
+		SET "CMAKE32_ARCH=-A Win32"
 
-	SET "MSVC64_DIR=%PRGFILES%\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133"
-	SET "MSVC64_VERSION=14.29"
-	SET "MSVC64_YEAR=2019"
-	SET "CMAKE64_GENERATOR=16 2019"
-	SET "CMAKE64_TOOLSET=v142"
+		SET "MSVC64_DIR=%PRGFILES%\Microsoft Visual Studio\2019\%%I\VC\Tools\MSVC\14.29.30133"
+		SET "MSVC64_VERSION=14.29"
+		SET "MSVC64_YEAR=2019"
+		SET "CMAKE64_GENERATOR=16 2019"
+		SET "CMAKE64_TOOLSET=v142"
+		SET "CMAKE64_ARCH=-A x64"
+	)
 )
-IF EXIST "%PRGFILES%\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.16.27023\bin\HostX86\x86\cl.exe" (
-	SET "MSVC32_DIR=%PRGFILES%\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.16.27023"
-	SET "MSVC32_VERSION=14.16"
-	SET "MSVC32_YEAR=2019"
-	SET "CMAKE32_GENERATOR=16 2019"
-	SET "CMAKE32_TOOLSET=v141_xp"
 
-	SET "MSVC64_DIR=%PRGFILES%\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.29.30133"
-	SET "MSVC64_VERSION=14.29"
-	SET "MSVC64_YEAR=2019"
-	SET "CMAKE64_GENERATOR=16 2019"
-	SET "CMAKE64_TOOLSET=v142"
-)
-IF EXIST "%PRGFILES%\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\14.16.27023\bin\HostX86\x86\cl.exe" (
-	SET "MSVC32_DIR=%PRGFILES%\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\14.16.27023"
-	SET "MSVC32_VERSION=14.16"
-	SET "MSVC32_YEAR=2019"
-	SET "CMAKE32_GENERATOR=16 2019"
-	SET "CMAKE32_TOOLSET=v141_xp"
+:: MSVC 2022: Use the 2017 (14.1x) compiler for 32-bit in order to maintain WinXP compatibilty.
+:: NOTE: MSVC 2022 switched to 64-bit Program Files
+FOR %%I IN (Community Professional Enterprise) DO (
+	IF EXIST "%PROGRAMFILES%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.33.31629\bin\HostX86\x86\cl.exe" (
+		SET "MSVC32_DIR=%PROGRAMFILES%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.16.27023"
+		SET "MSVC32_VERSION=14.16"
+		SET "MSVC32_YEAR=2022"
+		SET "CMAKE32_GENERATOR=17 2022"
+		SET "CMAKE32_TOOLSET=v141_xp"
+		SET "CMAKE32_ARCH=-A Win32"
 
-	SET "MSVC64_DIR=%PRGFILES%\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\14.29.30133"
-	SET "MSVC64_VERSION=14.29"
-	SET "MSVC64_YEAR=2019"
-	SET "CMAKE64_GENERATOR=16 2019"
-	SET "CMAKE64_TOOLSET=v142"
+		SET "MSVC64_DIR=%PROGRAMFILES%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.33.31629"
+		SET "MSVC64_VERSION=14.33"
+		SET "MSVC64_YEAR=2022"
+		SET "CMAKE64_GENERATOR=17 2022"
+		SET "CMAKE64_TOOLSET=v143"
+		SET "CMAKE64_ARCH=-A x64"
+	)
 )
 
 IF "%CMAKE64_GENERATOR%" == "" (
 	ECHO *** ERROR: Supported version of MSVC was not found.
-	ECHO Supported versions: 2019, 2017, 2015, 2013, 2012
+	ECHO Supported versions: 2022, 2019, 2017, 2015, 2013, 2012
 	PAUSE
 	EXIT /B 1
 )
@@ -187,20 +125,14 @@ ECHO - 32-bit: MSVC %MSVC32_YEAR% (%MSVC32_VERSION%)
 ECHO - 64-bit: MSVC %MSVC64_YEAR% (%MSVC64_VERSION%)
 ECHO.
 
-:: MSVC 2017 uses a different directory layout.
-:: NOTE: This must be set here, since you can't use a variable
-:: set in a block within the same block. (It'll have the previous
-:: value for some reason.)
+:: MSVC 2017+ uses a different directory layout.
 SET MSVC_CL=
-IF "%MSVC64_YEAR%" == "2017" (
-	SET "MSVC_CL=%MSVC32_DIR%\bin\HostX86\x86\cl.exe"
-	SET "MSVC_CL64_CROSS=%MSVC64_DIR%\bin\HostX86\x64\cl.exe"
-	SET "MSVC_CL64_NATIVE=%MSVC64_DIR%\bin\HostX64\x64\cl.exe"
-)
-IF "%MSVC64_YEAR%" == "2019" (
-	SET "MSVC_CL=%MSVC32_DIR%\bin\HostX86\x86\cl.exe"
-	SET "MSVC_CL64_CROSS=%MSVC64_DIR%\bin\HostX86\x64\cl.exe"
-	SET "MSVC_CL64_NATIVE=%MSVC64_DIR%\bin\HostX64\x64\cl.exe"
+FOR %%I IN (2017 2019 2022) DO (
+	IF "%MSVC64_YEAR%" == "%%I" (
+		SET "MSVC_CL=%MSVC32_DIR%\bin\HostX86\x86\cl.exe"
+		SET "MSVC_CL64_CROSS=%MSVC64_DIR%\bin\HostX86\x64\cl.exe"
+		SET "MSVC_CL64_NATIVE=%MSVC64_DIR%\bin\HostX64\x64\cl.exe"
+	)
 )
 IF "%MSVC_CL%" == "" (
 	SET "MSVC_CL=%MSVC32_DIR%\VC\bin\cl.exe"
@@ -210,7 +142,6 @@ IF "%MSVC_CL%" == "" (
 
 :: Check for the 32-bit compiler.
 IF NOT EXIST "%MSVC_CL%" (
-	ECHO "%MSVC_CL%"
 	ECHO *** ERROR: 32-bit cl.exe was not found.
 	ECHO Please reinstall MSVC.
 	PAUSE
@@ -287,11 +218,7 @@ MKDIR build.i386
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 PUSHD build.i386
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-IF "%MSVC32_YEAR%" == "2019" (
-	cmake ..\.. -G "Visual Studio %CMAKE32_GENERATOR%" -A Win32 -DCMAKE_GENERATOR_TOOLSET=%CMAKE32_TOOLSET% -DCMAKE_BUILD_TYPE=Release -DENABLE_JPEG=ON -DBUILD_TESTING=OFF -DSPLIT_DEBUG=ON
-) ELSE (
-	cmake ..\.. -G "Visual Studio %CMAKE32_GENERATOR%" -DCMAKE_GENERATOR_TOOLSET=%CMAKE32_TOOLSET% -DCMAKE_BUILD_TYPE=Release -DENABLE_JPEG=ON -DBUILD_TESTING=OFF -DSPLIT_DEBUG=ON
-)
+cmake ..\.. -G "Visual Studio %CMAKE32_GENERATOR%" %CMAKE32_ARCH% -DCMAKE_GENERATOR_TOOLSET=%CMAKE32_TOOLSET% -DCMAKE_BUILD_TYPE=Release -DENABLE_JPEG=ON -DBUILD_TESTING=OFF -DSPLIT_DEBUG=ON
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 cmake --build . --config Release
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
@@ -305,11 +232,7 @@ MKDIR build.amd64
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 PUSHD build.amd64
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-IF "%MSVC64_YEAR%" == "2019" (
-	cmake ..\.. -G "Visual Studio %CMAKE64_GENERATOR%" -A x64 -DCMAKE_GENERATOR_TOOLSET=%CMAKE64_TOOLSET% -DCMAKE_BUILD_TYPE=Release -DENABLE_JPEG=ON -DBUILD_TESTING=OFF -DSPLIT_DEBUG=ON
-) ELSE (
-	cmake ..\.. -G "Visual Studio %CMAKE64_GENERATOR% Win64" -DCMAKE_GENERATOR_TOOLSET=%CMAKE64_TOOLSET% -DCMAKE_BUILD_TYPE=Release -DENABLE_JPEG=ON -DBUILD_TESTING=OFF -DSPLIT_DEBUG=ON
-)
+cmake ..\.. -G "Visual Studio %CMAKE64_GENERATOR%" %CMAKE64_ARCH% -DCMAKE_GENERATOR_TOOLSET=%CMAKE64_TOOLSET% -DCMAKE_BUILD_TYPE=Release -DENABLE_JPEG=ON -DBUILD_TESTING=OFF -DSPLIT_DEBUG=ON
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 cmake --build . --config Release
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
@@ -343,7 +266,7 @@ unzip ..\build.i386\*-win32.zip
 :: NOTE: Not moving the PDBs to the base directory,
 :: since those are stored in a separate ZIP file.
 :: NOTE 2: svrplus.exe is renamed to install.exe to make it
-:; more obvious that it's the installer.
+:: more obvious that it's the installer.
 MOVE i386\rpcli.exe .
 MOVE i386\rp-config.exe .
 MOVE i386\svrplus.exe install.exe
