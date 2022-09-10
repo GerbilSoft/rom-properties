@@ -35,7 +35,6 @@ typedef struct _Xbox_XPR0_Header {
 	union {			// [0x00C] XPR type
 		uint32_t flags;
 		struct {
-			// TODO: Verify endian handling.
 			uint16_t ref_count;	// [0x00C] Reference count (should be 1)
 			uint16_t type;		// [0x00E] Type (3 bits; see Xbox_XPR0_Type_e)
 		};

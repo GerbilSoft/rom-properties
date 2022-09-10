@@ -601,7 +601,8 @@ XboxXPR::XboxXPR(IRpFile *file)
 	}
 
 	// Make sure this is an XPR texture.
-	if ((d->xpr0Header.type & XPR0_TYPE_MASK) != XPR0_TYPE_TEXTURE) {
+	const uint16_t type = le16_to_cpu(d->xpr0Header.type);
+	if ((type & XPR0_TYPE_MASK) != XPR0_TYPE_TEXTURE) {
 		// Only textures are supported.
 		d->isValid = false;
 	}
