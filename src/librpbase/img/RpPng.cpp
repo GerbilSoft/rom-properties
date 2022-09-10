@@ -351,12 +351,15 @@ static rp_image *loadPng(png_structp png_ptr, png_infop info_ptr)
 			break;
 
 		case PNG_COLOR_TYPE_RGB: {
-			// 24-bit RGB.
+			// 24-bit RGB
 			fmt = rp_image::Format::ARGB32;
 			const bool has_tRNS = (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS) == PNG_INFO_tRNS);
 			if (has_tRNS) {
 				// tRNS chunk is present. Use it as the alpha channel.
 				png_set_tRNS_to_alpha(png_ptr);
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+				png_set_swap_alpha(png_ptr);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 			} else {
 				// 24-bit RGB with no transparency.
 				is24bit = true;
@@ -373,7 +376,7 @@ static rp_image *loadPng(png_structp png_ptr, png_infop info_ptr)
 		}
 
 		case PNG_COLOR_TYPE_RGB_ALPHA:
-			// 32-bit ARGB.
+			// 32-bit ARGB
 			fmt = rp_image::Format::ARGB32;
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
 			png_set_swap_alpha(png_ptr);
