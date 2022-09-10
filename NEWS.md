@@ -24,6 +24,8 @@
     * DirectDrawSurface formats were previously converted manually, but
       there were errors in the ASTC formats, so DDS has been converted to
       use a Python script and these errors are fixed.
+  * rpcli: New option '-d' to skip RFT_LISTDATA fields with more than
+    10 items. Useful for skipping e.g. Windows DLL imports/exports.
 
 * New parsers:
   * Atari7800: Atari 7800 ROM images with an A78 header.
