@@ -14,5 +14,7 @@ The following changes have been made to the original:
 
 - Converted some large ternary comparison trees to switch/case.
 
+- Proper byteswapping for Big-Endian architectures.
+
 To obtain the original Basis Universal v1.15, visit:
 https://github.com/BinomialLLC/basis_universal

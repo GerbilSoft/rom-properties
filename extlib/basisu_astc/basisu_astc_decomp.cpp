@@ -57,6 +57,9 @@ typedef uint64_t deUint64;
 #pragma GCC diagnostic ignored "-Wunused-function"
 #endif
 
+// rom-properties
+#include "../../src/librpcpu/byteorder.h"
+
 namespace basisu_astc
 {
 	static bool inBounds(int v, int l, int h)
@@ -1569,24 +1572,31 @@ bool decompress(uint8_t *pDst, const uint8_t * data, bool isSRGB, int blockWidth
 	// rg - We only support LDR here, although adding back in HDR would be easy.
 	const bool isLDR = true;
 	DE_ASSERT(isLDR || !isSRGB);
-	
+
 	float linear[MAX_BLOCK_WIDTH * MAX_BLOCK_HEIGHT * 4];
 
 	const Block128 blockData(data);
 	if (decompressBlock(isSRGB ? (void*)pDst : (void*)& linear[0],
 		blockData, blockWidth, blockHeight, isSRGB, isLDR) != DECOMPRESS_RESULT_VALID_BLOCK)
 		return false;
-	
+
 	if (!isSRGB)
 	{
 		const float *pLinear = linear;
 		for (int i = blockWidth * blockHeight; i > 0; i--, pDst += 4, pLinear += 4)
 		{
 			// NOTE: R and B are swapped for rom-properties.
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
 			pDst[2] = (uint8_t)(basisu_astc::clamp<int>((int)(pLinear[0] * 65536.0f + .5f), 0, 65535) >> 8);
 			pDst[1] = (uint8_t)(basisu_astc::clamp<int>((int)(pLinear[1] * 65536.0f + .5f), 0, 65535) >> 8);
 			pDst[0] = (uint8_t)(basisu_astc::clamp<int>((int)(pLinear[2] * 65536.0f + .5f), 0, 65535) >> 8);
 			pDst[3] = (uint8_t)(basisu_astc::clamp<int>((int)(pLinear[3] * 65536.0f + .5f), 0, 65535) >> 8);
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+			pDst[1] = (uint8_t)(basisu_astc::clamp<int>((int)(pLinear[0] * 65536.0f + .5f), 0, 65535) >> 8);
+			pDst[2] = (uint8_t)(basisu_astc::clamp<int>((int)(pLinear[1] * 65536.0f + .5f), 0, 65535) >> 8);
+			pDst[3] = (uint8_t)(basisu_astc::clamp<int>((int)(pLinear[2] * 65536.0f + .5f), 0, 65535) >> 8);
+			pDst[0] = (uint8_t)(basisu_astc::clamp<int>((int)(pLinear[3] * 65536.0f + .5f), 0, 65535) >> 8);
+#endif
 		}
 	}
 
