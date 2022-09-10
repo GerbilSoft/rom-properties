@@ -3,7 +3,7 @@
  * RP_PropSheet_Register.cpp: IPropertyStore implementation.               *
  * COM registration functions.                                             *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,7 +25,7 @@ CLSID_IMPL(RP_PropertyStore, _T("ROM Properties Page - Property Store"))
  * Get the PreviewDetails string.
  * @return PreviewDetails string.
  */
-tstring RP_PropertyStore::GetPreviewDetailsString()
+tstring RP_PropertyStore_Private::GetPreviewDetailsString()
 {
 	// PreviewDetails.
 	// NOTE: Default properties should go *after* these.
@@ -67,7 +67,7 @@ tstring RP_PropertyStore::GetPreviewDetailsString()
  * Get the InfoTip string.
  * @return InfoTip string.
  */
-std::tstring RP_PropertyStore::GetInfoTipString()
+std::tstring RP_PropertyStore_Private::GetInfoTipString()
 {
 	// InfoTip.
 	// NOTE: Default properties should go *before* these.
@@ -116,7 +116,7 @@ std::tstring RP_PropertyStore::GetInfoTipString()
  * Get the FullDetails string.
  * @return FullDetails string.
  */
-std::tstring RP_PropertyStore::GetFullDetailsString()
+std::tstring RP_PropertyStore_Private::GetFullDetailsString()
 {
 	// FIXME: FullDetails will show empty properties if
 	// they're listed here but aren't set by RP_PropertyStore.
@@ -153,8 +153,8 @@ LONG RP_PropertyStore::RegisterFileType(RegKey &hkcr, _In_opt_ RegKey *pHklm, _I
 	// Set the properties to display in the various fields.
 	// FIXME: FullDetails will show empty properties...
 	// TODO: PreviewTitle.
-	const tstring s_previewDetails = GetPreviewDetailsString();
-	const tstring s_infoTip = GetInfoTipString();
+	const tstring s_previewDetails = RP_PropertyStore_Private::GetPreviewDetailsString();
+	const tstring s_infoTip = RP_PropertyStore_Private::GetInfoTipString();
 
 	// Write the registry keys.
 	// TODO: Determine which fields are actually supported by the specific extension.
@@ -227,12 +227,12 @@ LONG RP_PropertyStore::UnregisterFileType(RegKey &hkcr, _In_opt_ RegKey *pHklm, 
 	if (!pHkey->isOpen())
 		return pHkey->lOpenRes();
 	tstring s_value = pHkey->read(_T("PreviewDetails"));
-	if (s_value == GetPreviewDetailsString()) {
+	if (s_value == RP_PropertyStore_Private::GetPreviewDetailsString()) {
 		LONG lResult = pHkey->deleteValue(_T("PreviewDetails"));
 		if (lResult != ERROR_SUCCESS) return lResult;
 	}
 	s_value = pHkey->read(_T("InfoTip"));
-	if (s_value == GetInfoTipString()) {
+	if (s_value == RP_PropertyStore_Private::GetInfoTipString()) {
 		LONG lResult = pHkey->deleteValue(_T("InfoTip"));
 		if (lResult != ERROR_SUCCESS) return lResult;
 	}

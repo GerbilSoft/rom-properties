@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_PropertyStore_p.hpp: IPropertyStore implementation. (PRIVATE CLASS)  *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -65,6 +65,25 @@ class RP_PropertyStore_Private
 			LONG vtype;
 		};
 		static const MetaDataConv metaDataConv[];
+
+	public:
+		/**
+		 * Get the PreviewDetails string.
+		 * @return PreviewDetails string.
+		 */
+		static std::tstring GetPreviewDetailsString();
+
+		/**
+		 * Get the InfoTip string.
+		 * @return InfoTip string.
+		 */
+		static std::tstring GetInfoTipString();
+
+		/**
+		 * Get the FullDetails string.
+		 * @return FullDetails string.
+		 */
+		static std::tstring GetFullDetailsString();
 };
 
 #endif /* __ROMPROPERTIES_WIN32_RP_PROPERTYSTORE_P_HPP__ */

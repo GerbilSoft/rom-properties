@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_PropertyStore.hpp: IPropertyStore implementation.                    *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -48,25 +48,6 @@ RP_PropertyStore final : public LibWin32Common::ComBase3<IInitializeWithStream, 
 	public:
 		CLSID_DECL(RP_PropertyStore)
 		FILETYPE_HANDLER_HKLM_DECL(RP_PropertyStore)
-
-	private:
-		/**
-		 * Get the PreviewDetails string.
-		 * @return PreviewDetails string.
-		 */
-		static std::tstring GetPreviewDetailsString();
-
-		/**
-		 * Get the InfoTip string.
-		 * @return InfoTip string.
-		 */
-		static std::tstring GetInfoTipString();
-
-		/**
-		 * Get the FullDetails string.
-		 * @return FullDetails string.
-		 */
-		static std::tstring GetFullDetailsString();
 
 	public:
 		// IUnknown
