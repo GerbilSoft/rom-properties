@@ -86,7 +86,7 @@ T LibRpBase::cpN_to_utf16[abi:cxx11](unsigned int, char const*, int, unsigned in
 T LibRpBase::cpN_to_utf8[abi:cxx11](unsigned int, char const*, int, unsigned int)
 T LibRpBase::IconAnimHelper::nextFrame(int*)
 T LibRpBase::IconAnimHelper::reset()
-T LibRpBase::JSONROMOutput::JSONROMOutput(LibRpBase::RomData const*, unsigned int, bool)
+T LibRpBase::JSONROMOutput::JSONROMOutput(LibRpBase::RomData const*, unsigned int, unsigned int)
 T LibRpBase::KeyManager::getAndVerify(char const*, LibRpBase::KeyManager::KeyData_t*, unsigned char const*, unsigned int) const
 T LibRpBase::KeyManager::instance()
 T LibRpBase::KeyManager::verifyResultToString(LibRpBase::KeyManager::VerifyResult)
@@ -118,7 +118,7 @@ T LibRpBase::RomFields::tabName(int) const
 T LibRpBase::RomMetaData::count() const
 T LibRpBase::RomMetaData::empty() const
 T LibRpBase::RomMetaData::prop(int) const
-T LibRpBase::ROMOutput::ROMOutput(LibRpBase::RomData const*, unsigned int, bool)
+T LibRpBase::ROMOutput::ROMOutput(LibRpBase::RomData const*, unsigned int, unsigned int)
 T LibRpBase::RpImageLoader::load(LibRpFile::IRpFile*)
 T LibRpBase::RpPng::libpng_copyright_string()
 T LibRpBase::RpPng::libpng_has_APNG()

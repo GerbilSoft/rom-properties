@@ -21,6 +21,11 @@ namespace LibRpBase {
 
 class RomData;
 
+enum OutputFlags {
+	OF_SkipInternalImages		= (1U << 0),
+	OF_SkipListDataMoreThan10	= (1U << 1),	// ROMOutput only
+};
+
 /**
  * Partially unescape a URL.
  * %20, %23, and %25 are left escaped.
@@ -32,10 +37,10 @@ std::string urlPartialUnescape(const std::string &url);
 class ROMOutput {
 	const RomData *const romdata;
 	uint32_t lc;
-	bool skipInternalImages;
+	unsigned int flags;
 public:
 	RP_LIBROMDATA_PUBLIC
-	explicit ROMOutput(const RomData *romdata, uint32_t lc = 0, bool skipInternalImages = false);
+	explicit ROMOutput(const RomData *romdata, uint32_t lc = 0, unsigned int flags = 0);
 
 	RP_LIBROMDATA_PUBLIC
 	friend std::ostream& operator<<(std::ostream& os, const ROMOutput& fo);
@@ -44,11 +49,11 @@ public:
 class JSONROMOutput {
 	const RomData *const romdata;
 	uint32_t lc;
-	bool skipInternalImages;
+	unsigned int flags;
 	bool crlf_;
 public:
 	RP_LIBROMDATA_PUBLIC
-	explicit JSONROMOutput(const RomData *romdata, uint32_t lc = 0, bool skipInternalImages = false);
+	explicit JSONROMOutput(const RomData *romdata, uint32_t lc = 0, unsigned int flags = 0);
 
 	RP_LIBROMDATA_PUBLIC
 	friend std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo);

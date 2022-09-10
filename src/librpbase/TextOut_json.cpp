@@ -344,10 +344,10 @@ public:
 };
 
 
-JSONROMOutput::JSONROMOutput(const RomData *romdata, uint32_t lc, bool skipInternalImages)
+JSONROMOutput::JSONROMOutput(const RomData *romdata, uint32_t lc, unsigned int flags)
 	: romdata(romdata)
 	, lc(lc)
-	, skipInternalImages(skipInternalImages)
+	, flags(flags)
 	, crlf_(false) { }
 RP_LIBROMDATA_PUBLIC
 std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
@@ -378,7 +378,7 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 
 	const uint32_t imgbf = romdata->supportedImageTypes();
 	if (imgbf != 0) {
-		if (!fo.skipInternalImages) {
+		if (!(fo.flags & OF_SkipInternalImages)) {
 			// Internal images
 			Value imgint_array(kArrayType);	// imgint
 

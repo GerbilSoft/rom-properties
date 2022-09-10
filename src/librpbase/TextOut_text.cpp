@@ -265,11 +265,13 @@ class ListDataField {
 	const RomFields::Field &romField;
 	uint32_t def_lc;	// ROM-default language code.
 	uint32_t user_lc;	// User-specified language code.
+	unsigned int flags;
 public:
-	ListDataField(size_t width, const RomFields::Field &romField, uint32_t def_lc, uint32_t user_lc)
-		: width(width), romField(romField), def_lc(def_lc), user_lc(user_lc) { }
+	ListDataField(size_t width, const RomFields::Field &romField, uint32_t def_lc, uint32_t user_lc, unsigned int flags)
+		: width(width), romField(romField), def_lc(def_lc), user_lc(user_lc), flags(flags) { }
 	friend ostream& operator<<(ostream& os, const ListDataField& field) {
 		auto romField = field.romField;
+		os << ColonPad(field.width, romField.name.c_str());
 
 		const auto &listDataDesc = romField.desc.list_data;
 		// NOTE: listDataDesc.names can be nullptr,
@@ -296,7 +298,13 @@ public:
 
 		assert(pListData != nullptr);
 		if (!pListData) {
-			return os << "[ERROR: No list data.]";
+			return os << C_("TextOut", "[ERROR: No list data.]");
+		}
+
+		if (field.flags & OF_SkipListDataMoreThan10) {
+			if (pListData->size() > 10) {
+				return os << C_("TextOut", "[More than 10 items; skipping...]");
+			}
 		}
 
 		unsigned int col_count = 1;
@@ -311,7 +319,7 @@ public:
 		}
 		assert(col_count > 0);
 		if (col_count <= 0) {
-			return os << "[ERROR: No list data.]";
+			return os << C_("TextOut", "[ERROR: No list data.]");
 		}
 
 		/** Calculate the column widths. **/
@@ -371,8 +379,6 @@ public:
 		}
 
 		/** Print the list data. **/
-
-		os << ColonPad(field.width, romField.name.c_str());
 		StreamStateSaver state(os);
 
 		// Print the list on a separate row from the field name?
@@ -688,9 +694,10 @@ public:
 class FieldsOutput {
 	const RomFields& fields;
 	uint32_t lc;
+	unsigned int flags;
 public:
-	explicit FieldsOutput(const RomFields& fields, uint32_t lc = 0)
-		: fields(fields), lc(lc) { }
+	explicit FieldsOutput(const RomFields& fields, uint32_t lc = 0, unsigned int flags = 0)
+		: fields(fields), lc(lc), flags(flags) { }
 	friend std::ostream& operator<<(std::ostream& os, const FieldsOutput& fo) {
 		size_t maxWidth = 0;
 		std::for_each(fo.fields.cbegin(), fo.fields.cend(),
@@ -747,7 +754,7 @@ public:
 					os << BitfieldField(maxWidth, romField);
 					break;
 				case RomFields::RFT_LISTDATA:
-					os << ListDataField(maxWidth, romField, def_lc, user_lc);
+					os << ListDataField(maxWidth, romField, def_lc, user_lc, fo.flags);
 					break;
 				case RomFields::RFT_DATETIME:
 					os << DateTimeField(maxWidth, romField);
@@ -774,10 +781,10 @@ public:
 };
 
 
-ROMOutput::ROMOutput(const RomData *romdata, uint32_t lc, bool skipInternalImages)
+ROMOutput::ROMOutput(const RomData *romdata, uint32_t lc, unsigned int flags)
 	: romdata(romdata)
 	, lc(lc)
-	, skipInternalImages(skipInternalImages) { }
+	, flags(flags) { }
 RP_LIBROMDATA_PUBLIC
 std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	auto romdata = fo.romdata;
@@ -800,13 +807,13 @@ std::ostream& operator<<(std::ostream& os, const ROMOutput& fo) {
 	const RomFields *const fields = romdata->fields();
 	assert(fields != nullptr);
 	if (fields) {
-		os << FieldsOutput(*fields, fo.lc) << '\n';
+		os << FieldsOutput(*fields, fo.lc, fo.flags) << '\n';
 	}
 
 	const uint32_t imgbf = romdata->supportedImageTypes();
 	if (imgbf != 0) {
 		// Internal images
-		if (!fo.skipInternalImages) {
+		if (!(fo.flags & OF_SkipInternalImages)) {
 			for (int i = RomData::IMG_INT_MIN; i <= RomData::IMG_INT_MAX; i++) {
 				if (!(imgbf & (1U << i)))
 					continue;

@@ -2,10 +2,10 @@ protected: __cdecl LibRpBase::ConfReader::ConfReader(class LibRpBase::ConfReader
 protected: __cdecl LibRpBase::Config::Config(void) __ptr64
 public: __cdecl LibRomData::GcnFst::GcnFst(unsigned char const * __ptr64,unsigned int,unsigned char) __ptr64
 protected: __cdecl LibRpFile::IRpFile::IRpFile(void) __ptr64
-public: __cdecl LibRpBase::JSONROMOutput::JSONROMOutput(class LibRpBase::RomData const * __ptr64,unsigned int,bool) __ptr64
+public: __cdecl LibRpBase::JSONROMOutput::JSONROMOutput(class LibRpBase::RomData const * __ptr64,unsigned int,unsigned int) __ptr64
 public: __cdecl LibRomData::KeyStoreUI::KeyStoreUI(void) __ptr64
 public: __cdecl LibRpFile::MemFile::MemFile(void const * __ptr64,unsigned __int64) __ptr64
-public: __cdecl LibRpBase::ROMOutput::ROMOutput(class LibRpBase::RomData const * __ptr64,unsigned int,bool) __ptr64
+public: __cdecl LibRpBase::ROMOutput::ROMOutput(class LibRpBase::RomData const * __ptr64,unsigned int,unsigned int) __ptr64
 public: __cdecl LibWin32Common::RegKey::RegKey(class LibWin32Common::RegKey const & __ptr64,wchar_t const * __ptr64,unsigned long,bool) __ptr64
 public: __cdecl LibWin32Common::RegKey::RegKey(struct HKEY__ * __ptr64,wchar_t const * __ptr64,unsigned long,bool) __ptr64
 public: __cdecl LibRpFile::RpFile::RpFile(class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const & __ptr64,enum LibRpFile::RpFile::FileMode) __ptr64

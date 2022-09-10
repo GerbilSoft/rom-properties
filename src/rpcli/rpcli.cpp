@@ -192,11 +192,11 @@ static void ExtractImages(const RomData *romData, vector<ExtractParam>& extract)
  * @param filename ROM filename
  * @param json Is program running in json mode?
  * @param extract Vector of image extraction parameters
- * @param languageCode Language code. (0 for default)
- * @param skipInternalImages If true, skip internal image processing.
+ * @param lc Language code (0 for default)
+ * @param flags ROMOutput flags (see OutputFlags)
  */
 static void DoFile(const char *filename, bool json, vector<ExtractParam>& extract,
-	uint32_t languageCode = 0, bool skipInternalImages = false)
+	uint32_t lc = 0, unsigned int flags = 0)
 {
 	cerr << "== " << rp_sprintf(C_("rpcli", "Reading file '%s'..."), filename) << endl;
 	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
@@ -205,9 +205,9 @@ static void DoFile(const char *filename, bool json, vector<ExtractParam>& extrac
 		if (romData && romData->isValid()) {
 			if (json) {
 				cerr << "-- " << C_("rpcli", "Outputting JSON data") << endl;
-				cout << JSONROMOutput(romData, languageCode, skipInternalImages) << endl;
+				cout << JSONROMOutput(romData, lc, flags) << endl;
 			} else {
-				cout << ROMOutput(romData, languageCode, skipInternalImages) << endl;
+				cout << ROMOutput(romData, lc, flags) << endl;
 			}
 
 			ExtractImages(romData, extract);
@@ -409,6 +409,7 @@ int RP_C_API main(int argc, char *argv[])
 #endif /* ENABLE_DECRYPTION */
 		cerr << "  -c:   " << C_("rpcli", "Print system region information.") << '\n';
 		cerr << "  -p:   " << C_("rpcli", "Print system path information.") << '\n';
+		cerr << "  -d:   " << C_("rpcli", "Skip ListData fields with more than 10 items. [text only]") << '\n';
 		cerr << "  -j:   " << C_("rpcli", "Use JSON output format.") << '\n';
 		cerr << "  -l:   " << C_("rpcli", "Retrieve the specified language from the ROM image.") << '\n';
 		cerr << "  -xN:  " << C_("rpcli", "Extract image N to outfile in PNG format.") << '\n';
@@ -458,8 +459,8 @@ int RP_C_API main(int argc, char *argv[])
 	bool inq_ata = false;
 	bool inq_ata_packet = false;
 #endif /* RP_OS_SCSI_SUPPORTED */
-	uint32_t languageCode = 0;
-	bool skipInternalImages = false;
+	uint32_t lc = 0;
+	unsigned int flags = 0;	// OutputFlags
 	bool first = true;
 	int ret = 0;
 	for (int i = 1; i < argc; i++){
@@ -501,11 +502,11 @@ int RP_C_API main(int argc, char *argv[])
 				}
 
 				// Parse the language code.
-				uint32_t lc = 0;
+				uint32_t new_lc = 0;
 				int pos;
 				for (pos = 0; pos < 4 && s_lang[pos] != '\0'; pos++) {
-					lc <<= 8;
-					lc |= (uint8_t)s_lang[pos];
+					new_lc <<= 8;
+					new_lc |= (uint8_t)s_lang[pos];
 				}
 				if (pos == 4 && s_lang[pos] != '\0') {
 					// Invalid language code.
@@ -514,12 +515,17 @@ int RP_C_API main(int argc, char *argv[])
 				}
 
 				// Language code set.
-				languageCode = lc;
+				lc = new_lc;
 				break;
 			}
 			case 'K': {
 				// Skip internal images. (NOTE: Not documented.)
-				skipInternalImages = true;
+				flags |= LibRpBase::OF_SkipInternalImages;
+				break;
+			}
+			case 'd': {
+				// Skip RFT_LISTDATA with more than 10 items. (Text only)
+				flags |= LibRpBase::OF_SkipListDataMoreThan10;
 				break;
 			}
 			case 'x': {
@@ -585,7 +591,7 @@ int RP_C_API main(int argc, char *argv[])
 #endif /* RP_OS_SCSI_SUPPORTED */
 			{
 				// Regular file.
-				DoFile(argv[i], json, extract, languageCode, skipInternalImages);
+				DoFile(argv[i], json, extract, lc, flags);
 			}
 
 #ifdef RP_OS_SCSI_SUPPORTED
