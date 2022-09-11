@@ -856,9 +856,12 @@ int GameCubeSave::loadFieldData(void)
 
 	// Filename.
 	// TODO: Remove trailing spaces.
-	d->fields->addField_string(C_("GameCubeSave", "Filename"),
-		cp1252_sjis_to_utf8(
-			direntry->filename, sizeof(direntry->filename)));
+	// NOTE: Some games (e.g. TMNT Mutant Melee [GE5EA4]) end the field with CR.
+	string filename = cp1252_sjis_to_utf8(direntry->filename, sizeof(direntry->filename));
+	if (!filename.empty() && filename[filename.size()-1] == '\r') {
+		filename.resize(filename.size()-1);
+	}
+	d->fields->addField_string(C_("GameCubeSave", "Filename"), filename);
 
 	// Description.
 	union {
@@ -884,6 +887,10 @@ int GameCubeSave::loadFieldData(void)
 			desc_len = null_pos - comment.desc;
 		}
 		string desc = cp1252_sjis_to_utf8(comment.desc, static_cast<int>(desc_len));
+		// NOTE: Some games (e.g. TMNT Mutant Melee [GE5EA4]) end the field with CR.
+		if (!desc.empty() && desc[desc.size()-1] == '\r') {
+			desc.resize(desc.size()-1);
+		}
 		desc += '\n';
 
 		// Check for a NULL byte in the file description.
@@ -894,6 +901,10 @@ int GameCubeSave::loadFieldData(void)
 			desc_len = null_pos - comment.file;
 		}
 		desc += cp1252_sjis_to_utf8(comment.file, static_cast<int>(desc_len));
+		// NOTE: Some games (e.g. TMNT Mutant Melee [GE5EA4]) end the field with CR.
+		if (!desc.empty() && desc[desc.size()-1] == '\r') {
+			desc.resize(desc.size()-1);
+		}
 
 		d->fields->addField_string(C_("GameCubeSave", "Description"), desc);
 	}
@@ -975,6 +986,10 @@ int GameCubeSave::loadMetaData(void)
 			desc_len = static_cast<int>(null_pos - desc_buf);
 		}
 		string desc = cp1252_sjis_to_utf8(desc_buf, desc_len);
+		// NOTE: Some games (e.g. TMNT Mutant Melee [GE5EA4]) end the field with CR.
+		if (!desc.empty() && desc[desc.size()-1] == '\r') {
+			desc.resize(desc.size()-1);
+		}
 		desc += '\n';
 
 		// Check for a NULL byte in the file description.
@@ -984,6 +999,10 @@ int GameCubeSave::loadMetaData(void)
 			desc_len = static_cast<int>(null_pos - desc_buf - 32);
 		}
 		desc += cp1252_sjis_to_utf8(&desc_buf[32], desc_len);
+		// NOTE: Some games (e.g. TMNT Mutant Melee [GE5EA4]) end the field with CR.
+		if (!desc.empty() && desc[desc.size()-1] == '\r') {
+			desc.resize(desc.size()-1);
+		}
 
 		d->metaData->addMetaData_string(Property::Title, desc);
 	}

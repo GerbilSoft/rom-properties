@@ -81,6 +81,7 @@
   * rpcli: Fix table widths when printing strings that contain Unicode code
     points over U+0080 and/or fullwidth characters.
     * Fixes #353, reported by @DankRank.
+  * GameCubeSave: Trim trailing CRs. (TMNT Mutant Melee [GE5EA4])
 
 * Other changes:
   * Windows: DLL loading has been hardened by using LoadLibraryEx().
