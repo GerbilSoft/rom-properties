@@ -253,15 +253,15 @@ int BCSTM::isRomSupported_static(const DetectInfo *info)
 	bool needsByteswap;
 	switch (bcstmHeader->bom) {
 		case BCSTM_BOM_HOST:
-			// Host-endian.
+			// Host-endian
 			needsByteswap = false;
 			break;
 		case BCSTM_BOM_SWAP:
-			// Swapped-endian.
+			// Swapped-endian
 			needsByteswap = true;
 			break;
 		default:
-			// Invalid.
+			// Invalid
 			return (int)BCSTMPrivate::AudioFormat::Unknown;
 	}
 
@@ -451,7 +451,7 @@ int BCSTM::loadFieldData(void)
 			// sample block count, number of samples per block, and
 			// number of samples in the last block.
 			sample_count =
-				(d->bcstm32_to_cpu(info->sample_block_count - 1) *
+				((d->bcstm32_to_cpu(info->sample_block_count) - 1) *
 				 d->bcstm32_to_cpu(info->sample_block_sample_count)) +
 				d->bcstm32_to_cpu(info->last_sample_block_sample_count);
 		} else /* if (d->audioFormat == BCSTMPrivate::AudioFormat::BFSTM) */ {

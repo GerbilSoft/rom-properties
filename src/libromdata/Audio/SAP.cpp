@@ -45,11 +45,12 @@ class SAPPrivate final : public RomDataPrivate
 		struct sap_tags_t {
 			bool tags_read;		// True if tags were read successfully.
 
-			string author;		// Author.
-			string name;		// Song title.
-			string date;		// Date. TODO: Disambiguate year vs. date.
-			uint8_t songs;		// Number of songs in the file. (Default is 1)
-			uint8_t def_song;	// Default song. (zero-based; default is 0)
+			string author;		// Author
+			string name;		// Song title
+			string date;		// Date (TODO: Disambiguate year vs. date.)
+
+			uint16_t songs;		// Number of songs in the file (Default is 1)
+			uint16_t def_song;	// Default song (zero-based; default is 0)
 
 			// TODO: Use a bitfield for flags?
 			bool ntsc;		// True if NTSC tag is present.
@@ -58,10 +59,10 @@ class SAPPrivate final : public RomDataPrivate
 			char type;		// B, C, D, S
 			uint16_t fastplay;	// Number of scanlines between calls of the player routine.
 						// Default is one frame: 312 lines for PAL, 262 lines for NTSC.
-			uint16_t init_addr;	// Init address. (Required for Types B, D, and S; invalid for others.)
-			uint16_t music_addr;	// Music data address. (Required for Type C; invalid for others.)
-			uint16_t player_addr;	// Player address.
-			uint16_t covox_addr;	// COVOX hardware address. (If not specified, set to 0.)
+			uint16_t init_addr;	// Init address (Required for Types B, D, and S; invalid for others)
+			uint16_t music_addr;	// Music data address (Required for Type C; invalid for others)
+			uint16_t player_addr;	// Player address
+			uint16_t covox_addr;	// COVOX hardware address (If not specified, set to 0)
 
 			// TIME tags.
 			// - first: Duration, in milliseconds.
@@ -429,7 +430,7 @@ SAPPrivate::sap_tags_t SAPPrivate::parseTags(void)
 			break;
 		}
 	}
-	
+
 	// Tags parsed.
 	tags.tags_read = true;
 	return tags;
