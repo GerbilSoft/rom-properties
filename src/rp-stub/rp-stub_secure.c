@@ -84,6 +84,10 @@ int rp_stub_do_security_options(bool config)
 		SCMP_SYS(statx),
 #endif /* __SNR_statx || __NR_statx */
 
+		// ConfReader checks timestamps between rpcli runs.
+		// NOTE: Only seems to get triggered on PowerPC...
+		SCMP_SYS(clock_gettime), SCMP_SYS(clock_gettime64),
+
 		// glibc ncsd
 		// TODO: Restrict connect() to AF_UNIX.
 		SCMP_SYS(connect), SCMP_SYS(recvmsg), SCMP_SYS(sendto),
