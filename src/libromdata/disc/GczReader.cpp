@@ -47,31 +47,31 @@ class GczReaderPrivate : public SparseDiscReaderPrivate {
 		RP_DISABLE_COPY(GczReaderPrivate)
 
 	public:
-		// GCZ header.
+		// GCZ header
 		GczHeader gczHeader;
 
-		// Block pointers and hashes.
+		// Block pointers and hashes (NOTE: Byteswapped on demand)
 		// If bit 63 of the block pointer is set, it's not compressed.
 		// Hashes are Adler32.
 		ao::uvector<uint64_t> blockPointers;
 		ao::uvector<uint32_t> hashes;
 
-		// Decompression buffer.
-		// (Same size as blockCache.)
+		// Decompression buffer
+		// (Same size as blockCache)
 		ao::uvector<uint8_t> z_buffer;
 
-		// Block cache.
+		// Block cache
 		ao::uvector<uint8_t> blockCache;
 		uint32_t blockCacheIdx;
 
-		// Starting offset of the data area.
-		// This offset must be added to the blockPointers value.
+		// Starting offset of the data area
+		// This offset must be added to the blockPointers value
 		uint32_t dataOffset;
 
 		/**
 		 * Get the compressed size of a block.
-		 * @param blockNum Block number.
-		 * @return Block's compressed size, or 0 on error.
+		 * @param blockNum Block number
+		 * @return Block's compressed size, or 0 on error
 		 */
 		uint32_t getBlockCompressedSize(uint32_t blockNum) const;
 };
@@ -89,8 +89,8 @@ GczReaderPrivate::GczReaderPrivate(GczReader *q)
 
 /**
  * Get the compressed size of a block.
- * @param blockNum Block number.
- * @return Block's compressed size, or 0 on error.
+ * @param blockNum Block number
+ * @return Block's compressed size, or 0 on error
  */
 uint32_t GczReaderPrivate::getBlockCompressedSize(uint32_t blockNum) const
 {
@@ -159,8 +159,8 @@ GczReader::GczReader(IRpFile *file)
 	// Byteswap the header.
 	d->gczHeader.magic	= le32_to_cpu(d->gczHeader.magic);
 	d->gczHeader.sub_type	= le32_to_cpu(d->gczHeader.sub_type);
-	d->gczHeader.z_data_size = le32_to_cpu(d->gczHeader.z_data_size);
-	d->gczHeader.data_size	= le32_to_cpu(d->gczHeader.data_size);
+	d->gczHeader.z_data_size = le64_to_cpu(d->gczHeader.z_data_size);
+	d->gczHeader.data_size	= le64_to_cpu(d->gczHeader.data_size);
 	d->gczHeader.block_size = le32_to_cpu(d->gczHeader.block_size);
 	d->gczHeader.num_blocks = le32_to_cpu(d->gczHeader.num_blocks);
 #endif /* SYS_BYTEORDER != SYS_LIL_ENDIAN */
@@ -168,7 +168,7 @@ GczReader::GczReader(IRpFile *file)
 	// Check if the block size is a supported power of two.
 	// - Minimum: GCZ_BLOCK_SIZE_MIN (32 KB, 1 << 15)
 	// - Maximum: GCZ_BLOCK_SIZE_MAX (16 MB, 1 << 24)
-	d->block_size = le32_to_cpu(d->gczHeader.block_size);
+	d->block_size = d->gczHeader.block_size;
 	if (!isPow2(d->block_size) ||
 	    d->block_size < GCZ_BLOCK_SIZE_MIN || d->block_size > GCZ_BLOCK_SIZE_MAX)
 	{
@@ -180,27 +180,22 @@ GczReader::GczReader(IRpFile *file)
 
 	// Verify that if data size is a multiple of the block size, it matches
 	// num_blocks, or if not, num_blocks + 1.
+	uint64_t expected_data_size;
 	if (d->gczHeader.data_size % d->block_size == 0) {
 		// Multiple of the block size.
-		if (((uint64_t)d->block_size * (uint64_t)d->gczHeader.num_blocks) != d->gczHeader.data_size) {
-			// Not a multiple.
-			UNREF_AND_NULL_NOCHK(m_file);
-			m_lastError = EIO;
-			return;
-		}
-		d->disc_size = d->gczHeader.data_size;
+		expected_data_size = d->gczHeader.data_size;
 	} else {
 		// Not a multiple of the block size.
 		// Round it up, then check.
-		const uint64_t disc_size = ALIGN_BYTES(d->block_size, d->gczHeader.data_size);
-		if (((uint64_t)d->block_size * (uint64_t)d->gczHeader.num_blocks) != disc_size) { 
-			// Incorrect size.
-			UNREF_AND_NULL_NOCHK(m_file);
-			m_lastError = EIO;
-			return;
-		}
-		d->disc_size = static_cast<off64_t>(disc_size);
+		expected_data_size = ALIGN_BYTES(d->block_size, d->gczHeader.data_size);
 	}
+	if (((uint64_t)d->block_size * (uint64_t)d->gczHeader.num_blocks) != expected_data_size) {
+		// Not a multiple.
+		UNREF_AND_NULL_NOCHK(m_file);
+		m_lastError = EIO;
+		return;
+	}
+	d->disc_size = static_cast<off64_t>(expected_data_size);
 
 	// Make sure the number of blocks is in range.
 	// We should have at least one block, and at most 16 GB of data.
@@ -326,20 +321,18 @@ int GczReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeader)
 	// num_blocks, or if not, num_blocks + 1.
 	const uint64_t data_size = le64_to_cpu(gczHeader->data_size);
 	const uint32_t num_blocks = le32_to_cpu(gczHeader->num_blocks);
+	uint64_t expected_data_size;
 	if (data_size % block_size == 0) {
 		// Multiple of the block size.
-		if (((uint64_t)block_size * (uint64_t)num_blocks) != data_size) {
-			// Not a multiple.
-			return -1;
-		}
+		expected_data_size = data_size;
 	} else {
 		// Not a multiple of the block size.
 		// Round it up, then check.
-		const uint64_t disc_size = ALIGN_BYTES(block_size, data_size);
-		if (((uint64_t)block_size * (uint64_t)num_blocks) != disc_size) { 
-			// Incorrect size.
-			return -1;
-		}
+		expected_data_size = ALIGN_BYTES(block_size, data_size);
+	}
+	if (((uint64_t)block_size * (uint64_t)num_blocks) != expected_data_size) { 
+		// Incorrect size.
+		return -1;
 	}
 
 	// This is a valid GCZ image.
@@ -378,7 +371,7 @@ off64_t GczReader::getPhysBlockAddr(uint32_t blockIdx) const
 
 	// Get the physical block address.
 	// NOTE: The caller has to decompress the block.
-	return (d->blockPointers[blockIdx] & ~GCZ_FLAG_BLOCK_NOT_COMPRESSED) + d->dataOffset;
+	return (le64_to_cpu(d->blockPointers[blockIdx]) & ~GCZ_FLAG_BLOCK_NOT_COMPRESSED) + d->dataOffset;
 }
 
 /**
@@ -424,7 +417,7 @@ int GczReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 	const bool isLastBlock = (blockIdx + 1 == d->blockPointers.size());
 
 	// Get the physical address first.
-	const uint64_t blockPointer = d->blockPointers[blockIdx];
+	const uint64_t blockPointer = le64_to_cpu(d->blockPointers[blockIdx]);
 	const off64_t physBlockAddr = static_cast<off64_t>(blockPointer & ~GCZ_FLAG_BLOCK_NOT_COMPRESSED) + d->dataOffset;
 	const uint32_t z_block_size = d->getBlockCompressedSize(blockIdx);
 	if (z_block_size == 0) {
