@@ -42,8 +42,8 @@ application/x-gcz-image			# GameCube
 application/x-rvz-image			# GameCube
 application/x-gamecube-bnr		# GameCubeBNR
 application/x-gamecube-save		# GameCubeSave
-application/x-ique-dat			# iQuePlayer
 application/x-ique-cmd			# iQuePlayer
+application/x-ique-dat			# iQuePlayer
 application/x-genesis-rom		# MegaDrive
 application/x-sega-cd-rom		# MegaDrive
 application/x-genesis-32x-rom		# MegaDrive

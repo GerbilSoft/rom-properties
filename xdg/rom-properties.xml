@@ -312,6 +312,20 @@
     </magic>
   </mime-type>
 
+  <!-- iQuePlayer -->
+  <!-- TODO: Distinguish between CMD (10,668 bytes) and DAT (11,084 bytes). -->
+  <mime-type type="application/x-ique-cmd">
+    <comment>iQue Player content metadata file</comment>
+    <!-- FIXME: Better icon. -->
+    <sub-class-of type="application/octet-stream"/>
+    <generic-icon name="application-octet-stream"/>
+    <magic priority="75">
+      <match value="CAM\x00" type="string" offset="64">
+        <match value="Root" type="string" offset="10328"/>
+      </match>
+    </magic>
+  </mime-type>
+
   <!-- MegaDrive -->
   <mime-type type="application/x-sega-cd-32x-rom">
     <!-- Translate this to Mega-CD if the console was known as such in your locale
