@@ -484,7 +484,7 @@ bool SNESPrivate::isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHi
 #endif
 
 	// Check the program type.
-	switch (romHeader->bsx.ext.program_type) {
+	switch (le32_to_cpu(romHeader->bsx.ext.program_type)) {
 		case SNES_BSX_PRG_65c816:
 		case SNES_BSX_PRG_SCRIPT:
 		case SNES_BSX_PRG_SA_1:
@@ -895,10 +895,7 @@ SNES::SNES(IRpFile *file)
 
 	d->header_address = 0;
 	const uint32_t *pHeaderAddress = &all_header_addresses[isCopierHeader][0];
-	for (int i = 0; i < 4; i++, pHeaderAddress++) {
-		if (*pHeaderAddress == 0)
-			break;
-
+	for (unsigned int i = 0; i < 4; i++, pHeaderAddress++) {
 		size_t size = d->file->seekAndRead(*pHeaderAddress, &d->romHeader, sizeof(d->romHeader));
 		if (size != sizeof(d->romHeader)) {
 			// Seek and/or read error.
@@ -910,6 +907,7 @@ SNES::SNES(IRpFile *file)
 			if (d->isBsxRomHeaderValid(&d->romHeader, (i & 1))) {
 				// BS-X ROM header is valid.
 				d->header_address = *pHeaderAddress;
+				d->mimeType = "application/x-satellaview-rom";	// unofficial, not on fd.o
 				break;
 			} else if (d->isSnesRomHeaderValid(&d->romHeader, (i & 1))) {
 				// SNES/SFC ROM header is valid.
