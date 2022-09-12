@@ -114,11 +114,13 @@ uint32_t EXEPrivate::pe_vaddr_to_paddr(uint32_t vaddr, uint32_t size)
 		}
 	}
 
+	// FIXME: How does XEX handle this?
 	for (const IMAGE_SECTION_HEADER &p : pe_sections) {
-		if (p.VirtualAddress <= vaddr) {
-			if ((p.VirtualAddress + p.SizeOfRawData) >= (vaddr+size)) {
+		const uint32_t sect_vaddr = le32_to_cpu(p.VirtualAddress);
+		if (sect_vaddr <= vaddr) {
+			if ((sect_vaddr + le32_to_cpu(p.SizeOfRawData)) >= (vaddr+size)) {
 				// Found the section. Adjust the address.
-				return (vaddr - p.VirtualAddress) + p.PointerToRawData;
+				return (vaddr - sect_vaddr) + le32_to_cpu(p.PointerToRawData);
 			}
 		}
 	}
@@ -231,8 +233,14 @@ int EXEPrivate::readPEImpExpDir(IMAGE_DATA_DIRECTORY &dataDir, int type,
 		return -ENOENT;
 	}
 
+	// FIXME: How does XEX handle this?
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+	dataDir.VirtualAddress = le32_to_cpu(dataDir.VirtualAddress);
+	dataDir.Size = le32_to_cpu(dataDir.Size);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+
 	// Get the import/export table's physical address.
-	uint32_t tbl_paddr = pe_vaddr_to_paddr(dataDir.VirtualAddress, dataDir.Size);
+	const uint32_t tbl_paddr = pe_vaddr_to_paddr(dataDir.VirtualAddress, dataDir.Size);
 	if (tbl_paddr == 0) {
 		// Not found.
 		return -ENOENT;
@@ -257,6 +265,7 @@ int EXEPrivate::readPEImpExpDir(IMAGE_DATA_DIRECTORY &dataDir, int type,
 	}
 	return 0;
 }
+
 /**
  * Read a block of null-terminated strings, where the length of the
  * last one isn't known in advance.
@@ -297,6 +306,7 @@ int EXEPrivate::readPENullBlock(uint32_t low, uint32_t high, uint32_t minExtra,
 	}
 	return 0;
 }
+
 /**
  * Read PE Import Directory (peImportDir) and DLL names (peImportNames).
  * @return 0 on success; negative POSIX error code on error.
@@ -832,9 +842,10 @@ int EXEPrivate::addFields_PE_Export(void)
 	ents.reserve(std::max(szExpAddrTbl, szExpNameTbl));
 
 	// Read address table
+	const uint32_t expDirTbl_base = le32_to_cpu(pExpDirTbl->Base);
 	for (uint32_t i = 0; i < szExpAddrTbl; i++) {
 		ExportEntry ent;
-		ent.ordinal = pExpDirTbl->Base + i;
+		ent.ordinal = expDirTbl_base + i;
 		ent.hint = -1;
 		ent.vaddr = le32_to_cpu(expAddrTbl[i]);
 		ent.paddr = pe_vaddr_to_paddr(ent.vaddr, 0);
@@ -1102,9 +1113,11 @@ int EXEPrivate::addFields_PE_Import(void)
 			row.emplace_back("");
 		} else {
 			// RVA to hint number followed by NUL terminated name.
+			// FIXME: How does XEX handle this?
 			auto ent = &dll_hint_data[it.value - dll_hint_base];
+			const uint16_t hint = le16_to_cpu(*reinterpret_cast<const uint16_t*>(ent));
 			row.emplace_back(ent+2);
-			row.emplace_back(rp_sprintf("%u", *reinterpret_cast<const uint16_t*>(ent)));
+			row.emplace_back(rp_sprintf("%u", hint));
 		}
 		row.emplace_back(*(it.dllname));
 	}
