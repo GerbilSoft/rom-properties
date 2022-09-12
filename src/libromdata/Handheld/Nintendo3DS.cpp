@@ -1037,7 +1037,7 @@ int Nintendo3DSPrivate::loadPermissions(void)
 	// TODO: Other descriptor versions?
 	// v2 is standard; may be v3 on 9.3.0-X.
 	// FIXME: Some pre-release images have version 0.
-	perm.ioAccess = static_cast<uint32_t>(le64_to_cpu(ncch_exheader->aci.arm9.descriptors));
+	perm.ioAccess = static_cast<uint32_t>(le32_to_cpu(ncch_exheader->aci.arm9.descriptors));
 	perm.ioAccessVersion = ncch_exheader->aci.arm9.descriptor_version;
 
 	// Save a pointer to the services array.
@@ -1367,8 +1367,8 @@ int Nintendo3DS::isRomSupported_static(const DetectInfo *info)
 			     cia_header->ticket_size == cpu_to_le32(sizeof(N3DS_Ticket_t) + 0x4 + 0x100 + 0x3C) ||
 			     cia_header->ticket_size == cpu_to_le32(sizeof(N3DS_Ticket_t) + 0x4 +  0x3C + 0x40)) &&
 			    le32_to_cpu(cia_header->tmd_size) % 4 == 0 &&
-			    (le32_to_cpu(cia_header->tmd_size) >= cpu_to_le32(sizeof(N3DS_TMD_Header_t) + 0x4 + 0x3C + 0x40 + sizeof(N3DS_Content_Info_Record_t)*64 + sizeof(N3DS_Content_Chunk_Record_t)) &&
-			     le32_to_cpu(cia_header->tmd_size) <= cpu_to_le32(sizeof(N3DS_TMD_Header_t) + 0x4 + 0x200 + 0x3C + sizeof(N3DS_Content_Info_Record_t)*256 + sizeof(N3DS_Content_Chunk_Record_t)*256)) &&
+			    (le32_to_cpu(cia_header->tmd_size) >= (sizeof(N3DS_TMD_Header_t) + 0x4 + 0x3C + 0x40 + sizeof(N3DS_Content_Info_Record_t)*64 + sizeof(N3DS_Content_Chunk_Record_t)) &&
+			     le32_to_cpu(cia_header->tmd_size) <= (sizeof(N3DS_TMD_Header_t) + 0x4 + 0x200 + 0x3C + sizeof(N3DS_Content_Info_Record_t)*256 + sizeof(N3DS_Content_Chunk_Record_t)*256)) &&
 			    (cia_header->meta_size == cpu_to_le32(0) ||	// no meta
 			     cia_header->meta_size == cpu_to_le32(8) ||	// CVer
 			     (le32_to_cpu(cia_header->meta_size) % 4 == 0 &&
@@ -2304,7 +2304,7 @@ int Nintendo3DS::loadFieldData(void)
 		vector<string> *const v_exheader_flags_names = RomFields::strArrayToVector(
 			exheader_flags_names, ARRAY_SIZE(exheader_flags_names));
 		d->fields->addField_bitfield("Flags",
-			v_exheader_flags_names, 0, le32_to_cpu(ncch_exheader->sci.flags));
+			v_exheader_flags_names, 0, ncch_exheader->sci.flags);
 
 		// TODO: Figure out what "Core Version" is.
 
