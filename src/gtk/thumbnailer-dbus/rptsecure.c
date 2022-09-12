@@ -63,6 +63,10 @@ int rpt_do_security_options(void)
 		SCMP_SYS(stat), SCMP_SYS(stat64),	// LibUnixCommon::isWritableDirectory()
 		SCMP_SYS(statfs), SCMP_SYS(statfs64),	// LibRpBase::FileSystem::isOnBadFS()
 
+		// ConfReader checks timestamps between rpcli runs.
+		// NOTE: Only seems to get triggered on PowerPC...
+		SCMP_SYS(clock_gettime), SCMP_SYS(clock_gettime64),
+
 #if defined(__SNR_statx) || defined(__NR_statx)
 		SCMP_SYS(getcwd),	// called by glibc's statx()
 		SCMP_SYS(statx),
