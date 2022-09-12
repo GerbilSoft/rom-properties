@@ -87,6 +87,8 @@ CS:0x3A0:Persona
 CS:0x3B4:Banjo & Kazooie
 CS:0x3C8:Fatal Fury
 
+CS:0x3DC:Minecraft
+
 ### Character IDs (C) [p.21]
 # C Fields: ID, Name
 #
@@ -1048,6 +1050,10 @@ C:0x3B40:Banjo & Kazooie
 
 # Fatal Fury (character series == 0x3C8)
 C:0x3C80:Terry
+
+# Minecraft (character series == 0x3DC)
+C:0x3DC0:Steve
+C:0x3DC1:Alex
 
 ### amiibo series (AS) [p.22]
 # AS Fields: ID, Name
@@ -2037,8 +2043,10 @@ A:0x0413:0:0:E.M.M.I.
 # The Legend of Zelda: Skyward Sword Series [0x414]
 A:0x0414:0:0:Zelda & Loftwing
 
-# SSBU: Wave 15 (Ultimate Fighter Pass 2) [0x041D]
+# SSBU: Wave 15 (Ultimate Fighter Pass 2) [0x041D,0x0422-0x0423]
 A:0x041D:88:15:Min Min
+A:0x0422:89:15:Steve
+A:0x0423:90:15:Alex
 
 # Yu-Gi-Oh! [0x424-0x42A]
 A:0x0424:0:0:Yuga Oudou
