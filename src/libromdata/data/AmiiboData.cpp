@@ -623,7 +623,9 @@ const char *AmiiboData::lookup_char_name(uint32_t char_id) const
 	if (d->loadIfNeeded() != 0)
 		return nullptr;
 
-	const uint16_t id = (char_id >> 16) & 0xFFFF;
+	// NOTE: Search is done on little-endian data,
+	// so the id needs to be 32-bit byteswapped.
+	const uint32_t id = cpu_to_le32((char_id >> 16) & 0xFFFF);
 
 	// Do a binary search.
 	const CharTableEntry key = {id, 0};
@@ -642,8 +644,9 @@ const char *AmiiboData::lookup_char_name(uint32_t char_id) const
 	const char *name = nullptr;
 	if (le32_to_cpu(cres->char_id) & CHARTABLE_VARIANT_FLAG) {
 		// Do a binary search in the character variant table.
+		const uint16_t cv_char_id = cpu_to_le16((char_id >> 16) & 0xFFFF);
 		const uint8_t variant_id = (char_id >> 8) & 0xFF;
-		const CharVariantTableEntry key = {id, variant_id, 0, 0};
+		const CharVariantTableEntry key = {cv_char_id, variant_id, 0, 0};
 		const CharVariantTableEntry *const vres =
 			static_cast<const CharVariantTableEntry*>(bsearch(&key,
 				d->pCharVarTbl,
@@ -682,7 +685,7 @@ const char *AmiiboData::lookup_amiibo_series_name(uint32_t amiibo_id) const
 	const unsigned int aseries_id = (amiibo_id >> 8) & 0xFF;
 	if (aseries_id >= d->aseriesTbl_count)
 		return nullptr;
-	
+
 	return d->strTbl_lookup(le32_to_cpu(d->pASeriesTbl[aseries_id]));
 }
 
@@ -707,7 +710,7 @@ const char *AmiiboData::lookup_amiibo_series_data(uint32_t amiibo_id, int *pRele
 
 	const AmiiboIDTableEntry *const pAmiibo = &d->pAmiiboIDTbl[id];
 	if (pReleaseNo) {
-		*pReleaseNo = pAmiibo->release_no;
+		*pReleaseNo = le16_to_cpu(pAmiibo->release_no);
 	}
 	if (pWaveNo) {
 		*pWaveNo = pAmiibo->wave_no;
