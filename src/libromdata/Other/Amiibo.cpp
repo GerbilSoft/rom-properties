@@ -435,15 +435,18 @@ int Amiibo::loadFieldData(void)
 
 	// amiibo name, wave number, and release number.
 	int wave_no, release_no;
+	const char *const amiibo_name_title = C_("Amiibo", "amiibo Name");
 	const char *const amiibo_name = pAmiiboData->lookup_amiibo_series_data(amiibo_id, &release_no, &wave_no);
 	if (amiibo_name) {
-		d->fields->addField_string(C_("Amiibo", "amiibo Name"), amiibo_name);
+		d->fields->addField_string(amiibo_name_title, amiibo_name);
 		if (wave_no != 0) {
 			d->fields->addField_string_numeric(C_("Amiibo", "amiibo Wave #"), wave_no);
 		}
 		if (release_no != 0) {
 			d->fields->addField_string_numeric(C_("Amiibo", "amiibo Release #"), release_no);
 		}
+	} else {
+		d->fields->addField_string(amiibo_name_title, C_("RomData", "Unknown"));
 	}
 
 	// tr: Credits for amiibo image downloads.

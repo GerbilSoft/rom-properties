@@ -502,7 +502,7 @@ inline const char *AmiiboDataPrivate::strTbl_lookup(uint32_t idx) const
 {
 	assert(strTbl_len > 0);
 	assert(idx < strTbl_len);
-	if (strTbl_len <= 0 || idx >= strTbl_len)
+	if (strTbl_len <= 0 || idx == 0 || idx >= strTbl_len)
 		return nullptr;
 	return &pStrTbl[idx];
 }
