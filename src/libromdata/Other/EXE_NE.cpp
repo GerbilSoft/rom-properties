@@ -264,10 +264,17 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 					// Found a matching version.
 					refDesc = rp_sprintf(C_("EXE|Runtime", "Microsoft Visual Basic %u.%u Runtime"),
 						p.ver_major, p.ver_minor);
-					refLink = p.url;
+					if (p.url) {
+						refLink = p.url;
+					}
 					break;
 				}
 			}
+		}
+
+		if (!refDesc.empty()) {
+			// Found the runtime DLL.
+			break;
 		}
 	}
 
