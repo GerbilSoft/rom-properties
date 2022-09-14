@@ -1181,6 +1181,8 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 	// TODO: More comprehensive?
 	// TODO: Checksum at 0x0830. (For GCN, makeGCM always puts 0xAB0B here...)
 	static const uint32_t sdk_0x0000 = 0xFFFF0000;	// BE32
+	// TODO: Some RVMs have extended headers at 0x0800, but not the 0x082C value.
+	static const uint32_t sdk_0x0820 = 0x0002F000;	// BE32
 	static const uint32_t sdk_0x082C = 0x0000E006;	// BE32
 	const uint32_t *const pData32 =
 		reinterpret_cast<const uint32_t*>(info->header.pData);
@@ -1190,7 +1192,9 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 			return (GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_SDK);
 		}
 
-		if (pData32[0x082C/4] == cpu_to_be32(sdk_0x082C)) {
+		if (pData32[0x082C/4] == cpu_to_be32(sdk_0x082C) ||
+		    pData32[0x0820/4] == cpu_to_be32(sdk_0x0820))
+		{
 			// This is a valid GCN/Wii SDK disc image header.
 			return (GameCubePrivate::DISC_SYSTEM_UNKNOWN | GameCubePrivate::DISC_FORMAT_SDK);
 		}
