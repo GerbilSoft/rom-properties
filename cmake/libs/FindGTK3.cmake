@@ -1,4 +1,4 @@
-### MODIFIED version of cmake-3.23.3's FindGTK3.cmake.
+### MODIFIED version of cmake-3.23.3's FindGTK2.cmake.
 ### Updated for GTK3.
 
 # Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
