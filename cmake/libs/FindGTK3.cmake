@@ -285,14 +285,14 @@ function(_GTK3_FIND_INCLUDE_DIR _var _hdr)
     endif()
 
     if(CMAKE_LIBRARY_ARCHITECTURE)
-      set(_gtk2_arch_dir /usr/lib/${CMAKE_LIBRARY_ARCHITECTURE})
+      set(_gtk3_arch_dir /usr/lib/${CMAKE_LIBRARY_ARCHITECTURE})
       if(GTK3_DEBUG)
-        message(STATUS "Adding ${_gtk2_arch_dir} to search path for multiarch support")
+        message(STATUS "Adding ${_gtk3_arch_dir} to search path for multiarch support")
       endif()
     endif()
     find_path(GTK3_${_var}_INCLUDE_DIR ${_hdr}
         PATHS
-            ${_gtk2_arch_dir}
+            ${_gtk3_arch_dir}
             /usr/local/libx32
             /usr/local/lib64
             /usr/local/lib
