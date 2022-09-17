@@ -10,6 +10,11 @@ License: GPL-2+
 Comment:
 
 Files:
+ cmake/libs/FindGTK3.cmake
+Copyright: 2000-2022 Kitware, Inc. and Contributors
+License: BSD-3-clause
+
+Files:
  cmake/macros/GCR_CMake/*
 Copyright: 2015-2019, Makman2 <makman@alice.de>
 License: GPL-3
