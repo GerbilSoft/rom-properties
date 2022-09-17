@@ -16,14 +16,13 @@
 
 namespace LibRpFile {
 
-class VectorFile final : public IRpFile
+class RP_LIBROMDATA_PUBLIC VectorFile final : public IRpFile
 {
 	public:
 		/**
 		 * Open an IRpFile backed by an std::vector.
 		 * The resulting IRpFile is writable.
 		 */
-		RP_LIBROMDATA_PUBLIC
 		VectorFile();
 	protected:
 		virtual ~VectorFile() { }	// call unref() instead

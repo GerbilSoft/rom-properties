@@ -175,7 +175,10 @@ T LibRpFile::RpFile::RpFile(char const*, LibRpFile::RpFile::FileMode)
 T LibRpFile::RpFile::RpFile(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, LibRpFile::RpFile::FileMode)
 T LibRpFile::RpFile::scsi_inquiry(_SCSI_RESP_INQUIRY_STD*)
 T LibRpFile::RpFile::size()
+T LibRpFile::VectorFile::read(void*, unsigned long)
+T LibRpFile::VectorFile::seek(long)
 T LibRpFile::VectorFile::VectorFile()
+T LibRpFile::VectorFile::write(void const*, unsigned long)
 T LibRpTexture::ImageDecoder::fromLinear16_cpp(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned short const*, unsigned long, int)
 T LibRpTexture::ImageDecoder::fromLinear16_sse2(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned short const*, unsigned long, int)
 T LibRpTexture::ImageDecoder::fromLinear24_cpp(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned char const*, unsigned long, int)
@@ -226,12 +229,15 @@ T rp_i18n_init
 V typeinfo for LibRomData::KeyStoreUI
 V typeinfo for LibRpBase::Config
 V typeinfo for LibRpBase::ConfReader
+V typeinfo for LibRpFile::VectorFile
 V typeinfo for LibRpTexture::rp_image_backend
 V typeinfo name for LibRomData::KeyStoreUI
 V typeinfo name for LibRpBase::Config
 V typeinfo name for LibRpBase::ConfReader
+V typeinfo name for LibRpFile::VectorFile
 V typeinfo name for LibRpTexture::rp_image_backend
 V vtable for LibRomData::KeyStoreUI
 V vtable for LibRpBase::Config
 V vtable for LibRpBase::ConfReader
+V vtable for LibRpFile::VectorFile
 V vtable for LibRpTexture::rp_image_backend
