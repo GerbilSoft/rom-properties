@@ -731,7 +731,7 @@ foreach(_GTK3_component ${GTK3_FIND_COMPONENTS})
 
         _GTK3_FIND_INCLUDE_DIR(SIGC++ sigc++/sigc++.h)
         _GTK3_FIND_INCLUDE_DIR(SIGC++CONFIG sigc++config.h)
-        _GTK3_FIND_LIBRARY    (SIGC++ sigc true true)
+        _GTK3_FIND_LIBRARY    (SIGC++ sigc-2 true)
         _GTK3_ADD_TARGET      (SIGC++)
         # Since sigc++ 2.5.1 c++11 support is required
         if(GTK3_SIGC++CONFIG_INCLUDE_DIR)
