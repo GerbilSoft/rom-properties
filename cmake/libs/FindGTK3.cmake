@@ -687,11 +687,11 @@ foreach(_GTK3_component ${GTK3_FIND_COMPONENTS})
         _GTK3_ADD_TARGET      (GDK_PIXBUF GTK3_DEPENDS gobject glib)
 
         _GTK3_FIND_INCLUDE_DIR(CAIRO cairo.h)
-        _GTK3_FIND_LIBRARY    (CAIRO cairo false false)
+        _GTK3_FIND_LIBRARY    (CAIRO cairo false)
         _GTK3_ADD_TARGET      (CAIRO)
 
         _GTK3_FIND_INCLUDE_DIR(HARFBUZZ hb.h)
-        _GTK3_FIND_LIBRARY    (HARFBUZZ harfbuzz false false)
+        _GTK3_FIND_LIBRARY    (HARFBUZZ harfbuzz false)
         _GTK3_ADD_TARGET      (HARFBUZZ)
 
         _GTK3_FIND_INCLUDE_DIR(PANGO pango/pango.h)
