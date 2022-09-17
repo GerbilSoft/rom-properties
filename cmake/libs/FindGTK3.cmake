@@ -521,13 +521,11 @@ function(_GTK3_ADD_TARGET _var)
             add_library(GTK3::${_basename} UNKNOWN IMPORTED)
 
             if(GTK3_${_var}_LIBRARY_RELEASE)
-                MESSAGE(WARNING "lib1: ${GTK3_${_var}_LIBRARY_RELEASE}")
                 set_property(TARGET GTK3::${_basename} APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
                 set_property(TARGET GTK3::${_basename}        PROPERTY IMPORTED_LOCATION_RELEASE "${GTK3_${_var}_LIBRARY_RELEASE}" )
             endif()
 
             if(GTK3_${_var}_LIBRARY_DEBUG)
-                MESSAGE(WARNING "lib2: ${GTK3_${_var}_LIBRARY_DEBUG}")
                 set_property(TARGET GTK3::${_basename} APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
                 set_property(TARGET GTK3::${_basename}        PROPERTY IMPORTED_LOCATION_DEBUG "${GTK3_${_var}_LIBRARY_DEBUG}" )
             endif()
