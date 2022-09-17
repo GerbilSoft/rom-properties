@@ -538,6 +538,9 @@ function(_GTK4_ADD_TARGET _var)
                 set_property(TARGET GTK4::${_basename} APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${GTK4_${_var}CONFIG_INCLUDE_DIR}")
             endif()
 
+            # FIXME: GTK4_DEFINITIONS might have -pthread, which can sometimes cause
+            # -D-pthread to be added, resulting in build failures.
+            STRING(REPLACE "-pthread" "" GTK4_DEFINITIONS "${GTK4_DEFINITIONS}")
             if(GTK4_DEFINITIONS)
                 set_property(TARGET GTK4::${_basename} PROPERTY INTERFACE_COMPILE_DEFINITIONS "${GTK4_DEFINITIONS}")
             endif()
