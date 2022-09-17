@@ -1,4 +1,4 @@
-# NES Mappers
+ # NES Mappers
 # Format: Number|Name|Manufacturer|Mirroring
 # Number is always interpreted as decimal.
 
@@ -582,9 +582,37 @@
 442|||Unknown
 443|NC3000M multicart||Unknown
 444|NC7000M multicart (MMC3-compatible)||Unknown
+445|DG574B multicart (MMC3-compatible)||Unknown
+446|SMD172B_FPGA|Mindkids|Unknown
+447|KL-06 multicart (VRC4)||Unknown
+448|830768C multicart (VRC4)||Unknown
+449|Super Games King||Unknown
+
+# Mappers 450-459
+450|YY841157C multicart (VRC2)|J.Y. Company|Unknown
+451|Haratyler HP/MP||Unknown
+452|DS-9-27 multicart||Unknown
+453|Realtec 8042|Realtec|Unknown
+454|||Unknown
+455|||Unknown
+456|||Unknown
+457|||Unknown
+458|||Unknown
+459|||Unknown
+
+# Mappers 460-469
+460|||Unknown
+461|||Unknown
+462|||Unknown
+463|||Unknown
+464|||Unknown
+465|||Unknown
+466|||Unknown
+467|47-2 (MMC3)||Unknown
 
 ### NES 2.0 Plane 2 [512-767] ###
 
+# Mappers 512-519
 512|Zhōngguó Dàhēng|Sachen|Unknown
 513|Měi Shàonǚ Mèng Gōngchǎng III|Sachen|Unknown
 514|Subor Karaoke|Subor|Unknown
@@ -609,7 +637,7 @@
 # Mappers 530-539
 530|Super Mario Bros. Pocker Mali (VRC4f clone)||Unknown
 531|LittleCom PC-95|Asder|Unknown
-532|||Unknown
+532|CHINA_ER_SAN2||Unknown
 533|Sachen 3014|Sachen|Unknown
 534|2-in-1 Sudoku/Gomoku (NJ064) (MMC3 clone)||Unknown
 535|Nazo no Murasamejō (FDS conversion)|Whirlwind Manu|Unknown
@@ -625,11 +653,11 @@
 542|World Hero hack (VRC4 clone)||Unknown
 543|5-in-1 (CH-501) multicart (MMC1 clone)||Unknown
 544|Wàixīng FS306|Wàixīng|Unknown
-545|||Unknown
-546|||Unknown
+545|ST-80 (4-in-1)||Unknown
+546|10-in-1 Tenchi wo Kurau multicart||Unknown
 547|Konami QTa adapter (VRC5)|Konami|Unknown
 548|CTC-15|Co Tung Co.|Unknown
-549|||Unknown
+549|Meikyuu Jiin Dababa|Kaiser|Unknown
 
 # Mappers 550-559
 550|JY820845C|J.Y. Company|Unknown
