@@ -9,16 +9,39 @@ video game ROM and disc images.
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/GerbilSoft/rom-properties.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/GerbilSoft/rom-properties/alerts/)
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/GerbilSoft/rom-properties.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/GerbilSoft/rom-properties/context:cpp)
 
-## v1.9
+## v2.0 - Stella Edition
 
-This release adds a ton of new features, including ASTC and Godot textures,
-Commodore ROM cartridge images, and various performance improvements.
+![Stella attempting to use my ThinkPad X230](doc/img/PXL_20210905_210543493.jpg)
 
-![Godot 3 textures from Sonic Colors Ultimate](doc/img/rp-v1.9-kde5.GodotSTEX.SCU.png)
+This release is dedicated to my beagle, Stella, who sadly passed away on
+September 4, 2022.
+
+The main change in this release is a refactoring of the commmon core code
+into a shared library (DLL) in order to reduce the total size of the shell
+extension. A new libromdata.so.1 (romdata-1.dll on Windows) library now
+contains most of the common code, separate from the UI frontends that handle
+each UI (rpcli, KDE, GTK, Windows).
+
+Note that the libromdata ABI is *not* guaranteed to remain stable across
+releases, and it only exports symbols required for the UI frontends, not for
+general use with other programs. I will try to prevent major ABI breakages
+across releases, but if it happens, the SOVERSION will be incremented.
+
+String tables have also been refactored to use less memory and reduce the
+number of relocations, which improves startup performance.
+
+Aside from the low-level refactoring, there is now a GTK verson of rp-config
+for GTK desktops, Atari 7800 ROM header parsing, and assorted fixes for Lua,
+Nintendo 3DS, N64, and ELF, including fixes for big-endian systems.
+
+Translators needed; file an issue if you'd like to get started on a new
+translation, or submit a Pull Request if you have a translation ready to go.
+
+Other changes
 
 Translators needed; file an issue if you'd like to get started on a new translation, or submit a Pull Request if you have a translation ready to go.
 
-See [`NEWS.md`](NEWS.md) for a full list of changes in v1.9.
+See [`NEWS.md`](NEWS.md) for a full list of changes in v2.0.
 
 ## Feedback
 
