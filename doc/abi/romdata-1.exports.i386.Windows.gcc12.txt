@@ -77,7 +77,7 @@ T LibRpBase::cpN_to_utf16[abi:cxx11](unsigned int, char const*, int, unsigned in
 T LibRpBase::cpN_to_utf8[abi:cxx11](unsigned int, char const*, int, unsigned int)
 T LibRpBase::IconAnimHelper::nextFrame(int*)
 T LibRpBase::IconAnimHelper::reset()
-T LibRpBase::JSONROMOutput::JSONROMOutput(LibRpBase::RomData const*, unsigned int, bool)
+T LibRpBase::JSONROMOutput::JSONROMOutput(LibRpBase::RomData const*, unsigned int, unsigned int)
 T LibRpBase::KeyManager::getAndVerify(char const*, LibRpBase::KeyManager::KeyData_t*, unsigned char const*, unsigned int) const
 T LibRpBase::KeyManager::instance()
 T LibRpBase::KeyManager::verifyResultToString(LibRpBase::KeyManager::VerifyResult)
@@ -109,7 +109,7 @@ T LibRpBase::RomFields::tabName(int) const
 T LibRpBase::RomMetaData::count() const
 T LibRpBase::RomMetaData::empty() const
 T LibRpBase::RomMetaData::prop(int) const
-T LibRpBase::ROMOutput::ROMOutput(LibRpBase::RomData const*, unsigned int, bool)
+T LibRpBase::ROMOutput::ROMOutput(LibRpBase::RomData const*, unsigned int, unsigned int)
 T LibRpBase::RpImageLoader::load(LibRpFile::IRpFile*)
 T LibRpBase::RpPng::libpng_copyright_string()
 T LibRpBase::RpPng::libpng_has_APNG()
@@ -172,7 +172,10 @@ T LibRpFile::RpFile::RpFile(std::__cxx11::basic_string<char, std::char_traits<ch
 T LibRpFile::RpFile::scsi_inquiry(_SCSI_RESP_INQUIRY_STD*)
 T LibRpFile::RpFile::size()
 T LibRpFile::RpFile_windres::RpFile_windres(HINSTANCE__*, wchar_t const*, wchar_t const*)
+T LibRpFile::VectorFile::read(void*, unsigned int)
+T LibRpFile::VectorFile::seek(long long)
 T LibRpFile::VectorFile::VectorFile()
+T LibRpFile::VectorFile::write(void const*, unsigned int)
 T LibRpTexture::ImageDecoder::fromLinear16_cpp(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned short const*, unsigned int, int)
 T LibRpTexture::ImageDecoder::fromLinear16_sse2(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned short const*, unsigned int, int)
 T LibRpTexture::ImageDecoder::fromLinear24_cpp(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned char const*, unsigned int, int)
@@ -254,8 +257,10 @@ T w32err_to_posix
 V typeinfo for LibRomData::KeyStoreUI
 V typeinfo for LibRpBase::Config
 V typeinfo for LibRpBase::ConfReader
+V typeinfo for LibRpFile::VectorFile
 V typeinfo for LibRpTexture::rp_image_backend
 V vtable for LibRomData::KeyStoreUI
 V vtable for LibRpBase::Config
 V vtable for LibRpBase::ConfReader
+V vtable for LibRpFile::VectorFile
 V vtable for LibRpTexture::rp_image_backend

@@ -136,7 +136,7 @@ EXECUTE_PROCESS(COMMAND ${CMAKE_LINKER} --help
 	OUTPUT_VARIABLE _ld_out
 	ERROR_QUIET)
 
-FOREACH(FLAG_TEST "--sort-common" "--as-needed" "--build-id" "-Bsymbolic-functions")
+FOREACH(FLAG_TEST "--sort-common" "--as-needed" "--build-id" "-Bsymbolic-functions" "--no-undefined" "--no-allow-shlib-undefined")
 	IF(NOT DEFINED LDFLAG_${FLAG_TEST})
 		MESSAGE(STATUS "Checking if ld supports ${FLAG_TEST}")
 		IF(_ld_out MATCHES "${FLAG_TEST}")

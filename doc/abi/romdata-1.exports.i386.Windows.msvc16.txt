@@ -25,12 +25,14 @@ public: virtual __thiscall LibRpBase::Config::~Config(void)
 public: virtual __thiscall LibRomData::KeyStoreUI::~KeyStoreUI(void)
 public: __thiscall LibWin32Common::RegKey::~RegKey(void)
 public: __thiscall LibRpBase::RpPngWriter::~RpPngWriter(void)
+protected: virtual __thiscall LibRpFile::VectorFile::~VectorFile(void)
 public: virtual __thiscall LibRpTexture::rp_image_backend::~rp_image_backend(void)
 class std::basic_ostream<char,struct std::char_traits<char> > & __cdecl LibRpBase::operator<<(class std::basic_ostream<char,struct std::char_traits<char> > &,class LibRpBase::JSONROMOutput const &)
 class std::basic_ostream<char,struct std::char_traits<char> > & __cdecl LibRpBase::operator<<(class std::basic_ostream<char,struct std::char_traits<char> > &,class LibRpBase::ROMOutput const &)
 const LibRpBase::ConfReader::`vftable'
 const LibRpBase::Config::`vftable'
 const LibRomData::KeyStoreUI::`vftable'
+const LibRpFile::VectorFile::`vftable'
 const LibRpTexture::rp_image_backend::`vftable'
 bool __cdecl LibWin32Common::ComBase_isReferenced(void)
 int __cdecl LibRomData::CtrKeyScrambler::CtrScramble(union LibRomData::u128_t *,union LibRomData::u128_t const *,union LibRomData::u128_t const *,union LibRomData::u128_t const *)
@@ -42,6 +44,7 @@ public: static long __cdecl LibWin32Common::RegKey::RegisterFileType(wchar_t con
 void __cdecl GdiplusHelper::ShutdownGDIPlus(unsigned long)
 public: static long __cdecl LibWin32Common::RegKey::UnregisterComObject(struct _GUID const &,wchar_t const *)
 public: void __thiscall LibWin32Common::RegKey::__autoclassinit2(unsigned int)
+public: void __thiscall LibRpFile::VectorFile::__autoclassinit2(unsigned int)
 int __cdecl LibRpFile::FileSystem::access(char const *,int)
 public: static class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl LibRpBase::RomFields::ageRatingsDecode(class std::array<unsigned short,16> const *,bool)
 public: void __thiscall LibRomData::KeyStoreUI::allKeysSaved(void)
@@ -61,6 +64,7 @@ protected: void __thiscall LibRpTexture::rp_image_backend::clear_properties(void
 public: void __thiscall LibWin32Common::RegKey::close(void)
 public: virtual void __thiscall LibRpFile::RpFile::close(void)
 public: void __thiscall LibRpBase::RpPngWriter::close(void)
+public: virtual void __thiscall LibRpFile::VectorFile::close(void)
 public: int __thiscall LibRpBase::RomFields::count(void)const
 public: int __thiscall LibRpBase::RomMetaData::count(void)const
 class std::basic_string<char16_t,struct std::char_traits<char16_t>,class std::allocator<char16_t> > __cdecl LibRpBase::cpN_to_utf16(unsigned int,char const *,int,unsigned int)
@@ -97,6 +101,7 @@ public: virtual char const * __thiscall LibRpFile::RpFile::filename(void)const
 int __cdecl LibCacheCommon::filterCacheKey(char *)
 public: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __thiscall LibRomData::CacheManager::findInCache(class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const &)
 public: class LibRpTexture::rp_image * __thiscall LibRpTexture::rp_image::flip(enum LibRpTexture::rp_image::FlipOp)const
+public: virtual int __thiscall LibRpFile::VectorFile::flush(void)
 public: enum LibRpTexture::rp_image::Format __thiscall LibRpTexture::rp_image::format(void)const
 class LibRpTexture::rp_image * __cdecl LibRpTexture::ImageDecoder::fromLinear16_cpp(enum LibRpTexture::ImageDecoder::PixelFormat,int,int,unsigned short const * __restrict,unsigned int,int)
 class LibRpTexture::rp_image * __cdecl LibRpTexture::ImageDecoder::fromLinear16_sse2(enum LibRpTexture::ImageDecoder::PixelFormat,int,int,unsigned short const * __restrict,unsigned int,int)
@@ -152,6 +157,7 @@ public: bool __thiscall LibWin32Common::RegKey::isOpen(void)const
 public: bool __thiscall LibRpBase::RomData::isOpen(void)const
 public: virtual bool __thiscall LibRpFile::RpFile::isOpen(void)const
 public: bool __thiscall LibRpBase::RpPngWriter::isOpen(void)const
+public: virtual bool __thiscall LibRpFile::VectorFile::isOpen(void)const
 public: bool __thiscall LibRpTexture::rp_image::isSquare(void)const
 public: __int64 __thiscall LibRpBase::Achievements::isUnlocked(enum LibRpBase::Achievements::ID)const
 public: bool __thiscall LibRpBase::RomData::isValid(void)const
@@ -168,6 +174,7 @@ unsigned int __cdecl LibRpBase::RpPng::libpng_version_number(void)
 public: int __thiscall LibRpBase::ConfReader::load(bool)
 class LibRpTexture::rp_image * __cdecl LibRpBase::RpImageLoader::load(class LibRpFile::IRpFile *)
 class LibRpTexture::rp_image * __cdecl LibRpBase::RpPng::load(class LibRpFile::IRpFile *)
+public: virtual int __thiscall LibRpFile::VectorFile::makeWritable(void)
 public: class LibRpBase::RomMetaData const * __thiscall LibRpBase::RomData::metaData(void)const
 public: char const * __thiscall LibRpBase::RomData::mimeType(void)const
 public: int __thiscall LibRpBase::IconAnimHelper::nextFrame(int *)
@@ -179,6 +186,7 @@ public: static unsigned int __cdecl LibRpTexture::rp_image::premultiply_pixel(un
 public: struct LibRpBase::RomMetaData::MetaData const * __thiscall LibRpBase::RomMetaData::prop(int)const
 public: class std::basic_string<wchar_t,struct std::char_traits<wchar_t>,class std::allocator<wchar_t> > __thiscall LibWin32Common::RegKey::read(wchar_t const *,unsigned long *)const
 public: virtual unsigned int __thiscall LibRpFile::RpFile::read(void *,unsigned int)
+public: virtual unsigned int __thiscall LibRpFile::VectorFile::read(void *,unsigned int)
 public: unsigned long __thiscall LibWin32Common::RegKey::read_dword(wchar_t const *,unsigned long *)const
 public: class std::basic_string<wchar_t,struct std::char_traits<wchar_t>,class std::allocator<wchar_t> > __thiscall LibWin32Common::RegKey::read_expand(wchar_t const *,unsigned long *)const
 class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl LibRpFile::FileSystem::replace_ext(char const *,char const *)
@@ -201,6 +209,7 @@ public: int __thiscall LibRpFile::RpFile::scsi_inquiry(struct _SCSI_RESP_INQUIRY
 public: int __thiscall LibRomData::KeyStoreUI::sectCount(void)const
 public: int __thiscall LibRomData::KeyStoreUI::sectKeyToIdx(int,int)const
 public: char const * __thiscall LibRomData::KeyStoreUI::sectName(int)const
+public: virtual int __thiscall LibRpFile::VectorFile::seek(__int64)
 public: static void __cdecl LibRpTexture::rp_image::setBackendCreatorFn(class LibRpTexture::rp_image_backend * (__cdecl*)(int,int,enum LibRpTexture::rp_image::Format))
 public: int __thiscall LibRomData::KeyStoreUI::setKey(int,int,char const *)
 public: int __thiscall LibRomData::KeyStoreUI::setKey(int,char const *)
@@ -208,6 +217,7 @@ public: void __thiscall LibRpBase::Achievements::setNotifyFunction(int (__cdecl*
 public: void __thiscall LibRomData::CacheManager::setProxyUrl(char const *)
 public: bool __thiscall LibRpBase::Config::showDangerousPermissionsOverlayIcon(void)const
 public: virtual __int64 __thiscall LibRpFile::RpFile::size(void)
+public: virtual __int64 __thiscall LibRpFile::VectorFile::size(void)
 public: class LibRpTexture::rp_image * __thiscall LibRpTexture::rp_image::squared(void)const
 public: bool __thiscall LibRpBase::Config::storeFileOriginInfo(void)const
 public: int __thiscall LibRpTexture::rp_image::stride(void)const
@@ -218,6 +228,7 @@ unsigned int __cdecl LibRomData::ImageTypesConfig::sysCount(void)
 char const * __cdecl LibRomData::ImageTypesConfig::sysName(unsigned int)
 public: int __thiscall LibRpBase::RomFields::tabCount(void)const
 public: char const * __thiscall LibRpBase::RomFields::tabName(int)const
+public: virtual __int64 __thiscall LibRpFile::VectorFile::tell(void)
 public: struct HBITMAP__ * __thiscall LibRpTexture::RpGdiplusBackend::toHBITMAP(unsigned int,struct tagSIZE,bool)
 public: struct HBITMAP__ * __thiscall LibRpTexture::RpGdiplusBackend::toHBITMAP(unsigned long)
 public: struct HBITMAP__ * __thiscall LibRpTexture::RpGdiplusBackend::toHBITMAP_alpha(struct tagSIZE,bool)
@@ -232,11 +243,13 @@ class std::basic_string<char,struct std::char_traits<char>,class std::allocator<
 class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl LibRpBase::utf16be_to_utf8(char16_t const *,int)
 class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl LibRpBase::utf16le_to_utf8(char16_t const *,int)
 class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl LibRpBase::utf8_to_cpN(unsigned int,char const *,int)
+public: class std::vector<unsigned char,class std::allocator<unsigned char> > const & __thiscall LibRpFile::VectorFile::vector(void)const
 public: static char const * __cdecl LibRpBase::KeyManager::verifyResultToString(enum LibRpBase::KeyManager::VerifyResult)
 int __cdecl LibRpFile::FileSystem::waccess(wchar_t const *,int)
 public: int __thiscall LibRpTexture::rp_image::width(void)const
 public: long __thiscall LibWin32Common::RegKey::write(wchar_t const *,wchar_t const *,unsigned long)
 public: long __thiscall LibWin32Common::RegKey::write(wchar_t const *,class std::basic_string<wchar_t,struct std::char_traits<wchar_t>,class std::allocator<wchar_t> > const &,unsigned long)
+public: virtual unsigned int __thiscall LibRpFile::VectorFile::write(void const *,unsigned int)
 public: int __thiscall LibRpBase::RpPngWriter::write_IDAT(unsigned char const * const *,bool)
 public: int __thiscall LibRpBase::RpPngWriter::write_IDAT(void)
 public: int __thiscall LibRpBase::RpPngWriter::write_IHDR(struct LibRpTexture::rp_image::sBIT_t const *,unsigned int const *,unsigned int)
