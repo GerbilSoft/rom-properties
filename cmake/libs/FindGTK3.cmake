@@ -249,7 +249,7 @@ function(_GTK3_FIND_INCLUDE_DIR _var _hdr)
     set(_gtk_packages
         # If these ever change, things will break.
         ${GTK3_ADDITIONAL_SUFFIXES}
-        glibmm-3.0
+        glibmm-2.4
         glib-2.0
         atk-1.0
         atkmm-1.6
@@ -257,7 +257,7 @@ function(_GTK3_FIND_INCLUDE_DIR _var _hdr)
         cairomm-1.0
         gdk-pixbuf-2.0
         gdkmm-3.0
-        giomm-3.0
+        giomm-2.4
         gtk-3.0
         gtkmm-3.0
         harfbuzz
