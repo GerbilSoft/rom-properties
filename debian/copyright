@@ -11,6 +11,7 @@ Comment:
 
 Files:
  cmake/libs/FindGTK3.cmake
+ cmake/libs/FindGTK4.cmake
 Copyright: 2000-2022 Kitware, Inc. and Contributors
 License: BSD-3-clause
 
