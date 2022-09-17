@@ -13,18 +13,19 @@ FIND_PACKAGE(GObject2 ${REQUIRE_GTK4} ${GLIB_MIN_VERSION})
 FIND_PACKAGE(GIO ${REQUIRE_GTK4} ${GLIB_MIN_VERSION})
 FIND_PACKAGE(GIO-UNIX ${REQUIRE_GTK4} ${GLIB_MIN_VERSION})
 FIND_PACKAGE(GdkPixbuf2 ${REQUIRE_GTK})	# GTK4 doesn't support Cairo. (TODO: GdkTexture)
+FIND_PACKAGE(Pango ${REQUIRE_GTK4})
 FIND_PACKAGE(GTK4 ${REQUIRE_GTK4})
-IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf2_FOUND AND GTK4_FOUND)
+IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf2_FOUND AND Pango_FOUND AND GTK4_FOUND)
 	# We're not going to have an explicit dependency on libnautilus-extension.
 	# It will be dlopen()'d at runtime based on which
 	# initialization function is called.
 
 	# TODO: File browser extension libraries.
-ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf2_FOUND AND GTK4_FOUND)
+ELSE()
 	# GTK 4.x (or required dependencies) were not found.
 	# Disable the GTK4 frontend.
 	SET(BUILD_GTK4 OFF CACHE INTERNAL "Build the GTK 4.x plugin." FORCE)
-ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf2_FOUND AND GTK4_FOUND)
+ENDIF()
 
 # Ensure we don't use functions not available in GLib 2.44.
 # NOTE: GLib 2.44 added GListModel, which is needed by GTK4.
@@ -149,7 +150,7 @@ IF(BUILD_GTK4)
 		)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE glibresources)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE romdata)
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE GdkPixbuf2::gdkpixbuf2)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE GdkPixbuf2::gdkpixbuf2 Pango::pango)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC Gtk4::gtk4 GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
 	IF(HAVE_GSOUND)
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE GSound::gsound)
