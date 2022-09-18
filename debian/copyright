@@ -23,6 +23,13 @@ License: GPL-3
 Comment:
 
 Files:
+ src/span.hh
+Copyright:
+ 2022, Egor
+License: Apache-2.0 OR MIT
+Comment:
+
+Files:
  src/libromdata/Console/NES.cpp
  src/libromdata/Console/NES.hpp
  src/libromdata/Handheld/DMG.cpp

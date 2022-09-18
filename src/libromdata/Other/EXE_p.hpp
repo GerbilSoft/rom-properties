@@ -18,6 +18,7 @@
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector
 #include "uvector.h"
+#include "span.hh"
 
 // TinyXML2
 namespace tinyxml2 {
@@ -111,6 +112,32 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 		// NE target OSes.
 		// Also used for LE.
 		static const char *const NE_TargetOSes[6];
+
+		/**
+		 * Load the redisent portion of NE header
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int loadNEResident(void);
+
+		// Resident portion of NE header (up to the end of entry table)
+		ao::uvector<uint8_t> ne_resident;
+		bool ne_resident_loaded = false;
+		vhvc::span<uint8_t> ne_segment_table;
+		vhvc::span<uint8_t> ne_resource_table;
+		vhvc::span<uint8_t> ne_resident_name_table;
+		vhvc::span<uint8_t> ne_modref_table;
+		vhvc::span<uint8_t> ne_imported_name_table;
+		vhvc::span<uint8_t> ne_entry_table;
+
+		/**
+		 * Load the non-resident name table (NE)
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int loadNENonResidentNames(void);
+
+		// Contents of the non-resident name table (NE)
+		ao::uvector<uint8_t> ne_nonresident_name_table;
+		bool ne_nonresident_name_table_loaded = false;
 
 		/**
 		 * Load the NE resource table.

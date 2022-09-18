@@ -4,6 +4,7 @@
  * 16-bit New Executable format.                                           *
  *                                                                         *
  * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2022 by Egor.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -24,13 +25,12 @@ namespace LibRomData {
 /** EXEPrivate **/
 
 /**
- * Load the NE resource table.
- * @return 0 on success; negative POSIX error code on error. (-ENOENT if not found)
+ * Load the redisent portion of NE header
+ * @return 0 on success; negative POSIX error code on error.
  */
-int EXEPrivate::loadNEResourceTable(void)
+int EXEPrivate::loadNEResident(void)
 {
-	if (rsrcReader) {
-		// Resource reader is already initialized.
+	if (ne_resident_loaded) {
 		return 0;
 	} else if (!file || !file->isOpen()) {
 		// File isn't open.
@@ -43,49 +43,99 @@ int EXEPrivate::loadNEResourceTable(void)
 		return -ENOTSUP;
 	}
 
-	// NE resource table offset is relative to the start of the NE header.
-	// It must be >= the size of the NE header.
-	uint32_t ResTableOffset = le16_to_cpu(hdr.ne.ResTableOffset);
-	if (ResTableOffset < sizeof(NE_Header)) {
-		// Resource table cannot start in the middle of the NE header.
+	// Offsets in the NE header are relative to the start of the header.
+	const uint32_t ne_hdr_addr = le32_to_cpu(mz.e_lfanew);
+	const uint32_t entry_table_addr = le16_to_cpu(hdr.ne.EntryTableOffset);
+	const uint32_t ne_hdr_len = entry_table_addr + le16_to_cpu(hdr.ne.EntryTableLength);
+	ne_resident.resize(ne_hdr_len);
+	size_t nread = file->seekAndRead(ne_hdr_addr, ne_resident.data(), ne_resident.size());
+	if (nread != ne_resident.size())
+		return -EIO; // Short read
+
+	uint32_t end = ne_resident.size();
+	auto set_span = [this, &end](vhvc::span<uint8_t> &sp, auto offset) -> bool {
+		if (offset > end)
+			return true;
+		sp = vhvc::span<uint8_t>(ne_resident.data() + offset, end - offset);
+		end = offset;
+		return false;
+	};
+	// NOTE: The order of the tables in the resident part of NE header is fixed.
+	if (set_span(ne_entry_table,         entry_table_addr) ||
+	    set_span(ne_imported_name_table, le16_to_cpu(hdr.ne.ImportNameTable)) ||
+	    set_span(ne_modref_table,        le16_to_cpu(hdr.ne.ModRefTable)) ||
+	    set_span(ne_resident_name_table, le16_to_cpu(hdr.ne.ResidNamTable)) ||
+	    set_span(ne_resource_table,      le16_to_cpu(hdr.ne.ResTableOffset)) ||
+	    set_span(ne_segment_table,       le16_to_cpu(hdr.ne.SegTableOffset)) ||
+	    end < sizeof(NE_Header)) {
 		return -EIO;
 	}
 
-	// Check for the lowest non-zero offset after ResTableOffset.
-	// This will be used for the resource table size.
-	uint32_t maxOffset = 0;
-	uint32_t resTableSize = 0;
-	{
-		#define TABLE_CHECK(var) do { \
-			const uint32_t var = le16_to_cpu(hdr.ne.var); \
-			if (var != 0 && var > ResTableOffset && \
-			    (maxOffset == 0 || var < maxOffset)) \
-			{ \
-				maxOffset = var; \
-			} \
-		} while (0)
-		TABLE_CHECK(SegTableOffset);
-		TABLE_CHECK(ResidNamTable);
-		TABLE_CHECK(ModRefTable);
-		TABLE_CHECK(ImportNameTable);
-		// TODO: OffStartNonResTab is from the start of the file.
-		// Not sure if we need to check it.
+	ne_resident_loaded = true;
 
-		if (maxOffset != 0 && maxOffset > ResTableOffset) {
-			// Found a valid maximum.
-			resTableSize = maxOffset - ResTableOffset;
-		}
+	return 0;
+}
+
+
+/**
+ * Load the non-resident name table
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int EXEPrivate::loadNENonResidentNames(void)
+{
+	if (ne_nonresident_name_table_loaded) {
+		return 0;
+	} else if (!file || !file->isOpen()) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!isValid) {
+		// Unknown executable type.
+		return -EIO;
+	} else if (exeType != ExeType::NE) {
+		// Unsupported executable type.
+		return -ENOTSUP;
+	}
+	ne_nonresident_name_table.resize(le16_to_cpu(hdr.ne.NoResNamesTabSiz));
+	size_t nread = file->seekAndRead(le32_to_cpu(hdr.ne.OffStartNonResTab),
+		ne_nonresident_name_table.data(),
+		ne_nonresident_name_table.size());
+	if (nread != ne_nonresident_name_table.size())
+		return -EIO; // Short read
+	ne_nonresident_name_table_loaded = true;
+	return 0;
+}
+/**
+ * Load the NE resource table.
+ * @return 0 on success; negative POSIX error code on error. (-ENOENT if not found)
+ */
+int EXEPrivate::loadNEResourceTable(void)
+{
+	if (rsrcReader) {
+		// Resource reader is already initialized.
+		return 0;
+	}
+	int res = loadNEResident();
+	if (res < 0)
+		return res;
+	if (!file || !file->isOpen()) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!isValid) {
+		// Unknown executable type.
+		return -EIO;
+	} else if (exeType != ExeType::NE) {
+		// Unsupported executable type.
+		return -ENOTSUP;
 	}
 
-	// Adjust ResTableOffset to make it an absolute address.
-	ResTableOffset += le16_to_cpu(mz.e_lfanew);
-
-	// Check if a size is known.
-	if (resTableSize == 0) {
-		// Not known. Go with the file size.
-		// NOTE: Limited to 32-bit file sizes.
-		resTableSize = static_cast<uint32_t>(file->size()) - ResTableOffset;
+	// FIXME: NEResourceReader should be able to just take ne_resource_table.
+	// NE resource table offset is relative to the start of the NE header.
+	uint32_t ResTableOffset = le16_to_cpu(mz.e_lfanew) + le16_to_cpu(hdr.ne.ResTableOffset);
+	if (ResTableOffset < le16_to_cpu(mz.e_lfanew)) {
+		// Offse overflow
+		return -EIO;
 	}
+	uint32_t resTableSize = ne_resource_table.size();
 
 	// Load the resources using NEResourceReader.
 	rsrcReader = new NEResourceReader(file, ResTableOffset, resTableSize);
@@ -114,67 +164,23 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 	refLink.clear();
 	refHasKernel = false;
 
-	if (!file || !file->isOpen()) {
-		// File isn't open.
-		return -EBADF;
-	} else if (!isValid) {
-		// Unknown executable type.
-		return -EIO;
-	}
+	int res = loadNEResident();
+	if (res < 0)
+		return res;
 
-	// Offsets in the NE header are relative to the start of the header.
-	const uint32_t ne_hdr_addr = le32_to_cpu(mz.e_lfanew);
-
-	// Load the module references and imported names tables.
-	// NOTE: The order of the tables in the resident part of NE header is
-	// fixed, with module reference, import name, and entry tables being
-	// the last three tables within the resident area.
 	const unsigned int modRefs = le16_to_cpu(hdr.ne.ModRefs);
-	const unsigned int modRefTable_addr = ne_hdr_addr + le16_to_cpu(hdr.ne.ModRefTable);
-	const unsigned int importNameTable_addr = ne_hdr_addr + le16_to_cpu(hdr.ne.ImportNameTable);
-	const unsigned int entryTable_addr = ne_hdr_addr + le16_to_cpu(hdr.ne.EntryTableOffset);
 
 	if (modRefs == 0) {
 		// No module references.
 		return -ENOENT;
-	} else if (modRefTable_addr < ne_hdr_addr || importNameTable_addr < ne_hdr_addr || entryTable_addr < ne_hdr_addr) {
-		// One of the addresses is out of range.
+	}
+	if (modRefs*2 > ne_modref_table.size()) {
 		return -EIO;
 	}
 
-	// Check for overlapping tables
-	if (modRefTable_addr + modRefs*2 > importNameTable_addr)
-		return -EIO;
-
-	// Check ordering
-	if (modRefTable_addr > importNameTable_addr)
-		return -EIO;
-	if (importNameTable_addr > entryTable_addr)
-		return -EIO;
-
-	const uint32_t nameTable_size = entryTable_addr - importNameTable_addr;
-	const uint32_t read_size = entryTable_addr - modRefTable_addr;
-
-	unique_ptr<uint8_t[]> tbls(new uint8_t[read_size]);
-	size_t size = file->seekAndRead(modRefTable_addr, tbls.get(), read_size);
-	if (size != read_size) {
-		// Error reading the tables.
-		// NOTE: Even with the extra padding, this shouldn't happen,
-		// since there's executable code afterwards...
-		return -EIO;
-	}
-
-	const uint16_t *pModRefTable;
-	char *pNameTable;
-	if (modRefTable_addr < importNameTable_addr) {
-		// ModRefTable is first.
-		pModRefTable = reinterpret_cast<const uint16_t*>(tbls.get());
-		pNameTable = reinterpret_cast<char*>(&tbls[importNameTable_addr - modRefTable_addr]);
-	} else {
-		// ImportNameTable is first.
-		pNameTable = reinterpret_cast<char*>(tbls.get());
-		pModRefTable = reinterpret_cast<const uint16_t*>(&tbls[modRefTable_addr - importNameTable_addr]);
-	}
+	const uint16_t *pModRefTable = reinterpret_cast<const uint16_t*>(ne_modref_table.data());
+	char *pNameTable = reinterpret_cast<char*>(ne_imported_name_table.data());
+	const uint32_t nameTable_size = ne_imported_name_table.size();
 
 	// Convert the name table to uppercase for comparison purposes.
 	// NOTE: Uppercase due to DOS/Win16 conventions. PE uses lowercase.
@@ -464,40 +470,12 @@ void EXEPrivate::addFields_NE(void)
  */
 int EXEPrivate::addFields_NE_Entry(void)
 {
-	if (!file || !file->isOpen()) {
-		// File isn't open.
-		return -EBADF;
-	} else if (!isValid) {
-		// Unknown executable type.
-		return -EIO;
-	}
-
-	// Offsets in the NE header are relative to the start of the header.
-	const uint32_t ne_hdr_addr = le32_to_cpu(mz.e_lfanew);
-	const uint32_t enttab_off = ne_hdr_addr + le16_to_cpu(hdr.ne.EntryTableOffset);
-	const uint16_t enttab_len = le16_to_cpu(hdr.ne.EntryTableLength);
-
-	ao::uvector<uint8_t> enttab;
-	enttab.resize(enttab_len);
-	size_t nread = file->seekAndRead(enttab_off, enttab.data(), enttab.size());
-	if (nread != enttab.size())
-		return -EIO; // Short read
-
-	const uint32_t restab_off = ne_hdr_addr + le16_to_cpu(hdr.ne.ResidNamTable);
-	const uint16_t restab_len = le16_to_cpu(hdr.ne.ModRefTable) - le16_to_cpu(hdr.ne.ResidNamTable);
-	ao::uvector<uint8_t> restab;
-	restab.resize(restab_len);
-	nread = file->seekAndRead(restab_off, restab.data(), restab.size());
-	if (nread != restab.size())
-		return -EIO; // Short read
-
-	const uint32_t nrestab_off = le32_to_cpu(hdr.ne.OffStartNonResTab);
-	const uint16_t nrestab_len = le16_to_cpu(hdr.ne.NoResNamesTabSiz);
-	ao::uvector<uint8_t> nrestab;
-	nrestab.resize(nrestab_len);
-	nread = file->seekAndRead(nrestab_off, nrestab.data(), nrestab.size());
-	if (nread != nrestab.size())
-		return -EIO; // Short read
+	int res = loadNEResident();
+	if (res < 0)
+		return res;
+	res = loadNENonResidentNames();
+	if (res < 0)
+		return res;
 
 	struct Entry {
 		uint16_t ordinal;
@@ -512,16 +490,16 @@ int EXEPrivate::addFields_NE_Entry(void)
 	vector<Entry> ents;
 
 	// Read entry table
-	auto p = enttab.begin();
+	auto p = ne_entry_table.begin();
 	for (int ordinal = 1;;) {
 		// Entry table consists of bundles of symbols
 		// Each bundle is starts with count and segment of the symbols
-		if (p >= enttab.end())
+		if (p >= ne_entry_table.end())
 			return -ENOENT;
 		uint16_t bundle_count = *p++;
 		if (bundle_count == 0)
 			break; // end of table
-		if (p >= enttab.end())
+		if (p >= ne_entry_table.end())
 			return -ENOENT;
 		uint16_t bundle_segment = *p++;
 		switch (bundle_segment) {
@@ -534,7 +512,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 			 * - DB flags
 			 * - DW offset
 			 * 0xFE is used for constants.*/
-			if (p + bundle_count*3 > enttab.end())
+			if (p + bundle_count*3 > ne_entry_table.end())
 				return -ENOENT;
 			for (int i = 0; i < bundle_count; i++) {
 				Entry ent;
@@ -554,7 +532,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 			 * - DW INT 3F
 			 * - DB segment
 			 * - DW offset */
-			if (p + bundle_count*6 > enttab.end())
+			if (p + bundle_count*6 > ne_entry_table.end())
 				return -ENOENT;
 			for (int i = 0; i < bundle_count; i++) {
 				if (p[1] != 0xCD && p[2] != 0x3F) // INT 3Fh
@@ -625,11 +603,10 @@ int EXEPrivate::addFields_NE_Entry(void)
 	};
 
 	// Read names
-	int res;
-	res = readNames(restab.begin(), restab.end(), true);
+	res = readNames(ne_resident_name_table.begin(), ne_resident_name_table.end(), true);
 	if (res)
 		return res;
-	res = readNames(nrestab.begin(), nrestab.end(), false);
+	res = readNames(ne_nonresident_name_table.begin(), ne_nonresident_name_table.end(), true);
 	if (res)
 		return res;
 
