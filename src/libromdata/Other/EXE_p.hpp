@@ -122,12 +122,12 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 		// Resident portion of NE header (up to the end of entry table)
 		ao::uvector<uint8_t> ne_resident;
 		bool ne_resident_loaded = false;
-		vhvc::span<uint8_t> ne_segment_table;
-		vhvc::span<uint8_t> ne_resource_table;
-		vhvc::span<uint8_t> ne_resident_name_table;
-		vhvc::span<uint8_t> ne_modref_table;
-		vhvc::span<uint8_t> ne_imported_name_table;
-		vhvc::span<uint8_t> ne_entry_table;
+		vhvc::span<const uint8_t> ne_segment_table;
+		vhvc::span<const uint8_t> ne_resource_table;
+		vhvc::span<const uint8_t> ne_resident_name_table;
+		vhvc::span<const uint8_t> ne_modref_table;
+		vhvc::span<const uint8_t> ne_imported_name_table;
+		vhvc::span<const uint8_t> ne_entry_table;
 
 		/**
 		 * Load the non-resident name table (NE)

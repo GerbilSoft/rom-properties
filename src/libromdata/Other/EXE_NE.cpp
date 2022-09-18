@@ -53,10 +53,10 @@ int EXEPrivate::loadNEResident(void)
 		return -EIO; // Short read
 
 	uint32_t end = ne_resident.size();
-	auto set_span = [this, &end](vhvc::span<uint8_t> &sp, auto offset) -> bool {
+	auto set_span = [this, &end](vhvc::span<const uint8_t> &sp, auto offset) -> bool {
 		if (offset > end)
 			return true;
-		sp = vhvc::span<uint8_t>(ne_resident.data() + offset, end - offset);
+		sp = vhvc::span<const uint8_t>(ne_resident.data() + offset, end - offset);
 		end = offset;
 		return false;
 	};
@@ -179,7 +179,7 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 	}
 
 	const uint16_t *pModRefTable = reinterpret_cast<const uint16_t*>(ne_modref_table.data());
-	const char *pNameTable = reinterpret_cast<char*>(ne_imported_name_table.data());
+	const char *pNameTable = reinterpret_cast<const char*>(ne_imported_name_table.data());
 	const uint32_t nameTable_size = ne_imported_name_table.size();
 
 	// Visual Basic DLL version to display version table.
