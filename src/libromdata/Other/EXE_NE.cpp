@@ -505,8 +505,8 @@ int EXEPrivate::addFields_NE_Entry(void)
 		uint8_t segment;
 		uint16_t offset;
 		bool is_movable;
-		bool is_resident;
 		bool has_name;
+		bool is_resident;
 		string name;
 	};
 	vector<Entry> ents;
@@ -543,6 +543,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 				ent.segment = bundle_segment;
 				ent.offset = p[1] | p[2]<<8;
 				ent.is_movable = false;
+				ent.has_name = false;
 				ents.push_back(ent);
 				p += 3;
 			}
@@ -564,6 +565,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 				ent.segment = p[3];
 				ent.offset = p[4] | p[5]<<8;
 				ent.is_movable = true;
+				ent.has_name = false;
 				ents.push_back(ent);
 				p += 6;
 			}
@@ -654,7 +656,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 		 * actually used. */
 		if (ent.flags & 0xF8)
 			flags += rp_sprintf(" PARAMS=%d", ent.flags>>3);
-		if (ent.is_resident)
+		if (ent.has_name && ent.is_resident)
 			flags += " RESIDENTNAME";
 		flags.erase(0, 1);
 
