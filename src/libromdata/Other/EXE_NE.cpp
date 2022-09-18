@@ -477,7 +477,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 		bool is_movable;
 		bool has_name;
 		bool is_resident;
-		string name;
+		vhvc::span<const char> name;
 	};
 	vector<Entry> ents;
 
@@ -547,7 +547,9 @@ int EXEPrivate::addFields_NE_Entry(void)
 	 * more entries, so we must remember the original size so we can do
 	 * a binary search. */
 	size_t last = ents.size();
-	auto readNames = [&](const uint8_t *p, const uint8_t *end, bool is_resident) -> int {
+	auto readNames = [&](vhvc::span<const uint8_t> sp, bool is_resident) -> int {
+		const uint8_t *p = sp.data();
+		const uint8_t *const end = sp.data() + sp.size();
 		if (p == end)
 			return -ENOENT;
 		/* Skip first string. For resident strings it's module name, and
@@ -560,7 +562,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 			uint8_t len = *p++;
 			if (p + len + 2 >= end) // next length byte >= end
 				return -ENOENT;
-			string name(reinterpret_cast<const char *>(p), len);
+			vhvc::span<const char> name(reinterpret_cast<const char *>(p), len);
 			uint16_t ordinal = p[len] | p[len+1]<<8;
 
 			// binary search for the ordinal
@@ -575,17 +577,14 @@ int EXEPrivate::addFields_NE_Entry(void)
 
 			if (it->has_name) {
 				// This ordinal already has a name.
-				// Temporarily move the old name out to avoid a copy.
-				string oldname = std::move(it->name);
 				// Duplicate the entry, replace name in the copy.
 				Entry ent = *it;
-				it->name = std::move(oldname);
-				ent.name = std::move(name);
+				ent.name = name;
 				ent.is_resident = is_resident;
-				ents.push_back(std::move(ent)); // `it` is invalidated here
+				ents.push_back(ent); // `it` is invalidated here
 			} else {
 				it->has_name = true;
-				it->name = std::move(name);
+				it->name = name;
 				it->is_resident = is_resident;
 			}
 
@@ -595,10 +594,10 @@ int EXEPrivate::addFields_NE_Entry(void)
 	};
 
 	// Read names
-	res = readNames(ne_resident_name_table.begin(), ne_resident_name_table.end(), true);
+	res = readNames(ne_resident_name_table, true);
 	if (res)
 		return res;
-	res = readNames(ne_nonresident_name_table.begin(), ne_nonresident_name_table.end(), true);
+	res = readNames(ne_nonresident_name_table, true);
 	if (res)
 		return res;
 
@@ -630,7 +629,10 @@ int EXEPrivate::addFields_NE_Entry(void)
 		flags.erase(0, 1);
 
 		row.emplace_back(rp_sprintf("%d", ent.ordinal));
-		row.emplace_back(ent.has_name ? ent.name : C_("EXE|Exports", "(No name)"));
+		if (ent.has_name)
+			row.emplace_back(string(ent.name.data(), ent.name.size()));
+		else
+			row.emplace_back(C_("EXE|Exports", "(No name)"));
 		if (ent.is_movable)
 			row.emplace_back(rp_sprintf(C_("EXE|Exports", "%02X:%04X (Movable)"),
 				ent.segment, ent.offset));
