@@ -436,6 +436,19 @@ void EXEPrivate::addFields_NE(void)
 		fields->addField_string(C_("EXE", "Runtime DLL"), runtime_dll);
 	}
 
+	// Module Name and Module Description.
+	auto get_first_string = [](vhvc::span<const uint8_t> sp, string &out) -> bool {
+		if (sp.size() == 0 || sp[0] == 0 || sp.size() - 1 < sp[0])
+			return false;
+		out = string(reinterpret_cast<const char*>(sp.data() + 1), sp[0]);
+		return true;
+	};
+	string module_name, module_desc;
+	if (loadNEResident() == 0 && get_first_string(ne_resident_name_table, module_name))
+		fields->addField_string(C_("EXE", "Module Name"), module_name);
+	if (loadNENonResidentNames() == 0 && get_first_string(ne_nonresident_name_table, module_desc))
+		fields->addField_string(C_("EXE", "Module Description"), module_desc);
+
 	// Load resources.
 	ret = loadNEResourceTable();
 	if (ret == 0 && rsrcReader) {
