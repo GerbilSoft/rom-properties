@@ -152,7 +152,7 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 	if (importNameTable_addr > entryTable_addr)
 		return -EIO;
 
-	const uint32_t nameTable_size = entryTable_addr - modRefTable_addr;
+	const uint32_t nameTable_size = entryTable_addr - importNameTable_addr;
 	const uint32_t read_size = entryTable_addr - modRefTable_addr;
 
 	unique_ptr<uint8_t[]> tbls(new uint8_t[read_size]);
