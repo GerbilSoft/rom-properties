@@ -178,9 +178,12 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 		return -EIO;
 	}
 
-	const uint16_t *pModRefTable = reinterpret_cast<const uint16_t*>(ne_modref_table.data());
-	const char *pNameTable = reinterpret_cast<const char*>(ne_imported_name_table.data());
-	const uint32_t nameTable_size = ne_imported_name_table.size();
+	vhvc::span<const uint16_t> modRefTable(
+		reinterpret_cast<const uint16_t*>(ne_modref_table.data()),
+		modRefs);
+	vhvc::span<const char> nameTable(
+		reinterpret_cast<const char*>(ne_imported_name_table.data()),
+		ne_imported_name_table.size());
 
 	// Visual Basic DLL version to display version table.
 	static const struct {
@@ -197,26 +200,24 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 	};
 
 	// FIXME: Alignment?
-	const uint16_t *pModRef = pModRefTable;
-	const uint16_t *const pModRefEnd = &pModRef[modRefs];
-	for (; pModRef < pModRefEnd; pModRef++) {
-		const unsigned int nameOffset = le16_to_cpu(*pModRef);
-		assert(nameOffset < nameTable_size);
-		if (nameOffset >= nameTable_size) {
+	for (uint16_t modRef : modRefTable) {
+		const unsigned int nameOffset = le16_to_cpu(modRef);
+		assert(nameOffset < nameTable.size());
+		if (nameOffset >= nameTable.size()) {
 			// Out of range.
 			// TODO: Return an error?
 			break;
 		}
 
-		const uint8_t count = pNameTable[nameOffset];
-		assert(nameOffset + 1 + count < nameTable_size);
-		if (nameOffset + 1 + count >= nameTable_size) {
+		const uint8_t count = static_cast<uint8_t>(nameTable[nameOffset]);
+		assert(nameOffset + 1 + count < nameTable.size());
+		if (nameOffset + 1 + count >= nameTable.size()) {
 			// Out of range.
 			// TODO: Return an error?
 			break;
 		}
 
-		const char *const pDllName = reinterpret_cast<const char*>(&pNameTable[nameOffset + 1]);
+		const char *const pDllName = &nameTable[nameOffset + 1];
 
 		// Check the DLL name.
 		// TODO: More checks.
