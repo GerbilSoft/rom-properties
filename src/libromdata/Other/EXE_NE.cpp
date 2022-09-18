@@ -179,17 +179,8 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 	}
 
 	const uint16_t *pModRefTable = reinterpret_cast<const uint16_t*>(ne_modref_table.data());
-	char *pNameTable = reinterpret_cast<char*>(ne_imported_name_table.data());
+	const char *pNameTable = reinterpret_cast<char*>(ne_imported_name_table.data());
 	const uint32_t nameTable_size = ne_imported_name_table.size();
-
-	// Convert the name table to uppercase for comparison purposes.
-	// NOTE: Uppercase due to DOS/Win16 conventions. PE uses lowercase.
-	{
-		char *const p_end = &pNameTable[nameTable_size];
-		for (char *p = pNameTable; p < p_end; p++) {
-			if (*p >= 'a' && *p <= 'z') *p &= ~0x20;
-		}
-	}
 
 	// Visual Basic DLL version to display version table.
 	static const struct {
@@ -239,7 +230,7 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 			// This is needed in order to distinguish between really old
 			// OS/2 and Windows executables target OS == 0.
 			// Reference: https://github.com/wine-mirror/wine/blob/ba9f3dc198dfc81bb40159077b73b797006bb73c/dlls/kernel32/module.c#L262
-			if (!strncmp(pDllName, "KERNEL", 6)) {
+			if (!strncasecmp(pDllName, "KERNEL", 6)) {
 				// Found KERNEL.
 				refHasKernel = true;
 				if (!refDesc.empty())
@@ -250,7 +241,7 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 			// NOTE: There's only three 32-bit versions of Visual Basic,
 			// and .NET versions don't count.
 			for (const auto &p : msvb_dll_tbl) {
-				if (!strncmp(pDllName, p.dll_name, sizeof(p.dll_name))) {
+				if (!strncasecmp(pDllName, p.dll_name, sizeof(p.dll_name))) {
 					// Found a matching version.
 					refDesc = rp_sprintf(C_("EXE|Runtime", "Microsoft Visual Basic %u.%u Runtime"),
 						p.ver_major, p.ver_minor);
