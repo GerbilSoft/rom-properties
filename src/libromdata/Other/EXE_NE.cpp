@@ -210,9 +210,8 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 		}
 
 		const uint8_t count = static_cast<uint8_t>(nameTable[nameOffset]);
-		// FIXME: This assertion happens on EXEs that don't use a VB runtime.
-		//assert(nameOffset + 1 + count < nameTable.size());
-		if (nameOffset + 1 + count >= nameTable.size()) {
+		assert(nameOffset + 1 + count <= nameTable.size());
+		if (nameOffset + 1 + count > nameTable.size()) {
 			// Out of range.
 			// TODO: Return an error?
 			break;
@@ -580,7 +579,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 			return -ENOENT;
 
 		while (*p) {
-			size_t len = *p++;
+			uint8_t len = *p++;
 			if (p + len + 2 >= end) // next length byte >= end
 				return -ENOENT;
 			vhvc::span<const char> name(reinterpret_cast<const char *>(p), len);

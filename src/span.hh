@@ -52,47 +52,49 @@ namespace vhvc {
 		struct extent_eq: std::enable_if<E == dynamic_extent || E == N, int> {};
 
 		// checks that It is contiguous iterator
+		template<class It, class = void>
+		struct is_citer_impl: std::false_type {};
 		template<class It>
-		auto is_citer_impl(int) -> decltype(std::addressof(*std::declval<It>()), std::true_type());
+		struct is_citer_impl<It, decltype(void(std::addressof(*std::declval<It>())))>: std::true_type {};
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
 		template<class It>
-		auto is_citer_impl(...) -> std::false_type;
-#if !defined(_MSC_VER) || _MSC_VER >= 1914
-		template<class It>
-		struct is_citer: std::enable_if<decltype(is_citer_impl<It>(0))::value, int> {};
+		struct is_citer: std::enable_if<is_citer_impl<It>::value, int> {};
 #else
-		// FIXME: std::enable_if<decltype()::value, int> is broken on MSVC earlier than 19.14.
+		// FIXME: before which version of MSVC exactly is this needed?
 		template<class It>
 		struct is_citer: std::enable_if<true, int> {};
 #endif
 
 		// checks that It is contiguous iterator and End is a corresponding end iterator
+		template<class It, class End, class = void>
+		struct is_citer_pair_impl: std::false_type {};
 		template<class It, class End>
-		auto is_citer_pair_impl(int) -> decltype(std::declval<End>() - std::declval<It>(), std::true_type());
-		template<class It, class End>
-		auto is_citer_pair_impl(...) -> std::false_type;
-#if !defined(_MSC_VER) || _MSC_VER >= 1914
+		struct is_citer_pair_impl<It, End, decltype(void(std::declval<End>() - std::declval<It>()))>: std::true_type {};
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
 		template<class It, class End>
 		struct is_citer_pair: std::enable_if<
-				decltype(is_citer_impl<It>(0))::value &&
-				decltype(is_citer_pair_impl<It, End>(0))::value &&
+				is_citer_impl<It>::value &&
+				is_citer_pair_impl<It, End>::value &&
 				!std::is_convertible<End, size_t>::value,
 			int> {};
 #else
-		// FIXME: std::enable_if<decltype()::value, int> is broken on MSVC earlier than 19.14.
+		// FIXME: before which version of MSVC exactly is this needed?
 		template<class It, class End>
-		struct is_citer_pair: std::enable_if<true, int> {};
+		struct is_citer_pair: std::enable_if<
+				!std::is_convertible<End, size_t>::value,
+			int> {};
 #endif
 
 		// checks that R is a contiguous, sized range, but not a span or std::array
+		template<class R, class = void>
+		struct is_range_impl: std::false_type {};
 		template<class R>
-		auto is_range_impl(int) -> decltype(std::declval<R>().data(), std::declval<R>().size(), std::true_type());
+		struct is_range_impl<R, decltype(void((std::declval<R>().data(), std::declval<R>().size())))>: std::true_type {};
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
 		template<class R>
-		auto is_range_impl(...) -> std::false_type;
-#if !defined(_MSC_VER) || _MSC_VER >= 1914
-		template<class R>
-		struct is_range: std::enable_if<decltype(is_range_impl<R>(0))::value, int> {};
+		struct is_range: std::enable_if<is_range_impl<R>::value, int> {};
 #else
-		// FIXME: std::enable_if<decltype()::value, int> is broken on MSVC earlier than 19.14.
+		// FIXME: before which version of MSVC exactly is this needed?
 		template<class It>
 		struct is_range: std::enable_if<true, int> {};
 #endif
@@ -146,10 +148,8 @@ namespace vhvc {
 		constexpr span() noexcept :span::base(0), data_(nullptr) {}
 		template<class It, SPANCK(is_citer<It>)>
 		constexpr span(It first, size_type count) :span::base(count), data_(std::addressof(*first)) {}
-#if !defined(_MSC_VER) || _MSC_VER >= 1914
 		template<class It, class End, SPANCK(is_citer_pair<It, End>)>
 		constexpr span(It first, End last) :span::base(last - first), data_(std::addressof(*first)) {}
-#endif
 		template<size_t N, size_t E = Extent, SPANCK(extent_eq<E, N>)>
 		constexpr span(typename span_impl::type_identity<element_type>::type (&arr)[N]) noexcept :span::base(N), data_(arr) {}
 		template<class T, size_t N, size_t E = Extent, SPANCK(extent_eq<E, N>)>
