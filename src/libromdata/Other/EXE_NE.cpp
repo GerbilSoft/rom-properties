@@ -210,7 +210,8 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 		}
 
 		const uint8_t count = static_cast<uint8_t>(nameTable[nameOffset]);
-		assert(nameOffset + 1 + count < nameTable.size());
+		// FIXME: This assertion happens on EXEs that don't use a VB runtime.
+		//assert(nameOffset + 1 + count < nameTable.size());
 		if (nameOffset + 1 + count >= nameTable.size()) {
 			// Out of range.
 			// TODO: Return an error?
