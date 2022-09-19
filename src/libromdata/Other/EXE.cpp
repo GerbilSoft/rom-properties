@@ -955,7 +955,7 @@ int EXE::loadFieldData(void)
 
 	// Maximum number of fields:
 	// - MZ: 7
-	// - NE: 9
+	// - NE: 10
 	// - PE: 8
 	//   - PE Version: +6
 	//   - PE Manifest: +12
