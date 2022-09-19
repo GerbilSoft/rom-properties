@@ -328,7 +328,7 @@ public:
 		unique_ptr<size_t[]> colSize(new size_t[col_count]());
 		size_t totalWidth = col_count + 1;
 		if (listDataDesc.names) {
-			int i = 0;
+			unsigned int i = 0;
 			for (const string &name : *(listDataDesc.names)) {
 				colSize[i] = utf8_disp_strlen(name);
 				i++;
@@ -336,6 +336,7 @@ public:
 		}
 
 		// Row data
+		// FIXME: Handle control characters (U+0000-U+001F) as fullwidth.
 		unique_ptr<unsigned int[]> nl_count(new unsigned int[pListData->size()]());
 		unsigned int row = 0;
 		const auto pListData_cend = pListData->cend();

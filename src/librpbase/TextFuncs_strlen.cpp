@@ -90,7 +90,14 @@ size_t utf8_disp_strlen(const char *str, size_t max_len)
 		}
 
 		// Check the character width.
-		len += wcwidth(uchr);
+		const int w = wcwidth(uchr);
+		if (likely(w >= 0)) {
+			len += w;
+		} else {
+			// Probably a control character. (U+0000-U+001F)
+			// FIXME: Convert to U+2400-U+241F before-hand to get the correct width.
+			len++;
+		}
 	}
 
 	return len;
