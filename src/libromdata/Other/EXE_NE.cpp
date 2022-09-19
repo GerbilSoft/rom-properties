@@ -580,10 +580,10 @@ int EXEPrivate::addFields_NE_Entry(void)
 			return -ENOENT;
 
 		while (*p) {
-			uint8_t len = *p++;
+			size_t len = *p++;
 			if (p + len + 2 >= end) // next length byte >= end
 				return -ENOENT;
-			vhvc::span<const char> name(reinterpret_cast<const char *>(p), static_cast<size_t>(len));
+			vhvc::span<const char> name(reinterpret_cast<const char *>(p), len);
 			uint16_t ordinal = p[len] | p[len+1]<<8;
 
 			// binary search for the ordinal
