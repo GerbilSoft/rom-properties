@@ -665,12 +665,12 @@ int EXEPrivate::addFields_NE_Entry(void)
 		row.emplace_back(flags);
 	}
 
-	// tr: this is the EXE NE equivalent of EXE PE export table
-	fields->addTab(C_("EXE", "Entries"));
-	fields->reserve(1);
-
 	// Create the tab if we have any exports.
-	if (vv_data->size()) {
+	if (!vv_data->empty()) {
+		// tr: this is the EXE NE equivalent of EXE PE export table
+		fields->addTab(C_("EXE", "Entries"));
+		fields->reserve(1);
+
 		static const char *const field_names[] = {
 			NOP_C_("EXE|Exports", "Ordinal"),
 			NOP_C_("EXE|Exports", "Name"),
