@@ -1,15 +1,21 @@
-// SPDX-License-Identifier: Apache-2.0 OR MIT
-// Copyright (c) 2022 Egor
+/**
+ * std::span<> implementation for older compilers.
+ * Copyright (c) 2022 Egor
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ */
+
 #ifndef VHVC_SPAN
 #define VHVC_SPAN
-#include <stddef.h> // for ::size_t
-#include <cstddef> // for std::byte
-#include <array> // for std::array
-#include <type_traits> // for many things
-#include <iterator> // for std::reverse_iterator
-#include <limits> // for std::numeric_limits
-#include <memory> // for std::addressof
-#include <utility> // for std::declval
+
+#include <stddef.h>	// for ::size_t
+#include <cstddef>	// for std::byte
+#include <array>	// for std::array
+#include <type_traits>	// for many things
+#include <iterator>	// for std::reverse_iterator
+#include <limits>	// for std::numeric_limits
+#include <memory>	// for std::addressof
+#include <utility>	// for std::declval
+
 namespace vhvc {
 #if __cpp_inline_variables >= 201606L
 	inline
@@ -231,4 +237,5 @@ namespace vhvc {
 	}
 #endif
 }
-#endif
+
+#endif /* VHVC_SPAN */
