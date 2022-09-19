@@ -56,28 +56,46 @@ namespace vhvc {
 		auto is_citer_impl(int) -> decltype(std::addressof(*std::declval<It>()), std::true_type());
 		template<class It>
 		auto is_citer_impl(...) -> std::false_type;
+#if !defined(_MSC_VER) || _MSC_VER >= 1914
 		template<class It>
 		struct is_citer: std::enable_if<decltype(is_citer_impl<It>(0))::value, int> {};
+#else
+		// FIXME: std::enable_if<decltype()::value, int> is broken on MSVC earlier than 19.14.
+		template<class It>
+		struct is_citer: std::enable_if<true, int> {};
+#endif
 
 		// checks that It is contiguous iterator and End is a corresponding end iterator
 		template<class It, class End>
 		auto is_citer_pair_impl(int) -> decltype(std::declval<End>() - std::declval<It>(), std::true_type());
 		template<class It, class End>
 		auto is_citer_pair_impl(...) -> std::false_type;
+#if !defined(_MSC_VER) || _MSC_VER >= 1914
 		template<class It, class End>
 		struct is_citer_pair: std::enable_if<
 				decltype(is_citer_impl<It>(0))::value &&
 				decltype(is_citer_pair_impl<It, End>(0))::value &&
 				!std::is_convertible<End, size_t>::value,
 			int> {};
+#else
+		// FIXME: std::enable_if<decltype()::value, int> is broken on MSVC earlier than 19.14.
+		template<class It, class End>
+		struct is_citer_pair: std::enable_if<true, int> {};
+#endif
 
 		// checks that R is a contiguous, sized range, but not a span or std::array
 		template<class R>
 		auto is_range_impl(int) -> decltype(std::declval<R>().data(), std::declval<R>().size(), std::true_type());
 		template<class R>
 		auto is_range_impl(...) -> std::false_type;
+#if !defined(_MSC_VER) || _MSC_VER >= 1914
 		template<class R>
 		struct is_range: std::enable_if<decltype(is_range_impl<R>(0))::value, int> {};
+#else
+		// FIXME: std::enable_if<decltype()::value, int> is broken on MSVC earlier than 19.14.
+		template<class It>
+		struct is_range: std::enable_if<true, int> {};
+#endif
 		template<class ElementType, size_t Extent>
 		struct is_range<span<ElementType, Extent>> {};
 		template<class ElementType, size_t Extent>
