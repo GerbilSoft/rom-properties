@@ -65,6 +65,7 @@ size_t utf8_disp_strlen(const char *str, size_t max_len)
 				break;
 			} else {
 				assert(!"Invalid 3-byte UTF-8 sequence");
+				continue;
 			}
 		} else if ((u8str[0] & 0xF1) == 0xF0) {
 			// 4-byte UTF-8 sequence
@@ -80,13 +81,14 @@ size_t utf8_disp_strlen(const char *str, size_t max_len)
 				u8str += 3;
 			} else if (u8str[1] == 0 || u8str[2] == 0 || u8str[3] == 0) {
 				assert(!"Invalid 4-byte UTF-8 sequence");
-				break;
+				continue;
 			} else {
 				assert(!"Invalid 4-byte UTF-8 sequence");
+				continue;
 			}
 		} else {
 			assert(!"Invalid UTF-8 sequence");
-			break;
+			continue;
 		}
 
 		// Check the character width.
