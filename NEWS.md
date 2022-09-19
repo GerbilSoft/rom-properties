@@ -39,13 +39,13 @@
     IBMDOS.COM.
   * EXE: List DLL exports (PE/NE) and imports (PE only).
     * Fixes #348: Add an dll import/export function tab?
-      Reported by @vaualbus.
+      * Reported by @vaualbus.
     * Merged #349: EXE PE: Exports/Imports tabs
-      Submitted by @DankRank.
+      * Submitted by @DankRank.
     * Merged #350: EXE NE: Entries tab
-      Submitted by @DankRank.
+      * Submitted by @DankRank.
     * Merged #355: Follow-up fixes for ne-entries
-      Submitted by @DankRank.
+      * Submitted by @DankRank.
 
 * Bug fixes:
   * Lua: Fix a crash on Windows where systemName() sometimes returned
