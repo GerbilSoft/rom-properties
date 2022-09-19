@@ -44,6 +44,8 @@
       Submitted by @DankRank.
     * Merged #350: EXE NE: Entries tab
       Submitted by @DankRank.
+    * Merged #355: Follow-up fixes for ne-entries
+      Submitted by @DankRank.
 
 * Bug fixes:
   * Lua: Fix a crash on Windows where systemName() sometimes returned
