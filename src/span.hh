@@ -146,8 +146,10 @@ namespace vhvc {
 		constexpr span() noexcept :span::base(0), data_(nullptr) {}
 		template<class It, SPANCK(is_citer<It>)>
 		constexpr span(It first, size_type count) :span::base(count), data_(std::addressof(*first)) {}
+#if !defined(_MSC_VER) || _MSC_VER >= 1914
 		template<class It, class End, SPANCK(is_citer_pair<It, End>)>
 		constexpr span(It first, End last) :span::base(last - first), data_(std::addressof(*first)) {}
+#endif
 		template<size_t N, size_t E = Extent, SPANCK(extent_eq<E, N>)>
 		constexpr span(typename span_impl::type_identity<element_type>::type (&arr)[N]) noexcept :span::base(N), data_(arr) {}
 		template<class T, size_t N, size_t E = Extent, SPANCK(extent_eq<E, N>)>
