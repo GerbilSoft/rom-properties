@@ -4,6 +4,7 @@
  * 16-bit New Executable format.                                           *
  *                                                                         *
  * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2022 by Egor.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -24,13 +25,12 @@ namespace LibRomData {
 /** EXEPrivate **/
 
 /**
- * Load the NE resource table.
- * @return 0 on success; negative POSIX error code on error. (-ENOENT if not found)
+ * Load the redisent portion of NE header
+ * @return 0 on success; negative POSIX error code on error.
  */
-int EXEPrivate::loadNEResourceTable(void)
+int EXEPrivate::loadNEResident(void)
 {
-	if (rsrcReader) {
-		// Resource reader is already initialized.
+	if (ne_resident_loaded) {
 		return 0;
 	} else if (!file || !file->isOpen()) {
 		// File isn't open.
@@ -43,49 +43,99 @@ int EXEPrivate::loadNEResourceTable(void)
 		return -ENOTSUP;
 	}
 
-	// NE resource table offset is relative to the start of the NE header.
-	// It must be >= the size of the NE header.
-	uint32_t ResTableOffset = le16_to_cpu(hdr.ne.ResTableOffset);
-	if (ResTableOffset < sizeof(NE_Header)) {
-		// Resource table cannot start in the middle of the NE header.
+	// Offsets in the NE header are relative to the start of the header.
+	const uint32_t ne_hdr_addr = le32_to_cpu(mz.e_lfanew);
+	const uint32_t entry_table_addr = le16_to_cpu(hdr.ne.EntryTableOffset);
+	const uint32_t ne_hdr_len = entry_table_addr + le16_to_cpu(hdr.ne.EntryTableLength);
+	ne_resident.resize(ne_hdr_len);
+	size_t nread = file->seekAndRead(ne_hdr_addr, ne_resident.data(), ne_resident.size());
+	if (nread != ne_resident.size())
+		return -EIO; // Short read
+
+	uint32_t end = ne_resident.size();
+	auto set_span = [this, &end](vhvc::span<const uint8_t> &sp, auto offset) -> bool {
+		if (offset > end)
+			return true;
+		sp = vhvc::span<const uint8_t>(ne_resident.data() + offset, end - offset);
+		end = offset;
+		return false;
+	};
+	// NOTE: The order of the tables in the resident part of NE header is fixed.
+	if (set_span(ne_entry_table,         entry_table_addr) ||
+	    set_span(ne_imported_name_table, le16_to_cpu(hdr.ne.ImportNameTable)) ||
+	    set_span(ne_modref_table,        le16_to_cpu(hdr.ne.ModRefTable)) ||
+	    set_span(ne_resident_name_table, le16_to_cpu(hdr.ne.ResidNamTable)) ||
+	    set_span(ne_resource_table,      le16_to_cpu(hdr.ne.ResTableOffset)) ||
+	    set_span(ne_segment_table,       le16_to_cpu(hdr.ne.SegTableOffset)) ||
+	    end < sizeof(NE_Header)) {
 		return -EIO;
 	}
 
-	// Check for the lowest non-zero offset after ResTableOffset.
-	// This will be used for the resource table size.
-	uint32_t maxOffset = 0;
-	uint32_t resTableSize = 0;
-	{
-		#define TABLE_CHECK(var) do { \
-			const uint32_t var = le16_to_cpu(hdr.ne.var); \
-			if (var != 0 && var > ResTableOffset && \
-			    (maxOffset == 0 || var < maxOffset)) \
-			{ \
-				maxOffset = var; \
-			} \
-		} while (0)
-		TABLE_CHECK(SegTableOffset);
-		TABLE_CHECK(ResidNamTable);
-		TABLE_CHECK(ModRefTable);
-		TABLE_CHECK(ImportNameTable);
-		// TODO: OffStartNonResTab is from the start of the file.
-		// Not sure if we need to check it.
+	ne_resident_loaded = true;
 
-		if (maxOffset != 0 && maxOffset > ResTableOffset) {
-			// Found a valid maximum.
-			resTableSize = maxOffset - ResTableOffset;
-		}
+	return 0;
+}
+
+
+/**
+ * Load the non-resident name table
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int EXEPrivate::loadNENonResidentNames(void)
+{
+	if (ne_nonresident_name_table_loaded) {
+		return 0;
+	} else if (!file || !file->isOpen()) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!isValid) {
+		// Unknown executable type.
+		return -EIO;
+	} else if (exeType != ExeType::NE) {
+		// Unsupported executable type.
+		return -ENOTSUP;
+	}
+	ne_nonresident_name_table.resize(le16_to_cpu(hdr.ne.NoResNamesTabSiz));
+	size_t nread = file->seekAndRead(le32_to_cpu(hdr.ne.OffStartNonResTab),
+		ne_nonresident_name_table.data(),
+		ne_nonresident_name_table.size());
+	if (nread != ne_nonresident_name_table.size())
+		return -EIO; // Short read
+	ne_nonresident_name_table_loaded = true;
+	return 0;
+}
+/**
+ * Load the NE resource table.
+ * @return 0 on success; negative POSIX error code on error. (-ENOENT if not found)
+ */
+int EXEPrivate::loadNEResourceTable(void)
+{
+	if (rsrcReader) {
+		// Resource reader is already initialized.
+		return 0;
+	}
+	int res = loadNEResident();
+	if (res < 0)
+		return res;
+	if (!file || !file->isOpen()) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!isValid) {
+		// Unknown executable type.
+		return -EIO;
+	} else if (exeType != ExeType::NE) {
+		// Unsupported executable type.
+		return -ENOTSUP;
 	}
 
-	// Adjust ResTableOffset to make it an absolute address.
-	ResTableOffset += le16_to_cpu(mz.e_lfanew);
-
-	// Check if a size is known.
-	if (resTableSize == 0) {
-		// Not known. Go with the file size.
-		// NOTE: Limited to 32-bit file sizes.
-		resTableSize = static_cast<uint32_t>(file->size()) - ResTableOffset;
+	// FIXME: NEResourceReader should be able to just take ne_resource_table.
+	// NE resource table offset is relative to the start of the NE header.
+	uint32_t ResTableOffset = le16_to_cpu(mz.e_lfanew) + le16_to_cpu(hdr.ne.ResTableOffset);
+	if (ResTableOffset < le16_to_cpu(mz.e_lfanew)) {
+		// Offse overflow
+		return -EIO;
 	}
+	uint32_t resTableSize = ne_resource_table.size();
 
 	// Load the resources using NEResourceReader.
 	rsrcReader = new NEResourceReader(file, ResTableOffset, resTableSize);
@@ -114,92 +164,26 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 	refLink.clear();
 	refHasKernel = false;
 
-	if (!file || !file->isOpen()) {
-		// File isn't open.
-		return -EBADF;
-	} else if (!isValid) {
-		// Unknown executable type.
-		return -EIO;
-	}
+	int res = loadNEResident();
+	if (res < 0)
+		return res;
 
-	// Offsets in the NE header are relative to the start of the header.
-	const uint32_t ne_hdr_addr = le32_to_cpu(mz.e_lfanew);
-
-	// Load the module references and imported names tables.
-	// NOTE: Imported names table has counted strings, and
-	// since Win3.1 used 8.3 filenames (and extensions are
-	// not present here), there's a maximum of 9*ModRefs
-	// bytes to be read.
-	// NOTE 2: There might be some extra empty strings at
-	// the beginning, so read some extra data in case.
 	const unsigned int modRefs = le16_to_cpu(hdr.ne.ModRefs);
-	const unsigned int modRefTable_addr = ne_hdr_addr + le16_to_cpu(hdr.ne.ModRefTable);
-	const unsigned int importNameTable_addr = ne_hdr_addr + le16_to_cpu(hdr.ne.ImportNameTable);
 
 	if (modRefs == 0) {
 		// No module references.
 		return -ENOENT;
-	} else if (modRefTable_addr < ne_hdr_addr || importNameTable_addr < ne_hdr_addr) {
-		// One of the addresses is out of range.
+	}
+	if (modRefs*2 > ne_modref_table.size()) {
 		return -EIO;
 	}
 
-	// TODO: Check for overlapping tables?
-
-	// Determine the low address.
-	// ModRefTable is usually first, but we can't be certain.
-	uint32_t read_low_addr;
-	uint32_t read_size;
-	uint32_t nameTable_size;
-	if (modRefTable_addr < importNameTable_addr) {
-		// ModRefTable is first.
-		// Add 256 bytes for the nametable, since we can't determine how
-		// big the nametable actually is without reading it.
-		read_low_addr = modRefTable_addr;
-		nameTable_size = (9 * (static_cast<uint32_t>(modRefs) + 2)) + 256;
-		read_size = (importNameTable_addr - modRefTable_addr) + nameTable_size;
-	} else {
-		// ImportNameTable is first.
-		read_low_addr = importNameTable_addr;
-		nameTable_size = (modRefTable_addr - importNameTable_addr);
-		read_size = nameTable_size + (modRefs * static_cast<uint32_t>(sizeof(uint16_t)));
-	}
-
-	if (read_size > 128*1024) {
-		// Shouldn't be more than 128 KB...
-		// (Actually, it probably shouldn't be more than 64 KB.)
-		return -EIO;
-	}
-
-	unique_ptr<uint8_t[]> tbls(new uint8_t[read_size]);
-	size_t size = file->seekAndRead(read_low_addr, tbls.get(), read_size);
-	if (size != read_size) {
-		// Error reading the tables.
-		// NOTE: Even with the extra padding, this shouldn't happen,
-		// since there's executable code afterwards...
-		return -EIO;
-	}
-
-	const uint16_t *pModRefTable;
-	char *pNameTable;
-	if (modRefTable_addr < importNameTable_addr) {
-		// ModRefTable is first.
-		pModRefTable = reinterpret_cast<const uint16_t*>(tbls.get());
-		pNameTable = reinterpret_cast<char*>(&tbls[importNameTable_addr - modRefTable_addr]);
-	} else {
-		// ImportNameTable is first.
-		pNameTable = reinterpret_cast<char*>(tbls.get());
-		pModRefTable = reinterpret_cast<const uint16_t*>(&tbls[modRefTable_addr - importNameTable_addr]);
-	}
-
-	// Convert the name table to uppercase for comparison purposes.
-	// NOTE: Uppercase due to DOS/Win16 conventions. PE uses lowercase.
-	{
-		char *const p_end = &pNameTable[nameTable_size];
-		for (char *p = pNameTable; p < p_end; p++) {
-			if (*p >= 'a' && *p <= 'z') *p &= ~0x20;
-		}
-	}
+	vhvc::span<const uint16_t> modRefTable(
+		reinterpret_cast<const uint16_t*>(ne_modref_table.data()),
+		modRefs);
+	vhvc::span<const char> nameTable(
+		reinterpret_cast<const char*>(ne_imported_name_table.data()),
+		ne_imported_name_table.size());
 
 	// Visual Basic DLL version to display version table.
 	static const struct {
@@ -216,26 +200,24 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 	};
 
 	// FIXME: Alignment?
-	const uint16_t *pModRef = pModRefTable;
-	const uint16_t *const pModRefEnd = &pModRef[modRefs];
-	for (; pModRef < pModRefEnd; pModRef++) {
-		const unsigned int nameOffset = le16_to_cpu(*pModRef);
-		assert(nameOffset < nameTable_size);
-		if (nameOffset >= nameTable_size) {
+	for (uint16_t modRef : modRefTable) {
+		const unsigned int nameOffset = le16_to_cpu(modRef);
+		assert(nameOffset < nameTable.size());
+		if (nameOffset >= nameTable.size()) {
 			// Out of range.
 			// TODO: Return an error?
 			break;
 		}
 
-		const uint8_t count = pNameTable[nameOffset];
-		assert(nameOffset + 1 + count < nameTable_size);
-		if (nameOffset + 1 + count >= nameTable_size) {
+		const uint8_t count = static_cast<uint8_t>(nameTable[nameOffset]);
+		assert(nameOffset + 1 + count < nameTable.size());
+		if (nameOffset + 1 + count >= nameTable.size()) {
 			// Out of range.
 			// TODO: Return an error?
 			break;
 		}
 
-		const char *const pDllName = reinterpret_cast<const char*>(&pNameTable[nameOffset + 1]);
+		const char *const pDllName = &nameTable[nameOffset + 1];
 
 		// Check the DLL name.
 		// TODO: More checks.
@@ -249,7 +231,7 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 			// This is needed in order to distinguish between really old
 			// OS/2 and Windows executables target OS == 0.
 			// Reference: https://github.com/wine-mirror/wine/blob/ba9f3dc198dfc81bb40159077b73b797006bb73c/dlls/kernel32/module.c#L262
-			if (!strncmp(pDllName, "KERNEL", 6)) {
+			if (!strncasecmp(pDllName, "KERNEL", 6)) {
 				// Found KERNEL.
 				refHasKernel = true;
 				if (!refDesc.empty())
@@ -260,7 +242,7 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 			// NOTE: There's only three 32-bit versions of Visual Basic,
 			// and .NET versions don't count.
 			for (const auto &p : msvb_dll_tbl) {
-				if (!strncmp(pDllName, p.dll_name, sizeof(p.dll_name))) {
+				if (!strncasecmp(pDllName, p.dll_name, sizeof(p.dll_name))) {
 					// Found a matching version.
 					refDesc = rp_sprintf(C_("EXE|Runtime", "Microsoft Visual Basic %u.%u Runtime"),
 						p.ver_major, p.ver_minor);
@@ -286,8 +268,8 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
  */
 void EXEPrivate::addFields_NE(void)
 {
-	// Up to 3 tabs.
-	fields->reserveTabs(3);
+	// Up to 4 tabs.
+	fields->reserveTabs(4);
 
 	// NE Header
 	fields->setTabName(0, "NE");
@@ -461,29 +443,252 @@ void EXEPrivate::addFields_NE(void)
 		fields->addField_string(C_("EXE", "Runtime DLL"), runtime_dll);
 	}
 
+	// Module Name and Module Description.
+	auto get_first_string = [](vhvc::span<const uint8_t> sp, string &out) -> bool {
+		if (sp.size() == 0 || sp[0] == 0 || sp.size() - 1 < sp[0])
+			return false;
+		out = string(reinterpret_cast<const char*>(sp.data() + 1), sp[0]);
+		return true;
+	};
+	string module_name, module_desc;
+	if (loadNEResident() == 0 && get_first_string(ne_resident_name_table, module_name))
+		fields->addField_string(C_("EXE", "Module Name"), module_name);
+	if (loadNENonResidentNames() == 0 && get_first_string(ne_nonresident_name_table, module_desc))
+		fields->addField_string(C_("EXE", "Module Description"), module_desc);
+
 	// Load resources.
 	ret = loadNEResourceTable();
-	if (ret != 0 || !rsrcReader) {
-		// Unable to load resources.
-		// We're done here.
-		return;
+	if (ret == 0 && rsrcReader) {
+		// Load the version resource.
+		// NOTE: load_VS_VERSION_INFO loads it in host-endian.
+		VS_FIXEDFILEINFO vsffi;
+		IResourceReader::StringFileInfo vssfi;
+		ret = rsrcReader->load_VS_VERSION_INFO(VS_VERSION_INFO, -1, &vsffi, &vssfi);
+		if (ret == 0) {
+			// Add the version fields.
+			fields->setTabName(1, C_("EXE", "Version"));
+			fields->setTabIndex(1);
+			addFields_VS_VERSION_INFO(&vsffi, &vssfi);
+		}
 	}
 
-	// Load the version resource.
-	// NOTE: load_VS_VERSION_INFO loads it in host-endian.
-	VS_FIXEDFILEINFO vsffi;
-	IResourceReader::StringFileInfo vssfi;
-	ret = rsrcReader->load_VS_VERSION_INFO(VS_VERSION_INFO, -1, &vsffi, &vssfi);
-	if (ret != 0) {
-		// Unable to load the version resource.
-		// We're done here.
-		return;
+	// Add entries
+	addFields_NE_Entry();
+}
+
+/**
+ * Add fields for NE entry table.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int EXEPrivate::addFields_NE_Entry(void)
+{
+	int res = loadNEResident();
+	if (res < 0)
+		return res;
+	res = loadNENonResidentNames();
+	if (res < 0)
+		return res;
+
+	struct Entry {
+		uint16_t ordinal;
+		uint8_t flags;
+		uint8_t segment;
+		uint16_t offset;
+		bool is_movable;
+		bool has_name;
+		bool is_resident;
+		vhvc::span<const char> name;
+	};
+	vector<Entry> ents;
+
+	// Read entry table
+	auto p = ne_entry_table.begin();
+	for (int ordinal = 1;;) {
+		// Entry table consists of bundles of symbols
+		// Each bundle is starts with count and segment of the symbols
+		if (p >= ne_entry_table.end())
+			return -ENOENT;
+		uint16_t bundle_count = *p++;
+		if (bundle_count == 0)
+			break; // end of table
+		if (p >= ne_entry_table.end())
+			return -ENOENT;
+		uint16_t bundle_segment = *p++;
+		switch (bundle_segment) {
+		case 0:
+			// Segment value 0 is used for skipping over unused ordinal values.
+			ordinal += bundle_count;
+			break;
+		default:
+			/* Segment values 0x01-0xFE are used for fixed segments.
+			 * - DB flags
+			 * - DW offset
+			 * 0xFE is used for constants.*/
+			if (p + bundle_count*3 > ne_entry_table.end())
+				return -ENOENT;
+			for (int i = 0; i < bundle_count; i++) {
+				Entry ent;
+				ent.ordinal = ordinal++;
+				ent.flags = p[0];
+				ent.segment = bundle_segment;
+				ent.offset = p[1] | p[2]<<8;
+				ent.is_movable = false;
+				ent.has_name = false;
+				ents.push_back(ent);
+				p += 3;
+			}
+			break;
+		case 0xFF:
+			/* Segment value 0xFF is used for movable segments.
+			 * - DB flags
+			 * - DW INT 3F
+			 * - DB segment
+			 * - DW offset */
+			if (p + bundle_count*6 > ne_entry_table.end())
+				return -ENOENT;
+			for (int i = 0; i < bundle_count; i++) {
+				if (p[1] != 0xCD && p[2] != 0x3F) // INT 3Fh
+					return -ENOENT;
+				Entry ent;
+				ent.ordinal = ordinal++;
+				ent.flags = p[0];
+				ent.segment = p[3];
+				ent.offset = p[4] | p[5]<<8;
+				ent.is_movable = true;
+				ent.has_name = false;
+				ents.push_back(ent);
+				p += 6;
+			}
+			break;
+		}
 	}
 
-	// Add the version fields.
-	fields->setTabName(1, C_("EXE", "Version"));
-	fields->setTabIndex(1);
-	addFields_VS_VERSION_INFO(&vsffi, &vssfi);
+	/* Currently ents is sorted by ordinal. For duplicate names we'll add
+	 * more entries, so we must remember the original size so we can do
+	 * a binary search. */
+	size_t last = ents.size();
+	auto readNames = [&](vhvc::span<const uint8_t> sp, bool is_resident) -> int {
+		const uint8_t *p = sp.data();
+		const uint8_t *const end = sp.data() + sp.size();
+		if (p == end)
+			return -ENOENT;
+		/* Skip first string. For resident strings it's module name, and
+		 * for non-resident strings it's module description. */
+		p += *p + 3;
+		if (p >= end)
+			return -ENOENT;
+
+		while (*p) {
+			uint8_t len = *p++;
+			if (p + len + 2 >= end) // next length byte >= end
+				return -ENOENT;
+			vhvc::span<const char> name(reinterpret_cast<const char *>(p), len);
+			uint16_t ordinal = p[len] | p[len+1]<<8;
+
+			// binary search for the ordinal
+			auto it = std::lower_bound(ents.begin(), ents.begin()+last, ordinal,
+				[](const Entry &lhs, uint16_t rhs) {
+					return lhs.ordinal < rhs;
+				});
+			if (it == ents.begin()+last || it->ordinal != ordinal) {
+				// name points to non-existent ordinal
+				return -ENOENT;
+			}
+
+			if (it->has_name) {
+				// This ordinal already has a name.
+				// Duplicate the entry, replace name in the copy.
+				Entry ent = *it;
+				ent.name = name;
+				ent.is_resident = is_resident;
+				ents.push_back(ent); // `it` is invalidated here
+			} else {
+				it->has_name = true;
+				it->name = name;
+				it->is_resident = is_resident;
+			}
+
+			p += len + 2;
+		}
+		return 0;
+	};
+
+	// Read names
+	res = readNames(ne_resident_name_table, true);
+	if (res)
+		return res;
+	res = readNames(ne_nonresident_name_table, true);
+	if (res)
+		return res;
+
+	auto vv_data = new RomFields::ListData_t();
+	vv_data->reserve(ents.size());
+	for (unsigned int i = 0; i < static_cast<unsigned int>(ents.size()); i++) {
+		const Entry &ent = ents[i];
+		vv_data->emplace_back();
+		auto &row = vv_data->back();
+		row.reserve(4);
+		/* NODATA and RESIDENTNAME are from DEF files. EXPORT and PARAMS
+		 * are names I made up (in DEF files you can't specify internal
+		 * entries, and parameter count is specified by just a number).
+		 * Typical flags values are 3 for exports, 0 for internal
+		 * entries. */
+		string flags;
+		if (ent.flags & 1)
+			flags = " EXPORT";
+		if (!(ent.flags & 2))
+			flags += " NODATA";
+		if (ent.flags & 4)
+			flags += " (bit 2)";
+		/* Parameter count. I haven't found any module where this is
+		 * actually used. */
+		if (ent.flags & 0xF8)
+			flags += rp_sprintf(" PARAMS=%d", ent.flags>>3);
+		if (ent.has_name && ent.is_resident)
+			flags += " RESIDENTNAME";
+		flags.erase(0, 1);
+
+		row.emplace_back(rp_sprintf("%d", ent.ordinal));
+		if (ent.has_name)
+			row.emplace_back(string(ent.name.data(), ent.name.size()));
+		else
+			row.emplace_back(C_("EXE|Exports", "(No name)"));
+		if (ent.is_movable)
+			row.emplace_back(rp_sprintf(C_("EXE|Exports", "%02X:%04X (Movable)"),
+				ent.segment, ent.offset));
+		else if (ent.segment != 0xFE)
+			row.emplace_back(rp_sprintf(C_("EXE|Exports", "%02X:%04X (Fixed)"),
+				ent.segment, ent.offset));
+		else
+			row.emplace_back(rp_sprintf(C_("EXE|Exports", "%04X (Constant)"),
+				ent.offset));
+		row.emplace_back(flags);
+	}
+
+	// tr: this is the EXE NE equivalent of EXE PE export table
+	fields->addTab(C_("EXE", "Entries"));
+	fields->reserve(1);
+
+	// Create the tab if we have any exports.
+	if (vv_data->size()) {
+		static const char *const field_names[] = {
+			NOP_C_("EXE|Exports", "Ordinal"),
+			NOP_C_("EXE|Exports", "Name"),
+			NOP_C_("EXE|Exports", "Address"),
+			NOP_C_("EXE|Exports", "Flags"),
+		};
+		vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
+			"EXE|Exports", field_names, ARRAY_SIZE(field_names));
+
+		RomFields::AFLD_PARAMS params;
+		params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;
+		params.headers = v_field_names;
+		params.data.single = vv_data;
+		fields->addField_listData(C_("EXE", "Entries"), &params);
+	} else {
+		delete vv_data;
+	}
+	return 0;
 }
 
 }
