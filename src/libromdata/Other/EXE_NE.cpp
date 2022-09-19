@@ -579,7 +579,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 			return -ENOENT;
 
 		while (*p) {
-			size_t len = *p++;
+			uint8_t len = *p++;
 			if (p + len + 2 >= end) // next length byte >= end
 				return -ENOENT;
 			vhvc::span<const char> name(reinterpret_cast<const char *>(p), len);
