@@ -439,7 +439,7 @@ void EXEPrivate::addFields_NE(void)
 
 	// Runtime DLL.
 	// NOTE: Strings were obtained earlier.
-	if (hdr.ne.targOS == NE_OS_WIN) {
+	if (hdr.ne.targOS == NE_OS_WIN && !runtime_dll.empty()) {
 		// TODO: Show the link?
 		fields->addField_string(C_("EXE", "Runtime DLL"), runtime_dll);
 	}
