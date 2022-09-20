@@ -55,6 +55,11 @@ int EXEPrivate::loadNEResident(void)
 	if (nread != ne_resident.size())
 		return -EIO; // Short read
 
+	span<const uint8_t> ne_segment_raw;
+	span<const uint8_t> ne_resident_name_raw;
+	span<const uint8_t> ne_modref_raw;
+	span<const uint8_t> ne_imported_name_raw;
+
 	uint32_t end = ne_resident.size();
 	auto set_span = [this, &end](span<const uint8_t> &sp, auto offset) -> bool {
 		if (offset > end)
@@ -64,15 +69,27 @@ int EXEPrivate::loadNEResident(void)
 		return false;
 	};
 	// NOTE: The order of the tables in the resident part of NE header is fixed.
-	if (set_span(ne_entry_table,         entry_table_addr) ||
-	    set_span(ne_imported_name_table, le16_to_cpu(hdr.ne.ImportNameTable)) ||
-	    set_span(ne_modref_table,        le16_to_cpu(hdr.ne.ModRefTable)) ||
-	    set_span(ne_resident_name_table, le16_to_cpu(hdr.ne.ResidNamTable)) ||
-	    set_span(ne_resource_table,      le16_to_cpu(hdr.ne.ResTableOffset)) ||
-	    set_span(ne_segment_table,       le16_to_cpu(hdr.ne.SegTableOffset)) ||
+	if (set_span(ne_entry_table,       entry_table_addr) ||
+	    set_span(ne_imported_name_raw, le16_to_cpu(hdr.ne.ImportNameTable)) ||
+	    set_span(ne_modref_raw,        le16_to_cpu(hdr.ne.ModRefTable)) ||
+	    set_span(ne_resident_name_raw, le16_to_cpu(hdr.ne.ResidNamTable)) ||
+	    set_span(ne_resource_table,    le16_to_cpu(hdr.ne.ResTableOffset)) ||
+	    set_span(ne_segment_raw,       le16_to_cpu(hdr.ne.SegTableOffset)) ||
 	    end < sizeof(NE_Header)) {
 		return -EIO;
 	}
+
+	size_t segment_count = le16_to_cpu(hdr.ne.SegCount);
+	ne_segment_table = reinterpret_span_limit<const NE_Segment>(ne_segment_raw, segment_count);
+	assert(segment_count <= ne_segment_table.size());
+
+	ne_resident_name_table = reinterpret_span<const char>(ne_resident_name_raw);
+
+	size_t modref_count = le16_to_cpu(hdr.ne.ModRefs);
+	ne_modref_table = reinterpret_span_limit<const uint16_t>(ne_modref_raw, modref_count);
+	assert(modref_count <= ne_modref_table.size());
+
+	ne_imported_name_table = reinterpret_span<const char>(ne_imported_name_raw);
 
 	ne_resident_loaded = true;
 
@@ -171,18 +188,10 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 	if (res < 0)
 		return res;
 
-	const unsigned int modRefs = le16_to_cpu(hdr.ne.ModRefs);
-
-	if (modRefs == 0) {
+	if (ne_modref_table.size() == 0) {
 		// No module references.
 		return -ENOENT;
 	}
-	if (modRefs*2 > ne_modref_table.size()) {
-		return -EIO;
-	}
-
-	auto modRefTable = reinterpret_span_limit<const uint16_t>(ne_modref_table, modRefs);
-	auto nameTable = reinterpret_span<const char>(ne_imported_name_table);
 
 	// Visual Basic DLL version to display version table.
 	static const struct {
@@ -199,24 +208,24 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 	};
 
 	// FIXME: Alignment?
-	for (uint16_t modRef : modRefTable) {
+	for (uint16_t modRef : ne_modref_table) {
 		const unsigned int nameOffset = le16_to_cpu(modRef);
-		assert(nameOffset < nameTable.size());
-		if (nameOffset >= nameTable.size()) {
+		assert(nameOffset < ne_imported_name_table.size());
+		if (nameOffset >= ne_imported_name_table.size()) {
 			// Out of range.
 			// TODO: Return an error?
 			break;
 		}
 
-		const uint8_t count = static_cast<uint8_t>(nameTable[nameOffset]);
-		assert(nameOffset + 1 + count <= nameTable.size());
-		if (nameOffset + 1 + count > nameTable.size()) {
+		const uint8_t count = static_cast<uint8_t>(ne_imported_name_table[nameOffset]);
+		assert(nameOffset + 1 + count <= ne_imported_name_table.size());
+		if (nameOffset + 1 + count > ne_imported_name_table.size()) {
 			// Out of range.
 			// TODO: Return an error?
 			break;
 		}
 
-		const char *const pDllName = &nameTable[nameOffset + 1];
+		const char *const pDllName = &ne_imported_name_table[nameOffset + 1];
 
 		// Check the DLL name.
 		// TODO: More checks.
@@ -443,10 +452,13 @@ void EXEPrivate::addFields_NE(void)
 	}
 
 	// Module Name and Module Description.
-	auto get_first_string = [](span<const uint8_t> sp, string &out) -> bool {
-		if (sp.size() == 0 || sp[0] == 0 || sp.size() - 1 < sp[0])
+	auto get_first_string = [](span<const char> sp, string &out) -> bool {
+		if (sp.size() == 0)
 			return false;
-		out = string(reinterpret_cast<const char*>(sp.data() + 1), sp[0]);
+		size_t len = static_cast<uint8_t>(sp[0]);
+		if (!len || sp.size() - 1 < len)
+			return false;
+		out = string(sp.data() + 1, len);
 		return true;
 	};
 	string module_name, module_desc;
@@ -569,23 +581,23 @@ int EXEPrivate::addFields_NE_Entry(void)
 	 * more entries, so we must remember the original size so we can do
 	 * a binary search. */
 	size_t last = ents.size();
-	auto readNames = [&](span<const uint8_t> sp, bool is_resident) -> int {
-		const uint8_t *p = sp.data();
-		const uint8_t *const end = sp.data() + sp.size();
+	auto readNames = [&](span<const char> sp, bool is_resident) -> int {
+		const char *p = sp.data();
+		const char *const end = sp.data() + sp.size();
 		if (p == end)
 			return -ENOENT;
 		/* Skip first string. For resident strings it's module name, and
 		 * for non-resident strings it's module description. */
-		p += *p + 3;
+		p += static_cast<uint8_t>(*p) + 3;
 		if (p >= end)
 			return -ENOENT;
 
 		while (*p) {
-			uint8_t len = *p++;
+			uint8_t len = static_cast<uint8_t>(*p++);
 			if (p + len + 2 >= end) // next length byte >= end
 				return -ENOENT;
-			span<const char> name(reinterpret_cast<const char *>(p), len);
-			uint16_t ordinal = p[len] | p[len+1]<<8;
+			span<const char> name(p, len);
+			uint16_t ordinal = static_cast<uint8_t>(p[len]) | static_cast<uint8_t>(p[len+1])<<8;
 
 			// binary search for the ordinal
 			auto it = std::lower_bound(ents.begin(), ents.begin()+last, ordinal,
@@ -714,33 +726,23 @@ int EXEPrivate::addFields_NE_Import(void)
 	}
 
 	// Helper funcs for reading import name table and modrefs.
-	const unsigned int modRefs = le16_to_cpu(hdr.ne.ModRefs);
-	if (modRefs == 0) {
-		// No module references.
-		return -ENOENT;
-	}
-	if (modRefs*2 > ne_modref_table.size()) {
-		return -EIO;
-	}
-	auto modRefTable = reinterpret_span_limit<const uint16_t>(ne_modref_table, modRefs);
-	auto nameTable = reinterpret_span<const char>(ne_imported_name_table);
 	auto get_name = [&](size_t offset, string &out) -> bool {
-		assert(offset < nameTable.size());
-		if (offset >= nameTable.size())
+		assert(offset < ne_imported_name_table.size());
+		if (offset >= ne_imported_name_table.size())
 			return false;
-		const uint8_t count = static_cast<uint8_t>(nameTable[offset]);
+		const uint8_t count = static_cast<uint8_t>(ne_imported_name_table[offset]);
 
-		assert(offset + 1 + count <= nameTable.size());
-		if (offset + 1 + count > nameTable.size())
+		assert(offset + 1 + count <= ne_imported_name_table.size());
+		if (offset + 1 + count > ne_imported_name_table.size())
 			return false;
-		out = string(&nameTable[offset+1], count);
+		out = string(&ne_imported_name_table[offset+1], count);
 		return true;
 	};
 	auto get_modref = [&](size_t modref, string &out) -> bool {
-		assert(modref < modRefTable.size());
-		if (modref >= modRefTable.size())
+		assert(modref < ne_modref_table.size());
+		if (modref >= ne_modref_table.size())
 			return false;
-		return get_name(le16_to_cpu(modRefTable[modref]), out);
+		return get_name(le16_to_cpu(ne_modref_table[modref]), out);
 	};
 
 	/* IMPORTORDINAL
@@ -757,11 +759,7 @@ int EXEPrivate::addFields_NE_Import(void)
 	};
 	std::unordered_set<std::pair<uint16_t, uint16_t>, hash2x16> ordinal_set, name_set;
 
-	auto segs = reinterpret_span<const NE_Segment>(ne_segment_table);
-	if (le16_to_cpu(hdr.ne.SegCount) < segs.size())
-		segs = segs.first(le16_to_cpu(hdr.ne.SegCount));
-
-	for (auto& seg : segs) {
+	for (auto& seg : ne_segment_table) {
 		if (seg.offset == 0)
 			continue; // No data
 		if (!(le16_to_cpu(seg.flags) & NE_SEG_RELOCINFO))
