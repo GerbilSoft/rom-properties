@@ -178,12 +178,8 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 		return -EIO;
 	}
 
-	vhvc::span<const uint16_t> modRefTable(
-		reinterpret_cast<const uint16_t*>(ne_modref_table.data()),
-		modRefs);
-	vhvc::span<const char> nameTable(
-		reinterpret_cast<const char*>(ne_imported_name_table.data()),
-		ne_imported_name_table.size());
+	auto modRefTable = vhvc::reinterpret_span_limit<const uint16_t>(ne_modref_table, modRefs);
+	auto nameTable = vhvc::reinterpret_span<const char>(ne_imported_name_table);
 
 	// Visual Basic DLL version to display version table.
 	static const struct {
@@ -723,12 +719,8 @@ int EXEPrivate::addFields_NE_Import(void)
 	if (modRefs*2 > ne_modref_table.size()) {
 		return -EIO;
 	}
-	vhvc::span<const uint16_t> modRefTable(
-		reinterpret_cast<const uint16_t*>(ne_modref_table.data()),
-		modRefs);
-	vhvc::span<const char> nameTable(
-		reinterpret_cast<const char*>(ne_imported_name_table.data()),
-		ne_imported_name_table.size());
+	auto modRefTable = vhvc::reinterpret_span_limit<const uint16_t>(ne_modref_table, modRefs);
+	auto nameTable = vhvc::reinterpret_span<const char>(ne_imported_name_table);
 	auto get_name = [&](size_t offset, string &out) -> bool {
 		assert(offset < nameTable.size());
 		if (offset >= nameTable.size())
@@ -762,9 +754,7 @@ int EXEPrivate::addFields_NE_Import(void)
 	};
 	std::unordered_set<std::pair<uint16_t, uint16_t>, hash2x16> ordinal_set, name_set;
 
-	vhvc::span<const NE_Segment> segs(
-		reinterpret_cast<const NE_Segment*>(ne_segment_table.data()),
-		ne_segment_table.size()/sizeof(NE_Segment));
+	auto segs = vhvc::reinterpret_span<const NE_Segment>(ne_segment_table);
 	if (le16_to_cpu(hdr.ne.SegCount) < segs.size())
 		segs = segs.first(le16_to_cpu(hdr.ne.SegCount));
 
@@ -793,9 +783,7 @@ int EXEPrivate::addFields_NE_Import(void)
 		nread = file->seekAndRead(seg_offset + seg_size + 2, rel_buf.data(), rel_buf.size());
 		if (nread != rel_buf.size())
 			return -EIO; // Short read
-		vhvc::span<const NE_Reloc> relocs(
-			reinterpret_cast<const NE_Reloc*>(rel_buf.data()),
-			rel_buf.size()/sizeof(NE_Reloc));
+		auto relocs = vhvc::reinterpret_span<const NE_Reloc>(rel_buf);
 
 		for (auto& reloc : relocs) {
 			switch (reloc.flags & NE_REL_TARGET_MASK) {
