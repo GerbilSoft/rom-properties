@@ -268,8 +268,8 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
  */
 void EXEPrivate::addFields_NE(void)
 {
-	// Up to 4 tabs.
-	fields->reserveTabs(4);
+	// Up to 5 tabs.
+	fields->reserveTabs(5);
 
 	// NE Header
 	fields->setTabName(0, "NE");
@@ -474,6 +474,9 @@ void EXEPrivate::addFields_NE(void)
 
 	// Add entries
 	addFields_NE_Entry();
+
+	// Add imports
+	addFields_NE_Import();
 }
 
 /**
@@ -688,6 +691,176 @@ int EXEPrivate::addFields_NE_Entry(void)
 	} else {
 		delete vv_data;
 	}
+	return 0;
+}
+
+/**
+ * Add fields for NE import table.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int EXEPrivate::addFields_NE_Import(void)
+{
+	int res = loadNEResident();
+	if (res < 0)
+		return res;
+	if (!file || !file->isOpen()) {
+		// File isn't open.
+		return -EBADF;
+	} else if (!isValid) {
+		// Unknown executable type.
+		return -EIO;
+	} else if (exeType != ExeType::NE) {
+		// Unsupported executable type.
+		return -ENOTSUP;
+	}
+
+	// Helper funcs for reading import name table and modrefs.
+	const unsigned int modRefs = le16_to_cpu(hdr.ne.ModRefs);
+	if (modRefs == 0) {
+		// No module references.
+		return -ENOENT;
+	}
+	if (modRefs*2 > ne_modref_table.size()) {
+		return -EIO;
+	}
+	vhvc::span<const uint16_t> modRefTable(
+		reinterpret_cast<const uint16_t*>(ne_modref_table.data()),
+		modRefs);
+	vhvc::span<const char> nameTable(
+		reinterpret_cast<const char*>(ne_imported_name_table.data()),
+		ne_imported_name_table.size());
+	auto get_name = [&](size_t offset, string &out) -> bool {
+		assert(offset < nameTable.size());
+		if (offset >= nameTable.size())
+			return false;
+		const uint8_t count = static_cast<uint8_t>(nameTable[offset]);
+
+		assert(offset + 1 + count <= nameTable.size());
+		if (offset + 1 + count > nameTable.size())
+			return false;
+		out = string(&nameTable[offset+1], count);
+		return true;
+	};
+	auto get_modref = [&](size_t modref, string &out) -> bool {
+		assert(modref < modRefTable.size());
+		if (modref >= modRefTable.size())
+			return false;
+		return get_name(le16_to_cpu(modRefTable[modref]), out);
+	};
+
+	/* IMPORTORDINAL
+	 *   target1 --> modref index
+	 *   target2 --> ordinal
+	 * IMPORTNAME
+	 *   target1 --> modref index
+	 *   target2 --> imported names offset
+	 */
+	struct hash2x16 {
+		size_t operator()(const std::pair<uint16_t, uint16_t> &p) const {
+			return std::hash<uint32_t>()(p.first<<16 | p.second);
+		}
+	};
+	std::unordered_set<std::pair<uint16_t, uint16_t>, hash2x16> ordinal_set, name_set;
+
+	vhvc::span<const NE_Segment> segs(
+		reinterpret_cast<const NE_Segment*>(ne_segment_table.data()),
+		ne_segment_table.size()/sizeof(NE_Segment));
+	if (le16_to_cpu(hdr.ne.SegCount) < segs.size())
+		segs = segs.first(le16_to_cpu(hdr.ne.SegCount));
+
+	for (auto& seg : segs) {
+		if (seg.offset == 0)
+			continue; // No data
+		if (!(le16_to_cpu(seg.flags) & NE_SEG_RELOCINFO))
+			continue; // No relocations
+
+		// the logic for seg_size is from Wine's NE_LoadSegment
+		const size_t seg_offset = (size_t)le16_to_cpu(seg.offset) << le16_to_cpu(hdr.ne.FileAlnSzShftCnt);
+		const size_t seg_size =
+			seg.filesz ? le16_to_cpu(seg.filesz) :
+			seg.memsz ? le16_to_cpu(seg.memsz) : 0x10000;
+		if (seg_offset + seg_size < seg_offset)
+			return -EIO; // Overflow
+
+		uint16_t rel_count;
+		size_t nread = file->seekAndRead(seg_offset + seg_size, &rel_count, 2);
+		if (nread != 2)
+			return -EIO; // Short read
+		rel_count = le16_to_cpu(rel_count);
+
+		ao::uvector<uint8_t> rel_buf;
+		rel_buf.resize(rel_count*sizeof(NE_Reloc));
+		nread = file->seekAndRead(seg_offset + seg_size + 2, rel_buf.data(), rel_buf.size());
+		if (nread != rel_buf.size())
+			return -EIO; // Short read
+		vhvc::span<const NE_Reloc> relocs(
+			reinterpret_cast<const NE_Reloc*>(rel_buf.data()),
+			rel_buf.size()/sizeof(NE_Reloc));
+
+		for (auto& reloc : relocs) {
+			switch (reloc.flags & NE_REL_TARGET_MASK) {
+			case NE_REL_IMPORTORDINAL:
+				ordinal_set.emplace(le16_to_cpu(reloc.target1), le16_to_cpu(reloc.target2));
+				break;
+			case NE_REL_IMPORTNAME:
+				name_set.emplace(le16_to_cpu(reloc.target1), le16_to_cpu(reloc.target2));
+				break;
+			}
+		}
+	}
+
+	auto vv_data = new RomFields::ListData_t();
+	vv_data->reserve(ordinal_set.size() + name_set.size());
+	for (auto& imp : ordinal_set) {
+		string modname;
+		if (!get_modref(imp.first, modname))
+			continue;
+		vv_data->emplace_back();
+		auto &row = vv_data->back();
+		row.reserve(2);
+		row.emplace_back(rp_sprintf(C_("EXE|Exports", "Ordinal #%u"), imp.second));
+		row.push_back(std::move(modname));
+	}
+	for (auto& imp : name_set) {
+		string modname;
+		if (!get_modref(imp.first, modname))
+			continue;
+		string name;
+		if (!get_name(imp.second, name))
+			continue;
+		vv_data->emplace_back();
+		auto &row = vv_data->back();
+		row.reserve(2);
+		row.push_back(std::move(name));
+		row.push_back(std::move(modname));
+	}
+
+	// Sort the list data by (module, name).
+	std::sort(vv_data->begin(), vv_data->end(),
+		[](vector<string> &lhs, vector<string> &rhs) -> bool {
+			// Vector index 0: Name
+			// Vector index 1: Module
+			int res = strcasecmp(lhs[1].c_str(), rhs[1].c_str());
+			return res < 0 || (res == 0 && strcasecmp(lhs[0].c_str(), rhs[0].c_str()) < 0);
+		});
+
+	// Add the tab.
+	fields->addTab(C_("EXE", "Imports"));
+	fields->reserve(1);
+
+	// Intentionally sharing the translation context with the exports tab.
+	static const char *const field_names[] = {
+		NOP_C_("EXE|Exports", "Name"),
+		NOP_C_("EXE|Exports", "Module")
+	};
+	vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
+		"EXE|Exports", field_names, ARRAY_SIZE(field_names));
+
+	RomFields::AFLD_PARAMS params;
+	params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;
+	params.headers = v_field_names;
+	params.data.single = vv_data;
+	fields->addField_listData(C_("EXE", "Imports"), &params);
 	return 0;
 }
 

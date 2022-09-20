@@ -166,6 +166,12 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 		 */
 		int addFields_NE_Entry(void);
 
+		/**
+		 * Add fields for NE import table.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int addFields_NE_Import(void);
+
 		/** LE/LX-specific **/
 
 		/**
