@@ -19,6 +19,9 @@ using namespace LibRpBase;
 using std::string;
 using std::unique_ptr;
 using std::vector;
+using vhvc::span;
+using vhvc::reinterpret_span;
+using vhvc::reinterpret_span_limit;
 
 namespace LibRomData {
 
@@ -53,10 +56,10 @@ int EXEPrivate::loadNEResident(void)
 		return -EIO; // Short read
 
 	uint32_t end = ne_resident.size();
-	auto set_span = [this, &end](vhvc::span<const uint8_t> &sp, auto offset) -> bool {
+	auto set_span = [this, &end](span<const uint8_t> &sp, auto offset) -> bool {
 		if (offset > end)
 			return true;
-		sp = vhvc::span<const uint8_t>(ne_resident.data() + offset, end - offset);
+		sp = span<const uint8_t>(ne_resident.data() + offset, end - offset);
 		end = offset;
 		return false;
 	};
@@ -178,8 +181,8 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 		return -EIO;
 	}
 
-	auto modRefTable = vhvc::reinterpret_span_limit<const uint16_t>(ne_modref_table, modRefs);
-	auto nameTable = vhvc::reinterpret_span<const char>(ne_imported_name_table);
+	auto modRefTable = reinterpret_span_limit<const uint16_t>(ne_modref_table, modRefs);
+	auto nameTable = reinterpret_span<const char>(ne_imported_name_table);
 
 	// Visual Basic DLL version to display version table.
 	static const struct {
@@ -440,7 +443,7 @@ void EXEPrivate::addFields_NE(void)
 	}
 
 	// Module Name and Module Description.
-	auto get_first_string = [](vhvc::span<const uint8_t> sp, string &out) -> bool {
+	auto get_first_string = [](span<const uint8_t> sp, string &out) -> bool {
 		if (sp.size() == 0 || sp[0] == 0 || sp.size() - 1 < sp[0])
 			return false;
 		out = string(reinterpret_cast<const char*>(sp.data() + 1), sp[0]);
@@ -496,7 +499,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 		bool is_movable;
 		bool has_name;
 		bool is_resident;
-		vhvc::span<const char> name;
+		span<const char> name;
 	};
 	vector<Entry> ents;
 
@@ -566,7 +569,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 	 * more entries, so we must remember the original size so we can do
 	 * a binary search. */
 	size_t last = ents.size();
-	auto readNames = [&](vhvc::span<const uint8_t> sp, bool is_resident) -> int {
+	auto readNames = [&](span<const uint8_t> sp, bool is_resident) -> int {
 		const uint8_t *p = sp.data();
 		const uint8_t *const end = sp.data() + sp.size();
 		if (p == end)
@@ -581,7 +584,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 			uint8_t len = *p++;
 			if (p + len + 2 >= end) // next length byte >= end
 				return -ENOENT;
-			vhvc::span<const char> name(reinterpret_cast<const char *>(p), len);
+			span<const char> name(reinterpret_cast<const char *>(p), len);
 			uint16_t ordinal = p[len] | p[len+1]<<8;
 
 			// binary search for the ordinal
@@ -719,8 +722,8 @@ int EXEPrivate::addFields_NE_Import(void)
 	if (modRefs*2 > ne_modref_table.size()) {
 		return -EIO;
 	}
-	auto modRefTable = vhvc::reinterpret_span_limit<const uint16_t>(ne_modref_table, modRefs);
-	auto nameTable = vhvc::reinterpret_span<const char>(ne_imported_name_table);
+	auto modRefTable = reinterpret_span_limit<const uint16_t>(ne_modref_table, modRefs);
+	auto nameTable = reinterpret_span<const char>(ne_imported_name_table);
 	auto get_name = [&](size_t offset, string &out) -> bool {
 		assert(offset < nameTable.size());
 		if (offset >= nameTable.size())
@@ -754,7 +757,7 @@ int EXEPrivate::addFields_NE_Import(void)
 	};
 	std::unordered_set<std::pair<uint16_t, uint16_t>, hash2x16> ordinal_set, name_set;
 
-	auto segs = vhvc::reinterpret_span<const NE_Segment>(ne_segment_table);
+	auto segs = reinterpret_span<const NE_Segment>(ne_segment_table);
 	if (le16_to_cpu(hdr.ne.SegCount) < segs.size())
 		segs = segs.first(le16_to_cpu(hdr.ne.SegCount));
 
@@ -783,7 +786,7 @@ int EXEPrivate::addFields_NE_Import(void)
 		nread = file->seekAndRead(seg_offset + seg_size + 2, rel_buf.data(), rel_buf.size());
 		if (nread != rel_buf.size())
 			return -EIO; // Short read
-		auto relocs = vhvc::reinterpret_span<const NE_Reloc>(rel_buf);
+		auto relocs = reinterpret_span<const NE_Reloc>(rel_buf);
 
 		for (auto& reloc : relocs) {
 			switch (reloc.flags & NE_REL_TARGET_MASK) {
