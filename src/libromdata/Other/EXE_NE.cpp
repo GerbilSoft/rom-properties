@@ -810,7 +810,7 @@ int EXEPrivate::addFields_NE_Import(void)
 		row.reserve(2);
 		const char *name = EXENEEntries::lookup_ordinal(modname, imp.second);
 		if (name)
-			row.emplace_back(rp_sprintf(C_("EXE|Exports", "Ordinal #%u (%s)"), imp.second, name));
+			row.emplace_back(rp_sprintf(C_("EXE|Exports", "%s (#%u)"), name, imp.second));
 		else
 			row.emplace_back(rp_sprintf(C_("EXE|Exports", "Ordinal #%u"), imp.second));
 		row.push_back(std::move(modname));
