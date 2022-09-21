@@ -11,6 +11,7 @@
 #include "stdafx.h"
 #include "EXE_p.hpp"
 #include "disc/NEResourceReader.hpp"
+#include "data/EXENEEntries.hpp"
 
 // librpbase
 using namespace LibRpBase;
@@ -807,7 +808,11 @@ int EXEPrivate::addFields_NE_Import(void)
 		vv_data->emplace_back();
 		auto &row = vv_data->back();
 		row.reserve(2);
-		row.emplace_back(rp_sprintf(C_("EXE|Exports", "Ordinal #%u"), imp.second));
+		const char *name = EXENEEntries::lookup_ordinal(modname, imp.second);
+		if (name)
+			row.emplace_back(rp_sprintf(C_("EXE|Exports", "Ordinal #%u (%s)"), imp.second, name));
+		else
+			row.emplace_back(rp_sprintf(C_("EXE|Exports", "Ordinal #%u"), imp.second));
 		row.push_back(std::move(modname));
 	}
 	for (auto& imp : name_set) {
@@ -825,6 +830,7 @@ int EXEPrivate::addFields_NE_Import(void)
 	}
 
 	// Sort the list data by (module, name).
+	// FIXME: this need a numeric-aware sort because #1 #100 #2 #200 looks ugly
 	std::sort(vv_data->begin(), vv_data->end(),
 		[](vector<string> &lhs, vector<string> &rhs) -> bool {
 			// Vector index 0: Name
