@@ -833,6 +833,11 @@ int EXEPrivate::addFields_NE_Import(void)
 			return res < 0 || (res == 0 && strcasecmp(lhs[0].c_str(), rhs[0].c_str()) < 0);
 		});
 
+	if (!vv_data->size()) {
+		delete vv_data;
+		return 0;
+	}
+
 	// Add the tab.
 	fields->addTab(C_("EXE", "Imports"));
 	fields->reserve(1);
