@@ -24,25 +24,41 @@ IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND CairoGObj
 	# initialization function is called.
 
 	# Nautilus (GNOME)
-	FIND_PACKAGE(LibNautilusExtension 3.0.0)
-	IF(NOT LibNautilusExtension_FOUND)
+	FIND_PACKAGE(LibNautilusExtension)
+	IF(LibNautilusExtension_FOUND)
+		# Check if it's v3 or v4.
+		IF(LibNautilusExtension_EXTENSION_DIR MATCHES 3\.0$)
+			# v3: Use the directory as-is.
+			SET(LibNautilusExtension3_EXTENSION_DIR "${LibNautilusExtension_EXTENSION_DIR}")
+		ELSEIF(LibNautilusExtension_EXTENSION_DIR MATCHES 4\.0$)
+			# v4: Replace the version number with 3.0.
+			STRING(REPLACE "extensions-4" "extensions-3.0" LibNautilusExtension3_EXTENSION_DIR "${LibNautilusExtension_EXTENSION_DIR}") 
+		ELSE()
+			MESSAGE(STATUS "Unrecognized LibNautilusExtension version found. Using the default extensions directory.")
+			SET(LibNautilusExtension3_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/nautilus/extensions-3.0")
+		ENDIF()
+	ELSE(LibNautilusExtension_FOUND)
 		MESSAGE(STATUS "LibNautilusExtension not found. Using the default extensions directory.")
-		SET(LibNautilusExtension_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/nautilus/extensions-3.0")
-	ENDIF(NOT LibNautilusExtension_FOUND)
+		SET(LibNautilusExtension3_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/nautilus/extensions-3.0")
+	ENDIF(LibNautilusExtension_FOUND)
 
 	# Caja (MATE)
 	FIND_PACKAGE(LibCajaExtension 1.18.0)
-	IF(NOT LibCajaExtension_FOUND)
+	IF(LibCajaExtension_FOUND)
+		SET(LibCajaExtension3_EXTENSION_DIR "${LibCajaExtension_EXTENSION_DIR}")
+	ELSE(LibCajaExtension_FOUND)
 		MESSAGE(STATUS "LibCajaExtension not found. Using the default extensions directory.")
-		SET(LibCajaExtension_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/caja/extensions-2.0")
-	ENDIF(NOT LibCajaExtension_FOUND)
+		SET(LibCajaExtension3_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/caja/extensions-2.0")
+	ENDIF(LibCajaExtension_FOUND)
 
 	# Nemo (Cinnamon)
 	FIND_PACKAGE(LibNemoExtension)
-	IF(NOT LibNemoExtension_FOUND)
+	IF(LibNemoExtension_FOUND)
+		SET(LibNemoExtension3_EXTENSION_DIR "${LibNemoExtension_EXTENSION_DIR}")
+	ELSE(LibNemoExtension_FOUND)
 		MESSAGE(STATUS "LibNemoExtension not found. Using the default extensions directory.")
-		SET(LibNemoExtension_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/nemo/extensions-3.0")
-	ENDIF(NOT LibNemoExtension_FOUND)
+		SET(LibNemoExtension3_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/nemo/extensions-3.0")
+	ENDIF(LibNemoExtension_FOUND)
 
 	# ThunarX3 (XFCE)
 	FIND_PACKAGE(ThunarX3)
@@ -187,26 +203,26 @@ ENDIF(BUILD_GTK3)
 IF(BUILD_GTK3)
 	# GNOME (Nautilus) extension is installed directly.
 	INSTALL(TARGETS ${PROJECT_NAME}
-		LIBRARY DESTINATION "${LibNautilusExtension_EXTENSION_DIR}"
+		LIBRARY DESTINATION "${LibNautilusExtension3_EXTENSION_DIR}"
 		COMPONENT "plugin"
 		)
 
 	# Symlinks are created for Caja, Nemo, and Thunar.
 	# Reference: https://stackoverflow.com/questions/34578362/how-can-i-package-a-symlink-with-cpack
 	ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME} POST_BUILD
-		COMMAND ln -sf "${LibNautilusExtension_EXTENSION_DIR}/${PROJECT_NAME}.so" ${PROJECT_NAME}.symlink.so
+		COMMAND ln -sf "${LibNautilusExtension3_EXTENSION_DIR}/${PROJECT_NAME}.so" ${PROJECT_NAME}.symlink.so
 		WORKING_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
 		VERBATIM
 		)
 
 	# Install symlinks.
 	INSTALL(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${PROJECT_NAME}.symlink.so"
-		DESTINATION "${LibCajaExtension_EXTENSION_DIR}"
+		DESTINATION "${LibCajaExtension3_EXTENSION_DIR}"
 		RENAME "${PROJECT_NAME}.so"
 		COMPONENT "plugin"
 		)
 	INSTALL(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${PROJECT_NAME}.symlink.so"
-		DESTINATION "${LibNemoExtension_EXTENSION_DIR}"
+		DESTINATION "${LibNemoExtension3_EXTENSION_DIR}"
 		RENAME "${PROJECT_NAME}.so"
 		COMPONENT "plugin"
 		)
@@ -222,7 +238,7 @@ IF(BUILD_GTK3)
 		GET_TARGET_PROPERTY(DEBUG_FILENAME ${PROJECT_NAME} PDB)
 		IF(DEBUG_FILENAME)
 			INSTALL(FILES "${DEBUG_FILENAME}"
-				DESTINATION "lib/debug/${LibNautilusExtension_EXTENSION_DIR}"
+				DESTINATION "lib/debug/${LibNautilusExtension3_EXTENSION_DIR}"
 				COMPONENT "debug"
 				)
 		ENDIF(DEBUG_FILENAME)

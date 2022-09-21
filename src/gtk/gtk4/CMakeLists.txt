@@ -19,7 +19,24 @@ IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf
 	# It will be dlopen()'d at runtime based on which
 	# initialization function is called.
 
-	# TODO: File browser extension libraries.
+	# Nautilus (GNOME)
+	FIND_PACKAGE(LibNautilusExtension)
+	IF(LibNautilusExtension_FOUND)
+		# Check if it's v3 or v4.
+		IF(LibNautilusExtension_EXTENSION_DIR MATCHES 4\.0$)
+			# v4: Use the directory as-is.
+			SET(LibNautilusExtension4_EXTENSION_DIR "${LibNautilusExtension_EXTENSION_DIR}")
+		ELSEIF(LibNautilusExtension_EXTENSION_DIR MATCHES 3\.0$)
+			# v3: Replace the version number with 4.
+			STRING(REPLACE "extensions-3.0" "extensions-4.0" LibNautilusExtension4_EXTENSION_DIR "${LibNautilusExtension_EXTENSION_DIR}") 
+		ELSE()
+			MESSAGE(STATUS "Unrecognized LibNautilusExtension version found. Using the default extensions directory.")
+			SET(LibNautilusExtension4_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/nautilus/extensions-4")
+		ENDIF()
+	ELSE(LibNautilusExtension_FOUND)
+		MESSAGE(STATUS "LibNautilusExtension not found. Using the default extensions directory.")
+		SET(LibNautilusExtension4_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/nautilus/extensions-4")
+	ENDIF(LibNautilusExtension_FOUND)
 ELSE()
 	# GTK 4.x (or required dependencies) were not found.
 	# Disable the GTK4 frontend.
@@ -176,32 +193,7 @@ ENDIF(BUILD_GTK4)
 IF(0) #IF(BUILD_GTK4)
 	# GNOME (Nautilus) extension is installed directly.
 	INSTALL(TARGETS ${PROJECT_NAME}
-		LIBRARY DESTINATION "${LibNautilusExtension_EXTENSION_DIR}"
-		COMPONENT "plugin"
-		)
-
-	# Symlinks are created for Caja, Nemo, and Thunar.
-	# Reference: https://stackoverflow.com/questions/34578362/how-can-i-package-a-symlink-with-cpack
-	ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME} POST_BUILD
-		COMMAND ln -sf "${LibNautilusExtension_EXTENSION_DIR}/${PROJECT_NAME}.so" ${PROJECT_NAME}.symlink.so
-		WORKING_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
-		VERBATIM
-		)
-
-	# Install symlinks.
-	INSTALL(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${PROJECT_NAME}.symlink.so"
-		DESTINATION "${LibCajaExtension_EXTENSION_DIR}"
-		RENAME "${PROJECT_NAME}.so"
-		COMPONENT "plugin"
-		)
-	INSTALL(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${PROJECT_NAME}.symlink.so"
-		DESTINATION "${LibNemoExtension_EXTENSION_DIR}"
-		RENAME "${PROJECT_NAME}.so"
-		COMPONENT "plugin"
-		)
-	INSTALL(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${PROJECT_NAME}.symlink.so"
-		DESTINATION "${ThunarX4_EXTENSIONS_DIR}"
-		RENAME "${PROJECT_NAME}.so"
+		LIBRARY DESTINATION "${LibNautilusExtension4_EXTENSION_DIR}"
 		COMPONENT "plugin"
 		)
 
@@ -211,7 +203,7 @@ IF(0) #IF(BUILD_GTK4)
 		GET_TARGET_PROPERTY(DEBUG_FILENAME ${PROJECT_NAME} PDB)
 		IF(DEBUG_FILENAME)
 			INSTALL(FILES "${DEBUG_FILENAME}"
-				DESTINATION "lib/debug/${LibNautilusExtension_EXTENSION_DIR}"
+				DESTINATION "lib/debug/${LibNautilusExtension4_EXTENSION_DIR}"
 				COMPONENT "debug"
 				)
 		ENDIF(DEBUG_FILENAME)
