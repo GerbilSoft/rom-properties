@@ -631,7 +631,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 	res = readNames(ne_resident_name_table, true);
 	if (res)
 		return res;
-	res = readNames(ne_nonresident_name_table, true);
+	res = readNames(ne_nonresident_name_table, false);
 	if (res)
 		return res;
 
