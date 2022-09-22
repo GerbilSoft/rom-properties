@@ -740,10 +740,11 @@ int EXEPrivate::addFields_NE_Import(void)
 		return true;
 	};
 	auto get_modref = [&](size_t modref, string &out) -> bool {
-		assert(modref < ne_modref_table.size());
-		if (modref >= ne_modref_table.size())
+		// NOTE: modref is 1-indexed (and this is not mentioned anywhere in the docs)
+		assert(modref-1 < ne_modref_table.size());
+		if (modref-1 >= ne_modref_table.size())
 			return false;
-		return get_name(le16_to_cpu(ne_modref_table[modref]), out);
+		return get_name(le16_to_cpu(ne_modref_table[modref-1]), out);
 	};
 
 	/* IMPORTORDINAL
