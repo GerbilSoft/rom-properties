@@ -122,11 +122,11 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 		// Resident portion of NE header (up to the end of entry table)
 		ao::uvector<uint8_t> ne_resident;
 		bool ne_resident_loaded = false;
-		vhvc::span<const uint8_t> ne_segment_table;
+		vhvc::span<const NE_Segment> ne_segment_table;
 		vhvc::span<const uint8_t> ne_resource_table;
-		vhvc::span<const uint8_t> ne_resident_name_table;
-		vhvc::span<const uint8_t> ne_modref_table;
-		vhvc::span<const uint8_t> ne_imported_name_table;
+		vhvc::span<const char> ne_resident_name_table;
+		vhvc::span<const uint16_t> ne_modref_table;
+		vhvc::span<const char> ne_imported_name_table;
 		vhvc::span<const uint8_t> ne_entry_table;
 
 		/**
@@ -136,7 +136,7 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 		int loadNENonResidentNames(void);
 
 		// Contents of the non-resident name table (NE)
-		ao::uvector<uint8_t> ne_nonresident_name_table;
+		ao::uvector<char> ne_nonresident_name_table;
 		bool ne_nonresident_name_table_loaded = false;
 
 		/**
@@ -165,6 +165,12 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int addFields_NE_Entry(void);
+
+		/**
+		 * Add fields for NE import table.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int addFields_NE_Import(void);
 
 		/** LE/LX-specific **/
 

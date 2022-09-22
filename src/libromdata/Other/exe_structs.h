@@ -663,6 +663,45 @@ typedef struct _NE_TYPEINFO {
 } NE_TYPEINFO;
 ASSERT_STRUCT(NE_TYPEINFO, 8);
 
+typedef struct _NE_Segment {
+	uint16_t offset;	// in sectors as defined by FileAlnSzShftCnt
+	uint16_t filesz;	// 0 = 64K
+	uint16_t flags;
+	uint16_t memsz;		// 0 = 64K
+} NE_Segment;
+ASSERT_STRUCT(NE_Segment, 8);
+
+typedef enum {
+	NE_SEG_DATA		= 0x0001,
+	NE_SEG_ALLOCATED	= 0x0002,
+	NE_SEG_LOADED		= 0x0004,
+	NE_SEG_MOVABLE		= 0x0010,
+	NE_SEG_SHAREABLE	= 0x0020,
+	NE_SEG_PRELOAD		= 0x0040,
+	NE_SEG_EXECUTEONLY	= 0x0080,
+	NE_SEG_READONLY		= 0x0080,
+	NE_SEG_RELOCINFO	= 0x0100,
+	NE_SEG_DISCARD		= 0x1000,
+} NE_SegFlags;
+
+typedef struct _NE_Reloc {
+	uint8_t source_type;
+	uint8_t flags;
+	uint16_t offset;
+	uint16_t target1;
+	uint16_t target2;
+} NE_Reloc;
+ASSERT_STRUCT(NE_Reloc, 8);
+
+typedef enum {
+	NE_REL_TARGET_MASK	= 0x03,
+	NE_REL_INTERNALREF	= 0x00,
+	NE_REL_IMPORTORDINAL	= 0x01,
+	NE_REL_IMPORTNAME	= 0x02,
+	NE_REL_OSFIXUP		= 0x03,
+	NE_REL_ADDITIVE		= 0x04,
+} NE_RelocFlags;
+
 /** Linear Executable structs. **/
 // NOTE: The header format is the same for LE (Win16 drivers)
 // and LX (32-bit OS/2 executables).
