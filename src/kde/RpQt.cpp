@@ -226,53 +226,36 @@ QString rpFileDialogFilterToQt(const char *filter)
 	if (!filter || filter[0] == '\0')
 		return qs_ret;
 
-	// Temporary string so we can use strtok_r().
-	char *const tmpfilter = strdup(filter);
-	assert(tmpfilter != nullptr);
-	char *saveptr = nullptr;
+#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
+#  define Qt_KeepEmptyParts Qt::KeepEmptyParts
+#else /* QT_VERSION < QT_VERSION_CHECK(5,14,0) */
+#  define Qt_KeepEmptyParts QString::KeepEmptyParts
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,14,0) */
 
-	// First strtok_r() call.
-	qs_ret.reserve(strlen(filter) + 32);
-	char *token = strtok_r(tmpfilter, "|", &saveptr);
-	do {
-		// Separator 1: Between display name and pattern.
-		// (strtok_r() call was done in the previous iteration.)
-		assert(token != nullptr);
-		if (!token) {
-			// Missing token...
-			free(tmpfilter);
-			return QString();
-		}
+	// Using QString::split() instead of strtok_r() so we don't
+	// have to manually strdup() the filter.
+	const QString qs_filter = QString::fromUtf8(filter);
+	QStringList sl = qs_filter.split(QChar(L'|'), Qt_KeepEmptyParts);
+	assert(sl.size() % 3 == 0);
+	if (sl.size() % 3 != 0) {
+		// Not a multiple of 3.
+		return qs_ret;
+	}
+
+	qs_ret.reserve(qs_filter.size() + (sl.size() * 5));
+	for (int i = 0; i < sl.size(); i += 3) {
+		// String indexes:
+		// - 0: Display name
+		// - 1: Pattern
+		// - 2: MIME type (optional; not used by Qt)
 		if (!qs_ret.isEmpty()) {
 			qs_ret += QLatin1String(";;");
 		}
-		qs_ret += QString::fromUtf8(token);
-
-		// Separator 2: Between pattern and MIME types.
-		token = strtok_r(nullptr, "|", &saveptr);
-		assert(token != nullptr);
-		if (!token) {
-			// Missing token...
-			free(tmpfilter);
-			return QString();
-		}
-
-		QString patterns = QString::fromUtf8(token);
-		patterns.replace(QChar(L';'), QChar(L' '));
+		qs_ret += sl[i+0];
 		qs_ret += QLatin1String(" (");
-		qs_ret += patterns;
+		qs_ret += sl[i+1];
 		qs_ret += QChar(L')');
+	}
 
-		// Separator 3: Between MIME types and the next display name.
-		// NOTE: May be missing if this is the end of the string
-		// and a MIME type isn't set.
-		// NOTE: Not used by Qt.
-		token = strtok_r(nullptr, "|", &saveptr);
-
-		// Next token.
-		token = strtok_r(nullptr, "|", &saveptr);
-	} while (token != nullptr);
-
-	free(tmpfilter);
 	return qs_ret;
 }
