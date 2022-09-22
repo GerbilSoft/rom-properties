@@ -449,7 +449,7 @@ void KeyManagerTab::on_actionImportWiiKeysBin_triggered(void)
 		d->keyFileDir,	// dir
 		// tr: Wii keys.bin file filter (RP format)
 		rpFileDialogFilterToQt(
-			C_("KeyManagerTab", "keys.bin|keys.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-")));
+			C_("KeyManagerTab", "keys.bin|keys.bin|-|Binary Files|*.bin|-|All Files|*.*|-")));
 	if (filename.isEmpty())
 		return;
 	d->keyFileDir = QFileInfo(filename).canonicalPath();
@@ -471,7 +471,7 @@ void KeyManagerTab::on_actionImportWiiUOtpBin_triggered(void)
 		d->keyFileDir,	// dir
 		// tr: Wii U otp.bin file filter (RP format)
 		rpFileDialogFilterToQt(
-			C_("KeyManagerTab", "otp.bin|otp.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-")));
+			C_("KeyManagerTab", "otp.bin|otp.bin|-|Binary Files|*.bin|-|All Files|*.*|-")));
 	if (filename.isEmpty())
 		return;
 	d->keyFileDir = QFileInfo(filename).canonicalPath();
@@ -493,7 +493,7 @@ void KeyManagerTab::on_actionImport3DSboot9bin_triggered(void)
 		d->keyFileDir,	// dir
 		// tr: Nintendo 3DS boot9.bin file filter (RP format)
 		rpFileDialogFilterToQt(
-			C_("KeyManagerTab", "boot9.bin|boot9.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-")));
+			C_("KeyManagerTab", "boot9.bin|boot9.bin|-|Binary Files|*.bin|-|All Files|*.*|-")));
 	if (filename.isEmpty())
 		return;
 	d->keyFileDir = QFileInfo(filename).canonicalPath();
@@ -515,7 +515,7 @@ void KeyManagerTab::on_actionImport3DSaeskeydb_triggered(void)
 		d->keyFileDir,	// dir
 		// tr: Nintendo 3DS aeskeydb.bin file filter (RP format)
 		rpFileDialogFilterToQt(
-			C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|application/octet-stream|All Files|*.*|-")));
+			C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|-|All Files|*.*|-")));
 	if (filename.isEmpty())
 		return;
 	d->keyFileDir = QFileInfo(filename).canonicalPath();

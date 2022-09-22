@@ -37,67 +37,67 @@ int rpFileDialogFilterToGtk(GtkFileChooser *fileChooser, const char *filter)
 	if (!fileChooser || !filter || filter[0] == '\0')
 		return -EINVAL;
 
-	// Temporary string so we can use strtok_r().
-	gchar *const tmpfilter = g_strdup(filter);
-	assert(tmpfilter != nullptr);
-	gchar *saveptr = nullptr;
+	// Split the string.
+	gchar **const strv = g_strsplit(filter, "|", 0);
+	if (!strv)
+		return -EINVAL;
 
-	// First strtok_r() call.
-	char *token = strtok_r(tmpfilter, "|", &saveptr);
+	const gchar *const *pStrv = strv;
 	do {
-		GtkFileFilter *const fileFilter = gtk_file_filter_new();
-
 		// Separator 1: Between display name and pattern.
-		// (strtok_r() call was done in the previous iteration.)
-		assert(token != nullptr);
-		if (!token) {
+		assert(pStrv[0] != nullptr);
+		if (!pStrv[0]) {
 			// Missing token...
-			g_object_unref(fileFilter);
-			g_free(tmpfilter);
+			g_strfreev(strv);
 			return -EINVAL;
 		}
-		gtk_file_filter_set_name(fileFilter, token);
+
+		GtkFileFilter *const fileFilter = gtk_file_filter_new();
+		gtk_file_filter_set_name(fileFilter, pStrv[0]);
 
 		// Separator 2: Between pattern and MIME types.
-		token = strtok_r(nullptr, "|", &saveptr);
-		assert(token != nullptr);
-		if (!token) {
+		assert(pStrv[1] != nullptr);
+		if (!pStrv[1]) {
 			// Missing token...
 			g_object_unref(fileFilter);
-			g_free(tmpfilter);
+			g_strfreev(strv);
 			return -EINVAL;
 		}
 
 		// Split the pattern. (';'-separated)
-		char *saveptr2 = nullptr;
-		const char *token2 = strtok_r(token, ";", &saveptr2);
-		while (token2 != nullptr) {
-			gtk_file_filter_add_pattern(fileFilter, token2);
-			token2 = strtok_r(nullptr, ";", &saveptr2);
+		gchar **const strv_ext = g_strsplit(pStrv[1], ";", 0);
+		if (strv_ext) {
+			for (const gchar *const *pStrvExt = strv_ext; *pStrvExt != nullptr; pStrvExt++) {
+				gtk_file_filter_add_pattern(fileFilter, *pStrvExt);
+			}
+			g_strfreev(strv_ext);
 		}
 
 		// Separator 3: Between MIME types and the next display name.
-		// NOTE: strtok_r() skips empty fields. The special indicator
-		// "-" will be used to indicate "no MIME types".
-		token = strtok_r(nullptr, "|", &saveptr);
-		if (token && !(token[0] == '-' && token[1] == ' ')) {
+		if (pStrv[2] && pStrv[2][0] != '-') {
 			// Split the pattern. (';'-separated)
-			saveptr2 = nullptr;
-			token2 = strtok_r(token, ";", &saveptr2);
-			while (token2 != nullptr) {
-				gtk_file_filter_add_mime_type(fileFilter, token2);
-				token2 = strtok_r(nullptr, ";", &saveptr2);
+			gchar **const strv_mime = g_strsplit(pStrv[2], ";", 0);
+			if (strv_mime) {
+				for (const gchar *const *pStrvMime = strv_mime; *pStrvMime != nullptr; pStrvMime++) {
+					gtk_file_filter_add_mime_type(fileFilter, *pStrvMime);
+				}
+				g_strfreev(strv_mime);
 			}
 		}
 
 		// Add the GtkFileFilter.
 		gtk_file_chooser_add_filter(fileChooser, fileFilter);
 
-		// Next token.
-		token = strtok_r(nullptr, "|", &saveptr);
-	} while (token != nullptr);
+		if (!pStrv[2]) {
+			// MIME type token is missing. We're done here.
+			break;
+		}
 
-	g_free(tmpfilter);
+		// Next set of 3 tokens.
+		pStrv += 3;
+	} while (*pStrv != nullptr);
+
+	g_strfreev(strv);
 	return 0;
 }
 
