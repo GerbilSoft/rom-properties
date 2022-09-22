@@ -157,7 +157,7 @@ int w32err_to_posix(DWORD w32err)
 		});
 	if (pErr != p_w32_to_posix_end) {
 		// Found an error code.
-		return entry->posix;
+		return pErr->posix;
 	}
 
 	/* The error code wasn't in the table.  We check for a range of */
