@@ -12,7 +12,7 @@
 #include "../RpFile.hpp"
 #include "../RpFile_p.hpp"
 #ifdef _WIN32
-# include "libwin32common/w32err.h"
+#  include "libwin32common/w32err.hpp"
 #endif
 
 #include "scsi_protocol.h"

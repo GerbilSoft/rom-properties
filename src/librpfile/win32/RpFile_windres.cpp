@@ -10,7 +10,7 @@
 #include "RpFile_windres.hpp"
 
 // libwin32common
-#include "libwin32common/w32err.h"
+#include "libwin32common/w32err.hpp"
 
 // C++ STL classes.
 using std::string;

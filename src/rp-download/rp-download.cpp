@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * rp-download.cpp: Standalone cache downloader.                           *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -43,7 +43,7 @@ using std::unique_ptr;
 #ifdef _WIN32
 // libwin32common
 #  include "libwin32common/RpWin32_sdk.h"
-#  include "libwin32common/w32err.h"
+#  include "libwin32common/w32err.hpp"
 #  include "libwin32common/w32time.h"
 #endif /* _WIN32 */
 
@@ -72,7 +72,7 @@ using std::unique_ptr;
 using namespace RpDownload;
 
 // HTTP status codes.
-#include "http-status.h"
+#include "http-status.hpp"
 
 static const TCHAR *argv0 = nullptr;
 static bool verbose = false;

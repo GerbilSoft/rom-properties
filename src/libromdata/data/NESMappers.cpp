@@ -73,7 +73,7 @@ enum class NESMirroring : uint8_t {
  */
 #include "NESMappers_data.h"
 
-/** Submappers. **/
+/** Submappers **/
 
 /**
  * NES 2.0 submapper information.
@@ -332,39 +332,7 @@ const NESSubmapperEntry submappers[] = {
 	NES2_SUBMAPPER(444, mapper444_submappers),		// NC7000M multicart (MMC3-compatible)
 	NES2_SUBMAPPER(561, mapper006_submappers),		// Bung Super Game Doctor
 	NES2_SUBMAPPER(562, mapper006_submappers),		// Venus Turbo Game Doctor
-
-	{0, 0, nullptr}
 };
-
-/**
- * bsearch() comparison function for NESSubmapperInfo.
- * @param a
- * @param b
- * @return
- */
-static int RP_C_API NESSubmapperInfo_compar(const void *a, const void *b)
-{
-	uint8_t submapper1 = static_cast<const NESSubmapperInfo*>(a)->submapper;
-	uint8_t submapper2 = static_cast<const NESSubmapperInfo*>(b)->submapper;
-	if (submapper1 < submapper2) return -1;
-	if (submapper1 > submapper2) return 1;
-	return 0;
-}
-
-/**
- * bsearch() comparison function for NESSubmapperEntry.
- * @param a
- * @param b
- * @return
- */
-static int RP_C_API NESSubmapperEntry_compar(const void *a, const void *b)
-{
-	uint16_t mapper1 = static_cast<const NESSubmapperEntry*>(a)->mapper;
-	uint16_t mapper2 = static_cast<const NESSubmapperEntry*>(b)->mapper;
-	if (mapper1 < mapper2) return -1;
-	if (mapper1 > mapper2) return 1;
-	return 0;
-}
 
 /**
  * Look up an iNES mapper number.
@@ -407,27 +375,23 @@ const NESSubmapperInfo *lookup_nes2_submapper_info(int mapper, int submapper)
 	}
 
 	// Do a binary search in submappers[].
-	const NESSubmapperEntry key = { static_cast<uint16_t>(mapper), 0, nullptr };
-	const NESSubmapperEntry *const res =
-		static_cast<const NESSubmapperEntry*>(bsearch(&key,
-			submappers,
-			ARRAY_SIZE(submappers)-1,
-			sizeof(NESSubmapperEntry),
-			NESSubmapperEntry_compar));
-	if (!res || !res->info || res->info_size == 0)
+	static const NESSubmapperEntry *const pSubmappers_end =
+		&submappers[ARRAY_SIZE(submappers)];
+	auto pSubmapper = std::lower_bound(submappers, pSubmappers_end, static_cast<uint16_t>(mapper),
+		[](const NESSubmapperEntry &submapper, uint16_t mapper) {
+			return (submapper.mapper < mapper);
+		});
+	if (pSubmapper == pSubmappers_end || !pSubmapper->info || pSubmapper->info_size == 0)
 		return nullptr;
 
-	// Do a binary search in res->info.
-	const NESSubmapperInfo key2 = {
-		static_cast<uint8_t>(submapper), 0, 0,
-		nullptr, NESMirroring::Unknown
-	};
-	const NESSubmapperInfo *const res2 =
-		static_cast<const NESSubmapperInfo*>(bsearch(&key2,
-			res->info, res->info_size,
-			sizeof(NESSubmapperInfo),
-			NESSubmapperInfo_compar));
-	return res2;
+	// Do a binary search in pSubmapper->info.
+	const NESSubmapperInfo *const pInfo_end =
+		&pSubmapper->info[pSubmapper->info_size];
+	auto pSubmapperInfo = std::lower_bound(pSubmapper->info, pInfo_end, static_cast<uint8_t>(submapper),
+		[](const NESSubmapperInfo &submapperInfo, uint8_t submapper) {
+			return (submapperInfo.submapper < submapper);
+		});
+	return (pSubmapperInfo != pInfo_end) ? pSubmapperInfo : nullptr;
 }
 
 /**

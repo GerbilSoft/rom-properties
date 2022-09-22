@@ -56,8 +56,6 @@ static const MachineType machineTypes_PE[] = {
 	{IMAGE_FILE_MACHINE_M32R,	"Mitsubishi M32R"},
 	{IMAGE_FILE_MACHINE_ARM64,	"ARM (64-bit)"},
 	{IMAGE_FILE_MACHINE_CEE,	"MSIL"},
-
-	{0, nullptr}
 };
 
 // LE machine types.
@@ -72,24 +70,7 @@ static const MachineType machineTypes_LE[] = {
 	{LE_CPU_MIPS_I,		"MIPS Mark I (R2000, R3000"},
 	{LE_CPU_MIPS_II,	"MIPS Mark II (R6000)"},
 	{LE_CPU_MIPS_III,	"MIPS Mark III (R4000)"},
-
-	{0, nullptr}
 };
-
-/**
- * bsearch() comparison function for MachineType.
- * @param a
- * @param b
- * @return
- */
-static int RP_C_API MachineType_compar(const void *a, const void *b)
-{
-	const uint16_t cpu1 = static_cast<const MachineType*>(a)->cpu;
-	const uint16_t cpu2 = static_cast<const MachineType*>(b)->cpu;
-	if (cpu1 < cpu2) return -1;
-	if (cpu1 > cpu2) return 1;
-	return 0;
-}
 
 /** Public functions **/
 
@@ -101,14 +82,13 @@ static int RP_C_API MachineType_compar(const void *a, const void *b)
 const char *lookup_pe_cpu(uint16_t cpu)
 {
 	// Do a binary search.
-	const MachineType key = {cpu, nullptr};
-	const MachineType *res =
-		static_cast<const MachineType*>(bsearch(&key,
-			machineTypes_PE,
-			ARRAY_SIZE(machineTypes_PE)-1,
-			sizeof(MachineType),
-			MachineType_compar));
-	return (res ? res->name : nullptr);
+	static const MachineType *const pMachineTypes_PE_end =
+		&machineTypes_PE[ARRAY_SIZE(machineTypes_PE)];
+	auto pPE = std::lower_bound(machineTypes_PE, pMachineTypes_PE_end, cpu,
+		[](const MachineType &pe, uint16_t cpu) {
+			return (pe.cpu < cpu);
+		});
+	return (pPE != pMachineTypes_PE_end) ? pPE->name : nullptr;
 }
 
 /**
@@ -119,14 +99,13 @@ const char *lookup_pe_cpu(uint16_t cpu)
 const char *lookup_le_cpu(uint16_t cpu)
 {
 	// Do a binary search.
-	const MachineType key = {cpu, nullptr};
-	const MachineType *res =
-		static_cast<const MachineType*>(bsearch(&key,
-			machineTypes_LE,
-			ARRAY_SIZE(machineTypes_LE)-1,
-			sizeof(MachineType),
-			MachineType_compar));
-	return (res ? res->name : nullptr);
+	static const MachineType *const pMachineTypes_LE_end =
+		&machineTypes_LE[ARRAY_SIZE(machineTypes_LE)];
+	auto pLE = std::lower_bound(machineTypes_LE, pMachineTypes_LE_end, cpu,
+		[](const MachineType &pe, uint16_t cpu) {
+			return (pe.cpu < cpu);
+		});
+	return (pLE != pMachineTypes_LE_end) ? pLE->name : nullptr;
 }
 
 } }

@@ -11,7 +11,7 @@
 
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"
-#include "libwin32common/w32err.h"
+#include "libwin32common/w32err.hpp"
 
 // References:
 // - https://docs.microsoft.com/en-us/windows/win32/seccrypto/example-c-program--creating-an-md-5-hash-from-file-content

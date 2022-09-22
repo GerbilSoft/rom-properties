@@ -35,11 +35,11 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.${PROJECT_NAME}.h.in" "${CMAK
 SET(${PROJECT_NAME}_SRCS
 	rp-download.cpp
 	IDownloader.cpp
-	http-status.c
+	http-status.cpp
 	)
 SET(${PROJECT_NAME}_H
 	IDownloader.hpp
-	http-status.h
+	http-status.hpp
 	)
 
 IF(WIN32)

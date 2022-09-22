@@ -55,24 +55,7 @@ static const ELFMachineType ELFMachineTypes_other[] = {
 	{0xFEBA,	"Vitesse IQ2000 (unofficial)"},
 	{0xFEBB,	"NIOS (unofficial)"},
 	{0xFEED,	"Moxie (unofficial)"},
-
-	{0, nullptr}
 };
-
-/**
- * bsearch() comparison function for ELFMachineType.
- * @param a
- * @param b
- * @return
- */
-static int RP_C_API ELFMachineType_compar(const void *a, const void *b)
-{
-	const uint16_t cpu1 = static_cast<const ELFMachineType*>(a)->cpu;
-	const uint16_t cpu2 = static_cast<const ELFMachineType*>(b)->cpu;
-	if (cpu1 < cpu2) return -1;
-	if (cpu1 > cpu2) return 1;
-	return 0;
-}
 
 /** Public functions **/
 
@@ -90,14 +73,13 @@ const char *lookup_cpu(uint16_t cpu)
 
 	// CPU ID is in the "other" IDs array.
 	// Do a binary search.
-	const ELFMachineType key = {cpu, nullptr};
-	const ELFMachineType *res =
-		static_cast<const ELFMachineType*>(bsearch(&key,
-			ELFMachineTypes_other,
-			ARRAY_SIZE(ELFMachineTypes_other)-1,
-			sizeof(ELFMachineType),
-			ELFMachineType_compar));
-	return (res ? res->name : nullptr);
+	static const ELFMachineType *const pELFMachineTypes_other_end =
+		&ELFMachineTypes_other[ARRAY_SIZE(ELFMachineTypes_other)];
+	auto pELF = std::lower_bound(ELFMachineTypes_other, pELFMachineTypes_other_end, cpu,
+		[](const ELFMachineType &elf, uint16_t cpu) {
+			return (elf.cpu < cpu);
+		});
+	return (pELF != pELFMachineTypes_other_end) ? pELF->name : nullptr;
 }
 
 /**

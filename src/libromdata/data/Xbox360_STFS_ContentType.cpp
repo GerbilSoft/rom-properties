@@ -58,21 +58,6 @@ static const ContentTypeEntry contentTypeList[] = {
 	{0, nullptr}
 };
 
-/**
- * Comparison function for bsearch().
- * @param a
- * @param b
- * @return
- */
-static int RP_C_API compar(const void *a, const void *b)
-{
-	uint32_t id1 = static_cast<const ContentTypeEntry*>(a)->id;
-	uint32_t id2 = static_cast<const ContentTypeEntry*>(b)->id;
-	if (id1 < id2) return -1;
-	if (id1 > id2) return 1;
-	return 0;
-}
-
 /** Public functions **/
 
 /**
@@ -83,16 +68,15 @@ static int RP_C_API compar(const void *a, const void *b)
 const char *lookup(uint32_t contentType)
 {
 	// Do a binary search.
-	const ContentTypeEntry key = {contentType, nullptr};
-	const ContentTypeEntry *res =
-		static_cast<const ContentTypeEntry*>(bsearch(&key,
-			contentTypeList,
-			ARRAY_SIZE(contentTypeList)-1,
-			sizeof(ContentTypeEntry),
-			compar));
-	return (res
-		? dpgettext_expr(RP_I18N_DOMAIN, "Xbox360_STFS|ContentType", res->contentType)
-		: nullptr);
+	static const ContentTypeEntry *const pContentTypeList_end =
+		&contentTypeList[ARRAY_SIZE(contentTypeList)];
+	auto pContentType = std::lower_bound(contentTypeList, pContentTypeList_end, contentType,
+		[](const ContentTypeEntry &cte, uint32_t contentType) {
+			return (cte.id < contentType);
+		});
+	return (pContentType != pContentTypeList_end)
+		? dpgettext_expr(RP_I18N_DOMAIN, "Xbox360_STFS|ContentType", pContentType->contentType)
+		: nullptr;
 }
 
 } }

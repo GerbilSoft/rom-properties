@@ -13,7 +13,7 @@
 
 // libwin32common
 #include "libwin32common/MiniU82T.hpp"
-#include "libwin32common/w32err.h"
+#include "libwin32common/w32err.hpp"
 using LibWin32Common::U82T;
 
 // C includes.

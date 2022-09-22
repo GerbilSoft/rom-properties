@@ -60,24 +60,7 @@ static const FirmBin_t firmBins[] = {
 	{0xF5D833A2, {2,51, 2}, {11,1}, true},
 	{0xFA7997F7, {2,56, 0}, {11,12}, false},
 	{0xFFA6777A, {2,48, 3}, { 9,3}, true},
-
-	{0, {0,0,0}, {0,0}, false}
 };
-
-/**
- * Comparison function for bsearch().
- * @param a
- * @param b
- * @return
- */
-static int RP_C_API compar(const void *a, const void *b)
-{
-	uint32_t crc_1 = static_cast<const FirmBin_t*>(a)->crc;
-	uint32_t crc_2 = static_cast<const FirmBin_t*>(b)->crc;
-	if (crc_1 < crc_2) return -1;
-	if (crc_1 > crc_2) return 1;
-	return 0;
-}
 
 /** Public functions **/
 
@@ -89,12 +72,13 @@ static int RP_C_API compar(const void *a, const void *b)
 const FirmBin_t *lookup_firmBin(const uint32_t crc)
 {
 	// Do a binary search.
-	const FirmBin_t key = {crc, {0,0,0}, {0,0}, false};
-	return static_cast<const FirmBin_t*>(bsearch(&key,
-			firmBins,
-			ARRAY_SIZE(firmBins)-1,
-			sizeof(FirmBin_t),
-			compar));
+	static const FirmBin_t *const pFirmBins_end =
+		&firmBins[ARRAY_SIZE(firmBins)];
+	auto pFirmBin = std::lower_bound(firmBins, pFirmBins_end, crc,
+		[](const FirmBin_t &firmBin, uint32_t crc) {
+			return (firmBin.crc < crc);
+		});
+	return (pFirmBin != pFirmBins_end) ? pFirmBin : nullptr;
 }
 
 } }

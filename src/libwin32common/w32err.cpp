@@ -1,23 +1,26 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libwin32common)                   *
- * w32err.c: Error code mapping. (Windows to POSIX)                        *
+ * w32err.cpp: Error code mapping. (Windows to POSIX)                      *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "w32err.h"
+#include "w32err.hpp"
 
-// C includes.
+// C includes
 #include <errno.h>
 #include <stdlib.h>
 
+// C++ includes
+#include <algorithm>
+
 // Some errors aren't present in various SDKs.
 #ifndef ERROR_IMAGE_SUBSYSTEM_NOT_PRESENT	// not present in MinGW-w64 4.0.6
-# define ERROR_IMAGE_SUBSYSTEM_NOT_PRESENT 308
+#  define ERROR_IMAGE_SUBSYSTEM_NOT_PRESENT 308
 #endif
 #ifndef ERROR_DISK_RESOURCES_EXHAUSTED		// not present in Windows 7 SDK
-# define ERROR_DISK_RESOURCES_EXHAUSTED 314
+#  define ERROR_DISK_RESOURCES_EXHAUSTED 314
 #endif
 
 typedef struct _errmap {
@@ -140,21 +143,19 @@ static int RP_C_API errmap_compar(const void *a, const void *b)
  */
 int w32err_to_posix(DWORD w32err)
 {
-	errmap key;
-	const errmap *entry;
-
 	if (w32err > UINT16_MAX) {
 		// Error code table is limited to uint16_t.
 		return EINVAL;
 	}
 
 	// Check the error code table.
-	key.w32 = (uint16_t)w32err;
-	key.posix = 0;
-	entry = (const errmap*)(bsearch(&key,
-		w32_to_posix, _countof(w32_to_posix),
-		sizeof(errmap), errmap_compar));
-	if (entry) {
+	static const errmap *const p_w32_to_posix_end =
+		&w32_to_posix[_countof(w32_to_posix)];
+	auto pErr = std::lower_bound(w32_to_posix, p_w32_to_posix_end, w32err,
+		[](const errmap &err, DWORD w32err) {
+			return (err.w32 < w32err);
+		});
+	if (pErr != p_w32_to_posix_end) {
 		// Found an error code.
 		return entry->posix;
 	}

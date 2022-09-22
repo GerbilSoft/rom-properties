@@ -24,21 +24,6 @@ struct OffTbl_t {
 };
 
 /**
- * Comparison function for bsearch().
- * @param a
- * @param b
- * @return
- */
-static int RP_C_API compar(const void *a, const void *b)
-{
-	unsigned int id1 = static_cast<const OffTbl_t*>(a)->id;
-	unsigned int id2 = static_cast<const OffTbl_t*>(b)->id;
-	if (id1 < id2) return -1;
-	if (id1 > id2) return 1;
-	return 0;
-}
-
-/**
  * OpenGL enumerations.
  */
 static const char glEnum_strtbl[] = {
@@ -549,18 +534,16 @@ const char *lookup_glEnum(unsigned int glEnum)
 	}
 
 	// Do a binary search.
-	const OffTbl_t key = {static_cast<uint16_t>(glEnum), 0};
-	const OffTbl_t *res =
-		static_cast<const OffTbl_t*>(bsearch(&key,
-			glEnum_offtbl,
-			ARRAY_SIZE(glEnum_offtbl),
-			sizeof(OffTbl_t),
-			compar));
-
-	if (!res || res->offset == 0) {
+	static const OffTbl_t *const pGlEnum_offtbl_end =
+		&glEnum_offtbl[ARRAY_SIZE(glEnum_offtbl)];
+	auto pEntry = std::lower_bound(glEnum_offtbl, pGlEnum_offtbl_end, glEnum,
+		[](const OffTbl_t &entry, unsigned int glEnum) {
+			return (entry.id < glEnum);
+		});
+	if (pEntry == pGlEnum_offtbl_end || pEntry->offset == 0) {
 		return nullptr;
 	}
-	return &glEnum_strtbl[res->offset];
+	return &glEnum_strtbl[pEntry->offset];
 }
 
 } }

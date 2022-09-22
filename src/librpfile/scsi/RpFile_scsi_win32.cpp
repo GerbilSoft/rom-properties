@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_scsi_win32.cpp: Standard file object. (Win32 SCSI)               *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,7 +16,7 @@
 
 #include "scsi_protocol.h"
 
-#include "libwin32common/w32err.h"
+#include "libwin32common/w32err.hpp"
 // NT DDK SCSI functions.
 #if defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
 // Old MinGW has the NT DDK headers in include/ddk/.

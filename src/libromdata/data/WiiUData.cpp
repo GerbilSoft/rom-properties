@@ -227,8 +227,6 @@ static const WiiUDiscPublisher disc_publishers_noregion[] = {
 	{'WGSx', '00CX'},	// Giana Sisters: Twisted Dreams - Director's Cut
 	{'WKNx', '00AY'},	// Shovel Knight
 	{'WTBx', '00EY'},	// Shakedown: Hawaii
-
-	{0, 0}
 };
 
 /**
@@ -276,24 +274,7 @@ static const WiiUDiscPublisher disc_publishers_region[] = {
 	{'BWPE', '0001'},	// Hyrule Warriors (NTSC-U)
 	{'BWPJ', '00C8'},	// Zelda Musou (NTSC-J)
 	{'BWPP', '0001'},	// Hyrule Warriors (PAL)
-
-	{0, 0}
 };
-
-/**
- * Comparison function for bsearch().
- * @param a
- * @param b
- * @return
- */
-static int RP_C_API compar(const void *a, const void *b)
-{
-	unsigned int id4_1 = static_cast<const WiiUDiscPublisher*>(a)->id4;
-	unsigned int id4_2 = static_cast<const WiiUDiscPublisher*>(b)->id4;
-	if (id4_1 < id4_2) return -1;
-	if (id4_1 > id4_2) return 1;
-	return 0;
-}
 
 /** Public functions **/
 
@@ -317,15 +298,15 @@ uint32_t lookup_disc_publisher(const char *id4)
 	key.publisher = 0;
 
 	// Do a binary search.
-	const WiiUDiscPublisher *res =
-		static_cast<const WiiUDiscPublisher*>(bsearch(&key,
-			disc_publishers_noregion,
-			ARRAY_SIZE(disc_publishers_noregion)-1,
-			sizeof(WiiUDiscPublisher),
-			compar));
-	if (res) {
+	static const WiiUDiscPublisher *const p_disc_publishers_noregion_end =
+		&disc_publishers_noregion[ARRAY_SIZE(disc_publishers_noregion)];
+	auto pPubNoRegion = std::lower_bound(disc_publishers_noregion, p_disc_publishers_noregion_end, key,
+		[](const WiiUDiscPublisher &pub, const WiiUDiscPublisher &key) {
+			return (pub.id4 < key.id4);
+		});
+	if (pPubNoRegion != p_disc_publishers_noregion_end) {
 		// Found a publisher in the region-independent list.
-		return res->publisher;
+		return pPubNoRegion->publisher;
 	}
 
 	// Check the region-specific list.
@@ -333,13 +314,13 @@ uint32_t lookup_disc_publisher(const char *id4)
 	key.id4 |= static_cast<uint8_t>(id4[3]);
 
 	// Do a binary search.
-	res = static_cast<const WiiUDiscPublisher*>(bsearch(&key,
-			disc_publishers_region,
-			ARRAY_SIZE(disc_publishers_region)-1,
-			sizeof(WiiUDiscPublisher),
-			compar));
-
-	return (res ? res->publisher : 0);
+	static const WiiUDiscPublisher *const p_disc_publishers_region_end =
+		&disc_publishers_region[ARRAY_SIZE(disc_publishers_region)];
+	auto pPubRegion = std::lower_bound(disc_publishers_region, p_disc_publishers_region_end, key,
+		[](const WiiUDiscPublisher &pub, const WiiUDiscPublisher &key) {
+			return (pub.id4 < key.id4);
+		});
+	return (pPubRegion != p_disc_publishers_region_end) ? pPubRegion->publisher : 0;
 }
 
 } }

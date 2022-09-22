@@ -65,21 +65,6 @@ static const LangName_t langNames[] = {
 };
 
 /**
- * char_id_t bsearch() comparison function.
- * @param a
- * @param b
- * @return
- */
-static int RP_C_API LangName_t_compar(const void *a, const void *b)
-{
-	uint32_t lc1 = static_cast<const LangName_t*>(a)->lc;
-	uint32_t lc2 = static_cast<const LangName_t*>(b)->lc;
-	if (lc1 < lc2) return -1;
-	if (lc1 > lc2) return 1;
-	return 0;
-}
-
-/**
  * Get the LC_MESSAGES or LC_ALL environment variable.
  * @return Value, or nullptr if not found.
  */
@@ -352,14 +337,13 @@ uint32_t getLanguageCode(void)
 const char *getLocalizedLanguageName(uint32_t lc)
 {
 	// Do a binary search.
-	const LangName_t key = {lc, nullptr};
-	const LangName_t *res =
-		static_cast<const LangName_t*>(bsearch(&key,
-			langNames,
-			ARRAY_SIZE(langNames),
-			sizeof(LangName_t),
-			LangName_t_compar));
-	return (res ? res->name : nullptr);
+	static const LangName_t *const pLangNames_end =
+		&langNames[ARRAY_SIZE(langNames)];
+	auto pLangName = std::lower_bound(langNames, pLangNames_end, lc,
+		[](const LangName_t &langName, uint32_t lc) {
+			return (langName.lc < lc);
+		});
+	return (pLangName != pLangNames_end) ? pLangNames_end->name : nullptr;
 }
 
 /**

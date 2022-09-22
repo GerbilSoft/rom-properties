@@ -49,25 +49,7 @@ static const SysVersionEntry_t sysVersionList[] = {
 	// NOTE 2: vWii also has 512, 513, and 514.
 	{544, "4.3J"}, {545, "4.3U"}, {546, "4.3E"},
 	{608, "4.3J"}, {609, "4.3U"}, {610, "4.3E"},
-
-	// End of list.
-	{0, ""}
 };
-
-/**
- * Comparison function for bsearch().
- * @param a
- * @param b
- * @return
- */
-static int RP_C_API compar(const void *a, const void *b)
-{
-	unsigned int v1 = static_cast<const SysVersionEntry_t*>(a)->version;
-	unsigned int v2 = static_cast<const SysVersionEntry_t*>(b)->version;
-	if (v1 < v2) return -1;
-	if (v1 > v2) return 1;
-	return 0;
-}
 
 /** Public functions **/
 
@@ -79,14 +61,13 @@ static int RP_C_API compar(const void *a, const void *b)
 const char *lookup(unsigned int version)
 {
 	// Do a binary search.
-	const SysVersionEntry_t key = {static_cast<uint16_t>(version), ""};
-	const SysVersionEntry_t *res =
-		static_cast<const SysVersionEntry_t*>(bsearch(&key,
-			sysVersionList,
-			ARRAY_SIZE(sysVersionList)-1,
-			sizeof(SysVersionEntry_t),
-			compar));
-	return (res ? res->str : nullptr);
+	static const SysVersionEntry_t *const pSysVersionList_end =
+		&sysVersionList[ARRAY_SIZE(sysVersionList)];
+	auto pVer = std::lower_bound(sysVersionList, pSysVersionList_end, version,
+		[](const SysVersionEntry_t &sysVersion, unsigned int version) {
+			return (sysVersion.version < version);
+		});
+	return (pVer != pSysVersionList_end) ? pVer->str : nullptr;
 }
 
 } }

@@ -1,31 +1,21 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (rp-download)                      *
- * http-status.h: HTTP status codes.                                       *
+ * http-status.hpp: HTTP status codes.                                     *
  *                                                                         *
- * Copyright (c) 2020 by David Korth.                                      *
+ * Copyright (c) 2020-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "http-status.h"
+#include "http-status.hpp"
 
 // C API declaration for MSVC.
 // Required when using stdcall as the default calling convention.
 #ifdef _MSC_VER
-# define RP_C_API __cdecl
+#  define RP_C_API __cdecl
 #else
-# define RP_C_API
+#  define RP_C_API
 #endif
-
-// Some compilers don't seem to provide the static_assert() macro,
-// even though they default to C11.
-// OpenBSD 6.6: clang-8.0.1
-// TODO: Move to c++11-compat.h?
-#ifndef _MSC_VER
-# ifndef static_assert
-#  define static_assert _Static_assert
-# endif /* !static_assert */
-#endif /* !_MSC_VER */
 
 // HTTP status code messages.
 // Reference: https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
@@ -216,21 +206,6 @@ static const HttpStatusMsg_t httpStatusMsgs[] = {
 };
 
 /**
- * HttpStatusMsg_t bsearch() comparison function.
- * @param a
- * @param b
- * @return
- */
-static int RP_C_API HttpStatusMsg_t_compar(const void *a, const void *b)
-{
-	int code1 = ((const HttpStatusMsg_t*)a)->code;
-	int code2 = ((const HttpStatusMsg_t*)b)->code;
-	if (code1 < code2) return -1;
-	if (code1 > code2) return 1;
-	return 0;
-}
-
-/**
  * Get a string representation for an HTTP status code.
  * @param code HTTP status code.
  * @return String representation, or nullptr if not found.
@@ -238,17 +213,16 @@ static int RP_C_API HttpStatusMsg_t_compar(const void *a, const void *b)
 const TCHAR *http_status_string(int code)
 {
 	// Do a binary search.
-	const HttpStatusMsg_t key = {code, 0};
-	const HttpStatusMsg_t *const res =
-		(const HttpStatusMsg_t*)bsearch(&key,
-			httpStatusMsgs,
-			ARRAY_SIZE(httpStatusMsgs)-1,
-			sizeof(HttpStatusMsg_t),
-			HttpStatusMsg_t_compar);
+	static const HttpStatusMsg_t *const pHttpStatusMsgs_end =
+		&httpStatusMsgs[ARRAY_SIZE(httpStatusMsgs)];
+	auto pHttp = std::lower_bound(httpStatusMsgs, pHttpStatusMsgs_end, code,
+		[](const HttpStatusMsg_t &msg, int code) {
+			return (msg.code < code);
+		});
 
 	// Putting static_assert() after the variable declarations
 	// to prevent issues with MSVC 2010.
 	static_assert(ARRAY_SIZE(httpStatusMsgs_str) == 1240, "httpStatusMsgs_str[] is the wrong size!");
 
-	return (res ? &httpStatusMsgs_str[res->offset] : NULL);
+	return (pHttp != pHttpStatusMsgs_end) ? &httpStatusMsgs_str[pHttp->offset] : nullptr;
 }

@@ -16,7 +16,7 @@
 // libwin32common
 #include "libwin32common/MiniU82T.hpp"
 #include "libwin32common/userdirs.hpp"
-#include "libwin32common/w32err.h"
+#include "libwin32common/w32err.hpp"
 #include "libwin32common/w32time.h"
 using LibWin32Common::T2U8;
 using LibWin32Common::U82T;

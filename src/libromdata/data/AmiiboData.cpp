@@ -133,22 +133,6 @@ class AmiiboDataPrivate {
 		 * @return String, or nullptr on error.
 		 */
 		inline const char *strTbl_lookup(uint32_t idx) const;
-
-		/**
-		 * CharTableEntry bsearch() comparison function.
-		 * @param a
-		 * @param b
-		 * @return
-		 */
-		static int RP_C_API CharTableEntry_compar(const void *a, const void *b);
-
-		/**
-		 * CharVariantTableEntry bsearch() comparison function.
-		 * @param a
-		 * @param b
-		 * @return
-		 */
-		static int RP_C_API CharVariantTableEntry_compar(const void *a, const void *b);
 };
 
 // amiibo-data.bin filename
@@ -507,55 +491,6 @@ inline const char *AmiiboDataPrivate::strTbl_lookup(uint32_t idx) const
 	return &pStrTbl[idx];
 }
 
-/**
- * CharTableEntry bsearch() comparison function.
- * @param a
- * @param b
- * @return
- */
-int RP_C_API AmiiboDataPrivate::CharTableEntry_compar(const void *a, const void *b)
-{
-	uint32_t id1 = le32_to_cpu(static_cast<const CharTableEntry*>(a)->char_id);
-	uint32_t id2 = le32_to_cpu(static_cast<const CharTableEntry*>(b)->char_id);
-
-	// NOTE: Masking off the character variant flag.
-	id1 &= ~CHARTABLE_VARIANT_FLAG;
-	id2 &= ~CHARTABLE_VARIANT_FLAG;
-
-	if (id1 < id2) return -1;
-	else if (id1 > id2) return 1;
-	else return 0;
-}
-
-/**
- * CharVariantTableEntry bsearch() comparison function.
- * @param a
- * @param b
- * @return
- */
-int RP_C_API AmiiboDataPrivate::CharVariantTableEntry_compar(const void *a, const void *b)
-{
-	const CharVariantTableEntry *pA = static_cast<const CharVariantTableEntry*>(a);
-	const CharVariantTableEntry *pB = static_cast<const CharVariantTableEntry*>(b);
-
-	if (pA->char_id == pB->char_id) {
-		// Same character ID. Compare the variant ID.
-		const uint8_t varA = pA->var_id;
-		const uint8_t varB = pB->var_id;
-		if (varA < varB) return -1;
-		else if (varA > varB) return 1;
-		else return 0;
-	}
-
-	// Character ID doesn't match.
-	const uint16_t idA = le16_to_cpu(pA->char_id);
-	const uint16_t idB = le16_to_cpu(pB->char_id);
-
-	if (idA < idB) return -1;
-	else if (idA > idB) return 1;
-	else return 0;
-}
-
 /** AmiiboData **/
 
 // Singleton instance.
@@ -623,49 +558,52 @@ const char *AmiiboData::lookup_char_name(uint32_t char_id) const
 	if (d->loadIfNeeded() != 0)
 		return nullptr;
 
-	// NOTE: Search is done on little-endian data,
-	// so the id needs to be 32-bit byteswapped.
-	const uint32_t id = cpu_to_le32((char_id >> 16) & 0xFFFF);
+	const uint32_t id = ((char_id >> 16) & 0xFFFF);
 
 	// Do a binary search.
-	const CharTableEntry key = {id, 0};
-	const CharTableEntry *const cres =
-		static_cast<const CharTableEntry*>(bsearch(&key,
-			d->pCharTbl,
-			d->charTbl_count,
-			sizeof(CharTableEntry),
-			AmiiboDataPrivate::CharTableEntry_compar));
-	if (!cres) {
+	//const CharTableEntry key = {id, 0};
+	const CharTableEntry *const pCharTblEnd = d->pCharTbl + d->charTbl_count;
+	auto pCTEntry = std::lower_bound(d->pCharTbl, pCharTblEnd, (id & ~CHARTABLE_VARIANT_FLAG),
+		[](const CharTableEntry &entry, uint32_t id2) {
+			uint32_t id1 = le32_to_cpu(entry.char_id) & ~CHARTABLE_VARIANT_FLAG;
+			return (id1 < id2);
+		});
+	if (pCTEntry == pCharTblEnd) {
 		// Character ID not found.
 		return nullptr;
 	}
 
 	// Check for variants.
 	const char *name = nullptr;
-	if (le32_to_cpu(cres->char_id) & CHARTABLE_VARIANT_FLAG) {
+	if (le32_to_cpu(pCTEntry->char_id) & CHARTABLE_VARIANT_FLAG) {
 		// Do a binary search in the character variant table.
-		const uint16_t cv_char_id = cpu_to_le16((char_id >> 16) & 0xFFFF);
+		const uint16_t cv_char_id = ((char_id >> 16) & 0xFFFF);
 		const uint8_t variant_id = (char_id >> 8) & 0xFF;
 		const CharVariantTableEntry key = {cv_char_id, variant_id, 0, 0};
-		const CharVariantTableEntry *const vres =
-			static_cast<const CharVariantTableEntry*>(bsearch(&key,
-				d->pCharVarTbl,
-				d->charVarTbl_count,
-				sizeof(CharVariantTableEntry),
-				AmiiboDataPrivate::CharVariantTableEntry_compar));
 
-		if (vres) {
+		const CharVariantTableEntry *const pCharVarTblEnd = d->pCharVarTbl + d->charVarTbl_count;
+		auto pCVTEntry = std::lower_bound(d->pCharVarTbl, pCharVarTblEnd, key,
+			[](const CharVariantTableEntry &key1, const CharVariantTableEntry &key2) {
+				// Compare the character ID first.
+				if (le16_to_cpu(key1.char_id) < key2.char_id)
+					return true;
+
+				// Compare the variant ID.
+				return (key1.var_id < key2.var_id);
+			});
+
+		if (pCVTEntry != pCharVarTblEnd) {
 			// Character variant ID found.
-			name = d->strTbl_lookup(le32_to_cpu(vres->name));
+			name = d->strTbl_lookup(le32_to_cpu(pCVTEntry->name));
 		} else {
 			// Character variant ID not found.
 			// Maybe it's an error...
 			// Default to the main character name.
-			name = d->strTbl_lookup(le32_to_cpu(cres->name));
+			name = d->strTbl_lookup(le32_to_cpu(pCTEntry->name));
 		}
 	} else {
 		// No variants.
-		name = d->strTbl_lookup(le32_to_cpu(cres->name));
+		name = d->strTbl_lookup(le32_to_cpu(pCTEntry->name));
 	}
 
 	return name;

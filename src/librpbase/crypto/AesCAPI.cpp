@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * AesCAPI.cpp: AES decryption class using Win32 CryptoAPI.                *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,7 +11,7 @@
 
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"
-#include "libwin32common/w32err.h"
+#include "libwin32common/w32err.hpp"
 
 // References:
 // - http://www.codeproject.com/Tips/787096/Operation-Password-CryptoAPI-with-AES

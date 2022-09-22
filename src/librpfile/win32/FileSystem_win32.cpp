@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * FileSystem_win32.cpp: File system functions. (Win32 implementation)     *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -27,7 +27,7 @@ using std::wstring;
 // libwin32common
 #include "libwin32common/MiniU82T.hpp"
 #include "libwin32common/RpWin32_sdk.h"
-#include "libwin32common/w32err.h"
+#include "libwin32common/w32err.hpp"
 #include "libwin32common/w32time.h"
 using LibWin32Common::T2U8;
 using LibWin32Common::U82W;
