@@ -44,6 +44,11 @@ int rpFileDialogFilterToGtk(GtkFileChooser *fileChooser, const char *filter)
 
 	const gchar *const *pStrv = strv;
 	do {
+		// String indexes:
+		// - 0: Display name
+		// - 1: Pattern
+		// - 2: MIME type (optional)
+
 		// Separator 1: Between display name and pattern.
 		assert(pStrv[0] != nullptr);
 		if (!pStrv[0]) {
