@@ -810,21 +810,22 @@ int EXEPrivate::addFields_NE_Import(void)
 		}
 	}
 
+	const char *const s_no_name = C_("EXE|Exports", "(No name)");
+
 	auto vv_data = new RomFields::ListData_t();
 	vv_data->reserve(ordinal_set.size() + name_set.size());
 	for (auto& imp : ordinal_set) {
 		string modname;
 		if (!get_modref(imp.first, modname))
 			continue;
-		vv_data->emplace_back();
-		auto &row = vv_data->back();
-		row.reserve(2);
-		const char *name = EXENEEntries::lookup_ordinal(modname, imp.second);
-		if (name)
-			row.emplace_back(rp_sprintf(C_("EXE|Exports", "%s (#%u)"), name, imp.second));
-		else
-			row.emplace_back(rp_sprintf(C_("EXE|Exports", "Ordinal #%u"), imp.second));
-		row.push_back(std::move(modname));
+
+		std::vector<string> row;
+		row.reserve(3);
+		const char *const name = EXENEEntries::lookup_ordinal(modname, imp.second);
+		row.emplace_back(name ? name : s_no_name);
+		row.emplace_back(rp_sprintf("%u", imp.second));
+		row.emplace_back(std::move(modname));
+		vv_data->emplace_back(std::move(row));
 	}
 	for (auto& imp : name_set) {
 		string modname;
@@ -833,21 +834,38 @@ int EXEPrivate::addFields_NE_Import(void)
 		string name;
 		if (!get_name(imp.second, name))
 			continue;
-		vv_data->emplace_back();
-		auto &row = vv_data->back();
-		row.reserve(2);
-		row.push_back(std::move(name));
-		row.push_back(std::move(modname));
+
+		std::vector<string> row;
+		row.reserve(3);
+		row.emplace_back(std::move(name));
+		row.emplace_back(string());
+		row.emplace_back(std::move(modname));
+		vv_data->emplace_back(std::move(row));
 	}
 
-	// Sort the list data by (module, name).
-	// FIXME: this need a numeric-aware sort because #1 #100 #2 #200 looks ugly
+	// Sort the list data by (module, name, ordinal).
 	std::sort(vv_data->begin(), vv_data->end(),
 		[](vector<string> &lhs, vector<string> &rhs) -> bool {
 			// Vector index 0: Name
-			// Vector index 1: Module
-			int res = strcasecmp(lhs[1].c_str(), rhs[1].c_str());
-			return res < 0 || (res == 0 && strcasecmp(lhs[0].c_str(), rhs[0].c_str()) < 0);
+			// Vector index 1: Ordinal
+			// Vector index 2: Module
+
+			int res = strcasecmp(lhs[2].c_str(), rhs[2].c_str());
+			if (res < 0)
+				return true;
+			else if (res > 0)
+				return false;
+
+			res = strcasecmp(lhs[0].c_str(), rhs[0].c_str());
+			if (res < 0)
+				return true;
+			else if (res > 0)
+				return false;
+
+			// Numeric sort for ordinals.
+			const unsigned long ord1 = strtoul(lhs[1].c_str(), nullptr, 10);
+			const unsigned long ord2 = strtoul(rhs[1].c_str(), nullptr, 10);
+			return (ord1 < ord2);
 		});
 
 	if (!vv_data->size()) {
@@ -862,6 +880,7 @@ int EXEPrivate::addFields_NE_Import(void)
 	// Intentionally sharing the translation context with the exports tab.
 	static const char *const field_names[] = {
 		NOP_C_("EXE|Exports", "Name"),
+		NOP_C_("EXE|Exports", "Ordinal"),
 		NOP_C_("EXE|Exports", "Module")
 	};
 	vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
