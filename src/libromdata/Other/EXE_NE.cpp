@@ -636,6 +636,8 @@ int EXEPrivate::addFields_NE_Entry(void)
 	if (res)
 		return res;
 
+	const char *const s_no_name = C_("EXE|Exports", "(No name)");
+
 	auto vv_data = new RomFields::ListData_t();
 	vv_data->reserve(ents.size());
 	for (unsigned int i = 0; i < static_cast<unsigned int>(ents.size()); i++) {
@@ -649,34 +651,42 @@ int EXEPrivate::addFields_NE_Entry(void)
 		 * Typical flags values are 3 for exports, 0 for internal
 		 * entries. */
 		string flags;
-		if (ent.flags & 1)
-			flags = " EXPORT";
-		if (!(ent.flags & 2))
-			flags += " NODATA";
-		if (ent.flags & 4)
-			flags += " (bit 2)";
+		if (ent.flags & 1) {
+			flags = "EXPORT ";
+		}
+		if (!(ent.flags & 2)) {
+			flags += "NODATA ";
+		}
+		if (ent.flags & 4) {
+			flags += "(bit 2) ";
+		}
 		/* Parameter count. I haven't found any module where this is
 		 * actually used. */
-		if (ent.flags & 0xF8)
-			flags += rp_sprintf(" PARAMS=%d", ent.flags>>3);
-		if (ent.has_name && ent.is_resident)
-			flags += " RESIDENTNAME";
-		flags.erase(0, 1);
+		if (ent.flags & 0xF8) {
+			flags += rp_sprintf("PARAMS=%d ", ent.flags>>3);
+		}
+		if (ent.has_name && ent.is_resident) {
+			flags += "RESIDENTNAME ";
+		}
+		if (!flags.empty()) {
+			flags.resize(flags.size()-1);
+		}
 
 		row.emplace_back(rp_sprintf("%d", ent.ordinal));
 		if (ent.has_name)
 			row.emplace_back(string(ent.name.data(), ent.name.size()));
 		else
-			row.emplace_back(C_("EXE|Exports", "(No name)"));
-		if (ent.is_movable)
+			row.emplace_back(s_no_name);
+		if (ent.is_movable) {
 			row.emplace_back(rp_sprintf(C_("EXE|Exports", "%02X:%04X (Movable)"),
 				ent.segment, ent.offset));
-		else if (ent.segment != 0xFE)
+		} else if (ent.segment != 0xFE) {
 			row.emplace_back(rp_sprintf(C_("EXE|Exports", "%02X:%04X (Fixed)"),
 				ent.segment, ent.offset));
-		else
+		} else {
 			row.emplace_back(rp_sprintf(C_("EXE|Exports", "%04X (Constant)"),
 				ent.offset));
+		}
 		row.emplace_back(flags);
 	}
 
