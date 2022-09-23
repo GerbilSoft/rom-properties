@@ -35,6 +35,9 @@ using std::vector;
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector
 #include "uvector.h"
+#include "span.hh"
+using vhvc::span;
+using vhvc::reinterpret_span;
 
 namespace LibRomData {
 
@@ -101,6 +104,7 @@ class ELFPrivate final : public RomDataPrivate
 		struct hdr_info_t {
 			off64_t addr;
 			uint64_t size;
+			off64_t vaddr;
 		};
 
 		/**
@@ -112,6 +116,9 @@ class ELFPrivate final : public RomDataPrivate
 
 		// Program Header information
 		string interpreter;	// PT_INTERP value
+
+		// PT_LOAD
+		vector<hdr_info_t> pt_load;
 
 		// PT_DYNAMIC
 		hdr_info_t pt_dynamic;	// If addr == 0, not dynamic.
@@ -169,6 +176,14 @@ class ELFPrivate final : public RomDataPrivate
 		 * @return 0 on success; non-zero on error.
 		 */
 		int checkSectionHeaders(void);
+
+		/**
+		 * Read data at a given VA. The data must be in a single PT_LOAD segment.
+		 * @param vaddr The virtual address
+		 * @param out The output vector. Its size determines how much data is read.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int readDataAtVA(uint64_t vaddr, ao::uvector<uint8_t> &out);
 
 		/**
 		 * Add PT_DYNAMIC fields.
@@ -237,18 +252,22 @@ ELFPrivate::hdr_info_t ELFPrivate::readProgramHeader(const uint8_t *phbuf)
 		if (Elf_Header.primary.e_data == ELFDATAHOST) {
 			info.addr = phdr->p_offset;
 			info.size = phdr->p_filesz;
+			info.vaddr = phdr->p_vaddr;
 		} else {
 			info.addr = __swab64(phdr->p_offset);
 			info.size = __swab64(phdr->p_filesz);
+			info.vaddr = __swab64(phdr->p_vaddr);
 		}
 	} else {
 		const Elf32_Phdr *const phdr = reinterpret_cast<const Elf32_Phdr*>(phbuf);
 		if (Elf_Header.primary.e_data == ELFDATAHOST) {
 			info.addr = phdr->p_offset;
 			info.size = phdr->p_filesz;
+			info.vaddr = phdr->p_vaddr;
 		} else {
 			info.addr = __swab32(phdr->p_offset);
 			info.size = __swab32(phdr->p_filesz);
+			info.vaddr = __swab64(phdr->p_vaddr);
 		}
 	}
 
@@ -361,6 +380,12 @@ int ELFPrivate::checkProgramHeaders(void)
 
 				break;
 			}
+
+			case PT_LOAD:
+				pt_load.push_back(readProgramHeader(phbuf));
+				// vaddrs must be sorted
+				assert(pt_load.size() < 2 || pt_load.end()[-2].vaddr <= pt_load.end()[-1].vaddr);
+				break;
 
 			case PT_DYNAMIC:
 				// Executable is dynamically linked.
@@ -671,6 +696,41 @@ int ELFPrivate::checkSectionHeaders(void)
 }
 
 /**
+ * Read data at a given VA. The data must be in a single PT_LOAD segment.
+ * @param vaddr The virtual address
+ * @param out The output vector. Its size determines how much data is read.
+ * @return 0 on success; non-zero on error.
+ */
+int ELFPrivate::readDataAtVA(uint64_t vaddr, ao::uvector<uint8_t> &out)
+{
+	// Find the segment
+	const uint64_t vend = vaddr + out.size();
+	auto it = std::upper_bound(pt_load.begin(), pt_load.end(), vaddr,
+		[](uint64_t lhs, const hdr_info_t &rhs) -> bool {
+			return lhs < (uint64_t)rhs.vaddr;
+		});
+	if (it == pt_load.begin())
+		return -ENOENT;
+	it--;
+
+	// Check the bounds
+	uint64_t sstart = it->vaddr;
+	uint64_t send = it->vaddr + it->size;
+	if (sstart <= vaddr && vaddr <= send && sstart <= vend && vend <= send) {
+		// Read data
+		vaddr += it->addr - it->vaddr;
+		size_t size = file->seekAndRead(vaddr, out.data(), out.size());
+		assert(size == out.size());
+		if (size != out.size()) {
+			return -EIO;
+		}
+		return 0;
+	} else {
+		return -ENOENT;
+	}
+}
+
+/**
  * Add PT_DYNAMIC fields.
  * @return 0 on success; non-zero on error.
  */
@@ -700,28 +760,31 @@ int ELFPrivate::addPtDynamicFields(void)
 
 	// Process headers.
 	// NOTE: Separate loops for 32-bit vs. 64-bit.
-	bool has_DT_FLAGS = false, has_DT_FLAGS_1 = false;
-	uint32_t val_DT_FLAGS = 0, val_DT_FLAGS_1 = 0;
+	vector<uint64_t> needed;
+	bool has_dtag[DT_NUM] = {0};
+	uint64_t val_dtag[DT_NUM] = {0};
+	bool has_flags1 = false;
+	uint64_t val_flags1 = 0;
 
-	// TODO: DT_RPATH/DT_RUNPATH
-	// Requires string table parsing too?
 	if (Elf_Header.primary.e_class == ELFCLASS64) {
 		const Elf64_Dyn *phdr = reinterpret_cast<const Elf64_Dyn*>(pt_dyn_buf.get());
 		const Elf64_Dyn *const phdr_end = phdr + (size / sizeof(*phdr));
 		// TODO: Don't allow duplicates?
 		for (; phdr < phdr_end; phdr++) {
 			Elf64_Sxword d_tag = elf64_to_cpu(phdr->d_tag);
-			switch (d_tag) {
-				case DT_FLAGS:
-					has_DT_FLAGS = true;
-					val_DT_FLAGS = static_cast<uint32_t>(elf64_to_cpu(phdr->d_un.d_val));
-					break;
-				case DT_FLAGS_1:
-					has_DT_FLAGS_1 = true;
-					val_DT_FLAGS_1 = static_cast<uint32_t>(elf64_to_cpu(phdr->d_un.d_val));
-					break;
-				default:
-					break;
+			if (d_tag == DT_NULL) {
+				break;
+			} else if (d_tag == DT_NEEDED) {
+				needed.push_back(elf64_to_cpu(phdr->d_un.d_val));
+			} else if (d_tag == DT_FLAGS_1) {
+				assert(!has_flags1);
+				has_flags1 = true;
+				val_flags1 = elf64_to_cpu(phdr->d_un.d_val);
+			} else if (d_tag > DT_NULL && d_tag < DT_NUM) {
+				// Only DT_NEEDED can be duplicated in this range.
+				assert(!has_dtag[d_tag]);
+				has_dtag[d_tag] = true;
+				val_dtag[d_tag] = elf64_to_cpu(phdr->d_un.d_val);
 			}
 		}
 	} else {
@@ -729,66 +792,116 @@ int ELFPrivate::addPtDynamicFields(void)
 		const Elf32_Dyn *const phdr_end = phdr + (size / sizeof(*phdr));
 		for (; phdr < phdr_end; phdr++) {
 			Elf32_Sword d_tag = elf32_to_cpu(phdr->d_tag);
-			switch (d_tag) {
-				case DT_FLAGS:
-					has_DT_FLAGS = true;
-					val_DT_FLAGS = elf32_to_cpu(phdr->d_un.d_val);
-					break;
-				case DT_FLAGS_1:
-					has_DT_FLAGS_1 = true;
-					val_DT_FLAGS_1 = elf32_to_cpu(phdr->d_un.d_val);
-					break;
-				default:
-					break;
+			if (d_tag == DT_NULL) {
+				break;
+			} else if (d_tag == DT_NEEDED) {
+				needed.push_back(elf32_to_cpu(phdr->d_un.d_val));
+			} else if (d_tag == DT_FLAGS_1) {
+				assert(!has_flags1);
+				has_flags1 = true;
+				val_flags1 = elf32_to_cpu(phdr->d_un.d_val);
+			} else if (d_tag > DT_NULL && d_tag < DT_NUM) {
+				// Only DT_NEEDED can be duplicated in this range.
+				assert(!has_dtag[d_tag]);
+				has_dtag[d_tag] = true;
+				val_dtag[d_tag] = elf32_to_cpu(phdr->d_un.d_val);
 			}
 		}
 	}
 
-	if (!has_DT_FLAGS && !has_DT_FLAGS_1) {
-		// No relevant PT_DYNAMIC entries.
-		return 0;
+	ao::uvector<uint8_t> strtab_buf;
+	span<const char> strtab;
+	assert(val_dtag[DT_STRSZ] < 1*1024*1024);
+	if (has_dtag[DT_STRTAB] && has_dtag[DT_STRSZ] && val_dtag[DT_STRSZ] < 1*1024*1024) {
+		strtab_buf.resize(val_dtag[DT_STRSZ]);
+		if (readDataAtVA(val_dtag[DT_STRTAB], strtab_buf) == 0) {
+			// The first the last byte of the string table MUST be zero.
+			// This is pretty nice, because it simplifies the checks later on.
+			assert(strtab_buf[0] == 0 && strtab_buf[strtab_buf.size()-1] == 0);
+			if (strtab_buf[0] == 0 && strtab_buf[strtab_buf.size()-1] == 0) {
+				strtab = reinterpret_span<const char>(strtab_buf);
+			}
+		}
 	}
 
-	// Add the PT_DYNAMIC tab.
-	fields->addTab("PT_DYNAMIC");
+	if (has_dtag[DT_FLAGS] || has_flags1 || (strtab.size() &&
+			(needed.size() != 0 || has_dtag[DT_SONAME] || has_dtag[DT_RPATH] || has_dtag[DT_RUNPATH]))) {
+		// Add the PT_DYNAMIC tab.
+		fields->addTab("PT_DYNAMIC");
 
-	if (has_DT_FLAGS) {
-		// DT_FLAGS
-		static const char *const dt_flags_names[] = {
-			// 0x00000000
-			"ORIGIN", "SYMBOLIC", "TEXTREL", "BIND_NOW",
-			// 0x00000010
-			"STATIC_TLS",
-		};
-		vector<string> *const v_dt_flags_names = RomFields::strArrayToVector(
-			dt_flags_names, ARRAY_SIZE(dt_flags_names));
-		fields->addField_bitfield("DT_FLAGS",
-			v_dt_flags_names, 3, val_DT_FLAGS);
-	}
+		if (has_dtag[DT_FLAGS]) {
+			// DT_FLAGS
+			static const char *const dt_flags_names[] = {
+				// 0x00000000
+				"ORIGIN", "SYMBOLIC", "TEXTREL", "BIND_NOW",
+				// 0x00000010
+				"STATIC_TLS",
+			};
+			vector<string> *const v_dt_flags_names = RomFields::strArrayToVector(
+				dt_flags_names, ARRAY_SIZE(dt_flags_names));
+			fields->addField_bitfield("DT_FLAGS",
+				v_dt_flags_names, 3, val_dtag[DT_FLAGS]);
+		}
 
-	if (has_DT_FLAGS_1) {
-		// DT_FLAGS_1
-		// NOTE: Internal-use symbols are left as nullptr.
-		static const char *const dt_flags_1_names[] = {
-			// 0x00000000
-			"Now", "Global", "Group", "NoDelete",
-			// 0x00000010
-			"LoadFltr", "InitFirst", "NoOpen", "Origin",
-			// 0x00000100
-			"Direct", nullptr /*"Trans"*/, "Interpose", "NoDefLib",
-			// 0x00001000
-			"NoDump", "ConfAlt", "EndFiltee", "DispRelDNE",
-			// 0x00010000
-			"DispRelPND", "NoDirect", nullptr /*"IgnMulDef"*/, nullptr /*"NokSyms"*/,
-			// 0x00100000
-			nullptr /*"NoHdr"*/, "Edited", nullptr /*"NoReloc"*/, "SymIntpose",
-			// 0x01000000
-			"GlobAudit", "Singleton", "Stub", "PIE"
-		};
-		vector<string> *const v_dt_flags_1_names = RomFields::strArrayToVector(
-			dt_flags_1_names, ARRAY_SIZE(dt_flags_1_names));
-		fields->addField_bitfield("DT_FLAGS_1",
-			v_dt_flags_1_names, 3, val_DT_FLAGS_1);
+		if (has_flags1) {
+			// DT_FLAGS_1
+			// NOTE: Internal-use symbols are left as nullptr.
+			static const char *const dt_flags_1_names[] = {
+				// 0x00000000
+				"Now", "Global", "Group", "NoDelete",
+				// 0x00000010
+				"LoadFltr", "InitFirst", "NoOpen", "Origin",
+				// 0x00000100
+				"Direct", nullptr /*"Trans"*/, "Interpose", "NoDefLib",
+				// 0x00001000
+				"NoDump", "ConfAlt", "EndFiltee", "DispRelDNE",
+				// 0x00010000
+				"DispRelPND", "NoDirect", nullptr /*"IgnMulDef"*/, nullptr /*"NokSyms"*/,
+				// 0x00100000
+				nullptr /*"NoHdr"*/, "Edited", nullptr /*"NoReloc"*/, "SymIntpose",
+				// 0x01000000
+				"GlobAudit", "Singleton", "Stub", "PIE"
+			};
+			vector<string> *const v_dt_flags_1_names = RomFields::strArrayToVector(
+				dt_flags_1_names, ARRAY_SIZE(dt_flags_1_names));
+			fields->addField_bitfield("DT_FLAGS_1",
+				v_dt_flags_1_names, 3, val_flags1);
+		}
+
+		assert(!has_dtag[DT_SONAME] || val_dtag[DT_SONAME] < strtab.size());
+		if (has_dtag[DT_SONAME] && val_dtag[DT_SONAME] < strtab.size())
+			fields->addField_string("DT_SONAME", &strtab[val_dtag[DT_SONAME]]);
+
+		assert(!has_dtag[DT_SONAME] || val_dtag[DT_SONAME] < strtab.size());
+		if (has_dtag[DT_RPATH] && val_dtag[DT_RPATH] < strtab.size())
+			fields->addField_string("DT_RPATH", &strtab[val_dtag[DT_RPATH]]);
+	
+		if (has_dtag[DT_RUNPATH] && val_dtag[DT_RUNPATH] < strtab.size())
+			fields->addField_string("DT_RUNPATH", &strtab[val_dtag[DT_RUNPATH]]);
+
+		if (strtab.size() != 0 && needed.size() != 0) {
+			auto vv_data = new RomFields::ListData_t();
+			for (auto offset : needed) {
+				assert(offset < strtab.size());
+				if (offset >= strtab.size())
+					continue;
+				vector<string> row;
+				row.emplace_back(&strtab[offset]);
+				vv_data->push_back(std::move(row));
+			}
+
+			static const char *const field_names[] = {
+				NOP_C_("ELF", "Name"),
+			};
+			vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
+				"ELF", field_names, ARRAY_SIZE(field_names));
+
+			RomFields::AFLD_PARAMS params;
+			params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;
+			params.headers = v_field_names;
+			params.data.single = vv_data;
+			fields->addField_listData("DT_NEEDED", &params);
+		}
 	}
 
 	// We're done here.
