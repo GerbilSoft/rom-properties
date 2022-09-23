@@ -37,7 +37,7 @@
     missing metadata for GameCube CISO files.
   * EXE: Detect hybrid COM/NE executables, i.e. Multitasking DOS 4.0's
     IBMDOS.COM.
-  * EXE: List DLL exports imports. (PE, NE)
+  * EXE: List DLL exports and imports. (PE, NE)
     * Fixes #348: Add an dll import/export function tab?
       * Reported by @vaualbus.
     * Merged #349: EXE PE: Exports/Imports tabs
