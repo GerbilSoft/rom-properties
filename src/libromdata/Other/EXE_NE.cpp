@@ -710,7 +710,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 		params.headers = v_field_names;
 		params.data.single = vv_data;
 		// TODO: Header alignment?
-		params.col_attrs.align_data = AFLD_ALIGN3(TXA_D, TXA_R, TXA_D);
+		params.col_attrs.align_data = AFLD_ALIGN4(TXA_R, TXA_D, TXA_D, TXA_D);
 		fields->addField_listData(C_("EXE", "Entries"), &params);
 	} else {
 		delete vv_data;
