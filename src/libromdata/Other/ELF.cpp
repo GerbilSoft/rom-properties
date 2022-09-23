@@ -750,10 +750,10 @@ int ELFPrivate::addPtDynamicFields(void)
 	}
 
 	// Read the header.
-	const unsigned int sz_to_read = static_cast<unsigned int>(pt_dynamic.size);
-	unique_ptr<uint8_t[]> pt_dyn_buf(new uint8_t[sz_to_read]);
-	size_t size = file->seekAndRead(pt_dynamic.addr, pt_dyn_buf.get(), sz_to_read);
-	if (size != sz_to_read) {
+	ao::uvector<uint8_t> pt_dyn_buf;
+	pt_dyn_buf.resize(static_cast<unsigned int>(pt_dynamic.size));
+	size_t size = file->seekAndRead(pt_dynamic.addr, pt_dyn_buf.data(), pt_dyn_buf.size());
+	if (size != pt_dyn_buf.size()) {
 		// Read error.
 		return -3;
 	}
@@ -766,47 +766,33 @@ int ELFPrivate::addPtDynamicFields(void)
 	bool has_flags1 = false;
 	uint64_t val_flags1 = 0;
 
+	// Returns true when needs to break out of the loop
+	auto process_dtag = [&](uint64_t d_tag, uint64_t d_val) -> bool {
+		if (d_tag == DT_NULL) {
+			return true;
+		} else if (d_tag == DT_NEEDED) {
+			needed.push_back(d_val);
+		} else if (d_tag == DT_FLAGS_1) {
+			assert(!has_flags1);
+			has_flags1 = true;
+			val_flags1 = d_val;
+		} else if (d_tag > DT_NULL && d_tag < DT_NUM) {
+			// Only DT_NEEDED can be duplicated in this range.
+			assert(!has_dtag[d_tag]);
+			has_dtag[d_tag] = true;
+			val_dtag[d_tag] = d_val;
+		}
+		return false;
+	};
+
 	if (Elf_Header.primary.e_class == ELFCLASS64) {
-		const Elf64_Dyn *phdr = reinterpret_cast<const Elf64_Dyn*>(pt_dyn_buf.get());
-		const Elf64_Dyn *const phdr_end = phdr + (size / sizeof(*phdr));
-		// TODO: Don't allow duplicates?
-		for (; phdr < phdr_end; phdr++) {
-			Elf64_Sxword d_tag = elf64_to_cpu(phdr->d_tag);
-			if (d_tag == DT_NULL) {
+		for (auto &dyn : reinterpret_span<const Elf64_Dyn>(pt_dyn_buf))
+			if (process_dtag(elf64_to_cpu(dyn.d_tag), elf64_to_cpu(dyn.d_un.d_val)))
 				break;
-			} else if (d_tag == DT_NEEDED) {
-				needed.push_back(elf64_to_cpu(phdr->d_un.d_val));
-			} else if (d_tag == DT_FLAGS_1) {
-				assert(!has_flags1);
-				has_flags1 = true;
-				val_flags1 = elf64_to_cpu(phdr->d_un.d_val);
-			} else if (d_tag > DT_NULL && d_tag < DT_NUM) {
-				// Only DT_NEEDED can be duplicated in this range.
-				assert(!has_dtag[d_tag]);
-				has_dtag[d_tag] = true;
-				val_dtag[d_tag] = elf64_to_cpu(phdr->d_un.d_val);
-			}
-		}
 	} else {
-		const Elf32_Dyn *phdr = reinterpret_cast<const Elf32_Dyn*>(pt_dyn_buf.get());
-		const Elf32_Dyn *const phdr_end = phdr + (size / sizeof(*phdr));
-		for (; phdr < phdr_end; phdr++) {
-			Elf32_Sword d_tag = elf32_to_cpu(phdr->d_tag);
-			if (d_tag == DT_NULL) {
+		for (auto &dyn : reinterpret_span<const Elf32_Dyn>(pt_dyn_buf))
+			if (process_dtag(elf32_to_cpu(dyn.d_tag), elf32_to_cpu(dyn.d_un.d_val)))
 				break;
-			} else if (d_tag == DT_NEEDED) {
-				needed.push_back(elf32_to_cpu(phdr->d_un.d_val));
-			} else if (d_tag == DT_FLAGS_1) {
-				assert(!has_flags1);
-				has_flags1 = true;
-				val_flags1 = elf32_to_cpu(phdr->d_un.d_val);
-			} else if (d_tag > DT_NULL && d_tag < DT_NUM) {
-				// Only DT_NEEDED can be duplicated in this range.
-				assert(!has_dtag[d_tag]);
-				has_dtag[d_tag] = true;
-				val_dtag[d_tag] = elf32_to_cpu(phdr->d_un.d_val);
-			}
-		}
 	}
 
 	ao::uvector<uint8_t> strtab_buf;
