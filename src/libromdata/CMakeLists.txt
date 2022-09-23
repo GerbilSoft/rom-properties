@@ -90,6 +90,7 @@ SET(${PROJECT_NAME}_SRCS
 	data/CBMData.cpp
 	data/ELFData.cpp
 	data/EXEData.cpp
+	data/EXENEEntries.cpp
 	data/MachOData.cpp
 	data/NESMappers.cpp
 	data/NintendoPublishers.cpp
@@ -269,6 +270,8 @@ SET(${PROJECT_NAME}_H
 	data/ELFMachineTypes_data.h
 	data/ELF_OSABI_data.h
 	data/EXEData.hpp
+	data/EXENEEntries.hpp
+	data/EXENEEntries_data.h
 	data/MachOData.hpp
 	data/NESMappers.hpp
 	data/NESMappers_data.h

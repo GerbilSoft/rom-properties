@@ -256,6 +256,19 @@ namespace vhvc {
 			s.size_bytes());
 	}
 #endif
+
+	// rom-properties helpers
+	template<class T>
+	span<T> reinterpret_span(span<const uint8_t> s) {
+		return span<T>(
+			reinterpret_cast<T*>(s.data()),
+			s.size()/sizeof(T));
+	}
+	template<class T>
+	span<T> reinterpret_span_limit(span<const uint8_t> s, size_t limit) {
+		auto ns = reinterpret_span<T>(s);
+		return limit < ns.size() ? ns.first(limit) : ns;
+	}
 }
 
 #endif /* VHVC_SPAN */

@@ -952,6 +952,8 @@ int EXEPrivate::addFields_PE_Export(void)
 		params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;
 		params.headers = v_field_names;
 		params.data.single = vv_data;
+		// TODO: Header alignment?
+		params.col_attrs.align_data = AFLD_ALIGN5(TXA_D, TXA_R, TXA_D, TXA_D, TXA_D);
 		fields->addField_listData(C_("EXE", "Exports"), &params);
 	} else {
 		delete vv_data;
@@ -1171,6 +1173,8 @@ int EXEPrivate::addFields_PE_Import(void)
 	params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;
 	params.headers = v_field_names;
 	params.data.single = vv_data;
+	// TODO: Header alignment?
+	params.col_attrs.align_data = AFLD_ALIGN3(TXA_D, TXA_R, TXA_D);
 	fields->addField_listData(C_("EXE", "Imports"), &params);
 	return 0;
 }
