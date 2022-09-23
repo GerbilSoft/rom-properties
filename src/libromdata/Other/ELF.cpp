@@ -123,6 +123,18 @@ class ELFPrivate final : public RomDataPrivate
 		// PT_DYNAMIC
 		hdr_info_t pt_dynamic;	// If addr == 0, not dynamic.
 
+		struct symtab_info_t {
+			uint64_t offset;
+			uint64_t size;
+			uint64_t entsize;
+			uint64_t strtab_offset;
+			uint64_t strtab_size;
+		};
+		// SHT_SYMTAB
+		symtab_info_t sht_symtab;
+		// SHT_DYNSYM
+		symtab_info_t sht_dynsym;
+
 		// Section Header information
 		string osVersion;	// Operating system version.
 
@@ -190,6 +202,12 @@ class ELFPrivate final : public RomDataPrivate
 		 * @return 0 on success; non-zero on error.
 		 */
 		int addPtDynamicFields(void);
+
+		/**
+		 * Add SYMTAB fields.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int addSymbolFields(span<const char> dynsym_strtab);
 };
 
 ROMDATA_IMPL(ELF)
@@ -453,9 +471,11 @@ int ELFPrivate::checkSectionHeaders(void)
 		return ret;
 	}
 
+	uint64_t symtab_link = -1, dynsym_link = -1;
+
 	// Read all of the section header entries.
 	const bool isHostEndian = (Elf_Header.primary.e_data == ELFDATAHOST);
-	for (; e_shnum > 0; e_shnum--) {
+	for (unsigned i = 0; i < e_shnum; i++) {
 		size_t size = file->read(shbuf, shsize);
 		if (size != shsize) {
 			// Read error.
@@ -469,7 +489,52 @@ int ELFPrivate::checkSectionHeaders(void)
 			s_type = __swab32(s_type);
 		}
 
-		// Only NOTEs are supported right now.
+		// FIXME: this assumes that STRTABs come after SYMTABs.
+		if (s_type == SHT_STRTAB) {
+			if (Elf_Header.primary.e_class == ELFCLASS64) {
+				const Elf64_Shdr *const shdr = reinterpret_cast<const Elf64_Shdr*>(shbuf);
+				if (i == symtab_link) {
+					sht_symtab.strtab_offset = elf64_to_cpu(shdr->sh_offset);
+					sht_symtab.strtab_size = elf64_to_cpu(shdr->sh_size);
+				}
+				if (i == dynsym_link) {
+					sht_dynsym.strtab_offset = elf64_to_cpu(shdr->sh_offset);
+					sht_dynsym.strtab_size = elf64_to_cpu(shdr->sh_size);
+				}
+			} else {
+				const Elf32_Shdr *const shdr = reinterpret_cast<const Elf32_Shdr*>(shbuf);
+				if (i == symtab_link) {
+					sht_symtab.strtab_offset = elf32_to_cpu(shdr->sh_offset);
+					sht_symtab.strtab_size = elf32_to_cpu(shdr->sh_size);
+				}
+				if (i == dynsym_link) {
+					sht_dynsym.strtab_offset = elf32_to_cpu(shdr->sh_offset);
+					sht_dynsym.strtab_size = elf32_to_cpu(shdr->sh_size);
+				}
+			}
+
+		}
+
+		if (s_type == SHT_SYMTAB || s_type == SHT_DYNSYM) {
+			symtab_info_t &tab = (s_type == SHT_SYMTAB ? sht_symtab : sht_dynsym);
+			uint64_t &link = (s_type == SHT_SYMTAB ? symtab_link : dynsym_link);
+			if (Elf_Header.primary.e_class == ELFCLASS64) {
+				const Elf64_Shdr *const shdr = reinterpret_cast<const Elf64_Shdr*>(shbuf);
+				tab.offset = elf64_to_cpu(shdr->sh_offset);
+				tab.size = elf64_to_cpu(shdr->sh_size);
+				tab.entsize = elf64_to_cpu(shdr->sh_entsize);
+				link = elf64_to_cpu(shdr->sh_link);
+			} else {
+				const Elf32_Shdr *const shdr = reinterpret_cast<const Elf32_Shdr*>(shbuf);
+				tab.offset = elf32_to_cpu(shdr->sh_offset);
+				tab.size = elf32_to_cpu(shdr->sh_size);
+				tab.entsize = elf32_to_cpu(shdr->sh_entsize);
+				link = elf32_to_cpu(shdr->sh_link);
+			}
+			continue;
+		}
+
+		// Only STRTABs, SYMTABs, DYNSYMs and NOTEs are supported right now.
 		if (s_type != SHT_NOTE)
 			continue;
 
@@ -861,7 +926,7 @@ int ELFPrivate::addPtDynamicFields(void)
 		assert(!has_dtag[DT_SONAME] || val_dtag[DT_SONAME] < strtab.size());
 		if (has_dtag[DT_RPATH] && val_dtag[DT_RPATH] < strtab.size())
 			fields->addField_string("DT_RPATH", &strtab[val_dtag[DT_RPATH]]);
-	
+
 		if (has_dtag[DT_RUNPATH] && val_dtag[DT_RUNPATH] < strtab.size())
 			fields->addField_string("DT_RUNPATH", &strtab[val_dtag[DT_RUNPATH]]);
 
@@ -890,7 +955,135 @@ int ELFPrivate::addPtDynamicFields(void)
 		}
 	}
 
+	addSymbolFields(strtab);
 	// We're done here.
+	return 0;
+}
+
+/**
+ * Add SYMTAB fields.
+ * @return 0 on success; non-zero on error.
+ */
+int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
+{
+	/* Symbol table
+	 *
+	 * Unfortunately we can't use DT_SYMTAB because we don't know its size.
+	 * We could use DT_HASH to figure out the count of symbols, but no one
+	 * uses that anymore. DT_GNU_HASH doesn't have an easily accessible
+	 * count of symbols, but it's possible to figure out where the hash
+	 * table ends by looking for a terminator.
+	 *
+	 * It's simpler to just use SHT_DYNSYM. Do note that section table
+	 * could be stripped entirely, as dynamic linkers simply mmap
+	 * everything according to program headers and then just use the hash
+	 * tables. As an upside, we can output SHT_SYMTAB just as easily.
+	 *
+	 * Also note that DT_STRTAB is supposed to be be the same as
+	 * SHT_DYNSYM's SHT_STRTAB, so we have to pass it around to avoid
+	 * reading it twice.
+	 *
+	 * FIXME: This won't run if addPtDynamicFields fails.
+	 */
+
+	auto parse_sym = [this](uint8_t *ptr, vector<Elf64_Sym> &out) {
+		Elf64_Sym sym;
+		if (Elf_Header.primary.e_class == ELFCLASS64) {
+			const Elf32_Sym &sym64 = *reinterpret_cast<const Elf32_Sym *>(ptr);
+			sym.st_name = elf32_to_cpu(sym64.st_name);
+			sym.st_info = sym64.st_info;
+			sym.st_other = sym64.st_other;
+			sym.st_shndx = elf16_to_cpu(sym64.st_shndx);
+			sym.st_value = elf64_to_cpu(sym64.st_value);
+			sym.st_size = elf64_to_cpu(sym64.st_size);
+		} else {
+			const Elf32_Sym &sym32 = *reinterpret_cast<const Elf32_Sym *>(ptr);
+			sym.st_name = elf32_to_cpu(sym32.st_name);
+			sym.st_info = sym32.st_info;
+			sym.st_other = sym32.st_other;
+			sym.st_shndx = elf16_to_cpu(sym32.st_shndx);
+			sym.st_value = elf32_to_cpu(sym32.st_value);
+			sym.st_size = elf32_to_cpu(sym32.st_size);
+		}
+		out.push_back(sym);
+	};
+
+	auto parse_symtab = [this,parse_sym](vector<Elf64_Sym> &out, const symtab_info_t &info) {
+		ao::uvector<uint8_t> buf;
+		if (info.size == 0 || info.size > 1*1024*1024)
+			return;
+		if (info.entsize < (Elf_Header.primary.e_class == ELFCLASS64 ? sizeof(Elf64_Sym) : sizeof(Elf32_Sym)))
+			return;
+		buf.resize(info.size/info.entsize*info.entsize);
+		size_t nread = file->seekAndRead(info.offset, buf.data(), buf.size());
+		assert(nread == buf.size());
+		if (nread != buf.size())
+			return;
+		out.reserve(buf.size()/info.entsize);
+		for (uint8_t *p = buf.data(); p < buf.data() + buf.size(); p += info.entsize)
+			parse_sym(p, out);
+	};
+
+	auto add_symbol_tab = [this,parse_symtab](const char *name, const symtab_info_t &info, span<const char> strtab) {
+		if (strtab.size() == 0)
+			return;
+
+		vector<Elf64_Sym> tab;
+		parse_symtab(tab, info);
+		if (tab.size() == 0)
+			return;
+
+		auto vv_data = new RomFields::ListData_t();
+		for (auto &sym : tab) {
+			assert(sym.st_name < strtab.size());
+			if (sym.st_name >= strtab.size())
+				continue;
+			vector<string> row;
+			row.emplace_back(&strtab[sym.st_name]);
+			vv_data->push_back(std::move(row));
+		}
+		if (vv_data->size() == 0) {
+			delete vv_data;
+			return;
+		}
+
+		fields->addTab(name);
+
+		static const char *const field_names[] = {
+			NOP_C_("ELF", "Name"),
+		};
+		vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
+			"ELF", field_names, ARRAY_SIZE(field_names));
+
+		RomFields::AFLD_PARAMS params;
+		params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;
+		params.headers = v_field_names;
+		params.data.single = vv_data;
+		fields->addField_listData(name, &params);
+	};
+
+	auto read_strtab = [this](ao::uvector<uint8_t> &buf, const symtab_info_t &info) -> span<const char> {
+		if (info.strtab_size == 0 || info.strtab_size > 1*1024*1024)
+			return span<const char>();
+		buf.resize(info.strtab_size);
+		size_t nread = file->seekAndRead(info.strtab_offset, buf.data(), buf.size());
+		assert(nread == buf.size());
+		if (nread == buf.size()) {
+			assert(buf[0] == 0 && buf[buf.size()-1] == 0);
+			if (buf[0] == 0 && buf[buf.size()-1] == 0) {
+				return reinterpret_span<const char>(buf);
+			}
+		}
+		return span<const char>();
+	};
+
+	ao::uvector<uint8_t> symtab_buf, dynsym_buf;
+	add_symbol_tab("SHT_SYMTAB", sht_symtab, read_strtab(symtab_buf, sht_symtab));
+	if (dynsym_strtab.size() == 0) {
+		dynsym_strtab = read_strtab(dynsym_buf, sht_dynsym);
+	}
+	add_symbol_tab("SHT_DYNSYM", sht_dynsym, dynsym_strtab);
+
 	return 0;
 }
 
