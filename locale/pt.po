@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 1.9+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2022-09-23 22:35-0400\n"
+"POT-Creation-Date: 2022-09-24 16:10-0400\n"
 "PO-Revision-Date: 2018-06-02 15:07-0300\n"
 "Last-Translator: Null Magic\n"
 "Language-Team: \n"
@@ -1031,7 +1031,7 @@ msgstr ""
 #: ../src/libromdata/Other/Amiibo.cpp:424
 #: ../src/libromdata/Other/Amiibo.cpp:429
 #: ../src/libromdata/Other/Amiibo.cpp:434
-#: ../src/libromdata/Other/Amiibo.cpp:449 ../src/libromdata/Other/ELF.cpp:1470
+#: ../src/libromdata/Other/Amiibo.cpp:449 ../src/libromdata/Other/ELF.cpp:1500
 #: ../src/libromdata/Other/EXE.cpp:214
 #: ../src/libromdata/Other/EXE_manifest.cpp:219
 #: ../src/libromdata/Other/EXE_PE.cpp:677 ../src/libromdata/Other/MachO.cpp:503
@@ -1164,7 +1164,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1041
 #: ../src/libromdata/Console/XboxDisc.cpp:749
 #: ../src/libromdata/Handheld/WonderSwan.cpp:492
-#: ../src/libromdata/Other/ELF.cpp:2022 ../src/libromdata/Other/MachO.cpp:512
+#: ../src/libromdata/Other/ELF.cpp:2052 ../src/libromdata/Other/MachO.cpp:512
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1060
 #: ../src/librptexture/fileformat/KhronosKTX2.cpp:1042
 #, c-format
@@ -1376,7 +1376,7 @@ msgstr "Sistema"
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1161
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:376
 #: ../src/libromdata/Handheld/WonderSwan.cpp:465
-#: ../src/libromdata/Other/Amiibo.cpp:415 ../src/libromdata/Other/ELF.cpp:1589
+#: ../src/libromdata/Other/Amiibo.cpp:415 ../src/libromdata/Other/ELF.cpp:1619
 #: ../src/libromdata/Other/EXE.cpp:290 ../src/libromdata/Other/EXE.cpp:475
 #: ../src/libromdata/Other/EXE_NE.cpp:321
 #, c-format
@@ -3512,14 +3512,14 @@ msgstr "Programável"
 
 #: ../src/libromdata/Console/NES.cpp:1431
 #: ../src/libromdata/Console/NES.cpp:1532
-#: ../src/libromdata/data/NESMappers.cpp:588
+#: ../src/libromdata/data/NESMappers.cpp:594
 msgctxt "NES|Mirroring"
 msgid "Horizontal"
 msgstr "Horizontal"
 
 #: ../src/libromdata/Console/NES.cpp:1434
 #: ../src/libromdata/Console/NES.cpp:1534
-#: ../src/libromdata/data/NESMappers.cpp:588
+#: ../src/libromdata/data/NESMappers.cpp:594
 msgctxt "NES|Mirroring"
 msgid "Vertical"
 msgstr "Vertical"
@@ -4736,37 +4736,37 @@ msgctxt "KeyStoreUI|Section"
 msgid "Microsoft Xbox 360 AES Keys"
 msgstr ""
 
-#: ../src/libromdata/data/NESMappers.cpp:591
+#: ../src/libromdata/data/NESMappers.cpp:597
 msgctxt "NES|Mirroring"
 msgid "Mapper-controlled"
 msgstr ""
 
-#: ../src/libromdata/data/NESMappers.cpp:593
+#: ../src/libromdata/data/NESMappers.cpp:599
 msgctxt "NES|Mirroring"
 msgid "Mapper-controlled (H/V/A/B)"
 msgstr ""
 
-#: ../src/libromdata/data/NESMappers.cpp:595
+#: ../src/libromdata/data/NESMappers.cpp:601
 msgctxt "NES|Mirroring"
 msgid "Mapper-controlled (H/V)"
 msgstr ""
 
-#: ../src/libromdata/data/NESMappers.cpp:597
+#: ../src/libromdata/data/NESMappers.cpp:603
 msgctxt "NES|Mirroring"
 msgid "Mapper-controlled (A/B)"
 msgstr ""
 
-#: ../src/libromdata/data/NESMappers.cpp:599
+#: ../src/libromdata/data/NESMappers.cpp:605
 msgctxt "NES|Mirroring"
 msgid "Single Screen (A)"
 msgstr ""
 
-#: ../src/libromdata/data/NESMappers.cpp:601
+#: ../src/libromdata/data/NESMappers.cpp:607
 msgctxt "NES|Mirroring"
 msgid "Single Screen (B)"
 msgstr ""
 
-#: ../src/libromdata/data/NESMappers.cpp:603
+#: ../src/libromdata/data/NESMappers.cpp:609
 msgctxt "NES|Mirroring"
 msgid "Four Screens"
 msgstr "Quatro telas"
@@ -6346,289 +6346,339 @@ msgctxt "Amiibo"
 msgid "Credits"
 msgstr "Créditos"
 
-#: ../src/libromdata/Other/ELF.cpp:953 ../src/libromdata/Other/ELF.cpp:1072
+#: ../src/libromdata/Other/ELF.cpp:929
 msgctxt "ELF"
 msgid "Name"
 msgstr "Nome"
 
-#: ../src/libromdata/Other/ELF.cpp:1454 ../src/libromdata/Other/MachO.cpp:489
+#: ../src/libromdata/Other/ELF.cpp:1072
+msgctxt "ELF|Symbol"
+msgid "(Undefined)"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1074
+msgctxt "ELF|Symbol"
+msgid "(Absolute)"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1076
+msgctxt "ELF|Symbol"
+msgid "(COMMON)"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1096
+msgctxt "ELF|Symbol"
+msgid "Name"
+msgstr "Nome"
+
+#: ../src/libromdata/Other/ELF.cpp:1097
+msgctxt "ELF|Symbol"
+msgid "Binding"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1098
+msgctxt "ELF|Symbol"
+msgid "Type"
+msgstr "Tipo"
+
+#: ../src/libromdata/Other/ELF.cpp:1099
+msgctxt "ELF|Symbol"
+msgid "Visibility"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1100
+msgctxt "ELF|Symbol"
+msgid "Section"
+msgstr ""
+
+#: ../src/libromdata/Other/ELF.cpp:1101
+msgctxt "ELF|Symbol"
+msgid "Value"
+msgstr "Valor"
+
+#: ../src/libromdata/Other/ELF.cpp:1102
+msgctxt "ELF|Symbol"
+msgid "Size"
+msgstr "Tamanho"
+
+#: ../src/libromdata/Other/ELF.cpp:1484 ../src/libromdata/Other/MachO.cpp:489
 msgctxt "RomData|ExecType"
 msgid "32-bit Little-Endian"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1455 ../src/libromdata/Other/MachO.cpp:490
+#: ../src/libromdata/Other/ELF.cpp:1485 ../src/libromdata/Other/MachO.cpp:490
 msgctxt "RomData|ExecType"
 msgid "64-bit Little-Endian"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1456 ../src/libromdata/Other/MachO.cpp:491
+#: ../src/libromdata/Other/ELF.cpp:1486 ../src/libromdata/Other/MachO.cpp:491
 msgctxt "RomData|ExecType"
 msgid "32-bit Big-Endian"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1457 ../src/libromdata/Other/MachO.cpp:492
+#: ../src/libromdata/Other/ELF.cpp:1487 ../src/libromdata/Other/MachO.cpp:492
 msgctxt "RomData|ExecType"
 msgid "64-bit Big-Endian"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1459
+#: ../src/libromdata/Other/ELF.cpp:1489
 msgctxt "ELF"
 msgid "Format"
 msgstr "Formato"
 
-#: ../src/libromdata/Other/ELF.cpp:1474
+#: ../src/libromdata/Other/ELF.cpp:1504
 msgctxt "ELF"
 msgid "CPU"
 msgstr "CPU"
 
-#: ../src/libromdata/Other/ELF.cpp:1480 ../src/libromdata/Other/EXE.cpp:464
+#: ../src/libromdata/Other/ELF.cpp:1510 ../src/libromdata/Other/EXE.cpp:464
 #: ../src/libromdata/Other/EXE_PE.cpp:624
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (0x%04X)"
 msgstr "Desconhecido (0x%04X)"
 
-#: ../src/libromdata/Other/ELF.cpp:1518 ../src/libromdata/Other/ELF.cpp:1886
-#: ../src/libromdata/Other/ELF.cpp:1980
+#: ../src/libromdata/Other/ELF.cpp:1548 ../src/libromdata/Other/ELF.cpp:1916
+#: ../src/libromdata/Other/ELF.cpp:2010
 msgctxt "ELF"
 msgid "Instruction Set"
 msgstr "Conjunto de instruções"
 
-#: ../src/libromdata/Other/ELF.cpp:1541
+#: ../src/libromdata/Other/ELF.cpp:1571
 msgctxt "ELF|SPARC_MM"
 msgid "Total Store Ordering"
 msgstr "Ordem de armazenamento total"
 
-#: ../src/libromdata/Other/ELF.cpp:1542
+#: ../src/libromdata/Other/ELF.cpp:1572
 msgctxt "ELF|SPARC_MM"
 msgid "Partial Store Ordering"
 msgstr "Ordem de armazenamento parcial"
 
-#: ../src/libromdata/Other/ELF.cpp:1543
+#: ../src/libromdata/Other/ELF.cpp:1573
 msgctxt "ELF|SPARC_MM"
 msgid "Relaxed Memory Ordering"
 msgstr "Ordem de memória relaxada"
 
-#: ../src/libromdata/Other/ELF.cpp:1544
+#: ../src/libromdata/Other/ELF.cpp:1574
 msgctxt "ELF|SPARC_MM"
 msgid "Invalid"
 msgstr "Inválido(a)"
 
-#: ../src/libromdata/Other/ELF.cpp:1546
+#: ../src/libromdata/Other/ELF.cpp:1576
 msgctxt "ELF"
 msgid "Memory Ordering"
 msgstr "Ordem de memória"
 
 #. tr: Little-Endian Data
-#: ../src/libromdata/Other/ELF.cpp:1560
+#: ../src/libromdata/Other/ELF.cpp:1590
 msgctxt "ELF|SPARCFlags"
 msgid "LE Data"
 msgstr "Dados LE"
 
-#: ../src/libromdata/Other/ELF.cpp:1564 ../src/libromdata/Other/ELF.cpp:1610
-#: ../src/libromdata/Other/ELF.cpp:1651 ../src/libromdata/Other/ELF.cpp:1690
-#: ../src/libromdata/Other/ELF.cpp:1707 ../src/libromdata/Other/ELF.cpp:1747
-#: ../src/libromdata/Other/ELF.cpp:1786 ../src/libromdata/Other/ELF.cpp:1937
-#: ../src/libromdata/Other/ELF.cpp:2005
+#: ../src/libromdata/Other/ELF.cpp:1594 ../src/libromdata/Other/ELF.cpp:1640
+#: ../src/libromdata/Other/ELF.cpp:1681 ../src/libromdata/Other/ELF.cpp:1720
+#: ../src/libromdata/Other/ELF.cpp:1737 ../src/libromdata/Other/ELF.cpp:1777
+#: ../src/libromdata/Other/ELF.cpp:1816 ../src/libromdata/Other/ELF.cpp:1967
+#: ../src/libromdata/Other/ELF.cpp:2035
 msgctxt "ELF"
 msgid "CPU Flags"
 msgstr "Parâmetros de CPU"
 
-#: ../src/libromdata/Other/ELF.cpp:1573
+#: ../src/libromdata/Other/ELF.cpp:1603
 msgctxt "ELF"
 msgid "MIPS ABI"
 msgstr "ABI MIPS "
 
-#: ../src/libromdata/Other/ELF.cpp:1584
+#: ../src/libromdata/Other/ELF.cpp:1614
 msgctxt "ELF"
 msgid "CPU Level"
 msgstr "Nível de CPU"
 
-#: ../src/libromdata/Other/ELF.cpp:1597
+#: ../src/libromdata/Other/ELF.cpp:1627
 msgctxt "ELF|MIPSFlags"
 msgid "No Reorder"
 msgstr "Sem reordenação"
 
-#: ../src/libromdata/Other/ELF.cpp:1601
+#: ../src/libromdata/Other/ELF.cpp:1631
 msgctxt "ELF|MIPSFlags"
 msgid "Options First"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1636
+#: ../src/libromdata/Other/ELF.cpp:1666
 msgctxt "ELF"
 msgid "PA-RISC Version"
 msgstr "Versão do PA-RISC"
 
-#: ../src/libromdata/Other/ELF.cpp:1641
+#: ../src/libromdata/Other/ELF.cpp:1671
 msgctxt "ELF|PARISCFlags"
 msgid "Trap NULL"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1643
+#: ../src/libromdata/Other/ELF.cpp:1673
 msgctxt "ELF|PARISCFlags"
 msgid "Wide"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1645
+#: ../src/libromdata/Other/ELF.cpp:1675
 msgctxt "ELF|PARISCFlags"
 msgid "No KABP"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1647
+#: ../src/libromdata/Other/ELF.cpp:1677
 msgctxt "ELF|PARISCFlags"
 msgid "Lazy Swap"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1670
+#: ../src/libromdata/Other/ELF.cpp:1700
 msgctxt "ELF"
 msgid "ARM EABI"
 msgstr "ARM EABI"
 
-#: ../src/libromdata/Other/ELF.cpp:1678
+#: ../src/libromdata/Other/ELF.cpp:1708
 msgctxt "ELF|ARMFlags"
 msgid "APCS Float"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1680
+#: ../src/libromdata/Other/ELF.cpp:1710
 msgctxt "ELF|ARMFlags"
 msgid "Align8"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1681
+#: ../src/libromdata/Other/ELF.cpp:1711
 msgctxt "ELF|ARMFlags"
 msgid "New ABI"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1683
+#: ../src/libromdata/Other/ELF.cpp:1713
 msgctxt "ELF|ARMFlags"
 msgid "Old ABI"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1684
+#: ../src/libromdata/Other/ELF.cpp:1714
 msgctxt "ELF|ARMFlags"
 msgid "Soft Float"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1685
+#: ../src/libromdata/Other/ELF.cpp:1715
 msgctxt "ELF|ARMFlags"
 msgid "VFP Float"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1686
+#: ../src/libromdata/Other/ELF.cpp:1716
 msgctxt "ELF|ARMFlags"
 msgid "Maverick Float"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1702
+#: ../src/libromdata/Other/ELF.cpp:1732
 msgctxt "ELF|AlphaFlags"
 msgid "Addresses <= 2GB"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1703
+#: ../src/libromdata/Other/ELF.cpp:1733
 msgctxt "ELF|AlphaFlags"
 msgid "Relaxed Code Movement"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1734 ../src/libromdata/Other/ELF.cpp:1769
-#: ../src/libromdata/Other/ELF.cpp:1872 ../src/libromdata/Other/ELF.cpp:1919
-#: ../src/libromdata/Other/ELF.cpp:1960
+#: ../src/libromdata/Other/ELF.cpp:1764 ../src/libromdata/Other/ELF.cpp:1799
+#: ../src/libromdata/Other/ELF.cpp:1902 ../src/libromdata/Other/ELF.cpp:1949
+#: ../src/libromdata/Other/ELF.cpp:1990
 msgctxt "ELF"
 msgid "CPU Subtype"
 msgstr "Subtipo de CPU"
 
-#: ../src/libromdata/Other/ELF.cpp:1775
+#: ../src/libromdata/Other/ELF.cpp:1805
 msgctxt "ELF"
 msgid "Linux OSABI"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1847
+#: ../src/libromdata/Other/ELF.cpp:1877
 msgctxt "ELF"
 msgid "ColdFire ISA"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1896
+#: ../src/libromdata/Other/ELF.cpp:1926
 msgctxt "ELF"
 msgid "M32R New Insns"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1932
+#: ../src/libromdata/Other/ELF.cpp:1962
 msgctxt "ELF|BlackfinFlags"
 msgid "Code in L1"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1933
+#: ../src/libromdata/Other/ELF.cpp:1963
 msgctxt "ELF|BlackfinFlags"
 msgid "Data in L1"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1990
+#: ../src/libromdata/Other/ELF.cpp:2020
 msgctxt "ELF|RISCVFPABI"
 msgid "Soft-Float"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1991
+#: ../src/libromdata/Other/ELF.cpp:2021
 msgctxt "ELF|RISCVFPABI"
 msgid "Single-Float"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1992
+#: ../src/libromdata/Other/ELF.cpp:2022
 msgctxt "ELF|RISCVFPABI"
 msgid "Double-Float"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1993
+#: ../src/libromdata/Other/ELF.cpp:2023
 msgctxt "ELF|RISCVFPABI"
 msgid "Quad-Float"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:1995
+#: ../src/libromdata/Other/ELF.cpp:2025
 msgctxt "ELF"
 msgid "Floating-Point ABI"
 msgstr ""
 
-#: ../src/libromdata/Other/ELF.cpp:2016
+#: ../src/libromdata/Other/ELF.cpp:2046
 msgctxt "ELF"
 msgid "OS ABI"
 msgstr "ABI do SO"
 
-#: ../src/libromdata/Other/ELF.cpp:2027
+#: ../src/libromdata/Other/ELF.cpp:2057
 msgctxt "ELF"
 msgid "ABI Version"
 msgstr "Versão da ABI"
 
-#: ../src/libromdata/Other/ELF.cpp:2033
+#: ../src/libromdata/Other/ELF.cpp:2063
 msgctxt "ELF"
 msgid "Linkage"
 msgstr "Ligação"
 
-#: ../src/libromdata/Other/ELF.cpp:2035
+#: ../src/libromdata/Other/ELF.cpp:2065
 msgctxt "ELF|Linkage"
 msgid "Dynamic"
 msgstr "Dinâmica"
 
-#: ../src/libromdata/Other/ELF.cpp:2036
+#: ../src/libromdata/Other/ELF.cpp:2066
 msgctxt "ELF|Linkage"
 msgid "Static"
 msgstr "Estática"
 
-#: ../src/libromdata/Other/ELF.cpp:2041
+#: ../src/libromdata/Other/ELF.cpp:2071
 msgctxt "ELF"
 msgid "Interpreter"
 msgstr "Interpretador"
 
-#: ../src/libromdata/Other/ELF.cpp:2046
+#: ../src/libromdata/Other/ELF.cpp:2076
 msgctxt "ELF"
 msgid "OS Version"
 msgstr "Versão do SO"
 
 #. tr: Entry point, then "Position-Independent".
-#: ../src/libromdata/Other/ELF.cpp:2062
+#: ../src/libromdata/Other/ELF.cpp:2092
 #, c-format
 msgctxt "ELF"
 msgid "%s (Position-Independent)"
 msgstr "%s (Independente de posição)"
 
-#: ../src/libromdata/Other/ELF.cpp:2065
+#: ../src/libromdata/Other/ELF.cpp:2095
 msgctxt "ELF"
 msgid "Entry Point"
 msgstr "Ponto de entrada"
