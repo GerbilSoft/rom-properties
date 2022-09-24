@@ -637,6 +637,9 @@ int EXEPrivate::addFields_NE_Entry(void)
 		return res;
 
 	const char *const s_no_name = C_("EXE|Exports", "(No name)");
+	const char *const s_address_mf = C_("EXE|Exports", "%1$02X:%2$04X (%3$s)");
+	const char *const s_address_movable = C_("EXE|Exports", "Movable");
+	const char *const s_address_fixed = C_("EXE|Exports", "Fixed");
 
 	auto vv_data = new RomFields::ListData_t();
 	vv_data->reserve(ents.size());
@@ -678,14 +681,11 @@ int EXEPrivate::addFields_NE_Entry(void)
 		else
 			row.emplace_back(s_no_name);
 		if (ent.is_movable) {
-			row.emplace_back(rp_sprintf(C_("EXE|Exports", "%02X:%04X (Movable)"),
-				ent.segment, ent.offset));
+			row.emplace_back(rp_sprintf_p(s_address_mf, ent.segment, ent.offset, s_address_movable));
 		} else if (ent.segment != 0xFE) {
-			row.emplace_back(rp_sprintf(C_("EXE|Exports", "%02X:%04X (Fixed)"),
-				ent.segment, ent.offset));
+			row.emplace_back(rp_sprintf_p(s_address_mf, ent.segment, ent.offset, s_address_fixed));
 		} else {
-			row.emplace_back(rp_sprintf(C_("EXE|Exports", "%04X (Constant)"),
-				ent.offset));
+			row.emplace_back(rp_sprintf(C_("EXE|Exports", "0x%04X (Constant)"), ent.offset));
 		}
 		row.emplace_back(flags);
 	}

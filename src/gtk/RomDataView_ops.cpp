@@ -473,8 +473,8 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 	if (op->flags & RomData::RomOp::ROF_SAVE_FILE) {
 		GtkWidget *const fileDialog = gtk_file_chooser_dialog_new(
 			op->sfi.title, parent, GTK_FILE_CHOOSER_ACTION_SAVE,
-			_("Cancel"), GTK_RESPONSE_CANCEL,
-			_("Save"), GTK_RESPONSE_ACCEPT,
+			_("_Cancel"), GTK_RESPONSE_CANCEL,
+			_("_Save"), GTK_RESPONSE_ACCEPT,
 			nullptr);
 		gtk_widget_set_name(fileDialog, "fileDialog");
 
