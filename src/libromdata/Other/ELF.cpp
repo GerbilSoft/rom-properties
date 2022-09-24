@@ -270,7 +270,7 @@ ELFPrivate::ELFPrivate(ELF *q, IRpFile *file)
  */
 Elf64_Phdr ELFPrivate::readProgramHeader(const uint8_t *phbuf)
 {
-	Elf64_Phdr out;;
+	Elf64_Phdr out;
 
 	if (Elf_Header.primary.e_class == ELFCLASS64) {
 		const Elf64_Phdr *const phdr = reinterpret_cast<const Elf64_Phdr*>(phbuf);

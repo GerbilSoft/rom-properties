@@ -619,7 +619,6 @@ typedef enum {
 	DT_FILTER	= 0x7fffffff,	/* Shared object to get values from */
 #define DT_EXTRATAGIDX(tag)	((Elf32_Word)-((Elf32_Sword) (tag) <<1>>1)-1)
 	DT_EXTRANUM	= 3,
-
 } Elf_Dt_Type;
 
 /* Values of `d_un.d_val' in the DT_FLAGS entry.  */
@@ -665,8 +664,7 @@ typedef enum {
 } Elf_DT_FLAGS_1;
 
 /* Symbol table */
-typedef struct
-{
+typedef struct _Elf32_Sym {
 	Elf32_Word	st_name;	/* Symbol name (string tbl index) */
 	Elf32_Addr	st_value;	/* Symbol value */
 	Elf32_Word	st_size;	/* Symbol size */
@@ -675,8 +673,7 @@ typedef struct
 	Elf32_Section	st_shndx;	/* Section index */
 } Elf32_Sym;
 
-typedef struct
-{
+typedef struct _Elf64_Sym {
 	Elf64_Word	st_name;	/* Symbol name (string tbl index) */
 	unsigned char	st_info;	/* Symbol type and binding */
 	unsigned char	st_other;	/* Symbol visibility */
