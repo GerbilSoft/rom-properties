@@ -1,6 +1,6 @@
 # Changes
 
-## v2.0 (released 2022/??/??)
+## v2.0 (released 2022/09/24)
 
 * New features:
   * The configuration UI has been ported to GTK. Users of GTK-based
