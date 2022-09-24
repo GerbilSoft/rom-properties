@@ -619,7 +619,6 @@ typedef enum {
 	DT_FILTER	= 0x7fffffff,	/* Shared object to get values from */
 #define DT_EXTRATAGIDX(tag)	((Elf32_Word)-((Elf32_Sword) (tag) <<1>>1)-1)
 	DT_EXTRANUM	= 3,
-
 } Elf_Dt_Type;
 
 /* Values of `d_un.d_val' in the DT_FLAGS entry.  */
@@ -664,8 +663,8 @@ typedef enum {
 	DF_1_PIE	= 0x08000000,
 } Elf_DT_FLAGS_1;
 
-typedef struct
-{
+/* Symbol table */
+typedef struct _Elf32_Sym {
 	Elf32_Word	st_name;	/* Symbol name (string tbl index) */
 	Elf32_Addr	st_value;	/* Symbol value */
 	Elf32_Word	st_size;	/* Symbol size */
@@ -674,8 +673,7 @@ typedef struct
 	Elf32_Section	st_shndx;	/* Section index */
 } Elf32_Sym;
 
-typedef struct
-{
+typedef struct _Elf64_Sym {
 	Elf64_Word	st_name;	/* Symbol name (string tbl index) */
 	unsigned char	st_info;	/* Symbol type and binding */
 	unsigned char	st_other;	/* Symbol visibility */
@@ -683,6 +681,60 @@ typedef struct
 	Elf64_Addr	st_value;	/* Symbol value */
 	Elf64_Xword	st_size;	/* Symbol size */
 } Elf64_Sym;
+
+#define ELF32_ST_BIND(val)		(((unsigned char) (val)) >> 4)
+#define ELF32_ST_TYPE(val)		((val) & 0xf)
+
+#define ELF64_ST_BIND(val)		ELF32_ST_BIND(val)
+#define ELF64_ST_TYPE(val)		ELF32_ST_TYPE(val)
+
+#define STB_LOCAL	0		/* Local symbol */
+#define STB_GLOBAL	1		/* Global symbol */
+#define STB_WEAK	2		/* Weak symbol */
+#define STB_NUM		3		/* Number of defined types.  */
+#define STB_LOOS	10		/* Start of OS-specific */
+#define STB_GNU_UNIQUE	10		/* Unique symbol.  */
+#define STB_HIOS	12		/* End of OS-specific */
+#define STB_LOPROC	13		/* Start of processor-specific */
+#define STB_HIPROC	15		/* End of processor-specific */
+
+#define STT_NOTYPE	0		/* Symbol type is unspecified */
+#define STT_OBJECT	1		/* Symbol is a data object */
+#define STT_FUNC	2		/* Symbol is a code object */
+#define STT_SECTION	3		/* Symbol associated with a section */
+#define STT_FILE	4		/* Symbol's name is file name */
+#define STT_COMMON	5		/* Symbol is a common data object */
+#define STT_TLS		6		/* Symbol is thread-local data object*/
+#define STT_NUM		7		/* Number of defined types.  */
+#define STT_LOOS	10		/* Start of OS-specific */
+#define STT_GNU_IFUNC	10		/* Symbol is indirect code object */
+#define STT_HIOS	12		/* End of OS-specific */
+#define STT_LOPROC	13		/* Start of processor-specific */
+#define STT_HIPROC	15		/* End of processor-specific */
+
+#define ELF32_ST_VISIBILITY(o)	((o) & 0x03)
+
+#define ELF64_ST_VISIBILITY(o)	ELF32_ST_VISIBILITY(o)
+
+#define STV_DEFAULT	0		/* Default symbol visibility rules */
+#define STV_INTERNAL	1		/* Processor specific hidden class */
+#define STV_HIDDEN	2		/* Sym unavailable in other modules */
+#define STV_PROTECTED	3		/* Not preemptible, not exported */
+
+#define SHN_UNDEF	0		/* Undefined section */
+#define SHN_LORESERVE	0xff00		/* Start of reserved indices */
+#define SHN_LOPROC	0xff00		/* Start of processor-specific */
+#define SHN_BEFORE	0xff00		/* Order section before all others
+					   (Solaris).  */
+#define SHN_AFTER	0xff01		/* Order section after all others
+					   (Solaris).  */
+#define SHN_HIPROC	0xff1f		/* End of processor-specific */
+#define SHN_LOOS	0xff20		/* Start of OS-specific */
+#define SHN_HIOS	0xff3f		/* End of OS-specific */
+#define SHN_ABS		0xfff1		/* Associated symbol is absolute */
+#define SHN_COMMON	0xfff2		/* Associated symbol is common */
+#define SHN_XINDEX	0xffff		/* Index is in extra table.  */
+#define SHN_HIRESERVE	0xffff		/* End of reserved indices */
 
 #ifdef __cplusplus
 }

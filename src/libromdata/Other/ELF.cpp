@@ -100,28 +100,28 @@ class ELFPrivate final : public RomDataPrivate
 			Elf64_Ehdr elf64;
 		} Elf_Header;
 
-		// Header location and size.
-		struct hdr_info_t {
-			off64_t addr;
-			uint64_t size;
-			off64_t vaddr;
-		};
-
 		/**
 		 * Read an ELF program header.
 		 * @param phbuf	[in] Pointer to program header.
 		 * @return Header information.
 		 */
-		hdr_info_t readProgramHeader(const uint8_t *phbuf);
+		Elf64_Phdr readProgramHeader(const uint8_t *phbuf);
 
 		// Program Header information
 		string interpreter;	// PT_INTERP value
 
 		// PT_LOAD
-		vector<hdr_info_t> pt_load;
+		vector<Elf64_Phdr> pt_load;
 
 		// PT_DYNAMIC
-		hdr_info_t pt_dynamic;	// If addr == 0, not dynamic.
+		Elf64_Phdr pt_dynamic;	// If p_offset == 0, not dynamic.
+
+		/**
+		 * Read an ELF section header.
+		 * @param phbuf	[in] Pointer to section header.
+		 * @return Header information.
+		 */
+		Elf64_Shdr readSectionHeader(const uint8_t *phbuf);
 
 		struct symtab_info_t {
 			uint64_t offset;
@@ -204,6 +204,13 @@ class ELFPrivate final : public RomDataPrivate
 		int addPtDynamicFields(void);
 
 		/**
+		 * Read an ELF symbol.
+		 * @param sbuf	[in] Pointer to symbol.
+		 * @return Symbol information.
+		 */
+		Elf64_Sym readSymbol(const uint8_t *sbuf);
+
+		/**
 		 * Add SYMTAB fields.
 		 * @return 0 on success; non-zero on error.
 		 */
@@ -261,35 +268,35 @@ ELFPrivate::ELFPrivate(ELF *q, IRpFile *file)
  * @param phbuf	[in] Pointer to program header.
  * @return Header information.
  */
-ELFPrivate::hdr_info_t ELFPrivate::readProgramHeader(const uint8_t *phbuf)
+Elf64_Phdr ELFPrivate::readProgramHeader(const uint8_t *phbuf)
 {
-	hdr_info_t info;
+	Elf64_Phdr out;
 
 	if (Elf_Header.primary.e_class == ELFCLASS64) {
 		const Elf64_Phdr *const phdr = reinterpret_cast<const Elf64_Phdr*>(phbuf);
-		if (Elf_Header.primary.e_data == ELFDATAHOST) {
-			info.addr = phdr->p_offset;
-			info.size = phdr->p_filesz;
-			info.vaddr = phdr->p_vaddr;
-		} else {
-			info.addr = __swab64(phdr->p_offset);
-			info.size = __swab64(phdr->p_filesz);
-			info.vaddr = __swab64(phdr->p_vaddr);
-		}
+		if (Elf_Header.primary.e_data == ELFDATAHOST)
+			return *phdr;
+		out.p_type = elf32_to_cpu(phdr->p_type);
+		out.p_flags = elf32_to_cpu(phdr->p_flags);
+		out.p_offset = elf64_to_cpu(phdr->p_offset);
+		out.p_vaddr = elf64_to_cpu(phdr->p_vaddr);
+		out.p_paddr = elf64_to_cpu(phdr->p_vaddr);
+		out.p_filesz = elf64_to_cpu(phdr->p_filesz);
+		out.p_memsz = elf64_to_cpu(phdr->p_memsz);
+		out.p_align = elf64_to_cpu(phdr->p_align);
 	} else {
 		const Elf32_Phdr *const phdr = reinterpret_cast<const Elf32_Phdr*>(phbuf);
-		if (Elf_Header.primary.e_data == ELFDATAHOST) {
-			info.addr = phdr->p_offset;
-			info.size = phdr->p_filesz;
-			info.vaddr = phdr->p_vaddr;
-		} else {
-			info.addr = __swab32(phdr->p_offset);
-			info.size = __swab32(phdr->p_filesz);
-			info.vaddr = __swab64(phdr->p_vaddr);
-		}
+		out.p_type = elf32_to_cpu(phdr->p_type);
+		out.p_flags = elf32_to_cpu(phdr->p_flags);
+		out.p_offset = elf32_to_cpu(phdr->p_offset);
+		out.p_vaddr = elf32_to_cpu(phdr->p_vaddr);
+		out.p_paddr = elf32_to_cpu(phdr->p_vaddr);
+		out.p_filesz = elf32_to_cpu(phdr->p_filesz);
+		out.p_memsz = elf32_to_cpu(phdr->p_memsz);
+		out.p_align = elf32_to_cpu(phdr->p_align);
 	}
 
-	return info;
+	return out;
 }
 
 /**
@@ -316,22 +323,12 @@ int ELFPrivate::checkProgramHeaders(void)
 	uint8_t phbuf[sizeof(Elf64_Phdr)];
 
 	if (Elf_Header.primary.e_class == ELFCLASS64) {
-		if (Elf_Header.primary.e_data == ELFDATAHOST) {
-			e_phoff = static_cast<off64_t>(Elf_Header.elf64.e_phoff);
-			e_phnum = Elf_Header.elf64.e_phnum;
-		} else {
-			e_phoff = static_cast<off64_t>(__swab64(Elf_Header.elf64.e_phoff));
-			e_phnum = __swab16(Elf_Header.elf64.e_phnum);
-		}
+		e_phoff = static_cast<off64_t>(elf64_to_cpu(Elf_Header.elf64.e_phoff));
+		e_phnum = elf16_to_cpu(Elf_Header.elf64.e_phnum);
 		phsize = sizeof(Elf64_Phdr);
 	} else {
-		if (Elf_Header.primary.e_data == ELFDATAHOST) {
-			e_phoff = static_cast<off64_t>(Elf_Header.elf32.e_phoff);
-			e_phnum = Elf_Header.elf32.e_phnum;
-		} else {
-			e_phoff = static_cast<off64_t>(__swab32(Elf_Header.elf32.e_phoff));
-			e_phnum = __swab16(Elf_Header.elf32.e_phnum);
-		}
+		e_phoff = static_cast<off64_t>(elf32_to_cpu(Elf_Header.elf32.e_phoff));
+		e_phnum = elf16_to_cpu(Elf_Header.elf32.e_phnum);
 		phsize = sizeof(Elf32_Phdr);
 	}
 
@@ -347,7 +344,6 @@ int ELFPrivate::checkProgramHeaders(void)
 	}
 
 	// Read all of the program header entries.
-	const bool isHostEndian = (Elf_Header.primary.e_data == ELFDATAHOST);
 	for (; e_phnum > 0; e_phnum--) {
 		size_t size = file->read(phbuf, phsize);
 		if (size != phsize) {
@@ -355,28 +351,22 @@ int ELFPrivate::checkProgramHeaders(void)
 			break;
 		}
 
-		// Check the type.
-		uint32_t p_type;
-		memcpy(&p_type, phbuf, sizeof(p_type));
-		if (!isHostEndian) {
-			p_type = __swab32(p_type);
-		}
+		Elf64_Phdr phdr = readProgramHeader(phbuf);
 
-		switch (p_type) {
+		// Check the type.
+		switch (phdr.p_type) {
 			case PT_INTERP: {
 				// If the file type is ET_DYN, this is a PIE executable.
 				isPie = (elf16_to_cpu(Elf_Header.primary.e_type) == ET_DYN);
 
-				// Get the interpreter name.
-				hdr_info_t info = readProgramHeader(phbuf);
-
 				// Sanity check: Interpreter must be 256 characters or less.
 				// NOTE: Interpreter should be NULL-terminated.
-				if (info.size <= 256) {
+				size_t len = phdr.p_filesz;
+				if (len <= 256) {
 					char buf[256];
 					const off64_t prevoff = file->tell();
-					size = file->seekAndRead(info.addr, buf, info.size);
-					if (size != info.size) {
+					size = file->seekAndRead(phdr.p_offset, buf, len);
+					if (size != len) {
 						// Seek and/or read error.
 						return -EIO;
 					}
@@ -387,12 +377,12 @@ int ELFPrivate::checkProgramHeaders(void)
 					}
 
 					// Remove trailing NULLs.
-					while (info.size > 0 && buf[info.size-1] == 0) {
-						info.size--;
+					while (len > 0 && buf[len-1] == 0) {
+						len--;
 					}
 
-					if (info.size > 0) {
-						interpreter.assign(buf, static_cast<size_t>(info.size));
+					if (len > 0) {
+						interpreter.assign(buf, len);
 					}
 				}
 
@@ -400,10 +390,10 @@ int ELFPrivate::checkProgramHeaders(void)
 			}
 
 			case PT_LOAD:
-				pt_load.push_back(readProgramHeader(phbuf));
+				pt_load.push_back(phdr);
 				// vaddrs must be sorted
-				assert(pt_load.size() < 2 || pt_load.end()[-2].vaddr <= pt_load.end()[-1].vaddr);
-				if (pt_load.size() > 1 && unlikely(pt_load.end()[-2].vaddr > pt_load.end()[-1].vaddr)) {
+				assert(pt_load.size() < 2 || pt_load.end()[-2].p_vaddr <= pt_load.end()[-1].p_vaddr);
+				if (pt_load.size() > 1 && unlikely(pt_load.end()[-2].p_vaddr > pt_load.end()[-1].p_vaddr)) {
 					// Not sorted. Remove the last entry.
 					// TODO: Sort it manually?
 					pt_load.resize(pt_load.size()-1);
@@ -413,7 +403,7 @@ int ELFPrivate::checkProgramHeaders(void)
 			case PT_DYNAMIC:
 				// Executable is dynamically linked.
 				// Save the header information for later.
-				pt_dynamic = readProgramHeader(phbuf);
+				pt_dynamic = phdr;
 				break;
 
 			default:
@@ -423,6 +413,45 @@ int ELFPrivate::checkProgramHeaders(void)
 
 	// Program headers checked.
 	return 0;
+}
+
+/**
+ * Read an ELF section header.
+ * @param shbuf	[in] Pointer to section header.
+ * @return Header information.
+ */
+Elf64_Shdr ELFPrivate::readSectionHeader(const uint8_t *shbuf)
+{
+	Elf64_Shdr out;
+	if (Elf_Header.primary.e_class == ELFCLASS64) {
+		const Elf64_Shdr *const shdr = reinterpret_cast<const Elf64_Shdr*>(shbuf);
+		if (Elf_Header.primary.e_data == ELFDATAHOST)
+			return *shdr;
+		out.sh_name = elf32_to_cpu(shdr->sh_name);
+		out.sh_type = elf32_to_cpu(shdr->sh_type);
+		out.sh_flags = elf64_to_cpu(shdr->sh_flags);
+		out.sh_addr = elf64_to_cpu(shdr->sh_addr);
+		out.sh_offset = elf64_to_cpu(shdr->sh_offset);
+		out.sh_size = elf64_to_cpu(shdr->sh_size);
+		out.sh_link = elf32_to_cpu(shdr->sh_link);
+		out.sh_info = elf32_to_cpu(shdr->sh_info);
+		out.sh_addralign = elf64_to_cpu(shdr->sh_addralign);
+		out.sh_entsize = elf64_to_cpu(shdr->sh_entsize);
+	} else {
+		const Elf32_Shdr *const shdr = reinterpret_cast<const Elf32_Shdr*>(shbuf);
+		out.sh_name = elf32_to_cpu(shdr->sh_name);
+		out.sh_type = elf32_to_cpu(shdr->sh_type);
+		out.sh_flags = elf32_to_cpu(shdr->sh_flags);
+		out.sh_addr = elf32_to_cpu(shdr->sh_addr);
+		out.sh_offset = elf32_to_cpu(shdr->sh_offset);
+		out.sh_size = elf32_to_cpu(shdr->sh_size);
+		out.sh_link = elf32_to_cpu(shdr->sh_link);
+		out.sh_info = elf32_to_cpu(shdr->sh_info);
+		out.sh_addralign = elf32_to_cpu(shdr->sh_addralign);
+		out.sh_entsize = elf32_to_cpu(shdr->sh_entsize);
+	}
+
+	return out;
 }
 
 /**
@@ -446,22 +475,12 @@ int ELFPrivate::checkSectionHeaders(void)
 	uint8_t shbuf[sizeof(Elf64_Shdr)];
 
 	if (Elf_Header.primary.e_class == ELFCLASS64) {
-		if (Elf_Header.primary.e_data == ELFDATAHOST) {
-			e_shoff = static_cast<off64_t>(Elf_Header.elf64.e_shoff);
-			e_shnum = Elf_Header.elf64.e_shnum;
-		} else {
-			e_shoff = static_cast<off64_t>(__swab64(Elf_Header.elf64.e_shoff));
-			e_shnum = __swab16(Elf_Header.elf64.e_shnum);
-		}
+		e_shoff = static_cast<off64_t>(elf64_to_cpu(Elf_Header.elf64.e_shoff));
+		e_shnum = elf16_to_cpu(Elf_Header.elf64.e_shnum);
 		shsize = sizeof(Elf64_Shdr);
 	} else {
-		if (Elf_Header.primary.e_data == ELFDATAHOST) {
-			e_shoff = static_cast<off64_t>(Elf_Header.elf32.e_shoff);
-			e_shnum = Elf_Header.elf32.e_shnum;
-		} else {
-			e_shoff = static_cast<off64_t>(__swab32(Elf_Header.elf32.e_shoff));
-			e_shnum = __swab16(Elf_Header.elf32.e_shnum);
-		}
+		e_shoff = static_cast<off64_t>(elf32_to_cpu(Elf_Header.elf32.e_shoff));
+		e_shnum = elf16_to_cpu(Elf_Header.elf32.e_shnum);
 		shsize = sizeof(Elf32_Shdr);
 	}
 
@@ -479,7 +498,6 @@ int ELFPrivate::checkSectionHeaders(void)
 	uint64_t symtab_link = -1, dynsym_link = -1;
 
 	// Read all of the section header entries.
-	const bool isHostEndian = (Elf_Header.primary.e_data == ELFDATAHOST);
 	for (unsigned i = 0; i < e_shnum; i++) {
 		size_t size = file->read(shbuf, shsize);
 		if (size != shsize) {
@@ -487,84 +505,37 @@ int ELFPrivate::checkSectionHeaders(void)
 			break;
 		}
 
-		// Check the type.
-		uint32_t s_type;
-		memcpy(&s_type, &shbuf[4], sizeof(s_type));
-		if (!isHostEndian) {
-			s_type = __swab32(s_type);
-		}
+		const Elf64_Shdr shdr = readSectionHeader(shbuf);
 
 		// FIXME: this assumes that STRTABs come after SYMTABs.
-		if (s_type == SHT_STRTAB) {
-			if (Elf_Header.primary.e_class == ELFCLASS64) {
-				const Elf64_Shdr *const shdr = reinterpret_cast<const Elf64_Shdr*>(shbuf);
-				if (i == symtab_link) {
-					sht_symtab.strtab_offset = elf64_to_cpu(shdr->sh_offset);
-					sht_symtab.strtab_size = elf64_to_cpu(shdr->sh_size);
-				}
-				if (i == dynsym_link) {
-					sht_dynsym.strtab_offset = elf64_to_cpu(shdr->sh_offset);
-					sht_dynsym.strtab_size = elf64_to_cpu(shdr->sh_size);
-				}
-			} else {
-				const Elf32_Shdr *const shdr = reinterpret_cast<const Elf32_Shdr*>(shbuf);
-				if (i == symtab_link) {
-					sht_symtab.strtab_offset = elf32_to_cpu(shdr->sh_offset);
-					sht_symtab.strtab_size = elf32_to_cpu(shdr->sh_size);
-				}
-				if (i == dynsym_link) {
-					sht_dynsym.strtab_offset = elf32_to_cpu(shdr->sh_offset);
-					sht_dynsym.strtab_size = elf32_to_cpu(shdr->sh_size);
-				}
+		if (shdr.sh_type == SHT_STRTAB) {
+			if (i == symtab_link) {
+				sht_symtab.strtab_offset = shdr.sh_offset;
+				sht_symtab.strtab_size = shdr.sh_size;
 			}
-
+			if (i == dynsym_link) {
+				sht_dynsym.strtab_offset = shdr.sh_offset;
+				sht_dynsym.strtab_size = shdr.sh_size;
+			}
 		}
 
-		if (s_type == SHT_SYMTAB || s_type == SHT_DYNSYM) {
-			symtab_info_t &tab = (s_type == SHT_SYMTAB ? sht_symtab : sht_dynsym);
-			uint64_t &link = (s_type == SHT_SYMTAB ? symtab_link : dynsym_link);
-			if (Elf_Header.primary.e_class == ELFCLASS64) {
-				const Elf64_Shdr *const shdr = reinterpret_cast<const Elf64_Shdr*>(shbuf);
-				tab.offset = elf64_to_cpu(shdr->sh_offset);
-				tab.size = elf64_to_cpu(shdr->sh_size);
-				tab.entsize = elf64_to_cpu(shdr->sh_entsize);
-				link = elf64_to_cpu(shdr->sh_link);
-			} else {
-				const Elf32_Shdr *const shdr = reinterpret_cast<const Elf32_Shdr*>(shbuf);
-				tab.offset = elf32_to_cpu(shdr->sh_offset);
-				tab.size = elf32_to_cpu(shdr->sh_size);
-				tab.entsize = elf32_to_cpu(shdr->sh_entsize);
-				link = elf32_to_cpu(shdr->sh_link);
-			}
+		if (shdr.sh_type == SHT_SYMTAB || shdr.sh_type == SHT_DYNSYM) {
+			symtab_info_t &tab = (shdr.sh_type == SHT_SYMTAB ? sht_symtab : sht_dynsym);
+			uint64_t &link = (shdr.sh_type == SHT_SYMTAB ? symtab_link : dynsym_link);
+			tab.offset = shdr.sh_offset;
+			tab.size = shdr.sh_size;
+			tab.entsize = shdr.sh_entsize;
+			link = shdr.sh_link;
 			continue;
 		}
 
 		// Only STRTABs, SYMTABs, DYNSYMs and NOTEs are supported right now.
-		if (s_type != SHT_NOTE)
+		if (shdr.sh_type != SHT_NOTE)
 			continue;
 
 		// Get the note address and size.
-		off64_t int_addr;
-		uint64_t int_size;
-		if (Elf_Header.primary.e_class == ELFCLASS64) {
-			const Elf64_Shdr *const shdr = reinterpret_cast<const Elf64_Shdr*>(shbuf);
-			if (Elf_Header.primary.e_data == ELFDATAHOST) {
-				int_addr = shdr->sh_offset;
-				int_size = shdr->sh_size;
-			} else {
-				int_addr = __swab64(shdr->sh_offset);
-				int_size = __swab64(shdr->sh_size);
-			}
-		} else {
-			const Elf32_Shdr *const shdr = reinterpret_cast<const Elf32_Shdr*>(shbuf);
-			if (Elf_Header.primary.e_data == ELFDATAHOST) {
-				int_addr = shdr->sh_offset;
-				int_size = shdr->sh_size;
-			} else {
-				int_addr = __swab32(shdr->sh_offset);
-				int_size = __swab32(shdr->sh_size);
-			}
-		}
+		off64_t int_addr = shdr.sh_offset;
+		uint64_t int_size = shdr.sh_size;
 
 		// Sanity check: Note must be 256 bytes or less,
 		// and must be greater than sizeof(Elf32_Nhdr).
@@ -776,19 +747,19 @@ int ELFPrivate::readDataAtVA(uint64_t vaddr, ao::uvector<uint8_t> &out)
 	// Find the segment
 	const uint64_t vend = vaddr + out.size();
 	auto it = std::upper_bound(pt_load.begin(), pt_load.end(), vaddr,
-		[](uint64_t lhs, const hdr_info_t &rhs) -> bool {
-			return lhs < (uint64_t)rhs.vaddr;
+		[](uint64_t lhs, const Elf64_Phdr &rhs) -> bool {
+			return lhs < (uint64_t)rhs.p_vaddr;
 		});
 	if (it == pt_load.begin())
 		return -ENOENT;
 	it--;
 
 	// Check the bounds
-	uint64_t sstart = it->vaddr;
-	uint64_t send = it->vaddr + it->size;
+	uint64_t sstart = it->p_vaddr;
+	uint64_t send = it->p_vaddr + it->p_filesz;
 	if (sstart <= vaddr && vaddr <= send && sstart <= vend && vend <= send) {
 		// Read data
-		vaddr += it->addr - it->vaddr;
+		vaddr += it->p_offset - it->p_vaddr;
 		size_t size = file->seekAndRead(vaddr, out.data(), out.size());
 		assert(size == out.size());
 		if (size != out.size()) {
@@ -806,14 +777,14 @@ int ELFPrivate::readDataAtVA(uint64_t vaddr, ao::uvector<uint8_t> &out)
  */
 int ELFPrivate::addPtDynamicFields(void)
 {
-	if (isWiiU || pt_dynamic.addr == 0) {
+	if (isWiiU || pt_dynamic.p_offset == 0) {
 		// Not a dynamic object.
 		// (Wii U dynamic objects don't work the same way as
 		// standard POSIX dynamic objects.)
 		return -1;
 	}
 
-	if (pt_dynamic.size > 1U*1024*1024) {
+	if (pt_dynamic.p_filesz > 1U*1024*1024) {
 		// PT_DYNAMIC is larger than 1 MB.
 		// That's no good.
 		return -2;
@@ -821,8 +792,8 @@ int ELFPrivate::addPtDynamicFields(void)
 
 	// Read the header.
 	ao::uvector<uint8_t> pt_dyn_buf;
-	pt_dyn_buf.resize(static_cast<unsigned int>(pt_dynamic.size));
-	size_t size = file->seekAndRead(pt_dynamic.addr, pt_dyn_buf.data(), pt_dyn_buf.size());
+	pt_dyn_buf.resize(static_cast<unsigned int>(pt_dynamic.p_filesz));
+	size_t size = file->seekAndRead(pt_dynamic.p_offset, pt_dyn_buf.data(), pt_dyn_buf.size());
 	if (size != pt_dyn_buf.size()) {
 		// Read error.
 		return -3;
@@ -974,6 +945,36 @@ int ELFPrivate::addPtDynamicFields(void)
 }
 
 /**
+ * Read an ELF symbol.
+ * @param sbuf	[in] Pointer to symbol.
+ * @return Symbol information.
+ */
+Elf64_Sym ELFPrivate::readSymbol(const uint8_t *sbuf)
+{
+	Elf64_Sym out;
+	if (Elf_Header.primary.e_class == ELFCLASS64) {
+		const Elf64_Sym *const sym = reinterpret_cast<const Elf64_Sym *>(sbuf);
+		if (Elf_Header.primary.e_data == ELFDATAHOST)
+			return *sym;
+		out.st_name = elf32_to_cpu(sym->st_name);
+		out.st_info = sym->st_info;
+		out.st_other = sym->st_other;
+		out.st_shndx = elf16_to_cpu(sym->st_shndx);
+		out.st_value = elf64_to_cpu(sym->st_value);
+		out.st_size = elf64_to_cpu(sym->st_size);
+	} else {
+		const Elf32_Sym *const sym = reinterpret_cast<const Elf32_Sym *>(sbuf);
+		out.st_name = elf32_to_cpu(sym->st_name);
+		out.st_info = sym->st_info;
+		out.st_other = sym->st_other;
+		out.st_shndx = elf16_to_cpu(sym->st_shndx);
+		out.st_value = elf32_to_cpu(sym->st_value);
+		out.st_size = elf32_to_cpu(sym->st_size);
+	}
+	return out;
+}
+
+/**
  * Add SYMTAB fields.
  * @return 0 on success; non-zero on error.
  */
@@ -999,29 +1000,7 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 	 * FIXME: This won't run if addPtDynamicFields fails.
 	 */
 
-	auto parse_sym = [this](uint8_t *ptr, vector<Elf64_Sym> &out) {
-		Elf64_Sym sym;
-		if (Elf_Header.primary.e_class == ELFCLASS64) {
-			const Elf64_Sym &sym64 = *reinterpret_cast<const Elf64_Sym *>(ptr);
-			sym.st_name = elf32_to_cpu(sym64.st_name);
-			sym.st_info = sym64.st_info;
-			sym.st_other = sym64.st_other;
-			sym.st_shndx = elf16_to_cpu(sym64.st_shndx);
-			sym.st_value = elf64_to_cpu(sym64.st_value);
-			sym.st_size = elf64_to_cpu(sym64.st_size);
-		} else {
-			const Elf32_Sym &sym32 = *reinterpret_cast<const Elf32_Sym *>(ptr);
-			sym.st_name = elf32_to_cpu(sym32.st_name);
-			sym.st_info = sym32.st_info;
-			sym.st_other = sym32.st_other;
-			sym.st_shndx = elf16_to_cpu(sym32.st_shndx);
-			sym.st_value = elf32_to_cpu(sym32.st_value);
-			sym.st_size = elf32_to_cpu(sym32.st_size);
-		}
-		out.push_back(sym);
-	};
-
-	auto parse_symtab = [this,parse_sym](vector<Elf64_Sym> &out, const symtab_info_t &info) {
+	auto parse_symtab = [this](vector<Elf64_Sym> &out, const symtab_info_t &info) {
 		ao::uvector<uint8_t> buf;
 		if (info.size == 0 || info.size > 1*1024*1024)
 			return;
@@ -1034,7 +1013,7 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 			return;
 		out.reserve(buf.size()/info.entsize);
 		for (uint8_t *p = buf.data(); p < buf.data() + buf.size(); p += info.entsize)
-			parse_sym(p, out);
+			out.push_back(readSymbol(p));
 	};
 
 	auto add_symbol_tab = [this,parse_symtab](const char *name, const symtab_info_t &info, span<const char> strtab) {
@@ -1056,7 +1035,49 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 				continue;
 			}
 			vector<string> row;
+			row.reserve(7);
 			row.emplace_back(&strtab[sym.st_name]);
+			static const char *const bindings[16] = {
+				"LOCAL", "GLOBAL", "WEAK",
+				"3", "4", "5", "6", "7", "8", "9",
+				"GNU_UNIQUE", "LOOS+1", "LOOS+2",
+				"LOPROC+0", "LOPROC+1", "LOPROC+2",
+			};
+			static const char *const types[16] = {
+				"NOTYPE", "OBJECT", "FUNC", "SECTION",
+				"FILE", "COMMON",
+				"7", "8", "9",
+				"GNU_IFNUC", "LOOS+1", "LOOS+2",
+				"LOPROC+0", "LOPROC+1", "LOPROC+2",
+			};
+			static const char *const visibilities[4] = {
+				"DEFAULT", "INTERNAL", "HIDDEN", "PROTECTED"
+			};
+
+			// Symbol type LOOS+1 is IFUNC on GNU/Linux.
+			// NOTE: OSABI is usually set to ELFOSABI_SYSV unless IFUNC is in use.
+			const uint8_t sym_type = ELF64_ST_TYPE(sym.st_info);
+			const char *s_sym_type;
+			if (sym_type == STT_GNU_IFUNC && likely(Elf_Header.primary.e_osabi == ELFOSABI_GNU)) {
+				s_sym_type = "IFUNC";
+			} else {
+				s_sym_type = types[sym_type];
+			}
+
+			row.emplace_back(bindings[ELF64_ST_BIND(sym.st_info)]);
+			row.emplace_back(s_sym_type);
+			row.emplace_back(visibilities[ELF64_ST_VISIBILITY(sym.st_other)]);
+			// TODO: output section name if possible
+			if (sym.st_shndx == SHN_UNDEF)
+				row.emplace_back(C_("ELF|Symbol", "(Undefined)"));
+			else if (sym.st_shndx == SHN_ABS)
+				row.emplace_back(C_("ELF|Symbol", "(Absolute)"));
+			else if (sym.st_shndx == SHN_COMMON)
+				row.emplace_back(C_("ELF|Symbol", "(COMMON)"));
+			else
+				row.emplace_back(rp_sprintf("%d", sym.st_shndx));
+			row.emplace_back(rp_sprintf("0x%08" PRIX64, sym.st_value));
+			row.emplace_back(rp_sprintf("0x%08" PRIX64, sym.st_size));
 			vv_data->push_back(std::move(row));
 		}
 		if (vv_data->empty()) {
@@ -1066,18 +1087,22 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 
 		std::sort(vv_data->begin(), vv_data->end(),
 			[](const vector<string> &row1, const vector<string> &row2) -> bool {
-				assert(row1.size() == 1);
-				assert(row2.size() == 1);
 				return (row1[0].compare(row2[0]) < 0);
 			});
 
 		fields->addTab(name);
 
 		static const char *const field_names[] = {
-			NOP_C_("ELF", "Name"),
+			NOP_C_("ELF|Symbol", "Name"),
+			NOP_C_("ELF|Symbol", "Binding"),
+			NOP_C_("ELF|Symbol", "Type"),
+			NOP_C_("ELF|Symbol", "Visibility"),
+			NOP_C_("ELF|Symbol", "Section"),
+			NOP_C_("ELF|Symbol", "Value"),
+			NOP_C_("ELF|Symbol", "Size"),
 		};
 		vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
-			"ELF", field_names, ARRAY_SIZE(field_names));
+			"ELF|Symbol", field_names, ARRAY_SIZE(field_names));
 
 		RomFields::AFLD_PARAMS params;
 		params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;
@@ -1235,7 +1260,7 @@ ELF::ELF(IRpFile *file)
 		// Assuming this is a Wii U executable.
 		// TODO: Also verify that there's no program headers?
 		d->isWiiU = true;
-		d->pt_dynamic.addr = 1;	// TODO: Properly check this.
+		d->pt_dynamic.p_offset = 1;	// TODO: Properly check this.
 
 		// TODO: Determine different RPX/RPL file types.
 		switch (primary->e_type) {
@@ -2036,7 +2061,7 @@ int ELF::loadFieldData(void)
 	// Linkage. (Executables only)
 	if (d->fileType == FileType::Executable) {
 		d->fields->addField_string(C_("ELF", "Linkage"),
-			d->pt_dynamic.addr != 0
+			d->pt_dynamic.p_offset != 0
 				? C_("ELF|Linkage", "Dynamic")
 				: C_("ELF|Linkage", "Static"));
 	}
@@ -2084,7 +2109,7 @@ int ELF::loadFieldData(void)
 	// print DT_FLAGS and DT_FLAGS_1.
 	// TODO: Print required libraries?
 	// Sanity check: Maximum of 1 MB.
-	if (!d->isWiiU && d->pt_dynamic.addr != 0) {
+	if (!d->isWiiU && d->pt_dynamic.p_offset != 0) {
 		d->addPtDynamicFields();
 	}
 
