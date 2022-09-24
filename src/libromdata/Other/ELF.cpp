@@ -204,6 +204,13 @@ class ELFPrivate final : public RomDataPrivate
 		int addPtDynamicFields(void);
 
 		/**
+		 * Read an ELF symbol.
+		 * @param sbuf	[in] Pointer to symbol.
+		 * @return Symbol information.
+		 */
+		Elf64_Sym readSymbol(const uint8_t *sbuf);
+
+		/**
 		 * Add SYMTAB fields.
 		 * @return 0 on success; non-zero on error.
 		 */
@@ -405,7 +412,7 @@ int ELFPrivate::checkProgramHeaders(void)
 
 /**
  * Read an ELF section header.
- * @param phbuf	[in] Pointer to section header.
+ * @param shbuf	[in] Pointer to section header.
  * @return Header information.
  */
 Elf64_Shdr ELFPrivate::readSectionHeader(const uint8_t *shbuf)
@@ -933,6 +940,36 @@ int ELFPrivate::addPtDynamicFields(void)
 }
 
 /**
+ * Read an ELF symbol.
+ * @param sbuf	[in] Pointer to symbol.
+ * @return Symbol information.
+ */
+Elf64_Sym ELFPrivate::readSymbol(const uint8_t *sbuf)
+{
+	Elf64_Sym out;
+	if (Elf_Header.primary.e_class == ELFCLASS64) {
+		const Elf64_Sym *const sym = reinterpret_cast<const Elf64_Sym *>(sbuf);
+		if (Elf_Header.primary.e_data == ELFDATAHOST)
+			return *sym;
+		out.st_name = elf32_to_cpu(sym->st_name);
+		out.st_info = sym->st_info;
+		out.st_other = sym->st_other;
+		out.st_shndx = elf16_to_cpu(sym->st_shndx);
+		out.st_value = elf64_to_cpu(sym->st_value);
+		out.st_size = elf64_to_cpu(sym->st_size);
+	} else {
+		const Elf32_Sym *const sym = reinterpret_cast<const Elf32_Sym *>(sbuf);
+		out.st_name = elf32_to_cpu(sym->st_name);
+		out.st_info = sym->st_info;
+		out.st_other = sym->st_other;
+		out.st_shndx = elf16_to_cpu(sym->st_shndx);
+		out.st_value = elf32_to_cpu(sym->st_value);
+		out.st_size = elf32_to_cpu(sym->st_size);
+	}
+	return out;
+}
+
+/**
  * Add SYMTAB fields.
  * @return 0 on success; non-zero on error.
  */
@@ -958,29 +995,7 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 	 * FIXME: This won't run if addPtDynamicFields fails.
 	 */
 
-	auto parse_sym = [this](uint8_t *ptr, vector<Elf64_Sym> &out) {
-		Elf64_Sym sym;
-		if (Elf_Header.primary.e_class == ELFCLASS64) {
-			const Elf64_Sym &sym64 = *reinterpret_cast<const Elf64_Sym *>(ptr);
-			sym.st_name = elf32_to_cpu(sym64.st_name);
-			sym.st_info = sym64.st_info;
-			sym.st_other = sym64.st_other;
-			sym.st_shndx = elf16_to_cpu(sym64.st_shndx);
-			sym.st_value = elf64_to_cpu(sym64.st_value);
-			sym.st_size = elf64_to_cpu(sym64.st_size);
-		} else {
-			const Elf32_Sym &sym32 = *reinterpret_cast<const Elf32_Sym *>(ptr);
-			sym.st_name = elf32_to_cpu(sym32.st_name);
-			sym.st_info = sym32.st_info;
-			sym.st_other = sym32.st_other;
-			sym.st_shndx = elf16_to_cpu(sym32.st_shndx);
-			sym.st_value = elf32_to_cpu(sym32.st_value);
-			sym.st_size = elf32_to_cpu(sym32.st_size);
-		}
-		out.push_back(sym);
-	};
-
-	auto parse_symtab = [this,parse_sym](vector<Elf64_Sym> &out, const symtab_info_t &info) {
+	auto parse_symtab = [this](vector<Elf64_Sym> &out, const symtab_info_t &info) {
 		ao::uvector<uint8_t> buf;
 		if (info.size == 0 || info.size > 1*1024*1024)
 			return;
@@ -993,7 +1008,7 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 			return;
 		out.reserve(buf.size()/info.entsize);
 		for (uint8_t *p = buf.data(); p < buf.data() + buf.size(); p += info.entsize)
-			parse_sym(p, out);
+			out.push_back(readSymbol(p));
 	};
 
 	auto add_symbol_tab = [this,parse_symtab](const char *name, const symtab_info_t &info, span<const char> strtab) {
