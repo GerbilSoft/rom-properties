@@ -35,6 +35,9 @@ using std::vector;
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector
 #include "uvector.h"
+#include "span.hh"
+using vhvc::span;
+using vhvc::reinterpret_span;
 
 namespace LibRomData {
 
@@ -101,6 +104,7 @@ class ELFPrivate final : public RomDataPrivate
 		struct hdr_info_t {
 			off64_t addr;
 			uint64_t size;
+			off64_t vaddr;
 		};
 
 		/**
@@ -113,8 +117,23 @@ class ELFPrivate final : public RomDataPrivate
 		// Program Header information
 		string interpreter;	// PT_INTERP value
 
+		// PT_LOAD
+		vector<hdr_info_t> pt_load;
+
 		// PT_DYNAMIC
 		hdr_info_t pt_dynamic;	// If addr == 0, not dynamic.
+
+		struct symtab_info_t {
+			uint64_t offset;
+			uint64_t size;
+			uint64_t entsize;
+			uint64_t strtab_offset;
+			uint64_t strtab_size;
+		};
+		// SHT_SYMTAB
+		symtab_info_t sht_symtab;
+		// SHT_DYNSYM
+		symtab_info_t sht_dynsym;
 
 		// Section Header information
 		string osVersion;	// Operating system version.
@@ -171,10 +190,24 @@ class ELFPrivate final : public RomDataPrivate
 		int checkSectionHeaders(void);
 
 		/**
+		 * Read data at a given VA. The data must be in a single PT_LOAD segment.
+		 * @param vaddr The virtual address
+		 * @param out The output vector. Its size determines how much data is read.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int readDataAtVA(uint64_t vaddr, ao::uvector<uint8_t> &out);
+
+		/**
 		 * Add PT_DYNAMIC fields.
 		 * @return 0 on success; non-zero on error.
 		 */
 		int addPtDynamicFields(void);
+
+		/**
+		 * Add SYMTAB fields.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int addSymbolFields(span<const char> dynsym_strtab);
 };
 
 ROMDATA_IMPL(ELF)
@@ -237,18 +270,22 @@ ELFPrivate::hdr_info_t ELFPrivate::readProgramHeader(const uint8_t *phbuf)
 		if (Elf_Header.primary.e_data == ELFDATAHOST) {
 			info.addr = phdr->p_offset;
 			info.size = phdr->p_filesz;
+			info.vaddr = phdr->p_vaddr;
 		} else {
 			info.addr = __swab64(phdr->p_offset);
 			info.size = __swab64(phdr->p_filesz);
+			info.vaddr = __swab64(phdr->p_vaddr);
 		}
 	} else {
 		const Elf32_Phdr *const phdr = reinterpret_cast<const Elf32_Phdr*>(phbuf);
 		if (Elf_Header.primary.e_data == ELFDATAHOST) {
 			info.addr = phdr->p_offset;
 			info.size = phdr->p_filesz;
+			info.vaddr = phdr->p_vaddr;
 		} else {
 			info.addr = __swab32(phdr->p_offset);
 			info.size = __swab32(phdr->p_filesz);
+			info.vaddr = __swab64(phdr->p_vaddr);
 		}
 	}
 
@@ -362,6 +399,12 @@ int ELFPrivate::checkProgramHeaders(void)
 				break;
 			}
 
+			case PT_LOAD:
+				pt_load.push_back(readProgramHeader(phbuf));
+				// vaddrs must be sorted
+				assert(pt_load.size() < 2 || pt_load.end()[-2].vaddr <= pt_load.end()[-1].vaddr);
+				break;
+
 			case PT_DYNAMIC:
 				// Executable is dynamically linked.
 				// Save the header information for later.
@@ -428,9 +471,11 @@ int ELFPrivate::checkSectionHeaders(void)
 		return ret;
 	}
 
+	uint64_t symtab_link = -1, dynsym_link = -1;
+
 	// Read all of the section header entries.
 	const bool isHostEndian = (Elf_Header.primary.e_data == ELFDATAHOST);
-	for (; e_shnum > 0; e_shnum--) {
+	for (unsigned i = 0; i < e_shnum; i++) {
 		size_t size = file->read(shbuf, shsize);
 		if (size != shsize) {
 			// Read error.
@@ -444,7 +489,52 @@ int ELFPrivate::checkSectionHeaders(void)
 			s_type = __swab32(s_type);
 		}
 
-		// Only NOTEs are supported right now.
+		// FIXME: this assumes that STRTABs come after SYMTABs.
+		if (s_type == SHT_STRTAB) {
+			if (Elf_Header.primary.e_class == ELFCLASS64) {
+				const Elf64_Shdr *const shdr = reinterpret_cast<const Elf64_Shdr*>(shbuf);
+				if (i == symtab_link) {
+					sht_symtab.strtab_offset = elf64_to_cpu(shdr->sh_offset);
+					sht_symtab.strtab_size = elf64_to_cpu(shdr->sh_size);
+				}
+				if (i == dynsym_link) {
+					sht_dynsym.strtab_offset = elf64_to_cpu(shdr->sh_offset);
+					sht_dynsym.strtab_size = elf64_to_cpu(shdr->sh_size);
+				}
+			} else {
+				const Elf32_Shdr *const shdr = reinterpret_cast<const Elf32_Shdr*>(shbuf);
+				if (i == symtab_link) {
+					sht_symtab.strtab_offset = elf32_to_cpu(shdr->sh_offset);
+					sht_symtab.strtab_size = elf32_to_cpu(shdr->sh_size);
+				}
+				if (i == dynsym_link) {
+					sht_dynsym.strtab_offset = elf32_to_cpu(shdr->sh_offset);
+					sht_dynsym.strtab_size = elf32_to_cpu(shdr->sh_size);
+				}
+			}
+
+		}
+
+		if (s_type == SHT_SYMTAB || s_type == SHT_DYNSYM) {
+			symtab_info_t &tab = (s_type == SHT_SYMTAB ? sht_symtab : sht_dynsym);
+			uint64_t &link = (s_type == SHT_SYMTAB ? symtab_link : dynsym_link);
+			if (Elf_Header.primary.e_class == ELFCLASS64) {
+				const Elf64_Shdr *const shdr = reinterpret_cast<const Elf64_Shdr*>(shbuf);
+				tab.offset = elf64_to_cpu(shdr->sh_offset);
+				tab.size = elf64_to_cpu(shdr->sh_size);
+				tab.entsize = elf64_to_cpu(shdr->sh_entsize);
+				link = elf64_to_cpu(shdr->sh_link);
+			} else {
+				const Elf32_Shdr *const shdr = reinterpret_cast<const Elf32_Shdr*>(shbuf);
+				tab.offset = elf32_to_cpu(shdr->sh_offset);
+				tab.size = elf32_to_cpu(shdr->sh_size);
+				tab.entsize = elf32_to_cpu(shdr->sh_entsize);
+				link = elf32_to_cpu(shdr->sh_link);
+			}
+			continue;
+		}
+
+		// Only STRTABs, SYMTABs, DYNSYMs and NOTEs are supported right now.
 		if (s_type != SHT_NOTE)
 			continue;
 
@@ -671,6 +761,41 @@ int ELFPrivate::checkSectionHeaders(void)
 }
 
 /**
+ * Read data at a given VA. The data must be in a single PT_LOAD segment.
+ * @param vaddr The virtual address
+ * @param out The output vector. Its size determines how much data is read.
+ * @return 0 on success; non-zero on error.
+ */
+int ELFPrivate::readDataAtVA(uint64_t vaddr, ao::uvector<uint8_t> &out)
+{
+	// Find the segment
+	const uint64_t vend = vaddr + out.size();
+	auto it = std::upper_bound(pt_load.begin(), pt_load.end(), vaddr,
+		[](uint64_t lhs, const hdr_info_t &rhs) -> bool {
+			return lhs < (uint64_t)rhs.vaddr;
+		});
+	if (it == pt_load.begin())
+		return -ENOENT;
+	it--;
+
+	// Check the bounds
+	uint64_t sstart = it->vaddr;
+	uint64_t send = it->vaddr + it->size;
+	if (sstart <= vaddr && vaddr <= send && sstart <= vend && vend <= send) {
+		// Read data
+		vaddr += it->addr - it->vaddr;
+		size_t size = file->seekAndRead(vaddr, out.data(), out.size());
+		assert(size == out.size());
+		if (size != out.size()) {
+			return -EIO;
+		}
+		return 0;
+	} else {
+		return -ENOENT;
+	}
+}
+
+/**
  * Add PT_DYNAMIC fields.
  * @return 0 on success; non-zero on error.
  */
@@ -690,108 +815,275 @@ int ELFPrivate::addPtDynamicFields(void)
 	}
 
 	// Read the header.
-	const unsigned int sz_to_read = static_cast<unsigned int>(pt_dynamic.size);
-	unique_ptr<uint8_t[]> pt_dyn_buf(new uint8_t[sz_to_read]);
-	size_t size = file->seekAndRead(pt_dynamic.addr, pt_dyn_buf.get(), sz_to_read);
-	if (size != sz_to_read) {
+	ao::uvector<uint8_t> pt_dyn_buf;
+	pt_dyn_buf.resize(static_cast<unsigned int>(pt_dynamic.size));
+	size_t size = file->seekAndRead(pt_dynamic.addr, pt_dyn_buf.data(), pt_dyn_buf.size());
+	if (size != pt_dyn_buf.size()) {
 		// Read error.
 		return -3;
 	}
 
 	// Process headers.
 	// NOTE: Separate loops for 32-bit vs. 64-bit.
-	bool has_DT_FLAGS = false, has_DT_FLAGS_1 = false;
-	uint32_t val_DT_FLAGS = 0, val_DT_FLAGS_1 = 0;
+	vector<uint64_t> needed;
+	bool has_dtag[DT_NUM] = {0};
+	uint64_t val_dtag[DT_NUM] = {0};
+	bool has_flags1 = false;
+	uint64_t val_flags1 = 0;
 
-	// TODO: DT_RPATH/DT_RUNPATH
-	// Requires string table parsing too?
+	// Returns true when needs to break out of the loop
+	auto process_dtag = [&](uint64_t d_tag, uint64_t d_val) -> bool {
+		if (d_tag == DT_NULL) {
+			return true;
+		} else if (d_tag == DT_NEEDED) {
+			needed.push_back(d_val);
+		} else if (d_tag == DT_FLAGS_1) {
+			assert(!has_flags1);
+			has_flags1 = true;
+			val_flags1 = d_val;
+		} else if (d_tag > DT_NULL && d_tag < DT_NUM) {
+			// Only DT_NEEDED can be duplicated in this range.
+			assert(!has_dtag[d_tag]);
+			has_dtag[d_tag] = true;
+			val_dtag[d_tag] = d_val;
+		}
+		return false;
+	};
+
 	if (Elf_Header.primary.e_class == ELFCLASS64) {
-		const Elf64_Dyn *phdr = reinterpret_cast<const Elf64_Dyn*>(pt_dyn_buf.get());
-		const Elf64_Dyn *const phdr_end = phdr + (size / sizeof(*phdr));
-		// TODO: Don't allow duplicates?
-		for (; phdr < phdr_end; phdr++) {
-			Elf64_Sxword d_tag = elf64_to_cpu(phdr->d_tag);
-			switch (d_tag) {
-				case DT_FLAGS:
-					has_DT_FLAGS = true;
-					val_DT_FLAGS = static_cast<uint32_t>(elf64_to_cpu(phdr->d_un.d_val));
-					break;
-				case DT_FLAGS_1:
-					has_DT_FLAGS_1 = true;
-					val_DT_FLAGS_1 = static_cast<uint32_t>(elf64_to_cpu(phdr->d_un.d_val));
-					break;
-				default:
-					break;
-			}
-		}
+		for (auto &dyn : reinterpret_span<const Elf64_Dyn>(pt_dyn_buf))
+			if (process_dtag(elf64_to_cpu(dyn.d_tag), elf64_to_cpu(dyn.d_un.d_val)))
+				break;
 	} else {
-		const Elf32_Dyn *phdr = reinterpret_cast<const Elf32_Dyn*>(pt_dyn_buf.get());
-		const Elf32_Dyn *const phdr_end = phdr + (size / sizeof(*phdr));
-		for (; phdr < phdr_end; phdr++) {
-			Elf32_Sword d_tag = elf32_to_cpu(phdr->d_tag);
-			switch (d_tag) {
-				case DT_FLAGS:
-					has_DT_FLAGS = true;
-					val_DT_FLAGS = elf32_to_cpu(phdr->d_un.d_val);
-					break;
-				case DT_FLAGS_1:
-					has_DT_FLAGS_1 = true;
-					val_DT_FLAGS_1 = elf32_to_cpu(phdr->d_un.d_val);
-					break;
-				default:
-					break;
+		for (auto &dyn : reinterpret_span<const Elf32_Dyn>(pt_dyn_buf))
+			if (process_dtag(elf32_to_cpu(dyn.d_tag), elf32_to_cpu(dyn.d_un.d_val)))
+				break;
+	}
+
+	ao::uvector<uint8_t> strtab_buf;
+	span<const char> strtab;
+	assert(val_dtag[DT_STRSZ] < 1*1024*1024);
+	if (has_dtag[DT_STRTAB] && has_dtag[DT_STRSZ] && val_dtag[DT_STRSZ] < 1*1024*1024) {
+		strtab_buf.resize(val_dtag[DT_STRSZ]);
+		if (readDataAtVA(val_dtag[DT_STRTAB], strtab_buf) == 0) {
+			// The first the last byte of the string table MUST be zero.
+			// This is pretty nice, because it simplifies the checks later on.
+			assert(strtab_buf[0] == 0 && strtab_buf[strtab_buf.size()-1] == 0);
+			if (strtab_buf[0] == 0 && strtab_buf[strtab_buf.size()-1] == 0) {
+				strtab = reinterpret_span<const char>(strtab_buf);
 			}
 		}
 	}
 
-	if (!has_DT_FLAGS && !has_DT_FLAGS_1) {
-		// No relevant PT_DYNAMIC entries.
-		return 0;
+	if (has_dtag[DT_FLAGS] || has_flags1 || (strtab.size() &&
+			(needed.size() != 0 || has_dtag[DT_SONAME] || has_dtag[DT_RPATH] || has_dtag[DT_RUNPATH]))) {
+		// Add the PT_DYNAMIC tab.
+		fields->addTab("PT_DYNAMIC");
+
+		if (has_dtag[DT_FLAGS]) {
+			// DT_FLAGS
+			static const char *const dt_flags_names[] = {
+				// 0x00000000
+				"ORIGIN", "SYMBOLIC", "TEXTREL", "BIND_NOW",
+				// 0x00000010
+				"STATIC_TLS",
+			};
+			vector<string> *const v_dt_flags_names = RomFields::strArrayToVector(
+				dt_flags_names, ARRAY_SIZE(dt_flags_names));
+			fields->addField_bitfield("DT_FLAGS",
+				v_dt_flags_names, 3, val_dtag[DT_FLAGS]);
+		}
+
+		if (has_flags1) {
+			// DT_FLAGS_1
+			// NOTE: Internal-use symbols are left as nullptr.
+			static const char *const dt_flags_1_names[] = {
+				// 0x00000000
+				"Now", "Global", "Group", "NoDelete",
+				// 0x00000010
+				"LoadFltr", "InitFirst", "NoOpen", "Origin",
+				// 0x00000100
+				"Direct", nullptr /*"Trans"*/, "Interpose", "NoDefLib",
+				// 0x00001000
+				"NoDump", "ConfAlt", "EndFiltee", "DispRelDNE",
+				// 0x00010000
+				"DispRelPND", "NoDirect", nullptr /*"IgnMulDef"*/, nullptr /*"NokSyms"*/,
+				// 0x00100000
+				nullptr /*"NoHdr"*/, "Edited", nullptr /*"NoReloc"*/, "SymIntpose",
+				// 0x01000000
+				"GlobAudit", "Singleton", "Stub", "PIE"
+			};
+			vector<string> *const v_dt_flags_1_names = RomFields::strArrayToVector(
+				dt_flags_1_names, ARRAY_SIZE(dt_flags_1_names));
+			fields->addField_bitfield("DT_FLAGS_1",
+				v_dt_flags_1_names, 3, val_flags1);
+		}
+
+		assert(!has_dtag[DT_SONAME] || val_dtag[DT_SONAME] < strtab.size());
+		if (has_dtag[DT_SONAME] && val_dtag[DT_SONAME] < strtab.size())
+			fields->addField_string("DT_SONAME", &strtab[val_dtag[DT_SONAME]]);
+
+		assert(!has_dtag[DT_SONAME] || val_dtag[DT_SONAME] < strtab.size());
+		if (has_dtag[DT_RPATH] && val_dtag[DT_RPATH] < strtab.size())
+			fields->addField_string("DT_RPATH", &strtab[val_dtag[DT_RPATH]]);
+
+		if (has_dtag[DT_RUNPATH] && val_dtag[DT_RUNPATH] < strtab.size())
+			fields->addField_string("DT_RUNPATH", &strtab[val_dtag[DT_RUNPATH]]);
+
+		if (strtab.size() != 0 && needed.size() != 0) {
+			auto vv_data = new RomFields::ListData_t();
+			for (auto offset : needed) {
+				assert(offset < strtab.size());
+				if (offset >= strtab.size())
+					continue;
+				vector<string> row;
+				row.emplace_back(&strtab[offset]);
+				vv_data->push_back(std::move(row));
+			}
+
+			static const char *const field_names[] = {
+				NOP_C_("ELF", "Name"),
+			};
+			vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
+				"ELF", field_names, ARRAY_SIZE(field_names));
+
+			RomFields::AFLD_PARAMS params;
+			params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;
+			params.headers = v_field_names;
+			params.data.single = vv_data;
+			fields->addField_listData("DT_NEEDED", &params);
+		}
 	}
 
-	// Add the PT_DYNAMIC tab.
-	fields->addTab("PT_DYNAMIC");
-
-	if (has_DT_FLAGS) {
-		// DT_FLAGS
-		static const char *const dt_flags_names[] = {
-			// 0x00000000
-			"ORIGIN", "SYMBOLIC", "TEXTREL", "BIND_NOW",
-			// 0x00000010
-			"STATIC_TLS",
-		};
-		vector<string> *const v_dt_flags_names = RomFields::strArrayToVector(
-			dt_flags_names, ARRAY_SIZE(dt_flags_names));
-		fields->addField_bitfield("DT_FLAGS",
-			v_dt_flags_names, 3, val_DT_FLAGS);
-	}
-
-	if (has_DT_FLAGS_1) {
-		// DT_FLAGS_1
-		// NOTE: Internal-use symbols are left as nullptr.
-		static const char *const dt_flags_1_names[] = {
-			// 0x00000000
-			"Now", "Global", "Group", "NoDelete",
-			// 0x00000010
-			"LoadFltr", "InitFirst", "NoOpen", "Origin",
-			// 0x00000100
-			"Direct", nullptr /*"Trans"*/, "Interpose", "NoDefLib",
-			// 0x00001000
-			"NoDump", "ConfAlt", "EndFiltee", "DispRelDNE",
-			// 0x00010000
-			"DispRelPND", "NoDirect", nullptr /*"IgnMulDef"*/, nullptr /*"NokSyms"*/,
-			// 0x00100000
-			nullptr /*"NoHdr"*/, "Edited", nullptr /*"NoReloc"*/, "SymIntpose",
-			// 0x01000000
-			"GlobAudit", "Singleton", "Stub", "PIE"
-		};
-		vector<string> *const v_dt_flags_1_names = RomFields::strArrayToVector(
-			dt_flags_1_names, ARRAY_SIZE(dt_flags_1_names));
-		fields->addField_bitfield("DT_FLAGS_1",
-			v_dt_flags_1_names, 3, val_DT_FLAGS_1);
-	}
-
+	addSymbolFields(strtab);
 	// We're done here.
+	return 0;
+}
+
+/**
+ * Add SYMTAB fields.
+ * @return 0 on success; non-zero on error.
+ */
+int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
+{
+	/* Symbol table
+	 *
+	 * Unfortunately we can't use DT_SYMTAB because we don't know its size.
+	 * We could use DT_HASH to figure out the count of symbols, but no one
+	 * uses that anymore. DT_GNU_HASH doesn't have an easily accessible
+	 * count of symbols, but it's possible to figure out where the hash
+	 * table ends by looking for a terminator.
+	 *
+	 * It's simpler to just use SHT_DYNSYM. Do note that section table
+	 * could be stripped entirely, as dynamic linkers simply mmap
+	 * everything according to program headers and then just use the hash
+	 * tables. As an upside, we can output SHT_SYMTAB just as easily.
+	 *
+	 * Also note that DT_STRTAB is supposed to be be the same as
+	 * SHT_DYNSYM's SHT_STRTAB, so we have to pass it around to avoid
+	 * reading it twice.
+	 *
+	 * FIXME: This won't run if addPtDynamicFields fails.
+	 */
+
+	auto parse_sym = [this](uint8_t *ptr, vector<Elf64_Sym> &out) {
+		Elf64_Sym sym;
+		if (Elf_Header.primary.e_class == ELFCLASS64) {
+			const Elf32_Sym &sym64 = *reinterpret_cast<const Elf32_Sym *>(ptr);
+			sym.st_name = elf32_to_cpu(sym64.st_name);
+			sym.st_info = sym64.st_info;
+			sym.st_other = sym64.st_other;
+			sym.st_shndx = elf16_to_cpu(sym64.st_shndx);
+			sym.st_value = elf64_to_cpu(sym64.st_value);
+			sym.st_size = elf64_to_cpu(sym64.st_size);
+		} else {
+			const Elf32_Sym &sym32 = *reinterpret_cast<const Elf32_Sym *>(ptr);
+			sym.st_name = elf32_to_cpu(sym32.st_name);
+			sym.st_info = sym32.st_info;
+			sym.st_other = sym32.st_other;
+			sym.st_shndx = elf16_to_cpu(sym32.st_shndx);
+			sym.st_value = elf32_to_cpu(sym32.st_value);
+			sym.st_size = elf32_to_cpu(sym32.st_size);
+		}
+		out.push_back(sym);
+	};
+
+	auto parse_symtab = [this,parse_sym](vector<Elf64_Sym> &out, const symtab_info_t &info) {
+		ao::uvector<uint8_t> buf;
+		if (info.size == 0 || info.size > 1*1024*1024)
+			return;
+		if (info.entsize < (Elf_Header.primary.e_class == ELFCLASS64 ? sizeof(Elf64_Sym) : sizeof(Elf32_Sym)))
+			return;
+		buf.resize(info.size/info.entsize*info.entsize);
+		size_t nread = file->seekAndRead(info.offset, buf.data(), buf.size());
+		assert(nread == buf.size());
+		if (nread != buf.size())
+			return;
+		out.reserve(buf.size()/info.entsize);
+		for (uint8_t *p = buf.data(); p < buf.data() + buf.size(); p += info.entsize)
+			parse_sym(p, out);
+	};
+
+	auto add_symbol_tab = [this,parse_symtab](const char *name, const symtab_info_t &info, span<const char> strtab) {
+		if (strtab.size() == 0)
+			return;
+
+		vector<Elf64_Sym> tab;
+		parse_symtab(tab, info);
+		if (tab.size() == 0)
+			return;
+
+		auto vv_data = new RomFields::ListData_t();
+		for (auto &sym : tab) {
+			assert(sym.st_name < strtab.size());
+			if (sym.st_name >= strtab.size())
+				continue;
+			vector<string> row;
+			row.emplace_back(&strtab[sym.st_name]);
+			vv_data->push_back(std::move(row));
+		}
+		if (vv_data->size() == 0) {
+			delete vv_data;
+			return;
+		}
+
+		fields->addTab(name);
+
+		static const char *const field_names[] = {
+			NOP_C_("ELF", "Name"),
+		};
+		vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
+			"ELF", field_names, ARRAY_SIZE(field_names));
+
+		RomFields::AFLD_PARAMS params;
+		params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;
+		params.headers = v_field_names;
+		params.data.single = vv_data;
+		fields->addField_listData(name, &params);
+	};
+
+	auto read_strtab = [this](ao::uvector<uint8_t> &buf, const symtab_info_t &info) -> span<const char> {
+		if (info.strtab_size == 0 || info.strtab_size > 1*1024*1024)
+			return span<const char>();
+		buf.resize(info.strtab_size);
+		size_t nread = file->seekAndRead(info.strtab_offset, buf.data(), buf.size());
+		assert(nread == buf.size());
+		if (nread == buf.size()) {
+			assert(buf[0] == 0 && buf[buf.size()-1] == 0);
+			if (buf[0] == 0 && buf[buf.size()-1] == 0) {
+				return reinterpret_span<const char>(buf);
+			}
+		}
+		return span<const char>();
+	};
+
+	ao::uvector<uint8_t> symtab_buf, dynsym_buf;
+	add_symbol_tab("SHT_SYMTAB", sht_symtab, read_strtab(symtab_buf, sht_symtab));
+	if (dynsym_strtab.size() == 0) {
+		dynsym_strtab = read_strtab(dynsym_buf, sht_dynsym);
+	}
+	add_symbol_tab("SHT_DYNSYM", sht_dynsym, dynsym_strtab);
+
 	return 0;
 }
 
