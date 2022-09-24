@@ -826,26 +826,34 @@ int ELFPrivate::addPtDynamicFields(void)
 	// Process headers.
 	// NOTE: Separate loops for 32-bit vs. 64-bit.
 	vector<uint64_t> needed;
-	bool has_dtag[DT_NUM] = {0};
 	uint64_t val_dtag[DT_NUM] = {0};
-	bool has_flags1 = false;
 	uint64_t val_flags1 = 0;
+	bool has_dtag[DT_NUM] = {0};
+	bool has_flags1 = false;
 
 	// Returns true when needs to break out of the loop
 	auto process_dtag = [&](uint64_t d_tag, uint64_t d_val) -> bool {
-		if (d_tag == DT_NULL) {
-			return true;
-		} else if (d_tag == DT_NEEDED) {
-			needed.push_back(d_val);
-		} else if (d_tag == DT_FLAGS_1) {
-			assert(!has_flags1);
-			has_flags1 = true;
-			val_flags1 = d_val;
-		} else if (d_tag > DT_NULL && d_tag < DT_NUM) {
-			// Only DT_NEEDED can be duplicated in this range.
-			assert(!has_dtag[d_tag]);
-			has_dtag[d_tag] = true;
-			val_dtag[d_tag] = d_val;
+		switch (d_tag) {
+			case DT_NULL:
+				// End of D tags.
+				return true;
+			case DT_NEEDED:
+				needed.push_back(d_val);
+				break;
+			case DT_FLAGS_1:
+				assert(!has_flags1);
+				has_flags1 = true;
+				val_flags1 = d_val;
+				break;
+			default:
+				// DT_NULL and DT_NEEDED also match here,
+				// but they're handled by other case statements.
+				if (d_tag < DT_NUM) {
+					assert(!has_dtag[d_tag]);
+					has_dtag[d_tag] = true;
+					val_dtag[d_tag] = d_val;
+				}
+				break;
 		}
 		return false;
 	};
