@@ -18,9 +18,9 @@ ECHO.
 
 :: Determine the 32-bit "Program Files" directory.
 IF NOT "%ProgramFiles(x86)%" == "" (
-	SET PRGFILES=%ProgramFiles(x86)%
+	SET "PRGFILES=%ProgramFiles(x86)%"
 ) ELSE (
-	SET PRGFILES=%ProgramFiles%
+	SET "PRGFILES=%ProgramFiles%"
 )
 
 SET MSVC32_DIR=
@@ -44,13 +44,13 @@ FOR %%I IN (2012.11 2013.12 2015.14) DO (
 	SET YEAR=!J:~0,4!
 	SET V=!J:~5,2!
 	IF EXIST "%PRGFILES%\Microsoft Visual Studio !V!.0\VC\bin\cl.exe" (
-		SET MSVC32_DIR=%PRGFILES%\Microsoft Visual Studio !V!.0
+		SET "MSVC32_DIR=%PRGFILES%\Microsoft Visual Studio !V!.0"
 		SET MSVC32_VERSION=!V!.0
 		SET MSVC32_YEAR=!YEAR!
 		SET CMAKE32_GENERATOR=!V! !YEAR!
 		SET CMAKE32_TOOLSET=v!V!0_xp
 
-		SET MSVC64_DIR=%PRGFILES%\Microsoft Visual Studio !V!.0
+		SET "MSVC64_DIR=%PRGFILES%\Microsoft Visual Studio !V!.0"
 		SET MSVC64_VERSION=!V!.0
 		SET MSVC64_YEAR=!YEAR!
 		SET CMAKE64_GENERATOR=!V! !YEAR! Win64
@@ -61,13 +61,13 @@ FOR %%I IN (2012.11 2013.12 2015.14) DO (
 :: MSVC 2017
 FOR %%I IN (Community Professional Enterprise) DO (
 	IF EXIST "%PRGFILES%\Microsoft Visual Studio\2017\%%I\VC\Tools\MSVC\14.16.27023\bin\HostX86\x86\cl.exe" (
-		SET MSVC32_DIR=%PRGFILES%\Microsoft Visual Studio\2017\%%I\VC\Tools\MSVC\14.16.27023
+		SET "MSVC32_DIR=%PRGFILES%\Microsoft Visual Studio\2017\%%I\VC\Tools\MSVC\14.16.27023"
 		SET MSVC32_VERSION=14.16
 		SET MSVC32_YEAR=2017
 		SET CMAKE32_GENERATOR=15 2017
 		SET CMAKE32_TOOLSET=v141_xp
 
-		SET MSVC64_DIR=%PRGFILES%\Microsoft Visual Studio\2017\%%I\VC\Tools\MSVC\14.16.27023
+		SET "MSVC64_DIR=%PRGFILES%\Microsoft Visual Studio\2017\%%I\VC\Tools\MSVC\14.16.27023"
 		SET MSVC64_VERSION=14.16
 		SET MSVC64_YEAR=2017
 		SET CMAKE64_GENERATOR=15 2017 Win64
@@ -78,14 +78,14 @@ FOR %%I IN (Community Professional Enterprise) DO (
 :: MSVC 2019: Use the 2017 (14.1x) compiler for 32-bit in order to maintain WinXP compatibilty.
 FOR %%I IN (Community Professional Enterprise) DO (
 	IF EXIST "%PRGFILES%\Microsoft Visual Studio\2019\%%I\VC\Tools\MSVC\14.29.30133\bin\HostX86\x86\cl.exe" (
-		SET MSVC32_DIR=%PRGFILES%\Microsoft Visual Studio\2019\%%I\VC\Tools\MSVC\14.16.27023
+		SET "MSVC32_DIR=%PRGFILES%\Microsoft Visual Studio\2019\%%I\VC\Tools\MSVC\14.16.27023"
 		SET MSVC32_VERSION=14.16
 		SET MSVC32_YEAR=2019
 		SET CMAKE32_GENERATOR=16 2019
 		SET CMAKE32_TOOLSET=v141_xp
 		SET CMAKE32_ARCH=-A Win32
 
-		SET MSVC64_DIR=%PRGFILES%\Microsoft Visual Studio\2019\%%I\VC\Tools\MSVC\14.29.30133
+		SET "MSVC64_DIR=%PRGFILES%\Microsoft Visual Studio\2019\%%I\VC\Tools\MSVC\14.29.30133"
 		SET MSVC64_VERSION=14.29
 		SET MSVC64_YEAR=2019
 		SET CMAKE64_GENERATOR=16 2019
@@ -98,14 +98,14 @@ FOR %%I IN (Community Professional Enterprise) DO (
 :: NOTE: MSVC 2022 switched to 64-bit Program Files
 FOR %%I IN (Community Professional Enterprise) DO (
 	IF EXIST "%PROGRAMFILES%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.33.31629\bin\HostX86\x86\cl.exe" (
-		SET MSVC32_DIR=%PROGRAMFILES%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.16.27023
+		SET "MSVC32_DIR=%PROGRAMFILES%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.16.27023"
 		SET MSVC32_VERSION=14.16
 		SET MSVC32_YEAR=2022
 		SET CMAKE32_GENERATOR=17 2022
 		SET CMAKE32_TOOLSET=v141_xp
 		SET CMAKE32_ARCH=-A Win32
 
-		SET MSVC64_DIR=%PROGRAMFILES%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.33.31629
+		SET "MSVC64_DIR=%PROGRAMFILES%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.33.31629"
 		SET MSVC64_VERSION=14.33
 		SET MSVC64_YEAR=2022
 		SET CMAKE64_GENERATOR=17 2022
@@ -129,15 +129,15 @@ ECHO.
 SET MSVC_CL=
 FOR %%I IN (2017 2019 2022) DO (
 	IF "%MSVC64_YEAR%" == "%%I" (
-		SET MSVC_CL=%MSVC32_DIR%\bin\HostX86\x86\cl.exe
-		SET MSVC_CL64_CROSS=%MSVC64_DIR%\bin\HostX86\x64\cl.exe
-		SET MSVC_CL64_NATIVE=%MSVC64_DIR%\bin\HostX64\x64\cl.exe
+		SET "MSVC_CL=%MSVC32_DIR%\bin\HostX86\x86\cl.exe"
+		SET "MSVC_CL64_CROSS=%MSVC64_DIR%\bin\HostX86\x64\cl.exe"
+		SET "MSVC_CL64_NATIVE=%MSVC64_DIR%\bin\HostX64\x64\cl.exe"
 	)
 )
 IF "%MSVC_CL%" == "" (
-	SET MSVC_CL=%MSVC32_DIR%\VC\bin\cl.exe
-	SET MSVC_CL64_CROSS=%MSVC64_DIR%\VC\bin\x86_amd64\cl.exe
-	SET MSVC_CL64_NATIVE=%MSVC64_DIR%\VC\bin\amd64\cl.exe
+	SET "MSVC_CL=%MSVC32_DIR%\VC\bin\cl.exe"
+	SET "MSVC_CL64_CROSS=%MSVC64_DIR%\VC\bin\x86_amd64\cl.exe"
+	SET "MSVC_CL64_NATIVE=%MSVC64_DIR%\VC\bin\amd64\cl.exe"
 )
 
 :: Check for the 32-bit compiler.
