@@ -112,6 +112,10 @@
     KDE on X11 and Wayland, and GTK3/GTK4 on Wayland. GTK3/GTK4 on X11
     doesn't seem to be handling it properly, but that might just be an
     issue with it running on KDE instead of a GTK-based desktop environment.
+  * Linux: The .desktop files no longer list application/octet-stream as a
+    supported MIME type. The system MIME database should have proper entries
+    for all supported files. For unsupported file, an XML file is included
+    with custom MIME type definitions.
 
 ## v1.9 (released 2022/05/22)
 
