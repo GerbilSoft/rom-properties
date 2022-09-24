@@ -62,7 +62,7 @@ int EXEPrivate::loadNEResident(void)
 	span<const uint8_t> ne_imported_name_raw;
 
 	uint32_t end = ne_resident.size();
-	auto set_span = [this, &end](span<const uint8_t> &sp, auto offset) -> bool {
+	auto set_span = [this, &end](span<const uint8_t> &sp, unsigned int offset) -> bool {
 		if (offset > end)
 			return true;
 		sp = span<const uint8_t>(ne_resident.data() + offset, end - offset);
