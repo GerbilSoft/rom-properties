@@ -48,6 +48,9 @@
       * Submitted by @DankRank.
     * Merged #356: EXE NE: imports tab
       * Submitted by @DankRank.
+  * ELF: List shared library names and symbol imports.
+    * Merged #357: ELF dynamic stuff and symbols
+      * Submitted by @DankRank.
 
 * Bug fixes:
   * Lua: Fix a crash on Windows where systemName() sometimes returned

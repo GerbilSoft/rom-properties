@@ -664,6 +664,26 @@ typedef enum {
 	DF_1_PIE	= 0x08000000,
 } Elf_DT_FLAGS_1;
 
+typedef struct
+{
+	Elf32_Word	st_name;	/* Symbol name (string tbl index) */
+	Elf32_Addr	st_value;	/* Symbol value */
+	Elf32_Word	st_size;	/* Symbol size */
+	unsigned char	st_info;	/* Symbol type and binding */
+	unsigned char	st_other;	/* Symbol visibility */
+	Elf32_Section	st_shndx;	/* Section index */
+} Elf32_Sym;
+
+typedef struct
+{
+	Elf64_Word	st_name;	/* Symbol name (string tbl index) */
+	unsigned char	st_info;	/* Symbol type and binding */
+	unsigned char	st_other;	/* Symbol visibility */
+	Elf64_Section	st_shndx;	/* Section index */
+	Elf64_Addr	st_value;	/* Symbol value */
+	Elf64_Xword	st_size;	/* Symbol size */
+} Elf64_Sym;
+
 #ifdef __cplusplus
 }
 #endif
