@@ -1,3 +1,11 @@
+rom-properties (2.0-1ppa1~xenial3) xenial; urgency=medium
+
+  * Add #include "dll-macros.h" in more stdafx.h files.
+
+    It broke in RomFields.hpp in the KDE4 build this time.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 24 Sep 2022 18:25:52 -0400
+
 rom-properties (2.0-1ppa1~xenial2) xenial; urgency=medium
 
   * KeyStoreUI.hpp: #include "dll-macros.h" for RP_LIBROMDATA_PUBLIC

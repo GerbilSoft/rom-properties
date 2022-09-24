@@ -10,7 +10,6 @@
 #define __ROMPROPERTIES_LIBROMDATA_CONFIG_KEYSTOREUI_HPP__
 
 #include "common.h"
-#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 // C includes.
 #include <stdint.h>
