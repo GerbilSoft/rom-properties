@@ -94,7 +94,11 @@
     * Fixes #353, reported by @DankRank.
   * GameCubeSave: Trim trailing CRs. (TMNT Mutant Melee [GE5EA4])
   * EXE: Fix a segmentation fault when viewing 16-bit EXEs compiled using
-    Visual Basic. This broke in v1.9.
+    Visual Basic.
+    * This broke in v1.9.
+  * PlayStation: Fix detection of 2352-byte/2448-byte CD images.
+    * This broke in v1.8.
+    * Fixes #354, reported by @DankRank.
 
 * Other changes:
   * Windows: DLL loading has been hardened by using LoadLibraryEx().

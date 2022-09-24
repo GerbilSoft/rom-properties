@@ -354,7 +354,7 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 
 		for (auto p : sector_sizes) {
 			size_t size = d->file->seekAndRead(p * ISO_PVD_LBA, &sector, sizeof(sector));
-			if (size != sizeof(d->pvd)) {
+			if (size != sizeof(sector)) {
 				UNREF_AND_NULL_NOCHK(d->file);
 				return;
 			}
