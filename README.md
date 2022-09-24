@@ -9,16 +9,47 @@ video game ROM and disc images.
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/GerbilSoft/rom-properties.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/GerbilSoft/rom-properties/alerts/)
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/GerbilSoft/rom-properties.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/GerbilSoft/rom-properties/context:cpp)
 
-## v1.9
+## v2.0 - Stella Edition
 
-This release adds a ton of new features, including ASTC and Godot textures,
-Commodore ROM cartridge images, and various performance improvements.
+![Stella attempting to use my ThinkPad X230](doc/img/PXL_20210905_210543493.jpg)
 
-![Godot 3 textures from Sonic Colors Ultimate](doc/img/rp-v1.9-kde5.GodotSTEX.SCU.png)
+This release is dedicated to my beagle, Stella, who sadly passed away on
+September 4, 2022.
+
+rom-properties 2.0 has two major changes:
+
+* The configuration UI has been ported to the GTK+ UI toolkit. This allows
+  GTK+ desktop users to use rp-config without having to install the Qt/KDE
+  UI frontend.
+
+* libromdata is now linked as a shared library instead of as a static library:
+  libromdata.so.1 on Linux; romdata-1.dll on Windows. This significantly
+  reduces the overall size of all installed packages.
+
+  * Note that the libromdata ABI is *not* guaranteed to remain stable across
+    releases, and it only exports symbols required for the UI frontends. The
+    library is *not* intended for general use with other programs. I will try
+    to prevent major ABI breakages across releases, but if it happens, the
+    SOVERSION will be incremented.
+
+Other significant changes:
+
+* String tables have also been refactored to use less memory and reduce the
+  number of relocations, which improves startup performance.
+
+* Atari 7800 ROM images are now supported.
+
+* Assorted fixes for the Lua, Nintendo 3DS, N64, and ELF parsers, including
+  fixes for big-endian systems.
+
+Translators needed; file an issue if you'd like to get started on a new
+translation, or submit a Pull Request if you have a translation ready to go.
+
+Other changes
 
 Translators needed; file an issue if you'd like to get started on a new translation, or submit a Pull Request if you have a translation ready to go.
 
-See [`NEWS.md`](NEWS.md) for a full list of changes in v1.9.
+See [`NEWS.md`](NEWS.md) for a full list of changes in v2.0.
 
 ## Feedback
 
