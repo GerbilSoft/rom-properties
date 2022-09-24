@@ -51,6 +51,8 @@
   * ELF: List shared library names and symbol imports.
     * Merged #357: ELF dynamic stuff and symbols
       * Submitted by @DankRank.
+    * Merged #358: More columns in ELF symbol tables
+      * Submitted by @DankRank.
 
 * Bug fixes:
   * Lua: Fix a crash on Windows where systemName() sometimes returned
