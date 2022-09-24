@@ -56,8 +56,8 @@
 // librpbase common headers
 #include "common.h"
 #include "aligned_malloc.h"
-#include "ctypex.h
-#include "dll-macros.h""
+#include "ctypex.h"
+#include "dll-macros.h"
 
 // librpcpu
 #include "librpcpu/byteswap_rp.h"
