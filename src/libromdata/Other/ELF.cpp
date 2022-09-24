@@ -267,26 +267,14 @@ ELFPrivate::hdr_info_t ELFPrivate::readProgramHeader(const uint8_t *phbuf)
 
 	if (Elf_Header.primary.e_class == ELFCLASS64) {
 		const Elf64_Phdr *const phdr = reinterpret_cast<const Elf64_Phdr*>(phbuf);
-		if (Elf_Header.primary.e_data == ELFDATAHOST) {
-			info.addr = phdr->p_offset;
-			info.size = phdr->p_filesz;
-			info.vaddr = phdr->p_vaddr;
-		} else {
-			info.addr = __swab64(phdr->p_offset);
-			info.size = __swab64(phdr->p_filesz);
-			info.vaddr = __swab64(phdr->p_vaddr);
-		}
+		info.addr = elf64_to_cpu(phdr->p_offset);
+		info.size = elf64_to_cpu(phdr->p_filesz);
+		info.vaddr = elf64_to_cpu(phdr->p_vaddr);
 	} else {
 		const Elf32_Phdr *const phdr = reinterpret_cast<const Elf32_Phdr*>(phbuf);
-		if (Elf_Header.primary.e_data == ELFDATAHOST) {
-			info.addr = phdr->p_offset;
-			info.size = phdr->p_filesz;
-			info.vaddr = phdr->p_vaddr;
-		} else {
-			info.addr = __swab32(phdr->p_offset);
-			info.size = __swab32(phdr->p_filesz);
-			info.vaddr = __swab64(phdr->p_vaddr);
-		}
+		info.addr = elf32_to_cpu(phdr->p_offset);
+		info.size = elf32_to_cpu(phdr->p_filesz);
+		info.vaddr = elf32_to_cpu(phdr->p_vaddr);
 	}
 
 	return info;
@@ -316,22 +304,12 @@ int ELFPrivate::checkProgramHeaders(void)
 	uint8_t phbuf[sizeof(Elf64_Phdr)];
 
 	if (Elf_Header.primary.e_class == ELFCLASS64) {
-		if (Elf_Header.primary.e_data == ELFDATAHOST) {
-			e_phoff = static_cast<off64_t>(Elf_Header.elf64.e_phoff);
-			e_phnum = Elf_Header.elf64.e_phnum;
-		} else {
-			e_phoff = static_cast<off64_t>(__swab64(Elf_Header.elf64.e_phoff));
-			e_phnum = __swab16(Elf_Header.elf64.e_phnum);
-		}
+		e_phoff = static_cast<off64_t>(elf64_to_cpu(Elf_Header.elf64.e_phoff));
+		e_phnum = elf16_to_cpu(Elf_Header.elf64.e_phnum);
 		phsize = sizeof(Elf64_Phdr);
 	} else {
-		if (Elf_Header.primary.e_data == ELFDATAHOST) {
-			e_phoff = static_cast<off64_t>(Elf_Header.elf32.e_phoff);
-			e_phnum = Elf_Header.elf32.e_phnum;
-		} else {
-			e_phoff = static_cast<off64_t>(__swab32(Elf_Header.elf32.e_phoff));
-			e_phnum = __swab16(Elf_Header.elf32.e_phnum);
-		}
+		e_phoff = static_cast<off64_t>(elf32_to_cpu(Elf_Header.elf32.e_phoff));
+		e_phnum = elf16_to_cpu(Elf_Header.elf32.e_phnum);
 		phsize = sizeof(Elf32_Phdr);
 	}
 
@@ -347,7 +325,6 @@ int ELFPrivate::checkProgramHeaders(void)
 	}
 
 	// Read all of the program header entries.
-	const bool isHostEndian = (Elf_Header.primary.e_data == ELFDATAHOST);
 	for (; e_phnum > 0; e_phnum--) {
 		size_t size = file->read(phbuf, phsize);
 		if (size != phsize) {
@@ -358,9 +335,7 @@ int ELFPrivate::checkProgramHeaders(void)
 		// Check the type.
 		uint32_t p_type;
 		memcpy(&p_type, phbuf, sizeof(p_type));
-		if (!isHostEndian) {
-			p_type = __swab32(p_type);
-		}
+		p_type = elf32_to_cpu(p_type);
 
 		switch (p_type) {
 			case PT_INTERP: {
@@ -441,22 +416,12 @@ int ELFPrivate::checkSectionHeaders(void)
 	uint8_t shbuf[sizeof(Elf64_Shdr)];
 
 	if (Elf_Header.primary.e_class == ELFCLASS64) {
-		if (Elf_Header.primary.e_data == ELFDATAHOST) {
-			e_shoff = static_cast<off64_t>(Elf_Header.elf64.e_shoff);
-			e_shnum = Elf_Header.elf64.e_shnum;
-		} else {
-			e_shoff = static_cast<off64_t>(__swab64(Elf_Header.elf64.e_shoff));
-			e_shnum = __swab16(Elf_Header.elf64.e_shnum);
-		}
+		e_shoff = static_cast<off64_t>(elf64_to_cpu(Elf_Header.elf64.e_shoff));
+		e_shnum = elf16_to_cpu(Elf_Header.elf64.e_shnum);
 		shsize = sizeof(Elf64_Shdr);
 	} else {
-		if (Elf_Header.primary.e_data == ELFDATAHOST) {
-			e_shoff = static_cast<off64_t>(Elf_Header.elf32.e_shoff);
-			e_shnum = Elf_Header.elf32.e_shnum;
-		} else {
-			e_shoff = static_cast<off64_t>(__swab32(Elf_Header.elf32.e_shoff));
-			e_shnum = __swab16(Elf_Header.elf32.e_shnum);
-		}
+		e_shoff = static_cast<off64_t>(elf32_to_cpu(Elf_Header.elf32.e_shoff));
+		e_shnum = elf16_to_cpu(Elf_Header.elf32.e_shnum);
 		shsize = sizeof(Elf32_Shdr);
 	}
 
@@ -474,7 +439,6 @@ int ELFPrivate::checkSectionHeaders(void)
 	uint64_t symtab_link = -1, dynsym_link = -1;
 
 	// Read all of the section header entries.
-	const bool isHostEndian = (Elf_Header.primary.e_data == ELFDATAHOST);
 	for (unsigned i = 0; i < e_shnum; i++) {
 		size_t size = file->read(shbuf, shsize);
 		if (size != shsize) {
@@ -485,9 +449,7 @@ int ELFPrivate::checkSectionHeaders(void)
 		// Check the type.
 		uint32_t s_type;
 		memcpy(&s_type, &shbuf[4], sizeof(s_type));
-		if (!isHostEndian) {
-			s_type = __swab32(s_type);
-		}
+		s_type = elf32_to_cpu(s_type);
 
 		// FIXME: this assumes that STRTABs come after SYMTABs.
 		if (s_type == SHT_STRTAB) {
@@ -543,22 +505,12 @@ int ELFPrivate::checkSectionHeaders(void)
 		uint64_t int_size;
 		if (Elf_Header.primary.e_class == ELFCLASS64) {
 			const Elf64_Shdr *const shdr = reinterpret_cast<const Elf64_Shdr*>(shbuf);
-			if (Elf_Header.primary.e_data == ELFDATAHOST) {
-				int_addr = shdr->sh_offset;
-				int_size = shdr->sh_size;
-			} else {
-				int_addr = __swab64(shdr->sh_offset);
-				int_size = __swab64(shdr->sh_size);
-			}
+			int_addr = elf64_to_cpu(shdr->sh_offset);
+			int_size = elf64_to_cpu(shdr->sh_size);
 		} else {
 			const Elf32_Shdr *const shdr = reinterpret_cast<const Elf32_Shdr*>(shbuf);
-			if (Elf_Header.primary.e_data == ELFDATAHOST) {
-				int_addr = shdr->sh_offset;
-				int_size = shdr->sh_size;
-			} else {
-				int_addr = __swab32(shdr->sh_offset);
-				int_size = __swab32(shdr->sh_size);
-			}
+			int_addr = elf32_to_cpu(shdr->sh_offset);
+			int_size = elf32_to_cpu(shdr->sh_size);
 		}
 
 		// Sanity check: Note must be 256 bytes or less,
