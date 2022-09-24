@@ -1,3 +1,11 @@
+rom-properties (2.0-1ppa1~xenial5) xenial; urgency=medium
+
+  * Re-add #include "dll-macros.h" to KeyStoreUI.hpp and RomFields.hpp.
+
+    It's an issue with KDE4 automoc.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 24 Sep 2022 19:01:09 -0400
+
 rom-properties (2.0-1ppa1~xenial4) xenial; urgency=medium
 
   * [libromdata] stdafx.h: Fix stupid quoting errors.
