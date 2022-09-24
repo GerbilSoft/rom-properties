@@ -100,28 +100,21 @@ class ELFPrivate final : public RomDataPrivate
 			Elf64_Ehdr elf64;
 		} Elf_Header;
 
-		// Header location and size.
-		struct hdr_info_t {
-			off64_t addr;
-			uint64_t size;
-			off64_t vaddr;
-		};
-
 		/**
 		 * Read an ELF program header.
 		 * @param phbuf	[in] Pointer to program header.
 		 * @return Header information.
 		 */
-		hdr_info_t readProgramHeader(const uint8_t *phbuf);
+		Elf64_Phdr readProgramHeader(const uint8_t *phbuf);
 
 		// Program Header information
 		string interpreter;	// PT_INTERP value
 
 		// PT_LOAD
-		vector<hdr_info_t> pt_load;
+		vector<Elf64_Phdr> pt_load;
 
 		// PT_DYNAMIC
-		hdr_info_t pt_dynamic;	// If addr == 0, not dynamic.
+		Elf64_Phdr pt_dynamic;	// If p_offset == 0, not dynamic.
 
 		/**
 		 * Read an ELF section header.
@@ -268,23 +261,35 @@ ELFPrivate::ELFPrivate(ELF *q, IRpFile *file)
  * @param phbuf	[in] Pointer to program header.
  * @return Header information.
  */
-ELFPrivate::hdr_info_t ELFPrivate::readProgramHeader(const uint8_t *phbuf)
+Elf64_Phdr ELFPrivate::readProgramHeader(const uint8_t *phbuf)
 {
-	hdr_info_t info;
+	Elf64_Phdr out;;
 
 	if (Elf_Header.primary.e_class == ELFCLASS64) {
 		const Elf64_Phdr *const phdr = reinterpret_cast<const Elf64_Phdr*>(phbuf);
-		info.addr = elf64_to_cpu(phdr->p_offset);
-		info.size = elf64_to_cpu(phdr->p_filesz);
-		info.vaddr = elf64_to_cpu(phdr->p_vaddr);
+		if (Elf_Header.primary.e_data == ELFDATAHOST)
+			return *phdr;
+		out.p_type = elf32_to_cpu(phdr->p_type);
+		out.p_flags = elf32_to_cpu(phdr->p_flags);
+		out.p_offset = elf64_to_cpu(phdr->p_offset);
+		out.p_vaddr = elf64_to_cpu(phdr->p_vaddr);
+		out.p_paddr = elf64_to_cpu(phdr->p_vaddr);
+		out.p_filesz = elf64_to_cpu(phdr->p_filesz);
+		out.p_memsz = elf64_to_cpu(phdr->p_memsz);
+		out.p_align = elf64_to_cpu(phdr->p_align);
 	} else {
 		const Elf32_Phdr *const phdr = reinterpret_cast<const Elf32_Phdr*>(phbuf);
-		info.addr = elf32_to_cpu(phdr->p_offset);
-		info.size = elf32_to_cpu(phdr->p_filesz);
-		info.vaddr = elf32_to_cpu(phdr->p_vaddr);
+		out.p_type = elf32_to_cpu(phdr->p_type);
+		out.p_flags = elf32_to_cpu(phdr->p_flags);
+		out.p_offset = elf32_to_cpu(phdr->p_offset);
+		out.p_vaddr = elf32_to_cpu(phdr->p_vaddr);
+		out.p_paddr = elf32_to_cpu(phdr->p_vaddr);
+		out.p_filesz = elf32_to_cpu(phdr->p_filesz);
+		out.p_memsz = elf32_to_cpu(phdr->p_memsz);
+		out.p_align = elf32_to_cpu(phdr->p_align);
 	}
 
-	return info;
+	return out;
 }
 
 /**
@@ -339,26 +344,22 @@ int ELFPrivate::checkProgramHeaders(void)
 			break;
 		}
 
-		// Check the type.
-		uint32_t p_type;
-		memcpy(&p_type, phbuf, sizeof(p_type));
-		p_type = elf32_to_cpu(p_type);
+		Elf64_Phdr phdr = readProgramHeader(phbuf);
 
-		switch (p_type) {
+		// Check the type.
+		switch (phdr.p_type) {
 			case PT_INTERP: {
 				// If the file type is ET_DYN, this is a PIE executable.
 				isPie = (elf16_to_cpu(Elf_Header.primary.e_type) == ET_DYN);
 
-				// Get the interpreter name.
-				hdr_info_t info = readProgramHeader(phbuf);
-
 				// Sanity check: Interpreter must be 256 characters or less.
 				// NOTE: Interpreter should be NULL-terminated.
-				if (info.size <= 256) {
+				size_t len = phdr.p_filesz;
+				if (len <= 256) {
 					char buf[256];
 					const off64_t prevoff = file->tell();
-					size = file->seekAndRead(info.addr, buf, info.size);
-					if (size != info.size) {
+					size = file->seekAndRead(phdr.p_offset, buf, len);
+					if (size != len) {
 						// Seek and/or read error.
 						return -EIO;
 					}
@@ -369,12 +370,12 @@ int ELFPrivate::checkProgramHeaders(void)
 					}
 
 					// Remove trailing NULLs.
-					while (info.size > 0 && buf[info.size-1] == 0) {
-						info.size--;
+					while (len > 0 && buf[len-1] == 0) {
+						len--;
 					}
 
-					if (info.size > 0) {
-						interpreter.assign(buf, static_cast<size_t>(info.size));
+					if (len > 0) {
+						interpreter.assign(buf, len);
 					}
 				}
 
@@ -382,15 +383,15 @@ int ELFPrivate::checkProgramHeaders(void)
 			}
 
 			case PT_LOAD:
-				pt_load.push_back(readProgramHeader(phbuf));
+				pt_load.push_back(phdr);
 				// vaddrs must be sorted
-				assert(pt_load.size() < 2 || pt_load.end()[-2].vaddr <= pt_load.end()[-1].vaddr);
+				assert(pt_load.size() < 2 || pt_load.end()[-2].p_vaddr <= pt_load.end()[-1].p_vaddr);
 				break;
 
 			case PT_DYNAMIC:
 				// Executable is dynamically linked.
 				// Save the header information for later.
-				pt_dynamic = readProgramHeader(phbuf);
+				pt_dynamic = phdr;
 				break;
 
 			default:
@@ -734,19 +735,19 @@ int ELFPrivate::readDataAtVA(uint64_t vaddr, ao::uvector<uint8_t> &out)
 	// Find the segment
 	const uint64_t vend = vaddr + out.size();
 	auto it = std::upper_bound(pt_load.begin(), pt_load.end(), vaddr,
-		[](uint64_t lhs, const hdr_info_t &rhs) -> bool {
-			return lhs < (uint64_t)rhs.vaddr;
+		[](uint64_t lhs, const Elf64_Phdr &rhs) -> bool {
+			return lhs < (uint64_t)rhs.p_vaddr;
 		});
 	if (it == pt_load.begin())
 		return -ENOENT;
 	it--;
 
 	// Check the bounds
-	uint64_t sstart = it->vaddr;
-	uint64_t send = it->vaddr + it->size;
+	uint64_t sstart = it->p_vaddr;
+	uint64_t send = it->p_vaddr + it->p_filesz;
 	if (sstart <= vaddr && vaddr <= send && sstart <= vend && vend <= send) {
 		// Read data
-		vaddr += it->addr - it->vaddr;
+		vaddr += it->p_offset - it->p_vaddr;
 		size_t size = file->seekAndRead(vaddr, out.data(), out.size());
 		assert(size == out.size());
 		if (size != out.size()) {
@@ -764,14 +765,14 @@ int ELFPrivate::readDataAtVA(uint64_t vaddr, ao::uvector<uint8_t> &out)
  */
 int ELFPrivate::addPtDynamicFields(void)
 {
-	if (isWiiU || pt_dynamic.addr == 0) {
+	if (isWiiU || pt_dynamic.p_offset == 0) {
 		// Not a dynamic object.
 		// (Wii U dynamic objects don't work the same way as
 		// standard POSIX dynamic objects.)
 		return -1;
 	}
 
-	if (pt_dynamic.size > 1U*1024*1024) {
+	if (pt_dynamic.p_filesz > 1U*1024*1024) {
 		// PT_DYNAMIC is larger than 1 MB.
 		// That's no good.
 		return -2;
@@ -779,8 +780,8 @@ int ELFPrivate::addPtDynamicFields(void)
 
 	// Read the header.
 	ao::uvector<uint8_t> pt_dyn_buf;
-	pt_dyn_buf.resize(static_cast<unsigned int>(pt_dynamic.size));
-	size_t size = file->seekAndRead(pt_dynamic.addr, pt_dyn_buf.data(), pt_dyn_buf.size());
+	pt_dyn_buf.resize(static_cast<unsigned int>(pt_dynamic.p_filesz));
+	size_t size = file->seekAndRead(pt_dynamic.p_offset, pt_dyn_buf.data(), pt_dyn_buf.size());
 	if (size != pt_dyn_buf.size()) {
 		// Read error.
 		return -3;
@@ -1193,7 +1194,7 @@ ELF::ELF(IRpFile *file)
 		// Assuming this is a Wii U executable.
 		// TODO: Also verify that there's no program headers?
 		d->isWiiU = true;
-		d->pt_dynamic.addr = 1;	// TODO: Properly check this.
+		d->pt_dynamic.p_offset = 1;	// TODO: Properly check this.
 
 		// TODO: Determine different RPX/RPL file types.
 		switch (primary->e_type) {
@@ -1994,7 +1995,7 @@ int ELF::loadFieldData(void)
 	// Linkage. (Executables only)
 	if (d->fileType == FileType::Executable) {
 		d->fields->addField_string(C_("ELF", "Linkage"),
-			d->pt_dynamic.addr != 0
+			d->pt_dynamic.p_offset != 0
 				? C_("ELF|Linkage", "Dynamic")
 				: C_("ELF|Linkage", "Static"));
 	}
@@ -2042,7 +2043,7 @@ int ELF::loadFieldData(void)
 	// print DT_FLAGS and DT_FLAGS_1.
 	// TODO: Print required libraries?
 	// Sanity check: Maximum of 1 MB.
-	if (!d->isWiiU && d->pt_dynamic.addr != 0) {
+	if (!d->isWiiU && d->pt_dynamic.p_offset != 0) {
 		d->addPtDynamicFields();
 	}
 
