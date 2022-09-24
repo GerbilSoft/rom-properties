@@ -101,13 +101,17 @@ static const TCHAR httpStatusMsgs_str[] = {
 	_T("Bandwidth Limit Exceeded\0")	// 509 (Apache Web Server / cPanel)
 	_T("Not Extended\0")			// 510
 	_T("Network Authentication Required\0")	// 511
+	_T("Web Server returns an unknown error\0")	// 520 (Cloudflare)
+	_T("Web Server is down\0")		// 521 (Cloudflare)
+	_T("Connection timed out\0")		// 522 (Cloudflare)
+	_T("Origin is unreachable\0")		// 523 (Cloudflare)
+	_T("A timeout occurred\0")		// 524 (Cloudflare)
+	_T("SSL handshake failed\0")		// 525 (Cloudflare)
 	_T("Invalid SSL Certificate\0")		// 526 (Cloudflare / Cloud Foundry)
+	_T("Railgun Listener to origin error\0")	// 527 (Cloudflare)
 	_T("Site is overloaded\0")		// 529 (Qualys)
 	_T("Site is frozen\0")			// 530 (Pantheon)
 	_T("Network read timeout error\0")	// 598 (Used by some HTTP proxies)
-
-	// Might not be needed...
-	 _T("\0")
 };
 
 typedef struct _HttpStatusMsg_t {
@@ -197,12 +201,17 @@ static const HttpStatusMsg_t httpStatusMsgs[] = {
 	{509,	1083},	// Apache Web Server / cPanel
 	{510,	1108},
 	{511,	1121},
-	{526,	1153},	// Cloudflare / Cloud Foundry
-	{529,	1177},	// Qualys
-	{530,	1196},	// Pantheon
-	{598,	1211},	// Used by some HTTP proxies
-
-	{0, 0}
+	{520,	1153},	// Cloudflare
+	{521,	1189},	// Cloudflare
+	{522,	1208},	// Cloudflare
+	{523,	1229},	// Cloudflare
+	{524,	1251},	// Cloudflare
+	{525,	1270},	// Cloudflare
+	{526,	1291},	// Cloudflare / Cloud Foundry
+	{527,	1315},	// Cloudflare
+	{529,	1348},	// Qualys
+	{530,	1367},	// Pantheon
+	{598,	1382},	// Used by some HTTP proxies
 };
 
 /**
@@ -225,7 +234,7 @@ const TCHAR *http_status_string(int code)
 
 	// Putting static_assert() after the variable declarations
 	// to prevent issues with MSVC 2010.
-	static_assert(ARRAY_SIZE(httpStatusMsgs_str) == 1240, "httpStatusMsgs_str[] is the wrong size!");
+	static_assert(ARRAY_SIZE(httpStatusMsgs_str) == 1410, "httpStatusMsgs_str[] is the wrong size!");
 
 	return &httpStatusMsgs_str[pHttp->offset];
 }
