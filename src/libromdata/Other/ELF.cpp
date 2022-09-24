@@ -123,6 +123,13 @@ class ELFPrivate final : public RomDataPrivate
 		// PT_DYNAMIC
 		hdr_info_t pt_dynamic;	// If addr == 0, not dynamic.
 
+		/**
+		 * Read an ELF section header.
+		 * @param phbuf	[in] Pointer to section header.
+		 * @return Header information.
+		 */
+		Elf64_Shdr readSectionHeader(const uint8_t *phbuf);
+
 		struct symtab_info_t {
 			uint64_t offset;
 			uint64_t size;
@@ -396,6 +403,45 @@ int ELFPrivate::checkProgramHeaders(void)
 }
 
 /**
+ * Read an ELF section header.
+ * @param phbuf	[in] Pointer to section header.
+ * @return Header information.
+ */
+Elf64_Shdr ELFPrivate::readSectionHeader(const uint8_t *shbuf)
+{
+	Elf64_Shdr out;
+	if (Elf_Header.primary.e_class == ELFCLASS64) {
+		const Elf64_Shdr *const shdr = reinterpret_cast<const Elf64_Shdr*>(shbuf);
+		if (Elf_Header.primary.e_data == ELFDATAHOST)
+			return *shdr;
+		out.sh_name = elf32_to_cpu(shdr->sh_name);
+		out.sh_type = elf32_to_cpu(shdr->sh_type);
+		out.sh_flags = elf64_to_cpu(shdr->sh_flags);
+		out.sh_addr = elf64_to_cpu(shdr->sh_addr);
+		out.sh_offset = elf64_to_cpu(shdr->sh_offset);
+		out.sh_size = elf64_to_cpu(shdr->sh_size);
+		out.sh_link = elf32_to_cpu(shdr->sh_link);
+		out.sh_info = elf32_to_cpu(shdr->sh_info);
+		out.sh_addralign = elf64_to_cpu(shdr->sh_addralign);
+		out.sh_entsize = elf64_to_cpu(shdr->sh_entsize);
+	} else {
+		const Elf32_Shdr *const shdr = reinterpret_cast<const Elf32_Shdr*>(shbuf);
+		out.sh_name = elf32_to_cpu(shdr->sh_name);
+		out.sh_type = elf32_to_cpu(shdr->sh_type);
+		out.sh_flags = elf32_to_cpu(shdr->sh_flags);
+		out.sh_addr = elf32_to_cpu(shdr->sh_addr);
+		out.sh_offset = elf32_to_cpu(shdr->sh_offset);
+		out.sh_size = elf32_to_cpu(shdr->sh_size);
+		out.sh_link = elf32_to_cpu(shdr->sh_link);
+		out.sh_info = elf32_to_cpu(shdr->sh_info);
+		out.sh_addralign = elf32_to_cpu(shdr->sh_addralign);
+		out.sh_entsize = elf32_to_cpu(shdr->sh_entsize);
+	}
+
+	return out;
+}
+
+/**
  * Check section headers.
  * @return 0 on success; non-zero on error.
  */
@@ -446,72 +492,37 @@ int ELFPrivate::checkSectionHeaders(void)
 			break;
 		}
 
-		// Check the type.
-		uint32_t s_type;
-		memcpy(&s_type, &shbuf[4], sizeof(s_type));
-		s_type = elf32_to_cpu(s_type);
+		const Elf64_Shdr shdr = readSectionHeader(shbuf);
 
 		// FIXME: this assumes that STRTABs come after SYMTABs.
-		if (s_type == SHT_STRTAB) {
-			if (Elf_Header.primary.e_class == ELFCLASS64) {
-				const Elf64_Shdr *const shdr = reinterpret_cast<const Elf64_Shdr*>(shbuf);
-				if (i == symtab_link) {
-					sht_symtab.strtab_offset = elf64_to_cpu(shdr->sh_offset);
-					sht_symtab.strtab_size = elf64_to_cpu(shdr->sh_size);
-				}
-				if (i == dynsym_link) {
-					sht_dynsym.strtab_offset = elf64_to_cpu(shdr->sh_offset);
-					sht_dynsym.strtab_size = elf64_to_cpu(shdr->sh_size);
-				}
-			} else {
-				const Elf32_Shdr *const shdr = reinterpret_cast<const Elf32_Shdr*>(shbuf);
-				if (i == symtab_link) {
-					sht_symtab.strtab_offset = elf32_to_cpu(shdr->sh_offset);
-					sht_symtab.strtab_size = elf32_to_cpu(shdr->sh_size);
-				}
-				if (i == dynsym_link) {
-					sht_dynsym.strtab_offset = elf32_to_cpu(shdr->sh_offset);
-					sht_dynsym.strtab_size = elf32_to_cpu(shdr->sh_size);
-				}
+		if (shdr.sh_type == SHT_STRTAB) {
+			if (i == symtab_link) {
+				sht_symtab.strtab_offset = shdr.sh_offset;
+				sht_symtab.strtab_size = shdr.sh_size;
 			}
-
+			if (i == dynsym_link) {
+				sht_dynsym.strtab_offset = shdr.sh_offset;
+				sht_dynsym.strtab_size = shdr.sh_size;
+			}
 		}
 
-		if (s_type == SHT_SYMTAB || s_type == SHT_DYNSYM) {
-			symtab_info_t &tab = (s_type == SHT_SYMTAB ? sht_symtab : sht_dynsym);
-			uint64_t &link = (s_type == SHT_SYMTAB ? symtab_link : dynsym_link);
-			if (Elf_Header.primary.e_class == ELFCLASS64) {
-				const Elf64_Shdr *const shdr = reinterpret_cast<const Elf64_Shdr*>(shbuf);
-				tab.offset = elf64_to_cpu(shdr->sh_offset);
-				tab.size = elf64_to_cpu(shdr->sh_size);
-				tab.entsize = elf64_to_cpu(shdr->sh_entsize);
-				link = elf64_to_cpu(shdr->sh_link);
-			} else {
-				const Elf32_Shdr *const shdr = reinterpret_cast<const Elf32_Shdr*>(shbuf);
-				tab.offset = elf32_to_cpu(shdr->sh_offset);
-				tab.size = elf32_to_cpu(shdr->sh_size);
-				tab.entsize = elf32_to_cpu(shdr->sh_entsize);
-				link = elf32_to_cpu(shdr->sh_link);
-			}
+		if (shdr.sh_type == SHT_SYMTAB || shdr.sh_type == SHT_DYNSYM) {
+			symtab_info_t &tab = (shdr.sh_type == SHT_SYMTAB ? sht_symtab : sht_dynsym);
+			uint64_t &link = (shdr.sh_type == SHT_SYMTAB ? symtab_link : dynsym_link);
+			tab.offset = shdr.sh_offset;
+			tab.size = shdr.sh_size;
+			tab.entsize = shdr.sh_entsize;
+			link = shdr.sh_link;
 			continue;
 		}
 
 		// Only STRTABs, SYMTABs, DYNSYMs and NOTEs are supported right now.
-		if (s_type != SHT_NOTE)
+		if (shdr.sh_type != SHT_NOTE)
 			continue;
 
 		// Get the note address and size.
-		off64_t int_addr;
-		uint64_t int_size;
-		if (Elf_Header.primary.e_class == ELFCLASS64) {
-			const Elf64_Shdr *const shdr = reinterpret_cast<const Elf64_Shdr*>(shbuf);
-			int_addr = elf64_to_cpu(shdr->sh_offset);
-			int_size = elf64_to_cpu(shdr->sh_size);
-		} else {
-			const Elf32_Shdr *const shdr = reinterpret_cast<const Elf32_Shdr*>(shbuf);
-			int_addr = elf32_to_cpu(shdr->sh_offset);
-			int_size = elf32_to_cpu(shdr->sh_size);
-		}
+		off64_t int_addr = shdr.sh_offset;
+		uint64_t int_size = shdr.sh_size;
 
 		// Sanity check: Note must be 256 bytes or less,
 		// and must be greater than sizeof(Elf32_Nhdr).
