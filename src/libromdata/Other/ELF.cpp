@@ -1030,7 +1030,38 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 				continue;
 			}
 			vector<string> row;
+			row.reserve(7);
 			row.emplace_back(&strtab[sym.st_name]);
+			static const char *const bindings[16] = {
+				"LOCAL", "GLOBAL", "WEAK",
+				"3", "4", "5", "6", "7", "8", "9",
+				"GNU_UNIQUE", "LOOS+1", "LOOS+2",
+				"LOPROC+0", "LOPROC+1", "LOPROC+2",
+			};
+			static const char *const types[16] = {
+				"NOTYPE", "OBJECT", "FUNC", "SECTION",
+				"FILE", "COMMON",
+				"7", "8", "9",
+				"GNU_IFNUC", "LOOS+1", "LOOS+2",
+				"LOPROC+0", "LOPROC+1", "LOPROC+2",
+			};
+			static const char *const visibilities[4] = {
+				"DEFAULT", "INTERNAL", "HIDDEN", "PROTECTED"
+			};
+			row.emplace_back(bindings[ELF64_ST_BIND(sym.st_info)]);
+			row.emplace_back(types[ELF64_ST_TYPE(sym.st_info)]);
+			row.emplace_back(visibilities[ELF64_ST_VISIBILITY(sym.st_other)]);
+			// TODO: output section name if possible
+			if (sym.st_shndx == SHN_UNDEF)
+				row.emplace_back(C_("ELF|Symbol", "(Undefined)"));
+			else if (sym.st_shndx == SHN_ABS)
+				row.emplace_back(C_("ELF|Symbol", "(Absolute)"));
+			else if (sym.st_shndx == SHN_COMMON)
+				row.emplace_back(C_("ELF|Symbol", "(COMMON)"));
+			else
+				row.emplace_back(rp_sprintf("%d", sym.st_shndx));
+			row.emplace_back(rp_sprintf("0x%08" PRIX64, sym.st_value));
+			row.emplace_back(rp_sprintf("0x%08" PRIX64, sym.st_size));
 			vv_data->push_back(std::move(row));
 		}
 		if (vv_data->empty()) {
@@ -1040,18 +1071,22 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 
 		std::sort(vv_data->begin(), vv_data->end(),
 			[](const vector<string> &row1, const vector<string> &row2) -> bool {
-				assert(row1.size() == 1);
-				assert(row2.size() == 1);
 				return (row1[0].compare(row2[0]) < 0);
 			});
 
 		fields->addTab(name);
 
 		static const char *const field_names[] = {
-			NOP_C_("ELF", "Name"),
+			NOP_C_("ELF|Symbol", "Name"),
+			NOP_C_("ELF|Symbol", "Binding"),
+			NOP_C_("ELF|Symbol", "Type"),
+			NOP_C_("ELF|Symbol", "Visibility"),
+			NOP_C_("ELF|Symbol", "Section"),
+			NOP_C_("ELF|Symbol", "Value"),
+			NOP_C_("ELF|Symbol", "Size"),
 		};
 		vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
-			"ELF", field_names, ARRAY_SIZE(field_names));
+			"ELF|Symbol", field_names, ARRAY_SIZE(field_names));
 
 		RomFields::AFLD_PARAMS params;
 		params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;
