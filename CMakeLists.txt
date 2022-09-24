@@ -182,6 +182,16 @@ ELSE(BUILD_CLI)
 	SET(CLI_BUILD_MSG "No")
 ENDIF(BUILD_CLI)
 
+IF(RP_LIBROMDATA_IS_DLL)
+	IF(WIN32)
+		SET(LIBROMDATA_LIB_TYPE "shared library (.dll)")
+	ELSE(WIN32)
+		SET(LIBROMDATA_LIB_TYPE "shared library (.so)")
+	ENDIF(WIN32)
+ELSE(RP_LIBROMDATA_IS_DLL)
+	SET(LIBROMDATA_LIB_TYPE "static library")
+ENDIF(RP_LIBROMDATA_IS_DLL)
+
 IF(NOT SECURITY_MECHANISM)
 	SET(SECURITY_MECHANISM "None")
 ENDIF(NOT SECURITY_MECHANISM)
@@ -275,6 +285,7 @@ MESSAGE(STATUS "
 Build Summary:
 - Building these UI frontends: ${UI_FRONTENDS}
 - Building command-line frontend: ${CLI_BUILD_MSG}
+- libromdata is built as: ${LIBROMDATA_LIB_TYPE}
 - Security mechanism: ${SECURITY_MECHANISM}
 - Decryption functionality: ${ENABLE_DECRYPTION_MSG}
 - XML parsing: ${ENABLE_XML_MSG}

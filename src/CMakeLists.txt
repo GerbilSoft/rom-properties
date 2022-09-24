@@ -93,10 +93,16 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.version.h.in" "${CMAKE_CURREN
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/stdboolx.h.in" "${CMAKE_CURRENT_BINARY_DIR}/stdboolx.h")
 
 # Build certain libraries as shared libraries on Linux and Windows.
-IF(WIN32 OR (UNIX AND NOT APPLE))
-	SET(RP_LIBROMDATA_IS_DLL 1)
+IF(CMAKE_C_COMPILER MATCHES afl)
+	# Don't enable libromdata.so when building with afl/afl++.
+	# afl-fuzz crashes when trying to load libromdata.so for some reason.
+	MESSAGE(WARNING "Disabling libromdata.so due to afl")
+ELSEIF(WIN32 OR (UNIX AND NOT APPLE))
+	SET(RP_LIBROMDATA_IS_DLL 1 PARENT_SCOPE)
 	ADD_DEFINITIONS(-DRP_LIBROMDATA_IS_DLL=1)
-ENDIF(WIN32 OR (UNIX AND NOT APPLE))
+ELSE()
+	MESSAGE(WARNING "Disabling libromdata.so due to unsupported OS")
+ENDIF()
 
 # FIXME: gcc-5's libgcc.a doesn't get linked in for some reason,
 # resulting in the following error:
