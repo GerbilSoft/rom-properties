@@ -343,7 +343,10 @@ const char *getLocalizedLanguageName(uint32_t lc)
 		[](const LangName_t &langName, uint32_t lc) {
 			return (langName.lc < lc);
 		});
-	return (pLangName != pLangNames_end) ? pLangName->name : nullptr;
+	if (pLangName == pLangNames_end || pLangName->lc != lc) {
+		return nullptr;
+	}
+	return pLangName->name;
 }
 
 /**

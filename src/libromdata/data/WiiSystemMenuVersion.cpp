@@ -67,7 +67,10 @@ const char *lookup(unsigned int version)
 		[](const SysVersionEntry_t &sysVersion, unsigned int version) {
 			return (sysVersion.version < version);
 		});
-	return (pVer != pSysVersionList_end) ? pVer->str : nullptr;
+	if (pVer == pSysVersionList_end || pVer->version != version) {
+		return nullptr;
+	}
+	return pVer->str;
 }
 
 } }

@@ -381,8 +381,11 @@ const NESSubmapperInfo *lookup_nes2_submapper_info(int mapper, int submapper)
 		[](const NESSubmapperEntry &submapper, uint16_t mapper) {
 			return (submapper.mapper < mapper);
 		});
-	if (pSubmapper == pSubmappers_end || !pSubmapper->info || pSubmapper->info_size == 0)
+	if (pSubmapper == pSubmappers_end || pSubmapper->mapper != mapper ||
+	    !pSubmapper->info || pSubmapper->info_size == 0)
+	{
 		return nullptr;
+	}
 
 	// Do a binary search in pSubmapper->info.
 	const NESSubmapperInfo *const pInfo_end =
@@ -391,7 +394,10 @@ const NESSubmapperInfo *lookup_nes2_submapper_info(int mapper, int submapper)
 		[](const NESSubmapperInfo &submapperInfo, uint8_t submapper) {
 			return (submapperInfo.submapper < submapper);
 		});
-	return (pSubmapperInfo != pInfo_end) ? pSubmapperInfo : nullptr;
+	if (pSubmapperInfo == pInfo_end || pSubmapperInfo->submapper != submapper) {
+		return nullptr;
+	}
+	return pSubmapperInfo;
 }
 
 /**

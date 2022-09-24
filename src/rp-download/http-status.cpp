@@ -219,10 +219,13 @@ const TCHAR *http_status_string(int code)
 		[](const HttpStatusMsg_t &msg, int code) {
 			return (msg.code < code);
 		});
+	if (pHttp == pHttpStatusMsgs_end || pHttp->code != code) {
+		return nullptr;
+	}
 
 	// Putting static_assert() after the variable declarations
 	// to prevent issues with MSVC 2010.
 	static_assert(ARRAY_SIZE(httpStatusMsgs_str) == 1240, "httpStatusMsgs_str[] is the wrong size!");
 
-	return (pHttp != pHttpStatusMsgs_end) ? &httpStatusMsgs_str[pHttp->offset] : nullptr;
+	return &httpStatusMsgs_str[pHttp->offset];
 }

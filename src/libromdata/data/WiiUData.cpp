@@ -291,36 +291,40 @@ static const WiiUDiscPublisher disc_publishers_region[] = {
 uint32_t lookup_disc_publisher(const char *id4)
 {
 	// Check the region-independent list first.
-	WiiUDiscPublisher key;
-	key.id4 = (static_cast<uint8_t>(id4[0]) << 24) |
-		  (static_cast<uint8_t>(id4[1]) << 16) |
-		  (static_cast<uint8_t>(id4[2]) << 8) | 'x';
-	key.publisher = 0;
+	uint32_t id4_u32 = (static_cast<uint8_t>(id4[0]) << 24) |
+	                   (static_cast<uint8_t>(id4[1]) << 16) |
+	                   (static_cast<uint8_t>(id4[2]) << 8) | 'x';
 
 	// Do a binary search.
 	static const WiiUDiscPublisher *const p_disc_publishers_noregion_end =
 		&disc_publishers_noregion[ARRAY_SIZE(disc_publishers_noregion)];
-	auto pPubNoRegion = std::lower_bound(disc_publishers_noregion, p_disc_publishers_noregion_end, key,
-		[](const WiiUDiscPublisher &pub, const WiiUDiscPublisher &key) {
-			return (pub.id4 < key.id4);
+	auto pPubNoRegion = std::lower_bound(disc_publishers_noregion, p_disc_publishers_noregion_end, id4_u32,
+		[](const WiiUDiscPublisher &pub, const uint32_t id4_u32) {
+			return (pub.id4 < id4_u32);
 		});
-	if (pPubNoRegion != p_disc_publishers_noregion_end) {
+	if (pPubNoRegion != p_disc_publishers_noregion_end && pPubNoRegion->id4 == id4_u32) {
 		// Found a publisher in the region-independent list.
 		return pPubNoRegion->publisher;
 	}
 
 	// Check the region-specific list.
-	key.id4 &= ~0xFF;
-	key.id4 |= static_cast<uint8_t>(id4[3]);
+	id4_u32 &= ~0xFF;
+	id4_u32 |= static_cast<uint8_t>(id4[3]);
 
 	// Do a binary search.
 	static const WiiUDiscPublisher *const p_disc_publishers_region_end =
 		&disc_publishers_region[ARRAY_SIZE(disc_publishers_region)];
-	auto pPubRegion = std::lower_bound(disc_publishers_region, p_disc_publishers_region_end, key,
-		[](const WiiUDiscPublisher &pub, const WiiUDiscPublisher &key) {
-			return (pub.id4 < key.id4);
+	auto pPubRegion = std::lower_bound(disc_publishers_region, p_disc_publishers_region_end, id4_u32,
+		[](const WiiUDiscPublisher &pub, uint32_t id4_u32) {
+			return (pub.id4 < id4_u32);
 		});
-	return (pPubRegion != p_disc_publishers_region_end) ? pPubRegion->publisher : 0;
+	if (pPubRegion != p_disc_publishers_region_end && pPubRegion->id4 == id4_u32) {
+		// Found a publisher in the region-dependent list.
+		return pPubRegion->publisher;
+	}
+
+	// Not found.
+	return 0;
 }
 
 } }

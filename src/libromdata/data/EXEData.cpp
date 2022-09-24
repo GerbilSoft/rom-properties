@@ -88,7 +88,10 @@ const char *lookup_pe_cpu(uint16_t cpu)
 		[](const MachineType &pe, uint16_t cpu) {
 			return (pe.cpu < cpu);
 		});
-	return (pPE != pMachineTypes_PE_end) ? pPE->name : nullptr;
+	if (pPE == pMachineTypes_PE_end || pPE->cpu != cpu) {
+		return nullptr;
+	}
+	return pPE->name;
 }
 
 /**
@@ -105,7 +108,10 @@ const char *lookup_le_cpu(uint16_t cpu)
 		[](const MachineType &pe, uint16_t cpu) {
 			return (pe.cpu < cpu);
 		});
-	return (pLE != pMachineTypes_LE_end) ? pLE->name : nullptr;
+	if (pLE == pMachineTypes_LE_end || pLE->cpu != cpu) {
+		return nullptr;
+	}
+	return pLE->name;
 }
 
 } }

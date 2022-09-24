@@ -563,19 +563,19 @@ const char *AmiiboData::lookup_char_name(uint32_t char_id) const
 	// Do a binary search.
 	//const CharTableEntry key = {id, 0};
 	const CharTableEntry *const pCharTblEnd = d->pCharTbl + d->charTbl_count;
-	auto pCTEntry = std::lower_bound(d->pCharTbl, pCharTblEnd, (id & ~CHARTABLE_VARIANT_FLAG),
+	auto pCTEntry = std::lower_bound(d->pCharTbl, pCharTblEnd, id,
 		[](const CharTableEntry &entry, uint32_t id2) {
 			uint32_t id1 = le32_to_cpu(entry.char_id) & ~CHARTABLE_VARIANT_FLAG;
 			return (id1 < id2);
 		});
-	if (pCTEntry == pCharTblEnd) {
+	if (pCTEntry == pCharTblEnd || (le32_to_cpu(pCTEntry->char_id) & ~CHARTABLE_VARIANT_FLAG) != id) {
 		// Character ID not found.
 		return nullptr;
 	}
 
 	// Check for variants.
 	const char *name = nullptr;
-	if (le32_to_cpu(pCTEntry->char_id) & CHARTABLE_VARIANT_FLAG) {
+	if (pCTEntry->char_id & cpu_to_le32(CHARTABLE_VARIANT_FLAG)) {
 		// Do a binary search in the character variant table.
 		const uint16_t cv_char_id = ((char_id >> 16) & 0xFFFF);
 		const uint8_t variant_id = (char_id >> 8) & 0xFF;
@@ -592,7 +592,10 @@ const char *AmiiboData::lookup_char_name(uint32_t char_id) const
 				return (key1.var_id < key2.var_id);
 			});
 
-		if (pCVTEntry != pCharVarTblEnd) {
+		if (pCVTEntry != pCharVarTblEnd &&
+		    le16_to_cpu(pCVTEntry->char_id) == cv_char_id &&
+		    pCVTEntry->var_id == variant_id)
+		{
 			// Character variant ID found.
 			name = d->strTbl_lookup(le32_to_cpu(pCVTEntry->name));
 		} else {

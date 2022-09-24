@@ -155,7 +155,7 @@ int w32err_to_posix(DWORD w32err)
 		[](const errmap &err, DWORD w32err) {
 			return (err.w32 < w32err);
 		});
-	if (pErr != p_w32_to_posix_end) {
+	if (pErr != p_w32_to_posix_end && pErr->w32 == w32err) {
 		// Found an error code.
 		return pErr->posix;
 	}

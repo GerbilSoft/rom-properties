@@ -540,7 +540,7 @@ const char *lookup_glEnum(unsigned int glEnum)
 		[](const OffTbl_t &entry, unsigned int glEnum) {
 			return (entry.id < glEnum);
 		});
-	if (pEntry == pGlEnum_offtbl_end || pEntry->offset == 0) {
+	if (pEntry == pGlEnum_offtbl_end || pEntry->id != glEnum || pEntry->offset == 0) {
 		return nullptr;
 	}
 	return &glEnum_strtbl[pEntry->offset];

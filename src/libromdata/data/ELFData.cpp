@@ -79,7 +79,10 @@ const char *lookup_cpu(uint16_t cpu)
 		[](const ELFMachineType &elf, uint16_t cpu) {
 			return (elf.cpu < cpu);
 		});
-	return (pELF != pELFMachineTypes_other_end) ? pELF->name : nullptr;
+	if (pELF == pELFMachineTypes_other_end || pELF->cpu != cpu) {
+		return nullptr;
+	}
+	return pELF->name;
 }
 
 /**

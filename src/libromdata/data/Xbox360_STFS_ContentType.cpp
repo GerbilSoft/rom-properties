@@ -74,9 +74,10 @@ const char *lookup(uint32_t contentType)
 		[](const ContentTypeEntry &cte, uint32_t contentType) {
 			return (cte.id < contentType);
 		});
-	return (pContentType != pContentTypeList_end)
-		? dpgettext_expr(RP_I18N_DOMAIN, "Xbox360_STFS|ContentType", pContentType->contentType)
-		: nullptr;
+	if (pContentType == pContentTypeList_end || pContentType->id != contentType) {
+		return nullptr;
+	}
+	return dpgettext_expr(RP_I18N_DOMAIN, "Xbox360_STFS|ContentType", pContentType->contentType);
 }
 
 } }
