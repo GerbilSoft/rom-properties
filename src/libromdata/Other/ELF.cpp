@@ -27,7 +27,7 @@ using LibRpFile::IRpFile;
 #  include <cinttypes>
 #endif
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -956,7 +956,7 @@ int ELFPrivate::addPtDynamicFields(void)
 				"ELF", field_names, ARRAY_SIZE(field_names));
 
 			RomFields::AFLD_PARAMS params;
-			params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;
+			params.flags = 0;
 			params.headers = v_field_names;
 			params.data.single = vv_data;
 			fields->addField_listData("DT_NEEDED", &params);
@@ -997,7 +997,7 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 	auto parse_sym = [this](uint8_t *ptr, vector<Elf64_Sym> &out) {
 		Elf64_Sym sym;
 		if (Elf_Header.primary.e_class == ELFCLASS64) {
-			const Elf32_Sym &sym64 = *reinterpret_cast<const Elf32_Sym *>(ptr);
+			const Elf64_Sym &sym64 = *reinterpret_cast<const Elf64_Sym *>(ptr);
 			sym.st_name = elf32_to_cpu(sym64.st_name);
 			sym.st_info = sym64.st_info;
 			sym.st_other = sym64.st_other;
@@ -1044,16 +1044,27 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 		auto vv_data = new RomFields::ListData_t();
 		for (auto &sym : tab) {
 			assert(sym.st_name < strtab.size());
-			if (sym.st_name >= strtab.size())
+			if (sym.st_name >= strtab.size()) {
 				continue;
+			}
+			if (strtab[sym.st_name] == '\0') {
+				continue;
+			}
 			vector<string> row;
 			row.emplace_back(&strtab[sym.st_name]);
 			vv_data->push_back(std::move(row));
 		}
-		if (vv_data->size() == 0) {
+		if (vv_data->empty()) {
 			delete vv_data;
 			return;
 		}
+
+		std::sort(vv_data->begin(), vv_data->end(),
+			[](const vector<string> &row1, const vector<string> &row2) -> bool {
+				assert(row1.size() == 1);
+				assert(row2.size() == 1);
+				return (row1[0].compare(row2[0]) < 0);
+			});
 
 		fields->addTab(name);
 
@@ -1082,6 +1093,8 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 				return reinterpret_span<const char>(buf);
 			}
 		}
+
+		// Either the string table couldn't be read, or it isn't NULL-terminated.
 		return span<const char>();
 	};
 
