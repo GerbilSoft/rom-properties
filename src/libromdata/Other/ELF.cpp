@@ -403,6 +403,11 @@ int ELFPrivate::checkProgramHeaders(void)
 				pt_load.push_back(readProgramHeader(phbuf));
 				// vaddrs must be sorted
 				assert(pt_load.size() < 2 || pt_load.end()[-2].vaddr <= pt_load.end()[-1].vaddr);
+				if (pt_load.size() > 1 && unlikely(pt_load.end()[-2].vaddr > pt_load.end()[-1].vaddr)) {
+					// Not sorted. Remove the last entry.
+					// TODO: Sort it manually?
+					pt_load.resize(pt_load.size()-1);
+				}
 				break;
 
 			case PT_DYNAMIC:
