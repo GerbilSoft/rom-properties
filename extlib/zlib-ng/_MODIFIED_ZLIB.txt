@@ -18,6 +18,8 @@ Tag: 2.0.6
 
 The following changes have been made to the original:
 
+- Now checks that the OS supports saving the YMM registers before enabling AVX2.
+
 - CMakeLists.txt has been edited to prevent building the Win32 resource
   data when being built as a shared library.
 
