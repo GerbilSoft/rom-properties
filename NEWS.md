@@ -2,6 +2,12 @@
 
 ## v2.1 (released 2022/??/??)
 
+* Bug fixes:
+  * ELF: The "TLS" symbol type was missing, resulting in an off-by-one
+    error for some symbol types.
+    * Merged #359: [libromdata] ELFPrivate::addSymbolFields(): fix the symbol type names
+      * Submitted by @DankRank.
+
 * Other changes:
   * libromdata's SOVERSION was bumped to 2 due to an ABI change in
     librpfile's MemFile and VectorFile classes.
