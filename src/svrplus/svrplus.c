@@ -639,7 +639,7 @@ static void InitDialog(HWND hDlg)
 	// MSVC 2022 runtime requires Windows Vista or later.
 	osvi.dwOSVersionInfoSize = sizeof(osvi);
 	if (GetVersionEx(&osvi) != 0 && osvi.dwMajorVersion >= 6) {
-		// Windows Vista or later. Use MSVC 2019.
+		// Windows Vista or later. Use MSVC 2022.
 		vcyear = 2022;
 		vcver = 17;
 	} else {
