@@ -1045,7 +1045,7 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 			};
 			static const char *const types[16] = {
 				"NOTYPE", "OBJECT", "FUNC", "SECTION",
-				"FILE", "COMMON",
+				"FILE", "COMMON", "TLS",
 				"7", "8", "9",
 				"GNU_IFNUC", "LOOS+1", "LOOS+2",
 				"LOPROC+0", "LOPROC+1", "LOPROC+2",
@@ -1054,18 +1054,8 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 				"DEFAULT", "INTERNAL", "HIDDEN", "PROTECTED"
 			};
 
-			// Symbol type LOOS+1 is IFUNC on GNU/Linux.
-			// NOTE: OSABI is usually set to ELFOSABI_SYSV unless IFUNC is in use.
-			const uint8_t sym_type = ELF64_ST_TYPE(sym.st_info);
-			const char *s_sym_type;
-			if (sym_type == STT_GNU_IFUNC && likely(Elf_Header.primary.e_osabi == ELFOSABI_GNU)) {
-				s_sym_type = "IFUNC";
-			} else {
-				s_sym_type = types[sym_type];
-			}
-
 			row.emplace_back(bindings[ELF64_ST_BIND(sym.st_info)]);
-			row.emplace_back(s_sym_type);
+			row.emplace_back(types[ELF64_ST_TYPE(sym.st_info)]);
 			row.emplace_back(visibilities[ELF64_ST_VISIBILITY(sym.st_other)]);
 			// TODO: output section name if possible
 			if (sym.st_shndx == SHN_UNDEF)
