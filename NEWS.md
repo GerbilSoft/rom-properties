@@ -5,6 +5,11 @@
 * Other changes:
   * libromdata's SOVERSION was bumped to 2 due to an ABI change in
     librpfile's MemFile and VectorFile classes.
+  * Bundled zlib-ng: Fix for systems with a CPU that supports AVX2 but
+    an OS that doesn't, e.g. Windows XP.
+    * Fixes #361: Crash in rp-config on Windows XP
+    * Merged #362: zlib-ng: Check that the OS supports saving the YMM registers before enabling AVX2
+      * Reported and submitted by @ccawley2011.
 
 ## v2.0 (released 2022/09/24)
 
