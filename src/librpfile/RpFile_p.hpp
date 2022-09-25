@@ -64,8 +64,6 @@ namespace LibRpFile {
 class RpFilePrivate
 {
 	public:
-		// NOTE: Using #define instead of static const
-		// to work around C2864 on MSVC.
 #ifdef _WIN32
 		typedef HANDLE FILE_TYPE;
 #else /* !_WIN32 */
