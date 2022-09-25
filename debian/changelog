@@ -1,3 +1,15 @@
+rom-properties (2.0-1ppa2~focal1) focal; urgency=medium
+
+  * Build for Ubuntu 20.04 "Focal" Fossa.
+
+  * Disabled GTK+ 2.x builds. (XFCE)
+  * Disabled KDE 4.x builds.
+  * Enabled system libzstd.
+
+    PPA version bumped to ensure it updates from previous versions.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 24 Sep 2022 21:59:16 -0400
+
 rom-properties (2.0-1ppa2~bionic2) bionic; urgency=medium
 
   * Export MemFile, IRpFile, and RefBase due to a gcc-7 issue with
