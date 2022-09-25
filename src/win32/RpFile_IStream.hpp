@@ -124,7 +124,7 @@ class RpFile_IStream final : public LibRpFile::IRpFile
 
 	protected:
 		IStreamPtr m_pStream;
-		std::string m_filename;
+		char *m_filename;
 
 		// zlib
 		unsigned int m_z_uncomp_sz;

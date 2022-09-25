@@ -114,10 +114,10 @@ HRESULT RP_ExtractImage_Private::Fallback(HBITMAP *phBmpImage)
 	// TODO: Check HKCU first.
 
 	// Get the file extension.
-	if (filename.empty()) {
+	if (!filename || filename[0] == '\0') {
 		return E_INVALIDARG;
 	}
-	const char *file_ext = FileSystem::file_ext(filename.c_str());
+	const char *file_ext = FileSystem::file_ext(filename);
 	if (!file_ext) {
 		// Invalid or missing file extension.
 		return E_INVALIDARG;

@@ -374,10 +374,10 @@ LONG RP_ExtractIcon_Private::Fallback(HICON *phiconLarge, HICON *phiconSmall, UI
 	// TODO: Check HKCU first.
 
 	// Get the file extension.
-	if (filename.empty()) {
+	if (!filename || filename[0] == '\0') {
 		return ERROR_FILE_NOT_FOUND;
 	}
-	const char *file_ext = FileSystem::file_ext(filename.c_str());
+	const char *file_ext = FileSystem::file_ext(filename);
 	if (!file_ext) {
 		// Invalid or missing file extension.
 		return ERROR_FILE_NOT_FOUND;

@@ -62,17 +62,17 @@ class RomDataPrivate
 	public:
 		/** These fields must be set by RomData subclasses in their constructors. **/
 		const RomDataInfo *pRomDataInfo;// RomData subclass information
-		const char *mimeType;		// MIME type. (ASCII) (default is nullptr)
-		RomData::FileType fileType;	// File type. (default is FileType::ROM_Image)
+		const char *mimeType;		// MIME type (ASCII) (default is nullptr)
+		RomData::FileType fileType;	// File type (default is FileType::ROM_Image)
 		bool isValid;			// Subclass must set this to true if the ROM is valid.
 	public:
 		/** These fields are set by RomData's own constructor. **/
+		LibRpFile::IRpFile *file;	// Open file
+		char *filename;			// Copy of the filename
 		bool isCompressed;		// True if the file is compressed. (transparent decompression)
-		std::string filename;		// Copy of the filename.
-		LibRpFile::IRpFile *file;	// Open file.
 	public:
-		RomFields *const fields;	// ROM fields. (NOTE: allocated by the base class)
-		RomMetaData *metaData;		// ROM metadata. (NOTE: nullptr initially.)
+		RomFields *const fields;	// ROM fields (NOTE: allocated by the base class)
+		RomMetaData *metaData;		// ROM metadata (NOTE: nullptr initially)
 
 	public:
 		/** Convenience functions. **/

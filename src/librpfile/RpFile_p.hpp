@@ -73,11 +73,19 @@ class RpFilePrivate
 #endif /* _WIN32 */
 
 		RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode)
-			: q_ptr(q), file(INVALID_HANDLE_VALUE), filename(filename)
-			, mode(mode), gzfd(nullptr), gzsz(-1), devInfo(nullptr) { }
+			: q_ptr(q), file(INVALID_HANDLE_VALUE)
+			, mode(mode), gzfd(nullptr), gzsz(-1), devInfo(nullptr)
+		{
+			assert(filename != nullptr);
+			this->filename = strdup(filename);
+		}
 		RpFilePrivate(RpFile *q, const string &filename, RpFile::FileMode mode)
-			: q_ptr(q), file(INVALID_HANDLE_VALUE), filename(filename)
-			, mode(mode), gzfd(nullptr), gzsz(-1), devInfo(nullptr) { }
+			: q_ptr(q), file(INVALID_HANDLE_VALUE)
+			, mode(mode), gzfd(nullptr), gzsz(-1), devInfo(nullptr)
+		{
+			assert(!filename.empty());
+			this->filename = strdup(filename.c_str());
+		}
 		~RpFilePrivate();
 
 	private:
@@ -85,9 +93,9 @@ class RpFilePrivate
 		RpFile *const q_ptr;
 
 	public:
-		FILE_TYPE file;		// File pointer.
-		string filename;	// Filename.
-		RpFile::FileMode mode;	// File mode.
+		FILE_TYPE file;		// File pointer
+		char *filename;		// Filename
+		RpFile::FileMode mode;	// File mode
 
 		gzFile gzfd;		// Used for transparent gzip decompression.
 		off64_t gzsz;		// Uncompressed file size.

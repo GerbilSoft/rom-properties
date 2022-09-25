@@ -28,8 +28,8 @@ class RP_ExtractIcon_Private
 		RP_DISABLE_COPY(RP_ExtractIcon_Private)
 
 	public:
-		// ROM filename from IPersistFile::Load().
-		std::string filename;
+		// ROM filename from IPersistFile::Load()
+		char *filename;
 
 		// RomData object. Loaded in IPersistFile::Load().
 		LibRpBase::RomData *romData;

@@ -29,7 +29,8 @@ const CLSID CLSID_RP_ExtractImage =
 #include "RP_ExtractImage_p.hpp"
 
 RP_ExtractImage_Private::RP_ExtractImage_Private()
-	: romData(nullptr)
+	: filename(nullptr)
+	, romData(nullptr)
 	, dwRecClrDepth(0)
 	, dwFlags(0)
 {
@@ -39,6 +40,7 @@ RP_ExtractImage_Private::RP_ExtractImage_Private()
 
 RP_ExtractImage_Private::~RP_ExtractImage_Private()
 {
+	free(filename);
 	UNREF(romData);
 }
 
@@ -102,11 +104,15 @@ IFACEMETHODIMP RP_ExtractImage::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
 
 	// pszFileName is the file being worked on.
 	// TODO: If the file was already loaded, don't reload it.
-	d->filename = W2U8(pszFileName);
+	free(d->filename);
+	d->filename = strdup(W2U8(pszFileName).c_str());
+	if (!d->filename) {
+		return E_OUTOFMEMORY;
+	}
 
 	// Check for "bad" file systems.
 	const Config *const config = Config::instance();
-	if (FileSystem::isOnBadFS(d->filename.c_str(), config->enableThumbnailOnNetworkFS())) {
+	if (FileSystem::isOnBadFS(d->filename, config->enableThumbnailOnNetworkFS())) {
 		// This file is on a "bad" file system.
 		return E_FAIL;
 	}
@@ -146,12 +152,26 @@ IFACEMETHODIMP RP_ExtractImage::SaveCompleted(_In_ LPCOLESTR pszFileName)
 
 IFACEMETHODIMP RP_ExtractImage::GetCurFile(_Outptr_ LPOLESTR *ppszFileName)
 {
-	assert(ppszFileName != nullptr);
-	if (!ppszFileName) {
+	if (!ppszFileName)
 		return E_POINTER;
+
+	RP_D(const RP_ExtractImage);
+	if (!d->filename) {
+		// No filename. Create an empty string.
+		LPWSTR psz = static_cast<LPWSTR>(CoTaskMemAlloc(sizeof(wchar_t)));
+		if (!psz)
+			return E_OUTOFMEMORY;
+		memset(psz, 0, sizeof(wchar_t));
+	} else {
+		// Copy the filename.
+		const size_t cb = strlen(d->filename) * sizeof(wchar_t);
+		LPWSTR psz = static_cast<LPWSTR>(CoTaskMemAlloc(cb));
+		if (!psz)
+			return E_OUTOFMEMORY;
+		memcpy(psz, d->filename, cb);
 	}
-	RP_UNUSED(ppszFileName);
-	return E_NOTIMPL;
+
+	return S_OK;
 }
 
 /** IExtractImage **/
@@ -214,7 +234,7 @@ IFACEMETHODIMP RP_ExtractImage::Extract(_Outptr_ HBITMAP *phBmpImage)
 {
 	// Make sure a filename was set by calling IPersistFile::Load().
 	RP_D(RP_ExtractImage);
-	if (d->filename.empty()) {
+	if (!d->filename || d->filename[0] == '\0') {
 		return E_UNEXPECTED;
 	}
 
@@ -254,7 +274,7 @@ IFACEMETHODIMP RP_ExtractImage::GetDateStamp(_Out_ FILETIME *pDateStamp)
 	if (!pDateStamp) {
 		// No FILETIME pointer specified.
 		return E_POINTER;
-	} else if (d->filename.empty()) {
+	} else if (!d->filename || d->filename[0] == '\0') {
 		// Filename was not set in GetLocation().
 		return E_INVALIDARG;
 	}

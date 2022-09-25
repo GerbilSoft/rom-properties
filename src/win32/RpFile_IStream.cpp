@@ -43,6 +43,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 RpFile_IStream::RpFile_IStream(IStream *pStream, bool gzip)
 	: super()
 	, m_pStream(pStream, true)	// true == call AddRef()
+	, m_filename(nullptr)
 	, m_z_uncomp_sz(0)
 	, m_z_filepos(0)
 	, m_z_realpos(0)
@@ -150,6 +151,8 @@ RpFile_IStream::~RpFile_IStream()
 		inflateEnd(m_pZstm);
 		free(m_pZstm);
 	}
+
+	free(m_filename);
 }
 
 /**
@@ -676,7 +679,8 @@ off64_t RpFile_IStream::size(void)
  */
 const char *RpFile_IStream::filename(void) const
 {
-	if (m_filename.empty()) {
+	// Assuming m_filename is nullptr, not empty string, if not obtained yet.
+	if (!m_filename) {
 		// Get the filename.
 		// FIXME: This does NOT have the full path; only the
 		// file portion is included. This is enough for the
@@ -690,11 +694,11 @@ const char *RpFile_IStream::filename(void) const
 
 		if (statstg.pwcsName) {
 			// Save the filename.
-			const_cast<RpFile_IStream*>(this)->m_filename = W2U8(statstg.pwcsName);
+			const_cast<RpFile_IStream*>(this)->m_filename = strdup(W2U8(statstg.pwcsName).c_str());
 			CoTaskMemFree(statstg.pwcsName);
 		}
 	}
 
 	// Return the filename.
-	return (!m_filename.empty() ? m_filename.c_str() : nullptr);
+	return (m_filename != nullptr && m_filename[0] != '\0') ? m_filename : nullptr;
 }

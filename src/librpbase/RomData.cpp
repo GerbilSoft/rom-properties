@@ -41,8 +41,9 @@ RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file, const RomDataInfo *pRo
 	, mimeType(nullptr)
 	, fileType(RomData::FileType::ROM_Image)
 	, isValid(false)
-	, isCompressed(false)
 	, file(nullptr)
+	, filename(nullptr)
+	, isCompressed(false)
 	, fields(new RomFields())
 	, metaData(nullptr)
 {
@@ -58,7 +59,7 @@ RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file, const RomDataInfo *pRo
 
 		const char *const filename = file->filename();
 		if (filename) {
-			this->filename.assign(filename);
+			this->filename = strdup(filename);
 		}
 	}
 }
@@ -67,6 +68,7 @@ RomDataPrivate::~RomDataPrivate()
 {
 	delete fields;
 	delete metaData;
+	free(filename);
 
 	// Unreference the file.
 	UNREF(this->file);
@@ -512,7 +514,7 @@ IRpFile *RomData::ref_file(void)
 const char *RomData::filename(void) const
 {
 	RP_D(const RomData);
-	return (!d->filename.empty() ? d->filename.c_str() : nullptr);
+	return (d->filename != nullptr && d->filename[0] != '\0') ? d->filename : nullptr;
 }
 
 /**

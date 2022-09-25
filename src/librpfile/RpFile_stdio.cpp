@@ -33,6 +33,7 @@ RpFilePrivate::~RpFilePrivate()
 	if (file) {
 		fclose(file);
 	}
+	free(filename);
 	delete devInfo;
 }
 
@@ -87,7 +88,7 @@ int RpFilePrivate::reOpenFile(void)
 	uint8_t fileType = 0;
 #ifdef HAVE_STATX
 	struct statx sbx;
-	int ret = statx(AT_FDCWD, filename.c_str(), 0, STATX_TYPE, &sbx);
+	int ret = statx(AT_FDCWD, filename, 0, STATX_TYPE, &sbx);
 	if (ret == 0 && (sbx.stx_mask & STATX_TYPE)) {
 		// statx() succeeded.
 		hasFileMode = true;
@@ -95,7 +96,7 @@ int RpFilePrivate::reOpenFile(void)
 	}
 #else /* !HAVE_STATX */
 	struct stat sb;
-	int ret = stat(filename.c_str(), &sb);
+	int ret = stat(filename, &sb);
 	if (ret == 0) {
 		// fstat() succeeded.
 		hasFileMode = true;
@@ -170,7 +171,7 @@ int RpFilePrivate::reOpenFile(void)
 #ifndef NO_PATTERNS_FOR_THIS_OS
 		bool isMatch = false;
 		for (const auto &pattern : fileNamePatterns) {
-			if (!strncasecmp(filename.c_str(), &pattern[1], (uint8_t)pattern[0])) {
+			if (!strncasecmp(filename, &pattern[1], (uint8_t)pattern[0])) {
 				// Found a match!
 				isMatch = true;
 				break;
@@ -186,7 +187,7 @@ int RpFilePrivate::reOpenFile(void)
 #endif /* NO_PATTERNS_FOR_THIS_OS */
 	}
 
-	file = fopen(filename.c_str(), mode_str);
+	file = fopen(filename, mode_str);
 
 	// If fopen() failed (and returned nullptr),
 	// return the non-zero error code.
@@ -606,7 +607,7 @@ off64_t RpFile::size(void)
 const char *RpFile::filename(void) const
 {
 	RP_D(const RpFile);
-	return (!d->filename.empty() ? d->filename.c_str() : nullptr);
+	return (d->filename != nullptr && d->filename[0] != '\0') ? d->filename : nullptr;
 }
 
 /** Extra functions **/
@@ -628,14 +629,14 @@ int RpFile::makeWritable(void)
 	RP_D(RpFile);
 	off64_t prev_pos = ftello(d->file);
 	fclose(d->file);
-	d->file = fopen(d->filename.c_str(), "rb+");
+	d->file = fopen(d->filename, "rb+");
 	if (d->file) {
 		// File is now writable.
 		m_isWritable = true;
 	} else {
 		// Failed to open the file as writable.
 		// Try reopening as read-only.
-		d->file = fopen(d->filename.c_str(), "rb");
+		d->file = fopen(d->filename, "rb");
 		if (d->file) {
 			fseeko(d->file, prev_pos, SEEK_SET);
 		}

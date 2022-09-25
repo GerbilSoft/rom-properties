@@ -63,9 +63,14 @@ const CLSID CLSID_RP_ShellPropSheetExt =
 // This points to the RP_ShellPropSheetExt_Private::tab object.
 const TCHAR RP_ShellPropSheetExt_Private::TAB_PTR_PROP[] = _T("RP_ShellPropSheetExt_Private::tab");
 
-RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q, string &&filename)
+/**
+ * RP_ShellPropSheetExt_Private constructor
+ * @param q
+ * @param filename Filename (RP_ShellPropSheetExt_Private takes ownership)
+ */
+RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q, char *filename)
 	: q_ptr(q)
-	, filename(std::move(filename))
+	, filename(filename)
 	, romData(nullptr)
 	, hDlgSheet(nullptr)
 	, hBtnOptions(nullptr)
@@ -96,6 +101,7 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 	delete lblIcon;
 
 	// Unreference the RomData object.
+	free(filename);
 	UNREF(romData);
 }
 
@@ -2206,11 +2212,12 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 
 	HRESULT hr = E_FAIL;
 	UINT nFiles, cchFilename;
-	TCHAR *tfilename = nullptr;
 	RpFile *file = nullptr;
 	RomData *romData = nullptr;
 
-	string u8filename;
+	TCHAR *tfilename = nullptr;
+	char *u8filename = nullptr;	// RP_ShellPropSheetExt_Private takes ownership!
+
 	const Config *config;
 
 	// Determine how many files are involved in this operation. This
@@ -2229,7 +2236,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 		goto cleanup;
 	}
 
-	tfilename = new TCHAR[cchFilename+1];
+	tfilename = static_cast<TCHAR*>(malloc((cchFilename+1) * sizeof(TCHAR)));
 	cchFilename = DragQueryFile(hDrop, 0, tfilename, cchFilename+1);
 	if (cchFilename == 0) {
 		// No filename.
@@ -2237,11 +2244,16 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	}
 
 	// Convert the filename to UTF-8.
-	u8filename = T2U8(tfilename, cchFilename);
+	u8filename = strdup(T2U8(tfilename, cchFilename).c_str());
+	if (!u8filename) {
+		// Memory allocation failed.
+		hr = E_OUTOFMEMORY;
+		goto cleanup;
+	}
 
 	// Check for "bad" file systems.
 	config = Config::instance();
-	if (FileSystem::isOnBadFS(u8filename.c_str(),
+	if (FileSystem::isOnBadFS(u8filename,
 	    config->enableThumbnailOnNetworkFS()))
 	{
 		// This file is on a "bad" file system.
@@ -2249,7 +2261,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	}
 
 	// Open the file.
-	file = new RpFile(u8filename.c_str(), RpFile::FM_OPEN_READ_GZ);
+	file = new RpFile(u8filename, RpFile::FM_OPEN_READ_GZ);
 	if (!file->isOpen()) {
 		// Unable to open the file.
 		goto cleanup;
@@ -2271,7 +2283,8 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 
 	// Save the filename in the private class for later.
 	if (!d_ptr) {
-		d_ptr = new RP_ShellPropSheetExt_Private(this, std::move(u8filename));
+		d_ptr = new RP_ShellPropSheetExt_Private(this, u8filename);
+		u8filename = nullptr;
 	}
 
 	hr = S_OK;
@@ -2280,7 +2293,8 @@ cleanup:
 	UNREF(file);
 	GlobalUnlock(stm.hGlobal);
 	ReleaseStgMedium(&stm);
-	delete[] tfilename;
+	free(tfilename);
+	free(u8filename);
 
 	// If any value other than S_OK is returned from the method, the property 
 	// sheet is not displayed.

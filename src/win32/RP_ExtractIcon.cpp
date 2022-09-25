@@ -28,11 +28,13 @@ const CLSID CLSID_RP_ExtractIcon =
 #include "RP_ExtractIcon_p.hpp"
 
 RP_ExtractIcon_Private::RP_ExtractIcon_Private()
-	: romData(nullptr)
+	: filename(nullptr)
+	, romData(nullptr)
 { }
 
 RP_ExtractIcon_Private::~RP_ExtractIcon_Private()
 {
+	free(filename);
 	UNREF(romData);
 }
 
@@ -96,11 +98,15 @@ IFACEMETHODIMP RP_ExtractIcon::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
 
 	// pszFileName is the file being worked on.
 	// TODO: If the file was already loaded, don't reload it.
-	d->filename = W2U8(pszFileName);
+	free(d->filename);
+	d->filename = strdup(W2U8(pszFileName).c_str());
+	if (!d->filename) {
+		return E_OUTOFMEMORY;
+	}
 
 	// Check for "bad" file systems.
 	const Config *const config = Config::instance();
-	if (FileSystem::isOnBadFS(d->filename.c_str(), config->enableThumbnailOnNetworkFS())) {
+	if (FileSystem::isOnBadFS(d->filename, config->enableThumbnailOnNetworkFS())) {
 		// This file is on a "bad" file system.
 		return E_FAIL;
 	}
@@ -144,12 +150,21 @@ IFACEMETHODIMP RP_ExtractIcon::GetCurFile(_In_ LPOLESTR *ppszFileName)
 		return E_POINTER;
 
 	RP_D(const RP_ExtractIcon);
-	size_t cb = (d->filename.size() + 1) * sizeof(wchar_t);
-	LPWSTR psz = static_cast<LPWSTR>(CoTaskMemAlloc(cb));
-	if (!psz)
-		return E_OUTOFMEMORY;
+	if (!d->filename) {
+		// No filename. Create an empty string.
+		LPWSTR psz = static_cast<LPWSTR>(CoTaskMemAlloc(sizeof(wchar_t)));
+		if (!psz)
+			return E_OUTOFMEMORY;
+		memset(psz, 0, sizeof(wchar_t));
+	} else {
+		// Copy the filename.
+		const size_t cb = strlen(d->filename) * sizeof(wchar_t);
+		LPWSTR psz = static_cast<LPWSTR>(CoTaskMemAlloc(cb));
+		if (!psz)
+			return E_OUTOFMEMORY;
+		memcpy(psz, d->filename, cb);
+	}
 
-	memcpy(psz, d->filename.c_str(), cb);
 	return S_OK;
 }
 
@@ -170,7 +185,7 @@ IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 
 	// If the file wasn't set via IPersistFile::Load(), that's an error.
 	RP_D(RP_ExtractIcon);
-	if (d->filename.empty()) {
+	if (!d->filename || d->filename[0] == '\0') {
 		return E_UNEXPECTED;
 	}
 
@@ -204,7 +219,7 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(_In_ LPCWSTR pszFile, UINT nIconIndex,
 
 	// Make sure a filename was set by calling IPersistFile::Load().
 	RP_D(RP_ExtractIcon);
-	if (d->filename.empty()) {
+	if (!d->filename || d->filename[0] == '\0') {
 		return E_UNEXPECTED;
 	}
 

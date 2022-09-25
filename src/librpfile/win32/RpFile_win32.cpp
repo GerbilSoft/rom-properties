@@ -45,6 +45,7 @@ RpFilePrivate::~RpFilePrivate()
 	if (file && file != INVALID_HANDLE_VALUE) {
 		CloseHandle(file);
 	}
+	free(filename);
 	delete devInfo;
 }
 
@@ -99,6 +100,11 @@ inline int RpFilePrivate::mode_to_win32(RpFile::FileMode mode,
 int RpFilePrivate::reOpenFile(void)
 {
 	RP_Q(RpFile);
+	if (!filename || filename[0] == '\0') {
+		// No filename...
+		q->m_lastError = EINVAL;
+		return -EINVAL;
+	}
 
 	// Determine the file mode.
 	DWORD dwDesiredAccess = 0;
@@ -114,28 +120,33 @@ int RpFilePrivate::reOpenFile(void)
 	tstring tfilename;
 
 	// If the filename is "X:", change it to "X:\\".
-	if (filename.size() == 2 &&
-	    ISASCII(filename[0]) && ISALPHA(filename[0]) &&
-	    filename[1] == ':')
+	if (ISASCII(filename[0]) && ISALPHA(filename[0]) &&
+	    filename[1] == ':' && filename[2] == '\0')
 	{
 		// Drive letter. Append '\\'.
-		filename += '\\';
+		char *drvfilename = static_cast<char*>(malloc(4));
+		drvfilename[0] = filename[0];
+		drvfilename[1] = ':';
+		drvfilename[2] = '\\';
+		drvfilename[3] = '\0';
+
+		std::swap(drvfilename, this->filename);
+		free(drvfilename);
 	}
 
 	// Check if the path starts with a drive letter.
-	if (filename.size() >= 3 &&
-	    ISASCII(filename[0]) && ISALPHA(filename[0]) &&
+	if (ISASCII(filename[0]) && ISALPHA(filename[0]) &&
 	    filename[1] == ':' && filename[2] == '\\')
 	{
 		// Is it only a drive letter?
-		if (filename.size() == 3) {
+		if (filename[3] == '\0') {
 			// This is a drive letter.
 			// Only CD-ROM (and similar) drives are supported.
 			// TODO: Verify if opening by drive letter works,
 			// or if we have to resolve the physical device name.
 			// NOTE: filename is UTF-8, but we can use it as if
 			// it's ANSI for a drive letter.
-			const UINT driveType = GetDriveTypeA(filename.c_str());
+			const UINT driveType = GetDriveTypeA(filename);
 			switch (driveType) {
 				case DRIVE_CDROM:
 					// CD-ROM works.
@@ -734,7 +745,7 @@ off64_t RpFile::size(void)
 const char *RpFile::filename(void) const
 {
 	RP_D(const RpFile);
-	return (!d->filename.empty() ? d->filename.c_str() : nullptr);
+	return (d->filename != nullptr && d->filename[0] != '\0') ? d->filename : nullptr;
 }
 
 /** Extra functions **/

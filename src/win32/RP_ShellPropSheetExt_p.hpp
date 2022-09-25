@@ -53,7 +53,13 @@ class DragImageLabel;
 class RP_ShellPropSheetExt_Private
 {
 	public:
-		explicit RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q, std::string &&filename);
+		/**
+		 * RP_ShellPropSheetExt_Private constructor
+		 * @param q
+		 * @param filename Filename (RP_ShellPropSheetExt_Private takes ownership)
+		 */
+		explicit RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q, char *filename);
+
 		~RP_ShellPropSheetExt_Private();
 
 	private:
@@ -67,9 +73,9 @@ class RP_ShellPropSheetExt_Private
 		static const TCHAR TAB_PTR_PROP[];
 
 	public:
-		// ROM filename.
-		std::string filename;
-		// ROM data. (Not opened until the properties tab is shown.)
+		// ROM filename
+		char *filename;
+		// ROM data (Not opened until the properties tab is shown.)
 		LibRpBase::RomData *romData;
 
 		// Useful window handles.
