@@ -1,3 +1,12 @@
+rom-properties (2.0-1ppa2~bionic2) bionic; urgency=medium
+
+  * Export MemFile, IRpFile, and RefBase due to a gcc-7 issue with
+    RpPngFormatTest.
+
+    PPA version bumped to ensure it updates from previous versions.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 24 Sep 2022 21:45:40 -0400
+
 rom-properties (2.0-1ppa2~bionic1) bionic; urgency=medium
 
   * Build for Ubuntu 18.04 "Bionic" Beaver.
