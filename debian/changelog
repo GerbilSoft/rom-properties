@@ -1,3 +1,12 @@
+rom-properties (2.0-1ppa1~xenial6) xenial; urgency=medium
+
+  * Need to set RP_LIBROMDATA_IS_DLL in the current *and* parent scope.
+
+    Otherwise, it shows up properly in the build summary, but libromdata
+    always ends up being built as a static library.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 24 Sep 2022 20:02:02 -0400
+
 rom-properties (2.0-1ppa1~xenial5) xenial; urgency=medium
 
   * Re-add #include "dll-macros.h" to KeyStoreUI.hpp and RomFields.hpp.

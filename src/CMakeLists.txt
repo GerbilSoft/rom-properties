@@ -98,6 +98,7 @@ IF(CMAKE_C_COMPILER MATCHES afl)
 	# afl-fuzz crashes when trying to load libromdata.so for some reason.
 	MESSAGE(WARNING "Disabling libromdata.so due to afl")
 ELSEIF(WIN32 OR (UNIX AND NOT APPLE))
+	SET(RP_LIBROMDATA_IS_DLL 1)
 	SET(RP_LIBROMDATA_IS_DLL 1 PARENT_SCOPE)
 	ADD_DEFINITIONS(-DRP_LIBROMDATA_IS_DLL=1)
 ELSE()
