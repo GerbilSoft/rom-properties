@@ -9,6 +9,8 @@
 #ifndef __ROMPROPERTIES_REFBASE_HPP__
 #define __ROMPROPERTIES_REFBASE_HPP__
 
+#include "dll-macros.h"
+
 // librpthreads
 #include "librpthreads/Atomics.h"
 
@@ -48,7 +50,7 @@
 	(obj) = nullptr; \
 } while (0)
 
-class RefBase
+class RP_LIBROMDATA_PUBLIC RefBase
 {
 	protected:
 		RefBase() : m_ref_cnt(1) { }
