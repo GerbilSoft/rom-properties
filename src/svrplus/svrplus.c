@@ -34,24 +34,15 @@
 // Application resources.
 #include "resource.h"
 
-// These were introduced in MSVC 2015 or 2017.
-// AppVeyor is set to MSVC 2013, so it fails there.
-#ifndef _MAX_ITOSTR_BASE10_COUNT
-#define _MAX_ITOSTR_BASE10_COUNT   (1 + 10 + 1)
-#endif
-#ifndef _MAX_ULTOSTR_BASE10_COUNT
-#define _MAX_ULTOSTR_BASE10_COUNT  (10 + 1)
-#endif
-
 // File paths
 static const TCHAR str_rp32path[] = _T("i386\\rom-properties.dll");
 static const TCHAR str_rp64path[] = _T("amd64\\rom-properties.dll");
 
 // Bullet symbol
 #ifdef _UNICODE
-# define BULLET _T("\x2022")
+#  define BULLET _T("\x2022")
 #else /* !_UNICODE */
-# define BULLET _T("*")
+#  define BULLET _T("*")
 #endif
 
 // Globals
@@ -193,17 +184,14 @@ static int GetSystemDirFilePath(TCHAR *pszPath, size_t cchPath, const TCHAR *fil
 	}
 
 	// Append the System directory name.
+	len += _sntprintf(&pszPath[len], cchPath-len, _T("%s\\%s"),
 #ifdef _WIN64
-	_tcscpy_s(&pszPath[len], cchPath-len, (is64 ? _T("System32\\") : _T("SysWOW64\\")));
-	len += 9;
-#else /* !_WIN64 */
-	_tcscpy_s(&pszPath[len], cchPath-len, (is64 ? _T("Sysnative\\") : _T("System32\\")));
-	len += (is64 ? 10 : 9);
-#endif /* _WIN64 */
-
-	// Append the filename.
-	_tcscpy_s(&pszPath[len], cchPath-len, filename);
-	return len + cchFilename;
+		is64 ? _T("System32") : _T("SysWOW64")
+#else /* !_WIN32 */
+		is64 ? _T("Sysnative") : _T("System32")
+#endif /* _WIN32 */
+		, filename);
+	return len;
 }
 
 /**
@@ -385,7 +373,6 @@ static InstallServerResult TryInstallServer(HWND hWnd,
 	TCHAR *sErrBuf, size_t cchErrBuf)
 {
 	const TCHAR *dll_path, *entry_point;
-	TCHAR ultot_buf[_MAX_ULTOSTR_BASE10_COUNT];
 	DWORD errorCode;
 	InstallServerResult res = InstallServer(isUninstall, is64, &errorCode);
 
@@ -413,14 +400,10 @@ static InstallServerResult TryInstallServer(HWND hWnd,
 			_tcscpy_s(sErrBuf, cchErrBuf, _T("An unknown fatal error occurred."));
 			break;
 		case ISR_FILE_NOT_FOUND:
-			_tcscpy_s(sErrBuf, cchErrBuf, dll_path);
-			_tcscat_s(sErrBuf, cchErrBuf, _T(" is missing."));
+			_sntprintf(sErrBuf, cchErrBuf, _T("%s is missing."), dll_path);
 			break;
 		case ISR_CREATEPROCESS_FAILED:
-			_ultot_s(errorCode, ultot_buf, _countof(ultot_buf), 10);
-			_tcscpy_s(sErrBuf, cchErrBuf, _T("Could not start REGSVR32.exe. (Err:"));
-			_tcscat_s(sErrBuf, cchErrBuf, ultot_buf);
-			_tcscat_s(sErrBuf, cchErrBuf, _T(")"));
+			_sntprintf(sErrBuf, cchErrBuf, _T("Could not start REGSVR32.exe. (Err:%u)"), errorCode);
 			break;
 		case ISR_PROCESS_STILL_ACTIVE:
 			_tcscpy_s(sErrBuf, cchErrBuf, _T("The REGSVR32 process never completed."));
@@ -434,26 +417,20 @@ static InstallServerResult TryInstallServer(HWND hWnd,
 					_tcscpy_s(sErrBuf, cchErrBuf, _T("REGSVR32 failed: OleInitialize() failed."));
 					break;
 				case REGSVR32_FAIL_LOAD:
-					_tcscpy_s(sErrBuf, cchErrBuf, _T("REGSVR32 failed: "));
-					_tcscat_s(sErrBuf, cchErrBuf, dll_path);
-					_tcscat_s(sErrBuf, cchErrBuf, _T(" is not a valid DLL."));
+					_sntprintf(sErrBuf, cchErrBuf,
+						_T("REGSVR32 failed: %s is not a valid DLL."), dll_path);
 					break;
 				case REGSVR32_FAIL_ENTRY:
-					_tcscpy_s(sErrBuf, cchErrBuf, _T("REGSVR32 failed: "));
-					_tcscat_s(sErrBuf, cchErrBuf, dll_path);
-					_tcscat_s(sErrBuf, cchErrBuf, _T(" is missing "));
-					_tcscat_s(sErrBuf, cchErrBuf, entry_point);
-					_tcscat_s(sErrBuf, cchErrBuf, _T("()."));
+					_sntprintf(sErrBuf, cchErrBuf,
+						_T("REGSVR32 failed: %s is missing %s()."), dll_path, entry_point);
 					break;
 				case REGSVR32_FAIL_REG:
-					_tcscpy_s(sErrBuf, cchErrBuf, _T("REGSVR32 failed: "));
-					_tcscat_s(sErrBuf, cchErrBuf, entry_point);
-					_tcscat_s(sErrBuf, cchErrBuf, _T("() returned an error."));
+					_sntprintf(sErrBuf, cchErrBuf,
+						_T("REGSVR32 failed: %s() returned an error."), entry_point);
 					break;
 				default:
-					_ultot_s(errorCode, ultot_buf, _countof(ultot_buf), 10);
-					_tcscpy_s(sErrBuf, cchErrBuf, _T("REGSVR32 failed: Unknown exit code: "));
-					_tcscat_s(sErrBuf, cchErrBuf, ultot_buf);
+					_sntprintf(sErrBuf, cchErrBuf,
+						_T("REGSVR32 failed: Unknown exit code: %u"), errorCode);
 					break;
 			}
 			break;
@@ -745,12 +722,9 @@ static void HandleInstallUninstall(HWND hDlg, bool isUninstall)
 	if (!hThread) {
 		// Couldn't start the worker thread.
 		TCHAR threadErr[128];
-		TCHAR ultot_buf[_MAX_ULTOSTR_BASE10_COUNT];
-
 		const DWORD lastError = GetLastError();
-		_ultot_s(lastError, ultot_buf, _countof(ultot_buf), 10);
-		_tcscpy_s(threadErr, _countof(threadErr), BULLET _T(" Win32 error code: "));
-		_tcscat_s(threadErr, _countof(threadErr), ultot_buf);
+		_sntprintf(threadErr, _countof(threadErr),
+			BULLET _T(" Win32 error code: %u"), lastError);
 
 		ShowStatusMessage(hDlg, _T("An error occurred while starting the worker thread."), threadErr, MB_ICONSTOP);
 		MessageBeep(MB_ICONSTOP);
@@ -840,12 +814,8 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 					if (ret <= 32) {
 						// ShellExecute() failed.
 						TCHAR err[128];
-						TCHAR itot_buf[_MAX_ITOSTR_BASE10_COUNT];
-						_itot_s((int)ret, itot_buf, _countof(itot_buf), 10);
-						_tcscpy_s(err, _countof(err),
-							_T("Could not open the URL.\n\n")
-							_T("Win32 error code: "));
-						_tcscat_s(err, _countof(err), itot_buf);
+						_sntprintf(err, _countof(err),
+							_T("Could not open the URL.\n\nWin32 error code: %d"), (int)ret);
 						MessageBox(hDlg, err, _T("Could not open URL"), MB_ICONERROR);
 					}
 					return TRUE;
@@ -913,7 +883,7 @@ int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	//setlocale(LC_ALL, "");
 
 #ifndef _WIN64
-	// Check if this is a 64-bit system. (Wow64)
+	// Check if this is a 64-bit system. (WoW64)
 	hKernel32 = GetModuleHandle(_T("kernel32"));
 	assert(hKernel32 != NULL);
 	if (!hKernel32) {
