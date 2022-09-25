@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * LanguageComboBox.hpp: Language QComboBox subclass.                      *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -79,19 +79,19 @@ class LanguageComboBox : public QComboBox
 
 		/**
 		 * Get the selected language code.
-		 * @return Selected language code. (0 if none)
+		 * @return Selected language code (0 if none)
 		 */
 		uint32_t selectedLC(void) const;
 
 		/**
 		 * Set the Force PAL setting.
-		 * @param forcePAL Force PAL setting.
+		 * @param forcePAL Force PAL setting
 		 */
 		void setForcePAL(bool forcePAL);
 
 		/**
 		 * Get the Force PAL setting.
-		 * @param forcePAL Force PAL setting.
+		 * @return Force PAL setting
 		 */
 		inline bool isForcePAL(void) const
 		{

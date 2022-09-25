@@ -176,7 +176,7 @@ bool LanguageComboBox::setSelectedLC(uint32_t lc)
 
 /**
  * Get the selected language code.
- * @return Selected language code. (0 if none)
+ * @return Selected language code (0 if none)
  */
 uint32_t LanguageComboBox::selectedLC(void) const
 {
@@ -186,7 +186,7 @@ uint32_t LanguageComboBox::selectedLC(void) const
 
 /**
  * Set the Force PAL setting.
- * @param forcePAL Force PAL setting.
+ * @param forcePAL Force PAL setting
  */
 void LanguageComboBox::setForcePAL(bool forcePAL)
 {
