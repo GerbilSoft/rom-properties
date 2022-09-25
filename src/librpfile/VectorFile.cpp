@@ -27,10 +27,11 @@ namespace LibRpFile {
  */
 VectorFile::VectorFile()
 	: super()
+	, m_pVector(new std::vector<uint8_t>())
 	, m_pos(0)
 {
 	// Reserve at least 16 KB.
-	m_vector.reserve(16*1024);
+	m_pVector->reserve(16*1024);
 
 	// VectorFile is writable.
 	m_isWritable = true;
@@ -51,14 +52,15 @@ size_t VectorFile::read(void *ptr, size_t size)
 
 	// Check if size is in bounds.
 	// NOTE: Need to use a signed comparison here.
-	if (static_cast<off64_t>(m_pos) > (static_cast<off64_t>(m_vector.size()) - static_cast<off64_t>(size))) {
+	const size_t vec_size = m_pVector->size();
+	if (static_cast<off64_t>(m_pos) > (static_cast<off64_t>(vec_size) - static_cast<off64_t>(size))) {
 		// Not enough data.
 		// Copy whatever's left in the buffer.
-		size = m_vector.size() - m_pos;
+		size = vec_size - m_pos;
 	}
 
 	// Copy the data.
-	const uint8_t *const buf = m_vector.data();
+	const uint8_t *const buf = m_pVector->data();
 	memcpy(ptr, &buf[m_pos], size);
 	m_pos += size;
 	return size;
@@ -78,20 +80,21 @@ size_t VectorFile::write(const void *ptr, size_t size)
 	}
 
 	// Do we need to expand the std::vector?
-	off64_t req_size = static_cast<off64_t>(m_vector.size()) + size;
+	const size_t vec_size = m_pVector->size();
+	off64_t req_size = static_cast<off64_t>(vec_size) + size;
 	if (req_size < 0) {
 		// Overflow...
 		return 0;
 	} else if (req_size > static_cast<off64_t>(std::numeric_limits<size_t>::max())) {
 		// Too big for size_t.
 		return 0;
-	} else if (req_size > static_cast<off64_t>(m_vector.size())) {
+	} else if (req_size > static_cast<off64_t>(vec_size)) {
 		// Need to expand the std::vector.
-		m_vector.resize(static_cast<size_t>(req_size));
+		m_pVector->resize(static_cast<size_t>(req_size));
 	}
 
 	// Copy the data to the buffer.
-	uint8_t *const buf = m_vector.data();
+	uint8_t *const buf = m_pVector->data();
 	memcpy(&buf[m_pos], ptr, size);
 	m_pos += size;
 	return size;
@@ -108,8 +111,8 @@ int VectorFile::seek(off64_t pos)
 	// a position within a memory buffer.
 	if (pos <= 0) {
 		m_pos = 0;
-	} else if (pos >= static_cast<off64_t>(m_vector.size())) {
-		m_pos = m_vector.size();
+	} else if (pos >= static_cast<off64_t>(m_pVector->size())) {
+		m_pos = m_pVector->size();
 	} else {
 		m_pos = static_cast<size_t>(pos);
 	}

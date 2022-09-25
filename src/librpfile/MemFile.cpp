@@ -29,6 +29,7 @@ MemFile::MemFile(const void *buf, size_t size)
 	, m_buf(buf)
 	, m_size(static_cast<off64_t>(size))
 	, m_pos(0)
+	, m_filename(nullptr)
 {
 	assert(buf != nullptr);
 	assert(size != 0);

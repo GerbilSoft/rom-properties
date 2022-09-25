@@ -41,7 +41,10 @@ class RP_LIBROMDATA_PUBLIC MemFile : public IRpFile
 		 */
 		MemFile();
 	protected:
-		virtual ~MemFile() { }	// call unref() instead
+		virtual ~MemFile()	// call unref() instead
+		{
+			free(m_filename);
+		}
 
 	private:
 		typedef IRpFile super;
@@ -118,7 +121,7 @@ class RP_LIBROMDATA_PUBLIC MemFile : public IRpFile
 		 */
 		inline const char *filename(void) const final
 		{
-			return (!m_filename.empty() ? m_filename.c_str() : nullptr);
+			return m_filename;
 		}
 
 	public:
@@ -130,7 +133,10 @@ class RP_LIBROMDATA_PUBLIC MemFile : public IRpFile
 		 */
 		inline void setFilename(const char *filename)
 		{
-			m_filename = filename;
+			if (m_filename) {
+				free(m_filename);
+			}
+			m_filename = (filename && filename[0] != '\0') ? strdup(filename) : nullptr;
 		}
 
 		/**
@@ -139,15 +145,18 @@ class RP_LIBROMDATA_PUBLIC MemFile : public IRpFile
 		 */
 		inline void setFilename(const std::string &filename)
 		{
-			m_filename = filename;
+			if (m_filename) {
+				free(m_filename);
+			}
+			m_filename = !filename.empty() ? strdup(filename.c_str()) : nullptr;
 		}
 
 	protected:
-		const void *m_buf;	// Memory buffer.
-		size_t m_size;		// Size of memory buffer.
-		size_t m_pos;		// Current position.
+		const void *m_buf;	// Memory buffer
+		size_t m_size;		// Size of memory buffer
+		size_t m_pos;		// Current position
 
-		std::string m_filename;	// Dummy filename.
+		char *m_filename;	// Dummy filename
 };
 
 }

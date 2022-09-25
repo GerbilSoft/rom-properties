@@ -105,7 +105,7 @@ class RP_LIBROMDATA_PUBLIC VectorFile final : public IRpFile
 		 */
 		off64_t size(void) final
 		{
-			return m_vector.size();
+			return m_pVector->size();
 		}
 
 	public:
@@ -129,12 +129,12 @@ class RP_LIBROMDATA_PUBLIC VectorFile final : public IRpFile
 		 */
 		const std::vector<uint8_t> &vector(void) const
 		{
-			return m_vector;
+			return *m_pVector;
 		}
 
 	protected:
-		std::vector<uint8_t> m_vector;
-		size_t m_pos;		// Current position.
+		std::vector<uint8_t> *m_pVector;	// NOTE: Needs to be ptr to prevent DLL linkage issues.
+		size_t m_pos;				// Current position
 };
 
 }

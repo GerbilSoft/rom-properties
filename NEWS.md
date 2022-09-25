@@ -1,5 +1,11 @@
 # Changes
 
+## v2.1 (released 2022/??/??)
+
+* Other changes:
+  * libromdata's SOVERSION was bumped to 2 due to an ABI change in
+    librpfile's MemFile and VectorFile classes.
+
 ## v2.0 (released 2022/09/24)
 
 * New features:
