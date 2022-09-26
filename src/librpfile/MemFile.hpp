@@ -133,9 +133,7 @@ class RP_LIBROMDATA_PUBLIC MemFile : public IRpFile
 		 */
 		inline void setFilename(const char *filename)
 		{
-			if (m_filename) {
-				free(m_filename);
-			}
+			free(m_filename);
 			m_filename = (filename && filename[0] != '\0') ? strdup(filename) : nullptr;
 		}
 
@@ -145,9 +143,7 @@ class RP_LIBROMDATA_PUBLIC MemFile : public IRpFile
 		 */
 		inline void setFilename(const std::string &filename)
 		{
-			if (m_filename) {
-				free(m_filename);
-			}
+			free(m_filename);
 			m_filename = !filename.empty() ? strdup(filename.c_str()) : nullptr;
 		}
 
