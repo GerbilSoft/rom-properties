@@ -78,6 +78,10 @@ program uses the following security features:
 
 GameTDB.com's privacy policy can be read here: https://www.gametdb.com/Main/Legal
 
+## amiibo.life Privacy Policy
+
+amiibo.life's privacy policy can be read here: https://amiibo.life/privacy
+
 ## rpdb.gerbilsoft.com Privacy Policy
 
 As with most web servers, accessing rpdb.gerbilsoft.com does result in user
