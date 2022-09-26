@@ -45,10 +45,6 @@ Other significant changes:
 Translators needed; file an issue if you'd like to get started on a new
 translation, or submit a Pull Request if you have a translation ready to go.
 
-Other changes
-
-Translators needed; file an issue if you'd like to get started on a new translation, or submit a Pull Request if you have a translation ready to go.
-
 See [`NEWS.md`](NEWS.md) for a full list of changes in v2.0.
 
 ## Feedback
