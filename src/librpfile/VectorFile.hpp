@@ -25,7 +25,10 @@ class RP_LIBROMDATA_PUBLIC VectorFile final : public IRpFile
 		 */
 		VectorFile();
 	protected:
-		virtual ~VectorFile() { }	// call unref() instead
+		virtual ~VectorFile()	// call unref() instead
+		{
+			delete m_pVector;
+		}
 
 	private:
 		typedef IRpFile super;
