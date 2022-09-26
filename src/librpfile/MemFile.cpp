@@ -148,4 +148,26 @@ off64_t MemFile::tell(void)
 	return static_cast<off64_t>(m_pos);
 }
 
+/** MemFile functions **/
+
+/**
+ * Set the filename.
+ * @param filename Filename
+ */
+void MemFile::setFilename(const char *filename)
+{
+	free(m_filename);
+	m_filename = (filename && filename[0] != '\0') ? strdup(filename) : nullptr;
+}
+
+/**
+ * Set the filename.
+ * @param filename Filename
+ */
+void MemFile::setFilename(const std::string &filename)
+{
+	free(m_filename);
+	m_filename = !filename.empty() ? strdup(filename.c_str()) : nullptr;
+}
+
 }

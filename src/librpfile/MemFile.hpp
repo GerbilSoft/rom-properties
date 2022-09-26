@@ -41,10 +41,7 @@ class RP_LIBROMDATA_PUBLIC MemFile : public IRpFile
 		 */
 		MemFile();
 	protected:
-		virtual ~MemFile()	// call unref() instead
-		{
-			free(m_filename);
-		}
+		virtual ~MemFile();	// call unref() instead
 
 	private:
 		typedef IRpFile super;
@@ -131,21 +128,13 @@ class RP_LIBROMDATA_PUBLIC MemFile : public IRpFile
 		 * Set the filename.
 		 * @param filename Filename
 		 */
-		inline void setFilename(const char *filename)
-		{
-			free(m_filename);
-			m_filename = (filename && filename[0] != '\0') ? strdup(filename) : nullptr;
-		}
+		void setFilename(const char *filename);
 
 		/**
 		 * Set the filename.
 		 * @param filename Filename
 		 */
-		inline void setFilename(const std::string &filename)
-		{
-			free(m_filename);
-			m_filename = !filename.empty() ? strdup(filename.c_str()) : nullptr;
-		}
+		void setFilename(const std::string &filename);
 
 	protected:
 		const void *m_buf;	// Memory buffer

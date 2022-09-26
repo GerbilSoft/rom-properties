@@ -37,6 +37,11 @@ VectorFile::VectorFile()
 	m_isWritable = true;
 }
 
+VectorFile::~VectorFile()
+{
+	delete m_pVector;
+}
+
 /**
  * Read data from the file.
  * @param ptr Output data buffer.
