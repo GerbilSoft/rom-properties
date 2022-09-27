@@ -50,6 +50,11 @@ MemFile::MemFile()
 	, m_pos(0)
 { }
 
+MemFile::~MemFile()
+{
+	free(m_filename);
+}
+
 /**
  * Close the file.
  */
