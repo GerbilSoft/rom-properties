@@ -564,12 +564,9 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 				}
 				if (d->fieldIdx_secArea >= 0) {
 					field = const_cast<RomFields::Field*>(d->fields->at(d->fieldIdx_secArea));
-					const char *const s_secArea = d->getNDSSecureAreaString();
-					if (field->data.str) {
-						const_cast<string*>(field->data.str)->assign(s_secArea);
-					} else {
-						field->data.str = new string(s_secArea);
-					}
+					char *const old_str = const_cast<char*>(field->data.str);
+					field->data.str = strdup(d->getNDSSecureAreaString());
+					free(old_str);
 				}
 			}
 

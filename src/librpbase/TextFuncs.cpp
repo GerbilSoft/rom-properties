@@ -395,7 +395,7 @@ std::string formatFrequency(uint32_t frequency)
 /**
  * Remove trailing spaces from a string.
  * NOTE: This modifies the string *in place*.
- * @param str String.
+ * @param str String
  */
 void trimEnd(string &str)
 {
@@ -409,6 +409,29 @@ void trimEnd(string &str)
 		sz--;
 	}
 	str.resize(sz);
+}
+
+/**
+ * Remove trailing spaces from a string.
+ * NOTE: This modifies the string *in place*.
+ * @param str String
+ */
+void trimEnd(char *str)
+{
+	// TODO: Check for U+3000? (UTF-8: "\xE3\x80\x80")
+	if (unlikely(!str || str[0] == '\0'))
+		return;
+	size_t sz = strlen(str);
+	for (char *p = &str[sz-1]; sz > 0; p--) {
+		if (*p != ' ')
+			break;
+		sz--;
+	}
+
+	// NULL out the trailing spaces.
+	// NOTE: If no trailing spaces were found, then
+	// this will simply overwrite the existing NULL terminator.
+	str[sz] = '\0';
 }
 
 /**

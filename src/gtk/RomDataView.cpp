@@ -681,8 +681,8 @@ rom_data_view_init_string(RomDataView *page,
 	gtk_label_set_use_underline(GTK_LABEL(widget), false);
 	gtk_widget_show(widget);
 
-	if (!str && field.data.str) {
-		str = field.data.str->c_str();
+	if (!str) {
+		str = field.data.str;
 	}
 
 	if (field.type == RomFields::RFT_STRING &&

@@ -87,7 +87,7 @@ void RomFieldsPrivate::delete_data(void)
 				break;
 
 			case RomFields::RFT_STRING:
-				delete const_cast<string*>(field.data.str);
+				free(const_cast<char*>(field.data.str));
 				break;
 			case RomFields::RFT_BITFIELD:
 				delete const_cast<vector<string>*>(field.desc.bitfield.names);
@@ -738,7 +738,7 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 				break;
 
 			case RFT_STRING:
-				field_dest.data.str = (field_src.data.str ? new string(*field_src.data.str) : nullptr);
+				field_dest.data.str = (field_src.data.str ? strdup(field_src.data.str) : nullptr);
 				break;
 			case RFT_BITFIELD:
 				field_dest.desc.bitfield.names = (field_src.desc.bitfield.names
@@ -823,7 +823,7 @@ int RomFields::addField_string(const char *name, const char *str, unsigned int f
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
-	string *const nstr = (str ? new string(str) : nullptr);
+	char *const nstr = (str ? strdup(str) : nullptr);
 	field.name = (name ? strdup(name) : nullptr);
 	field.type = RFT_STRING;
 	field.desc.flags = flags;
@@ -833,41 +833,7 @@ int RomFields::addField_string(const char *name, const char *str, unsigned int f
 
 	// Handle string trimming flags.
 	if (nstr && (flags & STRF_TRIM_END)) {
-		trimEnd(*nstr);
-	}
-	return static_cast<int>(idx);
-}
-
-/**
- * Add string field data.
- * @param name Field name.
- * @param str String.
- * @param flags Formatting flags.
- * @return Field index.
- */
-int RomFields::addField_string(const char *name, const string &str, unsigned int flags)
-{
-	assert(name != nullptr);
-	if (!name)
-		return -1;
-
-	// RFT_STRING
-	RP_D(RomFields);
-	size_t idx = d->fields.size();
-	d->fields.resize(idx+1);
-	Field &field = d->fields.at(idx);
-
-	string *const nstr = (!str.empty() ? new string(str) : nullptr);
-	field.name = (name ? strdup(name) : nullptr);
-	field.type = RFT_STRING;
-	field.desc.flags = flags;
-	field.data.str = nstr;
-	field.tabIdx = d->tabIdx;
-	field.isValid = true;
-
-	// Handle string trimming flags.
-	if (nstr && (flags & STRF_TRIM_END)) {
-		trimEnd(*nstr);
+		trimEnd(nstr);
 	}
 	return static_cast<int>(idx);
 }

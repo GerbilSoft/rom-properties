@@ -125,7 +125,7 @@ public:
 					field_obj.AddMember("desc", desc_obj, allocator);
 
 					field_obj.AddMember("data",
-						romField.data.str ? StringRef(*(romField.data.str)) : StringRef(""),
+						romField.data.str ? StringRef(romField.data.str) : StringRef(""),
 						allocator);
 					break;
 				}

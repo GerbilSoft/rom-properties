@@ -248,8 +248,8 @@ int RP_ShellPropSheetExt_Private::updateField(int fieldIdx)
 				break;
 			}
 
-			if (field->data.str && !field->data.str->empty()) {
-				const tstring ts_text = LibWin32UI::unix2dos(U82T_s(*field->data.str));
+			if (field->data.str) {
+				const tstring ts_text = LibWin32UI::unix2dos(U82T_s(field->data.str));
 				SetWindowText(hLabel, ts_text.c_str());
 			} else {
 				SetWindowText(hLabel, _T(""));

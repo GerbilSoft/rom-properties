@@ -354,7 +354,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 
 		// NULL string == empty string
 		if (field.data.str) {
-			str_nl = LibWin32UI::unix2dos(U82T_s(*(field.data.str)), &lf_count);
+			str_nl = LibWin32UI::unix2dos(U82T_s(field.data.str), &lf_count);
 		}
 	} else {
 		// Use the specified string.

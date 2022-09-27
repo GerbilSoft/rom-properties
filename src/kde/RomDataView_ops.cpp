@@ -120,7 +120,7 @@ int RomDataViewPrivate::updateField(int fieldIdx)
 			}
 
 			if (field->data.str) {
-				label->setText(U82Q(*(field->data.str)));
+				label->setText(U82Q(field->data.str));
 			} else {
 				label->clear();
 			}

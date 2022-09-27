@@ -640,9 +640,16 @@ std::string formatFrequency(uint32_t frequency);
 /**
  * Remove trailing spaces from a string.
  * NOTE: This modifies the string *in place*.
- * @param str String.
+ * @param str String
  */
 void trimEnd(std::string &str);
+
+/**
+ * Remove trailing spaces from a string.
+ * NOTE: This modifies the string *in place*.
+ * @param str String
+ */
+void trimEnd(char *str);
 
 /**
  * Convert DOS (CRLF) line endings to UNIX (LF) line endings.

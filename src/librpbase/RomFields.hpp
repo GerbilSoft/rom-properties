@@ -298,7 +298,7 @@ class RomFields
 				uint64_t generic;
 
 				// RFT_STRING
-				const std::string *str;
+				const char *str;
 
 				// RFT_BITFIELD
 				uint32_t bitfield;
@@ -569,7 +569,10 @@ class RomFields
 		 * @param flags Formatting flags.
 		 * @return Field index.
 		 */
-		int addField_string(const char *name, const std::string &str, unsigned int flags = 0);
+		int addField_string(const char *name, const std::string &str, unsigned int flags = 0)
+		{
+			return addField_string(name, str.c_str(), flags);
+		}
 
 		enum class Base {
 			Dec,	// Decimal (Base 10)

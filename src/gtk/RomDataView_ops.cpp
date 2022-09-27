@@ -144,9 +144,7 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 				break;
 			}
 
-			gtk_label_set_text(GTK_LABEL(widget), field->data.str
-				? field->data.str->c_str()
-				: nullptr);
+			gtk_label_set_text(GTK_LABEL(widget), field->data.str);
 			ret = 0;
 			break;
 		}

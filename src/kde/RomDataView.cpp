@@ -263,7 +263,7 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 		if (str) {
 			text = *str;
 		} else if (field.data.str) {
-			text = U82Q(*(field.data.str));
+			text = U82Q(field.data.str);
 		}
 		text.replace(QChar(L'\n'), QLatin1String("<br/>"));
 		lblString->setText(text);
@@ -276,7 +276,7 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 		if (str) {
 			lblString->setText(*str);
 		} else if (field.data.str) {
-			lblString->setText(U82Q(*(field.data.str)));
+			lblString->setText(U82Q(field.data.str));
 		}
 	}
 
