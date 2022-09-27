@@ -250,7 +250,7 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 	Q_Q(RomDataView);
 	QLabel *lblString = new QLabel(q);
 	// NOTE: No name for this QObject.
-	if (field.desc.flags & RomFields::STRF_CREDITS) {
+	if (field.flags & RomFields::STRF_CREDITS) {
 		// Credits text. Enable formatting and center text.
 		lblString->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
 		lblString->setTextFormat(Qt::RichText);
@@ -290,7 +290,7 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 	// Check for any formatting options. (RFT_STRING only)
 	if (field.type == RomFields::RFT_STRING) {
 		// Monospace font?
-		if (field.desc.flags & RomFields::STRF_MONOSPACE) {
+		if (field.flags & RomFields::STRF_MONOSPACE) {
 			QFont font(QLatin1String("Monospace"));
 			font.setStyleHint(QFont::TypeWriter);
 			lblString->setFont(font);
@@ -298,7 +298,7 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 		}
 
 		// "Warning" font?
-		if (field.desc.flags & RomFields::STRF_WARNING) {
+		if (field.flags & RomFields::STRF_WARNING) {
 			// Only expecting a maximum of one "Warning" per ROM,
 			// so we're initializing this here.
 			const QString css = QLatin1String("color: #F00; font-weight: bold;");
@@ -310,7 +310,7 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 	// Credits?
 	auto &tab = tabs[field.tabIdx];
 	if (field.type == RomFields::RFT_STRING &&
-	    (field.desc.flags & RomFields::STRF_CREDITS))
+	    (field.flags & RomFields::STRF_CREDITS))
 	{
 		// Credits row goes at the end.
 		// There should be a maximum of one STRF_CREDITS per tab.
@@ -418,7 +418,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 	// Single language ListData_t.
 	// For RFT_LISTDATA_MULTI, this is only used for row and column count.
 	const RomFields::ListData_t *list_data;
-	const bool isMulti = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI);
+	const bool isMulti = !!(field.flags & RomFields::RFT_LISTDATA_MULTI);
 	if (isMulti) {
 		// Multiple languages.
 		const auto *const multi = field.data.list_data.data.multi;
@@ -446,8 +446,8 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 
 	// Validate flags.
 	// Cannot have both checkboxes and icons.
-	const bool hasCheckboxes = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
-	const bool hasIcons = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_ICONS);
+	const bool hasCheckboxes = !!(field.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
+	const bool hasIcons = !!(field.flags & RomFields::RFT_LISTDATA_ICONS);
 	assert(!(hasCheckboxes && hasIcons));
 	if (hasCheckboxes && hasIcons) {
 		// Both are set. This shouldn't happen...
@@ -575,7 +575,7 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 			static_cast<Qt::SortOrder>(listDataDesc.col_attrs.sort_dir));
 	}
 
-	if (listDataDesc.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
+	if (field.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
 		// Separate rows.
 		tabs[field.tabIdx].form->addRow(lblDesc);
 		tabs[field.tabIdx].form->addRow(treeView);
@@ -661,13 +661,13 @@ void RomDataViewPrivate::initDateTime(QLabel *lblDesc,
 
 	QDateTime dateTime;
 	dateTime.setTimeSpec(
-		(field.desc.flags & RomFields::RFT_DATETIME_IS_UTC)
+		(field.flags & RomFields::RFT_DATETIME_IS_UTC)
 			? Qt::UTC : Qt::LocalTime);
 	dateTime.setMSecsSinceEpoch(field.data.date_time * 1000);
 
 	QString str;
 	const QLocale locale = QLocale::system();
-	switch (field.desc.flags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK) {
+	switch (field.flags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK) {
 		case RomFields::RFT_DATETIME_HAS_DATE:
 			// Date only.
 			str = locale.toString(dateTime.date(), locale.dateFormat(QLocale::ShortFormat));

@@ -279,7 +279,7 @@ public:
 
 		// Get the ListData_t container.
 		const RomFields::ListData_t *pListData = nullptr;
-		if (listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI) {
+		if (romField.flags & RomFields::RFT_LISTDATA_MULTI) {
 			// ROM must have set a default language code.
 			assert(field.def_lc != 0);
 
@@ -374,7 +374,7 @@ public:
 
 		// Extra spacing for checkboxes
 		// TODO: Use a separate column for the checkboxes?
-		if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
+		if (romField.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
 			// Prepend 4 spaces in column 0 for "[x] ".
 			colSize[0] += 4;
 		}
@@ -383,7 +383,7 @@ public:
 		StreamStateSaver state(os);
 
 		// Print the list on a separate row from the field name?
-		const bool separateRow = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW);
+		const bool separateRow = !!(romField.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW);
 		if (separateRow) {
 			os << '\n';
 		}
@@ -449,7 +449,7 @@ public:
 		}
 
 		uint32_t checkboxes = romField.data.list_data.mxd.checkboxes;
-		if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
+		if (romField.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
 			// Remove the 4 spaces in column 0.
 			// Those spaces will not be used in the text area.
 			colSize[0] -= 4;
@@ -478,7 +478,7 @@ public:
 					skipFirstNL = false;
 				}
 				os << '|';
-				if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
+				if (romField.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
 					os << '[' << ((checkboxes & 1) ? 'x' : ' ') << "] ";
 					checkboxes >>= 1;
 				}
@@ -560,7 +560,7 @@ public:
 		: width(width), romField(romField) { }
 	friend ostream& operator<<(ostream& os, const DateTimeField& field) {
 		auto romField = field.romField;
-		auto flags = romField.desc.flags;
+		auto flags = romField.flags;
 
 		os << ColonPad(field.width, romField.name);
 		StreamStateSaver state(os);

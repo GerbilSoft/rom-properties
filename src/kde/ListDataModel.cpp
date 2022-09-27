@@ -484,11 +484,12 @@ void ListDataModel::setField(const RomFields::Field *pField)
 	}
 
 	const auto &listDataDesc = pField->desc.list_data;
+	const unsigned int flags = pField->flags;
 
 	// Validate flags.
 	// Cannot have both checkboxes and icons.
-	const bool hasCheckboxes = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
-	const bool hasIcons = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_ICONS);
+	const bool hasCheckboxes = !!(flags & RomFields::RFT_LISTDATA_CHECKBOXES);
+	const bool hasIcons = !!(flags & RomFields::RFT_LISTDATA_ICONS);
 	assert(!(hasCheckboxes && hasIcons));
 	if (hasCheckboxes && hasIcons) {
 		// Both are set. This shouldn't happen...
@@ -498,7 +499,7 @@ void ListDataModel::setField(const RomFields::Field *pField)
 	// Single language ListData_t.
 	// For RFT_LISTDATA_MULTI, this is only used for row and column count.
 	const RomFields::ListData_t *list_data;
-	const bool isMulti = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI);
+	const bool isMulti = !!(flags & RomFields::RFT_LISTDATA_MULTI);
 	if (isMulti) {
 		// Multiple languages.
 		const auto *const multi = pField->data.list_data.data.multi;

@@ -66,7 +66,7 @@ private:
 		return s_lc_name;
 	}
 
-	static Value listDataToValue(const RomFields::Field &field,
+	static Value listDataToValue(const RomFields::Field &romField,
 		const RomFields::ListData_t *list_data, Allocator &allocator)
 	{
 		Value data_array(kArrayType);	// data
@@ -76,8 +76,8 @@ private:
 			return data_array;
 		}
 
-		const bool has_checkboxes = !!(field.desc.list_data.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
-		uint32_t checkboxes = field.data.list_data.mxd.checkboxes;
+		const bool has_checkboxes = !!(romField.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
+		uint32_t checkboxes = romField.data.list_data.mxd.checkboxes;
 		const auto list_data_cend = list_data->cend();
 		for (auto it = list_data->cbegin(); it != list_data_cend; ++it) {
 			Value row_array(kArrayType);
@@ -121,7 +121,7 @@ public:
 
 					Value desc_obj(kObjectType);	// desc
 					desc_obj.AddMember("name", StringRef(romField.name), allocator);
-					desc_obj.AddMember("format", romField.desc.flags, allocator);
+					desc_obj.AddMember("format", romField.flags, allocator);
 					field_obj.AddMember("desc", desc_obj, allocator);
 
 					field_obj.AddMember("data",
@@ -176,7 +176,7 @@ public:
 
 					Value names_array(kArrayType);	// names
 					if (listDataDesc.names) {
-						if (listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
+						if (romField.flags & RomFields::RFT_LISTDATA_CHECKBOXES) {
 							// TODO: Better JSON schema for RFT_LISTDATA_CHECKBOXES?
 							names_array.PushBack("checked", allocator);
 						}
@@ -191,7 +191,7 @@ public:
 					desc_obj.AddMember("names", names_array, allocator);
 					field_obj.AddMember("desc", desc_obj, allocator);
 
-					if (!(listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI)) {
+					if (!(romField.flags & RomFields::RFT_LISTDATA_MULTI)) {
 						// Single-language ListData.
 						Value data_array = listDataToValue(romField,
 							romField.data.list_data.data.single, allocator);
@@ -240,7 +240,7 @@ public:
 
 					Value desc_obj(kObjectType);	// desc
 					desc_obj.AddMember("name", StringRef(romField.name), allocator);
-					desc_obj.AddMember("flags", romField.desc.flags, allocator);
+					desc_obj.AddMember("flags", romField.flags, allocator);
 					field_obj.AddMember("desc", desc_obj, allocator);
 
 					field_obj.AddMember("data", static_cast<int64_t>(romField.data.date_time), allocator);
@@ -312,7 +312,7 @@ public:
 
 					Value desc_obj(kObjectType);	// desc
 					desc_obj.AddMember("name", StringRef(romField.name), allocator);
-					desc_obj.AddMember("format", romField.desc.flags, allocator);
+					desc_obj.AddMember("format", romField.flags, allocator);
 					field_obj.AddMember("desc", desc_obj, allocator);
 
 					Value data_obj(kObjectType);	// data

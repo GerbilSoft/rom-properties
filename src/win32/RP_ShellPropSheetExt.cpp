@@ -378,11 +378,11 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 	if (field.type == RomFields::RFT_STRING) {
 		// FIXME: STRF_MONOSPACE | STRF_WARNING is not supported.
 		// Preferring STRF_WARNING.
-		assert((field.desc.flags &
+		assert((field.flags &
 			(RomFields::STRF_MONOSPACE | RomFields::STRF_WARNING)) !=
 			(RomFields::STRF_MONOSPACE | RomFields::STRF_WARNING));
 
-		if (field.desc.flags & RomFields::STRF_WARNING) {
+		if (field.flags & RomFields::STRF_WARNING) {
 			// "Warning" font.
 			isWarning = true;
 			HFONT hFontBold = fontHandler.boldFont();
@@ -395,7 +395,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 				SetWindowFont(hStatic, hFont, false);
 				SetWindowLongPtr(hStatic, GWLP_USERDATA, static_cast<LONG_PTR>(RGB(255, 0, 0)));
 			}
-		} else if (field.desc.flags & RomFields::STRF_MONOSPACE) {
+		} else if (field.flags & RomFields::STRF_MONOSPACE) {
 			// Monospaced font.
 			isMonospace = true;
 		}
@@ -406,7 +406,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 	HWND hDlgItem;
 
 	if (field.type == RomFields::RFT_STRING &&
-	    (field.desc.flags & RomFields::STRF_CREDITS))
+	    (field.flags & RomFields::STRF_CREDITS))
 	{
 		// Align to the bottom of the dialog and center-align the text.
 		// 7x7 DLU margin is recommended by the Windows UX guidelines.
@@ -756,7 +756,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 	// Single language ListData_t.
 	// For RFT_LISTDATA_MULTI, this is only used for row and column count.
 	const RomFields::ListData_t *list_data;
-	const bool isMulti = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI);
+	const bool isMulti = !!(field.flags & RomFields::RFT_LISTDATA_MULTI);
 	if (isMulti) {
 		// Multiple languages.
 		const auto *const multi = field.data.list_data.data.multi;
@@ -782,8 +782,8 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 	// Validate flags.
 	// Cannot have both checkboxes and icons.
-	const bool hasCheckboxes = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
-	const bool hasIcons = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_ICONS);
+	const bool hasCheckboxes = !!(field.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
+	const bool hasIcons = !!(field.flags & RomFields::RFT_LISTDATA_ICONS);
 	assert(!(hasCheckboxes && hasIcons));
 	if (hasCheckboxes && hasIcons) {
 		// Both are set. This shouldn't happen...
@@ -1235,10 +1235,10 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg, HWND hWndTab,
 	UnixTimeToSystemTime(field.data.date_time, &st);
 
 	// At least one of Date and/or Time must be set.
-	assert((field.desc.flags &
+	assert((field.flags &
 		(RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_HAS_TIME)) != 0);
 
-	if (!(field.desc.flags & RomFields::RFT_DATETIME_IS_UTC)) {
+	if (!(field.flags & RomFields::RFT_DATETIME_IS_UTC)) {
 		// Convert to the current timezone.
 		SYSTEMTIME st_utc = st;
 		BOOL ret = SystemTimeToTzSpecificLocalTime(nullptr, &st_utc, &st);
@@ -1248,10 +1248,10 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg, HWND hWndTab,
 		}
 	}
 
-	if (field.desc.flags & RomFields::RFT_DATETIME_HAS_DATE) {
+	if (field.flags & RomFields::RFT_DATETIME_HAS_DATE) {
 		// Format the date.
 		int ret;
-		if (field.desc.flags & RomFields::RFT_DATETIME_NO_YEAR) {
+		if (field.flags & RomFields::RFT_DATETIME_NO_YEAR) {
 			// Try Windows 10's DATE_MONTHDAY first.
 			ret = GetDateFormat(
 				MAKELCID(LOCALE_USER_DEFAULT, SORT_DEFAULT),
@@ -1282,7 +1282,7 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg, HWND hWndTab,
 		cchBuf -= (ret-1);
 	}
 
-	if (field.desc.flags & RomFields::RFT_DATETIME_HAS_TIME) {
+	if (field.flags & RomFields::RFT_DATETIME_HAS_TIME) {
 		// Format the time.
 		if (start_pos > 0 && cchBuf >= 1) {
 			// Add a space.
@@ -1746,7 +1746,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		// TODO: Use measureTextSize()?
 		SIZE textSize;
 		if (field.type == RomFields::RFT_STRING &&
-		    field.desc.flags & RomFields::STRF_WARNING)
+		    field.flags & RomFields::STRF_WARNING)
 		{
 			// Label is bold.
 			HFONT hFontOrig = nullptr;
@@ -2008,7 +2008,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 
 				// Should the RFT_LISTDATA be placed on its own row?
 				bool doVBox = false;
-				if (field.desc.list_data.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
+				if (field.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
 					// Separate row.
 					size.cx = dlgSize.cx - 1;
 					// NOTE: This varies depending on if we have subtabs.
@@ -2053,7 +2053,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 				field_cy = initListData(hDlgSheet, tab.hDlg, pt_ListData, size, !doVBox, field, fieldIdx);
 				if (field_cy > 0) {
 					// Add the extra row if necessary.
-					if (field.desc.list_data.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
+					if (field.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW) {
 						const int szAdj = descSize.cy - (dlgMargin.top/3);
 						field_cy += szAdj;
 						// Reduce the hStatic size slightly.

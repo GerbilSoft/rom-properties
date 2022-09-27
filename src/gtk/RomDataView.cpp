@@ -686,7 +686,7 @@ rom_data_view_init_string(RomDataView *page,
 	}
 
 	if (field.type == RomFields::RFT_STRING &&
-	    (field.desc.flags & RomFields::STRF_CREDITS))
+	    (field.flags & RomFields::STRF_CREDITS))
 	{
 		// Credits text. Enable formatting and center alignment.
 		gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_CENTER);
@@ -710,17 +710,17 @@ rom_data_view_init_string(RomDataView *page,
 	g_object_set_data(G_OBJECT(widget), "RFT_fieldIdx", GINT_TO_POINTER(fieldIdx+1));
 
 	// Check for any formatting options. (RFT_STRING only)
-	if (field.type == RomFields::RFT_STRING && field.desc.flags != 0) {
+	if (field.type == RomFields::RFT_STRING && field.flags != 0) {
 		PangoAttrList *const attr_lst = pango_attr_list_new();
 
 		// Monospace font?
-		if (field.desc.flags & RomFields::STRF_MONOSPACE) {
+		if (field.flags & RomFields::STRF_MONOSPACE) {
 			pango_attr_list_insert(attr_lst,
 				pango_attr_family_new("monospace"));
 		}
 
 		// "Warning" font?
-		if (field.desc.flags & RomFields::STRF_WARNING) {
+		if (field.flags & RomFields::STRF_WARNING) {
 			pango_attr_list_insert(attr_lst,
 				pango_attr_weight_new(PANGO_WEIGHT_BOLD));
 			pango_attr_list_insert(attr_lst,
@@ -730,7 +730,7 @@ rom_data_view_init_string(RomDataView *page,
 		gtk_label_set_attributes(GTK_LABEL(widget), attr_lst);
 		pango_attr_list_unref(attr_lst);
 
-		if (field.desc.flags & RomFields::STRF_CREDITS) {
+		if (field.flags & RomFields::STRF_CREDITS) {
 			// Credits row goes at the end.
 			// There should be a maximum of one STRF_CREDITS per tab.
 			auto &tab = page->cxx->tabs.at(field.tabIdx);
@@ -863,7 +863,7 @@ rom_data_view_init_listdata(RomDataView *page,
 	// Single language ListData_t.
 	// For RFT_LISTDATA_MULTI, this is only used for row and column count.
 	const RomFields::ListData_t *list_data;
-	const bool isMulti = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_MULTI);
+	const bool isMulti = !!(field.flags & RomFields::RFT_LISTDATA_MULTI);
 	if (isMulti) {
 		// Multiple languages.
 		const auto *const multi = field.data.list_data.data.multi;
@@ -889,8 +889,8 @@ rom_data_view_init_listdata(RomDataView *page,
 
 	// Validate flags.
 	// Cannot have both checkboxes and icons.
-	const bool hasCheckboxes = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
-	const bool hasIcons = !!(listDataDesc.flags & RomFields::RFT_LISTDATA_ICONS);
+	const bool hasCheckboxes = !!(field.flags & RomFields::RFT_LISTDATA_CHECKBOXES);
+	const bool hasIcons = !!(field.flags & RomFields::RFT_LISTDATA_ICONS);
 	assert(!(hasCheckboxes && hasIcons));
 	if (hasCheckboxes && hasIcons) {
 		// Both are set. This shouldn't happen...
@@ -1222,7 +1222,7 @@ rom_data_view_init_datetime(RomDataView *page,
 	}
 
 	GDateTime *dateTime;
-	if (field.desc.flags & RomFields::RFT_DATETIME_IS_UTC) {
+	if (field.flags & RomFields::RFT_DATETIME_IS_UTC) {
 		dateTime = g_date_time_new_from_unix_utc(field.data.date_time);
 	} else {
 		dateTime = g_date_time_new_from_unix_local(field.data.date_time);
@@ -1247,7 +1247,7 @@ rom_data_view_init_datetime(RomDataView *page,
 	static const uint8_t formats_offtbl[8] = {0, 1, 4, 7, 13, 14, 20, 23};
 	static_assert(sizeof(formats_strtbl) == 33, "formats_offtbl[] needs to be recalculated");
 
-	const unsigned int offset = (field.desc.flags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK);
+	const unsigned int offset = (field.flags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK);
 	const char *const format = &formats_strtbl[formats_offtbl[offset]];
 	assert(format[0] != '\0');
 
@@ -1403,12 +1403,10 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 		const auto *const pListData = RomFields::getFromListDataMulti(pListData_multi, cxx->def_lc, user_lc);
 		assert(pListData != nullptr);
 		if (pListData != nullptr) {
-			const auto &listDataDesc = pField->desc.list_data;
-
 			// If we have checkboxes or icons, start at column 1.
 			// Otherwise, start at column 0.
 			int listStore_col_start;
-			if (listDataDesc.flags & (RomFields::RFT_LISTDATA_CHECKBOXES | RomFields::RFT_LISTDATA_ICONS)) {
+			if (pField->flags & (RomFields::RFT_LISTDATA_CHECKBOXES | RomFields::RFT_LISTDATA_ICONS)) {
 				// Checkboxes and/or icons are present.
 				listStore_col_start = 1;
 			} else {
@@ -1853,7 +1851,7 @@ rom_data_view_update_display(RomDataView *page)
 				widget = rom_data_view_init_bitfield(page, field, fieldIdx);
 				break;
 			case RomFields::RFT_LISTDATA:
-				separate_rows = !!(field.desc.list_data.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW);
+				separate_rows = !!(field.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW);
 				widget = rom_data_view_init_listdata(page, field, fieldIdx);
 				break;
 			case RomFields::RFT_DATETIME:
@@ -1885,7 +1883,7 @@ rom_data_view_update_display(RomDataView *page)
 			// Check if this is an RFT_STRING with warning set.
 			// If it is, set the "RFT_STRING_warning" flag.
 			const gboolean is_warning = (field.type == RomFields::RFT_STRING &&
-						     field.desc.flags & RomFields::STRF_WARNING);
+						     field.flags & RomFields::STRF_WARNING);
 			g_object_set_data(G_OBJECT(lblDesc), "RFT_STRING_warning", GUINT_TO_POINTER((guint)is_warning));
 
 			// Set the label format type.

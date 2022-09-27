@@ -257,15 +257,14 @@ class RomFields
 		// ROM field struct.
 		// Dynamically allocated.
 		struct Field {
-			const char *name;	// Field name.
-			RomFieldType type;	// ROM field type.
-			uint8_t tabIdx;		// Tab index. (0 for default)
+			const char *name;	// Field name
+			RomFieldType type;	// ROM field type
+			uint8_t tabIdx;		// Tab index (0 for default)
 			bool isValid;		// True if this field has valid data.
+			unsigned int flags;	// Flags (type-specific)
 
 			// Field description.
 			union _desc {
-				unsigned int flags;	// Generic flags. (string, date)
-
 				struct _bitfield {
 					// Bit flag names.
 					// Must be a vector of at least 'elements' strings.
@@ -276,18 +275,15 @@ class RomFields
 					int elemsPerRow;
 				} bitfield;
 				struct _list_data {
-					// List field names. (headers)
+					// List field names (headers)
 					// Must be a vector of at least 'fields' strings.
 					// If a name is nullptr, that field is skipped.
 					const std::vector<std::string> *names;
 
-					// Flags.
-					unsigned int flags;
-
-					// Number of visible rows. (0 for "default")
+					// Number of visible rows (0 for "default")
 					int rows_visible;
 
-					// Per-column attributes.
+					// Per-column attributes
 					ListDataColAttrs_t col_attrs;
 				} list_data;
 			} desc;
