@@ -77,6 +77,8 @@ void RomFieldsPrivate::delete_data(void)
 			return;
 		}
 
+		free(const_cast<char*>(field.name));
+
 		switch (field.type) {
 			case RomFields::RFT_INVALID:
 			case RomFields::RFT_DATETIME:
@@ -723,7 +725,8 @@ int RomFields::addFields_romFields(const RomFields *other, int tabOffset)
 		const Field &field_src = *old_iter;
 		Field &field_dest = d->fields.at(idx);
 
-		field_dest.name = field_src.name;
+		assert(field_src.name != nullptr);
+		field_dest.name = (field_src.name ? strdup(field_src.name) : nullptr);
 		field_dest.type = field_src.type;
 		field_dest.tabIdx = (tabOffset != -1 ? (field_src.tabIdx + tabOffset) : d->tabIdx);
 		field_dest.isValid = field_src.isValid;
@@ -821,7 +824,7 @@ int RomFields::addField_string(const char *name, const char *str, unsigned int f
 	Field &field = d->fields.at(idx);
 
 	string *const nstr = (str ? new string(str) : nullptr);
-	field.name = name;
+	field.name = (name ? strdup(name) : nullptr);
 	field.type = RFT_STRING;
 	field.desc.flags = flags;
 	field.data.str = nstr;
@@ -855,7 +858,7 @@ int RomFields::addField_string(const char *name, const string &str, unsigned int
 	Field &field = d->fields.at(idx);
 
 	string *const nstr = (!str.empty() ? new string(str) : nullptr);
-	field.name = name;
+	field.name = (name ? strdup(name) : nullptr);
 	field.type = RFT_STRING;
 	field.desc.flags = flags;
 	field.data.str = nstr;
@@ -1021,7 +1024,7 @@ int RomFields::addField_bitfield(const char *name,
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
-	field.name = name;
+	field.name = (name ? strdup(name) : nullptr);
 	field.type = RFT_BITFIELD;
 	field.desc.bitfield.names = bit_names;
 	field.desc.bitfield.elemsPerRow = elemsPerRow;
@@ -1069,7 +1072,7 @@ int RomFields::addField_listData(const char *name, const AFLD_PARAMS *params)
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
-	field.name = name;
+	field.name = (name ? strdup(name) : nullptr);
 	field.type = RFT_LISTDATA;
 	field.desc.list_data.flags = params->flags;
 	assert(params->rows_visible >= 0);
@@ -1127,7 +1130,7 @@ int RomFields::addField_dateTime(const char *name, time_t date_time, unsigned in
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
-	field.name = name;
+	field.name = (name ? strdup(name) : nullptr);
 	field.type = RFT_DATETIME;
 	field.desc.flags = flags;
 	field.data.date_time = date_time;
@@ -1155,7 +1158,7 @@ int RomFields::addField_ageRatings(const char *name, const age_ratings_t &age_ra
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
-	field.name = name;
+	field.name = (name ? strdup(name) : nullptr);
 	field.type = RFT_AGE_RATINGS;
 	field.data.age_ratings = new age_ratings_t(age_ratings);
 	field.tabIdx = d->tabIdx;
@@ -1183,7 +1186,7 @@ int RomFields::addField_dimensions(const char *name, int dimX, int dimY, int dim
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
-	field.name = name;
+	field.name = (name ? strdup(name) : nullptr);
 	field.type = RFT_DIMENSIONS;
 	field.data.dimensions[0] = dimX;
 	field.data.dimensions[1] = dimY;
@@ -1218,7 +1221,7 @@ int RomFields::addField_string_multi(const char *name, const StringMultiMap_t *s
 		d->def_lc = def_lc;
 	}
 
-	field.name = name;
+	field.name = (name ? strdup(name) : nullptr);
 	field.type = RFT_STRING_MULTI;
 	field.desc.flags = flags;
 	field.data.str_multi = (str_multi ? str_multi : nullptr);

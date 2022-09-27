@@ -182,7 +182,7 @@ public:
 	friend ostream& operator<<(ostream& os, const StringField& field) {
 		// NOTE: nullptr string is an empty string, not an error.
 		auto romField = field.romField;
-		os << ColonPad(field.width, romField.name.c_str());
+		os << ColonPad(field.width, romField.name);
 		if (romField.data.str) {
 			os << SafeString(romField.data.str, true, field.width);
 		} else {
@@ -228,7 +228,7 @@ public:
 		// Print the bits.
 		// FIXME: Why do we need to subtract 1 here to correctly align
 		// the first-row boxes? Maybe it should be somewhere else...
-		os << ColonPad(field.width-1, romField.name.c_str());
+		os << ColonPad(field.width-1, romField.name);
 		StreamStateSaver state(os);
 		col = 0;
 		uint32_t bitfield = romField.data.bitfield;
@@ -271,7 +271,7 @@ public:
 		: width(width), romField(romField), def_lc(def_lc), user_lc(user_lc), flags(flags) { }
 	friend ostream& operator<<(ostream& os, const ListDataField& field) {
 		auto romField = field.romField;
-		os << ColonPad(field.width, romField.name.c_str());
+		os << ColonPad(field.width, romField.name);
 
 		const auto &listDataDesc = romField.desc.list_data;
 		// NOTE: listDataDesc.names can be nullptr,
@@ -562,7 +562,7 @@ public:
 		auto romField = field.romField;
 		auto flags = romField.desc.flags;
 
-		os << ColonPad(field.width, romField.name.c_str());
+		os << ColonPad(field.width, romField.name);
 		StreamStateSaver state(os);
 
 		if (romField.data.date_time == -1) {
@@ -625,7 +625,7 @@ public:
 	friend ostream& operator<<(ostream& os, const AgeRatingsField& field) {
 		auto romField = field.romField;
 
-		os << ColonPad(field.width, romField.name.c_str());
+		os << ColonPad(field.width, romField.name);
 		StreamStateSaver state(os);
 
 		// Convert the age ratings field to a string.
@@ -644,7 +644,7 @@ public:
 	friend ostream& operator<<(ostream& os, const DimensionsField& field) {
 		auto romField = field.romField;
 
-		os << ColonPad(field.width, romField.name.c_str());
+		os << ColonPad(field.width, romField.name);
 		StreamStateSaver state(os);
 
 		// Convert the dimensions field to a string.
@@ -674,7 +674,7 @@ public:
 	friend ostream& operator<<(ostream& os, const StringMultiField& field) {
 		// NOTE: nullptr string is an empty string, not an error.
 		auto romField = field.romField;
-		os << ColonPad(field.width, romField.name.c_str());
+		os << ColonPad(field.width, romField.name);
 
 		const auto *const pStr_multi = romField.data.str_multi;
 		assert(pStr_multi != nullptr);
@@ -703,7 +703,7 @@ public:
 		size_t maxWidth = 0;
 		std::for_each(fo.fields.cbegin(), fo.fields.cend(),
 			[&maxWidth](const RomFields::Field &field) {
-				maxWidth = max(maxWidth, field.name.size());
+				maxWidth = max(maxWidth, strlen(field.name));
 			}
 		);
 		maxWidth += 2;
@@ -746,7 +746,7 @@ public:
 			switch (romField.type) {
 				case RomFields::RFT_INVALID:
 					assert(!"INVALID field type");
-					os << ColonPad(maxWidth, romField.name.c_str()) << "INVALID";
+					os << ColonPad(maxWidth, romField.name) << "INVALID";
 					break;
 				case RomFields::RFT_STRING:
 					os << StringField(maxWidth, romField);
@@ -771,7 +771,7 @@ public:
 					break;
 				default:
 					assert(!"Unknown RomFieldType");
-					os << ColonPad(maxWidth, romField.name.c_str()) << "NYI";
+					os << ColonPad(maxWidth, romField.name) << "NYI";
 					break;
 			}
 

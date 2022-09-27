@@ -257,7 +257,7 @@ class RomFields
 		// ROM field struct.
 		// Dynamically allocated.
 		struct Field {
-			std::string name;	// Field name.
+			const char *name;	// Field name.
 			RomFieldType type;	// ROM field type.
 			uint8_t tabIdx;		// Tab index. (0 for default)
 			bool isValid;		// True if this field has valid data.

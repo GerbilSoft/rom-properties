@@ -1735,13 +1735,12 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		if (!field.isValid) {
 			t_desc_text.emplace_back(tstring());
 			continue;
-		} else if (field.name.empty()) {
+		} else if (!field.name) {
 			t_desc_text.emplace_back(tstring());
 			continue;
 		}
 
-		tstring desc_text = U82T_s(rp_sprintf(
-			desc_label_fmt, field.name.c_str()));
+		tstring desc_text = U82T_s(rp_sprintf(desc_label_fmt, field.name));
 
 		// Get the width of this specific entry.
 		// TODO: Use measureTextSize()?

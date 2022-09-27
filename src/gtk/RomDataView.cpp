@@ -1875,7 +1875,7 @@ rom_data_view_update_display(RomDataView *page)
 			auto &tab = tabs.at(tabIdx);
 
 			// tr: Field description label.
-			const string txt = rp_sprintf(desc_label_fmt, field.name.c_str());
+			const string txt = rp_sprintf(desc_label_fmt, field.name);
 			GtkWidget *lblDesc = gtk_label_new(txt.c_str());
 			// NOTE: No name for this GtkWidget.
 			gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);
