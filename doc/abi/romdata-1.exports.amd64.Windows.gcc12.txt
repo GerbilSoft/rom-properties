@@ -159,13 +159,7 @@ T LibRpFile::FileSystem::replace_ext[abi:cxx11](char const*, char const*)
 T LibRpFile::FileSystem::rmkdir(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
 T LibRpFile::FileSystem::waccess(wchar_t const*, int)
 T LibRpFile::IRpFile::IRpFile()
-T LibRpFile::MemFile::close()
-T LibRpFile::MemFile::MemFile()
 T LibRpFile::MemFile::MemFile(void const*, unsigned long long)
-T LibRpFile::MemFile::read(void*, unsigned long long)
-T LibRpFile::MemFile::seek(long long)
-T LibRpFile::MemFile::tell()
-T LibRpFile::MemFile::write(void const*, unsigned long)
 T LibRpFile::RpFile::ata_identify_device(_ATA_RESP_IDENTIFY_DEVICE*)
 T LibRpFile::RpFile::ata_identify_packet_device(_ATA_RESP_IDENTIFY_DEVICE*)
 T LibRpFile::RpFile::close()
@@ -258,12 +252,10 @@ T w32err_to_posix
 V typeinfo for LibRomData::KeyStoreUI
 V typeinfo for LibRpBase::Config
 V typeinfo for LibRpBase::ConfReader
-V typeinfo for LibRpFile::MemFile
 V typeinfo for LibRpFile::VectorFile
 V typeinfo for LibRpTexture::rp_image_backend
 V vtable for LibRomData::KeyStoreUI
 V vtable for LibRpBase::Config
 V vtable for LibRpBase::ConfReader
-V vtable for LibRpFile::MemFile
 V vtable for LibRpFile::VectorFile
 V vtable for LibRpTexture::rp_image_backend

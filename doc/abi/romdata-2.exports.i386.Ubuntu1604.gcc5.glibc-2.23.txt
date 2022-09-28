@@ -1,11 +1,18 @@
+B __bss_start
+B _end
 B RP_CPU_Flags
 B RP_CPU_Flags_Init
-i LibRpTexture::ImageDecoder::fromLinear24(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned char const*, unsigned long, int)
-i LibRpTexture::ImageDecoder::fromLinear32(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned int const*, unsigned long, int)
+D _edata
+i LibRomData::SuperMagicDrive::decodeBlock(unsigned char*, unsigned char const*)
+i LibRpTexture::ImageDecoder::fromLinear16(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned short const*, unsigned int, int)
+i LibRpTexture::ImageDecoder::fromLinear24(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned char const*, unsigned int, int)
+i LibRpTexture::ImageDecoder::fromLinear32(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned int const*, unsigned int, int)
 i rp_byte_swap_16_array
 i rp_byte_swap_32_array
 T APNG_ref
 T APNG_unref
+T _fini
+T _init
 T LibCacheCommon::filterCacheKey(char*)
 T LibRomData::CacheManager::download(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
 T LibRomData::CacheManager::findInCache(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
@@ -43,17 +50,18 @@ T LibRomData::RomDataFactory::create(LibRpFile::IRpFile*, unsigned int)
 T LibRomData::RomDataFactory::supportedFileExtensions()
 T LibRomData::RomDataFactory::supportedMimeTypes()
 T LibRomData::SuperMagicDrive::decodeBlock_cpp(unsigned char*, unsigned char const*)
+T LibRomData::SuperMagicDrive::decodeBlock_mmx(unsigned char*, unsigned char const*)
 T LibRomData::SuperMagicDrive::decodeBlock_sse2(unsigned char*, unsigned char const*)
 T LibRpBase::AboutTabText::getCreditsData()
 T LibRpBase::AboutTabText::getProgramInfoStringCount()
 T LibRpBase::AboutTabText::getProgramInfoString(LibRpBase::AboutTabText::ProgramInfoStringID)
 T LibRpBase::AboutTabText::getSupportSites()
-T LibRpBase::Achievements::clearNotifyFunction(int (*)(long, LibRpBase::Achievements::ID), long)
+T LibRpBase::Achievements::clearNotifyFunction(int (*)(int, LibRpBase::Achievements::ID), int)
 T LibRpBase::Achievements::getDescUnlocked(LibRpBase::Achievements::ID) const
 T LibRpBase::Achievements::getName(LibRpBase::Achievements::ID) const
 T LibRpBase::Achievements::instance()
 T LibRpBase::Achievements::isUnlocked(LibRpBase::Achievements::ID) const
-T LibRpBase::Achievements::setNotifyFunction(int (*)(long, LibRpBase::Achievements::ID), long)
+T LibRpBase::Achievements::setNotifyFunction(int (*)(int, LibRpBase::Achievements::ID), int)
 T LibRpBase::AesCipherFactory::create(LibRpBase::AesCipherFactory::Implementation)
 T LibRpBase::AesNettle::get_nettle_compile_time_version(int*, int*)
 T LibRpBase::AesNettle::get_nettle_runtime_version(int*, int*)
@@ -82,7 +90,7 @@ T LibRpBase::JSONROMOutput::JSONROMOutput(LibRpBase::RomData const*, unsigned in
 T LibRpBase::KeyManager::getAndVerify(char const*, LibRpBase::KeyManager::KeyData_t*, unsigned char const*, unsigned int) const
 T LibRpBase::KeyManager::instance()
 T LibRpBase::KeyManager::verifyResultToString(LibRpBase::KeyManager::VerifyResult)
-T LibRpBase::MD5Hash::calcHash(unsigned char*, unsigned long, void const*, unsigned long)
+T LibRpBase::MD5Hash::calcHash(unsigned char*, unsigned int, void const*, unsigned int)
 T LibRpBase::operator<<(std::ostream&, LibRpBase::JSONROMOutput const&)
 T LibRpBase::operator<<(std::ostream&, LibRpBase::ROMOutput const&)
 T LibRpBase::RomData::className() const
@@ -97,7 +105,7 @@ T LibRpBase::RomData::isValid() const
 T LibRpBase::RomData::metaData() const
 T LibRpBase::RomData::mimeType() const
 T LibRpBase::RomData::romOps() const
-T LibRpBase::RomFields::ageRatingsDecode[abi:cxx11](std::array<unsigned short, 16ul> const*, bool)
+T LibRpBase::RomFields::ageRatingsDecode[abi:cxx11](std::array<unsigned short, 16u> const*, bool)
 T LibRpBase::RomFields::at(int) const
 T LibRpBase::RomFields::cbegin() const
 T LibRpBase::RomFields::cend() const
@@ -135,7 +143,7 @@ T LibRpBase::RpPngWriter::write_IHDR(LibRpTexture::rp_image::sBIT_t const*, unsi
 T LibRpBase::RpPngWriter::write_tEXt(std::vector<std::pair<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<char const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&)
 T LibRpBase::RpPng::zlib_is_ng()
 T LibRpBase::RpPng::zlib_version_string()
-T LibRpBase::rp_vsprintf[abi:cxx11](char const*, __va_list_tag*)
+T LibRpBase::rp_vsprintf[abi:cxx11](char const*, char*)
 T LibRpBase::SystemRegion::getCountryCode()
 T LibRpBase::SystemRegion::getFlagPosition(unsigned int, int*, int*, bool)
 T LibRpBase::SystemRegion::getLanguageCode()
@@ -158,28 +166,41 @@ T LibRpFile::FileSystem::get_file_d_type(char const*, bool)
 T LibRpFile::FileSystem::isOnBadFS(char const*, bool)
 T LibRpFile::FileSystem::replace_ext[abi:cxx11](char const*, char const*)
 T LibRpFile::FileSystem::rmkdir(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
+T LibRpFile::IRpFile::copyTo(LibRpFile::IRpFile*, long long, long long*, long long*)
+T LibRpFile::IRpFile::getc()
 T LibRpFile::IRpFile::IRpFile()
-T LibRpFile::MemFile::MemFile(void const*, unsigned long)
+T LibRpFile::IRpFile::ungetc(int)
+T LibRpFile::MemFile::close()
+T LibRpFile::MemFile::~MemFile()
+T LibRpFile::MemFile::MemFile()
+T LibRpFile::MemFile::MemFile(void const*, unsigned int)
+T LibRpFile::MemFile::read(void*, unsigned int)
+T LibRpFile::MemFile::seek(long long)
+T LibRpFile::MemFile::setFilename(char const*)
+T LibRpFile::MemFile::setFilename(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
+T LibRpFile::MemFile::tell()
+T LibRpFile::MemFile::write(void const*, unsigned int)
 T LibRpFile::RpFile::ata_identify_device(_ATA_RESP_IDENTIFY_DEVICE*)
 T LibRpFile::RpFile::ata_identify_packet_device(_ATA_RESP_IDENTIFY_DEVICE*)
 T LibRpFile::RpFile::close()
 T LibRpFile::RpFile::filename() const
 T LibRpFile::RpFile::isOpen() const
-T LibRpFile::RpFile::read(void*, unsigned long)
+T LibRpFile::RpFile::read(void*, unsigned int)
 T LibRpFile::RpFile::RpFile(char const*, LibRpFile::RpFile::FileMode)
 T LibRpFile::RpFile::RpFile(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, LibRpFile::RpFile::FileMode)
 T LibRpFile::RpFile::scsi_inquiry(_SCSI_RESP_INQUIRY_STD*)
 T LibRpFile::RpFile::size()
-T LibRpFile::VectorFile::read(void*, unsigned long)
-T LibRpFile::VectorFile::seek(long)
+T LibRpFile::VectorFile::read(void*, unsigned int)
+T LibRpFile::VectorFile::seek(long long)
+T LibRpFile::VectorFile::~VectorFile()
 T LibRpFile::VectorFile::VectorFile()
-T LibRpFile::VectorFile::write(void const*, unsigned long)
-T LibRpTexture::ImageDecoder::fromLinear16_cpp(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned short const*, unsigned long, int)
-T LibRpTexture::ImageDecoder::fromLinear16_sse2(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned short const*, unsigned long, int)
-T LibRpTexture::ImageDecoder::fromLinear24_cpp(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned char const*, unsigned long, int)
-T LibRpTexture::ImageDecoder::fromLinear24_ssse3(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned char const*, unsigned long, int)
-T LibRpTexture::ImageDecoder::fromLinear32_cpp(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned int const*, unsigned long, int)
-T LibRpTexture::ImageDecoder::fromLinear32_ssse3(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned int const*, unsigned long, int)
+T LibRpFile::VectorFile::write(void const*, unsigned int)
+T LibRpTexture::ImageDecoder::fromLinear16_cpp(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned short const*, unsigned int, int)
+T LibRpTexture::ImageDecoder::fromLinear16_sse2(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned short const*, unsigned int, int)
+T LibRpTexture::ImageDecoder::fromLinear24_cpp(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned char const*, unsigned int, int)
+T LibRpTexture::ImageDecoder::fromLinear24_ssse3(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned char const*, unsigned int, int)
+T LibRpTexture::ImageDecoder::fromLinear32_cpp(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned int const*, unsigned int, int)
+T LibRpTexture::ImageDecoder::fromLinear32_ssse3(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned int const*, unsigned int, int)
 T LibRpTexture::rp_image_backend::clear_properties()
 T LibRpTexture::rp_image::backend() const
 T LibRpTexture::rp_image_backend::has_translucent_palette_entries() const
@@ -215,8 +236,12 @@ T LibUnixCommon::getCacheDirectory[abi:cxx11]()
 T LibUnixCommon::getConfigDirectory[abi:cxx11]()
 T LibUnixCommon::getHomeDirectory[abi:cxx11]()
 T LibUnixCommon::isWritableDirectory(char const*)
+T rp_byte_swap_16_array_c
+T rp_byte_swap_16_array_mmx
 T rp_byte_swap_16_array_sse2
 T rp_byte_swap_16_array_ssse3
+T rp_byte_swap_32_array_c
+T rp_byte_swap_32_array_mmx
 T rp_byte_swap_32_array_sse2
 T rp_byte_swap_32_array_ssse3
 T RP_CPU_InitCPUFlags
@@ -224,15 +249,24 @@ T rp_i18n_init
 V typeinfo for LibRomData::KeyStoreUI
 V typeinfo for LibRpBase::Config
 V typeinfo for LibRpBase::ConfReader
+V typeinfo for LibRpFile::IRpFile
+V typeinfo for LibRpFile::MemFile
 V typeinfo for LibRpFile::VectorFile
 V typeinfo for LibRpTexture::rp_image_backend
+V typeinfo for RefBase
 V typeinfo name for LibRomData::KeyStoreUI
 V typeinfo name for LibRpBase::Config
 V typeinfo name for LibRpBase::ConfReader
+V typeinfo name for LibRpFile::IRpFile
+V typeinfo name for LibRpFile::MemFile
 V typeinfo name for LibRpFile::VectorFile
 V typeinfo name for LibRpTexture::rp_image_backend
+V typeinfo name for RefBase
 V vtable for LibRomData::KeyStoreUI
 V vtable for LibRpBase::Config
 V vtable for LibRpBase::ConfReader
+V vtable for LibRpFile::IRpFile
+V vtable for LibRpFile::MemFile
 V vtable for LibRpFile::VectorFile
 V vtable for LibRpTexture::rp_image_backend
+V vtable for RefBase
