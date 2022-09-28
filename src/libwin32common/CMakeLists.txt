@@ -28,7 +28,6 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.lib${PROJECT_NAME}.h.in" "${C
 
 # Sources and headers.
 SET(${PROJECT_NAME}_SRCS
-	RegKey.cpp
 	w32err.cpp
 	ComBase.cpp
 	propsys_xp.c
@@ -39,7 +38,6 @@ SET(${PROJECT_NAME}_SRCS
 	)
 SET(${PROJECT_NAME}_H
 	RpWin32_sdk.h
-	RegKey.hpp
 	w32err.hpp
 	w32time.h
 	ComBase.hpp

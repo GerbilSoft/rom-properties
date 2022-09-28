@@ -17,12 +17,14 @@ CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.lib${PROJECT_NAME}.h.in" "${C
 SET(${PROJECT_NAME}_SRCS
 	DialogBuilder.cpp
 	HiDPI.c
+	RegKey.cpp
 	WinUI.cpp
 	)
 SET(${PROJECT_NAME}_H
 	AutoGetDC.hpp
 	DialogBuilder.hpp
 	HiDPI.h
+	RegKey.hpp
 	SubclassWindow.h
 	WinUI.hpp
 	WTSSessionNotification.hpp

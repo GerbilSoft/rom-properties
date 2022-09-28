@@ -12,7 +12,7 @@
 #include "RP_ShellIconOverlayIdentifier_p.hpp"
 
 // libwin32common
-using LibWin32Common::RegKey;
+using LibWin32UI::RegKey;
 
 #define CLSID_RP_ShellIconOverlayIdentifier_String	TEXT("{02C6AF01-3C99-497D-B3FC-E38CE526786B}")
 extern const TCHAR RP_ProgID[];

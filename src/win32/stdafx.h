@@ -19,7 +19,7 @@
 #include <windows.h>
 
 #if _WIN32_WINNT < 0x0600
-# error Windows Vista SDK or later is required.
+#  error Windows Vista SDK or later is required.
 #endif
 
 // Typesafe inline function wrappers for some Windows headers.
@@ -100,11 +100,11 @@
 
 #ifdef __cplusplus
 // libwin32common C++ headers
-#include "libwin32common/ComBase.hpp"
-#include "libwin32common/RegKey.hpp"
+#  include "libwin32common/ComBase.hpp"
 // libwin32ui C++ headers
-#include "libwin32ui/WinUI.hpp"
-#include "libwin32ui/WTSSessionNotification.hpp"
+#  include "libwin32ui/RegKey.hpp"
+#  include "libwin32ui/WinUI.hpp"
+#  include "libwin32ui/WTSSessionNotification.hpp"
 #endif /* __cplusplus */
 
 // libi18n

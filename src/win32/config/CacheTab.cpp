@@ -13,7 +13,7 @@
 // librpbase, librpfile, libwin32common, libwin32ui
 using namespace LibRpBase;
 using namespace LibRpFile;
-using LibWin32Common::RegKey;
+using LibWin32UI::RegKey;
 using LibWin32UI::WTSSessionNotification;
 
 // IEmptyVolumeCacheCallBack implementation.

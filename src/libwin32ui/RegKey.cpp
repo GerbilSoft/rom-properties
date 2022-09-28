@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (libwin32common)                   *
+ * ROM Properties Page shell extension. (libwin32ui)                       *
  * RegKey.hpp: Registry key wrapper.                                       *
  *                                                                         *
  * Copyright (c) 2016-2022 by David Korth.                                 *
@@ -24,14 +24,7 @@ using std::tstring;
 #include <objbase.h>
 #include "sdk/GUID_fn.h"
 
-// RegKey isn't used by libromdata directly,
-// so use some linker hax to force linkage.
-extern "C" {
-	extern uint8_t RP_LibWin32Common_RegKey_ForceLinkage;
-	uint8_t RP_LibWin32Common_RegKey_ForceLinkage;
-}
-
-namespace LibWin32Common {
+namespace LibWin32UI {
 
 /**
  * Create or open a registry key.

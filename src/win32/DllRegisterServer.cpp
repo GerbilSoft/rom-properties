@@ -32,7 +32,7 @@
 #include "RP_ShellIconOverlayIdentifier.hpp"
 
 // libwin32common
-using LibWin32Common::RegKey;
+using LibWin32UI::RegKey;
 
 // For file extensions
 #include "libromdata/RomDataFactory.hpp"

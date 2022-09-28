@@ -14,7 +14,7 @@
 // librpbase, librpfile, libwin32common
 using namespace LibRpBase;
 using namespace LibRpFile;
-using LibWin32Common::RegKey;
+using LibWin32UI::RegKey;
 
 // C++ STL classes.
 using std::tstring;

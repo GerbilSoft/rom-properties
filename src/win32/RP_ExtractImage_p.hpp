@@ -52,7 +52,7 @@ class RP_ExtractImage_Private
 		 * @param hkey_Assoc File association key to register under.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG RegisterFileType(LibWin32Common::RegKey &hkey_Assoc);
+		static LONG RegisterFileType(LibWin32UI::RegKey &hkey_Assoc);
 
 		/**
 		 * Unregister the file type handler.
@@ -63,7 +63,7 @@ class RP_ExtractImage_Private
 		 * @param hkey_Assoc File association key to unregister under.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG UnregisterFileType(LibWin32Common::RegKey &hkey_Assoc);
+		static LONG UnregisterFileType(LibWin32UI::RegKey &hkey_Assoc);
 
 	private:
 		/**
@@ -72,7 +72,7 @@ class RP_ExtractImage_Private
 		 * @param phBmpImage
 		 * @return HRESULT.
 		 */
-		HRESULT Fallback_int(LibWin32Common::RegKey &hkey_Assoc, HBITMAP *phBmpImage);
+		HRESULT Fallback_int(LibWin32UI::RegKey &hkey_Assoc, HBITMAP *phBmpImage);
 
 	public:
 		/**

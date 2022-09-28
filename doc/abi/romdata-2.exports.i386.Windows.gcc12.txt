@@ -237,24 +237,6 @@ T LibWin32Common::getCacheDirectory[abi:cxx11]()
 T LibWin32Common::getConfigDirectory[abi:cxx11]()
 T LibWin32Common::getHomeDirectory[abi:cxx11]()
 T LibWin32Common::incRpGlobalRefCount()
-T LibWin32Common::RegKey::close()
-T LibWin32Common::RegKey::deleteSubKey(HKEY__*, wchar_t const*)
-T LibWin32Common::RegKey::deleteValue(wchar_t const*)
-T LibWin32Common::RegKey::enumSubKeys(std::__cxx11::list<std::__cxx11::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> >, std::allocator<std::__cxx11::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> > > >&)
-T LibWin32Common::RegKey::isKeyEmpty()
-T LibWin32Common::RegKey::read[abi:cxx11](wchar_t const*, unsigned long*) const
-T LibWin32Common::RegKey::read_dword(wchar_t const*, unsigned long*) const
-T LibWin32Common::RegKey::read_expand[abi:cxx11](wchar_t const*, unsigned long*) const
-T LibWin32Common::RegKey::RegisterApprovedExtension(_GUID const&, wchar_t const*)
-T LibWin32Common::RegKey::RegisterComObject(HINSTANCE__*, _GUID const&, wchar_t const*, wchar_t const*)
-T LibWin32Common::RegKey::RegisterFileType(wchar_t const*, LibWin32Common::RegKey**)
-T LibWin32Common::RegKey::~RegKey()
-T LibWin32Common::RegKey::RegKey(HKEY__*, wchar_t const*, unsigned long, bool)
-T LibWin32Common::RegKey::RegKey(LibWin32Common::RegKey const&, wchar_t const*, unsigned long, bool)
-T LibWin32Common::RegKey::UnregisterComObject(_GUID const&, wchar_t const*)
-T LibWin32Common::RegKey::write_dword(wchar_t const*, unsigned long)
-T LibWin32Common::RegKey::write(wchar_t const*, std::__cxx11::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> > const&, unsigned long)
-T LibWin32Common::RegKey::write(wchar_t const*, wchar_t const*, unsigned long)
 T LibWin32Common::rp_QISearch(void*, QITAB const*, _GUID const&, void**)@16
 T rp_byte_swap_16_array_c
 T rp_byte_swap_16_array_mmx

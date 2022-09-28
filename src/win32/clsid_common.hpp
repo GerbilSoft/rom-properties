@@ -10,7 +10,7 @@
 #define __ROMPROPERTIES_WIN32_CLSID_COMMON_HPP__
 
 #include "libwin32common/RpWin32_sdk.h"
-#include "libwin32common/RegKey.hpp"
+#include "libwin32ui/RegKey.hpp"
 
 // CLSID register/unregister function declarations
 #define CLSID_DECL(klass) \
@@ -51,14 +51,14 @@ LONG klass::RegisterCLSID(void) \
 	extern const TCHAR RP_ProgID[]; \
 	\
 	/* Register the COM object. */ \
-	LONG lResult = RegKey::RegisterComObject(HINST_THISCOMPONENT, \
+	LONG lResult = LibWin32UI::RegKey::RegisterComObject(HINST_THISCOMPONENT, \
 		__uuidof(klass), RP_ProgID, description); \
 	if (lResult != ERROR_SUCCESS) { \
 		return lResult; \
 	} \
 	\
 	/* Register as an "approved" shell extension. */ \
-	return RegKey::RegisterApprovedExtension(__uuidof(klass), description); \
+	return LibWin32UI::RegKey::RegisterApprovedExtension(__uuidof(klass), description); \
 } \
 \
 /** \
@@ -68,7 +68,7 @@ LONG klass::RegisterCLSID(void) \
 LONG klass::UnregisterCLSID(void) \
 { \
 	extern const TCHAR RP_ProgID[]; \
-	return LibWin32Common::RegKey::UnregisterComObject(__uuidof(klass), RP_ProgID); \
+	return LibWin32UI::RegKey::UnregisterComObject(__uuidof(klass), RP_ProgID); \
 }
 
 
@@ -80,7 +80,7 @@ LONG klass::UnregisterCLSID(void) \
 		 * @param ext	[in] File extension, including the leading dot. \
 		 * @return ERROR_SUCCESS on success; Win32 error code on error. \
 		 */ \
-		static LONG RegisterFileType(LibWin32Common::RegKey &hkcr, LPCTSTR ext); \
+		static LONG RegisterFileType(LibWin32UI::RegKey &hkcr, LPCTSTR ext); \
 		\
 		/** \
 		 * Unregister the file type handler. \
@@ -92,7 +92,7 @@ LONG klass::UnregisterCLSID(void) \
 		 * \
 		 * @return ERROR_SUCCESS on success; Win32 error code on error. \
 		 */ \
-		static LONG UnregisterFileType(LibWin32Common::RegKey &hkcr, LPCTSTR ext);
+		static LONG UnregisterFileType(LibWin32UI::RegKey &hkcr, LPCTSTR ext);
 
 // Filetype register/unregister function declarations (with pHklm)
 #define FILETYPE_HANDLER_HKLM_DECL(klass) \
@@ -103,7 +103,7 @@ LONG klass::UnregisterCLSID(void) \
 		 * @param ext	[in] File extension, including the leading dot. \
 		 * @return ERROR_SUCCESS on success; Win32 error code on error. \
 		 */ \
-		static LONG RegisterFileType(LibWin32Common::RegKey &hkcr, LibWin32Common::RegKey *pHklm, LPCTSTR ext); \
+		static LONG RegisterFileType(LibWin32UI::RegKey &hkcr, LibWin32UI::RegKey *pHklm, LPCTSTR ext); \
 		\
 		/** \
 		 * Unregister the file type handler. \
@@ -116,6 +116,6 @@ LONG klass::UnregisterCLSID(void) \
 		 * \
 		 * @return ERROR_SUCCESS on success; Win32 error code on error. \
 		 */ \
-		static LONG UnregisterFileType(LibWin32Common::RegKey &hkcr, LibWin32Common::RegKey *pHklm, LPCTSTR ext);
+		static LONG UnregisterFileType(LibWin32UI::RegKey &hkcr, LibWin32UI::RegKey *pHklm, LPCTSTR ext);
 
 #endif /* __ROMPROPERTIES_WIN32_CLSID_COMMON_HPP__ */

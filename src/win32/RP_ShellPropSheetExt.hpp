@@ -65,7 +65,7 @@ RP_ShellPropSheetExt final : public LibWin32Common::ComBase2<IShellExtInit, IShe
 		 * @param hkey_Assoc File association key to register under.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG RegisterFileType_int(LibWin32Common::RegKey &hkey_Assoc);
+		static LONG RegisterFileType_int(LibWin32UI::RegKey &hkey_Assoc);
 
 		/**
 		 * Unregister the file type handler.
@@ -76,7 +76,7 @@ RP_ShellPropSheetExt final : public LibWin32Common::ComBase2<IShellExtInit, IShe
 		 * @param hkey_Assoc File association key to unregister under.
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
-		static LONG UnregisterFileType_int(LibWin32Common::RegKey &hkey_Assoc);
+		static LONG UnregisterFileType_int(LibWin32UI::RegKey &hkey_Assoc);
 
 	public:
 		// IUnknown

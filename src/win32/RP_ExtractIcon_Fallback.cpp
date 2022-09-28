@@ -15,7 +15,7 @@
 #include "libwin32common/env_vars.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
-using LibWin32Common::RegKey;
+using LibWin32UI::RegKey;
 
 // C++ STL classes.
 using std::tstring;

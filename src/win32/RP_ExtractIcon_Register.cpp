@@ -12,7 +12,7 @@
 #include "RP_ExtractIcon_p.hpp"
 
 // libwin32common
-using LibWin32Common::RegKey;
+using LibWin32UI::RegKey;
 
 // C++ STL classes.
 using std::tstring;
