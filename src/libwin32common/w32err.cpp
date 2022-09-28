@@ -10,6 +10,7 @@
 
 // C includes
 #include <errno.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 // C++ includes
@@ -116,25 +117,10 @@ static const errmap w32_to_posix[] = {
 // C API declaration for MSVC.
 // Required when using stdcall as the default calling convention.
 #ifdef _MSC_VER
-# define RP_C_API __cdecl
+#  define RP_C_API __cdecl
 #else
-# define RP_C_API
+#  define RP_C_API
 #endif
-
-/**
- * bsearch() comparison function for the error code table.
- * @param a
- * @param b
- * @return
- */
-static int RP_C_API errmap_compar(const void *a, const void *b)
-{
-	const uint16_t err1 = ((const errmap*)a)->w32;
-	const uint16_t err2 = ((const errmap*)b)->w32;
-	if (err1 < err2) return -1;
-	if (err1 > err2) return 1;
-	return 0;
-}
 
 /**
  * Convert a Win32 error number to a POSIX error code.
