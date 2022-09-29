@@ -127,6 +127,7 @@ ENDIF(ENABLE_ACHIEVEMENTS)
 # - Disable implicit QString ASCII casts.
 # - Use strict iterators.
 # - Disable implicit cast from QString to QUrl.
+# - Use lean headers. (Qt6)
 ADD_DEFINITIONS(-DQT_USE_FAST_CONCATENATION
 	-DQT_USE_FAST_OPERATOR_PLUS
 	-DQT_USE_QSTRINGBUILDER
@@ -137,6 +138,7 @@ ADD_DEFINITIONS(-DQT_USE_FAST_CONCATENATION
 	-DQT_NO_CAST_FROM_BYTEARRAY
 	-DQT_NO_FOREACH
 	-DQT_NO_NARROWING_CONVERSIONS_IN_CONNECT
+	-DQT_LEAN_HEADERS=1	# Qt6
 	)
 
 ### FIXME: The following Qt declarations are being picked up by libromdata and rpcli...
