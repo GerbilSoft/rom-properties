@@ -88,10 +88,6 @@ struct _RomDataView {
 	LibRpBase::RomData	*romData;	// ROM data
 	gchar			*uri;		// URI (GVfs)
 
-	// "Options" button. (OptionsMenuButton)
-	GtkWidget	*btnOptions;
-	gchar		*prevExportDir;
-
 	// Header row.
 	GtkWidget	*hboxHeaderRow_outer;
 	GtkWidget	*hboxHeaderRow;
@@ -103,14 +99,24 @@ struct _RomDataView {
 	GtkWidget	*tabWidget;
 	// Tabs moved to: cxx->tabs
 
+	/** ROM operations **/
+
+	// "Options" button. (OptionsMenuButton)
+	GtkWidget	*btnOptions;
+	gchar		*prevExportDir;
+
 	// MessageWidget for ROM operation notifications.
 	GtkWidget	*messageWidget;
+
+	/** Multi-language **/
 
 	// Multi-language combo box.
 	GtkWidget	*cboLanguage;
 
 	/* Timeouts */
 	guint		changed_idle;
+
+	/** Other **/
 
 	// Description label format type.
 	RpDescFormatType	desc_format_type;

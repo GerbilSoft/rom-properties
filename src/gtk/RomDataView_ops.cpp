@@ -318,10 +318,12 @@ rom_data_view_doRomOp_stdop(RomDataView *page, int id)
 	// Reference: https://gitlab.gnome.org/GNOME/gtk/-/commit/063ad28b1a06328e14ed72cc4b99cd4684efed12
 
 	// TODO: URI?
-	GFile *const set_file = g_file_new_for_path(page->prevExportDir);
-	if (set_file) {
-		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fileDialog), set_file, nullptr);
-		g_object_unref(set_file);
+	if (page->prevExportDir) {
+		GFile *const set_file = g_file_new_for_path(page->prevExportDir);
+		if (set_file) {
+			gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fileDialog), set_file, nullptr);
+			g_object_unref(set_file);
+		}
 	}
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(fileDialog), TRUE);

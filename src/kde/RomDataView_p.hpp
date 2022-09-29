@@ -66,10 +66,6 @@ class RomDataViewPrivate
 		// RomData object.
 		LibRpBase::RomData *romData;
 
-		// "Options" button.
-		OptionsMenuButton *btnOptions;
-		QString prevExportDir;
-
 		// Tab contents.
 		struct tab {
 			QVBoxLayout *vbox;
@@ -80,11 +76,22 @@ class RomDataViewPrivate
 		};
 		std::vector<tab> tabs;
 
+	public:
+		// "Options" button.
+		OptionsMenuButton *btnOptions;
+		QString prevExportDir;
+
 #ifdef HAVE_KMESSAGEWIDGET
 		// KMessageWidget for ROM operation notifications.
 		KMessageWidget *messageWidget;
 #endif /* HAVE_KMESSAGEWIDGET */
 
+		/**
+		 * Create the "Options" button in the parent window.
+		 */
+		void createOptionsButton(void);
+
+	public:
 		// Multi-language functionality.
 		LanguageComboBox *cboLanguage;
 
@@ -99,13 +106,11 @@ class RomDataViewPrivate
 		std::vector<Data_ListDataMulti_t> vecListDataMulti;
 
 		uint32_t def_lc;	// Default language code for multi-language.
+
+	public:
 		bool hasCheckedAchievements;
 
-		/**
-		 * Create the "Options" button in the parent window.
-		 */
-		void createOptionsButton(void);
-
+	public:
 		/**
 		 * Initialize the header row widgets.
 		 * The widgets must have already been created by ui.setupUi().

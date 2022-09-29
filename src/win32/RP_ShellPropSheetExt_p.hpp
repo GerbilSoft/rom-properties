@@ -73,15 +73,12 @@ class RP_ShellPropSheetExt_Private
 		static const TCHAR TAB_PTR_PROP[];
 
 	public:
+		HWND hDlgSheet;		// Property sheet
+
 		// ROM filename
 		char *filename;
 		// ROM data (Not opened until the properties tab is shown.)
 		LibRpBase::RomData *romData;
-
-		// Useful window handles.
-		HWND hDlgSheet;		// Property sheet.
-		HWND hBtnOptions;	// Options button.
-		std::tstring ts_prevExportDir;
 
 		// Font handler
 		FontHandler fontHandler;
@@ -152,10 +149,15 @@ class RP_ShellPropSheetExt_Private
 		int lblDescHeight;	// Description label height.
 		SIZE dlgSize;		// Visible dialog size.
 
+	public:
+		HWND hBtnOptions;	// Options button.
+		std::tstring ts_prevExportDir;
+
 		// MessageWidget for ROM operation notifications.
 		HWND hMessageWidget;
 		int iTabHeightOrig;
 
+	public:
 		// Multi-language functionality.
 		uint32_t def_lc;	// Default language code from RomFields.
 		HWND cboLanguage;
