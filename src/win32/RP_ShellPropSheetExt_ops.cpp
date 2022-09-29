@@ -390,12 +390,12 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 				ts_prevExportDir.resize(bspos2);
 			}
 
-#ifdef __GNUC__
-			// FIXME: MinGW doesn't have wchar_t overloads.
-			ofs.open(T2U8(tfilename).c_str(), ofstream::out);
-#else /* !__GNUC__ */
+#ifdef HAVE_OFSTREAM_CTOR_WCHAR_T
 			ofs.open(tfilename.c_str(), ofstream::out);
-#endif /* __GNUC__ */
+#else /* !HAVE_OFSTREAM_CTOR_WCHAR_T */
+			// FIXME: Convert to ANSI, not UTF-8.
+			ofs.open(T2U8(tfilename).c_str(), ofstream::out);
+#endif /* HAVE_OFSTREAM_CTOR_WCHAR_T */
 			if (ofs.fail())
 				return;
 		}

@@ -22,6 +22,21 @@ ELSE()
 	MESSAGE(WARNING "Windows SDK is missing required IPropertyStore symbols.\nIPropertyStore functionality will not be available.")
 ENDIF()
 
+# Check for std::ofstream::open(const wchar_t*, ios_base::openmode).
+CHECK_CXX_SOURCE_COMPILES("
+#include <fstream>
+int main(void) {
+	std::ofstream ofs;
+	ofs.open(L\"wide-file.bin\");
+	return 0;
+}
+"
+HAVE_OFSTREAM_CTOR_WCHAR_T)
+# Sanity check: Should always be present on MSVC.
+IF(MSVC AND NOT HAVE_OFSTREAM_CTOR_WCHAR_T)
+	MESSAGE(FATAL_ERROR "HAVE_OFSTREAM_CTOR_WCHAR_T failed on MSVC.")
+ENDIF(MSVC AND NOT HAVE_OFSTREAM_CTOR_WCHAR_T)
+
 # Write the config.h file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.win32.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.win32.h")
 
