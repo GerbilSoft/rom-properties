@@ -14,7 +14,7 @@ FIND_PACKAGE(GIO ${REQUIRE_GTK4} ${GLIB_MIN_VERSION})
 FIND_PACKAGE(GIO-UNIX ${REQUIRE_GTK4} ${GLIB_MIN_VERSION})
 FIND_PACKAGE(GdkPixbuf2 ${REQUIRE_GTK})	# GTK4 doesn't support Cairo. (TODO: GdkTexture)
 FIND_PACKAGE(GTK4 ${REQUIRE_GTK4})
-IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf2_FOUND AND Pango_FOUND AND GTK4_FOUND)
+IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf2_FOUND AND GTK4_FOUND)
 	# We're not going to have an explicit dependency on libnautilus-extension.
 	# It will be dlopen()'d at runtime based on which
 	# initialization function is called.
