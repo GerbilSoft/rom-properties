@@ -207,16 +207,18 @@ int CurlDownloader::download(void)
 	curl_easy_setopt(curl, CURLOPT_USERAGENT, m_userAgent.c_str());
 
 	// Download the file.
+	int ret;
 	CURLcode res = curl_easy_perform(curl);
-	curl_easy_cleanup(curl);
 	switch (res) {
 		case CURLE_OK:
 			// File downloaded successfully.
+			ret = 0;
 			break;
 
 		case CURLE_OPERATION_TIMEDOUT:
 			// Operation timed out.
-			return -ETIMEDOUT;
+			ret = -ETIMEDOUT;
+			break;
 
 		default:
 			// Some other error downloading the file.
@@ -229,7 +231,13 @@ int CurlDownloader::download(void)
 				// TODO: Return a cURL error code and/or message...
 				return -EIO;
 			}
-			return (int)response_code;
+			ret = (int)response_code;
+			break;
+	}
+
+	curl_easy_cleanup(curl);
+	if (ret != 0) {
+		return ret;
 	}
 
 	// Check if we have data.
