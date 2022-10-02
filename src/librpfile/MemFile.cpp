@@ -48,6 +48,7 @@ MemFile::MemFile()
 	, m_buf(nullptr)
 	, m_size(0)
 	, m_pos(0)
+	, m_filename(nullptr)
 { }
 
 MemFile::~MemFile()
