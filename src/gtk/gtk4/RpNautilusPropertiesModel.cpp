@@ -29,12 +29,6 @@ typedef struct _RpNautilusPropertiesModel {
 } RpNautilusPropertiesModel;
 
 static void
-rp_nautilus_properties_model_free(RpNautilusPropertiesModel *self)
-{
-	g_free(self);
-}
-
-static void
 append_item(RpNautilusPropertiesModel *self,
             const char                *name,
             const char                *value)
@@ -165,7 +159,6 @@ rp_nautilus_properties_model_init_datetime(RpNautilusPropertiesModel *self, cons
 	const char *const format = &formats_strtbl[formats_offtbl[offset]];
 	assert(format[0] != '\0');
 
-	GtkWidget *widget = nullptr;
 	if (format[0] != '\0') {
 		gchar *const str = g_date_time_format(dateTime, format);
 		if (str) {
@@ -338,10 +331,16 @@ rp_nautilus_properties_model_load_from_romData(RpNautilusPropertiesModel *self,
 	}
 }
 
+static void
+rp_nautilus_properties_model_free_callback(void *data, GObject*)
+{
+	g_free((RpNautilusPropertiesModel*)data);
+}
+
 NautilusPropertiesModel *
 rp_nautilus_properties_model_new(const RomData *romData)
 {
-	RpNautilusPropertiesModel *const self = g_new0 (RpNautilusPropertiesModel, 1);
+	RpNautilusPropertiesModel *const self = g_new0(RpNautilusPropertiesModel, 1);
 
 	rp_nautilus_properties_model_init(self);
 	rp_nautilus_properties_model_load_from_romData(self, romData);
@@ -349,7 +348,7 @@ rp_nautilus_properties_model_new(const RomData *romData)
 	NautilusPropertiesModel *model = nautilus_properties_model_new(
 		C_("RomDataView", "ROM Properties"), G_LIST_MODEL(self->listStore));
 
-	g_object_weak_ref(G_OBJECT(model), (GWeakNotify)rp_nautilus_properties_model_free, self);
+	g_object_weak_ref(G_OBJECT(model), rp_nautilus_properties_model_free_callback, self);
 
 	return model;
 }
