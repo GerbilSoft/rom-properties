@@ -549,6 +549,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 				ent.offset = p[1] | p[2]<<8;
 				ent.is_movable = false;
 				ent.has_name = false;
+				ent.is_resident = false;
 				ents.push_back(ent);
 				p += 3;
 			}
@@ -571,6 +572,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 				ent.offset = p[4] | p[5]<<8;
 				ent.is_movable = true;
 				ent.has_name = false;
+				ent.is_resident = false;
 				ents.push_back(ent);
 				p += 6;
 			}
