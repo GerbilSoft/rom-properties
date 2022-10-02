@@ -2,6 +2,13 @@
 
 ## v2.1 (released 2022/??/??)
 
+* New features:
+  * Initial support for Nautilus 43 (GTK4). Nautilus 43 reworked the property
+    page interface so it only supports key/value pairs, so a lot of the
+    functionality (lists, bitfields, images) isn't implemented at the moment.
+    * Fixes #332: Compat with GTK4 and Nautilus 4.x
+      * Reported by @Amnesia1000.
+
 * Bug fixes:
   * ELF: The "TLS" symbol type was missing, resulting in an off-by-one
     error for some symbol types.
