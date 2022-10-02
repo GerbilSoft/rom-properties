@@ -365,8 +365,8 @@ int AchievementsPrivate::save(void) const
 	buf.reserve(sizeof(AchBinHeader) + ((int)Achievements::ID::Max * 12));
 	buf.resize(sizeof(AchBinHeader));
 
-	// Header.
-	AchBinHeader *const header = reinterpret_cast<AchBinHeader*>(buf.data());
+	// Header
+	AchBinHeader *header = reinterpret_cast<AchBinHeader*>(buf.data());
 	memcpy(header->magic, ACH_BIN_MAGIC, sizeof(header->magic));
 	header->length = 0;
 	header->crc32 = 0;
@@ -417,6 +417,10 @@ int AchievementsPrivate::save(void) const
 				break;
 		}
 	}
+
+	// NOTE: buf may have been reallocated, so we need to
+	// get the header pointer again.
+	header = reinterpret_cast<AchBinHeader*>(buf.data());
 
 	static const size_t HeaderSizeMinusCount = sizeof(AchBinHeader) - sizeof(header->count);
 
