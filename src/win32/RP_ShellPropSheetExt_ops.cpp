@@ -18,9 +18,10 @@
 #include "LanguageComboBox.hpp"
 #include "OptionsMenuButton.hpp"
 
-// librpbase
+// librpbase, librpfile
 #include "librpbase/TextOut.hpp"
 using namespace LibRpBase;
+using namespace LibRpFile;
 
 // C++ STL classes
 #include <fstream>
