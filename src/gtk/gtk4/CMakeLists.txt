@@ -44,7 +44,8 @@ ENDIF()
 
 # Ensure we don't use functions not available in GLib 2.44.
 # NOTE: GLib 2.44 added GListModel, which is needed by GTK4.
-ADD_DEFINITIONS(-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_44 -DGLIB_VERSION_MAX_ALLOWED=GLIB_VERSION_2_44)
+# NOTE: GTK 4.0.0 requires GLib 2.66, so we'll use that as a minimum here.
+ADD_DEFINITIONS(-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_66 -DGLIB_VERSION_MAX_ALLOWED=GLIB_VERSION_2_66)
 
 # Sources and headers. (GTK+ common)
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_CSRCS "${rom-properties-gtk_SRCS}")
