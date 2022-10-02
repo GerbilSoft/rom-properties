@@ -824,7 +824,7 @@ int RomFields::addField_string(const char *name, const char *str, unsigned int f
 	Field &field = d->fields.at(idx);
 
 	char *const nstr = (str ? strdup(str) : nullptr);
-	field.name = (name ? strdup(name) : nullptr);
+	field.name = strdup(name);
 	field.type = RFT_STRING;
 	field.flags = flags;
 	field.data.str = nstr;
@@ -990,7 +990,7 @@ int RomFields::addField_bitfield(const char *name,
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
-	field.name = (name ? strdup(name) : nullptr);
+	field.name = strdup(name);
 	field.type = RFT_BITFIELD;
 	field.flags = 0;
 	field.desc.bitfield.names = bit_names;
@@ -1039,7 +1039,7 @@ int RomFields::addField_listData(const char *name, const AFLD_PARAMS *params)
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
-	field.name = (name ? strdup(name) : nullptr);
+	field.name = strdup(name);
 	field.type = RFT_LISTDATA;
 	field.flags = params->flags;
 	assert(params->rows_visible >= 0);
@@ -1097,7 +1097,7 @@ int RomFields::addField_dateTime(const char *name, time_t date_time, unsigned in
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
-	field.name = (name ? strdup(name) : nullptr);
+	field.name = strdup(name);
 	field.type = RFT_DATETIME;
 	field.flags = flags;
 	field.data.date_time = date_time;
@@ -1125,7 +1125,7 @@ int RomFields::addField_ageRatings(const char *name, const age_ratings_t &age_ra
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
-	field.name = (name ? strdup(name) : nullptr);
+	field.name = strdup(name);
 	field.type = RFT_AGE_RATINGS;
 	field.flags = 0;
 	field.data.age_ratings = new age_ratings_t(age_ratings);
@@ -1154,7 +1154,7 @@ int RomFields::addField_dimensions(const char *name, int dimX, int dimY, int dim
 	d->fields.resize(idx+1);
 	Field &field = d->fields.at(idx);
 
-	field.name = (name ? strdup(name) : nullptr);
+	field.name = strdup(name);
 	field.type = RFT_DIMENSIONS;
 	field.flags = 0;
 	field.data.dimensions[0] = dimX;
@@ -1190,7 +1190,7 @@ int RomFields::addField_string_multi(const char *name, const StringMultiMap_t *s
 		d->def_lc = def_lc;
 	}
 
-	field.name = (name ? strdup(name) : nullptr);
+	field.name = strdup(name);
 	field.type = RFT_STRING_MULTI;
 	field.flags = flags;
 	field.data.str_multi = (str_multi ? str_multi : nullptr);
