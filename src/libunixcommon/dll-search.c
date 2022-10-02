@@ -375,7 +375,9 @@ int rp_dll_search(const char *symname, void **ppDll, void **ppfn, PFN_RP_DLL_DEB
 		*ppDll = dlopen(plugin_path, RTLD_LOCAL|RTLD_LAZY);
 		if (!*ppDll) {
 			// Library not found, or unable to open the library.
-			pfnDebug(LEVEL_DEBUG, "*** dlopen() failed: %s", dlerror());
+			if (pfnDebug) {
+				pfnDebug(LEVEL_DEBUG, "*** dlopen() failed: %s", dlerror());
+			}
 			continue;
 		}
 
@@ -386,7 +388,9 @@ int rp_dll_search(const char *symname, void **ppDll, void **ppfn, PFN_RP_DLL_DEB
 		*ppfn = dlsym(*ppDll, symname);
 		if (!*ppfn) {
 			// Symbol not found.
-			pfnDebug(LEVEL_DEBUG, "*** dlsym() failed: %s", dlerror());
+			if (pfnDebug) {
+				pfnDebug(LEVEL_DEBUG, "*** dlsym() failed: %s", dlerror());
+			}
 			dlclose(*ppDll);
 			*ppDll = NULL;
 			continue;
