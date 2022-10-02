@@ -98,20 +98,22 @@ rp_nautilus_properties_model_init_bitfield(RpNautilusPropertiesModel *self, cons
 		if (name.empty())
 			continue;
 
-		col++;
-		if (col == bitfieldDesc.elemsPerRow) {
-			str += "\n";
-			col = 0;
-		} else if (!str.empty()) {
-			// FIXME: Better alignment. (markup isn't supported)
-			str += "    ";
-		}
-
 		// FIXME: Fall back if a color emoji font can't be loaded.
 		gboolean value = (bitfield & 1);
 		str += (value) ? "✅ " : "🟩 ";
 		//str += (value) ? "☑ " : "☐ ";
 		str += name;
+
+		if ((iter + 1) != names_cend) {
+			col++;
+			if (col == bitfieldDesc.elemsPerRow) {
+				str += "\n";
+				col = 0;
+			} else if (!str.empty()) {
+				// FIXME: Better alignment. (markup isn't supported)
+				str += "    ";
+			}
+		}
 	}
 
 	rp_nautilus_properties_model_init_string(self, field, str.c_str());
