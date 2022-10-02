@@ -582,7 +582,7 @@ int AchievementsPrivate::load(void)
 #endif /* NDEBUG || FORCE_OBFUSCATE */
 
 	// Check the header.
-	AchBinHeader *const header = reinterpret_cast<AchBinHeader*>(buf.data());
+	const AchBinHeader *header = reinterpret_cast<const AchBinHeader*>(buf.data());
 	if (memcmp(header->magic, ACH_BIN_MAGIC, sizeof(header->magic)) != 0) {
 		// Incorrect header.
 		return -EBADF;
@@ -608,6 +608,10 @@ int AchievementsPrivate::load(void)
 		// Incorrect CRC32.
 		return -EBADF;
 	}
+
+	// NOTE: buf may have been reallocated, so we need to
+	// get the header pointer again.
+	header = reinterpret_cast<const AchBinHeader*>(buf.data());
 
 	// Process all achievements.
 	bool ok = true;
