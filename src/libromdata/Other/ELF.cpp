@@ -261,6 +261,8 @@ ELFPrivate::ELFPrivate(ELF *q, IRpFile *file)
 	// Clear the structs.
 	memset(&Elf_Header, 0, sizeof(Elf_Header));
 	memset(&pt_dynamic, 0, sizeof(pt_dynamic));
+	memset(&sht_symtab, 0, sizeof(sht_symtab));
+	memset(&sht_dynsym, 0, sizeof(sht_dynsym));
 }
 
 /**
