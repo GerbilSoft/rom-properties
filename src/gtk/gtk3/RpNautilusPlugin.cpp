@@ -21,10 +21,10 @@ static GType type_list[1];
 
 // Function pointers.
 static void *libextension_so;
-PFN_NAUTILUS_FILE_INFO_GET_TYPE pfn_nautilus_file_info_get_type;
-PFN_NAUTILUS_FILE_INFO_GET_URI pfn_nautilus_file_info_get_uri;
-PFN_NAUTILUS_PROPERTY_PAGE_PROVIDER_GET_TYPE pfn_nautilus_property_page_provider_get_type;
-PFN_NAUTILUS_PROPERTY_PAGE_NEW pfn_nautilus_property_page_new;
+PFN_NAUTILUS_FILE_INFO_GET_TYPE			pfn_nautilus_file_info_get_type;
+PFN_NAUTILUS_FILE_INFO_GET_URI			pfn_nautilus_file_info_get_uri;
+PFN_NAUTILUS_PROPERTY_PAGE_PROVIDER_GET_TYPE	pfn_nautilus_property_page_provider_get_type;
+PFN_NAUTILUS_PROPERTY_PAGE_NEW			pfn_nautilus_property_page_new;
 
 static void
 rp_nautilus_register_types(GTypeModule *module)

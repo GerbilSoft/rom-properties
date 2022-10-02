@@ -39,10 +39,10 @@ typedef GType (*PFN_NAUTILUS_PROPERTY_PAGE_PROVIDER_GET_TYPE)(void);
 typedef NautilusPropertyPage* (*PFN_NAUTILUS_PROPERTY_PAGE_NEW)(const char *name, GtkWidget *label, GtkWidget *page);
 
 // Function pointers.
-extern PFN_NAUTILUS_FILE_INFO_GET_TYPE pfn_nautilus_file_info_get_type;
-extern PFN_NAUTILUS_FILE_INFO_GET_URI pfn_nautilus_file_info_get_uri;
-extern PFN_NAUTILUS_PROPERTY_PAGE_PROVIDER_GET_TYPE pfn_nautilus_property_page_provider_get_type;
-extern PFN_NAUTILUS_PROPERTY_PAGE_NEW pfn_nautilus_property_page_new;
+extern PFN_NAUTILUS_FILE_INFO_GET_TYPE			pfn_nautilus_file_info_get_type;
+extern PFN_NAUTILUS_FILE_INFO_GET_URI			pfn_nautilus_file_info_get_uri;
+extern PFN_NAUTILUS_PROPERTY_PAGE_PROVIDER_GET_TYPE	pfn_nautilus_property_page_provider_get_type;
+extern PFN_NAUTILUS_PROPERTY_PAGE_NEW			pfn_nautilus_property_page_new;
 
 // Function pointer macros.
 #define nautilus_file_info_get_type()			(pfn_nautilus_file_info_get_type ())
