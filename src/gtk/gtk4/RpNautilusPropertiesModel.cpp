@@ -77,6 +77,58 @@ rp_nautilus_properties_model_init_string(RpNautilusPropertiesModel *self,
 }
 
 /**
+ * Initialize a bitfield.
+ * @param self		[in] RpNautilusPropertiesModel
+ * @param field		[in] RomFields::Field
+ */
+static void
+rp_nautilus_properties_model_init_bitfield(RpNautilusPropertiesModel *self, const RomFields::Field &field)
+{
+	// Using Unicode symbols to simulate checkboxes.
+	const auto &bitfieldDesc = field.desc.bitfield;
+	assert(bitfieldDesc.names->size() <= 32);
+
+	// Determine the total number of columns.
+	int totalCols;
+	if (bitfieldDesc.elemsPerRow == 0) {
+		// All elements are in one row.
+		totalCols = 999;
+	} else {
+		// Multiple rows.
+		totalCols = bitfieldDesc.elemsPerRow;
+	}
+
+	string str;
+	str.reserve(bitfieldDesc.names->size() * 24);
+
+	int col = 0;
+	uint32_t bitfield = field.data.bitfield;
+	const auto names_cend = bitfieldDesc.names->cend();
+	for (auto iter = bitfieldDesc.names->cbegin(); iter != names_cend; ++iter, bitfield >>= 1) {
+		const string &name = *iter;
+		if (name.empty())
+			continue;
+
+		col++;
+		if (col == bitfieldDesc.elemsPerRow) {
+			str += "\n";
+			col = 0;
+		} else if (!str.empty()) {
+			// FIXME: Better alignment. (Pango markup isn't supported)
+			str += "    ";
+		}
+
+		// FIXME: Fall back if a color emoji font can't be loaded.
+		gboolean value = (bitfield & 1);
+		str += (value) ? "✅ " : "🟩 ";
+		//str += (value) ? "☑ " : "☐ ";
+		str += name;
+	}
+
+	rp_nautilus_properties_model_init_string(self, field, str.c_str());
+}
+
+/**
  * Initialize a Date/Time field.
  * @param self		[in] RpNautilusPropertiesModel
  * @param field		[in] RomFields::Field
@@ -252,7 +304,7 @@ rp_nautilus_properties_model_load_from_romData(RpNautilusPropertiesModel *self,
 				rp_nautilus_properties_model_init_string(self, field);
 				break;
 			case RomFields::RFT_BITFIELD:
-				// Can't easily do RFT_BITFIELD here.
+				rp_nautilus_properties_model_init_bitfield(self, field);
 				break;
 			case RomFields::RFT_LISTDATA:
 				// Can't easily do RFT_LISTDATA here.
