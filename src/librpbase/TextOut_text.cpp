@@ -719,6 +719,7 @@ public:
 		const auto fields_cend = fo.fields.cend();
 		for (auto iter = fo.fields.cbegin(); iter != fields_cend; ++iter) {
 			const auto &romField = *iter;
+			assert(romField.isValid);
 			if (!romField.isValid)
 				continue;
 

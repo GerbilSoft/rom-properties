@@ -1819,6 +1819,7 @@ rom_data_view_update_display(RomDataView *page)
 	const auto pFields_cend = pFields->cend();
 	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter, fieldIdx++) {
 		const RomFields::Field &field = *iter;
+		assert(field.isValid);
 		if (!field.isValid)
 			continue;
 

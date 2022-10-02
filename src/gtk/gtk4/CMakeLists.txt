@@ -1,5 +1,4 @@
-# GTK+ 4.x UI frontend
-# TODO: Not supported by any file browsers yet...
+# GTK4 UI frontend
 CMAKE_POLICY(SET CMP0048 NEW)
 IF(POLICY CMP0063)
 	# CMake 3.3: Enable symbol visibility presets for all
@@ -45,7 +44,8 @@ ENDIF()
 
 # Ensure we don't use functions not available in GLib 2.44.
 # NOTE: GLib 2.44 added GListModel, which is needed by GTK4.
-ADD_DEFINITIONS(-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_44 -DGLIB_VERSION_MAX_ALLOWED=GLIB_VERSION_2_44)
+# NOTE: GTK 4.0.0 requires GLib 2.66, so we'll use that as a minimum here.
+ADD_DEFINITIONS(-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_66 -DGLIB_VERSION_MAX_ALLOWED=GLIB_VERSION_2_66)
 
 # Sources and headers. (GTK+ common)
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_CSRCS "${rom-properties-gtk_SRCS}")
@@ -124,19 +124,16 @@ SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}-notify_SRCS} ${${PROJECT_NAME}-notify_H}
 	${${PROJECT_NAME}_IFUNC_SRCS}
 	${${PROJECT_NAME}_SSSE3_SRCS}
-	../gtk3/RpNautilusPlugin.cpp
-	../gtk3/RpNautilusProvider.cpp
-	#../gtk3/RpThunarPlugin.cpp	# No plans for GTK4 Thunar yet...
-	#../gtk3/RpThunarProvider.cpp	# No plans for GTK4 Thunar yet...
+	RpNautilusPlugin.cpp
+	RpNautilusPropertiesModelProvider.cpp
+	RpNautilusPropertiesModel.cpp
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_H}
-	../gtk3/RpNautilusPlugin.hpp
-	../gtk3/RpNautilusProvider.hpp
-	#../gtk3/RpThunarPlugin.hpp	# No plans for GTK4 Thunar yet...
-	#../gtk3/RpThunarProvider.hpp	# No plans for GTK4 Thunar yet...
-	../gtk3/plugin-helper.h
-	../gtk3/thunarx-mini.h
+	RpNautilusPlugin.hpp
+	RpNautilusPropertiesModelProvider.hpp
+	RpNautilusPropertiesModel.hpp
+	../plugin-helper.h
 	)
 
 IF(HAVE_GSOUND)
@@ -155,8 +152,8 @@ IF(BUILD_GTK4)
 	SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES PREFIX "")
 	DO_SPLIT_DEBUG(${PROJECT_NAME})
 	TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
-		PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../gtk3>	# gtk3
-			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../gtk3>	# gtk3
+		PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# gtk4
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# gtk4
 		PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../xfce>	# xfce (for GdkImageConv)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../xfce>	# xfce (for GdkImageConv)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# gtk
@@ -190,7 +187,7 @@ ENDIF(BUILD_GTK4)
 
 # FIXME: Don't use .pc files for the extension libraries, since only
 # one version (3 or 4) can be installed at a time. Use defaults only.
-IF(0) #IF(BUILD_GTK4)
+IF(BUILD_GTK4)
 	# GNOME (Nautilus) extension is installed directly.
 	INSTALL(TARGETS ${PROJECT_NAME}
 		LIBRARY DESTINATION "${LibNautilusExtension4_EXTENSION_DIR}"
@@ -208,4 +205,4 @@ IF(0) #IF(BUILD_GTK4)
 				)
 		ENDIF(DEBUG_FILENAME)
 	ENDIF(INSTALL_DEBUG)
-ENDIF(0) #ENDIF(BUILD_GTK4)
+ENDIF(BUILD_GTK4)

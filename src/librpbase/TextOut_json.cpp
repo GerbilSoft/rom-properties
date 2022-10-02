@@ -104,6 +104,7 @@ public:
 		const auto fields_cend = fields.cend();
 		for (auto iter = fields.cbegin(); iter != fields_cend; ++iter) {
 			const auto &romField = *iter;
+			assert(romField.isValid);
 			if (!romField.isValid)
 				continue;
 

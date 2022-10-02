@@ -148,7 +148,7 @@ SET(${PROJECT_NAME}_H
 	RpNautilusProvider.hpp
 	RpThunarPlugin.hpp
 	RpThunarProvider.hpp
-	plugin-helper.h
+	../plugin-helper.h
 	thunarx-mini.h
 	)
 
