@@ -126,11 +126,13 @@ SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_SSSE3_SRCS}
 	RpNautilusPlugin.cpp
 	RpNautilusPropertiesModelProvider.cpp
+	RpNautilusPropertiesModel.cpp
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_H}
 	RpNautilusPlugin.hpp
 	RpNautilusPropertiesModelProvider.hpp
+	RpNautilusPropertiesModel.hpp
 	../plugin-helper.h
 	)
 
