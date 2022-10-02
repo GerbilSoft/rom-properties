@@ -88,16 +88,6 @@ rp_nautilus_properties_model_init_bitfield(RpNautilusPropertiesModel *self, cons
 	const auto &bitfieldDesc = field.desc.bitfield;
 	assert(bitfieldDesc.names->size() <= 32);
 
-	// Determine the total number of columns.
-	int totalCols;
-	if (bitfieldDesc.elemsPerRow == 0) {
-		// All elements are in one row.
-		totalCols = 999;
-	} else {
-		// Multiple rows.
-		totalCols = bitfieldDesc.elemsPerRow;
-	}
-
 	string str;
 	str.reserve(bitfieldDesc.names->size() * 24);
 
@@ -114,7 +104,7 @@ rp_nautilus_properties_model_init_bitfield(RpNautilusPropertiesModel *self, cons
 			str += "\n";
 			col = 0;
 		} else if (!str.empty()) {
-			// FIXME: Better alignment. (Pango markup isn't supported)
+			// FIXME: Better alignment. (markup isn't supported)
 			str += "    ";
 		}
 
