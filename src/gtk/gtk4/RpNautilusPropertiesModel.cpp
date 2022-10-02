@@ -48,16 +48,11 @@ rp_nautilus_properties_model_init(RpNautilusPropertiesModel *self)
  * Initialize a string field.
  * @param self		[in] RpNautilusPropertiesModel
  * @param field		[in] RomFields::Field
- * @param str		[in,opt] String data (If nullptr, field data is used)
  */
 static void
 rp_nautilus_properties_model_init_string(RpNautilusPropertiesModel *self,
-	const RomFields::Field &field, const char *str = nullptr)
+	const RomFields::Field &field)
 {
-	if (!str) {
-		str = field.data.str;
-	}
-
 	if (field.type == RomFields::RFT_STRING &&
 	    (field.flags & RomFields::STRF_CREDITS))
 	{
@@ -66,7 +61,7 @@ rp_nautilus_properties_model_init_string(RpNautilusPropertiesModel *self,
 	}
 
 	// TODO: Other formatting options?
-	append_item(self, field.name, str);
+	append_item(self, field.name, field.data.str);
 }
 
 /**
@@ -110,7 +105,7 @@ rp_nautilus_properties_model_init_bitfield(RpNautilusPropertiesModel *self, cons
 		}
 	}
 
-	rp_nautilus_properties_model_init_string(self, field, str.c_str());
+	append_item(self, field.name, str.c_str());
 }
 
 /**
@@ -124,7 +119,7 @@ rp_nautilus_properties_model_init_datetime(RpNautilusPropertiesModel *self, cons
 	// Date/Time.
 	if (field.data.date_time == -1) {
 		// tr: Invalid date/time.
-		rp_nautilus_properties_model_init_string(self, field, C_("RomDataView", "Unknown"));
+		append_item(self, field.name, C_("RomDataView", "Unknown"));
 		return;
 	}
 
@@ -137,7 +132,7 @@ rp_nautilus_properties_model_init_datetime(RpNautilusPropertiesModel *self, cons
 	assert(dateTime != nullptr);
 	if (!dateTime) {
 		// Unable to convert the timestamp.
-		rp_nautilus_properties_model_init_string(self, field, C_("RomDataView", "Unknown"));
+		append_item(self, field.name, C_("RomDataView", "Unknown"));
 		return;
 	}
 
@@ -162,7 +157,7 @@ rp_nautilus_properties_model_init_datetime(RpNautilusPropertiesModel *self, cons
 	if (format[0] != '\0') {
 		gchar *const str = g_date_time_format(dateTime, format);
 		if (str) {
-			rp_nautilus_properties_model_init_string(self, field, str);
+			append_item(self, field.name, str);
 			g_free(str);
 		}
 	}
@@ -182,13 +177,13 @@ rp_nautilus_properties_model_init_age_ratings(RpNautilusPropertiesModel *self, c
 	assert(age_ratings != nullptr);
 	if (!age_ratings) {
 		// tr: No age ratings data.
-		rp_nautilus_properties_model_init_string(self, field, C_("RomDataView", "ERROR"));
+		append_item(self, field.name, C_("RomDataView", "ERROR"));
 		return;
 	}
 
 	// Convert the age ratings field to a string.
 	const string str = RomFields::ageRatingsDecode(age_ratings);
-	rp_nautilus_properties_model_init_string(self, field, str.c_str());
+	append_item(self, field.name, str.c_str());
 }
 
 /**
@@ -214,7 +209,7 @@ rp_nautilus_properties_model_init_dimensions(RpNautilusPropertiesModel *self, co
 		snprintf(buf, sizeof(buf), "%d", dimensions[0]);
 	}
 
-	rp_nautilus_properties_model_init_string(self, field, buf);
+	append_item(self, field.name, buf);
 }
 
 /**
@@ -243,7 +238,7 @@ rp_nautilus_properties_model_init_string_multi(RpNautilusPropertiesModel *self, 
 		pStr = nullptr;
 	}
 
-	rp_nautilus_properties_model_init_string(self, field, (pStr ? pStr->c_str() : nullptr));
+	append_item(self, field.name, (pStr ? pStr->c_str() : nullptr));
 }
 
 static void
