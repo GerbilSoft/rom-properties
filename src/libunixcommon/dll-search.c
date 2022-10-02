@@ -169,7 +169,7 @@ static RP_Frontend walk_proc_tree(void)
 #ifdef __linux__
 	// Linux-specific: Walk through /proc.
 	pid_t ppid = getppid();
-	while (ppid > 1) {
+	for (unsigned int max_pid_check = 64; ppid > 1 && max_pid_check > 0; max_pid_check--) {
 		// Open the /proc/$PID/status file.
 		char process_name[32];
 
@@ -208,7 +208,7 @@ static RP_Frontend walk_proc_tree(void)
 		}
 	}
 #else
-# warning walk_proc_tree() is not implemented for this OS.
+#  warning walk_proc_tree() is not implemented for this OS.
 #endif
 
 	return ret_fe;
