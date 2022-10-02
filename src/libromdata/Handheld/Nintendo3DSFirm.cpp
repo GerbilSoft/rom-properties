@@ -311,7 +311,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 		// System version.
 		d->fields->addField_string(C_("Nintendo3DSFirm", "System Version"),
 			rp_sprintf("%u.%u", firmBin->sys.major, firmBin->sys.minor));
-	} else if (checkARM9) {
+	} else if (firmBuf && checkARM9) {
 		// Check for ARM9 homebrew.
 
 		// Version strings.
