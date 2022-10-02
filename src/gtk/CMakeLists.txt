@@ -38,6 +38,7 @@ UNSET(OLD_CMAKE_REQUIRED_DEFINITIONS)
 SET(${PROJECT_NAME}_SRCS
 	RomDataView.cpp
 	RomDataView_ops.cpp
+	RomDataFormat.cpp
 	DragImage.cpp
 	CreateThumbnail.cpp
 	PIMGTYPE.cpp
@@ -64,6 +65,7 @@ SET(${PROJECT_NAME}_SRCS
 SET(${PROJECT_NAME}_H
 	RomDataView.hpp
 	RomDataView_p.hpp
+	RomDataFormat.hpp
 	DragImage.hpp
 	PIMGTYPE.hpp
 	rp-gtk-enums.h

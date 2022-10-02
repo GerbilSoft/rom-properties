@@ -12,6 +12,8 @@
 
 #include "stdafx.h"
 #include "RpNautilusPropertiesModel.hpp"
+#include "RomDataFormat.hpp"
+
 #include "libi18n/i18n.h"
 
 // librpbase
@@ -116,53 +118,14 @@ rp_nautilus_properties_model_init_bitfield(RpNautilusPropertiesModel *self, cons
 static void
 rp_nautilus_properties_model_init_datetime(RpNautilusPropertiesModel *self, const RomFields::Field &field)
 {
-	// Date/Time.
-	if (field.data.date_time == -1) {
+	gchar *const str = rom_data_format_datetime(field.data.date_time, field.flags);
+	if (str) {
+		append_item(self, field.name, str);
+		g_free(str);
+	} else {
 		// tr: Invalid date/time.
 		append_item(self, field.name, C_("RomDataView", "Unknown"));
-		return;
 	}
-
-	GDateTime *dateTime;
-	if (field.flags & RomFields::RFT_DATETIME_IS_UTC) {
-		dateTime = g_date_time_new_from_unix_utc(field.data.date_time);
-	} else {
-		dateTime = g_date_time_new_from_unix_local(field.data.date_time);
-	}
-	assert(dateTime != nullptr);
-	if (!dateTime) {
-		// Unable to convert the timestamp.
-		append_item(self, field.name, C_("RomDataView", "Unknown"));
-		return;
-	}
-
-	static const char formats_strtbl[] =
-		"\0"		// [0] No date or time
-		"%x\0"		// [1] Date
-		"%X\0"		// [4] Time
-		"%x %X\0"	// [7] Date Time
-
-		// TODO: Better localization here.
-		"\0"		// [13] No date or time
-		"%b %d\0"	// [14] Date (no year)
-		"%X\0"		// [20] Time
-		"%b %d %X\0";	// [23] Date Time (no year)
-	static const uint8_t formats_offtbl[8] = {0, 1, 4, 7, 13, 14, 20, 23};
-	static_assert(sizeof(formats_strtbl) == 33, "formats_offtbl[] needs to be recalculated");
-
-	const unsigned int offset = (field.flags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK);
-	const char *const format = &formats_strtbl[formats_offtbl[offset]];
-	assert(format[0] != '\0');
-
-	if (format[0] != '\0') {
-		gchar *const str = g_date_time_format(dateTime, format);
-		if (str) {
-			append_item(self, field.name, str);
-			g_free(str);
-		}
-	}
-
-	g_date_time_unref(dateTime);
 }
 
 /**
@@ -194,22 +157,9 @@ rp_nautilus_properties_model_init_age_ratings(RpNautilusPropertiesModel *self, c
 static void
 rp_nautilus_properties_model_init_dimensions(RpNautilusPropertiesModel *self, const RomFields::Field &field)
 {
-	// TODO: 'x' or '×'? Using 'x' for now.
-	const int *const dimensions = field.data.dimensions;
-	char buf[64];
-	if (dimensions[1] > 0) {
-		if (dimensions[2] > 0) {
-			snprintf(buf, sizeof(buf), "%dx%dx%d",
-				dimensions[0], dimensions[1], dimensions[2]);
-		} else {
-			snprintf(buf, sizeof(buf), "%dx%d",
-				dimensions[0], dimensions[1]);
-		}
-	} else {
-		snprintf(buf, sizeof(buf), "%d", dimensions[0]);
-	}
-
-	append_item(self, field.name, buf);
+	gchar *const str = rom_data_format_dimensions(field.data.dimensions);
+	append_item(self, field.name, str);
+	g_free(str);
 }
 
 /**

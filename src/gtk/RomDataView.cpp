@@ -10,6 +10,8 @@
 
 #include "RomDataView.hpp"
 #include "RomDataView_p.hpp"
+#include "RomDataFormat.hpp"
+
 #include "rp-gtk-enums.h"
 #include "sort_funcs.h"
 #include "is-supported.hpp"
@@ -1215,52 +1217,17 @@ static GtkWidget*
 rom_data_view_init_datetime(RomDataView *page,
 	const RomFields::Field &field, int fieldIdx)
 {
-	// Date/Time.
-	if (field.data.date_time == -1) {
-		// tr: Invalid date/time.
-		return rom_data_view_init_string(page, field, fieldIdx, C_("RomDataView", "Unknown"));
-	}
+	GtkWidget *widget;
 
-	GDateTime *dateTime;
-	if (field.flags & RomFields::RFT_DATETIME_IS_UTC) {
-		dateTime = g_date_time_new_from_unix_utc(field.data.date_time);
+	gchar *const str = rom_data_format_datetime(field.data.date_time, field.flags);
+	if (str) {
+		widget = rom_data_view_init_string(page, field, fieldIdx, str);
+		g_free(str);
 	} else {
-		dateTime = g_date_time_new_from_unix_local(field.data.date_time);
-	}
-	assert(dateTime != nullptr);
-	if (!dateTime) {
-		// Unable to convert the timestamp.
-		return rom_data_view_init_string(page, field, fieldIdx, C_("RomDataView", "Unknown"));
+		// tr: Invalid date/time.
+		widget = rom_data_view_init_string(page, field, fieldIdx, C_("RomDataView", "Unknown"));
 	}
 
-	static const char formats_strtbl[] =
-		"\0"		// [0] No date or time
-		"%x\0"		// [1] Date
-		"%X\0"		// [4] Time
-		"%x %X\0"	// [7] Date Time
-
-		// TODO: Better localization here.
-		"\0"		// [13] No date or time
-		"%b %d\0"	// [14] Date (no year)
-		"%X\0"		// [20] Time
-		"%b %d %X\0";	// [23] Date Time (no year)
-	static const uint8_t formats_offtbl[8] = {0, 1, 4, 7, 13, 14, 20, 23};
-	static_assert(sizeof(formats_strtbl) == 33, "formats_offtbl[] needs to be recalculated");
-
-	const unsigned int offset = (field.flags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK);
-	const char *const format = &formats_strtbl[formats_offtbl[offset]];
-	assert(format[0] != '\0');
-
-	GtkWidget *widget = nullptr;
-	if (format[0] != '\0') {
-		gchar *const str = g_date_time_format(dateTime, format);
-		if (str) {
-			widget = rom_data_view_init_string(page, field, fieldIdx, str);
-			g_free(str);
-		}
-	}
-
-	g_date_time_unref(dateTime);
 	return widget;
 }
 
@@ -1275,7 +1242,6 @@ static GtkWidget*
 rom_data_view_init_age_ratings(RomDataView *page,
 	const RomFields::Field &field, int fieldIdx)
 {
-	// Age ratings.
 	const RomFields::age_ratings_t *const age_ratings = field.data.age_ratings;
 	assert(age_ratings != nullptr);
 	if (!age_ratings) {
@@ -1299,23 +1265,10 @@ static GtkWidget*
 rom_data_view_init_dimensions(RomDataView *page,
 	const RomFields::Field &field, int fieldIdx)
 {
-	// Dimensions.
-	// TODO: 'x' or '×'? Using 'x' for now.
-	const int *const dimensions = field.data.dimensions;
-	char buf[64];
-	if (dimensions[1] > 0) {
-		if (dimensions[2] > 0) {
-			snprintf(buf, sizeof(buf), "%dx%dx%d",
-				dimensions[0], dimensions[1], dimensions[2]);
-		} else {
-			snprintf(buf, sizeof(buf), "%dx%d",
-				dimensions[0], dimensions[1]);
-		}
-	} else {
-		snprintf(buf, sizeof(buf), "%d", dimensions[0]);
-	}
-
-	return rom_data_view_init_string(page, field, fieldIdx, buf);
+	gchar *const str = rom_data_format_dimensions(field.data.dimensions);
+	GtkWidget *const widget = rom_data_view_init_string(page, field, fieldIdx, str);
+	g_free(str);
+	return widget;
 }
 
 /**
