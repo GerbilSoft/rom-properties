@@ -1732,6 +1732,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 	const auto pFields_cend = pFields->cend();
 	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter) {
 		const RomFields::Field &field = *iter;
+		assert(field.isValid);
 		if (!field.isValid) {
 			t_desc_text.emplace_back(tstring());
 			continue;
