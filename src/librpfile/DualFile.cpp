@@ -30,6 +30,11 @@ DualFile::DualFile(IRpFile *file0, IRpFile *file1)
 	if (!file0 || !file1) {
 		// File is missing.
 		m_lastError = EBADF;
+		m_fullSize = 0;
+		m_file[0] = nullptr;
+		m_file[1] = nullptr;
+		m_size[0] = 0;
+		m_size[1] = 0;
 		return;
 	}
 
