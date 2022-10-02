@@ -187,7 +187,7 @@ ENDIF(BUILD_GTK4)
 
 # FIXME: Don't use .pc files for the extension libraries, since only
 # one version (3 or 4) can be installed at a time. Use defaults only.
-IF(0) #IF(BUILD_GTK4)
+IF(BUILD_GTK4)
 	# GNOME (Nautilus) extension is installed directly.
 	INSTALL(TARGETS ${PROJECT_NAME}
 		LIBRARY DESTINATION "${LibNautilusExtension4_EXTENSION_DIR}"
@@ -205,4 +205,4 @@ IF(0) #IF(BUILD_GTK4)
 				)
 		ENDIF(DEBUG_FILENAME)
 	ENDIF(INSTALL_DEBUG)
-ENDIF(0) #ENDIF(BUILD_GTK4)
+ENDIF(BUILD_GTK4)

@@ -11,6 +11,7 @@ packages:
 * XFCE (GTK+ 2.x): libglib2.0-dev libgtk2.0-dev libgdk-pixbuf2.0-dev libthunarx-2-dev libcanberra-dev libgsound-dev
 * XFCE (GTK+ 3.x): libglib2.0-dev libgtk-3-dev libcairo2-dev libthunarx-3-dev libgsound-dev
 * GNOME, MATE, Cinnamon: libglib2.0-dev libgtk-3-dev libcairo2-dev libnautilus-extension-dev libgsound-dev
+* GNOME 43: libglib2.0-dev libgtk-4-dev libgdk-pixbuf2.0-dev libnautilus-extension-dev libgsound-dev
 
 NOTE: On older versions of Ubuntu, some packages were different:
 * Earlier than 18.04:
@@ -30,6 +31,7 @@ packages:
 * XFCE (GTK+ 2.x): glib2-devel gtk2-devel gdk-pixbuf2-devel Thunar-devel gsound-devel
 * XFCE (GTK+ 3.x): glib2-devel gtk3-devel cairo-devel Thunar-devel gsound-devel
 * GNOME, MATE, Cinnamon: glib2-devel gtk3-devel cairo-devel nautilus-devel gsound-devel
+* GNOME 43: glib2-devel gtk4-devel gdk-pixbuf2-devel nautilus-devel gsound-devel
 
 NOTE: If gsound-devel is not available, use libcanberra-devel instead.
 
