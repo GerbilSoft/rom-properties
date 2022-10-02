@@ -22,7 +22,7 @@ namespace LibRomData { namespace SegaPublishers {
  */
 const char *lookup(unsigned int code)
 {
-	if (code > ARRAY_SIZE(SegaTCode_offtbl)) {
+	if (code >= ARRAY_SIZE(SegaTCode_offtbl)) {
 		return nullptr;
 	}
 
