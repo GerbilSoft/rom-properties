@@ -745,9 +745,9 @@ key_manager_tab_show_key_import_return_status(KeyManagerTab	*tab,
 			break;
 
 		case KeyStoreUI::ImportStatus::KeysImported: {
-			const unsigned int keyCount = iret.keysImportedVerify + iret.keysImportedNoVerify;
+			const int keyCount = static_cast<int>(iret.keysImportedVerify + iret.keysImportedNoVerify);
 			char buf[16];
-			snprintf(buf, sizeof(buf), "%'u", keyCount);
+			snprintf(buf, sizeof(buf), "%'d", keyCount);
 
 			msg = rp_sprintf_p(NC_("KeyManagerTab",
 				// tr: %1$s == number of keys (formatted), %2$u == filename
