@@ -117,7 +117,7 @@ int RP_C_API main(int argc, char *argv[])
 	// disc the FST belongs to.
 	unsigned int fst_start_offset = 0;
 	static const uint8_t root_dir_data[] = {1,0,0,0,0,0,0,0,0,0};
-	if (rd_size >= 0x60) {
+	if (fileSize >= 0x60) {
 		if (!memcmp(&fstData[0x50], root_dir_data, sizeof(root_dir_data))) {
 			// Found an NKit FST.
 			fst_start_offset = 0x50;
