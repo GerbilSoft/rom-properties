@@ -16,8 +16,7 @@
 
 // librpbase
 #include "librpbase/RomData.hpp"
-using LibRpBase::RomData;
-using LibRpBase::RomFields;
+using namespace LibRpBase;
 
 // C++ STL classes
 using std::string;
@@ -260,6 +259,28 @@ rp_nautilus_properties_model_load_from_romData(RpNautilusPropertiesModel *self,
 
 	// TODO: Asynchronous field loading. (separate thread?)
 	// If implemented, check Nautilus 43's image-extension for cancellable.
+
+	// System name and file type.
+	// TODO: System logo and/or game title?
+	const char *systemName = romData->systemName(
+		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
+	const char *fileType = romData->fileType_string();
+	assert(systemName != nullptr);
+	assert(fileType != nullptr);
+	if (!systemName) {
+		systemName = C_("RomDataView", "(unknown system)");
+	}
+	if (!fileType) {
+		fileType = C_("RomDataView", "(unknown filetype)");
+	}
+
+	// Add a "File Type" field with the system name and file type.
+	// Other UI frontends have dedicated widgets for this.
+	// NOTE: Using " | " separator; other UI frontends use "\n". (rpcli uses a single space)
+	const string sysInfo = rp_sprintf_p(
+		// tr: %1$s == system name, %2$s == file type
+		C_("RomDataView", "%1$s | %2$s"), systemName, fileType);
+	append_item(self, C_("RomDataView", "File Type"), sysInfo.c_str());
 
 	// Process RomData fields.
 	// NOTE: Not all field types can be handled here,
