@@ -821,6 +821,8 @@ key_manager_tab_show_key_import_return_status(KeyManagerTab	*tab,
 		}
 	}
 
+	g_free(fileNoPath);
+
 	// Display the message.
 	// TODO: Copy over timeout code from RomDataView?
 	// (Or, remove the timeout code entirely?)
