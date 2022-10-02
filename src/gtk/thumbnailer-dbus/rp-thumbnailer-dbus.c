@@ -501,7 +501,7 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 {
 	g_return_val_if_fail(IS_RP_THUMBNAILER(thumbnailer), FALSE);
 
-	const gchar *md5_string;	// owned by md5 object
+	gchar *md5_string = NULL;	// owned by us
 	const struct request_info *req;	// request info from the map
 	gchar *cache_filename = NULL;	// cache filename (g_strdup_printf())
 	size_t cache_filename_sz;	// size of cache_filename
@@ -606,6 +606,7 @@ finished:
 cleanup:
 	// Free allocated things.
 	g_free(cache_filename);
+	g_free(md5_string);
 
 	// req was allocated using g_malloc() before it was
 	// added to the queue. We'll need to free it here.
