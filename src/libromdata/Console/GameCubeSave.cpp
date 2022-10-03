@@ -166,6 +166,7 @@ void GameCubeSavePrivate::byteswap_direntry(card_direntry *direntry, SaveType sa
 
 	// FIXME: Dolphin says the GCS length field might not be accurate.
 
+#if SYS_BYTEORDER != SYS_BIG_ENDIAN
 	// 16-bit fields.
 	direntry->iconfmt	= be16_to_cpu(direntry->iconfmt);
 	direntry->iconspeed	= be16_to_cpu(direntry->iconspeed);
@@ -177,6 +178,7 @@ void GameCubeSavePrivate::byteswap_direntry(card_direntry *direntry, SaveType sa
 	direntry->lastmodified	= be32_to_cpu(direntry->lastmodified);
 	direntry->iconaddr	= be32_to_cpu(direntry->iconaddr);
 	direntry->commentaddr	= be32_to_cpu(direntry->commentaddr);
+#endif /* SYS_BYTEORDER != SYS_BIG_ENDIAN */
 }
 
 /**
