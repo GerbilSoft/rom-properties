@@ -29,6 +29,7 @@
 typedef enum {
 	RP_FE_KDE4,
 	RP_FE_KF5,
+	RP_FE_KF6,
 	RP_FE_GTK2,	// XFCE (Thunar 1.6)
 	RP_FE_GTK3,	// GNOME, MATE, Cinnamon, XFCE (Thunar 1.8)
 	RP_FE_GTK4,	// not used yet
@@ -45,6 +46,11 @@ static const char *const RP_Extension_Path[RP_FE_MAX] = {
 #endif
 #ifdef KF5_PLUGIN_INSTALL_DIR
 	KF5_PLUGIN_INSTALL_DIR "/rom-properties-kf5.so",
+#else
+	NULL,
+#endif
+#ifdef KF6_PLUGIN_INSTALL_DIR
+	KF6_PLUGIN_INSTALL_DIR "/rom-properties-kf6.so",
 #else
 	NULL,
 #endif
@@ -69,11 +75,12 @@ static const char *const RP_Extension_Path[RP_FE_MAX] = {
 // - Index: Current desktop environment. (RP_Frontend)
 // - Value: Plugin to use. (RP_Frontend)
 static const uint8_t plugin_prio[RP_FE_MAX][RP_FE_MAX] = {
-	{RP_FE_KDE4, RP_FE_KF5, RP_FE_GTK2, RP_FE_GTK3, RP_FE_GTK4},	// RP_FE_KDE4
-	{RP_FE_KF5, RP_FE_KDE4, RP_FE_GTK4, RP_FE_GTK3, RP_FE_GTK2},	// RP_FE_KF5
-	{RP_FE_GTK2, RP_FE_GTK3, RP_FE_GTK4, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_GTK2
-	{RP_FE_GTK3, RP_FE_GTK4, RP_FE_GTK2, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_GTK3
-	{RP_FE_GTK4, RP_FE_GTK3, RP_FE_GTK2, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_GTK4
+	{RP_FE_KDE4, RP_FE_KF5, RP_FE_KF6, RP_FE_GTK2, RP_FE_GTK3, RP_FE_GTK4},	// RP_FE_KDE4
+	{RP_FE_KF5, RP_FE_KF6, RP_FE_KDE4, RP_FE_GTK4, RP_FE_GTK3, RP_FE_GTK2},	// RP_FE_KF5
+	{RP_FE_KF6, RP_FE_KF5, RP_FE_KDE4, RP_FE_GTK4, RP_FE_GTK3, RP_FE_GTK2},	// RP_FE_KF6
+	{RP_FE_GTK2, RP_FE_GTK3, RP_FE_GTK4, RP_FE_KF6, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_GTK2
+	{RP_FE_GTK3, RP_FE_GTK4, RP_FE_GTK2, RP_FE_KF6, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_GTK3
+	{RP_FE_GTK4, RP_FE_GTK3, RP_FE_GTK2, RP_FE_KF6, RP_FE_KF5, RP_FE_KDE4},	// RP_FE_GTK4
 };
 
 /**
@@ -183,7 +190,12 @@ static RP_Frontend walk_proc_tree(void)
 		// Check the parent process name.
 		// NOTE: Unity and XFCE don't have unique parent processes.
 		// FIXME: Handle ksmserver...
-		if (!strcmp(process_name, "kdeinit5")) {
+		if (!strcmp(process_name, "kdeinit6")) {
+			// Found kdeinit6. (TODO: Verify this)
+			ret_fe = RP_FE_KF6;
+			ppid = 0;
+			break;
+		} else if (!strcmp(process_name, "kdeinit5")) {
 			// Found kdeinit5.
 			ret_fe = RP_FE_KF5;
 			ppid = 0;
@@ -230,6 +242,7 @@ static inline RP_Frontend check_xdg_desktop_name(const char *name)
 		// KDE.
 		// Check parent processes to determine the version.
 		// NOTE: Assuming KF5 if unable to determine the KDE version.
+		// TODO: Check for KF6?
 		RP_Frontend ret = walk_proc_tree();
 		if (ret >= RP_FE_MAX) {
 			// Unknown. Assume KF5.
@@ -253,7 +266,9 @@ static inline RP_Frontend check_xdg_desktop_name(const char *name)
 
 	// NOTE: The following desktop names are not actually used.
 	// They're used here for debugging purposes only.
-	if (!strcasecmp(name, "KF5") || !strcasecmp(name, "KDE5")) {
+	if (!strcasecmp(name, "KF6") || !strcasecmp(name, "KDE6")) {
+		return RP_FE_KF6;
+	} else if (!strcasecmp(name, "KF5") || !strcasecmp(name, "KDE5")) {
 		return RP_FE_KF5;
 	} else if (!strcasecmp(name, "KDE4")) {
 		return RP_FE_KDE4;
@@ -343,7 +358,7 @@ int rp_dll_search(const char *symname, void **ppDll, void **ppfn, PFN_RP_DLL_DEB
 	// Debug: Print the active desktop environment.
 	if (pfnDebug) {
 		static const char de_name_tbl[][8] = {
-			"KDE4", "KF5",
+			"KDE4", "KF5", "KF6",
 			"GTK2", "GTK3", "GTK4",
 		};
 		static_assert(sizeof(de_name_tbl)/sizeof(de_name_tbl[0]) == RP_FE_MAX,

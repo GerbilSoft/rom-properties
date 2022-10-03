@@ -30,8 +30,9 @@ IF(BUILD_KDE4)
 	STRING(REPLACE "-std=iso9899:1990" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 ENDIF(BUILD_KDE4)
 
-# Find the qtpaths executable.
 IF(BUILD_KF5)
+	# Find the qtpaths executable for Qt5.
+	SET(QT_SELECT_OLD "$ENV{QT_SELECT}")
 	SET(ENV{QT_SELECT} qt5)
 	FIND_PROGRAM(QTPATHS qtpaths)
 	IF(NOT QTPATHS)
@@ -49,13 +50,41 @@ IF(BUILD_KF5)
 	EXEC_PROGRAM(${QTPATHS} ARGS --install-prefix OUTPUT_VARIABLE QT5_INSTALL_PREFIX)
 	INCLUDE(ReplaceHardcodedPrefix)
 	REPLACE_HARDCODED_PREFIX(KF5_PLUGIN_INSTALL_DIR "${QT5_INSTALL_PREFIX}")
-	SET(ENV{QT_SELECT} ${QT_SELECT_OLD})
+	SET(ENV{QT_SELECT} "${QT_SELECT_OLD}")
 	UNSET(QT_SELECT_OLD)
 
 	SET(KF5_PRPD_PLUGIN_INSTALL_DIR "${KF5_PLUGIN_INSTALL_DIR}/kf5/propertiesdialog")
 	SET(KF5_KFMD_PLUGIN_INSTALL_DIR "${KF5_PLUGIN_INSTALL_DIR}/kf5/kfilemetadata")
 	SET(KF5_KOVI_PLUGIN_INSTALL_DIR "${KF5_PLUGIN_INSTALL_DIR}/kf5/overlayicon")
 ENDIF(BUILD_KF5)
+
+IF(BUILD_KF5)
+	# Find the qtpaths executable for Qt6.
+	SET(QT_SELECT_OLD "$ENV{QT_SELECT}")
+	SET(ENV{QT_SELECT} qt6)
+	FIND_PROGRAM(QTPATHS qtpaths)
+	IF(NOT QTPATHS)
+		MESSAGE(FATAL_ERROR "qtpaths not found. Install one of these packages:
+  - Debian/Ubuntu: qttools6-dev-tools
+  - Red Hat/Fedora: qt6-qttools")
+	ENDIF(NOT QTPATHS)
+
+	# Get the plugin directory and Qt prefix.
+	# Prefix will be removed from the plugin directory if necessary.
+	EXEC_PROGRAM(${QTPATHS} ARGS --plugin-dir OUTPUT_VARIABLE KF6_PLUGIN_INSTALL_DIR)
+	IF(NOT KF6_PLUGIN_INSTALL_DIR)
+		MESSAGE(FATAL_ERROR "`qtpaths` isn't working correctly.")
+	ENDIF(NOT KF6_PLUGIN_INSTALL_DIR)
+	EXEC_PROGRAM(${QTPATHS} ARGS --install-prefix OUTPUT_VARIABLE QT6_INSTALL_PREFIX)
+	INCLUDE(ReplaceHardcodedPrefix)
+	REPLACE_HARDCODED_PREFIX(KF6_PLUGIN_INSTALL_DIR "${QT6_INSTALL_PREFIX}")
+	SET(ENV{QT_SELECT} "${QT_SELECT_OLD}")
+	UNSET(QT_SELECT_OLD)
+
+	SET(KF6_PRPD_PLUGIN_INSTALL_DIR "${KF6_PLUGIN_INSTALL_DIR}/kf6/propertiesdialog")
+	SET(KF6_KFMD_PLUGIN_INSTALL_DIR "${KF6_PLUGIN_INSTALL_DIR}/kf6/kfilemetadata")
+	SET(KF6_KOVI_PLUGIN_INSTALL_DIR "${KF6_PLUGIN_INSTALL_DIR}/kf6/overlayicon")
+ENDIF(BUILD_KF6)
 
 # GTK+ UI frontends.
 # NOTE: Only checking for the main plugin, not symlinked plugins.
