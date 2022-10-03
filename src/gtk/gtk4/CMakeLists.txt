@@ -19,23 +19,21 @@ IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf
 	# initialization function is called.
 
 	# Nautilus (GNOME)
-	FIND_PACKAGE(LibNautilusExtension)
-	IF(LibNautilusExtension_FOUND)
-		# Check if it's v3 or v4.
-		IF(LibNautilusExtension_EXTENSION_DIR MATCHES 4\.0$)
-			# v4: Use the directory as-is.
-			SET(LibNautilusExtension4_EXTENSION_DIR "${LibNautilusExtension_EXTENSION_DIR}")
-		ELSEIF(LibNautilusExtension_EXTENSION_DIR MATCHES 3\.0$)
+	FIND_PACKAGE(LibNautilusExtension4)	# v4
+	IF(LibNautilusExtension4_FOUND)
+		# Found v4.
+	ELSE(LibNautilusExtension4_FOUND)
+		# Check if v3 is installed.
+		FIND_PACKAGE(LibNautilusExtension)
+		IF(LibNautilusExtension)
 			# v3: Replace the version number with 4.
-			STRING(REPLACE "extensions-3.0" "extensions-4.0" LibNautilusExtension4_EXTENSION_DIR "${LibNautilusExtension_EXTENSION_DIR}") 
-		ELSE()
-			MESSAGE(STATUS "Unrecognized LibNautilusExtension version found. Using the default extensions directory.")
+			STRING(REPLACE "extensions-3.0" "extensions-4.0" LibNautilusExtension4_EXTENSION_DIR "${LibNautilusExtension_EXTENSION_DIR}")
+		ELSE(LibNautilusExtension)
+			# Neither v3 nor v4 were found.
+			MESSAGE(STATUS "LibNautilusExtension4 not found. Using the default extensions directory.")
 			SET(LibNautilusExtension4_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/nautilus/extensions-4")
-		ENDIF()
-	ELSE(LibNautilusExtension_FOUND)
-		MESSAGE(STATUS "LibNautilusExtension not found. Using the default extensions directory.")
-		SET(LibNautilusExtension4_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/nautilus/extensions-4")
-	ENDIF(LibNautilusExtension_FOUND)
+		ENDIF(LibNautilusExtension)
+	ENDIF(LibNautilusExtension4_FOUND)
 ELSE()
 	# GTK 4.x (or required dependencies) were not found.
 	# Disable the GTK4 frontend.

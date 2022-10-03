@@ -24,22 +24,21 @@ IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND CairoGObj
 	# initialization function is called.
 
 	# Nautilus (GNOME)
-	FIND_PACKAGE(LibNautilusExtension)
+	FIND_PACKAGE(LibNautilusExtension)	# v3
 	IF(LibNautilusExtension_FOUND)
-		# Check if it's v3 or v4.
-		IF(LibNautilusExtension_EXTENSION_DIR MATCHES 3\.0$)
-			# v3: Use the directory as-is.
-			SET(LibNautilusExtension3_EXTENSION_DIR "${LibNautilusExtension_EXTENSION_DIR}")
-		ELSEIF(LibNautilusExtension_EXTENSION_DIR MATCHES 4\.0$)
-			# v4: Replace the version number with 3.0.
-			STRING(REPLACE "extensions-4" "extensions-3.0" LibNautilusExtension3_EXTENSION_DIR "${LibNautilusExtension_EXTENSION_DIR}") 
-		ELSE()
-			MESSAGE(STATUS "Unrecognized LibNautilusExtension version found. Using the default extensions directory.")
-			SET(LibNautilusExtension3_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/nautilus/extensions-3.0")
-		ENDIF()
+		# Found v3.
+		SET(LibNautilusExtension3_EXTENSION_DIR "${LibNautilusExtension_EXTENSION_DIR}")
 	ELSE(LibNautilusExtension_FOUND)
-		MESSAGE(STATUS "LibNautilusExtension not found. Using the default extensions directory.")
-		SET(LibNautilusExtension3_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/nautilus/extensions-3.0")
+		# Check if v4 is installed.
+		FIND_PACKAGE(LibNautilusExtension4)
+		IF(LibNautilusExtension4_FOUND)
+			# v4: Replace the version number with 3.0.
+			STRING(REPLACE "extensions-4" "extensions-3.0" LibNautilusExtension3_EXTENSION_DIR "${LibNautilusExtension4_EXTENSION_DIR}") 
+		ELSE(LibNautilusExtension4_FOUND)
+			# Neither v3 nor v4 were found.
+			MESSAGE(STATUS "LibNautilusExtension not found. Using the default extensions directory.")
+			SET(LibNautilusExtension3_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/nautilus/extensions-3.0")
+		ENDIF(LibNautilusExtension4_FOUND)
 	ENDIF(LibNautilusExtension_FOUND)
 
 	# Caja (MATE)

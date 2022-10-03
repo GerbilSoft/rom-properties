@@ -68,25 +68,23 @@ IF(BUILD_GTK2)
 ENDIF(BUILD_GTK2)
 IF(BUILD_GTK3 OR BUILD_GTK4)
 	# Nautilus (GNOME)
-	FIND_PACKAGE(LibNautilusExtension)
-	IF(LibNautilusExtension_FOUND)
-		# Check if it's v3 or v4.
-		IF(LibNautilusExtension_EXTENSION_DIR MATCHES 3\.0$)
-			SET(LibNautilusExtension3_EXTENSION_DIR "${LibNautilusExtension_EXTENSION_DIR}")
-			STRING(REPLACE "extensions-3.0" "extensions-4" LibNautilusExtension4_EXTENSION_DIR "${LibNautilusExtension_EXTENSION_DIR}") 
-		ELSEIF(LibNautilusExtension_EXTENSION_DIR MATCHES 4\.0$)
-			STRING(REPLACE "extensions-4" "extensions-3.0" LibNautilusExtension3_EXTENSION_DIR "${LibNautilusExtension_EXTENSION_DIR}") 
-			SET(LibNautilusExtension4_EXTENSION_DIR "${LibNautilusExtension_EXTENSION_DIR}")
-		ELSE()
-			MESSAGE(STATUS "Unrecognized LibNautilusExtension version found. Using the default extensions directory.")
-			SET(LibNautilusExtension3_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/nautilus/extensions-3.0")
-			SET(LibNautilusExtension4_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/nautilus/extensions-4")
-		ENDIF()
-	ELSE(LibNautilusExtension_FOUND)
+	FIND_PACKAGE(LibNautilusExtension)	# v3
+	FIND_PACKAGE(LibNautilusExtension4)	# v4
+	IF(LibNautilusExtension_FOUND AND LibNautilusExtnsion4_FOUND)
+		# Found both versions. (...not normally possible?)
+	ELSEIF(LibNautilusExtension_FOUND)
+		# Found v3 but not v4. Use defaults for v4.
+		SET(LibNautilusExtension3_EXTENSION_DIR "${LibNautilusExtension_EXTENSION_DIR}")
+		STRING(REPLACE "extensions-3.0" "extensions-4" LibNautilusExtension4_EXTENSION_DIR "${LibNautilusExtension_EXTENSION_DIR}") 
+	ELSEIF(LibNautilusExtension4_FOUND)
+		# Found v4 but not v3. Use defaults for v3.
+		STRING(REPLACE "extensions-4" "extensions-3.0" LibNautilusExtension3_EXTENSION_DIR "${LibNautilusExtension_EXTENSION_DIR}") 
+	ELSE()
+		# Neither v3 nor v4 were found.
 		MESSAGE(STATUS "LibNautilusExtension not found. Using the default extensions directory.")
 		SET(LibNautilusExtension3_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/nautilus/extensions-3.0")
 		SET(LibNautilusExtension4_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/nautilus/extensions-4")
-	ENDIF(LibNautilusExtension_FOUND)
+	ENDIF()
 ENDIF(BUILD_GTK3 OR BUILD_GTK4)
 
 # Check for C library functions.
