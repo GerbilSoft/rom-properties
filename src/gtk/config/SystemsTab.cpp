@@ -211,6 +211,18 @@ systems_tab_init(SystemsTab *tab)
 	gtk_table_attach(GTK_TABLE(table), tab->cboSGB, 1, 2, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(table), lblCGB, 0, 1, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
 	gtk_table_attach(GTK_TABLE(table), tab->cboCGB, 1, 2, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
+
+#if !GTK_CHECK_VERSION(3,0,0)
+	// GTK2: Vertically-center the labels. (Not needed for GTK3/GTK4...)
+	gfloat xalign;
+	gtk_misc_get_alignment(GTK_MISC(lblDMG), &xalign, nullptr);
+	gtk_misc_set_alignment(GTK_MISC(lblDMG), xalign, 0.5f);
+	gtk_misc_get_alignment(GTK_MISC(lblSGB), &xalign, nullptr);
+	gtk_misc_set_alignment(GTK_MISC(lblSGB), xalign, 0.5f);
+	gtk_misc_get_alignment(GTK_MISC(lblCGB), &xalign, nullptr);
+	gtk_misc_set_alignment(GTK_MISC(lblCGB), xalign, 0.5f);
+#endif /* !GTK_CHECK_VERSION(3,0,0) */
+
 #endif /* USE_GTK_GRID */
 
 #if GTK_CHECK_VERSION(4,0,0)
