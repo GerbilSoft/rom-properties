@@ -104,7 +104,11 @@ int RP_C_API rp_show_config_dialog(int argc, char *argv[])
 	// NOTE: GApplication is supposed to set this, but KDE isn't seeing it...
 	g_set_prgname("com.gerbilsoft.rom-properties.rp-config");
 	g_signal_connect(app, "activate", G_CALLBACK(app_activate), NULL);
-	status = g_application_run(G_APPLICATION(app), argc, argv);
+
+	// NOTE: We aren't setting up command line options in GApplication,
+	// so it will complain if argv has any parameters.
+	char *argv_new[1] = { argv[0] };
+	status = g_application_run(G_APPLICATION(app), 1, argv_new);
 #else /* !GTK_CHECK_VERSION(2,90,2) */
 	// NOTE: GTK2 doesn't send a startup notification.
 	// Not going to implement the Startup Notification protocol manually
