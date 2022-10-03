@@ -32,7 +32,7 @@ struct FirmBin_t {
 
 /**
  * Look up a Nintendo 3DS firmware binary.
- * @param Firmware binary CRC32.
+ * @param crc Firmware binary CRC32.
  * @return Firmware binary data, or nullptr if not found.
  */
 const FirmBin_t *lookup_firmBin(uint32_t crc);
