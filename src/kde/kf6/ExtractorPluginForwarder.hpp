@@ -26,7 +26,7 @@ class ExtractorPluginForwarder final : public ::KFileMetaData::ExtractorPlugin
 
 	public:
 		explicit ExtractorPluginForwarder(QObject *parent = nullptr);
-		virtual ~ExtractorPluginForwarder();
+		~ExtractorPluginForwarder() final;
 
 	private:
 		typedef KFileMetaData::ExtractorPlugin super;

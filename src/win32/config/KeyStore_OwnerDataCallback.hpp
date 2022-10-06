@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * KeyStore_OwnerDataCallback.hpp: LVS_OWNERDATA callback for Vista.       *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,7 +21,7 @@ class KeyStore_OwnerDataCallback final : public LibWin32Common::ComBase<IOwnerDa
 	public:
 		explicit KeyStore_OwnerDataCallback(const KeyStoreWin32 *keyStore);
 	protected:
-		virtual ~KeyStore_OwnerDataCallback() { }
+		~KeyStore_OwnerDataCallback() final { }
 
 	private:
 		typedef LibWin32Common::ComBase<IOwnerDataCallback> super;

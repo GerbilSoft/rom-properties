@@ -34,7 +34,7 @@ class RP_LIBROMDATA_PUBLIC IRpFile : public RefBase
 	protected:
 		IRpFile();
 
-		virtual ~IRpFile() { }	// call unref() instead
+		~IRpFile() override { }	// call unref() instead
 
 	private:
 		RP_DISABLE_COPY(IRpFile)

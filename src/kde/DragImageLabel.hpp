@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * DragImageLabel.hpp: Drag & Drop image label.                            *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -26,7 +26,7 @@ namespace LibRpTexture {
 #include <QtCore/QTimer>
 #include <QLabel>
 
-class DragImageLabel : public QLabel
+class DragImageLabel final : public QLabel
 {
 	Q_OBJECT
 
@@ -38,7 +38,7 @@ class DragImageLabel : public QLabel
 	public:
 		explicit DragImageLabel(const QString &text, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 		explicit DragImageLabel(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-		~DragImageLabel();
+		~DragImageLabel() final;
 
 	private:
 		typedef QLabel super;

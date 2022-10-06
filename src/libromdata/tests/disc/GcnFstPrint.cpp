@@ -8,6 +8,7 @@
 
 #include "disc/GcnFst.hpp"
 #include "FstPrint.hpp"
+using LibRpBase::IFst;
 using LibRomData::GcnFst;
 
 // i18n
@@ -36,10 +37,10 @@ using std::unique_ptr;
 #include "librpsecure/os-secure.h"
 
 #ifdef _WIN32
-# include "libwin32common/RpWin32_sdk.h"
-# include <io.h>
-# include "librpbase/TextFuncs.hpp"
-# include "librpbase/TextFuncs_wchar.hpp"
+#  include "libwin32common/RpWin32_sdk.h"
+#  include <io.h>
+#  include "librpbase/TextFuncs.hpp"
+#  include "librpbase/TextFuncs_wchar.hpp"
 using std::u16string;
 #endif /* _WIN32 */
 
@@ -127,7 +128,7 @@ int RP_C_API main(int argc, char *argv[])
 	// Parse the FST.
 	// TODO: Validate the FST and return an error if it doesn't
 	// "look" like an FST?
-	unique_ptr<GcnFst> fst(new GcnFst(&fstData[fst_start_offset],
+	unique_ptr<IFst> fst(new GcnFst(&fstData[fst_start_offset],
 		static_cast<uint32_t>(fileSize - fst_start_offset), offsetShift));
 	if (!fst->isOpen()) {
 		puts(C_("GcnFstPrint", "*** ERROR: Could not open a GcnFst."));

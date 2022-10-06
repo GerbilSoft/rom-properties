@@ -37,7 +37,7 @@ class Xbox360_XDBF_Private final : public RomDataPrivate
 {
 	public:
 		Xbox360_XDBF_Private(Xbox360_XDBF *q, IRpFile *file, bool xex);
-		virtual ~Xbox360_XDBF_Private();
+		~Xbox360_XDBF_Private() final;
 
 	private:
 		typedef RomDataPrivate super;

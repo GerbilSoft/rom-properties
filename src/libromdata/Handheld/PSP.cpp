@@ -38,7 +38,7 @@ class PSPPrivate final : public LibRpBase::RomDataPrivate
 {
 	public:
 		PSPPrivate(PSP *q, IRpFile *file);
-		virtual ~PSPPrivate();
+		~PSPPrivate() final;
 
 	private:
 		typedef RomDataPrivate super;

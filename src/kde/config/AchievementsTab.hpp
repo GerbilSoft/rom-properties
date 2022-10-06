@@ -12,13 +12,13 @@
 #include "ITab.hpp"
 
 class AchievementsTabPrivate;
-class AchievementsTab : public ITab
+class AchievementsTab final : public ITab
 {
 	Q_OBJECT
 
 	public:
 		explicit AchievementsTab(QWidget *parent = nullptr);
-		virtual ~AchievementsTab();
+		~AchievementsTab() final;
 
 	private:
 		typedef ITab super;

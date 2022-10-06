@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GcnPartition.hpp: GameCube partition reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -31,7 +31,7 @@ class GcnPartition : public LibRpBase::IPartition
 		 */
 		explicit GcnPartition(IDiscReader *discReader, off64_t partition_offset);
 	protected:
-		virtual ~GcnPartition();	// call unref() instead
+		~GcnPartition() override;	// call unref() instead
 	protected:
 		explicit GcnPartition(GcnPartitionPrivate *d, IDiscReader *discReader);
 

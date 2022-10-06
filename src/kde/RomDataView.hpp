@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomDataView.hpp: RomData viewer.                                        *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,7 +16,7 @@
 Q_DECLARE_METATYPE(LibRpBase::RomData*)
 
 class RomDataViewPrivate;
-class RomDataView : public QWidget
+class RomDataView final : public QWidget
 {
 	Q_OBJECT
 
@@ -25,7 +25,7 @@ class RomDataView : public QWidget
 	public:
 		explicit RomDataView(QWidget *parent = 0);
 		explicit RomDataView(LibRpBase::RomData *romData, QWidget *parent = 0);
-		virtual ~RomDataView();
+		~RomDataView() final;
 
 	private:
 		typedef QWidget super;

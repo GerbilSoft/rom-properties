@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormat_decl.hpp: Texture file format base class. (Subclass macros)  *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -11,7 +11,7 @@
 #define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_FILEFORMAT_DECL_HPP__
 
 #ifndef __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_FILEFORMAT_HPP__
-# error FileFormat_decl.hpp should only be included by FileFormat.hpp
+#  error FileFormat_decl.hpp should only be included by FileFormat.hpp
 #endif
 
 /** Macros for FileFormat subclasses. **/
@@ -25,7 +25,7 @@ namespace LibRpTexture {
 }
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
-# define FILEFORMAT_GETFIELDS_FUNCTION \
+#  define FILEFORMAT_GETFIELDS_FUNCTION \
 	public: \
 		/** \
 		 * Get property fields for rom-properties. \
@@ -34,7 +34,7 @@ namespace LibRpTexture {
 		 */ \
 		int getFields(LibRpBase::RomFields *fields) const final;
 #else
-# define FILEFORMAT_GETFIELDS_FUNCTION
+#  define FILEFORMAT_GETFIELDS_FUNCTION
 #endif /* ENABLE_LIBRPBASE_ROMFIELDS */
 
 /**
@@ -47,7 +47,7 @@ class klass final : public LibRpTexture::FileFormat { \
 	public: \
 		explicit klass(LibRpFile::IRpFile *file); \
 	protected: \
-		virtual ~klass() { } \
+		~klass() final { } \
 	private: \
 		typedef FileFormat super; \
 		friend class klass##Private; \

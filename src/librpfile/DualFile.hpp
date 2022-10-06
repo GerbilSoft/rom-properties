@@ -31,7 +31,7 @@ class DualFile final : public IRpFile
 		 */
 		DualFile();
 	protected:
-		virtual ~DualFile();	// call unref() instead
+		~DualFile() final;	// call unref() instead
 
 	private:
 		typedef IRpFile super;

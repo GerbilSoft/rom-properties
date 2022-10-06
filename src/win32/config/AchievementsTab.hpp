@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * AchievementsTab.hpp: Achievements tab for rp-config.                    *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,7 +16,7 @@ class AchievementsTab final : public ITab
 {
 	public:
 		AchievementsTab();
-		virtual ~AchievementsTab();
+		~AchievementsTab() final;
 
 	private:
 		typedef ITab super;

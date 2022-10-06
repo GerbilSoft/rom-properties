@@ -30,7 +30,7 @@ class GameCubeSavePrivate final : public RomDataPrivate
 {
 	public:
 		GameCubeSavePrivate(GameCubeSave *q, IRpFile *file);
-		virtual ~GameCubeSavePrivate();
+		~GameCubeSavePrivate() final;
 
 	private:
 		typedef RomDataPrivate super;

@@ -23,7 +23,7 @@ struct _ATA_RESP_IDENTIFY_DEVICE;
 namespace LibRpFile {
 
 class RpFilePrivate;
-class RpFile : public IRpFile
+class RpFile final : public IRpFile
 {
 	public:
 		enum FileMode : uint8_t {
@@ -59,7 +59,7 @@ class RpFile : public IRpFile
 	private:
 		void init(void);
 	protected:
-		virtual ~RpFile();	// call unref() instead
+		~RpFile() final;	// call unref() instead
 
 	private:
 		typedef IRpFile super;

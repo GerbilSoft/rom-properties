@@ -31,7 +31,7 @@ class RpFile_IStream final : public LibRpFile::IRpFile
 		 */
 		explicit RpFile_IStream(IStream *pStream, bool gzip = false);
 	protected:
-		virtual ~RpFile_IStream();	// call unref() instead
+		~RpFile_IStream() final;	// call unref() instead
 
 	private:
 		typedef LibRpFile::IRpFile super;

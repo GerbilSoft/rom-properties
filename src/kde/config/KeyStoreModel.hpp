@@ -15,14 +15,14 @@
 #include "KeyStoreQt.hpp"
 
 class KeyStoreModelPrivate;
-class KeyStoreModel : public QAbstractItemModel
+class KeyStoreModel final : public QAbstractItemModel
 {
 	Q_OBJECT
 	Q_PROPERTY(KeyStoreQt* keyStore READ keyStore WRITE setKeyStore NOTIFY keyStoreChanged)
 
 	public:
 		explicit KeyStoreModel(QObject *parent = 0);
-		virtual ~KeyStoreModel();
+		~KeyStoreModel() final;
 
 	private:
 		typedef QAbstractItemModel super;

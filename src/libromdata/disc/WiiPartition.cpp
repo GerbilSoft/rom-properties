@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiPartition.hpp: Wii partition reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -36,7 +36,7 @@ class WiiPartitionPrivate : public GcnPartitionPrivate
 	public:
 		WiiPartitionPrivate(WiiPartition *q, off64_t data_size,
 			off64_t partition_offset, WiiPartition::CryptoMethod cryptoMethod);
-		virtual ~WiiPartitionPrivate();
+		~WiiPartitionPrivate() final;
 
 	private:
 		typedef GcnPartitionPrivate super;

@@ -40,7 +40,7 @@ class DreamcastPrivate final : public RomDataPrivate
 {
 	public:
 		DreamcastPrivate(Dreamcast *q, IRpFile *file);
-		virtual ~DreamcastPrivate();
+		~DreamcastPrivate() final;
 
 	private:
 		typedef RomDataPrivate super;

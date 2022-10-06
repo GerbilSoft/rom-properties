@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * AboutTab.hpp: About tab for rp-config.                                  *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,7 +16,7 @@ class AboutTab final : public ITab
 {
 	public:
 		AboutTab();
-		virtual ~AboutTab();
+		~AboutTab() final;
 
 	private:
 		typedef ITab super;

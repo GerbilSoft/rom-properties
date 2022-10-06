@@ -15,7 +15,7 @@
 namespace LibRomData {
 
 class GcnFstPrivate;
-class GcnFst : public LibRpBase::IFst
+class GcnFst final : public LibRpBase::IFst
 {
 	public:
 		/**
@@ -28,7 +28,7 @@ class GcnFst : public LibRpBase::IFst
 		RP_LIBROMDATA_PUBLIC
 		GcnFst(const uint8_t *fstData, uint32_t len, uint8_t offsetShift);
 
-		virtual ~GcnFst();
+		~GcnFst() final;
 
 	private:
 		typedef IFst super;

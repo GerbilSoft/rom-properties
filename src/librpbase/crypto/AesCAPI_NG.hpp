@@ -14,11 +14,11 @@
 namespace LibRpBase {
 
 class AesCAPI_NG_Private;
-class AesCAPI_NG : public IAesCipher
+class AesCAPI_NG final : public IAesCipher
 {
 	public:
 		AesCAPI_NG();
-		virtual ~AesCAPI_NG();
+		~AesCAPI_NG() final;
 
 	private:
 		typedef IAesCipher super;

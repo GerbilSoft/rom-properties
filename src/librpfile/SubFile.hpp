@@ -32,11 +32,9 @@ class SubFile final : public IRpFile
 		}
 	protected:
 		// call unref() instead
-		virtual ~SubFile()
+		~SubFile() final
 		{
-			if (m_file) {
-				m_file->unref();
-			}
+			UNREF(m_file);
 		}
 
 	private:

@@ -39,7 +39,7 @@ class PlayStationDiscPrivate final : public RomDataPrivate
 {
 	public:
 		PlayStationDiscPrivate(PlayStationDisc *q, IRpFile *file);
-		virtual ~PlayStationDiscPrivate();
+		~PlayStationDiscPrivate() final;
 
 	private:
 		typedef RomDataPrivate super;

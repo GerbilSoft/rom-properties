@@ -31,7 +31,7 @@ class IDiscReader : public RefBase
 		explicit IDiscReader(LibRpFile::IRpFile *file);
 		explicit IDiscReader(IDiscReader *discReader);
 	protected:
-		virtual ~IDiscReader();	// call unref() instead
+		~IDiscReader() override;	// call unref() instead
 
 	private:
 		RP_DISABLE_COPY(IDiscReader)

@@ -31,7 +31,7 @@ namespace LibRomData {
 class GdiReaderPrivate : public SparseDiscReaderPrivate {
 	public:
 		GdiReaderPrivate(GdiReader *q);
-		virtual ~GdiReaderPrivate();
+		~GdiReaderPrivate() final;
 
 	private:
 		typedef SparseDiscReaderPrivate super;

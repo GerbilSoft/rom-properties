@@ -28,7 +28,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
 {
 	public:
 		ImageTypesTabPrivate();
-		virtual ~ImageTypesTabPrivate();
+		~ImageTypesTabPrivate() final;
 
 	private:
 		typedef TImageTypesConfig<HWND> super;

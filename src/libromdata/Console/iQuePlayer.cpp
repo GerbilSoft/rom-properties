@@ -42,7 +42,7 @@ class iQuePlayerPrivate final : public RomDataPrivate
 {
 	public:
 		iQuePlayerPrivate(iQuePlayer *q, IRpFile *file);
-		virtual ~iQuePlayerPrivate();
+		~iQuePlayerPrivate() final;
 
 	private:
 		typedef RomDataPrivate super;

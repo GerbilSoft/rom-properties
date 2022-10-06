@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * ITab.hpp: Configuration tab interface.                                  *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,7 +21,7 @@ class ITab : public QWidget
 	protected:
 		explicit ITab(QWidget *parent = nullptr);
 	public:
-		virtual ~ITab();
+		~ITab() override;
 
 	private:
 		typedef QWidget super;

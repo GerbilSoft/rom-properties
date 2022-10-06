@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * ImageTypesTab.hpp: Image Types tab for rp-config.                       *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,13 +12,13 @@
 #include "ITab.hpp"
 
 class ImageTypesTabPrivate;
-class ImageTypesTab : public ITab
+class ImageTypesTab final : public ITab
 {
 	Q_OBJECT
 
 	public:
 		explicit ImageTypesTab(QWidget *parent = nullptr);
-		virtual ~ImageTypesTab();
+		~ImageTypesTab() final;
 
 	private:
 		typedef ITab super;

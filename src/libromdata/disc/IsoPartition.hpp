@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * IsoPartition.hpp: ISO-9660 partition reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,7 +15,7 @@
 namespace LibRomData {
 
 class IsoPartitionPrivate;
-class IsoPartition : public LibRpBase::IPartition
+class IsoPartition final : public LibRpBase::IPartition
 {
 	public:
 		/**
@@ -30,7 +30,7 @@ class IsoPartition : public LibRpBase::IPartition
 		 */
 		IsoPartition(IDiscReader *discReader, off64_t partition_offset, int iso_start_offset = -1);
 	protected:
-		virtual ~IsoPartition();	// call unref() instead
+		~IsoPartition() final;	// call unref() instead
 
 	private:
 		typedef IPartition super;

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpProgressBar.hpp: QProgressBar subclass with error status support.     *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,7 +13,7 @@
 #include <QProgressBar>
 #include <QStyle>
 
-class RpProgressBar : public QProgressBar
+class RpProgressBar final : public QProgressBar
 {
 	Q_OBJECT
 

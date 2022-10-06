@@ -34,7 +34,7 @@ namespace LibRpTexture {
  * rp_image data storage class.
  * This can be overridden for e.g. QImage or GDI+.
  */
-class RpGdiplusBackend : public rp_image_backend
+class RpGdiplusBackend final : public rp_image_backend
 {
 	public:
 		/**
@@ -58,7 +58,7 @@ class RpGdiplusBackend : public rp_image_backend
 		 */
 		explicit RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp);
 
-		virtual ~RpGdiplusBackend();
+		~RpGdiplusBackend() final;
 
 	private:
 		typedef rp_image_backend super;

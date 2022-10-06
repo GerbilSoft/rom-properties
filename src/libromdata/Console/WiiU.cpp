@@ -35,7 +35,7 @@ class WiiUPrivate final : public RomDataPrivate
 {
 	public:
 		WiiUPrivate(WiiU *q, IRpFile *file);
-		virtual ~WiiUPrivate();
+		~WiiUPrivate() final;
 
 	private:
 		typedef RomDataPrivate super;

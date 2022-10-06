@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * AboutTab.hpp: About tab for rp-config.                                  *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,13 +12,13 @@
 #include "ITab.hpp"
 
 class AboutTabPrivate;
-class AboutTab : public ITab
+class AboutTab final : public ITab
 {
 	Q_OBJECT
 
 	public:
 		explicit AboutTab(QWidget *parent = nullptr);
-		virtual ~AboutTab();
+		~AboutTab() final;
 
 	private:
 		typedef ITab super;

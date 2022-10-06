@@ -59,7 +59,7 @@ class RomData : public RefBase
 		 * RomData destructor is protected.
 		 * Use unref() instead.
 		 */
-		virtual ~RomData();
+		~RomData() override;
 
 	private:
 		RP_DISABLE_COPY(RomData)

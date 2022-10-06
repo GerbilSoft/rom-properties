@@ -6,7 +6,7 @@
  * multiple plugins, so this file acts as a KFileMetaData ExtractorPlugin, *
  * and then forwards the request to the main library.                      *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -26,7 +26,7 @@ class ExtractorPluginForwarder final : public ::KFileMetaData::ExtractorPlugin
 
 	public:
 		explicit ExtractorPluginForwarder(QObject *parent = nullptr);
-		virtual ~ExtractorPluginForwarder();
+		~ExtractorPluginForwarder() final;
 
 	private:
 		typedef KFileMetaData::ExtractorPlugin super;

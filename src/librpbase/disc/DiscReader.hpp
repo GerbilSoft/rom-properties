@@ -4,7 +4,7 @@
  * This class is a "null" interface that simply passes calls down to       *
  * libc's stdio functions.                                                 *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,7 +15,7 @@
 
 namespace LibRpBase {
 
-class DiscReader : public IDiscReader
+class DiscReader final : public IDiscReader
 {
 	public:
 		/**
@@ -36,7 +36,7 @@ class DiscReader : public IDiscReader
 		 */
 		explicit DiscReader(LibRpFile::IRpFile *file, off64_t offset, off64_t length);
 	protected:
-		virtual ~DiscReader() { };	// call unref() instead
+		~DiscReader() final { };	// call unref() instead
 
 	private:
 		typedef IDiscReader super;

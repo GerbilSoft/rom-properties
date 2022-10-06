@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractImage_p.hpp: IExtractImage implementation. (PRIVATE CLASS)    *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,7 +22,7 @@ class RP_ExtractImage_Private
 {
 	public:
 		RP_ExtractImage_Private();
-		virtual ~RP_ExtractImage_Private();
+		~RP_ExtractImage_Private();
 
 	private:
 		RP_DISABLE_COPY(RP_ExtractImage_Private)

@@ -53,7 +53,7 @@ class GameCubePrivate final : public RomDataPrivate
 {
 	public:
 		GameCubePrivate(GameCube *q, IRpFile *file);
-		virtual ~GameCubePrivate();
+		~GameCubePrivate() final;
 
 	private:
 		typedef RomDataPrivate super;

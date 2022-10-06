@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * CBCReader.hpp: AES-128-CBC data reader class.                           *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,7 +15,7 @@
 namespace LibRpBase {
 
 class CBCReaderPrivate;
-class CBCReader : public LibRpBase::IPartition
+class CBCReader final : public LibRpBase::IPartition
 {
 	public:
 		/**
@@ -33,7 +33,7 @@ class CBCReader : public LibRpBase::IPartition
 		CBCReader(LibRpFile::IRpFile *file, off64_t offset, off64_t length,
 			const uint8_t *key, const uint8_t *iv);
 	protected:
-		virtual ~CBCReader();	// call unref() instead
+		~CBCReader() final;	// call unref() instead
 
 	private:
 		typedef IPartition super;

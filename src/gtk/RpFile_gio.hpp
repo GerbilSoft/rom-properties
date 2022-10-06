@@ -26,7 +26,7 @@ class RpFileGio final : public LibRpFile::IRpFile
 	private:
 		void init(void);
 	protected:
-		virtual ~RpFileGio();	// call unref() instead
+		~RpFileGio() final;	// call unref() instead
 
 	private:
 		typedef LibRpFile::IRpFile super;

@@ -40,7 +40,7 @@ class Xbox_XBE_Private final : public RomDataPrivate
 {
 	public:
 		Xbox_XBE_Private(Xbox_XBE *q, IRpFile *file);
-		virtual ~Xbox_XBE_Private();
+		~Xbox_XBE_Private() final;
 
 	private:
 		typedef RomDataPrivate super;

@@ -41,7 +41,7 @@ class RP_LIBROMDATA_PUBLIC MemFile : public IRpFile
 		 */
 		MemFile();
 	protected:
-		virtual ~MemFile();	// call unref() instead
+		~MemFile() override;	// call unref() instead
 
 	private:
 		typedef IRpFile super;

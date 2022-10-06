@@ -35,7 +35,7 @@ class klass final : public LibRpBase::RomData { \
 		explicit klass(LibRpFile::IRpFile *file); \
 	protected: \
 		RP_LIBROMDATA_LOCAL \
-		virtual ~klass() { } \
+		~klass() final { } \
 	private: \
 		typedef RomData super; \
 		friend class klass##Private; \

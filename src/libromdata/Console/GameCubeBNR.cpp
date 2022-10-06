@@ -33,7 +33,7 @@ class GameCubeBNRPrivate final : public RomDataPrivate
 {
 	public:
 		GameCubeBNRPrivate(GameCubeBNR *q, IRpFile *file, uint32_t gcnRegion = ~0U);
-		virtual ~GameCubeBNRPrivate();
+		~GameCubeBNRPrivate() final;
 
 	private:
 		typedef RomDataPrivate super;

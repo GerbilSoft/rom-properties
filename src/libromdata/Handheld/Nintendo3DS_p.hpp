@@ -39,7 +39,7 @@ class Nintendo3DSPrivate final : public LibRpBase::RomDataPrivate
 {
 	public:
 		Nintendo3DSPrivate(Nintendo3DS *q, LibRpFile::IRpFile *file);
-		virtual ~Nintendo3DSPrivate();
+		~Nintendo3DSPrivate() final;
 
 	private:
 		typedef RomDataPrivate super;

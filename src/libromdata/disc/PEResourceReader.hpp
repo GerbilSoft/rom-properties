@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PEResourceReader.hpp: Portable Executable resource reader.              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,7 +14,7 @@
 namespace LibRomData {
 
 class PEResourceReaderPrivate;
-class PEResourceReader : public IResourceReader
+class PEResourceReader final : public IResourceReader
 {
 	public:
 		/**
@@ -29,7 +29,7 @@ class PEResourceReader : public IResourceReader
 		 * @param rsrc_va .rsrc virtual address.
 		 */
 		PEResourceReader(LibRpFile::IRpFile *file, uint32_t rsrc_addr, uint32_t rsrc_size, uint32_t rsrc_va);
-		virtual ~PEResourceReader();
+		~PEResourceReader() final;
 
 	private:
 		typedef IResourceReader super;

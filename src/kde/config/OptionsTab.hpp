@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * OptionsTab.hpp: Options tab for rp-config.                              *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,13 +12,13 @@
 #include "ITab.hpp"
 
 class OptionsTabPrivate;
-class OptionsTab : public ITab
+class OptionsTab final : public ITab
 {
 	Q_OBJECT
 
 	public:
 		explicit OptionsTab(QWidget *parent = nullptr);
-		virtual ~OptionsTab();
+		~OptionsTab() final;
 
 	private:
 		typedef ITab super;

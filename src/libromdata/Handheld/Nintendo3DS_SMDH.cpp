@@ -33,7 +33,7 @@ class Nintendo3DS_SMDH_Private final : public RomDataPrivate
 {
 	public:
 		Nintendo3DS_SMDH_Private(Nintendo3DS_SMDH *q, IRpFile *file);
-		virtual ~Nintendo3DS_SMDH_Private();
+		~Nintendo3DS_SMDH_Private() final;
 
 	private:
 		typedef RomDataPrivate super;

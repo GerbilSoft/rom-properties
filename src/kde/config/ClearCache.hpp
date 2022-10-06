@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * ClearCache.hpp: Clear Cache object.                                     *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,7 +12,7 @@
 // Qt includes
 #include <QtCore/QObject>
 
-class ClearCache : public QObject
+class ClearCache final : public QObject
 {
 	Q_OBJECT
 

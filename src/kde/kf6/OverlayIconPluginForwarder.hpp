@@ -27,7 +27,7 @@ class OverlayIconPluginForwarder final : public KOverlayIconPlugin
 
 	public:
 		explicit OverlayIconPluginForwarder(QObject *parent = nullptr);
-		virtual ~OverlayIconPluginForwarder();
+		~OverlayIconPluginForwarder() final;
 
 	private:
 		typedef KOverlayIconPlugin super;

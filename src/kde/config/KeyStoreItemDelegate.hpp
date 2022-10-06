@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyStoreItemDelegate.hpp: KeyStore item delegate for QListView.         *
  *                                                                         *
- * Copyright (c) 2013-2020 by David Korth.                                 *
+ * Copyright (c) 2013-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,7 +17,7 @@
 #include <QStyledItemDelegate>
 class QValidator;
 
-class KeyStoreItemDelegate : public QStyledItemDelegate
+class KeyStoreItemDelegate final : public QStyledItemDelegate
 {
 	Q_OBJECT
 

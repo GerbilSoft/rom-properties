@@ -25,7 +25,7 @@ class DreamcastSavePrivate final : public RomDataPrivate
 {
 	public:
 		DreamcastSavePrivate(DreamcastSave *q, IRpFile *file);
-		virtual ~DreamcastSavePrivate();
+		~DreamcastSavePrivate() final;
 
 	private:
 		typedef RomDataPrivate super;

@@ -20,7 +20,7 @@ namespace LibRomData {
 class CIAReader;
 
 class NCCHReaderPrivate;
-class NCCHReader : public LibRpBase::IPartition
+class NCCHReader final : public LibRpBase::IPartition
 {
 	public:
 		/**
@@ -54,7 +54,7 @@ class NCCHReader : public LibRpBase::IPartition
 			uint8_t media_unit_shift,
 			off64_t ncch_offset, uint32_t ncch_length);
 	protected:
-		virtual ~NCCHReader();	// call unref() instead
+		~NCCHReader() final;	// call unref() instead
 
 	private:
 		typedef IPartition super;

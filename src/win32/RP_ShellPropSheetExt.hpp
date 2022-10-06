@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ShellPropSheetExt.hpp: IShellPropSheetExt implementation.            *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -42,7 +42,7 @@ RP_ShellPropSheetExt final : public LibWin32Common::ComBase2<IShellExtInit, IShe
 	public:
 		RP_ShellPropSheetExt();
 	protected:
-		virtual ~RP_ShellPropSheetExt();
+		~RP_ShellPropSheetExt() final;
 
 	private:
 		typedef LibWin32Common::ComBase2<IShellExtInit, IShellPropSheetExt> super;

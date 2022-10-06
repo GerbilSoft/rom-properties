@@ -36,7 +36,7 @@ class XboxDiscPrivate final : public RomDataPrivate
 {
 	public:
 		XboxDiscPrivate(XboxDisc *q, LibRpFile::IRpFile *file);
-		virtual ~XboxDiscPrivate();
+		~XboxDiscPrivate() final;
 
 	private:
 		typedef RomDataPrivate super;

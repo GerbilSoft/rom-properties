@@ -26,7 +26,7 @@ class IResourceReader : public LibRpBase::IPartition
 	protected:
 		IResourceReader(LibRpFile::IRpFile *file) : super(file) { }
 	protected:
-		virtual ~IResourceReader() = 0;	// call unref() instead
+		~IResourceReader() override = 0;	// call unref() instead
 
 	private:
 		typedef LibRpBase::IPartition super;

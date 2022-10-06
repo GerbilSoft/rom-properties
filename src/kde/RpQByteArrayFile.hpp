@@ -15,7 +15,7 @@
 // Qt includes.
 #include <QtCore/QByteArray>
 
-class RpQByteArrayFile : public LibRpFile::IRpFile
+class RpQByteArrayFile final : public LibRpFile::IRpFile
 {
 	public:
 		/**
@@ -24,7 +24,7 @@ class RpQByteArrayFile : public LibRpFile::IRpFile
 		 */
 		RpQByteArrayFile();
 	protected:
-		virtual ~RpQByteArrayFile() { }	// call unref() instead
+		~RpQByteArrayFile() final { }	// call unref() instead
 
 	private:
 		typedef LibRpFile::IRpFile super;

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * ListDataModel.hpp: QAbstractListModel for RFT_LISTDATA.                 *
  *                                                                         *
- * Copyright (c) 2012-2020 by David Korth.                                 *
+ * Copyright (c) 2012-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,7 +20,7 @@
 #include <set>
 
 class ListDataModelPrivate;
-class ListDataModel : public QAbstractListModel
+class ListDataModel final : public QAbstractListModel
 {
 	Q_OBJECT
 	typedef QAbstractListModel super;
@@ -30,7 +30,7 @@ class ListDataModel : public QAbstractListModel
 
 	public:
 		explicit ListDataModel(QObject *parent = 0);
-		virtual ~ListDataModel();
+		~ListDataModel() final;
 
 	protected:
 		ListDataModelPrivate *const d_ptr;

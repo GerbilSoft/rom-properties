@@ -36,7 +36,7 @@ RP_PropertyStore final : public LibWin32Common::ComBase3<IInitializeWithStream, 
 	public:
 		RP_PropertyStore();
 	protected:
-		virtual ~RP_PropertyStore();
+		~RP_PropertyStore() final;
 
 	private:
 		typedef LibWin32Common::ComBase3<IInitializeWithStream, IPropertyStore, IPropertyStoreCapabilities> super;

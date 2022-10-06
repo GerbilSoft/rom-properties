@@ -26,7 +26,7 @@ class GameComPrivate final : public RomDataPrivate
 {
 	public:
 		GameComPrivate(GameCom *q, IRpFile *file);
-		virtual ~GameComPrivate();
+		~GameComPrivate() final;
 
 	private:
 		typedef RomDataPrivate super;

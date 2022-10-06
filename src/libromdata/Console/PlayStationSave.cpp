@@ -29,7 +29,7 @@ class PlayStationSavePrivate final : public RomDataPrivate
 {
 	public:
 		PlayStationSavePrivate(PlayStationSave *q, IRpFile *file);
-		virtual ~PlayStationSavePrivate();
+		~PlayStationSavePrivate() final;
 
 	private:
 		typedef RomDataPrivate super;

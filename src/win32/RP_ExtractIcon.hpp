@@ -36,7 +36,7 @@ RP_ExtractIcon final : public LibWin32Common::ComBase3<IPersistFile, IExtractIco
 	public:
 		RP_ExtractIcon();
 	protected:
-		virtual ~RP_ExtractIcon();
+		~RP_ExtractIcon() final;
 
 	private:
 		typedef LibWin32Common::ComBase3<IPersistFile, IExtractIconW, IExtractIconA> super;

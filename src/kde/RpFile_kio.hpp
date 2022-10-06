@@ -27,7 +27,7 @@
 #include <QtCore/QUrl>
 
 class RpFileKioPrivate;
-class RpFileKio : public QObject, public LibRpFile::IRpFile
+class RpFileKio final : public QObject, public LibRpFile::IRpFile
 {
 	Q_OBJECT
 
@@ -43,7 +43,7 @@ class RpFileKio : public QObject, public LibRpFile::IRpFile
 	private:
 		void init(void);
 	protected:
-		virtual ~RpFileKio();	// call unref() instead
+		~RpFileKio() final;	// call unref() instead
 
 	private:
 		typedef LibRpFile::IRpFile super;

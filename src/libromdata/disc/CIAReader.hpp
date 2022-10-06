@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CIAReader.hpp: Nintendo 3DS CIA reader.                                 *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,7 +17,7 @@
 namespace LibRomData {
 
 class CIAReaderPrivate;
-class CIAReader : public LibRpBase::IPartition
+class CIAReader final : public LibRpBase::IPartition
 {
 	public:
 		/**
@@ -37,7 +37,7 @@ class CIAReader : public LibRpBase::IPartition
 			const N3DS_Ticket_t *ticket,
 			uint16_t tmd_content_index);
 	protected:
-		virtual ~CIAReader();	// call unref() instead
+		~CIAReader() final;	// call unref() instead
 
 	private:
 		typedef IPartition super;

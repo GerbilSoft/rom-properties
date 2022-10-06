@@ -14,11 +14,11 @@
 namespace LibRpBase {
 
 class AesNettlePrivate;
-class AesNettle : public IAesCipher
+class AesNettle final : public IAesCipher
 {
 	public:
 		AesNettle();
-		virtual ~AesNettle();
+		~AesNettle() final;
 
 	private:
 		typedef IAesCipher super;

@@ -36,7 +36,7 @@ RP_ShellIconOverlayIdentifier final : public LibWin32Common::ComBase<IShellIconO
 	public:
 		RP_ShellIconOverlayIdentifier();
 	protected:
-		virtual ~RP_ShellIconOverlayIdentifier();
+		~RP_ShellIconOverlayIdentifier() final;
 
 	private:
 		typedef LibWin32Common::ComBase<IShellIconOverlayIdentifier> super;

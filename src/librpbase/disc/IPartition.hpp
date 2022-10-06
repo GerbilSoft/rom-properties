@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IPartition.hpp: Partition reader interface.                             *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,7 +19,7 @@ class IPartition : public IDiscReader
 		explicit IPartition(LibRpFile::IRpFile *file) : super(file) { }
 		explicit IPartition(IDiscReader *discReader) : super(discReader) { }
 	protected:
-		virtual ~IPartition() = 0;	// call unref() instead
+		~IPartition() override = 0;	// call unref() instead
 
 	private:
 		typedef IDiscReader super;

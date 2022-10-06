@@ -27,7 +27,7 @@ class WiiWIBNPrivate final : public RomDataPrivate
 {
 	public:
 		WiiWIBNPrivate(WiiWIBN *q, IRpFile *file);
-		virtual ~WiiWIBNPrivate();
+		~WiiWIBNPrivate() final;
 
 	private:
 		typedef RomDataPrivate super;

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * AchievementsItemDelegate.cpp: Achievements item delegate for rp-config. *
  *                                                                         *
- * Copyright (c) 2013-2020 by David Korth.                                 *
+ * Copyright (c) 2013-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,14 +13,14 @@
 #include <QStyledItemDelegate>
 
 class AchievementsItemDelegatePrivate;
-class AchievementsItemDelegate : public QStyledItemDelegate
+class AchievementsItemDelegate final : public QStyledItemDelegate
 {
 	Q_OBJECT
 	typedef QStyledItemDelegate super;
 
 	public:
 		explicit AchievementsItemDelegate(QObject *parent);
-		virtual ~AchievementsItemDelegate();
+		~AchievementsItemDelegate() final;
 
 	protected:
 		AchievementsItemDelegatePrivate *const d_ptr;

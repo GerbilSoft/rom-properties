@@ -32,7 +32,7 @@ class RpFile_windres final : public MemFile
 		RP_LIBROMDATA_PUBLIC
 		RpFile_windres(HMODULE hModule, LPCTSTR lpName, LPCTSTR lpType);
 	protected:
-		virtual ~RpFile_windres();	// call unref() instead
+		~RpFile_windres() final;	// call unref() instead
 
 	private:
 		typedef MemFile super;

@@ -15,7 +15,7 @@ namespace LibRpBase {
 
 class IDiscReader;
 
-class PartitionFile : public LibRpFile::IRpFile
+class PartitionFile final : public LibRpFile::IRpFile
 {
 	public:
 		/**
@@ -27,7 +27,7 @@ class PartitionFile : public LibRpFile::IRpFile
 		 */
 		PartitionFile(IDiscReader *partition, off64_t offset, off64_t size);
 	protected:
-		virtual ~PartitionFile();	// call unref() instead
+		~PartitionFile() final;	// call unref() instead
 
 	private:
 		typedef IRpFile super;
