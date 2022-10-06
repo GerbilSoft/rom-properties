@@ -23,5 +23,8 @@ The following changes have been made to the original:
 
 - Removed CI configuration files.
 
+- Don't check for gcc warning flags on MSVC and vice-versa
+  This merely wastes time.
+
 To obtain the original lz4-1.9.4, visit:
 https://github.com/lz4/lz4

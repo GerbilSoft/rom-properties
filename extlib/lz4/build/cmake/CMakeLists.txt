@@ -194,21 +194,12 @@ endif()
 
 # Extra warning flags
 include (CheckCCompilerFlag)
-foreach (flag
-    # GCC-style
-    -Wall
-    -Wextra
-    -Wundef
-    -Wcast-qual
-    -Wcast-align
-    -Wshadow
-    -Wswitch-enum
-    -Wdeclaration-after-statement
-    -Wstrict-prototypes
-    -Wpointer-arith
-
-    # MSVC-style
-    /W4)
+if(MSVC)
+  set(CHECK_WARNING_FLAGS /W4)
+else()
+  set(CHECK_WARNING_FLAGS -Wall -Wextra -Wundef -Wcast-qual -Wcast-align -Wshadow -Wswitch-enum -Wdeclaration-after-statement -Wstrict-prototypes -Wpointer-arith)
+endif()
+foreach (flag ${CHECK_WARNING_FLAGS})
   # Because https://gcc.gnu.org/wiki/FAQ#wnowarning
   string(REGEX REPLACE "\\-Wno\\-(.+)" "-W\\1" flag_to_test "${flag}")
   string(REGEX REPLACE "[^a-zA-Z0-9]+" "_" test_name "CFLAG_${flag_to_test}")
