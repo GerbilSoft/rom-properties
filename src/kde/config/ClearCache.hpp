@@ -12,7 +12,7 @@
 // Qt includes
 #include <QtCore/QObject>
 
-class ClearCache final : public QObject
+class ClearCache : public QObject
 {
 	Q_OBJECT
 

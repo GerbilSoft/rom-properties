@@ -57,7 +57,7 @@ extern "C" {
 	}
 }
 
-class RomThumbCreatorPrivate : public TCreateThumbnail<QImage>
+class RomThumbCreatorPrivate final : public TCreateThumbnail<QImage>
 {
 	public:
 		RomThumbCreatorPrivate() { }

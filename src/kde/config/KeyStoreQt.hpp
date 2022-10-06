@@ -12,7 +12,7 @@
 #include "libromdata/crypto/KeyStoreUI.hpp"
 #include <QtCore/QObject>
 
-class KeyStoreQt final : public QObject, public LibRomData::KeyStoreUI
+class KeyStoreQt : public QObject, public LibRomData::KeyStoreUI
 {
 	Q_OBJECT
 

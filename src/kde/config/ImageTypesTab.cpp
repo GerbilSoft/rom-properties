@@ -16,7 +16,7 @@
 using namespace LibRomData;
 
 #include "ui_ImageTypesTab.h"
-class ImageTypesTabPrivate : public TImageTypesConfig<QComboBox*>
+class ImageTypesTabPrivate final : public TImageTypesConfig<QComboBox*>
 {
 	public:
 		explicit ImageTypesTabPrivate(ImageTypesTab *q);

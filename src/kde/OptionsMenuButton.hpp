@@ -31,7 +31,7 @@ enum StandardOptionID {
 	OPTION_COPY_JSON = -4,
 };
 
-class OptionsMenuButton final : public QPushButton
+class OptionsMenuButton : public QPushButton
 {
 	Q_OBJECT
 

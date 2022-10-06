@@ -12,7 +12,7 @@
 #include "ITab.hpp"
 
 class KeyManagerTabPrivate;
-class KeyManagerTab final : public ITab
+class KeyManagerTab : public ITab
 {
 	Q_OBJECT
 

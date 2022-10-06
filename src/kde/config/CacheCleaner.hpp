@@ -11,7 +11,7 @@
 
 #include <QtCore/QObject>
 
-class CacheCleaner final : public QObject
+class CacheCleaner : public QObject
 {
 	Q_OBJECT
 

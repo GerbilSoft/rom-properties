@@ -15,7 +15,7 @@
 
 #include <QTreeView>
 
-class DragImageTreeView final : public QTreeView
+class DragImageTreeView : public QTreeView
 {
 	Q_OBJECT
 

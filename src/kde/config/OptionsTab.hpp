@@ -12,7 +12,7 @@
 #include "ITab.hpp"
 
 class OptionsTabPrivate;
-class OptionsTab final : public ITab
+class OptionsTab : public ITab
 {
 	Q_OBJECT
 

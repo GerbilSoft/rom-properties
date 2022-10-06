@@ -18,7 +18,7 @@
 // C++ includes
 #include <set>
 
-class LanguageComboBox final : public QComboBox
+class LanguageComboBox : public QComboBox
 {
 	Q_OBJECT
 

@@ -13,7 +13,7 @@
 #include <QProgressBar>
 #include <QStyle>
 
-class RpProgressBar final : public QProgressBar
+class RpProgressBar : public QProgressBar
 {
 	Q_OBJECT
 

@@ -20,7 +20,7 @@
 #include <set>
 
 class ListDataModelPrivate;
-class ListDataModel final : public QAbstractListModel
+class ListDataModel : public QAbstractListModel
 {
 	Q_OBJECT
 	typedef QAbstractListModel super;

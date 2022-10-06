@@ -12,7 +12,7 @@
 #include "ITab.hpp"
 
 class ImageTypesTabPrivate;
-class ImageTypesTab final : public ITab
+class ImageTypesTab : public ITab
 {
 	Q_OBJECT
 

@@ -17,7 +17,7 @@
 #include <QStyledItemDelegate>
 class QValidator;
 
-class KeyStoreItemDelegate final : public QStyledItemDelegate
+class KeyStoreItemDelegate : public QStyledItemDelegate
 {
 	Q_OBJECT
 

@@ -13,7 +13,7 @@
 #include <QStyledItemDelegate>
 
 class AchievementsItemDelegatePrivate;
-class AchievementsItemDelegate final : public QStyledItemDelegate
+class AchievementsItemDelegate : public QStyledItemDelegate
 {
 	Q_OBJECT
 	typedef QStyledItemDelegate super;
