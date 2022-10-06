@@ -6,8 +6,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGESIZECALC_HPP__
-#define __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGESIZECALC_HPP__
+#ifndef __ROMPROPERTIES_LIBRPTEXTURE_IMAGESIZECALC_HPP__
+#define __ROMPROPERTIES_LIBRPTEXTURE_IMAGESIZECALC_HPP__
 
 #include "bitstuff.h"
 
@@ -151,4 +151,4 @@ unsigned int calcImageSizeASTC(int width, int height, uint8_t block_x, uint8_t b
 
 } }
 
-#endif /* __ROMPROPERTIES_LIBRPTEXTURE_DECODER_PIXELCONVERSION_HPP__ */
+#endif /* __ROMPROPERTIES_LIBRPTEXTURE_IMAGESIZECALC_HPP__ */

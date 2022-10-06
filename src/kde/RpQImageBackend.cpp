@@ -17,7 +17,7 @@
 
 // librpbase, librptexture
 #include "aligned_malloc.h"
-#include "librptexture/decoder/ImageSizeCalc.hpp"
+#include "librptexture/ImageSizeCalc.hpp"
 using namespace LibRpTexture;
 
 RpQImageBackend::RpQImageBackend(int width, int height, rp_image::Format format)

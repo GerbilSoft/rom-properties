@@ -27,6 +27,7 @@ ENDIF(ENABLE_OPENMP)
 # Sources.
 SET(${PROJECT_NAME}_SRCS
 	FileFormatFactory.cpp
+	ImageSizeCalc.cpp
 
 	img/rp_image.cpp
 	img/rp_image_backend.cpp
@@ -42,7 +43,6 @@ SET(${PROJECT_NAME}_SRCS
 	decoder/ImageDecoder_ETC1.cpp
 	decoder/ImageDecoder_BC7.cpp
 
-	decoder/ImageSizeCalc.cpp
 	decoder/PixelConversion.cpp
 
 	fileformat/FileFormat.cpp
@@ -67,6 +67,7 @@ SET(${PROJECT_NAME}_SRCS
 SET(${PROJECT_NAME}_H
 	FileFormatFactory.hpp
 	argb32_t.hpp
+	ImageSizeCalc.hpp
 
 	img/rp_image.hpp
 	img/rp_image_p.hpp
@@ -82,7 +83,6 @@ SET(${PROJECT_NAME}_H
 	decoder/ImageDecoder_DC.hpp
 	decoder/ImageDecoder_ETC1.hpp
 	decoder/ImageDecoder_BC7.hpp
-	decoder/ImageSizeCalc.hpp
 	decoder/PixelConversion.hpp
 
 	fileformat/FileFormat.hpp

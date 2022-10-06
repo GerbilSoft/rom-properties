@@ -11,7 +11,8 @@
 #include "rp_image_p.hpp"
 #include "rp_image_backend.hpp"
 
-#include "decoder/ImageSizeCalc.hpp"
+// librptexture
+#include "ImageSizeCalc.hpp"
 
 // Workaround for RP_D() expecting the no-underscore, UpperCamelCase naming convention.
 #define rp_imagePrivate rp_image_private

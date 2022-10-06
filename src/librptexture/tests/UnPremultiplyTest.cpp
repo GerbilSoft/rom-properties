@@ -12,7 +12,7 @@
 #include "common.h"
 
 // librptexture
-#include "librptexture/decoder/ImageSizeCalc.hpp"
+#include "librptexture/ImageSizeCalc.hpp"
 #include "librptexture/img/rp_image.hpp"
 #ifdef _WIN32
 // rp_image backend registration.

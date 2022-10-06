@@ -24,8 +24,8 @@ using LibRpFile::IRpFile;
 using LibRpFile::MemFile;
 
 // librptexture
+#include "ImageSizeCalc.hpp"
 #include "img/rp_image.hpp"
-#include "decoder/ImageSizeCalc.hpp"
 #include "decoder/ImageDecoder_Linear.hpp"
 #include "decoder/ImageDecoder_S3TC.hpp"
 #include "decoder/ImageDecoder_BC7.hpp"

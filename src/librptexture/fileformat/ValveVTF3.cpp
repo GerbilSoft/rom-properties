@@ -17,9 +17,9 @@ using LibRpBase::RomFields;
 using LibRpFile::IRpFile;
 
 // librptexture
+#include "ImageSizeCalc.hpp"
 #include "img/rp_image.hpp"
 #include "decoder/ImageDecoder_S3TC.hpp"
-#include "decoder/ImageSizeCalc.hpp"
 
 namespace LibRpTexture {
 

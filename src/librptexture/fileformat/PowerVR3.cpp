@@ -25,8 +25,8 @@ using LibRpBase::RomFields;
 using LibRpFile::IRpFile;
 
 // librptexture
+#include "ImageSizeCalc.hpp"
 #include "img/rp_image.hpp"
-#include "decoder/ImageSizeCalc.hpp"
 #include "decoder/ImageDecoder_Linear.hpp"
 #include "decoder/ImageDecoder_PVRTC.hpp"
 #include "decoder/ImageDecoder_ETC1.hpp"

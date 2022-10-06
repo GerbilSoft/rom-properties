@@ -16,7 +16,8 @@
 // C++ STL classes.
 using std::unique_ptr;
 
-#include "decoder/ImageSizeCalc.hpp"
+// librptexture
+#include "ImageSizeCalc.hpp"
 #include "img/rp_image.hpp"
 #include "img/GdiplusHelper.hpp"
 

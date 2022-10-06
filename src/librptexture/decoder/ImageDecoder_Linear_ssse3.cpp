@@ -11,7 +11,7 @@
 #include "ImageDecoder_Linear.hpp"
 
 // librptexture
-#include "decoder/ImageSizeCalc.hpp"
+#include "ImageSizeCalc.hpp"
 #include "img/rp_image.hpp"
 #include "PixelConversion.hpp"
 using namespace LibRpTexture::PixelConversion;

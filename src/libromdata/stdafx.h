@@ -91,7 +91,7 @@
 
 // librptexture C++ headers
 #include "librptexture/img/rp_image.hpp"
-#include "librptexture/decoder/ImageSizeCalc.hpp"
+#include "librptexture/ImageSizeCalc.hpp"
 #include "librptexture/decoder/PixelConversion.hpp"
 #include "librptexture/decoder/ImageDecoder_Linear.hpp"
 #endif /* !__cplusplus */
