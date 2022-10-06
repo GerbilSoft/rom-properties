@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * CairoImageConv.cpp: Helper functions to convert from rp_image to Cairo. *
  *                                                                         *
- * Copyright (c) 2017-2021 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,7 +13,8 @@
 using std::array;
 
 // librptexture
-using LibRpTexture::rp_image;
+#include "librptexture/ImageSizeCalc.hpp"
+using namespace LibRpTexture;
 
 /**
  * Convert an rp_image to cairo_surface_t.
@@ -65,7 +66,7 @@ cairo_surface_t *CairoImageConv::rp_image_to_cairo_surface_t(const rp_image *img
 			if (dest_stride == src_stride) {
 				// Stride is identical. Copy the whole image all at once.
 				// NOTE: Partial copy for the last line.
-				size_t sz = dest_stride * (height - 1);
+				size_t sz = ImageSizeCalc::T_calcImageSize(dest_stride, (height - 1));
 				sz += width * sizeof(uint32_t);
 				memcpy(px_dest, img_prex->bits(), sz);
 			} else {

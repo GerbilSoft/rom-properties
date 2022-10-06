@@ -19,6 +19,7 @@ using LibRpBase::RomFields;
 using LibRpFile::IRpFile;
 
 // librptexture
+#include "ImageSizeCalc.hpp"
 #include "img/rp_image.hpp"
 #include "decoder/ImageDecoder_Linear.hpp"
 
@@ -220,7 +221,7 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 	switch (le32_to_cpu(texHeader.px_format)) {
 		case DIDJ_PIXEL_FORMAT_RGB565: {
 			// RGB565
-			const size_t img_siz = (size_t)width * (size_t)height * sizeof(uint16_t);
+			const size_t img_siz = ImageSizeCalc::T_calcImageSize(width, height) * sizeof(uint16_t);
 			assert(img_siz == uncompr_size);
 			if (img_siz != uncompr_size) {
 				// Incorrect size.
@@ -235,7 +236,7 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 
 		case DIDJ_PIXEL_FORMAT_RGBA4444: {
 			// RGBA4444
-			const size_t img_siz = (size_t)width * (size_t)height * sizeof(uint16_t);
+			const size_t img_siz = ImageSizeCalc::T_calcImageSize(width, height) * sizeof(uint16_t);
 			assert(img_siz == uncompr_size);
 			if (img_siz != uncompr_size) {
 				// Incorrect size.
@@ -251,7 +252,7 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 		case DIDJ_PIXEL_FORMAT_8BPP_RGB565: {
 			// 8bpp with RGB565 palette.
 			const size_t pal_siz = 256U * sizeof(uint16_t);
-			const size_t img_siz = (size_t)width * (size_t)height;
+			const size_t img_siz = ImageSizeCalc::T_calcImageSize(width, height);
 			assert(pal_siz + img_siz == uncompr_size);
 			if (pal_siz + img_siz != uncompr_size) {
 				// Incorrect size.
@@ -269,7 +270,7 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 		case DIDJ_PIXEL_FORMAT_8BPP_RGBA4444: {
 			// 8bpp with RGBA4444 palette.
 			const size_t pal_siz = 256U * sizeof(uint16_t);
-			const size_t img_siz = (size_t)width * (size_t)height;
+			const size_t img_siz = ImageSizeCalc::T_calcImageSize(width, height);
 			assert(pal_siz + img_siz == uncompr_size);
 			if (pal_siz + img_siz != uncompr_size) {
 				// Incorrect size.
@@ -287,7 +288,7 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 		case DIDJ_PIXEL_FORMAT_4BPP_RGB565: {
 			// 4bpp with RGB565 palette.
 			const size_t pal_siz = 16U * sizeof(uint16_t);
-			const size_t img_siz = ((size_t)width * (size_t)height) / 2;
+			const size_t img_siz = ImageSizeCalc::T_calcImageSize(width, height) / 2;
 			assert(pal_siz + img_siz == uncompr_size);
 			if (pal_siz + img_siz != uncompr_size) {
 				// Incorrect size.
@@ -305,7 +306,7 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 		case DIDJ_PIXEL_FORMAT_4BPP_RGBA4444: {
 			// 4bpp with RGBA4444 palette.
 			const size_t pal_siz = 16U * sizeof(uint16_t);
-			const size_t img_siz = ((size_t)width * (size_t)height) / 2;
+			const size_t img_siz = ImageSizeCalc::T_calcImageSize(width, height) / 2;
 			assert(pal_siz + img_siz == uncompr_size);
 			if (pal_siz + img_siz != uncompr_size) {
 				// Incorrect size.
