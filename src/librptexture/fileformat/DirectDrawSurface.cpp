@@ -615,8 +615,8 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			case DXGI_FORMAT_BC4_SNORM:
 				// 16 pixels compressed into 64 bits. (4bpp)
 				// NOTE: Width and height must be rounded to the nearest tile. (4x4)
-				expected_size = ALIGN_BYTES(4, ddsHeader.dwWidth) *
-				                ALIGN_BYTES(4, ddsHeader.dwHeight) / 2;
+				expected_size = ImageSizeCalc::T_calcImageSize(
+					ALIGN_BYTES(4, ddsHeader.dwWidth), ALIGN_BYTES(4, ddsHeader.dwHeight)) / 2;
 				break;
 
 			case DXGI_FORMAT_BC2_TYPELESS:
@@ -633,13 +633,14 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			case DXGI_FORMAT_BC7_UNORM_SRGB:
 				// 16 pixels compressed into 128 bits. (8bpp)
 				// NOTE: Width and height must be rounded to the nearest tile. (4x4)
-				expected_size = ALIGN_BYTES(4, ddsHeader.dwWidth) *
-				                ALIGN_BYTES(4, ddsHeader.dwHeight);
+				expected_size = ImageSizeCalc::T_calcImageSize(
+					ALIGN_BYTES(4, ddsHeader.dwWidth), ALIGN_BYTES(4, ddsHeader.dwHeight));
 				break;
 
 			case DXGI_FORMAT_R9G9B9E5_SHAREDEXP:
 				// Uncompressed "special" 32bpp formats.
-				expected_size = ddsHeader.dwWidth * ddsHeader.dwHeight * 4;
+				expected_size = ImageSizeCalc::T_calcImageSize(
+					ddsHeader.dwWidth, ddsHeader.dwHeight) * 4;
 				break;
 
 #ifdef ENABLE_ASTC

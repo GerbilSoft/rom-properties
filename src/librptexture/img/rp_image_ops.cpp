@@ -11,6 +11,8 @@
 #include "rp_image_p.hpp"
 #include "rp_image_backend.hpp"
 
+#include "decoder/ImageSizeCalc.hpp"
+
 // Workaround for RP_D() expecting the no-underscore, UpperCamelCase naming convention.
 #define rp_imagePrivate rp_image_private
 
@@ -227,7 +229,7 @@ rp_image *rp_image::squared(void) const
 		const int addToBottom = addToTop + ((width-height)%2);
 
 		// Clear the top rows.
-		memset(dest, 0, addToTop * dest_stride);
+		memset(dest, 0, ImageSizeCalc::T_calcImageSize(addToTop, dest_stride));
 		dest += (addToTop * dest_stride);
 
 		// Copy the image data.
@@ -240,7 +242,7 @@ rp_image *rp_image::squared(void) const
 
 		// Clear the bottom rows.
 		// NOTE: Last row may not be the full stride.
-		memset(dest, 0, ((addToBottom-1) * dest_stride) + sq_img->row_bytes());
+		memset(dest, 0, ImageSizeCalc::T_calcImageSize(addToBottom-1, dest_stride) + sq_img->row_bytes());
 	} else /*if (width < height)*/ {
 		// Image is taller. Add columns to the left and right.
 

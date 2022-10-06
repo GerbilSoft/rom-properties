@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpQImageBackend.cpp: rp_image_backend using QImage.                     *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,8 +17,8 @@
 
 // librpbase, librptexture
 #include "aligned_malloc.h"
-using LibRpTexture::rp_image;
-using LibRpTexture::rp_image_backend;
+#include "librptexture/decoder/ImageSizeCalc.hpp"
+using namespace LibRpTexture;
 
 RpQImageBackend::RpQImageBackend(int width, int height, rp_image::Format format)
 	: super(width, height, format)
@@ -45,7 +45,8 @@ RpQImageBackend::RpQImageBackend(int width, int height, rp_image::Format format)
 
 	// Allocate our own memory buffer.
 	// This is needed in order to use 16-byte row alignment.
-	uint8_t *data = static_cast<uint8_t*>(aligned_malloc(16, height * this->stride));
+	uint8_t *const data = static_cast<uint8_t*>(aligned_malloc(16,
+		ImageSizeCalc::T_calcImageSize(this->stride, height)));
 	if (!data) {
 		// Error allocating the memory buffer.
 		clear_properties();

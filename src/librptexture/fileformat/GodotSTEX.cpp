@@ -330,7 +330,7 @@ int GodotSTEXPrivate::getMipmapInfo(void)
 		return 0;
 	}
 
-	unsigned int expected_size = ImageSizeCalc::calcImageSize(
+	unsigned int expected_size = ImageSizeCalc::calcImageSize_tbl(
 		op_tbl, ARRAY_SIZE(op_tbl), pixelFormat, width, height);
 	if (expected_size == 0 || expected_size + addr > file_sz) {
 		// Invalid image size.
@@ -389,7 +389,7 @@ int GodotSTEXPrivate::getMipmapInfo(void)
 			break;
 		}
 
-		expected_size = calcImageSize(op_tbl, ARRAY_SIZE(op_tbl),
+		expected_size = calcImageSize_tbl(op_tbl, ARRAY_SIZE(op_tbl),
 			pixelFormat, width, height);
 		if (expected_size == 0 || expected_size + addr > file_sz) {
 			// Invalid image size.

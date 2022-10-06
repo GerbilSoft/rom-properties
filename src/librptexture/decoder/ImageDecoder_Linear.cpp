@@ -11,6 +11,7 @@
 #include "ImageDecoder_Linear.hpp"
 
 // librptexture
+#include "decoder/ImageSizeCalc.hpp"
 #include "img/rp_image.hpp"
 #include "PixelConversion.hpp"
 using namespace LibRpTexture::PixelConversion;
@@ -569,7 +570,7 @@ rp_image *fromLinearCI8(PixelFormat px_format,
 		// Image stride matches the source width.
 		// Copy the entire image all at once.
 		// TODO: Needs testing.
-		memcpy(px_dest, img_buf, width * height);
+		memcpy(px_dest, img_buf, ImageSizeCalc::T_calcImageSize(width, height));
 	} else {
 		// Copy one line at a time. (CI8 -> CI8)
 		for (unsigned int y = static_cast<unsigned int>(height); y > 0; y--) {
@@ -1047,7 +1048,7 @@ rp_image *fromLinear32_cpp(PixelFormat px_format,
 			if (stride == dest_stride) {
 				// Stride is identical. Copy the whole image all at once.
 				// TODO: Partial copy for the last line?
-				memcpy(img->bits(), img_buf, stride * height);
+				memcpy(img->bits(), img_buf, ImageSizeCalc::T_calcImageSize(stride, height));
 			} else {
 				// Stride is not identical. Copy each scanline.
 				stride /= bytespp;

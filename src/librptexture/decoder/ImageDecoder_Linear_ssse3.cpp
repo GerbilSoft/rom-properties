@@ -11,6 +11,7 @@
 #include "ImageDecoder_Linear.hpp"
 
 // librptexture
+#include "decoder/ImageSizeCalc.hpp"
 #include "img/rp_image.hpp"
 #include "PixelConversion.hpp"
 using namespace LibRpTexture::PixelConversion;
@@ -207,9 +208,9 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= (((size_t)width * (size_t)height) * bytespp));
+	assert(img_siz >= (ImageSizeCalc::T_calcImageSize(width, height) * bytespp));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (((size_t)width * (size_t)height) * bytespp))
+	    img_siz < (ImageSizeCalc::T_calcImageSize(width, height) * bytespp))
 	{
 		return nullptr;
 	}
@@ -258,7 +259,7 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 		// We can directly copy the image data without conversions.
 		if (stride == img->stride()) {
 			// Stride is identical. Copy the whole image all at once.
-			memcpy(img->bits(), img_buf, stride * height);
+			memcpy(img->bits(), img_buf, ImageSizeCalc::T_calcImageSize(stride, height));
 		} else {
 			// Stride is not identical. Copy each scanline.
 			const int dest_stride = img->stride() / sizeof(uint32_t);

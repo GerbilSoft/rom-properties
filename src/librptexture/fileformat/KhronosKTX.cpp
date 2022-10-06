@@ -298,8 +298,8 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 				case GL_COMPRESSED_SIGNED_LUMINANCE_LATC1_EXT:
 					// 16 pixels compressed into 64 bits. (4bpp)
 					// NOTE: Width and height must be rounded to the nearest tile. (4x4)
-					expected_size = ALIGN_BYTES(4, ktxHeader.pixelWidth) *
-					                ALIGN_BYTES(4, (int)height) / 2;
+					expected_size = ImageSizeCalc::T_calcImageSize(
+						ALIGN_BYTES(4, ktxHeader.pixelWidth), ALIGN_BYTES(4, height)) / 2;
 					break;
 
 				//case GL_RGBA_S3TC:	// TODO
@@ -320,14 +320,14 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 				case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM:
 					// 16 pixels compressed into 128 bits. (8bpp)
 					// NOTE: Width and height must be rounded to the nearest tile. (4x4)
-					expected_size = ALIGN_BYTES(4, ktxHeader.pixelWidth) *
-					                ALIGN_BYTES(4, (int)height);
+					expected_size = ImageSizeCalc::T_calcImageSize(
+						ALIGN_BYTES(4, ktxHeader.pixelWidth), ALIGN_BYTES(4, height));
 					break;
 
 				case GL_RGB9_E5:
 					// Uncompressed "special" 32bpp formats.
 					// TODO: Does KTX handle GL_RGB9_E5 as compressed?
-					expected_size = ktxHeader.pixelWidth * height * 4;
+					expected_size = ImageSizeCalc::T_calcImageSize(ktxHeader.pixelWidth, height) * 4;
 					break;
 
 #ifdef ENABLE_ASTC

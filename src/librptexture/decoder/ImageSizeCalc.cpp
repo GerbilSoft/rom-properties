@@ -20,7 +20,7 @@ namespace LibRpTexture { namespace ImageSizeCalc {
  * @param height Image height
  * @return Image size, in bytes
  */
-unsigned int calcImageSize(
+unsigned int calcImageSize_tbl(
 	const OpCode *op_tbl, size_t tbl_size,
 	unsigned int format, unsigned int width, unsigned int height)
 {

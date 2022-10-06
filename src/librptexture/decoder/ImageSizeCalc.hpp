@@ -16,7 +16,22 @@
 
 namespace LibRpTexture { namespace ImageSizeCalc {
 
-// OpCode values for calcImageSize().
+/**
+ * Calculate an image size in bytes from width and height.
+ * Helper function to work around int->size_t promotion.
+ * @param width
+ * @param height
+ * @return Size, in bytes
+ */
+template<typename X, typename Y>
+static inline size_t T_calcImageSize(X width, Y height)
+{
+	assert(width > 0);
+	assert(height > 0);
+	return static_cast<size_t>(width) * static_cast<size_t>(height);
+}
+
+// OpCode values for calcImageSize_tbl().
 enum class OpCode : uint8_t {
 	Unknown = 0,
 	None,
@@ -51,7 +66,7 @@ enum class OpCode : uint8_t {
  * @param height Image height
  * @return Image size, in bytes
  */
-unsigned int calcImageSize(
+unsigned int calcImageSize_tbl(
 	const OpCode *op_tbl, size_t tbl_size,
 	unsigned int format, unsigned int width, unsigned int height);
 

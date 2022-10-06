@@ -12,6 +12,9 @@
 #include "common.h"
 #include "librpcpu/byteorder.h"
 
+// C includes (C++ namespace)
+#include <cassert>
+
 namespace LibRpTexture {
 
 // ARGB32 value with byte accessors.

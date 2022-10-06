@@ -12,6 +12,7 @@
 #include "common.h"
 
 // librptexture
+#include "librptexture/decoder/ImageSizeCalc.hpp"
 #include "librptexture/img/rp_image.hpp"
 #ifdef _WIN32
 // rp_image backend registration.
@@ -45,7 +46,7 @@ class UnPremultiplyTest : public ::testing::Test
 #endif /* _WIN32 */
 
 			// Initialize the image with non-zero data.
-			size_t sz = m_img->row_bytes() * (m_img->height() - 1);
+			size_t sz = ImageSizeCalc::T_calcImageSize(m_img->row_bytes(), (m_img->height() - 1));
 			sz += (m_img->width() * sizeof(uint32_t));
 			memset(m_img->bits(), 0x55, sz);
 		}

@@ -16,6 +16,7 @@
 // C++ STL classes.
 using std::unique_ptr;
 
+#include "decoder/ImageSizeCalc.hpp"
 #include "img/rp_image.hpp"
 #include "img/GdiplusHelper.hpp"
 
@@ -354,7 +355,7 @@ Gdiplus::Status RpGdiplusBackend::lock(void)
 
 	if (!m_pImgBuf) {
 		// Allocate the image buffer.
-		m_pImgBuf = aligned_malloc(16, m_gdipBmpData.Stride * this->height);
+		m_pImgBuf = aligned_malloc(16, ImageSizeCalc::T_calcImageSize(m_gdipBmpData.Stride, this->height));
 		if (!m_pImgBuf) {
 			// malloc() failed.
 			return Gdiplus::Status::OutOfMemory;

@@ -307,7 +307,7 @@ int ValveVTFPrivate::getMipmapInfo(void)
 
 	// Skip the low-resolution image.
 	if (vtfHeader.lowResImageFormat >= 0) {
-		addr += ImageSizeCalc::calcImageSize(
+		addr += ImageSizeCalc::calcImageSize_tbl(
 			op_tbl, ARRAY_SIZE(op_tbl), vtfHeader.lowResImageFormat,
 			vtfHeader.lowResImageWidth,
 			(vtfHeader.lowResImageHeight > 0 ? vtfHeader.lowResImageHeight : 1));
@@ -329,7 +329,7 @@ int ValveVTFPrivate::getMipmapInfo(void)
 	}
 
 	// Calculate the size of the full image.
-	unsigned int mipmap_size = ImageSizeCalc::calcImageSize(
+	unsigned int mipmap_size = ImageSizeCalc::calcImageSize_tbl(
 		op_tbl, ARRAY_SIZE(op_tbl), vtfHeader.highResImageFormat,
 		row_width, height);
 	if (mipmap_size == 0) {

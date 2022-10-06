@@ -247,7 +247,7 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 		case VK_FORMAT_B8G8R8_SRGB:
 			// 24-bit RGB.
 			stride = ALIGN_BYTES(4, width * 3);
-			expected_size = static_cast<unsigned int>(stride * height);
+			expected_size = ImageSizeCalc::T_calcImageSize(stride, height);
 			break;
 
 		case VK_FORMAT_R8G8B8A8_UNORM:
@@ -258,7 +258,7 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 		case VK_FORMAT_B8G8R8A8_SRGB:
 			// 32-bit RGBA.
 			stride = width * 4;
-			expected_size = static_cast<unsigned int>(stride * height);
+			expected_size = ImageSizeCalc::T_calcImageSize(stride, height);
 			break;
 
 		case VK_FORMAT_R8_UNORM:
@@ -266,13 +266,13 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 		case VK_FORMAT_R8_SRGB:
 			// 8-bit. (red)
 			stride = ALIGN_BYTES(4, width);
-			expected_size = static_cast<unsigned int>(stride * height);
+			expected_size = ImageSizeCalc::T_calcImageSize(stride, height);
 			break;
 
 		case VK_FORMAT_E5B9G9R9_UFLOAT_PACK32:
 			// Uncompressed "special" 32bpp formats.
 			stride = width * 4;
-			expected_size = static_cast<unsigned int>(stride * height);
+			expected_size = ImageSizeCalc::T_calcImageSize(stride, height);
 			break;
 
 		// Compressed formats.
@@ -291,8 +291,8 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 		case VK_FORMAT_EAC_R11_SNORM_BLOCK:
 			// 16 pixels compressed into 64 bits. (4bpp)
 			// NOTE: Width and height must be rounded to the nearest tile. (4x4)
-			expected_size = ALIGN_BYTES(4, width) *
-					ALIGN_BYTES(4, (int)height) / 2;
+			expected_size = ImageSizeCalc::T_calcImageSize(
+				ALIGN_BYTES(4, width), ALIGN_BYTES(4, height) / 2);
 			break;
 
 		case VK_FORMAT_BC2_UNORM_BLOCK:
@@ -307,8 +307,8 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 		case VK_FORMAT_EAC_R11G11_SNORM_BLOCK:
 			// 16 pixels compressed into 128 bits. (8bpp)
 			// NOTE: Width and height must be rounded to the nearest tile. (4x4)
-			expected_size = ALIGN_BYTES(4, width) *
-					ALIGN_BYTES(4, (int)height);
+			expected_size = ImageSizeCalc::T_calcImageSize(
+				ALIGN_BYTES(4, width), ALIGN_BYTES(4, height));
 			break;
 
 #ifdef ENABLE_PVRTC

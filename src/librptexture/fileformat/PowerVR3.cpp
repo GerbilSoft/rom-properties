@@ -342,7 +342,7 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 
 		// TODO: Minimum row width?
 		// TODO: Does 'rgb' use 24-bit or 32-bit?
-		expected_size = pvr3Header.width * height * bytes;
+		expected_size = ImageSizeCalc::T_calcImageSize(pvr3Header.width, height) * bytes;
 	} else {
 		// Compressed format.
 		int8_t fmts[2] = {PVR3_CHTYPE_UBYTE_NORM, PVR3_CHTYPE_UBYTE};
@@ -388,7 +388,7 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 			case PVR3_PXF_ETC2_RGB_A1:
 			case PVR3_PXF_EAC_R11:
 				// 4bpp formats
-				expected_size = width * height / 2;
+				expected_size = ImageSizeCalc::T_calcImageSize(width, height) / 2;
 				break;
 
 			case PVR3_PXF_DXT2:
@@ -401,7 +401,7 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 			case PVR3_PXF_ETC2_RGBA:
 			case PVR3_PXF_EAC_RG11:
 				// 8bpp formats
-				expected_size = width * height;
+				expected_size = ImageSizeCalc::T_calcImageSize(width, height);
 				break;
 
 			case PVR3_PXF_R9G9B9E5:
@@ -409,7 +409,7 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 				// NOTE: This is a floating-point format.
 				fmts[0] = PVR3_CHTYPE_FLOAT;
 				fmts[1] = -1;
-				expected_size = width * height * 4;
+				expected_size = ImageSizeCalc::T_calcImageSize(width, height) * 4;
 				break;
 
 #ifdef ENABLE_ASTC

@@ -11,6 +11,8 @@
 #include "rp_image_p.hpp"
 #include "rp_image_backend.hpp"
 
+#include "decoder/ImageSizeCalc.hpp"
+
 // Workaround for RP_D() expecting the no-underscore, UpperCamelCase naming convention.
 #define rp_imagePrivate rp_image_private
 
@@ -92,7 +94,7 @@ rp_image_backend_default::rp_image_backend_default(int width, int height, rp_ima
 	// Allocate memory for the image.
 	// We're using the full stride for the last row
 	// to make it easier to manage.
-	m_data_len = height * stride;
+	m_data_len = ImageSizeCalc::T_calcImageSize(height, stride);
 	assert(m_data_len > 0);
 	if (m_data_len == 0) {
 		// Somehow we have a 0-length image...
@@ -161,7 +163,7 @@ int rp_image_backend_default::shrink(int width, int height)
 	// adjusting the image data.
 	this->width = width;
 	this->height = height;
-	m_data_len = height * stride;
+	m_data_len = ImageSizeCalc::T_calcImageSize(height, stride);
 	return 0;
 }
 
