@@ -338,11 +338,11 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 		}
 
 		// Convert to bytes, rounding up.
-		const unsigned int bytes = ((fmtLkup->bits + 7) & ~7) / 8;
+		const unsigned int bytespp = ((fmtLkup->bits + 7) & ~7) / 8;
 
 		// TODO: Minimum row width?
 		// TODO: Does 'rgb' use 24-bit or 32-bit?
-		expected_size = ImageSizeCalc::T_calcImageSize(pvr3Header.width, height) * bytes;
+		expected_size = ImageSizeCalc::T_calcImageSize(pvr3Header.width, height, bytespp);
 	} else {
 		// Compressed format.
 		int8_t fmts[2] = {PVR3_CHTYPE_UBYTE_NORM, PVR3_CHTYPE_UBYTE};
@@ -409,7 +409,7 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 				// NOTE: This is a floating-point format.
 				fmts[0] = PVR3_CHTYPE_FLOAT;
 				fmts[1] = -1;
-				expected_size = ImageSizeCalc::T_calcImageSize(width, height) * 4;
+				expected_size = ImageSizeCalc::T_calcImageSize(width, height, sizeof(uint32_t));
 				break;
 
 #ifdef ENABLE_ASTC

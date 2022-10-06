@@ -640,7 +640,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			case DXGI_FORMAT_R9G9B9E5_SHAREDEXP:
 				// Uncompressed "special" 32bpp formats.
 				expected_size = ImageSizeCalc::T_calcImageSize(
-					ddsHeader.dwWidth, ddsHeader.dwHeight) * 4;
+					ddsHeader.dwWidth, ddsHeader.dwHeight, sizeof(uint32_t));
 				break;
 
 #ifdef ENABLE_ASTC

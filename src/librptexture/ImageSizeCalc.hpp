@@ -31,6 +31,23 @@ static inline size_t T_calcImageSize(X width, Y height)
 	return static_cast<size_t>(width) * static_cast<size_t>(height);
 }
 
+/**
+ * Calculate an image size in bytes from width and height.
+ * Helper function to work around int->size_t promotion.
+ * @param width
+ * @param height
+ * @param pixelsize sizeof(pixeltype)
+ * @return Size, in bytes
+ */
+template<typename X, typename Y, typename Z>
+static inline size_t T_calcImageSize(X width, Y height, Z pixelsize)
+{
+	assert(width > 0);
+	assert(height > 0);
+	assert(pixelsize > 0);
+	return static_cast<size_t>(width) * static_cast<size_t>(height) * static_cast<size_t>(pixelsize);
+}
+
 // OpCode values for calcImageSize_tbl().
 enum class OpCode : uint8_t {
 	Unknown = 0,

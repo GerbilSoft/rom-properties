@@ -221,7 +221,7 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 	switch (le32_to_cpu(texHeader.px_format)) {
 		case DIDJ_PIXEL_FORMAT_RGB565: {
 			// RGB565
-			const size_t img_siz = ImageSizeCalc::T_calcImageSize(width, height) * sizeof(uint16_t);
+			const size_t img_siz = ImageSizeCalc::T_calcImageSize(width, height, sizeof(uint16_t));
 			assert(img_siz == uncompr_size);
 			if (img_siz != uncompr_size) {
 				// Incorrect size.
@@ -236,7 +236,7 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 
 		case DIDJ_PIXEL_FORMAT_RGBA4444: {
 			// RGBA4444
-			const size_t img_siz = ImageSizeCalc::T_calcImageSize(width, height) * sizeof(uint16_t);
+			const size_t img_siz = ImageSizeCalc::T_calcImageSize(width, height, sizeof(uint16_t));
 			assert(img_siz == uncompr_size);
 			if (img_siz != uncompr_size) {
 				// Incorrect size.

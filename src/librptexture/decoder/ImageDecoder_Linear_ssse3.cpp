@@ -208,9 +208,9 @@ rp_image *fromLinear32_ssse3(PixelFormat px_format,
 	assert(img_buf != nullptr);
 	assert(width > 0);
 	assert(height > 0);
-	assert(img_siz >= (ImageSizeCalc::T_calcImageSize(width, height) * bytespp));
+	assert(img_siz >= ImageSizeCalc::T_calcImageSize(width, height, bytespp));
 	if (!img_buf || width <= 0 || height <= 0 ||
-	    img_siz < (ImageSizeCalc::T_calcImageSize(width, height) * bytespp))
+	    img_siz < ImageSizeCalc::T_calcImageSize(width, height, bytespp))
 	{
 		return nullptr;
 	}

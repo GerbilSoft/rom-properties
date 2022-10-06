@@ -327,7 +327,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 				case GL_RGB9_E5:
 					// Uncompressed "special" 32bpp formats.
 					// TODO: Does KTX handle GL_RGB9_E5 as compressed?
-					expected_size = ImageSizeCalc::T_calcImageSize(ktxHeader.pixelWidth, height) * 4;
+					expected_size = ImageSizeCalc::T_calcImageSize(ktxHeader.pixelWidth, height, sizeof(uint32_t));
 					break;
 
 #ifdef ENABLE_ASTC
