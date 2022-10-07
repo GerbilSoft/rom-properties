@@ -108,7 +108,6 @@ IF(BUILD_GTK3 OR BUILD_GTK4)
 	ELSEIF(LibNautilusExtension4_FOUND)
 		# Found v4 but not v3. Use defaults for v3.
 		STRING(REPLACE "extensions-4" "extensions-3.0" LibNautilusExtension3_EXTENSION_DIR "${LibNautilusExtension4_EXTENSION_DIR}")
-		MESSAGE(WARNING "LibNautilusExtension3_EXTENSION_DIR == ${LibNautilusExtension3_EXTENSION_DIR}")
 	ELSE()
 		# Neither v3 nor v4 were found.
 		MESSAGE(STATUS "LibNautilusExtension not found. Using the default extensions directory.")
