@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageSizeCalc.hpp: Image size calculation functions.                    *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -67,6 +67,37 @@ unsigned int calcImageSize_tbl(
 
 	return image_size;
 }
+
+/**
+ * Calculate the expected size of a PVRTC-I compressed 2D image.
+ * PVRTC-I requires power-of-2 dimensions.
+ * @tparam is2bpp True for 2bpp; false for 4bpp.
+ * @param width Image width
+ * @param height Image height
+ * @return Expected size, in bytes
+ */
+template<bool is2bpp>
+unsigned int T_calcImageSizePVRTC_PoT(int width, int height)
+{
+	static const int min_width = (is2bpp ? 8 : 4);
+	if (width < min_width) {
+		width = min_width;
+	} else if (!isPow2(width)) {
+		width = nextPow2(width);
+	}
+
+	if (height < 4) {
+		height = 4;
+	} else if (!isPow2(height)) {
+		height = nextPow2(height);
+	}
+
+	return (width * height / (is2bpp ? 4 : 2));
+}
+
+// Explicit instantiation
+template unsigned int T_calcImageSizePVRTC_PoT<true>(int width, int height);
+template unsigned int T_calcImageSizePVRTC_PoT<false>(int width, int height);
 
 /**
  * Calculate the expected size of an ASTC-compressed 2D image.

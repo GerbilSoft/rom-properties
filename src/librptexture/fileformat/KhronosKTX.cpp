@@ -248,7 +248,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 				case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
 					// 32 pixels compressed into 64 bits. (2bpp)
 					// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
-					expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<true>(
+					expected_size = ImageSizeCalc::T_calcImageSizePVRTC_PoT<true>(
 						ktxHeader.pixelWidth, height);
 					break;
 
@@ -258,7 +258,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 					// FIXME: Our PVRTC-II decoder requires power-of-2 textures right now.
 					//expected_size = ALIGN_BYTES(8, ktxHeader.pixelWidth) *
 					//                ALIGN_BYTES(4, (int)height) / 4;
-					expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<true>
+					expected_size = ImageSizeCalc::T_calcImageSizePVRTC_PoT<true>
 						(ktxHeader.pixelWidth, height);
 					break;
 
@@ -266,7 +266,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 				case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
 					// 16 pixels compressed into 64 bits. (4bpp)
 					// NOTE: Image dimensions must be a power of 2 for PVRTC-I.
-					expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<false>(
+					expected_size = ImageSizeCalc::T_calcImageSizePVRTC_PoT<false>(
 						ktxHeader.pixelWidth, height);
 					break;
 
@@ -276,7 +276,7 @@ const rp_image *KhronosKTXPrivate::loadImage(void)
 					// FIXME: Our PVRTC-II decoder requires power-of-2 textures right now.
 					//expected_size = ALIGN_BYTES(4, ktxHeader.pixelWidth) *
 					//                ALIGN_BYTES(4, (int)height) / 2;
-					expected_size = ImageSizeCalc::calcImageSizePVRTC_PoT<false>
+					expected_size = ImageSizeCalc::T_calcImageSizePVRTC_PoT<false>
 						(ktxHeader.pixelWidth, height);
 					break;
 #endif /* ENABLE_PVRTC */
