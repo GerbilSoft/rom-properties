@@ -661,6 +661,9 @@ int SAP::loadFieldData(void)
 
 	// Song list.
 	if (!tags.durations.empty()) {
+		const char *const s_yes = C_("RomData", "Yes");
+		const char *const s_no = C_("RomData", "No");
+
 		unsigned int song_num = 0;
 		auto song_list = new RomFields::ListData_t(tags.durations.size());
 		auto src_iter = tags.durations.cbegin();
@@ -678,9 +681,7 @@ int SAP::loadFieldData(void)
 			const uint32_t ms =  (duration % 1000);
 			data_row.emplace_back(rp_sprintf("%u", song_num));
 			data_row.emplace_back(rp_sprintf("%u:%02u.%03u", min, sec, ms));
-			data_row.emplace_back(src_iter->second
-				? C_("RomData", "Yes")
-				: C_("RomData", "No"));
+			data_row.emplace_back(src_iter->second ? s_yes : s_no);
 		}
 
 		static const char *const song_list_hdr[3] = {

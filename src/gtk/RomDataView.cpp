@@ -42,6 +42,7 @@ using LibRomData::RomDataFactory;
 // C++ STL classes
 using std::set;
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 // References:
@@ -1762,7 +1763,7 @@ rom_data_view_update_display(RomDataView *page)
 	// Reserve enough space for vecDescLabels.
 	page->cxx->vecDescLabels.reserve(count);
 	// Per-tab row counts.
-	vector<int> tabRowCount(tabs.size());
+	unique_ptr<int[]> tabRowCount(new int[tabs.size()]());
 
 	// tr: Field description label.
 	const char *const desc_label_fmt = C_("RomDataView", "%s:");
