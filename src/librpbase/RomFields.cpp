@@ -626,10 +626,15 @@ vector<string> *RomFields::strArrayToVector(const char *const *strArray, size_t 
 		return pVec;
 	}
 
+	pVec->reserve(count);
 	for (; count > 0; strArray++, count--) {
 		// nullptr will be handled as empty strings.
-		const char* const str = *strArray;
-		pVec->emplace_back(str ? str : "");
+		const char *const str = *strArray;
+		if (str) {
+			pVec->emplace_back(str);
+		} else {
+			pVec->emplace_back();
+		}
 	}
 
 	return pVec;
@@ -656,12 +661,15 @@ vector<string> *RomFields::strArrayToVector_i18n(const char *msgctxt, const char
 		return pVec;
 	}
 
+	pVec->reserve(count);
 	for (; count > 0; strArray++, count--) {
 		// nullptr will be handled as empty strings.
-		const char* const str = *strArray;
-		pVec->emplace_back(str
-			? dpgettext_expr(RP_I18N_DOMAIN, msgctxt, str)
-			: "");
+		const char *const str = *strArray;
+		if (str) {
+			pVec->emplace_back(dpgettext_expr(RP_I18N_DOMAIN, msgctxt, str));
+		} else {
+			pVec->emplace_back();
+		}
 	}
 
 	return pVec;
