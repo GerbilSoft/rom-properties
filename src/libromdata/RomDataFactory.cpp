@@ -936,8 +936,7 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 				} else {
 					// First time encountering this extension.
 					map_exts[*sys_exts] = fns->attrs;
-					vec_exts.emplace_back(RomDataFactory::ExtInfo(
-						*sys_exts, fns->attrs));
+					vec_exts.emplace_back(*sys_exts, fns->attrs);
 				}
 			}
 		}
@@ -955,7 +954,7 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 		} else {
 			// First time encountering this extension.
 			map_exts[ext] = FFF_ATTRS;
-			vec_exts.emplace_back(RomDataFactory::ExtInfo(ext, FFF_ATTRS));
+			vec_exts.emplace_back(ext, FFF_ATTRS);
 		}
 	}
 

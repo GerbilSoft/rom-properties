@@ -679,7 +679,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 
 		row.emplace_back(rp_sprintf("%d", ent.ordinal));
 		if (ent.has_name)
-			row.emplace_back(string(ent.name.data(), ent.name.size()));
+			row.emplace_back(ent.name.data(), ent.name.size());
 		else
 			row.emplace_back(s_no_name);
 		if (ent.is_movable) {
@@ -842,7 +842,7 @@ int EXEPrivate::addFields_NE_Import(void)
 		std::vector<string> row;
 		row.reserve(3);
 		row.emplace_back(std::move(name));
-		row.emplace_back(string());
+		row.emplace_back();
 		row.emplace_back(std::move(modname));
 		vv_data->emplace_back(std::move(row));
 	}

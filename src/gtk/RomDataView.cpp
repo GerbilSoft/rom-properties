@@ -1199,8 +1199,7 @@ rom_data_view_init_listdata(RomDataView *page,
 	}
 
 	if (isMulti) {
-		page->cxx->vecListDataMulti.emplace_back(
-			Data_ListDataMulti_t(listStore, GTK_TREE_VIEW(treeView), &field));
+		page->cxx->vecListDataMulti.emplace_back(listStore, GTK_TREE_VIEW(treeView), &field);
 	}
 
 	g_object_set_data(G_OBJECT(scrolledWindow), "RFT_fieldIdx", GINT_TO_POINTER(fieldIdx+1));

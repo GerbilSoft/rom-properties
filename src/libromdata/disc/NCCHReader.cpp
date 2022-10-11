@@ -261,27 +261,27 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 			const uint32_t logo_region_size = le32_to_cpu(ncch_header.hdr.logo_region_size) << media_unit_shift;
 			if (logo_region_size > 0) {
 				const uint32_t logo_region_offset = le32_to_cpu(ncch_header.hdr.logo_region_offset) << media_unit_shift;
-				encSections.emplace_back(EncSection(
+				encSections.emplace_back(
 					logo_region_offset,	// Address within NCCH.
-					logo_region_offset,		// Counter base address.
+					logo_region_offset,	// Counter base address.
 					logo_region_size,
-					0, N3DS_NCCH_SECTION_PLAIN));
+					0, N3DS_NCCH_SECTION_PLAIN);
 			}
 
 			// ExHeader
-			encSections.emplace_back(EncSection(
+			encSections.emplace_back(
 				sizeof(N3DS_NCCH_Header_t),	// Address within NCCH.
 				sizeof(N3DS_NCCH_Header_t),	// Counter base address.
 				le32_to_cpu(ncch_header.hdr.exheader_size),
-				0, N3DS_NCCH_SECTION_EXHEADER));
+				0, N3DS_NCCH_SECTION_EXHEADER);
 
 			if (headers_loaded & HEADER_EXEFS) {
 				// ExeFS header
-				encSections.emplace_back(EncSection(
+				encSections.emplace_back(
 					exefs_offset,	// Address within NCCH.
 					exefs_offset,	// Counter base address.
 					sizeof(N3DS_ExeFS_Header_t),
-					0, N3DS_NCCH_SECTION_EXEFS));
+					0, N3DS_NCCH_SECTION_EXEFS);
 
 				// ExeFS files
 				for (const N3DS_ExeFS_File_Header_t &p : exefs_header.files) {
@@ -299,23 +299,23 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 						keyIdx = 1;
 					}
 
-					encSections.emplace_back(EncSection(
+					encSections.emplace_back(
 						exefs_offset + sizeof(exefs_header) +	// Address within NCCH.
 							le32_to_cpu(p.offset),
 						exefs_offset,				// Counter base address.
 						le32_to_cpu(p.size),
-						keyIdx, N3DS_NCCH_SECTION_EXEFS));
+						keyIdx, N3DS_NCCH_SECTION_EXEFS);
 				}
 			}
 
 			// RomFS
 			if (ncch_header.hdr.romfs_size != cpu_to_le32(0)) {
 				const uint32_t romfs_offset = (le32_to_cpu(ncch_header.hdr.romfs_offset) << media_unit_shift);
-				encSections.emplace_back(EncSection(
+				encSections.emplace_back(
 					romfs_offset,	// Address within NCCH.
 					romfs_offset,	// Counter base address.
 					(le32_to_cpu(ncch_header.hdr.romfs_size) << media_unit_shift),
-					0, N3DS_NCCH_SECTION_ROMFS));
+					0, N3DS_NCCH_SECTION_ROMFS);
 			}
 
 			// Sort encSections by NCCH-relative address.

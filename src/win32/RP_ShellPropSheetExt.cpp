@@ -598,11 +598,11 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 	vector<tstring> tnames;
 	tnames.reserve(count);
 	for (const string &name : *(bitfieldDesc.names)) {
-		if (name.empty()) {
-			// Skip U82T_s() for empty strings.
-			tnames.emplace_back(tstring());
-		} else {
+		if (!name.empty()) {
 			tnames.emplace_back(U82T_s(name));
+		} else {
+			// Skip U82T_s() for empty strings.
+			tnames.emplace_back();
 		}
 	}
 
@@ -1733,11 +1733,8 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter) {
 		const RomFields::Field &field = *iter;
 		assert(field.isValid);
-		if (!field.isValid) {
-			t_desc_text.emplace_back(tstring());
-			continue;
-		} else if (!field.name) {
-			t_desc_text.emplace_back(tstring());
+		if (!field.isValid || !field.name) {
+			t_desc_text.emplace_back();
 			continue;
 		}
 

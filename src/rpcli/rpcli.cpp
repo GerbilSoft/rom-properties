@@ -534,11 +534,11 @@ int RP_C_API main(int argc, char *argv[])
 					cerr << rp_sprintf(C_("rpcli", "Warning: skipping unknown image type %ld"), num) << endl;
 					i++; continue;
 				}
-				extract.emplace_back(ExtractParam(argv[++i], num));
+				extract.emplace_back(argv[++i], num);
 				break;
 			}
 			case 'a':
-				extract.emplace_back(ExtractParam(argv[++i], -1));
+				extract.emplace_back(argv[++i], -1);
 				break;
 			case 'j': // do nothing
 				break;

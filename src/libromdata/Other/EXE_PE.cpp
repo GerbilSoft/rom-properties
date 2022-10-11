@@ -923,13 +923,13 @@ int EXEPrivate::addFields_PE_Export(void)
 			: C_("EXE|Exports", "None"));
 		if (ent.forwarder.size() != 0) {
 			row.emplace_back(ent.forwarder);
-			row.emplace_back("");
+			row.emplace_back();
 		} else {
 			row.emplace_back(rp_sprintf("0x%08X", ent.vaddr));
 			if (ent.paddr)
 				row.emplace_back(rp_sprintf("0x%08X", ent.paddr));
 			else
-				row.emplace_back(""); // it's probably in the bss section
+				row.emplace_back(); // it's probably in the bss section
 		}
 	}
 
@@ -1112,7 +1112,7 @@ int EXEPrivate::addFields_PE_Import(void)
 		row.reserve(3);
 		if (it.is_ordinal) {
 			row.emplace_back(rp_sprintf(C_("EXE|Exports", "Ordinal #%u"), it.value));
-			row.emplace_back("");
+			row.emplace_back();
 		} else {
 			// RVA to hint number followed by NUL terminated name.
 			// FIXME: How does XEX handle this?

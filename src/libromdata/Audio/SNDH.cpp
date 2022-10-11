@@ -881,7 +881,7 @@ int SNDH::loadFieldData(void)
 				if (idx < tags.subtune_names.size()) {
 					data_row.emplace_back(tags.subtune_names.at(idx));
 				} else {
-					data_row.emplace_back("");
+					data_row.emplace_back();
 				}
 			}
 
@@ -895,7 +895,7 @@ int SNDH::loadFieldData(void)
 					const unsigned int sec = duration % 60;
 					data_row.emplace_back(rp_sprintf("%u:%02u", min, sec));
 				} else {
-					data_row.emplace_back("");
+					data_row.emplace_back();
 				}
 			}
 

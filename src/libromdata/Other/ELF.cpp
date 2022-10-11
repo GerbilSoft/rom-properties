@@ -1027,6 +1027,10 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 		if (tab.size() == 0)
 			return;
 
+		const char *const elf_sym_undefined = C_("ELF|Symbol", "(Undefined)");
+		const char *const elf_sym_absolute = C_("ELF|Symbol", "(Absolute)");
+		const char *const elf_sym_common = C_("ELF|Symbol", "(COMMON)");
+
 		auto vv_data = new RomFields::ListData_t();
 		for (auto &sym : tab) {
 			assert(sym.st_name < strtab.size());
@@ -1061,11 +1065,11 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 			row.emplace_back(visibilities[ELF64_ST_VISIBILITY(sym.st_other)]);
 			// TODO: output section name if possible
 			if (sym.st_shndx == SHN_UNDEF)
-				row.emplace_back(C_("ELF|Symbol", "(Undefined)"));
+				row.emplace_back(elf_sym_undefined);
 			else if (sym.st_shndx == SHN_ABS)
-				row.emplace_back(C_("ELF|Symbol", "(Absolute)"));
+				row.emplace_back(elf_sym_absolute);
 			else if (sym.st_shndx == SHN_COMMON)
-				row.emplace_back(C_("ELF|Symbol", "(COMMON)"));
+				row.emplace_back(elf_sym_common);
 			else
 				row.emplace_back(rp_sprintf("%d", sym.st_shndx));
 			row.emplace_back(rp_sprintf("0x%08" PRIX64, sym.st_value));

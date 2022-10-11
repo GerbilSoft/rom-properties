@@ -2149,7 +2149,7 @@ int Nintendo3DS::loadFieldData(void)
 			auto &data_row = vv_contents->at(vidx);
 			data_row.reserve(5);
 
-			// Content index.
+			// Content index
 			data_row.emplace_back(rp_sprintf("%u", i));
 
 			// TODO: Use content_chunk->index?
@@ -2170,7 +2170,7 @@ int Nintendo3DS::loadFieldData(void)
 				// (Themes, DLC...)
 				const char *crypto = nullptr;
 				if (iter->type & cpu_to_be16(N3DS_CONTENT_CHUNK_ENCRYPTED)) {
-					// CIA encryption.
+					// CIA encryption
 					crypto = "CIA";
 				}
 
@@ -2191,21 +2191,21 @@ int Nintendo3DS::loadFieldData(void)
 				}
 				data_row.emplace_back(content_type);
 
-				// Encryption.
+				// Encryption
 				data_row.emplace_back(crypto ? crypto : s_unknown);
-				// Version.
-				data_row.emplace_back("");
+				// Version
+				data_row.emplace_back();
 
-				// Content size.
+				// Content size
 				data_row.emplace_back(LibRpBase::formatFileSize(be64_to_cpu(iter->size)));
 				UNREF(pNcch);
 				continue;
 			}
 
-			// Content type.
+			// Content type
 			data_row.emplace_back(content_type ? content_type : s_unknown);
 
-			// Encryption.
+			// Encryption
 			NCCHReader::CryptoType cryptoType;
 			bool isCIAcrypto = !!(iter->type & cpu_to_be16(N3DS_CONTENT_CHUNK_ENCRYPTED));
 			ret = NCCHReader::cryptoType_static(&cryptoType, content_ncch_header);
@@ -2237,11 +2237,11 @@ int Nintendo3DS::loadFieldData(void)
 					cryptoType.keyslot));
 			}
 
-			// Version. [FIXME: Might not be right...]
+			// Version [FIXME: Might not be right...]
 			data_row.emplace_back(d->n3dsVersionToString(
 				le16_to_cpu(content_ncch_header->version)));
 
-			// Content size.
+			// Content size
 			data_row.emplace_back(LibRpBase::formatFileSize(pNcch->partition_size()));
 
 			UNREF(pNcch);
