@@ -319,13 +319,16 @@ int EXEPrivate::addFields_PE_Manifest(void)
 			fields->addField_bitfield(C_("EXE|Manifest", "Settings"),
 				v_WindowsSettings_names, 2, settings);
 
-			// DPI Aware.
+			// dpiAware
 			// TODO: Test 10/1607 and improve descriptions.
 			// TODO: Decode strings to more useful values.
 			// Reference: https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifests
 			ADD_TEXT(windowsSettings, "dpiAware", C_("EXE|Manifest", "DPI Aware"));
-			// DPI Awareness. (Win10/1607)
+			// dpiAwareness (Win10/1607)
 			ADD_TEXT(windowsSettings, "dpiAwareness", C_("EXE|Manifest", "DPI Awareness"));
+
+			// activeCodePage (Win10/1903)
+			ADD_TEXT(windowsSettings, "activeCodePage", C_("EXE|Manifest", "Active Code Page"));
 		}
 	}
 
