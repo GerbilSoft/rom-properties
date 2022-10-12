@@ -78,6 +78,18 @@ class IDownloader
 		 */
 		void setMaxSize(size_t maxSize);
 
+		/**
+		 * Get the If-Modified-Since request timestamp.
+		 * @return If-Modified-Since timestamp (-1 for none)
+		 */
+		time_t ifModifiedSince(void) const;
+
+		/**
+		 * Set the If-Modified-Since request timestamp.
+		 * @param timestamp If-Modified-Since timestamp (-1 for none)
+		 */
+		void setIfModifiedSince(time_t timestamp);
+
 	public:
 		/** Data accessors. **/
 
@@ -130,16 +142,15 @@ class IDownloader
 		// Reference: http://andreoffringa.org/?q=uvector
 		ao::uvector<uint8_t> m_data;
 
-		// Last-Modified time.
-		time_t m_mtime;
+		time_t m_mtime;			// Last-Modified response
+		time_t m_if_modified_since;	// If-Modified-Since request
 
-		bool m_inProgress;	// Set when downloading.
-		size_t m_maxSize;	// Maximum buffer size. (0 == unlimited)
+		size_t m_maxSize;		// Maximum buffer size. (0 == unlimited)
+		std::tstring m_userAgent;	// User-Agent
 
-		// User-Agent.
-		std::tstring m_userAgent;
+		bool m_inProgress;		// Set when downloading
 #ifdef _WIN32
-		bool m_isWinXP;		// Set for Windows versions older than Vista.
+		bool m_isWinXP;			// Set for Windows versions older than Vista
 #endif /* _WIN32 */
 };
 

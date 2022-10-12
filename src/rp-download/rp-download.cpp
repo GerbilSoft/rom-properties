@@ -475,7 +475,12 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// - ngp:    https://rpdb.gerbilsoft.com/ngp/[key]
 	// - ngpc:   https://rpdb.gerbilsoft.com/ngpc/[key]
 	// - ws:     https://rpdb.gerbilsoft.com/ws/[key]
-	// - c64:
+	// - c64:    https://rpdb.gerbilsoft.com/c64/[key]
+	// - c128:   https://rpdb.gerbilsoft.com/c128/[key]
+	// - cbmII:  https://rpdb.gerbilsoft.com/cbmII/[key]
+	// - vic20:  https://rpdb.gerbilsoft.com/vic20/[key]
+	// - plus4:  https://rpdb.gerbilsoft.com/plus4/[key]
+	// - sys:    https://rpdb.gerbilsoft.com/sys/[key] [system info, e.g. update version]
 	const TCHAR *slash_pos = _tcschr(cache_key, _T('/'));
 	if (slash_pos == nullptr || slash_pos == cache_key ||
 		slash_pos[1] == '\0')
@@ -501,9 +506,19 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SHOW_ERROR(_T("Cache key '%s' is invalid."), cache_key);
 		return EXIT_FAILURE;
 	}
-	if (_tcscmp(lastdot, _T(".png")) != 0 &&
-	    _tcscmp(lastdot, _T(".jpg")) != 0)
+	if (!_tcscmp(lastdot, _T(".png")) != 0 ||
+	    !_tcscmp(lastdot, _T(".jpg")) != 0)
 	{
+		// Image file extension is supported.
+	}
+	else if (!_tcscmp(lastdot, _T(".txt")))
+	{
+		// .txt is supported for sys/ only.
+		if (_tcsncmp(cache_key, _T("sys/"), 4) != 0) {
+			SHOW_ERROR(_T("Cache key '%s' is invalid."), cache_key);
+			return EXIT_FAILURE;
+		}
+	} else {
 		// Not a supported file extension.
 		SHOW_ERROR(_T("Cache key '%s' is invalid."), cache_key);
 		return EXIT_FAILURE;
@@ -516,6 +531,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 	// Determine the full URL based on the cache key.
 	bool ok = false;
+	bool check_newer = false;	// for [sys]: always check, but only download if newer
 	TCHAR full_url[256];
 	if ((prefix_len == 3 && (!_tcsncmp(cache_key, _T("wii"), 3) || !_tcsncmp(cache_key, _T("3ds"), 3))) ||
 	    (prefix_len == 4 && !_tcsncmp(cache_key, _T("wiiu"), 4)) ||
@@ -560,6 +576,11 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				    !_tcsncmp(cache_key, _T("c64"), 3))
 				{
 					ok = true;
+				}
+				else if (!_tcsncmp(cache_key, _T("sys"), 3))
+				{
+					ok = true;
+					check_newer = true;
 				}
 				break;
 			case 4:
@@ -633,15 +654,15 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 	// Get the cache file information.
 	off64_t filesize = 0;
-	time_t filemtime = 0;
+	time_t filemtime = -1;
 	int ret = get_file_size_and_mtime(cache_filename.c_str(), &filesize, &filemtime);
 	if (ret == 0) {
 		// Check if the file is 0 bytes.
 		// TODO: How should we handle errors?
-		if (filesize == 0) {
-			// File is 0 bytes, which indicates it didn't exist
-			// on the server. If the file is older than a week,
-			// try to redownload it.
+		if (filesize == 0 && !check_newer) {
+			// File is 0 bytes, which indicates it didn't exist on the server.
+			// If the file is older than a week, try to redownload it.
+			// NOTE: Not used for "check_newer" files, e.g. "sys/".
 			// TODO: Configurable time.
 			const time_t systime = time(nullptr);
 			if ((systime - filemtime) < (86400*7)) {
@@ -663,15 +684,17 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		} else if (filesize > 0) {
 			// File is larger than 0 bytes, which indicates
 			// it was previously cached successfully
-			if (likely(!force)) {
-				SHOW_INFO(_T("Cache file for '%s' is already downloaded."), cache_key);
-				return EXIT_SUCCESS;
-			} else {
+			if (unlikely(check_newer)) {
+				SHOW_INFO(_T("Cache file for '%s' is already downloaded, but this cache key is set to download-if-newer."), cache_key);
+			} else if (unlikely(force)) {
 				SHOW_INFO(_T("Cache file for '%s' is already downloaded, but -f was specified. Redownloading anyway."), cache_key);
 				if (_tremove(cache_filename.c_str()) != 0) {
 					SHOW_ERROR(_T("Error deleting cache file for '%s': %s"), cache_key, _tcserror(errno));
 					return EXIT_FAILURE;
 				}
+			} else {
+				SHOW_INFO(_T("Cache file for '%s' is already downloaded."), cache_key);
+				return EXIT_SUCCESS;
 			}
 		}
 	} else if (ret == -ENOENT) {
@@ -696,17 +719,14 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	unique_ptr<IDownloader> m_downloader(new CurlDownloader());
 #endif /* _WIN32 */
 
-	// Open the cache file now so we can use it as a negative hit
-	// if the download fails.
-	FILE *f_out = _tfopen(cache_filename.c_str(), _T("wb"));
-	if (!f_out) {
-		// Error opening the cache file.
-		SHOW_ERROR(_T("Error writing to cache file: %s"), _tcserror(errno));
-		return EXIT_FAILURE;
-	}
-
 	// TODO: Configure this somewhere?
 	m_downloader->setMaxSize(4*1024*1024);
+
+	if (check_newer && filemtime >= 0) {
+		// Only download if the file on the server is newer than
+		// what's in our cache directory.
+		m_downloader->setIfModifiedSince(filemtime);
+	}
 
 	m_downloader->setUrl(full_url);
 	ret = m_downloader->download();
@@ -716,6 +736,15 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 			if (ret < 0) {
 				// POSIX error code
 				show_error(_T("Error downloading file: %s"), _tcserror(-ret));
+				// Create a 0-byte file to indicate an error occurred.
+				FILE *f_out = _tfopen(cache_filename.c_str(), _T("wb"));
+				if (f_out) {
+					fclose(f_out);
+				}
+			} else if (ret == 304 && check_newer) {
+				// HTTP 304 Not Modified
+				SHOW_ERROR(_T("File has not been modified on the server. Not redownloading."));
+				return EXIT_SUCCESS;
 			} else /*if (ret > 0)*/ {
 				// HTTP status code
 				const TCHAR *msg = http_status_string(ret);
@@ -724,16 +753,26 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				} else {
 					show_error(_T("Error downloading file: HTTP %d"), ret);
 				}
+				// Create a 0-byte file to indicate an error occurred.
+				FILE *f_out = _tfopen(cache_filename.c_str(), _T("wb"));
+				if (f_out) {
+					fclose(f_out);
+				}
 			}
 		}
-		fclose(f_out);
 		return EXIT_FAILURE;
 	}
 
 	if (m_downloader->dataSize() <= 0) {
 		// No data downloaded...
 		SHOW_ERROR(_T("Error downloading file: 0 bytes received"));
-		fclose(f_out);
+		return EXIT_FAILURE;
+	}
+
+	FILE *f_out = _tfopen(cache_filename.c_str(), _T("wb"));
+	if (!f_out) {
+		// Error opening the cache file.
+		SHOW_ERROR(_T("Error writing to cache file: %s"), _tcserror(errno));
 		return EXIT_FAILURE;
 	}
 

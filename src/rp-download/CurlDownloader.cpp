@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * CurlDownloader.cpp: libcurl-based file downloader.                      *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -185,6 +185,15 @@ int CurlDownloader::download(void)
 	// Redirection is required for https://amiibo.life/nfc/%08X-%08X
 	// TODO: Limit the number of redirects?
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, true);
+	// Request file modification time.
+	// NOTE: Probably not needed for http...
+	curl_easy_setopt(curl, CURLOPT_FILETIME, 1L);
+
+	if (m_if_modified_since >= 0) {
+		// Add an "If-Modified-Since" header.
+		curl_easy_setopt(curl, CURLOPT_TIMEVALUE_LARGE, static_cast<curl_off_t>(m_if_modified_since));
+		curl_easy_setopt(curl, CURLOPT_TIMECONDITION, CURL_TIMECOND_IFMODSINCE);
+	}
 
 	// Header and data functions.
 	curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, parse_header);
@@ -211,7 +220,17 @@ int CurlDownloader::download(void)
 	CURLcode res = curl_easy_perform(curl);
 	switch (res) {
 		case CURLE_OK:
-			// File downloaded successfully.
+			// If the file is empty, check for a 304.
+			if (m_data.empty() && m_if_modified_since >= 0) {
+				long unmet = 0;
+				if (!curl_easy_getinfo(curl, CURLINFO_CONDITION_UNMET, &unmet) && unmet) {
+					// HTTP 304 Not Modified
+					ret = 304;
+					break;
+				}
+			}
+
+			// File downloaded successfull.
 			ret = 0;
 			break;
 

@@ -29,9 +29,10 @@ namespace RpDownload {
 
 IDownloader::IDownloader()
 	: m_mtime(-1)
-	, m_inProgress(false)
+	, m_if_modified_since(-1)
 	, m_maxSize(0)
 #ifdef _WIN32
+	, m_inProgress(false)
 	, m_isWinXP(false)
 #endif /* _WIN32 */
 {
@@ -41,9 +42,10 @@ IDownloader::IDownloader()
 IDownloader::IDownloader(const TCHAR *url)
 	: m_url(url)
 	, m_mtime(-1)
-	, m_inProgress(false)
+	, m_if_modified_since(-1)
 	, m_maxSize(0)
 #ifdef _WIN32
+	, m_inProgress(false)
 	, m_isWinXP(false)
 #endif /* _WIN32 */
 {
@@ -53,8 +55,12 @@ IDownloader::IDownloader(const TCHAR *url)
 IDownloader::IDownloader(const tstring &url)
 	: m_url(url)
 	, m_mtime(-1)
-	, m_inProgress(false)
+	, m_if_modified_since(-1)
 	, m_maxSize(0)
+#ifdef _WIN32
+	, m_inProgress(false)
+	, m_isWinXP(false)
+#endif /* _WIN32 */
 {
 	createUserAgent();
 }
@@ -122,6 +128,26 @@ void IDownloader::setMaxSize(size_t maxSize)
 	assert(!m_inProgress);
 	// TODO: Don't set if m_inProgress?
 	m_maxSize = maxSize;
+}
+
+/**
+ * Get the If-Modified-Since request timestamp.
+ * @return If-Modified-Since timestamp (-1 for none)
+ */
+time_t IDownloader::ifModifiedSince(void) const
+{
+	return m_if_modified_since;
+}
+
+/**
+ * Set the If-Modified-Since request timestamp.
+ * @param timestamp If-Modified-Since timestamp (-1 for none)
+ */
+void IDownloader::setIfModifiedSince(time_t timestamp)
+{
+	assert(!m_inProgress);
+	// TODO: Don't set if m_inProgress?
+	m_if_modified_since = timestamp;
 }
 
 /** Data accessors. **/
