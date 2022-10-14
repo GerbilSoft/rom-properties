@@ -825,7 +825,7 @@ int EXEPrivate::addFields_NE_Import(void)
 
 		std::vector<string> row;
 		row.reserve(3);
-		const char *const name = EXENEEntries::lookup_ordinal(modname, imp.second);
+		const char *const name = EXENEEntries::lookup_ordinal(modname.c_str(), imp.second);
 		row.emplace_back(name ? name : s_no_name);
 		row.emplace_back(rp_sprintf("%u", imp.second));
 		row.emplace_back(std::move(modname));

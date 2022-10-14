@@ -33,13 +33,13 @@ struct OrdinalNameTable {
  * @param ordinal The ordinal
  * @return Name for the ordinal, or nullptr if not found.
  */
-const char *lookup_ordinal(const std::string &modname, uint16_t ordinal)
+const char *lookup_ordinal(const char *modname, uint16_t ordinal)
 {
-	auto it = std::lower_bound(entries, entries+ARRAY_SIZE(entries), modname.c_str(),
+	auto it = std::lower_bound(entries, entries+ARRAY_SIZE(entries), modname,
 		[](const OrdinalNameTable &lhs, const char *rhs) -> bool {
 			return strncasecmp(lhs.modname, rhs, 8) < 0;
 		});
-	if (it == entries+ARRAY_SIZE(entries) || strncasecmp(it->modname, modname.c_str(), 8) != 0)
+	if (it == entries+ARRAY_SIZE(entries) || strncasecmp(it->modname, modname, 8) != 0)
 		return nullptr;
 
 	auto it2 = std::lower_bound(it->table, it->table+it->count, ordinal,

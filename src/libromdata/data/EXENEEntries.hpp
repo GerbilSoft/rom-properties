@@ -12,11 +12,8 @@
 
 #include "common.h"
 
-// C includes.
+// C includes
 #include <stdint.h>
-
-// C++ includes.
-#include <string>
 
 namespace LibRomData { namespace EXENEEntries {
 
@@ -26,7 +23,7 @@ namespace LibRomData { namespace EXENEEntries {
  * @param ordinal The ordinal
  * @return Name for the ordinal, or nullptr if not found.
  */
-const char *lookup_ordinal(const std::string &modname, uint16_t ordinal);
+const char *lookup_ordinal(const char *modname, uint16_t ordinal);
 
 } }
 
