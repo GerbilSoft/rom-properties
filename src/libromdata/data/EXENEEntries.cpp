@@ -35,18 +35,20 @@ struct OrdinalNameTable {
  */
 const char *lookup_ordinal(const char *modname, uint16_t ordinal)
 {
-	auto it = std::lower_bound(entries, entries+ARRAY_SIZE(entries), modname,
+	static const OrdinalNameTable *const pEntries_end = &entries[ARRAY_SIZE(entries)];
+	auto it = std::lower_bound(entries, pEntries_end, modname,
 		[](const OrdinalNameTable &lhs, const char *rhs) -> bool {
 			return strncasecmp(lhs.modname, rhs, 8) < 0;
 		});
-	if (it == entries+ARRAY_SIZE(entries) || strncasecmp(it->modname, modname, 8) != 0)
+	if (it == pEntries_end || strncasecmp(it->modname, modname, 8) != 0)
 		return nullptr;
 
-	auto it2 = std::lower_bound(it->table, it->table+it->count, ordinal,
+	const OrdinalName *const pOrdinals_end = &it->table[it->count];
+	auto it2 = std::lower_bound(it->table, pOrdinals_end, ordinal,
 		[](const OrdinalName &lhs, uint16_t rhs) -> bool {
 			return lhs.ordinal < rhs;
 		});
-	if (it2 == it->table+it->count || it2->ordinal != ordinal)
+	if (it2 == pOrdinals_end || it2->ordinal != ordinal)
 		return nullptr;
 	return (likely(it2->offset != 0) ? &EXENEEntries_strtbl[it2->offset] : nullptr);
 }
