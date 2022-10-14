@@ -15,7 +15,7 @@ namespace LibRomData { namespace EXENEEntries {
 
 struct OrdinalName {
 	uint16_t ordinal;
-	const char *name;
+	uint16_t offset;
 };
 
 struct OrdinalNameTable {
@@ -48,7 +48,7 @@ const char *lookup_ordinal(const std::string &modname, uint16_t ordinal)
 		});
 	if (it2 == it->table+it->count || it2->ordinal != ordinal)
 		return nullptr;
-	return it2->name;
+	return (likely(it2->offset != 0) ? &EXENEEntries_strtbl[it2->offset] : nullptr);
 }
 
 } }
