@@ -239,12 +239,12 @@ set_label_format_type(GtkLabel *label, RpDescFormatType desc_format_type)
 	// gtk_label_set_?align() was introduced in GTK+ 3.16.
 	gtk_label_set_xalign(label, xalign);
 	gtk_label_set_yalign(label, yalign);
-#else
+#else /* !GTK_CHECK_VERSION(3,16,0) */
 	// NOTE: GtkMisc is deprecated on GTK+ 3.x, but it's
 	// needed for proper text alignment when using
 	// GtkSizeGroup prior to GTK+ 3.16.
 	gtk_misc_set_alignment(GTK_MISC(label), xalign, yalign);
-#endif
+#endif /* GTK_CHECK_VERSION(3,16,0) */
 
 	gtk_label_set_attributes(label, attr_lst);
 	pango_attr_list_unref(attr_lst);
@@ -579,8 +579,8 @@ rom_data_view_desc_format_type_changed(RomDataView	*page,
 	g_return_if_fail(IS_ROM_DATA_VIEW(page));
 	g_return_if_fail(desc_format_type >= RP_DFT_XFCE && desc_format_type < RP_DFT_LAST);
 
-	for (GtkWidget *label : page->cxx->vecDescLabels) {
-		set_label_format_type(GTK_LABEL(label), desc_format_type);
+	for (GtkLabel *label : page->cxx->vecDescLabels) {
+		set_label_format_type(label, desc_format_type);
 	}
 }
 
@@ -669,13 +669,12 @@ rom_data_view_init_header_row(RomDataView *page)
  * Initialize a string field.
  * @param page		[in] RomDataView object
  * @param field		[in] RomFields::Field
- * @param fieldIdx	[in] Field index
  * @param str		[in,opt] String data (If nullptr, field data is used)
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
 rom_data_view_init_string(RomDataView *page,
-	const RomFields::Field &field, int fieldIdx,
+	const RomFields::Field &field,
 	const char *str = nullptr)
 {
 	// String type.
@@ -708,9 +707,6 @@ rom_data_view_init_string(RomDataView *page,
 			gtk_label_set_text(GTK_LABEL(widget), str);
 		}
 	}
-
-	// NOTE: Set the field index here, since `widget` might be NULLed out later.
-	g_object_set_data(G_OBJECT(widget), "RFT_fieldIdx", GINT_TO_POINTER(fieldIdx+1));
 
 	// Check for any formatting options. (RFT_STRING only)
 	if (field.type == RomFields::RFT_STRING && field.flags != 0) {
@@ -762,12 +758,11 @@ rom_data_view_init_string(RomDataView *page,
  * Initialize a bitfield.
  * @param page		[in] RomDataView object
  * @param field		[in] RomFields::Field
- * @param fieldIdx	[in] Field index
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
 rom_data_view_init_bitfield(RomDataView *page,
-	const RomFields::Field &field, int fieldIdx)
+	const RomFields::Field &field)
 {
 	// Bitfield type. Create a grid of checkboxes.
 	// TODO: Description label needs some padding on the top...
@@ -821,13 +816,15 @@ rom_data_view_init_bitfield(RomDataView *page,
 		gtk_check_button_set_active(GTK_CHECK_BUTTON(checkBox), value);
 
 		// Save the bitfield checkbox's value in the GObject.
-		g_object_set_data(G_OBJECT(checkBox), "RFT_BITFIELD_value", GUINT_TO_POINTER((guint)value));
+		g_object_set_data(G_OBJECT(checkBox), "RFT_BITFIELD_value",
+			GUINT_TO_POINTER((guint)value));
 
 		// Disable user modifications.
 		// NOTE: Unlike Qt, both the "clicked" and "toggled" signals are
 		// emitted for both user and program modifications, so we have to
 		// connect this signal *after* setting the initial value.
-		g_signal_connect(checkBox, "toggled", G_CALLBACK(checkbox_no_toggle_signal_handler), page);
+		g_signal_connect(checkBox, "toggled",
+			G_CALLBACK(checkbox_no_toggle_signal_handler), page);
 
 #if USE_GTK_GRID
 		// TODO: GTK_FILL
@@ -843,7 +840,6 @@ rom_data_view_init_bitfield(RomDataView *page,
 		}
 	}
 
-	g_object_set_data(G_OBJECT(widget), "RFT_fieldIdx", GINT_TO_POINTER(fieldIdx+1));
 	return widget;
 }
 
@@ -851,12 +847,11 @@ rom_data_view_init_bitfield(RomDataView *page,
  * Initialize a list data field.
  * @param page		[in] RomDataView object
  * @param field		[in] RomFields::Field
- * @param fieldIdx	[in] Field index
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
 rom_data_view_init_listdata(RomDataView *page,
-	const RomFields::Field &field, int fieldIdx)
+	const RomFields::Field &field)
 {
 	// ListData type. Create a GtkListStore for the data.
 	const auto &listDataDesc = field.desc.list_data;
@@ -1202,7 +1197,6 @@ rom_data_view_init_listdata(RomDataView *page,
 		page->cxx->vecListDataMulti.emplace_back(listStore, GTK_TREE_VIEW(treeView), &field);
 	}
 
-	g_object_set_data(G_OBJECT(scrolledWindow), "RFT_fieldIdx", GINT_TO_POINTER(fieldIdx+1));
 	return scrolledWindow;
 }
 
@@ -1210,22 +1204,21 @@ rom_data_view_init_listdata(RomDataView *page,
  * Initialize a Date/Time field.
  * @param page	[in] RomDataView object
  * @param field	[in] RomFields::Field
- * @param fieldIdx	[in] Field index
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
 rom_data_view_init_datetime(RomDataView *page,
-	const RomFields::Field &field, int fieldIdx)
+	const RomFields::Field &field)
 {
 	GtkWidget *widget;
 
 	gchar *const str = rom_data_format_datetime(field.data.date_time, field.flags);
 	if (str) {
-		widget = rom_data_view_init_string(page, field, fieldIdx, str);
+		widget = rom_data_view_init_string(page, field, str);
 		g_free(str);
 	} else {
 		// tr: Invalid date/time.
-		widget = rom_data_view_init_string(page, field, fieldIdx, C_("RomDataView", "Unknown"));
+		widget = rom_data_view_init_string(page, field, C_("RomDataView", "Unknown"));
 	}
 
 	return widget;
@@ -1235,38 +1228,36 @@ rom_data_view_init_datetime(RomDataView *page,
  * Initialize an Age Ratings field.
  * @param page		[in] RomDataView object
  * @param field		[in] RomFields::Field
- * @param fieldIdx	[in] Field index
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
 rom_data_view_init_age_ratings(RomDataView *page,
-	const RomFields::Field &field, int fieldIdx)
+	const RomFields::Field &field)
 {
 	const RomFields::age_ratings_t *const age_ratings = field.data.age_ratings;
 	assert(age_ratings != nullptr);
 	if (!age_ratings) {
 		// tr: No age ratings data.
-		return rom_data_view_init_string(page, field, fieldIdx, C_("RomDataView", "ERROR"));
+		return rom_data_view_init_string(page, field, C_("RomDataView", "ERROR"));
 	}
 
 	// Convert the age ratings field to a string.
 	string str = RomFields::ageRatingsDecode(age_ratings);
-	return rom_data_view_init_string(page, field, fieldIdx, str.c_str());
+	return rom_data_view_init_string(page, field, str.c_str());
 }
 
 /**
  * Initialize a Dimensions field.
  * @param page		[in] RomDataView object
  * @param field		[in] RomFields::Field
- * @param fieldIdx	[in] Field index
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
 rom_data_view_init_dimensions(RomDataView *page,
-	const RomFields::Field &field, int fieldIdx)
+	const RomFields::Field &field)
 {
 	gchar *const str = rom_data_format_dimensions(field.data.dimensions);
-	GtkWidget *const widget = rom_data_view_init_string(page, field, fieldIdx, str);
+	GtkWidget *const widget = rom_data_view_init_string(page, field, str);
 	g_free(str);
 	return widget;
 }
@@ -1275,12 +1266,11 @@ rom_data_view_init_dimensions(RomDataView *page,
  * Initialize a multi-language string field.
  * @param page		[in] RomDataView object
  * @param field		[in] RomFields::Field
- * @param fieldIdx	[in] Field index
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
 rom_data_view_init_string_multi(RomDataView *page,
-	const RomFields::Field &field, int fieldIdx)
+	const RomFields::Field &field)
 {
 	// Mutli-language string.
 	// NOTE: The string contents won't be initialized here.
@@ -1288,9 +1278,9 @@ rom_data_view_init_string_multi(RomDataView *page,
 	// be able to change the displayed language.
 	// NOTE 2: The string must be "", not nullptr. Otherwise, it will
 	// attempt to use the field's string data, which is invalid.
-	GtkWidget *const lblStringMulti = rom_data_view_init_string(page, field, fieldIdx, "");
+	GtkWidget *const lblStringMulti = rom_data_view_init_string(page, field, "");
 	if (lblStringMulti) {
-		page->cxx->vecStringMulti.emplace_back(lblStringMulti, &field);
+		page->cxx->vecStringMulti.emplace_back(GTK_LABEL(lblStringMulti), &field);
 	}
 	return lblStringMulti;
 }
@@ -1308,7 +1298,7 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 
 	// RFT_STRING_MULTI
 	for (const Data_StringMulti_t &vsm : cxx->vecStringMulti) {
-		GtkWidget *const lblString = vsm.first;
+		GtkLabel *const lblString = vsm.first;
 		const RomFields::Field *const pField = vsm.second;
 		const auto *const pStr_multi = pField->data.str_multi;
 		assert(pStr_multi != nullptr);
@@ -1329,7 +1319,7 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 		// Get the string and update the text.
 		const string *const pStr = RomFields::getFromStringMulti(pStr_multi, cxx->def_lc, user_lc);
 		assert(pStr != nullptr);
-		gtk_label_set_text(GTK_LABEL(lblString), (pStr ? pStr->c_str() : ""));
+		gtk_label_set_text(lblString, (pStr ? pStr->c_str() : ""));
 	}
 
 	// RFT_LISTDATA_MULTI
@@ -1778,11 +1768,12 @@ rom_data_view_update_display(RomDataView *page)
 
 		// Verify the tab index.
 		const int tabIdx = field.tabIdx;
-		assert(tabIdx >= 0 && tabIdx < static_cast<int>(tabs.size()));
+		assert(tabIdx >= 0);
+		assert(tabIdx < static_cast<int>(tabs.size()));
 		if (tabIdx < 0 || tabIdx >= static_cast<int>(tabs.size())) {
 			// Tab index is out of bounds.
 			continue;
-		} else if (!tabs.at(tabIdx).table) {
+		} else if (!tabs[tabIdx].table) {
 			// Tab name is empty. Tab is hidden.
 			continue;
 		}
@@ -1799,162 +1790,168 @@ rom_data_view_update_display(RomDataView *page)
 				break;
 
 			case RomFields::RFT_STRING:
-				widget = rom_data_view_init_string(page, field, fieldIdx);
+				widget = rom_data_view_init_string(page, field);
 				break;
 			case RomFields::RFT_BITFIELD:
-				widget = rom_data_view_init_bitfield(page, field, fieldIdx);
+				widget = rom_data_view_init_bitfield(page, field);
 				break;
 			case RomFields::RFT_LISTDATA:
 				separate_rows = !!(field.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW);
-				widget = rom_data_view_init_listdata(page, field, fieldIdx);
+				widget = rom_data_view_init_listdata(page, field);
 				break;
 			case RomFields::RFT_DATETIME:
-				widget = rom_data_view_init_datetime(page, field, fieldIdx);
+				widget = rom_data_view_init_datetime(page, field);
 				break;
 			case RomFields::RFT_AGE_RATINGS:
-				widget = rom_data_view_init_age_ratings(page, field, fieldIdx);
+				widget = rom_data_view_init_age_ratings(page, field);
 				break;
 			case RomFields::RFT_DIMENSIONS:
-				widget = rom_data_view_init_dimensions(page, field, fieldIdx);
+				widget = rom_data_view_init_dimensions(page, field);
 				break;
 			case RomFields::RFT_STRING_MULTI:
-				widget = rom_data_view_init_string_multi(page, field, fieldIdx);
+				widget = rom_data_view_init_string_multi(page, field);
 				break;
 		}
 
-		if (widget) {
-			// Add the widget to the table.
-			auto &tab = tabs.at(tabIdx);
+		if (!widget) {
+			// No widget. Continue to the next field.
+			continue;
+		}
 
-			// tr: Field description label.
-			const string txt = rp_sprintf(desc_label_fmt, field.name);
-			GtkWidget *lblDesc = gtk_label_new(txt.c_str());
-			// NOTE: No name for this GtkWidget.
-			gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);
-			gtk_widget_show(lblDesc);
-			page->cxx->vecDescLabels.emplace_back(lblDesc);
+		// Set the widget's RFT_fieldIdx property.
+		// NOTE: RFT_STRING fields with STRF_CREDITS won't have this set.
+		g_object_set_data(G_OBJECT(widget), "RFT_fieldIdx", GINT_TO_POINTER(fieldIdx+1));
 
-			// Check if this is an RFT_STRING with warning set.
-			// If it is, set the "RFT_STRING_warning" flag.
-			const gboolean is_warning = (field.type == RomFields::RFT_STRING &&
-						     field.flags & RomFields::STRF_WARNING);
-			g_object_set_data(G_OBJECT(lblDesc), "RFT_STRING_warning", GUINT_TO_POINTER((guint)is_warning));
+		// Add the widget to the table.
+		auto &tab = tabs[tabIdx];
 
-			// Set the label format type.
-			set_label_format_type(GTK_LABEL(lblDesc), page->desc_format_type);
+		// tr: Field description label.
+		const string txt = rp_sprintf(desc_label_fmt, field.name);
+		GtkWidget *const lblDesc = gtk_label_new(txt.c_str());
+		// NOTE: No name for this GtkWidget.
+		gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);
+		set_label_format_type(GTK_LABEL(lblDesc), page->desc_format_type);
+		gtk_widget_show(lblDesc);
+		page->cxx->vecDescLabels.emplace_back(GTK_LABEL(lblDesc));
 
-			// Value widget.
-			int &row = tabRowCount[tabIdx];
+		// Check if this is an RFT_STRING with warning set.
+		// If it is, set the "RFT_STRING_warning" flag.
+		const guint is_warning = ((field.type == RomFields::RFT_STRING) &&
+		                          (field.flags & RomFields::STRF_WARNING));
+		g_object_set_data(G_OBJECT(lblDesc), "RFT_STRING_warning",
+			GUINT_TO_POINTER((guint)is_warning));
+
+		// Value widget.
+		int &row = tabRowCount[tabIdx];
 #if USE_GTK_GRID
-			// TODO: GTK_FILL
-			gtk_grid_attach(GTK_GRID(tab.table), lblDesc, 0, row, 1, 1);
-			// Widget halign is set above.
-			gtk_widget_set_valign(widget, GTK_ALIGN_START);
+		// TODO: GTK_FILL
+		gtk_grid_attach(GTK_GRID(tab.table), lblDesc, 0, row, 1, 1);
+		// Widget halign is set above.
+		gtk_widget_set_valign(widget, GTK_ALIGN_START);
 #else /* !USE_GTK_GRID */
-			gtk_table_attach(GTK_TABLE(tab.table), lblDesc, 0, 1, row, row+1,
-				GTK_FILL, GTK_FILL, 0, 0);
+		gtk_table_attach(GTK_TABLE(tab.table), lblDesc, 0, 1, row, row+1,
+			GTK_FILL, GTK_FILL, 0, 0);
 #endif /* USE_GTK_GRID */
 
-			if (separate_rows) {
-				// Separate rows.
-				// Make sure the description label is left-aligned.
-				GTK_LABEL_XALIGN_LEFT(lblDesc);
+		if (separate_rows) {
+			// Separate rows.
+			// Make sure the description label is left-aligned.
+			GTK_LABEL_XALIGN_LEFT(lblDesc);
 
-				// If this is the last field in the tab,
-				// put the RFT_LISTDATA in the GtkGrid instead.
-				bool doVBox = false;
-				RomFields::const_iterator nextIter = iter;
-				++nextIter;
-				if (tabIdx + 1 == tabCount && (nextIter == pFields_cend)) {
-					// Last tab, and last field.
+			// If this is the last field in the tab,
+			// put the RFT_LISTDATA in the GtkGrid instead.
+			bool doVBox = false;
+			RomFields::const_iterator nextIter = iter;
+			++nextIter;
+			if (tabIdx + 1 == tabCount && (nextIter == pFields_cend)) {
+				// Last tab, and last field.
+				doVBox = true;
+			} else {
+				// Check if the next field is on the next tab.
+				const RomFields::Field &nextField = *nextIter;
+				if (nextField.tabIdx != tabIdx) {
+					// Next field is on the next tab.
 					doVBox = true;
-				} else {
-					// Check if the next field is on the next tab.
-					const RomFields::Field &nextField = *nextIter;
-					if (nextField.tabIdx != tabIdx) {
-						// Next field is on the next tab.
-						doVBox = true;
-					}
 				}
+			}
 
-				if (doVBox) {
-					// FIXME: There still seems to be a good amount of space
-					// between tab.vbox and the RFT_LISTDATA widget here...
-					// (Moreso on Thunar GTK2 than Nautilus.)
+			if (doVBox) {
+				// FIXME: There still seems to be a good amount of space
+				// between tab.vbox and the RFT_LISTDATA widget here...
+				// (Moreso on Thunar GTK2 than Nautilus.)
 
-					// Unset this property to prevent the event filter from
-					// setting a fixed height.
-					g_object_set_data(G_OBJECT(widget), "RFT_LISTDATA_rows_visible",
-						GINT_TO_POINTER(0));
+				// Unset this property to prevent the event filter from
+				// setting a fixed height.
+				g_object_set_data(G_OBJECT(widget), "RFT_LISTDATA_rows_visible",
+					GINT_TO_POINTER(0));
 
 #if USE_GTK_GRID
-					// Set expand and fill properties.
-					gtk_widget_set_vexpand(widget, true);
-					gtk_widget_set_valign(widget, GTK_ALIGN_FILL);
+				// Set expand and fill properties.
+				gtk_widget_set_vexpand(widget, true);
+				gtk_widget_set_valign(widget, GTK_ALIGN_FILL);
 
-					// Set margin, since it's located outside of the GtkTable/GtkGrid.
-					// NOTE: Setting top margin to 0 due to spacing from the
-					// GtkTable/GtkGrid. (Still has extra spacing that needs to be fixed...)
-					g_object_set(widget,
-						"margin-left", 8, "margin-right",  8,
-						"margin-top",  0, "margin-bottom", 8,
-						nullptr);
+				// Set margin, since it's located outside of the GtkTable/GtkGrid.
+				// NOTE: Setting top margin to 0 due to spacing from the
+				// GtkTable/GtkGrid. (Still has extra spacing that needs to be fixed...)
+				g_object_set(widget,
+					"margin-left", 8, "margin-right",  8,
+					"margin-top",  0, "margin-bottom", 8,
+					nullptr);
 
-					GtkWidget *const widget_add = widget;
+				GtkWidget *const widget_add = widget;
 #else /* !USE_GTK_GRID */
-					// Need to use GtkAlignment on GTK+ 2.x.
-					GtkWidget *const alignment = gtk_alignment_new(0.0f, 0.0f, 1.0f, 1.0f);
-					// NOTE: No name for this GtkWidget.
-					gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 8, 8, 8);
-					gtk_container_add(GTK_CONTAINER(alignment), widget);
-					gtk_widget_show(alignment);
+				// Need to use GtkAlignment on GTK+ 2.x.
+				GtkWidget *const alignment = gtk_alignment_new(0.0f, 0.0f, 1.0f, 1.0f);
+				// NOTE: No name for this GtkWidget.
+				gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 8, 8, 8);
+				gtk_container_add(GTK_CONTAINER(alignment), widget);
+				gtk_widget_show(alignment);
 
-					GtkWidget *const widget_add = alignment;
+				GtkWidget *const widget_add = alignment;
 #endif /* USE_GTK_GRID */
 
-					// Add the widget to the GtkBox.
+				// Add the widget to the GtkBox.
 #if GTK_CHECK_VERSION(4,0,0)
-					if (tab.lblCredits) {
-						// Need to insert the widget before credits.
-						// TODO: Verify this.
-						gtk_widget_insert_before(widget_add, tab.vbox, tab.lblCredits);
-					} else {
-						gtk_box_append(GTK_BOX(tab.vbox), widget_add);
-					}
+				if (tab.lblCredits) {
+					// Need to insert the widget before credits.
+					// TODO: Verify this.
+					gtk_widget_insert_before(widget_add, tab.vbox, tab.lblCredits);
+				} else {
+					gtk_box_append(GTK_BOX(tab.vbox), widget_add);
+				}
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-					gtk_box_pack_start(GTK_BOX(tab.vbox), widget_add, true, true, 0);
-					if (tab.lblCredits) {
-						// Need to move it before credits.
-						// TODO: Verify this.
-						gtk_box_reorder_child(GTK_BOX(tab.vbox), widget_add, 1);
-					}
+				gtk_box_pack_start(GTK_BOX(tab.vbox), widget_add, true, true, 0);
+				if (tab.lblCredits) {
+					// Need to move it before credits.
+					// TODO: Verify this.
+					gtk_box_reorder_child(GTK_BOX(tab.vbox), widget_add, 1);
+				}
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
-					// Increment row by one, since only one widget is
-					// actually being added to the GtkTable/GtkGrid.
-					row++;
-				} else {
-					// Add the widget to the GtkTable/GtkGrid.
-#if USE_GTK_GRID
-					gtk_grid_attach(GTK_GRID(tab.table), widget, 0, row+1, 2, 1);
-#else /* !USE_GTK_GRID */
-					rowCount++;
-					gtk_table_resize(GTK_TABLE(tab.table), rowCount, 2);
-					gtk_table_attach(GTK_TABLE(tab.table), widget, 0, 2, row+1, row+2,
-						GTK_FILL, GTK_FILL, 0, 0);
-#endif /* USE_GTK_GRID */
-					row += 2;
-				}
+				// Increment row by one, since only one widget is
+				// actually being added to the GtkTable/GtkGrid.
+				row++;
 			} else {
-				// Single row.
+				// Add the widget to the GtkTable/GtkGrid.
 #if USE_GTK_GRID
-				gtk_grid_attach(GTK_GRID(tab.table), widget, 1, row, 1, 1);
+				gtk_grid_attach(GTK_GRID(tab.table), widget, 0, row+1, 2, 1);
 #else /* !USE_GTK_GRID */
-				gtk_table_attach(GTK_TABLE(tab.table), widget, 1, 2, row, row+1,
+				rowCount++;
+				gtk_table_resize(GTK_TABLE(tab.table), rowCount, 2);
+				gtk_table_attach(GTK_TABLE(tab.table), widget, 0, 2, row+1, row+2,
 					GTK_FILL, GTK_FILL, 0, 0);
 #endif /* USE_GTK_GRID */
-				row++;
+				row += 2;
 			}
+		} else {
+			// Single row.
+#if USE_GTK_GRID
+			gtk_grid_attach(GTK_GRID(tab.table), widget, 1, row, 1, 1);
+#else /* !USE_GTK_GRID */
+			gtk_table_attach(GTK_TABLE(tab.table), widget, 1, 2, row, row+1,
+				GTK_FILL, GTK_FILL, 0, 0);
+#endif /* USE_GTK_GRID */
+			row++;
 		}
 	}
 
@@ -1986,8 +1983,7 @@ rom_data_view_load_rom_data(RomDataView *page)
 	// Do we have a RomData object loaded already?
 	if (page->romData) {
 		// Unload the existing RomData object.
-		page->romData->unref();
-		page->romData = nullptr;
+		UNREF_AND_NULL_NOCHK(page->romData);
 		page->hasCheckedAchievements = false;
 		g_object_notify_by_pspec(G_OBJECT(page), props[PROP_SHOWING_DATA]);
 	}
@@ -2111,7 +2107,8 @@ checkbox_no_toggle_signal_handler(GtkCheckButton *checkbutton, RomDataView *page
 	}
 
 	// Get the saved RFT_BITFIELD value.
-	const gboolean value = (gboolean)GPOINTER_TO_UINT(g_object_get_data(G_OBJECT(checkbutton), "RFT_BITFIELD_value"));
+	const gboolean value = (gboolean)GPOINTER_TO_UINT(
+		g_object_get_data(G_OBJECT(checkbutton), "RFT_BITFIELD_value"));
 	if (gtk_check_button_get_active(checkbutton) != value) {
 		// Toggle this box.
 		gtk_check_button_set_active(checkbutton, value);
@@ -2170,7 +2167,8 @@ tree_view_realize_signal_handler(GtkTreeView	*treeView,
 	RP_UNUSED(page);
 
 	// Recalculate the row heights for this GtkTreeView.
-	const int rows_visible = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(treeView), "RFT_LISTDATA_rows_visible"));
+	const int rows_visible = GPOINTER_TO_INT(
+		g_object_get_data(G_OBJECT(treeView), "RFT_LISTDATA_rows_visible"));
 	if (rows_visible <= 0) {
 		// This GtkTreeView doesn't have a fixed number of rows.
 		return;
@@ -2178,7 +2176,8 @@ tree_view_realize_signal_handler(GtkTreeView	*treeView,
 
 	// Get the parent widget.
 	// This should be a GtkScrolledWindow.
-	GtkWidget *scrolledWindow = gtk_widget_get_ancestor(GTK_WIDGET(treeView), GTK_TYPE_SCROLLED_WINDOW);
+	GtkWidget *const scrolledWindow = gtk_widget_get_ancestor(
+		GTK_WIDGET(treeView), GTK_TYPE_SCROLLED_WINDOW);
 	if (!scrolledWindow || !GTK_IS_SCROLLED_WINDOW(scrolledWindow)) {
 		// No parent widget, or not a GtkScrolledWindow.
 		return;
@@ -2197,7 +2196,7 @@ tree_view_realize_signal_handler(GtkTreeView	*treeView,
 
 	if (gtk_tree_view_get_headers_visible(treeView)) {
 		// Get the header widget of the first column.
-		GtkTreeViewColumn *column = gtk_tree_view_get_column(treeView, 0);
+		GtkTreeViewColumn *const column = gtk_tree_view_get_column(treeView, 0);
 		assert(column != nullptr);
 		if (!column) {
 			// No columns...

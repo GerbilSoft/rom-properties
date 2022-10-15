@@ -282,8 +282,7 @@ language_combo_box_set_lcs(LanguageComboBox *widget, const uint32_t *lcs_array)
 	gtk_list_store_clear(widget->listStore);
 
 	int sel_idx = -1;
-	int cur_idx = 0;
-	for (; *lcs_array != 0; lcs_array++, cur_idx++) {
+	for (int cur_idx = 0; *lcs_array != 0; lcs_array++, cur_idx++) {
 		const uint32_t lc = *lcs_array;
 		const char *const name = SystemRegion::getLocalizedLanguageName(lc);
 

@@ -40,7 +40,7 @@ struct _RomDataViewClass {
 };
 
 // Multi-language stuff.
-typedef std::pair<GtkWidget*, const LibRpBase::RomFields::Field*> Data_StringMulti_t;
+typedef std::pair<GtkLabel*, const LibRpBase::RomFields::Field*> Data_StringMulti_t;
 
 struct Data_ListDataMulti_t {
 	GtkListStore *listStore;
@@ -67,13 +67,13 @@ struct _RomDataViewCxx {
 	};
 	std::vector<tab> tabs;
 
-	// Description labels.
-	std::vector<GtkWidget*> vecDescLabels;
+	// Description labels
+	std::vector<GtkLabel*> vecDescLabels;
 
-	// RFT_STRING_MULTI value labels.
+	// RFT_STRING_MULTI value labels
 	std::vector<Data_StringMulti_t> vecStringMulti;
 
-	// RFT_LISTDATA_MULTI value GtkListStores.
+	// RFT_LISTDATA_MULTI value GtkListStores
 	std::vector<Data_ListDataMulti_t> vecListDataMulti;
 
 	// Default language code for multi-language.

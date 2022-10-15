@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * GdkImageConv.cpp: Helper functions to convert from rp_image to GDK.     *
  *                                                                         *
- * Copyright (c) 2017-2021 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -97,11 +97,9 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 				// Remaining pixels.
 				const argb32_t *rpx_src = reinterpret_cast<const argb32_t*>(xmm_src);
 				argb32_t *rpx_dest = reinterpret_cast<argb32_t*>(xmm_dest);
-				for (; x > 0; x--) {
+				for (; x > 0; x--, rpx_src++, rpx_dest++) {
 					rpx_dest->u32 = rpx_src->u32;
 					std::swap(rpx_dest->r, rpx_dest->b);
-					rpx_src++;
-					rpx_dest++;
 				}
 
 				// Next line.
@@ -160,7 +158,7 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 			}
 
 			// Convert the image data from CI8 to ARGB32.
-			// FIXME: Why not just leave it as CI8?
+			// (GdkPixbuf doesn't support CI8.)
 			const int dest_stride_adj = (rowstride / sizeof(*px_dest)) - img->width();
 			const int src_stride_adj = img->stride() - width;
 
