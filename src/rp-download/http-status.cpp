@@ -9,14 +9,6 @@
 #include "stdafx.h"
 #include "http-status.hpp"
 
-// C API declaration for MSVC.
-// Required when using stdcall as the default calling convention.
-#ifdef _MSC_VER
-#  define RP_C_API __cdecl
-#else
-#  define RP_C_API
-#endif
-
 // HTTP status code messages.
 // Reference: https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
 

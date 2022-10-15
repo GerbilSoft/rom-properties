@@ -114,14 +114,6 @@ static const errmap w32_to_posix[] = {
 #define MIN_EACCES_RANGE ERROR_WRITE_PROTECT
 #define MAX_EACCES_RANGE ERROR_SHARING_BUFFER_EXCEEDED
 
-// C API declaration for MSVC.
-// Required when using stdcall as the default calling convention.
-#ifdef _MSC_VER
-#  define RP_C_API __cdecl
-#else
-#  define RP_C_API
-#endif
-
 /**
  * Convert a Win32 error number to a POSIX error code.
  * @param w32err Win32 error number.
