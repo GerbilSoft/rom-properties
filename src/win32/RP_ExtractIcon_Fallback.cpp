@@ -11,8 +11,7 @@
 #include "RP_ExtractIcon.hpp"
 #include "RP_ExtractIcon_p.hpp"
 
-// librpbase, librpfile, libwin32common
-#include "libwin32common/env_vars.hpp"
+// librpbase, librpfile, libwin32ui
 using namespace LibRpBase;
 using namespace LibRpFile;
 using LibWin32UI::RegKey;

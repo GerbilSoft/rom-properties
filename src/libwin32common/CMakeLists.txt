@@ -33,7 +33,6 @@ SET(${PROJECT_NAME}_SRCS
 	propsys_xp.c
 	userdirs.cpp
 	MiniU82T.cpp
-	env_vars.cpp
 	sdk/GUID_fn.c
 	)
 SET(${PROJECT_NAME}_H
@@ -44,7 +43,6 @@ SET(${PROJECT_NAME}_H
 	propsys_xp.h
 	userdirs.hpp
 	MiniU82T.hpp
-	env_vars.hpp
 	sdk/QITab.h
 	sdk/IListView.hpp
 	sdk/IOwnerDataCallback.hpp
