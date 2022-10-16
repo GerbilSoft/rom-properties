@@ -1,42 +1,30 @@
-# Makefile for libpng
-# Microsoft Visual C++ with Intel C/C++ Compiler 4.0 and later
-
-# Copyright (C) 2006, 2014 Glenn Randers-Pehrson
-# Copyright (C) 2000, Pawel Mrochen, based on makefile.msc which is
-# copyright 1995 Guy Eric Schalnat, Group 42, Inc.
+# makefile for libpng on win-arm64
+# Copyright (C) 2021 Gabor Kertesz
+# Copyright (C) 1998 Tim Wegner
+# Copyright (C) 2006,2009,2011,2014 Glenn Randers-Pehrson
 #
 # This code is released under the libpng license.
 # For conditions of distribution and use, see the disclaimer
 # and license in png.h
 #
-# To use, do "nmake /f scripts\makefile.intel"
-#
-# ------------------- Intel C/C++ Compiler 4.0 and later -------------------
+# Assumes that zlib.lib, zconf.h, and zlib.h have been copied to ..\zlib
+# To use, do "nmake /f scripts\makefile.vcwin-arm64"
 
-# Where the zlib library and include files are located
-ZLIBLIB=..\zlib
-ZLIBINC=..\zlib
+# -------- Microsoft Visual C++ 2.0 and later --------
 
-# Target CPU
-CPU=6		# Pentium II
-#CPU=5		# Pentium
-
-# Calling convention
-CALLING=r	# __fastcall
-#CALLING=z	# __stdcall
-#CALLING=d	# __cdecl
+# Compiler, linker, librarian and other tools
+CC = cl
+LD = link
+AR = lib
+CPPFLAGS = -I..\zlib
+CFLAGS  = -nologo -D_CRT_SECURE_NO_DEPRECATE -D_CRT_SECURE_NO_WARNINGS -DPNG_ARM_NEON_OPT=1 -MD -O2 -W3
+LDFLAGS = -nologo
+ARFLAGS = -nologo
+CP = copy
+RM = del
 
 # Uncomment next to put error messages in a file
-#ERRFILE=>>pngerrs
-
-# --------------------------------------------------------------------------
-
-CC=icl
-CPPFLAGS=-I$(ZLIBINC)
-CFLAGS=-O2 -G$(CPU)$(CALLING) -Qip -Qunroll4 -nologo
-LD=link
-LDFLAGS=/SUBSYSTEM:CONSOLE /NOLOGO
-CP=cp
+#ERRFILE= >> pngerrs.log
 
 # Pre-built configuration
 # See scripts\pnglibconf.mak for more options
@@ -46,13 +34,14 @@ PNGLIBCONF_H_PREBUILT = scripts\pnglibconf.h.prebuilt
 O=.obj
 
 # File lists
-OBJS1=png$(O) pngerror$(O) pngget$(O) pngmem$(O) pngpread$(O)
-OBJS2=pngread$(O) pngrio$(O) pngrtran$(O) pngrutil$(O) pngset$(O)
-OBJS3=pngtrans$(O) pngwio$(O) pngwrite$(O) pngwtran$(O) pngwutil$(O)
-OBJS=$(OBJS1) $(OBJS2) $(OBJS3)
+OBJS1 = png$(O) pngerror$(O) pngget$(O) pngmem$(O) pngpread$(O)
+OBJS2 = pngread$(O) pngrio$(O) pngrtran$(O) pngrutil$(O) pngset$(O)
+OBJS3 = pngtrans$(O) pngwio$(O) pngwrite$(O) pngwtran$(O) pngwutil$(O)
+OBJS4 = arm_init$(O) filter_neon_intrinsics$(O) palette_neon_intrinsics$(O)
+OBJS  = $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4)
 
 # Targets
-all: test
+all: libpng.lib
 
 pnglibconf.h: $(PNGLIBCONF_H_PREBUILT)
 	$(CP) $(PNGLIBCONF_H_PREBUILT) $@
@@ -102,17 +91,33 @@ pngwtran$(O): png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngde
 pngwutil$(O): png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h
 	$(CC) -c $(CPPFLAGS) $(CFLAGS) $*.c $(ERRFILE)
 
-libpng.lib: $(OBJS)
-	if exist libpng.lib del libpng.lib
-	lib /NOLOGO /OUT:libpng.lib $(OBJS)
+arm_init$(O): png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h
+	$(CC) -c $(CPPFLAGS) $(CFLAGS) arm\$*.c $(ERRFILE)
 
-pngtest.exe: pngtest.obj libpng.lib
-	$(LD) $(LDFLAGS) /OUT:pngtest.exe pngtest.obj libpng.lib $(ZLIBLIB)\zlib.lib
+filter_neon_intrinsics$(O): png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h
+	$(CC) -c $(CPPFLAGS) $(CFLAGS) arm\$*.c $(ERRFILE)
+
+palette_neon_intrinsics$(O): png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h
+	$(CC) -c $(CPPFLAGS) $(CFLAGS) arm\$*.c $(ERRFILE)
+
+libpng.lib: $(OBJS)
+	-$(RM) $@
+	$(AR) $(ARFLAGS) -out:$@ $(OBJS) $(ERRFILE)
+
+pngtest.exe: pngtest$(O) libpng.lib
+	$(LD) $(LDFLAGS) -out:$@ pngtest$(O) libpng.lib ..\zlib\zlib.lib $(ERRFILE)
 
 pngtest$(O): png.h pngconf.h pnglibconf.h
 	$(CC) -c $(CPPFLAGS) $(CFLAGS) $*.c $(ERRFILE)
 
 test: pngtest.exe
 	pngtest.exe
+
+clean:
+	-$(RM) *$(O)
+	-$(RM) libpng.lib
+	-$(RM) pnglibconf.h
+	-$(RM) pngtest.exe
+	-$(RM) pngout.png
 
 # End of makefile for libpng
