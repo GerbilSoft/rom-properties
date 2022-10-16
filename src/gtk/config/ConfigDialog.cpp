@@ -343,7 +343,7 @@ config_dialog_apply(ConfigDialog *dialog)
 		nullptr))
 	{
 		// Failed to open the configuration file.
-		g_object_unref(keyFile);
+		g_key_file_unref(keyFile);
 		return;
 	}
 
@@ -386,7 +386,7 @@ config_dialog_apply(ConfigDialog *dialog)
 			nullptr))
 		{
 			// Failed to open the configuration file.
-			g_object_unref(keyFile);
+			g_key_file_unref(keyFile);
 			return;
 		}
 
