@@ -517,9 +517,6 @@ about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 		(GTK_MAJOR_VERSION >= 4 ? "" : "+"),
 		(guint)GTK_MAJOR_VERSION, (guint)GTK_MINOR_VERSION,
 		(guint)GTK_MICRO_VERSION);
-#ifdef QT_IS_STATIC
-	sLibraries += rp_sprintf(sIntCopyOf, gtkVersion.c_str());
-#else
 	sLibraries += rp_sprintf(sCompiledWith, gtkVersionCompiled.c_str()) + '\n';
 
 	// NOTE: Although the GTK+ 2.x headers export variables,
@@ -533,7 +530,6 @@ about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 		gtk_get_micro_version());
 	sLibraries += rp_sprintf(sUsingDll, gtkVersionUsing.c_str());
 #endif /* GTK_CHECK_VERSION(2,90,7) */
-#endif /* QT_IS_STATIC */
 	sLibraries += "\n"
 		"Copyright (C) 1995-1997 Peter Mattis, Spencer Kimball and Josh MacDonald.\n"
 		"Copyright (C) 1995-2022 the GTK+ Team and others.\n"
