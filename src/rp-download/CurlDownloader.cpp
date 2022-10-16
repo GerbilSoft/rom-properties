@@ -191,7 +191,11 @@ int CurlDownloader::download(void)
 
 	if (m_if_modified_since >= 0) {
 		// Add an "If-Modified-Since" header.
+#if LIBCURL_VERSION_NUM >= 0x073B00
 		curl_easy_setopt(curl, CURLOPT_TIMEVALUE_LARGE, static_cast<curl_off_t>(m_if_modified_since));
+#else /* LIBCURL_VERSION_NUM < 0x073B00 */
+		curl_easy_setopt(curl, CURLOPT_TIMEVALUE, static_cast<long>(m_if_modified_since));
+#endif /* LIBCURL_VERSION_NUM >= 0x073B00 */
 		curl_easy_setopt(curl, CURLOPT_TIMECONDITION, CURL_TIMECOND_IFMODSINCE);
 	}
 
