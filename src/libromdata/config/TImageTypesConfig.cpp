@@ -323,7 +323,7 @@ int TImageTypesConfig<ComboBox>::save(void)
 		};
 
 		bool hasOne = false;
-		for (uint8_t &imageType : imgTypePrio) {
+		for (uint8_t imageType : imgTypePrio) {
 			if (imageType < imageTypeCount) {
 				if (hasOne)
 					imageTypeList += ',';
