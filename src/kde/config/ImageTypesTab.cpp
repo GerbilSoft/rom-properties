@@ -329,7 +329,7 @@ void ImageTypesTabPrivate::cboImageType_setPriorityValue(unsigned int cbid, unsi
 	const unsigned int imageType = imageTypeFromCbid(cbid);
 	if (!validateSysImageType(sys, imageType))
 		return;
-	SysData_t &sysData = v_sysData[sys];
+	const SysData_t &sysData = v_sysData[sys];
 
 	QComboBox *const cbo = sysData.cboImageType[imageType];
 	assert(cbo != nullptr);
