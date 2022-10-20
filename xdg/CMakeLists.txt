@@ -13,7 +13,8 @@ INCLUDE(DirInstallPaths)
 # Desktop file
 IF(DIR_INSTALL_XDG_DESKTOP)
 	INSTALL(FILES rp-config.desktop
-		DESTINATION "${DIR_INSTALL_XDG_DESKTOP}/com.gerbilsoft.rom-properties.rp-config.desktop"
+		RENAME com.gerbilsoft.rom-properties.rp-config.desktop
+		DESTINATION "${DIR_INSTALL_XDG_DESKTOP}"
 		COMPONENT "xdg")
 ENDIF(DIR_INSTALL_XDG_DESKTOP)
 

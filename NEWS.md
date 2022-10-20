@@ -14,6 +14,9 @@
     error for some symbol types.
     * Merged #359: [libromdata] ELFPrivate::addSymbolFields(): fix the symbol type names
       * Submitted by @DankRank.
+  * xdg: Install rp-config.desktop correctly.
+    * Fixes #367: "rp-config.desktop" file error
+      * Reported by @Amnesia1000.
 
 * Other changes:
   * libromdata's SOVERSION was bumped to 2 due to an ABI change in
