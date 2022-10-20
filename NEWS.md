@@ -17,6 +17,11 @@
   * xdg: Install rp-config.desktop correctly.
     * Fixes #367: "rp-config.desktop" file error
       * Reported by @Amnesia1000.
+  * Some text fields in certain ROMs that were documented as Latin-1
+    contain C0/C1 control codes, which causes problems with rpcli.
+    Handle these fields as cp1252 instead.
+    * Fixes #365: Issues parsing some DS ROMs
+      * Reported by @mariomadproductions.
 
 * Other changes:
   * libromdata's SOVERSION was bumped to 2 due to an ABI change in
