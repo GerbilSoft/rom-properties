@@ -429,7 +429,10 @@ static inline std::u16string cp1252_sjis_to_utf16(const char *str, int len)
  */
 static inline std::string latin1_to_utf8(const char *str, int len)
 {
-	return cpN_to_utf8(CP_LATIN1, str, len, TEXTCONV_FLAG_CP1252_FALLBACK);
+	// NOTE: Using cp1252 here, since this ends up passing
+	// various C0/C1 control characters through for some ROMs,
+	// which causes terminal output to stop.
+	return cpN_to_utf8(1252, str, len);
 }
 
 /**
@@ -440,8 +443,10 @@ static inline std::string latin1_to_utf8(const char *str, int len)
  */
 static inline std::string latin1_to_utf8(const std::string &str)
 {
-	return cpN_to_utf8(CP_LATIN1, str.data(), static_cast<int>(str.size()),
-		TEXTCONV_FLAG_CP1252_FALLBACK);
+	// NOTE: Using cp1252 here, since this ends up passing
+	// various C0/C1 control characters through for some ROMs,
+	// which causes terminal output to stop.
+	return cpN_to_utf8(1252, str.data(), static_cast<int>(str.size()));
 }
 
 /**

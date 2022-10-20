@@ -956,7 +956,7 @@ int NintendoDS::loadFieldData(void)
 
 	// Title
 	d->fields->addField_string(C_("RomData", "Title"),
-		cp1252_to_utf8(romHeader->title, ARRAY_SIZE_I(romHeader->title)),
+		latin1_to_utf8(romHeader->title, ARRAY_SIZE_I(romHeader->title)),
 		RomFields::STRF_TRIM_END);
 
 	if (!d->nds_icon_title_loaded) {
@@ -1358,7 +1358,7 @@ int NintendoDS::loadMetaData(void)
 	if (s_title.empty()) {
 		// Full title is not available.
 		// Use the short title from the NDS header.
-		s_title = cp1252_to_utf8(romHeader->title, ARRAY_SIZE_I(romHeader->title));
+		s_title = latin1_to_utf8(romHeader->title, ARRAY_SIZE_I(romHeader->title));
 	}
 
 	d->metaData->addMetaData_string(Property::Title, s_title, RomMetaData::STRF_TRIM_END);
