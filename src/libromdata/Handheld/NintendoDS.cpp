@@ -920,10 +920,10 @@ int NintendoDS::loadFieldData(void)
 		d->fields->reserve(10);
 	}
 
-	// NDS common fields.
+	// NDS common fields
 	d->fields->setTabName(0, "NDS");
 
-	// Type.
+	// Type
 	// TODO:
 	// - Show PassMe fields?
 	//   Reference: http://imrannazar.com/The-Smallest-NDS-File
@@ -954,9 +954,10 @@ int NintendoDS::loadFieldData(void)
 	}
 	d->fields->addField_string(C_("NintendoDS", "Type"), nds_romType);
 
-	// Title.
+	// Title
 	d->fields->addField_string(C_("RomData", "Title"),
-		latin1_to_utf8(romHeader->title, ARRAY_SIZE_I(romHeader->title)));
+		cp1252_to_utf8(romHeader->title, ARRAY_SIZE_I(romHeader->title)),
+		RomFields::STRF_TRIM_END);
 
 	if (!d->nds_icon_title_loaded) {
 		// Attempt to load the icon/title data.
@@ -1011,11 +1012,11 @@ int NintendoDS::loadFieldData(void)
 		}
 	}
 
-	// Game ID.
+	// Game ID
 	d->fields->addField_string(C_("RomData", "Game ID"),
 		latin1_to_utf8(romHeader->id6, ARRAY_SIZE_I(romHeader->id6)));
 
-	// Publisher.
+	// Publisher
 	const char *const publisher_title = C_("RomData", "Publisher");
 	const char *const publisher = NintendoPublishers::lookup(romHeader->company);
 	if (publisher) {
@@ -1032,7 +1033,7 @@ int NintendoDS::loadFieldData(void)
 		}
 	}
 
-	// ROM version.
+	// ROM version
 	d->fields->addField_string_numeric(C_("RomData", "Revision"),
 		romHeader->rom_version, RomFields::Base::Dec, 2);
 
@@ -1048,13 +1049,13 @@ int NintendoDS::loadFieldData(void)
 		v_nds_security_data_names, 0, d->secData);
 	d->fieldIdx_secData = static_cast<int>(d->fields->count()-1);
 
-	// Secure Area.
+	// Secure Area
 	// TODO: Verify the CRC.
 	d->fields->addField_string(C_("NintendoDS", "Secure Area"),
 		d->getNDSSecureAreaString());
 	d->fieldIdx_secArea = static_cast<int>(d->fields->count()-1);
 
-	// Hardware type.
+	// Hardware type
 	// NOTE: DS_HW_DS is inverted bit0; DS_HW_DSi is normal bit1.
 	uint32_t hw_type = (romHeader->unitcode & 3) ^ NintendoDSPrivate::DS_HW_DS;
 	if (hw_type == 0) {
@@ -1070,7 +1071,7 @@ int NintendoDS::loadFieldData(void)
 	d->fields->addField_bitfield(C_("NintendoDS", "Hardware"),
 		v_hw_bitfield_names, 0, hw_type);
 
-	// NDS Region.
+	// NDS Region
 	// Only used for region locking on Chinese iQue DS consoles.
 	// Not displayed for DSiWare wrapped in 3DS CIA packages.
 	uint32_t nds_region = 0;
@@ -1116,13 +1117,13 @@ int NintendoDS::loadFieldData(void)
 	/** DSi-specific fields. **/
 	d->fields->addTab("DSi");
 
-	// Title ID.
+	// Title ID
 	const uint32_t tid_hi = le32_to_cpu(romHeader->dsi.title_id.hi);
 	d->fields->addField_string(C_("Nintendo", "Title ID"),
 		rp_sprintf("%08X-%08X",
 			tid_hi, le32_to_cpu(romHeader->dsi.title_id.lo)));
 
-	// DSi filetype.
+	// DSi filetype
 	static const struct {
 		uint8_t dsi_filetype;
 		const char *s_dsi_filetype;
@@ -1182,7 +1183,7 @@ int NintendoDS::loadFieldData(void)
 			? C_("RomData", "Region Code")
 			: C_("NintendoDS", "DSi Region Code"));
 
-	// DSi Region.
+	// DSi Region
 	// Maps directly to the header field.
 	static const char *const dsi_region_bitfield_names[] = {
 		NOP_C_("Region", "Japan"),
@@ -1197,7 +1198,7 @@ int NintendoDS::loadFieldData(void)
 	d->fields->addField_bitfield(region_code_name,
 		v_dsi_region_bitfield_names, 3, le32_to_cpu(romHeader->dsi.region_code));
 
-	// Age rating(s).
+	// Age rating(s)
 	// Note that not all 16 fields are present on DSi,
 	// though the fields do match exactly, so no
 	// mapping is necessary.
@@ -1234,10 +1235,10 @@ int NintendoDS::loadFieldData(void)
 	}
 	d->fields->addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
 
-	// Permissions and flags.
+	// Permissions and flags
 	d->fields->addTab("Permissions");
 
-	// Permissions.
+	// Permissions
 	static const char *const dsi_permissions_bitfield_names[] = {
 		NOP_C_("NintendoDS|DSi_Permissions", "Common Key"),
 		NOP_C_("NintendoDS|DSi_Permissions", "AES Slot B"),
@@ -1284,7 +1285,7 @@ int NintendoDS::loadFieldData(void)
 	params.mxd.checkboxes = le32_to_cpu(romHeader->dsi.access_control);
 	d->fields->addField_listData(C_("NintendoDS", "Permissions"), &params);
 
-	// DSi flags.
+	// DSi flags
 	auto vv_dsi_flags = d->getDSiFlagsStringVector();
 	params.headers = nullptr;
 	params.data.single = vv_dsi_flags;
@@ -1321,7 +1322,7 @@ int NintendoDS::loadMetaData(void)
 	// ROM header is read in the constructor.
 	const NDS_RomHeader *const romHeader = &d->romHeader;
 
-	// Title.
+	// Title
 	string s_title;
 	if (!d->nds_icon_title_loaded) {
 		// Attempt to load the icon/title data.
@@ -1357,12 +1358,12 @@ int NintendoDS::loadMetaData(void)
 	if (s_title.empty()) {
 		// Full title is not available.
 		// Use the short title from the NDS header.
-		s_title = latin1_to_utf8(romHeader->title, ARRAY_SIZE_I(romHeader->title));
+		s_title = cp1252_to_utf8(romHeader->title, ARRAY_SIZE_I(romHeader->title));
 	}
 
-	d->metaData->addMetaData_string(Property::Title, s_title);
+	d->metaData->addMetaData_string(Property::Title, s_title, RomMetaData::STRF_TRIM_END);
 
-	// Publisher.
+	// Publisher
 	// TODO: Use publisher from the full title?
 	const char *const publisher = NintendoPublishers::lookup(romHeader->company);
 	d->metaData->addMetaData_string(Property::Publisher,
