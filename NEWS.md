@@ -22,6 +22,9 @@
     Handle these fields as cp1252 instead.
     * Fixes #365: Issues parsing some DS ROMs
       * Reported by @mariomadproductions.
+  * [gtk] rp-config: Fix saving if the files don't exist initially.
+    * Fixes #368: rp-config does not save configuration and keys in Manjaro Gnome.
+      * Reported by @Amnesia1000.
 
 * Other changes:
   * libromdata's SOVERSION was bumped to 2 due to an ABI change in

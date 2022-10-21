@@ -337,14 +337,31 @@ config_dialog_apply(ConfigDialog *dialog)
 		return;
 	}
 
+	GError *err = nullptr;
 	GKeyFile *keyFile = g_key_file_new();
 	if (!g_key_file_load_from_file(keyFile, filename,
 		(GKeyFileFlags)(G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS),
-		nullptr))
+		&err))
 	{
 		// Failed to open the configuration file.
-		g_key_file_unref(keyFile);
-		return;
+		gint code;
+		if (err) {
+			code = err->code;
+			g_error_free(err);
+			err = nullptr;
+		} else {
+			code = -1;
+		}
+
+		if (code == G_FILE_ERROR_NOENT) {
+			// File not found.
+			// We'll create a new file.
+		} else {
+			// Some other error.
+			// TODO: Show an error message.
+			g_key_file_unref(keyFile);
+			return;
+		}
 	}
 
 	// Save the settings.
@@ -383,11 +400,27 @@ config_dialog_apply(ConfigDialog *dialog)
 		keyFile = g_key_file_new();
 		if (!g_key_file_load_from_file(keyFile, filename,
 			(GKeyFileFlags)(G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS),
-			nullptr))
+			&err))
 		{
 			// Failed to open the configuration file.
-			g_key_file_unref(keyFile);
-			return;
+			gint code;
+			if (err) {
+				code = err->code;
+				g_error_free(err);
+				err = nullptr;
+			} else {
+				code = -1;
+			}
+
+			if (code == G_FILE_ERROR_NOENT) {
+				// File not found.
+				// We'll create a new file.
+			} else {
+				// Some other error.
+				// TODO: Show an error message.
+				g_key_file_unref(keyFile);
+				return;
+			}
 		}
 
 		// Save the keys.
