@@ -15,7 +15,15 @@
 #include "librpbase/config/AboutTabText.hpp"
 using namespace LibRpBase;
 
-// C++ STL classes.
+// libromdata
+#include "libromdata/img/CacheManager.hpp"
+using LibRomData::CacheManager;
+
+// KDE protocol manager.
+// Used to find the KDE proxy settings.
+#include <kprotocolmanager.h>
+
+// C++ STL classes
 using std::string;
 
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
@@ -81,6 +89,12 @@ class AboutTabPrivate
 		 * Initialize the dialog.
 		 */
 		void init(void);
+
+		/**
+		 * Check for updates.
+		 * TODO: Make this threaded.
+		 */
+		void checkForUpdates(void);
 };
 
 /** AboutTabPrivate **/
@@ -118,6 +132,8 @@ void AboutTabPrivate::initProgramTitleText(void)
 		AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::ProgramVersion);
 	const char *const gitVersion =
 		AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::GitVersion);
+
+	assert(programVersion != nullptr);
 
 	string sPrgTitle;
 	sPrgTitle.reserve(1024);
@@ -515,6 +531,111 @@ void AboutTabPrivate::init(void)
 	initSupportTab();
 }
 
+/**
+ * Check for updates.
+ * TODO: Make this threaded.
+ */
+void AboutTabPrivate::checkForUpdates(void)
+{
+	// Download sys/version.txt and compare it to our version.
+	// NOTE: Ignoring the fourth decimal (development flag).
+	const char *const updateVersionUrl =
+		AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::UpdateVersionUrl);
+	const char *const updateVersionCacheKey =
+		AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::UpdateVersionCacheKey);
+
+	assert(updateVersionUrl != nullptr);
+	assert(updateVersionCacheKey != nullptr);
+	if (!updateVersionUrl || !updateVersionCacheKey) {
+		// TODO: Show an error message.
+		return;
+	}
+
+	CacheManager cache;
+	QString proxy = KProtocolManager::proxyForUrl(QUrl(U82Q(updateVersionUrl)));
+	if (!proxy.isEmpty() && proxy != QLatin1String("DIRECT")) {
+		// Proxy is required.
+		cache.setProxyUrl(proxy.toUtf8().constData());
+	}
+
+	// tr: Error message template.
+	const QString errTemplate = AboutTab::tr("<b>ERROR:</b> %1");
+
+	// Download the version file.
+	string cache_filename = cache.download(updateVersionCacheKey);
+	if (cache_filename.empty()) {
+		// Unable to download the version file.
+		// TODO: Error code?
+		ui.lblUpdateCheck->setText(errTemplate.arg(AboutTab::tr("Failed to download version file.")));
+		return;
+	}
+
+	// Read the version file.
+	QFile file(U82Q(cache_filename));
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+		// TODO: Error code?
+		ui.lblUpdateCheck->setText(errTemplate.arg(AboutTab::tr("Failed to open version file.")));
+		return;
+	}
+
+	// Read the first line, which should contain a 4-decimal version number.
+	QString sVersion = U82Q(file.readLine().constData()).trimmed();
+	if (sVersion.isEmpty()) {
+		ui.lblUpdateCheck->setText(errTemplate.arg(AboutTab::tr("Version file is invalid.")));
+		return;
+	}
+
+	QStringList sVersionArray = sVersion.split(QChar(L'.'));
+	if (sVersionArray.size() != 4) {
+		ui.lblUpdateCheck->setText(errTemplate.arg(AboutTab::tr("Version file is invalid.")));
+		return;
+	}
+
+	// Convert to a 64-bit version. (ignoring the development flag)
+	bool ok = false;
+	uint64_t updateVersion = 0;
+	for (unsigned int i = 0; i < 3; i++, updateVersion <<= 16U) {
+		int x = sVersionArray[i].toInt(&ok);
+		if (!ok) {
+			ui.lblUpdateCheck->setText(errTemplate.arg(AboutTab::tr("Version file is invalid.")));
+			return;
+		}
+		updateVersion |= ((uint64_t)x & 0xFFFFU);
+	}
+	updateVersion = 0x0003000100050000;
+
+	// Our version. (ignoring the development flag)
+	uint64_t ourVersion = RP_PROGRAM_VERSION_NO_DEVEL(AboutTabText::getProgramVersion());
+
+	// Format the latest version string.
+	char sUpdVersion[32];
+	const unsigned int upd[3] = {
+		RP_PROGRAM_VERSION_MAJOR(updateVersion),
+		RP_PROGRAM_VERSION_MINOR(updateVersion),
+		RP_PROGRAM_VERSION_REVISION(updateVersion)
+	};
+
+	if (upd[2] == 0) {
+		snprintf(sUpdVersion, sizeof(sUpdVersion), "%u.%u", upd[0], upd[1]);
+	} else {
+		snprintf(sUpdVersion, sizeof(sUpdVersion), "%u.%u.%u", upd[0], upd[1], upd[2]);
+	}
+
+	string sVersionLabel;
+	sVersionLabel.reserve(512);
+
+	sVersionLabel = rp_sprintf(C_("AboutTab", "Latest version: %s"), sUpdVersion);
+	if (updateVersion > ourVersion) {
+		sVersionLabel += BR BR;
+		sVersionLabel += C_("AboutTab", "<b>New version available!</b>");
+		sVersionLabel += BR;
+		sVersionLabel += "<a href='https://github.com/GerbilSoft/rom-properties/releases'>";
+		sVersionLabel += C_("AboutTab", "Download at GitHub");
+	}
+
+	ui.lblUpdateCheck->setText(U82Q(sVersionLabel));
+}
+
 /** AboutTab **/
 
 AboutTab::AboutTab(QWidget *parent)
@@ -526,6 +647,9 @@ AboutTab::AboutTab(QWidget *parent)
 
 	// Initialize the dialog.
 	d->init();
+
+	// TODO: Check for updates the first time the About tab is focused.
+	d->checkForUpdates();
 }
 
 AboutTab::~AboutTab()

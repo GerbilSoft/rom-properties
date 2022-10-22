@@ -84,7 +84,7 @@ void CacheManager::setProxyUrl(const string &proxyUrl)
 /**
  * Download a file.
  *
- * @param cache_key Cache key.
+ * @param cache_key Cache key
  *
  * The URL will be determined based on the cache key.
  *
@@ -97,7 +97,7 @@ void CacheManager::setProxyUrl(const string &proxyUrl)
  *
  * @return Absolute path to the cached file.
  */
-string CacheManager::download(const string &cache_key)
+string CacheManager::download(const char *cache_key)
 {
 	// TODO: Only filter the cache key once.
 	// Currently it's filtered twice:
@@ -173,10 +173,10 @@ string CacheManager::download(const string &cache_key)
 
 /**
  * Check if a file has already been cached.
- * @param cache_key Cache key.
+ * @param cache_key Cache key
  * @return Filename in the cache, or empty string if not found.
  */
-string CacheManager::findInCache(const string &cache_key)
+string CacheManager::findInCache(const char *cache_key)
 {
 	// Get the cache key filename.
 	string cache_filename = LibCacheCommon::getCacheFilename(cache_key);
