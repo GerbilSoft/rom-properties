@@ -579,10 +579,10 @@ void AboutTabPrivate::checkForUpdates(void)
 		updChecker->moveToThread(thrUpdate);
 
 		// Status slots
-		QObject::connect(updChecker, SIGNAL(retrieved(quint64)),
-				 q, SLOT(updChecker_retrieved(quint64)));
 		QObject::connect(updChecker, SIGNAL(error(QString)),
 				 q, SLOT(updChecker_error(QString)));
+		QObject::connect(updChecker, SIGNAL(retrieved(quint64)),
+				 q, SLOT(updChecker_retrieved(quint64)));
 
 		// Thread signals
 		QObject::connect(thrUpdate, SIGNAL(started()),
@@ -651,6 +651,20 @@ void AboutTab::showEvent(QShowEvent *event)
 /** UpdateChecker slots **/
 
 /**
+ * An error occurred while trying to retrieve the update version.
+ * TODO: Error code?
+ * @param error Error message
+ */
+void AboutTab::updChecker_error(const QString &error)
+{
+	Q_D(AboutTab);
+
+	// tr: Error message template.
+	const QString errTemplate = AboutTab::tr("<b>ERROR:</b> %1");
+	d->ui.lblUpdateCheck->setText(errTemplate.arg(error));
+}
+
+/**
  * Update version retrieved.
  * @param updateVersion Update version (64-bit format)
  */
@@ -688,18 +702,4 @@ void AboutTab::updChecker_retrieved(quint64 updateVersion)
 	}
 
 	d->ui.lblUpdateCheck->setText(U82Q(sVersionLabel));
-}
-
-/**
- * An error occurred while trying to retrieve the update version.
- * TODO: Error code?
- * @param error Error message
- */
-void AboutTab::updChecker_error(const QString &error)
-{
-	Q_D(AboutTab);
-
-	// tr: Error message template.
-	const QString errTemplate = AboutTab::tr("<b>ERROR:</b> %1");
-	d->ui.lblUpdateCheck->setText(errTemplate.arg(error));
 }

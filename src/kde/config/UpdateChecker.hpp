@@ -31,17 +31,17 @@ class UpdateChecker : public QObject
 
 	signals:
 		/**
-		 * Update version retrieved.
-		 * @param updateVersion Update version (64-bit format)
-		 */
-		void retrieved(quint64 updateVersion);
-
-		/**
 		 * An error occurred while trying to retrieve the update version.
 		 * TODO: Error code?
 		 * @param error Error message
 		 */
 		void error(const QString &error);
+
+		/**
+		 * Update version retrieved.
+		 * @param updateVersion Update version (64-bit format)
+		 */
+		void retrieved(quint64 updateVersion);
 
 		/**
 		 * Update version task has completed.
