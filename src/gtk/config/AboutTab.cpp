@@ -11,6 +11,7 @@
 
 #include "AboutTab.hpp"
 #include "RpConfigTab.hpp"
+#include "UpdateChecker.hpp"
 
 #include "RpGtk.hpp"
 #include "gtk-compat.h"
@@ -59,11 +60,17 @@ struct _AboutTab {
 
 	GtkWidget	*imgLogo;	// GtkImage (GTK2/GTK3); GtkPicture (GTK4)
 	GtkWidget	*lblTitle;
+	GtkWidget	*lblUpdateCheck;
 
 	GtkWidget	*lblCredits;
 	GtkWidget	*lblLibraries;
 	GtkWidget	*lblSupport;
+
+	UpdateChecker	*updChecker;
+	gboolean	checkedForUpdates;
 };
+
+static void	about_tab_dispose			(GObject	*object);
 
 // Interface initialization
 static void	about_tab_rp_config_tab_interface_init	(RpConfigTabInterface *iface);
@@ -80,6 +87,16 @@ static void	about_tab_init_credits_tab		(GtkLabel	*lblCredits);
 static void	about_tab_init_libraries_tab		(GtkLabel	*lblLibraries);
 static void	about_tab_init_support_tab		(GtkLabel	*lblSupport);
 
+// Signal handlers
+static void	about_tab_realize_event			(GtkWidget	*self,
+							 gpointer	 user_data);
+static void	updChecker_error			(UpdateChecker	*updChecker,
+							 const gchar	*error,
+							 AboutTab	*tab);
+static void	updChecker_retrieved			(UpdateChecker	*updChecker,
+							 guint64	 updateVersion,
+							 AboutTab	*tab);
+
 // NOTE: Pango doesn't recognize "&nbsp;". Use U+00A0 instead.
 #define INDENT "\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0"
 #define BULLET "\xE2\x80\xA2"	/* U+2022: BULLET */
@@ -94,7 +111,8 @@ G_DEFINE_TYPE_EXTENDED(AboutTab, about_tab,
 static void
 about_tab_class_init(AboutTabClass *klass)
 {
-	RP_UNUSED(klass);
+	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
+	gobject_class->dispose = about_tab_dispose;
 }
 
 static void
@@ -128,6 +146,21 @@ about_tab_init(AboutTab *tab)
 	tab->lblTitle = gtk_label_new(nullptr);
 	gtk_widget_set_name(tab->lblTitle, "lblTitle");
 	gtk_label_set_justify(GTK_LABEL(tab->lblTitle), GTK_JUSTIFY_CENTER);
+
+#if GTK_CHECK_VERSION(3,1,6)
+	// FIXME: Figure out a good way to display lblUpdateCheck on GTK2.
+	// For GTK+ 3.2 and later, we'll use GtkOverlay.
+	// TODO: Qt has layout stretch factors; use that, or make Qt use overlays?
+	tab->lblUpdateCheck = gtk_label_new(nullptr);
+	gtk_widget_set_name(tab->lblUpdateCheck, "lblUpdateCheck");
+	gtk_label_set_justify(GTK_LABEL(tab->lblUpdateCheck), GTK_JUSTIFY_RIGHT);
+	GTK_WIDGET_HALIGN_RIGHT(tab->lblUpdateCheck);
+	GTK_WIDGET_VALIGN_TOP(tab->lblUpdateCheck);
+
+	GtkWidget *const ovlTitle = gtk_overlay_new();
+	gtk_overlay_set_child(GTK_OVERLAY(ovlTitle), hboxTitle);
+	gtk_overlay_add_overlay(GTK_OVERLAY(ovlTitle), tab->lblUpdateCheck);
+#endif /* GTK_CHECK_VERSION(3,1,6) */
 
 	GTK_WIDGET_HALIGN_CENTER(tab->imgLogo);
 	GTK_WIDGET_HALIGN_CENTER(tab->lblTitle);
@@ -259,7 +292,7 @@ about_tab_init(AboutTab *tab)
 	gtk_box_append(GTK_BOX(hboxTitle), tab->imgLogo);
 	gtk_box_append(GTK_BOX(hboxTitle), tab->lblTitle);
 
-	gtk_box_append(GTK_BOX(tab), hboxTitle);
+	gtk_box_append(GTK_BOX(tab), ovlTitle);	// contains hboxTitle
 	gtk_box_append(GTK_BOX(tab), tabWidget);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 
@@ -268,17 +301,29 @@ about_tab_init(AboutTab *tab)
 
 #  ifndef RP_USE_GTK_ALIGNMENT
 	GTK_WIDGET_HALIGN_CENTER(hboxTitle);
+#    if GTK_CHECK_VERSION(3,1,6)
+	gtk_box_pack_start(GTK_BOX(tab), ovlTitle, false, false, 0);
+#    else /* !GTK_CHECK_VERSION(3,1,6) */
 	gtk_box_pack_start(GTK_BOX(tab), hboxTitle, false, false, 0);
+#    endif /* GTK_CHECK_VERSION(3,1,6) */
 #  else /* RP_USE_GTK_ALIGNMENT */
 	GtkWidget *const alignTitle = gtk_alignment_new(0.5f, 0.0f, 0.0f, 0.0f);
 	gtk_widget_set_name(alignTitle, "alignTitle");
+#    if GTK_CHECK_VERSION(3,1,6)
+	gtk_container_add(GTK_CONTAINER(alignTitle), ovlTitle);	// contains hboxTitle
+#    else /* !GTK_CHECK_VERSION(3,1,6) */
 	gtk_container_add(GTK_CONTAINER(alignTitle), hboxTitle);
+#    endif /* GTK_CHECK_VERSION(3,1,6) */
 	gtk_box_pack_start(GTK_BOX(tab), alignTitle, false, false, 0);
 	gtk_widget_show(alignTitle);
 #  endif /* RP_USE_GTK_ALIGNMENT */
 	gtk_box_pack_start(GTK_BOX(tab), tabWidget, true, true, 0);
 
+#  if GTK_CHECK_VERSION(3,1,6)
+	gtk_widget_show_all(ovlTitle);
+#  else /* GTK_CHECK_VERSION(3,1,6) */
 	gtk_widget_show_all(hboxTitle);
+#  endif /* GTK_CHECK_VERSION(3,1,6) */
 	gtk_widget_show_all(tabWidget);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
@@ -287,6 +332,22 @@ about_tab_init(AboutTab *tab)
 	about_tab_init_credits_tab(GTK_LABEL(tab->lblCredits));
 	about_tab_init_libraries_tab(GTK_LABEL(tab->lblLibraries));
 	about_tab_init_support_tab(GTK_LABEL(tab->lblSupport));
+
+	// Connect signals
+	g_signal_connect(tab, "realize", G_CALLBACK(about_tab_realize_event), 0);
+}
+
+static void
+about_tab_dispose(GObject *object)
+{
+	AboutTab *const tab = ABOUT_TAB(object);
+
+	if (tab->updChecker) {
+		g_clear_object(&tab->updChecker);
+	}
+
+	// Call the superclass dispose() function.
+	G_OBJECT_CLASS(about_tab_parent_class)->dispose(object);
 }
 
 GtkWidget*
@@ -740,4 +801,84 @@ about_tab_init_support_tab(GtkLabel *lblSupport)
 
 	// We're done building the string.
 	gtk_label_set_markup(lblSupport, sSupport.c_str());
+}
+
+/** Signal handlers **/
+
+static void
+about_tab_realize_event(GtkWidget	*self,
+			gpointer	 user_data)
+{
+	RP_UNUSED(user_data);
+
+	AboutTab *const tab = ABOUT_TAB(self);
+	if (tab->checkedForUpdates) {
+		// Already checked for updates.
+		return;
+	}
+
+	tab->checkedForUpdates = TRUE;
+
+	// Check for updates.
+	// TODO: Label
+	//ui.lblUpdateCheck->setText(q->tr("Checking for updates..."));
+
+	// Run the update checker.
+	if (!tab->updChecker) {
+		tab->updChecker = update_checker_new();
+		g_signal_connect(tab->updChecker, "error", G_CALLBACK(updChecker_error), tab);
+		g_signal_connect(tab->updChecker, "retrieved", G_CALLBACK(updChecker_retrieved), tab);
+	}
+	update_checker_run(tab->updChecker);
+}
+
+static void
+updChecker_error(UpdateChecker	*updChecker,
+		 const gchar	*error,
+		 AboutTab	*tab)
+{
+	RP_UNUSED(updChecker);
+
+	gtk_label_set_markup(GTK_LABEL(tab->lblUpdateCheck),
+		rp_sprintf(C_("AboutTab", "<b>ERROR:</b> %s"), error).c_str());
+}
+
+static void
+updChecker_retrieved(UpdateChecker	*updChecker,
+		     guint64	 	 updateVersion,
+		     AboutTab		*tab)
+{
+	RP_UNUSED(updChecker);
+
+	// Our version. (ignoring the development flag)
+	const uint64_t ourVersion = RP_PROGRAM_VERSION_NO_DEVEL(AboutTabText::getProgramVersion());
+
+	// Format the latest version string.
+	char sUpdVersion[32];
+	const unsigned int upd[3] = {
+		RP_PROGRAM_VERSION_MAJOR(updateVersion),
+		RP_PROGRAM_VERSION_MINOR(updateVersion),
+		RP_PROGRAM_VERSION_REVISION(updateVersion)
+	};
+
+	if (upd[2] == 0) {
+		snprintf(sUpdVersion, sizeof(sUpdVersion), "%u.%u", upd[0], upd[1]);
+	} else {
+		snprintf(sUpdVersion, sizeof(sUpdVersion), "%u.%u.%u", upd[0], upd[1], upd[2]);
+	}
+
+	string sVersionLabel;
+	sVersionLabel.reserve(512);
+
+	sVersionLabel = rp_sprintf(C_("AboutTab", "Latest version: %s"), sUpdVersion);
+	if (updateVersion > ourVersion) {
+		sVersionLabel += "\n\n";
+		sVersionLabel += C_("AboutTab", "<b>New version available!</b>");
+		sVersionLabel += '\n';
+		sVersionLabel += "<a href='https://github.com/GerbilSoft/rom-properties/releases'>";
+		sVersionLabel += C_("AboutTab", "Download at GitHub");
+		sVersionLabel += "</a>";
+	}
+
+	gtk_label_set_markup(GTK_LABEL(tab->lblUpdateCheck), sVersionLabel.c_str());
 }

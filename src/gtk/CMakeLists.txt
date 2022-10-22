@@ -51,6 +51,7 @@ SET(${PROJECT_NAME}_SRCS
 	OptionsMenuButton.cpp
 	is-supported.cpp
 	AchSpritesheet.cpp
+	ProxyForUrl.cpp
 	config/stub-export.c
 	config/ConfigDialog.cpp
 	config/RpConfigTab.cpp
@@ -61,6 +62,7 @@ SET(${PROJECT_NAME}_SRCS
 	config/CacheCleaner.cpp
 	config/AchievementsTab.cpp
 	config/AboutTab.cpp
+	config/UpdateChecker.cpp
 	)
 SET(${PROJECT_NAME}_H
 	RomDataView.hpp
@@ -79,6 +81,7 @@ SET(${PROJECT_NAME}_H
 	check-uid.h
 	is-supported.hpp
 	AchSpritesheet.hpp
+	ProxyForUrl.hpp
 	config/ConfigDialog.hpp
 	config/RpConfigTab.h
 	config/ImageTypesTab.hpp
@@ -88,6 +91,7 @@ SET(${PROJECT_NAME}_H
 	config/CacheCleaner.hpp
 	config/AchievementsTab.hpp
 	config/AboutTab.hpp
+	config/UpdateChecker.hpp
 	)
 
 IF(ENABLE_DECRYPTION)
