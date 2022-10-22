@@ -37,6 +37,7 @@ SET(${PROJECT_NAME}_SRCS
 	config/AchievementsTab.cpp
 	config/AchievementsItemDelegate.cpp
 	config/AboutTab.cpp
+	config/UpdateChecker.cpp
 	)
 SET(${PROJECT_NAME}_H
 	RomPropertiesDialogPlugin.hpp
@@ -66,6 +67,7 @@ SET(${PROJECT_NAME}_H
 	config/AchievementsTab.hpp
 	config/AchievementsItemDelegate.hpp
 	config/AboutTab.hpp
+	config/UpdateChecker.hpp
 	)
 SET(${PROJECT_NAME}_UIS
 	RomDataView.ui

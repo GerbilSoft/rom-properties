@@ -66,6 +66,22 @@ class AboutTab : public ITab
 			// Nothing to do here.
 			Q_UNUSED(pSettings)
 		}
+
+	protected slots:
+		/** UpdateChecker slots **/
+
+		/**
+		 * Update version retrieved.
+		 * @param updateVersion Update version (64-bit format)
+		 */
+		void updChecker_retrieved(quint64 updateVersion);
+
+		/**
+		 * An error occurred while trying to retrieve the update version.
+		 * TODO: Error code?
+		 * @param error Error message
+		 */
+		void updChecker_error(const QString &error);
 };
 
 #endif /* __ROMPROPERTIES_KDE_CONFIG_ABOUTTAB_HPP__ */
