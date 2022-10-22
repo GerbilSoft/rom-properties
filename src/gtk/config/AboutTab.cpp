@@ -49,6 +49,12 @@ typedef GtkVBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_VBOX
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
+#if GTK_CHECK_VERSION(3,1,6)
+// NOTE: Update check requires GtkOverlay, which was
+// added in GTK+ 3.2.0 (3.1.6).
+#  define ENABLE_UPDATE_CHECK 1
+#endif /* !GTK_CHECK_VERSION(3,1,6) */
+
 // AboutTab class
 struct _AboutTabClass {
 	superclass __parent__;
@@ -88,6 +94,7 @@ static void	about_tab_init_libraries_tab		(GtkLabel	*lblLibraries);
 static void	about_tab_init_support_tab		(GtkLabel	*lblSupport);
 
 // Signal handlers
+#ifdef ENABLE_UPDATE_CHECK
 static void	about_tab_realize_event			(GtkWidget	*self,
 							 gpointer	 user_data);
 static void	updChecker_error			(UpdateChecker	*updChecker,
@@ -96,6 +103,7 @@ static void	updChecker_error			(UpdateChecker	*updChecker,
 static void	updChecker_retrieved			(UpdateChecker	*updChecker,
 							 guint64	 updateVersion,
 							 AboutTab	*tab);
+#endif /* ENABLE_UPDATE_CHECK */
 
 // NOTE: Pango doesn't recognize "&nbsp;". Use U+00A0 instead.
 #define INDENT "\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0"
@@ -147,7 +155,7 @@ about_tab_init(AboutTab *tab)
 	gtk_widget_set_name(tab->lblTitle, "lblTitle");
 	gtk_label_set_justify(GTK_LABEL(tab->lblTitle), GTK_JUSTIFY_CENTER);
 
-#if GTK_CHECK_VERSION(3,1,6)
+#ifdef ENABLE_UPDATE_CHECK
 	// FIXME: Figure out a good way to display lblUpdateCheck on GTK2.
 	// For GTK+ 3.2 and later, we'll use GtkOverlay.
 	// TODO: Qt has layout stretch factors; use that, or make Qt use overlays?
@@ -160,7 +168,7 @@ about_tab_init(AboutTab *tab)
 	GtkWidget *const ovlTitle = gtk_overlay_new();
 	gtk_overlay_set_child(GTK_OVERLAY(ovlTitle), hboxTitle);
 	gtk_overlay_add_overlay(GTK_OVERLAY(ovlTitle), tab->lblUpdateCheck);
-#endif /* GTK_CHECK_VERSION(3,1,6) */
+#endif /* ENABLE_UPDATE_CHECK */
 
 	GTK_WIDGET_HALIGN_CENTER(tab->imgLogo);
 	GTK_WIDGET_HALIGN_CENTER(tab->lblTitle);
@@ -301,29 +309,29 @@ about_tab_init(AboutTab *tab)
 
 #  ifndef RP_USE_GTK_ALIGNMENT
 	GTK_WIDGET_HALIGN_CENTER(hboxTitle);
-#    if GTK_CHECK_VERSION(3,1,6)
+#    ifdef ENABLE_UPDATE_CHECK
 	gtk_box_pack_start(GTK_BOX(tab), ovlTitle, false, false, 0);
-#    else /* !GTK_CHECK_VERSION(3,1,6) */
+#    else /* !ENABLE_UPDATE_CHECK */
 	gtk_box_pack_start(GTK_BOX(tab), hboxTitle, false, false, 0);
-#    endif /* GTK_CHECK_VERSION(3,1,6) */
+#    endif /* ENABLE_UPDATE_CHECK */
 #  else /* RP_USE_GTK_ALIGNMENT */
 	GtkWidget *const alignTitle = gtk_alignment_new(0.5f, 0.0f, 0.0f, 0.0f);
 	gtk_widget_set_name(alignTitle, "alignTitle");
-#    if GTK_CHECK_VERSION(3,1,6)
+#    ifdef ENABLE_UPDATE_CHECK
 	gtk_container_add(GTK_CONTAINER(alignTitle), ovlTitle);	// contains hboxTitle
-#    else /* !GTK_CHECK_VERSION(3,1,6) */
+#    else /* !ENABLE_UPDATE_CHECK */
 	gtk_container_add(GTK_CONTAINER(alignTitle), hboxTitle);
-#    endif /* GTK_CHECK_VERSION(3,1,6) */
+#    endif /* ENABLE_UPDATE_CHECK */
 	gtk_box_pack_start(GTK_BOX(tab), alignTitle, false, false, 0);
 	gtk_widget_show(alignTitle);
 #  endif /* RP_USE_GTK_ALIGNMENT */
 	gtk_box_pack_start(GTK_BOX(tab), tabWidget, true, true, 0);
 
-#  if GTK_CHECK_VERSION(3,1,6)
+#  ifdef ENABLE_UPDATE_CHECK
 	gtk_widget_show_all(ovlTitle);
-#  else /* GTK_CHECK_VERSION(3,1,6) */
+#  else /* !ENABLE_UPDATE_CHECK */
 	gtk_widget_show_all(hboxTitle);
-#  endif /* GTK_CHECK_VERSION(3,1,6) */
+#  endif /* ENABLE_UPDATE_CHECK */
 	gtk_widget_show_all(tabWidget);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
@@ -334,7 +342,9 @@ about_tab_init(AboutTab *tab)
 	about_tab_init_support_tab(GTK_LABEL(tab->lblSupport));
 
 	// Connect signals
+#ifdef ENABLE_UPDATE_CHECK
 	g_signal_connect(tab, "realize", G_CALLBACK(about_tab_realize_event), 0);
+#endif /* ENABLE_UPDATE_CHECK */
 }
 
 static void
@@ -805,6 +815,7 @@ about_tab_init_support_tab(GtkLabel *lblSupport)
 
 /** Signal handlers **/
 
+#ifdef ENABLE_UPDATE_CHECK
 static void
 about_tab_realize_event(GtkWidget	*self,
 			gpointer	 user_data)
@@ -882,3 +893,4 @@ updChecker_retrieved(UpdateChecker	*updChecker,
 
 	gtk_label_set_markup(GTK_LABEL(tab->lblUpdateCheck), sVersionLabel.c_str());
 }
+#endif /* ENABLE_UPDATE_CHECK */
