@@ -52,7 +52,10 @@ class CacheManager
 		 * Set the proxy server.
 		 * @param proxyUrl Proxy server URL. (Use blank string for default settings.)
 		 */
-		void setProxyUrl(const std::string &proxyUrl);
+		inline void setProxyUrl(const std::string &proxyUrl)
+		{
+			setProxyUrl(proxyUrl.c_str());
+		}
 
 	public:
 		/**

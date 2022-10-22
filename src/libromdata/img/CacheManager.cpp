@@ -73,15 +73,6 @@ void CacheManager::setProxyUrl(const char *proxyUrl)
 }
 
 /**
- * Set the proxy server.
- * @param proxyUrl Proxy server URL. (Use blank string for default settings.)
- */
-void CacheManager::setProxyUrl(const string &proxyUrl)
-{
-	m_proxyUrl = proxyUrl;
-}
-
-/**
  * Download a file.
  *
  * @param cache_key Cache key
