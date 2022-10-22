@@ -44,7 +44,7 @@ class UpdateChecker : public QObject
 		void error(const QString &error);
 
 		/**
-		 * Cache cleaning task has completed.
+		 * Update version task has completed.
 		 * This is called when run() exits, regardless of status.
 		 */
 		void finished(void);

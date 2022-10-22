@@ -94,7 +94,7 @@ void UpdateChecker::run(void)
 	uint64_t updateVersion = 0;
 	for (unsigned int i = 0; i < 3; i++, updateVersion <<= 16U) {
 		int x = sVersionArray[i].toInt(&ok);
-		if (!ok) {
+		if (!ok || x < 0) {
 			emit error(tr("Version file is invalid."));
 			emit finished();
 			return;
