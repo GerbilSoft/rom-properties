@@ -458,7 +458,10 @@ static inline std::string latin1_to_utf8(const std::string &str)
  */
 static inline std::u16string latin1_to_utf16(const char *str, int len)
 {
-	return cpN_to_utf16(CP_LATIN1, str, len, TEXTCONV_FLAG_CP1252_FALLBACK);
+	// NOTE: Using cp1252 here, since this ends up passing
+	// various C0/C1 control characters through for some ROMs,
+	// which causes terminal output to stop.
+	return cpN_to_utf16(1252, str, len, TEXTCONV_FLAG_CP1252_FALLBACK);
 }
 
 /**

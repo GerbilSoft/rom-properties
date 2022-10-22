@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * TextFuncsTest.cpp: TextFuncs class test.                                *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -625,24 +625,27 @@ TEST_F(TextFuncsTest, utf16_bswap_LEtoBE)
 
 /** Latin-1 (ISO-8859-1) **/
 
+// NOTE: latin1_to_*() functions now act like cp1252.
+// Use the cpN_to_*() functions instead.
+
 /**
  * Test latin1_to_utf8().
  */
 TEST_F(TextFuncsTest, latin1_to_utf8)
 {
 	// Test with implicit length.
-	string str = latin1_to_utf8((const char*)cp1252_data, -1);
+	string str = cpN_to_utf8(CP_LATIN1, (const char*)cp1252_data, -1);
 	EXPECT_EQ(ARRAY_SIZE(latin1_utf8_data)-1, str.size());
 	EXPECT_EQ((const char*)latin1_utf8_data, str);
 
 	// Test with explicit length.
-	str = latin1_to_utf8((const char*)cp1252_data, ARRAY_SIZE_I(cp1252_data)-1);
+	str = cpN_to_utf8(CP_LATIN1, (const char*)cp1252_data, ARRAY_SIZE_I(cp1252_data)-1);
 	EXPECT_EQ(ARRAY_SIZE(latin1_utf8_data)-1, str.size());
 	EXPECT_EQ((const char*)latin1_utf8_data, str);
 
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
-	str = latin1_to_utf8((const char*)cp1252_data, ARRAY_SIZE_I(cp1252_data));
+	str = cpN_to_utf8(CP_LATIN1, (const char*)cp1252_data, ARRAY_SIZE_I(cp1252_data));
 	EXPECT_EQ(ARRAY_SIZE(latin1_utf8_data)-1, str.size());
 	EXPECT_EQ((const char*)latin1_utf8_data, str);
 }
@@ -653,18 +656,18 @@ TEST_F(TextFuncsTest, latin1_to_utf8)
 TEST_F(TextFuncsTest, latin1_to_utf16)
 {
 	// Test with implicit length.
-	u16string str = latin1_to_utf16((const char*)cp1252_data, -1);
+	u16string str = cpN_to_utf16(CP_LATIN1, (const char*)cp1252_data, -1);
 	EXPECT_EQ(ARRAY_SIZE(latin1_utf16_data)-1, str.size());
 	EXPECT_EQ(latin1_utf16_data, str);
 
 	// Test with explicit length.
-	str = latin1_to_utf16((const char*)cp1252_data, ARRAY_SIZE_I(cp1252_data)-1);
+	str = cpN_to_utf16(CP_LATIN1, (const char*)cp1252_data, ARRAY_SIZE_I(cp1252_data)-1);
 	EXPECT_EQ(ARRAY_SIZE(latin1_utf16_data)-1, str.size());
 	EXPECT_EQ(latin1_utf16_data, str);
 
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
-	str = latin1_to_utf16((const char*)cp1252_data, ARRAY_SIZE_I(cp1252_data));
+	str = cpN_to_utf16(CP_LATIN1, (const char*)cp1252_data, ARRAY_SIZE_I(cp1252_data));
 	EXPECT_EQ(ARRAY_SIZE(latin1_utf16_data)-1, str.size());
 	EXPECT_EQ(latin1_utf16_data, str);
 }
