@@ -337,32 +337,13 @@ config_dialog_apply(ConfigDialog *dialog)
 		return;
 	}
 
-	GError *err = nullptr;
+	// NOTE: Ignoring load errors.
+	// We're going to save anyway, even if we can't load the
+	// existing file.
 	GKeyFile *keyFile = g_key_file_new();
-	if (!g_key_file_load_from_file(keyFile, filename,
+	g_key_file_load_from_file(keyFile, filename,
 		(GKeyFileFlags)(G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS),
-		&err))
-	{
-		// Failed to open the configuration file.
-		gint code;
-		if (err) {
-			code = err->code;
-			g_error_free(err);
-			err = nullptr;
-		} else {
-			code = -1;
-		}
-
-		if (code == G_FILE_ERROR_NOENT) {
-			// File not found.
-			// We'll create a new file.
-		} else {
-			// Some other error.
-			// TODO: Show an error message.
-			g_key_file_unref(keyFile);
-			return;
-		}
-	}
+		nullptr);
 
 	// Save the settings.
 	rp_config_tab_save(RP_CONFIG_TAB(dialog->tabImageTypes), keyFile);
@@ -398,30 +379,13 @@ config_dialog_apply(ConfigDialog *dialog)
 	assert(filename != nullptr);
 	if (filename) {
 		keyFile = g_key_file_new();
-		if (!g_key_file_load_from_file(keyFile, filename,
-			(GKeyFileFlags)(G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS),
-			&err))
-		{
-			// Failed to open the configuration file.
-			gint code;
-			if (err) {
-				code = err->code;
-				g_error_free(err);
-				err = nullptr;
-			} else {
-				code = -1;
-			}
 
-			if (code == G_FILE_ERROR_NOENT) {
-				// File not found.
-				// We'll create a new file.
-			} else {
-				// Some other error.
-				// TODO: Show an error message.
-				g_key_file_unref(keyFile);
-				return;
-			}
-		}
+		// NOTE: Ignoring load errors.
+		// We're going to save anyway, even if we can't load the
+		// existing file.
+		g_key_file_load_from_file(keyFile, filename,
+			(GKeyFileFlags)(G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS),
+			nullptr);
 
 		// Save the keys.
 		rp_config_tab_save(RP_CONFIG_TAB(dialog->tabKeyManager), keyFile);
