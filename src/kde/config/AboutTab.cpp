@@ -699,6 +699,7 @@ void AboutTab::updChecker_retrieved(quint64 updateVersion)
 		sVersionLabel += BR;
 		sVersionLabel += "<a href='https://github.com/GerbilSoft/rom-properties/releases'>";
 		sVersionLabel += C_("AboutTab", "Download at GitHub");
+		sVersionLabel += "</a>";
 	}
 
 	d->ui.lblUpdateCheck->setText(U82Q(sVersionLabel));
