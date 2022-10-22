@@ -102,10 +102,6 @@ void UpdateChecker::run(void)
 		updateVersion |= ((uint64_t)x & 0xFFFFU);
 	}
 
-	// HACK: Always returning 3.1.5 for testing purposes.
-	// Remove this when finished debugging!
-	updateVersion = 0x0003000100050000;
-
 	// Update version retrieved.
 	emit retrieved(updateVersion);
 	emit finished();
