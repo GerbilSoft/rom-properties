@@ -55,7 +55,9 @@ using std::string;
 class AboutTabPrivate
 {
 	public:
-		AboutTabPrivate() { };
+		AboutTabPrivate()
+			: checkedForUpdates(false)
+		{ }
 
 	private:
 		Q_DISABLE_COPY(AboutTabPrivate)
@@ -95,6 +97,10 @@ class AboutTabPrivate
 		 * TODO: Make this threaded.
 		 */
 		void checkForUpdates(void);
+
+	public:
+		// Checked for updates yet?
+		bool checkedForUpdates;
 };
 
 /** AboutTabPrivate **/
@@ -647,9 +653,6 @@ AboutTab::AboutTab(QWidget *parent)
 
 	// Initialize the dialog.
 	d->init();
-
-	// TODO: Check for updates the first time the About tab is focused.
-	d->checkForUpdates();
 }
 
 AboutTab::~AboutTab()
@@ -659,7 +662,7 @@ AboutTab::~AboutTab()
 
 /**
  * Widget state has changed.
- * @param event State change event.
+ * @param event State change event
  */
 void AboutTab::changeEvent(QEvent *event)
 {
@@ -674,4 +677,17 @@ void AboutTab::changeEvent(QEvent *event)
 
 	// Pass the event to the base class.
 	super::changeEvent(event);
+}
+
+/**
+ * Widget is now visible.
+ * @param event Show event
+ */
+void AboutTab::showEvent(QShowEvent *event)
+{
+	Q_D(AboutTab);
+	if (!d->checkedForUpdates) {
+		d->checkedForUpdates = true;
+		d->checkForUpdates();
+	}
 }

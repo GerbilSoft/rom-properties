@@ -39,8 +39,17 @@ class AboutTab : public ITab
 		bool hasDefaults(void) const final { return false; }
 
 	protected:
-		// State change event. (Used for switching the UI language at runtime.)
+		/**
+		 * Widget state has changed.
+		 * @param event State change event
+		 */
 		void changeEvent(QEvent *event) final;
+
+		/**
+		 * Widget is now visible.
+		 * @param event Show event
+		 */
+		void showEvent(QShowEvent *event) final;
 
 	public slots:
 		/**
