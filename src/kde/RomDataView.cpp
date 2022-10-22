@@ -363,11 +363,11 @@ void RomDataViewPrivate::initBitfield(QLabel *lblDesc,
 	// NOTE: No name for this QObject.
 	int row = 0, col = 0;
 	uint32_t bitfield = field.data.bitfield;
-	const auto names_cend = bitfieldDesc.names->cend();
-	for (auto iter = bitfieldDesc.names->cbegin(); iter != names_cend; ++iter, bitfield >>= 1) {
-		const string &name = *iter;
-		if (name.empty())
+	for (const string &name : *(bitfieldDesc.names)) {
+		if (name.empty()) {
+			bitfield >>= 1;
 			continue;
+		}
 
 		QCheckBox *const checkBox = new QCheckBox(q);
 		// NOTE: No name for this QObject.
@@ -395,6 +395,8 @@ void RomDataViewPrivate::initBitfield(QLabel *lblDesc,
 			row++;
 			col = 0;
 		}
+
+		bitfield >>= 1;
 	}
 
 	tabs[field.tabIdx].form->addRow(lblDesc, gridLayout);
@@ -527,12 +529,15 @@ void RomDataViewPrivate::initListData(QLabel *lblDesc,
 	// Set up column and header visibility.
 	if (listDataDesc.names) {
 		int col = 0;
-		const auto names_cend = listDataDesc.names->cend();
-		for (auto iter = listDataDesc.names->cbegin(); iter != names_cend && col < colCount; ++iter, col++) {
-			if (iter->empty()) {
+		for (const string &str : *(listDataDesc.names)) {
+			if (col >= colCount)
+				break;
+
+			if (str.empty()) {
 				// Don't show this column.
 				treeView->setColumnHidden(col, true);
 			}
+			col++;
 		}
 	} else {
 		// Hide the header.

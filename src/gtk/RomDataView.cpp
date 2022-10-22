@@ -803,13 +803,13 @@ rom_data_view_init_bitfield(RomDataView *page,
 
 	int row = 0, col = 0;
 	uint32_t bitfield = field.data.bitfield;
-	const auto names_cend = bitfieldDesc.names->cend();
-	for (auto iter = bitfieldDesc.names->cbegin(); iter != names_cend; ++iter, bitfield >>= 1) {
-		const string &name = *iter;
-		if (name.empty())
+	for (const string &name : *(bitfieldDesc.names)) {
+		if (name.empty()) {
+			bitfield >>= 1;
 			continue;
+		}
 
-		GtkWidget *checkBox = gtk_check_button_new_with_label(name.c_str());
+		GtkWidget *const checkBox = gtk_check_button_new_with_label(name.c_str());
 		// NOTE: No name for this GtkWidget.
 		gtk_widget_show(checkBox);
 		gboolean value = (bitfield & 1);
@@ -838,6 +838,8 @@ rom_data_view_init_bitfield(RomDataView *page,
 			row++;
 			col = 0;
 		}
+
+		bitfield >>= 1;
 	}
 
 	return widget;
@@ -919,32 +921,18 @@ rom_data_view_init_listdata(RomDataView *page,
 
 	GtkListStore *listStore;
 	int listStore_col_start;
-	if (hasCheckboxes) {
-		// Prepend an extra column for checkboxes.
-		GType *types = new GType[colCount+1];
-		types[0] = G_TYPE_BOOLEAN;
-		for (int i = colCount; i > 0; i--) {
-			types[i] = G_TYPE_STRING;
-		}
+	if (hasCheckboxes || hasIcons) {
+		// Prepend an extra column for checkboxes or icons.
+		GType *const types = new GType[colCount+1];
+		types[0] = (hasCheckboxes ? G_TYPE_BOOLEAN : PIMGTYPE_GOBJECT_TYPE);
+		std::fill(&types[1], &types[colCount+1], G_TYPE_STRING);
 		listStore = gtk_list_store_newv(colCount+1, types);
 		delete[] types;
 		listStore_col_start = 1;	// Skip the checkbox column for strings.
-	} else if (hasIcons) {
-		// Prepend an extra column for icons.
-		GType *types = new GType[colCount+1];
-		types[0] = PIMGTYPE_GOBJECT_TYPE;
-		for (int i = colCount; i > 0; i--) {
-			types[i] = G_TYPE_STRING;
-		}
-		listStore = gtk_list_store_newv(colCount+1, types);
-		delete[] types;
-		listStore_col_start = 1;	// Skip the icon column for strings.
 	} else {
 		// All strings.
-		GType *types = new GType[colCount];
-		for (int i = colCount-1; i >= 0; i--) {
-			types[i] = G_TYPE_STRING;
-		}
+		GType *const types = new GType[colCount];
+		std::fill(types, &types[colCount], G_TYPE_STRING);
 		listStore = gtk_list_store_newv(colCount, types);
 		delete[] types;
 		listStore_col_start = 0;
@@ -956,14 +944,13 @@ rom_data_view_init_listdata(RomDataView *page,
 		checkboxes = field.data.list_data.mxd.checkboxes;
 	}
 	unsigned int row = 0;	// for icons [TODO: Use iterator?]
-	const auto list_data_cend = list_data->cend();
-	for (auto iter = list_data->cbegin(); iter != list_data_cend; ++iter, row++) {
-		const vector<string> &data_row = *iter;
+	for (const vector<string> &data_row : *list_data) {
 		// FIXME: Skip even if we don't have checkboxes?
 		// (also check other UI frontends)
 		if (hasCheckboxes && data_row.empty()) {
 			// Skip this row.
 			checkboxes >>= 1;
+			row++;
 			continue;
 		}
 
@@ -971,8 +958,7 @@ rom_data_view_init_listdata(RomDataView *page,
 		gtk_list_store_append(listStore, &treeIter);
 		if (hasCheckboxes) {
 			// Checkbox column.
-			gtk_list_store_set(listStore, &treeIter,
-				0, (checkboxes & 1), -1);
+			gtk_list_store_set(listStore, &treeIter, 0, (checkboxes & 1), -1);
 			checkboxes >>= 1;
 		} else if (hasIcons) {
 			// Icon column.
@@ -994,8 +980,7 @@ rom_data_view_init_listdata(RomDataView *page,
 							pixbuf = scaled;
 						}
 					}
-					gtk_list_store_set(listStore, &treeIter,
-						0, pixbuf, -1);
+					gtk_list_store_set(listStore, &treeIter, 0, pixbuf, -1);
 					PIMGTYPE_destroy(pixbuf);
 				}
 			}
@@ -1003,11 +988,13 @@ rom_data_view_init_listdata(RomDataView *page,
 
 		if (!isMulti) {
 			int col = listStore_col_start;
-			const auto data_row_cend = data_row.cend();
-			for (auto iter = data_row.cbegin(); iter != data_row_cend; ++iter, col++) {
-				gtk_list_store_set(listStore, &treeIter, col, iter->c_str(), -1);
+			for (const string &str : data_row) {
+				gtk_list_store_set(listStore, &treeIter, col, str.c_str(), -1);
+				col++;
 			}
 		}
+
+		row++;
 	}
 
 	// Scroll area for the GtkTreeView.
@@ -1365,11 +1352,9 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 			while (ok && iter_listData != pListData_cend) {
 				// TODO: Verify GtkListStore column count?
 				int col = listStore_col_start;
-				const auto iter_listData_cend = iter_listData->cend();
-				for (auto iter_row = iter_listData->cbegin();
-				     iter_row != iter_listData_cend; ++iter_row, col++)
-				{
-					gtk_list_store_set(listStore, &treeIter, col, iter_row->c_str(), -1);
+				for (const string &str : *iter_listData) {
+					gtk_list_store_set(listStore, &treeIter, col, str.c_str(), -1);
+					col++;
 				}
 
 				// Next row.
