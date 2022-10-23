@@ -1218,11 +1218,15 @@ void AboutTabPrivate::initDialog(void)
 	initLibrariesTab();
 	initSupportTab();
 
-	// Subclass the control.
+	// Subclass the RichEdit controls.
 	// TODO: Error handling?
 	SetWindowSubclass(hRichEdit,
 		LibWin32UI::MultiLineEditProc,
 		IDC_ABOUT_RICHEDIT,
+		reinterpret_cast<DWORD_PTR>(GetParent(hWndPropSheet)));
+	SetWindowSubclass(hUpdateCheck,
+		LibWin32UI::MultiLineEditProc,
+		IDC_ABOUT_UPDATE_CHECK,
 		reinterpret_cast<DWORD_PTR>(GetParent(hWndPropSheet)));
 
 	// RichEdit adjustments for IDC_ABOUT_UPDATE_CHECK.
