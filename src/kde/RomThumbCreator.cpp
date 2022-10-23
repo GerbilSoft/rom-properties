@@ -146,11 +146,12 @@ class RomThumbCreatorPrivate final : public TCreateThumbnail<QImage>
 
 		/**
 		 * Get the proxy for the specified URL.
+		 * @param url URL
 		 * @return Proxy, or empty string if no proxy is needed.
 		 */
-		inline string proxyForUrl(const string &url) const final
+		inline string proxyForUrl(const char *url) const final
 		{
-			return ::proxyForUrl(url.c_str());
+			return ::proxyForUrl(url);
 		}
 };
 
