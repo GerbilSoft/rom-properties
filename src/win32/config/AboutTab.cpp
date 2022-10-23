@@ -66,6 +66,12 @@ using std::u16string;
 #define RTF_BR "\\par\n"
 #define RTF_TAB "\\tab "
 #define RTF_BULLET "\\bullet "
+#define RTF_ALIGN_LEFT "\\ql "
+#define RTF_ALIGN_RIGHT "\\qr "
+#define RTF_ALIGN_JUSTIFY "\\qj "
+#define RTF_ALIGN_CENTER "\\qc "
+#define RTF_BOLD_ON "\\b "
+#define RTF_BOLD_OFF "\\b0 "
 
 class AboutTabPrivate
 {
@@ -143,7 +149,8 @@ class AboutTabPrivate
 			const string *str;
 			size_t pos;
 		};
-		RTF_CTX rtfCtx;
+		RTF_CTX rtfCtx_main;
+		RTF_CTX rtfCtx_upd;
 
 		/**
 		 * RTF EditStream callback.
@@ -173,12 +180,13 @@ class AboutTabPrivate
 		string rtfFriendlyLink(const char *link, const char *title);
 
 	protected:
-		// Tab text. (RichText format)
+		// Tab text (RichText format)
+		string sVersionLabel;	// UpdateCheck
 		string sCredits;
 		string sLibraries;
 		string sSupport;
 
-		// RichEdit controls.
+		// RichEdit controls
 		HWND hRichEdit;		// Main RichEdit control
 		HWND hUpdateCheck;	// UpdateCheck label
 
@@ -227,7 +235,8 @@ AboutTabPrivate::AboutTabPrivate()
 	, hRichEdit(nullptr)
 	, hUpdateCheck(nullptr)
 {
-	memset(&rtfCtx, 0, sizeof(rtfCtx));
+	memset(&rtfCtx_main, 0, sizeof(rtfCtx_main));
+	memset(&rtfCtx_upd, 0, sizeof(rtfCtx_upd));
 
 	// Load the RichEdit DLLs.
 	// TODO: What if this fails?
@@ -454,18 +463,38 @@ void AboutTabPrivate::initBoldFont(HFONT hFont)
  */
 void AboutTabPrivate::checkForUpdates(void)
 {
-	// TODO: Make this threaded.
-	// Could create a subclassed control and send WM_NOTIFY,
-	// or just a plain object and send custom messages back.
-	SetWindowText(GetDlgItem(hWndPropSheet, IDC_ABOUT_UPDATE_CHECK),
-		U82T_c(C_("AboutTab", "Checking for updates...")));
+	sVersionLabel.clear();
+	sVersionLabel.reserve(64);
+
+	sVersionLabel = RTF_START RTF_ALIGN_RIGHT;
+	sVersionLabel += C_("AboutTab", "Checking for updates...");
+
+	// NOTE: EM_SETTEXTEX doesn't seem to work.
+	// We'll need to stream in the text instead.
+	// Reference: https://devblogs.microsoft.com/oldnewthing/20070110-13/?p=28463
+	rtfCtx_upd.str = &sVersionLabel;
+	rtfCtx_upd.pos = 0;
+	EDITSTREAM es = { (DWORD_PTR)&rtfCtx_upd, 0, EditStreamCallback };
+	SendMessage(hUpdateCheck, EM_STREAMIN, SF_RTF, (LPARAM)&es);
 
 	if (!updChecker) {
 		updChecker = new UpdateChecker();
 	}
 	if (!updChecker->run(hWndPropSheet)) {
 		// Failed to run the Update Checker.
-		SetWindowText(hUpdateCheck, U82T_c(C_("AboutTab", "Update check failed!")));
+		sVersionLabel.clear();
+		sVersionLabel.reserve(64);
+
+		sVersionLabel = RTF_START RTF_ALIGN_RIGHT;
+		sVersionLabel += C_("AboutTab", "Update check failed!");
+
+		// NOTE: EM_SETTEXTEX doesn't seem to work.
+		// We'll need to stream in the text instead.
+		// Reference: https://devblogs.microsoft.com/oldnewthing/20070110-13/?p=28463
+		rtfCtx_upd.str = &sVersionLabel;
+		rtfCtx_upd.pos = 0;
+		EDITSTREAM es = { (DWORD_PTR)&rtfCtx_upd, 0, EditStreamCallback };
+		SendMessage(hUpdateCheck, EM_STREAMIN, SF_RTF, (LPARAM)&es);
 	}
 }
 
@@ -481,9 +510,23 @@ void AboutTabPrivate::updChecker_error(void)
 		return;
 	}
 
-	// TODO: RichText label?
 	const char *const errorMessage = updChecker->errorMessage();
-	SetWindowText(hUpdateCheck, U82T_s(rp_sprintf(C_("AboutTab", "ERROR: %s"), errorMessage)));
+
+	sVersionLabel.clear();
+	sVersionLabel.reserve(128);
+
+	sVersionLabel = RTF_START RTF_ALIGN_RIGHT RTF_BOLD_ON;
+	sVersionLabel += C_("AboutTab", "ERROR:");
+	sVersionLabel += RTF_BOLD_OFF " ";
+	sVersionLabel += errorMessage;
+
+	// NOTE: EM_SETTEXTEX doesn't seem to work.
+	// We'll need to stream in the text instead.
+	// Reference: https://devblogs.microsoft.com/oldnewthing/20070110-13/?p=28463
+	rtfCtx_upd.str = &sVersionLabel;
+	rtfCtx_upd.pos = 0;
+	EDITSTREAM es = { (DWORD_PTR)&rtfCtx_upd, 0, EditStreamCallback };
+	SendMessage(hUpdateCheck, EM_STREAMIN, SF_RTF, (LPARAM)&es);
 }
 
 /**
@@ -515,19 +558,28 @@ void AboutTabPrivate::updChecker_retrieved(void)
 		snprintf(sUpdVersion, sizeof(sUpdVersion), "%u.%u.%u", upd[0], upd[1], upd[2]);
 	}
 
-	string sVersionLabel;
-	sVersionLabel.reserve(512);
+	sVersionLabel.clear();
+	sVersionLabel.reserve(384);
 
-	// TODO: RichText label?
-	sVersionLabel = rp_sprintf(C_("AboutTab", "Latest version: %s"), sUpdVersion);
+	// RTF starting sequence
+	sVersionLabel = RTF_START;
+	sVersionLabel += RTF_ALIGN_RIGHT;
+
+	sVersionLabel += rp_sprintf(C_("AboutTab", "Latest version: %s"), sUpdVersion);
 	if (updateVersion > ourVersion) {
-		sVersionLabel += "\n\n";
+		sVersionLabel += RTF_BR RTF_BR RTF_BOLD_ON;
 		sVersionLabel += C_("AboutTab", "New version available!");
-		sVersionLabel += '\n';
+		sVersionLabel += RTF_BOLD_OFF RTF_BR;
 		sVersionLabel += rtfFriendlyLink("https://github.com/GerbilSoft/rom-properties/releases", C_("AboutTab", "Download at GitHub"));
 	}
 
-	SetWindowText(hUpdateCheck, U82T_s(sVersionLabel));
+	// NOTE: EM_SETTEXTEX doesn't seem to work.
+	// We'll need to stream in the text instead.
+	// Reference: https://devblogs.microsoft.com/oldnewthing/20070110-13/?p=28463
+	rtfCtx_upd.str = &sVersionLabel;
+	rtfCtx_upd.pos = 0;
+	EDITSTREAM es = { (DWORD_PTR)&rtfCtx_upd, 0, EditStreamCallback };
+	SendMessage(hUpdateCheck, EM_STREAMIN, SF_RTF, (LPARAM)&es);
 }
 
 /**
@@ -759,8 +811,9 @@ void AboutTabPrivate::initCreditsTab(void)
 	sCredits.clear();
 	sCredits.reserve(4096);
 
-	// RTF starting sequence.
+	// RTF starting sequence
 	sCredits = RTF_START;
+
 	// FIXME: Figure out how to get links to work without
 	// resorting to manually adding CFE_LINK data...
 	// NOTE: Copyright is NOT localized.
@@ -850,7 +903,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sLibraries.clear();
 	sLibraries.reserve(8192);
 
-	// RTF starting sequence.
+	// RTF starting sequence
 	sLibraries = RTF_START;
 
 	// NOTE: These strings can NOT be static.
@@ -1035,7 +1088,7 @@ void AboutTabPrivate::initSupportTab(void)
 	sSupport.clear();
 	sSupport.reserve(4096);
 
-	// RTF starting sequence.
+	// RTF starting sequence
 	sSupport = RTF_START;
 
 	sSupport += rtfEscape(C_("AboutTab|Support",
@@ -1093,21 +1146,21 @@ void AboutTabPrivate::setTabContents(int index)
 	// Reference: https://devblogs.microsoft.com/oldnewthing/20070110-13/?p=28463
 	switch (index) {
 		case 0:
-			rtfCtx.str = &sCredits;
+			rtfCtx_main.str = &sCredits;
 			break;
 		case 1:
-			rtfCtx.str = &sLibraries;
+			rtfCtx_main.str = &sLibraries;
 			break;
 		case 2:
-			rtfCtx.str = &sSupport;
+			rtfCtx_main.str = &sSupport;
 			break;
 		default:
 			// Should not get here...
 			assert(!"Invalid tab index.");
 			return;
 	}
-	rtfCtx.pos = 0;
-	EDITSTREAM es = { (DWORD_PTR)&rtfCtx, 0, EditStreamCallback };
+	rtfCtx_main.pos = 0;
+	EDITSTREAM es = { (DWORD_PTR)&rtfCtx_main, 0, EditStreamCallback };
 	SendMessage(hRichEdit, EM_STREAMIN, SF_RTF, (LPARAM)&es);
 }
 
@@ -1213,6 +1266,12 @@ void AboutTabPrivate::initDialog(void)
 	// NOTE: Might only work on Win8+.
 	SendMessage(hRichEdit, EM_AUTOURLDETECT, AURL_ENABLEEMAILADDR, 0);
 
+	// RichEdit adjustments for IDC_ABOUT_UPDATE_CHECK.
+	// Enable links.
+	eventMask = SendMessage(hUpdateCheck, EM_GETEVENTMASK, 0, 0);
+	SendMessage(hUpdateCheck, EM_SETEVENTMASK, 0, (LPARAM)(eventMask | ENM_LINK));
+	SendMessage(hUpdateCheck, EM_AUTOURLDETECT, AURL_ENABLEURL, 0);
+
 	// Initialize the tab text.
 	initCreditsTab();
 	initLibrariesTab();
@@ -1228,12 +1287,6 @@ void AboutTabPrivate::initDialog(void)
 		LibWin32UI::MultiLineEditProc,
 		IDC_ABOUT_UPDATE_CHECK,
 		reinterpret_cast<DWORD_PTR>(GetParent(hWndPropSheet)));
-
-	// RichEdit adjustments for IDC_ABOUT_UPDATE_CHECK.
-	// Enable links.
-	eventMask = SendMessage(hUpdateCheck, EM_GETEVENTMASK, 0, 0);
-	SendMessage(hUpdateCheck, EM_SETEVENTMASK, 0, (LPARAM)(eventMask | ENM_LINK));
-	SendMessage(hUpdateCheck, EM_AUTOURLDETECT, AURL_ENABLEURL, 0);
 
 	// Remove the dummy tab.
 	TabCtrl_DeleteItem(hTabControl, MAX_TABS);
