@@ -45,9 +45,8 @@ using std::u16string;
 #  define AURL_ENABLEEMAILADDR 2
 #endif
 // Uncomment to enable use of RichEdit 4.1 if available.
-// FIXME: Friendly links aren't underlined or blue on WinXP or Win7...
 // Reference: https://docs.microsoft.com/en-us/archive/blogs/murrays/richedit-colors
-//#define MSFTEDIT_USE_41 1
+#define MSFTEDIT_USE_41 1
 
 // Other libraries.
 #ifdef HAVE_ZLIB
@@ -62,7 +61,9 @@ using std::u16string;
 #endif
 
 // Useful RTF strings.
+// TODO: Custom color table for links is only needed on Win7 and earlier.
 #define RTF_START "{\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033\n"
+#define RTF_COLOR_TABLE "{\\colortbl ;\\red0\\green102\\blue204;}\n"
 #define RTF_BR "\\par\n"
 #define RTF_TAB "\\tab "
 #define RTF_BULLET "\\bullet "
@@ -564,6 +565,7 @@ void AboutTabPrivate::updChecker_retrieved(void)
 
 	// RTF starting sequence
 	sVersionLabel = RTF_START;
+	sVersionLabel += RTF_COLOR_TABLE;	// TODO: Skip on Win8+?
 	sVersionLabel += RTF_ALIGN_RIGHT;
 
 	sVersionLabel += rp_sprintf(C_("AboutTab", "Latest version: %s"), sUpdVersion);
@@ -672,10 +674,16 @@ string AboutTabPrivate::rtfFriendlyLink(const char *link, const char *title)
 	assert(link != nullptr);
 	assert(title != nullptr);
 
+	// Color table reference:
+	// - https://stackoverflow.com/questions/42251000/inno-setup-how-to-change-the-color-of-the-hyperlink-in-rtf-text
+	// - https://stackoverflow.com/a/42273986
+
 	if (bUseFriendlyLinks) {
 		// Friendly links are available.
 		// Reference: https://docs.microsoft.com/en-us/archive/blogs/murrays/richedit-friendly-name-hyperlinks
-		return rp_sprintf("{\\field{\\*\\fldinst{HYPERLINK \"%s\"}}{\\fldrslt{%s}}}",
+		// TODO: Get the "proper" link color.
+		// TODO: Don't include cf1/cf0 on Win8+?
+		return rp_sprintf("{\\field{\\*\\fldinst{HYPERLINK \"%s\"}}{\\fldrslt{\\cf1\\ul %s\\ul0\\cf0 }}}",
 			rtfEscape(link).c_str(), rtfEscape(title).c_str());
 	} else {
 		// No friendly links.
@@ -814,6 +822,7 @@ void AboutTabPrivate::initCreditsTab(void)
 
 	// RTF starting sequence
 	sCredits = RTF_START;
+	sCredits += RTF_COLOR_TABLE;	// TODO: Skip on Win8+?
 
 	// FIXME: Figure out how to get links to work without
 	// resorting to manually adding CFE_LINK data...
@@ -1091,6 +1100,7 @@ void AboutTabPrivate::initSupportTab(void)
 
 	// RTF starting sequence
 	sSupport = RTF_START;
+	sSupport += RTF_COLOR_TABLE;	// TODO: Skip on Win8+?
 
 	sSupport += rtfEscape(C_("AboutTab|Support",
 		"For technical support, you can visit the following websites:"));
@@ -1240,7 +1250,9 @@ void AboutTabPrivate::initDialog(void)
 			WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | WS_EX_RIGHT,
 			MSFTEDIT_CLASS, _T(""),
 			ES_MULTILINE | ES_READONLY | WS_VISIBLE | WS_CHILD,
-			0, 0, 0, 0,
+			rectUpdateCheck.left, rectUpdateCheck.top,
+			rectUpdateCheck.right - rectUpdateCheck.left,
+			rectUpdateCheck.bottom - rectUpdateCheck.top,
 			hWndPropSheet, nullptr, nullptr, nullptr);
 		if (hUpdateCheck41) {
 			DestroyWindow(hUpdateCheck);
