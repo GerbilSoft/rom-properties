@@ -830,10 +830,6 @@ about_tab_realize_event(GtkWidget	*self,
 
 	tab->checkedForUpdates = TRUE;
 
-	// Check for updates.
-	// TODO: Label
-	//ui.lblUpdateCheck->setText(q->tr("Checking for updates..."));
-
 	// Run the update checker.
 	if (!tab->updChecker) {
 		tab->updChecker = update_checker_new();
