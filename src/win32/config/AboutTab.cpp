@@ -124,6 +124,19 @@ class AboutTabPrivate
 		bool bCheckedForUpdates;	// Checked for updates yet?
 		UpdateChecker *updChecker;
 
+		/**
+		 * An error occurred while trying to retrieve the update version.
+		 * Called by the WM_UPD_ERROR handler.
+		 * TODO: Error code?
+		 */
+		void updChecker_error();
+
+		/**
+		 * Update version retrieved.
+		 * Called by the WM_UPD_RETRIEVED handler.
+		 */
+		void updChecker_retrieved(void);
+
 	protected:
 		// Current RichText streaming context.
 		struct RTF_CTX {
@@ -165,8 +178,9 @@ class AboutTabPrivate
 		string sLibraries;
 		string sSupport;
 
-		// RichEdit control.
-		HWND hRichEdit;
+		// RichEdit controls.
+		HWND hRichEdit;		// Main RichEdit control
+		HWND hUpdateCheck;	// UpdateCheck label
 
 		/**
 		 * Initialize the program title text.
@@ -211,6 +225,7 @@ AboutTabPrivate::AboutTabPrivate()
 	, bCheckedForUpdates(false)
 	, updChecker(nullptr)
 	, hRichEdit(nullptr)
+	, hUpdateCheck(nullptr)
 {
 	memset(&rtfCtx, 0, sizeof(rtfCtx));
 
@@ -359,15 +374,7 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 				return FALSE;
 			}
 
-			if (!d->updChecker) {
-				// No Update Checker...
-				return FALSE;
-			}
-
-			// TODO: RichText label?
-			const char *const errorMessage = d->updChecker->errorMessage();
-			SetWindowText(GetDlgItem(hDlg, IDC_ABOUT_UPDATE_CHECK),
-				U82T_s(rp_sprintf(C_("AboutTab", "ERROR: %s"), errorMessage)));
+			d->updChecker_error();
 			return TRUE;
 		}
 
@@ -378,44 +385,7 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 				return FALSE;
 			}
 
-			if (!d->updChecker) {
-				// No Update Checker...
-				return FALSE;
-			}
-			const uint64_t updateVersion = d->updChecker->updateVersion();
-
-			// Our version. (ignoring the development flag)
-			const uint64_t ourVersion = RP_PROGRAM_VERSION_NO_DEVEL(AboutTabText::getProgramVersion());
-
-			// Format the latest version string.
-			char sUpdVersion[32];
-			const unsigned int upd[3] = {
-				RP_PROGRAM_VERSION_MAJOR(updateVersion),
-				RP_PROGRAM_VERSION_MINOR(updateVersion),
-				RP_PROGRAM_VERSION_REVISION(updateVersion)
-			};
-
-			if (upd[2] == 0) {
-				snprintf(sUpdVersion, sizeof(sUpdVersion), "%u.%u", upd[0], upd[1]);
-			} else {
-				snprintf(sUpdVersion, sizeof(sUpdVersion), "%u.%u.%u", upd[0], upd[1], upd[2]);
-			}
-
-			string sVersionLabel;
-			sVersionLabel.reserve(512);
-
-			// TODO: RichText label?
-			sVersionLabel = rp_sprintf(C_("AboutTab", "Latest version: %s"), sUpdVersion);
-			if (updateVersion > ourVersion) {
-				sVersionLabel += "\n\n";
-				sVersionLabel += C_("AboutTab", "New version available!");
-				sVersionLabel += '\n';
-				//sVersionLabel += "<a href='https://github.com/GerbilSoft/rom-properties/releases'>";
-				sVersionLabel += C_("AboutTab", "Download at GitHub");
-				//sVersionLabel += "</a>";
-			}
-
-			SetWindowText(GetDlgItem(hDlg, IDC_ABOUT_UPDATE_CHECK), U82T_s(sVersionLabel));
+			d->updChecker_retrieved();
 			return TRUE;
 		}
 
@@ -495,9 +465,69 @@ void AboutTabPrivate::checkForUpdates(void)
 	}
 	if (!updChecker->run(hWndPropSheet)) {
 		// Failed to run the Update Checker.
-		SetWindowText(GetDlgItem(hWndPropSheet, IDC_ABOUT_UPDATE_CHECK),
-			U82T_c(C_("AboutTab", "Update check failed!")));
+		SetWindowText(hUpdateCheck, U82T_c(C_("AboutTab", "Update check failed!")));
 	}
+}
+
+/**
+ * An error occurred while trying to retrieve the update version.
+ * Called by the WM_UPD_ERROR handler.
+ * TODO: Error code?
+ */
+void AboutTabPrivate::updChecker_error(void)
+{
+	if (!updChecker) {
+		// No Update Checker...
+		return;
+	}
+
+	// TODO: RichText label?
+	const char *const errorMessage = updChecker->errorMessage();
+	SetWindowText(hUpdateCheck, U82T_s(rp_sprintf(C_("AboutTab", "ERROR: %s"), errorMessage)));
+}
+
+/**
+ * Update version retrieved.
+ * Called by the WM_UPD_RETRIEVED handler.
+ */
+void AboutTabPrivate::updChecker_retrieved(void)
+{
+	if (!updChecker) {
+		// No Update Checker...
+		return;
+	}
+	const uint64_t updateVersion = updChecker->updateVersion();
+
+	// Our version. (ignoring the development flag)
+	const uint64_t ourVersion = RP_PROGRAM_VERSION_NO_DEVEL(AboutTabText::getProgramVersion());
+
+	// Format the latest version string.
+	char sUpdVersion[32];
+	const unsigned int upd[3] = {
+		RP_PROGRAM_VERSION_MAJOR(updateVersion),
+		RP_PROGRAM_VERSION_MINOR(updateVersion),
+		RP_PROGRAM_VERSION_REVISION(updateVersion)
+	};
+
+	if (upd[2] == 0) {
+		snprintf(sUpdVersion, sizeof(sUpdVersion), "%u.%u", upd[0], upd[1]);
+	} else {
+		snprintf(sUpdVersion, sizeof(sUpdVersion), "%u.%u.%u", upd[0], upd[1], upd[2]);
+	}
+
+	string sVersionLabel;
+	sVersionLabel.reserve(512);
+
+	// TODO: RichText label?
+	sVersionLabel = rp_sprintf(C_("AboutTab", "Latest version: %s"), sUpdVersion);
+	if (updateVersion > ourVersion) {
+		sVersionLabel += "\n\n";
+		sVersionLabel += C_("AboutTab", "New version available!");
+		sVersionLabel += '\n';
+		sVersionLabel += rtfFriendlyLink("https://github.com/GerbilSoft/rom-properties/releases", C_("AboutTab", "Download at GitHub"));
+	}
+
+	SetWindowText(hUpdateCheck, U82T_s(sVersionLabel));
 }
 
 /**
@@ -1111,8 +1141,10 @@ void AboutTabPrivate::initDialog(void)
 	// NOTE: We can't seem to set the dialog ID correctly
 	// when using CreateWindowEx(), so we'll save hRichEdit here.
 	hRichEdit = GetDlgItem(hWndPropSheet, IDC_ABOUT_RICHEDIT);
+	hUpdateCheck = GetDlgItem(hWndPropSheet, IDC_ABOUT_UPDATE_CHECK);
 	assert(hRichEdit != nullptr);
-	if (unlikely(!hRichEdit)) {
+	assert(hUpdateCheck != nullptr);
+	if (unlikely(!hRichEdit || !hUpdateCheck)) {
 		// Something went wrong...
 		return;
 	}
@@ -1144,6 +1176,25 @@ void AboutTabPrivate::initDialog(void)
 			SetWindowLong(hRichEdit, GWL_ID, IDC_ABOUT_RICHEDIT);
 			bUseFriendlyLinks = true;
 		}
+
+		// IDC_ABOUT_UPDATE_CHECK
+		RECT rectUpdateCheck;
+		GetClientRect(hUpdateCheck, &rectUpdateCheck);
+		MapWindowPoints(hUpdateCheck, hWndPropSheet, (LPPOINT)&rectUpdateCheck, 2);
+
+		HWND hUpdateCheck41 = CreateWindowEx(
+			WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | WS_EX_RIGHT,
+			MSFTEDIT_CLASS, _T(""),
+			ES_MULTILINE | ES_READONLY | WS_VISIBLE | WS_CHILD,
+			0, 0, 0, 0,
+			hWndPropSheet, nullptr, nullptr, nullptr);
+		if (hUpdateCheck41) {
+			DestroyWindow(hUpdateCheck);
+			SetWindowFont(hUpdateCheck41, GetWindowFont(hWndPropSheet), FALSE);
+			hUpdateCheck = hUpdateCheck41;
+			// FIXME: Not working...
+			SetWindowLong(hUpdateCheck41, GWL_ID, IDC_ABOUT_UPDATE_CHECK);
+		}
 	}
 #endif /* MSFTEDIT_USE_41 */
 
@@ -1173,6 +1224,12 @@ void AboutTabPrivate::initDialog(void)
 		LibWin32UI::MultiLineEditProc,
 		IDC_ABOUT_RICHEDIT,
 		reinterpret_cast<DWORD_PTR>(GetParent(hWndPropSheet)));
+
+	// RichEdit adjustments for IDC_ABOUT_UPDATE_CHECK.
+	// Enable links.
+	eventMask = SendMessage(hUpdateCheck, EM_GETEVENTMASK, 0, 0);
+	SendMessage(hUpdateCheck, EM_SETEVENTMASK, 0, (LPARAM)(eventMask | ENM_LINK));
+	SendMessage(hUpdateCheck, EM_AUTOURLDETECT, AURL_ENABLEURL, 0);
 
 	// Remove the dummy tab.
 	TabCtrl_DeleteItem(hTabControl, MAX_TABS);
