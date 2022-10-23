@@ -21,10 +21,10 @@
 using LibWin32Common::T2U8;
 using LibWin32Common::U82T;
 
-// C includes.
+// C includes
 #include <sys/utime.h>
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 using std::tstring;
 
@@ -95,7 +95,7 @@ int setFileOriginInfo(FILE *file, const TCHAR *filename, const TCHAR *url, time_
 
 	// Check if storeFileOriginInfo is enabled.
 	const bool storeFileOriginInfo = getStoreFileOriginInfo();
-	if (storeFileOriginInfo) {
+	if (storeFileOriginInfo) do {
 		// Create an ADS named "Zone.Identifier".
 		// References:
 		// - https://cqureacademy.com/blog/alternate-data-streams
@@ -114,37 +114,39 @@ int setFileOriginInfo(FILE *file, const TCHAR *filename, const TCHAR *url, time_
 			CREATE_ALWAYS,		// dwCreationDisposition
 			FILE_ATTRIBUTE_NORMAL,	// dwFlagsAndAttributes
 			nullptr);		// hTemplateFile
-		if (hAds && hAds != INVALID_HANDLE_VALUE) {
-			// Write a zone identifier.
-			// NOTE: Assuming UTF-8 encoding.
-			// FIXME: Chromium has some shenanigans for Windows 10.
-			// Reference: https://github.com/chromium/chromium/blob/55f44515cd0b9e7739b434d1c62f4b7e321cd530/components/services/quarantine/quarantine_win.cc
-			static const char zoneID_hdr[] = "[ZoneTransfer]\r\nZoneID=3\r\nHostUrl=";
-			std::string s_zoneID;
-			s_zoneID.reserve(sizeof(zoneID_hdr) + _tcslen(url) + 2);
-			s_zoneID = zoneID_hdr;
-			s_zoneID += T2U8(url);
-			s_zoneID += "\r\n";
-			DWORD dwBytesWritten = 0;
-			BOOL bRet = WriteFile(hAds, s_zoneID.data(),
-				static_cast<DWORD>(s_zoneID.size()),
-				&dwBytesWritten, nullptr);
-			if ((!bRet || dwBytesWritten != static_cast<DWORD>(s_zoneID.size())) && err == 0) {
-				// Some error occurred...
-				err = w32err_to_posix(GetLastError());
-				if (err == 0) {
-					err = EIO;
-				}
-			}
-			CloseHandle(hAds);
-		} else {
+		if (!hAds || hAds == INVALID_HANDLE_VALUE) {
 			// Error opening the ADS.
 			err = w32err_to_posix(GetLastError());
 			if (err == 0) {
 				err = EIO;
 			}
+			break;
 		}
-	}
+
+		// Write a zone identifier.
+		// NOTE: Assuming UTF-8 encoding.
+		// FIXME: Chromium has some shenanigans for Windows 10.
+		// Reference: https://github.com/chromium/chromium/blob/55f44515cd0b9e7739b434d1c62f4b7e321cd530/components/services/quarantine/quarantine_win.cc
+		static const char zoneID_hdr[] = "[ZoneTransfer]\r\nZoneID=3\r\nHostUrl=";
+		string s_zoneID;
+		s_zoneID.reserve(sizeof(zoneID_hdr) + _tcslen(url) + 2 + 16);
+		s_zoneID = zoneID_hdr;
+		s_zoneID += T2U8(url);
+		s_zoneID += "\r\n";
+
+		DWORD dwBytesWritten = 0;
+		BOOL bRet = WriteFile(hAds, s_zoneID.data(), static_cast<DWORD>(s_zoneID.size()),
+			&dwBytesWritten, nullptr);
+		if ((!bRet || dwBytesWritten != static_cast<DWORD>(s_zoneID.size())) && err == 0) {
+			// Some error occurred...
+			err = w32err_to_posix(GetLastError());
+			if (err == 0) {
+				err = EIO;
+			}
+		}
+
+		CloseHandle(hAds);
+	} while (0);
 
 	if (mtime >= 0) {
 		// TODO: 100ns timestamp precision for access time?
