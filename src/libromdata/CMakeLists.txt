@@ -697,7 +697,7 @@ ENDIF(BUILD_TESTING)
 IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 	IF(WIN32)
 		# NOTE: Don't install libraries.
-		# That installs the import library, and romdata-1.dll's
+		# That installs the import library, and romdata-2.dll's
 		# ABI is not guaranteed to be stable.
 		INSTALL(TARGETS ${PROJECT_NAME}
 			RUNTIME DESTINATION "${DIR_INSTALL_EXE}"
