@@ -589,8 +589,8 @@ void AboutTabPrivate::checkForUpdates(void)
 				 thrUpdate, SLOT(quit()));
 	}
 
-	ui.lblUpdateCheck->setText(q->tr("Checking for updates..."));
 	// Run the cleaning thread.
+	ui.lblUpdateCheck->setText(q->tr("Checking for updates..."));
 	thrUpdate->start();
 }
 
