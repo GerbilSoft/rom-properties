@@ -415,7 +415,6 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 				//sVersionLabel += "</a>";
 			}
 
-			const char *const errorMessage = d->updChecker->errorMessage();
 			SetWindowText(GetDlgItem(hDlg, IDC_ABOUT_UPDATE_CHECK), U82T_s(sVersionLabel));
 			return TRUE;
 		}
