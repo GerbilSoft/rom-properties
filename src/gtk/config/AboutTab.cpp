@@ -829,6 +829,7 @@ about_tab_realize_event(GtkWidget	*self,
 	}
 
 	tab->checkedForUpdates = TRUE;
+	gtk_label_set_text(GTK_LABEL(tab->lblUpdateCheck), C_("AboutTab", "Checking for updates..."));
 
 	// Run the update checker.
 	if (!tab->updChecker) {
