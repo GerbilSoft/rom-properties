@@ -657,7 +657,7 @@ void AboutTab::updChecker_error(const QString &error)
 {
 	Q_D(AboutTab);
 
-	// tr: Error message template.
+	// tr: Error message template. (Qt version, with formatting)
 	const QString errTemplate = AboutTab::tr("<b>ERROR:</b> %1");
 	d->ui.lblUpdateCheck->setText(errTemplate.arg(error));
 }

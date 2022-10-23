@@ -516,6 +516,7 @@ void AboutTabPrivate::updChecker_error(void)
 	sVersionLabel.reserve(128);
 
 	sVersionLabel = RTF_START RTF_ALIGN_RIGHT RTF_BOLD_ON;
+	// tr: Error message template. (Windows version, without formatting)
 	sVersionLabel += C_("AboutTab", "ERROR:");
 	sVersionLabel += RTF_BOLD_OFF " ";
 	sVersionLabel += errorMessage;
