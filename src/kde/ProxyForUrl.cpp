@@ -19,6 +19,7 @@ using std::string;
 
 /**
  * Get the proxy for the specified URL.
+ * @param url URL
  * @return Proxy, or empty string if no proxy is needed.
  */
 string proxyForUrl(const char *url)
