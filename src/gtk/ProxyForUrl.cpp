@@ -9,7 +9,7 @@
 #include <stdafx.h>
 #include "ProxyForUrl.hpp"
 
-// C++ STL includes
+// C++ STL classes
 using std::string;
 
 /**
