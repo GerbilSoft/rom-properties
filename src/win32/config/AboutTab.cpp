@@ -328,8 +328,14 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 			switch (pHdr->code) {
 				case EN_LINK: {
 					// RichEdit link notification.
-					if (pHdr->idFrom != IDC_ABOUT_RICHEDIT)
+					if (pHdr->idFrom == IDC_ABOUT_RICHEDIT ||
+					    pHdr->idFrom == IDC_ABOUT_UPDATE_CHECK)
+					{
+						// Allow this one.
+					} else {
+						// Incorrect source control ID.
 						break;
+					}
 
 					ENLINK *pENLink = reinterpret_cast<ENLINK*>(pHdr);
 					if (pENLink->msg == WM_LBUTTONUP) {
