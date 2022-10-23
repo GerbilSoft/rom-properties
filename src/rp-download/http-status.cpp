@@ -11,200 +11,7 @@
 
 // HTTP status code messages.
 // Reference: https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
-
-// String buffer.
-static const TCHAR httpStatusMsgs_str[] = {
-	// 1xx: Informational response
-	_T("Continue\0")			// 100
-	_T("Switching Protocols\0")		// 101
-	_T("Processing\0")			// 102
-	_T("Early Hints\0")			// 103
-
-	// 2xx: Success
-	_T("OK\0")				// 200
-	_T("Created\0")				// 201
-	_T("Accepted\0")			// 202
-	_T("Non-Authoritative Information\0")	// 203
-	_T("No Content\0")			// 204
-	_T("Reset Content\0")			// 205
-	_T("Partial Content\0")			// 206
-	_T("Multi-Status\0")			// 207
-	_T("Already Reported\0")		// 208
-	_T("This is fine\0")			// 218 (Apache Web Server)
-	_T("IM Used\0")				// 226
-
-	// 3xx: Redirection
-	_T("Multiple Choices\0")		// 300
-	_T("Moved Permanently\0")		// 301
-	_T("Found\0")				// 302
-	_T("See Other\0")			// 303
-	_T("Not Modified\0")			// 304
-	_T("Use Proxy\0")			// 305
-	_T("Switch Proxy\0")			// 306
-	_T("Temporary Redirect\0")		// 307
-	_T("Permanent Redirect\0")		// 308
-
-	// 4xx: Client errors
-	_T("Bad Request\0")			// 400
-	_T("Unauthorized\0")			// 401
-	_T("Payment Required\0")		// 402
-	_T("Forbidden\0")			// 403
-	_T("Not Found\0")			// 404
-	_T("Method Not Allowed\0")		// 405
-	_T("Not Acceptable\0")			// 406
-	_T("Proxy Authentication Required\0")	// 407
-	_T("Request Timeout\0")			// 408
-	_T("Conflict\0")			// 409
-	_T("Gone\0")				// 410
-	_T("Length Required\0")			// 411
-	_T("Precondition Failed\0")		// 412
-	_T("Payload Too Large\0")		// 413
-	_T("URI Too Long\0")			// 414
-	_T("Unsupported Media Type\0")		// 415
-	_T("Range Not Satisfiable\0")		// 416
-	_T("Expectation Failed\0")		// 417
-	_T("I'm a teapot\0")			// 418 (lol)
-	_T("Page Expired\0")			// 419 (Laravel Framework)
-	_T("Enhance Your Calm\0")		// 420 (Twitter)
-	_T("Misdirected Request\0")		// 421
-	_T("Unprocessable Entity\0")		// 422
-	_T("Locked\0")				// 423
-	_T("Failed Dependency\0")		// 424
-	_T("Too Early\0")			// 425
-	_T("Upgrade Required\0")		// 426
-	_T("Precondition Required\0")		// 428
-	_T("Too Many Requests\0")		// 429
-	_T("Request Header Fields Too Large\0")	// 430 (Shopify), 431
-	_T("Blocked by Windows Parental Controls\0")	// 450 (Microsoft Windows)
-	_T("Unavailable For Legal Reasons\0")	// 451
-	_T("Invalid Token\0")			// 498 (Esri)
-	_T("Token Required\0")			// 499 (Esri)
-
-	// 5xx: Server errors
-	_T("Internal Server Error\0")		// 500
-	_T("Not Implemented\0")			// 501
-	_T("Bad Gateway\0")			// 502
-	_T("Service Unavailable\0")		// 503
-	_T("Gateway Timeout\0")			// 504
-	_T("HTTP Version Not Supported\0")	// 505
-	_T("Variant Also Negotiates\0")		// 506
-	_T("Insufficient Storage\0")		// 507
-	_T("Loop Detected\0")			// 508
-	_T("Bandwidth Limit Exceeded\0")	// 509 (Apache Web Server / cPanel)
-	_T("Not Extended\0")			// 510
-	_T("Network Authentication Required\0")	// 511
-	_T("Web Server returns an unknown error\0")	// 520 (Cloudflare)
-	_T("Web Server is down\0")		// 521 (Cloudflare)
-	_T("Connection timed out\0")		// 522 (Cloudflare)
-	_T("Origin is unreachable\0")		// 523 (Cloudflare)
-	_T("A timeout occurred\0")		// 524 (Cloudflare)
-	_T("SSL handshake failed\0")		// 525 (Cloudflare)
-	_T("Invalid SSL Certificate\0")		// 526 (Cloudflare / Cloud Foundry)
-	_T("Railgun Listener to origin error\0")	// 527 (Cloudflare)
-	_T("Site is overloaded\0")		// 529 (Qualys)
-	_T("Site is frozen\0")			// 530 (Pantheon)
-	_T("Network read timeout error\0")	// 598 (Used by some HTTP proxies)
-};
-
-typedef struct _HttpStatusMsg_t {
-	uint16_t code;
-	uint16_t offset;
-} HttpStatusMsg_t;
-
-// Offsets into the string buffer.
-static const HttpStatusMsg_t httpStatusMsgs[] = {
-	// 1xx: Informational response
-	{100,	0},
-	{101,	9},
-	{102,	29},
-	{103,	40},
-
-	// 2xx: Success
-	{200,	52},
-	{201,	55},
-	{202,	63},
-	{203,	72},
-	{204,	102},
-	{205,	113},
-	{206,	127},
-	{207,	143},
-	{208,	156},
-	{218,	173},	// Apache Web Server
-	{226,	186},
-
-	// 3xx: Redirection
-	{300,	194},
-	{301,	211},
-	{302,	229},
-	{303,	235},
-	{304,	245},
-	{305,	258},
-	{306,	268},
-	{307,	281},
-	{308,	300},
-
-	// 4xx: Client errors
-	{400,	319},
-	{401,	331},
-	{402,	344},
-	{403,	361},
-	{404,	371},
-	{405,	381},
-	{406,	400},
-	{407,	415},
-	{408,	445},
-	{409,	461},
-	{410,	470},
-	{411,	475},
-	{412,	491},
-	{413,	511},
-	{414,	529},
-	{415,	542},
-	{416,	565},
-	{417,	587},
-	{418,	606},	// lol
-	{419,	619},	// Laravel Framework
-	{420,	632},	// Twitter
-	{421,	651},
-	{422,	670},
-	{423,	691},
-	{424,	698},
-	{425,	716},
-	{426,	726},
-	{428,	743},
-	{429,	765},
-	{430,	783},	// Shopify
-	{431,	783},	// Same as 430, but standard
-	{450,	815},	// Microsoft Windows
-	{451,	852},
-	{498,	882},	// Esri
-	{499,	896},	// Esri
-
-	// 5xx: Server errors
-	{500,	911},
-	{501,	933},
-	{502,	949},
-	{503,	961},
-	{504,	981},
-	{505,	997},
-	{506,	1024},
-	{507,	1048},
-	{508,	1069},
-	{509,	1083},	// Apache Web Server / cPanel
-	{510,	1108},
-	{511,	1121},
-	{520,	1153},	// Cloudflare
-	{521,	1189},	// Cloudflare
-	{522,	1208},	// Cloudflare
-	{523,	1229},	// Cloudflare
-	{524,	1251},	// Cloudflare
-	{525,	1270},	// Cloudflare
-	{526,	1291},	// Cloudflare / Cloud Foundry
-	{527,	1315},	// Cloudflare
-	{529,	1348},	// Qualys
-	{530,	1367},	// Pantheon
-	{598,	1382},	// Used by some HTTP proxies
-};
+#include "http-status-data.h"
 
 /**
  * Get a string representation for an HTTP status code.
@@ -214,19 +21,15 @@ static const HttpStatusMsg_t httpStatusMsgs[] = {
 const TCHAR *http_status_string(int code)
 {
 	// Do a binary search.
-	static const HttpStatusMsg_t *const pHttpStatusMsgs_end =
-		&httpStatusMsgs[ARRAY_SIZE(httpStatusMsgs)];
-	auto pHttp = std::lower_bound(httpStatusMsgs, pHttpStatusMsgs_end, code,
+	static const HttpStatusMsg_t *const p_http_status_offtbl =
+		&http_status_offtbl[ARRAY_SIZE(http_status_offtbl)];
+	auto pHttp = std::lower_bound(http_status_offtbl, p_http_status_offtbl, code,
 		[](const HttpStatusMsg_t &msg, int code) {
 			return (msg.code < code);
 		});
-	if (pHttp == pHttpStatusMsgs_end || pHttp->code != code) {
+	if (pHttp == p_http_status_offtbl || pHttp->code != code) {
 		return nullptr;
 	}
 
-	// Putting static_assert() after the variable declarations
-	// to prevent issues with MSVC 2010.
-	static_assert(ARRAY_SIZE(httpStatusMsgs_str) == 1410, "httpStatusMsgs_str[] is the wrong size!");
-
-	return &httpStatusMsgs_str[pHttp->offset];
+	return &http_status_strtbl[pHttp->offset];
 }
