@@ -8,6 +8,7 @@
 
 #include "stdafx.h"
 #include "UpdateChecker.hpp"
+#include "ProxyForUrl.hpp"
 
 // librpbase
 #include "librpbase/config/AboutTabText.hpp"
@@ -16,10 +17,6 @@ using namespace LibRpBase;
 // libromdata
 #include "libromdata/img/CacheManager.hpp"
 using LibRomData::CacheManager;
-
-// KDE protocol manager.
-// Used to find the KDE proxy settings.
-#include <kprotocolmanager.h>
 
 // C++ STL classes
 using std::string;
@@ -50,10 +47,10 @@ void UpdateChecker::run(void)
 	}
 
 	CacheManager cache;
-	QString proxy = KProtocolManager::proxyForUrl(QUrl(U82Q(updateVersionUrl)));
-	if (!proxy.isEmpty() && proxy != QLatin1String("DIRECT")) {
+	const string proxy = ::proxyForUrl(updateVersionUrl);
+	if (!proxy.empty()) {
 		// Proxy is required.
-		cache.setProxyUrl(proxy.toUtf8().constData());
+		cache.setProxyUrl(proxy);
 	}
 
 	// Download the version file.

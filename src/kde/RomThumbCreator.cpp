@@ -13,6 +13,7 @@
 #include "RomThumbCreator.hpp"
 #include "RpQImageBackend.hpp"
 #include "AchQtDBus.hpp"
+#include "ProxyForUrl.hpp"
 
 // librpbase, librptexture
 using namespace LibRpBase;
@@ -33,10 +34,6 @@ using LibRomData::TCreateThumbnail;
 // C++ STL classes.
 using std::string;
 using std::unique_ptr;
-
-// KDE protocol manager.
-// Used to find the KDE proxy settings.
-#include <kprotocolmanager.h>
 
 /**
  * Factory method.
@@ -151,26 +148,11 @@ class RomThumbCreatorPrivate final : public TCreateThumbnail<QImage>
 		 * Get the proxy for the specified URL.
 		 * @return Proxy, or empty string if no proxy is needed.
 		 */
-		string proxyForUrl(const string &url) const final;
+		inline string proxyForUrl(const string &url) const final
+		{
+			return ::proxyForUrl(url.c_str());
+		}
 };
-
-/** RomThumbCreatorPrivate **/
-
-/**
- * Get the proxy for the specified URL.
- * @return Proxy, or empty string if no proxy is needed.
- */
-string RomThumbCreatorPrivate::proxyForUrl(const string &url) const
-{
-	QString proxy = KProtocolManager::proxyForUrl(QUrl(U82Q(url)));
-	if (proxy.isEmpty() || proxy == QLatin1String("DIRECT")) {
-		// No proxy.
-		return string();
-	}
-
-	// Proxy is required..
-	return Q2U8(proxy);
-}
 
 /** RomThumbCreator **/
 

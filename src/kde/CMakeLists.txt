@@ -25,6 +25,7 @@ SET(${PROJECT_NAME}_SRCS
 	ListDataSortProxyModel.cpp
 	LanguageComboBox.cpp
 	OptionsMenuButton.cpp
+	ProxyForUrl.cpp
 	config/stub-export.cpp
 	config/ConfigDialog.cpp
 	config/ITab.cpp
@@ -55,6 +56,7 @@ SET(${PROJECT_NAME}_H
 	ListDataSortProxyModel.hpp
 	LanguageComboBox.hpp
 	OptionsMenuButton.hpp
+	ProxyForUrl.hpp
 	check-uid.hpp
 	config/ConfigDialog.hpp
 	config/ITab.hpp
