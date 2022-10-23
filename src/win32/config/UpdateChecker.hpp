@@ -30,8 +30,8 @@
 class UpdateChecker
 {
 	public:
-		UpdateChecker() { }
-		~UpdateChecker() { }
+		UpdateChecker();
+		~UpdateChecker();
 
 	private:
 		RP_DISABLE_COPY(UpdateChecker)
@@ -45,6 +45,14 @@ class UpdateChecker
 		 */
 		bool run(HWND hWnd);
 
+	private:
+		/**
+		* Update check thread procedure.
+		* @param lpParameter Thread parameter (UpdateChecker object)
+		* @return Error code.
+		*/
+		static unsigned int WINAPI ThreadProc(LPVOID lpParameter);
+
 	public:
 		inline const char *errorMessage(void) const
 		{
@@ -57,7 +65,13 @@ class UpdateChecker
 		}
 
 	protected:
-		// Error message for WM_UPD_ERROR.
+		// Active thread
+		HANDLE m_hThread;
+
+		// hWnd to send messages to
+		HWND m_hWnd;
+
+		// Error message for WM_UPD_ERROR
 		const char *m_errorMessage;
 
 		// Update version
