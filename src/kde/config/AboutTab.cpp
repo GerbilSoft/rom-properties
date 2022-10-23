@@ -91,7 +91,6 @@ class AboutTabPrivate
 
 		/**
 		 * Check for updates.
-		 * TODO: Make this threaded.
 		 */
 		void checkForUpdates(void);
 
@@ -563,7 +562,6 @@ void AboutTabPrivate::init(void)
 
 /**
  * Check for updates.
- * TODO: Make this threaded.
  */
 void AboutTabPrivate::checkForUpdates(void)
 {
