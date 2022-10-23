@@ -80,6 +80,7 @@ SET(${PROJECT_NAME}_SRCS
 	config/CacheTab.cpp
 	config/AchievementsTab.cpp
 	config/AboutTab.cpp
+	config/UpdateChecker.cpp
 	)
 SET(${PROJECT_NAME}_H
 	RP_ExtractIcon.hpp
@@ -113,6 +114,7 @@ SET(${PROJECT_NAME}_H
 	config/CacheTab.hpp
 	config/AchievementsTab.hpp
 	config/AboutTab.hpp
+	config/UpdateChecker.hpp
 	res/resource.h
 	)
 SET(${PROJECT_NAME}_RC

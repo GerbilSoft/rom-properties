@@ -10,6 +10,7 @@
 #include "config.librpbase.h"
 
 #include "AboutTab.hpp"
+#include "UpdateChecker.hpp"
 #include "res/resource.h"
 
 // librpbase
@@ -114,6 +115,15 @@ class AboutTabPrivate
 #endif /* MSFTEDIT_USE_41 */
 		bool bUseFriendlyLinks;
 
+	public:
+		/**
+		 * Check for updates.
+		 */
+		void checkForUpdates(void);
+
+		bool bCheckedForUpdates;	// Checked for updates yet?
+		UpdateChecker *updChecker;
+
 	protected:
 		// Current RichText streaming context.
 		struct RTF_CTX {
@@ -198,6 +208,8 @@ AboutTabPrivate::AboutTabPrivate()
 	, hWndPropSheet(nullptr)
 	, hFontBold(nullptr)
 	, bUseFriendlyLinks(false)
+	, bCheckedForUpdates(false)
+	, updChecker(nullptr)
 	, hRichEdit(nullptr)
 {
 	memset(&rtfCtx, 0, sizeof(rtfCtx));
@@ -222,6 +234,10 @@ AboutTabPrivate::~AboutTabPrivate()
 #endif /* MSFTEDIT_USE_41 */
 	if (hRichEd20_dll) {
 		FreeLibrary(hRichEd20_dll);
+	}
+
+	if (updChecker) {
+		delete updChecker;
 	}
 }
 
@@ -258,6 +274,22 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 			// Initialize the dialog.
 			d->initDialog();
 			return TRUE;
+		}
+
+		case WM_SHOWWINDOW: {
+			auto *const d = reinterpret_cast<AboutTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+			if (!d) {
+				// No AboutTabPrivate. Can't do anything...
+				return FALSE;
+			}
+
+			if (!d->bCheckedForUpdates) {
+				// Check for updates.
+				d->bCheckedForUpdates = true;
+				d->checkForUpdates();
+			}
+
+			break;
 		}
 
 		case WM_NOTIFY: {
@@ -320,6 +352,74 @@ INT_PTR CALLBACK AboutTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 			break;
 		}
 
+		case WM_UPD_ERROR: {
+			auto *const d = reinterpret_cast<AboutTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+			if (!d) {
+				// No AboutTabPrivate. Can't do anything...
+				return FALSE;
+			}
+
+			if (!d->updChecker) {
+				// No Update Checker...
+				return FALSE;
+			}
+
+			// TODO: RichText label?
+			const char *const errorMessage = d->updChecker->errorMessage();
+			SetWindowText(GetDlgItem(hDlg, IDC_ABOUT_UPDATE_CHECK),
+				U82T_s(rp_sprintf(C_("AboutTab", "ERROR: %s"), errorMessage)));
+			return TRUE;
+		}
+
+		case WM_UPD_RETRIEVED: {
+			auto *const d = reinterpret_cast<AboutTabPrivate*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+			if (!d) {
+				// No AboutTabPrivate. Can't do anything...
+				return FALSE;
+			}
+
+			if (!d->updChecker) {
+				// No Update Checker...
+				return FALSE;
+			}
+			const uint64_t updateVersion = d->updChecker->updateVersion();
+
+			// Our version. (ignoring the development flag)
+			const uint64_t ourVersion = RP_PROGRAM_VERSION_NO_DEVEL(AboutTabText::getProgramVersion());
+
+			// Format the latest version string.
+			char sUpdVersion[32];
+			const unsigned int upd[3] = {
+				RP_PROGRAM_VERSION_MAJOR(updateVersion),
+				RP_PROGRAM_VERSION_MINOR(updateVersion),
+				RP_PROGRAM_VERSION_REVISION(updateVersion)
+			};
+
+			if (upd[2] == 0) {
+				snprintf(sUpdVersion, sizeof(sUpdVersion), "%u.%u", upd[0], upd[1]);
+			} else {
+				snprintf(sUpdVersion, sizeof(sUpdVersion), "%u.%u.%u", upd[0], upd[1], upd[2]);
+			}
+
+			string sVersionLabel;
+			sVersionLabel.reserve(512);
+
+			// TODO: RichText label?
+			sVersionLabel = rp_sprintf(C_("AboutTab", "Latest version: %s"), sUpdVersion);
+			if (updateVersion > ourVersion) {
+				sVersionLabel += "\n\n";
+				sVersionLabel += C_("AboutTab", "New version available!");
+				sVersionLabel += '\n';
+				//sVersionLabel += "<a href='https://github.com/GerbilSoft/rom-properties/releases'>";
+				sVersionLabel += C_("AboutTab", "Download at GitHub");
+				//sVersionLabel += "</a>";
+			}
+
+			const char *const errorMessage = d->updChecker->errorMessage();
+			SetWindowText(GetDlgItem(hDlg, IDC_ABOUT_UPDATE_CHECK), U82T_s(sVersionLabel));
+			return TRUE;
+		}
+
 		default:
 			break;
 	}
@@ -377,6 +477,27 @@ void AboutTabPrivate::initBoldFont(HFONT hFont)
 		// Adjust the font and create a new one.
 		lfFontBold.lfWeight = FW_BOLD;
 		hFontBold = CreateFontIndirect(&lfFontBold);
+	}
+}
+
+/**
+ * Check for updates.
+ */
+void AboutTabPrivate::checkForUpdates(void)
+{
+	// TODO: Make this threaded.
+	// Could create a subclassed control and send WM_NOTIFY,
+	// or just a plain object and send custom messages back.
+	SetWindowText(GetDlgItem(hWndPropSheet, IDC_ABOUT_UPDATE_CHECK),
+		U82T_c(C_("AboutTab", "Checking for updates...")));
+
+	if (!updChecker) {
+		updChecker = new UpdateChecker();
+	}
+	if (!updChecker->run(hWndPropSheet)) {
+		// Failed to run the Update Checker.
+		SetWindowText(GetDlgItem(hWndPropSheet, IDC_ABOUT_UPDATE_CHECK),
+			U82T_c(C_("AboutTab", "Update check failed!")));
 	}
 }
 
@@ -565,6 +686,9 @@ void AboutTabPrivate::initProgramTitleText(void)
 			SWP_NOZORDER | SWP_NOOWNERZORDER);
 		ShowWindow(hStaticIcon, SW_SHOW);
 
+		// Reserve some space for the update check label.
+		const int rightPos = 96;
+
 		// Window rectangle.
 		RECT winRect;
 		GetClientRect(hWndPropSheet, &winRect);
@@ -581,7 +705,7 @@ void AboutTabPrivate::initProgramTitleText(void)
 			MapWindowPoints(hLabel, hWndPropSheet, (LPPOINT)&rect_label, 2);
 			SetWindowPos(hLabel, 0,
 				leftPos, rect_label.top,
-				winRect.right - leftPos - dlgMargin.left,
+				winRect.right - leftPos - rightPos - dlgMargin.left,
 				rect_label.bottom - rect_label.top,
 				SWP_NOZORDER | SWP_NOOWNERZORDER);
 		}
