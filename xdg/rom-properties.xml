@@ -468,7 +468,6 @@
       <match type="string" value="ib\0\0" offset="4"/>
       <match type="string" value="Bk\0\0" offset="4"/>
     </magic>
-    <glob pattern="*.wad"/>
   </mime-type>
   <mime-type type="application/x-nintendo-dsi-tad">
     <comment>Nintendo DSi TAD package</comment>
