@@ -744,9 +744,14 @@
   <!-- Amiibo -->
   <mime-type type="application/x-nintendo-amiibo">
     <comment>Nintendo amiibo NFC dump</comment>
-    <generic-icon name="application-x-executable"/>
+    <generic-icon name="application-octet-stream"/>
     <glob pattern="*.nfc"/>
     <glob pattern="*.nfp"/>
+    <magic priority="50">
+      <match value="\x0F\xE0\xF1\x10\xFF\xEE" type="string" offset="10">
+        <match value="\x01\x00\x0F" type="string" offset="520"/>
+      </match>
+    </magic>
   </mime-type>
 
   <!-- Lua -->

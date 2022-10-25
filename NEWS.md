@@ -29,6 +29,9 @@
   * [gtk] rp-config: Fix saving if the files don't exist initially.
     * Fixes #368: rp-config does not save configuration and keys in Manjaro Gnome.
       * Reported by @Amnesia1000.
+  * [xdg] rom-properties.xml: Add magic strings for amiibo files.
+    * Fixes #370: Amiibos without thumbnails (Gnome)
+      * Reported by @Amnesia1000.
 
 * Other changes:
   * libromdata's SOVERSION was bumped to 2 due to an ABI change in
