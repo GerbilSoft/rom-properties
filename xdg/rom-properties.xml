@@ -169,7 +169,6 @@
     <sub-class-of type="application/x-cd-image"/>
     <generic-icon name="application-x-cd-image"/>
     <alias type="application/x-dreamcast-iso-image"/>
-    <glob pattern="*.iso"/>
     <magic priority="50">
       <match value="SEGA SEGAKATANA" type="string" offset="0"/>
       <match value="SEGA SEGAKATANA" type="string" offset="16"/>
@@ -211,7 +210,6 @@
     <sub-class-of type="application/x-cd-image"/>
     <generic-icon name="application-x-cd-image"/>
     <alias type="application/x-gamecube-iso-image"/>
-    <glob pattern="*.iso"/>
     <glob pattern="*.gcm"/>
     <glob pattern="*.ciso"/>
     <magic priority="50">
@@ -242,7 +240,6 @@
     <generic-icon name="application-x-cd-image"/>
     <alias type="application/x-wii-iso-image"/>
     <alias type="application/x-wbfs"/>
-    <glob pattern="*.iso"/>
     <glob pattern="*.gcm"/>
     <glob pattern="*.ciso"/>
     <glob pattern="*.rvm"/>
@@ -343,7 +340,6 @@
         <match type="string" value="SEGA 32X" offset="272"/>
       </match>
     </magic>
-    <glob pattern="*.iso"/>
   </mime-type>
   <mime-type type="application/x-sega-pico-rom">
     <!-- Translate this to Kids Computer Pico if the console was known as such in your locale
@@ -450,7 +446,6 @@
     <sub-class-of type="application/x-cd-image"/>
     <generic-icon name="application-x-cd-image"/>
     <alias type="application/x-wii-u-iso-image"/>
-    <glob pattern="*.iso"/>
     <glob pattern="*.wud"/>
     <glob pattern="*.wux"/>
     <magic priority="50">
