@@ -8,6 +8,10 @@
     functionality (lists, bitfields, images) isn't implemented at the moment.
     * Fixes #332: Compat with GTK4 and Nautilus 4.x
       * Reported by @Amnesia1000.
+  * rp-config: The GTK, KDE, and Windows UI frontends now have an update checker
+    in the About tab. When you click the About tab, it will compare the current
+    version against the version listed on the RPDB server. If the current
+    version is older, a link will be provided to the GitHub releases page.
 
 * Bug fixes:
   * ELF: The "TLS" symbol type was missing, resulting in an off-by-one

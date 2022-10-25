@@ -150,7 +150,7 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 	const auto extURLs_cend = extURLs.cend();
 	for (auto iter = extURLs.cbegin(); iter != extURLs_cend; ++iter) {
 		const RomData::ExtURL &extURL = *iter;
-		std::string proxy = proxyForUrl(extURL.url);
+		std::string proxy = proxyForUrl(extURL.url.c_str());
 		cache.setProxyUrl(!proxy.empty() ? proxy.c_str() : nullptr);
 
 		// Should we attempt to download the image,

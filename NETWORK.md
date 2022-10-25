@@ -42,6 +42,9 @@ or deleted.
   * Super NES
   * WonderSwan (Color)
 
+The RPDB domain is also used by rp-config's update checker to determine if
+a newer version of rom-properties is available.
+
 ### ROM Information Used
 
 The following information is used as the lookup key in order to retrieve

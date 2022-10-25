@@ -85,7 +85,7 @@ void __cdecl LibRomData::SuperMagicDrive::decodeBlock_sse2(unsigned char * __res
 public: unsigned int __thiscall LibRpBase::RomFields::defaultLanguageCode(void)const
 public: enum LibRpBase::Config::DMG_TitleScreen_Mode __thiscall LibRpBase::Config::dmgTitleScreenMode(enum LibRpBase::Config::DMG_TitleScreen_Mode)const
 public: int __thiscall LibRpBase::RomData::doRomOp(int,struct LibRpBase::RomData::RomOpParams *)
-public: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __thiscall LibRomData::CacheManager::download(class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const &)
+public: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __thiscall LibRomData::CacheManager::download(char const *)
 public: bool __thiscall LibRpBase::Config::downloadHighResScans(void)const
 public: class LibRpTexture::rp_image * __thiscall LibRpTexture::rp_image::dup(void)const
 public: class LibRpTexture::rp_image * __thiscall LibRpTexture::rp_image::dup_ARGB32(void)const
@@ -103,7 +103,7 @@ public: virtual char const * __thiscall LibRpFile::MemFile::filename(void)const
 public: char const * __thiscall LibRpBase::RomData::filename(void)const
 public: virtual char const * __thiscall LibRpFile::RpFile::filename(void)const
 int __cdecl LibCacheCommon::filterCacheKey(char *)
-public: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __thiscall LibRomData::CacheManager::findInCache(class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const &)
+public: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __thiscall LibRomData::CacheManager::findInCache(char const *)
 public: class LibRpTexture::rp_image * __thiscall LibRpTexture::rp_image::flip(enum LibRpTexture::rp_image::FlipOp)const
 public: virtual int __thiscall LibRpFile::IRpFile::flush(void)
 public: virtual int __thiscall LibRpFile::VectorFile::flush(void)
@@ -136,6 +136,7 @@ char const * __cdecl LibRpBase::SystemRegion::getLocalizedLanguageName(unsigned 
 public: char const * __thiscall LibRpBase::Achievements::getName(enum LibRpBase::Achievements::ID)const
 char const * __cdecl LibRpBase::AboutTabText::getProgramInfoString(enum LibRpBase::AboutTabText::ProgramInfoStringID)
 enum LibRpBase::AboutTabText::ProgramInfoStringID __cdecl LibRpBase::AboutTabText::getProgramInfoStringCount(void)
+unsigned __int64 __cdecl LibRpBase::AboutTabText::getProgramVersion(void)
 struct LibRpBase::AboutTabText::SupportSite_t const * __cdecl LibRpBase::AboutTabText::getSupportSites(void)
 unsigned char __cdecl LibRpFile::FileSystem::get_file_d_type(char const *,bool)
 public: int __thiscall LibRpTexture::rp_image::get_sBIT(struct LibRpTexture::rp_image::sBIT_t *)const

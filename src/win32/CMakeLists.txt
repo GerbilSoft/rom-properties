@@ -80,6 +80,7 @@ SET(${PROJECT_NAME}_SRCS
 	config/CacheTab.cpp
 	config/AchievementsTab.cpp
 	config/AboutTab.cpp
+	config/UpdateChecker.cpp
 	)
 SET(${PROJECT_NAME}_H
 	RP_ExtractIcon.hpp
@@ -113,6 +114,7 @@ SET(${PROJECT_NAME}_H
 	config/CacheTab.hpp
 	config/AchievementsTab.hpp
 	config/AboutTab.hpp
+	config/UpdateChecker.hpp
 	res/resource.h
 	)
 SET(${PROJECT_NAME}_RC
@@ -178,8 +180,8 @@ IF(RP_LIBROMDATA_IS_DLL AND MSVC)
 	# Delay-load libromdata if it's a DLL.
 	# Otherwise, we won't be able to load it if it's in an
 	# architecture-specific subdirectory.
-	SET(DL_DEBUG_FLAGS "${DL_DEBUG_FLAGS} /DELAYLOAD:romdata-1d.dll")
-	SET(DL_RELEASE_FLAGS "${DL_RELEASE_FLAGS} /DELAYLOAD:romdata-1.dll")
+	SET(DL_DEBUG_FLAGS "${DL_DEBUG_FLAGS} /DELAYLOAD:romdata-2d.dll")
+	SET(DL_RELEASE_FLAGS "${DL_RELEASE_FLAGS} /DELAYLOAD:romdata-2.dll")
 
 	SET(CMAKE_SHARED_LINKER_FLAGS_DEBUG	"${CMAKE_SHARED_LINKER_FLAGS_DEBUG} ${DL_DEBUG_FLAGS}")
 	SET(CMAKE_SHARED_LINKER_FLAGS_RELEASE	"${CMAKE_SHARED_LINKER_FLAGS_RELEASE} ${DL_RELEASE_FLAGS}")

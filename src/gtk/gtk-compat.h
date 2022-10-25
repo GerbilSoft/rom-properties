@@ -154,8 +154,18 @@ gtk_label_set_wrap(GtkLabel *label, gboolean wrap)
 static inline void
 gtk_frame_set_child(GtkFrame *frame, GtkWidget *child)
 {
+	// TODO: Remove the existing child widget?
 	gtk_container_add(GTK_CONTAINER(frame), child);
 }
+
+#  if GTK_CHECK_VERSION(3,1,6)
+static inline void
+gtk_overlay_set_child(GtkOverlay *overlay, GtkWidget *child)
+{
+	// TODO: Remove the existing child widget?
+	gtk_container_add(GTK_CONTAINER(overlay), child);
+}
+#  endif /* GTK_CHECK_VERSION(3,1,6) */
 
 static inline void
 gtk_scrolled_window_set_child(GtkScrolledWindow *scrolled_window, GtkWidget *child)

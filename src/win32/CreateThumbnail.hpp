@@ -82,9 +82,10 @@ class CreateThumbnail : public LibRomData::TCreateThumbnail<HBITMAP>
 
 		/**
 		 * Get the proxy for the specified URL.
+		 * @param url URL
 		 * @return Proxy, or empty string if no proxy is needed.
 		 */
-		inline std::string proxyForUrl(const std::string &url) const final
+		inline std::string proxyForUrl(const char *url) const final
 		{
 			// rp-download uses WinInet on Windows, which
 			// always uses the system proxy.

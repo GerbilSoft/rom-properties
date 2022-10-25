@@ -20,6 +20,23 @@ extern "C" {
 
 namespace LibRpBase { namespace AboutTabText {
 
+/** Program version **/
+
+/**
+ * Get the program version as a 64-bit unsigned int.
+ * Format: [major][minor][revision][devel]
+ * @return Program version
+ */
+RP_LIBROMDATA_PUBLIC
+uint64_t getProgramVersion(void)
+{
+	return RP_PROGRAM_VERSION(
+		RP_VERSION_MAJOR, RP_VERSION_MINOR,
+		RP_VERSION_PATCH, RP_VERSION_DEVEL);
+}
+
+/** Program information strings **/
+
 static const char *const ProgramInfoString_tbl[] = {
 	"rom-properties",				// ProgramName
 	"ROM Properties Page Shell Extension",		// ProgramFullName
@@ -39,6 +56,11 @@ static const char *const ProgramInfoString_tbl[] = {
 #else /* !(RP_GIT_VERSION && RP_GIT_DESCRIBE) */
 	nullptr,
 #endif /* RP_GIT_VERSION && RP_GIT_DESCRIBE */
+
+	// UpdateVersionUrl
+	"https://rpdb.gerbilsoft.com/sys/version.txt",
+	// UpdateVersionCacheKey
+	"sys/version.txt",
 };
 
 /**

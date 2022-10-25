@@ -187,7 +187,7 @@ class RP_LIBROMDATA_PUBLIC KeyStoreUI
 		 */
 		bool hasChanged(void) const;
 
-	protected: /*signals:*/
+	protected /*signals*/:
 		/**
 		 * KeyStore has been changed by the user.
 		 * This must be reimplemented by subclasses

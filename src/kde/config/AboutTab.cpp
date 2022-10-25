@@ -10,13 +10,17 @@
 #include "config.librpbase.h"
 
 #include "AboutTab.hpp"
+#include "UpdateChecker.hpp"
 
 // librpbase
 #include "librpbase/config/AboutTabText.hpp"
 using namespace LibRpBase;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
+
+// Qt includes
+#include <QtCore/QThread>
 
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 // KIO version.
@@ -47,9 +51,12 @@ using std::string;
 class AboutTabPrivate
 {
 	public:
-		AboutTabPrivate() { };
+		AboutTabPrivate(AboutTab *q);
+		~AboutTabPrivate();
 
 	private:
+		AboutTab *const q_ptr;
+		Q_DECLARE_PUBLIC(AboutTab)
 		Q_DISABLE_COPY(AboutTabPrivate)
 
 	public:
@@ -81,6 +88,19 @@ class AboutTabPrivate
 		 * Initialize the dialog.
 		 */
 		void init(void);
+
+		/**
+		 * Check for updates.
+		 */
+		void checkForUpdates(void);
+
+	public:
+		// Update checker object and thread.
+		QThread *thrUpdate;
+		UpdateChecker *updChecker;
+
+		// Checked for updates yet?
+		bool checkedForUpdates;
 };
 
 /** AboutTabPrivate **/
@@ -91,6 +111,29 @@ class AboutTabPrivate
 #define B_END	"</b>"
 #define INDENT	"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
 #define BULLET	"\xE2\x80\xA2"	/* U+2022: BULLET */
+
+AboutTabPrivate::AboutTabPrivate(AboutTab *q)
+	: q_ptr(q)
+	, thrUpdate(nullptr)
+	, updChecker(nullptr)
+	, checkedForUpdates(false)
+{ }
+
+AboutTabPrivate::~AboutTabPrivate()
+{
+	if (thrUpdate && thrUpdate->isRunning()) {
+		// Make sure the thread is stopped.
+		thrUpdate->quit();
+		bool ok = thrUpdate->wait(5000);
+		if (!ok) {
+			// Thread is hung. Terminate it.
+			thrUpdate->terminate();
+		}
+	}
+
+	delete updChecker;
+	delete thrUpdate;
+}
 
 /**
  * Initialize the program title text.
@@ -118,6 +161,8 @@ void AboutTabPrivate::initProgramTitleText(void)
 		AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::ProgramVersion);
 	const char *const gitVersion =
 		AboutTabText::getProgramInfoString(AboutTabText::ProgramInfoStringID::GitVersion);
+
+	assert(programVersion != nullptr);
 
 	string sPrgTitle;
 	sPrgTitle.reserve(1024);
@@ -515,11 +560,45 @@ void AboutTabPrivate::init(void)
 	initSupportTab();
 }
 
+/**
+ * Check for updates.
+ */
+void AboutTabPrivate::checkForUpdates(void)
+{
+	// Create the QThread and UpdateChecker if necessary.
+	Q_Q(AboutTab);
+	if (!thrUpdate) {
+		thrUpdate = new QThread(q);
+		thrUpdate->setObjectName(QLatin1String("thrUpdate"));
+	}
+	if (!updChecker) {
+		updChecker = new UpdateChecker(nullptr);
+		updChecker->setObjectName(QLatin1String("updChecker"));
+		updChecker->moveToThread(thrUpdate);
+
+		// Status slots
+		QObject::connect(updChecker, SIGNAL(error(QString)),
+				 q, SLOT(updChecker_error(QString)));
+		QObject::connect(updChecker, SIGNAL(retrieved(quint64)),
+				 q, SLOT(updChecker_retrieved(quint64)));
+
+		// Thread signals
+		QObject::connect(thrUpdate, SIGNAL(started()),
+				 updChecker, SLOT(run()));
+		QObject::connect(updChecker, SIGNAL(finished()),
+				 thrUpdate, SLOT(quit()));
+	}
+
+	// Run the update check thread.
+	ui.lblUpdateCheck->setText(q->tr("Checking for updates..."));
+	thrUpdate->start();
+}
+
 /** AboutTab **/
 
 AboutTab::AboutTab(QWidget *parent)
 	: super(parent)
-	, d_ptr(new AboutTabPrivate())
+	, d_ptr(new AboutTabPrivate(this))
 {
 	Q_D(AboutTab);
 	d->ui.setupUi(this);
@@ -535,7 +614,7 @@ AboutTab::~AboutTab()
 
 /**
  * Widget state has changed.
- * @param event State change event.
+ * @param event State change event
  */
 void AboutTab::changeEvent(QEvent *event)
 {
@@ -550,4 +629,76 @@ void AboutTab::changeEvent(QEvent *event)
 
 	// Pass the event to the base class.
 	super::changeEvent(event);
+}
+
+/**
+ * Widget is now visible.
+ * @param event Show event
+ */
+void AboutTab::showEvent(QShowEvent *event)
+{
+	Q_UNUSED(event)
+
+	Q_D(AboutTab);
+	if (!d->checkedForUpdates) {
+		d->checkedForUpdates = true;
+		d->checkForUpdates();
+	}
+}
+
+/** UpdateChecker slots **/
+
+/**
+ * An error occurred while trying to retrieve the update version.
+ * TODO: Error code?
+ * @param error Error message
+ */
+void AboutTab::updChecker_error(const QString &error)
+{
+	Q_D(AboutTab);
+
+	// tr: Error message template. (Qt version, with formatting)
+	const QString errTemplate = AboutTab::tr("<b>ERROR:</b> %1");
+	d->ui.lblUpdateCheck->setText(errTemplate.arg(error));
+}
+
+/**
+ * Update version retrieved.
+ * @param updateVersion Update version (64-bit format)
+ */
+void AboutTab::updChecker_retrieved(quint64 updateVersion)
+{
+	Q_D(AboutTab);
+
+	// Our version. (ignoring the development flag)
+	const uint64_t ourVersion = RP_PROGRAM_VERSION_NO_DEVEL(AboutTabText::getProgramVersion());
+
+	// Format the latest version string.
+	char sUpdVersion[32];
+	const unsigned int upd[3] = {
+		RP_PROGRAM_VERSION_MAJOR(updateVersion),
+		RP_PROGRAM_VERSION_MINOR(updateVersion),
+		RP_PROGRAM_VERSION_REVISION(updateVersion)
+	};
+
+	if (upd[2] == 0) {
+		snprintf(sUpdVersion, sizeof(sUpdVersion), "%u.%u", upd[0], upd[1]);
+	} else {
+		snprintf(sUpdVersion, sizeof(sUpdVersion), "%u.%u.%u", upd[0], upd[1], upd[2]);
+	}
+
+	string sVersionLabel;
+	sVersionLabel.reserve(512);
+
+	sVersionLabel = rp_sprintf(C_("AboutTab", "Latest version: %s"), sUpdVersion);
+	if (updateVersion > ourVersion) {
+		sVersionLabel += BR BR;
+		sVersionLabel += C_("AboutTab", "<b>New version available!</b>");
+		sVersionLabel += BR;
+		sVersionLabel += "<a href='https://github.com/GerbilSoft/rom-properties/releases'>";
+		sVersionLabel += C_("AboutTab", "Download at GitHub");
+		sVersionLabel += "</a>";
+	}
+
+	d->ui.lblUpdateCheck->setText(U82Q(sVersionLabel));
 }

@@ -18,10 +18,8 @@ using std::string;
 class RpFileGioPrivate
 {
 	public:
-		explicit RpFileGioPrivate(const char *uri)
-			: stream(nullptr), uri(uri) { }
-		explicit RpFileGioPrivate(const string &uri)
-			: stream(nullptr), uri(uri) { }
+		explicit RpFileGioPrivate(const char *uri);
+		explicit RpFileGioPrivate(const string &uri);
 		~RpFileGioPrivate();
 
 	private:
@@ -29,7 +27,7 @@ class RpFileGioPrivate
 
 	public:
 		GFileInputStream *stream;	// File input stream.
-		string uri;			// GVfs URI.
+		char *uri;			// GVfs URI.
 
 	public:
 		/**
@@ -42,9 +40,22 @@ class RpFileGioPrivate
 
 /** RpFileGioPrivate **/
 
+RpFileGioPrivate::RpFileGioPrivate(const char *uri)
+	: stream(nullptr)
+{
+	this->uri = (uri ? strdup(uri) : nullptr);
+}
+
+RpFileGioPrivate::RpFileGioPrivate(const string &uri)
+	: stream(nullptr)
+{
+	this->uri = (!uri.empty() ? strdup(uri.c_str()) : nullptr);
+}
+
 RpFileGioPrivate::~RpFileGioPrivate()
 {
 	g_clear_object(&stream);
+	free(uri);
 }
 
 /**
@@ -105,7 +116,7 @@ void RpFileGio::init(void)
 	GError *err = nullptr;
 
 	// Open the file.
-	GFile *const file = g_file_new_for_uri(d->uri.c_str());
+	GFile *const file = g_file_new_for_uri(d->uri);
 	d->stream = g_file_read(file, nullptr, &err);
 	g_object_unref(file);
 	if (!d->stream || err != nullptr) {
@@ -292,5 +303,5 @@ off64_t RpFileGio::size(void)
 const char *RpFileGio::filename(void) const
 {
 	RP_D(const RpFileGio);
-	return (!d->uri.empty() ? d->uri.c_str() : nullptr);
+	return d->uri;
 }

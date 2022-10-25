@@ -232,9 +232,10 @@ class TCreateThumbnail
 
 		/**
 		 * Get the proxy for the specified URL.
+		 * @param url URL
 		 * @return Proxy, or empty string if no proxy is needed.
 		 */
-		virtual std::string proxyForUrl(const std::string &url) const = 0;
+		virtual std::string proxyForUrl(const char *url) const = 0;
 };
 
 }

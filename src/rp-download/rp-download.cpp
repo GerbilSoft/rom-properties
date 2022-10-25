@@ -506,8 +506,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SHOW_ERROR(_T("Cache key '%s' is invalid."), cache_key);
 		return EXIT_FAILURE;
 	}
-	if (!_tcscmp(lastdot, _T(".png")) != 0 ||
-	    !_tcscmp(lastdot, _T(".jpg")) != 0)
+	if ((!_tcscmp(lastdot, _T(".png"))) != 0 ||
+	    (!_tcscmp(lastdot, _T(".jpg"))) != 0)
 	{
 		// Image file extension is supported.
 	}
@@ -528,6 +528,12 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	const tstring cache_key_urlencode = LibCacheCommon::urlencode(cache_key);
 	// Update the slash position based on the urlencoded string.
 	slash_pos = _tcschr(cache_key_urlencode.data(), _T('/'));
+	assert(slash_pos != nullptr);
+	if (!slash_pos) {
+		// Shouldn't happen, since a slash was found earlier...
+		SHOW_ERROR(_T("Cache key '%s' is invalid."), cache_key);
+		return EXIT_FAILURE;
+	}
 
 	// Determine the full URL based on the cache key.
 	bool ok = false;

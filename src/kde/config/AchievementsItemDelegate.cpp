@@ -16,7 +16,7 @@
 #include <QtGui/QFontMetrics>
 #include <QStyle>
 
-// C++ STL includes
+// C++ STL classes
 using std::array;
 using std::vector;
 
