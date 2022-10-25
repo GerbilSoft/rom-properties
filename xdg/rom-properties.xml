@@ -743,8 +743,19 @@
     <glob pattern="*.nfc"/>
     <glob pattern="*.nfp"/>
     <magic priority="50">
+      <!-- lock_header, cap_container -->
       <match value="\x0F\xE0\xF1\x10\xFF\xEE" type="string" offset="10">
-        <match value="\x01\x00\x0F" type="string" offset="520"/>
+        <!-- lock_footer -->
+        <match value="\x01\x00\x0F" type="string" offset="520">
+          <!-- cfg0 -->
+          <match value="0x00000004" type="big32" offset="524">
+            <!-- cfg1 -->
+            <match value="0x5F000000" type="big32" offset="528">
+              <!-- last byte of amiibo ID must be 0x02 -->
+              <match value="0x02" type="byte" offset="91"/>
+            </match>
+          </match>
+        </match>
       </match>
     </magic>
   </mime-type>
