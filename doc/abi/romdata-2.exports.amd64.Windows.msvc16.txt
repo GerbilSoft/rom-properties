@@ -84,7 +84,7 @@ void __cdecl LibRomData::SuperMagicDrive::decodeBlock_sse2(unsigned char * __ptr
 public: unsigned int __cdecl LibRpBase::RomFields::defaultLanguageCode(void)const __ptr64
 public: enum LibRpBase::Config::DMG_TitleScreen_Mode __cdecl LibRpBase::Config::dmgTitleScreenMode(enum LibRpBase::Config::DMG_TitleScreen_Mode)const __ptr64
 public: int __cdecl LibRpBase::RomData::doRomOp(int,struct LibRpBase::RomData::RomOpParams * __ptr64) __ptr64
-public: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl LibRomData::CacheManager::download(class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const & __ptr64) __ptr64
+public: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl LibRomData::CacheManager::download(char const * __ptr64) __ptr64
 public: bool __cdecl LibRpBase::Config::downloadHighResScans(void)const __ptr64
 public: class LibRpTexture::rp_image * __ptr64 __cdecl LibRpTexture::rp_image::dup(void)const __ptr64
 public: class LibRpTexture::rp_image * __ptr64 __cdecl LibRpTexture::rp_image::dup_ARGB32(void)const __ptr64
@@ -102,7 +102,7 @@ public: virtual char const * __ptr64 __cdecl LibRpFile::MemFile::filename(void)c
 public: char const * __ptr64 __cdecl LibRpBase::RomData::filename(void)const __ptr64
 public: virtual char const * __ptr64 __cdecl LibRpFile::RpFile::filename(void)const __ptr64
 int __cdecl LibCacheCommon::filterCacheKey(char * __ptr64)
-public: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl LibRomData::CacheManager::findInCache(class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const & __ptr64) __ptr64
+public: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl LibRomData::CacheManager::findInCache(char const * __ptr64) __ptr64
 public: class LibRpTexture::rp_image * __ptr64 __cdecl LibRpTexture::rp_image::flip(enum LibRpTexture::rp_image::FlipOp)const __ptr64
 public: virtual int __cdecl LibRpFile::IRpFile::flush(void) __ptr64
 public: virtual int __cdecl LibRpFile::VectorFile::flush(void) __ptr64
@@ -135,6 +135,7 @@ char const * __ptr64 __cdecl LibRpBase::SystemRegion::getLocalizedLanguageName(u
 public: char const * __ptr64 __cdecl LibRpBase::Achievements::getName(enum LibRpBase::Achievements::ID)const __ptr64
 char const * __ptr64 __cdecl LibRpBase::AboutTabText::getProgramInfoString(enum LibRpBase::AboutTabText::ProgramInfoStringID)
 enum LibRpBase::AboutTabText::ProgramInfoStringID __cdecl LibRpBase::AboutTabText::getProgramInfoStringCount(void)
+unsigned __int64 __cdecl LibRpBase::AboutTabText::getProgramVersion(void)
 struct LibRpBase::AboutTabText::SupportSite_t const * __ptr64 __cdecl LibRpBase::AboutTabText::getSupportSites(void)
 unsigned char __cdecl LibRpFile::FileSystem::get_file_d_type(char const * __ptr64,bool)
 public: int __cdecl LibRpTexture::rp_image::get_sBIT(struct LibRpTexture::rp_image::sBIT_t * __ptr64)const __ptr64

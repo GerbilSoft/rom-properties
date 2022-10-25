@@ -7,8 +7,8 @@ T GdiplusHelper::ShutdownGDIPlus(unsigned long)
 T InitPropVariantFromString_noShlwapi@8
 T InitPropVariantFromStringVector_xp@12
 T LibCacheCommon::filterCacheKey(char*)
-T LibRomData::CacheManager::download(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
-T LibRomData::CacheManager::findInCache(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
+T LibRomData::CacheManager::download[abi:cxx11](char const*)
+T LibRomData::CacheManager::findInCache[abi:cxx11](char const*)
 T LibRomData::CacheManager::setProxyUrl(char const*)
 T LibRomData::CtrKeyScrambler::CtrScramble(LibRomData::u128_t*, LibRomData::u128_t const*, LibRomData::u128_t const*)
 T LibRomData::CtrKeyScrambler::CtrScramble(LibRomData::u128_t*, LibRomData::u128_t const*, LibRomData::u128_t const*, LibRomData::u128_t const*)
@@ -48,6 +48,7 @@ T LibRomData::SuperMagicDrive::decodeBlock_sse2(unsigned char*, unsigned char co
 T LibRpBase::AboutTabText::getCreditsData()
 T LibRpBase::AboutTabText::getProgramInfoStringCount()
 T LibRpBase::AboutTabText::getProgramInfoString(LibRpBase::AboutTabText::ProgramInfoStringID)
+T LibRpBase::AboutTabText::getProgramVersion()
 T LibRpBase::AboutTabText::getSupportSites()
 T LibRpBase::Achievements::clearNotifyFunction(int (*)(int, LibRpBase::Achievements::ID), int)
 T LibRpBase::Achievements::getDescUnlocked(LibRpBase::Achievements::ID) const
