@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * nfp_structs.h: Nintendo amiibo data structures.                         *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -46,23 +46,30 @@ typedef enum {
  * RO = read-only
  * RW = read/write
  */
+#define NFP_LOCK_HEADER 0x0FE0U
+#define NFP_CAP_CONTAINER 0xF110FFEEU
+#define NFP_CFG0 0x00000004U
+#define NFP_CFG1 0x5F000000U
 typedef struct _NFP_Data_t {
-	/** NTAG215 header. **/
+	/** NTAG215 header **/
 	uint8_t serial[9];		// [0x00,RO] NTAG215 serial number.
 	uint8_t int_u8;			// [0x02,RO] "Internal" u8 value
-	uint8_t lock_header[2];		// [0x02,RO] Lock bytes. Must match: 0x0F 0xE0
-	uint8_t cap_container[4];	// [0x03,RO] Must match: 0xF1 0x10 0xFF 0xEE
+	uint16_t lock_header;		// [0x02,RO] Lock bytes. Must match: 0x0FE0
+	uint32_t cap_container;		// [0x03,RO] Must match: 0xF1 0x10 0xFF 0xEE
 
-	/** User data area. **/
+	/** User data area **/
 
 	uint8_t hmac_counter[4];	// [0x04,RW] Some counter used with HMAC.
 	uint8_t crypt_data[32];		// [0x05,RW] Encryption data.
 	uint8_t sha256_hash_1[32];	// [0x0D,RO] SHA256(-HMAC?) hash of something.
 					// First 0x18 bytes of this hash is section3 in the encrypted buffer.
 
-	// Character identification. (page 0x15, raw offset 0x54)
+	// Character identification (page 0x15, raw offset 0x54)
 	uint32_t char_id;		// [0x15,RO] Character identification.
-	uint32_t amiibo_id;		// [0x16,RO] amiibo series identification.
+	union {
+		uint32_t u32;
+		uint8_t u8[4];
+	} amiibo_id;			// [0x16,RO] amiibo series identification.
 	uint8_t unknown1[4];		// [0x17,RO]
 	uint8_t sha256_hash_2[32];	// [0x18,RO] SHA256(-HMAC?) hash of something.
 
@@ -73,11 +80,11 @@ typedef struct _NFP_Data_t {
 	uint8_t section1[0x114];	// [0x28,RW] section1 of encrypted data.
 	uint8_t section2[0x54];		// [0x6D,RW] section2 of encrypted data.
 
-	/** NTAG215 footer. **/
+	/** NTAG215 footer **/
 	uint8_t lock_footer[4];		// [0x82,RO] NTAG215 dynamic lock bytes.
 					// First 3 bytes must match: 0x01 0x00 0x0F
-	uint8_t cfg0[4];		// [0x83,RO] NTAG215 CFG0. Must match: 0x00 0x00 0x00 0x04
-	uint8_t cfg1[4];		// [0x84,RO] NTAG215 CFG1. Must match: 0x5F 0x00 0x00 0x00
+	uint32_t cfg0;			// [0x83,RO] NTAG215 CFG0. Must match: 0x00000004
+	uint32_t cfg1;			// [0x84,RO] NTAG215 CFG1. Must match: 0x5F000000
 
 	uint8_t pwd[4];			// [0x85,RO]
 	uint8_t pack[2];		// [0x86,RO]

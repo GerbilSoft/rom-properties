@@ -225,30 +225,21 @@ int Amiibo::isRomSupported_static(const DetectInfo *info)
 	}
 
 	// Check the "must match" values.
-	static const uint8_t lock_header[2] = {0x0F, 0xE0};
-	static const uint8_t cap_container[4] = {0xF1, 0x10, 0xFF, 0xEE};
 	static const uint8_t lock_footer[3] = {0x01, 0x00, 0x0F};
-	static const uint8_t cfg0[4] = {0x00, 0x00, 0x00, 0x04};
-	static const uint8_t cfg1[4] = {0x5F, 0x00, 0x00, 0x00};
+	static_assert(sizeof(nfpData->lock_footer) == sizeof(lock_footer)+1, "lock_footer is the wrong size.");
 
-	static_assert(sizeof(nfpData->lock_header)   == sizeof(lock_header),   "lock_header is the wrong size.");
-	static_assert(sizeof(nfpData->cap_container) == sizeof(cap_container), "cap_container is the wrong size.");
-	static_assert(sizeof(nfpData->lock_footer)   == sizeof(lock_footer)+1, "lock_footer is the wrong size.");
-	static_assert(sizeof(nfpData->cfg0)          == sizeof(cfg0),          "cfg0 is the wrong size.");
-	static_assert(sizeof(nfpData->cfg1)          == sizeof(cfg1),          "cfg1 is the wrong size.");
-
-	if (memcmp(nfpData->lock_header,   lock_header,   sizeof(lock_header)) != 0 ||
-	    memcmp(nfpData->cap_container, cap_container, sizeof(cap_container)) != 0 ||
-	    memcmp(nfpData->lock_footer,   lock_footer,   sizeof(lock_footer)) != 0 ||
-	    memcmp(nfpData->cfg0,          cfg0,          sizeof(cfg0)) != 0 ||
-	    memcmp(nfpData->cfg1,          cfg1,          sizeof(cfg1)) != 0)
+	if (nfpData->lock_header != cpu_to_be16(NFP_LOCK_HEADER) ||
+	    nfpData->cap_container != cpu_to_be32(NFP_CAP_CONTAINER) ||
+	    memcmp(nfpData->lock_footer, lock_footer, sizeof(lock_footer)) != 0 ||
+	    nfpData->cfg0 != cpu_to_be32(NFP_CFG0) ||
+	    nfpData->cfg1 != cpu_to_be32(NFP_CFG1))
 	{
 		// Not an amiibo.
 		return -1;
 	}
 
 	// Low byte of amiibo_id must be 0x02.
-	if ((be32_to_cpu(nfpData->amiibo_id) & 0xFF) != 0x02) {
+	if (nfpData->amiibo_id.u8[3] != 0x02) {
 		// Incorrect amiibo ID.
 		return -1;
 	}
@@ -386,7 +377,7 @@ int Amiibo::loadFieldData(void)
 
 	// NFP data
 	const uint32_t char_id = be32_to_cpu(d->nfpData.char_id);
-	const uint32_t amiibo_id = be32_to_cpu(d->nfpData.amiibo_id);
+	const uint32_t amiibo_id = be32_to_cpu(d->nfpData.amiibo_id.u32);
 
 	// tr: amiibo ID. Represents the character and amiibo series.
 	// TODO: Link to https://amiibo.life/nfc/%08X-%08X
@@ -503,7 +494,7 @@ int Amiibo::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 	// Amiibo ID.
 	char amiibo_id[20];
 	snprintf(amiibo_id, sizeof(amiibo_id), "%08X-%08X",
-		be32_to_cpu(d->nfpData.char_id), be32_to_cpu(d->nfpData.amiibo_id));
+		be32_to_cpu(d->nfpData.char_id), be32_to_cpu(d->nfpData.amiibo_id.u32));
 
 	// Cache key. (amiibo ID)
 	extURL.cache_key.reserve(32);
