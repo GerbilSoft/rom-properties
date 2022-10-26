@@ -127,45 +127,44 @@ class RomDataViewPrivate
 		 * Initialize a string field.
 		 * @param lblDesc	[in] Description label
 		 * @param field		[in] RomFields::Field
-		 * @param fieldIdx	[in] Field index
 		 * @param str		[in,opt] String data (If nullptr, field data is used)
 		 * @return QLabel*, or nullptr on error.
 		 */
 		QLabel *initString(QLabel *lblDesc,
-			const LibRpBase::RomFields::Field &field, int fieldIdx,
+			const LibRpBase::RomFields::Field &field,
 			const QString *str = nullptr);
 
 		/**
 		 * Initialize a string field.
 		 * @param lblDesc	[in] Description label
 		 * @param field		[in] RomFields::Field
-		 * @param fieldIdx	[in] Field index
 		 * @param str		[in] String data
+		 * @return QLabel*, or nullptr on error.
 		 */
 		inline QLabel *initString(QLabel *lblDesc,
-			const LibRpBase::RomFields::Field &field, int fieldIdx,
+			const LibRpBase::RomFields::Field &field,
 			const QString &str)
 		{
-			return initString(lblDesc, field, fieldIdx, &str);
+			return initString(lblDesc, field, &str);
 		}
 
 		/**
 		 * Initialize a bitfield.
 		 * @param lblDesc	[in] Description label
 		 * @param field		[in] RomFields::Field
-		 * @param fieldIdx	[in] Field index
+		 * @return QGridLayout*, or nullptr on error.
 		 */
-		void initBitfield(QLabel *lblDesc,
-			const LibRpBase::RomFields::Field &field, int fieldIdx);
+		QGridLayout *initBitfield(QLabel *lblDesc,
+			const LibRpBase::RomFields::Field &field);
 
 		/**
 		 * Initialize a list data field.
 		 * @param lblDesc	[in] Description label
 		 * @param field		[in] RomFields::Field
-		 * @param fieldIdx	[in] Field index
+		 * @return QTreeView*, or nullptr on error.
 		 */
-		void initListData(QLabel *lblDesc,
-			const LibRpBase::RomFields::Field &field, int fieldIdx);
+		QTreeView *initListData(QLabel *lblDesc,
+			const LibRpBase::RomFields::Field &field);
 
 		/**
 		 * Adjust an RFT_LISTDATA field if it's the last field in a tab.
@@ -177,37 +176,37 @@ class RomDataViewPrivate
 		 * Initialize a Date/Time field.
 		 * @param lblDesc	[in] Description label
 		 * @param field		[in] RomFields::Field
-		 * @param fieldIdx	[in] Field index
+		 * @return QLabel*, or nullptr on error.
 		 */
-		void initDateTime(QLabel *lblDesc,
-			const LibRpBase::RomFields::Field &field, int fieldIdx);
+		QLabel *initDateTime(QLabel *lblDesc,
+			const LibRpBase::RomFields::Field &field);
 
 		/**
 		 * Initialize an Age Ratings field.
 		 * @param lblDesc	[in] Description label
 		 * @param field		[in] RomFields::Field
-		 * @param fieldIdx	[in] Field index
+		 * @return QLabel*, or nullptr on error.
 		 */
-		void initAgeRatings(QLabel *lblDesc,
-			const LibRpBase::RomFields::Field &field, int fieldIdx);
+		QLabel *initAgeRatings(QLabel *lblDesc,
+			const LibRpBase::RomFields::Field &field);
 
 		/**
 		 * Initialize a Dimensions field.
 		 * @param lblDesc	[in] Description label
 		 * @param field		[in] RomFields::Field
-		 * @param fieldIdx	[in] Field index
+		 * @return QLabel*, or nullptr on error.
 		 */
-		void initDimensions(QLabel *lblDesc,
-			const LibRpBase::RomFields::Field &field, int fieldIdx);
+		QLabel *initDimensions(QLabel *lblDesc,
+			const LibRpBase::RomFields::Field &field);
 
 		/**
 		 * Initialize a multi-language string field.
 		 * @param lblDesc	[in] Description label
 		 * @param field		[in] RomFields::Field
-		 * @param fieldIdx	[in] Field index
+		 * @return QLabel*, or nullptr on error.
 		 */
-		void initStringMulti(QLabel *lblDesc,
-			const LibRpBase::RomFields::Field &field, int fieldIdx);
+		QLabel *initStringMulti(QLabel *lblDesc,
+			const LibRpBase::RomFields::Field &field);
 
 		/**
 		 * Update all multi-language fields.
