@@ -42,7 +42,7 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(QObject *parent, const QVar
 	assert(props != nullptr);
 	if (!props) {
 		// Parent *must* be KPropertiesDialog.
-		return;
+		throw std::runtime_error("Parent object must be KPropertiesDialog.");
 	}
 
 	// Check if a single file was specified.
@@ -53,7 +53,7 @@ RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(QObject *parent, const QVar
 	}
 
 	// Attempt to open the ROM file.
-	IRpFile *const file = openQUrl(items.at(0).url(), false);
+	IRpFile *const file = openQUrl(items[0].url(), false);
 	if (!file) {
 		// Unable to open the file.
 		return;
