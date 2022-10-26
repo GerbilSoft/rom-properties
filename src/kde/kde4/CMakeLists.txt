@@ -26,6 +26,9 @@ IF(QT4_FOUND)
 	# Get rid of the explicit C90 setting.
 	STRING(REPLACE "-std=iso9899:1990" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 
+	# Get rid of -fno-exceptions.
+	STRING(REPLACE "-fno-exceptions" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+
 	IF(ENABLE_ACHIEVEMENTS AND QT_QTDBUS_LIBRARY)
 		# QtDBus is used for notifications.
 		# TODO: Make notifications optional.
