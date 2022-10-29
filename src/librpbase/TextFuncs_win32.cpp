@@ -31,48 +31,24 @@ namespace LibRpBase {
 /** OS-specific text conversion functions. **/
 
 /**
- * Convert a null-terminated multibyte string to UTF-16.
- * @param mbs		[in] Multibyte string. (null-terminated)
- * @param codepage	[in] mbs codepage.
- * @param dwFlags	[in, opt] Conversion flags.
- * @return Allocated UTF-16 string, or NULL on error. (Must be free()'d after use!)
- */
-static char16_t *W32U_mbs_to_UTF16(const char *mbs, unsigned int codepage, DWORD dwFlags = 0)
-{
-#ifdef RP_WIS16
-	static_assert(sizeof(wchar_t) == sizeof(char16_t), "RP_WIS16 is defined, but wchar_t is not 16-bit!");
-#else /* !RP_WIS16 */
-	static_assert(sizeof(wchar_t) != sizeof(char16_t), "RP_WIS16 is not defined, but wchar_t is 16-bit!");
-#endif /* RP_WIS16 */
-
-	int cchWcs = MultiByteToWideChar(codepage, dwFlags, mbs, -1, nullptr, 0);
-	if (cchWcs <= 0)
-		return nullptr;
-
-	wchar_t *const wcs = static_cast<wchar_t*>(malloc(cchWcs * sizeof(wchar_t)));
-	MultiByteToWideChar(codepage, dwFlags, mbs, -1, wcs, cchWcs);
-	return reinterpret_cast<char16_t*>(wcs);
-}
-
-/**
  * Convert a multibyte string to UTF-16.
- * @param mbs		[in] Multibyte string.
- * @param cbMbs		[in] Length of mbs, in bytes.
- * @param codepage	[in] mbs codepage.
- * @param cchWcs_ret	[out, opt] Number of characters in the returned string.
- * @param dwFlags	[in, opt] Conversion flags.
+ * @param mbs		[in] Multibyte string
+ * @param cbMbs		[in] Length of mbs, in bytes
+ * @param cp		[in] mbs codepage
+ * @param cchWcs_ret	[out, opt] Number of characters in the returned string
+ * @param dwFlags	[in, opt] Conversion flags
  * @return Allocated UTF-16 string, or NULL on error. (Must be free()'d after use!)
  * NOTE: Returned string might NOT be NULL-terminated!
  */
 static char16_t *W32U_mbs_to_UTF16(const char *mbs, int cbMbs,
-		unsigned int codepage, int *cchWcs_ret, DWORD dwFlags = 0)
+	unsigned int cp, int *cchWcs_ret, DWORD dwFlags = 0)
 {
-	int cchWcs = MultiByteToWideChar(codepage, dwFlags, mbs, cbMbs, nullptr, 0);
+	int cchWcs = MultiByteToWideChar(cp, dwFlags, mbs, cbMbs, nullptr, 0);
 	if (cchWcs <= 0)
 		return nullptr;
 
 	wchar_t *const wcs = static_cast<wchar_t*>(malloc(cchWcs * sizeof(wchar_t)));
-	MultiByteToWideChar(codepage, dwFlags, mbs, cbMbs, wcs, cchWcs);
+	MultiByteToWideChar(cp, dwFlags, mbs, cbMbs, wcs, cchWcs);
 
 	if (cchWcs_ret)
 		*cchWcs_ret = cchWcs;
@@ -80,40 +56,23 @@ static char16_t *W32U_mbs_to_UTF16(const char *mbs, int cbMbs,
 }
 
 /**
- * Convert a null-terminated UTF-16 string to multibyte.
- * @param wcs		[in] UTF-16 string. (null-terminated)
- * @param codepage	[in] mbs codepage.
- * @return Allocated multibyte string, or NULL on error. (Must be free()'d after use!)
- */
-static char *W32U_UTF16_to_mbs(const char16_t *wcs, unsigned int codepage)
-{
-	int cbMbs = WideCharToMultiByte(codepage, 0, reinterpret_cast<const wchar_t*>(wcs), -1, nullptr, 0, nullptr, nullptr);
-	if (cbMbs <= 0)
-		return nullptr;
- 
-	char *const mbs = static_cast<char*>(malloc(cbMbs));
-	WideCharToMultiByte(codepage, 0, reinterpret_cast<const wchar_t*>(wcs), -1, mbs, cbMbs, nullptr, nullptr);
-	return mbs;
-}
-
-/**
  * Convert a UTF-16 string to multibyte.
- * @param wcs		[in] UTF-16 string.
- * @param cchWcs	[in] Length of wcs, in characters.
- * @param codepage	[in] mbs codepage.
- * @param cbMbs_ret	[out, opt] Number of bytes in the returned string.
+ * @param wcs		[in] UTF-16 string
+ * @param cchWcs	[in] Length of wcs, in characters
+ * @param cp		[in] mbs codepage
+ * @param cbMbs_ret	[out, opt] Number of bytes in the returned string
  * @return Allocated multibyte string, or NULL on error. (Must be free()'d after use!)
  * NOTE: Returned string might NOT be NULL-terminated!
  */
 static char *W32U_UTF16_to_mbs(const char16_t *wcs, int cchWcs,
-		unsigned int codepage, int *cbMbs_ret)
+	unsigned int cp, int *cbMbs_ret)
 {
-	int cbMbs = WideCharToMultiByte(codepage, 0, reinterpret_cast<const wchar_t*>(wcs), cchWcs, nullptr, 0, nullptr, nullptr);
+	int cbMbs = WideCharToMultiByte(cp, 0, reinterpret_cast<const wchar_t*>(wcs), cchWcs, nullptr, 0, nullptr, nullptr);
 	if (cbMbs <= 0)
 		return nullptr;
 
 	char *const mbs = static_cast<char*>(malloc(cbMbs));
-	WideCharToMultiByte(codepage, 0, reinterpret_cast<const wchar_t*>(wcs), cchWcs, mbs, cbMbs, nullptr, nullptr);
+	WideCharToMultiByte(cp, 0, reinterpret_cast<const wchar_t*>(wcs), cchWcs, mbs, cbMbs, nullptr, nullptr);
 
 	if (cbMbs_ret)
 		*cbMbs_ret = cbMbs;
