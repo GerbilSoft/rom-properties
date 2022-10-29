@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * SuperMagicDriveTest.cpp: SuperMagicDrive class test.                    *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -27,8 +27,11 @@ class SuperMagicDriveTest : public ::testing::Test
 {
 	protected:
 		SuperMagicDriveTest()
-			: align_buf(nullptr)
-		{ }
+			: align_buf(aligned_uptr<uint8_t>(16, 0))
+		{
+			// Dummy align_buf initialization to
+			// prevent compiler errors.
+		}
 
 	public:
 		// Output block size. (+64 for zlib)
@@ -76,8 +79,7 @@ class SuperMagicDriveTest : public ::testing::Test
 
 	public:
 		// Temporary aligned memory buffer.
-		// Automatically freed in teardown().
-		uint8_t *align_buf;
+		UNIQUE_PTR_ALIGNED(uint8_t) align_buf;
 };
 
 // Test data is in SuperMagicDriveTest_data.hpp.
@@ -93,8 +95,9 @@ uint8_t *SuperMagicDriveTest::m_smd_data = nullptr;
  */
 void SuperMagicDriveTest::SetUp(void)
 {
-	align_buf = static_cast<uint8_t*>(aligned_malloc(16, SuperMagicDrive::SMD_BLOCK_SIZE));
-	ASSERT_TRUE(align_buf != nullptr);
+	// (Re-)initialize the buffer.
+	align_buf = aligned_uptr<uint8_t>(16, SuperMagicDrive::SMD_BLOCK_SIZE);
+	ASSERT_TRUE(align_buf.get() != nullptr);
 }
 
 /**
@@ -103,8 +106,8 @@ void SuperMagicDriveTest::SetUp(void)
  */
 void SuperMagicDriveTest::TearDown(void)
 {
-	aligned_free(align_buf);
-	align_buf = nullptr;
+	// NOTE: Can't simply reset it to nullptr.
+	align_buf = aligned_uptr<uint8_t>(16, 0);
 }
 
 /**
@@ -224,8 +227,8 @@ int SuperMagicDriveTest::decompress(void)
  */
 TEST_F(SuperMagicDriveTest, decodeBlock_cpp_test)
 {
-	SuperMagicDrive::decodeBlock_cpp(align_buf, m_smd_data);
-	EXPECT_EQ(0, memcmp(m_bin_data, align_buf, SuperMagicDrive::SMD_BLOCK_SIZE));
+	SuperMagicDrive::decodeBlock_cpp(align_buf.get(), m_smd_data);
+	EXPECT_EQ(0, memcmp(m_bin_data, align_buf.get(), SuperMagicDrive::SMD_BLOCK_SIZE));
 }
 
 /**
@@ -234,7 +237,7 @@ TEST_F(SuperMagicDriveTest, decodeBlock_cpp_test)
 TEST_F(SuperMagicDriveTest, decodeBlock_cpp_benchmark)
 {
 	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-		SuperMagicDrive::decodeBlock_cpp(align_buf, m_smd_data);
+		SuperMagicDrive::decodeBlock_cpp(align_buf.get(), m_smd_data);
 	}
 }
 
@@ -249,8 +252,8 @@ TEST_F(SuperMagicDriveTest, decodeBlock_mmx_test)
 		return;
 	}
 
-	SuperMagicDrive::decodeBlock_mmx(align_buf, m_smd_data);
-	EXPECT_EQ(0, memcmp(m_bin_data, align_buf, SuperMagicDrive::SMD_BLOCK_SIZE));
+	SuperMagicDrive::decodeBlock_mmx(align_buf.get(), m_smd_data);
+	EXPECT_EQ(0, memcmp(m_bin_data, align_buf.get(), SuperMagicDrive::SMD_BLOCK_SIZE));
 }
 
 /**
@@ -264,7 +267,7 @@ TEST_F(SuperMagicDriveTest, decodeBlock_mmx_benchmark)
 	}
 
 	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-		SuperMagicDrive::decodeBlock_mmx(align_buf, m_smd_data);
+		SuperMagicDrive::decodeBlock_mmx(align_buf.get(), m_smd_data);
 	}
 }
 #endif /* SMD_HAS_MMX */
@@ -280,8 +283,8 @@ TEST_F(SuperMagicDriveTest, decodeBlock_sse2_test)
 		return;
 	}
 
-	SuperMagicDrive::decodeBlock_sse2(align_buf, m_smd_data);
-	EXPECT_EQ(0, memcmp(m_bin_data, align_buf, SuperMagicDrive::SMD_BLOCK_SIZE));
+	SuperMagicDrive::decodeBlock_sse2(align_buf.get(), m_smd_data);
+	EXPECT_EQ(0, memcmp(m_bin_data, align_buf.get(), SuperMagicDrive::SMD_BLOCK_SIZE));
 }
 
 /**
@@ -295,7 +298,7 @@ TEST_F(SuperMagicDriveTest, decodeBlock_sse2_benchmark)
 	}
 
 	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-		SuperMagicDrive::decodeBlock_sse2(align_buf, m_smd_data);
+		SuperMagicDrive::decodeBlock_sse2(align_buf.get(), m_smd_data);
 	}
 }
 #endif /* SMD_HAS_SSE2 */
@@ -307,8 +310,8 @@ TEST_F(SuperMagicDriveTest, decodeBlock_sse2_benchmark)
  */
 TEST_F(SuperMagicDriveTest, decodeBlock_dispatch_test)
 {
-	SuperMagicDrive::decodeBlock(align_buf, m_smd_data);
-	EXPECT_EQ(0, memcmp(m_bin_data, align_buf, SuperMagicDrive::SMD_BLOCK_SIZE));
+	SuperMagicDrive::decodeBlock(align_buf.get(), m_smd_data);
+	EXPECT_EQ(0, memcmp(m_bin_data, align_buf.get(), SuperMagicDrive::SMD_BLOCK_SIZE));
 }
 
 /**
@@ -317,7 +320,7 @@ TEST_F(SuperMagicDriveTest, decodeBlock_dispatch_test)
 TEST_F(SuperMagicDriveTest, decodeBlock_dispatch_benchmark)
 {
 	for (unsigned int i = BENCHMARK_ITERATIONS; i > 0; i--) {
-		SuperMagicDrive::decodeBlock(align_buf, m_smd_data);
+		SuperMagicDrive::decodeBlock(align_buf.get(), m_smd_data);
 	}
 }
 #endif /* SMD_HAS_MMX || SMD_HAS_SSE2 */
