@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpsecure/win32)                *
  * integrity_level.c: Integrity level manipulation for process tokens.     *
  *                                                                         *
- * Copyright (c) 2020 by David Korth.                                      *
+ * Copyright (c) 2020-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -240,7 +240,7 @@ int GetProcessIntegrityLevel(void)
 	pTML = LocalAlloc(LMEM_FIXED, dwLengthNeeded);
 	assert(pTML != NULL);
 	if (!pTML) {
-		// malloc() failed.
+		// LocalAlloc() failed.
 		goto out;
 	}
 

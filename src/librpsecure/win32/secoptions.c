@@ -138,7 +138,7 @@ static DWORD HardenProcessIntegrityLevelPolicy(void)
 	pSecurityDescriptor = LocalAlloc(LMEM_FIXED, nLengthNeeded);
 	assert(pSecurityDescriptor != NULL);
 	if (!pSecurityDescriptor) {
-		// malloc() failed.
+		// LocalAlloc() failed.
 		dwLastError = ERROR_NOT_ENOUGH_MEMORY;
 		goto out;
 	}
