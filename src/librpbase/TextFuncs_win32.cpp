@@ -32,51 +32,53 @@ namespace LibRpBase {
 
 /**
  * Convert a multibyte string to UTF-16.
+ * @param s_wcs		[out] Output UTF-16 string (std::u16string)
  * @param mbs		[in] Multibyte string
  * @param cbMbs		[in] Length of mbs, in bytes
  * @param cp		[in] mbs codepage
- * @param cchWcs_ret	[out, opt] Number of characters in the returned string
  * @param dwFlags	[in, opt] Conversion flags
- * @return Allocated UTF-16 string, or NULL on error. (Must be free()'d after use!)
+ * @return 0 on success; non-zero on error.
  * NOTE: Returned string might NOT be NULL-terminated!
  */
-static char16_t *W32U_mbs_to_UTF16(const char *mbs, int cbMbs,
-	unsigned int cp, int *cchWcs_ret, DWORD dwFlags = 0)
+static int W32U_mbs_to_UTF16(
+	u16string &s_wcs,
+	const char *mbs, int cbMbs,
+	unsigned int cp, DWORD dwFlags = 0)
 {
 	int cchWcs = MultiByteToWideChar(cp, dwFlags, mbs, cbMbs, nullptr, 0);
-	if (cchWcs <= 0)
-		return nullptr;
+	if (cchWcs <= 0) {
+		s_wcs.clear();
+		return -1;
+	}
 
-	wchar_t *const wcs = static_cast<wchar_t*>(malloc(cchWcs * sizeof(wchar_t)));
-	MultiByteToWideChar(cp, dwFlags, mbs, cbMbs, wcs, cchWcs);
-
-	if (cchWcs_ret)
-		*cchWcs_ret = cchWcs;
-	return reinterpret_cast<char16_t*>(wcs);
+	s_wcs.resize(cchWcs);
+	MultiByteToWideChar(cp, dwFlags, mbs, cbMbs, reinterpret_cast<wchar_t*>(&s_wcs[0]), cchWcs);
+	return 0;
 }
 
 /**
  * Convert a UTF-16 string to multibyte.
+ * @param s_mbs		[out] Output multibyte string (std::string)
  * @param wcs		[in] UTF-16 string
  * @param cchWcs	[in] Length of wcs, in characters
  * @param cp		[in] mbs codepage
- * @param cbMbs_ret	[out, opt] Number of bytes in the returned string
  * @return Allocated multibyte string, or NULL on error. (Must be free()'d after use!)
  * NOTE: Returned string might NOT be NULL-terminated!
  */
-static char *W32U_UTF16_to_mbs(const char16_t *wcs, int cchWcs,
-	unsigned int cp, int *cbMbs_ret)
+static int W32U_UTF16_to_mbs(
+	string &s_mbs,
+	const char16_t *wcs, int cchWcs,
+	unsigned int cp)
 {
 	int cbMbs = WideCharToMultiByte(cp, 0, reinterpret_cast<const wchar_t*>(wcs), cchWcs, nullptr, 0, nullptr, nullptr);
-	if (cbMbs <= 0)
-		return nullptr;
+	if (cbMbs <= 0) {
+		s_mbs.clear();
+		return -1;
+	}
 
-	char *const mbs = static_cast<char*>(malloc(cbMbs));
-	WideCharToMultiByte(cp, 0, reinterpret_cast<const wchar_t*>(wcs), cchWcs, mbs, cbMbs, nullptr, nullptr);
-
-	if (cbMbs_ret)
-		*cbMbs_ret = cbMbs;
-	return mbs;
+	s_mbs.resize(cbMbs);
+	WideCharToMultiByte(cp, 0, reinterpret_cast<const wchar_t*>(wcs), cchWcs, &s_mbs[0], cbMbs, nullptr, nullptr);
+	return 0;
 }
 
 /** Generic code page functions. **/
@@ -109,32 +111,32 @@ string cpN_to_utf8(unsigned int cp, const char *str, int len, unsigned int flags
 	}
 
 	// Convert from `cp` to UTF-16.
-	string ret;
-	int cchWcs;
-	char16_t *wcs = W32U_mbs_to_UTF16(str, len, cp, &cchWcs, dwFlags);
-	if (!wcs || cchWcs == 0) {
+	u16string s_wcs;
+	if (W32U_mbs_to_UTF16(s_wcs, str, len, cp, dwFlags) != 0) {
 		if (flags & TEXTCONV_FLAG_CP1252_FALLBACK) {
 			// Try again using cp1252.
-			wcs = W32U_mbs_to_UTF16(str, len, 1252, &cchWcs, 0);
-		}
-	}
-
-	if (wcs && cchWcs > 0) {
-		// Convert from UTF-16 to UTF-8.
-		int cbMbs;
-		char *mbs = W32U_UTF16_to_mbs(wcs, cchWcs, CP_UTF8, &cbMbs);
-		if (mbs && cbMbs > 0) {
-			// Remove the NULL terminator if present.
-			if (mbs[cbMbs-1] == 0) {
-				cbMbs--;
+			if (W32U_mbs_to_UTF16(s_wcs, str, len, 1252, 0) != 0) {
+				// Failed.
+				s_wcs.clear();
 			}
-			ret.assign(mbs, cbMbs);
 		}
-		free(mbs);
 	}
 
-	free(wcs);
-	return ret;
+	string s_mbs;
+	if (!s_wcs.empty()) {
+		// Convert from UTF-16 to UTF-8.
+		if (!W32U_UTF16_to_mbs(s_mbs, s_wcs.data(), static_cast<int>(s_wcs.size()), CP_UTF8)) {
+			// Remove the NULL terminator if present.
+			if (!s_mbs.empty() && s_mbs[s_mbs.size()-1] == 0) {
+				s_mbs.resize(s_mbs.size()-1);
+			}
+		} else {
+			// Failed.
+			s_mbs.clear();
+		}
+	}
+
+	return s_mbs;
 }
 
 /**
@@ -160,25 +162,22 @@ u16string cpN_to_utf16(unsigned int cp, const char *str, int len, unsigned int f
 	}
 
 	// Convert from `cp` to UTF-16.
-	u16string ret;
-	int cchWcs;
-	char16_t *wcs = W32U_mbs_to_UTF16(str, len, cp, &cchWcs, dwFlags);
-	if (!wcs || cchWcs == 0) {
+	u16string s_wcs;
+	if (W32U_mbs_to_UTF16(s_wcs, str, len, cp, dwFlags) != 0) {
 		if (flags & TEXTCONV_FLAG_CP1252_FALLBACK) {
 			// Try again using cp1252.
-			wcs = W32U_mbs_to_UTF16(str, len, 1252, &cchWcs, 0);
+			if (W32U_mbs_to_UTF16(s_wcs, str, len, 1252, 0) != 0) {
+				// Failed.
+				s_wcs.clear();
+			}
 		}
 	}
 
-	if (wcs && cchWcs > 0) {
-		// Remove the NULL terminator if present.
-		if (wcs[cchWcs-1] == 0) {
-			cchWcs--;
-		}
-		ret.assign(wcs, cchWcs);
+	// Remove the NULL terminator if present.
+	if (!s_wcs.empty() && s_wcs[s_wcs.size()-1] == 0) {
+		s_wcs.resize(s_wcs.size()-1);
 	}
-	free(wcs);
-	return ret;
+	return s_wcs;
 }
 
 /**
@@ -198,25 +197,25 @@ string utf8_to_cpN(unsigned int cp, const char *str, int len)
 	len = check_NULL_terminator(str, len);
 
 	// Convert from UTF-8 to UTF-16.
-	string ret;
-	int cchWcs;
-	char16_t *wcs = W32U_mbs_to_UTF16(str, len, CP_UTF8, &cchWcs, 0);
-	if (wcs && cchWcs > 0) {
+	string s_mbs;
+	u16string s_wcs;
+	if (!W32U_mbs_to_UTF16(s_wcs, str, len, CP_UTF8, 0)) {
 		// Convert from UTF-16 to `cp`.
-		int cbMbs;
-		char *mbs = W32U_UTF16_to_mbs(wcs, cchWcs, cp, &cbMbs);
-		if (mbs && cbMbs > 0) {
+		if (!W32U_UTF16_to_mbs(s_mbs, s_wcs.data(), static_cast<int>(s_wcs.size()), cp)) {
 			// Remove the NULL terminator if present.
-			if (mbs[cbMbs-1] == 0) {
-				cbMbs--;
+			if (!s_mbs.empty() && s_mbs[s_mbs.size()-1] == 0) {
+				s_mbs.resize(s_mbs.size()-1);
 			}
-			ret.assign(mbs, cbMbs);
+		} else {
+			// Failed.
+			s_mbs.clear();
 		}
-		free(mbs);
+	} else {
+		// Failed.
+		s_mbs.clear();
 	}
 
-	free(wcs);
-	return ret;
+	return s_mbs;
 }
 
 /**
@@ -236,18 +235,18 @@ string utf16_to_cpN(unsigned int cp, const char16_t *wcs, int len)
 	len = check_NULL_terminator(wcs, len);
 
 	// Convert from UTF-16 to `cp`.
-	string ret;
-	int cbMbs;
-	char *mbs = W32U_UTF16_to_mbs(wcs, len, cp, &cbMbs);
-	if (mbs && cbMbs > 0) {
+	string s_mbs;
+	if (!W32U_UTF16_to_mbs(s_mbs, wcs, len, cp)) {
 		// Remove the NULL terminator if present.
-		if (mbs[cbMbs-1] == 0) {
-			cbMbs--;
+		if (!s_mbs.empty() && s_mbs[s_mbs.size()-1] == 0) {
+			s_mbs.resize(s_mbs.size()-1);
 		}
-		ret.assign(mbs, cbMbs);
+	} else {
+		// Failed.
+		s_mbs.clear();
 	}
-	free(mbs);
-	return ret;
+
+	return s_mbs;;
 }
 
 /** Specialized UTF-16 conversion functions. **/
