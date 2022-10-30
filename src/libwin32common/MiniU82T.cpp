@@ -25,20 +25,18 @@ namespace LibWin32Common {
  */
 string W2U8(const wchar_t *wcs)
 {
-	string s_ret;
+	string s_mbs;
 
 	// NOTE: cbMbs includes the NULL terminator.
 	int cbMbs = WideCharToMultiByte(CP_UTF8, 0, wcs, -1, nullptr, 0, nullptr, nullptr);
 	if (cbMbs <= 1) {
-		return s_ret;
+		return s_mbs;
 	}
 	cbMbs--;
  
-	char *const mbs = new char[cbMbs];
-	WideCharToMultiByte(CP_UTF8, 0, wcs, -1, mbs, cbMbs, nullptr, nullptr);
-	s_ret.assign(mbs, cbMbs);
-	delete[] mbs;
-	return s_ret;
+	s_mbs.resize(cbMbs);
+	WideCharToMultiByte(CP_UTF8, 0, wcs, -1, &s_mbs[0], cbMbs, nullptr, nullptr);
+	return s_mbs;
 }
 
 /**
@@ -48,20 +46,18 @@ string W2U8(const wchar_t *wcs)
  */
 wstring U82W(const char *mbs)
 {
-	wstring ws_ret;
+	wstring s_wcs;
 
 	// NOTE: cchWcs includes the NULL terminator.
 	int cchWcs = MultiByteToWideChar(CP_UTF8, 0, mbs, -1, nullptr, 0);
 	if (cchWcs <= 1) {
-		return ws_ret;
+		return s_wcs;
 	}
 	cchWcs--;
  
-	wchar_t *const wcs = new wchar_t[cchWcs];
-	MultiByteToWideChar(CP_UTF8, 0, mbs, -1, wcs, cchWcs);
-	ws_ret.assign(wcs, cchWcs);
-	delete[] wcs;
-	return ws_ret;
+	s_wcs.resize(cchWcs);
+	MultiByteToWideChar(CP_UTF8, 0, mbs, -1, &s_wcs[0], cchWcs);
+	return s_wcs;
 }
 
 }

@@ -375,18 +375,16 @@ string getCacheFilename(const char *pCacheKey)
  */
 static inline wstring U82W(const string &mbs)
 {
-	wstring ws_ret;
+	wstring s_wcs;
 
 	int cchWcs = MultiByteToWideChar(CP_UTF8, 0, mbs.c_str(), static_cast<int>(mbs.size()), nullptr, 0);
 	if (cchWcs <= 0) {
-		return ws_ret;
+		return s_wcs;
 	}
 
-	wchar_t *wcs = new wchar_t[cchWcs];
-	MultiByteToWideChar(CP_UTF8, 0, mbs.c_str(), static_cast<int>(mbs.size()), wcs, cchWcs);
-	ws_ret.assign(wcs, cchWcs);
-	delete[] wcs;
-	return ws_ret;
+	s_wcs.resize(cchWcs);
+	MultiByteToWideChar(CP_UTF8, 0, mbs.c_str(), static_cast<int>(mbs.size()), &s_wcs[0], cchWcs);
+	return s_wcs;
 }
 
 /**
