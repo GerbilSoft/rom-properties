@@ -45,11 +45,6 @@ using LibRpTexture::rp_image;
 // GDI+ token.
 static ULONG_PTR gdipToken = 0;
 
-extern "C" {
-	extern TCHAR dll_filename[];
-	TCHAR dll_filename[MAX_PATH];
-}
-
 #include "libi18n/config.libi18n.h"
 #if defined(_MSC_VER) && defined(ENABLE_NLS)
 // MSVC: Exception handling for /DELAYLOAD.
@@ -70,18 +65,6 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
 {
 	switch (dwReason) {
 		case DLL_PROCESS_ATTACH: {
-			// Get the DLL filename.
-			SetLastError(ERROR_SUCCESS);	// required for XP
-			DWORD dwResult = GetModuleFileName(hInstance,
-				dll_filename, _countof(dll_filename));
-			if (dwResult == 0 || dwResult >= _countof(dll_filename) || GetLastError() != ERROR_SUCCESS) {
-				// Cannot get the DLL filename.
-				// TODO: Windows XP doesn't SetLastError() if the
-				// filename is too big for the buffer.
-				dll_filename[0] = _T('\0');
-				return FALSE;
-			}
-
 #if !defined(_MSC_VER) || defined(_DLL)
 			// Disable thread library calls, since we don't
 			// care about thread attachments.

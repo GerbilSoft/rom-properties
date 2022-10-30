@@ -169,17 +169,24 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::GetOverlayInfo(_Out_writes_(cchMax
 		// same size as the regular icon, but with transparency.
 		hr = E_FAIL;
 #if 0
-		// from DllMain.cpp [TODO: Removed; rework this when needed.]
-		extern "C" {
-			extern TCHAR dll_filename[];
+		// [TODO: Removed; rework this when needed.]
+		TCHAR szDllFilename[MAX_PATH];
+		SetLastError(ERROR_SUCCESS);	// required for XP
+		DWORD dwResult = GetModuleFileName(HINST_THISCOMPONENT,
+			szDllFilename, _countof(szDllFilename));
+		if (dwResult == 0 || dwResult >= _countof(szDllFilename) || GetLastError() != ERROR_SUCCESS) {
+			// Cannot get the DLL filename.
+			// TODO: Windows XP doesn't SetLastError() if the
+			// filename is too big for the buffer.
+			hr = E_FAIL;
+		} else {
+			wcscpy_s(pwszIconFile, cchMax, szDllFilename);
+			*pIndex = -IDI_SHIELD;
+			*pdwFlags = ISIOI_ICONFILE | ISIOI_ICONINDEX;
+
+			// Assume we're successful.
+			hr = S_OK;
 		}
-
-		wcscpy_s(pwszIconFile, cchMax, dll_filename);
-		*pIndex = -IDI_SHIELD;
-		*pdwFlags = ISIOI_ICONFILE | ISIOI_ICONINDEX;
-
-		// Assume we're successful.
-		hr = S_OK;
 #endif
 	}
 

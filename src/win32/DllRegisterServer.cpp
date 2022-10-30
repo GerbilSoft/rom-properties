@@ -44,11 +44,6 @@ using std::string;
 using std::vector;
 using std::wstring;
 
-// from DllMain.cpp
-extern "C" {
-	extern TCHAR dll_filename[];
-}
-
 // Program ID for COM object registration.
 extern const TCHAR RP_ProgID[];
 const TCHAR RP_ProgID[] = _T("rom-properties");
@@ -508,7 +503,19 @@ static inline bool process_HKU_subkey(const tstring& subKey)
  */
 static inline bool checkDirectory(void)
 {
+	TCHAR szDllFilename[MAX_PATH];
 	TCHAR szWinPath[MAX_PATH];
+
+	SetLastError(ERROR_SUCCESS);	// required for XP
+	DWORD dwResult = GetModuleFileName(HINST_THISCOMPONENT,
+		szDllFilename, _countof(szDllFilename));
+	if (dwResult == 0 || dwResult >= _countof(szDllFilename) || GetLastError() != ERROR_SUCCESS) {
+		// Cannot get the DLL filename.
+		// TODO: Windows XP doesn't SetLastError() if the
+		// filename is too big for the buffer.
+		return FALSE;
+	}
+
 	UINT len = GetWindowsDirectory(szWinPath, _countof(szWinPath));
 	return !_tcsnicmp(szWinPath, dll_filename, len);
 }
