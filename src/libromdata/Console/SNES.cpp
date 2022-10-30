@@ -367,23 +367,33 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 		    !ISALNUM(romHeader->snes.ext.new_publisher_code[1]))
 		{
 			// New publisher code is invalid.
-			return false;
+			// NOTE: Allowing '00' for certain prototypes or homebrew.
+			if (romHeader->snes.ext.new_publisher_code[0] != 0 ||
+			    romHeader->snes.ext.new_publisher_code[1] != 0)
+			{
+				return false;
+			}
 		}
 
 		// Game ID must contain alphanumeric characters or a space.
-		for (size_t i = 0; i < ARRAY_SIZE(romHeader->snes.ext.id4); i++) {
-			// ID4 should be in the format "SMWJ" or "MW  ".
-			if (ISALNUM(romHeader->snes.ext.id4[i])) {
-				// Alphanumeric character.
-				continue;
-			} else if (i >= 2 && (romHeader->snes.ext.id4[i] == ' ' || romHeader->snes.ext.id4[i] == '\0')) {
-				// Some game IDs are two characters,
-				// and the remaining characters are spaces.
-				continue;
-			}
+		// NOTE: Some prototypes have NULL game IDs.
+		if (romHeader->snes.ext.id4.u32 == 0) {
+			// NULL game ID
+		} else {
+			for (size_t i = 0; i < ARRAY_SIZE(romHeader->snes.ext.id4.c); i++) {
+				// ID4 should be in the format "SMWJ" or "MW  ".
+				if (ISALNUM(romHeader->snes.ext.id4.c[i])) {
+					// Alphanumeric character.
+					continue;
+				} else if (i >= 2 && (romHeader->snes.ext.id4.c[i] == ' ' || romHeader->snes.ext.id4.c[i] == '\0')) {
+					// Some game IDs are two characters,
+					// and the remaining characters are spaces.
+					continue;
+				}
 
-			// Invalid character.
-			return false;
+				// Invalid character.
+				return false;
+			}
 		}
 	}
 
@@ -393,7 +403,13 @@ bool SNESPrivate::isSnesRomHeaderValid(const SNES_RomHeader *romHeader, bool isH
 	    static_cast<uint16_t>(~romHeader->snes.checksum_complement))
 	{
 		// Checksums are not complementary.
-		return false;
+		// NOTE: Both checksums may be 0 in prototypes.
+		if (romHeader->snes.checksum != 0 ||
+		    romHeader->snes.checksum_complement != 0)
+		{
+			// Not zero.
+			return false;
+		}
 	}
 
 	// ROM header appears to be valid.
@@ -453,9 +469,11 @@ bool SNESPrivate::isBsxRomHeaderValid(const SNES_RomHeader *romHeader, bool isHi
 			return false;
 
 		case 0x00:
-			// Seen in a few ROM images:
+			// NOTE: Allowing 0x00 results in a *lot* of false positives.
+			// One BS-X image appears to have this set incorrectly.
+			// TODO: Exceptions list?
 			// - Excitebike - Bun Bun Mario Battle - Stadium 3
-			break;
+			return false;
 	}
 
 	// Old publisher code must be either 0x33 or 0x00.
@@ -522,7 +540,7 @@ string SNESPrivate::getRomTitle(void) const
 	switch (romType) {
 		case RomType::SNES: {
 			doSJIS = (romHeader.snes.destination_code == SNES_DEST_JAPAN) ||
-			         (romHeader.snes.old_publisher_code == 0x33 && romHeader.snes.ext.id4[3] == 'J');
+			         (romHeader.snes.old_publisher_code == 0x33 && romHeader.snes.ext.id4.c[3] == 'J');
 			title = romHeader.snes.title;
 			len = sizeof(romHeader.snes.title);
 			getSnesRomMapping(&romHeader, nullptr, &hasExtraChr);
@@ -641,21 +659,21 @@ string SNESPrivate::getGameID(bool doFake) const
 	// NOTE: The game ID field is Only valid if the old publisher code is 0x33.
 	if (romHeader.snes.old_publisher_code == 0x33) {
 		// Do we have a valid two-digit game ID?
-		if (isValidGameIDChar(romHeader.snes.ext.id4[0]) &&
-		    isValidGameIDChar(romHeader.snes.ext.id4[1]))
+		if (isValidGameIDChar(romHeader.snes.ext.id4.c[0]) &&
+		    isValidGameIDChar(romHeader.snes.ext.id4.c[1]))
 		{
 			// Valid two-digit game ID.
-			id4[0] = romHeader.snes.ext.id4[0];
-			id4[1] = romHeader.snes.ext.id4[1];
+			id4[0] = romHeader.snes.ext.id4.c[0];
+			id4[1] = romHeader.snes.ext.id4.c[1];
 			id4[2] = '\0';
 
 			// Do we have a valid four-digit game ID?
-			if (isValidGameIDChar(romHeader.snes.ext.id4[2]) &&
-			    isValidGameIDChar(romHeader.snes.ext.id4[3]))
+			if (isValidGameIDChar(romHeader.snes.ext.id4.c[2]) &&
+			    isValidGameIDChar(romHeader.snes.ext.id4.c[3]))
 			{
 				// Valid four-digit game ID.
-				id4[2] = romHeader.snes.ext.id4[2];
-				id4[3] = romHeader.snes.ext.id4[3];
+				id4[2] = romHeader.snes.ext.id4.c[2];
+				id4[3] = romHeader.snes.ext.id4.c[3];
 				id4[4] = '\0';
 			}
 		}

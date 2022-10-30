@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * snes_structs.h: Super Nintendo data structures.                         *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -119,7 +119,12 @@ typedef struct _SNES_RomHeader {
 			/** Extended header is only present if old_publisher_code == 0x33. **/
 			struct {
 				char new_publisher_code[2];	// [0x7FB0]
-				char id4[4];			// [0x7FB2]
+#pragma pack(1)
+				union PACKED {
+					char c[4];
+					uint32_t u32;
+				} id4;				// [0x7FB2]
+#pragma pack()
 				uint8_t reserved[6];		// [0x7FB6] Always 0x00.
 				uint8_t exp_flash_size;		// [0x7FBC] Expansion FLASH size.
 				uint8_t exp_ram_size;		// [0x7FBD] Expansion RAM size.
