@@ -517,7 +517,7 @@ static inline bool checkDirectory(void)
 	}
 
 	UINT len = GetWindowsDirectory(szWinPath, _countof(szWinPath));
-	return !_tcsnicmp(szWinPath, dll_filename, len);
+	return !_tcsnicmp(szWinPath, szDllFilename, len);
 }
 
 /**
