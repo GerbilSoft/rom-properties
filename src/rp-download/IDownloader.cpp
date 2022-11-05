@@ -31,8 +31,8 @@ IDownloader::IDownloader()
 	: m_mtime(-1)
 	, m_if_modified_since(-1)
 	, m_maxSize(0)
-#ifdef _WIN32
 	, m_inProgress(false)
+#ifdef _WIN32
 	, m_isWinXP(false)
 #endif /* _WIN32 */
 {
@@ -44,8 +44,8 @@ IDownloader::IDownloader(const TCHAR *url)
 	, m_mtime(-1)
 	, m_if_modified_since(-1)
 	, m_maxSize(0)
-#ifdef _WIN32
 	, m_inProgress(false)
+#ifdef _WIN32
 	, m_isWinXP(false)
 #endif /* _WIN32 */
 {
@@ -57,8 +57,8 @@ IDownloader::IDownloader(const tstring &url)
 	, m_mtime(-1)
 	, m_if_modified_since(-1)
 	, m_maxSize(0)
-#ifdef _WIN32
 	, m_inProgress(false)
+#ifdef _WIN32
 	, m_isWinXP(false)
 #endif /* _WIN32 */
 {
