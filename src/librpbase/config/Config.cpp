@@ -622,7 +622,6 @@ uint32_t Config::palLanguageForGameTDB(void) const
 Config::ImgBandwidth Config::imgBandwidthUnmetered(void) const
 {
 	RP_D(const Config);
-	printf("imgBandwidthUnmetered == %d, downloadHighResScans == %d, isNewBandwidthOptionSet == %d\n", (int)d->imgBandwidthUnmetered, d->downloadHighResScans, d->isNewBandwidthOptionSet);
 	if (d->isNewBandwidthOptionSet) {
 		// New options are set.
 		return d->imgBandwidthUnmetered;
@@ -641,7 +640,6 @@ Config::ImgBandwidth Config::imgBandwidthUnmetered(void) const
 Config::ImgBandwidth Config::imgBandwidthMetered(void) const
 {
 	RP_D(const Config);
-	printf("imgBandwidthMetered == %d, downloadHighResScans == %d, isNewBandwidthOptionSet == %d\n", (int)d->imgBandwidthMetered, d->downloadHighResScans, d->isNewBandwidthOptionSet);
 	if (d->isNewBandwidthOptionSet) {
 		// New options are set.
 		return d->imgBandwidthMetered;
