@@ -133,6 +133,7 @@ options_tab_init(OptionsTab *tab)
 	tab->chkStoreFileOriginInfo = gtk_check_button_new_with_label(
 		C_("OptionsTab", "Store cached file origin information using extended attributes.\n"
 			"This helps to identify where cached files were downloaded from."));
+	gtk_widget_set_name(tab->chkStoreFileOriginInfo, "chkStoreFileOriginInfo");
 
 	// GameTDB PAL hbox.
 	GtkWidget *const hboxGameTDBPAL = rp_gtk_hbox_new(6);
