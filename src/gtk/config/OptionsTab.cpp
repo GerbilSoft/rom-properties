@@ -47,10 +47,16 @@ struct _OptionsTab {
 	bool inhibit;	// If true, inhibit signals.
 	bool changed;	// If true, an option was changed.
 
-	// Downloads
+	// Image bandwidth options
+	GtkWidget *fraExtImgDownloads;
 	GtkWidget *chkExtImgDownloadEnabled;
+	GtkWidget *lblUnmeteredConnection;
+	GtkWidget *cboUnmeteredConnection;
+	GtkWidget *lblMeteredConnection;
+	GtkWidget *cboMeteredConnection;
+
+	// Downloads
 	GtkWidget *chkUseIntIconForSmallSizes;
-	GtkWidget *chkDownloadHighResScans;
 	GtkWidget *chkStoreFileOriginInfo;
 	GtkWidget *cboGameTDBPAL;
 
@@ -69,6 +75,8 @@ static void	options_tab_save				(OptionsTab	*tab,
 
 // "modified" signal handler for UI widgets
 static void	options_tab_modified_handler			(GtkWidget	*widget,
+								 OptionsTab	*tab);
+static void	options_tab_chkExtImgDownloadEnabled_toggled	(GtkCheckButton	*checkButton,
 								 OptionsTab	*tab);
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -119,17 +127,81 @@ options_tab_init(OptionsTab *tab)
 	gtk_frame_set_child(GTK_FRAME(fraDownloads), alignDownloads);
 #endif /* GTK_CHECK_VERSION(2,91,0) */
 
-	// "Downloads" checkboxes.
-	tab->chkExtImgDownloadEnabled = gtk_check_button_new_with_label(
-		C_("OptionsTab", "Enable external image downloads."));
+	// Image bandwidth options
+	tab->fraExtImgDownloads = gtk_frame_new(nullptr);
+	gtk_widget_set_name(tab->fraExtImgDownloads, "fraExtImgDownloads");
+	tab->chkExtImgDownloadEnabled = gtk_check_button_new_with_mnemonic(
+		convert_accel_to_gtk(C_("OptionsTab", "E&xternal Image Downloads")).c_str());
 	gtk_widget_set_name(tab->chkExtImgDownloadEnabled, "chkExtImgDownloadEnabled");
+	gtk_frame_set_label_widget(GTK_FRAME(tab->fraExtImgDownloads), tab->chkExtImgDownloadEnabled);
+
+	// Image bandwidth options: Labels and dropdowns
+	tab->lblUnmeteredConnection = gtk_label_new(
+		C_("OptionsTab", "When using an unlimited\nnetwork connection:"));
+	tab->lblMeteredConnection = gtk_label_new(
+		C_("OptionsTab", "When using a metered\nnetwork connection:"));
+	gtk_widget_set_name(tab->lblUnmeteredConnection, "lblUnmeteredConnection");
+	gtk_widget_set_name(tab->lblMeteredConnection, "lblMeteredConnection");
+
+	const char *const s_ImgBandwidthNone      = C_("OptionsTab", "Don't download any images");
+	const char *const s_ImgBandwidthNormalRes = C_("OptionsTab", "Download normal-resolution images");
+	const char *const s_ImgBandwidthHighRes   = C_("OptionsTab", "Download high-resolution images");
+
+	// GtkListStore model for the combo boxes
+	GtkListStore *const lstImgBandwidth = gtk_list_store_new(1, G_TYPE_STRING);
+	gtk_list_store_insert_with_values(lstImgBandwidth, nullptr, 0, 0, s_ImgBandwidthNone, -1);
+	gtk_list_store_insert_with_values(lstImgBandwidth, nullptr, 1, 0, s_ImgBandwidthNormalRes, -1);
+	gtk_list_store_insert_with_values(lstImgBandwidth, nullptr, 2, 0, s_ImgBandwidthHighRes, -1);
+
+	tab->cboUnmeteredConnection = gtk_combo_box_new_with_model(GTK_TREE_MODEL(lstImgBandwidth));
+	tab->cboMeteredConnection = gtk_combo_box_new_with_model(GTK_TREE_MODEL(lstImgBandwidth));
+	gtk_widget_set_name(tab->cboUnmeteredConnection, "cboUnmeteredConnection");
+	gtk_widget_set_name(tab->cboMeteredConnection, "cboMeteredConnection");
+	g_object_unref(lstImgBandwidth);	// TODO: Is this correct?
+
+	// Create the cell renderers.
+	// NOTE: Using GtkComboBoxText would make this somewhat easier,
+	// but then we can't share the SGB/CGB GtkListStores.
+	GtkCellRenderer *column = gtk_cell_renderer_text_new();
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(tab->cboUnmeteredConnection), column, TRUE);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(tab->cboUnmeteredConnection),
+		column, "text", 0, nullptr);
+
+	column = gtk_cell_renderer_text_new();
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(tab->cboMeteredConnection), column, TRUE);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(tab->cboMeteredConnection),
+		column, "text", 0, nullptr);
+
+#if GTK_CHECK_VERSION(3,0,0)
+	GtkWidget *const tblImgBandwidth = gtk_grid_new();
+	gtk_widget_set_margin(tblImgBandwidth, 6);
+	gtk_grid_set_row_spacing(GTK_GRID(tblImgBandwidth), 2);
+	gtk_grid_set_column_spacing(GTK_GRID(tblImgBandwidth), 8);
+	gtk_grid_attach(GTK_GRID(tblImgBandwidth), tab->lblUnmeteredConnection, 0, 0, 1, 1);
+	gtk_grid_attach(GTK_GRID(tblImgBandwidth), tab->cboUnmeteredConnection, 1, 0, 1, 1);
+	gtk_grid_attach(GTK_GRID(tblImgBandwidth), tab->lblMeteredConnection, 0, 1, 1, 1);
+	gtk_grid_attach(GTK_GRID(tblImgBandwidth), tab->cboMeteredConnection, 1, 1, 1, 1);
+	gtk_frame_set_child(GTK_FRAME(tab->fraExtImgDownloads), tblImgBandwidth);
+#else /* !GTK_CHECK_VERSION(3,0,0) */
+	GtkWidget *const tblImgBandwidth = gtk_table_new(2, 2, false);
+	gtk_table_set_row_spacings(GTK_TABLE(tblImgBandwidth), 2);
+	gtk_table_set_col_spacings(GTK_TABLE(tblImgBandwidth), 8);
+	gtk_table_attach(GTK_TABLE(tblImgBandwidth), tab->lblUnmeteredConnection, 0, 1, 0, 1, GTK_EXPAND, GTK_EXPAND, 0, 0);
+	gtk_table_attach(GTK_TABLE(tblImgBandwidth), tab->cboUnmeteredConnection, 1, 2, 0, 1, GTK_EXPAND, GTK_EXPAND, 0, 0);
+	gtk_table_attach(GTK_TABLE(tblImgBandwidth), tab->lblMeteredConnection, 0, 1, 1, 2, GTK_EXPAND, GTK_EXPAND, 0, 0);
+	gtk_table_attach(GTK_TABLE(tblImgBandwidth), tab->cboMeteredConnection, 1, 2, 1, 2, GTK_EXPAND, GTK_EXPAND, 0, 0);
+
+	GtkWidget *const alignImgBandwidth = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
+	gtk_widget_set_name(alignImgBandwidth, "alignImgBandwidth");
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignImgBandwidth), 6, 6, 6, 6);
+	gtk_container_add(GTK_CONTAINER(alignImgBandwidth), tblImgBandwidth);
+	gtk_frame_set_child(GTK_FRAME(tab->fraExtImgDownloads), alignImgBandwidth);
+#endif /* GTK_CHECK_VERSION(3,0,0) */
+
+	// "Downloads" checkboxes.
 	tab->chkUseIntIconForSmallSizes = gtk_check_button_new_with_label(
 		C_("OptionsTab", "Always use the internal icon (if present) for small sizes."));
 	gtk_widget_set_name(tab->chkUseIntIconForSmallSizes, "chkUseIntIconForSmallSizes");
-	tab->chkDownloadHighResScans = gtk_check_button_new_with_label(
-		C_("OptionsTab", "Download high-resolution scans if viewing large thumbnails.\n"
-			"This may increase bandwidth usage."));
-	gtk_widget_set_name(tab->chkDownloadHighResScans, "chkDownloadHighResScans");
 	tab->chkStoreFileOriginInfo = gtk_check_button_new_with_label(
 		C_("OptionsTab", "Store cached file origin information using extended attributes.\n"
 			"This helps to identify where cached files were downloaded from."));
@@ -177,9 +249,13 @@ options_tab_init(OptionsTab *tab)
 	// inhibit handling when loading settings.
 	g_signal_connect(tab->chkExtImgDownloadEnabled, "toggled",
 		G_CALLBACK(options_tab_modified_handler), tab);
-	g_signal_connect(tab->chkUseIntIconForSmallSizes, "toggled",
+	g_signal_connect(tab->chkExtImgDownloadEnabled, "toggled",
+		G_CALLBACK(options_tab_chkExtImgDownloadEnabled_toggled), tab);
+	g_signal_connect(tab->cboUnmeteredConnection, "changed",
 		G_CALLBACK(options_tab_modified_handler), tab);
-	g_signal_connect(tab->chkDownloadHighResScans, "toggled",
+	g_signal_connect(tab->cboMeteredConnection, "changed",
+		G_CALLBACK(options_tab_modified_handler), tab);
+	g_signal_connect(tab->chkUseIntIconForSmallSizes, "toggled",
 		G_CALLBACK(options_tab_modified_handler), tab);
 	g_signal_connect(tab->chkStoreFileOriginInfo, "toggled",
 		G_CALLBACK(options_tab_modified_handler), tab);
@@ -193,9 +269,8 @@ options_tab_init(OptionsTab *tab)
 
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_box_append(GTK_BOX(tab), fraDownloads);
-	gtk_box_append(GTK_BOX(vboxDownloads), tab->chkExtImgDownloadEnabled);
+	gtk_box_append(GTK_BOX(vboxDownloads), tab->fraExtImgDownloads);
 	gtk_box_append(GTK_BOX(vboxDownloads), tab->chkUseIntIconForSmallSizes);
-	gtk_box_append(GTK_BOX(vboxDownloads), tab->chkDownloadHighResScans);
 	gtk_box_append(GTK_BOX(vboxDownloads), tab->chkStoreFileOriginInfo);
 
 	gtk_box_append(GTK_BOX(vboxDownloads), hboxGameTDBPAL);
@@ -207,9 +282,8 @@ options_tab_init(OptionsTab *tab)
 	gtk_box_append(GTK_BOX(vboxOptions), tab->chkEnableThumbnailOnNetworkFS);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	gtk_box_pack_start(GTK_BOX(tab), fraDownloads, false, false, 0);
-	gtk_box_pack_start(GTK_BOX(vboxDownloads), tab->chkExtImgDownloadEnabled, false, false, 0);
+	gtk_box_pack_start(GTK_BOX(vboxDownloads), tab->fraExtImgDownloads, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(vboxDownloads), tab->chkUseIntIconForSmallSizes, false, false, 0);
-	gtk_box_pack_start(GTK_BOX(vboxDownloads), tab->chkDownloadHighResScans, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(vboxDownloads), tab->chkStoreFileOriginInfo, false, false, 0);
 
 	gtk_box_pack_start(GTK_BOX(vboxDownloads), hboxGameTDBPAL, false, false, 0);
@@ -261,11 +335,18 @@ options_tab_reset(OptionsTab *tab)
 		GTK_CHECK_BUTTON(tab->chkUseIntIconForSmallSizes),
 		config->useIntIconForSmallSizes());
 	gtk_check_button_set_active(
-		GTK_CHECK_BUTTON(tab->chkDownloadHighResScans),
-		config->downloadHighResScans());
-	gtk_check_button_set_active(
 		GTK_CHECK_BUTTON(tab->chkStoreFileOriginInfo),
 		config->storeFileOriginInfo());
+
+	// Image bandwidth options
+	gtk_combo_box_set_active(
+		GTK_COMBO_BOX(tab->cboUnmeteredConnection),
+		static_cast<int>(config->imgBandwidthUnmetered()));
+	gtk_combo_box_set_active(
+		GTK_COMBO_BOX(tab->cboMeteredConnection),
+		static_cast<int>(config->imgBandwidthMetered()));
+	// Update sensitivity
+	options_tab_chkExtImgDownloadEnabled_toggled(GTK_CHECK_BUTTON(tab->chkExtImgDownloadEnabled), tab);
 
 	// Options
 	gtk_check_button_set_active(
@@ -304,9 +385,12 @@ options_tab_load_defaults(OptionsTab *tab)
 	// Downloads
 	static const bool extImgDownloadEnabled_default = true;
 	static const bool useIntIconForSmallSizes_default = true;
-	static const bool downloadHighResScans_default = true;
 	static const bool storeFileOriginInfo_default = true;
 	static const int palLanguageForGameTDB_default = pal_lc_idx_def;	// cboGameTDBPAL index ('en')
+
+	// Image bandwidth options
+	static const Config::ImgBandwidth imgBandwidthUnmetered_default = Config::ImgBandwidth::HighRes;
+	static const Config::ImgBandwidth imgBandwidthMetered_default = Config::ImgBandwidth::NormalRes;
 
 	// Options
 	static const bool showDangerousPermissionsOverlayIcon_default = true;
@@ -324,6 +408,8 @@ options_tab_load_defaults(OptionsTab *tab)
 			GTK_CHECK_BUTTON(tab->chkExtImgDownloadEnabled),
 			extImgDownloadEnabled_default);
 		isDefChanged = true;
+		// Update sensitivity
+		options_tab_chkExtImgDownloadEnabled_toggled(GTK_CHECK_BUTTON(tab->chkExtImgDownloadEnabled), tab);
 	}
 	if (COMPARE_CHK(tab->chkUseIntIconForSmallSizes, useIntIconForSmallSizes_default)) {
 		gtk_check_button_set_active(
@@ -337,12 +423,6 @@ options_tab_load_defaults(OptionsTab *tab)
 			useIntIconForSmallSizes_default);
 		isDefChanged = true;
 	}
-	if (COMPARE_CHK(tab->chkDownloadHighResScans, downloadHighResScans_default)) {
-		gtk_check_button_set_active(
-			GTK_CHECK_BUTTON(tab->chkDownloadHighResScans),
-			downloadHighResScans_default);
-		isDefChanged = true;
-	}
 	if (COMPARE_CHK(tab->chkStoreFileOriginInfo, storeFileOriginInfo_default)) {
 		gtk_check_button_set_active(
 			GTK_CHECK_BUTTON(tab->chkStoreFileOriginInfo),
@@ -353,6 +433,21 @@ options_tab_load_defaults(OptionsTab *tab)
 		gtk_combo_box_set_active(
 			GTK_COMBO_BOX(tab->cboGameTDBPAL),
 			palLanguageForGameTDB_default);
+		isDefChanged = true;
+	}
+
+	// Image bandwidth options
+	if (COMPARE_CBO(tab->cboUnmeteredConnection, static_cast<int>(imgBandwidthUnmetered_default))) {
+		printf("set active to: %d\n", static_cast<int>(imgBandwidthUnmetered_default));
+		gtk_combo_box_set_active(
+			GTK_COMBO_BOX(tab->cboUnmeteredConnection),
+			static_cast<int>(imgBandwidthUnmetered_default));
+		isDefChanged = true;
+	}
+	if (COMPARE_CBO(tab->cboMeteredConnection, static_cast<int>(imgBandwidthMetered_default))) {
+		gtk_combo_box_set_active(
+			GTK_COMBO_BOX(tab->cboMeteredConnection),
+			static_cast<int>(imgBandwidthMetered_default));
 		isDefChanged = true;
 	}
 
@@ -395,13 +490,41 @@ options_tab_save(OptionsTab *tab, GKeyFile *keyFile)
 		gtk_check_button_get_active(GTK_CHECK_BUTTON(tab->chkExtImgDownloadEnabled)));
 	g_key_file_set_boolean(keyFile, "Downloads", "UseIntIconForSmallSizes",
 		gtk_check_button_get_active(GTK_CHECK_BUTTON(tab->chkUseIntIconForSmallSizes)));
-	g_key_file_set_boolean(keyFile, "Downloads", "DownloadHighResScans",
-		gtk_check_button_get_active(GTK_CHECK_BUTTON(tab->chkDownloadHighResScans)));
 	g_key_file_set_boolean(keyFile, "Downloads", "StoreFileOriginInfo",
 		gtk_check_button_get_active(GTK_CHECK_BUTTON(tab->chkStoreFileOriginInfo)));
 	g_key_file_set_string(keyFile, "Downloads", "PalLanguageForGameTDB",
 		SystemRegion::lcToString(language_combo_box_get_selected_lc(
 			LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL))).c_str());
+
+	// Image bandwidth options
+	// TODO: Consolidate this.
+	const char *sUnmetered, *sMetered;
+	switch (static_cast<Config::ImgBandwidth>(gtk_combo_box_get_active(GTK_COMBO_BOX(tab->cboUnmeteredConnection)))) {
+		case Config::ImgBandwidth::None:
+			sUnmetered = "None";
+			break;
+		case Config::ImgBandwidth::NormalRes:
+			sUnmetered = "NormalRes";
+			break;
+		case Config::ImgBandwidth::HighRes:
+		default:
+			sUnmetered = "HighRes";
+			break;
+	}
+	switch (static_cast<Config::ImgBandwidth>(gtk_combo_box_get_active(GTK_COMBO_BOX(tab->cboMeteredConnection)))) {
+		case Config::ImgBandwidth::None:
+			sMetered = "None";
+			break;
+		case Config::ImgBandwidth::NormalRes:
+		default:
+			sMetered = "NormalRes";
+			break;
+		case Config::ImgBandwidth::HighRes:
+			sMetered = "HighRes";
+			break;
+	}
+	g_key_file_set_string(keyFile, "Downloads", "ImgBandwidthUnmetered", sUnmetered);
+	g_key_file_set_string(keyFile, "Downloads", "ImgBandwidthMetered", sMetered);
 
 	// Options
 	g_key_file_set_boolean(keyFile, "Options", "ShowDangerousPermissionsOverlayIcon",
@@ -430,4 +553,23 @@ options_tab_modified_handler(GtkWidget *widget, OptionsTab *tab)
 	// Forward the "modified" signal.
 	tab->changed = true;
 	g_signal_emit_by_name(tab, "modified", NULL);
+}
+
+/**
+ * chkExtImgDownloadEnabled was toggled.
+ *
+ * This handles enabling fraExtImgDownloads widgets, since we can't just
+ * disable the entire frame; otherwise, the checkbox also gets disabled.
+ *
+ * @param checkButton chkExtImgDownloadEnabled
+ * @param tab OptionsTab
+ */
+static void
+options_tab_chkExtImgDownloadEnabled_toggled(GtkCheckButton *checkButton, OptionsTab *tab)
+{
+	const bool enable = gtk_check_button_get_active(checkButton);
+	gtk_widget_set_sensitive(tab->lblUnmeteredConnection, enable);
+	gtk_widget_set_sensitive(tab->cboUnmeteredConnection, enable);
+	gtk_widget_set_sensitive(tab->lblMeteredConnection, enable);
+	gtk_widget_set_sensitive(tab->cboMeteredConnection, enable);
 }
