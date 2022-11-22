@@ -3,13 +3,29 @@
 The ROM Properties Page Shell Extension has functions to access various
 Internet databases in order to download artwork.
 
-This functionality can be disabled by using the `rp-config` utility,
-or by setting the following value in the configuration file:
+This functionality can be adjusted by using the `rp-config` utility, which
+adjusts the following values in the configuration file:
 
 ```
 [Downloads]
-ExtImageDownload=false
+ExtImageDownload=true
+ImgBandwidthUnmetered=HighRes
+ImgBandwidthMetered=NormalRes
 ```
+
+Set ExtImgDownload to false to disable all image downloads.
+
+The ImgBandwidthUnmetered and ImgBandwidthMetered keys can be set to one
+of the following values:
+* None: Disable image downloading on this network type.
+* NormalRes: Download normal-resolution images.
+* HighRes: Download high-resolution images.
+
+Metered network detection is supported on the following systems:
+* Windows 10 v2004 or later
+* Linux systems, when using NetworkManager
+
+On other systems, rom-properties will assume the network is unmetered.
 
 The configuration file is located at:
 * Linux: `~/.config/rom-properties/rom-properties.conf`
