@@ -20,7 +20,7 @@
       <item>
        <widget class="QGroupBox" name="grpExtImgDownloads">
         <property name="title">
-         <string>External Image Downloads</string>
+         <string>E&amp;xternal Image Downloads</string>
         </property>
         <property name="checkable">
          <bool>true</bool>
