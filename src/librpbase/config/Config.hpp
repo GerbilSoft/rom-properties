@@ -102,13 +102,6 @@ class RP_LIBROMDATA_PUBLIC Config : public ConfReader
 		bool useIntIconForSmallSizes(void) const;
 
 		/**
-		 * Download high-resolution scans if viewing large thumbnails.
-		 * NOTE: Call load() before using this function.
-		 * @return True if we should download high-resolution scans; false if not.
-		 */
-		bool downloadHighResScans(void) const;
-
-		/**
 		 * Store file origin information?
 		 * NOTE: Call load() before using this function.
 		 * @return True if we should; false if not.
@@ -120,6 +113,28 @@ class RP_LIBROMDATA_PUBLIC Config : public ConfReader
 		 * @return Language code.
 		 */
 		uint32_t palLanguageForGameTDB(void) const;
+
+		/* Image bandwidth options */
+
+		enum class ImgBandwidth : uint8_t {
+			None = 0,	// Don't download any images
+			NormalRes = 1,	// Download normal-resolution images
+			HighRes = 2,	// Download high-resolution images
+		};
+
+		/**
+		 * What type of images should be downloaded on unmetered connections?
+		 * These connections do not charge for usage.
+		 * @return ImgBandwidth for unmetered connections
+		 */
+		ImgBandwidth imgBandwidthUnmetered(void) const;
+
+		/**
+		 * What type of images should be downloaded on metered connections?
+		 * These connections may charge for usage.
+		 * @return ImgBandwidth for metered connections
+		 */
+		ImgBandwidth imgBandwidthMetered(void) const;
 
 		/** DMG title screen mode **/
 
