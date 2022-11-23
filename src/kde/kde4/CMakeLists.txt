@@ -29,11 +29,14 @@ IF(QT4_FOUND)
 	# Get rid of -fno-exceptions.
 	STRING(REPLACE "-fno-exceptions" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
-	IF(ENABLE_ACHIEVEMENTS AND QT_QTDBUS_LIBRARY)
-		# QtDBus is used for notifications.
-		# TODO: Make notifications optional.
-		SET(HAVE_QtDBus_NOTIFY 1)
-	ENDIF(ENABLE_ACHIEVEMENTS AND QT_QTDBUS_LIBRARY)
+	IF(QT_QTDBUS_LIBRARY)
+		SET(HAVE_QtDBus 1)
+		IF(ENABLE_ACHIEVEMENTS)
+			# QtDBus is used for notifications.
+			# TODO: Make notifications optional.
+			SET(HAVE_QtDBus_NOTIFY 1)
+		ENDIF(ENABLE_ACHIEVEMENTS)
+	ENDIF(QT_QTDBUS_LIBRARY)
 ELSE(QT4_FOUND)
 	# Qt4 not found.
 	SET(BUILD_KDE4 OFF CACHE INTERNAL "Build the KDE4 plugin." FORCE)
@@ -55,20 +58,23 @@ IF(QT4_FOUND)
 		OPTIONS -no-compress
 		)
 ENDIF(QT4_FOUND)
-IF(HAVE_QtDBus_NOTIFY)
-	STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_SRCS "${rom-properties-kde-notify_SRCS}")
-	STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_H    "${rom-properties-kde-notify_H}")
-
-	# QtDBus wrappers
+IF(HAVE_QtDBus)
 	QT4_ADD_DBUS_INTERFACES(${PROJECT_NAME}_DBUS_IFACE_SRCS
-		"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.Notifications.xml"
+		"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.NetworkManager.xml"
 		)
-ENDIF(HAVE_QtDBus_NOTIFY)
-
+	IF(HAVE_QtDBus_NOTIFY)
+		STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_SRCS "${rom-properties-kde-notify_SRCS}")
+		STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_H    "${rom-properties-kde-notify_H}")
+		QT4_ADD_DBUS_INTERFACES(${PROJECT_NAME}_DBUS_IFACE_SRCS_2
+			"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.Notifications.xml"
+			)
+	ENDIF(HAVE_QtDBus_NOTIFY)
+ENDIF(HAVE_QtDBus)
 SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_SRCS}
 	${${PROJECT_NAME}-notify_SRCS}
 	${${PROJECT_NAME}_DBUS_IFACE_SRCS}
+	${${PROJECT_NAME}_DBUS_IFACE_SRCS_2}
 	${${PROJECT_NAME}_RCC_O}
 	RomPropertiesDialogPluginFactoryKDE4.cpp
 	)
@@ -112,9 +118,9 @@ IF(BUILD_KDE4)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${KDE4_KFILE_LIBRARY} ${KDE4_KDEUI_LIBRARY})
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC Qt4::QtGui Qt4::QtCore)
 	TARGET_INCLUDE_DIRECTORIES(rom-properties-kde4 PUBLIC ${KDE4_INCLUDE_DIR})
-	IF(HAVE_QtDBus_NOTIFY)
+	IF(HAVE_QtDBus)
 		TARGET_LINK_LIBRARIES(rom-properties-kde4 PUBLIC Qt4::QtDBus)
-	ENDIF(HAVE_QtDBus_NOTIFY)
+	ENDIF(HAVE_QtDBus)
 ENDIF(BUILD_KDE4)
 
 #######################

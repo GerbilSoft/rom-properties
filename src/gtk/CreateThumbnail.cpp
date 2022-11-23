@@ -23,6 +23,10 @@ using LibRomData::RomDataFactory;
 #include "libromdata/img/TCreateThumbnail.cpp"
 using LibRomData::TCreateThumbnail;
 
+// NetworkManager D-Bus interface to determine if the connection is metered.
+#include <glib-object.h>
+#include "NetworkManager.h"
+
 // C++ STL classes.
 using std::string;
 using std::unique_ptr;
@@ -127,6 +131,50 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE>
 		inline string proxyForUrl(const char *url) const final
 		{
 			return ::proxyForUrl(url);
+		}
+
+		/**
+		 * Is the system using a metered connection?
+		 *
+		 * Note that if the system doesn't support identifying if the
+		 * connection is metered, it will be assumed that the network
+		 * connection is unmetered.
+		 *
+		 * @return True if metered; false if not.
+		 */
+		bool isMetered(void) final
+		{
+			// TODO: Keep a persistent NetworkManager connection?
+
+			// Connect to the service using gdbus-codegen's generated code.
+			Manager *proxy = nullptr;
+			GError *error = nullptr;
+
+			proxy = manager_proxy_new_for_bus_sync(
+				G_BUS_TYPE_SYSTEM,
+				G_DBUS_PROXY_FLAGS_NONE,
+				"org.freedesktop.NetworkManager",	// bus name
+				"/org/freedesktop/NetworkManager",	// object path
+				nullptr,				// GCancellable
+				&error);				// GError
+			if (!proxy) {
+				// Unable to connect.
+				// Assume unmetered.
+				g_error_free(error);
+				return false;
+			}
+
+			// https://developer-old.gnome.org/NetworkManager/stable/nm-dbus-types.html#NMMetered
+			enum NMMetered : uint32_t {
+				NM_METERED_UNKNOWN	= 0,
+				NM_METERED_YES		= 1,
+				NM_METERED_NO		= 2,
+				NM_METERED_GUESS_YES	= 3,
+				NM_METERED_GUESS_NO	= 4,
+			};
+			const NMMetered metered = static_cast<NMMetered>(manager_get_metered(proxy));
+			g_object_unref(proxy);
+			return (metered == NM_METERED_YES || metered == NM_METERED_GUESS_YES);
 		}
 };
 

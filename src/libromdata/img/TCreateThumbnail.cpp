@@ -144,8 +144,9 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 	// NOTE: This will force a configuration timestamp check.
 	const Config *const config = Config::instance();
 	const bool extImgDownloadEnabled = config->extImgDownloadEnabled();
-	// TODO: Determine if we're using metered or unmetered. Assuming unmetered for now.
-	const Config::ImgBandwidth imgBandwidthMode = config->imgBandwidthUnmetered();
+	const Config::ImgBandwidth imgBandwidthMode = unlikely(this->isMetered())
+		? config->imgBandwidthMetered()
+		: config->imgBandwidthUnmetered();
 
 	CacheManager cache;
 	const auto extURLs_cend = extURLs.cend();
