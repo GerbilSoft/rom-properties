@@ -438,7 +438,6 @@ options_tab_load_defaults(OptionsTab *tab)
 
 	// Image bandwidth options
 	if (COMPARE_CBO(tab->cboUnmeteredConnection, static_cast<int>(imgBandwidthUnmetered_default))) {
-		printf("set active to: %d\n", static_cast<int>(imgBandwidthUnmetered_default));
 		gtk_combo_box_set_active(
 			GTK_COMBO_BOX(tab->cboUnmeteredConnection),
 			static_cast<int>(imgBandwidthUnmetered_default));
@@ -525,6 +524,8 @@ options_tab_save(OptionsTab *tab, GKeyFile *keyFile)
 	}
 	g_key_file_set_string(keyFile, "Downloads", "ImgBandwidthUnmetered", sUnmetered);
 	g_key_file_set_string(keyFile, "Downloads", "ImgBandwidthMetered", sMetered);
+	// Remove the old option
+	g_key_file_remove_key(keyFile, "Downloads", "DownloadHighResScans", nullptr);
 
 	// Options
 	g_key_file_set_boolean(keyFile, "Options", "ShowDangerousPermissionsOverlayIcon",
