@@ -59,9 +59,12 @@ IF(QT4_FOUND)
 		)
 ENDIF(QT4_FOUND)
 IF(HAVE_QtDBus)
-	QT4_ADD_DBUS_INTERFACES(${PROJECT_NAME}_DBUS_IFACE_SRCS
-		"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.NetworkManager.xml"
-		)
+	# FIXME: Broken on Qt4.
+	IF(0)
+		QT4_ADD_DBUS_INTERFACES(${PROJECT_NAME}_DBUS_IFACE_SRCS
+			"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.NetworkManager.xml"
+			)
+	ENDIF(0)
 	IF(HAVE_QtDBus_NOTIFY)
 		STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_SRCS "${rom-properties-kde-notify_SRCS}")
 		STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_H    "${rom-properties-kde-notify_H}")

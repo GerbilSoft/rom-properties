@@ -31,10 +31,11 @@ using LibRomData::RomDataFactory;
 #include "libromdata/img/TCreateThumbnail.cpp"
 using LibRomData::TCreateThumbnail;
 
-#ifdef HAVE_QtDBus
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0) && defined(HAVE_QtDBus)
 // NetworkManager D-Bus interface to determine if the connection is metered.
-#include "networkmanagerinterface.h"
-#endif /* HAVE_QtDBus */
+// FIXME: Broken on Qt4.
+#  include "networkmanagerinterface.h"
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) && HAVE_QtDBus */
 
 // C++ STL classes.
 using std::string;
@@ -170,6 +171,7 @@ class RomThumbCreatorPrivate final : public TCreateThumbnail<QImage>
 		 */
 		bool isMetered(void) final
 		{
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0) && defined(HAVE_QtDBus)
 			// TODO: Keep a persistent NetworkManager connection?
 			org::freedesktop::NetworkManager iface(
 				QLatin1String("org.freedesktop.NetworkManager"),
@@ -191,6 +193,10 @@ class RomThumbCreatorPrivate final : public TCreateThumbnail<QImage>
 			};
 			const NMMetered metered = static_cast<NMMetered>(iface.metered());
 			return (metered == NM_METERED_YES || metered == NM_METERED_GUESS_YES);
+#else
+			// FIXME: Broken on Qt4.
+			return false;
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) && HAVE_QtDBus */
 		}
 };
 
