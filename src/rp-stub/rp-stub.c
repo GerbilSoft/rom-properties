@@ -34,6 +34,12 @@
 #include <string.h>
 #include <unistd.h>
 
+#ifdef _WIN32
+#  define DIR_SEP_CHR '\\'
+#else
+#  define DIR_SEP_CHR '/'
+#endif
+
 /**
  * rp_create_thumbnail() function pointer.
  * @param source_file Source file. (UTF-8)
@@ -91,6 +97,8 @@ static void show_help(const char *argv0)
 			"\n"
 			"Options:\n"
 			"  -s, --size\t\tMaximum thumbnail size. (default is 256px) [0 for full image]\n"
+			"  -a, --autoext\t\tGenerate the output filename based on the source filename.\n"
+			"               \t\t(WARNING: May overwrite an existing file without prompting.)\n"
 			"  -c, --config\t\tShow the configuration dialog instead of thumbnailing.\n"
 			"  -d, --debug\t\tShow debug output when searching for rom-properties.\n"
 			"  -h, --help\t\tDisplay this help and exit.\n"
@@ -166,6 +174,7 @@ int main(int argc, char *argv[])
 
 	static const struct option long_options[] = {
 		{"size",	required_argument,	NULL, 's'},
+		{"autoext",	no_argument,		NULL, 'a'},
 		{"config",	no_argument,		NULL, 'c'},
 		{"debug",	no_argument,		NULL, 'd'},
 		{"help",	no_argument,		NULL, 'h'},
@@ -181,8 +190,9 @@ int main(int argc, char *argv[])
 	// Default to 256x256.
 	uint8_t config = is_rp_config;
 	int maximum_size = 256;
+	bool autoext = false;
 	int c, option_index;
-	while ((c = getopt_long(argc, argv, "s:cdhV", long_options, &option_index)) != -1) {
+	while ((c = getopt_long(argc, argv, "s:acdhV", long_options, &option_index)) != -1) {
 		switch (c) {
 			case 's': {
 				char *endptr = NULL;
@@ -208,6 +218,11 @@ int main(int argc, char *argv[])
 				maximum_size = (int)lTmp;
 				break;
 			}
+
+			case 'a':
+				// Automatic output filename creation.
+				autoext = true;
+				break;
 
 			case 'c':
 				// Show the configuration dialog.
@@ -252,9 +267,17 @@ int main(int argc, char *argv[])
 			fprintf(stderr, str_help_more_info, argv[0]);
 			putc('\n', stderr);
 			return EXIT_FAILURE;
-		} else if (optind+1 == argc) {
+		} else if (optind+1 == argc && !autoext) {
 			// tr: %s == program name
 			fprintf(stderr, C_("rp-stub", "%s: missing output file parameter"), argv[0]);
+			putc('\n', stderr);
+			// tr: %s == program name
+			fprintf(stderr, str_help_more_info, argv[0]);
+			putc('\n', stderr);
+			return EXIT_FAILURE;
+		} else if (optind+2 == argc && autoext) {
+			// tr: %s == program name
+			fprintf(stderr, C_("rp-stub", "%s: --autoext and output file specified"), argv[0]);
 			putc('\n', stderr);
 			// tr: %s == program name
 			fprintf(stderr, str_help_more_info, argv[0]);
@@ -283,7 +306,35 @@ int main(int argc, char *argv[])
 	if (!config) {
 		// Create the thumbnail.
 		const char *const source_file = argv[optind];
-		const char *const output_file = argv[optind+1];
+		char *output_file;
+		if (autoext) {
+			// Create the output filename based on the input filename.
+			size_t len = strlen(source_file);
+			output_file = malloc(len + 16);
+			strcpy(output_file, source_file);
+
+			// Find the current extension and replace it.
+			char *dotpos = strrchr(output_file, '.');
+			if (!dotpos) {
+				// No file extension. Add it.
+				strcat(output_file, ".png");
+			} else {
+				// If the dot is after the last slash, we already have a file extension.
+				// Otherwise, we don't have one, and need to add it.
+				char *slashpos = strrchr(output_file, DIR_SEP_CHR);
+				if (slashpos < dotpos) {
+					// We already have a file extension.
+					strcpy(dotpos, ".png");
+				} else {
+					// No file extension.
+					strcat(output_file, ".png");
+				}
+			}
+		} else {
+			// Use the specified output filename.
+			output_file = argv[optind+1];
+		}
+
 		if (is_debug) {
 			// tr: NOTE: Not positional. Don't change argument positions!
 			// tr: Only localize "Calling function:".
@@ -292,6 +343,10 @@ int main(int argc, char *argv[])
 			putc('\n', stderr);
 		}
 		ret = ((PFN_RP_CREATE_THUMBNAIL)pfn)(source_file, output_file, maximum_size);
+
+		if (autoext) {
+			free(output_file);
+		}
 	} else {
 		// Show the configuration dialog.
 		if (is_debug) {
