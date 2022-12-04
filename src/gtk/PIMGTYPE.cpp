@@ -57,10 +57,10 @@ PIMGTYPE PIMGTYPE_scale(PIMGTYPE pImgType, int width, int height, bool bilinear)
 		return cairo_surface_reference(pImgType);
 	}
 
-	cairo_scale(cr, (double)width / (double)srcWidth, (double)height / (double)srcHeight);
-	cairo_set_source_surface(cr, pImgType, 0, 0);
 	cairo_pattern_set_filter(cairo_get_source(cr),
 		(bilinear ? CAIRO_FILTER_BILINEAR : CAIRO_FILTER_NEAREST));
+	cairo_scale(cr, (double)width / (double)srcWidth, (double)height / (double)srcHeight);
+	cairo_set_source_surface(cr, pImgType, 0, 0);
 	cairo_paint(cr);
 	cairo_destroy(cr);
 	return surface;
