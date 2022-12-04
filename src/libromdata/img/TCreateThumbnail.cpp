@@ -428,6 +428,9 @@ skip_image_check:
 		}
 	}
 
+	// Thumbnail size, in case it has to be adjusted.
+	ImgSize thumbSize = pOutParams->fullSize;
+
 	if (reqSize > 0 && (imgpf & RomData::IMGPF_RESCALE_NEAREST)) {
 		// Nearest-neighbor upscale may be needed.
 		// TODO: User configuration.
@@ -445,15 +448,15 @@ skip_image_check:
 			default:
 				// Only resize images that are less than or equal to
 				// half requested thumbnail size.
-				needs_resize_up = (pOutParams->fullSize.width  <= (reqSize/2)) ||
-						  (pOutParams->fullSize.height <= (reqSize/2));
+				needs_resize_up = (thumbSize.width  <= (reqSize/2)) ||
+						  (thumbSize.height <= (reqSize/2));
 				break;
 
 			case RESIZE_UP_ALL:
 				// Resize all images that are smaller than the
 				// requested thumbnail size.
-				needs_resize_up = (pOutParams->fullSize.width  < reqSize) ||
-						  (pOutParams->fullSize.height < reqSize);
+				needs_resize_up = (thumbSize.width  < reqSize) ||
+						  (thumbSize.height < reqSize);
 				break;
 		}
 
@@ -461,12 +464,12 @@ skip_image_check:
 			// Need to upscale the image.
 			ImgSize int_sz = {reqSize, reqSize};
 			// Resize to the next highest integer multiple.
-			int_sz.width -= (int_sz.width % pOutParams->fullSize.width);
-			int_sz.height -= (int_sz.height % pOutParams->fullSize.height);
+			int_sz.width -= (int_sz.width % thumbSize.width);
+			int_sz.height -= (int_sz.height % thumbSize.height);
 
 			// Calculate the closest size while maintaining the aspect ratio.
 			// Based on Qt 4.8's QSize::scale().
-			ImgSize rescale_sz = pOutParams->fullSize;
+			ImgSize rescale_sz = thumbSize;
 			rescale_aspect(rescale_sz, int_sz);
 
 			// FIXME: If the original image is 64x1024, the rescale
@@ -477,25 +480,16 @@ skip_image_check:
 				if (isImgClassValid(scaled_img)) {
 					freeImgClass(pOutParams->retImg);
 					pOutParams->retImg = scaled_img;
-					pOutParams->thumbSize = rescale_sz;
-				} else {
-					// Rescale failed. Use the full image size.
-					pOutParams->thumbSize = pOutParams->fullSize;
+					thumbSize = rescale_sz;
 				}
-			} else {
-				// Unable to rescale. Use the full image size.
-				pOutParams->thumbSize = pOutParams->fullSize;
 			}
-		} else {
-			// Resize Up isn't needed. Use the full image size.
-			pOutParams->thumbSize = pOutParams->fullSize;
 		}
 	}
 
 	// Check if a downscale is needed.
-	if (reqSize > 0 && (pOutParams->fullSize.width > reqSize || pOutParams->fullSize.height > reqSize)) {
+	if (reqSize > 0 && (thumbSize.width > reqSize || thumbSize.height > reqSize)) {
 		// Downscale is needed.
-		ImgSize rescale_sz = pOutParams->fullSize;
+		ImgSize rescale_sz = thumbSize;
 		const ImgSize target_sz = {reqSize, reqSize};
 		rescale_aspect(rescale_sz, target_sz);
 
@@ -507,21 +501,12 @@ skip_image_check:
 			if (isImgClassValid(scaled_img)) {
 				freeImgClass(pOutParams->retImg);
 				pOutParams->retImg = scaled_img;
-				pOutParams->thumbSize = rescale_sz;
-			} else {
-				// Rescale failed. Use the full image size.
-				pOutParams->thumbSize = pOutParams->fullSize;
+				thumbSize = rescale_sz;
 			}
-		} else {
-			// Unable to rescale. Use the full image size.
-			pOutParams->thumbSize = pOutParams->fullSize;
 		}
-	} else {
-		// Downscale isn't needed. Use the full image size.
-		pOutParams->thumbSize = pOutParams->fullSize;
 	}
-
 	// Image retrieved successfully.
+	pOutParams->thumbSize = thumbSize;
 	return RPCT_SUCCESS;
 }
 
