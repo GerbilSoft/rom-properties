@@ -81,6 +81,8 @@ ImgClass TCreateThumbnail<ImgClass>::getInternalImage(
 		return getNullImgClass();
 	}
 
+	// TODO: Multiple internal image sizes. [add reqSize]
+
 	// Convert the rp_image to ImgClass.
 	ImgClass ret_img = rpImageToImgClass(image);
 	if (isImgClassValid(ret_img)) {
@@ -109,7 +111,7 @@ ImgClass TCreateThumbnail<ImgClass>::getInternalImage(
  * Get an external image.
  * @param romData	[in] RomData object.
  * @param imageType	[in] Image type.
- * @param req_size	[in] Requested image size.
+ * @param reqSize	[in] Requested image size.
  * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size.
  * @param sBIT		[out,opt] sBIT metadata.
  * @return External image, or null ImgClass on error.
@@ -117,7 +119,7 @@ ImgClass TCreateThumbnail<ImgClass>::getInternalImage(
 template<typename ImgClass>
 ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 	const RomData *romData, RomData::ImageType imageType,
-	int req_size, ImgSize *pOutSize,
+	int reqSize, ImgSize *pOutSize,
 	rp_image::sBIT_t *sBIT)
 {
 	assert(imageType >= RomData::IMG_EXT_MIN && imageType <= RomData::IMG_EXT_MAX);
@@ -132,7 +134,7 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 	// Synchronously download from the source URLs.
 	// TODO: Image size selection.
 	std::vector<RomData::ExtURL> extURLs;
-	int ret = romData->extURLs(imageType, &extURLs, req_size);
+	int ret = romData->extURLs(imageType, &extURLs, reqSize);
 	if (ret != 0 || extURLs.empty()) {
 		// No URLs.
 		if (sBIT) {
@@ -248,7 +250,7 @@ inline void TCreateThumbnail<ImgClass>::rescale_aspect(ImgSize &rs_size, ImgSize
 /**
  * Create a thumbnail for the specified ROM file.
  * @param romData	[in] RomData object
- * @param reqSize	[in] Requested image size (single dimension; assuming square image)
+ * @param reqSize	[in] Requested image size (single dimension; assuming square image) [0 for full size or largest]
  * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
  * @return 0 on success; non-zero on error.
  */
@@ -256,9 +258,9 @@ template<typename ImgClass>
 int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int reqSize, GetThumbnailOutParams_t *pOutParams)
 {
 	assert(romData != nullptr);
-	assert(reqSize > 0);
+	assert(reqSize >= 0);
 	assert(pOutParams != nullptr);
-	if (reqSize <= 0) {
+	if (reqSize < 0) {
 		// Invalid parameter...
 		return RPCT_INVALID_IMAGE_SIZE;
 	}
@@ -426,8 +428,8 @@ skip_image_check:
 		}
 	}
 
-	// TODO: If image is larger than req_size, resize down.
-	if (imgpf & RomData::IMGPF_RESCALE_NEAREST) {
+	if (reqSize > 0 && (imgpf & RomData::IMGPF_RESCALE_NEAREST)) {
+		// Nearest-neighbor upscale may be needed.
 		// TODO: User configuration.
 		ResizeNearestUpPolicy resize_up = RESIZE_UP_HALF;
 		bool needs_resize_up = false;
@@ -488,8 +490,34 @@ skip_image_check:
 			// Resize Up isn't needed. Use the full image size.
 			pOutParams->thumbSize = pOutParams->fullSize;
 		}
+	}
+
+	// Check if a downscale is needed.
+	if (reqSize > 0 && (pOutParams->fullSize.width > reqSize || pOutParams->fullSize.height > reqSize)) {
+		// Downscale is needed.
+		ImgSize rescale_sz = pOutParams->fullSize;
+		const ImgSize target_sz = {reqSize, reqSize};
+		rescale_aspect(rescale_sz, target_sz);
+
+		// FIXME: If the original image is 64x1024, the rescale
+		// may result in 0x0, which is no good. If this happens,
+		// skip the rescaling entirely.
+		if (rescale_sz.width > 0 && rescale_sz.height > 0) {
+			ImgClass scaled_img = rescaleImgClass(pOutParams->retImg, rescale_sz);
+			if (isImgClassValid(scaled_img)) {
+				freeImgClass(pOutParams->retImg);
+				pOutParams->retImg = scaled_img;
+				pOutParams->thumbSize = rescale_sz;
+			} else {
+				// Rescale failed. Use the full image size.
+				pOutParams->thumbSize = pOutParams->fullSize;
+			}
+		} else {
+			// Unable to rescale. Use the full image size.
+			pOutParams->thumbSize = pOutParams->fullSize;
+		}
 	} else {
-		// Thumbnail size matches the full image size.
+		// Downscale isn't needed. Use the full image size.
 		pOutParams->thumbSize = pOutParams->fullSize;
 	}
 

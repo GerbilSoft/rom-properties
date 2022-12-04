@@ -90,7 +90,7 @@ static void show_help(const char *argv0)
 			"extracted and saved as output_file.\n"
 			"\n"
 			"Options:\n"
-			"  -s, --size\t\tMaximum thumbnail size. (default is 256px)\n"
+			"  -s, --size\t\tMaximum thumbnail size. (default is 256px) [0 for full image]\n"
 			"  -c, --config\t\tShow the configuration dialog instead of thumbnailing.\n"
 			"  -d, --debug\t\tShow debug output when searching for rom-properties.\n"
 			"  -h, --help\t\tDisplay this help and exit.\n"
@@ -196,7 +196,7 @@ int main(int argc, char *argv[])
 					fprintf(stderr, str_help_more_info, argv[0]);
 					putc('\n', stderr);
 					return EXIT_FAILURE;
-				} else if (lTmp <= 0 || lTmp > 32768) {
+				} else if (lTmp < 0 || lTmp > 32768) {
 					// tr: %1$s == program name, %2%s == invalid size
 					fprintf_p(stderr, C_("rp-stub", "%1$s: size '%2$s' is out of range"), argv[0], optarg);
 					putc('\n', stderr);

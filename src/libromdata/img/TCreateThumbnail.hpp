@@ -119,30 +119,30 @@ class TCreateThumbnail
 		 * Get an external image.
 		 * @param romData	[in] RomData object.
 		 * @param imageType	[in] Image type.
-		 * @param req_size	[in] Requested image size.
+		 * @param reqSize	[in] Requested image size. [0 for largest]
 		 * @param pOutSize	[out,opt] Pointer to ImgSize to store the image's size.
 		 * @param sBIT		[out,opt] sBIT metadata.
 		 * @return External image, or null ImgClass on error.
 		 */
 		ImgClass getExternalImage(
 			const LibRpBase::RomData *romData, LibRpBase::RomData::ImageType imageType,
-			int req_size, ImgSize *pOutSize = nullptr,
+			int reqSize = 0, ImgSize *pOutSize = nullptr,
 			LibRpTexture::rp_image::sBIT_t *sBIT = nullptr);
 
 		/**
 		 * getThumbnail() output parameters.
 		 */
 		struct GetThumbnailOutParams_t {
-			ImgClass retImg;			// [out] Returned image.
-			ImgSize thumbSize;			// [out] Thumbnail size.
-			ImgSize fullSize;			// [out] Full image size.
-			LibRpTexture::rp_image::sBIT_t sBIT;	// [out] sBIT metadata.
+			ImgClass retImg;			// [out] Returned image
+			ImgSize thumbSize;			// [out] Thumbnail size
+			ImgSize fullSize;			// [out] Full image size
+			LibRpTexture::rp_image::sBIT_t sBIT;	// [out] sBIT metadata
 		};
 
 		/**
 		 * Create a thumbnail for the specified ROM file.
 		 * @param romData	[in] RomData object
-		 * @param reqSize	[in] Requested image size (single dimension; assuming square image)
+		 * @param reqSize	[in] Requested image size (single dimension; assuming square image) [0 for full size or largest]
 		 * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
 		 * @return 0 on success; non-zero on error.
 		 */
@@ -151,7 +151,7 @@ class TCreateThumbnail
 		/**
 		 * Create a thumbnail for the specified ROM file.
 		 * @param file		[in] Open IRpFile object
-		 * @param reqSize	[in] Requested image size (single dimension; assuming square image)
+		 * @param reqSize	[in] Requested image size (single dimension; assuming square image) [0 for full size or largest]
 		 * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
 		 * @return 0 on success; non-zero on error.
 		 */
@@ -160,7 +160,7 @@ class TCreateThumbnail
 		/**
 		 * Create a thumbnail for the specified ROM file.
 		 * @param filename	[in] ROM file
-		 * @param reqSize	[in] Requested image size (single dimension; assuming square image)
+		 * @param reqSize	[in] Requested image size (single dimension; assuming square image) [0 for full size or largest]
 		 * @param pOutParams	[out] Output parameters (If an error occurs, pOutParams->retImg will be null)
 		 * @return 0 on success; non-zero on error.
 		 */
