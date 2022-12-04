@@ -16,6 +16,8 @@
     or on Windows 10 v2004 and later. rom-properties can be configured to either
     download lower-resolution images or no images when on metered connections,
     separately from the unmetered setting.
+  * rp-stub now accepts a thumbnail size of 0 to indicate a "full-size thumbnail"
+    is requested.
 
 * Bug fixes:
   * ELF: The "TLS" symbol type was missing, resulting in an off-by-one
@@ -36,6 +38,11 @@
   * [xdg] rom-properties.xml: Add magic strings for amiibo files.
     * Fixes #370: Amiibos without thumbnails (Gnome)
       * Reported by @Amnesia1000.
+  * Thumbnail downscaling was never implemented. It's implemented now, so thumbnail
+    caching should work better on some systems.
+  * Thumbnail bilinear filtering should have been enabled for 8:7 aspect ratio
+    correction, but it wasn't. It is now. This affects SNES and some Mega Drive
+    thumbnails.
 
 * Other changes:
   * libromdata's SOVERSION was bumped to 2 due to an ABI change in
