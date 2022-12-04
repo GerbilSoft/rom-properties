@@ -134,7 +134,16 @@ class RomThumbCreatorPrivate final : public TCreateThumbnail<QImage>
 					break;
 			}
 
-			return imgClass.scaled(sz.width, sz.height, Qt::IgnoreAspectRatio, mode);
+			QImage img = imgClass.scaled(sz.width, sz.height, Qt::IgnoreAspectRatio, mode);
+
+			// NOTE: Rescaling an ARGB32 image sometimes results in the format
+			// being changes to QImage::Format_ARGB32_Premultiplied.
+			// Convert it back to plain ARGB32 if that happens.
+			if (img.format() == QImage::Format_ARGB32_Premultiplied) {
+				img.convertTo(QImage::Format_ARGB32);
+			}
+
+			return img;
 		}
 
 		/**
@@ -271,6 +280,7 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 				bytespp = 1;
 				break;
 			case QImage::Format_ARGB32:
+			case QImage::Format_ARGB32_Premultiplied:
 			default:
 				bytespp = 4;
 				break;
