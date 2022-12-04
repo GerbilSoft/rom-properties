@@ -416,7 +416,7 @@ skip_image_check:
 		}
 		if (scaleW != 0) {
 			pOutParams->fullSize.width = scaleW;
-			ImgClass scaled_img = rescaleImgClass(pOutParams->retImg, pOutParams->fullSize);
+			ImgClass scaled_img = rescaleImgClass(pOutParams->retImg, pOutParams->fullSize, ScalingMethod::Bilinear);
 			if (isImgClassValid(scaled_img)) {
 				freeImgClass(pOutParams->retImg);
 				pOutParams->retImg = scaled_img;
@@ -503,7 +503,7 @@ skip_image_check:
 		// may result in 0x0, which is no good. If this happens,
 		// skip the rescaling entirely.
 		if (rescale_sz.width > 0 && rescale_sz.height > 0) {
-			ImgClass scaled_img = rescaleImgClass(pOutParams->retImg, rescale_sz);
+			ImgClass scaled_img = rescaleImgClass(pOutParams->retImg, rescale_sz, ScalingMethod::Bilinear);
 			if (isImgClassValid(scaled_img)) {
 				freeImgClass(pOutParams->retImg);
 				pOutParams->retImg = scaled_img;
