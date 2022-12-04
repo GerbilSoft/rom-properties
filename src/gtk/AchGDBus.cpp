@@ -155,10 +155,10 @@ int AchGDBusPrivate::notifyFunc(Achievements::ID id)
 	}
 
 	// Connect to the service using gdbus-codegen's generated code.
-	OrgFreedesktopNotifications *proxy = nullptr;
+	Notifications *proxy = nullptr;
 	GError *error = nullptr;
 
-	proxy = org_freedesktop_notifications_proxy_new_for_bus_sync(
+	proxy = notifications_proxy_new_for_bus_sync(
 		G_BUS_TYPE_SESSION,
 		G_DBUS_PROXY_FLAGS_NONE,
 		"org.freedesktop.Notifications",	// bus name
@@ -265,7 +265,7 @@ int AchGDBusPrivate::notifyFunc(Achievements::ID id)
 	GVariant *const hints = g_variant_builder_end(&b_hints);
 
 	const char *const s_summary = C_("Achievements", "Achievement Unlocked");
-	org_freedesktop_notifications_call_notify(
+	notifications_call_notify(
 		proxy,			// proxy
 		"rom-properties",	// app-name [s]
 		0,			// replaces_id [u]

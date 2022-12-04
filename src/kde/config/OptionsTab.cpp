@@ -94,10 +94,13 @@ void OptionsTab::reset(void)
 	Q_D(OptionsTab);
 
 	// Downloads
-	d->ui.chkExtImgDownloadEnabled->setChecked(config->extImgDownloadEnabled());
+	d->ui.grpExtImgDownloads->setChecked(config->extImgDownloadEnabled());
 	d->ui.chkUseIntIconForSmallSizes->setChecked(config->useIntIconForSmallSizes());
-	d->ui.chkDownloadHighResScans->setChecked(config->downloadHighResScans());
 	d->ui.chkStoreFileOriginInfo->setChecked(config->storeFileOriginInfo());
+
+	// Image bandwidth options
+	d->ui.cboUnmeteredConnection->setCurrentIndex(static_cast<int>(config->imgBandwidthUnmetered()));
+	d->ui.cboMeteredConnection->setCurrentIndex(static_cast<int>(config->imgBandwidthMetered()));
 
 	// Options
 	d->ui.chkShowDangerousPermissionsOverlayIcon->setChecked(config->showDangerousPermissionsOverlayIcon());
@@ -132,10 +135,13 @@ void OptionsTab::loadDefaults(void)
 	// Downloads
 	static const bool extImgDownloadEnabled_default = true;
 	static const bool useIntIconForSmallSizes_default = true;
-	static const bool downloadHighResScans_default = true;
 	static const bool storeFileOriginInfo_default = true;
 	static const int palLanguageForGameTDB_default =
 		OptionsTabPrivate::pal_lc_idx_def;	// cboGameTDBPAL index ('en')
+
+	// Image bandwidth options
+	static const Config::ImgBandwidth imgBandwidthUnmetered_default = Config::ImgBandwidth::HighRes;
+	static const Config::ImgBandwidth imgBandwidthMetered_default = Config::ImgBandwidth::NormalRes;
 
 	// Options
 	static const bool showDangerousPermissionsOverlayIcon_default = true;
@@ -145,16 +151,12 @@ void OptionsTab::loadDefaults(void)
 	Q_D(OptionsTab);
 
 	// Downloads
-	if (d->ui.chkExtImgDownloadEnabled->isChecked() != extImgDownloadEnabled_default) {
-		d->ui.chkExtImgDownloadEnabled->setChecked(extImgDownloadEnabled_default);
+	if (d->ui.grpExtImgDownloads->isChecked() != extImgDownloadEnabled_default) {
+		d->ui.grpExtImgDownloads->setChecked(extImgDownloadEnabled_default);
 		isDefChanged = true;
 	}
 	if (d->ui.chkUseIntIconForSmallSizes->isChecked() != useIntIconForSmallSizes_default) {
 		d->ui.chkUseIntIconForSmallSizes->setChecked(useIntIconForSmallSizes_default);
-		isDefChanged = true;
-	}
-	if (d->ui.chkDownloadHighResScans->isChecked() != downloadHighResScans_default) {
-		d->ui.chkDownloadHighResScans->setChecked(downloadHighResScans_default);
 		isDefChanged = true;
 	}
 	if (d->ui.chkStoreFileOriginInfo->isChecked() != storeFileOriginInfo_default) {
@@ -163,6 +165,16 @@ void OptionsTab::loadDefaults(void)
 	}
 	if (d->ui.cboGameTDBPAL->currentIndex() != palLanguageForGameTDB_default) {
 		d->ui.cboGameTDBPAL->setCurrentIndex(palLanguageForGameTDB_default);
+		isDefChanged = true;
+	}
+
+	// Image bandwidth options
+	if (d->ui.cboUnmeteredConnection->currentIndex() != static_cast<int>(imgBandwidthUnmetered_default)) {
+		d->ui.cboUnmeteredConnection->setCurrentIndex(static_cast<int>(imgBandwidthUnmetered_default));
+		isDefChanged = true;
+	}
+	if (d->ui.cboMeteredConnection->currentIndex() != static_cast<int>(imgBandwidthMetered_default)) {
+		d->ui.cboMeteredConnection->setCurrentIndex(static_cast<int>(imgBandwidthMetered_default));
 		isDefChanged = true;
 	}
 
@@ -206,16 +218,46 @@ void OptionsTab::save(QSettings *pSettings)
 	// Downloads
 	pSettings->beginGroup(QLatin1String("Downloads"));
 	pSettings->setValue(QLatin1String("ExtImageDownload"),
-		d->ui.chkExtImgDownloadEnabled->isChecked());
+		d->ui.grpExtImgDownloads->isChecked());
 	pSettings->setValue(QLatin1String("UseIntIconForSmallSizes"),
 		d->ui.chkUseIntIconForSmallSizes->isChecked());
-	pSettings->setValue(QLatin1String("DownloadHighResScans"),
-		d->ui.chkDownloadHighResScans->isChecked());
 	pSettings->setValue(QLatin1String("StoreFileOriginInfo"),
 		d->ui.chkStoreFileOriginInfo->isChecked());
 	// NOTE: QComboBox::currentData() was added in Qt 5.2.
 	pSettings->setValue(QLatin1String("PalLanguageForGameTDB"),
 		lcToQString(d->ui.cboGameTDBPAL->itemData(d->ui.cboGameTDBPAL->currentIndex()).toUInt()));
+
+	// Image bandwidth options
+	// TODO: Consolidate this.
+	const char *sUnmetered, *sMetered;
+	switch (static_cast<Config::ImgBandwidth>(d->ui.cboUnmeteredConnection->currentIndex())) {
+		case Config::ImgBandwidth::None:
+			sUnmetered = "None";
+			break;
+		case Config::ImgBandwidth::NormalRes:
+			sUnmetered = "NormalRes";
+			break;
+		case Config::ImgBandwidth::HighRes:
+		default:
+			sUnmetered = "HighRes";
+			break;
+	}
+	switch (static_cast<Config::ImgBandwidth>(d->ui.cboMeteredConnection->currentIndex())) {
+		case Config::ImgBandwidth::None:
+			sMetered = "None";
+			break;
+		case Config::ImgBandwidth::NormalRes:
+		default:
+			sMetered = "NormalRes";
+			break;
+		case Config::ImgBandwidth::HighRes:
+			sMetered = "HighRes";
+			break;
+	}
+	pSettings->setValue(QLatin1String("ImgBandwidthUnmetered"), QLatin1String(sUnmetered));
+	pSettings->setValue(QLatin1String("ImgBandwidthMetered"), QLatin1String(sMetered));
+	// Remove the old option
+	pSettings->remove(QLatin1String("DownloadHighResScans"));
 	pSettings->endGroup();
 
 	// Options

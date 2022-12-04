@@ -77,12 +77,18 @@ class ConfigPrivate : public ConfReaderPrivate
 		 */
 		unordered_map<string, uint32_t> mapImgTypePrio;
 
-		// Download options.
+		// Download options
+		uint32_t palLanguageForGameTDB;
 		bool extImgDownloadEnabled;
 		bool useIntIconForSmallSizes;
-		bool downloadHighResScans;
 		bool storeFileOriginInfo;
-		uint32_t palLanguageForGameTDB;
+
+		// Image bandwidth options
+		Config::ImgBandwidth imgBandwidthUnmetered;
+		Config::ImgBandwidth imgBandwidthMetered;
+		// Compatibility with older settings
+		bool isNewBandwidthOptionSet;
+		bool downloadHighResScans;
 
 		// DMG title screen mode. [index is ROM type]
 		Config::DMG_TitleScreen_Mode dmgTSMode[Config::DMG_TitleScreen_Mode::DMG_TS_MAX];
@@ -119,15 +125,20 @@ const uint8_t ConfigPrivate::defImgTypePrio[] = {
 
 ConfigPrivate::ConfigPrivate()
 	: super("rom-properties.conf")
-	/* Download options */
+	// Download options
+	, palLanguageForGameTDB('en')
 	, extImgDownloadEnabled(true)
 	, useIntIconForSmallSizes(true)
-	, downloadHighResScans(true)
 	, storeFileOriginInfo(true)
-	, palLanguageForGameTDB('en')
-	/* Overlay icon */
+	// Image bandwidth options
+	, imgBandwidthUnmetered(Config::ImgBandwidth::HighRes)
+	, imgBandwidthMetered(Config::ImgBandwidth::NormalRes)
+	// Compatibility with older settings
+	, isNewBandwidthOptionSet(false)
+	, downloadHighResScans(true)
+	// Overlay icon
 	, showDangerousPermissionsOverlayIcon(true)
-	/* Enable thumbnailing and metadata on network FS */
+	// Enable thumbnailing and metadata on network FS
 	, enableThumbnailOnNetworkFS(false)
 {
 	// NOTE: Configuration is also initialized in the reset() function.
@@ -153,8 +164,14 @@ void ConfigPrivate::reset(void)
 	// Download options
 	extImgDownloadEnabled = true;
 	useIntIconForSmallSizes = true;
-	downloadHighResScans = true;
 	storeFileOriginInfo = true;
+
+	// Image bandwidth options
+	imgBandwidthUnmetered = Config::ImgBandwidth::HighRes;
+	imgBandwidthMetered = Config::ImgBandwidth::NormalRes;
+	// Compatibility with older settings
+	isNewBandwidthOptionSet = false;
+	downloadHighResScans = false;
 
 	// DMG title screen mode.
 	dmgTSMode[Config::DMG_TitleScreen_Mode::DMG_TS_DMG] = Config::DMG_TitleScreen_Mode::DMG_TS_DMG;
@@ -192,15 +209,15 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 	// Which section are we in?
 	if (!strcasecmp(section, "Downloads")) {
 		// Downloads. Check for one of the boolean options.
-		bool *param;
+		bool *bParam = nullptr;
+		Config::ImgBandwidth *ibParam = nullptr;
+
 		if (!strcasecmp(name, "ExtImageDownload")) {
-			param = &extImgDownloadEnabled;
+			bParam = &extImgDownloadEnabled;
 		} else if (!strcasecmp(name, "UseIntIconForSmallSizes")) {
-			param = &useIntIconForSmallSizes;
-		} else if (!strcasecmp(name, "DownloadHighResScans")) {
-			param = &downloadHighResScans;
+			bParam = &useIntIconForSmallSizes;
 		} else if (!strcasecmp(name, "StoreFileOriginInfo")) {
-			param = &storeFileOriginInfo;
+			bParam = &storeFileOriginInfo;
 		} else if (!strcasecmp(name, "PalLanguageForGameTDB")) {
 			// PAL language. Parse the language code.
 			// NOTE: Converting to lowercase.
@@ -211,19 +228,45 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 				palLanguageForGameTDB |= TOLOWER(*value);
 			}
 			return 1;
+		} else if (!strcasecmp(name, "ImgBandwidthUnmetered")) {
+			isNewBandwidthOptionSet = true;
+			ibParam = &imgBandwidthUnmetered;
+		} else if (!strcasecmp(name, "ImgBandwidthMetered")) {
+			isNewBandwidthOptionSet = true;
+			ibParam = &imgBandwidthMetered;
+		} else if (!strcasecmp(name, "DownloadHighResScans")) {
+			bParam = &downloadHighResScans;
 		} else {
 			// Invalid option.
 			return 1;
 		}
 
-		// Parse the value.
-		// Acceptable values are "true", "false", "1", and "0".
-		if (!strcasecmp(value, "true") || !strcmp(value, "1")) {
-			*param = true;
-		} else if (!strcasecmp(value, "false") || !strcmp(value, "0")) {
-			*param = false;
+		if (bParam) {
+			// Boolean value.
+			// Acceptable values are "true", "false", "1", and "0".
+			if (!strcasecmp(value, "true") || !strcmp(value, "1")) {
+				*bParam = true;
+			} else if (!strcasecmp(value, "false") || !strcmp(value, "0")) {
+				*bParam = false;
+			} else {
+				// TODO: Show a warning or something?
+			}
+		} else if (ibParam) {
+			// ImgBandwidth value.
+			if (!strcasecmp(value, "None")) {
+				*ibParam = Config::ImgBandwidth::None;
+			} else if (!strcasecmp(value, "NormalRes")) {
+				*ibParam = Config::ImgBandwidth::NormalRes;
+			} else if (!strcasecmp(value, "HighRes")) {
+				*ibParam = Config::ImgBandwidth::HighRes;
+			} else {
+				// Invalid value.
+				return 1;
+			}
 		} else {
-			// TODO: Show a warning or something?
+			// Neither are set!
+			assert(!"Missing bParam or ibParam.");
+			return 1;
 		}
 	} else if (!strcasecmp(section, "DMGTitleScreenMode")) {
 		// DMG title screen mode.
@@ -549,17 +592,6 @@ bool Config::useIntIconForSmallSizes(void) const
 }
 
 /**
- * Download high-resolution scans if viewing large thumbnails.
- * NOTE: Call load() before using this function.
- * @return True if we should download high-resolution scans; false if not.
- */
-bool Config::downloadHighResScans(void) const
-{
-	RP_D(const Config);
-	return d->downloadHighResScans;
-}
-
-/**
  * Store file origin information?
  * NOTE: Call load() before using this function.
  * @return True if we should; false if not.
@@ -578,6 +610,44 @@ uint32_t Config::palLanguageForGameTDB(void) const
 {
 	RP_D(const Config);
 	return d->palLanguageForGameTDB;
+}
+
+/* Image bandwidth settings */
+
+/**
+ * What type of images should be downloaded on unmetered connections?
+ * These connections do not charge for usage.
+ * @return ImgBandwidth for unmetered connections
+ */
+Config::ImgBandwidth Config::imgBandwidthUnmetered(void) const
+{
+	RP_D(const Config);
+	if (d->isNewBandwidthOptionSet) {
+		// New options are set.
+		return d->imgBandwidthUnmetered;
+	} else {
+		// New options are *not* set.
+		// Use the old option to select between high-res and normal-res.
+		return (d->downloadHighResScans) ? ImgBandwidth::HighRes : ImgBandwidth::NormalRes;
+	}
+}
+
+/**
+ * What type of images should be downloaded on metered connections?
+ * These connections may charge for usage.
+ * @return ImgBandwidth for metered connections
+ */
+Config::ImgBandwidth Config::imgBandwidthMetered(void) const
+{
+	RP_D(const Config);
+	if (d->isNewBandwidthOptionSet) {
+		// New options are set.
+		return d->imgBandwidthMetered;
+	} else {
+		// New options are *not* set.
+		// Default to normal resolution for metered connections.
+		return ImgBandwidth::NormalRes;
+	}
 }
 
 /** DMG title screen mode **/

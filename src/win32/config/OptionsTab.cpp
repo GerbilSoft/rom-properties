@@ -77,6 +77,12 @@ class OptionsTabPrivate
 
 	public:
 		/**
+		 * Update grpExtImgDl's control sensitivity.
+		 */
+		void updateGrpExtImgDl(void);
+
+	public:
+		/**
 		 * Dialog procedure.
 		 * @param hDlg
 		 * @param uMsg
@@ -135,25 +141,30 @@ void OptionsTabPrivate::reset(void)
 	const Config *const config = Config::instance();
 
 	// Downloads
-	CheckDlgButton(hWndPropSheet, IDC_EXTIMGDL, boolToBstChecked(config->extImgDownloadEnabled()));
-	CheckDlgButton(hWndPropSheet, IDC_INTICONSMALL, boolToBstChecked(config->useIntIconForSmallSizes()));
-	CheckDlgButton(hWndPropSheet, IDC_HIGHRESDL, boolToBstChecked(config->downloadHighResScans()));
-	CheckDlgButton(hWndPropSheet, IDC_STOREFILEORIGININFO, boolToBstChecked(config->storeFileOriginInfo()));
+	CheckDlgButton(hWndPropSheet, IDC_OPTIONS_CHKEXTIMGDL, boolToBstChecked(config->extImgDownloadEnabled()));
+	CheckDlgButton(hWndPropSheet, IDC_OPTIONS_INTICONSMALL, boolToBstChecked(config->useIntIconForSmallSizes()));
+	CheckDlgButton(hWndPropSheet, IDC_OPTIONS_STOREFILEORIGININFO, boolToBstChecked(config->storeFileOriginInfo()));
+
+	// Image bandwidth options
+	ComboBox_SetCurSel(GetDlgItem(hWndPropSheet, IDC_OPTIONS_CBO_UNMETERED_DL), static_cast<int>(config->imgBandwidthUnmetered()));
+	ComboBox_SetCurSel(GetDlgItem(hWndPropSheet, IDC_OPTIONS_CBO_METERED_DL), static_cast<int>(config->imgBandwidthMetered()));
+	// Update sensitivity
+	updateGrpExtImgDl();
 
 	// Options
 	// FIXME: Uncomment this once the "dangerous" permissions overlay
 	// is working on Windows.
 	/*
-	CheckDlgButton(hWndPropSheet, IDC_DANGEROUSPERMISSIONS,
+	CheckDlgButton(hWndPropSheet, IDC_OPTIONS_DANGEROUSPERMISSIONS,
 		boolToBstChecked(config->showDangerousPermissionsOverlayIcon()));
 	*/
-	CheckDlgButton(hWndPropSheet, IDC_ENABLETHUMBNAILONNETWORKFS,
+	CheckDlgButton(hWndPropSheet, IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS,
 		boolToBstChecked(config->enableThumbnailOnNetworkFS()));
 
 	// FIXME: Remove this once the "dangerous" permissions overlay
 	// is working on Windows.
-	CheckDlgButton(hWndPropSheet, IDC_DANGEROUSPERMISSIONS, BST_UNCHECKED);
-	EnableWindow(GetDlgItem(hWndPropSheet, IDC_DANGEROUSPERMISSIONS), FALSE);
+	CheckDlgButton(hWndPropSheet, IDC_OPTIONS_DANGEROUSPERMISSIONS, BST_UNCHECKED);
+	EnableWindow(GetDlgItem(hWndPropSheet, IDC_OPTIONS_DANGEROUSPERMISSIONS), FALSE);
 
 	// PAL language code.
 	const uint32_t lc = config->palLanguageForGameTDB();
@@ -166,7 +177,7 @@ void OptionsTabPrivate::reset(void)
 		// Out of range. Default to 'en'.
 		idx = pal_lc_idx_def;
 	}
-	ComboBox_SetCurSel(GetDlgItem(hWndPropSheet, IDC_PALLANGUAGEFORGAMETDB), idx);
+	ComboBox_SetCurSel(GetDlgItem(hWndPropSheet, IDC_OPTIONS_PALLANGUAGEFORGAMETDB), idx);
 
 	// No longer changed.
 	changed = false;
@@ -183,10 +194,14 @@ void OptionsTabPrivate::loadDefaults(void)
 	// Downloads
 	static const bool extImgDownloadEnabled_default = true;
 	static const bool useIntIconForSmallSizes_default = true;
-	static const bool downloadHighResScans_default = true;
 	static const bool storeFileOriginInfo_default = true;
 	static const int palLanguageForGameTDB_default =
 		OptionsTabPrivate::pal_lc_idx_def;	// cboGameTDBPAL index ('en')
+
+	// Image bandwidth options
+	static const Config::ImgBandwidth imgBandwidthUnmetered_default = Config::ImgBandwidth::HighRes;
+	static const Config::ImgBandwidth imgBandwidthMetered_default = Config::ImgBandwidth::NormalRes;
+
 	// Options
 	// FIXME: Uncomment this once the "dangerous" permissions overlay
 	// is working on Windows.
@@ -195,31 +210,42 @@ void OptionsTabPrivate::loadDefaults(void)
 	bool isDefChanged = false;
 
 	// Downloads
-	bool cur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_EXTIMGDL));
+	bool cur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_CHKEXTIMGDL));
 	if (cur != extImgDownloadEnabled_default) {
-		CheckDlgButton(hWndPropSheet, IDC_EXTIMGDL, boolToBstChecked(extImgDownloadEnabled_default));
+		CheckDlgButton(hWndPropSheet, IDC_OPTIONS_CHKEXTIMGDL, boolToBstChecked(extImgDownloadEnabled_default));
 		isDefChanged = true;
+		// Update sensitivity
+		updateGrpExtImgDl();
 	}
-	cur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_INTICONSMALL));
+	cur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_INTICONSMALL));
 	if (cur != useIntIconForSmallSizes_default) {
-		CheckDlgButton(hWndPropSheet, IDC_INTICONSMALL, boolToBstChecked(useIntIconForSmallSizes_default));
+		CheckDlgButton(hWndPropSheet, IDC_OPTIONS_INTICONSMALL, boolToBstChecked(useIntIconForSmallSizes_default));
 		isDefChanged = true;
 	}
-	cur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_HIGHRESDL));
-	if (cur != downloadHighResScans_default) {
-		CheckDlgButton(hWndPropSheet, IDC_HIGHRESDL, boolToBstChecked(downloadHighResScans_default));
-		isDefChanged = true;
-	}
-	cur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_STOREFILEORIGININFO));
+	cur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_STOREFILEORIGININFO));
 	if (cur != storeFileOriginInfo_default) {
-		CheckDlgButton(hWndPropSheet, IDC_STOREFILEORIGININFO,
+		CheckDlgButton(hWndPropSheet, IDC_OPTIONS_STOREFILEORIGININFO,
 			boolToBstChecked(storeFileOriginInfo_default));
 		isDefChanged = true;
 	}
-	HWND cboGameTDBPAL = GetDlgItem(hWndPropSheet, IDC_PALLANGUAGEFORGAMETDB);
+	HWND cboGameTDBPAL = GetDlgItem(hWndPropSheet, IDC_OPTIONS_PALLANGUAGEFORGAMETDB);
 	int idx = ComboBox_GetCurSel(cboGameTDBPAL);
 	if (idx != palLanguageForGameTDB_default) {
 		ComboBox_SetCurSel(cboGameTDBPAL, idx);
+		isDefChanged = true;
+	}
+
+	// Image bandwidth options
+	HWND cboUnmeteredDL = GetDlgItem(hWndPropSheet, IDC_OPTIONS_CBO_UNMETERED_DL);
+	idx = ComboBox_GetCurSel(cboUnmeteredDL);
+	if (idx != static_cast<int>(imgBandwidthUnmetered_default)) {
+		ComboBox_SetCurSel(cboUnmeteredDL, static_cast<int>(imgBandwidthUnmetered_default));
+		isDefChanged = true;
+	}
+	HWND cboMeteredDL = GetDlgItem(hWndPropSheet, IDC_OPTIONS_CBO_METERED_DL);
+	idx = ComboBox_GetCurSel(cboMeteredDL);
+	if (idx != static_cast<int>(imgBandwidthMetered_default)) {
+		ComboBox_SetCurSel(cboMeteredDL, static_cast<int>(imgBandwidthMetered_default));
 		isDefChanged = true;
 	}
 
@@ -227,16 +253,16 @@ void OptionsTabPrivate::loadDefaults(void)
 	// FIXME: Uncomment this once the "dangerous" permissions overlay
 	// is working on Windows.
 	/*
-	cur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_DANGEROUSPERMISSIONS));
+	cur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_DANGEROUSPERMISSIONS));
 	if (cur != showDangerousPermissionsOverlayIcon_default) {
-		CheckDlgButton(hWndPropSheet, IDC_DANGEROUSPERMISSIONS,
+		CheckDlgButton(hWndPropSheet, IDC_OPTIONS_DANGEROUSPERMISSIONS,
 			boolToBstChecked(showDangerousPermissionsOverlayIcon_default));
 		isDefChanged = true;
 	}
 	*/
-	cur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_ENABLETHUMBNAILONNETWORKFS));
+	cur = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS));
 	if (cur != enableThumbnailOnNetworkFS_default) {
-		CheckDlgButton(hWndPropSheet, IDC_ENABLETHUMBNAILONNETWORKFS,
+		CheckDlgButton(hWndPropSheet, IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS,
 			boolToBstChecked(enableThumbnailOnNetworkFS_default));
 		isDefChanged = true;
 	}
@@ -276,24 +302,52 @@ void OptionsTabPrivate::save(void)
 	const tstring tfilename = U82T_c(filename);
 
 	// Downloads
-	const TCHAR *btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_EXTIMGDL));
+	const TCHAR *btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_CHKEXTIMGDL));
 	WritePrivateProfileString(_T("Downloads"), _T("ExtImageDownload"), btstr, tfilename.c_str());
 
-	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_INTICONSMALL));
+	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_INTICONSMALL));
 	WritePrivateProfileString(_T("Downloads"), _T("UseIntIconForSmallSizes"), btstr, tfilename.c_str());
 
-	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_HIGHRESDL));
-	WritePrivateProfileString(_T("Downloads"), _T("DownloadHighResScans"), btstr, tfilename.c_str());
-
-	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_STOREFILEORIGININFO));
+	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_STOREFILEORIGININFO));
 	WritePrivateProfileString(_T("Downloads"), _T("StoreFileOriginInfo"), btstr, tfilename.c_str());
 
-	int idx = ComboBox_GetCurSel(GetDlgItem(hWndPropSheet, IDC_PALLANGUAGEFORGAMETDB));
+	int idx = ComboBox_GetCurSel(GetDlgItem(hWndPropSheet, IDC_OPTIONS_PALLANGUAGEFORGAMETDB));
 	if (idx < 0 || idx >= ARRAY_SIZE_I(pal_lc)) {
 		idx = pal_lc_idx_def;
 	}
 	WritePrivateProfileString(_T("Downloads"), _T("PalLanguageForGameTDB"),
 		SystemRegion::lcToTString(pal_lc[idx]).c_str(), tfilename.c_str());
+
+	// Image bandwidth options
+	// TODO: Consolidate this.
+	const TCHAR *sUnmetered, *sMetered;
+	switch (static_cast<Config::ImgBandwidth>(ComboBox_GetCurSel(GetDlgItem(hWndPropSheet, IDC_OPTIONS_CBO_UNMETERED_DL)))) {
+		case Config::ImgBandwidth::None:
+			sUnmetered = _T("None");
+			break;
+		case Config::ImgBandwidth::NormalRes:
+			sUnmetered = _T("NormalRes");
+			break;
+		case Config::ImgBandwidth::HighRes:
+		default:
+			sUnmetered = _T("HighRes");
+			break;
+	}
+	switch (static_cast<Config::ImgBandwidth>(ComboBox_GetCurSel(GetDlgItem(hWndPropSheet, IDC_OPTIONS_CBO_METERED_DL)))) {
+		case Config::ImgBandwidth::None:
+			sMetered = _T("None");
+			break;
+		case Config::ImgBandwidth::NormalRes:
+		default:
+			sMetered = _T("NormalRes");
+			break;
+		case Config::ImgBandwidth::HighRes:
+			sMetered = _T("HighRes");
+			break;
+	}
+	WritePrivateProfileString(_T("Downloads"), _T("ImgBandwidthUnmetered"), sUnmetered, tfilename.c_str());
+	WritePrivateProfileString(_T("Downloads"), _T("ImgBandwidthMetered"), sMetered, tfilename.c_str());
+	// TODO: Remove the old key.
 
 	// Options
 	// FIXME: Uncomment this once the "dangerous" permissions overlay
@@ -303,11 +357,23 @@ void OptionsTabPrivate::save(void)
 	WritePrivateProfileString(_T("Options"), _T("ShowDangerousPermissionsOverlayIcon"), btstr, tfilename.c_str());
 	*/
 
-	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_ENABLETHUMBNAILONNETWORKFS));
+	btstr = bstCheckedToBoolString(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_ENABLETHUMBNAILONNETWORKFS));
 	WritePrivateProfileString(_T("Options"), _T("EnableThumbnailOnNetworkFS"), btstr, tfilename.c_str());
 
 	// No longer changed.
 	changed = false;
+}
+
+/**
+ * Update grpExtImgDl's control sensitivity.
+ */
+void OptionsTabPrivate::updateGrpExtImgDl(void)
+{
+	const bool enable = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_CHKEXTIMGDL));
+	EnableWindow(GetDlgItem(hWndPropSheet, IDC_OPTIONS_LBL_UNMETERED_DL), enable);
+	EnableWindow(GetDlgItem(hWndPropSheet, IDC_OPTIONS_CBO_UNMETERED_DL), enable);
+	EnableWindow(GetDlgItem(hWndPropSheet, IDC_OPTIONS_LBL_METERED_DL), enable);
+	EnableWindow(GetDlgItem(hWndPropSheet, IDC_OPTIONS_CBO_METERED_DL), enable);
 }
 
 /**
@@ -338,9 +404,22 @@ INT_PTR CALLBACK OptionsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 			// Store the D object pointer with this particular page dialog.
 			SetWindowLongPtr(hDlg, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
 
+			// Populate the combo boxes.
+			const tstring s_dl_None = U82T_c(C_("OptionsTab", "Don't download any images"));
+			const tstring s_dl_NormalRes = U82T_c(C_("OptionsTab", "Download normal-resolution images"));
+			const tstring s_dl_HighRes = U82T_c(C_("OptionsTab", "Download high-resolution images"));
+			HWND cboUnmeteredDL = GetDlgItem(hDlg, IDC_OPTIONS_CBO_UNMETERED_DL);
+			ComboBox_AddString(cboUnmeteredDL, s_dl_None.c_str());
+			ComboBox_AddString(cboUnmeteredDL, s_dl_NormalRes.c_str());
+			ComboBox_AddString(cboUnmeteredDL, s_dl_HighRes.c_str());
+			HWND cboMeteredDL = GetDlgItem(hDlg, IDC_OPTIONS_CBO_METERED_DL);
+			ComboBox_AddString(cboMeteredDL, s_dl_None.c_str());
+			ComboBox_AddString(cboMeteredDL, s_dl_NormalRes.c_str());
+			ComboBox_AddString(cboMeteredDL, s_dl_HighRes.c_str());
+
 			// Initialize the PAL language dropdown.
 			// TODO: "Force PAL" option.
-			HWND cboLanguage = GetDlgItem(hDlg, IDC_PALLANGUAGEFORGAMETDB);
+			HWND cboLanguage = GetDlgItem(hDlg, IDC_OPTIONS_PALLANGUAGEFORGAMETDB);
 			assert(cboLanguage != nullptr);
 			if (cboLanguage) {
 				LanguageComboBox_SetForcePAL(cboLanguage, true);

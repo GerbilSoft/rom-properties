@@ -92,6 +92,17 @@ class CreateThumbnail : public LibRomData::TCreateThumbnail<HBITMAP>
 			((void)url);
 			return std::string();
 		}
+
+		/**
+		 * Is the system using a metered connection?
+		 *
+		 * Note that if the system doesn't support identifying if the
+		 * connection is metered, it will be assumed that the network
+		 * connection is unmetered.
+		 *
+		 * @return True if metered; false if not.
+		 */
+		bool isMetered(void) final;
 };
 
 /**

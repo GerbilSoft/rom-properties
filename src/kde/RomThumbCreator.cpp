@@ -31,6 +31,12 @@ using LibRomData::RomDataFactory;
 #include "libromdata/img/TCreateThumbnail.cpp"
 using LibRomData::TCreateThumbnail;
 
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0) && defined(HAVE_QtDBus)
+// NetworkManager D-Bus interface to determine if the connection is metered.
+// FIXME: Broken on Qt4.
+#  include "networkmanagerinterface.h"
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) && HAVE_QtDBus */
+
 // C++ STL classes.
 using std::string;
 using std::unique_ptr;
@@ -152,6 +158,45 @@ class RomThumbCreatorPrivate final : public TCreateThumbnail<QImage>
 		inline string proxyForUrl(const char *url) const final
 		{
 			return ::proxyForUrl(url);
+		}
+
+		/**
+		 * Is the system using a metered connection?
+		 *
+		 * Note that if the system doesn't support identifying if the
+		 * connection is metered, it will be assumed that the network
+		 * connection is unmetered.
+		 *
+		 * @return True if metered; false if not.
+		 */
+		bool isMetered(void) final
+		{
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0) && defined(HAVE_QtDBus)
+			// TODO: Keep a persistent NetworkManager connection?
+			org::freedesktop::NetworkManager iface(
+				QLatin1String("org.freedesktop.NetworkManager"),
+				QLatin1String("/org/freedesktop/NetworkManager"),
+				QDBusConnection::systemBus());
+			if (!iface.isValid()) {
+				// Invalid interface.
+				// Assume unmetered.
+				return false;
+			}
+
+			// https://developer-old.gnome.org/NetworkManager/stable/nm-dbus-types.html#NMMetered
+			enum NMMetered : uint32_t {
+				NM_METERED_UNKNOWN	= 0,
+				NM_METERED_YES		= 1,
+				NM_METERED_NO		= 2,
+				NM_METERED_GUESS_YES	= 3,
+				NM_METERED_GUESS_NO	= 4,
+			};
+			const NMMetered metered = static_cast<NMMetered>(iface.metered());
+			return (metered == NM_METERED_YES || metered == NM_METERED_GUESS_YES);
+#else
+			// FIXME: Broken on Qt4.
+			return false;
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) && HAVE_QtDBus */
 		}
 };
 

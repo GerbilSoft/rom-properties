@@ -78,11 +78,14 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 		SET(KF5_KFMD_PLUGIN_INSTALL_DIR "${KF5_PLUGIN_INSTALL_DIR}/kf5/kfilemetadata")
 		SET(KF5_KOVI_PLUGIN_INSTALL_DIR "${KF5_PLUGIN_INSTALL_DIR}/kf5/overlayicon")
 
-		IF(ENABLE_ACHIEVEMENTS AND Qt5DBus_FOUND)
-			# QtDBus is used for notifications.
-			# TODO: Make notifications optional.
-			SET(HAVE_QtDBus_NOTIFY 1)
-		ENDIF(ENABLE_ACHIEVEMENTS AND Qt5DBus_FOUND)
+		IF(Qt5DBus_FOUND)
+			SET(HAVE_QtDBus 1)
+			IF(ENABLE_ACHIEVEMENTS)
+				# QtDBus is used for notifications.
+				# TODO: Make notifications optional.
+				SET(HAVE_QtDBus_NOTIFY 1)
+			ENDIF(ENABLE_ACHIEVEMENTS)
+		ENDIF(Qt5DBus_FOUND)
 	ELSE()
 		# Qt5 not found.
 		SET(BUILD_KF5 OFF CACHE INTERNAL "Build the KDE Frameworks 5 plugin." FORCE)
@@ -114,21 +117,24 @@ IF(Qt5Core_FOUND)
 		OPTIONS -no-compress
 		)
 ENDIF(Qt5Core_FOUND)
-IF(HAVE_QtDBus_NOTIFY)
-	STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_SRCS "${rom-properties-kde-notify_SRCS}")
-	STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_H    "${rom-properties-kde-notify_H}")
-
-	# QtDBus wrappers
+IF(HAVE_QtDBus)
 	QT5_ADD_DBUS_INTERFACES(${PROJECT_NAME}_DBUS_IFACE_SRCS
-		"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.Notifications.xml"
+		"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.NetworkManager.xml"
 		)
-ENDIF(HAVE_QtDBus_NOTIFY)
-
+	IF(HAVE_QtDBus_NOTIFY)
+		STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_SRCS "${rom-properties-kde-notify_SRCS}")
+		STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_H    "${rom-properties-kde-notify_H}")
+		QT5_ADD_DBUS_INTERFACES(${PROJECT_NAME}_DBUS_IFACE_SRCS_2
+			"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.Notifications.xml"
+			)
+	ENDIF(HAVE_QtDBus_NOTIFY)
+ENDIF(HAVE_QtDBus)
 SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_SRCS}
 	${rom-properties-kio5_SRCS}
 	${${PROJECT_NAME}-notify_SRCS}
 	${${PROJECT_NAME}_DBUS_IFACE_SRCS}
+	${${PROJECT_NAME}_DBUS_IFACE_SRCS_2}
 	${${PROJECT_NAME}_RCC_O}
 	RomPropertiesDialogPluginFactoryKF5.cpp
 	../ExtractorPlugin.cpp
@@ -178,9 +184,9 @@ IF(BUILD_KF5)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE romdata)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC KF5::KIOCore KF5::KIOWidgets KF5::WidgetsAddons KF5::FileMetaData)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC Qt5::Widgets Qt5::Gui Qt5::Core)
-	IF(HAVE_QtDBus_NOTIFY)
+	IF(HAVE_QtDBus)
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC Qt5::DBus)
-	ENDIF(HAVE_QtDBus_NOTIFY)
+	ENDIF(HAVE_QtDBus)
 
 	# ExtractorPluginForwarder
 	ADD_LIBRARY(kfilemetadata_${PROJECT_NAME} MODULE

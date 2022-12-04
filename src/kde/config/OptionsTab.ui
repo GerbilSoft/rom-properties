@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>490</width>
-    <height>384</height>
+    <width>503</width>
+    <height>453</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="vboxMain">
@@ -18,24 +18,81 @@
      </property>
      <layout class="QVBoxLayout" name="vboxDownloads">
       <item>
-       <widget class="QCheckBox" name="chkExtImgDownloadEnabled">
-        <property name="text">
-         <string>Enable external image downloads.</string>
+       <widget class="QGroupBox" name="grpExtImgDownloads">
+        <property name="title">
+         <string>E&amp;xternal Image Downloads</string>
         </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <layout class="QFormLayout" name="formLayout">
+         <item row="0" column="0">
+          <widget class="QLabel" name="lblUnmeteredConnection">
+           <property name="text">
+            <string>When using an unlimited
+network connection:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="cboUnmeteredConnection">
+           <property name="currentIndex">
+            <number>2</number>
+           </property>
+           <item>
+            <property name="text">
+             <string>Don't download any images</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Download normal-resolution images</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Download high-resolution images</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="lblMeteredConnection">
+           <property name="text">
+            <string>When using a metered
+network connection:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="cboMeteredConnection">
+           <property name="currentIndex">
+            <number>1</number>
+           </property>
+           <item>
+            <property name="text">
+             <string>Don't download any images</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Download normal-resolution images</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Download high-resolution images</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
       <item>
        <widget class="QCheckBox" name="chkUseIntIconForSmallSizes">
         <property name="text">
          <string>Always use the internal icon (if present) for small sizes.</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="chkDownloadHighResScans">
-        <property name="text">
-         <string>Download high-resolution scans if viewing large thumbnails.
-This may increase bandwidth usage.</string>
         </property>
        </widget>
       </item>
@@ -130,50 +187,18 @@ file systems. This may slow down file browsing.</string>
  <resources/>
  <connections>
   <connection>
-   <sender>chkExtImgDownloadEnabled</sender>
-   <signal>clicked()</signal>
-   <receiver>OptionsTab</receiver>
-   <slot>optionChanged_slot()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>28</x>
-     <y>60</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>5</x>
-     <y>18</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>chkUseIntIconForSmallSizes</sender>
    <signal>clicked()</signal>
    <receiver>OptionsTab</receiver>
    <slot>optionChanged_slot()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>26</x>
-     <y>95</y>
+     <x>40</x>
+     <y>199</y>
     </hint>
     <hint type="destinationlabel">
      <x>4</x>
      <y>43</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>chkDownloadHighResScans</sender>
-   <signal>clicked()</signal>
-   <receiver>OptionsTab</receiver>
-   <slot>optionChanged_slot()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>40</x>
-     <y>137</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>3</x>
-     <y>72</y>
     </hint>
    </hints>
   </connection>
@@ -184,8 +209,8 @@ file systems. This may slow down file browsing.</string>
    <slot>optionChanged_slot()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>65</x>
-     <y>286</y>
+     <x>79</x>
+     <y>383</y>
     </hint>
     <hint type="destinationlabel">
      <x>0</x>
@@ -200,8 +225,8 @@ file systems. This may slow down file browsing.</string>
    <slot>optionChanged_slot()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>61</x>
-     <y>335</y>
+     <x>75</x>
+     <y>432</y>
     </hint>
     <hint type="destinationlabel">
      <x>1</x>
@@ -216,8 +241,8 @@ file systems. This may slow down file browsing.</string>
    <slot>optionChanged_slot()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>86</x>
-     <y>171</y>
+     <x>100</x>
+     <y>248</y>
     </hint>
     <hint type="destinationlabel">
      <x>0</x>
@@ -232,12 +257,60 @@ file systems. This may slow down file browsing.</string>
    <slot>optionChanged_slot()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>319</x>
-     <y>205</y>
+     <x>356</x>
+     <y>289</y>
     </hint>
     <hint type="destinationlabel">
      <x>487</x>
      <y>200</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cboUnmeteredConnection</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>OptionsTab</receiver>
+   <slot>optionChanged_slot()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>407</x>
+     <y>94</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>499</x>
+     <y>101</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cboMeteredConnection</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>OptionsTab</receiver>
+   <slot>optionChanged_slot()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>425</x>
+     <y>139</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>500</x>
+     <y>146</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>grpExtImgDownloads</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>OptionsTab</receiver>
+   <slot>optionChanged_slot()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>451</x>
+     <y>60</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>501</x>
+     <y>58</y>
     </hint>
    </hints>
   </connection>

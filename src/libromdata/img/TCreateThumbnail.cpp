@@ -144,7 +144,9 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 	// NOTE: This will force a configuration timestamp check.
 	const Config *const config = Config::instance();
 	const bool extImgDownloadEnabled = config->extImgDownloadEnabled();
-	const bool downloadHighResScans = config->downloadHighResScans();
+	const Config::ImgBandwidth imgBandwidthMode = unlikely(this->isMetered())
+		? config->imgBandwidthMetered()
+		: config->imgBandwidthUnmetered();
 
 	CacheManager cache;
 	const auto extURLs_cend = extURLs.cend();
@@ -156,8 +158,8 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 		// Should we attempt to download the image,
 		// or just use the local cache?
 		// TODO: Verify that this works correctly.
-		bool download = extImgDownloadEnabled;
-		if (!downloadHighResScans && extURL.high_res) {
+		bool download = extImgDownloadEnabled || (imgBandwidthMode == Config::ImgBandwidth::None);
+		if ((imgBandwidthMode != Config::ImgBandwidth::HighRes) && extURL.high_res) {
 			// Don't download high-resolution images, but
 			// use them if they've already been downloaded.
 			download = false;

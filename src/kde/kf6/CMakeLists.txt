@@ -100,11 +100,14 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 		SET(KF6_KFMD_PLUGIN_INSTALL_DIR "/usr/lib64/qt6/plugins/kf6/kfilemetadata")
 		SET(KF6_KOVI_PLUGIN_INSTALL_DIR "/usr/lib64/qt6/plugins/kf6/overlayicon")
 
-		IF(ENABLE_ACHIEVEMENTS AND Qt6DBus_FOUND)
-			# QtDBus is used for notifications.
-			# TODO: Make notifications optional.
-			SET(HAVE_QtDBus_NOTIFY 1)
-		ENDIF(ENABLE_ACHIEVEMENTS AND Qt6DBus_FOUND)
+		IF(Qt6DBus_FOUND)
+			SET(HAVE_QtDBus 1)
+			IF(ENABLE_ACHIEVEMENTS)
+				# QtDBus is used for notifications.
+				# TODO: Make notifications optional.
+				SET(HAVE_QtDBus_NOTIFY 1)
+			ENDIF(ENABLE_ACHIEVEMENTS)
+		ENDIF(Qt6DBus_FOUND)
 	ELSE()
 		# Qt6 not found.
 		SET(BUILD_KF6 OFF CACHE INTERNAL "Build the KDE Frameworks 5 plugin." FORCE)
@@ -136,15 +139,18 @@ IF(Qt6Core_FOUND)
 		OPTIONS -no-compress
 		)
 ENDIF(Qt6Core_FOUND)
-IF(HAVE_QtDBus_NOTIFY)
-	STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_SRCS "${rom-properties-kde-notify_SRCS}")
-	STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_H    "${rom-properties-kde-notify_H}")
-
-	# QtDBus wrappers
+IF(HAVE_QtDBus)
 	QT6_ADD_DBUS_INTERFACES(${PROJECT_NAME}_DBUS_IFACE_SRCS
-		"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.Notifications.xml"
+		"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.NetworkManager.xml"
 		)
-ENDIF(HAVE_QtDBus_NOTIFY)
+	IF(HAVE_QtDBus_NOTIFY)
+		STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_SRCS "${rom-properties-kde-notify_SRCS}")
+		STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_H    "${rom-properties-kde-notify_H}")
+		QT6_ADD_DBUS_INTERFACES(${PROJECT_NAME}_DBUS_IFACE_SRCS_2
+			"${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.Notifications.xml"
+			)
+	ENDIF(HAVE_QtDBus_NOTIFY)
+ENDIF(HAVE_QtDBus)
 
 ### FIXME: KF6 isn't available yet, so we're only
 ### compile-testing against Qt6.
@@ -153,6 +159,7 @@ SET(${PROJECT_NAME}_SRCS
 	${rom-properties-kio6_SRCS}
 	${${PROJECT_NAME}-notify_SRCS}
 	${${PROJECT_NAME}_DBUS_IFACE_SRCS}
+	${${PROJECT_NAME}_DBUS_IFACE_SRCS_2}
 	${${PROJECT_NAME}_RCC_O}
 	RomPropertiesDialogPluginFactoryKF6.cpp
 	#../ExtractorPlugin.cpp	# FIXME: KF5 KFileMetaData uses QMap::insertMulti().
@@ -204,9 +211,9 @@ IF(BUILD_KF6)
 	### compile-testing against Qt6.
 	#TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC KF6::KIOCore KF6::KIOWidgets KF6::WidgetsAddons KF6::FileMetaData)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC Qt6::Widgets Qt6::Gui Qt6::Core)
-	IF(HAVE_QtDBus_NOTIFY)
+	IF(HAVE_QtDBus)
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC Qt6::DBus)
-	ENDIF(HAVE_QtDBus_NOTIFY)
+	ENDIF(HAVE_QtDBus)
 
 	### FIXME: KF6 isn't available yet, so we're only
 	### compile-testing against Qt6.
