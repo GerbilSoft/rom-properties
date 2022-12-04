@@ -12,6 +12,10 @@
     in the About tab. When you click the About tab, it will compare the current
     version against the version listed on the RPDB server. If the current
     version is older, a link will be provided to the GitHub releases page.
+  * Metered connections are now detected on Linux systems when using NetworkManager
+    or on Windows 10 v2004 and later. rom-properties can be configured to either
+    download lower-resolution images or no images when on metered connections,
+    separately from the unmetered setting.
 
 * Bug fixes:
   * ELF: The "TLS" symbol type was missing, resulting in an off-by-one
