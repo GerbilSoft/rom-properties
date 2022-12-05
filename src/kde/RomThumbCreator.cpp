@@ -140,7 +140,11 @@ class RomThumbCreatorPrivate final : public TCreateThumbnail<QImage>
 			// being changes to QImage::Format_ARGB32_Premultiplied.
 			// Convert it back to plain ARGB32 if that happens.
 			if (img.format() == QImage::Format_ARGB32_Premultiplied) {
+#if QT_VERSION >= QT_VERSION_CHECK(5,13,0)
 				img.convertTo(QImage::Format_ARGB32);
+#else /* QT_VERSION < QT_VERSION_CHECK(5,13,0) */
+				img = img.convertToFormat(QImage::Format_ARGB32);
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,13,0) */
 			}
 
 			return img;
