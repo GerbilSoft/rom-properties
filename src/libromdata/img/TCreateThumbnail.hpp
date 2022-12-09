@@ -36,6 +36,13 @@ typedef enum {
 } RpCreateThumbnailError;
 
 /**
+ * rp_create_thumbnail2() flags
+ */
+typedef enum {
+	RPCT_FLAG_NO_XDG_THUMBNAIL_METADATA	= (1U << 0),	/*< Don't add XDG thumbnail metadata */
+} RpCreateThumbnailFlags;
+
+/**
  * Thumbnail nearest-neighbor upscaling policy.
  * TODO: Make this configurable.
  */
@@ -55,11 +62,24 @@ typedef enum {
 } ResizeNearestUpPolicy;
 
 /**
- * rp_create_thumbnail() function pointer.
+ * Thumbnail creator function for wrapper programs. (v2)
  * Used for wrapper programs that don't link to libromdata directly.
- * @param source_file Source file. (UTF-8)
- * @param output_file Output file. (UTF-8)
- * @param maximum_size Maximum size.
+ * @param source_file Source file (UTF-8)
+ * @param output_file Output file (UTF-8)
+ * @param maximum_size Maximum size
+ * @param flags Flags (see RpCreateThumbnailFlags)
+ * @return 0 on success; non-zero on error.
+ */
+typedef int (RP_C_API *PFN_RP_CREATE_THUMBNAIL2)(const char *source_file, const char *output_file, int maximum_size, unsigned int flags);
+
+/**
+ * Thumbnail creator function for wrapper programs. (v1)
+ * Used for wrapper programs that don't link to libromdata directly.
+ * [OLD VERSION, for compatibility only.]
+ * @param source_file Source file (UTF-8)
+ * @param output_file Output file (UTF-8)
+ * @param maximum_size Maximum size
+ * @param flags Flags (see RpCreateThumbnailFlags)
  * @return 0 on success; non-zero on error.
  */
 typedef int (RP_C_API *PFN_RP_CREATE_THUMBNAIL)(const char *source_file, const char *output_file, int maximum_size);

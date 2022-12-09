@@ -9,7 +9,7 @@ TryExec=rp-stub
 # TODO:
 # - allow type overrides? for this it should always be image
 # - handle multiple filenames
-Exec=rp-stub -s 0 -a %f
+Exec=rp-stub -s 0 -an %f
 Icon=image-png
 
 Name=Convert to PNG

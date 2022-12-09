@@ -282,14 +282,15 @@ static int openFromFilenameOrURI(const char *source_file, IRpFile **pp_file, str
 }
 
 /**
- * Thumbnail creator function for wrapper programs.
- * @param source_file Source file or URI. (UTF-8)
- * @param output_file Output file. (UTF-8)
- * @param maximum_size Maximum size.
+ * Thumbnail creator function for wrapper programs. (v2)
+ * @param source_file Source file or URI (UTF-8)
+ * @param output_file Output file (UTF-8)
+ * @param maximum_size Maximum size
+ * @param flags Flags (see RpCreateThumbnailFlags)
  * @return 0 on success; non-zero on error.
  */
 extern "C"
-G_MODULE_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const char *output_file, int maximum_size)
+G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const char *output_file, int maximum_size, unsigned int flags)
 {
 	// Some of this is based on the GNOME Thumbnailer skeleton project.
 	// https://github.com/hadess/gnome-thumbnailer-skeleton/blob/master/gnome-thumbnailer-skeleton.c
@@ -347,6 +348,7 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const 
 	char szFile_str[32];
 	GFile *f_src = nullptr;
 	const char *mimeType;
+	const bool doXDG = !(flags & RPCT_FLAG_NO_XDG_THUMBNAIL_METADATA);
 
 	// gdk-pixbuf doesn't support CI8, so we'll assume all
 	// images are ARGB32. (Well, ABGR32, but close enough.)
@@ -366,74 +368,76 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const 
 
 	// Get values for the XDG thumbnail cache text chunks.
 	// KDE uses this order: Software, MTime, Mimetype, Size, URI
-	kv.reserve(5);
+	kv.reserve(doXDG ? 5 : 1);
 
-	// Software.
+	// Software
 	kv.emplace_back("Software", "ROM Properties Page shell extension (GTK" GTK_MAJOR_STR ")");
 
-	// Modification time and file size.
-	mtime_str[0] = 0;
-	szFile_str[0] = 0;
-	f_src = g_file_new_for_uri(s_uri.c_str());
-	if (f_src) {
-		GError *error = nullptr;
-		GFileInfo *const fi_src = g_file_query_info(f_src,
-			G_FILE_ATTRIBUTE_TIME_MODIFIED "," G_FILE_ATTRIBUTE_STANDARD_SIZE,
-			G_FILE_QUERY_INFO_NONE, nullptr, &error);
-		if (!error) {
-			// Get the modification time.
-			guint64 mtime = g_file_info_get_attribute_uint64(fi_src, G_FILE_ATTRIBUTE_TIME_MODIFIED);
-			if (mtime > 0) {
-				snprintf(mtime_str, sizeof(mtime_str), "%" PRId64, (int64_t)mtime);
-			}
+	if (doXDG) {
+		// Modification time and file size
+		mtime_str[0] = 0;
+		szFile_str[0] = 0;
+		f_src = g_file_new_for_uri(s_uri.c_str());
+		if (f_src) {
+			GError *error = nullptr;
+			GFileInfo *const fi_src = g_file_query_info(f_src,
+				G_FILE_ATTRIBUTE_TIME_MODIFIED "," G_FILE_ATTRIBUTE_STANDARD_SIZE,
+				G_FILE_QUERY_INFO_NONE, nullptr, &error);
+			if (!error) {
+				// Get the modification time.
+				guint64 mtime = g_file_info_get_attribute_uint64(fi_src, G_FILE_ATTRIBUTE_TIME_MODIFIED);
+				if (mtime > 0) {
+					snprintf(mtime_str, sizeof(mtime_str), "%" PRId64, (int64_t)mtime);
+				}
 
-			// Get the file size.
-			gint64 szFile = g_file_info_get_size(fi_src);
-			if (szFile > 0) {
-				snprintf(szFile_str, sizeof(szFile_str), "%" PRId64, szFile);
-			}
+				// Get the file size.
+				gint64 szFile = g_file_info_get_size(fi_src);
+				if (szFile > 0) {
+					snprintf(szFile_str, sizeof(szFile_str), "%" PRId64, szFile);
+				}
 
-			g_object_unref(fi_src);
-		} else {
-			g_error_free(error);
+				g_object_unref(fi_src);
+			} else {
+				g_error_free(error);
+			}
+			g_object_unref(f_src);
 		}
-		g_object_unref(f_src);
-	}
 
-	// Modification time.
-	if (mtime_str[0] != 0) {
-		kv.emplace_back("Thumb::MTime", mtime_str);
-	}
+		// Modification time
+		if (mtime_str[0] != 0) {
+			kv.emplace_back("Thumb::MTime", mtime_str);
+		}
 
-	// MIME type.
-	mimeType = romData->mimeType();
-	if (mimeType) {
-		kv.emplace_back("Thumb::Mimetype", mimeType);
-	}
+		// MIME type
+		mimeType = romData->mimeType();
+		if (mimeType) {
+			kv.emplace_back("Thumb::Mimetype", mimeType);
+		}
 
-	// File size.
-	if (szFile_str[0] != 0) {
-		kv.emplace_back("Thumb::Size", szFile_str);
-	}
+		// File size
+		if (szFile_str[0] != 0) {
+			kv.emplace_back("Thumb::Size", szFile_str);
+		}
 
-	// Original image dimensions.
-	if (outParams.fullSize.width > 0 && outParams.fullSize.height > 0) {
-		char imgdim_str[16];
-		snprintf(imgdim_str, sizeof(imgdim_str), "%d", outParams.fullSize.width);
-		kv.emplace_back("Thumb::Image::Width", imgdim_str);
-		snprintf(imgdim_str, sizeof(imgdim_str), "%d", outParams.fullSize.height);
-		kv.emplace_back("Thumb::Image::Height", imgdim_str);
-	}
+		// Original image dimensions
+		if (outParams.fullSize.width > 0 && outParams.fullSize.height > 0) {
+			char imgdim_str[16];
+			snprintf(imgdim_str, sizeof(imgdim_str), "%d", outParams.fullSize.width);
+			kv.emplace_back("Thumb::Image::Width", imgdim_str);
+			snprintf(imgdim_str, sizeof(imgdim_str), "%d", outParams.fullSize.height);
+			kv.emplace_back("Thumb::Image::Height", imgdim_str);
+		}
 
-	// URI.
-	// NOTE: The Thumbnail Management Standard specification says spaces
-	// must be urlencoded: ' ' -> "%20"
-	// KDE4 and KF5 prior to 5.46 did not do this correctly.
-	// KF5 5.46 does encode the URI correctly.
-	// References:
-	// - https://bugs.kde.org/show_bug.cgi?id=393015
-	// - https://specifications.freedesktop.org/thumbnail-spec/thumbnail-spec-latest.html
-	kv.emplace_back("Thumb::URI", s_uri.c_str());
+		// URI
+		// NOTE: The Thumbnail Management Standard specification says spaces
+		// must be urlencoded: ' ' -> "%20"
+		// KDE4 and KF5 prior to 5.46 did not do this correctly.
+		// KF5 5.46 does encode the URI correctly.
+		// References:
+		// - https://bugs.kde.org/show_bug.cgi?id=393015
+		// - https://specifications.freedesktop.org/thumbnail-spec/thumbnail-spec-latest.html
+		kv.emplace_back("Thumb::URI", s_uri.c_str());
+	}
 
 	// Write the tEXt chunks.
 	pngWriter->write_tEXt(kv);
@@ -480,4 +484,20 @@ cleanup:
 	d->freeImgClass(outParams.retImg);
 	romData->unref();
 	return ret;
+}
+
+/**
+ * Thumbnail creator function for wrapper programs. (v1)
+ * @param source_file Source file (UTF-8)
+ * @param output_file Output file (UTF-8)
+ * @param maximum_size Maximum size
+ * @param flags Flags (see RpCreateThumbnailFlags)
+ * @return 0 on success; non-zero on error.
+ */
+extern "C"
+G_MODULE_EXPORT int RP_C_API rp_create_thumbnail(const char *source_file, const char *output_file, int maximum_size)
+{
+	// Wrapper function that calls rp_create_thumbnail2()
+	// with flags == 0.
+	return rp_create_thumbnail2(source_file, output_file, maximum_size, 0);
 }
