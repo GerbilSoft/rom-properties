@@ -75,7 +75,7 @@ extern PFN_NAUTILUS_PROPERTY_PAGE_NEW			pfn_nautilus_property_page_new;
 #define nautilus_file_info_list_free(files)			(pfn_nautilus_file_info_list_free(files))
 #define nautilus_menu_item_get_type()				(pfn_nautilus_menu_item_get_type ())
 #define nautilus_menu_item_new(name, label, tip, icon)		(pfn_nautilus_menu_item_new((name), (label), (tip), (icon)))
-#define nautilus_menu_provider_get_type()				(pfn_nautilus_menu_provider_get_type ())
+#define nautilus_menu_provider_get_type()			(pfn_nautilus_menu_provider_get_type ())
 #define nautilus_property_page_provider_get_type()		(pfn_nautilus_property_page_provider_get_type ())
 #define nautilus_property_page_new(name, label, page)		(pfn_nautilus_property_page_new((name), (label), (page)))
 

@@ -9,7 +9,13 @@
 #ifndef __ROMPROPERTIES_GTK3_RPNAUTILUSMENUPROVIDER_HPP__
 #define __ROMPROPERTIES_GTK3_RPNAUTILUSMENUPROVIDER_HPP__
 
-#include "RpNautilusPlugin.hpp"
+#include <gtk/gtk.h>
+
+#if GTK_CHECK_VERSION(4,0,0)
+#  include "../gtk4/RpNautilusPlugin.hpp"
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+#  include "RpNautilusPlugin.hpp"
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 G_BEGIN_DECLS
 

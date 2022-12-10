@@ -20,7 +20,11 @@
 using LibRpBase::RomData;
 
 // nautilus-extension.h mini replacement
-#include "nautilus-extension-mini.h"
+#if GTK_CHECK_VERSION(4,0,0)
+#  include "../gtk4/nautilus-extension-mini.h"
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+#  include "nautilus-extension-mini.h"
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 // Supported MIME types
 // TODO: Consolidate with the KF5 service menu?
@@ -45,9 +49,13 @@ static const char *const supported_mime_types[] = {
 static GQuark rp_item_convert_to_png_quark;
 
 static void   rp_nautilus_menu_provider_page_provider_init	(NautilusMenuProviderInterface *iface);
-static GList *rp_nautilus_menu_provider_get_file_items		(NautilusMenuProvider          *provider,
-								 GtkWidget                     *window,
-								 GList                         *files);
+
+static GList *rp_nautilus_menu_provider_get_file_items(
+	NautilusMenuProvider *provider,
+#if !GTK_CHECK_VERSION(4,0,0)
+	GtkWidget *window,
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
+	GList *files);
 
 struct _RpNautilusMenuProviderClass {
 	GObjectClass __parent__;
@@ -143,9 +151,9 @@ is_file_uri(NautilusFileInfo *file_info)
 }
 
 static void
-rp_item_convert_to_png(NautilusMenuItem *item, GtkWidget *window)
+rp_item_convert_to_png(NautilusMenuItem *item, gpointer user_data)
 {
-	RP_UNUSED(window);
+	RP_UNUSED(user_data);
 
 	GList *const files = static_cast<GList*>(g_object_get_qdata(G_OBJECT(item), rp_item_convert_to_png_quark));
 	if (G_UNLIKELY(!files))
@@ -207,10 +215,17 @@ rp_item_convert_to_png(NautilusMenuItem *item, GtkWidget *window)
 }
 
 static GList*
-rp_nautilus_menu_provider_get_file_items(NautilusMenuProvider *provider, GtkWidget *window, GList *files)
+rp_nautilus_menu_provider_get_file_items(
+	NautilusMenuProvider *provider,
+#if !GTK_CHECK_VERSION(4,0,0)
+	GtkWidget *window,
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
+	GList *files)
 {
 	RP_UNUSED(provider);
+#if !GTK_CHECK_VERSION(4,0,0)
 	RP_UNUSED(window);
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
 
 	// Verify that all specified files are supported.
 	bool is_supported = false;
@@ -257,6 +272,6 @@ rp_nautilus_menu_provider_get_file_items(NautilusMenuProvider *provider, GtkWidg
 		nautilus_file_info_list_copy(files),
 		(GDestroyNotify)pfn_nautilus_file_info_list_free);
 	g_signal_connect_closure(G_OBJECT(item), "activate",
-		g_cclosure_new_object(G_CALLBACK(rp_item_convert_to_png), G_OBJECT(window)), TRUE);
+		g_cclosure_new_object(G_CALLBACK(rp_item_convert_to_png), G_OBJECT(item)), TRUE);
 	return g_list_append(nullptr, item);
 }

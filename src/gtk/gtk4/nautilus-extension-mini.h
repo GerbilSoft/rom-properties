@@ -23,6 +23,17 @@ struct _NautilusPropertiesModelProviderInterface {
 	GList *(*get_models) (NautilusPropertiesModelProvider *provider,
 	                      GList                           *files);
 };
+typedef struct _NautilusPropertiesModelProviderInterface NautilusPropertiesModelProviderInterface;
+
+struct _NautilusMenuProviderInterface {
+	GTypeInterface g_iface;
+
+	GList *(*get_file_items)       (NautilusMenuProvider *provider,
+					GList                *files);
+	GList *(*get_background_items) (NautilusMenuProvider *provider,
+					NautilusFileInfo     *current_folder);
+};
+typedef struct _NautilusMenuProviderInterface NautilusMenuProviderInterface;
 
 G_END_DECLS
 
