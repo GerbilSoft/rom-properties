@@ -328,7 +328,6 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const
 	}
 
 	// Create the thumbnail.
-	// TODO: If image is larger than maximum_size, resize down.
 	unique_ptr<CreateThumbnailPrivate> d(new CreateThumbnailPrivate());
 	CreateThumbnailPrivate::GetThumbnailOutParams_t outParams;
 	ret = d->getThumbnail(romData, maximum_size, &outParams);

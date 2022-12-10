@@ -348,7 +348,6 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 	}
 
 	// Create the thumbnail.
-	// TODO: If image is larger than maximum_size, resize down.
 	RomThumbCreatorPrivate *const d = new RomThumbCreatorPrivate();
 	RomThumbCreatorPrivate::GetThumbnailOutParams_t outParams;
 	int ret = d->getThumbnail(romData, maximum_size, &outParams);
