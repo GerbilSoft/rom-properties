@@ -127,16 +127,9 @@ is_file_uri(ThunarxFileInfo *file_info)
 	return ret;
 }
 
-static void
-rp_item_convert_to_png(ThunarxMenuItem *item, GtkWidget *window)
+static gpointer
+rp_item_convert_to_png_ThreadFunc(GList *files)
 {
-	// TODO: Run this in another thread so it doesn't block the UI.
-	RP_UNUSED(window);
-
-	GList *const files = static_cast<GList*>(g_object_get_qdata(G_OBJECT(item), rp_item_convert_to_png_quark));
-	if (G_UNLIKELY(!files))
-		return;
-
 	for (GList *file = files; file != nullptr; file = file->next) {
 		gchar *const source_uri = thunarx_file_info_get_uri(THUNARX_FILE_INFO(file->data));
 		if (G_UNLIKELY(!source_uri))
@@ -190,6 +183,32 @@ rp_item_convert_to_png(ThunarxMenuItem *item, GtkWidget *window)
 		g_free(output_file_esc);
 		g_free(output_file);
 	}
+
+	thunarx_file_info_list_free(files);
+	return 0;
+}
+
+#if GTK_CHECK_VERSION(3,0,0)
+static void
+rp_item_convert_to_png(ThunarxMenuItem *item, gpointer user_data)
+#else /* !GTK_CHECK_VERSION(3,0,0) */
+static void
+rp_item_convert_to_png(GtkAction *item, gpointer user_data)
+#endif /* GTK_CHECK_VERSION(3,0,0) */
+{
+	RP_UNUSED(user_data);
+
+	GList *const files = static_cast<GList*>(g_object_steal_qdata(G_OBJECT(item), rp_item_convert_to_png_quark));
+	if (G_UNLIKELY(!files))
+		return;
+
+	// Process the files in a separate thread.
+	char thread_name[64];
+	snprintf(thread_name, sizeof(thread_name), "rp-convert-to-png-%p", files);
+	GThread *const thread = g_thread_new(thread_name, (GThreadFunc)rp_item_convert_to_png_ThreadFunc, files);
+
+	// TODO: Do we want to keep a handle to the thread somewhere?
+	g_thread_unref(thread);
 }
 
 static GList*
