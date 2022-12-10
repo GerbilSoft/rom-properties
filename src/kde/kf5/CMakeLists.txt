@@ -272,7 +272,7 @@ IF(BUILD_KF5)
 
 	# Service menus
 	# TODO: Make it KDE common instead of KF5-specific? (Needs KDE4 testing.)
-	INSTALL(FILES rp-convert-to-png.desktop
+	INSTALL(FILES servicemenus/rp-convert-to-png.desktop
 		DESTINATION "${CMAKE_INSTALL_PREFIX}/share/kio/servicemenus"
 		PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
 		COMPONENT "plugin")
