@@ -732,62 +732,9 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 
 	// Post-processing: Check if swizzling is needed.
 	// NOTE: Ignoring an "rgba" swizzle.
-	if (this->ktx_swizzle[0] != '\0' && memcmp(this->ktx_swizzle, "rgba", 4) != 0) {
+	if (this->ktx_swizzle[0] != '\0') {
 		// Swizzle is needed.
-		// TODO: Improve both C performance and add SSSE3.
-		// TODO: General swizzle function.
-		typedef union _u8_32 {
-			uint8_t u8[4];
-			uint32_t u32;
-		} u8_32;
-
-		uint32_t *bits = static_cast<uint32_t*>(img->bits());
-		const unsigned int stride_diff = (img->stride() - img->row_bytes()) / sizeof(uint32_t);
-		const int width = img->width();
-		for (int y = img->height(); y > 0; y--) {
-			for (int x = width; x > 0; x--, bits++) {
-				u8_32 cur, swz;
-				cur.u32 = *bits;
-
-		// TODO: Verify on big-endian.
-#if SYS_BYTEORDER == SYS_LIL_ENDIAN
-#  define SWZ_CH_B 0
-#  define SWZ_CH_G 1
-#  define SWZ_CH_R 2
-#  define SWZ_CH_A 3
-#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
-#  define SWZ_CH_B 3
-#  define SWZ_CH_G 2
-#  define SWZ_CH_R 1
-#  define SWZ_CH_A 0
-#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
-
-#define SWIZZLE_CHANNEL(n) do { \
-				switch (this->ktx_swizzle[n]) { \
-					case 'b':	swz.u8[n] = cur.u8[SWZ_CH_B];	break; \
-					case 'g':	swz.u8[n] = cur.u8[SWZ_CH_G];	break; \
-					case 'r':	swz.u8[n] = cur.u8[SWZ_CH_R];	break; \
-					case 'a':	swz.u8[n] = cur.u8[SWZ_CH_A];	break; \
-					case '0':	swz.u8[n] = 0;			break; \
-					case '1':	swz.u8[n] = 255;		break; \
-					default: \
-						assert(!"Invalid swizzle value."); \
-						swz.u8[n] = 0; \
-						break; \
-				} \
-			} while (0)
-
-				SWIZZLE_CHANNEL(0);
-				SWIZZLE_CHANNEL(1);
-				SWIZZLE_CHANNEL(2);
-				SWIZZLE_CHANNEL(3);
-
-				*bits = swz.u32;
-			}
-
-			// Next row.
-			bits += stride_diff;
-		}
+		img->swizzle(this->ktx_swizzle);
 	}
 
 	mipmaps[mip] = img;

@@ -771,4 +771,84 @@ int rp_image::swapRB_cpp(void)
 	return 0;
 }
 
+/**
+ * Swizzle the image channels.
+ * @param swz_spec Swizzle specification: [rgba01]{4} [matches KTX2]
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int rp_image::swizzle(const char *swz_spec)
+{
+	// TODO: Improve C performance and add SSSE3.
+	RP_D(rp_image);
+	rp_image_backend *const backend = d->backend;
+	assert(backend->format == rp_image::Format::ARGB32);
+	if (backend->format != rp_image::Format::ARGB32) {
+		// ARGB32 is required.
+		// TODO: Automatically convert the image?
+		return -EINVAL;
+	}
+
+	// TODO: Verify swz_spec.
+	typedef union _u8_32 {
+		uint8_t u8[4];
+		uint32_t u32;
+	} u8_32;
+	u8_32 swz_ch;
+	memcpy(&swz_ch, swz_spec, sizeof(swz_ch));
+	if (swz_ch.u32 == be32_to_cpu('rgba')) {
+		// 'rgba' == NULL swizzle. Don't bother doing anything.
+		return 0;
+	}
+
+	uint32_t *bits = static_cast<uint32_t*>(backend->data());
+	const unsigned int stride_diff = (backend->stride - this->row_bytes()) / sizeof(uint32_t);
+	const int width = backend->width;
+	for (int y = backend->height; y > 0; y--) {
+		for (int x = width; x > 0; x--, bits++) {
+			u8_32 cur, swz;
+			cur.u32 = *bits;
+
+		// TODO: Verify on big-endian.
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+#  define SWZ_CH_B 0
+#  define SWZ_CH_G 1
+#  define SWZ_CH_R 2
+#  define SWZ_CH_A 3
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+#  define SWZ_CH_B 3
+#  define SWZ_CH_G 2
+#  define SWZ_CH_R 1
+#  define SWZ_CH_A 0
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+
+#define SWIZZLE_CHANNEL(n) do { \
+				switch (swz_ch.u8[n]) { \
+					case 'b':	swz.u8[n] = cur.u8[SWZ_CH_B];	break; \
+					case 'g':	swz.u8[n] = cur.u8[SWZ_CH_G];	break; \
+					case 'r':	swz.u8[n] = cur.u8[SWZ_CH_R];	break; \
+					case 'a':	swz.u8[n] = cur.u8[SWZ_CH_A];	break; \
+					case '0':	swz.u8[n] = 0;			break; \
+					case '1':	swz.u8[n] = 255;		break; \
+					default: \
+						assert(!"Invalid swizzle value."); \
+						swz.u8[n] = 0; \
+						break; \
+				} \
+			} while (0)
+
+			SWIZZLE_CHANNEL(0);
+			SWIZZLE_CHANNEL(1);
+			SWIZZLE_CHANNEL(2);
+			SWIZZLE_CHANNEL(3);
+
+			*bits = swz.u32;
+		}
+
+		// Next row.
+		bits += stride_diff;
+	}
+
+	return 0;
+}
+
 }

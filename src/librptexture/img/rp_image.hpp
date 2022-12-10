@@ -511,6 +511,8 @@ class rp_image : public RefBase
 		 */
 		int shrink(int width, int height);
 
+		/** swapRB() **/
+
 		/**
 		 * Swap Red and Blue channels in an ARGB32 image.
 		 * Standard version using regular C++ code.
@@ -534,6 +536,15 @@ class rp_image : public RefBase
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		inline int swapRB(void);
+
+		/** swizzle() **/
+
+		/**
+		 * Swizzle the image channels.
+		 * @param swz_spec Swizzle specification: [rgba01]{4} [matches KTX2]
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int swizzle(const char *swz_spec);
 };
 
 /**
