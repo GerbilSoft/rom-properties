@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KF5)                              *
- * RomPropertiesDialogPluginFactoryKF5.cpp: Factory class.                 *
+ * ROM Properties Page shell extension. (KDE4)                             *
+ * PluginFactoryKDE4.cpp: Plugin factory class.                            *
  *                                                                         *
  * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -25,8 +25,7 @@
 #include "RpQImageBackend.hpp"
 using LibRpTexture::rp_image;
 
-// KDE Frameworks
-#include <kcoreaddons_version.h>
+// KDE
 #include <kpluginfactory.h>
 
 static void register_backends(void)
@@ -38,19 +37,6 @@ static void register_backends(void)
 #endif /* ENABLE_ACHIEVEMENTS && HAVE_QtDBus_NOTIFY */
 }
 
-#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,89,0)
-// KF5 5.89 added a new registerPlugin() with no keyword or CreateInstanceFunction parameters
-// and deprecated the old version.
-K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf5.json",
-	register_backends();
-	registerPlugin<RomPropertiesDialogPlugin>();
-#ifdef HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H
-	registerPlugin<RomThumbnailCreator>();
-#endif /* HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H */
-)
-#else /* KCOREADDONS_VERSION < QT_VERSION_CHECK(5,89,0) */
-// NOTE: KIO::ThumbnailCreator was added in KF5 5.100, so it won't be
-// added in this code path. (KF5 5.88 and earlier)
 static QObject *createRomPropertiesPage(QWidget *w, QObject *parent, const QVariantList &args)
 {
 	// NOTE: RomPropertiesDialogPlugin will verify that parent is an
@@ -59,10 +45,12 @@ static QObject *createRomPropertiesPage(QWidget *w, QObject *parent, const QVari
 	return new RomPropertiesDialogPlugin(parent, args);
 }
 
-K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf5.json",
+K_PLUGIN_FACTORY(RomPropertiesDialogFactory,
 	register_backends();
 	registerPlugin<RomPropertiesDialogPlugin>(QString(), createRomPropertiesPage);
 )
+#if QT_VERSION < 0x050000
+K_EXPORT_PLUGIN(RomPropertiesDialogFactory("rom-properties-kde"))
 #endif
 
 // automoc4 works correctly without any special handling.
@@ -70,4 +58,4 @@ K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf5.json"
 // Q_OBJECT macro, so it needs a manual .moc include.
 // That .moc include trips up automoc4, even if it's #ifdef'd.
 // Hence, we need separate files for KDE4 and KF5.
-#include "RomPropertiesDialogPluginFactoryKF5.moc"
+//#include "PluginFactoryKDE4.moc"

@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (KF6)                              *
- * RomPropertiesDialogPluginFactoryKF6.cpp: Factory class.                 *
+ * ROM Properties Page shell extension. (KF5)                              *
+ * PluginFactoryKF5.cpp: Plugin factory class.                             *
  *                                                                         *
  * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -38,17 +38,36 @@ static void register_backends(void)
 #endif /* ENABLE_ACHIEVEMENTS && HAVE_QtDBus_NOTIFY */
 }
 
-K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf6.json",
+#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,89,0)
+// KF5 5.89 added a new registerPlugin() with no keyword or CreateInstanceFunction parameters
+// and deprecated the old version.
+K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf5.json",
 	register_backends();
 	registerPlugin<RomPropertiesDialogPlugin>();
 #ifdef HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H
 	registerPlugin<RomThumbnailCreator>();
 #endif /* HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H */
 )
+#else /* KCOREADDONS_VERSION < QT_VERSION_CHECK(5,89,0) */
+// NOTE: KIO::ThumbnailCreator was added in KF5 5.100, so it won't be
+// added in this code path. (KF5 5.88 and earlier)
+static QObject *createRomPropertiesPage(QWidget *w, QObject *parent, const QVariantList &args)
+{
+	// NOTE: RomPropertiesDialogPlugin will verify that parent is an
+	// instance of KPropertiesDialog*, so we don't have to do that here.
+	Q_UNUSED(w)
+	return new RomPropertiesDialogPlugin(parent, args);
+}
+
+K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf5.json",
+	register_backends();
+	registerPlugin<RomPropertiesDialogPlugin>(QString(), createRomPropertiesPage);
+)
+#endif
 
 // automoc4 works correctly without any special handling.
 // automoc5 doesn't notice that K_PLUGIN_FACTORY() has a
 // Q_OBJECT macro, so it needs a manual .moc include.
 // That .moc include trips up automoc4, even if it's #ifdef'd.
-// Hence, we need separate files for KDE4, KF5, and KF6.
-#include "RomPropertiesDialogPluginFactoryKF6.moc"
+// Hence, we need separate files for KDE4 and KF5.
+#include "PluginFactoryKF5.moc"

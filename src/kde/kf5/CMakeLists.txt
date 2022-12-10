@@ -144,7 +144,7 @@ SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_DBUS_IFACE_SRCS}
 	${${PROJECT_NAME}_DBUS_IFACE_SRCS_2}
 	${${PROJECT_NAME}_RCC_O}
-	RomPropertiesDialogPluginFactoryKF5.cpp
+	PluginFactoryKF5.cpp
 	../ExtractorPlugin.cpp
 	../OverlayIconPlugin.cpp
 	)

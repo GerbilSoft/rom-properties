@@ -164,7 +164,7 @@ SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_DBUS_IFACE_SRCS}
 	${${PROJECT_NAME}_DBUS_IFACE_SRCS_2}
 	${${PROJECT_NAME}_RCC_O}
-	RomPropertiesDialogPluginFactoryKF6.cpp
+	PluginFactoryKF6.cpp
 	#../ExtractorPlugin.cpp	# FIXME: KF5 KFileMetaData uses QMap::insertMulti().
 	../OverlayIconPlugin.cpp
 	)

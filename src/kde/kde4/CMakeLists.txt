@@ -79,7 +79,7 @@ SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_DBUS_IFACE_SRCS}
 	${${PROJECT_NAME}_DBUS_IFACE_SRCS_2}
 	${${PROJECT_NAME}_RCC_O}
-	RomPropertiesDialogPluginFactoryKDE4.cpp
+	PluginFactoryKDE4.cpp
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_H}
