@@ -36,6 +36,9 @@ struct _ThunarxPropertyPageProviderIface {
 };
 typedef struct _ThunarxPropertyPageProviderIface ThunarxPropertyPageProviderIface;
 
+// N.B. This interface is essentially the same on GTK2 as on GTK3,
+// but on GTK3, the functions return ThunarxMenuItems, whereas on
+// GTK2, they return GtkActions.
 struct _ThunarxMenuProviderIface {
 	/*< private >*/
 	GTypeInterface __parent__;
