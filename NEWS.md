@@ -18,6 +18,9 @@
     separately from the unmetered setting.
   * rp-stub now accepts a thumbnail size of 0 to indicate a "full-size thumbnail"
     is requested.
+  * Added a right-click option for "Convert to PNG" for supported texture formats,
+    e.g. DirectDraw Surfaces and Khronos KTX/KTX2. Currently implemented for KF5
+    and GTK2, GTK3, and GTK4 systems.
 
 * Bug fixes:
   * ELF: The "TLS" symbol type was missing, resulting in an off-by-one
