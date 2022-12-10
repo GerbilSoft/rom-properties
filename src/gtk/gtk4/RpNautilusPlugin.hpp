@@ -45,8 +45,8 @@ typedef struct _NautilusPropertiesItem NautilusPropertiesItem;
 
 // Function pointer typedefs
 typedef GType (*PFN_NAUTILUS_FILE_INFO_GET_TYPE)(void);
+typedef char* (*PFN_NAUTILUS_FILE_INFO_GET_MIME_TYPE)(NautilusFileInfo *file_info);
 typedef char* (*PFN_NAUTILUS_FILE_INFO_GET_URI)(NautilusFileInfo *file);
-typedef gboolean (*PFN_NAUTILUS_FILE_INFO_IS_MIME_TYPE)(NautilusFileInfo *file_info, const char *mime_type);
 typedef GList* (*PFN_NAUTILUS_FILE_INFO_LIST_COPY)(GList *files);
 typedef void (*PFN_NAUTILUS_FILE_INFO_LIST_FREE)(GList *files);
 
@@ -64,8 +64,8 @@ typedef NautilusPropertiesItem* (*PFN_NAUTILUS_PROPERTIES_ITEM_NEW)(const char *
 
 // Function pointers
 extern PFN_NAUTILUS_FILE_INFO_GET_TYPE			pfn_nautilus_file_info_get_type;
+extern PFN_NAUTILUS_FILE_INFO_GET_MIME_TYPE		pfn_nautilus_file_info_get_mime_type;
 extern PFN_NAUTILUS_FILE_INFO_GET_URI			pfn_nautilus_file_info_get_uri;
-extern PFN_NAUTILUS_FILE_INFO_IS_MIME_TYPE		pfn_nautilus_file_info_is_mime_type;
 extern PFN_NAUTILUS_FILE_INFO_LIST_COPY			pfn_nautilus_file_info_list_copy;
 extern PFN_NAUTILUS_FILE_INFO_LIST_FREE			pfn_nautilus_file_info_list_free;
 extern PFN_NAUTILUS_MENU_ITEM_GET_TYPE			pfn_nautilus_menu_item_get_type;
@@ -78,19 +78,19 @@ extern PFN_NAUTILUS_PROPERTIES_ITEM_GET_TYPE		pfn_nautilus_properties_item_get_t
 extern PFN_NAUTILUS_PROPERTIES_ITEM_NEW			pfn_nautilus_properties_item_new;
 
 // Function pointer macros
-#define nautilus_file_info_get_type()				(pfn_nautilus_file_info_get_type ())
-#define nautilus_file_info_get_uri(file)			(pfn_nautilus_file_info_get_uri(file))
-#define nautilus_file_info_is_mime_type(file_info, mime_type)	(pfn_nautilus_file_info_is_mime_type((file_info), (mime_type)))
-#define nautilus_file_info_list_copy(files)			(pfn_nautilus_file_info_list_copy(files))
-#define nautilus_file_info_list_free(files)			(pfn_nautilus_file_info_list_free(files))
-#define nautilus_menu_item_get_type()				(pfn_nautilus_menu_item_get_type ())
-#define nautilus_menu_item_new(name, label, tip, icon)		(pfn_nautilus_menu_item_new((name), (label), (tip), (icon)))
-#define nautilus_menu_provider_get_type()				(pfn_nautilus_menu_provider_get_type ())
-#define nautilus_properties_model_provider_get_type()		(pfn_nautilus_properties_model_provider_get_type ())
-#define nautilus_properties_model_get_type()			(pfn_nautilus_properties_model_get_type ())
-#define nautilus_properties_model_new(title, model)		(pfn_nautilus_properties_model_new((title), (model)))
-#define nautilus_properties_item_get_type()			(pfn_nautilus_properties_item_get_type ())
-#define nautilus_properties_item_new(name, value)		(pfn_nautilus_properties_item_new((name), (value)))
+#define nautilus_file_info_get_type()			(pfn_nautilus_file_info_get_type ())
+#define nautilus_file_info_get_mime_type(file_info)	(pfn_nautilus_file_info_get_mime_type(file_info))
+#define nautilus_file_info_get_uri(file)		(pfn_nautilus_file_info_get_uri(file))
+#define nautilus_file_info_list_copy(files)		(pfn_nautilus_file_info_list_copy(files))
+#define nautilus_file_info_list_free(files)		(pfn_nautilus_file_info_list_free(files))
+#define nautilus_menu_item_get_type()			(pfn_nautilus_menu_item_get_type ())
+#define nautilus_menu_item_new(name, label, tip, icon)	(pfn_nautilus_menu_item_new((name), (label), (tip), (icon)))
+#define nautilus_menu_provider_get_type()		(pfn_nautilus_menu_provider_get_type ())
+#define nautilus_properties_model_provider_get_type()	(pfn_nautilus_properties_model_provider_get_type ())
+#define nautilus_properties_model_get_type()		(pfn_nautilus_properties_model_get_type ())
+#define nautilus_properties_model_new(title, model)	(pfn_nautilus_properties_model_new((title), (model)))
+#define nautilus_properties_item_get_type()		(pfn_nautilus_properties_item_get_type ())
+#define nautilus_properties_item_new(name, value)	(pfn_nautilus_properties_item_new((name), (value)))
 
 // GType macros
 #define NAUTILUS_TYPE_FILE_INFO				(pfn_nautilus_file_info_get_type ())

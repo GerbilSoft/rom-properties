@@ -209,12 +209,23 @@ rp_thunar_menu_provider_get_file_menu_items(ThunarxMenuProvider *provider, GtkWi
 			continue;
 		}
 
+		// Get the file's MIME type.
+		gchar *const mime_type = thunarx_file_info_get_mime_type(file_info);
+		if (!mime_type) {
+			// No MIME type...
+			continue;
+		}
+
 		// Check the file against all supported MIME types.
-		is_supported = std::any_of(supported_mime_types, &supported_mime_types[ARRAY_SIZE(supported_mime_types)],
-			[file_info](const char *mime_type) {
-				return thunarx_file_info_has_mime_type(file_info, mime_type);
+		static const char *const *const p_mime_types_convert_to_png_end =
+			&mime_types_convert_to_png[ARRAY_SIZE(mime_types_convert_to_png)];
+		is_supported = std::binary_search(mime_types_convert_to_png, p_mime_types_convert_to_png_end, mime_type,
+			[](const char *a, const char *b) -> bool
+			{
+				return (strcmp(a, b) < 0);
 			}
 		);
+		g_free(mime_type);
 		if (!is_supported)
 			break;
 

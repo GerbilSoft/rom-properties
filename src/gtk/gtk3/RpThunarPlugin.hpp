@@ -50,8 +50,8 @@ typedef struct _ThunarxPropertyPage ThunarxPropertyPage;
 typedef const gchar* (*PFN_THUNARX_CHECK_VERSION)(guint required_major, guint required_micro, guint required_minor);
 
 typedef GType (*PFN_THUNARX_FILE_INFO_GET_TYPE)(void);
+typedef gchar* (*PFN_THUNARX_FILE_INFO_GET_MIME_TYPE)(ThunarxFileInfo *file_info);
 typedef gchar* (*PFN_THUNARX_FILE_INFO_GET_URI)(ThunarxFileInfo *file);
-typedef gboolean (*PFN_THUNARX_FILE_INFO_HAS_MIME_TYPE)(ThunarxFileInfo *file_info, const gchar *mime_type);
 typedef GList* (*PFN_THUNARX_FILE_INFO_LIST_COPY)(GList *file_infos);
 typedef void (*PFN_THUNARX_FILE_INFO_LIST_FREE)(GList *file_infos);
 
@@ -66,8 +66,8 @@ typedef GtkWidget* (*PFN_THUNARX_PROPERTY_PAGE_NEW)(const gchar *label);
 // Function pointers.
 extern PFN_THUNARX_CHECK_VERSION pfn_thunarx_check_version;
 extern PFN_THUNARX_FILE_INFO_GET_TYPE pfn_thunarx_file_info_get_type;
+extern PFN_THUNARX_FILE_INFO_GET_MIME_TYPE pfn_thunarx_file_info_get_mime_type;
 extern PFN_THUNARX_FILE_INFO_GET_URI pfn_thunarx_file_info_get_uri;
-extern PFN_THUNARX_FILE_INFO_HAS_MIME_TYPE pfn_thunarx_file_info_has_mime_type;
 extern PFN_THUNARX_FILE_INFO_LIST_COPY pfn_thunarx_file_info_list_copy;
 extern PFN_THUNARX_FILE_INFO_LIST_FREE pfn_thunarx_file_info_list_free;
 extern PFN_THUNARX_MENU_ITEM_GET_TYPE pfn_thunarx_menu_item_get_type;
@@ -80,8 +80,8 @@ extern PFN_THUNARX_PROPERTY_PAGE_NEW pfn_thunarx_property_page_new;
 #define thunarx_check_version(required_major, required_minor, required_micro) \
 	pfn_thunarx_check_version((required_major), (required_minor), (required_micro))
 #define thunarx_file_info_get_type()				(pfn_thunarx_file_info_get_type ())
+#define thunarx_file_info_get_mime_type(file_info)		(pfn_thunarx_file_info_get_mime_type(file_info))
 #define thunarx_file_info_get_uri(file)				(pfn_thunarx_file_info_get_uri(file))
-#define thunarx_file_info_has_mime_type(file_info, mime_type)	(pfn_thunarx_file_info_has_mime_type(file_info, mime_type))
 #define thunarx_file_info_list_copy(file_infos)			(pfn_thunarx_file_info_list_copy(file_infos))
 #define thunarx_file_info_list_free(file_infos)			(pfn_thunarx_file_info_list_free(file_infos))
 #define thunarx_menu_item_get_type()				(pfn_thunarx_menu_item_get_type ())

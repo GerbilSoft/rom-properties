@@ -38,8 +38,8 @@ static void *libextension_so;
 
 PFN_THUNARX_CHECK_VERSION pfn_thunarx_check_version;
 PFN_THUNARX_FILE_INFO_GET_TYPE pfn_thunarx_file_info_get_type;
+PFN_THUNARX_FILE_INFO_GET_MIME_TYPE pfn_thunarx_file_info_get_mime_type;
 PFN_THUNARX_FILE_INFO_GET_URI pfn_thunarx_file_info_get_uri;
-PFN_THUNARX_FILE_INFO_HAS_MIME_TYPE pfn_thunarx_file_info_has_mime_type;
 PFN_THUNARX_FILE_INFO_LIST_COPY pfn_thunarx_file_info_list_copy;
 PFN_THUNARX_FILE_INFO_LIST_FREE pfn_thunarx_file_info_list_free;
 PFN_THUNARX_MENU_ITEM_GET_TYPE pfn_thunarx_menu_item_get_type;
@@ -93,8 +93,8 @@ thunar_extension_initialize(ThunarxProviderPlugin *plugin)
 	// Load symbols.
 	DLSYM(thunarx_check_version,			thunarx_check_version);
 	DLSYM(thunarx_file_info_get_type,		thunarx_file_info_get_type);
+	DLSYM(thunarx_file_info_get_mime_type,		thunarx_file_info_get_mime_type);
 	DLSYM(thunarx_file_info_get_uri,		thunarx_file_info_get_uri);
-	DLSYM(thunarx_file_info_has_mime_type,		thunarx_file_info_has_mime_type);
 	DLSYM(thunarx_file_info_list_copy,		thunarx_file_info_list_copy);
 	DLSYM(thunarx_file_info_list_free,		thunarx_file_info_list_free);
 	DLSYM(thunarx_menu_item_get_type,		thunarx_menu_item_get_type);

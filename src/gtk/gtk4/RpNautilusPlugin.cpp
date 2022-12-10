@@ -23,8 +23,8 @@ static GType type_list[2];
 // Function pointers
 static void *libextension_so;
 PFN_NAUTILUS_FILE_INFO_GET_TYPE				pfn_nautilus_file_info_get_type;
+PFN_NAUTILUS_FILE_INFO_GET_MIME_TYPE			pfn_nautilus_file_info_get_mime_type;
 PFN_NAUTILUS_FILE_INFO_GET_URI				pfn_nautilus_file_info_get_uri;
-PFN_NAUTILUS_FILE_INFO_IS_MIME_TYPE			pfn_nautilus_file_info_is_mime_type;
 PFN_NAUTILUS_FILE_INFO_LIST_COPY			pfn_nautilus_file_info_list_copy;
 PFN_NAUTILUS_FILE_INFO_LIST_FREE			pfn_nautilus_file_info_list_free;
 PFN_NAUTILUS_MENU_ITEM_GET_TYPE				pfn_nautilus_menu_item_get_type;
@@ -82,8 +82,8 @@ prefix##_module_initialize(GTypeModule *module) \
 \
 	/* Load symbols. */ \
 	DLSYM(nautilus_file_info_get_type,			prefix##_file_info_get_type); \
+	DLSYM(nautilus_file_info_get_mime_type,			prefix##_file_info_get_mime_type); \
 	DLSYM(nautilus_file_info_get_uri,			prefix##_file_info_get_uri); \
-	DLSYM(nautilus_file_info_is_mime_type,			prefix##_file_info_is_mime_type); \
 	DLSYM(nautilus_file_info_list_copy,			prefix##_file_info_list_copy); \
 	DLSYM(nautilus_file_info_list_free,			prefix##_file_info_list_free); \
 	DLSYM(nautilus_menu_item_get_type,			prefix##_menu_item_get_type); \
