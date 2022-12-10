@@ -28,23 +28,7 @@ using LibRpBase::RomData;
 
 // Supported MIME types
 // TODO: Consolidate with the KF5 service menu?
-static const char *const supported_mime_types[] = {
-	"image/astc",
-	"image/ktx",
-	"image/ktx2",
-	"image/vnd.ms-dds",
-	"image/vnd.valve.source.texture",
-	"image/x-didj-texture",
-	"image/x-dds",
-	"image/x-godot-stex",
-	"image/x-sega-gvr",
-	"image/x-sega-pvr",
-	"image/x-sega-pvrx",
-	"image/x-sega-svr",
-	"image/x-vtf",
-	"image/x-vtf3",
-	"image/x-xbox-xpr0",
-};
+#include "mime-types.convert-to-png.h"
 
 static GQuark rp_item_convert_to_png_quark;
 

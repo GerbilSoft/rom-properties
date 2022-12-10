@@ -162,6 +162,7 @@ SET(${PROJECT_NAME}_H
 	../plugin-helper.h
 	thunarx-mini.h
 	nautilus-extension-mini.h
+	mime-types.convert-to-png.h
 	)
 
 IF(HAVE_GSOUND OR (HAVE_LIBCANBERRA AND HAVE_LIBCANBERRA_GTK3))
