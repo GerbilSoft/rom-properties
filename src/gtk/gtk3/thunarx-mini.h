@@ -36,8 +36,7 @@ struct _ThunarxPropertyPageProviderIface {
 };
 typedef struct _ThunarxPropertyPageProviderIface ThunarxPropertyPageProviderIface;
 
-struct _ThunarxMenuProviderIface
-{
+struct _ThunarxMenuProviderIface {
 	/*< private >*/
 	GTypeInterface __parent__;
 
