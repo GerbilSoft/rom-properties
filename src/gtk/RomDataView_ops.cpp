@@ -255,6 +255,10 @@ rom_data_view_doRomOp_stdop_response(GtkFileChooserDialog *fileDialog, gint resp
 static void
 rom_data_view_doRomOp_stdop(RomDataView *page, int id)
 {
+	// Prevent unused variable warnings for some quarks.
+	RP_UNUSED(RFT_STRING_warning_quark);
+	RP_UNUSED(RFT_LISTDATA_rows_visible_quark);
+
 	const char *const rom_filename = page->romData->filename();
 	if (!rom_filename)
 		return;
