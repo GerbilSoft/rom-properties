@@ -75,21 +75,28 @@ class KhronosKTX2Private final : public FileFormatPrivate
 		// Default without KTXorientation is HFlip=false, VFlip=true
 		rp_image::FlipOp flipOp;
 
-		// Mipmap offsets.
+		// Mipmap offsets
 		ao::uvector<KTX2_Mipmap_Index> mipmap_data;
 
-		// Decoded mipmaps.
+		// Decoded mipmaps
 		// Mipmap 0 is the full image.
 		vector<rp_image*> mipmaps;
 
 		// Invalid pixel format message.
 		char invalid_pixel_format[24];
 
-		// Key/Value data.
+		// Key/Value data
 		// NOTE: Stored as vector<vector<string> > instead of
 		// vector<pair<string, string> > for compatibility with
 		// RFT_LISTDATA.
 		RomFields::ListData_t kv_data;
+
+		// KTXswizzle, if specified.
+		// Four bytes indicate the values of each channel.
+		// Each byte can be: [rgba01], where rgba corresponds
+		// to each channel, 0 is 0, and 1 is 1.
+		// If byte 0 is a literal \0, no KTXswizzle tag was found.
+		char ktx_swizzle[4];
 
 		/**
 		 * Load the image.
@@ -132,6 +139,7 @@ KhronosKTX2Private::KhronosKTX2Private(KhronosKTX2 *q, IRpFile *file)
 	// Clear the KTX2 header struct.
 	memset(&ktx2Header, 0, sizeof(ktx2Header));
 	memset(invalid_pixel_format, 0, sizeof(invalid_pixel_format));
+	memset(ktx_swizzle, 0, sizeof(ktx_swizzle));
 }
 
 KhronosKTX2Private::~KhronosKTX2Private()
@@ -722,6 +730,66 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 		}
 	}
 
+	// Post-processing: Check if swizzling is needed.
+	// NOTE: Ignoring an "rgba" swizzle.
+	if (this->ktx_swizzle[0] != '\0' && memcmp(this->ktx_swizzle, "rgba", 4) != 0) {
+		// Swizzle is needed.
+		// TODO: Improve both C performance and add SSSE3.
+		// TODO: General swizzle function.
+		typedef union _u8_32 {
+			uint8_t u8[4];
+			uint32_t u32;
+		} u8_32;
+
+		uint32_t *bits = static_cast<uint32_t*>(img->bits());
+		const unsigned int stride_diff = (img->stride() - img->row_bytes()) / sizeof(uint32_t);
+		const int width = img->width();
+		for (int y = img->height(); y > 0; y--) {
+			for (int x = width; x > 0; x--, bits++) {
+				u8_32 cur, swz;
+				cur.u32 = *bits;
+
+		// TODO: Verify on big-endian.
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+#  define SWZ_CH_B 0
+#  define SWZ_CH_G 1
+#  define SWZ_CH_R 2
+#  define SWZ_CH_A 3
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+#  define SWZ_CH_B 3
+#  define SWZ_CH_G 2
+#  define SWZ_CH_R 1
+#  define SWZ_CH_A 0
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+
+#define SWIZZLE_CHANNEL(n) do { \
+				switch (this->ktx_swizzle[n]) { \
+					case 'b':	swz.u8[n] = cur.u8[SWZ_CH_B];	break; \
+					case 'g':	swz.u8[n] = cur.u8[SWZ_CH_G];	break; \
+					case 'r':	swz.u8[n] = cur.u8[SWZ_CH_R];	break; \
+					case 'a':	swz.u8[n] = cur.u8[SWZ_CH_A];	break; \
+					case '0':	swz.u8[n] = 0;			break; \
+					case '1':	swz.u8[n] = 255;		break; \
+					default: \
+						assert(!"Invalid swizzle value."); \
+						swz.u8[n] = 0; \
+						break; \
+				} \
+			} while (0)
+
+				SWIZZLE_CHANNEL(0);
+				SWIZZLE_CHANNEL(1);
+				SWIZZLE_CHANNEL(2);
+				SWIZZLE_CHANNEL(3);
+
+				*bits = swz.u32;
+			}
+
+			// Next row.
+			bits += stride_diff;
+		}
+	}
+
 	mipmaps[mip] = img;
 	return img;
 }
@@ -760,6 +828,7 @@ void KhronosKTX2Private::loadKeyValueData(void)
 	const char *p = buf.get();
 	const char *const p_end = p + ktx2Header.kvdByteLength;
 	bool hasKTXorientation = false;
+	bool hasKTXswizzle = false;
 
 	while (p < p_end-3) {
 		// Check the next key/value size.
@@ -824,6 +893,38 @@ void KhronosKTX2Private::loadKeyValueData(void)
 			}
 			if (v[0] != '\0' && v[1] == 'u') {
 				flipOp = static_cast<rp_image::FlipOp>(flipOp | rp_image::FLIP_V);
+			}
+		}
+
+		// Check if this is KTXswizzle.
+		// NOTE: Only the first instance is used.
+		if (!hasKTXswizzle && !strcasecmp(p, "KTXswizzle")) {
+			// Value must match the regex [rgba01]{4}.
+			const char *const v = k_end + 1;
+			bool isOK = true;
+			for (unsigned int i = 0; isOK && i < 4; i++) {
+				switch (v[i]) {
+					case '\0':
+					default:
+						// Invalid character!
+						isOK = false;
+						break;
+					case 'r': case 'g': case 'b': case 'a':
+					case '0': case '1':
+						break;
+				}
+			}
+
+			if (isOK) {
+				// Make sure the fifth byte *is* NULL.
+				if (v[4] != '\0') {
+					// Invalid character!
+					isOK = false;
+				}
+			}
+
+			if (isOK) {
+				memcpy(this->ktx_swizzle, v, 4);
 			}
 		}
 
