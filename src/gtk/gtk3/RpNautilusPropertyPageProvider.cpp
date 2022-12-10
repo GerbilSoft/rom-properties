@@ -25,14 +25,8 @@
 #include "librpbase/RomData.hpp"
 using LibRpBase::RomData;
 
-// NautilusPropertyPageProviderInterface definition.
-extern "C"
-struct _NautilusPropertyPageProviderInterface {
-	GTypeInterface g_iface;
-
-	GList *(*get_pages) (NautilusPropertyPageProvider *provider,
-	                     GList                        *files);
-};
+// nautilus-extension.h mini replacement
+#include "nautilus-extension-mini.h"
 
 static void   rp_nautilus_property_page_provider_page_provider_init	(NautilusPropertyPageProviderInterface	*iface);
 static GList *rp_nautilus_property_page_provider_get_pages		(NautilusPropertyPageProvider		*provider,

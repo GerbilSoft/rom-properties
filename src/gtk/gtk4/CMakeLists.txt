@@ -140,6 +140,7 @@ SET(${PROJECT_NAME}_H
 	RpNautilusPropertiesModelProvider.hpp
 	RpNautilusPropertiesModel.hpp
 	../plugin-helper.h
+	nautilus-extension-mini.h
 	)
 
 IF(HAVE_GSOUND)
