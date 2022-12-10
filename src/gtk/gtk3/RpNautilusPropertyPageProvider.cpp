@@ -54,7 +54,7 @@ struct _RpNautilusPropertyPageProvider {
 // due to an implicit int to GTypeFlags conversion.
 G_DEFINE_DYNAMIC_TYPE_EXTENDED(RpNautilusPropertyPageProvider, rp_nautilus_property_page_provider,
 	G_TYPE_OBJECT, 0,
-	G_IMPLEMENT_INTERFACE(NAUTILUS_TYPE_PROPERTY_PAGE_PROVIDER,
+	G_IMPLEMENT_INTERFACE_DYNAMIC(NAUTILUS_TYPE_PROPERTY_PAGE_PROVIDER,
 		rp_nautilus_property_page_provider_page_provider_init));
 
 #if !GLIB_CHECK_VERSION(2,59,1)
