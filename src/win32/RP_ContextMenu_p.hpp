@@ -42,6 +42,14 @@ class RP_ContextMenu_Private
 		 */
 		void clear_filenames(void);
 
+		/**
+		 * Convert a texture file to PNG format.
+		 * Destination filename will be generated based on the source filename.
+		 * @param source_file Source filename
+		 * @return 0 on success; non-zero on error.
+		 */
+		int convert_to_png(LPCTSTR source_file);
+
 	public:
 		/**
 		 * Register the file type handler.

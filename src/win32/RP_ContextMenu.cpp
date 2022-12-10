@@ -11,7 +11,11 @@
 #include "RP_ContextMenu.hpp"
 #include "RpImageWin32.hpp"
 
+// for RPCT_* constants
+#include "CreateThumbnail.hpp"
+
 // librpbase, librpfile, librptexture, libromdata
+#include "librpbase/img/RpPngWriter.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
 using LibRpTexture::rp_image;
@@ -20,6 +24,7 @@ using LibRomData::RomDataFactory;
 // C++ STL classes.
 using std::string;
 using std::tstring;
+using std::unique_ptr;
 
 // CLSID
 const CLSID CLSID_RP_ContextMenu =
@@ -50,6 +55,121 @@ void RP_ContextMenu_Private::clear_filenames(void)
 		free(filename);
 	}
 	filenames.clear();
+}
+
+/**
+ * Convert a texture file to PNG format.
+ * Destination filename will be generated based on the source filename.
+ * @param source_file Source filename
+ * @return 0 on success; non-zero on error.
+ */
+int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_file)
+{
+	const size_t source_len = _tcslen(source_file);
+	LPTSTR output_file = static_cast<LPTSTR>(malloc((source_len + 16) * sizeof(TCHAR)));
+	_tcscpy(output_file, source_file);
+
+	// Find the current extension and replace it.
+	TCHAR *const dotpos = _tcsrchr(output_file, '.');
+	if (!dotpos) {
+		// No file extension. Add it.
+		_tcscat(output_file, _T(".png"));
+	} else {
+		// If the dot is after the last slash, we already have a file extension.
+		// Otherwise, we don't have one, and need to add it.
+		TCHAR *const slashpos = _tcsrchr(output_file, _T('\\'));
+		if (slashpos < dotpos) {
+			// We already have a file extension.
+			_tcscpy(dotpos, _T(".png"));
+		} else {
+			// No file extension.
+			_tcscat(output_file, _T(".png"));
+		}
+	}
+
+	// Get the appropriate RomData class for this ROM.
+	// RomData class *must* support at least one image type.
+	// TODO: Use FileFormatFactory from librptexture instead?
+	RomData *const romData = RomDataFactory::create(T2U8(source_file).c_str(), RomDataFactory::RDA_HAS_THUMBNAIL);
+	if (!romData) {
+		// ROM is not supported.
+		free(output_file);
+		return RPCT_SOURCE_FILE_NOT_SUPPORTED;
+	}
+
+	// Get the internal image.
+	// NOTE: The GTK and KDE implementations use CreateThumbnail.
+	// NOTE 2: Image is owned by the RomData object.
+	const rp_image *const img = romData->image(RomData::IMG_INT_IMAGE);
+	if (!img) {
+		// No image.
+		romData->unref();
+		free(output_file);
+		return RPCT_SOURCE_FILE_NO_IMAGE;
+	}
+
+	// Save the image using RpPngWriter.
+	const int height = img->height();
+
+	// tEXt chunks
+	RpPngWriter::kv_vector kv;
+
+	unique_ptr<RpPngWriter> pngWriter(new RpPngWriter(T2U8(output_file).c_str(),
+		img->width(), height, img->format()));
+	free(output_file);
+	if (!pngWriter->isOpen()) {
+		// Could not open the PNG writer.
+		romData->unref();
+		return RPCT_OUTPUT_FILE_FAILED;
+	}
+
+	/** tEXt chunks **/
+
+	// Software
+	kv.emplace_back("Software", "ROM Properties Page shell extension (Win32)");
+
+	// Write the tEXt chunks.
+	pngWriter->write_tEXt(kv);
+
+	/** IHDR **/
+
+	// If sBIT wasn't found, all fields will be 0.
+	// RpPngWriter will ignore sBIT in this case.
+	rp_image::sBIT_t sBIT;
+	if (img->get_sBIT(&sBIT) != 0) {
+		memset(&sBIT, 0, sizeof(sBIT));
+	}
+	int pwRet = pngWriter->write_IHDR(&sBIT,
+		img->palette(), img->palette_len());
+	if (pwRet != 0) {
+		// Error writing IHDR.
+		// TODO: Unlink the PNG image.
+		romData->unref();
+		return RPCT_OUTPUT_FILE_FAILED;
+	}
+
+	/** IDAT chunk. **/
+
+	// Initialize the row pointers.
+	unique_ptr<const uint8_t*[]> row_pointers(new const uint8_t*[height]);
+	const uint8_t *pixels = static_cast<const uint8_t*>(img->bits());
+	int stride = img->stride();
+	for (int y = 0; y < height; y++, pixels += stride) {
+		row_pointers[y] = pixels;
+	}
+
+	// Write the IDAT section.
+	pwRet = pngWriter->write_IDAT(row_pointers.get());
+	if (pwRet != 0) {
+		// Error writing IDAT.
+		// TODO: Unlink the PNG image.
+		romData->unref();
+		return RPCT_OUTPUT_FILE_FAILED;
+	}
+
+	// Finished writing the PNG image.
+	romData->unref();
+	return 0;
 }
 
 /** RP_ContextMenu **/
@@ -226,12 +346,17 @@ IFACEMETHODIMP RP_ContextMenu::InvokeCommand(_In_ CMINVOKECOMMANDINFO *pici)
 		}
 	}
 
-	if (isConvertToPNG) {
-		MessageBoxA(NULL, "Convert To PNG is OK!!!!", "Convert To PNG is OK!!!!", 0);
-	} else {
-		MessageBoxA(NULL, "NOPE, not Convert To PNG", "NOPE, not Convert To PNG", 0);
+	if (!isConvertToPNG) {
+		return E_FAIL;
 	}
-	return E_FAIL;
+
+	// Process the files.
+	RP_D(RP_ContextMenu);
+	for (const LPTSTR filename : d->filenames) {
+		// TODO: Return an error if one of these fails?
+		d->convert_to_png(filename);
+	}
+	return S_OK;
 }
 
 IFACEMETHODIMP RP_ContextMenu::GetCommandString(_In_ UINT_PTR idCmd, _In_ UINT uType, _Reserved_ UINT *pReserved, _Out_ CHAR *pszName, _In_  UINT cchMax)
