@@ -21,6 +21,11 @@
   * Added a right-click option for "Convert to PNG" for supported texture formats,
     e.g. DirectDraw Surfaces and Khronos KTX/KTX2.
 
+* New parser features:
+  * KhronosKTX2: Add support for RG88 textures.
+  * KhronosKTX2: Textures with the KTXswizzle attribute set will have the color
+    channels swizzled as specified. Includes SSSE3-optimized swizzling.
+
 * Bug fixes:
   * ELF: The "TLS" symbol type was missing, resulting in an off-by-one
     error for some symbol types.
