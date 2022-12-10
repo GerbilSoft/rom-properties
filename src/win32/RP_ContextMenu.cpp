@@ -351,6 +351,7 @@ IFACEMETHODIMP RP_ContextMenu::InvokeCommand(_In_ CMINVOKECOMMANDINFO *pici)
 	}
 
 	// Process the files.
+	// TODO: Run this in a separate thread so it doesn't block Explorer.
 	RP_D(RP_ContextMenu);
 	for (const LPTSTR filename : d->filenames) {
 		// TODO: Return an error if one of these fails?
