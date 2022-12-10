@@ -7,6 +7,8 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "CreateThumbnail.hpp"
+
 #include "check-uid.h"
 #include "ProxyForUrl.hpp"
 

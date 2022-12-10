@@ -14,10 +14,11 @@
 
 G_BEGIN_DECLS
 
-// From thunarx/thunarx-property-page-provider.h
+// Struct definitions from thunarx/thunarx-property-page-provider.h
 // Compatible with:
 // - Thunar 1.6.12
 // - Thunar 1.8.14
+
 struct _ThunarxPropertyPageProviderIface {
 	/*< private >*/
 	GTypeInterface __parent__;
@@ -34,6 +35,32 @@ struct _ThunarxPropertyPageProviderIface {
 	void (*reserved5) (void);
 };
 typedef struct _ThunarxPropertyPageProviderIface ThunarxPropertyPageProviderIface;
+
+struct _ThunarxMenuProviderIface
+{
+	/*< private >*/
+	GTypeInterface __parent__;
+
+	/*< public >*/
+	GList *(*get_file_menu_items)    (ThunarxMenuProvider *provider,
+					  GtkWidget           *window,
+					  GList               *files);
+
+	GList *(*get_folder_menu_items)  (ThunarxMenuProvider *provider,
+					  GtkWidget           *window,
+					  ThunarxFileInfo     *folder);
+
+	GList *(*get_dnd_menu_items)     (ThunarxMenuProvider *provider,
+					  GtkWidget           *window,
+					  ThunarxFileInfo     *folder,
+					  GList               *files);
+
+	/*< private >*/
+	void (*reserved1) (void);
+	void (*reserved2) (void);
+	void (*reserved3) (void);
+};
+typedef struct _ThunarxMenuProviderIface ThunarxMenuProviderIface;
 
 G_END_DECLS
 

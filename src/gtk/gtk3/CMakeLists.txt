@@ -148,6 +148,7 @@ SET(${PROJECT_NAME}_SRCS
 	RpNautilusProvider.cpp
 	RpThunarPlugin.cpp
 	RpThunarProvider.cpp
+	RpThunarMenuProvider.cpp
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_H}
@@ -155,6 +156,7 @@ SET(${PROJECT_NAME}_H
 	RpNautilusProvider.hpp
 	RpThunarPlugin.hpp
 	RpThunarProvider.hpp
+	RpThunarMenuProvider.hpp
 	../plugin-helper.h
 	thunarx-mini.h
 	)
