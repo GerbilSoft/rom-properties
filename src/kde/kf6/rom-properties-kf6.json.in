@@ -1,4 +1,5 @@
 {
+    "CacheThumbnail": true,
     "KPlugin": {
         "MimeTypes": [
 @MIMETYPES_ALL_JSON_ARRAY@

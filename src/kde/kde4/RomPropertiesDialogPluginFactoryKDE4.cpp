@@ -15,8 +15,27 @@
  */
 
 #include "stdafx.h"
+#include "config.kde.h"
+
+#include "AchQtDBus.hpp"
 #include "RomPropertiesDialogPlugin.hpp"
+#include "RomThumbCreator.hpp"
+
+// RpQImageBackend
+#include "RpQImageBackend.hpp"
+using LibRpTexture::rp_image;
+
+// KDE
 #include <kpluginfactory.h>
+
+static void register_backends(void)
+{
+	// Register RpQImageBackend and AchQtDBus.
+	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
+#if defined(ENABLE_ACHIEVEMENTS) && defined(HAVE_QtDBus_NOTIFY)
+	AchQtDBus::instance();
+#endif /* ENABLE_ACHIEVEMENTS && HAVE_QtDBus_NOTIFY */
+}
 
 static QObject *createRomPropertiesPage(QWidget *w, QObject *parent, const QVariantList &args)
 {
@@ -26,7 +45,10 @@ static QObject *createRomPropertiesPage(QWidget *w, QObject *parent, const QVari
 	return new RomPropertiesDialogPlugin(parent, args);
 }
 
-K_PLUGIN_FACTORY(RomPropertiesDialogFactory, registerPlugin<RomPropertiesDialogPlugin>(QString(), createRomPropertiesPage);)
+K_PLUGIN_FACTORY(RomPropertiesDialogFactory,
+	register_backends();
+	registerPlugin<RomPropertiesDialogPlugin>(QString(), createRomPropertiesPage);
+)
 #if QT_VERSION < 0x050000
 K_EXPORT_PLUGIN(RomPropertiesDialogFactory("rom-properties-kde"))
 #endif

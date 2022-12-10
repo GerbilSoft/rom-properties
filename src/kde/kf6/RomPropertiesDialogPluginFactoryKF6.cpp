@@ -15,13 +15,36 @@
  */
 
 #include "stdafx.h"
-#include "RomPropertiesDialogPlugin.hpp"
+#include "config.kde.h"
 
+#include "AchQtDBus.hpp"
+#include "RomPropertiesDialogPlugin.hpp"
+#include "RomThumbCreator.hpp"
+
+// RpQImageBackend
+#include "RpQImageBackend.hpp"
+using LibRpTexture::rp_image;
+
+// KDE Frameworks
 #include <kcoreaddons_version.h>
 #include <kpluginfactory.h>
 
+static void register_backends(void)
+{
+	// Register RpQImageBackend and AchQtDBus.
+	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
+#if defined(ENABLE_ACHIEVEMENTS) && defined(HAVE_QtDBus_NOTIFY)
+	AchQtDBus::instance();
+#endif /* ENABLE_ACHIEVEMENTS && HAVE_QtDBus_NOTIFY */
+}
+
 K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf6.json",
-	registerPlugin<RomPropertiesDialogPlugin>();)
+	register_backends();
+	registerPlugin<RomPropertiesDialogPlugin>();
+#ifdef HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H
+	registerPlugin<RomThumbnailCreator>();
+#endif /* HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H */
+)
 
 // automoc4 works correctly without any special handling.
 // automoc5 doesn't notice that K_PLUGIN_FACTORY() has a

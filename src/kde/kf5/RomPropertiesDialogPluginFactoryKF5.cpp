@@ -15,17 +15,42 @@
  */
 
 #include "stdafx.h"
-#include "RomPropertiesDialogPlugin.hpp"
+#include "config.kde.h"
 
+#include "AchQtDBus.hpp"
+#include "RomPropertiesDialogPlugin.hpp"
+#include "RomThumbCreator.hpp"
+
+// RpQImageBackend
+#include "RpQImageBackend.hpp"
+using LibRpTexture::rp_image;
+
+// KDE Frameworks
 #include <kcoreaddons_version.h>
 #include <kpluginfactory.h>
+
+static void register_backends(void)
+{
+	// Register RpQImageBackend and AchQtDBus.
+	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
+#if defined(ENABLE_ACHIEVEMENTS) && defined(HAVE_QtDBus_NOTIFY)
+	AchQtDBus::instance();
+#endif /* ENABLE_ACHIEVEMENTS && HAVE_QtDBus_NOTIFY */
+}
 
 #if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,89,0)
 // KF5 5.89 added a new registerPlugin() with no keyword or CreateInstanceFunction parameters
 // and deprecated the old version.
 K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf5.json",
-	registerPlugin<RomPropertiesDialogPlugin>();)
+	register_backends();
+	registerPlugin<RomPropertiesDialogPlugin>();
+#ifdef HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H
+	registerPlugin<RomThumbnailCreator>();
+#endif /* HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H */
+)
 #else /* KCOREADDONS_VERSION < QT_VERSION_CHECK(5,89,0) */
+// NOTE: KIO::ThumbnailCreator was added in KF5 5.100, so it won't be
+// added in this code path. (KF5 5.88 and earlier)
 static QObject *createRomPropertiesPage(QWidget *w, QObject *parent, const QVariantList &args)
 {
 	// NOTE: RomPropertiesDialogPlugin will verify that parent is an
@@ -35,7 +60,9 @@ static QObject *createRomPropertiesPage(QWidget *w, QObject *parent, const QVari
 }
 
 K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf5.json",
-	registerPlugin<RomPropertiesDialogPlugin>(QString(), createRomPropertiesPage);)
+	register_backends();
+	registerPlugin<RomPropertiesDialogPlugin>(QString(), createRomPropertiesPage);
+)
 #endif
 
 // automoc4 works correctly without any special handling.

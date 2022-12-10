@@ -53,12 +53,6 @@ RomDataViewPrivate::RomDataViewPrivate(RomDataView *q, RomData *romData)
 	if (romData) {
 		this->romData = romData->ref();
 	}
-
-	// Register RpQImageBackend and AchQtDBus.
-	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
-#if defined(ENABLE_ACHIEVEMENTS) && defined(HAVE_QtDBus_NOTIFY)
-	AchQtDBus::instance();
-#endif /* ENABLE_ACHIEVEMENTS && HAVE_QtDBus_NOTIFY */
 }
 
 RomDataViewPrivate::~RomDataViewPrivate()

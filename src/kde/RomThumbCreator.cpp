@@ -12,7 +12,6 @@
 
 #include "RomThumbCreator.hpp"
 #include "RpQImageBackend.hpp"
-#include "AchQtDBus.hpp"
 #include "ProxyForUrl.hpp"
 
 // librpbase, librptexture
@@ -50,12 +49,6 @@ using std::unique_ptr;
 extern "C" {
 	Q_DECL_EXPORT ThumbCreator *new_creator()
 	{
-		// Register RpQImageBackend and AchQtDBus.
-		rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
-#if defined(ENABLE_ACHIEVEMENTS) && defined(HAVE_QtDBus_NOTIFY)
-		AchQtDBus::instance();
-#endif /* ENABLE_ACHIEVEMENTS && HAVE_QtDBus_NOTIFY */
-
 		return new RomThumbCreator();
 	}
 }
@@ -213,7 +206,9 @@ class RomThumbCreatorPrivate final : public TCreateThumbnail<QImage>
 		}
 };
 
-/** RomThumbCreator **/
+/** RomThumbCreator (KDE4 and KF5 only) **/
+
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 
 RomThumbCreator::RomThumbCreator()
 	: d_ptr(new RomThumbCreatorPrivate())
@@ -271,6 +266,8 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 	Q_D(RomThumbCreator);
 	RomThumbCreatorPrivate::GetThumbnailOutParams_t outParams;
 	int ret = d->getThumbnail(file, width, &outParams);
+	file->unref();
+
 	if (ret == 0) {
 		img = outParams.retImg;
 		// FIXME: KF5 5.91, Dolphin 21.12.1
@@ -293,7 +290,7 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 			img = img.copy();
 		}
 	}
-	file->unref();
+
 	return (ret == 0);
 }
 
@@ -307,6 +304,78 @@ ThumbCreator::Flags RomThumbCreator::flags(void) const
 {
 	return ThumbCreator::None;
 }
+#endif /* QT_VERSION < QT_VERSION_CHECK(6,0,0) */
+
+/** RomThumbnailCreator (KF5 5.100 and later) **/
+
+#ifdef HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H
+
+RomThumbnailCreator::RomThumbnailCreator(QObject *parent, const QVariantList &args)
+	: super(parent, args)
+	, d_ptr(new RomThumbnailCreatorPrivate())
+{ }
+
+RomThumbnailCreator::~RomThumbnailCreator()
+{
+	delete d_ptr;
+}
+
+/**
+ * Create a thumbnail. (new interface added in KF5 5.100)
+ *
+ * @param request ThumbnailRequest
+ * @return ThumbnailResult
+ */
+KIO::ThumbnailResult RomThumbnailCreator::create(const KIO::ThumbnailRequest &request)
+{
+	QUrl url = request.url();
+	if (url.isEmpty()) {
+		return KIO::ThumbnailResult::fail();
+	}
+
+	// Attempt to open the ROM file.
+	IRpFile *const file = openQUrl(url, true);
+	if (!file) {
+		return KIO::ThumbnailResult::fail();
+	}
+
+	// Assuming width and height are the same.
+	// TODO: What if they aren't?
+	Q_D(RomThumbnailCreator);
+	const int width = request.targetSize().width();
+	RomThumbnailCreatorPrivate::GetThumbnailOutParams_t outParams;
+	int ret = d->getThumbnail(file, width, &outParams);
+	file->unref();
+
+	if (ret != 0) {
+		return KIO::ThumbnailResult::fail();
+	}
+
+	QImage img = outParams.retImg;
+	// FIXME: KF5 5.91, Dolphin 21.12.1
+	// If img.width() * bytespp != img.bytesPerLine(), the image
+	// pitch is incorrect. Test image: hi_mark_sq.ktx (145x130)
+	// The underlying QImage works perfectly fine, though...
+	int bytespp;
+	switch (img.format()) {
+		// TODO: Other formats?
+		case QImage::Format_Indexed8:
+			bytespp = 1;
+			break;
+		case QImage::Format_ARGB32:
+		case QImage::Format_ARGB32_Premultiplied:
+		default:
+			bytespp = 4;
+			break;
+	}
+	if (img.width() * bytespp != img.bytesPerLine()) {
+		img = img.copy();
+	}
+
+	return KIO::ThumbnailResult::pass(img);
+}
+
+#endif /* HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H */
 
 /** CreateThumbnail **/
 

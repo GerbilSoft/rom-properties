@@ -18,4 +18,7 @@
 /* Define to 1 if QtDBus should be used to send notifications. */
 #cmakedefine HAVE_QtDBus_NOTIFY 1
 
+/* Define to 1 if the KIOGui/KIO/ThumbnailCreator header file is available. */
+#cmakedefine HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H 1
+
 #endif /* __ROMPROPERTIES_KDE_CONFIG_H__ */
