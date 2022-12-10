@@ -327,19 +327,19 @@ int main(int argc, char *argv[])
 		char *output_file;
 		if (autoext) {
 			// Create the output filename based on the input filename.
-			size_t len = strlen(source_file);
-			output_file = malloc(len + 16);
+			size_t output_len = strlen(source_file);
+			output_file = malloc(output_len + 16);
 			strcpy(output_file, source_file);
 
 			// Find the current extension and replace it.
-			char *dotpos = strrchr(output_file, '.');
+			char *const dotpos = strrchr(output_file, '.');
 			if (!dotpos) {
 				// No file extension. Add it.
 				strcat(output_file, ".png");
 			} else {
 				// If the dot is after the last slash, we already have a file extension.
 				// Otherwise, we don't have one, and need to add it.
-				char *slashpos = strrchr(output_file, DIR_SEP_CHR);
+				char *const slashpos = strrchr(output_file, DIR_SEP_CHR);
 				if (slashpos < dotpos) {
 					// We already have a file extension.
 					strcpy(dotpos, ".png");

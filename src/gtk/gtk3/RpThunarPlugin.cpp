@@ -11,8 +11,8 @@
 #include "plugin-helper.h"
 
 #include "RpThunarPlugin.hpp"
-#include "RpThunarProvider.hpp"
 #include "RpThunarMenuProvider.hpp"
+#include "RpThunarPropertyPageProvider.hpp"
 #include "AchGDBus.hpp"
 
 // Thunar version is based on GTK+ version.
@@ -54,11 +54,11 @@ rp_thunar_register_types(ThunarxProviderPlugin *plugin)
 	/* Register the types provided by this plugin */
 	// NOTE: G_DEFINE_DYNAMIC_TYPE() marks the *_register_type()
 	// functions as static, so we're using wrapper functions here.
-	rp_thunar_provider_register_type_ext(plugin);
+	rp_thunar_property_page_provider_register_type_ext(plugin);
 	rp_thunar_menu_provider_register_type_ext(plugin);
 
 	/* Setup the plugin provider type list */
-	type_list[0] = TYPE_RP_THUNAR_PROVIDER;
+	type_list[0] = TYPE_RP_THUNAR_PROPERTY_PAGE_PROVIDER;
 	type_list[1] = TYPE_RP_THUNAR_MENU_PROVIDER;
 
 #ifdef ENABLE_ACHIEVEMENTS

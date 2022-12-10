@@ -147,16 +147,16 @@ SET(${PROJECT_NAME}_SRCS
 	RpNautilusPlugin.cpp
 	RpNautilusProvider.cpp
 	RpThunarPlugin.cpp
-	RpThunarProvider.cpp
 	RpThunarMenuProvider.cpp
+	RpThunarPropertyPageProvider.cpp
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_H}
 	RpNautilusPlugin.hpp
 	RpNautilusProvider.hpp
 	RpThunarPlugin.hpp
-	RpThunarProvider.hpp
 	RpThunarMenuProvider.hpp
+	RpThunarPropertyPageProvider.hpp
 	../plugin-helper.h
 	thunarx-mini.h
 	)
