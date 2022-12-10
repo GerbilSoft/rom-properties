@@ -146,17 +146,19 @@ SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_SSSE3_SRCS}
 	RpNautilusPlugin.cpp
 	RpNautilusPropertyPageProvider.cpp
+	RpNautilusMenuProvider.cpp
 	RpThunarPlugin.cpp
-	RpThunarMenuProvider.cpp
 	RpThunarPropertyPageProvider.cpp
+	RpThunarMenuProvider.cpp
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_H}
 	RpNautilusPlugin.hpp
 	RpNautilusPropertyPageProvider.hpp
+	RpNautilusMenuProvider.hpp
 	RpThunarPlugin.hpp
-	RpThunarMenuProvider.hpp
 	RpThunarPropertyPageProvider.hpp
+	RpThunarMenuProvider.hpp
 	../plugin-helper.h
 	thunarx-mini.h
 	nautilus-extension-mini.h
