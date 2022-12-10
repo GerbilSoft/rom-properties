@@ -209,20 +209,24 @@ IFACEMETHODIMP RP_ContextMenu::InvokeCommand(_In_ CMINVOKECOMMANDINFO *pici)
 
 IFACEMETHODIMP RP_ContextMenu::GetCommandString(_In_ UINT_PTR idCmd, _In_ UINT uType, _Reserved_ UINT *pReserved, _Out_ CHAR *pszName, _In_  UINT cchMax)
 {
+	// NOTE: Using snprintf()/_snwprintf() because strncpy()
+	// clears the buffer, which can be slow.
+
 	RP_D(const RP_ContextMenu);
 	if (idCmd == d->idConvertToPng) {
 		switch (uType) {
 			case GCS_VERBA:
+				snprintf(pszName, cchMax, "rp-convert-to-png");
+				return S_OK;
 			case GCS_VERBW:
-				// This will be handled outside of switch/case.
-				break;
+				_snwprintf(reinterpret_cast<LPWSTR>(pszName), cchMax, L"rp-convert-to-png");
+				return S_OK;
 
 			case GCS_HELPTEXTA:
-				*pszName = '\0';
-				return S_FALSE;
 			case GCS_HELPTEXTW:
-				*((LPWSTR)pszName) = L'\0';
-				return S_FALSE;
+				// This will be handled outside of switch/case.
+				// NOTE: Not used by Windows Vista or later.
+				break;
 
 			case GCS_VALIDATEA:
 			case GCS_VALIDATEW:
@@ -232,16 +236,14 @@ IFACEMETHODIMP RP_ContextMenu::GetCommandString(_In_ UINT_PTR idCmd, _In_ UINT u
 				return E_FAIL;
 		}
 
+		// GCS_HELPTEXT(A|W)
 		const char *const msg = NC_("ServiceMenu",
 			"Convert the selected texture file to PNG format.",
 			"Convert the selected texture files to PNG format.",
 			static_cast<int>(d->filenames.size()));
 
-		// NOTE: Using snprintf()/_snwprintf() because strncpy()
-		// clears the buffer, which can be slow.
 		if (likely(uType == GCS_VERBW)) {
-			LPWSTR pwszName = reinterpret_cast<LPWSTR>(pszName);
-			_snwprintf(pwszName, cchMax, L"%s", U82T_c(msg));
+			_snwprintf(reinterpret_cast<LPWSTR>(pszName), cchMax, L"%s", U82T_c(msg));
 		} else /*if (uType == GCS_VERBA)*/ {
 			_snprintf(pszName, cchMax, "%s", U82A_c(msg));
 		}
