@@ -37,9 +37,6 @@ class RP_ContextMenu_Private
 		// Selected filenames. [from IShellExtInit::Initialize()]
 		std::vector<LPTSTR> filenames;
 
-		// Menu ID for "Convert to PNG".
-		UINT idConvertToPng;
-
 		/**
 		 * Clear the filenames vector.
 		 */

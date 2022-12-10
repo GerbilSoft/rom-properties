@@ -28,11 +28,12 @@ const CLSID CLSID_RP_ContextMenu =
 #define CTX_VERB_A "rp-convert-to-png"
 #define CTX_VERB_W L"rp-convert-to-png"
 
+#define IDM_RP_CONVERT_TO_PNG 0
+
 /** RP_ContextMenu_Private **/
 #include "RP_ContextMenu_p.hpp"
 
 RP_ContextMenu_Private::RP_ContextMenu_Private()
-	: idConvertToPng(0)
 { }
 
 RP_ContextMenu_Private::~RP_ContextMenu_Private()
@@ -194,16 +195,42 @@ IFACEMETHODIMP RP_ContextMenu::QueryContextMenu(_In_ HMENU hMenu, _In_ UINT inde
 	// Add "Convert to PNG".
 	// TODO: Verify that it can be converted to PNG first.
 	RP_D(RP_ContextMenu);
-	d->idConvertToPng = idCmdFirst;
-	InsertMenu(hMenu, indexMenu, MF_STRING | MF_BYPOSITION, idCmdFirst,
+	InsertMenu(hMenu, indexMenu, MF_STRING | MF_BYPOSITION,
+		idCmdFirst + IDM_RP_CONVERT_TO_PNG,
 		U82T_c(C_("ServiceMenu", "Convert to PNG")));
-	return MAKE_HRESULT(SEVERITY_SUCCESS, 0, USHORT(1));
+	return MAKE_HRESULT(SEVERITY_SUCCESS, 0, USHORT(IDM_RP_CONVERT_TO_PNG + 1));
 }
 
 IFACEMETHODIMP RP_ContextMenu::InvokeCommand(_In_ CMINVOKECOMMANDINFO *pici)
 {
-	// TODO: Implement this.
-	MessageBoxA(NULL, "invoke RP Convert to PNG!", "invoke RP Convert to PNG!", 0);
+	// Check for a matching "Convert to PNG" verb.
+	bool isConvertToPNG = false;
+	if (pici->cbSize == sizeof(CMINVOKECOMMANDINFOEX) && (pici->fMask & CMIC_MASK_UNICODE)) {
+		// Unicode version
+		CMINVOKECOMMANDINFOEX *const piciex = reinterpret_cast<CMINVOKECOMMANDINFOEX*>(pici);
+		if (HIWORD(piciex->lpVerbW)) {
+			// Verb is specified
+			isConvertToPNG = !wcscmp(piciex->lpVerbW, CTX_VERB_W);
+		} else {
+			// Offset is specified
+			isConvertToPNG = (LOWORD(pici->lpVerb) == IDM_RP_CONVERT_TO_PNG);
+		}
+	} else {
+		// ANSI version
+		if (HIWORD(pici->lpVerb)) {
+			// Verb is specified
+			isConvertToPNG = !strcmp(pici->lpVerb, CTX_VERB_A);
+		} else {
+			// Offset is specified
+			isConvertToPNG = (LOWORD(pici->lpVerb) == IDM_RP_CONVERT_TO_PNG);
+		}
+	}
+
+	if (isConvertToPNG) {
+		MessageBoxA(NULL, "Convert To PNG is OK!!!!", "Convert To PNG is OK!!!!", 0);
+	} else {
+		MessageBoxA(NULL, "NOPE, not Convert To PNG", "NOPE, not Convert To PNG", 0);
+	}
 	return E_FAIL;
 }
 
@@ -213,13 +240,13 @@ IFACEMETHODIMP RP_ContextMenu::GetCommandString(_In_ UINT_PTR idCmd, _In_ UINT u
 	// clears the buffer, which can be slow.
 
 	RP_D(const RP_ContextMenu);
-	if (idCmd == d->idConvertToPng) {
+	if (idCmd == IDM_RP_CONVERT_TO_PNG) {
 		switch (uType) {
 			case GCS_VERBA:
-				snprintf(pszName, cchMax, "rp-convert-to-png");
+				snprintf(pszName, cchMax, CTX_VERB_A);
 				return S_OK;
 			case GCS_VERBW:
-				_snwprintf(reinterpret_cast<LPWSTR>(pszName), cchMax, L"rp-convert-to-png");
+				_snwprintf(reinterpret_cast<LPWSTR>(pszName), cchMax, CTX_VERB_W);
 				return S_OK;
 
 			case GCS_HELPTEXTA:
