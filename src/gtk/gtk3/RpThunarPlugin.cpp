@@ -42,8 +42,10 @@ PFN_THUNARX_FILE_INFO_GET_MIME_TYPE pfn_thunarx_file_info_get_mime_type;
 PFN_THUNARX_FILE_INFO_GET_URI pfn_thunarx_file_info_get_uri;
 PFN_THUNARX_FILE_INFO_LIST_COPY pfn_thunarx_file_info_list_copy;
 PFN_THUNARX_FILE_INFO_LIST_FREE pfn_thunarx_file_info_list_free;
+#if GTK_CHECK_VERSION(3,0,0)
 PFN_THUNARX_MENU_ITEM_GET_TYPE pfn_thunarx_menu_item_get_type;
 PFN_THUNARX_MENU_ITEM_NEW pfn_thunarx_menu_item_new;
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 PFN_THUNARX_MENU_PROVIDER_GET_TYPE pfn_thunarx_menu_provider_get_type;
 PFN_THUNARX_PROPERTY_PAGE_PROVIDER_GET_TYPE pfn_thunarx_property_page_provider_get_type;
 PFN_THUNARX_PROPERTY_PAGE_NEW pfn_thunarx_property_page_new;
@@ -97,8 +99,10 @@ thunar_extension_initialize(ThunarxProviderPlugin *plugin)
 	DLSYM(thunarx_file_info_get_uri,		thunarx_file_info_get_uri);
 	DLSYM(thunarx_file_info_list_copy,		thunarx_file_info_list_copy);
 	DLSYM(thunarx_file_info_list_free,		thunarx_file_info_list_free);
+#if GTK_CHECK_VERSION(3,0,0)
 	DLSYM(thunarx_menu_item_get_type,		thunarx_menu_item_get_type);
 	DLSYM(thunarx_menu_item_new,			thunarx_menu_item_new);
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 	DLSYM(thunarx_menu_provider_get_type,		thunarx_menu_provider_get_type);
 	DLSYM(thunarx_property_page_provider_get_type,	thunarx_property_page_provider_get_type);
 	DLSYM(thunarx_property_page_new,		thunarx_property_page_new);

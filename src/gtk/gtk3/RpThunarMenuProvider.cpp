@@ -238,13 +238,25 @@ rp_thunar_menu_provider_get_file_menu_items(ThunarxMenuProvider *provider, GtkWi
 	}
 
 	// Create the menu item.
-	ThunarxMenuItem *const item = thunarx_menu_item_new("rp-convert-to-png",
+	// NOTE: Starting with Thunar 1.7/1.8 (GTK3), ThunarxMenuItem is used.
+	// Previous versions (GTK2) used GtkAction.
+#if GTK_CHECK_VERSION(3,0,0)
+	ThunarxMenuItem *const item = thunarx_menu_item_new(
+#else /* !GTK_CHECK_VERSION(3,0,0) */
+	GtkAction *const item = gtk_action_new(
+#endif /* GTK_CHECK_VERSION(3,0,0) */
+		"rp-convert-to-png",
 		C_("ServiceMenu", "Convert to PNG"),
 		NC_("ServiceMenu",
 			"Convert the selected texture file to PNG format.",
 			"Convert the selected texture files to PNG format.",
 			file_count),
 		"image-png");
+
+#if GTK_CHECK_VERSION(2,15,1) && !GTK_CHECK_VERSION(3,0,0)
+	// Set the GtkAction's icon name.
+	gtk_action_set_icon_name(item, "image-png");
+#endif /* GTK_CHECK_VERSION(2,16,0) && !GTK_CHECK_VERSION(3,0,0) */
 
 	// Save the file list in the menu item.
 	g_object_set_qdata_full(G_OBJECT(item), rp_item_convert_to_png_quark,
