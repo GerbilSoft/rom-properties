@@ -795,10 +795,17 @@ int rp_image::swizzle(const char *swz_spec)
 	} u8_32;
 	u8_32 swz_ch;
 	memcpy(&swz_ch, swz_spec, sizeof(swz_ch));
-	if (swz_ch.u32 == be32_to_cpu('rgba')) {
+	if (swz_ch.u32 == 'rgba') {
 		// 'rgba' == NULL swizzle. Don't bother doing anything.
 		return 0;
 	}
+
+	// NOTE: Texture uses ARGB format, but swizzle uses rgba.
+	// Rotate swz_ch to convert it to argb.
+	// The entire thing needs to be byteswapped to match the internal order, too.
+	// TODO: Verify on big-endian.
+	swz_ch.u32 = (swz_ch.u32 >> 24) | (swz_ch.u32 << 8);
+	swz_ch.u32 = be32_to_cpu(swz_ch.u32);
 
 	uint32_t *bits = static_cast<uint32_t*>(backend->data());
 	const unsigned int stride_diff = (backend->stride - this->row_bytes()) / sizeof(uint32_t);
@@ -846,6 +853,28 @@ int rp_image::swizzle(const char *swz_spec)
 
 		// Next row.
 		bits += stride_diff;
+	}
+
+	// Swizzle the sBIT value, if set.
+	if (d->has_sBIT) {
+		// TODO: If gray is set, move its values to rgb?
+		rp_image::sBIT_t sBIT_old = d->sBIT;
+
+#define SWIZZLE_sBIT(n, ch) do { \
+				switch (swz_ch.u8[n]) { \
+					case 'b':	d->sBIT.ch = sBIT_old.blue;	break; \
+					case 'g':	d->sBIT.ch = sBIT_old.green;	break; \
+					case 'r':	d->sBIT.ch = sBIT_old.red;	break; \
+					case 'a':	d->sBIT.ch = sBIT_old.alpha;	break; \
+					case '0': case '1': \
+							d->sBIT.ch = 1;			break; \
+				} \
+			} while (0)
+
+			SWIZZLE_sBIT(SWZ_CH_B, blue);
+			SWIZZLE_sBIT(SWZ_CH_G, green);
+			SWIZZLE_sBIT(SWZ_CH_R, red);
+			SWIZZLE_sBIT(SWZ_CH_A, alpha);
 	}
 
 	return 0;
