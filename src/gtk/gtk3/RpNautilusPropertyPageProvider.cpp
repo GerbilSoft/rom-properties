@@ -30,7 +30,8 @@ using LibRpBase::RomData;
 
 static void   rp_nautilus_property_page_provider_page_provider_init	(NautilusPropertyPageProviderInterface	*iface);
 static GList *rp_nautilus_property_page_provider_get_pages		(NautilusPropertyPageProvider		*provider,
-									 GList					*files);
+									 GList					*files)
+									G_GNUC_MALLOC G_GNUC_WARN_UNUSED_RESULT;
 
 struct _RpNautilusPropertyPageProviderClass {
 	GObjectClass __parent__;

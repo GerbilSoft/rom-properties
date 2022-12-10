@@ -39,7 +39,7 @@ static GList *rp_nautilus_menu_provider_get_file_items(
 #if !GTK_CHECK_VERSION(4,0,0)
 	GtkWidget *window,
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
-	GList *files);
+	GList *files) G_GNUC_MALLOC G_GNUC_WARN_UNUSED_RESULT;
 
 struct _RpNautilusMenuProviderClass {
 	GObjectClass __parent__;

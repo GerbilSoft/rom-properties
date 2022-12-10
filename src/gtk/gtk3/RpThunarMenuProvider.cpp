@@ -31,7 +31,8 @@ static GQuark rp_item_convert_to_png_quark;
 static void   rp_thunar_menu_provider_page_provider_init	(ThunarxMenuProviderIface *iface);
 static GList *rp_thunar_menu_provider_get_file_menu_items	(ThunarxMenuProvider      *provider,
 								 GtkWidget                *window,
-								 GList                    *files);
+								 GList                    *files)
+								G_GNUC_MALLOC G_GNUC_WARN_UNUSED_RESULT;
 
 struct _RpThunarMenuProviderClass {
 	GObjectClass __parent__;

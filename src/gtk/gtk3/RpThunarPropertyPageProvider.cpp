@@ -20,7 +20,8 @@ using LibRpBase::RomData;
 
 static void   rp_thunar_property_page_provider_page_provider_init	(ThunarxPropertyPageProviderIface *iface);
 static GList *rp_thunar_property_page_provider_get_pages		(ThunarxPropertyPageProvider      *page_provider,
-									 GList                            *files);
+									 GList                            *files)
+									G_GNUC_MALLOC G_GNUC_WARN_UNUSED_RESULT;
 
 struct _RpThunarPropertyPageProviderClass {
 	GObjectClass __parent__;
