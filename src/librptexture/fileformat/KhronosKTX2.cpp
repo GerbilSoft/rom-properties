@@ -245,7 +245,7 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 		case VK_FORMAT_B8G8R8_UNORM:
 		case VK_FORMAT_B8G8R8_UINT:
 		case VK_FORMAT_B8G8R8_SRGB:
-			// 24-bit RGB.
+			// 24-bit RGB
 			stride = ALIGN_BYTES(4, width * 3);
 			expected_size = ImageSizeCalc::T_calcImageSize(stride, height);
 			break;
@@ -256,7 +256,7 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 		case VK_FORMAT_B8G8R8A8_UNORM:
 		case VK_FORMAT_B8G8R8A8_UINT:
 		case VK_FORMAT_B8G8R8A8_SRGB:
-			// 32-bit RGBA.
+			// 32-bit RGBA
 			stride = width * 4;
 			expected_size = ImageSizeCalc::T_calcImageSize(stride, height);
 			break;
@@ -264,8 +264,16 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 		case VK_FORMAT_R8_UNORM:
 		case VK_FORMAT_R8_UINT:
 		case VK_FORMAT_R8_SRGB:
-			// 8-bit. (red)
+			// 8-bit (red)
 			stride = ALIGN_BYTES(4, width);
+			expected_size = ImageSizeCalc::T_calcImageSize(stride, height);
+			break;
+
+		case VK_FORMAT_R8G8_UNORM:
+		case VK_FORMAT_R8G8_UINT:
+		case VK_FORMAT_R8G8_SRGB:
+			// 16-bit (red/green; may also be luminance/alpha)
+			stride = ALIGN_BYTES(4, width * 2);
 			expected_size = ImageSizeCalc::T_calcImageSize(stride, height);
 			break;
 
@@ -438,7 +446,7 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 		case VK_FORMAT_R8G8B8_UNORM:
 		case VK_FORMAT_R8G8B8_UINT:
 		case VK_FORMAT_R8G8B8_SRGB:
-			// 24-bit RGB.
+			// 24-bit RGB
 			img = ImageDecoder::fromLinear24(
 				ImageDecoder::PixelFormat::BGR888, width, height,
 				buf.get(), expected_size, stride);
@@ -447,7 +455,7 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 		case VK_FORMAT_B8G8R8_UNORM:
 		case VK_FORMAT_B8G8R8_UINT:
 		case VK_FORMAT_B8G8R8_SRGB:
-			// 24-bit RGB. (R/B swapped)
+			// 24-bit RGB (R/B swapped)
 			img = ImageDecoder::fromLinear24(
 				ImageDecoder::PixelFormat::RGB888, width, height,
 				buf.get(), expected_size, stride);
@@ -456,7 +464,7 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 		case VK_FORMAT_R8G8B8A8_UNORM:
 		case VK_FORMAT_R8G8B8A8_UINT:
 		case VK_FORMAT_R8G8B8A8_SRGB:
-			// 32-bit RGBA.
+			// 32-bit RGBA
 			img = ImageDecoder::fromLinear32(
 				ImageDecoder::PixelFormat::ABGR8888, width, height,
 				reinterpret_cast<const uint32_t*>(buf.get()), expected_size, stride);
@@ -465,7 +473,7 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 		case VK_FORMAT_B8G8R8A8_UNORM:
 		case VK_FORMAT_B8G8R8A8_UINT:
 		case VK_FORMAT_B8G8R8A8_SRGB:
-			// 32-bit RGBA. (R/B swapped)
+			// 32-bit RGBA (R/B swapped)
 			img = ImageDecoder::fromLinear32(
 				ImageDecoder::PixelFormat::ARGB8888, width, height,
 				reinterpret_cast<const uint32_t*>(buf.get()), expected_size, stride);
@@ -474,10 +482,19 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 		case VK_FORMAT_R8_UNORM:
 		case VK_FORMAT_R8_UINT:
 		case VK_FORMAT_R8_SRGB:
-			// 8-bit (red).
+			// 8-bit (red)
 			img = ImageDecoder::fromLinear8(
 				ImageDecoder::PixelFormat::R8, width, height,
 				buf.get(), expected_size, stride);
+			break;
+
+		case VK_FORMAT_R8G8_UNORM:
+		case VK_FORMAT_R8G8_UINT:
+		case VK_FORMAT_R8G8_SRGB:
+			// 16-bit (red/green; may also be luminance/alpha)
+			img = ImageDecoder::fromLinear16(
+				ImageDecoder::PixelFormat::GR88, width, height,
+				reinterpret_cast<const uint16_t*>(buf.get()), expected_size, stride);
 			break;
 
 		case VK_FORMAT_E5B9G9R9_UFLOAT_PACK32:
