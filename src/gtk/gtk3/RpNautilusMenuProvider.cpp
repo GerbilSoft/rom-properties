@@ -137,6 +137,7 @@ is_file_uri(NautilusFileInfo *file_info)
 static void
 rp_item_convert_to_png(NautilusMenuItem *item, gpointer user_data)
 {
+	// TODO: Run this in another thread so it doesn't block the UI.
 	RP_UNUSED(user_data);
 
 	GList *const files = static_cast<GList*>(g_object_get_qdata(G_OBJECT(item), rp_item_convert_to_png_quark));

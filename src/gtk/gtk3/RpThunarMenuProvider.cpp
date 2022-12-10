@@ -130,6 +130,7 @@ is_file_uri(ThunarxFileInfo *file_info)
 static void
 rp_item_convert_to_png(ThunarxMenuItem *item, GtkWidget *window)
 {
+	// TODO: Run this in another thread so it doesn't block the UI.
 	RP_UNUSED(window);
 
 	GList *const files = static_cast<GList*>(g_object_get_qdata(G_OBJECT(item), rp_item_convert_to_png_quark));
