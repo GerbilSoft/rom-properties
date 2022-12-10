@@ -11,6 +11,9 @@
 #include "RP_ContextMenu.hpp"
 #include "RpImageWin32.hpp"
 
+// MSVCRT-specific [for _beginthreadex()]
+#include <process.h>
+
 // for RPCT_* constants
 #include "CreateThumbnail.hpp"
 
@@ -43,18 +46,23 @@ RP_ContextMenu_Private::RP_ContextMenu_Private()
 
 RP_ContextMenu_Private::~RP_ContextMenu_Private()
 {
-	clear_filenames();
+	clear_filenames_vector(this->filenames);
 }
 
 /**
- * Clear the filenames vector.
+ * Clear a filenames vector.
+ * All filenames will be deleted and the vector will also be deleted.
+ * @param filenames Filenames vector
  */
-void RP_ContextMenu_Private::clear_filenames(void)
+void RP_ContextMenu_Private::clear_filenames_vector(std::vector<LPTSTR> *filenames)
 {
-	for (LPTSTR filename : filenames) {
+	if (unlikely(!filenames))
+		return;
+
+	for (LPTSTR filename : *filenames) {
 		free(filename);
 	}
-	filenames.clear();
+	delete filenames;
 }
 
 /**
@@ -172,6 +180,31 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_file)
 	return 0;
 }
 
+/**
+ * Convert texture file(s) to PNG format.
+ * This function should be created in a separate thread using _beginthreadex().
+ * @param lpParameter [in] Pointer to vector of filenames. Will be freed by this function afterwards.
+ * @return 0 on success; non-zero on error.
+ */
+unsigned int WINAPI RP_ContextMenu_Private::convert_to_png_ThreadProc(std::vector<LPTSTR> *filenames)
+{
+	if (unlikely(!filenames)) {
+		// No filenames...
+		return ERROR_INVALID_PARAMETER;
+	}
+
+	// Process the filenames.
+	for (LPTSTR filename : *filenames) {
+		convert_to_png(filename);
+	}
+
+	// Delete the filenames vector.
+	clear_filenames_vector(filenames);
+
+	// We're done here.
+	return 0;
+}
+
 /** RP_ContextMenu **/
 
 RP_ContextMenu::RP_ContextMenu()
@@ -215,7 +248,8 @@ IFACEMETHODIMP RP_ContextMenu::Initialize(
 	// Clear the stored filenames on Initialize(),
 	// even if the rest of the function fails.
 	RP_D(RP_ContextMenu);
-	d->clear_filenames();
+	d->clear_filenames_vector(d->filenames);
+	d->filenames = nullptr;
 
 	// Based on CppShellExtPropSheetHandler.
 	// https://code.msdn.microsoft.com/windowsapps/CppShellExtPropSheetHandler-d93b49b7
@@ -252,7 +286,9 @@ IFACEMETHODIMP RP_ContextMenu::Initialize(
 		return E_FAIL;
 	}
 
-	// Save the file paths.
+	// Save the filenames.
+	d->filenames = new std::vector<LPTSTR>();
+	d->filenames->reserve(nFiles);
 	for (UINT i = 0; i < nFiles; i++) {
 		UINT cchFilename = DragQueryFile(hDrop, i, nullptr, 0);
 		if (cchFilename == 0) {
@@ -287,7 +323,7 @@ IFACEMETHODIMP RP_ContextMenu::Initialize(
 
 		if (is_texture) {
 			// It's a supported texture. Save the filename.
-			d->filenames.emplace_back(tfilename);
+			d->filenames->emplace_back(tfilename);
 		} else {
 			// Not a supported texture.
 			free(tfilename);
@@ -350,13 +386,25 @@ IFACEMETHODIMP RP_ContextMenu::InvokeCommand(_In_ CMINVOKECOMMANDINFO *pici)
 		return E_FAIL;
 	}
 
-	// Process the files.
-	// TODO: Run this in a separate thread so it doesn't block Explorer.
+	// Start the PNG conversion thread.
 	RP_D(RP_ContextMenu);
-	for (const LPTSTR filename : d->filenames) {
-		// TODO: Return an error if one of these fails?
-		d->convert_to_png(filename);
+	std::vector<LPTSTR> *param_filenames = nullptr;
+	std::swap(param_filenames, d->filenames);
+	HANDLE hThread = reinterpret_cast<HANDLE>(_beginthreadex(
+		nullptr, 0, (_beginthreadex_proc_type)d->convert_to_png_ThreadProc,
+		param_filenames, 0, nullptr));
+	if (!hThread) {
+		// Couldn't start the worker thread.
+
+		// Copy the filenames vector pointer back so we still own it.
+		d->filenames = param_filenames;
+
+		// TODO: Better error code?
+		return E_FAIL;
 	}
+
+	// We don't need to hold on to the thread handle.
+	CloseHandle(hThread);
 	return S_OK;
 }
 
@@ -390,10 +438,11 @@ IFACEMETHODIMP RP_ContextMenu::GetCommandString(_In_ UINT_PTR idCmd, _In_ UINT u
 		}
 
 		// GCS_HELPTEXT(A|W)
+		const int nc = d->filenames ? static_cast<int>(d->filenames->size()) : 0;
 		const char *const msg = NC_("ServiceMenu",
 			"Convert the selected texture file to PNG format.",
 			"Convert the selected texture files to PNG format.",
-			static_cast<int>(d->filenames.size()));
+			nc);
 
 		if (likely(uType == GCS_HELPTEXTW)) {
 			_snwprintf(reinterpret_cast<LPWSTR>(pszName), cchMax, L"%s", U82T_c(msg));

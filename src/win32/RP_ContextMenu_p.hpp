@@ -35,12 +35,16 @@ class RP_ContextMenu_Private
 
 	public:
 		// Selected filenames. [from IShellExtInit::Initialize()]
-		std::vector<LPTSTR> filenames;
+		// NOTE: Ownership passes to convert_to_png_ThreadProc()
+		// once the command is invoked.
+		std::vector<LPTSTR> *filenames;
 
 		/**
-		 * Clear the filenames vector.
+		 * Clear a filenames vector.
+		 * All filenames will be deleted and the vector will also be deleted.
+		 * @param filenames Filenames vector
 		 */
-		void clear_filenames(void);
+		static void clear_filenames_vector(std::vector<LPTSTR> *filenames);
 
 		/**
 		 * Convert a texture file to PNG format.
@@ -48,7 +52,15 @@ class RP_ContextMenu_Private
 		 * @param source_file Source filename
 		 * @return 0 on success; non-zero on error.
 		 */
-		int convert_to_png(LPCTSTR source_file);
+		static int convert_to_png(LPCTSTR source_file);
+
+		/**
+		 * Convert texture file(s) to PNG format.
+		 * This function should be created in a separate thread using _beginthreadex().
+		 * @param lpParameter [in] Pointer to vector of filenames. Will be freed by this function afterwards.
+		 * @return 0 on success; non-zero on error.
+		 */
+		static unsigned int WINAPI convert_to_png_ThreadProc(std::vector<LPTSTR> *filenames);
 
 	public:
 		/**
