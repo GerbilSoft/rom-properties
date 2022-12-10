@@ -145,7 +145,7 @@ SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_IFUNC_SRCS}
 	${${PROJECT_NAME}_SSSE3_SRCS}
 	RpNautilusPlugin.cpp
-	RpNautilusProvider.cpp
+	RpNautilusPropertyPageProvider.cpp
 	RpThunarPlugin.cpp
 	RpThunarMenuProvider.cpp
 	RpThunarPropertyPageProvider.cpp
@@ -153,7 +153,7 @@ SET(${PROJECT_NAME}_SRCS
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_H}
 	RpNautilusPlugin.hpp
-	RpNautilusProvider.hpp
+	RpNautilusPropertyPageProvider.hpp
 	RpThunarPlugin.hpp
 	RpThunarMenuProvider.hpp
 	RpThunarPropertyPageProvider.hpp

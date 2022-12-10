@@ -1,10 +1,10 @@
-/***************************************************************************
- * ROM Properties Page shell extension. (GTK+ 3.x)                         *
- * RpNautilusProvider.cpp: Nautilus (and forks) Provider Definition.       *
- *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
- * SPDX-License-Identifier: GPL-2.0-or-later                               *
- ***************************************************************************/
+/*********************************************************************************
+ * ROM Properties Page shell extension. (GTK+ 3.x)                               *
+ * RpNautilusPropertyPageProvider.hpp: Nautilus (and forks) Provider Definition. *
+ *                                                                               *
+ * Copyright (c) 2017-2022 by David Korth.                                       *
+ * SPDX-License-Identifier: GPL-2.0-or-later                                     *
+ *********************************************************************************/
 
 /**
  * References:
@@ -16,7 +16,7 @@
  */
 
 #include "stdafx.h"
-#include "RpNautilusProvider.hpp"
+#include "RpNautilusPropertyPageProvider.hpp"
 #include "RpNautilusPlugin.hpp"
 #include "is-supported.hpp"
 
@@ -34,15 +34,15 @@ struct _NautilusPropertyPageProviderInterface {
 	                     GList                        *files);
 };
 
-static void   rp_nautilus_provider_page_provider_init	(NautilusPropertyPageProviderInterface	*iface);
-static GList *rp_nautilus_provider_get_pages		(NautilusPropertyPageProvider		*provider,
-							 GList					*files);
+static void   rp_nautilus_property_page_provider_page_provider_init	(NautilusPropertyPageProviderInterface	*iface);
+static GList *rp_nautilus_property_page_provider_get_pages		(NautilusPropertyPageProvider		*provider,
+									 GList					*files);
 
-struct _RpNautilusProviderClass {
+struct _RpNautilusPropertyPageProviderClass {
 	GObjectClass __parent__;
 };
 
-struct _RpNautilusProvider {
+struct _RpNautilusPropertyPageProvider {
 	GObject __parent__;
 };
 
@@ -58,10 +58,10 @@ struct _RpNautilusProvider {
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(RpNautilusProvider, rp_nautilus_provider,
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(RpNautilusPropertyPageProvider, rp_nautilus_property_page_provider,
 	G_TYPE_OBJECT, 0,
 	G_IMPLEMENT_INTERFACE(NAUTILUS_TYPE_PROPERTY_PAGE_PROVIDER,
-			rp_nautilus_provider_page_provider_init));
+		rp_nautilus_property_page_provider_page_provider_init));
 
 #if !GLIB_CHECK_VERSION(2,59,1)
 # if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
@@ -70,37 +70,37 @@ G_DEFINE_DYNAMIC_TYPE_EXTENDED(RpNautilusProvider, rp_nautilus_provider,
 #endif /* !GLIB_CHECK_VERSION(2,59,1) */
 
 void
-rp_nautilus_provider_register_type_ext(GTypeModule *module)
+rp_nautilus_property_page_provider_register_type_ext(GTypeModule *module)
 {
-	rp_nautilus_provider_register_type(module);
+	rp_nautilus_property_page_provider_register_type(module);
 }
 
 static void
-rp_nautilus_provider_class_init(RpNautilusProviderClass *klass)
-{
-	RP_UNUSED(klass);
-}
-
-static void
-rp_nautilus_provider_class_finalize(RpNautilusProviderClass *klass)
+rp_nautilus_property_page_provider_class_init(RpNautilusPropertyPageProviderClass *klass)
 {
 	RP_UNUSED(klass);
 }
 
 static void
-rp_nautilus_provider_init(RpNautilusProvider *sbr_provider)
+rp_nautilus_property_page_provider_class_finalize(RpNautilusPropertyPageProviderClass *klass)
+{
+	RP_UNUSED(klass);
+}
+
+static void
+rp_nautilus_property_page_provider_init(RpNautilusPropertyPageProvider *sbr_provider)
 {
 	RP_UNUSED(sbr_provider);
 }
 
 static void
-rp_nautilus_provider_page_provider_init(NautilusPropertyPageProviderInterface *iface)
+rp_nautilus_property_page_provider_page_provider_init(NautilusPropertyPageProviderInterface *iface)
 {
-	iface->get_pages = rp_nautilus_provider_get_pages;
+	iface->get_pages = rp_nautilus_property_page_provider_get_pages;
 }
 
 static GList*
-rp_nautilus_provider_get_pages(NautilusPropertyPageProvider *provider, GList *files)
+rp_nautilus_property_page_provider_get_pages(NautilusPropertyPageProvider *provider, GList *files)
 {
 	RP_UNUSED(provider);
 	GList *pages = nullptr;
