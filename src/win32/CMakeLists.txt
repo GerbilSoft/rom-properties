@@ -63,6 +63,8 @@ SET(${PROJECT_NAME}_SRCS
 	RP_ThumbnailProvider_Fallback.cpp
 	RP_ShellIconOverlayIdentifier.cpp
 	RP_ShellIconOverlayIdentifier_Register.cpp
+	RP_ContextMenu.cpp
+	RP_ContextMenu_Register.cpp
 	CreateThumbnail.cpp
 	DragImageLabel.cpp
 	FontHandler.cpp
@@ -97,6 +99,8 @@ SET(${PROJECT_NAME}_H
 	RP_ThumbnailProvider_p.hpp
 	RP_ShellIconOverlayIdentifier.hpp
 	RP_ShellIconOverlayIdentifier_p.hpp
+	RP_ContextMenu.hpp
+	RP_ContextMenu_p.hpp
 	CreateThumbnail.hpp
 	DragImageLabel.hpp
 	FontHandler.hpp

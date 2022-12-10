@@ -30,6 +30,7 @@
 #  include "RP_PropertyStore.hpp"
 #endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 #include "RP_ShellIconOverlayIdentifier.hpp"
+#include "RP_ContextMenu.hpp"
 
 // libwin32common
 using LibWin32UI::RegKey;
@@ -132,6 +133,33 @@ static LONG RegisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory::
 		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	}
 
+	// Register the context menu handler.
+	// TODO: Get these from FileFormatFactory. (requires TCHAR conversion though)
+	static const TCHAR texture_exts[][8] = {
+		_T(".astc"), _T(".dds"), _T(".gvr"), _T(".ktx"),
+		_T(".ktx2"), _T(".pvr"), _T(".stex"), _T(".svr"),
+		_T(".tex"), _T(".texs"), _T(".tga"), _T(".vtf"),
+		_T(".xpr"), _T(".xbx"),
+	};
+	// TODO: Rework into a binary search.
+	bool is_texture = false;
+	for (auto texture_ext : texture_exts) {
+		if (!_tcscmp(texture_ext, t_ext.c_str())) {
+			is_texture = true;
+			break;
+		}
+	}
+	if (is_texture) {
+		// Register the context menu handler.
+		lResult = RP_ContextMenu::RegisterFileType(hkcr, t_ext.c_str());
+		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	} else {
+		// Not a texture file extension.
+		// Unregister the handler if it was previously registered.
+		lResult = RP_ContextMenu::UnregisterFileType(hkcr, t_ext.c_str());
+		if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	}
+
 	// All file type handlers registered.
 	return ERROR_SUCCESS;
 }
@@ -190,6 +218,8 @@ static LONG UnregisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory
 	// MinGW-w64: Suppress pHklm warnings, since it's unused.
 	((void)pHklm);
 #endif /* HAVE_RP_PROPERTYSTORE_DEPS */
+	lResult = RP_ContextMenu::UnregisterFileType(hkcr, t_ext.c_str());
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	// Delete keys if they're empty.
 	static const TCHAR *const keysToDel[] = {_T("ShellEx"), _T("RP_Fallback")};
@@ -549,6 +579,8 @@ STDAPI DllRegisterServer(void)
 	lResult = RP_ShellIconOverlayIdentifier::RegisterCLSID();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 #endif /* ENABLE_OVERLAY_ICON_HANDLER */
+	lResult = RP_ContextMenu::RegisterCLSID();
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	// Enumerate user hives.
 	RegKey hku(HKEY_USERS, nullptr, KEY_READ, false);
@@ -668,6 +700,8 @@ STDAPI DllUnregisterServer(void)
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 #endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 	lResult = RP_ShellIconOverlayIdentifier::UnregisterCLSID();
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_ContextMenu::UnregisterCLSID();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	// Enumerate user hives.
