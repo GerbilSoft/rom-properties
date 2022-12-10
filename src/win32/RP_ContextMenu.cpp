@@ -242,9 +242,9 @@ IFACEMETHODIMP RP_ContextMenu::GetCommandString(_In_ UINT_PTR idCmd, _In_ UINT u
 			"Convert the selected texture files to PNG format.",
 			static_cast<int>(d->filenames.size()));
 
-		if (likely(uType == GCS_VERBW)) {
+		if (likely(uType == GCS_HELPTEXTW)) {
 			_snwprintf(reinterpret_cast<LPWSTR>(pszName), cchMax, L"%s", U82T_c(msg));
-		} else /*if (uType == GCS_VERBA)*/ {
+		} else /*if (uType == GCS_HELPTEXTA)*/ {
 			_snprintf(pszName, cchMax, "%s", U82A_c(msg));
 		}
 		return S_OK;
