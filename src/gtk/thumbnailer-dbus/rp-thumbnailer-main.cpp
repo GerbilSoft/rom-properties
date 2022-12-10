@@ -143,8 +143,8 @@ int main(int argc, char *argv[])
 
 	// Attempt to open a ROM Properties Page library.
 	void *pDll = nullptr;
-	PFN_RP_CREATE_THUMBNAIL pfn_rp_create_thumbnail = nullptr;
-	int ret = rp_dll_search("rp_create_thumbnail", &pDll, (void**)&pfn_rp_create_thumbnail, fnDebug);
+	PFN_RP_CREATE_THUMBNAIL2 pfn_rp_create_thumbnail2 = nullptr;
+	int ret = rp_dll_search("rp_create_thumbnail2", &pDll, (void**)&pfn_rp_create_thumbnail2, fnDebug);
 	if (ret != 0) {
 		return EXIT_FAILURE;
 	}
@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
 
 	// Create the RpThumbnail service object.
 	RpThumbnailer *const thumbnailer = rp_thumbnailer_new(
-		connection, cache_dir.c_str(), pfn_rp_create_thumbnail);
+		connection, cache_dir.c_str(), pfn_rp_create_thumbnail2);
 
 	// Register the D-Bus service.
 	g_bus_own_name_on_connection(connection,

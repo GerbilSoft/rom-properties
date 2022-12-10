@@ -133,13 +133,16 @@ SET(${PROJECT_NAME}_SRCS
 	RpNautilusPlugin.cpp
 	RpNautilusPropertiesModelProvider.cpp
 	RpNautilusPropertiesModel.cpp
+	../gtk3/RpNautilusMenuProvider.cpp
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_H}
 	RpNautilusPlugin.hpp
 	RpNautilusPropertiesModelProvider.hpp
 	RpNautilusPropertiesModel.hpp
+	../gtk3/RpNautilusMenuProvider.hpp
 	../plugin-helper.h
+	nautilus-extension-mini.h
 	)
 
 IF(HAVE_GSOUND)

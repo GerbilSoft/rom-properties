@@ -69,6 +69,7 @@ SET(${PROJECT_NAME}_H
 	RomDataView_p.hpp
 	RomDataFormat.hpp
 	DragImage.hpp
+	CreateThumbnail.hpp
 	PIMGTYPE.hpp
 	rp-gtk-enums.h
 	RpFile_gio.hpp

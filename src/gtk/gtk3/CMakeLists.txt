@@ -145,18 +145,24 @@ SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_IFUNC_SRCS}
 	${${PROJECT_NAME}_SSSE3_SRCS}
 	RpNautilusPlugin.cpp
-	RpNautilusProvider.cpp
+	RpNautilusPropertyPageProvider.cpp
+	RpNautilusMenuProvider.cpp
 	RpThunarPlugin.cpp
-	RpThunarProvider.cpp
+	RpThunarPropertyPageProvider.cpp
+	RpThunarMenuProvider.cpp
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_H}
 	RpNautilusPlugin.hpp
-	RpNautilusProvider.hpp
+	RpNautilusPropertyPageProvider.hpp
+	RpNautilusMenuProvider.hpp
 	RpThunarPlugin.hpp
-	RpThunarProvider.hpp
+	RpThunarPropertyPageProvider.hpp
+	RpThunarMenuProvider.hpp
 	../plugin-helper.h
 	thunarx-mini.h
+	nautilus-extension-mini.h
+	mime-types.convert-to-png.h
 	)
 
 IF(HAVE_GSOUND OR (HAVE_LIBCANBERRA AND HAVE_LIBCANBERRA_GTK3))

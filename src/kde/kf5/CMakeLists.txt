@@ -242,16 +242,13 @@ IF(BUILD_KF5)
 	# FIXME: Need to add a dependency to ensure these files are regenerated if the XDG files are changed.
 	INCLUDE(ParseMimeTypes)
 	PARSE_MIME_TYPES(MIMETYPES_THUMBONLY
-		"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
-		)
+		"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types")
 	PARSE_MIME_TYPES(MIMETYPES_ALL
 		"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
-		"${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types"
-		)
+		"${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types")
 	PARSE_MIME_TYPES_JSON(MIMETYPES_ALL_JSON_ARRAY "            "
 		"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
-		"${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types"
-		)
+		"${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types")
 	CONFIGURE_FILE(${PROJECT_NAME}.KPropertiesDialog.desktop.in ${PROJECT_NAME}.KPropertiesDialog.desktop @ONLY)
 	CONFIGURE_FILE(${PROJECT_NAME}.ThumbCreator.desktop.in      ${PROJECT_NAME}.ThumbCreator.desktop @ONLY)
 	CONFIGURE_FILE(${PROJECT_NAME}.json.in                      ${PROJECT_NAME}.json    @ONLY)
@@ -260,22 +257,25 @@ IF(BUILD_KF5)
 	# breaks thumbnails. We might need to make a KPropertiesDialog forwarder.
 	INSTALL(TARGETS ${PROJECT_NAME}
 		LIBRARY DESTINATION "${KF5_PLUGIN_INSTALL_DIR}"
-		COMPONENT "plugin"
-		)
+		COMPONENT "plugin")
 	INSTALL(TARGETS kfilemetadata_${PROJECT_NAME}
 		LIBRARY DESTINATION "${KF5_KFMD_PLUGIN_INSTALL_DIR}"
-		COMPONENT "plugin"
-		)
+		COMPONENT "plugin")
 	INSTALL(TARGETS overlayiconplugin_${PROJECT_NAME}
 		LIBRARY DESTINATION "${KF5_KOVI_PLUGIN_INSTALL_DIR}"
-		COMPONENT "plugin"
-		)
+		COMPONENT "plugin")
 	INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.KPropertiesDialog.desktop"
 		      "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.ThumbCreator.desktop"
 		DESTINATION "${SERVICES_INSTALL_DIR}"
-		COMPONENT "plugin"
-		)
+		COMPONENT "plugin")
 	# FIXME: Run kbuildsycoca5?
+
+	# Service menus
+	# TODO: Make it KDE common instead of KF5-specific? (Needs KDE4 testing.)
+	INSTALL(FILES servicemenus/rp-convert-to-png.desktop
+		DESTINATION "${CMAKE_INSTALL_PREFIX}/share/kio/servicemenus"
+		PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+		COMPONENT "plugin")
 
 	# Check if a split debug file should be installed.
 	IF(INSTALL_DEBUG)
@@ -284,24 +284,21 @@ IF(BUILD_KF5)
 		IF(DEBUG_FILENAME)
 			INSTALL(FILES "${DEBUG_FILENAME}"
 				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${KF5_PLUGIN_INSTALL_DIR}"
-				COMPONENT "debug"
-				)
+				COMPONENT "debug")
 		ENDIF(DEBUG_FILENAME)
 
 		GET_TARGET_PROPERTY(DEBUG_FILENAME kfilemetadata_${PROJECT_NAME} PDB)
 		IF(DEBUG_FILENAME)
 			INSTALL(FILES "${DEBUG_FILENAME}"
 				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${KF5_KFMD_PLUGIN_INSTALL_DIR}"
-				COMPONENT "debug"
-				)
+				COMPONENT "debug")
 		ENDIF(DEBUG_FILENAME)
 
 		GET_TARGET_PROPERTY(DEBUG_FILENAME overlayiconplugin_${PROJECT_NAME} PDB)
 		IF(DEBUG_FILENAME)
 			INSTALL(FILES "${DEBUG_FILENAME}"
 				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${KF5_KOVI_PLUGIN_INSTALL_DIR}"
-				COMPONENT "debug"
-				)
+				COMPONENT "debug")
 		ENDIF(DEBUG_FILENAME)
 	ENDIF(INSTALL_DEBUG)
 ENDIF(BUILD_KF5)

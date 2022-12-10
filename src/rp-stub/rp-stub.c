@@ -34,14 +34,28 @@
 #include <string.h>
 #include <unistd.h>
 
+#ifdef _WIN32
+#  define DIR_SEP_CHR '\\'
+#else
+#  define DIR_SEP_CHR '/'
+#endif
+
 /**
- * rp_create_thumbnail() function pointer.
- * @param source_file Source file. (UTF-8)
- * @param output_file Output file. (UTF-8)
- * @param maximum_size Maximum size.
+ * rp_create_thumbnail2() flags
+ */
+typedef enum {
+	RPCT_FLAG_NO_XDG_THUMBNAIL_METADATA	= (1U << 0),	/*< Don't add XDG thumbnail metadata */
+} RpCreateThumbnailFlags;
+
+/**
+ * rp_create_thumbnail2() function pointer. (v2)
+ * @param source_file Source file (UTF-8)
+ * @param output_file Output file (UTF-8)
+ * @param maximum_size Maximum size
+ * @param flags Flags (see RpCreateThumbnailFlags)
  * @return 0 on success; non-zero on error.
  */
-typedef int (RP_C_API *PFN_RP_CREATE_THUMBNAIL)(const char *source_file, const char *output_file, int maximum_size);
+typedef int (RP_C_API *PFN_RP_CREATE_THUMBNAIL2)(const char *source_file, const char *output_file, int maximum_size, unsigned int flags);
 
 /**
  * rp_show_config_dialog() function pointer. (Unix/Linux version)
@@ -89,8 +103,13 @@ static void show_help(const char *argv0)
 			"If source_file is a supported ROM image, a thumbnail is\n"
 			"extracted and saved as output_file.\n"
 			"\n"
-			"Options:\n"
+			"Thumbnailing options:\n"
 			"  -s, --size\t\tMaximum thumbnail size. (default is 256px) [0 for full image]\n"
+			"  -a, --autoext\t\tGenerate the output filename based on the source filename.\n"
+			"               \t\t(WARNING: May overwrite an existing file without prompting.)\n"
+			"  -n, --noxdg\t\tDon't include XDG thumbnail metadata.\n"
+			"\n"
+			"Other options:\n"
 			"  -c, --config\t\tShow the configuration dialog instead of thumbnailing.\n"
 			"  -d, --debug\t\tShow debug output when searching for rom-properties.\n"
 			"  -h, --help\t\tDisplay this help and exit.\n"
@@ -166,6 +185,8 @@ int main(int argc, char *argv[])
 
 	static const struct option long_options[] = {
 		{"size",	required_argument,	NULL, 's'},
+		{"autoext",	no_argument,		NULL, 'a'},
+		{"noxdg",	no_argument,		NULL, 'n'},
 		{"config",	no_argument,		NULL, 'c'},
 		{"debug",	no_argument,		NULL, 'd'},
 		{"help",	no_argument,		NULL, 'h'},
@@ -181,8 +202,10 @@ int main(int argc, char *argv[])
 	// Default to 256x256.
 	uint8_t config = is_rp_config;
 	int maximum_size = 256;
+	unsigned int flags = 0;
+	bool autoext = false;
 	int c, option_index;
-	while ((c = getopt_long(argc, argv, "s:cdhV", long_options, &option_index)) != -1) {
+	while ((c = getopt_long(argc, argv, "s:acdnhV", long_options, &option_index)) != -1) {
 		switch (c) {
 			case 's': {
 				char *endptr = NULL;
@@ -209,6 +232,11 @@ int main(int argc, char *argv[])
 				break;
 			}
 
+			case 'a':
+				// Automatic output filename creation.
+				autoext = true;
+				break;
+
 			case 'c':
 				// Show the configuration dialog.
 				config = true;
@@ -222,6 +250,11 @@ int main(int argc, char *argv[])
 			case 'h':
 				show_help(argv[0]);
 				return EXIT_SUCCESS;
+
+			case 'n':
+				// Don't add XDG thumbnail metadata.
+				flags |= RPCT_FLAG_NO_XDG_THUMBNAIL_METADATA;
+				break;
 
 			case 'V':
 				show_version();
@@ -252,9 +285,17 @@ int main(int argc, char *argv[])
 			fprintf(stderr, str_help_more_info, argv[0]);
 			putc('\n', stderr);
 			return EXIT_FAILURE;
-		} else if (optind+1 == argc) {
+		} else if (optind+1 == argc && !autoext) {
 			// tr: %s == program name
 			fprintf(stderr, C_("rp-stub", "%s: missing output file parameter"), argv[0]);
+			putc('\n', stderr);
+			// tr: %s == program name
+			fprintf(stderr, str_help_more_info, argv[0]);
+			putc('\n', stderr);
+			return EXIT_FAILURE;
+		} else if (optind+2 == argc && autoext) {
+			// tr: %s == program name
+			fprintf(stderr, C_("rp-stub", "%s: --autoext and output file specified"), argv[0]);
 			putc('\n', stderr);
 			// tr: %s == program name
 			fprintf(stderr, str_help_more_info, argv[0]);
@@ -273,7 +314,7 @@ int main(int argc, char *argv[])
 
 	// Search for a usable rom-properties library.
 	// TODO: Desktop override option?
-	const char *const symname = (config ? "rp_show_config_dialog" : "rp_create_thumbnail");
+	const char *const symname = (config ? "rp_show_config_dialog" : "rp_create_thumbnail2");
 	void *pDll = NULL, *pfn = NULL;
 	int ret = rp_dll_search(symname, &pDll, &pfn, fnDebug);
 	if (ret != 0) {
@@ -283,15 +324,47 @@ int main(int argc, char *argv[])
 	if (!config) {
 		// Create the thumbnail.
 		const char *const source_file = argv[optind];
-		const char *const output_file = argv[optind+1];
+		char *output_file;
+		if (autoext) {
+			// Create the output filename based on the input filename.
+			size_t output_len = strlen(source_file);
+			output_file = malloc(output_len + 16);
+			strcpy(output_file, source_file);
+
+			// Find the current extension and replace it.
+			char *const dotpos = strrchr(output_file, '.');
+			if (!dotpos) {
+				// No file extension. Add it.
+				strcat(output_file, ".png");
+			} else {
+				// If the dot is after the last slash, we already have a file extension.
+				// Otherwise, we don't have one, and need to add it.
+				char *const slashpos = strrchr(output_file, DIR_SEP_CHR);
+				if (slashpos < dotpos) {
+					// We already have a file extension.
+					strcpy(dotpos, ".png");
+				} else {
+					// No file extension.
+					strcat(output_file, ".png");
+				}
+			}
+		} else {
+			// Use the specified output filename.
+			output_file = argv[optind+1];
+		}
+
 		if (is_debug) {
 			// tr: NOTE: Not positional. Don't change argument positions!
 			// tr: Only localize "Calling function:".
-			fprintf(stderr, C_("rp-stub", "Calling function: %s(\"%s\", \"%s\", %d);"),
-				symname, source_file, output_file, maximum_size);
+			fprintf(stderr, C_("rp-stub", "Calling function: %s(\"%s\", \"%s\", %d, %u);"),
+				symname, source_file, output_file, maximum_size, flags);
 			putc('\n', stderr);
 		}
-		ret = ((PFN_RP_CREATE_THUMBNAIL)pfn)(source_file, output_file, maximum_size);
+		ret = ((PFN_RP_CREATE_THUMBNAIL2)pfn)(source_file, output_file, maximum_size, flags);
+
+		if (autoext) {
+			free(output_file);
+		}
 	} else {
 		// Show the configuration dialog.
 		if (is_debug) {

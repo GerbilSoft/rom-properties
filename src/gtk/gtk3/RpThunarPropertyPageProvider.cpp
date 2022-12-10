@@ -1,13 +1,13 @@
-/***************************************************************************
- * ROM Properties Page shell extension. (GTK+ 3.x)                         *
- * RpThunarProvider.cpp: ThunarX Provider Definition.                      *
- *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
- * SPDX-License-Identifier: GPL-2.0-or-later                               *
- ***************************************************************************/
+/********************************************************************************
+ * ROM Properties Page shell extension. (GTK+ 3.x)                              *
+ * RpThunarPropertyPageProvider.cpp: ThunarX Property Page Provider Definition. *
+ *                                                                              *
+ * Copyright (c) 2017-2022 by David Korth.                                      *
+ * SPDX-License-Identifier: GPL-2.0-or-later                                    *
+ ********************************************************************************/
 
 #include "stdafx.h"
-#include "RpThunarProvider.hpp"
+#include "RpThunarPropertyPageProvider.hpp"
 #include "is-supported.hpp"
 
 #include "../RomDataView.hpp"
@@ -18,34 +18,35 @@ using LibRpBase::RomData;
 // thunarx.h mini replacement
 #include "thunarx-mini.h"
 
-static void   rp_thunar_provider_page_provider_init	(ThunarxPropertyPageProviderIface *iface);
-static GList *rp_thunar_provider_get_pages		(ThunarxPropertyPageProvider      *page_provider,
-							 GList                            *files);
+static void   rp_thunar_property_page_provider_page_provider_init	(ThunarxPropertyPageProviderIface *iface);
+static GList *rp_thunar_property_page_provider_get_pages		(ThunarxPropertyPageProvider      *page_provider,
+									 GList                            *files)
+									G_GNUC_MALLOC G_GNUC_WARN_UNUSED_RESULT;
 
-struct _RpThunarProviderClass {
+struct _RpThunarPropertyPageProviderClass {
 	GObjectClass __parent__;
 };
 
-struct _RpThunarProvider {
+struct _RpThunarPropertyPageProvider {
 	GObject __parent__;
 };
 
 #if !GLIB_CHECK_VERSION(2,59,1)
-# if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 2))
+#  if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 2))
 /* Disable GCC 8 -Wcast-function-type warnings. (Fixed in glib-2.59.1 upstream.) */
-#  if (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
-#   pragma GCC diagnostic push
+#    if (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#      pragma GCC diagnostic push
+#    endif
+#    pragma GCC diagnostic ignored "-Wcast-function-type"
 #  endif
-#  pragma GCC diagnostic ignored "-Wcast-function-type"
-# endif
 #endif /* !GLIB_CHECK_VERSION(2,59,1) */
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(RpThunarProvider, rp_thunar_provider,
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(RpThunarPropertyPageProvider, rp_thunar_property_page_provider,
 	G_TYPE_OBJECT, static_cast<GTypeFlags>(0),
 	G_IMPLEMENT_INTERFACE_DYNAMIC(THUNARX_TYPE_PROPERTY_PAGE_PROVIDER,
-		rp_thunar_provider_page_provider_init));
+		rp_thunar_property_page_provider_page_provider_init));
 
 #if !GLIB_CHECK_VERSION(2,59,1)
 # if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
@@ -54,37 +55,37 @@ G_DEFINE_DYNAMIC_TYPE_EXTENDED(RpThunarProvider, rp_thunar_provider,
 #endif /* !GLIB_CHECK_VERSION(2,59,1) */
 
 void
-rp_thunar_provider_register_type_ext(ThunarxProviderPlugin *plugin)
+rp_thunar_property_page_provider_register_type_ext(ThunarxProviderPlugin *plugin)
 {
-	rp_thunar_provider_register_type(G_TYPE_MODULE(plugin));
+	rp_thunar_property_page_provider_register_type(G_TYPE_MODULE(plugin));
 }
 
 static void
-rp_thunar_provider_class_init(RpThunarProviderClass *klass)
-{
-	RP_UNUSED(klass);
-}
-
-static void
-rp_thunar_provider_class_finalize(RpThunarProviderClass *klass)
+rp_thunar_property_page_provider_class_init(RpThunarPropertyPageProviderClass *klass)
 {
 	RP_UNUSED(klass);
 }
 
 static void
-rp_thunar_provider_init(RpThunarProvider *sbr_provider)
+rp_thunar_property_page_provider_class_finalize(RpThunarPropertyPageProviderClass *klass)
+{
+	RP_UNUSED(klass);
+}
+
+static void
+rp_thunar_property_page_provider_init(RpThunarPropertyPageProvider *sbr_provider)
 {
 	RP_UNUSED(sbr_provider);
 }
 
 static void
-rp_thunar_provider_page_provider_init(ThunarxPropertyPageProviderIface *iface)
+rp_thunar_property_page_provider_page_provider_init(ThunarxPropertyPageProviderIface *iface)
 {
-	iface->get_pages = rp_thunar_provider_get_pages;
+	iface->get_pages = rp_thunar_property_page_provider_get_pages;
 }
 
 static GList*
-rp_thunar_provider_get_pages(ThunarxPropertyPageProvider *page_provider, GList *files)
+rp_thunar_property_page_provider_get_pages(ThunarxPropertyPageProvider *page_provider, GList *files)
 {
 	RP_UNUSED(page_provider);
 	GList *pages = nullptr;

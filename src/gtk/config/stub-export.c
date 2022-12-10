@@ -58,11 +58,10 @@ app_activate(GtkApplication *app, gpointer user_data)
 	gtk_widget_show(configDialog);
 #if GTK_CHECK_VERSION(2,90,2)
 	gtk_application_add_window(app, GTK_WINDOW(configDialog));
-#endif /* GTK_CHECK_VERSION(2,90,2) */
-
-#if !GTK_CHECK_VERSION(2,90,2)
+#else /* GTK_CHECK_VERSION(2,90,2) */
 	// GTK2: No GtkApplication to manage the main loop, so we
 	// need to to ensure it exits when the window is closed.
+	RP_UNUSED(app);
 	g_signal_connect(configDialog, "delete-event", G_CALLBACK(config_dialog_delete_event), NULL);
 #endif /* !GTK_CHECK_VERSION(2,90,2) */
 }

@@ -41,7 +41,7 @@ enum RpThumbnailerProperties {
 
 	PROP_CONNECTION,
 	PROP_CACHE_DIR,
-	PROP_PFN_RP_CREATE_THUMBNAIL,
+	PROP_PFN_RP_CREATE_THUMBNAIL2,
 	PROP_EXPORTED,
 
 	PROP_LAST
@@ -128,8 +128,8 @@ struct _RpThumbnailer {
 	// Thumbnail cache directory.
 	gchar *cache_dir;
 
-	// rp_create_thumbnail() function pointer.
-	PFN_RP_CREATE_THUMBNAIL pfn_rp_create_thumbnail;
+	// rp_create_thumbnail2() function pointer.
+	PFN_RP_CREATE_THUMBNAIL2 pfn_rp_create_thumbnail2;
 
 	// Is the D-Bus object exported?
 	bool exported;
@@ -196,8 +196,8 @@ rp_thumbnailer_class_init(RpThumbnailerClass *klass, gpointer class_data)
 		NULL,
 		G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT_ONLY);
 
-	props[PROP_PFN_RP_CREATE_THUMBNAIL] = g_param_spec_pointer(
-		"pfn-rp-create-thumbnail", "pfn-rp-create-thumbnail", "rp_create_thumbnail() function pointer.",
+	props[PROP_PFN_RP_CREATE_THUMBNAIL2] = g_param_spec_pointer(
+		"pfn-rp-create-thumbnail2", "pfn-rp-create-thumbnail2", "rp_create_thumbnail2() function pointer.",
 		G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_CONSTRUCT_ONLY);
 
 	props[PROP_EXPORTED] = g_param_spec_boolean(
@@ -336,9 +336,9 @@ rp_thumbnailer_set_property(GObject *object,
 			break;
 		}
 
-		case PROP_PFN_RP_CREATE_THUMBNAIL:
-			thumbnailer->pfn_rp_create_thumbnail =
-				(PFN_RP_CREATE_THUMBNAIL)g_value_get_pointer(value);
+		case PROP_PFN_RP_CREATE_THUMBNAIL2:
+			thumbnailer->pfn_rp_create_thumbnail2 =
+				(PFN_RP_CREATE_THUMBNAIL2)g_value_get_pointer(value);
 			break;
 
 		case PROP_EXPORTED:
@@ -373,8 +373,8 @@ rp_thumbnailer_get_property(GObject *object,
 		case PROP_CACHE_DIR:
 			g_value_set_string(value, thumbnailer->cache_dir);
 			break;
-		case PROP_PFN_RP_CREATE_THUMBNAIL:
-			g_value_set_pointer(value, (gpointer)thumbnailer->pfn_rp_create_thumbnail);
+		case PROP_PFN_RP_CREATE_THUMBNAIL2:
+			g_value_set_pointer(value, (gpointer)thumbnailer->pfn_rp_create_thumbnail2);
 			break;
 		case PROP_EXPORTED:
 			g_value_set_boolean(value, thumbnailer->exported);
@@ -515,7 +515,7 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 		goto cleanup;
 	}
 
-	// NOTE: cache_dir and pfn_rp_create_thumbnail should NOT be NULL
+	// NOTE: cache_dir and pfn_rp_create_thumbnail2 should NOT be NULL
 	// at this point, but we're checking it anyway.
 	if (!thumbnailer->cache_dir || thumbnailer->cache_dir[0] == 0) {
 		// No cache directory...
@@ -524,7 +524,7 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 			0, "Thumbnail cache directory is empty.");
 		goto finished;
 	}
-	if (!thumbnailer->pfn_rp_create_thumbnail) {
+	if (!thumbnailer->pfn_rp_create_thumbnail2) {
 		// No thumbnailer function.
 		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
 			thumbnailer->skeleton, req->handle, "",
@@ -584,7 +584,7 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 	}
 
 	// Thumbnail the image.
-	ret = thumbnailer->pfn_rp_create_thumbnail(req->uri, cache_filename, req->large ? 256 : 128);
+	ret = thumbnailer->pfn_rp_create_thumbnail2(req->uri, cache_filename, req->large ? 256 : 128, 0);
 	if (ret == 0) {
 		// Image thumbnailed successfully.
 		g_debug("rom-properties thumbnail: %s -> %s [OK]", req->uri, cache_filename);
@@ -631,19 +631,19 @@ cleanup:
 /**
  * Create an RpThumbnailer object.
  * @param connection			[in] GDBusConnection
- * @param cache_dir			[in] Cache directory.
- * @param pfn_rp_create_thumbnail	[in] rp_create_thumbnail() function pointer.
- * @return RpThumbnailer object.
+ * @param cache_dir			[in] Cache directory
+ * @param pfn_rp_create_thumbnail2	[in] rp_create_thumbnail2() function pointer
+ * @return RpThumbnailer object
  */
 RpThumbnailer*
 rp_thumbnailer_new(GDBusConnection *connection,
 	const gchar *cache_dir,
-	PFN_RP_CREATE_THUMBNAIL pfn_rp_create_thumbnail)
+	PFN_RP_CREATE_THUMBNAIL2 pfn_rp_create_thumbnail2)
 {
 	return g_object_new(TYPE_RP_THUMBNAILER,
 		"connection", connection,
 		"cache-dir", cache_dir,
-		"pfn-rp-create-thumbnail", pfn_rp_create_thumbnail,
+		"pfn-rp-create-thumbnail2", pfn_rp_create_thumbnail2,
 		NULL);
 }
 

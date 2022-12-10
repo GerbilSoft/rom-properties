@@ -11,7 +11,8 @@
 #include "plugin-helper.h"
 
 #include "RpThunarPlugin.hpp"
-#include "RpThunarProvider.hpp"
+#include "RpThunarMenuProvider.hpp"
+#include "RpThunarPropertyPageProvider.hpp"
 #include "AchGDBus.hpp"
 
 // Thunar version is based on GTK+ version.
@@ -27,7 +28,7 @@
 #  define THUNARX_MICRO_VERSION 0
 #endif
 
-static GType type_list[1];
+static GType type_list[2];
 
 // C includes.
 #include <assert.h>
@@ -37,7 +38,15 @@ static void *libextension_so;
 
 PFN_THUNARX_CHECK_VERSION pfn_thunarx_check_version;
 PFN_THUNARX_FILE_INFO_GET_TYPE pfn_thunarx_file_info_get_type;
+PFN_THUNARX_FILE_INFO_GET_MIME_TYPE pfn_thunarx_file_info_get_mime_type;
 PFN_THUNARX_FILE_INFO_GET_URI pfn_thunarx_file_info_get_uri;
+PFN_THUNARX_FILE_INFO_LIST_COPY pfn_thunarx_file_info_list_copy;
+PFN_THUNARX_FILE_INFO_LIST_FREE pfn_thunarx_file_info_list_free;
+#if GTK_CHECK_VERSION(3,0,0)
+PFN_THUNARX_MENU_ITEM_GET_TYPE pfn_thunarx_menu_item_get_type;
+PFN_THUNARX_MENU_ITEM_NEW pfn_thunarx_menu_item_new;
+#endif /* GTK_CHECK_VERSION(3,0,0) */
+PFN_THUNARX_MENU_PROVIDER_GET_TYPE pfn_thunarx_menu_provider_get_type;
 PFN_THUNARX_PROPERTY_PAGE_PROVIDER_GET_TYPE pfn_thunarx_property_page_provider_get_type;
 PFN_THUNARX_PROPERTY_PAGE_NEW pfn_thunarx_property_page_new;
 
@@ -47,10 +56,12 @@ rp_thunar_register_types(ThunarxProviderPlugin *plugin)
 	/* Register the types provided by this plugin */
 	// NOTE: G_DEFINE_DYNAMIC_TYPE() marks the *_register_type()
 	// functions as static, so we're using wrapper functions here.
-	rp_thunar_provider_register_type_ext(plugin);
+	rp_thunar_property_page_provider_register_type_ext(plugin);
+	rp_thunar_menu_provider_register_type_ext(plugin);
 
 	/* Setup the plugin provider type list */
-	type_list[0] = TYPE_RP_THUNAR_PROVIDER;
+	type_list[0] = TYPE_RP_THUNAR_PROPERTY_PAGE_PROVIDER;
+	type_list[1] = TYPE_RP_THUNAR_MENU_PROVIDER;
 
 #ifdef ENABLE_ACHIEVEMENTS
 	// Register AchGDBus.
@@ -84,7 +95,15 @@ thunar_extension_initialize(ThunarxProviderPlugin *plugin)
 	// Load symbols.
 	DLSYM(thunarx_check_version,			thunarx_check_version);
 	DLSYM(thunarx_file_info_get_type,		thunarx_file_info_get_type);
+	DLSYM(thunarx_file_info_get_mime_type,		thunarx_file_info_get_mime_type);
 	DLSYM(thunarx_file_info_get_uri,		thunarx_file_info_get_uri);
+	DLSYM(thunarx_file_info_list_copy,		thunarx_file_info_list_copy);
+	DLSYM(thunarx_file_info_list_free,		thunarx_file_info_list_free);
+#if GTK_CHECK_VERSION(3,0,0)
+	DLSYM(thunarx_menu_item_get_type,		thunarx_menu_item_get_type);
+	DLSYM(thunarx_menu_item_new,			thunarx_menu_item_new);
+#endif /* GTK_CHECK_VERSION(3,0,0) */
+	DLSYM(thunarx_menu_provider_get_type,		thunarx_menu_provider_get_type);
 	DLSYM(thunarx_property_page_provider_get_type,	thunarx_property_page_provider_get_type);
 	DLSYM(thunarx_property_page_new,		thunarx_property_page_new);
 

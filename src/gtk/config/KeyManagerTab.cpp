@@ -32,6 +32,9 @@ static const char *const import_menu_actions[] = {
 	NOP_C_("KeyManagerTab", "3DS aeskeydb.bin"),
 };
 
+static GQuark menuImport_id_quark;
+static GQuark KeyManagerTab_fileID_quark;
+
 #if GTK_CHECK_VERSION(3,0,0)
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
@@ -138,6 +141,13 @@ key_manager_tab_class_init(KeyManagerTabClass *klass)
 	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
 	gobject_class->dispose = key_manager_tab_dispose;
 	gobject_class->finalize = key_manager_tab_finalize;
+
+	/** Quarks **/
+
+	// NOTE: Not using g_quark_from_static_string()
+	// because the extension can be unloaded.
+	menuImport_id_quark = g_quark_from_string("menuImport_id");
+	KeyManagerTab_fileID_quark = g_quark_from_string("KeyManagerTab.fileID");
 }
 
 static void
@@ -293,7 +303,7 @@ key_manager_tab_init(KeyManagerTab *tab)
 		snprintf(buf, sizeof(buf), "%d", i);
 		GSimpleAction *const action = g_simple_action_new(buf, nullptr);
 		g_simple_action_set_enabled(action, TRUE);
-		g_object_set_data(G_OBJECT(action), "menuImport_id", GINT_TO_POINTER(i));
+		g_object_set_qdata(G_OBJECT(action), menuImport_id_quark, GINT_TO_POINTER(i));
 		g_signal_connect(action, "activate", G_CALLBACK(action_triggered_signal_handler), tab);
 		g_action_map_add_action(G_ACTION_MAP(tab->actionGroup), G_ACTION(action));
 
@@ -310,7 +320,7 @@ key_manager_tab_init(KeyManagerTab *tab)
 		GtkWidget *const menuItem = gtk_menu_item_new_with_label(import_menu_actions[i]);
 		char menu_name[32];
 		snprintf(menu_name, sizeof(menu_name), "menuImport%d", i);
-		g_object_set_data(G_OBJECT(menuItem), "menuImport_id", GINT_TO_POINTER(i));
+		g_object_set_qdata(G_OBJECT(menuItem), menuImport_id_quark, GINT_TO_POINTER(i));
 		g_signal_connect(menuItem, "activate", G_CALLBACK(menuImport_triggered_signal_handler), tab);	// TODO
 		gtk_widget_show(menuItem);
 		gtk_menu_shell_append(GTK_MENU_SHELL(tab->menuImport), menuItem);
@@ -643,7 +653,7 @@ key_manager_tab_handle_menu_action(KeyManagerTab *tab, gint id)
 	rpFileDialogFilterToGtk(GTK_FILE_CHOOSER(fileDialog), s_filter);
 
 	// Set the file ID in the dialog.
-	g_object_set_data(G_OBJECT(fileDialog), "KeyManagerTab.fileID", GINT_TO_POINTER(id));
+	g_object_set_qdata(G_OBJECT(fileDialog), KeyManagerTab_fileID_quark, GINT_TO_POINTER(id));
 
 	// Prompt for a filename.
 	g_signal_connect(fileDialog, "response", G_CALLBACK(key_manager_tab_menu_action_response), tab);
@@ -853,7 +863,7 @@ key_manager_tab_menu_action_response(GtkFileChooserDialog *fileDialog, gint resp
 
 	// Get the file ID from the dialog.
 	const KeyStoreUI::ImportFileID id = static_cast<KeyStoreUI::ImportFileID>(
-		GPOINTER_TO_INT(g_object_get_data(G_OBJECT(fileDialog), "KeyManagerTab.fileID")));
+		GPOINTER_TO_INT(g_object_get_qdata(G_OBJECT(fileDialog), KeyManagerTab_fileID_quark)));
 
 #if GTK_CHECK_VERSION(4,0,0)
 	// TODO: URIs?
