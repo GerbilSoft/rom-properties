@@ -1,10 +1,10 @@
-/*********************************************************************************
- * ROM Properties Page shell extension. (GTK+ 3.x)                               *
- * RpNautilusPropertyPageProvider.hpp: Nautilus (and forks) Provider Definition. *
- *                                                                               *
- * Copyright (c) 2017-2022 by David Korth.                                       *
- * SPDX-License-Identifier: GPL-2.0-or-later                                     *
- *********************************************************************************/
+/***********************************************************************************
+ * ROM Properties Page shell extension. (GTK+ 3.x)                                 *
+ * RpNautilusPropertyPageProvider.hpp: Nautilus Property Page Provider Definition. *
+ *                                                                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                         *
+ * SPDX-License-Identifier: GPL-2.0-or-later                                       *
+ ***********************************************************************************/
 
 #ifndef __ROMPROPERTIES_GTK3_RPNAUTILUSPROPERTYPAGEPROVIDER_HPP__
 #define __ROMPROPERTIES_GTK3_RPNAUTILUSPROPERTYPAGEPROVIDER_HPP__
