@@ -14,7 +14,7 @@
 G_BEGIN_DECLS
 
 typedef struct _RpThunarMenuProviderClass	RpThunarMenuProviderClass;
-typedef struct _RpThunarMenuProvider	RpThunarMenuProvider;
+typedef struct _RpThunarMenuProvider		RpThunarMenuProvider;
 
 #define TYPE_RP_THUNAR_MENU_PROVIDER		(rp_thunar_menu_provider_get_type())
 #define RP_THUNAR_MENU_PROVIDER(obj)		(G_TYPE_CHECK_INSTANCE_CAST((obj), TYPE_RP_THUNAR_MENU_PROVIDER, RpThunarMenuProvider))
