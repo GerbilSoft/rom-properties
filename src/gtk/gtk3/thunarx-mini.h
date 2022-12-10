@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                         *
  * thunarx-mini.h: ThunarX struct definitions for compatibility.           *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,7 +14,7 @@
 
 G_BEGIN_DECLS
 
-// Struct definitions from thunarx/thunarx-property-page-provider.h
+// Struct definitions from thunarx.
 // Compatible with:
 // - Thunar 1.6.12
 // - Thunar 1.8.14
