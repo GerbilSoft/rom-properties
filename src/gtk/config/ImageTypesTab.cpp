@@ -124,6 +124,8 @@ struct _ImageTypesTab {
 	GtkWidget *lblCredits;
 };
 
+static GQuark rp_config_cbid_quark;
+
 static void	image_types_tab_finalize			(GObject	*object);
 
 // Interface initialization
@@ -269,7 +271,7 @@ void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
 	sysData.cboImageType[imageType] = GTK_COMBO_BOX(cbo);
 
 	// Set the cbid as GObject data.
-	g_object_set_data(G_OBJECT(cbo), "rp-config.cbid", GUINT_TO_POINTER(cbid));
+	g_object_set_qdata(G_OBJECT(cbo), rp_config_cbid_quark, GUINT_TO_POINTER(cbid));
 
 	// Connect the signal handlers for the comboboxes.
 	// NOTE: Signal handlers are triggered if the value is
@@ -404,6 +406,12 @@ image_types_tab_class_init(ImageTypesTabClass *klass)
 {
 	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
 	gobject_class->finalize = image_types_tab_finalize;
+
+	/** Quarks **/
+
+	// NOTE: Not using g_quark_from_static_string()
+	// because the extension can be unloaded.
+	rp_config_cbid_quark = g_quark_from_string("rp-config.cbid");
 }
 
 static void
@@ -574,7 +582,7 @@ image_types_tab_modified_handler(GtkWidget *widget, ImageTypesTab *tab)
 	assert(GTK_IS_COMBO_BOX(widget));
 	g_return_if_fail(GTK_IS_COMBO_BOX(widget));
 	GtkComboBox *const cbo = GTK_COMBO_BOX(widget);
-	const unsigned int cbid = GPOINTER_TO_UINT(g_object_get_data(G_OBJECT(cbo), "rp-config.cbid"));
+	const unsigned int cbid = GPOINTER_TO_UINT(g_object_get_qdata(G_OBJECT(cbo), rp_config_cbid_quark));
 	ImageTypesTabPrivate *const d = tab->d;
 
 	const int idx = gtk_combo_box_get_active(cbo);

@@ -72,7 +72,7 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 		// NOTE: RFT_fieldIdx starts at 1 to prevent conflicts with widgets
 		// that don't have RFT_fieldIdx, which would return NULL here.
 		const gint tmp_fieldIdx = GPOINTER_TO_INT(
-			g_object_get_data(G_OBJECT(widget), "RFT_fieldIdx"));
+			g_object_get_qdata(G_OBJECT(widget), RFT_fieldIdx_quark));
 		return (tmp_fieldIdx != 0 && (tmp_fieldIdx - 1) == fieldIdx);
 	};
 
@@ -197,7 +197,7 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 
 				const bool value = (bitfield & 1);
 				gtk_check_button_set_active(GTK_CHECK_BUTTON(checkBox), value);
-				g_object_set_data(G_OBJECT(checkBox), "RFT_BITFIELD_value", GUINT_TO_POINTER((guint)value));
+				g_object_set_qdata(G_OBJECT(checkBox), RFT_BITFIELD_value_quark, GUINT_TO_POINTER((guint)value));
 			}
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 			// Get the list of child widgets.
@@ -228,7 +228,7 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 
 				const bool value = (bitfield & 1);
 				gtk_check_button_set_active(GTK_CHECK_BUTTON(checkBox), value);
-				g_object_set_data(G_OBJECT(checkBox), "RFT_BITFIELD_value", GUINT_TO_POINTER((guint)value));
+				g_object_set_qdata(G_OBJECT(checkBox), RFT_BITFIELD_value_quark, GUINT_TO_POINTER((guint)value));
 			}
 			g_list_free(widgetList);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
@@ -336,7 +336,7 @@ rom_data_view_doRomOp_stdop(RomDataView *page, int id)
 	rpFileDialogFilterToGtk(GTK_FILE_CHOOSER(fileDialog), filter);
 
 	// Set the operation ID in the dialog.
-	g_object_set_data(G_OBJECT(fileDialog), "RomDataView.romOp", GINT_TO_POINTER(id));
+	g_object_set_qdata(G_OBJECT(fileDialog), RomDataView_romOp_quark, GINT_TO_POINTER(id));
 
 	gchar *const basename = g_path_get_basename(rom_filename);
 	string defaultName = basename;
@@ -378,7 +378,7 @@ rom_data_view_doRomOp_stdop_response(GtkFileChooserDialog *fileDialog, gint resp
 	}
 
 	// Get the operation ID from the dialog.
-	const int id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(fileDialog), "RomDataView.romOp"));
+	const int id = GPOINTER_TO_INT(g_object_get_qdata(G_OBJECT(fileDialog), RomDataView_romOp_quark));
 
 #if GTK_CHECK_VERSION(4,0,0)
 	// TODO: URIs?

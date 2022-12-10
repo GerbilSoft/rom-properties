@@ -129,6 +129,12 @@ struct _RomDataView {
 
 G_BEGIN_DECLS
 
+static GQuark RFT_BITFIELD_value_quark;
+static GQuark RFT_LISTDATA_rows_visible_quark;
+static GQuark RFT_fieldIdx_quark;
+static GQuark RFT_STRING_warning_quark;
+static GQuark RomDataView_romOp_quark;
+
 int	rom_data_view_update_field		(RomDataView		*page,
 						 int			 fieldIdx);
 

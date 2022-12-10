@@ -123,6 +123,16 @@ rom_data_view_class_init(RomDataViewClass *klass)
 	gobject_class->set_property = rom_data_view_set_property;
 	gobject_class->get_property = rom_data_view_get_property;
 
+	/** Quarks **/
+
+	// NOTE: Not using g_quark_from_static_string()
+	// because the extension can be unloaded.
+	RFT_BITFIELD_value_quark = g_quark_from_string("RFT_BITFIELD_value");
+	RFT_LISTDATA_rows_visible_quark = g_quark_from_string("RFT_LISTDATA_rows_visible");
+	RFT_fieldIdx_quark = g_quark_from_string("RFT_fieldIdx");
+	RFT_STRING_warning_quark = g_quark_from_string("RFT_STRING_warning");
+	RomDataView_romOp_quark = g_quark_from_string("RomDataView.romOp");
+
 	/** Properties **/
 
 	props[PROP_URI] = g_param_spec_string(
@@ -188,7 +198,7 @@ set_label_format_type(GtkLabel *label, RpDescFormatType desc_format_type)
 
 	// Check if this label has the "Warning" flag set.
 	const gboolean is_warning = (gboolean)GPOINTER_TO_UINT(
-		g_object_get_data(G_OBJECT(label), "RFT_STRING_warning"));
+		g_object_get_qdata(G_OBJECT(label), RFT_STRING_warning_quark));
 	if (is_warning) {
 		// Use the "Warning" format.
 		pango_attr_list_insert(attr_lst,
@@ -816,7 +826,7 @@ rom_data_view_init_bitfield(RomDataView *page,
 		gtk_check_button_set_active(GTK_CHECK_BUTTON(checkBox), value);
 
 		// Save the bitfield checkbox's value in the GObject.
-		g_object_set_data(G_OBJECT(checkBox), "RFT_BITFIELD_value",
+		g_object_set_qdata(G_OBJECT(checkBox), RFT_BITFIELD_value_quark,
 			GUINT_TO_POINTER((guint)value));
 
 		// Disable user modifications.
@@ -1174,7 +1184,7 @@ rom_data_view_init_listdata(RomDataView *page,
 	// and/or the system theme is changed.
 	// TODO: Set an actual default number of rows, or let GTK+ handle it?
 	// (Windows uses 5.)
-	g_object_set_data(G_OBJECT(treeView), "RFT_LISTDATA_rows_visible",
+	g_object_set_qdata(G_OBJECT(treeView), RFT_LISTDATA_rows_visible_quark,
 		GINT_TO_POINTER(listDataDesc.rows_visible));
 	if (listDataDesc.rows_visible > 0) {
 		g_signal_connect(treeView, "realize", G_CALLBACK(tree_view_realize_signal_handler), page);
@@ -1805,7 +1815,7 @@ rom_data_view_update_display(RomDataView *page)
 
 		// Set the widget's RFT_fieldIdx property.
 		// NOTE: RFT_STRING fields with STRF_CREDITS won't have this set.
-		g_object_set_data(G_OBJECT(widget), "RFT_fieldIdx", GINT_TO_POINTER(fieldIdx+1));
+		g_object_set_qdata(G_OBJECT(widget), RFT_fieldIdx_quark, GINT_TO_POINTER(fieldIdx+1));
 
 		// Add the widget to the table.
 		auto &tab = tabs[tabIdx];
@@ -1823,7 +1833,7 @@ rom_data_view_update_display(RomDataView *page)
 		// If it is, set the "RFT_STRING_warning" flag.
 		const guint is_warning = ((field.type == RomFields::RFT_STRING) &&
 		                          (field.flags & RomFields::STRF_WARNING));
-		g_object_set_data(G_OBJECT(lblDesc), "RFT_STRING_warning",
+		g_object_set_qdata(G_OBJECT(lblDesc), RFT_STRING_warning_quark,
 			GUINT_TO_POINTER((guint)is_warning));
 
 		// Value widget.
@@ -1867,7 +1877,7 @@ rom_data_view_update_display(RomDataView *page)
 
 				// Unset this property to prevent the event filter from
 				// setting a fixed height.
-				g_object_set_data(G_OBJECT(widget), "RFT_LISTDATA_rows_visible",
+				g_object_set_qdata(G_OBJECT(widget), RFT_LISTDATA_rows_visible_quark,
 					GINT_TO_POINTER(0));
 
 #if USE_GTK_GRID
@@ -2093,7 +2103,7 @@ checkbox_no_toggle_signal_handler(GtkCheckButton *checkbutton, RomDataView *page
 
 	// Get the saved RFT_BITFIELD value.
 	const gboolean value = (gboolean)GPOINTER_TO_UINT(
-		g_object_get_data(G_OBJECT(checkbutton), "RFT_BITFIELD_value"));
+		g_object_get_qdata(G_OBJECT(checkbutton), RFT_BITFIELD_value_quark));
 	if (gtk_check_button_get_active(checkbutton) != value) {
 		// Toggle this box.
 		gtk_check_button_set_active(checkbutton, value);
@@ -2153,7 +2163,7 @@ tree_view_realize_signal_handler(GtkTreeView	*treeView,
 
 	// Recalculate the row heights for this GtkTreeView.
 	const int rows_visible = GPOINTER_TO_INT(
-		g_object_get_data(G_OBJECT(treeView), "RFT_LISTDATA_rows_visible"));
+		g_object_get_qdata(G_OBJECT(treeView), RFT_LISTDATA_rows_visible_quark));
 	if (rows_visible <= 0) {
 		// This GtkTreeView doesn't have a fixed number of rows.
 		return;

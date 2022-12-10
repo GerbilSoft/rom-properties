@@ -68,6 +68,8 @@ typedef enum {
 	SIGNAL_LAST
 } OptionsMenuButtonSignalID;
 
+static GQuark menuOptions_id_quark;
+
 static void	options_menu_button_dispose	(GObject	*object);
 static void	options_menu_button_set_property(GObject	*object,
 						 guint		 prop_id,
@@ -151,6 +153,12 @@ options_menu_button_class_init(OptionsMenuButtonClass *klass)
 	gobject_class->dispose = options_menu_button_dispose;
 	gobject_class->set_property = options_menu_button_set_property;
 	gobject_class->get_property = options_menu_button_get_property;
+
+	/** Quarks **/
+
+	// NOTE: Not using g_quark_from_static_string()
+	// because the extension can be unloaded.
+	menuOptions_id_quark = g_quark_from_string("menuOptions_id");
 
 	/** Properties **/
 
@@ -482,7 +490,7 @@ action_triggered_signal_handler(GSimpleAction *action, GVariant *parameter, Opti
 	RP_UNUSED(parameter);
 
 	const gint id = (gboolean)GPOINTER_TO_INT(
-		g_object_get_data(G_OBJECT(action), "menuOptions_id"));
+		g_object_get_qdata(G_OBJECT(action), menuOptions_id_quark));
 
 	g_signal_emit(widget, signals[SIGNAL_TRIGGERED], 0, id);
 }
@@ -499,7 +507,7 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 	g_return_if_fail(IS_OPTIONS_MENU_BUTTON(widget));
 
 	const gint id = (gboolean)GPOINTER_TO_INT(
-		g_object_get_data(G_OBJECT(menuItem), "menuOptions_id"));
+		g_object_get_qdata(G_OBJECT(menuItem), menuOptions_id_quark));
 
 	g_signal_emit(widget, signals[SIGNAL_TRIGGERED], 0, id);
 }
@@ -541,7 +549,7 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 		snprintf(buf, sizeof(buf), "%d", p.id);
 		GSimpleAction *const action = g_simple_action_new(buf, nullptr);
 		g_simple_action_set_enabled(action, TRUE);
-		g_object_set_data(G_OBJECT(action), "menuOptions_id", GINT_TO_POINTER(p.id));
+		g_object_set_qdata(G_OBJECT(action), menuOptions_id_quark, GINT_TO_POINTER(p.id));
 		g_signal_connect(action, "activate", G_CALLBACK(action_triggered_signal_handler), widget);
 		g_action_map_add_action(G_ACTION_MAP(actionGroup), G_ACTION(action));
 
@@ -565,7 +573,7 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 			snprintf(buf, sizeof(buf), "%d", i);
 			GSimpleAction *const action = g_simple_action_new(buf, nullptr);
 			g_simple_action_set_enabled(action, !!(op.flags & RomData::RomOp::ROF_ENABLED));
-			g_object_set_data(G_OBJECT(action), "menuOptions_id", GINT_TO_POINTER(i));
+			g_object_set_qdata(G_OBJECT(action), menuOptions_id_quark, GINT_TO_POINTER(i));
 			g_signal_connect(action, "activate", G_CALLBACK(action_triggered_signal_handler), widget);
 			g_action_map_add_action(G_ACTION_MAP(actionGroup), G_ACTION(action));
 
@@ -587,7 +595,7 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 		GtkWidget *const menuItem = gtk_menu_item_new_with_label(
 			dpgettext_expr(RP_I18N_DOMAIN, "RomDataView|Options", p.desc));
 		// NOTE: No name for this GtkWidget.
-		g_object_set_data(G_OBJECT(menuItem), "menuOptions_id", GINT_TO_POINTER(p.id));
+		g_object_set_qdata(G_OBJECT(menuItem), menuOptions_id_quark, GINT_TO_POINTER(p.id));
 		g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), widget);
 		gtk_widget_show(menuItem);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menuOptions), menuItem);
@@ -610,7 +618,7 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
 			menuItem = gtk_menu_item_new_with_mnemonic(desc.c_str());
 			// NOTE: No name for this GtkWidget.
 			gtk_widget_set_sensitive(menuItem, !!(op.flags & RomData::RomOp::ROF_ENABLED));
-			g_object_set_data(G_OBJECT(menuItem), "menuOptions_id", GINT_TO_POINTER(i));
+			g_object_set_qdata(G_OBJECT(menuItem), menuOptions_id_quark, GINT_TO_POINTER(i));
 			g_signal_connect(menuItem, "activate", G_CALLBACK(menuOptions_triggered_signal_handler), widget);
 			gtk_widget_show(menuItem);
 			gtk_menu_shell_append(GTK_MENU_SHELL(menuOptions), menuItem);
@@ -699,7 +707,7 @@ options_menu_button_update_op(OptionsMenuButton *widget,
 		GList *next = l->next;
 		if (GTK_IS_MENU_ITEM(l->data)) {
 			const gint item_id = (gboolean)GPOINTER_TO_INT(
-				g_object_get_data(G_OBJECT(l->data), "menuOptions_id"));
+				g_object_get_qdata(G_OBJECT(l->data), menuOptions_id_quark));
 			if (item_id == id) {
 				// Found the menu item.
 				menuItem = GTK_MENU_ITEM(l->data);
