@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * stdafx.h: Common definitions and includes.                              *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -24,7 +24,7 @@
 #ifdef __cplusplus
 /** C++ **/
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cassert>
 #include <cerrno>
 #include <cstring>
@@ -32,7 +32,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-// C++ includes.
+// C++ includes
 #include <algorithm>
 #include <array>
 #include <list>
@@ -46,7 +46,7 @@
 #else /* !__cplusplus */
 /** C **/
 
-// C includes.
+// C includes
 #include <assert.h>
 #include <errno.h>
 #include <inttypes.h>
@@ -62,12 +62,12 @@
 #  undef GTK_DISABLE_DEPRECATED
 #endif
 
-// GTK+ includes.
+// GTK+ includes
 #include <glib.h>
 #include <glib-object.h>
 #include <gtk/gtk.h>
 
-// GTK+ 2.x compatibility functions.
+// GTK+ 2.x compatibility functions
 #include "gtk-compat.h"
 
 // GLib on non-Windows platforms defines G_MODULE_EXPORT to a no-op.
