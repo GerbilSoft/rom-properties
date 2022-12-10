@@ -773,12 +773,14 @@ int rp_image::swapRB_cpp(void)
 
 /**
  * Swizzle the image channels.
+ * Standard version using regular C++ code.
+ *
  * @param swz_spec Swizzle specification: [rgba01]{4} [matches KTX2]
  * @return 0 on success; negative POSIX error code on error.
  */
-int rp_image::swizzle(const char *swz_spec)
+int rp_image::swizzle_cpp(const char *swz_spec)
 {
-	// TODO: Improve C performance and add SSSE3.
+	// TODO: Improve C performance.
 	RP_D(rp_image);
 	rp_image_backend *const backend = d->backend;
 	assert(backend->format == rp_image::Format::ARGB32);

@@ -541,10 +541,31 @@ class rp_image : public RefBase
 
 		/**
 		 * Swizzle the image channels.
+		 * Standard version using regular C++ code.
+		 *
 		 * @param swz_spec Swizzle specification: [rgba01]{4} [matches KTX2]
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int swizzle(const char *swz_spec);
+		int swizzle_cpp(const char *swz_spec);
+
+#ifdef RP_IMAGE_HAS_SSSE3
+		/**
+		 * Swizzle the image channels.
+		 * SSSE3-optimized version.
+		 *
+		 * @param swz_spec Swizzle specification: [rgba01]{4} [matches KTX2]
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int swizzle_ssse3(const char *swz_spec);
+#endif /* RP_IMAGE_HAS_SSSE3 */
+
+		/**
+		 * Swizzle the image channels.
+		 *
+		 * @param swz_spec Swizzle specification: [rgba01]{4} [matches KTX2]
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		inline int swizzle(const char *swz_spec);
 };
 
 /**
@@ -610,6 +631,25 @@ inline int rp_image::swapRB(void)
 #endif /* RP_IMAGE_HAS_SSSE3 */
 	{
 		return swapRB_cpp();
+	}
+}
+
+/**
+ * Swizzle the image channels.
+ *
+ * @param swz_spec Swizzle specification: [rgba01]{4} [matches KTX2]
+ * @return 0 on success; negative POSIX error code on error.
+ */
+inline int rp_image::swizzle(const char *swz_spec)
+{
+	// FIXME: Figure out how to get IFUNC working with C++ member functions.
+#if defined(RP_IMAGE_HAS_SSSE3)
+	if (RP_CPU_HasSSSE3()) {
+		return swizzle_ssse3(swz_spec);
+	} else
+#endif /* RP_IMAGE_HAS_SSSE3 */
+	{
+		return swizzle_cpp(swz_spec);
 	}
 }
 

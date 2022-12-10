@@ -114,4 +114,166 @@ int rp_image::swapRB_ssse3(void)
 	return 0;
 }
 
+/**
+ * Swizzle the image channels.
+ * SSSE3-optimized version.
+ *
+ * @param swz_spec Swizzle specification: [rgba01]{4} [matches KTX2]
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int rp_image::swizzle_ssse3(const char *swz_spec)
+{
+	RP_D(rp_image);
+	rp_image_backend *const backend = d->backend;
+	assert(backend->format == rp_image::Format::ARGB32);
+	if (backend->format != rp_image::Format::ARGB32) {
+		// ARGB32 is required.
+		// TODO: Automatically convert the image?
+		return -EINVAL;
+	}
+
+	// TODO: Verify swz_spec.
+	typedef union _u8_32 {
+		uint8_t u8[4];
+		uint32_t u32;
+	} u8_32;
+	u8_32 swz_ch;
+	memcpy(&swz_ch, swz_spec, sizeof(swz_ch));
+	if (swz_ch.u32 == 'rgba') {
+		// 'rgba' == NULL swizzle. Don't bother doing anything.
+		return 0;
+	}
+
+	// NOTE: Texture uses ARGB format, but swizzle uses rgba.
+	// Rotate swz_ch to convert it to argb.
+	// The entire thing needs to be byteswapped to match the internal order, too.
+	// TODO: Verify on big-endian.
+	swz_ch.u32 = (swz_ch.u32 >> 24) | (swz_ch.u32 << 8);
+	swz_ch.u32 = be32_to_cpu(swz_ch.u32);
+
+	// Determine the pshufb mask.
+	// This can be used for [rgba0].
+	// For 1, we'll need a separate por mask.
+	// N.B.: For pshufb, only bit 7 needs to be set to indicate "zero the byte".
+	uint8_t pshufb_mask_vals[4];
+	u8_32 por_mask_vals;
+#define SWIZZLE_MASK_VAL(n) do { \
+		switch (swz_ch.u8[n]) { \
+			case 'b':	pshufb_mask_vals[n] = 0;	por_mask_vals.u8[n] = 0;	break; \
+			case 'g':	pshufb_mask_vals[n] = 1;	por_mask_vals.u8[n] = 0;	break; \
+			case 'r':	pshufb_mask_vals[n] = 2;	por_mask_vals.u8[n] = 0;	break; \
+			case 'a':	pshufb_mask_vals[n] = 3;	por_mask_vals.u8[n] = 0;	break; \
+			case '0':	pshufb_mask_vals[n] = 0x80;	por_mask_vals.u8[n] = 0;	break; \
+			case '1':	pshufb_mask_vals[n] = 0x80;	por_mask_vals.u8[n] = 0xFF;	break; \
+			default: \
+				assert(!"Invalid swizzle value."); \
+				pshufb_mask_vals[n] = 0xFF; \
+				por_mask_vals.u8[n] = 0; \
+				break; \
+		} \
+	} while (0)
+
+	SWIZZLE_MASK_VAL(0);
+	SWIZZLE_MASK_VAL(1);
+	SWIZZLE_MASK_VAL(2);
+	SWIZZLE_MASK_VAL(3);
+
+	const __m128i pshufb_mask = _mm_setr_epi8(
+		pshufb_mask_vals[0],	pshufb_mask_vals[1],	pshufb_mask_vals[2],	pshufb_mask_vals[3],
+		pshufb_mask_vals[0]+4,	pshufb_mask_vals[1]+4,	pshufb_mask_vals[2]+4,	pshufb_mask_vals[3]+4,
+		pshufb_mask_vals[0]+8,	pshufb_mask_vals[1]+8,	pshufb_mask_vals[2]+8,	pshufb_mask_vals[3]+8,
+		pshufb_mask_vals[0]+12,	pshufb_mask_vals[1]+12,	pshufb_mask_vals[2]+12,	pshufb_mask_vals[3]+12
+	);
+	const __m128i por_mask = _mm_setr_epi32(por_mask_vals.u32, por_mask_vals.u32, por_mask_vals.u32, por_mask_vals.u32);
+	
+	uint32_t *bits = static_cast<uint32_t*>(backend->data());
+	const unsigned int stride_diff = (backend->stride - this->row_bytes()) / sizeof(uint32_t);
+	const int width = backend->width;
+	for (int y = backend->height; y > 0; y--) {
+		// Process 16 pixels at a time using SSSE3.
+		__m128i *xmm_bits = reinterpret_cast<__m128i*>(bits);
+		int x;
+		for (x = width; x > 15; x -= 16, xmm_bits += 4) {
+			__m128i sa = _mm_load_si128(&xmm_bits[0]);
+			__m128i sb = _mm_load_si128(&xmm_bits[1]);
+			__m128i sc = _mm_load_si128(&xmm_bits[2]);
+			__m128i sd = _mm_load_si128(&xmm_bits[3]);
+
+			_mm_store_si128(&xmm_bits[0], _mm_or_si128(_mm_shuffle_epi8(sa, pshufb_mask), por_mask));
+			_mm_store_si128(&xmm_bits[1], _mm_or_si128(_mm_shuffle_epi8(sb, pshufb_mask), por_mask));
+			_mm_store_si128(&xmm_bits[2], _mm_or_si128(_mm_shuffle_epi8(sc, pshufb_mask), por_mask));
+			_mm_store_si128(&xmm_bits[3], _mm_or_si128(_mm_shuffle_epi8(sd, pshufb_mask), por_mask));
+		}
+
+		// Process remaining pixels using regular swizzling
+		bits = reinterpret_cast<uint32_t*>(xmm_bits);
+		for (; x > 0; x--, bits++) {
+			u8_32 cur, swz;
+			cur.u32 = *bits;
+
+		// TODO: Verify on big-endian.
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+#  define SWZ_CH_B 0
+#  define SWZ_CH_G 1
+#  define SWZ_CH_R 2
+#  define SWZ_CH_A 3
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+#  define SWZ_CH_B 3
+#  define SWZ_CH_G 2
+#  define SWZ_CH_R 1
+#  define SWZ_CH_A 0
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+
+#define SWIZZLE_CHANNEL(n) do { \
+				switch (swz_ch.u8[n]) { \
+					case 'b':	swz.u8[n] = cur.u8[SWZ_CH_B];	break; \
+					case 'g':	swz.u8[n] = cur.u8[SWZ_CH_G];	break; \
+					case 'r':	swz.u8[n] = cur.u8[SWZ_CH_R];	break; \
+					case 'a':	swz.u8[n] = cur.u8[SWZ_CH_A];	break; \
+					case '0':	swz.u8[n] = 0;			break; \
+					case '1':	swz.u8[n] = 255;		break; \
+					default: \
+						assert(!"Invalid swizzle value."); \
+						swz.u8[n] = 0; \
+						break; \
+				} \
+			} while (0)
+
+			SWIZZLE_CHANNEL(0);
+			SWIZZLE_CHANNEL(1);
+			SWIZZLE_CHANNEL(2);
+			SWIZZLE_CHANNEL(3);
+
+			*bits = swz.u32;
+		}
+
+		// Next row.
+		bits += stride_diff;
+	}
+
+	// Swizzle the sBIT value, if set.
+	if (d->has_sBIT) {
+		// TODO: If gray is set, move its values to rgb?
+		rp_image::sBIT_t sBIT_old = d->sBIT;
+
+#define SWIZZLE_sBIT(n, ch) do { \
+				switch (swz_ch.u8[n]) { \
+					case 'b':	d->sBIT.ch = sBIT_old.blue;	break; \
+					case 'g':	d->sBIT.ch = sBIT_old.green;	break; \
+					case 'r':	d->sBIT.ch = sBIT_old.red;	break; \
+					case 'a':	d->sBIT.ch = sBIT_old.alpha;	break; \
+					case '0': case '1': \
+							d->sBIT.ch = 1;			break; \
+				} \
+			} while (0)
+
+			SWIZZLE_sBIT(SWZ_CH_B, blue);
+			SWIZZLE_sBIT(SWZ_CH_G, green);
+			SWIZZLE_sBIT(SWZ_CH_R, red);
+			SWIZZLE_sBIT(SWZ_CH_A, alpha);
+	}
+
+	return 0;
+}
+
 }
