@@ -11,7 +11,7 @@
 
 #include <kpropertiesdialog.h>
 
-class Q_DECL_EXPORT RomPropertiesDialogPlugin : public KPropertiesDialogPlugin
+class RomPropertiesDialogPlugin : public KPropertiesDialogPlugin
 {
 	Q_OBJECT
 
