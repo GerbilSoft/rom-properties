@@ -907,7 +907,7 @@ action_triggered_signal_handler(GSimpleAction *action, GVariant *parameter, KeyM
 	g_return_if_fail(IS_KEY_MANAGER_TAB(tab));
 
 	const gint id = (gboolean)GPOINTER_TO_INT(
-		g_object_get_data(G_OBJECT(action), "menuImport_id"));
+		g_object_get_qdata(G_OBJECT(action), menuImport_id_quark));
 	key_manager_tab_handle_menu_action(tab, id);
 }
 #else /* !USE_G_MENU_MODEL */
@@ -922,7 +922,7 @@ menuImport_triggered_signal_handler(GtkMenuItem *menuItem, KeyManagerTab *tab)
 	g_return_if_fail(IS_KEY_MANAGER_TAB(tab));
 
 	const gint id = (gboolean)GPOINTER_TO_INT(
-		g_object_get_data(G_OBJECT(menuItem), "menuImport_id"));
+		g_object_get_qdata(G_OBJECT(menuItem), menuImport_id_quark));
 	key_manager_tab_handle_menu_action(tab, id);
 }
 #endif /* USE_G_MENU_MODEL */
