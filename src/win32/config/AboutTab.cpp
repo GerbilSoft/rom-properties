@@ -646,26 +646,26 @@ string AboutTabPrivate::rtfEscape(const char *str)
 
 	// Convert the string to UTF-16 first.
 	const u16string u16str = utf8_to_utf16(str, -1);
-	const char16_t *wcs = u16str.c_str();
 
 	// RTF return string.
-	string ret;
+	string s_rtf;
+	s_rtf.reserve(u16str.size() * 2);
 
 	// Reference: http://www.zopatista.com/python/2012/06/06/rtf-and-unicode/
 	char buf[12];	// Conversion buffer.
-	for (; *wcs != 0; wcs++) {
-		if (*wcs <= 0x00FF) {
+	for (const char16_t *p = u16str.c_str(); *p != 0; p++) {
+		if (*p <= 0x00FF) {
 			// cp1252 is a superset of ISO-8859-1.
-			ret += (char)*wcs;
+			s_rtf += (char)*p;
 		} else {
 			// Convert to a signed 16-bit integer.
 			// Surrogate pairs are encoded as two separate characters.
-			snprintf(buf, sizeof(buf), "\\u%d?", (int16_t)*wcs);
-			ret += buf;
+			snprintf(buf, sizeof(buf), "\\u%d?", (int16_t)*p);
+			s_rtf += buf;
 		}
 	}
 
-	return ret;
+	return s_rtf;
 }
 
 /**
@@ -854,7 +854,7 @@ void AboutTabPrivate::initCreditsTab(void)
 		    creditsData->type != lastCreditType)
 		{
 			// New credit type.
-			sCredits += RTF_BR RTF_BR "\\b ";
+			sCredits += RTF_BR RTF_BR RTF_BOLD_ON;
 
 			switch (creditsData->type) {
 				case AboutTabText::CreditType::Developer:
@@ -874,7 +874,7 @@ void AboutTabPrivate::initCreditsTab(void)
 					break;
 			}
 
-			sCredits += "\\b0 ";
+			sCredits += RTF_BOLD_OFF;
 		}
 
 		// Append the contributor's name.
