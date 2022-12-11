@@ -127,9 +127,9 @@ static void show_help(const char *argv0)
 
 /**
  * Debug print function for rp_dll_search().
- * @param level Debug level.
- * @param format Format string.
- * @param ... Format arguments.
+ * @param level Debug level
+ * @param format Format string
+ * @param ... Format arguments
  * @return vfprintf() return value.
  */
 static int ATTR_PRINTF(2, 3) fnDebug(int level, const char *format, ...)
@@ -143,6 +143,33 @@ static int ATTR_PRINTF(2, 3) fnDebug(int level, const char *format, ...)
 	fputc('\n', stderr);
 	va_end(args);
 
+	return ret;
+}
+
+/**
+ * Show an option parser error message.
+ * @param argv0 argv[0]
+ * @param format Format string (If NULL, only prints the "more information" line)
+ * @param ... Format arguments
+ * @return vfprintf() return value.
+ */
+static int ATTR_PRINTF(2, 3) print_opt_error(const char *argv0, const char *format, ...)
+{
+	int ret = 0;
+
+	if (format) {
+		// NOTE: Not translating the program name formatting.
+		fprintf(stderr, "%s: ", argv0);
+
+		va_list args;
+		va_start(args, format);
+		ret = vfprintf(stderr, format, args);
+		putc('\n', stderr);
+		va_end(args);
+	}
+
+	fprintf(stderr, C_("rp-stub", "Try '%s --help' for more information."), argv0);
+	putc('\n', stderr);
 	return ret;
 }
 
@@ -196,9 +223,6 @@ int main(int argc, char *argv[])
 		{NULL, 0, NULL, 0}
 	};
 
-	// "More Information" string.
-	const char *const str_help_more_info = C_("rp-stub", "Try '%s --help' for more information.");
-
 	// Default to 256x256.
 	uint8_t config = is_rp_config;
 	int maximum_size = 256;
@@ -212,20 +236,10 @@ int main(int argc, char *argv[])
 				errno = 0;
 				long lTmp = (int)strtol(optarg, &endptr, 10);
 				if (errno == ERANGE || *endptr != 0) {
-					// tr: %1$s == program name, %2%s == invalid size
-					fprintf_p(stderr, C_("rp-stub", "%1$s: invalid size '%2$s'"), argv[0], optarg);
-					putc('\n', stderr);
-					// tr: %s == program name
-					fprintf(stderr, str_help_more_info, argv[0]);
-					putc('\n', stderr);
+					print_opt_error(argv[0], "invalid size '%s'", optarg);
 					return EXIT_FAILURE;
 				} else if (lTmp < 0 || lTmp > 32768) {
-					// tr: %1$s == program name, %2%s == invalid size
-					fprintf_p(stderr, C_("rp-stub", "%1$s: size '%2$s' is out of range"), argv[0], optarg);
-					putc('\n', stderr);
-					// tr: %s == program name
-					fprintf(stderr, str_help_more_info, argv[0]);
-					putc('\n', stderr);
+					print_opt_error(argv[0], "size '%s' is out of range", optarg);
 					return EXIT_FAILURE;
 				}
 				maximum_size = (int)lTmp;
@@ -263,8 +277,7 @@ int main(int argc, char *argv[])
 			case '?':
 			default:
 				// Unrecognized option.
-				fprintf(stderr, str_help_more_info, argv[0]);
-				putc('\n', stderr);
+				print_opt_error(argv[0], NULL);
 				return EXIT_FAILURE;
 		}
 	}
@@ -278,36 +291,16 @@ int main(int argc, char *argv[])
 		// Thumbnailing mode.
 		// We must have 2 filenames specified.
 		if (optind == argc) {
-			// tr: %s == program name
-			fprintf(stderr, C_("rp-stub", "%s: missing source and output file parameters"), argv[0]);
-			putc('\n', stderr);
-			// tr: %s == program name
-			fprintf(stderr, str_help_more_info, argv[0]);
-			putc('\n', stderr);
+			print_opt_error(argv[0], "missing source and output file parameters");
 			return EXIT_FAILURE;
 		} else if (optind+1 == argc && !autoext) {
-			// tr: %s == program name
-			fprintf(stderr, C_("rp-stub", "%s: missing output file parameter"), argv[0]);
-			putc('\n', stderr);
-			// tr: %s == program name
-			fprintf(stderr, str_help_more_info, argv[0]);
-			putc('\n', stderr);
+			print_opt_error(argv[0], "missing output file parameter");
 			return EXIT_FAILURE;
 		} else if (optind+2 == argc && autoext) {
-			// tr: %s == program name
-			fprintf(stderr, C_("rp-stub", "%s: --autoext and output file specified"), argv[0]);
-			putc('\n', stderr);
-			// tr: %s == program name
-			fprintf(stderr, str_help_more_info, argv[0]);
-			putc('\n', stderr);
+			print_opt_error(argv[0], "--autoext and output file specified");
 			return EXIT_FAILURE;
 		} else if (optind+3 < argc) {
-			// tr: %s == program name
-			fprintf(stderr, C_("rp-stub", "%s: too many parameters specified"), argv[0]);
-			putc('\n', stderr);
-			// tr: %s == program name
-			fprintf(stderr, str_help_more_info, argv[0]);
-			putc('\n', stderr);
+			print_opt_error(argv[0], "too many parameters specified");
 			return EXIT_FAILURE;
 		}
 	}
