@@ -103,8 +103,9 @@ prefix##_module_initialize(GTypeModule *module) \
 }
 
 NAUTILUS_MODULE_INITIALIZE_FUNC(nautilus)
-NAUTILUS_MODULE_INITIALIZE_FUNC(caja)
-NAUTILUS_MODULE_INITIALIZE_FUNC(nemo)
+// TODO: Re-enable these if/when Caja and Nemo switch to GTK4.
+//NAUTILUS_MODULE_INITIALIZE_FUNC(caja)
+//NAUTILUS_MODULE_INITIALIZE_FUNC(nemo)
 
 /** Common shutdown and list_types functions. **/
 
