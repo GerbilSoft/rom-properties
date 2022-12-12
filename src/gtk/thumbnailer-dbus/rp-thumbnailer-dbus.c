@@ -263,6 +263,13 @@ rp_thumbnailer_dispose(GObject *object)
 {
 	RpThumbnailer *const thumbnailer = RP_THUMBNAILER(object);
 
+	// Unexport the object.
+	if (G_LIKELY(thumbnailer->exported)) {
+		g_dbus_interface_skeleton_unexport(G_DBUS_INTERFACE_SKELETON(thumbnailer->skeleton));
+		// TODO: Do we call g_object_notify_by_pspec() here?
+		thumbnailer->exported = false;
+	}
+
 	// Stop the inactivity timeout.
 	if (G_LIKELY(thumbnailer->timeout_id != 0)) {
 		g_source_remove(thumbnailer->timeout_id);
@@ -274,9 +281,6 @@ rp_thumbnailer_dispose(GObject *object)
 		g_source_remove(thumbnailer->idle_process);
 		thumbnailer->idle_process = 0;
 	}
-
-	// No longer exported.
-	thumbnailer->exported = false;
 
 	// Call the superclass dispose() function.
 	G_OBJECT_CLASS(rp_thumbnailer_parent_class)->dispose(object);
@@ -298,7 +302,10 @@ rp_thumbnailer_finalize(GObject *object)
 	}
 	g_queue_clear(&thumbnailer->request_queue);
 
-	/** Properties. **/
+	/** Properties **/
+	if (thumbnailer->connection) {
+		g_object_unref(thumbnailer->connection);
+	}
 	g_free(thumbnailer->cache_dir);
 
 	// Call the superclass finalize() function.
