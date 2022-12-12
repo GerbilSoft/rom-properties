@@ -8,44 +8,24 @@
 
 #include "common.h"
 #include "check-uid.h"
-#include "libunixcommon/userdirs.hpp"
 #include "libunixcommon/dll-search.h"
 #include "rp-thumbnailer-dbus.h"
 
 // OS-specific security options.
 #include "rptsecure.h"
 
-// C includes. (C++ namespace)
-#include <cstdarg>
-#include <cstdio>
+// C includes
+#include <stdarg.h>
+#include <stdio.h>
 
-// C++ includes.
-#include <string>
-using std::string;
+// stdbool
+#include "stdboolx.h"
 
 // dlopen()
 #include <dlfcn.h>
 
-// Shutdown request.
+// Shutdown request
 static bool stop_main_loop = false;
-
-// Cache directory.
-static string cache_dir;
-
-/**
- * Initialize the cache directory.
- * @return 0 on success; non-zero on error.
- */
-static int init_cache_dir(void)
-{
-	cache_dir = LibUnixCommon::getCacheDirectory();
-	if (cache_dir.empty()) {
-		g_critical("Unable to determine the XDG cache directory.");
-		return -1;
-	}
-	g_debug("Cache directory: %s", cache_dir.c_str());
-	return 0;
-}
 
 /**
  * Debug print function for rp_dll_search().
@@ -86,7 +66,7 @@ static void
 shutdown_rp_thumbnailer_dbus(RpThumbnailer *thumbnailer, GMainLoop *main_loop)
 {
 	g_return_if_fail(IS_RP_THUMBNAILER(thumbnailer));
-	g_return_if_fail(main_loop != nullptr);
+	g_return_if_fail(main_loop != NULL);
 
 	// Exit the main loop.
 	stop_main_loop = true;
@@ -105,7 +85,7 @@ on_dbus_name_lost(GDBusConnection *connection, const gchar *name, gpointer user_
 	RP_UNUSED(connection);
 	RP_UNUSED(name);
 	GMainLoop *const main_loop = (GMainLoop*)user_data;
-	g_return_if_fail(main_loop != nullptr);
+	g_return_if_fail(main_loop != NULL);
 
 	stop_main_loop = true;
 	if (g_main_loop_is_running(main_loop)) {
@@ -132,25 +112,27 @@ int main(int argc, char *argv[])
 	// g_thread_init() is automatic as of glib-2.32.0
 	// and is marked deprecated.
 	if (!g_thread_supported()) {
-		g_thread_init(nullptr);
+		g_thread_init(NULL);
 	}
 #endif
 
-	// Initialize the cache directory.
-	if (init_cache_dir() != 0) {
+	// Get the XDG cache directory.
+	const gchar *const cache_dir = g_get_user_cache_dir();
+	if (!cache_dir) {
 		return EXIT_FAILURE;
 	}
+	g_debug("Cache directory: %s", cache_dir);
 
 	// Attempt to open a ROM Properties Page library.
-	void *pDll = nullptr;
-	PFN_RP_CREATE_THUMBNAIL2 pfn_rp_create_thumbnail2 = nullptr;
+	void *pDll = NULL;
+	PFN_RP_CREATE_THUMBNAIL2 pfn_rp_create_thumbnail2 = NULL;
 	int ret = rp_dll_search("rp_create_thumbnail2", &pDll, (void**)&pfn_rp_create_thumbnail2, fnDebug);
 	if (ret != 0) {
 		return EXIT_FAILURE;
 	}
 
-	GError *error = nullptr;
-	GDBusConnection *const connection = g_bus_get_sync(G_BUS_TYPE_SESSION, nullptr, &error);
+	GError *error = NULL;
+	GDBusConnection *const connection = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, &error);
 	if (error) {
 		g_critical("Unable to connect to the session bus: %s", error->message);
 		g_error_free(error);
@@ -158,16 +140,16 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	GMainLoop *main_loop = g_main_loop_new(nullptr, false);
+	GMainLoop *main_loop = g_main_loop_new(NULL, false);
 
 	// Create the RpThumbnail service object.
 	RpThumbnailer *const thumbnailer = rp_thumbnailer_new(
-		connection, cache_dir.c_str(), pfn_rp_create_thumbnail2);
+		connection, cache_dir, pfn_rp_create_thumbnail2);
 
 	// Register the D-Bus service.
 	g_bus_own_name_on_connection(connection,
 		"com.gerbilsoft.rom-properties.SpecializedThumbnailer1",
-		G_BUS_NAME_OWNER_FLAGS_NONE, nullptr, on_dbus_name_lost, main_loop, nullptr);
+		G_BUS_NAME_OWNER_FLAGS_NONE, NULL, on_dbus_name_lost, main_loop, NULL);
 
 	if (rp_thumbnailer_is_exported(thumbnailer)) {
 		// Service object is exported.

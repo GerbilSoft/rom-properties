@@ -5,7 +5,7 @@ IF(POLICY CMP0063)
 	# target types, including static libraries and executables.
 	CMAKE_POLICY(SET CMP0063 NEW)
 ENDIF(POLICY CMP0063)
-PROJECT(rp-thumbnailer-dbus LANGUAGES C CXX)
+PROJECT(rp-thumbnailer-dbus LANGUAGES C)
 
 # Find packages.
 FIND_PACKAGE(GLib2 ${REQUIRE_XFCE} ${GLIB_MIN_VERSION})
@@ -46,7 +46,7 @@ ENDIF(CFLAG_Wno_unused_parameter)
 
 SET(${PROJECT_NAME}_SRCS
 	rp-thumbnailer-dbus.c
-	rp-thumbnailer-main.cpp
+	rp-thumbnailer-main.c
 	rptsecure.c
 	${CMAKE_CURRENT_BINARY_DIR}/SpecializedThumbnailer1.c
 	)
