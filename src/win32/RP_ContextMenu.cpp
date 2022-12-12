@@ -102,7 +102,7 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_file)
 	if (!romData) {
 		// ROM is not supported.
 		free(output_file);
-		return RPCT_SOURCE_FILE_NOT_SUPPORTED;
+		return RPCT_ERROR_SOURCE_FILE_NOT_SUPPORTED;
 	}
 
 	// Get the internal image.
@@ -113,7 +113,7 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_file)
 		// No image.
 		romData->unref();
 		free(output_file);
-		return RPCT_SOURCE_FILE_NO_IMAGE;
+		return RPCT_ERROR_SOURCE_FILE_NO_IMAGE;
 	}
 
 	// Save the image using RpPngWriter.
@@ -128,7 +128,7 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_file)
 	if (!pngWriter->isOpen()) {
 		// Could not open the PNG writer.
 		romData->unref();
-		return RPCT_OUTPUT_FILE_FAILED;
+		return RPCT_ERROR_OUTPUT_FILE_FAILED;
 	}
 
 	/** tEXt chunks **/
@@ -153,7 +153,7 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_file)
 		// Error writing IHDR.
 		// TODO: Unlink the PNG image.
 		romData->unref();
-		return RPCT_OUTPUT_FILE_FAILED;
+		return RPCT_ERROR_OUTPUT_FILE_FAILED;
 	}
 
 	/** IDAT chunk. **/
@@ -172,7 +172,7 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_file)
 		// Error writing IDAT.
 		// TODO: Unlink the PNG image.
 		romData->unref();
-		return RPCT_OUTPUT_FILE_FAILED;
+		return RPCT_ERROR_OUTPUT_FILE_FAILED;
 	}
 
 	// Finished writing the PNG image.

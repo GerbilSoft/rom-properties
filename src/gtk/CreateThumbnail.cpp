@@ -213,7 +213,7 @@ static int openFromFilenameOrURI(const char *source_file, IRpFile **pp_file, str
 			if (FileSystem::isOnBadFS(source_filename, enableThumbnailOnNetworkFS)) {
 				// It's on a "bad" filesystem.
 				g_free(source_filename);
-				return RPCT_SOURCE_FILE_BAD_FS;
+				return RPCT_ERROR_SOURCE_FILE_BAD_FS;
 			}
 
 			// Open the file using RpFile.
@@ -223,7 +223,7 @@ static int openFromFilenameOrURI(const char *source_file, IRpFile **pp_file, str
 			// Not a local filename.
 			if (!enableThumbnailOnNetworkFS) {
 				// Thumbnailing on network file systems is disabled.
-				return RPCT_SOURCE_FILE_BAD_FS;
+				return RPCT_ERROR_SOURCE_FILE_BAD_FS;
 			}
 
 			// Open the file using RpFileGio.
@@ -238,7 +238,7 @@ static int openFromFilenameOrURI(const char *source_file, IRpFile **pp_file, str
 		// Check if it's on a "bad" filesystem.
 		if (FileSystem::isOnBadFS(source_file, enableThumbnailOnNetworkFS)) {
 			// It's on a "bad" filesystem.
-			return RPCT_SOURCE_FILE_BAD_FS;
+			return RPCT_ERROR_SOURCE_FILE_BAD_FS;
 		}
 
 		// Check fi we have an absolute or relative path.
@@ -280,7 +280,7 @@ static int openFromFilenameOrURI(const char *source_file, IRpFile **pp_file, str
 	// File was not opened.
 	// TODO: Actual error code?
 	UNREF(file);
-	return RPCT_SOURCE_FILE_ERROR;
+	return RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
 }
 
 /**
@@ -296,7 +296,7 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const
 {
 	// Some of this is based on the GNOME Thumbnailer skeleton project.
 	// https://github.com/hadess/gnome-thumbnailer-skeleton/blob/master/gnome-thumbnailer-skeleton.c
-	CHECK_UID_RET(RPCT_RUNNING_AS_ROOT);
+	CHECK_UID_RET(RPCT_ERROR_RUNNING_AS_ROOT);
 
 	// Make sure glib is initialized.
 	// NOTE: This is a no-op as of glib-2.35.1.
@@ -324,7 +324,7 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const
 	file->unref();	// file is ref()'d by RomData.
 	if (!romData) {
 		// ROM is not supported.
-		return RPCT_SOURCE_FILE_NOT_SUPPORTED;
+		return RPCT_ERROR_SOURCE_FILE_NOT_SUPPORTED;
 	}
 
 	// Create the thumbnail.
@@ -334,7 +334,7 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const
 	if (ret != 0) {
 		// No image.
 		romData->unref();
-		return RPCT_SOURCE_FILE_NO_IMAGE;
+		return RPCT_ERROR_SOURCE_FILE_NO_IMAGE;
 	}
 
 	// Save the image using RpPngWriter.
@@ -359,7 +359,7 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const
 		rp_image::Format::ARGB32));
 	if (!pngWriter->isOpen()) {
 		// Could not open the PNG writer.
-		ret = RPCT_OUTPUT_FILE_FAILED;
+		ret = RPCT_ERROR_OUTPUT_FILE_FAILED;
 		goto cleanup;
 	}
 
@@ -451,7 +451,7 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const
 	if (pwRet != 0) {
 		// Error writing IHDR.
 		// TODO: Unlink the PNG image.
-		ret = RPCT_OUTPUT_FILE_FAILED;
+		ret = RPCT_ERROR_OUTPUT_FILE_FAILED;
 		goto cleanup;
 	}
 
@@ -477,7 +477,7 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const
 	if (pwRet != 0) {
 		// Error writing IDAT.
 		// TODO: Unlink the PNG image.
-		ret = RPCT_OUTPUT_FILE_FAILED;
+		ret = RPCT_ERROR_OUTPUT_FILE_FAILED;
 		goto cleanup;
 	}
 

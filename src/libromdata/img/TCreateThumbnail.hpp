@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * TCreateThumbnail.hpp: Thumbnail creator template.                       *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -23,16 +23,16 @@ extern "C" {
  * TCreateThumbnail::create() errors.
  */
 typedef enum {
-	RPCT_SUCCESS			= 0,
-	RPCT_DLL_ERROR			= 1,	// Cannot load the shared library.
-	RPCT_SOURCE_FILE_ERROR		= 2,	// Cannot open the source file.
-	RPCT_SOURCE_FILE_NOT_SUPPORTED	= 3,	// Source file isn't supported.
-	RPCT_SOURCE_FILE_NO_IMAGE	= 4,	// Source file has no image.
-	RPCT_OUTPUT_FILE_FAILED		= 5,	// Failed to save the output file.
-	RPCT_SOURCE_FILE_CLASS_DISABLED	= 6,	// User configuration has disabled thumbnails for this class.
-	RPCT_SOURCE_FILE_BAD_FS		= 7,	// Source file is located on a "bad" file system.
-	RPCT_RUNNING_AS_ROOT		= 8,	// Running as root is not supported.
-	RPCT_INVALID_IMAGE_SIZE		= 9,	// Invalid image size requested. (e.g. 0 or less)
+	RPCT_SUCCESS				= 0,
+	RPCT_ERROR_CANNOT_LOAD_DLL		= 1,	// Cannot load the shared library.
+	RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE	= 2,	// Cannot open the source file.
+	RPCT_ERROR_SOURCE_FILE_NOT_SUPPORTED	= 3,	// Source file isn't supported.
+	RPCT_ERROR_SOURCE_FILE_NO_IMAGE		= 4,	// Source file has no image.
+	RPCT_ERROR_OUTPUT_FILE_FAILED		= 5,	// Failed to save the output file.
+	RPCT_ERROR_SOURCE_FILE_CLASS_DISABLED	= 6,	// User configuration has disabled thumbnails for this class.
+	RPCT_ERROR_SOURCE_FILE_BAD_FS		= 7,	// Source file is located on a "bad" file system.
+	RPCT_ERROR_RUNNING_AS_ROOT		= 8,	// Running as root is not supported.
+	RPCT_ERROR_INVALID_IMAGE_SIZE		= 9,	// Invalid image size requested. (e.g. 0 or less)
 } RpCreateThumbnailError;
 
 /**

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * TCreateThumbnail.cpp: Thumbnail creator template.                       *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -262,7 +262,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int reqSize
 	assert(pOutParams != nullptr);
 	if (reqSize < 0) {
 		// Invalid parameter...
-		return RPCT_INVALID_IMAGE_SIZE;
+		return RPCT_ERROR_INVALID_IMAGE_SIZE;
 	}
 
 	// Zero out the output parameters initially.
@@ -290,11 +290,11 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int reqSize
 			break;
 		case Config::ImgTypeResult::Disabled:
 			// Thumbnails are disabled for this class.
-			return RPCT_SOURCE_FILE_CLASS_DISABLED;
+			return RPCT_ERROR_SOURCE_FILE_CLASS_DISABLED;
 		default:
 			// Should not happen...
 			assert(!"Invalid return value from Config::getImgTypePrio().");
-			return RPCT_SOURCE_FILE_ERROR;
+			return RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
 	}
 
 	if (config->useIntIconForSmallSizes() && reqSize <= 48) {
@@ -354,7 +354,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const RomData *romData, int reqSize
 
 	if (!isImgClassValid(pOutParams->retImg)) {
 		// No image.
-		return RPCT_SOURCE_FILE_NO_IMAGE;
+		return RPCT_ERROR_SOURCE_FILE_NO_IMAGE;
 	}
 
 skip_image_check:
@@ -362,7 +362,7 @@ skip_image_check:
 		// Image size is invalid.
 		freeImgClass(pOutParams->retImg);
 		pOutParams->retImg = getNullImgClass();
-		return RPCT_SOURCE_FILE_ERROR;
+		return RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
 	}
 
 	if (imgpf & RomData::IMGPF_RESCALE_RFT_DIMENSIONS_2) {
@@ -525,7 +525,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(IRpFile *file, int reqSize, GetThum
 	assert(pOutParams != nullptr);
 	if (reqSize <= 0) {
 		// Invalid parameter...
-		return RPCT_INVALID_IMAGE_SIZE;
+		return RPCT_ERROR_INVALID_IMAGE_SIZE;
 	}
 
 	// Get the appropriate RomData class for this ROM.
@@ -533,7 +533,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(IRpFile *file, int reqSize, GetThum
 	RomData *romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
 	if (!romData) {
 		// ROM is not supported.
-		return RPCT_SOURCE_FILE_NOT_SUPPORTED;
+		return RPCT_ERROR_SOURCE_FILE_NOT_SUPPORTED;
 	}
 
 	// Call the actual function.
@@ -557,7 +557,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const char *filename, int reqSize, 
 	assert(pOutParams != nullptr);
 	if (reqSize <= 0) {
 		// Invalid parameter...
-		return RPCT_INVALID_IMAGE_SIZE;
+		return RPCT_ERROR_INVALID_IMAGE_SIZE;
 	}
 
 	// Attempt to open the ROM file.
@@ -567,7 +567,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const char *filename, int reqSize, 
 	if (!file->isOpen()) {
 		// Could not open the file.
 		file->unref();
-		return RPCT_SOURCE_FILE_ERROR;
+		return RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
 	}
 
 	// Get the appropriate RomData class for this ROM.
@@ -576,7 +576,7 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const char *filename, int reqSize, 
 	file->unref();	// file is ref()'d by RomData.
 	if (!romData) {
 		// ROM is not supported.
-		return RPCT_SOURCE_FILE_NOT_SUPPORTED;
+		return RPCT_ERROR_SOURCE_FILE_NOT_SUPPORTED;
 	}
 
 	// Call the actual function.

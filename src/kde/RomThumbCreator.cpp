@@ -393,7 +393,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 	// NOTE: TCreateThumbnail() has wrappers for opening the
 	// ROM file and getting RomData*, but we're doing it here
 	// in order to return better error codes.
-	CHECK_UID_RET(RPCT_RUNNING_AS_ROOT);
+	CHECK_UID_RET(RPCT_ERROR_RUNNING_AS_ROOT);
 
 	// Register RpQImageBackend.
 	// TODO: Static initializer somewhere?
@@ -404,7 +404,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 	IRpFile *const file = openQUrl(localUrl, true);
 	if (!file) {
 		// Could not open the file.
-		return RPCT_SOURCE_FILE_ERROR;
+		return RPCT_ERROR_CANNOT_OPEN_SOURCE_FILE;
 	}
 
 	// Get the appropriate RomData class for this ROM.
@@ -413,7 +413,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 	file->unref();	// file is ref()'d by RomData.
 	if (!romData) {
 		// ROM is not supported.
-		return RPCT_SOURCE_FILE_NOT_SUPPORTED;
+		return RPCT_ERROR_SOURCE_FILE_NOT_SUPPORTED;
 	}
 
 	// Create the thumbnail.
@@ -425,7 +425,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 	if (ret != 0 || outParams.retImg.isNull()) {
 		// No image.
 		romData->unref();
-		return RPCT_SOURCE_FILE_NO_IMAGE;
+		return RPCT_ERROR_SOURCE_FILE_NO_IMAGE;
 	}
 
 	// Save the image using RpPngWriter.
@@ -455,7 +455,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 			// Unsupported...
 			assert(!"Unsupported QImage image format.");
 			romData->unref();
-			return RPCT_OUTPUT_FILE_FAILED;
+			return RPCT_ERROR_OUTPUT_FILE_FAILED;
 	}
 
 	RpPngWriter *pngWriter = new RpPngWriter(output_file,
@@ -464,7 +464,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 		// Could not open the PNG writer.
 		delete pngWriter;
 		romData->unref();
-		return RPCT_OUTPUT_FILE_FAILED;
+		return RPCT_ERROR_OUTPUT_FILE_FAILED;
 	}
 
 	const bool doXDG = !(flags & RPCT_FLAG_NO_XDG_THUMBNAIL_METADATA);
@@ -538,7 +538,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 		// TODO: Unlink the PNG image.
 		delete pngWriter;
 		romData->unref();
-		return RPCT_OUTPUT_FILE_FAILED;
+		return RPCT_ERROR_OUTPUT_FILE_FAILED;
 	}
 
 	/** IDAT chunk. **/
@@ -556,7 +556,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 	if (pwRet != 0) {
 		// Error writing IDAT.
 		// TODO: Unlink the PNG image.
-		ret = RPCT_OUTPUT_FILE_FAILED;
+		ret = RPCT_ERROR_OUTPUT_FILE_FAILED;
 	}
 
 	delete pngWriter;
