@@ -72,14 +72,14 @@ static gboolean	rp_thumbnailer_timeout		(RpThumbnailer	*thumbnailer);
 static gboolean	rp_thumbnailer_process		(RpThumbnailer	*thumbnailer);
 
 // D-Bus methods.
-static gboolean	rp_thumbnailer_queue		(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
+static gboolean	rp_thumbnailer_queue		(SpecializedThumbnailer1 *skeleton,
 						 GDBusMethodInvocation *invocation,
 						 const gchar	*uri,
 						 const gchar	*mime_type,
 						 const char	*flavor,
 						 bool		 urgent,
 						 RpThumbnailer	*thumbnailer);
-static gboolean	rp_thumbnailer_dequeue		(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
+static gboolean	rp_thumbnailer_dequeue		(SpecializedThumbnailer1 *skeleton,
 						 GDBusMethodInvocation *invocation,
 						 guint32	 handle,
 						 RpThumbnailer	*thumbnailer);
@@ -103,7 +103,7 @@ struct request_info {
 
 struct _RpThumbnailer {
 	GObject __parent__;
-	OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton;
+	SpecializedThumbnailer1 *skeleton;
 
 	// Has the shutdown signal been emitted?
 	bool shutdown_emitted;
@@ -233,7 +233,7 @@ rp_thumbnailer_constructed(GObject *object)
 	RpThumbnailer *const thumbnailer = RP_THUMBNAILER(object);
 
 	GError *error = NULL;
-	thumbnailer->skeleton = org_freedesktop_thumbnails_specialized_thumbnailer1_skeleton_new();
+	thumbnailer->skeleton = specialized_thumbnailer1_skeleton_new();
 	g_dbus_interface_skeleton_export(G_DBUS_INTERFACE_SKELETON(thumbnailer->skeleton),
 		thumbnailer->connection, "/com/gerbilsoft/rom_properties/SpecializedThumbnailer1", &error);
 	if (error) {
@@ -404,7 +404,7 @@ rp_thumbnailer_get_property(GObject *object,
  * @return True if the signal was handled; false if not.
  */
 static gboolean
-rp_thumbnailer_queue(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
+rp_thumbnailer_queue(SpecializedThumbnailer1 *skeleton,
 	GDBusMethodInvocation *invocation,
 	const gchar *uri, const gchar *mime_type,
 	const char *flavor, bool urgent,
@@ -452,7 +452,7 @@ rp_thumbnailer_queue(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
 		thumbnailer->idle_process = g_idle_add((GSourceFunc)rp_thumbnailer_process, thumbnailer);
 	}
 
-	org_freedesktop_thumbnails_specialized_thumbnailer1_complete_queue(skeleton, invocation, handle);
+	specialized_thumbnailer1_complete_queue(skeleton, invocation, handle);
 	return true;
 }
 
@@ -465,7 +465,7 @@ rp_thumbnailer_queue(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
  * @return True if the signal was handled; false if not.
  */
 static gboolean
-rp_thumbnailer_dequeue(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton,
+rp_thumbnailer_dequeue(SpecializedThumbnailer1 *skeleton,
 	GDBusMethodInvocation *invocation,
 	guint32 handle,
 	RpThumbnailer *thumbnailer)
@@ -474,7 +474,7 @@ rp_thumbnailer_dequeue(OrgFreedesktopThumbnailsSpecializedThumbnailer1 *skeleton
 	g_dbus_async_return_val_if_fail(handle != 0, invocation, false);
 
 	// TODO
-	org_freedesktop_thumbnails_specialized_thumbnailer1_complete_dequeue(skeleton, invocation);
+	specialized_thumbnailer1_complete_dequeue(skeleton, invocation);
 	return true;
 }
 
@@ -526,14 +526,14 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 	// at this point, but we're checking it anyway.
 	if (!thumbnailer->cache_dir || thumbnailer->cache_dir[0] == 0) {
 		// No cache directory...
-		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
+		specialized_thumbnailer1_emit_error(
 			thumbnailer->skeleton, req->handle, "",
 			0, "Thumbnail cache directory is empty.");
 		goto finished;
 	}
 	if (!thumbnailer->pfn_rp_create_thumbnail2) {
 		// No thumbnailer function.
-		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
+		specialized_thumbnailer1_emit_error(
 			thumbnailer->skeleton, req->handle, "",
 			0, "No thumbnailer function is available.");
 		goto finished;
@@ -556,14 +556,14 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 	// pos does NOT include the NULL terminator, so check >=.
 	if (pos < 0 || ((size_t)pos + 1 + 32 + 4) > cache_filename_sz) {
 		// Not enough memory.
-		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
+		specialized_thumbnailer1_emit_error(
 			thumbnailer->skeleton, req->handle, req->uri,
 			0, "Cannot snprintf() the thumbnail cache directory name.");
 		goto finished;
 	}
 
 	if (g_mkdir_with_parents(cache_filename, 0777) != 0) {
-		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
+		specialized_thumbnailer1_emit_error(
 			thumbnailer->skeleton, req->handle, req->uri,
 			0, "Cannot mkdir() the thumbnail cache directory.");
 		goto finished;
@@ -573,7 +573,7 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 	md5_string = g_compute_checksum_for_data(G_CHECKSUM_MD5, (const guchar*)req->uri, strlen(req->uri));
 	if (!md5_string) {
 		// Cannot compute the checksum...
-		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
+		specialized_thumbnailer1_emit_error(
 			thumbnailer->skeleton, req->handle, req->uri,
 			0, "g_compute_checksum_for_data() failed.");
 		goto finished;
@@ -584,7 +584,7 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 	// pos and pos2 do NOT include the NULL terminator, so check >=.
 	if (pos2 < 0 || ((size_t)pos + (size_t)pos2) >= cache_filename_sz) {
 		// Not enough memory.
-		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
+		specialized_thumbnailer1_emit_error(
 			thumbnailer->skeleton, req->handle, req->uri,
 			0, "Cannot snprintf() the thumbnail filename.");
 		goto finished;
@@ -595,19 +595,19 @@ rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 	if (ret == 0) {
 		// Image thumbnailed successfully.
 		g_debug("rom-properties thumbnail: %s -> %s [OK]", req->uri, cache_filename);
-		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_ready(
+		specialized_thumbnailer1_emit_ready(
 			thumbnailer->skeleton, req->handle, req->uri);
 	} else {
 		// Error thumbnailing the image...
 		g_debug("rom-properties thumbnail: %s -> %s [ERR=%d]", req->uri, cache_filename, ret);
-		org_freedesktop_thumbnails_specialized_thumbnailer1_emit_error(
+		specialized_thumbnailer1_emit_error(
 			thumbnailer->skeleton, req->handle, req->uri,
 			2, "Image thumbnailing failed... (TODO: return code)");
 	}
 
 finished:
 	// Request is finished. Emit the finished signal.
-	org_freedesktop_thumbnails_specialized_thumbnailer1_emit_finished(
+	specialized_thumbnailer1_emit_finished(
 		thumbnailer->skeleton, req->handle);
 
 cleanup:
