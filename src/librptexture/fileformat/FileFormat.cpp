@@ -156,7 +156,7 @@ int FileFormat::getDimensions(int pBuf[3]) const
  * @param pBuf Two-element array for [x, y].
  * @return 0 on success; -ENOENT if no rescale dimensions; negative POSIX error code on error.
  */
-int FileFormat::getRescaleDimensions(int pBuf[3]) const
+int FileFormat::getRescaleDimensions(int pBuf[2]) const
 {
 	RP_D(const FileFormat);
 	if (!d->isValid) {
