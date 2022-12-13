@@ -16,7 +16,7 @@
 Q_DECLARE_METATYPE(LibRpBase::RomData*)
 
 class RomDataViewPrivate;
-class RomDataView : public QWidget
+class RomDataView final : public QWidget
 {
 	Q_OBJECT
 

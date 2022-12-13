@@ -16,7 +16,7 @@
 #include <QSortFilterProxyModel>
 
 class ListDataSortProxyModelPrivate;
-class ListDataSortProxyModel : public QSortFilterProxyModel
+class ListDataSortProxyModel final : public QSortFilterProxyModel
 {
 	Q_OBJECT
 	typedef QSortFilterProxyModel super;

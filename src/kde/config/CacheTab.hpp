@@ -13,7 +13,7 @@
 #include "CacheCleaner.hpp"
 
 class CacheTabPrivate;
-class CacheTab : public ITab
+class CacheTab final : public ITab
 {
 	Q_OBJECT
 

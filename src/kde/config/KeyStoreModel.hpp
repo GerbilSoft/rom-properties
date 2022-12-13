@@ -15,7 +15,7 @@
 #include "KeyStoreQt.hpp"
 
 class KeyStoreModelPrivate;
-class KeyStoreModel : public QAbstractItemModel
+class KeyStoreModel final : public QAbstractItemModel
 {
 	Q_OBJECT
 	Q_PROPERTY(KeyStoreQt* keyStore READ keyStore WRITE setKeyStore NOTIFY keyStoreChanged)

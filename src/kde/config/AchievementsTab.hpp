@@ -12,7 +12,7 @@
 #include "ITab.hpp"
 
 class AchievementsTabPrivate;
-class AchievementsTab : public ITab
+class AchievementsTab final : public ITab
 {
 	Q_OBJECT
 
