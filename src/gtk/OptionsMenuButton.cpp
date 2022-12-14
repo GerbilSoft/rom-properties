@@ -27,7 +27,6 @@ using std::vector;
 // NOTE: We only have one child widget, so we don't
 // have to explicitly set H vs. V for GtkBox.
 // (default is horizontal?)
-// TODO: GtkWidget in GTK4?
 #if GTK_CHECK_VERSION(3,0,0)
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
