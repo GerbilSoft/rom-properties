@@ -62,37 +62,37 @@ typedef enum {
 
 static GParamSpec *props[PROP_LAST];
 
-static void	rom_data_view_dispose		(GObject	*object);
-static void	rom_data_view_finalize		(GObject	*object);
-static void	rom_data_view_set_property	(GObject	*object,
+static void	rp_rom_data_view_dispose		(GObject	*object);
+static void	rp_rom_data_view_finalize		(GObject	*object);
+static void	rp_rom_data_view_set_property	(GObject	*object,
 						 guint		 prop_id,
 						 const GValue	*value,
 						 GParamSpec	*pspec);
-static void	rom_data_view_get_property	(GObject	*object,
+static void	rp_rom_data_view_get_property	(GObject	*object,
 						 guint		 prop_id,
 						 GValue		*value,
 						 GParamSpec	*pspec);
 
-static void	rom_data_view_desc_format_type_changed(RomDataView *page,
+static void	rp_rom_data_view_desc_format_type_changed(RpRomDataView *page,
 						 RpDescFormatType desc_format_type);
 
-static void	rom_data_view_init_header_row	(RomDataView	*page);
-static void	rom_data_view_update_display	(RomDataView	*page);
-static gboolean	rom_data_view_load_rom_data	(RomDataView	*page);
-static void	rom_data_view_delete_tabs	(RomDataView	*page);
+static void	rp_rom_data_view_init_header_row(RpRomDataView	*page);
+static void	rp_rom_data_view_update_display	(RpRomDataView	*page);
+static gboolean	rp_rom_data_view_load_rom_data	(RpRomDataView	*page);
+static void	rp_rom_data_view_delete_tabs	(RpRomDataView	*page);
 
 /** Signal handlers **/
 static void	checkbox_no_toggle_signal_handler   (GtkCheckButton	*checkbutton,
-						     RomDataView	*page);
-static void	rom_data_view_map_signal_handler    (RomDataView	*page,
+						     RpRomDataView	*page);
+static void	rp_rom_data_view_map_signal_handler (RpRomDataView	*page,
 						     gpointer		 user_data);
-static void	rom_data_view_unmap_signal_handler  (RomDataView	*page,
+static void	rp_rom_data_view_unmap_signal_handler(RpRomDataView	*page,
 						     gpointer		 user_data);
 static void	tree_view_realize_signal_handler    (GtkTreeView	*treeView,
-						     RomDataView	*page);
+						     RpRomDataView	*page);
 static void	cboLanguage_lc_changed_signal_handler(GtkComboBox	*widget,
 						     uint32_t		 lc,
-						     RomDataView	*page);
+						     RpRomDataView	*page);
 
 #if GTK_CHECK_VERSION(3,0,0)
 // libadwaita/libhandy function pointers.
@@ -111,17 +111,17 @@ static pfnAdwHeaderBarPackEnd_t pfn_adw_header_bar_pack_end = nullptr;
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
-G_DEFINE_TYPE_EXTENDED(RomDataView, rom_data_view,
+G_DEFINE_TYPE_EXTENDED(RpRomDataView, rp_rom_data_view,
 	GTK_TYPE_SUPER, static_cast<GTypeFlags>(0), {});
 
 static void
-rom_data_view_class_init(RomDataViewClass *klass)
+rp_rom_data_view_class_init(RpRomDataViewClass *klass)
 {
 	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
-	gobject_class->dispose = rom_data_view_dispose;
-	gobject_class->finalize = rom_data_view_finalize;
-	gobject_class->set_property = rom_data_view_set_property;
-	gobject_class->get_property = rom_data_view_get_property;
+	gobject_class->dispose = rp_rom_data_view_dispose;
+	gobject_class->finalize = rp_rom_data_view_finalize;
+	gobject_class->set_property = rp_rom_data_view_set_property;
+	gobject_class->get_property = rp_rom_data_view_get_property;
 
 	/** Quarks **/
 
@@ -187,7 +187,7 @@ rom_data_view_class_init(RomDataViewClass *klass)
 
 /**
  * Set the label format type.
- * @param page RomDataView
+ * @param page RpRomDataView
  * @param label GtkLabel
  * @param desc_format_type Format type
  */
@@ -261,12 +261,12 @@ set_label_format_type(GtkLabel *label, RpDescFormatType desc_format_type)
 }
 
 static void
-rom_data_view_init(RomDataView *page)
+rp_rom_data_view_init(RpRomDataView *page)
 {
 	// g_object_new() guarantees that all values are initialized to 0.
 
 	// Initialize C++ objects.
-	page->cxx = new _RomDataViewCxx();
+	page->cxx = new _RpRomDataViewCxx();
 
 	// Default description format type.
 	page->desc_format_type = RP_DFT_XFCE;
@@ -357,17 +357,17 @@ rom_data_view_init(RomDataView *page)
 	// Connect the "map" and "unmap" signals.
 	// These are needed in order to start and stop the animation.
 	g_signal_connect(page, "map",
-		G_CALLBACK(rom_data_view_map_signal_handler), nullptr);
+		G_CALLBACK(rp_rom_data_view_map_signal_handler), nullptr);
 	g_signal_connect(page, "unmap",
-		G_CALLBACK(rom_data_view_unmap_signal_handler), nullptr);
+		G_CALLBACK(rp_rom_data_view_unmap_signal_handler), nullptr);
 
-	// Table layout is created in rom_data_view_update_display().
+	// Table layout is created in rp_rom_data_view_update_display().
 }
 
 static void
-rom_data_view_dispose(GObject *object)
+rp_rom_data_view_dispose(GObject *object)
 {
-	RomDataView *const page = ROM_DATA_VIEW(object);
+	RpRomDataView *const page = RP_ROM_DATA_VIEW(object);
 
 	/* Unregister the changed_idle */
 	if (G_UNLIKELY(page->changed_idle > 0)) {
@@ -376,16 +376,16 @@ rom_data_view_dispose(GObject *object)
 	}
 
 	// Delete the icon frames and tabs.
-	rom_data_view_delete_tabs(page);
+	rp_rom_data_view_delete_tabs(page);
 
 	// Call the superclass dispose() function.
-	G_OBJECT_CLASS(rom_data_view_parent_class)->dispose(object);
+	G_OBJECT_CLASS(rp_rom_data_view_parent_class)->dispose(object);
 }
 
 static void
-rom_data_view_finalize(GObject *object)
+rp_rom_data_view_finalize(GObject *object)
 {
-	RomDataView *const page = ROM_DATA_VIEW(object);
+	RpRomDataView *const page = RP_ROM_DATA_VIEW(object);
 
 	// Delete the C++ objects.
 	delete page->cxx;
@@ -398,28 +398,28 @@ rom_data_view_finalize(GObject *object)
 	UNREF(page->romData);
 
 	// Call the superclass finalize() function.
-	G_OBJECT_CLASS(rom_data_view_parent_class)->finalize(object);
+	G_OBJECT_CLASS(rp_rom_data_view_parent_class)->finalize(object);
 }
 
 GtkWidget*
-rom_data_view_new(void)
+rp_rom_data_view_new(void)
 {
-	return static_cast<GtkWidget*>(g_object_new(TYPE_ROM_DATA_VIEW, nullptr));
+	return static_cast<GtkWidget*>(g_object_new(RP_TYPE_ROM_DATA_VIEW, nullptr));
 }
 
 GtkWidget*
-rom_data_view_new_with_uri(const gchar *uri, RpDescFormatType desc_format_type)
+rp_rom_data_view_new_with_uri(const gchar *uri, RpDescFormatType desc_format_type)
 {
-	return rom_data_view_new_with_romData(uri, nullptr, desc_format_type);
+	return rp_rom_data_view_new_with_romData(uri, nullptr, desc_format_type);
 }
 
 GtkWidget*
-rom_data_view_new_with_romData(const gchar *uri, RomData *romData, RpDescFormatType desc_format_type)
+rp_rom_data_view_new_with_romData(const gchar *uri, RomData *romData, RpDescFormatType desc_format_type)
 {
 	// At least URI needs to be set.
 	assert(uri != nullptr);
 
-	RomDataView *const page = static_cast<RomDataView*>(g_object_new(TYPE_ROM_DATA_VIEW, nullptr));
+	RpRomDataView *const page = static_cast<RpRomDataView*>(g_object_new(RP_TYPE_ROM_DATA_VIEW, nullptr));
 	page->desc_format_type = desc_format_type;
 	if (uri) {
 		page->uri = g_strdup(uri);
@@ -429,7 +429,7 @@ rom_data_view_new_with_romData(const gchar *uri, RomData *romData, RpDescFormatT
 	}
 	if (G_LIKELY(uri != nullptr)) {
 		// NOTE: G_SOURCE_FUNC() was added in glib-2.58.
-		page->changed_idle = g_idle_add((GSourceFunc)rom_data_view_load_rom_data, page);
+		page->changed_idle = g_idle_add((GSourceFunc)rp_rom_data_view_load_rom_data, page);
 	}
 
 	return reinterpret_cast<GtkWidget*>(page);
@@ -438,20 +438,20 @@ rom_data_view_new_with_romData(const gchar *uri, RomData *romData, RpDescFormatT
 /** Properties **/
 
 static void
-rom_data_view_set_property(GObject	*object,
+rp_rom_data_view_set_property(GObject	*object,
 			   guint	 prop_id,
 			   const GValue	*value,
 			   GParamSpec	*pspec)
 {
-	RomDataView *const page = ROM_DATA_VIEW(object);
+	RpRomDataView *const page = RP_ROM_DATA_VIEW(object);
 
 	switch (prop_id) {
 		case PROP_URI:
-			rom_data_view_set_uri(page, g_value_get_string(value));
+			rp_rom_data_view_set_uri(page, g_value_get_string(value));
 			break;
 
 		case PROP_DESC_FORMAT_TYPE:
-			rom_data_view_set_desc_format_type(page,
+			rp_rom_data_view_set_desc_format_type(page,
 				static_cast<RpDescFormatType>(g_value_get_enum(value)));
 			break;
 
@@ -463,12 +463,12 @@ rom_data_view_set_property(GObject	*object,
 }
 
 static void
-rom_data_view_get_property(GObject	*object,
+rp_rom_data_view_get_property(GObject	*object,
 			   guint	 prop_id,
 			   GValue	*value,
 			   GParamSpec	*pspec)
 {
-	RomDataView *const page = ROM_DATA_VIEW(object);
+	RpRomDataView *const page = RP_ROM_DATA_VIEW(object);
 
 	switch (prop_id) {
 		case PROP_URI:
@@ -490,7 +490,7 @@ rom_data_view_get_property(GObject	*object,
 }
 
 /**
- * rom_data_view_get_uri:
+ * rp_rom_data_view_get_uri:
  * @page : a #RomDataView.
  *
  * Returns the current URI for the @page.
@@ -498,24 +498,24 @@ rom_data_view_get_property(GObject	*object,
  * Return value: the file associated with this property page.
  **/
 const gchar*
-rom_data_view_get_uri(RomDataView *page)
+rp_rom_data_view_get_uri(RpRomDataView *page)
 {
-	g_return_val_if_fail(IS_ROM_DATA_VIEW(page), nullptr);
+	g_return_val_if_fail(RP_IS_ROM_DATA_VIEW(page), nullptr);
 	return page->uri;
 }
 
 /**
- * rom_data_view_set_uri:
+ * rp_rom_data_view_set_uri:
  * @page : a #RomDataView.
  * @uri : a URI.
  *
  * Sets the URI for this @page.
  **/
 void
-rom_data_view_set_uri(RomDataView	*page,
+rp_rom_data_view_set_uri(RpRomDataView	*page,
 		      const gchar	*uri)
 {
-	g_return_if_fail(IS_ROM_DATA_VIEW(page));
+	g_return_if_fail(RP_IS_ROM_DATA_VIEW(page));
 
 	/* Check if we already use this file */
 	if (G_UNLIKELY(!g_strcmp0(page->uri, uri)))
@@ -531,7 +531,7 @@ rom_data_view_set_uri(RomDataView	*page,
 		page->hasCheckedAchievements = false;
 
 		// Delete the icon frames and tabs.
-		rom_data_view_delete_tabs(page);
+		rp_rom_data_view_delete_tabs(page);
 	}
 
 	/* Assign the value */
@@ -541,7 +541,7 @@ rom_data_view_set_uri(RomDataView	*page,
 	if (G_LIKELY(page->uri != nullptr)) {
 		if (page->changed_idle == 0) {
 			// NOTE: G_SOURCE_FUNC() was added in glib-2.58.
-			page->changed_idle = g_idle_add((GSourceFunc)rom_data_view_load_rom_data, page);
+			page->changed_idle = g_idle_add((GSourceFunc)rp_rom_data_view_load_rom_data, page);
 		}
 	} else {
 		// Hide the header row. (outerbox)
@@ -551,22 +551,22 @@ rom_data_view_set_uri(RomDataView	*page,
 	}
 
 	// URI has been changed.
-	// FIXME: If called from rom_data_view_set_property(), this might
+	// FIXME: If called from rp_rom_data_view_set_property(), this might
 	// result in *two* notifications.
 	g_object_notify_by_pspec(G_OBJECT(page), props[PROP_URI]);
 }
 
 RpDescFormatType
-rom_data_view_get_desc_format_type(RomDataView *page)
+rp_rom_data_view_get_desc_format_type(RpRomDataView *page)
 {
-	g_return_val_if_fail(IS_ROM_DATA_VIEW(page), RP_DFT_XFCE);
+	g_return_val_if_fail(RP_IS_ROM_DATA_VIEW(page), RP_DFT_XFCE);
 	return page->desc_format_type;
 }
 
 void
-rom_data_view_set_desc_format_type(RomDataView *page, RpDescFormatType desc_format_type)
+rp_rom_data_view_set_desc_format_type(RpRomDataView *page, RpDescFormatType desc_format_type)
 {
-	g_return_if_fail(IS_ROM_DATA_VIEW(page));
+	g_return_if_fail(RP_IS_ROM_DATA_VIEW(page));
 	g_return_if_fail(desc_format_type >= RP_DFT_XFCE && desc_format_type < RP_DFT_LAST);
 	if (desc_format_type == page->desc_format_type) {
 		// Nothing to change.
@@ -575,18 +575,18 @@ rom_data_view_set_desc_format_type(RomDataView *page, RpDescFormatType desc_form
 		return;
 	}
 
-	// FIXME: If called from rom_data_view_set_property(), this might
+	// FIXME: If called from rp_rom_data_view_set_property(), this might
 	// result in *two* notifications.
 	page->desc_format_type = desc_format_type;
-	rom_data_view_desc_format_type_changed(page, desc_format_type);
+	rp_rom_data_view_desc_format_type_changed(page, desc_format_type);
 	g_object_notify_by_pspec(G_OBJECT(page), props[PROP_DESC_FORMAT_TYPE]);
 }
 
 static void
-rom_data_view_desc_format_type_changed(RomDataView	*page,
+rp_rom_data_view_desc_format_type_changed(RpRomDataView	*page,
 				       RpDescFormatType	desc_format_type)
 {
-	g_return_if_fail(IS_ROM_DATA_VIEW(page));
+	g_return_if_fail(RP_IS_ROM_DATA_VIEW(page));
 	g_return_if_fail(desc_format_type >= RP_DFT_XFCE && desc_format_type < RP_DFT_LAST);
 
 	for (GtkLabel *label : page->cxx->vecDescLabels) {
@@ -595,17 +595,17 @@ rom_data_view_desc_format_type_changed(RomDataView	*page,
 }
 
 gboolean
-rom_data_view_is_showing_data(RomDataView *page)
+rp_rom_data_view_is_showing_data(RpRomDataView *page)
 {
 	// FIXME: This was intended to be used to determine if
 	// the RomData was valid, but the RomData isn't loaded
 	// until idle is processed...
-	g_return_val_if_fail(IS_ROM_DATA_VIEW(page), false);
+	g_return_val_if_fail(RP_IS_ROM_DATA_VIEW(page), false);
 	return (page->romData != nullptr);
 }
 
 static void
-rom_data_view_init_header_row(RomDataView *page)
+rp_rom_data_view_init_header_row(RpRomDataView *page)
 {
 	// Initialize the header row.
 	assert(page != nullptr);
@@ -683,7 +683,7 @@ rom_data_view_init_header_row(RomDataView *page)
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_string(RomDataView *page,
+rp_rom_data_view_init_string(RpRomDataView *page,
 	const RomFields::Field &field,
 	const char *str = nullptr)
 {
@@ -771,7 +771,7 @@ rom_data_view_init_string(RomDataView *page,
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_bitfield(RomDataView *page,
+rp_rom_data_view_init_bitfield(RpRomDataView *page,
 	const RomFields::Field &field)
 {
 	// Bitfield type. Create a grid of checkboxes.
@@ -862,7 +862,7 @@ rom_data_view_init_bitfield(RomDataView *page,
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_listdata(RomDataView *page,
+rp_rom_data_view_init_listdata(RpRomDataView *page,
 	const RomFields::Field &field)
 {
 	// ListData type. Create a GtkListStore for the data.
@@ -1204,18 +1204,18 @@ rom_data_view_init_listdata(RomDataView *page,
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_datetime(RomDataView *page,
+rp_rom_data_view_init_datetime(RpRomDataView *page,
 	const RomFields::Field &field)
 {
 	GtkWidget *widget;
 
 	gchar *const str = rom_data_format_datetime(field.data.date_time, field.flags);
 	if (str) {
-		widget = rom_data_view_init_string(page, field, str);
+		widget = rp_rom_data_view_init_string(page, field, str);
 		g_free(str);
 	} else {
 		// tr: Invalid date/time.
-		widget = rom_data_view_init_string(page, field, C_("RomDataView", "Unknown"));
+		widget = rp_rom_data_view_init_string(page, field, C_("RomDataView", "Unknown"));
 	}
 
 	return widget;
@@ -1228,19 +1228,19 @@ rom_data_view_init_datetime(RomDataView *page,
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_age_ratings(RomDataView *page,
+rp_rom_data_view_init_age_ratings(RpRomDataView *page,
 	const RomFields::Field &field)
 {
 	const RomFields::age_ratings_t *const age_ratings = field.data.age_ratings;
 	assert(age_ratings != nullptr);
 	if (!age_ratings) {
 		// tr: No age ratings data.
-		return rom_data_view_init_string(page, field, C_("RomDataView", "ERROR"));
+		return rp_rom_data_view_init_string(page, field, C_("RomDataView", "ERROR"));
 	}
 
 	// Convert the age ratings field to a string.
 	string str = RomFields::ageRatingsDecode(age_ratings);
-	return rom_data_view_init_string(page, field, str.c_str());
+	return rp_rom_data_view_init_string(page, field, str.c_str());
 }
 
 /**
@@ -1250,11 +1250,11 @@ rom_data_view_init_age_ratings(RomDataView *page,
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_dimensions(RomDataView *page,
+rp_rom_data_view_init_dimensions(RpRomDataView *page,
 	const RomFields::Field &field)
 {
 	gchar *const str = rom_data_format_dimensions(field.data.dimensions);
-	GtkWidget *const widget = rom_data_view_init_string(page, field, str);
+	GtkWidget *const widget = rp_rom_data_view_init_string(page, field, str);
 	g_free(str);
 	return widget;
 }
@@ -1266,7 +1266,7 @@ rom_data_view_init_dimensions(RomDataView *page,
  * @return Display widget, or nullptr on error.
  */
 static GtkWidget*
-rom_data_view_init_string_multi(RomDataView *page,
+rp_rom_data_view_init_string_multi(RpRomDataView *page,
 	const RomFields::Field &field)
 {
 	// Mutli-language string.
@@ -1275,7 +1275,7 @@ rom_data_view_init_string_multi(RomDataView *page,
 	// be able to change the displayed language.
 	// NOTE 2: The string must be "", not nullptr. Otherwise, it will
 	// attempt to use the field's string data, which is invalid.
-	GtkWidget *const lblStringMulti = rom_data_view_init_string(page, field, "");
+	GtkWidget *const lblStringMulti = rp_rom_data_view_init_string(page, field, "");
 	if (lblStringMulti) {
 		page->cxx->vecStringMulti.emplace_back(GTK_LABEL(lblStringMulti), &field);
 	}
@@ -1288,9 +1288,9 @@ rom_data_view_init_string_multi(RomDataView *page,
  * @param user_lc	[in] User-specified language code.
  */
 static void
-rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
+rp_rom_data_view_update_multi(RpRomDataView *page, uint32_t user_lc)
 {
-	_RomDataViewCxx *const cxx = page->cxx;
+	_RpRomDataViewCxx *const cxx = page->cxx;
 	set<uint32_t> set_lc;
 
 	// RFT_STRING_MULTI
@@ -1448,7 +1448,7 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 }
 
 static void
-rom_data_view_create_options_button(RomDataView *page)
+rp_rom_data_view_create_options_button(RpRomDataView *page)
 {
 	assert(!page->btnOptions);
 	if (page->btnOptions != nullptr)
@@ -1609,20 +1609,20 @@ rom_data_view_create_options_button(RomDataView *page)
 }
 
 static void
-rom_data_view_update_display(RomDataView *page)
+rp_rom_data_view_update_display(RpRomDataView *page)
 {
 	assert(page != nullptr);
 
 	// Delete the icon frames and tabs.
-	rom_data_view_delete_tabs(page);
+	rp_rom_data_view_delete_tabs(page);
 
 	// Create the "Options" button.
 	if (!page->btnOptions) {
-		rom_data_view_create_options_button(page);
+		rp_rom_data_view_create_options_button(page);
 	}
 
 	// Initialize the header row.
-	rom_data_view_init_header_row(page);
+	rp_rom_data_view_init_header_row(page);
 
 	if (!page->romData) {
 		// No ROM data...
@@ -1785,26 +1785,26 @@ rom_data_view_update_display(RomDataView *page)
 				break;
 
 			case RomFields::RFT_STRING:
-				widget = rom_data_view_init_string(page, field);
+				widget = rp_rom_data_view_init_string(page, field);
 				break;
 			case RomFields::RFT_BITFIELD:
-				widget = rom_data_view_init_bitfield(page, field);
+				widget = rp_rom_data_view_init_bitfield(page, field);
 				break;
 			case RomFields::RFT_LISTDATA:
 				separate_rows = !!(field.flags & RomFields::RFT_LISTDATA_SEPARATE_ROW);
-				widget = rom_data_view_init_listdata(page, field);
+				widget = rp_rom_data_view_init_listdata(page, field);
 				break;
 			case RomFields::RFT_DATETIME:
-				widget = rom_data_view_init_datetime(page, field);
+				widget = rp_rom_data_view_init_datetime(page, field);
 				break;
 			case RomFields::RFT_AGE_RATINGS:
-				widget = rom_data_view_init_age_ratings(page, field);
+				widget = rp_rom_data_view_init_age_ratings(page, field);
 				break;
 			case RomFields::RFT_DIMENSIONS:
-				widget = rom_data_view_init_dimensions(page, field);
+				widget = rp_rom_data_view_init_dimensions(page, field);
 				break;
 			case RomFields::RFT_STRING_MULTI:
-				widget = rom_data_view_init_string_multi(page, field);
+				widget = rp_rom_data_view_init_string_multi(page, field);
 				break;
 		}
 
@@ -1953,20 +1953,20 @@ rom_data_view_update_display(RomDataView *page)
 	// Initial update of RFT_STRING_MULTI and RFT_LISTDATA_MULTI fields.
 	if (!page->cxx->vecStringMulti.empty() || !page->cxx->vecListDataMulti.empty()) {
 		page->cxx->def_lc = pFields->defaultLanguageCode();
-		rom_data_view_update_multi(page, 0);
+		rp_rom_data_view_update_multi(page, 0);
 	}
 }
 
 /**
  * Load the actual ROM data.
  * Call this function using g_idle_add().
- * @param page RomDataView
+ * @param page RpRomDataView
  * @return G_SOURCE_REMOVE
  */
 static gboolean
-rom_data_view_load_rom_data(RomDataView *page)
+rp_rom_data_view_load_rom_data(RpRomDataView *page)
 {
-	g_return_val_if_fail(IS_ROM_DATA_VIEW(page), G_SOURCE_REMOVE);
+	g_return_val_if_fail(RP_IS_ROM_DATA_VIEW(page), G_SOURCE_REMOVE);
 
 	if (G_UNLIKELY(page->uri == nullptr && page->romData == nullptr)) {
 		// No URI or RomData.
@@ -1986,7 +1986,7 @@ rom_data_view_load_rom_data(RomDataView *page)
 	// Load the specified URI.
 	RomData *const romData = rp_gtk_open_uri(page->uri);
 	if (romData) {
-		// FIXME: If called from rom_data_view_set_property(), this might
+		// FIXME: If called from rp_rom_data_view_set_property(), this might
 		// result in *two* notifications.
 		page->romData = romData;
 		page->hasCheckedAchievements = false;
@@ -1996,7 +1996,7 @@ rom_data_view_load_rom_data(RomDataView *page)
 	if (page->romData) {
 		// Update the display widgets.
 		// TODO: If already mapped, check achievements again.
-		rom_data_view_update_display(page);
+		rp_rom_data_view_update_display(page);
 
 		// Make sure the underlying file handle is closed,
 		// since we don't need it once the RomData has been
@@ -2014,14 +2014,14 @@ rom_data_view_load_rom_data(RomDataView *page)
 
 /**
  * Delete tabs and related widgets.
- * @param page RomDataView
+ * @param page RpRomDataView
  */
 static void
-rom_data_view_delete_tabs(RomDataView *page)
+rp_rom_data_view_delete_tabs(RpRomDataView *page)
 {
 	assert(page != nullptr);
 	assert(page->cxx != nullptr);
-	_RomDataViewCxx *const cxx = page->cxx;
+	_RpRomDataViewCxx *const cxx = page->cxx;
 
 	// Clear the tabs.
 	if (cxx->tabs.size() == 1) {
@@ -2091,10 +2091,10 @@ rom_data_view_delete_tabs(RomDataView *page)
 /**
  * Prevent bitfield checkboxes from being toggled.
  * @param checkbutton Bitfield checkbox
- * @param page RomDataView
+ * @param page RpRomDataView
  */
 static void
-checkbox_no_toggle_signal_handler(GtkCheckButton *checkbutton, RomDataView *page)
+checkbox_no_toggle_signal_handler(GtkCheckButton *checkbutton, RpRomDataView *page)
 {
 	if (page->inhibit_checkbox_no_toggle) {
 		// Inhibiting the no-toggle handler.
@@ -2112,12 +2112,12 @@ checkbox_no_toggle_signal_handler(GtkCheckButton *checkbutton, RomDataView *page
 
 /**
  * RomDataView is being mapped onto the screen.
- * @param page RomDataView
+ * @param page RpRomDataView
  * @param user_data User data
  */
 static void
-rom_data_view_map_signal_handler(RomDataView	*page,
-				 gpointer	 user_data)
+rp_rom_data_view_map_signal_handler(RpRomDataView	*page,
+				    gpointer	 	 user_data)
 {
 	RP_UNUSED(user_data);
 	rp_drag_image_start_anim_timer(RP_DRAG_IMAGE(page->imgIcon));
@@ -2134,11 +2134,11 @@ rom_data_view_map_signal_handler(RomDataView	*page,
 
 /**
  * RomDataView is being unmapped from the screen.
- * @param page RomDataView
+ * @param page RpRomDataView
  * @param user_data User data
  */
 static void
-rom_data_view_unmap_signal_handler(RomDataView	*page,
+rp_rom_data_view_unmap_signal_handler(RpRomDataView	*page,
 				   gpointer	 user_data)
 {
 	RP_UNUSED(user_data);
@@ -2151,11 +2151,11 @@ rom_data_view_unmap_signal_handler(RomDataView	*page,
 /**
  * GtkTreeView widget has been realized.
  * @param treeView GtkTreeView
- * @param page RomDataView
+ * @param page RpRomDataView
  */
 static void
 tree_view_realize_signal_handler(GtkTreeView	*treeView,
-				 RomDataView	*page)
+				 RpRomDataView	*page)
 {
 	// TODO: Redo this if the system font and/or style changes.
 	// TODO: Remove the `page` parameter?
@@ -2248,8 +2248,8 @@ tree_view_realize_signal_handler(GtkTreeView	*treeView,
 static void
 cboLanguage_lc_changed_signal_handler(GtkComboBox *widget,
 				      uint32_t     lc,
-				      RomDataView *page)
+				      RpRomDataView *page)
 {
 	RP_UNUSED(widget);
-	rom_data_view_update_multi(page, lc);
+	rp_rom_data_view_update_multi(page, lc);
 }

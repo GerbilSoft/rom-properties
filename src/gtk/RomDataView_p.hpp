@@ -34,12 +34,12 @@ typedef GtkVBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_VBOX
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
-// GTK+ property page class.
-struct _RomDataViewClass {
+// GTK+ property page class
+struct _RpRomDataViewClass {
 	superclass __parent__;
 };
 
-// Multi-language stuff.
+// Multi-language stuff
 typedef std::pair<GtkLabel*, const LibRpBase::RomFields::Field*> Data_StringMulti_t;
 
 struct Data_ListDataMulti_t {
@@ -56,8 +56,8 @@ struct Data_ListDataMulti_t {
 		, field(field) { }
 };
 
-// C++ objects.
-struct _RomDataViewCxx {
+// C++ objects
+struct _RpRomDataViewCxx {
 	struct tab {
 		GtkWidget	*vbox;		// Either parent page or a GtkVBox/GtkBox.
 		GtkWidget	*table;		// GtkTable (2.x); GtkGrid (3.x)
@@ -80,11 +80,11 @@ struct _RomDataViewCxx {
 	uint32_t def_lc;
 };
 
-// GTK+ property page instance.
-struct _RomDataView {
+// GTK+ property page instance
+struct _RpRomDataView {
 	super __parent__;
 
-	_RomDataViewCxx		*cxx;		// C++ objects
+	_RpRomDataViewCxx	*cxx;		// C++ objects
 	LibRpBase::RomData	*romData;	// ROM data
 	gchar			*uri;		// URI (GVfs)
 
@@ -135,12 +135,12 @@ static GQuark RFT_fieldIdx_quark;
 static GQuark RFT_STRING_warning_quark;
 static GQuark RomDataView_romOp_quark;
 
-int	rom_data_view_update_field		(RomDataView		*page,
+int	rp_rom_data_view_update_field		(RpRomDataView		*page,
 						 int			 fieldIdx);
 
 void	btnOptions_triggered_signal_handler	(RpOptionsMenuButton	*menuButton,
 						 gint		 	 id,
-						 RomDataView		*page);
+						 RpRomDataView		*page);
 
 G_END_DECLS
 

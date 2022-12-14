@@ -38,16 +38,16 @@ using std::vector;
 /**
  * Update a field's value.
  * This is called after running a ROM operation.
- * @param page		[in] RomDataView object.
- * @param fieldIdx	[in] Field index.
+ * @param page		[in] RpRomDataView
+ * @param fieldIdx	[in] Field index
  * @return 0 on success; non-zero on error.
  */
 int
-rom_data_view_update_field(RomDataView *page, int fieldIdx)
+rp_rom_data_view_update_field(RpRomDataView *page, int fieldIdx)
 {
 	assert(page != nullptr);
 	assert(page->cxx != nullptr);
-	_RomDataViewCxx *const cxx = page->cxx;
+	_RpRomDataViewCxx *const cxx = page->cxx;
 
 	const RomFields *const pFields = page->romData->fields();
 	assert(pFields != nullptr);
@@ -244,16 +244,16 @@ rom_data_view_update_field(RomDataView *page, int fieldIdx)
 }
 
 static void
-rom_data_view_doRomOp_stdop_response(GtkFileChooserDialog *fileDialog, gint response_id, RomDataView *page);
+rp_rom_data_view_doRomOp_stdop_response(GtkFileChooserDialog *fileDialog, gint response_id, RpRomDataView *page);
 
 /**
  * ROM operation: Standard Operations
  * Dispatched by btnOptions_triggered_signal_handler().
- * @param page RomDataView
+ * @param page RpRomDataView
  * @param id Standard action ID
  */
 static void
-rom_data_view_doRomOp_stdop(RomDataView *page, int id)
+rp_rom_data_view_doRomOp_stdop(RpRomDataView *page, int id)
 {
 	// Prevent unused variable warnings for some quarks.
 	RP_UNUSED(RFT_STRING_warning_quark);
@@ -354,7 +354,7 @@ rom_data_view_doRomOp_stdop(RomDataView *page, int id)
 	gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(fileDialog), defaultName.c_str());
 
 	// Prompt for a save file.
-	g_signal_connect(fileDialog, "response", G_CALLBACK(rom_data_view_doRomOp_stdop_response), page);
+	g_signal_connect(fileDialog, "response", G_CALLBACK(rp_rom_data_view_doRomOp_stdop_response), page);
 	gtk_window_set_transient_for(GTK_WINDOW(fileDialog), parent);
 	gtk_window_set_modal(GTK_WINDOW(fileDialog), true);
 	gtk_widget_show(GTK_WIDGET(fileDialog));
@@ -366,10 +366,10 @@ rom_data_view_doRomOp_stdop(RomDataView *page, int id)
  * The Save dialog for a Standard ROM Operation has been closed.
  * @param fileDialog GtkFileChooserDialog
  * @param response_id Response ID
- * @param page RomDataView
+ * @param page RpRomDataView
  */
 static void
-rom_data_view_doRomOp_stdop_response(GtkFileChooserDialog *fileDialog, gint response_id, RomDataView *page)
+rp_rom_data_view_doRomOp_stdop_response(GtkFileChooserDialog *fileDialog, gint response_id, RpRomDataView *page)
 {
 	if (response_id != GTK_RESPONSE_ACCEPT) {
 		// User cancelled the dialog.
@@ -446,19 +446,19 @@ rom_data_view_doRomOp_stdop_response(GtkFileChooserDialog *fileDialog, gint resp
  * An "Options" menu action was triggered.
  * @param menuButton	RpOptionsMenuButton
  * @param id		Menu options ID
- * @param page		RomDataView
+ * @param page		RpRomDataView
  */
 void
 btnOptions_triggered_signal_handler(RpOptionsMenuButton *menuButton,
 				    gint id,
-				    RomDataView *page)
+				    RpRomDataView *page)
 {
 	RP_UNUSED(menuButton);
 	GtkWindow *const parent = gtk_widget_get_toplevel_window(GTK_WIDGET(page));
 
 	if (id < 0) {
 		// Standard operation.
-		rom_data_view_doRomOp_stdop(page, id);
+		rp_rom_data_view_doRomOp_stdop(page, id);
 		return;
 	}
 
@@ -556,7 +556,7 @@ btnOptions_triggered_signal_handler(RpOptionsMenuButton *menuButton,
 
 		// Update fields.
 		for (int fieldIdx : params.fieldIdx) {
-			rom_data_view_update_field(page, fieldIdx);
+			rp_rom_data_view_update_field(page, fieldIdx);
 		}
 
 		// Update the RomOp menu entry in case it changed.

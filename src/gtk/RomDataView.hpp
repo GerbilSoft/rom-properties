@@ -9,19 +9,16 @@
 #ifndef __ROMPROPERTIES_GTK_ROMDATAVIEW_HPP__
 #define __ROMPROPERTIES_GTK_ROMDATAVIEW_HPP__
 
-#include <gtk/gtk.h>
+#include "gtk-compat.h"
 
 G_BEGIN_DECLS
 
-typedef struct _RomDataViewClass	RomDataViewClass;
-typedef struct _RomDataView		RomDataView;
-
-#define TYPE_ROM_DATA_VIEW            (rom_data_view_get_type())
-#define ROM_DATA_VIEW(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), TYPE_ROM_DATA_VIEW, RomDataView))
-#define ROM_DATA_VIEW_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass),  TYPE_ROM_DATA_VIEW, RomDataViewClass))
-#define IS_ROM_DATA_VIEW(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), TYPE_ROM_DATA_VIEW))
-#define IS_ROM_DATA_VIEW_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass),  TYPE_ROM_DATA_VIEW))
-#define ROM_DATA_VIEW_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj),  TYPE_ROM_DATA_VIEW, RomDataViewClass))
+#define RP_TYPE_ROM_DATA_VIEW (rp_rom_data_view_get_type())
+#if GTK_CHECK_VERSION(3,0,0)
+G_DECLARE_FINAL_TYPE(RpRomDataView, rp_rom_data_view, RP, ROM_DATA_VIEW, GtkBox)
+#else /* !GTK_CHECK_VERSION(3,0,0) */
+G_DECLARE_FINAL_TYPE(RpRomDataView, rp_rom_data_view, RP, ROM_DATA_VIEW, GtkVBox)
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 
 /** RpDescFormatType: How the "description" label is formatted. **/
 typedef enum {
@@ -31,23 +28,22 @@ typedef enum {
 	RP_DFT_LAST
 } RpDescFormatType;
 
-/* these two functions are implemented automatically by the G_DEFINE_TYPE macro */
-GType		rom_data_view_get_type		(void) G_GNUC_CONST G_GNUC_INTERNAL;
-void		rom_data_view_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
+/* this function is implemented automatically by the G_DEFINE_TYPE macro */
+void		rp_rom_data_view_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
 
-GtkWidget	*rom_data_view_new		(void) G_GNUC_INTERNAL G_GNUC_MALLOC;
-GtkWidget	*rom_data_view_new_with_uri	(const gchar	*uri,
+GtkWidget	*rp_rom_data_view_new		(void) G_GNUC_INTERNAL G_GNUC_MALLOC;
+GtkWidget	*rp_rom_data_view_new_with_uri	(const gchar	*uri,
 						 RpDescFormatType desc_format_type) G_GNUC_INTERNAL G_GNUC_MALLOC;
 
-const gchar	*rom_data_view_get_uri		(RomDataView	*page) G_GNUC_INTERNAL;
-void		rom_data_view_set_uri		(RomDataView	*page,
+const gchar	*rp_rom_data_view_get_uri	(RpRomDataView	*page) G_GNUC_INTERNAL;
+void		rp_rom_data_view_set_uri	(RpRomDataView	*page,
 						 const gchar	*uri) G_GNUC_INTERNAL;
 
-RpDescFormatType rom_data_view_get_desc_format_type(RomDataView *page) G_GNUC_INTERNAL;
-void		rom_data_view_set_desc_format_type(RomDataView *page,
+RpDescFormatType rp_rom_data_view_get_desc_format_type(RpRomDataView *page) G_GNUC_INTERNAL;
+void		rp_rom_data_view_set_desc_format_type(RpRomDataView *page,
 						   RpDescFormatType desc_format_type) G_GNUC_INTERNAL;
 
-gboolean	rom_data_view_is_showing_data	(RomDataView	*page) G_GNUC_INTERNAL;
+gboolean	rp_rom_data_view_is_showing_data(RpRomDataView	*page) G_GNUC_INTERNAL;
 
 G_END_DECLS
 
@@ -55,7 +51,7 @@ G_END_DECLS
 namespace LibRpBase {
 	class RomData;
 };
-GtkWidget	*rom_data_view_new_with_romData	(const gchar *uri,
+GtkWidget	*rp_rom_data_view_new_with_romData(const gchar *uri,
 						 LibRpBase::RomData *romData,
 						 RpDescFormatType desc_format_type) G_GNUC_INTERNAL G_GNUC_MALLOC;
 #endif /* __cplusplus */
