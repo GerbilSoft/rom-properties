@@ -104,7 +104,6 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(GtkDialog, g_object_unref)
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(GtkEventBox, g_object_unref)
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(GtkHBox, g_object_unref)
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(GtkVBox, g_object_unref)
-G_DEFINE_AUTOPTR_CLEANUP_FUNC(GtkWidget, g_object_unref)
 #endif /* !GTK_CHECK_VERSION(3,15,5) && defined(G_DEFINE_AUTOPTR_CLEANUP_FUNC) */
 
 /** Functions added in GTK 4.0.0 **/

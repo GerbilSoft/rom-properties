@@ -27,11 +27,8 @@ using std::vector;
 // NOTE: We only have one child widget, so we don't
 // have to explicitly set H vs. V for GtkBox.
 // (default is horizontal?)
-#if GTK_CHECK_VERSION(4,0,0)
-typedef GtkWidgetClass superclass;
-typedef GtkWidget super;
-#  define GTK_TYPE_SUPER GTK_TYPE_WIDGET
-#elif GTK_CHECK_VERSION(3,0,0)
+// TODO: GtkWidget in GTK4?
+#if GTK_CHECK_VERSION(3,0,0)
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_BOX
@@ -242,7 +239,7 @@ rp_options_menu_button_init(RpOptionsMenuButton *widget)
 
 	// Add the menu button to the container widget.
 #if GTK_CHECK_VERSION(4,0,0)
-	gtk_widget_insert_after(widget->menuButton, GTK_WIDGET(widget), nullptr);
+	gtk_box_append(GTK_BOX(widget), widget->menuButton);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	gtk_container_add(GTK_CONTAINER(widget), widget->menuButton);
 #endif /* GTK_CHECK_VERSION(4,0,0) */

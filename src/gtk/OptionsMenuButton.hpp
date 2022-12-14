@@ -14,9 +14,7 @@
 G_BEGIN_DECLS
 
 #define RP_TYPE_OPTIONS_MENU_BUTTON (rp_options_menu_button_get_type())
-#if GTK_CHECK_VERSION(4,0,0)
-G_DECLARE_FINAL_TYPE(RpOptionsMenuButton, rp_options_menu_button, RP, OPTIONS_MENU_BUTTON, GtkWidget)
-#elif GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3,0,0)
 G_DECLARE_FINAL_TYPE(RpOptionsMenuButton, rp_options_menu_button, RP, OPTIONS_MENU_BUTTON, GtkBox)
 #else /* !GTK_CHECK_VERSION(3,0,0) */
 G_DECLARE_FINAL_TYPE(RpOptionsMenuButton, rp_options_menu_button, RP, OPTIONS_MENU_BUTTON, GtkHBox)
