@@ -26,7 +26,7 @@ namespace LibRpTexture {
 #include <QtCore/QTimer>
 #include <QLabel>
 
-class DragImageLabel final : public QLabel
+class DragImageLabel : public QLabel
 {
 	Q_OBJECT
 

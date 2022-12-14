@@ -28,7 +28,7 @@ using std::vector;
 
 namespace LibRomData {
 
-class GdiReaderPrivate final : public SparseDiscReaderPrivate {
+class GdiReaderPrivate : public SparseDiscReaderPrivate {
 	public:
 		GdiReaderPrivate(GdiReader *q);
 		~GdiReaderPrivate() final;

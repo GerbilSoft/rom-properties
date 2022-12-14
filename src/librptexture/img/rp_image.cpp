@@ -21,7 +21,7 @@ namespace LibRpTexture {
 
 /** rp_image_backend_default **/
 
-class rp_image_backend_default final : public rp_image_backend
+class rp_image_backend_default : public rp_image_backend
 {
  	public:
 		rp_image_backend_default(int width, int height, rp_image::Format format);
