@@ -9,7 +9,7 @@
 #ifndef __ROMPROPERTIES_GTK_THUMBNAILER_DBUS_RP_THUMBNAILER_DBUS_HPP__
 #define __ROMPROPERTIES_GTK_THUMBNAILER_DBUS_RP_THUMBNAILER_DBUS_HPP__
 
-#include <glib.h>
+#include "glib-compat.h"
 #include <gio/gio.h>
 
 G_BEGIN_DECLS
