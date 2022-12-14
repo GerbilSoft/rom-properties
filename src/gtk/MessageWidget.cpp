@@ -19,18 +19,18 @@ typedef enum {
 	PROP_LAST
 } MessageWidgetPropID;
 
-static void	message_widget_set_property	(GObject	*object,
+static void	rp_message_widget_set_property	(GObject	*object,
 						 guint		 prop_id,
 						 const GValue	*value,
 						 GParamSpec	*pspec);
-static void	message_widget_get_property	(GObject	*object,
+static void	rp_message_widget_get_property	(GObject	*object,
 						 guint		 prop_id,
 						 GValue		*value,
 						 GParamSpec	*pspec);
 
 /** Signal handlers. **/
-static void	message_widget_close_button_clicked_handler	(GtkButton	*button,
-								 MessageWidget	*widget);
+static void	rp_message_widget_close_button_clicked_handler	(GtkButton		*button,
+								 RpMessageWidget	*widget);
 
 #if GTK_CHECK_VERSION(3,0,0)
 typedef GtkBoxClass superclass;
@@ -46,13 +46,13 @@ typedef GtkEventBox super;
 
 static GParamSpec *props[PROP_LAST];
 
-// MessageWidget class.
-struct _MessageWidgetClass {
+// RpMessageWidget class
+struct _RpMessageWidgetClass {
 	superclass __parent__;
 };
 
-// MessageWidget instance.
-struct _MessageWidget {
+// RpMessageWidget instance
+struct _RpMessageWidget {
 	super __parent__;
 
 #if !GTK_CHECK_VERSION(3,0,0)
@@ -69,15 +69,15 @@ struct _MessageWidget {
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
-G_DEFINE_TYPE_EXTENDED(MessageWidget, message_widget,
+G_DEFINE_TYPE_EXTENDED(RpMessageWidget, rp_message_widget,
 	GTK_TYPE_SUPER, static_cast<GTypeFlags>(0), {});
 
 static void
-message_widget_class_init(MessageWidgetClass *klass)
+rp_message_widget_class_init(RpMessageWidgetClass *klass)
 {
 	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
-	gobject_class->set_property = message_widget_set_property;
-	gobject_class->get_property = message_widget_get_property;
+	gobject_class->set_property = rp_message_widget_set_property;
+	gobject_class->get_property = rp_message_widget_get_property;
 
 	/** Properties **/
 
@@ -152,7 +152,7 @@ message_widget_class_init(MessageWidgetClass *klass)
 }
 
 static void
-message_widget_init(MessageWidget *widget)
+rp_message_widget_init(RpMessageWidget *widget)
 {
 	GtkBox *hbox;
 #if GTK_CHECK_VERSION(3,0,0)
@@ -212,24 +212,24 @@ message_widget_init(MessageWidget *widget)
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	g_signal_connect(widget->close_button, "clicked",
-		G_CALLBACK(message_widget_close_button_clicked_handler), widget);
+		G_CALLBACK(rp_message_widget_close_button_clicked_handler), widget);
 }
 
 GtkWidget*
-message_widget_new(void)
+rp_message_widget_new(void)
 {
-	return static_cast<GtkWidget*>(g_object_new(TYPE_MESSAGE_WIDGET, nullptr));
+	return static_cast<GtkWidget*>(g_object_new(RP_TYPE_MESSAGE_WIDGET, nullptr));
 }
 
 /** Properties **/
 
 static void
-message_widget_set_property(GObject	*object,
-			   guint	 prop_id,
-			   const GValue	*value,
-			   GParamSpec	*pspec)
+rp_message_widget_set_property(GObject		*object,
+			       guint		 prop_id,
+			       const GValue	*value,
+			       GParamSpec	*pspec)
 {
-	MessageWidget *const widget = MESSAGE_WIDGET(object);
+	RpMessageWidget *const widget = RP_MESSAGE_WIDGET(object);
 
 	switch (prop_id) {
 		case PROP_TEXT:
@@ -237,7 +237,7 @@ message_widget_set_property(GObject	*object,
 			break;
 
 		case PROP_MESSAGE_TYPE:
-			message_widget_set_message_type(widget, static_cast<GtkMessageType>(g_value_get_enum(value)));
+			rp_message_widget_set_message_type(widget, static_cast<GtkMessageType>(g_value_get_enum(value)));
 			break;
 
 		default:
@@ -247,12 +247,12 @@ message_widget_set_property(GObject	*object,
 }
 
 static void
-message_widget_get_property(GObject	*object,
-			   guint	 prop_id,
-			   GValue	*value,
-			   GParamSpec	*pspec)
+rp_message_widget_get_property(GObject		*object,
+			       guint		 prop_id,
+			       GValue		*value,
+			       GParamSpec	*pspec)
 {
-	MessageWidget *const widget = MESSAGE_WIDGET(object);
+	RpMessageWidget *const widget = RP_MESSAGE_WIDGET(object);
 
 	switch (prop_id) {
 		case PROP_TEXT:
@@ -270,7 +270,7 @@ message_widget_get_property(GObject	*object,
 }
 
 void
-message_widget_set_text(MessageWidget *widget, const gchar *str)
+rp_message_widget_set_text(RpMessageWidget *widget, const gchar *str)
 {
 	gtk_label_set_text(GTK_LABEL(widget->label), str);
 
@@ -280,13 +280,13 @@ message_widget_set_text(MessageWidget *widget, const gchar *str)
 }
 
 const gchar*
-message_widget_get_text(MessageWidget *widget)
+rp_message_widget_get_text(RpMessageWidget *widget)
 {
 	return gtk_label_get_text(GTK_LABEL(widget->label));
 }
 
 void
-message_widget_set_message_type(MessageWidget *widget, GtkMessageType messageType)
+rp_message_widget_set_message_type(RpMessageWidget *widget, GtkMessageType messageType)
 {
 	// Update the icon.
 	// Background colors based on KMessageWidget.
@@ -395,7 +395,7 @@ message_widget_set_message_type(MessageWidget *widget, GtkMessageType messageTyp
 }
 
 GtkMessageType
-message_widget_get_message_type(MessageWidget *widget)
+rp_message_widget_get_message_type(RpMessageWidget *widget)
 {
 	return widget->messageType;
 }
@@ -408,7 +408,7 @@ message_widget_get_message_type(MessageWidget *widget)
  * @param widget MessageWidget
  */
 static void
-message_widget_close_button_clicked_handler(GtkButton *button, MessageWidget *widget)
+rp_message_widget_close_button_clicked_handler(GtkButton *button, RpMessageWidget *widget)
 {
 	// TODO: Animation like KMessageWidget.
 	RP_UNUSED(button);

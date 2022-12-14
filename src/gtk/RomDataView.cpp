@@ -332,9 +332,9 @@ rom_data_view_init(RomDataView *page)
 	gtk_widget_show(page->lblSysInfo);
 
 	// Banner and icon.
-	page->imgBanner = drag_image_new();
+	page->imgBanner = rp_drag_image_new();
 	gtk_widget_set_name(page->imgBanner, "imgBanner");
-	page->imgIcon = drag_image_new();
+	page->imgIcon = rp_drag_image_new();
 	gtk_widget_set_name(page->imgIcon, "imgIcon");
 
 #if GTK_CHECK_VERSION(4,0,0)
@@ -646,7 +646,7 @@ rom_data_view_init_header_row(RomDataView *page)
 	gtk_widget_hide(page->imgBanner);
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
 		// Get the banner.
-		bool ok = drag_image_set_rp_image(DRAG_IMAGE(page->imgBanner), romData->image(RomData::IMG_INT_BANNER));
+		bool ok = rp_drag_image_set_rp_image(RP_DRAG_IMAGE(page->imgBanner), romData->image(RomData::IMG_INT_BANNER));
 		if (ok) {
 			gtk_widget_show(page->imgBanner);
 		}
@@ -659,11 +659,11 @@ rom_data_view_init_header_row(RomDataView *page)
 		const rp_image *const icon = romData->image(RomData::IMG_INT_ICON);
 		if (icon && icon->isValid()) {
 			// Is this an animated icon?
-			bool ok = drag_image_set_icon_anim_data(DRAG_IMAGE(page->imgIcon), romData->iconAnimData());
+			bool ok = rp_drag_image_set_icon_anim_data(RP_DRAG_IMAGE(page->imgIcon), romData->iconAnimData());
 			if (!ok) {
 				// Not an animated icon, or invalid icon data.
 				// Set the static icon.
-				ok = drag_image_set_rp_image(DRAG_IMAGE(page->imgIcon), icon);
+				ok = rp_drag_image_set_rp_image(RP_DRAG_IMAGE(page->imgIcon), icon);
 			}
 			if (ok) {
 				gtk_widget_show(page->imgIcon);
@@ -1406,7 +1406,7 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
 		// Create the language combobox.
-		page->cboLanguage = language_combo_box_new();
+		page->cboLanguage = rp_language_combo_box_new();
 		gtk_widget_set_name(page->cboLanguage, "cboLanguage");
 		gtk_widget_show(page->cboLanguage);
 
@@ -1423,7 +1423,7 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 		vec_lc.reserve(set_lc.size() + 1);
 		vec_lc.assign(set_lc.cbegin(), set_lc.cend());
 		vec_lc.emplace_back(0);
-		language_combo_box_set_lcs(LANGUAGE_COMBO_BOX(page->cboLanguage), vec_lc.data());
+		rp_language_combo_box_set_lcs(RP_LANGUAGE_COMBO_BOX(page->cboLanguage), vec_lc.data());
 
 		// Select the default language.
 		uint32_t lc_to_set = 0;
@@ -1440,7 +1440,7 @@ rom_data_view_update_multi(RomDataView *page, uint32_t user_lc)
 				lc_to_set = *(set_lc.cbegin());
 			}
 		}
-		language_combo_box_set_selected_lc(LANGUAGE_COMBO_BOX(page->cboLanguage), lc_to_set);
+		rp_language_combo_box_set_selected_lc(RP_LANGUAGE_COMBO_BOX(page->cboLanguage), lc_to_set);
 
 		// Connect the "lc-changed" signal.
 		g_signal_connect(page->cboLanguage, "lc-changed", G_CALLBACK(cboLanguage_lc_changed_signal_handler), page);
@@ -1525,11 +1525,11 @@ rom_data_view_create_options_button(RomDataView *page)
 			return;
 	}
 
-	// Create the OptionsMenuButton.
-	page->btnOptions = options_menu_button_new();
+	// Create the RpOptionsMenuButton.
+	page->btnOptions = rp_options_menu_button_new();
 	gtk_widget_set_name(page->btnOptions, "btnOptions");
 	gtk_widget_hide(page->btnOptions);
-	options_menu_button_set_direction(OPTIONS_MENU_BUTTON(page->btnOptions), GTK_ARROW_UP);
+	rp_options_menu_button_set_direction(RP_OPTIONS_MENU_BUTTON(page->btnOptions), GTK_ARROW_UP);
 
 #if GTK_CHECK_VERSION(3,0,0)
 	if (isLibAdwaita) {
@@ -1541,7 +1541,7 @@ rom_data_view_create_options_button(RomDataView *page)
 		gtk_dialog_add_action_widget(GTK_DIALOG(parent), page->btnOptions, GTK_RESPONSE_NONE);
 
 		// Disconnect the "clicked" signal from the default GtkDialog response handler.
-		// NOTE: May be "activate" now that OptionsMenuButton no longer derives from
+		// NOTE: May be "activate" now that RpOptionsMenuButton no longer derives from
 		// GtkMenuButton/GtkButton.
 		guint signal_id = 0;
 		if (GTK_IS_BUTTON(page->btnOptions)) {
@@ -1582,7 +1582,7 @@ rom_data_view_create_options_button(RomDataView *page)
 		// No reordering is necessary.
 
 		// Change the arrow to point down instead of up.
-		options_menu_button_set_direction(OPTIONS_MENU_BUTTON(page->btnOptions), GTK_ARROW_DOWN);
+		rp_options_menu_button_set_direction(RP_OPTIONS_MENU_BUTTON(page->btnOptions), GTK_ARROW_DOWN);
 	} else
 #endif /* GTK_CHECK_VERSION(3,11,5) */
 	{
@@ -1601,11 +1601,11 @@ rom_data_view_create_options_button(RomDataView *page)
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 	}
 
-	// Connect the OptionsMenuButton's triggered(int) signal.
+	// Connect the RpOptionsMenuButton's triggered(int) signal.
 	g_signal_connect(page->btnOptions, "triggered", G_CALLBACK(btnOptions_triggered_signal_handler), page);
 
 	// Initialize the menu options.
-	options_menu_button_reinit_menu(OPTIONS_MENU_BUTTON(page->btnOptions), page->romData);
+	rp_options_menu_button_reinit_menu(RP_OPTIONS_MENU_BUTTON(page->btnOptions), page->romData);
 }
 
 static void
@@ -2120,7 +2120,7 @@ rom_data_view_map_signal_handler(RomDataView	*page,
 				 gpointer	 user_data)
 {
 	RP_UNUSED(user_data);
-	drag_image_start_anim_timer(DRAG_IMAGE(page->imgIcon));
+	rp_drag_image_start_anim_timer(RP_DRAG_IMAGE(page->imgIcon));
 	if (page->btnOptions) {
 		gtk_widget_show(page->btnOptions);
 	}
@@ -2142,7 +2142,7 @@ rom_data_view_unmap_signal_handler(RomDataView	*page,
 				   gpointer	 user_data)
 {
 	RP_UNUSED(user_data);
-	drag_image_stop_anim_timer(DRAG_IMAGE(page->imgIcon));
+	rp_drag_image_stop_anim_timer(RP_DRAG_IMAGE(page->imgIcon));
 	if (page->btnOptions) {
 		gtk_widget_hide(page->btnOptions);
 	}

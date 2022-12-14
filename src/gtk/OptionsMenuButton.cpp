@@ -19,7 +19,7 @@ using std::string;
 using std::vector;
 
 // NOTE: GtkMenuButton is final in GTK4, but not GTK3.
-// As a result, OptionsMenuButton is now rewritten to be a
+// As a result, RpOptionsMenuButton is now rewritten to be a
 // GtkWidget (GTK4) or GtkContainer (GTK3, GTK2) that contains
 // a GtkMenuButton (or GtkButton).
 
@@ -70,45 +70,45 @@ typedef enum {
 
 static GQuark menuOptions_id_quark;
 
-static void	options_menu_button_dispose	(GObject	*object);
-static void	options_menu_button_set_property(GObject	*object,
-						 guint		 prop_id,
-						 const GValue	*value,
-						 GParamSpec	*pspec);
-static void	options_menu_button_get_property(GObject	*object,
-						 guint		 prop_id,
-						 GValue		*value,
-						 GParamSpec	*pspec);
+static void	rp_options_menu_button_dispose		(GObject	*object);
+static void	rp_options_menu_button_set_property	(GObject	*object,
+							 guint		 prop_id,
+							 const GValue	*value,
+							 GParamSpec	*pspec);
+static void	rp_options_menu_button_get_property	(GObject	*object,
+							 guint		 prop_id,
+							 GValue		*value,
+							 GParamSpec	*pspec);
 
-static gboolean	menuButton_clicked_signal_handler(GtkButton	*button,
-						  OptionsMenuButton *widget);
-static gboolean	menuButton_activate_signal_handler(GtkButton	*button,
-						   OptionsMenuButton *widget);
+static gboolean	menuButton_clicked_signal_handler	(GtkButton	*button,
+							 RpOptionsMenuButton *widget);
+static gboolean	menuButton_activate_signal_handler	(GtkButton	*button,
+							 RpOptionsMenuButton *widget);
 #ifndef USE_GTK_MENU_BUTTON
 static gboolean	btnOptions_event_signal_handler (GtkButton	*button,
 						 GdkEvent 	*event,
-						 OptionsMenuButton *widget);
+						 RpOptionsMenuButton *widget);
 #endif /* !USE_GTK_MENU_BUTTON */
 
 #ifdef USE_G_MENU_MODEL
 static void	action_triggered_signal_handler     (GSimpleAction	*action,
 						     GVariant		*parameter,
-						     OptionsMenuButton	*widget);
+						     RpOptionsMenuButton *widget);
 #else
 static void	menuOptions_triggered_signal_handler(GtkMenuItem	*menuItem,
-						     OptionsMenuButton	*widget);
+						     RpOptionsMenuButton *widget);
 #endif /* USE_G_MENU_MODEL */
 
 static GParamSpec *props[PROP_LAST];
 static guint signals[SIGNAL_LAST];
 
-// OptionsMenuButton class.
-struct _OptionsMenuButtonClass {
+// RpOptionsMenuButton class
+struct _RpOptionsMenuButtonClass {
 	superclass __parent__;
 };
 
-// OptionsMenuButton instance.
-struct _OptionsMenuButton {
+// RpOptionsMenuButton instance
+struct _RpOptionsMenuButton {
 	super __parent__;
 	GtkWidget *menuButton;	// GtkMenuButton (or GtkButton)
 
@@ -131,7 +131,7 @@ struct _OptionsMenuButton {
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
-G_DEFINE_TYPE_EXTENDED(OptionsMenuButton, options_menu_button,
+G_DEFINE_TYPE_EXTENDED(RpOptionsMenuButton, rp_options_menu_button,
 	GTK_TYPE_SUPER, static_cast<GTypeFlags>(0), {});
 
 /** Standard actions. **/
@@ -147,12 +147,12 @@ static const option_menu_action_t stdacts[] = {
 };
 
 static void
-options_menu_button_class_init(OptionsMenuButtonClass *klass)
+rp_options_menu_button_class_init(RpOptionsMenuButtonClass *klass)
 {
 	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
-	gobject_class->dispose = options_menu_button_dispose;
-	gobject_class->set_property = options_menu_button_set_property;
-	gobject_class->get_property = options_menu_button_get_property;
+	gobject_class->dispose = rp_options_menu_button_dispose;
+	gobject_class->set_property = rp_options_menu_button_set_property;
+	gobject_class->get_property = rp_options_menu_button_get_property;
 
 	/** Quarks **/
 
@@ -176,12 +176,12 @@ options_menu_button_class_init(OptionsMenuButtonClass *klass)
 
 	// GtkButton signals
 	signals[SIGNAL_CLICKED] = g_signal_new("clicked",
-		TYPE_OPTIONS_MENU_BUTTON,
+		RP_TYPE_OPTIONS_MENU_BUTTON,
 		static_cast<GSignalFlags>(G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION),
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 0);
 	signals[SIGNAL_ACTIVATE] = g_signal_new("activate",
-		TYPE_OPTIONS_MENU_BUTTON,
+		RP_TYPE_OPTIONS_MENU_BUTTON,
 		static_cast<GSignalFlags>(G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION),
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 0);
@@ -189,7 +189,7 @@ options_menu_button_class_init(OptionsMenuButtonClass *klass)
 	// GtkMenuButton signals
 	// TODO: G_SIGNAL_ACTION?
 	signals[SIGNAL_TRIGGERED] = g_signal_new("triggered",
-		TYPE_OPTIONS_MENU_BUTTON, G_SIGNAL_RUN_LAST,
+		RP_TYPE_OPTIONS_MENU_BUTTON, G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 1, G_TYPE_INT);
 
@@ -198,7 +198,7 @@ options_menu_button_class_init(OptionsMenuButtonClass *klass)
 }
 
 static void
-options_menu_button_init(OptionsMenuButton *widget)
+rp_options_menu_button_init(RpOptionsMenuButton *widget)
 {
 	string s_title = convert_accel_to_gtk(C_("OptionsMenuButton", "&Options"));
 
@@ -217,7 +217,7 @@ options_menu_button_init(OptionsMenuButton *widget)
 	widget->imgOptions = gtk_image_new();
 	gtk_widget_set_name(widget->imgOptions, "imgOptions");
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
-	options_menu_button_set_direction(widget, GTK_ARROW_UP);
+	rp_options_menu_button_set_direction(widget, GTK_ARROW_UP);
 
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_menu_button_set_label(GTK_MENU_BUTTON(widget), s_title.c_str());
@@ -262,9 +262,9 @@ options_menu_button_init(OptionsMenuButton *widget)
 }
 
 static void
-options_menu_button_dispose(GObject *object)
+rp_options_menu_button_dispose(GObject *object)
 {
-	OptionsMenuButton *const widget = OPTIONS_MENU_BUTTON(object);
+	RpOptionsMenuButton *const widget = RP_OPTIONS_MENU_BUTTON(object);
 
 	// NOTE: widget->menuButton is owned by the GtkBox,
 	// so we don't have to delete it manually.
@@ -288,28 +288,28 @@ options_menu_button_dispose(GObject *object)
 #endif /* USE_G_MENU_MODEL */
 
 	// Call the superclass dispose() function.
-	G_OBJECT_CLASS(options_menu_button_parent_class)->dispose(object);
+	G_OBJECT_CLASS(rp_options_menu_button_parent_class)->dispose(object);
 }
 
 GtkWidget*
-options_menu_button_new(void)
+rp_options_menu_button_new(void)
 {
-	return static_cast<GtkWidget*>(g_object_new(TYPE_OPTIONS_MENU_BUTTON, nullptr));
+	return static_cast<GtkWidget*>(g_object_new(RP_TYPE_OPTIONS_MENU_BUTTON, nullptr));
 }
 
 /** Properties **/
 
 static void
-options_menu_button_set_property(GObject	*object,
-				 guint	 	 prop_id,
-				 const GValue	*value,
-				 GParamSpec	*pspec)
+rp_options_menu_button_set_property(GObject		*object,
+				    guint	 	 prop_id,
+				    const GValue	*value,
+				    GParamSpec		*pspec)
 {
-	OptionsMenuButton *const widget = OPTIONS_MENU_BUTTON(object);
+	RpOptionsMenuButton *const widget = RP_OPTIONS_MENU_BUTTON(object);
 
 	switch (prop_id) {
 		case PROP_DIRECTION:
-			options_menu_button_set_direction(widget, (GtkArrowType)g_value_get_enum(value));
+			rp_options_menu_button_set_direction(widget, (GtkArrowType)g_value_get_enum(value));
 			break;
 
 		default:
@@ -319,16 +319,16 @@ options_menu_button_set_property(GObject	*object,
 }
 
 static void
-options_menu_button_get_property(GObject	*object,
-				 guint		 prop_id,
-				 GValue		*value,
-				 GParamSpec	*pspec)
+rp_options_menu_button_get_property(GObject	*object,
+				    guint	 prop_id,
+				    GValue	*value,
+				    GParamSpec	*pspec)
 {
-	OptionsMenuButton *const widget = OPTIONS_MENU_BUTTON(object);
+	RpOptionsMenuButton *const widget = RP_OPTIONS_MENU_BUTTON(object);
 
 	switch (prop_id) {
 		case PROP_DIRECTION:
-			g_value_set_enum(value, options_menu_button_get_direction(widget));
+			g_value_set_enum(value, rp_options_menu_button_get_direction(widget));
 			break;
 
 		default:
@@ -338,9 +338,9 @@ options_menu_button_get_property(GObject	*object,
 }
 
 GtkArrowType
-options_menu_button_get_direction(OptionsMenuButton *widget)
+rp_options_menu_button_get_direction(RpOptionsMenuButton *widget)
 {
-	g_return_val_if_fail(IS_OPTIONS_MENU_BUTTON(widget), GTK_ARROW_UP);
+	g_return_val_if_fail(RP_IS_OPTIONS_MENU_BUTTON(widget), GTK_ARROW_UP);
 #ifdef USE_GTK_MENU_BUTTON
 	return gtk_menu_button_get_direction(GTK_MENU_BUTTON(widget->menuButton));
 #else /* !USE_GTK_MENU_BUTTON */
@@ -349,9 +349,9 @@ options_menu_button_get_direction(OptionsMenuButton *widget)
 }
 
 void
-options_menu_button_set_direction(OptionsMenuButton *widget, GtkArrowType arrowType)
+rp_options_menu_button_set_direction(RpOptionsMenuButton *widget, GtkArrowType arrowType)
 {
-	g_return_if_fail(IS_OPTIONS_MENU_BUTTON(widget));
+	g_return_if_fail(RP_IS_OPTIONS_MENU_BUTTON(widget));
 #ifdef USE_GTK_MENU_BUTTON
 	if (gtk_menu_button_get_direction(GTK_MENU_BUTTON(widget->menuButton)) == arrowType)
 		return;
@@ -389,19 +389,19 @@ options_menu_button_set_direction(OptionsMenuButton *widget, GtkArrowType arrowT
 }
 
 static gboolean
-menuButton_clicked_signal_handler(GtkButton *button, OptionsMenuButton *widget)
+menuButton_clicked_signal_handler(GtkButton *button, RpOptionsMenuButton *widget)
 {
 	RP_UNUSED(button);
-	g_return_val_if_fail(IS_OPTIONS_MENU_BUTTON(widget), FALSE);
+	g_return_val_if_fail(RP_IS_OPTIONS_MENU_BUTTON(widget), FALSE);
 	g_signal_emit(GTK_WIDGET(widget), signals[SIGNAL_CLICKED], 0);
 	return TRUE;
 }
 
 static gboolean
-menuButton_activate_signal_handler(GtkButton *button, OptionsMenuButton *widget)
+menuButton_activate_signal_handler(GtkButton *button, RpOptionsMenuButton *widget)
 {
 	RP_UNUSED(button);
-	g_return_val_if_fail(IS_OPTIONS_MENU_BUTTON(widget), FALSE);
+	g_return_val_if_fail(RP_IS_OPTIONS_MENU_BUTTON(widget), FALSE);
 	g_signal_emit(GTK_WIDGET(widget), signals[SIGNAL_ACTIVATE], 0);
 	return TRUE;
 }
@@ -437,10 +437,10 @@ btnOptions_menu_pos_func(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, Gtk
  * @param widget	OptionsMenuButton
  */
 static gboolean
-btnOptions_event_signal_handler(GtkButton *button, GdkEvent *event, OptionsMenuButton *widget)
+btnOptions_event_signal_handler(GtkButton *button, GdkEvent *event, RpOptionsMenuButton *widget)
 {
 	RP_UNUSED(button);
-	g_return_val_if_fail(IS_OPTIONS_MENU_BUTTON(widget), FALSE);
+	g_return_val_if_fail(RP_IS_OPTIONS_MENU_BUTTON(widget), FALSE);
 	g_return_val_if_fail(GTK_IS_MENU(widget->menuOptions), FALSE);
 
 	if (gdk_event_get_event_type(event) != GDK_BUTTON_PRESS) {
@@ -484,9 +484,9 @@ btnOptions_event_signal_handler(GtkButton *button, GdkEvent *event, OptionsMenuB
  * @param widget	OptionsMenuButton
  */
 static void
-action_triggered_signal_handler(GSimpleAction *action, GVariant *parameter, OptionsMenuButton *widget)
+action_triggered_signal_handler(GSimpleAction *action, GVariant *parameter, RpOptionsMenuButton *widget)
 {
-	g_return_if_fail(IS_OPTIONS_MENU_BUTTON(widget));
+	g_return_if_fail(RP_IS_OPTIONS_MENU_BUTTON(widget));
 	RP_UNUSED(parameter);
 
 	const gint id = (gboolean)GPOINTER_TO_INT(
@@ -502,9 +502,9 @@ action_triggered_signal_handler(GSimpleAction *action, GVariant *parameter, Opti
  */
 static void
 menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
-				     OptionsMenuButton *widget)
+				     RpOptionsMenuButton *widget)
 {
-	g_return_if_fail(IS_OPTIONS_MENU_BUTTON(widget));
+	g_return_if_fail(RP_IS_OPTIONS_MENU_BUTTON(widget));
 
 	const gint id = (gboolean)GPOINTER_TO_INT(
 		g_object_get_qdata(G_OBJECT(menuItem), menuOptions_id_quark));
@@ -521,10 +521,10 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
  * @param romData RomData object
  */
 void
-options_menu_button_reinit_menu(OptionsMenuButton *widget,
-				const RomData *romData)
+rp_options_menu_button_reinit_menu(RpOptionsMenuButton *widget,
+				   const RomData *romData)
 {
-	g_return_if_fail(IS_OPTIONS_MENU_BUTTON(widget));
+	g_return_if_fail(RP_IS_OPTIONS_MENU_BUTTON(widget));
 
 #if USE_G_MENU_MODEL
 	char prefix[64];
@@ -659,11 +659,11 @@ options_menu_button_reinit_menu(OptionsMenuButton *widget,
  * @param op ROM operation
  */
 void
-options_menu_button_update_op(OptionsMenuButton *widget,
-			      int id,
-			      const RomData::RomOp *op)
+rp_options_menu_button_update_op(RpOptionsMenuButton *widget,
+				 int id,
+				 const RomData::RomOp *op)
 {
-	g_return_if_fail(IS_OPTIONS_MENU_BUTTON(widget));
+	g_return_if_fail(RP_IS_OPTIONS_MENU_BUTTON(widget));
 	g_return_if_fail(op != nullptr);
 #ifndef USE_G_MENU_MODEL
 	g_return_if_fail(GTK_IS_MENU(widget->menuOptions));

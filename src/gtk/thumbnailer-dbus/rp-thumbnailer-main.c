@@ -66,7 +66,7 @@ static int ATTR_PRINTF(2, 3) fnDebug(int level, const char *format, ...)
 static void
 shutdown_rp_thumbnailer_dbus(RpThumbnailer *thumbnailer, GMainLoop *main_loop)
 {
-	g_return_if_fail(IS_RP_THUMBNAILER(thumbnailer));
+	g_return_if_fail(RP_IS_THUMBNAILER(thumbnailer));
 	g_return_if_fail(main_loop != NULL);
 
 	// Exit the main loop.

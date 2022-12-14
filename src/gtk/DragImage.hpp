@@ -13,26 +13,21 @@
 
 G_BEGIN_DECLS
 
-typedef struct _DragImageClass	DragImageClass;
-typedef struct _DragImage	DragImage;
+#define RP_TYPE_DRAG_IMAGE (rp_drag_image_get_type())
+#if GTK_CHECK_VERSION(4,0,0)
+G_DECLARE_FINAL_TYPE(RpDragImage, rp_drag_image, RP, DRAG_IMAGE, GtkBox)
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+G_DECLARE_FINAL_TYPE(RpDragImage, rp_drag_image, RP, DRAG_IMAGE, GtkEventBox)
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
-#define TYPE_DRAG_IMAGE            (drag_image_get_type())
-#define DRAG_IMAGE(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), TYPE_DRAG_IMAGE, DragImage))
-#define DRAG_IMAGE_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass),  TYPE_DRAG_IMAGE, DragImageClass))
-#define IS_DRAG_IMAGE(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), TYPE_DRAG_IMAGE))
-#define IS_DRAG_IMAGE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass),  TYPE_DRAG_IMAGE))
-#define DRAG_IMAGE_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj),  TYPE_DRAG_IMAGE, DragImageClass))
+/* this function is implemented automatically by the G_DEFINE_TYPE macro */
+void		rp_drag_image_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
 
-/* these two functions are implemented automatically by the G_DEFINE_TYPE macro */
-GType		drag_image_get_type		(void) G_GNUC_CONST G_GNUC_INTERNAL;
-void		drag_image_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
-
-GtkWidget	*drag_image_new			(void) G_GNUC_MALLOC;
+GtkWidget	*rp_drag_image_new		(void) G_GNUC_MALLOC;
 
 // TODO: Make these properties?
-
-void drag_image_get_minimum_image_size(DragImage *image, int *width, int *height);
-void drag_image_set_minimum_image_size(DragImage *image, int width, int height);
+void rp_drag_image_get_minimum_image_size(RpDragImage *image, int *width, int *height);
+void rp_drag_image_set_minimum_image_size(RpDragImage *image, int width, int height);
 
 G_END_DECLS
 
@@ -56,11 +51,11 @@ namespace LibRpTexture {
  * NOTE 2: If animated icon data is specified, that supercedes
  * the individual rp_image.
  *
- * @param image DragImage
+ * @param image RpDragImage
  * @param img rp_image, or nullptr to clear.
  * @return True on success; false on error or if clearing.
  */
-bool drag_image_set_rp_image(DragImage *image, const LibRpTexture::rp_image *img);
+bool rp_drag_image_set_rp_image(RpDragImage *image, const LibRpTexture::rp_image *img);
 
 /**
  * Set the icon animation data for this image.
@@ -72,44 +67,44 @@ bool drag_image_set_rp_image(DragImage *image, const LibRpTexture::rp_image *img
  * NOTE 2: If animated icon data is specified, that supercedes
  * the individual rp_image.
  *
- * @param image DragImage
+ * @param image RpDragImage
  * @param iconAnimData IconAnimData, or nullptr to clear.
  * @return True on success; false on error or if clearing.
  */
-bool drag_image_set_icon_anim_data(DragImage *image, const LibRpBase::IconAnimData *iconAnimData);
+bool rp_drag_image_set_icon_anim_data(RpDragImage *image, const LibRpBase::IconAnimData *iconAnimData);
 
 /**
  * Clear the rp_image and iconAnimData.
  * This will stop the animation timer if it's running.
- * @param image DragImage
+ * @param image RpDragImage
  */
-void drag_image_clear(DragImage *image);
+void rp_drag_image_clear(RpDragImage *image);
 
 /**
  * Start the animation timer.
- * @param image DragImage
+ * @param image RpDragImage
  */
-void drag_image_start_anim_timer(DragImage *image);
+void rp_drag_image_start_anim_timer(RpDragImage *image);
 
 /**
  * Stop the animation timer.
- * @param image DragImage
+ * @param image RpDragImage
  */
-void drag_image_stop_anim_timer(DragImage *image);
+void rp_drag_image_stop_anim_timer(RpDragImage *image);
 
 /**
  * Is the animation timer running?
- * @param image DragImage
+ * @param image RpDragImage
  * @return True if running; false if not.
  */
-bool drag_image_is_anim_timer_running(DragImage *image);
+bool rp_drag_image_is_anim_timer_running(RpDragImage *image);
 
 /**
  * Reset the animation frame.
  * This does NOT update the animation frame.
- * @param image DragImage
+ * @param image RpDragImage
  */
-void drag_image_reset_anim_frame(DragImage *image);
+void rp_drag_image_reset_anim_frame(RpDragImage *image);
 
 #endif /* __cplusplus */
 

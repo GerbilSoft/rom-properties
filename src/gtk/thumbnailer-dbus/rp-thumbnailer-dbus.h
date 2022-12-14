@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (D-Bus Thumbnailer)                *
  * rp-thumbnailer-dbus.h: D-Bus thumbnailer service.                       *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,7 +15,7 @@
 G_BEGIN_DECLS
 
 /**
- * rp_create_thumbnail() function pointer.
+ * rp_create_thumbnail2() function pointer.
  * @param source_file Source file (UTF-8)
  * @param output_file Output file (UTF-8)
  * @param maximum_size Maximum size
@@ -24,17 +24,8 @@ G_BEGIN_DECLS
  */
 typedef int (*PFN_RP_CREATE_THUMBNAIL2)(const char *source_file, const char *output_file, int maximum_size, unsigned int flags);
 
-typedef struct _RpThumbnailerClass	RpThumbnailerClass;
-typedef struct _RpThumbnailer		RpThumbnailer;
-
-#define TYPE_RP_THUMBNAILER		(rp_thumbnailer_get_type())
-#define RP_THUMBNAILER(obj)		(G_TYPE_CHECK_INSTANCE_CAST((obj), TYPE_RP_THUMBNAILER, RpThumbnailer))
-#define RP_THUMBNAILER_CLASS(klass)	(G_TYPE_CHECK_CLASS_CAST((klass),  TYPE_RP_THUMBNAILER, RpThumbnailerClass))
-#define IS_RP_THUMBNAILER(obj)		(G_TYPE_CHECK_INSTANCE_TYPE((obj), TYPE_RP_THUMBNAILER))
-#define IS_RP_THUMBNAILER_CLASS(klass)	(G_TYPE_CHECK_CLASS_TYPE((klass),  TYPE_RP_THUMBNAILER))
-#define RP_THUMBNAILER_GET_CLASS(obj)	(G_TYPE_INSTANCE_GET_CLASS((obj),  TYPE_RP_THUMBNAILER, RpThumbnailerClass))
-
-GType		rp_thumbnailer_get_type			(void) G_GNUC_CONST G_GNUC_INTERNAL;
+#define RP_TYPE_THUMBNAILER (rp_thumbnailer_get_type())
+G_DECLARE_FINAL_TYPE(RpThumbnailer, rp_thumbnailer, RP, THUMBNAILER, GObject)
 
 RpThumbnailer	*rp_thumbnailer_new			(GDBusConnection *connection,
 							 const gchar *cache_dir,

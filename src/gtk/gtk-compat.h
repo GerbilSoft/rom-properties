@@ -10,6 +10,7 @@
 #define __ROMPROPERTIES_GTK_GTK_COMPAT_H__
 
 #include <gtk/gtk.h>
+#include "glib-compat.h"
 
 // C includes
 #include <assert.h>
@@ -93,6 +94,14 @@ gdk_event_get_event_type(const GdkEvent *event)
 	return event->any.type;
 }
 #endif /* !GTK_CHECK_VERSION(3,9,12) */
+
+/** Functions added in GTK+ 3.16.0 **/
+
+#if !GTK_CHECK_VERSION(3,15,5) && defined(G_DEFINE_AUTOPTR_CLEANUP_FUNC)
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(GtkComboBox, g_object_unref)
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(GtkEventBox, g_object_unref)
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(GtkHBox, g_object_unref)
+#endif /* !GTK_CHECK_VERSION(3,15,5) && defined(G_DEFINE_AUTOPTR_CLEANUP_FUNC) */
 
 /** Functions added in GTK 4.0.0 **/
 

@@ -9,35 +9,27 @@
 #ifndef __ROMPROPERTIES_GTK_LANGUAGECOMBOBOX_HPP__
 #define __ROMPROPERTIES_GTK_LANGUAGECOMBOBOX_HPP__
 
-#include <gtk/gtk.h>
+#include "gtk-compat.h"
 
 G_BEGIN_DECLS
 
-typedef struct _LanguageComboBoxClass	LanguageComboBoxClass;
-typedef struct _LanguageComboBox	LanguageComboBox;
+#define RP_TYPE_LANGUAGE_COMBO_BOX (rp_language_combo_box_get_type())
+G_DECLARE_FINAL_TYPE(RpLanguageComboBox, rp_language_combo_box, RP, LANGUAGE_COMBO_BOX, GtkComboBox)
 
-#define TYPE_LANGUAGE_COMBO_BOX            (language_combo_box_get_type())
-#define LANGUAGE_COMBO_BOX(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), TYPE_LANGUAGE_COMBO_BOX, LanguageComboBox))
-#define LANGUAGE_COMBO_BOX_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass),  TYPE_LANGUAGE_COMBO_BOX, LanguageComboBoxClass))
-#define IS_LANGUAGE_COMBO_BOX(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), TYPE_LANGUAGE_COMBO_BOX))
-#define IS_LANGUAGE_COMBO_BOX_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass),  TYPE_LANGUAGE_COMBO_BOX))
-#define LANGUAGE_COMBO_BOX_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj),  TYPE_LANGUAGE_COMBO_BOX, LanguageComboBoxClass))
+/* this function is implemented automatically by the G_DEFINE_TYPE macro */
+void		rp_language_combo_box_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
 
-/* these two functions are implemented automatically by the G_DEFINE_TYPE macro */
-GType		language_combo_box_get_type		(void) G_GNUC_CONST G_GNUC_INTERNAL;
-void		language_combo_box_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
+GtkWidget	*rp_language_combo_box_new		(void) G_GNUC_MALLOC;
 
-GtkWidget	*language_combo_box_new			(void) G_GNUC_MALLOC;
+void		rp_language_combo_box_set_lcs		(RpLanguageComboBox *widget, const uint32_t *lcs_array);
+uint32_t 	*rp_language_combo_box_get_lcs		(RpLanguageComboBox *widget) G_GNUC_MALLOC;
+void		rp_language_combo_box_clear_lcs		(RpLanguageComboBox *widget);
 
-void		language_combo_box_set_lcs		(LanguageComboBox *widget, const uint32_t *lcs_array);
-uint32_t 	*language_combo_box_get_lcs		(LanguageComboBox *widget) G_GNUC_MALLOC;
-void		language_combo_box_clear_lcs		(LanguageComboBox *widget);
+gboolean	rp_language_combo_box_set_selected_lc	(RpLanguageComboBox *widget, uint32_t lc);
+uint32_t	rp_language_combo_box_get_selected_lc	(RpLanguageComboBox *widget);
 
-gboolean	language_combo_box_set_selected_lc	(LanguageComboBox *widget, uint32_t lc);
-uint32_t	language_combo_box_get_selected_lc	(LanguageComboBox *widget);
-
-void		language_combo_box_set_force_pal	(LanguageComboBox *widget, gboolean forcePAL);
-gboolean	language_combo_box_get_force_pal	(LanguageComboBox *widget);
+void		rp_language_combo_box_set_force_pal	(RpLanguageComboBox *widget, gboolean forcePAL);
+gboolean	rp_language_combo_box_get_force_pal	(RpLanguageComboBox *widget);
 
 G_END_DECLS
 

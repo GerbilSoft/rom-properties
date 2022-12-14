@@ -212,7 +212,7 @@ rp_thumbnailer_class_init(RpThumbnailerClass *klass, gpointer class_data)
 
 	// RpThumbnailer has been idle for long enough and should exit.
 	signals[SIGNAL_SHUTDOWN] = g_signal_new("shutdown",
-		TYPE_RP_THUMBNAILER, G_SIGNAL_RUN_LAST,
+		RP_TYPE_THUMBNAILER, G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 0);
 }
@@ -229,7 +229,7 @@ rp_thumbnailer_init(RpThumbnailer *thumbnailer, gpointer g_class)
 static void
 rp_thumbnailer_constructed(GObject *object)
 {
-	g_return_if_fail(IS_RP_THUMBNAILER(object));
+	g_return_if_fail(RP_IS_THUMBNAILER(object));
 	RpThumbnailer *const thumbnailer = RP_THUMBNAILER(object);
 
 	GError *error = NULL;
@@ -323,7 +323,7 @@ static void
 rp_thumbnailer_set_property(GObject *object,
 	guint prop_id, const GValue *value, GParamSpec *pspec)
 {
-	g_return_if_fail(IS_RP_THUMBNAILER(object));
+	g_return_if_fail(RP_IS_THUMBNAILER(object));
 	RpThumbnailer *const thumbnailer = RP_THUMBNAILER(object);
 
 	switch (prop_id) {
@@ -370,7 +370,7 @@ static void
 rp_thumbnailer_get_property(GObject *object,
 	guint prop_id, GValue *value, GParamSpec *pspec)
 {
-	g_return_if_fail(IS_RP_THUMBNAILER(object));
+	g_return_if_fail(RP_IS_THUMBNAILER(object));
 	RpThumbnailer *const thumbnailer = RP_THUMBNAILER(object);
 
 	switch (prop_id) {
@@ -411,7 +411,7 @@ rp_thumbnailer_queue(SpecializedThumbnailer1 *skeleton,
 	RpThumbnailer *thumbnailer)
 {
 	RP_UNUSED(mime_type);
-	g_dbus_async_return_val_if_fail(IS_RP_THUMBNAILER(thumbnailer), invocation, false);
+	g_dbus_async_return_val_if_fail(RP_IS_THUMBNAILER(thumbnailer), invocation, false);
 	g_dbus_async_return_val_if_fail(uri != NULL, invocation, false);
 
 	if (G_UNLIKELY(thumbnailer->shutdown_emitted)) {
@@ -470,7 +470,7 @@ rp_thumbnailer_dequeue(SpecializedThumbnailer1 *skeleton,
 	guint32 handle,
 	RpThumbnailer *thumbnailer)
 {
-	g_dbus_async_return_val_if_fail(IS_RP_THUMBNAILER(thumbnailer), invocation, false);
+	g_dbus_async_return_val_if_fail(RP_IS_THUMBNAILER(thumbnailer), invocation, false);
 	g_dbus_async_return_val_if_fail(handle != 0, invocation, false);
 
 	// TODO
@@ -485,7 +485,7 @@ rp_thumbnailer_dequeue(SpecializedThumbnailer1 *skeleton,
 static gboolean
 rp_thumbnailer_timeout(RpThumbnailer *thumbnailer)
 {
-	g_return_val_if_fail(IS_RP_THUMBNAILER(thumbnailer), false);
+	g_return_val_if_fail(RP_IS_THUMBNAILER(thumbnailer), false);
 	if (!g_queue_is_empty(&thumbnailer->request_queue)) {
 		// Still processing stuff.
 		return true;
@@ -506,7 +506,7 @@ rp_thumbnailer_timeout(RpThumbnailer *thumbnailer)
 static gboolean
 rp_thumbnailer_process(RpThumbnailer *thumbnailer)
 {
-	g_return_val_if_fail(IS_RP_THUMBNAILER(thumbnailer), FALSE);
+	g_return_val_if_fail(RP_IS_THUMBNAILER(thumbnailer), FALSE);
 
 	gchar *md5_string = NULL;	// owned by us
 	const struct request_info *req;	// request info from the map
@@ -647,7 +647,7 @@ rp_thumbnailer_new(GDBusConnection *connection,
 	const gchar *cache_dir,
 	PFN_RP_CREATE_THUMBNAIL2 pfn_rp_create_thumbnail2)
 {
-	return g_object_new(TYPE_RP_THUMBNAILER,
+	return g_object_new(RP_TYPE_THUMBNAILER,
 		"connection", connection,
 		"cache-dir", cache_dir,
 		"pfn-rp-create-thumbnail2", pfn_rp_create_thumbnail2,
@@ -661,6 +661,6 @@ rp_thumbnailer_new(GDBusConnection *connection,
 gboolean
 rp_thumbnailer_is_exported(RpThumbnailer *thumbnailer)
 {
-	g_return_val_if_fail(IS_RP_THUMBNAILER(thumbnailer), false);
+	g_return_val_if_fail(RP_IS_THUMBNAILER(thumbnailer), false);
 	return thumbnailer->exported;
 }

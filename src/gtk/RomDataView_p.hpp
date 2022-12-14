@@ -101,7 +101,7 @@ struct _RomDataView {
 
 	/** ROM operations **/
 
-	// "Options" button. (OptionsMenuButton)
+	// "Options" button. (RpOptionsMenuButton)
 	GtkWidget	*btnOptions;
 	gchar		*prevExportDir;
 
@@ -138,7 +138,7 @@ static GQuark RomDataView_romOp_quark;
 int	rom_data_view_update_field		(RomDataView		*page,
 						 int			 fieldIdx);
 
-void	btnOptions_triggered_signal_handler	(OptionsMenuButton	*menuButton,
+void	btnOptions_triggered_signal_handler	(RpOptionsMenuButton	*menuButton,
 						 gint		 	 id,
 						 RomDataView		*page);
 

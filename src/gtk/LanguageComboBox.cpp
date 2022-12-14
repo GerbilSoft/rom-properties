@@ -24,14 +24,14 @@ typedef enum {
 	PROP_FORCE_PAL,
 
 	PROP_LAST
-} LanguageComboBoxPropID;
+} RpLanguageComboBoxPropID;
 
 /* Signal identifiers */
 typedef enum {
 	SIGNAL_LC_CHANGED,	// Language code was changed.
 
 	SIGNAL_LAST
-} LanguageComboBoxSignalID;
+} RpLanguageComboBoxSignalID;
 
 /* Column identifiers */
 typedef enum {
@@ -40,29 +40,29 @@ typedef enum {
 	SM_COL_LC,
 } StringMultiColumns;
 
-static void	language_combo_box_set_property	(GObject	*object,
-						 guint		 prop_id,
-						 const GValue	*value,
-						 GParamSpec	*pspec);
-static void	language_combo_box_get_property	(GObject	*object,
-						 guint		 prop_id,
-						 GValue		*value,
-						 GParamSpec	*pspec);
+static void	rp_language_combo_box_set_property(GObject	*object,
+						   guint	 prop_id,
+						   const GValue	*value,
+						   GParamSpec	*pspec);
+static void	rp_language_combo_box_get_property(GObject	*object,
+						   guint	 prop_id,
+						   GValue	*value,
+						   GParamSpec	*pspec);
 
 /** Signal handlers. **/
-static void	internal_changed_handler	(LanguageComboBox *widget,
+static void	internal_changed_handler	(RpLanguageComboBox *widget,
 						 gpointer          user_data);
 
 static GParamSpec *props[PROP_LAST];
 static guint signals[SIGNAL_LAST];
 
-// LanguageComboBox class.
-struct _LanguageComboBoxClass {
+// RpLanguageComboBox class
+struct _RpLanguageComboBoxClass {
 	GtkComboBoxClass __parent__;
 };
 
-// LanguageComboBox instance.
-struct _LanguageComboBox {
+// RpLanguageComboBox instance
+struct _RpLanguageComboBox {
 	GtkComboBox __parent__;
 
 	GtkListStore *listStore;
@@ -71,15 +71,15 @@ struct _LanguageComboBox {
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
-G_DEFINE_TYPE_EXTENDED(LanguageComboBox, language_combo_box,
+G_DEFINE_TYPE_EXTENDED(RpLanguageComboBox, rp_language_combo_box,
 	GTK_TYPE_COMBO_BOX, static_cast<GTypeFlags>(0), {});
 
 static void
-language_combo_box_class_init(LanguageComboBoxClass *klass)
+rp_language_combo_box_class_init(RpLanguageComboBoxClass *klass)
 {
 	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
-	gobject_class->set_property = language_combo_box_set_property;
-	gobject_class->get_property = language_combo_box_get_property;
+	gobject_class->set_property = rp_language_combo_box_set_property;
+	gobject_class->get_property = rp_language_combo_box_get_property;
 
 	/** Properties **/
 
@@ -99,13 +99,13 @@ language_combo_box_class_init(LanguageComboBoxClass *klass)
 	/** Signals **/
 
 	signals[SIGNAL_LC_CHANGED] = g_signal_new("lc-changed",
-		TYPE_LANGUAGE_COMBO_BOX, G_SIGNAL_RUN_LAST,
+		RP_TYPE_LANGUAGE_COMBO_BOX, G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 1, G_TYPE_UINT);
 }
 
 static void
-language_combo_box_init(LanguageComboBox *widget)
+rp_language_combo_box_init(RpLanguageComboBox *widget)
 {
 	// Create the GtkListStore.
 	widget->listStore = gtk_list_store_new(3, PIMGTYPE_GOBJECT_TYPE, G_TYPE_STRING, G_TYPE_UINT);
@@ -136,28 +136,28 @@ language_combo_box_init(LanguageComboBox *widget)
 }
 
 GtkWidget*
-language_combo_box_new(void)
+rp_language_combo_box_new(void)
 {
-	return static_cast<GtkWidget*>(g_object_new(TYPE_LANGUAGE_COMBO_BOX, nullptr));
+	return static_cast<GtkWidget*>(g_object_new(RP_TYPE_LANGUAGE_COMBO_BOX, nullptr));
 }
 
 /** Properties **/
 
 static void
-language_combo_box_set_property(GObject	*object,
+rp_language_combo_box_set_property(GObject	*object,
 			   guint	 prop_id,
 			   const GValue	*value,
 			   GParamSpec	*pspec)
 {
-	LanguageComboBox *const widget = LANGUAGE_COMBO_BOX(object);
+	RpLanguageComboBox *const widget = RP_LANGUAGE_COMBO_BOX(object);
 
 	switch (prop_id) {
 		case PROP_SELECTED_LC:
-			language_combo_box_set_selected_lc(widget, g_value_get_uint(value));
+			rp_language_combo_box_set_selected_lc(widget, g_value_get_uint(value));
 			break;
 
 		case PROP_FORCE_PAL:
-			language_combo_box_set_force_pal(widget, g_value_get_boolean(value));
+			rp_language_combo_box_set_force_pal(widget, g_value_get_boolean(value));
 			break;
 
 		default:
@@ -167,16 +167,16 @@ language_combo_box_set_property(GObject	*object,
 }
 
 static void
-language_combo_box_get_property(GObject	*object,
+rp_language_combo_box_get_property(GObject	*object,
 			   guint	 prop_id,
 			   GValue	*value,
 			   GParamSpec	*pspec)
 {
-	LanguageComboBox *const widget = LANGUAGE_COMBO_BOX(object);
+	RpLanguageComboBox *const widget = RP_LANGUAGE_COMBO_BOX(object);
 
 	switch (prop_id) {
 		case PROP_SELECTED_LC:
-			g_value_set_uint(value, language_combo_box_get_selected_lc(widget));
+			g_value_set_uint(value, rp_language_combo_box_get_selected_lc(widget));
 			break;
 
 		case PROP_FORCE_PAL:
@@ -191,10 +191,10 @@ language_combo_box_get_property(GObject	*object,
 
 /**
  * Rebuild the language icons.
- * @param widget LanguageComboBox
+ * @param widget RpLanguageComboBox
  */
 void
-language_combo_box_rebuild_icons(LanguageComboBox *widget)
+rp_language_combo_box_rebuild_icons(RpLanguageComboBox *widget)
 {
 	// TODO:
 	// - High-DPI scaling on GTK+ earlier than 3.10
@@ -267,16 +267,16 @@ language_combo_box_rebuild_icons(LanguageComboBox *widget)
 
 /**
  * Set the language codes.
- * @param widget LanguageComboBox
+ * @param widget RpLanguageComboBox
  * @param lcs_array 0-terminated array of language codes.
  */
 void
-language_combo_box_set_lcs(LanguageComboBox *widget, const uint32_t *lcs_array)
+rp_language_combo_box_set_lcs(RpLanguageComboBox *widget, const uint32_t *lcs_array)
 {
 	g_return_if_fail(lcs_array != nullptr);
 
 	// Check the LC of the selected index.
-	const uint32_t sel_lc = language_combo_box_get_selected_lc(widget);
+	const uint32_t sel_lc = rp_language_combo_box_get_selected_lc(widget);
 
 	// Populate the GtkListStore.
 	gtk_list_store_clear(widget->listStore);
@@ -304,7 +304,7 @@ language_combo_box_set_lcs(LanguageComboBox *widget, const uint32_t *lcs_array)
 	}
 
 	// Rebuild icons.
-	language_combo_box_rebuild_icons(widget);
+	rp_language_combo_box_rebuild_icons(widget);
 
 	// Re-select the previously-selected LC.
 	gtk_combo_box_set_active(GTK_COMBO_BOX(widget), sel_idx);
@@ -313,11 +313,11 @@ language_combo_box_set_lcs(LanguageComboBox *widget, const uint32_t *lcs_array)
 /**
  * Get the set of language codes.
  * Caller must g_free() the returned array.
- * @param widget LanguageComboBox
+ * @param widget RpLanguageComboBox
  * @return 0-terminated array of language codes, or nullptr if none.
  */
 uint32_t*
-language_combo_box_get_lcs(LanguageComboBox *widget)
+rp_language_combo_box_get_lcs(RpLanguageComboBox *widget)
 {
 	const int count = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(widget->listStore), nullptr);
 	assert(count <= 1024);
@@ -353,10 +353,10 @@ language_combo_box_get_lcs(LanguageComboBox *widget)
 
 /**
  * Clear the language codes.
- * @param widget LanguageComboBox
+ * @param widget RpLanguageComboBox
  */
 void
-language_combo_box_clear_lcs(LanguageComboBox *widget)
+rp_language_combo_box_clear_lcs(RpLanguageComboBox *widget)
 {
 	const int cur_idx = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
 	gtk_list_store_clear(widget->listStore);
@@ -372,15 +372,15 @@ language_combo_box_clear_lcs(LanguageComboBox *widget)
  * NOTE: This function will return true if the LC was found,
  * even if it was already selected.
  *
- * @param widget LanguageComboBox
+ * @param widget RpLanguageComboBox
  * @param lc Language code. (0 to unselect)
  * @return True if set; false if LC was not found.
  */
 gboolean
-language_combo_box_set_selected_lc(LanguageComboBox *widget, uint32_t lc)
+rp_language_combo_box_set_selected_lc(RpLanguageComboBox *widget, uint32_t lc)
 {
 	// Check if this LC is already selected.
-	if (lc == language_combo_box_get_selected_lc(widget)) {
+	if (lc == rp_language_combo_box_get_selected_lc(widget)) {
 		// Already selected.
 		return true;
 	}
@@ -413,7 +413,7 @@ language_combo_box_set_selected_lc(LanguageComboBox *widget, uint32_t lc)
 		}
 	}
 
-	// FIXME: If called from language_combo_box_set_property(), this might
+	// FIXME: If called from rp_language_combo_box_set_property(), this might
 	// result in *two* notifications.
 	g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_SELECTED_LC]);
 
@@ -424,11 +424,11 @@ language_combo_box_set_selected_lc(LanguageComboBox *widget, uint32_t lc)
 
 /**
  * Get the selected language code.
- * @param widget LanguageComboBox
+ * @param widget RpLanguageComboBox
  * @return Selected language code. (0 if none)
  */
 uint32_t
-language_combo_box_get_selected_lc(LanguageComboBox *widget)
+rp_language_combo_box_get_selected_lc(RpLanguageComboBox *widget)
 {
 	uint32_t sel_lc = 0;
 	GtkTreeIter iter;
@@ -446,12 +446,12 @@ language_combo_box_get_selected_lc(LanguageComboBox *widget)
  * @param forcePAL Force PAL setting.
  */
 void
-language_combo_box_set_force_pal(LanguageComboBox *widget, gboolean forcePAL)
+rp_language_combo_box_set_force_pal(RpLanguageComboBox *widget, gboolean forcePAL)
 {
 	if (widget->forcePAL == forcePAL)
 		return;
 	widget->forcePAL = forcePAL;
-	language_combo_box_rebuild_icons(widget);
+	rp_language_combo_box_rebuild_icons(widget);
 }
 
 /**
@@ -459,21 +459,21 @@ language_combo_box_set_force_pal(LanguageComboBox *widget, gboolean forcePAL)
  * @return Force PAL setting.
  */
 gboolean
-language_combo_box_get_force_pal(LanguageComboBox *widget)
+rp_language_combo_box_get_force_pal(RpLanguageComboBox *widget)
 {
 	return widget->forcePAL;
 }
 
 /**
  * Internal signal handler for GtkComboBox "changed".
- * @param widget LanguageComboBox
+ * @param widget RpLanguageComboBox
  * @param user_data
  */
 static void
-internal_changed_handler(LanguageComboBox *widget,
+internal_changed_handler(RpLanguageComboBox *widget,
 			 gpointer          user_data)
 {
 	RP_UNUSED(user_data);
-	const uint32_t lc = language_combo_box_get_selected_lc(widget);
+	const uint32_t lc = rp_language_combo_box_get_selected_lc(widget);
 	g_signal_emit(widget, signals[SIGNAL_LC_CHANGED], 0, lc);
 }

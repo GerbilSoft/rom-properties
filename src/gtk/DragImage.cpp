@@ -24,13 +24,13 @@ using std::vector;
 // TODO: Adjust minimum image size based on DPI.
 #define DIL_MIN_IMAGE_SIZE 32
 
-static void	drag_image_dispose	(GObject	*object);
+static void	rp_drag_image_dispose	(GObject	*object);
 
 // Signal handlers
 // FIXME: GTK4 has a new Drag & Drop API.
 #if !GTK_CHECK_VERSION(4,0,0)
-static void	drag_image_drag_begin(DragImage *image, GdkDragContext *context, gpointer user_data);
-static void	drag_image_drag_data_get(DragImage *image, GdkDragContext *context, GtkSelectionData *data, guint info, guint time, gpointer user_data);
+static void	rp_drag_image_drag_begin(RpDragImage *image, GdkDragContext *context, gpointer user_data);
+static void	rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSelectionData *data, guint info, guint time, gpointer user_data);
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 
 // GTK4 no longer needs GtkEventBox, since
@@ -45,13 +45,13 @@ typedef GtkEventBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_EVENT_BOX
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
-// DragImage class.
-struct _DragImageClass {
+// RpDragImage class
+struct _RpDragImageClass {
 	superclass __parent__;
 };
 
-// DragImage instance.
-struct _DragImage {
+// RpDragImage instance
+struct _RpDragImage {
 	super __parent__;
 
 	// GtkImage child widget.
@@ -104,22 +104,22 @@ struct _DragImage {
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
-G_DEFINE_TYPE_EXTENDED(DragImage, drag_image,
+G_DEFINE_TYPE_EXTENDED(RpDragImage, rp_drag_image,
 	GTK_TYPE_SUPER, static_cast<GTypeFlags>(0), {});
 
 static void
-drag_image_class_init(DragImageClass *klass)
+rp_drag_image_class_init(RpDragImageClass *klass)
 {
 	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
-	gobject_class->dispose = drag_image_dispose;
+	gobject_class->dispose = rp_drag_image_dispose;
 
 	// TODO
-	//gobject_class->set_property = drag_image_set_property;
-	//gobject_class->get_property = drag_image_get_property;
+	//gobject_class->set_property = rp_drag_image_set_property;
+	//gobject_class->get_property = rp_drag_image_get_property;
 }
 
 static void
-drag_image_init(DragImage *image)
+rp_drag_image_init(RpDragImage *image)
 {
 	image->minimumImageSize.width = DIL_MIN_IMAGE_SIZE;
 	image->minimumImageSize.height = DIL_MIN_IMAGE_SIZE;
@@ -139,16 +139,16 @@ drag_image_init(DragImage *image)
 // FIXME: GTK4 has a new Drag & Drop API.
 #if !GTK_CHECK_VERSION(4,0,0)
 	g_signal_connect(G_OBJECT(image), "drag-begin",
-		G_CALLBACK(drag_image_drag_begin), (gpointer)0);
+		G_CALLBACK(rp_drag_image_drag_begin), (gpointer)0);
 	g_signal_connect(G_OBJECT(image), "drag-data-get",
-		G_CALLBACK(drag_image_drag_data_get), (gpointer)0);
+		G_CALLBACK(rp_drag_image_drag_data_get), (gpointer)0);
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 }
 
 static void
-drag_image_dispose(GObject *object)
+rp_drag_image_dispose(GObject *object)
 {
-	DragImage *const image = DRAG_IMAGE(object);
+	RpDragImage *const image = RP_DRAG_IMAGE(object);
 
 	// Unreference the current frame if we still have it.
 	if (image->curFrame) {
@@ -165,24 +165,24 @@ drag_image_dispose(GObject *object)
 	UNREF_AND_NULL(image->img);
 
 	// Call the superclass dispose() function.
-	G_OBJECT_CLASS(drag_image_parent_class)->dispose(object);
+	G_OBJECT_CLASS(rp_drag_image_parent_class)->dispose(object);
 }
 
 GtkWidget*
-drag_image_new(void)
+rp_drag_image_new(void)
 {
-	return static_cast<GtkWidget*>(g_object_new(TYPE_DRAG_IMAGE, nullptr));
+	return static_cast<GtkWidget*>(g_object_new(RP_TYPE_DRAG_IMAGE, nullptr));
 }
 
 /**
  * Update the pixmap(s).
- * @param image DragImage
+ * @param image RpDragImage
  * @return True on success; false on error.
  */
 static bool
-drag_image_update_pixmaps(DragImage *image)
+rp_drag_image_update_pixmaps(RpDragImage *image)
 {
-	g_return_val_if_fail(IS_DRAG_IMAGE(image), false);
+	g_return_val_if_fail(RP_IS_DRAG_IMAGE(image), false);
 	bool bRet = false;
 
 	if (image->curFrame) {
@@ -255,25 +255,25 @@ drag_image_update_pixmaps(DragImage *image)
 }
 
 void
-drag_image_get_minimum_image_size(DragImage *image, int *width, int *height)
+rp_drag_image_get_minimum_image_size(RpDragImage *image, int *width, int *height)
 {
-	g_return_if_fail(IS_DRAG_IMAGE(image));
+	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
 
 	*width = image->minimumImageSize.width;
 	*height = image->minimumImageSize.height;
 }
 
 void
-drag_image_set_minimum_image_size(DragImage *image, int width, int height)
+rp_drag_image_set_minimum_image_size(RpDragImage *image, int width, int height)
 {
-	g_return_if_fail(IS_DRAG_IMAGE(image));
+	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
 
 	if (image->minimumImageSize.width != width &&
 	    image->minimumImageSize.height != height)
 	{
 		image->minimumImageSize.width = width;
 		image->minimumImageSize.height = height;
-		drag_image_update_pixmaps(image);
+		rp_drag_image_update_pixmaps(image);
 	}
 }
 
@@ -287,14 +287,14 @@ drag_image_set_minimum_image_size(DragImage *image, int width, int height)
  * NOTE 2: If animated icon data is specified, that supercedes
  * the individual rp_image.
  *
- * @param image DragImage
+ * @param image RpDragImage
  * @param img rp_image, or nullptr to clear.
  * @return True on success; false on error or if clearing.
  */
 bool
-drag_image_set_rp_image(DragImage *image, const LibRpTexture::rp_image *img)
+rp_drag_image_set_rp_image(RpDragImage *image, const LibRpTexture::rp_image *img)
 {
-	g_return_val_if_fail(IS_DRAG_IMAGE(image), false);
+	g_return_val_if_fail(RP_IS_DRAG_IMAGE(image), false);
 
 	// NOTE: We're not checking if the image pointer matches the
 	// previously stored image, since the underlying image may
@@ -305,13 +305,13 @@ drag_image_set_rp_image(DragImage *image, const LibRpTexture::rp_image *img)
 		if (!image->anim || !image->anim->iconAnimData) {
 			gtk_image_clear(GTK_IMAGE(image->imageWidget));
 		} else {
-			return drag_image_update_pixmaps(image);
+			return rp_drag_image_update_pixmaps(image);
 		}
 		return false;
 	}
 
 	image->img = img->ref();
-	return drag_image_update_pixmaps(image);
+	return rp_drag_image_update_pixmaps(image);
 }
 
 /**
@@ -324,17 +324,17 @@ drag_image_set_rp_image(DragImage *image, const LibRpTexture::rp_image *img)
  * NOTE 2: If animated icon data is specified, that supercedes
  * the individual rp_image.
  *
- * @param image DragImage
+ * @param image RpDragImage
  * @param iconAnimData IconAnimData, or nullptr to clear.
  * @return True on success; false on error or if clearing.
  */
 bool
-drag_image_set_icon_anim_data(DragImage *image, const LibRpBase::IconAnimData *iconAnimData)
+rp_drag_image_set_icon_anim_data(RpDragImage *image, const LibRpBase::IconAnimData *iconAnimData)
 {
-	g_return_val_if_fail(IS_DRAG_IMAGE(image), false);
+	g_return_val_if_fail(RP_IS_DRAG_IMAGE(image), false);
 
 	if (!image->anim) {
-		image->anim = new DragImage::anim_vars();
+		image->anim = new RpDragImage::anim_vars();
 	}
 	auto *const anim = image->anim;
 
@@ -352,24 +352,24 @@ drag_image_set_icon_anim_data(DragImage *image, const LibRpBase::IconAnimData *i
 		if (!image->img) {
 			gtk_image_clear(GTK_IMAGE(image->imageWidget));
 		} else {
-			return drag_image_update_pixmaps(image);
+			return rp_drag_image_update_pixmaps(image);
 		}
 		return false;
 	}
 
 	anim->iconAnimData = iconAnimData->ref();
-	return drag_image_update_pixmaps(image);
+	return rp_drag_image_update_pixmaps(image);
 }
 
 /**
  * Clear the rp_image and iconAnimData.
  * This will stop the animation timer if it's running.
- * @param image DragImage
+ * @param image RpDragImage
  */
 void
-drag_image_clear(DragImage *image)
+rp_drag_image_clear(RpDragImage *image)
 {
-	g_return_if_fail(IS_DRAG_IMAGE(image));
+	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
 
 	auto *const anim = image->anim;
 	if (anim) {
@@ -386,13 +386,13 @@ drag_image_clear(DragImage *image)
 
 /**
  * Animated icon timer.
- * @param image DragImage
+ * @param image RpDragImage
  * @return True to continue the timer; false to stop it.
  */
 static gboolean
-drag_image_anim_timer_func(DragImage *image)
+rp_drag_image_anim_timer_func(RpDragImage *image)
 {
-	g_return_val_if_fail(IS_DRAG_IMAGE(image), false);
+	g_return_val_if_fail(RP_IS_DRAG_IMAGE(image), false);
 	auto *const anim = image->anim;
 	g_return_val_if_fail(anim != nullptr, false);
 
@@ -421,7 +421,7 @@ drag_image_anim_timer_func(DragImage *image)
 		// Set a new timer and unset the current one.
 		anim->last_delay = delay;
 		anim->tmrIconAnim = g_timeout_add(delay,
-			reinterpret_cast<GSourceFunc>(drag_image_anim_timer_func), image);
+			reinterpret_cast<GSourceFunc>(rp_drag_image_anim_timer_func), image);
 		return false;
 	}
 
@@ -431,12 +431,12 @@ drag_image_anim_timer_func(DragImage *image)
 
 /**
  * Start the animation timer.
- * @param image DragImage
+ * @param image RpDragImage
  */
 void
-drag_image_start_anim_timer(DragImage *image)
+rp_drag_image_start_anim_timer(RpDragImage *image)
 {
-	g_return_if_fail(IS_DRAG_IMAGE(image));
+	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
 
 	auto *const anim = image->anim;
 	if (!anim || !anim->iconAnimHelper.isAnimated()) {
@@ -454,22 +454,22 @@ drag_image_start_anim_timer(DragImage *image)
 	}
 
 	// Stop the animation timer first.
-	drag_image_stop_anim_timer(image);
+	rp_drag_image_stop_anim_timer(image);
 
 	// Set a single-shot timer for the current frame.
 	image->anim->last_delay = delay;
 	image->anim->tmrIconAnim = g_timeout_add(delay,
-		reinterpret_cast<GSourceFunc>(drag_image_anim_timer_func), image);
+		reinterpret_cast<GSourceFunc>(rp_drag_image_anim_timer_func), image);
 }
 
 /**
  * Stop the animation timer.
- * @param image DragImage
+ * @param image RpDragImage
  */
 void
-drag_image_stop_anim_timer(DragImage *image)
+rp_drag_image_stop_anim_timer(RpDragImage *image)
 {
-	g_return_if_fail(IS_DRAG_IMAGE(image));
+	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
 
 	auto *const anim = image->anim;
 	if (anim && anim->tmrIconAnim > 0) {
@@ -481,13 +481,13 @@ drag_image_stop_anim_timer(DragImage *image)
 
 /**
  * Is the animation timer running?
- * @param image DragImage
+ * @param image RpDragImage
  * @return True if running; false if not.
  */
 bool
-drag_image_is_anim_timer_running(DragImage *image)
+rp_drag_image_is_anim_timer_running(RpDragImage *image)
 {
-	g_return_val_if_fail(IS_DRAG_IMAGE(image), false);
+	g_return_val_if_fail(RP_IS_DRAG_IMAGE(image), false);
 	auto *const anim = image->anim;
 	return (anim && (anim->tmrIconAnim > 0));
 }
@@ -495,12 +495,12 @@ drag_image_is_anim_timer_running(DragImage *image)
 /**
  * Reset the animation frame.
  * This does NOT update the animation frame.
- * @param image DragImage
+ * @param image RpDragImage
  */
 void
-drag_image_reset_anim_frame(DragImage *image)
+rp_drag_image_reset_anim_frame(RpDragImage *image)
 {
-	g_return_if_fail(IS_DRAG_IMAGE(image));
+	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
 
 	auto *const anim = image->anim;
 	if (anim) {
@@ -513,10 +513,10 @@ drag_image_reset_anim_frame(DragImage *image)
 // FIXME: GTK4 has a new Drag & Drop API.
 #if !GTK_CHECK_VERSION(4,0,0)
 static void
-drag_image_drag_begin(DragImage *image, GdkDragContext *context, gpointer user_data)
+rp_drag_image_drag_begin(RpDragImage *image, GdkDragContext *context, gpointer user_data)
 {
 	RP_UNUSED(user_data);
-	g_return_if_fail(IS_DRAG_IMAGE(image));
+	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
 
 	// Set the drag icon.
 	// NOTE: gtk_drag_set_icon_PIMGTYPE() takes its own reference to the PIMGTYPE.
@@ -527,13 +527,13 @@ drag_image_drag_begin(DragImage *image, GdkDragContext *context, gpointer user_d
 }
 
 static void
-drag_image_drag_data_get(DragImage *image, GdkDragContext *context, GtkSelectionData *data, guint info, guint time, gpointer user_data)
+rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSelectionData *data, guint info, guint time, gpointer user_data)
 {
 	RP_UNUSED(context);	// TODO
 	RP_UNUSED(info);
 	RP_UNUSED(time);
 	RP_UNUSED(user_data);
-	g_return_if_fail(IS_DRAG_IMAGE(image));
+	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
 
 	auto *const anim = image->anim;
 	const bool isAnimated = (anim && anim->iconAnimData && anim->iconAnimHelper.isAnimated());

@@ -271,7 +271,7 @@ rom_data_view_doRomOp_stdop(RomDataView *page, int id)
 	switch (id) {
 		case OPTION_COPY_TEXT: {
 			const uint32_t sel_lc = page->cboLanguage
-				? language_combo_box_get_selected_lc(LANGUAGE_COMBO_BOX(page->cboLanguage))
+				? rp_language_combo_box_get_selected_lc(RP_LANGUAGE_COMBO_BOX(page->cboLanguage))
 				: 0;
 
 			ostringstream oss;
@@ -419,7 +419,7 @@ rom_data_view_doRomOp_stdop_response(GtkFileChooserDialog *fileDialog, gint resp
 	switch (id) {
 		case OPTION_EXPORT_TEXT: {
 			const uint32_t sel_lc = page->cboLanguage
-				? language_combo_box_get_selected_lc(LANGUAGE_COMBO_BOX(page->cboLanguage))
+				? rp_language_combo_box_get_selected_lc(RP_LANGUAGE_COMBO_BOX(page->cboLanguage))
 				: 0;
 
 			ofs << "== " << rp_sprintf(C_("RomDataView", "File: '%s'"), page->romData->filename()) << std::endl;
@@ -444,12 +444,12 @@ rom_data_view_doRomOp_stdop_response(GtkFileChooserDialog *fileDialog, gint resp
 
 /**
  * An "Options" menu action was triggered.
- * @param menuButton	OptionsMenuButton
+ * @param menuButton	RpOptionsMenuButton
  * @param id		Menu options ID
  * @param page		RomDataView
  */
 void
-btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
+btnOptions_triggered_signal_handler(RpOptionsMenuButton *menuButton,
 				    gint id,
 				    RomDataView *page)
 {
@@ -564,7 +564,7 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 		ops = page->romData->romOps();
 		assert(id < (int)ops.size());
 		if (id < (int)ops.size()) {
-			options_menu_button_update_op(OPTIONS_MENU_BUTTON(page->btnOptions), id, &ops[id]);
+			rp_options_menu_button_update_op(RP_OPTIONS_MENU_BUTTON(page->btnOptions), id, &ops[id]);
 		}
 
 		messageType = GTK_MESSAGE_INFO;
@@ -581,7 +581,7 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 
 		// Show the MessageWidget.
 		if (!page->messageWidget) {
-			page->messageWidget = message_widget_new();
+			page->messageWidget = rp_message_widget_new();
 #if GTK_CHECK_VERSION(4,0,0)
 			gtk_box_append(GTK_BOX(page), page->messageWidget);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
@@ -589,9 +589,9 @@ btnOptions_triggered_signal_handler(OptionsMenuButton *menuButton,
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 		}
 
-		MessageWidget *const messageWidget = MESSAGE_WIDGET(page->messageWidget);
-		message_widget_set_message_type(messageWidget, messageType);
-		message_widget_set_text(messageWidget, params.msg.c_str());
+		RpMessageWidget *const messageWidget = RP_MESSAGE_WIDGET(page->messageWidget);
+		rp_message_widget_set_message_type(messageWidget, messageType);
+		rp_message_widget_set_text(messageWidget, params.msg.c_str());
 		gtk_widget_show(page->messageWidget);
 	}
 }

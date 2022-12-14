@@ -212,10 +212,10 @@ options_tab_init(OptionsTab *tab)
 	gtk_widget_set_name(hboxGameTDBPAL, "hboxGameTDBPAL");
 	GtkWidget *const lblGameTDBPAL = gtk_label_new(C_("OptionsTab", "Language for PAL titles on GameTDB:"));
 	gtk_widget_set_name(lblGameTDBPAL, "lblGameTDBPAL");
-	tab->cboGameTDBPAL = language_combo_box_new();
+	tab->cboGameTDBPAL = rp_language_combo_box_new();
 	gtk_widget_set_name(tab->cboGameTDBPAL, "cboGameTDBPAL");
-	language_combo_box_set_force_pal(LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL), true);
-	language_combo_box_set_lcs(LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL), pal_lc);
+	rp_language_combo_box_set_force_pal(RP_LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL), true);
+	rp_language_combo_box_set_lcs(RP_LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL), pal_lc);
 
 	// Create the "Options" frame.
 	// FIXME: GtkFrame doesn't support mnemonics?
@@ -492,8 +492,8 @@ options_tab_save(OptionsTab *tab, GKeyFile *keyFile)
 	g_key_file_set_boolean(keyFile, "Downloads", "StoreFileOriginInfo",
 		gtk_check_button_get_active(GTK_CHECK_BUTTON(tab->chkStoreFileOriginInfo)));
 	g_key_file_set_string(keyFile, "Downloads", "PalLanguageForGameTDB",
-		SystemRegion::lcToString(language_combo_box_get_selected_lc(
-			LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL))).c_str());
+		SystemRegion::lcToString(rp_language_combo_box_get_selected_lc(
+			RP_LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL))).c_str());
 
 	// Image bandwidth options
 	// TODO: Consolidate this.

@@ -169,7 +169,7 @@ key_manager_tab_init(KeyManagerTab *tab)
 	gtk_box_set_spacing(GTK_BOX(tab), 8);
 
 	// MessageWidget goes at the top of the window.
-	tab->messageWidget = message_widget_new();
+	tab->messageWidget = rp_message_widget_new();
 	gtk_widget_set_name(tab->messageWidget, "messageWidget");
 
 	// Initialize the KeyStoreGTK.
@@ -837,8 +837,8 @@ key_manager_tab_show_key_import_return_status(KeyManagerTab	*tab,
 	// TODO: Copy over timeout code from RomDataView?
 	// (Or, remove the timeout code entirely?)
 	// TODO: MessageSound?
-	message_widget_set_message_type(MESSAGE_WIDGET(tab->messageWidget), type);
-	message_widget_set_text(MESSAGE_WIDGET(tab->messageWidget), msg.c_str());
+	rp_message_widget_set_message_type(RP_MESSAGE_WIDGET(tab->messageWidget), type);
+	rp_message_widget_set_text(RP_MESSAGE_WIDGET(tab->messageWidget), msg.c_str());
 	gtk_widget_show(tab->messageWidget);
 }
 

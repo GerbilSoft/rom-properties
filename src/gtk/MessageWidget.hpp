@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * MessageWidget.hpp: Message widget. (Similar to KMessageWidget)          *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,27 +13,23 @@
 
 G_BEGIN_DECLS
 
-typedef struct _MessageWidgetClass	MessageWidgetClass;
-typedef struct _MessageWidget	MessageWidget;
+#define RP_TYPE_MESSAGE_WIDGET (rp_message_widget_get_type())
+#if GTK_CHECK_VERSION(4,0,0)
+G_DECLARE_FINAL_TYPE(RpMessageWidget, rp_message_widget, RP, MESSAGE_WIDGET, GtkBox)
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+G_DECLARE_FINAL_TYPE(RpMessageWidget, rp_message_widget, RP, MESSAGE_WIDGET, GtkEventBox)
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
-#define TYPE_MESSAGE_WIDGET            (message_widget_get_type())
-#define MESSAGE_WIDGET(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), TYPE_MESSAGE_WIDGET, MessageWidget))
-#define MESSAGE_WIDGET_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass),  TYPE_MESSAGE_WIDGET, MessageWidgetClass))
-#define IS_MESSAGE_WIDGET(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), TYPE_MESSAGE_WIDGET))
-#define IS_MESSAGE_WIDGET_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass),  TYPE_MESSAGE_WIDGET))
-#define MESSAGE_WIDGET_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj),  TYPE_MESSAGE_WIDGET, MessageWidgetClass))
+/* this function is implemented automatically by the G_DEFINE_TYPE macro */
+void		rp_message_widget_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
 
-/* these two functions are implemented automatically by the G_DEFINE_TYPE macro */
-GType		message_widget_get_type		(void) G_GNUC_CONST G_GNUC_INTERNAL;
-void		message_widget_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
+GtkWidget	*rp_message_widget_new		(void) G_GNUC_MALLOC;
 
-GtkWidget	*message_widget_new		(void) G_GNUC_MALLOC;
+void		rp_message_widget_set_text	(RpMessageWidget *widget, const gchar *str);
+const gchar*	rp_message_widget_get_text	(RpMessageWidget *widget);
 
-void		message_widget_set_text		(MessageWidget *widget, const gchar *str);
-const gchar*	message_widget_get_text		(MessageWidget *widget);
-
-void		message_widget_set_message_type	(MessageWidget *widget, GtkMessageType messageType);
-GtkMessageType	message_widget_get_message_type	(MessageWidget *widget);
+void		rp_message_widget_set_message_type	(RpMessageWidget *widget, GtkMessageType messageType);
+GtkMessageType	rp_message_widget_get_message_type	(RpMessageWidget *widget);
 
 G_END_DECLS
 
