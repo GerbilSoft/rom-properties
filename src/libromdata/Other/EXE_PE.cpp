@@ -1126,7 +1126,7 @@ int EXEPrivate::addFields_PE_Import(void)
 
 	// Sort the list data by (module, name, hint).
 	std::sort(vv_data->begin(), vv_data->end(),
-		[](vector<string> &lhs, vector<string> &rhs) -> bool {
+		[](const vector<string> &lhs, const vector<string> &rhs) -> bool {
 			// Vector index 0: Name
 			// Vector index 1: Hint
 			// Vector index 2: Module

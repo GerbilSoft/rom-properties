@@ -76,6 +76,7 @@ SET(${PROJECT_NAME}_H
 	MessageWidget.hpp
 	RpGtk.hpp
 	sort_funcs.h
+	glib-compat.h
 	gtk-compat.h
 	LanguageComboBox.hpp
 	OptionsMenuButton.hpp

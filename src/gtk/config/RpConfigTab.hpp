@@ -9,6 +9,7 @@
 #ifndef __ROMPROPERTIES_GTK_CONFIG_RPCONFIGTAB_HPP__
 #define __ROMPROPERTIES_GTK_CONFIG_RPCONFIGTAB_HPP__
 
+#include "glib-compat.h"
 #include <gtk/gtk.h>
 
 G_BEGIN_DECLS

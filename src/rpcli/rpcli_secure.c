@@ -60,7 +60,12 @@ int rpcli_do_security_options(void)
 		SCMP_SYS(stat), SCMP_SYS(stat64),	// LibUnixCommon::isWritableDirectory()
 		// ConfReader checks timestamps between rpcli runs.
 		// NOTE: Only seems to get triggered on PowerPC...
-		SCMP_SYS(clock_gettime), SCMP_SYS(clock_gettime64),
+		SCMP_SYS(clock_gettime),
+#if defined(__SNR_clock_gettime64)
+		SCMP_SYS(clock_gettime64),
+#elif defined(__NR_clock_gettime64)
+		__NR_clock_gettime64,
+#endif /* __SNR_clock_gettime64 || __NR_clock_gettime64 */
 
 #if defined(__SNR_statx) || defined(__NR_statx)
 		SCMP_SYS(getcwd),	// called by glibc's statx()

@@ -109,8 +109,16 @@ int rp_secure_enable(rp_secure_param_t param)
 		static const int syscall_wl_threading[] = {
 			SCMP_SYS(clone),
 			SCMP_SYS(set_robust_list),
-			SCMP_SYS(clone3),		// pthread_create() with glibc-2.34
-			SCMP_SYS(rseq),			// restartable sequences, glibc-2.35
+#if defined(__SNR_clone3)
+			SCMP_SYS(clone3),	// pthread_create() with glibc-2.34
+#elif defined(__NR_clone3)
+			__NR_clone3,		// pthread_create() with glibc-2.34
+#endif /* __SNR_clone3 || __NR_clone3 */
+#if defined(__SNR_rseq)
+			SCMP_SYS(rseq),		// restartable sequences, glibc-2.35
+#elif defined(__NR_rseq)
+			__NR_rseq,		// restartable sequences, glibc-2.35
+#endif /* __SNR_rseq || __NR_rseq */
 
 #ifdef __clang__
 			// LLVM/clang's OpenMP implementation (libomp) calls

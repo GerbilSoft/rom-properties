@@ -849,7 +849,7 @@ int EXEPrivate::addFields_NE_Import(void)
 
 	// Sort the list data by (module, name, ordinal).
 	std::sort(vv_data->begin(), vv_data->end(),
-		[](vector<string> &lhs, vector<string> &rhs) -> bool {
+		[](const vector<string> &lhs, const vector<string> &rhs) -> bool {
 			// Vector index 0: Name
 			// Vector index 1: Ordinal
 			// Vector index 2: Module
