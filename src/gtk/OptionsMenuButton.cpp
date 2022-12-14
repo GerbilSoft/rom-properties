@@ -517,7 +517,7 @@ menuOptions_triggered_signal_handler(GtkMenuItem *menuItem,
 
 /**
  * Reset the menu items using the specified RomData object.
- * @param widget OptionsMenuButton
+ * @param widget RpOptionsMenuButton
  * @param romData RomData object
  */
 void
@@ -654,7 +654,7 @@ rp_options_menu_button_reinit_menu(RpOptionsMenuButton *widget,
 
 /**
  * Update a ROM operation menu item.
- * @param widget OptionsMenuButton
+ * @param widget RpOptionsMenuButton
  * @param id ROM operation ID
  * @param op ROM operation
  */

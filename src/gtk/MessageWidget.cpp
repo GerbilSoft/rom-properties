@@ -405,7 +405,7 @@ rp_message_widget_get_message_type(RpMessageWidget *widget)
 /**
  * The Close button was clicked.
  * @param button Close button
- * @param widget MessageWidget
+ * @param widget RpMessageWidget
  */
 static void
 rp_message_widget_close_button_clicked_handler(GtkButton *button, RpMessageWidget *widget)
