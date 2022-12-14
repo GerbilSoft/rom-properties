@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK+ common)                      *
- * LanguageComboBox.hpp: Language GtkComboBox subclass.                    *
+ * LanguageComboBox.cpp: Language GtkComboBox subclass.                    *
  *                                                                         *
  * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -50,21 +50,32 @@ static void	rp_language_combo_box_get_property(GObject	*object,
 						   GParamSpec	*pspec);
 
 /** Signal handlers. **/
-static void	internal_changed_handler	(RpLanguageComboBox *widget,
-						 gpointer          user_data);
+static void	internal_changed_handler	(GtkComboBox		*comboBox,
+						 RpLanguageComboBox	*widget);
 
 static GParamSpec *props[PROP_LAST];
 static guint signals[SIGNAL_LAST];
 
+#if GTK_CHECK_VERSION(3,0,0)
+typedef GtkBoxClass superclass;
+typedef GtkBox super;
+#  define GTK_TYPE_SUPER GTK_TYPE_BOX
+#else /* !GTK_CHECK_VERSION(3,0,0) */
+typedef GtkHBoxClass superclass;
+typedef GtkHBox super;
+#  define GTK_TYPE_SUPER GTK_TYPE_HBOX
+#endif
+
 // LanguageComboBox class
 struct _RpLanguageComboBoxClass {
-	GtkComboBoxClass __parent__;
+	superclass __parent__;
 };
 
 // LanguageComboBox instance
 struct _RpLanguageComboBox {
-	GtkComboBox __parent__;
+	super __parent__;
 
+	GtkWidget *comboBox;
 	GtkListStore *listStore;
 	gboolean forcePAL;
 };
@@ -72,7 +83,7 @@ struct _RpLanguageComboBox {
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
 G_DEFINE_TYPE_EXTENDED(RpLanguageComboBox, rp_language_combo_box,
-	GTK_TYPE_COMBO_BOX, static_cast<GTypeFlags>(0), {});
+	GTK_TYPE_SUPER, static_cast<GTypeFlags>(0), {});
 
 static void
 rp_language_combo_box_class_init(RpLanguageComboBoxClass *klass)
@@ -107,9 +118,18 @@ rp_language_combo_box_class_init(RpLanguageComboBoxClass *klass)
 static void
 rp_language_combo_box_init(RpLanguageComboBox *widget)
 {
+	// Create the GtkComboBox widget.
+	widget->comboBox = gtk_combo_box_new();
+#if GTK_CHECK_VERSION(4,0,0)
+	gtk_box_append(GTK_BOX(widget), widget->comboBox);
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+	gtk_box_pack_start(GTK_BOX(widget), widget->comboBox, TRUE, TRUE, 0);
+	gtk_widget_show(widget->comboBox);
+#endif
+
 	// Create the GtkListStore.
 	widget->listStore = gtk_list_store_new(3, PIMGTYPE_GOBJECT_TYPE, G_TYPE_STRING, G_TYPE_UINT);
-	gtk_combo_box_set_model(GTK_COMBO_BOX(widget), GTK_TREE_MODEL(widget->listStore));
+	gtk_combo_box_set_model(GTK_COMBO_BOX(widget->comboBox), GTK_TREE_MODEL(widget->listStore));
 
 	// Remove our reference on widget->listStore.
 	// The superclass will automatically destroy it.
@@ -119,20 +139,20 @@ rp_language_combo_box_init(RpLanguageComboBox *widget)
 
 	// Icon renderer
 	GtkCellRenderer *renderer = gtk_cell_renderer_pixbuf_new();
-	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(widget), renderer, false);
-	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(widget),
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(widget->comboBox), renderer, false);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(widget->comboBox),
 		renderer, GTK_CELL_RENDERER_PIXBUF_PROPERTY, SM_COL_ICON, NULL);
 
 	// Text renderer
 	renderer = gtk_cell_renderer_text_new();
-	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(widget), renderer, true);
-	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(widget),
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(widget->comboBox), renderer, true);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(widget->comboBox),
 		renderer, "text", SM_COL_TEXT, NULL);
 
 	/** Signals **/
 
 	// Connect the "changed" signal.
-	g_signal_connect(widget, "changed", G_CALLBACK(internal_changed_handler), nullptr);
+	g_signal_connect(widget->comboBox, "changed", G_CALLBACK(internal_changed_handler), widget);
 }
 
 GtkWidget*
@@ -193,7 +213,7 @@ rp_language_combo_box_get_property(GObject	*object,
  * Rebuild the language icons.
  * @param widget RpLanguageComboBox
  */
-void
+static void
 rp_language_combo_box_rebuild_icons(RpLanguageComboBox *widget)
 {
 	// TODO:
@@ -307,7 +327,7 @@ rp_language_combo_box_set_lcs(RpLanguageComboBox *widget, const uint32_t *lcs_ar
 	rp_language_combo_box_rebuild_icons(widget);
 
 	// Re-select the previously-selected LC.
-	gtk_combo_box_set_active(GTK_COMBO_BOX(widget), sel_idx);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(widget->comboBox), sel_idx);
 }
 
 /**
@@ -358,7 +378,9 @@ rp_language_combo_box_get_lcs(RpLanguageComboBox *widget)
 void
 rp_language_combo_box_clear_lcs(RpLanguageComboBox *widget)
 {
-	const int cur_idx = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+	g_return_if_fail(RP_IS_LANGUAGE_COMBO_BOX(widget));
+
+	const int cur_idx = gtk_combo_box_get_active(GTK_COMBO_BOX(widget->comboBox));
 	gtk_list_store_clear(widget->listStore);
 	if (cur_idx >= 0) {
 		// Nothing is selected now.
@@ -379,6 +401,8 @@ rp_language_combo_box_clear_lcs(RpLanguageComboBox *widget)
 gboolean
 rp_language_combo_box_set_selected_lc(RpLanguageComboBox *widget, uint32_t lc)
 {
+	g_return_val_if_fail(RP_IS_LANGUAGE_COMBO_BOX(widget), false);
+
 	// Check if this LC is already selected.
 	if (lc == rp_language_combo_box_get_selected_lc(widget)) {
 		// Already selected.
@@ -388,7 +412,7 @@ rp_language_combo_box_set_selected_lc(RpLanguageComboBox *widget, uint32_t lc)
 	bool bRet;
 	if (lc == 0) {
 		// Unselect the selected LC.
-		gtk_combo_box_set_active(GTK_COMBO_BOX(widget), -1);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(widget->comboBox), -1);
 		bRet = true;
 	} else {
 		// Find an item with a matching LC.
@@ -403,7 +427,7 @@ rp_language_combo_box_set_selected_lc(RpLanguageComboBox *widget, uint32_t lc)
 
 			if (lc == check_lc) {
 				// Found it.
-				gtk_combo_box_set_active_iter(GTK_COMBO_BOX(widget), &iter);
+				gtk_combo_box_set_active_iter(GTK_COMBO_BOX(widget->comboBox), &iter);
 				bRet = true;
 				break;
 			}
@@ -430,9 +454,11 @@ rp_language_combo_box_set_selected_lc(RpLanguageComboBox *widget, uint32_t lc)
 uint32_t
 rp_language_combo_box_get_selected_lc(RpLanguageComboBox *widget)
 {
+	g_return_val_if_fail(RP_IS_LANGUAGE_COMBO_BOX(widget), 0);
+
 	uint32_t sel_lc = 0;
 	GtkTreeIter iter;
-	if (gtk_combo_box_get_active_iter(GTK_COMBO_BOX(widget), &iter)) {
+	if (gtk_combo_box_get_active_iter(GTK_COMBO_BOX(widget->comboBox), &iter)) {
 		GValue value = G_VALUE_INIT;
 		gtk_tree_model_get_value(GTK_TREE_MODEL(widget->listStore), &iter, SM_COL_LC, &value);
 		sel_lc = g_value_get_uint(&value);
@@ -448,6 +474,8 @@ rp_language_combo_box_get_selected_lc(RpLanguageComboBox *widget)
 void
 rp_language_combo_box_set_force_pal(RpLanguageComboBox *widget, gboolean forcePAL)
 {
+	g_return_if_fail(RP_IS_LANGUAGE_COMBO_BOX(widget));
+
 	if (widget->forcePAL == forcePAL)
 		return;
 	widget->forcePAL = forcePAL;
@@ -461,19 +489,20 @@ rp_language_combo_box_set_force_pal(RpLanguageComboBox *widget, gboolean forcePA
 gboolean
 rp_language_combo_box_get_force_pal(RpLanguageComboBox *widget)
 {
+	g_return_val_if_fail(RP_IS_LANGUAGE_COMBO_BOX(widget), false);
 	return widget->forcePAL;
 }
 
 /**
  * Internal signal handler for GtkComboBox "changed".
- * @param widget RpLanguageComboBox
- * @param user_data
+ * @param comboBox	GtkComboBox
+ * @param widget	RpLanguageComboBox
  */
 static void
-internal_changed_handler(RpLanguageComboBox *widget,
-			 gpointer          user_data)
+internal_changed_handler(GtkComboBox		*comboBox,
+			 RpLanguageComboBox	*widget)
 {
-	RP_UNUSED(user_data);
+	RP_UNUSED(comboBox);
 	const uint32_t lc = rp_language_combo_box_get_selected_lc(widget);
 	g_signal_emit(widget, signals[SIGNAL_LC_CHANGED], 0, lc);
 }

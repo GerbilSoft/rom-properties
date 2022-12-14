@@ -76,6 +76,9 @@ static void	rp_options_tab_save				(RpOptionsTab	*tab,
 // "modified" signal handler for UI widgets
 static void	rp_options_tab_modified_handler			(GtkWidget	*widget,
 								 RpOptionsTab	*tab);
+static void	rp_options_tab_lc_changed_handler		(RpLanguageComboBox *widget,
+								 uint32_t	 lc,
+								 RpOptionsTab	*tab);
 static void	rp_options_tab_chkExtImgDownloadEnabled_toggled	(GtkCheckButton	*checkButton,
 								 RpOptionsTab	*tab);
 
@@ -259,8 +262,8 @@ rp_options_tab_init(RpOptionsTab *tab)
 		G_CALLBACK(rp_options_tab_modified_handler), tab);
 	g_signal_connect(tab->chkStoreFileOriginInfo, "toggled",
 		G_CALLBACK(rp_options_tab_modified_handler), tab);
-	g_signal_connect(tab->cboGameTDBPAL, "changed",
-		G_CALLBACK(rp_options_tab_modified_handler), tab);
+	g_signal_connect(tab->cboGameTDBPAL, "lc-changed",
+		G_CALLBACK(rp_options_tab_lc_changed_handler), tab);
 
 	g_signal_connect(tab->chkShowDangerousPermissionsOverlayIcon, "toggled",
 		G_CALLBACK(rp_options_tab_modified_handler), tab);
@@ -357,17 +360,7 @@ rp_options_tab_reset(RpOptionsTab *tab)
 		config->enableThumbnailOnNetworkFS());
 
 	// PAL language code
-	const uint32_t lc = config->palLanguageForGameTDB();
-	int idx = 0;
-	for (; idx < ARRAY_SIZE_I(pal_lc)-1; idx++) {
-		if (pal_lc[idx] == lc)
-			break;
-	}
-	if (idx >= ARRAY_SIZE_I(pal_lc)) {
-		// Out of range. Default to 'en'.
-		idx = pal_lc_idx_def;
-	}
-	gtk_combo_box_set_active(GTK_COMBO_BOX(tab->cboGameTDBPAL), idx);
+	rp_language_combo_box_set_selected_lc(RP_LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL), config->palLanguageForGameTDB());
 
 	tab->changed = false;
 	tab->inhibit = false;
@@ -548,6 +541,27 @@ static void
 rp_options_tab_modified_handler(GtkWidget *widget, RpOptionsTab *tab)
 {
 	RP_UNUSED(widget);
+	if (tab->inhibit)
+		return;
+
+	// Forward the "modified" signal.
+	tab->changed = true;
+	g_signal_emit_by_name(tab, "modified", NULL);
+}
+
+/**
+ * "lc-changed" signal handler for RpLanguageComboBox
+ * @param widget RpLanguageComboBox
+ * @param lc New language code
+ * @param tab OptionsTab
+ */
+static void
+rp_options_tab_lc_changed_handler(RpLanguageComboBox *widget,
+				  uint32_t	 lc,
+				  RpOptionsTab	*tab)
+{
+	RP_UNUSED(widget);
+	RP_UNUSED(lc);
 	if (tab->inhibit)
 		return;
 
