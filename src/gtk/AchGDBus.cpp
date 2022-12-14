@@ -96,7 +96,7 @@ AchGDBusPrivate::~AchGDBusPrivate()
 
 	// Delete the achievements sprite sheets.
 	for (const auto &pair : map_imgAchSheet) {
-		PIMGTYPE_destroy(pair.second);
+		PIMGTYPE_unref(pair.second);
 	}
 }
 
@@ -281,7 +281,7 @@ int AchGDBusPrivate::notifyFunc(Achievements::ID id)
 
 	// NOTE: Not waiting for a response.
 	if (subIcon) {
-		PIMGTYPE_destroy(subIcon);
+		PIMGTYPE_unref(subIcon);
 	}
 	g_object_unref(proxy);
 	return 0;

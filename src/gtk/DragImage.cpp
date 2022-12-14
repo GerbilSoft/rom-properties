@@ -92,7 +92,7 @@ struct _RpDragImage {
 
 			for (PIMGTYPE frame : iconFrames) {
 				if (frame) {
-					PIMGTYPE_destroy(frame);
+					PIMGTYPE_unref(frame);
 				}
 			}
 
@@ -152,7 +152,7 @@ rp_drag_image_dispose(GObject *object)
 
 	// Unreference the current frame if we still have it.
 	if (image->curFrame) {
-		PIMGTYPE_destroy(image->curFrame);
+		PIMGTYPE_unref(image->curFrame);
 		image->curFrame = nullptr;
 	}
 
@@ -186,7 +186,7 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 	bool bRet = false;
 
 	if (image->curFrame) {
-		PIMGTYPE_destroy(image->curFrame);
+		PIMGTYPE_unref(image->curFrame);
 		image->curFrame = nullptr;
 	}
 
@@ -200,7 +200,7 @@ rp_drag_image_update_pixmaps(RpDragImage *image)
 		for (int i = iconAnimData->count-1; i >= 0; i--) {
 			// Remove the existing frame first.
 			if (anim->iconFrames[i]) {
-				PIMGTYPE_destroy(anim->iconFrames[i]);
+				PIMGTYPE_unref(anim->iconFrames[i]);
 				anim->iconFrames[i] = nullptr;
 			}
 

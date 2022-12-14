@@ -46,7 +46,7 @@ PIMGTYPE load(int iconSize, bool gray)
 	     (int)(iconSize * Achievements::ACH_SPRITE_SHEET_ROWS)))
 	{
 		// Incorrect size. We can't use it.
-		PIMGTYPE_destroy(imgAchSheet);
+		PIMGTYPE_unref(imgAchSheet);
 		return nullptr;
 	}
 

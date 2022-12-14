@@ -986,12 +986,12 @@ rp_rom_data_view_init_listdata(RpRomDataView *page,
 						// Also, preserve the aspect ratio.
 						PIMGTYPE scaled = PIMGTYPE_scale(pixbuf, icon_sz, icon_sz, true);
 						if (scaled) {
-							PIMGTYPE_destroy(pixbuf);
+							PIMGTYPE_unref(pixbuf);
 							pixbuf = scaled;
 						}
 					}
 					gtk_list_store_set(listStore, &treeIter, 0, pixbuf, -1);
-					PIMGTYPE_destroy(pixbuf);
+					PIMGTYPE_unref(pixbuf);
 				}
 			}
 		}

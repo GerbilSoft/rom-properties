@@ -246,7 +246,7 @@ rp_language_combo_box_rebuild_icons(RpLanguageComboBox *widget)
 				PIMGTYPE icon = PIMGTYPE_get_subsurface(flags_spriteSheet,
 					col*iconSize, row*iconSize, iconSize, iconSize);
 				gtk_list_store_set(widget->listStore, &iter, SM_COL_ICON, icon, -1);
-				PIMGTYPE_destroy(icon);
+				PIMGTYPE_unref(icon);
 			} else {
 				// No icon. Clear it.
 				gtk_list_store_set(widget->listStore, &iter, SM_COL_ICON, nullptr, -1);
@@ -261,7 +261,7 @@ rp_language_combo_box_rebuild_icons(RpLanguageComboBox *widget)
 	} while (ok);
 
 	if (flags_spriteSheet) {
-		PIMGTYPE_destroy(flags_spriteSheet);
+		PIMGTYPE_unref(flags_spriteSheet);
 	}
 }
 

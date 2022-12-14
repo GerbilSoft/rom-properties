@@ -96,8 +96,8 @@ static inline PIMGTYPE PIMGTYPE_ref(PIMGTYPE pImgType)
 #endif /* RP_GTK_USE_CAIRO */
 }
 
-// PIMGTYPE free() wrapper function.
-static inline void PIMGTYPE_destroy(PIMGTYPE pImgType)
+// PIMGTYPE unref() wrapper function.
+static inline void PIMGTYPE_unref(PIMGTYPE pImgType)
 {
 #ifdef RP_GTK_USE_CAIRO
 	cairo_surface_destroy(pImgType);

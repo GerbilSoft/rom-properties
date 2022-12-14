@@ -99,7 +99,7 @@ class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE>
 		 */
 		inline void freeImgClass(PIMGTYPE &imgClass) const final
 		{
-			PIMGTYPE_destroy(imgClass);
+			PIMGTYPE_unref(imgClass);
 		}
 
 		/**

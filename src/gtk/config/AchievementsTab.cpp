@@ -218,7 +218,7 @@ rp_achievements_tab_reset(RpAchievementsTab *tab)
 		gtk_list_store_append(tab->listStore, &treeIter);
 		gtk_list_store_set(tab->listStore, &treeIter,
 			0, subIcon, 1, s_ach.c_str(), -1);
-		PIMGTYPE_destroy(subIcon);
+		PIMGTYPE_unref(subIcon);
 
 		if (unlocked) {
 			// Format the unlock time.
