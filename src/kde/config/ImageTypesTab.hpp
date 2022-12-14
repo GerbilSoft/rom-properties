@@ -18,7 +18,7 @@ class ImageTypesTab : public ITab
 
 	public:
 		explicit ImageTypesTab(QWidget *parent = nullptr);
-		~ImageTypesTab() final;
+		~ImageTypesTab() override;
 
 	private:
 		typedef ITab super;

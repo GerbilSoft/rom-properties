@@ -18,7 +18,7 @@ class AboutTab : public ITab
 
 	public:
 		explicit AboutTab(QWidget *parent = nullptr);
-		~AboutTab() final;
+		~AboutTab() override;
 
 	private:
 		typedef ITab super;

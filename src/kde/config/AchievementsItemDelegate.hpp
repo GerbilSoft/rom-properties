@@ -20,7 +20,7 @@ class AchievementsItemDelegate : public QStyledItemDelegate
 
 	public:
 		explicit AchievementsItemDelegate(QObject *parent);
-		~AchievementsItemDelegate() final;
+		~AchievementsItemDelegate() override;
 
 	protected:
 		AchievementsItemDelegatePrivate *const d_ptr;

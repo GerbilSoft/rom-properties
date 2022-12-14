@@ -18,7 +18,7 @@ class SystemsTab : public ITab
 
 	public:
 		explicit SystemsTab(QWidget *parent = nullptr);
-		~SystemsTab() final;
+		~SystemsTab() override;
 
 	private:
 		typedef ITab super;

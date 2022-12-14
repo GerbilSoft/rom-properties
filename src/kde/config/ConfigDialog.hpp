@@ -18,7 +18,7 @@ class ConfigDialog : public QDialog
 
 	public:
 		explicit ConfigDialog(QWidget *parent = nullptr);
-		~ConfigDialog() final;
+		~ConfigDialog() override;
 
 	private:
 		typedef QDialog super;

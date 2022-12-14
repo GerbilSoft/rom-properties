@@ -22,7 +22,7 @@ class KeyStoreModel : public QAbstractItemModel
 
 	public:
 		explicit KeyStoreModel(QObject *parent = 0);
-		~KeyStoreModel() final;
+		~KeyStoreModel() override;
 
 	private:
 		typedef QAbstractItemModel super;

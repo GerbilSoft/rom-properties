@@ -24,7 +24,7 @@ class RpQByteArrayFile : public LibRpFile::IRpFile
 		 */
 		RpQByteArrayFile();
 	protected:
-		~RpQByteArrayFile() final { }	// call unref() instead
+		~RpQByteArrayFile() override { }	// call unref() instead
 
 	private:
 		typedef LibRpFile::IRpFile super;

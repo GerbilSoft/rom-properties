@@ -23,11 +23,11 @@ class RomThumbCreatorPrivate;
 // TODO: ThumbCreatorV2 on KDE4 for user configuration?
 // (This was merged into ThumbCreator for KF5.)
 
-class RomThumbCreator final : public ThumbCreator
+class RomThumbCreator : public ThumbCreator
 {
 	public:
 		RomThumbCreator();
-		~RomThumbCreator() final;
+		~RomThumbCreator() override;
 
 	public:
 		/**
@@ -71,13 +71,13 @@ class RomThumbCreator final : public ThumbCreator
 #include <KIO/ThumbnailCreator>
 
 #define RomThumbnailCreatorPrivate RomThumbCreatorPrivate
-class RomThumbnailCreator final : public KIO::ThumbnailCreator
+class RomThumbnailCreator : public KIO::ThumbnailCreator
 {
 	Q_OBJECT
 
 	public:
 		RomThumbnailCreator(QObject *parent, const QVariantList &args);
-		~RomThumbnailCreator() final;
+		~RomThumbnailCreator() override;
 
 	public:
 		/**

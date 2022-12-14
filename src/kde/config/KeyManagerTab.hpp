@@ -18,7 +18,7 @@ class KeyManagerTab : public ITab
 
 	public:
 		explicit KeyManagerTab(QWidget *parent = nullptr);
-		~KeyManagerTab() final;
+		~KeyManagerTab() override;
 
 	private:
 		typedef ITab super;

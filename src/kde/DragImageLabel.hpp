@@ -38,7 +38,7 @@ class DragImageLabel : public QLabel
 	public:
 		explicit DragImageLabel(const QString &text, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 		explicit DragImageLabel(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-		~DragImageLabel() final;
+		~DragImageLabel() override;
 
 	private:
 		typedef QLabel super;

@@ -19,7 +19,7 @@ class CacheTab : public ITab
 
 	public:
 		explicit CacheTab(QWidget *parent = nullptr);
-		~CacheTab() final;
+		~CacheTab() override;
 
 	private:
 		typedef ITab super;

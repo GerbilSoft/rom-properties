@@ -18,7 +18,7 @@ class OptionsTab : public ITab
 
 	public:
 		explicit OptionsTab(QWidget *parent = nullptr);
-		~OptionsTab() final;
+		~OptionsTab() override;
 
 	private:
 		typedef ITab super;

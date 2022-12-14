@@ -25,7 +25,7 @@ class RomDataView : public QWidget
 	public:
 		explicit RomDataView(QWidget *parent = 0);
 		explicit RomDataView(LibRpBase::RomData *romData, QWidget *parent = 0);
-		~RomDataView() final;
+		~RomDataView() override;
 
 	private:
 		typedef QWidget super;

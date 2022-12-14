@@ -27,7 +27,7 @@ class ListDataSortProxyModel : public QSortFilterProxyModel
 		explicit ListDataSortProxyModel(QObject *parent = 0)
 			: super(parent)
 			, m_sortingMethods(0) { }
-		~ListDataSortProxyModel() final { }
+		~ListDataSortProxyModel() override { }
 
 	private:
 		Q_DISABLE_COPY(ListDataSortProxyModel)

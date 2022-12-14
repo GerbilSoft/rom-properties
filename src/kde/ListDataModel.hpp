@@ -30,7 +30,7 @@ class ListDataModel : public QAbstractListModel
 
 	public:
 		explicit ListDataModel(QObject *parent = 0);
-		~ListDataModel() final;
+		~ListDataModel() override;
 
 	protected:
 		ListDataModelPrivate *const d_ptr;

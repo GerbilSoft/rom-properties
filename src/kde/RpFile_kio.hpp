@@ -43,7 +43,7 @@ class RpFileKio : public QObject, public LibRpFile::IRpFile
 	private:
 		void init(void);
 	protected:
-		~RpFileKio() final;	// call unref() instead
+		~RpFileKio() override;	// call unref() instead
 
 	private:
 		typedef LibRpFile::IRpFile super;

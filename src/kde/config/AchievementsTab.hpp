@@ -18,7 +18,7 @@ class AchievementsTab : public ITab
 
 	public:
 		explicit AchievementsTab(QWidget *parent = nullptr);
-		~AchievementsTab() final;
+		~AchievementsTab() override;
 
 	private:
 		typedef ITab super;
