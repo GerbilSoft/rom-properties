@@ -9,20 +9,6 @@
 #ifndef __ROMPROPERTIES_GTK_DRAGIMAGE_HPP__
 #define __ROMPROPERTIES_GTK_DRAGIMAGE_HPP__
 
-#ifdef __cplusplus
-namespace LibRpTexture {
-	class rp_image;
-}
-
-// librpbase
-#include "librpbase/img/IconAnimData.hpp"
-#include "librpbase/img/IconAnimHelper.hpp"
-
-// C++ includes.
-#include <array>
-#endif /* __cplusplus */
-
-// GTK+ includes.
 #include <gtk/gtk.h>
 
 G_BEGIN_DECLS
@@ -48,7 +34,18 @@ GtkWidget	*drag_image_new			(void) G_GNUC_MALLOC;
 void drag_image_get_minimum_image_size(DragImage *image, int *width, int *height);
 void drag_image_set_minimum_image_size(DragImage *image, int width, int height);
 
+G_END_DECLS
+
 #ifdef __cplusplus
+
+namespace LibRpTexture {
+	class rp_image;
+}
+
+// librpbase
+#include "librpbase/img/IconAnimData.hpp"
+#include "librpbase/img/IconAnimHelper.hpp"
+
 /**
  * Set the rp_image for this image.
  *
@@ -115,7 +112,5 @@ bool drag_image_is_anim_timer_running(DragImage *image);
 void drag_image_reset_anim_frame(DragImage *image);
 
 #endif /* __cplusplus */
-
-G_END_DECLS
 
 #endif /* __ROMPROPERTIES_GTK_DRAGIMAGE_HPP__ */
