@@ -46,12 +46,12 @@ typedef GtkEventBox super;
 
 static GParamSpec *props[PROP_LAST];
 
-// RpMessageWidget class
+// MessageWidget class
 struct _RpMessageWidgetClass {
 	superclass __parent__;
 };
 
-// RpMessageWidget instance
+// MessageWidget instance
 struct _RpMessageWidget {
 	super __parent__;
 

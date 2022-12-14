@@ -45,12 +45,12 @@ typedef GtkEventBox super;
 #  define GTK_TYPE_SUPER GTK_TYPE_EVENT_BOX
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
-// RpDragImage class
+// DragImage class
 struct _RpDragImageClass {
 	superclass __parent__;
 };
 
-// RpDragImage instance
+// DragImage instance
 struct _RpDragImage {
 	super __parent__;
 

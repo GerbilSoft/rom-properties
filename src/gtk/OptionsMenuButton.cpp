@@ -102,12 +102,12 @@ static void	menuOptions_triggered_signal_handler(GtkMenuItem	*menuItem,
 static GParamSpec *props[PROP_LAST];
 static guint signals[SIGNAL_LAST];
 
-// RpOptionsMenuButton class
+// OptionsMenuButton class
 struct _RpOptionsMenuButtonClass {
 	superclass __parent__;
 };
 
-// RpOptionsMenuButton instance
+// OptionsMenuButton instance
 struct _RpOptionsMenuButton {
 	super __parent__;
 	GtkWidget *menuButton;	// GtkMenuButton (or GtkButton)

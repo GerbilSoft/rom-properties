@@ -56,12 +56,12 @@ static void	internal_changed_handler	(RpLanguageComboBox *widget,
 static GParamSpec *props[PROP_LAST];
 static guint signals[SIGNAL_LAST];
 
-// RpLanguageComboBox class
+// LanguageComboBox class
 struct _RpLanguageComboBoxClass {
 	GtkComboBoxClass __parent__;
 };
 
-// RpLanguageComboBox instance
+// LanguageComboBox instance
 struct _RpLanguageComboBox {
 	GtkComboBox __parent__;
 
