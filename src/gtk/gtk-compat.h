@@ -9,8 +9,8 @@
 #ifndef __ROMPROPERTIES_GTK_GTK_COMPAT_H__
 #define __ROMPROPERTIES_GTK_GTK_COMPAT_H__
 
-#include <gtk/gtk.h>
 #include "glib-compat.h"
+#include <gtk/gtk.h>
 
 // C includes
 #include <assert.h>
