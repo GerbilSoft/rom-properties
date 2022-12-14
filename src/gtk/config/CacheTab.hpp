@@ -9,25 +9,21 @@
 #ifndef __ROMPROPERTIES_GTK_CONFIG_CACHETAB_HPP__
 #define __ROMPROPERTIES_GTK_CONFIG_CACHETAB_HPP__
 
-#include <gtk/gtk.h>
+#include "gtk-compat.h"
 
 G_BEGIN_DECLS
 
-typedef struct _CacheTabClass		CacheTabClass;
-typedef struct _CacheTab		CacheTab;
+#define RP_TYPE_CACHE_TAB (rp_cache_tab_get_type())
+#if GTK_CHECK_VERSION(3,0,0)
+G_DECLARE_FINAL_TYPE(RpCacheTab, rp_cache_tab, RP, CACHE_TAB, GtkBox)
+#else /* !GTK_CHECK_VERSION(3,0,0) */
+G_DECLARE_FINAL_TYPE(RpCacheTab, rp_cache_tab, RP, CACHE_TAB, GtkVBox)
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 
-#define TYPE_CACHE_TAB            (cache_tab_get_type())
-#define CACHE_TAB(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), TYPE_CACHE_TAB, CacheTab))
-#define CACHE_TAB_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass),  TYPE_CACHE_TAB, CacheTabClass))
-#define IS_CACHE_TAB(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), TYPE_CACHE_TAB))
-#define IS_CACHE_TAB_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass),  TYPE_CACHE_TAB))
-#define CACHE_TAB_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj),  TYPE_CACHE_TAB, CacheTabClass))
+/* this function is implemented automatically by the G_DEFINE_TYPE macro */
+void		rp_cache_tab_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
 
-/* these two functions are implemented automatically by the G_DEFINE_TYPE macro */
-GType		cache_tab_get_type		(void) G_GNUC_CONST G_GNUC_INTERNAL;
-void		cache_tab_register_type		(GtkWidget *widget) G_GNUC_INTERNAL;
-
-GtkWidget	*cache_tab_new		(void) G_GNUC_INTERNAL G_GNUC_MALLOC;
+GtkWidget	*rp_cache_tab_new		(void) G_GNUC_INTERNAL G_GNUC_MALLOC;
 
 G_END_DECLS
 

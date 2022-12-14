@@ -9,8 +9,7 @@
 #ifndef __ROMPROPERTIES_GTK_CONFIG_RPCONFIGTAB_HPP__
 #define __ROMPROPERTIES_GTK_CONFIG_RPCONFIGTAB_HPP__
 
-#include "glib-compat.h"
-#include <gtk/gtk.h>
+#include "gtk-compat.h"
 
 G_BEGIN_DECLS
 
@@ -19,9 +18,9 @@ G_BEGIN_DECLS
 #  define RP_USE_GTK_ALIGNMENT 1
 #endif
 
-#define RP_CONFIG_TYPE_TAB	(rp_config_tab_get_type())
+#define RP_TYPE_CONFIG_TAB (rp_config_tab_get_type())
 
-G_DECLARE_INTERFACE(RpConfigTab, rp_config_tab, RP_CONFIG, TAB, GObject)
+G_DECLARE_INTERFACE(RpConfigTab, rp_config_tab, RP, CONFIG_TAB, GObject)
 
 typedef struct _RpConfigTabInterface {
 	GTypeInterface parent_iface;

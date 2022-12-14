@@ -37,12 +37,12 @@ typedef GtkVBox super;
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
 // OptionsTab class
-struct _OptionsTabClass {
+struct _RpOptionsTabClass {
 	superclass __parent__;
 };
 
 // OptionsTab instance
-struct _OptionsTab {
+struct _RpOptionsTab {
 	super __parent__;
 	bool inhibit;	// If true, inhibit signals.
 	bool changed;	// If true, an option was changed.
@@ -66,43 +66,43 @@ struct _OptionsTab {
 };
 
 // Interface initialization
-static void	options_tab_rp_config_tab_interface_init	(RpConfigTabInterface *iface);
-static gboolean	options_tab_has_defaults			(OptionsTab	*tab);
-static void	options_tab_reset				(OptionsTab	*tab);
-static void	options_tab_load_defaults			(OptionsTab	*tab);
-static void	options_tab_save				(OptionsTab	*tab,
+static void	rp_options_tab_rp_config_tab_interface_init	(RpConfigTabInterface *iface);
+static gboolean	rp_options_tab_has_defaults			(RpOptionsTab	*tab);
+static void	rp_options_tab_reset				(RpOptionsTab	*tab);
+static void	rp_options_tab_load_defaults			(RpOptionsTab	*tab);
+static void	rp_options_tab_save				(RpOptionsTab	*tab,
 								 GKeyFile       *keyFile);
 
 // "modified" signal handler for UI widgets
-static void	options_tab_modified_handler			(GtkWidget	*widget,
-								 OptionsTab	*tab);
-static void	options_tab_chkExtImgDownloadEnabled_toggled	(GtkCheckButton	*checkButton,
-								 OptionsTab	*tab);
+static void	rp_options_tab_modified_handler			(GtkWidget	*widget,
+								 RpOptionsTab	*tab);
+static void	rp_options_tab_chkExtImgDownloadEnabled_toggled	(GtkCheckButton	*checkButton,
+								 RpOptionsTab	*tab);
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
-G_DEFINE_TYPE_EXTENDED(OptionsTab, options_tab,
+G_DEFINE_TYPE_EXTENDED(RpOptionsTab, rp_options_tab,
 	GTK_TYPE_SUPER, static_cast<GTypeFlags>(0),
-		G_IMPLEMENT_INTERFACE(RP_CONFIG_TYPE_TAB,
-			options_tab_rp_config_tab_interface_init));
+		G_IMPLEMENT_INTERFACE(RP_TYPE_CONFIG_TAB,
+			rp_options_tab_rp_config_tab_interface_init));
 
 static void
-options_tab_class_init(OptionsTabClass *klass)
+rp_options_tab_class_init(RpOptionsTabClass *klass)
 {
 	RP_UNUSED(klass);
 }
 
 static void
-options_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)
+rp_options_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)
 {
-	iface->has_defaults = (__typeof__(iface->has_defaults))options_tab_has_defaults;
-	iface->reset = (__typeof__(iface->reset))options_tab_reset;
-	iface->load_defaults = (__typeof__(iface->load_defaults))options_tab_load_defaults;
-	iface->save = (__typeof__(iface->save))options_tab_save;
+	iface->has_defaults = (__typeof__(iface->has_defaults))rp_options_tab_has_defaults;
+	iface->reset = (__typeof__(iface->reset))rp_options_tab_reset;
+	iface->load_defaults = (__typeof__(iface->load_defaults))rp_options_tab_load_defaults;
+	iface->save = (__typeof__(iface->save))rp_options_tab_save;
 }
 
 static void
-options_tab_init(OptionsTab *tab)
+rp_options_tab_init(RpOptionsTab *tab)
 {
 #if GTK_CHECK_VERSION(3,0,0)
 	// Make this a VBox.
@@ -248,24 +248,24 @@ options_tab_init(OptionsTab *tab)
 	// programmatically edited, unlike Qt, so we'll need to
 	// inhibit handling when loading settings.
 	g_signal_connect(tab->chkExtImgDownloadEnabled, "toggled",
-		G_CALLBACK(options_tab_modified_handler), tab);
+		G_CALLBACK(rp_options_tab_modified_handler), tab);
 	g_signal_connect(tab->chkExtImgDownloadEnabled, "toggled",
-		G_CALLBACK(options_tab_chkExtImgDownloadEnabled_toggled), tab);
+		G_CALLBACK(rp_options_tab_chkExtImgDownloadEnabled_toggled), tab);
 	g_signal_connect(tab->cboUnmeteredConnection, "changed",
-		G_CALLBACK(options_tab_modified_handler), tab);
+		G_CALLBACK(rp_options_tab_modified_handler), tab);
 	g_signal_connect(tab->cboMeteredConnection, "changed",
-		G_CALLBACK(options_tab_modified_handler), tab);
+		G_CALLBACK(rp_options_tab_modified_handler), tab);
 	g_signal_connect(tab->chkUseIntIconForSmallSizes, "toggled",
-		G_CALLBACK(options_tab_modified_handler), tab);
+		G_CALLBACK(rp_options_tab_modified_handler), tab);
 	g_signal_connect(tab->chkStoreFileOriginInfo, "toggled",
-		G_CALLBACK(options_tab_modified_handler), tab);
+		G_CALLBACK(rp_options_tab_modified_handler), tab);
 	g_signal_connect(tab->cboGameTDBPAL, "changed",
-		G_CALLBACK(options_tab_modified_handler), tab);
+		G_CALLBACK(rp_options_tab_modified_handler), tab);
 
 	g_signal_connect(tab->chkShowDangerousPermissionsOverlayIcon, "toggled",
-		G_CALLBACK(options_tab_modified_handler), tab);
+		G_CALLBACK(rp_options_tab_modified_handler), tab);
 	g_signal_connect(tab->chkEnableThumbnailOnNetworkFS, "toggled",
-		G_CALLBACK(options_tab_modified_handler), tab);
+		G_CALLBACK(rp_options_tab_modified_handler), tab);
 
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_box_append(GTK_BOX(tab), fraDownloads);
@@ -299,28 +299,28 @@ options_tab_init(OptionsTab *tab)
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Load the current configuration.
-	options_tab_reset(tab);
+	rp_options_tab_reset(tab);
 }
 
 GtkWidget*
-options_tab_new(void)
+rp_options_tab_new(void)
 {
-	return static_cast<GtkWidget*>(g_object_new(TYPE_OPTIONS_TAB, nullptr));
+	return static_cast<GtkWidget*>(g_object_new(RP_TYPE_OPTIONS_TAB, nullptr));
 }
 
 /** RpConfigTab interface functions **/
 
 static gboolean
-options_tab_has_defaults(OptionsTab *tab)
+rp_options_tab_has_defaults(RpOptionsTab *tab)
 {
-	g_return_val_if_fail(IS_OPTIONS_TAB(tab), FALSE);
+	g_return_val_if_fail(RP_IS_OPTIONS_TAB(tab), FALSE);
 	return TRUE;
 }
 
 static void
-options_tab_reset(OptionsTab *tab)
+rp_options_tab_reset(RpOptionsTab *tab)
 {
-	g_return_if_fail(IS_OPTIONS_TAB(tab));
+	g_return_if_fail(RP_IS_OPTIONS_TAB(tab));
 
 	// NOTE: This may re-check the configuration timestamp.
 	const Config *const config = Config::instance();
@@ -346,7 +346,7 @@ options_tab_reset(OptionsTab *tab)
 		GTK_COMBO_BOX(tab->cboMeteredConnection),
 		static_cast<int>(config->imgBandwidthMetered()));
 	// Update sensitivity
-	options_tab_chkExtImgDownloadEnabled_toggled(GTK_CHECK_BUTTON(tab->chkExtImgDownloadEnabled), tab);
+	rp_options_tab_chkExtImgDownloadEnabled_toggled(GTK_CHECK_BUTTON(tab->chkExtImgDownloadEnabled), tab);
 
 	// Options
 	gtk_check_button_set_active(
@@ -374,9 +374,9 @@ options_tab_reset(OptionsTab *tab)
 }
 
 static void
-options_tab_load_defaults(OptionsTab *tab)
+rp_options_tab_load_defaults(RpOptionsTab *tab)
 {
-	g_return_if_fail(IS_OPTIONS_TAB(tab));
+	g_return_if_fail(RP_IS_OPTIONS_TAB(tab));
 	tab->inhibit = true;
 
 	// TODO: Get the defaults from Config.
@@ -409,7 +409,7 @@ options_tab_load_defaults(OptionsTab *tab)
 			extImgDownloadEnabled_default);
 		isDefChanged = true;
 		// Update sensitivity
-		options_tab_chkExtImgDownloadEnabled_toggled(GTK_CHECK_BUTTON(tab->chkExtImgDownloadEnabled), tab);
+		rp_options_tab_chkExtImgDownloadEnabled_toggled(GTK_CHECK_BUTTON(tab->chkExtImgDownloadEnabled), tab);
 	}
 	if (COMPARE_CHK(tab->chkUseIntIconForSmallSizes, useIntIconForSmallSizes_default)) {
 		gtk_check_button_set_active(
@@ -472,9 +472,9 @@ options_tab_load_defaults(OptionsTab *tab)
 }
 
 static void
-options_tab_save(OptionsTab *tab, GKeyFile *keyFile)
+rp_options_tab_save(RpOptionsTab *tab, GKeyFile *keyFile)
 {
-	g_return_if_fail(IS_OPTIONS_TAB(tab));
+	g_return_if_fail(RP_IS_OPTIONS_TAB(tab));
 	g_return_if_fail(keyFile != nullptr);
 
 	if (!tab->changed) {
@@ -545,7 +545,7 @@ options_tab_save(OptionsTab *tab, GKeyFile *keyFile)
  * @param tab OptionsTab
  */
 static void
-options_tab_modified_handler(GtkWidget *widget, OptionsTab *tab)
+rp_options_tab_modified_handler(GtkWidget *widget, RpOptionsTab *tab)
 {
 	RP_UNUSED(widget);
 	if (tab->inhibit)
@@ -566,7 +566,7 @@ options_tab_modified_handler(GtkWidget *widget, OptionsTab *tab)
  * @param tab OptionsTab
  */
 static void
-options_tab_chkExtImgDownloadEnabled_toggled(GtkCheckButton *checkButton, OptionsTab *tab)
+rp_options_tab_chkExtImgDownloadEnabled_toggled(GtkCheckButton *checkButton, RpOptionsTab *tab)
 {
 	const bool enable = gtk_check_button_get_active(checkButton);
 	gtk_widget_set_sensitive(tab->lblUnmeteredConnection, enable);

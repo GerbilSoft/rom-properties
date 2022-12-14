@@ -56,16 +56,16 @@ typedef GtkVBox super;
 #endif /* GTK_CHECK_VERSION(3,5,6) */
 
 // KeyManagerTab class
-struct _KeyManagerTabClass {
+struct _RpKeyManagerTabClass {
 	superclass __parent__;
 };
 
 // KeyManagerTab instance
-struct _KeyManagerTab {
+struct _RpKeyManagerTab {
 	super __parent__;
 	bool changed;	// If true, an option was changed.
 
-	KeyStoreGTK *keyStore;
+	RpKeyStoreGTK *keyStore;
 
 	GtkTreeStore *treeStore;
 	GtkWidget *treeView;
@@ -83,64 +83,64 @@ struct _KeyManagerTab {
 	GtkWidget *messageWidget;
 };
 
-static void	key_manager_tab_dispose				(GObject	*object);
-static void	key_manager_tab_finalize			(GObject	*object);
+static void	rp_key_manager_tab_dispose			(GObject	*object);
+static void	rp_key_manager_tab_finalize			(GObject	*object);
 
-static void	key_manager_tab_init_keys			(KeyManagerTab *tab);
+static void	rp_key_manager_tab_init_keys			(RpKeyManagerTab *tab);
 
 // Interface initialization
-static void	key_manager_tab_rp_config_tab_interface_init	(RpConfigTabInterface *iface);
-static gboolean	key_manager_tab_has_defaults			(KeyManagerTab	*tab);
-static void	key_manager_tab_reset				(KeyManagerTab	*tab);
-static void	key_manager_tab_load_defaults			(KeyManagerTab	*tab);
-static void	key_manager_tab_save				(KeyManagerTab	*tab,
-								 GKeyFile       *keyFile);
+static void	rp_key_manager_tab_rp_config_tab_interface_init	(RpConfigTabInterface	*iface);
+static gboolean	rp_key_manager_tab_has_defaults			(RpKeyManagerTab	*tab);
+static void	rp_key_manager_tab_reset			(RpKeyManagerTab	*tab);
+static void	rp_key_manager_tab_load_defaults		(RpKeyManagerTab	*tab);
+static void	rp_key_manager_tab_save				(RpKeyManagerTab	*tab,
+								 GKeyFile		*keyFile);
 
 // "Import" menu button
 #ifndef USE_GTK_MENU_BUTTON
-static gboolean	btnImport_event_signal_handler			(GtkButton	*button,
-								 GdkEvent 	*event,
-								 KeyManagerTab	*tab);
+static gboolean	btnImport_event_signal_handler			(GtkButton		*button,
+								 GdkEvent 		*event,
+								 RpKeyManagerTab	*tab);
 #endif /* !USE_GTK_MENU_BUTTON */
 
 #ifdef USE_G_MENU_MODEL
-static void	action_triggered_signal_handler			(GSimpleAction	*action,
-								 GVariant	*parameter,
-								 KeyManagerTab	*tab);
+static void	action_triggered_signal_handler			(GSimpleAction		*action,
+								 GVariant		*parameter,
+								 RpKeyManagerTab	*tab);
 #else
-static void	menuImport_triggered_signal_handler		(GtkMenuItem	*menuItem,
-								 KeyManagerTab	*tab);
+static void	menuImport_triggered_signal_handler		(GtkMenuItem		*menuItem,
+								 RpKeyManagerTab	*tab);
 #endif /* USE_G_MENU_MODEL */
 
 // KeyStoreGTK signal handlers
-static void	keyStore_key_changed_signal_handler		(KeyStoreGTK	*keyStore,
-								 int		 sectIdx,
-								 int		 keyIdx,
-								 KeyManagerTab	*tab);
-static void	keyStore_all_keys_changed_signal_handler	(KeyStoreGTK	*keyStore,
-								 KeyManagerTab	*tab);
-static void	keyStore_modified_signal_handler		(KeyStoreGTK	*keyStore,
-								 KeyManagerTab	*tab);
+static void	keyStore_key_changed_signal_handler		(RpKeyStoreGTK		*keyStore,
+								 int			 sectIdx,
+								 int			 keyIdx,
+								 RpKeyManagerTab	*tab);
+static void	keyStore_all_keys_changed_signal_handler	(RpKeyStoreGTK		*keyStore,
+								 RpKeyManagerTab	*tab);
+static void	keyStore_modified_signal_handler		(RpKeyStoreGTK		*keyStore,
+								 RpKeyManagerTab	*tab);
 
 // GtkCellRendererText signal handlers
-static void	renderer_edited_signal_handler			(GtkCellRendererText *self,
-								 gchar		*path,
-								 gchar		*new_text,
-								 KeyManagerTab	*tab);
+static void	renderer_edited_signal_handler			(GtkCellRendererText	*self,
+								 gchar			*path,
+								 gchar			*new_text,
+								 RpKeyManagerTab	*tab);
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
-G_DEFINE_TYPE_EXTENDED(KeyManagerTab, key_manager_tab,
+G_DEFINE_TYPE_EXTENDED(RpKeyManagerTab, rp_key_manager_tab,
 	GTK_TYPE_SUPER, static_cast<GTypeFlags>(0),
-		G_IMPLEMENT_INTERFACE(RP_CONFIG_TYPE_TAB,
-			key_manager_tab_rp_config_tab_interface_init));
+		G_IMPLEMENT_INTERFACE(RP_TYPE_CONFIG_TAB,
+			rp_key_manager_tab_rp_config_tab_interface_init));
 
 static void
-key_manager_tab_class_init(KeyManagerTabClass *klass)
+rp_key_manager_tab_class_init(RpKeyManagerTabClass *klass)
 {
 	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
-	gobject_class->dispose = key_manager_tab_dispose;
-	gobject_class->finalize = key_manager_tab_finalize;
+	gobject_class->dispose = rp_key_manager_tab_dispose;
+	gobject_class->finalize = rp_key_manager_tab_finalize;
 
 	/** Quarks **/
 
@@ -151,16 +151,16 @@ key_manager_tab_class_init(KeyManagerTabClass *klass)
 }
 
 static void
-key_manager_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)
+rp_key_manager_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)
 {
-	iface->has_defaults = (__typeof__(iface->has_defaults))key_manager_tab_has_defaults;
-	iface->reset = (__typeof__(iface->reset))key_manager_tab_reset;
-	iface->load_defaults = (__typeof__(iface->load_defaults))key_manager_tab_load_defaults;
-	iface->save = (__typeof__(iface->save))key_manager_tab_save;
+	iface->has_defaults = (__typeof__(iface->has_defaults))rp_key_manager_tab_has_defaults;
+	iface->reset = (__typeof__(iface->reset))rp_key_manager_tab_reset;
+	iface->load_defaults = (__typeof__(iface->load_defaults))rp_key_manager_tab_load_defaults;
+	iface->save = (__typeof__(iface->save))rp_key_manager_tab_save;
 }
 
 static void
-key_manager_tab_init(KeyManagerTab *tab)
+rp_key_manager_tab_init(RpKeyManagerTab *tab)
 {
 #if GTK_CHECK_VERSION(3,0,0)
 	// Make this a VBox.
@@ -173,7 +173,7 @@ key_manager_tab_init(KeyManagerTab *tab)
 	gtk_widget_set_name(tab->messageWidget, "messageWidget");
 
 	// Initialize the KeyStoreGTK.
-	tab->keyStore = key_store_gtk_new();
+	tab->keyStore = rp_key_store_gtk_new();
 	g_signal_connect(tab->keyStore, "key-changed", G_CALLBACK(keyStore_key_changed_signal_handler), tab);
 	g_signal_connect(tab->keyStore, "all-keys-changed", G_CALLBACK(keyStore_all_keys_changed_signal_handler), tab);
 	g_signal_connect(tab->keyStore, "modified", G_CALLBACK(keyStore_modified_signal_handler), tab);
@@ -372,10 +372,10 @@ key_manager_tab_init(KeyManagerTab *tab)
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Initialize the GtkTreeView with the available keys.
-	key_manager_tab_init_keys(tab);
+	rp_key_manager_tab_init_keys(tab);
 
 	// Load the current keys.
-	key_manager_tab_reset(tab);
+	rp_key_manager_tab_reset(tab);
 }
 
 /**
@@ -385,14 +385,14 @@ key_manager_tab_init(KeyManagerTab *tab)
  * @param tab KeyManagerTab
  */
 static void
-key_manager_tab_init_keys(KeyManagerTab *tab)
+rp_key_manager_tab_init_keys(RpKeyManagerTab *tab)
 {
 	gtk_tree_store_clear(tab->treeStore);
 
 	// FIXME: GtkTreeView doesn't have anything equivalent to
 	// Qt's QTreeView::setFirstColumnSpanned().
 
-	const KeyStoreUI *const keyStoreUI = key_store_gtk_get_key_store_ui(tab->keyStore);
+	const KeyStoreUI *const keyStoreUI = rp_key_store_gtk_get_key_store_ui(tab->keyStore);
 	const int sectCount = keyStoreUI->sectCount();
 	int idx = 0;	// flat key index
 	for (int sectIdx = 0; sectIdx < sectCount; sectIdx++) {
@@ -417,9 +417,9 @@ key_manager_tab_init_keys(KeyManagerTab *tab)
 }
 
 static void
-key_manager_tab_dispose(GObject *object)
+rp_key_manager_tab_dispose(GObject *object)
 {
-	KeyManagerTab *const tab = KEY_MANAGER_TAB(object);
+	RpKeyManagerTab *const tab = RP_KEY_MANAGER_TAB(object);
 
 #ifdef USE_G_MENU_MODEL
 	g_clear_object(&tab->menuModel);
@@ -436,13 +436,13 @@ key_manager_tab_dispose(GObject *object)
 #endif /* USE_G_MENU_MODEL */
 
 	// Call the superclass dispose() function.
-	G_OBJECT_CLASS(key_manager_tab_parent_class)->dispose(object);
+	G_OBJECT_CLASS(rp_key_manager_tab_parent_class)->dispose(object);
 }
 
 static void
-key_manager_tab_finalize(GObject *object)
+rp_key_manager_tab_finalize(GObject *object)
 {
-	KeyManagerTab *const tab = KEY_MANAGER_TAB(object);
+	RpKeyManagerTab *const tab = RP_KEY_MANAGER_TAB(object);
 
 	// Unreference the KeyStoreGTK.
 	g_object_unref(tab->keyStore);
@@ -451,45 +451,45 @@ key_manager_tab_finalize(GObject *object)
 	g_free(tab->prevOpenDir);
 
 	// Call the superclass finalize() function.
-	G_OBJECT_CLASS(key_manager_tab_parent_class)->finalize(object);
+	G_OBJECT_CLASS(rp_key_manager_tab_parent_class)->finalize(object);
 }
 
 GtkWidget*
-key_manager_tab_new(void)
+rp_key_manager_tab_new(void)
 {
-	return static_cast<GtkWidget*>(g_object_new(TYPE_KEY_MANAGER_TAB, nullptr));
+	return static_cast<GtkWidget*>(g_object_new(RP_TYPE_KEY_MANAGER_TAB, nullptr));
 }
 
 /** RpConfigTab interface functions **/
 
 static gboolean
-key_manager_tab_has_defaults(KeyManagerTab *tab)
+rp_key_manager_tab_has_defaults(RpKeyManagerTab *tab)
 {
-	g_return_val_if_fail(IS_KEY_MANAGER_TAB(tab), FALSE);
+	g_return_val_if_fail(RP_IS_KEY_MANAGER_TAB(tab), FALSE);
 	return FALSE;
 }
 
 static void
-key_manager_tab_reset(KeyManagerTab *tab)
+rp_key_manager_tab_reset(RpKeyManagerTab *tab)
 {
-	g_return_if_fail(IS_KEY_MANAGER_TAB(tab));
+	g_return_if_fail(RP_IS_KEY_MANAGER_TAB(tab));
 
 	// Reset/reload the key store.
-	KeyStoreUI *const keyStore = key_store_gtk_get_key_store_ui(tab->keyStore);
+	KeyStoreUI *const keyStore = rp_key_store_gtk_get_key_store_ui(tab->keyStore);
 	keyStore->reset();
 }
 
 static void
-key_manager_tab_load_defaults(KeyManagerTab *tab)
+rp_key_manager_tab_load_defaults(RpKeyManagerTab *tab)
 {
-	g_return_if_fail(IS_KEY_MANAGER_TAB(tab));
+	g_return_if_fail(RP_IS_KEY_MANAGER_TAB(tab));
 	// Not implemented.
 }
 
 static void
-key_manager_tab_save(KeyManagerTab *tab, GKeyFile *keyFile)
+rp_key_manager_tab_save(RpKeyManagerTab *tab, GKeyFile *keyFile)
 {
-	g_return_if_fail(IS_KEY_MANAGER_TAB(tab));
+	g_return_if_fail(RP_IS_KEY_MANAGER_TAB(tab));
 	g_return_if_fail(keyFile != nullptr);
 
 	if (!tab->changed) {
@@ -498,7 +498,7 @@ key_manager_tab_save(KeyManagerTab *tab, GKeyFile *keyFile)
 	}
 
 	// Save the keys.
-	const KeyStoreUI *const keyStoreUI = key_store_gtk_get_key_store_ui(tab->keyStore);
+	const KeyStoreUI *const keyStoreUI = rp_key_store_gtk_get_key_store_ui(tab->keyStore);
 	const int totalKeyCount = keyStoreUI->totalKeyCount();
 	for (int i = 0; i < totalKeyCount; i++) {
 		const KeyStoreUI::Key *const key = keyStoreUI->getKey(i);
@@ -544,14 +544,14 @@ btnImport_menu_pos_func(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, gpoi
 
 /**
  * "Import" button event handler. (Non-GtkMenuButton version)
- * @param button	GtkButton
- * @param event		GdkEvent
- * @param tab		KeyManagerTab
+ * @param button tkButton
+ * @param event GdkEvent
+ * @param tab KeyManagerTab
  */
 static gboolean
-btnImport_event_signal_handler(GtkButton *button, GdkEvent *event, KeyManagerTab *tab)
+btnImport_event_signal_handler(GtkButton *button, GdkEvent *event, RpKeyManagerTab *tab)
 {
-	g_return_val_if_fail(IS_KEY_MANAGER_TAB(tab), FALSE);
+	g_return_val_if_fail(RP_IS_KEY_MANAGER_TAB(tab), FALSE);
 	g_return_val_if_fail(GTK_IS_MENU(tab->menuImport), FALSE);
 
 	if (gdk_event_get_event_type(event) != GDK_BUTTON_PRESS) {
@@ -576,7 +576,7 @@ btnImport_event_signal_handler(GtkButton *button, GdkEvent *event, KeyManagerTab
 #endif /* !USE_GTK_MENU_BUTTON */
 
 static void
-key_manager_tab_menu_action_response(GtkFileChooserDialog *fileDialog, gint response_id, KeyManagerTab *page);
+rp_key_manager_tab_menu_action_response(GtkFileChooserDialog *fileDialog, gint response_id, RpKeyManagerTab *page);
 
 /**
  * Handle a menu action.
@@ -585,7 +585,7 @@ key_manager_tab_menu_action_response(GtkFileChooserDialog *fileDialog, gint resp
  * @param id Menu action ID
  */
 static void
-key_manager_tab_handle_menu_action(KeyManagerTab *tab, gint id)
+rp_key_manager_tab_handle_menu_action(RpKeyManagerTab *tab, gint id)
 {
 	assert(id >= (int)KeyStoreUI::ImportFileID::WiiKeysBin);
 	assert(id <= (int)KeyStoreUI::ImportFileID::N3DSaeskeydb);
@@ -656,7 +656,7 @@ key_manager_tab_handle_menu_action(KeyManagerTab *tab, gint id)
 	g_object_set_qdata(G_OBJECT(fileDialog), KeyManagerTab_fileID_quark, GINT_TO_POINTER(id));
 
 	// Prompt for a filename.
-	g_signal_connect(fileDialog, "response", G_CALLBACK(key_manager_tab_menu_action_response), tab);
+	g_signal_connect(fileDialog, "response", G_CALLBACK(rp_key_manager_tab_menu_action_response), tab);
 	gtk_window_set_transient_for(GTK_WINDOW(fileDialog), parent);
 	gtk_window_set_modal(GTK_WINDOW(fileDialog), true);
 	gtk_widget_show(GTK_WIDGET(fileDialog));
@@ -672,7 +672,7 @@ key_manager_tab_handle_menu_action(KeyManagerTab *tab, gint id)
  * @param iret ImportReturn
  */
 static void
-key_manager_tab_show_key_import_return_status(KeyManagerTab	*tab,
+rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 					      const char	*filename,
 					      const char	*keyType,
 					      const KeyStoreUI::ImportReturn &iret)
@@ -849,7 +849,7 @@ key_manager_tab_show_key_import_return_status(KeyManagerTab	*tab,
  * @param tab KeyManagerTab
  */
 static void
-key_manager_tab_menu_action_response(GtkFileChooserDialog *fileDialog, gint response_id, KeyManagerTab *tab)
+rp_key_manager_tab_menu_action_response(GtkFileChooserDialog *fileDialog, gint response_id, RpKeyManagerTab *tab)
 {
 	if (response_id != GTK_RESPONSE_ACCEPT) {
 		// User cancelled the dialog.
@@ -884,11 +884,11 @@ key_manager_tab_menu_action_response(GtkFileChooserDialog *fileDialog, gint resp
 		return;
 	}
 
-	KeyStoreUI *const keyStoreUI = key_store_gtk_get_key_store_ui(tab->keyStore);
+	KeyStoreUI *const keyStoreUI = rp_key_store_gtk_get_key_store_ui(tab->keyStore);
 	KeyStoreUI::ImportReturn iret = keyStoreUI->importKeysFromBin(id, in_filename);
 
 	// TODO: Show the key import status in a MessageWidget.
-	key_manager_tab_show_key_import_return_status(tab, in_filename,
+	rp_key_manager_tab_show_key_import_return_status(tab, in_filename,
 		dpgettext_expr(RP_I18N_DOMAIN, "KeyManagerTab", import_menu_actions[(int)id]), iret);
 	g_free(in_filename);
 }
@@ -896,34 +896,34 @@ key_manager_tab_menu_action_response(GtkFileChooserDialog *fileDialog, gint resp
 #ifdef USE_G_MENU_MODEL
 /**
  * An "Import" menu action was triggered.
- * @param action     	GSimpleAction (Get the "menuImport_id" data.)
- * @param parameter	Parameter data
- * @param tab		KeyManagerTab
+ * @param action GSimpleAction (Get the "menuImport_id" data.)
+ * @param parameter Parameter data
+ * @param tab KeyManagerTab
  */
 static void
-action_triggered_signal_handler(GSimpleAction *action, GVariant *parameter, KeyManagerTab *tab)
+action_triggered_signal_handler(GSimpleAction *action, GVariant *parameter, RpKeyManagerTab *tab)
 {
 	RP_UNUSED(parameter);
-	g_return_if_fail(IS_KEY_MANAGER_TAB(tab));
+	g_return_if_fail(RP_IS_KEY_MANAGER_TAB(tab));
 
 	const gint id = (gboolean)GPOINTER_TO_INT(
 		g_object_get_qdata(G_OBJECT(action), menuImport_id_quark));
-	key_manager_tab_handle_menu_action(tab, id);
+	rp_key_manager_tab_handle_menu_action(tab, id);
 }
 #else /* !USE_G_MENU_MODEL */
 /**
  * An "Options" menu action was triggered.
- * @param menuItem     	Menu item (Get the "menuImport_id" data.)
- * @param tab		KeyManagerTab
+ * @param menuItem Menu item (Get the "menuImport_id" data.)
+ * @param tab KeyManagerTab
  */
 static void
-menuImport_triggered_signal_handler(GtkMenuItem *menuItem, KeyManagerTab *tab)
+menuImport_triggered_signal_handler(GtkMenuItem *menuItem, RpKeyManagerTab *tab)
 {
-	g_return_if_fail(IS_KEY_MANAGER_TAB(tab));
+	g_return_if_fail(RP_IS_KEY_MANAGER_TAB(tab));
 
 	const gint id = (gboolean)GPOINTER_TO_INT(
 		g_object_get_qdata(G_OBJECT(menuItem), menuImport_id_quark));
-	key_manager_tab_handle_menu_action(tab, id);
+	rp_key_manager_tab_handle_menu_action(tab, id);
 }
 #endif /* USE_G_MENU_MODEL */
 
@@ -945,9 +945,9 @@ static const char *const is_valid_icon_name_tbl[] = {
  * @param tab KeyManagerTab
  */
 static void
-keyStore_key_changed_signal_handler(KeyStoreGTK *keyStore, int sectIdx, int keyIdx, KeyManagerTab *tab)
+keyStore_key_changed_signal_handler(RpKeyStoreGTK *keyStore, int sectIdx, int keyIdx, RpKeyManagerTab *tab)
 {
-	const KeyStoreUI *const keyStoreUI = key_store_gtk_get_key_store_ui(keyStore);
+	const KeyStoreUI *const keyStoreUI = rp_key_store_gtk_get_key_store_ui(keyStore);
 	GtkTreeModel *const treeModel = GTK_TREE_MODEL(tab->treeStore);
 
 	// Get the iterator from a path.
@@ -983,9 +983,9 @@ keyStore_key_changed_signal_handler(KeyStoreGTK *keyStore, int sectIdx, int keyI
  * @param tab KeyManagerTab
  */
 static void
-keyStore_all_keys_changed_signal_handler(KeyStoreGTK *keyStore, KeyManagerTab *tab)
+keyStore_all_keys_changed_signal_handler(RpKeyStoreGTK *keyStore, RpKeyManagerTab *tab)
 {
-	const KeyStoreUI *const keyStoreUI = key_store_gtk_get_key_store_ui(keyStore);
+	const KeyStoreUI *const keyStoreUI = rp_key_store_gtk_get_key_store_ui(keyStore);
 	GtkTreeModel *const treeModel = GTK_TREE_MODEL(tab->treeStore);
 
 	// Load the key values and "Valid?" icons.
@@ -1032,7 +1032,7 @@ keyStore_all_keys_changed_signal_handler(KeyStoreGTK *keyStore, KeyManagerTab *t
  * @param tab KeyManagerTab
  */
 static void
-keyStore_modified_signal_handler(KeyStoreGTK *keyStore, KeyManagerTab *tab)
+keyStore_modified_signal_handler(RpKeyStoreGTK *keyStore, RpKeyManagerTab *tab)
 {
         RP_UNUSED(keyStore);
 
@@ -1044,12 +1044,12 @@ keyStore_modified_signal_handler(KeyStoreGTK *keyStore, KeyManagerTab *tab)
 /** GtkCellRendererText signal handlers **/
 
 static void
-renderer_edited_signal_handler(GtkCellRendererText *self, gchar *path, gchar *new_text, KeyManagerTab *tab)
+renderer_edited_signal_handler(GtkCellRendererText *self, gchar *path, gchar *new_text, RpKeyManagerTab *tab)
 {
 	RP_UNUSED(self);
 	RP_UNUSED(tab);
 
-	KeyStoreUI *const keyStoreUI = key_store_gtk_get_key_store_ui(tab->keyStore);
+	KeyStoreUI *const keyStoreUI = rp_key_store_gtk_get_key_store_ui(tab->keyStore);
 
 	// Convert the path to sectIdx/keyIdx.
 	int sectIdx, keyIdx; char dummy;

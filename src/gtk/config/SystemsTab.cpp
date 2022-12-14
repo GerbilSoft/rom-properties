@@ -31,12 +31,12 @@ typedef GtkVBox super;
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
 // SystemsTab class
-struct _SystemsTabClass {
+struct _RpSystemsTabClass {
 	superclass __parent__;
 };
 
 // SystemsTab instance
-struct _SystemsTab {
+struct _RpSystemsTab {
 	super __parent__;
 	bool inhibit;	// If true, inhibit signals.
 	bool changed;	// If true, an option was changed.
@@ -47,41 +47,41 @@ struct _SystemsTab {
 };
 
 // Interface initialization
-static void	systems_tab_rp_config_tab_interface_init	(RpConfigTabInterface *iface);
-static gboolean	systems_tab_has_defaults			(SystemsTab	*tab);
-static void	systems_tab_reset				(SystemsTab	*tab);
-static void	systems_tab_load_defaults			(SystemsTab	*tab);
-static void	systems_tab_save				(SystemsTab	*tab,
+static void	rp_systems_tab_rp_config_tab_interface_init	(RpConfigTabInterface *iface);
+static gboolean	rp_systems_tab_has_defaults			(RpSystemsTab	*tab);
+static void	rp_systems_tab_reset				(RpSystemsTab	*tab);
+static void	rp_systems_tab_load_defaults			(RpSystemsTab	*tab);
+static void	rp_systems_tab_save				(RpSystemsTab	*tab,
 								 GKeyFile       *keyFile);
 
 // "modified" signal handler for UI widgets
-static void	systems_tab_modified_handler			(GtkWidget	*widget,
-								 SystemsTab	*tab);
+static void	rp_systems_tab_modified_handler			(GtkWidget	*widget,
+								 RpSystemsTab	*tab);
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
-G_DEFINE_TYPE_EXTENDED(SystemsTab, systems_tab,
+G_DEFINE_TYPE_EXTENDED(RpSystemsTab, rp_systems_tab,
 	GTK_TYPE_SUPER, static_cast<GTypeFlags>(0),
-		G_IMPLEMENT_INTERFACE(RP_CONFIG_TYPE_TAB,
-			systems_tab_rp_config_tab_interface_init));
+		G_IMPLEMENT_INTERFACE(RP_TYPE_CONFIG_TAB,
+			rp_systems_tab_rp_config_tab_interface_init));
 
 static void
-systems_tab_class_init(SystemsTabClass *klass)
+rp_systems_tab_class_init(RpSystemsTabClass *klass)
 {
 	RP_UNUSED(klass);
 }
 
 static void
-systems_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)
+rp_systems_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)
 {
-	iface->has_defaults = (__typeof__(iface->has_defaults))systems_tab_has_defaults;
-	iface->reset = (__typeof__(iface->reset))systems_tab_reset;
-	iface->load_defaults = (__typeof__(iface->load_defaults))systems_tab_load_defaults;
-	iface->save = (__typeof__(iface->save))systems_tab_save;
+	iface->has_defaults = (__typeof__(iface->has_defaults))rp_systems_tab_has_defaults;
+	iface->reset = (__typeof__(iface->reset))rp_systems_tab_reset;
+	iface->load_defaults = (__typeof__(iface->load_defaults))rp_systems_tab_load_defaults;
+	iface->save = (__typeof__(iface->save))rp_systems_tab_save;
 }
 
 static void
-systems_tab_init(SystemsTab *tab)
+rp_systems_tab_init(RpSystemsTab *tab)
 {
 #if GTK_CHECK_VERSION(3,0,0)
 	// Make this a VBox.
@@ -179,11 +179,11 @@ systems_tab_init(SystemsTab *tab)
 	// programmatically edited, unlike Qt, so we'll need to
 	// inhibit handling when loading settings.
 	g_signal_connect(tab->cboDMG, "changed",
-		G_CALLBACK(systems_tab_modified_handler), tab);
+		G_CALLBACK(rp_systems_tab_modified_handler), tab);
 	g_signal_connect(tab->cboSGB, "changed",
-		G_CALLBACK(systems_tab_modified_handler), tab);
+		G_CALLBACK(rp_systems_tab_modified_handler), tab);
 	g_signal_connect(tab->cboCGB, "changed",
-		G_CALLBACK(systems_tab_modified_handler), tab);
+		G_CALLBACK(rp_systems_tab_modified_handler), tab);
 
 	// GtkGrid/GtkTable
 #ifdef USE_GTK_GRID
@@ -247,28 +247,28 @@ systems_tab_init(SystemsTab *tab)
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Load the current configuration.
-	systems_tab_reset(tab);
+	rp_systems_tab_reset(tab);
 }
 
 GtkWidget*
-systems_tab_new(void)
+rp_systems_tab_new(void)
 {
-	return static_cast<GtkWidget*>(g_object_new(TYPE_SYSTEMS_TAB, nullptr));
+	return static_cast<GtkWidget*>(g_object_new(RP_TYPE_SYSTEMS_TAB, nullptr));
 }
 
 /** RpConfigTab interface functions **/
 
 static gboolean
-systems_tab_has_defaults(SystemsTab *tab)
+rp_systems_tab_has_defaults(RpSystemsTab *tab)
 {
-	g_return_val_if_fail(IS_SYSTEMS_TAB(tab), FALSE);
+	g_return_val_if_fail(RP_IS_SYSTEMS_TAB(tab), FALSE);
 	return TRUE;
 }
 
 static void
-systems_tab_reset(SystemsTab *tab)
+rp_systems_tab_reset(RpSystemsTab *tab)
 {
-	g_return_if_fail(IS_SYSTEMS_TAB(tab));
+	g_return_if_fail(RP_IS_SYSTEMS_TAB(tab));
 
 	// NOTE: This may re-check the configuration timestamp.
 	const Config *const config = Config::instance();
@@ -301,9 +301,9 @@ systems_tab_reset(SystemsTab *tab)
 }
 
 static void
-systems_tab_load_defaults(SystemsTab *tab)
+rp_systems_tab_load_defaults(RpSystemsTab *tab)
 {
-	g_return_if_fail(IS_SYSTEMS_TAB(tab));
+	g_return_if_fail(RP_IS_SYSTEMS_TAB(tab));
 	tab->inhibit = true;
 
 	// TODO: Get the defaults from Config.
@@ -337,9 +337,9 @@ systems_tab_load_defaults(SystemsTab *tab)
 }
 
 static void
-systems_tab_save(SystemsTab *tab, GKeyFile *keyFile)
+rp_systems_tab_save(RpSystemsTab *tab, GKeyFile *keyFile)
 {
-	g_return_if_fail(IS_SYSTEMS_TAB(tab));
+	g_return_if_fail(RP_IS_SYSTEMS_TAB(tab));
 	g_return_if_fail(keyFile != nullptr);
 
 	if (!tab->changed) {
@@ -384,7 +384,7 @@ systems_tab_save(SystemsTab *tab, GKeyFile *keyFile)
  * @param tab SystemsTab
  */
 static void
-systems_tab_modified_handler(GtkWidget *widget, SystemsTab *tab)
+rp_systems_tab_modified_handler(GtkWidget *widget, RpSystemsTab *tab)
 {
 	RP_UNUSED(widget);
 	if (tab->inhibit)

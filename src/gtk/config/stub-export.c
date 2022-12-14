@@ -24,7 +24,7 @@ typedef void *GtkApplication;
  * @param user_data
  */
 static gboolean
-config_dialog_delete_event(ConfigDialog *dialog, GdkEvent *event, gpointer user_data)
+config_dialog_delete_event(RpConfigDialog *dialog, GdkEvent *event, gpointer user_data)
 {
 	RP_UNUSED(dialog);
 	RP_UNUSED(event);
@@ -53,7 +53,7 @@ app_activate(GtkApplication *app, gpointer user_data)
 	rp_i18n_init();
 
 	// Create the ConfigDialog.
-	GtkWidget *const configDialog = config_dialog_new();
+	GtkWidget *const configDialog = rp_config_dialog_new();
 	gtk_widget_set_name(configDialog, "configDialog");
 	gtk_widget_show(configDialog);
 #if GTK_CHECK_VERSION(2,90,2)

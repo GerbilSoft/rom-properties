@@ -33,12 +33,12 @@ typedef GtkVBox super;
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
 // CacheTab class
-struct _CacheTabClass {
+struct _RpCacheTabClass {
 	superclass __parent__;
 };
 
 // CacheTab instance
-struct _CacheTab {
+struct _RpCacheTab {
 	super __parent__;
 
 	GtkWidget	*lblSysCache;
@@ -49,63 +49,63 @@ struct _CacheTab {
 	GtkWidget	*lblStatus;
 	GtkWidget	*pbStatus;
 
-	CacheCleaner	*ccCleaner;
+	RpCacheCleaner	*ccCleaner;
 };
 
-static void	cache_tab_dispose			(GObject	*object);
-static void	cache_tab_finalize			(GObject	*object);
+static void	rp_cache_tab_dispose			(GObject	*object);
+static void	rp_cache_tab_finalize			(GObject	*object);
 
 // Interface initialization
-static void	cache_tab_rp_config_tab_interface_init	(RpConfigTabInterface *iface);
-static gboolean	cache_tab_has_defaults			(CacheTab	*tab);
-static void	cache_tab_reset				(CacheTab	*tab);
-static void	cache_tab_load_defaults			(CacheTab	*tab);
-static void	cache_tab_save				(CacheTab	*tab,
-							 GKeyFile       *keyFile);
+static void	rp_cache_tab_rp_config_tab_interface_init	(RpConfigTabInterface *iface);
+static gboolean	rp_cache_tab_has_defaults			(RpCacheTab	*tab);
+static void	rp_cache_tab_reset				(RpCacheTab	*tab);
+static void	rp_cache_tab_load_defaults			(RpCacheTab	*tab);
+static void	rp_cache_tab_save				(RpCacheTab	*tab,
+								 GKeyFile       *keyFile);
 
 // Enable/disable the UI controls.
-static void	cache_tab_enable_ui_controls		(CacheTab	*tab,
+static void	rp_cache_tab_enable_ui_controls		(RpCacheTab	*tab,
 							 gboolean	enable);
 
 // Widget signal handlers
-static void	cache_tab_on_btnSysCache_clicked	(GtkButton	*button,
-							 CacheTab	*tab);
-static void	cache_tab_on_btnRpCache_clicked		(GtkButton	*button,
-							 CacheTab	*tab);
+static void	rp_cache_tab_on_btnSysCache_clicked	(GtkButton	*button,
+							 RpCacheTab	*tab);
+static void	rp_cache_tab_on_btnRpCache_clicked	(GtkButton	*button,
+							 RpCacheTab	*tab);
 
 // CacheCleaner signal handlers
-static void	ccCleaner_progress			(CacheCleaner	*cleaner,
+static void	ccCleaner_progress			(RpCacheCleaner	*cleaner,
 							 int		 pg_cur,
 							 int		 pg_max,
 							 gboolean	 hasError,
-							 CacheTab	*tab);
-static void	ccCleaner_error				(CacheCleaner	*cleaner,
+							 RpCacheTab	*tab);
+static void	ccCleaner_error				(RpCacheCleaner	*cleaner,
 							 const char	*error,
-							 CacheTab	*tab);
-static void	ccCleaner_cacheIsEmpty			(CacheCleaner	*cleaner,
+							 RpCacheTab	*tab);
+static void	ccCleaner_cacheIsEmpty			(RpCacheCleaner	*cleaner,
 							 RpCacheDir	 cache_dir,
-							 CacheTab	*tab);
-static void	ccCleaner_cacheCleared			(CacheCleaner	*cleaner,
+							 RpCacheTab	*tab);
+static void	ccCleaner_cacheCleared			(RpCacheCleaner	*cleaner,
 							 RpCacheDir	 cacheDir,
 							 unsigned int	 dirErrs,
 							 unsigned int	 fileErrs,
-							 CacheTab	*tab);
-static void	ccCleaner_finished			(CacheCleaner	*cleaner,
-							 CacheTab	*tab);
+							 RpCacheTab	*tab);
+static void	ccCleaner_finished			(RpCacheCleaner	*cleaner,
+							 RpCacheTab	*tab);
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
-G_DEFINE_TYPE_EXTENDED(CacheTab, cache_tab,
+G_DEFINE_TYPE_EXTENDED(RpCacheTab, rp_cache_tab,
 	GTK_TYPE_SUPER, static_cast<GTypeFlags>(0),
-		G_IMPLEMENT_INTERFACE(RP_CONFIG_TYPE_TAB,
-			cache_tab_rp_config_tab_interface_init));
+		G_IMPLEMENT_INTERFACE(RP_TYPE_CONFIG_TAB,
+			rp_cache_tab_rp_config_tab_interface_init));
 
 static void
-cache_tab_class_init(CacheTabClass *klass)
+rp_cache_tab_class_init(RpCacheTabClass *klass)
 {
 	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-	gobject_class->dispose = cache_tab_dispose;
-	gobject_class->finalize = cache_tab_finalize;
+	gobject_class->dispose = rp_cache_tab_dispose;
+	gobject_class->finalize = rp_cache_tab_finalize;
 
 #if GTK_CHECK_VERSION(3,0,0)
 	// Add a CSS class for a GtkProgressBar "error" state.
@@ -136,16 +136,16 @@ cache_tab_class_init(CacheTabClass *klass)
 }
 
 static void
-cache_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)
+rp_cache_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)
 {
-	iface->has_defaults = (__typeof__(iface->has_defaults))cache_tab_has_defaults;
-	iface->reset = (__typeof__(iface->reset))cache_tab_reset;
-	iface->load_defaults = (__typeof__(iface->load_defaults))cache_tab_load_defaults;
-	iface->save = (__typeof__(iface->save))cache_tab_save;
+	iface->has_defaults = (__typeof__(iface->has_defaults))rp_cache_tab_has_defaults;
+	iface->reset = (__typeof__(iface->reset))rp_cache_tab_reset;
+	iface->load_defaults = (__typeof__(iface->load_defaults))rp_cache_tab_load_defaults;
+	iface->save = (__typeof__(iface->save))rp_cache_tab_save;
 }
 
 static void
-cache_tab_init(CacheTab *tab)
+rp_cache_tab_init(RpCacheTab *tab)
 {
 #if GTK_CHECK_VERSION(3,0,0)
 	// Make this a VBox.
@@ -183,8 +183,8 @@ cache_tab_init(CacheTab *tab)
 #endif /* !GTK_CHECK_VERSION(3,0,0) */
 
 	// Connect the signal handlers for the buttons.
-	g_signal_connect(tab->btnSysCache, "clicked", G_CALLBACK(cache_tab_on_btnSysCache_clicked), tab);
-	g_signal_connect(tab->btnRpCache,  "clicked", G_CALLBACK(cache_tab_on_btnRpCache_clicked),  tab);
+	g_signal_connect(tab->btnSysCache, "clicked", G_CALLBACK(rp_cache_tab_on_btnSysCache_clicked), tab);
+	g_signal_connect(tab->btnRpCache,  "clicked", G_CALLBACK(rp_cache_tab_on_btnRpCache_clicked),  tab);
 
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_widget_hide(tab->lblStatus);
@@ -222,71 +222,71 @@ cache_tab_init(CacheTab *tab)
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Load the current configuration.
-	cache_tab_reset(tab);
+	rp_cache_tab_reset(tab);
 }
 
 static void
-cache_tab_dispose(GObject *object)
+rp_cache_tab_dispose(GObject *object)
 {
-	//CacheTab *const tab = CACHE_TAB(object);
+	//RpCacheTab *const tab = RP_CACHE_TAB(object);
 
 	// NOTE: We can't clear the busy cursor here because
 	// the window is being destroyed.
 
 	// Call the superclass dispose() function.
-	G_OBJECT_CLASS(cache_tab_parent_class)->dispose(object);
+	G_OBJECT_CLASS(rp_cache_tab_parent_class)->dispose(object);
 }
 
 static void
-cache_tab_finalize(GObject *object)
+rp_cache_tab_finalize(GObject *object)
 {
-	CacheTab *const tab = CACHE_TAB(object);
+	RpCacheTab *const tab = RP_CACHE_TAB(object);
 
 	if (tab->ccCleaner) {
 		g_object_unref(tab->ccCleaner);
 	}
 
 	// Call the superclass finalize() function.
-	G_OBJECT_CLASS(cache_tab_parent_class)->finalize(object);
+	G_OBJECT_CLASS(rp_cache_tab_parent_class)->finalize(object);
 }
 
 GtkWidget*
-cache_tab_new(void)
+rp_cache_tab_new(void)
 {
-	return static_cast<GtkWidget*>(g_object_new(TYPE_CACHE_TAB, nullptr));
+	return static_cast<GtkWidget*>(g_object_new(RP_TYPE_CACHE_TAB, nullptr));
 }
 
 /** RpConfigTab interface functions **/
 
 static gboolean
-cache_tab_has_defaults(CacheTab *tab)
+rp_cache_tab_has_defaults(RpCacheTab *tab)
 {
-	g_return_val_if_fail(IS_CACHE_TAB(tab), FALSE);
+	g_return_val_if_fail(RP_IS_CACHE_TAB(tab), FALSE);
 	return FALSE;
 }
 
 static void
-cache_tab_reset(CacheTab *tab)
+rp_cache_tab_reset(RpCacheTab *tab)
 {
-	g_return_if_fail(IS_CACHE_TAB(tab));
+	g_return_if_fail(RP_IS_CACHE_TAB(tab));
 
 	// Not implemented.
 	return;
 }
 
 static void
-cache_tab_load_defaults(CacheTab *tab)
+rp_cache_tab_load_defaults(RpCacheTab *tab)
 {
-	g_return_if_fail(IS_CACHE_TAB(tab));
+	g_return_if_fail(RP_IS_CACHE_TAB(tab));
 
 	// Not implemented.
 	return;
 }
 
 static void
-cache_tab_save(CacheTab *tab, GKeyFile *keyFile)
+rp_cache_tab_save(RpCacheTab *tab, GKeyFile *keyFile)
 {
-	g_return_if_fail(IS_CACHE_TAB(tab));
+	g_return_if_fail(RP_IS_CACHE_TAB(tab));
 	g_return_if_fail(keyFile != nullptr);
 
 	// Not implemented.
@@ -301,7 +301,7 @@ cache_tab_save(CacheTab *tab, GKeyFile *keyFile)
  * @param enable True to enable; false to disable.
  */
 static void
-cache_tab_enable_ui_controls(CacheTab *tab, gboolean enable)
+rp_cache_tab_enable_ui_controls(RpCacheTab *tab, gboolean enable)
 {
 	// TODO: Disable the main tab control too?
 	gtk_widget_set_sensitive(tab->lblSysCache, enable);
@@ -367,7 +367,7 @@ void gtk_progress_bar_set_error(GtkProgressBar *pb, gboolean error)
  * @param cache_dir Cache directory
  */
 static void
-cache_tab_clear_cache_dir(CacheTab *tab, RpCacheDir cache_dir)
+rp_cache_tab_clear_cache_dir(RpCacheTab *tab, RpCacheDir cache_dir)
 {
 	// Reset the progress bar.
 	// FIXME: No "error" option in GtkProgressBar.
@@ -400,11 +400,11 @@ cache_tab_clear_cache_dir(CacheTab *tab, RpCacheDir cache_dir)
 	gtk_widget_show(tab->pbStatus);
 
 	// Disable the buttons until we're done.
-	cache_tab_enable_ui_controls(tab, FALSE);
+	rp_cache_tab_enable_ui_controls(tab, FALSE);
 
 	// Create the CacheCleaner if necessary.
 	if (!tab->ccCleaner) {
-		tab->ccCleaner = cache_cleaner_new(cache_dir);
+		tab->ccCleaner = rp_cache_cleaner_new(cache_dir);
 		g_object_ref_sink(tab->ccCleaner);
 
 		// Connect the signal handlers.
@@ -416,15 +416,15 @@ cache_tab_clear_cache_dir(CacheTab *tab, RpCacheDir cache_dir)
 	}
 
 	// Set the cache directory.
-	cache_cleaner_set_cache_dir(tab->ccCleaner, cache_dir);
+	rp_cache_cleaner_set_cache_dir(tab->ccCleaner, cache_dir);
 
 	// Run the CacheCleaner object.
 	// NOTE: Sending signals from a GObject to a GtkWidget
 	// and updating the UI can cause the program to crash.
 	// Instead, we'll just run gtk_main_iteration() within
-	// cache_cleaner_run().
+	// rp_cache_cleaner_run().
 	// Everything else works just like the KDE version.
-	cache_cleaner_run(tab->ccCleaner);
+	rp_cache_cleaner_run(tab->ccCleaner);
 }
 
 static inline void
@@ -453,9 +453,9 @@ gtk_process_main_event_loop(void)
  * @param tab CacheTab
  */
 static void
-ccCleaner_progress(CacheCleaner *cleaner, int pg_cur, int pg_max, gboolean hasError, CacheTab *tab)
+ccCleaner_progress(RpCacheCleaner *cleaner, int pg_cur, int pg_max, gboolean hasError, RpCacheTab *tab)
 {
-	g_return_if_fail(IS_CACHE_TAB(tab));
+	g_return_if_fail(RP_IS_CACHE_TAB(tab));
 	RP_UNUSED(cleaner);
 
 	// GtkProgressBar uses a gdouble fraction in the range [0.0,1.0].
@@ -472,9 +472,9 @@ ccCleaner_progress(CacheCleaner *cleaner, int pg_cur, int pg_max, gboolean hasEr
  * @param tab CacheTab
  */
 static void
-ccCleaner_error(CacheCleaner *cleaner, const char *error, CacheTab *tab)
+ccCleaner_error(RpCacheCleaner *cleaner, const char *error, RpCacheTab *tab)
 {
-	g_return_if_fail(IS_CACHE_TAB(tab));
+	g_return_if_fail(RP_IS_CACHE_TAB(tab));
 	RP_UNUSED(cleaner);
 
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(tab->pbStatus), 1.0);
@@ -494,9 +494,9 @@ ccCleaner_error(CacheCleaner *cleaner, const char *error, CacheTab *tab)
  * @param tab CacheTab
  */
 static void
-ccCleaner_cacheIsEmpty(CacheCleaner *cleaner, RpCacheDir cache_dir, CacheTab *tab)
+ccCleaner_cacheIsEmpty(RpCacheCleaner *cleaner, RpCacheDir cache_dir, RpCacheTab *tab)
 {
-	g_return_if_fail(IS_CACHE_TAB(tab));
+	g_return_if_fail(RP_IS_CACHE_TAB(tab));
 	RP_UNUSED(cleaner);
 
 	const char *s_msg;
@@ -529,7 +529,7 @@ ccCleaner_cacheIsEmpty(CacheCleaner *cleaner, RpCacheDir cache_dir, CacheTab *ta
  * @param tab CacheTab
  */
 static void
-ccCleaner_cacheCleared(CacheCleaner *cleaner, RpCacheDir cache_dir, unsigned int dirErrs, unsigned int fileErrs, CacheTab *tab)
+ccCleaner_cacheCleared(RpCacheCleaner *cleaner, RpCacheDir cache_dir, unsigned int dirErrs, unsigned int fileErrs, RpCacheTab *tab)
 {
 	RP_UNUSED(cleaner);
 
@@ -575,10 +575,10 @@ ccCleaner_cacheCleared(CacheCleaner *cleaner, RpCacheDir cache_dir, unsigned int
  * @param tab CacheTab
  */
 static void
-ccCleaner_finished(CacheCleaner *cleaner, CacheTab *tab)
+ccCleaner_finished(RpCacheCleaner *cleaner, RpCacheTab *tab)
 {
 	RP_UNUSED(cleaner);
-	cache_tab_enable_ui_controls(tab, TRUE);
+	rp_cache_tab_enable_ui_controls(tab, TRUE);
 }
 
 /** Widget signal handlers **/
@@ -587,18 +587,18 @@ ccCleaner_finished(CacheCleaner *cleaner, CacheTab *tab)
  * "Clear the System Thumbnail Cache" button was clicked.
  */
 static void
-cache_tab_on_btnSysCache_clicked(GtkButton *button, CacheTab *tab)
+rp_cache_tab_on_btnSysCache_clicked(GtkButton *button, RpCacheTab *tab)
 {
 	RP_UNUSED(button);
-	cache_tab_clear_cache_dir(tab, RP_CD_System);
+	rp_cache_tab_clear_cache_dir(tab, RP_CD_System);
 }
 
 /**
  * "Clear the ROM Properties Page Download Cache" button was clicked.
  */
 static void
-cache_tab_on_btnRpCache_clicked(GtkButton *button, CacheTab *tab)
+rp_cache_tab_on_btnRpCache_clicked(GtkButton *button, RpCacheTab *tab)
 {
 	RP_UNUSED(button);
-	cache_tab_clear_cache_dir(tab, RP_CD_RomProperties);
+	rp_cache_tab_clear_cache_dir(tab, RP_CD_RomProperties);
 }

@@ -46,11 +46,11 @@ typedef enum {
 	SIGNAL_LAST
 } CacheCleanerSignalID;
 
-static void	cache_cleaner_get_property	(GObject	*object,
+static void	rp_cache_cleaner_get_property	(GObject	*object,
 						 guint		 prop_id,
 						 GValue		*value,
 						 GParamSpec	*pspec);
-static void	cache_cleaner_set_property	(GObject	*object,
+static void	rp_cache_cleaner_set_property	(GObject	*object,
 						 guint		 prop_id,
 						 const GValue	*value,
 						 GParamSpec	*pspec);
@@ -58,13 +58,13 @@ static void	cache_cleaner_set_property	(GObject	*object,
 static GParamSpec *props[PROP_LAST];
 static guint signals[SIGNAL_LAST];
 
-// CacheCleaner class
-struct _CacheCleanerClass {
+// RpCacheCleaner class
+struct _RpCacheCleanerClass {
 	GObjectClass __parent__;
 };
 
-// CacheCleaner instance
-struct _CacheCleaner {
+// RpCacheCleaner instance
+struct _RpCacheCleaner {
 	GObject __parent__;
 
 	// Cache directory to clean
@@ -73,15 +73,15 @@ struct _CacheCleaner {
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
-G_DEFINE_TYPE_EXTENDED(CacheCleaner, cache_cleaner,
+G_DEFINE_TYPE_EXTENDED(RpCacheCleaner, rp_cache_cleaner,
 	G_TYPE_OBJECT, static_cast<GTypeFlags>(0), { });
 
 static void
-cache_cleaner_class_init(CacheCleanerClass *klass)
+rp_cache_cleaner_class_init(RpCacheCleanerClass *klass)
 {
 	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-	gobject_class->set_property = cache_cleaner_set_property;
-	gobject_class->get_property = cache_cleaner_get_property;
+	gobject_class->set_property = rp_cache_cleaner_set_property;
+	gobject_class->get_property = rp_cache_cleaner_get_property;
 
 	/** Properties **/
 
@@ -102,7 +102,7 @@ cache_cleaner_class_init(CacheCleanerClass *klass)
 	 * @param hasError If true, errors have occurred.
 	 */
 	signals[SIGNAL_PROGRESS] = g_signal_new("progress",
-		TYPE_CACHE_CLEANER, G_SIGNAL_RUN_LAST,
+		RP_TYPE_CACHE_CLEANER, G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 3, G_TYPE_INT, G_TYPE_INT, G_TYPE_BOOLEAN);
 
@@ -111,7 +111,7 @@ cache_cleaner_class_init(CacheCleanerClass *klass)
 	 * @param error Error description.
 	 */
 	signals[SIGNAL_ERROR] = g_signal_new("error",
-		TYPE_CACHE_CLEANER, G_SIGNAL_RUN_LAST,
+		RP_TYPE_CACHE_CLEANER, G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 1, G_TYPE_STRING);
 
@@ -120,7 +120,7 @@ cache_cleaner_class_init(CacheCleanerClass *klass)
 	 * @param cache_dir Which cache directory was checked.
 	 */
 	signals[SIGNAL_CACHE_IS_EMPTY] = g_signal_new("cache-is-empty",
-		TYPE_CACHE_CLEANER, G_SIGNAL_RUN_LAST,
+		RP_TYPE_CACHE_CLEANER, G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 1, RP_TYPE_CACHE_DIR);
 
@@ -131,7 +131,7 @@ cache_cleaner_class_init(CacheCleanerClass *klass)
 	 * @param fileErrs Number of files that could not be deleted.
 	 */
 	signals[SIGNAL_CACHE_CLEARED] = g_signal_new("cache-cleared",
-		TYPE_CACHE_CLEANER, G_SIGNAL_RUN_LAST,
+		RP_TYPE_CACHE_CLEANER, G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 3, RP_TYPE_CACHE_DIR, G_TYPE_UINT, G_TYPE_UINT);
 
@@ -140,39 +140,38 @@ cache_cleaner_class_init(CacheCleanerClass *klass)
 	 * This is called when run() exits, regardless of status.
 	 */
 	signals[SIGNAL_FINISHED] = g_signal_new("finished",
-		TYPE_CACHE_CLEANER, G_SIGNAL_RUN_LAST,
+		RP_TYPE_CACHE_CLEANER, G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 0);
 }
 
 static void
-cache_cleaner_init(CacheCleaner *tab)
+rp_cache_cleaner_init(RpCacheCleaner *tab)
 {
 	// Nothing to initialize here.
 	RP_UNUSED(tab);
 }
 
-CacheCleaner*
-cache_cleaner_new(RpCacheDir cache_dir)
+RpCacheCleaner*
+rp_cache_cleaner_new(RpCacheDir cache_dir)
 {
-	return static_cast<CacheCleaner*>(g_object_new(TYPE_CACHE_CLEANER, "cache-dir", cache_dir, nullptr));
+	return static_cast<RpCacheCleaner*>(g_object_new(RP_TYPE_CACHE_CLEANER, "cache-dir", cache_dir, nullptr));
 }
 
 /** Properties **/
 
 static void
-cache_cleaner_get_property(GObject	*object,
+rp_cache_cleaner_get_property(GObject	*object,
 			   guint	 prop_id,
 			   GValue	*value,
 			   GParamSpec	*pspec)
 {
-	CacheCleaner *const widget = CACHE_CLEANER(object);
+	RpCacheCleaner *const widget = RP_CACHE_CLEANER(object);
 
 	switch (prop_id) {
 		case PROP_CACHE_DIR:
 			g_value_set_enum(value, widget->cache_dir);
 			break;
-
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
 			break;
@@ -180,12 +179,12 @@ cache_cleaner_get_property(GObject	*object,
 }
 
 static void
-cache_cleaner_set_property(GObject	*object,
+rp_cache_cleaner_set_property(GObject	*object,
 			   guint	 prop_id,
 			   const GValue	*value,
 			   GParamSpec	*pspec)
 {
-	CacheCleaner *const widget = CACHE_CLEANER(object);
+	RpCacheCleaner *const widget = RP_CACHE_CLEANER(object);
 
 	switch (prop_id) {
 		case PROP_CACHE_DIR:
@@ -204,9 +203,9 @@ cache_cleaner_set_property(GObject	*object,
  * @return Cache directory
  */
 RpCacheDir
-cache_cleaner_get_cache_dir(CacheCleaner *cleaner)
+rp_cache_cleaner_get_cache_dir(RpCacheCleaner *cleaner)
 {
-	g_return_val_if_fail(IS_CACHE_CLEANER(cleaner), RP_CD_System);
+	g_return_val_if_fail(RP_IS_CACHE_CLEANER(cleaner), RP_CD_System);
 	return cleaner->cache_dir;
 }
 
@@ -216,9 +215,9 @@ cache_cleaner_get_cache_dir(CacheCleaner *cleaner)
  * @param cache_dir Cache directory
  */
 void
-cache_cleaner_set_cache_dir(CacheCleaner *cleaner, RpCacheDir cache_dir)
+rp_cache_cleaner_set_cache_dir(RpCacheCleaner *cleaner, RpCacheDir cache_dir)
 {
-	g_return_if_fail(IS_CACHE_CLEANER(cleaner));
+	g_return_if_fail(RP_IS_CACHE_CLEANER(cleaner));
 	cleaner->cache_dir = cache_dir;
 }
 
@@ -385,9 +384,9 @@ recursiveScan(const char *path, list<pair<tstring, uint8_t> > &rlist)
  * @param cleaner CacheCleaner
  */
 void
-cache_cleaner_run(CacheCleaner *cleaner)
+rp_cache_cleaner_run(RpCacheCleaner *cleaner)
 {
-	g_return_if_fail(IS_CACHE_CLEANER(cleaner));
+	g_return_if_fail(RP_IS_CACHE_CLEANER(cleaner));
 
 	string cacheDir;
 	const char *s_err = nullptr;

@@ -9,25 +9,21 @@
 #ifndef __ROMPROPERTIES_GTK_CONFIG_SYSTEMSTAB_HPP__
 #define __ROMPROPERTIES_GTK_CONFIG_SYSTEMSTAB_HPP__
 
-#include <gtk/gtk.h>
+#include "gtk-compat.h"
 
 G_BEGIN_DECLS
 
-typedef struct _SystemsTabClass		SystemsTabClass;
-typedef struct _SystemsTab		SystemsTab;
+#define RP_TYPE_SYSTEMS_TAB (rp_systems_tab_get_type())
+#if GTK_CHECK_VERSION(3,0,0)
+G_DECLARE_FINAL_TYPE(RpSystemsTab, rp_systems_tab, RP, SYSTEMS_TAB, GtkBox)
+#else /* !GTK_CHECK_VERSION(3,0,0) */
+G_DECLARE_FINAL_TYPE(RpSystemsTab, rp_systems_tab, RP, SYSTEMS_TAB, GtkVBox)
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 
-#define TYPE_SYSTEMS_TAB            (systems_tab_get_type())
-#define SYSTEMS_TAB(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), TYPE_SYSTEMS_TAB, SystemsTab))
-#define SYSTEMS_TAB_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass),  TYPE_SYSTEMS_TAB, SystemsTabClass))
-#define IS_SYSTEMS_TAB(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), TYPE_SYSTEMS_TAB))
-#define IS_SYSTEMS_TAB_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass),  TYPE_SYSTEMS_TAB))
-#define SYSTEMS_TAB_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj),  TYPE_SYSTEMS_TAB, SystemsTabClass))
+/* this function is implemented automatically by the G_DEFINE_TYPE macro */
+void		rp_systems_tab_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
 
-/* these two functions are implemented automatically by the G_DEFINE_TYPE macro */
-GType		systems_tab_get_type		(void) G_GNUC_CONST G_GNUC_INTERNAL;
-void		systems_tab_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
-
-GtkWidget	*systems_tab_new		(void) G_GNUC_INTERNAL G_GNUC_MALLOC;
+GtkWidget	*rp_systems_tab_new		(void) G_GNUC_INTERNAL G_GNUC_MALLOC;
 
 G_END_DECLS
 

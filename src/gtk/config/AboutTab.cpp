@@ -55,13 +55,13 @@ typedef GtkVBox super;
 #  define ENABLE_UPDATE_CHECK 1
 #endif /* !GTK_CHECK_VERSION(3,1,6) */
 
-// AboutTab class
-struct _AboutTabClass {
+// RpAboutTab class
+struct _RpAboutTabClass {
 	superclass __parent__;
 };
 
-// AboutTab instance
-struct _AboutTab {
+// RpAboutTab instance
+struct _RpAboutTab {
 	super __parent__;
 
 	GtkWidget	*imgLogo;	// GtkImage (GTK2/GTK3); GtkPicture (GTK4)
@@ -76,33 +76,33 @@ struct _AboutTab {
 	gboolean	checkedForUpdates;
 };
 
-static void	about_tab_dispose			(GObject	*object);
+static void	rp_about_tab_dispose			(GObject	*object);
 
 // Interface initialization
-static void	about_tab_rp_config_tab_interface_init	(RpConfigTabInterface *iface);
-static gboolean	about_tab_has_defaults			(AboutTab	*tab);
-static void	about_tab_reset				(AboutTab	*tab);
-static void	about_tab_load_defaults			(AboutTab	*tab);
-static void	about_tab_save				(AboutTab	*tab,
-							 GKeyFile       *keyFile);
+static void	rp_about_tab_rp_config_tab_interface_init	(RpConfigTabInterface *iface);
+static gboolean	rp_about_tab_has_defaults			(RpAboutTab	*tab);
+static void	rp_about_tab_reset				(RpAboutTab	*tab);
+static void	rp_about_tab_load_defaults			(RpAboutTab	*tab);
+static void	rp_about_tab_save				(RpAboutTab	*tab,
+								 GKeyFile       *keyFile);
 
 // Label initialization
-static void	about_tab_init_program_title_text	(GtkWidget	*imgLogo,
+static void	rp_about_tab_init_program_title_text	(GtkWidget	*imgLogo,
 							 GtkLabel	*lblTitle);
-static void	about_tab_init_credits_tab		(GtkLabel	*lblCredits);
-static void	about_tab_init_libraries_tab		(GtkLabel	*lblLibraries);
-static void	about_tab_init_support_tab		(GtkLabel	*lblSupport);
+static void	rp_about_tab_init_credits_tab		(GtkLabel	*lblCredits);
+static void	rp_about_tab_init_libraries_tab		(GtkLabel	*lblLibraries);
+static void	rp_about_tab_init_support_tab		(GtkLabel	*lblSupport);
 
 // Signal handlers
 #ifdef ENABLE_UPDATE_CHECK
-static void	about_tab_realize_event			(GtkWidget	*self,
+static void	rp_about_tab_realize_event		(GtkWidget	*self,
 							 gpointer	 user_data);
 static void	updChecker_error			(UpdateChecker	*updChecker,
 							 const gchar	*error,
-							 AboutTab	*tab);
+							 RpAboutTab	*tab);
 static void	updChecker_retrieved			(UpdateChecker	*updChecker,
 							 guint64	 updateVersion,
-							 AboutTab	*tab);
+							 RpAboutTab	*tab);
 #endif /* ENABLE_UPDATE_CHECK */
 
 // NOTE: Pango doesn't recognize "&nbsp;". Use U+00A0 instead.
@@ -111,29 +111,29 @@ static void	updChecker_retrieved			(UpdateChecker	*updChecker,
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
-G_DEFINE_TYPE_EXTENDED(AboutTab, about_tab,
+G_DEFINE_TYPE_EXTENDED(RpAboutTab, rp_about_tab,
 	GTK_TYPE_SUPER, static_cast<GTypeFlags>(0),
-		G_IMPLEMENT_INTERFACE(RP_CONFIG_TYPE_TAB,
-			about_tab_rp_config_tab_interface_init));
+		G_IMPLEMENT_INTERFACE(RP_TYPE_CONFIG_TAB,
+			rp_about_tab_rp_config_tab_interface_init));
 
 static void
-about_tab_class_init(AboutTabClass *klass)
+rp_about_tab_class_init(RpAboutTabClass *klass)
 {
 	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
-	gobject_class->dispose = about_tab_dispose;
+	gobject_class->dispose = rp_about_tab_dispose;
 }
 
 static void
-about_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)
+rp_about_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)
 {
-	iface->has_defaults = (__typeof__(iface->has_defaults))about_tab_has_defaults;
-	iface->reset = (__typeof__(iface->reset))about_tab_reset;
-	iface->load_defaults = (__typeof__(iface->load_defaults))about_tab_load_defaults;
-	iface->save = (__typeof__(iface->save))about_tab_save;
+	iface->has_defaults = (__typeof__(iface->has_defaults))rp_about_tab_has_defaults;
+	iface->reset = (__typeof__(iface->reset))rp_about_tab_reset;
+	iface->load_defaults = (__typeof__(iface->load_defaults))rp_about_tab_load_defaults;
+	iface->save = (__typeof__(iface->save))rp_about_tab_save;
 }
 
 static void
-about_tab_init(AboutTab *tab)
+rp_about_tab_init(RpAboutTab *tab)
 {
 #if GTK_CHECK_VERSION(3,0,0)
 	// Make this a VBox.
@@ -336,65 +336,65 @@ about_tab_init(AboutTab *tab)
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Initialize the various text fields.
-	about_tab_init_program_title_text(tab->imgLogo, GTK_LABEL(tab->lblTitle));
-	about_tab_init_credits_tab(GTK_LABEL(tab->lblCredits));
-	about_tab_init_libraries_tab(GTK_LABEL(tab->lblLibraries));
-	about_tab_init_support_tab(GTK_LABEL(tab->lblSupport));
+	rp_about_tab_init_program_title_text(tab->imgLogo, GTK_LABEL(tab->lblTitle));
+	rp_about_tab_init_credits_tab(GTK_LABEL(tab->lblCredits));
+	rp_about_tab_init_libraries_tab(GTK_LABEL(tab->lblLibraries));
+	rp_about_tab_init_support_tab(GTK_LABEL(tab->lblSupport));
 
 	// Connect signals
 #ifdef ENABLE_UPDATE_CHECK
-	g_signal_connect(tab, "realize", G_CALLBACK(about_tab_realize_event), 0);
+	g_signal_connect(tab, "realize", G_CALLBACK(rp_about_tab_realize_event), 0);
 #endif /* ENABLE_UPDATE_CHECK */
 }
 
 static void
-about_tab_dispose(GObject *object)
+rp_about_tab_dispose(GObject *object)
 {
-	AboutTab *const tab = ABOUT_TAB(object);
+	RpAboutTab *const tab = RP_ABOUT_TAB(object);
 
 	if (tab->updChecker) {
 		g_clear_object(&tab->updChecker);
 	}
 
 	// Call the superclass dispose() function.
-	G_OBJECT_CLASS(about_tab_parent_class)->dispose(object);
+	G_OBJECT_CLASS(rp_about_tab_parent_class)->dispose(object);
 }
 
 GtkWidget*
-about_tab_new(void)
+rp_about_tab_new(void)
 {
-	return static_cast<GtkWidget*>(g_object_new(TYPE_ABOUT_TAB, nullptr));
+	return static_cast<GtkWidget*>(g_object_new(RP_TYPE_ABOUT_TAB, nullptr));
 }
 
 /** RpConfigTab interface functions **/
 
 static gboolean
-about_tab_has_defaults(AboutTab *tab)
+rp_about_tab_has_defaults(RpAboutTab *tab)
 {
-	g_return_val_if_fail(IS_ABOUT_TAB(tab), FALSE);
+	g_return_val_if_fail(RP_IS_ABOUT_TAB(tab), FALSE);
 	return FALSE;
 }
 
 static void
-about_tab_reset(AboutTab *tab)
+rp_about_tab_reset(RpAboutTab *tab)
 {
-	g_return_if_fail(IS_ABOUT_TAB(tab));
+	g_return_if_fail(RP_IS_ABOUT_TAB(tab));
 	// TODO
 }
 
 static void
-about_tab_load_defaults(AboutTab *tab)
+rp_about_tab_load_defaults(RpAboutTab *tab)
 {
-	g_return_if_fail(IS_ABOUT_TAB(tab));
+	g_return_if_fail(RP_IS_ABOUT_TAB(tab));
 
 	// Not implemented.
 	return;
 }
 
 static void
-about_tab_save(AboutTab *tab, GKeyFile *keyFile)
+rp_about_tab_save(RpAboutTab *tab, GKeyFile *keyFile)
 {
-	g_return_if_fail(IS_ABOUT_TAB(tab));
+	g_return_if_fail(RP_IS_ABOUT_TAB(tab));
 	g_return_if_fail(keyFile != nullptr);
 
 	// Not implemented.
@@ -409,7 +409,7 @@ about_tab_save(AboutTab *tab, GKeyFile *keyFile)
  * @param lblTitle
  */
 static void
-about_tab_init_program_title_text(GtkWidget *imgLogo, GtkLabel *lblTitle)
+rp_about_tab_init_program_title_text(GtkWidget *imgLogo, GtkLabel *lblTitle)
 {
 	// Program icon.
 	// TODO: Make a custom icon instead of reusing the system icon.
@@ -473,7 +473,7 @@ about_tab_init_program_title_text(GtkWidget *imgLogo, GtkLabel *lblTitle)
  * @param lblCredits
  */
 static void
-about_tab_init_credits_tab(GtkLabel *lblCredits)
+rp_about_tab_init_credits_tab(GtkLabel *lblCredits)
 {
 	// License name, with HTML formatting.
 	const string sPrgLicense = rp_sprintf("<a href='https://www.gnu.org/licenses/gpl-2.0.html'>%s</a>",
@@ -553,7 +553,7 @@ about_tab_init_credits_tab(GtkLabel *lblCredits)
  * @param lblLibraries
  */
 static void
-about_tab_init_libraries_tab(GtkLabel *lblLibraries)
+rp_about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 {
 	// lblLibraries is RichText.
 	char sVerBuf[64];
@@ -781,7 +781,7 @@ about_tab_init_libraries_tab(GtkLabel *lblLibraries)
  * @param lblSupport
  */
 static void
-about_tab_init_support_tab(GtkLabel *lblSupport)
+rp_about_tab_init_support_tab(GtkLabel *lblSupport)
 {
 	string sSupport;
 	sSupport.reserve(4096);
@@ -817,12 +817,12 @@ about_tab_init_support_tab(GtkLabel *lblSupport)
 
 #ifdef ENABLE_UPDATE_CHECK
 static void
-about_tab_realize_event(GtkWidget	*self,
+rp_about_tab_realize_event(GtkWidget	*self,
 			gpointer	 user_data)
 {
 	RP_UNUSED(user_data);
 
-	AboutTab *const tab = ABOUT_TAB(self);
+	RpAboutTab *const tab = RP_ABOUT_TAB(self);
 	if (tab->checkedForUpdates) {
 		// Already checked for updates.
 		return;
@@ -843,7 +843,7 @@ about_tab_realize_event(GtkWidget	*self,
 static void
 updChecker_error(UpdateChecker	*updChecker,
 		 const gchar	*error,
-		 AboutTab	*tab)
+		 RpAboutTab	*tab)
 {
 	RP_UNUSED(updChecker);
 
@@ -855,7 +855,7 @@ updChecker_error(UpdateChecker	*updChecker,
 static void
 updChecker_retrieved(UpdateChecker	*updChecker,
 		     guint64	 	 updateVersion,
-		     AboutTab		*tab)
+		     RpAboutTab		*tab)
 {
 	RP_UNUSED(updChecker);
 

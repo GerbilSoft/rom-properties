@@ -9,28 +9,20 @@
 #ifndef __ROMPROPERTIES_GTK_CONFIG_KEYSTOREGTK_HPP__
 #define __ROMPROPERTIES_GTK_CONFIG_KEYSTOREGTK_HPP__
 
-#include <gtk/gtk.h>
+#include "glib-compat.h"
 
 G_BEGIN_DECLS
 
-typedef struct _KeyStoreGTKClass	KeyStoreGTKClass;
-typedef struct _KeyStoreGTK		KeyStoreGTK;
+#define RP_TYPE_KEY_STORE_GTK (rp_key_store_gtk_get_type())
+G_DECLARE_FINAL_TYPE(RpKeyStoreGTK, rp_key_store_gtk, RP, KEY_STORE_GTK, GObject)
 
-#define TYPE_KEY_STORE_GTK            (key_store_gtk_get_type())
-#define KEY_STORE_GTK(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), TYPE_KEY_STORE_GTK, KeyStoreGTK))
-#define KEY_STORE_GTK_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass),  TYPE_KEY_STORE_GTK, KeyStoreGTKClass))
-#define IS_KEY_STORE_GTK(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), TYPE_KEY_STORE_GTK))
-#define IS_KEY_STORE_GTK_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass),  TYPE_KEY_STORE_GTK))
-#define KEY_STORE_GTK_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj),  TYPE_KEY_STORE_GTK, KeyStoreGTKClass))
+/* this function is implemented automatically by the G_DEFINE_TYPE macro */
+void		rp_key_store_gtk_register_type		(GtkWidget *widget) G_GNUC_INTERNAL;
 
-/* these two functions are implemented automatically by the G_DEFINE_TYPE macro */
-GType		key_store_gtk_get_type			(void) G_GNUC_CONST G_GNUC_INTERNAL;
-void		key_store_gtk_register_type		(GtkWidget *widget) G_GNUC_INTERNAL;
+RpKeyStoreGTK	*rp_key_store_gtk_new			(void) G_GNUC_INTERNAL G_GNUC_MALLOC;
 
-KeyStoreGTK	*key_store_gtk_new			(void) G_GNUC_INTERNAL G_GNUC_MALLOC;
-
-int		key_store_gtk_get_total_key_count	(KeyStoreGTK *keyStore);
-gboolean	key_store_gtk_has_changed		(KeyStoreGTK *keyStore);
+int		rp_key_store_gtk_get_total_key_count	(RpKeyStoreGTK *keyStore);
+gboolean	rp_key_store_gtk_has_changed		(RpKeyStoreGTK *keyStore);
 
 G_END_DECLS
 
@@ -41,7 +33,7 @@ G_END_DECLS
  * @param keyStore KeyStoreGTK
  * @return KeyStoreUI
  */
-LibRomData::KeyStoreUI	*key_store_gtk_get_key_store_ui(KeyStoreGTK *keyStore);
+LibRomData::KeyStoreUI	*rp_key_store_gtk_get_key_store_ui(RpKeyStoreGTK *keyStore);
 #endif /* __cplusplus */
 
 #endif /* __ROMPROPERTIES_GTK_CONFIG_KEYSTOREGTK_HPP__ */

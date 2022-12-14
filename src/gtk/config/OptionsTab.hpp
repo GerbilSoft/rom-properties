@@ -9,25 +9,21 @@
 #ifndef __ROMPROPERTIES_GTK_CONFIG_OPTIONSTAB_HPP__
 #define __ROMPROPERTIES_GTK_CONFIG_OPTIONSTAB_HPP__
 
-#include <gtk/gtk.h>
+#include "gtk-compat.h"
 
 G_BEGIN_DECLS
 
-typedef struct _OptionsTabClass		OptionsTabClass;
-typedef struct _OptionsTab		OptionsTab;
+#define RP_TYPE_OPTIONS_TAB (rp_options_tab_get_type())
+#if GTK_CHECK_VERSION(3,0,0)
+G_DECLARE_FINAL_TYPE(RpOptionsTab, rp_options_tab, RP, OPTIONS_TAB, GtkBox)
+#else /* !GTK_CHECK_VERSION(3,0,0) */
+G_DECLARE_FINAL_TYPE(RpOptionsTab, rp_options_tab, RP, OPTIONS_TAB, GtkVBox)
+#endif /* GTK_CHECK_VERSION(3,0,0) */
 
-#define TYPE_OPTIONS_TAB            (options_tab_get_type())
-#define OPTIONS_TAB(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), TYPE_OPTIONS_TAB, OptionsTab))
-#define OPTIONS_TAB_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass),  TYPE_OPTIONS_TAB, OptionsTabClass))
-#define IS_OPTIONS_TAB(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), TYPE_OPTIONS_TAB))
-#define IS_OPTIONS_TAB_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass),  TYPE_OPTIONS_TAB))
-#define OPTIONS_TAB_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj),  TYPE_OPTIONS_TAB, OptionsTabClass))
+/* this function is implemented automatically by the G_DEFINE_TYPE macro */
+void		rp_options_tab_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
 
-/* these two functions are implemented automatically by the G_DEFINE_TYPE macro */
-GType		options_tab_get_type		(void) G_GNUC_CONST G_GNUC_INTERNAL;
-void		options_tab_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
-
-GtkWidget	*options_tab_new		(void) G_GNUC_INTERNAL G_GNUC_MALLOC;
+GtkWidget	*rp_options_tab_new		(void) G_GNUC_INTERNAL G_GNUC_MALLOC;
 
 G_END_DECLS
 

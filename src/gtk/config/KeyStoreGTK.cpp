@@ -29,11 +29,11 @@ typedef enum {
 	SIGNAL_LAST
 } KeyStoreGTKSignalID;
 
-static void	key_store_gtk_get_property	(GObject	*object,
+static void	rp_key_store_gtk_get_property	(GObject	*object,
 						 guint		 prop_id,
 						 GValue		*value,
 						 GParamSpec	*pspec);
-static void	key_store_gtk_set_property	(GObject	*object,
+static void	rp_key_store_gtk_set_property	(GObject	*object,
 						 guint		 prop_id,
 						 const GValue	*value,
 						 GParamSpec	*pspec);
@@ -42,32 +42,32 @@ static GParamSpec *props[PROP_LAST];
 static guint signals[SIGNAL_LAST];
 
 // KeyStoreGTK class
-struct _KeyStoreGTKClass {
+struct _RpKeyStoreGTKClass {
 	GObjectClass __parent__;
 };
 
 // KeyStoreGTK instance
-class KeyStoreGTKPrivate;
-struct _KeyStoreGTK {
+class RpKeyStoreGTKPrivate;
+struct _RpKeyStoreGTK {
 	GObject __parent__;
 
-	KeyStoreGTKPrivate *d;
+	RpKeyStoreGTKPrivate *d;
 };
 
-static void	key_store_gtk_finalize		(GObject	*object);
+static void	rp_key_store_gtk_finalize		(GObject	*object);
 
 /**
- * KeyStoreUI implementation for GTK+.
+ * KeyStoreUI implementation for GTK+
  */
-class KeyStoreGTKPrivate final : public LibRomData::KeyStoreUI
+class RpKeyStoreGTKPrivate final : public LibRomData::KeyStoreUI
 {
 	public:
-		KeyStoreGTKPrivate(KeyStoreGTK *q)
+		RpKeyStoreGTKPrivate(RpKeyStoreGTK *q)
 			: q(q) { }
 
 	private:
-		KeyStoreGTK *const q;
-		RP_DISABLE_COPY(KeyStoreGTKPrivate);
+		RpKeyStoreGTK *const q;
+		RP_DISABLE_COPY(RpKeyStoreGTKPrivate);
 
 	protected: /*signals:*/
 		/**
@@ -108,16 +108,16 @@ class KeyStoreGTKPrivate final : public LibRomData::KeyStoreUI
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
-G_DEFINE_TYPE_EXTENDED(KeyStoreGTK, key_store_gtk,
+G_DEFINE_TYPE_EXTENDED(RpKeyStoreGTK, rp_key_store_gtk,
 	G_TYPE_OBJECT, static_cast<GTypeFlags>(0), { });
 
 static void
-key_store_gtk_class_init(KeyStoreGTKClass *klass)
+rp_key_store_gtk_class_init(RpKeyStoreGTKClass *klass)
 {
 	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
-	gobject_class->finalize = key_store_gtk_finalize;
-	gobject_class->set_property = key_store_gtk_set_property;
-	gobject_class->get_property = key_store_gtk_get_property;
+	gobject_class->finalize = rp_key_store_gtk_finalize;
+	gobject_class->set_property = rp_key_store_gtk_set_property;
+	gobject_class->get_property = rp_key_store_gtk_get_property;
 
 	/** Properties **/
 
@@ -140,7 +140,7 @@ key_store_gtk_class_init(KeyStoreGTKClass *klass)
 	 * @param keyIdx Key index.
 	 */
 	signals[SIGNAL_KEY_CHANGED] = g_signal_new("key-changed",
-		TYPE_KEY_STORE_GTK, G_SIGNAL_RUN_LAST,
+		RP_TYPE_KEY_STORE_GTK, G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 2, G_TYPE_INT, G_TYPE_INT);
 
@@ -149,7 +149,7 @@ key_store_gtk_class_init(KeyStoreGTKClass *klass)
 	 * @param idx Flat key index.
 	 */
 	signals[SIGNAL_KEY_CHANGED_FLAT] = g_signal_new("key-changed-flat",
-		TYPE_KEY_STORE_GTK, G_SIGNAL_RUN_LAST,
+		RP_TYPE_KEY_STORE_GTK, G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 1, G_TYPE_INT);
 
@@ -157,7 +157,7 @@ key_store_gtk_class_init(KeyStoreGTKClass *klass)
 	 * All keys have changed.
 	 */
 	signals[SIGNAL_ALL_KEYS_CHANGED] = g_signal_new("all-keys-changed",
-		TYPE_KEY_STORE_GTK, G_SIGNAL_RUN_LAST,
+		RP_TYPE_KEY_STORE_GTK, G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 0);
 
@@ -165,45 +165,45 @@ key_store_gtk_class_init(KeyStoreGTKClass *klass)
 	 * KeyStore has been changed by the user.
 	 */
 	signals[SIGNAL_MODIFIED] = g_signal_new("modified",
-		TYPE_KEY_STORE_GTK, G_SIGNAL_RUN_LAST,
+		RP_TYPE_KEY_STORE_GTK, G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 0);
 }
 
 static void
-key_store_gtk_init(KeyStoreGTK *tab)
+rp_key_store_gtk_init(RpKeyStoreGTK *tab)
 {
 	// Initialize the KeyStoreGTKPrivate.
 	// This is a workaround for GObject not supporting
 	// C++ directly, and I don't want to use glibmm/gtkmm.
-	tab->d = new KeyStoreGTKPrivate(tab);
+	tab->d = new RpKeyStoreGTKPrivate(tab);
 }
 
 static void
-key_store_gtk_finalize(GObject *object)
+rp_key_store_gtk_finalize(GObject *object)
 {
-	KeyStoreGTK *const keyStore = KEY_STORE_GTK(object);
+	RpKeyStoreGTK *const keyStore = RP_KEY_STORE_GTK(object);
 	delete keyStore->d;
 
 	// Call the superclass finalize() function.
-	G_OBJECT_CLASS(key_store_gtk_parent_class)->finalize(object);
+	G_OBJECT_CLASS(rp_key_store_gtk_parent_class)->finalize(object);
 }
 
-KeyStoreGTK*
-key_store_gtk_new(void)
+RpKeyStoreGTK*
+rp_key_store_gtk_new(void)
 {
-	return static_cast<KeyStoreGTK*>(g_object_new(TYPE_KEY_STORE_GTK, nullptr));
+	return static_cast<RpKeyStoreGTK*>(g_object_new(RP_TYPE_KEY_STORE_GTK, nullptr));
 }
 
 /** Properties **/
 
 static void
-key_store_gtk_get_property(GObject	*object,
-			   guint	 prop_id,
-			   GValue	*value,
-			   GParamSpec	*pspec)
+rp_key_store_gtk_get_property(GObject		*object,
+			      guint		 prop_id,
+			      GValue		*value,
+			      GParamSpec	*pspec)
 {
-	KeyStoreGTK *const keyStore = KEY_STORE_GTK(object);
+	RpKeyStoreGTK *const keyStore = RP_KEY_STORE_GTK(object);
 
 	switch (prop_id) {
 		case PROP_TOTAL_KEY_COUNT:
@@ -221,12 +221,12 @@ key_store_gtk_get_property(GObject	*object,
 }
 
 static void
-key_store_gtk_set_property(GObject	*object,
-			   guint	 prop_id,
-			   const GValue	*value,
-			   GParamSpec	*pspec)
+rp_key_store_gtk_set_property(GObject		*object,
+			      guint		 prop_id,
+			      const GValue	*value,
+			      GParamSpec	*pspec)
 {
-	//sKeyStoreGTK *const keyStore = KEY_STORE_GTK(object);
+	//sRpKeyStoreGTK *const keyStore = RP_KEY_STORE_GTK(object);
 	RP_UNUSED(value);
 
 	// TODO: Handling read-only properties?
@@ -243,9 +243,9 @@ key_store_gtk_set_property(GObject	*object,
  * @return Total key count
  */
 int
-key_store_gtk_get_total_key_count(KeyStoreGTK *keyStore)
+rp_key_store_gtk_get_total_key_count(RpKeyStoreGTK *keyStore)
 {
-	g_return_val_if_fail(IS_KEY_STORE_GTK(keyStore), 0);
+	g_return_val_if_fail(RP_IS_KEY_STORE_GTK(keyStore), 0);
 	return keyStore->d->totalKeyCount();
 }
 
@@ -255,9 +255,9 @@ key_store_gtk_get_total_key_count(KeyStoreGTK *keyStore)
  * @return True if anything has been changed; false if not.
  */
 gboolean
-key_store_gtk_has_changed(KeyStoreGTK *keyStore)
+rp_key_store_gtk_has_changed(RpKeyStoreGTK *keyStore)
 {
-	g_return_val_if_fail(IS_KEY_STORE_GTK(keyStore), FALSE);
+	g_return_val_if_fail(RP_IS_KEY_STORE_GTK(keyStore), FALSE);
 	return keyStore->d->hasChanged();
 }
 
@@ -267,8 +267,8 @@ key_store_gtk_has_changed(KeyStoreGTK *keyStore)
  * @return KeyStoreUI
  */
 LibRomData::KeyStoreUI*
-key_store_gtk_get_key_store_ui(KeyStoreGTK *keyStore)
+rp_key_store_gtk_get_key_store_ui(RpKeyStoreGTK *keyStore)
 {
-	g_return_val_if_fail(IS_KEY_STORE_GTK(keyStore), nullptr);
+	g_return_val_if_fail(RP_IS_KEY_STORE_GTK(keyStore), nullptr);
 	return keyStore->d;
 }

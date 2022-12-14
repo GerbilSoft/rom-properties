@@ -27,7 +27,7 @@ rp_config_tab_default_init(RpConfigTabInterface *iface)
 
 	/** Signals **/
 	signals[SIGNAL_MODIFIED] = g_signal_new("modified",
-		RP_CONFIG_TYPE_TAB, G_SIGNAL_RUN_LAST,
+		RP_TYPE_CONFIG_TAB, G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 0);
 }
@@ -36,7 +36,7 @@ rp_config_tab_default_init(RpConfigTabInterface *iface)
 
 gboolean rp_config_tab_has_defaults(RpConfigTab *tab)
 {
-	g_return_val_if_fail(RP_CONFIG_IS_TAB(tab), false);
+	g_return_val_if_fail(RP_IS_CONFIG_TAB(tab), false);
 
 	// Assume tabs have the "Defaults" button by default if the function isn't defined.
 	RpConfigTabInterface *const iface = RP_CONFIG_TAB_GET_IFACE(tab);
@@ -45,7 +45,7 @@ gboolean rp_config_tab_has_defaults(RpConfigTab *tab)
 
 void rp_config_tab_reset(RpConfigTab *tab)
 {
-	g_return_if_fail(RP_CONFIG_IS_TAB(tab));
+	g_return_if_fail(RP_IS_CONFIG_TAB(tab));
 
 	RpConfigTabInterface *const iface = RP_CONFIG_TAB_GET_IFACE(tab);
 	assert(iface->reset != NULL);
@@ -55,7 +55,7 @@ void rp_config_tab_reset(RpConfigTab *tab)
 
 void rp_config_tab_load_defaults(RpConfigTab *tab)
 {
-	g_return_if_fail(RP_CONFIG_IS_TAB(tab));
+	g_return_if_fail(RP_IS_CONFIG_TAB(tab));
 
 	RpConfigTabInterface *const iface = RP_CONFIG_TAB_GET_IFACE(tab);
 	assert(iface->load_defaults != NULL);
@@ -65,7 +65,7 @@ void rp_config_tab_load_defaults(RpConfigTab *tab)
 
 void rp_config_tab_save(RpConfigTab *tab, GKeyFile *keyFile)
 {
-	g_return_if_fail(RP_CONFIG_IS_TAB(tab));
+	g_return_if_fail(RP_IS_CONFIG_TAB(tab));
 
 	RpConfigTabInterface *const iface = RP_CONFIG_TAB_GET_IFACE(tab);
 	assert(iface->save != NULL);

@@ -33,15 +33,15 @@ typedef GtkVBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_VBOX
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
-class ImageTypesTabPrivate : public TImageTypesConfig<GtkComboBox*>
+class RpImageTypesTabPrivate : public TImageTypesConfig<GtkComboBox*>
 {
 	public:
-		explicit ImageTypesTabPrivate(ImageTypesTab *q);
-		~ImageTypesTabPrivate();
+		explicit RpImageTypesTabPrivate(RpImageTypesTab *q);
+		~RpImageTypesTabPrivate();
 
 	private:
-		ImageTypesTab *const q;
-		RP_DISABLE_COPY(ImageTypesTabPrivate)
+		RpImageTypesTab *const q;
+		RP_DISABLE_COPY(RpImageTypesTabPrivate)
 
 	protected:
 		/** TImageTypesConfig functions (protected) **/
@@ -89,7 +89,7 @@ class ImageTypesTabPrivate : public TImageTypesConfig<GtkComboBox*>
 		void cboImageType_setPriorityValue(unsigned int cbid, unsigned int prio) final;
 
 	public:
-		/** Other ImageTypesTabPrivate functions **/
+		/** Other RpImageTypesTabPrivate functions **/
 
 		/**
 		 * Initialize strings.
@@ -108,17 +108,17 @@ class ImageTypesTabPrivate : public TImageTypesConfig<GtkComboBox*>
 };
 
 // ImageTypesTab class
-struct _ImageTypesTabClass {
+struct _RpImageTypesTabClass {
 	superclass __parent__;
 };
 
 // ImageTypesTab instance
-struct _ImageTypesTab {
+struct _RpImageTypesTab {
 	super __parent__;
 	bool inhibit;	// If true, inhibit signals.
 	bool changed;	// If true, an option was changed.
 
-	ImageTypesTabPrivate *d;
+	RpImageTypesTabPrivate *d;
 
 	GtkWidget *table;	// GtkGrid/GtkTable
 	GtkWidget *lblCredits;
@@ -126,36 +126,36 @@ struct _ImageTypesTab {
 
 static GQuark rp_config_cbid_quark;
 
-static void	image_types_tab_finalize			(GObject	*object);
+static void	rp_image_types_tab_finalize			(GObject		*object);
 
 // Interface initialization
-static void	image_types_tab_rp_config_tab_interface_init	(RpConfigTabInterface *iface);
-static gboolean	image_types_tab_has_defaults			(ImageTypesTab	*tab);
-static void	image_types_tab_reset				(ImageTypesTab	*tab);
-static void	image_types_tab_load_defaults			(ImageTypesTab	*tab);
-static void	image_types_tab_save				(ImageTypesTab	*tab,
-								 GKeyFile       *keyFile);
+static void	rp_image_types_tab_rp_config_tab_interface_init	(RpConfigTabInterface	*iface);
+static gboolean	rp_image_types_tab_has_defaults			(RpImageTypesTab	*tab);
+static void	rp_image_types_tab_reset			(RpImageTypesTab	*tab);
+static void	rp_image_types_tab_load_defaults		(RpImageTypesTab	*tab);
+static void	rp_image_types_tab_save				(RpImageTypesTab	*tab,
+								 GKeyFile       	*keyFile);
 
 // "modified" signal handler for UI widgets
-static void	image_types_tab_modified_handler		(GtkWidget	*widget,
-								 ImageTypesTab	*tab);
+static void	rp_image_types_tab_modified_handler		(GtkWidget		*widget,
+								 RpImageTypesTab	*tab);
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
-G_DEFINE_TYPE_EXTENDED(ImageTypesTab, image_types_tab,
+G_DEFINE_TYPE_EXTENDED(RpImageTypesTab, rp_image_types_tab,
 	GTK_TYPE_SUPER, static_cast<GTypeFlags>(0),
-		G_IMPLEMENT_INTERFACE(RP_CONFIG_TYPE_TAB,
-			image_types_tab_rp_config_tab_interface_init));
+		G_IMPLEMENT_INTERFACE(RP_TYPE_CONFIG_TAB,
+			rp_image_types_tab_rp_config_tab_interface_init));
 
-/** ImageTypesTabPrivate **/
+/** RpImageTypesTabPrivate **/
 
-ImageTypesTabPrivate::ImageTypesTabPrivate(ImageTypesTab* q)
+RpImageTypesTabPrivate::RpImageTypesTabPrivate(RpImageTypesTab* q)
 	: q(q)
 	, cboImageType_lastAdded(nullptr)
 	, keyFile(nullptr)
 { }
 
-ImageTypesTabPrivate::~ImageTypesTabPrivate()
+RpImageTypesTabPrivate::~RpImageTypesTabPrivate()
 {
 	// cboImageType_lastAdded should be nullptr.
 	// (Cleared by finishComboBoxes().)
@@ -171,7 +171,7 @@ ImageTypesTabPrivate::~ImageTypesTabPrivate()
 /**
  * Create the labels in the grid.
  */
-void ImageTypesTabPrivate::createGridLabels(void)
+void RpImageTypesTabPrivate::createGridLabels(void)
 {
 	// TODO: Make sure that all columns except 0 have equal sizes.
 
@@ -240,7 +240,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
  * Create a ComboBox in the grid.
  * @param cbid ComboBox ID.
  */
-void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
+void RpImageTypesTabPrivate::createComboBox(unsigned int cbid)
 {
 	const unsigned int sys = sysFromCbid(cbid);
 	const unsigned int imageType = imageTypeFromCbid(cbid);
@@ -278,7 +278,7 @@ void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
 	// programmatically edited, unlike Qt, so we'll need to
 	// inhibit handling when loading settings.
 	g_signal_connect(cbo, "changed",
-		G_CALLBACK(image_types_tab_modified_handler), q);
+		G_CALLBACK(rp_image_types_tab_modified_handler), q);
 
 	// Adjust the tab order. [TODO]
 #if 0
@@ -294,7 +294,7 @@ void ImageTypesTabPrivate::createComboBox(unsigned int cbid)
  * @param cbid ComboBox ID.
  * @param max_prio Maximum priority value. (minimum is 1)
  */
-void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
+void RpImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 {
 	const unsigned int sys = sysFromCbid(cbid);
 	const unsigned int imageType = imageTypeFromCbid(cbid);
@@ -338,7 +338,7 @@ void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 /**
  * Finish adding the ComboBoxes.
  */
-void ImageTypesTabPrivate::finishComboBoxes(void)
+void RpImageTypesTabPrivate::finishComboBoxes(void)
 {
 	if (!cboImageType_lastAdded) {
 		// Nothing to do here.
@@ -347,7 +347,7 @@ void ImageTypesTabPrivate::finishComboBoxes(void)
 
 	/* TODO
 	// Set the tab order for the credits label.
-	Q_Q(ImageTypesTab);
+	Q_Q(RpImageTypesTab);
 	q->setTabOrder(cboImageType_lastAdded, ui.lblCredits);
 	cboImageType_lastAdded = nullptr;
 	*/
@@ -359,7 +359,7 @@ void ImageTypesTabPrivate::finishComboBoxes(void)
  * @param imageTypeList Image type list, comma-separated.
  * @return 0 on success; negative POSIX error code on error.
  */
-int ImageTypesTabPrivate::saveWriteEntry(const char *sysName, const char *imageTypeList)
+int RpImageTypesTabPrivate::saveWriteEntry(const char *sysName, const char *imageTypeList)
 {
 	// NOTE: GKeyFile does *not* store comma-separated strings with
 	// double-quotes, whereas QSettings does.
@@ -381,7 +381,7 @@ int ImageTypesTabPrivate::saveWriteEntry(const char *sysName, const char *imageT
  * @param cbid ComboBox ID.
  * @param prio New priority value. (0xFF == no)
  */
-void ImageTypesTabPrivate::cboImageType_setPriorityValue(unsigned int cbid, unsigned int prio)
+void RpImageTypesTabPrivate::cboImageType_setPriorityValue(unsigned int cbid, unsigned int prio)
 {
 	const unsigned int sys = sysFromCbid(cbid);
 	const unsigned int imageType = imageTypeFromCbid(cbid);
@@ -402,10 +402,10 @@ void ImageTypesTabPrivate::cboImageType_setPriorityValue(unsigned int cbid, unsi
 /** ImageTypesTab **/
 
 static void
-image_types_tab_class_init(ImageTypesTabClass *klass)
+rp_image_types_tab_class_init(RpImageTypesTabClass *klass)
 {
 	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
-	gobject_class->finalize = image_types_tab_finalize;
+	gobject_class->finalize = rp_image_types_tab_finalize;
 
 	/** Quarks **/
 
@@ -415,16 +415,16 @@ image_types_tab_class_init(ImageTypesTabClass *klass)
 }
 
 static void
-image_types_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)
+rp_image_types_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)
 {
-	iface->has_defaults = (__typeof__(iface->has_defaults))image_types_tab_has_defaults;
-	iface->reset = (__typeof__(iface->reset))image_types_tab_reset;
-	iface->load_defaults = (__typeof__(iface->load_defaults))image_types_tab_load_defaults;
-	iface->save = (__typeof__(iface->save))image_types_tab_save;
+	iface->has_defaults = (__typeof__(iface->has_defaults))rp_image_types_tab_has_defaults;
+	iface->reset = (__typeof__(iface->reset))rp_image_types_tab_reset;
+	iface->load_defaults = (__typeof__(iface->load_defaults))rp_image_types_tab_load_defaults;
+	iface->save = (__typeof__(iface->save))rp_image_types_tab_save;
 }
 
 static void
-image_types_tab_init(ImageTypesTab *tab)
+rp_image_types_tab_init(RpImageTypesTab *tab)
 {
 #if GTK_CHECK_VERSION(3,0,0)
 	// Make this a VBox.
@@ -467,7 +467,7 @@ image_types_tab_init(ImageTypesTab *tab)
 	gtk_widget_set_name(tab->table, "table");
 
 	// Create the control grid.
-	tab->d = new ImageTypesTabPrivate(tab);
+	tab->d = new RpImageTypesTabPrivate(tab);
 	tab->d->createGrid();
 
 #if GTK_CHECK_VERSION(4,0,0)
@@ -489,40 +489,40 @@ image_types_tab_init(ImageTypesTab *tab)
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Load the current configuration.
-	image_types_tab_reset(tab);
+	rp_image_types_tab_reset(tab);
 }
 
 static void
-image_types_tab_finalize(GObject *object)
+rp_image_types_tab_finalize(GObject *object)
 {
-	ImageTypesTab *const tab = IMAGE_TYPES_TAB(object);
+	RpImageTypesTab *const tab = RP_IMAGE_TYPES_TAB(object);
 
 	// Delete the private class.
 	delete tab->d;
 
 	// Call the superclass finalize() function.
-	G_OBJECT_CLASS(image_types_tab_parent_class)->finalize(object);
+	G_OBJECT_CLASS(rp_image_types_tab_parent_class)->finalize(object);
 }
 
 GtkWidget*
-image_types_tab_new(void)
+rp_image_types_tab_new(void)
 {
-	return static_cast<GtkWidget*>(g_object_new(TYPE_IMAGE_TYPES_TAB, nullptr));
+	return static_cast<GtkWidget*>(g_object_new(RP_TYPE_IMAGE_TYPES_TAB, nullptr));
 }
 
 /** RpConfigTab interface functions **/
 
 static gboolean
-image_types_tab_has_defaults(ImageTypesTab *tab)
+rp_image_types_tab_has_defaults(RpImageTypesTab *tab)
 {
-	g_return_val_if_fail(IS_IMAGE_TYPES_TAB(tab), FALSE);
+	g_return_val_if_fail(RP_IS_IMAGE_TYPES_TAB(tab), FALSE);
 	return TRUE;
 }
 
 static void
-image_types_tab_reset(ImageTypesTab *tab)
+rp_image_types_tab_reset(RpImageTypesTab *tab)
 {
-	g_return_if_fail(IS_IMAGE_TYPES_TAB(tab));
+	g_return_if_fail(RP_IS_IMAGE_TYPES_TAB(tab));
 
 	tab->inhibit = true;
 	tab->d->reset();
@@ -531,9 +531,9 @@ image_types_tab_reset(ImageTypesTab *tab)
 }
 
 static void
-image_types_tab_load_defaults(ImageTypesTab *tab)
+rp_image_types_tab_load_defaults(RpImageTypesTab *tab)
 {
-	g_return_if_fail(IS_IMAGE_TYPES_TAB(tab));
+	g_return_if_fail(RP_IS_IMAGE_TYPES_TAB(tab));
 	tab->inhibit = true;
 
 	if (tab->d->loadDefaults()) {
@@ -546,9 +546,9 @@ image_types_tab_load_defaults(ImageTypesTab *tab)
 }
 
 static void
-image_types_tab_save(ImageTypesTab *tab, GKeyFile *keyFile)
+rp_image_types_tab_save(RpImageTypesTab *tab, GKeyFile *keyFile)
 {
-	g_return_if_fail(IS_IMAGE_TYPES_TAB(tab));
+	g_return_if_fail(RP_IS_IMAGE_TYPES_TAB(tab));
 	g_return_if_fail(keyFile != nullptr);
 
 	if (!tab->changed) {
@@ -573,7 +573,7 @@ image_types_tab_save(ImageTypesTab *tab, GKeyFile *keyFile)
  * @param tab ImageTypesTab
  */
 static void
-image_types_tab_modified_handler(GtkWidget *widget, ImageTypesTab *tab)
+rp_image_types_tab_modified_handler(GtkWidget *widget, RpImageTypesTab *tab)
 {
 	RP_UNUSED(widget);
 	if (tab->inhibit)
@@ -583,7 +583,7 @@ image_types_tab_modified_handler(GtkWidget *widget, ImageTypesTab *tab)
 	g_return_if_fail(GTK_IS_COMBO_BOX(widget));
 	GtkComboBox *const cbo = GTK_COMBO_BOX(widget);
 	const unsigned int cbid = GPOINTER_TO_UINT(g_object_get_qdata(G_OBJECT(cbo), rp_config_cbid_quark));
-	ImageTypesTabPrivate *const d = tab->d;
+	RpImageTypesTabPrivate *const d = tab->d;
 
 	const int idx = gtk_combo_box_get_active(cbo);
 	const unsigned int prio = (unsigned int)(idx <= 0 ? 0xFF : idx-1);

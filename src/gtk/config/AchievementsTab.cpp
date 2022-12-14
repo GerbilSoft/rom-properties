@@ -32,13 +32,13 @@ typedef GtkVBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_VBOX
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
-// AchievementsTab class
-struct _AchievementsTabClass {
+// RpAchievementsTab class
+struct _RpAchievementsTabClass {
 	superclass __parent__;
 };
 
-// AchievementsTab instance
-struct _AchievementsTab {
+// RpAchievementsTab instance
+struct _RpAchievementsTab {
 	super __parent__;
 
 	GtkListStore	*listStore;
@@ -46,37 +46,37 @@ struct _AchievementsTab {
 };
 
 // Interface initialization
-static void	achievements_tab_rp_config_tab_interface_init	(RpConfigTabInterface *iface);
-static gboolean	achievements_tab_has_defaults			(AchievementsTab	*tab);
-static void	achievements_tab_reset				(AchievementsTab	*tab);
-static void	achievements_tab_load_defaults			(AchievementsTab	*tab);
-static void	achievements_tab_save				(AchievementsTab	*tab,
-							 GKeyFile       *keyFile);
+static void	rp_achievements_tab_rp_config_tab_interface_init	(RpConfigTabInterface	*iface);
+static gboolean	rp_achievements_tab_has_defaults			(RpAchievementsTab	*tab);
+static void	rp_achievements_tab_reset				(RpAchievementsTab	*tab);
+static void	rp_achievements_tab_load_defaults			(RpAchievementsTab	*tab);
+static void	rp_achievements_tab_save				(RpAchievementsTab	*tab,
+									 GKeyFile		*keyFile);
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
-G_DEFINE_TYPE_EXTENDED(AchievementsTab, achievements_tab,
+G_DEFINE_TYPE_EXTENDED(RpAchievementsTab, rp_achievements_tab,
 	GTK_TYPE_SUPER, static_cast<GTypeFlags>(0),
-		G_IMPLEMENT_INTERFACE(RP_CONFIG_TYPE_TAB,
-			achievements_tab_rp_config_tab_interface_init));
+		G_IMPLEMENT_INTERFACE(RP_TYPE_CONFIG_TAB,
+			rp_achievements_tab_rp_config_tab_interface_init));
 
 static void
-achievements_tab_class_init(AchievementsTabClass *klass)
+rp_achievements_tab_class_init(RpAchievementsTabClass *klass)
 {
 	RP_UNUSED(klass);
 }
 
 static void
-achievements_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)
+rp_achievements_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)
 {
-	iface->has_defaults = (__typeof__(iface->has_defaults))achievements_tab_has_defaults;
-	iface->reset = (__typeof__(iface->reset))achievements_tab_reset;
-	iface->load_defaults = (__typeof__(iface->load_defaults))achievements_tab_load_defaults;
-	iface->save = (__typeof__(iface->save))achievements_tab_save;
+	iface->has_defaults = (__typeof__(iface->has_defaults))rp_achievements_tab_has_defaults;
+	iface->reset = (__typeof__(iface->reset))rp_achievements_tab_reset;
+	iface->load_defaults = (__typeof__(iface->load_defaults))rp_achievements_tab_load_defaults;
+	iface->save = (__typeof__(iface->save))rp_achievements_tab_save;
 }
 
 static void
-achievements_tab_init(AchievementsTab *tab)
+rp_achievements_tab_init(RpAchievementsTab *tab)
 {
 #if GTK_CHECK_VERSION(3,0,0)
 	// Make this a VBox.
@@ -146,28 +146,28 @@ achievements_tab_init(AchievementsTab *tab)
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Load the achievements.
-	achievements_tab_reset(tab);
+	rp_achievements_tab_reset(tab);
 }
 
 GtkWidget*
-achievements_tab_new(void)
+rp_achievements_tab_new(void)
 {
-	return static_cast<GtkWidget*>(g_object_new(TYPE_ACHIEVEMENTS_TAB, nullptr));
+	return static_cast<GtkWidget*>(g_object_new(RP_TYPE_ACHIEVEMENTS_TAB, nullptr));
 }
 
 /** RpConfigTab interface functions **/
 
 static gboolean
-achievements_tab_has_defaults(AchievementsTab *tab)
+rp_achievements_tab_has_defaults(RpAchievementsTab *tab)
 {
-	g_return_val_if_fail(IS_ACHIEVEMENTS_TAB(tab), FALSE);
+	g_return_val_if_fail(RP_IS_ACHIEVEMENTS_TAB(tab), FALSE);
 	return FALSE;
 }
 
 static void
-achievements_tab_reset(AchievementsTab *tab)
+rp_achievements_tab_reset(RpAchievementsTab *tab)
 {
-	g_return_if_fail(IS_ACHIEVEMENTS_TAB(tab));
+	g_return_if_fail(RP_IS_ACHIEVEMENTS_TAB(tab));
 	gtk_list_store_clear(tab->listStore);
 
 	// Load the Achievements icon sprite sheet.
@@ -237,18 +237,18 @@ achievements_tab_reset(AchievementsTab *tab)
 }
 
 static void
-achievements_tab_load_defaults(AchievementsTab *tab)
+rp_achievements_tab_load_defaults(RpAchievementsTab *tab)
 {
-	g_return_if_fail(IS_ACHIEVEMENTS_TAB(tab));
+	g_return_if_fail(RP_IS_ACHIEVEMENTS_TAB(tab));
 
 	// Not implemented.
 	return;
 }
 
 static void
-achievements_tab_save(AchievementsTab *tab, GKeyFile *keyFile)
+rp_achievements_tab_save(RpAchievementsTab *tab, GKeyFile *keyFile)
 {
-	g_return_if_fail(IS_ACHIEVEMENTS_TAB(tab));
+	g_return_if_fail(RP_IS_ACHIEVEMENTS_TAB(tab));
 	g_return_if_fail(keyFile != nullptr);
 
 	// Not implemented.

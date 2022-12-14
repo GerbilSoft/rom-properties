@@ -35,29 +35,29 @@ using LibRpBase::KeyManager;
 #define CONFIG_DIALOG_RESPONSE_RESET		0
 #define CONFIG_DIALOG_RESPONSE_DEFAULTS		1
 
-static void	config_dialog_dispose		(GObject	*object);
+static void	rp_config_dialog_dispose		(GObject	*object);
 
 // Signal handlers
-static void	config_dialog_response_handler	(ConfigDialog	*dialog,
-						 gint		 response_id,
-						 gpointer	 user_data);
+static void	rp_config_dialog_response_handler	(RpConfigDialog	*dialog,
+							 gint		 response_id,
+							 gpointer	 user_data);
 
-static void	config_dialog_switch_page	(GtkNotebook	*tabWidget,
-						 GtkWidget	*page,
-						 guint		 page_num,
-						 ConfigDialog	*dialog);
+static void	rp_config_dialog_switch_page		(GtkNotebook	*tabWidget,
+							 GtkWidget	*page,
+							 guint		 page_num,
+							 RpConfigDialog	*dialog);
 
-static void	config_dialog_tab_modified	(RpConfigTab	*tab,
-						 ConfigDialog	*dialog);
+static void	rp_config_dialog_tab_modified		(RpConfigTab	*tab,
+							 RpConfigDialog	*dialog);
 
 
 // ConfigDialog class
-struct _ConfigDialogClass {
+struct _RpConfigDialogClass {
 	GtkDialogClass __parent__;
 };
 
 // ConfigDialog instance
-struct _ConfigDialog {
+struct _RpConfigDialog {
 	GtkDialog __parent__;
 
 	// Buttons
@@ -87,18 +87,18 @@ struct _ConfigDialog {
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
-G_DEFINE_TYPE_EXTENDED(ConfigDialog, config_dialog,
+G_DEFINE_TYPE_EXTENDED(RpConfigDialog, rp_config_dialog,
 	GTK_TYPE_DIALOG, static_cast<GTypeFlags>(0), {});
 
 static void
-config_dialog_class_init(ConfigDialogClass *klass)
+rp_config_dialog_class_init(RpConfigDialogClass *klass)
 {
 	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-	gobject_class->dispose = config_dialog_dispose;
+	gobject_class->dispose = rp_config_dialog_dispose;
 }
 
 static void
-config_dialog_init(ConfigDialog *dialog)
+rp_config_dialog_init(RpConfigDialog *dialog)
 {
 	// g_object_new() guarantees that all values are initialized to 0.
 	gtk_window_set_title(GTK_WINDOW(dialog),
@@ -232,20 +232,20 @@ config_dialog_init(ConfigDialog *dialog)
 		gtk_widget_set_name(dialog->tab##name, "tab" #name); \
 		GTK_WIDGET_SHOW_GTK3(dialog->tab##name); \
 		g_signal_connect(dialog->tab##name, "modified", \
-			G_CALLBACK(config_dialog_tab_modified), dialog); \
+			G_CALLBACK(rp_config_dialog_tab_modified), dialog); \
 		\
 		ADD_TAB(name); \
 	} while (0)
 
-	CREATE_TAB(ImageTypes, C_("ConfigDialog", "&Image Types"), image_types_tab_new);
-	CREATE_TAB(Systems, C_("ConfigDialog", "&Systems"), systems_tab_new);
-	CREATE_TAB(Options, C_("ConfigDialog", "&Options"), options_tab_new);
-	CREATE_TAB(Cache, C_("ConfigDialog", "Thumbnail Cache"), cache_tab_new);
-	CREATE_TAB(Achievements, C_("ConfigDialog", "&Achievements"), achievements_tab_new);
+	CREATE_TAB(ImageTypes, C_("ConfigDialog", "&Image Types"), rp_image_types_tab_new);
+	CREATE_TAB(Systems, C_("ConfigDialog", "&Systems"), rp_systems_tab_new);
+	CREATE_TAB(Options, C_("ConfigDialog", "&Options"), rp_options_tab_new);
+	CREATE_TAB(Cache, C_("ConfigDialog", "Thumbnail Cache"), rp_cache_tab_new);
+	CREATE_TAB(Achievements, C_("ConfigDialog", "&Achievements"), rp_achievements_tab_new);
 #ifdef ENABLE_DECRYPTION
-	CREATE_TAB(KeyManager, C_("ConfigDialog", "&Key Manager"), key_manager_tab_new);
+	CREATE_TAB(KeyManager, C_("ConfigDialog", "&Key Manager"), rp_key_manager_tab_new);
 #endif /* ENABLE_DECRYPTION */
-	CREATE_TAB(About, C_("ConfigDialog", "Abou&t"), about_tab_new);
+	CREATE_TAB(About, C_("ConfigDialog", "Abou&t"), rp_about_tab_new);
 
 	// Show the GtkNotebook.
 	GTK_WIDGET_SHOW_GTK3(dialog->tabWidget);
@@ -265,15 +265,15 @@ config_dialog_init(ConfigDialog *dialog)
 	// Connect signals.
 	dialog->tabWidget_switch_page = g_signal_connect(
 		dialog->tabWidget, "switch-page",
-		G_CALLBACK(config_dialog_switch_page), dialog);
+		G_CALLBACK(rp_config_dialog_switch_page), dialog);
 
-	g_signal_connect(dialog, "response", G_CALLBACK(config_dialog_response_handler), NULL);
+	g_signal_connect(dialog, "response", G_CALLBACK(rp_config_dialog_response_handler), NULL);
 }
 
 static void
-config_dialog_dispose(GObject *object)
+rp_config_dialog_dispose(GObject *object)
 {
-	ConfigDialog *const dialog = CONFIG_DIALOG(object);
+	RpConfigDialog *const dialog = RP_CONFIG_DIALOG(object);
 
 	// Disconnect GtkNotebook's signals.
 	// Otherwise, it ends up trying to adjust btnDefaults after
@@ -285,13 +285,13 @@ config_dialog_dispose(GObject *object)
 	}
 
 	// Call the superclass dispose() function.
-	G_OBJECT_CLASS(config_dialog_parent_class)->dispose(object);
+	G_OBJECT_CLASS(rp_config_dialog_parent_class)->dispose(object);
 }
 
 GtkWidget*
-config_dialog_new(void)
+rp_config_dialog_new(void)
 {
-	return static_cast<GtkWidget*>(g_object_new(TYPE_CONFIG_DIALOG, nullptr));
+	return static_cast<GtkWidget*>(g_object_new(RP_TYPE_CONFIG_DIALOG, nullptr));
 }
 
 /**
@@ -299,7 +299,7 @@ config_dialog_new(void)
  * @param dialog ConfigDialog
  */
 static void
-config_dialog_close(ConfigDialog *dialog)
+rp_config_dialog_close(RpConfigDialog *dialog)
 {
 #if GTK_CHECK_VERSION(3,9,8)
 	gtk_window_close(GTK_WINDOW(dialog));
@@ -316,7 +316,7 @@ config_dialog_close(ConfigDialog *dialog)
  * @param dialog ConfigDialog
  */
 static void
-config_dialog_apply(ConfigDialog *dialog)
+rp_config_dialog_apply(RpConfigDialog *dialog)
 {
 	// Open the configuration file using GKeyFile.
 	// TODO: Error handling.
@@ -424,7 +424,7 @@ config_dialog_apply(ConfigDialog *dialog)
  * @param dialog ConfigDialog
  */
 static void
-config_dialog_reset(ConfigDialog *dialog)
+rp_config_dialog_reset(RpConfigDialog *dialog)
 {
 	GtkNotebook *const tabWidget = GTK_NOTEBOOK(dialog->tabWidget);
 	const int num_pages = gtk_notebook_get_n_pages(tabWidget);
@@ -446,7 +446,7 @@ config_dialog_reset(ConfigDialog *dialog)
  * @param dialog ConfigDialog
  */
 static void
-config_dialog_load_defaults(ConfigDialog *dialog)
+rp_config_dialog_load_defaults(RpConfigDialog *dialog)
 {
 	GtkNotebook *const tabWidget = GTK_NOTEBOOK(dialog->tabWidget);
 	RpConfigTab *const tab = RP_CONFIG_TAB(gtk_notebook_get_nth_page(
@@ -464,9 +464,9 @@ config_dialog_load_defaults(ConfigDialog *dialog)
  * @param user_data
  */
 static void
-config_dialog_response_handler(ConfigDialog *dialog,
-			       gint          response_id,
-			       gpointer      user_data)
+rp_config_dialog_response_handler(RpConfigDialog *dialog,
+				  gint		  response_id,
+				  gpointer	  user_data)
 {
 	RP_UNUSED(user_data);
 
@@ -474,32 +474,32 @@ config_dialog_response_handler(ConfigDialog *dialog,
 		case GTK_RESPONSE_OK:
 			// The "OK" button was clicked.
 			// Save all tabs and close the dialog.
-			config_dialog_apply(dialog);
-			config_dialog_close(dialog);
+			rp_config_dialog_apply(dialog);
+			rp_config_dialog_close(dialog);
 			break;
 
 		case GTK_RESPONSE_APPLY:
 			// The "Apply" button was clicked.
 			// Save all tabs.
-			config_dialog_apply(dialog);
+			rp_config_dialog_apply(dialog);
 			break;
 
 		case GTK_RESPONSE_CANCEL:
 			// The "Cancel" button was clicked.
 			// Close the dialog.
-			config_dialog_close(dialog);
+			rp_config_dialog_close(dialog);
 			break;
 
 		case CONFIG_DIALOG_RESPONSE_DEFAULTS:
 			// The "Defaults" button was clicked.
 			// Load defaults for the current tab.
-			config_dialog_load_defaults(dialog);
+			rp_config_dialog_load_defaults(dialog);
 			break;
 
 		case CONFIG_DIALOG_RESPONSE_RESET:
 			// The "Reset" button was clicked.
 			// Reset all tabs to the current settings.
-			config_dialog_reset(dialog);
+			rp_config_dialog_reset(dialog);
 			break;
 
 		default:
@@ -515,10 +515,10 @@ config_dialog_response_handler(ConfigDialog *dialog,
  * @param dialog
  */
 static void
-config_dialog_switch_page(GtkNotebook *tabWidget, GtkWidget *page, guint page_num, ConfigDialog *dialog)
+rp_config_dialog_switch_page(GtkNotebook *tabWidget, GtkWidget *page, guint page_num, RpConfigDialog *dialog)
 {
 #ifndef RP_USE_GTK_ALIGNMENT
-	g_return_if_fail(RP_CONFIG_IS_TAB(page));
+	g_return_if_fail(RP_IS_CONFIG_TAB(page));
 #else /* RP_USE_GTK_ALIGNMENT */
 	g_return_if_fail(GTK_IS_ALIGNMENT(page));
 #endif /* RP_USE_GTK_ALIGNMENT */
@@ -543,7 +543,7 @@ config_dialog_switch_page(GtkNotebook *tabWidget, GtkWidget *page, guint page_nu
  * A tab has been modified.
  */
 static void
-config_dialog_tab_modified(RpConfigTab *tab, ConfigDialog *dialog)
+rp_config_dialog_tab_modified(RpConfigTab *tab, RpConfigDialog *dialog)
 {
 	RP_UNUSED(tab);
 
