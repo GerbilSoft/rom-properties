@@ -9,7 +9,7 @@
 #ifndef __ROMPROPERTIES_GTK_OPTIONSMENUBUTTON_HPP__
 #define __ROMPROPERTIES_GTK_OPTIONSMENUBUTTON_HPP__
 
-#include <gtk/gtk.h>
+#include "gtk-compat.h"
 
 G_BEGIN_DECLS
 
