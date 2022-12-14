@@ -21,8 +21,10 @@ using LibRpBase::RomData;
 
 // nautilus-extension.h mini replacement
 #if GTK_CHECK_VERSION(4,0,0)
+#  include "../gtk4/NautilusPlugin.hpp"
 #  include "../gtk4/nautilus-extension-mini.h"
 #else /* !GTK_CHECK_VERSION(4,0,0) */
+#  include "NautilusPlugin.hpp"
 #  include "nautilus-extension-mini.h"
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 

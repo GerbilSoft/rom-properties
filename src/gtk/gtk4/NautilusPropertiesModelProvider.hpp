@@ -13,25 +13,16 @@
 #ifndef __ROMPROPERTIES_GTK4_NAUTILUSPROPERTIESMODELPROVIDER_HPP__
 #define __ROMPROPERTIES_GTK4_NAUTILUSPROPERTIESMODELPROVIDER_HPP__
 
-#include <glib.h>
-#include <glib-object.h>
+#include "glib-compat.h"
 
 G_BEGIN_DECLS
 
-typedef struct _RpNautilusPropertiesModelProviderClass	RpNautilusPropertiesModelProviderClass;
-typedef struct _RpNautilusPropertiesModelProvider	RpNautilusPropertiesModelProvider;
+#define RP_TYPE_NAUTILUS_PROPERTIES_MODEL_PROVIDER (rp_nautilus_properties_model_provider_get_type())
+G_DECLARE_FINAL_TYPE(RpNautilusPropertiesModelProvider, rp_nautilus_properties_model_provider, RP, NAUTILUS_PROPERTIES_MODEL_PROVIDER, GObject)
 
-#define TYPE_RP_NAUTILUS_PROPERTIES_MODEL_PROVIDER		(rp_nautilus_properties_model_provider_get_type())
-#define RP_NAUTILUS_PROPERTIES_MODEL_PROVIDER(obj)		(G_TYPE_CHECK_INSTANCE_CAST((obj), TYPE_RP_NAUTILUS_PROPERTIES_MODEL_PROVIDER, RpNautilusPropertiesModelProvider))
-#define RP_NAUTILUS_PROPERTIES_MODEL_PROVIDER_CLASS(klass)	(G_TYPE_CHECK_CLASS_CAST((klass),  TYPE_RP_NAUTILUS_PROPERTIES_MODEL_PROVIDER, RpNautilusPropertiesModelProviderClass))
-#define IS_RP_NAUTILUS_PROPERTIES_MODEL_PROVIDER(obj)		(G_TYPE_CHECK_INSTANCE_TYPE((obj), TYPE_RP_NAUTILUS_PROPERTIES_MODEL_PROVIDER))
-#define IS_RP_NAUTILUS_PROPERTIES_MODEL_PROVIDER_CLASS(klass)	(G_TYPE_CHECK_CLASS_TYPE((klass),  TYPE_RP_NAUTILUS_PROPERTIES_MODEL_PROVIDER))
-#define RP_NAUTILUS_PROPERTIES_MODEL_PROVIDER_GET_CLASS(obj)	(G_TYPE_INSTANCE_GET_CLASS((obj),  TYPE_RP_NAUTILUS_PROPERTIES_MODEL_PROVIDER, RpNautilusPropertiesModelProviderClass))
-
-/* these two functions are implemented automatically by the G_DEFINE_DYNAMIC_TYPE macro */
-GType		rp_nautilus_properties_model_provider_get_type	(void) G_GNUC_CONST G_GNUC_INTERNAL;
+/* this function is implemented automatically by the G_DEFINE_TYPE macro */
 /* NOTE: G_DEFINE_DYNAMIC_TYPE() declares the actual function as static. */
-void		rp_nautilus_properties_model_provider_register_type_ext(GTypeModule *module) G_GNUC_INTERNAL;
+void rp_nautilus_properties_model_provider_register_type_ext(GTypeModule *module) G_GNUC_INTERNAL;
 
 G_END_DECLS
 

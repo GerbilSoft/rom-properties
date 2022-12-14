@@ -43,8 +43,8 @@ rp_nautilus_register_types(GTypeModule *module)
 	rp_nautilus_menu_provider_register_type_ext(module);
 
 	/* Setup the plugin provider type list */
-	type_list[0] = TYPE_RP_NAUTILUS_PROPERTY_PAGE_PROVIDER;
-	type_list[1] = TYPE_RP_NAUTILUS_MENU_PROVIDER;
+	type_list[0] = RP_TYPE_NAUTILUS_PROPERTY_PAGE_PROVIDER;
+	type_list[1] = RP_TYPE_NAUTILUS_MENU_PROVIDER;
 }
 
 /** Per-frontend initialization functions. **/

@@ -60,8 +60,8 @@ rp_thunar_register_types(ThunarxProviderPlugin *plugin)
 	rp_thunar_menu_provider_register_type_ext(plugin);
 
 	/* Setup the plugin provider type list */
-	type_list[0] = TYPE_RP_THUNAR_PROPERTY_PAGE_PROVIDER;
-	type_list[1] = TYPE_RP_THUNAR_MENU_PROVIDER;
+	type_list[0] = RP_TYPE_THUNAR_PROPERTY_PAGE_PROVIDER;
+	type_list[1] = RP_TYPE_THUNAR_MENU_PROVIDER;
 
 #ifdef ENABLE_ACHIEVEMENTS
 	// Register AchGDBus.
