@@ -1,20 +1,20 @@
-/******************************************************************************
- * ROM Properties Page shell extension. (GTK+ 3.x)                            *
- * RpNautilusMenuProvider.cpp: Nautilus (and forks) Menu Provider Definition. *
- *                                                                            *
- * Copyright (c) 2017-2022 by David Korth.                                    *
- * SPDX-License-Identifier: GPL-2.0-or-later                                  *
- ******************************************************************************/
+/***************************************************************************
+ * ROM Properties Page shell extension. (GTK+ 3.x)                         *
+ * NautilusMenuProvider.hpp: Nautilus (and forks) Menu Provider Definition *
+ *                                                                         *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
+ * SPDX-License-Identifier: GPL-2.0-or-later                               *
+ ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK3_RPNAUTILUSMENUPROVIDER_HPP__
-#define __ROMPROPERTIES_GTK3_RPNAUTILUSMENUPROVIDER_HPP__
+#ifndef __ROMPROPERTIES_GTK3_NAUTILUSMENUPROVIDER_HPP__
+#define __ROMPROPERTIES_GTK3_NAUTILUSMENUPROVIDER_HPP__
 
 #include <gtk/gtk.h>
 
 #if GTK_CHECK_VERSION(4,0,0)
-#  include "../gtk4/RpNautilusPlugin.hpp"
+#  include "../gtk4/NautilusPlugin.hpp"
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-#  include "RpNautilusPlugin.hpp"
+#  include "NautilusPlugin.hpp"
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 G_BEGIN_DECLS

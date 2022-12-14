@@ -1,15 +1,15 @@
-/********************************************************************************
- * ROM Properties Page shell extension. (GTK+ 3.x)                              *
- * RpThunarPropertyPageProvider.hpp: ThunarX Property Page Provider Definition. *
- *                                                                              *
- * Copyright (c) 2017-2022 by David Korth.                                      *
- * SPDX-License-Identifier: GPL-2.0-or-later                                    *
- ********************************************************************************/
+/*****************************************************************************
+ * ROM Properties Page shell extension. (GTK+ 3.x)                           *
+ * ThunarPropertyPageProvider.hpp: ThunarX Property Page Provider Definition *
+ *                                                                           *
+ * Copyright (c) 2017-2022 by David Korth.                                   *
+ * SPDX-License-Identifier: GPL-2.0-or-later                                 *
+ *****************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK3_RPTHUNARPROPERTYPAGEPROVIDER_HPP__
-#define __ROMPROPERTIES_GTK3_RPTHUNARPROPERTYPAGEPROVIDER_HPP__
+#ifndef __ROMPROPERTIES_GTK3_THUNARPROPERTYPAGEPROVIDER_HPP__
+#define __ROMPROPERTIES_GTK3_THUNARPROPERTYPAGEPROVIDER_HPP__
 
-#include "RpThunarPlugin.hpp"
+#include "ThunarPlugin.hpp"
 
 G_BEGIN_DECLS
 
@@ -30,4 +30,4 @@ void		rp_thunar_property_page_provider_register_type_ext	(ThunarxProviderPlugin 
 
 G_END_DECLS
 
-#endif /* !__ROMPROPERTIES_GTK3_RPTHUNARPROPERTYPAGEPROVIDER_HPP__ */
+#endif /* !__ROMPROPERTIES_GTK3_THUNARPROPERTYPAGEPROVIDER_HPP__ */

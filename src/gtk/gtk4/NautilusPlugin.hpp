@@ -1,13 +1,13 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK4)                             *
- * RpNautilusPlugin.cpp: Nautilus GTK4 Plugin Definition.                  *
+ * NautilusPlugin.hpp: Nautilus GTK4 Plugin Definition.                    *
  *                                                                         *
  * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK4_RPNAUTILUSPLUGIN_HPP__
-#define __ROMPROPERTIES_GTK4_RPNAUTILUSPLUGIN_HPP__
+#ifndef __ROMPROPERTIES_GTK4_NAUTILUSPLUGIN_HPP__
+#define __ROMPROPERTIES_GTK4_NAUTILUSPLUGIN_HPP__
 
 #include <glib.h>
 #include <glib-object.h>
@@ -123,4 +123,4 @@ extern PFN_NAUTILUS_PROPERTIES_ITEM_NEW			pfn_nautilus_properties_item_new;
 
 G_END_DECLS;
 
-#endif /* __ROMPROPERTIES_GTK4_RPNAUTILUSPLUGIN_HPP__ */
+#endif /* __ROMPROPERTIES_GTK4_NAUTILUSPLUGIN_HPP__ */

@@ -1,6 +1,6 @@
-/***************************************************************************
+/*****************************************************************************
  * ROM Properties Page shell extension. (GTK4)                               *
- * RpNautilusPropertiesModelProvider.cpp: Nautilus properties model provider *
+ * NautilusPropertiesModelProvider.cpp: Nautilus properties model provider   *
  *                                                                           *
  * NOTE: Nautilus 43 only accepts key/value pairs for properties, instead of *
  * arbitrary GtkWidgets. As such, the properties returned will be more       *
@@ -8,13 +8,13 @@
  *                                                                           *
  * Copyright (c) 2017-2022 by David Korth.                                   *
  * SPDX-License-Identifier: GPL-2.0-or-later                                 *
- ***************************************************************************/
+ *****************************************************************************/
 
 #include "stdafx.h"
-#include "RpNautilusPropertiesModelProvider.hpp"
-#include "RpNautilusPropertiesModel.hpp"
+#include "NautilusPropertiesModelProvider.hpp"
+#include "NautilusPropertiesModel.hpp"
 
-#include "RpNautilusPlugin.hpp"
+#include "NautilusPlugin.hpp"
 #include "is-supported.hpp"
 
 #include "../RomDataView.hpp"

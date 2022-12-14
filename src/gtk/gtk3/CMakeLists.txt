@@ -144,21 +144,21 @@ SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}-notify_SRCS} ${${PROJECT_NAME}-notify_H} ${Notifications_GDBus_SRCS}
 	${${PROJECT_NAME}_IFUNC_SRCS}
 	${${PROJECT_NAME}_SSSE3_SRCS}
-	RpNautilusPlugin.cpp
-	RpNautilusPropertyPageProvider.cpp
-	RpNautilusMenuProvider.cpp
-	RpThunarPlugin.cpp
-	RpThunarPropertyPageProvider.cpp
-	RpThunarMenuProvider.cpp
+	NautilusPlugin.cpp
+	NautilusPropertyPageProvider.cpp
+	NautilusMenuProvider.cpp
+	ThunarPlugin.cpp
+	ThunarPropertyPageProvider.cpp
+	ThunarMenuProvider.cpp
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_H}
-	RpNautilusPlugin.hpp
-	RpNautilusPropertyPageProvider.hpp
-	RpNautilusMenuProvider.hpp
-	RpThunarPlugin.hpp
-	RpThunarPropertyPageProvider.hpp
-	RpThunarMenuProvider.hpp
+	NautilusPlugin.hpp
+	NautilusPropertyPageProvider.hpp
+	NautilusMenuProvider.hpp
+	ThunarPlugin.hpp
+	ThunarPropertyPageProvider.hpp
+	ThunarMenuProvider.hpp
 	../plugin-helper.h
 	thunarx-mini.h
 	nautilus-extension-mini.h

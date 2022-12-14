@@ -1,13 +1,13 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK+ 3.x)                         *
- * RpThunarPlugin.hpp: ThunarX Plugin Definition.                          *
+ * ThunarPlugin.hpp: ThunarX Plugin Definition                             *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK3_RPTHUNARPLUGIN_HPP__
-#define __ROMPROPERTIES_GTK3_RPTHUNARPLUGIN_HPP__
+#ifndef __ROMPROPERTIES_GTK3_THUNARPLUGIN_HPP__
+#define __ROMPROPERTIES_GTK3_THUNARPLUGIN_HPP__
 
 #include <glib.h>
 #include <glib-object.h>
@@ -121,4 +121,4 @@ extern PFN_THUNARX_PROPERTY_PAGE_NEW pfn_thunarx_property_page_new;
 
 G_END_DECLS;
 
-#endif /* __ROMPROPERTIES_GTK3_RPTHUNARPLUGIN_H__ */
+#endif /* __ROMPROPERTIES_GTK3_THUNARPLUGIN_H__ */

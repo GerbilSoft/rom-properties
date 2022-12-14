@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (GTK4)                             *
- * RpNautilusPlugin.cpp: Nautilus GTK4 Plugin Definition.                  *
+ * ROM Properties Page shell extension. (GTK+ 3.x)                         *
+ * NautilusPlugin.cpp: Nautilus (and forks) Plugin Definition              *
  *                                                                         *
  * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -10,9 +10,9 @@
 #include "config.gtk.h"
 #include "plugin-helper.h"
 
-#include "RpNautilusPlugin.hpp"
-#include "RpNautilusPropertiesModelProvider.hpp"
-#include "../gtk3/RpNautilusMenuProvider.hpp"
+#include "NautilusPlugin.hpp"
+#include "NautilusMenuProvider.hpp"
+#include "NautilusPropertyPageProvider.hpp"
 #include "AchGDBus.hpp"
 
 static GType type_list[2];
@@ -20,21 +20,18 @@ static GType type_list[2];
 // C includes.
 #include <assert.h>
 
-// Function pointers
+// Function pointers.
 static void *libextension_so;
-PFN_NAUTILUS_FILE_INFO_GET_TYPE				pfn_nautilus_file_info_get_type;
-PFN_NAUTILUS_FILE_INFO_GET_MIME_TYPE			pfn_nautilus_file_info_get_mime_type;
-PFN_NAUTILUS_FILE_INFO_GET_URI				pfn_nautilus_file_info_get_uri;
-PFN_NAUTILUS_FILE_INFO_LIST_COPY			pfn_nautilus_file_info_list_copy;
-PFN_NAUTILUS_FILE_INFO_LIST_FREE			pfn_nautilus_file_info_list_free;
-PFN_NAUTILUS_MENU_ITEM_GET_TYPE				pfn_nautilus_menu_item_get_type;
-PFN_NAUTILUS_MENU_ITEM_NEW				pfn_nautilus_menu_item_new;
-PFN_NAUTILUS_MENU_PROVIDER_GET_TYPE			pfn_nautilus_menu_provider_get_type;
-PFN_NAUTILUS_PROPERTIES_MODEL_PROVIDER_GET_TYPE		pfn_nautilus_properties_model_provider_get_type;
-PFN_NAUTILUS_PROPERTIES_MODEL_GET_TYPE			pfn_nautilus_properties_model_get_type;
-PFN_NAUTILUS_PROPERTIES_MODEL_NEW			pfn_nautilus_properties_model_new;
-PFN_NAUTILUS_PROPERTIES_ITEM_GET_TYPE			pfn_nautilus_properties_item_get_type;
-PFN_NAUTILUS_PROPERTIES_ITEM_NEW			pfn_nautilus_properties_item_new;
+PFN_NAUTILUS_FILE_INFO_GET_TYPE			pfn_nautilus_file_info_get_type;
+PFN_NAUTILUS_FILE_INFO_GET_MIME_TYPE		pfn_nautilus_file_info_get_mime_type;
+PFN_NAUTILUS_FILE_INFO_GET_URI			pfn_nautilus_file_info_get_uri;
+PFN_NAUTILUS_FILE_INFO_LIST_COPY		pfn_nautilus_file_info_list_copy;
+PFN_NAUTILUS_FILE_INFO_LIST_FREE		pfn_nautilus_file_info_list_free;
+PFN_NAUTILUS_MENU_ITEM_GET_TYPE			pfn_nautilus_menu_item_get_type;
+PFN_NAUTILUS_MENU_ITEM_NEW			pfn_nautilus_menu_item_new;
+PFN_NAUTILUS_MENU_PROVIDER_GET_TYPE		pfn_nautilus_menu_provider_get_type;
+PFN_NAUTILUS_PROPERTY_PAGE_PROVIDER_GET_TYPE	pfn_nautilus_property_page_provider_get_type;
+PFN_NAUTILUS_PROPERTY_PAGE_NEW			pfn_nautilus_property_page_new;
 
 static void
 rp_nautilus_register_types(GTypeModule *module)
@@ -42,11 +39,11 @@ rp_nautilus_register_types(GTypeModule *module)
 	/* Register the types provided by this module */
 	// NOTE: G_DEFINE_DYNAMIC_TYPE() marks the *_register_type()
 	// functions as static, so we're using wrapper functions here.
-	rp_nautilus_properties_model_provider_register_type_ext(module);
+	rp_nautilus_property_page_provider_register_type_ext(module);
 	rp_nautilus_menu_provider_register_type_ext(module);
 
 	/* Setup the plugin provider type list */
-	type_list[0] = TYPE_RP_NAUTILUS_PROPERTIES_MODEL_PROVIDER;
+	type_list[0] = TYPE_RP_NAUTILUS_PROPERTY_PAGE_PROVIDER;
 	type_list[1] = TYPE_RP_NAUTILUS_MENU_PROVIDER;
 }
 
@@ -81,19 +78,16 @@ prefix##_module_initialize(GTypeModule *module) \
 	} \
 \
 	/* Load symbols. */ \
-	DLSYM(nautilus_file_info_get_type,			prefix##_file_info_get_type); \
-	DLSYM(nautilus_file_info_get_mime_type,			prefix##_file_info_get_mime_type); \
-	DLSYM(nautilus_file_info_get_uri,			prefix##_file_info_get_uri); \
-	DLSYM(nautilus_file_info_list_copy,			prefix##_file_info_list_copy); \
-	DLSYM(nautilus_file_info_list_free,			prefix##_file_info_list_free); \
-	DLSYM(nautilus_menu_item_get_type,			prefix##_menu_item_get_type); \
-	DLSYM(nautilus_menu_item_new,				prefix##_menu_item_new); \
-	DLSYM(nautilus_menu_provider_get_type,			prefix##_menu_provider_get_type); \
-	DLSYM(nautilus_properties_model_provider_get_type,	prefix##_properties_model_provider_get_type); \
-	DLSYM(nautilus_properties_model_get_type,		prefix##_properties_model_get_type); \
-	DLSYM(nautilus_properties_model_new,			prefix##_properties_model_new); \
-	DLSYM(nautilus_properties_item_get_type,		prefix##_properties_item_get_type); \
-	DLSYM(nautilus_properties_item_new,			prefix##_properties_item_new); \
+	DLSYM(nautilus_file_info_get_type,		prefix##_file_info_get_type); \
+	DLSYM(nautilus_file_info_get_mime_type,		prefix##_file_info_get_mime_type); \
+	DLSYM(nautilus_file_info_get_uri,		prefix##_file_info_get_uri); \
+	DLSYM(nautilus_file_info_list_copy,		prefix##_file_info_list_copy); \
+	DLSYM(nautilus_file_info_list_free,		prefix##_file_info_list_free); \
+	DLSYM(nautilus_menu_item_get_type,		prefix##_menu_item_get_type); \
+	DLSYM(nautilus_menu_item_new,			prefix##_menu_item_new); \
+	DLSYM(nautilus_menu_provider_get_type,		prefix##_menu_provider_get_type); \
+	DLSYM(nautilus_property_page_provider_get_type,	prefix##_property_page_provider_get_type); \
+	DLSYM(nautilus_property_page_new,		prefix##_property_page_new); \
 \
 	/* Symbols loaded. Register our types. */ \
 	rp_nautilus_register_types(module); \
@@ -103,9 +97,8 @@ prefix##_module_initialize(GTypeModule *module) \
 }
 
 NAUTILUS_MODULE_INITIALIZE_FUNC(nautilus)
-// TODO: Re-enable these if/when Caja and Nemo switch to GTK4.
-//NAUTILUS_MODULE_INITIALIZE_FUNC(caja)
-//NAUTILUS_MODULE_INITIALIZE_FUNC(nemo)
+NAUTILUS_MODULE_INITIALIZE_FUNC(caja)
+NAUTILUS_MODULE_INITIALIZE_FUNC(nemo)
 
 /** Common shutdown and list_types functions. **/
 
@@ -128,4 +121,24 @@ nautilus_module_list_types(const GType	**types,
 {
 	*types = type_list;
 	*n_types = G_N_ELEMENTS(type_list);
+}
+
+extern "C" {
+
+/** Symbol aliases for MATE (Caja) **/
+
+G_MODULE_EXPORT void caja_module_shutdown		(void)
+	__attribute__((alias("nautilus_module_shutdown")));
+G_MODULE_EXPORT void caja_module_list_types		(const GType	**types,
+							 gint		 *n_types)
+	__attribute__((alias("nautilus_module_list_types")));
+
+/** Symbol aliases for Cinnamon (Nemo) **/
+
+G_MODULE_EXPORT void nemo_module_shutdown		(void)
+	__attribute__((alias("nautilus_module_shutdown")));
+G_MODULE_EXPORT void nemo_module_list_types		(const GType	**types,
+							 gint		 *n_types)
+	__attribute__((alias("nautilus_module_list_types")));
+
 }

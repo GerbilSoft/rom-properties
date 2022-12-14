@@ -130,17 +130,17 @@ SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}-notify_SRCS} ${${PROJECT_NAME}-notify_H} ${Notifications_GDBus_SRCS}
 	${${PROJECT_NAME}_IFUNC_SRCS}
 	${${PROJECT_NAME}_SSSE3_SRCS}
-	RpNautilusPlugin.cpp
-	RpNautilusPropertiesModelProvider.cpp
-	RpNautilusPropertiesModel.cpp
-	../gtk3/RpNautilusMenuProvider.cpp
+	NautilusPlugin.cpp
+	NautilusPropertiesModelProvider.cpp
+	NautilusPropertiesModel.cpp
+	../gtk3/NautilusMenuProvider.cpp
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_H}
-	RpNautilusPlugin.hpp
-	RpNautilusPropertiesModelProvider.hpp
-	RpNautilusPropertiesModel.hpp
-	../gtk3/RpNautilusMenuProvider.hpp
+	NautilusPlugin.hpp
+	NautilusPropertiesModelProvider.hpp
+	NautilusPropertiesModel.hpp
+	../gtk3/NautilusMenuProvider.hpp
 	../plugin-helper.h
 	nautilus-extension-mini.h
 	)

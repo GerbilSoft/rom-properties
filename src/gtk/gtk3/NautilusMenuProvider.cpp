@@ -1,15 +1,15 @@
-/******************************************************************************
- * ROM Properties Page shell extension. (GTK+ 3.x)                            *
- * RpNautilusMenuProvider.cpp: Nautilus (and forks) Menu Provider Definition. *
- *                                                                            *
- * Copyright (c) 2017-2022 by David Korth.                                    *
- * SPDX-License-Identifier: GPL-2.0-or-later                                  *
- ******************************************************************************/
+/***************************************************************************
+ * ROM Properties Page shell extension. (GTK+ 3.x)                         *
+ * NautilusMenuProvider.cpp: Nautilus (and forks) Menu Provider Definition *
+ *                                                                         *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
+ * SPDX-License-Identifier: GPL-2.0-or-later                               *
+ ***************************************************************************/
 
 // Reference: https://github.com/xfce-mirror/thunar-archive-plugin/blob/master/thunar-archive-plugin/tap-provider.c
 
 #include "stdafx.h"
-#include "RpNautilusMenuProvider.hpp"
+#include "NautilusMenuProvider.hpp"
 
 #include "img/TCreateThumbnail.hpp"
 #include "CreateThumbnail.hpp"

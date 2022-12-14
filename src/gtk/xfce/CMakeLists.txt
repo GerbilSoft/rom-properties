@@ -129,9 +129,9 @@ SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}-notify_SRCS} ${${PROJECT_NAME}-notify_H} ${Notifications_GDBus_SRCS}
 	${${PROJECT_NAME}_IFUNC_SRCS}
 	${${PROJECT_NAME}_SSSE3_SRCS}
-	../gtk3/RpThunarPlugin.cpp
-	../gtk3/RpThunarMenuProvider.cpp
-	../gtk3/RpThunarPropertyPageProvider.cpp
+	../gtk3/ThunarPlugin.cpp
+	../gtk3/ThunarMenuProvider.cpp
+	../gtk3/ThunarPropertyPageProvider.cpp
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_H}

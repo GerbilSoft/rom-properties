@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK+ 3.x)                         *
- * RpThunarMenuProvider.cpp: ThunarX Menu Provider Definition.             *
+ * ThunarMenuProvider.cpp: ThunarX Menu Provider Definition                *
  *                                                                         *
  * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -9,7 +9,7 @@
 // Reference: https://github.com/xfce-mirror/thunar-archive-plugin/blob/master/thunar-archive-plugin/tap-provider.c
 
 #include "stdafx.h"
-#include "RpThunarMenuProvider.hpp"
+#include "ThunarMenuProvider.hpp"
 
 #include "img/TCreateThumbnail.hpp"
 #include "CreateThumbnail.hpp"

@@ -1,13 +1,13 @@
-/********************************************************************************
- * ROM Properties Page shell extension. (GTK+ 3.x)                              *
- * RpThunarPropertyPageProvider.cpp: ThunarX Property Page Provider Definition. *
- *                                                                              *
- * Copyright (c) 2017-2022 by David Korth.                                      *
- * SPDX-License-Identifier: GPL-2.0-or-later                                    *
- ********************************************************************************/
+/*****************************************************************************
+ * ROM Properties Page shell extension. (GTK+ 3.x)                           *
+ * ThunarPropertyPageProvider.cpp: ThunarX Property Page Provider Definition *
+ *                                                                           *
+ * Copyright (c) 2017-2022 by David Korth.                                   *
+ * SPDX-License-Identifier: GPL-2.0-or-later                                 *
+ *****************************************************************************/
 
 #include "stdafx.h"
-#include "RpThunarPropertyPageProvider.hpp"
+#include "ThunarPropertyPageProvider.hpp"
 #include "is-supported.hpp"
 
 #include "../RomDataView.hpp"
