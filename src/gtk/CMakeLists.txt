@@ -34,7 +34,7 @@ SET(CMAKE_REQUIRED_DEFINITIONS ${OLD_CMAKE_REQUIRED_DEFINITIONS})
 UNSET(OLD_CMAKE_REQUIRED_LIBRARIES)
 UNSET(OLD_CMAKE_REQUIRED_DEFINITIONS)
 
-# Sources and headers.
+# Sources and headers
 SET(${PROJECT_NAME}_SRCS
 	RomDataView.cpp
 	RomDataView_ops.cpp
@@ -94,6 +94,14 @@ SET(${PROJECT_NAME}_H
 	config/AchievementsTab.hpp
 	config/AboutTab.hpp
 	config/UpdateChecker.hpp
+	)
+
+# Sources and headers (GTK4+ only)
+SET(${PROJECT_NAME}_GTK4MIN_SRCS
+	LanguageComboBoxItem.cpp
+	)
+SET(${PROJECT_NAME}_GTK4MIN_H
+	LanguageComboBoxItem.hpp
 	)
 
 IF(ENABLE_DECRYPTION)

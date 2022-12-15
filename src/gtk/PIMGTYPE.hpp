@@ -19,6 +19,7 @@
 
 // NOTE: GTK4 doesn't support Cairo anymore, so we'll switch back to GdkPixbuf.
 // TODO: Use GdkTexture?
+// TODO: Proper GObject cast for Cairo.
 #if GTK_CHECK_VERSION(3,10,0) && !GTK_CHECK_VERSION(4,0,0)
 #  define RP_GTK_USE_CAIRO 1
 #  ifdef __cplusplus
@@ -26,6 +27,7 @@
 #  endif /* __cplusplus */
 #  include <cairo-gobject.h>
 #  define PIMGTYPE_GOBJECT_TYPE CAIRO_GOBJECT_TYPE_SURFACE
+#  define PIMGTYPE_CAST(obj) ((PIMGTYPE)obj)
 #  define GTK_CELL_RENDERER_PIXBUF_PROPERTY "surface"
 G_BEGIN_DECLS
 typedef cairo_surface_t *PIMGTYPE;
@@ -35,6 +37,7 @@ G_END_DECLS
 #    include "GdkImageConv.hpp"
 #  endif /* __cplusplus */
 #  define PIMGTYPE_GOBJECT_TYPE GDK_TYPE_PIXBUF
+#  define PIMGTYPE_CAST(obj) GDK_PIXBUF(obj)
 #  define GTK_CELL_RENDERER_PIXBUF_PROPERTY "pixbuf"
 G_BEGIN_DECLS
 typedef GdkPixbuf *PIMGTYPE;

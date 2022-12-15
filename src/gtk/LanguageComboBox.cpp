@@ -10,6 +10,11 @@
 #include "LanguageComboBox.hpp"
 #include "PIMGTYPE.hpp"
 
+#if GTK_CHECK_VERSION(4,0,0)
+#  define USE_GTK_DROP_DOWN 1
+#  include "LanguageComboBoxItem.hpp"
+#endif
+
 // librpbase
 using namespace LibRpBase;
 
@@ -49,9 +54,17 @@ static void	rp_language_combo_box_get_property(GObject	*object,
 						   GValue	*value,
 						   GParamSpec	*pspec);
 
-/** Signal handlers. **/
+static void	rp_language_combo_box_dispose     (GObject	*object);
+
+/** Signal handlers **/
+#ifdef USE_GTK_DROP_DOWN
+static void	internal_notify_selected_handler(GtkDropDown		*dropDown,
+						 GParamSpec		*pspec,
+						 RpLanguageComboBox	*widget);
+#else /* !USE_GTK_DROP_DOWN */
 static void	internal_changed_handler	(GtkComboBox		*comboBox,
 						 RpLanguageComboBox	*widget);
+#endif /* USE_GTK_DROP_DOWN */
 
 static GParamSpec *props[PROP_LAST];
 static guint signals[SIGNAL_LAST];
@@ -75,8 +88,15 @@ struct _RpLanguageComboBoxClass {
 struct _RpLanguageComboBox {
 	super __parent__;
 
+#ifdef USE_GTK_DROP_DOWN
+	GtkWidget *dropDown;
+	GListStore *listStore;
+	GtkListItemFactory *factory;
+#else /* !USE_GTK_DROP_DOWN */
 	GtkWidget *comboBox;
 	GtkListStore *listStore;
+#endif /* USE_GTK_DROP_DOWN */
+
 	gboolean forcePAL;
 };
 
@@ -91,6 +111,7 @@ rp_language_combo_box_class_init(RpLanguageComboBoxClass *klass)
 	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
 	gobject_class->set_property = rp_language_combo_box_set_property;
 	gobject_class->get_property = rp_language_combo_box_get_property;
+	gobject_class->dispose = rp_language_combo_box_dispose;
 
 	/** Properties **/
 
@@ -115,26 +136,87 @@ rp_language_combo_box_class_init(RpLanguageComboBoxClass *klass)
 		G_TYPE_NONE, 1, G_TYPE_UINT);
 }
 
+#ifdef USE_GTK_DROP_DOWN
+// GtkSignalListItemFactory signal handlers
+// Reference: https://blog.gtk.org/2020/09/05/a-primer-on-gtklistview/
+static void
+setup_listitem_cb(GtkListItemFactory	*factory,
+		  GtkListItem		*list_item,
+		  gpointer		 user_data)
+{
+	RP_UNUSED(factory);
+	RP_UNUSED(user_data);
+
+	GtkWidget *const icon = gtk_image_new();
+	GtkWidget *const label = gtk_label_new(nullptr);
+	gtk_label_set_xalign(GTK_LABEL(label), 0.0f);
+
+	GtkWidget *const hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+	gtk_box_append(GTK_BOX(hbox), icon);
+	gtk_box_append(GTK_BOX(hbox), label);
+	gtk_list_item_set_child(list_item, hbox);
+}
+
+static void
+bind_listitem_cb(GtkListItemFactory	*factory,
+                 GtkListItem		*list_item,
+		 gpointer		 user_data)
+{
+	RP_UNUSED(factory);
+	RP_UNUSED(user_data);
+
+	GtkWidget *const hbox = gtk_list_item_get_child(list_item);
+	GtkWidget *const icon = gtk_widget_get_first_child(hbox);
+	GtkWidget *const label = gtk_widget_get_next_sibling(icon);
+	assert(icon && label);
+	if (!icon || !label) {
+		return;
+	}
+
+	RpLanguageComboBoxItem *const item = RP_LANGUAGE_COMBO_BOX_ITEM(gtk_list_item_get_item(list_item));
+
+	gtk_image_set_from_pixbuf(GTK_IMAGE(icon), rp_language_combo_box_item_get_icon(item));
+	gtk_label_set_text(GTK_LABEL(label), rp_language_combo_box_item_get_name(item));
+}
+#endif /* USE_GTK_DROP_DOWN */
+
 static void
 rp_language_combo_box_init(RpLanguageComboBox *widget)
 {
+#ifdef USE_GTK_DROP_DOWN
+	// Create the GListStore
+	widget->listStore = g_list_store_new(RP_TYPE_LANGUAGE_COMBO_BOX_ITEM);
+
+	// Create the GtkDropDown widget
+	// NOTE: GtkDropDown takes ownership of widget->listStore.
+	widget->dropDown = gtk_drop_down_new(G_LIST_MODEL(widget->listStore), nullptr);
+	gtk_box_append(GTK_BOX(widget), widget->dropDown);
+
+	// Create the GtkSignalListItemFactory
+	widget->factory = gtk_signal_list_item_factory_new();
+	g_signal_connect(widget->factory, "setup", G_CALLBACK(setup_listitem_cb), nullptr);
+	g_signal_connect(widget->factory, "bind", G_CALLBACK(bind_listitem_cb), nullptr);
+	gtk_drop_down_set_factory(GTK_DROP_DOWN(widget->dropDown), widget->factory);
+#else /* !USE_GTK_DROP_DOWN */
 	// Create the GtkComboBox widget.
 	widget->comboBox = gtk_combo_box_new();
-#if GTK_CHECK_VERSION(4,0,0)
+#  if GTK_CHECK_VERSION(4,0,0)
 	gtk_box_append(GTK_BOX(widget), widget->comboBox);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
+#  else /* !GTK_CHECK_VERSION(4,0,0) */
 	gtk_box_pack_start(GTK_BOX(widget), widget->comboBox, TRUE, TRUE, 0);
 	gtk_widget_show(widget->comboBox);
-#endif
+#  endif /* GTK_CHECK_VERSION(4,0,0) */
 
-	// Create the GtkListStore.
+	// Create the GtkListStore
 	widget->listStore = gtk_list_store_new(3, PIMGTYPE_GOBJECT_TYPE, G_TYPE_STRING, G_TYPE_UINT);
 	gtk_combo_box_set_model(GTK_COMBO_BOX(widget->comboBox), GTK_TREE_MODEL(widget->listStore));
 
 	// Remove our reference on widget->listStore.
 	// The superclass will automatically destroy it.
 	g_object_unref(widget->listStore);
+#endif /* USE_GTK_DROP_DOWN */
 
+#ifndef USE_GTK_DROP_DOWN
 	/** Cell renderers **/
 
 	// Icon renderer
@@ -148,11 +230,19 @@ rp_language_combo_box_init(RpLanguageComboBox *widget)
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(widget->comboBox), renderer, true);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(widget->comboBox),
 		renderer, "text", SM_COL_TEXT, NULL);
+#endif /* !USE_GTK_DROP_DOWN */
 
 	/** Signals **/
 
+#ifdef USE_GTK_DROP_DOWN
+	// GtkDropDown doesn't have a "changed" signal, and its
+	// GtkSelectionModel object isn't accessible.
+	// Listen for GObject::notify for the "selected" property.
+	g_signal_connect(widget->dropDown, "notify::selected", G_CALLBACK(internal_notify_selected_handler), widget);
+#else /* !USE_GTK_DROP_DOWN */
 	// Connect the "changed" signal.
 	g_signal_connect(widget->comboBox, "changed", G_CALLBACK(internal_changed_handler), widget);
+#endif /* USE_GTK_DROP_DOWN */
 }
 
 GtkWidget*
@@ -209,6 +299,29 @@ rp_language_combo_box_get_property(GObject	*object,
 	}
 }
 
+/** Dispose / Finalize **/
+
+static void
+rp_language_combo_box_dispose(GObject *object)
+{
+#ifdef USE_GTK_DROP_DOWN
+	RpLanguageComboBox *const widget = RP_LANGUAGE_COMBO_BOX(object);
+
+	if (widget->dropDown) {
+		gtk_drop_down_set_factory(GTK_DROP_DOWN(widget->dropDown), nullptr);
+	}
+	if (widget->factory) {
+		g_object_unref(widget->factory);
+		widget->factory = nullptr;
+	}
+#endif /* USE_GTK_DROP_DOWN */
+
+	// Call the superclass dispose() function.
+	G_OBJECT_CLASS(rp_language_combo_box_parent_class)->dispose(object);
+}
+
+/** Property accessors / mutators **/
+
 /**
  * Rebuild the language icons.
  * @param widget RpLanguageComboBox
@@ -239,14 +352,6 @@ rp_language_combo_box_rebuild_icons(RpLanguageComboBox *widget)
 #  endif /* 0 */
 #endif /* GTK_CHECK_VERSION(3,10,0) */
 
-	GtkTreeIter iter;
-	GtkTreeModel *const treeModel = GTK_TREE_MODEL(widget->listStore);
-	gboolean ok = gtk_tree_model_get_iter_first(treeModel, &iter);
-	if (!ok) {
-		// No iterators...
-		return;
-	}
-
 	// Load the flags sprite sheet.
 	char flags_filename[64];
 	snprintf(flags_filename, sizeof(flags_filename),
@@ -254,6 +359,43 @@ rp_language_combo_box_rebuild_icons(RpLanguageComboBox *widget)
 		iconSize, iconSize);
 	PIMGTYPE flags_spriteSheet = PIMGTYPE_load_png_from_gresource(flags_filename);
 	assert(flags_spriteSheet != nullptr);
+
+#ifdef USE_GTK_DROP_DOWN
+	guint n_items = g_list_model_get_n_items(G_LIST_MODEL(widget->listStore));
+	for (guint i = 0; i < n_items; i++) {
+		RpLanguageComboBoxItem *const item = RP_LANGUAGE_COMBO_BOX_ITEM(
+			g_list_model_get_item(G_LIST_MODEL(widget->listStore), i));
+		assert(item != nullptr);
+		if (!item)
+			continue;
+
+		if (flags_spriteSheet) {
+			const uint32_t lc = rp_language_combo_box_item_get_lc(item);
+
+			int col, row;
+			if (!SystemRegion::getFlagPosition(lc, &col, &row, widget->forcePAL)) {
+				// Found a matching icon.
+				PIMGTYPE icon = PIMGTYPE_get_subsurface(flags_spriteSheet,
+					col*iconSize, row*iconSize, iconSize, iconSize);
+				rp_language_combo_box_item_set_icon(item, icon);
+				PIMGTYPE_unref(icon);
+			} else {
+				// No icon. Clear it.
+				rp_language_combo_box_item_set_icon(item, nullptr);
+			}
+		} else {
+			// Clear the icon.
+			rp_language_combo_box_item_set_icon(item, nullptr);
+		}
+	}
+#else /* !USE_GTK_DROP_DOWN */
+	GtkTreeIter iter;
+	GtkTreeModel *const treeModel = GTK_TREE_MODEL(widget->listStore);
+	gboolean ok = gtk_tree_model_get_iter_first(treeModel, &iter);
+	if (!ok) {
+		// No iterators...
+		return;
+	}
 
 	do {
 		if (flags_spriteSheet) {
@@ -279,6 +421,7 @@ rp_language_combo_box_rebuild_icons(RpLanguageComboBox *widget)
 		// Next row.
 		ok = gtk_tree_model_iter_next(treeModel, &iter);
 	} while (ok);
+#endif /* USE_GTK_DROP_DOWN */
 
 	if (flags_spriteSheet) {
 		PIMGTYPE_unref(flags_spriteSheet);
@@ -298,7 +441,34 @@ rp_language_combo_box_set_lcs(RpLanguageComboBox *widget, const uint32_t *lcs_ar
 	// Check the LC of the selected index.
 	const uint32_t sel_lc = rp_language_combo_box_get_selected_lc(widget);
 
-	// Populate the GtkListStore.
+	// Populate the GtkListStore / GListStore.
+#ifdef USE_GTK_DROP_DOWN
+	g_list_store_remove_all(widget->listStore);
+
+	guint sel_idx = GTK_INVALID_LIST_POSITION;
+	for (guint cur_idx = 0; *lcs_array != 0; lcs_array++, cur_idx++) {
+		const uint32_t lc = *lcs_array;
+		const char *const name = SystemRegion::getLocalizedLanguageName(lc);
+
+		RpLanguageComboBoxItem *const item = rp_language_combo_box_item_new(nullptr, name, lc);
+		if (!name) {
+			// Invalid language code.
+			rp_language_combo_box_item_set_name(item, SystemRegion::lcToString(lc).c_str());
+		}
+		g_list_store_append(widget->listStore, item);
+
+		if (sel_lc != 0 && lc == sel_lc) {
+			// This was the previously-selected LC.
+			sel_idx = cur_idx;
+		}
+	}
+
+	// Rebuild icons.
+	rp_language_combo_box_rebuild_icons(widget);
+
+	// Re-select the previously-selected LC.
+	gtk_drop_down_set_selected(GTK_DROP_DOWN(widget->dropDown), sel_idx);
+#else /* !USE_GTK_DROP_DOWN */
 	gtk_list_store_clear(widget->listStore);
 
 	int sel_idx = -1;
@@ -328,6 +498,7 @@ rp_language_combo_box_set_lcs(RpLanguageComboBox *widget, const uint32_t *lcs_ar
 
 	// Re-select the previously-selected LC.
 	gtk_combo_box_set_active(GTK_COMBO_BOX(widget->comboBox), sel_idx);
+#endif /* USE_GTK_DROP_DOWN */
 }
 
 /**
@@ -339,7 +510,11 @@ rp_language_combo_box_set_lcs(RpLanguageComboBox *widget, const uint32_t *lcs_ar
 uint32_t*
 rp_language_combo_box_get_lcs(RpLanguageComboBox *widget)
 {
+#ifdef USE_GTK_DROP_DOWN
+	const int count = (int)g_list_model_get_n_items(G_LIST_MODEL(widget->listStore));
+#else /* USE_GTK_DROP_DOWN */
 	const int count = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(widget->listStore), nullptr);
+#endif /* USE_GTK_DROP_DOWN */
 	assert(count <= 1024);
 	if (count <= 0 || count > 1024) {
 		// No language codes, or too many language codes.
@@ -350,6 +525,20 @@ rp_language_combo_box_get_lcs(RpLanguageComboBox *widget)
 	uint32_t *p = lcs_array;
 	uint32_t *const p_end = lcs_array + count;
 
+#ifdef USE_GTK_DROP_DOWN
+	for (guint i = 0; i < (guint)count && p < p_end; i++) {
+		RpLanguageComboBoxItem *const item = RP_LANGUAGE_COMBO_BOX_ITEM(
+			g_list_model_get_item(G_LIST_MODEL(widget->listStore), i));
+		assert(item != nullptr);
+		if (!item)
+			continue;
+
+		const uint32_t lc = rp_language_combo_box_item_get_lc(item);
+		if (lc != 0) {
+			*p++ = lc;
+		}
+	}
+#else /* USE_GTK_DROP_DOWN */
 	GtkTreeIter iter;
 	gboolean ok = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(widget->listStore), &iter);
 	while (ok && p < p_end) {
@@ -365,6 +554,7 @@ rp_language_combo_box_get_lcs(RpLanguageComboBox *widget)
 		// Next row.
 		ok = gtk_tree_model_iter_next(GTK_TREE_MODEL(widget->listStore), &iter);
 	}
+#endif /* USE_GTK_DROP_DOWN */
 
 	// Last entry is 0.
 	*p = 0;
@@ -380,12 +570,23 @@ rp_language_combo_box_clear_lcs(RpLanguageComboBox *widget)
 {
 	g_return_if_fail(RP_IS_LANGUAGE_COMBO_BOX(widget));
 
-	const int cur_idx = gtk_combo_box_get_active(GTK_COMBO_BOX(widget->comboBox));
+#ifdef USE_GTK_DROP_DOWN
+	const guint cur_idx = gtk_drop_down_get_selected(GTK_DROP_DOWN(widget->dropDown));
+	g_list_store_remove_all(widget->listStore);
+
+	if (cur_idx != GTK_INVALID_LIST_POSITION) {
+		// Nothing is selected now.
+		g_signal_emit(widget, signals[SIGNAL_LC_CHANGED], 0, 0);
+	}
+#else /* !USE_GTK_DROP_DOWN */
+	const int cur_idx = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
 	gtk_list_store_clear(widget->listStore);
+
 	if (cur_idx >= 0) {
 		// Nothing is selected now.
 		g_signal_emit(widget, signals[SIGNAL_LC_CHANGED], 0, 0);
 	}
+#endif /* USE_GTK_DROP_DOWN */
 }
 
 /**
@@ -410,6 +611,33 @@ rp_language_combo_box_set_selected_lc(RpLanguageComboBox *widget, uint32_t lc)
 	}
 
 	bool bRet;
+#ifdef USE_GTK_DROP_DOWN
+	if (lc == 0) {
+		// Unselect the selected LC.
+		gtk_drop_down_set_selected(GTK_DROP_DOWN(widget->dropDown), GTK_INVALID_LIST_POSITION);
+		bRet = true;
+	} else {
+		// Find an item with a matching LC.
+		bRet = false;
+
+		guint n_items = g_list_model_get_n_items(G_LIST_MODEL(widget->listStore));
+		for (guint i = 0; i < n_items; i++) {
+			RpLanguageComboBoxItem *const item = RP_LANGUAGE_COMBO_BOX_ITEM(
+				g_list_model_get_item(G_LIST_MODEL(widget->listStore), i));
+			assert(item != nullptr);
+			if (!item)
+				continue;
+
+			const uint32_t check_lc = rp_language_combo_box_item_get_lc(item);
+			if (lc == check_lc) {
+				// Found it.
+				gtk_drop_down_set_selected(GTK_DROP_DOWN(widget->dropDown), i);
+				bRet = true;
+				break;
+			}
+		}
+	}
+#else /* USE_GTK_DROP_DOWN */
 	if (lc == 0) {
 		// Unselect the selected LC.
 		gtk_combo_box_set_active(GTK_COMBO_BOX(widget->comboBox), -1);
@@ -436,6 +664,7 @@ rp_language_combo_box_set_selected_lc(RpLanguageComboBox *widget, uint32_t lc)
 			ok = gtk_tree_model_iter_next(GTK_TREE_MODEL(widget->listStore), &iter);
 		}
 	}
+#endif /* USE_GTK_DROP_DOWN */
 
 	// FIXME: If called from rp_language_combo_box_set_property(), this might
 	// result in *two* notifications.
@@ -455,8 +684,18 @@ uint32_t
 rp_language_combo_box_get_selected_lc(RpLanguageComboBox *widget)
 {
 	g_return_val_if_fail(RP_IS_LANGUAGE_COMBO_BOX(widget), 0);
-
 	uint32_t sel_lc = 0;
+
+#ifdef USE_GTK_DROP_DOWN
+	const gpointer obj = gtk_drop_down_get_selected_item(GTK_DROP_DOWN(widget->dropDown));
+	if (obj) {
+		RpLanguageComboBoxItem *const item = RP_LANGUAGE_COMBO_BOX_ITEM(obj);
+		assert(item != nullptr);
+		if (item) {
+			sel_lc = rp_language_combo_box_item_get_lc(item);
+		}
+	}
+#else /* !USE_GTK_DROP_DOWN */
 	GtkTreeIter iter;
 	if (gtk_combo_box_get_active_iter(GTK_COMBO_BOX(widget->comboBox), &iter)) {
 		GValue value = G_VALUE_INIT;
@@ -464,6 +703,8 @@ rp_language_combo_box_get_selected_lc(RpLanguageComboBox *widget)
 		sel_lc = g_value_get_uint(&value);
 		g_value_unset(&value);
 	}
+#endif /* USE_GTK_DROP_DOWN */
+
 	return sel_lc;
 }
 
@@ -493,10 +734,28 @@ rp_language_combo_box_get_force_pal(RpLanguageComboBox *widget)
 	return widget->forcePAL;
 }
 
+#ifdef USE_GTK_DROP_DOWN
 /**
- * Internal signal handler for GtkComboBox "changed".
- * @param comboBox	GtkComboBox
- * @param widget	RpLanguageComboBox
+ * Internal GObject "notify" signal handler for GtkDropDown's "selected" propertyl
+ * @param dropDown GtkDropDown
+ * @param pspec Property specification
+ * @param widget RpLanguageComboBox
+ */
+static void
+internal_notify_selected_handler(GtkDropDown		*dropDown,
+				 GParamSpec		*pspec,
+				 RpLanguageComboBox	*widget)
+{
+	RP_UNUSED(dropDown);
+	RP_UNUSED(pspec);
+	const uint32_t lc = rp_language_combo_box_get_selected_lc(widget);
+	g_signal_emit(widget, signals[SIGNAL_LC_CHANGED], 0, lc);
+}
+#else /* !USE_GTK_DROP_DOWN */
+/**
+ * Internal signal handler for GtkComboBox's "changed" signal.
+ * @param comboBox GtkComboBox
+ * @param widget RpLanguageComboBox
  */
 static void
 internal_changed_handler(GtkComboBox		*comboBox,
@@ -506,3 +765,4 @@ internal_changed_handler(GtkComboBox		*comboBox,
 	const uint32_t lc = rp_language_combo_box_get_selected_lc(widget);
 	g_signal_emit(widget, signals[SIGNAL_LC_CHANGED], 0, lc);
 }
+#endif /* USE_GTK_DROP_DOWN */
