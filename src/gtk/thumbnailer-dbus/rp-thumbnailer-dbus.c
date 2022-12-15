@@ -212,7 +212,8 @@ rp_thumbnailer_class_init(RpThumbnailerClass *klass, gpointer class_data)
 
 	// RpThumbnailer has been idle for long enough and should exit.
 	signals[SIGNAL_SHUTDOWN] = g_signal_new("shutdown",
-		RP_TYPE_THUMBNAILER, G_SIGNAL_RUN_LAST,
+		G_OBJECT_CLASS_TYPE(gobject_class),
+		G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 0);
 }

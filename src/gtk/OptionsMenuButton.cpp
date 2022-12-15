@@ -175,12 +175,12 @@ rp_options_menu_button_class_init(RpOptionsMenuButtonClass *klass)
 
 	// GtkButton signals
 	signals[SIGNAL_CLICKED] = g_signal_new("clicked",
-		RP_TYPE_OPTIONS_MENU_BUTTON,
+		G_OBJECT_CLASS_TYPE(gobject_class),
 		static_cast<GSignalFlags>(G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION),
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 0);
 	signals[SIGNAL_ACTIVATE] = g_signal_new("activate",
-		RP_TYPE_OPTIONS_MENU_BUTTON,
+		G_OBJECT_CLASS_TYPE(gobject_class),
 		static_cast<GSignalFlags>(G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION),
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 0);
@@ -188,7 +188,8 @@ rp_options_menu_button_class_init(RpOptionsMenuButtonClass *klass)
 	// GtkMenuButton signals
 	// TODO: G_SIGNAL_ACTION?
 	signals[SIGNAL_TRIGGERED] = g_signal_new("triggered",
-		RP_TYPE_OPTIONS_MENU_BUTTON, G_SIGNAL_RUN_LAST,
+		G_OBJECT_CLASS_TYPE(gobject_class),
+		G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 1, G_TYPE_INT);
 

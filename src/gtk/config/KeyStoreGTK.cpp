@@ -140,7 +140,8 @@ rp_key_store_gtk_class_init(RpKeyStoreGTKClass *klass)
 	 * @param keyIdx Key index.
 	 */
 	signals[SIGNAL_KEY_CHANGED] = g_signal_new("key-changed",
-		RP_TYPE_KEY_STORE_GTK, G_SIGNAL_RUN_LAST,
+		G_OBJECT_CLASS_TYPE(gobject_class),
+		G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 2, G_TYPE_INT, G_TYPE_INT);
 
@@ -149,7 +150,8 @@ rp_key_store_gtk_class_init(RpKeyStoreGTKClass *klass)
 	 * @param idx Flat key index.
 	 */
 	signals[SIGNAL_KEY_CHANGED_FLAT] = g_signal_new("key-changed-flat",
-		RP_TYPE_KEY_STORE_GTK, G_SIGNAL_RUN_LAST,
+		G_OBJECT_CLASS_TYPE(gobject_class),
+		G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 1, G_TYPE_INT);
 
@@ -157,7 +159,8 @@ rp_key_store_gtk_class_init(RpKeyStoreGTKClass *klass)
 	 * All keys have changed.
 	 */
 	signals[SIGNAL_ALL_KEYS_CHANGED] = g_signal_new("all-keys-changed",
-		RP_TYPE_KEY_STORE_GTK, G_SIGNAL_RUN_LAST,
+		G_OBJECT_CLASS_TYPE(gobject_class),
+		G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 0);
 
@@ -165,7 +168,8 @@ rp_key_store_gtk_class_init(RpKeyStoreGTKClass *klass)
 	 * KeyStore has been changed by the user.
 	 */
 	signals[SIGNAL_MODIFIED] = g_signal_new("modified",
-		RP_TYPE_KEY_STORE_GTK, G_SIGNAL_RUN_LAST,
+		G_OBJECT_CLASS_TYPE(gobject_class),
+		G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 0);
 }

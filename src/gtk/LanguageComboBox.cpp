@@ -131,7 +131,8 @@ rp_language_combo_box_class_init(RpLanguageComboBoxClass *klass)
 	/** Signals **/
 
 	signals[SIGNAL_LC_CHANGED] = g_signal_new("lc-changed",
-		RP_TYPE_LANGUAGE_COMBO_BOX, G_SIGNAL_RUN_LAST,
+		G_OBJECT_CLASS_TYPE(gobject_class),
+		G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 1, G_TYPE_UINT);
 }

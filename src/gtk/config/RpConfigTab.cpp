@@ -27,7 +27,8 @@ rp_config_tab_default_init(RpConfigTabInterface *iface)
 
 	/** Signals **/
 	signals[SIGNAL_MODIFIED] = g_signal_new("modified",
-		RP_TYPE_CONFIG_TAB, G_SIGNAL_RUN_LAST,
+		RP_TYPE_CONFIG_TAB,
+		G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 0);
 }

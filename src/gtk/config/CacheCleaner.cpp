@@ -102,7 +102,8 @@ rp_cache_cleaner_class_init(RpCacheCleanerClass *klass)
 	 * @param hasError If true, errors have occurred.
 	 */
 	signals[SIGNAL_PROGRESS] = g_signal_new("progress",
-		RP_TYPE_CACHE_CLEANER, G_SIGNAL_RUN_LAST,
+		G_OBJECT_CLASS_TYPE(gobject_class),
+		G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 3, G_TYPE_INT, G_TYPE_INT, G_TYPE_BOOLEAN);
 
@@ -111,7 +112,8 @@ rp_cache_cleaner_class_init(RpCacheCleanerClass *klass)
 	 * @param error Error description.
 	 */
 	signals[SIGNAL_ERROR] = g_signal_new("error",
-		RP_TYPE_CACHE_CLEANER, G_SIGNAL_RUN_LAST,
+		G_OBJECT_CLASS_TYPE(gobject_class),
+		G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 1, G_TYPE_STRING);
 
@@ -120,7 +122,8 @@ rp_cache_cleaner_class_init(RpCacheCleanerClass *klass)
 	 * @param cache_dir Which cache directory was checked.
 	 */
 	signals[SIGNAL_CACHE_IS_EMPTY] = g_signal_new("cache-is-empty",
-		RP_TYPE_CACHE_CLEANER, G_SIGNAL_RUN_LAST,
+		G_OBJECT_CLASS_TYPE(gobject_class),
+		G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 1, RP_TYPE_CACHE_DIR);
 
@@ -131,7 +134,8 @@ rp_cache_cleaner_class_init(RpCacheCleanerClass *klass)
 	 * @param fileErrs Number of files that could not be deleted.
 	 */
 	signals[SIGNAL_CACHE_CLEARED] = g_signal_new("cache-cleared",
-		RP_TYPE_CACHE_CLEANER, G_SIGNAL_RUN_LAST,
+		G_OBJECT_CLASS_TYPE(gobject_class),
+		G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 3, RP_TYPE_CACHE_DIR, G_TYPE_UINT, G_TYPE_UINT);
 
@@ -140,7 +144,8 @@ rp_cache_cleaner_class_init(RpCacheCleanerClass *klass)
 	 * This is called when run() exits, regardless of status.
 	 */
 	signals[SIGNAL_FINISHED] = g_signal_new("finished",
-		RP_TYPE_CACHE_CLEANER, G_SIGNAL_RUN_LAST,
+		G_OBJECT_CLASS_TYPE(gobject_class),
+		G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 0);
 }

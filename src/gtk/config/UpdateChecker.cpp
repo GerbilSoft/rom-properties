@@ -65,7 +65,8 @@ rp_update_checker_class_init(RpUpdateCheckerClass *klass)
 	 * @param error Error message
 	 */
 	signals[SIGNAL_ERROR] = g_signal_new("error",
-		RP_TYPE_UPDATE_CHECKER, G_SIGNAL_RUN_LAST,
+		G_OBJECT_CLASS_TYPE(gobject_class),
+		G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 1, G_TYPE_STRING);
 
@@ -74,7 +75,8 @@ rp_update_checker_class_init(RpUpdateCheckerClass *klass)
 	 * @param updateVersion Update version (64-bit format)
 	 */
 	signals[SIGNAL_RETRIEVED] = g_signal_new("retrieved",
-		RP_TYPE_UPDATE_CHECKER, G_SIGNAL_RUN_LAST,
+		G_OBJECT_CLASS_TYPE(gobject_class),
+		G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 1, G_TYPE_UINT64);
 
@@ -83,7 +85,8 @@ rp_update_checker_class_init(RpUpdateCheckerClass *klass)
 	 * This is called when run() exits, regardless of status.
 	 */
 	signals[SIGNAL_FINISHED] = g_signal_new("finished",
-		RP_TYPE_UPDATE_CHECKER, G_SIGNAL_RUN_LAST,
+		G_OBJECT_CLASS_TYPE(gobject_class),
+		G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 0);
 }
