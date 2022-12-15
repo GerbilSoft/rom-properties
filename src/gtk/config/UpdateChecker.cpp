@@ -33,29 +33,29 @@ typedef enum {
 static guint signals[SIGNAL_LAST];
 
 // UpdateChecker class
-struct _UpdateCheckerClass {
+struct _RpUpdateCheckerClass {
 	GObjectClass __parent__;
 };
 
 // UpdateChecker instance
-struct _UpdateChecker {
+struct _RpUpdateChecker {
 	GObject __parent__;
 
 	GThread *thread;
 };
 
-static void	update_checker_dispose			(GObject	*object);
+static void	rp_update_checker_dispose		(GObject	*object);
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
-G_DEFINE_TYPE_EXTENDED(UpdateChecker, update_checker,
+G_DEFINE_TYPE_EXTENDED(RpUpdateChecker, rp_update_checker,
 	G_TYPE_OBJECT, static_cast<GTypeFlags>(0), { });
 
 static void
-update_checker_class_init(UpdateCheckerClass *klass)
+rp_update_checker_class_init(RpUpdateCheckerClass *klass)
 {
 	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
-	gobject_class->dispose = update_checker_dispose;
+	gobject_class->dispose = rp_update_checker_dispose;
 
 	/** Signals **/
 
@@ -65,7 +65,7 @@ update_checker_class_init(UpdateCheckerClass *klass)
 	 * @param error Error message
 	 */
 	signals[SIGNAL_ERROR] = g_signal_new("error",
-		TYPE_UPDATE_CHECKER, G_SIGNAL_RUN_LAST,
+		RP_TYPE_UPDATE_CHECKER, G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 1, G_TYPE_STRING);
 
@@ -74,7 +74,7 @@ update_checker_class_init(UpdateCheckerClass *klass)
 	 * @param updateVersion Update version (64-bit format)
 	 */
 	signals[SIGNAL_RETRIEVED] = g_signal_new("retrieved",
-		TYPE_UPDATE_CHECKER, G_SIGNAL_RUN_LAST,
+		RP_TYPE_UPDATE_CHECKER, G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 1, G_TYPE_UINT64);
 
@@ -83,28 +83,28 @@ update_checker_class_init(UpdateCheckerClass *klass)
 	 * This is called when run() exits, regardless of status.
 	 */
 	signals[SIGNAL_FINISHED] = g_signal_new("finished",
-		TYPE_UPDATE_CHECKER, G_SIGNAL_RUN_LAST,
+		RP_TYPE_UPDATE_CHECKER, G_SIGNAL_RUN_LAST,
 		0, NULL, NULL, NULL,
 		G_TYPE_NONE, 0);
 }
 
 static void
-update_checker_init(UpdateChecker *tab)
+rp_update_checker_init(RpUpdateChecker *tab)
 {
 	// Nothing to initialize here.
 	RP_UNUSED(tab);
 }
 
-UpdateChecker*
-update_checker_new(void)
+RpUpdateChecker*
+rp_update_checker_new(void)
 {
-	return static_cast<UpdateChecker*>(g_object_new(TYPE_UPDATE_CHECKER, nullptr));
+	return static_cast<RpUpdateChecker*>(g_object_new(RP_TYPE_UPDATE_CHECKER, nullptr));
 }
 
 static void
-update_checker_dispose(GObject *object)
+rp_update_checker_dispose(GObject *object)
 {
-	UpdateChecker *const updChecker = UPDATE_CHECKER(object);
+	RpUpdateChecker *const updChecker = RP_UPDATE_CHECKER(object);
 
 	// Make sure the thread has exited.
 	// TODO: Set a timeout and terminate the thread if the timeout expires?
@@ -115,7 +115,7 @@ update_checker_dispose(GObject *object)
 	}
 
 	// Call the superclass dispose() function.
-	G_OBJECT_CLASS(update_checker_parent_class)->dispose(object);
+	G_OBJECT_CLASS(rp_update_checker_parent_class)->dispose(object);
 }
 
 /** Methods **/
@@ -125,7 +125,7 @@ update_checker_dispose(GObject *object)
  * @param updChecker Update checker
  */
 static gpointer
-update_checker_thread_run(UpdateChecker *updChecker)
+rp_update_checker_thread_run(RpUpdateChecker *updChecker)
 {
 	// Download sys/version.txt and compare it to our version.
 	// NOTE: Ignoring the fourth decimal (development flag).
@@ -224,9 +224,9 @@ update_checker_thread_run(UpdateChecker *updChecker)
  * @param updChecker Update checker
  */
 void
-update_checker_run(UpdateChecker *updChecker)
+rp_update_checker_run(RpUpdateChecker *updChecker)
 {
-	g_return_if_fail(IS_UPDATE_CHECKER(updChecker));
+	g_return_if_fail(RP_IS_UPDATE_CHECKER(updChecker));
 
 	// Make sure the thread isn't currently running.
 	// TODO: Show an error if it is?
@@ -236,6 +236,6 @@ update_checker_run(UpdateChecker *updChecker)
 	}
 
 	// Run the update check in a separate thread.
-	updChecker->thread = g_thread_new("updChecker", (GThreadFunc)update_checker_thread_run, updChecker);
+	updChecker->thread = g_thread_new("updChecker", (GThreadFunc)rp_update_checker_thread_run, updChecker);
 	return;
 }

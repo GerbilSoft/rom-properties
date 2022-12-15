@@ -72,7 +72,7 @@ struct _RpAboutTab {
 	GtkWidget	*lblLibraries;
 	GtkWidget	*lblSupport;
 
-	UpdateChecker	*updChecker;
+	RpUpdateChecker	*updChecker;
 	gboolean	checkedForUpdates;
 };
 
@@ -95,14 +95,14 @@ static void	rp_about_tab_init_support_tab		(GtkLabel	*lblSupport);
 
 // Signal handlers
 #ifdef ENABLE_UPDATE_CHECK
-static void	rp_about_tab_realize_event		(GtkWidget	*self,
-							 gpointer	 user_data);
-static void	updChecker_error			(UpdateChecker	*updChecker,
-							 const gchar	*error,
-							 RpAboutTab	*tab);
-static void	updChecker_retrieved			(UpdateChecker	*updChecker,
-							 guint64	 updateVersion,
-							 RpAboutTab	*tab);
+static void	rp_about_tab_realize_event		(GtkWidget		*self,
+							 gpointer		 user_data);
+static void	updChecker_error			(RpUpdateChecker	*updChecker,
+							 const gchar		*error,
+							 RpAboutTab		*tab);
+static void	updChecker_retrieved			(RpUpdateChecker	*updChecker,
+							 guint64		 updateVersion,
+							 RpAboutTab		*tab);
 #endif /* ENABLE_UPDATE_CHECK */
 
 // NOTE: Pango doesn't recognize "&nbsp;". Use U+00A0 instead.
@@ -818,7 +818,7 @@ rp_about_tab_init_support_tab(GtkLabel *lblSupport)
 #ifdef ENABLE_UPDATE_CHECK
 static void
 rp_about_tab_realize_event(GtkWidget	*self,
-			gpointer	 user_data)
+			   gpointer	 user_data)
 {
 	RP_UNUSED(user_data);
 
@@ -833,17 +833,17 @@ rp_about_tab_realize_event(GtkWidget	*self,
 
 	// Run the update checker.
 	if (!tab->updChecker) {
-		tab->updChecker = update_checker_new();
+		tab->updChecker = rp_update_checker_new();
 		g_signal_connect(tab->updChecker, "error", G_CALLBACK(updChecker_error), tab);
 		g_signal_connect(tab->updChecker, "retrieved", G_CALLBACK(updChecker_retrieved), tab);
 	}
-	update_checker_run(tab->updChecker);
+	rp_update_checker_run(tab->updChecker);
 }
 
 static void
-updChecker_error(UpdateChecker	*updChecker,
-		 const gchar	*error,
-		 RpAboutTab	*tab)
+updChecker_error(RpUpdateChecker	*updChecker,
+		 const gchar		*error,
+		 RpAboutTab		*tab)
 {
 	RP_UNUSED(updChecker);
 
@@ -853,7 +853,7 @@ updChecker_error(UpdateChecker	*updChecker,
 }
 
 static void
-updChecker_retrieved(UpdateChecker	*updChecker,
+updChecker_retrieved(RpUpdateChecker	*updChecker,
 		     guint64	 	 updateVersion,
 		     RpAboutTab		*tab)
 {
