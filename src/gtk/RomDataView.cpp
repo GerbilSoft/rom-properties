@@ -62,8 +62,6 @@ typedef enum {
 
 static GParamSpec *props[PROP_LAST];
 
-static void	rp_rom_data_view_dispose		(GObject	*object);
-static void	rp_rom_data_view_finalize		(GObject	*object);
 static void	rp_rom_data_view_set_property	(GObject	*object,
 						 guint		 prop_id,
 						 const GValue	*value,
@@ -72,12 +70,14 @@ static void	rp_rom_data_view_get_property	(GObject	*object,
 						 guint		 prop_id,
 						 GValue		*value,
 						 GParamSpec	*pspec);
+static void	rp_rom_data_view_dispose	(GObject	*object);
+static void	rp_rom_data_view_finalize	(GObject	*object);
 
 static void	rp_rom_data_view_desc_format_type_changed(RpRomDataView *page,
 						 RpDescFormatType desc_format_type);
 
 static void	rp_rom_data_view_init_header_row(RpRomDataView	*page);
-static void	rp_rom_data_view_update_display	(RpRomDataView	*page);
+static gboolean	rp_rom_data_view_update_display	(RpRomDataView	*page);
 static gboolean	rp_rom_data_view_load_rom_data	(RpRomDataView	*page);
 static void	rp_rom_data_view_delete_tabs	(RpRomDataView	*page);
 
@@ -118,10 +118,10 @@ static void
 rp_rom_data_view_class_init(RpRomDataViewClass *klass)
 {
 	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
-	gobject_class->dispose = rp_rom_data_view_dispose;
-	gobject_class->finalize = rp_rom_data_view_finalize;
 	gobject_class->set_property = rp_rom_data_view_set_property;
 	gobject_class->get_property = rp_rom_data_view_get_property;
+	gobject_class->dispose = rp_rom_data_view_dispose;
+	gobject_class->finalize = rp_rom_data_view_finalize;
 
 	/** Quarks **/
 
@@ -427,8 +427,17 @@ rp_rom_data_view_new_with_romData(const gchar *uri, RomData *romData, RpDescForm
 			page->romData = romData->ref();
 		}
 	}
-	if (G_LIKELY(uri != nullptr)) {
-		// NOTE: G_SOURCE_FUNC() was added in glib-2.58.
+
+	// NOTE: G_SOURCE_FUNC() was added in glib-2.58.
+	if (G_LIKELY(romData != nullptr)) {
+		// NOTE: Don't call rp_rom_data_view_load_rom_data() because that will
+		// close and reopen romData, which wastes CPU cycles.
+		// Call rp_rom_data_view_update_display() instead.
+		page->changed_idle = g_idle_add((GSourceFunc)rp_rom_data_view_update_display, page);
+		page->hasCheckedAchievements = false;
+	} else if (G_LIKELY(uri != nullptr)) {
+		// URI is specified, but not RomData.
+		// We'll need to create a RomData object.
 		page->changed_idle = g_idle_add((GSourceFunc)rp_rom_data_view_load_rom_data, page);
 	}
 
@@ -1608,10 +1617,15 @@ rp_rom_data_view_create_options_button(RpRomDataView *page)
 	rp_options_menu_button_reinit_menu(RP_OPTIONS_MENU_BUTTON(page->btnOptions), page->romData);
 }
 
-static void
+/**
+ * Update the display widgets.
+ * @param page RomDataView
+ * @return G_SOURCE_REMOVE
+ */
+static gboolean
 rp_rom_data_view_update_display(RpRomDataView *page)
 {
-	assert(page != nullptr);
+	g_return_val_if_fail(RP_IS_ROM_DATA_VIEW(page), G_SOURCE_REMOVE);
 
 	// Delete the icon frames and tabs.
 	rp_rom_data_view_delete_tabs(page);
@@ -1626,7 +1640,8 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 
 	if (!page->romData) {
 		// No ROM data...
-		return;
+		page->changed_idle = 0;
+		return G_SOURCE_REMOVE;
 	}
 
 	// Get the fields.
@@ -1635,7 +1650,8 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 	if (!pFields) {
 		// No fields.
 		// TODO: Show an error?
-		return;
+		page->changed_idle = 0;
+		return G_SOURCE_REMOVE;
 	}
 	const int count = pFields->count();
 #if !GTK_CHECK_VERSION(3,0,0)
@@ -1955,10 +1971,13 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 		page->cxx->def_lc = pFields->defaultLanguageCode();
 		rp_rom_data_view_update_multi(page, 0);
 	}
+
+	page->changed_idle = 0;
+	return G_SOURCE_REMOVE;
 }
 
 /**
- * Load the actual ROM data.
+ * Reload the RomData object from the current URI.
  * Call this function using g_idle_add().
  * @param page RpRomDataView
  * @return G_SOURCE_REMOVE
@@ -1968,7 +1987,7 @@ rp_rom_data_view_load_rom_data(RpRomDataView *page)
 {
 	g_return_val_if_fail(RP_IS_ROM_DATA_VIEW(page), G_SOURCE_REMOVE);
 
-	if (G_UNLIKELY(page->uri == nullptr && page->romData == nullptr)) {
+	if (G_UNLIKELY(page->uri == nullptr)) {
 		// No URI or RomData.
 		// TODO: Remove widgets?
 		page->changed_idle = 0;
@@ -1996,6 +2015,7 @@ rp_rom_data_view_load_rom_data(RpRomDataView *page)
 	if (page->romData) {
 		// Update the display widgets.
 		// TODO: If already mapped, check achievements again.
+		// NOTE: This will clear page->changed_idle.
 		rp_rom_data_view_update_display(page);
 
 		// Make sure the underlying file handle is closed,
