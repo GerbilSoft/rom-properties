@@ -20,9 +20,6 @@ G_DECLARE_FINAL_TYPE(RpMessageWidget, rp_message_widget, RP, MESSAGE_WIDGET, Gtk
 G_DECLARE_FINAL_TYPE(RpMessageWidget, rp_message_widget, RP, MESSAGE_WIDGET, GtkEventBox)
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
-/* this function is implemented automatically by the G_DEFINE_TYPE macro */
-void		rp_message_widget_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
-
 GtkWidget	*rp_message_widget_new		(void) G_GNUC_MALLOC;
 
 void		rp_message_widget_set_text	(RpMessageWidget *widget, const gchar *str);

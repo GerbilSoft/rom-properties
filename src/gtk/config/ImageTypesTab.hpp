@@ -20,9 +20,6 @@ G_DECLARE_FINAL_TYPE(RpImageTypesTab, rp_image_types_tab, RP, IMAGE_TYPES_TAB, G
 G_DECLARE_FINAL_TYPE(RpImageTypesTab, rp_image_types_tab, RP, IMAGE_TYPES_TAB, GtkVBox)
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
-/* this function is implemented automatically by the G_DEFINE_TYPE macro */
-void		rp_image_types_tab_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
-
 GtkWidget	*rp_image_types_tab_new			(void) G_GNUC_INTERNAL G_GNUC_MALLOC;
 
 G_END_DECLS

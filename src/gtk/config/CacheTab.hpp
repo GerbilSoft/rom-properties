@@ -20,9 +20,6 @@ G_DECLARE_FINAL_TYPE(RpCacheTab, rp_cache_tab, RP, CACHE_TAB, GtkBox)
 G_DECLARE_FINAL_TYPE(RpCacheTab, rp_cache_tab, RP, CACHE_TAB, GtkVBox)
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
-/* this function is implemented automatically by the G_DEFINE_TYPE macro */
-void		rp_cache_tab_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
-
 GtkWidget	*rp_cache_tab_new		(void) G_GNUC_INTERNAL G_GNUC_MALLOC;
 
 G_END_DECLS

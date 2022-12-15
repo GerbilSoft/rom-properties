@@ -16,9 +16,6 @@ G_BEGIN_DECLS
 #define RP_TYPE_CONFIG_DIALOG (rp_config_dialog_get_type())
 G_DECLARE_FINAL_TYPE(RpConfigDialog, rp_config_dialog, RP, CONFIG_DIALOG, GtkDialog)
 
-/* this function is implemented automatically by the G_DEFINE_TYPE macro */
-void		rp_config_dialog_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
-
 GtkWidget	*rp_config_dialog_new		(void) G_GNUC_INTERNAL G_GNUC_MALLOC;
 
 G_END_DECLS

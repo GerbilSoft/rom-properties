@@ -27,9 +27,6 @@ enum StandardOptionID {
 	OPTION_COPY_JSON = -4,
 };
 
-/* this function is implemented automatically by the G_DEFINE_TYPE macro */
-void		rp_options_menu_button_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
-
 GtkWidget	*rp_options_menu_button_new		(void) G_GNUC_MALLOC;
 
 GtkArrowType	rp_options_menu_button_get_direction	(RpOptionsMenuButton *widget);

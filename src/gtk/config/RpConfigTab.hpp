@@ -32,9 +32,8 @@ typedef struct _RpConfigTabInterface {
 	void (*save)(RpConfigTab *tab, GKeyFile *keyFile);
 } RpConfigTabInterface;
 
-/* these two functions are implemented automatically by the G_DEFINE_TYPE macro */
+/* this function is implemented automatically by the G_DEFINE_TYPE macro */
 GType		rp_config_tab_get_type		(void) G_GNUC_CONST G_GNUC_INTERNAL;
-void		rp_config_tab_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
 
 gboolean	rp_config_tab_has_defaults	(RpConfigTab *tab) G_GNUC_INTERNAL;
 

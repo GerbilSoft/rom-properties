@@ -28,9 +28,6 @@ typedef enum {
 	RP_DFT_LAST
 } RpDescFormatType;
 
-/* this function is implemented automatically by the G_DEFINE_TYPE macro */
-void		rp_rom_data_view_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
-
 GtkWidget	*rp_rom_data_view_new		(void) G_GNUC_INTERNAL G_GNUC_MALLOC;
 GtkWidget	*rp_rom_data_view_new_with_uri	(const gchar	*uri,
 						 RpDescFormatType desc_format_type) G_GNUC_INTERNAL G_GNUC_MALLOC;

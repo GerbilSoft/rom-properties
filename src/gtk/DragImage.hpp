@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * DragImage.hpp: Drag & Drop image.                                       *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,9 +19,6 @@ G_DECLARE_FINAL_TYPE(RpDragImage, rp_drag_image, RP, DRAG_IMAGE, GtkBox)
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 G_DECLARE_FINAL_TYPE(RpDragImage, rp_drag_image, RP, DRAG_IMAGE, GtkEventBox)
 #endif /* GTK_CHECK_VERSION(4,0,0) */
-
-/* this function is implemented automatically by the G_DEFINE_TYPE macro */
-void		rp_drag_image_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
 
 GtkWidget	*rp_drag_image_new		(void) G_GNUC_MALLOC;
 

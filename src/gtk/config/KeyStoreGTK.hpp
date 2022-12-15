@@ -16,9 +16,6 @@ G_BEGIN_DECLS
 #define RP_TYPE_KEY_STORE_GTK (rp_key_store_gtk_get_type())
 G_DECLARE_FINAL_TYPE(RpKeyStoreGTK, rp_key_store_gtk, RP, KEY_STORE_GTK, GObject)
 
-/* this function is implemented automatically by the G_DEFINE_TYPE macro */
-void		rp_key_store_gtk_register_type		(GtkWidget *widget) G_GNUC_INTERNAL;
-
 RpKeyStoreGTK	*rp_key_store_gtk_new			(void) G_GNUC_INTERNAL G_GNUC_MALLOC;
 
 int		rp_key_store_gtk_get_total_key_count	(RpKeyStoreGTK *keyStore);

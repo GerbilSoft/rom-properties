@@ -20,9 +20,6 @@ G_DECLARE_FINAL_TYPE(RpKeyManagerTab, rp_key_manager_tab, RP, KEY_MANAGER_TAB, G
 G_DECLARE_FINAL_TYPE(RpKeyManagerTab, rp_key_manager_tab, RP, KEY_MANAGER_TAB, GtkVBox)
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
-/* this function is implemented automatically by the G_DEFINE_TYPE macro */
-void		rp_key_manager_tab_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
-
 GtkWidget	*rp_key_manager_tab_new			(void) G_GNUC_INTERNAL G_GNUC_MALLOC;
 
 G_END_DECLS

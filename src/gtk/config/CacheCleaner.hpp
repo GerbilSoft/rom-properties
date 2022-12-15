@@ -22,9 +22,6 @@ typedef enum {
 	RP_CD_RomProperties,	/*< nick=ROM Properties cache directory >*/
 } RpCacheDir;
 
-/* this function is implemented automatically by the G_DEFINE_TYPE macro */
-void		rp_cache_cleaner_register_type	(GtkWidget *widget) G_GNUC_INTERNAL;
-
 RpCacheCleaner	*rp_cache_cleaner_new		(RpCacheDir cache_dir) G_GNUC_INTERNAL G_GNUC_MALLOC;
 
 RpCacheDir	rp_cache_cleaner_get_cache_dir	(RpCacheCleaner *cleaner) G_GNUC_INTERNAL;
