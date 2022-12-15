@@ -171,7 +171,8 @@ bind_listitem_cb(GtkListItemFactory	*factory,
 	GtkWidget *const hbox = gtk_list_item_get_child(list_item);
 	GtkWidget *const icon = gtk_widget_get_first_child(hbox);
 	GtkWidget *const label = gtk_widget_get_next_sibling(icon);
-	assert(icon && label);
+	assert(icon != nullptr);
+	assert(label != nullptr);
 	if (!icon || !label) {
 		return;
 	}
