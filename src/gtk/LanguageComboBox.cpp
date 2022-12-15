@@ -38,12 +38,14 @@ typedef enum {
 	SIGNAL_LAST
 } RpLanguageComboBoxSignalID;
 
+#ifndef USE_GTK_DROP_DOWN
 /* Column identifiers */
 typedef enum {
 	SM_COL_ICON,
 	SM_COL_TEXT,
 	SM_COL_LC,
 } StringMultiColumns;
+#endif /* !USE_GTK_DROP_DOWN */
 
 static void	rp_language_combo_box_set_property(GObject	*object,
 						   guint	 prop_id,
