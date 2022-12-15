@@ -10,7 +10,7 @@
 #include "LanguageComboBox.hpp"
 #include "PIMGTYPE.hpp"
 
-#if GTK_CHECK_VERSION(4,0,0)
+#if GTK_CHECK_VERSION(3,99,0)
 #  define USE_GTK_DROP_DOWN 1
 #  include "LanguageComboBoxItem.hpp"
 #endif
