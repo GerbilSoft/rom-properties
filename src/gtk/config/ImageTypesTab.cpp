@@ -609,6 +609,8 @@ rp_image_types_tab_notify_selected_handler(GtkDropDown		*cbo,
 					   GParamSpec		*pspec,
 					   RpImageTypesTab	*tab)
 {
+	RP_UNUSED(pspec);
+
 	assert(GTK_IS_DROP_DOWN(cbo));
 	g_return_if_fail(GTK_IS_DROP_DOWN(cbo));
 
