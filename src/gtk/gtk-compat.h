@@ -373,6 +373,10 @@ typedef GtkComboBox OurComboBox;
 /* convenience macros for GtkCheckButton */
 #define COMPARE_CHK(widget, defval) \
 	(gtk_check_button_get_active(GTK_CHECK_BUTTON(widget)) != (defval))
+#define SET_CHK(widget, value) \
+	gtk_check_button_set_active(GTK_CHECK_BUTTON(widget), (value))
+#define GET_CHK(widget) \
+	gtk_check_button_get_active(GTK_CHECK_BUTTON(widget))
 
 G_END_DECLS
 

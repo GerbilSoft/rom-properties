@@ -413,29 +413,21 @@ rp_options_tab_load_defaults(RpOptionsTab *tab)
 
 	// Downloads
 	if (COMPARE_CHK(tab->chkExtImgDownloadEnabled, extImgDownloadEnabled_default)) {
-		gtk_check_button_set_active(
-			GTK_CHECK_BUTTON(tab->chkExtImgDownloadEnabled),
-			extImgDownloadEnabled_default);
+		SET_CHK(tab->chkExtImgDownloadEnabled, extImgDownloadEnabled_default);
 		isDefChanged = true;
 		// Update sensitivity
 		rp_options_tab_chkExtImgDownloadEnabled_toggled(GTK_CHECK_BUTTON(tab->chkExtImgDownloadEnabled), tab);
 	}
 	if (COMPARE_CHK(tab->chkUseIntIconForSmallSizes, useIntIconForSmallSizes_default)) {
-		gtk_check_button_set_active(
-			GTK_CHECK_BUTTON(tab->chkUseIntIconForSmallSizes),
-			extImgDownloadEnabled_default);
+		SET_CHK(tab->chkUseIntIconForSmallSizes, extImgDownloadEnabled_default);
 		isDefChanged = true;
 	}
 	if (COMPARE_CHK(tab->chkUseIntIconForSmallSizes, useIntIconForSmallSizes_default)) {
-		gtk_check_button_set_active(
-			GTK_CHECK_BUTTON(tab->chkUseIntIconForSmallSizes),
-			useIntIconForSmallSizes_default);
+		SET_CHK(tab->chkUseIntIconForSmallSizes, useIntIconForSmallSizes_default);
 		isDefChanged = true;
 	}
 	if (COMPARE_CHK(tab->chkStoreFileOriginInfo, storeFileOriginInfo_default)) {
-		gtk_check_button_set_active(
-			GTK_CHECK_BUTTON(tab->chkStoreFileOriginInfo),
-			storeFileOriginInfo_default);
+		SET_CHK(tab->chkStoreFileOriginInfo, storeFileOriginInfo_default);
 		isDefChanged = true;
 	}
 	if (rp_language_combo_box_get_selected_lc(RP_LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL)) != palLanguageForGameTDB_default) {
@@ -491,11 +483,11 @@ rp_options_tab_save(RpOptionsTab *tab, GKeyFile *keyFile)
 
 	// Downloads
 	g_key_file_set_boolean(keyFile, "Downloads", "ExtImageDownload",
-		gtk_check_button_get_active(GTK_CHECK_BUTTON(tab->chkExtImgDownloadEnabled)));
+		GET_CHK(tab->chkExtImgDownloadEnabled));
 	g_key_file_set_boolean(keyFile, "Downloads", "UseIntIconForSmallSizes",
-		gtk_check_button_get_active(GTK_CHECK_BUTTON(tab->chkUseIntIconForSmallSizes)));
+		GET_CHK(tab->chkUseIntIconForSmallSizes));
 	g_key_file_set_boolean(keyFile, "Downloads", "StoreFileOriginInfo",
-		gtk_check_button_get_active(GTK_CHECK_BUTTON(tab->chkStoreFileOriginInfo)));
+		GET_CHK(tab->chkStoreFileOriginInfo));
 	g_key_file_set_string(keyFile, "Downloads", "PalLanguageForGameTDB",
 		SystemRegion::lcToString(rp_language_combo_box_get_selected_lc(
 			RP_LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL))).c_str());
@@ -534,9 +526,9 @@ rp_options_tab_save(RpOptionsTab *tab, GKeyFile *keyFile)
 
 	// Options
 	g_key_file_set_boolean(keyFile, "Options", "ShowDangerousPermissionsOverlayIcon",
-		gtk_check_button_get_active(GTK_CHECK_BUTTON(tab->chkShowDangerousPermissionsOverlayIcon)));
+		GET_CHK(tab->chkShowDangerousPermissionsOverlayIcon));
 	g_key_file_set_boolean(keyFile, "Options", "EnableThumbnailOnNetworkFS",
-		gtk_check_button_get_active(GTK_CHECK_BUTTON(tab->chkEnableThumbnailOnNetworkFS)));
+		GET_CHK(tab->chkEnableThumbnailOnNetworkFS));
 
 	// Configuration saved.
 	tab->changed = false;
