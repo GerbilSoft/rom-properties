@@ -740,7 +740,7 @@ rp_language_combo_box_get_force_pal(RpLanguageComboBox *widget)
 
 #ifdef USE_GTK_DROP_DOWN
 /**
- * Internal GObject "notify" signal handler for GtkDropDown's "selected" propertyl
+ * Internal GObject "notify" signal handler for GtkDropDown's "selected" property.
  * @param dropDown GtkDropDown sending the signal
  * @param pspec Property specification
  * @param widget RpLanguageComboBox
