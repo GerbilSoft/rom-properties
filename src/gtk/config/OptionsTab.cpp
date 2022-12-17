@@ -36,6 +36,17 @@ typedef GtkVBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_VBOX
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
+// GTK4: Use GtkDropDown.
+// GTK2, GTK3: Use GtkComboBox.
+#if GTK_CHECK_VERSION(3,99,0)
+#  define USE_GTK_DROP_DOWN 1
+#  define OUR_COMBO_BOX(obj) GTK_DROP_DOWN(obj)
+typedef GtkDropDown OurComboBox;
+#else /* !GTK_CHECK_VERSION(3,99,0) */
+#  define OUR_COMBO_BOX(obj) GTK_COMBO_BOX(obj)
+typedef GtkComboBox OurComboBox;
+#endif /* GTK_CHECK_VERSION(3,99,0) */
+
 // OptionsTab class
 struct _RpOptionsTabClass {
 	superclass __parent__;
@@ -74,6 +85,11 @@ static void	rp_options_tab_save				(RpOptionsTab	*tab,
 								 GKeyFile       *keyFile);
 
 // "modified" signal handler for UI widgets
+#ifdef USE_GTK_DROP_DOWN
+static void	rp_options_tab_notify_selected_handler		(GtkDropDown	*dropDown,
+								 GParamSpec	*pspec,
+								 RpOptionsTab	*widget);
+#endif /* USE_GTK_DROP_DOWN */
 static void	rp_options_tab_modified_handler			(GtkWidget	*widget,
 								 RpOptionsTab	*tab);
 static void	rp_options_tab_lc_changed_handler		(RpLanguageComboBox *widget,
@@ -150,6 +166,18 @@ rp_options_tab_init(RpOptionsTab *tab)
 	const char *const s_ImgBandwidthNormalRes = C_("OptionsTab", "Download normal-resolution images");
 	const char *const s_ImgBandwidthHighRes   = C_("OptionsTab", "Download high-resolution images");
 
+#ifdef USE_GTK_DROP_DOWN
+	// GtkStringList model for the GtkDropDowns
+	GtkStringList *const lstImgBandwidth = gtk_string_list_new(nullptr);
+	gtk_string_list_append(lstImgBandwidth, s_ImgBandwidthNone);
+	gtk_string_list_append(lstImgBandwidth, s_ImgBandwidthNormalRes);
+	gtk_string_list_append(lstImgBandwidth, s_ImgBandwidthHighRes);
+
+	// NOTE: gtk_drop_down_new() takes ownership of the GListModel.
+	// For cboMeteredConnection, we'll need to take an additional reference.
+	tab->cboUnmeteredConnection = gtk_drop_down_new(G_LIST_MODEL(lstImgBandwidth), nullptr);
+	tab->cboMeteredConnection = gtk_drop_down_new(G_LIST_MODEL(g_object_ref(lstImgBandwidth)), nullptr);
+#else /* !USE_GTK_DROP_DOWN */
 	// GtkListStore model for the combo boxes
 	GtkListStore *const lstImgBandwidth = gtk_list_store_new(1, G_TYPE_STRING);
 	gtk_list_store_insert_with_values(lstImgBandwidth, nullptr, 0, 0, s_ImgBandwidthNone, -1);
@@ -174,6 +202,7 @@ rp_options_tab_init(RpOptionsTab *tab)
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(tab->cboMeteredConnection), column, TRUE);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(tab->cboMeteredConnection),
 		column, "text", 0, nullptr);
+#endif /* USE_GTK_DROP_DOWN */
 
 #if GTK_CHECK_VERSION(3,0,0)
 	GtkWidget *const tblImgBandwidth = gtk_grid_new();
@@ -254,10 +283,17 @@ rp_options_tab_init(RpOptionsTab *tab)
 		G_CALLBACK(rp_options_tab_modified_handler), tab);
 	g_signal_connect(tab->chkExtImgDownloadEnabled, "toggled",
 		G_CALLBACK(rp_options_tab_chkExtImgDownloadEnabled_toggled), tab);
+#ifdef USE_GTK_DROP_DOWN
+	g_signal_connect(tab->cboUnmeteredConnection, "notify::selected",
+		G_CALLBACK(rp_options_tab_notify_selected_handler), tab);
+	g_signal_connect(tab->cboMeteredConnection, "notify::selected",
+		G_CALLBACK(rp_options_tab_notify_selected_handler), tab);
+#else /* !USE_GTK_DROP_DOWN */
 	g_signal_connect(tab->cboUnmeteredConnection, "changed",
 		G_CALLBACK(rp_options_tab_modified_handler), tab);
 	g_signal_connect(tab->cboMeteredConnection, "changed",
 		G_CALLBACK(rp_options_tab_modified_handler), tab);
+#endif /* USE_GTK_DROP_DOWN */
 	g_signal_connect(tab->chkUseIntIconForSmallSizes, "toggled",
 		G_CALLBACK(rp_options_tab_modified_handler), tab);
 	g_signal_connect(tab->chkStoreFileOriginInfo, "toggled",
@@ -313,6 +349,22 @@ rp_options_tab_new(void)
 
 /** RpConfigTab interface functions **/
 
+#ifdef USE_GTK_DROP_DOWN
+#  define COMPARE_CBO(widget, defval) \
+	(gtk_drop_down_get_selected(GTK_DROP_DOWN(widget)) != (defval))
+#  define SET_CBO(widget, value) \
+	gtk_drop_down_set_selected(GTK_DROP_DOWN(widget), (value))
+#  define GET_CBO(widget) \
+	gtk_drop_down_get_selected(GTK_DROP_DOWN(widget))
+#else /* !USE_GTK_DROP_DOWN */
+#  define COMPARE_CBO(widget, defval) \
+	(gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != (defval))
+#  define SET_CBO(widget, value) \
+	gtk_combo_box_set_active(GTK_COMBO_BOX(widget), (value))
+#  define GET_CBO(widget) \
+	gtk_combo_box_get_active(GTK_COMBO_BOX(widget))
+#endif /* USE_GTK_DROP_DOWN */
+
 static gboolean
 rp_options_tab_has_defaults(RpOptionsTab *tab)
 {
@@ -342,12 +394,8 @@ rp_options_tab_reset(RpOptionsTab *tab)
 		config->storeFileOriginInfo());
 
 	// Image bandwidth options
-	gtk_combo_box_set_active(
-		GTK_COMBO_BOX(tab->cboUnmeteredConnection),
-		static_cast<int>(config->imgBandwidthUnmetered()));
-	gtk_combo_box_set_active(
-		GTK_COMBO_BOX(tab->cboMeteredConnection),
-		static_cast<int>(config->imgBandwidthMetered()));
+	SET_CBO(tab->cboUnmeteredConnection, static_cast<int>(config->imgBandwidthUnmetered()));
+	SET_CBO(tab->cboMeteredConnection, static_cast<int>(config->imgBandwidthMetered()));
 	// Update sensitivity
 	rp_options_tab_chkExtImgDownloadEnabled_toggled(GTK_CHECK_BUTTON(tab->chkExtImgDownloadEnabled), tab);
 
@@ -392,8 +440,6 @@ rp_options_tab_load_defaults(RpOptionsTab *tab)
 
 #define COMPARE_CHK(widget, defval) \
 	(gtk_check_button_get_active(GTK_CHECK_BUTTON(widget)) != (defval))
-#define COMPARE_CBO(widget, defval) \
-	(gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != (defval))
 
 	// Downloads
 	if (COMPARE_CHK(tab->chkExtImgDownloadEnabled, extImgDownloadEnabled_default)) {
@@ -431,15 +477,11 @@ rp_options_tab_load_defaults(RpOptionsTab *tab)
 
 	// Image bandwidth options
 	if (COMPARE_CBO(tab->cboUnmeteredConnection, static_cast<int>(imgBandwidthUnmetered_default))) {
-		gtk_combo_box_set_active(
-			GTK_COMBO_BOX(tab->cboUnmeteredConnection),
-			static_cast<int>(imgBandwidthUnmetered_default));
+		SET_CBO(tab->cboUnmeteredConnection, static_cast<int>(imgBandwidthUnmetered_default));
 		isDefChanged = true;
 	}
 	if (COMPARE_CBO(tab->cboMeteredConnection, static_cast<int>(imgBandwidthMetered_default))) {
-		gtk_combo_box_set_active(
-			GTK_COMBO_BOX(tab->cboMeteredConnection),
-			static_cast<int>(imgBandwidthMetered_default));
+		SET_CBO(tab->cboMeteredConnection, static_cast<int>(imgBandwidthMetered_default));
 		isDefChanged = true;
 	}
 
@@ -491,7 +533,7 @@ rp_options_tab_save(RpOptionsTab *tab, GKeyFile *keyFile)
 	// Image bandwidth options
 	// TODO: Consolidate this.
 	const char *sUnmetered, *sMetered;
-	switch (static_cast<Config::ImgBandwidth>(gtk_combo_box_get_active(GTK_COMBO_BOX(tab->cboUnmeteredConnection)))) {
+	switch (static_cast<Config::ImgBandwidth>(GET_CBO(tab->cboUnmeteredConnection))) {
 		case Config::ImgBandwidth::None:
 			sUnmetered = "None";
 			break;
@@ -503,7 +545,7 @@ rp_options_tab_save(RpOptionsTab *tab, GKeyFile *keyFile)
 			sUnmetered = "HighRes";
 			break;
 	}
-	switch (static_cast<Config::ImgBandwidth>(gtk_combo_box_get_active(GTK_COMBO_BOX(tab->cboMeteredConnection)))) {
+	switch (static_cast<Config::ImgBandwidth>(GET_CBO(tab->cboMeteredConnection))) {
 		case Config::ImgBandwidth::None:
 			sMetered = "None";
 			break;
@@ -531,6 +573,27 @@ rp_options_tab_save(RpOptionsTab *tab, GKeyFile *keyFile)
 }
 
 /** Signal handlers **/
+
+#ifdef USE_GTK_DROP_DOWN
+/**
+ * Internal GObject "notify" signal handler for GtkDropDown's "selected" property.
+ * @param cbo GtkDropDown sending the signal
+ * @param pspec Property specification
+ * @param tab OptionsTab
+ */
+static void
+rp_options_tab_notify_selected_handler(GtkDropDown *dropDown, GParamSpec *pspec, RpOptionsTab *tab)
+{
+	RP_UNUSED(dropDown);
+	RP_UNUSED(pspec);
+	if (tab->inhibit)
+		return;
+
+	// Forward the "modified" signal.
+	tab->changed = true;
+	g_signal_emit_by_name(tab, "modified", NULL);
+}
+#endif /* USE_GTK_DROP_DOWN */
 
 /**
  * "modified" signal handler for UI widgets
