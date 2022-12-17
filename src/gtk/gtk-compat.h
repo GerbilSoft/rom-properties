@@ -343,10 +343,11 @@ gtk_widget_set_margin(GtkWidget *widget, gint margin)
 
 /******** GtkDropDown compatibility stuff (GTK4) ********/
 
-// GTK4: Use GtkDropDown.
-// GTK2, GTK3: Use GtkComboBox.
+// GTK4: Use GtkDropDown and GtkColumnView.
+// GTK2, GTK3: Use GtkComboBox and GtkTreeView.
 #if GTK_CHECK_VERSION(3,99,0)
 #  define USE_GTK_DROP_DOWN 1
+#  define USE_GTK_COLUMN_VIEW 1
 #  define OUR_COMBO_BOX(obj) GTK_DROP_DOWN(obj)
 typedef GtkDropDown OurComboBox;
 #else /* !GTK_CHECK_VERSION(3,99,0) */

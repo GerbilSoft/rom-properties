@@ -176,6 +176,9 @@ bind_listitem_cb(GtkListItemFactory	*factory,
 	}
 
 	RpLanguageComboBoxItem *const item = RP_LANGUAGE_COMBO_BOX_ITEM(gtk_list_item_get_item(list_item));
+	if (!item) {
+		return;
+	}
 
 	gtk_image_set_from_pixbuf(GTK_IMAGE(icon), rp_language_combo_box_item_get_icon(item));
 	gtk_label_set_text(GTK_LABEL(label), rp_language_combo_box_item_get_name(item));

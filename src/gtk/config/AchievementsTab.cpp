@@ -7,13 +7,17 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-
 #include "AchievementsTab.hpp"
 #include "RpConfigTab.hpp"
+
 #include "../AchSpritesheet.hpp"
 
 #include "RpGtk.hpp"
 #include "gtk-compat.h"
+
+#ifdef USE_GTK_COLUMN_VIEW
+#  include "AchievementItem.hpp"
+#endif /* USE_GTK_COLUMN_VIEW */
 
 // librpbase
 #include "librpbase/Achievements.hpp"
@@ -41,8 +45,13 @@ struct _RpAchievementsTabClass {
 struct _RpAchievementsTab {
 	super __parent__;
 
+#ifdef USE_GTK_COLUMN_VIEW
+	GListStore	*listStore;
+	GtkWidget	*columnView;
+#else /* !USE_GTK_COLUMN_VIEW */
 	GtkListStore	*listStore;
 	GtkWidget	*treeView;
+#endif /* USE_GTK_COLUMN_VIEW */
 };
 
 // Interface initialization
@@ -75,6 +84,93 @@ rp_achievements_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)
 	iface->save = (__typeof__(iface->save))rp_achievements_tab_save;
 }
 
+#ifdef USE_GTK_COLUMN_VIEW
+// GtkSignalListItemFactory signal handlers
+// Reference: https://blog.gtk.org/2020/09/05/a-primer-on-gtklistview/
+// NOTE: user_data will indicate the column number: 0 == icon, 1 == description, 2 == unlock time
+static void
+setup_listitem_cb(GtkListItemFactory	*factory,
+		  GtkListItem		*list_item,
+		  gpointer		 user_data)
+{
+	RP_UNUSED(factory);
+
+	switch (GPOINTER_TO_INT(user_data)) {
+		case 0: // Icon
+			gtk_list_item_set_child(list_item, gtk_image_new());
+			//gtk_label_set_xalign(GTK_LABEL(label), 0.0f);
+			break;
+		case 1:   // Description
+		case 2: { // Unlock Time
+			GtkWidget *const label = gtk_label_new(nullptr);
+			gtk_label_set_xalign(GTK_LABEL(label), 0.0f);
+			gtk_list_item_set_child(list_item, label);
+			break;
+		}
+		default:
+			assert(!"Invalid column number");
+			return;
+	}
+}
+
+static void
+bind_listitem_cb(GtkListItemFactory	*factory,
+                 GtkListItem		*list_item,
+		 gpointer		 user_data)
+{
+	RP_UNUSED(factory);
+
+	GtkWidget *const widget = gtk_list_item_get_child(list_item);
+	assert(widget != nullptr);
+	if (!widget) {
+		return;
+	}
+
+	RpAchievementItem *const item = RP_ACHIEVEMENT_ITEM(gtk_list_item_get_item(list_item));
+	if (!item) {
+		return;
+	}
+
+	switch (GPOINTER_TO_INT(user_data)) {
+		case 0:
+			// Icon
+			gtk_image_set_from_pixbuf(GTK_IMAGE(widget), rp_achievement_item_get_icon(item));
+			break;
+
+		case 1:
+			// Description
+			gtk_label_set_markup(GTK_LABEL(widget), rp_achievement_item_get_description(item));
+			break;
+
+		case 2: {
+			// Unlock time
+			bool is_set = false;
+
+			const time_t unlock_time = rp_achievement_item_get_unlock_time(item);
+			const bool unlocked = (unlock_time != -1);
+			if (unlocked) {
+				GDateTime *const dateTime = g_date_time_new_from_unix_local(unlock_time);
+				assert(dateTime != nullptr);
+				if (dateTime) {
+					gchar *const str = g_date_time_format(dateTime, "%x %X");
+					if (str) {
+						gtk_label_set_text(GTK_LABEL(widget), str);
+						g_free(str);
+						is_set = true;
+					}
+					g_date_time_unref(dateTime);
+				}
+			}
+
+			if (!is_set) {
+				gtk_label_set_text(GTK_LABEL(widget), nullptr);
+			}
+			break;
+		}
+	}
+}
+#endif /* USE_GTK_COLUMN_VIEW */
+
 static void
 rp_achievements_tab_init(RpAchievementsTab *tab)
 {
@@ -102,6 +198,52 @@ rp_achievements_tab_init(RpAchievementsTab *tab)
 	gtk_widget_set_vexpand(scrolledWindow, TRUE);
 #endif /* GTK_CHECK_VERSION(2,91,1) */
 
+#ifdef USE_GTK_COLUMN_VIEW
+	// Create the GListStore and GtkColumnView.
+	// NOTE: Each column will need its own GtkColumnViewColumn and GtkSignalListItemFactory.
+	// TODO: Make this a loop?
+	tab->listStore = g_list_store_new(RP_TYPE_ACHIEVEMENT_ITEM);
+	tab->columnView = gtk_column_view_new(nullptr);
+	gtk_widget_set_name(tab->columnView, "columnView");
+	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolledWindow), tab->columnView);
+
+	// GtkColumnView requires a GtkSelectionModel, so we'll create
+	// a GtkSingleSelection to wrap around the GListStore.
+	GtkSingleSelection *selModel = gtk_single_selection_new(G_LIST_MODEL(tab->listStore));
+	gtk_column_view_set_model(GTK_COLUMN_VIEW(tab->columnView), GTK_SELECTION_MODEL(selModel));
+
+	// NOTE: Regarding object ownership:
+	// - GtkColumnViewColumn takes ownership of the GtkListItemFactory
+	// - GtkColumnView takes ownership of the GtkColumnViewColumn
+	// As such, neither the factory nor the column objects will be unref()'d here.
+
+	// Column 0: Icon
+	GtkListItemFactory *factory = gtk_signal_list_item_factory_new();
+	g_signal_connect(factory, "setup", G_CALLBACK(setup_listitem_cb), GINT_TO_POINTER(0));
+	g_signal_connect(factory, "bind", G_CALLBACK(bind_listitem_cb), GINT_TO_POINTER(0));
+
+	GtkColumnViewColumn *column = gtk_column_view_column_new(C_("AchievementsTab", "Icon"), factory);
+	gtk_column_view_column_set_resizable(column, FALSE);
+	gtk_column_view_append_column(GTK_COLUMN_VIEW(tab->columnView), column);
+
+	// Column 1: Achievement (description)
+	factory = gtk_signal_list_item_factory_new();
+	g_signal_connect(factory, "setup", G_CALLBACK(setup_listitem_cb), GINT_TO_POINTER(1));
+	g_signal_connect(factory, "bind", G_CALLBACK(bind_listitem_cb), GINT_TO_POINTER(1));
+
+	column = gtk_column_view_column_new(C_("AchievementsTab", "Achievement"), factory);
+	gtk_column_view_column_set_resizable(column, TRUE);
+	gtk_column_view_append_column(GTK_COLUMN_VIEW(tab->columnView), column);
+
+	// Column 2: Unlock Time
+	factory = gtk_signal_list_item_factory_new();
+	g_signal_connect(factory, "setup", G_CALLBACK(setup_listitem_cb), GINT_TO_POINTER(2));
+	g_signal_connect(factory, "bind", G_CALLBACK(bind_listitem_cb), GINT_TO_POINTER(2));
+
+	column = gtk_column_view_column_new(C_("AchievementsTab", "Unlock Time"), factory);
+	gtk_column_view_column_set_resizable(column, TRUE);
+	gtk_column_view_append_column(GTK_COLUMN_VIEW(tab->columnView), column);
+#else /* !USE_GTK_COLUMN_VIEW */
 	// Create the GtkListStore and GtkTreeView.
 	tab->listStore = gtk_list_store_new(3, PIMGTYPE_GOBJECT_TYPE, G_TYPE_STRING, G_TYPE_STRING);
 	tab->treeView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(tab->listStore));
@@ -109,7 +251,7 @@ rp_achievements_tab_init(RpAchievementsTab *tab)
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tab->treeView), TRUE);
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolledWindow), tab->treeView);
 
-	// Column 1: Icon
+	// Column 0: Icon
 	GtkTreeViewColumn *column = gtk_tree_view_column_new();
 	gtk_tree_view_column_set_title(column, C_("AchievementsTab", "Icon"));
 	gtk_tree_view_column_set_resizable(column, FALSE);
@@ -118,7 +260,7 @@ rp_achievements_tab_init(RpAchievementsTab *tab)
 	gtk_tree_view_column_add_attribute(column, renderer, GTK_CELL_RENDERER_PIXBUF_PROPERTY, 0);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tab->treeView), column);
 	
-	// Column 2: Achievement
+	// Column 1: Achievement (description)
 	column = gtk_tree_view_column_new();
 	gtk_tree_view_column_set_title(column, C_("AchievementsTab", "Achievement"));
 	gtk_tree_view_column_set_resizable(column, TRUE);
@@ -127,7 +269,7 @@ rp_achievements_tab_init(RpAchievementsTab *tab)
 	gtk_tree_view_column_add_attribute(column, renderer, "markup", 1);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tab->treeView), column);
 
-	// Column 3: Unlock Time
+	// Column 2: Unlock Time
 	// TODO: Store as a string, or as a GDateTime?
 	column = gtk_tree_view_column_new();
 	gtk_tree_view_column_set_title(column, C_("AchievementsTab", "Unlock Time"));
@@ -136,6 +278,7 @@ rp_achievements_tab_init(RpAchievementsTab *tab)
 	gtk_tree_view_column_pack_start(column, renderer, FALSE);
 	gtk_tree_view_column_add_attribute(column, renderer, "text", 2);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tab->treeView), column);
+#endif /* USE_GTK_COLUMN_VIEW */
 
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_box_append(GTK_BOX(tab), scrolledWindow);
@@ -168,7 +311,12 @@ static void
 rp_achievements_tab_reset(RpAchievementsTab *tab)
 {
 	g_return_if_fail(RP_IS_ACHIEVEMENTS_TAB(tab));
+
+#if USE_GTK_COLUMN_VIEW
+	g_list_store_remove_all(tab->listStore);
+#else /*USE_GTK_COLUMN_VIEW */
 	gtk_list_store_clear(tab->listStore);
+#endif /* USE_GTK_COLUMN_VIEW */
 
 	// Load the Achievements icon sprite sheet.
 	// NOTE: Assuming 32x32 icons for now.
@@ -214,6 +362,10 @@ rp_achievements_tab_reset(RpAchievementsTab *tab)
 		g_free(s_ach_desc_unlocked);
 
 		// Add the list item.
+#ifdef USE_GTK_COLUMN_VIEW
+		g_list_store_append(tab->listStore, rp_achievement_item_new(subIcon, s_ach.c_str(), timestamp));
+		PIMGTYPE_unref(subIcon);
+#else /* !USE_GTK_COLUMN_VIEW */
 		GtkTreeIter treeIter;
 		gtk_list_store_append(tab->listStore, &treeIter);
 		gtk_list_store_set(tab->listStore, &treeIter,
@@ -233,6 +385,7 @@ rp_achievements_tab_reset(RpAchievementsTab *tab)
 				g_date_time_unref(dateTime);
 			}
 		}
+#endif /* USE_GTK_COLUMN_VIEW */
 	}
 }
 
