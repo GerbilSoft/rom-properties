@@ -33,7 +33,18 @@ typedef GtkVBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_VBOX
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
-class RpImageTypesTabPrivate : public TImageTypesConfig<GtkComboBox*>
+// GTK4: Use GtkDropDown.
+// GTK2, GTK3: Use GtkComboBox.
+#if GTK_CHECK_VERSION(3,99,0)
+#  define USE_GTK_DROP_DOWN 1
+#  define OUR_COMBO_BOX(obj) GTK_DROP_DOWN(obj)
+typedef GtkDropDown OurComboBox;
+#else /* !GTK_CHECK_VERSION(3,99,0) */
+#  define OUR_COMBO_BOX(obj) GTK_COMBO_BOX(obj)
+typedef GtkComboBox OurComboBox;
+#endif /* GTK_CHECK_VERSION(3,99,0) */
+
+class RpImageTypesTabPrivate : public TImageTypesConfig<OurComboBox*>
 {
 	public:
 		explicit RpImageTypesTabPrivate(RpImageTypesTab *q);
@@ -100,7 +111,7 @@ class RpImageTypesTabPrivate : public TImageTypesConfig<GtkComboBox*>
 		// Last ComboBox added.
 		// Needed in order to set the correct
 		// tab order for the credits label.
-		GtkComboBox *cboImageType_lastAdded;
+		OurComboBox *cboImageType_lastAdded;
 
 		// Temporary GKeyFile object.
 		// Set and cleared by ImageTypesTab::save();
@@ -137,8 +148,14 @@ static void	rp_image_types_tab_save				(RpImageTypesTab	*tab,
 								 GKeyFile       	*keyFile);
 
 // "modified" signal handler for UI widgets
-static void	rp_image_types_tab_modified_handler		(GtkWidget		*widget,
+#ifdef USE_GTK_DROP_DOWN
+static void	rp_image_types_tab_notify_selected_handler	(GtkDropDown		*cbo,
+								 GParamSpec		*pspec,
 								 RpImageTypesTab	*tab);
+#else /* !USE_GTK_DROP_DOWN */
+static void	rp_image_types_tab_modified_handler		(GtkComboBox		*cbo,
+								 RpImageTypesTab	*tab);
+#endif /* USE_GTK_DROP_DOWN */
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
@@ -256,10 +273,16 @@ void RpImageTypesTabPrivate::createComboBox(unsigned int cbid)
 	SysData_t &sysData = v_sysData[sys];
 
 	// Create the ComboBox.
+#ifdef USE_GTK_DROP_DOWN
+	GtkWidget *const cbo = gtk_drop_down_new(nullptr, nullptr);
+#else /* !USE_GTK_DROP_DOWN */
 	GtkWidget *const cbo = gtk_combo_box_new();
+#endif /* USE_GTK_DROP_DOWN */
+
 	char cbo_name[32];
 	snprintf(cbo_name, sizeof(cbo_name), "cbo%04X", cbid);
 	gtk_widget_set_name(cbo, cbo_name);
+
 #if !GTK_CHECK_VERSION(4,0,0)
 	gtk_widget_show(cbo);
 #endif /* !GTK_CHECK_VERSION */
@@ -268,7 +291,7 @@ void RpImageTypesTabPrivate::createComboBox(unsigned int cbid)
 #else /* !USE_GTK_GRID */
 	gtk_table_attach(GTK_TABLE(q->table), cbo, imageType+1, imageType+2, sys+1, sys+2, GTK_SHRINK, GTK_SHRINK, 0, 0);
 #endif /* USE_GTK_GRID */
-	sysData.cboImageType[imageType] = GTK_COMBO_BOX(cbo);
+	sysData.cboImageType[imageType] = OUR_COMBO_BOX(cbo);
 
 	// Set the cbid as GObject data.
 	g_object_set_qdata(G_OBJECT(cbo), rp_config_cbid_quark, GUINT_TO_POINTER(cbid));
@@ -277,8 +300,14 @@ void RpImageTypesTabPrivate::createComboBox(unsigned int cbid)
 	// NOTE: Signal handlers are triggered if the value is
 	// programmatically edited, unlike Qt, so we'll need to
 	// inhibit handling when loading settings.
-	g_signal_connect(cbo, "changed",
-		G_CALLBACK(rp_image_types_tab_modified_handler), q);
+#ifdef USE_GTK_DROP_DOWN
+	// GtkDropDown doesn't have a "changed" signal, and its
+	// GtkSelectionModel object isn't accessible.
+	// Listen for GObject::notify for the "selected" property.
+	g_signal_connect(cbo, "notify::selected", G_CALLBACK(rp_image_types_tab_notify_selected_handler), q);
+#else /* !USE_GTK_DROP_DOWN */
+	g_signal_connect(cbo, "changed", G_CALLBACK(rp_image_types_tab_modified_handler), q);
+#endif /* USE_GTK_DROP_DOWN */
 
 	// Adjust the tab order. [TODO]
 #if 0
@@ -302,7 +331,7 @@ void RpImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 		return;
 	const SysData_t &sysData = v_sysData[sys];
 
-	GtkComboBox *const cbo = sysData.cboImageType[imageType];
+	OurComboBox *const cbo = sysData.cboImageType[imageType];
 	assert(cbo != nullptr);
 	if (!cbo)
 		return;
@@ -312,6 +341,20 @@ void RpImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 
 	// NOTE: Need to add one more than the total number,
 	// since "No" counts as an entry.
+#ifdef USE_GTK_DROP_DOWN
+	GtkStringList *const list = gtk_string_list_new(nullptr);
+	gtk_string_list_append(list, C_("ImageTypesTab|Values", "No"));
+	for (int i = 1; i <= max_prio; i++) {
+		char buf[16];
+		snprintf(buf, sizeof(buf), "%d", i);
+		gtk_string_list_append(list, buf);
+	}
+
+	gtk_drop_down_set_model(cbo, G_LIST_MODEL(list));
+	g_object_unref(list);	// FIXME: may be incorrect
+
+	gtk_drop_down_set_selected(cbo, 0);
+#else /* !USE_GTK_DROP_DOWN */
 	assert(max_prio <= static_cast<int>(ImageTypesConfig::imageTypeCount()));
 	GtkListStore *const lstCbo = gtk_list_store_new(1, G_TYPE_STRING);
 	gtk_list_store_insert_with_values(lstCbo, nullptr, 0, 0, C_("ImageTypesTab|Values", "No"), -1);
@@ -331,6 +374,7 @@ void RpImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 		column, "text", 0, nullptr);
 
 	gtk_combo_box_set_active(cbo, 0);
+#endif /* USE_GTK_DROP_DOWN */
 
 	q->inhibit = prev_inhibit;
 }
@@ -389,12 +433,16 @@ void RpImageTypesTabPrivate::cboImageType_setPriorityValue(unsigned int cbid, un
 		return;
 	SysData_t &sysData = v_sysData[sys];
 
-	GtkComboBox *const cbo = sysData.cboImageType[imageType];
+	OurComboBox *const cbo = sysData.cboImageType[imageType];
 	assert(cbo != nullptr);
 	if (cbo) {
 		const bool prev_inhibit = q->inhibit;
 		q->inhibit = true;
+#ifdef USE_GTK_DROP_DOWN
+		gtk_drop_down_set_selected(cbo, prio < ImageTypesConfig::imageTypeCount() ? prio+1 : 0);
+#else /* !USE_GTK_DROP_DOWN */
 		gtk_combo_box_set_active(cbo, prio < ImageTypesConfig::imageTypeCount() ? prio+1 : 0);
+#endif /* USE_GTK_DROP_DOWN */
 		q->inhibit = prev_inhibit;
 	}
 }
@@ -567,26 +615,29 @@ rp_image_types_tab_save(RpImageTypesTab *tab, GKeyFile *keyFile)
 
 /** Signal handlers **/
 
+#ifdef USE_GTK_DROP_DOWN
 /**
- * "modified" signal handler for UI widgets
- * @param widget Widget sending the signal
- * @param tab ImageTypesTab
+ * Internal GObject "notify" signal handler for GtkDropDown's "selected" propertyl
+ * @param cbo GtkDropDown sending the signal
+ * @param pspec Property specification
+ * @param widget RpLanguageComboBox
  */
 static void
-rp_image_types_tab_modified_handler(GtkWidget *widget, RpImageTypesTab *tab)
+rp_image_types_tab_notify_selected_handler(GtkDropDown		*cbo,
+					   GParamSpec		*pspec,
+					   RpImageTypesTab	*tab)
 {
-	RP_UNUSED(widget);
+	assert(GTK_IS_DROP_DOWN(cbo));
+	g_return_if_fail(GTK_IS_DROP_DOWN(cbo));
+
 	if (tab->inhibit)
 		return;
 
-	assert(GTK_IS_COMBO_BOX(widget));
-	g_return_if_fail(GTK_IS_COMBO_BOX(widget));
-	GtkComboBox *const cbo = GTK_COMBO_BOX(widget);
 	const unsigned int cbid = GPOINTER_TO_UINT(g_object_get_qdata(G_OBJECT(cbo), rp_config_cbid_quark));
 	RpImageTypesTabPrivate *const d = tab->d;
 
-	const int idx = gtk_combo_box_get_active(cbo);
-	const unsigned int prio = (unsigned int)(idx <= 0 ? 0xFF : idx-1);
+	const guint idx = gtk_drop_down_get_selected(cbo);
+	const unsigned int prio = ((idx == 0 || idx == GTK_INVALID_LIST_POSITION) ? 0xFFU : idx-1);
 	if (d->cboImageType_priorityValueChanged(cbid, prio)) {
 		// Configuration has been changed.
 		// Forward the "modified" signal.
@@ -594,3 +645,31 @@ rp_image_types_tab_modified_handler(GtkWidget *widget, RpImageTypesTab *tab)
 		g_signal_emit_by_name(tab, "modified", NULL);
 	}
 }
+#else /* !USE_GTK_DROP_DOWN */
+/**
+ * Internal "modified" signal handler for GtkComboBox.
+ * @param cbo GtkComboBox sending the signal
+ * @param tab ImageTypesTab
+ */
+static void
+rp_image_types_tab_modified_handler(GtkComboBox *cbo, RpImageTypesTab *tab)
+{
+	assert(GTK_IS_COMBO_BOX(cbo));
+	g_return_if_fail(GTK_IS_COMBO_BOX(cbo));
+
+	if (tab->inhibit)
+		return;
+
+	const unsigned int cbid = GPOINTER_TO_UINT(g_object_get_qdata(G_OBJECT(cbo), rp_config_cbid_quark));
+	RpImageTypesTabPrivate *const d = tab->d;
+
+	const int idx = gtk_combo_box_get_active(cbo);
+	const unsigned int prio = (unsigned int)(idx <= 0 ? 0xFFU : idx-1);
+	if (d->cboImageType_priorityValueChanged(cbid, prio)) {
+		// Configuration has been changed.
+		// Forward the "modified" signal.
+		tab->changed = true;
+		g_signal_emit_by_name(tab, "modified", NULL);
+	}
+}
+#endif /* !USE_GTK_DROP_DOWN */
