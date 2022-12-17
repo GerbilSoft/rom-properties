@@ -36,17 +36,6 @@ typedef GtkVBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_VBOX
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
-// GTK4: Use GtkDropDown.
-// GTK2, GTK3: Use GtkComboBox.
-#if GTK_CHECK_VERSION(3,99,0)
-#  define USE_GTK_DROP_DOWN 1
-#  define OUR_COMBO_BOX(obj) GTK_DROP_DOWN(obj)
-typedef GtkDropDown OurComboBox;
-#else /* !GTK_CHECK_VERSION(3,99,0) */
-#  define OUR_COMBO_BOX(obj) GTK_COMBO_BOX(obj)
-typedef GtkComboBox OurComboBox;
-#endif /* GTK_CHECK_VERSION(3,99,0) */
-
 // OptionsTab class
 struct _RpOptionsTabClass {
 	superclass __parent__;
@@ -349,22 +338,6 @@ rp_options_tab_new(void)
 
 /** RpConfigTab interface functions **/
 
-#ifdef USE_GTK_DROP_DOWN
-#  define COMPARE_CBO(widget, defval) \
-	(gtk_drop_down_get_selected(GTK_DROP_DOWN(widget)) != (defval))
-#  define SET_CBO(widget, value) \
-	gtk_drop_down_set_selected(GTK_DROP_DOWN(widget), (value))
-#  define GET_CBO(widget) \
-	gtk_drop_down_get_selected(GTK_DROP_DOWN(widget))
-#else /* !USE_GTK_DROP_DOWN */
-#  define COMPARE_CBO(widget, defval) \
-	(gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != (defval))
-#  define SET_CBO(widget, value) \
-	gtk_combo_box_set_active(GTK_COMBO_BOX(widget), (value))
-#  define GET_CBO(widget) \
-	gtk_combo_box_get_active(GTK_COMBO_BOX(widget))
-#endif /* USE_GTK_DROP_DOWN */
-
 static gboolean
 rp_options_tab_has_defaults(RpOptionsTab *tab)
 {
@@ -437,9 +410,6 @@ rp_options_tab_load_defaults(RpOptionsTab *tab)
 	static const bool showDangerousPermissionsOverlayIcon_default = true;
 	static const bool enableThumbnailOnNetworkFS_default = false;
 	bool isDefChanged = false;
-
-#define COMPARE_CHK(widget, defval) \
-	(gtk_check_button_get_active(GTK_CHECK_BUTTON(widget)) != (defval))
 
 	// Downloads
 	if (COMPARE_CHK(tab->chkExtImgDownloadEnabled, extImgDownloadEnabled_default)) {

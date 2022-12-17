@@ -10,10 +10,9 @@
 #include "LanguageComboBox.hpp"
 #include "PIMGTYPE.hpp"
 
-#if GTK_CHECK_VERSION(3,99,0)
-#  define USE_GTK_DROP_DOWN 1
+#ifdef USE_GTK_DROP_DOWN
 #  include "LanguageComboBoxItem.hpp"
-#endif
+#endif /* USE_GTK_DROP_DOWN */
 
 // librpbase
 using namespace LibRpBase;

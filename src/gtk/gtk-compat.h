@@ -341,6 +341,39 @@ gtk_widget_set_margin(GtkWidget *widget, gint margin)
 }
 #endif /* GTK_CHECK_VERSION(2,91,0) */
 
+/******** GtkDropDown compatibility stuff (GTK4) ********/
+
+// GTK4: Use GtkDropDown.
+// GTK2, GTK3: Use GtkComboBox.
+#if GTK_CHECK_VERSION(3,99,0)
+#  define USE_GTK_DROP_DOWN 1
+#  define OUR_COMBO_BOX(obj) GTK_DROP_DOWN(obj)
+typedef GtkDropDown OurComboBox;
+#else /* !GTK_CHECK_VERSION(3,99,0) */
+#  define OUR_COMBO_BOX(obj) GTK_COMBO_BOX(obj)
+typedef GtkComboBox OurComboBox;
+#endif /* GTK_CHECK_VERSION(3,99,0) */
+
+#ifdef USE_GTK_DROP_DOWN
+#  define COMPARE_CBO(widget, defval) \
+	(gtk_drop_down_get_selected(GTK_DROP_DOWN(widget)) != (defval))
+#  define SET_CBO(widget, value) \
+	gtk_drop_down_set_selected(GTK_DROP_DOWN(widget), (value))
+#  define GET_CBO(widget) \
+	gtk_drop_down_get_selected(GTK_DROP_DOWN(widget))
+#else /* !USE_GTK_DROP_DOWN */
+#  define COMPARE_CBO(widget, defval) \
+	(gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != (defval))
+#  define SET_CBO(widget, value) \
+	gtk_combo_box_set_active(GTK_COMBO_BOX(widget), (value))
+#  define GET_CBO(widget) \
+	gtk_combo_box_get_active(GTK_COMBO_BOX(widget))
+#endif /* USE_GTK_DROP_DOWN */
+
+/* convenience macros for GtkCheckButton */
+#define COMPARE_CHK(widget, defval) \
+	(gtk_check_button_get_active(GTK_CHECK_BUTTON(widget)) != (defval))
+
 G_END_DECLS
 
 #endif /* __ROMPROPERTIES_GTK_GTK_COMPAT_H__ */
