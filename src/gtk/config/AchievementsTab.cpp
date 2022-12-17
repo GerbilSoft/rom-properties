@@ -26,6 +26,13 @@ using namespace LibRpBase;
 // C++ STL classes
 using std::string;
 
+/* Column identifiers */
+typedef enum {
+	ACH_COL_ICON,
+	ACH_COL_DESCRIPTION,
+	ACH_COL_UNLOCK_TIME,
+} AchievementColumns;
+
 #if GTK_CHECK_VERSION(3,0,0)
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
@@ -96,17 +103,19 @@ setup_listitem_cb(GtkListItemFactory	*factory,
 	RP_UNUSED(factory);
 
 	switch (GPOINTER_TO_INT(user_data)) {
-		case 0: // Icon
+		case ACH_COL_ICON:
 			gtk_list_item_set_child(list_item, gtk_image_new());
 			//gtk_label_set_xalign(GTK_LABEL(label), 0.0f);
 			break;
-		case 1:   // Description
-		case 2: { // Unlock Time
+
+		case ACH_COL_DESCRIPTION:
+		case ACH_COL_UNLOCK_TIME: {
 			GtkWidget *const label = gtk_label_new(nullptr);
 			gtk_label_set_xalign(GTK_LABEL(label), 0.0f);
 			gtk_list_item_set_child(list_item, label);
 			break;
 		}
+
 		default:
 			assert(!"Invalid column number");
 			return;
@@ -132,17 +141,17 @@ bind_listitem_cb(GtkListItemFactory	*factory,
 	}
 
 	switch (GPOINTER_TO_INT(user_data)) {
-		case 0:
+		case ACH_COL_ICON:
 			// Icon
 			gtk_image_set_from_pixbuf(GTK_IMAGE(widget), rp_achievement_item_get_icon(item));
 			break;
 
-		case 1:
+		case ACH_COL_DESCRIPTION:
 			// Description
 			gtk_label_set_markup(GTK_LABEL(widget), rp_achievement_item_get_description(item));
 			break;
 
-		case 2: {
+		case ACH_COL_UNLOCK_TIME: {
 			// Unlock time
 			bool is_set = false;
 
@@ -219,8 +228,8 @@ rp_achievements_tab_init(RpAchievementsTab *tab)
 
 	// Column 0: Icon
 	GtkListItemFactory *factory = gtk_signal_list_item_factory_new();
-	g_signal_connect(factory, "setup", G_CALLBACK(setup_listitem_cb), GINT_TO_POINTER(0));
-	g_signal_connect(factory, "bind", G_CALLBACK(bind_listitem_cb), GINT_TO_POINTER(0));
+	g_signal_connect(factory, "setup", G_CALLBACK(setup_listitem_cb), GINT_TO_POINTER(ACH_COL_ICON));
+	g_signal_connect(factory, "bind", G_CALLBACK(bind_listitem_cb), GINT_TO_POINTER(ACH_COL_ICON));
 
 	GtkColumnViewColumn *column = gtk_column_view_column_new(C_("AchievementsTab", "Icon"), factory);
 	gtk_column_view_column_set_resizable(column, FALSE);
@@ -228,8 +237,8 @@ rp_achievements_tab_init(RpAchievementsTab *tab)
 
 	// Column 1: Achievement (description)
 	factory = gtk_signal_list_item_factory_new();
-	g_signal_connect(factory, "setup", G_CALLBACK(setup_listitem_cb), GINT_TO_POINTER(1));
-	g_signal_connect(factory, "bind", G_CALLBACK(bind_listitem_cb), GINT_TO_POINTER(1));
+	g_signal_connect(factory, "setup", G_CALLBACK(setup_listitem_cb), GINT_TO_POINTER(ACH_COL_DESCRIPTION));
+	g_signal_connect(factory, "bind", G_CALLBACK(bind_listitem_cb), GINT_TO_POINTER(ACH_COL_DESCRIPTION));
 
 	column = gtk_column_view_column_new(C_("AchievementsTab", "Achievement"), factory);
 	gtk_column_view_column_set_resizable(column, TRUE);
@@ -237,8 +246,8 @@ rp_achievements_tab_init(RpAchievementsTab *tab)
 
 	// Column 2: Unlock Time
 	factory = gtk_signal_list_item_factory_new();
-	g_signal_connect(factory, "setup", G_CALLBACK(setup_listitem_cb), GINT_TO_POINTER(2));
-	g_signal_connect(factory, "bind", G_CALLBACK(bind_listitem_cb), GINT_TO_POINTER(2));
+	g_signal_connect(factory, "setup", G_CALLBACK(setup_listitem_cb), GINT_TO_POINTER(ACH_COL_UNLOCK_TIME));
+	g_signal_connect(factory, "bind", G_CALLBACK(bind_listitem_cb), GINT_TO_POINTER(ACH_COL_UNLOCK_TIME));
 
 	column = gtk_column_view_column_new(C_("AchievementsTab", "Unlock Time"), factory);
 	gtk_column_view_column_set_resizable(column, TRUE);
@@ -257,7 +266,7 @@ rp_achievements_tab_init(RpAchievementsTab *tab)
 	gtk_tree_view_column_set_resizable(column, FALSE);
 	GtkCellRenderer *renderer = gtk_cell_renderer_pixbuf_new();
 	gtk_tree_view_column_pack_start(column, renderer, FALSE);
-	gtk_tree_view_column_add_attribute(column, renderer, GTK_CELL_RENDERER_PIXBUF_PROPERTY, 0);
+	gtk_tree_view_column_add_attribute(column, renderer, GTK_CELL_RENDERER_PIXBUF_PROPERTY, ACH_COL_ICON);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tab->treeView), column);
 	
 	// Column 1: Achievement (description)
@@ -266,7 +275,7 @@ rp_achievements_tab_init(RpAchievementsTab *tab)
 	gtk_tree_view_column_set_resizable(column, TRUE);
 	renderer = gtk_cell_renderer_text_new();
 	gtk_tree_view_column_pack_start(column, renderer, FALSE);
-	gtk_tree_view_column_add_attribute(column, renderer, "markup", 1);
+	gtk_tree_view_column_add_attribute(column, renderer, "markup", ACH_COL_DESCRIPTION);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tab->treeView), column);
 
 	// Column 2: Unlock Time
@@ -276,7 +285,7 @@ rp_achievements_tab_init(RpAchievementsTab *tab)
 	gtk_tree_view_column_set_resizable(column, TRUE);
 	renderer = gtk_cell_renderer_text_new();
 	gtk_tree_view_column_pack_start(column, renderer, FALSE);
-	gtk_tree_view_column_add_attribute(column, renderer, "text", 2);
+	gtk_tree_view_column_add_attribute(column, renderer, "text", ACH_COL_UNLOCK_TIME);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tab->treeView), column);
 #endif /* USE_GTK_COLUMN_VIEW */
 
