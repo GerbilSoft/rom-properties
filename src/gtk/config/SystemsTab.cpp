@@ -30,6 +30,17 @@ typedef GtkVBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_VBOX
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
+// GTK4: Use GtkDropDown.
+// GTK2, GTK3: Use GtkComboBox.
+#if GTK_CHECK_VERSION(3,99,0)
+#  define USE_GTK_DROP_DOWN 1
+#  define OUR_COMBO_BOX(obj) GTK_DROP_DOWN(obj)
+typedef GtkDropDown OurComboBox;
+#else /* !GTK_CHECK_VERSION(3,99,0) */
+#  define OUR_COMBO_BOX(obj) GTK_COMBO_BOX(obj)
+typedef GtkComboBox OurComboBox;
+#endif /* GTK_CHECK_VERSION(3,99,0) */
+
 // SystemsTab class
 struct _RpSystemsTabClass {
 	superclass __parent__;
@@ -54,9 +65,15 @@ static void	rp_systems_tab_load_defaults			(RpSystemsTab	*tab);
 static void	rp_systems_tab_save				(RpSystemsTab	*tab,
 								 GKeyFile       *keyFile);
 
-// "modified" signal handler for UI widgets
-static void	rp_systems_tab_modified_handler			(GtkWidget	*widget,
+#ifdef USE_GTK_DROP_DOWN
+static void	rp_systems_tab_notify_selected_handler		(GtkDropDown	*cbo,
+								 GParamSpec	*pspec,
 								 RpSystemsTab	*tab);
+#else /* !USE_GTK_DROP_DOWN */
+// "modified" signal handler for UI widgets
+static void	rp_systems_tab_modified_handler			(GtkComboBox	*cbo,
+								 RpSystemsTab	*tab);
+#endif /* USE_GTK_DROP_DOWN */
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
@@ -128,6 +145,23 @@ rp_systems_tab_init(RpSystemsTab *tab)
 	const char *const s_SGB = C_("SystemsTab", "Super Game Boy");
 	const char *const s_CGB = C_("SystemsTab", "Game Boy Color");
 
+#ifdef USE_GTK_DROP_DOWN
+	// GtkStringList models for the GtkDropDowns
+	GtkStringList *const lstDMG = gtk_string_list_new(nullptr);
+	gtk_string_list_append(lstDMG, s_DMG);
+	gtk_string_list_append(lstDMG, s_CGB);
+	// NOTE: SGB and CGB have the same lists.
+	GtkStringList *const lstSGB = gtk_string_list_new(nullptr);
+	gtk_string_list_append(lstSGB, s_DMG);
+	gtk_string_list_append(lstSGB, s_SGB);
+	gtk_string_list_append(lstSGB, s_CGB);
+
+	// NOTE: gtk_drop_down_new() takes ownership of the GListModel.
+	// For cboCGB, we'll need to take an additional reference.
+	tab->cboDMG = gtk_drop_down_new(G_LIST_MODEL(lstDMG), nullptr);
+	tab->cboSGB = gtk_drop_down_new(G_LIST_MODEL(lstSGB), nullptr);
+	tab->cboCGB = gtk_drop_down_new(G_LIST_MODEL(g_object_ref(lstSGB)), nullptr);
+#else /* !USE_GTK_DROP_DOWN */
 	// GtkListStore models for the combo boxes
 	GtkListStore *const lstDMG = gtk_list_store_new(1, G_TYPE_STRING);
 	gtk_list_store_insert_with_values(lstDMG, nullptr, 0, 0, s_DMG, -1);
@@ -138,23 +172,13 @@ rp_systems_tab_init(RpSystemsTab *tab)
 	gtk_list_store_insert_with_values(lstSGB, nullptr, 1, 0, s_SGB, -1);
 	gtk_list_store_insert_with_values(lstSGB, nullptr, 2, 0, s_CGB, -1);
 
+	// GtkComboBox takes a reference to the GtkListStore.
+	// We'll need to remove our own reference afterwards.
 	tab->cboDMG = gtk_combo_box_new_with_model(GTK_TREE_MODEL(lstDMG));
-	g_object_unref(lstDMG);	// TODO: Is this correct?
+	g_object_unref(lstDMG);
 	tab->cboSGB = gtk_combo_box_new_with_model(GTK_TREE_MODEL(lstSGB));
 	tab->cboCGB = gtk_combo_box_new_with_model(GTK_TREE_MODEL(lstSGB));
-	g_object_unref(lstSGB);	// TODO: Is this correct?
-
-	gtk_widget_set_name(tab->cboDMG, "cboDMG");
-	gtk_widget_set_name(tab->cboSGB, "cboSGB");
-	gtk_widget_set_name(tab->cboCGB, "cboCGB");
-
-	// TODO: Label alignments based on DE?
-	gtk_label_set_mnemonic_widget(GTK_LABEL(lblDMG), tab->cboDMG);
-	gtk_label_set_mnemonic_widget(GTK_LABEL(lblSGB), tab->cboSGB);
-	gtk_label_set_mnemonic_widget(GTK_LABEL(lblCGB), tab->cboCGB);
-	GTK_LABEL_XALIGN_RIGHT(lblDMG);
-	GTK_LABEL_XALIGN_RIGHT(lblSGB);
-	GTK_LABEL_XALIGN_RIGHT(lblCGB);
+	g_object_unref(lstSGB);
 
 	// Create the cell renderers.
 	// NOTE: Using GtkComboBoxText would make this somewhat easier,
@@ -173,17 +197,33 @@ rp_systems_tab_init(RpSystemsTab *tab)
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(tab->cboCGB), column, TRUE);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(tab->cboCGB),
 		column, "text", 0, nullptr);
+#endif /* USE_GTK_DROP_DOWN */
+
+	gtk_widget_set_name(tab->cboDMG, "cboDMG");
+	gtk_widget_set_name(tab->cboSGB, "cboSGB");
+	gtk_widget_set_name(tab->cboCGB, "cboCGB");
+
+	// TODO: Label alignments based on DE?
+	gtk_label_set_mnemonic_widget(GTK_LABEL(lblDMG), tab->cboDMG);
+	gtk_label_set_mnemonic_widget(GTK_LABEL(lblSGB), tab->cboSGB);
+	gtk_label_set_mnemonic_widget(GTK_LABEL(lblCGB), tab->cboCGB);
+	GTK_LABEL_XALIGN_RIGHT(lblDMG);
+	GTK_LABEL_XALIGN_RIGHT(lblSGB);
+	GTK_LABEL_XALIGN_RIGHT(lblCGB);
 
 	// Connect the signal handlers for the comboboxes.
 	// NOTE: Signal handlers are triggered if the value is
 	// programmatically edited, unlike Qt, so we'll need to
 	// inhibit handling when loading settings.
-	g_signal_connect(tab->cboDMG, "changed",
-		G_CALLBACK(rp_systems_tab_modified_handler), tab);
-	g_signal_connect(tab->cboSGB, "changed",
-		G_CALLBACK(rp_systems_tab_modified_handler), tab);
-	g_signal_connect(tab->cboCGB, "changed",
-		G_CALLBACK(rp_systems_tab_modified_handler), tab);
+#ifdef USE_GTK_DROP_DOWN
+	g_signal_connect(tab->cboDMG, "notify::selected", G_CALLBACK(rp_systems_tab_notify_selected_handler), tab);
+	g_signal_connect(tab->cboSGB, "notify::selected", G_CALLBACK(rp_systems_tab_notify_selected_handler), tab);
+	g_signal_connect(tab->cboCGB, "notify::selected", G_CALLBACK(rp_systems_tab_notify_selected_handler), tab);
+#else /* !USE_GTK_DROP_DOWN */
+	g_signal_connect(tab->cboDMG, "changed", G_CALLBACK(rp_systems_tab_modified_handler), tab);
+	g_signal_connect(tab->cboSGB, "changed", G_CALLBACK(rp_systems_tab_modified_handler), tab);
+	g_signal_connect(tab->cboCGB, "changed", G_CALLBACK(rp_systems_tab_modified_handler), tab);
+#endif /* USE_GTK_DROP_DOWN */
 
 	// GtkGrid/GtkTable
 #ifdef USE_GTK_GRID
@@ -258,6 +298,22 @@ rp_systems_tab_new(void)
 
 /** RpConfigTab interface functions **/
 
+#ifdef USE_GTK_DROP_DOWN
+#  define COMPARE_CBO(widget, defval) \
+	(gtk_drop_down_get_selected(GTK_DROP_DOWN(widget)) != (defval))
+#  define SET_CBO(widget, value) \
+	gtk_drop_down_set_selected(GTK_DROP_DOWN(widget), (value))
+#  define GET_CBO(widget) \
+	gtk_drop_down_get_selected(GTK_DROP_DOWN(widget))
+#else /* !USE_GTK_DROP_DOWN */
+#  define COMPARE_CBO(widget, defval) \
+	(gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != (defval))
+#  define SET_CBO(widget, value) \
+	gtk_combo_box_set_active(GTK_COMBO_BOX(widget), (value))
+#  define GET_CBO(widget) \
+	gtk_combo_box_get_active(GTK_COMBO_BOX(widget))
+#endif /* USE_GTK_DROP_DOWN */
+
 static gboolean
 rp_systems_tab_has_defaults(RpSystemsTab *tab)
 {
@@ -283,18 +339,16 @@ rp_systems_tab_reset(RpSystemsTab *tab)
 		case Config::DMG_TitleScreen_Mode::DMG_TS_DMG:
 		case Config::DMG_TitleScreen_Mode::DMG_TS_SGB:
 		default:
-			gtk_combo_box_set_active(GTK_COMBO_BOX(tab->cboDMG), 0);
+			SET_CBO(tab->cboDMG, 0);
 			break;
 		case Config::DMG_TitleScreen_Mode::DMG_TS_CGB:
-			gtk_combo_box_set_active(GTK_COMBO_BOX(tab->cboDMG), 1);
+			SET_CBO(tab->cboDMG, 1);
 			break;
 	}
 
 	// The SGB and CGB dropdowns have all three.
-	gtk_combo_box_set_active(GTK_COMBO_BOX(tab->cboSGB),
-		(int)config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::DMG_TS_SGB));
-	gtk_combo_box_set_active(GTK_COMBO_BOX(tab->cboCGB),
-		(int)config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::DMG_TS_CGB));
+	SET_CBO(tab->cboSGB, (int)config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::DMG_TS_SGB));
+	SET_CBO(tab->cboCGB, (int)config->dmgTitleScreenMode(Config::DMG_TitleScreen_Mode::DMG_TS_CGB));
 
 	tab->changed = false;
 	tab->inhibit = false;
@@ -313,19 +367,16 @@ rp_systems_tab_load_defaults(RpSystemsTab *tab)
 	static const int8_t idxCGB_default = 2;
 	bool isDefChanged = false;
 
-#define COMPARE_CBO(widget, defval) \
-	(gtk_combo_box_get_active(GTK_COMBO_BOX(widget)) != (defval))
-
 	if (COMPARE_CBO(tab->cboDMG, idxDMG_default)) {
-		gtk_combo_box_set_active(GTK_COMBO_BOX(tab->cboDMG), idxDMG_default);
+		SET_CBO(tab->cboDMG, idxDMG_default);
 		isDefChanged = true;
 	}
 	if (COMPARE_CBO(tab->cboSGB, idxSGB_default)) {
-		gtk_combo_box_set_active(GTK_COMBO_BOX(tab->cboSGB), idxSGB_default);
+		SET_CBO(tab->cboSGB, idxSGB_default);
 		isDefChanged = true;
 	}
 	if (COMPARE_CBO(tab->cboCGB, idxCGB_default)) {
-		gtk_combo_box_set_active(GTK_COMBO_BOX(tab->cboCGB), idxCGB_default);
+		SET_CBO(tab->cboCGB, idxCGB_default);
 		isDefChanged = true;
 	}
 
@@ -350,22 +401,23 @@ rp_systems_tab_save(RpSystemsTab *tab, GKeyFile *keyFile)
 	// Save the configuration.
 
 	static const char s_dmg_dmg[][4] = {"DMG", "CGB"};
-	const int idxDMG = gtk_combo_box_get_active(GTK_COMBO_BOX(tab->cboDMG));
+	static const char s_dmg_other[][4] = {"DMG", "SGB", "CGB"};
+
+	const int idxDMG = GET_CBO(tab->cboDMG);
 	assert(idxDMG >= 0);
 	assert(idxDMG < ARRAY_SIZE_I(s_dmg_dmg));
 	if (idxDMG >= 0 && idxDMG < ARRAY_SIZE_I(s_dmg_dmg)) {
 		g_key_file_set_string(keyFile, "DMGTitleScreenMode", "DMG", s_dmg_dmg[idxDMG]);
 	}
 
-	static const char s_dmg_other[][4] = {"DMG", "SGB", "CGB"};
-	const int idxSGB = gtk_combo_box_get_active(GTK_COMBO_BOX(tab->cboSGB));
-	const int idxCGB = gtk_combo_box_get_active(GTK_COMBO_BOX(tab->cboCGB));
-
+	const int idxSGB = GET_CBO(tab->cboSGB);
 	assert(idxSGB >= 0);
 	assert(idxSGB < ARRAY_SIZE_I(s_dmg_other));
 	if (idxSGB >= 0 && idxSGB < ARRAY_SIZE_I(s_dmg_other)) {
 		g_key_file_set_string(keyFile, "DMGTitleScreenMode", "SGB", s_dmg_other[idxSGB]);
 	}
+
+	const int idxCGB = GET_CBO(tab->cboCGB);
 	assert(idxCGB >= 0);
 	assert(idxCGB < ARRAY_SIZE_I(s_dmg_other));
 	if (idxCGB >= 0 && idxCGB < ARRAY_SIZE_I(s_dmg_other)) {
@@ -378,15 +430,18 @@ rp_systems_tab_save(RpSystemsTab *tab, GKeyFile *keyFile)
 
 /** Signal handlers **/
 
+#ifdef USE_GTK_DROP_DOWN
 /**
- * "modified" signal handler for UI widgets
- * @param widget Widget sending the signal
- * @param tab SystemsTab
+ * Internal GObject "notify" signal handler for GtkDropDown's "selected" property.
+ * @param cbo GtkDropDown sending the signal
+ * @param pspec Property specification
+ * @param widget RpLanguageComboBox
  */
 static void
-rp_systems_tab_modified_handler(GtkWidget *widget, RpSystemsTab *tab)
+rp_systems_tab_notify_selected_handler(GtkDropDown *dropDown, GParamSpec *pspec, RpSystemsTab *tab)
 {
-	RP_UNUSED(widget);
+	RP_UNUSED(dropDown);
+	RP_UNUSED(pspec);
 	if (tab->inhibit)
 		return;
 
@@ -394,3 +449,21 @@ rp_systems_tab_modified_handler(GtkWidget *widget, RpSystemsTab *tab)
 	tab->changed = true;
 	g_signal_emit_by_name(tab, "modified", NULL);
 }
+#else /* !USE_GTK_DROP_DOWN */
+/**
+ * Internal "modified" signal handler for GtkComboBox.
+ * @param cbo GtkComboBox sending the signal
+ * @param tab SystemsTab
+ */
+static void
+rp_systems_tab_modified_handler(GtkComboBox *cbo, RpSystemsTab *tab)
+{
+	RP_UNUSED(cbo);
+	if (tab->inhibit)
+		return;
+
+	// Forward the "modified" signal.
+	tab->changed = true;
+	g_signal_emit_by_name(tab, "modified", NULL);
+}
+#endif /* USE_GTK_DROP_DOWN */
