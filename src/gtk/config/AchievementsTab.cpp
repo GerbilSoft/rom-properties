@@ -31,6 +31,8 @@ typedef enum {
 	ACH_COL_ICON,
 	ACH_COL_DESCRIPTION,
 	ACH_COL_UNLOCK_TIME,
+
+	ACH_COL_MAX
 } AchievementColumns;
 
 #if GTK_CHECK_VERSION(3,0,0)
@@ -207,10 +209,18 @@ rp_achievements_tab_init(RpAchievementsTab *tab)
 	gtk_widget_set_vexpand(scrolledWindow, TRUE);
 #endif /* GTK_CHECK_VERSION(2,91,1) */
 
+	// Column titles
+	static const char *const column_titles[ACH_COL_MAX] = {
+		NOP_C_("AchievementsTab", "Icon"),
+		NOP_C_("AchievementsTab", "Achievement"),
+		NOP_C_("AchievementsTab", "Unlock Time"),
+	};
+	// Column resizability
+	static const bool column_resizable[ACH_COL_MAX] = {false, true, true};
+
 #ifdef USE_GTK_COLUMN_VIEW
 	// Create the GListStore and GtkColumnView.
 	// NOTE: Each column will need its own GtkColumnViewColumn and GtkSignalListItemFactory.
-	// TODO: Make this a loop?
 	tab->listStore = g_list_store_new(RP_TYPE_ACHIEVEMENT_ITEM);
 	tab->columnView = gtk_column_view_new(nullptr);
 	gtk_widget_set_name(tab->columnView, "columnView");
@@ -226,32 +236,17 @@ rp_achievements_tab_init(RpAchievementsTab *tab)
 	// - GtkColumnView takes ownership of the GtkColumnViewColumn
 	// As such, neither the factory nor the column objects will be unref()'d here.
 
-	// Column 0: Icon
-	GtkListItemFactory *factory = gtk_signal_list_item_factory_new();
-	g_signal_connect(factory, "setup", G_CALLBACK(setup_listitem_cb), GINT_TO_POINTER(ACH_COL_ICON));
-	g_signal_connect(factory, "bind", G_CALLBACK(bind_listitem_cb), GINT_TO_POINTER(ACH_COL_ICON));
+	// Create the columns.
+	for (int i = 0; i < ACH_COL_MAX; i++) {
+		GtkListItemFactory *const factory = gtk_signal_list_item_factory_new();
+		g_signal_connect(factory, "setup", G_CALLBACK(setup_listitem_cb), GINT_TO_POINTER(i));
+		g_signal_connect(factory, "bind", G_CALLBACK(bind_listitem_cb), GINT_TO_POINTER(i));
 
-	GtkColumnViewColumn *column = gtk_column_view_column_new(C_("AchievementsTab", "Icon"), factory);
-	gtk_column_view_column_set_resizable(column, FALSE);
-	gtk_column_view_append_column(GTK_COLUMN_VIEW(tab->columnView), column);
-
-	// Column 1: Achievement (description)
-	factory = gtk_signal_list_item_factory_new();
-	g_signal_connect(factory, "setup", G_CALLBACK(setup_listitem_cb), GINT_TO_POINTER(ACH_COL_DESCRIPTION));
-	g_signal_connect(factory, "bind", G_CALLBACK(bind_listitem_cb), GINT_TO_POINTER(ACH_COL_DESCRIPTION));
-
-	column = gtk_column_view_column_new(C_("AchievementsTab", "Achievement"), factory);
-	gtk_column_view_column_set_resizable(column, TRUE);
-	gtk_column_view_append_column(GTK_COLUMN_VIEW(tab->columnView), column);
-
-	// Column 2: Unlock Time
-	factory = gtk_signal_list_item_factory_new();
-	g_signal_connect(factory, "setup", G_CALLBACK(setup_listitem_cb), GINT_TO_POINTER(ACH_COL_UNLOCK_TIME));
-	g_signal_connect(factory, "bind", G_CALLBACK(bind_listitem_cb), GINT_TO_POINTER(ACH_COL_UNLOCK_TIME));
-
-	column = gtk_column_view_column_new(C_("AchievementsTab", "Unlock Time"), factory);
-	gtk_column_view_column_set_resizable(column, TRUE);
-	gtk_column_view_append_column(GTK_COLUMN_VIEW(tab->columnView), column);
+		GtkColumnViewColumn *const column = gtk_column_view_column_new(
+			dpgettext_expr(RP_I18N_DOMAIN, "AchievementsTab", column_titles[i]), factory);
+		gtk_column_view_column_set_resizable(column, static_cast<gboolean>(column_resizable[i]));
+		gtk_column_view_append_column(GTK_COLUMN_VIEW(tab->columnView), column);
+	}
 #else /* !USE_GTK_COLUMN_VIEW */
 	// Create the GtkListStore and GtkTreeView.
 	tab->listStore = gtk_list_store_new(3, PIMGTYPE_GOBJECT_TYPE, G_TYPE_STRING, G_TYPE_STRING);
@@ -260,33 +255,24 @@ rp_achievements_tab_init(RpAchievementsTab *tab)
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tab->treeView), TRUE);
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolledWindow), tab->treeView);
 
-	// Column 0: Icon
-	GtkTreeViewColumn *column = gtk_tree_view_column_new();
-	gtk_tree_view_column_set_title(column, C_("AchievementsTab", "Icon"));
-	gtk_tree_view_column_set_resizable(column, FALSE);
-	GtkCellRenderer *renderer = gtk_cell_renderer_pixbuf_new();
-	gtk_tree_view_column_pack_start(column, renderer, FALSE);
-	gtk_tree_view_column_add_attribute(column, renderer, GTK_CELL_RENDERER_PIXBUF_PROPERTY, ACH_COL_ICON);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(tab->treeView), column);
-	
-	// Column 1: Achievement (description)
-	column = gtk_tree_view_column_new();
-	gtk_tree_view_column_set_title(column, C_("AchievementsTab", "Achievement"));
-	gtk_tree_view_column_set_resizable(column, TRUE);
-	renderer = gtk_cell_renderer_text_new();
-	gtk_tree_view_column_pack_start(column, renderer, FALSE);
-	gtk_tree_view_column_add_attribute(column, renderer, "markup", ACH_COL_DESCRIPTION);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(tab->treeView), column);
+	// Property to use for each column
+	static const char *const column_property_names[ACH_COL_MAX] = {
+		GTK_CELL_RENDERER_PIXBUF_PROPERTY, "markup", "text"
+	};
 
-	// Column 2: Unlock Time
-	// TODO: Store as a string, or as a GDateTime?
-	column = gtk_tree_view_column_new();
-	gtk_tree_view_column_set_title(column, C_("AchievementsTab", "Unlock Time"));
-	gtk_tree_view_column_set_resizable(column, TRUE);
-	renderer = gtk_cell_renderer_text_new();
-	gtk_tree_view_column_pack_start(column, renderer, FALSE);
-	gtk_tree_view_column_add_attribute(column, renderer, "text", ACH_COL_UNLOCK_TIME);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(tab->treeView), column);
+	// Create the columns.
+	// NOTE: Unlock Time is stored as a string, not as a GDateTime or Unix timestamp.
+	for (int i = 0; i < ACH_COL_MAX; i++) {
+		GtkTreeViewColumn *const column = gtk_tree_view_column_new();
+		gtk_tree_view_column_set_title(column,
+			dpgettext_expr(RP_I18N_DOMAIN, "AchievementsTab", column_titles[i]));
+		gtk_tree_view_column_set_resizable(column, static_cast<gboolean>(column_resizable[i]));
+
+		GtkCellRenderer *const renderer = (i == 0 ? gtk_cell_renderer_pixbuf_new() : gtk_cell_renderer_text_new());
+		gtk_tree_view_column_pack_start(column, renderer, FALSE);
+		gtk_tree_view_column_add_attribute(column, renderer, column_property_names[i], i);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(tab->treeView), column);
+	}
 #endif /* USE_GTK_COLUMN_VIEW */
 
 #if GTK_CHECK_VERSION(4,0,0)
