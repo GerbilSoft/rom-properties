@@ -60,12 +60,12 @@ static void	rp_language_combo_box_dispose     (GObject	*object);
 
 /** Signal handlers **/
 #ifdef USE_GTK_DROP_DOWN
-static void	internal_notify_selected_handler(GtkDropDown		*dropDown,
-						 GParamSpec		*pspec,
-						 RpLanguageComboBox	*widget);
+static void	rp_language_combo_box_notify_selected_handler(GtkDropDown		*dropDown,
+							      GParamSpec		*pspec,
+							      RpLanguageComboBox	*widget);
 #else /* !USE_GTK_DROP_DOWN */
-static void	internal_changed_handler	(GtkComboBox		*comboBox,
-						 RpLanguageComboBox	*widget);
+static void	rp_language_combo_box_changed_handler(GtkComboBox		*comboBox,
+						      RpLanguageComboBox	*widget);
 #endif /* USE_GTK_DROP_DOWN */
 
 static GParamSpec *props[PROP_LAST];
@@ -242,10 +242,10 @@ rp_language_combo_box_init(RpLanguageComboBox *widget)
 	// GtkDropDown doesn't have a "changed" signal, and its
 	// GtkSelectionModel object isn't accessible.
 	// Listen for GObject::notify for the "selected" property.
-	g_signal_connect(widget->dropDown, "notify::selected", G_CALLBACK(internal_notify_selected_handler), widget);
+	g_signal_connect(widget->dropDown, "notify::selected", G_CALLBACK(rp_language_combo_box_notify_selected_handler), widget);
 #else /* !USE_GTK_DROP_DOWN */
 	// Connect the "changed" signal.
-	g_signal_connect(widget->comboBox, "changed", G_CALLBACK(internal_changed_handler), widget);
+	g_signal_connect(widget->comboBox, "changed", G_CALLBACK(rp_language_combo_box_changed_handler), widget);
 #endif /* USE_GTK_DROP_DOWN */
 }
 
@@ -674,7 +674,7 @@ rp_language_combo_box_set_selected_lc(RpLanguageComboBox *widget, uint32_t lc)
 	// result in *two* notifications.
 	g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_SELECTED_LC]);
 
-	// NOTE: internal_changed_handler will emit SIGNAL_LC_CHANGED,
+	// NOTE: rp_language_combo_box_changed_handler will emit SIGNAL_LC_CHANGED,
 	// so we don't need to emit it here.
 	return bRet;
 }
@@ -741,14 +741,14 @@ rp_language_combo_box_get_force_pal(RpLanguageComboBox *widget)
 #ifdef USE_GTK_DROP_DOWN
 /**
  * Internal GObject "notify" signal handler for GtkDropDown's "selected" propertyl
- * @param dropDown GtkDropDown
+ * @param dropDown GtkDropDown sending the signal
  * @param pspec Property specification
  * @param widget RpLanguageComboBox
  */
 static void
-internal_notify_selected_handler(GtkDropDown		*dropDown,
-				 GParamSpec		*pspec,
-				 RpLanguageComboBox	*widget)
+rp_language_combo_box_notify_selected_handler(GtkDropDown		*dropDown,
+					      GParamSpec		*pspec,
+					      RpLanguageComboBox	*widget)
 {
 	RP_UNUSED(dropDown);
 	RP_UNUSED(pspec);
@@ -758,12 +758,12 @@ internal_notify_selected_handler(GtkDropDown		*dropDown,
 #else /* !USE_GTK_DROP_DOWN */
 /**
  * Internal signal handler for GtkComboBox's "changed" signal.
- * @param comboBox GtkComboBox
+ * @param comboBox GtkComboBox sending the signal
  * @param widget RpLanguageComboBox
  */
 static void
-internal_changed_handler(GtkComboBox		*comboBox,
-			 RpLanguageComboBox	*widget)
+rp_language_combo_box_changed_handler(GtkComboBox		*comboBox,
+				      RpLanguageComboBox	*widget)
 {
 	RP_UNUSED(comboBox);
 	const uint32_t lc = rp_language_combo_box_get_selected_lc(widget);
