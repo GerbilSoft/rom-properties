@@ -50,6 +50,7 @@
   * Thumbnail bilinear filtering should have been enabled for 8:7 aspect ratio
     correction, but it wasn't. It is now. This affects SNES and some Mega Drive
     thumbnails.
+  * xdg: Add inode/blockdevice to re-enable physical CD/DVD support on Linux.
 
 * Other changes:
   * libromdata's SOVERSION was bumped to 2 due to an ABI change in

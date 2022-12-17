@@ -15,6 +15,8 @@ application/x-raw-disk-image
 application/x-cso			# technically a different format...
 application/x-compressed-iso		# KDE detects CISO as this
 
+inode/blockdevice			# for CD-ROM drives
+
 # Console
 application/x-c64-cartridge		# CBMCart
 application/x-c128-cartridge		# CBMCart
