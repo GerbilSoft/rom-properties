@@ -222,7 +222,7 @@ rp_achievements_tab_reset(RpAchievementsTab *tab)
 
 		if (unlocked) {
 			// Format the unlock time.
-			GDateTime *const dateTime = g_date_time_new_from_unix_utc(timestamp);
+			GDateTime *const dateTime = g_date_time_new_from_unix_local(timestamp);
 			assert(dateTime != nullptr);
 			if (dateTime) {
 				gchar *const str = g_date_time_format(dateTime, "%x %X");

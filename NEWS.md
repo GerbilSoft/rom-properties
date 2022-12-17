@@ -51,6 +51,8 @@
     correction, but it wasn't. It is now. This affects SNES and some Mega Drive
     thumbnails.
   * xdg: Add inode/blockdevice to re-enable physical CD/DVD support on Linux.
+  * rp-config: Achievement unlock times were incorrectly shown in UTC. They're now
+    shown in the local timezone.
 
 * Other changes:
   * libromdata's SOVERSION was bumped to 2 due to an ABI change in
