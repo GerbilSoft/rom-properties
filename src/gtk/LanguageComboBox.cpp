@@ -92,7 +92,6 @@ struct _RpLanguageComboBox {
 #ifdef USE_GTK_DROP_DOWN
 	GtkWidget *dropDown;
 	GListStore *listStore;
-	GtkListItemFactory *factory;
 #else /* !USE_GTK_DROP_DOWN */
 	GtkWidget *comboBox;
 	GtkListStore *listStore;
@@ -196,10 +195,11 @@ rp_language_combo_box_init(RpLanguageComboBox *widget)
 	gtk_box_append(GTK_BOX(widget), widget->dropDown);
 
 	// Create the GtkSignalListItemFactory
-	widget->factory = gtk_signal_list_item_factory_new();
-	g_signal_connect(widget->factory, "setup", G_CALLBACK(setup_listitem_cb), nullptr);
-	g_signal_connect(widget->factory, "bind", G_CALLBACK(bind_listitem_cb), nullptr);
-	gtk_drop_down_set_factory(GTK_DROP_DOWN(widget->dropDown), widget->factory);
+	GtkListItemFactory *const factory = gtk_signal_list_item_factory_new();
+	g_signal_connect(factory, "setup", G_CALLBACK(setup_listitem_cb), nullptr);
+	g_signal_connect(factory, "bind", G_CALLBACK(bind_listitem_cb), nullptr);
+	gtk_drop_down_set_factory(GTK_DROP_DOWN(widget->dropDown), factory);
+	g_object_unref(factory);	// we don't need to keep a reference
 #else /* !USE_GTK_DROP_DOWN */
 	// Create the GtkComboBox widget.
 	widget->comboBox = gtk_combo_box_new();
@@ -312,10 +312,6 @@ rp_language_combo_box_dispose(GObject *object)
 
 	if (widget->dropDown) {
 		gtk_drop_down_set_factory(GTK_DROP_DOWN(widget->dropDown), nullptr);
-	}
-	if (widget->factory) {
-		g_object_unref(widget->factory);
-		widget->factory = nullptr;
 	}
 #endif /* USE_GTK_DROP_DOWN */
 
