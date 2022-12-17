@@ -379,7 +379,7 @@ rp_options_tab_load_defaults(RpOptionsTab *tab)
 	static const bool extImgDownloadEnabled_default = true;
 	static const bool useIntIconForSmallSizes_default = true;
 	static const bool storeFileOriginInfo_default = true;
-	static const int palLanguageForGameTDB_default = pal_lc_idx_def;	// cboGameTDBPAL index ('en')
+	static const int palLanguageForGameTDB_default = 'en';
 
 	// Image bandwidth options
 	static const Config::ImgBandwidth imgBandwidthUnmetered_default = Config::ImgBandwidth::HighRes;
@@ -422,9 +422,9 @@ rp_options_tab_load_defaults(RpOptionsTab *tab)
 			storeFileOriginInfo_default);
 		isDefChanged = true;
 	}
-	if (COMPARE_CBO(tab->cboGameTDBPAL, palLanguageForGameTDB_default)) {
-		gtk_combo_box_set_active(
-			GTK_COMBO_BOX(tab->cboGameTDBPAL),
+	if (rp_language_combo_box_get_selected_lc(RP_LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL)) != palLanguageForGameTDB_default) {
+		rp_language_combo_box_set_selected_lc(
+			RP_LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL),
 			palLanguageForGameTDB_default);
 		isDefChanged = true;
 	}
