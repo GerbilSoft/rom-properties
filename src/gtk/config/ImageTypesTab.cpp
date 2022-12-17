@@ -341,8 +341,6 @@ void RpImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 
 	gtk_drop_down_set_model(cbo, G_LIST_MODEL(list));
 	g_object_unref(list);	// FIXME: may be incorrect
-
-	gtk_drop_down_set_selected(cbo, 0);
 #else /* !USE_GTK_DROP_DOWN */
 	assert(max_prio <= static_cast<int>(ImageTypesConfig::imageTypeCount()));
 	GtkListStore *const lstCbo = gtk_list_store_new(1, G_TYPE_STRING);
@@ -361,10 +359,9 @@ void RpImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(cbo), column, TRUE);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(cbo),
 		column, "text", 0, nullptr);
-
-	gtk_combo_box_set_active(cbo, 0);
 #endif /* USE_GTK_DROP_DOWN */
 
+	SET_CBO(cbo, 0);
 	q->inhibit = prev_inhibit;
 }
 
@@ -427,11 +424,7 @@ void RpImageTypesTabPrivate::cboImageType_setPriorityValue(unsigned int cbid, un
 	if (cbo) {
 		const bool prev_inhibit = q->inhibit;
 		q->inhibit = true;
-#ifdef USE_GTK_DROP_DOWN
-		gtk_drop_down_set_selected(cbo, prio < ImageTypesConfig::imageTypeCount() ? prio+1 : 0);
-#else /* !USE_GTK_DROP_DOWN */
-		gtk_combo_box_set_active(cbo, prio < ImageTypesConfig::imageTypeCount() ? prio+1 : 0);
-#endif /* USE_GTK_DROP_DOWN */
+		SET_CBO(cbo, prio < ImageTypesConfig::imageTypeCount() ? prio+1 : 0);
 		q->inhibit = prev_inhibit;
 	}
 }
