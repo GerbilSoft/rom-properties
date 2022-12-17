@@ -1018,11 +1018,11 @@ rp_rom_data_view_init_listdata(RpRomDataView *page,
 
 	// Scroll area for the GtkTreeView.
 #if GTK_CHECK_VERSION(4,0,0)
-	GtkWidget *scrolledWindow = gtk_scrolled_window_new();
+	GtkWidget *const scrolledWindow = gtk_scrolled_window_new();
 	// NOTE: No name for this GtkWidget.
 	gtk_scrolled_window_set_has_frame(GTK_SCROLLED_WINDOW(scrolledWindow), true);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-	GtkWidget *scrolledWindow = gtk_scrolled_window_new(nullptr, nullptr);
+	GtkWidget *const scrolledWindow = gtk_scrolled_window_new(nullptr, nullptr);
 	// NOTE: No name for this GtkWidget.
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolledWindow), GTK_SHADOW_IN);
 #endif /* GTK_CHECK_VERSION */
@@ -1046,12 +1046,13 @@ rp_rom_data_view_init_listdata(RpRomDataView *page,
 	// May require fixed columns...
 	// Reference: https://developer.gnome.org/gtk3/stable/GtkTreeView.html#gtk-tree-view-set-fixed-height-mode
 
-#if GTK_CHECK_VERSION(3,0,0)
-	// FIXME: Alternating row colors isn't working in GTK+ 3.x...
-#else
+#if !GTK_CHECK_VERSION(3,0,0)
 	// GTK+ 2.x: Use the "rules hint" for alternating row colors.
+	// Deprecated in GTK+ 3.14 (and removed in GTK4), but it doesn't
+	// work with GTK+ 3.x anyway.
+	// TODO: GTK4's GtkListView might have a similar function.
 	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(treeView), true);
-#endif
+#endif /* !GTK_CHECK_VERSION(3,0,0) */
 
 	// Extra GtkCellRenderer for icon and/or checkbox.
 	// This is prepended to column 0.
@@ -1653,10 +1654,7 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 		page->changed_idle = 0;
 		return G_SOURCE_REMOVE;
 	}
-	const int count = pFields->count();
-#if !GTK_CHECK_VERSION(3,0,0)
-	int rowCount = count;
-#endif
+	int fieldCount = pFields->count();
 
 	// Create the GtkNotebook.
 	auto &tabs = page->cxx->tabs;
@@ -1695,8 +1693,8 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 			gtk_grid_set_row_spacing(GTK_GRID(tab.table), 2);
 			gtk_grid_set_column_spacing(GTK_GRID(tab.table), 8);
 #else /* !USE_GTK_GRID */
-			// TODO: Adjust the table size?
-			tab.table = gtk_table_new(rowCount, 2, false);
+			// FIXME: Adjust the table size for the number of fields on this tab.
+			tab.table = gtk_table_new(fieldCount, 2, false);
 			gtk_table_set_row_spacings(GTK_TABLE(tab.table), 2);
 			gtk_table_set_col_spacings(GTK_TABLE(tab.table), 8);
 #endif /* USE_GTK_GRID */
@@ -1742,8 +1740,8 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 		gtk_grid_set_row_spacing(GTK_GRID(tab.table), 2);
 		gtk_grid_set_column_spacing(GTK_GRID(tab.table), 8);
 #else /* !USE_GTK_GRID */
-		// TODO: Adjust the table size?
-		tab.table = gtk_table_new(count, 2, false);
+		// FIXME: Adjust the table size for the number of fields on this tab.
+		tab.table = gtk_table_new(fieldCount, 2, false);
 		gtk_table_set_row_spacings(GTK_TABLE(tab.table), 2);
 		gtk_table_set_col_spacings(GTK_TABLE(tab.table), 8);
 #endif /* USE_GTK_GRID */
@@ -1761,7 +1759,7 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 	}
 
 	// Reserve enough space for vecDescLabels.
-	page->cxx->vecDescLabels.reserve(count);
+	page->cxx->vecDescLabels.reserve(fieldCount);
 	// Per-tab row counts.
 	unique_ptr<int[]> tabRowCount(new int[tabs.size()]());
 
@@ -1947,8 +1945,8 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 #if USE_GTK_GRID
 				gtk_grid_attach(GTK_GRID(tab.table), widget, 0, row+1, 2, 1);
 #else /* !USE_GTK_GRID */
-				rowCount++;
-				gtk_table_resize(GTK_TABLE(tab.table), rowCount, 2);
+				fieldCount++;
+				gtk_table_resize(GTK_TABLE(tab.table), fieldCount, 2);
 				gtk_table_attach(GTK_TABLE(tab.table), widget, 0, 2, row+1, row+2,
 					GTK_FILL, GTK_FILL, 0, 0);
 #endif /* USE_GTK_GRID */
