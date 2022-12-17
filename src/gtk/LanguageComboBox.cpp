@@ -216,7 +216,7 @@ rp_language_combo_box_init(RpLanguageComboBox *widget)
 	gtk_combo_box_set_model(GTK_COMBO_BOX(widget->comboBox), GTK_TREE_MODEL(widget->listStore));
 
 	// Remove our reference on widget->listStore.
-	// The superclass will automatically destroy it.
+	// The GtkComboBox will automatically destroy it.
 	g_object_unref(widget->listStore);
 #endif /* USE_GTK_DROP_DOWN */
 
