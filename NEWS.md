@@ -52,7 +52,7 @@
     thumbnails.
   * xdg: Add inode/blockdevice to re-enable physical CD/DVD support on Linux.
     * v2.0 removed application/octet-stream, which otherwise covered this use case.
-  * rp-config: Achievement unlock times were incorrectly shown in UTC. They're now
+  * [gtk] rp-config: Achievement unlock times were incorrectly shown in UTC. They're now
     shown in the local timezone.
 
 * Other changes:
