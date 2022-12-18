@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.0+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2022-12-10 14:40-0500\n"
+"POT-Creation-Date: 2022-12-18 14:59-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -37,21 +37,21 @@ msgid "&Support"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:51
-#: ../src/gtk/config/AchievementsTab.cpp:133
+#: ../src/gtk/config/AchievementsTab.cpp:216
 #: ../src/win32/config/AchievementsTab.cpp:449
 msgctxt "AchievementsTab"
 msgid "Unlock Time"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:52
-#: ../src/gtk/config/AchievementsTab.cpp:123
+#: ../src/gtk/config/AchievementsTab.cpp:215
 #: ../src/win32/config/AchievementsTab.cpp:443
 msgctxt "AchievementsTab"
 msgid "Achievement"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:53
-#: ../src/gtk/config/AchievementsTab.cpp:114
+#: ../src/gtk/config/AchievementsTab.cpp:214
 msgctxt "AchievementsTab"
 msgid "Icon"
 msgstr ""
@@ -128,7 +128,7 @@ msgid "Abou&t"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_ImageTypesTab.h:81
-#: ../src/gtk/config/ImageTypesTab.cpp:437
+#: ../src/gtk/config/ImageTypesTab.cpp:467
 msgctxt "ImageTypesTab"
 msgid ""
 "Select the image types you would like to use for each system as its "
@@ -151,13 +151,13 @@ msgid "&Downloads"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:171
-#: ../src/gtk/config/OptionsTab.cpp:134
+#: ../src/gtk/config/OptionsTab.cpp:142
 msgctxt "OptionsTab"
 msgid "E&xternal Image Downloads"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:172
-#: ../src/gtk/config/OptionsTab.cpp:140
+#: ../src/gtk/config/OptionsTab.cpp:148
 msgctxt "OptionsTab"
 msgid ""
 "When using an unlimited\n"
@@ -166,27 +166,27 @@ msgstr ""
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:174
 #: ../build/src/kde/kf5/ui_OptionsTab.h:180
-#: ../src/gtk/config/OptionsTab.cpp:146 ../src/win32/config/OptionsTab.cpp:408
+#: ../src/gtk/config/OptionsTab.cpp:154 ../src/win32/config/OptionsTab.cpp:408
 msgctxt "OptionsTab"
 msgid "Don't download any images"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:175
 #: ../build/src/kde/kf5/ui_OptionsTab.h:181
-#: ../src/gtk/config/OptionsTab.cpp:147 ../src/win32/config/OptionsTab.cpp:409
+#: ../src/gtk/config/OptionsTab.cpp:155 ../src/win32/config/OptionsTab.cpp:409
 msgctxt "OptionsTab"
 msgid "Download normal-resolution images"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:176
 #: ../build/src/kde/kf5/ui_OptionsTab.h:182
-#: ../src/gtk/config/OptionsTab.cpp:148 ../src/win32/config/OptionsTab.cpp:410
+#: ../src/gtk/config/OptionsTab.cpp:156 ../src/win32/config/OptionsTab.cpp:410
 msgctxt "OptionsTab"
 msgid "Download high-resolution images"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:178
-#: ../src/gtk/config/OptionsTab.cpp:142
+#: ../src/gtk/config/OptionsTab.cpp:150
 msgctxt "OptionsTab"
 msgid ""
 "When using a metered\n"
@@ -194,13 +194,13 @@ msgid ""
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:184
-#: ../src/gtk/config/OptionsTab.cpp:203
+#: ../src/gtk/config/OptionsTab.cpp:224
 msgctxt "OptionsTab"
 msgid "Always use the internal icon (if present) for small sizes."
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:185
-#: ../src/gtk/config/OptionsTab.cpp:206
+#: ../src/gtk/config/OptionsTab.cpp:227
 msgctxt "OptionsTab"
 msgid ""
 "Store cached file origin information using extended attributes.\n"
@@ -208,7 +208,7 @@ msgid ""
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:187
-#: ../src/gtk/config/OptionsTab.cpp:213
+#: ../src/gtk/config/OptionsTab.cpp:234
 msgctxt "OptionsTab"
 msgid "Language for PAL titles on GameTDB:"
 msgstr ""
@@ -219,7 +219,7 @@ msgid "&Options"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:189
-#: ../src/gtk/config/OptionsTab.cpp:239
+#: ../src/gtk/config/OptionsTab.cpp:260
 msgctxt "OptionsTab"
 msgid ""
 "Show a security overlay icon for ROM images with\n"
@@ -227,7 +227,7 @@ msgid ""
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:191
-#: ../src/gtk/config/OptionsTab.cpp:242
+#: ../src/gtk/config/OptionsTab.cpp:263
 msgctxt "OptionsTab"
 msgid ""
 "Enable thumbnailing and metadata extraction on network\n"
@@ -240,7 +240,7 @@ msgid "&Game Boy Title Screens"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:127
-#: ../src/gtk/config/SystemsTab.cpp:117
+#: ../src/gtk/config/SystemsTab.cpp:123
 msgctxt "SystemsTab"
 msgid "Game &Boy:"
 msgstr ""
@@ -248,7 +248,7 @@ msgstr ""
 #: ../build/src/kde/kf5/ui_SystemsTab.h:128
 #: ../build/src/kde/kf5/ui_SystemsTab.h:132
 #: ../build/src/kde/kf5/ui_SystemsTab.h:137
-#: ../src/gtk/config/SystemsTab.cpp:127
+#: ../src/gtk/config/SystemsTab.cpp:133
 msgctxt "SystemsTab"
 msgid "Game Boy"
 msgstr ""
@@ -256,26 +256,26 @@ msgstr ""
 #: ../build/src/kde/kf5/ui_SystemsTab.h:129
 #: ../build/src/kde/kf5/ui_SystemsTab.h:134
 #: ../build/src/kde/kf5/ui_SystemsTab.h:139
-#: ../src/gtk/config/SystemsTab.cpp:129
+#: ../src/gtk/config/SystemsTab.cpp:135
 msgctxt "SystemsTab"
 msgid "Game Boy Color"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:131
-#: ../src/gtk/config/SystemsTab.cpp:119
+#: ../src/gtk/config/SystemsTab.cpp:125
 msgctxt "SystemsTab"
 msgid "&Super Game Boy:"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:133
 #: ../build/src/kde/kf5/ui_SystemsTab.h:138
-#: ../src/gtk/config/SystemsTab.cpp:128
+#: ../src/gtk/config/SystemsTab.cpp:134
 msgctxt "SystemsTab"
 msgid "Super Game Boy"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:136
-#: ../src/gtk/config/SystemsTab.cpp:121
+#: ../src/gtk/config/SystemsTab.cpp:127
 msgctxt "SystemsTab"
 msgid "Game Boy &Color:"
 msgstr ""
@@ -399,14 +399,17 @@ msgctxt "AboutTab|Support"
 msgid "You can also email the developer directly:"
 msgstr ""
 
-#: ../src/gtk/config/AboutTab.cpp:832 ../src/win32/config/AboutTab.cpp:477
+#: ../src/gtk/config/AboutTab.cpp:832 ../src/kde/config/AboutTab.cpp:593
+#: ../src/win32/config/AboutTab.cpp:477
 msgctxt "AboutTab"
 msgid "Checking for updates..."
 msgstr ""
 
-#: ../src/gtk/config/AboutTab.cpp:852
+#. tr: Error message template. (GTK version, with formatting)
+#: ../src/gtk/config/AboutTab.cpp:852 ../src/gtk/config/CacheTab.cpp:484
+#: ../src/gtk/config/CacheTab.cpp:539
 #, c-format
-msgctxt "AboutTab"
+msgctxt "ConfigDialog"
 msgid "<b>ERROR:</b> %s"
 msgstr ""
 
@@ -428,33 +431,40 @@ msgctxt "AboutTab"
 msgid "Download at GitHub"
 msgstr ""
 
-#: ../src/gtk/config/CacheCleaner.cpp:397
-#: ../src/gtk/config/CacheCleaner.cpp:455
+#: ../src/gtk/config/CacheCleaner.cpp:401
+#: ../src/gtk/config/CacheCleaner.cpp:459
+#: ../src/kde/config/CacheCleaner.cpp:194
+#: ../src/kde/config/CacheCleaner.cpp:253
 msgctxt "CacheCleaner"
 msgid "Invalid cache directory specified."
 msgstr ""
 
-#: ../src/gtk/config/CacheCleaner.cpp:404
+#: ../src/gtk/config/CacheCleaner.cpp:408
+#: ../src/kde/config/CacheCleaner.cpp:201
 msgctxt "CacheCleaner"
 msgid "Unable to get the XDG cache directory."
 msgstr ""
 
-#: ../src/gtk/config/CacheCleaner.cpp:412
+#: ../src/gtk/config/CacheCleaner.cpp:416
+#: ../src/kde/config/CacheCleaner.cpp:209
 msgctxt "CacheCleaner"
 msgid "Thumbnails cache directory does not exist."
 msgstr ""
 
-#: ../src/gtk/config/CacheCleaner.cpp:421 ../src/win32/config/CacheTab.cpp:639
+#: ../src/gtk/config/CacheCleaner.cpp:425
+#: ../src/kde/config/CacheCleaner.cpp:218 ../src/win32/config/CacheTab.cpp:639
 msgctxt "CacheCleaner"
 msgid "Unable to get the rom-properties cache directory."
 msgstr ""
 
-#: ../src/gtk/config/CacheCleaner.cpp:458
+#: ../src/gtk/config/CacheCleaner.cpp:462
+#: ../src/kde/config/CacheCleaner.cpp:256
 msgctxt "CacheCleaner"
 msgid "System thumbnail cache has unexpected files. Not clearing it."
 msgstr ""
 
-#: ../src/gtk/config/CacheCleaner.cpp:461 ../src/win32/config/CacheTab.cpp:694
+#: ../src/gtk/config/CacheCleaner.cpp:465
+#: ../src/kde/config/CacheCleaner.cpp:259 ../src/win32/config/CacheTab.cpp:694
 msgctxt "CacheCleaner"
 msgid "rom-properties cache has unexpected files. Not clearing it."
 msgstr ""
@@ -466,51 +476,49 @@ msgid ""
 "to clear the system thumbnail cache."
 msgstr ""
 
-#: ../src/gtk/config/CacheTab.cpp:382 ../src/gtk/config/CacheTab.cpp:506
-#: ../src/gtk/config/CacheTab.cpp:551
+#: ../src/gtk/config/CacheTab.cpp:382 ../src/gtk/config/CacheTab.cpp:507
+#: ../src/gtk/config/CacheTab.cpp:553 ../src/kde/config/CacheTab.cpp:124
+#: ../src/kde/config/CacheTab.cpp:279 ../src/kde/config/CacheTab.cpp:321
 msgctxt "CacheTab"
 msgid "Invalid cache directory specified."
 msgstr ""
 
-#: ../src/gtk/config/CacheTab.cpp:385
+#: ../src/gtk/config/CacheTab.cpp:385 ../src/kde/config/CacheTab.cpp:127
 msgctxt "CacheTab"
 msgid "Clearing the system thumbnail cache..."
 msgstr ""
 
-#: ../src/gtk/config/CacheTab.cpp:388
+#: ../src/gtk/config/CacheTab.cpp:388 ../src/kde/config/CacheTab.cpp:130
 msgctxt "CacheTab"
 msgid "Clearing the ROM Properties Page cache..."
 msgstr ""
 
-#: ../src/gtk/config/CacheTab.cpp:483 ../src/gtk/config/CacheTab.cpp:537
-#, c-format
-msgctxt "CacheTab"
-msgid "<b>ERROR:</b> %s"
-msgstr ""
-
-#: ../src/gtk/config/CacheTab.cpp:509
+#: ../src/gtk/config/CacheTab.cpp:510 ../src/kde/config/CacheTab.cpp:282
 msgctxt "CacheTab"
 msgid "System thumbnail cache is empty. Nothing to do."
 msgstr ""
 
-#: ../src/gtk/config/CacheTab.cpp:512 ../src/win32/config/CacheTab.cpp:676
-#: ../src/win32/config/CacheTab.cpp:707
+#: ../src/gtk/config/CacheTab.cpp:513 ../src/kde/config/CacheTab.cpp:285
+#: ../src/win32/config/CacheTab.cpp:676 ../src/win32/config/CacheTab.cpp:707
 msgctxt "CacheTab"
 msgid "rom-properties cache is empty. Nothing to do."
 msgstr ""
 
-#: ../src/gtk/config/CacheTab.cpp:538 ../src/kde/config/CacheTab.cpp:307
+#: ../src/gtk/config/CacheTab.cpp:540 ../src/kde/config/CacheTab.cpp:309
+#: ../src/win32/config/CacheTab.cpp:758
 #, c-format
 msgctxt "CacheTab"
 msgid "Unable to delete %1$u file(s) and/or %2$u dir(s)."
 msgstr ""
 
-#: ../src/gtk/config/CacheTab.cpp:555 ../src/win32/config/CacheTab.cpp:529
+#: ../src/gtk/config/CacheTab.cpp:557 ../src/kde/config/CacheTab.cpp:325
+#: ../src/win32/config/CacheTab.cpp:529
 msgctxt "CacheTab"
 msgid "System thumbnail cache cleared successfully."
 msgstr ""
 
-#: ../src/gtk/config/CacheTab.cpp:559 ../src/win32/config/CacheTab.cpp:764
+#: ../src/gtk/config/CacheTab.cpp:561 ../src/kde/config/CacheTab.cpp:329
+#: ../src/win32/config/CacheTab.cpp:764
 msgctxt "CacheTab"
 msgid "rom-properties cache cleared successfully."
 msgstr ""
@@ -545,14 +553,15 @@ msgctxt "ConfigDialog"
 msgid "&Key Manager"
 msgstr ""
 
-#: ../src/gtk/config/ImageTypesTab.cpp:317
+#: ../src/gtk/config/ImageTypesTab.cpp:335
+#: ../src/gtk/config/ImageTypesTab.cpp:347
 #: ../src/kde/config/ImageTypesTab.cpp:242
 #: ../src/win32/config/ImageTypesTab.cpp:381
 msgctxt "ImageTypesTab|Values"
 msgid "No"
 msgstr ""
 
-#: ../src/gtk/config/ImageTypesTab.cpp:450
+#: ../src/gtk/config/ImageTypesTab.cpp:480
 #: ../src/kde/config/ImageTypesTab.cpp:353
 #: ../src/win32/config/ImageTypesTab.cpp:508
 msgctxt "ImageTypesTab"
@@ -842,44 +851,49 @@ msgid_plural "%s keys have been imported without verification."
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/gtk/config/OptionsTab.cpp:115
+#: ../src/gtk/config/OptionsTab.cpp:123
 msgctxt "OptionsTab"
 msgid "Downloads"
 msgstr ""
 
 #. tr: Tab title.
-#: ../src/gtk/config/OptionsTab.cpp:222 ../src/win32/config/OptionsTab.cpp:573
+#: ../src/gtk/config/OptionsTab.cpp:243 ../src/win32/config/OptionsTab.cpp:573
 msgctxt "OptionsTab"
 msgid "Options"
 msgstr ""
 
-#: ../src/gtk/config/SystemsTab.cpp:94
+#: ../src/gtk/config/SystemsTab.cpp:100
 msgctxt "SystemsTab"
 msgid "Game Boy Title Screens"
 msgstr ""
 
-#: ../src/gtk/config/SystemsTab.cpp:111
+#: ../src/gtk/config/SystemsTab.cpp:117
 msgctxt "SystemsTab"
 msgid ""
 "Select the Game Boy model to use for title screens for different types of\n"
 "Game Boy ROM images."
 msgstr ""
 
-#: ../src/gtk/config/UpdateChecker.cpp:157
+#: ../src/gtk/config/UpdateChecker.cpp:160
+#: ../src/kde/config/UpdateChecker.cpp:60
 #: ../src/win32/config/UpdateChecker.cpp:72
 msgctxt "UpdateChecker"
 msgid "Failed to download version file."
 msgstr ""
 
-#: ../src/gtk/config/UpdateChecker.cpp:167
+#: ../src/gtk/config/UpdateChecker.cpp:170
+#: ../src/kde/config/UpdateChecker.cpp:69
 #: ../src/win32/config/UpdateChecker.cpp:81
 msgctxt "UpdateChecker"
 msgid "Failed to open version file."
 msgstr ""
 
-#: ../src/gtk/config/UpdateChecker.cpp:177
-#: ../src/gtk/config/UpdateChecker.cpp:190
-#: ../src/gtk/config/UpdateChecker.cpp:202
+#: ../src/gtk/config/UpdateChecker.cpp:181
+#: ../src/gtk/config/UpdateChecker.cpp:194
+#: ../src/gtk/config/UpdateChecker.cpp:207
+#: ../src/kde/config/UpdateChecker.cpp:77
+#: ../src/kde/config/UpdateChecker.cpp:84
+#: ../src/kde/config/UpdateChecker.cpp:95
 #: ../src/win32/config/UpdateChecker.cpp:90
 #: ../src/win32/config/UpdateChecker.cpp:103
 #: ../src/win32/config/UpdateChecker.cpp:111
@@ -889,15 +903,15 @@ msgctxt "UpdateChecker"
 msgid "Version file is invalid."
 msgstr ""
 
-#: ../src/gtk/gtk3/RpNautilusMenuProvider.cpp:272
-#: ../src/gtk/gtk3/RpThunarMenuProvider.cpp:270
+#: ../src/gtk/gtk3/NautilusMenuProvider.cpp:275
+#: ../src/gtk/gtk3/ThunarMenuProvider.cpp:271
 #: ../src/win32/RP_ContextMenu.cpp:356
 msgctxt "ServiceMenu"
 msgid "Convert to PNG"
 msgstr ""
 
-#: ../src/gtk/gtk3/RpNautilusMenuProvider.cpp:274
-#: ../src/gtk/gtk3/RpThunarMenuProvider.cpp:272
+#: ../src/gtk/gtk3/NautilusMenuProvider.cpp:277
+#: ../src/gtk/gtk3/ThunarMenuProvider.cpp:273
 #: ../src/win32/RP_ContextMenu.cpp:443
 msgctxt "ServiceMenu"
 msgid "Convert the selected texture file to PNG format."
@@ -906,9 +920,9 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. tr: Tab title.
-#: ../src/gtk/gtk3/RpNautilusPropertyPageProvider.cpp:130
-#: ../src/gtk/gtk3/RpThunarPropertyPageProvider.cpp:119
-#: ../src/gtk/gtk4/RpNautilusPropertiesModel.cpp:295
+#: ../src/gtk/gtk3/NautilusPropertyPageProvider.cpp:130
+#: ../src/gtk/gtk3/ThunarPropertyPageProvider.cpp:119
+#: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:295
 #: ../src/kde/RomPropertiesDialogPlugin.cpp:75
 #: ../src/win32/RP_ShellPropSheetExt.cpp:2314
 msgctxt "RomDataView"
@@ -917,31 +931,31 @@ msgstr ""
 
 #. tr: Invalid date/time.
 #. tr: Invalid date/time
-#: ../src/gtk/gtk4/RpNautilusPropertiesModel.cpp:127
-#: ../src/gtk/RomDataView.cpp:1218 ../src/kde/RomDataView.cpp:654
+#: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:127
+#: ../src/gtk/RomDataView.cpp:1228 ../src/kde/RomDataView.cpp:654
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1225
 msgctxt "RomDataView"
 msgid "Unknown"
 msgstr ""
 
 #. tr: No age ratings data.
-#: ../src/gtk/gtk4/RpNautilusPropertiesModel.cpp:143
-#: ../src/gtk/RomDataView.cpp:1238 ../src/kde/RomDataView.cpp:731
+#: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:143
+#: ../src/gtk/RomDataView.cpp:1248 ../src/kde/RomDataView.cpp:731
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1339
 msgctxt "RomDataView"
 msgid "ERROR"
 msgstr ""
 
-#: ../src/gtk/gtk4/RpNautilusPropertiesModel.cpp:211
-#: ../src/gtk/RomDataView.cpp:631 ../src/kde/RomDataView.cpp:155
+#: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:211
+#: ../src/gtk/RomDataView.cpp:640 ../src/kde/RomDataView.cpp:155
 #: ../src/librpbase/TextOut_text.cpp:802
 #: ../src/win32/RP_ShellPropSheetExt.cpp:242
 msgctxt "RomDataView"
 msgid "(unknown system)"
 msgstr ""
 
-#: ../src/gtk/gtk4/RpNautilusPropertiesModel.cpp:214
-#: ../src/gtk/RomDataView.cpp:634 ../src/kde/RomDataView.cpp:158
+#: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:214
+#: ../src/gtk/RomDataView.cpp:643 ../src/kde/RomDataView.cpp:158
 #: ../src/librpbase/TextOut_text.cpp:803
 #: ../src/win32/RP_ShellPropSheetExt.cpp:245
 msgctxt "RomDataView"
@@ -949,36 +963,36 @@ msgid "(unknown filetype)"
 msgstr ""
 
 #. tr: %1$s == system name, %2$s == file type
-#: ../src/gtk/gtk4/RpNautilusPropertiesModel.cpp:222
+#: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:222
 #, c-format
 msgctxt "RomDataView"
 msgid "%1$s | %2$s"
 msgstr ""
 
-#: ../src/gtk/gtk4/RpNautilusPropertiesModel.cpp:223
+#: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:223
 msgctxt "RomDataView"
 msgid "File Type"
 msgstr ""
 
-#: ../src/gtk/OptionsMenuButton.cpp:143 ../src/kde/OptionsMenuButton.cpp:24
+#: ../src/gtk/OptionsMenuButton.cpp:142 ../src/kde/OptionsMenuButton.cpp:24
 #: ../src/win32/OptionsMenuButton.cpp:34
 msgctxt "OptionsMenuButton|StdActs"
 msgid "Export to Text..."
 msgstr ""
 
-#: ../src/gtk/OptionsMenuButton.cpp:144 ../src/kde/OptionsMenuButton.cpp:25
+#: ../src/gtk/OptionsMenuButton.cpp:143 ../src/kde/OptionsMenuButton.cpp:25
 #: ../src/win32/OptionsMenuButton.cpp:35
 msgctxt "OptionsMenuButton|StdActs"
 msgid "Export to JSON..."
 msgstr ""
 
-#: ../src/gtk/OptionsMenuButton.cpp:145 ../src/kde/OptionsMenuButton.cpp:26
+#: ../src/gtk/OptionsMenuButton.cpp:144 ../src/kde/OptionsMenuButton.cpp:26
 #: ../src/win32/OptionsMenuButton.cpp:36
 msgctxt "OptionsMenuButton|StdActs"
 msgid "Copy as Text"
 msgstr ""
 
-#: ../src/gtk/OptionsMenuButton.cpp:146 ../src/kde/OptionsMenuButton.cpp:27
+#: ../src/gtk/OptionsMenuButton.cpp:145 ../src/kde/OptionsMenuButton.cpp:27
 #: ../src/win32/OptionsMenuButton.cpp:37
 msgctxt "OptionsMenuButton|StdActs"
 msgid "Copy as JSON"
@@ -991,7 +1005,7 @@ msgid "&Options"
 msgstr ""
 
 #. tr: %1$s == system name, %2$s == file type
-#: ../src/gtk/RomDataView.cpp:639 ../src/kde/RomDataView.cpp:163
+#: ../src/gtk/RomDataView.cpp:648 ../src/kde/RomDataView.cpp:163
 #: ../src/win32/RP_ShellPropSheetExt.cpp:251
 #, c-format
 msgctxt "RomDataView"
@@ -1001,7 +1015,7 @@ msgid ""
 msgstr ""
 
 #. tr: Field description label.
-#: ../src/gtk/RomDataView.cpp:1753 ../src/kde/RomDataView.cpp:1006
+#: ../src/gtk/RomDataView.cpp:1767 ../src/kde/RomDataView.cpp:1006
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1731
 #, c-format
 msgctxt "RomDataView"
@@ -1055,6 +1069,13 @@ msgstr ""
 #: ../src/kde/config/AboutTab.cpp:170
 msgctxt "AboutTab"
 msgid "<b>ROM Properties Page</b><br>Shell Extension"
+msgstr ""
+
+#. tr: Error message template. (Qt version, with formatting)
+#: ../src/kde/config/AboutTab.cpp:661 ../src/kde/config/CacheTab.cpp:264
+#: ../src/kde/config/CacheTab.cpp:308
+msgctxt "ConfigDialog"
+msgid "<b>ERROR:</b> %1"
 msgstr ""
 
 #. tr: "Options" button.
@@ -1247,7 +1268,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/WonderSwan.cpp:492
 #: ../src/libromdata/Other/ELF.cpp:2048 ../src/libromdata/Other/MachO.cpp:512
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1060
-#: ../src/librptexture/fileformat/KhronosKTX2.cpp:1042
+#: ../src/librptexture/fileformat/KhronosKTX2.cpp:1109
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%u)"
@@ -8758,33 +8779,33 @@ msgctxt "GodotSTEX"
 msgid "Format Flags"
 msgstr ""
 
-#: ../src/librptexture/fileformat/KhronosKTX2.cpp:1038
-#: ../src/librptexture/fileformat/KhronosKTX2.cpp:1041
+#: ../src/librptexture/fileformat/KhronosKTX2.cpp:1105
+#: ../src/librptexture/fileformat/KhronosKTX2.cpp:1108
 msgctxt "KhronosKTX2"
 msgid "Supercompression"
 msgstr ""
 
-#: ../src/librptexture/fileformat/KhronosKTX2.cpp:1058
+#: ../src/librptexture/fileformat/KhronosKTX2.cpp:1125
 msgctxt "KhronosKTX2"
 msgid "# of Layers"
 msgstr ""
 
-#: ../src/librptexture/fileformat/KhronosKTX2.cpp:1064
+#: ../src/librptexture/fileformat/KhronosKTX2.cpp:1131
 msgctxt "KhronosKTX2"
 msgid "# of Faces"
 msgstr ""
 
-#: ../src/librptexture/fileformat/KhronosKTX2.cpp:1072
+#: ../src/librptexture/fileformat/KhronosKTX2.cpp:1139
 msgctxt "KhronosKTX2|KeyValue"
 msgid "Key"
 msgstr ""
 
-#: ../src/librptexture/fileformat/KhronosKTX2.cpp:1073
+#: ../src/librptexture/fileformat/KhronosKTX2.cpp:1140
 msgctxt "KhronosKTX2|KeyValue"
 msgid "Value"
 msgstr ""
 
-#: ../src/librptexture/fileformat/KhronosKTX2.cpp:1084
+#: ../src/librptexture/fileformat/KhronosKTX2.cpp:1151
 msgctxt "KhronosKTX2"
 msgid "Key/Value Data"
 msgstr ""
@@ -9612,77 +9633,67 @@ msgid ""
 "desktop environment."
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:200
+#: ../src/rp-stub/rp-stub.c:171
 #, c-format
 msgctxt "rp-stub"
 msgid "Try '%s --help' for more information."
 msgstr ""
 
-#. tr: %1$s == program name, %2%s == invalid size
-#: ../src/rp-stub/rp-stub.c:216
+#: ../src/rp-stub/rp-stub.c:239
 #, c-format
 msgctxt "rp-stub"
-msgid "%1$s: invalid size '%2$s'"
+msgid "invalid size '%s'"
 msgstr ""
 
-#. tr: %1$s == program name, %2%s == invalid size
-#: ../src/rp-stub/rp-stub.c:224
+#: ../src/rp-stub/rp-stub.c:242
 #, c-format
 msgctxt "rp-stub"
-msgid "%1$s: size '%2$s' is out of range"
+msgid "size '%s' is out of range"
 msgstr ""
 
-#. tr: %s == program name
-#: ../src/rp-stub/rp-stub.c:282
-#, c-format
+#: ../src/rp-stub/rp-stub.c:294
 msgctxt "rp-stub"
-msgid "%s: missing source and output file parameters"
+msgid "missing source and output file parameters"
 msgstr ""
 
-#. tr: %s == program name
-#: ../src/rp-stub/rp-stub.c:290
-#, c-format
+#: ../src/rp-stub/rp-stub.c:297
 msgctxt "rp-stub"
-msgid "%s: missing output file parameter"
+msgid "missing output file parameter"
 msgstr ""
 
-#. tr: %s == program name
-#: ../src/rp-stub/rp-stub.c:298
-#, c-format
+#: ../src/rp-stub/rp-stub.c:300
 msgctxt "rp-stub"
-msgid "%s: --autoext and output file specified"
+msgid "--autoext and output file specified"
 msgstr ""
 
-#. tr: %s == program name
-#: ../src/rp-stub/rp-stub.c:306
-#, c-format
+#: ../src/rp-stub/rp-stub.c:303
 msgctxt "rp-stub"
-msgid "%s: too many parameters specified"
+msgid "too many parameters specified"
 msgstr ""
 
 #. tr: NOTE: Not positional. Don't change argument positions!
 #. tr: Only localize "Calling function:".
-#: ../src/rp-stub/rp-stub.c:359
+#: ../src/rp-stub/rp-stub.c:352
 #, c-format
 msgctxt "rp-stub"
 msgid "Calling function: %s(\"%s\", \"%s\", %d, %u);"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:371
+#: ../src/rp-stub/rp-stub.c:364
 #, c-format
 msgctxt "rp-stub"
 msgid "Calling function: %s();"
 msgstr ""
 
 #. tr: %1$s == function name, %2$d == return value
-#: ../src/rp-stub/rp-stub.c:382
+#: ../src/rp-stub/rp-stub.c:375
 #, c-format
 msgctxt "rp-stub"
 msgid "%1$s() returned %2$d."
 msgstr ""
 
 #. tr: %1$s == function name, %2$d == return value
-#: ../src/rp-stub/rp-stub.c:387
+#: ../src/rp-stub/rp-stub.c:380
 #, c-format
 msgctxt "rp-stub"
 msgid "*** ERROR: %1$s() returned %2$d."
@@ -9807,12 +9818,6 @@ msgctxt "CacheTab"
 msgid "Clearing the rom-properties cache..."
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:758
-#, c-format
-msgctxt "CacheTab"
-msgid "Error: Unable to delete %u file(s) and/or %u dir(s)."
-msgstr ""
-
 #. tr: Tab title.
 #: ../src/win32/config/CacheTab.cpp:1004
 msgctxt "CacheTab"
@@ -9866,7 +9871,7 @@ msgid "&Options..."
 msgstr ""
 
 #. tr: "All Files" filter (RP format)
-#: ../src/win32/RP_ShellPropSheetExt_ops.cpp:490
+#: ../src/win32/RP_ShellPropSheetExt_ops.cpp:494
 msgctxt "RomData"
 msgid "All Files|*.*|-"
 msgstr ""
