@@ -236,10 +236,10 @@ int main(int argc, char *argv[])
 				errno = 0;
 				long lTmp = (int)strtol(optarg, &endptr, 10);
 				if (errno == ERANGE || *endptr != 0) {
-					print_opt_error(argv[0], "invalid size '%s'", optarg);
+					print_opt_error(argv[0], C_("rp-stub", "invalid size '%s'"), optarg);
 					return EXIT_FAILURE;
 				} else if (lTmp < 0 || lTmp > 32768) {
-					print_opt_error(argv[0], "size '%s' is out of range", optarg);
+					print_opt_error(argv[0], C_("rp-stub", "size '%s' is out of range"), optarg);
 					return EXIT_FAILURE;
 				}
 				maximum_size = (int)lTmp;
@@ -291,16 +291,16 @@ int main(int argc, char *argv[])
 		// Thumbnailing mode.
 		// We must have 2 filenames specified.
 		if (optind == argc) {
-			print_opt_error(argv[0], "missing source and output file parameters");
+			print_opt_error(argv[0], "%s", C_("rp-stub", "missing source and output file parameters"));
 			return EXIT_FAILURE;
 		} else if (optind+1 == argc && !autoext) {
-			print_opt_error(argv[0], "missing output file parameter");
+			print_opt_error(argv[0], "%s", C_("rp-stub", "missing output file parameter"));
 			return EXIT_FAILURE;
 		} else if (optind+2 == argc && autoext) {
-			print_opt_error(argv[0], "--autoext and output file specified");
+			print_opt_error(argv[0], "%s", C_("rp-stub", "--autoext and output file specified"));
 			return EXIT_FAILURE;
 		} else if (optind+3 < argc) {
-			print_opt_error(argv[0], "too many parameters specified");
+			print_opt_error(argv[0], "%s", C_("rp-stub", "too many parameters specified"));
 			return EXIT_FAILURE;
 		}
 	}
