@@ -187,18 +187,18 @@ CacheCleaner::CacheCleaner(QObject *parent, CacheCleaner::CacheDir cacheDir)
 void CacheCleaner::run(void)
 {
 	string cacheDir;
-	QString qs_err;
+	const char *s_err = nullptr;
 	switch (m_cacheDir) {
 		default:
 			assert(!"Invalid cache directory specified.");
-			qs_err = tr("Invalid cache directory specified.");
+			s_err = C_("CacheCleaner", "Invalid cache directory specified.");
 			break;
 
 		case CacheCleaner::CD_System:
 			// System thumbnails. (~/.cache/thumbnails)
 			cacheDir = LibUnixCommon::getCacheDirectory();
 			if (cacheDir.empty()) {
-				qs_err = tr("Unable to get the XDG cache directory.");
+				s_err = C_("CacheCleaner", "Unable to get the XDG cache directory.");
 				break;
 			}
 			// Append "/thumbnails".
@@ -206,7 +206,7 @@ void CacheCleaner::run(void)
 			if (!LibUnixCommon::isWritableDirectory(cacheDir.c_str())) {
 				// Thumbnails subdirectory does not exist. (or is not writable)
 				// TODO: Check specifically if it's not writable or doesn't exist?
-				qs_err = tr("Thumbnails cache directory does not exist.");
+				s_err = C_("CacheCleaner", "Thumbnails cache directory does not exist.");
 				break;
 			}
 			break;
@@ -215,7 +215,7 @@ void CacheCleaner::run(void)
 			// rom-properties cache. (~/.cache/rom-properties)
 			cacheDir = FileSystem::getCacheDirectory();
 			if (cacheDir.empty()) {
-				qs_err = tr("Unable to get the rom-properties cache directory.");
+				s_err = C_("CacheCleaner", "Unable to get the rom-properties cache directory.");
 				break;
 			}
 
@@ -231,10 +231,10 @@ void CacheCleaner::run(void)
 			break;
 	}
 
-	if (!qs_err.isEmpty()) {
+	if (s_err != nullptr) {
 		// An error occurred trying to get the directory.
 		emit progress(1, 1, true);
-		emit error(qs_err);
+		emit error(U82Q(s_err));
 		emit finished();
 		return;
 	}
@@ -250,17 +250,17 @@ void CacheCleaner::run(void)
 		switch (m_cacheDir) {
 			default:
 				assert(!"Invalid cache directory specified.");
-				qs_err = tr("Invalid cache directory specified.");
+				s_err = C_("CacheCleaner", "Invalid cache directory specified.");
 				break;
 			case CacheCleaner::CD_System:
-				qs_err = tr("System thumbnail cache has unexpected files. Not clearing it.");
+				s_err = C_("CacheCleaner", "System thumbnail cache has unexpected files. Not clearing it.");
 				break;
 			case CacheCleaner::CD_RomProperties:
-				qs_err = tr("rom-properties cache has unexpected files. Not clearing it.");
+				s_err = C_("CacheCleaner", "rom-properties cache has unexpected files. Not clearing it.");
 				break;
 		}
 		emit progress(1, 1, true);
-		emit error(qs_err);
+		emit error(U82Q(s_err));
 		emit finished();
 		return;
 	} else if (rlist.empty()) {

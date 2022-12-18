@@ -57,7 +57,7 @@ void UpdateChecker::run(void)
 	string cache_filename = cache.download(updateVersionCacheKey);
 	if (cache_filename.empty()) {
 		// Unable to download the version file.
-		emit error(tr("Failed to download version file."));
+		emit error(U82Q(C_("UpdateChecker", "Failed to download version file.")));
 		emit finished();
 		return;
 	}
@@ -66,7 +66,7 @@ void UpdateChecker::run(void)
 	QFile file(U82Q(cache_filename));
 	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
 		// TODO: Error code?
-		emit error(tr("Failed to open version file."));
+		emit error(U82Q(C_("UpdateChecker", "Failed to open version file.")));
 		emit finished();
 		return;
 	}
@@ -74,14 +74,14 @@ void UpdateChecker::run(void)
 	// Read the first line, which should contain a 4-decimal version number.
 	QString sVersion = U82Q(file.readLine().constData()).trimmed();
 	if (sVersion.isEmpty()) {
-		emit error(tr("Version file is invalid."));
+		emit error(U82Q(C_("UpdateChecker", "Version file is invalid.")));
 		emit finished();
 		return;
 	}
 
 	QStringList sVersionArray = sVersion.split(QChar(L'.'));
 	if (sVersionArray.size() != 4) {
-		emit error(tr("Version file is invalid."));
+		emit error(U82Q(C_("UpdateChecker", "Version file is invalid.")));
 		emit finished();
 		return;
 	}
@@ -92,7 +92,7 @@ void UpdateChecker::run(void)
 	for (unsigned int i = 0; i < 3; i++, updateVersion <<= 16U) {
 		int x = sVersionArray[i].toInt(&ok);
 		if (!ok || x < 0) {
-			emit error(tr("Version file is invalid."));
+			emit error(U82Q(C_("UpdateChecker", "Version file is invalid.")));
 			emit finished();
 			return;
 		}
