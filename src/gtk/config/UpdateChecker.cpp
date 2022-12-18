@@ -193,6 +193,7 @@ rp_update_checker_thread_run(RpUpdateChecker *updChecker)
 		g_signal_emit(updChecker, signals[SIGNAL_ERROR], 0,
 			C_("UpdateChecker", "Version file is invalid."));
 		g_signal_emit(updChecker, signals[SIGNAL_FINISHED], 0);
+		g_strfreev(sVersionArray);
 		return GINT_TO_POINTER(5);
 	}
 
