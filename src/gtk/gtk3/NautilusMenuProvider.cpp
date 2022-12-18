@@ -157,6 +157,7 @@ rp_item_convert_to_png_ThreadFunc(GList *files)
 		if (source_len < 8) {
 			// Doesn't have "file://".
 			g_free(source_uri);
+			continue;
 		}
 		// Skip the "file://" portion.
 		// NOTE: Needs to be urldecoded.
