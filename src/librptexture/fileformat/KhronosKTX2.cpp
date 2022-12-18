@@ -720,21 +720,23 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 			break;
 	}
 
-	// Post-processing: Check if a flip is needed.
-	if (img && flipOp != rp_image::FLIP_NONE) {
-		// TODO: Assert that img dimensions match ktx2Header?
-		rp_image *const flipimg = img->flip(flipOp);
-		if (flipimg) {
-			img->unref();
-			img = flipimg;
+	// Post-processing
+	if (img) {
+		// Check if a flip is needed.
+		if (flipOp != rp_image::FLIP_NONE) {
+			// TODO: Assert that img dimensions match ktx2Header?
+			rp_image *const flipimg = img->flip(flipOp);
+			if (flipimg) {
+				img->unref();
+				img = flipimg;
+			}
 		}
-	}
 
-	// Post-processing: Check if swizzling is needed.
-	// NOTE: Ignoring an "rgba" swizzle.
-	if (this->ktx_swizzle[0] != '\0') {
-		// Swizzle is needed.
-		img->swizzle(this->ktx_swizzle);
+		// Check if swizzling is needed.
+		if (this->ktx_swizzle[0] != '\0') {
+			// Swizzle is needed.
+			img->swizzle(this->ktx_swizzle);
+		}
 	}
 
 	mipmaps[mip] = img;
