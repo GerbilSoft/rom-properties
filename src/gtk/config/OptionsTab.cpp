@@ -400,7 +400,7 @@ rp_options_tab_load_defaults(RpOptionsTab *tab)
 	static const bool extImgDownloadEnabled_default = true;
 	static const bool useIntIconForSmallSizes_default = true;
 	static const bool storeFileOriginInfo_default = true;
-	static const int palLanguageForGameTDB_default = 'en';
+	static const uint32_t palLanguageForGameTDB_default = 'en';
 
 	// Image bandwidth options
 	static const Config::ImgBandwidth imgBandwidthUnmetered_default = Config::ImgBandwidth::HighRes;
