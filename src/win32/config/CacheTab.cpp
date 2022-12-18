@@ -755,7 +755,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 
 	if (dirErrs > 0 || fileErrs > 0) {
 		char buf[256];
-		snprintf(buf, sizeof(buf), C_("CacheTab", "Error: Unable to delete %u file(s) and/or %u dir(s)."),
+		snprintf_p(buf, sizeof(buf), C_("CacheTab", "Unable to delete %1$u file(s) and/or %2$u dir(s)."),
 			fileErrs, dirErrs);
 		const string s_err = rp_sprintf(C_("CacheTab", "ERROR: %s"), buf);
 		SetWindowText(hStatusLabel, U82T_s(s_err));
