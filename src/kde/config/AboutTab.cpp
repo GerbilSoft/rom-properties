@@ -658,7 +658,7 @@ void AboutTab::updChecker_error(const QString &error)
 	Q_D(AboutTab);
 
 	// tr: Error message template. (Qt version, with formatting)
-	const QString errTemplate = U82Q(C_("AboutTab", "<b>ERROR:</b> %1"));
+	const QString errTemplate = U82Q(C_("ConfigDialog", "<b>ERROR:</b> %1"));
 	d->ui.lblUpdateCheck->setText(errTemplate.arg(error));
 }
 

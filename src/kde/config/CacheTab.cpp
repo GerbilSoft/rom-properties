@@ -260,7 +260,8 @@ void CacheTab::ccCleaner_error(const QString &error)
 	d->ui.pbStatus->setMaximum(1);
 	d->ui.pbStatus->setValue(1);
 	d->ui.pbStatus->setError(true);
-	const QString qs_msg = U82Q(C_("CacheTab", "<b>ERROR:</b> %1")).arg(error);
+	// tr: Error message template. (Qt version, with formatting)
+	const QString qs_msg = U82Q(C_("ConfigDialog", "<b>ERROR:</b> %1")).arg(error);
 	d->ui.lblStatus->setText(qs_msg);
 	MessageSound::play(QMessageBox::Warning, qs_msg, this);
 }
@@ -303,7 +304,8 @@ void CacheTab::ccCleaner_cacheCleared(CacheCleaner::CacheDir cacheDir, unsigned 
 	Q_D(CacheTab);
 
 	if (dirErrs > 0 || fileErrs > 0) {
-		QString qs_msg = U82Q(C_("CacheTab", "<b>ERROR:</b> %1")).arg(
+		// tr: Error message template. (Qt version, with formatting)
+		QString qs_msg = U82Q(C_("ConfigDialog", "<b>ERROR:</b> %1")).arg(
 			U82Q(rp_sprintf_p(C_("CacheTab", "Unable to delete %1$u file(s) and/or %2$u dir(s)."),
 				fileErrs, dirErrs)));
 		d->ui.lblStatus->setText(qs_msg);

@@ -847,9 +847,9 @@ updChecker_error(RpUpdateChecker	*updChecker,
 {
 	RP_UNUSED(updChecker);
 
-	// tr: Error message template. (GTK version, with formatting)
 	gtk_label_set_markup(GTK_LABEL(tab->lblUpdateCheck),
-		rp_sprintf(C_("AboutTab", "<b>ERROR:</b> %s"), error).c_str());
+		// tr: Error message template. (GTK version, with formatting)
+		rp_sprintf(C_("ConfigDialog", "<b>ERROR:</b> %s"), error).c_str());
 }
 
 static void
