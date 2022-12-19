@@ -1142,8 +1142,8 @@ msgstr "Расширение оболочки<br><b>ROM Properties Page</b>"
 #: ../src/kde/config/AboutTab.cpp:661 ../src/kde/config/CacheTab.cpp:264
 #: ../src/kde/config/CacheTab.cpp:308
 msgctxt "ConfigDialog"
-msgid "<b>ERROR:</b> %s"
-msgstr "<b>ОШИБКА:</b> %s"
+msgid "<b>ERROR:</b> %1"
+msgstr "<b>ОШИБКА:</b> %1"
 
 #. tr: "Options" button.
 #: ../src/kde/OptionsMenuButton.cpp:39
