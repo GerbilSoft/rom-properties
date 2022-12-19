@@ -28,7 +28,7 @@ typedef struct _RpConfigTabInterface {
 	gboolean (*has_defaults)(RpConfigTab *tab);
 
 	void (*reset)(RpConfigTab *tab);
-	void (*load_defaults)(RpConfigTab *tab);
+	void (*load_defaults)(RpConfigTab *tab);		// can be NULL
 	void (*save)(RpConfigTab *tab, GKeyFile *keyFile);
 } RpConfigTabInterface;
 

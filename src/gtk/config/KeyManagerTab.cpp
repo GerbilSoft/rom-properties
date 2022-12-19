@@ -92,7 +92,6 @@ static void	rp_key_manager_tab_init_keys			(RpKeyManagerTab *tab);
 static void	rp_key_manager_tab_rp_config_tab_interface_init	(RpConfigTabInterface	*iface);
 static gboolean	rp_key_manager_tab_has_defaults			(RpKeyManagerTab	*tab);
 static void	rp_key_manager_tab_reset			(RpKeyManagerTab	*tab);
-static void	rp_key_manager_tab_load_defaults		(RpKeyManagerTab	*tab);
 static void	rp_key_manager_tab_save				(RpKeyManagerTab	*tab,
 								 GKeyFile		*keyFile);
 
@@ -155,7 +154,7 @@ rp_key_manager_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)
 {
 	iface->has_defaults = (__typeof__(iface->has_defaults))rp_key_manager_tab_has_defaults;
 	iface->reset = (__typeof__(iface->reset))rp_key_manager_tab_reset;
-	iface->load_defaults = (__typeof__(iface->load_defaults))rp_key_manager_tab_load_defaults;
+	iface->load_defaults = nullptr;
 	iface->save = (__typeof__(iface->save))rp_key_manager_tab_save;
 }
 
@@ -477,13 +476,6 @@ rp_key_manager_tab_reset(RpKeyManagerTab *tab)
 	// Reset/reload the key store.
 	KeyStoreUI *const keyStore = rp_key_store_gtk_get_key_store_ui(tab->keyStore);
 	keyStore->reset();
-}
-
-static void
-rp_key_manager_tab_load_defaults(RpKeyManagerTab *tab)
-{
-	g_return_if_fail(RP_IS_KEY_MANAGER_TAB(tab));
-	// Not implemented.
 }
 
 static void

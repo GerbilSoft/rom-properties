@@ -67,7 +67,6 @@ struct _RpAchievementsTab {
 static void	rp_achievements_tab_rp_config_tab_interface_init	(RpConfigTabInterface	*iface);
 static gboolean	rp_achievements_tab_has_defaults			(RpAchievementsTab	*tab);
 static void	rp_achievements_tab_reset				(RpAchievementsTab	*tab);
-static void	rp_achievements_tab_load_defaults			(RpAchievementsTab	*tab);
 static void	rp_achievements_tab_save				(RpAchievementsTab	*tab,
 									 GKeyFile		*keyFile);
 
@@ -89,7 +88,7 @@ rp_achievements_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)
 {
 	iface->has_defaults = (__typeof__(iface->has_defaults))rp_achievements_tab_has_defaults;
 	iface->reset = (__typeof__(iface->reset))rp_achievements_tab_reset;
-	iface->load_defaults = (__typeof__(iface->load_defaults))rp_achievements_tab_load_defaults;
+	iface->load_defaults = nullptr;
 	iface->save = (__typeof__(iface->save))rp_achievements_tab_save;
 }
 
@@ -382,15 +381,6 @@ rp_achievements_tab_reset(RpAchievementsTab *tab)
 		}
 #endif /* USE_GTK_COLUMN_VIEW */
 	}
-}
-
-static void
-rp_achievements_tab_load_defaults(RpAchievementsTab *tab)
-{
-	g_return_if_fail(RP_IS_ACHIEVEMENTS_TAB(tab));
-
-	// Not implemented.
-	return;
 }
 
 static void

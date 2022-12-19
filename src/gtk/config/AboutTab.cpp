@@ -82,7 +82,6 @@ static void	rp_about_tab_dispose			(GObject	*object);
 static void	rp_about_tab_rp_config_tab_interface_init	(RpConfigTabInterface *iface);
 static gboolean	rp_about_tab_has_defaults			(RpAboutTab	*tab);
 static void	rp_about_tab_reset				(RpAboutTab	*tab);
-static void	rp_about_tab_load_defaults			(RpAboutTab	*tab);
 static void	rp_about_tab_save				(RpAboutTab	*tab,
 								 GKeyFile       *keyFile);
 
@@ -128,7 +127,7 @@ rp_about_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)
 {
 	iface->has_defaults = (__typeof__(iface->has_defaults))rp_about_tab_has_defaults;
 	iface->reset = (__typeof__(iface->reset))rp_about_tab_reset;
-	iface->load_defaults = (__typeof__(iface->load_defaults))rp_about_tab_load_defaults;
+	iface->load_defaults = nullptr;
 	iface->save = (__typeof__(iface->save))rp_about_tab_save;
 }
 
@@ -380,15 +379,6 @@ rp_about_tab_reset(RpAboutTab *tab)
 {
 	g_return_if_fail(RP_IS_ABOUT_TAB(tab));
 	// TODO
-}
-
-static void
-rp_about_tab_load_defaults(RpAboutTab *tab)
-{
-	g_return_if_fail(RP_IS_ABOUT_TAB(tab));
-
-	// Not implemented.
-	return;
 }
 
 static void

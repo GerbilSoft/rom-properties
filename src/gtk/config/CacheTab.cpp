@@ -59,7 +59,6 @@ static void	rp_cache_tab_finalize			(GObject	*object);
 static void	rp_cache_tab_rp_config_tab_interface_init	(RpConfigTabInterface *iface);
 static gboolean	rp_cache_tab_has_defaults			(RpCacheTab	*tab);
 static void	rp_cache_tab_reset				(RpCacheTab	*tab);
-static void	rp_cache_tab_load_defaults			(RpCacheTab	*tab);
 static void	rp_cache_tab_save				(RpCacheTab	*tab,
 								 GKeyFile       *keyFile);
 
@@ -140,7 +139,7 @@ rp_cache_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)
 {
 	iface->has_defaults = (__typeof__(iface->has_defaults))rp_cache_tab_has_defaults;
 	iface->reset = (__typeof__(iface->reset))rp_cache_tab_reset;
-	iface->load_defaults = (__typeof__(iface->load_defaults))rp_cache_tab_load_defaults;
+	iface->load_defaults = nullptr;
 	iface->save = (__typeof__(iface->save))rp_cache_tab_save;
 }
 
@@ -267,15 +266,6 @@ rp_cache_tab_has_defaults(RpCacheTab *tab)
 
 static void
 rp_cache_tab_reset(RpCacheTab *tab)
-{
-	g_return_if_fail(RP_IS_CACHE_TAB(tab));
-
-	// Not implemented.
-	return;
-}
-
-static void
-rp_cache_tab_load_defaults(RpCacheTab *tab)
 {
 	g_return_if_fail(RP_IS_CACHE_TAB(tab));
 

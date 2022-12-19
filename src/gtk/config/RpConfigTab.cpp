@@ -29,7 +29,7 @@ rp_config_tab_default_init(RpConfigTabInterface *iface)
 	signals[SIGNAL_MODIFIED] = g_signal_new("modified",
 		RP_TYPE_CONFIG_TAB,
 		G_SIGNAL_RUN_LAST,
-		0, NULL, NULL, NULL,
+		0, nullptr, nullptr, nullptr,
 		G_TYPE_NONE, 0);
 }
 
@@ -41,7 +41,7 @@ gboolean rp_config_tab_has_defaults(RpConfigTab *tab)
 
 	// Assume tabs have the "Defaults" button by default if the function isn't defined.
 	RpConfigTabInterface *const iface = RP_CONFIG_TAB_GET_IFACE(tab);
-	return (iface->has_defaults != NULL ? iface->has_defaults(tab) : TRUE);
+	return (iface->has_defaults != nullptr) ? iface->has_defaults(tab) : TRUE;
 }
 
 void rp_config_tab_reset(RpConfigTab *tab)
@@ -49,8 +49,8 @@ void rp_config_tab_reset(RpConfigTab *tab)
 	g_return_if_fail(RP_IS_CONFIG_TAB(tab));
 
 	RpConfigTabInterface *const iface = RP_CONFIG_TAB_GET_IFACE(tab);
-	assert(iface->reset != NULL);
-	g_return_if_fail(iface->reset != NULL);
+	assert(iface->reset != nullptr);
+	g_return_if_fail(iface->reset != nullptr);
 	return iface->reset(tab);
 }
 
@@ -58,10 +58,11 @@ void rp_config_tab_load_defaults(RpConfigTab *tab)
 {
 	g_return_if_fail(RP_IS_CONFIG_TAB(tab));
 
+	// NOTE: load_defaults *can* be NULL.
 	RpConfigTabInterface *const iface = RP_CONFIG_TAB_GET_IFACE(tab);
-	assert(iface->load_defaults != NULL);
-	g_return_if_fail(iface->load_defaults != NULL);
-	return iface->load_defaults(tab);
+	if (iface->load_defaults) {
+		iface->load_defaults(tab);
+	}
 }
 
 void rp_config_tab_save(RpConfigTab *tab, GKeyFile *keyFile)
@@ -69,7 +70,7 @@ void rp_config_tab_save(RpConfigTab *tab, GKeyFile *keyFile)
 	g_return_if_fail(RP_IS_CONFIG_TAB(tab));
 
 	RpConfigTabInterface *const iface = RP_CONFIG_TAB_GET_IFACE(tab);
-	assert(iface->save != NULL);
-	g_return_if_fail(iface->save != NULL);
+	assert(iface->save != nullptr);
+	g_return_if_fail(iface->save != nullptr);
 	return iface->save(tab, keyFile);
 }
