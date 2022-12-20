@@ -285,5 +285,5 @@ rp_nautilus_menu_provider_get_file_items(
 		(GDestroyNotify)pfn_nautilus_file_info_list_free);
 	g_signal_connect_closure(G_OBJECT(item), "activate",
 		g_cclosure_new_object(G_CALLBACK(rp_item_convert_to_png), G_OBJECT(item)), TRUE);
-	return g_list_append(nullptr, item);
+	return g_list_prepend(nullptr, item);
 }

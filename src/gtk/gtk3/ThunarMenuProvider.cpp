@@ -286,5 +286,5 @@ rp_thunar_menu_provider_get_file_menu_items(ThunarxMenuProvider *provider, GtkWi
 		(GDestroyNotify)pfn_thunarx_file_info_list_free);
 	g_signal_connect_closure(G_OBJECT(item), "activate",
 		g_cclosure_new_object(G_CALLBACK(rp_item_convert_to_png), G_OBJECT(window)), TRUE);
-	return g_list_append(nullptr, item);
+	return g_list_prepend(nullptr, item);
 }
