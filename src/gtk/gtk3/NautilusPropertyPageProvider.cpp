@@ -98,18 +98,21 @@ static GList*
 rp_nautilus_property_page_provider_get_pages(NautilusPropertyPageProvider *provider, GList *files)
 {
 	RP_UNUSED(provider);
-	GList *pages = nullptr;
-	GList *file;
-	NautilusFileInfo *info;
 
-	if (g_list_length(files) != 1) 
+	assert(files->prev == nullptr);	// `files` should be the list head
+	GList *const file = g_list_first(files);
+	if (G_UNLIKELY(file == nullptr)) {
+		// No files...
 		return nullptr;
+	}
 
-	file = g_list_first(files);
-	if (G_UNLIKELY(file == nullptr))
+	// TODO: Handle multiple files?
+	if (file->next != nullptr) {
+		// Only handles single files.
 		return nullptr;
+	}
 
-	info = NAUTILUS_FILE_INFO(file->data);
+	NautilusFileInfo *const info = NAUTILUS_FILE_INFO(file->data);
 	gchar *const uri = nautilus_file_info_get_uri(info);
 	if (G_UNLIKELY(uri == nullptr)) {
 		// No URI...
@@ -118,26 +121,26 @@ rp_nautilus_property_page_provider_get_pages(NautilusPropertyPageProvider *provi
 
 	// Attempt to open the URI.
 	RomData *const romData = rp_gtk_open_uri(uri);
-	if (G_LIKELY(romData != nullptr)) {
-		// Create the RomDataView.
-		// TODO: Add some extra padding to the top...
-		GtkWidget *const romDataView = rp_rom_data_view_new_with_romData(uri, romData, RP_DFT_GNOME);
-		gtk_widget_set_name(romDataView, "romDataView");
-		gtk_widget_show(romDataView);
-		romData->unref();
-
-		// tr: Tab title.
-		const char *const tabTitle = C_("RomDataView", "ROM Properties");
-
-		// Create the NautilusPropertyPage.
-		NautilusPropertyPage *const page = nautilus_property_page_new(
-			"RomPropertiesPage::property_page",
-			gtk_label_new(tabTitle), romDataView);
-
-		// Add the page to the pages provided by this plugin.
-		pages = g_list_prepend(pages, page);
+	if (G_UNLIKELY(!romData)) {
+		// Unable to open the URI as a RomData object.
+		g_free(uri);
+		return nullptr;
 	}
 
+	// Create the RomDataView.
+	// TODO: Add some extra padding to the top...
+	GtkWidget *const romDataView = rp_rom_data_view_new_with_romData(uri, romData, RP_DFT_GNOME);
+	gtk_widget_set_name(romDataView, "romDataView");
+	gtk_widget_show(romDataView);
+	romData->unref();
 	g_free(uri);
-	return pages;
+
+	// tr: Tab title.
+	const char *const tabTitle = C_("RomDataView", "ROM Properties");
+
+	// Create the NautilusPropertyPage and return it in a GList.
+	NautilusPropertyPage *const page = nautilus_property_page_new(
+		"RomPropertiesPage::property_page",
+		gtk_label_new(tabTitle), romDataView);
+	return g_list_prepend(nullptr, page);
 }

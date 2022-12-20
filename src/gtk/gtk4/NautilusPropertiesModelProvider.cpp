@@ -94,17 +94,17 @@ static GList*
 rp_nautilus_properties_model_provider_get_models(NautilusPropertiesModelProvider *provider, GList *files)
 {
 	RP_UNUSED(provider);
-	GList *models = nullptr;
 
-	// TODO: Handle multiple files?
-	if (g_list_length(files) != 1) {
-		// Only handles single files.
-		return nullptr;
-	}
-
+	assert(files->prev == nullptr);	// `files` should be the list head
 	GList *const file = g_list_first(files);
 	if (G_UNLIKELY(file == nullptr)) {
 		// No files...
+		return nullptr;
+	}
+
+	// TODO: Handle multiple files?
+	if (file->next != nullptr) {
+		// Only handles single files.
 		return nullptr;
 	}
 
@@ -117,14 +117,15 @@ rp_nautilus_properties_model_provider_get_models(NautilusPropertiesModelProvider
 
 	// Attempt to open the URI.
 	RomData *const romData = rp_gtk_open_uri(uri);
-	if (G_LIKELY(romData != nullptr)) {
-		// Create an RpNautilusPorpertiesModel for the RomData.
-		NautilusPropertiesModel *const model = rp_nautilus_properties_model_new(romData);
-		romData->unref();
-
-		models = g_list_prepend(models, model);
+	if (G_UNLIKELY(!romData)) {
+		// Unable to open the URI as a RomData object.
+		g_free(uri);
+		return nullptr;
 	}
 
+	// Create the RpNautilusPropertiesModel and return it in a GList.
+	NautilusPropertiesModel *const model = rp_nautilus_properties_model_new(romData);
+	romData->unref();
 	g_free(uri);
-	return models;
+	return g_list_prepend(nullptr, model);
 }
