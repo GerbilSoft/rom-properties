@@ -659,9 +659,9 @@ uint32_t WiiWAD::supportedImageTypes_static(void)
  */
 uint32_t WiiWAD::supportedImageTypes(void) const
 {
-	RP_D(const WiiWAD);
 	uint32_t ret;
 #ifdef ENABLE_DECRYPTION
+	RP_D(const WiiWAD);
 	if (d->mainContent) {
 		// TODO: Verify external types?
 		ret = d->mainContent->supportedImageTypes() |
