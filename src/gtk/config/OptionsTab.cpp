@@ -24,7 +24,7 @@ using namespace LibRpBase;
 // TODO: Combine with the KDE version.
 // NOTE: GTK LanguageComboBox uses a NULL-terminated pal_lc[] array.
 static const uint32_t pal_lc[] = {'au', 'de', 'en', 'es', 'fr', 'it', 'nl', 'pt', 'ru', 0};
-static const int pal_lc_idx_def = 2;
+static const int pal_lc_def = 'en';
 
 #if GTK_CHECK_VERSION(3,0,0)
 typedef GtkBoxClass superclass;
@@ -400,7 +400,7 @@ rp_options_tab_load_defaults(RpOptionsTab *tab)
 	static const bool extImgDownloadEnabled_default = true;
 	static const bool useIntIconForSmallSizes_default = true;
 	static const bool storeFileOriginInfo_default = true;
-	static const uint32_t palLanguageForGameTDB_default = 'en';
+	static const uint32_t palLanguageForGameTDB_default = pal_lc_def;
 
 	// Image bandwidth options
 	static const Config::ImgBandwidth imgBandwidthUnmetered_default = Config::ImgBandwidth::HighRes;
