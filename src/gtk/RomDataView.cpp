@@ -369,11 +369,8 @@ rp_rom_data_view_dispose(GObject *object)
 {
 	RpRomDataView *const page = RP_ROM_DATA_VIEW(object);
 
-	/* Unregister the changed_idle */
-	if (G_UNLIKELY(page->changed_idle > 0)) {
-		g_source_remove(page->changed_idle);
-		page->changed_idle = 0;
-	}
+	// Unregister changed_idle.
+	g_clear_handle_id(&page->changed_idle, g_source_remove);
 
 	// Delete the icon frames and tabs.
 	rp_rom_data_view_delete_tabs(page);

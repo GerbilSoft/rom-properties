@@ -271,17 +271,9 @@ rp_thumbnailer_dispose(GObject *object)
 		thumbnailer->exported = false;
 	}
 
-	// Stop the inactivity timeout.
-	if (G_LIKELY(thumbnailer->timeout_id != 0)) {
-		g_source_remove(thumbnailer->timeout_id);
-		thumbnailer->timeout_id = 0;
-	}
-
-	// Unregister idle_process.
-	if (G_UNLIKELY(thumbnailer->idle_process != 0)) {
-		g_source_remove(thumbnailer->idle_process);
-		thumbnailer->idle_process = 0;
-	}
+	// Unregister timer sources.
+	g_clear_handle_id(&thumbnailer->timeout_id, g_source_remove);
+	g_clear_handle_id(&thumbnailer->idle_process, g_source_remove);
 
 	/** Properties **/
 	g_clear_object(&thumbnailer->connection);
@@ -424,10 +416,7 @@ rp_thumbnailer_queue(SpecializedThumbnailer1 *skeleton,
 	}
 
 	// Stop the inactivity timeout.
-	if (G_LIKELY(thumbnailer->timeout_id != 0)) {
-		g_source_remove(thumbnailer->timeout_id);
-		thumbnailer->timeout_id = 0;
-	}
+	g_clear_handle_id(&thumbnailer->timeout_id, g_source_remove);
 
 	// Queue the URI for processing.
 	guint32 handle = ++thumbnailer->last_handle;

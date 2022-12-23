@@ -86,9 +86,7 @@ struct _RpDragImage {
 			iconFrames.fill(nullptr);
 		}
 		~anim_vars() {
-			if (tmrIconAnim > 0) {
-				g_source_remove(tmrIconAnim);
-			}
+			g_clear_handle_id(&tmrIconAnim, g_source_remove);
 
 			for (PIMGTYPE frame : iconFrames) {
 				if (frame) {
@@ -344,10 +342,7 @@ rp_drag_image_set_icon_anim_data(RpDragImage *image, const LibRpBase::IconAnimDa
 	UNREF_AND_NULL(anim->iconAnimData);
 
 	if (!iconAnimData) {
-		if (anim->tmrIconAnim > 0) {
-			g_source_remove(anim->tmrIconAnim);
-			anim->tmrIconAnim = 0;
-		}
+		g_clear_handle_id(&anim->tmrIconAnim, g_source_remove);
 
 		if (!image->img) {
 			gtk_image_clear(GTK_IMAGE(image->imageWidget));
@@ -373,10 +368,7 @@ rp_drag_image_clear(RpDragImage *image)
 
 	auto *const anim = image->anim;
 	if (anim) {
-		if (anim->tmrIconAnim > 0) {
-			g_source_remove(anim->tmrIconAnim);
-			anim->tmrIconAnim = 0;
-		}
+		g_clear_handle_id(&anim->tmrIconAnim, g_source_remove);
 		UNREF_AND_NULL(anim->iconAnimData);
 	}
 
@@ -472,9 +464,8 @@ rp_drag_image_stop_anim_timer(RpDragImage *image)
 	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
 
 	auto *const anim = image->anim;
-	if (anim && anim->tmrIconAnim > 0) {
-		g_source_remove(anim->tmrIconAnim);
-		anim->tmrIconAnim = 0;
+	if (anim) {
+		g_clear_handle_id(&anim->tmrIconAnim, g_source_remove);
 		anim->last_delay = 0;
 	}
 }

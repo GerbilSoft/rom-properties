@@ -43,7 +43,32 @@ G_BEGIN_DECLS
   G_GNUC_UNUSED static inline ModuleObjName##Interface * MODULE##_##OBJ_NAME##_GET_IFACE (gpointer ptr) {  \
     return G_TYPE_INSTANCE_GET_INTERFACE (ptr, module_obj_name##_get_type (), ModuleObjName##Interface); } \
   G_GNUC_END_IGNORE_DEPRECATIONS
-#endif /* GTK_CHECK_VERSION(2,43,4) */
+#endif /* !GLIB_CHECK_VERSION(2,43,4) */
+
+/** Functions added in GLib 2.56.0 **/
+
+#if !GLIB_CHECK_VERSION(2,55,0)
+typedef void (* GClearHandleFunc) (guint handle_id);
+#endif /* !GLIB_CHECK_VERSION(2,55,0) */
+
+// NOTE: Always defining g_clear_handle_id() here to prevent
+// warnings because we have a minimum GLib version set for warnings.
+#ifdef g_clear_handle_id
+#  undef g_clear_handle_id
+#endif
+#define g_clear_handle_id(tag_ptr, clear_func)             \
+  G_STMT_START {                                           \
+    G_STATIC_ASSERT (sizeof *(tag_ptr) == sizeof (guint)); \
+    guint *_tag_ptr = (guint *) (tag_ptr);                 \
+    guint _handle_id;                                      \
+                                                           \
+    _handle_id = *_tag_ptr;                                \
+    if (_handle_id > 0)                                    \
+      {                                                    \
+        *_tag_ptr = 0;                                     \
+        clear_func (_handle_id);                           \
+      }                                                    \
+  } G_STMT_END
 
 G_END_DECLS
 

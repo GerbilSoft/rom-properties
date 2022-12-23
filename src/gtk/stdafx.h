@@ -62,13 +62,13 @@
 #  undef GTK_DISABLE_DEPRECATED
 #endif
 
-// GTK+ includes
-#include <glib.h>
-#include <glib-object.h>
-#include <gtk/gtk.h>
-
-// GTK+ 2.x compatibility functions
+// GLib and GTK+ compatibility functions
+// (includes glib.h and gtk.h)
+#include "glib-compat.h"
 #include "gtk-compat.h"
+
+// GObject
+#include <glib-object.h>
 
 // GLib on non-Windows platforms defines G_MODULE_EXPORT to a no-op.
 // This doesn't work when we use symbol visibility settings.
