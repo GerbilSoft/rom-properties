@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * is-supported.hpp: Check if a URI is supported.                          *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -27,7 +27,6 @@ LibRpBase::RomData *rp_gtk_open_uri(const gchar *uri)
 	g_return_val_if_fail(uri != nullptr && uri[0] != '\0', nullptr);
 
 	// TODO: Check file extensions and/or MIME types?
-	RomData *romData = nullptr;
 
 	// Check if the URI maps to a local file.
 	IRpFile *file = nullptr;
@@ -42,6 +41,7 @@ LibRpBase::RomData *rp_gtk_open_uri(const gchar *uri)
 	}
 
 	// Open the ROM file.
+	RomData *romData = nullptr;
 	if (file->isOpen()) {
 		// Attempt to open the ROM file.
 		romData = RomDataFactory::create(file);
