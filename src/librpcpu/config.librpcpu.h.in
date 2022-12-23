@@ -12,4 +12,7 @@
 /* Define to 1 if IFUNC is supported by this system. */
 #cmakedefine HAVE_IFUNC 1
 
+/* Define to 1 if you have the <cpuid.h> header file. */
+#cmakedefine HAVE_CPUID_H 1
+
 #endif /* __ROMPROPERTIES_LIBRPCPU_CONFIG_LIBRPCPU_H__ */

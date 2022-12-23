@@ -141,7 +141,10 @@ static FORCEINLINE int is_cpuid_supported(void)
  */
 static FORCEINLINE void cpuid(unsigned int level, unsigned int regs[4])
 {
-#if defined(__GNUC__)
+#ifdef HAVE_CPUID_H
+	// Use the compiler's __cpuid() macro.
+	__cpuid(level, regs[0], regs[1], regs[2, regs[3]);
+#elif defined(__GNUC__)
 	// CPUID macro with PIC support.
 	// See http://gcc.gnu.org/ml/gcc-patches/2007-09/msg00324.html
 #  ifdef ASM_RESERVE_EBX

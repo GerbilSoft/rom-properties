@@ -9,6 +9,7 @@ PROJECT(rpcpu LANGUAGES C)
 
 # Check for C headers.
 CHECK_INCLUDE_FILES("features.h" HAVE_FEATURES_H)
+CHECK_INCLUDE_FILES("cpuid.h" HAVE_CPUID_H)
 
 # Sources.
 SET(${PROJECT_NAME}_SRCS
