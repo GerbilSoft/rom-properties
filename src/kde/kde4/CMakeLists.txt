@@ -154,7 +154,13 @@ IF(BUILD_KDE4)
 		DESTINATION "${SERVICES_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
-	# FIXME: Run kbuildsycoca4.
+	# FIXME: Run kbuildsycoca4?
+
+	# Service menus
+	INSTALL(FILES ../servicemenus/rp-convert-to-png.desktop
+		DESTINATION "${CMAKE_INSTALL_PREFIX}/share/kio/servicemenus"
+		PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+		COMPONENT "plugin")
 
 	# Check if a split debug file should be installed.
 	IF(INSTALL_DEBUG)
