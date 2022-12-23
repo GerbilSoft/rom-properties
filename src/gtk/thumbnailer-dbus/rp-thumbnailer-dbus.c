@@ -283,6 +283,9 @@ rp_thumbnailer_dispose(GObject *object)
 		thumbnailer->idle_process = 0;
 	}
 
+	/** Properties **/
+	g_clear_object(&thumbnailer->connection);
+
 	// Call the superclass dispose() function.
 	G_OBJECT_CLASS(rp_thumbnailer_parent_class)->dispose(object);
 }
@@ -304,9 +307,6 @@ rp_thumbnailer_finalize(GObject *object)
 	g_queue_clear(&thumbnailer->request_queue);
 
 	/** Properties **/
-	if (thumbnailer->connection) {
-		g_object_unref(thumbnailer->connection);
-	}
 	g_free(thumbnailer->cache_dir);
 
 	// Call the superclass finalize() function.

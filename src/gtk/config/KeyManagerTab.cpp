@@ -434,6 +434,8 @@ rp_key_manager_tab_dispose(GObject *object)
 	}
 #endif /* USE_G_MENU_MODEL */
 
+	g_clear_object(&tab->keyStore);
+
 	// Call the superclass dispose() function.
 	G_OBJECT_CLASS(rp_key_manager_tab_parent_class)->dispose(object);
 }
@@ -443,10 +445,6 @@ rp_key_manager_tab_finalize(GObject *object)
 {
 	RpKeyManagerTab *const tab = RP_KEY_MANAGER_TAB(object);
 
-	// Unreference the KeyStoreGTK.
-	g_object_unref(tab->keyStore);
-
-	// Free the strings.
 	g_free(tab->prevOpenDir);
 
 	// Call the superclass finalize() function.

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * GdkImageConv.cpp: Helper functions to convert from rp_image to GDK.     *
  *                                                                         *
- * Copyright (c) 2017-2021 by David Korth.                                 *
+ * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -134,8 +134,7 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_cpp(const rp_image *img)
 		default:
 			// Unsupported image format.
 			assert(!"Unsupported rp_image::Format.");
-			g_object_unref(pixbuf);
-			pixbuf = nullptr;
+			g_clear_object(&pixbuf);
 			break;
 	}
 

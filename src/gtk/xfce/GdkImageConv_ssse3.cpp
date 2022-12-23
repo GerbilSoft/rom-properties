@@ -123,7 +123,7 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 			assert(palette != nullptr);
 			if (unlikely(!palette)) {
 				// Unable to allocate memory for the palette.
-				g_object_unref(G_OBJECT(pixbuf));
+				g_object_unref(pixbuf);
 				return nullptr;
 			}
 
@@ -192,8 +192,7 @@ GdkPixbuf *GdkImageConv::rp_image_to_GdkPixbuf_ssse3(const rp_image *img)
 		default:
 			// Unsupported image format.
 			assert(!"Unsupported rp_image::Format.");
-			g_object_unref(pixbuf);
-			pixbuf = nullptr;
+			g_clear_object(&pixbuf);
 			break;
 	}
 

@@ -53,7 +53,6 @@ struct _RpCacheTab {
 };
 
 static void	rp_cache_tab_dispose			(GObject	*object);
-static void	rp_cache_tab_finalize			(GObject	*object);
 
 // Interface initialization
 static void	rp_cache_tab_rp_config_tab_interface_init	(RpConfigTabInterface *iface);
@@ -104,7 +103,6 @@ rp_cache_tab_class_init(RpCacheTabClass *klass)
 {
 	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 	gobject_class->dispose = rp_cache_tab_dispose;
-	gobject_class->finalize = rp_cache_tab_finalize;
 
 #if GTK_CHECK_VERSION(3,0,0)
 	// Add a CSS class for a GtkProgressBar "error" state.
@@ -227,26 +225,15 @@ rp_cache_tab_init(RpCacheTab *tab)
 static void
 rp_cache_tab_dispose(GObject *object)
 {
-	//RpCacheTab *const tab = RP_CACHE_TAB(object);
+	RpCacheTab *const tab = RP_CACHE_TAB(object);
 
 	// NOTE: We can't clear the busy cursor here because
 	// the window is being destroyed.
 
+	g_clear_object(&tab->ccCleaner);
+
 	// Call the superclass dispose() function.
 	G_OBJECT_CLASS(rp_cache_tab_parent_class)->dispose(object);
-}
-
-static void
-rp_cache_tab_finalize(GObject *object)
-{
-	RpCacheTab *const tab = RP_CACHE_TAB(object);
-
-	if (tab->ccCleaner) {
-		g_object_unref(tab->ccCleaner);
-	}
-
-	// Call the superclass finalize() function.
-	G_OBJECT_CLASS(rp_cache_tab_parent_class)->finalize(object);
 }
 
 GtkWidget*

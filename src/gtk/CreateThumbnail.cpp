@@ -252,9 +252,9 @@ static int openFromFilenameOrURI(const char *source_file, IRpFile **pp_file, str
 		} else {
 			// We have a relative path.
 			// Convert the filename to an absolute path.
-			GFile *curdir = g_file_new_for_path(".");
+			GFile *const curdir = g_file_new_for_path(".");
 			if (curdir) {
-				GFile *abspath = g_file_resolve_relative_path(curdir, source_file);
+				GFile *const abspath = g_file_resolve_relative_path(curdir, source_file);
 				if (abspath) {
 					gchar *const source_uri = g_file_get_uri(abspath);
 					if (source_uri) {
@@ -343,12 +343,8 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const
 	int rowstride;
 	int pwRet;
 
-	// tEXt chunks.
+	// tEXt chunks
 	RpPngWriter::kv_vector kv;
-	char mtime_str[32];
-	char szFile_str[32];
-	GFile *f_src = nullptr;
-	const char *mimeType;
 	const bool doXDG = !(flags & RPCT_FLAG_NO_XDG_THUMBNAIL_METADATA);
 
 	// gdk-pixbuf doesn't support CI8, so we'll assume all
@@ -376,9 +372,11 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const
 
 	if (doXDG) {
 		// Modification time and file size
+		char mtime_str[32];
+		char szFile_str[32];
 		mtime_str[0] = 0;
 		szFile_str[0] = 0;
-		f_src = g_file_new_for_uri(s_uri.c_str());
+		GFile *const f_src = g_file_new_for_uri(s_uri.c_str());
 		if (f_src) {
 			GError *error = nullptr;
 			GFileInfo *const fi_src = g_file_query_info(f_src,
@@ -405,18 +403,18 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const
 		}
 
 		// Modification time
-		if (mtime_str[0] != 0) {
+		if (mtime_str[0] != '\0') {
 			kv.emplace_back("Thumb::MTime", mtime_str);
 		}
 
 		// MIME type
-		mimeType = romData->mimeType();
+		const char *const mimeType = romData->mimeType();
 		if (mimeType) {
 			kv.emplace_back("Thumb::Mimetype", mimeType);
 		}
 
 		// File size
-		if (szFile_str[0] != 0) {
+		if (szFile_str[0] != '\0') {
 			kv.emplace_back("Thumb::Size", szFile_str);
 		}
 
