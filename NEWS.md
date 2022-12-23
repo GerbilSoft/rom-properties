@@ -13,7 +13,7 @@
     version against the version listed on the RPDB server. If the current
     version is older, a link will be provided to the GitHub releases page.
   * Metered connections are now detected on Linux systems when using NetworkManager
-    or on Windows 10 v2004 and later. rom-properties can be configured to either
+    and on Windows 10 v2004 and later. rom-properties can be configured to either
     download lower-resolution images or no images when on metered connections,
     separately from the unmetered setting.
   * rp-stub now accepts a thumbnail size of 0 to indicate a "full-size thumbnail"
