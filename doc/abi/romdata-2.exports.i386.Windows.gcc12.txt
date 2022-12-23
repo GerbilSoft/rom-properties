@@ -59,11 +59,12 @@ T LibRpBase::Achievements::setNotifyFunction(int (*)(int, LibRpBase::Achievement
 T LibRpBase::AesCipherFactory::create(LibRpBase::AesCipherFactory::Implementation)
 T LibRpBase::Config::Config()
 T LibRpBase::Config::dmgTitleScreenMode(LibRpBase::Config::DMG_TitleScreen_Mode) const
-T LibRpBase::Config::downloadHighResScans() const
 T LibRpBase::Config::enableThumbnailOnNetworkFS() const
 T LibRpBase::Config::extImgDownloadEnabled() const
 T LibRpBase::Config::getDefImgTypePrio(LibRpBase::Config::ImgTypePrio_t*) const
 T LibRpBase::Config::getImgTypePrio(char const*, LibRpBase::Config::ImgTypePrio_t*) const
+T LibRpBase::Config::imgBandwidthMetered() const
+T LibRpBase::Config::imgBandwidthUnmetered() const
 T LibRpBase::Config::instance()
 T LibRpBase::Config::palLanguageForGameTDB() const
 T LibRpBase::Config::showDangerousPermissionsOverlayIcon() const

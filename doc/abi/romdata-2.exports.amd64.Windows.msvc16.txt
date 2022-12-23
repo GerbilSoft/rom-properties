@@ -85,7 +85,6 @@ public: unsigned int __cdecl LibRpBase::RomFields::defaultLanguageCode(void)cons
 public: enum LibRpBase::Config::DMG_TitleScreen_Mode __cdecl LibRpBase::Config::dmgTitleScreenMode(enum LibRpBase::Config::DMG_TitleScreen_Mode)const __ptr64
 public: int __cdecl LibRpBase::RomData::doRomOp(int,struct LibRpBase::RomData::RomOpParams * __ptr64) __ptr64
 public: class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl LibRomData::CacheManager::download(char const * __ptr64) __ptr64
-public: bool __cdecl LibRpBase::Config::downloadHighResScans(void)const __ptr64
 public: class LibRpTexture::rp_image * __ptr64 __cdecl LibRpTexture::rp_image::dup(void)const __ptr64
 public: class LibRpTexture::rp_image * __ptr64 __cdecl LibRpTexture::rp_image::dup_ARGB32(void)const __ptr64
 public: bool __cdecl LibRpBase::RomMetaData::empty(void)const __ptr64
@@ -148,6 +147,8 @@ public: int __cdecl LibRomData::KeyStoreUI::idxToSectKey(int,int * __ptr64,int *
 public: class LibRpTexture::rp_image const * __ptr64 __cdecl LibRpBase::RomData::image(enum LibRpBase::RomData::ImageType)const __ptr64
 unsigned int __cdecl LibRomData::ImageTypesConfig::imageTypeCount(void)
 char const * __ptr64 __cdecl LibRomData::ImageTypesConfig::imageTypeName(unsigned int)
+public: bool __cdecl LibRpBase::Config::imgBandwidthMetered(void)const
+public: bool __cdecl LibRpBase::Config::imgBandwidthUnmetered(void)const
 public: struct LibRomData::KeyStoreUI::ImportReturn __cdecl LibRomData::KeyStoreUI::importKeysFromBin(enum LibRomData::KeyStoreUI::ImportFileID,char const * __ptr64) __ptr64
 void __cdecl LibWin32Common::incRpGlobalRefCount(void)
 public: static class LibRpBase::Achievements * __ptr64 __cdecl LibRpBase::Achievements::instance(void)
