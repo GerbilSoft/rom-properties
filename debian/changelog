@@ -1,3 +1,9 @@
+rom-properties (2.1-1ppa1~xenial2) xenial; urgency=medium
+
+  * rom-properties-stub -> rom-properties-utils
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 24 Dec 2022 13:44:35 -0500
+
 rom-properties (2.1-1ppa1~xenial1) xenial; urgency=medium
 
   * 2.1 release.
