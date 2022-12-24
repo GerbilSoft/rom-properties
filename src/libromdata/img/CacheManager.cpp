@@ -102,42 +102,49 @@ string CacheManager::download(const char *cache_key)
 		return string();
 	}
 
+	// If the cache key begins with "sys/", then we have to
+	// attempt to download the file, since it may be updated
+	// with e.g. new version information.
+	const bool check_newer = (!strncmp(cache_key, "sys/", 4));
+
 	// Lock the semaphore to make sure we don't
 	// download too many files at once.
 	SemaphoreLocker locker(m_dlsem);
 
-	// Check if the file already exists.
-	off64_t filesize = 0;
-	time_t filemtime = 0;
-	int ret = FileSystem::get_file_size_and_mtime(cache_filename, &filesize, &filemtime);
-	if (ret == 0) {
-		// Check if the file is 0 bytes.
-		// TODO: How should we handle errors?
-		if (filesize == 0) {
-			// File is 0 bytes, which indicates it didn't exist
-			// on the server. If the file is older than a week,
-			// try to redownload it.
-			// TODO: Configurable time.
-			const time_t systime = time(nullptr);
-			if ((systime - filemtime) < (86400*7)) {
-				// Less than a week old.
-				return string();
-			}
+	if (!check_newer) {
+		// Check if the file already exists.
+		off64_t filesize = 0;
+		time_t filemtime = 0;
+		int ret = FileSystem::get_file_size_and_mtime(cache_filename, &filesize, &filemtime);
+		if (ret == 0) {
+			// Check if the file is 0 bytes.
+			// TODO: How should we handle errors?
+			if (filesize == 0) {
+				// File is 0 bytes, which indicates it didn't exist
+				// on the server. If the file is older than a week,
+				// try to redownload it.
+				// TODO: Configurable time.
+				const time_t systime = time(nullptr);
+				if ((systime - filemtime) < (86400*7)) {
+					// Less than a week old.
+					return string();
+				}
 
-			// More than a week old.
-			// Delete the cache file and try to download it again.
-			if (FileSystem::delete_file(cache_filename) != 0) {
-				// Unable to delete the cache file.
-				return string();
+				// More than a week old.
+				// Delete the cache file and try to download it again.
+				if (FileSystem::delete_file(cache_filename) != 0) {
+					// Unable to delete the cache file.
+					return string();
+				}
+			} else if (filesize > 0) {
+				// File is larger than 0 bytes, which indicates
+				// it was cached successfully.
+				return cache_filename;
 			}
-		} else if (filesize > 0) {
-			// File is larger than 0 bytes, which indicates
-			// it was cached successfully.
-			return cache_filename;
+		} else if (ret != -ENOENT) {
+			// Some error other than "file not found" occurred.
+			return string();
 		}
-	} else if (ret != -ENOENT) {
-		// Some error other than "file not found" occurred.
-		return string();
 	}
 
 	// TODO: Add an option for "offline only".
@@ -152,7 +159,8 @@ string CacheManager::download(const char *cache_key)
 	// NOTE: Using the unfiltered cache key, since filtering it
 	// results in slashes being changed to backslashes on Windows.
 	// rp-download will filter the key itself.
-	ret = execRpDownload(cache_key);
+	int ret = execRpDownload(cache_key);
+	printf("ret == %d\n", ret);
 	if (ret != 0) {
 		// rp-download failed for some reason.
 		return string();
