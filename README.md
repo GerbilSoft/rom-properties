@@ -8,43 +8,27 @@ video game ROM and disc images.
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/10146/badge.svg)](https://scan.coverity.com/projects/10146)<br>
 [![CodeQL](https://github.com/GerbilSoft/rom-properties/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/GerbilSoft/rom-properties/actions/workflows/codeql-analysis.yml)
 
-## v2.0 - Stella Edition
+## v2.1
 
-![Stella attempting to use my ThinkPad X230](doc/img/PXL_20210905_210543493.jpg)
+![Right-click menu in Thunar showing the "Convert to PNG" option](doc/img/rp-v2.1-thunar.ConvertToPNG.png)
 
-This release is dedicated to my beagle, Stella, who sadly passed away on
-September 4, 2022.
+Major changes in v2.1 include:
 
-rom-properties 2.0 has two major changes:
+* Support for GTK4 UI frontends, e.g. Nautilus 43. Note that Nautilus 43 has
+  significantly limited the functionality of property pages, so it's only
+  partially implemented at the moment.
 
-* The configuration UI has been ported to the GTK+ UI toolkit. This allows
-  GTK+ desktop users to use rp-config without having to install the Qt/KDE
-  UI frontend.
+* Right-click menu option for "Convert to PNG" for supported texture files,
+  e.g. DDS and KTX.
 
-* libromdata is now linked as a shared library instead of as a static library:
-  libromdata.so.1 on Linux; romdata-1.dll on Windows. This significantly
-  reduces the overall size of all installed packages.
+* rp-config now has a built-in update checker on the "About" tab.
 
-  * Note that the libromdata ABI is *not* guaranteed to remain stable across
-    releases, and it only exports symbols required for the UI frontends. The
-    library is *not* intended for general use with other programs. I will try
-    to prevent major ABI breakages across releases, but if it happens, the
-    SOVERSION will be incremented.
-
-Other significant changes:
-
-* String tables have also been refactored to use less memory and reduce the
-  number of relocations, which improves startup performance.
-
-* Atari 7800 ROM images are now supported.
-
-* Assorted fixes for the Lua, Nintendo 3DS, N64, and ELF parsers, including
-  fixes for big-endian systems.
+* KTX2: RG88 texture format and swizzling are now supported.
 
 Translators needed; file an issue if you'd like to get started on a new
 translation, or submit a Pull Request if you have a translation ready to go.
 
-See [`NEWS.md`](NEWS.md) for a full list of changes in v2.0.
+See [`NEWS.md`](NEWS.md) for a full list of changes in v2.1.
 
 ## Feedback
 
@@ -77,7 +61,7 @@ On Windows XP/2003 and earlier, you will need the MSVC 2015-2017 runtime:
 * 32-bit: https://aka.ms/vs/15/release/VC_redist.x86.exe
 * 64-bit: https://aka.ms/vs/15/release/VC_redist.x64.exe
 
-For instructions on compiling from source, see doc/COMPILING.md .
+For instructions on compiling from source, see [`doc/COMPILING.md`](doc/COMPILING.md).
 
 ### Linux
 
