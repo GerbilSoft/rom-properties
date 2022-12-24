@@ -1,3 +1,11 @@
+rom-properties (2.1-1ppa2~jammy1) jammy; urgency=medium
+
+  * Build for Ubuntu 22.04 "Jammy" Jellyfish.
+
+    PPA version bumped to ensure it updates from previous versions.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 24 Dec 2022 13:32:46 -0500
+
 rom-properties (2.1-1ppa2~focal1) focal; urgency=medium
 
   * Build for Ubuntu 20.04 "Focal" Fossa.
