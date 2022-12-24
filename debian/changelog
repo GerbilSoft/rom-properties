@@ -1,4 +1,4 @@
-rom-properties (2.1-1ppa2~kudu1) kudu; urgency=medium
+rom-properties (2.1-1ppa2~kinetic1) kinetic; urgency=medium
 
   * Build for Ubuntu 22.10 "Kinetic" Kudu.
 
