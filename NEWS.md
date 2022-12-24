@@ -1,6 +1,6 @@
 # Changes
 
-## v2.1 (released 2022/??/??)
+## v2.1 (released 2022/12/24)
 
 * New features:
   * Initial support for Nautilus 43 (GTK4). Nautilus 43 reworked the property
