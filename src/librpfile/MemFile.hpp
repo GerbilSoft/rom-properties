@@ -39,9 +39,9 @@ class RP_LIBROMDATA_PUBLIC MemFile : public IRpFile
 		 * Internal constructor for use by subclasses.
 		 * This initializes everything to nullptr.
 		 */
-		MemFile();
+		RP_LIBROMDATA_LOCAL MemFile();
 	protected:
-		~MemFile() override;	// call unref() instead
+		RP_LIBROMDATA_LOCAL ~MemFile() override;	// call unref() instead
 
 	private:
 		typedef IRpFile super;

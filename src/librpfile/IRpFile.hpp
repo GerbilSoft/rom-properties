@@ -33,7 +33,6 @@ class RP_LIBROMDATA_PUBLIC IRpFile : public RefBase
 {
 	protected:
 		IRpFile();
-
 		~IRpFile() override { }	// call unref() instead
 
 	private:
