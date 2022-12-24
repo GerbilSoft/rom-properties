@@ -738,32 +738,32 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	ret = m_downloader->download();
 	if (ret != 0) {
 		// Error downloading the file.
-		if (verbose) {
-			if (ret < 0) {
-				// POSIX error code
-				show_error(_T("Error downloading file: %s"), _tcserror(-ret));
-				// Create a 0-byte file to indicate an error occurred.
-				FILE *f_out = _tfopen(cache_filename.c_str(), _T("wb"));
-				if (f_out) {
-					fclose(f_out);
-				}
-			} else if (ret == 304 && check_newer) {
-				// HTTP 304 Not Modified
-				SHOW_ERROR(_T("File has not been modified on the server. Not redownloading."));
-				return EXIT_SUCCESS;
-			} else /*if (ret > 0)*/ {
-				// HTTP status code
+		if (ret < 0) {
+			// POSIX error code
+			SHOW_ERROR(_T("Error downloading file: %s"), _tcserror(-ret));
+			// Create a 0-byte file to indicate an error occurred.
+			FILE *f_out = _tfopen(cache_filename.c_str(), _T("wb"));
+			if (f_out) {
+				fclose(f_out);
+			}
+		} else if (ret == 304 && check_newer) {
+			// HTTP 304 Not Modified
+			SHOW_ERROR(_T("File has not been modified on the server. Not redownloading."));
+			return EXIT_SUCCESS;
+		} else /*if (ret > 0)*/ {
+			// HTTP status code
+			if (verbose) {
 				const TCHAR *msg = http_status_string(ret);
 				if (msg) {
 					show_error(_T("Error downloading file: HTTP %d %s"), ret, msg);
 				} else {
 					show_error(_T("Error downloading file: HTTP %d"), ret);
 				}
-				// Create a 0-byte file to indicate an error occurred.
-				FILE *f_out = _tfopen(cache_filename.c_str(), _T("wb"));
-				if (f_out) {
-					fclose(f_out);
-				}
+			}
+			// Create a 0-byte file to indicate an error occurred.
+			FILE *f_out = _tfopen(cache_filename.c_str(), _T("wb"));
+			if (f_out) {
+				fclose(f_out);
 			}
 		}
 		return EXIT_FAILURE;
