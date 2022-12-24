@@ -59,7 +59,7 @@ Description: ROM Properties Page shell extension
 
 Package: rom-properties-kf5
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata2, rom-properties-utils, rom-properties-xdg, rom-properties-stub
+Depends: ${shlibs:Depends}, ${misc:Depends}, libromdata2, rom-properties-utils, rom-properties-xdg, rom-properties-utils
 Recommends: rom-properties-lang
 Conflicts: rom-properties-kde5
 Replaces: rom-properties-kde5
