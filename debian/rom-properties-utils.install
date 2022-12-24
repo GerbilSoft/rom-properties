@@ -3,3 +3,4 @@ usr/bin/rp-stub
 usr/bin/rp-config
 usr/lib/*/libexec/rp-download
 usr/lib/*/libexec/rp-thumbnail
+usr/share/thumbnailers/rom-properties.thumbnailer
