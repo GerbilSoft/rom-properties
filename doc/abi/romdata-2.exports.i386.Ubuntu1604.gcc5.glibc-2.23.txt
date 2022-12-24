@@ -173,8 +173,6 @@ T LibRpFile::IRpFile::getc()
 T LibRpFile::IRpFile::IRpFile()
 T LibRpFile::IRpFile::ungetc(int)
 T LibRpFile::MemFile::close()
-T LibRpFile::MemFile::~MemFile()
-T LibRpFile::MemFile::MemFile()
 T LibRpFile::MemFile::MemFile(void const*, unsigned int)
 T LibRpFile::MemFile::read(void*, unsigned int)
 T LibRpFile::MemFile::seek(long long)
@@ -205,7 +203,6 @@ T LibRpTexture::ImageDecoder::fromLinear32_cpp(LibRpTexture::ImageDecoder::Pixel
 T LibRpTexture::ImageDecoder::fromLinear32_ssse3(LibRpTexture::ImageDecoder::PixelFormat, int, int, unsigned int const*, unsigned int, int)
 T LibRpTexture::rp_image_backend::clear_properties()
 T LibRpTexture::rp_image::backend() const
-T LibRpTexture::rp_image_backend::has_translucent_palette_entries() const
 T LibRpTexture::rp_image_backend::isValid() const
 T LibRpTexture::rp_image_backend::~rp_image_backend()
 T LibRpTexture::rp_image_backend::rp_image_backend(int, int, LibRpTexture::rp_image::Format)

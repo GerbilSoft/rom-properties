@@ -147,8 +147,8 @@ public: int __cdecl LibRomData::KeyStoreUI::idxToSectKey(int,int * __ptr64,int *
 public: class LibRpTexture::rp_image const * __ptr64 __cdecl LibRpBase::RomData::image(enum LibRpBase::RomData::ImageType)const __ptr64
 unsigned int __cdecl LibRomData::ImageTypesConfig::imageTypeCount(void)
 char const * __ptr64 __cdecl LibRomData::ImageTypesConfig::imageTypeName(unsigned int)
-public: bool __cdecl LibRpBase::Config::imgBandwidthMetered(void)const
-public: bool __cdecl LibRpBase::Config::imgBandwidthUnmetered(void)const
+public: enum LibRpBase::Config::ImgBandwidth __cdecl LibRpBase::Config::imgBandwidthMetered(void)const __ptr64
+public: enum LibRpBase::Config::ImgBandwidth __cdecl LibRpBase::Config::imgBandwidthUnmetered(void)const __ptr64
 public: struct LibRomData::KeyStoreUI::ImportReturn __cdecl LibRomData::KeyStoreUI::importKeysFromBin(enum LibRomData::KeyStoreUI::ImportFileID,char const * __ptr64) __ptr64
 void __cdecl LibWin32Common::incRpGlobalRefCount(void)
 public: static class LibRpBase::Achievements * __ptr64 __cdecl LibRpBase::Achievements::instance(void)
