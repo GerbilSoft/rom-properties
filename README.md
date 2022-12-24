@@ -45,6 +45,7 @@ following platforms:
 * KDE Frameworks 5.x
 * XFCE (GTK+ 2.x, GTK+ 3.x)
 * GNOME and Unity (GTK+ 3.x)
+* GNOME 43 (GTK 4.x)
 * MATE Desktop (1.18+; GTK+ 3.x)
 * Cinnamon Desktop
 * Windows 7 (and later)
