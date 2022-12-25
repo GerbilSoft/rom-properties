@@ -44,7 +44,7 @@ or deleted.
 
 ## Domains accessed:
 
-* https://art.gametdb.com/ - Box, cover, and media scans for Nintendo
+* [https://art.gametdb.com/](https://gametdb.com/) - Box, cover, and media scans for Nintendo
   GameCube, Wii, Wii U, DS, and 3DS games.
 * https://amiibo.life/ - Images of Nintendo amiibo products.
 * https://rpdb.gerbilsoft.com/ - Title screen images for the following
