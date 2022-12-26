@@ -12,4 +12,5 @@ X-KDE-Protocols=file,desktop
 
 # Supported MIME types.
 # For KDE KPropertiesDialog, both thumbnailable and non-thumbnailable types are listed.
-MimeType=@MIMETYPES_ALL@
+# NOTE: application/octet-stream is listed due to the xattrs tab.
+MimeType=application/octet-stream;@MIMETYPES_ALL@

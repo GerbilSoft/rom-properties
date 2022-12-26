@@ -2,6 +2,7 @@
     "CacheThumbnail": true,
     "KPlugin": {
         "MimeTypes": [
+            "application/octet-stream",
 @MIMETYPES_ALL_JSON_ARRAY@
         ],
         "Name": "rom-properties-kf5",
@@ -10,7 +11,7 @@
             "KPropertiesDialog/Plugin"
         ]
     },
-    "MimeType": "@MIMETYPES_ALL@",
+    "MimeType": "application/octet-stream;@MIMETYPES_ALL@",
     "X-KDE-Protocol": "file",
     "X-KDE-Protocols": [
         "file",
