@@ -62,6 +62,7 @@ application/x-wii-save			# WiiSave
 application/x-wii-u-rom			# WiiU
 application/x-nintendo-dsi-tad		# WiiWAD
 application/x-wii-wad			# WiiWAD
+application/x-doom-wad			# WiiWAD (for compatibility)
 application/x-wii-wibn			# WiiWIBN
 application/x-xbox-executable		# Xbox_XBE
 application/x-xbox360-stfs		# Xbox360_STFS

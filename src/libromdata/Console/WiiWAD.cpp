@@ -62,7 +62,10 @@ const char *const WiiWADPrivate::mimeTypes[] = {
 
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
-	"application/x-dsi-tad",
+	"application/x-nintendo-dsi-tad",
+
+	// for compatibility
+	"application/x-doom-wad",
 
 	nullptr
 };

@@ -1,5 +1,12 @@
 # Changes
 
+## v2.2 (released 2023/??/??)
+
+* Bug fixes:
+  * WiiWAD: Add application/x-doom-wad for compatibility with some systems that
+    assume all .wad files are Doom WADs.
+  * WiiWAD: application/x-dsi-tad -> application/x-nintendo-dsi-tad
+
 ## v2.1 (released 2022/12/24)
 
 * New features:
