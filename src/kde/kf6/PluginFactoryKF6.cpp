@@ -25,9 +25,8 @@ using LibRpTexture::rp_image;
 #include "AchQtDBus.hpp"
 
 // Plugins
-#include "RomPropertiesDialogPlugin.hpp"
+#include "RpPropertiesDialogPlugin.hpp"
 #include "RomThumbCreator.hpp"
-#include "xattr/XAttrViewPropertiesDialogPlugin.hpp"
 
 // KDE Frameworks
 #include <kcoreaddons_version.h>
@@ -44,11 +43,10 @@ static void register_backends(void)
 
 K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf6.json",
 	register_backends();
-	registerPlugin<RomPropertiesDialogPlugin>();
+	registerPlugin<RpPropertiesDialogPlugin>();
 #ifdef HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H
 	registerPlugin<RomThumbnailCreator>();
 #endif /* HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H */
-	registerPlugin<XAttrViewPropertiesDialogPlugin>();
 )
 
 // automoc4 works correctly without any special handling.

@@ -11,7 +11,7 @@ PROJECT(rom-properties-kde LANGUAGES CXX)
 
 # Sources and headers.
 SET(${PROJECT_NAME}_SRCS
-	RomPropertiesDialogPlugin.cpp
+	RpPropertiesDialogPlugin.cpp
 	RomDataView.cpp
 	RomDataView_ops.cpp
 	RomThumbCreator.cpp
@@ -41,10 +41,9 @@ SET(${PROJECT_NAME}_SRCS
 	config/UpdateChecker.cpp
 	xattr/LinuxAttrView.cpp
 	xattr/XAttrView.cpp
-	xattr/XAttrViewPropertiesDialogPlugin.cpp
 	)
 SET(${PROJECT_NAME}_H
-	RomPropertiesDialogPlugin.hpp
+	RpPropertiesDialogPlugin.hpp
 	RomDataView.hpp
 	RomDataView_p.hpp
 	RomThumbCreator.hpp
@@ -75,7 +74,6 @@ SET(${PROJECT_NAME}_H
 	config/UpdateChecker.hpp
 	xattr/LinuxAttrView.hpp
 	xattr/XAttrView.hpp
-	xattr/XAttrViewPropertiesDialogPlugin.hpp
 	)
 SET(${PROJECT_NAME}_UIS
 	RomDataView.ui

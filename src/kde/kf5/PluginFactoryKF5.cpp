@@ -25,9 +25,8 @@ using LibRpTexture::rp_image;
 #include "AchQtDBus.hpp"
 
 // Plugins
-#include "RomPropertiesDialogPlugin.hpp"
+#include "RpPropertiesDialogPlugin.hpp"
 #include "RomThumbCreator.hpp"
-#include "xattr/XAttrViewPropertiesDialogPlugin.hpp"
 
 // KDE Frameworks
 #include <kcoreaddons_version.h>
@@ -47,36 +46,26 @@ static void register_backends(void)
 // and deprecated the old version.
 K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf5.json",
 	register_backends();
-	registerPlugin<RomPropertiesDialogPlugin>();
+	registerPlugin<RpPropertiesDialogPlugin>();
 #ifdef HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H
 	registerPlugin<RomThumbnailCreator>();
 #endif /* HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H */
-	registerPlugin<XAttrViewPropertiesDialogPlugin>();
 )
 #else /* KCOREADDONS_VERSION < QT_VERSION_CHECK(5,89,0) */
 // NOTE: KIO::ThumbnailCreator was added in KF5 5.100, so it won't be
 // added in this code path. (KF5 5.88 and earlier)
 
-static QObject *createRomPropertiesPage(QWidget *w, QObject *parent, const QVariantList &args)
+static QObject *createRpPropertiesPages(QWidget *w, QObject *parent, const QVariantList &args)
 {
 	// NOTE: RomPropertiesDialogPlugin will verify that parent is an
 	// instance of KPropertiesDialog*, so we don't have to do that here.
 	Q_UNUSED(w)
-	return new RomPropertiesDialogPlugin(parent, args);
-}
-
-static QObject *createXAttrViewPropertiesPage(QWidget *w, QObject *parent, const QVariantList &args)
-{
-	// NOTE: XAttrViewPropertiesDialogPlugin will verify that parent is an
-	// instance of KPropertiesDialog*, so we don't have to do that here.
-	Q_UNUSED(w)
-	return new XAttrViewPropertiesDialogPlugin(parent, args);
+	return new RpPropertiesDialogPlugin(parent, args);
 }
 
 K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf5.json",
 	register_backends();
-	registerPlugin<RomPropertiesDialogPlugin>(QString(), createRomPropertiesPage);
-	registerPlugin<XAttrViewPropertiesDialogPlugin>(QString(), createXAttrViewPropertiesPage);
+	registerPlugin<RpPropertiesDialogPlugin>(QString(), createRpPropertiesPages);
 )
 #endif
 
