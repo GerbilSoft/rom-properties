@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DosAttrView</class>
+ <widget class="QWidget" name="DosAttrView">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>365</width>
+    <height>70</height>
+   </rect>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="hboxDOSAttrs">
+     <item>
+      <widget class="QCheckBox" name="chkReadOnly">
+       <property name="text">
+        <string>&amp;Read-only</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="chkHidden">
+       <property name="text">
+        <string>&amp;Hidden</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="chkArchive">
+       <property name="text">
+        <string>&amp;Archive</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="chkSystem">
+       <property name="text">
+        <string>&amp;System</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="hspcDOSAttributes">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>10</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="hboxNTFSAttrs">
+     <item>
+      <widget class="QCheckBox" name="chkCompressed">
+       <property name="text">
+        <string>&amp;Compressed</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="chkEncrypted">
+       <property name="text">
+        <string>&amp;Encrypted</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="hspcNTFSAttributes">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>10</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

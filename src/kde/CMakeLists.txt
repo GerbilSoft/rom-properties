@@ -40,6 +40,7 @@ SET(${PROJECT_NAME}_SRCS
 	config/AboutTab.cpp
 	config/UpdateChecker.cpp
 	xattr/LinuxAttrView.cpp
+	xattr/DosAttrView.cpp
 	xattr/XAttrView.cpp
 	)
 SET(${PROJECT_NAME}_H
@@ -73,6 +74,7 @@ SET(${PROJECT_NAME}_H
 	config/AboutTab.hpp
 	config/UpdateChecker.hpp
 	xattr/LinuxAttrView.hpp
+	xattr/DosAttrView.hpp
 	xattr/XAttrView.hpp
 	)
 SET(${PROJECT_NAME}_UIS
@@ -86,6 +88,7 @@ SET(${PROJECT_NAME}_UIS
 	config/AboutTab.ui
 	xattr/XAttrView.ui
 	xattr/LinuxAttrView.ui
+	xattr/DosAttrView.ui
 	)
 SET(${PROJECT_NAME}_RCC_SRCS
 	../res/flags/flags.qrc

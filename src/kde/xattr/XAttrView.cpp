@@ -19,6 +19,8 @@
 #include <fcntl.h>
 // for FS_IOC_GETFLAGS (equivalent to EXT2_IOC_GETFLAGS)
 #include <linux/fs.h>
+// for FAT_IOCTL_GET_ATTRIBUTES
+#include <linux/msdos_fs.h>
 
 // C++ STL classes
 using std::string;
@@ -45,11 +47,24 @@ class XAttrViewPrivate
 		// Do we have attributes for this file?
 		bool hasAttributes;
 
+	private:
+		/**
+		 * Load Linux attributes, if available.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int loadLinuxAttrs(void);
+
+		/**
+		 * Load MS-DOS attributes, if available.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int loadDosAttrs(void);
+
 	public:
 		/**
 		 * Load the attributes from the specified file.
 		 * The attributes will be loaded into the display widgets.
-		 * @return 0 on success; non-zero on error.
+		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int loadAttributes(void);
 
@@ -60,9 +75,171 @@ class XAttrViewPrivate
 };
 
 /**
+ * Load Linux attributes, if available.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int XAttrViewPrivate::loadLinuxAttrs(void)
+{
+	// Hide by default.
+	// If we do have attributes, we'll show the widgets there.
+	ui.grpLinuxAttributes->hide();
+
+	// TODO: Handle non-local QUrls?
+	if (filename.scheme().isEmpty() || filename.isLocalFile()) {
+		// Local URL. We'll allow it.
+	} else {
+		// Not a local URL. Clear the display widgets.
+		return -ENOTSUP;
+	}
+
+	const string s_local_filename = filename.toLocalFile().toUtf8().constData();
+
+#ifdef __gnu_linux__
+	// Make sure this is a regular file.
+	// TODO: Use statx() if available.
+	struct stat sb;
+	errno = 0;
+	if (!stat(s_local_filename.c_str(), &sb) && !S_ISREG(sb.st_mode) && !S_ISDIR(sb.st_mode)) {
+		// stat() failed, or this is neither a regular file nor a directory.
+		int err = -errno;
+		if (err == 0) {
+			err = -ENOTSUP;
+		}
+		return err;
+	}
+
+	// Open the file to get attributes.
+	// TODO: Move this to librpbase or libromdata,
+	// and add configure checks for HAVE_EXT2_IOCTLS.
+	// (e2fsprogs enables HAVE_EXT2_IOCTLS on Linux only)
+	#define OPEN_FLAGS (O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_NOFOLLOW)
+	int fd = open(s_local_filename.c_str(), OPEN_FLAGS);
+	if (fd < 0) {
+		// Error opening the file.
+		return -errno;
+	}
+
+	// Verify the file mode again using fstat().
+	errno = 0;
+	if (!fstat(fd, &sb) && !S_ISREG(sb.st_mode) && !S_ISDIR(sb.st_mode)) {
+		// fstat() failed, or this is neither a regular file nor a directory.
+		int err = -errno;
+		if (err == 0) {
+			err = -ENOTSUP;
+		}
+		close(fd);
+		return err;
+	}
+
+	// Attempt to get EXT2 flags.
+	// NOTE: The ioctl is defined as using long, but the actual
+	// kernel code uses int.
+	int ext2_flags = 0;
+	errno = 0;
+	if (!ioctl(fd, FS_IOC_GETFLAGS, &ext2_flags)) {
+		// ioctl() succeeded. We have EXT2 flags.
+		ui.linuxAttrView->setFlags(static_cast<int>(ext2_flags));
+		ui.grpLinuxAttributes->show();
+	} else {
+		// No EXT2 flags on this file.
+		// Assume this file system doesn't support them.
+		ui.linuxAttrView->clearFlags();
+	}
+
+	// Done using the file.
+	close(fd);
+	return 0;
+#else /* !__gnu_linux__ */
+	// Can't use HAVE_EXT2_IOCTLs.
+	return -ENOTSUP;
+#endif /* __gnu_linux__ */
+}
+
+/**
+ * Load MS-DOS attributes, if available.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int XAttrViewPrivate::loadDosAttrs(void)
+{
+	// Hide by default.
+	// If we do have attributes, we'll show the widgets there.
+	ui.grpDosAttributes->hide();
+
+	// TODO: Handle non-local QUrls?
+	if (filename.scheme().isEmpty() || filename.isLocalFile()) {
+		// Local URL. We'll allow it.
+	} else {
+		// Not a local URL. Clear the display widgets.
+		return -ENOTSUP;
+	}
+
+	const string s_local_filename = filename.toLocalFile().toUtf8().constData();
+
+#ifdef __gnu_linux__
+	// Make sure this is a regular file.
+	// TODO: Use statx() if available.
+	struct stat sb;
+	errno = 0;
+	if (!stat(s_local_filename.c_str(), &sb) && !S_ISREG(sb.st_mode) && !S_ISDIR(sb.st_mode)) {
+		// stat() failed, or this is neither a regular file nor a directory.
+		int err = -errno;
+		if (err == 0) {
+			err = -ENOTSUP;
+		}
+		return err;
+	}
+
+	// Open the file to get attributes.
+	// TODO: Move this to librpbase or libromdata,
+	// and add configure checks for FAT_IOCTL_GET_ATTRIBUTES.
+	#define OPEN_FLAGS (O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_NOFOLLOW)
+	int fd = open(s_local_filename.c_str(), OPEN_FLAGS);
+	if (fd < 0) {
+		// Error opening the file.
+		return -errno;
+	}
+
+	// Verify the file mode again using fstat().
+	errno = 0;
+	if (!fstat(fd, &sb) && !S_ISREG(sb.st_mode) && !S_ISDIR(sb.st_mode)) {
+		// fstat() failed, or this is neither a regular file nor a directory.
+		int err = -errno;
+		if (err == 0) {
+			err = -ENOTSUP;
+		}
+		close(fd);
+		return err;
+	}
+
+	// Attempt to get MS-DOS attributes.
+	// TODO: Also check xattrs.
+	// ntfs3 has: system.dos_attrib, system.ntfs_attrib
+	// ntfs-3g has: system.ntfs_attrib, system.ntfs_attrib_be
+	unsigned int dos_attrs = 0;
+	errno = 0;
+	if (!ioctl(fd, FAT_IOCTL_GET_ATTRIBUTES, &dos_attrs)) {
+		// ioctl() succeeded. We have MS-DOS attributes.
+		ui.dosAttrView->setAttrs(static_cast<int>(dos_attrs));
+		ui.grpDosAttributes->show();
+	} else {
+		// No MS-DOS attributes on this file.
+		// Assume this is not an MS-DOS file system.
+		ui.dosAttrView->clearAttrs();
+	}
+
+	// Done using the file.
+	close(fd);
+	return 0;
+#else /* !__gnu_linux__ */
+	// Can't use HAVE_EXT2_IOCTLs.
+	return -ENOTSUP;
+#endif /* __gnu_linux__ */
+}
+
+/**
  * Load the attributes from the specified file.
  * The attributes will be loaded into the display widgets.
- * @return 0 on success; non-zero on error.
+ * @return 0 on success; negative POSIX error code on error.
  */
 int XAttrViewPrivate::loadAttributes(void)
 {
@@ -83,75 +260,25 @@ int XAttrViewPrivate::loadAttributes(void)
 		return -ENOTSUP;
 	}
 
-	const string s_local_filename = filename.toLocalFile().toUtf8().constData();
+	bool hasAnyAttrs = false;
 
-#ifdef __gnu_linux__
-	// Make sure this is a regular file.
-	// TODO: Use statx() if available.
-	struct stat sb;
-	errno = 0;
-	if (!stat(s_local_filename.c_str(), &sb) && !S_ISREG(sb.st_mode) && !S_ISDIR(sb.st_mode)) {
-		// stat() failed, or this is neither a regular file nor a directory.
-		int err = -errno;
-		if (err == 0) {
-			err = -ENOTSUP;
-		}
-		hasAttributes = false;
-		clearDisplayWidgets();
-		return err;
+	int ret = loadLinuxAttrs();
+	if (ret == 0) {
+		hasAnyAttrs = true;
+	}
+	ret = loadDosAttrs();
+	if (ret == 0) {
+		hasAnyAttrs = true;
 	}
 
-	// Open the file to get attributes.
-	// TODO: Move this to librpbase or libromdata,
-	// and add configure checks for HAVE_EXT2_IOCTLS.
-	// (e2fsprogs enables HAVE_EXT2_IOCTLS on Linux only)
-	#define OPEN_FLAGS (O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_NOFOLLOW)
-	int fd = open(s_local_filename.c_str(), OPEN_FLAGS);
-	if (fd < 0) {
-		// Error opening the file.
-		const int err = -errno;
-		hasAttributes = false;
-		clearDisplayWidgets();
-		return err;
-	}
-
-	// Verify the file mode again using fstat().
-	errno = 0;
-	if (!fstat(fd, &sb) && !S_ISREG(sb.st_mode) && !S_ISDIR(sb.st_mode)) {
-		// fstat() failed, or this is neither a regular file nor a directory.
-		int err = -errno;
-		if (err == 0) {
-			err = -ENOTSUP;
-		}
-		close(fd);
-		hasAttributes = false;
-		clearDisplayWidgets();
-		return err;
-	}
-
-	// Attempt to get EXT2 flags.
-	// NOTE: The ioctl is defined as using long, but the actual
-	// kernel code uses int.
-	int ext2_flags = 0;
-	errno = 0;
-	if (!ioctl(fd, FS_IOC_GETFLAGS, &ext2_flags)) {
-		// ioctl() succeeded. We have EXT2 flags.
-		ui.linuxAttrView->setFlags(static_cast<int>(ext2_flags));
+	// If we have attributes, great!
+	// If not, clear the display widgets.
+	if (hasAnyAttrs) {
+		hasAttributes = true;
 	} else {
-		// No EXT2 flags on this file.
-		// TODO: Check errno to see if it doesn't have flags vs. an error occurred?
-		ui.linuxAttrView->clearFlags();
+		hasAttributes = false;
+		clearDisplayWidgets();
 	}
-
-	// Done using the file.
-	close(fd);
-	hasAttributes = true;
-#else /* !__gnu_linux__ */
-	// Can't use HAVE_EXT2_IOCTLs.
-	hasAttributes = false;
-	clearDisplayWidgets();
-#endif /* __gnu_linux__ */
-
 	return 0;
 }
 
