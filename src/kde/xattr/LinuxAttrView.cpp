@@ -171,6 +171,10 @@ int LinuxAttrView::flags(void) const
 	return d->flags;
 }
 
+/**
+ * Set the current Linux attributes.
+ * @param flags Linux attributes
+ */
 void LinuxAttrView::setFlags(int flags)
 {
 	Q_D(LinuxAttrView);
