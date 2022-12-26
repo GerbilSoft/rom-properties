@@ -110,7 +110,7 @@ void LinuxAttrViewPrivate::updateFlagsCheckboxes(void)
 	UPDATE_CHECKBOX(FS_JOURNAL_DATA_FL, chkJournalled);
 
 	UPDATE_CHECKBOX(FS_NOCOMP_FL, chkNoCompress);
-	UPDATE_CHECKBOX(FS_INLINE_DATA_FL, chkInline);
+	UPDATE_CHECKBOX(FS_INLINE_DATA_FL, chkInlineData);
 	UPDATE_CHECKBOX(FS_PROJINHERIT_FL, chkProject);
 	UPDATE_CHECKBOX(FS_SECRM_FL, chkSecureDelete);
 
@@ -153,7 +153,7 @@ LinuxAttrView::LinuxAttrView(QWidget *parent)
 	CONNECT_CHECKBOX_SIGNAL(chkJournalled);
 
 	CONNECT_CHECKBOX_SIGNAL(chkNoCompress);
-	CONNECT_CHECKBOX_SIGNAL(chkInline);
+	CONNECT_CHECKBOX_SIGNAL(chkInlineData);
 	CONNECT_CHECKBOX_SIGNAL(chkProject);
 	CONNECT_CHECKBOX_SIGNAL(chkSecureDelete);
 

@@ -59,12 +59,12 @@
    <item>
     <layout class="QGridLayout" name="gridLayout">
      <item row="3" column="1">
-      <widget class="QCheckBox" name="chkInline">
+      <widget class="QCheckBox" name="chkInlineData">
        <property name="toolTip">
         <string>File data is stored inline in the inode.</string>
        </property>
        <property name="text">
-        <string>N: inline</string>
+        <string>N: inline data</string>
        </property>
       </widget>
      </item>
