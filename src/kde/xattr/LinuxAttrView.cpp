@@ -88,29 +88,39 @@ void LinuxAttrViewPrivate::updateFlagsString(void)
  */
 void LinuxAttrViewPrivate::updateFlagsCheckboxes(void)
 {
-	// Checkboxes
-	ui.chkAppendOnly->setChecked(!!(flags & FS_APPEND_FL));
-	ui.chkNoATime->setChecked(!!(flags & FS_NOATIME_FL));
-	ui.chkCompressed->setChecked(!!(flags & FS_COMPR_FL));
-	ui.chkNoCOW->setChecked(!!(flags & FS_NOCOW_FL));
-	ui.chkNoDump->setChecked(!!(flags & FS_NODUMP_FL));
-	ui.chkDirSync->setChecked(!!(flags & FS_DIRSYNC_FL));
-	ui.chkExtents->setChecked(!!(flags & FS_EXTENT_FL));
-	ui.chkEncrypted->setChecked(!!(flags & FS_ENCRYPT_FL));
-	ui.chkCasefold->setChecked(!!(flags & FS_CASEFOLD_FL));
-	ui.chkImmutable->setChecked(!!(flags & FS_IMMUTABLE_FL));
-	ui.chkIndexed->setChecked(!!(flags & FS_INDEX_FL));
-	ui.chkJournalled->setChecked(!!(flags & FS_JOURNAL_DATA_FL));
-	ui.chkNoCompress->setChecked(!!(flags & FS_NOCOMP_FL));
-	ui.chkInline->setChecked(!!(flags & FS_INLINE_DATA_FL));
-	ui.chkProject->setChecked(!!(flags & FS_PROJINHERIT_FL));
-	ui.chkSecureDelete->setChecked(!!(flags & FS_SECRM_FL));
-	ui.chkFileSync->setChecked(!!(flags & FS_SYNC_FL));
-	ui.chkNoTailMerge->setChecked(!!(flags & FS_NOTAIL_FL));
-	ui.chkTopDir->setChecked(!!(flags & FS_TOPDIR_FL));
-	ui.chkUndelete->setChecked(!!(flags & FS_UNRM_FL));
-	ui.chkDAX->setChecked(!!(flags & FS_DAX_FL));
-	ui.chkVerity->setChecked(!!(flags & FS_VERITY_FL));
+	bool val;
+#define UPDATE_CHECKBOX(flag, obj) \
+	val = !!(flags & (flag)); \
+	ui.obj->setChecked(val); \
+	ui.obj->setProperty("LinuxAttrView.value", val)
+
+	UPDATE_CHECKBOX(FS_APPEND_FL, chkAppendOnly);
+	UPDATE_CHECKBOX(FS_NOATIME_FL, chkNoATime);
+	UPDATE_CHECKBOX(FS_COMPR_FL, chkCompressed);
+	UPDATE_CHECKBOX(FS_NOCOW_FL, chkNoCOW);
+
+	UPDATE_CHECKBOX(FS_NODUMP_FL, chkNoDump);
+	UPDATE_CHECKBOX(FS_DIRSYNC_FL, chkDirSync);
+	UPDATE_CHECKBOX(FS_EXTENT_FL, chkExtents);
+	UPDATE_CHECKBOX(FS_ENCRYPT_FL, chkEncrypted);
+
+	UPDATE_CHECKBOX(FS_CASEFOLD_FL, chkCasefold);
+	UPDATE_CHECKBOX(FS_IMMUTABLE_FL, chkImmutable);
+	UPDATE_CHECKBOX(FS_INDEX_FL, chkIndexed);
+	UPDATE_CHECKBOX(FS_JOURNAL_DATA_FL, chkJournalled);
+
+	UPDATE_CHECKBOX(FS_NOCOMP_FL, chkNoCompress);
+	UPDATE_CHECKBOX(FS_INLINE_DATA_FL, chkInline);
+	UPDATE_CHECKBOX(FS_PROJINHERIT_FL, chkProject);
+	UPDATE_CHECKBOX(FS_SECRM_FL, chkSecureDelete);
+
+	UPDATE_CHECKBOX(FS_SYNC_FL, chkFileSync);
+	UPDATE_CHECKBOX(FS_NOTAIL_FL, chkNoTailMerge);
+	UPDATE_CHECKBOX(FS_TOPDIR_FL, chkTopDir);
+	UPDATE_CHECKBOX(FS_UNRM_FL, chkUndelete);
+
+	UPDATE_CHECKBOX(FS_DAX_FL, chkDAX);
+	UPDATE_CHECKBOX(FS_VERITY_FL, chkVerity);
 }
 
 /** LinuxAttrView **/
@@ -121,6 +131,34 @@ LinuxAttrView::LinuxAttrView(QWidget *parent)
 {
 	Q_D(LinuxAttrView);
 	d->ui.setupUi(this);
+
+	// Connect checkbox signals.
+#define CONNECT_CHECKBOX_SIGNAL(obj) \
+	connect(d->ui.obj, SIGNAL(clicked(bool)), \
+		this, SLOT(checkBox_clicked_slot(bool)))
+
+	CONNECT_CHECKBOX_SIGNAL(chkAppendOnly);
+	CONNECT_CHECKBOX_SIGNAL(chkNoATime);
+	CONNECT_CHECKBOX_SIGNAL(chkCompressed);
+	CONNECT_CHECKBOX_SIGNAL(chkNoCOW);
+
+	CONNECT_CHECKBOX_SIGNAL(chkNoDump);
+	CONNECT_CHECKBOX_SIGNAL(chkDirSync);
+	CONNECT_CHECKBOX_SIGNAL(chkExtents);
+	CONNECT_CHECKBOX_SIGNAL(chkEncrypted);
+
+	CONNECT_CHECKBOX_SIGNAL(chkCasefold);
+	CONNECT_CHECKBOX_SIGNAL(chkImmutable);
+	CONNECT_CHECKBOX_SIGNAL(chkIndexed);
+	CONNECT_CHECKBOX_SIGNAL(chkJournalled);
+
+	CONNECT_CHECKBOX_SIGNAL(chkNoCompress);
+	CONNECT_CHECKBOX_SIGNAL(chkInline);
+	CONNECT_CHECKBOX_SIGNAL(chkProject);
+	CONNECT_CHECKBOX_SIGNAL(chkSecureDelete);
+
+	CONNECT_CHECKBOX_SIGNAL(chkDAX);
+	CONNECT_CHECKBOX_SIGNAL(chkVerity);
 }
 
 /**
@@ -151,5 +189,24 @@ void LinuxAttrView::clearFlags(void)
 	if (d->flags != 0) {
 		d->flags = 0;
 		d->updateFlagsDisplay();
+	}
+}
+
+/** Widget slots **/
+
+/**
+ * Disable user modifications of checkboxes.
+ */
+void LinuxAttrView::checkBox_clicked_slot(bool checked)
+{
+	QAbstractButton *sender = qobject_cast<QAbstractButton*>(QObject::sender());
+	if (!sender)
+		return;
+
+	// Get the saved LinuxAttrView value.
+	const bool value = sender->property("LinuxAttrView.value").toBool();
+	if (checked != value) {
+		// Toggle this box.
+		sender->setChecked(value);
 	}
 }

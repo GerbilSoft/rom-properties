@@ -47,6 +47,12 @@ class LinuxAttrView : public QWidget
 		 * Clear the flags.
 		 */
 		void clearFlags(void);
+
+	protected slots:
+		/**
+		 * Disable user modifications of checkboxes.
+		 */
+		void checkBox_clicked_slot(bool checked);
 };
 
 #endif /* __ROMPROPERTIES_KDE_XATTR_LINUXATTRVIEW_HPP__ */
