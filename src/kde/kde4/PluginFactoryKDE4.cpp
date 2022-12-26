@@ -49,6 +49,14 @@ static QObject *createRomPropertiesPage(QWidget *w, QObject *parent, const QVari
 	return new RomPropertiesDialogPlugin(parent, args);
 }
 
+static QObject *createXAttrViewPropertiesPage(QWidget *w, QObject *parent, const QVariantList &args)
+{
+	// NOTE: XAttrsViewPropertiesDialogPlugin will verify that parent is an
+	// instance of KPropertiesDialog*, so we don't have to do that here.
+	Q_UNUSED(w)
+	return new XAttrsViewPropertiesDialogPlugin(parent, args);
+}
+
 K_PLUGIN_FACTORY(RomPropertiesDialogFactory,
 	register_backends();
 	registerPlugin<RomPropertiesDialogPlugin>(QString(), createRomPropertiesPage);
