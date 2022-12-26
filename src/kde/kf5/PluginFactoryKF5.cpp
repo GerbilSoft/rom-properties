@@ -17,13 +17,17 @@
 #include "stdafx.h"
 #include "config.kde.h"
 
-#include "AchQtDBus.hpp"
-#include "RomPropertiesDialogPlugin.hpp"
-#include "RomThumbCreator.hpp"
-
 // RpQImageBackend
 #include "RpQImageBackend.hpp"
 using LibRpTexture::rp_image;
+
+// Achievements backend
+#include "AchQtDBus.hpp"
+
+// Plugins
+#include "RomPropertiesDialogPlugin.hpp"
+#include "RomThumbCreator.hpp"
+#include "xattr/XAttrViewPropertiesDialogPlugin.hpp"
 
 // KDE Frameworks
 #include <kcoreaddons_version.h>
@@ -47,10 +51,12 @@ K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf5.json"
 #ifdef HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H
 	registerPlugin<RomThumbnailCreator>();
 #endif /* HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H */
+	registerPlugin<XAttrViewPropertiesDialogPlugin>();
 )
 #else /* KCOREADDONS_VERSION < QT_VERSION_CHECK(5,89,0) */
 // NOTE: KIO::ThumbnailCreator was added in KF5 5.100, so it won't be
 // added in this code path. (KF5 5.88 and earlier)
+
 static QObject *createRomPropertiesPage(QWidget *w, QObject *parent, const QVariantList &args)
 {
 	// NOTE: RomPropertiesDialogPlugin will verify that parent is an
@@ -59,9 +65,18 @@ static QObject *createRomPropertiesPage(QWidget *w, QObject *parent, const QVari
 	return new RomPropertiesDialogPlugin(parent, args);
 }
 
+static QObject *createXAttrViewPropertiesPage(QWidget *w, QObject *parent, const QVariantList &args)
+{
+	// NOTE: XAttrViewPropertiesDialogPlugin will verify that parent is an
+	// instance of KPropertiesDialog*, so we don't have to do that here.
+	Q_UNUSED(w)
+	return new XAttrViewPropertiesDialogPlugin(parent, args);
+}
+
 K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf5.json",
 	register_backends();
 	registerPlugin<RomPropertiesDialogPlugin>(QString(), createRomPropertiesPage);
+	registerPlugin<XAttrViewPropertiesDialogPlugin>(QString(), createXAttrViewPropertiesPage);
 )
 #endif
 

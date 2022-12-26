@@ -39,6 +39,9 @@ SET(${PROJECT_NAME}_SRCS
 	config/AchievementsItemDelegate.cpp
 	config/AboutTab.cpp
 	config/UpdateChecker.cpp
+	xattr/LinuxAttrView.cpp
+	xattr/XAttrView.cpp
+	xattr/XAttrViewPropertiesDialogPlugin.cpp
 	)
 SET(${PROJECT_NAME}_H
 	RomPropertiesDialogPlugin.hpp
@@ -70,6 +73,9 @@ SET(${PROJECT_NAME}_H
 	config/AchievementsItemDelegate.hpp
 	config/AboutTab.hpp
 	config/UpdateChecker.hpp
+	xattr/LinuxAttrView.hpp
+	xattr/XAttrView.hpp
+	xattr/XAttrViewPropertiesDialogPlugin.hpp
 	)
 SET(${PROJECT_NAME}_UIS
 	RomDataView.ui
@@ -80,6 +86,8 @@ SET(${PROJECT_NAME}_UIS
 	config/CacheTab.ui
 	config/AchievementsTab.ui
 	config/AboutTab.ui
+	xattr/XAttrView.ui
+	xattr/LinuxAttrView.ui
 	)
 SET(${PROJECT_NAME}_RCC_SRCS
 	../res/flags/flags.qrc

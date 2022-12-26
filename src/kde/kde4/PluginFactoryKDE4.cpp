@@ -17,13 +17,17 @@
 #include "stdafx.h"
 #include "config.kde.h"
 
-#include "AchQtDBus.hpp"
-#include "RomPropertiesDialogPlugin.hpp"
-#include "RomThumbCreator.hpp"
-
 // RpQImageBackend
 #include "RpQImageBackend.hpp"
 using LibRpTexture::rp_image;
+
+// Achievements backend
+#include "AchQtDBus.hpp"
+
+// Plugins
+#include "RomPropertiesDialogPlugin.hpp"
+#include "RomThumbCreator.hpp"
+#include "xattr/XAttrViewPropertiesDialogPlugin.hpp"
 
 // KDE
 #include <kpluginfactory.h>
@@ -48,6 +52,7 @@ static QObject *createRomPropertiesPage(QWidget *w, QObject *parent, const QVari
 K_PLUGIN_FACTORY(RomPropertiesDialogFactory,
 	register_backends();
 	registerPlugin<RomPropertiesDialogPlugin>(QString(), createRomPropertiesPage);
+	registerPlugin<XAttrViewPropertiesDialogPlugin>(QString(), createXAttrViewPropertiesPage);
 )
 #if QT_VERSION < 0x050000
 K_EXPORT_PLUGIN(RomPropertiesDialogFactory("rom-properties-kde"))

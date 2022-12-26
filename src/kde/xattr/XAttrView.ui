@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>XAttrView</class>
+ <widget class="QWidget" name="XAttrView">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>606</width>
+    <height>710</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="vboxXAttrView" stretch="0,0,1">
+   <item>
+    <widget class="QGroupBox" name="grpDOSAttributes">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title">
+      <string>MS-DOS Attributes</string>
+     </property>
+     <layout class="QVBoxLayout" name="vboxDOSAttributes">
+      <item>
+       <layout class="QHBoxLayout" name="hboxDOSAttributes">
+        <item>
+         <widget class="QCheckBox" name="chkAttrReadOnly">
+          <property name="text">
+           <string>&amp;Read-only</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="chkAttrHidden">
+          <property name="text">
+           <string>&amp;Hidden</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="chkAttrArchive">
+          <property name="text">
+           <string>&amp;Archive</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="chkAttrSystem">
+          <property name="text">
+           <string>&amp;System</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="hspcDOSAttributes">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>10</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="hboxNTFSAttributes">
+        <item>
+         <widget class="QCheckBox" name="chkNTFSCompressed">
+          <property name="text">
+           <string>&amp;Compressed</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="chkNTFSEncrypted">
+          <property name="text">
+           <string>&amp;Encrypted</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="hspcNTFSAttributes">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>10</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="grpLinuxAttributes">
+     <property name="title">
+      <string>Linux Attributes</string>
+     </property>
+     <layout class="QVBoxLayout" name="vboxLinuxAttributes">
+      <item>
+       <widget class="LinuxAttrView" name="linuxAttrView" native="true"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="grpXAttr">
+     <property name="title">
+      <string>E&amp;xtended Attributes</string>
+     </property>
+     <layout class="QVBoxLayout" name="vboxXAttr">
+      <item>
+       <widget class="QTreeWidget" name="treeXAttr">
+        <column>
+         <property name="text">
+          <string>Name</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Value</string>
+         </property>
+        </column>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>LinuxAttrView</class>
+   <extends>QWidget</extends>
+   <header>xattr/LinuxAttrView.hpp</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
