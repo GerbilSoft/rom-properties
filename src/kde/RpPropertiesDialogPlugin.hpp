@@ -38,19 +38,19 @@ class RpPropertiesDialogPlugin : public KPropertiesDialogPlugin
 	protected:
 		/**
 		 * Instantiate a RomDataView object for the given QUrl.
-		 * @param url QUrl
+		 * @param fileItem KFileItem
 		 * @param props KPropertiesDialog
 		 * @return RomDataView object, or nullptr if the file is not supported.
 		 */
-		RomDataView *createRomDataView(const QUrl &url, KPropertiesDialog *props = nullptr);
+		RomDataView *createRomDataView(const KFileItem &fileItem, KPropertiesDialog *props = nullptr);
 
 		/**
 		 * Instantiate an XAttrView object for the given QUrl.
-		 * @param url QUrl
+		 * @param fileItem KFileItem
 		 * @param props KPropertiesDialog
 		 * @return XAttrView object, or nullptr if the file is not supported.
 		 */
-		XAttrView *createXAttrView(const QUrl &url, KPropertiesDialog *props = nullptr);
+		XAttrView *createXAttrView(const KFileItem &fileItem, KPropertiesDialog *props = nullptr);
 };
 
 #endif /* __ROMPROPERTIES_KDE_RPPROPERTIESDIALOGPLUGIN_HPP__ */

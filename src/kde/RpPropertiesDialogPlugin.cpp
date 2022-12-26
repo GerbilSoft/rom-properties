@@ -30,16 +30,32 @@ using LibRpFile::IRpFile;
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
 
+// C++ STL classes
+using std::string;
+using std::vector;
+
 /**
  * Instantiate a RomDataView object for the given QUrl.
- * @param url QUrl
+ * @param fileItem KFileItem
  * @param props KPropertiesDialog
  * @return RomDataView object, or nullptr if the file is not supported.
  */
-RomDataView *RpPropertiesDialogPlugin::createRomDataView(const QUrl &url, KPropertiesDialog *props)
+RomDataView *RpPropertiesDialogPlugin::createRomDataView(const KFileItem &fileItem, KPropertiesDialog *props)
 {
+	// Check if the MIME type is supported.
+	// TODO: Rework supportedMimeTypes() to return a set to make lookups faster?
+	const string u8_mimeType = fileItem.mimetype().toUtf8().toStdString();
+	const vector<const char*> &mimeTypes = RomDataFactory::supportedMimeTypes();
+	bool match = std::any_of(mimeTypes.begin(), mimeTypes.end(),
+		[&u8_mimeType](const char *mime) {
+			return u8_mimeType.compare(mime) == 0;
+		});
+	if (!match) {
+		return nullptr;
+	}
+
 	// Attempt to open the ROM file.
-	IRpFile *const file = openQUrl(url, false);
+	IRpFile *const file = openQUrl(fileItem.url(), false);
 	if (!file) {
 		// Unable to open the file.
 		return nullptr;
@@ -71,13 +87,13 @@ RomDataView *RpPropertiesDialogPlugin::createRomDataView(const QUrl &url, KPrope
 
 /**
  * Instantiate an XAttrView object for the given QUrl.
- * @param url QUrl
+ * @param fileItem KFileItem
  * @param props KPropertiesDialog
  * @return XAttrView object, or nullptr if the file is not supported.
  */
-XAttrView *RpPropertiesDialogPlugin::createXAttrView(const QUrl &url, KPropertiesDialog *props)
+XAttrView *RpPropertiesDialogPlugin::createXAttrView(const KFileItem &fileItem, KPropertiesDialog *props)
 {
-	XAttrView *const xattrView = new XAttrView(url, props);
+	XAttrView *const xattrView = new XAttrView(fileItem.url(), props);
 	if (!xattrView->hasAttributes()) {
 		// No attributes. Don't show the page.
 		delete xattrView;
@@ -112,17 +128,17 @@ RpPropertiesDialogPlugin::RpPropertiesDialogPlugin(QObject *parent, const QVaria
 		return;
 	}
 
-	const QUrl url = items[0].url();
+	const KFileItem &fileItem = items[0];
 
 	// Create the RomDataView.
-	RomDataView *const romDataView = createRomDataView(url, props);
+	RomDataView *const romDataView = createRomDataView(fileItem, props);
 	if (romDataView) {
 		// tr: RomDataView tab title
 		props->addPage(romDataView, U82Q(C_("RomDataView", "ROM Properties")));
 	}
 
 	// Create the XAttrView.
-	XAttrView *const xattrView = createXAttrView(url, props);
+	XAttrView *const xattrView = createXAttrView(fileItem, props);
 	if (xattrView) {
 		// tr: XAttrView tab title
 		props->addPage(xattrView, U82Q(C_("XAttrView", "xattrs")));
