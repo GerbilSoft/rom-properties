@@ -43,14 +43,17 @@ using std::vector;
 RomDataView *RpPropertiesDialogPlugin::createRomDataView(const KFileItem &fileItem, KPropertiesDialog *props)
 {
 	// Check if the MIME type is supported.
-	// TODO: Rework supportedMimeTypes() to return a set to make lookups faster?
+	// RomDataFactory::supportedMimeTypes() returns MIME types in
+	// alphabetical order, so we can use std::lower_bound().
+	// FIXME: May break the libromdata.so.2 ABI...
 	const string u8_mimeType = fileItem.mimetype().toUtf8().toStdString();
 	const vector<const char*> &mimeTypes = RomDataFactory::supportedMimeTypes();
-	bool match = std::any_of(mimeTypes.begin(), mimeTypes.end(),
-		[&u8_mimeType](const char *mime) {
-			return u8_mimeType.compare(mime) == 0;
+	auto iter = std::lower_bound(mimeTypes.begin(), mimeTypes.end(), u8_mimeType,
+		[](const char *check, const string &search) -> bool {
+			return (strcmp(check, search.c_str()) < 0);
 		});
-	if (!match) {
+	if (iter == mimeTypes.end() || strcmp(*iter, u8_mimeType.c_str()) != 0) {
+		// MIME type is not supported.
 		return nullptr;
 	}
 

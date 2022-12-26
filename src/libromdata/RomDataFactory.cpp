@@ -1033,6 +1033,13 @@ void RomDataFactoryPrivate::init_supportedMimeTypes(void)
 			vec_mimeTypes.emplace_back(mimeType);
 		}
 	}
+
+	// Sort the MIME types alphabetically to make it possible
+	// to use std::lower_bound() to do a binary search.
+	std::sort(vec_mimeTypes.begin(), vec_mimeTypes.end(),
+		[](const char *a, const char *b) -> bool {
+			return (strcmp(a, b) < 0);
+		});
 }
 
 /**
