@@ -48,6 +48,10 @@ STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_H "${rom-properties-kde_
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_UIS "${rom-properties-kde_UIS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_RCC_SRCS "${rom-properties-kde_RCC_SRCS}")
 
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_XATTR_SRCS "${rom-properties-kde_XATTR_SRCS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_XATTR_H    "${rom-properties-kde_XATTR_H}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_XATTR_UIS  "${rom-properties-kde_XATTR_UIS}")
+
 # Write the config.h file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/../config.kde.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.kde.h")
 
@@ -73,6 +77,8 @@ IF(HAVE_QtDBus)
 			)
 	ENDIF(HAVE_QtDBus_NOTIFY)
 ENDIF(HAVE_QtDBus)
+
+# Main plugin
 SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_SRCS}
 	${${PROJECT_NAME}-notify_SRCS}
@@ -86,10 +92,17 @@ SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}-notify_H}
 	)
 
+# XAttrView plugin
+SET(${PROJECT_NAME}_XATTR_SRCS
+	${${PROJECT_NAME}_XATTR_SRCS}
+	XAttrViewPluginFactoryKDE4.cpp
+	)
+
 IF(COMMAND QT4_WRAP_UI)
 	# Wrap UI files.
 	QT4_WRAP_UI(${PROJECT_NAME}_UIS_H ${${PROJECT_NAME}_UIS})
-	ADD_CUSTOM_TARGET(kde4_generate_ui_h DEPENDS ${${PROJECT_NAME}_UIS_H})
+	QT4_WRAP_UI(${PROJECT_NAME}_XATTR_UIS_H ${${PROJECT_NAME}_XATTR_UIS})
+	ADD_CUSTOM_TARGET(kde4_generate_ui_h DEPENDS ${${PROJECT_NAME}_UIS_H} ${${PROJECT_NAME}_XATTR_UIS_H})
 ENDIF(COMMAND QT4_WRAP_UI)
 
 #####################
@@ -97,6 +110,7 @@ ENDIF(COMMAND QT4_WRAP_UI)
 #####################
 
 IF(BUILD_KDE4)
+	### Main UI frontend plugin ###
 	KDE4_ADD_PLUGIN(${PROJECT_NAME}
 		${${PROJECT_NAME}_SRCS}
 		${${PROJECT_NAME}_H}
@@ -124,6 +138,35 @@ IF(BUILD_KDE4)
 	IF(HAVE_QtDBus)
 		TARGET_LINK_LIBRARIES(rom-properties-kde4 PUBLIC Qt4::QtDBus)
 	ENDIF(HAVE_QtDBus)
+
+	### XAttrView plugin ###
+	SET(XATTRVIEW_NAME xattrview-kde4)
+
+	KDE4_ADD_PLUGIN(${XATTRVIEW_NAME}
+		${${PROJECT_NAME}_XATTR_SRCS}
+		${${PROJECT_NAME}_XATTR_H}
+		${${PROJECT_NAME}_XATTR_UIS_H}
+		)
+	# TODO: Enable PCH?
+	#IF(ENABLE_PCH)
+	#	TARGET_PRECOMPILE_HEADERS(${XATTRVIEW_NAME} PRIVATE
+	#		"${RP_CONFIG_LIBC_H}" "${RP_CXX11_COMPAT_H}"
+	#		../stdafx.h
+	#		)
+	#ENDIF(ENABLE_PCH)
+	SET_TARGET_PROPERTIES(${XATTRVIEW_NAME} PROPERTIES PREFIX "")
+	DO_SPLIT_DEBUG(${XATTRVIEW_NAME})
+	TARGET_INCLUDE_DIRECTORIES(${XATTRVIEW_NAME}
+		PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# kde4
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# kde4
+		PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# kde
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# kde
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>	# src
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# src
+		)
+	TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PRIVATE romdata)
+	TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PUBLIC ${KDE4_KFILE_LIBRARY} ${KDE4_KDEUI_LIBRARY})
+	TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PUBLIC Qt4::QtGui Qt4::QtCore)
 ENDIF(BUILD_KDE4)
 
 #######################
@@ -140,17 +183,17 @@ IF(BUILD_KDE4)
 		"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
 		"${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types"
 		)
-	CONFIGURE_FILE(rom-properties-kde4.KPropertiesDialog.desktop.in rom-properties-kde4.KPropertiesDialog.desktop @ONLY)
-	CONFIGURE_FILE(rom-properties-kde4.ThumbCreator.desktop.in      rom-properties-kde4.ThumbCreator.desktop @ONLY)
+	CONFIGURE_FILE(${PROJECT_NAME}.KPropertiesDialog.desktop.in ${PROJECT_NAME}.KPropertiesDialog.desktop @ONLY)
+	CONFIGURE_FILE(${PROJECT_NAME}.ThumbCreator.desktop.in      ${PROJECT_NAME}.ThumbCreator.desktop @ONLY)
 
 	# FIXME: KDE4's installation directories have the prefix
 	# hard-coded. This should be removed.
-	INSTALL(TARGETS rom-properties-kde4
+	INSTALL(TARGETS ${PROJECT_NAME} ${XATTRVIEW_NAME}
 		LIBRARY DESTINATION "${PLUGIN_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
-	INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/rom-properties-kde4.KPropertiesDialog.desktop"
-		      "${CMAKE_CURRENT_BINARY_DIR}/rom-properties-kde4.ThumbCreator.desktop"
+	INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.KPropertiesDialog.desktop"
+		      "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.ThumbCreator.desktop"
 		DESTINATION "${SERVICES_INSTALL_DIR}"
 		COMPONENT "plugin"
 		)
@@ -165,12 +208,19 @@ IF(BUILD_KDE4)
 	# Check if a split debug file should be installed.
 	IF(INSTALL_DEBUG)
 		# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
-		GET_TARGET_PROPERTY(DEBUG_FILENAME rom-properties-kde4 PDB)
+		GET_TARGET_PROPERTY(DEBUG_FILENAME ${PROJECT_NAME} PDB)
 		IF(DEBUG_FILENAME)
 			INSTALL(FILES "${DEBUG_FILENAME}"
 				DESTINATION "lib/debug/${PLUGIN_INSTALL_DIR}"
 				COMPONENT "debug"
 				)
+		ENDIF(DEBUG_FILENAME)
+
+		GET_TARGET_PROPERTY(DEBUG_FILENAME ${XATTRVIEW_NAME} PDB)
+		IF(DEBUG_FILENAME)
+			INSTALL(FILES "${DEBUG_FILENAME}"
+				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${KF5_PLUGIN_INSTALL_DIR}"
+				COMPONENT "debug")
 		ENDIF(DEBUG_FILENAME)
 	ENDIF(INSTALL_DEBUG)
 ENDIF(BUILD_KDE4)

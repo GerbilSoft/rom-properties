@@ -112,6 +112,10 @@ STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_H    "${rom-properties-k
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_UIS  "${rom-properties-kde_UIS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_RCC_SRCS "${rom-properties-kde_RCC_SRCS}")
 
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_XATTR_SRCS "${rom-properties-kde_XATTR_SRCS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_XATTR_H    "${rom-properties-kde_XATTR_H}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_XATTR_UIS  "${rom-properties-kde_XATTR_UIS}")
+
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kio5_SRCS "${rom-properties-kio_SRCS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kio5_H    "${rom-properties-kio_H}")
 
@@ -137,6 +141,8 @@ IF(HAVE_QtDBus)
 			)
 	ENDIF(HAVE_QtDBus_NOTIFY)
 ENDIF(HAVE_QtDBus)
+
+# Main plugin
 SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_SRCS}
 	${rom-properties-kio5_SRCS}
@@ -148,7 +154,6 @@ SET(${PROJECT_NAME}_SRCS
 	../ExtractorPlugin.cpp
 	../OverlayIconPlugin.cpp
 	)
-
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_H}
 	${rom-properties-kio5_H}
@@ -157,10 +162,17 @@ SET(${PROJECT_NAME}_H
 	../OverlayIconPlugin.hpp
 	)
 
+# XAttrView plugin
+SET(${PROJECT_NAME}_XATTR_SRCS
+	${${PROJECT_NAME}_XATTR_SRCS}
+	XAttrViewPluginFactoryKF5.cpp
+	)
+
 IF(COMMAND QT5_WRAP_UI)
 	# Wrap UI files.
 	QT5_WRAP_UI(${PROJECT_NAME}_UIS_H ${${PROJECT_NAME}_UIS})
-	ADD_CUSTOM_TARGET(kf5_generate_ui_h DEPENDS ${${PROJECT_NAME}_UIS_H})
+	QT5_WRAP_UI(${PROJECT_NAME}_XATTR_UIS_H ${${PROJECT_NAME}_XATTR_UIS})
+	ADD_CUSTOM_TARGET(kf5_generate_ui_h DEPENDS ${${PROJECT_NAME}_UIS_H} ${${PROJECT_NAME}_XATTR_UIS_H})
 ENDIF(COMMAND QT5_WRAP_UI)
 
 #####################
@@ -168,6 +180,7 @@ ENDIF(COMMAND QT5_WRAP_UI)
 #####################
 
 IF(BUILD_KF5)
+	### Main UI frontend plugin ###
 	# Reference: https://community.kde.org/Frameworks/Porting_Notes
 	ADD_LIBRARY(${PROJECT_NAME} MODULE
 		${${PROJECT_NAME}_SRCS}
@@ -199,6 +212,37 @@ IF(BUILD_KF5)
 	IF(HAVE_QtDBus)
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC Qt5::DBus)
 	ENDIF(HAVE_QtDBus)
+
+	### XAttrView plugin ###
+	SET(XATTRVIEW_NAME xattrview-kf5)
+
+	ADD_LIBRARY(${XATTRVIEW_NAME} MODULE
+		${${PROJECT_NAME}_XATTR_SRCS}
+		${${PROJECT_NAME}_XATTR_H}
+		${${PROJECT_NAME}_XATTR_UIS_H}
+		)
+	# TODO: Enable PCH?
+	#IF(ENABLE_PCH)
+	#	TARGET_PRECOMPILE_HEADERS(${XATTRVIEW_NAME} PRIVATE
+	#		"${RP_CONFIG_LIBC_H}" "${RP_CXX11_COMPAT_H}"
+	#		../stdafx.h
+	#		)
+	#ENDIF(ENABLE_PCH)
+	SET_TARGET_PROPERTIES(${XATTRVIEW_NAME} PROPERTIES PREFIX "")
+	DO_SPLIT_DEBUG(${XATTRVIEW_NAME})
+	TARGET_INCLUDE_DIRECTORIES(${XATTRVIEW_NAME}
+		PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# kf5
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# kf5
+		PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# kde
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# kde
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>	# src
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# src
+		)
+	TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PRIVATE romdata)
+	TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PRIVATE KF5::KIOCore KF5::KIOWidgets)
+	TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PUBLIC Qt5::Widgets Qt5::Gui Qt5::Core)
+
+	### Plugin Forwarders ###
 
 	# ExtractorPluginForwarder
 	ADD_LIBRARY(kfilemetadata_${PROJECT_NAME} MODULE
@@ -267,7 +311,7 @@ IF(BUILD_KF5)
 
 	# FIXME: Installing the main plugin into ${KF5_PRPD_PLUGIN_INSTALL_DIR}
 	# breaks thumbnails. We might need to make a KPropertiesDialog forwarder.
-	INSTALL(TARGETS ${PROJECT_NAME}
+	INSTALL(TARGETS ${PROJECT_NAME} ${XATTRVIEW_NAME}
 		LIBRARY DESTINATION "${KF5_PLUGIN_INSTALL_DIR}"
 		COMPONENT "plugin")
 	INSTALL(TARGETS kfilemetadata_${PROJECT_NAME}
@@ -278,6 +322,7 @@ IF(BUILD_KF5)
 		COMPONENT "plugin")
 	INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.KPropertiesDialog.desktop"
 		      "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.ThumbCreator.desktop"
+		      "${XATTRVIEW_NAME}.desktop"
 		DESTINATION "${SERVICES_INSTALL_DIR}"
 		COMPONENT "plugin")
 	# FIXME: Run kbuildsycoca5?
@@ -292,6 +337,13 @@ IF(BUILD_KF5)
 	IF(INSTALL_DEBUG)
 		# FIXME: Generator expression $<TARGET_PROPERTY:${_target},PDB> didn't work with CPack-3.6.1.
 		GET_TARGET_PROPERTY(DEBUG_FILENAME ${PROJECT_NAME} PDB)
+		IF(DEBUG_FILENAME)
+			INSTALL(FILES "${DEBUG_FILENAME}"
+				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${KF5_PLUGIN_INSTALL_DIR}"
+				COMPONENT "debug")
+		ENDIF(DEBUG_FILENAME)
+
+		GET_TARGET_PROPERTY(DEBUG_FILENAME ${XATTRVIEW_NAME} PDB)
 		IF(DEBUG_FILENAME)
 			INSTALL(FILES "${DEBUG_FILENAME}"
 				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${KF5_PLUGIN_INSTALL_DIR}"

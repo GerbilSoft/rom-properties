@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (KF6)                              *
- * PluginFactoryKF6.cpp: Plugin factory class.                             *
+ * XAttrViewPluginFactoryKF5.cpp: XAttrView plugin factory class           *
  *                                                                         *
  * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -15,38 +15,16 @@
  */
 
 #include "stdafx.h"
-#include "config.kde.h"
-
-// RpQImageBackend
-#include "RpQImageBackend.hpp"
-using LibRpTexture::rp_image;
-
-// Achievements backend
-#include "AchQtDBus.hpp"
 
 // Plugins
-#include "RomPropertiesDialogPlugin.hpp"
-#include "RomThumbCreator.hpp"
+#include "xattr/XAttrViewPropertiesDialogPlugin.hpp"
 
 // KDE Frameworks
 #include <kcoreaddons_version.h>
 #include <kpluginfactory.h>
 
-static void register_backends(void)
-{
-	// Register RpQImageBackend and AchQtDBus.
-	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
-#if defined(ENABLE_ACHIEVEMENTS) && defined(HAVE_QtDBus_NOTIFY)
-	AchQtDBus::instance();
-#endif /* ENABLE_ACHIEVEMENTS && HAVE_QtDBus_NOTIFY */
-}
-
-K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf6.json",
-	register_backends();
-	registerPlugin<RomPropertiesDialogPlugin>();
-#ifdef HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H
-	registerPlugin<RomThumbnailCreator>();
-#endif /* HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H */
+K_PLUGIN_FACTORY_WITH_JSON(XAttrViewPropertiesDialogFactory, "xattrview-kf6.json",
+	registerPlugin<XAttrViewPropertiesDialogPlugin>();
 )
 
 // automoc4 works correctly without any special handling.
@@ -54,4 +32,4 @@ K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf6.json"
 // Q_OBJECT macro, so it needs a manual .moc include.
 // That .moc include trips up automoc4, even if it's #ifdef'd.
 // Hence, we need separate files for KDE4, KF5, and KF6.
-#include "PluginFactoryKF6.moc"
+#include "XAttrViewPluginFactoryKF6.moc"

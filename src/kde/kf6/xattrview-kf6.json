@@ -2,15 +2,15 @@
     "CacheThumbnail": true,
     "KPlugin": {
         "MimeTypes": [
-@MIMETYPES_ALL_JSON_ARRAY@
+            "application/octet-stream"
         ],
-        "Name": "rom-properties-kf6",
-        "Description": "ROM Properties Page for KDE Frameworks 6",
+        "Name": "xattrview-kf5",
+        "Description": "Extended Attributes Viewer for KDE Frameworks 6",
         "ServiceTypes": [
             "KPropertiesDialog/Plugin"
         ]
     },
-    "MimeType": "@MIMETYPES_ALL@",
+    "MimeType": "application/octet-stream",
     "X-KDE-Protocol": "file",
     "X-KDE-Protocols": [
         "file",

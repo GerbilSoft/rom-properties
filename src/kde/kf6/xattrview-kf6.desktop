@@ -1,15 +1,15 @@
 [Desktop Entry]
 Encoding=UTF-8
 Type=Service
-Name=ROM Properties Page
+Name=Extended Attributes Viewer
 ServiceTypes=KPropertiesDialog/Plugin
 
 # KDE service settings.
-X-KDE-Library=rom-properties-kf5
+X-KDE-Library=xattrview-kf6
 X-KDE-ServiceTypes=KPropertiesDialog/Plugin
 X-KDE-Protocol=file
 X-KDE-Protocols=file,desktop
 
 # Supported MIME types.
 # For KDE KPropertiesDialog, both thumbnailable and non-thumbnailable types are listed.
-MimeType=@MIMETYPES_ALL@
+MimeType=application/octet-stream

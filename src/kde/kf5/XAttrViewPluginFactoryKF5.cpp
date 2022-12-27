@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (KF5)                              *
- * PluginFactoryKF5.cpp: Plugin factory class.                             *
+ * XAttrViewPluginFactoryKF5.cpp: XAttrView plugin factory class           *
  *                                                                         *
  * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -15,57 +15,34 @@
  */
 
 #include "stdafx.h"
-#include "config.kde.h"
-
-// RpQImageBackend
-#include "RpQImageBackend.hpp"
-using LibRpTexture::rp_image;
-
-// Achievements backend
-#include "AchQtDBus.hpp"
 
 // Plugins
-#include "RomPropertiesDialogPlugin.hpp"
-#include "RomThumbCreator.hpp"
+#include "xattr/XAttrViewPropertiesDialogPlugin.hpp"
 
 // KDE Frameworks
 #include <kcoreaddons_version.h>
 #include <kpluginfactory.h>
 
-static void register_backends(void)
-{
-	// Register RpQImageBackend and AchQtDBus.
-	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
-#if defined(ENABLE_ACHIEVEMENTS) && defined(HAVE_QtDBus_NOTIFY)
-	AchQtDBus::instance();
-#endif /* ENABLE_ACHIEVEMENTS && HAVE_QtDBus_NOTIFY */
-}
-
 #if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,89,0)
 // KF5 5.89 added a new registerPlugin() with no keyword or CreateInstanceFunction parameters
 // and deprecated the old version.
-K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf5.json",
-	register_backends();
-	registerPlugin<RomPropertiesDialogPlugin>();
-#ifdef HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H
-	registerPlugin<RomThumbnailCreator>();
-#endif /* HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H */
+K_PLUGIN_FACTORY_WITH_JSON(XAttrViewPropertiesDialogFactory, "xattrview-kf5.json",
+	registerPlugin<XAttrViewPropertiesDialogPlugin>();
 )
 #else /* KCOREADDONS_VERSION < QT_VERSION_CHECK(5,89,0) */
 // NOTE: KIO::ThumbnailCreator was added in KF5 5.100, so it won't be
 // added in this code path. (KF5 5.88 and earlier)
 
-static QObject *createRomPropertiesPage(QWidget *w, QObject *parent, const QVariantList &args)
+static QObject *createXAttrViewPropertiesPage(QWidget *w, QObject *parent, const QVariantList &args)
 {
 	// NOTE: RomPropertiesDialogPlugin will verify that parent is an
 	// instance of KPropertiesDialog*, so we don't have to do that here.
 	Q_UNUSED(w)
-	return new RomPropertiesDialogPlugin(parent, args);
+	return new XAttrViewPropertiesDialogPlugin(parent, args);
 }
 
-K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf5.json",
-	register_backends();
-	registerPlugin<RomPropertiesDialogPlugin>(QString(), createRomPropertiesPage);
+K_PLUGIN_FACTORY_WITH_JSON(XAttrViewPropertiesDialogFactory, "xattrview-kf5.json",
+	registerPlugin<XAttrViewPropertiesDialogFactory>(QString(), createXAttrViewPropertiesPage);
 )
 #endif
 
@@ -74,4 +51,4 @@ K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf5.json"
 // Q_OBJECT macro, so it needs a manual .moc include.
 // That .moc include trips up automoc4, even if it's #ifdef'd.
 // Hence, we need separate files for KDE4, KF5, and KF6.
-#include "PluginFactoryKF5.moc"
+#include "XAttrViewPluginFactoryKF5.moc"

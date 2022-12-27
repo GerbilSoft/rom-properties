@@ -11,11 +11,12 @@ PROJECT(rom-properties-kde LANGUAGES CXX)
 
 # Sources and headers.
 SET(${PROJECT_NAME}_SRCS
-	RpPropertiesDialogPlugin.cpp
+	RomPropertiesDialogPlugin.cpp
 	RomDataView.cpp
 	RomDataView_ops.cpp
 	RomThumbCreator.cpp
 	RpQt.cpp
+	RpQUrl.cpp
 	RpQImageBackend.cpp
 	DragImageLabel.cpp
 	RpQByteArrayFile.cpp
@@ -39,16 +40,14 @@ SET(${PROJECT_NAME}_SRCS
 	config/AchievementsItemDelegate.cpp
 	config/AboutTab.cpp
 	config/UpdateChecker.cpp
-	xattr/LinuxAttrView.cpp
-	xattr/DosAttrView.cpp
-	xattr/XAttrView.cpp
 	)
 SET(${PROJECT_NAME}_H
-	RpPropertiesDialogPlugin.hpp
+	RomPropertiesDialogPlugin.hpp
 	RomDataView.hpp
 	RomDataView_p.hpp
 	RomThumbCreator.hpp
 	RpQt.hpp
+	RpQUrl.hpp
 	RpQImageBackend.hpp
 	QImageData_qt4.hpp
 	DragImageLabel.hpp
@@ -73,9 +72,6 @@ SET(${PROJECT_NAME}_H
 	config/AchievementsItemDelegate.hpp
 	config/AboutTab.hpp
 	config/UpdateChecker.hpp
-	xattr/LinuxAttrView.hpp
-	xattr/DosAttrView.hpp
-	xattr/XAttrView.hpp
 	)
 SET(${PROJECT_NAME}_UIS
 	RomDataView.ui
@@ -86,13 +82,31 @@ SET(${PROJECT_NAME}_UIS
 	config/CacheTab.ui
 	config/AchievementsTab.ui
 	config/AboutTab.ui
-	xattr/XAttrView.ui
-	xattr/LinuxAttrView.ui
-	xattr/DosAttrView.ui
 	)
 SET(${PROJECT_NAME}_RCC_SRCS
 	../res/flags/flags.qrc
 	../res/ach/ach.qrc
+	)
+
+# XAttrView plugin
+SET(${PROJECT_NAME}_XATTR_SRCS
+	RpQUrl.cpp	# NOTE: duplicated here
+	xattr/XAttrViewPropertiesDialogPlugin.cpp
+	xattr/LinuxAttrView.cpp
+	xattr/DosAttrView.cpp
+	xattr/XAttrView.cpp
+	)
+SET(${PROJECT_NAME}_XATTR_H
+	RpQUrl.hpp	# NOTE: duplicated here
+	xattr/XAttrViewPropertiesDialogPlugin.hpp
+	xattr/LinuxAttrView.hpp
+	xattr/DosAttrView.hpp
+	xattr/XAttrView.hpp
+	)
+SET(${PROJECT_NAME}_XATTR_UIS
+	xattr/XAttrView.ui
+	xattr/LinuxAttrView.ui
+	xattr/DosAttrView.ui
 	)
 
 IF(ENABLE_DECRYPTION)

@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
- * RpPropertiesDialogPlugin.cpp: KPropertiesDialogPlugin implementation.   *
+ * RomPropertiesDialogPlugin.cpp: KPropertiesDialogPlugin implementation   *
  *                                                                         *
  * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -16,11 +16,8 @@
 
 #include "stdafx.h"
 #include "check-uid.hpp"
-#include "RpPropertiesDialogPlugin.hpp"
-
-// Property pages
+#include "RomPropertiesDialogPlugin.hpp"
 #include "RomDataView.hpp"
-#include "xattr/XAttrView.hpp"
 
 // librpbase, librpfile
 using LibRpBase::RomData;
@@ -40,7 +37,7 @@ using std::vector;
  * @param props KPropertiesDialog
  * @return RomDataView object, or nullptr if the file is not supported.
  */
-RomDataView *RpPropertiesDialogPlugin::createRomDataView(const KFileItem &fileItem, KPropertiesDialog *props)
+RomDataView *RomPropertiesDialogPlugin::createRomDataView(const KFileItem &fileItem, KPropertiesDialog *props)
 {
 	// Check if the MIME type is supported.
 	// RomDataFactory::supportedMimeTypes() returns MIME types in
@@ -89,29 +86,11 @@ RomDataView *RpPropertiesDialogPlugin::createRomDataView(const KFileItem &fileIt
 }
 
 /**
- * Instantiate an XAttrView object for the given QUrl.
- * @param fileItem KFileItem
- * @param props KPropertiesDialog
- * @return XAttrView object, or nullptr if the file is not supported.
- */
-XAttrView *RpPropertiesDialogPlugin::createXAttrView(const KFileItem &fileItem, KPropertiesDialog *props)
-{
-	XAttrView *const xattrView = new XAttrView(fileItem.url(), props);
-	if (!xattrView->hasAttributes()) {
-		// No attributes. Don't show the page.
-		delete xattrView;
-		return nullptr;
-	}
-
-	return xattrView;
-}
-
-/**
- * Instantiate properties pages for the given KPropertiesDialog.
+ * Instantiate RomDataView for the given KPropertiesDialog.
  * @param parent KPropertiesDialog (NOTE: QObject* is used for registerPlugin() compatibility.)
  * @param args
  */
-RpPropertiesDialogPlugin::RpPropertiesDialogPlugin(QObject *parent, const QVariantList &args)
+RomPropertiesDialogPlugin::RomPropertiesDialogPlugin(QObject *parent, const QVariantList &args)
 	: super(qobject_cast<KPropertiesDialog*>(parent))
 {
 	Q_UNUSED(args)
@@ -138,12 +117,5 @@ RpPropertiesDialogPlugin::RpPropertiesDialogPlugin(QObject *parent, const QVaria
 	if (romDataView) {
 		// tr: RomDataView tab title
 		props->addPage(romDataView, U82Q(C_("RomDataView", "ROM Properties")));
-	}
-
-	// Create the XAttrView.
-	XAttrView *const xattrView = createXAttrView(fileItem, props);
-	if (xattrView) {
-		// tr: XAttrView tab title
-		props->addPage(xattrView, U82Q(C_("XAttrView", "xattrs")));
 	}
 }
