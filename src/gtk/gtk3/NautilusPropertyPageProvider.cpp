@@ -21,7 +21,7 @@
 #include "is-supported.hpp"
 
 #include "../RomDataView.hpp"
-#include "../xattr/LinuxAttrView.h"	// TODO: Replace with XAttrView
+#include "../xattr/DosAttrView.h"	// TODO: Replace with XAttrView
 
 #include "librpbase/RomData.hpp"
 using LibRpBase::RomData;
@@ -136,10 +136,10 @@ rp_nautilus_property_page_provider_get_XAttrView(const gchar *uri)
 	// TODO: Actually open the file.
 	// For now, add a test widget.
 
-	GtkWidget *const linuxAttrView = rp_linux_attr_view_new();
-	gtk_widget_set_name(linuxAttrView, "linuxAttrView");
-	rp_linux_attr_view_set_flags(RP_LINUX_ATTR_VIEW(linuxAttrView), 0x00000123);
-	gtk_widget_show(linuxAttrView);
+	GtkWidget *const xattrView = rp_dos_attr_view_new();
+	gtk_widget_set_name(xattrView, "xattrView");
+	rp_dos_attr_view_set_attrs(RP_DOS_ATTR_VIEW(xattrView), 0x07);
+	gtk_widget_show(xattrView);
 
 	// tr: Tab title.
 	const char *const tabTitle = "xattrs";
@@ -147,7 +147,7 @@ rp_nautilus_property_page_provider_get_XAttrView(const gchar *uri)
 	// Create the NautilusPropertyPage
 	return nautilus_property_page_new(
 		"RomProperties::XAttrView",
-		gtk_label_new(tabTitle), linuxAttrView);
+		gtk_label_new(tabTitle), xattrView);
 }
 
 static GList*
