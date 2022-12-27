@@ -46,7 +46,6 @@ XAttrView *XAttrViewPropertiesDialogPlugin::createXAttrView(const KFileItem &fil
 XAttrViewPropertiesDialogPlugin::XAttrViewPropertiesDialogPlugin(QObject *parent, const QVariantList &args)
 	: super(qobject_cast<KPropertiesDialog*>(parent))
 {
-	printf("QUACK\n");
 	Q_UNUSED(args)
 	CHECK_UID();
 
