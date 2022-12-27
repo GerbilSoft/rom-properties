@@ -14,6 +14,7 @@
 #include <sys/ioctl.h>
 #include <sys/xattr.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 // EXT2 flags (also used for EXT3, EXT4, and other Linux file systems)
 #include "ext2_flags.h"
