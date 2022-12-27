@@ -67,7 +67,7 @@ ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR CMAKE_SYSTEM_NAME STREQUAL "Drago
 	SET(${PROJECT_NAME}_SRCS
 		${${PROJECT_NAME}_SRCS}
 		scsi/RpFile_scsi_freebsd.cpp
-		xattr/XAttrReader_dummy.cpp	# TODO
+		xattr/XAttrReader_dummy.cpp
 		)
 
 	IF(0) # FIXME
@@ -89,7 +89,7 @@ ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "NetBSD" OR CMAKE_SYSTEM_NAME STREQUAL "OpenBS
 	SET(${PROJECT_NAME}_SRCS
 		${${PROJECT_NAME}_SRCS}
 		scsi/RpFile_scsi_netbsd.cpp
-		xattr/XAttrReader_dummy.cpp	# TODO
+		xattr/XAttrReader_dummy.cpp
 		)
 	SET(RP_OS_SCSI_SUPPORTED 1)
 ELSE()
