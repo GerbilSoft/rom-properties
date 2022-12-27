@@ -190,10 +190,14 @@ rp_dos_attr_view_set_property(GObject		*object,
 	RpDosAttrView *const widget = RP_DOS_ATTR_VIEW(object);
 
 	switch (prop_id) {
-		case PROP_ATTRS:
-			widget->attrs = g_value_get_uint(value);
-			rp_dos_attr_view_update_attrs_display(widget);
+		case PROP_ATTRS: {
+			const unsigned int attrs = g_value_get_uint(value);
+			if (widget->attrs != attrs) {
+				widget->attrs = attrs;
+				rp_dos_attr_view_update_attrs_display(widget);
+			}
 			break;
+		}
 
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);

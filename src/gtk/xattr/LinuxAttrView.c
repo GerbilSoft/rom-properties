@@ -302,10 +302,14 @@ rp_linux_attr_view_set_property(GObject		*object,
 	RpLinuxAttrView *const widget = RP_LINUX_ATTR_VIEW(object);
 
 	switch (prop_id) {
-		case PROP_FLAGS:
-			widget->flags = g_value_get_int(value);
-			rp_linux_attr_view_update_flags_display(widget);
+		case PROP_FLAGS: {
+			const int flags = g_value_get_int(value);
+			if (widget->flags != flags) {
+				widget->flags = flags;
+				rp_linux_attr_view_update_flags_display(widget);
+			}
 			break;
+		}
 
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
