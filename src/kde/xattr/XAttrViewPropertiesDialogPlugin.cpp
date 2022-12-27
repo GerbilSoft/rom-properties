@@ -34,6 +34,7 @@ XAttrView *XAttrViewPropertiesDialogPlugin::createXAttrView(const KFileItem &fil
 		return nullptr;
 	}
 
+	xattrView->setObjectName(QLatin1String("xattrView"));
 	return xattrView;
 }
 
