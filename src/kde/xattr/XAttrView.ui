@@ -52,6 +52,12 @@
      <layout class="QVBoxLayout" name="vboxXAttr">
       <item>
        <widget class="QTreeWidget" name="treeXAttr">
+        <property name="rootIsDecorated">
+         <bool>false</bool>
+        </property>
+        <property name="uniformRowHeights">
+         <bool>true</bool>
+        </property>
         <column>
          <property name="text">
           <string>Name</string>

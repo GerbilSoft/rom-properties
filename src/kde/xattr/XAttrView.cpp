@@ -16,6 +16,7 @@
 // for EXT2 flags [TODO: move to librpbase/libromdata]
 #include <sys/stat.h>
 #include <sys/ioctl.h>
+#include <sys/xattr.h>
 #include <fcntl.h>
 // for FS_IOC_GETFLAGS (equivalent to EXT2_IOC_GETFLAGS)
 #include <linux/fs.h>
@@ -24,6 +25,7 @@
 
 // C++ STL classes
 using std::string;
+using std::unique_ptr;
 
 /** XAttrViewPrivate **/
 
@@ -61,6 +63,13 @@ class XAttrViewPrivate
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int loadDosAttrs(int fd);
+
+		/**
+		 * Load POSIX xattrs, if available.
+		 * @param fd File descriptor of the open file
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int loadPosixXattrs(int fd);
 
 	public:
 		/**
@@ -156,6 +165,104 @@ int XAttrViewPrivate::loadDosAttrs(int fd)
 }
 
 /**
+ * Load POSIX xattrs, if available.
+ * @param fd File descriptor of the open file
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int XAttrViewPrivate::loadPosixXattrs(int fd)
+{
+	// Hide by default.
+	// If we do have attributes, we'll show the widgets there.
+	ui.grpXAttr->hide();
+
+#ifdef __gnu_linux__
+	// Get the size of the xattr name list.
+	ssize_t list_size = flistxattr(fd, nullptr, 0);
+	if (list_size == 0) {
+		// No xattrs. Show an empty list.
+		ui.treeXAttr->clear();
+		ui.grpXAttr->show();
+		return 0;
+	} else if (list_size < 0) {
+		// Xattrs are not supported.
+		return -ENOTSUP;
+	}
+
+	unique_ptr<char[]> list_buf(new char[list_size]);
+	if (flistxattr(fd, list_buf.get(), list_size) != list_size) {
+		// List size doesn't match. Something broke here...
+		return -ENOTSUP;
+	}
+	// List should end with a NULL terminator.
+	if (list_buf[list_size-1] != '\0') {
+		// Not NULL-terminated...
+		return -EIO;
+	}
+
+	// Value buffer
+	size_t value_len = 256;
+	unique_ptr<char[]> value_buf(new char[value_len]);
+
+	// List contains NULL-terminated strings.
+	// Process strings until we reach list_buf + list_size.
+	ui.treeXAttr->clear();
+	const char *const list_end = &list_buf[list_size];
+	const char *p = list_buf.get();
+	while (p < list_end) {
+		const char *name = p;
+		if (name[0] == '\0') {
+			// Empty name. Assume we're at the end of the list.
+			break;
+		}
+		p += strlen(name) + 1;
+
+		// Get the value for this attribute.
+		// NOTE: vlen does *not* include a NULL-terminator.
+		ssize_t vlen = fgetxattr(fd, name, nullptr, 0);
+		if (vlen <= 0) {
+			// Error retrieving attribute information.
+			continue;
+		} else if ((size_t)vlen > value_len) {
+			// Need to reallocate the buffer.
+			value_len = vlen;
+			value_buf.reset(new char[value_len]);
+		}
+		if (fgetxattr(fd, name, value_buf.get(), value_len) != vlen) {
+			// Failed to get this attribute. Skip it for now.
+			continue;
+		}
+
+		// We have the attribute. Add a list item.
+		QTreeWidgetItem *const treeWidgetItem = new QTreeWidgetItem(ui.treeXAttr);
+		treeWidgetItem->setData(0, Qt::DisplayRole, QString::fromUtf8(name));
+		treeWidgetItem->setData(1, Qt::DisplayRole, QString::fromUtf8(value_buf.get(), static_cast<int>(vlen)));
+	}
+
+	// Set column stretch modes.
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+	QHeaderView *const pHeader = ui.treeXAttr->header();
+	pHeader->setStretchLastSection(false);
+	pHeader->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+	pHeader->setSectionResizeMode(1, QHeaderView::Stretch);
+#else /* QT_VERSION <= QT_VERSION_CHECK(5,0,0) */
+	// Qt 4 doesn't have QHeaderView::setSectionResizeMode().
+	// We'll run a manual resize on each column initially.
+	for (int i = 0; i < 2; i++) {
+		ui.treeXAttr->resizeColumnToContents(i);
+	}
+#endif
+
+	// Extended attributes retrieved.
+	ui.grpXAttr->show();
+	return 0;
+#else /* !__gnu_linux__ */
+	// Can't use extended attributes.
+	ui.treeXAttr->clear();
+	return -ENOTSUP;
+#endif /* __gnu_linux__ */
+}
+
+/**
  * Load the attributes from the specified file.
  * The attributes will be loaded into the display widgets.
  * @return 0 on success; negative POSIX error code on error.
@@ -232,6 +339,10 @@ int XAttrViewPrivate::loadAttributes(void)
 	if (ret == 0) {
 		hasAnyAttrs = true;
 	}
+	ret = loadPosixXattrs(fd);
+	if (ret == 0) {
+		hasAnyAttrs = true;
+	}
 
 	// We don't need the file descriptor anymore.
 	close(fd);
@@ -254,6 +365,8 @@ void XAttrViewPrivate::clearDisplayWidgets()
 {
 	// TODO: Other widgets.
 	ui.linuxAttrView->clearFlags();
+	ui.dosAttrView->clearAttrs();
+	ui.treeXAttr->clear();
 }
 
 /** XAttrView **/
