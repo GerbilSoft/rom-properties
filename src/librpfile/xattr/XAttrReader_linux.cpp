@@ -10,6 +10,8 @@
 #include "XAttrReader.hpp"
 #include "XAttrReader_p.hpp"
 
+#include "librpcpu/byteswap_rp.h"
+
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <sys/xattr.h>
@@ -143,26 +145,46 @@ int XAttrReaderPrivate::loadLinuxAttrs(void)
 int XAttrReaderPrivate::loadDosAttrs(void)
 {
 	// Attempt to get MS-DOS attributes.
-	// TODO: Also check xattrs.
-	// ntfs3 has: system.dos_attrib, system.ntfs_attrib
-	// ntfs-3g has: system.ntfs_attrib, system.ntfs_attrib_be
-	int ret;
+
+	// ioctl (Linux vfat only)
 	if (!ioctl(fd, FAT_IOCTL_GET_ATTRIBUTES, &dosAttributes)) {
 		// ioctl() succeeded. We have MS-DOS attributes.
 		hasDosAttributes = true;
-		ret = 0;
-	} else {
-		// No MS-DOS attributes on this file.
-		// Assume this is not an MS-DOS file system.
-		ret = errno;
-		if (ret == 0) {
-			ret = -EIO;
-		}
-
-		dosAttributes = 0;
-		hasDosAttributes = false;
+		return 0;
 	}
-	return ret;
+
+	// Try system xattrs:
+	// ntfs3 has: system.dos_attrib, system.ntfs_attrib
+	// ntfs-3g has: system.ntfs_attrib, system.ntfs_attrib_be
+	// Attribute is stored as a 32-bit DWORD.
+	union {
+		uint8_t u8[16];
+		uint32_t u32;
+	} buf;
+
+	ssize_t sz = fgetxattr(fd, "system.ntfs_attrib_be", buf.u8, sizeof(buf.u8));
+	if (sz == 4) {
+		dosAttributes = be32_to_cpu(buf.u32);
+		hasDosAttributes = true;
+		return 0;
+	}
+
+	sz = fgetxattr(fd, "system.ntfs_attrib", buf.u8, sizeof(buf.u8));
+	if (sz == 4) {
+		dosAttributes = le32_to_cpu(buf.u32);
+		hasDosAttributes = true;
+		return 0;
+	}
+	
+	sz = fgetxattr(fd, "system.dos_attrib", buf.u8, sizeof(buf.u8));
+	if (sz == 4) {
+		dosAttributes = le32_to_cpu(buf.u32);
+		hasDosAttributes = true;
+		return 0;
+	}
+
+	// No valid attributes found.
+	return -ENOENT;
 }
 
 /**
