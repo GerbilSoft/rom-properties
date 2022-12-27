@@ -230,7 +230,9 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 		}
 
 		// We have the attribute.
-		genericXAttrs.emplace_back(string(name), string(value_buf.get(), vlen));
+		// NOTE: Not checking for duplicates, since there
+		// shouldn't be duplicate attribute names.
+		genericXAttrs.emplace(string(name), string(value_buf.get(), vlen));
 	}
 
 	// Extended attributes retrieved.

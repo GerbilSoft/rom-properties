@@ -14,7 +14,7 @@
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 // C++ includes
-#include <list>
+#include <map>
 #include <string>
 #include <utility>
 
@@ -75,11 +75,11 @@ class RP_LIBROMDATA_PUBLIC XAttrReader
 		bool hasGenericXAttrs(void) const;
 
 		/**
-		 * Extended attribute list (UTF-8)
+		 * Extended attribute map (UTF-8)
 		 * - Key: Name
 		 * - Value: Value
 		 */
-		typedef std::list<std::pair<std::string, std::string> > XAttrList;
+		typedef std::map<std::string, std::string> XAttrList;
 
 		/**
 		 * Get the list of extended attributes.
