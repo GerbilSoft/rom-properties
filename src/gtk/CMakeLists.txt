@@ -63,6 +63,7 @@ SET(${PROJECT_NAME}_SRCS
 	config/AchievementsTab.cpp
 	config/AboutTab.cpp
 	config/UpdateChecker.cpp
+	xattr/LinuxAttrView.c
 	)
 SET(${PROJECT_NAME}_H
 	RomDataView.hpp
@@ -94,6 +95,7 @@ SET(${PROJECT_NAME}_H
 	config/AchievementsTab.hpp
 	config/AboutTab.hpp
 	config/UpdateChecker.hpp
+	xattr/LinuxAttrView.h
 	)
 
 # Sources and headers (GTK4+ only)
