@@ -10,14 +10,13 @@
 #include "XAttrReader.hpp"
 #include "XAttrReader_p.hpp"
 
-// EXT2 flags (also used for EXT3, EXT4, and other Linux file systems)
-#include "ext2_flags.h"
-
-// for EXT2 flags [TODO: move to librpbase/libromdata]
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <sys/xattr.h>
 #include <fcntl.h>
+
+// EXT2 flags (also used for EXT3, EXT4, and other Linux file systems)
+#include "ext2_flags.h"
 // for FS_IOC_GETFLAGS (equivalent to EXT2_IOC_GETFLAGS)
 #include <linux/fs.h>
 // for FAT_IOCTL_GET_ATTRIBUTES
