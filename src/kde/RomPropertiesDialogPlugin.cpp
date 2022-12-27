@@ -39,18 +39,6 @@ using std::vector;
  */
 RomDataView *RomPropertiesDialogPlugin::createRomDataView(const KFileItem &fileItem, KPropertiesDialog *props)
 {
-	// Check if the MIME type is supported.
-	// TODO: Rework supportedMimeTypes() to return a set to make lookups faster?
-	const string u8_mimeType = fileItem.mimetype().toUtf8().toStdString();
-	const vector<const char*> &mimeTypes = RomDataFactory::supportedMimeTypes();
-	bool match = std::any_of(mimeTypes.begin(), mimeTypes.end(),
-		[&u8_mimeType](const char *mime) {
-			return u8_mimeType.compare(mime) == 0;
-		});
-	if (!match) {
-		return nullptr;
-	}
-
 	// Attempt to open the ROM file.
 	IRpFile *const file = openQUrl(fileItem.url(), false);
 	if (!file) {
