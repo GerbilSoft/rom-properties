@@ -9,6 +9,11 @@
 #include "stdafx.h"
 #include "XAttrView.hpp"
 
+// XAttrReader
+#include "librpfile/xattr/XAttrReader.hpp"
+using LibRpFile::XAttrReader;
+
+// Attribute viewer widgets
 #include "LinuxAttrView.h"
 #include "DosAttrView.h"
 
@@ -32,7 +37,8 @@ static void	rp_xattr_view_get_property(GObject	*object,
 static void	rp_xattr_view_finalize    (GObject	*object);
 
 /** Update display **/
-static void	rp_xattr_view_update_display(RpXAttrView *widget);
+static int	rp_xattr_view_load_attributes(RpXAttrView *widget);
+static void	rp_xattr_view_clear_display_widgets(RpXAttrView *widget);
 
 static GParamSpec *props[PROP_LAST];
 
@@ -57,9 +63,13 @@ struct _RpXAttrView {
 	super __parent__;
 
 	gchar *uri;
-	gboolean is_loaded;
+	XAttrReader *xattrReader;
+	gboolean has_attributes;
 
+	GtkWidget *fraLinuxAttributes;
 	GtkWidget *linuxAttrView;
+
+	GtkWidget *fraDosAttributes;
 	GtkWidget *dosAttrView;
 };
 
@@ -96,16 +106,16 @@ rp_xattr_view_init(RpXAttrView *widget)
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
 	// Linux attributes
-	GtkWidget *const fraLinuxAttributes = gtk_frame_new(C_("XAttrView", "Linux Attributes"));
-	gtk_widget_set_name(fraLinuxAttributes, "fraLinuxAttributes");
+	widget->fraLinuxAttributes = gtk_frame_new(C_("XAttrView", "Linux Attributes"));
+	gtk_widget_set_name(widget->fraLinuxAttributes, "fraLinuxAttributes");
 	GtkWidget *const vboxLinuxAttributes = rp_gtk_vbox_new(0);
 	gtk_widget_set_name(vboxLinuxAttributes, "vboxLinuxAttributes");
 	widget->linuxAttrView = rp_linux_attr_view_new();
 	gtk_widget_set_name(widget->linuxAttrView, "linuxAttrView");
 
 	// MS-DOS attributes
-	GtkWidget *const fraDosAttributes = gtk_frame_new(C_("XAttrView", "MS-DOS Attributes"));
-	gtk_widget_set_name(fraDosAttributes, "fraDosAttributes");
+	widget->fraDosAttributes = gtk_frame_new(C_("XAttrView", "MS-DOS Attributes"));
+	gtk_widget_set_name(widget->fraDosAttributes, "fraDosAttributes");
 	GtkWidget *const vboxDosAttributes = rp_gtk_vbox_new(0);
 	gtk_widget_set_name(vboxDosAttributes, "vboxDosAttributes");
 	widget->dosAttrView = rp_dos_attr_view_new();
@@ -120,12 +130,12 @@ rp_xattr_view_init(RpXAttrView *widget)
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 #if GTK_CHECK_VERSION(2,91,0)
-	gtk_widget_set_margin(fraLinuxAttributes, 6);
-	gtk_widget_set_margin(fraDosAttributes, 6);
+	gtk_widget_set_margin(widget->fraLinuxAttributes, 6);
+	gtk_widget_set_margin(widget->fraDosAttributes, 6);
 	gtk_widget_set_margin(vboxLinuxAttributes, 6);
 	gtk_widget_set_margin(vboxDosAttributes, 6);
-	gtk_frame_set_child(GTK_FRAME(fraLinuxAttributes), vboxLinuxAttributes);
-	gtk_frame_set_child(GTK_FRAME(fraDosAttributes), vboxDosAttributes);
+	gtk_frame_set_child(GTK_FRAME(widget->fraLinuxAttributes), vboxLinuxAttributes);
+	gtk_frame_set_child(GTK_FRAME(widget->fraDosAttributes), vboxDosAttributes);
 #else /* !GTK_CHECK_VERSION(2,91,0) */
 	// NOTE: The extra alignments outside the frame reduce the frame widths.
 	// This only affects GTK2, so meh.
@@ -134,41 +144,41 @@ rp_xattr_view_init(RpXAttrView *widget)
 	gtk_widget_show(alignVboxLinuxAttributes);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignVboxLinuxAttributes), 6, 6, 6, 6);
 	gtk_container_add(GTK_CONTAINER(alignVboxLinuxAttributes), vboxLinuxAttributes);
-	gtk_frame_set_child(GTK_FRAME(fraLinuxAttributes), alignVboxLinuxAttributes);
+	gtk_frame_set_child(GTK_FRAME(widget->fraLinuxAttributes), alignVboxLinuxAttributes);
 
 	GtkWidget *const alignFraLinuxAttributes = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
 	gtk_widget_set_name(alignFraLinuxAttributes, "alignFraLinuxAttributes");
 	gtk_widget_show(alignFraLinuxAttributes);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignFraLinuxAttributes), 6, 6, 6, 6);
-	gtk_container_add(GTK_CONTAINER(alignFraLinuxAttributes), fraLinuxAttributes);
+	gtk_container_add(GTK_CONTAINER(alignFraLinuxAttributes), widget->fraLinuxAttributes);
 
 	GtkWidget *const alignVboxDosAttributes = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
 	gtk_widget_set_name(alignVboxDosAttributes, "alignVboxDosAttributes");
 	gtk_widget_show(alignVboxDosAttributes);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignVboxDosAttributes), 6, 6, 6, 6);
 	gtk_container_add(GTK_CONTAINER(alignVboxDosAttributes), vboxDosAttributes);
-	gtk_frame_set_child(GTK_FRAME(fraDosAttributes), alignVboxDosAttributes);
+	gtk_frame_set_child(GTK_FRAME(widget->fraDosAttributes), alignVboxDosAttributes);
 
 	GtkWidget *const alignFraDosAttributes = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
 	gtk_widget_set_name(alignFraDosAttributes, "alignFraDosAttributes");
 	gtk_widget_show(alignFraDosAttributes);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignFraDosAttributes), 6, 6, 6, 6);
-	gtk_container_add(GTK_CONTAINER(alignFraDosAttributes), fraDosAttributes);
+	gtk_container_add(GTK_CONTAINER(alignFraDosAttributes), widget->fraDosAttributes);
 #endif /* GTK_CHECK_VERSION(2,91,0) */
 
 #if GTK_CHECK_VERSION(4,0,0)
-	gtk_box_append(GTK_BOX(widget), fraLinuxAttributes);
-	gtk_box_append(GTK_BOX(widget), fraDosAttributes);
+	gtk_box_append(GTK_BOX(widget), widget->fraLinuxAttributes);
+	gtk_box_append(GTK_BOX(widget), widget->fraDosAttributes);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 #  if GTK_CHECK_VERSION(2,91,0)
-	gtk_box_pack_start(GTK_BOX(widget), fraLinuxAttributes, FALSE, FALSE, 0);
-	gtk_box_pack_start(GTK_BOX(widget), fraDosAttributes, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(widget), widget->fraLinuxAttributes, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(widget), widget->fraDosAttributes, FALSE, FALSE, 0);
 #  else /* !GTK_CHECK_VERSION(2,91,0) */
 	gtk_box_pack_start(GTK_BOX(widget), alignFraLinuxAttributes, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(widget), alignFraDosAttributes, FALSE, FALSE, 0);
 #  endif /* GTK_CHECK_VERSION(2,91,0) */
-	gtk_widget_show(fraLinuxAttributes);
-	gtk_widget_show(fraDosAttributes);
+	gtk_widget_show(widget->fraLinuxAttributes);
+	gtk_widget_show(widget->fraDosAttributes);
 	gtk_widget_show(vboxLinuxAttributes);
 	gtk_widget_show(vboxDosAttributes);
 	gtk_widget_show(widget->linuxAttrView);
@@ -204,7 +214,7 @@ rp_xattr_view_set_property(GObject	*object,
 				// URI has changed.
 				g_free(widget->uri);
 				widget->uri = g_strdup(uri);
-				rp_xattr_view_update_display(widget);
+				rp_xattr_view_load_attributes(widget);
 			}
 			break;
 		}
@@ -242,6 +252,7 @@ rp_xattr_view_finalize(GObject *object)
 	RpXAttrView *const widget = RP_XATTR_VIEW(object);
 
 	g_free(widget->uri);
+	delete widget->xattrReader;
 
 	// Call the superclass finalize() function.
 	G_OBJECT_CLASS(rp_xattr_view_parent_class)->finalize(object);
@@ -250,14 +261,133 @@ rp_xattr_view_finalize(GObject *object)
 /** Update display **/
 
 /**
- * Update the display.
+ * Load Linux attributes, if available.
+ * @param widget XAttrView
+ * @return 0 on success; negative POSIX error code on error.
+ */
+static int
+rp_xattr_view_load_linux_attrs(RpXAttrView *widget)
+{
+	// Hide by default.
+	// If we do have attributes, we'll show the widgets there.
+	gtk_widget_hide(widget->fraLinuxAttributes);
+
+	if (!widget->xattrReader->hasLinuxAttributes()) {
+		// No Linux attributes.
+		return -ENOENT;
+	}
+
+	// We have Linux attributes.
+	rp_linux_attr_view_set_flags(RP_LINUX_ATTR_VIEW(widget->linuxAttrView),
+		widget->xattrReader->linuxAttributes());
+	gtk_widget_show(widget->fraLinuxAttributes);
+	return 0;
+}
+
+/**
+ * Load MS-DOS attributes, if available.
+ * @param widget XAttrView
+ * @return 0 on success; negative POSIX error code on error.
+ */
+static int
+rp_xattr_view_load_dos_attrs(RpXAttrView *widget)
+{
+	// Hide by default.
+	// If we do have attributes, we'll show the widgets there.
+	gtk_widget_hide(widget->fraDosAttributes);
+
+	if (!widget->xattrReader->hasDosAttributes()) {
+		// No Linux attributes.
+		return -ENOENT;
+	}
+
+	// We have Linux attributes.
+	rp_dos_attr_view_set_attrs(RP_DOS_ATTR_VIEW(widget->dosAttrView),
+		widget->xattrReader->dosAttributes());
+	gtk_widget_show(widget->fraDosAttributes);
+	return 0;
+}
+
+/**
+ * Load POSIX xattrs, if available.
+ * @param widget XAttrView
+ * @return 0 on success; negative POSIX error code on error.
+ */
+static int
+rp_xattr_view_load_posix_xattrs(RpXAttrView *widget)
+{
+	// TODO
+	return -ENOTSUP;
+}
+
+/**
+ * Load the attributes from the specified file.
+ * The attributes will be loaded into the display widgets.
+ * @param widget XAttrView
+ * @return 0 on success; negative POSIX error code on error.
+ */
+static int
+rp_xattr_view_load_attributes(RpXAttrView *widget)
+{
+	// Attempt to open the file.
+	gchar *const filename = g_filename_from_uri(widget->uri, nullptr, nullptr);
+	if (!filename) {
+		// Not a local file.
+		widget->has_attributes = false;
+		delete widget->xattrReader;
+		widget->xattrReader = nullptr;
+		return -EIO;
+	}
+
+	// Close the XAttrReader if it's already open.
+	delete widget->xattrReader;
+
+	// Open an XAttrReader.
+	widget->xattrReader = new XAttrReader(filename);
+	g_free(filename);
+	int err = widget->xattrReader->lastError();
+	if (err != 0) {
+		// Error reading attributes.
+		delete widget->xattrReader;
+		widget->xattrReader = nullptr;
+		return err;
+	}
+
+	// Load the attributes.
+	bool hasAnyAttrs = false;
+	int ret = rp_xattr_view_load_linux_attrs(widget);
+	if (ret == 0) {
+		hasAnyAttrs = true;
+	}
+	ret = rp_xattr_view_load_dos_attrs(widget);
+	if (ret == 0) {
+		hasAnyAttrs = true;
+	}
+	ret = rp_xattr_view_load_posix_xattrs(widget);
+	if (ret == 0) {
+		hasAnyAttrs = true;
+	}
+
+	// If we have attributes, great!
+	// If not, clear the display widgets.
+	if (hasAnyAttrs) {
+		widget->has_attributes = true;
+	} else {
+		widget->has_attributes = false;
+		rp_xattr_view_clear_display_widgets(widget);
+	}
+	return 0;
+}
+
+/**
+ * Clear the display widgets.
  * @param widget XAttrView
  */
 static void
-rp_xattr_view_update_display(RpXAttrView *widget)
+rp_xattr_view_clear_display_widgets(RpXAttrView *widget)
 {
-	// TODO: Verify that this is a local URI and load the attributes.
-	widget->is_loaded = (widget->uri != nullptr);
+	rp_linux_attr_view_clear_flags(RP_LINUX_ATTR_VIEW(widget->linuxAttrView));
+	rp_dos_attr_view_clear_attrs(RP_DOS_ATTR_VIEW(widget->dosAttrView));
 }
 
 /** Property accessors / mutators **/
@@ -274,7 +404,7 @@ rp_xattr_view_set_uri(RpXAttrView *widget, const gchar *uri)
 	if (g_strcmp0(widget->uri, uri) != 0) {
 		g_free(widget->uri),
 		widget->uri = g_strdup(uri);
-		rp_xattr_view_update_display(widget);
+		rp_xattr_view_load_attributes(widget);
 		g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_URI]);
 	}
 }
@@ -294,11 +424,11 @@ rp_xattr_view_get_uri(RpXAttrView *widget)
 /**
  * Are attributes loaded from the current URI?
  * @param widget RpXAttrView
- * @return True if loaded; false if not.
+ * @return True if we have attributes; false if not.
  */
 gboolean
-rp_xattr_view_is_loaded(RpXAttrView *widget)
+rp_xattr_view_has_attributes(RpXAttrView *widget)
 {
 	g_return_val_if_fail(RP_IS_XATTR_VIEW(widget), FALSE);
-	return widget->is_loaded;
+	return widget->has_attributes;
 }

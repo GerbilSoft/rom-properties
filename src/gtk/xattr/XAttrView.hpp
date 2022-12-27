@@ -31,9 +31,9 @@ const gchar	*rp_xattr_view_get_uri		(RpXAttrView *widget);
 /**
  * Are attributes loaded from the current URI?
  * @param widget RpXAttrView
- * @return True if loaded; false if not.
+ * @return True if we have attributes; false if not.
  */
-gboolean	rp_xattr_view_is_loaded		(RpXAttrView *widget);
+gboolean	rp_xattr_view_has_attributes	(RpXAttrView *widget);
 
 G_END_DECLS
 
