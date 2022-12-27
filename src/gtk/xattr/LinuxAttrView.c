@@ -172,13 +172,14 @@ struct _RpLinuxAttrView {
 
 	int flags;
 
-	GtkWidget *lblLsAttr;	// lsattr-style attributes label
+	// Inhibit checkbox toggling while updating.
+	gboolean inhibit_checkbox_no_toggle;
+
+	// lsattr-style attributes label
+	GtkWidget *lblLsAttr;
 
 	// See enum CheckboxID and checkboxInfo.
 	GtkWidget *checkboxes[CHECKBOX_MAX];
-
-	// Inhibit checkbox toggling while updating.
-	gboolean inhibit_checkbox_no_toggle;
 };
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
