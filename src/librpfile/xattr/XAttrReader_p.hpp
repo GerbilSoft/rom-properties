@@ -28,7 +28,12 @@ class XAttrReaderPrivate
 		XAttrReaderPrivate(const wchar_t *filename);
 #endif /* _WIN32 */
 	private:
-		void init(int fd);
+		/**
+		 * Initialize attributes.
+		 * @param fd File descriptor
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int init(int fd);
 
 	private:
 		RP_DISABLE_COPY(XAttrReaderPrivate)

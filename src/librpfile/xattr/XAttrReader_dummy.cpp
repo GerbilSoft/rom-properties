@@ -33,6 +33,17 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 }
 
 /**
+ * Initialize attributes.
+ * @param fd File descriptor
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int XAttrReaderPrivate::init(int fd)
+{
+	RP_UNUSED(fd);
+	return -ENOTSUP;
+}
+
+/**
  * Load Linux attributes, if available.
  * @param fd File descriptor of the open file
  * @return 0 on success; negative POSIX error code on error.

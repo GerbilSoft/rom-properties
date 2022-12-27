@@ -74,24 +74,35 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 		return;
 	}
 
+	// Initialize attributes.
+	lastError = init(fd);
+	close(fd);
+}
+
+/**
+ * Initialize attributes.
+ * @param fd File descriptor
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int XAttrReaderPrivate::init(int fd)
+{
 	// Verify the file mode again using fstat().
+	struct stat sb;
 	errno = 0;
 	if (!fstat(fd, &sb) && !S_ISREG(sb.st_mode) && !S_ISDIR(sb.st_mode)) {
 		// fstat() failed, or this is neither a regular file nor a directory.
-		lastError = -errno;
-		if (lastError == 0) {
-			lastError = -EIO;
+		int err = -errno;
+		if (err == 0) {
+			err = -EIO;
 		}
-		close(fd);
-		return;
+		return err;
 	}
 
 	// Load the attributes.
 	loadLinuxAttrs(fd);
 	loadDosAttrs(fd);
 	loadGenericXattrs(fd);
-
-	close(fd);
+	return 0;
 }
 
 /**
