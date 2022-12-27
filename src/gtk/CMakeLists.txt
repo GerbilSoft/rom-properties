@@ -65,6 +65,7 @@ SET(${PROJECT_NAME}_SRCS
 	config/UpdateChecker.cpp
 	xattr/LinuxAttrView.c
 	xattr/DosAttrView.c
+	xattr/XAttrView.cpp
 	)
 SET(${PROJECT_NAME}_H
 	RomDataView.hpp
@@ -98,6 +99,7 @@ SET(${PROJECT_NAME}_H
 	config/UpdateChecker.hpp
 	xattr/LinuxAttrView.h
 	xattr/DosAttrView.h
+	xattr/XAttrView.hpp
 	)
 
 # Sources and headers (GTK4+ only)

@@ -21,7 +21,7 @@
 #include "is-supported.hpp"
 
 #include "../RomDataView.hpp"
-#include "../xattr/DosAttrView.h"	// TODO: Replace with XAttrView
+#include "../xattr/XAttrView.hpp"
 
 #include "librpbase/RomData.hpp"
 using LibRpBase::RomData;
@@ -136,9 +136,8 @@ rp_nautilus_property_page_provider_get_XAttrView(const gchar *uri)
 	// TODO: Actually open the file.
 	// For now, add a test widget.
 
-	GtkWidget *const xattrView = rp_dos_attr_view_new();
+	GtkWidget *const xattrView = rp_xattr_view_new(uri);
 	gtk_widget_set_name(xattrView, "xattrView");
-	rp_dos_attr_view_set_attrs(RP_DOS_ATTR_VIEW(xattrView), 0x07);
 	gtk_widget_show(xattrView);
 
 	// tr: Tab title.
