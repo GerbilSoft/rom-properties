@@ -1,13 +1,13 @@
 /***************************************************************************
- * ROM Properties Page shell extension.                                    *
- * ext2_flags.h: EXT2 file system flags.                                   *
+ * ROM Properties Page shell extension. (librpfile)                        *
+ * ext2_flags.h: EXT2 file system flags                                    *
  *                                                                         *
  * Based on fs.h and ext2.h from the Linux kernel.                         *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_EXT2_FLAGS_H__
-#define __ROMPROPERTIES_EXT2_FLAGS_H__
+#ifndef __ROMPROPERTIES_LIBRPFILE_XATTR_EXT2_FLAGS_H__
+#define __ROMPROPERTIES_LIBRPFILE_XATTR_EXT2_FLAGS_H__
 
 #include <stdint.h>
 
@@ -139,4 +139,4 @@ static inline uint32_t ext2_mask_flags(unsigned int mode, uint32_t flags)
 }
 #endif
 
-#endif /* __ROMPROPERTIES_EXT2_FLAGS_H__ */
+#endif /* __ROMPROPERTIES_LIBRPFILE_XATTR_EXT2_FLAGS_H__ */

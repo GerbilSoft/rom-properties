@@ -584,6 +584,8 @@ IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 		RP_LibRpBase_TextOut_json_ForceLinkage
 		RP_LibRpBase_TextOut_text_ForceLinkage
 		RP_LibRpFile_VectorFile_ForceLinkage
+		RP_LibRpFile_XAttrReader_ForceLinkage
+		RP_LibRpFile_XAttrReader_impl_ForceLinkage
 		)
 	IF(WIN32)
 		SET(SYMS_FORCE ${SYMS_FORCE}

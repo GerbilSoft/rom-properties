@@ -11,7 +11,7 @@
 #include "LinuxAttrView.hpp"
 
 // EXT2 flags (also used for EXT3, EXT4, and other Linux file systems)
-#include "ext2_flags.h"
+#include "librpfile/xattr/ext2_flags.h"
 
 /** LinuxAttrViewPrivate **/
 

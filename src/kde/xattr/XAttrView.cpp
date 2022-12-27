@@ -10,18 +10,9 @@
 #include "stdafx.h"
 #include "XAttrView.hpp"
 
-// EXT2 flags (also used for EXT3, EXT4, and other Linux file systems)
-#include "ext2_flags.h"
-
-// for EXT2 flags [TODO: move to librpbase/libromdata]
-#include <sys/stat.h>
-#include <sys/ioctl.h>
-#include <sys/xattr.h>
-#include <fcntl.h>
-// for FS_IOC_GETFLAGS (equivalent to EXT2_IOC_GETFLAGS)
-#include <linux/fs.h>
-// for FAT_IOCTL_GET_ATTRIBUTES
-#include <linux/msdos_fs.h>
+// XAttrReader
+#include "librpfile/xattr/XAttrReader.hpp"
+using LibRpFile::XAttrReader;
 
 // C++ STL classes
 using std::string;
@@ -36,8 +27,14 @@ class XAttrViewPrivate
 		// TODO: Reomve localizeQUrl() once non-local QUrls are supported.
 		XAttrViewPrivate(const QUrl &filename)
 			: filename(localizeQUrl(filename))
+			, xattrReader(nullptr)
 			, hasAttributes(false)
 		{ }
+
+		~XAttrViewPrivate()
+		{
+			delete xattrReader;
+		}
 
 	private:
 		Q_DISABLE_COPY(XAttrViewPrivate)
@@ -46,30 +43,31 @@ class XAttrViewPrivate
 		Ui::XAttrView ui;
 		QUrl filename;
 
+		// XAttrReader
+		XAttrReader *xattrReader;
+
 		// Do we have attributes for this file?
 		bool hasAttributes;
 
 	private:
 		/**
 		 * Load Linux attributes, if available.
-		 * @param fd File descriptor of the open file
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int loadLinuxAttrs(int fd);
+		int loadLinuxAttrs(void);
 
 		/**
 		 * Load MS-DOS attributes, if available.
-		 * @param fd File descriptor of the open file
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int loadDosAttrs(int fd);
+		int loadDosAttrs(void);
 
 		/**
 		 * Load POSIX xattrs, if available.
 		 * @param fd File descriptor of the open file
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int loadPosixXattrs(int fd);
+		int loadPosixXattrs(void);
 
 	public:
 		/**
@@ -87,155 +85,67 @@ class XAttrViewPrivate
 
 /**
  * Load Linux attributes, if available.
- * @param fd File descriptor of the open file
  * @return 0 on success; negative POSIX error code on error.
  */
-int XAttrViewPrivate::loadLinuxAttrs(int fd)
+int XAttrViewPrivate::loadLinuxAttrs(void)
 {
 	// Hide by default.
 	// If we do have attributes, we'll show the widgets there.
 	ui.grpLinuxAttributes->hide();
 
-#ifdef __gnu_linux__
-	// Attempt to get EXT2 flags.
-	// NOTE: The ioctl is defined as using long, but the actual
-	// kernel code uses int.
-	int ext2_flags = 0;
-	errno = 0;
-	if (!ioctl(fd, FS_IOC_GETFLAGS, &ext2_flags)) {
-		// ioctl() succeeded. We have EXT2 flags.
-		ui.linuxAttrView->setFlags(static_cast<int>(ext2_flags));
-		ui.grpLinuxAttributes->show();
-	} else {
-		// No EXT2 flags on this file.
-		// Assume this file system doesn't support them.
-		int err = errno;
-		if (err == 0) {
-			err = -EIO;
-		}
-		ui.linuxAttrView->clearFlags();
-		return err;
+	if (!xattrReader->hasLinuxAttributes()) {
+		// No Linux attributes.
+		return -ENOENT;
 	}
+
+	// We have Linux attributes.
+	ui.linuxAttrView->setFlags(xattrReader->linuxAttributes());
+	ui.grpLinuxAttributes->show();
 	return 0;
-#else /* !__gnu_linux__ */
-	// Can't use HAVE_EXT2_IOCTLs.
-	ui.linuxAttrView->clearFlags();
-	return -ENOTSUP;
-#endif /* __gnu_linux__ */
 }
 
 /**
  * Load MS-DOS attributes, if available.
- * @param fd File descriptor of the open file
  * @return 0 on success; negative POSIX error code on error.
  */
-int XAttrViewPrivate::loadDosAttrs(int fd)
+int XAttrViewPrivate::loadDosAttrs(void)
 {
 	// Hide by default.
 	// If we do have attributes, we'll show the widgets there.
 	ui.grpDosAttributes->hide();
 
-#ifdef __gnu_linux__
-	// Attempt to get MS-DOS attributes.
-	// TODO: Also check xattrs.
-	// ntfs3 has: system.dos_attrib, system.ntfs_attrib
-	// ntfs-3g has: system.ntfs_attrib, system.ntfs_attrib_be
-	unsigned int dos_attrs = 0;
-	errno = 0;
-	if (!ioctl(fd, FAT_IOCTL_GET_ATTRIBUTES, &dos_attrs)) {
-		// ioctl() succeeded. We have MS-DOS attributes.
-		ui.dosAttrView->setAttrs(static_cast<int>(dos_attrs));
-		ui.grpDosAttributes->show();
-	} else {
-		// No MS-DOS attributes on this file.
-		// Assume this is not an MS-DOS file system.
-		int err = errno;
-		if (err == 0) {
-			err = -EIO;
-		}
-		ui.dosAttrView->clearAttrs();
-		return err;
+	if (!xattrReader->hasDosAttributes()) {
+		// No MS-DOS attributes.
+		return -ENOENT;
 	}
+
+	// We have MS-DOS attributes.
+	ui.dosAttrView->setAttrs(xattrReader->dosAttributes());
+	ui.grpDosAttributes->show();
 	return 0;
-#else /* !__gnu_linux__ */
-	// Can't use HAVE_EXT2_IOCTLs.
-	ui.dosAttrView->clearAttrs();
-	return -ENOTSUP;
-#endif /* __gnu_linux__ */
 }
 
 /**
  * Load POSIX xattrs, if available.
- * @param fd File descriptor of the open file
  * @return 0 on success; negative POSIX error code on error.
  */
-int XAttrViewPrivate::loadPosixXattrs(int fd)
+int XAttrViewPrivate::loadPosixXattrs(void)
 {
 	// Hide by default.
 	// If we do have attributes, we'll show the widgets there.
 	ui.grpXAttr->hide();
 
-#ifdef __gnu_linux__
-	// Get the size of the xattr name list.
-	ssize_t list_size = flistxattr(fd, nullptr, 0);
-	if (list_size == 0) {
-		// No xattrs. Show an empty list.
-		ui.treeXAttr->clear();
-		ui.grpXAttr->show();
-		return 0;
-	} else if (list_size < 0) {
-		// Xattrs are not supported.
-		return -ENOTSUP;
+	if (!xattrReader->hasGenericXAttrs()) {
+		// No generic attributes.
+		return -ENOENT;
 	}
 
-	unique_ptr<char[]> list_buf(new char[list_size]);
-	if (flistxattr(fd, list_buf.get(), list_size) != list_size) {
-		// List size doesn't match. Something broke here...
-		return -ENOTSUP;
-	}
-	// List should end with a NULL terminator.
-	if (list_buf[list_size-1] != '\0') {
-		// Not NULL-terminated...
-		return -EIO;
-	}
-
-	// Value buffer
-	size_t value_len = 256;
-	unique_ptr<char[]> value_buf(new char[value_len]);
-
-	// List contains NULL-terminated strings.
-	// Process strings until we reach list_buf + list_size.
 	ui.treeXAttr->clear();
-	const char *const list_end = &list_buf[list_size];
-	const char *p = list_buf.get();
-	while (p < list_end) {
-		const char *name = p;
-		if (name[0] == '\0') {
-			// Empty name. Assume we're at the end of the list.
-			break;
-		}
-		p += strlen(name) + 1;
-
-		// Get the value for this attribute.
-		// NOTE: vlen does *not* include a NULL-terminator.
-		ssize_t vlen = fgetxattr(fd, name, nullptr, 0);
-		if (vlen <= 0) {
-			// Error retrieving attribute information.
-			continue;
-		} else if ((size_t)vlen > value_len) {
-			// Need to reallocate the buffer.
-			value_len = vlen;
-			value_buf.reset(new char[value_len]);
-		}
-		if (fgetxattr(fd, name, value_buf.get(), value_len) != vlen) {
-			// Failed to get this attribute. Skip it for now.
-			continue;
-		}
-
-		// We have the attribute. Add a list item.
+	const XAttrReader::XAttrList &xattrList = xattrReader->genericXAttrs();
+	for (const auto &xattr : xattrList) {
 		QTreeWidgetItem *const treeWidgetItem = new QTreeWidgetItem(ui.treeXAttr);
-		treeWidgetItem->setData(0, Qt::DisplayRole, QString::fromUtf8(name));
-		treeWidgetItem->setData(1, Qt::DisplayRole, QString::fromUtf8(value_buf.get(), static_cast<int>(vlen)));
+		treeWidgetItem->setData(0, Qt::DisplayRole, QString::fromUtf8(xattr.first.c_str(), xattr.first.size()));
+		treeWidgetItem->setData(1, Qt::DisplayRole, QString::fromUtf8(xattr.second.c_str(), xattr.second.size()));
 	}
 
 	// Set column stretch modes.
@@ -255,11 +165,6 @@ int XAttrViewPrivate::loadPosixXattrs(int fd)
 	// Extended attributes retrieved.
 	ui.grpXAttr->show();
 	return 0;
-#else /* !__gnu_linux__ */
-	// Can't use extended attributes.
-	ui.treeXAttr->clear();
-	return -ENOTSUP;
-#endif /* __gnu_linux__ */
 }
 
 /**
@@ -288,64 +193,34 @@ int XAttrViewPrivate::loadAttributes(void)
 
 	const string s_local_filename = filename.toLocalFile().toUtf8().constData();
 
-	// Make sure this is a regular file.
-	// TODO: Use statx() if available.
-	struct stat sb;
-	errno = 0;
-	if (!stat(s_local_filename.c_str(), &sb) && !S_ISREG(sb.st_mode) && !S_ISDIR(sb.st_mode)) {
-		// stat() failed, or this is neither a regular file nor a directory.
-		int err = -errno;
-		if (err == 0) {
-			err = -ENOTSUP;
-		}
-		hasAttributes = false;
-		clearDisplayWidgets();
-		return err;
+	// Close the XAttrReader if it's already open.
+	if (xattrReader) {
+		delete xattrReader;
 	}
-
-	// Open the file to get attributes.
-	// TODO: Move this to librpbase or libromdata,
-	// and add configure checks for FAT_IOCTL_GET_ATTRIBUTES.
-#define OPEN_FLAGS (O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_NOFOLLOW)
-	int fd = open(s_local_filename.c_str(), OPEN_FLAGS);
-	if (fd < 0) {
-		// Error opening the file.
-		hasAttributes = false;
-		clearDisplayWidgets();
-		return -errno;
-	}
-
-	// Verify the file mode again using fstat().
-	errno = 0;
-	if (!fstat(fd, &sb) && !S_ISREG(sb.st_mode) && !S_ISDIR(sb.st_mode)) {
-		// fstat() failed, or this is neither a regular file nor a directory.
-		int err = -errno;
-		if (err == 0) {
-			err = -ENOTSUP;
-		}
-		close(fd);
-		hasAttributes = false;
-		clearDisplayWidgets();
+	// Open an XAttrReader.
+	xattrReader = new XAttrReader(s_local_filename.c_str());
+	int err = xattrReader->lastError();
+	if (err != 0) {
+		// Error reading attributes.
+		delete xattrReader;
+		xattrReader = nullptr;
 		return err;
 	}
 
 	// Load the attributes.
 	bool hasAnyAttrs = false;
-	int ret = loadLinuxAttrs(fd);
+	int ret = loadLinuxAttrs();
 	if (ret == 0) {
 		hasAnyAttrs = true;
 	}
-	ret = loadDosAttrs(fd);
+	ret = loadDosAttrs();
 	if (ret == 0) {
 		hasAnyAttrs = true;
 	}
-	ret = loadPosixXattrs(fd);
+	ret = loadPosixXattrs();
 	if (ret == 0) {
 		hasAnyAttrs = true;
 	}
-
-	// We don't need the file descriptor anymore.
-	close(fd);
 
 	// If we have attributes, great!
 	// If not, clear the display widgets.

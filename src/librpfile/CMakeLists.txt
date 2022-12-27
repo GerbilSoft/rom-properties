@@ -27,6 +27,7 @@ SET(${PROJECT_NAME}_SRCS
 	DualFile.cpp
 	scsi/RpFile_Kreon.cpp
 	scsi/RpFile_scsi.cpp
+	xattr/XAttrReader.cpp
 	)
 # Headers.
 SET(${PROJECT_NAME}_H
@@ -42,19 +43,32 @@ SET(${PROJECT_NAME}_H
 	scsi/ata_protocol.h
 	scsi/scsi_protocol.h
 	scsi/scsi_ata_cmds.h
+	xattr/XAttrReader.hpp
 	)
 
-# SCSI implementation for Kreon disc drive support.
+# OS-specific implementations
 IF(WIN32)
-	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} scsi/RpFile_scsi_win32.cpp)
+	SET(${PROJECT_NAME}_SRCS
+		${${PROJECT_NAME}_SRCS}
+		scsi/RpFile_scsi_win32.cpp
+		xattr/XAttrReader_win32.cpp
+		)
 	SET(RP_OS_SCSI_SUPPORTED 1)
 ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} scsi/RpFile_scsi_linux.cpp)
+	SET(${PROJECT_NAME}_SRCS
+		${${PROJECT_NAME}_SRCS}
+		scsi/RpFile_scsi_linux.cpp
+		xattr/XAttrReader_linux.cpp
+		)
 	SET(RP_OS_SCSI_SUPPORTED 1)
 ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR CMAKE_SYSTEM_NAME STREQUAL "Dragonfly")
 	# FIXME: Not working properly. (SCSI ILLEGAL REQUEST errors)
 	# NOTE: The file is still needed for rereadDeviceSizeOS().
-	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} scsi/RpFile_scsi_freebsd.cpp)
+	SET(${PROJECT_NAME}_SRCS
+		${${PROJECT_NAME}_SRCS}
+		scsi/RpFile_scsi_freebsd.cpp
+		xattr/XAttrReader_dummy.cpp	# TODO
+		)
 
 	IF(0) # FIXME
 	# TODO: Check for header files. CHECK_INCLUDE_FILE() doesn't work
@@ -72,11 +86,19 @@ ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR CMAKE_SYSTEM_NAME STREQUAL "Drago
 	ENDIF()
 	ENDIF(0) # FIXME
 ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "NetBSD" OR CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
-	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} scsi/RpFile_scsi_netbsd.cpp)
+	SET(${PROJECT_NAME}_SRCS
+		${${PROJECT_NAME}_SRCS}
+		scsi/RpFile_scsi_netbsd.cpp
+		xattr/XAttrReader_dummy.cpp	# TODO
+		)
 	SET(RP_OS_SCSI_SUPPORTED 1)
 ELSE()
-	# Dummy implementation for RpFile::rereadDeviceSizeOS().
-	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} scsi/RpFile_scsi_dummy.cpp)
+	# Dummy implementations
+	SET(${PROJECT_NAME}_SRCS
+		${${PROJECT_NAME}_SRCS}
+		scsi/RpFile_scsi_dummy.cpp
+		xattr/XAttrReader_dummy.cpp
+		)
 ENDIF()
 
 IF(WIN32)

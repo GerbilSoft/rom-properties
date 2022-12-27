@@ -12,7 +12,7 @@
 
 // MS-DOS and Windows attributes
 // NOTE: Does not depend on the Windows SDK.
-#include "dos_attrs.h"
+#include "librpfile/xattr/dos_attrs.h"
 
 /** DosAttrViewPrivate **/
 
