@@ -52,6 +52,9 @@
      <layout class="QVBoxLayout" name="vboxXAttr">
       <item>
        <widget class="QTreeWidget" name="treeXAttr">
+        <property name="alternatingRowColors">
+         <bool>true</bool>
+        </property>
         <property name="rootIsDecorated">
          <bool>false</bool>
         </property>
