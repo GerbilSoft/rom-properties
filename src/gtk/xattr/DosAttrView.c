@@ -35,7 +35,7 @@ static void	rp_dos_attr_view_get_property(GObject		*object,
 static void	checkbox_no_toggle_signal_handler(GtkCheckButton	*checkbutton,
 						  RpDosAttrView		*widget);
 
-/** Update flags display **/
+/** Update attributes display **/
 static void	rp_dos_attr_view_update_attrs_display(RpDosAttrView *widget);
 
 static GParamSpec *props[PROP_LAST];
@@ -224,7 +224,7 @@ rp_dos_attr_view_get_property(GObject		*object,
 	}
 }
 
-/** Update flags display **/
+/** Update attributes display **/
 
 /**
  * Update the attributes display.
@@ -287,7 +287,7 @@ rp_dos_attr_view_get_attrs(RpDosAttrView *widget)
  * @param widget DosAttrView
  */
 void
-rp_dos_attr_view_clear_flags(RpDosAttrView *widget)
+rp_dos_attr_view_clear_attrs(RpDosAttrView *widget)
 {
 	g_return_if_fail(RP_IS_DOS_ATTR_VIEW(widget));
 	if (widget->attrs != 0) {
