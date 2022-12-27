@@ -39,7 +39,8 @@ namespace LibRpFile {
 /** XAttrReaderPrivate **/
 
 XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
-	: lastError(0)
+	: fd(-1)
+	, lastError(0)
 	, hasLinuxAttributes(false)
 	, hasDosAttributes(false)
 	, hasGenericXAttrs(false)
@@ -64,7 +65,7 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	// and add configure checks for FAT_IOCTL_GET_ATTRIBUTES.
 #define OPEN_FLAGS (O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_NOFOLLOW)
 	errno = 0;
-	int fd = open(filename, OPEN_FLAGS);
+	fd = open(filename, OPEN_FLAGS);
 	if (fd < 0) {
 		// Error opening the file.
 		lastError = -errno;
@@ -75,16 +76,16 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	}
 
 	// Initialize attributes.
-	lastError = init(fd);
+	lastError = init();
 	close(fd);
 }
 
 /**
  * Initialize attributes.
- * @param fd File descriptor
+ * Internal fd (filename on Windows) must be set.
  * @return 0 on success; negative POSIX error code on error.
  */
-int XAttrReaderPrivate::init(int fd)
+int XAttrReaderPrivate::init(void)
 {
 	// Verify the file mode again using fstat().
 	struct stat sb;
@@ -99,18 +100,18 @@ int XAttrReaderPrivate::init(int fd)
 	}
 
 	// Load the attributes.
-	loadLinuxAttrs(fd);
-	loadDosAttrs(fd);
-	loadGenericXattrs(fd);
+	loadLinuxAttrs();
+	loadDosAttrs();
+	loadGenericXattrs();
 	return 0;
 }
 
 /**
  * Load Linux attributes, if available.
- * @param fd File descriptor of the open file
+ * Internal fd (filename on Windows) must be set.
  * @return 0 on success; negative POSIX error code on error.
  */
-int XAttrReaderPrivate::loadLinuxAttrs(int fd)
+int XAttrReaderPrivate::loadLinuxAttrs(void)
 {
 	// Attempt to get EXT2 flags.
 	// NOTE: The ioctl is defined as using long, but the actual
@@ -136,10 +137,10 @@ int XAttrReaderPrivate::loadLinuxAttrs(int fd)
 
 /**
  * Load MS-DOS attributes, if available.
- * @param fd File descriptor of the open file
+ * Internal fd (filename on Windows) must be set.
  * @return 0 on success; negative POSIX error code on error.
  */
-int XAttrReaderPrivate::loadDosAttrs(int fd)
+int XAttrReaderPrivate::loadDosAttrs(void)
 {
 	// Attempt to get MS-DOS attributes.
 	// TODO: Also check xattrs.
@@ -167,10 +168,10 @@ int XAttrReaderPrivate::loadDosAttrs(int fd)
 /**
  * Load generic xattrs, if available.
  * (POSIX xattr on Linux; ADS on Windows)
- * @param fd File descriptor of the open file
+ * Internal fd (filename on Windows) must be set.
  * @return 0 on success; negative POSIX error code on error.
  */
-int XAttrReaderPrivate::loadGenericXattrs(int fd)
+int XAttrReaderPrivate::loadGenericXattrs(void)
 {
 	genericXAttrs.clear();
 
