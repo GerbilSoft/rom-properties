@@ -100,11 +100,17 @@ int XAttrViewPrivate::loadLinuxAttrs(int fd)
 	} else {
 		// No EXT2 flags on this file.
 		// Assume this file system doesn't support them.
+		int err = errno;
+		if (err == 0) {
+			err = -EIO;
+		}
 		ui.linuxAttrView->clearFlags();
+		return err;
 	}
 	return 0;
 #else /* !__gnu_linux__ */
 	// Can't use HAVE_EXT2_IOCTLs.
+	ui.linuxAttrView->clearFlags();
 	return -ENOTSUP;
 #endif /* __gnu_linux__ */
 }
@@ -134,11 +140,17 @@ int XAttrViewPrivate::loadDosAttrs(int fd)
 	} else {
 		// No MS-DOS attributes on this file.
 		// Assume this is not an MS-DOS file system.
+		int err = errno;
+		if (err == 0) {
+			err = -EIO;
+		}
 		ui.dosAttrView->clearAttrs();
+		return err;
 	}
 	return 0;
 #else /* !__gnu_linux__ */
 	// Can't use HAVE_EXT2_IOCTLs.
+	ui.dosAttrView->clearAttrs();
 	return -ENOTSUP;
 #endif /* __gnu_linux__ */
 }
