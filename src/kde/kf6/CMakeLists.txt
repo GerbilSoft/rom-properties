@@ -81,9 +81,10 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 		# KIO::ThumbnailCreator is always available in KF6.
 		SET(HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H 1)
 
-		SET(KF6_PRPD_PLUGIN_INSTALL_DIR "${KF6_PLUGIN_INSTALL_DIR}/kf6/propertiesdialog")
-		SET(KF6_KFMD_PLUGIN_INSTALL_DIR "${KF6_PLUGIN_INSTALL_DIR}/kf6/kfilemetadata")
-		SET(KF6_KOVI_PLUGIN_INSTALL_DIR "${KF6_PLUGIN_INSTALL_DIR}/kf6/overlayicon")
+		SET(KF6_PRPD_PLUGIN_INSTALL_DIR  "${KF6_PLUGIN_INSTALL_DIR}/kf6/propertiesdialog")
+		SET(KF6_KFMD_PLUGIN_INSTALL_DIR  "${KF6_PLUGIN_INSTALL_DIR}/kf6/kfilemetadata")
+		SET(KF6_KOVI_PLUGIN_INSTALL_DIR  "${KF6_PLUGIN_INSTALL_DIR}/kf6/overlayicon")
+		SET(KF6_THUMB_PLUGIN_INSTALL_DIR "${KF6_PLUGIN_INSTALL_DIR}/kf6/thumbcreator")
 		ENDIF(0)
 
 		# HACK: Hard-coded paths for KF5.
@@ -320,7 +321,7 @@ ENDIF(BUILD_KF6)
 #######################
 
 IF(BUILD_KF6)
-	# Process MIME types for the .desktop and .json files.
+	# Process MIME types for the .json files.
 	# FIXME: Need to add a dependency to ensure these files are regenerated if the XDG files are changed.
 	INCLUDE(ParseMimeTypes)
 	PARSE_MIME_TYPES(MIMETYPES_THUMBONLY
@@ -334,33 +335,31 @@ IF(BUILD_KF6)
 		"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
 		"${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types"
 		)
-	CONFIGURE_FILE(${PROJECT_NAME}.KPropertiesDialog.desktop.in ${PROJECT_NAME}.KPropertiesDialog.desktop @ONLY)
-	CONFIGURE_FILE(${PROJECT_NAME}.ThumbCreator.desktop.in      ${PROJECT_NAME}.ThumbCreator.desktop @ONLY)
-	CONFIGURE_FILE(${PROJECT_NAME}.json.in                      ${PROJECT_NAME}.json    @ONLY)
+	CONFIGURE_FILE(${PROJECT_NAME}.json.in ${PROJECT_NAME}.json @ONLY)
 
 	### FIXME: KF6 isn't available yet, so we're only
 	### compile-testing against Qt6.
 	IF(0)
-	# FIXME: Installing the main plugin into ${KF6_PRPD_PLUGIN_INSTALL_DIR}
-	# breaks thumbnails. We might need to make a KPropertiesDialog forwarder.
+	# Main plugin is installed in the propertiesdialog subdirectory.
+	# Create a symlink for ThumbCreator.
+	ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME} POST_BUILD
+		COMMAND ln -sf "${KF6_PRPD_PLUGIN_INSTALL_DIR}/${PROJECT_NAME}.so" "${PROJECT_NAME}.symlink.so"
+		WORKING_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
+		VERBATIM)
 	INSTALL(TARGETS ${PROJECT_NAME} ${XATTRVIEW_NAME}
-		LIBRARY DESTINATION "${KF6_PLUGIN_INSTALL_DIR}"
-		COMPONENT "plugin"
-		)
+		LIBRARY DESTINATION "${KF6_PRPD_PLUGIN_INSTALL_DIR}"
+		COMPONENT "plugin")
+	INSTALL(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${PROJECT_NAME}.symlink.so"
+		DESTINATION "${KF6_THUMB_PLUGIN_INSTALL_DIR}"
+		RENAME "${PROJECT_NAME}.so"
+		COMPONENT "plugin")
+
 	INSTALL(TARGETS kfilemetadata_${PROJECT_NAME}
 		LIBRARY DESTINATION "${KF6_KFMD_PLUGIN_INSTALL_DIR}"
-		COMPONENT "plugin"
-		)
+		COMPONENT "plugin")
 	INSTALL(TARGETS overlayiconplugin_${PROJECT_NAME}
 		LIBRARY DESTINATION "${KF6_KOVI_PLUGIN_INSTALL_DIR}"
-		COMPONENT "plugin"
-		)
-	INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.KPropertiesDialog.desktop"
-		      "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.ThumbCreator.desktop"
-		      "${XATTRVIEW_NAME}.desktop"
-		DESTINATION "${SERVICES_INSTALL_DIR}"
-		COMPONENT "plugin"
-		)
+		COMPONENT "plugin")
 	# FIXME: Run kbuildsycoca6?
 
 	# Service menus
