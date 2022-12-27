@@ -43,7 +43,7 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	init();
 }
 
-XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
+XAttrReaderPrivate::XAttrReaderPrivate(const wchar_t *filename)
 	: filename(filename)
 	, lastError(0)
 	, hasLinuxAttributes(false)
