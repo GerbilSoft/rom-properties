@@ -12,6 +12,7 @@
 #define __ROMPROPERTIES_KDE_XATTR_XATTRVIEW_HPP__
 
 // Qt includes
+#include <QtCore/QUrl>
 #include <QWidget>
 
 class XAttrViewPrivate;
