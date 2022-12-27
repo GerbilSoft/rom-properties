@@ -162,25 +162,22 @@ int XAttrReaderPrivate::loadDosAttrs(void)
 		uint32_t u32;
 	} buf;
 
-	ssize_t sz = fgetxattr(fd, "system.ntfs_attrib_be", buf.u8, sizeof(buf.u8));
-	if (sz == 4) {
-		dosAttributes = be32_to_cpu(buf.u32);
-		hasDosAttributes = true;
-		return 0;
-	}
-
-	sz = fgetxattr(fd, "system.ntfs_attrib", buf.u8, sizeof(buf.u8));
-	if (sz == 4) {
-		dosAttributes = le32_to_cpu(buf.u32);
-		hasDosAttributes = true;
-		return 0;
-	}
-	
-	sz = fgetxattr(fd, "system.dos_attrib", buf.u8, sizeof(buf.u8));
-	if (sz == 4) {
-		dosAttributes = le32_to_cpu(buf.u32);
-		hasDosAttributes = true;
-		return 0;
+	struct DosAttrName {
+		const char name[23];
+		bool be32;
+	};
+	static const DosAttrName dosAttrNames[] = {
+		{"system.ntfs_attrib_be", true},
+		{"system.ntfs_attrib", false},
+		{"system.dos_attrib", false},
+	};
+	for (const auto &p : dosAttrNames) {
+		ssize_t sz = fgetxattr(fd, p.name, buf.u8, sizeof(buf.u8));
+		if (sz == 4) {
+			dosAttributes = (p.be32) ? be32_to_cpu(buf.u32) : le32_to_cpu(buf.u32);
+			hasDosAttributes = true;
+			return 0;
+		}
 	}
 
 	// No valid attributes found.
