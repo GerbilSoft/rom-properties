@@ -44,7 +44,7 @@ class LinuxAttrView : public QWidget
 		void setFlags(int flags);
 
 		/**
-		 * Clear the flags.
+		 * Clear the current Linux attributes.
 		 */
 		void clearFlags(void);
 

@@ -185,7 +185,7 @@ void LinuxAttrView::setFlags(int flags)
 }
 
 /**
- * Clear the flags.
+ * Clear the current Linux attributes.
  */
 void LinuxAttrView::clearFlags(void)
 {

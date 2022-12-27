@@ -104,7 +104,7 @@ void DosAttrView::setAttrs(unsigned int attrs)
 }
 
 /**
- * Clear the attributes.
+ * Clear the current MS-DOS attributes.
  */
 void DosAttrView::clearAttrs(void)
 {

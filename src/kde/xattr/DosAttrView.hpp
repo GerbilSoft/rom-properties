@@ -44,7 +44,7 @@ class DosAttrView : public QWidget
 		void setAttrs(unsigned int attrs);
 
 		/**
-		 * Clear the attributes.
+		 * Clear the current MS-DOS attributes.
 		 */
 		void clearAttrs(void);
 
