@@ -42,6 +42,14 @@ static void	rp_xattr_view_clear_display_widgets(RpXAttrView *widget);
 
 static GParamSpec *props[PROP_LAST];
 
+/* Column identifiers */
+typedef enum {
+	XATTR_COL_NAME,
+	XATTR_COL_VALUE,
+
+	XATTR_COL_MAX
+} XAttrColumns;
+
 #if GTK_CHECK_VERSION(3,0,0)
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
@@ -71,6 +79,10 @@ struct _RpXAttrView {
 
 	GtkWidget *fraDosAttributes;
 	GtkWidget *dosAttrView;
+
+	GtkWidget	*fraXAttr;
+	GtkListStore	*listStore;
+	GtkWidget	*treeView;
 };
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -121,6 +133,66 @@ rp_xattr_view_init(RpXAttrView *widget)
 	widget->dosAttrView = rp_dos_attr_view_new();
 	gtk_widget_set_name(widget->dosAttrView, "dosAttrView");
 
+	// Extended attributes
+	widget->fraXAttr = gtk_frame_new(C_("XAttrView", "Extended Attributes"));
+	gtk_widget_set_name(widget->fraXAttr, "fraXAttr");
+
+	// Scroll area for the GtkTreeView.
+#if GTK_CHECK_VERSION(4,0,0)
+	GtkWidget *const scrlXAttr = gtk_scrolled_window_new();
+	gtk_scrolled_window_set_has_frame(GTK_SCROLLED_WINDOW(scrlXAttr), true);
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+	GtkWidget *const scrlXAttr = gtk_scrolled_window_new(nullptr, nullptr);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrlXAttr), GTK_SHADOW_IN);
+#endif /* GTK_CHECK_VERSION */
+	gtk_widget_set_name(scrlXAttr, "scrlXAttr");
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrlXAttr),
+		GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+#if GTK_CHECK_VERSION(2,91,1)
+	gtk_widget_set_halign(scrlXAttr, GTK_ALIGN_FILL);
+	gtk_widget_set_valign(scrlXAttr, GTK_ALIGN_FILL);
+	gtk_widget_set_hexpand(scrlXAttr, TRUE);
+	gtk_widget_set_vexpand(scrlXAttr, TRUE);
+	gtk_widget_set_margin(scrlXAttr, 6);	// TODO: GTK2 version
+#endif /* GTK_CHECK_VERSION(2,91,1) */
+
+	// Column titles
+	static const char *const column_titles[XATTR_COL_MAX] = {
+		NOP_C_("XAttrView", "Name"),
+		NOP_C_("XAttrView", "Value"),
+	};
+
+	// TODO: GtkListView version for GTK4
+
+	// Create the GtkListStore and GtkTreeView.
+	widget->listStore = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+	widget->treeView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(widget->listStore));
+	gtk_widget_set_name(widget->treeView, "treeView");
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(widget->treeView), TRUE);
+	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrlXAttr), widget->treeView);
+
+#if !GTK_CHECK_VERSION(3,0,0)
+	// GTK+ 2.x: Use the "rules hint" for alternating row colors.
+	// Deprecated in GTK+ 3.14 (and removed in GTK4), but it doesn't
+	// work with GTK+ 3.x anyway.
+	// TODO: GTK4's GtkListView might have a similar function.
+	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(widget->treeView), true);
+#endif /* !GTK_CHECK_VERSION(3,0,0) */
+
+	// Create the columns.
+	// NOTE: Unlock Time is stored as a string, not as a GDateTime or Unix timestamp.
+	for (int i = 0; i < XATTR_COL_MAX; i++) {
+		GtkTreeViewColumn *const column = gtk_tree_view_column_new();
+		gtk_tree_view_column_set_title(column,
+			dpgettext_expr(RP_I18N_DOMAIN, "XAttrView", column_titles[i]));
+		gtk_tree_view_column_set_resizable(column, TRUE);
+
+		GtkCellRenderer *const renderer = gtk_cell_renderer_text_new();
+		gtk_tree_view_column_pack_start(column, renderer, FALSE);
+		gtk_tree_view_column_add_attribute(column, renderer, "text", i);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(widget->treeView), column);
+	}
+
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_box_append(GTK_BOX(vboxLinuxAttributes), widget->linuxAttrView);
 	gtk_box_append(GTK_BOX(vboxDosAttributes), widget->dosAttrView);
@@ -132,10 +204,12 @@ rp_xattr_view_init(RpXAttrView *widget)
 #if GTK_CHECK_VERSION(2,91,0)
 	gtk_widget_set_margin(widget->fraLinuxAttributes, 6);
 	gtk_widget_set_margin(widget->fraDosAttributes, 6);
+	gtk_widget_set_margin(widget->fraXAttr, 6);
 	gtk_widget_set_margin(vboxLinuxAttributes, 6);
 	gtk_widget_set_margin(vboxDosAttributes, 6);
 	gtk_frame_set_child(GTK_FRAME(widget->fraLinuxAttributes), vboxLinuxAttributes);
 	gtk_frame_set_child(GTK_FRAME(widget->fraDosAttributes), vboxDosAttributes);
+	gtk_frame_set_child(GTK_FRAME(widget->fraXAttr), scrlXAttr);
 #else /* !GTK_CHECK_VERSION(2,91,0) */
 	// NOTE: The extra alignments outside the frame reduce the frame widths.
 	// This only affects GTK2, so meh.
@@ -164,25 +238,44 @@ rp_xattr_view_init(RpXAttrView *widget)
 	gtk_widget_show(alignFraDosAttributes);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignFraDosAttributes), 6, 6, 6, 6);
 	gtk_container_add(GTK_CONTAINER(alignFraDosAttributes), widget->fraDosAttributes);
+
+	GtkWidget *const alignScrlXAttr = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
+	gtk_widget_set_name(alignScrlXAttr, "alignScrlXAttr");
+	gtk_widget_show(alignScrlXAttr);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignScrlXAttr), 6, 6, 6, 6);
+	gtk_container_add(GTK_CONTAINER(alignScrlXAttr), scrlXAttr);
+	gtk_frame_set_child(GTK_FRAME(widget->fraXAttr), alignScrlXAttr);
+
+	GtkWidget *const alignFraXAttr = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
+	gtk_widget_set_name(alignFraXAttr, "alignFraXAttr");
+	gtk_widget_show(alignFraXAttr);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignFraXAttr), 6, 6, 6, 6);
+	gtk_container_add(GTK_CONTAINER(alignFraXAttr), widget->fraXAttr);
 #endif /* GTK_CHECK_VERSION(2,91,0) */
 
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_box_append(GTK_BOX(widget), widget->fraLinuxAttributes);
 	gtk_box_append(GTK_BOX(widget), widget->fraDosAttributes);
+	gtk_box_append(GTK_BOX(widget), widget->fraXAttr);	// TODO: Expand?
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 #  if GTK_CHECK_VERSION(2,91,0)
 	gtk_box_pack_start(GTK_BOX(widget), widget->fraLinuxAttributes, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(widget), widget->fraDosAttributes, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(widget), widget->fraXAttr, TRUE, TRUE, 0);
 #  else /* !GTK_CHECK_VERSION(2,91,0) */
 	gtk_box_pack_start(GTK_BOX(widget), alignFraLinuxAttributes, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(widget), alignFraDosAttributes, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(widget), alignFraXAttr, TRUE, TRUE, 0);	// FIXME: Expand isn't working here.
 #  endif /* GTK_CHECK_VERSION(2,91,0) */
 	gtk_widget_show(widget->fraLinuxAttributes);
 	gtk_widget_show(widget->fraDosAttributes);
+	gtk_widget_show(widget->fraXAttr);
 	gtk_widget_show(vboxLinuxAttributes);
 	gtk_widget_show(vboxDosAttributes);
 	gtk_widget_show(widget->linuxAttrView);
 	gtk_widget_show(widget->dosAttrView);
+	gtk_widget_show(scrlXAttr);
+	gtk_widget_show(widget->treeView);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 }
 
@@ -316,8 +409,30 @@ rp_xattr_view_load_dos_attrs(RpXAttrView *widget)
 static int
 rp_xattr_view_load_posix_xattrs(RpXAttrView *widget)
 {
-	// TODO
-	return -ENOTSUP;
+	// Hide by default.
+	// If we do have attributes, we'll show the widgets there.
+	gtk_widget_hide(widget->fraXAttr);
+
+	if (!widget->xattrReader->hasGenericXAttrs()) {
+		// No generic attributes.
+		return -ENOENT;
+	}
+
+	gtk_list_store_clear(widget->listStore);
+	const XAttrReader::XAttrList &xattrList = widget->xattrReader->genericXAttrs();
+	for (const auto &xattr : xattrList) {
+		GtkTreeIter treeIter;
+		gtk_list_store_append(widget->listStore, &treeIter);
+		gtk_list_store_set(widget->listStore, &treeIter,
+			0, xattr.first.c_str(), 1, xattr.second.c_str(), -1);
+	}
+
+	// Resize the columns to fit the contents.
+	gtk_tree_view_columns_autosize(GTK_TREE_VIEW(widget->treeView));
+
+	// Extended attributes retrieved.
+	gtk_widget_show(widget->fraXAttr);
+	return 0;
 }
 
 /**
