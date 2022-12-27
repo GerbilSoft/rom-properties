@@ -46,7 +46,7 @@ RomDataView *RpPropertiesDialogPlugin::createRomDataView(const KFileItem &fileIt
 	// RomDataFactory::supportedMimeTypes() returns MIME types in
 	// alphabetical order, so we can use std::lower_bound().
 	// FIXME: May break the libromdata.so.2 ABI...
-	const string u8_mimeType = fileItem.mimetype().toUtf8().toStdString();
+	const string u8_mimeType(fileItem.mimetype().toUtf8().constData());
 	const vector<const char*> &mimeTypes = RomDataFactory::supportedMimeTypes();
 	auto iter = std::lower_bound(mimeTypes.begin(), mimeTypes.end(), u8_mimeType,
 		[](const char *check, const string &search) -> bool {
