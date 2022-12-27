@@ -64,7 +64,6 @@ class XAttrViewPrivate
 
 		/**
 		 * Load POSIX xattrs, if available.
-		 * @param fd File descriptor of the open file
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int loadPosixXattrs(void);
@@ -194,9 +193,8 @@ int XAttrViewPrivate::loadAttributes(void)
 	const string s_local_filename = filename.toLocalFile().toUtf8().constData();
 
 	// Close the XAttrReader if it's already open.
-	if (xattrReader) {
-		delete xattrReader;
-	}
+	delete xattrReader;
+
 	// Open an XAttrReader.
 	xattrReader = new XAttrReader(s_local_filename.c_str());
 	int err = xattrReader->lastError();
@@ -238,7 +236,6 @@ int XAttrViewPrivate::loadAttributes(void)
  */
 void XAttrViewPrivate::clearDisplayWidgets()
 {
-	// TODO: Other widgets.
 	ui.linuxAttrView->clearFlags();
 	ui.dosAttrView->clearAttrs();
 	ui.treeXAttr->clear();
