@@ -67,9 +67,9 @@ int XAttrReaderPrivate::init(void)
 	// handle from the file, so we'll just use the filename.
 
 	// Load the attributes.
-	loadLinuxAttrs(fd);
-	loadDosAttrs(fd);
-	loadGenericXattrs(fd);
+	loadLinuxAttrs();
+	loadDosAttrs();
+	loadGenericXattrs();
 	return 0;
 }
 
