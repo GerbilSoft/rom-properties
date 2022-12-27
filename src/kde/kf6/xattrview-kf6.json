@@ -2,7 +2,8 @@
     "CacheThumbnail": true,
     "KPlugin": {
         "MimeTypes": [
-            "application/octet-stream"
+            "application/octet-stream",
+            "inode/directory"
         ],
         "Name": "xattrview-kf5",
         "Description": "Extended Attributes Viewer for KDE Frameworks 6",
@@ -10,7 +11,7 @@
             "KPropertiesDialog/Plugin"
         ]
     },
-    "MimeType": "application/octet-stream",
+    "MimeType": "application/octet-stream;inode/directory",
     "X-KDE-Protocol": "file",
     "X-KDE-Protocols": [
         "file",

@@ -4,12 +4,11 @@ Type=Service
 Name=Extended Attributes Viewer
 ServiceTypes=KPropertiesDialog/Plugin
 
-# KDE service settings.
+# KDE service settings
 X-KDE-Library=xattrview-kde4
 X-KDE-ServiceTypes=KPropertiesDialog/Plugin
 X-KDE-Protocol=file
 X-KDE-Protocols=file,desktop
 
-# Supported MIME types.
-# For KDE KPropertiesDialog, both thumbnailable and non-thumbnailable types are listed.
-MimeType=application/octet-stream
+# Supported MIME types
+MimeType=application/octet-stream;inode/directory
