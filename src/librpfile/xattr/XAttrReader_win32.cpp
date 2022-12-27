@@ -93,7 +93,7 @@ int XAttrReaderPrivate::loadLinuxAttrs(void)
  */
 int XAttrReaderPrivate::loadDosAttrs(void)
 {
-	dosAttributes = GetFileAttributes(filename);
+	dosAttributes = GetFileAttributes(filename.c_str());
 	hasDosAttributes = (dosAttributes != INVALID_FILE_ATTRIBUTES);
 	return (hasDosAttributes ? 0 : -ENOTSUP);
 }
