@@ -29,6 +29,7 @@ using namespace LibRpBase;
 #include "Other/NintendoBadge.hpp"
 #include "Handheld/NintendoDS.hpp"
 #include "Handheld/Nintendo3DS.hpp"
+#include "Console/PlayStationDisc.hpp"
 #include "Console/PlayStationSave.hpp"
 #include "Console/WiiU.hpp"
 #include "Console/WiiWAD.hpp"
@@ -41,7 +42,7 @@ namespace LibRomData { namespace ImageTypesConfig {
 // Number of image types. (columns)
 static const unsigned int IMG_TYPE_COUNT = LibRpBase::RomData::IMG_EXT_MAX+1;
 // Number of systems. (rows)
-static const unsigned int SYS_COUNT = 10;
+static const unsigned int SYS_COUNT = 11;
 
 namespace Private {
 
@@ -64,6 +65,7 @@ static const SysData_t sysData[SYS_COUNT] = {
 	SysDataEntry(GameCubeSave),
 	SysDataEntry(NintendoDS),
 	SysDataEntry(Nintendo3DS),
+	SysDataEntry(PlayStationDisc),
 	SysDataEntry(PlayStationSave),
 	SysDataEntry(WiiU),
 	SysDataEntry(WiiWAD),
@@ -156,6 +158,8 @@ const char *sysName(unsigned int sys)
 		NOP_C_("ImageTypesConfig|SysName", "Nintendo DS(i)"),
 		// tr: Nintendo3DS
 		NOP_C_("ImageTypesConfig|SysName", "Nintendo 3DS"),
+		// tr: PlayStationDisc (PS1 and PS2)
+		NOP_C_("ImageTypesConfig|SysName", "PlayStation 1 & 2"),
 		// tr: PlayStationSave
 		NOP_C_("ImageTypesConfig|SysName", "PlayStation Saves"),
 		// tr: WiiU
