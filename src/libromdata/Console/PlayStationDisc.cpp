@@ -126,6 +126,9 @@ const char *const PlayStationDiscPrivate::mimeTypes[] = {
 	"application/x-cd-image",
 	"application/x-iso9660-image",
 
+	// Custom, for 2352-byte sector disc images
+	"application/x-raw-cd-image",
+
 	// TODO: PS1/PS2?
 	nullptr
 };
