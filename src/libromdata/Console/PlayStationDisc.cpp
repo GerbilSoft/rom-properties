@@ -111,7 +111,6 @@ class PlayStationDiscPrivate final : public RomDataPrivate
 };
 
 ROMDATA_IMPL(PlayStationDisc)
-ROMDATA_IMPL_IMG(PlayStationDisc)
 
 /** PlayStationDiscPrivate **/
 
@@ -631,7 +630,20 @@ uint32_t PlayStationDisc::supportedImageTypes_static(void)
 }
 
 /**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t PlayStationDisc::supportedImageTypes(void) const
+{
+	return supportedImageTypes_static();
+}
+
+/**
  * Get a list of all available image sizes for the specified image type.
+ *
+ * The first item in the returned vector is the "default" size.
+ * If the width/height is 0, then an image exists, but the size is unknown.
+ *
  * @param imageType Image type.
  * @return Vector of available image sizes, or empty vector if no images are available.
  */
@@ -639,17 +651,63 @@ vector<RomData::ImageSizeDef> PlayStationDisc::supportedImageSizes_static(ImageT
 {
 	ASSERT_supportedImageSizes(imageType);
 
+	// NOTE: Can't check for system type here.
+	// Assuming PS1 disc images.
 	switch (imageType) {
 #ifdef HAVE_JPEG
 		case IMG_EXT_COVER: {
-			// xlenore PS1 cover art images are 500x500.
-			// xlenore PS2 cover art images are 512x736.
-			// TODO: Non-static version that indicates this.
 			static const ImageSizeDef sz_EXT_COVER[] = {
 				{nullptr, 500, 500, 0},
 			};
 			return vector<ImageSizeDef>(sz_EXT_COVER,
 				sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER));
+		}
+#endif /* HAVE_JPEG */
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return vector<ImageSizeDef>();
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ *
+ * The first item in the returned vector is the "default" size.
+ * If the width/height is 0, then an image exists, but the size is unknown.
+ *
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> PlayStationDisc::supportedImageSizes(ImageType imageType) const
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	switch (imageType) {
+#ifdef HAVE_JPEG
+		case IMG_EXT_COVER: {
+			RP_D(const PlayStationDisc);
+			switch (d->consoleType) {
+				default:
+					assert(!"Invalid ConsoleType.");
+					break;
+				case PlayStationDiscPrivate::ConsoleType::PS1: {
+					static const ImageSizeDef sz_EXT_COVER_PS1[] = {
+						{nullptr, 500, 500, 0},
+					};
+					return vector<ImageSizeDef>(sz_EXT_COVER_PS1,
+						sz_EXT_COVER_PS1 + ARRAY_SIZE(sz_EXT_COVER_PS1));
+				}
+				case PlayStationDiscPrivate::ConsoleType::PS2: {
+					static const ImageSizeDef sz_EXT_COVER_PS2[] = {
+						{nullptr, 512, 736, 0},
+					};
+					return vector<ImageSizeDef>(sz_EXT_COVER_PS2,
+						sz_EXT_COVER_PS2 + ARRAY_SIZE(sz_EXT_COVER_PS2));
+				}
+			}
+			break;
 		}
 #endif /* HAVE_JPEG */
 		default:
