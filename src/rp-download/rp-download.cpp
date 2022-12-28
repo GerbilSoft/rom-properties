@@ -480,6 +480,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// - cbmII:  https://rpdb.gerbilsoft.com/cbmII/[key]
 	// - vic20:  https://rpdb.gerbilsoft.com/vic20/[key]
 	// - plus4:  https://rpdb.gerbilsoft.com/plus4/[key]
+	// - ps1:    https://rpdb.gerbilsoft.com/ps1/[key]
+	// - ps2:    https://rpdb.gerbilsoft.com/ps2/[key]
 	// - sys:    https://rpdb.gerbilsoft.com/sys/[key] [system info, e.g. update version]
 	const TCHAR *slash_pos = _tcschr(cache_key, _T('/'));
 	if (slash_pos == nullptr || slash_pos == cache_key ||
@@ -579,7 +581,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 				if (!_tcsncmp(cache_key, _T("gba"), 3) ||
 				    !_tcsncmp(cache_key, _T("mcd"), 3) ||
 				    !_tcsncmp(cache_key, _T("32x"), 3) ||
-				    !_tcsncmp(cache_key, _T("c64"), 3))
+				    !_tcsncmp(cache_key, _T("c64"), 3) ||
+				    !_tcsncmp(cache_key, _T("ps1"), 3) ||
+				    !_tcsncmp(cache_key, _T("ps2"), 3))
 				{
 					ok = true;
 				}

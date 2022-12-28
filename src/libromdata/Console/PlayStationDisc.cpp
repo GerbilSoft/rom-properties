@@ -7,6 +7,8 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "librpbase/config.librpbase.h"
+
 #include "PlayStationDisc.hpp"
 #include "ps2_structs.h"
 
@@ -109,6 +111,7 @@ class PlayStationDiscPrivate final : public RomDataPrivate
 };
 
 ROMDATA_IMPL(PlayStationDisc)
+ROMDATA_IMPL_IMG(PlayStationDisc)
 
 /** PlayStationDiscPrivate **/
 
@@ -615,6 +618,49 @@ const char *PlayStationDisc::systemName(unsigned int type) const
 }
 
 /**
+ * Get a bitfield of image types this class can retrieve.
+ * @return Bitfield of supported image types. (ImageTypesBF)
+ */
+uint32_t PlayStationDisc::supportedImageTypes_static(void)
+{
+#ifdef HAVE_JPEG
+	return IMGBF_EXT_COVER;
+#else /* !HAVE_JPEG */
+	return 0;
+#endif /* HAVE_JPEG */
+}
+
+/**
+ * Get a list of all available image sizes for the specified image type.
+ * @param imageType Image type.
+ * @return Vector of available image sizes, or empty vector if no images are available.
+ */
+vector<RomData::ImageSizeDef> PlayStationDisc::supportedImageSizes_static(ImageType imageType)
+{
+	ASSERT_supportedImageSizes(imageType);
+
+	switch (imageType) {
+#ifdef HAVE_JPEG
+		case IMG_EXT_COVER: {
+			// xlenore PS1 cover art images are 500x500.
+			// xlenore PS2 cover art images are 512x736.
+			// TODO: Non-static version that indicates this.
+			static const ImageSizeDef sz_EXT_COVER[] = {
+				{nullptr, 500, 500, 0},
+			};
+			return vector<ImageSizeDef>(sz_EXT_COVER,
+				sz_EXT_COVER + ARRAY_SIZE(sz_EXT_COVER));
+		}
+#endif /* HAVE_JPEG */
+		default:
+			break;
+	}
+
+	// Unsupported image type.
+	return vector<ImageSizeDef>();
+}
+
+/**
  * Load field data.
  * Called by RomData::fields() if the field data hasn't been loaded yet.
  * @return Number of fields read on success; negative POSIX error code on error.
@@ -815,6 +861,111 @@ int PlayStationDisc::loadMetaData(void)
 
 	// Finished reading the metadata.
 	return static_cast<int>(d->metaData->count());
+}
+
+/**
+ * Get a list of URLs for an external image type.
+ *
+ * A thumbnail size may be requested from the shell.
+ * If the subclass supports multiple sizes, it should
+ * try to get the size that most closely matches the
+ * requested size.
+ *
+ * @param imageType	[in]     Image type.
+ * @param pExtURLs	[out]    Output vector.
+ * @param size		[in,opt] Requested image size. This may be a requested
+ *                               thumbnail size in pixels, or an ImageSizeType
+ *                               enum value.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int PlayStationDisc::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
+{
+	ASSERT_extURLs(imageType, pExtURLs);
+	pExtURLs->clear();
+
+	RP_D(const PlayStationDisc);
+	if (!d->isValid || (int)d->consoleType < 0) {
+		// Disc image isn't valid.
+		return -EIO;
+	}
+
+	// Get the disc serial number. (boot filename)
+	if (d->boot_filename.empty() || d->boot_filename == "PSX.EXE") {
+		// No boot filename, or it's the default filename.
+		return -ENOENT;
+	}
+
+	// System ID
+	static const char sys_tbl[][4] = {
+		"ps1", "ps2"
+	};
+	if (d->consoleType >= PlayStationDiscPrivate::ConsoleType::Max)
+		return -ENOENT;
+	const char *const sys = sys_tbl[(int)d->consoleType];
+
+	// Game ID format: SLUS-20718
+	// Boot filename format: SLUS_207.18
+	// Using the first part as the region code.
+	string gameID = d->boot_filename;
+	string region_code;
+	size_t pos = gameID.find('_');
+	if (pos != string::npos) {
+		region_code = gameID.substr(0, pos);
+		gameID[pos] = '-';
+	} else if (d->boot_filename.size() > 4) {
+		// No underscore. Use the first four characters as the region.
+		region_code = gameID.substr(0, 4);
+	} else {
+		// Too short to be a game ID.
+		return -ENOENT;
+	}
+
+	// Remove the dot.
+	pos = gameID.rfind('.');
+	if (pos != string::npos) {
+		gameID.erase(pos, 1);
+	}
+
+	// NOTE: We only have one size for MegaDrive right now.
+	// TODO: Determine the actual image size.
+	RP_UNUSED(size);
+	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
+	assert(sizeDefs.size() == 1);
+	if (sizeDefs.empty()) {
+		// No image sizes.
+		return -ENOENT;
+	}
+
+	// NOTE: RPDB's cover database only has one size.
+	// There's no need to check image sizes, but we need to
+	// get the image size for the extURLs struct.
+
+	// Determine the image type name.
+	const char *imageTypeName;
+	const char *ext;
+	switch (imageType) {
+#ifdef HAVE_JPEG
+		case IMG_EXT_COVER:
+			imageTypeName = "cover";
+			ext = ".jpg";
+			break;
+#endif /* HAVE_JPEG */
+		default:
+			// Unsupported image type.
+			return -ENOENT;
+	}
+
+	// Add the URLs.
+	pExtURLs->resize(1);
+	auto extURL_iter = pExtURLs->begin();
+	extURL_iter->url = d->getURL_RPDB(sys, imageTypeName, region_code.c_str(), gameID.c_str(), ext);
+	extURL_iter->cache_key = d->getCacheKey_RPDB(sys, imageTypeName, region_code.c_str(), gameID.c_str(), ext);
+	extURL_iter->width = sizeDefs[0].width;
+	extURL_iter->height = sizeDefs[0].height;
+	extURL_iter->high_res = (sizeDefs[0].index >= 2);
+
+	// All URLs added.
+	return 0;
 }
 
 }

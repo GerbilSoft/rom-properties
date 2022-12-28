@@ -2,6 +2,14 @@
 
 ## v2.2 (released 2023/??/??)
 
+* New features:
+  * PlayStationDisc: Added external cover images using RPDB, mirrored from
+    the following GitHub repositories:
+    * https://github.com/xlenore/psx-covers
+    * https://github.com/xlenore/ps2-covers
+    * Fixes #371: PlayStation 1 and 2 covers
+      * Reported by @DankRank.
+
 * Bug fixes:
   * WiiWAD: Add application/x-doom-wad for compatibility with some systems that
     assume all .wad files are Doom WADs.

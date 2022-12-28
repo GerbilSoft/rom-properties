@@ -55,11 +55,17 @@ or deleted.
   * Nintendo Game Boy Color
   * Nintendo Game Boy Advance
   * Sega Mega Drive / Genesis, Sega CD, 32X, Pico
+  * Sony PlayStation 1 and 2
   * Super NES
   * WonderSwan (Color)
 
 The RPDB domain is also used by rp-config's update checker to determine if
 a newer version of rom-properties is available.
+
+PlayStation 1 and 2 cover art is mirrored from the following GitHub repositories:
+
+* https://github.com/xlenore/psx-covers
+* https://github.com/xlenore/ps2-covers
 
 ### ROM Information Used
 
@@ -77,6 +83,7 @@ images from the online databases:
 * amiibo: 64-bit amiibo ID (e.g. `00000000-00000002`)
 * Neo Geo Pocket (Color): Game ID (e.g. `NEOP0001`). For certain games
   with invalid IDs (e.g. homebrew), the game title is also used.
+* PlayStation 1 and 2: Game ID (e.g. `SLUS-20718`)
 * Sega Mega Drive and related: Serial number (e.g. `GM 00001009-00`)
   and region code.
 * Super NES: Game title and region code (e.g. `SNS-SUPER MARIOWORLD-USA`),

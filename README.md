@@ -120,7 +120,7 @@ button.
 | Sega Dreamcast            |       Yes      |    Yes   |      Media      |        No       |
 | Sega Dreamcast Saves      |       Yes      |    Yes   |   Icon, Banner  |        No       |
 | Sega Saturn               |       Yes      |    Yes   |       N/A       |        No       |
-| Sony PlayStation Discs    |       Yes      |    No    |       N/A       |        No       |
+| Sony PlayStation Discs    |       Yes      |    No    |       N/A       |      Covers     |
 | Sony PlayStation EXEs     |       Yes      |    No    |       N/A       |       N/A       |
 | Sony PlayStation Saves    |       Yes      |    Yes   |       Icon      |       N/A       |
 | Sony PlayStation 2 Discs  |       Yes      |    Yes   |       N/A       |        No       |
@@ -388,3 +388,5 @@ https://github.com/GerbilSoft/rom-properties/issues
 * [Vulkan SDK for Android](https://arm-software.github.io/vulkan-sdk/_a_s_t_c.html)
   for the ASTC file format header.
 * [NEZ Plug](http://nezplug.sourceforge.net/) for basic GBR specifications.
+* [xlenore](https://github.com/xlenore) for the PlayStation 1 and 2 cover art
+  repository.
