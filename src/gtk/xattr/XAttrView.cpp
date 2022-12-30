@@ -423,8 +423,15 @@ rp_xattr_view_load_posix_xattrs(RpXAttrView *widget)
 	for (const auto &xattr : xattrList) {
 		GtkTreeIter treeIter;
 		gtk_list_store_append(widget->listStore, &treeIter);
-		gtk_list_store_set(widget->listStore, &treeIter,
-			0, xattr.first.c_str(), 1, xattr.second.c_str(), -1);
+		// NOTE: Trimming leading and trailing spaces from the value.
+		// TODO: If copy is added, include the spaces.
+		gchar *value_str = g_strdup(xattr.second.c_str());
+		if (value_str) {
+			value_str = g_strstrip(value_str);
+			gtk_list_store_set(widget->listStore, &treeIter,
+				0, xattr.first.c_str(), 1, value_str, -1);
+			g_free(value_str);
+		}
 	}
 
 	// Resize the columns to fit the contents.
