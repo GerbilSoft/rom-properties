@@ -134,12 +134,12 @@ int XAttrViewPrivate::loadPosixXattrs(void)
 	// If we do have attributes, we'll show the widgets there.
 	ui.grpXAttr->hide();
 
+	ui.treeXAttr->clear();
 	if (!xattrReader->hasGenericXAttrs()) {
 		// No generic attributes.
 		return -ENOENT;
 	}
 
-	ui.treeXAttr->clear();
 	const XAttrReader::XAttrList &xattrList = xattrReader->genericXAttrs();
 	for (const auto &xattr : xattrList) {
 		QTreeWidgetItem *const treeWidgetItem = new QTreeWidgetItem(ui.treeXAttr);

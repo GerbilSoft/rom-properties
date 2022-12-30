@@ -413,12 +413,12 @@ rp_xattr_view_load_posix_xattrs(RpXAttrView *widget)
 	// If we do have attributes, we'll show the widgets there.
 	gtk_widget_hide(widget->fraXAttr);
 
+	gtk_list_store_clear(widget->listStore);
 	if (!widget->xattrReader->hasGenericXAttrs()) {
 		// No generic attributes.
 		return -ENOENT;
 	}
 
-	gtk_list_store_clear(widget->listStore);
 	const XAttrReader::XAttrList &xattrList = widget->xattrReader->genericXAttrs();
 	for (const auto &xattr : xattrList) {
 		GtkTreeIter treeIter;
