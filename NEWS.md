@@ -6,6 +6,7 @@
   * Extended attribute viewer tab. Supports viewing MS-DOS and (on Linux)
     EXT2 attributes on supported file systems, plus POSIX extended attributes.
     * On Windows, alternate data streams are displayed as extended attributes.
+    * Windows xattr functionality currently does not work on Windows XP.
   * KDE UI frontend now only uses JSON loading when compiled with KDE Frameworks
     5.89.0 or later.
 
