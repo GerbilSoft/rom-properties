@@ -10,41 +10,8 @@
 #ifndef __ROMPROPERTIES_WIN32_RP_XATTRVIEW_P_HPP__
 #define __ROMPROPERTIES_WIN32_RP_XATTRVIEW_P_HPP__
 
-// Control base IDs.
-#define IDC_STATIC_BANNER		0x0100
-#define IDC_STATIC_ICON			0x0101
-#define IDC_TAB_WIDGET			0x0102
-#define IDC_CBO_LANGUAGE		0x0103
-#define IDC_MESSAGE_WIDGET		0x0104
-#define IDC_TAB_PAGE(idx)		(0x0200 + (idx))
-#define IDC_STATIC_DESC(idx)		(0x1000 + (idx))
-#define IDC_RFT_STRING(idx)		(0x1400 + (idx))
-#define IDC_RFT_LISTDATA(idx)		(0x1800 + (idx))
-
-// Bitfield is last due to multiple controls per field.
-#define IDC_RFT_BITFIELD(idx, bit)	(0x7000 + ((idx) * 32) + (bit))
-
-// librpbase
-namespace LibRpBase {
-	class RomData;
-	class RomFields;
-}
-
 // TCHAR
 #include "tcharx.h"
-
-// C++ includes
-#include <string>
-#include <unordered_map>
-#include <vector>
-
-// Custom controls (pseudo-controls)
-class DragImageLabel;
-#include "FontHandler.hpp"
-
-
-// ListView Data
-#include "LvData.hpp"
 
 /** RP_XAttrView_Private **/
 // Workaround for RP_D() expecting the no-underscore naming convention.
@@ -74,9 +41,7 @@ class RP_XAttrView_Private
 
 	public:
 		HWND hDlgSheet;		// Property sheet
-
-		// Opened file
-		LPTSTR filename;
+		LPTSTR filename;	// Opened file
 
 		// wtsapi32.dll for Remote Desktop status. (WinXP and later)
 		LibWin32UI::WTSSessionNotification wts;
