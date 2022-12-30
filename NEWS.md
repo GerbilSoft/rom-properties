@@ -2,6 +2,13 @@
 
 ## v2.2 (released 2023/??/??)
 
+* New features:
+  * Extended attribute viewer tab. Currently implemented on GTK and KDE UI
+    frontends. Supports viewing MS-DOS and Linux EXT2 attributes on supported
+    file systems, plus POSIX extended attributes.
+  * KDE UI frontend now only uses JSON loading when compiled with KDE Frameworks
+    5.89.0 or later.
+
 * Bug fixes:
   * WiiWAD: Add application/x-doom-wad for compatibility with some systems that
     assume all .wad files are Doom WADs.
