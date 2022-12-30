@@ -15,8 +15,15 @@
 
 #include "RP_XAttrView.hpp"
 #include "RP_XAttrView_p.hpp"
-#include "RpImageWin32.hpp"
 #include "res/resource.h"
+
+// librpfile
+#include "librpfile/xattr/XAttrReader.hpp"
+using LibRpFile::XAttrReader;
+
+// MS-DOS and Windows attributes
+// NOTE: Does not depend on the Windows SDK.
+#include "librpfile/xattr/dos_attrs.h"
 
 // CLSID
 const CLSID CLSID_RP_XAttrView =
@@ -36,6 +43,7 @@ const TCHAR RP_XAttrView_Private::TAB_PTR_PROP[] = _T("RP_XAttrView_Private::tab
 RP_XAttrView_Private::RP_XAttrView_Private(RP_XAttrView *q, LPTSTR filename)
 	: q_ptr(q)
 	, filename(filename)
+	, xattrReader(nullptr)
 	, hDlgSheet(nullptr)
 	, dwExStyleRTL(LibWin32UI::isSystemRTL())
 	, colorAltRow(LibWin32UI::getAltRowColor())
@@ -45,6 +53,100 @@ RP_XAttrView_Private::RP_XAttrView_Private(RP_XAttrView *q, LPTSTR filename)
 RP_XAttrView_Private::~RP_XAttrView_Private()
 {
 	free(filename);
+	delete xattrReader;
+}
+
+/**
+ * Load MS-DOS attributes, if available.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RP_XAttrView_Private::loadDosAttrs(void)
+{
+	const bool hasDosAttributes = xattrReader->hasDosAttributes();
+	const unsigned int attrs = (likely(hasDosAttributes)) ? xattrReader->dosAttributes() : 0;
+
+#define SET_CHECK(id, attr) \
+	Button_SetCheck(GetDlgItem(hDlgSheet, (id)), (attrs & (attr)) ? BST_CHECKED : BST_UNCHECKED);
+
+	SET_CHECK(IDC_XATTRVIEW_DOS_READONLY, FILE_ATTRIBUTE_READONLY);
+	SET_CHECK(IDC_XATTRVIEW_DOS_HIDDEN, FILE_ATTRIBUTE_HIDDEN);
+	SET_CHECK(IDC_XATTRVIEW_DOS_ARCHIVE, FILE_ATTRIBUTE_ARCHIVE);
+	SET_CHECK(IDC_XATTRVIEW_DOS_SYSTEM, FILE_ATTRIBUTE_SYSTEM);
+	SET_CHECK(IDC_XATTRVIEW_NTFS_COMPRESSED, FILE_ATTRIBUTE_COMPRESSED);
+	SET_CHECK(IDC_XATTRVIEW_NTFS_ENCRYPTED, FILE_ATTRIBUTE_ENCRYPTED);
+	return (likely(hasDosAttributes)) ? 0 : -ENOENT;
+}
+
+/**
+ * Load alternate data streams, if available.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RP_XAttrView_Private::loadADS(void)
+{
+	// TODO
+	return -ENOTSUP;
+}
+
+/**
+ * Load the attributes from the specified file.
+ * The attributes will be loaded into the display widgets.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int RP_XAttrView_Private::loadAttributes(void)
+{
+	// Close the XAttrReader if it's already open.
+	delete xattrReader;
+
+	if (!filename) {
+		// No filename.
+		return -EIO;
+	}
+
+	// Open an XAttrReader.
+	xattrReader = new XAttrReader(filename);
+	int err = xattrReader->lastError();
+	if (err != 0) {
+		// Error reading attributes.
+		// TODO: Cancel tab loading?
+		delete xattrReader;
+		xattrReader = nullptr;
+		return err;
+	}
+
+	// Load the attributes.
+	bool hasAnyAttrs = false;
+	// TODO: Load Linux attributes? (WSL, etc)
+	int ret = loadDosAttrs();
+	if (ret == 0) {
+		hasAnyAttrs = true;
+	}
+	ret = loadADS();
+	if (ret == 0) {
+		hasAnyAttrs = true;
+	}
+
+	// If we have attributes, great!
+	// If not, clear the display widgets.
+	if (!hasAnyAttrs) {
+		// TODO: Cancel tab loading?
+		clearDisplayWidgets();
+	}
+	return 0;
+}
+
+/**
+ * Clear the display widgets.
+ */
+void RP_XAttrView_Private::clearDisplayWidgets()
+{
+	Button_SetCheck(GetDlgItem(hDlgSheet, IDC_XATTRVIEW_DOS_READONLY), BST_UNCHECKED);
+	Button_SetCheck(GetDlgItem(hDlgSheet, IDC_XATTRVIEW_DOS_HIDDEN), BST_UNCHECKED);
+	Button_SetCheck(GetDlgItem(hDlgSheet, IDC_XATTRVIEW_DOS_ARCHIVE), BST_UNCHECKED);
+	Button_SetCheck(GetDlgItem(hDlgSheet, IDC_XATTRVIEW_DOS_SYSTEM), BST_UNCHECKED);
+	Button_SetCheck(GetDlgItem(hDlgSheet, IDC_XATTRVIEW_NTFS_COMPRESSED), BST_UNCHECKED);
+	Button_SetCheck(GetDlgItem(hDlgSheet, IDC_XATTRVIEW_NTFS_ENCRYPTED), BST_UNCHECKED);
+
+	ListView_DeleteAllItems(GetDlgItem(hDlgSheet, IDC_XATTRVIEW_LISTVIEW_ADS));
 }
 
 /**
@@ -67,7 +169,9 @@ void RP_XAttrView_Private::initDialog(void)
 		SetWindowLongPtr(hDlgSheet, GWL_EXSTYLE, lpExStyle);
 	}
 
-	// TODO: Load the attributes.
+	// Load attributes.
+	// TODO: Cancel tab loading if it fails?
+	loadAttributes();
 
 	// Window is fully initialized.
 	isFullyInit = true;

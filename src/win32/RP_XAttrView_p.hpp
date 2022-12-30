@@ -10,6 +10,11 @@
 #ifndef __ROMPROPERTIES_WIN32_RP_XATTRVIEW_P_HPP__
 #define __ROMPROPERTIES_WIN32_RP_XATTRVIEW_P_HPP__
 
+// librpfile
+namespace LibRpFile {
+	class XAttrReader;
+}
+
 // TCHAR
 #include "tcharx.h"
 
@@ -40,8 +45,9 @@ class RP_XAttrView_Private
 		static const TCHAR TAB_PTR_PROP[];
 
 	public:
-		HWND hDlgSheet;		// Property sheet
-		LPTSTR filename;	// Opened file
+		HWND hDlgSheet;				// Property sheet
+		LPTSTR filename;			// Opened file
+		LibRpFile::XAttrReader *xattrReader;	// XAttrReader
 
 		// wtsapi32.dll for Remote Desktop status. (WinXP and later)
 		LibWin32UI::WTSSessionNotification wts;
@@ -61,6 +67,32 @@ class RP_XAttrView_Private
 		// Alternate row color.
 		COLORREF colorAltRow;
 		bool isFullyInit;		// True if the window is fully initialized.
+
+	private:
+		/**
+		 * Load MS-DOS attributes, if available.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int loadDosAttrs(void);
+
+		/**
+		 * Load alternate data streams, if available.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int loadADS(void);
+
+	public:
+		/**
+		 * Load the attributes from the specified file.
+		 * The attributes will be loaded into the display widgets.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int loadAttributes(void);
+
+		/**
+		 * Clear the display widgets.
+		 */
+		void clearDisplayWidgets();
 
 	public:
 		/**
