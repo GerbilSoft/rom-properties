@@ -320,7 +320,7 @@ INT_PTR RP_XAttrView_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 	switch (pHdr->code) {
 		case NM_CUSTOMDRAW: {
 			// Custom drawing notification.
-			if ((pHdr->idFrom & 0xFC00) != IDC_RFT_LISTDATA(0))
+			if (pHdr->idFrom != IDC_XATTRVIEW_LISTVIEW_ADS)
 				break;
 
 			// NOTE: Since this is a DlgProc, we can't simply return
