@@ -27,6 +27,10 @@ extern "C" {
 	uint8_t RP_LibRpFile_XAttrReader_impl_ForceLinkage;
 }
 
+// ADS functions (Windows Vista and later)
+typedef HANDLE (WINAPI *PFNFINDFIRSTSTREAMW)(_In_ LPCWSTR lpFileName, _In_ STREAM_INFO_LEVELS InfoLevel, _Out_ LPVOID lpFindStreamData, DWORD dwFlags);
+typedef HANDLE (WINAPI *PFNFINDNEXTSTREAMW)(_In_ HANDLE hFindStream, _Out_ LPVOID lpFindStreamData);
+
 namespace LibRpFile {
 
 /** XAttrReaderPrivate **/
@@ -108,9 +112,46 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 {
 	genericXAttrs.clear();
 
-	// TODO: Enumerate alternate data streams.
-	hasGenericXAttrs = false;
-	return -ENOTSUP;
+	// Windows Vista: Use FindFirstStream().
+	// TODO: Implement an XP version using BackupRead().
+	HMODULE hKernel32 = GetModuleHandle(_T("kernel32"));
+	assert(hKernel32 != nullptr);
+	if (!hKernel32)
+		return -ENOMEM;
+
+	PFNFINDFIRSTSTREAMW pfnFindFirstStreamW = (PFNFINDFIRSTSTREAMW)GetProcAddress(hKernel32, "FindFirstStreamW");
+	PFNFINDNEXTSTREAMW pfnFindNextStreamW = (PFNFINDNEXTSTREAMW)GetProcAddress(hKernel32, "FindNextStreamW");
+	if (pfnFindFirstStreamW && pfnFindNextStreamW) {
+		// We have FindFirstStreamW().
+		WIN32_FIND_STREAM_DATA fsd;
+		HANDLE hADS = pfnFindFirstStreamW(filename.c_str(), FindStreamInfoStandard, &fsd, 0);
+		if (!hADS || hADS == INVALID_HANDLE_VALUE) {
+			// FindFirstStream() failed.
+			return -ENOENT;
+		}
+
+		do {
+			if (!_tcscmp(fsd.cStreamName, _T("::$DATA"))) {
+				// Primary data stream. Ignore it.
+				continue;
+			}
+
+			// TODO: Read the stream data. (or at least up to 256 bytes/chars)
+			// For now, just set the name.
+			// TODO: Remove ":$DATA" from the attribute name?
+			genericXAttrs.emplace(T2U8(fsd.cStreamName), "dummy");
+		} while (pfnFindNextStreamW(hADS, &fsd));
+
+		FindClose(hADS);
+	} else {
+		// We don't have FindFirstStreamW().
+		// TODO: BackupRead().
+		return -ENOTSUP;
+	}
+
+	// Extended attributes retrieved.
+	hasGenericXAttrs = true;
+	return 0;
 }
 
 }

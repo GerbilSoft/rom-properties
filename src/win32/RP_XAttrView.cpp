@@ -90,18 +90,11 @@ int RP_XAttrView_Private::loadADS(void)
 	assert(hListViewADS != nullptr);
 	ListView_DeleteAllItems(hListViewADS);
 
-	// TODO: ADS loading isn't implemented yet.
-#if 0
 	if (!xattrReader->hasGenericXAttrs()) {
 		// No generic attributes.
 		return -ENOENT;
 	}
-
 	const XAttrReader::XAttrList &xattrList = xattrReader->genericXAttrs();
-#endif
-	XAttrReader::XAttrList xattrList;
-	xattrList.emplace("test1abcdefghijklmnop", "omgwtflolbbq");
-	xattrList.emplace("moo", "what does a cow say");
 
 	LVITEM lvItem;
 	memset(&lvItem, 0, sizeof(lvItem));
