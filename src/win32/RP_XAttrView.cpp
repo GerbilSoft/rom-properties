@@ -86,10 +86,16 @@ int RP_XAttrView_Private::loadDosAttrs(void)
  */
 int RP_XAttrView_Private::loadADS(void)
 {
+	// Hide by default.
+	// If we do have attributes, we'll show the widgets there.
+	HWND grpADS = GetDlgItem(hDlgSheet, IDC_XATTRVIEW_GRPADS);
 	HWND hListViewADS = GetDlgItem(hDlgSheet, IDC_XATTRVIEW_LISTVIEW_ADS);
+	assert(grpADS != nullptr);
 	assert(hListViewADS != nullptr);
-	ListView_DeleteAllItems(hListViewADS);
+	ShowWindow(grpADS, SW_HIDE);
+	ShowWindow(hListViewADS, SW_HIDE);
 
+	ListView_DeleteAllItems(hListViewADS);
 	if (!xattrReader->hasGenericXAttrs()) {
 		// No generic attributes.
 		return -ENOENT;
@@ -147,6 +153,8 @@ int RP_XAttrView_Private::loadADS(void)
 	ListView_SetColumnWidth(hListViewADS, 1, LVSCW_AUTOSIZE_USEHEADER);
 
 	// Extended attributes retrieved.
+	ShowWindow(grpADS, SW_SHOW);
+	ShowWindow(hListViewADS, SW_SHOW);
 	return 0;
 }
 
