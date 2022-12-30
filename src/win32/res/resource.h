@@ -2,17 +2,17 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * resource.rc: Win32 resource script.                                     *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_WIN32_RESOURCE_H__
 #define __ROMPROPERTIES_WIN32_RESOURCE_H__
 
-/** Icons. **/
+/** Icons **/
 #define IDI_KEY_VALID				201
 
-/** PNG images. **/
+/** PNG images **/
 #define RT_PNG					0x4E50	/* 'PN', byteswapped */
 #define IDP_FLAGS_16x16				301
 #define IDP_FLAGS_24x24				302
@@ -27,8 +27,9 @@
 #define IDP_ACH_GRAY_64x64			324
 
 // Dialogs
-#define IDD_PROPERTY_SHEET                      100	/* Generic property sheet. */
-#define IDD_SUBTAB_CHILD_DIALOG                 101	/* Subtab child dialog. */
+#define IDD_PROPERTY_SHEET			100	// Generic property sheet
+#define IDD_SUBTAB_CHILD_DIALOG			101	// Subtab child dialog
+#define IDD_XATTRVIEW				102	// Extended Attribute viewer
 
 // Standard controls
 #ifndef IDC_STATIC
@@ -38,18 +39,18 @@
 // Property sheet controls.
 // These are defined in Wine's comctl32.h, but not the Windows SDK.
 // Reference: https://source.winehq.org/git/wine.git/blob/HEAD:/dlls/comctl32/comctl32.h
-#define IDC_TABCONTROL                          12320
-#define IDC_APPLY_BUTTON                        12321
-#define IDC_BACK_BUTTON                         12323
-#define IDC_NEXT_BUTTON                         12324
-#define IDC_FINISH_BUTTON                       12325
-#define IDC_SUNKEN_LINE                         12326
-#define IDC_SUNKEN_LINEHEADER                   12327
+#define IDC_TABCONTROL				12320
+#define IDC_APPLY_BUTTON			12321
+#define IDC_BACK_BUTTON				12323
+#define IDC_NEXT_BUTTON				12324
+#define IDC_FINISH_BUTTON			12325
+#define IDC_SUNKEN_LINE				12326
+#define IDC_SUNKEN_LINEHEADER			12327
 
 // Custom property sheet controls.
-#define IDC_RP_RESET                            13431
-#define IDC_RP_DEFAULTS                         13432
-#define IDC_RP_OPTIONS                          13433
+#define IDC_RP_RESET				13431
+#define IDC_RP_DEFAULTS				13432
+#define IDC_RP_OPTIONS				13433
 
 // "Reset" and "Defaults" messages.
 // The parent PropertySheet doesn't store any user data, so we can't
@@ -88,6 +89,8 @@
 // lParam: 0
 #define WM_KEYSTORE_MODIFIED					(WM_USER + 0x2004)
 #define KeyStore_Modified(hWnd)					(void)SNDMSG(hWnd,WM_KEYSTORE_MODIFIED,0,0)
+
+/**** RP_ShellPropSheetExt ****/
 
 /** Configuration dialog **/
 #define IDD_CONFIG_IMAGETYPES			110
@@ -163,5 +166,15 @@
 #define IDC_ABOUT_UPDATE_CHECK			40505
 #define IDC_ABOUT_TABCONTROL			40506
 #define IDC_ABOUT_RICHEDIT			40507
+
+/**** RP_XAttrView ****/
+
+#define IDC_XATTRVIEW_DOS_READONLY		42001
+#define IDC_XATTRVIEW_DOS_HIDDEN		42002
+#define IDC_XATTRVIEW_DOS_ARCHIVE		42003
+#define IDC_XATTRVIEW_DOS_SYSTEM		42004
+#define IDC_XATTRVIEW_NTFS_COMPRESSED		42005
+#define IDC_XATTRVIEW_NTFS_ENCRYPTED		42006
+#define IDC_XATTRVIEW_LISTVIEW_ADS		42007
 
 #endif /* __ROMPROPERTIES_WIN32_RESOURCE_H__ */

@@ -31,6 +31,7 @@
 #endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 #include "RP_ShellIconOverlayIdentifier.hpp"
 #include "RP_ContextMenu.hpp"
+#include "RP_XAttrView.hpp"
 
 // libwin32common
 using LibWin32UI::RegKey;
@@ -219,6 +220,8 @@ static LONG UnregisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory
 	((void)pHklm);
 #endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 	lResult = RP_ContextMenu::UnregisterFileType(hkcr, t_ext.c_str());
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_XAttrView::UnregisterFileType(hkcr, t_ext.c_str());
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	// Delete keys if they're empty.
@@ -581,6 +584,8 @@ STDAPI DllRegisterServer(void)
 #endif /* ENABLE_OVERLAY_ICON_HANDLER */
 	lResult = RP_ContextMenu::RegisterCLSID();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_XAttrView::RegisterCLSID();
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	// Enumerate user hives.
 	RegKey hku(HKEY_USERS, nullptr, KEY_READ, false);
@@ -626,6 +631,11 @@ STDAPI DllRegisterServer(void)
 	// Register RP_ShellPropSheetExt for disk drives.
 	// TODO: Icon/thumbnail handling?
 	lResult = RP_ShellPropSheetExt::RegisterFileType(hkcr, _T("Drive"));
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+
+	// Register RP_XAttrView for all file types.
+	// TODO: Also for drives?
+	lResult = RP_XAttrView::RegisterFileType(hkcr, _T("*"));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	/** Fixes for previous versions **/
@@ -703,6 +713,8 @@ STDAPI DllUnregisterServer(void)
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	lResult = RP_ContextMenu::UnregisterCLSID();
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+	lResult = RP_XAttrView::UnregisterCLSID();
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	// Enumerate user hives.
 	RegKey hku(HKEY_USERS, nullptr, KEY_READ, false);
@@ -743,6 +755,11 @@ STDAPI DllUnregisterServer(void)
 	// Unregister RP_ShellPropSheetExt for disk drives.
 	// TODO: Icon/thumbnail handling?
 	lResult = RP_ShellPropSheetExt::UnregisterFileType(hkcr, _T("Drive"));
+	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
+
+	// Unregister RP_XAttrView for all file types.
+	// TODO: Also for drives, if we add registration for it.
+	lResult = RP_XAttrView::UnregisterFileType(hkcr, _T("*"));
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 
 	// Remove the ProgID.
