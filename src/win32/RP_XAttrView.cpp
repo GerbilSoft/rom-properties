@@ -122,6 +122,14 @@ int RP_XAttrView_Private::loadADS(void)
 		lvItem.iItem++;
 	}
 
+	// Set extended ListView styles.
+	DWORD lvsExStyle = LVS_EX_FULLROWSELECT;
+	if (!GetSystemMetrics(SM_REMOTESESSION)) {
+		// Not RDP (or is RemoteFX): Enable double buffering.
+		lvsExStyle |= LVS_EX_DOUBLEBUFFER;
+	}
+	ListView_SetExtendedListViewStyle(hListViewADS, lvsExStyle);
+
 	// Auto-size columns
 	ListView_SetColumnWidth(hListViewADS, 0, LVSCW_AUTOSIZE_USEHEADER);
 	ListView_SetColumnWidth(hListViewADS, 1, LVSCW_AUTOSIZE_USEHEADER);
