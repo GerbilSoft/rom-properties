@@ -114,7 +114,7 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 	genericXAttrs.clear();
 
 	// Windows Vista: Use FindFirstStream().
-	// TODO: Implement an XP version using BackupRead().
+	// Windows XP: Use BackupRead(). [TODO]
 	HMODULE hKernel32 = GetModuleHandle(_T("kernel32"));
 	assert(hKernel32 != nullptr);
 	if (!hKernel32)
