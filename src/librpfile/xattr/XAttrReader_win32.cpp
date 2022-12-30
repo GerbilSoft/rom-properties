@@ -141,7 +141,22 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 		bool is_unicode;
 
 		do {
-			if (!_tcscmp(fsd.cStreamName, _T("::$DATA"))) {
+			// We're only allowing $DATA streams.
+			size_t streamName_len = _tcslen(fsd.cStreamName);
+			if (streamName_len < 7) {
+				// Stream name is too small.
+				continue;
+			}
+			if (_tcscmp(&fsd.cStreamName[streamName_len - 6], L":$DATA") != 0) {
+				// Not a $DATA stream.
+				continue;
+			}
+			// Remove ":$DATA" from the stream name.
+			fsd.cStreamName[streamName_len - 6] = L'\0';
+
+			// If the stream name is ":", it's the primary data stream.
+			// This doesn't count as an extended attribute.
+			if (!_tcscmp(fsd.cStreamName, _T(":"))) {
 				// Primary data stream. Ignore it.
 				continue;
 			}
@@ -198,9 +213,14 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 				ads_data.zero_data = 0;
 			}
 
-			// TODO: Remove ":$DATA" from the attribute name?
+			// The leading ':' and trailing ":$DATA" will be removed
+			// from the attribute name.
+			string s_name;
+			if (fsd.cStreamName[0] != L'\0') {
+				s_name.assign(W2U8(&fsd.cStreamName[1]));
+			}
 			string s_value = (is_unicode) ? W2U8(ads_data.wch) : A2U8(ads_data.ch);
-			genericXAttrs.emplace(T2U8(fsd.cStreamName), std::move(s_value));
+			genericXAttrs.emplace(std::move(s_name), std::move(s_value));
 		} while (pfnFindNextStreamW(hFindADS, &fsd));
 
 		FindClose(hFindADS);
