@@ -105,9 +105,27 @@ int RP_XAttrView_Private::loadADS(void)
 		lvItem.pszText = const_cast<LPTSTR>(tstr.c_str());
 		ListView_InsertItem(hListViewADS, &lvItem);
 
-		// TODO: Trim spaces?
-		// TODO: Handle newlines.
+		// Trim spaces for the value.
+		// TODO: Split this into a separate function.
 		tstr = U82T_c(xattr.second.c_str());
+		// Trim at the end.
+		size_t pos = tstr.size();
+		while (pos > 0 && ISSPACE(tstr[pos-1])) {
+			pos--;
+		}
+		tstr.resize(pos);
+		// Trim at the start.
+		pos = 0;
+		while (pos < tstr.size() && ISSPACE(tstr[pos])) {
+			pos++;
+		}
+		if (pos == tstr.size()) {
+			tstr.clear();
+		} else if (pos > 0) {
+			tstr = tstr.substr(pos);
+		}
+
+		// TODO: Handle newlines.
 		lvItem.iSubItem = 1;
 		lvItem.pszText = const_cast<LPTSTR>(tstr.c_str());
 		ListView_SetItem(hListViewADS, &lvItem);
