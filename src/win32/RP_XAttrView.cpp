@@ -25,6 +25,9 @@ using LibRpFile::XAttrReader;
 // NOTE: Does not depend on the Windows SDK.
 #include "librpfile/xattr/dos_attrs.h"
 
+// C++ STL classes
+using std::tstring;
+
 // CLSID
 const CLSID CLSID_RP_XAttrView =
 	{0xB0503F2E, 0xC4AE, 0x48DF, {0xA8,0x80, 0xE2, 0xB1, 0x22, 0xB5, 0x85, 0x71}};
@@ -83,8 +86,48 @@ int RP_XAttrView_Private::loadDosAttrs(void)
  */
 int RP_XAttrView_Private::loadADS(void)
 {
-	// TODO
-	return -ENOTSUP;
+	HWND hListViewADS = GetDlgItem(hDlgSheet, IDC_XATTRVIEW_LISTVIEW_ADS);
+	assert(hListViewADS != nullptr);
+	ListView_DeleteAllItems(hListViewADS);
+
+	// TODO: ADS loading isn't implemented yet.
+#if 0
+	if (!xattrReader->hasGenericXAttrs()) {
+		// No generic attributes.
+		return -ENOENT;
+	}
+
+	const XAttrReader::XAttrList &xattrList = xattrReader->genericXAttrs();
+#endif
+	XAttrReader::XAttrList xattrList;
+	xattrList.emplace("test1abcdefghijklmnop", "omgwtflolbbq");
+	xattrList.emplace("moo", "what does a cow say");
+
+	LVITEM lvItem;
+	memset(&lvItem, 0, sizeof(lvItem));
+	lvItem.mask = LVIF_TEXT;
+	for (const auto &xattr : xattrList) {
+		tstring tstr = U82T_c(xattr.first.c_str());
+		lvItem.iSubItem = 0;
+		lvItem.pszText = const_cast<LPTSTR>(tstr.c_str());
+		ListView_InsertItem(hListViewADS, &lvItem);
+
+		// TODO: Trim spaces?
+		tstr = U82T_c(xattr.second.c_str());
+		lvItem.iSubItem = 1;
+		lvItem.pszText = const_cast<LPTSTR>(tstr.c_str());
+		ListView_SetItem(hListViewADS, &lvItem);
+
+		// Next item
+		lvItem.iItem++;
+	}
+
+	// Auto-size columns
+	ListView_SetColumnWidth(hListViewADS, 0, LVSCW_AUTOSIZE_USEHEADER);
+	ListView_SetColumnWidth(hListViewADS, 1, LVSCW_AUTOSIZE_USEHEADER);
+
+	// Extended attributes retrieved.
+	return 0;
 }
 
 /**
@@ -168,6 +211,21 @@ void RP_XAttrView_Private::initDialog(void)
 		lpExStyle |= WS_EX_LAYOUTRTL;
 		SetWindowLongPtr(hDlgSheet, GWL_EXSTYLE, lpExStyle);
 	}
+
+	// Initialize ADS ListView columns.
+	HWND hListViewADS = GetDlgItem(hDlgSheet, IDC_XATTRVIEW_LISTVIEW_ADS);
+	assert(hListViewADS != nullptr);
+	LVCOLUMN lvColumn;
+	lvColumn.mask = LVCF_TEXT | LVCF_FMT;
+	lvColumn.fmt = LVCFMT_LEFT;
+	lvColumn.pszText = _T("Name");
+	ListView_InsertColumn(hListViewADS, 0, &lvColumn);
+	lvColumn.pszText = _T("Value");
+	ListView_InsertColumn(hListViewADS, 1, &lvColumn);
+
+	// Auto-size columns
+	ListView_SetColumnWidth(hListViewADS, 0, LVSCW_AUTOSIZE_USEHEADER);
+	ListView_SetColumnWidth(hListViewADS, 1, LVSCW_AUTOSIZE_USEHEADER);
 
 	// Load attributes.
 	// TODO: Cancel tab loading if it fails?
