@@ -106,6 +106,7 @@ int RP_XAttrView_Private::loadADS(void)
 		ListView_InsertItem(hListViewADS, &lvItem);
 
 		// TODO: Trim spaces?
+		// TODO: Handle newlines.
 		tstr = U82T_c(xattr.second.c_str());
 		lvItem.iSubItem = 1;
 		lvItem.pszText = const_cast<LPTSTR>(tstr.c_str());

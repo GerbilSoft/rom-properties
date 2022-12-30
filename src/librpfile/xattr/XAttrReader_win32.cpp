@@ -18,6 +18,7 @@
 
 // C++ STL classes
 using std::string;
+using std::tstring;
 using std::unique_ptr;
 
 // XAttrReader isn't used by libromdata directly,
@@ -124,11 +125,20 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 	if (pfnFindFirstStreamW && pfnFindNextStreamW) {
 		// We have FindFirstStreamW().
 		WIN32_FIND_STREAM_DATA fsd;
-		HANDLE hADS = pfnFindFirstStreamW(filename.c_str(), FindStreamInfoStandard, &fsd, 0);
-		if (!hADS || hADS == INVALID_HANDLE_VALUE) {
+		HANDLE hFindADS = pfnFindFirstStreamW(filename.c_str(), FindStreamInfoStandard, &fsd, 0);
+		if (!hFindADS || hFindADS == INVALID_HANDLE_VALUE) {
 			// FindFirstStream() failed.
 			return -ENOENT;
 		}
+
+		tstring ads_filename = filename;
+		union {
+			uint8_t u8[257 * sizeof(TCHAR)];
+			char ch[257];
+			wchar_t wch[257];
+			unsigned int zero_data;
+		} ads_data;
+		bool is_unicode;
 
 		do {
 			if (!_tcscmp(fsd.cStreamName, _T("::$DATA"))) {
@@ -136,13 +146,64 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 				continue;
 			}
 
-			// TODO: Read the stream data. (or at least up to 256 bytes/chars)
-			// For now, just set the name.
-			// TODO: Remove ":$DATA" from the attribute name?
-			genericXAttrs.emplace(T2U8(fsd.cStreamName), "dummy");
-		} while (pfnFindNextStreamW(hADS, &fsd));
+			// Read up to 257 TCHARs from the alternate data stream.
+			// If we get 257, truncate it to 253 and add "...".
+			// TODO: Verify that the stream data is in fact Unicode.
+			ads_filename.resize(filename.size());
+			ads_filename += fsd.cStreamName;
+			HANDLE hStream = CreateFile(ads_filename.c_str(),
+				GENERIC_READ, FILE_SHARE_READ, nullptr,
+			       OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+			if (hStream) {
+				// Read up to 257 TCHARs.
+				DWORD bytesRead;
+				if (ReadFile(hStream, ads_data.u8, sizeof(ads_data.u8), &bytesRead, nullptr) &&
+				    bytesRead > 0 && bytesRead <= sizeof(ads_data.u8))
+				{
+					// Data read. Check if it's likely to be Unicode or not.
+					if (IsTextUnicode(ads_data.u8, bytesRead, nullptr)) {
+						// It's likely Unicode.
+						is_unicode = true;
+						// Truncate at TCHAR[253] if it's >= 257 TCHARs.
+						if (bytesRead >= 257 * sizeof(TCHAR)) {
+							ads_data.wch[253] = L'.';
+							ads_data.wch[254] = L'.';
+							ads_data.wch[255] = L'.';
+							ads_data.wch[256] = L'\0';
+						} else {
+							// Ensure the string is NULL-terminated.
+							ads_data.wch[bytesRead] = L'\0';
+						}
+					} else {
+						// It's likely *not* Unicode.
+						is_unicode = false;
+						// Truncate at char[253] if it's >= 257 chars.
+						if (bytesRead >= 257 * sizeof(char)) {
+							ads_data.ch[253] = '.';
+							ads_data.ch[254] = '.';
+							ads_data.ch[255] = '.';
+							ads_data.ch[256] = '\0';
+						} else {
+							// Ensure the string is NULL-terminated.
+							ads_data.ch[bytesRead] = '\0';
+						}
+					}
+				} else {
+					// Unable to read data from the stream.
+					ads_data.zero_data = 0;
+				}
+				CloseHandle(hStream);
+			} else {
+				// Unable to open the data stream.
+				ads_data.zero_data = 0;
+			}
 
-		FindClose(hADS);
+			// TODO: Remove ":$DATA" from the attribute name?
+			string s_value = (is_unicode) ? W2U8(ads_data.wch) : A2U8(ads_data.ch);
+			genericXAttrs.emplace(T2U8(fsd.cStreamName), std::move(s_value));
+		} while (pfnFindNextStreamW(hFindADS, &fsd));
+
+		FindClose(hFindADS);
 	} else {
 		// We don't have FindFirstStreamW().
 		// TODO: BackupRead().
