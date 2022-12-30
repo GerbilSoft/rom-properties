@@ -67,6 +67,8 @@ void RP_XAttrView_Private::initDialog(void)
 		SetWindowLongPtr(hDlgSheet, GWL_EXSTYLE, lpExStyle);
 	}
 
+	// TODO: Load the attributes.
+
 	// Window is fully initialized.
 	isFullyInit = true;
 }
@@ -391,7 +393,8 @@ INT_PTR CALLBACK RP_XAttrView_Private::DlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				break;
 			}
 
-			// TODO: Open the file and get the attributes.
+			// Initialize the dialog.
+			d->initDialog();
 
 			// Continue normal processing.
 			break;
