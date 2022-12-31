@@ -12,7 +12,6 @@
         ]
     },
     "MimeType": "application/octet-stream;inode/directory",
-    "X-KDE-Protocol": "file",
     "X-KDE-Protocols": [
         "file",
         "desktop"

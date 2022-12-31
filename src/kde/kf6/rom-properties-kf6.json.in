@@ -12,7 +12,6 @@
         ]
     },
     "MimeType": "@MIMETYPES_ALL@",
-    "X-KDE-Protocol": "file",
     "X-KDE-Protocols": [
         "file",
         "desktop"
