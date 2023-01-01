@@ -54,6 +54,26 @@ class XAttrReaderPrivate
 		 */
 		int loadDosAttrs(void);
 
+#ifdef _WIN32
+		/**
+		 * Load generic xattrs, if available.
+		 * (POSIX xattr on Linux; ADS on Windows)
+		 * FindFirstStreamW() version; requires Windows Vista or later.
+		 * Internal fd (filename on Windows) must be set.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int loadGenericXattrs_FindFirstStreamW(void);
+
+		/**
+		 * Load generic xattrs, if available.
+		 * (POSIX xattr on Linux; ADS on Windows)
+		 * BackupRead() version.
+		 * Internal fd (filename on Windows) must be set.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int loadGenericXattrs_BackupRead(void);
+#endif /* _WIN32 */
+
 		/**
 		 * Load generic xattrs, if available.
 		 * (POSIX xattr on Linux; ADS on Windows)
