@@ -77,15 +77,17 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 			# KF6 not found.
 			SET(BUILD_KF6 OFF CACHE INTERNAL "Build the KDE Frameworks 5 plugin." FORCE)
 		ENDIF(NOT KF6KIO_FOUND OR NOT KF6WidgetsAddons_FOUND OR NOT KF6FileMetaData_FOUND)
+		ENDIF(0)
 
 		# KIO::ThumbnailCreator is always available in KF6.
 		SET(HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H 1)
 
+		IF(KF6_PLUGIN_INSTALL_DIR)
 		SET(KF6_PRPD_PLUGIN_INSTALL_DIR  "${KF6_PLUGIN_INSTALL_DIR}/kf6/propertiesdialog")
 		SET(KF6_KFMD_PLUGIN_INSTALL_DIR  "${KF6_PLUGIN_INSTALL_DIR}/kf6/kfilemetadata")
 		SET(KF6_KOVI_PLUGIN_INSTALL_DIR  "${KF6_PLUGIN_INSTALL_DIR}/kf6/overlayicon")
 		SET(KF6_THUMB_PLUGIN_INSTALL_DIR "${KF6_PLUGIN_INSTALL_DIR}/kf6/thumbcreator")
-		ENDIF(0)
+		ENDIF(KF6_PLUGIN_INSTALL_DIR)
 
 		# HACK: Hard-coded paths for KF5.
 		# This obviously won't work for KF6, but it's
@@ -96,6 +98,7 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 			"/usr/include/KF5/KFileMetaData"
 			"/usr/include/KF5/KIO"
 			"/usr/include/KF5/KIOCore"
+			"/usr/include/KF5/KIOGui"
 			"/usr/include/KF5/KIOWidgets"
 			"/usr/include/KF5/KWidgetsAddons"
 			)
