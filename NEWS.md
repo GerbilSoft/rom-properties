@@ -15,6 +15,10 @@
     assume all .wad files are Doom WADs.
   * WiiWAD: application/x-dsi-tad -> application/x-nintendo-dsi-tad
 
+* Other changes:
+  * EXE: Don't show import/export tables for .NET executables, since they only
+    have a single import, MSCOREEE!_CorExeMain.
+
 ## v2.1 (released 2022/12/24)
 
 * New features:

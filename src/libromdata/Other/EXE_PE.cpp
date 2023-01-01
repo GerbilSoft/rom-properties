@@ -615,7 +615,7 @@ void EXEPrivate::addFields_PE(void)
 		dotnet = (opthdr.DataDirectory[IMAGE_DATA_DIRECTORY_CLR_HEADER].Size != 0);
 	}
 
-	// CPU. (Also .NET status.)
+	// CPU (Also .NET status)
 	string s_cpu;
 	const char *const cpu = EXEData::lookup_pe_cpu(machine);
 	if (cpu != nullptr) {
@@ -629,11 +629,11 @@ void EXEPrivate::addFields_PE(void)
 	}
 	fields->addField_string(C_("EXE", "CPU"), s_cpu);
 
-	// OS version.
+	// OS version
 	fields->addField_string(C_("EXE", "OS Version"),
 		rp_sprintf("%u.%u", os_ver_major, os_ver_minor));
 
-	// Subsystem names.
+	// Subsystem names
 	static const char *const subsysNames[IMAGE_SUBSYSTEM_XBOX+1] = {
 		// IMAGE_SUBSYSTEM_UNKNOWN
 		nullptr,
@@ -667,7 +667,7 @@ void EXEPrivate::addFields_PE(void)
 		NOP_C_("EXE|Subsystem", "Xbox"),
 	};
 
-	// Subsystem name and version.
+	// Subsystem name and version
 	string subsystem_name;
 	if (pe_subsystem < ARRAY_SIZE(subsysNames) && subsysNames[pe_subsystem] != nullptr) {
 		subsystem_name = rp_sprintf("%s %u.%u",
@@ -687,7 +687,7 @@ void EXEPrivate::addFields_PE(void)
 	}
 	fields->addField_string(C_("EXE", "Subsystem"), subsystem_name);
 
-	// PE flags. (characteristics)
+	// PE flags (characteristics)
 	// NOTE: Only important flags will be listed.
 	static const char *const pe_flags_names[] = {
 		nullptr,
@@ -705,7 +705,7 @@ void EXEPrivate::addFields_PE(void)
 	fields->addField_bitfield(C_("EXE", "PE Flags"),
 		v_pe_flags_names, 3, pe_flags);
 
-	// DLL flags. (characteristics)
+	// DLL flags (characteristics)
 	static const char *const dll_flags_names[] = {
 		nullptr, nullptr, nullptr, nullptr, nullptr,
 		NOP_C_("EXE|DLLFlags", "High Entropy VA"),
@@ -725,7 +725,7 @@ void EXEPrivate::addFields_PE(void)
 	fields->addField_bitfield(C_("EXE", "DLL Flags"),
 		v_dll_flags_names, 3, dll_flags);
 
-	// Timestamp.
+	// Timestamp
 	// TODO: Windows 10 modules have hashes here instead of timestamps.
 	// We should detect that by checking for obviously out-of-range values.
 	// TODO: time_t is signed, so values greater than 2^31-1 may be negative.
@@ -740,7 +740,7 @@ void EXEPrivate::addFields_PE(void)
 		fields->addField_string(timestamp_title, C_("EXE", "Not set"));
 	}
 
-	// Runtime DLL.
+	// Runtime DLL
 	string runtime_dll, runtime_link;
 	int ret = findPERuntimeDLL(runtime_dll, runtime_link);
 	if (ret == 0 && !runtime_dll.empty()) {
@@ -748,7 +748,7 @@ void EXEPrivate::addFields_PE(void)
 		fields->addField_string(C_("EXE", "Runtime DLL"), runtime_dll);
 	}
 
-	// Load resources.
+	// Load resources
 	ret = loadPEResourceTypes();
 	if (ret == 0 && rsrcReader != nullptr) {
 		// Load the version resource.
@@ -769,9 +769,14 @@ void EXEPrivate::addFields_PE(void)
 #endif /* ENABLE_XML */
 	}
 
-	// Add exports / imports
-	addFields_PE_Export();
-	addFields_PE_Import();
+	if (!dotnet) {
+		// Add exports / imports
+		// NOTE: .NET executables have a single import,
+		// MSCOREEE!_CorExeMain, so we're ignoring the
+		// import/export tables for .NET.
+		addFields_PE_Export();
+		addFields_PE_Import();
+	}
 }
 
 /**
