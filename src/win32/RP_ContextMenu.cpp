@@ -273,8 +273,6 @@ IFACEMETHODIMP RP_ContextMenu::Initialize(
 		return E_FAIL;
 	}
 
-	HRESULT hr = E_FAIL;
-
 	// Determine how many files are involved in this operation. This
 	// code sample displays the custom context menu item when only
 	// one file is selected.
@@ -342,6 +340,8 @@ IFACEMETHODIMP RP_ContextMenu::Initialize(
 
 IFACEMETHODIMP RP_ContextMenu::QueryContextMenu(_In_ HMENU hMenu, _In_ UINT indexMenu, _In_ UINT idCmdFirst, _In_ UINT idCmdLast, _In_ UINT uFlags)
 {
+	RP_UNUSED(idCmdLast);
+
 	// TODO: Figure out when the context menu is added.
 	if ((LOWORD(uFlags) & 3) != CMF_NORMAL) {
 		// Not a "normal" context menu. Don't add anything.
@@ -411,6 +411,7 @@ IFACEMETHODIMP RP_ContextMenu::GetCommandString(_In_ UINT_PTR idCmd, _In_ UINT u
 {
 	// NOTE: Using snprintf()/_snwprintf() because strncpy()
 	// clears the buffer, which can be slow.
+	RP_UNUSED(pReserved);
 
 	RP_D(const RP_ContextMenu);
 	if (idCmd == IDM_RP_CONVERT_TO_PNG) {
