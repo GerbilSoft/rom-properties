@@ -45,9 +45,9 @@ const TCHAR RP_XAttrView_Private::TAB_PTR_PROP[] = _T("RP_XAttrView_Private::tab
  */
 RP_XAttrView_Private::RP_XAttrView_Private(RP_XAttrView *q, LPTSTR filename)
 	: q_ptr(q)
+	, hDlgSheet(nullptr)
 	, filename(filename)
 	, xattrReader(nullptr)
-	, hDlgSheet(nullptr)
 	, dwExStyleRTL(LibWin32UI::isSystemRTL())
 	, colorAltRow(LibWin32UI::getAltRowColor())
 	, isFullyInit(false)
