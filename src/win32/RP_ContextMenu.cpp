@@ -350,7 +350,6 @@ IFACEMETHODIMP RP_ContextMenu::QueryContextMenu(_In_ HMENU hMenu, _In_ UINT inde
 
 	// Add "Convert to PNG".
 	// TODO: Verify that it can be converted to PNG first.
-	RP_D(RP_ContextMenu);
 	InsertMenu(hMenu, indexMenu, MF_STRING | MF_BYPOSITION,
 		idCmdFirst + IDM_RP_CONVERT_TO_PNG,
 		U82T_c(C_("ServiceMenu", "Convert to PNG")));
