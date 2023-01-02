@@ -2,14 +2,15 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * DelayLoadHelper.h: DelayLoad helper functions and macros.               *
  *                                                                         *
- * Copyright (c) 2017-20232 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
 #if !defined(_WIN32) || !defined(_MSC_VER)
-#pragma once
+#  error DelayLoadHelper.h is MSVC and Win32 only at the moment.
+#endif
 
 // MSVC: Exception handling for /DELAYLOAD.
 // TODO: Check for /DELAYLOAD usage.
