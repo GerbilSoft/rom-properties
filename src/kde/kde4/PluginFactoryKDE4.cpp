@@ -17,13 +17,16 @@
 #include "stdafx.h"
 #include "config.kde.h"
 
-#include "AchQtDBus.hpp"
-#include "RomPropertiesDialogPlugin.hpp"
-#include "RomThumbCreator.hpp"
-
 // RpQImageBackend
 #include "RpQImageBackend.hpp"
 using LibRpTexture::rp_image;
+
+// Achievements backend
+#include "AchQtDBus.hpp"
+
+// Plugins
+#include "RomPropertiesDialogPlugin.hpp"
+#include "RomThumbCreator.hpp"
 
 // KDE
 #include <kpluginfactory.h>
@@ -57,5 +60,5 @@ K_EXPORT_PLUGIN(RomPropertiesDialogFactory("rom-properties-kde"))
 // automoc5 doesn't notice that K_PLUGIN_FACTORY() has a
 // Q_OBJECT macro, so it needs a manual .moc include.
 // That .moc include trips up automoc4, even if it's #ifdef'd.
-// Hence, we need separate files for KDE4 and KF5.
+// Hence, we need separate files for KDE4, KF5, and KF6.
 //#include "PluginFactoryKDE4.moc"

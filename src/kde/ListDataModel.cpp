@@ -58,8 +58,8 @@ class ListDataModelPrivate
 		// Icons.
 		// NOTE: References to rp_image* are kept in case
 		// the icon size is changed.
-		std::vector<QPixmap> icons;
-		std::vector<const rp_image*> icons_rp;
+		vector<QPixmap> icons;
+		vector<const rp_image*> icons_rp;
 		QSize iconSize;
 
 		// Qt::ItemFlags

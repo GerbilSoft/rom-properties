@@ -17,13 +17,16 @@
 #include "stdafx.h"
 #include "config.kde.h"
 
-#include "AchQtDBus.hpp"
-#include "RomPropertiesDialogPlugin.hpp"
-#include "RomThumbCreator.hpp"
-
 // RpQImageBackend
 #include "RpQImageBackend.hpp"
 using LibRpTexture::rp_image;
+
+// Achievements backend
+#include "AchQtDBus.hpp"
+
+// Plugins
+#include "RomPropertiesDialogPlugin.hpp"
+#include "RomThumbCreator.hpp"
 
 // KDE Frameworks
 #include <kcoreaddons_version.h>
@@ -51,6 +54,7 @@ K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf5.json"
 #else /* KCOREADDONS_VERSION < QT_VERSION_CHECK(5,89,0) */
 // NOTE: KIO::ThumbnailCreator was added in KF5 5.100, so it won't be
 // added in this code path. (KF5 5.88 and earlier)
+
 static QObject *createRomPropertiesPage(QWidget *w, QObject *parent, const QVariantList &args)
 {
 	// NOTE: RomPropertiesDialogPlugin will verify that parent is an
@@ -69,5 +73,5 @@ K_PLUGIN_FACTORY_WITH_JSON(RomPropertiesDialogFactory, "rom-properties-kf5.json"
 // automoc5 doesn't notice that K_PLUGIN_FACTORY() has a
 // Q_OBJECT macro, so it needs a manual .moc include.
 // That .moc include trips up automoc4, even if it's #ifdef'd.
-// Hence, we need separate files for KDE4 and KF5.
+// Hence, we need separate files for KDE4, KF5, and KF6.
 #include "PluginFactoryKF5.moc"

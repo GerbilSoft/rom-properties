@@ -37,37 +37,41 @@ typedef enum {
 	RP_FE_MAX
 } RP_Frontend;
 
-// Extension paths.
-static const char *const RP_Extension_Path[RP_FE_MAX] = {
+// Extension paths
+// Two paths per DE are supported, since KF5 5.89 and later
+// supports namespaced plugins.
+static const char *const RP_Extension_Path[RP_FE_MAX][2] = {
 #ifdef KDE4_PLUGIN_INSTALL_DIR
-	KDE4_PLUGIN_INSTALL_DIR "/rom-properties-kde4.so",
+	{KDE4_PLUGIN_INSTALL_DIR "/rom-properties-kde4.so", NULL},
 #else
-	NULL,
+	{NULL, NULL},
 #endif
 #ifdef KF5_PLUGIN_INSTALL_DIR
-	KF5_PLUGIN_INSTALL_DIR "/rom-properties-kf5.so",
+	{KF5_PRPD_PLUGIN_INSTALL_DIR "/rom-properties-kf5.so",
+	 KF5_PLUGIN_INSTALL_DIR "/rom-properties-kf5.so"},
 #else
-	NULL,
+	{NULL, NULL},
 #endif
 #ifdef KF6_PLUGIN_INSTALL_DIR
-	KF6_PLUGIN_INSTALL_DIR "/rom-properties-kf6.so",
+	{KF6_PRPD_PLUGIN_INSTALL_DIR "/rom-properties-kf6.so",
+	 KF6_PLUGIN_INSTALL_DIR "/rom-properties-kf6.so"},
 #else
-	NULL,
+	{NULL, NULL},
 #endif
 #ifdef ThunarX2_EXTENSIONS_DIR
-	ThunarX2_EXTENSIONS_DIR "/rom-properties-xfce.so",
+	{ThunarX2_EXTENSIONS_DIR "/rom-properties-xfce.so", NULL},
 #else
-	NULL,
+	{NULL, NULL},
 #endif
 #ifdef LibNautilusExtension3_EXTENSION_DIR
-	LibNautilusExtension3_EXTENSION_DIR "/rom-properties-gtk3.so",
+	{LibNautilusExtension3_EXTENSION_DIR "/rom-properties-gtk3.so", NULL},
 #else
-	NULL,
+	{NULL, NULL},
 #endif
 #ifdef LibNautilusExtension4_EXTENSION_DIR
-	LibNautilusExtension4_EXTENSION_DIR "/rom-properties-gtk4.so",
+	{LibNautilusExtension4_EXTENSION_DIR "/rom-properties-gtk4.so", NULL},
 #else
-	NULL,
+	{NULL, NULL},
 #endif
 };
 
@@ -379,8 +383,9 @@ int rp_dll_search(const char *symname, void **ppDll, void **ppfn, PFN_RP_DLL_DEB
 	*ppDll = NULL;
 	*ppfn = NULL;
 	for (unsigned int i = 0; i < RP_FE_MAX; i++) {
+	for (unsigned int j = 0; !*ppfn && j < 2; j++) {
 		// Attempt to open this plugin.
-		const char *const plugin_path = RP_Extension_Path[prio[i]];
+		const char *const plugin_path = RP_Extension_Path[prio[i]][j];
 		if (!plugin_path)
 			continue;
 
@@ -413,7 +418,7 @@ int rp_dll_search(const char *symname, void **ppDll, void **ppfn, PFN_RP_DLL_DEB
 
 		// Found the symbol.
 		break;
-	}
+	} }
 
 	if (!*ppfn) {
 		if (pfnDebug) {

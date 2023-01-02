@@ -16,6 +16,7 @@ SET(${PROJECT_NAME}_SRCS
 	RomDataView_ops.cpp
 	RomThumbCreator.cpp
 	RpQt.cpp
+	RpQUrl.cpp
 	RpQImageBackend.cpp
 	DragImageLabel.cpp
 	RpQByteArrayFile.cpp
@@ -46,6 +47,7 @@ SET(${PROJECT_NAME}_H
 	RomDataView_p.hpp
 	RomThumbCreator.hpp
 	RpQt.hpp
+	RpQUrl.hpp
 	RpQImageBackend.hpp
 	QImageData_qt4.hpp
 	DragImageLabel.hpp
@@ -84,6 +86,27 @@ SET(${PROJECT_NAME}_UIS
 SET(${PROJECT_NAME}_RCC_SRCS
 	../res/flags/flags.qrc
 	../res/ach/ach.qrc
+	)
+
+# XAttrView plugin
+SET(${PROJECT_NAME}_XATTR_SRCS
+	RpQUrl.cpp	# NOTE: duplicated here
+	xattr/XAttrViewPropertiesDialogPlugin.cpp
+	xattr/LinuxAttrView.cpp
+	xattr/DosAttrView.cpp
+	xattr/XAttrView.cpp
+	)
+SET(${PROJECT_NAME}_XATTR_H
+	RpQUrl.hpp	# NOTE: duplicated here
+	xattr/XAttrViewPropertiesDialogPlugin.hpp
+	xattr/LinuxAttrView.hpp
+	xattr/DosAttrView.hpp
+	xattr/XAttrView.hpp
+	)
+SET(${PROJECT_NAME}_XATTR_UIS
+	xattr/XAttrView.ui
+	xattr/LinuxAttrView.ui
+	xattr/DosAttrView.ui
 	)
 
 IF(ENABLE_DECRYPTION)

@@ -16,7 +16,7 @@
 #include "gtk-compat.h"
 
 #ifdef USE_GTK_COLUMN_VIEW
-#  include "AchievementItem.hpp"
+#  include "AchievementItem.h"
 #endif /* USE_GTK_COLUMN_VIEW */
 
 // librpbase

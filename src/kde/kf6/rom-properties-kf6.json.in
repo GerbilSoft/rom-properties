@@ -7,11 +7,11 @@
         "Name": "rom-properties-kf6",
         "Description": "ROM Properties Page for KDE Frameworks 6",
         "ServiceTypes": [
-            "KPropertiesDialog/Plugin"
+            "KPropertiesDialog/Plugin",
+            "ThumbnailCreator"
         ]
     },
     "MimeType": "@MIMETYPES_ALL@",
-    "X-KDE-Protocol": "file",
     "X-KDE-Protocols": [
         "file",
         "desktop"

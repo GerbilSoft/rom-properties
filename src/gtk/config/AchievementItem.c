@@ -1,20 +1,13 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK+ common)                      *
- * AchievementItem.cpp: Achievement ComboBox Item (for GtkDropDown)        *
+ * AchievementItem.c: Achievement ComboBox Item (for GtkDropDown)          *
  *                                                                         *
  * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "AchievementItem.hpp"
-
-// librpbase
-using namespace LibRpBase;
-
-// C++ STL classes
-#include <limits>
-using std::string;
+#include "AchievementItem.h"
 
 /* Property identifiers */
 typedef enum {
@@ -27,17 +20,17 @@ typedef enum {
 	PROP_LAST
 } RpAchievementPropID;
 
-static void	rp_achievement_item_set_property(GObject		*object,
-							guint		 prop_id,
-							const GValue	*value,
-							GParamSpec	*pspec);
-static void	rp_achievement_item_get_property(GObject		*object,
-							guint		 prop_id,
-							GValue		*value,
-							GParamSpec	*pspec);
+static void	rp_achievement_item_set_property(GObject	*object,
+						 guint		 prop_id,
+						 const GValue	*value,
+						 GParamSpec	*pspec);
+static void	rp_achievement_item_get_property(GObject	*object,
+						 guint		 prop_id,
+						 GValue		*value,
+						 GParamSpec	*pspec);
 
-static void	rp_achievement_item_dispose     (GObject		*object);
-static void	rp_achievement_item_finalize    (GObject		*object);
+static void	rp_achievement_item_dispose     (GObject	*object);
+static void	rp_achievement_item_finalize    (GObject	*object);
 
 static GParamSpec *props[PROP_LAST];
 
@@ -61,7 +54,7 @@ struct _RpAchievementItem {
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
 G_DEFINE_TYPE_EXTENDED(RpAchievementItem, rp_achievement_item,
-	G_TYPE_OBJECT, static_cast<GTypeFlags>(0), {});
+	G_TYPE_OBJECT, (GTypeFlags)0, {});
 
 static void
 rp_achievement_item_class_init(RpAchievementItemClass *klass)
@@ -86,9 +79,7 @@ rp_achievement_item_class_init(RpAchievementItemClass *klass)
 
 	props[PROP_UNLOCK_TIME] = g_param_spec_int64(
 		"unlock-time", "Unlock Time", "Timestamp when this achievement was unlocked",
-		static_cast<gint64>(std::numeric_limits<gint64>::min()),
-		static_cast<gint64>(std::numeric_limits<gint64>::max()),
-		static_cast<gint64>(-1LL),
+		LLONG_MIN, LLONG_MAX, -1LL,
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
 	// Install the properties.
@@ -104,12 +95,11 @@ rp_achievement_item_init(RpAchievementItem *item)
 RpAchievementItem*
 rp_achievement_item_new(PIMGTYPE icon, const char *description, time_t unlock_time)
 {
-	return static_cast<RpAchievementItem*>(
-		g_object_new(RP_TYPE_ACHIEVEMENT_ITEM,
+	return g_object_new(RP_TYPE_ACHIEVEMENT_ITEM,
 			"icon", icon,
 			"description", description,
-			"unlock-time", static_cast<gint64>(unlock_time),
-			nullptr));
+			"unlock-time", (gint64)unlock_time,
+			NULL);
 }
 
 /** Properties **/
@@ -128,7 +118,7 @@ rp_achievement_item_set_property(GObject	*object,
 			if (icon) {
 				if (item->icon) {
 					PIMGTYPE_unref(item->icon);
-					item->icon = nullptr;
+					item->icon = NULL;
 				}
 				item->icon = PIMGTYPE_ref(icon);
 			}
@@ -193,7 +183,7 @@ rp_achievement_item_dispose(GObject *object)
 
 	if (item->icon) {
 		PIMGTYPE_unref(item->icon);
-		item->icon = nullptr;
+		item->icon = NULL;
 	}
 
 	// Call the superclass dispose() function.
@@ -208,7 +198,7 @@ rp_achievement_item_finalize(GObject *object)
 
 	if (item->description) {
 		g_free(item->description);
-		item->description = nullptr;
+		item->description = NULL;
 	}
 
 	// Call the superclass finalize() function.
@@ -234,7 +224,7 @@ rp_achievement_item_set_icon(RpAchievementItem *item, PIMGTYPE icon)
 PIMGTYPE
 rp_achievement_item_get_icon(RpAchievementItem *item)
 {
-	g_return_val_if_fail(RP_IS_ACHIEVEMENT_ITEM(item), nullptr);
+	g_return_val_if_fail(RP_IS_ACHIEVEMENT_ITEM(item), NULL);
 
 	// Caller must take a reference to the icon.
 	return item->icon;
@@ -257,7 +247,7 @@ rp_achievement_item_set_description(RpAchievementItem *item, const char *descrip
 const char*
 rp_achievement_item_get_description(RpAchievementItem *item)
 {
-	g_return_val_if_fail(RP_IS_ACHIEVEMENT_ITEM(item), nullptr);
+	g_return_val_if_fail(RP_IS_ACHIEVEMENT_ITEM(item), NULL);
 
 	// String is owned by this instance.
 	return item->description;
@@ -268,7 +258,7 @@ rp_achievement_item_set_unlock_time(RpAchievementItem *item, time_t unlock_time)
 {
 	g_return_if_fail(RP_IS_ACHIEVEMENT_ITEM(item));
 
-	item->unlock_time = static_cast<gint64>(unlock_time);
+	item->unlock_time = (gint64)unlock_time;
 	g_object_notify_by_pspec(G_OBJECT(item), props[PROP_UNLOCK_TIME]);
 
 }

@@ -9,6 +9,8 @@
 #ifndef __ROMPROPERTIES_KDE_RPQT_HPP__
 #define __ROMPROPERTIES_KDE_RPQT_HPP__
 
+#include "RpQUrl.hpp"
+
 namespace LibRpFile {
 	class IRpFile;
 }
@@ -20,10 +22,8 @@ namespace LibRpTexture {
 #include <string>
 
 // Qt includes
-#include <qglobal.h>
 #include <QtCore/QObject>
 #include <QtCore/QString>
-#include <QtCore/QUrl>
 #include <QtGui/QImage>
 
 #define CONCAT_FN(fn, suffix)		CONCAT_FN_INT(fn, suffix)
@@ -141,15 +141,6 @@ static inline T findDirectChild(QObject *obj, const QString &aName = QString())
 QImage rpToQImage(const LibRpTexture::rp_image *image);
 
 /** QUrl **/
-
-/**
- * Localize a QUrl.
- * This function automatically converts certain URL schemes, e.g. desktop:/, to local paths.
- *
- * @param qUrl QUrl.
- * @return Localized QUrl, or empty QUrl on error.
- */
-QUrl localizeQUrl(const QUrl &url);
 
 /**
  * Open a QUrl as an IRpFile. (read-only)

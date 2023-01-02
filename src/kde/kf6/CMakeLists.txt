@@ -77,14 +77,17 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 			# KF6 not found.
 			SET(BUILD_KF6 OFF CACHE INTERNAL "Build the KDE Frameworks 5 plugin." FORCE)
 		ENDIF(NOT KF6KIO_FOUND OR NOT KF6WidgetsAddons_FOUND OR NOT KF6FileMetaData_FOUND)
+		ENDIF(0)
 
 		# KIO::ThumbnailCreator is always available in KF6.
 		SET(HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H 1)
 
-		SET(KF6_PRPD_PLUGIN_INSTALL_DIR "${KF6_PLUGIN_INSTALL_DIR}/kf6/propertiesdialog")
-		SET(KF6_KFMD_PLUGIN_INSTALL_DIR "${KF6_PLUGIN_INSTALL_DIR}/kf6/kfilemetadata")
-		SET(KF6_KOVI_PLUGIN_INSTALL_DIR "${KF6_PLUGIN_INSTALL_DIR}/kf6/overlayicon")
-		ENDIF(0)
+		IF(KF6_PLUGIN_INSTALL_DIR)
+		SET(KF6_PRPD_PLUGIN_INSTALL_DIR  "${KF6_PLUGIN_INSTALL_DIR}/kf6/propertiesdialog")
+		SET(KF6_KFMD_PLUGIN_INSTALL_DIR  "${KF6_PLUGIN_INSTALL_DIR}/kf6/kfilemetadata")
+		SET(KF6_KOVI_PLUGIN_INSTALL_DIR  "${KF6_PLUGIN_INSTALL_DIR}/kf6/overlayicon")
+		SET(KF6_THUMB_PLUGIN_INSTALL_DIR "${KF6_PLUGIN_INSTALL_DIR}/kf6/thumbcreator")
+		ENDIF(KF6_PLUGIN_INSTALL_DIR)
 
 		# HACK: Hard-coded paths for KF5.
 		# This obviously won't work for KF6, but it's
@@ -95,6 +98,7 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 			"/usr/include/KF5/KFileMetaData"
 			"/usr/include/KF5/KIO"
 			"/usr/include/KF5/KIOCore"
+			"/usr/include/KF5/KIOGui"
 			"/usr/include/KF5/KIOWidgets"
 			"/usr/include/KF5/KWidgetsAddons"
 			)
@@ -129,6 +133,10 @@ STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_H    "${rom-properties-k
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_UIS  "${rom-properties-kde_UIS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_RCC_SRCS "${rom-properties-kde_RCC_SRCS}")
 
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_XATTR_SRCS "${rom-properties-kde_XATTR_SRCS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_XATTR_H    "${rom-properties-kde_XATTR_H}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_XATTR_UIS  "${rom-properties-kde_XATTR_UIS}")
+
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kio6_SRCS "${rom-properties-kio_SRCS}")
 STRING(REGEX REPLACE "([^;]+)" "../\\1" rom-properties-kio6_H    "${rom-properties-kio_H}")
 
@@ -157,6 +165,8 @@ ENDIF(HAVE_QtDBus)
 
 ### FIXME: KF6 isn't available yet, so we're only
 ### compile-testing against Qt6.
+
+# Main plugin
 SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_SRCS}
 	${rom-properties-kio6_SRCS}
@@ -176,10 +186,17 @@ SET(${PROJECT_NAME}_H
 	../OverlayIconPlugin.hpp
 	)
 
+# XAttrView plugin
+SET(${PROJECT_NAME}_XATTR_SRCS
+	${${PROJECT_NAME}_XATTR_SRCS}
+	XAttrViewPluginFactoryKF6.cpp
+	)
+
 IF(COMMAND QT6_WRAP_UI)
 	# Wrap UI files.
 	QT6_WRAP_UI(${PROJECT_NAME}_UIS_H ${${PROJECT_NAME}_UIS})
-	ADD_CUSTOM_TARGET(kf6_generate_ui_h DEPENDS ${${PROJECT_NAME}_UIS_H})
+	QT6_WRAP_UI(${PROJECT_NAME}_XATTR_UIS_H ${${PROJECT_NAME}_XATTR_UIS})
+	ADD_CUSTOM_TARGET(kf6_generate_ui_h DEPENDS ${${PROJECT_NAME}_UIS_H} ${PROJECT_NAME}_XATTR_UIS_H)
 ENDIF(COMMAND QT6_WRAP_UI)
 
 #####################
@@ -187,6 +204,7 @@ ENDIF(COMMAND QT6_WRAP_UI)
 #####################
 
 IF(BUILD_KF6)
+	### Main UI frontend plugin ###
 	# Reference: https://community.kde.org/Frameworks/Porting_Notes
 	ADD_LIBRARY(${PROJECT_NAME} MODULE
 		${${PROJECT_NAME}_SRCS}
@@ -217,6 +235,39 @@ IF(BUILD_KF6)
 	IF(HAVE_QtDBus)
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC Qt6::DBus)
 	ENDIF(HAVE_QtDBus)
+
+	### XAttrView plugin ###
+	SET(XATTRVIEW_NAME xattrview-kf6)
+
+	ADD_LIBRARY(${XATTRVIEW_NAME} MODULE
+		${${PROJECT_NAME}_XATTR_SRCS}
+		${${PROJECT_NAME}_XATTR_H}
+		${${PROJECT_NAME}_XATTR_UIS_H}
+		)
+	# TODO: Enable PCH?
+	#IF(ENABLE_PCH)
+	#	TARGET_PRECOMPILE_HEADERS(${XATTRVIEW_NAME} PRIVATE
+	#		"${RP_CONFIG_LIBC_H}" "${RP_CXX11_COMPAT_H}"
+	#		../stdafx.h
+	#		)
+	#ENDIF(ENABLE_PCH)
+	SET_TARGET_PROPERTIES(${XATTRVIEW_NAME} PROPERTIES PREFIX "")
+	DO_SPLIT_DEBUG(${XATTRVIEW_NAME})
+	TARGET_INCLUDE_DIRECTORIES(${XATTRVIEW_NAME}
+		PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# kf6
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# kf6
+		PRIVATE	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>	# kde
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/..>	# kde
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>	# src
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# src
+		)
+	TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PRIVATE romdata)
+	### FIXME: KF6 isn't available yet, so we're only
+	### compile-testing against Qt6.
+	#TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PRIVATE KF6::KIOCore KF6::KIOWidgets)
+	TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PUBLIC Qt6::Widgets Qt6::Gui Qt6::Core)
+
+	### Plugin Forwarders ###
 
 	### FIXME: KF6 isn't available yet, so we're only
 	### compile-testing against Qt6.
@@ -273,7 +324,7 @@ ENDIF(BUILD_KF6)
 #######################
 
 IF(BUILD_KF6)
-	# Process MIME types for the .desktop and .json files.
+	# Process MIME types for the .json files.
 	# FIXME: Need to add a dependency to ensure these files are regenerated if the XDG files are changed.
 	INCLUDE(ParseMimeTypes)
 	PARSE_MIME_TYPES(MIMETYPES_THUMBONLY
@@ -287,32 +338,31 @@ IF(BUILD_KF6)
 		"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
 		"${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types"
 		)
-	CONFIGURE_FILE(${PROJECT_NAME}.KPropertiesDialog.desktop.in ${PROJECT_NAME}.KPropertiesDialog.desktop @ONLY)
-	CONFIGURE_FILE(${PROJECT_NAME}.ThumbCreator.desktop.in      ${PROJECT_NAME}.ThumbCreator.desktop @ONLY)
-	CONFIGURE_FILE(${PROJECT_NAME}.json.in                      ${PROJECT_NAME}.json    @ONLY)
+	CONFIGURE_FILE(${PROJECT_NAME}.json.in ${PROJECT_NAME}.json @ONLY)
 
 	### FIXME: KF6 isn't available yet, so we're only
 	### compile-testing against Qt6.
 	IF(0)
-	# FIXME: Installing the main plugin into ${KF6_PRPD_PLUGIN_INSTALL_DIR}
-	# breaks thumbnails. We might need to make a KPropertiesDialog forwarder.
-	INSTALL(TARGETS ${PROJECT_NAME}
-		LIBRARY DESTINATION "${KF6_PLUGIN_INSTALL_DIR}"
-		COMPONENT "plugin"
-		)
+	# Main plugin is installed in the propertiesdialog subdirectory.
+	# Create a symlink for ThumbCreator.
+	ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME} POST_BUILD
+		COMMAND ln -sf "${KF6_PRPD_PLUGIN_INSTALL_DIR}/${PROJECT_NAME}.so" "${PROJECT_NAME}.symlink.so"
+		WORKING_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
+		VERBATIM)
+	INSTALL(TARGETS ${PROJECT_NAME} ${XATTRVIEW_NAME}
+		LIBRARY DESTINATION "${KF6_PRPD_PLUGIN_INSTALL_DIR}"
+		COMPONENT "plugin")
+	INSTALL(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${PROJECT_NAME}.symlink.so"
+		DESTINATION "${KF6_THUMB_PLUGIN_INSTALL_DIR}"
+		RENAME "${PROJECT_NAME}.so"
+		COMPONENT "plugin")
+
 	INSTALL(TARGETS kfilemetadata_${PROJECT_NAME}
 		LIBRARY DESTINATION "${KF6_KFMD_PLUGIN_INSTALL_DIR}"
-		COMPONENT "plugin"
-		)
+		COMPONENT "plugin")
 	INSTALL(TARGETS overlayiconplugin_${PROJECT_NAME}
 		LIBRARY DESTINATION "${KF6_KOVI_PLUGIN_INSTALL_DIR}"
-		COMPONENT "plugin"
-		)
-	INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.KPropertiesDialog.desktop"
-		      "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.ThumbCreator.desktop"
-		DESTINATION "${SERVICES_INSTALL_DIR}"
-		COMPONENT "plugin"
-		)
+		COMPONENT "plugin")
 	# FIXME: Run kbuildsycoca6?
 
 	# Service menus
@@ -331,6 +381,13 @@ IF(BUILD_KF6)
 				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${KF6_PLUGIN_INSTALL_DIR}"
 				COMPONENT "debug"
 				)
+		ENDIF(DEBUG_FILENAME)
+
+		GET_TARGET_PROPERTY(DEBUG_FILENAME ${XATTRVIEW_NAME} PDB)
+		IF(DEBUG_FILENAME)
+			INSTALL(FILES "${DEBUG_FILENAME}"
+				DESTINATION "lib/debug/${CMAKE_INSTALL_PREFIX}/${KF6_PLUGIN_INSTALL_DIR}"
+				COMPONENT "debug")
 		ENDIF(DEBUG_FILENAME)
 
 		GET_TARGET_PROPERTY(DEBUG_FILENAME kfilemetadata_${PROJECT_NAME} PDB)

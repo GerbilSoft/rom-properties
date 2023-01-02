@@ -9,7 +9,7 @@
 /**
  * References:
  * - audio-tags plugin for Xfce/Thunar
- * - http://api.xfce.m8t.in/xfce-4.10/thunarx-1.4.0/ThunarxPropertyPage.html
+ * - http://api.xfce.m8t.in/xfce-4.10/nautilusx-1.4.0/ThunarxPropertyPage.html
  * - https://developer.gnome.org/libnautilus-extension//3.16/libnautilus-extension-nautilus-property-page.html
  * - https://developer.gnome.org/libnautilus-extension//3.16/libnautilus-extension-nautilus-property-page-provider.html
  * - https://github.com/GNOME/nautilus/blob/bb433582165da10ab07337d707ea448703c3865f/src/nautilus-image-properties-page.c
@@ -21,6 +21,7 @@
 #include "is-supported.hpp"
 
 #include "../RomDataView.hpp"
+#include "../xattr/XAttrView.hpp"
 
 #include "librpbase/RomData.hpp"
 using LibRpBase::RomData;
@@ -94,6 +95,65 @@ rp_nautilus_property_page_provider_page_provider_init(NautilusPropertyPageProvid
 	iface->get_pages = rp_nautilus_property_page_provider_get_pages;
 }
 
+/**
+ * Instantiate a Nautilus Property Page with a RomDataView for this URI.
+ * @param uri URI
+ * @return NautilusPropertyPage with RomDataView, or nullptr on error.
+ */
+static NautilusPropertyPage*
+rp_nautilus_property_page_provider_get_RomDataView(const gchar *uri)
+{
+	// Attempt to open the URI.
+	RomData *const romData = rp_gtk_open_uri(uri);
+	if (G_UNLIKELY(!romData)) {
+		// Unable to open the URI as a RomData object.
+		return nullptr;
+	}
+
+	// Create the RomDataView.
+	GtkWidget *const romDataView = rp_rom_data_view_new_with_romData(uri, romData, RP_DFT_GNOME);
+	gtk_widget_set_name(romDataView, "romDataView");
+	gtk_widget_show(romDataView);
+	romData->unref();
+
+	// tr: Tab title.
+	const char *const tabTitle = C_("RomDataView", "ROM Properties");
+
+	// Create the NautilusPropertyPage
+	return nautilus_property_page_new(
+		"RomProperties::RomDataView",
+		gtk_label_new(tabTitle), romDataView);
+}
+
+/**
+ * Instantiate a Nautilus Property Page with an XAttrView for this URI.
+ * @param uri URI
+ * @return NautilusPropertyPage with XAttrView, or nullptr on error.
+ */
+static NautilusPropertyPage*
+rp_nautilus_property_page_provider_get_XAttrView(const gchar *uri)
+{
+	// TODO: Actually open the file.
+	// For now, add a test widget.
+
+	GtkWidget *const xattrView = rp_xattr_view_new(uri);
+	if (!rp_xattr_view_has_attributes(RP_XATTR_VIEW(xattrView))) {
+		// No attributes available.
+		g_object_unref(xattrView);
+		return nullptr;
+	}
+	gtk_widget_set_name(xattrView, "xattrView");
+	gtk_widget_show(xattrView);
+
+	// tr: Tab title.
+	const char *const tabTitle = "xattrs";
+
+	// Create the NautilusPropertyPage
+	return nautilus_property_page_new(
+		"RomProperties::XAttrView",
+		gtk_label_new(tabTitle), xattrView);
+}
+
 static GList*
 rp_nautilus_property_page_provider_get_pages(NautilusPropertyPageProvider *provider, GList *files)
 {
@@ -119,28 +179,17 @@ rp_nautilus_property_page_provider_get_pages(NautilusPropertyPageProvider *provi
 		return nullptr;
 	}
 
-	// Attempt to open the URI.
-	RomData *const romData = rp_gtk_open_uri(uri);
-	if (G_UNLIKELY(!romData)) {
-		// Unable to open the URI as a RomData object.
-		g_free(uri);
-		return nullptr;
+	GList *list = nullptr;
+
+	NautilusPropertyPage *page = rp_nautilus_property_page_provider_get_XAttrView(uri);
+	if (page) {
+		list = g_list_prepend(list, page);
+	}
+	page = rp_nautilus_property_page_provider_get_RomDataView(uri);
+	if (page) {
+		list = g_list_prepend(list, page);
 	}
 
-	// Create the RomDataView.
-	// TODO: Add some extra padding to the top...
-	GtkWidget *const romDataView = rp_rom_data_view_new_with_romData(uri, romData, RP_DFT_GNOME);
-	gtk_widget_set_name(romDataView, "romDataView");
-	gtk_widget_show(romDataView);
-	romData->unref();
 	g_free(uri);
-
-	// tr: Tab title.
-	const char *const tabTitle = C_("RomDataView", "ROM Properties");
-
-	// Create the NautilusPropertyPage and return it in a GList.
-	NautilusPropertyPage *const page = nautilus_property_page_new(
-		"RomPropertiesPage::property_page",
-		gtk_label_new(tabTitle), romDataView);
-	return g_list_prepend(nullptr, page);
+	return list;
 }

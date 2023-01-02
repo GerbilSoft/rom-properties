@@ -11,7 +11,7 @@
 #include "PIMGTYPE.hpp"
 
 #ifdef USE_GTK_DROP_DOWN
-#  include "LanguageComboBoxItem.hpp"
+#  include "LanguageComboBoxItem.h"
 #endif /* USE_GTK_DROP_DOWN */
 
 // librpbase
@@ -261,9 +261,9 @@ rp_language_combo_box_new(void)
 
 static void
 rp_language_combo_box_set_property(GObject	*object,
-			   guint	 prop_id,
-			   const GValue	*value,
-			   GParamSpec	*pspec)
+				   guint	 prop_id,
+				   const GValue	*value,
+				   GParamSpec	*pspec)
 {
 	RpLanguageComboBox *const widget = RP_LANGUAGE_COMBO_BOX(object);
 
@@ -284,9 +284,9 @@ rp_language_combo_box_set_property(GObject	*object,
 
 static void
 rp_language_combo_box_get_property(GObject	*object,
-			   guint	 prop_id,
-			   GValue	*value,
-			   GParamSpec	*pspec)
+				   guint	 prop_id,
+				   GValue	*value,
+				   GParamSpec	*pspec)
 {
 	RpLanguageComboBox *const widget = RP_LANGUAGE_COMBO_BOX(object);
 

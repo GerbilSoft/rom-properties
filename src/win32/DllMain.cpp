@@ -31,6 +31,7 @@
 #endif /* HAVE_RP_PROPERTYSTORE_DEPS */
 #include "RP_ShellIconOverlayIdentifier.hpp"
 #include "RP_ContextMenu.hpp"
+#include "RP_XAttrView.hpp"
 
 #include "AchWin32.hpp"
 #include "MessageWidget.hpp"
@@ -185,6 +186,7 @@ _Check_return_ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, 
 		else CHECK_INTERFACE(RP_ShellIconOverlayIdentifier)
 #endif /* ENABLE_OVERLAY_ICON_HANDLER */
 		else CHECK_INTERFACE(RP_ContextMenu)
+		else CHECK_INTERFACE(RP_XAttrView)
 	} catch (const std::bad_alloc&) {
 		hr = E_OUTOFMEMORY;
 	}

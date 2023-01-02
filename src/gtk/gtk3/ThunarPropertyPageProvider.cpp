@@ -11,6 +11,7 @@
 #include "is-supported.hpp"
 
 #include "../RomDataView.hpp"
+#include "../xattr/XAttrView.hpp"
 
 #include "librpbase/RomData.hpp"
 using LibRpBase::RomData;
@@ -84,6 +85,65 @@ rp_thunar_property_page_provider_page_provider_init(ThunarxPropertyPageProviderI
 	iface->get_pages = rp_thunar_property_page_provider_get_pages;
 }
 
+/**
+ * Instantiate a Thunarx Property Page with a RomDataView for this URI.
+ * @param uri URI
+ * @return ThunarxPropertyPage with RomDataView, or nullptr on error.
+ */
+static GtkWidget*
+rp_thunar_property_page_provider_get_RomDataView(const gchar *uri)
+{
+	// Attempt to open the URI.
+	RomData *const romData = rp_gtk_open_uri(uri);
+	if (G_UNLIKELY(!romData)) {
+		// Unable to open the URI as a RomData object.
+		return nullptr;
+	}
+
+	// Create the RomDataView.
+	GtkWidget *const romDataView = rp_rom_data_view_new_with_romData(uri, romData, RP_DFT_XFCE);
+	gtk_widget_set_name(romDataView, "romDataView");
+	gtk_widget_show(romDataView);
+	romData->unref();
+
+	// tr: Tab title.
+	const char *const tabTitle = C_("RomDataView", "ROM Properties");
+
+	// Create the ThunarxPropertyPage
+	GtkWidget *const page = thunarx_property_page_new(tabTitle);
+	gtk_container_add(GTK_CONTAINER(page), romDataView);
+	return page;
+}
+
+/**
+ * Instantiate a Thunarx Property Page with an XAttrView for this URI.
+ * @param uri URI
+ * @return ThunarxPropertyPage with XAttrView, or nullptr on error.
+ */
+static GtkWidget*
+rp_thunar_property_page_provider_get_XAttrView(const gchar *uri)
+{
+	// TODO: Actually open the file.
+	// For now, add a test widget.
+
+	GtkWidget *const xattrView = rp_xattr_view_new(uri);
+	if (!rp_xattr_view_has_attributes(RP_XATTR_VIEW(xattrView))) {
+		// No attributes available.
+		g_object_unref(xattrView);
+		return nullptr;
+	}
+	gtk_widget_set_name(xattrView, "xattrView");
+	gtk_widget_show(xattrView);
+
+	// tr: Tab title.
+	const char *const tabTitle = "xattrs";
+
+	// Create the ThunarxPropertyPage
+	GtkWidget *const page = thunarx_property_page_new(tabTitle);
+	gtk_container_add(GTK_CONTAINER(page), xattrView);
+	return page;
+}
+
 static GList*
 rp_thunar_property_page_provider_get_pages(ThunarxPropertyPageProvider *page_provider, GList *files)
 {
@@ -109,26 +169,17 @@ rp_thunar_property_page_provider_get_pages(ThunarxPropertyPageProvider *page_pro
 		return nullptr;
 	}
 
-	// Attempt to open the URI.
-	RomData *const romData = rp_gtk_open_uri(uri);
-	if (G_UNLIKELY(!romData)) {
-		// Unable to open the URI as a RomData object.
-		g_free(uri);
-		return nullptr;
+	GList *list = nullptr;
+
+	GtkWidget *page = rp_thunar_property_page_provider_get_XAttrView(uri);
+	if (page) {
+		list = g_list_prepend(list, page);
+	}
+	page = rp_thunar_property_page_provider_get_RomDataView(uri);
+	if (page) {
+		list = g_list_prepend(list, page);
 	}
 
-	// Create the RomDataView.
-	GtkWidget *const romDataView = rp_rom_data_view_new_with_romData(uri, romData, RP_DFT_XFCE);
-	gtk_widget_set_name(romDataView, "romDataView");
-	gtk_widget_show(romDataView);
-	romData->unref();
 	g_free(uri);
-
-	// tr: Tab title.
-	const char *const tabTitle = C_("RomDataView", "ROM Properties");
-
-	// Create the ThunarxPropertyPage and return it in a GList.
-	GtkWidget *const page = thunarx_property_page_new(tabTitle);
-	gtk_container_add(GTK_CONTAINER(page), romDataView);
-	return g_list_prepend(nullptr, page);
+	return list;
 }

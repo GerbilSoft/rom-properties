@@ -187,7 +187,7 @@ rp_rom_data_view_class_init(RpRomDataViewClass *klass)
 
 /**
  * Set the label format type.
- * @param page RpRomDataView
+ * @param page RomDataView
  * @param label GtkLabel
  * @param desc_format_type Format type
  */
@@ -1974,7 +1974,7 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 /**
  * Reload the RomData object from the current URI.
  * Call this function using g_idle_add().
- * @param page RpRomDataView
+ * @param page RomDataView
  * @return G_SOURCE_REMOVE
  */
 static gboolean
@@ -2029,7 +2029,7 @@ rp_rom_data_view_load_rom_data(RpRomDataView *page)
 
 /**
  * Delete tabs and related widgets.
- * @param page RpRomDataView
+ * @param page RomDataView
  */
 static void
 rp_rom_data_view_delete_tabs(RpRomDataView *page)
@@ -2106,7 +2106,7 @@ rp_rom_data_view_delete_tabs(RpRomDataView *page)
 /**
  * Prevent bitfield checkboxes from being toggled.
  * @param checkbutton Bitfield checkbox
- * @param page RpRomDataView
+ * @param page RomDataView
  */
 static void
 checkbox_no_toggle_signal_handler(GtkCheckButton *checkbutton, RpRomDataView *page)
@@ -2127,7 +2127,7 @@ checkbox_no_toggle_signal_handler(GtkCheckButton *checkbutton, RpRomDataView *pa
 
 /**
  * RomDataView is being mapped onto the screen.
- * @param page RpRomDataView
+ * @param page RomDataView
  * @param user_data User data
  */
 static void
@@ -2149,7 +2149,7 @@ rp_rom_data_view_map_signal_handler(RpRomDataView	*page,
 
 /**
  * RomDataView is being unmapped from the screen.
- * @param page RpRomDataView
+ * @param page RomDataView
  * @param user_data User data
  */
 static void
@@ -2166,7 +2166,7 @@ rp_rom_data_view_unmap_signal_handler(RpRomDataView	*page,
 /**
  * GtkTreeView widget has been realized.
  * @param treeView GtkTreeView
- * @param page RpRomDataView
+ * @param page RomDataView
  */
 static void
 tree_view_realize_signal_handler(GtkTreeView	*treeView,

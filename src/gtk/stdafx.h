@@ -29,6 +29,7 @@
 #include <cerrno>
 #include <cstring>
 #include <cinttypes>
+#include <climits>
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -50,6 +51,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <inttypes.h>
+#include <limits.h>
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>

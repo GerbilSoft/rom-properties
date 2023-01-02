@@ -9,11 +9,21 @@
     * https://github.com/xlenore/ps2-covers
     * Fixes #371: PlayStation 1 and 2 covers
       * Reported by @DankRank.
+  * Extended attribute viewer tab. Supports viewing MS-DOS and (on Linux)
+    EXT2 attributes on supported file systems, plus POSIX extended attributes.
+    * On Windows, alternate data streams are displayed as extended attributes.
+    * Windows xattr functionality currently does not work on Windows XP.
+  * KDE UI frontend now only uses JSON loading when compiled with KDE Frameworks
+    5.89.0 or later.
 
 * Bug fixes:
   * WiiWAD: Add application/x-doom-wad for compatibility with some systems that
     assume all .wad files are Doom WADs.
   * WiiWAD: application/x-dsi-tad -> application/x-nintendo-dsi-tad
+
+* Other changes:
+  * EXE: Don't show import/export tables for .NET executables, since they only
+    have a single import, MSCOREEE!_CorExeMain.
 
 ## v2.1 (released 2022/12/24)
 

@@ -1,0 +1,19 @@
+{
+    "CacheThumbnail": true,
+    "KPlugin": {
+        "MimeTypes": [
+            "application/octet-stream",
+            "inode/directory"
+        ],
+        "Name": "xattrview-kf5",
+        "Description": "Extended Attributes Viewer for KDE Frameworks 5",
+        "ServiceTypes": [
+            "KPropertiesDialog/Plugin"
+        ]
+    },
+    "MimeType": "application/octet-stream;inode/directory",
+    "X-KDE-Protocols": [
+        "file",
+        "desktop"
+    ]
+}

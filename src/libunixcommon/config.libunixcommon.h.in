@@ -15,8 +15,14 @@
 /* KF5 plugin path */
 #cmakedefine KF5_PLUGIN_INSTALL_DIR "@KF5_PLUGIN_INSTALL_DIR@"
 
+/* KF5 PropertiesDialog plugin path */
+#cmakedefine KF5_PRPD_PLUGIN_INSTALL_DIR "@KF5_PRPD_PLUGIN_INSTALL_DIR@"
+
 /* KF6 plugin path */
 #cmakedefine KF6_PLUGIN_INSTALL_DIR "@KF6_PLUGIN_INSTALL_DIR@"
+
+/* KF6 PropertiesDialog plugin path */
+#cmakedefine KF6_PRPD_PLUGIN_INSTALL_DIR "@KF6_PRPD_PLUGIN_INSTALL_DIR@"
 
 /* ThunarX2 extensions path */
 #cmakedefine ThunarX2_EXTENSIONS_DIR "@ThunarX2_EXTENSIONS_DIR@"

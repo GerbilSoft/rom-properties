@@ -65,6 +65,8 @@ SET(${PROJECT_NAME}_SRCS
 	RP_ShellIconOverlayIdentifier_Register.cpp
 	RP_ContextMenu.cpp
 	RP_ContextMenu_Register.cpp
+	RP_XAttrView.cpp
+	RP_XAttrView_Register.cpp
 	CreateThumbnail.cpp
 	DragImageLabel.cpp
 	FontHandler.cpp
@@ -101,6 +103,8 @@ SET(${PROJECT_NAME}_H
 	RP_ShellIconOverlayIdentifier_p.hpp
 	RP_ContextMenu.hpp
 	RP_ContextMenu_p.hpp
+	RP_XAttrView.hpp
+	RP_XAttrView_p.hpp
 	CreateThumbnail.hpp
 	DragImageLabel.hpp
 	FontHandler.hpp

@@ -23,6 +23,7 @@
 #include <algorithm>
 #include <array>
 #include <limits>
+#include <memory>
 
 #else /* !__cplusplus */
 /** C **/

@@ -17,13 +17,16 @@
 #include "stdafx.h"
 #include "config.kde.h"
 
-#include "AchQtDBus.hpp"
-#include "RomPropertiesDialogPlugin.hpp"
-#include "RomThumbCreator.hpp"
-
 // RpQImageBackend
 #include "RpQImageBackend.hpp"
 using LibRpTexture::rp_image;
+
+// Achievements backend
+#include "AchQtDBus.hpp"
+
+// Plugins
+#include "RomPropertiesDialogPlugin.hpp"
+#include "RomThumbCreator.hpp"
 
 // KDE Frameworks
 #include <kcoreaddons_version.h>
