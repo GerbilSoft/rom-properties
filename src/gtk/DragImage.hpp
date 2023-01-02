@@ -69,6 +69,8 @@ bool rp_drag_image_set_rp_image(RpDragImage *image, const LibRpTexture::rp_image
  */
 bool rp_drag_image_set_icon_anim_data(RpDragImage *image, const LibRpBase::IconAnimData *iconAnimData);
 
+#endif /* __cplusplus */
+
 /**
  * Clear the rp_image and iconAnimData.
  * This will stop the animation timer if it's running.
@@ -101,5 +103,3 @@ bool rp_drag_image_is_anim_timer_running(RpDragImage *image);
  * @param image RpDragImage
  */
 void rp_drag_image_reset_anim_frame(RpDragImage *image);
-
-#endif /* __cplusplus */
