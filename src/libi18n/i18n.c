@@ -21,8 +21,6 @@
 #  include <stdlib.h>	// _countof() on 32-bit MinGW-w64
 #endif
 
-#include "common.h"
-
 // Initialized?
 #include "stdboolx.h"
 #include "librpthreads/pthread_once.h"

@@ -10,7 +10,7 @@
 
 #include "common.h"
 
-// C includes.
+// C includes
 #include <stdint.h>
 
 namespace LibRomData {

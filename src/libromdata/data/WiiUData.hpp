@@ -13,9 +13,6 @@
 
 #pragma once
 
-#include "common.h"
-
-// C includes.
 #include <stdint.h>
 
 namespace LibRomData { namespace WiiUData {

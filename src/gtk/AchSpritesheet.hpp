@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "common.h"
+#include "PIMGTYPE.hpp"
 
 namespace AchSpritesheet {
 

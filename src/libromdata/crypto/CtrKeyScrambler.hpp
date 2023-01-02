@@ -10,10 +10,10 @@
 
 #include "librpbase/config.librpbase.h"
 #ifndef ENABLE_DECRYPTION
-#error This file should only be included if decryption is enabled.
+#  error This file should only be included if decryption is enabled.
 #endif /* ENABLE_DECRYPTION */
 
-#include "common.h"
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
 // for u128_t
 #include "N3DSVerifyKeys.hpp"

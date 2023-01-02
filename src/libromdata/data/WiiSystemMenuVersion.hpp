@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include "common.h"
-
 namespace LibRomData { namespace WiiSystemMenuVersion {
 
 /**

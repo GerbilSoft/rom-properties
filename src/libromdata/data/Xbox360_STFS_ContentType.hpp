@@ -9,7 +9,6 @@
 #pragma once
 
 #include <stdint.h>
-#include "common.h"
 
 namespace LibRomData { namespace Xbox360_STFS_ContentType {
 

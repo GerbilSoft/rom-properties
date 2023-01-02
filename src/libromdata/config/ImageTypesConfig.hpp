@@ -14,7 +14,7 @@
  * libromdata and should *not* be compiled by UI frontends.
  */
 
-#include "common.h"
+#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 #include "librpbase/RomData.hpp"
 
 // C includes. (C++ namespace)

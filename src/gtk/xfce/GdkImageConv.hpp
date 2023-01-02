@@ -11,7 +11,6 @@
 // NOTE: GdkPixbuf doesn't natively support 8bpp. Because of this,
 // we can't simply make a GdkPixbuf rp_image backend.
 
-#include "common.h"
 #include "librpcpu/cpu_dispatch.h"
 namespace LibRpTexture {
 	class rp_image;
