@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_PropertyStore.hpp: IPropertyStore implementation.                    *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_RP_PROPERTYSTORE_HPP__
-#define __ROMPROPERTIES_WIN32_RP_PROPERTYSTORE_HPP__
+#pragma once
 
 // librpbase
 #include "librpbase/config.librpbase.h"
@@ -71,5 +70,3 @@ RP_PropertyStore final : public LibWin32Common::ComBase3<IInitializeWithStream, 
 // Required for MinGW-w64 __uuidof() emulation.
 __CRT_UUID_DECL(RP_PropertyStore, __MSABI_LONG(0x4a1e3510), 0x50bd, 0x4b03, 0xa8,0x01, 0xe4, 0xc9, 0x54, 0xf4, 0x3b, 0x96)
 #endif
-
-#endif /* __ROMPROPERTIES_WIN32_RP_PROPERTYSTORE_HPP__ */

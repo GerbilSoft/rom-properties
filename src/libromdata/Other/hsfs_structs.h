@@ -2,15 +2,14 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * hsfs_structs.h: High Sierra structs for old CD-ROM images.              *
  *                                                                         *
- * Copyright (c) 2017-2021 by David Korth.                                 *
- * Copyright (c) 2020 Egor.                                                *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
+ * Copyright (c) 2020 by Egor.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // Reference: OpenSolaris source code /usr/src/uts/common/sys/fs/hsfs_spec.h
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_HSFS_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_HSFS_STRUCTS_H__
+#pragma once
 
 #include <stdint.h>
 
@@ -150,5 +149,3 @@ ASSERT_STRUCT(HSFS_Primary_Volume_Descriptor, ISO_SECTOR_SIZE_MODE1_COOKED);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_HSFS_STRUCTS_H__ */

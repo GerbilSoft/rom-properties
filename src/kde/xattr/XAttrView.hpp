@@ -2,14 +2,11 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * XAttrView.hpp: Extended attribute viewer property page.                 *
  *                                                                         *
- * Copyright (c) 2022 by David Korth.                                      *
+ * Copyright (c) 2022-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-// Reference: https://doc.qt.io/qt-5/dnd.html
-
-#ifndef __ROMPROPERTIES_KDE_XATTR_XATTRVIEW_HPP__
-#define __ROMPROPERTIES_KDE_XATTR_XATTRVIEW_HPP__
+#pragma once
 
 // Qt includes
 #include <QtCore/QUrl>
@@ -59,5 +56,3 @@ class XAttrView : public QWidget
 		 */
 		void filenameChanged(const QUrl &url);
 };
-
-#endif /* __ROMPROPERTIES_KDE_XATTR_LINUXATTRVIEW_HPP__ */

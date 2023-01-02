@@ -3,12 +3,11 @@
  * TextFuncs_libc.h: Reimplementations of libc functions that aren't       *
  * present on this system.                                                 *
  *                                                                         *
- * Copyright (c) 2009-2019 by David Korth.                                 *
+ * Copyright (c) 2009-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_LIBC_H__
-#define __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_LIBC_H__
+#pragma once
 
 #include "config.librpbase.h"
 #include <stddef.h>
@@ -46,5 +45,3 @@ void *memmem(const void *haystack, size_t haystacklen,
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_LIBC_H__ */

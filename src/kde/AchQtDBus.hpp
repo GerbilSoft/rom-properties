@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * AchQtDBus.hpp: QtDBus notifications for achievements.                   *
  *                                                                         *
- * Copyright (c) 2020 by David Korth.                                      *
+ * Copyright (c) 2020-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_ACHQTDBUS_HPP__
-#define __ROMPROPERTIES_KDE_ACHQTDBUS_HPP__
+#pragma once
 
 #include "librpbase/Achievements.hpp"
 #include "common.h"
@@ -43,5 +42,3 @@ class AchQtDBus
 		 */
 		static AchQtDBus *instance(void);
 };
-
-#endif /* __ROMPROPERTIES_KDE_ACHQTDBUS_HPP__ */

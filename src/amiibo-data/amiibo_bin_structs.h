@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (amiibo-data)                      *
  * amiibo_bin_structs.h: Nintendo amiibo binary data structs.              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_AMIIBO_DATA_AMIIBO_BIN_STRUCTS_H__
-#define __ROMPROPERTIES_AMIIBO_DATA_AMIIBO_BIN_STRUCTS_H__
+#pragma once
 
 #include "common.h"
 #include <stdint.h>
@@ -93,5 +92,3 @@ ASSERT_STRUCT(AmiiboIDTableEntry, 2*sizeof(uint32_t));
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_AMIIBO_DATA_AMIIBO_BIN_STRUCTS_H__ */

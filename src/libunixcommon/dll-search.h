@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libunixcommon)                    *
  * dll-search.h: Function to search for a usable rom-properties library.   *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_RP_STUB_DLL_SEARCH_H__
-#define __ROMPROPERTIES_RP_STUB_DLL_SEARCH_H__
+#pragma once
 
 #include <sys/types.h>
 
@@ -47,5 +46,3 @@ int rp_dll_search(const char *symname, void **ppDll, void **ppfn, PFN_RP_DLL_DEB
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_RP_STUB_DLL_SEARCH_H__ */

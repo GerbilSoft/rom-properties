@@ -2,9 +2,11 @@
  * ROM Properties Page shell extension. (librpsecure/win32)                *
  * secoptions.h: Security options for executables.                         *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
+
+#pragma once
 
 #ifndef __ROMPROPERTIES_LIBRPSECURE_WIN32_SECOPTIONS_H__
 #define __ROMPROPERTIES_LIBRPSECURE_WIN32_SECOPTIONS_H__

@@ -2,13 +2,12 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RomData_decl.hpp: ROM data base class. (Subclass macros)                *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_ROMDATA_DECL_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_ROMDATA_DECL_HPP__
+#pragma once
 
 #ifndef __ROMPROPERTIES_LIBRPBASE_ROMDATA_HPP__
 # error RomData_decl.hpp should only be included by RomData.hpp
@@ -397,5 +396,3 @@ std::vector<RomData::ImageSizeDef> klass::supportedImageSizes(ImageType imageTyp
 	*(pImage) = (func)(); \
 	return (*(pImage) != nullptr ? 0 : -EIO); \
 } while (0)
-
-#endif /* __ROMPROPERTIES_LIBRPBASE_ROMDATA_DECL_HPP__ */

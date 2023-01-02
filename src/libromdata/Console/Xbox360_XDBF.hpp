@@ -3,12 +3,11 @@
  * Xbox360_XDBF.hpp: Microsoft Xbox 360 game resource reader.              *
  * Handles XDBF files and sections.                                        *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOX360_XDBF_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOX360_XDBF_HPP__
+#pragma once
 
 #include "librpbase/RomData.hpp"
 #include "librpbase/RomMetaData.hpp"
@@ -66,5 +65,3 @@ ROMDATA_DECL_IMGINT()
 ROMDATA_DECL_END()
 
 }
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOX360_XDBF_HPP__ */

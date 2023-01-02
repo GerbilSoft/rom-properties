@@ -2,15 +2,14 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * RpGdiplusBackend.hpp: rp_image_backend using GDI+.                      *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // NOTE: This class is located in libromdata, not Win32,
 // since RpPng_gdiplus.cpp uses the backend directly.
 
-#ifndef __ROMPROPERTIES_LIBRPTEXTURE_IMG_RPGDIPLUSBACKEND_HPP__
-#define __ROMPROPERTIES_LIBRPTEXTURE_IMG_RPGDIPLUSBACKEND_HPP__
+#pragma once
 
 #include "rp_image_backend.hpp"
 #include "libwin32common/RpWin32_sdk.h"
@@ -231,5 +230,3 @@ class RpGdiplusBackend final : public rp_image_backend
 };
 
 }
-
-#endif /* __ROMPROPERTIES_LIBRPTEXTURE_IMG_RPGDIPLUSBACKEND_HPP__ */

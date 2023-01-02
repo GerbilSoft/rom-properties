@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_ASTC.hpp: Image decoding functions: ASTC                   *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGEDECODER_ASTC_HPP__
-#define __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGEDECODER_ASTC_HPP__
+#pragma once
 
 #include "ImageDecoder_common.hpp"
 
@@ -31,5 +30,3 @@ rp_image *fromASTC(int width, int height,
 #endif /* ENABLE_ASTC */
 
 } }
-
-#endif /* __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGEDECODER_ASTC_HPP__ */

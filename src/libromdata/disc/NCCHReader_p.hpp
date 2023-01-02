@@ -3,12 +3,11 @@
  * NCCHReader_p.hpp: Nintendo 3DS NCCH reader.                             *
  * Private class declaration.                                              *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_DISC_NCCHREADER_P_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_DISC_NCCHREADER_P_HPP__
+#pragma once
 
 #include "librpbase/config.librpbase.h"
 #include "NCCHReader.hpp"
@@ -187,5 +186,3 @@ class NCCHReaderPrivate
 };
 
 }
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_DISC_NCCHREADER_P_HPP__ */

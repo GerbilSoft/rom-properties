@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomDataView.hpp: RomData viewer. (Private class)                        *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_ROMDATAVIEW_P_HPP__
-#define __ROMPROPERTIES_KDE_ROMDATAVIEW_P_HPP__
+#pragma once
 
 #include "config.kde.h"
 
@@ -237,6 +236,3 @@ class RomDataViewPrivate
 		 */
 		void doRomOp_stdop(int id);
 };
-
-
-#endif /* __ROMPROPERTIES_KDE_ROMDATAVIEW_P_HPP__ */

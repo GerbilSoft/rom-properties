@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * propsys_xp.c: Implementation of PropSys functions not available in XP.  *
  *                                                                         *
- * Copyright (c) 2018-2022 by David Korth.                                 *
+ * Copyright (c) 2018-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBWIN32COMMON_PROPSYS_XP_H__
-#define __ROMPROPERTIES_LIBWIN32COMMON_PROPSYS_XP_H__
+#pragma once
 
 #include "RpWin32_sdk.h"
 #include <propvarutil.h>
@@ -80,5 +79,3 @@ static inline HRESULT InitPropVariantFromFloat_noSensorsUtils(_In_ float fvalueI
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBWIN32COMMON_PROPSYS_XP_H__ */

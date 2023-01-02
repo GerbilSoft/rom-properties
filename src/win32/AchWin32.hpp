@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * AchWin32.hpp: Win32 notifications for achievements.                     *
  *                                                                         *
- * Copyright (c) 2020 by David Korth.                                      *
+ * Copyright (c) 2020-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_ACHWIN32_HPP__
-#define __ROMPROPERTIES_WIN32_ACHWIN32_HPP__
+#pragma once
 
 #include "librpbase/Achievements.hpp"
 #include "common.h"
@@ -51,5 +50,3 @@ class AchWin32
 		 */
 		bool isAnyPopupStillActive(void) const;
 };
-
-#endif /* __ROMPROPERTIES_KDE_ACHQTDBUS_HPP__ */

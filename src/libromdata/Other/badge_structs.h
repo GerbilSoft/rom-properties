@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * badge_structs.h: Nintendo Badge Arcade data structures.                 *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_BADGE_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_BADGE_STRUCTS_H__
+#pragma once
 
 /**
  * References:
@@ -87,5 +86,3 @@ ASSERT_STRUCT(Badge_CABS_Header, 0x1068);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_PVR_STRUCTS_H__ */

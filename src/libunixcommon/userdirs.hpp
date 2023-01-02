@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libunixcommon)                    *
  * userdirs.hpp: Find user directories.                                    *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBUNIXCOMMON_USERDIRS_HPP__
-#define __ROMPROPERTIES_LIBUNIXCOMMON_USERDIRS_HPP__
+#pragma once
 
 // NOTE: All functions return 8-bit strings.
 // This is usually encoded as UTF-8.
@@ -60,5 +59,3 @@ RP_LIBROMDATA_PUBLIC
 std::string getConfigDirectory(void);
 
 }
-
-#endif /* __ROMPROPERTIES_LIBUNIXCOMMON_UNIXDIRS_HPP__ */

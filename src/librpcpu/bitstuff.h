@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpcpu)                         *
  * bitstuff.h: Bit manipulation inline functions.                          *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPCPU_BITSTUFF_H__
-#define __ROMPROPERTIES_LIBRPCPU_BITSTUFF_H__
+#pragma once
 
 #ifdef _MSC_VER
 #  include <intrin.h>
@@ -90,5 +89,3 @@ static inline unsigned int nextPow2(unsigned int x)
 {
 	return (1U << (uilog2(x) + 1));
 }
-
-#endif /* __ROMPROPERTIES_LIBRPCPU_BITSTUFF_H__ */

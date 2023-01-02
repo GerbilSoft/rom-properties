@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * LinuxAttrView.h: Linux file system attribute viewer widget.             *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_XATTR_LINUXATTRVIEW_H__
-#define __ROMPROPERTIES_GTK_XATTR_LINUXATTRVIEW_H__
+#pragma once
 
 #include "gtk-compat.h"
 
@@ -30,5 +29,3 @@ int 		rp_linux_attr_view_get_flags		(RpLinuxAttrView *widget);
 void		rp_linux_attr_view_clear_flags		(RpLinuxAttrView *widget);
 
 G_END_DECLS
-
-#endif /* __ROMPROPERTIES_GTK_XATTR_LINUXATTRVIEW_H__ */

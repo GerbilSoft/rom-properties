@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ValveVTF.hpp: Valve VTF texture reader.                                 *
  *                                                                         *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_VALVEVTF_HPP__
-#define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_VALVEVTF_HPP__
+#pragma once
 
 #include "FileFormat.hpp"
 
@@ -17,5 +16,3 @@ FILEFORMAT_DECL_BEGIN(ValveVTF)
 FILEFORMAT_DECL_END()
 
 }
-
-#endif /* __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_VALVEVTF_HPP__ */

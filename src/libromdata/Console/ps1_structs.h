@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ps1_structs.h: Sony PlayStation data structures.                        *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * Copyright (c) 2017 by Egor.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -11,8 +11,7 @@
 // - https://www.psdevwiki.com/ps3/PS1_Savedata
 // - http://problemkaputt.de/psx-spx.htm#memorycarddataformat
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_PS1_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_PS1_STRUCTS_H__
+#pragma once
 
 #include "common.h"
 #include <stdint.h>
@@ -144,5 +143,3 @@ ASSERT_STRUCT(PS1_PSV_Header, 0x84);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_PS1_STRUCTS_H__ */

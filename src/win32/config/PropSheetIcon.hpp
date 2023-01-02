@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * PropSheetIcon.hpp: Property sheet icon.                                 *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_CONFIG_PROPSHEETICON_HPP__
-#define __ROMPROPERTIES_WIN32_CONFIG_PROPSHEETICON_HPP__
+#pragma once
 
 #include "common.h"
 #include "libwin32common/RpWin32_sdk.h"
@@ -57,5 +56,3 @@ class PropSheetIcon
 		 */
 		HICON get96Icon(void) const;
 };
-
-#endif /* __ROMPROPERTIES_WIN32_CONFIG_PROPSHEETICON_HPP__ */

@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * gl_defs.h: OpenGL definitions.                                          *
  *                                                                         *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_GL_DEFS_H__
-#define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_GL_DEFS_H__
+#pragma once
 
 // OpenGL definitions.
 // (Mostly taken from GLEW 1.13.0.)
@@ -300,5 +299,3 @@
 #define GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR 0x93DB
 #define GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR 0x93DC
 #define GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR 0x93DD
-
-#endif /* __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_GL_DEFS_H__ */

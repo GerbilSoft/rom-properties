@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * stdafx.h: Common definitions and includes.                              *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_STDAFX_H__
-#define __ROMPROPERTIES_GTK_STDAFX_H__
+#pragma once
 
 // PrecompiledHeader.cmake's FILE(GENERATE) command mangles the
 // escaped double-quotes for G_LOG_DOMAIN.
@@ -124,5 +123,3 @@
 #ifdef __cplusplus
 #  include "RpFile_gio.hpp"
 #endif /* __cplusplus */
-
-#endif /* __ROMPROPERTIES_GTK_STDAFX_H__ */

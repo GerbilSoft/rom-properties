@@ -2,15 +2,14 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * nsf_structs.h: SID audio data structures.                               *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // References:
 // - https://www.hvsc.c64.org/download/C64Music/DOCUMENTS/SID_file_format.txt
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_AUDIO_SID_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_AUDIO_SID_STRUCTS_H__
+#pragma once
 
 #include "common.h"
 #include <stdint.h>
@@ -59,5 +58,3 @@ ASSERT_STRUCT(SID_Header, 118);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_AUDIO_SID_STRUCTS_H__ */

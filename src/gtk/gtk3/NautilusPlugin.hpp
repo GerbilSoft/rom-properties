@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                         *
  * NautilusPlugin.hpp: Nautilus (and forks) Plugin Definition              *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK3_NAUTILUSPLUGIN_HPP__
-#define __ROMPROPERTIES_GTK3_NAUTILUSPLUGIN_HPP__
+#pragma once
 
 #include <glib.h>
 #include <glib-object.h>
@@ -101,5 +100,3 @@ extern PFN_NAUTILUS_PROPERTY_PAGE_NEW			pfn_nautilus_property_page_new;
 #define NAUTILUS_PROPERTY_PAGE_PROVIDER_GET_IFACE(obj)	(G_TYPE_INSTANCE_GET_INTERFACE((obj),  NAUTILUS_TYPE_PROPERTY_PAGE_PROVIDER, NautilusPropertyPageProviderInterface))
 
 G_END_DECLS;
-
-#endif /* __ROMPROPERTIES_GTK3_NAUTILUSPLUGIN_HPP__ */

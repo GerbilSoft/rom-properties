@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PSP.hpp: PlayStation Portable disc image reader.                        *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_HANDHELD_PSP_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_HANDHELD_PSP_HPP__
+#pragma once
 
 #include "librpbase/RomData.hpp"
 #include "../iso_structs.h"
@@ -32,5 +31,3 @@ ROMDATA_DECL_IMGINT()
 ROMDATA_DECL_END()
 
 }
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_HANDHELD_PSP_HPP__ */

@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * OptionsTab.hpp: Options tab for rp-config.                              *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_CONFIG_OPTIONSTAB_HPP__
-#define __ROMPROPERTIES_KDE_CONFIG_OPTIONSTAB_HPP__
+#pragma once
 
 #include "ITab.hpp"
 
@@ -55,5 +54,3 @@ class OptionsTab : public ITab
 		 */
 		void optionChanged_slot(void);
 };
-
-#endif /* __ROMPROPERTIES_KDE_CONFIG_OPTIONSTAB_HPP__ */

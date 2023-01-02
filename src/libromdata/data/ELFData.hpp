@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ELFData.hpp: Executable and Linkable Format data.                       *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_DATA_ELFDATA_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_DATA_ELFDATA_HPP__
+#pragma once
 
 #include "common.h"
 
@@ -31,5 +30,3 @@ const char *lookup_cpu(uint16_t cpu);
 const char *lookup_osabi(uint8_t osabi);
 
 } }
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_ELFDATA_HPP__ */

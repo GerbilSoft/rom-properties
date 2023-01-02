@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK+)                             *
  * AchSpritesheet.hpp: Achievement spritesheets loader.                    *
  *                                                                         *
- * Copyright (c) 2020-2022 by David Korth.                                 *
+ * Copyright (c) 2020-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_ACHSPRITESHEET_HPP__
-#define __ROMPROPERTIES_GTK_ACHSPRITESHEET_HPP__
+#pragma once
 
 #include "common.h"
 
@@ -23,5 +22,3 @@ namespace AchSpritesheet {
 PIMGTYPE load(int iconSize, bool gray = false);
 
 };
-
-#endif /* __ROMPROPERTIES_GTK_ACHSPRITESHEET_HPP__ */

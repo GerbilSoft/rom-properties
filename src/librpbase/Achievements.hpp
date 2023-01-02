@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * Achievements.hpp: Achievements class.                                   *
  *                                                                         *
- * Copyright (c) 2020-2022 by David Korth.                                 *
+ * Copyright (c) 2020-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_ACHIEVEMENTS_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_ACHIEVEMENTS_HPP__
+#pragma once
 
 #include "common.h"
 
@@ -138,5 +137,3 @@ class Achievements
 };
 
 }
-
-#endif /* __ROMPROPERTIES_LIBRPBASE_ACHIEVEMENTS_HPP__ */

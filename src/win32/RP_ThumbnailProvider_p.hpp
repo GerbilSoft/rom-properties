@@ -3,12 +3,11 @@
  * RP_ThumbnailProvider_p.hpp: IThumbnailProvider implementation.          *
  * (PRIVATE CLASS)                                                         *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_RP_THUMBNAILPROVIDER_P_HPP__
-#define __ROMPROPERTIES_WIN32_RP_THUMBNAILPROVIDER_P_HPP__
+#pragma once
 
 #include "RP_ThumbnailProvider.hpp"
 #include "CreateThumbnail.hpp"
@@ -89,5 +88,3 @@ class RP_ThumbnailProvider_Private
 		 */
 		HRESULT Fallback(UINT cx, HBITMAP *phbmp, WTS_ALPHATYPE *pdwAlpha);
 };
-
-#endif /* __ROMPROPERTIES_WIN32_RP_THUMBNAILPROVIDER_P_HPP__ */

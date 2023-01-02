@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ClassFactory.hpp: IClassFactory implementation.                      *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_RP_CLASSFACTORY_HPP__
-#define __ROMPROPERTIES_WIN32_RP_CLASSFACTORY_HPP__
+#pragma once
 
 // References:
 // - http://www.codeproject.com/Articles/665/A-very-simple-COM-server-without-ATL-or-MFC
@@ -91,5 +90,3 @@ class RP_ClassFactory final : public LibWin32Common::ComBase<IClassFactory>, pub
 			return S_OK;
 		}
 };
-
-#endif /* __ROMPROPERTIES_WIN32_RP_CLASSFACTORY_HPP__ */

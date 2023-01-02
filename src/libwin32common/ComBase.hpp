@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * ComBase.hpp: Base class for COM objects.                                *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBWIN32COMMON_COMBASE_HPP__
-#define __ROMPROPERTIES_LIBWIN32COMMON_COMBASE_HPP__
+#pragma once
 
 /**
  * COM base class. Handles reference counting and IUnknown.
@@ -93,5 +92,3 @@ class ComBase3 : public I1, public I2, public I3
 	RP_COMBASE_IMPL(ComBase3);
 
 }
-
-#endif /* __ROMPROPERTIES_LIBWIN32COMMON_COMBASE_HPP__ */

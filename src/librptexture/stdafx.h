@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * stdafx.h: Common definitions and includes.                              *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPTEXTURE_STDAFX_H__
-#define __ROMPROPERTIES_LIBRPTEXTURE_STDAFX_H__
+#pragma once
 
 #ifdef __cplusplus
 /** C++ **/
@@ -61,5 +60,3 @@
 #include "librpfile/IRpFile.hpp"
 #include "librpfile/FileSystem.hpp"
 #endif /* !__cplusplus */
-
-#endif /* __ROMPROPERTIES_LIBRPTEXTURE_STDAFX_H__ */

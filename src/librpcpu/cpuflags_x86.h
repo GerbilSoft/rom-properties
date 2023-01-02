@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpcpu)                         *
  * cpuflags_x86.h: x86 CPU flags detection.                                *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPCPU_CPUFLAGS_X86_H__
-#define __ROMPROPERTIES_LIBRPCPU_CPUFLAGS_X86_H__
+#pragma once
 
 #include <stdint.h>
 #include "common.h"
@@ -104,5 +103,3 @@ static FORCEINLINE int RP_CPU_HasSSE41(void)
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBRPCPU_CPUFLAGS_X86_H__ */

@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * UpdateChecker.hpp: Update checker object for AboutTab.                  *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_CONFIG_UPDATECHECKER_HPP__
-#define __ROMPROPERTIES_WIN32_CONFIG_UPDATECHECKER_HPP__
+#pragma once
 
 #include "common.h"
 #include "libwin32common/RpWin32_sdk.h"
@@ -77,5 +76,3 @@ class UpdateChecker
 		// Update version
 		uint64_t m_updateVersion;
 };
-
-#endif /* __ROMPROPERTIES_WIN32_CONFIG_UPDATECHECKER_HPP__ */

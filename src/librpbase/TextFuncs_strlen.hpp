@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextFuncs_strlen.hpp: UTF-8 strlen() functions.                         *
  *                                                                         *
- * Copyright (c) 2022 by David Korth.                                      *
+ * Copyright (c) 2022-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_STRLEN_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_STRLEN_HPP__
+#pragma once
 
 // C includes (C++ namespace)
 #include <cstddef>
@@ -41,5 +40,3 @@ static inline size_t utf8_disp_strlen(const std::string &str, size_t max_len = s
 }
 
 }
-
-#endif /* __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_STRLEN_HPP__ */

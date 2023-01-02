@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * ConfigDialog.hpp: Configuration dialog.                                 *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_CONFIG_CONFIGDIALOG_HPP__
-#define __ROMPROPERTIES_GTK_CONFIG_CONFIGDIALOG_HPP__
+#pragma once
 
 #include "gtk-compat.h"
 
@@ -19,5 +18,3 @@ G_DECLARE_FINAL_TYPE(RpConfigDialog, rp_config_dialog, RP, CONFIG_DIALOG, GtkDia
 GtkWidget	*rp_config_dialog_new		(void) G_GNUC_INTERNAL G_GNUC_MALLOC;
 
 G_END_DECLS
-
-#endif /* __ROMPROPERTIES_GTK_CONFIG_CONFIGDIALOG_HPP__ */

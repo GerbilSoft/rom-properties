@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * cdrom_structs.h: CD-ROM data structures.                                *
  *                                                                         *
- * Copyright (c) 2017-2021 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_CDROM_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_CDROM_STRUCTS_H__
+#pragma once
 
 /**
  * References:
@@ -175,5 +174,3 @@ static inline const uint8_t *cdromSectorDataPtr(const CDROM_2352_Sector_t *secto
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_CDROM_STRUCTS_H__ */

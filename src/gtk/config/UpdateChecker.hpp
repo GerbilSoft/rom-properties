@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * UpdateChecker.hpp: Update checker object for AboutTab.                  *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_CONFIG_UPDATECHECKER_HPP__
-#define __ROMPROPERTIES_GTK_CONFIG_UPDATECHECKER_HPP__
+#pragma once
 
 #include "glib-compat.h"
 
@@ -31,5 +30,3 @@ RpUpdateChecker	*rp_update_checker_new		(void) G_GNUC_INTERNAL G_GNUC_MALLOC;
 void		rp_update_checker_run		(RpUpdateChecker *updChecker);
 
 G_END_DECLS
-
-#endif /* __ROMPROPERTIES_GTK_CONFIG_UPDATECHECKER_HPP__ */

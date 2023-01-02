@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SegaPublishers.hpp: Sega third-party publishers list.                   *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_SEGAPUBLISHERS_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_SEGAPUBLISHERS_HPP__
+#pragma once
 
 #include "common.h"
 
@@ -21,5 +20,3 @@ namespace LibRomData { namespace SegaPublishers {
 const char *lookup(unsigned int code);
 
 } }
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_SEGAPUBLISHERS_HPP__ */

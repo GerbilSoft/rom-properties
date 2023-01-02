@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * xbox360_xex_structs.h: Microsoft Xbox 360 executable data structures.   *
  *                                                                         *
- * Copyright (c) 2019-2021 by David Korth.                                 *
+ * Copyright (c) 2019-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOX360_XEX_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOX360_XEX_STRUCTS_H__
+#pragma once
 
 #include "xbox360_common_structs.h"
 
@@ -632,5 +631,3 @@ ASSERT_STRUCT(XEX2_LAN_Key, 16);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOX360_XEX_STRUCTS_H__ */

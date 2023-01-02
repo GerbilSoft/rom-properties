@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                            *
  * mime-types.convert-to-png.h: MIME types for "Convert to PNG".              *
  *                                                                            *
- * Copyright (c) 2022 by David Korth.                                         *
+ * Copyright (c) 2022-2023 by David Korth.                                    *
  * SPDX-License-Identifier: GPL-2.0-or-later                                  *
  ******************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK3_MIMETYPES_CONVERTTOPNG_HPP__
-#define __ROMPROPERTIES_GTK3_MIMETYPES_CONVERTTOPNG_HPP__
+#pragma once
 
 // Supported MIME types
 // NOTE: Must be sorted alphabetically for use with std::binary_search().
@@ -29,5 +28,3 @@ static const char *const mime_types_convert_to_png[] = {
 	"image/x-vtf3",
 	"image/x-xbox-xpr0",
 };
-
-#endif /* __ROMPROPERTIES_GTK3_MIMETYPES_CONVERTTOPNG_HPP__ */

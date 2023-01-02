@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK4)                               *
  * nautilus-extension-mini.h: nautilus-extension struct definitions for compatibility. *
  *                                                                                     *
- * Copyright (c) 2017-2022 by David Korth.                                             *
+ * Copyright (c) 2017-2023 by David Korth.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                                           *
  ***************************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK4_NAUTILUS_EXTENSION_MINI_H__
-#define __ROMPROPERTIES_GTK4_NAUTILUS_EXTENSION_MINI_H__
+#pragma once
 
 #include <glib.h>
 #include <gtk/gtk.h>
@@ -36,5 +35,3 @@ struct _NautilusMenuProviderInterface {
 typedef struct _NautilusMenuProviderInterface NautilusMenuProviderInterface;
 
 G_END_DECLS
-
-#endif /* __ROMPROPERTIES_GTK4_NAUTILUS_EXTENSION_MINI_H__ */

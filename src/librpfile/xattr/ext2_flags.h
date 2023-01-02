@@ -6,8 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPFILE_XATTR_EXT2_FLAGS_H__
-#define __ROMPROPERTIES_LIBRPFILE_XATTR_EXT2_FLAGS_H__
+#pragma once
 
 #include <stdint.h>
 
@@ -138,5 +137,3 @@ static inline uint32_t ext2_mask_flags(unsigned int mode, uint32_t flags)
 		return flags & EXT2_OTHER_FLMASK;
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBRPFILE_XATTR_EXT2_FLAGS_H__ */

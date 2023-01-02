@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * psf_structs.h: PSF audio data structures.                               *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,8 +13,7 @@
 // - http://wiki.neillcorlett.com/PSFTagFormat
 //   - ARCHIVED: https://web.archive.org/web/20100510040327/http://wiki.neillcorlett.com:80/PSFTagFormat
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_AUDIO_PSF_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_AUDIO_PSF_STRUCTS_H__
+#pragma once
 
 #include "common.h"
 #include <stdint.h>
@@ -56,5 +55,3 @@ typedef enum {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_AUDIO_PSF_STRUCTS_H__ */

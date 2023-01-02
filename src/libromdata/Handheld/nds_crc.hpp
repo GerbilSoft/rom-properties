@@ -3,8 +3,7 @@
 	by Rafael Vuijk (aka DarkFader)
 */
 
-#ifndef __CRC_H
-#define __CRC_H
+#pragma once
 
 #include <string.h>
 
@@ -38,5 +37,3 @@ static inline uint16_t CalcCrc16(const uint8_t *data, size_t length, uint16_t cr
 	}
 	return crc;
 }
-
-#endif	// __CRC_H

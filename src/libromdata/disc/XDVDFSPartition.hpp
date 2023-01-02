@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * XDVDFSPartition.hpp: Microsoft Xbox XDVDFS partition reader.            *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_DISC_XDVDFSPARTITION_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_DISC_XDVDFSPARTITION_HPP__
+#pragma once
 
 #include "librpbase/disc/IPartition.hpp"
 
@@ -149,5 +148,3 @@ class XDVDFSPartition final : public LibRpBase::IPartition
 };
 
 }
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_DISC_XDVDFSPARTITION_HPP__ */

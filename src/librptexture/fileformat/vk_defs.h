@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * vk_defs.h: Vulkan definitions.                                          *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_VK_DEFS_H__
-#define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_VK_DEFS_H__
+#pragma once
 
 // Vulkan definitions.
 // Taken from vulkan-headers 1.1.125.
@@ -337,5 +336,3 @@ typedef enum VkFormat {
 	VK_FORMAT_RANGE_SIZE = (VK_FORMAT_ASTC_12x12_SRGB_BLOCK - VK_FORMAT_UNDEFINED + 1),
 	VK_FORMAT_MAX_ENUM = 0x7FFFFFFF
 } VkFormat;
-
-#endif /* __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_VK_DEFS_H__ */

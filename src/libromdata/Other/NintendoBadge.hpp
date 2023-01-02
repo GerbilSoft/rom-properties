@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoBadge.hpp: Nintendo Badge Arcade image reader.                  *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_NINTENDOBADGE_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_NINTENDOBADGE_HPP__
+#pragma once
 
 #include "librpbase/RomData.hpp"
 
@@ -20,5 +19,3 @@ ROMDATA_DECL_IMGINT()
 ROMDATA_DECL_END()
 
 }
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_NINTENDOBADGE_HPP__ */

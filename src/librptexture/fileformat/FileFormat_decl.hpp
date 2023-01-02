@@ -2,13 +2,12 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormat_decl.hpp: Texture file format base class. (Subclass macros)  *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_FILEFORMAT_DECL_HPP__
-#define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_FILEFORMAT_DECL_HPP__
+#pragma once
 
 #ifndef __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_FILEFORMAT_HPP__
 #  error FileFormat_decl.hpp should only be included by FileFormat.hpp
@@ -134,5 +133,3 @@ const LibRpTexture::TextureInfo *klass::textureInfo(void) \
 { \
 	return &klass##Private::textureInfo; \
 }
-
-#endif /* __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_FILEFORMAT_DECL_HPP__ */

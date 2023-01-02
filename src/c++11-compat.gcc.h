@@ -1,12 +1,11 @@
 /***************************************************************************
  * c++11-compat.gcc.h: C++ 2011 compatibility header. (gcc)                *
  *                                                                         *
- * Copyright (c) 2011-2020 by David Korth.                                 *
+ * Copyright (c) 2011-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __CXX11_COMPAT_GCC_H__
-#define __CXX11_COMPAT_GCC_H__
+#pragma once
 
 #if !defined(__GNUC__) || defined(__clang__) || defined(__INTEL_COMPILER)
 #  error c++11-compat.gcc.h should only be included in gcc builds.
@@ -55,5 +54,3 @@
 #endif
 
 #endif /* __cplusplus */
-
-#endif /* __CXX11_COMPAT_GCC_H__ */

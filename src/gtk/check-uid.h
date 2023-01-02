@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                         *
  * check-uid.h: CHECK_UID() macro.                                         *
  *                                                                         *
- * Copyright (c) 2017-2021 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_CHECK_UID_H__
-#define __ROMPROPERTIES_GTK_CHECK_UID_H__
+#pragma once
 
 #include <unistd.h>
 #include <glib.h>
@@ -28,5 +27,3 @@
 		return (errval); \
 	} \
 } while (0)
-
-#endif /* __ROMPROPERTIES_GTK_CHECK_UID_H__ */

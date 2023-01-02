@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * TextFuncsTest_data.hpp: Data for TextFuncsTest.                         *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_TESTS_TEXTFUNCSTEST_DATA_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_TESTS_TEXTFUNCSTEST_DATA_HPP__
+#pragma once
 
 // NOTE: 8-bit test strings are unsigned in order to prevent
 // narrowing conversion warnings from appearing.
@@ -708,5 +707,3 @@ const char16_t TextFuncsTest::atascii_utf16_data[229+1] =
 
 	0
 };
-
-#endif /* __ROMPROPERTIES_LIBRPBASE_TESTS_TEXTFUNCSTEST_DATA_HPP__ */

@@ -6,8 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPSECURE_WIN32_SECOPTIONS_WIN8_H__
-#define __ROMPROPERTIES_LIBRPSECURE_WIN32_SECOPTIONS_WIN8_H__
+#pragma once
 
 #ifndef __ROMPROPERTIES_LIBRPSECURE_WIN32_SECOPTIONS_H__
 #  error secoptions_win8.h should not be included directly - include secoptions.h instead
@@ -176,5 +175,3 @@ typedef struct _PROCESS_MITIGATION_IMAGE_LOAD_POLICY {
 	} DUMMYUNIONNAME;
 } PROCESS_MITIGATION_IMAGE_LOAD_POLICY, *PPROCESS_MITIGATION_IMAGE_LOAD_POLICY;
 #endif /* !_WIN32_WINNT_WIN10 */
-
-#endif /* __ROMPROPERTIES_LIBRPSECURE_WIN32_SECOPTIONS_WIN8_H__ */

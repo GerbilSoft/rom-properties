@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ContextMenu.hpp: IContextMenu implementation.                        *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_RP_CONTEXTMENU_HPP__
-#define __ROMPROPERTIES_WIN32_RP_CONTEXTMENU_HPP__
+#pragma once
 
 // librpbase
 #include "librpbase/config.librpbase.h"
@@ -66,5 +65,3 @@ RP_ContextMenu final : public LibWin32Common::ComBase2<IShellExtInit, IContextMe
 // Required for MinGW-w64 __uuidof() emulation.
 __CRT_UUID_DECL(RP_ContextMenu, __MSABI_LONG(0x150715EA), 0x6843, 0x472C, 0x97,0x09, 0x2C, 0xFA, 0x56, 0x69, 0x05, 0x01)
 #endif
-
-#endif /* __ROMPROPERTIES_WIN32_RP_CONTEXTMENU_HPP__ */

@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * stdafx.h: Common definitions and includes for COM.                      *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_STDAFX_H__
-#define __ROMPROPERTIES_WIN32_STDAFX_H__
+#pragma once
 
 // Make sure STRICT is defined for better type safety.
 #ifndef STRICT
@@ -135,5 +134,3 @@
 // libromdata C++ headers
 #include "libromdata/RomDataFactory.hpp"
 #endif /* __cplusplus */
-
-#endif /* __ROMPROPERTIES_WIN32_STDAFX_H__ */

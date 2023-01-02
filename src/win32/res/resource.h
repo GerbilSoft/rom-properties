@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * resource.rc: Win32 resource script.                                     *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_RESOURCE_H__
-#define __ROMPROPERTIES_WIN32_RESOURCE_H__
+#pragma once
 
 /** Icons **/
 #define IDI_KEY_VALID				201
@@ -177,5 +176,3 @@
 #define IDC_XATTRVIEW_NTFS_ENCRYPTED		42006
 #define IDC_XATTRVIEW_GRPADS			42007
 #define IDC_XATTRVIEW_LISTVIEW_ADS		42008
-
-#endif /* __ROMPROPERTIES_WIN32_RESOURCE_H__ */

@@ -3,12 +3,11 @@
  * device.hpp: Extra functions for devices.                                *
  *                                                                         *
  * Copyright (c) 2016-2018 by Egor.                                        *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_RPCLI_DEVICE_HPP__
-#define __ROMPROPERTIES_RPCLI_DEVICE_HPP__
+#pragma once
 
 #include "librpfile/config.librpfile.h"
 
@@ -37,5 +36,3 @@ public:
 };
 
 #endif /* RP_OS_SCSI_SUPPORTED */
-
-#endif /* __ROMPROPERTIES_RPCLI_DEVICE_HPP__ */

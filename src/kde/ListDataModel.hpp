@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * ListDataModel.hpp: QAbstractListModel for RFT_LISTDATA.                 *
  *                                                                         *
- * Copyright (c) 2012-2022 by David Korth.                                 *
+ * Copyright (c) 2012-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_LISTDATAMODEL_HPP__
-#define __ROMPROPERTIES_KDE_LISTDATAMODEL_HPP__
+#pragma once
 
 // librpbase
 #include "librpbase/RomFields.hpp"
@@ -119,5 +118,3 @@ class ListDataModel : public QAbstractListModel
 		 */
 		void iconSizeChanged(const QSize &iconSize);
 };
-
-#endif /* __MCRECOVER_MEMCARDMODEL_HPP__ */

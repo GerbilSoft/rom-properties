@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * CBCReader.hpp: AES-128-CBC data reader class.                           *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_DISC_CBCREADER_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_DISC_CBCREADER_HPP__
+#pragma once
 
 // librpbase
 #include "IPartition.hpp"
@@ -96,5 +95,3 @@ class CBCReader final : public LibRpBase::IPartition
 };
 
 }
-
-#endif /* __ROMPROPERTIES_LIBRPBASE_DISC_CBCREADER_HPP__ */

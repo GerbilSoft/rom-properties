@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ps2_structs.h: Sony PlayStation 2 data structures.                      *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_PS2_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_PS2_STRUCTS_H__
+#pragma once
 
 #include "common.h"
 #include <stdint.h>
@@ -60,5 +59,3 @@ ASSERT_STRUCT(PS2_CDVDGEN_t, 0x400);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_PS2_STRUCTS_H__ */

@@ -6,6 +6,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
+#pragma once
+
 #ifndef __ROMPROPERTIES_CONFIG_LIBC_H__
 #define __ROMPROPERTIES_CONFIG_LIBC_H__
 

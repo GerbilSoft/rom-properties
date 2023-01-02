@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_p.hpp: Standard file object. (PRIVATE CLASS)                     *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPFILE_RPFILE_P_HPP__
-#define __ROMPROPERTIES_LIBRPFILE_RPFILE_P_HPP__
+#pragma once
 
 #include "config.librpfile.h"
 #include "RpFile.hpp"
@@ -265,5 +264,3 @@ class RpFilePrivate
 };
 
 }
-
-#endif /* __ROMPROPERTIES_LIBRPFILE_RPFILE_STDIO_P_HPP__ */

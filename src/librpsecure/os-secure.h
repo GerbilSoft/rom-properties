@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpsecure)                      *
  * os-secure.h: OS security functions.                                     *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPSECURE_OS_SECURE_H__
-#define __ROMPROPERTIES_LIBRPSECURE_OS_SECURE_H__
+#pragma once
 
 #include "config.librpsecure.h"
 #include "stdboolx.h"
@@ -87,5 +86,3 @@ static inline int rp_secure_enable(rp_secure_param_t param)
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBRPSECURE_OS_SECURE_H__ */

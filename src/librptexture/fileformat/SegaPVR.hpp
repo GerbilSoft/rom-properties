@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * SegaPVR.hpp: Sega PVR texture reader.                                   *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_SEGAPVR_HPP__
-#define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_SEGAPVR_HPP__
+#pragma once
 
 #include "FileFormat.hpp"
 
@@ -21,5 +20,3 @@ FILEFORMAT_DECL_BEGIN(SegaPVR)
 FILEFORMAT_DECL_END()
 
 }
-
-#endif /* __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_SEGAPVR_HPP__ */

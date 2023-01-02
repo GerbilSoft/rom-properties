@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (rpcli)                            *
  * stdafx.h: Common includes.                                              *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_RPCLI_STDAFX_H__
-#define __ROMPROPERTIES_RPCLI_STDAFX_H__
+#pragma once
 
 // Time functions, with workaround for systems
 // that don't have reentrant versions.
@@ -17,25 +16,23 @@
 #include "time_r.h"
 
 #ifdef __cplusplus
-// C includes.
-# include <sys/types.h>
-// C includes. (C++ namespace)
-# include <cassert>
-# include <cstdio>
-# include <cstring>
-// C++ includes.
-# include <algorithm>
-# include <fstream>
-# include <iomanip>
-# include <iostream>
-# include <locale>
-# include <memory>
-# include <vector>
+// C includes
+#  include <sys/types.h>
+// C includes (C++ namespace)
+#  include <cassert>
+#  include <cstdio>
+#  include <cstring>
+// C++ includes
+#  include <algorithm>
+#  include <fstream>
+#  include <iomanip>
+#  include <iostream>
+#  include <locale>
+#  include <memory>
+#  include <vector>
 #else /* !__cplusplus */
-// C includes.
-# include <assert.h>
-# include <stdio.h>
-# include <string.h>
+// C includes
+#  include <assert.h>
+#  include <stdio.h>
+#  include <string.h>
 #endif /* __cplusplus */
-
-#endif /* __ROMPROPERTIES_RPCLI_STDAFX_H__ */

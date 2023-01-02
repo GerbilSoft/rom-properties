@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * IRpFile.hpp: File wrapper interface.                                    *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPFILE_IRPFILE_HPP__
-#define __ROMPROPERTIES_LIBRPFILE_IRPFILE_HPP__
+#pragma once
 
 // C includes
 #include <stdint.h>
@@ -283,5 +282,3 @@ class RP_LIBROMDATA_PUBLIC IRpFile : public RefBase
 };
 
 }
-
-#endif /* __ROMPROPERTIES_LIBRPFILE_IRPFILE_HPP__ */

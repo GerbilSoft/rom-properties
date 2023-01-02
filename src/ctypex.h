@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension.                                    *
  * ctypex.h: ctype functions with unsigned char casting.                   *
  *                                                                         *
- * Copyright (c) 2018 by David Korth.                                      *
+ * Copyright (c) 2018-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_CTYPEX_H__
-#define __ROMPROPERTIES_CTYPEX_H__
+#pragma once
 
 #ifdef __cplusplus
 # include <cctype>
@@ -32,5 +31,3 @@
 
 #define TOUPPER(c) toupper((unsigned char)(c))
 #define TOLOWER(c) tolower((unsigned char)(c))
-
-#endif /* __ROMPROPERTIES_CTYPEX_H__ */

@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_N3DS.hpp: Image decoding functions: Nintendo 3DS           *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGEDECODER_N3DS_HPP__
-#define __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGEDECODER_N3DS_HPP__
+#pragma once
 
 #include "ImageDecoder_common.hpp"
 
@@ -40,5 +39,3 @@ rp_image *fromN3DSTiledRGB565_A4(int width, int height,
 	const uint8_t *RESTRICT alpha_buf, size_t alpha_siz);
 
 } }
-
-#endif /* __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGEDECODER_N3DS_HPP__ */

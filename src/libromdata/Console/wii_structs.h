@@ -2,15 +2,14 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * wii_structs.h: Nintendo Wii data structures.                            *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // NOTE: This file has Wii-specific structs only.
 // For structs shared with GameCube, see gcn_structs.h.
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_WII_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_WII_STRUCTS_H__
+#pragma once
 
 #include <stdint.h>
 #include "common.h"
@@ -243,5 +242,3 @@ ASSERT_STRUCT(RVL_RegionSetting, 32);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_WII_STRUCTS_H__ */

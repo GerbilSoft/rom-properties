@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ShellPropSheetExt.hpp: IShellPropSheetExt implementation.            *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_RP_SHELLPROPSHEETEXT_HPP__
-#define __ROMPROPERTIES_WIN32_RP_SHELLPROPSHEETEXT_HPP__
+#pragma once
 
 // librpbase
 #include "librpbase/config.librpbase.h"
@@ -94,5 +93,3 @@ RP_ShellPropSheetExt final : public LibWin32Common::ComBase2<IShellExtInit, IShe
 // Required for MinGW-w64 __uuidof() emulation.
 __CRT_UUID_DECL(RP_ShellPropSheetExt, __MSABI_LONG(0x2443c158), 0xdf7c, 0x4352, 0xb4,0x35, 0xbc, 0x9f, 0x88, 0x5f, 0xfd, 0x52)
 #endif
-
-#endif /* __ROMPROPERTIES_WIN32_RP_SHELLPROPSHEETEXT_HPP__ */

@@ -5,8 +5,7 @@
  * Based on windowsx.h from the Windows SDK v7.1A.                         *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBWIN32COMMON_SDK_WINDOWSX_TS_H__
-#define __ROMPROPERTIES_LIBWIN32COMMON_SDK_WINDOWSX_TS_H__
+#pragma once
 
 #include "tsbase.h"
 #include <windowsx.h>
@@ -480,5 +479,3 @@ static FORCEINLINE UINT ComboBox_GetExtendedUI(_In_ HWND hwndCtl)
 static FORCEINLINE int ComboBox_SetExtendedUI(_In_ HWND hwndCtl, _In_ UINT flags)
 	{ return STATIC_CAST(UINT)(STATIC_CAST(DWORD)(SNDMSG(hwndCtl, CB_SETEXTENDEDUI, STATIC_CAST(WPARAM)(flags), 0L))); }
 #endif  /* WINVER >= 0x030a */
-
-#endif /* __ROMPROPERTIES_LIBWIN32COMMON_SDK_WINDOWSX_TS_H__ */

@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * check-uid.h: CHECK_UID() macro.                                         *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_CHECK_UID_HPP__
-#define __ROMPROPERTIES_KDE_CHECK_UID_HPP__
+#pragma once
 
 #include <unistd.h>
 #include <qglobal.h>
@@ -27,5 +26,3 @@
 		qCritical("*** rom-properties-" RP_KDE_LOWER " does not support running as root."); \
 	} \
 } while (0)
-
-#endif /* __ROMPROPERTIES_KDE_CHECK_UID_HPP__ */

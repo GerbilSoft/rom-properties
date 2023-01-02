@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * XAttrReader_p.hpp: Extended Attribute reader (PRIVATE CLASS)            *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPFILE_XATTRREADER_P_HPP__
-#define __ROMPROPERTIES_LIBRPFILE_XATTRREADER_P_HPP__
+#pragma once
 
 // Common macros
 #include "common.h"
@@ -103,5 +102,3 @@ class XAttrReaderPrivate
 };
 
 }
-
-#endif /* __ROMPROPERTIES_LIBRPFILE_IRPFILE_HPP__ */

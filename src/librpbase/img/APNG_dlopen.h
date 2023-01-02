@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * APNG_dlopen.h: APNG dlopen()'d function pointers.                       *
  *                                                                         *
- * Copyright (c) 2014-2022 by David Korth.                                 *
+ * Copyright (c) 2014-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_IMG_APNG_DLOPEN_H__
-#define __ROMPROPERTIES_LIBRPBASE_IMG_APNG_DLOPEN_H__
+#pragma once
 
 #include "librpbase/config.librpbase.h"
 #include "dll-macros.h"
@@ -227,5 +226,3 @@ PNG_EXPORT(264, void, png_write_frame_tail, (png_structp png_ptr,
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBRPBASE_IMG_APNG_DLOPEN_H__ */

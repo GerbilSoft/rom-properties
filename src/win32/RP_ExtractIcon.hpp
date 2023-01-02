@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractIcon.hpp: IExtractIcon implementation.                        *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_RP_EXTRACTICON_H__
-#define __ROMPROPERTIES_WIN32_RP_EXTRACTICON_H__
+#pragma once
 
 // librpbase
 #include "librpbase/config.librpbase.h"
@@ -89,5 +88,3 @@ __CRT_UUID_DECL(RP_ExtractIcon, __MSABI_LONG(0xe51bc107), 0xe491, 0x4b29, 0xa6,0
 __CRT_UUID_DECL(IExtractIconA, __MSABI_LONG(0x000214eb), 0, 0, 0xc0,0, 0, 0, 0, 0, 0, 0x46)
 __CRT_UUID_DECL(IExtractIconW, __MSABI_LONG(0x000214fa), 0, 0, 0xc0,0, 0, 0, 0, 0, 0, 0x46)
 #endif
-
-#endif /* __ROMPROPERTIES_WIN32_RP_EXTRACTICON_H__ */

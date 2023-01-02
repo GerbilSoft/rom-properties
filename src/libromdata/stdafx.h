@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * stdafx.h: Common definitions and includes.                              *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_STDAFX_H__
-#define __ROMPROPERTIES_LIBROMDATA_STDAFX_H__
+#pragma once
 
 // time_r.h needs to be here due to *_r() issues on MinGW-w64.
 #include "time_r.h"
@@ -95,5 +94,3 @@
 #include "librptexture/decoder/PixelConversion.hpp"
 #include "librptexture/decoder/ImageDecoder_Linear.hpp"
 #endif /* !__cplusplus */
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_STDAFX_H__ */

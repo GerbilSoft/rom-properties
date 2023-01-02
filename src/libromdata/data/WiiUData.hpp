@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiUData.hpp: Nintendo Wii U publisher data.                            *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,8 +11,7 @@
 // possible to use GameTDB unless we hard-code all of the
 // publisher IDs here.
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_WIIUDATA_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_WIIUDATA_HPP__
+#pragma once
 
 #include "common.h"
 
@@ -34,5 +33,3 @@ namespace LibRomData { namespace WiiUData {
 uint32_t lookup_disc_publisher(const char *id4);
 
 } }
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_WIIUDATA_HPP__ */

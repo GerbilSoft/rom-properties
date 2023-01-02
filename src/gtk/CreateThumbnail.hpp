@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * CreateThumbnail.hpp: Thumbnail creator for wrapper programs.            *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_CREATETHUMBNAIL_HPP__
-#define __ROMPROPERTIES_GTK_CREATETHUMBNAIL_HPP__
+#pragma once
 
 // GLib
 #include <glib.h>
@@ -28,5 +27,3 @@ extern "C"
 G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const char *output_file, int maximum_size, unsigned int flags);
 
 G_END_DECLS
-
-#endif /* __ROMPROPERTIES_GTK_CREATETHUMBNAIL_HPP__ */

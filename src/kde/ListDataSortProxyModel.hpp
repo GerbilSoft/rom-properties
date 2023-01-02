@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * ListDataSortProxyModel.hpp: QSortFilterProxyModel for RFT_LISTDATA.     *
  *                                                                         *
- * Copyright (c) 2012-2022 by David Korth.                                 *
+ * Copyright (c) 2012-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_LISTDATASORTPROXYMODEL_HPP__
-#define __ROMPROPERTIES_KDE_LISTDATASORTPROXYMODEL_HPP__
+#pragma once
 
 // C includes.
 #include <stdint.h>
@@ -90,5 +89,3 @@ class ListDataSortProxyModel : public QSortFilterProxyModel
 	private:
 		uint32_t m_sortingMethods;
 };
-
-#endif /* __MCRECOVER_MEMCARDMODEL_HPP__ */

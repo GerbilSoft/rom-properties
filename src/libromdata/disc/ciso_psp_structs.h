@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ciso_psp_structs.h: PlayStation Portable CISO structs.                  *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,8 +11,7 @@
 // - https://github.com/unknownbrackets/maxcso/blob/master/src/dax.h
 // - https://github.com/unknownbrackets/maxcso/blob/master/src/input.cpp
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_DISC_CISO_PSP_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_DISC_CISO_PSP_STRUCTS_H__
+#pragma once
 
 #include <stdint.h>
 #include "common.h"
@@ -130,5 +129,3 @@ typedef enum {
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_DISC_CISO_PSP_STRUCTS_H__ */

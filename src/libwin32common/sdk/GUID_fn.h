@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * GUID.h: GUID function reimplementations for ANSI builds.                *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBWIN32COMMON_GUID_FN_H__
-#define __ROMPROPERTIES_LIBWIN32COMMON_GUID_FN_H__
+#pragma once
 
 #include "../RpWin32_sdk.h"
 
@@ -41,5 +40,3 @@ HRESULT WINAPI CLSIDFromStringA(_In_ LPCSTR lpsz, _Out_ LPCLSID pclsid);
 #endif
 
 #endif /* !UNICODE */
-
-#endif /* __ROMPROPERTIES_LIBWIN32COMMON_GUID_FN_H__ */

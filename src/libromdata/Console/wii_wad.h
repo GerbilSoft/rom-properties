@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * wii_wad.h: Nintendo Wii WAD file data structures.                       *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_WII_WAD_H__
-#define __ROMPROPERTIES_LIBROMDATA_WII_WAD_H__
+#pragma once
 
 // References:
 // - https://wiibrew.org/wiki/WAD_files
@@ -93,5 +92,3 @@ ASSERT_STRUCT(Wii_Content_Bin_Header, 64);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_WII_WAD_H__ */

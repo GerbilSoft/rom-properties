@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyStoreQt.hpp: Key store object for Qt.                                *
  *                                                                         *
- * Copyright (c) 2012-2022 by David Korth.                                 *
+ * Copyright (c) 2012-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_CONFIG_KEYSTOREQT_HPP__
-#define __ROMPROPERTIES_KDE_CONFIG_KEYSTOREQT_HPP__
+#pragma once
 
 #include "libromdata/crypto/KeyStoreUI.hpp"
 #include <QtCore/QObject>
@@ -80,5 +79,3 @@ class KeyStoreQt : public QObject, public LibRomData::KeyStoreUI
 		 */
 		void modified(void);
 };
-
-#endif /* __ROMPROPERTIES_KDE_CONFIG_KEYSTOREQT_HPP__ */

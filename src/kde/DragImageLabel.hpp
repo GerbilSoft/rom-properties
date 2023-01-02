@@ -2,14 +2,13 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * DragImageLabel.hpp: Drag & Drop image label.                            *
  *                                                                         *
- * Copyright (c) 2019-2022 by David Korth.                                 *
+ * Copyright (c) 2019-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // Reference: https://doc.qt.io/qt-5/dnd.html
 
-#ifndef __ROMPROPERTIES_KDE_DRAGIMAGELABEL_HPP__
-#define __ROMPROPERTIES_KDE_DRAGIMAGELABEL_HPP__
+#pragma once
 
 namespace LibRpTexture {
 	class rp_image;
@@ -180,5 +179,3 @@ class DragImageLabel : public QLabel
 		};
 		anim_vars *m_anim;
 };
-
-#endif /* __ROMPROPERTIES_KDE_DRAGIMAGELABEL_HPP__ */

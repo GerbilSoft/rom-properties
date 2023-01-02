@@ -1,12 +1,11 @@
 /***************************************************************************
  * c++11-compat.msvc.h: C++ 2011 compatibility header. (MSVC)              *
  *                                                                         *
- * Copyright (c) 2011-2022 by David Korth.                                 *
+ * Copyright (c) 2011-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __CXX11_COMPAT_MSVC_H__
-#define __CXX11_COMPAT_MSVC_H__
+#pragma once
 
 #ifndef _MSC_VER
 #error c++11-compat.msvc.h should only be included in MSVC builds.
@@ -55,5 +54,3 @@
 #if defined(_MSC_VER) && defined(__cplusplus)
 #  define __typeof__(x) decltype(x)
 #endif
-
-#endif /* __CXX11_COMPAT_MSVC_H__ */

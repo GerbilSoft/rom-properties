@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_NDS.hpp: Image decoding functions: Nintendo DS             *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGEDECODER_NDS_HPP__
-#define __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGEDECODER_NDS_HPP__
+#pragma once
 
 #include "ImageDecoder_common.hpp"
 
@@ -29,5 +28,3 @@ rp_image *fromNDS_CI4(int width, int height,
 	const uint16_t *RESTRICT pal_buf, size_t pal_siz);
 
 } }
-
-#endif /* __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGEDECODER_NDS_HPP__ */

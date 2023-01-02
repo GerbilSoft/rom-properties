@@ -2,13 +2,12 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextOut.hpp: Text output for RomData.                                   *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * Copyright (c) 2016-2017 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_TEXTOUT_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_TEXTOUT_HPP__
+#pragma once
 
 // C includes.
 #include <stdint.h>
@@ -68,5 +67,3 @@ public:
 };
 
 }
-
-#endif /* __ROMPROPERTIES_LIBRPBASE_TEXTOUT_HPP__ */

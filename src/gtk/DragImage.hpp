@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * DragImage.hpp: Drag & Drop image.                                       *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_DRAGIMAGE_HPP__
-#define __ROMPROPERTIES_GTK_DRAGIMAGE_HPP__
+#pragma once
 
 #include "gtk-compat.h"
 
@@ -104,5 +103,3 @@ bool rp_drag_image_is_anim_timer_running(RpDragImage *image);
 void rp_drag_image_reset_anim_frame(RpDragImage *image);
 
 #endif /* __cplusplus */
-
-#endif /* __ROMPROPERTIES_GTK_DRAGIMAGE_HPP__ */

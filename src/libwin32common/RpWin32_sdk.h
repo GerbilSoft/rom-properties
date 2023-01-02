@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * RpWin32_sdk.h: Windows SDK defines and includes.                        *
  *                                                                         *
- * Copyright (c) 2009-2022 by David Korth.                                 *
+ * Copyright (c) 2009-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBWIN32COMMON_RPWIN32_SDK_H__
-#define __ROMPROPERTIES_LIBWIN32COMMON_RPWIN32_SDK_H__
+#pragma once
 
 #include "libwin32common/config.libwin32common.h"
 
@@ -193,5 +192,3 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 #  define LoadLibraryExA(lpLibFileName, hFile, dwFlags)	LoadLibraryA(lpLibFileName)
 #  define LoadLibraryExW(lpLibFileName, hFile, dwFlags)	LoadLibraryW(lpLibFileName)
 #endif /* ENABLE_OLDWINCOMPAT */
-
-#endif /* __ROMPROPERTIES_LIBWIN32COMMON_RPWIN32_SDK_H__ */

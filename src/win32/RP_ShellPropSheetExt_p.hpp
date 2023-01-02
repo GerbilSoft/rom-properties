@@ -3,12 +3,11 @@
  * RP_ShellPropSheetExt_p.hpp: IShellPropSheetExt implementation.          *
  * (Private class)                                                         *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_RP_SHELLPROPSHEETEXT_P_HPP__
-#define __ROMPROPERTIES_WIN32_RP_SHELLPROPSHEETEXT_P_HPP__
+#pragma once
 
 // Control base IDs.
 #define IDC_STATIC_BANNER		0x0100
@@ -390,6 +389,3 @@ class RP_ShellPropSheetExt_Private
 		 */
 		static INT_PTR CALLBACK SubtabDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
-
-#endif /* __ROMPROPERTIES_WIN32_RP_SHELLPROPSHEETEXT_P_HPP__ */
-

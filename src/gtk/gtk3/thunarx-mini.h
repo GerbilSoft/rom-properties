@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                         *
  * thunarx-mini.h: ThunarX struct definitions for compatibility.           *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK3_THUNARX_MINI_H__
-#define __ROMPROPERTIES_GTK3_THUNARX_MINI_H__
+#pragma once
 
 #include <glib.h>
 #include <gtk/gtk.h>
@@ -65,5 +64,3 @@ struct _ThunarxMenuProviderIface {
 typedef struct _ThunarxMenuProviderIface ThunarxMenuProviderIface;
 
 G_END_DECLS
-
-#endif /* __ROMPROPERTIES_GTK3_THUNARX_MINI_H__ */

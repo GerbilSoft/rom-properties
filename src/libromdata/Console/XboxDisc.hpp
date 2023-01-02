@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * XboxDisc.hpp: Microsoft Xbox disc image parser.                         *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOXDISC_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOXDISC_HPP__
+#pragma once
 
 #include "librpbase/RomData.hpp"
 #include "../iso_structs.h"
@@ -44,5 +43,3 @@ ROMDATA_DECL_VIEWED_ACHIEVEMENTS()
 ROMDATA_DECL_END()
 
 }
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOXDISC_HPP__ */

@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_XAttrView.hpp: Extended attribute viewer property page.              *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_RP_XATTRVIEW_HPP__
-#define __ROMPROPERTIES_WIN32_RP_XATTRVIEW_HPP__
+#pragma once
 
 // librpbase
 #include "librpbase/config.librpbase.h"
@@ -94,5 +93,3 @@ RP_XAttrView final : public LibWin32Common::ComBase2<IShellExtInit, IShellPropSh
 // Required for MinGW-w64 __uuidof() emulation.
 __CRT_UUID_DECL(RP_XAttrView, __MSABI_LONG(0xB0503F2E), 0xC4AE, 0x48DF, 0xA8,0x80, 0xE2, 0xB1, 0x22, 0xB5, 0x85, 0x71)
 #endif
-
-#endif /* __ROMPROPERTIES_WIN32_RP_XATTRVIEW_HPP__ */

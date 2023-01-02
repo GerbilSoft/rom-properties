@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RpImageWin32.hpp: rp_image to Win32 conversion functions.               *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_RPIMAGEWIN32_HPP__
-#define __ROMPROPERTIES_WIN32_RPIMAGEWIN32_HPP__
+#pragma once
 
 #include "common.h"
 namespace LibRpTexture {
@@ -91,5 +90,3 @@ HICON toHICON(HBITMAP hBitmap);
 HBITMAP getSubBitmap(const LibRpTexture::rp_image *img, int x, int y, int w, int h, UINT dpi = 96);
 
 }
-
-#endif /* __ROMPROPERTIES_WIN32_RPIMAGEWIN32_HPP__ */

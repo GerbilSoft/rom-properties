@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiSystemMenuVersion.hpp: Nintendo Wii System Menu version list.        *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_WIISYSTEMMENUVERSION_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_WIISYSTEMMENUVERSION_HPP__
+#pragma once
 
 #include "common.h"
 
@@ -21,5 +20,3 @@ namespace LibRomData { namespace WiiSystemMenuVersion {
 const char *lookup(unsigned int version);
 
 } }
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_WIISYSTEMMENUVERSION_HPP__ */

@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * w32time.h: Windows time conversion functions.                           *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBWIN32COMMON_WINTIME_H__
-#define __ROMPROPERTIES_LIBWIN32COMMON_WINTIME_H__
+#pragma once
 
 #include "RpWin32_sdk.h"
 
@@ -70,5 +69,3 @@ static inline int64_t SystemTimeToUnixTime(_In_ const SYSTEMTIME *pSystemTime)
 	SystemTimeToFileTime(pSystemTime, &fileTime);
 	return FileTimeToUnixTime(&fileTime);
 }
-
-#endif /* __ROMPROPERTIES_LIBWIN32COMMON_WINTIME_H__ */

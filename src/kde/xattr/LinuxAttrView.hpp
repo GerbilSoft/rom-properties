@@ -6,10 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-// Reference: https://doc.qt.io/qt-5/dnd.html
-
-#ifndef __ROMPROPERTIES_KDE_XATTR_LINUXATTRVIEW_HPP__
-#define __ROMPROPERTIES_KDE_XATTR_LINUXATTRVIEW_HPP__
+#pragma once
 
 // Qt includes
 #include <QWidget>
@@ -54,5 +51,3 @@ class LinuxAttrView : public QWidget
 		 */
 		void checkBox_clicked_slot(bool checked);
 };
-
-#endif /* __ROMPROPERTIES_KDE_XATTR_LINUXATTRVIEW_HPP__ */

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ciso_gcn.h: GameCube/Wii CISO structs.                                  *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,8 +10,7 @@
 // - https://github.com/dolphin-emu/dolphin/blob/master/Source/Core/DiscIO/CISOBlob.cpp
 // - https://github.com/dolphin-emu/dolphin/blob/master/Source/Core/DiscIO/CISOBlob.h
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_DISC_CISO_GCN_H__
-#define __ROMPROPERTIES_LIBROMDATA_DISC_CISO_GCN_H__
+#pragma once
 
 #include <stdint.h>
 #include "common.h"
@@ -44,5 +43,3 @@ ASSERT_STRUCT(CISOHeader, 2*sizeof(uint32_t) + CISO_MAP_SIZE);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_DISC_CISO_GCN_H__ */

@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpFile_kio.hpp: IRpFile implementation using KIO.                       *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_RPFILE_KIO_HPP__
-#define __ROMPROPERTIES_KDE_RPFILE_KIO_HPP__
+#pragma once
 
 // FIXME: Dolphin ends up hanging for some reason...
 #if 0
@@ -122,5 +121,3 @@ class RpFileKio : public QObject, public LibRpFile::IRpFile
 #endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 
 #endif // FIXME: Dolphin ends up hanging for some reason...
-
-#endif /* __ROMPROPERTIES_KDE_RPFILE_KIO_HPP__ */

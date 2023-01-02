@@ -2,15 +2,14 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * nsf_structs.h: NSF audio data structures.                               *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // References:
 // - http://vgmrips.net/wiki/NSF_File_Format
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_AUDIO_NSF_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_AUDIO_NSF_STRUCTS_H__
+#pragma once
 
 #include "common.h"
 #include <stdint.h>
@@ -73,5 +72,3 @@ typedef enum {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_AUDIO_NSF_STRUCTS_H__ */

@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PSF.hpp: PSF audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018 by David Korth.                                      *
+ * Copyright (c) 2018-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_AUDIO_PSF_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_AUDIO_PSF_HPP__
+#pragma once
 
 #include "librpbase/RomData.hpp"
 
@@ -18,5 +17,3 @@ ROMDATA_DECL_METADATA()
 ROMDATA_DECL_END()
 
 }
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_AUDIO_PSF_HPP__ */

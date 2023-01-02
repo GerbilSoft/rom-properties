@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension.                                    *
  * dll-macros.h: DLL visibility macros.                                    *
  *                                                                         *
- * Copyright (c) 2022 by David Korth.                                      *
+ * Copyright (c) 2022-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_DLL_MACROS_H__
-#define __ROMPROPERTIES_DLL_MACROS_H__
+#pragma once
 
 // C API declaration for MSVC.
 // Required when using stdcall as the default calling convention.
@@ -67,5 +66,3 @@
 #  define RP_LIBROMDATA_PUBLIC
 #  define RP_LIBROMDATA_LOCAL
 #endif
-
-#endif /* __ROMPROPERTIES_DLL_MACROS_H__ */

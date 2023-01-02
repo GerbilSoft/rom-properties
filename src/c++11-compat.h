@@ -1,12 +1,11 @@
 /***************************************************************************
  * c++11-compat.h: C++ 2011 compatibility header.                          *
  *                                                                         *
- * Copyright (c) 2011-2020 by David Korth.                                 *
+ * Copyright (c) 2011-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __CXX11_COMPAT_H__
-#define __CXX11_COMPAT_H__
+#pragma once
 
 // config.libc.h must be included externally for
 // off_t/off64_t checks.
@@ -131,5 +130,3 @@ typedef int64_t off64_t;
 #ifdef _WIN32
 #  include "c99-compat.msvcrt.h"
 #endif
-
-#endif /* __CXX11_COMPAT_H__ */

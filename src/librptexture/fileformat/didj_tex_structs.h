@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librptexture)                      *
  * didj_tex_structs.h: Leapster Didj .tex format data structures.           *
  *                                                                          *
- * Copyright (c) 2019-2020 by David Korth.                                  *
+ * Copyright (c) 2019-2023 by David Korth.                                  *
  * SPDX-License-Identifier: GPL-2.0-or-later                                *
  ****************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_DIDJ_TEX_STRUCTS_H__
-#define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_DIDJ_TEX_STRUCTS_H__
+#pragma once
 
 #include <stdint.h>
 #include "common.h"
@@ -57,5 +56,3 @@ typedef enum {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_DIDJ_TEX_STRUCTS_H__ */

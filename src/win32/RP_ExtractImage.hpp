@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractImage.hpp: IExtractImage implementation.                      *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_RP_EXTRACTIMAGE_HPP__
-#define __ROMPROPERTIES_WIN32_RP_EXTRACTIMAGE_HPP__
+#pragma once
 
 // librpbase
 #include "librpbase/config.librpbase.h"
@@ -76,5 +75,3 @@ RP_ExtractImage final : public LibWin32Common::ComBase2<IPersistFile, IExtractIm
 // Required for MinGW-w64 __uuidof() emulation.
 __CRT_UUID_DECL(RP_ExtractImage, __MSABI_LONG(0x84573bc0), 0x9502, 0x42f8, 0x80,0x66, 0xcc, 0x52, 0x7d, 0x07, 0x79, 0xe5)
 #endif
-
-#endif /* __ROMPROPERTIES_WIN32_RP_EXTRACTIMAGE_HPP__ */

@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * CacheCleaner.hpp: Cache cleaner object for CacheTab.                    *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_CONFIG_CACHECLEANER_HPP__
-#define __ROMPROPERTIES_KDE_CONFIG_CACHECLEANER_HPP__
+#pragma once
 
 #include <QtCore/QObject>
 
@@ -97,5 +96,3 @@ class CacheCleaner : public QObject
 };
 
 Q_DECLARE_METATYPE(CacheCleaner::CacheDir)
-
-#endif /* __ROMPROPERTIES_KDE_CONFIG_CACHECLEANER_HPP__ */

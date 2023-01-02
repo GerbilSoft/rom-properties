@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RpConfigTab.hpp: Configuration tab interface.                           *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_CONFIG_RPCONFIGTAB_HPP__
-#define __ROMPROPERTIES_GTK_CONFIG_RPCONFIGTAB_HPP__
+#pragma once
 
 #include "gtk-compat.h"
 
@@ -42,5 +41,3 @@ void		rp_config_tab_load_defaults	(RpConfigTab *tab) G_GNUC_INTERNAL;
 void		rp_config_tab_save		(RpConfigTab *tab, GKeyFile *keyFile) G_GNUC_INTERNAL;
 
 G_END_DECLS
-
-#endif /* __ROMPROPERTIES_GTK_CONFIG_RPCONFIGTAB_HPP__ */

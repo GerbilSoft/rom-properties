@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * LanguageComboBox.hpp: Language QComboBox subclass.                      *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_LANGUAGECOMBOBOX_HPP__
-#define __ROMPROPERTIES_KDE_LANGUAGECOMBOBOX_HPP__
+#pragma once
 
 // for ATTR_ACCESS_SIZE()
 #include "common.h"
@@ -115,5 +114,3 @@ class LanguageComboBox : public QComboBox
 	protected:
 		bool m_forcePAL;
 };
-
-#endif /* __ROMPROPERTIES_KDE_ROMDATAVIEW_HPP__ */

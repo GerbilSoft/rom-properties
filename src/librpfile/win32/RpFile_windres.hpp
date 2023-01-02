@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_windres.hpp: Windows resource wrapper for IRpFile. (Win32)       *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPFILE_WIN32_RPFILE_WINDRES_HPP__
-#define __ROMPROPERTIES_LIBRPFILE_WIN32_RPFILE_WINDRES_HPP__
+#pragma once
 
 #ifndef _WIN32
 #  error RpFile_Resource.hpp is Windows only.
@@ -49,5 +48,3 @@ class RpFile_windres final : public MemFile
 };
 
 }
-
-#endif /* __ROMPROPERTIES_LIBRPFILE_WIN32_RPFILE_WINDRES_HPP__ */

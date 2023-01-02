@@ -1,12 +1,11 @@
 /***************************************************************************
  * c99-compat.msvcrt.h: C99 compatibility header. (MSVC)                   *
  *                                                                         *
- * Copyright (c) 2011-2022 by David Korth.                                 *
+ * Copyright (c) 2011-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __C99_COMPAT_MSVCRT_H__
-#define __C99_COMPAT_MSVCRT_H__
+#pragma once
 
 #ifndef _WIN32
 #  error c99-compat.msvcrt.h should only be included in Win32 builds.
@@ -120,5 +119,3 @@ typedef __int64 ssize_t;
 typedef int ssize_t;
 #  endif /* _WIN64 */
 #endif /* _MSC_VER */
-
-#endif /* __C99_COMPAT_MSVCRT_H__ */

@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * DosAttrView.h: MS-DOS file system attribute viewer widget.              *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_XATTR_DOSATTRVIEW_H__
-#define __ROMPROPERTIES_GTK_XATTR_DOSATTRVIEW_H__
+#pragma once
 
 #include "gtk-compat.h"
 
@@ -30,5 +29,3 @@ unsigned int 	rp_dos_attr_view_get_attrs	(RpDosAttrView *widget);
 void		rp_dos_attr_view_clear_attrs	(RpDosAttrView *widget);
 
 G_END_DECLS
-
-#endif /* __ROMPROPERTIES_GTK_XATTR_DOSATTRVIEW_H__ */

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * macho_structs.h: Mach-O executable structures.                          *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,8 +16,7 @@
 // - https://github.com/aidansteele/osx-abi-macho-file-format-reference
 // - https://opensource.apple.com/source/xnu/xnu-344/EXTERNAL_HEADERS/mach-o/fat.h.auto.html
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_OTHER_MACHO_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_OTHER_MACHO_STRUCTS_H__
+#pragma once
 
 #include <stdint.h>
 #include "common.h"
@@ -332,5 +331,3 @@ ASSERT_STRUCT(fat_arch, 5*sizeof(uint32_t));
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_OTHER_MACHO_STRUCTS_H__ */

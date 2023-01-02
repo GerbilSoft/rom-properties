@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextFuncs.hpp: Text encoding functions.                                 *
  *                                                                         *
- * Copyright (c) 2009-2022 by David Korth.                                 *
+ * Copyright (c) 2009-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_HPP__
+#pragma once
 
 // System byteorder is needed for conversions from UTF-16.
 // Conversions to UTF-16 always use host-endian.
@@ -699,5 +698,3 @@ unsigned int convSampleToMs(unsigned int sample, unsigned int rate);
 
 }
 #endif /* __cplusplus */
-
-#endif /* __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_HPP__ */

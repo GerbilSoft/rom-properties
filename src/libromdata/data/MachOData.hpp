@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * MachOData.hpp: Mach-O executable format data.                           *
  *                                                                         *
- * Copyright (c) 2020-2022 by David Korth.                                 *
+ * Copyright (c) 2020-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_DATA_MACHODATA_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_DATA_MACHODATA_HPP__
+#pragma once
 
 #include "common.h"
 
@@ -32,5 +31,3 @@ const char *lookup_cpu_type(uint32_t cputype);
 const char *lookup_cpu_subtype(uint32_t cputype, uint32_t cpusubtype);
 
 } }
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_DATA_MACHODATA_HPP__ */

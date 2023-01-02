@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXE_p.hpp: DOS/Windows executable reader. (Private class)               *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_EXE_P_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_EXE_P_HPP__
+#pragma once
 
 #include "librpbase/config.librpbase.h"
 #include "librpbase/RomData_p.hpp"
@@ -320,5 +319,3 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 };
 
 }
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_EXE_P_HPP__ */

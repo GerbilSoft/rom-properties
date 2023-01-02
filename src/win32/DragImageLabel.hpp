@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * DragImageLabel.hpp: Drag & Drop image label.                            *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_DRAGIMAGELABEL_HPP__
-#define __ROMPROPERTIES_WIN32_DRAGIMAGELABEL_HPP__
+#pragma once
 
 #include "libwin32common/RpWin32_sdk.h"
 #include "common.h"
@@ -123,5 +122,3 @@ class DragImageLabel
 		 */
 		void invalidateRect(bool bErase = false);
 };
-
-#endif /* __ROMPROPERTIES_WIN32_DRAGIMAGELABEL_HPP__ */

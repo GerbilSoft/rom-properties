@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image.hpp: Image class.                                              *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPTEXTURE_RP_IMAGE_HPP__
-#define __ROMPROPERTIES_LIBRPTEXTURE_RP_IMAGE_HPP__
+#pragma once
 
 #include "common.h"
 #include "dll-macros.h"
@@ -654,5 +653,3 @@ inline int rp_image::swizzle(const char *swz_spec)
 }
 
 }
-
-#endif /* __ROMPROPERTIES_LIBRPTEXTURE_RP_IMAGE_HPP__ */

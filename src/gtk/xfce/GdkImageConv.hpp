@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * GdkImageConv.hpp: Helper functions to convert from rp_image to GDK.     *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_GDKIMAGECONV_HPP__
-#define __ROMPROPERTIES_GTK_GDKIMAGECONV_HPP__
+#pragma once
 
 // NOTE: GdkPixbuf doesn't natively support 8bpp. Because of this,
 // we can't simply make a GdkPixbuf rp_image backend.
@@ -74,5 +73,3 @@ inline GdkPixbuf *rp_image_to_GdkPixbuf(const LibRpTexture::rp_image *img)
 #endif /* HAVE_IFUNC && (RP_CPU_I386 || RP_CPU_AMD64) */
 
 }
-
-#endif /* __ROMPROPERTIES_GTK_GDKIMAGECONV_HPP__ */

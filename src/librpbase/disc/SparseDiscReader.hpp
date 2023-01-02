@@ -3,12 +3,11 @@
  * SparseDiscReader.hpp: Disc reader base class for disc image formats     *
  * that use sparse and/or compressed blocks, e.g. CISO, WBFS, GCZ.         *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_SPARSEDISCREADER_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_SPARSEDISCREADER_HPP__
+#pragma once
 
 #include "IDiscReader.hpp"
 
@@ -97,5 +96,3 @@ class SparseDiscReader : public IDiscReader
 };
 
 }
-
-#endif /* __ROMPROPERTIES_LIBRPBASE_SPARSEDISCREADER_HPP__ */

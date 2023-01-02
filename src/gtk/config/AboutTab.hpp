@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * AboutTab.hpp: About tab for rp-config.                                  *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_CONFIG_ABOUTTAB_HPP__
-#define __ROMPROPERTIES_GTK_CONFIG_ABOUTTAB_HPP__
+#pragma once
 
 #include "gtk-compat.h"
 
@@ -23,5 +22,3 @@ G_DECLARE_FINAL_TYPE(RpAboutTab, rp_about_tab, RP, ABOUT_TAB, GtkVBox)
 GtkWidget	*rp_about_tab_new		(void) G_GNUC_INTERNAL G_GNUC_MALLOC;
 
 G_END_DECLS
-
-#endif /* __ROMPROPERTIES_GTK_CONFIG_ABOUTTAB_HPP__ */

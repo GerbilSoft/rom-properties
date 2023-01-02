@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libwin32ui)                       *
  * SubclassWindow.h: Wrapper functions for COMCTL32 subclassing.           *
  *                                                                         *
- * Copyright (c) 2019-2022 by David Korth.                                 *
+ * Copyright (c) 2019-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBWIN32UI_SUBCLASSWINDOW_H__
-#define __ROMPROPERTIES_LIBWIN32UI_SUBCLASSWINDOW_H__
+#pragma once
 
 #include "config.libwin32common.h"
 
@@ -25,16 +24,16 @@
 // Undefine isolation-aware subclass macros.
 // This breaks isolation awareness, but Windows 2000 doesn't have that anyway.
 #ifdef SetWindowSubclass
-#undef SetWindowSubclass
+#  undef SetWindowSubclass
 #endif
 #ifdef GetWindowSubclass
-#undef GetWindowSubclass
+#  undef GetWindowSubclass
 #endif
 #ifdef RemoveWindowSubclass
-#undef RemoveWindowSubclass
+#  undef RemoveWindowSubclass
 #endif
 #ifdef DefSubclassProc
-#undef DefSubclassProc
+#  undef DefSubclassProc
 #endif
 
 #define SetWindowSubclass(hWnd, pfnSubclass, uIdsubclass, dwRefData) SetWindowSubclass_compat((hWnd), (pfnSubclass), (uIdsubclass), (dwRefData))
@@ -147,5 +146,3 @@ static inline LRESULT DefSubclassProc_compat(HWND hWnd, UINT uMsg, WPARAM wParam
 }
 
 #endif /* ENABLE_OLDWINCOMPAT */
-
-#endif /* __ROMPROPERTIES_LIBWIN32UI_SUBCLASSWINDOW_H__ */

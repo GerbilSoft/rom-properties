@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * iQuePlayer.hpp: iQue Player .cmd reader.                                *
  *                                                                         *
- * Copyright (c) 2019 by David Korth.                                      *
+ * Copyright (c) 2019-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_IQUEPLAYER_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_IQUEPLAYER_HPP__
+#pragma once
 
 #include "librpbase/RomData.hpp"
 
@@ -21,5 +20,3 @@ ROMDATA_DECL_IMGINT()
 ROMDATA_DECL_END()
 
 }
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_IQUEPLAYER_HPP__ */

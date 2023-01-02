@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension.                                    *
  * force_inline.h: FORCEINLINE macro.                                      *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_FORCE_INLINE_H__
-#define __ROMPROPERTIES_FORCE_INLINE_H__
+#pragma once
 
 // NOTE: MinGW's __forceinline macro has an extra 'extern' when compiling as C code.
 // This breaks "static FORCEINLINE".
@@ -35,5 +34,3 @@
 #    endif
 #   endif
 #endif /* !defined(FORCEINLINE) */
-
-#endif /* __ROMPROPERTIES_FORCE_INLINE_H__ */

@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextFuncs_NULL.hpp: Text encoding functions. (NULL terminator checks)   *
  *                                                                         *
- * Copyright (c) 2009-2019 by David Korth.                                 *
+ * Copyright (c) 2009-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_NULL_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_NULL_HPP__
+#pragma once
 
 #include "config.librpbase.h"
 #include "common.h"
@@ -40,5 +39,3 @@ static FORCEINLINE int check_NULL_terminator(const char16_t *wcs, int len)
 }
 
 }
-
-#endif /* __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_NULL_HPP__ */

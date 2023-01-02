@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * argb32_t.hpp: ARGB32 value with byte accessors.                         *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPTEXTURE_ARGB32_T_HPP__
-#define __ROMPROPERTIES_LIBRPTEXTURE_ARGB32_T_HPP__
+#pragma once
 
 #include "common.h"
 #include "librpcpu/byteorder.h"
@@ -50,5 +49,3 @@ ASSERT_STRUCT(argb32_t, 4);
 #endif
 
 }
-
-#endif /* __ROMPROPERTIES_LIBRPTEXTURE_ARGB32_T_HPP__ */

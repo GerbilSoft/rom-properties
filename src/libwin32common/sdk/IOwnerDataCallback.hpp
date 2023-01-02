@@ -6,8 +6,7 @@
  * https://www.codeproject.com/Articles/35197/Undocumented-List-View-Features *
  ******************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBWIN32COMMON_SDK_IOWNERDATACALLBACK_HPP__
-#define __ROMPROPERTIES_LIBWIN32COMMON_SDK_IOWNERDATACALLBACK_HPP__
+#pragma once
 
 // IListView.hpp is required for LVITEMINDEX if
 // _WIN32_WINNT < 0x0600.
@@ -94,5 +93,3 @@ IOwnerDataCallback : public IUnknown
 // Required for MinGW-w64 __uuidof() emulation.
 __CRT_UUID_DECL(IOwnerDataCallback, 0x44C09D56, 0x8D3B, 0x419D, 0xA4, 0x62, 0x7B, 0x95, 0x6B, 0x10, 0x5B, 0x47)
 #endif
-
-#endif /* __ROMPROPERTIES_LIBWIN32COMMON_SDK_IOWNERDATACALLBACK_HPP__ */

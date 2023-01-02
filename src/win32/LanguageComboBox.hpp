@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * LanguageComboBox.hpp: Language ComboBoxEx superclass.                   *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_LANGUAGECOMBOBOX_HPP__
-#define __ROMPROPERTIES_WIN32_LANGUAGECOMBOBOX_HPP__
+#pragma once
 
 #include "libwin32common/RpWin32_sdk.h"
 
@@ -65,5 +64,3 @@ static inline bool LanguageComboBox_GetForcePAL(HWND hWnd)
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_WIN32_DRAGIMAGELABEL_HPP__ */

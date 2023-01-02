@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * stdafx.h: Common definitions and includes for COM.                      *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_RP_DOWNLOAD_STDAFX_H__
-#define __ROMPROPERTIES_RP_DOWNLOAD_STDAFX_H__
+#pragma once
 
 #ifdef _WIN32
 // Windows SDK defines and includes.
@@ -49,5 +48,3 @@
 #include "common.h"
 #include "ctypex.h"
 #include "tcharx.h"
-
-#endif /* __ROMPROPERTIES_RP_DOWNLOAD_STDAFX_H__ */

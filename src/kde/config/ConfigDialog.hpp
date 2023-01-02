@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * ConfigDialog.hpp: Configuration dialog.                                 *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_CONFIG_CONFIGDIALOG_HPP__
-#define __ROMPROPERTIES_KDE_CONFIG_CONFIGDIALOG_HPP__
+#pragma once
 
 #include <QDialog>
 
@@ -64,5 +63,3 @@ class ConfigDialog : public QDialog
 		 */
 		void tabModified(void);
 };
-
-#endif /* __ROMPROPERTIES_KDE_CONFIG_CONFIGDIALOG_HPP__ */

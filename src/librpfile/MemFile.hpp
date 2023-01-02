@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * MemFile.hpp: IRpFile implementation using a memory buffer.              *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPFILE_MEMFILE_HPP__
-#define __ROMPROPERTIES_LIBRPFILE_MEMFILE_HPP__
+#pragma once
 
 #include "IRpFile.hpp"
 
@@ -145,5 +144,3 @@ class RP_LIBROMDATA_PUBLIC MemFile : public IRpFile
 };
 
 }
-
-#endif /* __ROMPROPERTIES_LIBRPFILE_MEMFILE_HPP__ */

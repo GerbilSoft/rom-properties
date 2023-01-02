@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * sort_funcs.h: GtkTreeSortable sort functions.                           *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_SORT_FUNCS_H__
-#define __ROMPROPERTIES_GTK_SORT_FUNCS_H__
+#pragma once
 
 #include <gtk/gtk.h>
 
@@ -34,5 +33,3 @@ gint sort_RFT_LISTDATA_nocase(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *
 gint sort_RFT_LISTDATA_numeric(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer userdata);
 
 G_END_DECLS
-
-#endif /* __ROMPROPERTIES_GTK_SORT_FUNCS_H__ */

@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpQByteArrayFile.hpp: IRpFile implementation using a QByteArray.        *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_RPQBYTEARRAYFILE_HPP__
-#define __ROMPROPERTIES_KDE_RPQBYTEARRAYFILE_HPP__
+#pragma once
 
 // librpfile
 #include "librpfile/IRpFile.hpp"
@@ -106,5 +105,3 @@ class RpQByteArrayFile : public LibRpFile::IRpFile
 		QByteArray m_byteArray;
 		size_t m_pos;		// Current position.
 };
-
-#endif /* __ROMPROPERTIES_KDE_RPQBYTEARRAYFILE_HPP__ */

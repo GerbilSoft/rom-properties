@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * LvData.hpp: ListView data internal implementation.                      *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_RP_LVDATA_HPP__
-#define __ROMPROPERTIES_WIN32_RP_LVDATA_HPP__
+#pragma once
 
 // librpbase
 #include "librpbase/RomFields.hpp"
@@ -120,5 +119,3 @@ private:
 	 */
 	void doSort(int column, LibRpBase::RomFields::ColSortOrder direction);
 };
-
-#endif /* __ROMPROPERTIES_WIN32_RP_LVDATA_HPP__ */

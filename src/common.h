@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension.                                    *
  * common.h: Common types and macros.                                      *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_COMMON_H__
-#define __ROMPROPERTIES_COMMON_H__
+#pragma once
 
 // FORCEINLINE
 #include "force_inline.h"
@@ -173,5 +172,3 @@
 #  define ATTR_ACCESS(access_mode, ref_index)
 #  define ATTR_ACCESS_SIZE(access_mode, ref_index, size_index)
 #endif
-
-#endif /* __ROMPROPERTIES_COMMON_H__ */

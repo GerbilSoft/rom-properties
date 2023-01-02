@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * AchievementItem.h: Achievement ComboBox Item (for GtkDropDown)          *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_CONFIG_ACHIEVEMENTITEM_H__
-#define __ROMPROPERTIES_GTK_CONFIG_ACHIEVEMENTITEM_H__
+#pragma once
 
 #include "gtk-compat.h"
 #include "PIMGTYPE.hpp"
@@ -33,5 +32,3 @@ void		rp_achievement_item_set_unlock_time	(RpAchievementItem *item, time_t unloc
 time_t		rp_achievement_item_get_unlock_time	(RpAchievementItem *item);
 
 G_END_DECLS
-
-#endif /* __ROMPROPERTIES_GTK_CONFIG_ACHIEVEMENTITEM_H__ */

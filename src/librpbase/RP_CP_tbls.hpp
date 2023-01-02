@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RP_CP_tbls.hpp: Code page lookup tables for custom code pages.          *
  *                                                                         *
- * Copyright (c) 2009-2022 by David Korth.                                 *
+ * Copyright (c) 2009-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_RP_CP_TBLS_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_RP_CP_TBLS_HPP__
+#pragma once
 
 #include "stdafx.h"
 
@@ -240,5 +239,3 @@ static const char16_t *const lkup_tbls[] = {
 };
 
 } }
-
-#endif /* __ROMPROPERTIES_LIBRPBASE_RP_CP_TBLS_HPP__ */

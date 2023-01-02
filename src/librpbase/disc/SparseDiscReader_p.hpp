@@ -4,12 +4,11 @@
  * that use sparse and/or compressed blocks, e.g. CISO, WBFS, GCZ.         *
  * (PRIVATE CLASS)                                                         *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_DISC_SPARSEDISCREADER_P_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_DISC_SPARSEDISCREADER_P_HPP__
+#pragma once
 
 #include <stdint.h>
 #include "common.h"
@@ -37,5 +36,3 @@ class SparseDiscReaderPrivate
 };
 
 }
-
-#endif /* __ROMPROPERTIES_LIBRPBASE_DISC_SPARSEDISCREADER_P_HPP__ */

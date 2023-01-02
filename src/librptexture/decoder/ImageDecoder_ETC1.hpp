@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_ETC1.hpp: Image decoding functions: ETCn                   *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGEDECODER_ETC1_HPP__
-#define __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGEDECODER_ETC1_HPP__
+#pragma once
 
 #include "ImageDecoder_common.hpp"
 
@@ -86,5 +85,3 @@ rp_image *fromEAC_RG11(int width, int height,
 	const uint8_t *RESTRICT img_buf, size_t img_siz);
 
 } }
-
-#endif /* __ROMPROPERTIES_LIBRPTEXTURE_DECODER_IMAGEDECODER_ETC1_HPP__ */

@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ShellIconOverlayIdentifier.cpp: IShellIconOverlayIdentifier          *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_RP_SHELLICONOVERLAYIDENTIFIER_HPP__
-#define __ROMPROPERTIES_WIN32_RP_SHELLICONOVERLAYIDENTIFIER_HPP__
+#pragma once
 
 // librpbase
 #include "librpbase/config.librpbase.h"
@@ -66,5 +65,3 @@ __CRT_UUID_DECL(RP_ShellIconOverlayIdentifier, __MSABI_LONG(0x02c6af01), 0x3c99,
 // doesn't declare the UUID for IShellIconOverlayIdentifier for __uuidof() emulation.
 __CRT_UUID_DECL(IShellIconOverlayIdentifier, __MSABI_LONG(0x0c6c4200), 0xc589, 0x11d0, 0x99,0x9a, 0x00, 0xc0, 0x4f, 0xd6, 0x55, 0xe1)
 #endif
-
-#endif /* __ROMPROPERTIES_WIN32_RP_SHELLICONOVERLAYIDENTIFIER_HPP__ */

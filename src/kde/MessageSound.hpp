@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * MessageSound.hpp: Message sound effects class.                          *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_MESSAGESOUND_HPP__
-#define __ROMPROPERTIES_KDE_MESSAGESOUND_HPP__
+#pragma once
 
 #include <QMessageBox>
 
@@ -28,5 +27,3 @@ class MessageSound
 		 */
 		static void play(QMessageBox::Icon notificationType, const QString &message = QString(), QWidget *parent = nullptr);
 };
-
-#endif /* __ROMPROPERTIES_KDE_MESSAGESOUND_HPP__ */

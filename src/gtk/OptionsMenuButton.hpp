@@ -6,8 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_OPTIONSMENUBUTTON_HPP__
-#define __ROMPROPERTIES_GTK_OPTIONSMENUBUTTON_HPP__
+#pragma once
 
 #include "gtk-compat.h"
 
@@ -45,5 +44,3 @@ void		rp_options_menu_button_update_op	(RpOptionsMenuButton *widget,
 							 int id,
 							 const LibRpBase::RomData::RomOp *op);
 #endif /* __cplusplus */
-
-#endif /* __ROMPROPERTIES_GTK_OPTIONSMENUBUTTON_HPP__ */

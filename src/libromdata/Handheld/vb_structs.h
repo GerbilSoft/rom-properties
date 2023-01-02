@@ -2,13 +2,12 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * dmg_structs.h: Nintendo Virtual Boy data structures.                    *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_VB_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_VB_STRUCTS_H__
+#pragma once
 
 #include <stdint.h>
 #include "common.h"
@@ -37,5 +36,3 @@ ASSERT_STRUCT(VB_RomFooter, 32);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_VB_STRUCTS_H__ */

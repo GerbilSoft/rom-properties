@@ -2,15 +2,14 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * wux_structs.h: Wii U .wux format structs.                               *
  *                                                                         *
- * Copyright (c) 2018-2021 by David Korth.                                 *
+ * Copyright (c) 2018-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // References:
 // - https://gbatemp.net/threads/wii-u-image-wud-compression-tool.397901/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_DISC_WUX_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_DISC_WUX_STRUCTS_H__
+#pragma once
 
 #include <stdint.h>
 #include "common.h"
@@ -47,5 +46,3 @@ ASSERT_STRUCT(wuxHeader_t, 32);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_DISC_WUX_STRUCTS_H__ */

@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextFuncs_printf.hpp: printf()-style functions.                         *
  *                                                                         *
- * Copyright (c) 2009-2022 by David Korth.                                 *
+ * Copyright (c) 2009-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_PRINTF_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_PRINTF_HPP__
+#pragma once
 
 #include "common.h"	// for ATTR_PRINTF()
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
@@ -194,5 +193,3 @@ static inline std::wstring rp_swprintf_p(const wchar_t *fmt, ...)
 #endif /* _WIN32 */
 
 }
-
-#endif /* __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_PRINTF_HPP__ */

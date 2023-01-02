@@ -2,15 +2,14 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * lua_structs.h: Lua data structures.                                     *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * Copyright (c) 2016-2022 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 /* NOTE: this file is unused, but I left it here for future reference. */
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_LUA_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_LUA_STRUCTS_H__
+#pragma once
 
 #include <stdint.h>
 #include "common.h"
@@ -193,5 +192,3 @@ ASSERT_STRUCT(Lua5_4_Header, 15);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_LUA_STRUCTS_H__ */

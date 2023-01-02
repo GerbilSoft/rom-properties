@@ -2,12 +2,11 @@
  * Ortin (IS-NITRO management) (libortin)                                  *
  * ndscrypt.hpp: Nintendo DS encryption.                                   *
  *                                                                         *
- * Copyright (c) 2020 by David Korth.                                      *
+ * Copyright (c) 2020-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_NDSCRYPT_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_NDSCRYPT_HPP__
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -56,5 +55,3 @@ int ndscrypt_decrypt_secure_area(uint8_t *pRom, size_t len, BlowfishKey bfkey);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_NDSCRYPT_HPP__ */

@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension.                                    *
  * d_type.h: d_type enumeration.                                           *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_D_TYPE_H__
-#define __ROMPROPERTIES_D_TYPE_H__
+#pragma once
 
 #include "config.libc.h"
 
@@ -80,5 +79,3 @@ enum {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_D_TYPE_H__ */

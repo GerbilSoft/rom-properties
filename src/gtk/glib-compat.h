@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * glib-compat.h: GLib compatibility functions.                            *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_GLIB_COMPAT_H__
-#define __ROMPROPERTIES_GTK_GLIB_COMPAT_H__
+#pragma once
 
 #include <glib.h>
 
@@ -71,5 +70,3 @@ typedef void (* GClearHandleFunc) (guint handle_id);
   } G_STMT_END
 
 G_END_DECLS
-
-#endif /* __ROMPROPERTIES_GTK_GLIB_COMPAT_H__ */

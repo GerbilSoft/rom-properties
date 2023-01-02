@@ -5,8 +5,7 @@
  * Based on commctrl.h from the Windows SDK v7.1A.                         *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBWIN32COMMON_SDK_COMMCTRL_TS_H__
-#define __ROMPROPERTIES_LIBWIN32COMMON_SDK_COMMCTRL_TS_H__
+#pragma once
 
 #include "tsbase.h"
 #include <commctrl.h>
@@ -1346,5 +1345,3 @@ static FORCEINLINE BOOL ComboBox_GetCueBannerText(_In_ HWND hwnd, _Out_ LPWSTR l
 	{ return STATIC_CAST(BOOL)(STATIC_CAST(DWORD)(SNDMSG(hwnd, CB_SETCUEBANNER, REINTERPRET_CAST(WPARAM)(lpwText), STATIC_CAST(LPARAM)(cchText)))); }
 #endif /* _WIN32_WINNT >= 0x0501 */
 #endif /* NOCOMBOBOX */
-
-#endif /* __ROMPROPERTIES_LIBWIN32COMMON_SDK_COMMCTRL_TS_H__ */

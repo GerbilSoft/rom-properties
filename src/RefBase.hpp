@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension.                                    *
  * refbase.hpp: Reference-counted base class.                              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_REFBASE_HPP__
-#define __ROMPROPERTIES_REFBASE_HPP__
+#pragma once
 
 #include "dll-macros.h"
 
@@ -150,5 +149,3 @@ class unique_RefBase
 	private:
 		T *m_refBase;
 };
-
-#endif /* __ROMPROPERTIES_REFBASE_HPP__ */

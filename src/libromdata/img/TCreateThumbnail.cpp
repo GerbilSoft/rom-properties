@@ -2,12 +2,14 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * TCreateThumbnail.cpp: Thumbnail creator template.                       *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_IMG_TCREATETHUMBNAIL_CPP__
-#define __ROMPROPERTIES_LIBROMDATA_IMG_TCREATETHUMBNAIL_CPP__
+#pragma once
+
+// NOTE: This is #included in other files,
+// so don't use any 'using' statements!
 
 #include "TCreateThumbnail.hpp"
 
@@ -586,5 +588,3 @@ int TCreateThumbnail<ImgClass>::getThumbnail(const char *filename, int reqSize, 
 }
 
 }
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_IMG_TCREATETHUMBNAIL_CPP__ */

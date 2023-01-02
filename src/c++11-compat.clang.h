@@ -1,12 +1,11 @@
 /***************************************************************************
  * c++11-compat.clang.h: C++ 2011 compatibility header. (clang)            *
  *                                                                         *
- * Copyright (c) 2011-2020 by David Korth.                                 *
+ * Copyright (c) 2011-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __CXX11_COMPAT_CLANG_H__
-#define __CXX11_COMPAT_CLANG_H__
+#pragma once
 
 #if !defined(__clang__)
 #  error c++11-compat.clang.h should only be included in LLVM/clang builds.
@@ -69,5 +68,3 @@
 #endif
 
 #endif /* __cplusplus */
-
-#endif /* __CXX11_COMPAT_CLANG_H__ */

@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libi18n)                          *
  * i18n.h: Internationalization support code.                              *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBI18N_H__
-#define __ROMPROPERTIES_LIBI18N_H__
+#pragma once
 
 #include "libi18n/config.libi18n.h"
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
@@ -77,5 +76,3 @@ int rp_i18n_init(void);
 #  define fprintf_p(fp, fmt, ...)		fprintf((fp), (fmt), ##__VA_ARGS__)
 #  define snprintf_p(buf, sz, fmt, ...)		snprintf((buf), (sz), (fmt), ##__VA_ARGS__)
 #endif
-
-#endif /* __ROMPROPERTIES_LIBI18N_H__ */

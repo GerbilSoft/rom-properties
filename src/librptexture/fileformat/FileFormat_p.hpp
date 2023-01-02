@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormat.hpp: Texture file format base class. (PRIVATE CLASS)         *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_FILEFORMAT_P_HPP__
-#define __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_FILEFORMAT_P_HPP__
+#pragma once
 
 namespace LibRpFile {
 	class IRpFile;
@@ -59,5 +58,3 @@ class FileFormatPrivate
 };
 
 }
-
-#endif /* __ROMPROPERTIES_LIBRPTEXTURE_FILEFORMAT_FILEFORMAT_P_HPP__ */

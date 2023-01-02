@@ -2,15 +2,14 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * IStreamWrapper.hpp: IStream wrapper for IRpFile. (Win32)                *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPFILE_WIN32_ISTREAMWRAPPER_HPP__
-#define __ROMPROPERTIES_LIBRPFILE_WIN32_ISTREAMWRAPPER_HPP__
+#pragma once
 
 #ifndef _WIN32
-#error IStreamWrapper.hpp is Windows only.
+#  error IStreamWrapper.hpp is Windows only.
 #endif
 
 #include "../IRpFile.hpp"
@@ -74,5 +73,3 @@ class IStreamWrapper final : public LibWin32Common::ComBase<IStream>
 };
 
 }
-
-#endif /* __ROMPROPERTIES_LIBRPFILE_WIN32_ISTREAMWRAPPER_HPP__ */

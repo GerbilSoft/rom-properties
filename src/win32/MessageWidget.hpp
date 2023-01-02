@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * MessageWidget.hpp: Message widget. (Similar to KMessageWidget)          *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_MESSAGEWIDGET_HPP__
-#define __ROMPROPERTIES_WIN32_MESSAGEWIDGET_HPP__
+#pragma once
 
 #include "libwin32common/RpWin32_sdk.h"
 
@@ -39,5 +38,3 @@ static inline int MessageWidget_GetMessageType(HWND hWnd)
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_WIN32_DRAGIMAGELABEL_HPP__ */

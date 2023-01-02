@@ -39,8 +39,7 @@
 **
 ****************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_QIMAGEDATA_QT4_HPP__
-#define __ROMPROPERTIES_KDE_QIMAGEDATA_QT4_HPP__
+#pragma once
 
 // QImageData struct from qimage_p.h. (Qt 4.8.7)
 // This is needed in order to trick Qt4's QImage into
@@ -115,5 +114,3 @@ struct Q_GUI_EXPORT QImageData {        // internal image data
 };
 
 #endif /* QT_VERSION >= QT_VERSION_CHECK(4,0,0) && QT_VERSION < QT_VERSION_CHECK(5,0,0) */
-
-#endif /* __ROMPROPERTIES_KDE_QIMAGEDATA_QT4_HPP__ */

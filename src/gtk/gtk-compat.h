@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * gtk-compat.h: GTK+ compatibility functions.                             *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_GTK_COMPAT_H__
-#define __ROMPROPERTIES_GTK_GTK_COMPAT_H__
+#pragma once
 
 #include "glib-compat.h"
 #include <gtk/gtk.h>
@@ -380,5 +379,3 @@ typedef GtkComboBox OurComboBox;
 	gtk_check_button_get_active(GTK_CHECK_BUTTON(widget))
 
 G_END_DECLS
-
-#endif /* __ROMPROPERTIES_GTK_GTK_COMPAT_H__ */

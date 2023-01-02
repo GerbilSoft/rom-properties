@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpQt.hpp: Qt wrappers for some libromdata functionality.                *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_RPQT_HPP__
-#define __ROMPROPERTIES_KDE_RPQT_HPP__
+#pragma once
 
 #include "RpQUrl.hpp"
 
@@ -166,5 +165,3 @@ LibRpFile::IRpFile *openQUrl(const QUrl &url, bool isThumbnail = false);
  * @return Qt file dialog filter.
  */
 QString rpFileDialogFilterToQt(const char *filter);
-
-#endif /* __ROMPROPERTIES_KDE_RPQT_HPP__ */

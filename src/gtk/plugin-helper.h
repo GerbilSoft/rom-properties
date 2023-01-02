@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * plugin-helper.h: Plugin helper macros.                                  *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_PLUGIN_HELPER_H__
-#define __ROMPROPERTIES_GTK_PLUGIN_HELPER_H__
+#pragma once
 
 #include <unistd.h>
 #include <dlfcn.h>
@@ -52,5 +51,3 @@ G_BEGIN_DECLS
 } while (0)
 
 G_END_DECLS
-
-#endif /* __ROMPROPERTIES_GTK_PLUGIN_HELPER_H__ */

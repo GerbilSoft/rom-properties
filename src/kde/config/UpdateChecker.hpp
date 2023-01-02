@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * UpdateChecker.hpp: Update checker object for AboutTab.                  *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_CONFIG_UPDATECHECKER_HPP__
-#define __ROMPROPERTIES_KDE_CONFIG_UPDATECHECKER_HPP__
+#pragma once
 
 #include <QtCore/QObject>
 
@@ -49,5 +48,3 @@ class UpdateChecker : public QObject
 		 */
 		void finished(void);
 };
-
-#endif /* __ROMPROPERTIES_KDE_CONFIG_UPDATECHECKER_HPP__ */

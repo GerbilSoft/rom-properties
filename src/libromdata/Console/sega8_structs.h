@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * sega8_structs.h: Sega 8-bit (SMS/GG) data structures.                   *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_SEGA8_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_SEGA8_STRUCTS_H__
+#pragma once
 
 #include "common.h"
 #include <stdint.h>
@@ -145,5 +144,3 @@ ASSERT_STRUCT(Sega8_SDSC_RomHeader, 16);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_SEGA8_STRUCTS_H__ */

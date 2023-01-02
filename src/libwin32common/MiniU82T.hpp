@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * MiniU82T.cpp: Minimal U82T()/T2U8() functions.                          *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBWIN32COMMON_MINIU82T_HPP__
-#define __ROMPROPERTIES_LIBWIN32COMMON_MINIU82T_HPP__
+#pragma once
 
 // C++ includes.
 #include <string>
@@ -79,5 +78,3 @@ static inline std::tstring U82T(const std::string &mbs)
 }
 
 }
-
-#endif /* __ROMPROPERTIES_LIBWIN32COMMON_MINIU82T_HPP__ */

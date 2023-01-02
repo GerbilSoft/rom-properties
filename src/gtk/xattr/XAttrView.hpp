@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * XAttrView.hpp: Extended attribute viewer property page.                 *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_XATTR_XATTRVIEW_HPP__
-#define __ROMPROPERTIES_GTK_XATTR_XATTRVIEW_HPP__
+#pragma once
 
 #include "gtk-compat.h"
 
@@ -36,5 +35,3 @@ const gchar	*rp_xattr_view_get_uri		(RpXAttrView *widget);
 gboolean	rp_xattr_view_has_attributes	(RpXAttrView *widget);
 
 G_END_DECLS
-
-#endif /* __ROMPROPERTIES_GTK_XATTR_XATTRVIEW_H__ */

@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * SystemRegion.hpp: Get the system country code.                          *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_SYSTEMREGION_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_SYSTEMREGION_HPP__
+#pragma once
 
 #include "common.h"
 
@@ -115,5 +114,3 @@ std::wstring lcToWStringUpper(uint32_t lc);
 #endif /* _WIN32 */
 
 } }
-
-#endif /* __ROMPROPERTIES_LIBRPBASE_SYSTEMREGION_HPP__ */

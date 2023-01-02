@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * nintendo_system_id.h: Nintendo system IDs.                              *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_NINTENDO_SYSTEM_ID_H__
-#define __ROMPROPERTIES_LIBROMDATA_NINTENDO_SYSTEM_ID_H__
+#pragma once
 
 #include <stdint.h>
 #include "byteorder.h"
@@ -164,5 +163,3 @@ typedef enum {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_NINTENDO_SYSTEM_ID_H__ */

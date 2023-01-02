@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (Win32)                                 *
  * RP_EmptyVolumeCacheCallback.cpp: RP_EmptyVolumeCacheCallback implementation. *
  *                                                                              *
- * Copyright (c) 2016-2020 by David Korth.                                      *
+ * Copyright (c) 2016-2023 by David Korth.                                      *
  * SPDX-License-Identifier: GPL-2.0-or-later                                    *
  ********************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_CONFIG_RP_EMPTYVOLUMECACHECALLBACK_HPP
-#define __ROMPROPERTIES_WIN32_CONFIG_RP_EMPTYVOLUMECACHECALLBACK_HPP
+#pragma once
 
 /**
  * IEmptyVolumeCacheCallback implementation.
@@ -49,5 +48,3 @@ class RP_EmptyVolumeCacheCallback final : public LibWin32Common::ComBase<IEmptyV
 // doesn't declare the UUID for IEmptyVolumeCacheCallBack for __uuidof() emulation.
 __CRT_UUID_DECL(IEmptyVolumeCacheCallBack, __MSABI_LONG(0x6e793361), 0x73c6, 0x11d0, 0x84,0x69, 0x00, 0xaa, 0x00, 0x44, 0x29, 0x01)
 #endif
-
-#endif /* __ROMPROPERTIES_WIN32_CONFIG_RP_EMPTYVOLUMECACHECALLBACK_HPP */

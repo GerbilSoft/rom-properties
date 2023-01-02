@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * xbox360_common_structs.h: Microsoft Xbox 360 common data structures.    *
  *                                                                         *
- * Copyright (c) 2019-2020 by David Korth.                                 *
+ * Copyright (c) 2019-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOX360_COMMON_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOX360_COMMON_STRUCTS_H__
+#pragma once
 
 #include <stdint.h>
 
@@ -54,5 +53,3 @@ typedef union _XEX2_Title_ID {
 	uint32_t u32;
 } Xbox360_Title_ID;
 ASSERT_STRUCT(Xbox360_Title_ID, sizeof(uint32_t));
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_CONSOLE_XBOX360_COMMON_STRUCTS_H__ */

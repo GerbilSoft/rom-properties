@@ -2,14 +2,13 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * KeyStore_OwnerDataCallback.hpp: LVS_OWNERDATA callback for Vista.       *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // Reference: https://www.codeproject.com/Articles/35197/Undocumented-List-View-Features#virtualgroups
 
-#ifndef __ROMPROPERTIES_WIN32_CONFIG_KEYSTORE_OWNERDATACALLBACK_HPP__
-#define __ROMPROPERTIES_WIN32_CONFIG_KEYSTORE_OWNERDATACALLBACK_HPP__
+#pragma once
 
 #include "common.h"
 #include "libwin32common/ComBase.hpp"
@@ -43,5 +42,3 @@ class KeyStore_OwnerDataCallback final : public LibWin32Common::ComBase<IOwnerDa
 	private:
 		const KeyStoreWin32 *m_keyStore;
 };
-
-#endif /* __ROMPROPERTIES_WIN32_CONFIG_KEYSTORE_OWNERDATACALLBACK_HPP__ */

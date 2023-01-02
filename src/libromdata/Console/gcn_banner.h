@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * gcn_banner.h: Nintendo GameCube banner structures.                      *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,8 +11,7 @@
  * - http://hitmen.c02.at/files/yagcd/yagcd/chap14.html
  */
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_GCN_BANNER_H__
-#define __ROMPROPERTIES_LIBROMDATA_GCN_BANNER_H__
+#pragma once
 
 #include <stdint.h>
 #include "common.h"
@@ -76,5 +75,3 @@ typedef enum {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_GCN_BANNER_H__ */

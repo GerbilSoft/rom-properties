@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpcpu)                         *
  * byteswap_rp.h: Byteswapping functions.                                  *
  *                                                                         *
- * Copyright (c) 2008-2022 by David Korth.                                 *
+ * Copyright (c) 2008-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPCPU_BYTESWAP_RP_H__
-#define __ROMPROPERTIES_LIBRPCPU_BYTESWAP_RP_H__
+#pragma once
 
 // C includes.
 #include <stdint.h>
@@ -292,5 +291,3 @@ static FORCEINLINE void rp_byte_swap_32_array(uint32_t *ptr, size_t n)
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBRPCPU_BYTESWAP_RP_H__ */

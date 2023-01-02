@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiU.hpp: Nintendo Wii U disc image reader.                             *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_WIIU_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_WIIU_HPP__
+#pragma once
 
 #include "librpbase/RomData.hpp"
 
@@ -19,5 +18,3 @@ ROMDATA_DECL_IMGEXT()
 ROMDATA_DECL_END()
 
 }
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_WIIU_HPP__ */

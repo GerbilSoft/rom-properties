@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageSizeCalc.hpp: Image size calculation functions.                    *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPTEXTURE_IMAGESIZECALC_HPP__
-#define __ROMPROPERTIES_LIBRPTEXTURE_IMAGESIZECALC_HPP__
+#pragma once
 
 #include "bitstuff.h"
 
@@ -151,5 +150,3 @@ static inline void alignImageSizeASTC(int& width, int& height, uint8_t block_x, 
 unsigned int calcImageSizeASTC(int width, int height, uint8_t block_x, uint8_t block_y);
 
 } }
-
-#endif /* __ROMPROPERTIES_LIBRPTEXTURE_IMAGESIZECALC_HPP__ */

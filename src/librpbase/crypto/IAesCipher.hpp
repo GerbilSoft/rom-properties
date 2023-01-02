@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * IAesCipher.hpp: AES decryption interface.                               *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_CRYPTO_IAESCIPHER_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_CRYPTO_IAESCIPHER_HPP__
+#pragma once
 
 #include "common.h"
 
@@ -119,5 +118,3 @@ class IAesCipher
 inline IAesCipher::~IAesCipher() { }
 
 }
-
-#endif /* __ROMPROPERTIES_LIBRPBASE_CRYPTO_IAESCIPHER_HPP__ */

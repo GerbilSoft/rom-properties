@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * TImageTypesConfig.hpp: Image Types editor template.                     *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_CONFIG_TIMAGETYPESCONFIG_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_CONFIG_TIMAGETYPESCONFIG_HPP__
+#pragma once
 
 /**
  * NOTE: TImageTypesConfig.cpp MUST be #included by a file in
@@ -266,5 +265,3 @@ class TImageTypesConfig
 };
 
 }
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_CONFIG_TIMAGETYPESCONFIG_HPP__ */

@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libcachecommon)                   *
  * CacheDir.hpp: Cache directory handler.                                  *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBCACHECOMMON_CACHEDIR_HPP__
-#define __ROMPROPERTIES_LIBCACHECOMMON_CACHEDIR_HPP__
+#pragma once
 
 // C++ includes.
 #include <string>
@@ -25,5 +24,3 @@ namespace LibCacheCommon {
 const std::string &getCacheDirectory(void);
 
 }
-
-#endif /* __ROMPROPERTIES_LIBCACHECOMMON_CACHEDIR_HPP__ */

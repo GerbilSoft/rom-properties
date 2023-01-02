@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpJpeg.hpp: JPEG image handler.                                         *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_IMG_RPJPEG_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_IMG_RPJPEG_HPP__
+#pragma once
 
 #include "common.h"
 
@@ -38,5 +37,3 @@ class RpJpeg
 };
 
 }
-
-#endif /* __ROMPROPERTIES_LIBRPBASE_IMG_RPJPEG_HPP__ */

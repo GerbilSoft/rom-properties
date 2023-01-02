@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * dos_attrs.h: MS-DOS and Windows file attributes                         *
  *                                                                         *
- * Copyright (c) 2022 by David Korth.                                      *
+ * Copyright (c) 2022-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPFILE_XATTRS_DOS_ATTRS_H__
-#define __ROMPROPERTIES_LIBRPFILE_XATTRS_DOS_ATTRS_H__
+#pragma once
 
 // NOTE: These attributes use the same names as the Windows SDK.
 // If the names are already defined, then we won't redefine them here.
@@ -110,5 +109,3 @@
 #ifndef FILE_ATTRIBUTE_VALID_SET_FLAGS
 #define FILE_ATTRIBUTE_VALID_SET_FLAGS	0x31A7
 #endif
-
-#endif /* __ROMPROPERTIES_LIBRPFILE_XATTRS_DOS_ATTRS_H__ */

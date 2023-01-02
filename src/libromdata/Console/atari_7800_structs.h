@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * atari_7800_structs.h: Atari 7800 ROM image data structures.             *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_ATARI_7800_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_ATARI_7800_STRUCTS_H__
+#pragma once
 
 #include "common.h"
 #include <stdint.h>
@@ -118,5 +117,3 @@ typedef enum {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_CBM_CART_STRUCTS_H__ */

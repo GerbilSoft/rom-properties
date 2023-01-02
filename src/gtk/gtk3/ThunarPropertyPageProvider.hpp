@@ -6,8 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                                 *
  *****************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK3_THUNARPROPERTYPAGEPROVIDER_HPP__
-#define __ROMPROPERTIES_GTK3_THUNARPROPERTYPAGEPROVIDER_HPP__
+#pragma once
 
 #include "glib-compat.h"
 #include "ThunarPlugin.hpp"
@@ -22,5 +21,3 @@ G_DECLARE_FINAL_TYPE(RpThunarPropertyPageProvider, rp_thunar_property_page_provi
 void rp_thunar_property_page_provider_register_type_ext(ThunarxProviderPlugin *plugin) G_GNUC_INTERNAL;
 
 G_END_DECLS
-
-#endif /* !__ROMPROPERTIES_GTK3_THUNARPROPERTYPAGEPROVIDER_HPP__ */

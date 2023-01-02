@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * stdafx.h: Common definitions and includes.                              *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPFILE_STDAFX_H__
-#define __ROMPROPERTIES_LIBRPFILE_STDAFX_H__
+#pragma once
 
 #ifdef __cplusplus
 /** C++ **/
@@ -49,5 +48,3 @@
 // librpcpu
 #include "librpcpu/byteswap_rp.h"
 #include "librpcpu/bitstuff.h"
-
-#endif /* __ROMPROPERTIES_LIBRPFILE_STDAFX_H__ */

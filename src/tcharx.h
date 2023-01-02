@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension.                                    *
  * tcharx.h: TCHAR support for Windows and Linux.                          *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_TCHAR_H__
-#define __ROMPROPERTIES_TCHAR_H__
+#pragma once
 
 #ifdef _WIN32
 
@@ -73,11 +72,9 @@ typedef char TCHAR;
 
 // Directory separator character.
 #ifdef _WIN32
-# define DIR_SEP_CHR _T('\\')
-# define DIR_SEP_STR _T("\\")
+#  define DIR_SEP_CHR _T('\\')
+#  define DIR_SEP_STR _T("\\")
 #else /* !_WIN32 */
-# define DIR_SEP_CHR _T('/')
-# define DIR_SEP_STR _T("/")
+#  define DIR_SEP_CHR _T('/')
+#  define DIR_SEP_STR _T("/")
 #endif /* _WIN32 */
-
-#endif /* __ROMPROPERTIES_TCHAR_H__ */

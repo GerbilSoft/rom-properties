@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpcpu)                         *
  * cpu_dispatch.h: CPU dispatch macros.                                    *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPCPU_CPU_DISPATCH_H__
-#define __ROMPROPERTIES_LIBRPCPU_CPU_DISPATCH_H__
+#pragma once
 
 #include "librpcpu/config.librpcpu.h"
 
@@ -54,5 +53,3 @@
 #  define IFUNC_SSE2_STATIC_INLINE static inline
 #  define IFUNC_ATTR(func)
 #endif
-
-#endif /* __ROMPROPERTIES_LIBRPCPU_CPU_DISPATCH_H__ */

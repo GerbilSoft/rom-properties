@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * CacheTab.hpp: Thumbnail Cache tab for rp-config.                        *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_CONFIG_CACHETAB_HPP__
-#define __ROMPROPERTIES_KDE_CONFIG_CACHETAB_HPP__
+#pragma once
 
 #include "ITab.hpp"
 #include "CacheCleaner.hpp"
@@ -107,5 +106,3 @@ class CacheTab : public ITab
 		 */
 		void ccCleaner_finished(void);
 };
-
-#endif /* __ROMPROPERTIES_KDE_CONFIG_CACHETAB_HPP__ */

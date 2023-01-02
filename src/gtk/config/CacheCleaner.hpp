@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * CacheCleaner.hpp: Cache cleaner object for CacheCleaner.                *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_CONFIG_CACHECLEANER_HPP__
-#define __ROMPROPERTIES_GTK_CONFIG_CACHECLEANER_HPP__
+#pragma once
 
 #include "glib-compat.h"
 
@@ -41,5 +40,3 @@ void		rp_cache_cleaner_set_cache_dir	(RpCacheCleaner *cleaner, RpCacheDir cache_
 void		rp_cache_cleaner_run		(RpCacheCleaner *cleaner) G_GNUC_INTERNAL;
 
 G_END_DECLS
-
-#endif /* __ROMPROPERTIES_GTK_CONFIG_CACHECLEANER_HPP__ */

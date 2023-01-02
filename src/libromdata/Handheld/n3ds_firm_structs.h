@@ -2,15 +2,14 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * n3ds_firm_structs.h: Nintendo 3DS firmware data structures.             *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // References:
 // - https://3dbrew.org/wiki/FIRM
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_N3DS_FIRM_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_N3DS_FIRM_STRUCTS_H__
+#pragma once
 
 #include <stdint.h>
 #include "common.h"
@@ -53,5 +52,3 @@ ASSERT_STRUCT(_N3DS_FIRM_Header_t, 512);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_N3DS_FIRM_STRUCTS_H__ */

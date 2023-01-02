@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * elf_structs.h: Executable and Linkable Format structures.               *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,8 +16,7 @@
 // For Sony PS3 SELFs:
 // - https://www.psdevwiki.com/ps3/SELF_-_SPRX
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_ELF_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_ELF_STRUCTS_H__
+#pragma once
 
 #include <stdint.h>
 #include "common.h"
@@ -739,5 +738,3 @@ typedef struct _Elf64_Sym {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_ELF_STRUCTS_H__ */

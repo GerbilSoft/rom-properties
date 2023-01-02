@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                         *
  * ThunarMenuProvider.hpp: ThunarX Menu Provider Definition                *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK3_THUNARMENUPROVIDER_HPP__
-#define __ROMPROPERTIES_GTK3_THUNARMENUPROVIDER_HPP__
+#pragma once
 
 #include "glib-compat.h"
 #include "ThunarPlugin.hpp"
@@ -22,5 +21,3 @@ G_DECLARE_FINAL_TYPE(RpThunarMenuProvider, rp_thunar_menu_provider, RP, THUNAR_M
 void rp_thunar_menu_provider_register_type_ext(ThunarxProviderPlugin *plugin) G_GNUC_INTERNAL;
 
 G_END_DECLS
-
-#endif /* !__ROMPROPERTIES_GTK3_THUNARMENUPROVIDER_HPP__ */

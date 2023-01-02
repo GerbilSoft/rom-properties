@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * exe_structs.h: DOS/Windows executable structures.                       *
  *                                                                         *
- * Copyright (c) 2017-2021 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,8 +15,7 @@
 // - http://sandsprite.com/CodeStuff/Understanding_imports.html
 // - https://docs.microsoft.com/en-us/windows/win32/debug/pe-format
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_EXE_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_EXE_STRUCTS_H__
+#pragma once
 
 #include <stdint.h>
 #include "common.h"
@@ -788,5 +787,3 @@ typedef enum {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_EXE_STRUCTS_H__ */

@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * thumbcache-wrapper.hpp: thumbcache.h wrapper for MinGW-w64.             *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_THUMBCACHE_WRAPPER_HPP__
-#define __ROMPROPERTIES_WIN32_THUMBCACHE_WRAPPER_HPP__
+#pragma once
 
 #include "config.win32.h"
 
@@ -42,5 +41,3 @@ IThumbnailProvider : public IUnknown
 __CRT_UUID_DECL(IThumbnailProvider, __MSABI_LONG(0xe357fccd), 0xa995, 0x4576, 0xb0,0x1f, 0x23, 0x46, 0x30, 0x15, 0x4e, 0x96)
 
 #endif /* HAVE_THUMBCACHE_H */
-
-#endif /* __ROMPROPERTIES_WIN32_THUMBCACHE_WRAPPER_HPP__ */

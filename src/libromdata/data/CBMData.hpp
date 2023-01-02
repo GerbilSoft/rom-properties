@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CBMData.hpp: Commodore cartridge data.                                  *
  *                                                                         *
- * Copyright (c) 2022 by David Korth.                                      *
+ * Copyright (c) 2022-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_DATA_CBMDATA_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_DATA_CBMDATA_HPP__
+#pragma once
 
 #include "common.h"
 
@@ -31,5 +30,3 @@ const char *lookup_C64_cart_type(uint16_t type);
 const char *lookup_VIC20_cart_type(uint16_t type);
 
 } }
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_DATA_CBMDATA_HPP__ */

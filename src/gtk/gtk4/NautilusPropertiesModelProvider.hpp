@@ -6,12 +6,11 @@
  * arbitrary GtkWidgets. As such, the properties returned will be more       *
  * limited than in previous versions.                                        *
  *                                                                           *
- * Copyright (c) 2017-2022 by David Korth.                                   *
+ * Copyright (c) 2017-2023 by David Korth.                                   *
  * SPDX-License-Identifier: GPL-2.0-or-later                                 *
  *****************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK4_NAUTILUSPROPERTIESMODELPROVIDER_HPP__
-#define __ROMPROPERTIES_GTK4_NAUTILUSPROPERTIESMODELPROVIDER_HPP__
+#pragma once
 
 #include "glib-compat.h"
 
@@ -25,5 +24,3 @@ G_DECLARE_FINAL_TYPE(RpNautilusPropertiesModelProvider, rp_nautilus_properties_m
 void rp_nautilus_properties_model_provider_register_type_ext(GTypeModule *module) G_GNUC_INTERNAL;
 
 G_END_DECLS
-
-#endif /* !__ROMPROPERTIES_GTK4_NAUTILUSPROPERTIESMODELPROVIDER_HPP__ */

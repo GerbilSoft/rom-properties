@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image_p.hpp: Image class. (Private class)                            *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPTEXTURE_IMG_RP_IMAGE_P_HPP__
-#define __ROMPROPERTIES_LIBRPTEXTURE_IMG_RP_IMAGE_P_HPP__
+#pragma once
 
 #include "rp_image.hpp"
 
@@ -57,5 +56,3 @@ class rp_image_private
 };
 
 }
-
-#endif /* __ROMPROPERTIES_LIBRPTEXTURE_IMG_RP_IMAGE_P_HPP__ */

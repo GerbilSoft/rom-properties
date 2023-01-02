@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ique_player_structs.h: iQue Player data structures.                     *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_IQUE_PLAYER_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_IQUE_PLAYER_STRUCTS_H__
+#pragma once
 
 #include "common.h"
 #include <stdint.h>
@@ -146,5 +145,3 @@ typedef enum {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_IQUE_PLAYER_STRUCTS_H__ */

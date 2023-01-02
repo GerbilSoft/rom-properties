@@ -6,12 +6,11 @@
  * multiple plugins, so this file acts as a KOverlayIconPlugin,            *
  * and then forwards the request to the main library.                      *
  *                                                                         *
- * Copyright (c) 2018-2022 by David Korth.                                 *
+ * Copyright (c) 2018-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_OVERLAYICONPLUGIN_HPP__
-#define __ROMPROPERTIES_KDE_OVERLAYICONPLUGIN_HPP__
+#pragma once
 
 #include <QtCore/qglobal.h>
 #include <KOverlayIconPlugin>
@@ -43,5 +42,3 @@ class OverlayIconPlugin : public ::KOverlayIconPlugin
 typedef OverlayIconPlugin* (*pfn_createOverlayIconPluginKDE_t)(QObject *parent);
 
 }
-
-#endif /* __ROMPROPERTIES_KDE_OVERLAYICONPLUGIN_HPP__ */

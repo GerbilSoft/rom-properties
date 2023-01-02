@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * IResourceReader.hpp: Interface for Windows resource readers.            *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_DISC_IRESOURCEREADER_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_DISC_IRESOURCEREADER_HPP__
+#pragma once
 
 #include "../Other/exe_structs.h"
 
@@ -83,5 +82,3 @@ class IResourceReader : public LibRpBase::IPartition
 inline IResourceReader::~IResourceReader() { }
 
 }
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_DISC_IRESOURCEREADER_HPP__ */

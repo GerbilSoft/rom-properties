@@ -6,8 +6,7 @@
  * https://www.codeproject.com/Articles/35197/Undocumented-List-View-Features *
  ******************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBWIN32COMMON_SDK_ILISTVIEW_HPP__
-#define __ROMPROPERTIES_LIBWIN32COMMON_SDK_ILISTVIEW_HPP__
+#pragma once
 
 #include "../RpWin32_sdk.h"
 #include <oleidl.h>
@@ -347,5 +346,3 @@ IListView_Win7 : public IOleWindow
 // Required for MinGW-w64 __uuidof() emulation.
 __CRT_UUID_DECL(IListView_Win7, 0xE5B16AF2, 0x3990, 0x4681, 0xA6, 0x09, 0x1F, 0x06, 0x0C, 0xD1, 0x42, 0x69)
 #endif
-
-#endif /* __ROMPROPERTIES_LIBWIN32COMMON_SDK_ILISTVIEW_HPP__ */

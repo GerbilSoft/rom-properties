@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (D-Bus Thumbnailer)                *
  * rp-thumbnailer-dbus.h: D-Bus thumbnailer service.                       *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_THUMBNAILER_DBUS_RP_THUMBNAILER_DBUS_HPP__
-#define __ROMPROPERTIES_GTK_THUMBNAILER_DBUS_RP_THUMBNAILER_DBUS_HPP__
+#pragma once
 
 #include "glib-compat.h"
 #include <gio/gio.h>
@@ -35,5 +34,3 @@ RpThumbnailer	*rp_thumbnailer_new			(GDBusConnection *connection,
 gboolean	rp_thumbnailer_is_exported		(RpThumbnailer *thumbnailer);
 
 G_END_DECLS
-
-#endif /* __ROMPROPERTIES_GTK_THUMBNAILER_DBUS_RP_THUMBNAILER_DBUS_HPP__ */

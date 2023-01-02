@@ -3,12 +3,11 @@
  * TextFuncs_wchar.hpp: wchar_t text conversion macros.                    *
  * Generally only used on Windows.                                         *
  *                                                                         *
- * Copyright (c) 2009-2020 by David Korth.                                 *
+ * Copyright (c) 2009-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_WCHAR_HPP__
-#define __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_WCHAR_HPP__
+#pragma once
 
 /**
  * NOTE: These are defined outside of the LibRpBase
@@ -27,19 +26,19 @@
 #include "common.h"
 
 #ifdef _WIN32
-# include <tchar.h>
-# if defined(__cplusplus) && !defined(tstring)
+#  include <tchar.h>
+#  if defined(__cplusplus) && !defined(tstring)
 // NOTE: Can't use typedef due to std:: namespace.
-#  ifdef _UNICODE
-#   define tstring wstring
-#  else /* !_UNICODE */
-#   define tstring string
-#  endif /* _UNICODE */
-# endif /* defined(__cplusplus) && !defined(tstring) */
+#    ifdef _UNICODE
+#      define tstring wstring
+#    else /* !_UNICODE */
+#      define tstring string
+#    endif /* _UNICODE */
+#  endif /* defined(__cplusplus) && !defined(tstring) */
 #endif /* _WIN32 */
 
 #ifndef RP_WIS16
-# error Cannot use TextFuncs_wchar.hpp if sizeof(wchar_t) != 2
+#  error Cannot use TextFuncs_wchar.hpp if sizeof(wchar_t) != 2
 #endif /* RP_WIS16 */
 
 /** wchar_t (Unicode) **/
@@ -228,5 +227,3 @@ static inline std::string T2U8(const std::tstring &tcs)
 
 #endif /* UNICODE */
 #endif /* _WIN32 */
-
-#endif /* __ROMPROPERTIES_LIBRPBASE_TEXTFUNCS_WCHAR_HPP__ */

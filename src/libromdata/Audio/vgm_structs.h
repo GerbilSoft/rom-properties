@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * vgm_structs.h: VGM audio data structures.                               *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,8 +10,7 @@
 // - http://vgmrips.net/wiki/VGM_Specification
 // - http://vgmrips.net/wiki/GD3_Specification
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_AUDIO_VGM_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_AUDIO_VGM_STRUCTS_H__
+#pragma once
 
 #include "common.h"
 #include <stdint.h>
@@ -319,5 +318,3 @@ ASSERT_STRUCT(VGM_170_ChipVolume, 4);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_AUDIO_VGM_STRUCTS_H__ */

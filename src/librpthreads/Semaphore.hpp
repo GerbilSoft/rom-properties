@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpthreads)                     *
  * Semaphore.hpp: System-specific semaphore implementation.                *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPTHREADS_SEMAPHORE_HPP__
-#define __ROMPROPERTIES_LIBRPTHREADS_SEMAPHORE_HPP__
+#pragma once
 
 // NOTE: The .cpp files are #included here in order to inline the functions.
 // Do NOT compile them separately!
@@ -15,11 +14,11 @@
 // Each .cpp file defines the Mutex class itself, with required fields.
 
 #if defined(_WIN32)
-# include "SemaphoreWin32.cpp"
+#  include "SemaphoreWin32.cpp"
 #elif defined(__APPLE__)
-# include "SemaphoreMac.cpp"
+#  include "SemaphoreMac.cpp"
 #else
-# include "SemaphorePosix.cpp"
+#  include "SemaphorePosix.cpp"
 #endif
 
 namespace LibRpThreads {
@@ -57,5 +56,3 @@ class SemaphoreLocker
 };
 
 }
-
-#endif /* __ROMPROPERTIES_LIBRPTHREADS_SEMAPHORE_HPP__ */

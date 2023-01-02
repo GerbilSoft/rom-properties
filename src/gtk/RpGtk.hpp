@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RpGtk.hpp: glib/gtk+ wrappers for some libromdata functionality.        *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_RPGTK_HPP__
-#define __ROMPROPERTIES_GTK_RPGTK_HPP__
+#pragma once
 
 #include <gtk/gtk.h>
 
@@ -45,5 +44,3 @@ G_END_DECLS
 std::string convert_accel_to_gtk(const char *str);
 
 #endif /* __cplusplus */
-
-#endif /* __ROMPROPERTIES_GTK_RPGTK_HPP__ */

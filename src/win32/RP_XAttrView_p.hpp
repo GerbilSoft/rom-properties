@@ -3,12 +3,11 @@
  * RP_XAttrView_p.hpp: Extended attribute viewer property page.            *
  * (Private class)                                                         *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_RP_XATTRVIEW_P_HPP__
-#define __ROMPROPERTIES_WIN32_RP_XATTRVIEW_P_HPP__
+#pragma once
 
 // librpfile
 namespace LibRpFile {
@@ -119,5 +118,3 @@ class RP_XAttrView_Private
 		 */
 		static INT_PTR CALLBACK SubtabDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
-
-#endif /* __ROMPROPERTIES_WIN32_RP_XATTRVIEW_P_HPP__ */

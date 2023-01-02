@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiWAD_p.hpp: Nintendo Wii WAD file reader. (Private class)             *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_CONSOLE_WIIWAD_P_HPP__
-#define __ROMPROPERTIES_LIBROMDATA_CONSOLE_WIIWAD_P_HPP__
+#pragma once
 
 #include "stdafx.h"
 #include "librpbase/config.librpbase.h"
@@ -138,5 +137,3 @@ class WiiWADPrivate final : public LibRpBase::RomDataPrivate
 };
 
 }
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_CONSOLE_WIIWAD_P_HPP__ */

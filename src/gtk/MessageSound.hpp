@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * MessageSound.hpp: Message sound effects class.                          *
  *                                                                         *
- * Copyright (c) 2018-2020 by David Korth.                                 *
+ * Copyright (c) 2018-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_MESSAGESOUND_HPP__
-#define __ROMPROPERTIES_GTK_MESSAGESOUND_HPP__
+#pragma once
 
 #include <gtk/gtk.h>
 #include "common.h"
@@ -29,5 +28,3 @@ class MessageSound
 		 */
 		static void play(GtkMessageType notificationType, const char *message = nullptr, GtkWidget *parent = nullptr);
 };
-
-#endif /* __ROMPROPERTIES_GTK_MESSAGESOUND_HPP__ */

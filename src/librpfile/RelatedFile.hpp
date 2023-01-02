@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RelatedFile.hpp: Open a related file.                                   *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPFILE_RELATEDFILE_HPP__
-#define __ROMPROPERTIES_LIBRPFILE_RELATEDFILE_HPP__
+#pragma once
 
 namespace LibRpFile {
 	class IRpFile;
@@ -33,5 +32,3 @@ namespace LibRpFile { namespace FileSystem {
 LibRpFile::IRpFile *openRelatedFile(const char *filename, const char *basename, const char *ext);
 
 } }
-
-#endif /* __ROMPROPERTIES_LIBRPFILE_RELATEDFILE_HPP__ */

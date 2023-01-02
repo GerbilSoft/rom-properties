@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * is-supported.hpp: Check if a URI is supported.                          *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_IS_SUPPORTED_H__
-#define __ROMPROPERTIES_GTK_IS_SUPPORTED_H__
+#pragma once
 
 #include <glib.h>
 
@@ -25,5 +24,3 @@ namespace LibRomData {
 LibRpBase::RomData *rp_gtk_open_uri(const gchar *uri);
 
 #endif /* __cplusplus */
-
-#endif /* __ROMPROPERTIES_GTK_IS_SUPPORTED_H__ */

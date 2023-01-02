@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * http-status.hpp: HTTP status codes.                                     *
  *                                                                         *
- * Copyright (c) 2020-2022 by David Korth.                                 *
+ * Copyright (c) 2020-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_RP_DOWNLOAD_HTTP_STATUS_HPP__
-#define __ROMPROPERTIES_RP_DOWNLOAD_HTTP_STATUS_HPP__
+#pragma once
 
 #include "tcharx.h"
 
@@ -25,5 +24,3 @@ const TCHAR *http_status_string(int code);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_RP_DOWNLOAD_HTTP_STATUS_HPP__ */

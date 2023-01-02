@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * saturn_structs.h: Sega Saturn data structures.                          *
  *                                                                         *
- * Copyright (c) 2017-2020 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_SATURN_STRUCTS_H__
-#define __ROMPROPERTIES_LIBROMDATA_SATURN_STRUCTS_H__
+#pragma once
 
 /**
  * References:
@@ -83,5 +82,3 @@ typedef enum {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_SATURN_STRUCTS_H__ */

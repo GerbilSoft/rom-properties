@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK+)                             *
  * AchGDBus.hpp: GDBus notifications for achievements.                     *
  *                                                                         *
- * Copyright (c) 2020-2022 by David Korth.                                 *
+ * Copyright (c) 2020-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_ACHGDBUS_HPP__
-#define __ROMPROPERTIES_GTK_ACHGDBUS_HPP__
+#pragma once
 
 #include "common.h"
 #include "librpbase/Achievements.hpp"
@@ -43,5 +42,3 @@ class AchGDBus
 		 */
 		static AchGDBus *instance(void);
 };
-
-#endif /* __ROMPROPERTIES_GTK_ACHGDBUS_HPP__ */
