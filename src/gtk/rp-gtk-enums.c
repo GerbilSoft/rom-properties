@@ -20,8 +20,7 @@ rp_desc_format_type_get_type (void)
             { 0, NULL, NULL }
       };
 
-      GType g_enum_type_id =
-        g_enum_register_static (g_intern_static_string ("RpDescFormatType"), values);
+      GType g_enum_type_id = g_enum_register_static ("RpDescFormatType", values);
 
       g_once_init_leave (&static_g_enum_type_id, g_enum_type_id);
     }
@@ -44,8 +43,7 @@ rp_cache_dir_get_type (void)
             { 0, NULL, NULL }
       };
 
-      GType g_enum_type_id =
-        g_enum_register_static (g_intern_static_string ("RpCacheDir"), values);
+      GType g_enum_type_id = g_enum_register_static ("RpCacheDir", values);
 
       g_once_init_leave (&static_g_enum_type_id, g_enum_type_id);
     }

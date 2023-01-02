@@ -28,8 +28,7 @@ GType
             { 0, NULL, NULL }
       };
 
-      GType g_@type@_type_id =
-        g_@type@_register_static (g_intern_static_string ("@EnumName@"), values);
+      GType g_@type@_type_id = g_@type@_register_static ("@EnumName@", values);
 
       g_once_init_leave (&static_g_@type@_type_id, g_@type@_type_id);
     }
