@@ -104,12 +104,12 @@ SET(${PROJECT_NAME}_H
 
 # Sources and headers (GTK4+ only)
 SET(${PROJECT_NAME}_GTK4MIN_SRCS
-	LanguageComboBoxItem.cpp
-	config/AchievementItem.cpp
+	LanguageComboBoxItem.c
+	config/AchievementItem.c
 	)
 SET(${PROJECT_NAME}_GTK4MIN_H
-	LanguageComboBoxItem.hpp
-	config/AchievementItem.hpp
+	LanguageComboBoxItem.h
+	config/AchievementItem.h
 	)
 
 IF(ENABLE_DECRYPTION)

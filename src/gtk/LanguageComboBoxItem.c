@@ -7,13 +7,7 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "LanguageComboBoxItem.hpp"
-
-// librpbase
-using namespace LibRpBase;
-
-// C++ STL classes
-using std::string;
+#include "LanguageComboBoxItem.h"
 
 /* Property identifiers */
 typedef enum {
@@ -57,7 +51,7 @@ struct _RpLanguageComboBoxItem {
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
 G_DEFINE_TYPE_EXTENDED(RpLanguageComboBoxItem, rp_language_combo_box_item,
-	G_TYPE_OBJECT, static_cast<GTypeFlags>(0), {});
+	G_TYPE_OBJECT, (GTypeFlags)0, {});
 
 static void
 rp_language_combo_box_item_class_init(RpLanguageComboBoxItemClass *klass)
@@ -98,12 +92,11 @@ rp_language_combo_box_item_init(RpLanguageComboBoxItem *item)
 RpLanguageComboBoxItem*
 rp_language_combo_box_item_new(PIMGTYPE icon, const char *name, uint32_t lc)
 {
-	return static_cast<RpLanguageComboBoxItem*>(
-		g_object_new(RP_TYPE_LANGUAGE_COMBO_BOX_ITEM,
+	return g_object_new(RP_TYPE_LANGUAGE_COMBO_BOX_ITEM,
 			"icon", icon,
 			"name", name,
 			"lc", lc,
-			nullptr));
+			NULL);
 }
 
 /** Properties **/
@@ -122,7 +115,7 @@ rp_language_combo_box_item_set_property(GObject		*object,
 			if (icon) {
 				if (item->icon) {
 					PIMGTYPE_unref(item->icon);
-					item->icon = nullptr;
+					item->icon = NULL;
 				}
 				item->icon = PIMGTYPE_ref(icon);
 			}
@@ -187,7 +180,7 @@ rp_language_combo_box_item_dispose(GObject *object)
 
 	if (item->icon) {
 		PIMGTYPE_unref(item->icon);
-		item->icon = nullptr;
+		item->icon = NULL;
 	}
 
 	// Call the superclass dispose() function.
@@ -202,7 +195,7 @@ rp_language_combo_box_item_finalize(GObject *object)
 
 	if (item->name) {
 		g_free(item->name);
-		item->name = nullptr;
+		item->name = NULL;
 	}
 
 	// Call the superclass finalize() function.
@@ -228,7 +221,7 @@ rp_language_combo_box_item_set_icon(RpLanguageComboBoxItem *item, PIMGTYPE icon)
 PIMGTYPE
 rp_language_combo_box_item_get_icon(RpLanguageComboBoxItem *item)
 {
-	g_return_val_if_fail(RP_IS_LANGUAGE_COMBO_BOX_ITEM(item), nullptr);
+	g_return_val_if_fail(RP_IS_LANGUAGE_COMBO_BOX_ITEM(item), NULL);
 
 	// Caller must take a reference to the icon.
 	return item->icon;
@@ -251,7 +244,7 @@ rp_language_combo_box_item_set_name(RpLanguageComboBoxItem *item, const char *na
 const char*
 rp_language_combo_box_item_get_name(RpLanguageComboBoxItem *item)
 {
-	g_return_val_if_fail(RP_IS_LANGUAGE_COMBO_BOX_ITEM(item), nullptr);
+	g_return_val_if_fail(RP_IS_LANGUAGE_COMBO_BOX_ITEM(item), NULL);
 
 	// String is owned by this instance.
 	return item->name;

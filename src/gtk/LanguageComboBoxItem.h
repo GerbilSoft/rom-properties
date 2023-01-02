@@ -1,13 +1,13 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK+ common)                      *
- * LanguageComboBoxItem.hpp: Language ComboBox Item (for GtkDropDown)      *
+ * LanguageComboBoxItem.h: Language ComboBox Item (for GtkDropDown)        *
  *                                                                         *
  * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_LANGUAGECOMBOBOXITEM_HPP__
-#define __ROMPROPERTIES_GTK_LANGUAGECOMBOBOXITEM_HPP__
+#ifndef __ROMPROPERTIES_GTK_LANGUAGECOMBOBOXITEM_H__
+#define __ROMPROPERTIES_GTK_LANGUAGECOMBOBOXITEM_H__
 
 #include "gtk-compat.h"
 #include "PIMGTYPE.hpp"
@@ -34,4 +34,4 @@ uint32_t	rp_language_combo_box_item_get_lc		(RpLanguageComboBoxItem *item);
 
 G_END_DECLS
 
-#endif /* __ROMPROPERTIES_GTK_LANGUAGECOMBOBOXITEM_HPP__ */
+#endif /* __ROMPROPERTIES_GTK_LANGUAGECOMBOBOXITEM_H__ */

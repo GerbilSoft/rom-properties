@@ -11,7 +11,7 @@
 #include "PIMGTYPE.hpp"
 
 #ifdef USE_GTK_DROP_DOWN
-#  include "LanguageComboBoxItem.hpp"
+#  include "LanguageComboBoxItem.h"
 #endif /* USE_GTK_DROP_DOWN */
 
 // librpbase
