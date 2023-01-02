@@ -18,7 +18,7 @@
 
 // Custom widgets
 #include "DragImage.hpp"
-#include "MessageWidget.hpp"
+#include "MessageWidget.h"
 #include "LanguageComboBox.hpp"
 
 // librpbase, librptexture

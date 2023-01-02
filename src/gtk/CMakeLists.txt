@@ -44,7 +44,7 @@ SET(${PROJECT_NAME}_SRCS
 	PIMGTYPE.cpp
 	rp-gtk-enums.c
 	RpFile_gio.cpp
-	MessageWidget.cpp
+	MessageWidget.c
 	RpGtk.cpp
 	sort_funcs.c
 	LanguageComboBox.cpp
@@ -76,7 +76,7 @@ SET(${PROJECT_NAME}_H
 	PIMGTYPE.hpp
 	rp-gtk-enums.h
 	RpFile_gio.hpp
-	MessageWidget.hpp
+	MessageWidget.h
 	RpGtk.hpp
 	sort_funcs.h
 	glib-compat.h

@@ -16,7 +16,7 @@
 #include "KeyStoreGTK.hpp"
 using LibRomData::KeyStoreUI;
 
-#include "MessageWidget.hpp"
+#include "MessageWidget.h"
 
 // librpbase
 using namespace LibRpBase;

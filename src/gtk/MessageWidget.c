@@ -1,13 +1,13 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK+ common)                      *
- * MessageWidget.hpp: Message widget. (Similar to KMessageWidget)          *
+ * MessageWidget.c: Message widget (similar to KMessageWidget)             *
  *                                                                         *
  * Copyright (c) 2017-2022 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "MessageWidget.hpp"
+#include "MessageWidget.h"
 
 /* Property identifiers */
 typedef enum {
@@ -70,7 +70,7 @@ struct _RpMessageWidget {
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
 G_DEFINE_TYPE_EXTENDED(RpMessageWidget, rp_message_widget,
-	GTK_TYPE_SUPER, static_cast<GTypeFlags>(0), {});
+	GTK_TYPE_SUPER, (GTypeFlags)0, {});
 
 static void
 rp_message_widget_class_init(RpMessageWidgetClass *klass)
@@ -83,7 +83,7 @@ rp_message_widget_class_init(RpMessageWidgetClass *klass)
 
 	props[PROP_TEXT] = g_param_spec_string(
 		"text", "Text", "Text displayed on the MessageWidget.",
-		nullptr,
+		NULL,
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
 	props[PROP_MESSAGE_TYPE] = g_param_spec_enum(
@@ -175,7 +175,7 @@ rp_message_widget_init(RpMessageWidget *widget)
 	widget->messageType = GTK_MESSAGE_OTHER;
 	widget->image = gtk_image_new();
 	gtk_widget_set_name(widget->image, "image");
-	widget->label = gtk_label_new(nullptr);
+	widget->label = gtk_label_new(NULL);
 	gtk_widget_set_name(widget->label, "label");
 
 	// TODO: Align the GtkImage to the top of the first line
@@ -218,7 +218,7 @@ rp_message_widget_init(RpMessageWidget *widget)
 GtkWidget*
 rp_message_widget_new(void)
 {
-	return static_cast<GtkWidget*>(g_object_new(RP_TYPE_MESSAGE_WIDGET, nullptr));
+	return g_object_new(RP_TYPE_MESSAGE_WIDGET, NULL);
 }
 
 /** Properties **/
@@ -237,7 +237,7 @@ rp_message_widget_set_property(GObject		*object,
 			break;
 
 		case PROP_MESSAGE_TYPE:
-			rp_message_widget_set_message_type(widget, static_cast<GtkMessageType>(g_value_get_enum(value)));
+			rp_message_widget_set_message_type(widget, (GtkMessageType)g_value_get_enum(value));
 			break;
 
 		default:
@@ -290,12 +290,12 @@ rp_message_widget_set_message_type(RpMessageWidget *widget, GtkMessageType messa
 {
 	// Update the icon.
 	// Background colors based on KMessageWidget.
-	struct IconInfo_t {
+	typedef struct _IconInfo_t {
 		const char icon_name[20];	// XDG icon name
 		const char css_class[20];	// CSS class (GTK+ 3.x only)
 		uint32_t border_color;		// from KMessageWidget
 		uint32_t bg_color;		// lightened version of border_color
-	};
+	} IconInfo_t;
 	static const IconInfo_t iconInfo_tbl[] = {
 		{"dialog-information",	"gsrp_msgw_info",	0x3DAEE9, 0x7FD3FF},	// INFO
 		{"dialog-warning",	"gsrp_msgw_warning",	0xF67400, 0xFF9B41},	// WARNING
@@ -336,11 +336,12 @@ rp_message_widget_set_message_type(RpMessageWidget *widget, GtkMessageType messa
 
 		// Remove all of our CSS classes first.
 		GtkStyleContext *const context = gtk_widget_get_style_context(GTK_WIDGET(widget));
-		for (auto iconInfo : iconInfo_tbl) {
-			gtk_style_context_remove_class(context, iconInfo.css_class);
+		static const IconInfo_t *const pIconInfo_tbl_end = &iconInfo_tbl[ARRAY_SIZE(iconInfo_tbl)];
+		for (const IconInfo_t *p = iconInfo_tbl; p < pIconInfo_tbl_end; p++) {
+			gtk_style_context_remove_class(context, p->css_class);
 		}
-		for (auto darkCssClass : dark_css_class_tbl) {
-			gtk_style_context_remove_class(context, darkCssClass);
+		for (unsigned int i = 0; i < ARRAY_SIZE(dark_css_class_tbl); i++) {
+			gtk_style_context_remove_class(context, dark_css_class_tbl[i]);
 		}
 
 		// Get the text color. If its grayscale value is >= 0.75,
@@ -384,8 +385,8 @@ rp_message_widget_set_message_type(RpMessageWidget *widget, GtkMessageType messa
 	} else {
 #if !GTK_CHECK_VERSION(3,0,0)
 		gtk_container_set_border_width(GTK_CONTAINER(widget->evbox_inner), 0);
-		gtk_widget_modify_bg(GTK_WIDGET(widget), GTK_STATE_NORMAL, nullptr);
-		gtk_widget_modify_bg(GTK_WIDGET(widget->evbox_inner), GTK_STATE_NORMAL, nullptr);
+		gtk_widget_modify_bg(GTK_WIDGET(widget), GTK_STATE_NORMAL, NULL);
+		gtk_widget_modify_bg(GTK_WIDGET(widget->evbox_inner), GTK_STATE_NORMAL, NULL);
 #endif /* !GTK_CHECK_VERSION(3,0,0) */
 	}
 
