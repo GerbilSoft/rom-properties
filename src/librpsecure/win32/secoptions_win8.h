@@ -2,15 +2,15 @@
  * ROM Properties Page shell extension. (librpsecure/win32)                *
  * secoptions_win8.h: Security options for executables. (Win8)             *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef __ROMPROPERTIES_LIBRPSECURE_WIN32_SECOPTIONS_WIN8_H__
 #define __ROMPROPERTIES_LIBRPSECURE_WIN32_SECOPTIONS_WIN8_H__
 
-#ifndef __ROMPROPERTIES_LIBRPSECURE_WIN32_SECOPTIONS_WIN8_H__
-#error secoptions_win8.h should not be included directly - include secoptions.h instead
+#ifndef __ROMPROPERTIES_LIBRPSECURE_WIN32_SECOPTIONS_H__
+#  error secoptions_win8.h should not be included directly - include secoptions.h instead
 #endif
 
 /* NOTE: MinGW-w64 v5.0.3 has ProcessDynamicCodePolicy
