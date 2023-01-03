@@ -2,7 +2,6 @@
     "CacheThumbnail": true,
     "KPlugin": {
         "MimeTypes": [
-            "application/octet-stream",
 @MIMETYPES_ALL_JSON_ARRAY@
         ],
         "Name": "ROM Properties Page",
@@ -13,7 +12,7 @@
             "ThumbnailCreator"
         ]
     },
-    "MimeType": "application/octet-stream;@MIMETYPES_ALL@",
+    "MimeType": "@MIMETYPES_ALL@",
     "X-KDE-Protocols": [
         "file",
         "desktop"
