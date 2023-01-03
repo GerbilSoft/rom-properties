@@ -5,7 +5,7 @@
             "application/octet-stream",
 @MIMETYPES_ALL_JSON_ARRAY@
         ],
-        "Name": "rom-properties-kf5",
+        "Name": "ROM Properties Page",
         "Description": "ROM Properties Page for KDE Frameworks 5",
         "ServiceTypes": [
             "KPropertiesDialog/Plugin",

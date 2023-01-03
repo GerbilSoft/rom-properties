@@ -4,7 +4,7 @@
         "MimeTypes": [
 @MIMETYPES_ALL_JSON_ARRAY@
         ],
-        "Name": "rom-properties-kf6",
+        "Name": "ROM Properties Page",
         "Description": "ROM Properties Page for KDE Frameworks 6",
         "ServiceTypes": [
             "KPropertiesDialog/Plugin",
