@@ -167,6 +167,13 @@ class RP_LIBROMDATA_PUBLIC Config : public ConfReader
 		 * @return True if we should enable; false if not.
 		 */
 		bool enableThumbnailOnNetworkFS(void) const;
+
+		/**
+		 * Show the Extended Attributes tab?
+		 * NOTE: Call load() before using this function.
+		 * @return True if we should enable; false if not.
+		 */
+		bool showXAttrView(void) const;
 };
 
 }

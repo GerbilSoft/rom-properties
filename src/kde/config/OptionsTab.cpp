@@ -105,6 +105,7 @@ void OptionsTab::reset(void)
 	// Options
 	d->ui.chkShowDangerousPermissionsOverlayIcon->setChecked(config->showDangerousPermissionsOverlayIcon());
 	d->ui.chkEnableThumbnailOnNetworkFS->setChecked(config->enableThumbnailOnNetworkFS());
+	d->ui.chkShowXAttrView->setChecked(config->showXAttrView());
 
 	// PAL language code
 	const uint32_t lc = config->palLanguageForGameTDB();
@@ -146,6 +147,7 @@ void OptionsTab::loadDefaults(void)
 	// Options
 	static const bool showDangerousPermissionsOverlayIcon_default = true;
 	static const bool enableThumbnailOnNetworkFS_default = false;
+	static const bool showXAttrView_default = true;
 	bool isDefChanged = false;
 
 	Q_D(OptionsTab);
@@ -188,6 +190,10 @@ void OptionsTab::loadDefaults(void)
 	}
 	if (d->ui.chkEnableThumbnailOnNetworkFS->isChecked() != enableThumbnailOnNetworkFS_default) {
 		d->ui.chkEnableThumbnailOnNetworkFS->setChecked(enableThumbnailOnNetworkFS_default);
+		isDefChanged = true;
+	}
+	if (d->ui.chkShowXAttrView->isChecked() != showXAttrView_default) {
+		d->ui.chkShowXAttrView->setChecked(showXAttrView_default);
 		isDefChanged = true;
 	}
 
@@ -266,6 +272,8 @@ void OptionsTab::save(QSettings *pSettings)
 		d->ui.chkShowDangerousPermissionsOverlayIcon->isChecked());
 	pSettings->setValue(QLatin1String("EnableThumbnailOnNetworkFS"),
 		d->ui.chkEnableThumbnailOnNetworkFS->isChecked());
+	pSettings->setValue(QLatin1String("ShowXAttrView"),
+		d->ui.chkShowXAttrView->isChecked());
 	pSettings->endGroup();
 
 	// Configuration saved.

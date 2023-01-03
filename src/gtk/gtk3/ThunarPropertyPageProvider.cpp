@@ -13,7 +13,9 @@
 #include "../RomDataView.hpp"
 #include "../xattr/XAttrView.hpp"
 
+#include "librpbase/config/Config.hpp"
 #include "librpbase/RomData.hpp"
+using LibRpBase::Config;
 using LibRpBase::RomData;
 
 // thunarx.h mini replacement
@@ -170,11 +172,19 @@ rp_thunar_property_page_provider_get_pages(ThunarxPropertyPageProvider *page_pro
 	}
 
 	GList *list = nullptr;
+	GtkWidget *page;
 
-	GtkWidget *page = rp_thunar_property_page_provider_get_XAttrView(uri);
-	if (page) {
-		list = g_list_prepend(list, page);
+	// Check if XAttrView is enabled.
+	const Config *const config = Config::instance();
+	if (config->showXAttrView()) {
+		// XAttrView is enabled.
+		page = rp_thunar_property_page_provider_get_XAttrView(uri);
+		if (page) {
+			list = g_list_prepend(list, page);
+		}
 	}
+
+	// RomDataView
 	page = rp_thunar_property_page_provider_get_RomDataView(uri);
 	if (page) {
 		list = g_list_prepend(list, page);

@@ -23,7 +23,9 @@
 #include "../RomDataView.hpp"
 #include "../xattr/XAttrView.hpp"
 
+#include "librpbase/config/Config.hpp"
 #include "librpbase/RomData.hpp"
+using LibRpBase::Config;
 using LibRpBase::RomData;
 
 // nautilus-extension.h mini replacement
@@ -180,11 +182,19 @@ rp_nautilus_property_page_provider_get_pages(NautilusPropertyPageProvider *provi
 	}
 
 	GList *list = nullptr;
+	NautilusPropertyPage *page;
 
-	NautilusPropertyPage *page = rp_nautilus_property_page_provider_get_XAttrView(uri);
-	if (page) {
-		list = g_list_prepend(list, page);
+	// Check if XAttrView is enabled.
+	const Config *const config = Config::instance();
+	if (config->showXAttrView()) {
+		// XAttrView is enabled.
+		page = rp_nautilus_property_page_provider_get_XAttrView(uri);
+		if (page) {
+			list = g_list_prepend(list, page);
+		}
 	}
+
+	// RomDataView
 	page = rp_nautilus_property_page_provider_get_RomDataView(uri);
 	if (page) {
 		list = g_list_prepend(list, page);

@@ -16,8 +16,12 @@
 
 #include "stdafx.h"
 #include "check-uid.hpp"
+
 #include "XAttrViewPropertiesDialogPlugin.hpp"
 #include "XAttrView.hpp"
+
+#include "librpbase/config/Config.hpp"
+using LibRpBase::Config;
 
 /**
  * Instantiate an XAttrView object for the given KFileItem.
@@ -64,6 +68,13 @@ XAttrViewPropertiesDialogPlugin::XAttrViewPropertiesDialogPlugin(QObject *parent
 	}
 
 	const KFileItem &fileItem = items[0];
+
+	// Check if XAttrView is enabled.
+	const Config *const config = Config::instance();
+	if (!config->showXAttrView()) {
+		// XAttrView is disabled.
+		return;
+	}
 
 	// Create the XAttrView.
 	XAttrView *const xattrView = createXAttrView(fileItem, props);

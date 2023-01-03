@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>503</width>
-    <height>453</height>
+    <height>483</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="vboxMain">
@@ -156,6 +156,13 @@ This helps to identify where cached files were downloaded from.</string>
         <property name="text">
          <string>Enable thumbnailing and metadata extraction on network
 file systems. This may slow down file browsing.</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="chkShowXAttrView">
+        <property name="text">
+         <string>Show the Extended Attributes tab.</string>
         </property>
        </widget>
       </item>
@@ -311,6 +318,22 @@ file systems. This may slow down file browsing.</string>
     <hint type="destinationlabel">
      <x>501</x>
      <y>58</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>chkShowXAttrView</sender>
+   <signal>clicked()</signal>
+   <receiver>OptionsTab</receiver>
+   <slot>optionChanged_slot()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>133</x>
+     <y>451</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>191</x>
+     <y>480</y>
     </hint>
    </hints>
   </connection>

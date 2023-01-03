@@ -63,6 +63,7 @@ struct _RpOptionsTab {
 	// Options
 	GtkWidget *chkShowDangerousPermissionsOverlayIcon;
 	GtkWidget *chkEnableThumbnailOnNetworkFS;
+	GtkWidget *chkShowXAttrView;
 };
 
 // Interface initialization
@@ -263,6 +264,9 @@ rp_options_tab_init(RpOptionsTab *tab)
 		C_("OptionsTab", "Enable thumbnailing and metadata extraction on network\n"
 			"file systems. This may slow down file browsing."));
 	gtk_widget_set_name(tab->chkEnableThumbnailOnNetworkFS, "chkEnableThumbnailOnNetworkFS");
+	tab->chkShowXAttrView = gtk_check_button_new_with_label(
+		C_("OptionsTab", "Show the Extended Attributes tab."));
+	gtk_widget_set_name(tab->chkShowXAttrView, "chkShowXAttrView");
 
 	// Connect the signal handlers for the checkboxes.
 	// NOTE: Signal handlers are triggered if the value is
@@ -294,6 +298,8 @@ rp_options_tab_init(RpOptionsTab *tab)
 		G_CALLBACK(rp_options_tab_modified_handler), tab);
 	g_signal_connect(tab->chkEnableThumbnailOnNetworkFS, "toggled",
 		G_CALLBACK(rp_options_tab_modified_handler), tab);
+	g_signal_connect(tab->chkShowXAttrView, "toggled",
+		G_CALLBACK(rp_options_tab_modified_handler), tab);
 
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_box_append(GTK_BOX(tab), fraDownloads);
@@ -308,6 +314,7 @@ rp_options_tab_init(RpOptionsTab *tab)
 	gtk_box_append(GTK_BOX(tab), fraOptions);
 	gtk_box_append(GTK_BOX(vboxOptions), tab->chkShowDangerousPermissionsOverlayIcon);
 	gtk_box_append(GTK_BOX(vboxOptions), tab->chkEnableThumbnailOnNetworkFS);
+	gtk_box_append(GTK_BOX(vboxOptions), tab->chkShowXAttrView);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	gtk_box_pack_start(GTK_BOX(tab), fraDownloads, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(vboxDownloads), tab->fraExtImgDownloads, false, false, 0);
@@ -321,6 +328,7 @@ rp_options_tab_init(RpOptionsTab *tab)
 	gtk_box_pack_start(GTK_BOX(tab), fraOptions, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(vboxOptions), tab->chkShowDangerousPermissionsOverlayIcon, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(vboxOptions), tab->chkEnableThumbnailOnNetworkFS, false, false, 0);
+	gtk_box_pack_start(GTK_BOX(vboxOptions), tab->chkShowXAttrView, false, false, 0);
 
 	gtk_widget_show_all(fraDownloads);
 	gtk_widget_show_all(fraOptions);
@@ -379,6 +387,9 @@ rp_options_tab_reset(RpOptionsTab *tab)
 	gtk_check_button_set_active(
 		GTK_CHECK_BUTTON(tab->chkEnableThumbnailOnNetworkFS),
 		config->enableThumbnailOnNetworkFS());
+	gtk_check_button_set_active(
+		GTK_CHECK_BUTTON(tab->chkShowXAttrView),
+		config->showXAttrView());
 
 	// PAL language code
 	rp_language_combo_box_set_selected_lc(RP_LANGUAGE_COMBO_BOX(tab->cboGameTDBPAL), config->palLanguageForGameTDB());
@@ -409,6 +420,7 @@ rp_options_tab_load_defaults(RpOptionsTab *tab)
 	// Options
 	static const bool showDangerousPermissionsOverlayIcon_default = true;
 	static const bool enableThumbnailOnNetworkFS_default = false;
+	static const bool showXAttrView_default = true;
 	bool isDefChanged = false;
 
 	// Downloads
@@ -458,6 +470,12 @@ rp_options_tab_load_defaults(RpOptionsTab *tab)
 		gtk_check_button_set_active(
 			GTK_CHECK_BUTTON(tab->chkEnableThumbnailOnNetworkFS),
 			enableThumbnailOnNetworkFS_default);
+		isDefChanged = true;
+	}
+	if (COMPARE_CHK(tab->chkShowXAttrView, showXAttrView_default)) {
+		gtk_check_button_set_active(
+			GTK_CHECK_BUTTON(tab->chkShowXAttrView),
+			showXAttrView_default);
 		isDefChanged = true;
 	}
 
@@ -529,6 +547,8 @@ rp_options_tab_save(RpOptionsTab *tab, GKeyFile *keyFile)
 		GET_CHK(tab->chkShowDangerousPermissionsOverlayIcon));
 	g_key_file_set_boolean(keyFile, "Options", "EnableThumbnailOnNetworkFS",
 		GET_CHK(tab->chkEnableThumbnailOnNetworkFS));
+	g_key_file_set_boolean(keyFile, "Options", "ShowXAttrView",
+		GET_CHK(tab->chkShowXAttrView));
 
 	// Configuration saved.
 	tab->changed = false;

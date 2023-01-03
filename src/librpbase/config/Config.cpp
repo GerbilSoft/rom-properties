@@ -96,6 +96,7 @@ class ConfigPrivate : public ConfReaderPrivate
 		// Other options.
 		bool showDangerousPermissionsOverlayIcon;
 		bool enableThumbnailOnNetworkFS;
+		bool showXAttrView;
 };
 
 /** ConfigPrivate **/
@@ -140,6 +141,8 @@ ConfigPrivate::ConfigPrivate()
 	, showDangerousPermissionsOverlayIcon(true)
 	// Enable thumbnailing and metadata on network FS
 	, enableThumbnailOnNetworkFS(false)
+	// Show the Extended Attributes tab
+	, showXAttrView(true)
 {
 	// NOTE: Configuration is also initialized in the reset() function.
 	memset(dmgTSMode, 0, sizeof(dmgTSMode));
@@ -182,6 +185,8 @@ void ConfigPrivate::reset(void)
 	showDangerousPermissionsOverlayIcon = true;
 	// Enable thumbnail and metadata on network FS
 	enableThumbnailOnNetworkFS = false;
+	// Show the Extended Attributes tab
+	showXAttrView = true;
 }
 
 /**
@@ -304,6 +309,8 @@ int ConfigPrivate::processConfigLine(const char *section, const char *name, cons
 			param = &showDangerousPermissionsOverlayIcon;
 		} else if (!strcasecmp(name, "EnableThumbnailOnNetworkFS")) {
 			param = &enableThumbnailOnNetworkFS;
+		} else if (!strcasecmp(name, "ShowXAttrView")) {
+			param = &showXAttrView;
 		} else {
 			// Invalid option.
 			return 1;
@@ -694,6 +701,17 @@ bool Config::enableThumbnailOnNetworkFS(void) const
 {
 	RP_D(const Config);
 	return d->enableThumbnailOnNetworkFS;
+}
+
+/**
+ * Show the Extended Attributes tab?
+ * NOTE: Call load() before using this function.
+ * @return True if we should enable; false if not.
+ */
+bool Config::showXAttrView(void) const
+{
+	RP_D(const Config);
+	return d->showXAttrView;
 }
 
 }
