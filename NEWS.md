@@ -20,6 +20,13 @@
   * WiiWAD: Add application/x-doom-wad for compatibility with some systems that
     assume all .wad files are Doom WADs.
   * WiiWAD: application/x-dsi-tad -> application/x-nintendo-dsi-tad
+  * KDE: Revert RpQImageBackend registration removal in RomThumbCreator. This
+    is needed when using KDE Frameworks 5.99 or earlier, since the
+    ThumbCreator interface is not considered a KPlugin.
+    * Fixes #372: KF5 frontend crashes when displaying thumbnails
+      (rp_image_backend doesn't get initialized)
+    * Merged #374: [kde] register RpQImageBackend when RomThumbCreator is used
+      * Reported by @DankRank.
 
 * Other changes:
   * EXE: Don't show import/export tables for .NET executables, since they only
