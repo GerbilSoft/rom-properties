@@ -26,7 +26,10 @@
     * Fixes #372: KF5 frontend crashes when displaying thumbnails
       (rp_image_backend doesn't get initialized)
     * Merged #374: [kde] register RpQImageBackend when RomThumbCreator is used
-      * Reported by @DankRank.
+      * Reported and submitted by @DankRank.
+  * KDE: Fix split debug install paths.
+    * Merged #373: [kde] Fix split debug install paths.
+      * Submitted by @DankRank.
 
 * Other changes:
   * EXE: Don't show import/export tables for .NET executables, since they only
