@@ -70,42 +70,21 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 		### FIXME: KF6 isn't available yet, so we're only
 		### compile-testing against Qt6.
 
-		IF(0)
 		# Find KF6. (TODO: Version?)
-		FIND_PACKAGE(KF6 ${REQUIRE_KF6} COMPONENTS KIO WidgetsAddons FileMetaData)
-		IF(NOT KF6KIO_FOUND OR NOT KF6WidgetsAddons_FOUND OR NOT KF6FileMetaData_FOUND)
+		# NOTE: KF6 is still using the KF5 namespace for now.
+		FIND_PACKAGE(KF5 ${REQUIRE_KF6} COMPONENTS KIO WidgetsAddons) # FileMetaData)
+		IF(NOT KF5KIO_FOUND OR NOT KF5WidgetsAddons_FOUND) # OR NOT KF5FileMetaData_FOUND)
 			# KF6 not found.
-			SET(BUILD_KF6 OFF CACHE INTERNAL "Build the KDE Frameworks 5 plugin." FORCE)
-		ENDIF(NOT KF6KIO_FOUND OR NOT KF6WidgetsAddons_FOUND OR NOT KF6FileMetaData_FOUND)
-		ENDIF(0)
+			SET(BUILD_KF6 OFF CACHE INTERNAL "Build the KDE Frameworks 6 plugin." FORCE)
+		ENDIF(NOT KF5KIO_FOUND OR NOT KF5WidgetsAddons_FOUND) # OR NOT KF6FileMetaData_FOUND)
 
 		# KIO::ThumbnailCreator is always available in KF6.
 		SET(HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H 1)
 
-		IF(KF6_PLUGIN_INSTALL_DIR)
 		SET(KF6_PRPD_PLUGIN_INSTALL_DIR  "${KF6_PLUGIN_INSTALL_DIR}/kf6/propertiesdialog")
 		SET(KF6_KFMD_PLUGIN_INSTALL_DIR  "${KF6_PLUGIN_INSTALL_DIR}/kf6/kfilemetadata")
 		SET(KF6_KOVI_PLUGIN_INSTALL_DIR  "${KF6_PLUGIN_INSTALL_DIR}/kf6/overlayicon")
 		SET(KF6_THUMB_PLUGIN_INSTALL_DIR "${KF6_PLUGIN_INSTALL_DIR}/kf6/thumbcreator")
-		ENDIF(KF6_PLUGIN_INSTALL_DIR)
-
-		# HACK: Hard-coded paths for KF5.
-		# This obviously won't work for KF6, but it's
-		# good enough for testing.
-		INCLUDE_DIRECTORIES(
-			"/usr/include/KF5"
-			"/usr/include/KF5/KCoreAddons"
-			"/usr/include/KF5/KFileMetaData"
-			"/usr/include/KF5/KIO"
-			"/usr/include/KF5/KIOCore"
-			"/usr/include/KF5/KIOGui"
-			"/usr/include/KF5/KIOWidgets"
-			"/usr/include/KF5/KWidgetsAddons"
-			)
-		# HACK: Hard-coded KF6 plugin directories.
-		SET(KF6_PRPD_PLUGIN_INSTALL_DIR "/usr/lib64/qt6/plugins/kf6/propertiesdialog")
-		SET(KF6_KFMD_PLUGIN_INSTALL_DIR "/usr/lib64/qt6/plugins/kf6/kfilemetadata")
-		SET(KF6_KOVI_PLUGIN_INSTALL_DIR "/usr/lib64/qt6/plugins/kf6/overlayicon")
 
 		IF(Qt6DBus_FOUND)
 			SET(HAVE_QtDBus 1)
@@ -117,11 +96,11 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 		ENDIF(Qt6DBus_FOUND)
 	ELSE()
 		# Qt6 not found.
-		SET(BUILD_KF6 OFF CACHE INTERNAL "Build the KDE Frameworks 5 plugin." FORCE)
+		SET(BUILD_KF6 OFF CACHE INTERNAL "Build the KDE Frameworks 6 plugin." FORCE)
 	ENDIF()
 ELSE()
 	# KF6 Extra CMake Modules not found.
-	SET(BUILD_KF6 OFF CACHE INTERNAL "Build the KDE Frameworks 5 plugin." FORCE)
+	SET(BUILD_KF6 OFF CACHE INTERNAL "Build the KDE Frameworks 6 plugin." FORCE)
 ENDIF()
 
 # Write the config.h file.
@@ -162,9 +141,6 @@ IF(HAVE_QtDBus)
 			)
 	ENDIF(HAVE_QtDBus_NOTIFY)
 ENDIF(HAVE_QtDBus)
-
-### FIXME: KF6 isn't available yet, so we're only
-### compile-testing against Qt6.
 
 # Main plugin
 SET(${PROJECT_NAME}_SRCS
@@ -228,9 +204,8 @@ IF(BUILD_KF6)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# src
 		)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE romdata)
-	### FIXME: KF6 isn't available yet, so we're only
-	### compile-testing against Qt6.
-	#TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC KF6::KIOGui KF6::KIOCore KF6::KIOWidgets KF6::WidgetsAddons KF6::FileMetaData)
+	# NOTE: KF6 is still using the KF5 namespace for now.
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC KF5::KIOGui KF5::KIOCore KF5::KIOWidgets KF5::WidgetsAddons) ## KF5::FileMetaData)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC Qt6::Widgets Qt6::Gui Qt6::Core)
 	IF(HAVE_QtDBus)
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC Qt6::DBus)
@@ -262,17 +237,12 @@ IF(BUILD_KF6)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# src
 		)
 	TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PRIVATE romdata)
-	### FIXME: KF6 isn't available yet, so we're only
-	### compile-testing against Qt6.
-	#TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PRIVATE KF6::KIOCore KF6::KIOWidgets)
+	# NOTE: KF6 is still using the KF5 namespace for now.
+	TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PRIVATE KF5::KIOCore KF5::KIOWidgets)
 	TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PUBLIC Qt6::Widgets Qt6::Gui Qt6::Core)
 
 	### Plugin Forwarders ###
 
-	### FIXME: KF6 isn't available yet, so we're only
-	### compile-testing against Qt6.
-
-	IF(0)
 	# ExtractorPluginForwarder
 	ADD_LIBRARY(kfilemetadata_${PROJECT_NAME} MODULE
 		ExtractorPluginForwarder.cpp
@@ -280,14 +250,14 @@ IF(BUILD_KF6)
 		)
 	SET_TARGET_PROPERTIES(kfilemetadata_${PROJECT_NAME} PROPERTIES PREFIX "")
 	DO_SPLIT_DEBUG(kfilemetadata_${PROJECT_NAME})
-	TARGET_LINK_LIBRARIES(kfilemetadata_${PROJECT_NAME} PRIVATE KF6::KIOCore KF6::FileMetaData)
+	# NOTE: KF6 is still using the KF5 namespace for now.
+	TARGET_LINK_LIBRARIES(kfilemetadata_${PROJECT_NAME} PRIVATE KF5::KIOCore) # KF5::FileMetaData)
 	TARGET_LINK_LIBRARIES(kfilemetadata_${PROJECT_NAME} PRIVATE Qt6::Core)
 
 	# Link in libdl if it's required for dlopen().
 	IF(CMAKE_DL_LIBS)
 		TARGET_LINK_LIBRARIES(kfilemetadata_${PROJECT_NAME} PRIVATE ${CMAKE_DL_LIBS})
 	ENDIF(CMAKE_DL_LIBS)
-	ENDIF(0)
 
 	# OverlayIconPluginForwarder
 	# TODO: Use kcoreaddons_add_plugin() for the JSON?
@@ -299,7 +269,8 @@ IF(BUILD_KF6)
 		)
 	SET_TARGET_PROPERTIES(overlayiconplugin_${PROJECT_NAME} PROPERTIES PREFIX "")
 	DO_SPLIT_DEBUG(overlayiconplugin_${PROJECT_NAME})
-	#TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE KF6::KIOCore KF6::KIOWidgets)
+	# NOTE: KF6 is still using the KF5 namespace for now.
+	TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE KF5::KIOCore KF5::KIOWidgets)
 	TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE Qt6::Core)
 
 	# Link in libdl if it's required for dlopen().
@@ -340,9 +311,6 @@ IF(BUILD_KF6)
 		)
 	CONFIGURE_FILE(${PROJECT_NAME}.json.in ${PROJECT_NAME}.json @ONLY)
 
-	### FIXME: KF6 isn't available yet, so we're only
-	### compile-testing against Qt6.
-	IF(0)
 	# Main plugin is installed in the propertiesdialog subdirectory.
 	# Create a symlink for ThumbCreator.
 	ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME} POST_BUILD
@@ -406,5 +374,4 @@ IF(BUILD_KF6)
 				)
 		ENDIF(DEBUG_FILENAME)
 	ENDIF(INSTALL_DEBUG)
-	ENDIF(0)
 ENDIF(BUILD_KF6)
