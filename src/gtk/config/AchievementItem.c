@@ -126,10 +126,7 @@ rp_achievement_item_set_property(GObject	*object,
 		}
 
 		case PROP_DESCRIPTION:
-			if (item->description) {
-				g_free(item->description);
-			}
-			item->description = g_strdup(g_value_get_string(value));
+			g_set_str(&item->description, g_value_get_string(value));
 			break;
 
 		case PROP_UNLOCK_TIME:
@@ -234,12 +231,7 @@ void
 rp_achievement_item_set_description(RpAchievementItem *item, const char *description)
 {
 	g_return_if_fail(RP_IS_ACHIEVEMENT_ITEM(item));
-
-	if (item->description) {
-		g_free(item->description);
-	}
-	item->description = g_strdup(description);
-
+	g_set_str(&item->description, description);
 	g_object_notify_by_pspec(G_OBJECT(item), props[PROP_DESCRIPTION]);
 
 }

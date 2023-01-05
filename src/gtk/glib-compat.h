@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <string.h> // for strcmp()
+
 #include <glib.h>
 
 G_BEGIN_DECLS
@@ -68,5 +70,26 @@ typedef void (* GClearHandleFunc) (guint handle_id);
         clear_func (_handle_id);                           \
       }                                                    \
   } G_STMT_END
+
+/** Functions added in GLib 2.76.0 **/
+
+#if !GLIB_CHECK_VERSION(2,75,1)
+static inline gboolean
+g_set_str (char       **str_pointer,
+           const char  *new_str)
+{
+  char *copy;
+
+  if (*str_pointer == new_str ||
+      (*str_pointer && new_str && strcmp (*str_pointer, new_str) == 0))
+    return FALSE;
+
+  copy = g_strdup (new_str);
+  g_free (*str_pointer);
+  *str_pointer = copy;
+
+  return TRUE;
+}
+#endif /* GLIB_CHECK_VERSION(2,75,1) */
 
 G_END_DECLS

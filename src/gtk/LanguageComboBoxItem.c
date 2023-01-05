@@ -123,10 +123,7 @@ rp_language_combo_box_item_set_property(GObject		*object,
 		}
 
 		case PROP_NAME:
-			if (item->name) {
-				g_free(item->name);
-			}
-			item->name = g_strdup(g_value_get_string(value));
+			g_set_str(&item->name, g_value_get_string(value));
 			break;
 
 		case PROP_LC:
@@ -231,12 +228,7 @@ void
 rp_language_combo_box_item_set_name(RpLanguageComboBoxItem *item, const char *name)
 {
 	g_return_if_fail(RP_IS_LANGUAGE_COMBO_BOX_ITEM(item));
-
-	if (item->name) {
-		g_free(item->name);
-	}
-	item->name = g_strdup(name);
-
+	g_set_str(&item->name, name);
 	g_object_notify_by_pspec(G_OBJECT(item), props[PROP_NAME]);
 
 }
