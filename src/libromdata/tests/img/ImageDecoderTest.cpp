@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * ImageDecoderTest.cpp: ImageDecoder class test.                          *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -670,7 +670,13 @@ INSTANTIATE_TEST_SUITE_P(DDS_ARGB32, ImageDecoderTest,
 			"ARGB/A2R10G10B10.png"),
 		ImageDecoderTest_mode(
 			"ARGB/A2B10G10R10.dds.gz",
-			"ARGB/A2B10G10R10.png"))
+			"ARGB/A2B10G10R10.png"),
+
+		// DXGI format is set; legacy bitmasks are not.
+		// (from Pillow)
+		ImageDecoderTest_mode(
+			"ARGB/argb-32bpp_MipMaps-1.dds.gz",
+			"ARGB/argb-32bpp_MipMaps-1.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // DirectDrawSurface tests (Luminance)
@@ -687,7 +693,15 @@ INSTANTIATE_TEST_SUITE_P(DDS_Luma, ImageDecoderTest,
 			"Luma/L16.png"),
 		ImageDecoderTest_mode(
 			"Luma/A8L8.dds.gz",
-			"Luma/A8L8.png"))
+			"Luma/A8L8.png"),
+		ImageDecoderTest_mode(
+			"Luma/uncompressed_l.dds.gz",
+			"Luma/uncompressed_l.png"),
+
+		// (from Pillow)
+		ImageDecoderTest_mode(
+			"Luma/uncompressed_la.dds.gz",
+			"Luma/uncompressed_la.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // DirectDrawSurface tests (Alpha)
