@@ -379,6 +379,7 @@ static inline uint32_t IA8_to_ARGB32(uint16_t px16)
 {
 	// FIXME: What's the component order of IA8?
 	// Assuming I=MSB, A=LSB...
+	// NOTE: This is the same as L8A8_to_ARGB32().
 
 	// IA8:    IIIIIIII AAAAAAAA
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
@@ -670,30 +671,32 @@ static inline uint32_t A8L8_to_ARGB32(uint16_t px16)
 {
 	//   A8L8: AAAAAAAA LLLLLLLL
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-	uint32_t argb;
-	argb =  (px16 & 0xFF) |			// Red
-	       ((px16 & 0xFF) << 8) |		// Green
-	       ((px16 & 0xFF) << 16) |		// Blue
-	       ((px16 << 16) & 0xFF000000);	// Alpha
-	return argb;
+	uint32_t i = (px16 & 0x00FF);
+	i |= (i <<  8);
+	i |= (i << 16);
+	i |= ((px16 & 0xFF00) << 16);
+	return i;
 }
 
 /**
  * Convert an L8A8 pixel to ARGB32.
  * NOTE: Uses a grayscale palette.
- * @param px16 A8L8 pixel.
+ * @param px16 L8A8 pixel.
  * @return ARGB32 pixel.
  */
 static inline uint32_t L8A8_to_ARGB32(uint16_t px16)
 {
+	// FIXME: What's the component order of IA8?
+	// Assuming I=MSB, A=LSB...
+	// NOTE: This is the same as IA8_to_ARGB32().
+
 	//   L8A8: LLLLLLLL AAAAAAAA
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
-	uint32_t argb;
-	argb =  (px16 >> 8) |			// Red
-	        (px16 & 0xFF00) |		// Green
-	       ((px16 << 8) & 0x00FF0000) |	// Blue
-	       ((px16 & 0xFF) << 24);		// Alpha
-	return argb;
+	uint32_t i = (px16 & 0xFF00);
+	i |= (i << 8);
+	i |= (i >> 8);
+	i |= ((px16 & 0x00FF) << 24);
+	return i;
 }
 
 // Alpha
