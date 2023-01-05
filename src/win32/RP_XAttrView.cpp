@@ -17,8 +17,10 @@
 #include "RP_XAttrView_p.hpp"
 #include "res/resource.h"
 
-// librpfile
+// librpbase, librpfile
+#include "librpbase/config/Config.hpp"
 #include "librpfile/xattr/XAttrReader.hpp"
+using LibRpBase::Config;
 using LibRpFile::XAttrReader;
 
 // MS-DOS and Windows attributes
@@ -312,6 +314,13 @@ IFACEMETHODIMP RP_XAttrView::Initialize(
 	// https://code.msdn.microsoft.com/windowsapps/CppShellExtPropSheetHandler-d93b49b7
 	if (!pDataObj) {
 		return E_INVALIDARG;
+	}
+
+	// Check if XAttrView is enabled.
+	const Config *const config = Config::instance();
+	if (!config->showXAttrView()) {
+		// XAttrView is disabled.
+		goto cleanup;
 	}
 
 	// TODO: Handle CFSTR_MOUNTEDVOLUME for volumes mounted on an NTFS mount point.

@@ -346,9 +346,11 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 
 			{DDPF_FOURCC_ATI1, DXGI_FORMAT_BC4_UNORM, DDS_ALPHA_MODE_STRAIGHT},
 			{DDPF_FOURCC_BC4U, DXGI_FORMAT_BC4_UNORM, DDS_ALPHA_MODE_STRAIGHT},
+			{DDPF_FOURCC_BC4S, DXGI_FORMAT_BC4_UNORM, DDS_ALPHA_MODE_STRAIGHT},
 
 			{DDPF_FOURCC_ATI2, DXGI_FORMAT_BC5_UNORM, DDS_ALPHA_MODE_STRAIGHT},
 			{DDPF_FOURCC_BC5U, DXGI_FORMAT_BC5_UNORM, DDS_ALPHA_MODE_STRAIGHT},
+			{DDPF_FOURCC_BC5S, DXGI_FORMAT_BC5_SNORM, DDS_ALPHA_MODE_STRAIGHT},
 
 			// TODO: PVRTC no-alpha formats?
 			{DDPF_FOURCC_PTC2, DXGI_FORMAT_FAKE_PVRTC_2bpp, DDS_ALPHA_MODE_STRAIGHT},
@@ -391,21 +393,21 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 				{DXGI_FORMAT_R8G8B8A8_UNORM,		ImageDecoder::PixelFormat::ABGR8888, 4},
 				{DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,	ImageDecoder::PixelFormat::ABGR8888, 4},
 				{DXGI_FORMAT_R8G8B8A8_UINT,		ImageDecoder::PixelFormat::ABGR8888, 4},
-				{DXGI_FORMAT_R8G8B8A8_SNORM,		ImageDecoder::PixelFormat::ABGR8888, 4},
-				{DXGI_FORMAT_R8G8B8A8_SINT,		ImageDecoder::PixelFormat::ABGR8888, 4},
+				//{DXGI_FORMAT_R8G8B8A8_SNORM,		ImageDecoder::PixelFormat::ABGR8888, 4},
+				//{DXGI_FORMAT_R8G8B8A8_SINT,		ImageDecoder::PixelFormat::ABGR8888, 4},
 
 				{DXGI_FORMAT_R16G16_TYPELESS,		ImageDecoder::PixelFormat::G16R16, 4},
 				{DXGI_FORMAT_R16G16_FLOAT,		ImageDecoder::PixelFormat::G16R16, 4},
 				{DXGI_FORMAT_R16G16_UNORM,		ImageDecoder::PixelFormat::G16R16, 4},
 				{DXGI_FORMAT_R16G16_UINT,		ImageDecoder::PixelFormat::G16R16, 4},
-				{DXGI_FORMAT_R16G16_SNORM,		ImageDecoder::PixelFormat::G16R16, 4},
-				{DXGI_FORMAT_R16G16_SINT,		ImageDecoder::PixelFormat::G16R16, 4},
+				//{DXGI_FORMAT_R16G16_SNORM,		ImageDecoder::PixelFormat::G16R16, 4},
+				//{DXGI_FORMAT_R16G16_SINT,		ImageDecoder::PixelFormat::G16R16, 4},
 
 				{DXGI_FORMAT_R8G8_TYPELESS,		ImageDecoder::PixelFormat::GR88, 2},
 				{DXGI_FORMAT_R8G8_UNORM,		ImageDecoder::PixelFormat::GR88, 2},
 				{DXGI_FORMAT_R8G8_UINT,			ImageDecoder::PixelFormat::GR88, 2},
-				{DXGI_FORMAT_R8G8_SNORM,		ImageDecoder::PixelFormat::GR88, 2},
-				{DXGI_FORMAT_R8G8_SINT,			ImageDecoder::PixelFormat::GR88, 2},
+				//{DXGI_FORMAT_R8G8_SNORM,		ImageDecoder::PixelFormat::GR88, 2},
+				//{DXGI_FORMAT_R8G8_SINT,		ImageDecoder::PixelFormat::GR88, 2},
 
 				{DXGI_FORMAT_A8_UNORM,			ImageDecoder::PixelFormat::A8, 1},
 
@@ -581,6 +583,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 	// which use premultiplied alpha.
 
 	// TODO: Handle sRGB.
+	// TODO: Handle signed textures.
 
 	// NOTE: Mipmaps are stored *after* the main image.
 	// Hence, no mipmap processing is necessary.
@@ -612,7 +615,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			case DXGI_FORMAT_BC1_UNORM_SRGB:
 			case DXGI_FORMAT_BC4_TYPELESS:
 			case DXGI_FORMAT_BC4_UNORM:
-			case DXGI_FORMAT_BC4_SNORM:
+			//case DXGI_FORMAT_BC4_SNORM:
 				// 16 pixels compressed into 64 bits. (4bpp)
 				// NOTE: Width and height must be rounded to the nearest tile. (4x4)
 				expected_size = ImageSizeCalc::T_calcImageSize(
@@ -627,7 +630,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			case DXGI_FORMAT_BC3_UNORM_SRGB:
 			case DXGI_FORMAT_BC5_TYPELESS:
 			case DXGI_FORMAT_BC5_UNORM:
-			case DXGI_FORMAT_BC5_SNORM:
+			//case DXGI_FORMAT_BC5_SNORM:
 			case DXGI_FORMAT_BC7_TYPELESS:
 			case DXGI_FORMAT_BC7_UNORM:
 			case DXGI_FORMAT_BC7_UNORM_SRGB:
@@ -801,7 +804,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 
 			case DXGI_FORMAT_BC4_TYPELESS:
 			case DXGI_FORMAT_BC4_UNORM:
-			case DXGI_FORMAT_BC4_SNORM:
+			//case DXGI_FORMAT_BC4_SNORM:
 				img = ImageDecoder::fromBC4(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					buf.get(), expected_size);
@@ -809,7 +812,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 
 			case DXGI_FORMAT_BC5_TYPELESS:
 			case DXGI_FORMAT_BC5_UNORM:
-			case DXGI_FORMAT_BC5_SNORM:
+			//case DXGI_FORMAT_BC5_SNORM:
 				img = ImageDecoder::fromBC5(
 					ddsHeader.dwWidth, ddsHeader.dwHeight,
 					buf.get(), expected_size);
