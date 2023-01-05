@@ -214,13 +214,18 @@ const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb
 const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_luma[] = {
 	// 8-bit
 	// TODO: Verify A4L4.
-	{0xFF000000, 0xFF000000, 0xFF000000, 0x00000000, "L8",   ImageDecoder::PixelFormat::L8},
+	{0x00FF, 0x0000, 0x0000, 0x0000, "L8",   ImageDecoder::PixelFormat::L8},
+	{0x00FF, 0x00FF, 0x00FF, 0x0000, "L8",   ImageDecoder::PixelFormat::L8},
+	{0xFF000000, 0xFF000000, 0xFF000000, 0x00000000, "L8",   ImageDecoder::PixelFormat::L8},	// from Pillow
+	{0x000F, 0x0000, 0x0000, 0x00F0, "A4L4", ImageDecoder::PixelFormat::A4L4},
 	{0x000F, 0x000F, 0x000F, 0x00F0, "A4L4", ImageDecoder::PixelFormat::A4L4},
 
 	// 16-bit
 	// TODO: Verify L16.
+	{0xFFFF, 0x0000, 0x0000, 0x0000, "L16",  ImageDecoder::PixelFormat::L16},
 	{0xFFFF, 0xFFFF, 0xFFFF, 0x0000, "L16",  ImageDecoder::PixelFormat::L16},
-	{0x00FF, 0x00FF, 0x00FF, 0xFF00, "A8L8", ImageDecoder::PixelFormat::A8L8},
+	{0x00FF, 0x0000, 0x0000, 0xFF00, "A8L8", ImageDecoder::PixelFormat::A8L8},
+	{0x00FF, 0x00FF, 0x00FF, 0xFF00, "A8L8", ImageDecoder::PixelFormat::A8L8},			// from Pillow
 
 	// end
 	{0, 0, 0, 0, "", ImageDecoder::PixelFormat::Unknown}
