@@ -30,6 +30,8 @@
   * KDE: Fix split debug install paths.
     * Merged #373: [kde] Fix split debug install paths.
       * Submitted by @DankRank.
+  * DirectDrawSurface: Fix detection of BC4S and BC5S, but disable signed
+    texture decoding right now because it doesn't currently work.
   * DirectDrawSurface: Fix detection for some L8 and A8L8 textures, as well as
     some uncompressed textures that have a DXGI format set but not the legacy
     bitmask values.
