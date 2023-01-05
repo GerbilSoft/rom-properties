@@ -30,6 +30,9 @@
   * KDE: Fix split debug install paths.
     * Merged #373: [kde] Fix split debug install paths.
       * Submitted by @DankRank.
+  * DirectDrawSurface: Fix detection for some L8 and A8L8 textures, as well as
+    some uncompressed textures that have a DXGI format set but not the legacy
+    bitmask values.
 
 * Other changes:
   * EXE: Don't show import/export tables for .NET executables, since they only
