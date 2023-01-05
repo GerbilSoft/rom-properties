@@ -384,8 +384,7 @@ static inline uint32_t IA8_to_ARGB32(uint16_t px16)
 	// IA8:    IIIIIIII AAAAAAAA
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 	uint32_t i = (px16 & 0xFF00);
-	i |= (i << 8);
-	i |= (i >> 8);
+	i |= ((i << 8) | (i >> 8));
 	i |= ((px16 & 0x00FF) << 24);
 	return i;
 }
@@ -672,8 +671,7 @@ static inline uint32_t A8L8_to_ARGB32(uint16_t px16)
 	//   A8L8: AAAAAAAA LLLLLLLL
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 	uint32_t i = (px16 & 0x00FF);
-	i |= (i <<  8);
-	i |= (i << 16);
+	i |= ((i << 8) | (i << 16));
 	i |= ((px16 & 0xFF00) << 16);
 	return i;
 }
@@ -693,8 +691,7 @@ static inline uint32_t L8A8_to_ARGB32(uint16_t px16)
 	//   L8A8: LLLLLLLL AAAAAAAA
 	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 	uint32_t i = (px16 & 0xFF00);
-	i |= (i << 8);
-	i |= (i >> 8);
+	i |= ((i << 8) | (i >> 8));
 	i |= ((px16 & 0x00FF) << 24);
 	return i;
 }
