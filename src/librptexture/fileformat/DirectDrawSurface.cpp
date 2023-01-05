@@ -587,7 +587,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 
 	// NOTE: Mipmaps are stored *after* the main image.
 	// Hence, no mipmap processing is necessary.
-	if (dxgi_format != 0) {
+	if (pxf_uncomp == ImageDecoder::PixelFormat::Unknown) {
 		// Compressed RGB data.
 
 		// NOTE: dwPitchOrLinearSize is not necessarily correct.
