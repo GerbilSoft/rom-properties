@@ -111,17 +111,6 @@ struct _RpConfigDialog {
 	// GtkNotebook tab widget
 	GtkWidget *tabWidget;
 
-	// Tabs
-	GtkWidget *tabImageTypes;
-	GtkWidget *tabSystems;
-	GtkWidget *tabOptions;
-	GtkWidget *tabCache;
-	GtkWidget *tabAchievements;
-#ifdef ENABLE_DECRYPTION
-	GtkWidget *tabKeyManager;
-#endif /* ENABLE_DECRYPTION */
-	GtkWidget *tabAbout;
-
 	// Signal handler IDs
 	gulong tabWidget_switch_page;
 };
@@ -221,50 +210,70 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 	gtk_widget_set_valign(dialog->tabWidget, GTK_ALIGN_FILL);
 #endif /* USE_GTK_DIALOG */
 
-	// Create the tabs.
-#ifndef RP_USE_GTK_ALIGNMENT
-	// GTK3/GTK4: Use the 'margin-*' properties and add the pages directly.
-#define ADD_TAB(name) do { \
-		gtk_widget_set_margin(dialog->tab##name, 8); \
-		gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), dialog->tab##name, lbl##name); \
-	} while (0)
-#else
-	// GTK2: Need to add GtkAlignment widgets for padding.
-#define ADD_TAB(name) do { \
-		GtkWidget *const align##name = gtk_alignment_new(0.0f, 0.0f, 1.0f, 1.0f); \
-		gtk_widget_set_name(align##name, "align" #name); \
-		gtk_alignment_set_padding(GTK_ALIGNMENT(align##name), 8, 8, 8, 8); \
-		gtk_container_add(GTK_CONTAINER(align##name), dialog->tab##name); \
-		GTK_WIDGET_SHOW_GTK3(align##name); \
-		\
-		gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), align##name, lbl##name); \
-	} while (0)
-#endif
+	// Tab information
+	struct TabInfo_t {
+		// Tab title (localized, using Qt/Win32 accelerators)
+		const char *title;
 
-#define CREATE_TAB(name, label, fn) do { \
-		GtkWidget *const lbl##name = gtk_label_new_with_mnemonic( \
-			convert_accel_to_gtk(label).c_str()); \
-		gtk_widget_set_name(lbl##name, "lbl" #name); \
-		GTK_WIDGET_SHOW_GTK3(lbl##name); \
-		\
-		dialog->tab##name = fn(); \
-		gtk_widget_set_name(dialog->tab##name, "tab" #name); \
-		GTK_WIDGET_SHOW_GTK3(dialog->tab##name); \
-		g_signal_connect(dialog->tab##name, "modified", \
-			G_CALLBACK(rp_config_dialog_tab_modified), dialog); \
-		\
-		ADD_TAB(name); \
-	} while (0)
+		// Constructor function
+		GtkWidget* (*ctor_fn)(void);
 
-	CREATE_TAB(ImageTypes, C_("ConfigDialog", "&Image Types"), rp_image_types_tab_new);
-	CREATE_TAB(Systems, C_("ConfigDialog", "&Systems"), rp_systems_tab_new);
-	CREATE_TAB(Options, C_("ConfigDialog", "&Options"), rp_options_tab_new);
-	CREATE_TAB(Cache, C_("ConfigDialog", "Thumbnail Cache"), rp_cache_tab_new);
-	CREATE_TAB(Achievements, C_("ConfigDialog", "&Achievements"), rp_achievements_tab_new);
+		// Object names
+		const char *lbl_name;
+		const char *tab_name;
+#ifdef RP_USE_GTK_ALIGNMENT
+		const char *align_name;
+#endif /* RP_USE_GTK_ALIGNMENT */
+	};
+
+#ifdef RP_USE_GTK_ALIGNMENT
+#  define TAB_INFO(klass, tab_title, ctor) \
+	{ tab_title, ctor, "lbl" #klass, "tab" #klass, "align" #klass }
+#else /* !RP_USE_GTK_ALIGNMENT */
+#  define TAB_INFO(klass, tab_title, ctor) \
+	{ tab_title, ctor, "lbl" #klass, "tab" #klass }
+#endif /* RP_USE_GTK_ALIGNMENT */
+
+	static const TabInfo_t tabInfo_tbl[] = {
+		TAB_INFO(ImageTypes,	NOP_C_("ConfigDialog", "&Image Types"),		rp_image_types_tab_new),
+		TAB_INFO(Systems,	NOP_C_("ConfigDialog", "&Systems"),		rp_systems_tab_new),
+		TAB_INFO(Options,	NOP_C_("ConfigDialog", "&Options"),		rp_options_tab_new),
+		TAB_INFO(Cache,		NOP_C_("ConfigDialog", "Thumbnail Cache"),	rp_cache_tab_new),
+		TAB_INFO(Achievements,	NOP_C_("ConfigDialog", "&Achievements"),	rp_achievements_tab_new),
 #ifdef ENABLE_DECRYPTION
-	CREATE_TAB(KeyManager, C_("ConfigDialog", "&Key Manager"), rp_key_manager_tab_new);
+		TAB_INFO(KeyManager,	NOP_C_("ConfigDialog", "&Key Manager"),		rp_key_manager_tab_new),
 #endif /* ENABLE_DECRYPTION */
-	CREATE_TAB(About, C_("ConfigDialog", "Abou&t"), rp_about_tab_new);
+		TAB_INFO(About,		NOP_C_("ConfigDialog", "Abou&t"),		rp_about_tab_new),
+	};
+
+	// Create the tabs.
+	for (const auto &tabInfo : tabInfo_tbl) {
+		GtkWidget *const tab_label = gtk_label_new_with_mnemonic(
+			convert_accel_to_gtk(dpgettext_expr(RP_I18N_DOMAIN, "ConfigDialog", tabInfo.title)).c_str());
+		gtk_widget_set_name(tab_label, tabInfo.lbl_name);
+		GTK_WIDGET_SHOW_GTK3(tab_label);
+
+		GtkWidget *const tab = tabInfo.ctor_fn();
+		gtk_widget_set_name(tab, tabInfo.tab_name);
+		GTK_WIDGET_SHOW_GTK3(tab);
+		g_signal_connect(tab, "modified", G_CALLBACK(rp_config_dialog_tab_modified), dialog);
+
+		// Add the tab to the GtkNotebook.
+#ifndef RP_USE_GTK_ALIGNMENT
+		// GTK3/GTK4: Use the 'margin-*' properties and add the pages directly.
+		gtk_widget_set_margin(tab, 8);
+		gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), tab, tab_label);
+#else /* RP_USE_GTK_ALIGNMENT */
+		// GTK2: Need to add GtkAlignment widgets for padding.
+		GtkWidget *const alignment = gtk_alignment_new(0.0f, 0.0f, 1.0f, 1.0f);
+		gtk_widget_set_name(alignment, tabInfo.align_name);
+		gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 8, 8, 8, 8);
+		gtk_container_add(GTK_CONTAINER(alignment), tab);
+		GTK_WIDGET_SHOW_GTK3(alignment);
+
+		gtk_notebook_append_page(GTK_NOTEBOOK(dialog->tabWidget), alignment, tab_label);
+#endif /* RP_USE_GTK_ALIGNMENT */
+	}
 
 	// Show the GtkNotebook.
 	GTK_WIDGET_SHOW_GTK3(dialog->tabWidget);
@@ -374,8 +383,12 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 	gtk_widget_set_sensitive(dialog->btnReset, FALSE);
 
 	// Adjust btnDefaults for the first tab.
-	gtk_widget_set_sensitive(dialog->btnDefaults,
-		rp_config_tab_has_defaults(RP_CONFIG_TAB(dialog->tabImageTypes)));
+	GtkWidget *const tab_0 = gtk_notebook_get_nth_page(GTK_NOTEBOOK(dialog->tabWidget), 0);
+	assert(RP_IS_CONFIG_TAB(tab_0));
+	if (RP_IS_CONFIG_TAB(tab_0)) {
+		gtk_widget_set_sensitive(dialog->btnDefaults,
+			rp_config_tab_has_defaults(RP_CONFIG_TAB(tab_0)));
+	}
 
 	// Escape key handler
 	g_signal_connect(dialog, "close", G_CALLBACK(rp_config_dialog_close), nullptr);
@@ -461,9 +474,27 @@ rp_config_dialog_apply(RpConfigDialog *dialog)
 		nullptr);
 
 	// Save the settings.
-	rp_config_tab_save(RP_CONFIG_TAB(dialog->tabImageTypes), keyFile);
-	rp_config_tab_save(RP_CONFIG_TAB(dialog->tabSystems), keyFile);
-	rp_config_tab_save(RP_CONFIG_TAB(dialog->tabOptions), keyFile);
+	// NOTE: Saving KeyManagerTab for later.
+#ifdef ENABLE_DECRYPTION
+	GtkWidget *tabKeyManager = nullptr;
+#endif /* ENABLE_DECRYPTION */
+	const gint n_pages = gtk_notebook_get_n_pages(GTK_NOTEBOOK(dialog->tabWidget));
+	for (gint i = 0; i < n_pages; i++) {
+		GtkWidget *const tab = gtk_notebook_get_nth_page(GTK_NOTEBOOK(dialog->tabWidget), i);
+		assert(RP_IS_CONFIG_TAB(tab));
+#ifdef ENABLE_DECRYPTION
+		if (RP_IS_KEY_MANAGER_TAB(tab)) {
+			// Found KeyManagerTab.
+			assert(tabKeyManager != nullptr);
+			tabKeyManager = tab;
+		} else
+#endif /* ENABLE_DECRYPTION */
+		{
+			// rp_config_tab_save() checks tab's type,
+			// so no need to check RP_IS_CONFIG_TAB() here.
+			rp_config_tab_save(RP_CONFIG_TAB(tab), keyFile);
+		}
+	}
 
 	// Commit the changes.
 	// NOTE: g_key_file_save_to_file() was added in glib-2.40.
@@ -503,7 +534,10 @@ rp_config_dialog_apply(RpConfigDialog *dialog)
 			nullptr);
 
 		// Save the keys.
-		rp_config_tab_save(RP_CONFIG_TAB(dialog->tabKeyManager), keyFile);
+		assert(tabKeyManager != nullptr);
+		// rp_config_tab_save() checks tab's type,
+		// so no need to check RP_IS_CONFIG_TAB() here.
+		rp_config_tab_save(RP_CONFIG_TAB(tabKeyManager), keyFile);
 
 		// Commit the changes.
 		// NOTE: g_key_file_save_to_file() was added in glib-2.40.
