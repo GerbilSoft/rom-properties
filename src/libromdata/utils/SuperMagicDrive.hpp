@@ -44,7 +44,12 @@ static const unsigned int SMD_BLOCK_SIZE = 16384;
  * @param pDest	[out] Destination block. (Must be 16 KB.)
  * @param pSrc	[in] Source block. (Must be 16 KB.)
  */
-void RP_LIBROMDATA_PUBLIC decodeBlock_cpp(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc);
+void RP_LIBROMDATA_PUBLIC decodeBlock_cpp(uint8_t *RESTRICT pDest, const uint8_t *RESTRICT pSrc)
+	ATTR_GCC_NO_VECTORIZE;
+// NOTE: Disabling auto-vectorization on gcc because it massively
+// bloats the code with no performance benefit. The MMX and SSE2
+// implementations using intrinsics are significantly faster.
+// (clang and MSVC do not have this issue.)
 
 #if SMD_HAS_MMX
 /**

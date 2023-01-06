@@ -172,3 +172,14 @@
 #  define ATTR_ACCESS(access_mode, ref_index)
 #  define ATTR_ACCESS_SIZE(access_mode, ref_index, size_index)
 #endif
+
+// gcc-12 enables automatic vectorization using SSE2.
+// This results in massive code bloat compared to the manually-optimized
+// versions in some cases, e.g. SMD decoding, so we'll explicitly disable
+// vectorization for some of the non-optimized functions.
+// (clang and MSVC do not have this issue.)
+#if !defined(__clang__) && defined(__GNUC__) && (__GNUC__ >= 5 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4))
+#  define ATTR_GCC_NO_VECTORIZE __attribute__((optimize("no-tree-vectorize")))
+#else
+#  define ATTR_GCC_NO_VECTORIZE
+#endif
