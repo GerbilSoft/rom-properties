@@ -622,7 +622,7 @@ rp_config_dialog_response_handler(RpConfigDialog	*dialog,
 	}
 }
 
-#if GTK_CHECK_VERSION(4,0,0)
+#ifndef USE_GTK_DIALOG
 /**
  * Dialog button handler (non-GtkDialog)
  * @param button GtkButton (check response_id_quark for the response ID)
@@ -637,7 +637,7 @@ rp_config_dialog_button_handler(GtkButton	*button,
 
 	rp_config_dialog_response_handler(dialog, response_id, nullptr);
 }
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* USE_GTK_DIALOG */
 
 /**
  * The selected tab has been changed.
