@@ -1073,7 +1073,7 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 
 	// Check if we need to unswizzle a GIMP-DDS texture.
 	if (!memcmp(ddsHeader.gimp.magic, DDS_GIMP_MAGIC, sizeof(ddsHeader.gimp.magic))) {
-		// TODO: Implement AEXP and YCoCgS.
+		// TODO: Verify that the image format is ARGB32.
 		switch (be32_to_cpu(ddsHeader.gimp.fourCC.u32)) {
 			default:
 				// Not supported...
@@ -1082,9 +1082,14 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 			case 0:
 				// No swizzling.
 				break;
+			case DDS_GIMP_SWIZZLE_FOURCC_AEXP:
+				img->unswizzle_AExp();
+				break;
 			case DDS_GIMP_SWIZZLE_FOURCC_YCG1:
-				// TODO: Verify that the image format is ARGB32.
 				img->unswizzle_YCoCg();
+				break;
+			case DDS_GIMP_SWIZZLE_FOURCC_YCG2:
+				img->unswizzle_YCoCg_scaled();
 				break;
 		}
 	}

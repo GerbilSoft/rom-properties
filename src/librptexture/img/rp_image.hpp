@@ -571,6 +571,18 @@ class rp_image : public RefBase
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int unswizzle_YCoCg(void);
+
+		/**
+		 * Unswizzle GIMP-DDS YCoCg (scaled).
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int unswizzle_YCoCg_scaled(void);
+
+		/**
+		 * Unswizzle GIMP-DDS Alpha Exponent.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int unswizzle_AExp(void);
 };
 
 /**
