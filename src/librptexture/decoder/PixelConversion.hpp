@@ -725,4 +725,20 @@ static inline uint32_t R8_to_ARGB32(uint8_t px8)
 	return 0xFF000000U | (static_cast<uint32_t>(px8) << 16);
 }
 
+/**
+ * Convert an RGB332 pixel to ARGB32.
+ * @param px8 RGB332 pixel.
+ * @return ARGB32 pixel.
+ */
+static inline uint32_t RGB332_to_ARGB32(uint8_t px8)
+{
+	// RGB332: RRRGGGBB
+	// ARGB32: AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
+	uint32_t argb = 0xFF000000U;
+	argb |= (c3_lookup[(px8 & 0xE0) >> 5] << 16);	// R
+	argb |= (c3_lookup[(px8 & 0x1C) >> 2] <<  8);	// G
+	argb |=  c2_lookup[(px8 & 0x03)];		// B
+	return argb;
+}
+
 } }

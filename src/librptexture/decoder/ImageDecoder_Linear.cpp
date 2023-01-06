@@ -744,6 +744,7 @@ rp_image *fromLinear8(PixelFormat px_format,
 		// Other
 		// NOTE: Have to specify RGB bits...
 		fromLinear8_convert(R8, 8,1,1,0,0);
+		fromLinear8_convert(RGB332, 3,3,2,0,0);
 
 		default:
 			assert(!"Unsupported 8-bit pixel format.");

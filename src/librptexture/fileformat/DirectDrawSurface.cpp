@@ -87,6 +87,7 @@ class DirectDrawSurfacePrivate final : public FileFormatPrivate
 		};
 		ASSERT_STRUCT(RGB_Format_Table_t, sizeof(uint32_t)*4 + 15 + 1);
 
+		static const RGB_Format_Table_t rgb_fmt_tbl_8[];	// 8-bit RGB
 		static const RGB_Format_Table_t rgb_fmt_tbl_16[];	// 16-bit RGB
 		static const RGB_Format_Table_t rgb_fmt_tbl_24[];	// 24-bit RGB
 		static const RGB_Format_Table_t rgb_fmt_tbl_32[];	// 32-bit RGB
@@ -142,7 +143,16 @@ const TextureInfo DirectDrawSurfacePrivate::textureInfo = {
 	exts, mimeTypes
 };
 
-// Supported 16-bit uncompressed RGB formats.
+// Supported 16-bit uncompressed RGB formats
+const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_8[] = {
+	// 3-bit for R and G; 2-bit for B
+	{0xE0, 0x1C, 0x03, 0x00, "RGB332", ImageDecoder::PixelFormat::RGB332},
+
+	// end
+	{0, 0, 0, 0, "", ImageDecoder::PixelFormat::Unknown}
+};
+
+// Supported 16-bit uncompressed RGB formats
 const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_16[] = {
 	// 5-bit per channel, plus alpha.
 	{0x7C00, 0x03E0, 0x001F, 0x8000, "ARGB1555", ImageDecoder::PixelFormat::ARGB1555},
@@ -177,7 +187,7 @@ const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb
 	{0, 0, 0, 0, "", ImageDecoder::PixelFormat::Unknown}
 };
 
-// Supported 24-bit uncompressed RGB formats.
+// Supported 24-bit uncompressed RGB formats
 const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_24[] = {
 	{0x00FF0000, 0x0000FF00, 0x000000FF, 0x00000000, "RGB888", ImageDecoder::PixelFormat::RGB888},
 	{0x000000FF, 0x0000FF00, 0x00FF0000, 0x00000000, "BGR888", ImageDecoder::PixelFormat::BGR888},
@@ -186,7 +196,7 @@ const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb
 	{0, 0, 0, 0, "", ImageDecoder::PixelFormat::Unknown}
 };
 
-// Supported 32-bit uncompressed RGB formats.
+// Supported 32-bit uncompressed RGB formats
 const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_32[] = {
 	// Alpha
 	{0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000, "ARGB8888", ImageDecoder::PixelFormat::ARGB8888},
@@ -257,17 +267,21 @@ const char *DirectDrawSurfacePrivate::getPixelFormatName(const DDS_PIXELFORMAT &
 	const RGB_Format_Table_t *entry = nullptr;
 	if (ddspf.dwFlags & DDPF_RGB) {
 		switch (ddspf.dwRGBBitCount) {
+			case 8:
+				// 8-bit
+				entry = rgb_fmt_tbl_8;
+				break;
 			case 15:
 			case 16:
-				// 16-bit.
+				// 16-bit
 				entry = rgb_fmt_tbl_16;
 				break;
 			case 24:
-				// 24-bit.
+				// 24-bit
 				entry = rgb_fmt_tbl_24;
 				break;
 			case 32:
-				// 32-bit.
+				// 32-bit
 				entry = rgb_fmt_tbl_32;
 				break;
 			default:
@@ -459,17 +473,21 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 		const RGB_Format_Table_t *entry = nullptr;
 		if (ddspf.dwFlags & DDPF_RGB) {
 			switch (ddspf.dwRGBBitCount) {
+				case 8:
+					// 8-bit
+					entry = rgb_fmt_tbl_8;
+					break;
 				case 15:
 				case 16:
-					// 16-bit.
+					// 16-bit
 					entry = rgb_fmt_tbl_16;
 					break;
 				case 24:
-					// 24-bit.
+					// 24-bit
 					entry = rgb_fmt_tbl_24;
 					break;
 				case 32:
-					// 32-bit.
+					// 32-bit
 					entry = rgb_fmt_tbl_32;
 					break;
 				default:

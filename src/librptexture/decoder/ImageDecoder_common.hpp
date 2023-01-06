@@ -116,6 +116,7 @@ enum class PixelFormat : uint8_t {
 
 	// Other
 	R8,		// RRRRRRRR
+	RGB332,		// RRRGGGBB
 
 	// Endian-specific ARGB32 definitions.
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
