@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * PowerVR3.cpp: PowerVR 3.0.0 texture image reader.                       *
  *                                                                         *
- * Copyright (c) 2019-2022 by David Korth.                                 *
+ * Copyright (c) 2019-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -660,7 +660,7 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 				if (pvr3Header.pixel_format >= PVR3_PXF_ASTC_4x4 &&
 				    pvr3Header.pixel_format <= PVR3_PXF_ASTC_12x12)
 				{
-				// TODO: PVR3 ASTC 3D formats.
+					// TODO: PVR3 ASTC 3D formats.
 					static_assert(PVR3_PXF_ASTC_12x12 - PVR3_PXF_ASTC_4x4 + 1 == ARRAY_SIZE(ImageDecoder::astc_lkup_tbl),
 						"ASTC lookup table size is wrong!");
 					const unsigned int astc_idx = pvr3Header.pixel_format - PVR3_PXF_ASTC_4x4;
