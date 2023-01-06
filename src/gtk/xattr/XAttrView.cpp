@@ -305,8 +305,7 @@ rp_xattr_view_set_property(GObject	*object,
 			const gchar *uri = g_value_get_string(value);
 			if (g_strcmp0(widget->uri, uri) != 0) {
 				// URI has changed.
-				g_free(widget->uri);
-				widget->uri = g_strdup(uri);
+				g_set_str(&widget->uri, uri);
 				rp_xattr_view_load_attributes(widget);
 			}
 			break;
@@ -319,10 +318,10 @@ rp_xattr_view_set_property(GObject	*object,
 }
 
 static void
-rp_xattr_view_get_property(GObject		*object,
-				guint		 prop_id,
-				GValue		*value,
-				GParamSpec	*pspec)
+rp_xattr_view_get_property(GObject	*object,
+			   guint	 prop_id,
+			   GValue	*value,
+			   GParamSpec	*pspec)
 {
 	RpXAttrView *const widget = RP_XATTR_VIEW(object);
 
@@ -524,8 +523,7 @@ rp_xattr_view_set_uri(RpXAttrView *widget, const gchar *uri)
 {
 	g_return_if_fail(RP_IS_XATTR_VIEW(widget));
 	if (g_strcmp0(widget->uri, uri) != 0) {
-		g_free(widget->uri),
-		widget->uri = g_strdup(uri);
+		g_set_str(&widget->uri, uri);
 		rp_xattr_view_load_attributes(widget);
 		g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_URI]);
 	}
