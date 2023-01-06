@@ -557,13 +557,6 @@ DirectDrawSurfacePrivate::~DirectDrawSurfacePrivate()
 	UNREF(img);
 }
 
-static inline float saturate(float a)
-{
-	if (a < 0) a = 0;
-	if (a > 1) a = 1;
-	return a;
-}
-
 /**
  * Load the image.
  * @return Image, or nullptr on error.
@@ -1080,54 +1073,19 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 
 	// Check if we need to unswizzle a GIMP-DDS texture.
 	if (!memcmp(ddsHeader.gimp.magic, DDS_GIMP_MAGIC, sizeof(ddsHeader.gimp.magic))) {
-		if (ddsHeader.gimp.fourCC.u32 == cpu_to_be32(DDS_GIMP_SWIZZLE_FOURCC_YCG1)) {
-			// YCoCg
-			// TODO: Implement AEXP and YCoCgS.
-			// TODO: Move this to rp_image and add optimized versions.
-			if (img->format() != rp_image::Format::ARGB32) {
-				// Can only do unswizzling with ARGB32.
-				rp_image *const img_argb32 = img->dup_ARGB32();
-				if (!img_argb32) {
-					// Unable to dup() the image...
-					// End processing right here.
-					return img;
-				}
-				img->unref();
-				img = img_argb32;
-			}
-
-			const int width = img->width();
-			const int dest_stride_adj = (img->stride() / sizeof(argb32_t)) - width;
-			argb32_t *px_dest = static_cast<argb32_t*>(img->bits());
-
-			// Conversion offset
-			static const float YCoCg_offset = 0.5f * 256.0f / 255.0f;
-
-			for (unsigned int y = static_cast<unsigned int>(img->height()); y > 0; y--) {
-				for (unsigned int x = static_cast<unsigned int>(width); x > 0; x--) {
-					// References:
-					// - https://en.wikipedia.org/wiki/YCoCg
-					// - https://github.com/paulvortex/RwgTex/blob/master/libs/gimpdds/src/misc.c
-
-					const float Y  = ((float)px_dest->YCoCg.y  / 255.0f);
-					const float Co = ((float)px_dest->YCoCg.co / 255.0f) - YCoCg_offset;
-					const float Cg = ((float)px_dest->YCoCg.cg / 255.0f) - YCoCg_offset;
-
-					const float Y_minus_Cg = Y - Cg;
-					const float R = saturate(Y_minus_Cg + Co);
-					const float G = saturate(Y + Cg);
-					const float B = saturate(Y_minus_Cg - Co);
-					const uint8_t A = px_dest->YCoCg.a;
-
-					px_dest->r = (uint8_t)(R * 255.0f);
-					px_dest->g = (uint8_t)(G * 255.0f);
-					px_dest->b = (uint8_t)(B * 255.0f);
-					px_dest->a = A;
-
-					px_dest++;
-				}
-				px_dest += dest_stride_adj;
-			}
+		// TODO: Implement AEXP and YCoCgS.
+		switch (be32_to_cpu(ddsHeader.gimp.fourCC.u32)) {
+			default:
+				// Not supported...
+				assert(!"Unsupported GIMP-DDS swizzle format.");
+				break;
+			case 0:
+				// No swizzling.
+				break;
+			case DDS_GIMP_SWIZZLE_FOURCC_YCG1:
+				// TODO: Verify that the image format is ARGB32.
+				img->unswizzle_YCoCg();
+				break;
 		}
 	}
 

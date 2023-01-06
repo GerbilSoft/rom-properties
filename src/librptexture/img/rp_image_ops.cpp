@@ -882,4 +882,63 @@ int rp_image::swizzle_cpp(const char *swz_spec)
 	return 0;
 }
 
+static inline float saturate(float a)
+{
+	if (a < 0) a = 0;
+	if (a > 1) a = 1;
+	return a;
+}
+
+/**
+ * Unswizzle GIMP-DDS YCoCg.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int rp_image::unswizzle_YCoCg(void)
+{
+	// TODO: SSE-optimized version.
+	RP_D(rp_image);
+	rp_image_backend *const backend = d->backend;
+	assert(backend->format == rp_image::Format::ARGB32);
+	if (backend->format != rp_image::Format::ARGB32) {
+		// ARGB32 is required.
+		// TODO: Automatically convert the image?
+		return -EINVAL;
+	}
+
+	const int width = backend->width;
+	const unsigned int stride_diff = (backend->stride - this->row_bytes()) / sizeof(argb32_t);
+	argb32_t *bits = static_cast<argb32_t*>(backend->data());
+
+	// Conversion offset (for YCoCg to RGB)
+	static const float YCoCg_offset = 0.5f * 256.0f / 255.0f;
+
+	for (unsigned int y = static_cast<unsigned int>(backend->height); y > 0; y--) {
+		for (unsigned int x = static_cast<unsigned int>(width); x > 0; x--) {
+			// References:
+			// - https://en.wikipedia.org/wiki/YCoCg
+			// - https://github.com/paulvortex/RwgTex/blob/master/libs/gimpdds/src/misc.c
+
+			const float Y  = ((float)bits->YCoCg.y  / 255.0f);
+			const float Co = ((float)bits->YCoCg.co / 255.0f) - YCoCg_offset;
+			const float Cg = ((float)bits->YCoCg.cg / 255.0f) - YCoCg_offset;
+
+			const float Y_minus_Cg = Y - Cg;
+			const float R = saturate(Y_minus_Cg + Co);
+			const float G = saturate(Y + Cg);
+			const float B = saturate(Y_minus_Cg - Co);
+			const uint8_t A = bits->YCoCg.a;
+
+			bits->r = (uint8_t)(R * 255.0f);
+			bits->g = (uint8_t)(G * 255.0f);
+			bits->b = (uint8_t)(B * 255.0f);
+			bits->a = A;
+
+			bits++;
+		}
+		bits += stride_diff;
+	}
+
+	return 0;
+}
+
 }

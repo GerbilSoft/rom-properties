@@ -565,6 +565,12 @@ class rp_image : public RefBase
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		inline int swizzle(const char *swz_spec);
+
+		/**
+		 * Unswizzle GIMP-DDS YCoCg.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int unswizzle_YCoCg(void);
 };
 
 /**
