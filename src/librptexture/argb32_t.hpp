@@ -31,6 +31,22 @@ union argb32_t {
 		uint8_t b;
 #endif
 	};
+
+	// for YCoCg swizzling
+	struct {
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+		uint8_t a;
+		uint8_t cg;
+		uint8_t co;
+		uint8_t y;
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+		uint8_t y;
+		uint8_t co;
+		uint8_t cg;
+		uint8_t a;
+#endif
+	} YCoCg;
+
 	uint32_t u32;
 };
 ASSERT_STRUCT(argb32_t, 4);
