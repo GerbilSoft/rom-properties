@@ -166,7 +166,7 @@ static inline void
 gtk_frame_set_child(GtkFrame *frame, GtkWidget *child)
 {
 	// TODO: Remove the existing child widget?
-	gtk_container_add(GTK_CONTAINER(frame), child);
+	gtk_container_add((GtkContainer*)frame, child);
 }
 
 #  if GTK_CHECK_VERSION(3,1,6)
@@ -174,7 +174,7 @@ static inline void
 gtk_overlay_set_child(GtkOverlay *overlay, GtkWidget *child)
 {
 	// TODO: Remove the existing child widget?
-	gtk_container_add(GTK_CONTAINER(overlay), child);
+	gtk_container_add((GtkContainer*)overlay, child);
 }
 #  endif /* GTK_CHECK_VERSION(3,1,6) */
 
@@ -182,15 +182,13 @@ static inline void
 gtk_scrolled_window_set_child(GtkScrolledWindow *scrolled_window, GtkWidget *child)
 {
 	// TODO: Remove the existing child widget?
-	gtk_container_add(GTK_CONTAINER(scrolled_window), child);
+	gtk_container_add((GtkContainer*)scrolled_window, child);
 }
 #endif /* GTK_CHECK_VERSION(3,98,4) */
 
 #if !GTK_CHECK_VERSION(3,99,1)
 // Prior to GTK4, GtkCheckButton inherited from GtkToggleButton.
 // In GTK4, the two are now distinct classes.
-// NOTE: Casting directly to GtkToggleButton to avoid a
-// runtime GObject class check.
 static inline void
 gtk_check_button_set_active(GtkCheckButton *self, gboolean setting)
 {
