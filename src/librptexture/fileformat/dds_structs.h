@@ -88,6 +88,10 @@ typedef enum {
 
 	DDPF_FOURCC_DX10	= 'DX10',
 	DDPF_FOURCC_XBOX	= 'XBOX',
+
+	// from Blender issue T101405
+	// https://developer.blender.org/T101405
+	DDPF_FOURCC_RXGB	= 'RXGB',
 } DDS_PIXELFORMAT_FOURCC;
 
 /**

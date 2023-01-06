@@ -369,6 +369,9 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 			{DDPF_FOURCC_ASTC8x5, DXGI_FORMAT_ASTC_8X5_UNORM, DDS_ALPHA_MODE_STRAIGHT},
 			{DDPF_FOURCC_ASTC8x6, DXGI_FORMAT_ASTC_8X6_UNORM, DDS_ALPHA_MODE_STRAIGHT},
 			{DDPF_FOURCC_ASTC10x5, DXGI_FORMAT_ASTC_10X5_UNORM, DDS_ALPHA_MODE_STRAIGHT},
+
+			// RXGB: DXT5 with swizzled channels
+			{DDPF_FOURCC_RXGB, DXGI_FORMAT_BC3_UNORM, DDS_ALPHA_MODE_STRAIGHT},
 		};
 
 		for (const auto &p : fourCC_dxgi_lkup_tbl) {
@@ -801,6 +804,10 @@ const rp_image *DirectDrawSurfacePrivate::loadImage(void)
 					img = ImageDecoder::fromDXT5(
 						ddsHeader.dwWidth, ddsHeader.dwHeight,
 						buf.get(), expected_size);
+					if (ddsHeader.ddspf.dwFourCC == DDPF_FOURCC_RXGB) {
+						// RxGB -> xRGB
+						img->swizzle("agb1");
+					}
 				} else {
 					// Premultiplied alpha: DXT4
 					img = ImageDecoder::fromDXT4(
