@@ -15,7 +15,7 @@ namespace LibRpTexture { namespace ImageDecoder {
 #ifdef ENABLE_ASTC
 /**
  * ASTC lookup table.
- * - Index: Matches ordering in DDS (div3), PVR3, KTX, KTX2.
+ * - Index: Matches ordering in DDS (div4), PVR3, KTX, KTX2 (div2).
  * - Value 0: block_x
  * - Value 1: block_y
  */
