@@ -383,12 +383,10 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 	gtk_widget_set_sensitive(dialog->btnReset, FALSE);
 
 	// Adjust btnDefaults for the first tab.
-	GtkWidget *const tab_0 = gtk_notebook_get_nth_page(GTK_NOTEBOOK(dialog->tabWidget), 0);
-	assert(RP_IS_CONFIG_TAB(tab_0));
-	if (RP_IS_CONFIG_TAB(tab_0)) {
-		gtk_widget_set_sensitive(dialog->btnDefaults,
-			rp_config_tab_has_defaults(RP_CONFIG_TAB(tab_0)));
-	}
+	RpConfigTab *const tab_0 = RP_CONFIG_TAB(gtk_notebook_get_nth_page(GTK_NOTEBOOK(dialog->tabWidget), 0));
+	assert(tab_0 != nullptr);
+	gtk_widget_set_sensitive(dialog->btnDefaults,
+		rp_config_tab_has_defaults(RP_CONFIG_TAB(tab_0)));
 
 	// Escape key handler
 	g_signal_connect(dialog, "close", G_CALLBACK(rp_config_dialog_close), nullptr);
@@ -476,12 +474,12 @@ rp_config_dialog_apply(RpConfigDialog *dialog)
 	// Save the settings.
 	// NOTE: Saving KeyManagerTab for later.
 #ifdef ENABLE_DECRYPTION
-	GtkWidget *tabKeyManager = nullptr;
+	RpConfigTab *tabKeyManager = nullptr;
 #endif /* ENABLE_DECRYPTION */
 	const gint n_pages = gtk_notebook_get_n_pages(GTK_NOTEBOOK(dialog->tabWidget));
 	for (gint i = 0; i < n_pages; i++) {
-		GtkWidget *const tab = gtk_notebook_get_nth_page(GTK_NOTEBOOK(dialog->tabWidget), i);
-		assert(RP_IS_CONFIG_TAB(tab));
+		RpConfigTab *const tab = RP_CONFIG_TAB(gtk_notebook_get_nth_page(GTK_NOTEBOOK(dialog->tabWidget), i));
+		assert(tab != nullptr);
 #ifdef ENABLE_DECRYPTION
 		if (RP_IS_KEY_MANAGER_TAB(tab)) {
 			// Found KeyManagerTab.
@@ -492,7 +490,7 @@ rp_config_dialog_apply(RpConfigDialog *dialog)
 		{
 			// rp_config_tab_save() checks tab's type,
 			// so no need to check RP_IS_CONFIG_TAB() here.
-			rp_config_tab_save(RP_CONFIG_TAB(tab), keyFile);
+			rp_config_tab_save(tab, keyFile);
 		}
 	}
 
@@ -537,7 +535,7 @@ rp_config_dialog_apply(RpConfigDialog *dialog)
 		assert(tabKeyManager != nullptr);
 		// rp_config_tab_save() checks tab's type,
 		// so no need to check RP_IS_CONFIG_TAB() here.
-		rp_config_tab_save(RP_CONFIG_TAB(tabKeyManager), keyFile);
+		rp_config_tab_save(tabKeyManager, keyFile);
 
 		// Commit the changes.
 		// NOTE: g_key_file_save_to_file() was added in glib-2.40.
@@ -580,9 +578,7 @@ rp_config_dialog_reset(RpConfigDialog *dialog)
 	for (int i = 0; i < num_pages; i++) {
 		RpConfigTab *const tab = RP_CONFIG_TAB(gtk_notebook_get_nth_page(tabWidget, i));
 		assert(tab != nullptr);
-		if (tab) {
-			rp_config_tab_reset(tab);
-		}
+		rp_config_tab_reset(tab);
 	}
 
 	// Disable the "Apply" and "Reset" buttons.
