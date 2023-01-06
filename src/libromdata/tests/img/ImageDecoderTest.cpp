@@ -559,41 +559,38 @@ string ImageDecoderTest::test_case_suffix_generator(const ::testing::TestParamIn
 /** Test cases **/
 
 // DirectDrawSurface tests (S3TC)
+#define S3TC_IMAGE_TEST(file) ImageDecoderTest_mode( \
+			"S3TC/" file ".dds.gz", \
+			"S3TC/" file ".s3tc.png")
+#define S3TC_IMAGE_TEST2(file) ImageDecoderTest_mode( \
+			"S3TC/" file ".dds.gz", \
+			"S3TC/" file ".png")
 INSTANTIATE_TEST_SUITE_P(DDS_S3TC, ImageDecoderTest,
 	::testing::Values(
-		ImageDecoderTest_mode(
-			"S3TC/dxt1-rgb.dds.gz",
-			"S3TC/dxt1-rgb.s3tc.png"),
-		ImageDecoderTest_mode(
-			"S3TC/dxt2-rgb.dds.gz",
-			"S3TC/dxt2-rgb.s3tc.png"),
-		ImageDecoderTest_mode(
-			"S3TC/dxt2-argb.dds.gz",
-			"S3TC/dxt2-argb.s3tc.png"),
-		ImageDecoderTest_mode(
-			"S3TC/dxt3-rgb.dds.gz",
-			"S3TC/dxt3-rgb.s3tc.png"),
-		ImageDecoderTest_mode(
-			"S3TC/dxt3-argb.dds.gz",
-			"S3TC/dxt3-argb.s3tc.png"),
-		ImageDecoderTest_mode(
-			"S3TC/dxt4-rgb.dds.gz",
-			"S3TC/dxt4-rgb.s3tc.png"),
-		ImageDecoderTest_mode(
-			"S3TC/dxt4-argb.dds.gz",
-			"S3TC/dxt4-argb.s3tc.png"),
-		ImageDecoderTest_mode(
-			"S3TC/dxt5-rgb.dds.gz",
-			"S3TC/dxt5-rgb.s3tc.png"),
-		ImageDecoderTest_mode(
-			"S3TC/dxt5-argb.dds.gz",
-			"S3TC/dxt5-argb.s3tc.png"),
-		ImageDecoderTest_mode(
-			"S3TC/bc4.dds.gz",
-			"S3TC/bc4.s3tc.png"),
-		ImageDecoderTest_mode(
-			"S3TC/bc5.dds.gz",
-			"S3TC/bc5.s3tc.png"))
+		S3TC_IMAGE_TEST("dxt1-rgb"),
+		S3TC_IMAGE_TEST("dxt2-rgb"),
+		S3TC_IMAGE_TEST("dxt2-argb"),
+		S3TC_IMAGE_TEST("dxt3-rgb"),
+		S3TC_IMAGE_TEST("dxt3-argb"),
+		S3TC_IMAGE_TEST("dxt4-rgb"),
+		S3TC_IMAGE_TEST("dxt4-argb"),
+		S3TC_IMAGE_TEST("dxt5-rgb"),
+		S3TC_IMAGE_TEST("dxt5-argb"),
+		S3TC_IMAGE_TEST("bc4"),
+		S3TC_IMAGE_TEST("bc5"),
+
+		// from Blender T101405
+		// https://developer.blender.org/T101405
+		S3TC_IMAGE_TEST2("tex_cmp_bc3rxgb"))
+	, ImageDecoderTest::test_case_suffix_generator);
+
+// DirectDrawSurface tests (Uncompressed 8-bit RGB)
+#define RGB8_IMAGE_TEST(file) ImageDecoderTest_mode( \
+			"RGB/" file ".dds.gz", \
+			"RGB/" file ".png")
+INSTANTIATE_TEST_SUITE_P(DDS_RGB8, ImageDecoderTest,
+	::testing::Values(
+		RGB8_IMAGE_TEST("tex_dds_rgb332"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // DirectDrawSurface tests (Uncompressed 16-bit RGB)
