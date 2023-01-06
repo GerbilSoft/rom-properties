@@ -169,6 +169,13 @@ gtk_frame_set_child(GtkFrame *frame, GtkWidget *child)
 	gtk_container_add((GtkContainer*)frame, child);
 }
 
+static inline void
+gtk_window_set_child(GtkWindow *window, GtkWidget *child)
+{
+	// TODO: Remove the existing child widget?
+	gtk_container_add((GtkContainer*)window, child);
+}
+
 #  if GTK_CHECK_VERSION(3,1,6)
 static inline void
 gtk_overlay_set_child(GtkOverlay *overlay, GtkWidget *child)
@@ -270,6 +277,29 @@ rp_gtk_vbox_new(gint spacing)
 	return gtk_vbox_new(FALSE, spacing);
 #endif
 }
+
+// TODo: Find the exact version when GtkButtonBox was removed.
+#if !GTK_CHECK_VERSION(4,0,0)
+static inline GtkWidget*
+rp_gtk_hbutton_box_new(void)
+{
+#if GTK_CHECK_VERSION(2,90,1)
+	return gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
+#else /* GTK_CHECK_VERSION(2,90,1) */
+	return gtk_hbutton_box_new();
+#endif
+}
+
+static inline GtkWidget*
+rp_gtk_vbutton_box_new(void)
+{
+#if GTK_CHECK_VERSION(2,90,1)
+	return gtk_button_box_new(GTK_ORIENTATION_VERTICAL);
+#else /* GTK_CHECK_VERSION(2,90,1) */
+	return gtk_vbutton_box_new();
+#endif
+}
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
 
 /** "?align" shenanigans **/
 

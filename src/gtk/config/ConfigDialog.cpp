@@ -13,6 +13,8 @@
 #include "ConfigDialog.hpp"
 #include "RpGtk.hpp"
 
+#include <gdk/gdkkeysyms.h>
+
 // for e.g. Config and FileSystem
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -32,15 +34,28 @@ using namespace LibRpFile;
 using LibRpBase::KeyManager;
 #endif
 
+// Using GtkDialog on GTK2/GTK3.
+// For GTK4, using GtkWindow.
+#if !GTK_CHECK_VERSION(4,0,0)
+#  define USE_GTK_DIALOG 1
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
+
 #define CONFIG_DIALOG_RESPONSE_RESET		0
 #define CONFIG_DIALOG_RESPONSE_DEFAULTS		1
 
 static void	rp_config_dialog_dispose		(GObject	*object);
 
 // Signal handlers
+static void	rp_config_dialog_close			(RpConfigDialog *dialog,
+							 gpointer	 user_data);
+
 static void	rp_config_dialog_response_handler	(RpConfigDialog	*dialog,
 							 gint		 response_id,
 							 gpointer	 user_data);
+#ifndef USE_GTK_DIALOG
+static void	rp_config_dialog_button_handler		(GtkButton	*button,
+							 RpConfigDialog	*dialog);
+#endif /* !USE_GTK_DIALOG */
 
 static void	rp_config_dialog_switch_page		(GtkNotebook	*tabWidget,
 							 GtkWidget	*page,
@@ -50,15 +65,41 @@ static void	rp_config_dialog_switch_page		(GtkNotebook	*tabWidget,
 static void	rp_config_dialog_tab_modified		(RpConfigTab	*tab,
 							 RpConfigDialog	*dialog);
 
+#ifndef USE_GTK_DIALOG
+/* Signal identifiers */
+typedef enum {
+	SIGNAL_CLOSE,	// Dialog close request (Escape key)
+
+	SIGNAL_LAST
+} RpConfigDialogSignalID;
+
+static GQuark response_id_quark;
+static guint signals[SIGNAL_LAST];
+#endif /* !USE_GTK_DIALOG */
+
+#ifdef USE_GTK_DIALOG
+typedef GtkDialogClass superclass;
+typedef GtkDialog super;
+#  define GTK_TYPE_SUPER GTK_TYPE_DIALOG
+#else /* !USE_GTK_DIALOG */
+typedef GtkWindowClass superclass;
+typedef GtkWindow super;
+#  define GTK_TYPE_SUPER GTK_TYPE_WINDOW
+#endif /* USE_GTK_DIALOG */
 
 // ConfigDialog class
 struct _RpConfigDialogClass {
-	GtkDialogClass __parent__;
+	superclass __parent__;
 };
 
 // ConfigDialog instance
 struct _RpConfigDialog {
-	GtkDialog __parent__;
+	super __parent__;
+
+#ifndef USE_GTK_DIALOG
+	GtkWidget *vboxDialog;
+	GtkWidget *buttonBox;
+#endif /* USE_GTK_DIALOG */
 
 	// Buttons
 	GtkWidget *btnReset;
@@ -88,13 +129,32 @@ struct _RpConfigDialog {
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
 G_DEFINE_TYPE_EXTENDED(RpConfigDialog, rp_config_dialog,
-	GTK_TYPE_DIALOG, static_cast<GTypeFlags>(0), {});
+	GTK_TYPE_SUPER, static_cast<GTypeFlags>(0), {});
 
 static void
 rp_config_dialog_class_init(RpConfigDialogClass *klass)
 {
 	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 	gobject_class->dispose = rp_config_dialog_dispose;
+
+#ifndef USE_GTK_DIALOG
+	/** Quarks **/
+
+	// NOTE: Not using g_quark_from_static_string()
+	// because the extension can be unloaded.
+	response_id_quark = g_quark_from_string("response-id");
+
+	/** Signals **/
+
+	signals[SIGNAL_CLOSE] = g_signal_new("close",
+		G_OBJECT_CLASS_TYPE(gobject_class),
+		(GSignalFlags)(G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
+		0, NULL, NULL, NULL,
+		G_TYPE_NONE, 0);
+
+	/** Escape key handling **/
+	gtk_widget_class_add_binding_signal(GTK_WIDGET_CLASS(klass), GDK_KEY_Escape, (GdkModifierType)0, "close", NULL);
+#endif /* USE_GTK_DIALOG */
 }
 
 static void
@@ -128,56 +188,21 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 	g_list_free_full(icon_list, g_object_unref);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
-	// Add dialog buttons.
-	// NOTE: GTK+ has deprecated icons on buttons, so we won't add them.
-	// TODO: Proper ordering for the Apply button?
-	// TODO: Spacing between "Defaults" and "Cancel".
-	// NOTE: Only need to save Reset, Defaults, and Apply.
-	dialog->btnReset = gtk_dialog_add_button(GTK_DIALOG(dialog),
-		convert_accel_to_gtk(C_("ConfigDialog|Button", "&Reset")).c_str(),
-		CONFIG_DIALOG_RESPONSE_RESET);
-	dialog->btnDefaults = gtk_dialog_add_button(GTK_DIALOG(dialog),
-		convert_accel_to_gtk(C_("ConfigDialog|Button", "Defaults")).c_str(),
-		CONFIG_DIALOG_RESPONSE_DEFAULTS);
-
-	// GTK4 no longer has GTK_STOCK_*, so we'll have to provide it ourselves.
-	dialog->btnCancel = gtk_dialog_add_button(GTK_DIALOG(dialog),
-		convert_accel_to_gtk(C_("ConfigDialog|Button", "&Cancel")).c_str(),
-		GTK_RESPONSE_CANCEL);
 #if GTK_CHECK_VERSION(4,0,0)
-	gtk_widget_set_hexpand(dialog->btnCancel, TRUE);
+#  define GTK_WIDGET_SHOW_GTK3(widget)
+#else /* !GTK_CHECK_VERSION(4,0,0) */
+#  define GTK_WIDGET_SHOW_GTK3(widget) gtk_widget_show(widget)
 #endif /* GTK_CHECK_VERSION(4,0,0) */
-	dialog->btnApply = gtk_dialog_add_button(GTK_DIALOG(dialog),
-		convert_accel_to_gtk(C_("ConfigDialog|Button", "&Apply")).c_str(),
-		GTK_RESPONSE_APPLY);
-	gtk_widget_set_sensitive(dialog->btnApply, FALSE);
-	dialog->btnOK = gtk_dialog_add_button(GTK_DIALOG(dialog),
-		convert_accel_to_gtk(C_("ConfigDialog|Button", "&OK")).c_str(),
-		GTK_RESPONSE_OK);
 
-
-	// Set button alignment.
-	GtkWidget *const parent = gtk_widget_get_parent(dialog->btnReset);
-#if GTK_CHECK_VERSION(3,96,0)
-	gtk_widget_set_halign(parent, GTK_ALIGN_FILL);
-	gtk_box_set_spacing(GTK_BOX(parent), 2);
-
-	// FIXME: This doesn't seem to be working...
-	gtk_widget_set_halign(dialog->btnReset, GTK_ALIGN_START);
-	gtk_widget_set_halign(dialog->btnDefaults, GTK_ALIGN_START);
-	gtk_widget_set_halign(dialog->btnCancel, GTK_ALIGN_END);
-	gtk_widget_set_halign(dialog->btnApply, GTK_ALIGN_END);
-	gtk_widget_set_halign(dialog->btnOK, GTK_ALIGN_END);
-#else /* !GTK_CHECK_VERSION(3,96,0) */
-	// GTK2, GTK3: May be GtkButtonBox.
-	if (GTK_IS_BUTTON_BOX(parent)) {
-		gtk_button_box_set_child_secondary(GTK_BUTTON_BOX(parent), dialog->btnReset, true);
-		gtk_button_box_set_child_secondary(GTK_BUTTON_BOX(parent), dialog->btnDefaults, true);
-	}
-#endif /* GTK_CHECK_VERSION(3,96,0) */
-
-	// Dialog content area.
+	// Dialog content area
+#ifdef USE_GTK_DIALOG
 	GtkWidget *const content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+#else /* !USE_GTK_DIALOG */
+	dialog->vboxDialog = rp_gtk_vbox_new(0);
+	gtk_widget_set_name(dialog->vboxDialog, "vboxDialog");
+	gtk_window_set_child(GTK_WINDOW(dialog), dialog->vboxDialog);
+	GTK_WIDGET_SHOW_GTK3(dialog->vboxDialog);
+#endif /* USE_GTK_DIALOG */
 
 	// Create the GtkNotebook.
 	dialog->tabWidget = gtk_notebook_new();
@@ -187,20 +212,14 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 	// May be a theme-specific thing...
 	gtk_widget_set_margin_bottom(dialog->tabWidget, 8);
 #endif /* RP_USE_GTK_ALIGNMENT */
-#if GTK_CHECK_VERSION(4,0,0)
-	gtk_box_append(GTK_BOX(content_area), dialog->tabWidget);
+#if USE_GTK_DIALOG
+	gtk_container_add(GTK_CONTAINER(content_area), dialog->tabWidget);
+#else /* !USE_GTK_DIALOG */
+	gtk_box_append(GTK_BOX(dialog->vboxDialog), dialog->tabWidget);
 	// TODO: Verify that this works.
 	gtk_widget_set_halign(dialog->tabWidget, GTK_ALIGN_FILL);
 	gtk_widget_set_valign(dialog->tabWidget, GTK_ALIGN_FILL);
-#else /* !GTK_CHECK_VERSION(4,0,0) */
-	gtk_box_pack_start(GTK_BOX(content_area), dialog->tabWidget, TRUE, TRUE, 0);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
-
-#if GTK_CHECK_VERSION(4,0,0)
-#  define GTK_WIDGET_SHOW_GTK3(widget)
-#else /* !GTK_CHECK_VERSION(4,0,0) */
-#  define GTK_WIDGET_SHOW_GTK3(widget) gtk_widget_show(widget)
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* USE_GTK_DIALOG */
 
 	// Create the tabs.
 #ifndef RP_USE_GTK_ALIGNMENT
@@ -250,6 +269,107 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 	// Show the GtkNotebook.
 	GTK_WIDGET_SHOW_GTK3(dialog->tabWidget);
 
+	// FIXME: For some reason, GtkNotebook is defaulting to the
+	// "Thumbnail Cache" tab on GTK3 after optimizing
+	// gtk_widget_show(). Explicitly reset it to 0.
+	gtk_notebook_set_current_page(GTK_NOTEBOOK(dialog->tabWidget), 0);
+
+	// Connect the tab switch signal.
+	dialog->tabWidget_switch_page = g_signal_connect(
+		dialog->tabWidget, "switch-page",
+		G_CALLBACK(rp_config_dialog_switch_page), dialog);
+
+	// Dialog button box
+	// NOTE: Using GtkButtonBox on GTK2/GTK3 for "secondary" button functionality.
+	// NOTE: GTK+ has deprecated icons on buttons, so we won't add them.
+	// TODO: Proper ordering for the Apply button?
+#if USE_GTK_DIALOG
+	// Secondary buttons
+	dialog->btnReset = gtk_dialog_add_button(GTK_DIALOG(dialog),
+		convert_accel_to_gtk(C_("ConfigDialog|Button", "&Reset")).c_str(),
+		CONFIG_DIALOG_RESPONSE_RESET);
+	dialog->btnDefaults = gtk_dialog_add_button(GTK_DIALOG(dialog),
+		convert_accel_to_gtk(C_("ConfigDialog|Button", "Defaults")).c_str(),
+		CONFIG_DIALOG_RESPONSE_DEFAULTS);
+
+	// GTK4 no longer has GTK_STOCK_*, so we'll have to provide it ourselves.
+	dialog->btnCancel = gtk_dialog_add_button(GTK_DIALOG(dialog),
+		convert_accel_to_gtk(C_("ConfigDialog|Button", "&Cancel")).c_str(),
+		GTK_RESPONSE_CANCEL);
+	dialog->btnApply = gtk_dialog_add_button(GTK_DIALOG(dialog),
+		convert_accel_to_gtk(C_("ConfigDialog|Button", "&Apply")).c_str(),
+		GTK_RESPONSE_APPLY);
+	dialog->btnOK = gtk_dialog_add_button(GTK_DIALOG(dialog),
+		convert_accel_to_gtk(C_("ConfigDialog|Button", "&OK")).c_str(),
+		GTK_RESPONSE_OK);
+
+	// Set button alignment
+	GtkWidget *const buttonBox = gtk_widget_get_parent(dialog->btnReset);
+	assert(GTK_IS_BUTTON_BOX(buttonBox));
+	gtk_button_box_set_child_secondary(GTK_BUTTON_BOX(buttonBox), dialog->btnReset, true);
+	gtk_button_box_set_child_secondary(GTK_BUTTON_BOX(buttonBox), dialog->btnDefaults, true);
+
+	// Connect the dialog response handler.
+	g_signal_connect(dialog, "response", G_CALLBACK(rp_config_dialog_response_handler), NULL);
+#else /* !USE_GTK_DIALOG */
+	dialog->buttonBox = rp_gtk_hbox_new(2);
+	gtk_widget_set_name(dialog->buttonBox, "buttonBox");
+
+	// Secondary buttons
+	dialog->btnReset = gtk_button_new_with_mnemonic(
+		convert_accel_to_gtk(C_("ConfigDialog|Button", "&Reset")).c_str());
+	g_object_set_qdata(G_OBJECT(dialog->btnReset), response_id_quark,
+		GINT_TO_POINTER(CONFIG_DIALOG_RESPONSE_RESET));
+	dialog->btnDefaults = gtk_button_new_with_mnemonic(
+		convert_accel_to_gtk(C_("ConfigDialog|Button", "Defaults")).c_str());
+	g_object_set_qdata(G_OBJECT(dialog->btnDefaults), response_id_quark,
+		GINT_TO_POINTER(CONFIG_DIALOG_RESPONSE_DEFAULTS));
+
+	// Primary buttons
+	// GTK4 no longer has GTK_STOCK_*, so we'll have to provide it ourselves.
+	dialog->btnCancel = gtk_button_new_with_mnemonic(
+		convert_accel_to_gtk(C_("ConfigDialog|Button", "&Cancel")).c_str());
+	g_object_set_qdata(G_OBJECT(dialog->btnCancel), response_id_quark,
+		GINT_TO_POINTER(GTK_RESPONSE_CANCEL));
+	gtk_widget_set_hexpand(dialog->btnCancel, TRUE);
+	dialog->btnApply = gtk_button_new_with_mnemonic(
+		convert_accel_to_gtk(C_("ConfigDialog|Button", "&Apply")).c_str());
+	g_object_set_qdata(G_OBJECT(dialog->btnApply), response_id_quark,
+		GINT_TO_POINTER(GTK_RESPONSE_APPLY));
+	dialog->btnOK = gtk_button_new_with_mnemonic(
+		convert_accel_to_gtk(C_("ConfigDialog|Button", "&OK")).c_str());
+	g_object_set_qdata(G_OBJECT(dialog->btnOK), response_id_quark,
+		GINT_TO_POINTER(GTK_RESPONSE_OK));
+
+	// Set button alignment.
+	gtk_widget_set_halign(dialog->buttonBox, GTK_ALIGN_FILL);
+
+	gtk_box_append(GTK_BOX(dialog->buttonBox), dialog->btnReset);
+	gtk_box_append(GTK_BOX(dialog->buttonBox), dialog->btnDefaults);
+	gtk_box_append(GTK_BOX(dialog->buttonBox), dialog->btnCancel);
+	gtk_box_append(GTK_BOX(dialog->buttonBox), dialog->btnApply);
+	gtk_box_append(GTK_BOX(dialog->buttonBox), dialog->btnOK);
+
+	// FIXME: This doesn't seem to be working...
+	gtk_widget_set_halign(dialog->btnReset, GTK_ALIGN_START);
+	gtk_widget_set_halign(dialog->btnDefaults, GTK_ALIGN_START);
+	gtk_widget_set_halign(dialog->btnCancel, GTK_ALIGN_END);
+	gtk_widget_set_halign(dialog->btnApply, GTK_ALIGN_END);
+	gtk_widget_set_halign(dialog->btnOK, GTK_ALIGN_END);
+
+	gtk_box_append(GTK_BOX(dialog->vboxDialog), dialog->buttonBox);
+
+	// Connect the button signals.
+	g_signal_connect(dialog->btnReset,    "clicked", G_CALLBACK(rp_config_dialog_button_handler), dialog);
+	g_signal_connect(dialog->btnDefaults, "clicked", G_CALLBACK(rp_config_dialog_button_handler), dialog);
+	g_signal_connect(dialog->btnCancel,   "clicked", G_CALLBACK(rp_config_dialog_button_handler), dialog);
+	g_signal_connect(dialog->btnApply,    "clicked", G_CALLBACK(rp_config_dialog_button_handler), dialog);
+	g_signal_connect(dialog->btnOK,       "clicked", G_CALLBACK(rp_config_dialog_button_handler), dialog);
+#endif /* USE_GTK_DIALOG */
+
+	// Disbale the "Apply" button initially.
+	gtk_widget_set_sensitive(dialog->btnApply, FALSE);
+
 	// Reset button is disabled initially.
 	gtk_widget_set_sensitive(dialog->btnReset, FALSE);
 
@@ -257,17 +377,8 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 	gtk_widget_set_sensitive(dialog->btnDefaults,
 		rp_config_tab_has_defaults(RP_CONFIG_TAB(dialog->tabImageTypes)));
 
-	// FIXME: For some reason, GtkNotebook is defaulting to the
-	// "Thumbnail Cache" tab on GTK3 after optimizing
-	// gtk_widget_show(). Explicitly reset it to 0.
-	gtk_notebook_set_current_page(GTK_NOTEBOOK(dialog->tabWidget), 0);
-
-	// Connect signals.
-	dialog->tabWidget_switch_page = g_signal_connect(
-		dialog->tabWidget, "switch-page",
-		G_CALLBACK(rp_config_dialog_switch_page), dialog);
-
-	g_signal_connect(dialog, "response", G_CALLBACK(rp_config_dialog_response_handler), NULL);
+	// Escape key handler
+	g_signal_connect(dialog, "close", G_CALLBACK(rp_config_dialog_close), nullptr);
 }
 
 static void
@@ -296,11 +407,15 @@ rp_config_dialog_new(void)
 
 /**
  * Close the dialog.
+ * NOTE: Also used as a signal handler.
  * @param dialog ConfigDialog
+ * @param user_data
  */
 static void
-rp_config_dialog_close(RpConfigDialog *dialog)
+rp_config_dialog_close(RpConfigDialog *dialog, gpointer user_data)
 {
+	RP_UNUSED(user_data);
+
 #if GTK_CHECK_VERSION(3,9,8)
 	gtk_window_close(GTK_WINDOW(dialog));
 #else /* !GTK_CHECK_VERSION(3,9,8) */
@@ -458,15 +573,15 @@ rp_config_dialog_load_defaults(RpConfigDialog *dialog)
 }
 
 /**
- * Dialog response handler.
+ * Dialog response handler
  * @param dialog ConfigDialog
  * @param response_id Response ID
  * @param user_data
  */
 static void
-rp_config_dialog_response_handler(RpConfigDialog *dialog,
-				  gint		  response_id,
-				  gpointer	  user_data)
+rp_config_dialog_response_handler(RpConfigDialog	*dialog,
+				  gint			 response_id,
+				  gpointer		 user_data)
 {
 	RP_UNUSED(user_data);
 
@@ -475,7 +590,7 @@ rp_config_dialog_response_handler(RpConfigDialog *dialog,
 			// The "OK" button was clicked.
 			// Save all tabs and close the dialog.
 			rp_config_dialog_apply(dialog);
-			rp_config_dialog_close(dialog);
+			rp_config_dialog_close(dialog, nullptr);
 			break;
 
 		case GTK_RESPONSE_APPLY:
@@ -487,7 +602,7 @@ rp_config_dialog_response_handler(RpConfigDialog *dialog,
 		case GTK_RESPONSE_CANCEL:
 			// The "Cancel" button was clicked.
 			// Close the dialog.
-			rp_config_dialog_close(dialog);
+			rp_config_dialog_close(dialog, nullptr);
 			break;
 
 		case CONFIG_DIALOG_RESPONSE_DEFAULTS:
@@ -506,6 +621,23 @@ rp_config_dialog_response_handler(RpConfigDialog *dialog,
 			break;
 	}
 }
+
+#if GTK_CHECK_VERSION(4,0,0)
+/**
+ * Dialog button handler (non-GtkDialog)
+ * @param button GtkButton (check response_id_quark for the response ID)
+ * @param dialog RpConfigDialog
+ */
+static void
+rp_config_dialog_button_handler(GtkButton	*button,
+				RpConfigDialog	*dialog)
+{
+	const gint response_id = GPOINTER_TO_INT(
+		g_object_get_qdata(G_OBJECT(button), response_id_quark));
+
+	rp_config_dialog_response_handler(dialog, response_id, nullptr);
+}
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 /**
  * The selected tab has been changed.
