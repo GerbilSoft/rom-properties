@@ -13,6 +13,8 @@
 #include "ConfigDialog.hpp"
 #include "RpGtk.hpp"
 
+#include <gdk/gdkkeysyms.h>
+
 // for e.g. Config and FileSystem
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -32,12 +34,22 @@ using namespace LibRpFile;
 using LibRpBase::KeyManager;
 #endif
 
+/* Signal identifiers */
+typedef enum {
+	SIGNAL_CLOSE,	// Dialog close request (Escape key)
+
+	SIGNAL_LAST
+} RpLanguageComboBoxSignalID;
+
 #define CONFIG_DIALOG_RESPONSE_RESET		0
 #define CONFIG_DIALOG_RESPONSE_DEFAULTS		1
 
 static void	rp_config_dialog_dispose		(GObject	*object);
 
 // Signal handlers
+static void	rp_config_dialog_close			(RpConfigDialog *dialog,
+							 gpointer	 user_data);
+
 static void	rp_config_dialog_button_handler		(GtkButton	*button,
 							 RpConfigDialog	*dialog);
 
@@ -51,6 +63,7 @@ static void	rp_config_dialog_tab_modified		(RpConfigTab	*tab,
 
 
 static GQuark response_id_quark;
+static guint signals[SIGNAL_LAST];
 
 // NOTE: GTK4 deprecated GtkDialog.
 // We'll use GtkWindow and reimplement the buttons ourselves.
@@ -108,6 +121,22 @@ rp_config_dialog_class_init(RpConfigDialogClass *klass)
 	// NOTE: Not using g_quark_from_static_string()
 	// because the extension can be unloaded.
 	response_id_quark = g_quark_from_string("response-id");
+
+	/** Signals **/
+
+	signals[SIGNAL_CLOSE] = g_signal_new("close",
+		G_OBJECT_CLASS_TYPE(gobject_class),
+		(GSignalFlags)(G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
+		0, NULL, NULL, NULL,
+		G_TYPE_NONE, 0);
+
+	/** Escape key handling **/
+#if GTK_CHECK_VERSION(3,98,2)
+	gtk_widget_class_add_binding_signal(GTK_WIDGET_CLASS(klass), GDK_KEY_Escape, (GdkModifierType)0, "close", NULL);
+#else /* !GTK_CHECK_VERSION(3,98,2) */
+	GtkBindingSet *const binding_set = gtk_binding_set_by_class(klass);
+	gtk_binding_entry_add_signal(binding_set, GDK_KEY_Escape, (GdkModifierType)0, "close", 0);
+#endif /* GTK_CHECK_VERSION(3,98,2) */
 }
 
 static void
@@ -316,6 +345,9 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 	// Adjust btnDefaults for the first tab.
 	gtk_widget_set_sensitive(dialog->btnDefaults,
 		rp_config_tab_has_defaults(RP_CONFIG_TAB(dialog->tabImageTypes)));
+
+	// Escape key handler
+	g_signal_connect(dialog, "close", G_CALLBACK(rp_config_dialog_close), nullptr);
 }
 
 static void
@@ -344,11 +376,15 @@ rp_config_dialog_new(void)
 
 /**
  * Close the dialog.
+ * NOTE: Also used as a signal handler.
  * @param dialog ConfigDialog
+ * @param user_data
  */
 static void
-rp_config_dialog_close(RpConfigDialog *dialog)
+rp_config_dialog_close(RpConfigDialog *dialog, gpointer user_data)
 {
+	RP_UNUSED(user_data);
+
 #if GTK_CHECK_VERSION(3,9,8)
 	gtk_window_close(GTK_WINDOW(dialog));
 #else /* !GTK_CHECK_VERSION(3,9,8) */
@@ -506,7 +542,7 @@ rp_config_dialog_load_defaults(RpConfigDialog *dialog)
 }
 
 /**
- * Dialog button handler. (non-GtkDialog)
+ * Dialog button handler (non-GtkDialog)
  * @param button GtkButton (check response_id_quark for the response ID)
  * @param dialog RpConfigDialog
  */
@@ -522,7 +558,7 @@ rp_config_dialog_button_handler(GtkButton	*button,
 			// The "OK" button was clicked.
 			// Save all tabs and close the dialog.
 			rp_config_dialog_apply(dialog);
-			rp_config_dialog_close(dialog);
+			rp_config_dialog_close(dialog, nullptr);
 			break;
 
 		case GTK_RESPONSE_APPLY:
@@ -534,7 +570,7 @@ rp_config_dialog_button_handler(GtkButton	*button,
 		case GTK_RESPONSE_CANCEL:
 			// The "Cancel" button was clicked.
 			// Close the dialog.
-			rp_config_dialog_close(dialog);
+			rp_config_dialog_close(dialog, nullptr);
 			break;
 
 		case CONFIG_DIALOG_RESPONSE_DEFAULTS:
