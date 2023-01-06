@@ -21,6 +21,19 @@ using std::array;
 namespace LibRpTexture { namespace ImageDecoder {
 
 /**
+ * ASTC lookup table.
+ * - Index: Matches ordering in DDS (div3), PVR3, KTX, KTX2.
+ * - Value 0: block_x
+ * - Value 1: block_y
+ */
+const uint8_t astc_lkup_tbl[14][2] = {
+	{ 4, 4}, { 5, 4}, { 5, 5}, { 6, 5},
+	{ 6, 6}, { 8, 5}, { 8, 6}, { 8, 8},
+	{10, 5}, {10, 6}, {10, 8}, {10,10},
+	{12,10}, {12,12}
+};
+
+/**
  * Convert an ASTC 2D image to rp_image.
  * @param width Image width
  * @param height Image height

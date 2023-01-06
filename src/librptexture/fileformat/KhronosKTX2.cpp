@@ -363,66 +363,21 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 			break;
 #endif /* ENABLE_PVRTC */
 
+		default:
 #ifdef ENABLE_ASTC
-		case VK_FORMAT_ASTC_4x4_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_4x4_SRGB_BLOCK:
-			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 4, 4);
-			break;
-		case VK_FORMAT_ASTC_5x4_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_5x4_SRGB_BLOCK:
-			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 5, 4);
-			break;
-		case VK_FORMAT_ASTC_5x5_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_5x5_SRGB_BLOCK:
-			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 5, 5);
-			break;
-		case VK_FORMAT_ASTC_6x5_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_6x5_SRGB_BLOCK:
-			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 6, 5);
-			break;
-		case VK_FORMAT_ASTC_6x6_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_6x6_SRGB_BLOCK:
-			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 6, 6);
-			break;
-		case VK_FORMAT_ASTC_8x5_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_8x5_SRGB_BLOCK:
-			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 8, 5);
-			break;
-		case VK_FORMAT_ASTC_8x6_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_8x6_SRGB_BLOCK:
-			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 8, 6);
-			break;
-		case VK_FORMAT_ASTC_8x8_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_8x8_SRGB_BLOCK:
-			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 8, 8);
-			break;
-		case VK_FORMAT_ASTC_10x5_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_10x5_SRGB_BLOCK:
-			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 10, 5);
-			break;
-		case VK_FORMAT_ASTC_10x6_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_10x6_SRGB_BLOCK:
-			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 10, 6);
-			break;
-		case VK_FORMAT_ASTC_10x8_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_10x8_SRGB_BLOCK:
-			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 10, 8);
-			break;
-		case VK_FORMAT_ASTC_10x10_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_10x10_SRGB_BLOCK:
-			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 10, 10);
-			break;
-		case VK_FORMAT_ASTC_12x10_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_12x10_SRGB_BLOCK:
-			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 12, 10);
-			break;
-		case VK_FORMAT_ASTC_12x12_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_12x12_SRGB_BLOCK:
-			expected_size = ImageSizeCalc::calcImageSizeASTC(width, height, 12, 12);
-			break;
+			if (ktx2Header.vkFormat >= VK_FORMAT_ASTC_4x4_UNORM_BLOCK &&
+			    ktx2Header.vkFormat <= VK_FORMAT_ASTC_12x12_SRGB_BLOCK)
+			{
+				static_assert(((VK_FORMAT_ASTC_12x12_UNORM_BLOCK - VK_FORMAT_ASTC_4x4_UNORM_BLOCK) / 2) + 1 ==
+					ARRAY_SIZE(ImageDecoder::astc_lkup_tbl), "ASTC lookup table size is wrong!");
+				const unsigned int astc_idx = (ktx2Header.vkFormat - VK_FORMAT_ASTC_4x4_UNORM_BLOCK) / 2;
+				expected_size = ImageSizeCalc::calcImageSizeASTC(width, height,
+					ImageDecoder::astc_lkup_tbl[astc_idx][0],
+					ImageDecoder::astc_lkup_tbl[astc_idx][1]);
+				break;
+			}
 #endif /* ENABLE_ASTC */
 
-		default:
 			// Not supported.
 			return nullptr;
 	}
@@ -641,81 +596,23 @@ const rp_image *KhronosKTX2Private::loadImage(int mip)
 			break;
 #endif /* ENABLE_PVRTC */
 
+		default:
 #ifdef ENABLE_ASTC
-		// TODO: sRGB handling?
-		case VK_FORMAT_ASTC_4x4_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_4x4_SRGB_BLOCK:
-			img = ImageDecoder::fromASTC(width, height,
-				buf.get(), expected_size, 4, 4);
-			break;
-		case VK_FORMAT_ASTC_5x4_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_5x4_SRGB_BLOCK:
-			img = ImageDecoder::fromASTC(width, height,
-				buf.get(), expected_size, 5, 4);
-			break;
-		case VK_FORMAT_ASTC_5x5_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_5x5_SRGB_BLOCK:
-			img = ImageDecoder::fromASTC(width, height,
-				buf.get(), expected_size, 5, 5);
-			break;
-		case VK_FORMAT_ASTC_6x5_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_6x5_SRGB_BLOCK:
-			img = ImageDecoder::fromASTC(width, height,
-				buf.get(), expected_size, 6, 5);
-			break;
-		case VK_FORMAT_ASTC_6x6_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_6x6_SRGB_BLOCK:
-			img = ImageDecoder::fromASTC(width, height,
-				buf.get(), expected_size, 6, 6);
-			break;
-		case VK_FORMAT_ASTC_8x5_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_8x5_SRGB_BLOCK:
-			img = ImageDecoder::fromASTC(width, height,
-				buf.get(), expected_size, 8, 5);
-			break;
-		case VK_FORMAT_ASTC_8x6_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_8x6_SRGB_BLOCK:
-			img = ImageDecoder::fromASTC(width, height,
-				buf.get(), expected_size, 8, 6);
-			break;
-		case VK_FORMAT_ASTC_8x8_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_8x8_SRGB_BLOCK:
-			img = ImageDecoder::fromASTC(width, height,
-				buf.get(), expected_size, 8, 8);
-			break;
-		case VK_FORMAT_ASTC_10x5_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_10x5_SRGB_BLOCK:
-			img = ImageDecoder::fromASTC(width, height,
-				buf.get(), expected_size, 10, 5);
-			break;
-		case VK_FORMAT_ASTC_10x6_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_10x6_SRGB_BLOCK:
-			img = ImageDecoder::fromASTC(width, height,
-				buf.get(), expected_size, 10, 6);
-			break;
-		case VK_FORMAT_ASTC_10x8_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_10x8_SRGB_BLOCK:
-			img = ImageDecoder::fromASTC(width, height,
-				buf.get(), expected_size, 10, 8);
-			break;
-		case VK_FORMAT_ASTC_10x10_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_10x10_SRGB_BLOCK:
-			img = ImageDecoder::fromASTC(width, height,
-				buf.get(), expected_size, 10, 10);
-			break;
-		case VK_FORMAT_ASTC_12x10_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_12x10_SRGB_BLOCK:
-			img = ImageDecoder::fromASTC(width, height,
-				buf.get(), expected_size, 12, 10);
-			break;
-		case VK_FORMAT_ASTC_12x12_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_12x12_SRGB_BLOCK:
-			img = ImageDecoder::fromASTC(width, height,
-				buf.get(), expected_size, 12, 12);
-			break;
+			if (ktx2Header.vkFormat >= VK_FORMAT_ASTC_4x4_UNORM_BLOCK &&
+			    ktx2Header.vkFormat <= VK_FORMAT_ASTC_12x12_SRGB_BLOCK)
+			{
+				// TODO: sRGB handling?
+				static_assert(((VK_FORMAT_ASTC_12x12_UNORM_BLOCK - VK_FORMAT_ASTC_4x4_UNORM_BLOCK) / 2) + 1 ==
+					ARRAY_SIZE(ImageDecoder::astc_lkup_tbl), "ASTC lookup table size is wrong!");
+				const unsigned int astc_idx = (ktx2Header.vkFormat - VK_FORMAT_ASTC_4x4_UNORM_BLOCK) / 2;
+				img = ImageDecoder::fromASTC(width, height,
+					buf.get(), expected_size,
+					ImageDecoder::astc_lkup_tbl[astc_idx][0],
+					ImageDecoder::astc_lkup_tbl[astc_idx][1]);
+				break;
+			}
 #endif /* ENABLE_ASTC */
 
-		default:
 			// Not supported.
 			break;
 	}
