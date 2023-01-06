@@ -96,6 +96,7 @@ typedef enum {
 
 /**
  * DirectDraw Surface: NVTT header.
+ * Located at 0x1C in DDS_HEADER.
  * This is present within the DDS header if the DDS was created by
  * nVidia Texture Tools.
  *
@@ -112,6 +113,32 @@ typedef struct _DDS_NVTT_Header {
 					//         (major << 16) | (minor << 8) | (revision)
 } DDS_NVTT_Header;
 ASSERT_STRUCT(DDS_NVTT_Header, 11*sizeof(uint32_t));
+
+/**
+ * DirectDraw Surface: GIMP-DDS swizzle FourCCs
+ */
+typedef enum {
+	DDS_GIMP_SWIZZLE_FOURCC_AEXP	= 'AEXP',	// Alpha Exponent (DXT5)
+	DDS_GIMP_SWIZZLE_FOURCC_YCG1	= 'YCG1',	// YCoCg (swizzled DXT5)
+	DDS_GIMP_SWIZZLE_FOURCC_YCG2	= 'YCG2',	// YCoCg Scaled (swizzled DXT5)
+} DDS_GIMP_SWIZZLE_FOURCC;
+
+/**
+ * DirectDraw Surface: GIMP-DDS header.
+ * Located at 0x1C in DDS_HEADER.
+ * Indicates extra swizzling for some formats.
+ *
+ * All fields are in little-endian.
+ */
+#define DDS_GIMP_MAGIC "GIMP-DDS"
+typedef struct _DDS_GIMP_Header {
+	char magic[8];		// [0x000] "GIMP-DDS"
+	uint32_t version;	// [0x008]
+	union {
+		char c[4];
+		uint32_t u32;
+	} fourCC;		// [0x00C] Swizzle FourCC
+} DDS_GIMP_Header;
 
 /**
  * DirectDraw Surface: File header.
@@ -132,13 +159,14 @@ typedef struct _DDS_HEADER {
 	union {
 		uint32_t dwReserved1[11];	// [0x01C]
 		DDS_NVTT_Header nvtt;		// [0x01C] NVTT header
+		DDS_GIMP_Header gimp;		// [0x01C] GIMP-DDS header
 	};
 	DDS_PIXELFORMAT ddspf;		// [0x048]
 	uint32_t dwCaps;		// [0x068]
 	uint32_t dwCaps2;		// [0x06C]
 	uint32_t dwCaps3;		// [0x070]
 	uint32_t dwCaps4;		// [0x074]
-	uint32_t dwReserved2;		// [0x078]
+	uint32_t dwReserved3;		// [0x078]
 } DDS_HEADER;
 ASSERT_STRUCT(DDS_HEADER, 124);
 

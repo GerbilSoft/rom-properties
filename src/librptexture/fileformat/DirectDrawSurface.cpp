@@ -1389,9 +1389,9 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 	}
 
 	const int initial_count = fields->count();
-	fields->reserve(initial_count + 10);	// Maximum of 10 fields.
+	fields->reserve(initial_count + 10);	// Maximum of 10 fields
 
-	// DDS header.
+	// DDS header
 	const DDS_HEADER *const ddsHeader = &d->ddsHeader;
 
 	// Pitch (uncompressed)
@@ -1420,6 +1420,18 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 				   (nvtt_version >> 16) & 0xFF,
 				   (nvtt_version >>  8) & 0xFF,
 				    nvtt_version        & 0xFF));
+	}
+
+	// GIMP-DDS header
+	if (!memcmp(ddsHeader->gimp.magic, DDS_GIMP_MAGIC, sizeof(ddsHeader->gimp.magic))) {
+		// Show the FourCC if it's set.
+		// TODO: Show descriptive versions.
+		if (ddsHeader->gimp.fourCC.u32 != 0) {
+			char buf[8];
+			memcpy(buf, ddsHeader->gimp.fourCC.c, 4);
+			buf[4] = '\0';
+			fields->addField_string(C_("DirectDrawSurface", "GIMP-DDS FourCC"), buf);
+		}
 	}
 
 	// dwFlags
