@@ -1130,21 +1130,19 @@ int PowerVR3::getFields(LibRpBase::RomFields *fields) const
 	if (d->orientation_valid) {
 		// Using KTX-style formatting.
 		// TODO: Is 1D set using height or width?
-		char str[16];
-		if (pvr3Header->depth > 1) {
-			snprintf(str, sizeof(str), "S=%c,T=%c,R=%c",
-				(d->orientation.x != 0 ? 'l' : 'r'),
-				(d->orientation.y != 0 ? 'u' : 'd'),
-				(d->orientation.z != 0 ? 'o' : 'i'));
-		} else if (pvr3Header->height > 1) {
-			snprintf(str, sizeof(str), "S=%c,T=%c",
-				(d->orientation.x != 0 ? 'l' : 'r'),
-				(d->orientation.y != 0 ? 'u' : 'd'));
+		char s_orientation[] = "S=?,T=?,R=?";
+		s_orientation[2] = (d->orientation.x != 0) ? 'l' : 'r';
+		if (pvr3Header->height > 1) {
+			s_orientation[6] = (d->orientation.y != 0) ? 'u' : 'd';
+			if (pvr3Header->depth > 1) {
+				s_orientation[10] = (d->orientation.z != 0) ? 'o' : 'i';
+			} else {
+				s_orientation[7] = '\0';
+			}
 		} else {
-			snprintf(str, sizeof(str), "S=%c",
-				(d->orientation.x != 0 ? 'l' : 'r'));
+			s_orientation[3] = '\0';
 		}
-		fields->addField_string(C_("PowerVR3", "Orientation"), str);
+		fields->addField_string(C_("PowerVR3", "Orientation"), s_orientation);
 	}
 
 	// TODO: Additional fields.

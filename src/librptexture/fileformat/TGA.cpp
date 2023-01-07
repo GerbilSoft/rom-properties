@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * TGA.cpp: TrueVision TGA reader.                                         *
  *                                                                         *
- * Copyright (c) 2019-2022 by David Korth.                                 *
+ * Copyright (c) 2019-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -786,11 +786,10 @@ int TGA::getFields(RomFields *fields) const
 	// Orientation
 	// Uses KTX1 format for display.
 	// Default 00 orientation: H-flip NO, V-flip YES
-	char str[16];
-	snprintf(str, sizeof(str), "S=%c,T=%c",
-		((tgaHeader->img.attr_dir & TGA_ORIENTATION_X_MASK) ? 'l' : 'r'),
-		((tgaHeader->img.attr_dir & TGA_ORIENTATION_Y_MASK) ? 'd' : 'u'));
-	fields->addField_string(C_("TGA", "Orientation"), str);
+	char s_orientation[] = "S=?,T=?";
+	s_orientation[2] = (tgaHeader->img.attr_dir & TGA_ORIENTATION_X_MASK) ? 'l' : 'r';
+	s_orientation[6] = (tgaHeader->img.attr_dir & TGA_ORIENTATION_Y_MASK) ? 'd' : 'u';
+	fields->addField_string(C_("TGA", "Orientation"), s_orientation);
 
 	// Compression
 	const char *s_compression;

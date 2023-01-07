@@ -412,7 +412,7 @@ int WiiU::loadFieldData(void)
 	d->fields->addField_string(C_("RomData", "Game ID"),
 		latin1_to_utf8(discHeader->id, sizeof(discHeader->id)));
 
-	// Publisher.
+	// Publisher
 	// Look up the publisher ID.
 	char publisher_code[5];
 	const char *publisher = nullptr;
@@ -445,20 +445,21 @@ int WiiU::loadFieldData(void)
 	}
 	d->fields->addField_string(C_("RomData", "Publisher"), s_publisher);
 
-	// Game version.
+	// Game version
 	// TODO: Validate the version characters.
 	d->fields->addField_string(C_("RomData", "Version"),
 		latin1_to_utf8(discHeader->version, sizeof(discHeader->version)));
 
-	// OS version.
+	// OS version
 	// TODO: Validate the version characters.
-	d->fields->addField_string(C_("WiiU", "OS Version"),
-		rp_sprintf("%c.%c.%c",
-			discHeader->os_version[0],
-			discHeader->os_version[1],
-			discHeader->os_version[2]));
+	const char s_os_version[] = {
+		discHeader->os_version[0], '.',
+		discHeader->os_version[1], '.',
+		discHeader->os_version[2], '\0'
+	};
+	d->fields->addField_string(C_("WiiU", "OS Version"), s_os_version);
 
-	// Region.
+	// Region
 	// TODO: Compare against list of regions and show the fancy name.
 	d->fields->addField_string(C_("RomData", "Region Code"),
 		latin1_to_utf8(discHeader->region, sizeof(discHeader->region)));

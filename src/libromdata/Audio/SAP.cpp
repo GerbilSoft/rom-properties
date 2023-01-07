@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * SAP.cpp: Atari 8-bit SAP audio reader.                                  *
  *                                                                         *
- * Copyright (c) 2018-2022 by David Korth.                                 *
+ * Copyright (c) 2018-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -612,8 +612,8 @@ int SAP::loadFieldData(void)
 	// TODO: Verify that the type is valid?
 	const char *const type_title = C_("SAP", "Type");
 	if (ISALPHA(tags.type)) {
-		d->fields->addField_string(type_title,
-			rp_sprintf("%c", tags.type));
+		const char s_tag_type[2] = {tags.type, '\0'};
+		d->fields->addField_string(type_title, s_tag_type);
 	} else {
 		d->fields->addField_string(type_title,
 			rp_sprintf("0x%02X", static_cast<unsigned int>(tags.type)),
