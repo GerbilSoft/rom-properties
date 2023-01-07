@@ -316,16 +316,16 @@ IFACEMETHODIMP RP_XAttrView::Initialize(
 		return E_INVALIDARG;
 	}
 
+	// TODO: Handle CFSTR_MOUNTEDVOLUME for volumes mounted on an NTFS mount point.
+	FORMATETC fe = { CF_HDROP, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
+	STGMEDIUM stm;
+
 	// Check if XAttrView is enabled.
 	const Config *const config = Config::instance();
 	if (!config->showXAttrView()) {
 		// XAttrView is disabled.
 		goto cleanup;
 	}
-
-	// TODO: Handle CFSTR_MOUNTEDVOLUME for volumes mounted on an NTFS mount point.
-	FORMATETC fe = { CF_HDROP, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
-	STGMEDIUM stm;
 
 	// The pDataObj pointer contains the objects being acted upon. In this 
 	// example, we get an HDROP handle for enumerating the selected files and 
