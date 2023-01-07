@@ -320,6 +320,10 @@ IFACEMETHODIMP RP_XAttrView::Initialize(
 	FORMATETC fe = { CF_HDROP, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
 	STGMEDIUM stm;
 
+	HRESULT hr = E_FAIL;
+	UINT nFiles, cchFilename;
+	TCHAR *tfilename = nullptr;
+
 	// Check if XAttrView is enabled.
 	const Config *const config = Config::instance();
 	if (!config->showXAttrView()) {
@@ -340,11 +344,6 @@ IFACEMETHODIMP RP_XAttrView::Initialize(
 		return E_FAIL;
 	}
 
-	HRESULT hr = E_FAIL;
-	UINT nFiles, cchFilename;
-	TCHAR *tfilename = nullptr;
-	//const Config *config;
-
 	// Determine how many files are involved in this operation. This
 	// code sample displays the custom context menu item when only
 	// one file is selected.
@@ -362,6 +361,10 @@ IFACEMETHODIMP RP_XAttrView::Initialize(
 	}
 
 	tfilename = static_cast<TCHAR*>(malloc((cchFilename+1) * sizeof(TCHAR)));
+	if (!tfilename) {
+		hr = E_OUTOFMEMORY;
+		goto cleanup;
+	}
 	cchFilename = DragQueryFile(hDrop, 0, tfilename, cchFilename+1);
 	if (cchFilename == 0) {
 		// No filename.
