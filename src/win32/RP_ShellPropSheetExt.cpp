@@ -2234,6 +2234,10 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	}
 
 	tfilename = static_cast<TCHAR*>(malloc((cchFilename+1) * sizeof(TCHAR)));
+	if (!tfilename) {
+		hr = E_OUTOFMEMORY;
+		goto cleanup;
+	}
 	cchFilename = DragQueryFile(hDrop, 0, tfilename, cchFilename+1);
 	if (cchFilename == 0) {
 		// No filename.
