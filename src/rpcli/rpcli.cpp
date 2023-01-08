@@ -3,7 +3,7 @@
  * rpcli.cpp: Command-line interface for properties.                       *
  *                                                                         *
  * Copyright (c) 2016-2018 by Egor.                                        *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -266,12 +266,13 @@ static void PrintSystemRegion(void)
  */
 static void PrintPathnames(void)
 {
-	cout << rp_sprintf("User's home directory:   ") << OS_NAMESPACE::getHomeDirectory() << '\n';
-	cout << rp_sprintf("User's cache directory:  ") << OS_NAMESPACE::getCacheDirectory() << '\n';
-	cout << rp_sprintf("User's config directory: ") << OS_NAMESPACE::getConfigDirectory() << '\n';
+	// TODO: Localize these strings?
+	cout << "User's home directory:   " << OS_NAMESPACE::getHomeDirectory() << '\n';
+	cout << "User's cache directory:  " << OS_NAMESPACE::getCacheDirectory() << '\n';
+	cout << "User's config directory: " << OS_NAMESPACE::getConfigDirectory() << '\n';
 	cout << '\n';
-	cout << rp_sprintf("RP cache directory:      ") << FileSystem::getCacheDirectory() << '\n';
-	cout << rp_sprintf("RP config directory:     ") << FileSystem::getConfigDirectory() << '\n';
+	cout << "RP cache directory:      " << FileSystem::getCacheDirectory() << '\n';
+	cout << "RP config directory:     " << FileSystem::getConfigDirectory() << '\n';
 
 	// Extra line. (TODO: Only if multiple commands are specified.)
 	cout << endl;
