@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * KeyManagerTab.hpp: Key Manager tab for rp-config.                       *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1470,7 +1470,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 					"An error occurred while opening '%1$s': %2$s")),
 					fileNoPath.c_str(), _wcserror(iret.error_code));
 			} else {
-				msg = rp_stprintf_p(U82T_c(C_("KeyManagerTab",
+				msg = rp_stprintf(U82T_c(C_("KeyManagerTab",
 					// tr: %s == filename
 					"An error occurred while opening '%s'.")),
 					fileNoPath.c_str());
@@ -1486,7 +1486,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 					"An error occurred while reading '%1$s': %2$s")),
 					fileNoPath, _wcserror(iret.error_code));
 			} else {
-				msg = rp_stprintf_p(U82T_c(C_("KeyManagerTab",
+				msg = rp_stprintf(U82T_c(C_("KeyManagerTab",
 					// tr: %s == filename
 					"An error occurred while reading '%s'.")),
 					fileNoPath.c_str());
