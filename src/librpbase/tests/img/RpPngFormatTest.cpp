@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * RpPngFormatTest.cpp: RpPng format test.                                 *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1321,7 +1321,7 @@ INSTANTIATE_TEST_SUITE_P(happy_mac_mono_png, RpPngFormatTest,
  */
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-	fprintf(stderr, "LibRpBase test suite: RpPng format test.\n\n");
+	fputs("LibRpBase test suite: RpPng format test.\n\n", stderr);
 	fflush(nullptr);
 
 	// Make sure the CRC32 table is initialized.

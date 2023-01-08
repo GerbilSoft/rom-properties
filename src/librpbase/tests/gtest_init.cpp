@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * gtest_init.c: Google Test initialization.                               *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -113,7 +113,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	ULONG_PTR gdipToken;
 	Gdiplus::Status status = GdiplusStartup(&gdipToken, &gdipSI, nullptr);
 	if (status != Gdiplus::Status::Ok) {
-		fprintf(stderr, "*** ERROR: GDI+ initialization failed.\n");
+		fputs("*** ERROR: GDI+ initialization failed.\n", stderr);
 		return EXIT_FAILURE;
 	}
 

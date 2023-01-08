@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * AesCipherTest.cpp: AesCipher class test.                                *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -230,7 +230,7 @@ void AesCipherTest::SetUp(void)
 		pfnLastCreateIAesCipher = mode.pfnCreateIAesCipher;
 
 		if (!mode.isRequired && !m_cipher->isInit()) {
-			printf("This implementation is not supported on this system; skipping tests.\n");
+			fputs("This implementation is not supported on this system; skipping tests.\n", stdout);
 		}
 	}
 
@@ -707,7 +707,7 @@ AesDecryptTestSet(Nettle, true)
  */
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-	fprintf(stderr, "LibRpBase test suite: Crypto tests.\n\n");
+	fputs("LibRpBase test suite: Crypto tests.\n\n", stderr);
 	fflush(nullptr);
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.

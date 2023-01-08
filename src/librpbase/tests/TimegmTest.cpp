@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * TimegmTest.cpp: timegm() test.                                          *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -237,11 +237,11 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 	static const char func_name[] = "timegm() (internal)";
 #endif
 
-	fprintf(stderr, "LibRpBase test suite: timegm() tests.\n");
+	fputs("LibRpBase test suite: timegm() tests.\n", stderr);
 	fprintf(stderr, "Time conversion function in use: %s\n", func_name);
 	if (sizeof(time_t) < 8) {
-		fprintf(stderr, "*** WARNING: 32-bit time_t is in use.\n"
-		                "*** Disabling tests known to fail with 32-bit time_t.\n");
+		fputs("*** WARNING: 32-bit time_t is in use.\n"
+		      "*** Disabling tests known to fail with 32-bit time_t.\n", stderr);
 	}
 	fputc('\n', stderr);
 		

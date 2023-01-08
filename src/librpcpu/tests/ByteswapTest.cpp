@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpcpu/tests)                   *
  * ByteswapTest.cpp: Byteswap functions test.                              *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -388,7 +388,7 @@ DO_ARRAY_32_unQWORD_BENCHMARK	(dispatch, true, "")
  */
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-	fprintf(stderr, "LibRpCpu test suite: Byteswap tests.\n\n");
+	fputs("LibRpCpu test suite: Byteswap tests.\n\n", stderr);
 	fprintf(stderr, "Benchmark iterations: %u\n", LibRpCpu::Tests::ByteswapTest::BENCHMARK_ITERATIONS);
 	fflush(nullptr);
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpsecure)                      *
  * os-secure_linux.c: OS security functions. (Linux)                       *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -36,7 +36,7 @@ int rp_secure_enable(rp_secure_param_t param)
 {
 	assert(param.syscall_wl != NULL);
 	if (!param.syscall_wl) {
-		fprintf(stderr, "*** ERROR: rp_secure_enable() called with NULL syscall whitelist.\n");
+		fputs("*** ERROR: rp_secure_enable() called with NULL syscall whitelist.\n", stderr);
 		abort();
 	}
 
@@ -58,7 +58,7 @@ int rp_secure_enable(rp_secure_param_t param)
 	if (!ctx) {
 		// Cannot initialize seccomp.
 #ifdef ENABLE_SECCOMP_DEBUG
-		fprintf(stderr, "*** ERROR: seccomp_init() failed.\n");
+		fputs("*** ERROR: seccomp_init() failed.\n", stderr);
 #endif /* ENABLE_SECCOMP_DEBUG */
 		return -ENOSYS;
 	}

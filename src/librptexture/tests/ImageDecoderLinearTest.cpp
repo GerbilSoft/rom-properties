@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture/tests)               *
  * ImageDecoderLinearTest.cpp: Linear image decoding tests with SSSE3.     *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -501,7 +501,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_benchmark)
 TEST_P(ImageDecoderLinearTest, fromLinear_sse2_test)
 {
 	if (!RP_CPU_HasSSE2()) {
-		fprintf(stderr, "*** SSE2 is not supported on this CPU. Skipping test.\n");
+		fputs("*** SSE2 is not supported on this CPU. Skipping test.\n", stderr);
 		return;
 	}
 
@@ -541,7 +541,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_sse2_test)
 TEST_P(ImageDecoderLinearTest, fromLinear_sse2_benchmark)
 {
 	if (!RP_CPU_HasSSE2()) {
-		fprintf(stderr, "*** SSE2 is not supported on this CPU. Skipping test.\n");
+		fputs("*** SSE2 is not supported on this CPU. Skipping test.\n", stderr);
 		return;
 	}
 
@@ -1238,7 +1238,7 @@ INSTANTIATE_TEST_SUITE_P(fromLinear16_384, ImageDecoderLinearTest,
  */
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-	fprintf(stderr, "LibRpTexture test suite: ImageDecoder::fromLinear*() tests.\n\n");
+	fputs("LibRpTexture test suite: ImageDecoder::fromLinear*() tests.\n\n", stderr);
 	fprintf(stderr, "Benchmark iterations: %u\n",
 		LibRpTexture::Tests::ImageDecoderLinearTest::BENCHMARK_ITERATIONS);
 	fflush(nullptr);

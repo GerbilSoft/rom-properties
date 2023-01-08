@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture/tests)               *
  * UnPremutiplyTest.cpp: Test un_premultiply().                            *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -84,7 +84,7 @@ TEST_F(UnPremultiplyTest, un_premultiply_cpp_benchmark)
 TEST_F(UnPremultiplyTest, un_premultiply_sse41_benchmark)
 {
 	if (!RP_CPU_HasSSE41()) {
-		fprintf(stderr, "*** SSE4.1 is not supported on this CPU. Skipping test.\n");
+		fputs("*** SSE4.1 is not supported on this CPU. Skipping test.\n", stderr);
 		return;
 	}
 
@@ -125,7 +125,7 @@ TEST_F(UnPremultiplyTest, premultiply_cpp)
  */
 extern "C" int gtest_main(int argc, TCHAR *argv[])
 {
-	fprintf(stderr, "LibRpTexture test suite: rp_image::un_premultiply() tests.\n\n");
+	fputs("LibRpTexture test suite: rp_image::un_premultiply() tests.\n\n", stderr);
 	fprintf(stderr, "Benchmark iterations: %u\n",
 		LibRpTexture::Tests::UnPremultiplyTest::BENCHMARK_ITERATIONS);
 	fflush(nullptr);
