@@ -147,9 +147,6 @@ const TextureInfo DirectDrawSurfacePrivate::textureInfo = {
 const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_8[] = {
 	// 3-bit for R and G; 2-bit for B
 	{0xE0, 0x1C, 0x03, 0x00, "RGB332", ImageDecoder::PixelFormat::RGB332},
-
-	// end
-	{0, 0, 0, 0, "", ImageDecoder::PixelFormat::Unknown}
 };
 
 // Supported 16-bit uncompressed RGB formats
@@ -182,9 +179,6 @@ const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb
 
 	// Other uncommon 16-bit formats.
 	{0x00E0, 0x001C, 0x0003, 0xFF00, "ARGB8332", ImageDecoder::PixelFormat::ARGB8332},
-
-	// end
-	{0, 0, 0, 0, "", ImageDecoder::PixelFormat::Unknown}
 };
 
 // Supported 24-bit uncompressed RGB formats
@@ -215,9 +209,6 @@ const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb
 
 	{0x3FF00000, 0x000FFC00, 0x000003FF, 0xC0000000, "A2R10G10B10", ImageDecoder::PixelFormat::A2R10G10B10},
 	{0x000003FF, 0x000FFC00, 0x3FF00000, 0xC0000000, "A2B10G10R10", ImageDecoder::PixelFormat::A2B10G10R10},
-
-	// end
-	{0, 0, 0, 0, "", ImageDecoder::PixelFormat::Unknown}
 };
 
 // Supported luminance formats.
@@ -236,18 +227,12 @@ const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb
 	{0xFFFF, 0xFFFF, 0xFFFF, 0x0000, "L16",  ImageDecoder::PixelFormat::L16},
 	{0x00FF, 0x0000, 0x0000, 0xFF00, "A8L8", ImageDecoder::PixelFormat::A8L8},
 	{0x00FF, 0x00FF, 0x00FF, 0xFF00, "A8L8", ImageDecoder::PixelFormat::A8L8},			// from Pillow
-
-	// end
-	{0, 0, 0, 0, "", ImageDecoder::PixelFormat::Unknown}
 };
 
 // Supported alpha formats.
 const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb_fmt_tbl_alpha[] = {
 	// 8-bit
 	{0x0000, 0x0000, 0x0000, 0x00FF, "A8", ImageDecoder::PixelFormat::A8},
-
-	// end
-	{0, 0, 0, 0, "", ImageDecoder::PixelFormat::Unknown}
 };
 
 /**
@@ -265,24 +250,29 @@ const char *DirectDrawSurfacePrivate::getPixelFormatName(const DDS_PIXELFORMAT &
 #endif /* !NDEBUG */
 
 	const RGB_Format_Table_t *entry = nullptr;
+	const RGB_Format_Table_t *pTbl_end = nullptr;
 	if (ddspf.dwFlags & DDPF_RGB) {
 		switch (ddspf.dwRGBBitCount) {
 			case 8:
 				// 8-bit
 				entry = rgb_fmt_tbl_8;
+				pTbl_end = &rgb_fmt_tbl_8[ARRAY_SIZE(rgb_fmt_tbl_8)];
 				break;
 			case 15:
 			case 16:
 				// 16-bit
 				entry = rgb_fmt_tbl_16;
+				pTbl_end = &rgb_fmt_tbl_16[ARRAY_SIZE(rgb_fmt_tbl_16)];
 				break;
 			case 24:
 				// 24-bit
 				entry = rgb_fmt_tbl_24;
+				pTbl_end = &rgb_fmt_tbl_24[ARRAY_SIZE(rgb_fmt_tbl_24)];
 				break;
 			case 32:
 				// 32-bit
 				entry = rgb_fmt_tbl_32;
+				pTbl_end = &rgb_fmt_tbl_32[ARRAY_SIZE(rgb_fmt_tbl_32)];
 				break;
 			default:
 				// Unsupported.
@@ -291,9 +281,11 @@ const char *DirectDrawSurfacePrivate::getPixelFormatName(const DDS_PIXELFORMAT &
 	} else if (ddspf.dwFlags & DDPF_LUMINANCE) {
 		// Luminance.
 		entry = rgb_fmt_tbl_luma;
+		pTbl_end = &rgb_fmt_tbl_luma[ARRAY_SIZE(rgb_fmt_tbl_luma)];
 	} else if (ddspf.dwFlags & DDPF_ALPHA) {
 		// Alpha.
 		entry = rgb_fmt_tbl_alpha;
+		pTbl_end = &rgb_fmt_tbl_alpha[ARRAY_SIZE(rgb_fmt_tbl_alpha)];
 	} else {
 		// Unsupported.
 		return nullptr;
@@ -304,7 +296,7 @@ const char *DirectDrawSurfacePrivate::getPixelFormatName(const DDS_PIXELFORMAT &
 		return nullptr;
 	}
 
-	for (; entry->desc[0] != '\0'; entry++) {
+	for (; entry < pTbl_end; entry++) {
 		if (ddspf.dwRBitMask == entry->Rmask &&
 		    ddspf.dwGBitMask == entry->Gmask &&
 		    ddspf.dwBBitMask == entry->Bmask &&
@@ -471,24 +463,29 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 		// No FourCC.
 		// Determine the pixel format by looking at the bit masks.
 		const RGB_Format_Table_t *entry = nullptr;
+		const RGB_Format_Table_t *pTbl_end = nullptr;
 		if (ddspf.dwFlags & DDPF_RGB) {
 			switch (ddspf.dwRGBBitCount) {
 				case 8:
 					// 8-bit
 					entry = rgb_fmt_tbl_8;
+					pTbl_end = &rgb_fmt_tbl_8[ARRAY_SIZE(rgb_fmt_tbl_8)];
 					break;
 				case 15:
 				case 16:
 					// 16-bit
 					entry = rgb_fmt_tbl_16;
+					pTbl_end = &rgb_fmt_tbl_16[ARRAY_SIZE(rgb_fmt_tbl_16)];
 					break;
 				case 24:
 					// 24-bit
 					entry = rgb_fmt_tbl_24;
+					pTbl_end = &rgb_fmt_tbl_24[ARRAY_SIZE(rgb_fmt_tbl_24)];
 					break;
 				case 32:
 					// 32-bit
 					entry = rgb_fmt_tbl_32;
+					pTbl_end = &rgb_fmt_tbl_32[ARRAY_SIZE(rgb_fmt_tbl_32)];
 					break;
 				default:
 					// Unsupported.
@@ -497,11 +494,13 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 		} else if (ddspf.dwFlags & DDPF_LUMINANCE) {
 			// Luminance.
 			entry = rgb_fmt_tbl_luma;
+			pTbl_end = &rgb_fmt_tbl_luma[ARRAY_SIZE(rgb_fmt_tbl_luma)];
 			// TODO: Set to standard alpha if it's Luma+Alpha?
 			dxgi_alpha = DDS_ALPHA_MODE_OPAQUE;
 		} else if (ddspf.dwFlags & DDPF_ALPHA) {
 			// Alpha.
 			entry = rgb_fmt_tbl_alpha;
+			pTbl_end = &rgb_fmt_tbl_alpha[ARRAY_SIZE(rgb_fmt_tbl_alpha)];
 		} else {
 			// Unsupported.
 			dxgi_alpha = DDS_ALPHA_MODE_UNKNOWN;
@@ -514,7 +513,7 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 			return -ENOTSUP;
 		}
 
-		for (; entry->desc[0] != '\0'; entry++) {
+		for (; entry < pTbl_end; entry++) {
 			if (ddspf.dwRBitMask == entry->Rmask &&
 			    ddspf.dwGBitMask == entry->Gmask &&
 			    ddspf.dwBBitMask == entry->Bmask &&
