@@ -570,34 +570,38 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 	// - Increase the height.
 	// - Show on a separate line?
 
-	static const char *const vectors_names[] = {
+	static const char vectors_strtbl[] = {
 		// $00
-		"Initial SP",
-		"Entry Point",
-		"Bus Error",
-		"Address Error",
+		"Initial SP\0"
+		"Entry Point\0"
+		"Bus Error\0"
+		"Address Error\0"
 		// $10
-		"Illegal Instruction",
-		"Division by Zero",
-		"CHK Exception",
-		"TRAPV Exception",
+		"Illegal Instruction\0"
+		"Division by Zero\0"
+		"CHK Exception\0"
+		"TRAPV Exception\0"
 		// $20
-		"Privilege Violation",
-		"TRACE Exception",
-		"Line A Emulator",
-		"Line F Emulator",
+		"Privilege Violation\0"
+		"TRACE Exception\0"
+		"Line A Emulator\0"
+		"Line F Emulator\0"
 		// $60
-		"Spurious Interrupt",
-		"IRQ1",
-		"IRQ2 (TH)",
-		"IRQ3",
+		"Spurious Interrupt\0"
+		"IRQ1\0"
+		"IRQ2 (TH)\0"
+		"IRQ3\0"
 		// $70
-		"IRQ4 (HBlank)",
-		"IRQ5",
-		"IRQ6 (VBlank)",
-		"IRQ7 (NMI)",
-
-		nullptr
+		"IRQ4 (HBlank)\0"
+		"IRQ5\0"
+		"IRQ6 (VBlank)\0"
+		"IRQ7 (NMI)\0"
+	};
+	// Just under 255 (uint8_t max). Nice.
+	static const uint8_t vectors_offtbl[] = {
+		0, 11, 23, 33, 47, 67, 84, 98,	// $00-$1C
+		114, 134, 150, 166,			// $20-$2C
+		182, 201, 206, 216, 221, 235, 240, 254,	// $60-$7C
 	};
 
 	// Map of displayed vectors to actual vectors.
@@ -606,17 +610,15 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 		 0,  1,  2,  3,  4,  5,  6,  7,	// $00-$1C
 		 8,  9, 10, 11,			// $20-$2C
 		24, 25, 26, 27, 28, 29, 30, 31,	// $60-$7C
-
-		-1
 	};
 
-	static_assert(ARRAY_SIZE(vectors_names) == ARRAY_SIZE(vectors_map),
-		"vectors_names[] and vectors_map[] are out of sync.");
+	static_assert(ARRAY_SIZE(vectors_offtbl) == ARRAY_SIZE(vectors_map),
+		"vectors_offtbl[] and vectors_map[] are out of sync.");
 
-	auto vv_vectors = new RomFields::ListData_t(ARRAY_SIZE(vectors_names)-1);
+	auto vv_vectors = new RomFields::ListData_t(ARRAY_SIZE(vectors_offtbl));
 	auto iter = vv_vectors->begin();
 	const auto vv_vectors_end = vv_vectors->end();
-	for (size_t i = 0; i < ARRAY_SIZE(vectors_names)-1 && iter != vv_vectors_end; ++i, ++iter) {
+	for (size_t i = 0; i < ARRAY_SIZE(vectors_offtbl) && iter != vv_vectors_end; ++i, ++iter) {
 		auto &data_row = *iter;
 		data_row.reserve(3);
 
@@ -628,7 +630,7 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 		data_row.emplace_back(rp_sprintf("$%02X", vector_index*4));
 
 		// Vector name
-		data_row.emplace_back(vectors_names[i]);
+		data_row.emplace_back(&vectors_strtbl[vectors_offtbl[i]]);
 
 		// Address
 		data_row.emplace_back(rp_sprintf("$%08X", be32_to_cpu(pVectors->vectors[vector_index])));
