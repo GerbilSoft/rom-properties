@@ -243,14 +243,14 @@ rp_image *RpJpeg::load(IRpFile *file)
 		if (try_ext_bgra && tried_ext_bgra) {
 			// Tried using JCS_EXT_BGRA and it didn't work.
 			// Try again with JCS_RGB.
-			printf("JCS_EXT_BGRA FAILED, trying JCS_RGB\n");
+			fputs("JCS_EXT_BGRA FAILED, trying JCS_RGB\n", stderr);
 			try_ext_bgra = false;
 			direct_copy = false;
 			file->rewind();
 			jmperr = setjmp(jerr.setjmp_buffer);
 		}
 		if (jmperr) {
-			printf("JPEG decoding FAILED\n");
+			fputs("JPEG decoding FAILED\n", stderr);
 			// An error occurred while decoding the JPEG.
 			// NOTE: buffer is allocated using JPEG allocation functions,
 			// so it's automatically freed when we destroy cinfo.
