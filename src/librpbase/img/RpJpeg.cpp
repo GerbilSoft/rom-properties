@@ -72,13 +72,11 @@ void JPEGCALL RpJpegPrivate::my_output_message(j_common_ptr cinfo)
 	// The default libjpeg error handler uses MessageBox() on Windows.
 	// This is bad design, so we'll use OutputDebugStringA() instead.
 	char txtbuf[JMSG_LENGTH_MAX+64];
-	snprintf(txtbuf, sizeof(txtbuf), "libjpeg error: %s", buffer);
+	snprintf(txtbuf, sizeof(txtbuf), "libjpeg error: %s\n", buffer);
 	OutputDebugStringA(txtbuf);
-	OutputDebugStringA("\n");
 #else /* !_WIN32 */
 	// Print to stderr.
-	fprintf(stderr, C_("RpJpeg", "libjpeg error: %s"), buffer);
-	fputc('\n', stderr);
+	fprintf(stderr, "libjpeg error: %s\n", buffer);
 #endif /* _WIN32 */
 }
 
