@@ -35,6 +35,11 @@ string rp_vsprintf(const char *fmt, va_list ap)
 	char locbuf[128];
 	va_list ap_tmp;
 
+	// Verify that fmt has at least one format specifier.
+	// If it doesn't, the rp_sprintf() should be removed.
+	// (Debug builds only!)
+	assert(strchr(fmt, '%') != nullptr);
+
 #if defined(_MSC_VER) && _MSC_VER < 1900
 	// MSVC 2013 and older isn't C99 compliant.
 	// Use the non-standard _vscprintf() to count characters.
@@ -94,6 +99,11 @@ string rp_vsprintf_p(const char *fmt, va_list ap)
 {
 	// Local buffer optimization to reduce memory allocation.
 	char locbuf[128];
+
+	// Verify that fmt has at least one format specifier.
+	// If it doesn't, the rp_sprintf() should be removed.
+	// (Debug builds only!)
+	assert(strchr(fmt, '%') != nullptr);
 
 	// _vsprintf_p() isn't C99 compliant.
 	// Use the non-standard _vscprintf_p() to count characters.
