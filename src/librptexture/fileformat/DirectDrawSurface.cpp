@@ -94,6 +94,13 @@ class DirectDrawSurfacePrivate final : public FileFormatPrivate
 		static const RGB_Format_Table_t rgb_fmt_tbl_luma[];	// Luminance
 		static const RGB_Format_Table_t rgb_fmt_tbl_alpha[];	// Alpha
 
+		/**
+		 * Get an RGB_Format_Table_t entry from an RGB format table.
+		 * @param ddspf DirectDraw Surface pixel format
+		 * @return Pointer to RGB_Format_Table_t, or nullptr if not found.
+		 */
+		static const RGB_Format_Table_t *getRGBFormatTableEntry(const DDS_PIXELFORMAT &ddspf);
+
 		// Image format identifiers.
 		ImageDecoder::PixelFormat pxf_uncomp;	// Pixel format for uncompressed images. (If 0, compressed.)
 		uint8_t bytespp;	// Bytes per pixel. (Uncompressed only; set to 0 for compressed.)
@@ -105,7 +112,7 @@ class DirectDrawSurfacePrivate final : public FileFormatPrivate
 		 * @param ddspf DDS_PIXELFORMAT
 		 * @return Format name, or nullptr if not supported.
 		 */
-		static const char *getPixelFormatName(const DDS_PIXELFORMAT &ddspf);
+		static inline const char *getPixelFormatName(const DDS_PIXELFORMAT &ddspf);
 
 		/**
 		 * Get the pixel formats of the DDS texture.
@@ -236,11 +243,11 @@ const DirectDrawSurfacePrivate::RGB_Format_Table_t DirectDrawSurfacePrivate::rgb
 };
 
 /**
- * Get the format name of an uncompressed DirectDraw surface pixel format.
- * @param ddspf DDS_PIXELFORMAT
- * @return Format name, or nullptr if not supported.
+ * Get an RGB_Format_Table_t entry from an RGB format table.
+ * @param ddspf DirectDraw Surface pixel format
+ * @return Pointer to RGB_Format_Table_t, or nullptr if not found.
  */
-const char *DirectDrawSurfacePrivate::getPixelFormatName(const DDS_PIXELFORMAT &ddspf)
+const DirectDrawSurfacePrivate::RGB_Format_Table_t *DirectDrawSurfacePrivate::getRGBFormatTableEntry(const DDS_PIXELFORMAT &ddspf)
 {
 #ifndef NDEBUG
 	static const unsigned int FORMATS = DDPF_ALPHA | DDPF_FOURCC | DDPF_RGB | DDPF_YUV | DDPF_LUMINANCE;
@@ -275,19 +282,19 @@ const char *DirectDrawSurfacePrivate::getPixelFormatName(const DDS_PIXELFORMAT &
 				pTbl_end = &rgb_fmt_tbl_32[ARRAY_SIZE(rgb_fmt_tbl_32)];
 				break;
 			default:
-				// Unsupported.
+				// Not supported
 				return nullptr;
 		}
 	} else if (ddspf.dwFlags & DDPF_LUMINANCE) {
-		// Luminance.
+		// Luminance
 		entry = rgb_fmt_tbl_luma;
 		pTbl_end = &rgb_fmt_tbl_luma[ARRAY_SIZE(rgb_fmt_tbl_luma)];
 	} else if (ddspf.dwFlags & DDPF_ALPHA) {
-		// Alpha.
+		// Alpha
 		entry = rgb_fmt_tbl_alpha;
 		pTbl_end = &rgb_fmt_tbl_alpha[ARRAY_SIZE(rgb_fmt_tbl_alpha)];
 	} else {
-		// Unsupported.
+		// Not supported
 		return nullptr;
 	}
 
@@ -303,12 +310,23 @@ const char *DirectDrawSurfacePrivate::getPixelFormatName(const DDS_PIXELFORMAT &
 		    ddspf.dwABitMask == entry->Amask)
 		{
 			// Found a match!
-			return entry->desc;
+			return entry;
 		}
 	}
 
-	// Format not found.
+	// Not found.
 	return nullptr;
+}
+
+/**
+ * Get the format name of an uncompressed DirectDraw surface pixel format.
+ * @param ddspf DDS_PIXELFORMAT
+ * @return Format name, or nullptr if not supported.
+ */
+inline const char *DirectDrawSurfacePrivate::getPixelFormatName(const DDS_PIXELFORMAT &ddspf)
+{
+	const RGB_Format_Table_t *const entry = getRGBFormatTableEntry(ddspf);
+	return (likely(entry != nullptr)) ? entry->desc : nullptr;
 }
 
 /**
@@ -462,74 +480,25 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 	} else {
 		// No FourCC.
 		// Determine the pixel format by looking at the bit masks.
-		const RGB_Format_Table_t *entry = nullptr;
-		const RGB_Format_Table_t *pTbl_end = nullptr;
-		if (ddspf.dwFlags & DDPF_RGB) {
-			switch (ddspf.dwRGBBitCount) {
-				case 8:
-					// 8-bit
-					entry = rgb_fmt_tbl_8;
-					pTbl_end = &rgb_fmt_tbl_8[ARRAY_SIZE(rgb_fmt_tbl_8)];
-					break;
-				case 15:
-				case 16:
-					// 16-bit
-					entry = rgb_fmt_tbl_16;
-					pTbl_end = &rgb_fmt_tbl_16[ARRAY_SIZE(rgb_fmt_tbl_16)];
-					break;
-				case 24:
-					// 24-bit
-					entry = rgb_fmt_tbl_24;
-					pTbl_end = &rgb_fmt_tbl_24[ARRAY_SIZE(rgb_fmt_tbl_24)];
-					break;
-				case 32:
-					// 32-bit
-					entry = rgb_fmt_tbl_32;
-					pTbl_end = &rgb_fmt_tbl_32[ARRAY_SIZE(rgb_fmt_tbl_32)];
-					break;
-				default:
-					// Unsupported.
-					return -ENOTSUP;
-			}
-		} else if (ddspf.dwFlags & DDPF_LUMINANCE) {
-			// Luminance.
-			entry = rgb_fmt_tbl_luma;
-			pTbl_end = &rgb_fmt_tbl_luma[ARRAY_SIZE(rgb_fmt_tbl_luma)];
-			// TODO: Set to standard alpha if it's Luma+Alpha?
-			dxgi_alpha = DDS_ALPHA_MODE_OPAQUE;
-		} else if (ddspf.dwFlags & DDPF_ALPHA) {
-			// Alpha.
-			entry = rgb_fmt_tbl_alpha;
-			pTbl_end = &rgb_fmt_tbl_alpha[ARRAY_SIZE(rgb_fmt_tbl_alpha)];
-		} else {
-			// Unsupported.
-			dxgi_alpha = DDS_ALPHA_MODE_UNKNOWN;
-			return -ENOTSUP;
-		}
-
+		const RGB_Format_Table_t *const entry = getRGBFormatTableEntry(ddspf);
 		if (!entry) {
 			// No table...
+			printf("ERR\n");
 			dxgi_alpha = DDS_ALPHA_MODE_UNKNOWN;
 			return -ENOTSUP;
 		}
 
-		for (; entry < pTbl_end; entry++) {
-			if (ddspf.dwRBitMask == entry->Rmask &&
-			    ddspf.dwGBitMask == entry->Gmask &&
-			    ddspf.dwBBitMask == entry->Bmask &&
-			    ddspf.dwABitMask == entry->Amask)
-			{
-				// Found a match!
-				pxf_uncomp = entry->px_format;
-				bytespp = (ddspf.dwRGBBitCount == 15 ? 2 : (ddspf.dwRGBBitCount / 8));
-				dxgi_alpha = (ddspf.dwABitMask != 0 ? DDS_ALPHA_MODE_STRAIGHT : DDS_ALPHA_MODE_OPAQUE);
-				return 0;
-			}
-		}
+		// Found a match!
+		pxf_uncomp = entry->px_format;
+		bytespp = (ddspf.dwRGBBitCount == 15 ? 2 : (ddspf.dwRGBBitCount / 8));
+		dxgi_alpha = (ddspf.dwABitMask != 0 ? DDS_ALPHA_MODE_STRAIGHT : DDS_ALPHA_MODE_OPAQUE);
 
-		// Format not found.
-		dxgi_alpha = DDS_ALPHA_MODE_UNKNOWN;
-		ret = -ENOTSUP;
+		// TODO: For DDPF_LUMINANCE, we're always setting DDS_ALPHA_MODE_OPAQUE.
+		// Set it to standard alpha if it's Luma+Alpha?
+		if (ddspf.dwFlags & DDPF_LUMINANCE) {
+			dxgi_alpha = DDS_ALPHA_MODE_OPAQUE;
+		}
+		printf("ret == %d\n", ret);
 	}
 
 	return ret;
@@ -1188,19 +1157,19 @@ const char *DirectDrawSurface::pixelFormat(void) const
 
 	// Manually determine the pixel format.
 	if (ddspf.dwFlags & DDPF_RGB) {
-		// Uncompressed RGB data.
+		// Uncompressed RGB data
 		snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
 			 "RGB (%u-bit)", ddspf.dwRGBBitCount);
 	} else if (ddspf.dwFlags & DDPF_ALPHA) {
-		// Alpha channel.
+		// Alpha channel
 		snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
 			C_("DirectDrawSurface", "Alpha (%u-bit)"), ddspf.dwRGBBitCount);
 	} else if (ddspf.dwFlags & DDPF_YUV) {
-		// YUV. (TODO: Determine the format.)
+		// YUV (TODO: Determine the format.)
 		snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
 			C_("DirectDrawSurface", "YUV (%u-bit)"), ddspf.dwRGBBitCount);
 	} else if (ddspf.dwFlags & DDPF_LUMINANCE) {
-		// Luminance.
+		// Luminance
 		if (ddspf.dwFlags & DDPF_ALPHAPIXELS) {
 			snprintf(d_nc->pixel_format, sizeof(d_nc->pixel_format),
 				C_("DirectDrawSurface", "Luminance + Alpha (%u-bit)"),
@@ -1211,7 +1180,7 @@ const char *DirectDrawSurface::pixelFormat(void) const
 				ddspf.dwRGBBitCount);
 		}
 	} else {
-		// Unknown pixel format.
+		// Unknown pixel format
 		strncpy(d_nc->pixel_format,
 			C_("FileFormat", "Unknown"), sizeof(d_nc->pixel_format));
 		d_nc->pixel_format[sizeof(d_nc->pixel_format)-1] = '\0';
