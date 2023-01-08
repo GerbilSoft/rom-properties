@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * DMG.hpp: Game Boy (DMG/CGB/SGB) ROM reader.                             *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -1034,7 +1034,7 @@ int DMG::loadFieldData(void)
 		// GBX version.
 		// TODO: Do things based on the version number?
 		d->fields->addField_string(C_("DMG", "GBX Version"),
-			rp_sprintf_p(C_("DMG", "%1$u.%2$u"),
+			rp_sprintf_p("%1$u.%2$u",
 				be32_to_cpu(gbxFooter->version.major),
 				be32_to_cpu(gbxFooter->version.minor)));
 
