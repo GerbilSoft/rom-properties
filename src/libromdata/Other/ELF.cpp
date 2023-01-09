@@ -1685,14 +1685,25 @@ int ELF::loadFieldData(void)
 				break;
 			}
 
+			// ARM EABI byteorder
+			// FIXME: What if both flags are set?
+			const char *arm_byteorder;
+			switch (e_flags & 0x00C00000) {
+				case 0x00800000:
+					arm_byteorder = " BE8";
+					break;
+				case 0x00400000:
+					arm_byteorder = " LE8";
+					break;
+				default:
+					arm_byteorder = "";
+					break;
+			}
+
 			// ARM EABI
-			string arm_eabi = rp_sprintf("EABI%u", (e_flags >> 24));
-			if (e_flags & 0x00800000) {
-				arm_eabi += " BE8";
-			}
-			if (e_flags & 0x00400000) {
-				arm_eabi += " LE8";
-			}
+			char arm_eabi[32];
+			snprintf(arm_eabi, sizeof(arm_eabi), "EABI%u%s",
+				(e_flags >> 24), arm_byteorder);
 			d->fields->addField_string(C_("ELF", "ARM EABI"), arm_eabi);
 
 			// ARM CPU flags.
