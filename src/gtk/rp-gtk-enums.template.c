@@ -1,9 +1,9 @@
 /*** BEGIN file-header ***/
+#include <glib-object.h>
 
 /*** END file-header ***/
 
 /*** BEGIN file-production ***/
-#include <glib-object.h>
 
 /* enumerations from "@filename@" */
 #include "@filename@"
