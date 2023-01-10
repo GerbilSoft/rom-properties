@@ -8,12 +8,6 @@ ENDIF(POLICY CMP0063)
 # FIXME: CMake-3.15.5 on travis-ci can't find Objective-C...
 PROJECT(unixcommon LANGUAGES C CXX)
 
-# Qt5 requires "-fpic -fPIC" due to reduced relocations.
-# This is also needed in order to link the static library
-# into a shared library.
-SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -fpic -fPIC")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpic -fPIC")
-
 IF(BUILD_KDE4)
 	# Find the framework libraries in order to determine plugin paths.
 	# FIXME: Remove prefix from KDE4's path.
@@ -194,6 +188,7 @@ IF(NOT TARGET ${PROJECT_NAME}-dll)
 ENDIF()
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
+# Qt5 requires "-fpic -fPIC" due to reduced relocations.
 IF(UNIX AND NOT APPLE)
 	SET(CMAKE_C_FLAGS	"${CMAKE_C_FLAGS} -fpic -fPIC")
 	SET(CMAKE_CXX_FLAGS	"${CMAKE_CXX_FLAGS} -fpic -fPIC")
