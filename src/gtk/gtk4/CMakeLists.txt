@@ -7,6 +7,9 @@ IF(POLICY CMP0063)
 ENDIF(POLICY CMP0063)
 PROJECT(rom-properties-gtk4 LANGUAGES C CXX)
 
+# GTK4 requires glib-2.66.0.
+SET(GLIB_MIN_VERSION 2.66.0)
+
 FIND_PACKAGE(GLib2 ${REQUIRE_GTK4} ${GLIB_MIN_VERSION})
 FIND_PACKAGE(GObject2 ${REQUIRE_GTK4} ${GLIB_MIN_VERSION})
 FIND_PACKAGE(GIO ${REQUIRE_GTK4} ${GLIB_MIN_VERSION})
@@ -34,6 +37,13 @@ IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf
 			SET(LibNautilusExtension4_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/nautilus/extensions-4")
 		ENDIF(LibNautilusExtension)
 	ENDIF(LibNautilusExtension4_FOUND)
+
+	# Verify the GLib version.
+	IF(GLib2_VERSION VERSION_LESS ${GLIB_MIN_VERSION})
+		MESSAGE(WARNING "GLib2 minimum version for GTK4 is ${GLIB_MIN_VERSION}, but ${GLib2_VERSION} was found.\nDisabling GTK4 build.")
+		SET(BUILD_GTK4 OFF CACHE INTERNAL "Build the GTK 4.x plugin." FORCE)
+		SET(LibNautilusExtension4_EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/nautilus/extensions-4")
+	ENDIF(GLib2_VERSION VERSION_LESS ${GLIB_MIN_VERSION})
 ELSE()
 	# GTK 4.x (or required dependencies) were not found.
 	# Disable the GTK4 frontend.

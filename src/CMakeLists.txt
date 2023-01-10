@@ -81,11 +81,8 @@ CHECK_INCLUDE_FILE("stdbool.h" HAVE_STDBOOL_H)
 # glib-2.44 (released 2015/03/23) added GListModel, which is needed by GTK4.
 # glib-2.66 (released 2020/09/10) is required by GTK 4.0.0.
 # Ubuntu 14.04 has glib-2.40.
-IF(BUILD_GTK4)
-	SET(GLIB_MIN_VERSION 2.66.0)
-ELSE(BUILD_GTK4)
-	SET(GLIB_MIN_VERSION 2.34.0)
-ENDIF(BUILD_GTK4)
+# NOTE: Only setting to 2.34.0 here. GTK4 build will need to check for 2.66.0.
+SET(GLIB_MIN_VERSION 2.34.0)
 
 # Write the version number to config.version.h.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.version.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.version.h")

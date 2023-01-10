@@ -150,8 +150,8 @@ IF(GLib2_FOUND AND GObject2_FOUND)
 ELSE(GLib2_FOUND AND GObject2_FOUND)
 	# Cannot build any GTK+ frontends.
 	SET(BUILD_GTK2 OFF CACHE INTERNAL "Build the GTK+ 2.x plugin." FORCE)
-	SET(BUILD_GTK3 OFF CACHE INTERNAL "Check for GTK+ 3.x plugin." FORCE)
-	SET(BUILD_GTK4 OFF CACHE INTERNAL "Check for GTK 4.x plugin." FORCE)
+	SET(BUILD_GTK3 OFF CACHE INTERNAL "Build the GTK+ 3.x plugin." FORCE)
+	SET(BUILD_GTK4 OFF CACHE INTERNAL "Build the GTK 4.x plugin." FORCE)
 ENDIF(GLib2_FOUND AND GObject2_FOUND)
 
 # LibCanberra and related packages.
