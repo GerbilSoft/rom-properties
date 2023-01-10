@@ -34,6 +34,47 @@ SET(CMAKE_REQUIRED_DEFINITIONS ${OLD_CMAKE_REQUIRED_DEFINITIONS})
 UNSET(OLD_CMAKE_REQUIRED_LIBRARIES)
 UNSET(OLD_CMAKE_REQUIRED_DEFINITIONS)
 
+# Generate GDBus bindings. (TODO: Split into a separate file?)
+# _outvar: Variable for the generated source files
+# _prefix: Prefix for the filenames
+# _xml: D-Bus XML filename
+FUNCTION(GDBUS_CODEGEN _outvar _prefix _xml)
+	ADD_CUSTOM_COMMAND(
+		OUTPUT "${_prefix}.c" "${_prefix}.h"
+		COMMAND "${GDBUS_CODEGEN}"
+			--generate-c-code "${_prefix}"
+			"${_xml}"
+		WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+		DEPENDS "${_xml}"
+		VERBATIM
+		)
+
+	# Disable unused parameter warnings in generated D-Bus sources.
+	INCLUDE(CheckCCompilerFlag)
+	CHECK_C_COMPILER_FLAG("-Wno-unused-parameter" CFLAG_Wno_unused_parameter)
+	IF(CFLAG_Wno_unused_parameter)
+		SET_SOURCE_FILES_PROPERTIES("${CMAKE_CURRENT_BINARY_DIR}/${_prefix}.c"
+			APPEND_STRING PROPERTIES COMPILE_FLAGS " -Wno-unused-parameter ")
+	ENDIF(CFLAG_Wno_unused_parameter)
+
+	SET(${_outvar} "${_prefix}.c" "${_prefix}.h" PARENT_SCOPE)
+ENDFUNCTION(GDBUS_CODEGEN)
+
+# D-Bus bindings for NetworkManager.
+# NOTE: This has to be in this file, not the GTK+ CMakeLists.txt.
+GDBUS_CODEGEN(NetworkManager_GDBus_SRCS NetworkManager "${CMAKE_CURRENT_SOURCE_DIR}/../dbus/org.freedesktop.NetworkManager.xml")
+IF(ENABLE_ACHIEVEMENTS)
+	GDBUS_CODEGEN(Notifications_GDBus_SRCS Notifications "${CMAKE_CURRENT_SOURCE_DIR}/../dbus/org.freedesktop.Notifications.xml")
+ENDIF(ENABLE_ACHIEVEMENTS)
+
+# Sources and headers (GLib common; no GTK dependencies)
+SET(${PROJECT_NAME}_GLib_SRCS
+	${NetworkManager_GDBus_SRCS}
+	${Notifications_GDBus_SRCS}
+	)
+SET(${PROJECT_NAME}_GLib_H
+	)
+
 # Sources and headers
 SET(${PROJECT_NAME}_SRCS
 	RomDataView.cpp
@@ -180,6 +221,28 @@ ENDIF(GSound_FOUND)
 
 # Write the config.h file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.gtk.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.gtk.h")
+
+# GLib common library
+ADD_LIBRARY(rom-properties-glib STATIC
+	${${PROJECT_NAME}_GLib_SRCS}
+	${${PROJECT_NAME}_GLib_H}
+	)
+SET_TARGET_PROPERTIES(rom-properties-glib PROPERTIES EXCLUDE_FROM_ALL TRUE)
+TARGET_INCLUDE_DIRECTORIES(rom-properties-glib
+	PUBLIC	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>		# gtk
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>		# gtk
+	PRIVATE	$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>		# src
+		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>		# src
+	)
+TARGET_LINK_LIBRARIES(rom-properties-glib PUBLIC glibresources)
+TARGET_LINK_LIBRARIES(rom-properties-glib PUBLIC GLib2::glib)
+
+# Unix: Add -fpic/-fPIC in order to use this static library in plugins.
+# NOTE: This will be propagated to subprojects.
+IF(UNIX AND NOT APPLE)
+	SET(CMAKE_C_FLAGS	"${CMAKE_C_FLAGS} -fpic -fPIC")
+	SET(CMAKE_CXX_FLAGS	"${CMAKE_CXX_FLAGS} -fpic -fPIC")
+ENDIF(UNIX AND NOT APPLE)
 
 # Build GTK+ 2.x frontends.
 IF(BUILD_GTK2)

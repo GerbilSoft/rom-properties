@@ -82,42 +82,10 @@ STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_CH    "${rom-properties-
 SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} CairoImageConv.cpp)
 SET(${PROJECT_NAME}_H    ${${PROJECT_NAME}_H}    CairoImageConv.hpp)
 
-# Generate GDBus bindings. (TODO: Split into a separate file?)
-# _outvar: Variable for the generated source files
-# _prefix: Prefix for the filenames
-# _xml: D-Bus XML filename
-FUNCTION(GDBUS_CODEGEN _outvar _prefix _xml)
-	ADD_CUSTOM_COMMAND(
-		OUTPUT "${_prefix}.c" "${_prefix}.h"
-		COMMAND "${GDBUS_CODEGEN}"
-			--generate-c-code "${_prefix}"
-			"${_xml}"
-		WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-		DEPENDS "${_xml}"
-		VERBATIM
-		)
-
-	# Disable unused parameter warnings in generated D-Bus sources.
-	INCLUDE(CheckCCompilerFlag)
-	CHECK_C_COMPILER_FLAG("-Wno-unused-parameter" CFLAG_Wno_unused_parameter)
-	IF(CFLAG_Wno_unused_parameter)
-		SET_SOURCE_FILES_PROPERTIES("${CMAKE_CURRENT_BINARY_DIR}/${_prefix}.c"
-			APPEND_STRING PROPERTIES COMPILE_FLAGS " -Wno-unused-parameter ")
-	ENDIF(CFLAG_Wno_unused_parameter)
-
-	SET(${_outvar} "${_prefix}.c" "${_prefix}.h" PARENT_SCOPE)
-ENDFUNCTION(GDBUS_CODEGEN)
-
-# D-Bus bindings for NetworkManager.
-# NOTE: This has to be in this file, not the GTK+ CMakeLists.txt.
-GDBUS_CODEGEN(NetworkManager_GDBus_SRCS NetworkManager "${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.NetworkManager.xml")
-
 IF(ENABLE_ACHIEVEMENTS)
 	STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_SRCS "${rom-properties-gtk-notify_SRCS}")
 	STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}-notify_H    "${rom-properties-gtk-notify_H}")
 	SET(${PROJECT_NAME}-notify_SRCS ${${PROJECT_NAME}-notify_SRCS})
-
-	GDBUS_CODEGEN(Notifications_GDBus_SRCS Notifications "${CMAKE_CURRENT_SOURCE_DIR}/../../dbus/org.freedesktop.Notifications.xml")
 ENDIF(ENABLE_ACHIEVEMENTS)
 
 # CPU-specific and optimized sources.
@@ -140,8 +108,7 @@ UNSET(arch)
 # Sources and headers. (GTK3-specific)
 SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_CSRCS} ${${PROJECT_NAME}_SRCS}
-	${NetworkManager_GDBus_SRCS}
-	${${PROJECT_NAME}-notify_SRCS} ${${PROJECT_NAME}-notify_H} ${Notifications_GDBus_SRCS}
+	${${PROJECT_NAME}-notify_SRCS} ${${PROJECT_NAME}-notify_H}
 	${${PROJECT_NAME}_IFUNC_SRCS}
 	${${PROJECT_NAME}_SSSE3_SRCS}
 	NautilusPlugin.cpp
@@ -188,7 +155,7 @@ IF(BUILD_GTK3)
 			$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>		# src
 			$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>		# src
 		)
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE glibresources)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rom-properties-glib)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE romdata)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE Cairo::gobject)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC GTK3::gtk GTK3::gdk GTK3::pango GTK3::cairo)
