@@ -71,28 +71,32 @@ ENDIF(ENABLE_ACHIEVEMENTS)
 SET(${PROJECT_NAME}_GLib_SRCS
 	${NetworkManager_GDBus_SRCS}
 	${Notifications_GDBus_SRCS}
+	RomDataFormat.cpp
+	RpFile_gio.cpp
+	is-supported.cpp
+	ProxyForUrl.cpp
 	)
 SET(${PROJECT_NAME}_GLib_H
+	RomDataFormat.hpp
+	RpFile_gio.hpp
+	is-supported.hpp
+	ProxyForUrl.hpp
 	)
 
 # Sources and headers
 SET(${PROJECT_NAME}_SRCS
 	RomDataView.cpp
 	RomDataView_ops.cpp
-	RomDataFormat.cpp
 	DragImage.cpp
 	CreateThumbnail.cpp
 	PIMGTYPE.cpp
 	rp-gtk-enums.c
-	RpFile_gio.cpp
 	MessageWidget.c
 	RpGtk.cpp
 	sort_funcs.c
 	LanguageComboBox.cpp
 	OptionsMenuButton.cpp
-	is-supported.cpp
 	AchSpritesheet.cpp
-	ProxyForUrl.cpp
 	config/stub-export.c
 	config/ConfigDialog.cpp
 	config/RpConfigTab.cpp
@@ -111,12 +115,10 @@ SET(${PROJECT_NAME}_SRCS
 SET(${PROJECT_NAME}_H
 	RomDataView.hpp
 	RomDataView_p.hpp
-	RomDataFormat.hpp
 	DragImage.hpp
 	CreateThumbnail.hpp
 	PIMGTYPE.hpp
 	rp-gtk-enums.h
-	RpFile_gio.hpp
 	MessageWidget.h
 	RpGtk.hpp
 	sort_funcs.h
@@ -125,9 +127,7 @@ SET(${PROJECT_NAME}_H
 	LanguageComboBox.hpp
 	OptionsMenuButton.hpp
 	check-uid.h
-	is-supported.hpp
 	AchSpritesheet.hpp
-	ProxyForUrl.hpp
 	config/ConfigDialog.hpp
 	config/RpConfigTab.h
 	config/ImageTypesTab.hpp
@@ -175,7 +175,9 @@ ENDIF(ENABLE_ACHIEVEMENTS)
 # Common libraries required for both GTK+ 2.x and 3.x.
 FIND_PACKAGE(GLib2 ${GLIB_MIN_VERSION})
 FIND_PACKAGE(GObject2 ${GLIB_MIN_VERSION})
-IF(GLib2_FOUND AND GObject2_FOUND)
+FIND_PACKAGE(GIO ${REQUIRE_GTK4} ${GLIB_MIN_VERSION})
+FIND_PACKAGE(GIO-UNIX ${REQUIRE_GTK4} ${GLIB_MIN_VERSION})
+IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND)
 	# Check for version-specific image libraries.
 	FIND_PACKAGE(GdkPixbuf2)
 	IF(NOT GdkPixbuf2_FOUND)
@@ -188,12 +190,12 @@ IF(GLib2_FOUND AND GObject2_FOUND)
 		SET(BUILD_GTK3 OFF CACHE INTERNAL "Build the GTK+ 3.x plugin." FORCE)
 		SET(BUILD_GTK4 OFF CACHE INTERNAL "Build the GTK 4.x plugin." FORCE)
 	ENDIF(NOT Cairo_FOUND)
-ELSE(GLib2_FOUND AND GObject2_FOUND)
+ELSE(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND)
 	# Cannot build any GTK+ frontends.
 	SET(BUILD_GTK2 OFF CACHE INTERNAL "Build the GTK+ 2.x plugin." FORCE)
 	SET(BUILD_GTK3 OFF CACHE INTERNAL "Build the GTK+ 3.x plugin." FORCE)
 	SET(BUILD_GTK4 OFF CACHE INTERNAL "Build the GTK 4.x plugin." FORCE)
-ENDIF(GLib2_FOUND AND GObject2_FOUND)
+ENDIF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND)
 
 # LibCanberra and related packages.
 # TODO: Add an OPTION() to allow the user to disable this?
@@ -235,7 +237,7 @@ TARGET_INCLUDE_DIRECTORIES(rom-properties-glib
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>		# src
 	)
 TARGET_LINK_LIBRARIES(rom-properties-glib PUBLIC glibresources)
-TARGET_LINK_LIBRARIES(rom-properties-glib PUBLIC GLib2::glib)
+TARGET_LINK_LIBRARIES(rom-properties-glib PUBLIC GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
 # NOTE: This will be propagated to subprojects.

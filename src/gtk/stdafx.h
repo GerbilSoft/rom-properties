@@ -17,7 +17,8 @@
 #elif defined(RP_UI_XFCE)
 #  define G_LOG_DOMAIN "rom-properties-xfce"
 #else
-#  error RP_UI macro not defined
+#  define RP_IS_GLIB_ONLY 1
+#  define G_LOG_DOMAIN "rom-properties-glib"
 #endif
 
 #ifdef __cplusplus
@@ -63,13 +64,15 @@
 #  undef GTK_DISABLE_DEPRECATED
 #endif
 
-// GLib and GTK+ compatibility functions
-// (includes glib.h and gtk.h)
+// GLib compatibility functions (includes glib.h)
 #include "glib-compat.h"
-#include "gtk-compat.h"
-
-// GObject
 #include <glib-object.h>
+#include <gio/gio.h>
+
+// GTK+ compatibility functions (includes gtk.h)
+#ifndef RP_IS_GLIB_ONLY
+#  include "gtk-compat.h"
+#endif /* !RP_IS_GLIB_ONLY */
 
 // GLib on non-Windows platforms defines G_MODULE_EXPORT to a no-op.
 // This doesn't work when we use symbol visibility settings.
@@ -112,13 +115,15 @@
 #endif /* !__cplusplus */
 
 // GTK+ UI frontend headers
-#include "PIMGTYPE.hpp"
-#ifdef RP_GTK_USE_CAIRO
-#  include <cairo.h>
-#  include <cairo-gobject.h>
-#else /* !RP_GTK_USE_CAIRO */
-#  include <gdk/gdkpixbuf.h>
-#endif /* RP_GTK_USE_CAIRO */
+#ifndef RP_IS_GLIB_ONLY
+#  include "PIMGTYPE.hpp"
+#  ifdef RP_GTK_USE_CAIRO
+#    include <cairo.h>
+#    include <cairo-gobject.h>
+#  else /* !RP_GTK_USE_CAIRO */
+#    include <gdk/gdkpixbuf.h>
+#  endif /* RP_GTK_USE_CAIRO */
+#endif /* !RP_IS_GLIB_ONLY */
 
 #ifdef __cplusplus
 #  include "RpFile_gio.hpp"
