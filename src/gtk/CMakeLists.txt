@@ -81,6 +81,7 @@ SET(${PROJECT_NAME}_GLib_H
 	RpFile_gio.hpp
 	is-supported.hpp
 	ProxyForUrl.hpp
+	glib-compat.h
 	)
 
 # Sources and headers
@@ -122,7 +123,6 @@ SET(${PROJECT_NAME}_H
 	MessageWidget.h
 	RpGtk.hpp
 	sort_funcs.h
-	glib-compat.h
 	gtk-compat.h
 	LanguageComboBox.hpp
 	OptionsMenuButton.hpp
