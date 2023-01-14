@@ -167,12 +167,15 @@ _Check_return_ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, 
 	// Check for supported classes.
 	HRESULT hr = CLASS_E_CLASSNOTAVAILABLE;
 	try {
+		IClassFactory *pCF = nullptr;
+
 #define CHECK_INTERFACE(Interface) \
 		if (IsEqualIID(rclsid, CLSID_##Interface)) { \
 			/* Create a new class factory for this Interface. */ \
-			RP_ClassFactory<Interface> *pCF = new RP_ClassFactory<Interface>(); \
-			hr = pCF->QueryInterface(riid, ppv); \
-			pCF->Release(); \
+			pCF = new RP_ClassFactory<Interface>(); \
+			if (pCF) { \
+				goto got_pCF; \
+			} \
 		}
 
 		CHECK_INTERFACE(RP_ExtractIcon)
@@ -187,6 +190,15 @@ _Check_return_ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, 
 #endif /* ENABLE_OVERLAY_ICON_HANDLER */
 		else CHECK_INTERFACE(RP_ContextMenu)
 		else CHECK_INTERFACE(RP_XAttrView)
+
+		// Unable to find a matching interface.
+		*ppv = nullptr;
+		return hr;
+
+	got_pCF:
+		// Found a matching interface.
+		hr = pCF->QueryInterface(riid, ppv);
+		pCF->Release();
 	} catch (const std::bad_alloc&) {
 		hr = E_OUTOFMEMORY;
 	}
