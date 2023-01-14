@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * wmain.c: UTF-16 to UTF-8 main() wrapper for command-line programs.      *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,9 +15,9 @@
 // C API declaration for MSVC.
 // Required when using stdcall as the default calling convention.
 #ifdef _MSC_VER
-# define RP_C_API __cdecl
+#  define RP_C_API __cdecl
 #else
-# define RP_C_API
+#  define RP_C_API
 #endif
 
 // TODO: envp[]?
@@ -45,7 +45,9 @@ int RP_C_API wmain(int argc, wchar_t *argv[])
 		int cbMbs = WideCharToMultiByte(CP_UTF8, 0, argv[i], -1, NULL, 0, NULL, NULL);
 		if (cbMbs <= 0) {
 			// Invalid string. Make it an empty string anyway.
-			u8argv[i] = strdup("");
+			char *const empty_str = malloc(1);
+			empty_str[0] = '\0';
+			u8argv[i] = empty_str;
 			continue;
 		}
 
