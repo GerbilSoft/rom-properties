@@ -45,6 +45,7 @@ const CLSID CLSID_RP_ContextMenu =
 #include "RP_ContextMenu_p.hpp"
 
 RP_ContextMenu_Private::RP_ContextMenu_Private()
+	: filenames(nullptr)
 { }
 
 RP_ContextMenu_Private::~RP_ContextMenu_Private()
