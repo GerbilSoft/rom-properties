@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * MessageWidget.cpp: Message widget. (Similar to KMessageWidget)          *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -280,6 +280,9 @@ MessageWidgetWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	// FIXME: Don't use GWLP_USERDATA; use extra window bytes?
 	switch (uMsg) {
+		default:
+			break;
+
 		case WM_NCCREATE: {
 			MessageWidgetPrivate *const d = new MessageWidgetPrivate(hWnd);
 			SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));

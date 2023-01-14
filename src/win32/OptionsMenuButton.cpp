@@ -210,6 +210,9 @@ OptionsMenuButtonWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	// FIXME: Don't use GWLP_USERDATA; use extra window bytes?
 	switch (uMsg) {
+		default:
+			break;
+
 		case WM_CREATE: {
 			// NOTE: WM_NCCREATE is sent too early to set BS_SPLITBUTTON,
 			// so we're doing this in WM_CREATE instead.

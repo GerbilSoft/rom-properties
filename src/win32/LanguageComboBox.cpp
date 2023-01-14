@@ -347,6 +347,9 @@ LanguageComboBoxWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	// FIXME: Don't use GWLP_USERDATA; use extra window bytes?
 	switch (uMsg) {
+		default:
+			break;
+
 		case WM_NCCREATE: {
 			LanguageComboBoxPrivate *const d = new LanguageComboBoxPrivate(hWnd);
 			SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d));
