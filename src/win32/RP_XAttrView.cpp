@@ -321,6 +321,7 @@ IFACEMETHODIMP RP_XAttrView::Initialize(
 	STGMEDIUM stm;
 
 	HRESULT hr = E_FAIL;
+	HDROP hDrop;
 	UINT nFiles, cchFilename;
 	TCHAR *tfilename = nullptr;
 
@@ -338,7 +339,7 @@ IFACEMETHODIMP RP_XAttrView::Initialize(
 		return E_FAIL;
 
 	// Get an HDROP handle.
-	HDROP hDrop = static_cast<HDROP>(GlobalLock(stm.hGlobal));
+	hDrop = static_cast<HDROP>(GlobalLock(stm.hGlobal));
 	if (!hDrop) {
 		ReleaseStgMedium(&stm);
 		return E_FAIL;
