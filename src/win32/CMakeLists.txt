@@ -263,7 +263,7 @@ ELSEIF(MINGW)
 	# NOTE: Enabling stdcall fixups so we can use
 	# the same .def file for Win32 and Win64,
 	# since Win64 doesn't use stdcall.
-	SET(RP_DLL_FLAGS "-Wl,-enable-stdcall-fixup ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.def")
+	SET(RP_DLL_FLAGS "-Wl,--enable-stdcall-fixup ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.def")
 ENDIF()
 
 IF(RP_DLL_FLAGS)
