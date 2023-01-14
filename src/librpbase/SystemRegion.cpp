@@ -38,31 +38,49 @@ static uint32_t lc = 0;
 // pthread_once() control variable.
 static pthread_once_t system_region_once_control = PTHREAD_ONCE_INIT;
 
-struct LangName_t {
+struct LanguageOffTbl_t {
 	uint32_t lc;
-	const char *name;
+	const uint32_t offset;
 };
+
+// Language name string table.
+// NOTE: Strings are UTF-8.
+// Reference: https://www.omniglot.com/language/names.htm
+static const char languages_strtbl[] =
+	"English (AU)\0"	// 'au' (GameTDB only)
+	"Deutsch\0"		// 'de'
+	"English\0"		// 'en'
+	"Español\0"		// 'es'
+	"Français\0"		// 'fr'
+	"Italiano\0"		// 'it'
+	"日本語\0"		// 'ja'
+	"한국어\0"		// 'ko': South Korea
+	"Nederlands\0"		// 'nl'
+	"Polski\0"		// 'pl'
+	"Português\0"		// 'pt'
+	"Русский\0"		// 'ru'
+	"简体中文\0"		// 'hans'
+	"繁體中文\0";		// 'hant'
 
 // Language name mapping.
 // NOTE: This MUST be sorted by 'lc'!
-// NOTE: Names MUST be in UTF-8!
-// Reference: https://www.omniglot.com/language/names.htm
-static const LangName_t langNames[] = {
-	{'au',	"English (AU)"}, // GameTDB only
-	{'de',	"Deutsch"},
-	{'en',	"English"},
-	{'es',	"Español"},
-	{'fr',	"Français"},
-	{'it',	"Italiano"},
-	{'ja',	"日本語"},
-	{'ko',	"한국어"},	// South Korea
-	{'nl',	"Nederlands"},
-	{'pl',	"Polski"},
-	{'pt',	"Português"},
-	{'ru',	"Русский"},
-	{'hans', "简体中文"},
-	{'hant', "繁體中文"},
+static const LanguageOffTbl_t languages_offtbl[] = {
+	{'au',	0}, // GameTDB only
+	{'de',	13},
+	{'en',	21},
+	{'es',	29},
+	{'fr',	38},
+	{'it',	48},
+	{'ja',	57},
+	{'ko',	67},
+	{'nl',	77},
+	{'pl',	88},
+	{'pt',	95},
+	{'ru',	106},
+	{'hans', 121},
+	{'hant', 134},
 };
+static_assert(sizeof(languages_strtbl) == 0x93+1, "languages_strtbl[] size has changed!");
 
 /**
  * Get the LC_MESSAGES or LC_ALL environment variable.
@@ -337,16 +355,16 @@ uint32_t getLanguageCode(void)
 const char *getLocalizedLanguageName(uint32_t lc)
 {
 	// Do a binary search.
-	static const LangName_t *const pLangNames_end =
-		&langNames[ARRAY_SIZE(langNames)];
-	auto pLangName = std::lower_bound(langNames, pLangNames_end, lc,
-		[](const LangName_t &langName, uint32_t lc) {
-			return (langName.lc < lc);
+	static const LanguageOffTbl_t *const p_languages_offtbl_end =
+		&languages_offtbl[ARRAY_SIZE(languages_offtbl)];
+	auto pLangOffTbl = std::lower_bound(languages_offtbl, p_languages_offtbl_end, lc,
+		[](const LanguageOffTbl_t &langOffTbl, uint32_t lc) {
+			return (langOffTbl.lc < lc);
 		});
-	if (pLangName == pLangNames_end || pLangName->lc != lc) {
+	if (pLangOffTbl == p_languages_offtbl_end || pLangOffTbl->lc != lc) {
 		return nullptr;
 	}
-	return pLangName->name;
+	return &languages_strtbl[pLangOffTbl->offset];
 }
 
 /**
