@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * AchWin32.hpp: Win32 notifications for achievements.                     *
  *                                                                         *
- * Copyright (c) 2020-2022 by David Korth.                                 *
+ * Copyright (c) 2020-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -136,19 +136,20 @@ AchWin32Private::AchWin32Private()
 	// NOTE: Cannot register with the Achievements class here because the
 	// static Achievements instance might not be fully initialized yet.
 
-	WNDCLASSEX wndClass;
-	wndClass.cbSize = sizeof(wndClass);
-	wndClass.style = CS_HREDRAW | CS_VREDRAW;
-	wndClass.lpfnWndProc = RpAchNotifyWndProc;
-	wndClass.cbClsExtra = 0;
-	wndClass.cbWndExtra = 0;
-	wndClass.hInstance = HINST_THISCOMPONENT;
-	wndClass.hIcon = nullptr;
-	wndClass.hCursor = nullptr;
-	wndClass.hbrBackground = nullptr;
-	wndClass.lpszMenuName = nullptr;
-	wndClass.lpszClassName = _T("RpAchNotifyWnd");
-	wndClass.hIconSm = nullptr;
+	static const WNDCLASSEX wndClass = {
+		sizeof(WNDCLASSEX),		// cbSize
+		CS_HREDRAW | CS_VREDRAW,	// style
+		RpAchNotifyWndProc,		// lpfnWndProc
+		0,				// cbClsExtra
+		0,				// cbWndExtra
+		HINST_THISCOMPONENT,		// hInstance
+		nullptr,			// hIcon
+		nullptr,			// hCursor
+		nullptr,			// hbrBackground
+		nullptr,			// lpszMenuName
+		_T("RpAchNotifyWnd"),		// lpszClassName
+		nullptr				// hIconSm
+	};
 
 	// Register the window class.
 	atomWindowClass = RegisterClassEx(&wndClass);

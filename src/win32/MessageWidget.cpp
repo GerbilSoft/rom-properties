@@ -468,7 +468,8 @@ void MessageWidgetRegister(void)
 	if (atom_messageWidget != 0)
 		return;
 
-	static const WNDCLASS wndClass = {
+	static const WNDCLASSEX wndClass = {
+		sizeof(WNDCLASSEX),		// cbSize
 		CS_HREDRAW | CS_VREDRAW,	// style
 		MessageWidgetWndProc,		// lpfnWndProc
 		0,				// cbClsExtra
@@ -479,9 +480,10 @@ void MessageWidgetRegister(void)
 		nullptr,			// hbrBackground
 		nullptr,			// lpszMenuName
 		WC_MESSAGEWIDGET,		// lpszClassName
+		nullptr				// hIconSm
 	};
 
-	atom_messageWidget = RegisterClass(&wndClass);
+	atom_messageWidget = RegisterClassEx(&wndClass);
 }
 
 void MessageWidgetUnregister(void)

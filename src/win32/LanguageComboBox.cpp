@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * LanguageComboBox.cpp: Language ComboBoxEx superclass.                   *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -417,8 +417,8 @@ void LanguageComboBoxRegister(void)
 	// Get ComboBoxEx class information.
 	// NOTE: ComboBoxEx was introduced in MSIE 3.0, so we don't
 	// need to fall back to regular ComboBox.
-	WNDCLASS wndClass;
-	BOOL bRet = GetClassInfo(nullptr, WC_COMBOBOXEX, &wndClass);
+	WNDCLASSEX wndClass;
+	BOOL bRet = GetClassInfoEx(nullptr, WC_COMBOBOXEX, &wndClass);
 	assert(bRet != FALSE);
 	if (!bRet) {
 		// Error getting class info.
@@ -430,7 +430,7 @@ void LanguageComboBoxRegister(void)
 	wndClass.hInstance = HINST_THISCOMPONENT;
 	wndClass.lpszClassName = WC_LANGUAGECOMBOBOX;
 
-	atom_languageComboBox = RegisterClass(&wndClass);
+	atom_languageComboBox = RegisterClassEx(&wndClass);
 }
 
 void LanguageComboBoxUnregister(void)
