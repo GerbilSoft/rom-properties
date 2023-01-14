@@ -35,6 +35,8 @@
   * DirectDrawSurface: Fix detection for some L8 and A8L8 textures, as well as
     some uncompressed textures that have a DXGI format set but not the legacy
     bitmask values.
+  * Windows: The "Convert to PNG" context menu item now uses the system PNG
+    file icon. Note that icon transparency is currently broken.
 
 * Other changes:
   * EXE: Don't show import/export tables for .NET executables, since they only
