@@ -26,6 +26,9 @@ using LibRomData::RomDataFactory;
 using LibRpTexture::rp_image;
 using LibRpTexture::FileFormatFactory;
 
+// libwin32ui
+using LibWin32UI::RegKey;
+
 // C++ STL classes.
 using std::string;
 using std::tstring;
@@ -46,11 +49,15 @@ const CLSID CLSID_RP_ContextMenu =
 
 RP_ContextMenu_Private::RP_ContextMenu_Private()
 	: filenames(nullptr)
+	, hbmPng(nullptr)
 { }
 
 RP_ContextMenu_Private::~RP_ContextMenu_Private()
 {
 	clear_filenames_vector(this->filenames);
+	if (hbmPng) {
+		DeleteBitmap(hbmPng);
+	}
 }
 
 /**
@@ -209,6 +216,132 @@ unsigned int WINAPI RP_ContextMenu_Private::convert_to_png_ThreadProc(std::vecto
 	return 0;
 }
 
+/**
+ * Get the icon index from an icon resource specification,
+ * e.g. "C:\\Windows\\Some.DLL,1" .
+ * @param szIconSpec Icon resource specification
+ * @return Icon index, or 0 (default) if unknown.
+ */
+int RP_ContextMenu_Private::getIconIndexFromSpec(LPCTSTR szIconSpec)
+{
+	// DefaultIcon format: "C:\\Windows\\Some.DLL,1"
+	// TODO: Can the filename be quoted?
+	// TODO: Better error codes?
+	int nIconIndex;
+	const TCHAR *const comma = _tcsrchr(szIconSpec, _T(','));
+	if (!comma) {
+		// No comma. Assume the default icon index.
+		return 0;
+	}
+
+	// Found the comma.
+	if (comma > szIconSpec && comma[1] != _T('\0')) {
+		TCHAR *endptr = nullptr;
+		errno = 0;
+		nIconIndex = (int)_tcstol(&comma[1], &endptr, 10);
+		if (errno == ERANGE || *endptr != 0) {
+			// _tcstol() failed.
+			// DefaultIcon is invalid, but we'll assume the index is 0.
+			nIconIndex = 0;
+		}
+	} else {
+		// Comma is the last character.
+		// We'll assume the index is 0.
+		nIconIndex = 0;
+	}
+
+	return nIconIndex;
+}
+
+/**
+ * Get the PNG icon for the menu.
+ * (Technically an HBITMAP for menus.)
+ * @return PNG icon, or nullptr if unavailable.
+ */
+HBITMAP RP_ContextMenu_Private::getPngIcon(void)
+{
+	if (this->hbmPng) {
+		// We already have the icon.
+		return this->hbmPng;
+	}
+
+	// Get the icon used for PNG files.
+	// NOTE: Assuming it's ".png" -> "pngfile". Not handling other cases.
+	RegKey hkcr_png(HKEY_CLASSES_ROOT, _T(".png"), KEY_READ, false);
+	if (!hkcr_png.isOpen()) {
+		return nullptr;
+	}
+
+	tstring ts_class_name = hkcr_png.read(nullptr);
+	if (ts_class_name.empty()) {
+		return nullptr;
+	}
+	hkcr_png.close();
+
+	ts_class_name += _T("\\DefaultIcon");
+	RegKey hkcr_defaultIcon(HKEY_CLASSES_ROOT, ts_class_name.c_str(), KEY_READ, false);
+	if (!hkcr_defaultIcon.isOpen()) {
+		return nullptr;
+	}
+
+	const tstring ts_icon_name = hkcr_defaultIcon.read_expand(nullptr);
+	if (ts_icon_name.empty()) {
+		return nullptr;
+	}
+	hkcr_defaultIcon.close();
+
+	// We have an icon and index.
+	// TODO: Only load the small icon?
+	const UINT nIconSize = MAKELONG(
+		GetSystemMetrics(SM_CXICON),	// LOWORD: Large icon size
+		GetSystemMetrics(SM_CXSMICON)	// HIWORD: Small icon size
+	);
+	HICON hLargeIcon = nullptr, hSmallIcon = nullptr;
+	int ret = LibWin32UI::loadIconFromFilenameAndIndex(ts_icon_name.c_str(), &hLargeIcon, &hSmallIcon, nIconSize);
+	if (ret != ERROR_SUCCESS) {
+		// Error loading an icon.
+		if (hLargeIcon) {
+			DestroyIcon(hLargeIcon);
+		}
+		if (hSmallIcon) {
+			DestroyIcon(hSmallIcon);
+		}
+		return nullptr;
+	}
+
+	// Prefer the small icon.
+	if (!hSmallIcon) {
+		hSmallIcon = hLargeIcon;
+		hLargeIcon = nullptr;
+	}
+	if (!hSmallIcon) {
+		// No icon...
+		return nullptr;
+	}
+
+	// Get the icon bitmaps.
+	ICONINFO iconInfo;
+	BOOL bRet = GetIconInfo(hSmallIcon, &iconInfo);
+	DestroyIcon(hSmallIcon);
+	if (hLargeIcon) {
+		DestroyIcon(hLargeIcon);
+	}
+	if (!bRet) {
+		// Failed to retrieve the icon bitmaps.
+		return nullptr;
+	}
+
+	if (iconInfo.hbmMask) {
+		// TODO: Do we need to use the mask?
+		// Ignore it for now.
+		DeleteBitmap(iconInfo.hbmMask);
+	}
+
+	// We have the bitmap.
+	this->hbmPng = iconInfo.hbmColor;
+	return iconInfo.hbmColor;
+}
+
 /** RP_ContextMenu **/
 
 RP_ContextMenu::RP_ContextMenu()
@@ -349,11 +482,28 @@ IFACEMETHODIMP RP_ContextMenu::QueryContextMenu(_In_ HMENU hMenu, _In_ UINT inde
 		return MAKE_HRESULT(SEVERITY_SUCCESS, 0, USHORT(0));
 	}
 
+	// Get the icon used for PNG files.
+	RP_D(RP_ContextMenu);
+	HBITMAP hbmPng = d->getPngIcon();
+
+	// Menu item text
+	const tstring ts_text = U82T_c(C_("ServiceMenu", "Convert to PNG"));
+
 	// Add "Convert to PNG".
 	// TODO: Verify that it can be converted to PNG first.
-	InsertMenu(hMenu, indexMenu, MF_STRING | MF_BYPOSITION,
-		idCmdFirst + IDM_RP_CONVERT_TO_PNG,
-		U82T_c(C_("ServiceMenu", "Convert to PNG")));
+	// FIXME: Icon transparency seems to be broken.
+	MENUITEMINFO mii;
+	mii.cbSize = sizeof(mii);
+	mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID | MIIM_STATE | MIIM_BITMAP;
+	mii.wID = idCmdFirst + IDM_RP_CONVERT_TO_PNG;
+	mii.fType = MFT_STRING;
+	mii.dwTypeData = const_cast<LPTSTR>(ts_text.c_str());
+	mii.hbmpItem = hbmPng;
+	mii.fState = MFS_ENABLED;
+
+	if (!InsertMenuItem(hMenu, indexMenu, TRUE, &mii)) {
+		return HRESULT_FROM_WIN32(GetLastError());
+	}
 	return MAKE_HRESULT(SEVERITY_SUCCESS, 0, USHORT(IDM_RP_CONVERT_TO_PNG + 1));
 }
 

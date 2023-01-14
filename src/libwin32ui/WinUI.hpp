@@ -140,6 +140,17 @@ int measureStringForListView(HDC hDC, const std::tstring &tstr, int *pNlCount = 
  */
 DWORD isSystemRTL(void);
 
+/**
+ * Load an icon from a filename and index string.
+ * Example: _T("C:\\Windows\\System32\\imageres.dll,-83")
+ * @param lpszIconFilename	[in] Filename and index string
+ * @param phiconLarge		[out,opt] Large icon
+ * @param phiconSmall		[out,opt] Small icon
+ * @param nIconSize		[in] Icon sizes (LOWORD == large icon size; HIWORD == small icon size)
+ * @return 0 on success; Win32 error code on error.
+ */
+int loadIconFromFilenameAndIndex(LPCTSTR lpszIconFilename, HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize);
+
 /** File dialogs **/
 
 /**

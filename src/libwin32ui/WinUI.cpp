@@ -333,6 +333,104 @@ DWORD isSystemRTL(void)
 	return dwRet;
 }
 
+/**
+ * Get the icon index from an icon resource specification,
+ * e.g. "C:\\Windows\\Some.DLL,1" .
+ * @param szIconSpec Icon resource specification
+ * @return Icon index, or 0 (default) if unknown.
+ */
+static int getIconIndexFromSpec(LPCTSTR szIconSpec)
+{
+	// DefaultIcon format: "C:\\Windows\\Some.DLL,1"
+	// TODO: Can the filename be quoted?
+	// TODO: Better error codes?
+	int nIconIndex;
+	const TCHAR *const comma = _tcsrchr(szIconSpec, _T(','));
+	if (!comma) {
+		// No comma. Assume the default icon index.
+		return 0;
+	}
+
+	// Found the comma.
+	if (comma > szIconSpec && comma[1] != _T('\0')) {
+		TCHAR *endptr = nullptr;
+		errno = 0;
+		nIconIndex = (int)_tcstol(&comma[1], &endptr, 10);
+		if (errno == ERANGE || *endptr != 0) {
+			// _tcstol() failed.
+			// DefaultIcon is invalid, but we'll assume the index is 0.
+			nIconIndex = 0;
+		}
+	} else {
+		// Comma is the last character.
+		// We'll assume the index is 0.
+		nIconIndex = 0;
+	}
+
+	return nIconIndex;
+}
+
+/**
+ * Load an icon from a filename and index string.
+ * Example: _T("C:\\Windows\\System32\\imageres.dll,-83")
+ * @param lpszIconFilename	[in] Filename and index string
+ * @param phiconLarge		[out,opt] Large icon
+ * @param phiconSmall		[out,opt] Small icon
+ * @param nIconSize		[in] Icon sizes (LOWORD == large icon size; HIWORD == small icon size)
+ * @return 0 on success; Win32 error code on error.
+ */
+int loadIconFromFilenameAndIndex(LPCTSTR lpszIconFilename, HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize)
+{
+	// DefaultIcon is set but IconHandler isn't, which means
+	// the file's icon is stored as an icon resource.
+	// TODO: Return filename+index in the main IExtractIconW handler?
+	int nIconIndex = getIconIndexFromSpec(lpszIconFilename);
+
+	// Remove the index from the filename.
+	tstring ts_filename(lpszIconFilename);
+	size_t comma = ts_filename.find_last_of(_T(','));
+	if (comma != tstring::npos && comma > 0) {
+		ts_filename.resize(comma);
+	}
+
+	// PrivateExtractIcons() is published as of Windows XP SP1,
+	// but it's "officially" private.
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-privateextracticonsw
+	// TODO: Verify that hIcons[x] is NULL if only one size is found.
+	// TODO: Verify which icon is extracted.
+	// TODO: What if the size isn't found?
+	HICON hIcons[2];
+	UINT uRet = PrivateExtractIcons(ts_filename.c_str(), nIconIndex,
+		nIconSize, nIconSize, hIcons, nullptr, 2, 0);
+	if (uRet == 0) {
+		// No icons were extracted.
+		return ERROR_FILE_NOT_FOUND;
+	}
+
+	// At least one icon was extracted.
+	if (uRet >= 1) {
+		if (phiconLarge) {
+			*phiconLarge = hIcons[0];
+		} else if (hIcons[0]) {
+			DestroyIcon(hIcons[0]);
+		}
+	} else if (phiconLarge) {
+		*phiconLarge = nullptr;
+	}
+
+	if (uRet >= 2) {
+		if (phiconSmall) {
+			*phiconSmall = hIcons[1];
+		} else if (hIcons[1]) {
+			DestroyIcon(hIcons[1]);
+		}
+	} else if (phiconSmall) {
+		*phiconSmall = nullptr;
+	}
+
+	return ERROR_SUCCESS;
+}
+
 /** File dialogs **/
 
 #ifdef UNICODE

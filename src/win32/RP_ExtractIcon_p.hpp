@@ -83,20 +83,12 @@ class RP_ExtractIcon_Private
 			_Outptr_opt_ HICON *phiconLarge, _Outptr_opt_ HICON *phiconSmall, UINT nIconSize);
 
 		/**
-		 * Get the icon index from an icon resource specification,
-		 * e.g. "C:\\Windows\\Some.DLL,1" .
-		 * @param szIconSpec Icon resource specification
-		 * @return Icon index, or 0 (default) if unknown.
-		 */
-		static int getIconIndexFromSpec(LPCTSTR szIconSpec);
-
-		/**
 		 * Fallback icon handler function. (internal)
 		 * This function reads the RP_Fallback key for fallback data.
 		 * @param hkey_Assoc	[in] File association key to check
 		 * @param phiconLarge	[out,opt] Large icon
 		 * @param phiconSmall	[out,opt] Small icon
-		 * @param nIconSize	[in] Icon sizes
+		 * @param nIconSize	[in] Icon sizes (LOWORD == large icon size; HIWORD == small icon size)
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
 		LONG Fallback_int(LibWin32UI::RegKey &hkey_Assoc,
@@ -105,9 +97,9 @@ class RP_ExtractIcon_Private
 	public:
 		/**
 		 * Fallback icon handler function.
-		 * @param phiconLarge Large icon.
-		 * @param phiconSmall Small icon.
-		 * @param nIconSize Icon sizes.
+		 * @param phiconLarge Large icon
+		 * @param phiconSmall Small icon
+		 * @param nIconSize Icon sizes (LOWORD == large icon size; HIWORD == small icon size)
 		 * @return ERROR_SUCCESS on success; Win32 error code on error.
 		 */
 		LONG Fallback(HICON *phiconLarge, HICON *phiconSmall, UINT nIconSize);
