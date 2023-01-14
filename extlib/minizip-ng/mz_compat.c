@@ -10,7 +10,6 @@
    See the accompanying LICENSE file for the full text of the license.
 */
 
-
 #include "mz.h"
 #include "mz_os.h"
 #include "mz_strm.h"
@@ -874,6 +873,11 @@ int unzOpenCurrentFile3(unzFile file, int *method, int *level, int raw, const ch
         *method = 0;
     if (level != NULL)
         *level = 0;
+
+    if (mz_zip_entry_is_open(compat->handle) == MZ_OK) {
+        /* zlib minizip does not error out here if close returns errors */
+        unzCloseCurrentFile(file);
+    }
 
     compat->total_out = 0;
     err = mz_zip_entry_read_open(compat->handle, (uint8_t)raw, password);

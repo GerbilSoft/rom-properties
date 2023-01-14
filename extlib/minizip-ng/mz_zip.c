@@ -15,7 +15,6 @@
    See the accompanying LICENSE file for the full text of the license.
 */
 
-
 #include "mz.h"
 #include "mz_crypt.h"
 #include "mz_strm.h"
@@ -152,7 +151,6 @@ static int32_t mz_zip_search_zip64_eocd(void *stream, const int64_t end_central_
     uint32_t value32 = 0;
     int32_t err = MZ_OK;
 
-
     *central_pos = 0;
 
     /* Zip64 end of central directory locator */
@@ -221,7 +219,6 @@ static int32_t mz_zip_entry_read_header(void *stream, uint8_t local, mz_zip_file
     int64_t saved_pos = 0;
     int32_t err = MZ_OK;
     char *linkname = NULL;
-
 
     memset(file_info, 0, sizeof(mz_zip_file));
 
@@ -486,7 +483,6 @@ static int32_t mz_zip_entry_read_descriptor(void *stream, uint8_t zip64, uint32_
     uint32_t value32 = 0;
     int64_t value64 = 0;
     int32_t err = MZ_OK;
-
 
     err = mz_stream_read_uint32(stream, &value32);
     if (value32 != MZ_ZIP_MAGIC_DATADESCRIPTOR)
@@ -793,13 +789,13 @@ static int32_t mz_zip_entry_write_header(void *stream, uint8_t local, mz_zip_fil
         const char *backslash = NULL;
         const char *next = filename;
         int32_t left = filename_length;
-        
+
         /* Ensure all slashes are written as forward slashes according to 4.4.17.1 */
         while ((err == MZ_OK) && (backslash = strrchr(next, '\\')) != NULL) {
             int32_t part_length = (int32_t)(backslash - next);
 
             if (mz_stream_write(stream, next, part_length) != part_length ||
-                mz_stream_write(stream, "/", 1) != 1) 
+                mz_stream_write(stream, "/", 1) != 1)
                 err = MZ_WRITE_ERROR;
 
             left -= part_length + 1;
@@ -960,7 +956,6 @@ static int32_t mz_zip_read_cd(void *handle) {
     int32_t comment_read = 0;
     int32_t err = MZ_OK;
 
-
     if (zip == NULL)
         return MZ_PARAM_ERROR;
 
@@ -1079,7 +1074,6 @@ static int32_t mz_zip_read_cd(void *handle) {
             if (err == MZ_OK)
                 err = mz_stream_read_uint32(zip->stream, &zip->cd_signature);
             if ((err == MZ_OK) && (zip->cd_signature == MZ_ZIP_MAGIC_CENTRALHEADER)) {
-
                 /* If found compensate for incorrect locations */
                 value64i = zip->cd_offset;
                 zip->cd_offset = eocd_pos - zip->cd_size;
@@ -1109,7 +1103,6 @@ static int32_t mz_zip_write_cd(void *handle) {
     int64_t disk_size = 0;
     int32_t comment_size = 0;
     int32_t err = MZ_OK;
-
 
     if (zip == NULL)
         return MZ_PARAM_ERROR;
@@ -1259,7 +1252,6 @@ static int32_t mz_zip_recover_cd(void *handle) {
     int32_t err = MZ_OK;
     uint8_t zip64 = 0;
     uint8_t eof = 0;
-
 
     mz_zip_print("Zip - Recover - Start\n");
 
@@ -1434,7 +1426,6 @@ void mz_zip_delete(void **handle) {
 int32_t mz_zip_open(void *handle, void *stream, int32_t mode) {
     mz_zip *zip = (mz_zip *)handle;
     int32_t err = MZ_OK;
-
 
     if (zip == NULL)
         return MZ_PARAM_ERROR;
@@ -2106,7 +2097,7 @@ int32_t mz_zip_entry_read_close(void *handle, uint32_t *crc32, int64_t *compress
     }
 
     /* If entire entry was not read verification will fail */
-    if ((err == MZ_OK) && (total_in > 0) && (!zip->entry_raw)) {
+    if ((err == MZ_OK) && (total_in == zip->file_info.compressed_size) && (!zip->entry_raw)) {
 #ifdef HAVE_WZAES
         /* AES zip version AE-1 will expect a valid crc as well */
         if (zip->file_info.aes_version <= 0x0001)
@@ -2308,8 +2299,6 @@ int32_t mz_zip_entry_is_symlink(void *handle) {
     if (zip->entry_scanned == 0)
         return MZ_PARAM_ERROR;
     if (mz_zip_attrib_is_symlink(zip->file_info.external_fa, zip->file_info.version_madeby) != MZ_OK)
-        return MZ_EXIST_ERROR;
-    if (zip->file_info.linkname == NULL || *zip->file_info.linkname == 0)
         return MZ_EXIST_ERROR;
 
     return MZ_OK;
@@ -2584,7 +2573,6 @@ int32_t mz_zip_extrafield_find(void *stream, uint16_t type, int32_t max_seek, ui
     int32_t err = MZ_OK;
     uint16_t field_type = 0;
     uint16_t field_length = 0;
-
 
     if (max_seek < 4)
         return MZ_EXIST_ERROR;

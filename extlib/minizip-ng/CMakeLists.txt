@@ -28,7 +28,7 @@ option(MZ_PKCRYPT "Enables PKWARE traditional encryption" ON)
 option(MZ_WZAES "Enables WinZIP AES encryption" ON)
 option(MZ_OPENSSL "Enables OpenSSL for encryption" ${UNIX})
 option(MZ_LIBBSD "Enable libbsd crypto random" ${UNIX})
-option(MZ_SIGNING "Enables zip signing support" ON)
+option(MZ_SIGNING "Enables zip signing support" OFF)
 # Character conversion options
 option(MZ_ICONV "Enables iconv for string encoding conversion" ON)
 # Code generation options
@@ -79,7 +79,7 @@ endif()
 enable_language(C)
 
 # Library version
-set(VERSION "3.0.7")
+set(VERSION "3.0.8")
 
 # API version
 set(SOVERSION "3")
@@ -222,6 +222,7 @@ if(MZ_ZLIB)
         else()
             list(APPEND MINIZIP_DEP zlib)
         endif()
+
         if(EXISTS "${ZLIB_BINARY_DIR}/zlib-ng.h")
             message(STATUS "ZLIB repository detected as ZLIBNG")
             set(ZLIB_COMPAT OFF)
@@ -319,6 +320,7 @@ if(MZ_LZMA)
 
         list(APPEND MINIZIP_INC ${LIBLZMA_INCLUDE_DIRS})
         list(APPEND MINIZIP_LIB ${LIBLZMA_LIBRARIES})
+        list(APPEND MINIZIP_LBD ${LIBLZMA_LIBRARY_DIRS})
 
         set(PC_PRIVATE_LIBS "${PC_PRIVATE_LIBS} -lliblzma")
     elseif(MZ_FETCH_LIBS)
@@ -677,17 +679,9 @@ if(MZ_CODE_COVERAGE)
     endif()
 else()
     if(MSVC)
-        add_compile_options(
-            $<$<CONFIG:Debug>:/Zi>
-            $<$<CONFIG:Debug>:/Od>
-            $<$<CONFIG:Debug>:/W3>
-            $<$<CONFIG:Release>:/Ox>
-            $<$<CONFIG:Release>:/Os>)
+        add_compile_options($<$<CONFIG:Debug>:/W3>)
     else()
-        add_compile_options(
-            $<$<CONFIG:Debug>:-g>
-            $<$<CONFIG:Debug>:-Wall>
-            $<$<CONFIG:Release>:-Os>)
+        add_compile_options($<$<CONFIG:Debug>:-Wall>)
     endif()
 endif()
 

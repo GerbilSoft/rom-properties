@@ -1,12 +1,11 @@
-# minizip-ng 3.0.7
+# minizip-ng
 
 minizip-ng is a zip manipulation library written in C that is supported on Windows, macOS, and Linux.
 
-[![Master Branch Status](https://github.com/zlib-ng/minizip-ng/workflows/CI/badge.svg)](https://github.com/zlib-ng/minizip-ng/actions)
+[![Master Branch Status](https://github.com/zlib-ng/minizip-ng/workflows/Build/badge.svg)](https://github.com/zlib-ng/minizip-ng/actions)
 [![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/minizip.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:minizip)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/53d48ca8fec549f4a8b39cf95cba6ad6)](https://www.codacy.com/manual/nmoinvaz/minizip?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=nmoinvaz/minizip&amp;utm_campaign=Badge_Grade)
 [![License: Zlib](https://img.shields.io/badge/license-zlib-lightgrey.svg)](https://github.com/zlib-ng/minizip-ng/blob/master/LICENSE)
-[![codecov.io](https://codecov.io/github/nmoinvaz/minizip/coverage.svg?branch=develop)](https://codecov.io/github/nmoinvaz/minizip/)
+[![codecov.io](https://codecov.io/github/zlib-ng/minizip-ng/coverage.svg?branch=develop)](https://codecov.io/github/zlib-ng/minizip-ng/)
 
 Developed and maintained by Nathan Moinvaziri.
 
@@ -60,8 +59,8 @@ To generate project files for your platform:
 2. Run cmake in the minizip directory.
 
 ```
-cmake . -DMZ_BUILD_TESTS=ON
-cmake --build .
+cmake -S . -B build -D MZ_BUILD_TESTS=ON
+cmake --build build
 ```
 
 ## Build Options
@@ -80,7 +79,7 @@ cmake --build .
 | MZ_WZAES            | Enables WinZIP AES encryption                       |      ON       |
 | MZ_OPENSSL          | Enables OpenSSL encryption                          |     UNIX      |
 | MZ_LIBBSD           | Builds with libbsd crypto random                    |     UNIX      |
-| MZ_SIGNING          | Enables zip signing support                         |      ON       |
+| MZ_SIGNING          | Enables zip signing support                         |      OFF      |
 | MZ_ICONV            | Enables iconv encoding conversion                   |      ON       |
 | MZ_COMPRESS_ONLY    | Only support compression                            |      OFF      |
 | MZ_DECOMPRESS_ONLY  | Only support decompression                          |      OFF      |
