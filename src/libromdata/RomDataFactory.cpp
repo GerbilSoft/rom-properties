@@ -944,7 +944,7 @@ void RomDataFactoryPrivate::init_supportedFileExtensions(void)
 
 	// Get file extensions from FileFormatFactory.
 	static const unsigned int FFF_ATTRS = ATTR_HAS_THUMBNAIL | ATTR_HAS_METADATA;
-	vector<const char*> vec_exts_fileFormat = FileFormatFactory::supportedFileExtensions();
+	const vector<const char*> &vec_exts_fileFormat = FileFormatFactory::supportedFileExtensions();
 	for (const char *ext : vec_exts_fileFormat) {
 		auto iter = map_exts.find(ext);
 		if (iter != map_exts.end()) {

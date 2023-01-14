@@ -51,7 +51,8 @@ class FileFormatFactory
 		 *
 		 * @return All supported file extensions, including the leading dot.
 		 */
-		static std::vector<const char*> supportedFileExtensions(void);
+		RP_LIBROMDATA_PUBLIC	/* TODO: Export on Windows only? */
+		static const std::vector<const char*> &supportedFileExtensions(void);
 
 		/**
 		 * Get all supported MIME types.

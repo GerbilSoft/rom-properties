@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * FileFormatFactory.cpp: FileFormat factory class.                        *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -17,6 +17,9 @@
 #include "librpfile/FileSystem.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
+
+// librpthreads
+#include "librpthreads/pthread_once.h"
 
 // C++ STL classes.
 using std::string;
@@ -90,9 +93,32 @@ class FileFormatFactoryPrivate
 		// FileFormat subclasses that have special checks.
 		// This array is for file extensions and MIME types only.
 		static const FileFormatFns FileFormatFns_mime[];
+
+		// Vectors for file extensions.
+		// We want to collect them once per session instead of
+		// repeatedly collecting them, since the caller might
+		// not cache them.
+		static vector<const char*> vec_exts;
+		// pthread_once() control variables
+		static pthread_once_t once_exts;
+
+		/**
+		 * Initialize the vector of supported file extensions.
+		 * Used for Win32 COM registration.
+		 *
+		 * Internal function; must be called using pthread_once().
+		 *
+		 * NOTE: The return value is a struct that includes a flag
+		 * indicating if the file type handler supports thumbnails.
+		 */
+		static void init_supportedFileExtensions(void);
 };
 
 /** FileFormatFactoryPrivate **/
+
+vector<const char*> FileFormatFactoryPrivate::vec_exts;
+// pthread_once() control variables
+pthread_once_t FileFormatFactoryPrivate::once_exts = PTHREAD_ONCE_INIT;
 
 // FileFormat subclasses that use a header at 0 and
 // definitely have a 32-bit magic number at address 0.
@@ -285,19 +311,21 @@ FileFormat *FileFormatFactory::create(IRpFile *file)
 }
 
 /**
- * Get all supported file extensions.
+ * Initialize the vector of supported file extensions.
  * Used for Win32 COM registration.
  *
- * @return All supported file extensions, including the leading dot.
+ * Internal function; must be called using pthread_once().
+ *
+ * NOTE: The return value is a struct that includes a flag
+ * indicating if the file type handler supports thumbnails.
  */
-vector<const char*> FileFormatFactory::supportedFileExtensions(void)
+void FileFormatFactoryPrivate::init_supportedFileExtensions(void)
 {
 	// In order to handle multiple FileFormat subclasses
 	// that support the same extensions, we're using
 	// an unordered_set<string>.
 	//
 	// The actual data is stored in the vector<const char*>.
-	vector<const char*> vec_exts;
 	unordered_set<string> set_exts;
 
 	static const size_t reserve_size = ARRAY_SIZE(FileFormatFactoryPrivate::FileFormatFns_magic);
@@ -337,8 +365,18 @@ vector<const char*> FileFormatFactory::supportedFileExtensions(void)
 			}
 		}
 	}
+}
 
-	return vec_exts;
+/**
+ * Get all supported file extensions.
+ * Used for Win32 COM registration.
+ *
+ * @return All supported file extensions, including the leading dot.
+ */
+const vector<const char*> &FileFormatFactory::supportedFileExtensions(void)
+{
+	pthread_once(&FileFormatFactoryPrivate::once_exts, FileFormatFactoryPrivate::init_supportedFileExtensions);
+	return FileFormatFactoryPrivate::vec_exts;
 }
 
 /**
