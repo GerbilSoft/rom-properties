@@ -3,7 +3,7 @@
  * RP_ShellPropSheetExt_ops.cpp: IShellPropSheetExt implementation.        *
  * (ROM operations)                                                        *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -166,13 +166,14 @@ void RP_ShellPropSheetExt_Private::createOptionsButton(void)
 	MapWindowPoints(HWND_DESKTOP, hWndParent, (LPPOINT)&rect_tabControl, 2);
 
 	// Create the "Options" button.
+	OptionsMenuButtonRegister();
 	POINT ptBtn = {rect_tabControl.left, rect_btnOK.top};
 	const SIZE szBtn = {
 		rect_btnOK.right - rect_btnOK.left,
 		rect_btnOK.bottom - rect_btnOK.top
 	};
-	hBtnOptions = CreateWindowEx(dwExStyleRTL, WC_OPTIONSMENUBUTTON,
-		nullptr,	// OptionsMenuButton will set the text.
+	hBtnOptions = CreateWindowEx(dwExStyleRTL,
+		WC_OPTIONSMENUBUTTON, nullptr,	// OptionsMenuButton will set the text.
 		WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_GROUP | BS_PUSHBUTTON | BS_CENTER,
 		ptBtn.x, ptBtn.y, szBtn.cx, szBtn.cy,
 		hWndParent, (HMENU)IDC_RP_OPTIONS, nullptr, nullptr);

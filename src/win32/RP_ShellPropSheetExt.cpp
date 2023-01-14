@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ShellPropSheetExt.cpp: IShellPropSheetExt implementation.            *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1599,7 +1599,6 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 		}
 
 		LanguageComboBoxRegister();
-		OptionsMenuButtonRegister();
 		cboLanguage = CreateWindowEx(WS_EX_NOPARENTNOTIFY,
 			WC_LANGUAGECOMBOBOX, nullptr,
 			CBS_DROPDOWNLIST | WS_CHILD | WS_TABSTOP | WS_VISIBLE,
