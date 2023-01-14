@@ -38,7 +38,9 @@ using LibWin32UI::RegKey;
 
 // For file extensions
 #include "libromdata/RomDataFactory.hpp"
+#include "librptexture/FileFormatFactory.hpp"
 using LibRomData::RomDataFactory;
+using LibRpTexture::FileFormatFactory;
 
 // C++ STL classes
 using std::list;
@@ -135,21 +137,17 @@ static LONG RegisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory::
 	}
 
 	// Register the context menu handler.
-	// TODO: Get these from FileFormatFactory. (requires TCHAR conversion though)
-	static const TCHAR texture_exts[][8] = {
-		_T(".astc"), _T(".dds"), _T(".gvr"), _T(".ktx"),
-		_T(".ktx2"), _T(".pvr"), _T(".stex"), _T(".svr"),
-		_T(".tex"), _T(".texs"), _T(".tga"), _T(".vtf"),
-		_T(".xpr"), _T(".xbx"),
-	};
-	// TODO: Rework into a binary search.
+	// TODO: Better search method?
+	const vector<const char*> &texture_exts = FileFormatFactory::supportedFileExtensions();
+
 	bool is_texture = false;
 	for (auto texture_ext : texture_exts) {
-		if (!_tcscmp(texture_ext, t_ext.c_str())) {
+		if (!strcasecmp(texture_ext, extInfo.ext)) {
 			is_texture = true;
 			break;
 		}
 	}
+
 	if (is_texture) {
 		// Register the context menu handler.
 		lResult = RP_ContextMenu::RegisterFileType(hkcr, t_ext.c_str());

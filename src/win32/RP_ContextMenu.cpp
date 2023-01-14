@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ContextMenu.hpp: IContextMenu implementation.                        *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,15 +19,18 @@
 
 // librpbase, librpfile, librptexture, libromdata
 #include "librpbase/img/RpPngWriter.hpp"
+#include "librptexture/FileFormatFactory.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
-using LibRpTexture::rp_image;
 using LibRomData::RomDataFactory;
+using LibRpTexture::rp_image;
+using LibRpTexture::FileFormatFactory;
 
 // C++ STL classes.
 using std::string;
 using std::tstring;
 using std::unique_ptr;
+using std::vector;
 
 // CLSID
 const CLSID CLSID_RP_ContextMenu =
@@ -284,6 +287,9 @@ IFACEMETHODIMP RP_ContextMenu::Initialize(
 		return E_FAIL;
 	}
 
+	// Get the vector of supported file extensions.
+	const vector<const char*> &texture_exts = FileFormatFactory::supportedFileExtensions();
+
 	// Save the filenames.
 	d->filenames = new std::vector<LPTSTR>();
 	d->filenames->reserve(nFiles);
@@ -301,19 +307,13 @@ IFACEMETHODIMP RP_ContextMenu::Initialize(
 			continue;
 		}
 
-		// Check if the extension is supported.
-		// TODO: Combine with DllRegisterServer and/or FileFormatFactory.
-		const TCHAR *ext = FileSystem::file_ext(tfilename);
-		static const TCHAR texture_exts[][8] = {
-			_T(".astc"), _T(".dds"), _T(".gvr"), _T(".ktx"),
-			_T(".ktx2"), _T(".pvr"), _T(".stex"), _T(".svr"),
-			_T(".tex"), _T(".texs"), _T(".tga"), _T(".vtf"),
-			_T(".xpr"), _T(".xbx"),
-		};
-		// TODO: Rework into a binary search.
+		// The list of supported file extensions is in UTF-8.
+		// Convert the file extension from TCHAR to UTF-8.
+		const string s_ext = T2U8(FileSystem::file_ext(tfilename));
+
 		bool is_texture = false;
 		for (auto texture_ext : texture_exts) {
-			if (!_tcscmp(texture_ext, ext)) {
+			if (!strcasecmp(texture_ext, s_ext.c_str())) {
 				is_texture = true;
 				break;
 			}
