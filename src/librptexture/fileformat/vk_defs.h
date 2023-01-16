@@ -271,6 +271,8 @@ typedef enum VkFormat {
 	VK_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG = 1000054006,
 	VK_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG = 1000054007,
 
+	VK_FORMAT_R16G16_S10_5_NV = 1000464000,
+
 	// FIXME: This fails on CodeQL (gcc-9.4.0) for some reason.
 	// We don't actually use these definitions right now anyway,
 	// so we'll disable it for now.
