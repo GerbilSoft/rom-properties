@@ -82,9 +82,13 @@ ADD_CUSTOM_TARGET(update-all.po DEPENDS ${UPDATE_ALL_PO_TARGETS})
 ADD_CUSTOM_TARGET(translations ALL DEPENDS ${_gmoFiles})
 
 # Determine the Qt UI target.
-IF(BUILD_KDE5)
+IF(TARGET kf6_generate_ui_h)
+	SET(QT_UI_TARGET kf6_generate_ui_h)
+ELSEIF(TARGET kf5_generate_ui_h)
+	SET(QT_UI_TARGET kf5_generate_ui_h)
+ELSEIF(TARGET kde5_generate_ui_h)
 	SET(QT_UI_TARGET kde5_generate_ui_h)
-ELSEIF(BUILD_KDE4)
+ELSEIF(TARGET kde4_generate_ui_h)
 	SET(QT_UI_TARGET kde4_generate_ui_h)
 ENDIF()
 
