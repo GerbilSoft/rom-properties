@@ -94,71 +94,71 @@ typedef struct _CheckboxInfo {
 } CheckboxInfo;
 
 static const CheckboxInfo checkboxInfo[CHECKBOX_MAX] = {
-	{"chkAppendOnly", NOP_C_("LinuxXattrView", "a: append only"),
-	 NOP_C_("LinuxXattrView", "File can only be opened in append mode for writing.")},
+	{"chkAppendOnly", NOP_C_("LinuxAttrView", "a: append only"),
+	 NOP_C_("LinuxAttrView", "File can only be opened in append mode for writing.")},
 
-	{"chkNoATime", NOP_C_("LinuxXattrView", "A: no atime"),
-	 NOP_C_("LinuxXattrView", "Access time record is not modified.")},
+	{"chkNoATime", NOP_C_("LinuxAttrView", "A: no atime"),
+	 NOP_C_("LinuxAttrView", "Access time record is not modified.")},
 
-	{"chkCompressed", NOP_C_("LinuxXattrView", "c: compressed"),
-	 NOP_C_("LinuxXattrView", "File is compressed.")},
+	{"chkCompressed", NOP_C_("LinuxAttrView", "c: compressed"),
+	 NOP_C_("LinuxAttrView", "File is compressed.")},
 
-	{"chkNoCOW", NOP_C_("LinuxXattrView", "C: no CoW"),
-	 NOP_C_("LinuxXattrView", "Not subject to copy-on-write updates.")},
+	{"chkNoCOW", NOP_C_("LinuxAttrView", "C: no CoW"),
+	 NOP_C_("LinuxAttrView", "Not subject to copy-on-write updates.")},
 
-	{"chkNoDump", NOP_C_("LinuxXattrView", "d: no dump"),
-	 NOP_C_("LinuxXattrView", "This file is not a candidate for dumping with the dump(8) program.")},
+	{"chkNoDump", NOP_C_("LinuxAttrView", "d: no dump"),
+	 NOP_C_("LinuxAttrView", "This file is not a candidate for dumping with the dump(8) program.")},
 
-	{"chkDirSync", NOP_C_("LinuxXattrView", "D: dir sync"),
-	 NOP_C_("LinuxXattrView", "Changes to this directory are written synchronously to the disk.")},
+	{"chkDirSync", NOP_C_("LinuxAttrView", "D: dir sync"),
+	 NOP_C_("LinuxAttrView", "Changes to this directory are written synchronously to the disk.")},
 
-	{"chkExtents", NOP_C_("LinuxXattrView", "e: extents"),
-	 NOP_C_("LinuxXattrView", "File is mapped on disk using extents.")},
+	{"chkExtents", NOP_C_("LinuxAttrView", "e: extents"),
+	 NOP_C_("LinuxAttrView", "File is mapped on disk using extents.")},
 
-	{"chkEncrypted", NOP_C_("LinuxXattrView", "E: encrypted"),
-	 NOP_C_("LinuxXattrView", "File is encrypted.")},
+	{"chkEncrypted", NOP_C_("LinuxAttrView", "E: encrypted"),
+	 NOP_C_("LinuxAttrView", "File is encrypted.")},
 
-	{"chkCasefold", NOP_C_("LinuxXattrView", "F: casefold"),
-	 NOP_C_("LinuxXattrView", "Files stored in this directory use case-insensitive filenames.")},
+	{"chkCasefold", NOP_C_("LinuxAttrView", "F: casefold"),
+	 NOP_C_("LinuxAttrView", "Files stored in this directory use case-insensitive filenames.")},
 
-	{"chkImmutable", NOP_C_("LinuxXattrView", "i: immutable"),
-	 NOP_C_("LinuxXattrView", "File cannot be modified, deleted, or renamed.")},
+	{"chkImmutable", NOP_C_("LinuxAttrView", "i: immutable"),
+	 NOP_C_("LinuxAttrView", "File cannot be modified, deleted, or renamed.")},
 
-	{"chkIndexed", NOP_C_("LinuxXattrView", "I: indexed"),
-	 NOP_C_("LinuxXattrView", "Directory is indexed using hashed trees.")},
+	{"chkIndexed", NOP_C_("LinuxAttrView", "I: indexed"),
+	 NOP_C_("LinuxAttrView", "Directory is indexed using hashed trees.")},
 
-	{"chkJournalled", NOP_C_("LinuxXattrView", "j: journalled"),
-	 NOP_C_("LinuxXattrView", "File data is written to the journal before writing to the file itself.")},
+	{"chkJournalled", NOP_C_("LinuxAttrView", "j: journalled"),
+	 NOP_C_("LinuxAttrView", "File data is written to the journal before writing to the file itself.")},
 
-	{"chkNoCompress", NOP_C_("LinuxXattrView", "m: no compress"),
-	 NOP_C_("LinuxXattrView", "File is excluded from compression.")},
+	{"chkNoCompress", NOP_C_("LinuxAttrView", "m: no compress"),
+	 NOP_C_("LinuxAttrView", "File is excluded from compression.")},
 
-	{"chkInlineData", NOP_C_("LinuxXattrView", "N: inline data"),
-	 NOP_C_("LinuxXattrView", "File data is stored inline in the inode.")},
+	{"chkInlineData", NOP_C_("LinuxAttrView", "N: inline data"),
+	 NOP_C_("LinuxAttrView", "File data is stored inline in the inode.")},
 
-	{"chkProject", NOP_C_("LinuxXattrView", "P: project"),
-	 NOP_C_("LinuxXattrView", "Directory will enforce a hierarchical structure for project IDs.")},
+	{"chkProject", NOP_C_("LinuxAttrView", "P: project"),
+	 NOP_C_("LinuxAttrView", "Directory will enforce a hierarchical structure for project IDs.")},
 
-	{"chkSecureDelete", NOP_C_("LinuxXattrView", "s: secure del"),
-	 NOP_C_("LinuxXattrView", "File's blocks will be zeroed when deleted.")},
+	{"chkSecureDelete", NOP_C_("LinuxAttrView", "s: secure del"),
+	 NOP_C_("LinuxAttrView", "File's blocks will be zeroed when deleted.")},
 
-	{"chkFileSync", NOP_C_("LinuxXattrView", "S: sync"),
-	 NOP_C_("LinuxXattrView", "Changes to this file are written synchronously to the disk.")},
+	{"chkFileSync", NOP_C_("LinuxAttrView", "S: sync"),
+	 NOP_C_("LinuxAttrView", "Changes to this file are written synchronously to the disk.")},
 
-	{"chkNoTailMerge", NOP_C_("LinuxXattrView", "t: no tail merge"),
-	 NOP_C_("LinuxXattrView", "If the file system supports tail merging, this file will not have a partial block fragment at the end of the file merged with other files.")},
+	{"chkNoTailMerge", NOP_C_("LinuxAttrView", "t: no tail merge"),
+	 NOP_C_("LinuxAttrView", "If the file system supports tail merging, this file will not have a partial block fragment at the end of the file merged with other files.")},
 
-	{"chkTopDir", NOP_C_("LinuxXattrView", "T: top dir"),
-	 NOP_C_("LinuxXattrView", "Directory will be treated like a top-level directory by the ext3/ext4 Orlov block allocator.")},
+	{"chkTopDir", NOP_C_("LinuxAttrView", "T: top dir"),
+	 NOP_C_("LinuxAttrView", "Directory will be treated like a top-level directory by the ext3/ext4 Orlov block allocator.")},
 
-	{"chkUndelete", NOP_C_("LinuxXattrView", "u: undelete"),
-	 NOP_C_("LinuxXattrView", "File's contents will be saved when deleted, potentially allowing for undeletion. This is known to be broken.")},
+	{"chkUndelete", NOP_C_("LinuxAttrView", "u: undelete"),
+	 NOP_C_("LinuxAttrView", "File's contents will be saved when deleted, potentially allowing for undeletion. This is known to be broken.")},
 
-	{"chkDAX", NOP_C_("LinuxXattrView", "x: DAX"),
-	 NOP_C_("LinuxXattrView", "Direct access")},
+	{"chkDAX", NOP_C_("LinuxAttrView", "x: DAX"),
+	 NOP_C_("LinuxAttrView", "Direct access")},
 
-	{"chkVerity", NOP_C_("LinuxXattrView", "V: fs-verity"),
-	 NOP_C_("LinuxXattrView", "File has fs-verity enabled.")},
+	{"chkVerity", NOP_C_("LinuxAttrView", "V: fs-verity"),
+	 NOP_C_("LinuxAttrView", "File has fs-verity enabled.")},
 };
 
 // LinuxAttrView class
