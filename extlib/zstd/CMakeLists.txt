@@ -193,3 +193,9 @@ IF(UNIX AND NOT APPLE)
 	SET(CMAKE_C_FLAGS	"${CMAKE_C_FLAGS} -fpic -fPIC")
 	SET(CMAKE_CXX_FLAGS	"${CMAKE_CXX_FLAGS} -fpic -fPIC")
 ENDIF(UNIX AND NOT APPLE)
+
+# Clang: zstd uses __declspec() regardless of compiler or OS.
+IF(CMAKE_CXX_COMPILER_ID MATCHES "(Apple)?Clang")
+	SET(CMAKE_C_FLAGS	"${CMAKE_C_FLAGS} -fdeclspec")
+	SET(CMAKE_CXX_FLAGS	"${CMAKE_CXX_FLAGS} -fdeclspec")
+ENDIF(CMAKE_CXX_COMPILER_ID MATCHES "(Apple)?Clang")

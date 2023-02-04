@@ -114,7 +114,13 @@ ENDIF()
 OPTION(ENABLE_LTO "Enable link-time optimization in release builds." ${LTO_DEFAULT})
 
 # Split debug information into a separate file.
-OPTION(SPLIT_DEBUG "Split debug information into a separate file." ON)
+# FIXME: macOS `strip` shows an error:
+# error: symbols referenced by indirect symbol table entries that can't be stripped in: [library]
+IF(APPLE)
+	OPTION(SPLIT_DEBUG "Split debug information into a separate file." OFF)
+ELSE(APPLE)
+	OPTION(SPLIT_DEBUG "Split debug information into a separate file." ON)
+ENDIF(APPLE)
 
 # Install the split debug file.
 OPTION(INSTALL_DEBUG "Install the split debug files." ON)
