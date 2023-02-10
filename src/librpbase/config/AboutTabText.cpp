@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * AboutTabText.hpp: About tab for rp-config. (Common text)                *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -40,7 +40,7 @@ uint64_t getProgramVersion(void)
 static const char *const ProgramInfoString_tbl[] = {
 	"rom-properties",				// ProgramName
 	"ROM Properties Page Shell Extension",		// ProgramFullName
-	"Copyright (c) 2016-2022 by David Korth.",	// Copyright
+	"Copyright (c) 2016-2023 by David Korth.",	// Copyright
 	RP_VERSION_STRING,
 
 	// GitVersion
