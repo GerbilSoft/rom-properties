@@ -25,23 +25,23 @@ IF(BUILD_KDE4)
 ENDIF(BUILD_KDE4)
 
 IF(BUILD_KF5)
-	# Find the qtpaths executable for Qt5.
+	# Find the qtpaths5 executable for Qt5.
 	SET(QT_SELECT_OLD "$ENV{QT_SELECT}")
 	SET(ENV{QT_SELECT} qt5)
-	FIND_PROGRAM(QTPATHS qtpaths)
-	IF(NOT QTPATHS)
-		MESSAGE(FATAL_ERROR "qtpaths not found. Install one of these packages:
+	FIND_PROGRAM(QTPATHS5 qtpaths5 qtpaths)
+	IF(NOT QTPATHS5)
+		MESSAGE(FATAL_ERROR "qtpaths5 not found. Install one of these packages:
   - Debian/Ubuntu: qttools5-dev-tools
   - Red Hat/Fedora: qt5-qttools")
-	ENDIF(NOT QTPATHS)
+	ENDIF(NOT QTPATHS5)
 
 	# Get the plugin directory and Qt prefix.
 	# Prefix will be removed from the plugin directory if necessary.
-	EXEC_PROGRAM(${QTPATHS} ARGS --plugin-dir OUTPUT_VARIABLE KF5_PLUGIN_INSTALL_DIR)
+	EXEC_PROGRAM(${QTPATHS5} ARGS --plugin-dir OUTPUT_VARIABLE KF5_PLUGIN_INSTALL_DIR)
 	IF(NOT KF5_PLUGIN_INSTALL_DIR)
-		MESSAGE(FATAL_ERROR "`qtpaths` isn't working correctly.")
+		MESSAGE(FATAL_ERROR "`qtpaths5` is not working correctly.")
 	ENDIF(NOT KF5_PLUGIN_INSTALL_DIR)
-	EXEC_PROGRAM(${QTPATHS} ARGS --install-prefix OUTPUT_VARIABLE QT5_INSTALL_PREFIX)
+	EXEC_PROGRAM(${QTPATHS5} ARGS --install-prefix OUTPUT_VARIABLE QT5_INSTALL_PREFIX)
 	INCLUDE(ReplaceHardcodedPrefix)
 	REPLACE_HARDCODED_PREFIX(KF5_PLUGIN_INSTALL_DIR "${QT5_INSTALL_PREFIX}")
 	SET(ENV{QT_SELECT} "${QT_SELECT_OLD}")
@@ -51,23 +51,23 @@ IF(BUILD_KF5)
 ENDIF(BUILD_KF5)
 
 IF(BUILD_KF6)
-	# Find the qtpaths executable for Qt6.
+	# Find the qtpaths6 executable for Qt6.
 	SET(QT_SELECT_OLD "$ENV{QT_SELECT}")
 	SET(ENV{QT_SELECT} qt6)
-	FIND_PROGRAM(QTPATHS qtpaths)
-	IF(NOT QTPATHS)
-		MESSAGE(FATAL_ERROR "qtpaths not found. Install one of these packages:
+	FIND_PROGRAM(QTPATHS6 qtpaths6 qtpaths)
+	IF(NOT QTPATHS6)
+		MESSAGE(FATAL_ERROR "qtpaths6 not found. Install one of these packages:
   - Debian/Ubuntu: qttools6-dev-tools
   - Red Hat/Fedora: qt6-qttools")
-	ENDIF(NOT QTPATHS)
+	ENDIF(NOT QTPATHS6)
 
 	# Get the plugin directory and Qt prefix.
 	# Prefix will be removed from the plugin directory if necessary.
-	EXEC_PROGRAM(${QTPATHS} ARGS --plugin-dir OUTPUT_VARIABLE KF6_PLUGIN_INSTALL_DIR)
+	EXEC_PROGRAM(${QTPATHS6} ARGS --plugin-dir OUTPUT_VARIABLE KF6_PLUGIN_INSTALL_DIR)
 	IF(NOT KF6_PLUGIN_INSTALL_DIR)
-		MESSAGE(FATAL_ERROR "`qtpaths` isn't working correctly.")
+		MESSAGE(FATAL_ERROR "`qtpaths6` is not working correctly.")
 	ENDIF(NOT KF6_PLUGIN_INSTALL_DIR)
-	EXEC_PROGRAM(${QTPATHS} ARGS --install-prefix OUTPUT_VARIABLE QT6_INSTALL_PREFIX)
+	EXEC_PROGRAM(${QTPATHS6} ARGS --install-prefix OUTPUT_VARIABLE QT6_INSTALL_PREFIX)
 	INCLUDE(ReplaceHardcodedPrefix)
 	REPLACE_HARDCODED_PREFIX(KF6_PLUGIN_INSTALL_DIR "${QT6_INSTALL_PREFIX}")
 	SET(ENV{QT_SELECT} "${QT_SELECT_OLD}")

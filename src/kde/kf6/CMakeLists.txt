@@ -32,7 +32,7 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 	FIND_PACKAGE(Qt6 ${REQUIRE_KF6} COMPONENTS Core Gui Widgets DBus)
 	IF(Qt6Core_FOUND AND Qt6Gui_FOUND AND Qt6Widgets_FOUND)
 		# NOTE: QT_PLUGIN_INSTALL_DIR is missing the 'qt6' directory.
-		# Use `qtpaths` instead to get the actual path.
+		# Use `qtpaths6` instead to get the actual path.
 		#
 		# Ubuntu:
 		# - Expected: lib/${DEB_HOST_MULTIARCH}/qt6/plugins
@@ -47,19 +47,19 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 		# - Actual:   (FIXME)
 		#
 
-		# Find the qtpaths executable.
-		FIND_PROGRAM(QTPATHS qtpaths)
-		IF(NOT QTPATHS)
-			MESSAGE(FATAL_ERROR "qtpaths not found. Install one of these packages:
+		# Find the qtpaths6 executable.
+		FIND_PROGRAM(QTPATHS6 qtpaths6 qtpaths)
+		IF(NOT QTPATHS6)
+			MESSAGE(FATAL_ERROR "qtpaths6 not found. Install one of these packages:
   - Debian/Ubuntu: qttools6-dev-tools
   - Red Hat/Fedora: qt6-qttools")
-		ENDIF(NOT QTPATHS)
+		ENDIF(NOT QTPATHS6)
 
 		# Get the plugin directory and Qt prefix.
 		# Prefix will be removed from the plugin directory if necessary.
-		EXEC_PROGRAM(${QTPATHS} ARGS --plugin-dir OUTPUT_VARIABLE KF6_PLUGIN_INSTALL_DIR)
+		EXEC_PROGRAM(${QTPATHS6} ARGS --plugin-dir OUTPUT_VARIABLE KF6_PLUGIN_INSTALL_DIR)
 		IF(NOT KF6_PLUGIN_INSTALL_DIR)
-			MESSAGE(FATAL_ERROR "`qtpaths` isn't working correctly.")
+			MESSAGE(FATAL_ERROR "`qtpaths6` isn't working correctly.")
 		ENDIF(NOT KF6_PLUGIN_INSTALL_DIR)
 		# FIXME: Mageia has the Qt path set to "/usr/lib64/qt6" instead of "/usr".
 		# Reference: https://github.com/GerbilSoft/rom-properties/issues/69

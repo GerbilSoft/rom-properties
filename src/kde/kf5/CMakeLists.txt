@@ -32,7 +32,7 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 	FIND_PACKAGE(Qt5 ${REQUIRE_KF5} COMPONENTS Core Gui Widgets DBus)
 	IF(Qt5Core_FOUND AND Qt5Gui_FOUND AND Qt5Widgets_FOUND)
 		# NOTE: QT_PLUGIN_INSTALL_DIR is missing the 'qt5' directory.
-		# Use `qtpaths` instead to get the actual path.
+		# Use `qtpaths5` instead to get the actual path.
 		#
 		# Ubuntu:
 		# - Expected: lib/${DEB_HOST_MULTIARCH}/qt5/plugins
@@ -47,19 +47,19 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 		# - Actual:   (FIXME)
 		#
 
-		# Find the qtpaths executable.
-		FIND_PROGRAM(QTPATHS qtpaths)
-		IF(NOT QTPATHS)
-			MESSAGE(FATAL_ERROR "qtpaths not found. Install one of these packages:
+		# Find the qtpaths5 executable.
+		FIND_PROGRAM(QTPATHS5 qtpaths5 qtpaths)
+		IF(NOT QTPATHS5)
+			MESSAGE(FATAL_ERROR "qtpaths5 not found. Install one of these packages:
   - Debian/Ubuntu: qttools5-dev-tools
   - Red Hat/Fedora: qt5-qttools")
-		ENDIF(NOT QTPATHS)
+		ENDIF(NOT QTPATHS5)
 
 		# Get the plugin directory and Qt prefix.
 		# Prefix will be removed from the plugin directory if necessary.
-		EXEC_PROGRAM(${QTPATHS} ARGS --plugin-dir OUTPUT_VARIABLE KF5_PLUGIN_INSTALL_DIR)
+		EXEC_PROGRAM(${QTPATHS5} ARGS --plugin-dir OUTPUT_VARIABLE KF5_PLUGIN_INSTALL_DIR)
 		IF(NOT KF5_PLUGIN_INSTALL_DIR)
-			MESSAGE(FATAL_ERROR "`qtpaths` isn't working correctly.")
+			MESSAGE(FATAL_ERROR "`qtpaths5` isn't working correctly.")
 		ENDIF(NOT KF5_PLUGIN_INSTALL_DIR)
 		# FIXME: Mageia has the Qt path set to "/usr/lib64/qt5" instead of "/usr".
 		# Reference: https://github.com/GerbilSoft/rom-properties/issues/69
