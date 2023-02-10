@@ -33,7 +33,7 @@ IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND CairoGObj
 		FIND_PACKAGE(LibNautilusExtension4)
 		IF(LibNautilusExtension4_FOUND)
 			# v4: Replace the version number with 3.0.
-			STRING(REPLACE "extensions-4" "extensions-3.0" LibNautilusExtension3_EXTENSION_DIR "${LibNautilusExtension4_EXTENSION_DIR}") 
+			STRING(REPLACE "extensions-4" "extensions-3.0" LibNautilusExtension3_EXTENSION_DIR "${LibNautilusExtension4_EXTENSION_DIR}")
 		ELSE(LibNautilusExtension4_FOUND)
 			# Neither v3 nor v4 were found.
 			MESSAGE(STATUS "LibNautilusExtension not found. Using the default extensions directory.")

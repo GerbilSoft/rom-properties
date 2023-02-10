@@ -94,7 +94,7 @@ IF(BUILD_GTK3 OR BUILD_GTK4)
 	ELSEIF(LibNautilusExtension_FOUND)
 		# Found v3 but not v4. Use defaults for v4.
 		SET(LibNautilusExtension3_EXTENSION_DIR "${LibNautilusExtension_EXTENSION_DIR}")
-		STRING(REPLACE "extensions-3.0" "extensions-4" LibNautilusExtension4_EXTENSION_DIR "${LibNautilusExtension_EXTENSION_DIR}") 
+		STRING(REPLACE "extensions-3.0" "extensions-4" LibNautilusExtension4_EXTENSION_DIR "${LibNautilusExtension_EXTENSION_DIR}")
 	ELSEIF(LibNautilusExtension4_FOUND)
 		# Found v4 but not v3. Use defaults for v3.
 		STRING(REPLACE "extensions-4" "extensions-3.0" LibNautilusExtension3_EXTENSION_DIR "${LibNautilusExtension4_EXTENSION_DIR}")
