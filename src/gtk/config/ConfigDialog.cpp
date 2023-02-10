@@ -20,7 +20,7 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 
 // Tabs
-#include "RpConfigTab.hpp"
+#include "RpConfigTab.h"
 #include "ImageTypesTab.hpp"
 #include "SystemsTab.hpp"
 #include "OptionsTab.hpp"

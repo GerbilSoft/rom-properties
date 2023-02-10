@@ -9,7 +9,7 @@
 #include "stdafx.h"
 
 #include "CacheTab.hpp"
-#include "RpConfigTab.hpp"
+#include "RpConfigTab.h"
 #include "../MessageSound.hpp"
 #include "CacheCleaner.hpp"
 

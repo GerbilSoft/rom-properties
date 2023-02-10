@@ -8,7 +8,7 @@
 
 #include "stdafx.h"
 #include "KeyManagerTab.hpp"
-#include "RpConfigTab.hpp"
+#include "RpConfigTab.h"
 
 #include "RpGtk.hpp"
 #include "gtk-compat.h"

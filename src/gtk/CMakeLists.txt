@@ -100,7 +100,7 @@ SET(${PROJECT_NAME}_SRCS
 	AchSpritesheet.cpp
 	config/stub-export.c
 	config/ConfigDialog.cpp
-	config/RpConfigTab.cpp
+	config/RpConfigTab.c
 	config/ImageTypesTab.cpp
 	config/SystemsTab.cpp
 	config/OptionsTab.cpp

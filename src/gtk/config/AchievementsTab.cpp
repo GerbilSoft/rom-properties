@@ -8,7 +8,7 @@
 
 #include "stdafx.h"
 #include "AchievementsTab.hpp"
-#include "RpConfigTab.hpp"
+#include "RpConfigTab.h"
 
 #include "../AchSpritesheet.hpp"
 

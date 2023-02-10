@@ -10,7 +10,7 @@
 #include "config.librpbase.h"
 
 #include "AboutTab.hpp"
-#include "RpConfigTab.hpp"
+#include "RpConfigTab.h"
 #include "UpdateChecker.hpp"
 
 #include "RpGtk.hpp"
