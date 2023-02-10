@@ -1,11 +1,11 @@
-This copy of zstd-1.5.2 is a modified version of the original.
+This copy of zstd-1.5.4 is a modified version of the original.
 
-commit e47e674cd09583ff0503f0f6defd6d23d8b718d3
-Merge pull request #2995 from facebook/v1.5.2-rc
+commit 945f27758c0fd67b636103a38dbf050266c6b90a
+Merge pull request #3487 from facebook/dev
 
-Zstandard v1.5.2
+release v1.5.4
 
-Tag: v1.5.2
+Tag: v1.5.4
 
 The following changes have been made to the original:
 
@@ -13,5 +13,5 @@ The following changes have been made to the original:
 
 - Added the Win32 resource file to the DLL build.
 
-To obtain the original zstd-1.5.2, visit:
+To obtain the original zstd-1.5.4, visit:
 https://github.com/facebook/zstd
