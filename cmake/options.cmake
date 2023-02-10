@@ -151,3 +151,6 @@ ENDIF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 
 # Achievements. (TODO: "AUTO" option?)
 OPTION(ENABLE_ACHIEVEMENTS "Enable achievement pop-ups." ON)
+
+# Install documentation
+OPTION(INSTALL_DOC "Install documentation." ON)

@@ -146,11 +146,13 @@ IF(ENABLE_NLS)
 	ADD_SUBDIRECTORY(locale)
 ENDIF(ENABLE_NLS)
 
-# Project subdirectories.
+# Project subdirectories
 ADD_SUBDIRECTORY(extlib)
 ADD_SUBDIRECTORY(src)
-ADD_SUBDIRECTORY(doc)
 ADD_SUBDIRECTORY(xdg)
+IF(INSTALL_DOC)
+	ADD_SUBDIRECTORY(doc)
+ENDIF(INSTALL_DOC)
 
 ### Build summary ###
 
@@ -327,14 +329,15 @@ SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
 SET(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
 #SET(CPACK_RESOURCE_FILE_WELCOME "${CMAKE_SOURCE_DIR}/doc/WELCOME.txt")
 
-# Additional document files for the root directory.
-# TODO: Convert from Unix line endings to Windows when
-# compiling for Windows?
-INCLUDE(DirInstallPaths)
-INSTALL(FILES NETWORK.md
-	DESTINATION "${DIR_INSTALL_DOC_ROOT}"
-	COMPONENT "doc"
-	)
+IF(INSTALL_DOC)
+	# Additional document files for the root directory.
+	# TODO: Convert from Unix line endings to Windows when
+	# compiling for Windows?
+	INCLUDE(DirInstallPaths)
+	INSTALL(FILES NETWORK.md
+		DESTINATION "${DIR_INSTALL_DOC_ROOT}"
+		COMPONENT "doc")
+ENDIF(INSTALL_DOC)
 
 # CPack: Source package settings.
 # NOTE: Double-escape is required because the unescaped
