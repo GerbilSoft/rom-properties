@@ -37,6 +37,10 @@
     bitmask values.
   * Windows: The "Convert to PNG" context menu item now uses the system PNG
     file icon. Note that icon transparency is currently broken.
+  * GodotSTEX: Update v4 support for changes in Godot 4:
+    * PVRTC pixel formats have been removed.
+    * ETCn no longer has swapped R/B channels.
+    * Fix format flags not showing up at all.
 
 * Other changes:
   * EXE: Don't show import/export tables for .NET executables, since they only
