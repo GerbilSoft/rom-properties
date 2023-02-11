@@ -1179,7 +1179,7 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 	}
 
 	const int initial_count = fields->count();
-	fields->reserve(initial_count + 3);	// Maximum of 3 fields.
+	fields->reserve(initial_count + 4);	// Maximum of 4 fields.
 
 	// STEX version (NOT STEX4's version field!)
 	fields->addField_string_numeric(C_("GodotSTEX", "STEX Version"), d->stexVersion);
@@ -1190,6 +1190,24 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 			assert(!"Invalid STEX version.");
 			break;
 		case 3: {
+			// Embedded data format (if present)
+			const char *data_format = nullptr;
+			if (d->hasEmbeddedFile) {
+				switch (be32_to_cpu(d->embedHeader.fourCC)) {
+					case STEX_FourCC_PNG:
+						data_format = "PNG";
+						break;
+					case STEX_FourCC_WEBP:
+						data_format = "WebP";
+						break;
+					default:
+						break;
+				}
+			}
+			if (data_format) {
+				fields->addField_string(C_("GodotSTEX", "Data Format"), data_format);
+			}
+
 			// Flags (Godot 3 only)
 			static const char *const flags_bitfield_names[] = {
 				NOP_C_("GodotSTEX|Flags", "Mipmaps"),
