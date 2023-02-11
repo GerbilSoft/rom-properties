@@ -1490,7 +1490,9 @@ INSTANTIATE_TEST_SUITE_P(STEX3, ImageDecoderTest,
 			"STEX3/gray.L8.stex.gz",          
 			"gray-reference.png"),
 
+		// Sonic Colors Ultimate test textures
 		STEX3_IMAGE_TEST("TEST_RR_areaMap-bg.tga-RGBE9995"),
+		STEX3_IMAGE_TEST("2K_Sonic_Colors_Logo_ULTIMATE_JP_FLAT.tga-e7746b1823e491fe8eda38393405ae1b.astc-low"),
 
 		ImageDecoderTest_mode("STEX3/argb.PNG.mipmaps.stex", "argb-reference.png"),
 		ImageDecoderTest_mode("STEX3/rgb.PNG.stex", "rgb-reference.png"))
