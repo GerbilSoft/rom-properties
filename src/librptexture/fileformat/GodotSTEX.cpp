@@ -1328,22 +1328,24 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 
 	// Format flags (v3) (starting at bit 20)
 	static const char *const format_flags_bitfield_names_v3[] = {
-		NOP_C_("GodotSTEX|FormatFlags", "Lossless"),
-		NOP_C_("GodotSTEX|FormatFlags", "Lossy"),
-		NOP_C_("GodotSTEX|FormatFlags", "Stream"),
-		NOP_C_("GodotSTEX|FormatFlags", "Has Mipmaps"),
-		NOP_C_("GodotSTEX|FormatFlags", "Detect 3D"),
-		NOP_C_("GodotSTEX|FormatFlags", "Detect sRGB"),
-		NOP_C_("GodotSTEX|FormatFlags", "Detect Normal"),
+		NOP_C_("GodotSTEX|FormatFlags", "Lossless"),		// 20
+		NOP_C_("GodotSTEX|FormatFlags", "Lossy"),		// 21
+		NOP_C_("GodotSTEX|FormatFlags", "Stream"),		// 22
+		NOP_C_("GodotSTEX|FormatFlags", "Has Mipmaps"),		// 23
+		NOP_C_("GodotSTEX|FormatFlags", "Detect 3D"),		// 24
+		NOP_C_("GodotSTEX|FormatFlags", "Detect sRGB"),		// 25
+		NOP_C_("GodotSTEX|FormatFlags", "Detect Normal"),	// 26
 	};
-	// Format flags (v4) (starting at bit 22)
+	// Format flags (v4) (starting at bit 20)
 	static const char *const format_flags_bitfield_names_v4[] = {
-		NOP_C_("GodotSTEX|FormatFlags", "Stream"),
-		nullptr,
-		NOP_C_("GodotSTEX|FormatFlags", "Detect 3D"),
-		nullptr,
-		NOP_C_("GodotSTEX|FormatFlags", "Detect Normal"),
-		NOP_C_("GodotSTEX|FormatFlags", "Detect Roughness"),
+		nullptr,						// 20
+		nullptr,						// 21
+		NOP_C_("GodotSTEX|FormatFlags", "Stream"),		// 22
+		nullptr,						// 23
+		NOP_C_("GodotSTEX|FormatFlags", "Detect 3D"),		// 24
+		nullptr,						// 25
+		NOP_C_("GodotSTEX|FormatFlags", "Detect Normal"),	// 26
+		NOP_C_("GodotSTEX|FormatFlags", "Detect Roughness"),	// 27
 	};
 
 	vector<string> *v_format_flags_bitfield_names = nullptr;
@@ -1362,6 +1364,7 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 					ARRAY_SIZE(format_flags_bitfield_names_v4));
 			break;
 	}
+
 	if (v_format_flags_bitfield_names) {
 		fields->addField_bitfield(C_("GodotSTEX", "Format Flags"),
 			v_format_flags_bitfield_names, 3, d->pixelFormat_flags >> 20);
