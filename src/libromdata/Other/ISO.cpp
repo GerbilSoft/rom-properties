@@ -781,10 +781,13 @@ int ISO::loadFieldData(void)
 		return -EIO;
 	}
 
-	d->fields->reserve(17);	// Maximum of 17 fields.
+	d->fields->reserve(18);	// Maximum of 18 fields.
 
 	// NOTE: All fields are space-padded. (0x20, ' ')
 	// TODO: ascii_to_utf8()?
+
+	// Sector size
+	d->fields->addField_string_numeric(C_("ISO", "Sector Size"), d->sector_size);
 
 	switch (d->discType) {
 		case ISOPrivate::DiscType::ISO9660:
