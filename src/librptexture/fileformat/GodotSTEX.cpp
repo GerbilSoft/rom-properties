@@ -66,7 +66,7 @@ class GodotSTEXPrivate final : public FileFormatPrivate
 		} stexHeader;
 		unsigned int stexVersion;	// 3 or 4 (TODO: romType equivalent)
 		STEX_Format_e pixelFormat;	// flags are NOT included here
-		uint32_t pixelFormat_flags;	// pixelFormat with flags
+		uint32_t format_flags;		// format flags
 
 		// Embedded file header (PNG/WebP)
 		bool hasEmbeddedFile;
@@ -298,7 +298,7 @@ GodotSTEXPrivate::GodotSTEXPrivate(GodotSTEX *q, IRpFile *file)
 	: super(q, file, &textureInfo)
 	, stexVersion(0)
 	, pixelFormat(static_cast<STEX_Format_e>(~0U))
-	, pixelFormat_flags(~0U)
+	, format_flags(~0U)
 	, hasEmbeddedFile(false)
 {
 	static_assert(ARRAY_SIZE(GodotSTEXPrivate::img_format_tbl_v3) == STEX3_FORMAT_MAX,
@@ -1108,7 +1108,8 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 			UNREF_AND_NULL_NOCHK(d->file);
 			return;
 		case 3:
-			d->pixelFormat_flags = d->stexHeader.v3.format;
+			d->pixelFormat = static_cast<STEX_Format_e>(d->stexHeader.v3.format & STEX_FORMAT_MASK);
+			d->format_flags = (d->stexHeader.v3.format & ~STEX_FORMAT_MASK);
 			d->dimensions[0] = d->stexHeader.v3.width;
 			d->dimensions[1] = d->stexHeader.v3.height;
 			if (d->stexHeader.v3.width_rescale  != d->dimensions[0] ||
@@ -1121,7 +1122,8 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 			break;
 		case 4:
 			// FIXME: Verify rescale dimensions.
-			d->pixelFormat_flags = d->stexHeader.v4.pixel_format;
+			d->pixelFormat = static_cast<STEX_Format_e>(d->stexHeader.v4.pixel_format);
+			d->format_flags = d->stexHeader.v4.format_flags;
 			d->dimensions[0] = d->stexHeader.v4.img_width;
 			d->dimensions[1] = d->stexHeader.v4.img_height;
 			if ((int)d->stexHeader.v4.width  != d->dimensions[0] ||
@@ -1133,9 +1135,6 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 			}
 			break;
 	}
-
-	// Mask off the flags for the actual pixel format.
-	d->pixelFormat = static_cast<STEX_Format_e>(d->pixelFormat_flags & STEX_FORMAT_MASK);
 
 	// Special case: Godot 3 doesn't set rescaling parameters for NPOT PVRTC textures.
 	if (d->stexVersion == 3 && (d->pixelFormat >= STEX3_FORMAT_PVRTC1_2 && d->pixelFormat <= STEX3_FORMAT_PVRTC1_4A)) {
@@ -1367,7 +1366,7 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 
 	if (v_format_flags_bitfield_names) {
 		fields->addField_bitfield(C_("GodotSTEX", "Format Flags"),
-			v_format_flags_bitfield_names, 3, d->pixelFormat_flags >> 20);
+			v_format_flags_bitfield_names, 3, d->format_flags >> 20);
 	}
 
 	// Finished reading the field data.
