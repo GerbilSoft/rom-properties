@@ -123,6 +123,10 @@ FILE(GLOB_RECURSE ImageDecoderTest_images RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/
 	img/ImageDecoder_data/*.dds
 	img/ImageDecoder_data/*.tex
 	img/ImageDecoder_data/*.VMS
+
+	# Godot textures with embedded PNG and/or WebP images
+	img/ImageDecoder_data/*.ctex
+	img/ImageDecoder_data/*.stex
 	)
 FOREACH(test_image ${ImageDecoderTest_images})
 	ADD_CUSTOM_COMMAND(TARGET ImageDecoderTest POST_BUILD
