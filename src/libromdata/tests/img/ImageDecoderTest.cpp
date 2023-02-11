@@ -1499,6 +1499,9 @@ INSTANTIATE_TEST_SUITE_P(STEX3, ImageDecoderTest,
 #define STEX4_IMAGE_TEST(file) ImageDecoderTest_mode( \
 			"STEX4/" file ".stex.gz", \
 			"STEX4/" file ".png")
+#define CTEX4_IMAGE_TEST(file) ImageDecoderTest_mode( \
+			"STEX4/" file ".ctex.gz", \
+			"STEX4/" file ".png")
 INSTANTIATE_TEST_SUITE_P(STEX4, ImageDecoderTest,
 	::testing::Values(
 		STEX4_IMAGE_TEST("argb.DXT5"),
@@ -1518,7 +1521,12 @@ INSTANTIATE_TEST_SUITE_P(STEX4, ImageDecoderTest,
 		STEX4_IMAGE_TEST("gray.ETC"),
 		ImageDecoderTest_mode(
 			"STEX4/gray.L8.stex.gz",
-			"gray-reference.png"))
+			"gray-reference.png"),
+
+		// Godot 4 prefers the .ctex extension now, so any new
+		// tests added after this point should use .ctex.
+		CTEX4_IMAGE_TEST("argb.ASTC_4x4"),
+		CTEX4_IMAGE_TEST("argb.BPTC"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // Xbox XPR tests
