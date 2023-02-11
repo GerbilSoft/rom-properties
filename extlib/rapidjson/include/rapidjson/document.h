@@ -39,6 +39,7 @@ RAPIDJSON_DIAG_OFF(c++98-compat)
 
 #ifdef __GNUC__
 RAPIDJSON_DIAG_OFF(effc++)
+RAPIDJSON_DIAG_OFF(deprecated-declarations) // rom-properties
 #if __GNUC__ >= 6
 RAPIDJSON_DIAG_OFF(terminate) // ignore throwing RAPIDJSON_ASSERT in RAPIDJSON_NOEXCEPT functions
 #endif

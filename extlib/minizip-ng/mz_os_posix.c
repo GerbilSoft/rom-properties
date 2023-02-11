@@ -94,6 +94,7 @@ uint8_t *mz_os_utf8_string_create(const char *string, int32_t encoding) {
 uint8_t *mz_os_utf8_string_create(const char *string, int32_t encoding) {
     size_t string_length = 0;
     uint8_t *string_copy = NULL;
+    ((void)encoding);   /* rom-properties: -Wunused-variable */
 
     string_length = strlen(string);
     string_copy = (uint8_t *)MZ_ALLOC((int32_t)(string_length + 1));
