@@ -555,7 +555,7 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 		return nullptr;
 	}
 
-	// TODO: Support PNG and/or WebP images, and maybe Basis Universal.
+	// TODO: Support WebP images, and maybe Basis Universal.
 	if (hasEmbeddedFile) {
 		// If it's PNG, load it.
 		if (embedHeader.fourCC != cpu_to_be32(STEX_FourCC_PNG)) {
@@ -602,11 +602,9 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 
 	// Decode the image.
 	// TODO: More formats.
-	// NOTE: Due to Godot 3 and 4's pixel format numbering diverging
-	// after the removal of PVRTC texture formats, the switch/case
-	// has to be split up into v3 and v4 sections.
 	rp_image *img = nullptr;
-	if (stexVersion == 3) {
+	if (pixelFormat <= STEX_FORMAT_BPTC_RGBFU) {
+		// Common format between v3 and v4.
 		switch (pixelFormat) {
 			default:
 				break;
@@ -707,12 +705,16 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 					mdata.width, mdata.height,
 					buf.get(), mdata.size);
 				break;
-
-			// NOTE: Godot 4 removed the PVRTC formats.
-			// Godot commit 40be15920f849100dbf5bf94a1d09e81bf05c6e4,
-			// 2021/12/29 02:06:12 +0100
-			// Remove support for PVRTC texture encoding and decoding
-			// Pixel format numbering diverges at this point.
+		}
+	} else if (stexVersion == 3) {
+		// NOTE: Godot 4 removed the PVRTC formats.
+		// Godot commit 40be15920f849100dbf5bf94a1d09e81bf05c6e4,
+		// 2021/12/29 02:06:12 +0100
+		// Remove support for PVRTC texture encoding and decoding
+		// Pixel format numbering diverges at this point.
+		switch (pixelFormat) {
+			default:
+				break;
 
 #ifdef ENABLE_PVRTC
 			case STEX3_FORMAT_PVRTC1_2:
@@ -793,112 +795,14 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 #endif /* ENABLE_ASTC */
 		}
 	} else if (stexVersion == 4) {
+		// NOTE: Godot 4 removed the PVRTC formats.
+		// Godot commit 40be15920f849100dbf5bf94a1d09e81bf05c6e4,
+		// 2021/12/29 02:06:12 +0100
+		// Remove support for PVRTC texture encoding and decoding
+		// Pixel format numbering diverges at this point.
 		switch (pixelFormat) {
 			default:
 				break;
-
-			case STEX_FORMAT_L8:
-				img = ImageDecoder::fromLinear8(
-					ImageDecoder::PixelFormat::L8,
-					mdata.width, mdata.height,
-					buf.get(), mdata.size);
-				break;
-			case STEX_FORMAT_LA8:
-				// TODO: Verify byte-order.
-				img = ImageDecoder::fromLinear16(
-					ImageDecoder::PixelFormat::L8A8,
-					mdata.width, mdata.height,
-					reinterpret_cast<const uint16_t*>(buf.get()),
-					mdata.size);
-				break;
-
-			case STEX_FORMAT_R8:
-				img = ImageDecoder::fromLinear8(
-					ImageDecoder::PixelFormat::R8,
-					mdata.width, mdata.height,
-					buf.get(), mdata.size);
-				break;
-			case STEX_FORMAT_RG8:
-				// TODO: Verify byte-order.
-				img = ImageDecoder::fromLinear16(
-					ImageDecoder::PixelFormat::GR88,
-					mdata.width, mdata.height,
-					reinterpret_cast<const uint16_t*>(buf.get()),
-					mdata.size);
-				break;
-			case STEX_FORMAT_RGB8:
-				img = ImageDecoder::fromLinear24(
-					ImageDecoder::PixelFormat::BGR888,
-					mdata.width, mdata.height,
-					buf.get(), mdata.size);
-				break;
-			case STEX_FORMAT_RGBA8:
-				img = ImageDecoder::fromLinear32(
-					ImageDecoder::PixelFormat::ABGR8888,
-					mdata.width, mdata.height,
-					reinterpret_cast<const uint32_t*>(buf.get()),
-					mdata.size);
-				break;
-			case STEX_FORMAT_RGBA4444:
-				img = ImageDecoder::fromLinear16(
-					ImageDecoder::PixelFormat::RGBA4444,
-					mdata.width, mdata.height,
-					reinterpret_cast<const uint16_t*>(buf.get()),
-					mdata.size);
-				break;
-
-			case STEX_FORMAT_RGBE9995:
-				img = ImageDecoder::fromLinear32(
-					ImageDecoder::PixelFormat::RGB9_E5,
-					mdata.width, mdata.height,
-					reinterpret_cast<const uint32_t*>(buf.get()),
-					mdata.size);
-				break;
-
-			// NOTE: Godot 4's DXTn encoding is broken if the
-			// image width isn't a multiple of 4.
-			// - https://github.com/godotengine/godot/issues/49981
-			// - https://github.com/godotengine/godot/issues/51943
-			case STEX_FORMAT_DXT1:
-				img = ImageDecoder::fromDXT1(
-					mdata.width, mdata.height,
-					buf.get(), mdata.size);
-				break;
-			case STEX_FORMAT_DXT3:
-				img = ImageDecoder::fromDXT3(
-					mdata.width, mdata.height,
-					buf.get(), mdata.size);
-				break;
-			case STEX_FORMAT_DXT5:
-				img = ImageDecoder::fromDXT5(
-					mdata.width, mdata.height,
-					buf.get(), mdata.size);
-				break;
-
-			case STEX_FORMAT_RGTC_R:
-				// RGTC, one component. (BC4)
-				img = ImageDecoder::fromBC4(
-					mdata.width, mdata.height,
-					buf.get(), mdata.size);
-				break;
-			case STEX_FORMAT_RGTC_RG:
-				// RGTC, two components. (BC5)
-				img = ImageDecoder::fromBC5(
-					mdata.width, mdata.height,
-					buf.get(), mdata.size);
-				break;
-			case STEX_FORMAT_BPTC_RGBA:
-				// BPTC-compressed RGBA texture. (BC7)
-				img = ImageDecoder::fromBC7(
-					mdata.width, mdata.height,
-					buf.get(), mdata.size);
-				break;
-
-			// NOTE: Godot 4 removed the PVRTC formats.
-			// Godot commit 40be15920f849100dbf5bf94a1d09e81bf05c6e4,
-			// 2021/12/29 02:06:12 +0100
-			// Remove support for PVRTC texture encoding and decoding
-			// Pixel format numbering diverges at this point.
 
 			// NOTE: Godot 4 previously used swapped R and B channels in ETC textures,
 			// but this was fixed in commit ebec23d8d807e2a785075aac12466b88f7cbd3c1.
