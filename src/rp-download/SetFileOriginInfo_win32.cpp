@@ -14,12 +14,13 @@
 #endif /* !_WIN32 */
 
 // libwin32common
-#include "libwin32common/MiniU82T.hpp"
 #include "libwin32common/userdirs.hpp"
 #include "libwin32common/w32err.hpp"
 #include "libwin32common/w32time.h"
-using LibWin32Common::T2U8;
-using LibWin32Common::U82T;
+
+// librptext
+#include "librptext/conversion.hpp"
+#include "librptext/wchar.hpp"
 
 // C includes
 #include <sys/utime.h>
@@ -46,7 +47,7 @@ static bool getStoreFileOriginInfo(void)
 	// Get the config filename.
 	// NOTE: Not cached, since rp-download downloads one file per run.
 	// NOTE: This is sitll readable even when running as Low integrity.
-	tstring conf_filename = U82T(LibWin32Common::getConfigDirectory());
+	tstring conf_filename = U82T_s(LibWin32Common::getConfigDirectory());
 	if (conf_filename.empty()) {
 		// Empty filename...
 		return default_value;

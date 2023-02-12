@@ -32,7 +32,6 @@ SET(${PROJECT_NAME}_SRCS
 	ComBase.cpp
 	propsys_xp.c
 	userdirs.cpp
-	MiniU82T.cpp
 	sdk/GUID_fn.c
 	)
 SET(${PROJECT_NAME}_H
@@ -42,7 +41,6 @@ SET(${PROJECT_NAME}_H
 	ComBase.hpp
 	propsys_xp.h
 	userdirs.hpp
-	MiniU82T.hpp
 	sdk/QITab.h
 	sdk/IListView.hpp
 	sdk/IOwnerDataCallback.hpp
@@ -89,6 +87,7 @@ FOREACH(_target ${TARGETS})
 	ENDIF()
 
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE rpthreads${_target_suffix})
+	TARGET_LINK_LIBRARIES(${_target} PRIVATE rptext${_target_suffix})
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE uuid ole32 advapi32 shell32)
 	# for DefSubclassProc and related
 	TARGET_LINK_LIBRARIES(${_target} PUBLIC comctl32)

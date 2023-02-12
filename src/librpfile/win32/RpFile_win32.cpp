@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_win32.cpp: Standard file object. (Win32 implementation)          *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,14 +12,16 @@
 #include "../RpFile_p.hpp"
 
 // libwin32common
-#include "libwin32common/MiniU82T.hpp"
 #include "libwin32common/w32err.hpp"
-using LibWin32Common::U82T;
 
-// C includes.
+// librptext
+#include "librptext/conversion.hpp"
+#include "librptext/wchar.hpp"
+
+// C includes
 #include <fcntl.h>
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 using std::wstring;
 
@@ -172,16 +174,16 @@ int RpFilePrivate::reOpenFile(void)
 #ifdef UNICODE
 			// Unicode only: Prepend "\\?\" in order to support filenames longer than MAX_PATH.
 			tfilename = _T("\\\\?\\");
-			tfilename += U82T(filename);
+			tfilename += U82T_c(filename);
 #else /* !UNICODE */
 			// ANSI: Use the filename directly.
-			tfilename = U82T(filename);
+			tfilename = U82T_c(filename);
 #endif /* UNICODE */
 		}
 	} else {
 		// Not an absolute path, or "\\?\" is already
 		// prepended. Use it as-is.
-		tfilename = U82T(filename);
+		tfilename = U82T_c(filename);
 	}
 
 	if (q->m_fileType == DT_BLK) {

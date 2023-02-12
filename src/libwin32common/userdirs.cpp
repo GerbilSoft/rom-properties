@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * userdirs.cpp: Find user directories.                                    *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,8 +22,9 @@ using std::string;
 #include "RpWin32_sdk.h"
 #include <shlobj.h>
 
-// MiniU82T
-#include "MiniU82T.hpp"
+// librptext
+#include "librptext/conversion.hpp"
+#include "librptext/wchar.hpp"
 
 namespace LibWin32Common {
 

@@ -173,8 +173,6 @@ FOREACH(_target ${TARGETS})
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE rpcpu${_target_suffix} rpthreads${_target_suffix})
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE cachecommon${_target_suffix})
 	IF(WIN32)
-		# for MiniU82T
-		TARGET_LINK_LIBRARIES(${_target} PRIVATE win32common${_target_suffix})
 		# xattr/XAttrReader_win32.cpp uses wchar.hpp
 		TARGET_LINK_LIBRARIES(${_target} PRIVATE rptext${_target_suffix})
 	ENDIF(WIN32)

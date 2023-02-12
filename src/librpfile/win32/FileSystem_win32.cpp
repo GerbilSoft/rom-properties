@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * FileSystem_win32.cpp: File system functions. (Win32 implementation)     *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -19,23 +19,19 @@
 // DT_* enumeration
 #include "d_type.h"
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 using std::u16string;
 using std::wstring;
 
 // libwin32common
-#include "libwin32common/MiniU82T.hpp"
 #include "libwin32common/RpWin32_sdk.h"
 #include "libwin32common/w32err.hpp"
 #include "libwin32common/w32time.h"
-using LibWin32Common::T2U8;
-using LibWin32Common::U82W;
-using LibWin32Common::U82T;
 
-#ifndef UNICODE
-using LibWin32Common::W2U8;
-#endif /* !UNICODE */
+// librptext
+#include "librptext/conversion.hpp"
+#include "librptext/wchar.hpp"
 
 // Windows includes.
 #include <direct.h>
@@ -64,11 +60,11 @@ static inline wstring makeWinPath(const char *filename)
 	{
 		// Absolute path. Prepend "\\\\?\\" to the path.
 		filenameW = L"\\\\?\\";
-		filenameW += U82W(filename);
+		filenameW += U82W_c(filename);
 	} else {
 		// Not an absolute path, or "\\\\?\\" is already
 		// prepended. Use it as-is.
-		filenameW = U82W(filename);
+		filenameW = U82W_c(filename);
 	}
 	return filenameW;
 }
@@ -93,11 +89,11 @@ static inline wstring makeWinPath(const string &filename)
 	{
 		// Absolute path. Prepend "\\?\" to the path.
 		filenameW = L"\\\\?\\";
-		filenameW += U82W(filename);
+		filenameW += U82W_s(filename);
 	} else {
 		// Not an absolute path, or "\\?\" is already
 		// prepended. Use it as-is.
-		filenameW = U82W(filename);
+		filenameW = U82W_s(filename);
 	}
 	return filenameW;
 }
@@ -172,7 +168,7 @@ static inline wstring makeWinPath(const wstring &filename)
  */
 static inline tstring makeWinPath(const char *filename)
 {
-	return U82T(filename);
+	return U82T_c(filename);
 }
 
 /**
@@ -186,7 +182,7 @@ static inline tstring makeWinPath(const char *filename)
  */
 static inline tstring makeWinPath(const string &filename)
 {
-	return U82T(filename);
+	return U82T_s(filename);
 }
 
 /**
@@ -237,7 +233,7 @@ int rmkdir(const string &path)
 	static_assert(sizeof(wchar_t) == sizeof(char16_t), "wchar_t is not 16-bit!");
 
 	// TODO: makeWinPath()?
-	tstring tpath = U82T(path);
+	tstring tpath = U82T_s(path);
 
 	if (tpath.size() == 3) {
 		// 3 characters. Root directory is always present.
@@ -569,8 +565,7 @@ string resolve_symlink(const char *filename)
 		cchDeref--;
 	}
 
-	// TODO: Add back the cchDeref parameter for explicit length in MiniU82T?
-	string ret = T2U8(szDeref);
+	string ret = T2U8(szDeref, cchDeref);
 	delete[] szDeref;
 	CloseHandle(hFile);
 	return ret;
