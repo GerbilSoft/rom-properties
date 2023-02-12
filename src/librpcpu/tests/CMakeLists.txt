@@ -14,11 +14,19 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/../..)
 # ByteswapTest
 ADD_EXECUTABLE(ByteswapTest
 	ByteswapTest.cpp
-	ByteswapTest_data.hpp
-	)
+	ByteswapTest_data.hpp)
 TARGET_LINK_LIBRARIES(ByteswapTest PRIVATE rptest rpcpu)
 TARGET_LINK_LIBRARIES(ByteswapTest PRIVATE gtest)
 DO_SPLIT_DEBUG(ByteswapTest)
 SET_WINDOWS_SUBSYSTEM(ByteswapTest CONSOLE)
 SET_WINDOWS_ENTRYPOINT(ByteswapTest wmain OFF)
 ADD_TEST(NAME ByteswapTest COMMAND ByteswapTest "--gtest_filter=-*benchmark*")
+
+# BitstuffTest
+ADD_EXECUTABLE(BitstuffTest BitstuffTest.cpp)
+TARGET_LINK_LIBRARIES(BitstuffTest PRIVATE rptest rpcpu)
+TARGET_LINK_LIBRARIES(BitstuffTest PRIVATE gtest)
+DO_SPLIT_DEBUG(BitstuffTest)
+SET_WINDOWS_SUBSYSTEM(BitstuffTest CONSOLE)
+SET_WINDOWS_ENTRYPOINT(BitstuffTest wmain OFF)
+ADD_TEST(NAME BitstuffTest COMMAND BitstuffTest)

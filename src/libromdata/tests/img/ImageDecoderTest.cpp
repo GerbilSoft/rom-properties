@@ -1490,7 +1490,12 @@ INSTANTIATE_TEST_SUITE_P(STEX3, ImageDecoderTest,
 			"STEX3/gray.L8.stex.gz",          
 			"gray-reference.png"),
 
-		STEX3_IMAGE_TEST("TEST_RR_areaMap-bg.tga-RGBE9995"))
+		// Sonic Colors Ultimate test textures
+		STEX3_IMAGE_TEST("TEST_RR_areaMap-bg.tga-RGBE9995"),
+		STEX3_IMAGE_TEST("2K_Sonic_Colors_Logo_ULTIMATE_JP_FLAT.tga-e7746b1823e491fe8eda38393405ae1b.astc-low"),
+
+		ImageDecoderTest_mode("STEX3/argb.PNG.mipmaps.stex", "argb-reference.png"),
+		ImageDecoderTest_mode("STEX3/rgb.PNG.stex", "rgb-reference.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // Godot STEX4 tests
@@ -1498,6 +1503,9 @@ INSTANTIATE_TEST_SUITE_P(STEX3, ImageDecoderTest,
 // so the decompressed images will not match STEX3.
 #define STEX4_IMAGE_TEST(file) ImageDecoderTest_mode( \
 			"STEX4/" file ".stex.gz", \
+			"STEX4/" file ".png")
+#define CTEX4_IMAGE_TEST(file) ImageDecoderTest_mode( \
+			"STEX4/" file ".ctex.gz", \
 			"STEX4/" file ".png")
 INSTANTIATE_TEST_SUITE_P(STEX4, ImageDecoderTest,
 	::testing::Values(
@@ -1518,7 +1526,15 @@ INSTANTIATE_TEST_SUITE_P(STEX4, ImageDecoderTest,
 		STEX4_IMAGE_TEST("gray.ETC"),
 		ImageDecoderTest_mode(
 			"STEX4/gray.L8.stex.gz",
-			"gray-reference.png"))
+			"gray-reference.png"),
+
+		// Godot 4 prefers the .ctex extension now, so any new
+		// tests added after this point should use .ctex.
+		CTEX4_IMAGE_TEST("argb.ASTC_4x4"),
+		CTEX4_IMAGE_TEST("argb.BPTC"),
+
+		ImageDecoderTest_mode("STEX4/argb.PNG.mipmaps.ctex", "argb-reference.png"),
+		ImageDecoderTest_mode("STEX4/rgb.PNG.ctex", "rgb-reference.png"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // Xbox XPR tests

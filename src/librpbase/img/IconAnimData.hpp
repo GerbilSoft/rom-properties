@@ -92,10 +92,6 @@ public:
 		return RefBase::ref<IconAnimData>();
 	}
 
-	/**
-	 * Special case unref() function to allow
-	 * const IconAnimData* to be ref'd.
-	 */
 	inline const IconAnimData *ref(void) const
 	{
 		return const_cast<IconAnimData*>(this)->RefBase::ref<IconAnimData>();

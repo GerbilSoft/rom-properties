@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * GodotSTEX.cpp: Godot STEX image reader.                                 *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -66,7 +66,7 @@ class GodotSTEXPrivate final : public FileFormatPrivate
 		} stexHeader;
 		unsigned int stexVersion;	// 3 or 4 (TODO: romType equivalent)
 		STEX_Format_e pixelFormat;	// flags are NOT included here
-		uint32_t pixelFormat_flags;	// pixelFormat with flags
+		uint32_t format_flags;		// format flags
 
 		// Embedded file header (PNG/WebP)
 		bool hasEmbeddedFile;
@@ -89,11 +89,13 @@ class GodotSTEXPrivate final : public FileFormatPrivate
 		char invalid_pixel_format[24];
 
 	public:
-		// Image format table
-		static const char *const img_format_tbl[];
+		// Image format tables
+		static const char *const img_format_tbl_v3[];
+		static const char *const img_format_tbl_v4[];
 
-		// ImageSizeCalc opcode table
-		static const ImageSizeCalc::OpCode op_tbl[];
+		// ImageSizeCalc opcode tables
+		static const ImageSizeCalc::OpCode op_tbl_v3[];
+		static const ImageSizeCalc::OpCode op_tbl_v4[];
 
 	public:
 		/**
@@ -117,6 +119,7 @@ FILEFORMAT_IMPL(GodotSTEX)
 /* TextureInfo */
 const char *const GodotSTEXPrivate::exts[] = {
 	".stex",
+	".ctex",
 
 	nullptr
 };
@@ -124,6 +127,7 @@ const char *const GodotSTEXPrivate::mimeTypes[] = {
 	// Unofficial MIME types.
 	// TODO: Get these upstreamed on FreeDesktop.org.
 	"image/x-godot-stex",
+	"image/x-godot-ctex",
 
 	nullptr
 };
@@ -131,8 +135,8 @@ const TextureInfo GodotSTEXPrivate::textureInfo = {
 	exts, mimeTypes
 };
 
-// Image format table
-const char *const GodotSTEXPrivate::img_format_tbl[] = {
+// Image format table (STEX v3)
+const char *const GodotSTEXPrivate::img_format_tbl_v3[] = {
 	// 0x00
 	"L8", "LA8", "R8", "RG8",
 	"RGB8", "RGBA8", "RGBA4444", "RGB565",
@@ -160,8 +164,31 @@ const char *const GodotSTEXPrivate::img_format_tbl[] = {
 	"ASTC_8x8",
 };
 
-// ImageSizeCalc opcode table
-const ImageSizeCalc::OpCode GodotSTEXPrivate::op_tbl[] = {
+// Image format table (STEX v4)
+const char *const GodotSTEXPrivate::img_format_tbl_v4[] = {
+	// 0x00
+	"L8", "LA8", "R8", "RG8",
+	"RGB8", "RGBA8", "RGBA4444", "RGB565",
+
+	// 0x08
+	"RF", "RGF", "RGBF", "RGBAF",
+	"RH", "RGH", "RGBH", "RGBAH",
+
+	// 0x10
+	"RGBE9995", "DXT1", "DXT3", "DXT5",
+	"RGTC_R", "RGTC_RG", "BPTC_RGBA", "BPTC_RGBF",
+
+	// 0x18
+	"BPTC_RGBFU", "ETC", "ETC2_R11", "ETC2_R11S",
+	"ETC2_RG11", "ETC2_RG11S", "ETC2_RGB8", "ETC2_RGBA8",
+
+	// 0x20
+	"ETC2_RGB8A1", "ETC2_RA_AS_RG", "DXT5_RA_AS_RG", "ASTC_4x4",
+	"ASTC_4x4_HDR", "ASTC_8x8", "ASTC_8x8_HDR",
+};
+
+// ImageSizeCalc opcode table (STEX v3)
+const ImageSizeCalc::OpCode GodotSTEXPrivate::op_tbl_v3[] = {
 	// 0x00
 	OpCode::None,		// STEX_FORMAT_L8
 	OpCode::Multiply2,	// STEX_FORMAT_LA8
@@ -213,21 +240,76 @@ const ImageSizeCalc::OpCode GodotSTEXPrivate::op_tbl[] = {
 	// FIXME: Other ASTC variants need a more complicated calculation.
 	// FIXME: Godot 4 has a different format here.
 	OpCode::Align8Divide4,	// STEX_FORMAT_SCU_ASTC_8x8	// 8x8 == 2bpp
+};
 
-	// Godot 4 formats (TODO)
-	//OpCode::Divide2,	// STEX4_FORMAT_ETC2_RA_AS_RG	// TODO
-	OpCode::Align4,		// STEX4_FORMAT_DXT5_RA_AS_RG	// TODO
+// ImageSizeCalc opcode table (STEX v3)
+const ImageSizeCalc::OpCode GodotSTEXPrivate::op_tbl_v4[] = {
+	// 0x00
+	OpCode::None,		// STEX_FORMAT_L8
+	OpCode::Multiply2,	// STEX_FORMAT_LA8
+	OpCode::None,		// STEX_FORMAT_R8
+	OpCode::Multiply2,	// STEX_FORMAT_RG8
+	OpCode::Multiply3,	// STEX_FORMAT_RGB8
+	OpCode::Multiply4,	// STEX_FORMAT_RGBA8
+	OpCode::Multiply2,	// STEX_FORMAT_RGBA4444
+	OpCode::Multiply2,	// STEX_FORMAT_RGB565
+
+	// 0x08
+	OpCode::Multiply4,	// STEX_FORMAT_RF
+	OpCode::Multiply8,	// STEX_FORMAT_RGF
+	OpCode::Multiply12,	// STEX_FORMAT_RGBF	// TODO: Verify that it's not RGBxF.
+	OpCode::Multiply16,	// STEX_FORMAT_RGBAF
+	OpCode::Multiply2,	// STEX_FORMAT_RH
+	OpCode::Multiply4,	// STEX_FORMAT_RGH
+	OpCode::Multiply6,	// STEX_FORMAT_RGBH	// TODO: Verify that it's not RGBxH.
+	OpCode::Multiply8,	// STEX_FORMAT_RGBAH
+
+	// 0x10
+	OpCode::Multiply4,	// STEX_FORMAT_RGBE9995
+	OpCode::Align4Divide2,	// STEX_FORMAT_DXT1
+	OpCode::Align4,		// STEX_FORMAT_DXT3
+	OpCode::Align4,		// STEX_FORMAT_DXT5
+	OpCode::Align4Divide2,	// STEX_FORMAT_RGTC_R
+	OpCode::Align4,		// STEX_FORMAT_RGTC_RG
+	OpCode::Align4,		// STEX_FORMAT_BPTC_RGBA
+	OpCode::Align4,		// STEX_FORMAT_BPTC_RGBF	// TODO: Verify
+
+	// 0x18
+	OpCode::Align4,		// STEX_FORMAT_BPTC_RGBFU	// TODO: Verify
+	OpCode::Divide2,	// STEX_FORMAT_ETC
+	OpCode::Divide2,	// STEX_FORMAT_ETC2_R11
+	OpCode::Divide2,	// STEX_FORMAT_ETC2_R11S
+	OpCode::None,		// STEX_FORMAT_ETC2_RG11
+	OpCode::None,		// STEX_FORMAT_ETC2_RG11S
+	OpCode::Align4Divide2,	// STEX_FORMAT_ETC2_RGB8	// TODO: Verify?
+	OpCode::Align4,		// STEX_FORMAT_ETC2_RGBA8	// TODO: Verify?
+
+	// 0x20
+	OpCode::Align4Divide2,	// STEX_FORMAT_ETC2_RGB8A1	// TODO: Verify?
+	OpCode::Align4,		// STEX4_FORMAT_ETC2_RA_AS_RG	// TODO: Verify?
+	OpCode::Align4,		// STEX4_FORMAT_DXT5_RA_AS_RG	// TODO: Verify?
+	OpCode::None,		// STEX4_FORMAT_ASTC_4x4	// 4x4 == 8bpp
+	OpCode::None,		// STEX4_FORMAT_ASTC_4x4_HDR	// 4x4 == 8bpp
+	OpCode::Align8Divide4,	// STEX4_FORMAT_ASTC_8x8	// 8x8 == 2bpp
+	OpCode::Align8Divide4,	// STEX4_FORMAT_ASTC_8x8_HDR	// 8x8 == 2bpp
 };
 
 GodotSTEXPrivate::GodotSTEXPrivate(GodotSTEX *q, IRpFile *file)
 	: super(q, file, &textureInfo)
 	, stexVersion(0)
 	, pixelFormat(static_cast<STEX_Format_e>(~0U))
-	, pixelFormat_flags(~0U)
+	, format_flags(~0U)
 	, hasEmbeddedFile(false)
 {
-	static_assert(ARRAY_SIZE(GodotSTEXPrivate::op_tbl) == STEX_FORMAT_MAX,
-		"GodotSTEXPrivate::op_tbl[] is not the correct size.");
+	static_assert(ARRAY_SIZE(GodotSTEXPrivate::img_format_tbl_v3) == STEX3_FORMAT_MAX,
+		"GodotSTEXPrivate::img_format_tbl_v3[] is not the correct size.");
+	static_assert(ARRAY_SIZE(GodotSTEXPrivate::img_format_tbl_v4) == STEX4_FORMAT_MAX,
+		"GodotSTEXPrivate::img_format_tbl_v4[] is not the correct size.");
+
+	static_assert(ARRAY_SIZE(GodotSTEXPrivate::op_tbl_v3) == STEX3_FORMAT_MAX,
+		"GodotSTEXPrivate::op_tbl_v3[] is not the correct size.");
+	static_assert(ARRAY_SIZE(GodotSTEXPrivate::op_tbl_v4) == STEX4_FORMAT_MAX,
+		"GodotSTEXPrivate::op_tbl_v4[] is not the correct size.");
 
 	// Clear the structs and arrays.
 	memset(&stexHeader, 0, sizeof(stexHeader));
@@ -330,8 +412,23 @@ int GodotSTEXPrivate::getMipmapInfo(void)
 		return 0;
 	}
 
+	const ImageSizeCalc::OpCode *op_tbl;
+	size_t op_tbl_sz;
+	switch (stexVersion) {
+		default:
+			assert(!"Invalid STEX version.");
+			return -EIO;
+		case 3:
+			op_tbl = op_tbl_v3;
+			op_tbl_sz = ARRAY_SIZE(op_tbl_v3);
+			break;
+		case 4:
+			op_tbl = op_tbl_v4;
+			op_tbl_sz = ARRAY_SIZE(op_tbl_v4);
+			break;
+	}
 	unsigned int expected_size = ImageSizeCalc::calcImageSize_tbl(
-		op_tbl, ARRAY_SIZE(op_tbl), pixelFormat, width, height);
+		op_tbl, op_tbl_sz, pixelFormat, width, height);
 	if (expected_size == 0 || expected_size + addr > file_sz) {
 		// Invalid image size.
 		mipmaps.clear();
@@ -389,8 +486,7 @@ int GodotSTEXPrivate::getMipmapInfo(void)
 			break;
 		}
 
-		expected_size = calcImageSize_tbl(op_tbl, ARRAY_SIZE(op_tbl),
-			pixelFormat, width, height);
+		expected_size = calcImageSize_tbl(op_tbl, op_tbl_sz, pixelFormat, width, height);
 		if (expected_size == 0 || expected_size + addr > file_sz) {
 			// Invalid image size.
 			break;
@@ -459,7 +555,7 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 		return nullptr;
 	}
 
-	// TODO: Support PNG and/or WebP images, and maybe Basis Universal.
+	// TODO: Support WebP images, and maybe Basis Universal.
 	if (hasEmbeddedFile) {
 		// If it's PNG, load it.
 		if (embedHeader.fourCC != cpu_to_be32(STEX_FourCC_PNG)) {
@@ -507,199 +603,269 @@ const rp_image *GodotSTEXPrivate::loadImage(int mip)
 	// Decode the image.
 	// TODO: More formats.
 	rp_image *img = nullptr;
-	switch (pixelFormat) {
-		default:
-			break;
+	if (pixelFormat <= STEX_FORMAT_BPTC_RGBFU) {
+		// Common format between v3 and v4.
+		switch (pixelFormat) {
+			default:
+				break;
 
-		case STEX_FORMAT_L8:
-			img = ImageDecoder::fromLinear8(
-				ImageDecoder::PixelFormat::L8,
-				mdata.width, mdata.height,
-				buf.get(), mdata.size);
-			break;
-		case STEX_FORMAT_LA8:
-			// TODO: Verify byte-order.
-			img = ImageDecoder::fromLinear16(
-				ImageDecoder::PixelFormat::L8A8,
-				mdata.width, mdata.height,
-				reinterpret_cast<const uint16_t*>(buf.get()),
-				mdata.size);
-			break;
+			case STEX_FORMAT_L8:
+				img = ImageDecoder::fromLinear8(
+					ImageDecoder::PixelFormat::L8,
+					mdata.width, mdata.height,
+					buf.get(), mdata.size);
+				break;
+			case STEX_FORMAT_LA8:
+				// TODO: Verify byte-order.
+				img = ImageDecoder::fromLinear16(
+					ImageDecoder::PixelFormat::L8A8,
+					mdata.width, mdata.height,
+					reinterpret_cast<const uint16_t*>(buf.get()),
+					mdata.size);
+				break;
 
-		case STEX_FORMAT_R8:
-			img = ImageDecoder::fromLinear8(
-				ImageDecoder::PixelFormat::R8,
-				mdata.width, mdata.height,
-				buf.get(), mdata.size);
-			break;
-		case STEX_FORMAT_RG8:
-			// TODO: Verify byte-order.
-			img = ImageDecoder::fromLinear16(
-				ImageDecoder::PixelFormat::GR88,
-				mdata.width, mdata.height,
-				reinterpret_cast<const uint16_t*>(buf.get()),
-				mdata.size);
-			break;
-		case STEX_FORMAT_RGB8:
-			img = ImageDecoder::fromLinear24(
-				ImageDecoder::PixelFormat::BGR888,
-				mdata.width, mdata.height,
-				buf.get(), mdata.size);
-			break;
-		case STEX_FORMAT_RGBA8:
-			img = ImageDecoder::fromLinear32(
-				ImageDecoder::PixelFormat::ABGR8888,
-				mdata.width, mdata.height,
-				reinterpret_cast<const uint32_t*>(buf.get()),
-				mdata.size);
-			break;
-		case STEX_FORMAT_RGBA4444:
-			img = ImageDecoder::fromLinear16(
-				ImageDecoder::PixelFormat::RGBA4444,
-				mdata.width, mdata.height,
-				reinterpret_cast<const uint16_t*>(buf.get()),
-				mdata.size);
-			break;
+			case STEX_FORMAT_R8:
+				img = ImageDecoder::fromLinear8(
+					ImageDecoder::PixelFormat::R8,
+					mdata.width, mdata.height,
+					buf.get(), mdata.size);
+				break;
+			case STEX_FORMAT_RG8:
+				// TODO: Verify byte-order.
+				img = ImageDecoder::fromLinear16(
+					ImageDecoder::PixelFormat::GR88,
+					mdata.width, mdata.height,
+					reinterpret_cast<const uint16_t*>(buf.get()),
+					mdata.size);
+				break;
+			case STEX_FORMAT_RGB8:
+				img = ImageDecoder::fromLinear24(
+					ImageDecoder::PixelFormat::BGR888,
+					mdata.width, mdata.height,
+					buf.get(), mdata.size);
+				break;
+			case STEX_FORMAT_RGBA8:
+				img = ImageDecoder::fromLinear32(
+					ImageDecoder::PixelFormat::ABGR8888,
+					mdata.width, mdata.height,
+					reinterpret_cast<const uint32_t*>(buf.get()),
+					mdata.size);
+				break;
+			case STEX_FORMAT_RGBA4444:
+				img = ImageDecoder::fromLinear16(
+					ImageDecoder::PixelFormat::RGBA4444,
+					mdata.width, mdata.height,
+					reinterpret_cast<const uint16_t*>(buf.get()),
+					mdata.size);
+				break;
 
-		case STEX_FORMAT_RGBE9995:
-			img = ImageDecoder::fromLinear32(
-				ImageDecoder::PixelFormat::RGB9_E5,
-				mdata.width, mdata.height,
-				reinterpret_cast<const uint32_t*>(buf.get()),
-				mdata.size);
-			break;
+			case STEX_FORMAT_RGBE9995:
+				img = ImageDecoder::fromLinear32(
+					ImageDecoder::PixelFormat::RGB9_E5,
+					mdata.width, mdata.height,
+					reinterpret_cast<const uint32_t*>(buf.get()),
+					mdata.size);
+				break;
 
-		// NOTE: Godot 4's DXTn encoding is broken if the
-		// image width isn't a multiple of 4.
-		// - https://github.com/godotengine/godot/issues/49981
-		// - https://github.com/godotengine/godot/issues/51943
-		case STEX_FORMAT_DXT1:
-			img = ImageDecoder::fromDXT1(
-				mdata.width, mdata.height,
-				buf.get(), mdata.size);
-			break;
-		case STEX_FORMAT_DXT3:
-			img = ImageDecoder::fromDXT3(
-				mdata.width, mdata.height,
-				buf.get(), mdata.size);
-			break;
-		case STEX_FORMAT_DXT5:
-			img = ImageDecoder::fromDXT5(
-				mdata.width, mdata.height,
-				buf.get(), mdata.size);
-			break;
+			// NOTE: Godot 4's DXTn encoding is broken if the
+			// image width isn't a multiple of 4.
+			// - https://github.com/godotengine/godot/issues/49981
+			// - https://github.com/godotengine/godot/issues/51943
+			case STEX_FORMAT_DXT1:
+				img = ImageDecoder::fromDXT1(
+					mdata.width, mdata.height,
+					buf.get(), mdata.size);
+				break;
+			case STEX_FORMAT_DXT3:
+				img = ImageDecoder::fromDXT3(
+					mdata.width, mdata.height,
+					buf.get(), mdata.size);
+				break;
+			case STEX_FORMAT_DXT5:
+				img = ImageDecoder::fromDXT5(
+					mdata.width, mdata.height,
+					buf.get(), mdata.size);
+				break;
 
-		case STEX_FORMAT_RGTC_R:
-			// RGTC, one component. (BC4)
-			img = ImageDecoder::fromBC4(
-				mdata.width, mdata.height,
-				buf.get(), mdata.size);
-			break;
-		case STEX_FORMAT_RGTC_RG:
-			// RGTC, two components. (BC5)
-			img = ImageDecoder::fromBC5(
-				mdata.width, mdata.height,
-				buf.get(), mdata.size);
-			break;
-		case STEX_FORMAT_BPTC_RGBA:
-			// BPTC-compressed RGBA texture. (BC7)
-			img = ImageDecoder::fromBC7(
-				mdata.width, mdata.height,
-				buf.get(), mdata.size);
-			break;
+			case STEX_FORMAT_RGTC_R:
+				// RGTC, one component. (BC4)
+				img = ImageDecoder::fromBC4(
+					mdata.width, mdata.height,
+					buf.get(), mdata.size);
+				break;
+			case STEX_FORMAT_RGTC_RG:
+				// RGTC, two components. (BC5)
+				img = ImageDecoder::fromBC5(
+					mdata.width, mdata.height,
+					buf.get(), mdata.size);
+				break;
+			case STEX_FORMAT_BPTC_RGBA:
+				// BPTC-compressed RGBA texture. (BC7)
+				img = ImageDecoder::fromBC7(
+					mdata.width, mdata.height,
+					buf.get(), mdata.size);
+				break;
+		}
+	} else if (stexVersion == 3) {
+		// NOTE: Godot 4 removed the PVRTC formats.
+		// Godot commit 40be15920f849100dbf5bf94a1d09e81bf05c6e4,
+		// 2021/12/29 02:06:12 +0100
+		// Remove support for PVRTC texture encoding and decoding
+		// Pixel format numbering diverges at this point.
+		switch (pixelFormat) {
+			default:
+				break;
 
 #ifdef ENABLE_PVRTC
-		case STEX_FORMAT_PVRTC1_2:
-			img = ImageDecoder::fromPVRTC(
-				mdata.width, mdata.height,
-				buf.get(), mdata.size,
-				ImageDecoder::PVRTC_2BPP | ImageDecoder::PVRTC_ALPHA_NONE);
-			break;
-		case STEX_FORMAT_PVRTC1_2A:
-			img = ImageDecoder::fromPVRTC(
-				mdata.width, mdata.height,
-				buf.get(), mdata.size,
-				ImageDecoder::PVRTC_2BPP | ImageDecoder::PVRTC_ALPHA_YES);
-			break;
+			case STEX3_FORMAT_PVRTC1_2:
+				img = ImageDecoder::fromPVRTC(
+					mdata.width, mdata.height,
+					buf.get(), mdata.size,
+					ImageDecoder::PVRTC_2BPP | ImageDecoder::PVRTC_ALPHA_NONE);
+				break;
+			case STEX3_FORMAT_PVRTC1_2A:
+				img = ImageDecoder::fromPVRTC(
+					mdata.width, mdata.height,
+					buf.get(), mdata.size,
+					ImageDecoder::PVRTC_2BPP | ImageDecoder::PVRTC_ALPHA_YES);
+				break;
 
-		case STEX_FORMAT_PVRTC1_4:
-			img = ImageDecoder::fromPVRTC(
-				mdata.width, mdata.height,
-				buf.get(), mdata.size,
-				ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_NONE);
-			break;
-		case STEX_FORMAT_PVRTC1_4A:
-			img = ImageDecoder::fromPVRTC(
-				mdata.width, mdata.height,
-				buf.get(), mdata.size,
-				ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_YES);
-			break;
+			case STEX3_FORMAT_PVRTC1_4:
+				img = ImageDecoder::fromPVRTC(
+					mdata.width, mdata.height,
+					buf.get(), mdata.size,
+					ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_NONE);
+				break;
+			case STEX3_FORMAT_PVRTC1_4A:
+				img = ImageDecoder::fromPVRTC(
+					mdata.width, mdata.height,
+					buf.get(), mdata.size,
+					ImageDecoder::PVRTC_4BPP | ImageDecoder::PVRTC_ALPHA_YES);
+				break;
 #endif /* ENABLE_PVRTC */
 
-		// NOTE: Godot 4 uses swapped R and B channels in ETC textures.
-		case STEX_FORMAT_ETC:
-			img = ImageDecoder::fromETC1(
-				mdata.width, mdata.height,
-				buf.get(), mdata.size);
-			if (img && stexVersion == 4) {
-				img->swapRB();
-			}
-			break;
-		case STEX_FORMAT_ETC2_RGB8:
-			// NOTE: If the ETC2 texture has mipmaps,
-			// it's stored as a Power-of-2 texture.
-			img = ImageDecoder::fromETC2_RGB(
-				mdata.width, mdata.height,
-				buf.get(), mdata.size);
-			if (img && stexVersion == 4) {
-				img->swapRB();
-			}
-			break;
-		case STEX_FORMAT_ETC2_RGBA8:
-			img = ImageDecoder::fromETC2_RGBA(
-				mdata.width, mdata.height,
-				buf.get(), mdata.size);
-			if (img && stexVersion == 4) {
-				img->swapRB();
-			}
-			break;
-		case STEX_FORMAT_ETC2_RGB8A1:
-			img = ImageDecoder::fromETC2_RGB_A1(
-				mdata.width, mdata.height,
-				buf.get(), mdata.size);
-			if (img && stexVersion == 4) {
-				img->swapRB();
-			}
-			break;
+			// NOTE: Godot 4 uses swapped R and B channels in ETC textures.
+			case STEX3_FORMAT_ETC:
+				img = ImageDecoder::fromETC1(
+					mdata.width, mdata.height,
+					buf.get(), mdata.size);
+				break;
+			case STEX3_FORMAT_ETC2_RGB8:
+				// NOTE: If the ETC2 texture has mipmaps,
+				// it's stored as a Power-of-2 texture.
+				img = ImageDecoder::fromETC2_RGB(
+					mdata.width, mdata.height,
+					buf.get(), mdata.size);
+				break;
+			case STEX3_FORMAT_ETC2_RGBA8:
+				img = ImageDecoder::fromETC2_RGBA(
+					mdata.width, mdata.height,
+					buf.get(), mdata.size);
+				break;
+			case STEX3_FORMAT_ETC2_RGB8A1:
+				img = ImageDecoder::fromETC2_RGB_A1(
+					mdata.width, mdata.height,
+					buf.get(), mdata.size);
+				break;
 
-		case STEX_FORMAT_ETC2_R11:
-		case STEX_FORMAT_ETC2_R11S:
-			// EAC-compressed R11 texture.
-			// TODO: Does the signed version get decoded differently?
-			img = ImageDecoder::fromEAC_R11(
-				mdata.width, mdata.height,
-				buf.get(), mdata.size);
-			break;
-		case STEX_FORMAT_ETC2_RG11:
-		case STEX_FORMAT_ETC2_RG11S:
-			// EAC-compressed RG11 texture.
-			// TODO: Does the signed version get decoded differently?
-			img = ImageDecoder::fromEAC_RG11(
-				mdata.width, mdata.height,
-				buf.get(), mdata.size);
-			break;
+			case STEX3_FORMAT_ETC2_R11:
+			case STEX3_FORMAT_ETC2_R11S:
+				// EAC-compressed R11 texture.
+				// TODO: Does the signed version get decoded differently?
+				img = ImageDecoder::fromEAC_R11(
+					mdata.width, mdata.height,
+					buf.get(), mdata.size);
+				break;
+			case STEX3_FORMAT_ETC2_RG11:
+			case STEX3_FORMAT_ETC2_RG11S:
+				// EAC-compressed RG11 texture.
+				// TODO: Does the signed version get decoded differently?
+				img = ImageDecoder::fromEAC_RG11(
+					mdata.width, mdata.height,
+					buf.get(), mdata.size);
+				break;
 
 #ifdef ENABLE_ASTC
-		case STEX_FORMAT_SCU_ASTC_8x8:
-			// NOTE: Only valid for Godot 3.
-			// For Godot 4, this is a completely different format.
-			if (stexVersion == 3) {
+			case STEX3_FORMAT_SCU_ASTC_8x8:
+				// Sonic Colors Ultimate: ASTC 8x8
 				img = ImageDecoder::fromASTC(
 					mdata.width, mdata.height,
 					buf.get(), mdata.size, 8, 8);
-			}
-			break;
+				break;
 #endif /* ENABLE_ASTC */
+		}
+	} else if (stexVersion == 4) {
+		// NOTE: Godot 4 removed the PVRTC formats.
+		// Godot commit 40be15920f849100dbf5bf94a1d09e81bf05c6e4,
+		// 2021/12/29 02:06:12 +0100
+		// Remove support for PVRTC texture encoding and decoding
+		// Pixel format numbering diverges at this point.
+		switch (pixelFormat) {
+			default:
+				break;
+
+			// NOTE: Godot 4 previously used swapped R and B channels in ETC textures,
+			// but this was fixed in commit ebec23d8d807e2a785075aac12466b88f7cbd3c1.
+			// 2022/12/02 01:34:05 +1100
+			// ETCPAK expects BGRA data for ETC
+			case STEX4_FORMAT_ETC:
+				img = ImageDecoder::fromETC1(
+					mdata.width, mdata.height,
+					buf.get(), mdata.size);
+				break;
+			case STEX4_FORMAT_ETC2_RGB8:
+				// NOTE: If the ETC2 texture has mipmaps,
+				// it's stored as a Power-of-2 texture.
+				img = ImageDecoder::fromETC2_RGB(
+					mdata.width, mdata.height,
+					buf.get(), mdata.size);
+				break;
+			case STEX4_FORMAT_ETC2_RGBA8:
+				img = ImageDecoder::fromETC2_RGBA(
+					mdata.width, mdata.height,
+					buf.get(), mdata.size);
+				break;
+			case STEX4_FORMAT_ETC2_RGB8A1:
+				img = ImageDecoder::fromETC2_RGB_A1(
+					mdata.width, mdata.height,
+					buf.get(), mdata.size);
+				break;
+
+			case STEX4_FORMAT_ETC2_R11:
+			case STEX4_FORMAT_ETC2_R11S:
+				// EAC-compressed R11 texture.
+				// TODO: Does the signed version get decoded differently?
+				img = ImageDecoder::fromEAC_R11(
+					mdata.width, mdata.height,
+					buf.get(), mdata.size);
+				break;
+			case STEX4_FORMAT_ETC2_RG11:
+			case STEX4_FORMAT_ETC2_RG11S:
+				// EAC-compressed RG11 texture.
+				// TODO: Does the signed version get decoded differently?
+				img = ImageDecoder::fromEAC_RG11(
+					mdata.width, mdata.height,
+					buf.get(), mdata.size);
+				break;
+
+			case STEX4_FORMAT_ETC2_RA_AS_RG:
+			case STEX4_FORMAT_DXT5_RA_AS_RG:
+				// TODO
+				break;
+
+			case STEX4_FORMAT_ASTC_4x4:
+				img = ImageDecoder::fromASTC(
+					mdata.width, mdata.height,
+					buf.get(), mdata.size, 4, 4);
+				break;
+			case STEX4_FORMAT_ASTC_8x8:
+				img = ImageDecoder::fromASTC(
+					mdata.width, mdata.height,
+					buf.get(), mdata.size, 8, 8);
+				break;
+		}
+	} else {
+		assert(!"Unsupported stexVersion value.");
 	}
 
 	// Image rescaling is handled by the UI frontend.
@@ -846,7 +1012,8 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 			UNREF_AND_NULL_NOCHK(d->file);
 			return;
 		case 3:
-			d->pixelFormat_flags = d->stexHeader.v3.format;
+			d->pixelFormat = static_cast<STEX_Format_e>(d->stexHeader.v3.format & STEX_FORMAT_MASK);
+			d->format_flags = (d->stexHeader.v3.format & ~STEX_FORMAT_MASK);
 			d->dimensions[0] = d->stexHeader.v3.width;
 			d->dimensions[1] = d->stexHeader.v3.height;
 			if (d->stexHeader.v3.width_rescale  != d->dimensions[0] ||
@@ -859,7 +1026,8 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 			break;
 		case 4:
 			// FIXME: Verify rescale dimensions.
-			d->pixelFormat_flags = d->stexHeader.v4.pixel_format;
+			d->pixelFormat = static_cast<STEX_Format_e>(d->stexHeader.v4.pixel_format);
+			d->format_flags = d->stexHeader.v4.format_flags;
 			d->dimensions[0] = d->stexHeader.v4.img_width;
 			d->dimensions[1] = d->stexHeader.v4.img_height;
 			if ((int)d->stexHeader.v4.width  != d->dimensions[0] ||
@@ -872,11 +1040,8 @@ GodotSTEX::GodotSTEX(IRpFile *file)
 			break;
 	}
 
-	// Mask off the flags for the actual pixel format.
-	d->pixelFormat = static_cast<STEX_Format_e>(d->pixelFormat_flags & STEX_FORMAT_MASK);
-
 	// Special case: Godot 3 doesn't set rescaling parameters for NPOT PVRTC textures.
-	if (d->pixelFormat >= STEX_FORMAT_PVRTC1_2 && d->pixelFormat <= STEX_FORMAT_PVRTC1_4A) {
+	if (d->stexVersion == 3 && (d->pixelFormat >= STEX3_FORMAT_PVRTC1_2 && d->pixelFormat <= STEX3_FORMAT_PVRTC1_4A)) {
 		if (d->rescale_dimensions[0] == 0 &&
 		    (!isPow2(d->dimensions[0]) || !isPow2(d->dimensions[1])))
 		{
@@ -920,7 +1085,7 @@ const char *GodotSTEX::pixelFormat(void) const
 	if (!d->isValid)
 		return nullptr;
 
-	// TODO: Don't return version-specific pixel formats for the wrong version.
+	const char *const *img_format_tbl;
 	STEX_Format_e pixelFormatMax;
 	switch (d->stexVersion) {
 		default:
@@ -931,17 +1096,17 @@ const char *GodotSTEX::pixelFormat(void) const
 			// PNG or WebP image is present.
 			if (d->hasEmbeddedFile)
 				return nullptr;
-			pixelFormatMax = STEX_FORMAT_SCU_ASTC_8x8;
+			img_format_tbl = d->img_format_tbl_v3;
+			pixelFormatMax = STEX3_FORMAT_MAX;
 			break;
 		case 4:
-			// Godot 4: SCU's ASTC format isn't valid.
-			// TODO: Godot 4-specific formats?
-			pixelFormatMax = STEX_FORMAT_ETC2_RGB8A1;
+			img_format_tbl = d->img_format_tbl_v4;
+			pixelFormatMax = STEX4_FORMAT_MAX;
 			break;
 	}
 
 	if (d->pixelFormat >= 0 && d->pixelFormat <= pixelFormatMax) {
-		return d->img_format_tbl[d->pixelFormat];
+		return img_format_tbl[d->pixelFormat];
 	}
 
 	// Invalid pixel format.
@@ -1014,7 +1179,7 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 	}
 
 	const int initial_count = fields->count();
-	fields->reserve(initial_count + 3);	// Maximum of 3 fields.
+	fields->reserve(initial_count + 4);	// Maximum of 4 fields.
 
 	// STEX version (NOT STEX4's version field!)
 	fields->addField_string_numeric(C_("GodotSTEX", "STEX Version"), d->stexVersion);
@@ -1025,6 +1190,24 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 			assert(!"Invalid STEX version.");
 			break;
 		case 3: {
+			// Embedded data format (if present)
+			const char *data_format = nullptr;
+			if (d->hasEmbeddedFile) {
+				switch (be32_to_cpu(d->embedHeader.fourCC)) {
+					case STEX_FourCC_PNG:
+						data_format = "PNG";
+						break;
+					case STEX_FourCC_WEBP:
+						data_format = "WebP";
+						break;
+					default:
+						break;
+				}
+			}
+			if (data_format) {
+				fields->addField_string(C_("GodotSTEX", "Data Format"), data_format);
+			}
+
 			// Flags (Godot 3 only)
 			static const char *const flags_bitfield_names[] = {
 				NOP_C_("GodotSTEX|Flags", "Mipmaps"),
@@ -1066,22 +1249,24 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 
 	// Format flags (v3) (starting at bit 20)
 	static const char *const format_flags_bitfield_names_v3[] = {
-		NOP_C_("GodotSTEX|FormatFlags", "Lossless"),
-		NOP_C_("GodotSTEX|FormatFlags", "Lossy"),
-		NOP_C_("GodotSTEX|FormatFlags", "Stream"),
-		NOP_C_("GodotSTEX|FormatFlags", "Has Mipmaps"),
-		NOP_C_("GodotSTEX|FormatFlags", "Detect 3D"),
-		NOP_C_("GodotSTEX|FormatFlags", "Detect sRGB"),
-		NOP_C_("GodotSTEX|FormatFlags", "Detect Normal"),
+		NOP_C_("GodotSTEX|FormatFlags", "Lossless"),		// 20
+		NOP_C_("GodotSTEX|FormatFlags", "Lossy"),		// 21
+		NOP_C_("GodotSTEX|FormatFlags", "Stream"),		// 22
+		NOP_C_("GodotSTEX|FormatFlags", "Has Mipmaps"),		// 23
+		NOP_C_("GodotSTEX|FormatFlags", "Detect 3D"),		// 24
+		NOP_C_("GodotSTEX|FormatFlags", "Detect sRGB"),		// 25
+		NOP_C_("GodotSTEX|FormatFlags", "Detect Normal"),	// 26
 	};
-	// Format flags (v4) (starting at bit 22)
+	// Format flags (v4) (starting at bit 20)
 	static const char *const format_flags_bitfield_names_v4[] = {
-		NOP_C_("GodotSTEX|FormatFlags", "Stream"),
-		nullptr,
-		NOP_C_("GodotSTEX|FormatFlags", "Detect 3D"),
-		nullptr,
-		NOP_C_("GodotSTEX|FormatFlags", "Detect Normal"),
-		NOP_C_("GodotSTEX|FormatFlags", "Detect Roughness"),
+		nullptr,						// 20
+		nullptr,						// 21
+		NOP_C_("GodotSTEX|FormatFlags", "Stream"),		// 22
+		nullptr,						// 23
+		NOP_C_("GodotSTEX|FormatFlags", "Detect 3D"),		// 24
+		nullptr,						// 25
+		NOP_C_("GodotSTEX|FormatFlags", "Detect Normal"),	// 26
+		NOP_C_("GodotSTEX|FormatFlags", "Detect Roughness"),	// 27
 	};
 
 	vector<string> *v_format_flags_bitfield_names = nullptr;
@@ -1100,9 +1285,10 @@ int GodotSTEX::getFields(LibRpBase::RomFields *fields) const
 					ARRAY_SIZE(format_flags_bitfield_names_v4));
 			break;
 	}
+
 	if (v_format_flags_bitfield_names) {
 		fields->addField_bitfield(C_("GodotSTEX", "Format Flags"),
-			v_format_flags_bitfield_names, 3, d->pixelFormat_flags >> 20);
+			v_format_flags_bitfield_names, 3, d->format_flags >> 20);
 	}
 
 	// Finished reading the field data.

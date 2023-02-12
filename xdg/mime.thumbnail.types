@@ -107,6 +107,7 @@ image/x-didj-texture			# DidjTex
 image/vnd.ms-dds			# DirectDrawSurface
 image/x-dds				# DirectDrawSurface
 image/x-godot-stex			# Godot STEX
+image/x-godot-ctex			# Godot STEX (new extension for Godot 4)
 image/ktx				# KhronosKTX
 image/ktx2				# KhronosKTX2
 image/x-pvr				# PowerVR3

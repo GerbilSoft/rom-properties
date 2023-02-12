@@ -128,29 +128,49 @@ typedef enum {
 
 	// 0x18
 	STEX_FORMAT_BPTC_RGBFU,	// unsigned float bc6hu
-	STEX_FORMAT_PVRTC1_2,	// pvrtc1
-	STEX_FORMAT_PVRTC1_2A,
-	STEX_FORMAT_PVRTC1_4,
-	STEX_FORMAT_PVRTC1_4A,
-	STEX_FORMAT_ETC,	// etc1
-	STEX_FORMAT_ETC2_R11,	// etc2
-	STEX_FORMAT_ETC2_R11S,	// signed, NOT srgb.
 
-	// 0x20
-	STEX_FORMAT_ETC2_RG11,
-	STEX_FORMAT_ETC2_RG11S,
-	STEX_FORMAT_ETC2_RGB8,
-	STEX_FORMAT_ETC2_RGBA8,
-	STEX_FORMAT_ETC2_RGB8A1,
+	// NOTE: Godot 4 removed the PVRTC formats.
+	// Godot commit 40be15920f849100dbf5bf94a1d09e81bf05c6e4,
+	// 2021/12/29 02:06:12 +0100
+	// Remove support for PVRTC texture encoding and decoding
+	// Pixel format numbering diverges at this point.
+	STEX3_FORMAT_PVRTC1_2	= 0x19,	// pvrtc1
+	STEX3_FORMAT_PVRTC1_2A,
+	STEX3_FORMAT_PVRTC1_4,
+	STEX3_FORMAT_PVRTC1_4A,
+	STEX3_FORMAT_ETC,	// etc1
+	STEX3_FORMAT_ETC2_R11,	// etc2
+	STEX3_FORMAT_ETC2_R11S,	// signed, NOT srgb.
+	STEX3_FORMAT_ETC2_RG11,
+	STEX3_FORMAT_ETC2_RG11S,
+	STEX3_FORMAT_ETC2_RGB8,
+	STEX3_FORMAT_ETC2_RGBA8,
+	STEX3_FORMAT_ETC2_RGB8A1,
 
 	// Proprietary formats used in Sonic Colors Ultimate.
-	STEX_FORMAT_SCU_ASTC_8x8 = 0x25,
+	STEX3_FORMAT_SCU_ASTC_8x8 = 0x25,
+
+	STEX3_FORMAT_MAX,
+
+	// Godot 4 pixel formats, starting at ETC.
+	STEX4_FORMAT_ETC	= 0x19,	// etc1
+	STEX4_FORMAT_ETC2_R11,		// etc2
+	STEX4_FORMAT_ETC2_R11S,		// signed, NOT srgb.
+	STEX4_FORMAT_ETC2_RG11,
+	STEX4_FORMAT_ETC2_RG11S,
+	STEX4_FORMAT_ETC2_RGB8,
+	STEX4_FORMAT_ETC2_RGBA8,
+	STEX4_FORMAT_ETC2_RGB8A1,
 
 	// NOTE: The following formats were added in Godot 4.0.
-	STEX4_FORMAT_ETC2_RA_AS_RG = 0x25,	//used to make basis universal happy
-	STEX4_FORMAT_DXT5_RA_AS_RG = 0x26,	//used to make basis universal happy
+	STEX4_FORMAT_ETC2_RA_AS_RG,	//used to make basis universal happy
+	STEX4_FORMAT_DXT5_RA_AS_RG,	//used to make basis universal happy
+	STEX4_FORMAT_ASTC_4x4,
+	STEX4_FORMAT_ASTC_4x4_HDR,
+	STEX4_FORMAT_ASTC_8x8,
+	STEX4_FORMAT_ASTC_8x8_HDR,
 
-	STEX_FORMAT_MAX,
+	STEX4_FORMAT_MAX,
 
 	// Format flags
 	// NOTE: Godot 4 doesn't use lossless, lossy, or detect sRGB.
