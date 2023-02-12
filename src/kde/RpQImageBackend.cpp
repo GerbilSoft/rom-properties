@@ -167,9 +167,16 @@ int RpQImageBackend::shrink(int width, int height)
 		return -EINVAL;
 	}
 
+	if (width == this->width && height == this->height) {
+		// Attempting to resize to the same size...
+		return 0;
+	}
+
 	// QImage doesn't support changing width/height in-place,
 	// so we'll need to copy it to a new QImage.
 	m_qImage = m_qImage.copy(0, 0, width, height);
+	this->width = width;
+	this->height = height;
 	return 0;
 }
 
