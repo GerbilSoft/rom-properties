@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * SegaPVR.cpp: Sega PVR texture reader.                                   *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -1512,15 +1512,12 @@ int SegaPVR::getFields(LibRpBase::RomFields *fields) const
 	const int initial_count = fields->count();
 	fields->reserve(initial_count + 2);	// Maximum of 2 fields. (TODO)
 
-	// Image data type (for non-GCN)
-	if (d->pvrType != SegaPVRPrivate::PVRType::GVR) {
-		// Only if pxfmt is *not* nullptr.
-		const char *pxfmt = d->pixelFormatName();
-		if (pxfmt != nullptr) {
-			const char *idt = d->imageDataTypeName();
-			if (idt != nullptr) {
-				fields->addField_string(C_("SegaPVR", "Image Data Type"), idt);
-			}
+	// Image data type (only if pxfmt is *not* nullptr)
+	const char *pxfmt = d->pixelFormatName();
+	if (pxfmt != nullptr) {
+		const char *idt = d->imageDataTypeName();
+		if (idt != nullptr) {
+			fields->addField_string(C_("SegaPVR", "Image Data Type"), idt);
 		}
 	}
 
