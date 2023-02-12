@@ -1531,7 +1531,7 @@ INSTANTIATE_TEST_SUITE_P(STEX4, ImageDecoderTest,
 		// Godot 4 prefers the .ctex extension now, so any new
 		// tests added after this point should use .ctex.
 		CTEX4_IMAGE_TEST("argb.ASTC_4x4"),
-		CTEX4_IMAGE_TEST("argb.BPTC"),
+		CTEX4_IMAGE_TEST("argb.BPTC_RGBA"),
 
 		ImageDecoderTest_mode("STEX4/argb.PNG.mipmaps.ctex", "argb-reference.png"),
 		ImageDecoderTest_mode("STEX4/rgb.PNG.ctex", "rgb-reference.png"))
