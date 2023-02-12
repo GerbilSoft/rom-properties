@@ -34,6 +34,7 @@
 #include "common.h"
 #include "librpbase/img/RpPng.hpp"
 #include "librpbase/RomData.hpp"
+#include "librpbase/RomFields.hpp"
 #include "libromdata/Other/RpTextureWrapper.hpp"
 #include "librpfile/RpFile.hpp"
 #include "librpfile/MemFile.hpp"
@@ -440,9 +441,28 @@ void ImageDecoderTest::decodeTest_internal(void)
 		const RpTextureWrapper *const rptw = static_cast<RpTextureWrapper*>(m_romData);
 		EXPECT_NE(rptw, nullptr);
 		if (rptw) {
-			const char *const actual_pixel_format = rptw->pixelFormat();
+			const char *actual_pixel_format = rptw->pixelFormat();
 			EXPECT_NE(actual_pixel_format, nullptr);
 			if (actual_pixel_format) {
+				// If it's DX10, parse fields to find the actual DX10 pixel format.
+				// Not exporting a dx10Format() because that would change the ABI.
+				if (!strcmp(actual_pixel_format, "DX10")) {
+					// Find "DX10 Format".
+					// NOTE: The string is localized, but our Google Test initializer
+					// sets LC_ALL=C, which disables localization.
+					const RomFields *const fields = rptw->fields();
+					for (auto iter = fields->cbegin(); iter != fields->cend(); ++iter) {
+						if (iter->type == RomFields::RFT_STRING && !strcmp(iter->name, "DX10 Format")) {
+							// Found the DX10 format.
+							actual_pixel_format = iter->data.str;
+							break;
+						}
+					}
+
+					// NOTE: If the DX10 format wasn't found, then actual_pixel_format
+					// will stay as "DX10".
+				}
+
 				EXPECT_EQ(mode.expected_pixel_format, actual_pixel_format);
 			}
 		}
@@ -678,7 +698,7 @@ INSTANTIATE_TEST_SUITE_P(DDS_ARGB32, ImageDecoderTest,
 
 		// DXGI format is set; legacy bitmasks are not.
 		// (from Pillow)
-		ARGB_IMAGE_TEST("argb-32bpp_MipMaps-1", "DX10"))	// FIXME: Check DX10 format: "R8G8B8A8_UNORM"
+		ARGB_IMAGE_TEST("argb-32bpp_MipMaps-1", "DR8G8B8A8_UNORM"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // DirectDrawSurface tests (Luminance)
@@ -984,19 +1004,18 @@ INSTANTIATE_TEST_SUITE_P(TCtest_ASTC, ImageDecoderTest,
 			"BC7/" file ".png", (format))
 INSTANTIATE_TEST_SUITE_P(BC7, ImageDecoderTest,
 	::testing::Values(
-		// FIXME: Need to check the DX10 pixel formats. ("BC7_UNORM")
-		BC7_IMAGE_TEST("w5_grass200_abd_a", "DX10"),
-		BC7_IMAGE_TEST("w5_grass201_abd", "DX10"),
-		BC7_IMAGE_TEST("w5_grass206_abd", "DX10"),
-		BC7_IMAGE_TEST("w5_rock805_abd", "DX10"),
-		BC7_IMAGE_TEST("w5_rock805_nrm", "DX10"),
-		BC7_IMAGE_TEST("w5_sand504_abd_a", "DX10"),
-		BC7_IMAGE_TEST("w5_wood503_prm", "DX10"),
+		BC7_IMAGE_TEST("w5_grass200_abd_a", "BC7_UNORM"),
+		BC7_IMAGE_TEST("w5_grass201_abd", "BC7_UNORM"),
+		BC7_IMAGE_TEST("w5_grass206_abd", "BC7_UNORM"),
+		BC7_IMAGE_TEST("w5_rock805_abd", "BC7_UNORM"),
+		BC7_IMAGE_TEST("w5_rock805_nrm", "BC7_UNORM"),
+		BC7_IMAGE_TEST("w5_sand504_abd_a", "BC7_UNORM"),
+		BC7_IMAGE_TEST("w5_wood503_prm", "BC7_UNORM"),
 
 		// Non-gzipped DDS, since gzip doesn't help much
 		ImageDecoderTest_mode(
 			"BC7/w5_rope801_prm.dds",
-			"BC7/w5_rope801_prm.png", "DX10"))
+			"BC7/w5_rope801_prm.png", "BC7_UNORM"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // SMDH tests
