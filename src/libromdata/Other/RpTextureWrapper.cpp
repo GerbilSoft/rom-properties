@@ -364,4 +364,17 @@ int RpTextureWrapper::loadInternalImage(ImageType imageType, const rp_image **pI
 		d->texture->image);	// func
 }
 
+/**
+ * Get the pixel format, e.g. "RGB888" or "DXT1".
+ * @return Pixel format, or nullptr if unavailable.
+ */
+const char *RpTextureWrapper::pixelFormat(void) const
+{
+	RP_D(const RpTextureWrapper);
+	if (d->texture) {
+		return d->texture->pixelFormat();
+	}
+	return nullptr;
+}
+
 }
