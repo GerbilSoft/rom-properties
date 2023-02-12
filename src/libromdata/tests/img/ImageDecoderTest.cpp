@@ -698,7 +698,7 @@ INSTANTIATE_TEST_SUITE_P(DDS_ARGB32, ImageDecoderTest,
 
 		// DXGI format is set; legacy bitmasks are not.
 		// (from Pillow)
-		ARGB_IMAGE_TEST("argb-32bpp_MipMaps-1", "DR8G8B8A8_UNORM"))
+		ARGB_IMAGE_TEST("argb-32bpp_MipMaps-1", "R8G8B8A8_UNORM"))
 	, ImageDecoderTest::test_case_suffix_generator);
 
 // DirectDrawSurface tests (Luminance)
