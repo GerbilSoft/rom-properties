@@ -42,16 +42,19 @@ extern "C" {
  * except for the magic number.
  */
 #define BADGE_PRBS_MAGIC 'PRBS'
-#pragma pack(1)
-typedef struct PACKED _Badge_PRBS_Header {
+typedef struct _Badge_PRBS_Header {
 	uint32_t magic;		// [0x000] 'PRBS' (big-endian)
 	uint8_t reserved1[56];	// [0x004] Unknown
 	uint32_t badge_id;	// [0x03C] Badge ID
 	uint8_t reserved2[4];	// [0x040] Unknown
 	char filename[48];	// [0x044] Image filename. (Latin-1?)
 	char setname[48];	// [0x074] Set name. (Latin-1?)
-	Nintendo_TitleID_LE_t title_id;	// [0x0A4] Title ID for program launch.
-					// If no program is assigned, this is all 0xFF.
+#pragma pack(1)
+	struct PACKED {
+		Nintendo_TitleID_LE_t title_id;	// [0x0A4] Title ID for program launch.
+						// If no program is assigned, this is all 0xFF.
+	};
+#pragma pack()
 	uint8_t reserved3[12];	// [0x0AC] Unknown
 	uint32_t mb_width;	// [0x0B8] Mega-badge width.
 	uint32_t mb_height;	// [0x0BC] Mega-badge height.
@@ -59,7 +62,6 @@ typedef struct PACKED _Badge_PRBS_Header {
 	char16_t name[16][128];	// [0x0E0] Badge names. (UTF-16LE)
 } Badge_PRBS_Header;
 ASSERT_STRUCT(Badge_PRBS_Header, 0x10E0);
-#pragma pack()
 
 /**
  * CABS: Badge set file.
