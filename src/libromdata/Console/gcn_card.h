@@ -108,8 +108,7 @@ ASSERT_STRUCT(card_dircntrl, 64);
  * Directory entry.
  * Addresses are relative to the start of the file.
  */
-#pragma pack(1)
-typedef struct PACKED _card_direntry {
+typedef struct _card_direntry {
 	union {
 		struct {
 			char gamecode[4];	// Game code.
@@ -131,7 +130,6 @@ typedef struct PACKED _card_direntry {
 	uint16_t pad_01;	// Padding. (0xFFFF)
 	uint32_t commentaddr;	// Comment address.
 } card_direntry;
-#pragma pack()
 ASSERT_STRUCT(card_direntry, 64);
 
 /**
