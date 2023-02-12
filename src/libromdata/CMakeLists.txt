@@ -503,7 +503,7 @@ IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 	# should be linked in as PRIVATE, and include directories added
 	# manually. Otherwise, the .a libraries get linked in to the
 	# UI frontend plugins.
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpcpu-dll rptexture-dll rpfile-dll rpbase-dll)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpcpu-dll rptexture-dll rpfile-dll rpbase-dll rptext-dll)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpthreads-dll cachecommon-dll)
 	TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} INTERFACE
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../librpcpu>
@@ -514,6 +514,8 @@ IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../librpfile>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../librpbase>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../librpbase>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../librptext>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../librptext>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../librpthreads>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../librpthreads>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../libcachecommon>
@@ -551,7 +553,7 @@ IF(${PROJECT_NAME}_LINKAGE STREQUAL SHARED)
 			)
 	ENDIF()
 ELSE()
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC rpcpu rptexture rpfile rpbase)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC rpcpu rptexture rpfile rpbase rptext)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC rpthreads cachecommon)
 	IF(ENABLE_NLS)
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC i18n)

@@ -13,10 +13,10 @@
 #include "res/resource.h"
 #include "dll-macros.h"
 
-// librpbase, librpfile, librptexture
-#include "librpbase/TextFuncs_wchar.hpp"
+// Other rom-properties libraries
 #include "librpbase/img/RpPng.hpp"
 #include "librpfile/win32/RpFile_windres.hpp"
+#include "librptext/wchar.hpp"
 #include "librptexture/img/rp_image.hpp"
 using namespace LibRpBase;
 using LibRpFile::RpFile_windres;

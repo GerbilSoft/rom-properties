@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * CacheTab.cpp: Thumbnail Cache tab for rp-config.                        *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,9 +10,10 @@
 #include "CacheTab.hpp"
 #include "res/resource.h"
 
-// librpbase, librpfile, libwin32common, libwin32ui
+// Other rom-properties libraries
 using namespace LibRpBase;
 using namespace LibRpFile;
+using namespace LibRpText;
 using LibWin32UI::RegKey;
 using LibWin32UI::WTSSessionNotification;
 

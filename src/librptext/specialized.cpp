@@ -1,23 +1,25 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
- * TextFuncs.cpp: Text encoding functions. (specialized conversions)       *
+ * ROM Properties Page shell extension. (librptext)                        *
+ * specialized.cpp: Text encoding functions (specialized conversions)      *
  *                                                                         *
- * Copyright (c) 2009-2022 by David Korth.                                 *
+ * Copyright (c) 2009-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
 #include "common.h"
-#include "TextFuncs.hpp"
-#include "TextFuncs_NULL.hpp"
+#include "conversion.hpp"
+#include "NULL-check.hpp"
 
 // Code page tables
 #include "RP_CP_tbls.hpp"
 
-// C++ STL classes.
+// C includes (C++ namespace)
+#include <cassert>
+
+// C++ STL classes
 using std::string;
 
-namespace LibRpBase {
+namespace LibRpText {
 
 /**
  * Convert 8-bit text to UTF-8 using a lookup table.

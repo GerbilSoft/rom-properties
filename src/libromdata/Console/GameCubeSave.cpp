@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCubeSave.hpp: Nintendo GameCube save file reader.                   *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,12 +11,13 @@
 #include "data/NintendoPublishers.hpp"
 #include "gcn_card.h"
 
-// librpbase, librpfile, librptexture
+// Other rom-properties libraries
 #include "librpbase/SystemRegion.hpp"
 #include "librptexture/decoder/ImageDecoder_GCN.hpp"
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using namespace LibRpText;
 using namespace LibRpTexture;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 #include <string>

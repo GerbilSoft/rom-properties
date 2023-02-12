@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * XAttrReader_win32.cpp: Extended Attribute reader (Windows version)      *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,8 +13,8 @@
 // Windows SDK
 #include "libwin32common/RpWin32_sdk.h"
 
-// librpbase
-#include "librpbase/TextFuncs_wchar.hpp"
+// librptext
+#include "librptext/wchar.hpp"
 
 // C++ STL classes
 using std::string;

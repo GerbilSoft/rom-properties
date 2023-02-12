@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CacheManager.cpp: Local cache manager.                                  *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,8 +10,7 @@
 #include "config.libromdata.h"
 #include "CacheManager.hpp"
 
-// librpbase, librpfile, librpthreads
-#include "librpbase/TextFuncs.hpp"
+// Other rom-properties libraries
 #include "librpfile/RpFile.hpp"
 #include "librpfile/FileSystem.hpp"
 #include "librpthreads/Semaphore.hpp"
@@ -23,17 +22,16 @@ using LibRpThreads::SemaphoreLocker;
 // libcachecommon
 #include "libcachecommon/CacheKeys.hpp"
 
-// OS-specific includes.
+// OS-specific includes
 #ifdef _WIN32
 #  include "libwin32common/RpWin32_sdk.h"
-#  include "librpbase/TextFuncs_wchar.hpp"
+#  include "librptext/wchar.hpp"
 #endif /* _WIN32 */
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <ctime>
 
-// C++ includes.
-#include <string>
+// C++ STL classes
 using std::string;
 #ifdef _WIN32
 using std::wstring;

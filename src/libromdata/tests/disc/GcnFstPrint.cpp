@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * GcnFstPrint.cpp: GameCube/Wii FST printer.                              *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -39,8 +39,7 @@ using std::unique_ptr;
 #ifdef _WIN32
 #  include "libwin32common/RpWin32_sdk.h"
 #  include <io.h>
-#  include "librpbase/TextFuncs.hpp"
-#  include "librpbase/TextFuncs_wchar.hpp"
+#  include "librptext/wchar.hpp"
 using std::u16string;
 #endif /* _WIN32 */
 

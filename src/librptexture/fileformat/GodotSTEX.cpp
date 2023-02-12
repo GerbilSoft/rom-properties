@@ -14,12 +14,12 @@
 
 #include "godot_stex_structs.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #include "libi18n/i18n.h"
 #include "librpbase/img/RpPng.hpp"
-#include "librpbase/TextFuncs.hpp"
 #include "librpfile/MemFile.hpp"
 using namespace LibRpBase;
+using namespace LibRpText;
 using LibRpFile::IRpFile;
 using LibRpFile::MemFile;
 

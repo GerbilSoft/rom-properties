@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * AmiiboData.cpp: Nintendo amiibo identification data.                    *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,16 +14,18 @@
 #include "tcharx.h"
 #include "../../amiibo-data/amiibo_bin_structs.h"
 
+// OS-specific includes
 #ifdef _WIN32
 #  include "libwin32common/RpWin32_sdk.h"
-#  include "librpbase/TextFuncs_wchar.hpp"
+#  include "librptext/wchar.hpp"
 #endif /* _WIN32 */
 
+// Other rom-properties libraries
 #include "librpfile/FileSystem.hpp"
 #include "librpfile/RpFile.hpp"
 using namespace LibRpFile;
 
-// C++ includes.
+// C++ includes
 #include <string>
 using std::string;
 using std::tstring;

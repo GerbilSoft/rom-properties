@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GdiReader.hpp: GD-ROM reader for Dreamcast GDI images.                  *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,15 +13,16 @@
 #include "../cdrom_structs.h"
 #include "IsoPartition.hpp"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #include "librpfile/RelatedFile.hpp"
 using namespace LibRpBase;
+using namespace LibRpText;
 using namespace LibRpFile;
 
 // Other RomData subclasses
 #include "Other/ISO.hpp"
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 using std::unique_ptr;
 using std::vector;

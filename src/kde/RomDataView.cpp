@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * RomDataView.cpp: RomData viewer.                                        *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,16 +14,17 @@
 #include "RpQImageBackend.hpp"
 #include "AchQtDBus.hpp"
 
-// librpbase, librpfile, librptexture
+// Other rom-properties libraries
 #include "librpbase/TextOut.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
+using namespace LibRpText;
 using LibRpTexture::rp_image;
 
 // libi18n
 #include "libi18n/i18n.h"
 
-// C++ STL classes.
+// C++ STL classes
 using std::set;
 using std::string;
 using std::vector;

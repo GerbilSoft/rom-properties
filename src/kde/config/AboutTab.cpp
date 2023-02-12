@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * AboutTab.hpp: About tab for rp-config.                                  *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,9 +12,10 @@
 #include "AboutTab.hpp"
 #include "UpdateChecker.hpp"
 
-// librpbase
+// Other rom-properties libraries
 #include "librpbase/config/AboutTabText.hpp"
 using namespace LibRpBase;
+using namespace LibRpText;
 
 // C++ STL classes
 using std::string;

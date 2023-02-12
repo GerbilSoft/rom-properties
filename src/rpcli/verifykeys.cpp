@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rpcli)                            *
  * verifykeys.hpp: Verify encryption keys.                                 *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * Copyright (c) 2016-2017 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -16,19 +16,19 @@
 
 #include "verifykeys.hpp"
 
-// librpbase
-#include "librpbase/TextFuncs_printf.hpp"
+// Other rom-properties libraries
 #include "libi18n/i18n.h"
-using namespace LibRpBase;
+#include "librptext/printf.hpp"
+using namespace LibRpText;
 
 // libromdata
 #include "libromdata/crypto/KeyStoreUI.hpp"
 using namespace LibRomData;
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cassert>
 
-// C++ includes.
+// C++ includes
 #include <iostream>
 using std::cerr;
 using std::cout;

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * VGM.hpp: VGM audio reader.                                              *
  *                                                                         *
- * Copyright (c) 2018-2022 by David Korth.                                 *
+ * Copyright (c) 2018-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,11 +10,12 @@
 #include "VGM.hpp"
 #include "vgm_structs.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpText;
 using LibRpFile::IRpFile;
 
-// C++ STL classes.
+// C++ STL classes
 using std::array;
 using std::string;
 using std::unique_ptr;
@@ -194,7 +195,7 @@ void VGMPrivate::addCommonSoundChip(unsigned int clk_full, const char *display, 
 	if (clk != 0) {
 		fields->addField_string(
 			rp_sprintf(s_clockrate, display).c_str(),
-			LibRpBase::formatFrequency(clk));
+			LibRpText::formatFrequency(clk));
 		if (dual) {
 			fields->addField_string(
 				rp_sprintf(s_dualchip, display).c_str(),
@@ -456,7 +457,7 @@ int VGM::loadFieldData(void)
 
 		d->fields->addField_string(
 			rp_sprintf(d->s_clockrate, chip_name).c_str(),
-			LibRpBase::formatFrequency(sn76489_clk & ~PSG_T6W28));
+			LibRpText::formatFrequency(sn76489_clk & ~PSG_T6W28));
 		if (!isT6W28) {
 			d->fields->addField_string(
 				rp_sprintf(d->s_dualchip, chip_name).c_str(),
@@ -534,7 +535,7 @@ int VGM::loadFieldData(void)
 			if (clk != 0) {
 				d->fields->addField_string(
 					rp_sprintf(d->s_clockrate, "Sega PCM").c_str(),
-					LibRpBase::formatFrequency(clk));
+					LibRpText::formatFrequency(clk));
 				d->fields->addField_string_numeric(
 					rp_sprintf(C_("VGM", "%s IF reg"), "Sega PCM").c_str(),
 					le32_to_cpu(vgmHeader->sega_pcm_if_reg),
@@ -561,7 +562,7 @@ int VGM::loadFieldData(void)
 			if (clk != 0) {
 				d->fields->addField_string(
 					rp_sprintf(d->s_clockrate, "YM2203").c_str(),
-					LibRpBase::formatFrequency(clk));
+					LibRpText::formatFrequency(clk));
 				d->fields->addField_string(
 					rp_sprintf(d->s_dualchip, "YM2203").c_str(),
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
@@ -581,7 +582,7 @@ int VGM::loadFieldData(void)
 			if (clk != 0) {
 				d->fields->addField_string(
 					rp_sprintf(d->s_clockrate, "YM2608").c_str(),
-					LibRpBase::formatFrequency(clk));
+					LibRpText::formatFrequency(clk));
 				d->fields->addField_string(
 					rp_sprintf(d->s_dualchip, "YM2608").c_str(),
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
@@ -604,7 +605,7 @@ int VGM::loadFieldData(void)
 
 				d->fields->addField_string(
 					rp_sprintf(d->s_clockrate, chip_name).c_str(),
-					LibRpBase::formatFrequency(clk));
+					LibRpText::formatFrequency(clk));
 				d->fields->addField_string(
 					rp_sprintf(d->s_dualchip, chip_name).c_str(),
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
@@ -663,7 +664,7 @@ int VGM::loadFieldData(void)
 
 				d->fields->addField_string(
 					rp_sprintf(d->s_clockrate, chip_name).c_str(),
-					LibRpBase::formatFrequency(clk));
+					LibRpText::formatFrequency(clk));
 				d->fields->addField_string(
 					rp_sprintf(d->s_dualchip, chip_name).c_str(),
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
@@ -687,7 +688,7 @@ int VGM::loadFieldData(void)
 			if (clk != 0) {
 				d->fields->addField_string(
 					rp_sprintf(d->s_clockrate, "NES APU").c_str(),
-						LibRpBase::formatFrequency(clk));
+						LibRpText::formatFrequency(clk));
 				d->fields->addField_string(
 					rp_sprintf(d->s_dualchip, "NES APU").c_str(),
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
@@ -761,7 +762,7 @@ int VGM::loadFieldData(void)
 			if (clk != 0) {
 				d->fields->addField_string(
 					rp_sprintf(d->s_clockrate, "ES5503").c_str(),
-						LibRpBase::formatFrequency(clk));
+						LibRpText::formatFrequency(clk));
 				d->fields->addField_string(
 					rp_sprintf(d->s_dualchip, "ES5503").c_str(),
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
@@ -783,7 +784,7 @@ int VGM::loadFieldData(void)
 
 				d->fields->addField_string(
 					rp_sprintf(d->s_clockrate, chip_name).c_str(),
-						LibRpBase::formatFrequency(clk));
+						LibRpText::formatFrequency(clk));
 				d->fields->addField_string(
 					rp_sprintf(d->s_dualchip, chip_name).c_str(),
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);
@@ -804,7 +805,7 @@ int VGM::loadFieldData(void)
 			if (clk != 0) {
 				d->fields->addField_string(
 					rp_sprintf(d->s_clockrate, "C352").c_str(),
-						LibRpBase::formatFrequency(clk));
+						LibRpText::formatFrequency(clk));
 				d->fields->addField_string(
 					rp_sprintf(d->s_dualchip, "C352").c_str(),
 						(clk_full & VGM_CLK_FLAG_DUALCHIP) ? d->s_yes : d->s_no);

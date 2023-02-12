@@ -23,10 +23,11 @@
 #include "libwin32ui/SubclassWindow.h"
 using LibWin32UI::WTSSessionNotification;
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #include "librpbase/crypto/KeyManager.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
+using namespace LibRpText;
 
 // libromdata
 using namespace LibRomData;

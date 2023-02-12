@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WonderSwan.cpp: Bandai WonderSwan (Color) ROM reader.                   *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,8 +11,9 @@
 #include "data/WonderSwanPublishers.hpp"
 #include "ws_structs.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpText;
 using namespace LibRpFile;
 
 // C++ STL classes.

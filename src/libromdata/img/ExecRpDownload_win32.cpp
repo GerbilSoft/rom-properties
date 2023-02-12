@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ExecRpDownload_win32.cpp: Execute rp-download.exe. (Win32)              *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,12 +11,12 @@
 
 // Windows includes.
 #include "libwin32common/RpWin32_sdk.h"
-#include "librpbase/TextFuncs_wchar.hpp"
+#include "librptext/wchar.hpp"
 
 // librpsecure
 #include "librpsecure/win32/integrity_level.h"
 
-// C++ includes.
+// C++ includes
 #include <string>
 using std::string;
 using std::wstring;

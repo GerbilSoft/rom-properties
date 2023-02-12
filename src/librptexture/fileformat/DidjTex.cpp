@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * DidjTex.hpp: Leapster Didj .tex reader.                                 *
  *                                                                         *
- * Copyright (c) 2019-2022 by David Korth.                                 *
+ * Copyright (c) 2019-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,7 +14,7 @@
 
 // librpbase, librpfile
 #include "libi18n/i18n.h"
-using LibRpBase::rp_sprintf;
+using LibRpText::rp_sprintf;
 using LibRpBase::RomFields;
 using LibRpFile::IRpFile;
 

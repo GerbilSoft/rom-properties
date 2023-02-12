@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * GcnFstTest.cpp: GameCube/Wii FST test.                                  *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,13 +18,15 @@
 #include "mz_zip.h"
 #include "mz_compat.h"
 
-// librpbase, librpfile
-#include "librpbase/TextFuncs.hpp"
+// Other rom-properties libraries
 #include "librpfile/FileSystem.hpp"
-using namespace LibRpBase;
+#include "librptext/conversion.hpp"
+#include "librptext/printf.hpp"
+using namespace LibRpText;
 
 // libromdata
 #include "disc/GcnFst.hpp"
+using LibRpBase::IFst;
 using LibRomData::GcnFst;
 
 // libwin32common
@@ -32,13 +34,13 @@ using LibRomData::GcnFst;
 #include "libwin32common/RpWin32_sdk.h"
 #endif
 
-// FST printer.
+// FST printer
 #include "FstPrint.hpp"
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include "ctypex.h"
 
-// C++ includes.
+// C++ includes
 #include <sstream>
 #include <string>
 #include <unordered_set>

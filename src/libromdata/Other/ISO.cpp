@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ISO.cpp: ISO-9660 disc image parser.                                    *
  *                                                                         *
- * Copyright (c) 2019-2022 by David Korth.                                 *
+ * Copyright (c) 2019-2023 by David Korth.                                 *
  * Copyright (c) 2020 by Egor.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -14,22 +14,14 @@
 #include "../iso_structs.h"
 #include "hsfs_structs.h"
 
-// librpbase, librpfile, librpcpu
+// Other rom-properties libraries
 #include "librpbase/Achievements.hpp"
-#include "librpbase/TextFuncs.hpp"
 #include "libi18n/i18n.h"
 using namespace LibRpBase;
+using namespace LibRpText;
 using LibRpFile::IRpFile;
 
-// C includes. (C++ namespace)
-#include <cassert>
-#include <cerrno>
-#include <cstring>
-#include <ctime>
-
-// C++ includes.
-#include <string>
-#include <vector>
+// C++ STL classes
 using std::string;
 using std::vector;
 

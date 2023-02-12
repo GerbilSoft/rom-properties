@@ -3,7 +3,7 @@
  * device.cpp: Extra functions for devices.                                *
  *                                                                         *
  * Copyright (c) 2016-2018 by Egor.                                        *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,12 +14,12 @@
 // is checked in librpbase, not rpcli.
 #ifdef RP_OS_SCSI_SUPPORTED
 
-// librpbase, librpfile
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_printf.hpp"
+// Other rom-properties libraries
 #include "libi18n/i18n.h"
 #include "librpfile/RpFile.hpp"
-using namespace LibRpBase;
+#include "librptext/conversion.hpp"
+#include "librptext/printf.hpp"
+using namespace LibRpText;
 using LibRpFile::RpFile;
 
 // SCSI and ATA protocols.

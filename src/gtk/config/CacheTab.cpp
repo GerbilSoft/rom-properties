@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * CacheTab.cpp: Thumbnail Cache tab for rp-config.                        *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -16,8 +16,9 @@
 #include "RpGtk.hpp"
 #include "gtk-compat.h"
 
-// librpbase
+// Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpText;
 
 // C++ STL classes
 using std::string;

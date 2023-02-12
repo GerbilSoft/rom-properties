@@ -33,15 +33,16 @@ using LibWin32UI::WTSSessionNotification;
 // NOTE: Using "RomDataView" for the libi18n context, since that
 // matches what's used for the KDE and GTK+ frontends.
 
-// librpbase, librpfile, librptexture, libromdata
+// Other rom-properties libraries
 #include "librpbase/RomFields.hpp"
 #include "librpbase/TextOut.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
+using namespace LibRpText;
 using LibRpTexture::rp_image;
 using LibRomData::RomDataFactory;
 
-// C++ STL classes.
+// C++ STL classes
 using std::set;
 using std::string;
 using std::unique_ptr;

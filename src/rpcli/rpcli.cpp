@@ -16,16 +16,19 @@
 // OS-specific security options.
 #include "rpcli_secure.h"
 
-// librpbase, librpcpu
+// librpbase
+#include "libi18n/i18n.h"
 #include "librpcpu/byteswap_rp.h"
 #include "librpbase/RomData.hpp"
 #include "librpbase/SystemRegion.hpp"
-#include "librpbase/TextFuncs_printf.hpp"
 #include "librpbase/img/RpPng.hpp"
 #include "librpbase/img/IconAnimData.hpp"
 #include "librpbase/TextOut.hpp"
-#include "libi18n/i18n.h"
 using namespace LibRpBase;
+
+// librptext
+#include "librptext/printf.hpp"
+using namespace LibRpText;
 
 // librpfile
 #include "librpfile/config.librpfile.h"

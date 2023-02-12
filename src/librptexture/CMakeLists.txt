@@ -254,7 +254,7 @@ FOREACH(_target ${TARGETS})
 	ENDIF()
 
 	# TODO: More public/private library stuff.
-	TARGET_LINK_LIBRARIES(${_target} PUBLIC rpcpu${_target_suffix} rpfile${_target_suffix})
+	TARGET_LINK_LIBRARIES(${_target} PUBLIC rpcpu${_target_suffix} rpfile${_target_suffix} rptext${_target_suffix})
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE rpthreads${_target_suffix})
 
 	# Include paths:

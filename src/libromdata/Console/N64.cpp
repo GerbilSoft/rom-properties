@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * N64.cpp: Nintendo 64 ROM image reader.                                  *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,8 +10,9 @@
 #include "N64.hpp"
 #include "n64_structs.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpText;
 using LibRpFile::IRpFile;
 
 // C++ STL classes.
@@ -319,7 +320,7 @@ int N64::loadFieldData(void)
 			C_("N64|ClockRate", "0 (default)"));
 	} else {
 		d->fields->addField_string(clockrate_title,
-			formatFrequency(clockrate));
+			LibRpText::formatFrequency(clockrate));
 	}
 
 	// CRCs.

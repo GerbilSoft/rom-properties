@@ -3,7 +3,7 @@
  * EXE_PE.cpp: DOS/Windows executable reader.                              *
  * 32-bit/64-bit Portable Executable format.                               *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * Copyright (c) 2022 by Egor.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -13,13 +13,14 @@
 #include "data/EXEData.hpp"
 #include "disc/PEResourceReader.hpp"
 
-// for strnlen() if it's not available in <string.h>
-#include "librpbase/TextFuncs_libc.h"
-
-// librpbase
+// Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpText;
 
-// C++ STL classes.
+// for strnlen() if it's not available in <string.h>
+#include "librptext/libc.h"
+
+// C++ STL classes
 using std::string;
 using std::unique_ptr;
 using std::unordered_set;

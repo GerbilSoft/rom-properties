@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NintendoBadge.hpp: Nintendo Badge Arcade image reader.                  *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,11 +13,12 @@
 #include "data/Nintendo3DSSysTitles.hpp"
 #include "data/NintendoLanguage.hpp"
 
-// librpbase, librpcpu, librpfile, librptexture
+// Other rom-properties libraries
 #include "librptexture/decoder/ImageDecoder_N3DS.hpp"
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using namespace LibRpText;
 using namespace LibRpTexture;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::array;

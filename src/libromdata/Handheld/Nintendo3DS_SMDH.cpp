@@ -3,7 +3,7 @@
  * Nintendo3DS_SMDH.hpp: Nintendo 3DS SMDH reader.                         *
  * Handles SMDH files and SMDH sections.                                   *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,13 +13,14 @@
 #include "n3ds_structs.h"
 #include "data/NintendoLanguage.hpp"
 
-// librpbase, librpfile, librptexture
+// Other rom-properties libraries
 #include "librptexture/decoder/ImageDecoder_N3DS.hpp"
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using namespace LibRpText;
 using namespace LibRpTexture;
+using LibRpFile::IRpFile;
 
-// C++ STL classes.
+// C++ STL classes
 using std::array;
 using std::string;
 using std::vector;

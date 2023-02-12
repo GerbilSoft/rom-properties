@@ -28,7 +28,7 @@ ADD_EXECUTABLE(GcnFstPrint
 	disc/FstPrint.hpp
 	disc/GcnFstPrint.cpp
 	)
-TARGET_LINK_LIBRARIES(GcnFstPrint PRIVATE rpsecure romdata)
+TARGET_LINK_LIBRARIES(GcnFstPrint PRIVATE rpsecure romdata rptext)
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(GcnFstPrint PRIVATE i18n)
 ENDIF(ENABLE_NLS)
@@ -47,7 +47,7 @@ ADD_EXECUTABLE(GcnFstTest
 	disc/FstPrint.hpp
 	disc/GcnFstTest.cpp
 	)
-TARGET_LINK_LIBRARIES(GcnFstTest PRIVATE rptest romdata)
+TARGET_LINK_LIBRARIES(GcnFstTest PRIVATE rptest romdata rptext)
 IF(ENABLE_NLS)
 	TARGET_LINK_LIBRARIES(GcnFstTest PRIVATE i18n)
 ENDIF(ENABLE_NLS)

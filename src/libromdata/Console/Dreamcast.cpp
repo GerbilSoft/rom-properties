@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Dreamcast.hpp: Sega Dreamcast disc image reader.                        *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,9 +13,10 @@
 #include "dc_structs.h"
 #include "cdrom_structs.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 using namespace LibRpBase;
 using namespace LibRpFile;
+using namespace LibRpText;
 
 // librptexture
 #include "librptexture/fileformat/SegaPVR.hpp"

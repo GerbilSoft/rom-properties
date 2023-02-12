@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PlayStationEXE.cpp: PlayStation PS-X executable reader.                 *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,9 +10,10 @@
 #include "PlayStationEXE.hpp"
 #include "ps1_exe_structs.h"
 
-// librpbase, librpfile
-using LibRpFile::IRpFile;
+// Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpText;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::string;

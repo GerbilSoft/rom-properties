@@ -9,18 +9,6 @@ PROJECT(rpbase LANGUAGES C CXX)
 
 IF(NOT WIN32)
 	# Non-Windows library checks.
-
-	# On Win32, we use MultiByteToWideChar() and WideCharToMultiByte().
-	# On other systems, we use iconv(), which could be in libc or libiconv.
-	# Figure out which library has iconv().
-
-	# Check for iconv().
-	FIND_PACKAGE(Iconv REQUIRED)
-	SET(HAVE_ICONV 1)
-	IF(NOT Iconv_IS_BUILT_IN)
-		SET(HAVE_ICONV_LIBICONV 1)
-	ENDIF(NOT Iconv_IS_BUILT_IN)
-
 	IF(ENABLE_DECRYPTION)
 		INCLUDE(CheckNettle2or3)
 		CHECK_NETTLE_2_OR_3()
@@ -28,32 +16,6 @@ IF(NOT WIN32)
 ENDIF(NOT WIN32)
 
 # ZLIB and libpng are checked in the top-level CMakeLists.txt.
-
-# Check for C library functions.
-INCLUDE(CheckSymbolExists)
-INCLUDE(CheckStructHasMember)
-CHECK_SYMBOL_EXISTS(strnlen "string.h" HAVE_STRNLEN)
-CHECK_SYMBOL_EXISTS(memmem "string.h" HAVE_MEMMEM)
-# MSVCRT doesn't have nl_langinfo() and probably never will.
-IF(NOT WIN32)
-	CHECK_SYMBOL_EXISTS(nl_langinfo "langinfo.h" HAVE_NL_LANGINFO)
-ELSE(NOT WIN32)
-	# Win32: MinGW's `struct lconv` does have wchar_t fields,
-	# but only if __MSVCRT_VERSION__ >= 0xA00 || _WIN32_WINNT >= 0x601.
-	CHECK_STRUCT_HAS_MEMBER("struct lconv" _W_decimal_point "locale.h"
-		HAVE_STRUCT_LCONV_WCHAR_T
-		LANGUAGE C)
-ENDIF(NOT WIN32)
-
-# wcwidth() requires _XOPEN_SOURCE.
-SET(OLD_CMAKE_REQUIRED_DEFINITIONS ${CMAKE_REQUIRED_DEFINITIONS})
-SET(CMAKE_REQUIRED_DEFINITIONS ${CMAKE_REQUIRED_DEFINITIONS} -D_XOPEN_SOURCE)
-CHECK_SYMBOL_EXISTS(wcwidth "wchar.h" HAVE_WCWIDTH)
-SET(CMAKE_REQUIRED_DEFINITIONS ${OLD_CMAKE_REQUIRED_DEFINITIONS})
-UNSET(OLD_CMAKE_REQUIRED_DEFINITIONS)
-IF(HAVE_WCWIDTH)
-	ADD_DEFINITIONS(-D_XOPEN_SOURCE)
-ENDIF(HAVE_WCWIDTH)
 
 # Check for unordered_map::reserve and unordered_set::reserve.
 SET(OLD_CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES})
@@ -74,11 +36,6 @@ UNSET(OLD_CMAKE_REQUIRED_INCLUDES)
 
 # Sources.
 SET(${PROJECT_NAME}_SRCS
-	TextFuncs.cpp
-	TextFuncs_conv.cpp
-	TextFuncs_libc.c
-	TextFuncs_printf.cpp
-	TextFuncs_strlen.cpp
 	RomData.cpp
 	RomFields.cpp
 	RomMetaData.cpp
@@ -104,12 +61,6 @@ SET(${PROJECT_NAME}_SRCS
 	)
 # Headers.
 SET(${PROJECT_NAME}_H
-	TextFuncs.hpp
-	TextFuncs_libc.h
-	TextFuncs_printf.hpp
-	TextFuncs_strlen.hpp
-	TextFuncs_wchar.hpp
-	RP_CP_tbls.hpp
 	RomData.hpp
 	RomData_decl.hpp
 	RomData_p.hpp
@@ -147,13 +98,6 @@ ELSEIF(JPEG_FOUND)
 	SET(${PROJECT_NAME}_H ${${PROJECT_NAME}_H} img/RpJpeg.hpp)
 ENDIF()
 
-IF(WIN32)
-	SET(${PROJECT_NAME}_OS_SRCS TextFuncs_win32.cpp)
-	SET(${PROJECT_NAME}_OS_H    TextFuncs_wchar.hpp)
-ELSE(WIN32)
-	SET(${PROJECT_NAME}_OS_SRCS TextFuncs_iconv.cpp)
-ENDIF(WIN32)
-
 IF(ENABLE_DECRYPTION)
 	SET(${PROJECT_NAME}_CRYPTO_SRCS crypto/AesCipherFactory.cpp)
 	SET(${PROJECT_NAME}_CRYPTO_H    crypto/IAesCipher.hpp crypto/MD5Hash.hpp)
@@ -190,7 +134,7 @@ IF(CPU_i386 OR CPU_amd64)
 ENDIF()
 UNSET(arch)
 
-# Write the config.h files.
+# Write the config.h file.
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.lib${PROJECT_NAME}.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.lib${PROJECT_NAME}.h")
 
 ######################
@@ -211,7 +155,6 @@ ENDIF()
 FOREACH(_target ${TARGETS})
 	ADD_LIBRARY(${_target} STATIC
 		${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
-		${${PROJECT_NAME}_OS_SRCS} ${${PROJECT_NAME}_OS_H}
 		${${PROJECT_NAME}_CRYPTO_SRCS} ${${PROJECT_NAME}_CRYPTO_H}
 		${${PROJECT_NAME}_CRYPTO_OS_SRCS} ${${PROJECT_NAME}_CRYPTO_OS_H}
 		${${PROJECT_NAME}_SSSE3_SRCS}
@@ -268,19 +211,12 @@ FOREACH(_target ${TARGETS})
 		TARGET_LINK_LIBRARIES(${_target} PRIVATE ${CMAKE_DL_LIBS})
 	ENDIF(${PROJECT_NAME}_NEEDS_DL AND CMAKE_DL_LIBS)
 
-	# Other libraries.
+	# Other libraries
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE
-		rpcpu${_target_suffix} rpfile${_target_suffix}
+		rpcpu${_target_suffix} rpfile${_target_suffix} rptext${_target_suffix}
 		rptexture${_target_suffix} rpthreads${_target_suffix}
 		cachecommon${_target_suffix})
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE inih)
-
-	IF(Iconv_LIBRARY AND NOT Iconv_IS_BUILT_IN)
-		TARGET_LINK_LIBRARIES(${_target} PRIVATE Iconv::Iconv)
-	ENDIF(Iconv_LIBRARY AND NOT Iconv_IS_BUILT_IN)
-	IF(NOT HAVE_WCWIDTH)
-		TARGET_LINK_LIBRARIES(${_target} PRIVATE uniwidth)
-	ENDIF(NOT HAVE_WCWIDTH)
 
 	IF(ZLIB_FOUND)
 		TARGET_LINK_LIBRARIES(${_target} PRIVATE ${ZLIB_LIBRARIES})

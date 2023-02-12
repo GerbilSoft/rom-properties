@@ -65,8 +65,6 @@
 #ifdef __cplusplus
 // librpbase C++ headers
 #include "librpbase/RomData.hpp"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_printf.hpp"
 #include "librpbase/img/IconAnimData.hpp"
 
 // Uninitialized vector class.
@@ -93,4 +91,8 @@
 #include "librptexture/ImageSizeCalc.hpp"
 #include "librptexture/decoder/PixelConversion.hpp"
 #include "librptexture/decoder/ImageDecoder_Linear.hpp"
+
+// librptext C++ headers
+#include "librptext/conversion.hpp"
+#include "librptext/printf.hpp"
 #endif /* !__cplusplus */

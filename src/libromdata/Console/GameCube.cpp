@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GameCube.cpp: Nintendo GameCube and Wii disc image reader.              *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,12 +18,13 @@
 #include "GameCubeRegions.hpp"
 #include "WiiCommon.hpp"
 
-// librpbase, librpfile, librptexture
+// Other rom-properties libraries
 #include "librpfile/DualFile.hpp"
 #include "librpfile/RelatedFile.hpp"
 #include "librpbase/Achievements.hpp"
 #include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
+using namespace LibRpText;
 using namespace LibRpFile;
 using LibRpTexture::rp_image;
 
@@ -39,7 +40,7 @@ using LibRpTexture::rp_image;
 #include "GameCubeBNR.hpp"
 
 // for strnlen() if it's not available in <string.h>
-#include "librpbase/TextFuncs_libc.h"
+#include "librptext/libc.h"
 
 // C++ STL classes.
 using std::array;
@@ -1878,14 +1879,14 @@ int GameCube::loadFieldData(void)
 			// Used size.
 			const off64_t used_size = entry.partition->partition_size_used();
 			if (used_size >= 0) {
-				data_row.emplace_back(LibRpBase::formatFileSize(used_size));
+				data_row.emplace_back(LibRpText::formatFileSize(used_size));
 			} else {
 				// tr: Unknown used size.
 				data_row.emplace_back(C_("Wii|Partition", "Unknown"));
 			}
 
 			// Partition size.
-			data_row.emplace_back(LibRpBase::formatFileSize(entry.partition->partition_size()));
+			data_row.emplace_back(LibRpText::formatFileSize(entry.partition->partition_size()));
 		}
 
 		// Fields.

@@ -10,10 +10,10 @@
 #include "OptionsMenuButton.hpp"
 #include "res/resource.h"
 
-// libi18n, librpbase
+// Other rom-properties libraries
 #include "libi18n/i18n.h"
 #include "librpbase/RomData.hpp"
-#include "librpbase/TextFuncs_wchar.hpp"
+#include "librptext/wchar.hpp"
 using LibRpBase::RomData;
 
 // libwin32ui

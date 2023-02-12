@@ -175,6 +175,8 @@ FOREACH(_target ${TARGETS})
 	IF(WIN32)
 		# for MiniU82T
 		TARGET_LINK_LIBRARIES(${_target} PRIVATE win32common${_target_suffix})
+		# xattr/XAttrReader_win32.cpp uses wchar.hpp
+		TARGET_LINK_LIBRARIES(${_target} PRIVATE rptext${_target_suffix})
 	ENDIF(WIN32)
 
 	# Include paths:

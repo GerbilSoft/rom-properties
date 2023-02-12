@@ -3,7 +3,7 @@
  * Nintendo3DS.hpp: Nintendo 3DS ROM reader.                               *
  * Handles CCI/3DS, CIA, and SMDH files.                                   *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,12 +14,13 @@
 #include "Nintendo3DS_p.hpp"
 #include "n3ds_structs.h"
 
-// librpbase, librpfile, librptexture
+// Other rom-properties libraries
 #include "librpbase/config/Config.hpp"
 #include "librpbase/Achievements.hpp"
 #include "librpbase/SystemRegion.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
+using namespace LibRpText;
 using namespace LibRpTexture;
 
 // For sections delegated to other RomData subclasses.
@@ -2054,7 +2055,7 @@ int Nintendo3DS::loadFieldData(void)
 
 			// Partition size.
 			const off64_t length_bytes = static_cast<off64_t>(length) << d->media_unit_shift;
-			data_row.emplace_back(LibRpBase::formatFileSize(length_bytes));
+			data_row.emplace_back(LibRpText::formatFileSize(length_bytes));
 
 			UNREF(pNcch);
 		}
@@ -2197,7 +2198,7 @@ int Nintendo3DS::loadFieldData(void)
 				data_row.emplace_back();
 
 				// Content size
-				data_row.emplace_back(LibRpBase::formatFileSize(be64_to_cpu(iter->size)));
+				data_row.emplace_back(LibRpText::formatFileSize(be64_to_cpu(iter->size)));
 				UNREF(pNcch);
 				continue;
 			}
@@ -2242,7 +2243,7 @@ int Nintendo3DS::loadFieldData(void)
 				le16_to_cpu(content_ncch_header->version)));
 
 			// Content size
-			data_row.emplace_back(LibRpBase::formatFileSize(pNcch->partition_size()));
+			data_row.emplace_back(LibRpText::formatFileSize(pNcch->partition_size()));
 
 			UNREF(pNcch);
 		}

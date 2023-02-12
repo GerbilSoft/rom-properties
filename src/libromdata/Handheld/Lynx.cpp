@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Lynx.hpp: Atari Lynx ROM reader.                                        *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * Copyright (c) 2017-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -11,8 +11,9 @@
 #include "Lynx.hpp"
 #include "lnx_structs.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpText;
 using LibRpFile::IRpFile;
 
 namespace LibRomData {
@@ -214,10 +215,10 @@ int Lynx::loadFieldData(void)
 			: C_("RomData", "Unknown")));
 
 	d->fields->addField_string(C_("Lynx", "Bank 0 Size"),
-		LibRpBase::formatFileSize(le16_to_cpu(romHeader->page_size_bank0) * 256));
+		LibRpText::formatFileSize(le16_to_cpu(romHeader->page_size_bank0) * 256));
 
 	d->fields->addField_string(C_("Lynx", "Bank 1 Size"),
-		LibRpBase::formatFileSize(le16_to_cpu(romHeader->page_size_bank0) * 256));
+		LibRpText::formatFileSize(le16_to_cpu(romHeader->page_size_bank0) * 256));
 
 	return static_cast<int>(d->fields->count());
 }

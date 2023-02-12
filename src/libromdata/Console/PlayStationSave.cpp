@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PlayStationSave.hpp: Sony PlayStation save file reader.                 *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * Copyright (c) 2017-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -15,10 +15,11 @@
 #include "PlayStationSave.hpp"
 #include "ps1_structs.h"
 
-// librpbase, librpfile, librptexture
+// Other rom-properties libraries
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using namespace LibRpText;
 using namespace LibRpTexture;
+using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::vector;

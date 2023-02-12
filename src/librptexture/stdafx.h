@@ -53,10 +53,12 @@
 
 // librpbase C++ headers
 #include "librpbase/RomFields.hpp"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_printf.hpp"
 
 // librpfile C++ headers
 #include "librpfile/IRpFile.hpp"
 #include "librpfile/FileSystem.hpp"
+
+// librptext C++ headers
+#include "librptext/conversion.hpp"
+#include "librptext/printf.hpp"
 #endif /* !__cplusplus */

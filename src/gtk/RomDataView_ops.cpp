@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RomDataView.cpp: RomData viewer widget. (ROM operations)                *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,10 +22,11 @@
 #  include "MessageSound.hpp"
 #endif /* ENABLE_MESSAGESOUND */
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #include "librpbase/TextOut.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
+using namespace LibRpText;
 
 // C++ STL classes
 #include <fstream>

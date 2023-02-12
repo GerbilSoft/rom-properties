@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpPngWriter.cpp: PNG image writer.                                      *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -10,16 +10,13 @@
 #include "config.librpbase.h"
 #include "RpPngWriter.hpp"
 
-#include "byteorder.h"
-#include "TextFuncs.hpp"
-
-// librpfile
+// Other rom-properties libraries
+#include "librpcpu/byteorder.h"
 #include "librpfile/RpFile.hpp"
+#include "img/rp_image.hpp"
+using namespace LibRpText;
 using LibRpFile::IRpFile;
 using LibRpFile::RpFile;
-
-// librptexture
-#include "img/rp_image.hpp"
 using LibRpTexture::rp_image;
 using LibRpTexture::argb32_t;
 

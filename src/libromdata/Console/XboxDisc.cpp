@@ -2,16 +2,17 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * XboxDisc.cpp: Microsoft Xbox disc image parser.                         *
  *                                                                         *
- * Copyright (c) 2019-2022 by David Korth.                                 *
+ * Copyright (c) 2019-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "XboxDisc.hpp"
 
-// librpbase, librpfile, librptexture
+// Other rom-properties libraries
 #include "librpfile/RpFile.hpp"
 using namespace LibRpBase;
+using namespace LibRpText;
 using LibRpFile::IRpFile;
 using LibRpFile::RpFile;
 using LibRpTexture::rp_image;

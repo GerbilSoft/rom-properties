@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PSP.hpp: PlayStation Portable disc image reader.                        *
  *                                                                         *
- * Copyright (c) 2019-2022 by David Korth.                                 *
+ * Copyright (c) 2019-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,11 +11,12 @@
 #include "config.libromdata.h"
 #include "PSP.hpp"
 
-// librpbase, librpfile, librptexture
+// Other rom-properties libraries
 #include "librpbase/img/RpPng.hpp"
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using namespace LibRpText;
 using namespace LibRpTexture;
+using LibRpFile::IRpFile;
 
 // DiscReader
 #include "cdrom_structs.h"

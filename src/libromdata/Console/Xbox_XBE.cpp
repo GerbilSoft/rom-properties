@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Xbox_XBE.cpp: Microsoft Xbox executable reader.                         *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,9 +11,10 @@
 #include "xbox_xbe_structs.h"
 #include "data/XboxPublishers.hpp"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #include "librpbase/img/RpPng.hpp"
 using namespace LibRpBase;
+using namespace LibRpText;
 using LibRpFile::IRpFile;
 using LibRpFile::SubFile;
 
@@ -25,7 +26,7 @@ using LibRpTexture::XboxXPR;
 // Other RomData subclasses
 #include "Other/EXE.hpp"
 
-// C++ STL classes.
+// C++ STL classes
 using std::ostringstream;
 using std::string;
 using std::unique_ptr;

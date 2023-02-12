@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Nintendo3DSFirm.hpp: Nintendo 3DS firmware reader.                      *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,12 +11,13 @@
 #include "n3ds_firm_structs.h"
 #include "data/Nintendo3DSFirmData.hpp"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpText;
 using LibRpFile::IRpFile;
 
 // for memmem() if it's not available in <string.h>
-#include "librpbase/TextFuncs_libc.h"
+#include "librptext/libc.h"
 
 // C++ STL classes.
 using std::string;

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * iQuePlayer.cpp: iQue Player .cmd reader.                                *
  *                                                                         *
- * Copyright (c) 2019-2022 by David Korth.                                 *
+ * Copyright (c) 2019-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,13 +12,14 @@
 #include "iQuePlayer.hpp"
 #include "ique_player_structs.h"
 
-// librpbase, librpfile, librptexture
+// Other rom-properties libraries
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
+using namespace LibRpText;
 using namespace LibRpTexture;
+using LibRpFile::IRpFile;
 
 // for memmem() if it's not available in <string.h>
-#include "librpbase/TextFuncs_libc.h"
+#include "librptext/libc.h"
 
 // C++ STL classes.
 using std::string;

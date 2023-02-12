@@ -6,7 +6,7 @@
  * arbitrary GtkWidgets. As such, the properties returned will be more       *
  * limited than in previous versions.                                        *
  *                                                                           *
- * Copyright (c) 2017-2022 by David Korth.                                   *
+ * Copyright (c) 2017-2023 by David Korth.                                   *
  * SPDX-License-Identifier: GPL-2.0-or-later                                 *
  *****************************************************************************/
 
@@ -16,9 +16,10 @@
 
 #include "libi18n/i18n.h"
 
-// librpbase
+// Other rom-properties libraries
 #include "librpbase/RomData.hpp"
 using namespace LibRpBase;
+using namespace LibRpText;
 
 // C++ STL classes
 using std::string;

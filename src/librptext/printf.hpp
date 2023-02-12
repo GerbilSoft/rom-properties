@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
- * TextFuncs_printf.hpp: printf()-style functions.                         *
+ * ROM Properties Page shell extension. (librptext)                        *
+ * printf.hpp: printf()-style functions                                    *
  *                                                                         *
  * Copyright (c) 2009-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -17,7 +17,7 @@
 // C++ includes
 #include <string>
 
-namespace LibRpBase {
+namespace LibRpText {
 
 /** UTF-8 (char) **/
 

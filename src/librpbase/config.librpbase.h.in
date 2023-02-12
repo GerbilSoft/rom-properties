@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * config.librpbase.h.in: LibRpBase configuration. (source file)           *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -39,26 +39,6 @@
 
 /* Define to 1 if you have libjpeg. */
 #cmakedefine HAVE_JPEG 1
-
-/* Define to 1 if you have the `strnlen' function. */
-#cmakedefine HAVE_STRNLEN 1
-
-/* Define to 1 if you have the `memmem' function. */
-#cmakedefine HAVE_MEMMEM 1
-
-/* Define to 1 if you have the `nl_langinfo` function. */
-#cmakedefine HAVE_NL_LANGINFO 1
-
-/* Define to 1 if `struct lconv` has wchar_t fields. */
-// NOTE: Some versions of MinGW have this, but only with MSVCRT 10.0 or Windows 7 or later.
-#if defined(_WIN32)
-#  if defined(_MSC_VER) || (__MSVCRT_VERSION__ >= 0xA00 || _WIN32_WINNT >= 0x601)
-#    cmakedefine HAVE_STRUCT_LCONV_WCHAR_T 1
-#  endif
-#endif
-
-/* Define to 1 if you have the `wcwidth` function. */
-#cmakedefine HAVE_WCWIDTH 1
 
 /* Define to 1 if decryption should be enabled. */
 #cmakedefine ENABLE_DECRYPTION 1

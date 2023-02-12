@@ -2,18 +2,19 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * PEResourceReader.cpp: Portable Executable resource reader.              *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "PEResourceReader.hpp"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 using namespace LibRpBase;
 using namespace LibRpFile;
+using namespace LibRpText;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;

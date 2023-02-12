@@ -1,16 +1,16 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
- * TextFuncs_strlen.hpp: UTF-8 strlen() functions.                         *
+ * ROM Properties Page shell extension. (librptext)                        *
+ * utf8_strlen.cpp: UTF-8 strlen() functions                               *
  *                                                                         *
- * Copyright (c) 2022 by David Korth.                                      *
+ * Copyright (c) 2022-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
-#include "TextFuncs_strlen.hpp"
+#include "config.librptext.h"
+#include "utf8_strlen.hpp"
+#include "common.h"
 
 // C includes
-#include "config.librpbase.h"
 #ifdef HAVE_WCWIDTH
 #  include <wchar.h>
 #else /* !HAVE_WCWIDTH */
@@ -18,7 +18,10 @@
 #  define wcwidth(c) uc_width(c)
 #endif /* HAVE_WCWIDTH */
 
-namespace LibRpBase {
+// C includes (C++ namespace)
+#include <cassert>
+
+namespace LibRpText {
 
 /**
  * Determine the display length of a UTF-8 string.

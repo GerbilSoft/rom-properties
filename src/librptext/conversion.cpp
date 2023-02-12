@@ -1,17 +1,18 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
- * TextFuncs.cpp: Text encoding functions.                                 *
+ * ROM Properties Page shell extension. (librptext)                        *
+ * conversion.cpp: Text encoding functions                                 *
  *                                                                         *
- * Copyright (c) 2009-2022 by David Korth.                                 *
+ * Copyright (c) 2009-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
-#include "config.librpbase.h"
-#include "TextFuncs.hpp"
+#include "config.librptext.h"
+#include "conversion.hpp"
+#include "printf.hpp"
 
-// libi18n
+// libi18n, librpcpu
 #include "libi18n/i18n.h"
+#include "librpcpu/byteswap_rp.h"
 
 // C includes
 #ifdef HAVE_NL_LANGINFO
@@ -21,18 +22,23 @@
 #endif /* HAVE_NL_LANGINFO */
 
 // C includes (C++ namespace)
+#include <cassert>
 #include <cwctype>
 
 // for strnlen() if it's not available in <string.h>
-#include "TextFuncs_libc.h"
+#include "libc.h"
 
-// C++ STL classes.
+// C++ includes and STL classes
+#include <iomanip>
+#include <memory>
+#include <string>
+#include <sstream>
 using std::ostringstream;
 using std::string;
 using std::u16string;
 using std::unique_ptr;
 
-namespace LibRpBase {
+namespace LibRpText {
 
 /** OS-independent text conversion functions. **/
 
@@ -250,37 +256,37 @@ string formatFileSize(off64_t size)
 		frac_part = 0;
 	} else if (size < (2LL << 10)) {
 		// tr: Bytes (< 1,024)
-		suffix = NC_("TextFuncs|FileSize", "byte", "bytes", static_cast<int>(size));
+		suffix = NC_("LibRpText|FileSize", "byte", "bytes", static_cast<int>(size));
 		whole_part = static_cast<int>(size);
 		frac_part = 0;
 	} else if (size < (2LL << 20)) {
 		// tr: Kilobytes
-		suffix = C_("TextFuncs|FileSize", "KiB");
+		suffix = C_("LibRpText|FileSize", "KiB");
 		whole_part = static_cast<int>(size >> 10);
 		frac_part = calc_frac_part<off64_t>(size, (1LL << 10));
 	} else if (size < (2LL << 30)) {
 		// tr: Megabytes
-		suffix = C_("TextFuncs|FileSize", "MiB");
+		suffix = C_("LibRpText|FileSize", "MiB");
 		whole_part = static_cast<int>(size >> 20);
 		frac_part = calc_frac_part<off64_t>(size, (1LL << 20));
 	} else if (size < (2LL << 40)) {
 		// tr: Gigabytes
-		suffix = C_("TextFuncs|FileSize", "GiB");
+		suffix = C_("LibRpText|FileSize", "GiB");
 		whole_part = static_cast<int>(size >> 30);
 		frac_part = calc_frac_part<off64_t>(size, (1LL << 30));
 	} else if (size < (2LL << 50)) {
 		// tr: Terabytes
-		suffix = C_("TextFuncs|FileSize", "TiB");
+		suffix = C_("LibRpText|FileSize", "TiB");
 		whole_part = static_cast<int>(size >> 40);
 		frac_part = calc_frac_part<off64_t>(size, (1LL << 40));
 	} else if (size < (2LL << 60)) {
 		// tr: Petabytes
-		suffix = C_("TextFuncs|FileSize", "PiB");
+		suffix = C_("LibRpText|FileSize", "PiB");
 		whole_part = static_cast<int>(size >> 50);
 		frac_part = calc_frac_part<off64_t>(size, (1LL << 50));
 	} else /*if (size < (2LL << 70))*/ {
 		// tr: Exabytes
-		suffix = C_("TextFuncs|FileSize", "EiB");
+		suffix = C_("LibRpText|FileSize", "EiB");
 		whole_part = static_cast<int>(size >> 60);
 		frac_part = calc_frac_part<off64_t>(size, (1LL << 60));
 	}
@@ -306,7 +312,7 @@ string formatFileSize(off64_t size)
 
 	if (suffix) {
 		// tr: %1$s == localized value, %2$s == suffix (e.g. MiB)
-		return rp_sprintf_p(C_("TextFuncs|FileSize", "%1$s %2$s"),
+		return rp_sprintf_p(C_("LibRpText|FileSize", "%1$s %2$s"),
 			s_value.str().c_str(), suffix);
 	} else {
 		return s_value.str();
@@ -328,7 +334,7 @@ string formatFileSize(off64_t size)
  */
 std::string formatFileSizeKiB(unsigned int size)
 {
-	return rp_sprintf("%u %s", (size / 1024), C_("TextFuncs|FileSize", "KiB"));
+	return rp_sprintf("%u %s", (size / 1024), C_("LibRpText|FileSize", "KiB"));
 }
 
 /**
@@ -346,22 +352,22 @@ std::string formatFrequency(uint32_t frequency)
 	// TODO: Optimize this?
 	if (frequency < (2*1000)) {
 		// tr: Hertz (< 1,000)
-		suffix = C_("TextFuncs|Frequency", "Hz");
+		suffix = C_("LibRpText|Frequency", "Hz");
 		whole_part = frequency;
 		frac_part = 0;
 	} else if (frequency < (2*1000*1000)) {
 		// tr: Kilohertz
-		suffix = C_("TextFuncs|Frequency", "kHz");
+		suffix = C_("LibRpText|Frequency", "kHz");
 		whole_part = frequency / 1000;
 		frac_part = frequency % 1000;
 	} else if (frequency < (2*1000*1000*1000)) {
 		// tr: Megahertz
-		suffix = C_("TextFuncs|Frequency", "MHz");
+		suffix = C_("LibRpText|Frequency", "MHz");
 		whole_part = frequency / (1000*1000);
 		frac_part = (frequency / 1000) % 1000;
 	} else /*if (frequency < (2*1000*1000*1000*1000))*/ {
 		// tr: Gigahertz
-		suffix = C_("TextFuncs|Frequency", "GHz");
+		suffix = C_("LibRpText|Frequency", "GHz");
 		whole_part = frequency / (1000*1000*1000);
 		frac_part = (frequency / (1000*1000)) % 1000;
 	}
@@ -381,7 +387,7 @@ std::string formatFrequency(uint32_t frequency)
 
 	if (suffix) {
 		// tr: %1$s == localized value, %2$s == suffix (e.g. MHz)
-		return rp_sprintf_p(C_("TextFuncs|Frequency", "%1$s %2$s"),
+		return rp_sprintf_p(C_("LibRpText|Frequency", "%1$s %2$s"),
 			s_value.str().c_str(), suffix);
 	} else {
 		return s_value.str();

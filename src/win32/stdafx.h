@@ -118,9 +118,6 @@
 #ifdef __cplusplus
 // librpbase C++ headers
 #include "librpbase/RomData.hpp"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_printf.hpp"
-#include "librpbase/TextFuncs_wchar.hpp"
 #include "librpbase/config/Config.hpp"
 
 // librpfile C++ headers
@@ -133,4 +130,9 @@
 
 // libromdata C++ headers
 #include "libromdata/RomDataFactory.hpp"
+
+// librptext C++ headers
+#include "librptext/conversion.hpp"
+#include "librptext/printf.hpp"
+#include "librptext/wchar.hpp"
 #endif /* __cplusplus */

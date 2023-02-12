@@ -1,7 +1,7 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
- * TextFuncs_libc.h: Reimplementations of libc functions that aren't       *
- * present on this system.                                                 *
+ * ROM Properties Page shell extension. (librptext)                        *
+ * libc.h: Reimplementations of libc functions that aren't present on      *
+ * this system.                                                            *
  *                                                                         *
  * Copyright (c) 2009-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -9,7 +9,10 @@
 
 #pragma once
 
-#include "config.librpbase.h"
+#include "config.librptext.h"
+#include "common.h"
+
+// C includes
 #include <stddef.h>
 
 #ifdef __cplusplus

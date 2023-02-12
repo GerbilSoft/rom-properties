@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase/tests)                  *
- * TextFuncsTest_data.hpp: Data for TextFuncsTest.                         *
+ * ROM Properties Page shell extension. (librptext/tests)                  *
+ * TextFuncsTest.cpp: Text conversion functions test (data)                *
  *                                                                         *
  * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *

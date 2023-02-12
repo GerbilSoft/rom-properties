@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyManagerTab.cpp: Key Manager tab for rp-config.                       *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,9 +13,10 @@
 #include "KeyStoreModel.hpp"
 #include "KeyStoreItemDelegate.hpp"
 
-// librpbase, libromdata
+// Other rom-properties libraries
 using namespace LibRpBase;
-using namespace LibRomData;
+using namespace LibRpText;
+using LibRomData::KeyStoreUI;
 
 // C++ STL classes.
 using std::string;

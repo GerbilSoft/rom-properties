@@ -1,5 +1,5 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
+ * ROM Properties Page shell extension. (librptext)                        *
  * RP_CP_tbls.hpp: Code page lookup tables for custom code pages.          *
  *                                                                         *
  * Copyright (c) 2009-2023 by David Korth.                                 *
@@ -8,9 +8,7 @@
 
 #pragma once
 
-#include "stdafx.h"
-
-namespace LibRpBase { namespace CodePageTables {
+namespace LibRpText { namespace CodePageTables {
 
 // Atari ST lookup table.
 // Reference: https://en.wikipedia.org/wiki/Atari_ST_character_set

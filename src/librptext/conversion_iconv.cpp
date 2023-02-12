@@ -1,28 +1,27 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
- * TextFuncs_iconv.cpp: Text encoding functions. (iconv version)           *
+ * ROM Properties Page shell extension. (librptext)                        *
+ * conversion_iconv.cpp: Text encoding functions (iconv version)           *
  *                                                                         *
- * Copyright (c) 2009-2022 by David Korth.                                 *
+ * Copyright (c) 2009-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
-#include "config.librpbase.h"
-#include "TextFuncs.hpp"
-#include "TextFuncs_NULL.hpp"
+#include "config.librptext.h"
+#include "conversion.hpp"
+#include "NULL-check.hpp"
 
 #if defined(_WIN32)
-# error TextFuncs_iconv.cpp is not supported on Windows.
+#  error conversion_iconv.cpp is not supported on Windows.
 #elif !defined(HAVE_ICONV)
-# error TextFuncs_iconv.cpp requires the iconv() function.
+#  error conversion_iconv.cpp requires the iconv() function.
 #endif
 
 // Determine the system encodings.
-#include "byteorder.h"
+#include "librpcpu/byteorder.h"
 #if SYS_BYTEORDER == SYS_BIG_ENDIAN
-# define RP_ICONV_UTF16_ENCODING "UTF-16BE"
+#  define RP_ICONV_UTF16_ENCODING "UTF-16BE"
 #else
-# define RP_ICONV_UTF16_ENCODING "UTF-16LE"
+#  define RP_ICONV_UTF16_ENCODING "UTF-16LE"
 #endif
 
 // iconv
@@ -31,18 +30,21 @@
 // GNU libiconv is installed (/usr/local), its header gets
 // used first, so explicitly use the system iconv.h on
 // non-Linux systems.
-# include </usr/include/iconv.h>
+#  include </usr/include/iconv.h>
 #else
 // iconv() is either in libiconv only, or this is Linux.
 // Use iconv.h normally.
-# include <iconv.h>
+#  include <iconv.h>
 #endif
 
-// C++ STL classes.
+// C includes (C++ namespace)
+#include <cassert>
+
+// C++ STL classes
 using std::string;
 using std::u16string;
 
-namespace LibRpBase {
+namespace LibRpText {
 
 /** OS-specific text conversion functions. **/
 

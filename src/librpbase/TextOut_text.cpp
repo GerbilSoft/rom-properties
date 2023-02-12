@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextOut.hpp: Text output for RomData. (User-readable text)              *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -27,8 +27,11 @@ using std::vector;
 // librpbase
 #include "RomData.hpp"
 #include "RomFields.hpp"
-#include "TextFuncs.hpp"
-#include "TextFuncs_strlen.hpp"
+
+// librptext
+#include "librptext/conversion.hpp"
+#include "librptext/utf8_strlen.hpp"
+using namespace LibRpText;
 
 // librptexture
 #include "librptexture/img/rp_image.hpp"

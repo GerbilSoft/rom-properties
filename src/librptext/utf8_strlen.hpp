@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
- * TextFuncs_strlen.hpp: UTF-8 strlen() functions.                         *
+ * ROM Properties Page shell extension. (librptext)                        *
+ * utf8_strlen.cpp: UTF-8 strlen() functions                               *
  *                                                                         *
  * Copyright (c) 2022-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -14,7 +14,7 @@
 // C++ includes
 #include <string>
 
-namespace LibRpBase {
+namespace LibRpText {
 
 /**
  * Determine the display length of a UTF-8 string.

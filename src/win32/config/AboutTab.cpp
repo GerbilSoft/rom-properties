@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * AboutTab.cpp: About tab for rp-config.                                  *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,9 +13,10 @@
 #include "UpdateChecker.hpp"
 #include "res/resource.h"
 
-// librpbase
+// Other rom-properties libraries
 #include "librpbase/config/AboutTabText.hpp"
 using namespace LibRpBase;
+using namespace LibRpText;
 
 // libwin32ui
 #include "libwin32ui/SubclassWindow.h"

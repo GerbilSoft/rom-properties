@@ -12,9 +12,10 @@
 #include "data/NintendoPublishers.hpp"
 #include "dmg_structs.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #include "librpbase/config/Config.hpp"
 using namespace LibRpBase;
+using namespace LibRpText;
 using namespace LibRpFile;
 
 // For sections delegated to other RomData subclasses.

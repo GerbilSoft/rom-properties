@@ -1,21 +1,20 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
- * TextFuncs_win32.cpp: Text encoding functions. (Win32 version)           *
+ * ROM Properties Page shell extension. (librptext)                        *
+ * conversion_win32.cpp: Text encoding functions (Win32 version)           *
  *                                                                         *
- * Copyright (c) 2009-2018 by David Korth.                                 *
+ * Copyright (c) 2009-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include "stdafx.h"
-#include "config.librpbase.h"
-#include "TextFuncs.hpp"
-#include "TextFuncs_NULL.hpp"
+#include "config.librptext.h"
+#include "conversion.hpp"
+#include "NULL-check.hpp"
 
 #ifndef _WIN32
-# error TextFuncs_win32.cpp is for Windows only.
+#  error conversion_win32.cpp is for Windows only.
 #endif
 #if SYS_BYTEORDER != SYS_LIL_ENDIAN
-# error TextFuncs_win32.cpp only works on little-endian architectures.
+#  error conversion_win32.cpp only works on little-endian architectures.
 #endif
 
 // Windows
@@ -26,7 +25,7 @@ using std::string;
 using std::u16string;
 using std::wstring;
 
-namespace LibRpBase {
+namespace LibRpText {
 
 /** OS-specific text conversion functions. **/
 

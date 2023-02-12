@@ -85,18 +85,6 @@ IF(ENABLE_DECRYPTION)
 	ADD_TEST(NAME CryptoTests COMMAND CryptoTests)
 ENDIF(ENABLE_DECRYPTION)
 
-# TextFuncsTest
-ADD_EXECUTABLE(TextFuncsTest
-	TextFuncsTest.cpp
-	TextFuncsTest_data.hpp
-	)
-TARGET_LINK_LIBRARIES(TextFuncsTest PRIVATE rptest romdata)
-TARGET_LINK_LIBRARIES(TextFuncsTest PRIVATE gtest)
-DO_SPLIT_DEBUG(TextFuncsTest)
-SET_WINDOWS_SUBSYSTEM(TextFuncsTest CONSOLE)
-SET_WINDOWS_ENTRYPOINT(TextFuncsTest wmain OFF)
-ADD_TEST(NAME TextFuncsTest COMMAND TextFuncsTest)
-
 # TimegmTest
 ADD_EXECUTABLE(TimegmTest TimegmTest.cpp)
 TARGET_LINK_LIBRARIES(TimegmTest PRIVATE rptest)

@@ -1,6 +1,6 @@
 /***************************************************************************
- * ROM Properties Page shell extension. (librpbase)                        *
- * TextFuncs.hpp: Text encoding functions.                                 *
+ * ROM Properties Page shell extension. (librptext)                        *
+ * conversion.hpp: Text encoding functions                                 *
  *                                                                         *
  * Copyright (c) 2009-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -23,7 +23,7 @@
 #include <string>
 
 #ifdef __cplusplus
-namespace LibRpBase {
+namespace LibRpText {
 
 /* Define to 1 if the system has a 16-bit wchar_t. */
 #ifdef _WIN32

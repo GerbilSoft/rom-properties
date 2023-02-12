@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * CacheTab.cpp: Thumbnail Cache tab for rp-config.                        *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -13,13 +13,11 @@
 #include "../MessageSound.hpp"
 #include "CacheCleaner.hpp"
 
-// librpbase
-#include "librpbase/TextFuncs.hpp"
-using namespace LibRpBase;
-
-// librpfile
+// Other rom-properties libraries
 #include "librpfile/FileSystem.hpp"
+using namespace LibRpBase;
 using namespace LibRpFile;
+using namespace LibRpText;
 
 // C++ STL classes
 using std::string;

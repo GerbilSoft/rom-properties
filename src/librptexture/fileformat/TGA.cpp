@@ -15,9 +15,10 @@
 // timegm()
 #include "time_r.h"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 #include "libi18n/i18n.h"
-using namespace LibRpBase;
+using namespace LibRpText;
+using LibRpBase::RomFields;
 using LibRpFile::IRpFile;
 
 // librptexture

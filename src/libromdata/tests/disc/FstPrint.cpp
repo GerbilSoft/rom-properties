@@ -2,20 +2,21 @@
  * ROM Properties Page shell extension. (libromdata/tests)                 *
  * FstPrint.cpp: FST printer.                                              *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "FstPrint.hpp"
 
-// librpbase
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_printf.hpp"
-#include "librpbase/disc/IFst.hpp"
+// Other rom-properties libraries
 #include "libi18n/i18n.h"
+#include "librpbase/disc/IFst.hpp"
+#include "librptext/conversion.hpp"
+#include "librptext/printf.hpp"
 using namespace LibRpBase;
+using namespace LibRpText;
 
-// C includes.
+// C includes
 #include <stdint.h>
 
 // cinttypes was added in MSVC 2013.
@@ -31,11 +32,11 @@ using namespace LibRpBase;
 #  include <inttypes.h>
 #endif
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cerrno>
 #include <cstdio>
 
-// C++ includes.
+// C++ includes
 #include <iomanip>
 #include <sstream>
 #include <string>

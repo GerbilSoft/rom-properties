@@ -12,11 +12,12 @@
 #include "stdafx.h"
 #include "SAP.hpp"
 
-// librpbase, librpfile
+// Other rom-properties libraries
 using namespace LibRpBase;
+using namespace LibRpText;
 using LibRpFile::IRpFile;
 
-// C++ STL classes.
+// C++ STL classes
 using std::pair;
 using std::string;
 using std::unique_ptr;

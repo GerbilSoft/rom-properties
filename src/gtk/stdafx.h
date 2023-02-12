@@ -99,8 +99,6 @@
 // librpbase C++ headers
 #include "librpbase/RomData.hpp"
 #include "librpbase/RomFields.hpp"
-#include "librpbase/TextFuncs.hpp"
-#include "librpbase/TextFuncs_printf.hpp"
 #include "librpbase/SystemRegion.hpp"
 #include "librpbase/config/Config.hpp"
 #include "librpbase/img/RpPngWriter.hpp"
@@ -112,6 +110,10 @@
 
 // librptexture C++ headers
 #include "librptexture/img/rp_image.hpp"
+
+// librptext C++ headers
+#include "librptext/conversion.hpp"
+#include "librptext/printf.hpp"
 #endif /* !__cplusplus */
 
 // GTK+ UI frontend headers
