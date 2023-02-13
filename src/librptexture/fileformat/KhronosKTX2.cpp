@@ -851,6 +851,11 @@ KhronosKTX2::KhronosKTX2(IRpFile *file)
 	if (mipmapCount <= 0) {
 		// No mipmaps == one image.
 		mipmapCount = 1;
+	} else if (mipmapCount > 128) {
+		// Too many mipmaps.
+		d->isValid = false;
+		UNREF_AND_NULL_NOCHK(d->file);
+		return;
 	}
 	d->mipmaps.resize(mipmapCount);
 	d->mipmap_data.resize(mipmapCount);
