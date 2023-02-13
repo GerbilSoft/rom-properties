@@ -194,8 +194,7 @@ const rp_image *DidjTexPrivate::loadDidjTexImage(void)
 				break;
 
 			case Z_NEED_DICT:
-			case Z_DATA_ERROR:
-			case Z_MEM_ERROR:	// TODO: Handle this?
+			default:
 				// Error decompressing...
 				inflateEnd(&strm);
 				return nullptr;

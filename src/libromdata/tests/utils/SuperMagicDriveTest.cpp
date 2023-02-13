@@ -160,18 +160,18 @@ int SuperMagicDriveTest::decompress(uint8_t *pOut, unsigned int out_len, const u
 			ret = inflate(&strm, Z_NO_FLUSH);
 			assert(ret != Z_STREAM_ERROR);	// make sure the state isn't clobbered
 			switch (ret) {
+				case Z_OK:
+				case Z_STREAM_END:
+					break;
 				case Z_NEED_DICT:
 					ret = Z_DATA_ERROR;
 					// fall through
-				case Z_DATA_ERROR:
-				case Z_MEM_ERROR:
-				case Z_STREAM_ERROR:
-					// Error occurred while decoding the stream.
+
+				default:
+					// An error occurred while decoding the stream.
 					inflateEnd(&strm);
 					fprintf(stderr, "*** zlib error: %d\n", ret);
 					return ret;
-				default:
-					break;
 			}
 
 			// Increase the output position.
