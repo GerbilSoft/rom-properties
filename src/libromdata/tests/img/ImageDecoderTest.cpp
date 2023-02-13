@@ -441,28 +441,37 @@ void ImageDecoderTest::decodeTest_internal(void)
 		const RpTextureWrapper *const rptw = static_cast<RpTextureWrapper*>(m_romData);
 		EXPECT_NE(rptw, nullptr);
 		if (rptw) {
-			const char *actual_pixel_format = rptw->pixelFormat();
-			EXPECT_NE(actual_pixel_format, nullptr);
-			if (actual_pixel_format) {
-				// If it's DX10, parse fields to find the actual DX10 pixel format.
-				// Not exporting a dx10Format() because that would change the ABI.
-				if (!strcmp(actual_pixel_format, "DX10")) {
-					// Find "DX10 Format".
-					// NOTE: The string is localized, but our Google Test initializer
-					// sets LC_ALL=C, which disables localization.
-					const RomFields *const fields = rptw->fields();
-					for (auto iter = fields->cbegin(); iter != fields->cend(); ++iter) {
-						if (iter->type == RomFields::RFT_STRING && !strcmp(iter->name, "DX10 Format")) {
-							// Found the DX10 format.
-							actual_pixel_format = iter->data.str;
-							break;
-						}
-					}
+			// To avoid having to add test-only functions to RpTextureWrapper,
+			// we'll search the RomFields for the matching fields.
 
-					// NOTE: If the DX10 format wasn't found, then actual_pixel_format
-					// will stay as "DX10".
+			// NOTE: The string is localized, but our Google Test initializer
+			// sets LC_ALL=C, which disables localization.
+			const char *actual_pixel_format = nullptr;
+			const RomFields *const fields = rptw->fields();
+			for (auto iter = fields->cbegin(); iter != fields->cend(); ++iter) {
+				if (iter->type == RomFields::RFT_STRING && !strcmp(iter->name, "Pixel Format")) {
+					// Found the DX10 format.
+					actual_pixel_format = iter->data.str;
+					break;
+				}
+			}
+
+			if (actual_pixel_format && !strcmp(actual_pixel_format, "DX10")) {
+				// Find "DX10 Format".
+				for (auto iter = fields->cbegin(); iter != fields->cend(); ++iter) {
+					if (iter->type == RomFields::RFT_STRING && !strcmp(iter->name, "DX10 Format")) {
+						// Found the DX10 format.
+						actual_pixel_format = iter->data.str;
+						break;
+					}
 				}
 
+				// NOTE: If the DX10 format wasn't found, then actual_pixel_format
+				// will stay as "DX10".
+			}
+
+			EXPECT_NE(actual_pixel_format, nullptr);
+			if (actual_pixel_format) {
 				EXPECT_EQ(mode.expected_pixel_format, actual_pixel_format);
 			}
 		}
