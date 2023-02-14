@@ -13,7 +13,6 @@
 // Google Test
 #include "gtest/gtest.h"
 #include "tcharx.h"
-#include <unistd.h>
 
 // zlib and libpng
 #include <zlib.h>
