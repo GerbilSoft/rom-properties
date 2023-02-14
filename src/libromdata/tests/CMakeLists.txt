@@ -58,28 +58,6 @@ SET_WINDOWS_SUBSYSTEM(GcnFstTest CONSOLE)
 SET_WINDOWS_ENTRYPOINT(GcnFstTest wmain OFF)
 ADD_TEST(NAME GcnFstTest COMMAND GcnFstTest)
 
-# Copy the reference FSTs to:
-# - bin/fst_data/ (TODO: Subdirectory?)
-# - ${CMAKE_CURRENT_BINARY_DIR}/fst_data/
-# NOTE: Although the test executable is in bin/, CTest still
-# uses ${CMAKE_CURRENT_BINARY_DIR} as the working directory.
-# Hence, we have to copy the files to both places.
-FILE(GLOB test_fsts RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/disc/fst_data" disc/fst_data/*.zip)
-FOREACH(test_fst ${test_fsts})
-	ADD_CUSTOM_COMMAND(TARGET GcnFstTest POST_BUILD
-		COMMAND ${CMAKE_COMMAND}
-		ARGS -E copy_if_different
-			"${CMAKE_CURRENT_SOURCE_DIR}/disc/fst_data/${test_fst}"
-			"$<TARGET_FILE_DIR:GcnFstTest>/fst_data/${test_fst}"
-		)
-	ADD_CUSTOM_COMMAND(TARGET GcnFstTest POST_BUILD
-		COMMAND ${CMAKE_COMMAND}
-		ARGS -E copy_if_different
-			"${CMAKE_CURRENT_SOURCE_DIR}/disc/fst_data/${test_fst}"
-			"${CMAKE_CURRENT_BINARY_DIR}/fst_data/${test_fst}"
-		)
-ENDFOREACH(test_fst test_fsts)
-
 # ImageDecoder test
 ADD_EXECUTABLE(ImageDecoderTest img/ImageDecoderTest.cpp)
 TARGET_LINK_LIBRARIES(ImageDecoderTest PRIVATE rptest romdata)
