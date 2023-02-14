@@ -41,7 +41,9 @@ typedef char TCHAR;
 #define _fputts(s, stream) fputs((s), (stream))
 #define _fputtc(c, stream) fputc((c), (stream))
 
-#define _tfopen(filename, mode)		fopen((filename), (mode))
+#define _taccess(pathname, mode)	access((pathname), (mode))
+#define _tchdir(path)			chdir(path)
+#define _tfopen(pathname, mode)		fopen((pathname), (mode))
 #define _tmkdir(path, mode)		mkdir((path), (mode))
 #define _tremove(pathname)		remove(pathname)
 

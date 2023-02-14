@@ -13,6 +13,7 @@
 // Google Test
 #include "gtest/gtest.h"
 #include "tcharx.h"
+#include <unistd.h>
 
 // zlib and libpng
 #include <zlib.h>
@@ -241,8 +242,7 @@ void ImageDecoderTest::SetUp(void)
 	const ImageDecoderTest_mode &mode = GetParam();
 
 	// Open the gzipped DDS texture file being tested.
-	string path = "ImageDecoder_data";
-	path += DIR_SEP_CHR;
+	string path;
 	path += mode.dds_gz_filename;
 	replace_slashes(path);
 	m_gzDds = gzopen(path.c_str(), "rb");
@@ -281,7 +281,7 @@ void ImageDecoderTest::SetUp(void)
 	ASSERT_EQ(ddsSize, (uint32_t)sz) << "Error loading DDS image file: short read";
 
 	// Open the PNG image file being tested.
-	path.resize(18);	// Back to "ImageDecoder_data/".
+	path.clear();
 	path += mode.png_filename;
 	replace_slashes(path);
 	unique_RefBase<RpFile> file(new RpFile(path, RpFile::FM_OPEN_READ));
@@ -1614,6 +1614,29 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 		LibRomData::Tests::ImageDecoderTest::BENCHMARK_ITERATIONS,
 		LibRomData::Tests::ImageDecoderTest::BENCHMARK_ITERATIONS_BC7);
 	fflush(nullptr);
+
+	// Check for the ImageDecoder_data directory and chdir() into it.
+	static const TCHAR *const subdirs[] = {
+		_T("ImageDecoder_data"),
+		_T("bin/ImageDecoder_data"),
+		_T("../src/libromdata/tests/img/ImageDecoder_data"),
+		_T("../../src/libromdata/tests/img/ImageDecoder_data"),
+		_T("../../../src/libromdata/tests/img/ImageDecoder_data"),
+	};
+
+	bool is_found = false;
+	for (const TCHAR *const subdir : subdirs) {
+		if (!_taccess(subdir, R_OK)) {
+			_tchdir(subdir);
+			is_found = true;
+			break;
+		}
+	}
+
+	if (!is_found) {
+		fputs("*** ERROR: Cannot find the ImageDecoder_data test images directory.\n", stderr);
+		return EXIT_FAILURE;
+	}
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.
 	::testing::InitGoogleTest(&argc, argv);
