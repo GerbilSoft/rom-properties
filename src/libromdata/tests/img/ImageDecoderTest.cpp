@@ -1618,6 +1618,7 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 	static const TCHAR *const subdirs[] = {
 		_T("ImageDecoder_data"),
 		_T("bin/ImageDecoder_data"),
+		_T("src/libromdata/tests/img/ImageDecoder_data"),
 		_T("../src/libromdata/tests/img/ImageDecoder_data"),
 		_T("../../src/libromdata/tests/img/ImageDecoder_data"),
 		_T("../../../src/libromdata/tests/img/ImageDecoder_data"),

@@ -1326,6 +1326,7 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 	static const TCHAR *const subdirs[] = {
 		_T("png_data"),
 		_T("bin/png_data"),
+		_T("src/librpbase/tests/img/png_data"),
 		_T("../src/librpbase/tests/img/png_data"),
 		_T("../../src/librpbase/tests/img/png_data"),
 		_T("../../../src/librpbase/tests/img/png_data"),

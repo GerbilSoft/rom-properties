@@ -595,6 +595,7 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 	static const TCHAR *const subdirs[] = {
 		_T("fst_data"),
 		_T("bin/fst_data"),
+		_T("src/libromdata/tests/disc/fst_data"),
 		_T("../src/libromdata/tests/disc/fst_data"),
 		_T("../../src/libromdata/tests/disc/fst_data"),
 		_T("../../../src/libromdata/tests/disc/fst_data"),
