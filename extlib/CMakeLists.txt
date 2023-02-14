@@ -348,6 +348,7 @@ ENDIF(BUILD_TESTING)
 # Basis Universal ASTC decoder
 IF(ENABLE_ASTC)
 	ADD_SUBDIRECTORY(basisu_astc)
+	SET_EXTLIB_PROPERTIES(basisu_astc)
 ENDIF(ENABLE_ASTC)
 
 # uniwidth (subset of gnulib) (needed for wcwidth())
@@ -361,3 +362,7 @@ IF(NOT HAVE_WCWIDTH)
 	ADD_SUBDIRECTORY(uniwidth)
 	SET_EXTLIB_PROPERTIES(uniwidth)
 ENDIF(NOT HAVE_WCWIDTH)
+
+# MicroTAR (for libromdata tests)
+ADD_SUBDIRECTORY(microtar)
+SET_EXTLIB_PROPERTIES(microtar)

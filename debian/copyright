@@ -209,6 +209,11 @@ Files:
 Copyright: Copyright (C) 2000-2022 Free Software Foundation, Inc.
 License: LGPL-3+
 
+Files:
+ extlib/microtar/src/*
+Copyright: Copyright (c) 2017 rxi
+License: MIT
+
 License: BSD-2-clause
  All rights reserved.
  .
