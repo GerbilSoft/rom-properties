@@ -1622,6 +1622,8 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 		_T("../src/libromdata/tests/img/ImageDecoder_data"),
 		_T("../../src/libromdata/tests/img/ImageDecoder_data"),
 		_T("../../../src/libromdata/tests/img/ImageDecoder_data"),
+		_T("../../../../src/libromdata/tests/img/ImageDecoder_data"),
+		_T("../../../bin/ImageDecoder_data"),
 	};
 
 	bool is_found = false;

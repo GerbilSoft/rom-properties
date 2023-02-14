@@ -1330,6 +1330,8 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 		_T("../src/librpbase/tests/img/png_data"),
 		_T("../../src/librpbase/tests/img/png_data"),
 		_T("../../../src/librpbase/tests/img/png_data"),
+		_T("../../../../src/librpbase/tests/img/png_data"),
+		_T("../../../bin/png_data"),
 	};
 
 	bool is_found = false;

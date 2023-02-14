@@ -599,6 +599,8 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 		_T("../src/libromdata/tests/disc/fst_data"),
 		_T("../../src/libromdata/tests/disc/fst_data"),
 		_T("../../../src/libromdata/tests/disc/fst_data"),
+		_T("../../../../src/libromdata/tests/disc/fst_data"),
+		_T("../../../bin/fst_data"),
 	};
 
 	bool is_found = false;
