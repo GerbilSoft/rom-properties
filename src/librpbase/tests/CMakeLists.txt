@@ -44,28 +44,6 @@ SET_WINDOWS_SUBSYSTEM(RpPngFormatTest CONSOLE)
 SET_WINDOWS_ENTRYPOINT(RpPngFormatTest wmain OFF)
 ADD_TEST(NAME RpPngFormatTest COMMAND RpPngFormatTest)
 
-# Copy the reference images to:
-# - bin/png_data/ (TODO: Subdirectory?)
-# - ${CMAKE_CURRENT_BINARY_DIR}/png_data/
-# NOTE: Although the test executable is in bin/, CTest still
-# uses ${CMAKE_CURRENT_BINARY_DIR} as the working directory.
-# Hence, we have to copy the files to both places.
-FILE(GLOB RpPngFormatTest_images RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/img/png_data" img/png_data/*.png img/png_data/*.bmp.gz)
-FOREACH(test_image ${RpPngFormatTest_images})
-	ADD_CUSTOM_COMMAND(TARGET RpPngFormatTest POST_BUILD
-		COMMAND ${CMAKE_COMMAND}
-		ARGS -E copy_if_different
-			"${CMAKE_CURRENT_SOURCE_DIR}/img/png_data/${test_image}"
-			"$<TARGET_FILE_DIR:RpPngFormatTest>/png_data/${test_image}"
-		)
-	ADD_CUSTOM_COMMAND(TARGET RpPngFormatTest POST_BUILD
-		COMMAND ${CMAKE_COMMAND}
-		ARGS -E copy_if_different
-			"${CMAKE_CURRENT_SOURCE_DIR}/img/png_data/${test_image}"
-			"${CMAKE_CURRENT_BINARY_DIR}/png_data/${test_image}"
-		)
-ENDFOREACH(test_image ${RpPngFormatTest_images})
-
 IF(ENABLE_DECRYPTION)
 	# Crypto tests
 	ADD_EXECUTABLE(CryptoTests AesCipherTest.cpp MD5HashTest.cpp)
