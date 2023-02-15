@@ -127,9 +127,17 @@ static int getSystemRegion_LC_MESSAGES(const char *locale)
 {
 	if (!locale || locale[0] == '\0') {
 		// No locale...
-		cc = 0;
 		lc = 0;
+		cc = 0;
 		return -1;
+	}
+
+	// Explicitly check for the "C" locale.
+	if (!strcasecmp(locale, "C")) {
+		// "C" locale. Use 0.
+		lc = 0;
+		cc = 0;
+		return 0;
 	}
 
 	int ret = -1;
@@ -224,6 +232,7 @@ static void getSystemRegion(void)
 	// Check if LC_MESSAGES or LC_ALL is set.
 	const char *const locale_var = get_LC_MESSAGES();
 	if (locale_var != nullptr && locale_var[0] != '\0') {
+		// Check for an actual locale setting.
 		ret = getSystemRegion_LC_MESSAGES(locale_var);
 		if (ret == 0) {
 			// LC_MESSAGES or LC_ALL is set and is valid.
