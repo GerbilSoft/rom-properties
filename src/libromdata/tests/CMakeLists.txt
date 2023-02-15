@@ -98,17 +98,21 @@ SET_WINDOWS_SUBSYSTEM(SuperMagicDriveTest CONSOLE)
 SET_WINDOWS_ENTRYPOINT(SuperMagicDriveTest wmain OFF)
 ADD_TEST(NAME SuperMagicDriveTest COMMAND SuperMagicDriveTest "--gtest_filter=-*benchmark*")
 
-# MicroTAR zstd wrapper
-ADD_LIBRARY(microtar_zstd STATIC microtar_zstd.c microtar_zstd.h)
-TARGET_LINK_LIBRARIES(microtar_zstd PUBLIC microtar ${ZSTD_LIBRARY})
-DO_SPLIT_DEBUG(microtar_zstd)
+### zstd is required past this point ###
 
-# RomHeader test
-ADD_EXECUTABLE(RomHeaderTest RomHeaderTest.cpp)
-TARGET_LINK_LIBRARIES(RomHeaderTest PRIVATE rptest romdata)
-TARGET_LINK_LIBRARIES(RomHeaderTest PRIVATE microtar_zstd)
-TARGET_LINK_LIBRARIES(RomHeaderTest PRIVATE gtest)
-DO_SPLIT_DEBUG(RomHeaderTest)
-SET_WINDOWS_SUBSYSTEM(RomHeaderTest CONSOLE)
-SET_WINDOWS_ENTRYPOINT(RomHeaderTest wmain OFF)
-ADD_TEST(NAME RomHeaderTest COMMAND RomHeaderTest)
+IF(ENABLE_ZSTD)
+	# MicroTAR zstd wrapper
+	ADD_LIBRARY(microtar_zstd STATIC microtar_zstd.c microtar_zstd.h)
+	TARGET_LINK_LIBRARIES(microtar_zstd PUBLIC microtar ${ZSTD_LIBRARY})
+	DO_SPLIT_DEBUG(microtar_zstd)
+
+	# RomHeader test
+	ADD_EXECUTABLE(RomHeaderTest RomHeaderTest.cpp)
+	TARGET_LINK_LIBRARIES(RomHeaderTest PRIVATE rptest romdata)
+	TARGET_LINK_LIBRARIES(RomHeaderTest PRIVATE microtar_zstd)
+	TARGET_LINK_LIBRARIES(RomHeaderTest PRIVATE gtest)
+	DO_SPLIT_DEBUG(RomHeaderTest)
+	SET_WINDOWS_SUBSYSTEM(RomHeaderTest CONSOLE)
+	SET_WINDOWS_ENTRYPOINT(RomHeaderTest wmain OFF)
+	ADD_TEST(NAME RomHeaderTest COMMAND RomHeaderTest)
+ENDIF(ENABLE_ZSTD)
