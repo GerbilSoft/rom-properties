@@ -546,6 +546,21 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 		return EXIT_FAILURE;
 	}
 
+	// "--gtest_shuffle" is not supported due to the use of .tar.zst files.
+	// If it's specified, remove it.
+	bool warning_shown = false;
+	for (int i = 1; i < argc; i++) {
+		if (!strncmp(argv[i], "--gtest_shuffle", 15)) {
+			// NOTE: argv[i] may be dynamically allocated.
+			// We can't simply reassign the pointer, so NULL out the string instead.
+			argv[i][0] = _T('\0');
+			if (!warning_shown) {
+				fputs("*** WARNING: --gtest_shuffle is not supported by RomHeaderTest.\n\n", stderr);
+				warning_shown = true;
+			}
+		}
+	}
+
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.
 	::testing::InitGoogleTest(&argc, argv);
 	int ret = RUN_ALL_TESTS();
