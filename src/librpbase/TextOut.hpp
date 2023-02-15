@@ -23,6 +23,7 @@ class RomData;
 enum OutputFlags {
 	OF_SkipInternalImages		= (1U << 0),
 	OF_SkipListDataMoreThan10	= (1U << 1),	// ROMOutput only
+	OF_JSON_NoPrettyPrint		= (1U << 2),	// JSONROMOutput only
 };
 
 /**

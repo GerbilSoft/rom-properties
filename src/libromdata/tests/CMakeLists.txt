@@ -5,7 +5,7 @@ IF(POLICY CMP0063)
 	# target types, including static libraries and executables.
 	CMAKE_POLICY(SET CMP0063 NEW)
 ENDIF(POLICY CMP0063)
-PROJECT(libromdata-tests LANGUAGES CXX)
+PROJECT(libromdata-tests LANGUAGES C CXX)
 
 # Top-level src directory
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../..)
@@ -97,3 +97,18 @@ DO_SPLIT_DEBUG(SuperMagicDriveTest)
 SET_WINDOWS_SUBSYSTEM(SuperMagicDriveTest CONSOLE)
 SET_WINDOWS_ENTRYPOINT(SuperMagicDriveTest wmain OFF)
 ADD_TEST(NAME SuperMagicDriveTest COMMAND SuperMagicDriveTest "--gtest_filter=-*benchmark*")
+
+# MicroTAR zstd wrapper
+ADD_LIBRARY(microtar_zstd STATIC microtar_zstd.c microtar_zstd.h)
+TARGET_LINK_LIBRARIES(microtar_zstd PUBLIC microtar ${ZSTD_LIBRARY})
+DO_SPLIT_DEBUG(microtar_zstd)
+
+# RomHeader test
+ADD_EXECUTABLE(RomHeaderTest RomHeaderTest.cpp)
+TARGET_LINK_LIBRARIES(RomHeaderTest PRIVATE rptest romdata)
+TARGET_LINK_LIBRARIES(RomHeaderTest PRIVATE microtar_zstd)
+TARGET_LINK_LIBRARIES(RomHeaderTest PRIVATE gtest)
+DO_SPLIT_DEBUG(RomHeaderTest)
+SET_WINDOWS_SUBSYSTEM(RomHeaderTest CONSOLE)
+SET_WINDOWS_ENTRYPOINT(RomHeaderTest wmain OFF)
+ADD_TEST(NAME RomHeaderTest COMMAND RomHeaderTest)

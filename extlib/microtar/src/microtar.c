@@ -108,8 +108,13 @@ static int raw_to_header(mtar_header_t *h, const mtar_raw_header_t *rh) {
   sscanf(rh->size, "%o", &h->size);
   sscanf(rh->mtime, "%o", &h->mtime);
   h->type = rh->type;
-  strcpy(h->name, rh->name);
-  strcpy(h->linkname, rh->linkname);
+  strncpy(h->name, rh->name, sizeof(h->name));
+  strncpy(h->linkname, rh->linkname, sizeof(h->linkname));
+
+  /* rom-properties: Ensure NULL-termination of name and linkname. */
+  /* NOTE: Effectively limits names to 99 characters. */
+  h->name[sizeof(h->name)-1] = '\0';
+  h->linkname[sizeof(h->linkname)-1] = '\0';
 
   return MTAR_ESUCCESS;
 }
@@ -120,17 +125,17 @@ static int header_to_raw(mtar_raw_header_t *rh, const mtar_header_t *h) {
 
   /* Load header into raw header */
   memset(rh, 0, sizeof(*rh));
-  sprintf(rh->mode, "%o", h->mode);
-  sprintf(rh->owner, "%o", h->owner);
-  sprintf(rh->size, "%o", h->size);
-  sprintf(rh->mtime, "%o", h->mtime);
+  snprintf(rh->mode, sizeof(rh->mode), "%o", h->mode);
+  snprintf(rh->owner, sizeof(rh->owner), "%o", h->owner);
+  snprintf(rh->size, sizeof(rh->size), "%o", h->size);
+  snprintf(rh->mtime, sizeof(rh->mtime), "%o", h->mtime);
   rh->type = h->type ? h->type : MTAR_TREG;
-  strcpy(rh->name, h->name);
-  strcpy(rh->linkname, h->linkname);
+  strncpy(rh->name, h->name, sizeof(rh->name));
+  strncpy(rh->linkname, h->linkname, sizeof(rh->linkname));
 
   /* Calculate and write checksum */
   chksum = checksum(rh);
-  sprintf(rh->checksum, "%06o", chksum);
+  snprintf(rh->checksum, sizeof(rh->checksum), "%06o", chksum);
   rh->checksum[7] = ' ';
 
   return MTAR_ESUCCESS;

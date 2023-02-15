@@ -9,6 +9,7 @@
 #pragma once
 
 #include "common.h"
+#include "dll-macros.h"
 
 // C++ includes.
 #include <vector>

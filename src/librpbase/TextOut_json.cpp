@@ -473,9 +473,16 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 	}
 
 	OStreamWrapper oswr(os);
-	PrettyWriter<OStreamWrapper> writer(oswr);
-	writer.SetNewlineMode(fo.crlf_);
-	document.Accept(writer);
+	if (fo.flags & OF_JSON_NoPrettyPrint) {
+		// Don't use pretty-printing. (minimal JSON)
+		Writer<OStreamWrapper> writer(oswr);
+		document.Accept(writer);
+	} else {
+		// Use pretty-printing.
+		PrettyWriter<OStreamWrapper> writer(oswr);
+		writer.SetNewlineMode(fo.crlf_);
+		document.Accept(writer);
+	}
 
 	os.flush();
 	return os;
