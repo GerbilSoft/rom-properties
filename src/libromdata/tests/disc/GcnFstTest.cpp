@@ -591,7 +591,22 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 	// Make sure the CRC32 table is initialized.
 	get_crc_table();
 
+#ifdef _WIN32
 	// Check for the fst_data directory and chdir() into it.
+	static const TCHAR *const subdirs[] = {
+		_T("fst_data"),
+		_T("bin\\fst_data"),
+		_T("src\\libromdata\\tests\\disc\\fst_data"),
+		_T("..\\src\\libromdata\\tests\\disc\\fst_data"),
+		_T("..\\..\\src\\libromdata\\tests\\disc\\fst_data"),
+		_T("..\\..\\..\\src\\libromdata\\tests\\disc\\fst_data"),
+		_T("..\\..\\..\\..\\src\\libromdata\\tests\\disc\\fst_data"),
+		_T("..\\..\\..\\..\\..\\src\\libromdata\\tests\\disc\\fst_data"),
+		_T("..\\..\\..\\bin\\fst_data"),
+		_T("..\\..\\..\\bin\\Debug\\fst_data"),
+		_T("..\\..\\..\\bin\\Release\\fst_data"),
+	};
+#else /* !_WIN32 */
 	static const TCHAR *const subdirs[] = {
 		_T("fst_data"),
 		_T("bin/fst_data"),
@@ -600,8 +615,10 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 		_T("../../src/libromdata/tests/disc/fst_data"),
 		_T("../../../src/libromdata/tests/disc/fst_data"),
 		_T("../../../../src/libromdata/tests/disc/fst_data"),
+		_T("../../../../../src/libromdata/tests/disc/fst_data"),
 		_T("../../../bin/fst_data"),
 	};
+#endif /* _WIN32 */
 
 	bool is_found = false;
 	for (const TCHAR *const subdir : subdirs) {

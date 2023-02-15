@@ -28,15 +28,15 @@
 #define gzclose_w(file) gzclose(file)
 #endif
 
-// librpcpu, librpbase
 #include "common.h"
 #include "uvector.h"
 #include "tcharx.h"	// for DIR_SEP_CHR
-#include "librpcpu/byteswap_rp.h"
 
-// librpfile
-#include "librpfile/RpFile.hpp"
+// Other rom-properties libraries
+#include "librpcpu/byteswap_rp.h"
+#include "librpfile/FileSystem.hpp"
 #include "librpfile/MemFile.hpp"
+#include "librpfile/RpFile.hpp"
 using namespace LibRpFile;
 
 // librptexture
@@ -1323,6 +1323,21 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 	get_crc_table();
 
 	// Check for the png_data directory and chdir() into it.
+#ifdef _WIN32
+	static const TCHAR *const subdirs[] = {
+		_T("png_data"),
+		_T("bin\\png_data"),
+		_T("src\\librpbase\\tests\\img\\png_data"),
+		_T("..\\src\\librpbase\\tests\\img\\png_data"),
+		_T("..\\..\\src\\librpbase\\tests\\img\\png_data"),
+		_T("..\\..\\..\\src\\librpbase\\tests\\img\\png_data"),
+		_T("..\\..\\..\\..\\src\\librpbase\\tests\\img\\png_data"),
+		_T("..\\..\\..\\..\\..\\src\\librpbase\\tests\\img\\png_data"),
+		_T("..\\..\\..\\bin\\png_data"),
+		_T("..\\..\\..\\bin\\Debug\\png_data"),
+		_T("..\\..\\..\\bin\\Release\\png_data"),
+	};
+#else /* !_WIN32 */
 	static const TCHAR *const subdirs[] = {
 		_T("png_data"),
 		_T("bin/png_data"),
@@ -1331,8 +1346,10 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 		_T("../../src/librpbase/tests/img/png_data"),
 		_T("../../../src/librpbase/tests/img/png_data"),
 		_T("../../../../src/librpbase/tests/img/png_data"),
+		_T("../../../../../src/librpbase/tests/img/png_data"),
 		_T("../../../bin/png_data"),
 	};
+#endif /* _WIN32 */
 
 	bool is_found = false;
 	for (const TCHAR *const subdir : subdirs) {

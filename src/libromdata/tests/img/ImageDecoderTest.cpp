@@ -36,8 +36,8 @@
 #include "librpbase/RomData.hpp"
 #include "librpbase/RomFields.hpp"
 #include "libromdata/Other/RpTextureWrapper.hpp"
-#include "librpfile/RpFile.hpp"
 #include "librpfile/MemFile.hpp"
+#include "librpfile/RpFile.hpp"
 #include "librpfile/FileSystem.hpp"
 using namespace LibRpBase;
 using namespace LibRpFile;
@@ -1615,6 +1615,21 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 	fflush(nullptr);
 
 	// Check for the ImageDecoder_data directory and chdir() into it.
+#ifdef _WIN32
+	static const TCHAR *const subdirs[] = {
+		_T("ImageDecoder_data"),
+		_T("bin\\ImageDecoder_data"),
+		_T("src\\libromdata\\tests\\img\\ImageDecoder_data"),
+		_T("..\\src\\libromdata\\tests\\img\\ImageDecoder_data"),
+		_T("..\\..\\src\\libromdata\\tests\\img\\ImageDecoder_data"),
+		_T("..\\..\\..\\src\\libromdata\\tests\\img\\ImageDecoder_data"),
+		_T("..\\..\\..\\..\\src\\libromdata\\tests\\img\\ImageDecoder_data"),
+		_T("..\\..\\..\\..\\..\\src\\libromdata\\tests\\img\\ImageDecoder_data"),
+		_T("..\\..\\..\\bin\\ImageDecoder_data"),
+		_T("..\\..\\..\\bin\\Debug\\ImageDecoder_data"),
+		_T("..\\..\\..\\bin\\Release\\ImageDecoder_data"),
+	};
+#else /* !_WIN32 */
 	static const TCHAR *const subdirs[] = {
 		_T("ImageDecoder_data"),
 		_T("bin/ImageDecoder_data"),
@@ -1623,12 +1638,18 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 		_T("../../src/libromdata/tests/img/ImageDecoder_data"),
 		_T("../../../src/libromdata/tests/img/ImageDecoder_data"),
 		_T("../../../../src/libromdata/tests/img/ImageDecoder_data"),
+		_T("../../../../../src/libromdata/tests/img/ImageDecoder_data"),
+		_T("../../../../../../src/libromdata/tests/img/ImageDecoder_data"),
 		_T("../../../bin/ImageDecoder_data"),
 	};
+#endif /* _WIN32 */
 
 	bool is_found = false;
 	for (const TCHAR *const subdir : subdirs) {
+		printf("test: %s\n", subdir);
+		printf("_taccess(subdir, R_OK) == %d\n", _taccess(subdir, R_OK));
 		if (!_taccess(subdir, R_OK)) {
+			printf("R_OK\n");
 			if (_tchdir(subdir) == 0) {
 				is_found = true;
 				break;
