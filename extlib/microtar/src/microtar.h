@@ -61,7 +61,11 @@ struct mtar_t {
   void *stream;
   unsigned pos;
   unsigned remaining_data;
-  unsigned last_header;
+  unsigned last_header; /* position of last read header */
+
+  /* rom-properties: cache things to reduce seeking */
+  mtar_header_t last_read_header;
+  unsigned end_of_prev_file;  /* If 1, we're at the end of the previous file. */
 };
 
 

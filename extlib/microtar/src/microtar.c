@@ -200,6 +200,7 @@ int mtar_open(mtar_t *tar, const char *filename, const char *mode) {
     return MTAR_EOPENFAIL;
   }
   /* Read first header to check it is valid if mode is `r` */
+  memset(&tar->last_read_header, 0, sizeof(tar->last_read_header));
   if (*mode == 'r') {
     err = mtar_read_header(tar, &h);
     if (err != MTAR_ESUCCESS) {
@@ -233,16 +234,26 @@ int mtar_rewind(mtar_t *tar) {
 
 
 int mtar_next(mtar_t *tar) {
-  int err, n;
+  int err;
+  unsigned n;
   mtar_header_t h;
   /* Load header */
-  err = mtar_read_header(tar, &h);
-  if (err) {
-    return err;
+  if (!tar->end_of_prev_file) {
+    err = mtar_read_header(tar, &h);
+    if (err) {
+      return err;
+    }
+    /* Seek to next record */
+    n = round_up(h.size, 512) + sizeof(mtar_raw_header_t);
+    return mtar_seek(tar, tar->pos + n);
+  } else {
+    /* We're already at the end of the previous file. */
+    n = round_up(tar->pos, 512);
+    if (n != tar->pos) {
+      return mtar_seek(tar, n);
+    }
+    return MTAR_ESUCCESS;
   }
-  /* Seek to next record */
-  n = round_up(h.size, 512) + sizeof(mtar_raw_header_t);
-  return mtar_seek(tar, tar->pos + n);
 }
 
 
@@ -275,8 +286,17 @@ int mtar_find(mtar_t *tar, const char *name, mtar_header_t *h) {
 int mtar_read_header(mtar_t *tar, mtar_header_t *h) {
   int err;
   mtar_raw_header_t rh;
+
+  if ((tar->last_header != 0) && (tar->last_header >= tar->pos && tar->last_header <= (tar->pos + sizeof(rh) + tar->last_read_header.size))) {
+    // Reading the same header.
+    // NOTE: Special case for 0, since we can't easily determine that it's already read.
+    memcpy(h, &tar->last_read_header, sizeof(*h));
+    return 0;
+  }
+
   /* Save header position */
   tar->last_header = tar->pos;
+  tar->end_of_prev_file = 0;
   /* Read raw header */
   err = tread(tar, &rh, sizeof(rh));
   if (err) {
@@ -288,7 +308,11 @@ int mtar_read_header(mtar_t *tar, mtar_header_t *h) {
     return err;
   }
   /* Load raw header into header struct and return */
-  return raw_to_header(h, &rh);
+  err = raw_to_header(&tar->last_read_header, &rh);
+  if (err != MTAR_ESUCCESS)
+    return err;
+  memcpy(h, &tar->last_read_header, sizeof(*h));
+  return MTAR_ESUCCESS;
 }
 
 
@@ -319,7 +343,9 @@ int mtar_read_data(mtar_t *tar, void *ptr, unsigned size) {
   /* If there is no remaining data we've finished reading and seek back to the
    * header */
   if (tar->remaining_data == 0) {
-    return mtar_seek(tar, tar->last_header);
+    /* rom-properties: Disabled this seek.
+    return mtar_seek(tar, tar->last_header); */
+    tar->end_of_prev_file = 1;
   }
   return MTAR_ESUCCESS;
 }
