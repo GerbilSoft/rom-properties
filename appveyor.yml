@@ -54,9 +54,9 @@ build_script:
 
 test_script:
   - cmd: cd %APPVEYOR_BUILD_FOLDER%\build
-  - cmd: ctest -V -C %CONFIGURATION%
+  - cmd: ctest -C %CONFIGURATION%
   - sh: cd ${APPVEYOR_BUILD_FOLDER}/build
-  - sh: LD_LIBRARY_PATH=${APPVEYOR_BUILD_FOLDER}/build/lib ctest -V -C ${CONFIGURATION}
+  - sh: LD_LIBRARY_PATH=${APPVEYOR_BUILD_FOLDER}/build/lib ctest -C ${CONFIGURATION}
 
 after_test:
   - cmd: cd %APPVEYOR_BUILD_FOLDER%\build
