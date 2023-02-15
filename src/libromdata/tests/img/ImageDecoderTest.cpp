@@ -1646,8 +1646,6 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 
 	bool is_found = false;
 	for (const TCHAR *const subdir : subdirs) {
-		printf("test: %s\n", subdir);
-		printf("_taccess(subdir, R_OK) == %d\n", _taccess(subdir, R_OK));
 		if (!_taccess(subdir, R_OK)) {
 			printf("R_OK\n");
 			if (_tchdir(subdir) == 0) {
