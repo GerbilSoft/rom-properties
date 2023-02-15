@@ -477,6 +477,13 @@ INSTANTIATE_TEST_SUITE_P(DMG, RomHeaderTest,
 		"Handheld/DMG.json.tar.zst"))
 	, RomHeaderTest::test_case_suffix_generator);
 
+INSTANTIATE_TEST_SUITE_P(GameBoyAdvance, RomHeaderTest,
+	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
+		"Handheld/GameBoyAdvance.bin.tar.zst",
+		"Handheld/GameBoyAdvance.txt.tar.zst",
+		"Handheld/GameBoyAdvance.json.tar.zst"))
+	, RomHeaderTest::test_case_suffix_generator);
+
 } }
 
 extern "C" int gtest_main(int argc, TCHAR *argv[])
