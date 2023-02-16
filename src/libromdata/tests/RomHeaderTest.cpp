@@ -550,7 +550,7 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 	// If it's specified, remove it.
 	bool warning_shown = false;
 	for (int i = 1; i < argc; i++) {
-		if (!strncmp(argv[i], "--gtest_shuffle", 15)) {
+		if (!_tcsncmp(argv[i], _T("--gtest_shuffle"), 15)) {
 			// NOTE: argv[i] may be dynamically allocated.
 			// We can't simply reassign the pointer, so NULL out the string instead.
 			argv[i][0] = _T('\0');
