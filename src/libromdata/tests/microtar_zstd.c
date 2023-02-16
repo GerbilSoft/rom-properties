@@ -208,7 +208,7 @@ static int mtar_zstd_close(mtar_t *tar)
 int mtar_zstd_open_ro(mtar_t *tar, const char *filename)
 {
 	// Allocate buffers.
-	mzstd_ctx *const ctx = malloc(sizeof(mzstd_ctx));
+	mzstd_ctx *const ctx = calloc(1, sizeof(mzstd_ctx));
 	if (!ctx)
 		return MTAR_EFAILURE;
 
@@ -240,18 +240,10 @@ int mtar_zstd_open_ro(mtar_t *tar, const char *filename)
 	}
 
 	ctx->input.src = ctx->buf_in;
-	ctx->input.size = 0;
-	ctx->input.pos = 0;
 	ctx->output.dst = ctx->buf_out;
-	ctx->output.size = 0;
-	ctx->output.pos = 0;
-	ctx->output_ptr = 0;
 
-	// Current position in the decompressed stream.
-	ctx->unz_pos = 0;
-
+	memset(tar, 0, sizeof(*tar));
 	tar->read = mtar_zstd_read;
-	tar->write = NULL;
 	tar->seek = mtar_zstd_seek;
 	tar->close = mtar_zstd_close;
 	tar->stream = ctx;
