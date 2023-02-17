@@ -19,7 +19,7 @@ IF(ENABLE_DECRYPTION)
 	DO_SPLIT_DEBUG(CtrKeyScramblerTest)
 	SET_WINDOWS_SUBSYSTEM(CtrKeyScramblerTest CONSOLE)
 	SET_WINDOWS_ENTRYPOINT(CtrKeyScramblerTest wmain OFF)
-	ADD_TEST(NAME CtrKeyScramblerTest COMMAND CtrKeyScramblerTest)
+	ADD_TEST(NAME CtrKeyScramblerTest COMMAND CtrKeyScramblerTest "--gtest_brief=1")
 ENDIF(ENABLE_DECRYPTION)
 
 # GcnFstPrint (Not a test, but a useful program.)
@@ -56,7 +56,7 @@ TARGET_LINK_LIBRARIES(GcnFstTest PRIVATE minizip ${ZLIB_LIBRARIES})
 DO_SPLIT_DEBUG(GcnFstTest)
 SET_WINDOWS_SUBSYSTEM(GcnFstTest CONSOLE)
 SET_WINDOWS_ENTRYPOINT(GcnFstTest wmain OFF)
-ADD_TEST(NAME GcnFstTest COMMAND GcnFstTest)
+ADD_TEST(NAME GcnFstTest COMMAND GcnFstTest --gtest_brief)
 
 # ImageDecoder test
 ADD_EXECUTABLE(ImageDecoderTest img/ImageDecoderTest.cpp)
@@ -72,7 +72,7 @@ ENDIF(PNG_LIBRARY)
 DO_SPLIT_DEBUG(ImageDecoderTest)
 SET_WINDOWS_SUBSYSTEM(ImageDecoderTest CONSOLE)
 SET_WINDOWS_ENTRYPOINT(ImageDecoderTest wmain OFF)
-ADD_TEST(NAME ImageDecoderTest COMMAND ImageDecoderTest "--gtest_filter=-*Benchmark*")
+ADD_TEST(NAME ImageDecoderTest COMMAND ImageDecoderTest --gtest_brief --gtest_filter=-*Benchmark*)
 
 # Nintendo System ID test
 ADD_EXECUTABLE(NintendoSystemIDTest NintendoSystemIDTest.cpp)
@@ -81,7 +81,7 @@ TARGET_LINK_LIBRARIES(NintendoSystemIDTest PRIVATE gtest)
 DO_SPLIT_DEBUG(NintendoSystemIDTest)
 SET_WINDOWS_SUBSYSTEM(NintendoSystemIDTest CONSOLE)
 SET_WINDOWS_ENTRYPOINT(NintendoSystemIDTest wmain OFF)
-ADD_TEST(NAME NintendoSystemIDTest COMMAND NintendoSystemIDTest)
+ADD_TEST(NAME NintendoSystemIDTest COMMAND NintendoSystemIDTest --gtest_brief)
 
 # SuperMagicDrive test
 ADD_EXECUTABLE(SuperMagicDriveTest
@@ -96,7 +96,7 @@ TARGET_COMPILE_DEFINITIONS(SuperMagicDriveTest PRIVATE ${ZLIB_DEFINITIONS})
 DO_SPLIT_DEBUG(SuperMagicDriveTest)
 SET_WINDOWS_SUBSYSTEM(SuperMagicDriveTest CONSOLE)
 SET_WINDOWS_ENTRYPOINT(SuperMagicDriveTest wmain OFF)
-ADD_TEST(NAME SuperMagicDriveTest COMMAND SuperMagicDriveTest "--gtest_filter=-*benchmark*")
+ADD_TEST(NAME SuperMagicDriveTest COMMAND SuperMagicDriveTest --gtest_brief --gtest_filter=-*benchmark*)
 
 ### zstd is required past this point ###
 
@@ -114,5 +114,5 @@ IF(ENABLE_ZSTD)
 	DO_SPLIT_DEBUG(RomHeaderTest)
 	SET_WINDOWS_SUBSYSTEM(RomHeaderTest CONSOLE)
 	SET_WINDOWS_ENTRYPOINT(RomHeaderTest wmain OFF)
-	ADD_TEST(NAME RomHeaderTest COMMAND RomHeaderTest)
+	ADD_TEST(NAME RomHeaderTest COMMAND RomHeaderTest --gtest_brief)
 ENDIF(ENABLE_ZSTD)
