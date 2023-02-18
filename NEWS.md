@@ -43,6 +43,9 @@
     * PVRTC pixel formats have been removed.
     * ETCn no longer has swapped R/B channels.
     * Fix format flags not showing up at all.
+  * GameCube: Show the raw version number of unrecognized Wii Menu versions,
+    and fix the raw version number for 4.2K.
+    * Reported by @johnsanc314.
 
 * Other changes:
   * EXE: Don't show import/export tables for .NET executables, since they only
