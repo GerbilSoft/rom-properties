@@ -1479,8 +1479,8 @@ int GameCube::loadFieldData(void)
 	// TODO: Reserve fewer fields for GCN?
 	// Maximum number of fields:
 	// - GameCube and Wii: 7 (includes Game Info)
-	// - Wii only: 5
-	d->fields->reserve(12);
+	// - Wii only: 6
+	d->fields->reserve(7+6);
 
 	// TODO: Trim the titles. (nulls, spaces)
 	// NOTE: The titles are dup()'d as C strings, so maybe not nulls.
@@ -1693,6 +1693,7 @@ int GameCube::loadFieldData(void)
 		const char *sysMenu = nullptr;
 		unsigned int ios_slot = 0, ios_major = 0, ios_minor = 0;
 		unsigned int ios_retail_count = 0;
+		time_t update_date = -1;	// from update.inf
 		bool isDebugIOS = false;
 		if (d->updatePartition) {
 			// Get the update version.
@@ -1763,6 +1764,33 @@ int GameCube::loadFieldData(void)
 				}
 				d->updatePartition->closedir(dirp);
 			}
+
+			// Check if __update.inf exists.
+			// If it does, read the datestamp.
+			IRpFile *const update_inf = d->updatePartition->open("/__update.inf");
+			if (update_inf) {
+				char buf[11];
+				size_t size = update_inf->read(buf, sizeof(buf));
+				update_inf->unref();
+				if (size == sizeof(buf) && buf[sizeof(buf)-1] == '\0') {
+					struct tm tm;
+					memset(&tm, 0, sizeof(tm));
+					int ret = sscanf(buf, "%d/%d/%d", &tm.tm_year, &tm.tm_mon, &tm.tm_mday);
+					// NOTE: timegm() silently produces the wrong values if the string data
+					// is out of range, so verify it here.
+					if (ret == 3 &&
+					    tm.tm_year >= 2000 && tm.tm_year <= 2999 &&
+					    tm.tm_mon >= 1 && tm.tm_mon <= 12 &&
+					    tm.tm_mday >= 1 && tm.tm_mday <= 31)
+					{
+						// Adjust the year and month to match struct tm specifications.
+						tm.tm_year -= 1900;
+						tm.tm_mon -= 1;
+
+						update_date = timegm(&tm);
+					}
+				}
+			}
 		}
 
 		const char *const update_title = C_("Nintendo", "Update");
@@ -1779,6 +1807,11 @@ int GameCube::loadFieldData(void)
 				}
 			}
 			d->fields->addField_string(update_title, sysMenu);
+		}
+
+		if (update_date > -1) {
+			d->fields->addField_dateTime(C_("Nintendo", "Update Date"), update_date,
+				RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_IS_UTC);
 		}
 
 		// Partition table.

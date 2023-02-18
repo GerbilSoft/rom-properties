@@ -15,6 +15,8 @@
     * Windows xattr functionality currently does not work on Windows XP.
   * KDE UI frontend now only uses JSON loading when compiled with KDE Frameworks
     5.89.0 or later.
+  * GameCube: Display the Wii update partition date if available.
+    * Requested by @johnsanc314.
 
 * Bug fixes:
   * WiiWAD: Add application/x-doom-wad for compatibility with some systems that
