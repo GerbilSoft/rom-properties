@@ -500,6 +500,13 @@ INSTANTIATE_TEST_SUITE_P(SNES, RomHeaderTest,
 		"Console/SNES.json.tar.zst"))
 	, RomHeaderTest::test_case_suffix_generator);
 
+INSTANTIATE_TEST_SUITE_P(SufamiTurbo, RomHeaderTest,
+	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
+		"Console/SufamiTurbo.bin.tar.zst",
+		"Console/SufamiTurbo.txt.tar.zst",
+		"Console/SufamiTurbo.json.tar.zst"))
+	, RomHeaderTest::test_case_suffix_generator);
+
 /* Handheld */
 
 INSTANTIATE_TEST_SUITE_P(DMG, RomHeaderTest,
