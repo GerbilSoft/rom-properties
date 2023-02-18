@@ -1690,7 +1690,7 @@ int GameCube::loadFieldData(void)
 		}
 
 		// Update version.
-		const char *sysMenu = nullptr;
+		unsigned int sysMenuVersion = 0;
 		unsigned int ios_slot = 0, ios_major = 0, ios_minor = 0;
 		unsigned int ios_retail_count = 0;
 		time_t update_date = -1;	// from update.inf
@@ -1730,7 +1730,7 @@ int GameCube::loadFieldData(void)
 						int ret = sscanf(dirent->name, "RVL-WiiSystemmenu-v%u.wad", &version);
 						if (ret == 1) {
 							// Found a retail System Menu.
-							sysMenu = WiiSystemMenuVersion::lookup(version);
+							sysMenuVersion = version;
 							break;
 						}
 					}
@@ -1799,14 +1799,27 @@ int GameCube::loadFieldData(void)
 				rp_sprintf("IOS%u %u.%u (v%u)", ios_slot, ios_major, ios_minor,
 					(ios_major << 8) | ios_minor));
 		} else {
-			if (!sysMenu) {
-				if (!d->updatePartition) {
-					sysMenu = C_("Nintendo", "None");
+			if (sysMenuVersion != 0) {
+				// Look up the system menu version name.
+				const char *const sysMenu = WiiSystemMenuVersion::lookup(sysMenuVersion);
+				if (sysMenu) {
+					d->fields->addField_string(update_title, sysMenu);
 				} else {
-					sysMenu = d->wii_getCryptoStatus(d->updatePartition);
+					// Unknown system menu version.
+					// Use the raw version number.
+					d->fields->addField_string(update_title, rp_sprintf("v%u", sysMenuVersion));
 				}
+			} else {
+				// No system menu version number.
+				// FIXME: Sometimes shows "Something happened" even if it wasn't a crypto error.
+				const char *updateStatus;
+				if (!d->updatePartition) {
+					updateStatus = C_("Nintendo", "None");
+				} else {
+					updateStatus = d->wii_getCryptoStatus(d->updatePartition);
+				}
+				d->fields->addField_string(update_title, updateStatus);
 			}
-			d->fields->addField_string(update_title, sysMenu);
 		}
 
 		if (update_date > -1) {
