@@ -876,6 +876,7 @@ GameCube::GameCube(IRpFile *file)
 			break;
 	}
 
+	// Check if the disc type is still valid.
 	d->isValid = (d->discType >= 0);
 	if (!d->isValid) {
 		// Not supported.
@@ -942,8 +943,8 @@ GameCube::GameCube(IRpFile *file)
 		    tid.lo == be32_to_cpu('UPC'))	// CHN region (maybe?)
 		{
 			// Update partition.
-			// TODO: What's the difference between the different title IDs?
-			// It might be region code, but what is 'UPD'?
+			// Last character is title ID, except for 'UPD' which is 'all regions'.
+			// (Usually used for IOS-only update paritions.)
 			pt.type = RVL_PT_UPDATE;
 			d->updatePartition = pt.partition;
 		} else if (tid.lo == be32_to_cpu('INS')) {
@@ -957,6 +958,7 @@ GameCube::GameCube(IRpFile *file)
 		}
 
 		// Read the partition header.
+		// FIXME: This is failing for "incrementing values" update partitions.
 		size = pt.partition->read(&d->discHeader, sizeof(d->discHeader));
 		if (size != sizeof(d->discHeader)) {
 			// Error reading the partition header.
