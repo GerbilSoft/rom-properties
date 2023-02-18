@@ -500,7 +500,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_cpp_benchmark)
  */
 TEST_P(ImageDecoderLinearTest, fromLinear_sse2_test)
 {
-	if (!RP_CPU_HasSSE2()) {
+	if (!RP_CPU_HasSSE2() && !GTEST_FLAG_GET(brief)) {
 		fputs("*** SSE2 is not supported on this CPU. Skipping test.\n", stderr);
 		return;
 	}
@@ -513,7 +513,9 @@ TEST_P(ImageDecoderLinearTest, fromLinear_sse2_test)
 		case 24:
 		case 32:
 			// Not implemented...
-			fprintf(stderr, "*** SSE2 decoding is not implemented for %u-bit color.\n", mode.bpp);
+			if (!GTEST_FLAG_GET(brief)) {
+				fprintf(stderr, "*** SSE2 decoding is not implemented for %u-bit color.\n", mode.bpp);
+			}
 			return;
 
 		case 15:
@@ -540,7 +542,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_sse2_test)
  */
 TEST_P(ImageDecoderLinearTest, fromLinear_sse2_benchmark)
 {
-	if (!RP_CPU_HasSSE2()) {
+	if (!RP_CPU_HasSSE2() && !GTEST_FLAG_GET(brief)) {
 		fputs("*** SSE2 is not supported on this CPU. Skipping test.\n", stderr);
 		return;
 	}
@@ -553,7 +555,9 @@ TEST_P(ImageDecoderLinearTest, fromLinear_sse2_benchmark)
 		case 24:
 		case 32:
 			// Not implemented...
-			fprintf(stderr, "*** SSE2 decoding is not implemented for %u-bit color.\n", mode.bpp);
+			if (!GTEST_FLAG_GET(brief)) {
+				fprintf(stderr, "*** SSE2 decoding is not implemented for %u-bit color.\n", mode.bpp);
+			}
 			return;
 
 		case 15:
@@ -580,7 +584,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_sse2_benchmark)
  */
 TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_test)
 {
-	if (!RP_CPU_HasSSSE3()) {
+	if (!RP_CPU_HasSSSE3() && !GTEST_FLAG_GET(brief)) {
 		fprintf(stderr, "*** SSSE3 is not supported on this CPU. Skipping test.\n");
 		return;
 	}
@@ -606,7 +610,9 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_test)
 		case 15:
 		case 16:
 			// Not implemented...
-			fprintf(stderr, "*** SSSE3 decoding is not implemented for %u-bit color.\n", mode.bpp);
+			if (!GTEST_FLAG_GET(brief)) {
+				fprintf(stderr, "*** SSSE3 decoding is not implemented for %u-bit color.\n", mode.bpp);
+			}
 			return;
 
 		default:
@@ -625,7 +631,7 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_test)
  */
 TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_benchmark)
 {
-	if (!RP_CPU_HasSSSE3()) {
+	if (!RP_CPU_HasSSSE3() && !GTEST_FLAG_GET(brief)) {
 		fprintf(stderr, "*** SSSE3 is not supported on this CPU. Skipping test.\n");
 		return;
 	}
@@ -657,7 +663,9 @@ TEST_P(ImageDecoderLinearTest, fromLinear_ssse3_benchmark)
 		case 15:
 		case 16:
 			// Not implemented...
-			fprintf(stderr, "*** SSSE3 decoding is not implemented for %u-bit color.\n", mode.bpp);
+			if (!GTEST_FLAG_GET(brief)) {
+				fprintf(stderr, "*** SSSE3 decoding is not implemented for %u-bit color.\n", mode.bpp);
+			}
 			return;
 
 		default:

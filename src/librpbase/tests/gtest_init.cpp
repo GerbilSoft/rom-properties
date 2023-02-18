@@ -67,6 +67,10 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		__NR_openat2,		// Linux 5.6
 #endif /* __SNR_openat2 || __NR_openat2 */
 
+		// for ImageDecoderTest so we don't have to copy the test files to the binary directory
+		SCMP_SYS(access),
+		SCMP_SYS(chdir),
+
 		// Google Test
 		SCMP_SYS(getcwd),	// testing::internal::FilePath::GetCurrentDir()
 					// - testing::internal::UnitTestImpl::AddTestInfo()

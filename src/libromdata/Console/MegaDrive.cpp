@@ -416,8 +416,9 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 		cp1252_sjis_to_utf8(s_title_domestic, title_len), RomFields::STRF_TRIM_END);
 	fields->addField_string(C_("MegaDrive", "Export Title"),
 		cp1252_sjis_to_utf8(s_title_export, title_len), RomFields::STRF_TRIM_END);
+	// NOTE: Serial number should be ASCII only.
 	fields->addField_string(C_("MegaDrive", "Serial Number"),
-		cp1252_sjis_to_utf8(s_serial_number, sizeof(pRomHeader->serial_number)),
+		cp1252_to_utf8(s_serial_number, sizeof(pRomHeader->serial_number)),
 			RomFields::STRF_TRIM_END);
 	if (!isDisc()) {
 		// Checksum. (MD only; not valid for Mega CD.)

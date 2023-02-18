@@ -28,15 +28,15 @@
 #define gzclose_w(file) gzclose(file)
 #endif
 
-// librpcpu, librpbase
 #include "common.h"
 #include "uvector.h"
 #include "tcharx.h"	// for DIR_SEP_CHR
-#include "librpcpu/byteswap_rp.h"
 
-// librpfile
-#include "librpfile/RpFile.hpp"
+// Other rom-properties libraries
+#include "librpcpu/byteswap_rp.h"
+#include "librpfile/FileSystem.hpp"
 #include "librpfile/MemFile.hpp"
+#include "librpfile/RpFile.hpp"
 using namespace LibRpFile;
 
 // librptexture
@@ -311,10 +311,7 @@ void RpPngFormatTest::SetUp(void)
 	const RpPngFormatTest_mode &mode = GetParam();
 
 	// Open the PNG image file being tested.
-	string path = "png_data";
-	path += DIR_SEP_CHR;
-	path += mode.png_filename;
-	unique_RefBase<RpFile> file(new RpFile(path, RpFile::FM_OPEN_READ));
+	unique_RefBase<RpFile> file(new RpFile(mode.png_filename, RpFile::FM_OPEN_READ));
 	ASSERT_TRUE(file->isOpen());
 
 	// Maximum image size.
@@ -329,9 +326,7 @@ void RpPngFormatTest::SetUp(void)
 		<< mode.png_filename;
 
 	// Open the gzipped BMP image file being tested.
-	path.resize(9);	// Back to "png_data/".
-	path += mode.bmp_gz_filename;
-	m_gzBmp = gzopen(path.c_str(), "rb");
+	m_gzBmp = gzopen(mode.bmp_gz_filename.c_str(), "rb");
 	ASSERT_TRUE(m_gzBmp != nullptr) << "gzopen() failed to open the BMP file:"
 		<< mode.bmp_gz_filename;
 
@@ -1326,6 +1321,50 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 
 	// Make sure the CRC32 table is initialized.
 	get_crc_table();
+
+	// Check for the png_data directory and chdir() into it.
+#ifdef _WIN32
+	static const TCHAR *const subdirs[] = {
+		_T("png_data"),
+		_T("bin\\png_data"),
+		_T("src\\librpbase\\tests\\img\\png_data"),
+		_T("..\\src\\librpbase\\tests\\img\\png_data"),
+		_T("..\\..\\src\\librpbase\\tests\\img\\png_data"),
+		_T("..\\..\\..\\src\\librpbase\\tests\\img\\png_data"),
+		_T("..\\..\\..\\..\\src\\librpbase\\tests\\img\\png_data"),
+		_T("..\\..\\..\\..\\..\\src\\librpbase\\tests\\img\\png_data"),
+		_T("..\\..\\..\\bin\\png_data"),
+		_T("..\\..\\..\\bin\\Debug\\png_data"),
+		_T("..\\..\\..\\bin\\Release\\png_data"),
+	};
+#else /* !_WIN32 */
+	static const TCHAR *const subdirs[] = {
+		_T("png_data"),
+		_T("bin/png_data"),
+		_T("src/librpbase/tests/img/png_data"),
+		_T("../src/librpbase/tests/img/png_data"),
+		_T("../../src/librpbase/tests/img/png_data"),
+		_T("../../../src/librpbase/tests/img/png_data"),
+		_T("../../../../src/librpbase/tests/img/png_data"),
+		_T("../../../../../src/librpbase/tests/img/png_data"),
+		_T("../../../bin/png_data"),
+	};
+#endif /* _WIN32 */
+
+	bool is_found = false;
+	for (const TCHAR *const subdir : subdirs) {
+		if (!_taccess(subdir, R_OK)) {
+			if (_tchdir(subdir) == 0) {
+				is_found = true;
+				break;
+			}
+		}
+	}
+
+	if (!is_found) {
+		fputs("*** ERROR: Cannot find the png_data test images directory.\n", stderr);
+		return EXIT_FAILURE;
+	}
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.
 	::testing::InitGoogleTest(&argc, argv);

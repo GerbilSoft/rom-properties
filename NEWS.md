@@ -45,6 +45,9 @@
 * Other changes:
   * EXE: Don't show import/export tables for .NET executables, since they only
     have a single import, MSCOREEE!_CorExeMain.
+  * New unit test RomHeaderTest that runs `rpcli` against a set of known ROM
+    headers and reference text and JSON output. Currently has headers for
+    MegaDrive (including 32X), N64, SNES, DMG, and GameBoyAdvance.
 
 ## v2.1 (released 2022/12/24)
 

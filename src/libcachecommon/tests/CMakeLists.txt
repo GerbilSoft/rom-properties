@@ -23,7 +23,7 @@ TARGET_LINK_LIBRARIES(FilterCacheKeyTest PRIVATE gtest)
 DO_SPLIT_DEBUG(FilterCacheKeyTest)
 SET_WINDOWS_SUBSYSTEM(FilterCacheKeyTest CONSOLE)
 SET_WINDOWS_ENTRYPOINT(FilterCacheKeyTest wmain OFF)
-ADD_TEST(NAME FilterCacheKeyTest COMMAND FilterCacheKeyTest)
+ADD_TEST(NAME FilterCacheKeyTest COMMAND FilterCacheKeyTest --gtest_brief)
 
 # Delay-load shell32.dll and ole32.dll to prevent a performance penalty due to gdi32.dll.
 # Reference: https://randomascii.wordpress.com/2018/12/03/a-not-called-function-can-cause-a-5x-slowdown/

@@ -211,19 +211,14 @@ void GcnFstTest::TearDown(void)
  */
 unzFile GcnFstTest::openZip(const char *filename)
 {
-	// Prepend fst_data.
-	string path = "fst_data";
-	path += DIR_SEP_CHR;
-	path += filename;
-
 #ifdef _WIN32
 	// NOTE: MiniZip 3.0.2's compatibility functions
 	// take UTF-8 on Windows, not UTF-16.
 	zlib_filefunc64_def ffunc;
 	fill_win32_filefunc64(&ffunc);
-	return unzOpen2_64(path.c_str(), &ffunc);
+	return unzOpen2_64(filename, &ffunc);
 #else /* !_WIN32 */
-	return unzOpen(path.c_str());
+	return unzOpen(filename);
 #endif /* _WIN32 */
 }
 
@@ -595,6 +590,50 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 
 	// Make sure the CRC32 table is initialized.
 	get_crc_table();
+
+#ifdef _WIN32
+	// Check for the fst_data directory and chdir() into it.
+	static const TCHAR *const subdirs[] = {
+		_T("fst_data"),
+		_T("bin\\fst_data"),
+		_T("src\\libromdata\\tests\\disc\\fst_data"),
+		_T("..\\src\\libromdata\\tests\\disc\\fst_data"),
+		_T("..\\..\\src\\libromdata\\tests\\disc\\fst_data"),
+		_T("..\\..\\..\\src\\libromdata\\tests\\disc\\fst_data"),
+		_T("..\\..\\..\\..\\src\\libromdata\\tests\\disc\\fst_data"),
+		_T("..\\..\\..\\..\\..\\src\\libromdata\\tests\\disc\\fst_data"),
+		_T("..\\..\\..\\bin\\fst_data"),
+		_T("..\\..\\..\\bin\\Debug\\fst_data"),
+		_T("..\\..\\..\\bin\\Release\\fst_data"),
+	};
+#else /* !_WIN32 */
+	static const TCHAR *const subdirs[] = {
+		_T("fst_data"),
+		_T("bin/fst_data"),
+		_T("src/libromdata/tests/disc/fst_data"),
+		_T("../src/libromdata/tests/disc/fst_data"),
+		_T("../../src/libromdata/tests/disc/fst_data"),
+		_T("../../../src/libromdata/tests/disc/fst_data"),
+		_T("../../../../src/libromdata/tests/disc/fst_data"),
+		_T("../../../../../src/libromdata/tests/disc/fst_data"),
+		_T("../../../bin/fst_data"),
+	};
+#endif /* _WIN32 */
+
+	bool is_found = false;
+	for (const TCHAR *const subdir : subdirs) {
+		if (!_taccess(subdir, R_OK)) {
+			if (_tchdir(subdir) == 0) {
+				is_found = true;
+				break;
+			}
+		}
+	}
+
+	if (!is_found) {
+		fputs("*** ERROR: Cannot find the fst_data test data directory.\n", stderr);
+		return EXIT_FAILURE;
+	}
 
 	// coverity[fun_call_w_exception]: uncaught exceptions cause nonzero exit anyway, so don't warn.
 	::testing::InitGoogleTest(&argc, argv);
