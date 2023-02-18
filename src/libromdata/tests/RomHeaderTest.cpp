@@ -246,6 +246,18 @@ int RomHeaderTest::read_next_files(const RomHeaderTest_mode &mode)
 		ret3 = mtar_read_data(const_cast<mtar_t*>(&mode.p_tar_files->json_tar), last_json_data.data(), json_file_header->size);
 	}
 
+	// SNES: Ensure the BIN file is at least 64 KB.
+	if (mode.bin_filename.size() > 4 &&
+	    mode.bin_filename.compare(mode.bin_filename.size() - 4, string::npos, ".sfc") == 0)
+	{
+		static const size_t MIN_BIN_DATA_SIZE = 64U * 1024U;
+		if (last_bin_data.size() < MIN_BIN_DATA_SIZE) {
+			size_t cur_size = last_bin_data.size();
+			last_bin_data.resize(MIN_BIN_DATA_SIZE);
+			memset(&last_bin_data[cur_size], 0, MIN_BIN_DATA_SIZE - cur_size);
+		}
+	}
+
 	// Ensure the text and JSON data arrays are NULL-terminated.
 	last_txt_data[last_txt_data.size()-1] = 0;
 	last_json_data[last_json_data.size()-1] = 0;
@@ -296,6 +308,7 @@ TEST_P(RomHeaderTest, Text)
 	// Get the text output for this binary file, e.g. as if we're running `rpcli`.
 	memFile = new MemFile(last_bin_data.data(), last_bin_data.size());
 	ASSERT_NE(memFile, nullptr) << "Unable to create MemFile object for binary data.";
+	memFile->setFilename(mode.bin_filename);	// needed for SNES
 	romData = RomDataFactory::create(memFile);
 
 	if (romData) {
@@ -341,6 +354,7 @@ TEST_P(RomHeaderTest, JSON)
 	// Get the JSON output for this binary file, e.g. as if we're running `rpcli -j`.
 	memFile = new MemFile(last_bin_data.data(), last_bin_data.size());
 	ASSERT_NE(memFile, nullptr) << "Unable to create MemFile object for binary data.";
+	memFile->setFilename(mode.bin_filename);	// needed for SNES
 	romData = RomDataFactory::create(memFile);
 
 	if (romData) {
@@ -477,6 +491,13 @@ INSTANTIATE_TEST_SUITE_P(N64, RomHeaderTest,
 		"Console/N64.bin.tar.zst",
 		"Console/N64.txt.tar.zst",
 		"Console/N64.json.tar.zst"))
+	, RomHeaderTest::test_case_suffix_generator);
+
+INSTANTIATE_TEST_SUITE_P(SNES, RomHeaderTest,
+	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
+		"Console/SNES.bin.tar.zst",
+		"Console/SNES.txt.tar.zst",
+		"Console/SNES.json.tar.zst"))
 	, RomHeaderTest::test_case_suffix_generator);
 
 /* Handheld */
