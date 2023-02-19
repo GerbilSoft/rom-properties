@@ -437,13 +437,20 @@ int RP_C_API main(int argc, char *argv[])
 	}
 	
 	assert(RomData::IMG_INT_MIN == 0);
+
+	unsigned int flags = 0;	// OutputFlags
 	// DoFile parameters
 	bool json = false;
 	vector<ExtractParam> extract;
 
 	for (int i = 1; i < argc; i++) { // figure out the json mode in advance
-		if (argv[i][0] == '-' && argv[i][1] == 'j') {
-			json = true;
+		if (argv[i][0] == '-') {
+			if (argv[i][1] == 'j') {
+				json = true;
+			} else if (argv[i][1] == 'J') {
+				json = true;
+				flags |= OF_JSON_NoPrettyPrint;
+			}
 		}
 	}
 	if (json) cout << "[\n";
@@ -464,7 +471,6 @@ int RP_C_API main(int argc, char *argv[])
 	bool inq_ata_packet = false;
 #endif /* RP_OS_SCSI_SUPPORTED */
 	uint32_t lc = 0;
-	unsigned int flags = 0;	// OutputFlags
 	bool first = true;
 	int ret = 0;
 	for (int i = 1; i < argc; i++){
@@ -545,6 +551,7 @@ int RP_C_API main(int argc, char *argv[])
 				extract.emplace_back(argv[++i], -1);
 				break;
 			case 'j': // do nothing
+			case 'J': // still do nothing
 				break;
 #ifdef RP_OS_SCSI_SUPPORTED
 			case 'i':
