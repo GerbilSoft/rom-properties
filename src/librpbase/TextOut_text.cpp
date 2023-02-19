@@ -27,6 +27,7 @@ using std::vector;
 // librpbase
 #include "RomData.hpp"
 #include "RomFields.hpp"
+#include "SystemRegion.hpp"
 
 // librptext
 #include "librptext/conversion.hpp"
@@ -591,30 +592,85 @@ public:
 			return os;
 		}
 
-		static const char formats_strtbl[] =
-			"\0"		// [0] No date or time
-			"%x\0"		// [1] Date
-			"%X\0"		// [4] Time
-			"%x %X\0"	// [7] Date Time
+		// Buffer for the RFT_DATETIME string
+		char str[128];
+		str[0] = '\0';
 
-			// TODO: Better localization here.
-			"\0"		// [13] No date or time
-			"%b %d\0"	// [14] Date (no year)
-			"%X\0"		// [20] Time
-			"%b %d %X\0";	// [23] Date Time (no year)
-		static const uint8_t formats_offtbl[8] = {0, 1, 4, 7, 13, 14, 20, 23};
-		static_assert(sizeof(formats_strtbl) == 33, "formats_offtbl[] needs to be recalculated");
+		if (likely(SystemRegion::getLanguageCode() != 0)) {
+			// Localized time format
+			static const char formats_strtbl[] =
+				"\0"		// [0] No date or time
+				"%x\0"		// [1] Date
+				"%X\0"		// [4] Time
+				"%x %X\0"	// [7] Date Time
 
-		const unsigned int offset = (flags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK);
-		const char *format = &formats_strtbl[formats_offtbl[offset]];
-		assert(format[0] != '\0');
-		if (format[0] == '\0') {
-			format = "Invalid DateTime";
+				// TODO: Better localization here.
+				"\0"		// [13] No date or time
+				"%b %d\0"	// [14] Date (no year)
+				"%X\0"		// [20] Time
+				"%b %d %X\0";	// [23] Date Time (no year)
+			static const uint8_t formats_offtbl[8] = {0, 1, 4, 7, 13, 14, 20, 23};
+			static_assert(sizeof(formats_strtbl) == 33, "formats_offtbl[] needs to be recalculated");
+
+			const unsigned int offset = (flags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK);
+			const char *format = &formats_strtbl[formats_offtbl[offset]];
+			assert(format[0] != '\0');
+			if (format[0] == '\0') {
+				os << "Invalid DateTime";
+			} else {
+				strftime(str, 128, format, &timestamp);
+			}
+		} else {
+			// LC_ALL=C
+			// Always use the same format regardless of platform.
+			// This is needed on Windows because LC_ALL doesn't affect
+			// MSVCRT's strftime().
+			// TODO: Split date/time into separate sections?
+			switch (flags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK) {
+				case 0:
+				case RomFields::RFT_DATETIME_NO_YEAR:
+				default:
+					// Nothing to do...
+					os << "Invalid DateTime";
+					break;
+
+				case RomFields::RFT_DATETIME_HAS_DATE:
+					// Date, with year
+					snprintf(str, sizeof(str), "%04d/%02d/%02d",
+						timestamp.tm_year + 1900, timestamp.tm_mon + 1, timestamp.tm_mday);
+					break;
+				case RomFields::RFT_DATETIME_HAS_TIME:
+				case RomFields::RFT_DATETIME_HAS_TIME | RomFields::RFT_DATETIME_NO_YEAR:
+					// Time
+					snprintf(str, sizeof(str), "%02d:%02d:%02d",
+						 timestamp.tm_hour, timestamp.tm_min, timestamp.tm_sec);
+					break;
+				case RomFields::RFT_DATETIME_HAS_DATE |
+				     RomFields::RFT_DATETIME_HAS_TIME:
+					// Date and time (with year)
+					snprintf(str, sizeof(str), "%04d/%02d/%02d %02d:%02d:%02d",
+						timestamp.tm_year + 1900, timestamp.tm_mon + 1, timestamp.tm_mday,
+						timestamp.tm_hour, timestamp.tm_min, timestamp.tm_sec);
+					break;
+
+				case RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_NO_YEAR:
+					// Date, without year
+					snprintf(str, sizeof(str), "%02d/%02d",
+						timestamp.tm_mon + 1, timestamp.tm_mday);
+					break;
+				case RomFields::RFT_DATETIME_HAS_DATE |
+				     RomFields::RFT_DATETIME_HAS_TIME | RomFields::RFT_DATETIME_NO_YEAR:
+					// Date and time (without year)
+					snprintf(str, sizeof(str), "%02d/%02d %02d:%02d:%02d",
+						timestamp.tm_mon + 1, timestamp.tm_mday,
+						timestamp.tm_hour, timestamp.tm_min, timestamp.tm_sec);
+					break;
+			}
 		}
 
-		char str[128];
-		strftime(str, 128, format, &timestamp);
-		os << str;
+		if (str[0] != '\0') {
+			os << str;
+		}
 		return os;
 	}
 };
