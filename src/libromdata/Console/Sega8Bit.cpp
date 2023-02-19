@@ -183,10 +183,17 @@ time_t Sega8BitPrivate::sdsc_date_to_unix_time(const Sega8_SDSC_Date *date)
 	// - tm_year: year - 1900
 	// - tm_mon: 0 == January
 
+	// NOTE: Some ROM images have the Century value set to 0x02 instead of 0x20:
+	// - Interactive Sprite Test (PD).sms
+	// - GG Hi-Res Graphics Demo by Charles McDonald (PD).gg
+	unsigned int century = ((date->century >> 4) * 1000) +
+			       ((date->century & 0x0F) * 100);
+	if (century == 200)
+		century = 2000;
+
 	// TODO: Check for invalid BCD values.
 	struct tm sdsctime;
-	sdsctime.tm_year = ((date->century >> 4) * 1000) +
-			   ((date->century & 0x0F) * 100) +
+	sdsctime.tm_year = century +
 			   ((date->year >> 4) * 10) +
 			    (date->year & 0x0F) - 1900;
 	sdsctime.tm_mon  = ((date->month >> 4) * 10) +
