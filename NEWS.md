@@ -46,6 +46,9 @@
   * GameCube: Show the raw version number of unrecognized Wii Menu versions,
     and fix the raw version number for 4.2K.
     * Reported by @johnsanc314.
+  * GameCube: Handle standalone Wii update partitions containing Incrementing
+    Values.
+    * Reported by @johnsanc314.
 
 * Other changes:
   * EXE: Don't show import/export tables for .NET executables, since they only

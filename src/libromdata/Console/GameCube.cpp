@@ -122,6 +122,7 @@ class GameCubePrivate final : public RomDataPrivate
 		// Do we have certain things loaded?
 		bool hasRegionCode;
 		bool wiiPtblLoaded;
+		bool hasDiscHeader;	// true most of the time, except inc values update partitions
 
 		// Region code. (bi2.bin for GCN, RVL_RegionSetting for Wii.)
 		uint32_t gcnRegion;
@@ -266,6 +267,7 @@ GameCubePrivate::GameCubePrivate(GameCube *q, IRpFile *file)
 	, discReader(nullptr)
 	, hasRegionCode(false)
 	, wiiPtblLoaded(false)
+	, hasDiscHeader(false)
 	, gcnRegion(~0U)
 	, updatePartition(nullptr)
 	, gamePartition(nullptr)
@@ -916,6 +918,7 @@ GameCube::GameCube(IRpFile *file)
 			// Error reading the disc header.
 			goto notSupported;
 		}
+		d->hasDiscHeader = true;
 		d->hasRegionCode = true;
 	} else {
 		// Standalone partition.
@@ -958,13 +961,20 @@ GameCube::GameCube(IRpFile *file)
 		}
 
 		// Read the partition header.
-		// FIXME: This is failing for "incrementing values" update partitions.
 		size = pt.partition->read(&d->discHeader, sizeof(d->discHeader));
-		if (size != sizeof(d->discHeader)) {
-			// Error reading the partition header.
-			UNREF_AND_NULL_NOCHK(pt.partition);
-			d->wiiPtbl.clear();
-			goto notSupported;
+		if (size == sizeof(d->discHeader)) {
+			d->hasDiscHeader = true;
+		} else {
+			// Read failed. This may happen if we have an Incrementing Values
+			// update partition.
+			d->hasDiscHeader = false;
+			if (pt.partition->verifyResult() != KeyManager::VerifyResult::IncrementingValues) {
+				// Not Incrementing Values.
+				// Error reading the partition header.
+				UNREF_AND_NULL_NOCHK(pt.partition);
+				d->wiiPtbl.clear();
+				goto notSupported;
+			}
 		}
 
 		// Need to change encryption bytes to 00.
@@ -1488,50 +1498,52 @@ int GameCube::loadFieldData(void)
 	// NOTE: The titles are dup()'d as C strings, so maybe not nulls.
 	// TODO: Display the disc image format?
 
-	// Game title.
-	// TODO: Is Shift-JIS actually permissible here?
-	const char *const title_title = C_("RomData", "Title");
-	switch (d->gcnRegion) {
-		case GCN_REGION_USA:
-		case GCN_REGION_EUR:
-		case GCN_REGION_ALL:	// TODO: Assume JP?
-		default:
-			// USA/PAL uses cp1252.
-			d->fields->addField_string(title_title,
-				cp1252_to_utf8(
-					discHeader->game_title, sizeof(discHeader->game_title)));
-			break;
+	// Disc header is normally present, except for standalone
+	// Wii update partitions with incrementing values.
+	if (d->hasDiscHeader) {
+		// Game title
+		// TODO: Is Shift-JIS actually permissible here?
+		const char *const title_title = C_("RomData", "Title");
+		switch (d->gcnRegion) {
+			case GCN_REGION_USA:
+			case GCN_REGION_EUR:
+			case GCN_REGION_ALL:	// TODO: Assume JP?
+			default:
+				// USA/PAL uses cp1252.
+				d->fields->addField_string(title_title, cp1252_to_utf8(
+						discHeader->game_title, sizeof(discHeader->game_title)));
+				break;
 
-		case GCN_REGION_JPN:
-		case GCN_REGION_KOR:
-		case GCN_REGION_CHN:
-		case GCN_REGION_TWN:
-			// Japan uses Shift-JIS.
-			d->fields->addField_string(title_title,
-				cp1252_sjis_to_utf8(
-					discHeader->game_title, sizeof(discHeader->game_title)));
-			break;
+			case GCN_REGION_JPN:
+			case GCN_REGION_KOR:
+			case GCN_REGION_CHN:
+			case GCN_REGION_TWN:
+				// Japan uses Shift-JIS.
+				d->fields->addField_string(title_title, cp1252_sjis_to_utf8(
+						discHeader->game_title, sizeof(discHeader->game_title)));
+				break;
+		}
+
+		// Game ID
+		// Replace any non-printable characters with underscores.
+		// (GameCube NDDEMO has ID6 "00\0E01".)
+		char id6[7]; 
+		for (int i = 0; i < 6; i++) {
+			id6[i] = (ISPRINT(d->discHeader.id6[i])
+				? d->discHeader.id6[i]
+				: '_');
+		}
+		d->fields->addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id6, 6));
+
+		// Publisher
+		d->fields->addField_string(C_("RomData", "Publisher"), d->getPublisher());
+
+		// Other disc header fields
+		d->fields->addField_string_numeric(C_("RomData", "Disc #"),
+			discHeader->disc_number+1, RomFields::Base::Dec);
+		d->fields->addField_string_numeric(C_("RomData", "Revision"),
+			discHeader->revision, RomFields::Base::Dec, 2);
 	}
-
-	// Game ID.
-	// Replace any non-printable characters with underscores.
-	// (GameCube NDDEMO has ID6 "00\0E01".)
-	char id6[7]; 
-	for (int i = 0; i < 6; i++) {
-		id6[i] = (ISPRINT(d->discHeader.id6[i])
-			? d->discHeader.id6[i]
-			: '_');
-	}
-	d->fields->addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id6, 6));
-
-	// Publisher.
-	d->fields->addField_string(C_("RomData", "Publisher"), d->getPublisher());
-
-	// Other fields.
-	d->fields->addField_string_numeric(C_("RomData", "Disc #"),
-		discHeader->disc_number+1, RomFields::Base::Dec);
-	d->fields->addField_string_numeric(C_("RomData", "Revision"),
-		discHeader->revision, RomFields::Base::Dec, 2);
 
 	// The remaining fields are not located in the disc header.
 	// If we can't read the disc contents for some reason, e.g.
@@ -2146,6 +2158,9 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 	} else if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) == GameCubePrivate::DISC_FORMAT_TGC) {
 		// TGC game IDs aren't unique, so we can't get
 		// an image URL that makes any sense.
+		return -ENOENT;
+	} else if (!d->hasDiscHeader) {
+		// No disc header. Cannot get the game ID.
 		return -ENOENT;
 	}
 
