@@ -500,11 +500,25 @@ INSTANTIATE_TEST_SUITE_P(Sega8Bit_SMS, RomHeaderTest,
 		"Console/Sega8Bit_SMS.json.tar.zst"))
 	, RomHeaderTest::test_case_suffix_generator);
 
+INSTANTIATE_TEST_SUITE_P(Sega8Bit_SMS_SDSC, RomHeaderTest,
+	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
+		"Console/Sega8Bit_SMS_SDSC.bin.tar.zst",
+		"Console/Sega8Bit_SMS_SDSC.txt.tar.zst",
+		"Console/Sega8Bit_SMS_SDSC.json.tar.zst"))
+	, RomHeaderTest::test_case_suffix_generator);
+
 INSTANTIATE_TEST_SUITE_P(Sega8Bit_GG, RomHeaderTest,
 	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
 		"Console/Sega8Bit_GG.bin.tar.zst",
 		"Console/Sega8Bit_GG.txt.tar.zst",
 		"Console/Sega8Bit_GG.json.tar.zst"))
+	, RomHeaderTest::test_case_suffix_generator);
+
+INSTANTIATE_TEST_SUITE_P(Sega8Bit_GG_SDSC, RomHeaderTest,
+	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
+		"Console/Sega8Bit_GG_SDSC.bin.tar.zst",
+		"Console/Sega8Bit_GG_SDSC.txt.tar.zst",
+		"Console/Sega8Bit_GG_SDSC.json.tar.zst"))
 	, RomHeaderTest::test_case_suffix_generator);
 
 INSTANTIATE_TEST_SUITE_P(SNES, RomHeaderTest,
