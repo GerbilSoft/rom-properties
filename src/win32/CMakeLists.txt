@@ -188,8 +188,9 @@ IF(RP_LIBROMDATA_IS_DLL AND MSVC)
 	# Delay-load libromdata if it's a DLL.
 	# Otherwise, we won't be able to load it if it's in an
 	# architecture-specific subdirectory.
-	SET(DL_DEBUG_FLAGS "${DL_DEBUG_FLAGS} /DELAYLOAD:romdata-2d.dll")
-	SET(DL_RELEASE_FLAGS "${DL_RELEASE_FLAGS} /DELAYLOAD:romdata-2.dll")
+	# TODO: Global variable with the libromdata SOVERSION?
+	SET(DL_DEBUG_FLAGS "${DL_DEBUG_FLAGS} /DELAYLOAD:romdata-3d.dll")
+	SET(DL_RELEASE_FLAGS "${DL_RELEASE_FLAGS} /DELAYLOAD:romdata-3.dll")
 
 	SET(CMAKE_SHARED_LINKER_FLAGS_DEBUG	"${CMAKE_SHARED_LINKER_FLAGS_DEBUG} ${DL_DEBUG_FLAGS}")
 	SET(CMAKE_SHARED_LINKER_FLAGS_RELEASE	"${CMAKE_SHARED_LINKER_FLAGS_RELEASE} ${DL_RELEASE_FLAGS}")

@@ -56,6 +56,8 @@
   * New unit test RomHeaderTest that runs `rpcli` against a set of known ROM
     headers and reference text and JSON output. Currently has headers for
     MegaDrive (including 32X), N64, SNES, DMG, and GameBoyAdvance.
+  * libromdata's SOVERSION was bumped to 3 due to, among other things, the
+    librptext split.
 
 ## v2.1 (released 2022/12/24)
 
