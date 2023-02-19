@@ -625,7 +625,13 @@ public:
 			// Always use the same format regardless of platform.
 			// This is needed on Windows because LC_ALL doesn't affect
 			// MSVCRT's strftime().
-			// TODO: Split date/time into separate sections?
+
+			// Month names for dates without years
+			static const char months[12][4] = {
+				"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+				"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+			};
+
 			switch (flags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK) {
 				case 0:
 				case RomFields::RFT_DATETIME_NO_YEAR:
@@ -653,18 +659,28 @@ public:
 						timestamp.tm_hour, timestamp.tm_min, timestamp.tm_sec);
 					break;
 
-				case RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_NO_YEAR:
+				case RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_NO_YEAR: {
 					// Date, without year
-					snprintf(str, sizeof(str), "%02d/%02d",
-						timestamp.tm_mon + 1, timestamp.tm_mday);
+					const char *const s_mon = (timestamp.tm_mon >= 0 && timestamp.tm_mon < 12)
+						? months[timestamp.tm_mon]
+						: "Unk";
+
+					snprintf(str, sizeof(str), "%s %02d",
+						s_mon, timestamp.tm_mday);
 					break;
+				}
 				case RomFields::RFT_DATETIME_HAS_DATE |
-				     RomFields::RFT_DATETIME_HAS_TIME | RomFields::RFT_DATETIME_NO_YEAR:
+				     RomFields::RFT_DATETIME_HAS_TIME | RomFields::RFT_DATETIME_NO_YEAR: {
 					// Date and time (without year)
-					snprintf(str, sizeof(str), "%02d/%02d %02d:%02d:%02d",
-						timestamp.tm_mon + 1, timestamp.tm_mday,
+					const char *const s_mon = (timestamp.tm_mon >= 0 && timestamp.tm_mon < 12)
+						? months[timestamp.tm_mon]
+						: "Unk";
+
+					snprintf(str, sizeof(str), "%s %02d %02d:%02d:%02d",
+						s_mon, timestamp.tm_mday,
 						timestamp.tm_hour, timestamp.tm_min, timestamp.tm_sec);
 					break;
+				}
 			}
 		}
 
