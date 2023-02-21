@@ -498,7 +498,6 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 		if (ddspf.dwFlags & DDPF_LUMINANCE) {
 			dxgi_alpha = DDS_ALPHA_MODE_OPAQUE;
 		}
-		printf("ret == %d\n", ret);
 	}
 
 	return ret;

@@ -158,7 +158,6 @@ string CacheManager::download(const char *cache_key)
 	// results in slashes being changed to backslashes on Windows.
 	// rp-download will filter the key itself.
 	int ret = execRpDownload(cache_key);
-	printf("ret == %d\n", ret);
 	if (ret != 0) {
 		// rp-download failed for some reason.
 		return string();
