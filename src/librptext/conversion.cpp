@@ -10,9 +10,10 @@
 #include "conversion.hpp"
 #include "printf.hpp"
 
-// libi18n, librpcpu
+// Other rom-properties libraries
 #include "libi18n/i18n.h"
 #include "librpcpu/byteswap_rp.h"
+#include "librpthreads/pthread_once.h"
 
 // C includes
 #ifdef HAVE_NL_LANGINFO
@@ -41,6 +42,11 @@ using std::unique_ptr;
 namespace LibRpText {
 
 /** OS-independent text conversion functions. **/
+
+// Localized decimal point
+static pthread_once_t lc_decimal_once_control = PTHREAD_ONCE_INIT;
+static bool is_C_locale;
+static char lc_decimal[8];
 
 /**
  * Byteswap and return UTF-16 text.
@@ -209,31 +215,51 @@ static inline int calc_frac_part(T val, T mask)
 }
 
 /**
- * Get the localized decimal point.
- * @return Localized decimal point.
+ * Initialize the localized decimal point.
+ * Called by pthread_once().
  */
-static string localizedDecimalPoint(void)
+static void initLocalizedDecimalPoint(void)
 {
+	// Check if we're using the C locale.
+	const char *locale = getenv("LC_MESSAGES");
+	if (!locale || locale[0] == '\0') {
+		locale = getenv("LC_ALL");
+	}
+	if (locale && !strcmp(locale, "C")) {
+		// We're using the C locale.
+		is_C_locale = true;
+		strcpy(lc_decimal, ".");
+		return;
+	}
+
+	// Not using C locale. Get the localized decimal point.
 #if defined(_WIN32)
 	// Use localeconv(). (Windows: Convert from UTF-16 to UTF-8.)
 #  if defined(HAVE_STRUCT_LCONV_WCHAR_T)
 	// MSVCRT: `struct lconv` has wchar_t fields.
-	return utf16_to_utf8(reinterpret_cast<const char16_t*>(
+	const string s_dec = utf16_to_utf8(reinterpret_cast<const char16_t*>(
 		localeconv()->_W_decimal_point), -1);
+	strncpy(lc_decimal, s_dec.c_str(), sizeof(lc_decimal));
 #  else /* !HAVE_STRUCT_LCONV_WCHAR_T */
 	// MinGW v5,v6: `struct lconv` does not have wchar_t fields.
 	// NOTE: The `char` fields are ANSI.
-	return ansi_to_utf8(localeconv()->decimal_point, -1);
+	const string s_dec = ansi_to_utf8(localeconv()->decimal_point, -1);
+	strncpy(lc_decimal, s_dec.c_str(), sizeof(lc_decimal));
 #  endif /* HAVE_STRUCT_LCONV_WCHAR_T */
 #elif defined(HAVE_NL_LANGINFO)
 	// Use nl_langinfo().
 	// Reference: https://www.gnu.org/software/libc/manual/html_node/The-Elegant-and-Fast-Way.html
 	// NOTE: RADIXCHAR is the portable version of DECIMAL_POINT.
-	return nl_langinfo(RADIXCHAR);
+	const char *const radix = nl_langinfo(RADIXCHAR);
+	strncpy(lc_decimal, radix ? radix : ".", sizeof(lc_decimal));
 #else
 	// Use localeconv(). (Assuming UTF-8)
-	return localeconv()->decimal_point;
+	const char *const radix = localeconv()->decimal_point;
+	strncpy(lc_decimal, radix ? radix : ".", sizeof(lc_decimal));
 #endif
+
+	// Ensure NULL-termination.
+	lc_decimal[sizeof(lc_decimal)-1] = '\0';
 }
 
 /**
@@ -247,6 +273,9 @@ string formatFileSize(off64_t size)
 	// frac_part is always 0 to 100.
 	// If whole_part >= 10, frac_part is divided by 10.
 	int whole_part, frac_part;
+
+	// Ensure the localized decimal point is initialized.
+	pthread_once(&lc_decimal_once_control, initLocalizedDecimalPoint);
 
 	// TODO: Optimize this?
 	if (size < 0) {
@@ -292,6 +321,7 @@ string formatFileSize(off64_t size)
 	}
 
 	// Localize the whole part.
+	// FIXME: If using C locale, don't do localization.
 	ostringstream s_value;
 	s_value << whole_part;
 
@@ -306,7 +336,7 @@ string formatFileSize(off64_t size)
 		}
 
 		// Append the fractional part using the required number of digits.
-		s_value << localizedDecimalPoint();
+		s_value << lc_decimal;
 		s_value << std::setw(frac_digits) << std::setfill('0') << frac_part;
 	}
 
@@ -349,6 +379,9 @@ std::string formatFrequency(uint32_t frequency)
 	// If whole_part >= 10, frac_part is divided by 10.
 	int whole_part, frac_part;
 
+	// Ensure the localized decimal point is initialized.
+	pthread_once(&lc_decimal_once_control, initLocalizedDecimalPoint);
+
 	// TODO: Optimize this?
 	if (frequency < (2*1000)) {
 		// tr: Hertz (< 1,000)
@@ -373,6 +406,7 @@ std::string formatFrequency(uint32_t frequency)
 	}
 
 	// Localize the whole part.
+	// FIXME: If using C locale, don't do localization.
 	ostringstream s_value;
 	s_value << whole_part;
 
@@ -381,7 +415,7 @@ std::string formatFrequency(uint32_t frequency)
 		const int frac_digits = 3;
 
 		// Append the fractional part using the required number of digits.
-		s_value << localizedDecimalPoint();
+		s_value << lc_decimal;
 		s_value << std::setw(frac_digits) << std::setfill('0') << frac_part;
 	}
 
