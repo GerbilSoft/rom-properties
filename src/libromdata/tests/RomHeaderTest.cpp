@@ -486,6 +486,13 @@ INSTANTIATE_TEST_SUITE_P(MegaDrive_32X, RomHeaderTest,
 		"Console/MegaDrive_32X.json.tar.zst"))
 	, RomHeaderTest::test_case_suffix_generator);
 
+INSTANTIATE_TEST_SUITE_P(MegaDrive_Pico, RomHeaderTest,
+	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
+		"Console/MegaDrive_Pico.bin.tar.zst",
+		"Console/MegaDrive_Pico.txt.tar.zst",
+		"Console/MegaDrive_Pico.json.tar.zst"))
+	, RomHeaderTest::test_case_suffix_generator);
+
 INSTANTIATE_TEST_SUITE_P(N64, RomHeaderTest,
 	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
 		"Console/N64.bin.tar.zst",
