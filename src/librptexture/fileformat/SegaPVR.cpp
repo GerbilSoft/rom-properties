@@ -239,34 +239,28 @@ const char *SegaPVRPrivate::pixelFormatName(void) const
 		static_cast<uint8_t>(ARRAY_SIZE(pxfmt_tbl_pvrx)),
 	};
 
-	// GVR has pixel format and image data type located at a different offset.
-	uint8_t px_format;
-	switch (pvrType) {
-		default:
-		case PVRType::PVR:
-		case PVRType::SVR:
-		case PVRType::PVRX:	// TODO
-			px_format = pvrHeader.pvr.px_format;
-			break;
-		case PVRType::GVR:
-			px_format = pvrHeader.gvr.px_format;
-			break;
+	if ((int)pvrType < 0 || pvrType >= PVRType::Max) {
+		// Invalid PVR type.
+		return nullptr;
 	}
+
+	// GVR has pixel format and image data type located at a different offset.
+	const uint8_t px_format = (pvrType == PVRType::GVR)
+		? pvrHeader.gvr.px_format
+		: pvrHeader.pvr.px_format;
 
 	// NOTE: GameCube pxfmt makes no sense.
 	// Maybe we should use the image data type instead?
 	// For now, we'll end up returning nullptr here.
-	const char *pxfmt = nullptr;
-	if ((int)pvrType >= 0 && pvrType < PVRType::Max) {
-		const char *const *const p_pxfmt_tbl = pxfmt_tbl_ptrs[(int)pvrType];
-		const uint8_t pxfmt_tbl_sz = pxfmt_tbl_sizes[(int)pvrType];
+	const char *const *const p_pxfmt_tbl = pxfmt_tbl_ptrs[(int)pvrType];
+	const uint8_t pxfmt_tbl_sz = pxfmt_tbl_sizes[(int)pvrType];
 
-		if (px_format < pxfmt_tbl_sz) {
-			pxfmt = p_pxfmt_tbl[px_format];
-		}
+	if (px_format < pxfmt_tbl_sz) {
+		return p_pxfmt_tbl[px_format];
 	}
 
-	return pxfmt;
+	// Unknown image data type
+	return nullptr;
 }
 
 /**
@@ -349,6 +343,11 @@ const char *SegaPVRPrivate::imageDataTypeName(void) const
 		static_cast<uint8_t>(ARRAY_SIZE(idt_tbl_pvrx)),
 	};
 
+	if ((int)pvrType < 0 || pvrType >= PVRType::Max) {
+		// Invalid PVR type.
+		return nullptr;
+	}
+
 	// GVR has these values located at a different offset.
 	// TODO: Verify PVRX.
 	uint8_t img_data_type;
@@ -365,25 +364,23 @@ const char *SegaPVRPrivate::imageDataTypeName(void) const
 	}
 
 	// NOTE: For GameCube, this is essentially the pixel format.
-	const char *idt = nullptr;
-	if ((int)pvrType >= 0 && pvrType < SegaPVRPrivate::PVRType::Max) {
-		const char *const *const p_idt_tbl = idt_tbl_ptrs[(int)pvrType];
-		const uint8_t idt_tbl_sz = idt_tbl_sizes[(int)pvrType];
+	const char *const *const p_idt_tbl = idt_tbl_ptrs[(int)pvrType];
+	const uint8_t idt_tbl_sz = idt_tbl_sizes[(int)pvrType];
 
-		if (pvrType == SegaPVRPrivate::PVRType::SVR) {
-			// SVR image data type.
-			if (img_data_type >= SVR_IMG_MIN && img_data_type <= SVR_IMG_MAX) {
-				idt = idt_tbl_svr[img_data_type - SVR_IMG_MIN];
-			}
-		} else {
-			// Other image data type.
-			if (img_data_type < idt_tbl_sz) {
-				idt = p_idt_tbl[img_data_type];
-			}
+	if (pvrType == SegaPVRPrivate::PVRType::SVR) {
+		// SVR image data type
+		if (img_data_type >= SVR_IMG_MIN && img_data_type <= SVR_IMG_MAX) {
+			return idt_tbl_svr[img_data_type - SVR_IMG_MIN];
+		}
+	} else {
+		// Other image data type
+		if (img_data_type < idt_tbl_sz) {
+			return p_idt_tbl[img_data_type];
 		}
 	}
 
-	return idt;
+	// Unknown image data type
+	return nullptr;
 }
 
 /**
