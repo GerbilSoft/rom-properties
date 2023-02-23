@@ -19,7 +19,7 @@ class SparseDiscReader;
 class SparseDiscReaderPrivate
 {
 	protected:
-		SparseDiscReaderPrivate(SparseDiscReader *q);
+		explicit SparseDiscReaderPrivate(SparseDiscReader *q);
 	public:
 		virtual ~SparseDiscReaderPrivate() { };
 

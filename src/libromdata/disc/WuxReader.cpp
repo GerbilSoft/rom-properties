@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WuxReader.cpp: Wii U .wux disc image reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,7 +25,7 @@ namespace LibRomData {
 
 class WuxReaderPrivate : public SparseDiscReaderPrivate {
 	public:
-		WuxReaderPrivate(WuxReader *q);
+		explicit WuxReaderPrivate(WuxReader *q);
 
 	private:
 		typedef SparseDiscReaderPrivate super;

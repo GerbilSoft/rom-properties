@@ -29,7 +29,7 @@ static WNDPROC pfnComboBoxExWndProc;
 class LanguageComboBoxPrivate
 {
 	public:
-		LanguageComboBoxPrivate(HWND hWnd)
+		explicit LanguageComboBoxPrivate(HWND hWnd)
 			: hWnd(hWnd)
 			, himglFlags(nullptr)
 			, dwExStyleRTL(LibWin32UI::isSystemRTL())

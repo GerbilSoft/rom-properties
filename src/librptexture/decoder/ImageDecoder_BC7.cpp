@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ImageDecoder_BC7.cpp: Image decoding functions: BC7                     *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -224,7 +224,7 @@ struct bc7_block {
 	uint64_t lsb;
 	uint64_t msb;
 
-	bc7_block(const uint64_t *src)
+	explicit bc7_block(const uint64_t *src)
 	{
 		// TODO: Make sure this is correct on big-endian.
 		lsb = le64_to_cpu(src[0]);

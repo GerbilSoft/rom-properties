@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GczReader.cpp: GameCube/Wii GCZ disc image reader.                      *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -40,7 +40,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 
 class GczReaderPrivate : public SparseDiscReaderPrivate {
 	public:
-		GczReaderPrivate(GczReader *q);
+		explicit GczReaderPrivate(GczReader *q);
 
 	private:
 		typedef SparseDiscReaderPrivate super;

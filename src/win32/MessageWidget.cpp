@@ -17,7 +17,7 @@ static ATOM atom_messageWidget;
 class MessageWidgetPrivate
 {
 	public:
-		MessageWidgetPrivate(HWND hWnd);
+		explicit MessageWidgetPrivate(HWND hWnd);
 		~MessageWidgetPrivate();
 
 	public:

@@ -61,9 +61,9 @@ class SPCPrivate final : public RomDataPrivate
 				}; 
 				bool isStrIdx;
 
-				val_t() : timestamp(0), isStrIdx(false) { }
-				val_t(int ivalue) : ivalue(ivalue), isStrIdx(false) { }
-				val_t(unsigned int uvalue) : uvalue(uvalue), isStrIdx(false) { }
+				explicit val_t() : timestamp(0), isStrIdx(false) { }
+				explicit val_t(int ivalue) : ivalue(ivalue), isStrIdx(false) { }
+				explicit val_t(unsigned int uvalue) : uvalue(uvalue), isStrIdx(false) { }
 			};
 
 			// Map of ID666 tags.

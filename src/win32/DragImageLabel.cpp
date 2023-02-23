@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * DragImageLabel.cpp: Drag & Drop image label.                            *
  *                                                                         *
- * Copyright (c) 2019-2022 by David Korth.                                 *
+ * Copyright (c) 2019-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -65,7 +65,7 @@ class DragImageLabelPrivate
 			UINT_PTR animTimerID;
 			int last_frame_number;		// Last frame number.
 
-			anim_vars(HWND hwndParent)
+			explicit anim_vars(HWND hwndParent)
 				: iconAnimData(nullptr)
 				, m_hwndParent(hwndParent)
 				, animTimerID(0)

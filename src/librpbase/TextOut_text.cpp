@@ -100,25 +100,25 @@ class SafeString {
 	size_t width;
 	bool quotes;
 public:
-	SafeString(const char *str, bool quotes = true, size_t width = 0)
+	explicit SafeString(const char *str, bool quotes = true, size_t width = 0)
 		: str(str)
 		, len(str ? strlen(str) : 0)
 		, width(width)
 		, quotes(quotes) { }
 
-	SafeString(const char *str, size_t len, bool quotes = true, size_t width = 0)
+	explicit SafeString(const char *str, size_t len, bool quotes = true, size_t width = 0)
 		: str(str)
 		, len(len)
 		, width(width)
 		, quotes(quotes) { }
 
-	SafeString(const string *str, bool quotes = true, size_t width = 0)
+	explicit SafeString(const string *str, bool quotes = true, size_t width = 0)
 		: str(str ? str->c_str() : nullptr)
 		, len(str ? str->size() : 0)
 		, width(width)
 		, quotes(quotes) { }
 
-	SafeString(const string &str, bool quotes = true, size_t width = 0)
+	explicit SafeString(const string &str, bool quotes = true, size_t width = 0)
 		: str(str.c_str())
 		, len(str.size())
 		, width(width)

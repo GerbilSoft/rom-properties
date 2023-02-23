@@ -23,9 +23,9 @@ namespace LibRpFile {
 class XAttrReaderPrivate
 {
 	public:
-		XAttrReaderPrivate(const char *filename);
+		explicit XAttrReaderPrivate(const char *filename);
 #ifdef _WIN32
-		XAttrReaderPrivate(const wchar_t *filename);
+		explicit XAttrReaderPrivate(const wchar_t *filename);
 #endif /* _WIN32 */
 	private:
 		/**

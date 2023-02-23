@@ -1036,7 +1036,7 @@ int EXEPrivate::addFields_PE_Import(void)
 		const string *dllname;
 		bool is_ordinal;
 		uint32_t value; // rva to hint/name or ordinal
-		IltIterator(const uint32_t *end)
+		explicit IltIterator(const uint32_t *end)
 			: dir_index(0)
 			, ilt(end)
 			, dllname(nullptr)

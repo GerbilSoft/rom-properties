@@ -14,7 +14,7 @@ class FontHandlerPrivate;
 class FontHandler
 {
 	public:
-		FontHandler(HWND hWnd = nullptr);
+		explicit FontHandler(HWND hWnd = nullptr);
 		~FontHandler();
 
 	private:

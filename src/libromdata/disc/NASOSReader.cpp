@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NASOSReader.hpp: GameCube/Wii NASOS (.iso.dec) disc image reader.       *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -23,7 +23,7 @@ namespace LibRomData {
 
 class NASOSReaderPrivate : public SparseDiscReaderPrivate {
 	public:
-		NASOSReaderPrivate(NASOSReader *q);
+		explicit NASOSReaderPrivate(NASOSReader *q);
 
 	private:
 		typedef SparseDiscReaderPrivate super;

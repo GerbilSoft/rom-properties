@@ -40,7 +40,7 @@ static const option_menu_action_t stdacts[] = {
 class OptionsMenuButtonPrivate
 {
 	public:
-		OptionsMenuButtonPrivate(HWND hWnd);
+		explicit OptionsMenuButtonPrivate(HWND hWnd);
 		~OptionsMenuButtonPrivate();
 
 	public:
