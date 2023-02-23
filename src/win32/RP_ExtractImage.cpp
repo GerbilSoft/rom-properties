@@ -159,16 +159,23 @@ IFACEMETHODIMP RP_ExtractImage::GetCurFile(_Outptr_ LPOLESTR *ppszFileName)
 	if (!d->filename) {
 		// No filename. Create an empty string.
 		LPWSTR psz = static_cast<LPWSTR>(CoTaskMemAlloc(sizeof(wchar_t)));
-		if (!psz)
+		if (!psz) {
+			*ppszFileName = nullptr;
 			return E_OUTOFMEMORY;
-		memset(psz, 0, sizeof(wchar_t));
+		}
+		*psz = L'\0';
+		*ppszFileName = psz;
 	} else {
-		// Copy the filename.
-		const size_t cb = strlen(d->filename) * sizeof(wchar_t);
+		// Convert the filename to UTF-16 first and then copy it.
+		wstring wfilename = U82W_c(d->filename);
+		const size_t cb = (wfilename.size() + 1) * sizeof(wchar_t);
 		LPWSTR psz = static_cast<LPWSTR>(CoTaskMemAlloc(cb));
-		if (!psz)
+		if (!psz) {
+			*ppszFileName = nullptr;
 			return E_OUTOFMEMORY;
-		memcpy(psz, d->filename, cb);
+		}
+		memcpy(psz, wfilename.c_str(), cb);
+		*ppszFileName = psz;
 	}
 
 	return S_OK;
