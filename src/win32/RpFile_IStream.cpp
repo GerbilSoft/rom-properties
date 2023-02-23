@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RpFile_IStream.hpp: IRpFile using an IStream*.                          *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -56,7 +56,11 @@ RpFile_IStream::RpFile_IStream(IStream *pStream, bool gzip)
 	// TODO: Proper writable check.
 	m_isWritable = true;
 
-	if (gzip) { do {
+	// The rest of this function is only needed for gzipped files.
+	if (!gzip)
+		return;
+
+	do {
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 		// Delay load verification.
 		// TODO: Only if linked with /DELAYLOAD?
@@ -77,7 +81,10 @@ RpFile_IStream::RpFile_IStream(IStream *pStream, bool gzip)
 		HRESULT hr = m_pStream->Read(&gzmagic, (ULONG)sizeof(gzmagic), &cbRead);
 		if (FAILED(hr) || cbRead != (ULONG)sizeof(gzmagic) ||
 		    gzmagic != be16_to_cpu(0x1F8B))
+		{
+			// Not a gzipped file.
 			break;
+		}
 
 		// gzip magic found!
 		// Get the uncompressed size at the end of the file.
@@ -127,19 +134,17 @@ RpFile_IStream::RpFile_IStream(IStream *pStream, bool gzip)
 			m_pZstm = nullptr;
 			m_z_uncomp_sz = 0;
 		}
-	} while (0); }
+	} while (0);
 
-	if (gzip) {
-		if (!m_pZstm) {
-			// Error initializing zlib.
-			m_z_uncomp_sz = 0;
-		}
-
-		// Rewind back to the beginning of the stream.
-		LARGE_INTEGER li;
-		li.QuadPart = 0;
-		m_pStream->Seek(li, STREAM_SEEK_SET, nullptr);
+	if (!m_pZstm) {
+		// Error initializing zlib.
+		m_z_uncomp_sz = 0;
 	}
+
+	// Rewind back to the beginning of the stream.
+	LARGE_INTEGER li;
+	li.QuadPart = 0;
+	m_pStream->Seek(li, STREAM_SEEK_SET, nullptr);
 }
 
 RpFile_IStream::~RpFile_IStream()
