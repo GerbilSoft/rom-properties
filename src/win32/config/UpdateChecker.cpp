@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * UpdateChecker.hpp: Update checker object for AboutTab.                  *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -86,6 +86,7 @@ unsigned int WINAPI UpdateChecker::ThreadProc(LPVOID lpParameter)
 	// Read the first line, which should contain a 4-decimal version number.
 	char buf[256];
 	char *fgret = fgets(buf, sizeof(buf), f);
+	fclose(f);
 	if (fgret == buf && ISSPACE(buf[0])) {
 		updChecker->m_errorMessage = C_("UpdateChecker", "Version file is invalid.");
 		SendMessage(updChecker->m_hWnd, WM_UPD_ERROR, 0, 0);
