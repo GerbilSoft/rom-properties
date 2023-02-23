@@ -106,7 +106,7 @@ static HBITMAP toHBITMAP_mask(const rp_image *image)
 					// TODO: Use stride arithmetic instead of image->scanLine().
 					const uint8_t *src = static_cast<const uint8_t*>(image->scanLine(y));
 					unsigned int x = (unsigned int)width;
-					for (unsigned int x = (unsigned int)width; x > 7; x -= 8) {
+					for (x = (unsigned int)width; x > 7; x -= 8) {
 						uint8_t pxMono = 0;
 						for (unsigned int bit = 8; bit > 0; bit--, src++) {
 							// MSB == left-most pixel.
@@ -130,7 +130,7 @@ static HBITMAP toHBITMAP_mask(const rp_image *image)
 					}
 
 					// Clear out unused bytes and go to the next line.
-					for (unsigned int x = (unsigned int)stride_adj; x > 0; x--) {
+					for (x = (unsigned int)stride_adj; x > 0; x--) {
 						*dest++ = 0;
 					}
 				}
@@ -175,7 +175,7 @@ static HBITMAP toHBITMAP_mask(const rp_image *image)
 				}
 
 				// Clear out unused bytes and go to the next line.
-				for (unsigned int x = (unsigned int)stride_adj; x > 0; x--) {
+				for (x = (unsigned int)stride_adj; x > 0; x--) {
 					*dest++ = 0;
 				}
 			}
