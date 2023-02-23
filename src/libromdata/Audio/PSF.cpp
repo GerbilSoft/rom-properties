@@ -41,9 +41,18 @@ class PSFPrivate final : public RomDataPrivate
 		static const RomDataInfo romDataInfo;
 
 	public:
-		// PSF header.
+		// PSF header
 		// NOTE: **NOT** byteswapped in memory.
 		PSF_Header psfHeader;
+
+		// PSF types
+		struct psf_type_tbl_t {
+			uint8_t version;
+			char tag_name[7];	// psfby
+			const char *sys_name;	// system name (localizable)
+		};
+		static const psf_type_tbl_t psf_type_tbl[];
+		static const psf_type_tbl_t *const p_psf_type_tbl_end;
 
 		/**
 		 * Parse the tag section.
@@ -101,6 +110,20 @@ const char *const PSFPrivate::mimeTypes[] = {
 const RomDataInfo PSFPrivate::romDataInfo = {
 	"PSF", exts, mimeTypes
 };
+
+// PSF types
+const PSFPrivate::psf_type_tbl_t PSFPrivate::psf_type_tbl[] = {
+	{PSF_VERSION_PLAYSTATION,	"psfby",	NOP_C_("PSF|System", "Sony PlayStation")},
+	{PSF_VERSION_PLAYSTATION_2,	"psfby",	NOP_C_("PSF|System", "Sony PlayStation 2")},
+	{PSF_VERSION_SATURN,		"ssfby",	NOP_C_("PSF|System", "Sega Saturn")},
+	{PSF_VERSION_DREAMCAST,		"dsfby",	NOP_C_("PSF|System", "Sega Dreamcast")},
+	{PSF_VERSION_MEGA_DRIVE,	"msfby",	NOP_C_("PSF|System", "Sega Mega Drive")}, // FIXME: "msfby" may be incorrect.
+	{PSF_VERSION_N64,		"usfby",	NOP_C_("PSF|System", "Nintendo 64")},
+	{PSF_VERSION_GBA,		"gsfby",	NOP_C_("PSF|System", "Game Boy Advance")},
+	{PSF_VERSION_SNES,		"snsfby",	NOP_C_("PSF|System", "Super NES")},
+	{PSF_VERSION_QSOUND,		"qsfby",	NOP_C_("PSF|System", "Capcom QSound")},
+};
+const PSFPrivate::psf_type_tbl_t *const PSFPrivate::p_psf_type_tbl_end = &psf_type_tbl[ARRAY_SIZE(psf_type_tbl)];
 
 PSFPrivate::PSFPrivate(PSF *q, IRpFile *file)
 	: super(q, file, &romDataInfo)
@@ -212,30 +235,17 @@ unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
  */
 const char *PSFPrivate::getRippedByTagName(uint8_t version)
 {
-	static const struct {
-		uint8_t version;
-		char tag_name[7];
-	} psfby_lkup_tbl[] = {
-		{PSF_VERSION_PLAYSTATION,	"psfby"},
-		{PSF_VERSION_PLAYSTATION_2,	"psfby"},
-		{PSF_VERSION_SATURN,		"ssfby"},
-		{PSF_VERSION_DREAMCAST,		"dsfby"},
-		{PSF_VERSION_MEGA_DRIVE,	"msfby"}, // FIXME: May be incorrect.
-		{PSF_VERSION_N64,		"usfby"},
-		{PSF_VERSION_GBA,		"gsfby"},
-		{PSF_VERSION_SNES,		"snsfby"},
-		{PSF_VERSION_QSOUND,		"qsfby"},
-	};
-
-	for (const auto &p : psfby_lkup_tbl) {
-		if (p.version == version) {
-			// Found a match.
-			return p.tag_name;
-		}
+	auto iter = std::find_if(psf_type_tbl, p_psf_type_tbl_end,
+		[version](const psf_type_tbl_t &p) {
+			return (p.version == version);
+		});
+	if (iter != p_psf_type_tbl_end) {
+		// Found a match.
+		return iter->tag_name;
 	}
 
 	// No match. Assume it's PSF.
-	return psfby_lkup_tbl[0].tag_name;
+	return psf_type_tbl->tag_name;
 }
 
 /**
@@ -493,7 +503,7 @@ int PSF::loadFieldData(void)
 		return -EIO;
 	}
 
-	// PSF header.
+	// PSF header
 	const PSF_Header *const psfHeader = &d->psfHeader;
 
 	// PSF fields:
@@ -501,36 +511,22 @@ int PSF::loadFieldData(void)
 	// - 11 fields in the "[TAG]" section.
 	d->fields->reserve(1+11);
 
-	// System.
-	static const struct {
-		uint8_t version;
-		const char *sysname;
-	} sysname_lkup_tbl[] = {
-		{PSF_VERSION_PLAYSTATION,	NOP_C_("PSF|System", "Sony PlayStation")},
-		{PSF_VERSION_PLAYSTATION_2,	NOP_C_("PSF|System", "Sony PlayStation 2")},
-		{PSF_VERSION_SATURN,		NOP_C_("PSF|System", "Sega Saturn")},
-		{PSF_VERSION_DREAMCAST,		NOP_C_("PSF|System", "Sega Dreamcast")},
-		{PSF_VERSION_MEGA_DRIVE,	NOP_C_("PSF|System", "Sega Mega Drive")},
-		{PSF_VERSION_N64,		NOP_C_("PSF|System", "Nintendo 64")},
-		{PSF_VERSION_GBA,		NOP_C_("PSF|System", "Game Boy Advance")},
-		{PSF_VERSION_SNES,		NOP_C_("PSF|System", "Super NES")},
-		{PSF_VERSION_QSOUND,		NOP_C_("PSF|System", "Capcom QSound")},
-	};
-
+	// System
+	const char *sys_name = nullptr;
 	const uint8_t psf_version = psfHeader->version;
-	const char *sysname = nullptr;
-	for (const auto &p : sysname_lkup_tbl) {
-		if (p.version == psf_version) {
-			// Found a match.
-			sysname = p.sysname;
-			break;
-		}
+	auto iter = std::find_if(PSFPrivate::psf_type_tbl, PSFPrivate::p_psf_type_tbl_end,
+		[psf_version](const PSFPrivate::psf_type_tbl_t &p) {
+			return (p.version == psf_version);
+		});
+	if (iter != PSFPrivate::p_psf_type_tbl_end) {
+		// Found a match.
+		sys_name = iter->sys_name;
 	}
 
 	const char *const system_title = C_("PSF", "System");
-	if (sysname) {
+	if (sys_name) {
 		d->fields->addField_string(system_title,
-			dpgettext_expr(RP_I18N_DOMAIN, "PSF|System", sysname));
+			dpgettext_expr(RP_I18N_DOMAIN, "PSF|System", sys_name));
 	} else {
 		d->fields->addField_string(system_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), psf_version));
@@ -652,7 +648,7 @@ int PSF::loadMetaData(void)
 		return -EIO;
 	}
 
-	// PSF header.
+	// PSF header
 	const PSF_Header *const psfHeader = &d->psfHeader;
 
 	// Attempt to parse the tags before doing anything else.
