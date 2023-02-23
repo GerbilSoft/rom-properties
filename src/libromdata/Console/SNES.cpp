@@ -1319,10 +1319,11 @@ int SNES::loadFieldData(void)
 
 	// ROM mapping
 	// NOTE: Not translatable!
-	static const struct {
+	struct rom_mapping_tbl_t {
 		uint8_t rom_mapping;
 		const char *s_rom_mapping;
-	} rom_mapping_tbl[] = {
+	};
+	static const rom_mapping_tbl_t rom_mapping_tbl[] = {
 		{SNES_ROMMAPPING_LoROM,			"LoROM"},
 		{SNES_ROMMAPPING_HiROM,			"HiROM"},
 		{SNES_ROMMAPPING_LoROM_S_DD1,		"LoROM + S-DD1"},
@@ -1336,12 +1337,13 @@ int SNES::loadFieldData(void)
 	};
 
 	const char *s_rom_mapping = nullptr;
-	for (const auto &p : rom_mapping_tbl) {
-		if (p.rom_mapping == rom_mapping) {
-			// Found a match.
-			s_rom_mapping = p.s_rom_mapping;
-			break;
-		}
+	static const rom_mapping_tbl_t *const p_rom_mapping_tbl_end = &rom_mapping_tbl[ARRAY_SIZE(rom_mapping_tbl)];
+	auto iter = std::find_if(rom_mapping_tbl, p_rom_mapping_tbl_end,
+		[rom_mapping](const rom_mapping_tbl_t &p) {
+			return (p.rom_mapping == rom_mapping);
+		});
+	if (iter != p_rom_mapping_tbl_end) {
+		s_rom_mapping = iter->s_rom_mapping;
 	}
 
 	const char *const rom_mapping_title = C_("SNES", "ROM Mapping");

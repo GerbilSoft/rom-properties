@@ -110,7 +110,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	if (!pVsFfi)
 		return;
 
-	// File version.
+	// File version
 	fields->addField_string(C_("EXE", "File Version"),
 		rp_sprintf("%u.%u.%u.%u",
 			pVsFfi->dwFileVersionMS >> 16,
@@ -118,7 +118,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 			pVsFfi->dwFileVersionLS >> 16,
 			pVsFfi->dwFileVersionLS & 0xFFFF));
 
-	// Product version.
+	// Product version
 	fields->addField_string(C_("EXE", "Product Version"),
 		rp_sprintf("%u.%u.%u.%u",
 			pVsFfi->dwProductVersionMS >> 16,
@@ -126,7 +126,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 			pVsFfi->dwProductVersionLS >> 16,
 			pVsFfi->dwProductVersionLS & 0xFFFF));
 
-	// File flags.
+	// File flags
 	static const char *const FileFlags_names[] = {
 		NOP_C_("EXE|FileFlags", "Debug"),
 		NOP_C_("EXE|FileFlags", "Prerelease"),
@@ -140,12 +140,13 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	fields->addField_bitfield(C_("EXE", "File Flags"),
 		v_FileFlags_names, 3, pVsFfi->dwFileFlags & pVsFfi->dwFileFlagsMask);
 
-	// File OS.
+	// File OS
 	// NOTE: Not translatable.
-	static const struct {
+	struct fileOS_tbl_t {
 		uint32_t dwFileOS;
 		const char *s_fileOS;
-	} fileOS_lkup_tbl[] = {
+	};
+	static const fileOS_tbl_t fileOS_tbl[] = {
 		// TODO: Reorder based on how common each OS is?
 		// VOS_NT_WINDOWS32 is probably the most common nowadays.
 
@@ -169,12 +170,15 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 
 	const uint32_t dwFileOS = pVsFfi->dwFileOS;
 	const char *s_fileOS = nullptr;
-	for (const auto &p : fileOS_lkup_tbl) {
-		if (p.dwFileOS == dwFileOS) {
-			// Found a match.
-			s_fileOS = p.s_fileOS;
-			break;
-		}
+
+	static const fileOS_tbl_t *const p_fileOS_tbl_end = &fileOS_tbl[ARRAY_SIZE(fileOS_tbl)];
+	auto iter = std::find_if(fileOS_tbl, p_fileOS_tbl_end,
+		[dwFileOS](const fileOS_tbl_t &p) {
+			return (p.dwFileOS == dwFileOS);
+		});
+	if (iter != p_fileOS_tbl_end) {
+		// Found a match.
+		s_fileOS = iter->s_fileOS;
 	}
 
 	const char *const fileOS_title = C_("EXE", "File OS");
@@ -185,7 +189,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 			rp_sprintf(C_("RomData", "Unknown (0x%08X)"), dwFileOS));
 	}
 
-	// File type.
+	// File type
 	static const char *const fileTypes_tbl[] = {
 		// VFT_UNKNOWN
 		nullptr,
@@ -219,7 +223,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		}
 	}
 
-	// File subtype.
+	// File subtype
 	bool hasSubtype = false;
 	const char *fileSubtype = nullptr;
 	switch (pVsFfi->dwFileType) {
@@ -292,7 +296,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		}
 	}
 
-	// File timestamp. (FILETIME format)
+	// File timestamp (FILETIME format)
 	// NOTE: This seems to be 0 in most EXEs and DLLs I've tested.
 	uint64_t fileTime = (static_cast<uint64_t>(pVsFfi->dwFileDateMS)) << 32 |
 			     static_cast<uint64_t>(pVsFfi->dwFileDateLS);
@@ -331,7 +335,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		data_row.emplace_back(st_row.second);
 	}
 
-	// Fields.
+	// Fields
 	static const char *const field_names[] = {
 		NOP_C_("EXE|StringFileInfo", "Key"),
 		NOP_C_("EXE|StringFileInfo", "Value"),

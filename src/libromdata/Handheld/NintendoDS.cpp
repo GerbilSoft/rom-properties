@@ -1125,10 +1125,11 @@ int NintendoDS::loadFieldData(void)
 			tid_hi, le32_to_cpu(romHeader->dsi.title_id.lo)));
 
 	// DSi filetype
-	static const struct {
+	struct dsi_filetype_tbl_t{
 		uint8_t dsi_filetype;
 		const char *s_dsi_filetype;
-	} dsi_filetype_lkup_tbl[] = {
+	};
+	static const dsi_filetype_tbl_t dsi_filetype_tbl[] = {
 		// tr: DSi-enhanced or DSi-exclusive cartridge.
 		{DSi_FTYPE_CARTRIDGE,		NOP_C_("NintendoDS|DSiFileType", "Cartridge")},
 		// tr: DSiWare (download-only title)
@@ -1144,12 +1145,14 @@ int NintendoDS::loadFieldData(void)
 	};
 
 	const char *s_dsi_filetype = nullptr;
-	for (const auto &p : dsi_filetype_lkup_tbl) {
-		if (p.dsi_filetype == dsi_filetype) {
-			// Found a match.
-			s_dsi_filetype = p.s_dsi_filetype;
-			break;
-		}
+	static const dsi_filetype_tbl_t *const p_dsi_filetype_tbl_end = &dsi_filetype_tbl[ARRAY_SIZE(dsi_filetype_tbl)];
+	auto iter = std::find_if(dsi_filetype_tbl, p_dsi_filetype_tbl_end,
+		[dsi_filetype](const dsi_filetype_tbl_t &p) {
+			return (p.dsi_filetype == dsi_filetype);
+		});
+	if (iter != p_dsi_filetype_tbl_end) {
+		// Found a match.
+		s_dsi_filetype = iter->s_dsi_filetype;
 	}
 
 	// TODO: Is the field name too long?

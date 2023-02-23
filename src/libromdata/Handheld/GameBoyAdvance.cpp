@@ -541,18 +541,17 @@ int GameBoyAdvance::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int s
 		memcpy(region_code, "NoID", 5);
 	} else {
 		const uint32_t id4_32 = be32_to_cpu(romHeader->id4_32);
-		for (uint32_t p : common_ID4) {
-			if (id4_32 == p) {
-				// This ROM has a common ID4. Use the title.
-				name.assign(romHeader->title, sizeof(romHeader->title));
-				size_t null_pos = name.find('\0');
-				if (null_pos != string::npos) {
-					name.resize(null_pos);
-				}
-				trimEnd(name);
-				memcpy(region_code, "NoID", 5);
-				break;
+		if (std::any_of(common_ID4, &common_ID4[ARRAY_SIZE(common_ID4)],
+			[id4_32](uint32_t id4_chk) { return (id4_chk == id4_32); }))
+		{
+			// This ROM has a common ID4. Use the title.
+			name.assign(romHeader->title, sizeof(romHeader->title));
+			size_t null_pos = name.find('\0');
+			if (null_pos != string::npos) {
+				name.resize(null_pos);
 			}
+			trimEnd(name);
+			memcpy(region_code, "NoID", 5);
 		}
 	}
 	if (name.empty()) {

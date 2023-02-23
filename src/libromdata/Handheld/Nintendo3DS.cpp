@@ -788,10 +788,11 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 		f_logo->unref();
 	}
 
-	static const struct {
+	struct logo_crc_tbl_t {
 		uint32_t crc;
 		const char *name;
-	} logo_crc_tbl[] = {
+	};
+	static const logo_crc_tbl_t logo_crc_tbl[] = {
 		// Official logos
 		// NOTE: Not translatable!
 		{0xCFD0EB8BU,	"Nintendo"},
@@ -818,12 +819,14 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 	const char *logo_name = nullptr;
 	if (crc != 0) {
 		// Search for a matching logo.
-		for (const auto &p : logo_crc_tbl) {
-			if (p.crc == crc) {
-				// Found a matching logo.
-				logo_name = p.name;
-				break;
-			}
+		static const logo_crc_tbl_t *const p_logo_crc_tbl_end = &logo_crc_tbl[ARRAY_SIZE(logo_crc_tbl)];
+		auto iter = std::find_if(logo_crc_tbl, p_logo_crc_tbl_end,
+			[crc](const logo_crc_tbl_t &p) {
+				return (p.crc == crc);
+			});
+		if (iter != p_logo_crc_tbl_end) {
+			// Found a matching logo.
+			logo_name = iter->name;
 		}
 
 		if (!logo_name) {
