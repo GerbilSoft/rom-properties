@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * KeyStoreQt.cpp: Key store object for GTK.                               *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -62,7 +62,7 @@ static void	rp_key_store_gtk_finalize		(GObject	*object);
 class RpKeyStoreGTKPrivate final : public LibRomData::KeyStoreUI
 {
 	public:
-		RpKeyStoreGTKPrivate(RpKeyStoreGTK *q)
+		explicit RpKeyStoreGTKPrivate(RpKeyStoreGTK *q)
 			: q(q) { }
 
 	private:

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * XAttrView.cpp: Extended attribute viewer property page.                 *
  *                                                                         *
- * Copyright (c) 2022 by David Korth.                                      *
+ * Copyright (c) 2022-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,7 +25,7 @@ class XAttrViewPrivate
 {
 	public:
 		// TODO: Reomve localizeQUrl() once non-local QUrls are supported.
-		XAttrViewPrivate(const QUrl &filename)
+		explicit XAttrViewPrivate(const QUrl &filename)
 			: filename(localizeQUrl(filename))
 			, xattrReader(nullptr)
 			, hasAttributes(false)

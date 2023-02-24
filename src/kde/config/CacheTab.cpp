@@ -29,7 +29,7 @@ using std::string;
 class CacheTabPrivate
 {
 	public:
-		CacheTabPrivate(CacheTab *q)
+		explicit CacheTabPrivate(CacheTab *q)
 			: q_ptr(q)
 			, thrCleaner(nullptr)
 			, ccCleaner(nullptr)

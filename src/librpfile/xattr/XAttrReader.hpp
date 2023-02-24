@@ -23,9 +23,9 @@ class XAttrReaderPrivate;
 class RP_LIBROMDATA_PUBLIC XAttrReader
 {
 	public:
-		XAttrReader(const char *filename);
+		explicit XAttrReader(const char *filename);
 #ifdef _WIN32
-		XAttrReader(const wchar_t *filename);
+		explicit XAttrReader(const wchar_t *filename);
 #endif /* _WIN32 */
 
 	private:

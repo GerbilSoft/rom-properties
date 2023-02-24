@@ -52,7 +52,7 @@ using std::string;
 class AboutTabPrivate
 {
 	public:
-		AboutTabPrivate(AboutTab *q);
+		explicit AboutTabPrivate(AboutTab *q);
 		~AboutTabPrivate();
 
 	private:
