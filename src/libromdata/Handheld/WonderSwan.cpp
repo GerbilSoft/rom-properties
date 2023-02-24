@@ -473,7 +473,7 @@ int WonderSwan::loadFieldData(void)
 	};
 	vector<string> *const v_system_bitfield_names = RomFields::strArrayToVector(
 		system_bitfield_names, ARRAY_SIZE(system_bitfield_names));
-	const uint32_t ws_system = (romFooter->system_id & 1 ? 3 : 1);
+	const uint32_t ws_system = (romFooter->system_id & 1) ? 3 : 1;
 	d->fields->addField_bitfield(C_("WonderSwan", "System"),
 		v_system_bitfield_names, 0, ws_system);
 

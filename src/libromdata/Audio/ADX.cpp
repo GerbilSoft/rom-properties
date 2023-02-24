@@ -315,7 +315,7 @@ int ADX::loadFieldData(void)
 
 	// Encryption
 	d->fields->addField_string(C_("ADX", "Encrypted"),
-		(adxHeader->flags & ADX_FLAG_ENCRYPTED ? s_yes : s_no));
+		((adxHeader->flags & ADX_FLAG_ENCRYPTED) ? s_yes : s_no));
 
 	// Looping
 	const ADX_LoopData *const pLoopData = d->pLoopData;
