@@ -67,14 +67,16 @@ struct _RpAboutTab {
 
 	GtkWidget	*imgLogo;	// GtkImage (GTK2/GTK3); GtkPicture (GTK4)
 	GtkWidget	*lblTitle;
-	GtkWidget	*lblUpdateCheck;
 
 	GtkWidget	*lblCredits;
 	GtkWidget	*lblLibraries;
 	GtkWidget	*lblSupport;
 
+#ifdef ENABLE_UPDATE_CHECK
+	GtkWidget	*lblUpdateCheck;
 	RpUpdateChecker	*updChecker;
 	gboolean	checkedForUpdates;
+#endif /* ENABLE_UPDATE_CHECK */
 };
 
 static void	rp_about_tab_dispose			(GObject	*object);
@@ -352,9 +354,11 @@ rp_about_tab_dispose(GObject *object)
 {
 	RpAboutTab *const tab = RP_ABOUT_TAB(object);
 
+#ifdef ENABLE_UPDATE_CHECK
 	if (tab->updChecker) {
 		g_clear_object(&tab->updChecker);
 	}
+#endif /* ENABLE_UPDATE_CHECK */
 
 	// Call the superclass dispose() function.
 	G_OBJECT_CLASS(rp_about_tab_parent_class)->dispose(object);
