@@ -159,14 +159,14 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 
 		case KeyStoreUI::ImportStatus::OpenError:
 			if (iret.error_code != 0) {
+				// tr: %1$s == filename, %2$s == error message
 				msg = rp_sprintf_p(C_("KeyManagerTab",
-					// tr: %1$s == filename, %2$s == error message
 					"An error occurred while opening '%1$s': %2$s"),
 					fileNoPath.toUtf8().constData(),
 					strerror(iret.error_code));
 			} else {
+				// tr: %s == filename
 				msg = rp_sprintf_p(C_("KeyManagerTab",
-					// tr: %s == filename
 					"An error occurred while opening '%s'."),
 					fileNoPath.toUtf8().constData());
 			}
@@ -177,14 +177,14 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 		case KeyStoreUI::ImportStatus::ReadError:
 			// TODO: Error code for short reads.
 			if (iret.error_code != 0) {
+				// tr: %1$s == filename, %2$s == error message
 				msg = rp_sprintf_p(C_("KeyManagerTab",
-					// tr: %1$s == filename, %2$s == error message
 					"An error occurred while reading '%1$s': %2$s"),
 					fileNoPath.toUtf8().constData(),
 					strerror(iret.error_code));
 			} else {
+				// tr: %s == filename
 				msg = rp_sprintf_p(C_("KeyManagerTab",
-					// tr: %s == filename
 					"An error occurred while reading '%s'."),
 					fileNoPath.toUtf8().constData());
 			}
@@ -193,8 +193,8 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			break;
 
 		case KeyStoreUI::ImportStatus::InvalidFile:
+			// tr: %1$s == filename, %2$s == type of file
 			msg = rp_sprintf_p(C_("KeyManagerTab",
-				// tr: %1$s == filename, %2$s == type of file
 				"The file '%1$s' is not a valid %2$s file."),
 				fileNoPath.toUtf8().constData(),
 				keyType.toUtf8().constData());
@@ -203,8 +203,8 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			break;
 
 		case KeyStoreUI::ImportStatus::NoKeysImported:
+			// tr: %s == filename
 			msg = rp_sprintf(C_("KeyManagerTab",
-				// tr: %s == filename
 				"No keys were imported from '%s'."),
 				fileNoPath.toUtf8().constData());
 			type = KMessageWidget::Information;
@@ -214,8 +214,8 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 
 		case KeyStoreUI::ImportStatus::KeysImported: {
 			const unsigned int keyCount = iret.keysImportedVerify + iret.keysImportedNoVerify;
+			// tr: %1$s == number of keys (formatted), %2$u == filename
 			msg = rp_sprintf_p(NC_("KeyManagerTab",
-				// tr: %1$s == number of keys (formatted), %2$u == filename
 				"%1$s key was imported from '%2$s'.",
 				"%1$s keys were imported from '%2$s'.",
 				keyCount),
@@ -234,8 +234,8 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 	if (showKeyStats) {
 		if (iret.keysExist > 0) {
 			msg += nl_bullet;
+			// tr: %s == number of keys (formatted)
 			msg += rp_sprintf(NC_("KeyManagerTab",
-				// tr: %s == number of keys (formatted)
 				"%s key already exists in the Key Manager.",
 				"%s keys already exist in the Key Manager.",
 				iret.keysExist),
@@ -243,8 +243,8 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 		}
 		if (iret.keysInvalid > 0) {
 			msg += nl_bullet;
+			// tr: %s == number of keys (formatted)
 			msg += rp_sprintf(NC_("KeyManagerTab",
-				// tr: %s == number of keys (formatted)
 				"%s key was not imported because it is incorrect.",
 				"%s keys were not imported because they are incorrect.",
 				iret.keysInvalid),
@@ -252,8 +252,8 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 		}
 		if (iret.keysNotUsed > 0) {
 			msg += nl_bullet;
+			// tr: %s == number of keys (formatted)
 			msg += rp_sprintf(NC_("KeyManagerTab",
-				// tr: %s == number of keys (formatted)
 				"%s key was not imported because it isn't used by rom-properties.",
 				"%s keys were not imported because they aren't used by rom-properties.",
 				iret.keysNotUsed),
@@ -261,8 +261,8 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 		}
 		if (iret.keysCantDecrypt > 0) {
 			msg += nl_bullet;
+			// tr: %s == number of keys (formatted)
 			msg += rp_sprintf(NC_("KeyManagerTab",
-				// tr: %s == number of keys (formatted)
 				"%s key was not imported because it is encrypted and the master key isn't available.",
 				"%s keys were not imported because they are encrypted and the master key isn't available.",
 				iret.keysCantDecrypt),
@@ -270,8 +270,8 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 		}
 		if (iret.keysImportedVerify > 0) {
 			msg += nl_bullet;
+			// tr: %s == number of keys (formatted)
 			msg += rp_sprintf(NC_("KeyManagerTab",
-				// tr: %s == number of keys (formatted)
 				"%s key has been imported and verified as correct.",
 				"%s keys have been imported and verified as correct.",
 				iret.keysImportedVerify),
