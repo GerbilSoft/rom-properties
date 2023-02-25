@@ -80,7 +80,7 @@ int filterCacheKey(char *pCacheKey)
 
 	for (char *p = pCacheKey; *p != '\0'; p++) {
 		// See valid_ascii_table for a description of valid characters.
-		uint8_t chr = (uint8_t)*p;
+		const uint8_t chr = (uint8_t)*p;
 		if (chr & 0x80) {
 			// Start of UTF-8 sequence.
 			// Verify that the sequence is valid.
@@ -227,7 +227,7 @@ int filterCacheKey(wchar_t *pCacheKey)
 
 	for (wchar_t *p = pCacheKey; *p != '\0'; p++) {
 		// See valid_ascii_table for a description of valid characters.
-		wchar_t chr = *p;
+		const wchar_t chr = *p;
 
 		// Surrogate pair check
 		const wchar_t schk = (chr & 0xDC00);
@@ -377,7 +377,7 @@ static inline wstring U82W(const string &mbs)
 {
 	wstring s_wcs;
 
-	int cchWcs = MultiByteToWideChar(CP_UTF8, 0, mbs.c_str(), static_cast<int>(mbs.size()), nullptr, 0);
+	const int cchWcs = MultiByteToWideChar(CP_UTF8, 0, mbs.c_str(), static_cast<int>(mbs.size()), nullptr, 0);
 	if (cchWcs <= 0) {
 		return s_wcs;
 	}
@@ -441,7 +441,7 @@ string urlencode(const char *url)
 
 	assert(url != nullptr);
 	for (; *url != '\0'; url++) {
-		uint8_t chr = static_cast<uint8_t>(*url);
+		const uint8_t chr = static_cast<uint8_t>(*url);
 		if (chr & 0x80) {
 			// UTF-8 code sequence.
 			char buf[8];

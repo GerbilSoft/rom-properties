@@ -65,7 +65,7 @@ static string str8_to_utf8(const char16_t tbl[256], const char *str, int len)
 		// NOTE: The (uint8_t) cast is required.
 		// Otherwise, *str is interpreted as a signed char,
 		// which causes all sorts of shenanigans.
-		char16_t ch16 = tbl[(uint8_t)*str];
+		const char16_t ch16 = tbl[(uint8_t)*str];
 		// NOTE: Masks for the first byte might not be needed...
 		if (ch16 < 0x0080) {
 			s_utf8 += (char)(ch16 & 0x7F);

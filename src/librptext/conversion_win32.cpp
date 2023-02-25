@@ -44,7 +44,7 @@ static int W32U_mbs_to_UTF16(
 	const char *mbs, int cbMbs,
 	unsigned int cp, DWORD dwFlags = 0)
 {
-	int cchWcs = MultiByteToWideChar(cp, dwFlags, mbs, cbMbs, nullptr, 0);
+	const int cchWcs = MultiByteToWideChar(cp, dwFlags, mbs, cbMbs, nullptr, 0);
 	if (cchWcs <= 0) {
 		s_wcs.clear();
 		return -1;
@@ -69,7 +69,7 @@ static int W32U_UTF16_to_mbs(
 	const char16_t *wcs, int cchWcs,
 	unsigned int cp)
 {
-	int cbMbs = WideCharToMultiByte(cp, 0, reinterpret_cast<const wchar_t*>(wcs), cchWcs, nullptr, 0, nullptr, nullptr);
+	const int cbMbs = WideCharToMultiByte(cp, 0, reinterpret_cast<const wchar_t*>(wcs), cchWcs, nullptr, 0, nullptr, nullptr);
 	if (cbMbs <= 0) {
 		s_mbs.clear();
 		return -1;

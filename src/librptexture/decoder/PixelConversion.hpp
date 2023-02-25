@@ -566,9 +566,9 @@ static inline uint32_t RGB9_E5_to_ARGB32(uint32_t px32)
 	scale.u = (e + 127) << 23;
 
 	// Process as float.
-	float rf = (float) (px32        & 0x1FF) * scale.f;
-	float gf = (float)((px32 >>  9) & 0x1FF) * scale.f;
-	float bf = (float)((px32 >> 18) & 0x1FF) * scale.f;
+	const float rf = (float) (px32        & 0x1FF) * scale.f;
+	const float gf = (float)((px32 >>  9) & 0x1FF) * scale.f;
+	const float bf = (float)((px32 >> 18) & 0x1FF) * scale.f;
 
 	// Convert to ARGB32, clamping to [0,255].
 	argb32_t pxr;
