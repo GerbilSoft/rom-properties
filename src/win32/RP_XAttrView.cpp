@@ -316,6 +316,13 @@ IFACEMETHODIMP RP_XAttrView::Initialize(
 		return E_INVALIDARG;
 	}
 
+	// Check if XAttrView is enabled.
+	const Config *const config = Config::instance();
+	if (!config->showXAttrView()) {
+		// XAttrView is disabled.
+		return E_FAIL;
+	}
+
 	// TODO: Handle CFSTR_MOUNTEDVOLUME for volumes mounted on an NTFS mount point.
 	FORMATETC fe = { CF_HDROP, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
 	STGMEDIUM stm;
@@ -324,13 +331,6 @@ IFACEMETHODIMP RP_XAttrView::Initialize(
 	HDROP hDrop;
 	UINT nFiles, cchFilename;
 	TCHAR *tfilename = nullptr;
-
-	// Check if XAttrView is enabled.
-	const Config *const config = Config::instance();
-	if (!config->showXAttrView()) {
-		// XAttrView is disabled.
-		goto cleanup;
-	}
 
 	// The pDataObj pointer contains the objects being acted upon. In this 
 	// example, we get an HDROP handle for enumerating the selected files and 
@@ -344,6 +344,8 @@ IFACEMETHODIMP RP_XAttrView::Initialize(
 		ReleaseStgMedium(&stm);
 		return E_FAIL;
 	}
+
+	// From this point forward, goto cleanup; on error.
 
 	// Determine how many files are involved in this operation. This
 	// code sample displays the custom context menu item when only
