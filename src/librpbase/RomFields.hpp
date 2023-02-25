@@ -695,13 +695,13 @@ class RomFields
 
 			// Mutually-exclusive data.
 			union {
-				// Checkbox bitfield.
+				// Checkbox bitfield
 				// Requires RFT_LISTDATA_CHECKBOXES.
 				uint32_t checkboxes;
 
-				// Icons vector.
+				// Icons vector
 				// Requires RFT_LISTDATA_ICONS.
-				const std::vector<const LibRpTexture::rp_image*> *icons;
+				const ListDataIcons_t *icons;
 			} mxd;
 		};
 
