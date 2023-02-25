@@ -166,7 +166,6 @@ int XAttrReaderPrivate::loadGenericXattrs_FindFirstStreamW(void)
 
 		// Read up to 257 TCHARs from the alternate data stream.
 		// If we get 257, truncate it to 253 and add "...".
-		// TODO: Verify that the stream data is in fact Unicode.
 		ads_filename.resize(filename.size());
 		ads_filename += fsd.cStreamName;
 		HANDLE hStream = CreateFile(ads_filename.c_str(),
