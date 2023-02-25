@@ -145,7 +145,7 @@ int XAttrReaderPrivate::loadGenericXattrs_FindFirstStreamW(void)
 
 	do {
 		// We're only allowing $DATA streams.
-		size_t streamName_len = _tcslen(fsd.cStreamName);
+		const size_t streamName_len = _tcslen(fsd.cStreamName);
 		if (streamName_len < 7) {
 			// Stream name is too small.
 			continue;
@@ -190,7 +190,8 @@ int XAttrReaderPrivate::loadGenericXattrs_FindFirstStreamW(void)
 						ads_data.wch[256] = L'\0';
 					} else {
 						// Ensure the string is NULL-terminated.
-						ads_data.wch[bytesRead] = L'\0';
+						// TODO: Make sure it's a multiple of 2 bytes.
+						ads_data.wch[bytesRead/sizeof(TCHAR)] = L'\0';
 					}
 				} else {
 					// It's likely *not* Unicode.
@@ -203,7 +204,7 @@ int XAttrReaderPrivate::loadGenericXattrs_FindFirstStreamW(void)
 						ads_data.ch[256] = '\0';
 					} else {
 						// Ensure the string is NULL-terminated.
-						ads_data.ch[bytesRead] = '\0';
+						ads_data.ch[bytesRead/sizeof(char)] = '\0';
 					}
 				}
 			} else {
