@@ -356,7 +356,8 @@ inline int DMGPrivate::RomSize(uint8_t type)
  */
 inline string DMGPrivate::formatROMSizeKiB(unsigned int size)
 {
-	return rp_sprintf("%u KiB", (size / 1024));
+	// tr: Kilobytes
+	return rp_sprintf("%u %s", (size / 1024), C_("LibRpText|FileSize", "KiB"));
 }
 
 /**
