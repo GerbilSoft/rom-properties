@@ -283,7 +283,6 @@ time_t DreamcastSavePrivate::vmi_to_unix_time(const DC_VMI_Timestamp *vmi_tm)
  */
 unsigned int DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
 {
-	DC_VMS_Header vms_header;
 	size_t size = file->seekAndRead(address, &vms_header, sizeof(vms_header));
 	if (size != sizeof(vms_header)) {
 		// Seek and/or read error.
@@ -361,7 +360,7 @@ unsigned int DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
 	vms_header.data_size       = le32_to_cpu(vms_header.data_size);
 #endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
-	memcpy(&this->vms_header, &vms_header, sizeof(vms_header));
+	// VMS header loaded.
 	this->vms_header_offset = address;
 	return DC_HAVE_VMS;
 }
@@ -420,6 +419,8 @@ int DreamcastSavePrivate::readVmiHeader(IRpFile *vmi_file)
 	// TODO: Convert the timestamp to BCD?
 	vms_dirent.size = blocks;
 	memset(vms_dirent.reserved, 0, sizeof(vms_dirent.reserved));
+
+	// VMI header loaded.
 	loaded_headers |= DreamcastSavePrivate::DC_HAVE_DIR_ENTRY;
 	return 0;
 }
@@ -445,6 +446,9 @@ const rp_image *DreamcastSavePrivate::loadIcon(void)
 	if (loaded_headers & DC_IS_ICONDATA_VMS) {
 		// Special handling for ICONDATA_VMS.
 		return loadIcon_ICONDATA_VMS();
+	} else if (!(loaded_headers & DC_HAVE_VMS)) {
+		// No VMS header. Cannot load the icon.
+		return nullptr;
 	}
 
 	// Check the icon count.
@@ -669,6 +673,11 @@ const rp_image *DreamcastSavePrivate::loadBanner(void)
 		return img_banner;
 	} else if (!this->file || !this->isValid) {
 		// Can't load the banner.
+		return nullptr;
+	}
+
+	if (!(loaded_headers & DC_HAVE_VMS)) {
+		// No VMS header. Cannot load the banner.
 		return nullptr;
 	}
 
@@ -1381,9 +1390,9 @@ int DreamcastSave::loadFieldData(void)
 				d->vms_dirent.filetype));
 	}
 
-	// DC VMS directory entry.
+	// DC VMS directory entry
 	if (d->loaded_headers & DreamcastSavePrivate::DC_HAVE_DIR_ENTRY) {
-		// Copy protection.
+		// Copy protection
 		const char *protect;
 		switch (d->vms_dirent.protect) {
 			case DC_VMS_DIRENT_PROTECT_COPY_OK:
@@ -1405,12 +1414,12 @@ int DreamcastSave::loadFieldData(void)
 				rp_sprintf(C_("RomData", "Unknown (0x%02X)"), d->vms_dirent.protect));
 		}
 
-		// Filename.
+		// Filename
 		// TODO: Latin1 or Shift-JIS?
 		d->fields->addField_string(C_("DreamcastSave", "Filename"),
 			latin1_to_utf8(d->vms_dirent.filename, sizeof(d->vms_dirent.filename)));
 
-		// Creation time.
+		// Creation time
 		d->fields->addField_dateTime(C_("DreamcastSave", "Creation Time"), d->ctime,
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_HAS_TIME |
@@ -1423,7 +1432,7 @@ int DreamcastSave::loadFieldData(void)
 		// DC ICONDATA_VMS header.
 		const DC_VMS_ICONDATA_Header *const icondata_vms = &d->vms_header.icondata_vms;
 
-		// VMS description.
+		// VMS description
 		d->fields->addField_string(vms_description_title,
 			cp1252_sjis_to_utf8(
 				icondata_vms->vms_description, sizeof(icondata_vms->vms_description)),
@@ -1435,19 +1444,19 @@ int DreamcastSave::loadFieldData(void)
 		// DC VMS header.
 		const DC_VMS_Header *const vms_header = &d->vms_header;
 
-		// VMS description.
+		// VMS description
 		d->fields->addField_string(vms_description_title,
 			cp1252_sjis_to_utf8(
 				vms_header->vms_description, sizeof(vms_header->vms_description)),
 				RomFields::STRF_TRIM_END);
 
-		// DC description.
+		// DC description
 		d->fields->addField_string(C_("DreamcastSave", "DC Description"),
 			cp1252_sjis_to_utf8(
 				vms_header->dc_description, sizeof(vms_header->dc_description)),
 				RomFields::STRF_TRIM_END);
 
-		// Game Title.
+		// Game title
 		// NOTE: This is used as the "sort key" on DC file management,
 		// and occasionally has control codes.
 		// TODO: Escape the control codes.
@@ -1455,7 +1464,7 @@ int DreamcastSave::loadFieldData(void)
 			cp1252_sjis_to_utf8(
 				vms_header->application, sizeof(vms_header->application)));
 
-		// CRC.
+		// CRC
 		// NOTE: Seems to be 0 for all of the SA2 theme files.
 		// NOTE: "CRC" is non-translatable.
 		d->fields->addField_string_numeric("CRC",
@@ -1492,7 +1501,7 @@ int DreamcastSave::loadMetaData(void)
 
 	// TODO: More metadata properties?
 
-	// Title.
+	// Title
 	if (d->loaded_headers & DreamcastSavePrivate::DC_HAVE_VMS) {
 		d->metaData->addMetaData_string(Property::Title,
 				cp1252_sjis_to_utf8(
@@ -1505,7 +1514,7 @@ int DreamcastSave::loadMetaData(void)
 				RomFields::STRF_TRIM_END);
 	}
 
-	// Creation time.
+	// Creation time
 	if (d->loaded_headers & DreamcastSavePrivate::DC_HAVE_DIR_ENTRY) {
 		// TODO: Dreamcast doesn't support timezones.
 		d->metaData->addMetaData_timestamp(Property::CreationDate, d->ctime);
