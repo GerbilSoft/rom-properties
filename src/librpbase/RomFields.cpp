@@ -962,17 +962,17 @@ int RomFields::addField_string_address_range(const char *name,
 		digits = 16;
 	}
 
-	// Address range.
-	string str = rp_sprintf(
+	// Address range
+	char buf[128];
+	int len = snprintf(buf, sizeof(buf),
 		(!(flags & STRF_HEX_LOWER)) ? "0x%0*X - 0x%0*X" : "0x%0*x - 0x%0*x",
 		digits, start, digits, end);
-	if (suffix && suffix[0] != 0) {
+	if (suffix && suffix[0] != 0 && (len > 0 && len < 126)) {
 		// Append a space and the specified suffix.
-		str += ' ';
-		str += suffix;
+		snprintf(&buf[len], sizeof(buf)-len, " %s", suffix);
 	}
 
-	return addField_string(name, str, flags);
+	return addField_string(name, buf, flags);
 }
 
 /**
