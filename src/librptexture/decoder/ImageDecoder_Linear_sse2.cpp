@@ -3,7 +3,7 @@
  * ImageDecoder_Linear.cpp: Image decoding functions: Linear               *
  * SSE2-optimized version.                                                 *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -82,12 +82,9 @@ static inline void VECTORCALL T_RGB16_sse2(
 
 	// Mask the G and B components and shift them into place.
 	__m128i sG = _mm_slli_epi16(_mm_and_si128(Gmask, *xmm_src), Gshift_W);
-	__m128i sB;
-	if (isBGR) {
-		sB = _mm_srli_epi16(_mm_and_si128(Bmask, *xmm_src), Bshift_W);
-	} else {
-		sB = _mm_slli_epi16(_mm_and_si128(Bmask, *xmm_src), Bshift_W);
-	}
+	__m128i sB = (isBGR)
+		? _mm_srli_epi16(_mm_and_si128(Bmask, *xmm_src), Bshift_W)
+		: _mm_slli_epi16(_mm_and_si128(Bmask, *xmm_src), Bshift_W);
 	sG = _mm_or_si128(sG, _mm_srli_epi16(sG, Gbits));
 	sB = _mm_or_si128(sB, _mm_srli_epi16(sB, Bbits));
 	// Combine G and B.
@@ -101,12 +98,9 @@ static inline void VECTORCALL T_RGB16_sse2(
 	}
 
 	// Mask the R component and shift it into place.
-	__m128i sR;
-	if (isBGR) {
-		sR = _mm_slli_epi16(_mm_and_si128(Rmask, *xmm_src), Rshift_W);
-	} else {
-		sR = _mm_srli_epi16(_mm_and_si128(Rmask, *xmm_src), Rshift_W);
-	}
+	__m128i sR = (isBGR)
+		? _mm_slli_epi16(_mm_and_si128(Rmask, *xmm_src), Rshift_W)
+		: _mm_srli_epi16(_mm_and_si128(Rmask, *xmm_src), Rshift_W);
 	sR = _mm_or_si128(sR, _mm_srli_epi16(sR, Rbits));
 
 	// Unpack R and GB into DWORDs.
@@ -161,14 +155,12 @@ static inline void VECTORCALL T_ARGB16_sse2(
 
 	// Mask the G and B components and shift them into place.
 	__m128i sG = _mm_slli_epi16(_mm_and_si128(Gmask, *xmm_src), Gshift_W);
-	__m128i sB;
-	if (isBGR) {
-		sB = _mm_srli_epi16(_mm_and_si128(Bmask, *xmm_src), Bshift_W);
-	} else {
-		sB = _mm_slli_epi16(_mm_and_si128(Bmask, *xmm_src), Bshift_W);
-	}
+	__m128i sB = (isBGR)
+		? _mm_srli_epi16(_mm_and_si128(Bmask, *xmm_src), Bshift_W)
+		: _mm_slli_epi16(_mm_and_si128(Bmask, *xmm_src), Bshift_W);
 	sG = _mm_or_si128(sG, _mm_srli_epi16(sG, Gbits));
 	sB = _mm_or_si128(sB, _mm_srli_epi16(sB, Bbits));
+
 	// Combine G and B.
 	if (Gbits > 4) {
 		// NOTE: G low byte has to be masked due to the shift.
@@ -180,13 +172,11 @@ static inline void VECTORCALL T_ARGB16_sse2(
 	}
 
 	// Mask the R component and shift it into place.
-	__m128i sR;
-	if (isBGR) {
-		sR = _mm_slli_epi16(_mm_and_si128(Rmask, *xmm_src), Rshift_W);
-	} else {
-		sR = _mm_srli_epi16(_mm_and_si128(Rmask, *xmm_src), Rshift_W);
-	}
+	__m128i sR = (isBGR)
+		? _mm_slli_epi16(_mm_and_si128(Rmask, *xmm_src), Rshift_W)
+		: _mm_srli_epi16(_mm_and_si128(Rmask, *xmm_src), Rshift_W);
 	sR = _mm_or_si128(sR, _mm_srli_epi16(sR, Rbits));
+
 	// Mask the A components, shift it into place, and combine with R.
 	__m128i sA;
 	if (Ashift_W == 16) {
