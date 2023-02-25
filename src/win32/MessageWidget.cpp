@@ -235,7 +235,7 @@ void MessageWidgetPrivate::paint(void)
 		};
 		TCHAR tbuf[128];
 		int len = GetWindowTextLength(hWnd);
-		if (len < 128) {
+		if (len < _countof(tbuf)) {
 			GetWindowText(hWnd, tbuf, _countof(tbuf));
 			DrawText(hDC, tbuf, len, &textRect, 0);
 		} else {
