@@ -166,22 +166,90 @@ RomMetaDataPrivate::RomMetaDataPrivate()
 
 /** RomMetaData::MetaData **/
 
+/**
+ * Initialize a RomMetaData::MetaData object.
+ * Defaults to zero init.
+ */
+RomMetaData::MetaData::MetaData()
+	: name(Property::Invalid)
+	, type(PropertyType::Invalid)
+{
+	data.iptrvalue = 0;
+}
+
+/**
+* Initialize a RomMetaData::MetaData object.
+* Property data will be zero-initialized.
+* @param name
+* @param type
+*/
+RomMetaData::MetaData::MetaData(Property name, PropertyType type)
+	: name(name)
+	, type(type)
+{
+	data.iptrvalue = 0;
+}
+
 RomMetaData::MetaData::~MetaData()
 {
 	// Ensure allocated data values get deleted.
 	switch (this->type) {
+		default:
+			// ERROR!
+			assert(!"Unsupported RomMetaData PropertyType.");
+			break;
+
 		case PropertyType::Integer:
 		case PropertyType::UnsignedInteger:
 		case PropertyType::Timestamp:
 		case PropertyType::Double:
 			// No allocated data here.
 			break;
+
 		case PropertyType::String:
 			delete const_cast<string*>(this->data.str);
 			break;
+	}
+}
+
+/**
+ * Copy constructor
+ *
+ * NOTE: This only ensures that the string data is copied correctly.
+ * It will not handle map index updates.
+ *
+ * @param other Other RomMetaData::MetaData object
+ */
+RomMetaData::MetaData::MetaData(const MetaData &other)
+{
+	assert(other.name != Property::Invalid);
+	this->name = other.name;
+	this->type = other.type;
+
+	switch (other.type) {
 		default:
 			// ERROR!
 			assert(!"Unsupported RomMetaData PropertyType.");
+			this->data.iptrvalue = 0;
+			break;
+
+		case PropertyType::Integer:
+			this->data.ivalue = other.data.ivalue;
+			break;
+		case PropertyType::UnsignedInteger:
+			this->data.uvalue = other.data.uvalue;
+			break;
+		case PropertyType::Timestamp:
+			this->data.timestamp = other.data.timestamp;
+			break;
+		case PropertyType::Double:
+			this->data.dvalue = other.data.dvalue;
+			break;
+
+		case PropertyType::String:
+			this->data.str = (other.data.str)
+				? new string(*other.data.str)
+				: nullptr;
 			break;
 	}
 }
@@ -219,12 +287,10 @@ RomMetaData::MetaData *RomMetaDataPrivate::addProperty(Property name)
 			return nullptr;
 		}
 
-		size_t idx = metaData.size();
-		metaData.resize(idx+1);
+		metaData.emplace_back(name, static_cast<PropertyType>(PropertyTypeMap[static_cast<int>(name)]));
+		size_t idx = metaData.size() - 1;
 		pMetaData = &metaData[idx];
-		pMetaData->name = name;
-		pMetaData->type = static_cast<PropertyType>(PropertyTypeMap[(int)name]);
-		map_metaData[(int)name] = static_cast<Property>(idx);
+		map_metaData[static_cast<int>(name)] = static_cast<Property>(idx);
 	}
 
 	return pMetaData;

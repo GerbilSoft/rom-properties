@@ -169,8 +169,57 @@ class RomMetaData
 			Property name;		// Property name.
 			PropertyType type;	// Property type.
 
+			/**
+			 * Initialize a RomMetaData::MetaData object.
+			 * Defaults to zero init.
+			 */
+			MetaData();
+
+			/**
+			 * Initialize a RomMetaData::MetaData object.
+			 * Property data will be zero-initialized.
+			 * @param name
+			 * @param type
+			 */
+			MetaData(Property name, PropertyType type);
+
 			// Destructor to handle automatic string deletion.
 			~MetaData();
+
+			// copy constructor
+			MetaData(const MetaData &other);
+
+			// assignment operator
+			MetaData& operator=(MetaData other)
+			{
+				// Parameter is passed by value in order to make use of copy-by-swap.
+				// References:
+				// - https://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
+				// - https://stackoverflow.com/a/3279550
+				std::swap(*this, other);
+				return *this;
+			}
+
+			// move constructor
+			MetaData(MetaData &&other)
+				: name(Property::Invalid)
+				, type(PropertyType::Invalid)
+			{
+				// name and type are zeroed out to indicate this
+				// object is empty and nothing from data should
+				// be freed after the std::swap() is done.
+
+				// Clear the data value.
+				data.iptrvalue = 0;
+
+				// Swap the objects.
+				// References:
+				// - https://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
+				// - https://stackoverflow.com/a/3279550
+				std::swap(*this, other);
+			}
+
+			/** Fields **/
 
 			union _data {
 				// intptr_t field to cover everything.
