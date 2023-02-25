@@ -1012,8 +1012,8 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 	const auto pFields_cend = pFields->cend();
 	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter, fieldIdx++) {
 		const RomFields::Field &field = *iter;
-		assert(field.isValid);
-		if (!field.isValid)
+		assert(field.isValid());
+		if (!field.isValid())
 			continue;
 
 		// Verify the tab index.
@@ -1047,11 +1047,12 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 		switch (field.type) {
 			case RomFields::RFT_INVALID:
 				// No data here.
+				assert(!"Field type is RFT_INVALID");
 				obj = nullptr;
 				delete lblDesc;
 				break;
 			default:
-				// Unsupported right now.
+				// Unsupported data type.
 				assert(!"Unsupported RomFields::RomFieldsType.");
 				obj = nullptr;
 				delete lblDesc;

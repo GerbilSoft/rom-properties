@@ -239,16 +239,17 @@ rp_nautilus_properties_model_load_from_romData(RpNautilusPropertiesModel *self,
 	const auto pFields_cend = pFields->cend();
 	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter) {
 		const RomFields::Field &field = *iter;
-		assert(field.isValid);
-		if (!field.isValid)
+		assert(field.isValid());
+		if (!field.isValid())
 			continue;
 
 		switch (field.type) {
 			case RomFields::RFT_INVALID:
-				// No data here.
+				// Should not happen due to the above check...
+				assert(!"Field type is RFT_INVALID");
 				break;
 			default:
-				// Unsupported right now.
+				// Unsupported data type.
 				assert(!"Unsupported RomFields::RomFieldsType.");
 				break;
 

@@ -1732,11 +1732,9 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 	const auto pFields_cend = pFields->cend();
 	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter) {
 		const RomFields::Field &field = *iter;
-		assert(field.isValid);
-		if (!field.isValid || !field.name) {
-			t_desc_text.emplace_back();
+		assert(field.isValid());
+		if (!field.isValid())
 			continue;
-		}
 
 		tstring desc_text = U82T_s(rp_sprintf(desc_label_fmt, field.name));
 
@@ -1952,7 +1950,8 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter, ++iter_desc, fieldIdx++) {
 		assert(iter_desc != t_desc_text.cend());
 		const RomFields::Field &field = *iter;
-		if (!field.isValid)
+		assert(field.isValid());
+		if (!field.isValid())
 			continue;
 
 		// Verify the tab index.
@@ -1986,7 +1985,13 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 		SIZE size = {dlg_value_width_base - descSize.cx, field_cy};
 		switch (field.type) {
 			case RomFields::RFT_INVALID:
-				// No data here.
+				// Should not happen due to the above check...
+				assert(!"Field type is RFT_INVALID");
+				field_cy = 0;
+				break;
+			default:
+				// Unsupported data type.
+				assert(!"Unsupported RomFields::RomFieldsType.");
 				field_cy = 0;
 				break;
 
@@ -2077,12 +2082,6 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 			case RomFields::RFT_STRING_MULTI:
 				// Multi-language string field.
 				field_cy = initStringMulti(hDlgSheet, tab.hDlg, pt_start, size, field, fieldIdx);
-				break;
-
-			default:
-				// Unsupported data type.
-				assert(!"Unsupported RomFields::RomFieldsType.");
-				field_cy = 0;
 				break;
 		}
 

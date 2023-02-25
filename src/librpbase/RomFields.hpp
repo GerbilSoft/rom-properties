@@ -265,7 +265,7 @@ class RomFields
 			/**
 			 * Initialize a RomFields::Field object.
 			 * Some values will be initialized here.
-			 * isValid, desc, and data must be set afterwards.
+			 * desc and data must be set afterwards.
 			 * @param name
 			 * @param type
 			 * @param tabIdx
@@ -310,8 +310,12 @@ class RomFields
 			const char *name;	// Field name
 			RomFieldType type;	// ROM field type
 			uint8_t tabIdx;		// Tab index (0 for default)
-			bool isValid;		// True if this field has valid data.
 			unsigned int flags;	// Flags (type-specific)
+
+			inline bool isValid(void) const
+			{
+				return (type != RFT_INVALID);
+			}
 
 			// Field description.
 			union _desc {

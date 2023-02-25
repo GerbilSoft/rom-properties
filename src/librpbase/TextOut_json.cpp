@@ -104,18 +104,16 @@ public:
 		const auto fields_cend = fields.cend();
 		for (auto iter = fields.cbegin(); iter != fields_cend; ++iter) {
 			const auto &romField = *iter;
-			assert(romField.isValid);
-			if (!romField.isValid)
+			assert(romField.isValid());
+			if (!romField.isValid())
 				continue;
 
 			Value field_obj(kObjectType);	// field
-
 			switch (romField.type) {
-				case RomFields::RFT_INVALID: {
-					assert(!"INVALID field type");
-					field_obj.AddMember("type", "INVALID", allocator);
+				case RomFields::RFT_INVALID:
+					// Should not happen due to the above check...
+					assert(!"Field type is RFT_INVALID");
 					break;
-				}
 
 				case RomFields::RFT_STRING: {
 					field_obj.AddMember("type", "STRING", allocator);

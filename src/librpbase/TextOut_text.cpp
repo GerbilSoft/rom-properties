@@ -794,8 +794,8 @@ public:
 		const auto fields_cend = fo.fields.cend();
 		for (auto iter = fo.fields.cbegin(); iter != fields_cend; ++iter) {
 			const auto &romField = *iter;
-			assert(romField.isValid);
-			if (!romField.isValid)
+			assert(romField.isValid());
+			if (!romField.isValid())
 				continue;
 
 			if (printed_first)
@@ -821,8 +821,8 @@ public:
 
 			switch (romField.type) {
 				case RomFields::RFT_INVALID:
-					assert(!"INVALID field type");
-					os << ColonPad(maxWidth, romField.name) << "INVALID";
+					// Should not happen due to the above check...
+					assert(!"Field type is RFT_INVALID");
 					break;
 				case RomFields::RFT_STRING:
 					os << StringField(maxWidth, romField);

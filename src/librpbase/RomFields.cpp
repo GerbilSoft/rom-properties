@@ -63,7 +63,6 @@ RomFields::Field::Field()
 	: name(nullptr)
 	, type(RFT_INVALID)
 	, tabIdx(0)
-	, isValid(false)
 	, flags(0)
 {
 	// NOTE: desc/data are not zeroed here.
@@ -74,7 +73,7 @@ RomFields::Field::Field()
 /**
  * Initialize a RomFields::Field object.
  * Some values will be initialized here.
- * isValid, desc, and data must be set afterwards.
+ * desc and data must be set afterwards.
  * @param name
  * @param type
  * @param tabIdx
@@ -84,7 +83,6 @@ RomFields::Field::Field(const char *name, RomFieldType type, uint8_t tabIdx, uns
 	: name(name ? strdup(name) : nullptr)
 	, type(type)
 	, tabIdx(tabIdx)
-	, isValid(false)
 	, flags(flags)
 {
 	// NOTE: desc/data are not zeroed here.
@@ -143,7 +141,6 @@ RomFields::Field::Field(const Field &other)
 	this->name = (other.name ? strdup(other.name) : nullptr);
 	this->type = other.type;
 	this->tabIdx = other.tabIdx;
-	this->isValid = other.isValid;
 	this->flags = other.flags;
 
 	switch (other.type) {
@@ -846,7 +843,6 @@ int RomFields::addField_string(const char *name, const char *str, unsigned int f
 
 	char *const nstr = (str ? strdup(str) : nullptr);
 	field.data.str = nstr;
-	field.isValid = (name != nullptr);
 
 	// Handle string trimming flags.
 	if (nstr && (flags & STRF_TRIM_END)) {
@@ -1010,7 +1006,6 @@ int RomFields::addField_bitfield(const char *name,
 	field.desc.bitfield.names = bit_names;
 	field.desc.bitfield.elemsPerRow = elemsPerRow;
 	field.data.bitfield = bitfield;
-	field.isValid = true;
 	return static_cast<int>(d->fields.size() - 1);
 }
 
@@ -1083,7 +1078,6 @@ int RomFields::addField_listData(const char *name, const AFLD_PARAMS *params)
 		}
 	}
 	field.tabIdx = d->tabIdx;
-	field.isValid = true;
 	return static_cast<int>(d->fields.size() - 1);
 }
 
@@ -1106,7 +1100,6 @@ int RomFields::addField_dateTime(const char *name, time_t date_time, unsigned in
 	Field &field = *(d->fields.rbegin());
 
 	field.data.date_time = date_time;
-	field.isValid = true;
 	return static_cast<int>(d->fields.size() - 1);
 }
 
@@ -1130,7 +1123,6 @@ int RomFields::addField_ageRatings(const char *name, const age_ratings_t &age_ra
 
 	field.data.age_ratings = new age_ratings_t(age_ratings);
 	field.tabIdx = d->tabIdx;
-	field.isValid = true;
 	return static_cast<int>(d->fields.size() - 1);
 }
 
@@ -1156,7 +1148,6 @@ int RomFields::addField_dimensions(const char *name, int dimX, int dimY, int dim
 	field.data.dimensions[0] = dimX;
 	field.data.dimensions[1] = dimY;
 	field.data.dimensions[2] = dimZ;
-	field.isValid = true;
 	return static_cast<int>(d->fields.size() - 1);
 }
 
@@ -1185,7 +1176,6 @@ int RomFields::addField_string_multi(const char *name, const StringMultiMap_t *s
 	}
 
 	field.data.str_multi = (str_multi ? str_multi : nullptr);
-	field.isValid = true;
 	return static_cast<int>(d->fields.size() - 1);
 }
 

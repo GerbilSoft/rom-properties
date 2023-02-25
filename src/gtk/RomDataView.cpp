@@ -1769,8 +1769,8 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 	const auto pFields_cend = pFields->cend();
 	for (auto iter = pFields->cbegin(); iter != pFields_cend; ++iter, fieldIdx++) {
 		const RomFields::Field &field = *iter;
-		assert(field.isValid);
-		if (!field.isValid)
+		assert(field.isValid());
+		if (!field.isValid())
 			continue;
 
 		// Verify the tab index.
@@ -1789,10 +1789,11 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 		bool separate_rows = false;
 		switch (field.type) {
 			case RomFields::RFT_INVALID:
-				// No data here.
+				// Should not happen due to the above check...
+				assert(!"Field type is RFT_INVALID");
 				break;
 			default:
-				// Unsupported right now.
+				// Unsupported data type.
 				assert(!"Unsupported RomFields::RomFieldsType.");
 				break;
 
