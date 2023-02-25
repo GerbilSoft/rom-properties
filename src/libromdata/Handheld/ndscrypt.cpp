@@ -10,6 +10,8 @@
 // - https://github.com/devkitPro/ndstool/blob/master/source/encryption.cpp
 // - https://github.com/d0k3/GodMode9/blob/master/arm9/source/gamecart/secure_ntr.c
 
+// FIXME: Not big-endian safe.
+
 #include "stdafx.h"
 #include "ndscrypt.hpp"
 
