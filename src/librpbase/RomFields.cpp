@@ -876,8 +876,9 @@ int RomFields::addField_string_numeric(const char *name, uint32_t val, Base base
 			break;
 	}
 
-	const string str = rp_sprintf(fmtstr, digits, val);
-	return addField_string(name, str, flags);
+	char buf[64];
+	snprintf(buf, sizeof(buf), fmtstr, digits, val);
+	return addField_string(name, buf, flags);
 }
 
 /**
