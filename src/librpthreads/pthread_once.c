@@ -21,7 +21,7 @@
 #  define WIN32_LEAN_AND_MEAN 1
 # endif
 # include <windows.h>
-# define pthread_yield() SwitchToThread()
+# define sched_yield() SwitchToThread()
 #else
 # error Unsupported threading model.
 #endif
