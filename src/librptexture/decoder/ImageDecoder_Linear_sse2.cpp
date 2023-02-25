@@ -87,6 +87,7 @@ static inline void VECTORCALL T_RGB16_sse2(
 		: _mm_slli_epi16(_mm_and_si128(Bmask, *xmm_src), Bshift_W);
 	sG = _mm_or_si128(sG, _mm_srli_epi16(sG, Gbits));
 	sB = _mm_or_si128(sB, _mm_srli_epi16(sB, Bbits));
+
 	// Combine G and B.
 	if (Gbits > 4) {
 		// NOTE: G low byte has to be masked due to the shift.
