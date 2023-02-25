@@ -532,7 +532,7 @@ IFACEMETHODIMP RP_PropertyStore::GetValue(_In_ REFPROPERTYKEY key, _Out_ PROPVAR
 	}
 
 	// Property not found.
-	PropVariantClear(pv);
+	PropVariantInit(pv);
 	return S_OK;
 }
 
