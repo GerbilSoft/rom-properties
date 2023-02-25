@@ -148,15 +148,15 @@ class NDSCrypt
 		explicit NDSCrypt(uint32_t gamecode);
 
 	private:
-		static uint32_t lookup(uint32_t *magic, uint32_t v);
+		static uint32_t lookup(const uint32_t *magic, uint32_t v);
 
-		static void encrypt(uint32_t *magic, uint32_t *arg1, uint32_t *arg2);
-		static void decrypt(uint32_t *magic, uint32_t *arg1, uint32_t *arg2);
+		static void encrypt(const uint32_t *magic, uint32_t *arg1, uint32_t *arg2);
+		static void decrypt(const uint32_t *magic, uint32_t *arg1, uint32_t *arg2);
 
-		static void encrypt(uint32_t *magic, uint64_t &cmd);
-		static void decrypt(uint32_t *magic, uint64_t &cmd);
+		static void encrypt(const uint32_t *magic, uint64_t &cmd);
+		static void decrypt(const uint32_t *magic, uint64_t &cmd);
 
-		static void update_hashtable(uint32_t* magic, uint8_t arg1[8]);
+		static void update_hashtable(uint32_t* magic, const uint8_t arg1[8]);
 		static void init2(uint32_t *magic, uint32_t a[3]);
 		void init1(BlowfishKey bfkey);
 
@@ -190,7 +190,7 @@ NDSCrypt::NDSCrypt(uint32_t gamecode)
 	memset(m_keycode, 0, sizeof(m_keycode));
 }
 
-uint32_t NDSCrypt::lookup(uint32_t *magic, uint32_t v)
+uint32_t NDSCrypt::lookup(const uint32_t *magic, uint32_t v)
 {
 	uint32_t a = (v >> 24) & 0xFF;
 	uint32_t b = (v >> 16) & 0xFF;
@@ -205,7 +205,7 @@ uint32_t NDSCrypt::lookup(uint32_t *magic, uint32_t v)
 	return d + (c ^ (b + a));
 }
 
-void NDSCrypt::encrypt(uint32_t *magic, uint32_t *arg1, uint32_t *arg2)
+void NDSCrypt::encrypt(const uint32_t *magic, uint32_t *arg1, uint32_t *arg2)
 {
 	uint32_t a,b,c;
 	a = *arg1;
@@ -220,7 +220,7 @@ void NDSCrypt::encrypt(uint32_t *magic, uint32_t *arg1, uint32_t *arg2)
 	*arg1 = b ^ magic[17];
 }
 
-void NDSCrypt::decrypt(uint32_t *magic, uint32_t *arg1, uint32_t *arg2)
+void NDSCrypt::decrypt(const uint32_t *magic, uint32_t *arg1, uint32_t *arg2)
 {
 	uint32_t a,b,c;
 	a = *arg1;
@@ -235,17 +235,17 @@ void NDSCrypt::decrypt(uint32_t *magic, uint32_t *arg1, uint32_t *arg2)
 	*arg2 = a ^ magic[1];
 }
 
-void NDSCrypt::encrypt(uint32_t *magic, uint64_t &cmd)
+void NDSCrypt::encrypt(const uint32_t *magic, uint64_t &cmd)
 {
 	encrypt(magic, (uint32_t *)&cmd + 1, (uint32_t *)&cmd + 0);
 }
 
-void NDSCrypt::decrypt(uint32_t *magic, uint64_t &cmd)
+void NDSCrypt::decrypt(const uint32_t *magic, uint64_t &cmd)
 {
 	decrypt(magic, (uint32_t *)&cmd + 1, (uint32_t *)&cmd + 0);
 }
 
-void NDSCrypt::update_hashtable(uint32_t* magic, uint8_t arg1[8])
+void NDSCrypt::update_hashtable(uint32_t* magic, const uint8_t arg1[8])
 {
 	for (int j=0;j<18;j++)
 	{
