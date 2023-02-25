@@ -57,7 +57,7 @@ int pthread_once(pthread_once_t *once_control, void (*init_routine)(void))
 					return 0;
 				default:
 					// The initializer is being processed by another thread.
-					pthread_yield();
+					sched_yield();
 					break;
 			}
 		}
