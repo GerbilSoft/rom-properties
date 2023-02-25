@@ -83,7 +83,6 @@ class RomDataPrivate
 		 * @param region Region name.
 		 * @param gameID Game ID.
 		 * @param ext File extension, e.g. ".png" or ".jpg".
-		 * TODO: PAL multi-region selection?
 		 * @return GameTDB URL.
 		 */
 		static std::string getURL_GameTDB(
@@ -98,7 +97,6 @@ class RomDataPrivate
 		 * @param region Region name.
 		 * @param gameID Game ID.
 		 * @param ext File extension, e.g. ".png" or ".jpg".
-		 * TODO: PAL multi-region selection?
 		 * @return GameTDB cache key.
 		 */
 		static std::string getCacheKey_GameTDB(
@@ -113,7 +111,6 @@ class RomDataPrivate
 		 * @param region Region name. (May be nullptr if no region is needed.)
 		 * @param gameID Game ID.
 		 * @param ext File extension, e.g. ".png" or ".jpg".
-		 * TODO: PAL multi-region selection?
 		 * @return RPDB URL.
 		 */
 		static std::string getURL_RPDB(
@@ -128,7 +125,6 @@ class RomDataPrivate
 		 * @param region Region name. (May be nullptr if no region is needed.)
 		 * @param gameID Game ID.
 		 * @param ext File extension, e.g. ".png" or ".jpg".
-		 * TODO: PAL multi-region selection?
 		 * @return RPDB cache key.
 		 */
 		static std::string getCacheKey_RPDB(

@@ -81,7 +81,6 @@ RomDataPrivate::~RomDataPrivate()
  * @param region Region name.
  * @param gameID Game ID.
  * @param ext File extension, e.g. ".png" or ".jpg".
- * TODO: PAL multi-region selection?
  * @return GameTDB URL.
  */
 string RomDataPrivate::getURL_GameTDB(
@@ -100,7 +99,6 @@ string RomDataPrivate::getURL_GameTDB(
  * @param region Region name.
  * @param gameID Game ID.
  * @param ext File extension, e.g. ".png" or ".jpg".
- * TODO: PAL multi-region selection?
  * @return GameTDB cache key.
  */
 string RomDataPrivate::getCacheKey_GameTDB(
@@ -119,7 +117,6 @@ string RomDataPrivate::getCacheKey_GameTDB(
  * @param region Region name. (May be nullptr if no region is needed.)
  * @param gameID Game ID.
  * @param ext File extension, e.g. ".png" or ".jpg".
- * TODO: PAL multi-region selection?
  * @return RPDB URL.
  */
 string RomDataPrivate::getURL_RPDB(
@@ -141,7 +138,6 @@ string RomDataPrivate::getURL_RPDB(
  * @param region Region name. (May be nullptr if no region is needed.)
  * @param gameID Game ID.
  * @param ext File extension, e.g. ".png" or ".jpg".
- * TODO: PAL multi-region selection?
  * @return RPDB cache key.
  */
 string RomDataPrivate::getCacheKey_RPDB(
