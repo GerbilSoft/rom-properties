@@ -43,6 +43,10 @@ SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin" CACHE INTERNAL "Put
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib" CACHE INTERNAL "Put all libraries in a single directory.")
 SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib" CACHE INTERNAL "Put all archives in a single directory.")
 
+# Don't re-link executables if a shared library's implementation has
+# changed but its headers haven't changed.
+SET(CMAKE_LINK_DEPENDS_NO_SHARED ON)
+
 # Enable testing.
 # TODO: INCLUDE(CTest) for more advanced testing after
 # enough tests are added.
