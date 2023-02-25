@@ -171,7 +171,7 @@ int XAttrReaderPrivate::loadGenericXattrs_FindFirstStreamW(void)
 		HANDLE hStream = CreateFile(ads_filename.c_str(),
 			GENERIC_READ, FILE_SHARE_READ, nullptr,
 			OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-		if (hStream) {
+		if (hStream && hStream != INVALID_HANDLE_VALUE) {
 			// Read up to 257 TCHARs.
 			DWORD bytesRead;
 			if (ReadFile(hStream, ads_data.u8, sizeof(ads_data.u8), &bytesRead, nullptr) &&
