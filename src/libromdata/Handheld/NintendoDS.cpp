@@ -1147,7 +1147,7 @@ int NintendoDS::loadFieldData(void)
 	const char *s_dsi_filetype = nullptr;
 	static const dsi_filetype_tbl_t *const p_dsi_filetype_tbl_end = &dsi_filetype_tbl[ARRAY_SIZE(dsi_filetype_tbl)];
 	auto iter = std::find_if(dsi_filetype_tbl, p_dsi_filetype_tbl_end,
-		[dsi_filetype](const dsi_filetype_tbl_t &p) {
+		[dsi_filetype](const dsi_filetype_tbl_t &p) noexcept -> bool {
 			return (p.dsi_filetype == dsi_filetype);
 		});
 	if (iter != p_dsi_filetype_tbl_end) {

@@ -821,7 +821,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 		// Search for a matching logo.
 		static const logo_crc_tbl_t *const p_logo_crc_tbl_end = &logo_crc_tbl[ARRAY_SIZE(logo_crc_tbl)];
 		auto iter = std::find_if(logo_crc_tbl, p_logo_crc_tbl_end,
-			[crc](const logo_crc_tbl_t &p) {
+			[crc](const logo_crc_tbl_t &p) noexcept -> bool {
 				return (p.crc == crc);
 			});
 		if (iter != p_logo_crc_tbl_end) {

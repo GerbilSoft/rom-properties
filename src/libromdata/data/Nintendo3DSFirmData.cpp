@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Nintendo3DSFirmData.cpp: Nintendo 3DS firmware data.                    *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -75,7 +75,7 @@ const FirmBin_t *lookup_firmBin(const uint32_t crc)
 	static const FirmBin_t *const pFirmBins_end =
 		&firmBins[ARRAY_SIZE(firmBins)];
 	auto pFirmBin = std::lower_bound(firmBins, pFirmBins_end, crc,
-		[](const FirmBin_t &firmBin, uint32_t crc) {
+		[](const FirmBin_t &firmBin, uint32_t crc) noexcept -> bool {
 			return (firmBin.crc < crc);
 		});
 	if (pFirmBin == pFirmBins_end || pFirmBin->crc != crc) {

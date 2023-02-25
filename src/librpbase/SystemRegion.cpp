@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * SystemRegion.cpp: Get the system country code.                          *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -367,7 +367,7 @@ const char *getLocalizedLanguageName(uint32_t lc)
 	static const LanguageOffTbl_t *const p_languages_offtbl_end =
 		&languages_offtbl[ARRAY_SIZE(languages_offtbl)];
 	auto pLangOffTbl = std::lower_bound(languages_offtbl, p_languages_offtbl_end, lc,
-		[](const LanguageOffTbl_t &langOffTbl, uint32_t lc) {
+		[](const LanguageOffTbl_t &langOffTbl, uint32_t lc) noexcept -> bool {
 			return (langOffTbl.lc < lc);
 		});
 	if (pLangOffTbl == p_languages_offtbl_end || pLangOffTbl->lc != lc) {

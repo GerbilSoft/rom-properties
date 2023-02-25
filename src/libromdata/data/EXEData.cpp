@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXEData.cpp: DOS/Windows executable data.                               *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -85,7 +85,7 @@ const char *lookup_pe_cpu(uint16_t cpu)
 	static const MachineType *const pMachineTypes_PE_end =
 		&machineTypes_PE[ARRAY_SIZE(machineTypes_PE)];
 	auto pPE = std::lower_bound(machineTypes_PE, pMachineTypes_PE_end, cpu,
-		[](const MachineType &pe, uint16_t cpu) {
+		[](const MachineType &pe, uint16_t cpu) noexcept -> bool {
 			return (pe.cpu < cpu);
 		});
 	if (pPE == pMachineTypes_PE_end || pPE->cpu != cpu) {
@@ -105,7 +105,7 @@ const char *lookup_le_cpu(uint16_t cpu)
 	static const MachineType *const pMachineTypes_LE_end =
 		&machineTypes_LE[ARRAY_SIZE(machineTypes_LE)];
 	auto pLE = std::lower_bound(machineTypes_LE, pMachineTypes_LE_end, cpu,
-		[](const MachineType &pe, uint16_t cpu) {
+		[](const MachineType &pe, uint16_t cpu) noexcept -> bool {
 			return (pe.cpu < cpu);
 		});
 	if (pLE == pMachineTypes_LE_end || pLE->cpu != cpu) {

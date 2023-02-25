@@ -1339,7 +1339,7 @@ int SNES::loadFieldData(void)
 	const char *s_rom_mapping = nullptr;
 	static const rom_mapping_tbl_t *const p_rom_mapping_tbl_end = &rom_mapping_tbl[ARRAY_SIZE(rom_mapping_tbl)];
 	auto iter = std::find_if(rom_mapping_tbl, p_rom_mapping_tbl_end,
-		[rom_mapping](const rom_mapping_tbl_t &p) {
+		[rom_mapping](const rom_mapping_tbl_t &p) noexcept -> bool {
 			return (p.rom_mapping == rom_mapping);
 		});
 	if (iter != p_rom_mapping_tbl_end) {

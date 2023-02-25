@@ -173,7 +173,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 
 	static const fileOS_tbl_t *const p_fileOS_tbl_end = &fileOS_tbl[ARRAY_SIZE(fileOS_tbl)];
 	auto iter = std::find_if(fileOS_tbl, p_fileOS_tbl_end,
-		[dwFileOS](const fileOS_tbl_t &p) {
+		[dwFileOS](const fileOS_tbl_t &p) noexcept -> bool {
 			return (p.dwFileOS == dwFileOS);
 		});
 	if (iter != p_fileOS_tbl_end) {

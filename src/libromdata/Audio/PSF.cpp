@@ -201,7 +201,7 @@ unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
 				// NOTE: Key *must* be ASCII.
 				string key(p, k_len);
 				std::transform(key.begin(), key.end(), key.begin(),
-					[](unsigned char c) { return std::tolower(c); });
+					[](unsigned char c) noexcept -> char { return std::tolower(c); });
 				kv.emplace(key, string(eq+1, v_len));
 
 				// Check for UTF-8.
@@ -236,7 +236,7 @@ unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
 const char *PSFPrivate::getRippedByTagName(uint8_t version)
 {
 	auto iter = std::find_if(psf_type_tbl, p_psf_type_tbl_end,
-		[version](const psf_type_tbl_t &p) {
+		[version](const psf_type_tbl_t &p) noexcept -> bool{
 			return (p.version == version);
 		});
 	if (iter != p_psf_type_tbl_end) {
@@ -515,7 +515,7 @@ int PSF::loadFieldData(void)
 	const char *sys_name = nullptr;
 	const uint8_t psf_version = psfHeader->version;
 	auto iter = std::find_if(PSFPrivate::psf_type_tbl, PSFPrivate::p_psf_type_tbl_end,
-		[psf_version](const PSFPrivate::psf_type_tbl_t &p) {
+		[psf_version](const PSFPrivate::psf_type_tbl_t &p) noexcept -> bool {
 			return (p.version == psf_version);
 		});
 	if (iter != PSFPrivate::p_psf_type_tbl_end) {

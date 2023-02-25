@@ -750,7 +750,7 @@ int SAP::loadMetaData(void)
 
 	// NOTE: Including all songs in the duration.
 	uint32_t duration = std::accumulate(tags.durations.cbegin(), tags.durations.cend(), 0U,
-		[](uint32_t a, const pair<uint32_t, bool> &tag_duration) -> uint32_t {
+		[](uint32_t a, const pair<uint32_t, bool> &tag_duration) noexcept -> uint32_t {
 			return a + tag_duration.first;
 		}
 	);

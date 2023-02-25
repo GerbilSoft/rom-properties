@@ -338,7 +338,7 @@ const XDBF_Entry *Xbox360_XDBF_Private::findResource(uint16_t namespace_id, uint
 #endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
 	auto iter = std::find_if(entryTable.cbegin(), entryTable.cend(),
-		[namespace_id, resource_id](const XDBF_Entry &p) {
+		[namespace_id, resource_id](const XDBF_Entry &p) noexcept -> bool {
 			return (p.namespace_id == namespace_id &&
 				p.resource_id == resource_id);
 		}

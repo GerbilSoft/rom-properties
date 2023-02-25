@@ -910,7 +910,7 @@ int KeyStoreUI::totalKeyCount(void) const
 {
 	RP_D(const KeyStoreUI);
 	int ret = std::accumulate(d->sections.cbegin(), d->sections.cend(), 0,
-		[](int a, const KeyStoreUIPrivate::Section &section) -> int {
+		[](int a, const KeyStoreUIPrivate::Section &section) noexcept -> int {
 			return a + section.keyCount;
 		}
 	);

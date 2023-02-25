@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NESMappers.cpp: NES mapper data.                                        *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * Copyright (c) 2016-2022 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -378,7 +378,7 @@ const NESSubmapperInfo *lookup_nes2_submapper_info(int mapper, int submapper)
 	static const NESSubmapperEntry *const pSubmappers_end =
 		&submappers[ARRAY_SIZE(submappers)];
 	auto pSubmapper = std::lower_bound(submappers, pSubmappers_end, static_cast<uint16_t>(mapper),
-		[](const NESSubmapperEntry &submapper, uint16_t mapper) {
+		[](const NESSubmapperEntry &submapper, uint16_t mapper) noexcept -> bool {
 			return (submapper.mapper < mapper);
 		});
 	if (pSubmapper == pSubmappers_end || pSubmapper->mapper != mapper ||
@@ -391,7 +391,7 @@ const NESSubmapperInfo *lookup_nes2_submapper_info(int mapper, int submapper)
 	const NESSubmapperInfo *const pInfo_end =
 		&pSubmapper->info[pSubmapper->info_size];
 	auto pSubmapperInfo = std::lower_bound(pSubmapper->info, pInfo_end, static_cast<uint8_t>(submapper),
-		[](const NESSubmapperInfo &submapperInfo, uint8_t submapper) {
+		[](const NESSubmapperInfo &submapperInfo, uint8_t submapper) noexcept -> bool {
 			return (submapperInfo.submapper < submapper);
 		});
 	if (pSubmapperInfo == pInfo_end || pSubmapperInfo->submapper != submapper) {

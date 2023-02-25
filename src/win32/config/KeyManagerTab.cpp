@@ -1618,7 +1618,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 
 	// Count the number of newlines and increase the MessageWidget height.
 	const int nl_count = std::count_if(msg.cbegin(), msg.cend(),
-		[](TCHAR chr) { return (chr == _T('\n')); }
+		[](TCHAR chr) noexcept -> bool { return (chr == _T('\n')); }
 	);
 
 	// Determine the size.

@@ -777,7 +777,7 @@ public:
 	friend std::ostream& operator<<(std::ostream& os, const FieldsOutput& fo) {
 		size_t maxWidth = 0;
 		std::for_each(fo.fields.cbegin(), fo.fields.cend(),
-			[&maxWidth](const RomFields::Field &field) {
+			[&maxWidth](const RomFields::Field &field) noexcept -> void {
 				maxWidth = max(maxWidth, strlen(field.name));
 			}
 		);

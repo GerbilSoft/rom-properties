@@ -332,7 +332,7 @@ const XEX2_Optional_Header_Tbl *Xbox360_XEX_Private::getOptHdrTblEntry(uint32_t 
 	// can't depend on that always being the case, since someone
 	// might do something screwy.
 	auto iter = std::find_if(optHdrTbl.cbegin(), optHdrTbl.cend(),
-		[header_id](const XEX2_Optional_Header_Tbl &tbl) -> bool {
+		[header_id](const XEX2_Optional_Header_Tbl &tbl) noexcept -> bool {
 			return (tbl.header_id == header_id);
 		}
 	);

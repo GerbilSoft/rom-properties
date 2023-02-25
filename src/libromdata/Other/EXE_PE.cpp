@@ -166,7 +166,7 @@ int EXEPrivate::loadPEResourceTypes(void)
 	// .rsrc is usually closer to the end of the section list,
 	// so search back to front.
 	auto iter = std::find_if(pe_sections.crbegin(), pe_sections.crend(),
-		[](const IMAGE_SECTION_HEADER &section) -> bool {
+		[](const IMAGE_SECTION_HEADER &section) noexcept -> bool {
 			return !strcmp(section.Name, ".rsrc");
 		}
 	);

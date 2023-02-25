@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * w32err.cpp: Error code mapping. (Windows to POSIX)                      *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -130,7 +130,7 @@ int w32err_to_posix(DWORD w32err)
 	static const errmap *const p_w32_to_posix_end =
 		&w32_to_posix[_countof(w32_to_posix)];
 	auto pErr = std::lower_bound(w32_to_posix, p_w32_to_posix_end, w32err,
-		[](const errmap &err, DWORD w32err) {
+		[](const errmap &err, DWORD w32err) noexcept -> bool {
 			return (err.w32 < w32err);
 		});
 	if (pErr != p_w32_to_posix_end && pErr->w32 == w32err) {

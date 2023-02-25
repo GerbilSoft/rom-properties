@@ -364,7 +364,7 @@ GdiReader::GdiReader(IRpFile *file)
 	// NOTE: Searching in reverse order.
 	int lastDataTrack = 0;	// 1-based; 0 is invalid.
 	std::for_each(d->trackMappings.crbegin(), d->trackMappings.crend(),
-		[&lastDataTrack](const GdiReaderPrivate::BlockRange *blockRange) {
+		[&lastDataTrack](const GdiReaderPrivate::BlockRange *blockRange) noexcept -> void {
 			if (blockRange) {
 				if (static_cast<int>(blockRange->trackNumber) > lastDataTrack) {
 					lastDataTrack = blockRange->trackNumber;

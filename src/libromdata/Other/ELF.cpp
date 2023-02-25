@@ -750,7 +750,7 @@ int ELFPrivate::readDataAtVA(uint64_t vaddr, ao::uvector<uint8_t> &out)
 	// Find the segment
 	const uint64_t vend = vaddr + out.size();
 	auto it = std::upper_bound(pt_load.begin(), pt_load.end(), vaddr,
-		[](uint64_t lhs, const Elf64_Phdr &rhs) -> bool {
+		[](uint64_t lhs, const Elf64_Phdr &rhs) noexcept -> bool {
 			return lhs < (uint64_t)rhs.p_vaddr;
 		});
 	if (it == pt_load.begin())
@@ -1003,7 +1003,7 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 	 * FIXME: This won't run if addPtDynamicFields fails.
 	 */
 
-	auto parse_symtab = [this](vector<Elf64_Sym> &out, const symtab_info_t &info) {
+	auto parse_symtab = [this](vector<Elf64_Sym> &out, const symtab_info_t &info) -> void {
 		ao::uvector<uint8_t> buf;
 		if (info.size == 0 || info.size > 1*1024*1024)
 			return;
@@ -1019,7 +1019,7 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 			out.push_back(readSymbol(p));
 	};
 
-	auto add_symbol_tab = [this,parse_symtab](const char *name, const symtab_info_t &info, span<const char> strtab) {
+	auto add_symbol_tab = [this,parse_symtab](const char *name, const symtab_info_t &info, span<const char> strtab) -> void {
 		if (strtab.size() == 0)
 			return;
 

@@ -656,7 +656,7 @@ IRpFile *NEResourceReader::open(uint16_t type, int id, int lang)
 		// Search for the ID.
 		// TODO: unordered_map?
 		auto iter = std::find_if(dir.cbegin(), dir.cend(),
-			[id](const NEResourceReaderPrivate::ResTblEntry &entry) -> bool {
+			[id](const NEResourceReaderPrivate::ResTblEntry &entry) noexcept -> bool {
 				return (entry.id == static_cast<uint16_t>(id));
 			}
 		);

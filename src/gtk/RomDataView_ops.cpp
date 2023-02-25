@@ -69,7 +69,7 @@ rp_rom_data_view_update_field(RpRomDataView *page, int fieldIdx)
 		return 3;
 
 	// Lambda function to check a GObject's RFT_fieldIdx.
-	auto checkFieldIdx = [](GtkWidget *widget, int fieldIdx) -> bool {
+	auto checkFieldIdx = [](GtkWidget *widget, int fieldIdx) noexcept -> bool {
 		// NOTE: RFT_fieldIdx starts at 1 to prevent conflicts with widgets
 		// that don't have RFT_fieldIdx, which would return NULL here.
 		const gint tmp_fieldIdx = GPOINTER_TO_INT(

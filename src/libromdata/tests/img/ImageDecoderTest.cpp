@@ -597,7 +597,7 @@ string ImageDecoderTest::test_case_suffix_generator(const ::testing::TestParamIn
 	// Replace all non-alphanumeric characters with '_'.
 	// See gtest-param-util.h::IsValidParamName().
 	std::replace_if(suffix.begin(), suffix.end(),
-		[](char c) { return !ISALNUM(c); }, '_');
+		[](char c) noexcept -> bool { return !ISALNUM(c); }, '_');
 
 	// Append the image type to allow checking multiple types
 	// of images in the same file.

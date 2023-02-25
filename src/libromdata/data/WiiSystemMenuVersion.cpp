@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiSystemMenuVersion.cpp: Nintendo Wii System Menu version list.        *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -64,7 +64,7 @@ const char *lookup(unsigned int version)
 	static const SysVersionEntry_t *const pSysVersionList_end =
 		&sysVersionList[ARRAY_SIZE(sysVersionList)];
 	auto pVer = std::lower_bound(sysVersionList, pSysVersionList_end, version,
-		[](const SysVersionEntry_t &sysVersion, unsigned int version) {
+		[](const SysVersionEntry_t &sysVersion, unsigned int version) noexcept -> bool {
 			return (sysVersion.version < version);
 		});
 	if (pVer == pSysVersionList_end || pVer->version != version) {

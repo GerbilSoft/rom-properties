@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXENEEntries.cpp: EXE NE Entry ordinal data                             *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * Copyright (c) 2022 by Egor.                                             *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -37,16 +37,16 @@ const char *lookup_ordinal(const char *modname, uint16_t ordinal)
 {
 	static const OrdinalNameTable *const pEntries_end = &entries[ARRAY_SIZE(entries)];
 	auto it = std::lower_bound(entries, pEntries_end, modname,
-		[](const OrdinalNameTable &lhs, const char *rhs) -> bool {
-			return strncasecmp(lhs.modname, rhs, 8) < 0;
+		[](const OrdinalNameTable &lhs, const char *rhs) noexcept -> bool {
+			return (strncasecmp(lhs.modname, rhs, 8) < 0);
 		});
 	if (it == pEntries_end || strncasecmp(it->modname, modname, 8) != 0)
 		return nullptr;
 
 	const OrdinalName *const pOrdinals_end = &it->table[it->count];
 	auto it2 = std::lower_bound(it->table, pOrdinals_end, ordinal,
-		[](const OrdinalName &lhs, uint16_t rhs) -> bool {
-			return lhs.ordinal < rhs;
+		[](const OrdinalName &lhs, uint16_t rhs) noexcept -> bool {
+			return (lhs.ordinal < rhs);
 		});
 	if (it2 == pOrdinals_end || it2->ordinal != ordinal)
 		return nullptr;

@@ -566,7 +566,7 @@ const char *AmiiboData::lookup_char_name(uint32_t char_id) const
 	//const CharTableEntry key = {id, 0};
 	const CharTableEntry *const pCharTblEnd = d->pCharTbl + d->charTbl_count;
 	auto pCTEntry = std::lower_bound(d->pCharTbl, pCharTblEnd, id,
-		[](const CharTableEntry &entry, uint32_t id2) {
+		[](const CharTableEntry &entry, uint32_t id2) noexcept -> bool {
 			uint32_t id1 = le32_to_cpu(entry.char_id) & ~CHARTABLE_VARIANT_FLAG;
 			return (id1 < id2);
 		});
@@ -585,7 +585,7 @@ const char *AmiiboData::lookup_char_name(uint32_t char_id) const
 
 		const CharVariantTableEntry *const pCharVarTblEnd = d->pCharVarTbl + d->charVarTbl_count;
 		auto pCVTEntry = std::lower_bound(d->pCharVarTbl, pCharVarTblEnd, key,
-			[](const CharVariantTableEntry &key1, const CharVariantTableEntry &key2) {
+			[](const CharVariantTableEntry &key1, const CharVariantTableEntry &key2) noexcept -> bool {
 				// Compare the character ID first.
 				if (le16_to_cpu(key1.char_id) < key2.char_id)
 					return true;

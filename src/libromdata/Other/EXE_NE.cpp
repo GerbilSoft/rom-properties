@@ -605,8 +605,8 @@ int EXEPrivate::addFields_NE_Entry(void)
 
 			// binary search for the ordinal
 			auto it = std::lower_bound(ents.begin(), ents.begin()+last, ordinal,
-				[](const Entry &lhs, uint16_t rhs) {
-					return lhs.ordinal < rhs;
+				[](const Entry &lhs, uint16_t rhs) noexcept -> bool {
+					return (lhs.ordinal < rhs);
 				});
 			if (it == ents.begin()+last || it->ordinal != ordinal) {
 				// name points to non-existent ordinal

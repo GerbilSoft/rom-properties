@@ -175,7 +175,7 @@ int PlayStationDiscPrivate::parse_system_cnf(void *user, const char *section, co
 	// Save the value for later.
 	string s_name(name);
 	std::transform(s_name.begin(), s_name.end(), s_name.begin(),
-		[](unsigned char c) { return std::toupper(c); });
+		[](unsigned char c) noexcept -> char { return std::toupper(c); });
 
 	PlayStationDiscPrivate *const d = static_cast<PlayStationDiscPrivate*>(user);
 	auto ret = d->system_cnf.emplace(std::move(s_name), value);

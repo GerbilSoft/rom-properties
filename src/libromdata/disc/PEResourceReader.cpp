@@ -252,7 +252,7 @@ const PEResourceReaderPrivate::rsrc_dir_t *PEResourceReaderPrivate::getTypeDir(u
 
 	// Not cached. Find the type in the root directory.
 	auto iter = std::find_if(res_types.cbegin(), res_types.cend(),
-		[type](const ResDirEntry &entry) -> bool {
+		[type](const ResDirEntry &entry) noexcept -> bool {
 			return (entry.id == type);
 		}
 	);
@@ -307,7 +307,7 @@ const PEResourceReaderPrivate::rsrc_dir_t *PEResourceReaderPrivate::getTypeIdDir
 
 	// Find the ID in the type directory.
 	auto iter = std::find_if(type_dir->cbegin(), type_dir->cend(),
-		[id](const ResDirEntry &entry) -> bool {
+		[id](const ResDirEntry &entry) noexcept -> bool {
 			return (entry.id == id);
 		}
 	);
@@ -721,7 +721,7 @@ IRpFile *PEResourceReader::open(uint16_t type, int id, int lang)
 	} else {
 		// Find the specified language ID.
 		auto iter = std::find_if(type_id_dir->cbegin(), type_id_dir->cend(),
-			[lang](const PEResourceReaderPrivate::ResDirEntry &entry) -> bool {
+			[lang](const PEResourceReaderPrivate::ResDirEntry &entry) noexcept -> bool {
 				return (entry.id == static_cast<uint16_t>(lang));
 			}
 		);

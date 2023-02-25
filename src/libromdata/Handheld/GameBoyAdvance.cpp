@@ -542,7 +542,9 @@ int GameBoyAdvance::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int s
 	} else {
 		const uint32_t id4_32 = be32_to_cpu(romHeader->id4_32);
 		if (std::any_of(common_ID4, &common_ID4[ARRAY_SIZE(common_ID4)],
-			[id4_32](uint32_t id4_chk) { return (id4_chk == id4_32); }))
+			[id4_32](uint32_t id4_chk) noexcept -> bool {
+				return (id4_chk == id4_32);
+			}))
 		{
 			// This ROM has a common ID4. Use the title.
 			name.assign(romHeader->title, sizeof(romHeader->title));

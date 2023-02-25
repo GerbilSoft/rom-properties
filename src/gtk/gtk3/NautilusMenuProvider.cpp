@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                         *
  * NautilusMenuProvider.cpp: Nautilus (and forks) Menu Provider Definition *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -253,7 +253,7 @@ rp_nautilus_menu_provider_get_file_items(
 		static const char *const *const p_mime_types_convert_to_png_end =
 			&mime_types_convert_to_png[ARRAY_SIZE(mime_types_convert_to_png)];
 		is_supported = std::binary_search(mime_types_convert_to_png, p_mime_types_convert_to_png_end, mime_type,
-			[](const char *a, const char *b) -> bool
+			[](const char *a, const char *b) noexcept -> bool
 			{
 				return (strcmp(a, b) < 0);
 			}

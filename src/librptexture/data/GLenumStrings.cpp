@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * GLenumStrings.cpp: OpenGL string tables.                                *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -537,7 +537,7 @@ const char *lookup_glEnum(unsigned int glEnum)
 	static const OffTbl_t *const pGlEnum_offtbl_end =
 		&glEnum_offtbl[ARRAY_SIZE(glEnum_offtbl)];
 	auto pEntry = std::lower_bound(glEnum_offtbl, pGlEnum_offtbl_end, glEnum,
-		[](const OffTbl_t &entry, unsigned int glEnum) {
+		[](const OffTbl_t &entry, unsigned int glEnum) noexcept -> bool {
 			return (entry.id < glEnum);
 		});
 	if (pEntry == pGlEnum_offtbl_end || pEntry->id != glEnum || pEntry->offset == 0) {

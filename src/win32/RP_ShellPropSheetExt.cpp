@@ -2584,9 +2584,10 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 			// NOTE: SysLink control only supports Unicode.
 			// NOTE: Linear search...
 			const HWND hwndFrom = pHdr->hwndFrom;
-			const bool isSysLink = std::any_of(tabs.cbegin(), tabs.cend(), [hwndFrom](const tab& tab) {
-				return (tab.lblCredits == hwndFrom);
-			});
+			const bool isSysLink = std::any_of(tabs.cbegin(), tabs.cend(),
+				[hwndFrom](const tab& tab) noexcept -> bool {
+					return (tab.lblCredits == hwndFrom);
+				});
 			if (isSysLink) {
 				// It's a SysLink control.
 				// Open the URL.

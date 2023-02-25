@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Xbox360_STFS_ContentType.cpp: Microsoft Xbox 360 STFS Content Type.     *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -71,7 +71,7 @@ const char *lookup(uint32_t contentType)
 	static const ContentTypeEntry *const pContentTypeList_end =
 		&contentTypeList[ARRAY_SIZE(contentTypeList)];
 	auto pContentType = std::lower_bound(contentTypeList, pContentTypeList_end, contentType,
-		[](const ContentTypeEntry &cte, uint32_t contentType) {
+		[](const ContentTypeEntry &cte, uint32_t contentType) noexcept -> bool {
 			return (cte.id < contentType);
 		});
 	if (pContentType == pContentTypeList_end || pContentType->id != contentType) {

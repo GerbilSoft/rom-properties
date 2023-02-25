@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiUData.hpp: Nintendo Wii U publisher data.                            *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -299,7 +299,7 @@ uint32_t lookup_disc_publisher(const char *id4)
 	static const WiiUDiscPublisher *const p_disc_publishers_noregion_end =
 		&disc_publishers_noregion[ARRAY_SIZE(disc_publishers_noregion)];
 	auto pPubNoRegion = std::lower_bound(disc_publishers_noregion, p_disc_publishers_noregion_end, id4_u32,
-		[](const WiiUDiscPublisher &pub, const uint32_t id4_u32) {
+		[](const WiiUDiscPublisher &pub, const uint32_t id4_u32) noexcept -> bool {
 			return (pub.id4 < id4_u32);
 		});
 	if (pPubNoRegion != p_disc_publishers_noregion_end && pPubNoRegion->id4 == id4_u32) {
@@ -315,7 +315,7 @@ uint32_t lookup_disc_publisher(const char *id4)
 	static const WiiUDiscPublisher *const p_disc_publishers_region_end =
 		&disc_publishers_region[ARRAY_SIZE(disc_publishers_region)];
 	auto pPubRegion = std::lower_bound(disc_publishers_region, p_disc_publishers_region_end, id4_u32,
-		[](const WiiUDiscPublisher &pub, uint32_t id4_u32) {
+		[](const WiiUDiscPublisher &pub, uint32_t id4_u32) noexcept -> bool {
 			return (pub.id4 < id4_u32);
 		});
 	if (pPubRegion != p_disc_publishers_region_end && pPubRegion->id4 == id4_u32) {

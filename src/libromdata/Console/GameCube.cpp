@@ -400,7 +400,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 
 	// Sort partitions by starting address in order to calculate the sizes.
 	std::sort(wiiPtbl.begin(), wiiPtbl.end(),
-		[](const WiiPartEntry &a, const WiiPartEntry &b) {
+		[](const WiiPartEntry &a, const WiiPartEntry &b) noexcept -> bool {
 			return (a.start < b.start);
 		}
 	);
@@ -418,7 +418,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 
 	// Restore the original sorting order. (VG#, then PT#)
 	std::sort(wiiPtbl.begin(), wiiPtbl.end(),
-		[](const WiiPartEntry &a, const WiiPartEntry &b) {
+		[](const WiiPartEntry &a, const WiiPartEntry &b) noexcept -> bool {
 			return (a.vg < b.vg || a.pt < b.pt);
 		}
 	);
