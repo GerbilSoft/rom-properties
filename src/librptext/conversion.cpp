@@ -364,7 +364,14 @@ string formatFileSize(off64_t size)
  */
 std::string formatFileSizeKiB(unsigned int size)
 {
-	return rp_sprintf("%u %s", (size / 1024), C_("LibRpText|FileSize", "KiB"));
+	// Localize the number.
+	// FIXME: If using C locale, don't do localization.
+	ostringstream s_value;
+	s_value << (size / 1024);
+
+	// tr: %1$s == localized value, %2$s == suffix (e.g. MiB)
+	return rp_sprintf_p(C_("LibRpText|FileSize", "%1$s %2$s"),
+		s_value.str().c_str(), C_("LibRpText|FileSize", "KiB"));
 }
 
 /**

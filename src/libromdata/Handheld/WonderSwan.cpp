@@ -486,8 +486,7 @@ int WonderSwan::loadFieldData(void)
 	const char *const rom_size_title = C_("WonderSwan", "ROM Size");
 	if (romFooter->rom_size < ARRAY_SIZE(rom_size_tbl)) {
 		d->fields->addField_string(rom_size_title,
-			// TODO: Format with commas?
-			rp_sprintf(C_("WonderSwan", "%u KiB"), rom_size_tbl[romFooter->rom_size]));
+			formatFileSizeKiB(rom_size_tbl[romFooter->rom_size]));
 	} else {
 		d->fields->addField_string(rom_size_title,
 			rp_sprintf(C_("RomData", "Unknown (%u)"), romFooter->publisher));

@@ -119,17 +119,6 @@ class DMGPrivate final : public RomDataPrivate
 		 */
 		static inline int RomSize(uint8_t type);
 
-		/**
-		 * Format ROM/RAM sizes, in KiB.
-		 *
-		 * This function expects the size to be a multiple of 1024,
-		 * so it doesn't do any fractional rounding or printing.
-		 *
-		 * @param size File size.
-		 * @return Formatted file size.
-		 */
-		inline string formatROMSizeKiB(unsigned int size);
-
 	public:
 		/**
 		 * DMG RAM size array.
@@ -343,21 +332,6 @@ inline int DMGPrivate::RomSize(uint8_t type)
 		return rom_size_52[type-0x52];
 	}
 	return -1;
-}
-
-/**
- * Format ROM/RAM sizes, in KiB.
- *
- * This function expects the size to be a multiple of 1024,
- * so it doesn't do any fractional rounding or printing.
- *
- * @param size File size.
- * @return Formatted file size.
- */
-inline string DMGPrivate::formatROMSizeKiB(unsigned int size)
-{
-	// tr: Kilobytes
-	return rp_sprintf("%u %s", (size / 1024), C_("LibRpText|FileSize", "KiB"));
 }
 
 /**
@@ -1135,15 +1109,14 @@ int DMG::loadFieldData(void)
 		d->fields->addField_bitfield(C_("DMG", "Features"),
 			v_gbx_feature_bitfield_names, 0, gbx_features);
 
-		// ROM size, in bytes.
-		// TODO: Use formatFileSize() instead?
+		// ROM size, in bytes. (formatted as KiB)
 		d->fields->addField_string(C_("DMG", "ROM Size"),
-			d->formatROMSizeKiB(be32_to_cpu(gbxFooter->rom_size)));
+			formatFileSizeKiB(be32_to_cpu(gbxFooter->rom_size)));
 
 		// RAM size, in bytes.
 		// TODO: Use formatFileSize() instead?
 		d->fields->addField_string(C_("DMG", "RAM Size"),
-			d->formatROMSizeKiB(be32_to_cpu(gbxFooter->ram_size)));
+			formatFileSizeKiB(be32_to_cpu(gbxFooter->ram_size)));
 	}
 
 	/** GBS **/
