@@ -229,7 +229,7 @@ IFACEMETHODIMP RP_ExtractImage::GetLocation(
 	// MSDN says it cannot be NULL, but we'll check for NULL
 	// anyway because it's not useful nowadays.
 	if (pdwPriority) {
-		*pdwPriority = 0;
+		*pdwPriority = IEIT_PRIORITY_NORMAL;
 	}
 
 	// If IEIFLAG_ASYNC is specified, return E_PENDING to let
