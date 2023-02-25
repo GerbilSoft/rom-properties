@@ -393,8 +393,6 @@ list<RomHeaderTest_mode> RomHeaderTest::ReadTestCasesFromDisk(const char *bin_ta
 	// NOTE: Cannot use ASSERT_TRUE() here.
 	list<RomHeaderTest_mode> files;
 
-	// FIXME: Before committing, we need to add .zst decompression.
-
 	// Open the .tar files.
 	all_tar_files.emplace_back();
 	tar_files_t *p_tar_files = &(*(all_tar_files.rbegin()));
