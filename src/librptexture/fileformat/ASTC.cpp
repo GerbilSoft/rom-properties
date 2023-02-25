@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ASTC.hpp: ASTC image reader.                                            *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -298,7 +298,7 @@ int ASTC::getFields(LibRpBase::RomFields *fields) const
 	if (!fields)
 		return 0;
 
-	RP_D(ASTC);
+	RP_D(const ASTC);
 	if (!d->isValid) {
 		// Unknown file type.
 		return -EIO;

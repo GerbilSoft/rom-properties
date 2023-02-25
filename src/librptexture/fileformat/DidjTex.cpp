@@ -487,7 +487,7 @@ int DidjTex::getFields(RomFields *fields) const
 	if (!fields)
 		return 0;
 
-	RP_D(DidjTex);
+	RP_D(const DidjTex);
 	if (!d->isValid || (int)d->texType < 0) {
 		// Not valid.
 		return -EIO;

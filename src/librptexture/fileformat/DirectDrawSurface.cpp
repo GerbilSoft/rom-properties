@@ -1215,7 +1215,7 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 	if (!fields)
 		return 0;
 
-	RP_D(DirectDrawSurface);
+	RP_D(const DirectDrawSurface);
 	if (!d->isValid) {
 		// Unknown file type.
 		return -EIO;

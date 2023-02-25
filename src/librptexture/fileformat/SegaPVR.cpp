@@ -1500,7 +1500,7 @@ int SegaPVR::getFields(LibRpBase::RomFields *fields) const
 	if (!fields)
 		return 0;
 
-	RP_D(SegaPVR);
+	RP_D(const SegaPVR);
 	if (!d->isValid || (int)d->pvrType < 0) {
 		// Unknown PVR image type.
 		return -EIO;

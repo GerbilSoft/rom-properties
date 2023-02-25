@@ -814,7 +814,7 @@ int ValveVTF::getFields(LibRpBase::RomFields *fields) const
 	if (!fields)
 		return 0;
 
-	RP_D(ValveVTF);
+	RP_D(const ValveVTF);
 	if (!d->isValid) {
 		// Unknown file type.
 		return -EIO;

@@ -748,7 +748,7 @@ int XboxXPR::getFields(LibRpBase::RomFields *fields) const
 	if (!fields)
 		return 0;
 
-	RP_D(XboxXPR);
+	RP_D(const XboxXPR);
 	if (!d->isValid || (int)d->xprType < 0) {
 		// Unknown XPR image type.
 		return -EIO;

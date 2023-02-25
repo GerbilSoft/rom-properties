@@ -772,7 +772,7 @@ int TGA::getFields(RomFields *fields) const
 	if (!fields)
 		return 0;
 
-	RP_D(TGA);
+	RP_D(const TGA);
 	if (!d->isValid || (int)d->texType < 0) {
 		// Not valid.
 		return -EIO;

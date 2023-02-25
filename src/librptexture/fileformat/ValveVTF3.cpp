@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * ValveVTF3.hpp: Valve VTF3 (PS3) image reader.                           *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -312,7 +312,7 @@ int ValveVTF3::getFields(LibRpBase::RomFields *fields) const
 	if (!fields)
 		return 0;
 
-	RP_D(ValveVTF3);
+	RP_D(const ValveVTF3);
 	if (!d->isValid) {
 		// Unknown file type.
 		return -EIO;

@@ -1034,7 +1034,7 @@ int PowerVR3::getFields(LibRpBase::RomFields *fields) const
 	if (!fields)
 		return 0;
 
-	RP_D(PowerVR3);
+	RP_D(const PowerVR3);
 	if (!d->isValid) {
 		// Unknown file type.
 		return -EIO;
