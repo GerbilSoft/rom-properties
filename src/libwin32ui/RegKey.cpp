@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32ui)                       *
  * RegKey.hpp: Registry key wrapper.                                       *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -344,7 +344,7 @@ LONG RegKey::write(LPCTSTR lpValueName, const tstring& value, DWORD dwType)
 
 	// Get the string length, add 1 for NULL,
 	// and multiply by sizeof(TCHAR).
-	DWORD cbData = static_cast<DWORD>((value.size() + 1) * sizeof(TCHAR));
+	const DWORD cbData = static_cast<DWORD>((value.size() + 1) * sizeof(TCHAR));
 
 	return RegSetValueEx(m_hKey,
 		lpValueName,			// lpValueName

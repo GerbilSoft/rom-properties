@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32ui)                       *
  * WinUI.hpp: Windows UI common functions.                                 *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -140,7 +140,7 @@ int measureTextSizeLink(HWND hWnd, HFONT hFont, const TCHAR *tstr, LPSIZE lpSize
 
 	// Remove HTML-style tags.
 	// NOTE: This is a very simplistic version.
-	size_t len = _tcslen(tstr);
+	const size_t len = _tcslen(tstr);
 	unique_ptr<TCHAR[]> ntstr(new TCHAR[len+1]);
 	TCHAR *p = ntstr.get();
 
@@ -533,7 +533,7 @@ static inline HRESULT getFileName_int_IFileDialog(tstring &ts_ret, bool bSave, H
 		if (!pfnSHCreateItemFromParsingName)
 			return E_FAIL;
 
-		DWORD dwAttrs = GetFileAttributes(origFilename);
+		const DWORD dwAttrs = GetFileAttributes(origFilename);
 		IShellItemPtr pFolder;
 		if (dwAttrs != INVALID_FILE_ATTRIBUTES && (dwAttrs & FILE_ATTRIBUTE_DIRECTORY)) {
 			// It's a directory.
@@ -731,7 +731,7 @@ static tstring getFileName_int(bool bSave, HWND hWnd,
 
 	// Check if the original filename is a directory or a file.
 	if (origFilename && origFilename[0] != _T('\0')) {
-		DWORD dwAttrs = GetFileAttributes(origFilename);
+		const DWORD dwAttrs = GetFileAttributes(origFilename);
 		if (dwAttrs != INVALID_FILE_ATTRIBUTES && (dwAttrs & FILE_ATTRIBUTE_DIRECTORY)) {
 			// It's a directory.
 			ofn.lpstrInitialDir = origFilename;

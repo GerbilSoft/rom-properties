@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image_ops.cpp: Image class. (operations)                             *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -52,7 +52,7 @@ rp_image *rp_image::dup(void) const
 
 	if (src_stride == dest_stride) {
 		// Copy the entire image all at once.
-		size_t len = backend->data_len();
+		const size_t len = backend->data_len();
 		memcpy(dest, src, len);
 	} else {
 		// Copy one line at a time.
