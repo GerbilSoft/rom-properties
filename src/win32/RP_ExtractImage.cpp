@@ -224,6 +224,14 @@ IFACEMETHODIMP RP_ExtractImage::GetLocation(
 	*pdwFlags |= IEIFLAG_CACHE;
 #endif /* NDEBUG */
 
+	// Priority flag: Only used on Windows XP when using
+	// IEIFLAG_ASYNC, but we should set it regardless.
+	// MSDN says it cannot be NULL, but we'll check for NULL
+	// anyway because it's not useful nowadays.
+	if (pdwPriority) {
+		*pdwPriority = 0;
+	}
+
 	// If IEIFLAG_ASYNC is specified, return E_PENDING to let
 	// the calling process know it can call Extract() from a
 	// background thread. If this isn't done, then Explorer
