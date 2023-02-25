@@ -256,6 +256,57 @@ class RomFields
 		// ROM field struct.
 		// Dynamically allocated.
 		struct Field {
+			/**
+			 * Initialize a RomFields::Field object.
+			 * Defaults to zero init.
+			 */
+			Field();
+
+			/**
+			 * Initialize a RomFields::Field object.
+			 * Some values will be initialized here.
+			 * isValid, desc, and data must be set afterwards.
+			 * @param name
+			 * @param type
+			 * @param tabIdx
+			 * @param flags
+			 */
+			Field(const char *name, RomFieldType type, uint8_t tabIdx, unsigned int flags);
+
+			~Field();
+
+			// copy constructor
+			Field(const Field &other);
+
+			// assignment operator
+			Field& operator=(Field other)
+			{
+				// Parameter is passed by value in order to make use of copy-by-swap.
+				// References:
+				// - https://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
+				// - https://stackoverflow.com/a/3279550
+				std::swap(*this, other);
+				return *this;
+			}
+
+			// move constructor
+			Field(Field &&other)
+				: name(nullptr)
+				, type(RFT_INVALID)
+			{
+				// name and type are zeroed out to indicate this
+				// object is empty and nothing from desc/data should
+				// be freed after the std::swap() is done.
+
+				// Swap the objects.
+				// References:
+				// - https://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
+				// - https://stackoverflow.com/a/3279550
+				std::swap(*this, other);
+			}
+
+			/** Fields **/
+
 			const char *name;	// Field name
 			RomFieldType type;	// ROM field type
 			uint8_t tabIdx;		// Tab index (0 for default)
