@@ -320,7 +320,7 @@ rp_key_manager_tab_init(RpKeyManagerTab *tab)
 		char menu_name[32];
 		snprintf(menu_name, sizeof(menu_name), "menuImport%d", i);
 		g_object_set_qdata(G_OBJECT(menuItem), menuImport_id_quark, GINT_TO_POINTER(i));
-		g_signal_connect(menuItem, "activate", G_CALLBACK(menuImport_triggered_signal_handler), tab);	// TODO
+		g_signal_connect(menuItem, "activate", G_CALLBACK(menuImport_triggered_signal_handler), tab);
 		gtk_widget_show(menuItem);
 		gtk_menu_shell_append(GTK_MENU_SHELL(tab->menuImport), menuItem);
 	}
