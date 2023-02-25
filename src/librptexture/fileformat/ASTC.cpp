@@ -144,8 +144,8 @@ const rp_image *ASTCPrivate::loadImage(void)
 		return nullptr;
 	}
 
-	// TODO: Adjust for mipmaps.
-	// For now, assuming the main texture is directly after the header.
+	// The ASTC file format does not support mipmaps.
+	// The texture data is located directly after the header.
 	const unsigned int texDataStartAddr = static_cast<unsigned int>(sizeof(astcHeader));
 
 	// Seek to the start of the texture data.
@@ -282,7 +282,7 @@ int ASTC::mipmapCount(void) const
 	if (!d->isValid)
 		return -1;
 
-	// TODO: Does this format support mipmaps?
+	// The ASTC file format does not support mipmaps.
 	return -1;
 }
 
