@@ -89,8 +89,8 @@ class IDiscReader : public RefBase
 
 		/**
 		 * Set the disc image position.
-		 * @param pos disc image position.
-		 * @return 0 on success; -1 on error.
+		 * @param pos Disc image position
+		 * @return 0 on success; -1 on error
 		 */
 		virtual int seek(off64_t pos) = 0;
 
@@ -126,6 +126,13 @@ class IDiscReader : public RefBase
 		 */
 		ATTR_ACCESS_SIZE(write_only, 3, 4)
 		size_t seekAndRead(off64_t pos, void *ptr, size_t size);
+
+		/**
+		 * Seek to a relative offset. (SEEK_CUR)
+		 * @param pos Relative offset
+		 * @return 0 on success; -1 on error
+		 */
+		int seek_cur(off64_t offset);
 
 	public:
 		/** Device file functions **/

@@ -76,6 +76,20 @@ size_t IDiscReader::seekAndRead(off64_t pos, void *ptr, size_t size)
 	return this->read(ptr, size);
 }
 
+/**
+ * Seek to a relative offset. (SEEK_CUR)
+ * @param pos Relative offset
+ * @return 0 on success; -1 on error
+ */
+int IDiscReader::seek_cur(off64_t offset)
+{
+	off64_t pos = this->tell();
+	if (pos < 0) {
+		return -1;
+	}
+	return this->seek(pos + offset);
+}
+
 /** Device file functions **/
 
 /**
