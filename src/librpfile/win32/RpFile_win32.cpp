@@ -210,14 +210,12 @@ int RpFilePrivate::reOpenFile(void)
 			// This is okay if creating a new file, but not if we're
 			// opening an existing file.
 			if (!(mode & RpFile::FM_CREATE)) {
-				RP_Q(RpFile);
 				q->m_fileType = DT_UNKNOWN;
 				q->m_lastError = EIO;
 				return -EIO;
 			}
 		} else if (dwAttr & FILE_ATTRIBUTE_DIRECTORY) {
 			// File is a directory.
-			RP_Q(RpFile);
 			q->m_fileType = DT_DIR;
 			q->m_lastError = EISDIR;
 			return -EISDIR;
