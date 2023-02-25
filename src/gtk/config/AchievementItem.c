@@ -79,7 +79,7 @@ rp_achievement_item_class_init(RpAchievementItemClass *klass)
 
 	props[PROP_UNLOCK_TIME] = g_param_spec_int64(
 		"unlock-time", "Unlock Time", "Timestamp when this achievement was unlocked",
-		LLONG_MIN, LLONG_MAX, -1LL,
+		G_MININT64, G_MAXINT64, -1LL,
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
 	// Install the properties.

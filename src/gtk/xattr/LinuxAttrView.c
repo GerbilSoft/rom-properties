@@ -204,7 +204,7 @@ rp_linux_attr_view_class_init(RpLinuxAttrViewClass *klass)
 
 	props[PROP_FLAGS] = g_param_spec_int(
 		"flags", "Flags", "Linux file system file attributes",
-		INT_MIN, INT_MAX, 0,
+		G_MININT, G_MAXINT, 0,
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
 	// Install the properties.
