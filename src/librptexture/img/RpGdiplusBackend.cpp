@@ -164,10 +164,11 @@ RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
 			m_pGdipBmp = nullptr;
 			m_gdipFmt = 0;
 			clear_properties();
+			return;
 		}
 
 		// Actual GDI+ palette size.
-		int palette_size = pGdipBmp->GetPaletteSize();
+		const int palette_size = pGdipBmp->GetPaletteSize();
 		assert(palette_size > 0);
 
 		Gdiplus::Status status = pGdipBmp->GetPalette(m_pGdipPalette, palette_size);
@@ -185,7 +186,7 @@ RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
 		if (m_pGdipPalette->Count < 256) {
 			// Extend the palette to 256 colors.
 			// Additional colors will be set to 0.
-			int diff = 256 - m_pGdipPalette->Count;
+			const int diff = 256 - m_pGdipPalette->Count;
 			memset(&m_pGdipPalette->Entries[m_pGdipPalette->Count], 0, diff*sizeof(Gdiplus::ARGB));
 			m_pGdipPalette->Count = 256;
 		}
