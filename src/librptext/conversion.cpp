@@ -274,9 +274,6 @@ string formatFileSize(off64_t size)
 	// If whole_part >= 10, frac_part is divided by 10.
 	int whole_part, frac_part;
 
-	// Ensure the localized decimal point is initialized.
-	pthread_once(&lc_decimal_once_control, initLocalizedDecimalPoint);
-
 	// TODO: Optimize this?
 	if (size < 0) {
 		// Invalid size. Print the value as-is.
@@ -335,6 +332,9 @@ string formatFileSize(off64_t size)
 			frac_digits = 1;
 		}
 
+		// Ensure the localized decimal point is initialized.
+		pthread_once(&lc_decimal_once_control, initLocalizedDecimalPoint);
+
 		// Append the fractional part using the required number of digits.
 		s_value << lc_decimal;
 		s_value << std::setw(frac_digits) << std::setfill('0') << frac_part;
@@ -379,9 +379,6 @@ std::string formatFrequency(uint32_t frequency)
 	// If whole_part >= 10, frac_part is divided by 10.
 	int whole_part, frac_part;
 
-	// Ensure the localized decimal point is initialized.
-	pthread_once(&lc_decimal_once_control, initLocalizedDecimalPoint);
-
 	// TODO: Optimize this?
 	if (frequency < (2*1000)) {
 		// tr: Hertz (< 1,000)
@@ -413,6 +410,9 @@ std::string formatFrequency(uint32_t frequency)
 	if (frequency >= (2*1000)) {
 		// Fractional part.
 		const int frac_digits = 3;
+
+		// Ensure the localized decimal point is initialized.
+		pthread_once(&lc_decimal_once_control, initLocalizedDecimalPoint);
 
 		// Append the fractional part using the required number of digits.
 		s_value << lc_decimal;
