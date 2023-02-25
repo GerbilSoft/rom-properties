@@ -26,7 +26,6 @@ class RomMetaDataPrivate
 {
 	public:
 		RomMetaDataPrivate();
-		~RomMetaDataPrivate();
 
 	private:
 		RP_DISABLE_COPY(RomMetaDataPrivate)
@@ -39,11 +38,6 @@ class RomMetaDataPrivate
 		// Index == Property
 		// Value == metaData index (-1 for none)
 		std::array<Property, (int)Property::PropertyCount> map_metaData;
-
-		/**
-		 * Deletes allocated strings in this->metaData.
-		 */
-		void delete_data(void);
 
 		// Property type mapping
 		static const PropertyType PropertyTypeMap[];
@@ -170,45 +164,26 @@ RomMetaDataPrivate::RomMetaDataPrivate()
 	map_metaData.fill(Property::Invalid);
 }
 
-RomMetaDataPrivate::~RomMetaDataPrivate()
-{
-	delete_data();
-}
+/** RomMetaData::MetaData **/
 
-/**
- * Deletes allocated strings in this->data.
- */
-void RomMetaDataPrivate::delete_data(void)
+RomMetaData::MetaData::~MetaData()
 {
-	// Delete all of the allocated strings in this->metaData.
-	for (RomMetaData::MetaData &metaData : this->metaData) {
-		assert(metaData.name > Property::FirstProperty);
-		assert(metaData.name < Property::PropertyCount);
-		if (metaData.name <= Property::FirstProperty ||
-		    metaData.name >= Property::PropertyCount)
-		{
-			continue;
-		}
-
-		switch (PropertyTypeMap[(int)metaData.name]) {
-			case PropertyType::Integer:
-			case PropertyType::UnsignedInteger:
-			case PropertyType::Timestamp:
-			case PropertyType::Double:
-				// No data here.
-				break;
-			case PropertyType::String:
-				delete const_cast<string*>(metaData.data.str);
-				break;
-			default:
-				// ERROR!
-				assert(!"Unsupported RomMetaData PropertyType.");
-				break;
-		}
+	// Ensure allocated data values get deleted.
+	switch (this->type) {
+		case PropertyType::Integer:
+		case PropertyType::UnsignedInteger:
+		case PropertyType::Timestamp:
+		case PropertyType::Double:
+			// No allocated data here.
+			break;
+		case PropertyType::String:
+			delete const_cast<string*>(this->data.str);
+			break;
+		default:
+			// ERROR!
+			assert(!"Unsupported RomMetaData PropertyType.");
+			break;
 	}
-
-	// Clear the metadata vector.
-	this->metaData.clear();
 }
 
 /**

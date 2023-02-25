@@ -169,6 +169,9 @@ class RomMetaData
 			Property name;		// Property name.
 			PropertyType type;	// Property type.
 
+			// Destructor to handle automatic string deletion.
+			~MetaData();
+
 			union _data {
 				// intptr_t field to cover everything.
 				// Mainly used to reset the entire field.
