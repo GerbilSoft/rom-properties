@@ -23,8 +23,6 @@ class GcnPartition : public LibRpBase::IPartition
 		 * NOTE: The IDiscReader *must* remain valid while this
 		 * GcnPartition is open.
 		 *
-		 * TODO: TGC support?
-		 *
 		 * @param discReader IDiscReader.
 		 * @param partition_offset Partition start offset.
 		 */

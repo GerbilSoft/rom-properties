@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GcnPartition.cpp: GameCube partition reader.                            *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -24,8 +24,6 @@ namespace LibRomData {
  *
  * NOTE: The IDiscReader *must* remain valid while this
  * GcnPartition is open.
- *
- * TODO: TGC support?
  *
  * @param discReader IDiscReader.
  * @param partition_offset Partition start offset.
