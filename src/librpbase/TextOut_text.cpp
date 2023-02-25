@@ -775,9 +775,10 @@ public:
 	explicit FieldsOutput(const RomFields& fields, uint32_t lc = 0, unsigned int flags = 0)
 		: fields(fields), lc(lc), flags(flags) { }
 	friend std::ostream& operator<<(std::ostream& os, const FieldsOutput& fo) {
+		// FIXME: Use std::max_element() [but that requires more strlen() calls...]
 		size_t maxWidth = 0;
 		std::for_each(fo.fields.cbegin(), fo.fields.cend(),
-			[&maxWidth](const RomFields::Field &field) noexcept -> void {
+			[&maxWidth](const RomFields::Field &field) {
 				maxWidth = max(maxWidth, strlen(field.name));
 			}
 		);
