@@ -208,7 +208,7 @@ int main(int argc, char *argv[])
 				break;
 			}
 			char *endptr;
-			unsigned int id = strtoul(token, &endptr, 0);
+			const unsigned int id = strtoul(token, &endptr, 0);
 			if (*endptr != '\0') {
 				fprintf(stderr, "*** ERROR: Line %d: 'CS' command: Invalid ID '%s'.\n", line, token);
 				err = true;
@@ -235,7 +235,7 @@ int main(int argc, char *argv[])
 			}
 
 			// Check if we already have this character series.
-			unsigned int idx = id / 4;
+			const unsigned int idx = id / 4;
 			if (idx < charSeriesTable.size()) {
 				if (charSeriesTable[idx] != 0) {
 					fprintf(stderr, "*** ERROR: Line %d: 'CS' command has duplicate ID: %u (0x%04X)\n", line, id, id);
@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
 				break;
 			}
 			char *endptr;
-			unsigned int id = strtoul(token, &endptr, 0);
+			const unsigned int id = strtoul(token, &endptr, 0);
 			if (*endptr != '\0') {
 				fprintf(stderr, "*** ERROR: Line %d: 'C' command: Invalid ID '%s'.\n", line, token);
 				err = true;
@@ -310,7 +310,7 @@ int main(int argc, char *argv[])
 				break;
 			}
 			char *endptr;
-			unsigned int id = strtoul(token, &endptr, 0);
+			const unsigned int id = strtoul(token, &endptr, 0);
 			if (*endptr != '\0') {
 				fprintf(stderr, "*** ERROR: Line %d: 'CV' command: Invalid ID '%s'.\n", line, token);
 				err = true;
@@ -328,7 +328,7 @@ int main(int argc, char *argv[])
 				err = true;
 				break;
 			}
-			unsigned int var_id = strtoul(token, &endptr, 0);
+			const unsigned int var_id = strtoul(token, &endptr, 0);
 			if (*endptr != '\0') {
 				fprintf(stderr, "*** ERROR: Line %d: 'CV' command: Invalid VarID '%s'.\n", line, token);
 				err = true;
@@ -398,7 +398,7 @@ int main(int argc, char *argv[])
 				break;
 			}
 			char *endptr;
-			unsigned int id = strtoul(token, &endptr, 0);
+			const unsigned int id = strtoul(token, &endptr, 0);
 			if (*endptr != '\0') {
 				fprintf(stderr, "*** ERROR: Line %d: 'AS' command: Invalid ID '%s'.\n", line, token);
 				err = true;
@@ -445,7 +445,7 @@ int main(int argc, char *argv[])
 				break;
 			}
 			char *endptr;
-			unsigned int id = strtoul(token, &endptr, 0);
+			const unsigned int id = strtoul(token, &endptr, 0);
 			if (*endptr != '\0') {
 				fprintf(stderr, "*** ERROR: Line %d: 'A' command: Invalid ID '%s'.\n", line, token);
 				err = true;
@@ -463,7 +463,7 @@ int main(int argc, char *argv[])
 				err = true;
 				break;
 			}
-			unsigned int release_no = strtoul(token, &endptr, 0);
+			const unsigned int release_no = strtoul(token, &endptr, 0);
 			if (*endptr != '\0') {
 				fprintf(stderr, "*** ERROR: Line %d: 'A' command: Invalid Release No. '%s'.\n", line, token);
 				err = true;
@@ -481,7 +481,7 @@ int main(int argc, char *argv[])
 				err = true;
 				break;
 			}
-			unsigned int wave_no = strtoul(token, &endptr, 0);
+			const unsigned int wave_no = strtoul(token, &endptr, 0);
 			if (*endptr != '\0') {
 				fprintf(stderr, "*** ERROR: Line %d: 'A' command: Invalid Wave. '%s'.\n", line, token);
 				err = true;
