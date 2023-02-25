@@ -223,8 +223,10 @@ bool isThemeActive(void)
 	PFNISTHEMEACTIVE pfnIsThemeActive =
 		reinterpret_cast<PFNISTHEMEACTIVE>(GetProcAddress(hUxTheme_dll, "IsThemeActive"));
 	assert(pfnIsThemeActive != nullptr);
-	if (!pfnIsThemeActive)
+	if (!pfnIsThemeActive) {
+		FreeLibrary(hUxTheme_dll);
 		return false;
+	}
 
 	const bool bRet = !!pfnIsThemeActive();
 	FreeLibrary(hUxTheme_dll);
