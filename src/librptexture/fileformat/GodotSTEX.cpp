@@ -236,9 +236,7 @@ const ImageSizeCalc::OpCode GodotSTEXPrivate::op_tbl_v3[] = {
 	OpCode::Align4,		// STEX_FORMAT_ETC2_RGBA8	// TODO: Verify?
 	OpCode::Align4Divide2,	// STEX_FORMAT_ETC2_RGB8A1	// TODO: Verify?
 
-	// Proprietary formats used in Sonic Colors Ultimate.
-	// FIXME: Other ASTC variants need a more complicated calculation.
-	// FIXME: Godot 4 has a different format here.
+	// Proprietary format used in Sonic Colors Ultimate.
 	OpCode::Align8Divide4,	// STEX_FORMAT_SCU_ASTC_8x8	// 8x8 == 2bpp
 };
 
