@@ -332,9 +332,11 @@ unsigned int DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
 			rp_byte_swap_32_array(vms_header.dci_dword, sizeof(vms_header.icondata_vms));
 		}
 
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
 		// Byteswap the fields.
 		vms_header.icondata_vms.mono_icon_addr = le32_to_cpu(vms_header.icondata_vms.mono_icon_addr);
 		vms_header.icondata_vms.color_icon_addr = le32_to_cpu(vms_header.icondata_vms.color_icon_addr);
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
 		memcpy(&this->vms_header.icondata_vms, &vms_header.icondata_vms, sizeof(vms_header.icondata_vms));
 		this->vms_header_offset = address;
@@ -350,12 +352,14 @@ unsigned int DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
 		rp_byte_swap_32_array(vms_header.dci_dword, sizeof(vms_header.dci_dword));
 	}
 
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	// Byteswap the fields.
 	vms_header.icon_count      = le16_to_cpu(vms_header.icon_count);
 	vms_header.icon_anim_speed = le16_to_cpu(vms_header.icon_anim_speed);
 	vms_header.eyecatch_type   = le16_to_cpu(vms_header.eyecatch_type);
 	vms_header.crc             = le16_to_cpu(vms_header.crc);
 	vms_header.data_size       = le32_to_cpu(vms_header.data_size);
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
 	memcpy(&this->vms_header, &vms_header, sizeof(vms_header));
 	this->vms_header_offset = address;
@@ -380,12 +384,16 @@ int DreamcastSavePrivate::readVmiHeader(IRpFile *vmi_file)
 		return (lastError != 0 ? -lastError : -EIO);
 	}
 
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	// Byteswap the VMI header.
 	vmi_header.ctime.year  = le16_to_cpu(vmi_header.ctime.year);
 	vmi_header.vmi_version = le16_to_cpu(vmi_header.vmi_version);
 	vmi_header.mode        = le16_to_cpu(vmi_header.mode);
 	vmi_header.reserved    = le16_to_cpu(vmi_header.reserved);
 	vmi_header.filesize    = le32_to_cpu(vmi_header.filesize);
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
+
+	// VMI header is loaded.
 	loaded_headers |= DreamcastSavePrivate::DC_HAVE_VMI;
 
 	// Convert the VMI time to Unix time.
@@ -809,10 +817,12 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 			return;
 		}
 
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
 		// Byteswap the directory entry.
 		d->vms_dirent.address     = le16_to_cpu(d->vms_dirent.address);
 		d->vms_dirent.size        = le16_to_cpu(d->vms_dirent.size);
 		d->vms_dirent.header_addr = le16_to_cpu(d->vms_dirent.header_addr);
+#endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
 		d->isGameFile = !!(d->vms_dirent.filetype == DC_VMS_DIRENT_FTYPE_GAME);
 		d->loaded_headers |= DreamcastSavePrivate::DC_HAVE_DIR_ENTRY;
