@@ -104,24 +104,6 @@ class ValveVTFPrivate final : public FileFormatPrivate
 		 * @return Image, or nullptr on error.
 		 */
 		const rp_image *loadImage(int mip);
-
-#if SYS_BYTEORDER == SYS_BIG_ENDIAN
-		/**
-		 * Byteswap a float. (TODO: Move to byteswap_rp.h?)
-		 * @param f Float to byteswap.
-		 * @return Byteswapped flaot.
-		 */
-		static inline float __swabf(float f)
-		{
-			union {
-				uint32_t u32;
-				float f;
-			} u32_f;
-			u32_f.f = f;
-			u32_f.u32 = __swab32(u32_f.u32);
-			return u32_f.f;
-		}
-#endif
 };
 
 FILEFORMAT_IMPL(ValveVTF)
@@ -712,10 +694,10 @@ ValveVTF::ValveVTF(IRpFile *file)
 	d->vtfHeader.flags		= le32_to_cpu(d->vtfHeader.flags);
 	d->vtfHeader.frames		= le16_to_cpu(d->vtfHeader.frames);
 	d->vtfHeader.firstFrame		= le16_to_cpu(d->vtfHeader.firstFrame);
-	d->vtfHeader.reflectivity[0]	= d->__swabf(d->vtfHeader.reflectivity[0]);
-	d->vtfHeader.reflectivity[1]	= d->__swabf(d->vtfHeader.reflectivity[1]);
-	d->vtfHeader.reflectivity[2]	= d->__swabf(d->vtfHeader.reflectivity[2]);
-	d->vtfHeader.bumpmapScale	= d->__swabf(d->vtfHeader.bumpmapScale);
+	d->vtfHeader.reflectivity[0]	= lef32_to_cpu(d->vtfHeader.reflectivity[0]);
+	d->vtfHeader.reflectivity[1]	= lef32_to_cpu(d->vtfHeader.reflectivity[1]);
+	d->vtfHeader.reflectivity[2]	= lef32_to_cpu(d->vtfHeader.reflectivity[2]);
+	d->vtfHeader.bumpmapScale	= lef32_to_cpu(d->vtfHeader.bumpmapScale);
 	d->vtfHeader.highResImageFormat	= le32_to_cpu(d->vtfHeader.highResImageFormat);
 	d->vtfHeader.lowResImageFormat	= le32_to_cpu(d->vtfHeader.lowResImageFormat);
 	d->vtfHeader.depth		= le16_to_cpu(d->vtfHeader.depth);

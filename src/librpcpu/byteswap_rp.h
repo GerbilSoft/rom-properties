@@ -83,6 +83,22 @@
 
 #endif /* defined(_MSC_VER) */
 
+/**
+ * Byteswap a float.
+ * @param f Float to byteswap
+ * @return Byteswapped float
+ */
+static inline float __swabf(float f)
+{
+	union {
+		uint32_t u32;
+		float f;
+	} u32_f;
+	u32_f.f = f;
+	u32_f.u32 = __swab32(u32_f.u32);
+	return u32_f.f;
+}
+
 #if SYS_BYTEORDER == SYS_LIL_ENDIAN
 	#define be16_to_cpu(x)	__swab16(x)
 	#define be32_to_cpu(x)	__swab32(x)
@@ -97,6 +113,12 @@
 	#define cpu_to_le16(x)	(x)
 	#define cpu_to_le32(x)	(x)
 	#define cpu_to_le64(x)	(x)
+
+	#define bef32_to_cpu(x)	__swabf(x)
+	#define cpu_to_bef32(x)	__swabf(x)
+
+	#define lef32_to_cpu(x)	(x)
+	#define cpu_to_lef32(x)	(x)
 #else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 	#define be16_to_cpu(x)	(x)
 	#define be32_to_cpu(x)	(x)
@@ -111,6 +133,12 @@
 	#define cpu_to_le16(x)	__swab16(x)
 	#define cpu_to_le32(x)	__swab32(x)
 	#define cpu_to_le64(x)	__swab64(x)
+
+	#define bef32_to_cpu(x)	(x)
+	#define cpu_to_bef32(x)	(x)
+
+	#define lef32_to_cpu(x)	__swabf(x)
+	#define cpu_to_lef32(x)	__swabf(x)
 #endif
 
 #ifdef __cplusplus
