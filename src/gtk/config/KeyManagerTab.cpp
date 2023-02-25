@@ -877,7 +877,6 @@ rp_key_manager_tab_menu_action_response(GtkFileChooserDialog *fileDialog, gint r
 	KeyStoreUI *const keyStoreUI = rp_key_store_gtk_get_key_store_ui(tab->keyStore);
 	KeyStoreUI::ImportReturn iret = keyStoreUI->importKeysFromBin(id, in_filename);
 
-	// TODO: Show the key import status in a MessageWidget.
 	rp_key_manager_tab_show_key_import_return_status(tab, in_filename,
 		dpgettext_expr(RP_I18N_DOMAIN, "KeyManagerTab", import_menu_actions[(int)id]), iret);
 	g_free(in_filename);
