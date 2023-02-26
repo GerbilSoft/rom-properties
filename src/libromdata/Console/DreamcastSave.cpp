@@ -337,7 +337,6 @@ unsigned int DreamcastSavePrivate::readAndVerifyVmsHeader(uint32_t address)
 		vms_header.icondata_vms.color_icon_addr = le32_to_cpu(vms_header.icondata_vms.color_icon_addr);
 #endif /* SYS_BYTEORDER == SYS_LIL_ENDIAN */
 
-		memcpy(&this->vms_header.icondata_vms, &vms_header.icondata_vms, sizeof(vms_header.icondata_vms));
 		this->vms_header_offset = address;
 		return DC_IS_ICONDATA_VMS;
 	}
