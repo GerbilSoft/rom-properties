@@ -16,9 +16,6 @@
 // librpbase
 using namespace LibRpBase;
 
-// C++ STL classes
-using std::string;
-
 #if GTK_CHECK_VERSION(3,0,0)
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
