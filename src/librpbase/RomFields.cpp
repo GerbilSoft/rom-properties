@@ -238,7 +238,7 @@ RomFields::Field& RomFields::Field::operator=(Field other)
  *
  * @param other Other RomFields::Field object
  */
-RomFields::Field::Field(Field &&other)
+RomFields::Field::Field(Field &&other) noexcept
 	: name(other.name)
 	, type(other.type)
 	, tabIdx(other.tabIdx)

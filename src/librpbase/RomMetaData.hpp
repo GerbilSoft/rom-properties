@@ -188,7 +188,7 @@ class RomMetaData
 
 			MetaData(const MetaData &other);	// copy constructor
 			MetaData& operator=(MetaData other);	// assignment operator
-			MetaData(MetaData &&other);		// move constructor
+			MetaData(MetaData &&other) noexcept;	// move constructor
 
 			/** Fields **/
 

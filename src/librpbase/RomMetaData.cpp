@@ -328,7 +328,7 @@ RomMetaData::MetaData& RomMetaData::MetaData::operator=(MetaData other)
  *
  * @param other Other RomMetaData::MetaData object
  */
-RomMetaData::MetaData::MetaData(MetaData &&other)
+RomMetaData::MetaData::MetaData(MetaData &&other) noexcept
 	: name(other.name)
 	, type(other.type)
 {

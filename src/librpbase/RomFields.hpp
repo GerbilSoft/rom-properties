@@ -277,7 +277,7 @@ class RomFields
 
 			Field(const Field &other);	// copy constructor
 			Field& operator=(Field other);	// assignment operator
-			Field(Field &&other);		// move constructor
+			Field(Field &&other) noexcept;	// move constructor
 
 			/** Fields **/
 
