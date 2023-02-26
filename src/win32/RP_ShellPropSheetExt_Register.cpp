@@ -59,7 +59,7 @@ LONG RP_ShellPropSheetExt::RegisterFileType_int(RegKey &hkey_Assoc)
  * @param ext	[in] File extension, including the leading dot.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ShellPropSheetExt::RegisterFileType(RegKey &hkcr, _In_ LPCTSTR ext)
+LONG RP_ShellPropSheetExt::RegisterFileType(_In_ RegKey &hkcr, _In_ LPCTSTR ext)
 {
 	// Open the file extension key.
 	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, true);
@@ -181,7 +181,7 @@ LONG RP_ShellPropSheetExt::UnregisterFileType_int(RegKey &hkey_Assoc)
  *
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ShellPropSheetExt::UnregisterFileType(RegKey &hkcr, _In_opt_ LPCTSTR ext)
+LONG RP_ShellPropSheetExt::UnregisterFileType(_In_ RegKey &hkcr, _In_opt_ LPCTSTR ext)
 {
 	// NOTE: NULL ext isn't needed for RP_ShellPropSheetExt.
 	assert(ext != nullptr);

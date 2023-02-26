@@ -79,7 +79,7 @@ LONG klass::UnregisterCLSID(void) \
 		 * @param ext	[in] File extension, including the leading dot. \
 		 * @return ERROR_SUCCESS on success; Win32 error code on error. \
 		 */ \
-		static LONG RegisterFileType(LibWin32UI::RegKey &hkcr, LPCTSTR ext); \
+		static LONG RegisterFileType(_In_ LibWin32UI::RegKey &hkcr, _In_ LPCTSTR ext); \
 		\
 		/** \
 		 * Unregister the file type handler. \
@@ -91,7 +91,7 @@ LONG klass::UnregisterCLSID(void) \
 		 * \
 		 * @return ERROR_SUCCESS on success; Win32 error code on error. \
 		 */ \
-		static LONG UnregisterFileType(LibWin32UI::RegKey &hkcr, LPCTSTR ext);
+		static LONG UnregisterFileType(_In_ LibWin32UI::RegKey &hkcr, _In_opt_ LPCTSTR ext);
 
 // Filetype register/unregister function declarations (with pHklm)
 #define FILETYPE_HANDLER_HKLM_DECL(klass) \
@@ -102,7 +102,7 @@ LONG klass::UnregisterCLSID(void) \
 		 * @param ext	[in] File extension, including the leading dot. \
 		 * @return ERROR_SUCCESS on success; Win32 error code on error. \
 		 */ \
-		static LONG RegisterFileType(LibWin32UI::RegKey &hkcr, LibWin32UI::RegKey *pHklm, LPCTSTR ext); \
+		static LONG RegisterFileType(_In_ LibWin32UI::RegKey &hkcr, _In_opt_ LibWin32UI::RegKey *pHklm, _In_ LPCTSTR ext); \
 		\
 		/** \
 		 * Unregister the file type handler. \
@@ -115,4 +115,4 @@ LONG klass::UnregisterCLSID(void) \
 		 * \
 		 * @return ERROR_SUCCESS on success; Win32 error code on error. \
 		 */ \
-		static LONG UnregisterFileType(LibWin32UI::RegKey &hkcr, LibWin32UI::RegKey *pHklm, LPCTSTR ext);
+		static LONG UnregisterFileType(_In_ LibWin32UI::RegKey &hkcr, _In_opt_ LibWin32UI::RegKey *pHklm, _In_opt_ LPCTSTR ext);

@@ -60,7 +60,7 @@ LONG RP_XAttrView::RegisterFileType_int(RegKey &hkey_Assoc)
  * @param ext	[in] File extension, including the leading dot.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_XAttrView::RegisterFileType(RegKey &hkcr, _In_ LPCTSTR ext)
+LONG RP_XAttrView::RegisterFileType(_In_ RegKey &hkcr, _In_ LPCTSTR ext)
 {
 	// Open the file extension key.
 	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, true);
@@ -182,7 +182,7 @@ LONG RP_XAttrView::UnregisterFileType_int(RegKey &hkey_Assoc)
  *
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_XAttrView::UnregisterFileType(RegKey &hkcr, _In_opt_ LPCTSTR ext)
+LONG RP_XAttrView::UnregisterFileType(_In_ RegKey &hkcr, _In_opt_ LPCTSTR ext)
 {
 	// NOTE: NULL ext isn't needed for RP_XAttrView.
 	assert(ext != nullptr);

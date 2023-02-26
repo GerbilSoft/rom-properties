@@ -61,7 +61,7 @@ LONG RP_ContextMenu_Private::RegisterFileType(RegKey &hkey_Assoc)
  * @param ext	[in] File extension, including the leading dot.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ContextMenu::RegisterFileType(RegKey &hkcr, _In_ LPCTSTR ext)
+LONG RP_ContextMenu::RegisterFileType(_In_ RegKey &hkcr, _In_ LPCTSTR ext)
 {
 	// Open the file extension key.
 	RegKey hkcr_ext(hkcr, ext, KEY_READ|KEY_WRITE, true);
@@ -183,7 +183,7 @@ LONG RP_ContextMenu_Private::UnregisterFileType(RegKey &hkey_Assoc)
  *
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_ContextMenu::UnregisterFileType(RegKey &hkcr, _In_opt_ LPCTSTR ext)
+LONG RP_ContextMenu::UnregisterFileType(_In_ RegKey &hkcr, _In_opt_ LPCTSTR ext)
 {
 	// NOTE: NULL ext isn't needed for RP_ContextMenu.
 	assert(ext != nullptr);

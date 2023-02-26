@@ -151,7 +151,7 @@ std::tstring RP_PropertyStore_Private::GetFullDetailsString()
  * @param ext	[in] File extension, including the leading dot.
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_PropertyStore::RegisterFileType(RegKey &hkcr, _In_opt_ RegKey *pHklm, _In_ LPCTSTR ext)
+LONG RP_PropertyStore::RegisterFileType(_In_ RegKey &hkcr, _In_opt_ RegKey *pHklm, _In_ LPCTSTR ext)
 {
 	// Set the properties to display in the various fields.
 	// FIXME: FullDetails will show empty properties...
@@ -209,7 +209,7 @@ LONG RP_PropertyStore::RegisterFileType(RegKey &hkcr, _In_opt_ RegKey *pHklm, _I
  *
  * @return ERROR_SUCCESS on success; Win32 error code on error.
  */
-LONG RP_PropertyStore::UnregisterFileType(RegKey &hkcr, _In_opt_ RegKey *pHklm, _In_opt_ LPCTSTR ext)
+LONG RP_PropertyStore::UnregisterFileType(_In_ RegKey &hkcr, _In_opt_ RegKey *pHklm, _In_opt_ LPCTSTR ext)
 {
 	// Check the main file extension key.
 	// If PreviewDetails and InfoTip match our values, remove them.
