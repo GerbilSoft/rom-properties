@@ -275,35 +275,9 @@ class RomFields
 
 			~Field();
 
-			// copy constructor
-			Field(const Field &other);
-
-			// assignment operator
-			Field& operator=(Field other)
-			{
-				// Parameter is passed by value in order to make use of copy-by-swap.
-				// References:
-				// - https://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-				// - https://stackoverflow.com/a/3279550
-				std::swap(*this, other);
-				return *this;
-			}
-
-			// move constructor
-			Field(Field &&other)
-				: name(nullptr)
-				, type(RFT_INVALID)
-			{
-				// name and type are zeroed out to indicate this
-				// object is empty and nothing from desc/data should
-				// be freed after the std::swap() is done.
-
-				// Swap the objects.
-				// References:
-				// - https://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-				// - https://stackoverflow.com/a/3279550
-				std::swap(*this, other);
-			}
+			Field(const Field &other);	// copy constructor
+			Field& operator=(Field other);	// assignment operator
+			Field(Field &&other);		// move constructor
 
 			/** Fields **/
 

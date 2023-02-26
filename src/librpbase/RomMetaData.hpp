@@ -186,38 +186,9 @@ class RomMetaData
 			// Destructor to handle automatic string deletion.
 			~MetaData();
 
-			// copy constructor
-			MetaData(const MetaData &other);
-
-			// assignment operator
-			MetaData& operator=(MetaData other)
-			{
-				// Parameter is passed by value in order to make use of copy-by-swap.
-				// References:
-				// - https://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-				// - https://stackoverflow.com/a/3279550
-				std::swap(*this, other);
-				return *this;
-			}
-
-			// move constructor
-			MetaData(MetaData &&other)
-				: name(Property::Invalid)
-				, type(PropertyType::Invalid)
-			{
-				// name and type are zeroed out to indicate this
-				// object is empty and nothing from data should
-				// be freed after the std::swap() is done.
-
-				// Clear the data value.
-				data.iptrvalue = 0;
-
-				// Swap the objects.
-				// References:
-				// - https://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
-				// - https://stackoverflow.com/a/3279550
-				std::swap(*this, other);
-			}
+			MetaData(const MetaData &other);	// copy constructor
+			MetaData& operator=(MetaData other);	// assignment operator
+			MetaData(MetaData &&other);		// move constructor
 
 			/** Fields **/
 

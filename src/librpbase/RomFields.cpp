@@ -96,6 +96,9 @@ RomFields::Field::~Field()
 
 	switch (type) {
 		case RomFields::RFT_INVALID:
+			assert(!"Field type is RFT_INVALID");
+			break;
+
 		case RomFields::RFT_DATETIME:
 		case RomFields::RFT_DIMENSIONS:
 			// No data here.
@@ -136,16 +139,16 @@ RomFields::Field::~Field()
  * @param other Other RomFields::Field object
  */
 RomFields::Field::Field(const Field &other)
+	: name(other.name ? strdup(other.name) : nullptr)
+	, type(other.type)
+	, tabIdx(other.tabIdx)
+	, flags(other.flags)
 {
 	assert(other.name != nullptr);
-	this->name = (other.name ? strdup(other.name) : nullptr);
-	this->type = other.type;
-	this->tabIdx = other.tabIdx;
-	this->flags = other.flags;
 
 	switch (other.type) {
 		case RFT_INVALID:
-			// No data here...
+			assert(!"Field type is RFT_INVALID");
 			break;
 
 		case RFT_STRING:
@@ -205,6 +208,99 @@ RomFields::Field::Field(const Field &other)
 			assert(!"Unsupported RomFields::RomFieldsType.");
 			break;
 	}
+}
+
+/**
+ * Assignment operator
+ *
+ * NOTE: This only ensures that the string data is copied correctly.
+ * It will not handle map index updates.
+ *
+ * @param other Other RomFields::Field object
+ */
+RomFields::Field& RomFields::Field::operator=(Field other)
+{
+	// Swap the objects.
+	// References:
+	// - https://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
+	// - https://stackoverflow.com/a/3279550
+	std::swap(*this, other);
+	return *this;
+}
+
+/**
+ * Move constructor
+ *
+ * NOTE: This only ensures that the string data is copied correctly.
+ * It will not handle map index updates.
+ *
+ * @param other Other RomFields::Field object
+ */
+RomFields::Field::Field(Field &&other)
+	: name(other.name)
+	, type(other.type)
+	, tabIdx(other.tabIdx)
+	, flags(other.flags)
+{
+	// NOTE: The previous implementation used copy-on-swap, which worked
+	// on gcc and MSVC 2019 but caused a stack overflow on MSVC 2015
+	// due to repeatedly calling the move constructor.
+	assert(other.name != nullptr);
+
+	// Copying data, but *without* strdup() or new, since
+	// the original Field will be set to RFT_INVALID.
+	switch (other.type) {
+		case RFT_INVALID:
+			assert(!"Field type is RFT_INVALID");
+			break;
+
+		case RFT_STRING:
+			this->data.str = other.data.str;
+			break;
+		case RFT_BITFIELD:
+			this->desc.bitfield.names = other.desc.bitfield.names;
+			this->desc.bitfield.elemsPerRow = other.desc.bitfield.elemsPerRow;
+			this->data.bitfield = other.data.bitfield;
+			break;
+		case RFT_LISTDATA:
+			this->desc.list_data.names = other.desc.list_data.names;
+			this->flags = other.flags;
+			this->desc.list_data.rows_visible = other.desc.list_data.rows_visible;
+			this->desc.list_data.col_attrs = other.desc.list_data.col_attrs;
+			if (other.flags & RFT_LISTDATA_MULTI) {
+				this->data.list_data.data.multi = other.data.list_data.data.multi;
+			} else {
+				this->data.list_data.data.single = other.data.list_data.data.single;
+			}
+			if (other.flags & RFT_LISTDATA_ICONS) {
+				// Icons: Copy the icon vector if set.
+				this->data.list_data.mxd.icons = other.data.list_data.mxd.icons;
+			} else {
+				// No icons. Copy checkboxes.
+				this->data.list_data.mxd.checkboxes = other.data.list_data.mxd.checkboxes;
+			}
+			break;
+		case RFT_DATETIME:
+			this->data.date_time = other.data.date_time;
+			break;
+		case RFT_AGE_RATINGS:
+			this->data.age_ratings = other.data.age_ratings;
+			break;
+		case RFT_DIMENSIONS:
+			memcpy(this->data.dimensions, other.data.dimensions, sizeof(other.data.dimensions));
+			break;
+		case RFT_STRING_MULTI:
+			this->data.str_multi = other.data.str_multi;
+			break;
+
+		default:
+			assert(!"Unsupported RomFields::RomFieldsType.");
+			break;
+	}
+
+	// Reset the other object.
+	other.name = nullptr;
+	other.type = RFT_INVALID;
 }
 
 /** RomFields **/
