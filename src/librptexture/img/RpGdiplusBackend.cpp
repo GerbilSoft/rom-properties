@@ -186,7 +186,7 @@ RpGdiplusBackend::RpGdiplusBackend(Gdiplus::Bitmap *pGdipBmp)
 		if (m_pGdipPalette->Count < 256) {
 			// Extend the palette to 256 colors.
 			// Additional colors will be set to 0.
-			const int diff = 256 - m_pGdipPalette->Count;
+			const unsigned int diff = 256 - m_pGdipPalette->Count;
 			memset(&m_pGdipPalette->Entries[m_pGdipPalette->Count], 0, diff*sizeof(Gdiplus::ARGB));
 			m_pGdipPalette->Count = 256;
 		}
