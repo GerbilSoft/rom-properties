@@ -524,12 +524,12 @@ int EXEPrivate::addFields_NE_Entry(void)
 		// Each bundle is starts with count and segment of the symbols
 		if (p >= ne_entry_table.end())
 			return -ENOENT;
-		uint16_t bundle_count = *p++;
+		const unsigned int bundle_count = *p++;
 		if (bundle_count == 0)
 			break; // end of table
 		if (p >= ne_entry_table.end())
 			return -ENOENT;
-		uint16_t bundle_segment = *p++;
+		const uint8_t bundle_segment = *p++;
 		switch (bundle_segment) {
 		case 0:
 			// Segment value 0 is used for skipping over unused ordinal values.
@@ -542,7 +542,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 			 * 0xFE is used for constants.*/
 			if (p + bundle_count*3 > ne_entry_table.end())
 				return -ENOENT;
-			for (int i = 0; i < bundle_count; i++) {
+			for (unsigned int i = 0; i < bundle_count; i++) {
 				Entry ent;
 				ent.ordinal = ordinal++;
 				ent.flags = p[0];
@@ -563,7 +563,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 			 * - DW offset */
 			if (p + bundle_count*6 > ne_entry_table.end())
 				return -ENOENT;
-			for (int i = 0; i < bundle_count; i++) {
+			for (unsigned int i = 0; i < bundle_count; i++) {
 				if (p[1] != 0xCD && p[2] != 0x3F) // INT 3Fh
 					return -ENOENT;
 				Entry ent;
