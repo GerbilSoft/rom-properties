@@ -164,6 +164,48 @@ RomMetaDataPrivate::RomMetaDataPrivate()
 	map_metaData.fill(Property::Invalid);
 }
 
+/**
+ * Add or overwrite a Property.
+ * @param name Property name
+ * @return Metadata property
+ */
+RomMetaData::MetaData *RomMetaDataPrivate::addProperty(Property name)
+{
+	assert(name > Property::FirstProperty);
+	assert(name < Property::PropertyCount);
+	if (name <= Property::FirstProperty ||
+	    name >= Property::PropertyCount)
+	{
+		return nullptr;
+	}
+
+	// Check if this metadata property was already added.
+	RomMetaData::MetaData *pMetaData;
+	if (map_metaData[(int)name] > Property::Invalid) {
+		// Already added. Overwrite it.
+		pMetaData = &metaData[(int)map_metaData[(int)name]];
+		// If a string is present, delete it.
+		if (pMetaData->type == PropertyType::String) {
+			delete pMetaData->data.str;
+			pMetaData->data.str = nullptr;
+		}
+	} else {
+		// Not added yet. Create a new one.
+		assert(metaData.size() < 128);
+		if (metaData.size() >= 128) {
+			// Can't add any more properties...
+			return nullptr;
+		}
+
+		metaData.emplace_back(name, static_cast<PropertyType>(PropertyTypeMap[static_cast<int>(name)]));
+		size_t idx = metaData.size() - 1;
+		pMetaData = &metaData[idx];
+		map_metaData[static_cast<int>(name)] = static_cast<Property>(idx);
+	}
+
+	return pMetaData;
+}
+
 /** RomMetaData::MetaData **/
 
 /**
@@ -294,48 +336,6 @@ RomMetaData::MetaData::MetaData(MetaData &&other)
 	memcpy(&this->data, &other.data, sizeof(this->data));
 	other.name = Property::Invalid;
 	other.type = PropertyType::Invalid;
-}
-
-/**
- * Add or overwrite a Property.
- * @param name Property name
- * @return Metadata property
- */
-RomMetaData::MetaData *RomMetaDataPrivate::addProperty(Property name)
-{
-	assert(name > Property::FirstProperty);
-	assert(name < Property::PropertyCount);
-	if (name <= Property::FirstProperty ||
-	    name >= Property::PropertyCount)
-	{
-		return nullptr;
-	}
-
-	// Check if this metadata property was already added.
-	RomMetaData::MetaData *pMetaData;
-	if (map_metaData[(int)name] > Property::Invalid) {
-		// Already added. Overwrite it.
-		pMetaData = &metaData[(int)map_metaData[(int)name]];
-		// If a string is present, delete it.
-		if (pMetaData->type == PropertyType::String) {
-			delete pMetaData->data.str;
-			pMetaData->data.str = nullptr;
-		}
-	} else {
-		// Not added yet. Create a new one.
-		assert(metaData.size() < 128);
-		if (metaData.size() >= 128) {
-			// Can't add any more properties...
-			return nullptr;
-		}
-
-		metaData.emplace_back(name, static_cast<PropertyType>(PropertyTypeMap[static_cast<int>(name)]));
-		size_t idx = metaData.size() - 1;
-		pMetaData = &metaData[idx];
-		map_metaData[static_cast<int>(name)] = static_cast<Property>(idx);
-	}
-
-	return pMetaData;
 }
 
 /** RomMetaData **/
