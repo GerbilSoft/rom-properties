@@ -96,7 +96,9 @@ RomFields::Field::~Field()
 
 	switch (type) {
 		case RomFields::RFT_INVALID:
-			assert(!"Field type is RFT_INVALID");
+			// Destroying an invalid field.
+			// May have been the source object for std::move,
+			// so we'll allow it.
 			break;
 
 		case RomFields::RFT_DATETIME:

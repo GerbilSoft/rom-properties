@@ -199,6 +199,12 @@ RomMetaData::MetaData::~MetaData()
 			assert(!"Unsupported RomMetaData PropertyType.");
 			break;
 
+		case PropertyType::Invalid:
+			// Destroying an invalid property.
+			// May have been the source object for std::move,
+			// so we'll allow it.
+			break;
+
 		case PropertyType::Integer:
 		case PropertyType::UnsignedInteger:
 		case PropertyType::Timestamp:
