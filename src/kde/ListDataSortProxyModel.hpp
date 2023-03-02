@@ -62,7 +62,7 @@ class ListDataSortProxyModel : public QSortFilterProxyModel
 		 * Set the sorting methods.
 		 * @param sortingMethods Sorting methods.
 		 */
-		void setSortingMethods(uint32_t sortingMethods)
+		void setSortingMethods(uint16_t sortingMethods)
 		{
 			if (m_sortingMethods == sortingMethods)
 				return;
@@ -74,7 +74,7 @@ class ListDataSortProxyModel : public QSortFilterProxyModel
 		 * Get the sorting methods.
 		 * @return Sorting methods.
 		 */
-		uint32_t sortingMethods(void) const
+		uint16_t sortingMethods(void) const
 		{
 			return m_sortingMethods;
 		}
@@ -84,8 +84,8 @@ class ListDataSortProxyModel : public QSortFilterProxyModel
 		 * Sorting methods have changed.
 		 * @param sortingMethods Sorting methods.
 		 */
-		void sortingMethodsChanged(uint32_t sortingMethods);
+		void sortingMethodsChanged(uint16_t sortingMethods);
 
 	private:
-		uint32_t m_sortingMethods;
+		uint16_t m_sortingMethods;
 };

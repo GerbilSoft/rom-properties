@@ -59,8 +59,6 @@ namespace LibRpBase {
 #define AFLD_ALIGN6(a,b,c,d,e,f)		(AFLD_ALIGN5(a,b,c,d,e)|(((f)&3U)<<10U))
 #define AFLD_ALIGN7(a,b,c,d,e,f,g)		(AFLD_ALIGN6(a,b,c,d,e,f)|(((g)&3U)<<12U))
 #define AFLD_ALIGN8(a,b,c,d,e,f,g,h)		(AFLD_ALIGN7(a,b,c,d,e,f,g)|(((h)&3U)<<14U))
-#define AFLD_ALIGN9(a,b,c,d,e,f,g,h,i)		(AFLD_ALIGN8(a,b,c,d,e,f,g,h)|(((i)&3U)<<16U))
-#define AFLD_ALIGN10(a,b,c,d,e,f,g,h,i,j)	(AFLD_ALIGN9(a,b,c,d,e,f,g,h,i)|(((j)&3U)<<18U))
 
 class RomFieldsPrivate;
 class RomFields
@@ -221,16 +219,15 @@ class RomFields
 		};
 
 		// RFT_LISTDATA per-column attributes.
-		// Up to 16 columns can be specified using
+		// Up to 8 columns can be specified using
 		// two bits each, with the two LSBs indicating
 		// column 0, next two bits column 1, etc.
 		// See the TextAlign enum.
 		struct ListDataColAttrs_t {
-			// TODO: Reduce to uint16_t?
-			uint32_t align_headers;	// Header alignment
-			uint32_t align_data;	// Data alignment
-			uint32_t sizing;	// Column sizing
-			uint32_t sorting;	// Column sorting
+			uint16_t align_headers;	// Header alignment
+			uint16_t align_data;	// Data alignment
+			uint16_t sizing;	// Column sizing
+			uint16_t sorting;	// Column sorting
 
 			int8_t  sort_col;	// Default sort column. (-1 for none)
 			ColSortOrder sort_dir;	// Sort order.
@@ -709,7 +706,7 @@ class RomFields
 			unsigned int flags;
 			int rows_visible;
 
-			// Per-column attributes.
+			// Per-column attributes
 			ListDataColAttrs_t col_attrs;
 
 			// Default language code. (RFT_LISTDATA_MULTI)

@@ -396,7 +396,7 @@ public:
 		if (listDataDesc.names) {
 			// Print the column names.
 			unsigned int col = 0;
-			uint32_t align = listDataDesc.col_attrs.align_headers;
+			unsigned int align = listDataDesc.col_attrs.align_headers;
 			const auto names_cend = listDataDesc.names->cend();
 			for (auto it = listDataDesc.names->cbegin(); it != names_cend; ++it, ++col, align >>= 2) {
 				// FIXME: What was this used for?
@@ -487,7 +487,7 @@ public:
 					checkboxes >>= 1;
 				}
 				unsigned int col = 0;
-				uint32_t align = listDataDesc.col_attrs.align_data;
+				unsigned int align = listDataDesc.col_attrs.align_data;
 				const auto it_cend = it->cend();
 				for (auto jt = it->cbegin(); jt != it_cend; ++jt, ++col, align >>= 2) {
 					string str;

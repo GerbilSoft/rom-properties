@@ -869,7 +869,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 	// NOTE: ListView header alignment matches data alignment.
 	// We'll prefer the data alignment value.
-	uint32_t align = listDataDesc.col_attrs.align_data;
+	unsigned int align = listDataDesc.col_attrs.align_data;
 
 	LVCOLUMN lvColumn;
 	if (listDataDesc.names) {

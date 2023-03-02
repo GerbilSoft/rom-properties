@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * ListDataModel.cpp: QAbstractListModel for RFT_LISTDATA.                 *
  *                                                                         *
- * Copyright (c) 2012-2022 by David Korth.                                 *
+ * Copyright (c) 2012-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -65,11 +65,11 @@ class ListDataModelPrivate
 		// Qt::ItemFlags
 		Qt::ItemFlags itemFlags;
 
-		// Text alignment.
-		uint32_t align_headers;
-		uint32_t align_data;
+		// Text alignment
+		uint16_t align_headers;
+		uint16_t align_data;
 
-		// Checkboxes.
+		// Checkboxes
 		uint32_t checkboxes;
 		bool hasCheckboxes;
 

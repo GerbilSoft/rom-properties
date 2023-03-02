@@ -544,7 +544,7 @@ QTreeView *RomDataViewPrivate::initListData(QLabel *lblDesc,
 		assert(pHeader != nullptr);
 		if (pHeader) {
 			pHeader->setStretchLastSection(false);
-			uint32_t sizing = listDataDesc.col_attrs.sizing;
+			unsigned int sizing = listDataDesc.col_attrs.sizing;
 			for (int i = 0; i < colCount; i++, sizing >>= RomFields::COLSZ_BITS) {
 				pHeader->setSectionResizeMode(i, (QHeaderView::ResizeMode)(sizing & RomFields::COLSZ_MASK));
 			}
