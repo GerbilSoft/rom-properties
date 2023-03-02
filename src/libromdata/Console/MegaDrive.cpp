@@ -374,15 +374,15 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 	const bool isEarlyRomHeader = checkIfEarlyRomHeader(pRomHeader);
 
 	// Read the strings from the header.
-	fields->addField_string(C_("MegaDrive", "System"),
+	fields.addField_string(C_("MegaDrive", "System"),
 		cp1252_sjis_to_utf8(pRomHeader->system, sizeof(pRomHeader->system)),
 			RomFields::STRF_TRIM_END);
-	fields->addField_string(C_("RomData", "Copyright"),
+	fields.addField_string(C_("RomData", "Copyright"),
 		cp1252_sjis_to_utf8(pRomHeader->copyright, sizeof(pRomHeader->copyright)),
 			RomFields::STRF_TRIM_END);
 
 	// Publisher
-	fields->addField_string(C_("RomData", "Publisher"), getPublisher(pRomHeader));
+	fields.addField_string(C_("RomData", "Publisher"), getPublisher(pRomHeader));
 
 	// Some fields vary depending on if this is a standard ROM header
 	// or an 'early' ROM header.
@@ -412,17 +412,17 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 	}
 
 	// Titles, serial number, and checksum.
-	fields->addField_string(C_("MegaDrive", "Domestic Title"),
+	fields.addField_string(C_("MegaDrive", "Domestic Title"),
 		cp1252_sjis_to_utf8(s_title_domestic, title_len), RomFields::STRF_TRIM_END);
-	fields->addField_string(C_("MegaDrive", "Export Title"),
+	fields.addField_string(C_("MegaDrive", "Export Title"),
 		cp1252_sjis_to_utf8(s_title_export, title_len), RomFields::STRF_TRIM_END);
 	// NOTE: Serial number should be ASCII only.
-	fields->addField_string(C_("MegaDrive", "Serial Number"),
+	fields.addField_string(C_("MegaDrive", "Serial Number"),
 		cp1252_to_utf8(s_serial_number, sizeof(pRomHeader->serial_number)),
 			RomFields::STRF_TRIM_END);
 	if (!isDisc()) {
 		// Checksum. (MD only; not valid for Mega CD.)
-		fields->addField_string_numeric(C_("RomData", "Checksum"),
+		fields.addField_string_numeric(C_("RomData", "Checksum"),
 			checksum, RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 	}
 
@@ -467,17 +467,17 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 	if (s_io_devices.empty()) {
 		s_io_devices = C_("MegaDrive|I/O", "None");
 	}
-	fields->addField_string(C_("MegaDrive", "I/O Support"), s_io_devices);
+	fields.addField_string(C_("MegaDrive", "I/O Support"), s_io_devices);
 
 	if (!isDisc()) {
 		// ROM range.
-		fields->addField_string_address_range(C_("MegaDrive", "ROM Range"),
+		fields.addField_string_address_range(C_("MegaDrive", "ROM Range"),
 				be32_to_cpu(pRomRam->rom_start),
 				be32_to_cpu(pRomRam->rom_end), 8,
 				RomFields::STRF_MONOSPACE);
 
 		// RAM range.
-		fields->addField_string_address_range(C_("MegaDrive", "RAM Range"),
+		fields.addField_string_address_range(C_("MegaDrive", "RAM Range"),
 				be32_to_cpu(pRomRam->ram_start),
 				be32_to_cpu(pRomRam->ram_end), 8,
 				RomFields::STRF_MONOSPACE);
@@ -508,12 +508,12 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 					break;
 			}
 
-			fields->addField_string_address_range(sram_range_title,
+			fields.addField_string_address_range(sram_range_title,
 				be32_to_cpu(pRomHeader->sram_start),
 				be32_to_cpu(pRomHeader->sram_end),
 				suffix, 8, RomFields::STRF_MONOSPACE);
 		} else {
-			fields->addField_string(sram_range_title, C_("MegaDrive", "None"));
+			fields.addField_string(sram_range_title, C_("MegaDrive", "None"));
 		}
 
 		// Check for an extra ROM chip.
@@ -528,7 +528,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 			const uint32_t extrom_end   = (pRomHeader->extrom.data[3] << 16) |
 						      (pRomHeader->extrom.data[4] <<  8) |
 						       pRomHeader->extrom.data[5];
-			fields->addField_string_address_range(C_("MegaDrive", "ExtROM Range"),
+			fields.addField_string_address_range(C_("MegaDrive", "ExtROM Range"),
 				extrom_start, extrom_end, nullptr, 8,
 				RomFields::STRF_MONOSPACE);
 		}
@@ -549,7 +549,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 	};
 	vector<string> *const v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
 		"Region", region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
-	fields->addField_bitfield(C_("RomData", "Region Code"),
+	fields.addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code_bitfield_names, 0, md_region_check);
 
 	// TODO: Extensions, e.g. SSF2, MegaWifi, and TeraDrive boot CPU.
@@ -649,7 +649,7 @@ void MegaDrivePrivate::addFields_vectorTable(const M68K_VectorTable *pVectors)
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 8);
 	params.headers = v_vectors_headers;
 	params.data.single = vv_vectors;
-	fields->addField_listData(C_("RomData", "Vector Table"), &params);
+	fields.addField_listData(C_("RomData", "Vector Table"), &params);
 }
 
 /**
@@ -1389,7 +1389,7 @@ uint32_t MegaDrive::imgpf(ImageType imageType) const
 int MegaDrive::loadFieldData(void)
 {
 	RP_D(MegaDrive);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -1405,25 +1405,25 @@ int MegaDrive::loadFieldData(void)
 	// Maximum number of fields:
 	// - ROM Header: 13
 	// - Vector table: 1 (LIST_DATA)
-	d->fields->reserve(14);
+	d->fields.reserve(14);
 
 	// Reserve at least 2 tabs.
-	d->fields->reserveTabs(2);
+	d->fields.reserveTabs(2);
 
 	// ROM Header.
-	d->fields->setTabName(0, C_("MegaDrive", "ROM Header"));
+	d->fields.setTabName(0, C_("MegaDrive", "ROM Header"));
 	d->addFields_romHeader(&d->romHeader);
 
 	if (!d->isDisc()) {
 		// Vector table. (MD only; not valid for Mega CD.)
-		d->fields->addTab(C_("MegaDrive", "Vector Table"));
+		d->fields.addTab(C_("MegaDrive", "Vector Table"));
 		d->addFields_vectorTable(&d->vectors);
 	}
 
 	// Check for a locked-on ROM image.
 	if (d->pRomHeaderLockOn) {
 		// Locked-on ROM is present.
-		d->fields->addTab(C_("MegaDrive", "Locked-On ROM Header"));
+		d->fields.addTab(C_("MegaDrive", "Locked-On ROM Header"));
 		d->addFields_romHeader(d->pRomHeaderLockOn, true);
 	}
 
@@ -1437,7 +1437,7 @@ int MegaDrive::loadFieldData(void)
 			const RomFields *const isoFields = isoData->fields();
 			assert(isoFields != nullptr);
 			if (isoFields) {
-				d->fields->addFields_romFields(isoFields,
+				d->fields.addFields_romFields(isoFields,
 					RomFields::TabOffset_AddTabs);
 			}
 		}
@@ -1445,7 +1445,7 @@ int MegaDrive::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

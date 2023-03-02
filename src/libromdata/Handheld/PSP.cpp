@@ -516,7 +516,7 @@ vector<RomData::ImageSizeDef> PSP::supportedImageSizes_static(ImageType imageTyp
 int PSP::loadFieldData(void)
 {
 	RP_D(PSP);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -527,8 +527,8 @@ int PSP::loadFieldData(void)
 		return -EIO;
 	}
 
-	d->fields->reserve(6);	// Maximum of 6 fields.
-	d->fields->setTabName(0, (unlikely(d->discType == PSPPrivate::DiscType::UmdVideo) ? "UMD" : "PSP"));
+	d->fields.reserve(6);	// Maximum of 6 fields.
+	d->fields.setTabName(0, (unlikely(d->discType == PSPPrivate::DiscType::UmdVideo) ? "UMD" : "PSP"));
 
 	// Show UMD_DATA.BIN fields.
 	// FIXME: Figure out what the fields are.
@@ -552,7 +552,7 @@ int PSP::loadFieldData(void)
 				(unlikely(d->discType == PSPPrivate::DiscType::UmdVideo)
 					? C_("RomData", "Video Title")
 					: C_("RomData", "Game ID"));
-			d->fields->addField_string(gameID_title,
+			d->fields.addField_string(gameID_title,
 				latin1_to_utf8(buf, static_cast<int>(p - buf)));
 		}
 	}
@@ -571,11 +571,11 @@ int PSP::loadFieldData(void)
 		if (exeFields) {
 			int exeTabCount = exeFields->tabCount();
 			for (int i = 1; i < exeTabCount; i++) {
-				d->fields->setTabName(i, exeFields->tabName(i));
+				d->fields.setTabName(i, exeFields->tabName(i));
 			}
-			d->fields->setTabIndex(0);
-			d->fields->addFields_romFields(exeFields, 0);
-			d->fields->setTabIndex(exeTabCount - 1);
+			d->fields.setTabIndex(0);
+			d->fields.addFields_romFields(exeFields, 0);
+			d->fields.setTabIndex(exeTabCount - 1);
 		}
 	}
 
@@ -590,14 +590,14 @@ int PSP::loadFieldData(void)
 		// Add the fields.
 		const RomFields *const isoFields = isoData->fields();
 		if (isoFields) {
-			d->fields->addFields_romFields(isoFields,
+			d->fields.addFields_romFields(isoFields,
 				RomFields::TabOffset_AddTabs);
 		}
 	}
 	isoData->unref();
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

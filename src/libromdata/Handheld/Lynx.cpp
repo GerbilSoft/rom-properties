@@ -183,7 +183,7 @@ const char *Lynx::systemName(unsigned int type) const
 int Lynx::loadFieldData(void)
 {
 	RP_D(Lynx);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -196,12 +196,12 @@ int Lynx::loadFieldData(void)
 
 	// Lynx ROM header.
 	const Lynx_RomHeader *const romHeader = &d->romHeader;
-	d->fields->reserve(5);	// Maximum of 5 fields.
+	d->fields.reserve(5);	// Maximum of 5 fields.
 
-	d->fields->addField_string(C_("RomData", "Title"),
+	d->fields.addField_string(C_("RomData", "Title"),
 		latin1_to_utf8(romHeader->cartname, sizeof(romHeader->cartname)));
 
-	d->fields->addField_string(C_("Lynx", "Manufacturer"),
+	d->fields.addField_string(C_("Lynx", "Manufacturer"),
 		latin1_to_utf8(romHeader->manufname, sizeof(romHeader->manufname)));
 
 	static const char rotation_names[][8] = {
@@ -209,18 +209,18 @@ int Lynx::loadFieldData(void)
 		NOP_C_("Lynx|Rotation", "Left"),
 		NOP_C_("Lynx|Rotation", "Right"),
 	};
-	d->fields->addField_string(C_("Lynx", "Rotation"),
+	d->fields.addField_string(C_("Lynx", "Rotation"),
 		(romHeader->rotation < ARRAY_SIZE(rotation_names)
 			? dpgettext_expr(RP_I18N_DOMAIN, "Lynx|Rotation", rotation_names[romHeader->rotation])
 			: C_("RomData", "Unknown")));
 
-	d->fields->addField_string(C_("Lynx", "Bank 0 Size"),
+	d->fields.addField_string(C_("Lynx", "Bank 0 Size"),
 		LibRpText::formatFileSize(le16_to_cpu(romHeader->page_size_bank0) * 256));
 
-	d->fields->addField_string(C_("Lynx", "Bank 1 Size"),
+	d->fields.addField_string(C_("Lynx", "Bank 1 Size"),
 		LibRpText::formatFileSize(le16_to_cpu(romHeader->page_size_bank0) * 256));
 
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 }

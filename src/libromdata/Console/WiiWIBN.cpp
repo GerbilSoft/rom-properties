@@ -450,7 +450,7 @@ uint32_t WiiWIBN::imgpf(ImageType imageType) const
 int WiiWIBN::loadFieldData(void)
 {
 	RP_D(WiiWIBN);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -463,12 +463,12 @@ int WiiWIBN::loadFieldData(void)
 
 	// Wii WIBN header.
 	const Wii_WIBN_Header_t *const wibnHeader = &d->wibnHeader;
-	d->fields->reserve(3);	// Maximum of 3 fields.
+	d->fields.reserve(3);	// Maximum of 3 fields.
 
 	// TODO: Combine title and subtitle into one field?
 
 	// Title.
-	d->fields->addField_string(C_("WiiWIBN", "Title"),
+	d->fields.addField_string(C_("WiiWIBN", "Title"),
 		utf16be_to_utf8(wibnHeader->gameTitle, ARRAY_SIZE_I(wibnHeader->gameTitle)));
 
 	// Subtitle.
@@ -476,7 +476,7 @@ int WiiWIBN::loadFieldData(void)
 	const char16_t chr1 = wibnHeader->gameSubTitle[0];
 	const char16_t chr2 = wibnHeader->gameSubTitle[1];
 	if (chr1 != 0 && (chr1 != ' ' && chr2 != 0)) {
-		d->fields->addField_string(C_("WiiWIBN", "Subtitle"),
+		d->fields.addField_string(C_("WiiWIBN", "Subtitle"),
 			utf16be_to_utf8(wibnHeader->gameSubTitle, ARRAY_SIZE_I(wibnHeader->gameSubTitle)));
 	}
 
@@ -486,11 +486,11 @@ int WiiWIBN::loadFieldData(void)
 	};
 	vector<string> *const v_flags_names = RomFields::strArrayToVector_i18n(
 		"WiiWIBN|Flags", flags_names, ARRAY_SIZE(flags_names));
-	d->fields->addField_bitfield(C_("WiiWIBN", "Flags"),
+	d->fields.addField_bitfield(C_("WiiWIBN", "Flags"),
 		v_flags_names, 0, be32_to_cpu(wibnHeader->flags));
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

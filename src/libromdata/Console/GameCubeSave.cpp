@@ -825,7 +825,7 @@ uint32_t GameCubeSave::imgpf(ImageType imageType) const
 int GameCubeSave::loadFieldData(void)
 {
 	RP_D(GameCubeSave);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -838,7 +838,7 @@ int GameCubeSave::loadFieldData(void)
 
 	// Save file header is read and byteswapped in the constructor.
 	const card_direntry *const direntry = &d->direntry;
-	d->fields->reserve(8);	// Maximum of 8 fields.
+	d->fields.reserve(8);	// Maximum of 8 fields.
 
 	// Game ID.
 	// Replace any non-printable characters with underscores.
@@ -850,11 +850,11 @@ int GameCubeSave::loadFieldData(void)
 			: '_');
 	}
 	id6[6] = 0;
-	d->fields->addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id6, 6));
+	d->fields.addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id6, 6));
 
 	// Look up the publisher.
 	const char *publisher = NintendoPublishers::lookup(direntry->company);
-	d->fields->addField_string(C_("RomData", "Publisher"),
+	d->fields.addField_string(C_("RomData", "Publisher"),
 		publisher ? publisher : C_("RomData", "Unknown"));
 
 	// Filename.
@@ -864,7 +864,7 @@ int GameCubeSave::loadFieldData(void)
 	if (!filename.empty() && filename[filename.size()-1] == '\r') {
 		filename.resize(filename.size()-1);
 	}
-	d->fields->addField_string(C_("GameCubeSave", "Filename"), filename);
+	d->fields.addField_string(C_("GameCubeSave", "Filename"), filename);
 
 	// Description.
 	union {
@@ -909,11 +909,11 @@ int GameCubeSave::loadFieldData(void)
 			desc.resize(desc.size()-1);
 		}
 
-		d->fields->addField_string(C_("GameCubeSave", "Description"), desc);
+		d->fields.addField_string(C_("GameCubeSave", "Description"), desc);
 	}
 
 	// Last Modified timestamp.
-	d->fields->addField_dateTime(C_("GameCubeSave", "Last Modified"),
+	d->fields.addField_dateTime(C_("GameCubeSave", "Last Modified"),
 		static_cast<time_t>(direntry->lastmodified) + GC_UNIX_TIME_DIFF,
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_HAS_TIME |
@@ -927,15 +927,15 @@ int GameCubeSave::loadFieldData(void)
 	file_mode[2] = ((direntry->permission & CARD_ATTRIB_NOCOPY) ? 'C' : '-');
 	file_mode[3] = ((direntry->permission & CARD_ATTRIB_PUBLIC) ? 'P' : '-');
 	file_mode[4] = 0;
-	d->fields->addField_string(C_("GameCubeSave", "Mode"), file_mode, RomFields::STRF_MONOSPACE);
+	d->fields.addField_string(C_("GameCubeSave", "Mode"), file_mode, RomFields::STRF_MONOSPACE);
 
 	// Copy count.
-	d->fields->addField_string_numeric(C_("GameCubeSave", "Copy Count"), direntry->copytimes);
+	d->fields.addField_string_numeric(C_("GameCubeSave", "Copy Count"), direntry->copytimes);
 	// Blocks.
-	d->fields->addField_string_numeric(C_("GameCubeSave", "Blocks"), direntry->length);
+	d->fields.addField_string_numeric(C_("GameCubeSave", "Blocks"), direntry->length);
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

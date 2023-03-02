@@ -184,7 +184,7 @@ const char *SID::systemName(unsigned int type) const
 int SID::loadFieldData(void)
 {
 	RP_D(SID);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -197,7 +197,7 @@ int SID::loadFieldData(void)
 
 	// SID header.
 	const SID_Header *const sidHeader = &d->sidHeader;
-	d->fields->reserve(10);	// Maximum of 10 fields.
+	d->fields.reserve(10);	// Maximum of 10 fields.
 
 	// Type.
 	const char *type;
@@ -214,59 +214,59 @@ int SID::loadFieldData(void)
 			type = "Unknown";
 			break;
 	}
-	d->fields->addField_string(C_("SID", "Type"), type);
+	d->fields.addField_string(C_("SID", "Type"), type);
 
 	// Version.
 	// TODO: Check for PSIDv2NG?
-	d->fields->addField_string_numeric(C_("RomData", "Version"),
+	d->fields.addField_string_numeric(C_("RomData", "Version"),
 		be16_to_cpu(sidHeader->version));
 
 	// Name.
 	if (sidHeader->name[0] != 0) {
-		d->fields->addField_string(C_("RomData|Audio", "Name"),
+		d->fields.addField_string(C_("RomData|Audio", "Name"),
 			latin1_to_utf8(sidHeader->name, sizeof(sidHeader->name)));
 	}
 
 	// Author.
 	if (sidHeader->author[0] != 0) {
-		d->fields->addField_string(C_("RomData|Audio", "Author"),
+		d->fields.addField_string(C_("RomData|Audio", "Author"),
 			latin1_to_utf8(sidHeader->author, sizeof(sidHeader->author)));
 	}
 
 	// Copyright.
 	if (sidHeader->copyright[0] != 0) {
-		d->fields->addField_string(C_("RomData|Audio", "Copyright"),
+		d->fields.addField_string(C_("RomData|Audio", "Copyright"),
 			latin1_to_utf8(sidHeader->copyright, sizeof(sidHeader->copyright)));
 	}
 
 	// Load address.
-	d->fields->addField_string_numeric(C_("SID", "Load Address"),
+	d->fields.addField_string_numeric(C_("SID", "Load Address"),
 		be16_to_cpu(sidHeader->loadAddress),
 		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Init address.
-	d->fields->addField_string_numeric(C_("SID", "Init Address"),
+	d->fields.addField_string_numeric(C_("SID", "Init Address"),
 		be16_to_cpu(sidHeader->initAddress),
 		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Play address.
-	d->fields->addField_string_numeric(C_("SID", "Play Address"),
+	d->fields.addField_string_numeric(C_("SID", "Play Address"),
 		be16_to_cpu(sidHeader->playAddress),
 		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Number of songs.
-	d->fields->addField_string_numeric(C_("RomData|Audio", "# of Songs"),
+	d->fields.addField_string_numeric(C_("RomData|Audio", "# of Songs"),
 		be16_to_cpu(sidHeader->songs));
 
 	// Starting song number.
-	d->fields->addField_string_numeric(C_("RomData|Audio", "Starting Song #"),
+	d->fields.addField_string_numeric(C_("RomData|Audio", "Starting Song #"),
 		be16_to_cpu(sidHeader->startSong));
 
 	// TODO: Speed?
 	// TODO: v2+ fields.
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

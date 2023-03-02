@@ -557,14 +557,14 @@ int NintendoDS::doRomOp_int(int id, RomOpParams *pParams)
 
 			// Update the fields.
 			// TODO: Better way to update fields.
-			if (!d->fields->empty()) {
+			if (!d->fields.empty()) {
 				RomFields::Field *field;
 				if (d->fieldIdx_secData >= 0) {
-					field = const_cast<RomFields::Field*>(d->fields->at(d->fieldIdx_secData));
+					field = const_cast<RomFields::Field*>(d->fields.at(d->fieldIdx_secData));
 					field->data.bitfield = d->secData;
 				}
 				if (d->fieldIdx_secArea >= 0) {
-					field = const_cast<RomFields::Field*>(d->fields->at(d->fieldIdx_secArea));
+					field = const_cast<RomFields::Field*>(d->fields.at(d->fieldIdx_secArea));
 					char *const old_str = const_cast<char*>(field->data.str);
 					field->data.str = strdup(d->getNDSSecureAreaString());
 					free(old_str);

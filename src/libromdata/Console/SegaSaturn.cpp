@@ -462,7 +462,7 @@ const char *SegaSaturn::systemName(unsigned int type) const
 int SegaSaturn::loadFieldData(void)
 {
 	RP_D(SegaSaturn);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -475,32 +475,32 @@ int SegaSaturn::loadFieldData(void)
 
 	// Sega Saturn disc header.
 	const Saturn_IP0000_BIN_t *const discHeader = &d->discHeader;
-	d->fields->reserve(8);	// Maximum of 8 fields.
-	d->fields->setTabName(0, C_("SegaSaturn", "Saturn"));
+	d->fields.reserve(8);	// Maximum of 8 fields.
+	d->fields.setTabName(0, C_("SegaSaturn", "Saturn"));
 
 	// Title. (TODO: Encoding?)
-	d->fields->addField_string(C_("RomData", "Title"),
+	d->fields.addField_string(C_("RomData", "Title"),
 		latin1_to_utf8(discHeader->title, sizeof(discHeader->title)),
 		RomFields::STRF_TRIM_END);
 
 	// Publisher.
-	d->fields->addField_string(C_("RomData", "Publisher"), d->getPublisher());
+	d->fields.addField_string(C_("RomData", "Publisher"), d->getPublisher());
 
 	// TODO: Latin-1, cp1252, or Shift-JIS?
 
 	// Product number.
-	d->fields->addField_string(C_("SegaSaturn", "Product #"),
+	d->fields.addField_string(C_("SegaSaturn", "Product #"),
 		latin1_to_utf8(discHeader->product_number, sizeof(discHeader->product_number)),
 		RomFields::STRF_TRIM_END);
 
 	// Product version.
-	d->fields->addField_string(C_("RomData", "Version"),
+	d->fields.addField_string(C_("RomData", "Version"),
 		latin1_to_utf8(discHeader->product_version, sizeof(discHeader->product_version)),
 		RomFields::STRF_TRIM_END);
 
 	// Release date.
 	time_t release_date = d->ascii_yyyymmdd_to_unix_time(discHeader->release_date);
-	d->fields->addField_dateTime(C_("RomData", "Release Date"), release_date,
+	d->fields.addField_dateTime(C_("RomData", "Release Date"), release_date,
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_IS_UTC  // Date only.
 	);
@@ -519,7 +519,7 @@ int SegaSaturn::loadFieldData(void)
 	};
 	vector<string> *const v_region_code_bitfield_names = RomFields::strArrayToVector_i18n(
 		"Region", region_code_bitfield_names, ARRAY_SIZE(region_code_bitfield_names));
-	d->fields->addField_bitfield(C_("RomData", "Region Code"),
+	d->fields.addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code_bitfield_names, 0, d->saturn_region);
 
 	// Disc number.
@@ -527,7 +527,7 @@ int SegaSaturn::loadFieldData(void)
 	d->parseDiscNumber(disc_num, disc_total);
 	if (disc_num != 0 && disc_total > 1) {
 		const char *const disc_number_title = C_("RomData", "Disc #");
-		d->fields->addField_string(disc_number_title,
+		d->fields.addField_string(disc_number_title,
 			// tr: Disc X of Y (for multi-disc games)
 			rp_sprintf_p(C_("RomData|Disc", "%1$u of %2$u"),
 				disc_num, disc_total));
@@ -555,7 +555,7 @@ int SegaSaturn::loadFieldData(void)
 		"SegaSaturn|Peripherals", peripherals_bitfield_names, ARRAY_SIZE(peripherals_bitfield_names));
 	// Parse peripherals.
 	uint32_t peripherals = d->parsePeripherals(discHeader->peripherals, sizeof(discHeader->peripherals));
-	d->fields->addField_bitfield(C_("SegaSaturn", "Peripherals"),
+	d->fields.addField_bitfield(C_("SegaSaturn", "Peripherals"),
 		v_peripherals_bitfield_names, 3, peripherals);
 
 	// Try to open the ISO-9660 object.
@@ -567,14 +567,14 @@ int SegaSaturn::loadFieldData(void)
 		const RomFields *const isoFields = isoData->fields();
 		assert(isoFields != nullptr);
 		if (isoFields) {
-			d->fields->addFields_romFields(isoFields,
+			d->fields.addFields_romFields(isoFields,
 				RomFields::TabOffset_AddTabs);
 		}
 	}
 	isoData->unref();
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

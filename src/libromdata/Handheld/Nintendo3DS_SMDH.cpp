@@ -423,7 +423,7 @@ uint32_t Nintendo3DS_SMDH::imgpf(ImageType imageType) const
 int Nintendo3DS_SMDH::loadFieldData(void)
 {
 	RP_D(Nintendo3DS_SMDH);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -445,8 +445,8 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 
 	// Maximum of 5 fields, plus 3 for iQue 3DS.
 	const bool is_iQue = (smdhHeader->settings.region_code == cpu_to_le32(N3DS_REGION_CHINA));
-	d->fields->reserve(is_iQue ? 8 : 5);
-	d->fields->setTabName(0, "SMDH");
+	d->fields.reserve(is_iQue ? 8 : 5);
+	d->fields.setTabName(0, "SMDH");
 
 	// Title: Check if English is valid.
 	// If it is, we'll de-duplicate fields.
@@ -514,22 +514,22 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 
 	const uint32_t def_lc = d->getDefaultLC();
 	if (!pMap_desc_short->empty()) {
-		d->fields->addField_string_multi(s_title_title, pMap_desc_short, def_lc);
+		d->fields.addField_string_multi(s_title_title, pMap_desc_short, def_lc);
 	} else {
 		delete pMap_desc_short;
-		d->fields->addField_string(s_title_title, s_unknown);
+		d->fields.addField_string(s_title_title, s_unknown);
 	}
 	if (!pMap_desc_long->empty()) {
-		d->fields->addField_string_multi(s_full_title_title, pMap_desc_long, def_lc);
+		d->fields.addField_string_multi(s_full_title_title, pMap_desc_long, def_lc);
 	} else {
 		delete pMap_desc_long;
-		d->fields->addField_string(s_full_title_title, s_unknown);
+		d->fields.addField_string(s_full_title_title, s_unknown);
 	}
 	if (!pMap_publisher->empty()) {
-		d->fields->addField_string_multi(s_publisher_title, pMap_publisher, def_lc);
+		d->fields.addField_string_multi(s_publisher_title, pMap_publisher, def_lc);
 	} else {
 		delete pMap_publisher;
-		d->fields->addField_string(s_publisher_title, s_unknown);
+		d->fields.addField_string(s_publisher_title, s_unknown);
 	}
 
 	// Region code.
@@ -545,7 +545,7 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 	};
 	vector<string> *const v_n3ds_region_bitfield_names = RomFields::strArrayToVector_i18n(
 		"Region", n3ds_region_bitfield_names, ARRAY_SIZE(n3ds_region_bitfield_names));
-	d->fields->addField_bitfield(C_("RomData", "Region Code"),
+	d->fields.addField_bitfield(C_("RomData", "Region Code"),
 		v_n3ds_region_bitfield_names, 3, le32_to_cpu(smdhHeader->settings.region_code));
 
 	// Age rating(s).
@@ -583,7 +583,7 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 			age_ratings[i] = RomFields::AGEBF_ACTIVE | (n3ds_rating & 0x1F);
 		}
 	}
-	d->fields->addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
+	d->fields.addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
 
 	if (is_iQue) {
 		// Check for iQue 3DS fields.
@@ -602,18 +602,18 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 			// TODO: Use the fields directly instead of latin1_to_utf8()?
 
 			// ISBN
-			d->fields->addField_string(C_("RomData", "ISBN"),
+			d->fields.addField_string(C_("RomData", "ISBN"),
 				latin1_to_utf8(&ique_data[0], 17));
 
 			// Contract Reg. No.
-			d->fields->addField_string(C_("RomData", "Contract Reg. No."),
+			d->fields.addField_string(C_("RomData", "Contract Reg. No."),
 				latin1_to_utf8(&ique_data[17], 11));
 
 			// Publishing Approval No.
 			// Special formatting for this one.
 			// NOTE: MSVC is known to mishandle UTF-8 on certain systems.
 			// The UTF-8 text is: "新出审字 [%s]%s号"
-			d->fields->addField_string(C_("RomData", "Publishing Approval No."),
+			d->fields.addField_string(C_("RomData", "Publishing Approval No."),
 				rp_sprintf("\xE6\x96\xB0\xE5\x87\xBA\xE5\xAE\xA1\xE5\xAD\x97 [%s]%s\xE5\x8F\xB7",
 					latin1_to_utf8(&ique_data[17+11+1], 4).c_str(),
 					latin1_to_utf8(&ique_data[17+11+1+4], 3).c_str()));
@@ -621,7 +621,7 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

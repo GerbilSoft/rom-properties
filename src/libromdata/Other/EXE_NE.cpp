@@ -279,11 +279,11 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 void EXEPrivate::addFields_NE(void)
 {
 	// Up to 5 tabs.
-	fields->reserveTabs(5);
+	fields.reserveTabs(5);
 
 	// NE Header
-	fields->setTabName(0, "NE");
-	fields->setTabIndex(0);
+	fields.setTabName(0, "NE");
+	fields.setTabIndex(0);
 
 	// Get the runtime DLL and if KERNEL is imported.
 	string runtime_dll, runtime_link;
@@ -316,9 +316,9 @@ void EXEPrivate::addFields_NE(void)
 
 	const char *const targetOS_title = C_("EXE", "Target OS");
 	if (targetOS) {
-		fields->addField_string(targetOS_title, targetOS);
+		fields.addField_string(targetOS_title, targetOS);
 	} else {
-		fields->addField_string(targetOS_title,
+		fields.addField_string(targetOS_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), hdr.ne.targOS));
 	}
 
@@ -329,7 +329,7 @@ void EXEPrivate::addFields_NE(void)
 		NOP_C_("EXE|DGroupType", "Multiple"),
 		NOP_C_("EXE|DGroupType", "(null)"),
 	};
-	fields->addField_string(C_("EXE", "DGroup Type"),
+	fields.addField_string(C_("EXE", "DGroup Type"),
 		dpgettext_expr(RP_I18N_DOMAIN, "EXE|DGroupType", dgroupTypes[hdr.ne.ProgFlags & 3]));
 
 	// Program flags.
@@ -344,7 +344,7 @@ void EXEPrivate::addFields_NE(void)
 	};
 	vector<string> *const v_ProgFlags_names = RomFields::strArrayToVector_i18n(
 		"EXE|ProgFlags", ProgFlags_names, ARRAY_SIZE(ProgFlags_names));
-	fields->addField_bitfield("Program Flags",
+	fields.addField_bitfield("Program Flags",
 		v_ProgFlags_names, 2, hdr.ne.ProgFlags);
 
 	// Application type.
@@ -368,7 +368,7 @@ void EXEPrivate::addFields_NE(void)
 		};
 		applType = applTypes_Win[hdr.ne.ApplFlags & 3];
 	}
-	fields->addField_string(C_("EXE", "Application Type"),
+	fields.addField_string(C_("EXE", "Application Type"),
 		dpgettext_expr(RP_I18N_DOMAIN, "EXE|ApplType", applType));
 
 	// Application flags.
@@ -383,7 +383,7 @@ void EXEPrivate::addFields_NE(void)
 	};
 	vector<string> *const v_ApplFlags_names = RomFields::strArrayToVector_i18n(
 		"EXE|ApplFlags", ApplFlags_names, ARRAY_SIZE(ApplFlags_names));
-	fields->addField_bitfield(C_("EXE", "Application Flags"),
+	fields.addField_bitfield(C_("EXE", "Application Flags"),
 		v_ApplFlags_names, 2, hdr.ne.ApplFlags);
 
 	// Other flags.
@@ -400,7 +400,7 @@ void EXEPrivate::addFields_NE(void)
 	};
 	vector<string> *const v_OtherFlags_names = RomFields::strArrayToVector_i18n(
 		"EXE|OtherFlags", OtherFlags_names, ARRAY_SIZE(OtherFlags_names));
-	fields->addField_bitfield(C_("EXE", "Other Flags"),
+	fields.addField_bitfield(C_("EXE", "Other Flags"),
 		v_OtherFlags_names, 2, hdr.ne.OS2EXEFlags);
 
 	// Timestamp (Early NE executables; pre-Win1.01)
@@ -432,7 +432,7 @@ void EXEPrivate::addFields_NE(void)
 		{
 			// In range.
 			const time_t ne_time = timegm(&ne_tm);
-			fields->addField_dateTime(C_("EXE", "Timestamp"), ne_time,
+			fields.addField_dateTime(C_("EXE", "Timestamp"), ne_time,
 				RomFields::RFT_DATETIME_HAS_DATE |
 				RomFields::RFT_DATETIME_HAS_TIME |
 				RomFields::RFT_DATETIME_IS_UTC);	// no timezone
@@ -442,7 +442,7 @@ void EXEPrivate::addFields_NE(void)
 	// Expected Windows version.
 	// TODO: Is this used in OS/2 executables?
 	if (hdr.ne.targOS == NE_OS_WIN || hdr.ne.targOS == NE_OS_WIN386) {
-		fields->addField_string(C_("EXE", "Windows Version"),
+		fields.addField_string(C_("EXE", "Windows Version"),
 			rp_sprintf("%u.%u", hdr.ne.expctwinver[1], hdr.ne.expctwinver[0]));
 	}
 
@@ -450,7 +450,7 @@ void EXEPrivate::addFields_NE(void)
 	// NOTE: Strings were obtained earlier.
 	if (hdr.ne.targOS == NE_OS_WIN && !runtime_dll.empty()) {
 		// TODO: Show the link?
-		fields->addField_string(C_("EXE", "Runtime DLL"), runtime_dll);
+		fields.addField_string(C_("EXE", "Runtime DLL"), runtime_dll);
 	}
 
 	// Module Name and Module Description.
@@ -465,9 +465,9 @@ void EXEPrivate::addFields_NE(void)
 	};
 	string module_name, module_desc;
 	if (loadNEResident() == 0 && get_first_string(ne_resident_name_table, module_name))
-		fields->addField_string(C_("EXE", "Module Name"), module_name);
+		fields.addField_string(C_("EXE", "Module Name"), module_name);
 	if (loadNENonResidentNames() == 0 && get_first_string(ne_nonresident_name_table, module_desc))
-		fields->addField_string(C_("EXE", "Module Description"), module_desc);
+		fields.addField_string(C_("EXE", "Module Description"), module_desc);
 
 	// Load resources.
 	ret = loadNEResourceTable();
@@ -479,8 +479,8 @@ void EXEPrivate::addFields_NE(void)
 		ret = rsrcReader->load_VS_VERSION_INFO(VS_VERSION_INFO, -1, &vsffi, &vssfi);
 		if (ret == 0) {
 			// Add the version fields.
-			fields->setTabName(1, C_("EXE", "Version"));
-			fields->setTabIndex(1);
+			fields.setTabName(1, C_("EXE", "Version"));
+			fields.setTabIndex(1);
 			addFields_VS_VERSION_INFO(&vsffi, &vssfi);
 		}
 	}
@@ -696,8 +696,8 @@ int EXEPrivate::addFields_NE_Entry(void)
 	// Create the tab if we have any exports.
 	if (!vv_data->empty()) {
 		// tr: this is the EXE NE equivalent of EXE PE export table
-		fields->addTab(C_("EXE", "Entries"));
-		fields->reserve(1);
+		fields.addTab(C_("EXE", "Entries"));
+		fields.reserve(1);
 
 		static const char *const field_names[] = {
 			NOP_C_("EXE|Exports", "Ordinal"),
@@ -714,7 +714,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 		params.data.single = vv_data;
 		// TODO: Header alignment?
 		params.col_attrs.align_data = AFLD_ALIGN4(TXA_R, TXA_D, TXA_D, TXA_D);
-		fields->addField_listData(C_("EXE", "Entries"), &params);
+		fields.addField_listData(C_("EXE", "Entries"), &params);
 	} else {
 		delete vv_data;
 	}
@@ -879,8 +879,8 @@ int EXEPrivate::addFields_NE_Import(void)
 	}
 
 	// Add the tab.
-	fields->addTab(C_("EXE", "Imports"));
-	fields->reserve(1);
+	fields.addTab(C_("EXE", "Imports"));
+	fields.reserve(1);
 
 	// Intentionally sharing the translation context with the exports tab.
 	static const char *const field_names[] = {
@@ -897,7 +897,7 @@ int EXEPrivate::addFields_NE_Import(void)
 	params.data.single = vv_data;
 	// TODO: Header alignment?
 	params.col_attrs.align_data = AFLD_ALIGN3(TXA_D, TXA_R, TXA_D);
-	fields->addField_listData(C_("EXE", "Imports"), &params);
+	fields.addField_listData(C_("EXE", "Imports"), &params);
 	return 0;
 }
 

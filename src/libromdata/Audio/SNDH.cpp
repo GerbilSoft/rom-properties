@@ -767,7 +767,7 @@ const char *SNDH::systemName(unsigned int type) const
 int SNDH::loadFieldData(void)
 {
 	RP_D(SNDH);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -786,42 +786,42 @@ int SNDH::loadFieldData(void)
 	}
 
 	// SNDH header.
-	d->fields->reserve(13);	// Maximum of 4 fields.
+	d->fields.reserve(13);	// Maximum of 4 fields.
 
 	// NOTE: Some strings have trailing spaces.
 
 	// Song title.
 	if (!tags.title.empty()) {
-		d->fields->addField_string(C_("RomData|Audio", "Song Title"),
+		d->fields.addField_string(C_("RomData|Audio", "Song Title"),
 			tags.title, RomFields::STRF_TRIM_END);
 	}
 
 	// Composer.
 	if (!tags.composer.empty()) {
-		d->fields->addField_string(C_("RomData|Audio", "Composer"),
+		d->fields.addField_string(C_("RomData|Audio", "Composer"),
 			tags.composer, RomFields::STRF_TRIM_END);
 	}
 
 	// Ripper.
 	if (!tags.ripper.empty()) {
-		d->fields->addField_string(C_("SNDH", "Ripper"),
+		d->fields.addField_string(C_("SNDH", "Ripper"),
 			tags.ripper, RomFields::STRF_TRIM_END);
 	}
 
 	// Converter.
 	if (!tags.converter.empty()) {
-		d->fields->addField_string(C_("SNDH", "Converter"),
+		d->fields.addField_string(C_("SNDH", "Converter"),
 			tags.converter, RomFields::STRF_TRIM_END);
 	}
 
 	// Year of release.
 	if (tags.year != 0) {
-		d->fields->addField_string_numeric(C_("SNDH", "Year of Release"), tags.year);
+		d->fields.addField_string_numeric(C_("SNDH", "Year of Release"), tags.year);
 	}
 
 	// Number of subtunes.
 	// TODO: Omit this if it's 0 or 1?
-	d->fields->addField_string_numeric(C_("SNDH", "# of Subtunes"),
+	d->fields.addField_string_numeric(C_("SNDH", "# of Subtunes"),
 		(tags.subtunes > 0) ? tags.subtunes : 1);
 
 	// NOTE: Tag listing on http://sndh.atari.org/fileformat.php lists
@@ -831,7 +831,7 @@ int SNDH::loadFieldData(void)
 	// VBlank frequency.
 	const char *const s_hz = C_("SNDH", "%u Hz");
 	if (tags.vblank_freq != 0) {
-		d->fields->addField_string(C_("SNDH", "VBlank Freq"),
+		d->fields.addField_string(C_("SNDH", "VBlank Freq"),
 			rp_sprintf(s_hz, tags.vblank_freq));
 	}
 
@@ -842,7 +842,7 @@ int SNDH::loadFieldData(void)
 		if (tags.timer_freq[i] == 0)
 			continue;
 
-		d->fields->addField_string(
+		d->fields.addField_string(
 			rp_sprintf(s_timer_freq, 'A'+i).c_str(),
 			rp_sprintf(s_hz, tags.timer_freq[i]));
 	}
@@ -850,7 +850,7 @@ int SNDH::loadFieldData(void)
 	// Default subtune.
 	// NOTE: First subtune is 1, not 0.
 	if (tags.subtunes > 1 && tags.def_subtune > 0) {
-		d->fields->addField_string_numeric(C_("SMDH", "Default Subtune"), tags.def_subtune);
+		d->fields.addField_string_numeric(C_("SMDH", "Default Subtune"), tags.def_subtune);
 	}
 
 	// Subtune list.
@@ -930,7 +930,7 @@ int SNDH::loadFieldData(void)
 			RomFields::AFLD_PARAMS params;
 			params.headers = v_subtune_list_hdr;
 			params.data.single = vv_subtune_list;
-			d->fields->addField_listData(C_("SNDH", "Subtune List"), &params);
+			d->fields.addField_listData(C_("SNDH", "Subtune List"), &params);
 		}
 	} else if (tags.subtune_names.empty() && tags.subtune_lengths.size() == 1) {
 		// No subtune names, but we have one subtune length.
@@ -942,12 +942,12 @@ int SNDH::loadFieldData(void)
 		const uint32_t min = duration / 60;
 		const uint32_t sec = duration % 60;
 
-		d->fields->addField_string(C_("RomData|Audio", "Duration"),
+		d->fields.addField_string(C_("RomData|Audio", "Duration"),
 			rp_sprintf("%u:%02u", min, sec));
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

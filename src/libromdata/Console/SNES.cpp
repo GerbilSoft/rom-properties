@@ -1195,7 +1195,7 @@ uint32_t SNES::imgpf(ImageType imageType) const
 int SNES::loadFieldData(void)
 {
 	RP_D(SNES);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -1208,7 +1208,7 @@ int SNES::loadFieldData(void)
 
 	// ROM header is read in the constructor.
 	const SNES_RomHeader *const romHeader = &d->romHeader;
-	d->fields->reserve(8); // Maximum of 8 fields.
+	d->fields.reserve(8); // Maximum of 8 fields.
 
 	// Cartridge HW.
 	// TODO: Make this translatable.
@@ -1302,20 +1302,20 @@ int SNES::loadFieldData(void)
 	/** Add the field data. **/
 
 	// Title
-	d->fields->addField_string(C_("RomData", "Title"), d->getRomTitle());
+	d->fields.addField_string(C_("RomData", "Title"), d->getRomTitle());
 
 	// Game ID
 	const char *const game_id_title = C_("RomData", "Game ID");
 	string gameID = d->getGameID();
 	if (!gameID.empty()) {
-		d->fields->addField_string(game_id_title, gameID);
+		d->fields.addField_string(game_id_title, gameID);
 	} else if (d->romType == SNESPrivate::RomType::SNES) {
 		// Unknown game ID.
-		d->fields->addField_string(game_id_title, C_("RomData", "Unknown"));
+		d->fields.addField_string(game_id_title, C_("RomData", "Unknown"));
 	}
 
 	// Publisher
-	d->fields->addField_string(C_("RomData", "Publisher"), d->getPublisher());
+	d->fields.addField_string(C_("RomData", "Publisher"), d->getPublisher());
 
 	// ROM mapping
 	// NOTE: Not translatable!
@@ -1348,16 +1348,16 @@ int SNES::loadFieldData(void)
 
 	const char *const rom_mapping_title = C_("SNES", "ROM Mapping");
 	if (s_rom_mapping) {
-		d->fields->addField_string(rom_mapping_title, s_rom_mapping);
+		d->fields.addField_string(rom_mapping_title, s_rom_mapping);
 	} else {
 		// Unknown ROM mapping.
-		d->fields->addField_string(rom_mapping_title,
+		d->fields.addField_string(rom_mapping_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), rom_mapping));
 	}
 
 	// Cartridge HW
 	if (!cart_hw.empty()) {
-		d->fields->addField_string(C_("SNES", "Cartridge HW"), cart_hw);
+		d->fields.addField_string(C_("SNES", "Cartridge HW"), cart_hw);
 	}
 
 	// Region
@@ -1393,16 +1393,16 @@ int SNES::loadFieldData(void)
 			// Region
 			const char *const region_title = C_("RomData", "Region Code");
 			if (region_lkup) {
-				d->fields->addField_string(region_title,
+				d->fields.addField_string(region_title,
 					dpgettext_expr(RP_I18N_DOMAIN, "Region", region_lkup));
 			} else {
-				d->fields->addField_string(region_title,
+				d->fields.addField_string(region_title,
 					rp_sprintf(C_("RomData", "Unknown (0x%02X)"),
 						romHeader->snes.destination_code));
 			}
 
 			// Revision
-			d->fields->addField_string_numeric(C_("SNES", "Revision"),
+			d->fields.addField_string_numeric(C_("SNES", "Revision"),
 				romHeader->snes.version, RomFields::Base::Dec, 2);
 
 			break;
@@ -1440,7 +1440,7 @@ int SNES::loadFieldData(void)
 				unixtime = timegm(&bsxtime);
 			}
 
-			d->fields->addField_dateTime(C_("SNES", "Date"), unixtime,
+			d->fields.addField_dateTime(C_("SNES", "Date"), unixtime,
 				RomFields::RFT_DATETIME_HAS_DATE |	// Date only.
 				RomFields::RFT_DATETIME_IS_UTC   |	// No timezone.
 				RomFields::RFT_DATETIME_NO_YEAR		// No year.
@@ -1464,10 +1464,10 @@ int SNES::loadFieldData(void)
 			}
 			const char *const program_type_title = C_("SNES", "Program Type");
 			if (program_type) {
-				d->fields->addField_string(program_type_title,
+				d->fields.addField_string(program_type_title,
 					dpgettext_expr(RP_I18N_DOMAIN, "SNES|ProgramType", program_type));
 			} else {
-				d->fields->addField_string(program_type_title,
+				d->fields.addField_string(program_type_title,
 					rp_sprintf(C_("RomData", "Unknown (0x%08X)"),
 						le32_to_cpu(romHeader->bsx.ext.program_type)));
 			}
@@ -1486,10 +1486,10 @@ int SNES::loadFieldData(void)
 			if (limited_starts & 0x8000U) {
 				// Limited.
 				const unsigned int n = popcount(limited_starts & ~0x8000U);
-				d->fields->addField_string_numeric(limited_starts_title, n);
+				d->fields.addField_string_numeric(limited_starts_title, n);
 			} else {
 				// Unlimited.
-				d->fields->addField_string(limited_starts_title, C_("SNES", "Unlimited"));
+				d->fields.addField_string(limited_starts_title, C_("SNES", "Unlimited"));
 			}
 
 			// TODO: Show region == Japan?
@@ -1506,7 +1506,7 @@ int SNES::loadFieldData(void)
 	// TODO: Other fields.
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

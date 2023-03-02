@@ -209,7 +209,7 @@ const char *GBS::systemName(unsigned int type) const
 int GBS::loadFieldData(void)
 {
 	RP_D(GBS);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -230,55 +230,55 @@ int GBS::loadFieldData(void)
 			// GBS header.
 			const GBS_Header *const gbs = &d->header.gbs;
 
-			d->fields->reserve(9);	// Maximum of 9 fields.
-			d->fields->setTabName(0, "GBS");
+			d->fields.reserve(9);	// Maximum of 9 fields.
+			d->fields.setTabName(0, "GBS");
 
 			// NOTE: The GBS specification says ASCII, but I'm assuming
 			// the text is cp1252 and/or Shift-JIS.
 
 			// Title
 			if (gbs->title[0] != 0) {
-				d->fields->addField_string(C_("RomData|Audio", "Title"),
+				d->fields.addField_string(C_("RomData|Audio", "Title"),
 					cp1252_sjis_to_utf8(gbs->title, sizeof(gbs->title)));
 			}
 
 			// Composer
 			if (gbs->composer[0] != 0) {
-				d->fields->addField_string(C_("RomData|Audio", "Composer"),
+				d->fields.addField_string(C_("RomData|Audio", "Composer"),
 					cp1252_sjis_to_utf8(gbs->composer, sizeof(gbs->composer)));
 			}
 
 			// Copyright
 			if (gbs->copyright[0] != 0) {
-				d->fields->addField_string(C_("RomData|Audio", "Copyright"),
+				d->fields.addField_string(C_("RomData|Audio", "Copyright"),
 					cp1252_sjis_to_utf8(gbs->copyright, sizeof(gbs->copyright)));
 			}
 
 			// Number of tracks
-			d->fields->addField_string_numeric(C_("RomData|Audio", "Track Count"),
+			d->fields.addField_string_numeric(C_("RomData|Audio", "Track Count"),
 				gbs->track_count);
 
 			// Default track number
-			d->fields->addField_string_numeric(C_("RomData|Audio", "Default Track #"),
+			d->fields.addField_string_numeric(C_("RomData|Audio", "Default Track #"),
 				gbs->default_track);
 
 			// Load address
-			d->fields->addField_string_numeric(C_("GBS", "Load Address"),
+			d->fields.addField_string_numeric(C_("GBS", "Load Address"),
 				le16_to_cpu(gbs->load_address),
 				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 			// Init address
-			d->fields->addField_string_numeric(C_("GBS", "Init Address"),
+			d->fields.addField_string_numeric(C_("GBS", "Init Address"),
 				le16_to_cpu(gbs->init_address),
 				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 			// Play address
-			d->fields->addField_string_numeric(C_("GBS", "Play Address"),
+			d->fields.addField_string_numeric(C_("GBS", "Play Address"),
 				le16_to_cpu(gbs->play_address),
 				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 			// Play address
-			d->fields->addField_string_numeric(C_("GBS", "Stack Pointer"),
+			d->fields.addField_string_numeric(C_("GBS", "Stack Pointer"),
 				le16_to_cpu(gbs->stack_pointer),
 				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 			break;
@@ -289,21 +289,21 @@ int GBS::loadFieldData(void)
 			// TODO: Does GBR support text fields?
 			const GBR_Header *const gbr = &d->header.gbr;
 
-			d->fields->reserve(3);	// Maximum of 3 fields.
-			d->fields->setTabName(0, "GBR");
+			d->fields.reserve(3);	// Maximum of 3 fields.
+			d->fields.setTabName(0, "GBR");
 
 			// Init address
-			d->fields->addField_string_numeric(C_("GBS", "Init Address"),
+			d->fields.addField_string_numeric(C_("GBS", "Init Address"),
 				le16_to_cpu(gbr->init_address),
 				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 			// VSync address
-			d->fields->addField_string_numeric(C_("GBS", "VSync Address"),
+			d->fields.addField_string_numeric(C_("GBS", "VSync Address"),
 				le16_to_cpu(gbr->vsync_address),
 				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 			// Timer address
-			d->fields->addField_string_numeric(C_("GBS", "Timer Address"),
+			d->fields.addField_string_numeric(C_("GBS", "Timer Address"),
 				le16_to_cpu(gbr->timer_address),
 				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 			break;
@@ -313,7 +313,7 @@ int GBS::loadFieldData(void)
 	// TODO: Timer modulo and control?
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

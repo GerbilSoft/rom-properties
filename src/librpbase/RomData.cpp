@@ -42,7 +42,6 @@ RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file, const RomDataInfo *pRo
 	, file(nullptr)
 	, filename(nullptr)
 	, isCompressed(false)
-	, fields(new RomFields())
 	, metaData(nullptr)
 {
 	assert(pRomDataInfo != nullptr);
@@ -64,7 +63,6 @@ RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file, const RomDataInfo *pRo
 
 RomDataPrivate::~RomDataPrivate()
 {
-	delete fields;
 	delete metaData;
 	free(filename);
 
@@ -764,14 +762,14 @@ int RomData::loadMetaData(void)
 const RomFields *RomData::fields(void) const
 {
 	RP_D(const RomData);
-	if (d->fields->empty()) {
+	if (d->fields.empty()) {
 		// Data has not been loaded.
 		// Load it now.
 		int ret = const_cast<RomData*>(this)->loadFieldData();
 		if (ret < 0)
 			return nullptr;
 	}
-	return d->fields;
+	return &d->fields;
 }
 
 /**

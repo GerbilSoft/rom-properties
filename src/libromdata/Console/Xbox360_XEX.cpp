@@ -1603,7 +1603,7 @@ uint32_t Xbox360_XEX::imgpf(ImageType imageType) const
 int Xbox360_XEX::loadFieldData(void)
 {
 	RP_D(Xbox360_XEX);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -1620,8 +1620,8 @@ int Xbox360_XEX::loadFieldData(void)
 
 	// Maximum of 14 fields, not including RomData subclasses.
 	const char *const s_xexType = (d->xexType != Xbox360_XEX_Private::XexType::XEX1 ? "XEX2" : "XEX1");
-	d->fields->reserve(14);
-	d->fields->setTabName(0, s_xexType);
+	d->fields.reserve(14);
+	d->fields.setTabName(0, s_xexType);
 
 	// Image flags.
 	// NOTE: Same for both XEX1 and XEX2 according to Xenia.
@@ -1655,7 +1655,7 @@ int Xbox360_XEX::loadFieldData(void)
 			} else {
 				s_xexKeyID = "XEX2";
 			}
-			d->fields->addField_string(C_("RomData", "Warning"),
+			d->fields.addField_string(C_("RomData", "Warning"),
 				rp_sprintf(C_("Xbox360_XEX", "The Xbox 360 %s encryption key is not available."), s_xexKeyID),
 				RomFields::STRF_WARNING);
 		}
@@ -1664,7 +1664,7 @@ int Xbox360_XEX::loadFieldData(void)
 	// XDBF fields
 	const Xbox360_XDBF *const pe_xdbf = d->initXDBF();
 	if (pe_xdbf) {
-		pe_xdbf->addFields_strings(d->fields);
+		pe_xdbf->addFields_strings(&d->fields);
 	}
 
 	// Original executable name
@@ -1678,7 +1678,7 @@ int Xbox360_XEX::loadFieldData(void)
 			// NOTE: May or may not be NULL-terminated.
 			// TODO: What encoding? Assuming cp1252...
 			int len = static_cast<int>(size - sizeof(uint32_t));
-			d->fields->addField_string(C_("Xbox360_XEX", "PE Filename"),
+			d->fields.addField_string(C_("Xbox360_XEX", "PE Filename"),
 				cp1252_to_utf8(reinterpret_cast<const char*>(
 					u8_data.data() + sizeof(uint32_t)), len),
 				RomFields::STRF_TRIM_END);
@@ -1702,7 +1702,7 @@ int Xbox360_XEX::loadFieldData(void)
 		// Indicate that an XEX1 kernel is needed.
 		s_minver += " (XEX1)";
 	}
-	d->fields->addField_string(C_("Xbox360_XEX", "Min. Kernel"), s_minver);
+	d->fields.addField_string(C_("Xbox360_XEX", "Min. Kernel"), s_minver);
 
 	// Module flags
 	static const char *const module_flags_tbl[] = {
@@ -1717,7 +1717,7 @@ int Xbox360_XEX::loadFieldData(void)
 	};
 	vector<string> *const v_module_flags = RomFields::strArrayToVector_i18n(
 		"Xbox360_XEX", module_flags_tbl, ARRAY_SIZE(module_flags_tbl));
-	d->fields->addField_bitfield(C_("Xbox360_XEX", "Module Flags"),
+	d->fields.addField_bitfield(C_("Xbox360_XEX", "Module Flags"),
 		v_module_flags, 4, xex2Header->module_flags);
 
 	// Media types
@@ -1729,7 +1729,7 @@ int Xbox360_XEX::loadFieldData(void)
 	if (image_flags & XEX2_IMAGE_FLAG_XGD2_MEDIA_ONLY) {
 		// XGD2/XGD3 media only.
 		// TODO: Check the Burger King games. (XGD1)
-		d->fields->addField_string(C_("Xbox360_XEX", "Media Types"),
+		d->fields.addField_string(C_("Xbox360_XEX", "Media Types"),
 			C_("Xbox360_XEX", "Xbox Game Disc only"));
 	} else {
 		// Other types.
@@ -1792,7 +1792,7 @@ int Xbox360_XEX::loadFieldData(void)
 			}
 		}
 
-		d->fields->addField_string(C_("Xbox360_XEX", "Media Types"),
+		d->fields.addField_string(C_("Xbox360_XEX", "Media Types"),
 			found ? oss.str() : C_("Xbox360_XEX", "None"));
 	}
 
@@ -1836,11 +1836,11 @@ int Xbox360_XEX::loadFieldData(void)
 
 	vector<string> *const v_region_code = RomFields::strArrayToVector_i18n(
 		"Region", region_code_tbl, ARRAY_SIZE(region_code_tbl));
-	d->fields->addField_bitfield(C_("RomData", "Region Code"),
+	d->fields.addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code, 4, region_code);
 
 	// Media ID
-	d->fields->addField_string(C_("Xbox360_XEX", "Media ID"),
+	d->fields.addField_string(C_("Xbox360_XEX", "Media ID"),
 		d->formatMediaID(
 			(d->xexType != Xbox360_XEX_Private::XexType::XEX1
 				? d->secInfo.xex2.xgd2_media_id
@@ -1850,7 +1850,7 @@ int Xbox360_XEX::loadFieldData(void)
 	// Disc Profile ID
 	size = d->getOptHdrData(XEX2_OPTHDR_DISC_PROFILE_ID, u8_data);
 	if (size == 16) {
-		d->fields->addField_string(C_("Xbox360_XEX", "Disc Profile ID"),
+		d->fields.addField_string(C_("Xbox360_XEX", "Disc Profile ID"),
 			d->formatMediaID(u8_data.data()),
 			RomFields::STRF_MONOSPACE);
 	}
@@ -1881,7 +1881,7 @@ int Xbox360_XEX::loadFieldData(void)
 			tid_str.append(hexbuf, 2);
 		}
 			
-		d->fields->addField_string(C_("Xbox360_XEX", "Title ID"),
+		d->fields.addField_string(C_("Xbox360_XEX", "Title ID"),
 			rp_sprintf_p(C_("Xbox360_XEX", "%1$08X (%2$s-%3$04u)"),
 				be32_to_cpu(d->executionID.title_id.u32),
 				tid_str.c_str(),
@@ -1891,13 +1891,13 @@ int Xbox360_XEX::loadFieldData(void)
 		// Publisher
 		const string publisher = d->getPublisher();
 		if (!publisher.empty()) {
-			d->fields->addField_string(C_("RomData", "Publisher"), publisher);
+			d->fields.addField_string(C_("RomData", "Publisher"), publisher);
 		}
 
 		// Disc number
 		// NOTE: Not shown for single-disc games.
 		if (d->executionID.disc_number != 0 && d->executionID.disc_count > 1) {
-			d->fields->addField_string(C_("RomData", "Disc #"),
+			d->fields.addField_string(C_("RomData", "Disc #"),
 				// tr: Disc X of Y (for multi-disc games)
 				rp_sprintf_p(C_("RomData|Disc", "%1$u of %2$u"),
 					d->executionID.disc_number,
@@ -1933,7 +1933,7 @@ int Xbox360_XEX::loadFieldData(void)
 				break;
 		}
 	}
-	d->fields->addField_string(C_("Xbox360_XEX", "Encryption Key"), s_encryption_key);
+	d->fields.addField_string(C_("Xbox360_XEX", "Encryption Key"), s_encryption_key);
 
 	// Compression
 	static const char *const compression_tbl[] = {
@@ -1943,11 +1943,11 @@ int Xbox360_XEX::loadFieldData(void)
 		NOP_C_("Xbox360_XEX|Compression", "Delta"),
 	};
 	if (d->fileFormatInfo.compression_type < ARRAY_SIZE(compression_tbl)) {
-		d->fields->addField_string(C_("Xbox360_XEX", "Compression"),
+		d->fields.addField_string(C_("Xbox360_XEX", "Compression"),
 			dpgettext_expr(RP_I18N_DOMAIN, "Xbox360_XEX|Compression",
 				compression_tbl[d->fileFormatInfo.compression_type]));
 	} else {
-		d->fields->addField_string(C_("Xbox360_XEX", "Compression"),
+		d->fields.addField_string(C_("Xbox360_XEX", "Compression"),
 			rp_sprintf(C_("RomData", "Unknown (0x%02X)"),
 				d->fileFormatInfo.compression_type));
 	}
@@ -1965,7 +1965,7 @@ int Xbox360_XEX::loadFieldData(void)
 		// Convert the game ratings.
 		RomFields::age_ratings_t age_ratings;
 		d->convertGameRatings(age_ratings, *pLdGameRatings);
-		d->fields->addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
+		d->fields.addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
 	}
 
 	// NOTE: If this is an XEXP with a delta patch instead of a
@@ -1978,7 +1978,7 @@ int Xbox360_XEX::loadFieldData(void)
 			// Add the fields.
 			const RomFields *const exeFields = pe_exe->fields();
 			if (exeFields) {
-				d->fields->addFields_romFields(exeFields, RomFields::TabOffset_AddTabs);
+				d->fields.addFields_romFields(exeFields, RomFields::TabOffset_AddTabs);
 			}
 		}
 
@@ -1987,13 +1987,13 @@ int Xbox360_XEX::loadFieldData(void)
 			// Add the fields.
 			const RomFields *const xdbfFields = pe_xdbf->fields();
 			if (xdbfFields) {
-				d->fields->addFields_romFields(xdbfFields, RomFields::TabOffset_AddTabs);
+				d->fields.addFields_romFields(xdbfFields, RomFields::TabOffset_AddTabs);
 			}
 		}
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

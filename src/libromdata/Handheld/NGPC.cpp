@@ -289,7 +289,7 @@ uint32_t NGPC::imgpf(ImageType imageType) const
 int NGPC::loadFieldData(void)
 {
 	RP_D(NGPC);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -302,20 +302,20 @@ int NGPC::loadFieldData(void)
 
 	// ROM header is read in the constructor.
 	const NGPC_RomHeader *const romHeader = &d->romHeader;
-	d->fields->reserve(6);	// Maximum of 6 fields.
+	d->fields.reserve(6);	// Maximum of 6 fields.
 
 	// Title
 	// NOTE: It's listed as ASCII. We'll use Latin-1.
-	d->fields->addField_string(C_("RomData", "Title"),
+	d->fields.addField_string(C_("RomData", "Title"),
 		latin1_to_utf8(romHeader->title, sizeof(romHeader->title)),
 		RomFields::STRF_TRIM_END);
 
 	// Product ID
-	d->fields->addField_string(C_("RomData", "Product ID"),
+	d->fields.addField_string(C_("RomData", "Product ID"),
 		rp_sprintf("NEOP%02X%02X", romHeader->id_code[1], romHeader->id_code[0]));
 
 	// Revision
-	d->fields->addField_string_numeric(C_("RomData", "Revision"),
+	d->fields.addField_string_numeric(C_("RomData", "Revision"),
 		romHeader->version, RomFields::Base::Dec, 2);
 
 	// System
@@ -324,13 +324,13 @@ int NGPC::loadFieldData(void)
 	};
 	vector<string> *const v_system_bitfield_names = RomFields::strArrayToVector(
 		system_bitfield_names, ARRAY_SIZE(system_bitfield_names));
-	d->fields->addField_bitfield(C_("NGPC", "System"),
+	d->fields.addField_bitfield(C_("NGPC", "System"),
 		v_system_bitfield_names, 0,
 			(d->romType == NGPCPrivate::RomType::NGPC ? 3 : 1));
 
 	// Entry point
 	const uint32_t entry_point = le32_to_cpu(romHeader->entry_point);
-	d->fields->addField_string_numeric(C_("NGPC", "Entry Point"),
+	d->fields.addField_string_numeric(C_("NGPC", "Entry Point"),
 		entry_point, RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
 
 	// Debug enabled?
@@ -346,14 +346,14 @@ int NGPC::loadFieldData(void)
 			break;
 	}
 	if (s_debug) {
-		d->fields->addField_string(C_("NGPC", "Debug Mode"), s_debug);
+		d->fields.addField_string(C_("NGPC", "Debug Mode"), s_debug);
 	} else {
-		d->fields->addField_string(C_("NGPC", "Debug Mode"),
+		d->fields.addField_string(C_("NGPC", "Debug Mode"),
 			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), entry_point >> 24));
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

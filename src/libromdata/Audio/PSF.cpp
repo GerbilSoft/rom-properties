@@ -492,7 +492,7 @@ const char *PSF::systemName(unsigned int type) const
 int PSF::loadFieldData(void)
 {
 	RP_D(PSF);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -509,7 +509,7 @@ int PSF::loadFieldData(void)
 	// PSF fields:
 	// - 1 regular field.
 	// - 11 fields in the "[TAG]" section.
-	d->fields->reserve(1+11);
+	d->fields.reserve(1+11);
 
 	// System
 	const char *sys_name = nullptr;
@@ -525,10 +525,10 @@ int PSF::loadFieldData(void)
 
 	const char *const system_title = C_("PSF", "System");
 	if (sys_name) {
-		d->fields->addField_string(system_title,
+		d->fields.addField_string(system_title,
 			dpgettext_expr(RP_I18N_DOMAIN, "PSF|System", sys_name));
 	} else {
-		d->fields->addField_string(system_title,
+		d->fields.addField_string(system_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), psf_version));
 	}
 
@@ -542,38 +542,38 @@ int PSF::loadFieldData(void)
 		// Title
 		auto iter = tags.find("title");
 		if (iter != tags.end()) {
-			d->fields->addField_string(C_("RomData|Audio", "Title"), iter->second);
+			d->fields.addField_string(C_("RomData|Audio", "Title"), iter->second);
 		}
 
 		// Artist
 		iter = tags.find("artist");
 		if (iter != tags.end()) {
-			d->fields->addField_string(C_("RomData|Audio", "Artist"), iter->second);
+			d->fields.addField_string(C_("RomData|Audio", "Artist"), iter->second);
 		}
 
 		// Game
 		iter = tags.find("game");
 		if (iter != tags.end()) {
-			d->fields->addField_string(C_("PSF", "Game"), iter->second);
+			d->fields.addField_string(C_("PSF", "Game"), iter->second);
 		}
 
 		// Release Date
 		// NOTE: The tag is "year", but it may be YYYY-MM-DD.
 		iter = tags.find("year");
 		if (iter != tags.end()) {
-			d->fields->addField_string(C_("RomData", "Release Date"), iter->second);
+			d->fields.addField_string(C_("RomData", "Release Date"), iter->second);
 		}
 
 		// Genre
 		iter = tags.find("genre");
 		if (iter != tags.end()) {
-			d->fields->addField_string(C_("RomData|Audio", "Genre"), iter->second);
+			d->fields.addField_string(C_("RomData|Audio", "Genre"), iter->second);
 		}
 
 		// Copyright
 		iter = tags.find("copyright");
 		if (iter != tags.end()) {
-			d->fields->addField_string(C_("RomData|Audio", "Copyright"), iter->second);
+			d->fields.addField_string(C_("RomData|Audio", "Copyright"), iter->second);
 		}
 
 		// Ripped By
@@ -582,19 +582,19 @@ int PSF::loadFieldData(void)
 		const char *const ripped_by_title = C_("PSF", "Ripped By");
 		iter = tags.find(ripped_by_tag);
 		if (iter != tags.end()) {
-			d->fields->addField_string(ripped_by_title, iter->second);
+			d->fields.addField_string(ripped_by_title, iter->second);
 		} else {
 			// Try "psfby" if the system-specific one isn't there.
 			iter = tags.find("psfby");
 			if (iter != tags.end()) {
-				d->fields->addField_string(ripped_by_title, iter->second);
+				d->fields.addField_string(ripped_by_title, iter->second);
 			}
 		}
 
 		// Volume (floating-point number)
 		iter = tags.find("volume");
 		if (iter != tags.end()) {
-			d->fields->addField_string(C_("PSF", "Volume"), iter->second);
+			d->fields.addField_string(C_("PSF", "Volume"), iter->second);
 		}
 
 		// Duration
@@ -608,25 +608,25 @@ int PSF::loadFieldData(void)
 		// Commas are also accepted.
 		iter = tags.find("length");
 		if (iter != tags.end()) {
-			d->fields->addField_string(C_("RomData|Audio", "Duration"), iter->second);
+			d->fields.addField_string(C_("RomData|Audio", "Duration"), iter->second);
 		}
 
 		// Fadeout duration
 		// Same format as duration.
 		iter = tags.find("fade");
 		if (iter != tags.end()) {
-			d->fields->addField_string(C_("PSF", "Fadeout Duration"), iter->second);
+			d->fields.addField_string(C_("PSF", "Fadeout Duration"), iter->second);
 		}
 
 		// Comment
 		iter = tags.find("comment");
 		if (iter != tags.end()) {
-			d->fields->addField_string(C_("RomData|Audio", "Comment"), iter->second);
+			d->fields.addField_string(C_("RomData|Audio", "Comment"), iter->second);
 		}
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

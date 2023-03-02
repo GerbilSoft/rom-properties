@@ -340,7 +340,7 @@ uint32_t Amiibo::imgpf(ImageType imageType) const
 int Amiibo::loadFieldData(void)
 {
 	RP_D(Amiibo);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -352,7 +352,7 @@ int Amiibo::loadFieldData(void)
 	}
 
 	// NTAG215 data
-	d->fields->reserve(10);	// Maximum of 10 fields.
+	d->fields.reserve(10);	// Maximum of 10 fields.
 
 	// Serial number
 
@@ -372,7 +372,7 @@ int Amiibo::loadFieldData(void)
 	}
 	*pBuf = 0;
 
-	d->fields->addField_string(C_("Amiibo", "NTAG215 Serial"),
+	d->fields.addField_string(C_("Amiibo", "NTAG215 Serial"),
 		latin1_to_utf8(buf, 7*2),
 		RomFields::STRF_MONOSPACE);
 
@@ -382,7 +382,7 @@ int Amiibo::loadFieldData(void)
 
 	// tr: amiibo ID. Represents the character and amiibo series.
 	// TODO: Link to https://amiibo.life/nfc/%08X-%08X
-	d->fields->addField_string(C_("Amiibo", "amiibo ID"),
+	d->fields.addField_string(C_("Amiibo", "amiibo ID"),
 		rp_sprintf("%08X-%08X", char_id, amiibo_id),
 		RomFields::STRF_MONOSPACE);
 
@@ -399,11 +399,11 @@ int Amiibo::loadFieldData(void)
 	};
 	const char *const amiibo_type_title = C_("Amiibo", "amiibo Type");
 	if ((char_id & 0xFF) < ARRAY_SIZE(amiibo_type_tbl)) {
-		d->fields->addField_string(amiibo_type_title,
+		d->fields.addField_string(amiibo_type_title,
 			dpgettext_expr(RP_I18N_DOMAIN, "Amiibo|Type", amiibo_type_tbl[char_id & 0xFF]));
 	} else {
 		// Invalid amiibo type.
-		d->fields->addField_string(amiibo_type_title,
+		d->fields.addField_string(amiibo_type_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), (char_id & 0xFF)));
 	}
 
@@ -412,17 +412,17 @@ int Amiibo::loadFieldData(void)
 
 	// Character series
 	const char *const char_series = pAmiiboData->lookup_char_series_name(char_id);
-	d->fields->addField_string(C_("Amiibo", "Character Series"),
+	d->fields.addField_string(C_("Amiibo", "Character Series"),
 		char_series ? char_series : C_("RomData", "Unknown"));
 
 	// Character name
 	const char *const char_name = pAmiiboData->lookup_char_name(char_id);
-	d->fields->addField_string(C_("Amiibo", "Character Name"),
+	d->fields.addField_string(C_("Amiibo", "Character Name"),
 		char_name ? char_name : C_("RomData", "Unknown"));
 
 	// amiibo series
 	const char *const amiibo_series = pAmiiboData->lookup_amiibo_series_name(amiibo_id);
-	d->fields->addField_string(C_("Amiibo", "amiibo Series"),
+	d->fields.addField_string(C_("Amiibo", "amiibo Series"),
 		amiibo_series ? amiibo_series : C_("RomData", "Unknown"));
 
 	// amiibo name, wave number, and release number.
@@ -430,25 +430,25 @@ int Amiibo::loadFieldData(void)
 	const char *const amiibo_name_title = C_("Amiibo", "amiibo Name");
 	const char *const amiibo_name = pAmiiboData->lookup_amiibo_series_data(amiibo_id, &release_no, &wave_no);
 	if (amiibo_name) {
-		d->fields->addField_string(amiibo_name_title, amiibo_name);
+		d->fields.addField_string(amiibo_name_title, amiibo_name);
 		if (wave_no != 0) {
-			d->fields->addField_string_numeric(C_("Amiibo", "amiibo Wave #"), wave_no);
+			d->fields.addField_string_numeric(C_("Amiibo", "amiibo Wave #"), wave_no);
 		}
 		if (release_no != 0) {
-			d->fields->addField_string_numeric(C_("Amiibo", "amiibo Release #"), release_no);
+			d->fields.addField_string_numeric(C_("Amiibo", "amiibo Release #"), release_no);
 		}
 	} else {
-		d->fields->addField_string(amiibo_name_title, C_("RomData", "Unknown"));
+		d->fields.addField_string(amiibo_name_title, C_("RomData", "Unknown"));
 	}
 
 	// tr: Credits for amiibo image downloads.
 	const string credits = rp_sprintf(
 		C_("Amiibo", "amiibo images provided by %s,\nthe Unofficial amiibo Database."),
 		"<a href=\"https://amiibo.life/\">amiibo.life</a>");
-	d->fields->addField_string(C_("Amiibo", "Credits"), credits, RomFields::STRF_CREDITS);
+	d->fields.addField_string(C_("Amiibo", "Credits"), credits, RomFields::STRF_CREDITS);
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

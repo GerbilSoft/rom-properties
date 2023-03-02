@@ -865,7 +865,7 @@ int ELFPrivate::addPtDynamicFields(void)
 	if (has_dtag[DT_FLAGS] || has_flags1 || (strtab.size() &&
 			(needed.size() != 0 || has_dtag[DT_SONAME] || has_dtag[DT_RPATH] || has_dtag[DT_RUNPATH]))) {
 		// Add the PT_DYNAMIC tab.
-		fields->addTab("PT_DYNAMIC");
+		fields.addTab("PT_DYNAMIC");
 
 		if (has_dtag[DT_FLAGS]) {
 			// DT_FLAGS
@@ -877,7 +877,7 @@ int ELFPrivate::addPtDynamicFields(void)
 			};
 			vector<string> *const v_dt_flags_names = RomFields::strArrayToVector(
 				dt_flags_names, ARRAY_SIZE(dt_flags_names));
-			fields->addField_bitfield("DT_FLAGS",
+			fields.addField_bitfield("DT_FLAGS",
 				v_dt_flags_names, 3, val_dtag[DT_FLAGS]);
 		}
 
@@ -902,20 +902,20 @@ int ELFPrivate::addPtDynamicFields(void)
 			};
 			vector<string> *const v_dt_flags_1_names = RomFields::strArrayToVector(
 				dt_flags_1_names, ARRAY_SIZE(dt_flags_1_names));
-			fields->addField_bitfield("DT_FLAGS_1",
+			fields.addField_bitfield("DT_FLAGS_1",
 				v_dt_flags_1_names, 3, val_flags1);
 		}
 
 		assert(!has_dtag[DT_SONAME] || val_dtag[DT_SONAME] < strtab.size());
 		if (has_dtag[DT_SONAME] && val_dtag[DT_SONAME] < strtab.size())
-			fields->addField_string("DT_SONAME", &strtab[val_dtag[DT_SONAME]]);
+			fields.addField_string("DT_SONAME", &strtab[val_dtag[DT_SONAME]]);
 
 		assert(!has_dtag[DT_SONAME] || val_dtag[DT_SONAME] < strtab.size());
 		if (has_dtag[DT_RPATH] && val_dtag[DT_RPATH] < strtab.size())
-			fields->addField_string("DT_RPATH", &strtab[val_dtag[DT_RPATH]]);
+			fields.addField_string("DT_RPATH", &strtab[val_dtag[DT_RPATH]]);
 
 		if (has_dtag[DT_RUNPATH] && val_dtag[DT_RUNPATH] < strtab.size())
-			fields->addField_string("DT_RUNPATH", &strtab[val_dtag[DT_RUNPATH]]);
+			fields.addField_string("DT_RUNPATH", &strtab[val_dtag[DT_RUNPATH]]);
 
 		if (strtab.size() != 0 && needed.size() != 0) {
 			auto vv_data = new RomFields::ListData_t();
@@ -938,7 +938,7 @@ int ELFPrivate::addPtDynamicFields(void)
 			params.flags = 0;
 			params.headers = v_field_names;
 			params.data.single = vv_data;
-			fields->addField_listData("DT_NEEDED", &params);
+			fields.addField_listData("DT_NEEDED", &params);
 		}
 	}
 
@@ -1087,7 +1087,7 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 				return (row1[0].compare(row2[0]) < 0);
 			});
 
-		fields->addTab(name);
+		fields.addTab(name);
 
 		static const char *const field_names[] = {
 			NOP_C_("ELF|Symbol", "Name"),
@@ -1105,7 +1105,7 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 		params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;
 		params.headers = v_field_names;
 		params.data.single = vv_data;
-		fields->addField_listData(name, &params);
+		fields.addField_listData(name, &params);
 	};
 
 	auto read_strtab = [this](ao::uvector<uint8_t> &buf, const symtab_info_t &info) -> span<const char> {
@@ -1456,7 +1456,7 @@ const char *ELF::systemName(unsigned int type) const
 int ELF::loadFieldData(void)
 {
 	RP_D(ELF);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -1469,10 +1469,10 @@ int ELF::loadFieldData(void)
 
 	// Primary ELF header.
 	const Elf_PrimaryEhdr *const primary = &d->Elf_Header.primary;
-	d->fields->reserve(12);	// Maximum of 12 fields. [3 for machine subtype] [TODO verify this]
+	d->fields.reserve(12);	// Maximum of 12 fields. [3 for machine subtype] [TODO verify this]
 
-	d->fields->reserveTabs(2);
-	d->fields->setTabName(0, "ELF");
+	d->fields.reserveTabs(2);
+	d->fields.setTabName(0, "ELF");
 
 	// NOTE: Executable type is used as File Type.
 
@@ -1487,23 +1487,23 @@ int ELF::loadFieldData(void)
 	if (d->elfFormat > ELFPrivate::Elf_Format::Unknown &&
 	    (int)d->elfFormat < ARRAY_SIZE_I(exec_type_tbl))
 	{
-		d->fields->addField_string(format_title,
+		d->fields.addField_string(format_title,
 			dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType", exec_type_tbl[(int)d->elfFormat]));
 	}
 	else
 	{
 		// TODO: Show individual values.
 		// NOTE: This shouldn't happen...
-		d->fields->addField_string(format_title, C_("RomData", "Unknown"));
+		d->fields.addField_string(format_title, C_("RomData", "Unknown"));
 	}
 
 	// CPU.
 	const char *const cpu_title = C_("ELF", "CPU");
 	const char *const cpu = ELFData::lookup_cpu(primary->e_machine);
 	if (cpu) {
-		d->fields->addField_string(cpu_title, cpu);
+		d->fields.addField_string(cpu_title, cpu);
 	} else {
-		d->fields->addField_string(cpu_title,
+		d->fields.addField_string(cpu_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%04X)"), primary->e_machine));
 	}
 
@@ -1542,7 +1542,7 @@ int ELF::loadFieldData(void)
 			}
 
 			if (m68k_insn) {
-				d->fields->addField_string(C_("ELF", "Instruction Set"), m68k_insn);
+				d->fields.addField_string(C_("ELF", "Instruction Set"), m68k_insn);
 			}
 			break;
 		}
@@ -1570,7 +1570,7 @@ int ELF::loadFieldData(void)
 				NOP_C_("ELF|SPARC_MM", "Relaxed Memory Ordering"),
 				NOP_C_("ELF|SPARC_MM", "Invalid"),
 			};
-			d->fields->addField_string(C_("ELF", "Memory Ordering"),
+			d->fields.addField_string(C_("ELF", "Memory Ordering"),
 				dpgettext_expr(RP_I18N_DOMAIN, "ELF|SPARC_MM", sparc_mm[e_flags & 3]));
 
 			// SPARC CPU flags. (rshifted by 8)
@@ -1588,7 +1588,7 @@ int ELF::loadFieldData(void)
 			};
 			vector<string> *const v_sparc_flags_names = RomFields::strArrayToVector_i18n(
 				"ELF|SPARCFlags", sparc_flags_names, ARRAY_SIZE(sparc_flags_names));
-			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
+			d->fields.addField_bitfield(C_("ELF", "CPU Flags"),
 				v_sparc_flags_names, 4, (e_flags >> 8));
 			break;
 		}
@@ -1597,7 +1597,7 @@ int ELF::loadFieldData(void)
 		case EM_MIPS_RS3_LE: {
 			// 32-bit: O32 vs. N32
 			if (primary->e_class == ELFCLASS32) {
-				d->fields->addField_string(C_("ELF", "MIPS ABI"),
+				d->fields.addField_string(C_("ELF", "MIPS ABI"),
 					(e_flags & 0x20) ? "N32" : "O32");
 			}
 
@@ -1610,9 +1610,9 @@ int ELF::loadFieldData(void)
 			const unsigned int level = (e_flags >> 28);
 			const char *const cpu_level_title = C_("ELF", "CPU Level");
 			if (level < ARRAY_SIZE(mips_levels)) {
-				d->fields->addField_string(cpu_level_title, mips_levels[level]);
+				d->fields.addField_string(cpu_level_title, mips_levels[level]);
 			} else {
-				d->fields->addField_string(cpu_level_title,
+				d->fields.addField_string(cpu_level_title,
 					rp_sprintf(C_("RomData", "Unknown (0x%02X)"), level));
 			}
 
@@ -1634,7 +1634,7 @@ int ELF::loadFieldData(void)
 			};
 			vector<string> *const v_mips_flags_names = RomFields::strArrayToVector_i18n(
 				"ELF|MIPSFlags", mips_flags_names, ARRAY_SIZE(mips_flags_names));
-			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
+			d->fields.addField_bitfield(C_("ELF", "CPU Flags"),
 				v_mips_flags_names, 4, mips_cpu_flags);
 			break;
 		}
@@ -1660,7 +1660,7 @@ int ELF::loadFieldData(void)
 			if (e_flags & 0x0008) {
 				parisc_version += " (LP64)";
 			}
-			d->fields->addField_string(C_("ELF", "PA-RISC Version"), parisc_version);
+			d->fields.addField_string(C_("ELF", "PA-RISC Version"), parisc_version);
 
 			// PA-RISC CPU flags.
 			static const char *const parisc_flags_names[] = {
@@ -1675,7 +1675,7 @@ int ELF::loadFieldData(void)
 			};
 			vector<string> *const v_parisc_flags_names = RomFields::strArrayToVector_i18n(
 				"ELF|PARISCFlags", parisc_flags_names, ARRAY_SIZE(parisc_flags_names));
-			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
+			d->fields.addField_bitfield(C_("ELF", "CPU Flags"),
 				v_parisc_flags_names, 4, ((e_flags >> 16) & 0x7F));
 			break;
 		}
@@ -1705,7 +1705,7 @@ int ELF::loadFieldData(void)
 			char arm_eabi[32];
 			snprintf(arm_eabi, sizeof(arm_eabi), "EABI%u%s",
 				(e_flags >> 24), arm_byteorder);
-			d->fields->addField_string(C_("ELF", "ARM EABI"), arm_eabi);
+			d->fields.addField_string(C_("ELF", "ARM EABI"), arm_eabi);
 
 			// ARM CPU flags.
 			// NOTE: Most of these are deprecated. (pre-EABI)
@@ -1725,7 +1725,7 @@ int ELF::loadFieldData(void)
 			};
 			vector<string> *const v_arm_flags_names = RomFields::strArrayToVector_i18n(
 				"ELF|ARMFlags", arm_flags_names, ARRAY_SIZE(arm_flags_names));
-			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
+			d->fields.addField_bitfield(C_("ELF", "CPU Flags"),
 				v_arm_flags_names, 4, (e_flags & 0xFFF));
 			break;
 		}
@@ -1742,7 +1742,7 @@ int ELF::loadFieldData(void)
 			};
 			vector<string> *const v_alpha_flags_names = RomFields::strArrayToVector_i18n(
 				"ELF|AlphaFlags", alpha_flags_names, ARRAY_SIZE(alpha_flags_names));
-			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
+			d->fields.addField_bitfield(C_("ELF", "CPU Flags"),
 				v_alpha_flags_names, 2, (e_flags & 0x03));
 			break;
 		}
@@ -1769,7 +1769,7 @@ int ELF::loadFieldData(void)
 				s_cpu_subtype = superh_cpu_subtype_tbl[cpu_subtype];
 			}
 			if (s_cpu_subtype) {
-				d->fields->addField_string(C_("ELF", "CPU Subtype"), s_cpu_subtype);
+				d->fields.addField_string(C_("ELF", "CPU Subtype"), s_cpu_subtype);
 			}
 
 			// SuperH CPU flags. (rshifted by 8)
@@ -1782,7 +1782,7 @@ int ELF::loadFieldData(void)
 			};
 			vector<string> *const v_superh_flags_names = RomFields::strArrayToVector(
 				superh_flags_names, ARRAY_SIZE(superh_flags_names));
-			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
+			d->fields.addField_bitfield(C_("ELF", "CPU Flags"),
 				v_superh_flags_names, 2, (e_flags >> 8));
 			break;
 		}
@@ -1804,13 +1804,13 @@ int ELF::loadFieldData(void)
 				s_cpu_subtype = arc_cpu_subtypes[cpu_subtype];
 			}
 			if (s_cpu_subtype) {
-				d->fields->addField_string(C_("ELF", "CPU Subtype"), s_cpu_subtype);
+				d->fields.addField_string(C_("ELF", "CPU Subtype"), s_cpu_subtype);
 			}
 
 			// ARC Linux specific ABIs.
 			const uint8_t arc_linux_osabi = (e_flags >> 8) & 0x0F;
 			if (arc_linux_osabi != 1 && arc_linux_osabi <= 4) {
-				d->fields->addField_string(C_("ELF", "Linux OSABI"),
+				d->fields.addField_string(C_("ELF", "Linux OSABI"),
 					rp_sprintf("ARC Linux OSABI v%u", arc_linux_osabi));
 			}
 
@@ -1821,7 +1821,7 @@ int ELF::loadFieldData(void)
 			};
 			vector<string> *const v_arc_flags_names = RomFields::strArrayToVector(
 				arc_flags_names, ARRAY_SIZE(arc_flags_names));
-			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
+			d->fields.addField_bitfield(C_("ELF", "CPU Flags"),
 				v_arc_flags_names, 1, ((e_flags >> 8) & 1));
 			break;
 		}
@@ -1882,7 +1882,7 @@ int ELF::loadFieldData(void)
 			}
 
 			if (!s_cf_isa.empty()) {
-				d->fields->addField_string(C_("ELF", "ColdFire ISA"), s_cf_isa);
+				d->fields.addField_string(C_("ELF", "ColdFire ISA"), s_cf_isa);
 			}
 			break;
 		}
@@ -1907,7 +1907,7 @@ int ELF::loadFieldData(void)
 			}
 
 			if (s_avr_subtype[0] != '\0') {
-				d->fields->addField_string(C_("ELF", "CPU Subtype"), s_avr_subtype);
+				d->fields.addField_string(C_("ELF", "CPU Subtype"), s_avr_subtype);
 			}
 			break;
 		}
@@ -1921,7 +1921,7 @@ int ELF::loadFieldData(void)
 			const unsigned int idx = (e_flags >> 28) & 0x03;
 			if (idx < ARRAY_SIZE(m32r_insn_set_tbl)) {
 				const char *const m32r_insn_set = m32r_insn_set_tbl[idx];
-				d->fields->addField_string(C_("ELF", "Instruction Set"), m32r_insn_set);
+				d->fields.addField_string(C_("ELF", "Instruction Set"), m32r_insn_set);
 			}
 
 			// M32R new instructions field.
@@ -1931,7 +1931,7 @@ int ELF::loadFieldData(void)
 			};
 			vector<string> *const v_m32r_flags_names = RomFields::strArrayToVector_i18n(
 				"ELF|M32RFlags", m32r_flags_names, ARRAY_SIZE(m32r_flags_names));
-			d->fields->addField_bitfield(C_("ELF", "M32R New Insns"),
+			d->fields.addField_bitfield(C_("ELF", "M32R New Insns"),
 				v_m32r_flags_names, 4, ((e_flags >> 16) & 0x0FFF));
 
 			// TODO: 4-bit m32r ignore to check field? (0x0000000F)
@@ -1954,7 +1954,7 @@ int ELF::loadFieldData(void)
 			}
 
 			if (s_msp430_subtype[0] != '\0') {
-				d->fields->addField_string(C_("ELF", "CPU Subtype"), s_msp430_subtype);
+				d->fields.addField_string(C_("ELF", "CPU Subtype"), s_msp430_subtype);
 			}
 			break;
 		}
@@ -1972,7 +1972,7 @@ int ELF::loadFieldData(void)
 			};
 			vector<string> *const v_blackfin_flags_names = RomFields::strArrayToVector_i18n(
 				"ELF|BlackfinFlags", blackfin_flags_names, ARRAY_SIZE(blackfin_flags_names));
-			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
+			d->fields.addField_bitfield(C_("ELF", "CPU Flags"),
 				v_blackfin_flags_names, 2, (e_flags & 0x33));
 			break;
 		}
@@ -1995,7 +1995,7 @@ int ELF::loadFieldData(void)
 					break;
 			}
 			if (m32c_subtype) {
-				d->fields->addField_string(C_("ELF", "CPU Subtype"), m32c_subtype);
+				d->fields.addField_string(C_("ELF", "CPU Subtype"), m32c_subtype);
 			}
 			break;
 		}
@@ -2015,7 +2015,7 @@ int ELF::loadFieldData(void)
 				z80_insn_set = "eZ80 (ADL mode)";
 			}
 			if (z80_insn_set) {
-				d->fields->addField_string(C_("ELF", "Instruction Set"), z80_insn_set);
+				d->fields.addField_string(C_("ELF", "Instruction Set"), z80_insn_set);
 			}
 			break;
 		}
@@ -2030,7 +2030,7 @@ int ELF::loadFieldData(void)
 				NOP_C_("ELF|RISCVFPABI", "Double-Float"),
 				NOP_C_("ELF|RISCVFPABI", "Quad-Float"),
 			};
-			d->fields->addField_string(C_("ELF", "Floating-Point ABI"),
+			d->fields.addField_string(C_("ELF", "Floating-Point ABI"),
 				dpgettext_expr(RP_I18N_DOMAIN, "ELF|RISCVFPABI", riscv_fpabi_tbl[((e_flags & 0x0006) >> 1)]));
 
 			// RISC-V CPU flags.
@@ -2040,7 +2040,7 @@ int ELF::loadFieldData(void)
 			};
 			vector<string> *const v_riscv_flags_names = RomFields::strArrayToVector(
 				riscv_flags_names, ARRAY_SIZE(riscv_flags_names));
-			d->fields->addField_bitfield(C_("ELF", "CPU Flags"),
+			d->fields.addField_bitfield(C_("ELF", "CPU Flags"),
 				v_riscv_flags_names, 2, (e_flags & 0x0F));
 			break;
 		}
@@ -2054,21 +2054,21 @@ int ELF::loadFieldData(void)
 	const char *const osabi_title = C_("ELF", "OS ABI");
 	const char *const osabi = ELFData::lookup_osabi(primary->e_osabi);
 	if (osabi) {
-		d->fields->addField_string(osabi_title, osabi);
+		d->fields.addField_string(osabi_title, osabi);
 	} else {
-		d->fields->addField_string(osabi_title,
+		d->fields.addField_string(osabi_title,
 			rp_sprintf(C_("RomData", "Unknown (%u)"), primary->e_osabi));
 	}
 
 	// ABI version.
 	if (!d->isWiiU) {
-		d->fields->addField_string_numeric(C_("ELF", "ABI Version"),
+		d->fields.addField_string_numeric(C_("ELF", "ABI Version"),
 			primary->e_osabiversion);
 	}
 
 	// Linkage. (Executables only)
 	if (d->fileType == FileType::Executable) {
-		d->fields->addField_string(C_("ELF", "Linkage"),
+		d->fields.addField_string(C_("ELF", "Linkage"),
 			d->pt_dynamic.p_offset != 0
 				? C_("ELF|Linkage", "Dynamic")
 				: C_("ELF|Linkage", "Static"));
@@ -2076,12 +2076,12 @@ int ELF::loadFieldData(void)
 
 	// Interpreter.
 	if (!d->interpreter.empty()) {
-		d->fields->addField_string(C_("ELF", "Interpreter"), d->interpreter);
+		d->fields.addField_string(C_("ELF", "Interpreter"), d->interpreter);
 	}
 
 	// Operating system.
 	if (!d->osVersion.empty()) {
-		d->fields->addField_string(C_("ELF", "OS Version"), d->osVersion);
+		d->fields.addField_string(C_("ELF", "OS Version"), d->osVersion);
 	}
 
 	// Entry point.
@@ -2100,7 +2100,7 @@ int ELF::loadFieldData(void)
 			entry_point = rp_sprintf(C_("ELF", "%s (Position-Independent)"),
 				entry_point.c_str());
 		}
-		d->fields->addField_string(C_("ELF", "Entry Point"), entry_point);
+		d->fields.addField_string(C_("ELF", "Entry Point"), entry_point);
 	}
 
 	// Build ID.
@@ -2108,7 +2108,7 @@ int ELF::loadFieldData(void)
 		// TODO: Put the build ID type in the field itself.
 		// Using field name for now.
 		const string fieldName = rp_sprintf("BuildID[%s]", (d->build_id_type ? d->build_id_type : "unknown"));
-		d->fields->addField_string_hexdump(fieldName.c_str(),
+		d->fields.addField_string_hexdump(fieldName.c_str(),
 			d->build_id.data(), d->build_id.size(),
 			RomFields::STRF_HEX_LOWER | RomFields::STRF_HEXDUMP_NO_SPACES);
 	}
@@ -2122,7 +2122,7 @@ int ELF::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 }

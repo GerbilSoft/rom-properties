@@ -808,7 +808,7 @@ uint32_t DMG::imgpf(ImageType imageType) const
 int DMG::loadFieldData(void)
 {
 	RP_D(DMG);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -825,11 +825,11 @@ int DMG::loadFieldData(void)
 	// DMG ROM header:
 	// - 12 regular fields.
 	// - 5 fields for the GBX footer.
-	d->fields->reserve(12+5);
+	d->fields.reserve(12+5);
 
 	// Reserve at least 3 tabs:
 	// DMG, GBX, GBS
-	d->fields->reserveTabs(3);
+	d->fields.reserveTabs(3);
 
 	// Title and game ID
 	// NOTE: These have to be handled at the same time because
@@ -837,8 +837,8 @@ int DMG::loadFieldData(void)
 	// for the CGB flag and the game ID.
 	string s_title, s_gameID;
 	d->getTitleAndGameID(s_title, s_gameID);
-	d->fields->addField_string(C_("RomData", "Title"), s_title);
-	d->fields->addField_string(C_("RomData", "Game ID"),
+	d->fields.addField_string(C_("RomData", "Title"), s_title);
+	d->fields.addField_string(C_("RomData", "Game ID"),
 		!s_gameID.empty() ? s_gameID.c_str() : C_("RomData", "Unknown"));
 
 	// System
@@ -848,16 +848,16 @@ int DMG::loadFieldData(void)
 	};
 	vector<string> *const v_system_bitfield_names = RomFields::strArrayToVector(
 		system_bitfield_names, ARRAY_SIZE(system_bitfield_names));
-	d->fields->addField_bitfield(C_("DMG", "System"),
+	d->fields.addField_bitfield(C_("DMG", "System"),
 		v_system_bitfield_names, 0, dmg_system);
 
 	// Set the tab name based on the system.
 	if (dmg_system & DMGPrivate::DMG_SYSTEM_CGB) {
-		d->fields->setTabName(0, "CGB");
+		d->fields.setTabName(0, "CGB");
 	} else if (dmg_system & DMGPrivate::DMG_SYSTEM_SGB) {
-		d->fields->setTabName(0, "SGB");
+		d->fields.setTabName(0, "SGB");
 	} else {
-		d->fields->setTabName(0, "DMG");
+		d->fields.setTabName(0, "DMG");
 	}
 
 	// Entry Point
@@ -872,12 +872,12 @@ int DMG::loadFieldData(void)
 		// This is the "standard" way of doing the entry point.
 		// NOTE: Some titles use a different opcode instead of NOP.
 		const uint16_t entry_address = (romHeader->entry[2] | (romHeader->entry[3] << 8));
-		d->fields->addField_string_numeric(entry_point_title,
+		d->fields.addField_string_numeric(entry_point_title,
 			entry_address, RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 	} else if (romHeader->entry[0] == 0xC3) {
 		// JP nnnn without a NOP.
 		const uint16_t entry_address = (romHeader->entry[1] | (romHeader->entry[2] << 8));
-		d->fields->addField_string_numeric(entry_point_title,
+		d->fields.addField_string_numeric(entry_point_title,
 			entry_address, RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 	} else if (romHeader->entry[0] == 0x18) {
 		// JR nnnn
@@ -886,18 +886,18 @@ int DMG::loadFieldData(void)
 		// Current PC: 0x100
 		// Add displacement, plus 2.
 		const uint16_t entry_address = 0x100 + disp + 2;
-		d->fields->addField_string_numeric(entry_point_title,
+		d->fields.addField_string_numeric(entry_point_title,
 			entry_address, RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 	} else {
-		d->fields->addField_string_hexdump(entry_point_title,
+		d->fields.addField_string_hexdump(entry_point_title,
 			romHeader->entry, 4, RomFields::STRF_MONOSPACE);
 	}
 
 	// Publisher
-	d->fields->addField_string(C_("RomData", "Publisher"), d->getPublisher());
+	d->fields.addField_string(C_("RomData", "Publisher"), d->getPublisher());
 
 	// Hardware
-	d->fields->addField_string(C_("DMG", "Hardware"),
+	d->fields.addField_string(C_("DMG", "Hardware"),
 		DMGPrivate::dmg_hardware_names[(int)DMGPrivate::CartType(romHeader->cart_type).hardware]);
 
 	// Features
@@ -910,23 +910,23 @@ int DMG::loadFieldData(void)
 	};
 	vector<string> *const v_feature_bitfield_names = RomFields::strArrayToVector_i18n(
 		"DMG|Features", feature_bitfield_names, ARRAY_SIZE(feature_bitfield_names));
-	d->fields->addField_bitfield(C_("DMG", "Features"),
+	d->fields.addField_bitfield(C_("DMG", "Features"),
 		v_feature_bitfield_names, 3, DMGPrivate::CartType(romHeader->cart_type).features);
 
 	// ROM Size
 	const char *const rom_size_title = C_("DMG", "ROM Size");
 	const int rom_size = DMGPrivate::RomSize(romHeader->rom_size);
 	if (rom_size < 0) {
-		d->fields->addField_string(rom_size_title, C_("DMG", "Unknown"));
+		d->fields.addField_string(rom_size_title, C_("DMG", "Unknown"));
 	} else {
 		if (rom_size > 32) {
 			const int banks = rom_size / 16;
-			d->fields->addField_string(rom_size_title,
+			d->fields.addField_string(rom_size_title,
 				rp_sprintf_p(NC_("DMG", "%1$u KiB (%2$u bank)", "%1$u KiB (%2$u banks)", banks),
 					static_cast<unsigned int>(rom_size),
 					static_cast<unsigned int>(banks)));
 		} else {
-			d->fields->addField_string(rom_size_title,
+			d->fields.addField_string(rom_size_title,
 				rp_sprintf(C_("DMG", "%u KiB"), static_cast<unsigned int>(rom_size)));
 		}
 	}
@@ -934,26 +934,26 @@ int DMG::loadFieldData(void)
 	// RAM Size
 	const char *const ram_size_title = C_("DMG", "RAM Size");
 	if (romHeader->ram_size >= ARRAY_SIZE(DMGPrivate::dmg_ram_size)) {
-		d->fields->addField_string(ram_size_title, C_("RomData", "Unknown"));
+		d->fields.addField_string(ram_size_title, C_("RomData", "Unknown"));
 	} else {
 		const uint8_t ram_size = DMGPrivate::dmg_ram_size[romHeader->ram_size];
 		if (ram_size == 0 &&
 		    DMGPrivate::CartType(romHeader->cart_type).hardware == DMGPrivate::DMG_Hardware::MBC2)
 		{
-			d->fields->addField_string(ram_size_title,
+			d->fields.addField_string(ram_size_title,
 				// tr: MBC2 internal memory - Not really RAM, but whatever.
 				C_("DMG", "512 x 4 bits"));
 		} else if(ram_size == 0) {
-			d->fields->addField_string(ram_size_title, C_("DMG", "No RAM"));
+			d->fields.addField_string(ram_size_title, C_("DMG", "No RAM"));
 		} else {
 			if (ram_size > 8) {
 				const int banks = ram_size / 8;
-				d->fields->addField_string(ram_size_title,
+				d->fields.addField_string(ram_size_title,
 					rp_sprintf_p(NC_("DMG", "%1$u KiB (%2$u bank)", "%1$u KiB (%2$u banks)", banks),
 						static_cast<unsigned int>(ram_size),
 						static_cast<unsigned int>(banks)));
 			} else {
-				d->fields->addField_string(ram_size_title,
+				d->fields.addField_string(ram_size_title,
 					rp_sprintf(C_("DMG", "%u KiB"), static_cast<unsigned int>(ram_size)));
 			}
 		}
@@ -963,22 +963,22 @@ int DMG::loadFieldData(void)
 	const char *const region_code_title = C_("RomData", "Region Code");
 	switch (romHeader->region) {
 		case 0:
-			d->fields->addField_string(region_code_title,
+			d->fields.addField_string(region_code_title,
 				C_("Region|DMG", "Japanese"));
 			break;
 		case 1:
-			d->fields->addField_string(region_code_title,
+			d->fields.addField_string(region_code_title,
 				C_("Region|DMG", "Non-Japanese"));
 			break;
 		default:
 			// Invalid value.
-			d->fields->addField_string(region_code_title,
+			d->fields.addField_string(region_code_title,
 				rp_sprintf(C_("DMG", "0x%02X (INVALID)"), romHeader->region));
 			break;
 	}
 
 	// Revision
-	d->fields->addField_string_numeric(C_("RomData", "Revision"),
+	d->fields.addField_string_numeric(C_("RomData", "Revision"),
 		romHeader->version, RomFields::Base::Dec, 2);
 
 	// Header checksum.
@@ -993,11 +993,11 @@ int DMG::loadFieldData(void)
 
 	const char *const checksum_title = C_("RomData", "Checksum");
 	if (checksum - romHeader->header_checksum != 0) {
-		d->fields->addField_string(checksum_title,
+		d->fields.addField_string(checksum_title,
 			rp_sprintf_p(C_("DMG", "0x%1$02X (INVALID; should be 0x%2$02X)"),
 				romHeader->header_checksum, checksum));
 	} else {
-		d->fields->addField_string(checksum_title,
+		d->fields.addField_string(checksum_title,
 			rp_sprintf(C_("DMG", "0x%02X (valid)"), checksum));
 	}
 
@@ -1005,11 +1005,11 @@ int DMG::loadFieldData(void)
 	const GBX_Footer *const gbxFooter = &d->gbxFooter;
 	if (gbxFooter->magic == cpu_to_be32(GBX_MAGIC)) {
 		// GBX footer is present.
-		d->fields->addTab("GBX");
+		d->fields.addTab("GBX");
 
 		// GBX version.
 		// TODO: Do things based on the version number?
-		d->fields->addField_string(C_("DMG", "GBX Version"),
+		d->fields.addField_string(C_("DMG", "GBX Version"),
 			rp_sprintf_p("%1$u.%2$u",
 				be32_to_cpu(gbxFooter->version.major),
 				be32_to_cpu(gbxFooter->version.minor)));
@@ -1061,7 +1061,7 @@ int DMG::loadFieldData(void)
 		}
 
 		if (s_mapper) {
-			d->fields->addField_string(C_("DMG", "Mapper"), s_mapper);
+			d->fields.addField_string(C_("DMG", "Mapper"), s_mapper);
 		} else {
 			// If the mapper ID is all printable characters, print the mapper as text.
 			// Otherwise, print a hexdump.
@@ -1071,12 +1071,12 @@ int DMG::loadFieldData(void)
 			    ISPRINT(gbxFooter->mapper[3]))
 			{
 				// All printable.
-				d->fields->addField_string(C_("DMG", "Mapper"),
+				d->fields.addField_string(C_("DMG", "Mapper"),
 					latin1_to_utf8(gbxFooter->mapper, sizeof(gbxFooter->mapper)),
 					RomFields::STRF_MONOSPACE);
 			} else {
 				// Not printable. Print a hexdump.
-				d->fields->addField_string_hexdump(C_("DMG", "Mapper"),
+				d->fields.addField_string_hexdump(C_("DMG", "Mapper"),
 					reinterpret_cast<const uint8_t*>(&gbxFooter->mapper[0]),
 					sizeof(gbxFooter->mapper),
 					RomFields::STRF_MONOSPACE);
@@ -1106,16 +1106,16 @@ int DMG::loadFieldData(void)
 		};
 		vector<string> *const v_gbx_feature_bitfield_names = RomFields::strArrayToVector_i18n(
 			"DMG|Features", gbx_feature_bitfield_names, ARRAY_SIZE(gbx_feature_bitfield_names));
-		d->fields->addField_bitfield(C_("DMG", "Features"),
+		d->fields.addField_bitfield(C_("DMG", "Features"),
 			v_gbx_feature_bitfield_names, 0, gbx_features);
 
 		// ROM size, in bytes. (formatted as KiB)
-		d->fields->addField_string(C_("DMG", "ROM Size"),
+		d->fields.addField_string(C_("DMG", "ROM Size"),
 			formatFileSizeKiB(be32_to_cpu(gbxFooter->rom_size)));
 
 		// RAM size, in bytes.
 		// TODO: Use formatFileSize() instead?
-		d->fields->addField_string(C_("DMG", "RAM Size"),
+		d->fields.addField_string(C_("DMG", "RAM Size"),
 			formatFileSizeKiB(be32_to_cpu(gbxFooter->ram_size)));
 	}
 
@@ -1148,7 +1148,7 @@ int DMG::loadFieldData(void)
 						assert(gbsFields != nullptr);
 						assert(!gbsFields->empty());
 						if (gbsFields && !gbsFields->empty()) {
-							d->fields->addFields_romFields(gbsFields,
+							d->fields.addFields_romFields(gbsFields,
 								RomFields::TabOffset_AddTabs);
 						}
 					}
@@ -1160,7 +1160,7 @@ int DMG::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

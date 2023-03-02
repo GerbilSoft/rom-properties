@@ -324,7 +324,7 @@ vector<RomData::ImageSizeDef> CBMCart::supportedImageSizes_static(ImageType imag
 int CBMCart::loadFieldData(void)
 {
 	RP_D(CBMCart);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -337,11 +337,11 @@ int CBMCart::loadFieldData(void)
 
 	// ROM header is read in the constructor.
 	const CBM_CRTHeader *const romHeader = &d->romHeader;
-	d->fields->reserve(2);	// Maximum of 2 fields.
+	d->fields.reserve(2);	// Maximum of 2 fields.
 
 	// Title
 	if (romHeader->title[0] != '\0') {
-		d->fields->addField_string(C_("RomData", "Title"),
+		d->fields.addField_string(C_("RomData", "Title"),
 			cp1252_to_utf8(romHeader->title, sizeof(romHeader->title)),
 			RomFields::STRF_TRIM_END);
 	}
@@ -414,15 +414,15 @@ int CBMCart::loadFieldData(void)
 	if (!b_noType) {
 		const char *const s_type_title = C_("RomData", "Type");
 		if (s_type != nullptr) {
-			d->fields->addField_string(s_type_title, s_type);
+			d->fields.addField_string(s_type_title, s_type);
 		} else {
-			d->fields->addField_string(s_type_title,
+			d->fields.addField_string(s_type_title,
 				rp_sprintf(C_("RomData", "Unknown (%u)"), type));
 		}
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

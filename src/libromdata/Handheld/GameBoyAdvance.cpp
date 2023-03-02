@@ -326,7 +326,7 @@ uint32_t GameBoyAdvance::imgpf(ImageType imageType) const
 int GameBoyAdvance::loadFieldData(void)
 {
 	RP_D(GameBoyAdvance);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -339,10 +339,10 @@ int GameBoyAdvance::loadFieldData(void)
 
 	// ROM header is read in the constructor.
 	const GBA_RomHeader *const romHeader = &d->romHeader;
-	d->fields->reserve(7);	// Maximum of 7 fields.
+	d->fields.reserve(7);	// Maximum of 7 fields.
 
 	// Title
-	d->fields->addField_string(C_("RomData", "Title"),
+	d->fields.addField_string(C_("RomData", "Title"),
 		cpN_to_utf8(437, romHeader->title, sizeof(romHeader->title)));
 
 	// Game ID
@@ -355,13 +355,13 @@ int GameBoyAdvance::loadFieldData(void)
 			: '_');
 	}
 	id6[6] = 0;
-	d->fields->addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id6, 6));
+	d->fields.addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id6, 6));
 
 	// Publisher
-	d->fields->addField_string(C_("RomData", "Publisher"), d->getPublisher());
+	d->fields.addField_string(C_("RomData", "Publisher"), d->getPublisher());
 
 	// ROM version
-	d->fields->addField_string_numeric(C_("RomData", "Revision"),
+	d->fields.addField_string_numeric(C_("RomData", "Revision"),
 		romHeader->rom_version, RomFields::Base::Dec, 2);
 
 	// Entry point
@@ -378,12 +378,12 @@ int GameBoyAdvance::loadFieldData(void)
 				if (entry_point & 0x02000000) {
 					entry_point |= 0xFC000000;
 				}
-				d->fields->addField_string_numeric(entry_point_title,
+				d->fields.addField_string_numeric(entry_point_title,
 					entry_point, RomFields::Base::Hex, 8,
 					RomFields::STRF_MONOSPACE);
 			} else {
 				// Non-standard entry point instruction.
-				d->fields->addField_string_hexdump(entry_point_title,
+				d->fields.addField_string_hexdump(entry_point_title,
 					romHeader->entry_point_bytes, 4,
 					RomFields::STRF_MONOSPACE);
 			}
@@ -391,13 +391,13 @@ int GameBoyAdvance::loadFieldData(void)
 
 		case GameBoyAdvancePrivate::RomType::NDS_Expansion:
 			// Not bootable.
-			d->fields->addField_string(entry_point_title,
+			d->fields.addField_string(entry_point_title,
 				C_("GameBoyAdvance", "Not bootable (Nintendo DS expansion)"));
 			break;
 
 		default:
 			// Unknown ROM type.
-			d->fields->addField_string(entry_point_title,
+			d->fields.addField_string(entry_point_title,
 				C_("RomData", "Unknown"));
 			break;
 	}
@@ -406,7 +406,7 @@ int GameBoyAdvance::loadFieldData(void)
 	// Reference: https://problemkaputt.de/gbatek.htm#gbacartridgeheader
 	if (d->romType == GameBoyAdvancePrivate::RomType::GBA) {
 		const uint8_t debug_enable = romHeader->nintendo_logo[0x9C-4];
-		d->fields->addField_string(C_("GameBoyAdvance", "Enable Debug"),
+		d->fields.addField_string(C_("GameBoyAdvance", "Enable Debug"),
 			(debug_enable & 0xA5) == 0xA5
 				// tr: Debugging is enabled.
 				? C_("RomData", "Yes")
@@ -415,7 +415,7 @@ int GameBoyAdvance::loadFieldData(void)
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

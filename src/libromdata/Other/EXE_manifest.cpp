@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * EXE_manifest.cpp: DOS/Windows executable reader. (PE manifest reader)   *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -51,7 +51,7 @@ do { } while (0)
 #define ADD_ATTR(elem, attr_name, desc) do { \
 	const char *const attr = elem->Attribute(attr_name); \
 	if (attr) { \
-		fields->addField_string((desc), attr); \
+		fields.addField_string((desc), attr); \
 	} \
 } while (0)
 
@@ -60,7 +60,7 @@ do { } while (0)
 	if (child_elem) { \
 		const char *const text = child_elem->GetText(); \
 		if (text) { \
-			fields->addField_string((desc), text); \
+			fields.addField_string((desc), text); \
 		} \
 	} \
 } while (0)
@@ -212,10 +212,10 @@ int EXEPrivate::addFields_PE_Manifest(void)
 	}
 
 	// Add the manifest fields.
-	fields->addTab(C_("EXE", "Manifest"));
+	fields.addTab(C_("EXE", "Manifest"));
 
 	// Manifest ID.
-	fields->addField_string(C_("EXE|Manifest", "Manifest ID"),
+	fields.addField_string(C_("EXE|Manifest", "Manifest ID"),
 		(pResName ? pResName : C_("RomData", "Unknown")));
 
 	// Assembly element.
@@ -316,7 +316,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 			// Show the bitfield.
 			vector<string> *const v_WindowsSettings_names = RomFields::strArrayToVector_i18n(
 				"EXE|Manifest|WinSettings", WindowsSettings_names, ARRAY_SIZE(WindowsSettings_names));
-			fields->addField_bitfield(C_("EXE|Manifest", "Settings"),
+			fields.addField_bitfield(C_("EXE|Manifest", "Settings"),
 				v_WindowsSettings_names, 2, settings);
 
 			// dpiAware
@@ -403,7 +403,7 @@ int EXEPrivate::addFields_PE_Manifest(void)
 			// Show the bitfield.
 			vector<string> *const v_OS_Compatibility_names = RomFields::strArrayToVector_i18n(
 				"EXE|Manifest|OSCompatibility", OS_Compatibility_names, ARRAY_SIZE(OS_Compatibility_names));
-			fields->addField_bitfield(C_("EXE|Manifest", "Compatibility"),
+			fields.addField_bitfield(C_("EXE|Manifest", "Compatibility"),
 				v_OS_Compatibility_names, 2, compat);
 		}
 	}

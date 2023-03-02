@@ -580,11 +580,11 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 void EXEPrivate::addFields_PE(void)
 {
 	// Up to 6 tabs.
-	fields->reserveTabs(6);
+	fields.reserveTabs(6);
 
 	// PE Header
-	fields->setTabName(0, "PE");
-	fields->setTabIndex(0);
+	fields.setTabName(0, "PE");
+	fields.setTabIndex(0);
 
 	const uint16_t machine = le16_to_cpu(hdr.pe.FileHeader.Machine);
 	const uint16_t pe_flags = le16_to_cpu(hdr.pe.FileHeader.Characteristics);
@@ -628,10 +628,10 @@ void EXEPrivate::addFields_PE(void)
 		// .NET executable.
 		s_cpu += " (.NET)";
 	}
-	fields->addField_string(C_("EXE", "CPU"), s_cpu);
+	fields.addField_string(C_("EXE", "CPU"), s_cpu);
 
 	// OS version
-	fields->addField_string(C_("EXE", "OS Version"),
+	fields.addField_string(C_("EXE", "OS Version"),
 		rp_sprintf("%u.%u", os_ver_major, os_ver_minor));
 
 	// Subsystem names
@@ -686,7 +686,7 @@ void EXEPrivate::addFields_PE(void)
 				subsystem_ver_major, subsystem_ver_minor);
 		}
 	}
-	fields->addField_string(C_("EXE", "Subsystem"), subsystem_name);
+	fields.addField_string(C_("EXE", "Subsystem"), subsystem_name);
 
 	// PE flags (characteristics)
 	// NOTE: Only important flags will be listed.
@@ -703,7 +703,7 @@ void EXEPrivate::addFields_PE(void)
 	};
 	vector<string> *const v_pe_flags_names = RomFields::strArrayToVector_i18n(
 		"EXE|PEFlags", pe_flags_names, ARRAY_SIZE(pe_flags_names));
-	fields->addField_bitfield(C_("EXE", "PE Flags"),
+	fields.addField_bitfield(C_("EXE", "PE Flags"),
 		v_pe_flags_names, 3, pe_flags);
 
 	// DLL flags (characteristics)
@@ -723,7 +723,7 @@ void EXEPrivate::addFields_PE(void)
 	};
 	vector<string> *const v_dll_flags_names = RomFields::strArrayToVector_i18n(
 		"EXE|DLLFlags", dll_flags_names, ARRAY_SIZE(dll_flags_names));
-	fields->addField_bitfield(C_("EXE", "DLL Flags"),
+	fields.addField_bitfield(C_("EXE", "DLL Flags"),
 		v_dll_flags_names, 3, dll_flags);
 
 	// Timestamp
@@ -733,12 +733,12 @@ void EXEPrivate::addFields_PE(void)
 	const char *const timestamp_title = C_("EXE", "Timestamp");
 	uint32_t timestamp = le32_to_cpu(hdr.pe.FileHeader.TimeDateStamp);
 	if (timestamp != 0) {
-		fields->addField_dateTime(timestamp_title,
+		fields.addField_dateTime(timestamp_title,
 			static_cast<time_t>(timestamp),
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_HAS_TIME);
 	} else {
-		fields->addField_string(timestamp_title, C_("EXE", "Not set"));
+		fields.addField_string(timestamp_title, C_("EXE", "Not set"));
 	}
 
 	// Runtime DLL
@@ -746,7 +746,7 @@ void EXEPrivate::addFields_PE(void)
 	int ret = findPERuntimeDLL(runtime_dll, runtime_link);
 	if (ret == 0 && !runtime_dll.empty()) {
 		// TODO: Show the link?
-		fields->addField_string(C_("EXE", "Runtime DLL"), runtime_dll);
+		fields.addField_string(C_("EXE", "Runtime DLL"), runtime_dll);
 	}
 
 	// Load resources
@@ -758,8 +758,8 @@ void EXEPrivate::addFields_PE(void)
 		IResourceReader::StringFileInfo vssfi;
 		if (rsrcReader->load_VS_VERSION_INFO(VS_VERSION_INFO, -1, &vsffi, &vssfi) == 0) {
 			// Add the version fields.
-			fields->setTabName(1, C_("EXE", "Version"));
-			fields->setTabIndex(1);
+			fields.setTabName(1, C_("EXE", "Version"));
+			fields.setTabIndex(1);
 			addFields_VS_VERSION_INFO(&vsffi, &vssfi);
 		}
 
@@ -941,8 +941,8 @@ int EXEPrivate::addFields_PE_Export(void)
 
 	// Create the tab if we have any exports.
 	if (vv_data->size()) {
-		fields->addTab(C_("EXE", "Exports"));
-		fields->reserve(1);
+		fields.addTab(C_("EXE", "Exports"));
+		fields.reserve(1);
 
 		static const char *const field_names[] = {
 			NOP_C_("EXE|Exports", "Name"),
@@ -960,7 +960,7 @@ int EXEPrivate::addFields_PE_Export(void)
 		params.data.single = vv_data;
 		// TODO: Header alignment?
 		params.col_attrs.align_data = AFLD_ALIGN5(TXA_D, TXA_R, TXA_D, TXA_D, TXA_D);
-		fields->addField_listData(C_("EXE", "Exports"), &params);
+		fields.addField_listData(C_("EXE", "Exports"), &params);
 	} else {
 		delete vv_data;
 	}
@@ -1163,8 +1163,8 @@ int EXEPrivate::addFields_PE_Import(void)
 		});
 
 	// Add the tab
-	fields->addTab(C_("EXE", "Imports"));
-	fields->reserve(1);
+	fields.addTab(C_("EXE", "Imports"));
+	fields.reserve(1);
 
 	// Intentionally sharing the translation context with the exports tab.
 	static const char *const field_names[] = {
@@ -1181,7 +1181,7 @@ int EXEPrivate::addFields_PE_Import(void)
 	params.data.single = vv_data;
 	// TODO: Header alignment?
 	params.col_attrs.align_data = AFLD_ALIGN3(TXA_D, TXA_R, TXA_D);
-	fields->addField_listData(C_("EXE", "Imports"), &params);
+	fields.addField_listData(C_("EXE", "Imports"), &params);
 	return 0;
 }
 

@@ -111,7 +111,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		return;
 
 	// File version
-	fields->addField_string(C_("EXE", "File Version"),
+	fields.addField_string(C_("EXE", "File Version"),
 		rp_sprintf("%u.%u.%u.%u",
 			pVsFfi->dwFileVersionMS >> 16,
 			pVsFfi->dwFileVersionMS & 0xFFFF,
@@ -119,7 +119,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 			pVsFfi->dwFileVersionLS & 0xFFFF));
 
 	// Product version
-	fields->addField_string(C_("EXE", "Product Version"),
+	fields.addField_string(C_("EXE", "Product Version"),
 		rp_sprintf("%u.%u.%u.%u",
 			pVsFfi->dwProductVersionMS >> 16,
 			pVsFfi->dwProductVersionMS & 0xFFFF,
@@ -137,7 +137,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	};
 	vector<string> *const v_FileFlags_names = RomFields::strArrayToVector_i18n(
 		"EXE|FileFlags", FileFlags_names, ARRAY_SIZE(FileFlags_names));
-	fields->addField_bitfield(C_("EXE", "File Flags"),
+	fields.addField_bitfield(C_("EXE", "File Flags"),
 		v_FileFlags_names, 3, pVsFfi->dwFileFlags & pVsFfi->dwFileFlagsMask);
 
 	// File OS
@@ -183,9 +183,9 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 
 	const char *const fileOS_title = C_("EXE", "File OS");
 	if (s_fileOS) {
-		fields->addField_string(fileOS_title, s_fileOS);
+		fields.addField_string(fileOS_title, s_fileOS);
 	} else {
-		fields->addField_string(fileOS_title,
+		fields.addField_string(fileOS_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%08X)"), dwFileOS));
 	}
 
@@ -212,13 +212,13 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	if (pVsFfi->dwFileType < ARRAY_SIZE(fileTypes_tbl) &&
 	    fileTypes_tbl[pVsFfi->dwFileType] != nullptr)
 	{
-		fields->addField_string(fileType_title,
+		fields.addField_string(fileType_title,
 			dpgettext_expr(RP_I18N_DOMAIN, "EXE|FileType", fileTypes_tbl[pVsFfi->dwFileType]));
 	} else {
 		if (pVsFfi->dwFileType == VFT_UNKNOWN) {
-			fields->addField_string(fileType_title, C_("RomData", "Unknown"));
+			fields.addField_string(fileType_title, C_("RomData", "Unknown"));
 		} else {
-			fields->addField_string(fileType_title,
+			fields.addField_string(fileType_title,
 				rp_sprintf(C_("RomData", "Unknown (0x%08X)"), pVsFfi->dwFileType));
 		}
 	}
@@ -288,10 +288,10 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	if (hasSubtype) {
 		const char *const fileSubType_title = C_("EXE", "File Subtype");
 		if (fileSubtype) {
-			fields->addField_string(fileSubType_title,
+			fields.addField_string(fileSubType_title,
 				dpgettext_expr(RP_I18N_DOMAIN, "EXE|FileSubType", fileSubtype));
 		} else {
-			fields->addField_string(fileSubType_title,
+			fields.addField_string(fileSubType_title,
 				rp_sprintf(C_("RomData", "Unknown (0x%02X)"), pVsFfi->dwFileSubtype));
 		}
 	}
@@ -309,7 +309,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 		#define HECTONANOSEC_PER_SEC 10000000LL
 #endif
 		time_t fileTimeUnix = static_cast<time_t>((fileTime - FILETIME_1970) / HECTONANOSEC_PER_SEC);
-		fields->addField_dateTime(C_("EXE", "File Time"), fileTimeUnix,
+		fields.addField_dateTime(C_("EXE", "File Time"), fileTimeUnix,
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_HAS_TIME
 			);
@@ -347,7 +347,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	RomFields::AFLD_PARAMS params;
 	params.headers = v_field_names;
 	params.data.single = vv_data;
-	fields->addField_listData("StringFileInfo", &params);
+	fields.addField_listData("StringFileInfo", &params);
 }
 
 /** MZ-specific **/
@@ -378,9 +378,9 @@ void EXEPrivate::addFields_MZ(void)
 	 */
 
 	// Header and program size
-	fields->addField_string(C_("EXE", "Header Size"), formatFileSize(le16_to_cpu(mz.e_cparhdr) * 16));
+	fields.addField_string(C_("EXE", "Header Size"), formatFileSize(le16_to_cpu(mz.e_cparhdr) * 16));
 	uint32_t program_size = le16_to_cpu(mz.e_cp) * 512 - le16_to_cpu(mz.e_cparhdr) * 16;
-	fields->addField_string(C_("EXE", "Program Size"), formatFileSize(program_size));
+	fields.addField_string(C_("EXE", "Program Size"), formatFileSize(program_size));
 
 	// File size warnings
 	// Only show them if it's an MZ-only executable and if e_cblp is sane
@@ -392,11 +392,11 @@ void EXEPrivate::addFields_MZ(void)
 			if (mz.e_cblp != 0)
 				image_size -= 512 - le16_to_cpu(mz.e_cblp);
 			if (file_size < image_size) {
-				fields->addField_string(C_("RomData", "Warning"),
+				fields.addField_string(C_("RomData", "Warning"),
 					C_("EXE", "Program image truncated"), RomFields::STRF_WARNING);
 				shownWarning = true;
 			} else if (file_size > image_size) {
-				fields->addField_string(C_("RomData", "Warning"),
+				fields.addField_string(C_("RomData", "Warning"),
 					C_("EXE", "Extra data after end of file"), RomFields::STRF_WARNING);
 				shownWarning = true;
 			}
@@ -405,21 +405,21 @@ void EXEPrivate::addFields_MZ(void)
 
 	// Min/Max allocated memory
 	if (mz.e_maxalloc != 0) {
-		fields->addField_string(C_("EXE", "Min. Memory"), formatFileSize(le16_to_cpu(mz.e_minalloc) * 16));
-		fields->addField_string(C_("EXE", "Max. Memory"),
+		fields.addField_string(C_("EXE", "Min. Memory"), formatFileSize(le16_to_cpu(mz.e_minalloc) * 16));
+		fields.addField_string(C_("EXE", "Max. Memory"),
 			mz.e_maxalloc == 0xFFFF ? C_("EXE", "All") : formatFileSize(le16_to_cpu(mz.e_maxalloc) * 16));
 	} else {
 		/* NOTE: A "high" load means the program it at the end of the allocated
 		 * area, with extra pragraphs being between PSP and the program.
 		 * Not to be confused with "LOADHIGH" which loads programs into UMB.
 		 */
-		fields->addField_string(C_("EXE", "Load Type"), C_("EXE", "High"));
+		fields.addField_string(C_("EXE", "Load Type"), C_("EXE", "High"));
 	}
 
 	// Initial CS:IP/SS:SP
-	fields->addField_string(C_("EXE", "Initial CS:IP"),
+	fields.addField_string(C_("EXE", "Initial CS:IP"),
 		rp_sprintf("%04X:%04X", le16_to_cpu(mz.e_cs), le16_to_cpu(mz.e_ip)), RomFields::STRF_MONOSPACE);
-	fields->addField_string(C_("EXE", "Initial SS:SP"),
+	fields.addField_string(C_("EXE", "Initial SS:SP"),
 		rp_sprintf("%04X:%04X", le16_to_cpu(mz.e_ss), le16_to_cpu(mz.e_sp)), RomFields::STRF_MONOSPACE);
 
 	/* Linkers will happily put 0:0 in SS:SP if the stack is not defined.
@@ -435,7 +435,7 @@ void EXEPrivate::addFields_MZ(void)
 	 */
 	if (mz.e_ss == 0 && mz.e_sp == 0) {
 		if (!shownWarning) {
-			fields->addField_string(C_("RomData", "Warning"),
+			fields.addField_string(C_("RomData", "Warning"),
 				C_("EXE", "No stack"), RomFields::STRF_WARNING);
 		}
 	}
@@ -452,20 +452,20 @@ void EXEPrivate::addFields_LE(void)
 	// Currently assuming little-endian.
 
 	// Up to 2 tabs.
-	fields->reserveTabs(2);
+	fields.reserveTabs(2);
 
 	// LE Header
-	fields->setTabName(0, "LE");
-	fields->setTabIndex(0);
+	fields.setTabName(0, "LE");
+	fields.setTabIndex(0);
 
 	// CPU.
 	const char *const cpu_title = C_("EXE", "CPU");
 	const uint16_t cpu_type = le16_to_cpu(hdr.le.cpu_type);
 	const char *const cpu = EXEData::lookup_le_cpu(cpu_type);
 	if (cpu) {
-		fields->addField_string(cpu_title, cpu);
+		fields.addField_string(cpu_title, cpu);
 	} else {
-		fields->addField_string(cpu_title,
+		fields.addField_string(cpu_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%04X)"), cpu_type));
 	}
 
@@ -474,9 +474,9 @@ void EXEPrivate::addFields_LE(void)
 	const char *const targetOS_title = C_("EXE", "Target OS");
 	const uint16_t targOS = le16_to_cpu(hdr.le.targOS);
 	if (targOS < ARRAY_SIZE(NE_TargetOSes)) {
-		fields->addField_string(targetOS_title, NE_TargetOSes[targOS]);
+		fields.addField_string(targetOS_title, NE_TargetOSes[targOS]);
 	} else {
-		fields->addField_string(targetOS_title,
+		fields.addField_string(targetOS_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), targOS));
 	}
 }
@@ -947,7 +947,7 @@ const char *EXE::systemName(unsigned int type) const
 int EXE::loadFieldData(void)
 {
 	RP_D(EXE);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -964,7 +964,7 @@ int EXE::loadFieldData(void)
 	// - PE: 8
 	//   - PE Version: +6
 	//   - PE Manifest: +12
-	d->fields->reserve(27);
+	d->fields.reserve(27);
 
 	// Executable type.
 	// NOTE: Not translatable.
@@ -986,9 +986,9 @@ int EXE::loadFieldData(void)
 	const char *const type_title = C_("EXE", "Type");
 	if (d->exeType >= EXEPrivate::ExeType::MZ && d->exeType < EXEPrivate::ExeType::Max) {
 		const unsigned int offset = exeTypes_offtbl[(int)d->exeType];
-		d->fields->addField_string(type_title, &exeTypes_strtbl[offset]);
+		d->fields.addField_string(type_title, &exeTypes_strtbl[offset]);
 	} else {
-		d->fields->addField_string(type_title, C_("EXE", "Unknown"));
+		d->fields.addField_string(type_title, C_("EXE", "Unknown"));
 	}
 
 	switch (d->exeType) {
@@ -1021,12 +1021,12 @@ int EXE::loadFieldData(void)
 	    d->exeType != EXEPrivate::ExeType::COM_NE)
 	{
 		// NOTE: This doesn't actually create a separate tab for non-implemented types.
-		d->fields->addTab("MZ");
+		d->fields.addTab("MZ");
 		d->addFields_MZ();
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

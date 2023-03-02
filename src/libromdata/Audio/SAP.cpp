@@ -550,7 +550,7 @@ const char *SAP::systemName(unsigned int type) const
 int SAP::loadFieldData(void)
 {
 	RP_D(SAP);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -569,29 +569,29 @@ int SAP::loadFieldData(void)
 	}
 
 	// SAP header.
-	d->fields->reserve(11);	// Maximum of 11 fields.
+	d->fields.reserve(11);	// Maximum of 11 fields.
 
 	// Author
 	if (!tags.author.empty()) {
-		d->fields->addField_string(C_("RomData|Audio", "Author"), tags.author);
+		d->fields.addField_string(C_("RomData|Audio", "Author"), tags.author);
 	}
 
 	// Song title
 	if (!tags.name.empty()) {
-		d->fields->addField_string(C_("RomData|Audio", "Song Title"), tags.name);
+		d->fields.addField_string(C_("RomData|Audio", "Song Title"), tags.name);
 	}
 
 	// Date (TODO: Parse?)
 	if (!tags.date.empty()) {
-		d->fields->addField_string(C_("SAP", "Date"), tags.date);
+		d->fields.addField_string(C_("SAP", "Date"), tags.date);
 	}
 
 	// Number of songs
-	d->fields->addField_string_numeric(C_("RomData|Audio", "# of Songs"), tags.songs);
+	d->fields.addField_string_numeric(C_("RomData|Audio", "# of Songs"), tags.songs);
 
 	// Default song number
 	if (tags.songs > 1) {
-		d->fields->addField_string_numeric(C_("RomData|Audio", "Default Song #"), tags.def_song);
+		d->fields.addField_string_numeric(C_("RomData|Audio", "Default Song #"), tags.def_song);
 	}
 
 	// Flags: NTSC/PAL, Stereo
@@ -606,7 +606,7 @@ int SAP::loadFieldData(void)
 	uint32_t flags = 0;
 	if (tags.ntsc)   flags |= (1U << 0);
 	if (tags.stereo) flags |= (1U << 1);
-	d->fields->addField_bitfield(C_("SAP", "Flags"),
+	d->fields.addField_bitfield(C_("SAP", "Flags"),
 		v_flags_names, 0, flags);
 
 	// Type
@@ -614,9 +614,9 @@ int SAP::loadFieldData(void)
 	const char *const type_title = C_("SAP", "Type");
 	if (ISALPHA(tags.type)) {
 		const char s_tag_type[2] = {tags.type, '\0'};
-		d->fields->addField_string(type_title, s_tag_type);
+		d->fields.addField_string(type_title, s_tag_type);
 	} else {
-		d->fields->addField_string(type_title,
+		d->fields.addField_string(type_title,
 			rp_sprintf("0x%02X", static_cast<unsigned int>(tags.type)),
 			RomFields::STRF_MONOSPACE);
 	}
@@ -627,7 +627,7 @@ int SAP::loadFieldData(void)
 		// Use the default value for NTSC/PAL.
 		scanlines = (tags.ntsc ? 262 : 312);
 	}
-	d->fields->addField_string_numeric(C_("SAP", "Fastplay"), scanlines);
+	d->fields.addField_string_numeric(C_("SAP", "Fastplay"), scanlines);
 
 	// Init address (Types B, D, S) / music address (Type C)
 	switch (toupper(tags.type)) {
@@ -636,26 +636,26 @@ int SAP::loadFieldData(void)
 			break;
 
 		case 'B': case 'D': case 'S':
-			d->fields->addField_string_numeric(C_("SAP", "Init Address"),
+			d->fields.addField_string_numeric(C_("SAP", "Init Address"),
 				tags.init_addr,
 				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 			break;
 
 		case 'C':
-			d->fields->addField_string_numeric(C_("SAP", "Music Address"),
+			d->fields.addField_string_numeric(C_("SAP", "Music Address"),
 				tags.music_addr,
 				RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 			break;
 	}
 
 	// Player address.
-	d->fields->addField_string_numeric(C_("SAP", "Player Address"),
+	d->fields.addField_string_numeric(C_("SAP", "Player Address"),
 		tags.player_addr,
 		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// COVOX address. (if non-zero)
 	if (tags.covox_addr != 0) {
-		d->fields->addField_string_numeric(C_("SAP", "COVOX Address"),
+		d->fields.addField_string_numeric(C_("SAP", "COVOX Address"),
 			tags.covox_addr,
 			RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 	}
@@ -696,11 +696,11 @@ int SAP::loadFieldData(void)
 		RomFields::AFLD_PARAMS params;
 		params.headers = v_song_list_hdr;
 		params.data.single = song_list;
-		d->fields->addField_listData(C_("SAP", "Song List"), &params);
+		d->fields.addField_listData(C_("SAP", "Song List"), &params);
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

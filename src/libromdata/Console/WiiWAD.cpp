@@ -883,7 +883,7 @@ uint32_t WiiWAD::imgpf(ImageType imageType) const
 int WiiWAD::loadFieldData(void)
 {
 	RP_D(WiiWAD);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -897,8 +897,8 @@ int WiiWAD::loadFieldData(void)
 	// WAD headers are read in the constructor.
 	const RVL_TMD_Header *const tmdHeader = &d->tmdHeader;
 	const uint16_t sys_id = be16_to_cpu(tmdHeader->title_id.sysID);
-	d->fields->reserve(12);	// Maximum of 12 fields.
-	d->fields->setTabName(0, (sys_id != NINTENDO_SYSID_TWL) ? "WAD" : "TAD");
+	d->fields.reserve(12);	// Maximum of 12 fields.
+	d->fields.setTabName(0, (sys_id != NINTENDO_SYSID_TWL) ? "WAD" : "TAD");
 
 	if (d->key_status != KeyManager::VerifyResult::OK) {
 		// Unable to get the decryption key.
@@ -906,7 +906,7 @@ int WiiWAD::loadFieldData(void)
 		if (!err) {
 			err = C_("WiiWAD", "Unknown error. (THIS IS A BUG!)");
 		}
-		d->fields->addField_string(C_("WiiWAD", "Warning"),
+		d->fields.addField_string(C_("WiiWAD", "Warning"),
 			err, RomFields::STRF_WARNING);
 	}
 
@@ -944,17 +944,17 @@ int WiiWAD::loadFieldData(void)
 			s_wadType = C_("RomData", "Unknown");
 			break;
 	}
-	d->fields->addField_string(C_("WiiWAD", "Type"), s_wadType);
+	d->fields.addField_string(C_("WiiWAD", "Type"), s_wadType);
 
 	// Internal name. (BroadOn WADs only)
 	// FIXME: This is the same "meta" section as Nintendo WADs...
 	if (!d->wadName.empty()) {
-		d->fields->addField_string(C_("RomData", "Name"), d->wadName);
+		d->fields.addField_string(C_("RomData", "Name"), d->wadName);
 	}
 
 	// Title ID.
 	// TODO: Make sure the ticket title ID matches the TMD title ID.
-	d->fields->addField_string(C_("Nintendo", "Title ID"),
+	d->fields.addField_string(C_("Nintendo", "Title ID"),
 		rp_sprintf("%08X-%08X",
 			be32_to_cpu(tmdHeader->title_id.hi),
 			be32_to_cpu(tmdHeader->title_id.lo)));
@@ -969,13 +969,13 @@ int WiiWAD::loadFieldData(void)
 	{
 		// Print the game ID.
 		// TODO: Is the publisher code available anywhere?
-		d->fields->addField_string(C_("RomData", "Game ID"),
+		d->fields.addField_string(C_("RomData", "Game ID"),
 			rp_sprintf("%.4s", reinterpret_cast<const char*>(&tmdHeader->title_id.u8[4])));
 	}
 
 	// Title version.
 	const unsigned int title_version = be16_to_cpu(tmdHeader->title_version);
-	d->fields->addField_string(C_("Nintendo", "Title Version"),
+	d->fields.addField_string(C_("Nintendo", "Title Version"),
 		rp_sprintf("%u.%u (v%u)", title_version >> 8, title_version & 0xFF, title_version));
 
 	// Wii-specific
@@ -1044,9 +1044,9 @@ int WiiWAD::loadFieldData(void)
 				s_region = region;
 			}
 
-			d->fields->addField_string(region_code_title, s_region);
+			d->fields.addField_string(region_code_title, s_region);
 		} else {
-			d->fields->addField_string(region_code_title,
+			d->fields.addField_string(region_code_title,
 				rp_sprintf(C_("RomData", "Unknown (0x%02X)"), gcnRegion));
 		}
 
@@ -1058,12 +1058,12 @@ int WiiWAD::loadFieldData(void)
 			    ios_lo > 2 && ios_lo < 0x300)
 			{
 				// Standard IOS slot.
-				d->fields->addField_string(ios_version_title,
+				d->fields.addField_string(ios_version_title,
 					rp_sprintf("IOS%u", ios_lo));
 			} else if (tmdHeader->sys_version.id != 0) {
 				// Non-standard IOS slot.
 				// Print the full title ID.
-				d->fields->addField_string(ios_version_title,
+				d->fields.addField_string(ios_version_title,
 					rp_sprintf("%08X-%08X",
 						be32_to_cpu(tmdHeader->sys_version.hi),
 						be32_to_cpu(tmdHeader->sys_version.lo)));
@@ -1075,7 +1075,7 @@ int WiiWAD::loadFieldData(void)
 		v_access_rights_hdr->reserve(2);
 		v_access_rights_hdr->emplace_back("AHBPROT");
 		v_access_rights_hdr->emplace_back(C_("Wii", "DVD Video"));
-		d->fields->addField_bitfield(C_("Wii", "Access Rights"),
+		d->fields.addField_bitfield(C_("Wii", "Access Rights"),
 			v_access_rights_hdr, 0, be32_to_cpu(tmdHeader->access_rights));
 
 		if (sys_id == NINTENDO_SYSID_RVL) {
@@ -1113,7 +1113,7 @@ int WiiWAD::loadFieldData(void)
 					age_ratings[i] |= RomFields::AGEBF_ONLINE_PLAY;
 				}
 			}
-			d->fields->addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
+			d->fields.addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
 		}
 	}
 
@@ -1142,11 +1142,11 @@ int WiiWAD::loadFieldData(void)
 	} else {
 		keyName = C_("WiiWAD", "Unknown");
 	}
-	d->fields->addField_string(C_("WiiWAD", "Encryption Key"), keyName);
+	d->fields.addField_string(C_("WiiWAD", "Encryption Key"), keyName);
 
 	// Console ID.
 	// TODO: Hide the "0x" prefix?
-	d->fields->addField_string_numeric(C_("WiiWAD", "Console ID"),
+	d->fields.addField_string_numeric(C_("WiiWAD", "Console ID"),
 		be32_to_cpu(d->ticket.console_id), RomFields::Base::Hex, 8,
 		RomFields::STRF_MONOSPACE);
 
@@ -1162,7 +1162,7 @@ int WiiWAD::loadFieldData(void)
 			// For Wii, add the fields to the same tab.
 			// For DSi, add the fields to new tabs.
 			int tabOffset = (sys_id == NINTENDO_SYSID_TWL ? RomFields::TabOffset_AddTabs : 0);
-			d->fields->addFields_romFields(mainContentFields, tabOffset);
+			d->fields.addFields_romFields(mainContentFields, tabOffset);
 		}
 	} else if (sys_id != NINTENDO_SYSID_TWL) {
 		// No main content object.
@@ -1173,13 +1173,13 @@ int WiiWAD::loadFieldData(void)
 			// Add the field.
 			const uint32_t def_lc = NintendoLanguage::getWiiLanguageCode(
 				NintendoLanguage::getWiiLanguage());
-			d->fields->addField_string_multi(C_("WiiWAD", "Game Info"), pMap_bannerName, def_lc);
+			d->fields.addField_string_multi(C_("WiiWAD", "Game Info"), pMap_bannerName, def_lc);
 		}
 	}
 #endif /* ENABLE_DECRYPTION */
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

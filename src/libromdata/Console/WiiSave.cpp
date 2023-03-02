@@ -432,7 +432,7 @@ uint32_t WiiSave::imgpf(ImageType imageType) const
 int WiiSave::loadFieldData(void)
 {
 	RP_D(WiiSave);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -446,7 +446,7 @@ int WiiSave::loadFieldData(void)
 	// Wii save and backup headers.
 	const Wii_SaveGame_Header_t *const svHeader = &d->svHeader;
 	const Wii_Bk_Header_t *const bkHeader = &d->bkHeader;
-	d->fields->reserve(5);	// Maximum of 5 fields.
+	d->fields.reserve(5);	// Maximum of 5 fields.
 
 	// Check if the headers are valid.
 	// TODO: Do this in the constructor instead?
@@ -456,7 +456,7 @@ int WiiSave::loadFieldData(void)
 	// Savegame header.
 	if (isSvValid) {
 		// Savegame ID. (title ID)
-		d->fields->addField_string(C_("WiiSave", "Savegame ID"),
+		d->fields.addField_string(C_("WiiSave", "Savegame ID"),
 			rp_sprintf("%08X-%08X",
 				be32_to_cpu(svHeader->savegame_id.hi),
 				be32_to_cpu(svHeader->savegame_id.lo)));
@@ -474,7 +474,7 @@ int WiiSave::loadFieldData(void)
 		{
 			// Print the game ID.
 			// TODO: Is the publisher code available anywhere?
-			d->fields->addField_string(C_("RomData", "Game ID"),
+			d->fields.addField_string(C_("RomData", "Game ID"),
 				latin1_to_utf8(bkHeader->id4, sizeof(bkHeader->id4)));
 		}
 	}
@@ -497,7 +497,7 @@ int WiiSave::loadFieldData(void)
 		if (perms & 0x01)
 			s_perms[8] = 'w';
 
-		d->fields->addField_string(C_("WiiSave", "Permissions"), s_perms,
+		d->fields.addField_string(C_("WiiSave", "Permissions"), s_perms,
 			RomFields::STRF_MONOSPACE);
 	}
 
@@ -511,14 +511,14 @@ int WiiSave::loadFieldData(void)
 		vector<string> *const v_flags_names = RomFields::strArrayToVector_i18n(
 			"WiiSave|Flags", flags_names, ARRAY_SIZE(flags_names));
 		const uint32_t flags = (d->wibnData->isNoCopyFlagSet() ? 1 : 0);
-		d->fields->addField_bitfield(C_("WiiSave", "Flags"),
+		d->fields.addField_bitfield(C_("WiiSave", "Flags"),
 			v_flags_names, 3, flags);
 	}
 #endif /* ENABLE_DECRYPTION */
 
 	// MAC address.
 	if (isBkValid) {
-		d->fields->addField_string(C_("WiiSave", "MAC Address"),
+		d->fields.addField_string(C_("WiiSave", "MAC Address"),
 			rp_sprintf("%02X:%02X:%02X:%02X:%02X:%02X",
 				bkHeader->wii_mac[0], bkHeader->wii_mac[1],
 				bkHeader->wii_mac[2], bkHeader->wii_mac[3],
@@ -529,7 +529,7 @@ int WiiSave::loadFieldData(void)
 	// (Is there an IMET header?)
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

@@ -631,7 +631,7 @@ uint32_t iQuePlayer::imgpf(ImageType imageType) const
 int iQuePlayer::loadFieldData(void)
 {
 	RP_D(iQuePlayer);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -643,7 +643,7 @@ int iQuePlayer::loadFieldData(void)
 	}
 
 	const iQuePlayer_BbContentMetaDataHead *const bbContentMetaDataHead = &d->bbContentMetaDataHead;
-	d->fields->reserve(5);	// Maximum of 5 fields. (TODO: Add more.)
+	d->fields.reserve(5);	// Maximum of 5 fields. (TODO: Add more.)
 
 	// Get the title and ISBN.
 	// TODO: Trim trailing newlines?
@@ -652,12 +652,12 @@ int iQuePlayer::loadFieldData(void)
 	if (ret == 0) {
 		// Title.
 		if (!rom_title.empty()) {
-			d->fields->addField_string(C_("RomData", "Title"), rom_title);
+			d->fields.addField_string(C_("RomData", "Title"), rom_title);
 		}
 
 		// ISBN.
 		if (!rom_isbn.empty()) {
-			d->fields->addField_string(C_("RomData", "ISBN"), rom_isbn);
+			d->fields.addField_string(C_("RomData", "ISBN"), rom_isbn);
 		}
 	}
 
@@ -665,7 +665,7 @@ int iQuePlayer::loadFieldData(void)
 	// NOTE: We don't want the "0x" prefix.
 	// This is sort of like Wii title IDs, but only the
 	// title ID low portion.
-	d->fields->addField_string(C_("iQuePlayer", "Content ID"),
+	d->fields.addField_string(C_("iQuePlayer", "Content ID"),
 		rp_sprintf("%08X", be32_to_cpu(bbContentMetaDataHead->content_id)),
 		RomFields::STRF_MONOSPACE);
 
@@ -675,7 +675,7 @@ int iQuePlayer::loadFieldData(void)
 
 		// Console ID.
 		// TODO: Hide the "0x" prefix?
-		d->fields->addField_string_numeric(C_("iQuePlayer", "Console ID"),
+		d->fields.addField_string_numeric(C_("iQuePlayer", "Console ID"),
 			be32_to_cpu(bbTicketHead->bbId), RomFields::Base::Hex, 8,
 			RomFields::STRF_MONOSPACE);
 	}
@@ -691,11 +691,11 @@ int iQuePlayer::loadFieldData(void)
 	vector<string> *const v_hw_access_names = RomFields::strArrayToVector(
 		hw_access_names, ARRAY_SIZE(hw_access_names));
 
-	d->fields->addField_bitfield(C_("iQuePlayer", "HW Access"),
+	d->fields.addField_bitfield(C_("iQuePlayer", "HW Access"),
 		v_hw_access_names, 3, be32_to_cpu(bbContentMetaDataHead->hwAccessRights));
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

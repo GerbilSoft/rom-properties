@@ -394,7 +394,7 @@ vector<RomData::ImageSizeDef> WiiU::supportedImageSizes_static(ImageType imageTy
 int WiiU::loadFieldData(void)
 {
 	RP_D(WiiU);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -407,10 +407,10 @@ int WiiU::loadFieldData(void)
 
 	// Disc header is read in the constructor.
 	const WiiU_DiscHeader *const discHeader = &d->discHeader;
-	d->fields->reserve(4);	// Maximum of 4 fields.
+	d->fields.reserve(4);	// Maximum of 4 fields.
 
 	// Game ID
-	d->fields->addField_string(C_("RomData", "Game ID"),
+	d->fields.addField_string(C_("RomData", "Game ID"),
 		latin1_to_utf8(discHeader->id, sizeof(discHeader->id)));
 
 	// Publisher
@@ -444,11 +444,11 @@ int WiiU::loadFieldData(void)
 				static_cast<uint8_t>(publisher_code[3]));
 		}
 	}
-	d->fields->addField_string(C_("RomData", "Publisher"), s_publisher);
+	d->fields.addField_string(C_("RomData", "Publisher"), s_publisher);
 
 	// Game version
 	// TODO: Validate the version characters.
-	d->fields->addField_string(C_("RomData", "Version"),
+	d->fields.addField_string(C_("RomData", "Version"),
 		latin1_to_utf8(discHeader->version, sizeof(discHeader->version)));
 
 	// OS version
@@ -458,15 +458,15 @@ int WiiU::loadFieldData(void)
 		discHeader->os_version[1], '.',
 		discHeader->os_version[2], '\0'
 	};
-	d->fields->addField_string(C_("WiiU", "OS Version"), s_os_version);
+	d->fields.addField_string(C_("WiiU", "OS Version"), s_os_version);
 
 	// Region
 	// TODO: Compare against list of regions and show the fancy name.
-	d->fields->addField_string(C_("RomData", "Region Code"),
+	d->fields.addField_string(C_("RomData", "Region Code"),
 		latin1_to_utf8(discHeader->region, sizeof(discHeader->region)));
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

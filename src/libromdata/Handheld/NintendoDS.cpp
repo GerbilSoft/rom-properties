@@ -891,7 +891,7 @@ uint32_t NintendoDS::imgpf(ImageType imageType) const
 int NintendoDS::loadFieldData(void)
 {
 	RP_D(NintendoDS);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -915,14 +915,14 @@ int NintendoDS::loadFieldData(void)
 	const bool hasDSi = !!(romHeader->unitcode & NintendoDSPrivate::DS_HW_DSi);
 	if (hasDSi) {
 		// DSi-enhanced or DSi-exclusive.
-		d->fields->reserve(10+7);
+		d->fields.reserve(10+7);
 	} else {
 		// NDS only.
-		d->fields->reserve(10);
+		d->fields.reserve(10);
 	}
 
 	// NDS common fields
-	d->fields->setTabName(0, "NDS");
+	d->fields.setTabName(0, "NDS");
 
 	// Type
 	// TODO:
@@ -953,10 +953,10 @@ int NintendoDS::loadFieldData(void)
 				break;
 		}
 	}
-	d->fields->addField_string(C_("NintendoDS", "Type"), nds_romType);
+	d->fields.addField_string(C_("NintendoDS", "Type"), nds_romType);
 
 	// Title
-	d->fields->addField_string(C_("RomData", "Title"),
+	d->fields.addField_string(C_("RomData", "Title"),
 		latin1_to_utf8(romHeader->title, ARRAY_SIZE_I(romHeader->title)),
 		RomFields::STRF_TRIM_END);
 
@@ -1007,27 +1007,27 @@ int NintendoDS::loadFieldData(void)
 
 		if (!pMap_full_title->empty()) {
 			const uint32_t def_lc = d->getDefaultLC();
-			d->fields->addField_string_multi(C_("NintendoDS", "Full Title"), pMap_full_title, def_lc);
+			d->fields.addField_string_multi(C_("NintendoDS", "Full Title"), pMap_full_title, def_lc);
 		} else {
 			delete pMap_full_title;
 		}
 	}
 
 	// Game ID
-	d->fields->addField_string(C_("RomData", "Game ID"),
+	d->fields.addField_string(C_("RomData", "Game ID"),
 		latin1_to_utf8(romHeader->id6, ARRAY_SIZE_I(romHeader->id6)));
 
 	// Publisher
 	const char *const publisher_title = C_("RomData", "Publisher");
 	const char *const publisher = NintendoPublishers::lookup(romHeader->company);
 	if (publisher) {
-		d->fields->addField_string(publisher_title, publisher);
+		d->fields.addField_string(publisher_title, publisher);
 	} else {
 		if (ISALNUM(romHeader->company[0]) && ISALNUM(romHeader->company[1])) {
-			d->fields->addField_string(publisher_title,
+			d->fields.addField_string(publisher_title,
 				rp_sprintf(C_("RomData", "Unknown (%.2s)"), romHeader->company));
 		} else {
-			d->fields->addField_string(publisher_title,
+			d->fields.addField_string(publisher_title,
 				rp_sprintf(C_("RomData", "Unknown (%02X %02X)"),
 					static_cast<unsigned int>(romHeader->company[0]),
 					static_cast<unsigned int>(romHeader->company[1])));
@@ -1035,7 +1035,7 @@ int NintendoDS::loadFieldData(void)
 	}
 
 	// ROM version
-	d->fields->addField_string_numeric(C_("RomData", "Revision"),
+	d->fields.addField_string_numeric(C_("RomData", "Revision"),
 		romHeader->rom_version, RomFields::Base::Dec, 2);
 
 	// Is the security data present?
@@ -1046,15 +1046,15 @@ int NintendoDS::loadFieldData(void)
 	};
 	vector<string> *const v_nds_security_data_names = RomFields::strArrayToVector_i18n(
 		"NintendoDS|SecurityData", nds_security_data_names, ARRAY_SIZE(nds_security_data_names));
-	d->fields->addField_bitfield(C_("NintendoDS", "Security Data"),
+	d->fields.addField_bitfield(C_("NintendoDS", "Security Data"),
 		v_nds_security_data_names, 0, d->secData);
-	d->fieldIdx_secData = static_cast<int>(d->fields->count()-1);
+	d->fieldIdx_secData = static_cast<int>(d->fields.count()-1);
 
 	// Secure Area
 	// TODO: Verify the CRC.
-	d->fields->addField_string(C_("NintendoDS", "Secure Area"),
+	d->fields.addField_string(C_("NintendoDS", "Secure Area"),
 		d->getNDSSecureAreaString());
-	d->fieldIdx_secArea = static_cast<int>(d->fields->count()-1);
+	d->fieldIdx_secArea = static_cast<int>(d->fields.count()-1);
 
 	// Hardware type
 	// NOTE: DS_HW_DS is inverted bit0; DS_HW_DSi is normal bit1.
@@ -1069,7 +1069,7 @@ int NintendoDS::loadFieldData(void)
 	};
 	vector<string> *const v_hw_bitfield_names = RomFields::strArrayToVector(
 		hw_bitfield_names, ARRAY_SIZE(hw_bitfield_names));
-	d->fields->addField_bitfield(C_("NintendoDS", "Hardware"),
+	d->fields.addField_bitfield(C_("NintendoDS", "Hardware"),
 		v_hw_bitfield_names, 0, hw_type);
 
 	// NDS Region
@@ -1095,7 +1095,7 @@ int NintendoDS::loadFieldData(void)
 	};
 	vector<string> *const v_nds_region_bitfield_names = RomFields::strArrayToVector_i18n(
 		"Region", nds_region_bitfield_names, ARRAY_SIZE(nds_region_bitfield_names));
-	d->fields->addField_bitfield(C_("NintendoDS", "DS Region Code"),
+	d->fields.addField_bitfield(C_("NintendoDS", "DS Region Code"),
 		v_nds_region_bitfield_names, 0, nds_region);
 
 	if (!(hw_type & NintendoDSPrivate::DS_HW_DSi)) {
@@ -1104,23 +1104,23 @@ int NintendoDS::loadFieldData(void)
 			// DSi flags.
 			// NOTE: These are present in NDS games released after the DSi,
 			// even if the game isn't DSi-enhanced.
-			d->fields->addTab("DSi");
+			d->fields.addTab("DSi");
 			auto vv_dsi_flags = d->getDSiFlagsStringVector();
 			RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_CHECKBOXES, 8);
 			params.headers = nullptr;
 			params.data.single = vv_dsi_flags;
 			params.mxd.checkboxes = romHeader->dsi.flags;
-			d->fields->addField_listData(C_("NintendoDS", "Flags"), &params);
+			d->fields.addField_listData(C_("NintendoDS", "Flags"), &params);
 		}
-		return static_cast<int>(d->fields->count());
+		return static_cast<int>(d->fields.count());
 	}
 
 	/** DSi-specific fields. **/
-	d->fields->addTab("DSi");
+	d->fields.addTab("DSi");
 
 	// Title ID
 	const uint32_t tid_hi = le32_to_cpu(romHeader->dsi.title_id.hi);
-	d->fields->addField_string(C_("Nintendo", "Title ID"),
+	d->fields.addField_string(C_("Nintendo", "Title ID"),
 		rp_sprintf("%08X-%08X",
 			tid_hi, le32_to_cpu(romHeader->dsi.title_id.lo)));
 
@@ -1158,11 +1158,11 @@ int NintendoDS::loadFieldData(void)
 	// TODO: Is the field name too long?
 	const char *const dsi_rom_type_title = C_("NintendoDS", "DSi ROM Type");
 	if (s_dsi_filetype) {
-		d->fields->addField_string(dsi_rom_type_title,
+		d->fields.addField_string(dsi_rom_type_title,
 			dpgettext_expr(RP_I18N_DOMAIN, "NintendoDS|DSiFileType", s_dsi_filetype));
 	} else {
 		// Invalid file type.
-		d->fields->addField_string(dsi_rom_type_title,
+		d->fields.addField_string(dsi_rom_type_title,
 			rp_sprintf(C_("RomData", "Unknown (0x%02X)"), dsi_filetype));
 	}
 
@@ -1181,7 +1181,7 @@ int NintendoDS::loadFieldData(void)
 
 	// TODO: Keyset is determined by the system.
 	// There might be some indicator in the cartridge header...
-	d->fields->addField_string_numeric(C_("NintendoDS", "Key Index"), key_idx);
+	d->fields.addField_string_numeric(C_("NintendoDS", "Key Index"), key_idx);
 
 	const char *const region_code_name = (d->cia
 			? C_("RomData", "Region Code")
@@ -1199,7 +1199,7 @@ int NintendoDS::loadFieldData(void)
 	};
 	vector<string> *const v_dsi_region_bitfield_names = RomFields::strArrayToVector_i18n(
 		"Region", dsi_region_bitfield_names, ARRAY_SIZE(dsi_region_bitfield_names));
-	d->fields->addField_bitfield(region_code_name,
+	d->fields.addField_bitfield(region_code_name,
 		v_dsi_region_bitfield_names, 3, le32_to_cpu(romHeader->dsi.region_code));
 
 	// Age rating(s)
@@ -1237,10 +1237,10 @@ int NintendoDS::loadFieldData(void)
 			age_ratings[i] |= RomFields::AGEBF_PROHIBITED;
 		}
 	}
-	d->fields->addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
+	d->fields.addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
 
 	// Permissions and flags
-	d->fields->addTab("Permissions");
+	d->fields.addTab("Permissions");
 
 	// Permissions
 	static const char *const dsi_permissions_bitfield_names[] = {
@@ -1287,17 +1287,17 @@ int NintendoDS::loadFieldData(void)
 	params.headers = nullptr;
 	params.data.single = vv_dsi_perm;
 	params.mxd.checkboxes = le32_to_cpu(romHeader->dsi.access_control);
-	d->fields->addField_listData(C_("NintendoDS", "Permissions"), &params);
+	d->fields.addField_listData(C_("NintendoDS", "Permissions"), &params);
 
 	// DSi flags
 	auto vv_dsi_flags = d->getDSiFlagsStringVector();
 	params.headers = nullptr;
 	params.data.single = vv_dsi_flags;
 	params.mxd.checkboxes = romHeader->dsi.flags;
-	d->fields->addField_listData(C_("NintendoDS", "Flags"), &params);
+	d->fields.addField_listData(C_("NintendoDS", "Flags"), &params);
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

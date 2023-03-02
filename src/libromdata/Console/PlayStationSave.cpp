@@ -467,7 +467,7 @@ uint32_t PlayStationSave::imgpf(ImageType imageType) const
 int PlayStationSave::loadFieldData(void)
 {
 	RP_D(PlayStationSave);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -480,7 +480,7 @@ int PlayStationSave::loadFieldData(void)
 
 	// PSV (PS1 on PS3) save file header.
 	const PS1_SC_Struct *const scHeader = &d->scHeader;
-	d->fields->reserve(2);	// Maximum of 2 fields.
+	d->fields.reserve(2);	// Maximum of 2 fields.
 
 	// Filename.
 	const char* filename = nullptr;
@@ -499,18 +499,18 @@ int PlayStationSave::loadFieldData(void)
 	}
 
 	if (filename) {
-		d->fields->addField_string(C_("PlayStationSave", "Filename"),
+		d->fields.addField_string(C_("PlayStationSave", "Filename"),
 			cp1252_sjis_to_utf8(filename, 20));
 	}
 
 	// Description.
-	d->fields->addField_string(C_("PlayStationSave", "Description"),
+	d->fields.addField_string(C_("PlayStationSave", "Description"),
 		cp1252_sjis_to_utf8(scHeader->title, sizeof(scHeader->title)));
 
 	// TODO: Moar fields.
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

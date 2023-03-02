@@ -247,7 +247,7 @@ const char *N64::systemName(unsigned int type) const
 int N64::loadFieldData(void)
 {
 	RP_D(N64);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -264,11 +264,11 @@ int N64::loadFieldData(void)
 	// ROM file header is read and byteswapped in the constructor.
 	// TODO: Indicate the byteswapping format?
 	const N64_RomHeader *const romHeader = &d->romHeader;
-	d->fields->reserve(7);	// Maximum of 7 fields.
+	d->fields.reserve(7);	// Maximum of 7 fields.
 
 	// Title.
 	// TODO: Space elimination.
-	d->fields->addField_string(C_("RomData", "Title"),
+	d->fields.addField_string(C_("RomData", "Title"),
 		cp1252_sjis_to_utf8(romHeader->title, sizeof(romHeader->title)),
 		RomFields::STRF_TRIM_END);
 
@@ -281,15 +281,15 @@ int N64::loadFieldData(void)
 			: '_');
 	}
 	id4[4] = 0;
-	d->fields->addField_string(C_("N64", "Game ID"),
+	d->fields.addField_string(C_("N64", "Game ID"),
 		latin1_to_utf8(id4, 4));
 
 	// Revision.
-	d->fields->addField_string_numeric(C_("RomData", "Revision"),
+	d->fields.addField_string_numeric(C_("RomData", "Revision"),
 		romHeader->revision, RomFields::Base::Dec, 2);
 
 	// Entry point.
-	d->fields->addField_string_numeric(C_("N64", "Entry Point"),
+	d->fields.addField_string_numeric(C_("N64", "Entry Point"),
 		romHeader->entrypoint, RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
 
 	// OS version.
@@ -303,10 +303,10 @@ int N64::loadFieldData(void)
 			romHeader->os_version[2] / 10,
 			romHeader->os_version[2] % 10,
 			romHeader->os_version[3]);
-		d->fields->addField_string(os_version_title, buf);
+		d->fields.addField_string(os_version_title, buf);
 	} else {
 		// Unrecognized Release field.
-		d->fields->addField_string_hexdump(os_version_title,
+		d->fields.addField_string_hexdump(os_version_title,
 			romHeader->os_version, sizeof(romHeader->os_version),
 			RomFields::STRF_MONOSPACE);
 	}
@@ -316,21 +316,21 @@ int N64::loadFieldData(void)
 	const char *clockrate_title = C_("N64", "Clock Rate");
 	const uint32_t clockrate = (romHeader->clockrate & ~0xFU);
 	if (clockrate == 0) {
-		d->fields->addField_string(clockrate_title,
+		d->fields.addField_string(clockrate_title,
 			C_("N64|ClockRate", "0 (default)"));
 	} else {
-		d->fields->addField_string(clockrate_title,
+		d->fields.addField_string(clockrate_title,
 			LibRpText::formatFrequency(clockrate));
 	}
 
 	// CRCs.
 	snprintf(buf, sizeof(buf), "0x%08X 0x%08X",
 		romHeader->crc[0], romHeader->crc[1]);
-	d->fields->addField_string(C_("N64", "CRCs"),
+	d->fields.addField_string(C_("N64", "CRCs"),
 		buf, RomFields::STRF_MONOSPACE);
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

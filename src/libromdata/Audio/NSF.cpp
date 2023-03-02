@@ -181,7 +181,7 @@ const char *NSF::systemName(unsigned int type) const
 int NSF::loadFieldData(void)
 {
 	RP_D(NSF);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -194,49 +194,49 @@ int NSF::loadFieldData(void)
 
 	// NSF header.
 	const NSF_Header *const nsfHeader = &d->nsfHeader;
-	d->fields->reserve(10);	// Maximum of 10 fields.
+	d->fields.reserve(10);	// Maximum of 10 fields.
 
 	// NOTE: The NSF specification says ASCII, but I'm assuming
 	// the text is cp1252 and/or Shift-JIS.
 
 	// Title.
 	if (nsfHeader->title[0] != 0) {
-		d->fields->addField_string(C_("RomData|Audio", "Title"),
+		d->fields.addField_string(C_("RomData|Audio", "Title"),
 			cp1252_sjis_to_utf8(nsfHeader->title, sizeof(nsfHeader->title)));
 	}
 
 	// Composer.
 	if (nsfHeader->composer[0] != 0) {
-		d->fields->addField_string(C_("RomData|Audio", "Composer"),
+		d->fields.addField_string(C_("RomData|Audio", "Composer"),
 			cp1252_sjis_to_utf8(nsfHeader->composer, sizeof(nsfHeader->composer)));
 	}
 
 	// Copyright.
 	if (nsfHeader->copyright[0] != 0) {
-		d->fields->addField_string(C_("RomData|Audio", "Copyright"),
+		d->fields.addField_string(C_("RomData|Audio", "Copyright"),
 			cp1252_sjis_to_utf8(nsfHeader->copyright, sizeof(nsfHeader->copyright)));
 	}
 
 	// Number of tracks.
-	d->fields->addField_string_numeric(C_("RomData|Audio", "Track Count"),
+	d->fields.addField_string_numeric(C_("RomData|Audio", "Track Count"),
 		nsfHeader->track_count);
 
 	// Default track number.
-	d->fields->addField_string_numeric(C_("RomData|Audio", "Default Track #"),
+	d->fields.addField_string_numeric(C_("RomData|Audio", "Default Track #"),
 		nsfHeader->default_track);
 
 	// Load address.
-	d->fields->addField_string_numeric(C_("NSF", "Load Address"),
+	d->fields.addField_string_numeric(C_("NSF", "Load Address"),
 		le16_to_cpu(nsfHeader->load_address),
 		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Init address.
-	d->fields->addField_string_numeric(C_("NSF", "Init Address"),
+	d->fields.addField_string_numeric(C_("NSF", "Init Address"),
 		le16_to_cpu(nsfHeader->init_address),
 		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Play address.
-	d->fields->addField_string_numeric(C_("NSF", "Play Address"),
+	d->fields.addField_string_numeric(C_("NSF", "Play Address"),
 		le16_to_cpu(nsfHeader->play_address),
 		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
@@ -254,7 +254,7 @@ int NSF::loadFieldData(void)
 	}
 	vector<string> *const v_tv_system_bitfield_names = RomFields::strArrayToVector(
 		tv_system_bitfield_names, ARRAY_SIZE(tv_system_bitfield_names));
-	d->fields->addField_bitfield(C_("NSF", "TV System"),
+	d->fields.addField_bitfield(C_("NSF", "TV System"),
 		v_tv_system_bitfield_names, 0, bfval);
 
 	// Expansion audio.
@@ -264,11 +264,11 @@ int NSF::loadFieldData(void)
 	};
 	vector<string> *const v_expansion_bitfield_names = RomFields::strArrayToVector(
 		expansion_bitfield_names, ARRAY_SIZE(expansion_bitfield_names));
-	d->fields->addField_bitfield(C_("NSF", "Expansion"),
+	d->fields.addField_bitfield(C_("NSF", "Expansion"),
 		v_expansion_bitfield_names, 3, nsfHeader->expansion_audio);
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

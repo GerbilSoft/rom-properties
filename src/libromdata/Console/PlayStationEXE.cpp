@@ -229,7 +229,7 @@ const char *PlayStationEXE::systemName(unsigned int type) const
 int PlayStationEXE::loadFieldData(void)
 {
 	RP_D(PlayStationEXE);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -243,32 +243,32 @@ int PlayStationEXE::loadFieldData(void)
 	// Parse the PS-X executable.
 	const PS1_EXE_Header *const psxHeader = &d->psxHeader;
 
-	d->fields->reserve(6);	// Maximum of 6 fields.
-	d->fields->setTabName(0, "PS1 EXE");
+	d->fields.reserve(6);	// Maximum of 6 fields.
+	d->fields.setTabName(0, "PS1 EXE");
 
 	// RAM Address
-	d->fields->addField_string_numeric(C_("PlayStationEXE", "RAM Address"),
+	d->fields.addField_string_numeric(C_("PlayStationEXE", "RAM Address"),
 		le32_to_cpu(psxHeader->ram_addr), RomFields::Base::Hex, 8,
 		RomFields::STRF_MONOSPACE);
 
 	// Initial PC
-	d->fields->addField_string_numeric(C_("PlayStationEXE", "Initial PC"),
+	d->fields.addField_string_numeric(C_("PlayStationEXE", "Initial PC"),
 		le32_to_cpu(psxHeader->initial_pc), RomFields::Base::Hex, 8,
 		RomFields::STRF_MONOSPACE);
 
 	// Initial GP
-	d->fields->addField_string_numeric(C_("PlayStationEXE", "Initial GP"),
+	d->fields.addField_string_numeric(C_("PlayStationEXE", "Initial GP"),
 		le32_to_cpu(psxHeader->initial_gp), RomFields::Base::Hex, 8,
 		RomFields::STRF_MONOSPACE);
 
 	// Initial SP
 	const uint32_t initial_sp = (d->sp_override != 0 ? d->sp_override : le32_to_cpu(psxHeader->initial_sp));
-	d->fields->addField_string_numeric(C_("PlayStationEXE", "Initial SP/FP"),
+	d->fields.addField_string_numeric(C_("PlayStationEXE", "Initial SP/FP"),
 		initial_sp, RomFields::Base::Hex, 8,
 		RomFields::STRF_MONOSPACE);
 
 	// Initial SP offset
-	d->fields->addField_string_numeric(C_("PlayStationEXE", "Initial SP Offset"),
+	d->fields.addField_string_numeric(C_("PlayStationEXE", "Initial SP Offset"),
 		le32_to_cpu(psxHeader->initial_sp_off), RomFields::Base::Hex, 8,
 		RomFields::STRF_MONOSPACE);
 
@@ -293,14 +293,14 @@ int PlayStationEXE::loadFieldData(void)
 	}
 	const char *const s_region_title = C_("RomData", "Region");
 	if (s_region) {
-		d->fields->addField_string(s_region_title, s_region);
+		d->fields.addField_string(s_region_title, s_region);
 	} else {
-		d->fields->addField_string(s_region_title, 
+		d->fields.addField_string(s_region_title, 
 			latin1_to_utf8(psxHeader->region_id, sizeof(psxHeader->region_id)));
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 }

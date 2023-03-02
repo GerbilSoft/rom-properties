@@ -334,7 +334,7 @@ const char *Sega8Bit::systemName(unsigned int type) const
 int Sega8Bit::loadFieldData(void)
 {
 	RP_D(Sega8Bit);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -347,7 +347,7 @@ int Sega8Bit::loadFieldData(void)
 
 	// Sega 8-bit ROM header. (TMR SEGA)
 	const Sega8_RomHeader *const tmr = &d->romHeader.tmr;
-	d->fields->reserve(11);	// Maximum of 11 fields.
+	d->fields.reserve(11);	// Maximum of 11 fields.
 
 	// BCD conversion buffer.
 	char bcdbuf[16];
@@ -374,7 +374,7 @@ int Sega8Bit::loadFieldData(void)
 	p[2] = ('0' + ((tmr->product_code[0] >> 4) & 0xF));
 	p[3] = ('0' +  (tmr->product_code[0] & 0xF));
 	p[4] = 0;
-	d->fields->addField_string(C_("Sega8Bit", "Product Code"), bcdbuf);
+	d->fields.addField_string(C_("Sega8Bit", "Product Code"), bcdbuf);
 
 	// Version.
 	uint8_t digit = tmr->product_code[2] & 0xF;
@@ -386,7 +386,7 @@ int Sega8Bit::loadFieldData(void)
 		bcdbuf[1] = ('0' + digit - 10);
 		bcdbuf[2] = 0;
 	}
-	d->fields->addField_string(C_("RomData", "Version"), bcdbuf);
+	d->fields.addField_string(C_("RomData", "Version"), bcdbuf);
 
 	// Region code and system ID.
 	const char *sysID;
@@ -419,13 +419,13 @@ int Sega8Bit::loadFieldData(void)
 			sysID = nullptr;
 			region = nullptr;
 	}
-	d->fields->addField_string(C_("Sega8Bit", "System"),
+	d->fields.addField_string(C_("Sega8Bit", "System"),
 		(sysID ? sysID : C_("RomData", "Unknown")));
-	d->fields->addField_string(C_("RomData", "Region Code"),
+	d->fields.addField_string(C_("RomData", "Region Code"),
 		(region ? region : C_("RomData", "Unknown")));
 
 	// Checksum.
-	d->fields->addField_string_numeric(C_("RomData", "Checksum"),
+	d->fields.addField_string_numeric(C_("RomData", "Checksum"),
 		le16_to_cpu(tmr->checksum), RomFields::Base::Hex, 4,
 		RomFields::STRF_MONOSPACE);
 
@@ -437,31 +437,31 @@ int Sega8Bit::loadFieldData(void)
 	{
 		// Codemasters checksums match.
 		const Sega8_Codemasters_RomHeader *const codemasters = &d->romHeader.codemasters;
-		d->fields->addField_string(C_("Sega8Bit", "Extra Header"), "Codemasters");
+		d->fields.addField_string(C_("Sega8Bit", "Extra Header"), "Codemasters");
 
 		// Build time.
 		// NOTE: CreationDate is currently handled as QDate on KDE.
 		time_t ctime = d->codemasters_timestamp_to_unix_time(&codemasters->timestamp);
 
-		d->fields->addField_dateTime(C_("Sega8Bit", "Build Time"), ctime,
+		d->fields.addField_dateTime(C_("Sega8Bit", "Build Time"), ctime,
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_HAS_TIME |
 			RomFields::RFT_DATETIME_IS_UTC  // No timezone information here.
 		);
 
 		// Checksum.
-		d->fields->addField_string_numeric(C_("Sega8Bit", "CM Checksum Banks"),
+		d->fields.addField_string_numeric(C_("Sega8Bit", "CM Checksum Banks"),
 			codemasters->checksum_banks);
-		d->fields->addField_string_numeric(C_("Sega8Bit", "CM Checksum 1"),
+		d->fields.addField_string_numeric(C_("Sega8Bit", "CM Checksum 1"),
 			le16_to_cpu(codemasters->checksum),
 			RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
-		d->fields->addField_string_numeric(C_("Sega8Bit", "CM Checksum 2"),
+		d->fields.addField_string_numeric(C_("Sega8Bit", "CM Checksum 2"),
 			le16_to_cpu(codemasters->checksum_compl),
 			RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 	} else if (d->romHeader.sdsc.magic == cpu_to_be32(SDSC_MAGIC)) {
 		// SDSC header magic.
 		const Sega8_SDSC_RomHeader *sdsc = &d->romHeader.sdsc;
-		d->fields->addField_string(C_("Sega8Bit", "Extra Header"), "SDSC");
+		d->fields.addField_string(C_("Sega8Bit", "Extra Header"), "SDSC");
 
 		// Version number. Stored as two BCD values, major.minor.
 		// TODO: Verify BCD.
@@ -474,33 +474,33 @@ int Sega8Bit::loadFieldData(void)
 		p[2] = ('0' + (sdsc->version[1] >> 4));
 		p[3] = ('0' + (sdsc->version[1] & 0x0F));
 		p[4] = 0;
-		d->fields->addField_string(C_("Sega8Bit", "SDSC Version"), bcdbuf);
+		d->fields.addField_string(C_("Sega8Bit", "SDSC Version"), bcdbuf);
 
 		// Build date.
 		time_t ctime = d->sdsc_date_to_unix_time(&sdsc->date);
 
-		d->fields->addField_dateTime(C_("Sega8Bit", "Build Date"), ctime,
+		d->fields.addField_dateTime(C_("Sega8Bit", "Build Date"), ctime,
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_IS_UTC  // No timezone information here.
 		);
 
 		// SDSC string fields.
-		d->fields->addField_string(C_("RomData", "Author"),
+		d->fields.addField_string(C_("RomData", "Author"),
 			d->getSdscString(le16_to_cpu(sdsc->author_ptr)));
-		d->fields->addField_string(C_("RomData", "Name"),
+		d->fields.addField_string(C_("RomData", "Name"),
 			d->getSdscString(le16_to_cpu(sdsc->name_ptr)));
-		d->fields->addField_string(C_("RomData", "Description"),
+		d->fields.addField_string(C_("RomData", "Description"),
 			d->getSdscString(le16_to_cpu(sdsc->desc_ptr)));
 	} else if (!memcmp(d->romHeader.m404_copyright, "COPYRIGHT SEGA", 14) ||
 		   !memcmp(d->romHeader.m404_copyright, "COPYRIGHTSEGA", 13))
 	{
 		// Sega Master System M404 prototype copyright.
-		d->fields->addField_string(C_("Sega8Bit", "Extra Header"),
+		d->fields.addField_string(C_("Sega8Bit", "Extra Header"),
 			C_("Sega8Bit", "M404 Copyright Header"));
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

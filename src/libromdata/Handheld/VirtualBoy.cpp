@@ -310,7 +310,7 @@ const char *VirtualBoy::systemName(unsigned int type) const
 int VirtualBoy::loadFieldData(void)
 {
 	RP_D(VirtualBoy);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -323,16 +323,16 @@ int VirtualBoy::loadFieldData(void)
 
 	// Virtual Boy ROM footer, excluding the vector table.
 	const VB_RomFooter *const romFooter = &d->romFooter;
-	d->fields->reserve(5);	// Maximum of 5 fields.
+	d->fields.reserve(5);	// Maximum of 5 fields.
 
 	// Title
-	d->fields->addField_string(C_("RomData", "Title"),
+	d->fields.addField_string(C_("RomData", "Title"),
 		cp1252_sjis_to_utf8(romFooter->title, sizeof(romFooter->title)));
 
 	// Game ID and publisher.
 	string id6(romFooter->gameid, sizeof(romFooter->gameid));
 	id6.append(romFooter->publisher, sizeof(romFooter->publisher));
-	d->fields->addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id6));
+	d->fields.addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id6));
 
 	// Look up the publisher.
 	const char *const publisher = NintendoPublishers::lookup(romFooter->publisher);
@@ -351,10 +351,10 @@ int VirtualBoy::loadFieldData(void)
 				static_cast<uint8_t>(romFooter->publisher[1]));
 		}
 	}
-	d->fields->addField_string(C_("RomData", "Publisher"), s_publisher);
+	d->fields.addField_string(C_("RomData", "Publisher"), s_publisher);
 
 	// Revision
-	d->fields->addField_string_numeric(C_("RomData", "Revision"),
+	d->fields.addField_string_numeric(C_("RomData", "Revision"),
 		romFooter->version, RomFields::Base::Dec, 2);
 
 	// Region
@@ -371,14 +371,14 @@ int VirtualBoy::loadFieldData(void)
 			break;
 	}
 	if (s_region) {
-		d->fields->addField_string(C_("RomData", "Region Code"), s_region);
+		d->fields.addField_string(C_("RomData", "Region Code"), s_region);
 	} else {
-		d->fields->addField_string(C_("RomData", "Region Code"),
+		d->fields.addField_string(C_("RomData", "Region Code"),
 			rp_sprintf(C_("RomData", "Unknown (0x%02X)"),
 				static_cast<uint8_t>(romFooter->gameid[3])));
 	}
 
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 }

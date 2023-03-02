@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Lua.cpp: Lua binary chunk reader.                                       *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * Copyright (c) 2016-2022 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -653,7 +653,7 @@ const char *Lua::systemName(unsigned int type) const
 int Lua::loadFieldData(void)
 {
 	RP_D(Lua);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -666,7 +666,7 @@ int Lua::loadFieldData(void)
 
 	d->parse();
 
-	d->fields->reserve(10);	// Maximum of 10 fields.
+	d->fields.reserve(10);	// Maximum of 10 fields.
 
 	if (d->endianness != LuaPrivate::Endianness::Unknown) {
 		const char *s_endianness = nullptr;
@@ -682,19 +682,19 @@ int Lua::loadFieldData(void)
 				break;
 		}
 		if (s_endianness) {
-			d->fields->addField_string(C_("RomData", "Endianness"), s_endianness);
+			d->fields.addField_string(C_("RomData", "Endianness"), s_endianness);
 		}
 	}
 	if (d->int_size != -1)
-		d->fields->addField_string_numeric(C_("Lua", "int size"), d->int_size);
+		d->fields.addField_string_numeric(C_("Lua", "int size"), d->int_size);
 	if (d->size_t_size != -1)
-		d->fields->addField_string_numeric(C_("Lua", "size_t size"), d->size_t_size);
+		d->fields.addField_string_numeric(C_("Lua", "size_t size"), d->size_t_size);
 	if (d->instruction_size != -1)
-		d->fields->addField_string_numeric(C_("Lua", "lua_Instruction size"), d->instruction_size);
+		d->fields.addField_string_numeric(C_("Lua", "lua_Instruction size"), d->instruction_size);
 	if (d->integer_size != -1)
-		d->fields->addField_string_numeric(C_("Lua", "lua_Integer size"), d->integer_size);
+		d->fields.addField_string_numeric(C_("Lua", "lua_Integer size"), d->integer_size);
 	if (d->number_size != -1)
-		d->fields->addField_string_numeric(C_("Lua", "lua_Number size"), d->number_size);
+		d->fields.addField_string_numeric(C_("Lua", "lua_Number size"), d->number_size);
 	if (d->is_integral != LuaPrivate::IntegralType::Unknown) {
 		const char *s_integral_type = nullptr;
 		switch (d->is_integral) {
@@ -712,20 +712,20 @@ int Lua::loadFieldData(void)
 				break;
 		}
 		if (s_integral_type) {
-			d->fields->addField_string(C_("Lua", "lua_Number type"), s_integral_type);
+			d->fields.addField_string(C_("Lua", "lua_Number type"), s_integral_type);
 		}
 	}
 	if (d->is_float_swapped)
-		d->fields->addField_string(C_("RomData", "Warning"),
+		d->fields.addField_string(C_("RomData", "Warning"),
 			C_("Lua", "Floating-point values are byte-swapped"), RomFields::STRF_WARNING);
 	if (d->weird_layout)
-		d->fields->addField_string(C_("RomData", "Warning"),
+		d->fields.addField_string(C_("RomData", "Warning"),
 			C_("Lua", "Unusual instruction layout"), RomFields::STRF_WARNING);
 	if (d->corrupted)
-		d->fields->addField_string(C_("RomData", "Warning"),
+		d->fields.addField_string(C_("RomData", "Warning"),
 			C_("Lua", "File corrupted"), RomFields::STRF_WARNING);
 
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 }

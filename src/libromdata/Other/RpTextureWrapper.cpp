@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * RpTextureWrapper.hpp: librptexture file format wrapper.                 *
  *                                                                         *
- * Copyright (c) 2019-2021 by David Korth.                                 *
+ * Copyright (c) 2019-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -247,7 +247,7 @@ uint32_t RpTextureWrapper::imgpf(ImageType imageType) const
 int RpTextureWrapper::loadFieldData(void)
 {
 	RP_D(RpTextureWrapper);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -260,13 +260,13 @@ int RpTextureWrapper::loadFieldData(void)
 
 	// RpTextureWrapper header
 	const FileFormat *const texture = d->texture;
-	d->fields->reserve(4);	// Maximum of 4 fields.
+	d->fields.reserve(4);	// Maximum of 4 fields.
 
 	// Dimensions
 	int dimensions[3];
 	int ret = texture->getDimensions(dimensions);
 	if (ret == 0) {
-		d->fields->addField_dimensions(C_("RpTextureWrapper", "Dimensions"),
+		d->fields.addField_dimensions(C_("RpTextureWrapper", "Dimensions"),
 			dimensions[0], dimensions[1], dimensions[2]);
 
 		// Rescale dimensions (may not be present)
@@ -276,7 +276,7 @@ int RpTextureWrapper::loadFieldData(void)
 		if (ret == 0 && (rescale_dimensions[0] != dimensions[0] ||
 		                 rescale_dimensions[1] != dimensions[1]))
 		{
-			d->fields->addField_dimensions(C_("RpTextureWrapper", "Rescale To"),
+			d->fields.addField_dimensions(C_("RpTextureWrapper", "Rescale To"),
 				rescale_dimensions[0], rescale_dimensions[1]);
 		}
 	}
@@ -287,22 +287,22 @@ int RpTextureWrapper::loadFieldData(void)
 	// image to find it, but that would be slow.
 	const char *const pixelFormat = texture->pixelFormat();
 	if (pixelFormat) {
-		d->fields->addField_string(C_("RpTextureWrapper", "Pixel Format"), pixelFormat);
+		d->fields.addField_string(C_("RpTextureWrapper", "Pixel Format"), pixelFormat);
 	}
 
 	// Mipmap count
 	int mipmapCount = texture->mipmapCount();
 	if (mipmapCount >= 0) {
-		d->fields->addField_string_numeric(C_("RpTextureWrapper", "Mipmap Count"), mipmapCount);
+		d->fields.addField_string_numeric(C_("RpTextureWrapper", "Mipmap Count"), mipmapCount);
 	}
 
 	// Texture-specific fields.
-	texture->getFields(d->fields);
+	texture->getFields(&d->fields);
 
 	// TODO: More fields.
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

@@ -441,7 +441,7 @@ const char *MachO::systemName(unsigned int type) const
 int MachO::loadFieldData(void)
 {
 	RP_D(MachO);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -461,8 +461,8 @@ int MachO::loadFieldData(void)
 
 	// Maximum of 4 fields per architecture.
 	const int n_tabs = static_cast<int>(d->machHeaders.size());
-	d->fields->reserve(4*n_tabs);
-	d->fields->reserveTabs(n_tabs);
+	d->fields.reserve(4*n_tabs);
+	d->fields.reserveTabs(n_tabs);
 
 	int i = 0;
 	auto fmtIter = d->machFormats.cbegin();
@@ -478,10 +478,10 @@ int MachO::loadFieldData(void)
 
 		// TODO: Change addTab() behavior to set the first tab's name?
 		if (i == 0) {
-			d->fields->setTabName(i, s_cpu ? s_cpu :
+			d->fields.setTabName(i, s_cpu ? s_cpu :
 				rp_sprintf("0x%08X", machHeader->cputype).c_str());
 		} else {
-			d->fields->addTab(s_cpu ? s_cpu :
+			d->fields.addTab(s_cpu ? s_cpu :
 				rp_sprintf("0x%08X", machHeader->cputype).c_str());
 		}
 
@@ -496,20 +496,20 @@ int MachO::loadFieldData(void)
 		if (machFormat > MachOPrivate::Mach_Format::Unknown &&
 		    (int)machFormat < ARRAY_SIZE_I(exec_type_tbl))
 		{
-			d->fields->addField_string(format_title,
+			d->fields.addField_string(format_title,
 				dpgettext_expr(RP_I18N_DOMAIN, "RomData|ExecType", exec_type_tbl[(int)machFormat]));
 		} else {
 			// TODO: Show individual values.
 			// NOTE: This shouldn't happen...
-			d->fields->addField_string(format_title, C_("RomData", "Unknown"));
+			d->fields.addField_string(format_title, C_("RomData", "Unknown"));
 		}
 
 		// CPU type.
 		const char *const cpu_title = C_("MachO", "CPU");
 		if (s_cpu) {
-			d->fields->addField_string(cpu_title, s_cpu);
+			d->fields.addField_string(cpu_title, s_cpu);
 		} else {
-			d->fields->addField_string(cpu_title,
+			d->fields.addField_string(cpu_title,
 				rp_sprintf(C_("RomData", "Unknown (%u)"), machHeader->cputype & 0xFFFFFF));
 		}
 
@@ -517,7 +517,7 @@ int MachO::loadFieldData(void)
 		const char *const s_cpu_subtype = MachOData::lookup_cpu_subtype(
 			machHeader->cputype, machHeader->cpusubtype);
 		if (s_cpu_subtype) {
-			d->fields->addField_string(C_("MachO", "CPU Subtype"), s_cpu_subtype);
+			d->fields.addField_string(C_("MachO", "CPU Subtype"), s_cpu_subtype);
 		}
 
 		// Flags.
@@ -542,12 +542,12 @@ int MachO::loadFieldData(void)
 		};
 		vector<string> *const v_flags_bitfield_names = RomFields::strArrayToVector(
 			flags_bitfield_names, ARRAY_SIZE(flags_bitfield_names));
-		d->fields->addField_bitfield(C_("MachO", "Flags"),
+		d->fields.addField_bitfield(C_("MachO", "Flags"),
 			v_flags_bitfield_names, 3, machHeader->flags);
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 }

@@ -383,7 +383,7 @@ const char *BCSTM::systemName(unsigned int type) const
 int BCSTM::loadFieldData(void)
 {
 	RP_D(BCSTM);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -396,7 +396,7 @@ int BCSTM::loadFieldData(void)
 
 	// BCSTM headers
 	const BCSTM_Header *const bcstmHeader = &d->bcstmHeader;
-	d->fields->reserve(9);	// Maximum of 9 fields.
+	d->fields.reserve(9);	// Maximum of 9 fields.
 
 	// Type
 	// Disambiguates between the supported formats.
@@ -407,16 +407,16 @@ int BCSTM::loadFieldData(void)
 	if (d->audioFormat > BCSTMPrivate::AudioFormat::Unknown &&
 	    (int)d->audioFormat < ARRAY_SIZE_I(type_tbl))
 	{
-		d->fields->addField_string(type_title, type_tbl[(int)d->audioFormat]);
+		d->fields.addField_string(type_title, type_tbl[(int)d->audioFormat]);
 	} else {
-		d->fields->addField_string(type_title,
+		d->fields.addField_string(type_title,
 			rp_sprintf(C_("RomData", "Unknown (%d)"), (int)d->audioFormat));
 	}
 
 	// TODO: Show the version field?
 
 	// Endianness
-	d->fields->addField_string(C_("RomData", "Endianness"),
+	d->fields.addField_string(C_("RomData", "Endianness"),
 		(bcstmHeader->bom == cpu_to_be16(BCSTM_BOM_HOST))
 			? C_("RomData", "Big-Endian")
 			: C_("RomData", "Little-Endian"));
@@ -473,44 +473,44 @@ int BCSTM::loadFieldData(void)
 	};
 	const char *const codec_title = C_("BCSTM", "Codec");
 	if (codec < ARRAY_SIZE(codec_tbl)) {
-		d->fields->addField_string(codec_title,
+		d->fields.addField_string(codec_title,
 			dpgettext_expr(RP_I18N_DOMAIN, "BCSTM|Codec", codec_tbl[codec]));
 	} else {
-		d->fields->addField_string(codec_title,
+		d->fields.addField_string(codec_title,
 			rp_sprintf(C_("RomData", "Unknown (%u)"), codec));
 	}
 
 	// Number of channels
-	d->fields->addField_string_numeric(C_("RomData|Audio", "Channels"), channel_count);
+	d->fields.addField_string_numeric(C_("RomData|Audio", "Channels"), channel_count);
 
 	// Sample rate
 	// NOTE: Using ostringstream for localized numeric formatting.
 	ostringstream oss;
 	oss << sample_rate << " Hz";
-	d->fields->addField_string(C_("RomData|Audio", "Sample Rate"), oss.str());
+	d->fields.addField_string(C_("RomData|Audio", "Sample Rate"), oss.str());
 
 	// Length (non-looping)
 	// TODO: Figure this out for BCWAV.
 	if (d->audioFormat != BCSTMPrivate::AudioFormat::BCWAV) {
-		d->fields->addField_string(C_("RomData|Audio", "Length"),
+		d->fields.addField_string(C_("RomData|Audio", "Length"),
 			formatSampleAsTime(sample_count, sample_rate));
 	}
 
 	// Looping
-	d->fields->addField_string(C_("BCSTM", "Looping"),
+	d->fields.addField_string(C_("BCSTM", "Looping"),
 		(loop_flag ? C_("RomData", "Yes") : C_("RomData", "No")));
 	if (loop_flag) {
-		d->fields->addField_string(C_("BCSTM", "Loop Start"),
+		d->fields.addField_string(C_("BCSTM", "Loop Start"),
 			formatSampleAsTime(loop_start, sample_rate));
 		if (d->audioFormat == BCSTMPrivate::AudioFormat::BCSTM) {
 			// TODO: Verify that this isn't used in looping BFSTMs.
-			d->fields->addField_string(C_("BCSTM", "Loop End"),
+			d->fields.addField_string(C_("BCSTM", "Loop End"),
 				formatSampleAsTime(loop_end, sample_rate));
 		}
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

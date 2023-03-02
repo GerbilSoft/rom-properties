@@ -659,7 +659,7 @@ uint32_t Xbox_XBE::imgpf(ImageType imageType) const
 int Xbox_XBE::loadFieldData(void)
 {
 	RP_D(Xbox_XBE);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -680,11 +680,11 @@ int Xbox_XBE::loadFieldData(void)
 	}
 
 	// Maximum of 13 fields.
-	d->fields->reserve(13);
-	d->fields->setTabName(0, "XBE");
+	d->fields.reserve(13);
+	d->fields.setTabName(0, "XBE");
 
 	// Game name
-	d->fields->addField_string(C_("RomData", "Title"),
+	d->fields.addField_string(C_("RomData", "Title"),
 		utf16le_to_utf8(xbeCertificate->title_name, ARRAY_SIZE_I(xbeCertificate->title_name)));
 
 	// Original PE filename
@@ -700,13 +700,13 @@ int Xbox_XBE::loadFieldData(void)
 			pe_filename_W[ARRAY_SIZE(pe_filename_W)-1] = 0;
 			string pe_filename = utf16le_to_utf8(pe_filename_W, -1);
 			if (!pe_filename.empty()) {
-				d->fields->addField_string(s_filename_title, pe_filename);
+				d->fields.addField_string(s_filename_title, pe_filename);
 			} else {
-				d->fields->addField_string(s_filename_title, C_("RomData", "Unknown"));
+				d->fields.addField_string(s_filename_title, C_("RomData", "Unknown"));
 			}
 		}
 	} else {
-		d->fields->addField_string(s_filename_title, C_("RomData", "Unknown"));
+		d->fields.addField_string(s_filename_title, C_("RomData", "Unknown"));
 	}
 
 	// Title ID
@@ -731,7 +731,7 @@ int Xbox_XBE::loadFieldData(void)
 		tid_str.append(hexbuf, 2);
 	}
 
-	d->fields->addField_string(C_("Xbox_XBE", "Title ID"),
+	d->fields.addField_string(C_("Xbox_XBE", "Title ID"),
 		rp_sprintf_p(C_("Xbox_XBE", "%1$08X (%2$s-%3$03u)"),
 			le32_to_cpu(xbeCertificate->title_id.u32),
 			tid_str.c_str(),
@@ -739,19 +739,19 @@ int Xbox_XBE::loadFieldData(void)
 		RomFields::STRF_MONOSPACE);
 
 	// Publisher
-	d->fields->addField_string(C_("RomData", "Publisher"), d->getPublisher());
+	d->fields.addField_string(C_("RomData", "Publisher"), d->getPublisher());
 
 	// Timestamp
 	// TODO: time_t is signed, so values greater than 2^31-1 may be negative.
 	const char *const s_timestamp_title = C_("Xbox_XBE", "Timestamp");
 	uint32_t timestamp = le32_to_cpu(xbeHeader->timestamp);
 	if (timestamp != 0) {
-		d->fields->addField_dateTime(s_timestamp_title,
+		d->fields.addField_dateTime(s_timestamp_title,
 			static_cast<time_t>(timestamp),
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_HAS_TIME);
 	} else {
-		d->fields->addField_string(s_timestamp_title, C_("Xbox_XBE", "Not set"));
+		d->fields.addField_string(s_timestamp_title, C_("Xbox_XBE", "Not set"));
 	}
 
 	// Media types
@@ -794,7 +794,7 @@ int Xbox_XBE::loadFieldData(void)
 		oss << media_type_tbl[i];
 	}
 
-	d->fields->addField_string(C_("Xbox_XBE", "Media Types"),
+	d->fields.addField_string(C_("Xbox_XBE", "Media Types"),
 		found ? oss.str() : C_("Xbox_XBE", "None"));
 
 	// Initialization flags
@@ -807,7 +807,7 @@ int Xbox_XBE::loadFieldData(void)
 	};
 	vector<string> *const v_init_flags = RomFields::strArrayToVector_i18n(
 		"Region", init_flags_tbl, ARRAY_SIZE(init_flags_tbl));
-	d->fields->addField_bitfield(C_("Xbox_XBE", "Init Flags"),
+	d->fields.addField_bitfield(C_("Xbox_XBE", "Init Flags"),
 		v_init_flags, 2, init_flags);
 
 	// Region code
@@ -826,7 +826,7 @@ int Xbox_XBE::loadFieldData(void)
 	};
 	vector<string> *const v_region_code = RomFields::strArrayToVector_i18n(
 		"Region", region_code_tbl, ARRAY_SIZE(region_code_tbl));
-	d->fields->addField_bitfield(C_("RomData", "Region Code"),
+	d->fields.addField_bitfield(C_("RomData", "Region Code"),
 		v_region_code, 3, region_code);
 
 	// TODO: Age ratings, disc number
@@ -837,12 +837,12 @@ int Xbox_XBE::loadFieldData(void)
 		// Add the fields.
 		const RomFields *const exeFields = pe_exe->fields();
 		if (exeFields) {
-			d->fields->addFields_romFields(exeFields, RomFields::TabOffset_AddTabs);
+			d->fields.addFields_romFields(exeFields, RomFields::TabOffset_AddTabs);
 		}
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

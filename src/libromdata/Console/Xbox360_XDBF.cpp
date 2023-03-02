@@ -1134,7 +1134,7 @@ int Xbox360_XDBF_Private::addFields_achievements_SPA(void)
 	params.col_attrs.sort_col	= 0;	// ID
 	params.col_attrs.sort_dir	= RomFields::COLSORTORDER_ASCENDING;
 	params.mxd.icons = vv_icons;
-	fields->addField_listData(C_("Xbox360_XDBF", "Achievements"), &params);
+	fields.addField_listData(C_("Xbox360_XDBF", "Achievements"), &params);
 	return 0;
 }
 
@@ -1340,7 +1340,7 @@ int Xbox360_XDBF_Private::addFields_avatarAwards_SPA(void)
 	params.col_attrs.sort_dir	= RomFields::COLSORTORDER_ASCENDING;
 	params.data.multi = mvv_xgaa;
 	params.mxd.icons = vv_icons;
-	fields->addField_listData(C_("Xbox360_XDBF", "Avatar Awards"), &params);
+	fields.addField_listData(C_("Xbox360_XDBF", "Avatar Awards"), &params);
 	return 0;
 }
 
@@ -1542,7 +1542,7 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
 	params.col_attrs.sort_col	= 0;	// ID
 	params.col_attrs.sort_dir	= RomFields::COLSORTORDER_ASCENDING;
 	params.mxd.icons = vv_icons;
-	fields->addField_listData(C_("Xbox360_XDBF", "Achievements"), &params);
+	fields.addField_listData(C_("Xbox360_XDBF", "Achievements"), &params);
 	return 0;
 }
 
@@ -1838,7 +1838,7 @@ uint32_t Xbox360_XDBF::imgpf(ImageType imageType) const
 int Xbox360_XDBF::loadFieldData(void)
 {
 	RP_D(Xbox360_XDBF);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -1858,7 +1858,7 @@ int Xbox360_XDBF::loadFieldData(void)
 	}
 
 	// Default tab name.
-	d->fields->setTabName(0, "XDBF");
+	d->fields.setTabName(0, "XDBF");
 
 	// TODO: XSTR string table handling class.
 	// For now, just reading it directly.
@@ -1867,7 +1867,7 @@ int Xbox360_XDBF::loadFieldData(void)
 	// given a namespace ID and resource ID.
 
 	if (!d->xex) {
-		d->addFields_strings(d->fields);
+		d->addFields_strings(&d->fields);
 	}
 
 	// TODO: Create a separate tab for avatar awards and achievements?
@@ -1881,7 +1881,7 @@ int Xbox360_XDBF::loadFieldData(void)
 	d->addFields_achievements();
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

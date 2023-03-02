@@ -691,7 +691,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 	}
 
 	if (tid_desc) {
-		fields->addField_string(tid_desc, rp_sprintf("%08X-%08X", tid_hi, tid_lo));
+		fields.addField_string(tid_desc, rp_sprintf("%08X-%08X", tid_hi, tid_lo));
 	}
 
 	if (!ncch_header) {
@@ -703,12 +703,12 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 	if (ncch_header->program_id.id != ncch_header->title_id.id) {
 		uint32_t pid_lo = le32_to_cpu(ncch_header->program_id.lo);
 		uint32_t pid_hi = le32_to_cpu(ncch_header->program_id.hi);
-		fields->addField_string(C_("Nintendo3DS", "Program ID"),
+		fields.addField_string(C_("Nintendo3DS", "Program ID"),
 			rp_sprintf("%08X-%08X", pid_hi, pid_lo));
 	}
 
 	// Product code.
-	fields->addField_string(C_("Nintendo3DS", "Product Code"),
+	fields.addField_string(C_("Nintendo3DS", "Product Code"),
 		latin1_to_utf8(ncch_header->product_code, sizeof(ncch_header->product_code)));
 
 	// Content type.
@@ -716,13 +716,13 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 	if (showContentType) {
 		const char *const content_type = ncch->contentType();
 		// TODO: Remove context from "Unknown" and "Invalid" strings.
-		fields->addField_string(C_("Nintendo3DS", "Content Type"),
+		fields.addField_string(C_("Nintendo3DS", "Content Type"),
 			(content_type ? content_type : C_("RomData", "Unknown")));
 
 #ifdef ENABLE_DECRYPTION
 		// Only show the encryption type if a TMD isn't available.
 		if (loadTicketAndTMD() != 0) {
-			fields->addField_string(C_("Nintendo3DS", "Issuer"),
+			fields.addField_string(C_("Nintendo3DS", "Issuer"),
 				ncch->isDebug()
 					? C_("Nintendo3DS", "Debug")
 					: C_("Nintendo3DS", "Retail"));
@@ -736,12 +736,12 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 		int ret = NCCHReader::cryptoType_static(&cryptoType, ncch_header);
 		if (ret != 0 || !cryptoType.encrypted || cryptoType.keyslot >= 0x40) {
 			// Not encrypted, or not using a predefined keyslot.
-			fields->addField_string(s_encryption,
+			fields.addField_string(s_encryption,
 				cryptoType.name
 					? latin1_to_utf8(cryptoType.name, -1)
 					: s_unknown);
 		} else {
-			fields->addField_string(s_encryption,
+			fields.addField_string(s_encryption,
 				rp_sprintf("%s%s (0x%02X)",
 					(cryptoType.name ? cryptoType.name : s_unknown),
 					(cryptoType.seed ? "+Seed" : ""),
@@ -836,7 +836,7 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 	}
 
 	if (logo_name) {
-		fields->addField_string(C_("Nintendo3DS", "Logo"), logo_name);
+		fields.addField_string(C_("Nintendo3DS", "Logo"), logo_name);
 	}
 }
 
@@ -1138,7 +1138,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 	params.headers = nullptr;
 	params.data.single = vv_fs;
 	params.mxd.checkboxes = perm.fsAccess;
-	fields->addField_listData(C_("Nintendo3DS", "FS Access"), &params);
+	fields.addField_listData(C_("Nintendo3DS", "FS Access"), &params);
 
 	// ARM9 access.
 	static const char *const perm_arm9_access[] = {
@@ -1169,7 +1169,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 
 		params.data.single = vv_arm9;
 		params.mxd.checkboxes = perm.ioAccess;
-		fields->addField_listData(C_("Nintendo3DS", "ARM9 Access"), &params);
+		fields.addField_listData(C_("Nintendo3DS", "ARM9 Access"), &params);
 	}
 
 	// Services. Each service is a maximum of 8 characters.
@@ -1195,7 +1195,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 	if (likely(!vv_svc->empty())) {
 		params.flags = 0;
 		params.data.single = vv_svc;
-		fields->addField_listData(C_("Nintendo3DS", "Services"), &params);
+		fields.addField_listData(C_("Nintendo3DS", "Services"), &params);
 	} else {
 		// No services.
 		delete vv_svc;
@@ -1636,7 +1636,7 @@ uint32_t Nintendo3DS::imgpf(ImageType imageType) const
 int Nintendo3DS::loadFieldData(void)
 {
 	RP_D(Nintendo3DS);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -1653,11 +1653,11 @@ int Nintendo3DS::loadFieldData(void)
 
 	// Maximum of 22 fields.
 	// Tested with several CCI, CIA, and NCCH files.
-	d->fields->reserve(22);
+	d->fields.reserve(22);
 
 	// Reserve at least 4 tabs:
 	// SMDH, NCSD/CIA, ExHeader, Permissions
-	d->fields->reserveTabs(4);
+	d->fields.reserveTabs(4);
 
 	// Have we shown a warning yet?
 	bool shownWarning = false;
@@ -1685,7 +1685,7 @@ int Nintendo3DS::loadFieldData(void)
 		if (!ncch) {
 			// Unable to open the primary NCCH section.
 			if (!shownWarning) {
-				d->fields->addField_string(C_("RomData", "Warning"),
+				d->fields.addField_string(C_("RomData", "Warning"),
 					C_("Nintendo3DS", "Unable to open the primary NCCH section."),
 					RomFields::STRF_WARNING);
 				shownWarning = true;
@@ -1702,7 +1702,7 @@ int Nintendo3DS::loadFieldData(void)
 					if (!err) {
 						err = C_("Nintendo3DS", "Unknown error. (THIS IS A BUG!)");
 					}
-					d->fields->addField_string(C_("RomData", "Warning"),
+					d->fields.addField_string(C_("RomData", "Warning"),
 						err, RomFields::STRF_WARNING);
 					shownWarning = true;
 				}
@@ -1713,7 +1713,7 @@ int Nintendo3DS::loadFieldData(void)
 	// Load and parse the SMDH header.
 	bool haveSeparateSMDHTab = true;
 	if (d->headers_loaded & Nintendo3DSPrivate::HEADER_SMDH) {
-		d->fields->setTabName(0, "SMDH");
+		d->fields.setTabName(0, "SMDH");
 		// Will we end up having a separate SMDH tab?
 		if (!(d->headers_loaded & (Nintendo3DSPrivate::HEADER_NCSD | Nintendo3DSPrivate::HEADER_TMD))) {
 			// There will only be a single tab.
@@ -1729,14 +1729,14 @@ int Nintendo3DS::loadFieldData(void)
 		assert(smdh_fields != nullptr);
 		if (smdh_fields) {
 			// Add the SMDH fields.
-			d->fields->addFields_romFields(smdh_fields, 0);
+			d->fields.addFields_romFields(smdh_fields, 0);
 		}
 	} else if (d->mainContent) {
 		// DSiWare SRL.
 		const RomFields *const srl_fields = d->mainContent->fields();
 		assert(srl_fields != nullptr);
 		if (srl_fields) {
-			d->fields->setTabName(0, C_("Nintendo3DS", "DSiWare"));
+			d->fields.setTabName(0, C_("Nintendo3DS", "DSiWare"));
 
 			// Will we end up having a separate DSiWare tab?
 			if (!(d->headers_loaded & (Nintendo3DSPrivate::HEADER_NCSD | Nintendo3DSPrivate::HEADER_TMD))) {
@@ -1752,12 +1752,12 @@ int Nintendo3DS::loadFieldData(void)
 			const int subtab_count = srl_fields->tabCount();
 			if (subtab_count > 1) {
 				for (int subtab = 1; subtab < subtab_count; subtab++) {
-					d->fields->setTabName(subtab, srl_fields->tabName(subtab));
+					d->fields.setTabName(subtab, srl_fields->tabName(subtab));
 				}
 			}
 
 			// Add the DSiWare fields.
-			d->fields->addFields_romFields(srl_fields, 0);
+			d->fields.addFields_romFields(srl_fields, 0);
 		}
 	} else {
 		// Single tab.
@@ -1772,16 +1772,16 @@ int Nintendo3DS::loadFieldData(void)
 		// Display the NCSD header.
 		bool addTID = false;
 		if (haveSeparateSMDHTab) {
-			d->fields->addTab("NCSD");
+			d->fields.addTab("NCSD");
 			addTID = true;
 		} else {
-			d->fields->setTabName(0, "NCSD");
+			d->fields.setTabName(0, "NCSD");
 		}
 
 		if (!ncch) {
 			// Unable to open the primary NCCH section.
 			if (!shownWarning) {
-				d->fields->addField_string(C_("RomData", "Warning"),
+				d->fields.addField_string(C_("RomData", "Warning"),
 					C_("Nintendo3DS", "Unable to open the primary NCCH section."),
 					RomFields::STRF_WARNING);
 				shownWarning = true;
@@ -1798,7 +1798,7 @@ int Nintendo3DS::loadFieldData(void)
 				if (!err) {
 					err = C_("Nintendo3DS", "Unknown error. (THIS IS A BUG!)");
 				}
-				d->fields->addField_string(C_("RomData", "Warning"),
+				d->fields.addField_string(C_("RomData", "Warning"),
 					err, RomFields::STRF_WARNING);
 				shownWarning = true;
 			}
@@ -1806,7 +1806,7 @@ int Nintendo3DS::loadFieldData(void)
 			// NCSD is decrypted but has incorrect encryption flags.
 			// TODO: Show in the SMDH tab if it's visible?
 			if (!shownWarning) {
-				d->fields->addField_string(C_("RomData", "Warning"),
+				d->fields.addField_string(C_("RomData", "Warning"),
 					C_("Nintendo3DS", "NCCH encryption flags are incorrect. Use GodMode9 to fix."),
                                        RomFields::STRF_WARNING);
 				shownWarning = true;
@@ -1869,7 +1869,7 @@ int Nintendo3DS::loadFieldData(void)
 			// Old3DS uses encryption type 2 for CTR NAND.
 			// New3DS uses encryption type 3 for CTR NAND.
 			const bool new3ds = (ncsd_header->emmc_part_tbl.crypt_type[4] == 3);
-			d->fields->addField_string(C_("Nintendo3DS|eMMC", "Type"),
+			d->fields.addField_string(C_("Nintendo3DS|eMMC", "Type"),
 				(new3ds ? "New3DS / New2DS" : "Old3DS / 2DS"));
 
 			// Partition type names.
@@ -1906,16 +1906,16 @@ int Nintendo3DS::loadFieldData(void)
 			const uint8_t media_type = ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_TYPE_INDEX];
 			const char *const media_type_title = C_("Nintendo3DS", "Media Type");
 			if (media_type < ARRAY_SIZE(media_type_tbl)) {
-				d->fields->addField_string(media_type_title,
+				d->fields.addField_string(media_type_title,
 					media_type_tbl[media_type]);
 			} else {
-				d->fields->addField_string(media_type_title,
+				d->fields.addField_string(media_type_title,
 					rp_sprintf(C_("RomData", "Unknown (0x%02X)"), media_type));
 			}
 
 			if (ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_TYPE_INDEX] == N3DS_NCSD_MEDIA_TYPE_CARD2) {
 				// Card2 writable address.
-				d->fields->addField_string_numeric(C_("Nintendo3DS", "Card2 RW Address"),
+				d->fields.addField_string_numeric(C_("Nintendo3DS", "Card2 RW Address"),
 					le32_to_cpu(cinfo_header->card2_writable_address),
 					RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 			}
@@ -1940,17 +1940,17 @@ int Nintendo3DS::loadFieldData(void)
 			};
 			const char *const card_device_title = C_("Nintendo3DS", "Card Device");
 			if (card_dev_id >= 1 && card_dev_id < ARRAY_SIZE(card_dev_tbl)) {
-				d->fields->addField_string(card_device_title,
+				d->fields.addField_string(card_device_title,
 					dpgettext_expr(RP_I18N_DOMAIN, "Nintendo3DS|CDev", card_dev_tbl[card_dev_id]));
 			} else {
-				d->fields->addField_string(card_device_title,
+				d->fields.addField_string(card_device_title,
 					rp_sprintf_p(C_("Nintendo3DS|CDev", "Unknown (SDK2=0x%1$02X, SDK3=0x%2$02X)"),
 						ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK2],
 						ncsd_header->cci.partition_flags[N3DS_NCSD_PARTITION_FLAG_MEDIA_CARD_DEVICE_SDK3]));
 			}
 
 			// Card revision.
-			d->fields->addField_string_numeric(C_("Nintendo3DS", "Card Revision"),
+			d->fields.addField_string_numeric(C_("Nintendo3DS", "Card Revision"),
 				le32_to_cpu(cinfo_header->card_revision),
 				RomFields::Base::Dec, 2);
 
@@ -1960,7 +1960,7 @@ int Nintendo3DS::loadFieldData(void)
 			// Also show encryption type.
 			// TODO: Show a warning if `ncch` is NULL?
 			if (ncch) {
-				d->fields->addField_string(C_("Nintendo3DS", "Issuer"),
+				d->fields.addField_string(C_("Nintendo3DS", "Issuer"),
 					ncch->isDebug()
 						? C_("Nintendo3DS", "Debug")
 						: C_("Nintendo3DS", "Retail"));
@@ -2067,7 +2067,7 @@ int Nintendo3DS::loadFieldData(void)
 		RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 0);
 		params.headers = v_partitions_names;
 		params.data.single = vv_partitions;
-		d->fields->addField_listData(C_("Nintendo3DS", "Partitions"), &params);
+		d->fields.addField_listData(C_("Nintendo3DS", "Partitions"), &params);
 	}
 
 	// Is the TMD header loaded?
@@ -2075,12 +2075,12 @@ int Nintendo3DS::loadFieldData(void)
 		// Display the TMD header.
 		// NOTE: This is usually for CIAs only.
 		if (haveSeparateSMDHTab) {
-			d->fields->addTab("CIA");
+			d->fields.addTab("CIA");
 			// Add the title ID and product code fields here.
 			// (Content type is listed in the CIA contents table.)
 			d->addTitleIdAndProductCodeFields(false);
 		} else {
-			d->fields->setTabName(0, "CIA");
+			d->fields.setTabName(0, "CIA");
 		}
 
 		// TODO: Add more fields?
@@ -2089,7 +2089,7 @@ int Nintendo3DS::loadFieldData(void)
 		// TODO: Required system version?
 
 		// Version.
-		d->fields->addField_string(C_("Nintendo3DS", "Version"),
+		d->fields.addField_string(C_("Nintendo3DS", "Version"),
 			d->n3dsVersionToString(be16_to_cpu(tmd_header->title_version)));
 
 		// Issuer.
@@ -2110,24 +2110,24 @@ int Nintendo3DS::loadFieldData(void)
 		const char *const issuer_title = C_("Nintendo3DS", "Issuer");
 		if (issuer) {
 			// tr: Ticket issuer. (retail or debug)
-			d->fields->addField_string(issuer_title, issuer);
+			d->fields.addField_string(issuer_title, issuer);
 		} else {
 			// Unknown issuer. Print it as-is.
-			d->fields->addField_string(issuer_title,
+			d->fields.addField_string(issuer_title,
 				latin1_to_utf8(d->mxh.ticket.issuer, sizeof(d->mxh.ticket.issuer)));
 		}
 
 		// Demo use limit.
 		if (d->mxh.ticket.limits[0] == cpu_to_be32(4)) {
 			// Title has use limits.
-			d->fields->addField_string_numeric(C_("Nintendo3DS", "Demo Use Limit"),
+			d->fields.addField_string_numeric(C_("Nintendo3DS", "Demo Use Limit"),
 				be32_to_cpu(d->mxh.ticket.limits[1]));
 		}
 
 		// Console ID.
 		// NOTE: Technically part of the ticket.
 		// NOTE: Not including the "0x" hex prefix.
-		d->fields->addField_string(C_("Nintendo3DS", "Console ID"),
+		d->fields.addField_string(C_("Nintendo3DS", "Console ID"),
 			rp_sprintf("%08X", be32_to_cpu(d->mxh.ticket.console_id)),
 			RomFields::STRF_MONOSPACE);
 
@@ -2265,7 +2265,7 @@ int Nintendo3DS::loadFieldData(void)
 		RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 0);
 		params.headers = v_contents_names;
 		params.data.single = vv_contents;
-		d->fields->addField_listData(C_("Nintendo3DS", "Contents"), &params);
+		d->fields.addField_listData(C_("Nintendo3DS", "Contents"), &params);
 	}
 
 	// Get the NCCH Extended Header.
@@ -2274,10 +2274,10 @@ int Nintendo3DS::loadFieldData(void)
 	if (ncch_exheader) {
 		// Display the NCCH Extended Header.
 		// TODO: Add more fields?
-		d->fields->addTab("ExHeader");
+		d->fields.addTab("ExHeader");
 
 		// Process name.
-		d->fields->addField_string(C_("Nintendo3DS", "Process Name"),
+		d->fields.addField_string(C_("Nintendo3DS", "Process Name"),
 			latin1_to_utf8(ncch_exheader->sci.title, sizeof(ncch_exheader->sci.title)));
 
 		// Application type. (resource limit category)
@@ -2294,10 +2294,10 @@ int Nintendo3DS::loadFieldData(void)
 		const char *const type_title = C_("Nintendo3DS", "Type");
 		const uint8_t appl_type = ncch_exheader->aci.arm11_local.res_limit_category;
 		if (appl_type < ARRAY_SIZE(appl_type_tbl)) {
-			d->fields->addField_string(type_title,
+			d->fields.addField_string(type_title,
 				dpgettext_expr(RP_I18N_DOMAIN, "Nintendo3DS|ApplType", appl_type_tbl[appl_type]));
 		} else {
-			d->fields->addField_string(type_title,
+			d->fields.addField_string(type_title,
 				rp_sprintf(C_("Nintendo3DS", "Invalid (0x%02X)"), appl_type));
 		}
 
@@ -2307,7 +2307,7 @@ int Nintendo3DS::loadFieldData(void)
 		};
 		vector<string> *const v_exheader_flags_names = RomFields::strArrayToVector(
 			exheader_flags_names, ARRAY_SIZE(exheader_flags_names));
-		d->fields->addField_bitfield("Flags",
+		d->fields.addField_bitfield("Flags",
 			v_exheader_flags_names, 0, ncch_exheader->sci.flags);
 
 		// TODO: Figure out what "Core Version" is.
@@ -2336,11 +2336,11 @@ int Nintendo3DS::loadFieldData(void)
 		    old3ds_sys_mode_tbl[old3ds_sys_mode].name[0] != '\0')
 		{
 			const auto &ptbl = &old3ds_sys_mode_tbl[old3ds_sys_mode];
-			d->fields->addField_string(old3ds_sys_mode_title,
+			d->fields.addField_string(old3ds_sys_mode_title,
 				// tr: %1$s == Old3DS system mode; %2$u == RAM allocation, in megabytes
 				rp_sprintf_p(C_("Nintendo3DS", "%1$s (%2$u MiB)"), ptbl->name, ptbl->mb));
 		} else {
-			d->fields->addField_string(old3ds_sys_mode_title,
+			d->fields.addField_string(old3ds_sys_mode_title,
 				rp_sprintf(C_("Nintendo3DS", "Invalid (0x%02X)"), old3ds_sys_mode));
 		}
 
@@ -2357,11 +2357,11 @@ int Nintendo3DS::loadFieldData(void)
 			N3DS_NCCH_EXHEADER_ACI_FLAG1_New3DS_SysMode_Mask;
 		if (new3ds_sys_mode < ARRAY_SIZE(new3ds_sys_mode_tbl)) {
 			const auto &ptbl = &new3ds_sys_mode_tbl[new3ds_sys_mode];
-			d->fields->addField_string(new3ds_sys_mode_title,
+			d->fields.addField_string(new3ds_sys_mode_title,
 				// tr: %1$s == New3DS system mode; %2$u == RAM allocation, in megabytes
 				rp_sprintf_p(C_("Nintendo3DS", "%1$s (%2$u MiB)"), ptbl->name, ptbl->mb));
 		} else {
-			d->fields->addField_string(new3ds_sys_mode_title,
+			d->fields.addField_string(new3ds_sys_mode_title,
 				rp_sprintf(C_("Nintendo3DS", "Invalid (0x%02X)"), new3ds_sys_mode));
 		}
 
@@ -2372,7 +2372,7 @@ int Nintendo3DS::loadFieldData(void)
 		};
 		vector<string> *const v_new3ds_cpu_mode_names = RomFields::strArrayToVector_i18n(
 			"Nintendo3DS|N3DSCPUMode", new3ds_cpu_mode_names, ARRAY_SIZE(new3ds_cpu_mode_names));
-		d->fields->addField_bitfield("New3DS CPU Mode",
+		d->fields.addField_bitfield("New3DS CPU Mode",
 			v_new3ds_cpu_mode_names, 0, ncch_exheader->aci.arm11_local.flags[0]);
 
 		// TODO: Ideal CPU and affinity mask.
@@ -2382,12 +2382,12 @@ int Nintendo3DS::loadFieldData(void)
 		// Permissions. These are technically part of the
 		// ExHeader, but we're using a separate tab because
 		// there's a lot of them.
-		d->fields->addTab(C_("Nintendo3DS", "Permissions"));
+		d->fields.addTab(C_("Nintendo3DS", "Permissions"));
 		d->addFields_permissions();
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

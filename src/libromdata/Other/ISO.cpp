@@ -427,17 +427,17 @@ void ISOPrivate::addPVDCommon(const T *pvd)
 	// If the host-endian value is zero, check the swap-endian version.
 
 	// System ID
-	fields->addField_string(C_("ISO", "System ID"),
+	fields.addField_string(C_("ISO", "System ID"),
 		latin1_to_utf8(pvd->sysID, sizeof(pvd->sysID)),
 		RomFields::STRF_TRIM_END);
 
 	// Volume ID
-	fields->addField_string(C_("ISO", "Volume ID"),
+	fields.addField_string(C_("ISO", "Volume ID"),
 		latin1_to_utf8(pvd->volID, sizeof(pvd->volID)),
 		RomFields::STRF_TRIM_END);
 
 	// Size of volume
-	fields->addField_string(C_("ISO", "Volume Size"),
+	fields.addField_string(C_("ISO", "Volume Size"),
 		formatFileSize(
 			static_cast<off64_t>(host32(pvd->volume_space_size)) *
 			static_cast<off64_t>(host16(pvd->logical_block_size))));
@@ -449,39 +449,39 @@ void ISOPrivate::addPVDCommon(const T *pvd)
 	const uint16_t volume_set_size = host16(pvd->volume_set_size);
 	if (volume_seq_number != 0 && volume_set_size > 1) {
 		const char *const disc_number_title = C_("RomData", "Disc #");
-		fields->addField_string(disc_number_title,
+		fields.addField_string(disc_number_title,
 			// tr: Disc X of Y (for multi-disc games)
 			rp_sprintf_p(C_("RomData|Disc", "%1$u of %2$u"),
 				volume_seq_number, volume_set_size));
 	}
 
 	// Volume set ID
-	fields->addField_string(C_("ISO", "Volume Set"),
+	fields.addField_string(C_("ISO", "Volume Set"),
 		latin1_to_utf8(pvd->volume_set_id, sizeof(pvd->volume_set_id)),
 		RomFields::STRF_TRIM_END);
 
 	// Publisher
-	fields->addField_string(C_("ISO", "Publisher"),
+	fields.addField_string(C_("ISO", "Publisher"),
 		latin1_to_utf8(pvd->publisher, sizeof(pvd->publisher)),
 		RomFields::STRF_TRIM_END);
 
 	// Data Preparer
-	fields->addField_string(C_("ISO", "Data Preparer"),
+	fields.addField_string(C_("ISO", "Data Preparer"),
 		latin1_to_utf8(pvd->data_preparer, sizeof(pvd->data_preparer)),
 		RomFields::STRF_TRIM_END);
 
 	// Application
-	fields->addField_string(C_("ISO", "Application"),
+	fields.addField_string(C_("ISO", "Application"),
 		latin1_to_utf8(pvd->application, sizeof(pvd->application)),
 		RomFields::STRF_TRIM_END);
 
 	// Copyright file
-	fields->addField_string(C_("ISO", "Copyright File"),
+	fields.addField_string(C_("ISO", "Copyright File"),
 		latin1_to_utf8(pvd->copyright_file, sizeof(pvd->copyright_file)),
 		RomFields::STRF_TRIM_END);
 
 	// Abstract file
-	fields->addField_string(C_("ISO", "Abstract File"),
+	fields.addField_string(C_("ISO", "Abstract File"),
 		latin1_to_utf8(pvd->abstract_file, sizeof(pvd->abstract_file)),
 		RomFields::STRF_TRIM_END);
 }
@@ -497,25 +497,25 @@ void ISOPrivate::addPVDTimestamps(const T *pvd)
 	// For now, converting to UTC and showing as local time.
 
 	// Volume creation time
-	fields->addField_dateTime(C_("ISO", "Creation Time"),
+	fields.addField_dateTime(C_("ISO", "Creation Time"),
 		pvd_time_to_unix_time(&pvd->btime),
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_HAS_TIME);
 
 	// Volume modification time
-	fields->addField_dateTime(C_("ISO", "Modification Time"),
+	fields.addField_dateTime(C_("ISO", "Modification Time"),
 		pvd_time_to_unix_time(&pvd->mtime),
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_HAS_TIME);
 
 	// Volume expiration time
-	fields->addField_dateTime(C_("ISO", "Expiration Time"),
+	fields.addField_dateTime(C_("ISO", "Expiration Time"),
 		pvd_time_to_unix_time(&pvd->exptime),
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_HAS_TIME);
 
 	// Volume effective time
-	fields->addField_dateTime(C_("ISO", "Effective Time"),
+	fields.addField_dateTime(C_("ISO", "Effective Time"),
 		pvd_time_to_unix_time(&pvd->efftime),
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_HAS_TIME);
@@ -762,7 +762,7 @@ const char *ISO::systemName(unsigned int type) const
 int ISO::loadFieldData(void)
 {
 	RP_D(ISO);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -773,24 +773,24 @@ int ISO::loadFieldData(void)
 		return -EIO;
 	}
 
-	d->fields->reserve(18);	// Maximum of 18 fields.
+	d->fields.reserve(18);	// Maximum of 18 fields.
 
 	// NOTE: All fields are space-padded. (0x20, ' ')
 	// TODO: ascii_to_utf8()?
 
 	// Sector size
-	d->fields->addField_string_numeric(C_("ISO", "Sector Size"), d->sector_size);
+	d->fields.addField_string_numeric(C_("ISO", "Sector Size"), d->sector_size);
 
 	switch (d->discType) {
 		case ISOPrivate::DiscType::ISO9660:
 			// ISO-9660
-			d->fields->setTabName(0, C_("ISO", "ISO-9660 PVD"));
+			d->fields.setTabName(0, C_("ISO", "ISO-9660 PVD"));
 
 			// PVD common fields
 			d->addPVDCommon(&d->pvd.iso);
 
 			// Bibliographic file
-			d->fields->addField_string(C_("ISO", "Bibliographic File"),
+			d->fields.addField_string(C_("ISO", "Bibliographic File"),
 				latin1_to_utf8(d->pvd.iso.bibliographic_file, sizeof(d->pvd.iso.bibliographic_file)),
 				RomFields::STRF_TRIM_END);
 
@@ -807,7 +807,7 @@ int ISO::loadFieldData(void)
 				};
 				vector<string> *const v_boot_platforms_names = RomFields::strArrayToVector(
 					boot_platforms_names, ARRAY_SIZE(boot_platforms_names));
-				d->fields->addField_bitfield(C_("ISO", "Boot Platforms"),
+				d->fields.addField_bitfield(C_("ISO", "Boot Platforms"),
 					v_boot_platforms_names, 0, d->boot_platforms);
 
 			}
@@ -815,7 +815,7 @@ int ISO::loadFieldData(void)
 
 		case ISOPrivate::DiscType::HighSierra:
 			// High Sierra
-			d->fields->setTabName(0, C_("ISO", "High Sierra PVD"));
+			d->fields.setTabName(0, C_("ISO", "High Sierra PVD"));
 
 			// PVD common fields
 			d->addPVDCommon(&d->pvd.hsfs);
@@ -826,13 +826,13 @@ int ISO::loadFieldData(void)
 
 		case ISOPrivate::DiscType::CDi:
 			// CD-i
-			d->fields->setTabName(0, C_("ISO", "CD-i PVD"));
+			d->fields.setTabName(0, C_("ISO", "CD-i PVD"));
 
 			// PVD common fields
 			d->addPVDCommon(&d->pvd.iso);
 
 			// Bibliographic file
-			d->fields->addField_string(C_("ISO", "Bibliographic File"),
+			d->fields.addField_string(C_("ISO", "Bibliographic File"),
 				latin1_to_utf8(d->pvd.iso.bibliographic_file, sizeof(d->pvd.iso.bibliographic_file)),
 				RomFields::STRF_TRIM_END);
 
@@ -843,7 +843,7 @@ int ISO::loadFieldData(void)
 		default:
 			// Should not get here...
 			assert(!"Invalid ISO disc type.");
-			d->fields->setTabName(0, "ISO");
+			d->fields.setTabName(0, "ISO");
 			break;
 	}
 
@@ -851,12 +851,12 @@ int ISO::loadFieldData(void)
 		// UDF version.
 		// TODO: Parse the UDF volume descriptors and
 		// show a separate tab for UDF?
-		d->fields->addField_string(C_("ISO", "UDF Version"),
+		d->fields.addField_string(C_("ISO", "UDF Version"),
 			d->s_udf_version);
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

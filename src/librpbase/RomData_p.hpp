@@ -70,7 +70,7 @@ class RomDataPrivate
 		char *filename;			// Copy of the filename
 		bool isCompressed;		// True if the file is compressed. (transparent decompression)
 	public:
-		RomFields *const fields;	// ROM fields (NOTE: allocated by the base class)
+		RomFields fields;		// ROM fields (always allocated)
 		RomMetaData *metaData;		// ROM metadata (NOTE: nullptr initially)
 
 	public:

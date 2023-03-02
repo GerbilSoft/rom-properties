@@ -180,14 +180,14 @@ class GameCubePrivate final : public RomDataPrivate
 		 *
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int gcn_addGameInfo(void) const;
+		int gcn_addGameInfo(void);
 
 		/**
 		 * [Wii] Add the game name from opening.bnr.
 		 * This adds an RFT_STRING_MULTI field with all available languages.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int wii_addBannerName(void) const;
+		int wii_addBannerName(void);
 
 		/**
 		 * Get the encryption status of a partition.
@@ -585,7 +585,7 @@ int GameCubePrivate::wii_loadOpeningBnr(void)
  *
  * @return 0 on success; negative POSIX error code on error.
  */
-int GameCubePrivate::gcn_addGameInfo(void) const
+int GameCubePrivate::gcn_addGameInfo(void)
 {
 	assert((discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_GCN);
 	if ((discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_GCN) {
@@ -609,7 +609,7 @@ int GameCubePrivate::gcn_addGameInfo(void) const
 	}
 
 	// Add the field from the GameCubeBNR.
-	return opening_bnr.gcn.data->addField_gameInfo(this->fields);
+	return opening_bnr.gcn.data->addField_gameInfo(&this->fields);
 }
 
 /**
@@ -617,7 +617,7 @@ int GameCubePrivate::gcn_addGameInfo(void) const
  * This adds an RFT_STRING_MULTI field with all available languages.
  * @return 0 on success; negative POSIX error code on error.
  */
-int GameCubePrivate::wii_addBannerName(void) const
+int GameCubePrivate::wii_addBannerName(void)
 {
 	assert((discType & DISC_SYSTEM_MASK) == DISC_SYSTEM_WII);
 	if ((discType & DISC_SYSTEM_MASK) != DISC_SYSTEM_WII) {
@@ -650,7 +650,7 @@ int GameCubePrivate::wii_addBannerName(void) const
 	// Add the field.
 	const uint32_t def_lc = NintendoLanguage::getWiiLanguageCode(
 		NintendoLanguage::getWiiLanguage());
-	fields->addField_string_multi(C_("GameCube", "Game Info"), pMap_bannerName, def_lc);
+	fields.addField_string_multi(C_("GameCube", "Game Info"), pMap_bannerName, def_lc);
 	return 0;
 }
 
@@ -1474,7 +1474,7 @@ uint32_t GameCube::imgpf(ImageType imageType) const
 int GameCube::loadFieldData(void)
 {
 	RP_D(GameCube);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -1492,7 +1492,7 @@ int GameCube::loadFieldData(void)
 	// Maximum number of fields:
 	// - GameCube and Wii: 7 (includes Game Info)
 	// - Wii only: 6
-	d->fields->reserve(7+6);
+	d->fields.reserve(7+6);
 
 	// TODO: Trim the titles. (nulls, spaces)
 	// NOTE: The titles are dup()'d as C strings, so maybe not nulls.
@@ -1510,7 +1510,7 @@ int GameCube::loadFieldData(void)
 			case GCN_REGION_ALL:	// TODO: Assume JP?
 			default:
 				// USA/PAL uses cp1252.
-				d->fields->addField_string(title_title, cp1252_to_utf8(
+				d->fields.addField_string(title_title, cp1252_to_utf8(
 						discHeader->game_title, sizeof(discHeader->game_title)));
 				break;
 
@@ -1519,7 +1519,7 @@ int GameCube::loadFieldData(void)
 			case GCN_REGION_CHN:
 			case GCN_REGION_TWN:
 				// Japan uses Shift-JIS.
-				d->fields->addField_string(title_title, cp1252_sjis_to_utf8(
+				d->fields.addField_string(title_title, cp1252_sjis_to_utf8(
 						discHeader->game_title, sizeof(discHeader->game_title)));
 				break;
 		}
@@ -1533,15 +1533,15 @@ int GameCube::loadFieldData(void)
 				? d->discHeader.id6[i]
 				: '_');
 		}
-		d->fields->addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id6, 6));
+		d->fields.addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id6, 6));
 
 		// Publisher
-		d->fields->addField_string(C_("RomData", "Publisher"), d->getPublisher());
+		d->fields.addField_string(C_("RomData", "Publisher"), d->getPublisher());
 
 		// Other disc header fields
-		d->fields->addField_string_numeric(C_("RomData", "Disc #"),
+		d->fields.addField_string_numeric(C_("RomData", "Disc #"),
 			discHeader->disc_number+1, RomFields::Base::Dec);
-		d->fields->addField_string_numeric(C_("RomData", "Revision"),
+		d->fields.addField_string_numeric(C_("RomData", "Revision"),
 			discHeader->revision, RomFields::Base::Dec, 2);
 	}
 
@@ -1551,7 +1551,7 @@ int GameCube::loadFieldData(void)
 	if (!d->discReader) {
 		// Cannot read the disc contents.
 		// We're done for now.
-		return static_cast<int>(d->fields->count());
+		return static_cast<int>(d->fields.count());
 	}
 
 	// Region code.
@@ -1578,10 +1578,10 @@ int GameCube::loadFieldData(void)
 				s_region = region;
 			}
 
-			d->fields->addField_string(region_code_title, s_region);
+			d->fields.addField_string(region_code_title, s_region);
 		} else {
 			// Invalid region code.
-			d->fields->addField_string(region_code_title,
+			d->fields.addField_string(region_code_title,
 				rp_sprintf(C_("RomData", "Unknown (0x%08X)"), d->gcnRegion));
 		}
 
@@ -1592,7 +1592,7 @@ int GameCube::loadFieldData(void)
 			d->gcn_addGameInfo();
 
 			// Finished reading the field data.
-			return static_cast<int>(d->fields->count());
+			return static_cast<int>(d->fields.count());
 		}
 	}
 
@@ -1608,7 +1608,7 @@ int GameCube::loadFieldData(void)
 			// Title ID.
 			// TID Lo is usually the same as the game ID,
 			// except for some diagnostics discs.
-			d->fields->addField_string(C_("Nintendo", "Title ID"),
+			d->fields.addField_string(C_("Nintendo", "Title ID"),
 				rp_sprintf("%08X-%08X",
 					be32_to_cpu(tmdHeader->title_id.hi),
 					be32_to_cpu(tmdHeader->title_id.lo)));
@@ -1618,7 +1618,7 @@ int GameCube::loadFieldData(void)
 			v_access_rights_hdr->reserve(2);
 			v_access_rights_hdr->emplace_back("AHBPROT");
 			v_access_rights_hdr->emplace_back(C_("Wii", "DVD Video"));
-			d->fields->addField_bitfield(C_("Wii", "Access Rights"),
+			d->fields.addField_bitfield(C_("Wii", "Access Rights"),
 				v_access_rights_hdr, 0, be32_to_cpu(tmdHeader->access_rights));
 
 			// Required IOS version.
@@ -1629,12 +1629,12 @@ int GameCube::loadFieldData(void)
 			    ios_lo > 2 && ios_lo < 0x300)
 			{
 				// Standard IOS slot.
-				d->fields->addField_string(ios_version_title,
+				d->fields.addField_string(ios_version_title,
 					rp_sprintf("IOS%u", ios_lo));
 			} else if (tmdHeader->sys_version.id != 0) {
 				// Non-standard IOS slot.
 				// Print the full title ID.
-				d->fields->addField_string(ios_version_title,
+				d->fields.addField_string(ios_version_title,
 					rp_sprintf("%08X-%08X",
 						be32_to_cpu(tmdHeader->sys_version.hi),
 						be32_to_cpu(tmdHeader->sys_version.lo)));
@@ -1677,7 +1677,7 @@ int GameCube::loadFieldData(void)
 				age_ratings[i] |= RomFields::AGEBF_ONLINE_PLAY;
 			}
 		}
-		d->fields->addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
+		d->fields.addField_ageRatings(C_("RomData", "Age Ratings"), age_ratings);
 	}
 
 	// Display the Wii partition table(s).
@@ -1691,13 +1691,13 @@ int GameCube::loadFieldData(void)
 			if (!d->gamePartition) {
 				// No game partition.
 				if ((d->discType & GameCubePrivate::DISC_FORMAT_MASK) != GameCubePrivate::DISC_FORMAT_PARTITION) {
-					d->fields->addField_string(game_info_title,
+					d->fields.addField_string(game_info_title,
 						C_("GameCube", "ERROR: No game partition was found."));
 				}
 			} else if (d->gamePartition->verifyResult() != KeyManager::VerifyResult::OK) {
 				// Key error.
 				const char *status = d->wii_getCryptoStatus(d->gamePartition);
-				d->fields->addField_string(game_info_title,
+				d->fields.addField_string(game_info_title,
 					rp_sprintf(C_("GameCube", "ERROR: %s"),
 						(status ? status : C_("GameCube", "Unknown"))));
 			}
@@ -1809,7 +1809,7 @@ int GameCube::loadFieldData(void)
 
 		const char *const update_title = C_("Nintendo", "Update");
 		if (isDebugIOS || ios_retail_count == 1) {
-			d->fields->addField_string(update_title,
+			d->fields.addField_string(update_title,
 				rp_sprintf("IOS%u %u.%u (v%u)", ios_slot, ios_major, ios_minor,
 					(ios_major << 8) | ios_minor));
 		} else {
@@ -1817,11 +1817,11 @@ int GameCube::loadFieldData(void)
 				// Look up the system menu version name.
 				const char *const sysMenu = WiiSystemMenuVersion::lookup(sysMenuVersion);
 				if (sysMenu) {
-					d->fields->addField_string(update_title, sysMenu);
+					d->fields.addField_string(update_title, sysMenu);
 				} else {
 					// Unknown system menu version.
 					// Use the raw version number.
-					d->fields->addField_string(update_title, rp_sprintf("v%u", sysMenuVersion));
+					d->fields.addField_string(update_title, rp_sprintf("v%u", sysMenuVersion));
 				}
 			} else {
 				// No system menu version number.
@@ -1832,12 +1832,12 @@ int GameCube::loadFieldData(void)
 				} else {
 					updateStatus = d->wii_getCryptoStatus(d->updatePartition);
 				}
-				d->fields->addField_string(update_title, updateStatus);
+				d->fields.addField_string(update_title, updateStatus);
 			}
 		}
 
 		if (update_date > -1) {
-			d->fields->addField_dateTime(C_("Nintendo", "Update Date"), update_date,
+			d->fields.addField_dateTime(C_("Nintendo", "Update Date"), update_date,
 				RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_IS_UTC);
 		}
 
@@ -1968,14 +1968,14 @@ int GameCube::loadFieldData(void)
 		RomFields::AFLD_PARAMS params;
 		params.headers = v_partitions_names;
 		params.data.single = vv_partitions;
-		d->fields->addField_listData(C_("Wii", "Partitions"), &params);
+		d->fields.addField_listData(C_("Wii", "Partitions"), &params);
 	} else {
 		// Could not load partition tables.
 		// FIXME: Show an error?
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

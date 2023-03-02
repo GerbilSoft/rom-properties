@@ -201,7 +201,7 @@ const char *Nintendo3DSFirm::systemName(unsigned int type) const
 int Nintendo3DSFirm::loadFieldData(void)
 {
 	RP_D(Nintendo3DSFirm);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -214,7 +214,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 
 	// Nintendo 3DS firmware binary header.
 	const N3DS_FIRM_Header_t *const firmHeader = &d->firmHeader;
-	d->fields->reserve(6);	// Maximum of 6 fields.
+	d->fields.reserve(6);	// Maximum of 6 fields.
 
 	// Read the firmware binary.
 	unique_ptr<uint8_t[]> firmBuf;
@@ -301,16 +301,16 @@ int Nintendo3DSFirm::loadFieldData(void)
 
 	if (firmBin) {
 		// Official firmware binary fields.
-		d->fields->addField_string(C_("Nintendo3DSFirm", "Type"),
+		d->fields.addField_string(C_("Nintendo3DSFirm", "Type"),
 			(firmBinDesc ? firmBinDesc : C_("RomData", "Unknown")));
 
 		// FIRM version.
-		d->fields->addField_string(C_("Nintendo3DSFirm", "FIRM Version"),
+		d->fields.addField_string(C_("Nintendo3DSFirm", "FIRM Version"),
 			rp_sprintf("%u.%u.%u", firmBin->kernel.major,
 				firmBin->kernel.minor, firmBin->kernel.revision));
 
 		// System version.
-		d->fields->addField_string(C_("Nintendo3DSFirm", "System Version"),
+		d->fields.addField_string(C_("Nintendo3DSFirm", "System Version"),
 			rp_sprintf("%u.%u", firmBin->sys.major, firmBin->sys.minor));
 	} else if (firmBuf && checkARM9) {
 		// Check for ARM9 homebrew.
@@ -399,37 +399,37 @@ int Nintendo3DSFirm::loadFieldData(void)
 		}
 
 		// Add the firmware type field.
-		d->fields->addField_string(C_("Nintendo3DSFirm", "Type"),
+		d->fields.addField_string(C_("Nintendo3DSFirm", "Type"),
 			(firmBinDesc ? firmBinDesc : C_("RomData", "Unknown")));
 
 		if (arm9VerStr_title) {
-			d->fields->addField_string(C_("RomData", "Title"), arm9VerStr_title);
+			d->fields.addField_string(C_("RomData", "Title"), arm9VerStr_title);
 		}
 
 		// If the version was found, add it.
 		if (!s_verstr.empty()) {
-			d->fields->addField_string(C_("RomData", "Version"), s_verstr);
+			d->fields.addField_string(C_("RomData", "Version"), s_verstr);
 		}
 
-		d->fields->addField_string(C_("Nintendo3DSFirm", "Sighax Status"), s_sighax_status);
+		d->fields.addField_string(C_("Nintendo3DSFirm", "Sighax Status"), s_sighax_status);
 	} else {
 		// Add the firmware type field.
-		d->fields->addField_string(C_("Nintendo3DSFirm", "Type"),
+		d->fields.addField_string(C_("Nintendo3DSFirm", "Type"),
 			(firmBinDesc ? firmBinDesc : C_("RomData", "Unknown")));
 	}
 
 	// Entry Points
 	if (arm11_entrypoint != 0) {
-		d->fields->addField_string_numeric(C_("Nintendo3DSFirm", "ARM11 Entry Point"),
+		d->fields.addField_string_numeric(C_("Nintendo3DSFirm", "ARM11 Entry Point"),
 			arm11_entrypoint, RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
 	}
 	if (arm9_entrypoint != 0) {
-		d->fields->addField_string_numeric(C_("Nintendo3DSFirm", "ARM9 Entry Point"),
+		d->fields.addField_string_numeric(C_("Nintendo3DSFirm", "ARM9 Entry Point"),
 			arm9_entrypoint, RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 }

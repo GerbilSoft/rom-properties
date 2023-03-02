@@ -806,7 +806,7 @@ vector<RomData::ImageSizeDef> Xbox360_STFS::supportedImageSizes_static(ImageType
 int Xbox360_STFS::loadFieldData(void)
 {
 	RP_D(Xbox360_STFS);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -832,8 +832,8 @@ int Xbox360_STFS::loadFieldData(void)
 	// Maximum of 14 fields.
 	// - 10: Normal
 	// -  3: Console-specific
-	d->fields->reserve(13);
-	d->fields->setTabName(0, "STFS");
+	d->fields.reserve(13);
+	d->fields.setTabName(0, "STFS");
 
 	// Title fields.
 	// Includes display name and description.
@@ -900,27 +900,27 @@ int Xbox360_STFS::loadFieldData(void)
 	const uint32_t def_lc = d->getDefaultLC();
 	const char *const s_name_title = C_("RomData", "Name");
 	if (!pMap_name->empty()) {
-		d->fields->addField_string_multi(s_name_title, pMap_name, def_lc);
+		d->fields.addField_string_multi(s_name_title, pMap_name, def_lc);
 	} else {
 		delete pMap_name;
-		d->fields->addField_string(s_name_title, C_("RomData", "Unknown"));
+		d->fields.addField_string(s_name_title, C_("RomData", "Unknown"));
 	}
 	if (!pMap_desc->empty()) {
-		d->fields->addField_string_multi(C_("RomData", "Description"), pMap_desc, def_lc);
+		d->fields.addField_string_multi(C_("RomData", "Description"), pMap_desc, def_lc);
 	} else {
 		delete pMap_desc;
 	}
 
 	// Publisher
 	if (stfsMetadata->publisher_name[0] != 0) {
-		d->fields->addField_string(C_("RomData", "Publisher"),
+		d->fields.addField_string(C_("RomData", "Publisher"),
 			utf16be_to_utf8(stfsMetadata->publisher_name,
 				ARRAY_SIZE(stfsMetadata->publisher_name)));
 	}
 
 	// Title
 	if (stfsMetadata->title_name[0] != 0) {
-		d->fields->addField_string(C_("RomData", "Title"),
+		d->fields.addField_string(C_("RomData", "Title"),
 			utf16be_to_utf8(stfsMetadata->title_name,
 				ARRAY_SIZE(stfsMetadata->title_name)));
 	}
@@ -935,11 +935,11 @@ int Xbox360_STFS::loadFieldData(void)
 	if (d->stfsType > Xbox360_STFS_Private::StfsType::Unknown &&
 	    d->stfsType < Xbox360_STFS_Private::StfsType::Max)
 	{
-		d->fields->addField_string(C_("Xbox360_STFS", "Package Type"),
+		d->fields.addField_string(C_("Xbox360_STFS", "Package Type"),
 			dpgettext_expr(RP_I18N_DOMAIN, "Xbox360_STFS|FileType",
 				file_type_tbl[(int)d->stfsType]));
 	} else {
-		d->fields->addField_string(C_("Xbox360_STFS|RomData", "Type"),
+		d->fields.addField_string(C_("Xbox360_STFS|RomData", "Type"),
 			C_("RomData", "Unknown"));
 	}
 
@@ -947,15 +947,15 @@ int Xbox360_STFS::loadFieldData(void)
 	const char *const s_content_type = Xbox360_STFS_ContentType::lookup(
 		be32_to_cpu(stfsMetadata->content_type));
 	if (s_content_type) {
-		d->fields->addField_string(C_("Xbox360_STFS", "Content Type"), s_content_type);
+		d->fields.addField_string(C_("Xbox360_STFS", "Content Type"), s_content_type);
 	} else {
-		d->fields->addField_string(C_("Xbox360_STFS", "Content Type"),
+		d->fields.addField_string(C_("Xbox360_STFS", "Content Type"),
 			rp_sprintf(C_("RomData", "Unknown (0x%08X)"),
 				be32_to_cpu(stfsMetadata->content_type)));
 	}
 
 	// Media ID
-	d->fields->addField_string(C_("Xbox360_STFS", "Media ID"),
+	d->fields.addField_string(C_("Xbox360_STFS", "Media ID"),
 		rp_sprintf("%08X", be32_to_cpu(stfsMetadata->media_id)),
 		RomFields::STRF_MONOSPACE);
 
@@ -981,7 +981,7 @@ int Xbox360_STFS::loadFieldData(void)
 		tid_str.append(hexbuf, 2);
 	}
 
-	d->fields->addField_string(C_("Xbox360_XEX", "Title ID"),
+	d->fields.addField_string(C_("Xbox360_XEX", "Title ID"),
 		rp_sprintf_p(C_("Xbox360_XEX", "%1$08X (%2$s-%3$04u)"),
 			be32_to_cpu(stfsMetadata->title_id.u32),
 			tid_str.c_str(),
@@ -993,13 +993,13 @@ int Xbox360_STFS::loadFieldData(void)
 	Xbox360_Version_t ver, basever;
 	ver.u32 = be32_to_cpu(stfsMetadata->version.u32);
 	basever.u32 = be32_to_cpu(stfsMetadata->base_version.u32);
-	d->fields->addField_string(C_("Xbox360_XEX", "Version"),
+	d->fields.addField_string(C_("Xbox360_XEX", "Version"),
 		rp_sprintf("%u.%u.%u.%u",
 			static_cast<unsigned int>(ver.major),
 			static_cast<unsigned int>(ver.minor),
 			static_cast<unsigned int>(ver.build),
 			static_cast<unsigned int>(ver.qfe)));
-	d->fields->addField_string(C_("Xbox360_XEX", "Base Version"),
+	d->fields.addField_string(C_("Xbox360_XEX", "Base Version"),
 		rp_sprintf("%u.%u.%u.%u",
 			static_cast<unsigned int>(basever.major),
 			static_cast<unsigned int>(basever.minor),
@@ -1010,14 +1010,14 @@ int Xbox360_STFS::loadFieldData(void)
 	if (stfsHeader->magic == cpu_to_be32(STFS_MAGIC_CON)) {
 		// NOTE: addField_string_numeric() is limited to 32-bit.
 		// Print the console ID as a hexdump instead.
-		d->fields->addField_string_hexdump(C_("Xbox360_XEX", "Console ID"),
+		d->fields.addField_string_hexdump(C_("Xbox360_XEX", "Console ID"),
 			stfsHeader->console.console_id,
 			sizeof(stfsHeader->console.console_id),
 			RomFields::STRF_MONOSPACE | RomFields::STRF_HEXDUMP_NO_SPACES);
 
 		// Part number.
 		// Not entirely sure what this is referring to...
-		d->fields->addField_string(C_("Xbox360_XEX", "Part Number"),
+		d->fields.addField_string(C_("Xbox360_XEX", "Part Number"),
 			latin1_to_utf8(stfsHeader->console.part_number,
 				sizeof(stfsHeader->console.part_number)));
 
@@ -1036,9 +1036,9 @@ int Xbox360_STFS::loadFieldData(void)
 		}
 		const char *const s_console_type_title = C_("Xbox360_XEX", "Console Type");
 		if (s_console_type) {
-			d->fields->addField_string(s_console_type_title, s_console_type);
+			d->fields.addField_string(s_console_type_title, s_console_type);
 		} else {
-			d->fields->addField_string(s_console_type_title,
+			d->fields.addField_string(s_console_type_title,
 				rp_sprintf(C_("RomData", "Unknown (%u)"), stfsHeader->console.console_type));
 		}
 	}
@@ -1049,12 +1049,12 @@ int Xbox360_STFS::loadFieldData(void)
 		// Add the fields.
 		const RomFields *const xexFields = default_xex->fields();
 		if (xexFields) {
-			d->fields->addFields_romFields(xexFields, RomFields::TabOffset_AddTabs);
+			d->fields.addFields_romFields(xexFields, RomFields::TabOffset_AddTabs);
 		}
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

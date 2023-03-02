@@ -182,7 +182,7 @@ const char *Atari7800::systemName(unsigned int type) const
 int Atari7800::loadFieldData(void)
 {
 	RP_D(Atari7800);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -194,12 +194,12 @@ int Atari7800::loadFieldData(void)
 	}
 
 	const Atari_A78Header *const romHeader = &d->romHeader;
-	d->fields->reserve(4);	// Maximum of 4 fields.
+	d->fields.reserve(4);	// Maximum of 4 fields.
 
 	// Title
 	// NOTE: Should be ASCII, but allowing cp1252.
 	if (romHeader->title[0] != '\0') {
-		d->fields->addField_string(C_("RomData", "Title"),
+		d->fields.addField_string(C_("RomData", "Title"),
 			cp1252_to_utf8(romHeader->title, sizeof(romHeader->title)),
 			RomFields::STRF_TRIM_END);
 	}
@@ -210,7 +210,7 @@ int Atari7800::loadFieldData(void)
 	const char *tv_type_title = C_("Atari7800", "TV Type");
 	if (!(romHeader->tv_type & ATARI_A78_TVType_Artifacts_Mask)) {
 		// Composite artifacting
-		d->fields->addField_string(tv_type_title,
+		d->fields.addField_string(tv_type_title,
 			(romHeader->tv_type & ATARI_A78_TVType_Format_Mask) ? "PAL" : "NTSC");
 	} else {
 		// Component: no artifacting
@@ -218,7 +218,7 @@ int Atari7800::loadFieldData(void)
 		snprintf(s_tv_type, sizeof(s_tv_type), "%s, %s",
 			(romHeader->tv_type & ATARI_A78_TVType_Format_Mask) ? "PAL" : "NTSC",
 			(romHeader->tv_type & ATARI_A78_TVType_Artifacts_Mask) ? "component" : "composite");
-		d->fields->addField_string(tv_type_title, s_tv_type);
+		d->fields.addField_string(tv_type_title, s_tv_type);
 	}
 
 	// Controllers
@@ -244,11 +244,11 @@ int Atari7800::loadFieldData(void)
 		const uint8_t control_type = romHeader->control_types[i];
 
 		if (control_type < ARRAY_SIZE(controller_tbl)) {
-			d->fields->addField_string(control_title.c_str(),
+			d->fields.addField_string(control_title.c_str(),
 				dpgettext_expr(RP_I18N_DOMAIN, "Atari7800|ControllerType",
 					controller_tbl[control_type]));
 		} else {
-			d->fields->addField_string(control_title.c_str(),
+			d->fields.addField_string(control_title.c_str(),
 				rp_sprintf(C_("RomData", "Unknown (%u)"), control_type));
 		}
 	}
@@ -256,7 +256,7 @@ int Atari7800::loadFieldData(void)
 	// TODO: Other fields.
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

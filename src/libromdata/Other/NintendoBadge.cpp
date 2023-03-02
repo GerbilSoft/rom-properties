@@ -636,7 +636,7 @@ uint32_t NintendoBadge::imgpf(ImageType imageType) const
 int NintendoBadge::loadFieldData(void)
 {
 	RP_D(NintendoBadge);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -648,7 +648,7 @@ int NintendoBadge::loadFieldData(void)
 	}
 
 	// Maximum of 7 fields.
-	d->fields->reserve(7);
+	d->fields.reserve(7);
 
 	// Get the system language.
 	// TODO: Verify against the region code somehow?
@@ -660,7 +660,7 @@ int NintendoBadge::loadFieldData(void)
 	const char *const s_set_name_title = C_("NintendoBadge", "Set Name");
 	switch (d->badgeType) {
 		case NintendoBadgePrivate::BadgeType::PRBS: {
-			d->fields->addField_string(s_type_title,
+			d->fields.addField_string(s_type_title,
 				d->megaBadge ? C_("NintendoBadge|Type", "Mega Badge")
 				             : C_("NintendoBadge|Type", "Individual Badge"));
 
@@ -706,27 +706,27 @@ int NintendoBadge::loadFieldData(void)
 
 			if (!pMap_name->empty()) {
 				const uint32_t def_lc = d->getDefaultLC();
-				d->fields->addField_string_multi(s_name_title, pMap_name, def_lc);
+				d->fields.addField_string_multi(s_name_title, pMap_name, def_lc);
 			} else {
 				delete pMap_name;
-				d->fields->addField_string(s_name_title, C_("RomData", "Unknown"));
+				d->fields.addField_string(s_name_title, C_("RomData", "Unknown"));
 			}
 
 			// Badge ID.
-			d->fields->addField_string_numeric(C_("NintendoBadge", "Badge ID"),
+			d->fields.addField_string_numeric(C_("NintendoBadge", "Badge ID"),
 				le32_to_cpu(prbs->badge_id));
 
 			// Badge filename.
-			d->fields->addField_string(C_("NintendoBadge", "Filename"),
+			d->fields.addField_string(C_("NintendoBadge", "Filename"),
 				latin1_to_utf8(prbs->filename, sizeof(prbs->filename)));
 
 			// Set name.
-			d->fields->addField_string(s_set_name_title,
+			d->fields.addField_string(s_set_name_title,
 				latin1_to_utf8(prbs->setname, sizeof(prbs->setname)));
 
 			// Mega badge size.
 			if (d->megaBadge) {
-				d->fields->addField_dimensions(C_("NintendoBadge", "Mega Badge Size"),
+				d->fields.addField_dimensions(C_("NintendoBadge", "Mega Badge Size"),
 					prbs->mb_width, prbs->mb_height);
 			}
 
@@ -734,11 +734,11 @@ int NintendoBadge::loadFieldData(void)
 			const char *const launch_title_id_title = C_("NintendoBadge", "Launch Title ID");
 			if (prbs->title_id.id == cpu_to_le64(0xFFFFFFFFFFFFFFFFULL)) {
 				// No title ID.
-				d->fields->addField_string(launch_title_id_title,
+				d->fields.addField_string(launch_title_id_title,
 					C_("NintendoBadge", "None"));
 			} else {
 				// Title ID is present.
-				d->fields->addField_string(launch_title_id_title,
+				d->fields.addField_string(launch_title_id_title,
 					rp_sprintf("%08X-%08X",
 						le32_to_cpu(prbs->title_id.hi),
 						le32_to_cpu(prbs->title_id.lo)));
@@ -768,14 +768,14 @@ int NintendoBadge::loadFieldData(void)
 							str = title;
 						}
 					}
-					d->fields->addField_string(C_("NintendoBadge", "Launch Title Name"), str);
+					d->fields.addField_string(C_("NintendoBadge", "Launch Title Name"), str);
 				}
 			}
 			break;
 		}
 
 		case NintendoBadgePrivate::BadgeType::CABS: {
-			d->fields->addField_string(s_type_title, C_("NintendoBadge", "Badge Set"));
+			d->fields.addField_string(s_type_title, C_("NintendoBadge", "Badge Set"));
 
 			// CABS-specific fields.
 			const Badge_CABS_Header *const cabs = &d->badgeHeader.cabs;
@@ -801,15 +801,15 @@ int NintendoBadge::loadFieldData(void)
 			}
 			// NOTE: There aer 16 name entries, but only 12 languages...
 			if (lang >= 0 && lang < ARRAY_SIZE_I(cabs->name)) {
-				d->fields->addField_string(s_name_title,
+				d->fields.addField_string(s_name_title,
 					utf16le_to_utf8(cabs->name[lang], sizeof(cabs->name[lang])));
 			}
 
 			// Badge ID.
-			d->fields->addField_string_numeric(C_("NintendoBadge", "Set ID"), cabs->set_id);
+			d->fields.addField_string_numeric(C_("NintendoBadge", "Set ID"), cabs->set_id);
 
 			// Set name.
-			d->fields->addField_string(s_set_name_title,
+			d->fields.addField_string(s_set_name_title,
 				latin1_to_utf8(cabs->setname, sizeof(cabs->setname)));
 			break;
 		}
@@ -817,12 +817,12 @@ int NintendoBadge::loadFieldData(void)
 		default:
 			// Unknown.
 			assert(!"Unknown badge type. (Should not get here!)");
-			d->fields->addField_string(s_type_title, C_("RomData", "Unknown"));
+			d->fields.addField_string(s_type_title, C_("RomData", "Unknown"));
 			break;
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

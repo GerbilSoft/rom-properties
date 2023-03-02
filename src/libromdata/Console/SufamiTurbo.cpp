@@ -329,7 +329,7 @@ uint32_t SufamiTurbo::imgpf(ImageType imageType) const
 int SufamiTurbo::loadFieldData(void)
 {
 	RP_D(SufamiTurbo);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -342,10 +342,10 @@ int SufamiTurbo::loadFieldData(void)
 
 	// ROM header is read in the constructor.
 	const ST_RomHeader *const romHeader = &d->romHeader;
-	d->fields->reserve(4); // Maximum of 4 fields.
+	d->fields.reserve(4); // Maximum of 4 fields.
 
 	// Title
-	d->fields->addField_string(C_("RomData", "Title"), d->getRomTitle());
+	d->fields.addField_string(C_("RomData", "Title"), d->getRomTitle());
 
 	// Game ID
 	// FIXME: This seems useless, so not including it for now...
@@ -353,7 +353,7 @@ int SufamiTurbo::loadFieldData(void)
 	char gameID[16];
 	snprintf(gameID, sizeof(gameID), "%02X%02X%02X",
 		romHeader->game_id[0], romHeader->game_id[1], romHeader->game_id[2]);
-	d->fields->addField_string(C_("RomData", "Game ID"), gameID,
+	d->fields.addField_string(C_("RomData", "Game ID"), gameID,
 		RomFields::STRF_MONOSPACE);
 #endif
 
@@ -385,21 +385,21 @@ int SufamiTurbo::loadFieldData(void)
 			features |= (1U << 3);
 			break;
 	}
-	d->fields->addField_bitfield(C_("SufamiTurbo", "Features"),
+	d->fields.addField_bitfield(C_("SufamiTurbo", "Features"),
 		v_features_bitfield_names, 4, features);
 
 	// ROM size
-	d->fields->addField_string(C_("SufamiTurbo", "ROM Size"),
+	d->fields.addField_string(C_("SufamiTurbo", "ROM Size"),
 		formatFileSizeKiB(romHeader->rom_size * 128*1024));
 
 	// RAM size
-	d->fields->addField_string(C_("SufamiTurbo", "SRAM Size"),
+	d->fields.addField_string(C_("SufamiTurbo", "SRAM Size"),
 		formatFileSizeKiB(romHeader->sram_size * 2*1024));
 
 	// TODO: Get the Sufami Turbo game code?
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

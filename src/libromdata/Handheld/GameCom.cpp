@@ -709,7 +709,7 @@ uint32_t GameCom::imgpf(ImageType imageType) const
 int GameCom::loadFieldData(void)
 {
 	RP_D(GameCom);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -724,25 +724,25 @@ int GameCom::loadFieldData(void)
 
 	// game.com ROM header.
 	const Gcom_RomHeader *const romHeader = &d->romHeader;
-	d->fields->reserve(3);	// Maximum of 3 fields.
+	d->fields.reserve(3);	// Maximum of 3 fields.
 
 	// Game title.
-	d->fields->addField_string(C_("RomData", "Title"),
+	d->fields.addField_string(C_("RomData", "Title"),
 		latin1_to_utf8(romHeader->title, sizeof(romHeader->title)),
 		RomFields::STRF_TRIM_END);
 
 	// Game ID.
-	d->fields->addField_string_numeric(C_("RomData", "Game ID"),
+	d->fields.addField_string_numeric(C_("RomData", "Game ID"),
 		le16_to_cpu(romHeader->game_id),
 		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Entry point.
-	d->fields->addField_string_numeric(C_("GameCom", "Entry Point"),
+	d->fields.addField_string_numeric(C_("GameCom", "Entry Point"),
 		le16_to_cpu(romHeader->entry_point),
 		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

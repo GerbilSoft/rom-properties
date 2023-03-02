@@ -240,7 +240,7 @@ const char *ADX::systemName(unsigned int type) const
 int ADX::loadFieldData(void)
 {
 	RP_D(ADX);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -253,7 +253,7 @@ int ADX::loadFieldData(void)
 
 	// ADX header
 	const ADX_Header *const adxHeader = &d->adxHeader;
-	d->fields->reserve(8);	// Maximum of 8 fields.
+	d->fields.reserve(8);	// Maximum of 8 fields.
 
 	// Format
 	const char *format;
@@ -281,10 +281,10 @@ int ADX::loadFieldData(void)
 			format = C_("RomData", "Unknown");
 			break;
 	}
-	d->fields->addField_string(C_("RomData|Audio", "Format"), format);
+	d->fields.addField_string(C_("RomData|Audio", "Format"), format);
 
 	// Number of channels
-	d->fields->addField_string_numeric(C_("RomData|Audio", "Channels"), adxHeader->channel_count);
+	d->fields.addField_string_numeric(C_("RomData|Audio", "Channels"), adxHeader->channel_count);
 
 	// Sample rate and sample count
 	const uint32_t sample_rate = be32_to_cpu(adxHeader->sample_rate);
@@ -294,10 +294,10 @@ int ADX::loadFieldData(void)
 	// NOTE: Using ostringstream for localized numeric formatting.
 	ostringstream oss;
 	oss << sample_rate << " Hz";
-	d->fields->addField_string(C_("RomData|Audio", "Sample Rate"), oss.str());
+	d->fields.addField_string(C_("RomData|Audio", "Sample Rate"), oss.str());
 
 	// Length. (non-looping)
-	d->fields->addField_string(C_("RomData|Audio", "Length"),
+	d->fields.addField_string(C_("RomData|Audio", "Length"),
 		formatSampleAsTime(sample_count, sample_rate));
 
 #if 0
@@ -306,7 +306,7 @@ int ADX::loadFieldData(void)
 	// FIXME: Disabling until I figure this out.
 	oss.str("");
 	oss << be16_to_cpu(adxHeader->high_pass_cutoff) << " Hz";
-	d->fields->addField_string(C_("ADX", "High-Pass Cutoff"), oss.str());
+	d->fields.addField_string(C_("ADX", "High-Pass Cutoff"), oss.str());
 #endif
 
 	// Translated strings
@@ -314,23 +314,23 @@ int ADX::loadFieldData(void)
 	const char *const s_no  = C_("RomData", "No");
 
 	// Encryption
-	d->fields->addField_string(C_("ADX", "Encrypted"),
+	d->fields.addField_string(C_("ADX", "Encrypted"),
 		((adxHeader->flags & ADX_FLAG_ENCRYPTED) ? s_yes : s_no));
 
 	// Looping
 	const ADX_LoopData *const pLoopData = d->pLoopData;
 	const bool isLooping = (pLoopData && pLoopData->loop_flag != 0);
-	d->fields->addField_string(C_("ADX", "Looping"),
+	d->fields.addField_string(C_("ADX", "Looping"),
 		(isLooping ? s_yes : s_no));
 	if (isLooping) {
-		d->fields->addField_string(C_("ADX", "Loop Start"),
+		d->fields.addField_string(C_("ADX", "Loop Start"),
 			formatSampleAsTime(be32_to_cpu(pLoopData->start_sample), sample_rate));
-		d->fields->addField_string(C_("ADX", "Loop End"),
+		d->fields.addField_string(C_("ADX", "Loop End"),
 			formatSampleAsTime(be32_to_cpu(pLoopData->end_sample), sample_rate));
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

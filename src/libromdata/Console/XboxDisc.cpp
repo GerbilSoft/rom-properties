@@ -690,7 +690,7 @@ uint32_t XboxDisc::imgpf(ImageType imageType) const
 int XboxDisc::loadFieldData(void)
 {
 	RP_D(XboxDisc);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -711,7 +711,7 @@ int XboxDisc::loadFieldData(void)
 		d->lockKreonDrive();
 		return 0;
 	}
-	d->fields->reserve(3);	// Maximum of 3 fields.
+	d->fields.reserve(3);	// Maximum of 3 fields.
 
 	// Get the console name.
 	XboxDiscPrivate::ConsoleType consoleType = d->getConsoleType();
@@ -725,34 +725,34 @@ int XboxDisc::loadFieldData(void)
 			s_tab_name = "Xbox 360";
 			break;
 	}
-	d->fields->setTabName(0, s_tab_name);
+	d->fields.setTabName(0, s_tab_name);
 
 	// Disc type
 	const char *const s_disc_type = C_("XboxDisc", "Disc Type");
 	// NOTE: Not translating "Xbox Game Disc".
 	switch (d->discType) {
 		case XboxDiscPrivate::DiscType::Extracted:
-			d->fields->addField_string(s_disc_type,
+			d->fields.addField_string(s_disc_type,
 				C_("XboxDisc", "Extracted XDVDFS"));
 			break;
 		case XboxDiscPrivate::DiscType::XGD1:
-			d->fields->addField_string(s_disc_type, "Xbox Game Disc 1");
+			d->fields.addField_string(s_disc_type, "Xbox Game Disc 1");
 			break;
 		case XboxDiscPrivate::DiscType::XGD2:
-			d->fields->addField_string(s_disc_type,
+			d->fields.addField_string(s_disc_type,
 				rp_sprintf("Xbox Game Disc 2 (Wave %u)", d->wave));
 			break;
 		case XboxDiscPrivate::DiscType::XGD3:
-			d->fields->addField_string(s_disc_type, "Xbox Game Disc 3");
+			d->fields.addField_string(s_disc_type, "Xbox Game Disc 3");
 			break;
 		default:
-			d->fields->addField_string(s_disc_type,
+			d->fields.addField_string(s_disc_type,
 				rp_sprintf(C_("RomData", "Unknown (%u)"), d->wave));
 			break;
 	}
 
 	// Timestamp
-	d->fields->addField_dateTime(C_("XboxDisc", "Disc Timestamp"),
+	d->fields.addField_dateTime(C_("XboxDisc", "Disc Timestamp"),
 		xdvdfsPartition->xdvdfsTimestamp(),
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_HAS_TIME);
@@ -775,7 +775,7 @@ int XboxDisc::loadFieldData(void)
 				s_boot_filename = nullptr;
 				break;
 		}
-		d->fields->addField_string(C_("XboxDisc", "Boot Filename"),
+		d->fields.addField_string(C_("XboxDisc", "Boot Filename"),
 			(s_boot_filename ? s_boot_filename : C_("RomData", "Unknown")));
 
 		// Add the fields.
@@ -785,11 +785,11 @@ int XboxDisc::loadFieldData(void)
 		if (exeFields) {
 			int exeTabCount = exeFields->tabCount();
 			for (int i = 1; i < exeTabCount; i++) {
-				d->fields->setTabName(i, exeFields->tabName(i));
+				d->fields.setTabName(i, exeFields->tabName(i));
 			}
-			d->fields->setTabIndex(0);
-			d->fields->addFields_romFields(exeFields, 0);
-			d->fields->setTabIndex(exeTabCount - 1);
+			d->fields.setTabIndex(0);
+			d->fields.addFields_romFields(exeFields, 0);
+			d->fields.setTabIndex(exeTabCount - 1);
 		}
 	}
 
@@ -800,7 +800,7 @@ int XboxDisc::loadFieldData(void)
 			// Add the fields.
 			const RomFields *const isoFields = isoData->fields();
 			if (isoFields) {
-				d->fields->addFields_romFields(isoFields,
+				d->fields.addFields_romFields(isoFields,
 					RomFields::TabOffset_AddTabs);
 			}
 		}
@@ -811,7 +811,7 @@ int XboxDisc::loadFieldData(void)
 	d->lockKreonDrive();
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

@@ -193,7 +193,7 @@ const char *PokemonMini::systemName(unsigned int type) const
 int PokemonMini::loadFieldData(void)
 {
 	RP_D(PokemonMini);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -206,7 +206,7 @@ int PokemonMini::loadFieldData(void)
 
 	// Pokémon Mini ROM header.
 	const PokemonMini_RomHeader *const romHeader = &d->romHeader;
-	d->fields->reserve(3);	// Maximum of 3 fields.
+	d->fields.reserve(3);	// Maximum of 3 fields.
 
 	// Title.
 	string title;
@@ -218,7 +218,7 @@ int PokemonMini::loadFieldData(void)
 		// Assume other regions are cp1252.
 		title = cp1252_to_utf8(romHeader->title, sizeof(romHeader->title));
 	}
-	d->fields->addField_string(C_("RomData", "Title"), title, RomFields::STRF_TRIM_END);
+	d->fields.addField_string(C_("RomData", "Title"), title, RomFields::STRF_TRIM_END);
 
 	// Game ID.
 	// Replace any non-printable characters with underscores.
@@ -229,7 +229,7 @@ int PokemonMini::loadFieldData(void)
 			: '_');
 	}
 	id4[4] = 0;
-	d->fields->addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id4, 4));
+	d->fields.addField_string(C_("RomData", "Game ID"), latin1_to_utf8(id4, 4));
 
 	// Vector table.
 	static const char *const vectors_names[PokemonMini_IRQ_MAX] = {
@@ -331,10 +331,10 @@ int PokemonMini::loadFieldData(void)
 	RomFields::AFLD_PARAMS params(RomFields::RFT_LISTDATA_SEPARATE_ROW, 8);
 	params.headers = v_vectors_headers;
 	params.data.single = vv_vectors;
-	d->fields->addField_listData(C_("RomData", "Vector Table"), &params);
+	d->fields.addField_listData(C_("RomData", "Vector Table"), &params);
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

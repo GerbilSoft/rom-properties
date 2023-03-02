@@ -727,7 +727,7 @@ vector<RomData::ImageSizeDef> PlayStationDisc::supportedImageSizes(ImageType ima
 int PlayStationDisc::loadFieldData(void)
 {
 	RP_D(PlayStationDisc);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -738,7 +738,7 @@ int PlayStationDisc::loadFieldData(void)
 		return -EIO;
 	}
 
-	d->fields->reserve(6);	// Maximum of 6 fields.
+	d->fields.reserve(6);	// Maximum of 6 fields.
 
 	const char *s_tab_name;
 	switch (d->consoleType) {
@@ -750,14 +750,14 @@ int PlayStationDisc::loadFieldData(void)
 			s_tab_name = "PS2";
 			break;
 	}
-	d->fields->setTabName(0, s_tab_name);
+	d->fields.setTabName(0, s_tab_name);
 
 	// Boot filename
-	d->fields->addField_string(C_("PlayStationDisc", "Boot Filename"), d->boot_filename);
+	d->fields.addField_string(C_("PlayStationDisc", "Boot Filename"), d->boot_filename);
 
 	// Boot argument, if present
 	if (!d->boot_argument.empty()) {
-		d->fields->addField_string(C_("PlayStationDisc", "Boot Argument"), d->boot_argument);
+		d->fields.addField_string(C_("PlayStationDisc", "Boot Argument"), d->boot_argument);
 	}
 
 	// Console-specific fields
@@ -767,13 +767,13 @@ int PlayStationDisc::loadFieldData(void)
 			// Max thread count
 			auto iter = d->system_cnf.find("TCB");
 			if (iter != d->system_cnf.end() && !iter->second.empty()) {
-				d->fields->addField_string(C_("PlayStationDisc", "Max Thread Count"), iter->second);
+				d->fields.addField_string(C_("PlayStationDisc", "Max Thread Count"), iter->second);
 			}
 
 			// Max event count
 			iter = d->system_cnf.find("EVENT");
 			if (iter != d->system_cnf.end() && !iter->second.empty()) {
-				d->fields->addField_string(C_("PlayStationDisc", "Max Event Count"), iter->second);
+				d->fields.addField_string(C_("PlayStationDisc", "Max Event Count"), iter->second);
 			}
 			break;
 		}
@@ -782,14 +782,14 @@ int PlayStationDisc::loadFieldData(void)
 			// Version
 			auto iter = d->system_cnf.find("VER");
 			if (iter != d->system_cnf.end() && !iter->second.empty()) {
-				d->fields->addField_string(C_("PlayStationDisc", "Version"), iter->second);
+				d->fields.addField_string(C_("PlayStationDisc", "Version"), iter->second);
 			}
 
 			// Video mode
 			// TODO: Validate this?
 			iter = d->system_cnf.find("VMODE");
 			if (iter != d->system_cnf.end() && !iter->second.empty()) {
-				d->fields->addField_string(C_("PlayStationDisc", "Video Mode"), iter->second);
+				d->fields.addField_string(C_("PlayStationDisc", "Video Mode"), iter->second);
 			}
 			break;
 		}
@@ -801,7 +801,7 @@ int PlayStationDisc::loadFieldData(void)
 		// TODO: Do we need a leading slash?
 		boot_file_timestamp = d->isoPartition->get_mtime(d->boot_filename.c_str());
 	}
-	d->fields->addField_dateTime(C_("PlayStationDisc", "Boot File Time"),
+	d->fields.addField_dateTime(C_("PlayStationDisc", "Boot File Time"),
 		boot_file_timestamp,
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_HAS_TIME);
@@ -816,11 +816,11 @@ int PlayStationDisc::loadFieldData(void)
 		if (exeFields) {
 			int exeTabCount = exeFields->tabCount();
 			for (int i = 1; i < exeTabCount; i++) {
-				d->fields->setTabName(i, exeFields->tabName(i));
+				d->fields.setTabName(i, exeFields->tabName(i));
 			}
-			d->fields->setTabIndex(0);
-			d->fields->addFields_romFields(exeFields, 0);
-			d->fields->setTabIndex(exeTabCount - 1);
+			d->fields.setTabIndex(0);
+			d->fields.addFields_romFields(exeFields, 0);
+			d->fields.setTabIndex(exeTabCount - 1);
 		}
 	}
 
@@ -830,32 +830,32 @@ int PlayStationDisc::loadFieldData(void)
 		PS2_CDVDGEN_LBA * ISO_SECTOR_SIZE_MODE1_COOKED, &cdvdgen, sizeof(cdvdgen));
 	if (size == sizeof(cdvdgen) && !memcmp(cdvdgen.sw_version, "CDVDGEN ", 8)) {
 		// CDVDGEN data found.
-		d->fields->addTab("CDVDGEN");
-		d->fields->reserve(d->fields->count() + 9);
+		d->fields.addTab("CDVDGEN");
+		d->fields.reserve(d->fields.count() + 9);
 
 		// CDVDGEN version
-		d->fields->addField_string(C_("PlayStationDisc", "CDVDGEN Version"),
+		d->fields.addField_string(C_("PlayStationDisc", "CDVDGEN Version"),
 			cp1252_to_utf8(&cdvdgen.sw_version[8], sizeof(cdvdgen.disc_name)-8),
 			RomFields::STRF_TRIM_END);
 
 		// Disc name
-		d->fields->addField_string(C_("PlayStationDisc", "Disc Name"),
+		d->fields.addField_string(C_("PlayStationDisc", "Disc Name"),
 			cp1252_to_utf8(cdvdgen.disc_name, sizeof(cdvdgen.disc_name)),
 			RomFields::STRF_TRIM_END);
 
 		// Producer name
-		d->fields->addField_string(C_("PlayStationDisc", "Producer Name"),
+		d->fields.addField_string(C_("PlayStationDisc", "Producer Name"),
 			cp1252_to_utf8(cdvdgen.producer_name, sizeof(cdvdgen.producer_name)),
 			RomFields::STRF_TRIM_END);
 
 		// Copyright holder
-		d->fields->addField_string(C_("PlayStationDisc", "Copyright Holder"),
+		d->fields.addField_string(C_("PlayStationDisc", "Copyright Holder"),
 			cp1252_to_utf8(cdvdgen.copyright_holder, sizeof(cdvdgen.copyright_holder)),
 			RomFields::STRF_TRIM_END);
 
 		// Creation date
 		// NOTE: Marking as UTC because there's no timezone information.
-		d->fields->addField_dateTime(C_("PlayStationDisc", "Creation Date"),
+		d->fields.addField_dateTime(C_("PlayStationDisc", "Creation Date"),
 			d->ascii_yyyymmdd_to_unix_time(cdvdgen.creation_date),
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_IS_UTC);
@@ -864,16 +864,16 @@ int PlayStationDisc::loadFieldData(void)
 
 		// Disc drive information
 		// TODO: Hide if empty?
-		d->fields->addField_string(C_("PlayStationDisc", "Drive Vendor"),
+		d->fields.addField_string(C_("PlayStationDisc", "Drive Vendor"),
 			cp1252_to_utf8(cdvdgen.drive.vendor, sizeof(cdvdgen.drive.vendor)),
 			RomFields::STRF_TRIM_END);
-		d->fields->addField_string(C_("PlayStationDisc", "Drive Model"),
+		d->fields.addField_string(C_("PlayStationDisc", "Drive Model"),
 			cp1252_to_utf8(cdvdgen.drive.model, sizeof(cdvdgen.drive.model)),
 			RomFields::STRF_TRIM_END);
-		d->fields->addField_string(C_("PlayStationDisc", "Drive Firmware"),
+		d->fields.addField_string(C_("PlayStationDisc", "Drive Firmware"),
 			cp1252_to_utf8(cdvdgen.drive.revision, sizeof(cdvdgen.drive.revision)),
 			RomFields::STRF_TRIM_END);
-		d->fields->addField_string(C_("PlayStationDisc", "Drive Notes"),
+		d->fields.addField_string(C_("PlayStationDisc", "Drive Notes"),
 			cp1252_to_utf8(cdvdgen.drive.notes, sizeof(cdvdgen.drive.notes)),
 			RomFields::STRF_TRIM_END);
 	}
@@ -884,14 +884,14 @@ int PlayStationDisc::loadFieldData(void)
 		// Add the fields.
 		const RomFields *const isoFields = isoData->fields();
 		if (isoFields) {
-			d->fields->addFields_romFields(isoFields,
+			d->fields.addFields_romFields(isoFields,
 				RomFields::TabOffset_AddTabs);
 		}
 	}
 	isoData->unref();
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**

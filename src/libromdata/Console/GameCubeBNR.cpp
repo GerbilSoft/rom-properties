@@ -612,7 +612,7 @@ uint32_t GameCubeBNR::imgpf(ImageType imageType) const
 int GameCubeBNR::loadFieldData(void)
 {
 	RP_D(GameCubeBNR);
-	if (!d->fields->empty()) {
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file || !d->file->isOpen()) {
@@ -625,9 +625,9 @@ int GameCubeBNR::loadFieldData(void)
 
 	if (d->comments.empty()) {
 		// Banner comment data wasn't loaded...
-		return static_cast<int>(d->fields->count());
+		return static_cast<int>(d->fields.count());
 	}
-	d->fields->reserve(3);	// Maximum of 3 fields.
+	d->fields.reserve(3);	// Maximum of 3 fields.
 
 	// TODO: Show both full and normal?
 	// Currently showing full if it's there; otherwise, normal.
@@ -646,19 +646,19 @@ int GameCubeBNR::loadFieldData(void)
 		// Game name
 		string s_tmp = d->getGameNameString(comment);
 		if (!s_tmp.empty()) {
-			d->fields->addField_string(s_game_name_title, s_tmp);
+			d->fields.addField_string(s_game_name_title, s_tmp);
 		}
 
 		// Company
 		s_tmp = d->getCompanyString(comment);
 		if (!s_tmp.empty()) {
-			d->fields->addField_string(s_company_title, s_tmp);
+			d->fields.addField_string(s_company_title, s_tmp);
 		}
 
 		// Game description
 		s_tmp = d->getGameDescriptionString(comment);
 		if (!s_tmp.empty()) {
-			d->fields->addField_string(s_description_title, s_tmp);
+			d->fields.addField_string(s_description_title, s_tmp);
 		}
 	} else {
 		// BNR2: Assuming cp1252.
@@ -734,24 +734,24 @@ int GameCubeBNR::loadFieldData(void)
 		const uint32_t def_lc = NintendoLanguage::getGcnPalLanguageCode(
 			NintendoLanguage::getGcnPalLanguage());
 		if (!pMap_gamename->empty()) {
-			d->fields->addField_string_multi(s_game_name_title, pMap_gamename, def_lc);
+			d->fields.addField_string_multi(s_game_name_title, pMap_gamename, def_lc);
 		} else {
 			delete pMap_gamename;
 		}
 		if (!pMap_company->empty()) {
-			d->fields->addField_string_multi(s_company_title, pMap_company, def_lc);
+			d->fields.addField_string_multi(s_company_title, pMap_company, def_lc);
 		} else {
 			delete pMap_company;
 		}
 		if (!pMap_gamedesc->empty()) {
-			d->fields->addField_string_multi(s_description_title, pMap_gamedesc, def_lc);
+			d->fields.addField_string_multi(s_description_title, pMap_gamedesc, def_lc);
 		} else {
 			delete pMap_gamedesc;
 		}
 	}
 
 	// Finished reading the field data.
-	return static_cast<int>(d->fields->count());
+	return static_cast<int>(d->fields.count());
 }
 
 /**
