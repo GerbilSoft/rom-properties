@@ -53,7 +53,7 @@ namespace LibRomData {
 class Xbox360_XEX_Private final : public RomDataPrivate
 {
 	public:
-		Xbox360_XEX_Private(Xbox360_XEX *q, IRpFile *file);
+		Xbox360_XEX_Private(IRpFile *file);
 		~Xbox360_XEX_Private() final;
 
 	private:
@@ -287,8 +287,8 @@ const uint8_t Xbox360_XEXPrivate::EncryptionKeyVerifyData[Xbox360_XEX::Key_Max][
 };
 #endif /* ENABLE_DECRYPTION */
 
-Xbox360_XEX_Private::Xbox360_XEX_Private(Xbox360_XEX *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+Xbox360_XEX_Private::Xbox360_XEX_Private(IRpFile *file)
+	: super(file, &romDataInfo)
 	, xexType(XexType::Unknown)
 	, isExecutionIDLoaded(false)
 	, keyInUse(-1)
@@ -1360,7 +1360,7 @@ string Xbox360_XEX_Private::getPublisher(void) const
  * @param file Open XEX file.
  */
 Xbox360_XEX::Xbox360_XEX(IRpFile *file)
-	: super(new Xbox360_XEX_Private(this, file))
+	: super(new Xbox360_XEX_Private(file))
 {
 	// This class handles executables.
 	RP_D(Xbox360_XEX);

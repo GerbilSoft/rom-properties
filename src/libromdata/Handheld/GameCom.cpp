@@ -26,7 +26,7 @@ namespace LibRomData {
 class GameComPrivate final : public RomDataPrivate
 {
 	public:
-		GameComPrivate(GameCom *q, IRpFile *file);
+		GameComPrivate(IRpFile *file);
 		~GameComPrivate() final;
 
 	private:
@@ -110,8 +110,8 @@ const uint32_t GameComPrivate::gcom_palette[4] = {
 	0xFF000000,
 };
 
-GameComPrivate::GameComPrivate(GameCom *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+GameComPrivate::GameComPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, img_icon(nullptr)
 {
 	// Clear the ROM header struct.
@@ -504,7 +504,7 @@ const rp_image *GameComPrivate::loadIconRLE(void)
  * @param file Open ROM image.
  */
 GameCom::GameCom(IRpFile *file)
-	: super(new GameComPrivate(this, file))
+	: super(new GameComPrivate(file))
 {
 	RP_D(GameCom);
 	d->mimeType = "application/x-game-com-rom";	// unofficial, not on fd.o

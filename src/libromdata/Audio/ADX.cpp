@@ -24,7 +24,7 @@ namespace LibRomData {
 class ADXPrivate final : public RomDataPrivate
 {
 	public:
-		ADXPrivate(ADX *q, IRpFile *file);
+		ADXPrivate(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -68,8 +68,8 @@ const RomDataInfo ADXPrivate::romDataInfo = {
 	"ADX", exts, mimeTypes
 };
 
-ADXPrivate::ADXPrivate(ADX *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+ADXPrivate::ADXPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, pLoopData(nullptr)
 {
 	// Clear the ADX header struct.
@@ -92,7 +92,7 @@ ADXPrivate::ADXPrivate(ADX *q, IRpFile *file)
  * @param file Open ROM image.
  */
 ADX::ADX(IRpFile *file)
-	: super(new ADXPrivate(this, file))
+	: super(new ADXPrivate(file))
 {
 	RP_D(ADX);
 	d->mimeType = "audio/x-adx";	// unofficial, not on fd.o

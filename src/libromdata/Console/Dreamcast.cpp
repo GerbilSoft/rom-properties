@@ -40,7 +40,7 @@ namespace LibRomData {
 class DreamcastPrivate final : public RomDataPrivate
 {
 	public:
-		DreamcastPrivate(Dreamcast *q, IRpFile *file);
+		DreamcastPrivate(IRpFile *file);
 		~DreamcastPrivate() final;
 
 	private:
@@ -144,8 +144,8 @@ const RomDataInfo DreamcastPrivate::romDataInfo = {
 	"Dreamcast", exts, mimeTypes
 };
 
-DreamcastPrivate::DreamcastPrivate(Dreamcast *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+DreamcastPrivate::DreamcastPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, discReader(nullptr)
 	, isoPartition(nullptr)
@@ -326,7 +326,7 @@ void DreamcastPrivate::parseDiscNumber(uint8_t &disc_num, uint8_t &disc_total) c
  * @param file Open ROM image.
  */
 Dreamcast::Dreamcast(IRpFile *file)
-	: super(new DreamcastPrivate(this, file))
+	: super(new DreamcastPrivate(file))
 {
 	// This class handles disc images.
 	RP_D(Dreamcast);

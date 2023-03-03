@@ -26,7 +26,7 @@ namespace LibRomData {
 class SPCPrivate final : public RomDataPrivate
 {
 	public:
-		SPCPrivate(SPC *q, IRpFile *file);
+		SPCPrivate(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -194,8 +194,8 @@ const RomDataInfo SPCPrivate::romDataInfo = {
 	"SPC", exts, mimeTypes
 };
 
-SPCPrivate::SPCPrivate(SPC *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+SPCPrivate::SPCPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 {
 	// Clear the SPC header struct.
 	memset(&spcHeader, 0, sizeof(spcHeader));
@@ -518,7 +518,7 @@ SPCPrivate::spc_tags_t SPCPrivate::parseTags(void)
  * @param file Open ROM image.
  */
 SPC::SPC(IRpFile *file)
-	: super(new SPCPrivate(this, file))
+	: super(new SPCPrivate(file))
 {
 	RP_D(SPC);
 	d->mimeType = "audio/x-spc";	// unofficial

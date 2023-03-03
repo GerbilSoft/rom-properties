@@ -25,7 +25,7 @@ namespace LibRomData {
 class DreamcastSavePrivate final : public RomDataPrivate
 {
 	public:
-		DreamcastSavePrivate(DreamcastSave *q, IRpFile *file);
+		DreamcastSavePrivate(IRpFile *file);
 		~DreamcastSavePrivate() final;
 
 	private:
@@ -213,8 +213,8 @@ const uint32_t DreamcastSavePrivate::eyecatch_sizes[4] = {
 	DC_VMS_EYECATCH_CI4_PALETTE_SIZE + DC_VMS_EYECATCH_CI4_DATA_SIZE
 };
 
-DreamcastSavePrivate::DreamcastSavePrivate(DreamcastSave *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+DreamcastSavePrivate::DreamcastSavePrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, img_banner(nullptr)
 	, iconAnimData(nullptr)
 	, saveType(SaveType::Unknown)
@@ -775,7 +775,7 @@ const rp_image *DreamcastSavePrivate::loadBanner(void)
  * @param file Open disc image.
  */
 DreamcastSave::DreamcastSave(IRpFile *file)
-	: super(new DreamcastSavePrivate(this, file))
+	: super(new DreamcastSavePrivate(file))
 {
 	// This class handles save files.
 	RP_D(DreamcastSave);
@@ -934,7 +934,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
  * @param vmi_file Open .VMI save file.
  */
 DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
-	: super(new DreamcastSavePrivate(this, vms_file))
+	: super(new DreamcastSavePrivate(vms_file))
 {
 	// This class handles save files.
 	RP_D(DreamcastSave);

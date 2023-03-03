@@ -24,7 +24,7 @@ namespace LibRomData {
 class GBSPrivate : public RomDataPrivate
 {
 	public:
-		GBSPrivate(GBS *q, IRpFile *file);
+		GBSPrivate(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -81,8 +81,8 @@ const RomDataInfo GBSPrivate::romDataInfo = {
 	"GBS", exts, mimeTypes
 };
 
-GBSPrivate::GBSPrivate(GBS *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+GBSPrivate::GBSPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, audioFormat(AudioFormat::Unknown)
 {
 	// Clear the header struct.
@@ -105,7 +105,7 @@ GBSPrivate::GBSPrivate(GBS *q, IRpFile *file)
  * @param file Open ROM image.
  */
 GBS::GBS(IRpFile *file)
-	: super(new GBSPrivate(this, file))
+	: super(new GBSPrivate(file))
 {
 	RP_D(GBS);
 	d->fileType = FileType::AudioFile;

@@ -28,7 +28,7 @@ namespace LibRomData {
 class RpTextureWrapperPrivate final : public RomDataPrivate
 {
 	public:
-		RpTextureWrapperPrivate(RpTextureWrapper *q, IRpFile *file);
+		RpTextureWrapperPrivate(IRpFile *file);
 		~RpTextureWrapperPrivate();
 
 	private:
@@ -64,8 +64,8 @@ const RomDataInfo RpTextureWrapperPrivate::romDataInfo = {
 	"RpTextureWrapper", exts, mimeTypes
 };
 
-RpTextureWrapperPrivate::RpTextureWrapperPrivate(RpTextureWrapper *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+RpTextureWrapperPrivate::RpTextureWrapperPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, texture(nullptr)
 { }
 
@@ -90,7 +90,7 @@ RpTextureWrapperPrivate::~RpTextureWrapperPrivate()
  * @param file Open ROM image.
  */
 RpTextureWrapper::RpTextureWrapper(IRpFile *file)
-	: super(new RpTextureWrapperPrivate(this, file))
+	: super(new RpTextureWrapperPrivate(file))
 {
 	// This class handles texture files.
 	RP_D(RpTextureWrapper);

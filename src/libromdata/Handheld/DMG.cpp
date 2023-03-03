@@ -31,7 +31,7 @@ namespace LibRomData {
 class DMGPrivate final : public RomDataPrivate
 {
 	public:
-		DMGPrivate(DMG *q, IRpFile *file);
+		DMGPrivate(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -261,8 +261,8 @@ const DMGPrivate::dmg_cart_type DMGPrivate::dmg_cart_types_end[] = {
 	{DMG_Hardware::HUC1, DMG_FEATURE_RAM|DMG_FEATURE_BATTERY},
 };
 
-DMGPrivate::DMGPrivate(DMG *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+DMGPrivate::DMGPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
 {
 	// Clear the various structs.
@@ -543,7 +543,7 @@ string DMGPrivate::getPublisher(void) const
  * @param file Open ROM file.
  */
 DMG::DMG(IRpFile *file)
-	: super(new DMGPrivate(this, file))
+	: super(new DMGPrivate(file))
 {
 	RP_D(DMG);
 	if (!d->file) {

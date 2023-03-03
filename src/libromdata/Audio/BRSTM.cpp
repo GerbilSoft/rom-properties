@@ -24,7 +24,7 @@ namespace LibRomData {
 class BRSTMPrivate final : public RomDataPrivate
 {
 	public:
-		BRSTMPrivate(BRSTM *q, IRpFile *file);
+		BRSTMPrivate(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -87,8 +87,8 @@ const RomDataInfo BRSTMPrivate::romDataInfo = {
 	"BRSTM", exts, mimeTypes
 };
 
-BRSTMPrivate::BRSTMPrivate(BRSTM *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+BRSTMPrivate::BRSTMPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, needsByteswap(false)
 {
 	// Clear the BRSTM header structs.
@@ -112,7 +112,7 @@ BRSTMPrivate::BRSTMPrivate(BRSTM *q, IRpFile *file)
  * @param file Open ROM image.
  */
 BRSTM::BRSTM(IRpFile *file)
-	: super(new BRSTMPrivate(this, file))
+	: super(new BRSTMPrivate(file))
 {
 	RP_D(BRSTM);
 	d->mimeType = "audio/x-brstm";	// unofficial, not on fd.o

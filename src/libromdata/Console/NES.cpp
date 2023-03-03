@@ -29,7 +29,7 @@ namespace LibRomData {
 class NESPrivate final : public RomDataPrivate
 {
 	public:
-		NESPrivate(NES *q, IRpFile *file);
+		NESPrivate(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -192,8 +192,8 @@ const uint8_t NESPrivate::footer_chr_rom_size_shift_lkup[] = {
 	19,	// 5 (512 KB)
 };
 
-NESPrivate::NESPrivate(NES *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+NESPrivate::NESPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, romType(ROM_UNKNOWN)
 	, hasCheckedIntFooter(false)
 	, intFooterErrno(255)
@@ -622,7 +622,7 @@ int NESPrivate::loadInternalFooter(void)
  * @param file Open ROM file.
  */
 NES::NES(IRpFile *file)
-	: super(new NESPrivate(this, file))
+	: super(new NESPrivate(file))
 {
 	RP_D(NES);
 

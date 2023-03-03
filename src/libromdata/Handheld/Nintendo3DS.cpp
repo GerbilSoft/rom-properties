@@ -86,8 +86,8 @@ const RomDataInfo Nintendo3DSPrivate::romDataInfo = {
 	"Nintendo3DS", exts, mimeTypes
 };
 
-Nintendo3DSPrivate::Nintendo3DSPrivate(Nintendo3DS *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+Nintendo3DSPrivate::Nintendo3DSPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
 	, headers_loaded(0)
 	, media_unit_shift(9)	// default is 9 (512 bytes)
@@ -1220,7 +1220,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
  * @param file Open disc image.
  */
 Nintendo3DS::Nintendo3DS(IRpFile *file)
-	: super(new Nintendo3DSPrivate(this, file))
+	: super(new Nintendo3DSPrivate(file))
 {
 	// This class handles several different types of files,
 	// so we'll initialize d->fileType later.

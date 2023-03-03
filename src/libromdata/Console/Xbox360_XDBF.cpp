@@ -37,7 +37,7 @@ namespace LibRomData {
 class Xbox360_XDBF_Private final : public RomDataPrivate
 {
 	public:
-		Xbox360_XDBF_Private(Xbox360_XDBF *q, IRpFile *file, bool xex);
+		Xbox360_XDBF_Private(IRpFile *file, bool xex);
 		~Xbox360_XDBF_Private() final;
 
 	private:
@@ -289,8 +289,8 @@ const RomDataInfo Xbox360_XDBF_Private::romDataInfo = {
 	"Xbox360_XEX", exts, mimeTypes
 };
 
-Xbox360_XDBF_Private::Xbox360_XDBF_Private(Xbox360_XDBF *q, IRpFile *file, bool xex)
-	: super(q, file, &romDataInfo)
+Xbox360_XDBF_Private::Xbox360_XDBF_Private(IRpFile *file, bool xex)
+	: super(file, &romDataInfo)
 	, xdbfType(XDBFType::Unknown)
 	, img_icon(nullptr)
 	, data_offset(0)
@@ -1562,7 +1562,7 @@ int Xbox360_XDBF_Private::addFields_achievements_GPD(void)
  * @param file Open XDBF file and/or section.
  */
 Xbox360_XDBF::Xbox360_XDBF(IRpFile *file)
-	: super(new Xbox360_XDBF_Private(this, file, false))
+	: super(new Xbox360_XDBF_Private(file, false))
 {
 	// This class handles XDBF files and/or sections only.
 	// NOTE: Using the same image settings as Xbox360_XEX.
@@ -1593,7 +1593,7 @@ Xbox360_XDBF::Xbox360_XDBF(IRpFile *file)
  * @param xex If true, hide fields that are displayed separately in XEX executables.
  */
 Xbox360_XDBF::Xbox360_XDBF(IRpFile *file, bool xex)
-	: super(new Xbox360_XDBF_Private(this, file, xex))
+	: super(new Xbox360_XDBF_Private(file, xex))
 {
 	// This class handles XDBF files and/or sections only.
 	RP_D(Xbox360_XDBF);

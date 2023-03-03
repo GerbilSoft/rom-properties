@@ -21,7 +21,7 @@ namespace LibRomData {
 class LynxPrivate final : public RomDataPrivate
 {
 	public:
-		LynxPrivate(Lynx *q, IRpFile *file);
+		LynxPrivate(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -58,8 +58,8 @@ const RomDataInfo LynxPrivate::romDataInfo = {
 	"Lynx", exts, mimeTypes
 };
 
-LynxPrivate::LynxPrivate(Lynx *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+LynxPrivate::LynxPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
@@ -81,7 +81,7 @@ LynxPrivate::LynxPrivate(Lynx *q, IRpFile *file)
  * @param file Open ROM file.
  */
 Lynx::Lynx(IRpFile *file)
-	: super(new LynxPrivate(this, file))
+	: super(new LynxPrivate(file))
 {
 	RP_D(Lynx);
 	d->mimeType = "application/x-atari-lynx-rom";	// unofficial

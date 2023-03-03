@@ -39,7 +39,7 @@ namespace LibRomData {
 class SNDHPrivate final : public RomDataPrivate
 {
 	public:
-		SNDHPrivate(SNDH *q, IRpFile *file);
+		SNDHPrivate(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -126,8 +126,8 @@ const RomDataInfo SNDHPrivate::romDataInfo = {
 	"SNDH", exts, mimeTypes
 };
 
-SNDHPrivate::SNDHPrivate(SNDH *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+SNDHPrivate::SNDHPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 { }
 
 /**
@@ -631,7 +631,7 @@ SNDHPrivate::TagData SNDHPrivate::parseTags(void)
  * @param file Open ROM image.
  */
 SNDH::SNDH(IRpFile *file)
-	: super(new SNDHPrivate(this, file))
+	: super(new SNDHPrivate(file))
 {
 	RP_D(SNDH);
 	d->mimeType = "audio/x-sndh";	// unofficial, not on fd.o

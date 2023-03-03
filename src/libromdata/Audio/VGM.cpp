@@ -26,7 +26,7 @@ namespace LibRomData {
 class VGMPrivate final : public RomDataPrivate
 {
 	public:
-		VGMPrivate(VGM *q, IRpFile *file);
+		VGMPrivate(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -92,8 +92,8 @@ const RomDataInfo VGMPrivate::romDataInfo = {
 	"VGM", exts, mimeTypes
 };
 
-VGMPrivate::VGMPrivate(VGM *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+VGMPrivate::VGMPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, s_clockrate(nullptr)
 	, s_dualchip(nullptr)
 	, s_yes(nullptr)
@@ -220,7 +220,7 @@ void VGMPrivate::addCommonSoundChip(unsigned int clk_full, const char *display, 
  * @param file Open ROM image.
  */
 VGM::VGM(IRpFile *file)
-	: super(new VGMPrivate(this, file))
+	: super(new VGMPrivate(file))
 {
 	RP_D(VGM);
 	d->mimeType = "audio/x-vgm";	// unofficial

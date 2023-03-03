@@ -31,7 +31,7 @@ namespace LibRomData {
 class NintendoDSPrivate final : public LibRpBase::RomDataPrivate
 {
 	public:
-		NintendoDSPrivate(NintendoDS *q, LibRpFile::IRpFile *file, bool cia);
+		NintendoDSPrivate(LibRpFile::IRpFile *file, bool cia);
 		~NintendoDSPrivate() final;
 
 	private:

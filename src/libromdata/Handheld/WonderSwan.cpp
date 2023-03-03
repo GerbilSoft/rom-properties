@@ -25,7 +25,7 @@ namespace LibRomData {
 class WonderSwanPrivate final : public RomDataPrivate
 {
 	public:
-		WonderSwanPrivate(WonderSwan *q, IRpFile *file);
+		WonderSwanPrivate(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -94,8 +94,8 @@ const RomDataInfo WonderSwanPrivate::romDataInfo = {
 	"WonderSwan", exts, mimeTypes
 };
 
-WonderSwanPrivate::WonderSwanPrivate(WonderSwan *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+WonderSwanPrivate::WonderSwanPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
 	, forceGameIDSysIDTo0(false)
 {
@@ -145,7 +145,7 @@ string WonderSwanPrivate::getGameID(void) const
  * @param file Open ROM file.
  */
 WonderSwan::WonderSwan(IRpFile *file)
-	: super(new WonderSwanPrivate(this, file))
+	: super(new WonderSwanPrivate(file))
 {
 	RP_D(WonderSwan);
 	if (!d->file) {

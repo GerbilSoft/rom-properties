@@ -23,7 +23,7 @@ namespace LibRomData {
 class PlayStationEXEPrivate final : public RomDataPrivate
 {
 	public:
-		PlayStationEXEPrivate(PlayStationEXE *q, IRpFile *file, uint32_t sp_override);
+		PlayStationEXEPrivate(IRpFile *file, uint32_t sp_override);
 
 	private:
 		typedef RomDataPrivate super;
@@ -65,8 +65,8 @@ const RomDataInfo PlayStationEXEPrivate::romDataInfo = {
 	"PlayStationEXE", exts, mimeTypes
 };
 
-PlayStationEXEPrivate::PlayStationEXEPrivate(PlayStationEXE *q, IRpFile *file, uint32_t sp_override)
-	: super(q, file, &romDataInfo)
+PlayStationEXEPrivate::PlayStationEXEPrivate(IRpFile *file, uint32_t sp_override)
+	: super(file, &romDataInfo)
 	, sp_override(sp_override)
 {
 	// Clear the structs.
@@ -89,7 +89,7 @@ PlayStationEXEPrivate::PlayStationEXEPrivate(PlayStationEXE *q, IRpFile *file, u
  * @param file Open PS-X executable file.
  */
 PlayStationEXE::PlayStationEXE(IRpFile *file)
-	: super(new PlayStationEXEPrivate(this, file, 0))
+	: super(new PlayStationEXEPrivate(file, 0))
 {
 	// This class handles executables.
 	RP_D(PlayStationEXE);
@@ -119,7 +119,7 @@ PlayStationEXE::PlayStationEXE(IRpFile *file)
  * @param sp_override Stack pointer override.
  */
 PlayStationEXE::PlayStationEXE(IRpFile *file, uint32_t sp_override)
-	: super(new PlayStationEXEPrivate(this, file, sp_override))
+	: super(new PlayStationEXEPrivate(file, sp_override))
 {
 	// This class handles executables.
 	RP_D(PlayStationEXE);

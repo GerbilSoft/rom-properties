@@ -25,7 +25,7 @@ namespace LibRomData {
 class GameBoyAdvancePrivate final : public RomDataPrivate
 {
 	public:
-		GameBoyAdvancePrivate(GameBoyAdvance *q, IRpFile *file);
+		GameBoyAdvancePrivate(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -84,8 +84,8 @@ const RomDataInfo GameBoyAdvancePrivate::romDataInfo = {
 	"GameBoyAdvance", exts, mimeTypes
 };
 
-GameBoyAdvancePrivate::GameBoyAdvancePrivate(GameBoyAdvance *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+GameBoyAdvancePrivate::GameBoyAdvancePrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
 {
 	// Clear the ROM header struct.
@@ -134,7 +134,7 @@ string GameBoyAdvancePrivate::getPublisher(void) const
  * @param file Open ROM image.
  */
 GameBoyAdvance::GameBoyAdvance(IRpFile *file)
-	: super(new GameBoyAdvancePrivate(this, file))
+	: super(new GameBoyAdvancePrivate(file))
 {
 	RP_D(GameBoyAdvance);
 	d->mimeType = "application/x-gba-rom";	// unofficial

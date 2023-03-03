@@ -38,7 +38,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 class CBMCartPrivate final : public RomDataPrivate
 {
 	public:
-		CBMCartPrivate(CBMCart *q, IRpFile *file);
+		CBMCartPrivate(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -106,8 +106,8 @@ const RomDataInfo CBMCartPrivate::romDataInfo = {
 	"CBMCart", exts, mimeTypes
 };
 
-CBMCartPrivate::CBMCartPrivate(CBMCart *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+CBMCartPrivate::CBMCartPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
 	, rom_16k_crc32(0)
 {
@@ -155,7 +155,7 @@ int CBMCartPrivate::zlibInit(void)
  * @param file Open ROM image.
  */
 CBMCart::CBMCart(IRpFile *file)
-	: super(new CBMCartPrivate(this, file))
+	: super(new CBMCartPrivate(file))
 {
 	RP_D(CBMCart);
 

@@ -24,7 +24,7 @@ namespace LibRomData {
 class SIDPrivate final : public RomDataPrivate
 {
 	public:
-		SIDPrivate(SID *q, IRpFile *file);
+		SIDPrivate(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -62,8 +62,8 @@ const RomDataInfo SIDPrivate::romDataInfo = {
 	"SID", exts, mimeTypes
 };
 
-SIDPrivate::SIDPrivate(SID *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+SIDPrivate::SIDPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 {
 	// Clear the SID header struct.
 	memset(&sidHeader, 0, sizeof(sidHeader));
@@ -85,7 +85,7 @@ SIDPrivate::SIDPrivate(SID *q, IRpFile *file)
  * @param file Open ROM image.
  */
 SID::SID(IRpFile *file)
-	: super(new SIDPrivate(this, file))
+	: super(new SIDPrivate(file))
 {
 	RP_D(SID);
 	d->mimeType = "audio/prs.sid";	// official

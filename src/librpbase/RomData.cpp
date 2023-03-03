@@ -28,14 +28,11 @@ namespace LibRpBase {
 
 /**
  * Initialize a RomDataPrivate storage class.
- *
- * @param q RomData class
  * @param file ROM file
  * @param pRomDataInfo RomData subclass information
  */
-RomDataPrivate::RomDataPrivate(RomData *q, IRpFile *file, const RomDataInfo *pRomDataInfo)
-	: q_ptr(q)
-	, pRomDataInfo(pRomDataInfo)
+RomDataPrivate::RomDataPrivate(IRpFile *file, const RomDataInfo *pRomDataInfo)
+	: pRomDataInfo(pRomDataInfo)
 	, mimeType(nullptr)
 	, fileType(RomData::FileType::ROM_Image)
 	, isValid(false)

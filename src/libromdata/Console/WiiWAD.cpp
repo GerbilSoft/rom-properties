@@ -74,8 +74,8 @@ const RomDataInfo WiiWADPrivate::romDataInfo = {
 	"WiiWAD", exts, mimeTypes
 };
 
-WiiWADPrivate::WiiWADPrivate(WiiWAD *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+WiiWADPrivate::WiiWADPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, wadType(WadType::Unknown)
 	, data_offset(0)
 	, data_size(0)
@@ -247,7 +247,7 @@ int WiiWADPrivate::openSRL(void)
  * @param file Open disc image.
  */
 WiiWAD::WiiWAD(IRpFile *file)
-	: super(new WiiWADPrivate(this, file))
+	: super(new WiiWADPrivate(file))
 {
 	// This class handles application packages.
 	RP_D(WiiWAD);

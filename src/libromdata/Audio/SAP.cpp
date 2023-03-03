@@ -29,7 +29,7 @@ namespace LibRomData {
 class SAPPrivate final : public RomDataPrivate
 {
 	public:
-		SAPPrivate(SAP *q, IRpFile *file);
+		SAPPrivate(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -111,8 +111,8 @@ const RomDataInfo SAPPrivate::romDataInfo = {
 	"SAP", exts, mimeTypes
 };
 
-SAPPrivate::SAPPrivate(SAP *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+SAPPrivate::SAPPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 { }
 
 /**
@@ -453,7 +453,7 @@ SAPPrivate::sap_tags_t SAPPrivate::parseTags(void)
  * @param file Open ROM image.
  */
 SAP::SAP(IRpFile *file)
-	: super(new SAPPrivate(this, file))
+	: super(new SAPPrivate(file))
 {
 	RP_D(SAP);
 	d->mimeType = "audio/x-sap";	// unofficial

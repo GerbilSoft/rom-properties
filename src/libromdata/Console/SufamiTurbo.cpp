@@ -24,7 +24,7 @@ namespace LibRomData {
 class SufamiTurboPrivate final : public RomDataPrivate
 {
 	public:
-		SufamiTurboPrivate(SufamiTurbo *q, IRpFile *file);
+		SufamiTurboPrivate(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -79,8 +79,8 @@ const RomDataInfo SufamiTurboPrivate::romDataInfo = {
 	"SNES", exts, mimeTypes
 };
 
-SufamiTurboPrivate::SufamiTurboPrivate(SufamiTurbo *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+SufamiTurboPrivate::SufamiTurboPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
@@ -150,7 +150,7 @@ string SufamiTurboPrivate::getRomTitle(void) const
  * @param file Open ROM image.
  */
 SufamiTurbo::SufamiTurbo(IRpFile *file)
-	: super(new SufamiTurboPrivate(this, file))
+	: super(new SufamiTurboPrivate(file))
 {
 	// NOTE: Handling Sufami Turbo ROMs as if they're Super NES.
 	RP_D(SufamiTurbo);

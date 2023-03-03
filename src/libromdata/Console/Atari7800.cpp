@@ -25,7 +25,7 @@ namespace LibRomData {
 class Atari7800Private final : public RomDataPrivate
 {
 	public:
-		Atari7800Private(Atari7800 *q, IRpFile *file);
+		Atari7800Private(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -62,8 +62,8 @@ const RomDataInfo Atari7800Private::romDataInfo = {
 	"Atari7800", exts, mimeTypes
 };
 
-Atari7800Private::Atari7800Private(Atari7800 *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+Atari7800Private::Atari7800Private(IRpFile *file)
+	: super(file, &romDataInfo)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
@@ -85,7 +85,7 @@ Atari7800Private::Atari7800Private(Atari7800 *q, IRpFile *file)
  * @param file Open ROM image.
  */
 Atari7800::Atari7800(IRpFile *file)
-	: super(new Atari7800Private(this, file))
+	: super(new Atari7800Private(file))
 {
 	RP_D(Atari7800);
 

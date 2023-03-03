@@ -45,7 +45,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 class MegaDrivePrivate final : public RomDataPrivate
 {
 	public:
-		MegaDrivePrivate(MegaDrive *q, IRpFile *file);
+		MegaDrivePrivate(IRpFile *file);
 		~MegaDrivePrivate();
 
 	private:
@@ -249,8 +249,8 @@ const RomDataInfo MegaDrivePrivate::romDataInfo = {
 	"MegaDrive", exts, mimeTypes
 };
 
-MegaDrivePrivate::MegaDrivePrivate(MegaDrive *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+MegaDrivePrivate::MegaDrivePrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, romType(ROM_UNKNOWN)
 	, md_region(0)
 	, gt_crc(0)
@@ -749,7 +749,7 @@ int MegaDrivePrivate::zlibInit(void)
  * @param file Open ROM file.
  */
 MegaDrive::MegaDrive(IRpFile *file)
-	: super(new MegaDrivePrivate(this, file))
+	: super(new MegaDrivePrivate(file))
 {
 	RP_D(MegaDrive);
 

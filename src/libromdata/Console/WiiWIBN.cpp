@@ -27,7 +27,7 @@ namespace LibRomData {
 class WiiWIBNPrivate final : public RomDataPrivate
 {
 	public:
-		WiiWIBNPrivate(WiiWIBN *q, IRpFile *file);
+		WiiWIBNPrivate(IRpFile *file);
 		~WiiWIBNPrivate() final;
 
 	private:
@@ -94,8 +94,8 @@ const RomDataInfo WiiWIBNPrivate::romDataInfo = {
 	"WiiSave", exts, mimeTypes
 };
 
-WiiWIBNPrivate::WiiWIBNPrivate(WiiWIBN *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+WiiWIBNPrivate::WiiWIBNPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, img_banner(nullptr)
 	, iconAnimData(nullptr)
 {
@@ -262,7 +262,7 @@ const rp_image *WiiWIBNPrivate::loadBanner(void)
  * @param file Open disc image.
  */
 WiiWIBN::WiiWIBN(IRpFile *file)
-	: super(new WiiWIBNPrivate(this, file))
+	: super(new WiiWIBNPrivate(file))
 {
 	// This class handles banner files.
 	// NOTE: This will be handled using the same

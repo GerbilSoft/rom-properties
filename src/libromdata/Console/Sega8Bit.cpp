@@ -24,7 +24,7 @@ namespace LibRomData {
 class Sega8BitPrivate final : public RomDataPrivate
 {
 	public:
-		Sega8BitPrivate(Sega8Bit *q, IRpFile *file);
+		Sega8BitPrivate(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -92,8 +92,8 @@ const RomDataInfo Sega8BitPrivate::romDataInfo = {
 	"Sega8Bit", exts, mimeTypes
 };
 
-Sega8BitPrivate::Sega8BitPrivate(Sega8Bit *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+Sega8BitPrivate::Sega8BitPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
@@ -229,7 +229,7 @@ time_t Sega8BitPrivate::sdsc_date_to_unix_time(const Sega8_SDSC_Date *date)
  * @param file Open ROM image.
  */
 Sega8Bit::Sega8Bit(IRpFile *file)
-	: super(new Sega8BitPrivate(this, file))
+	: super(new Sega8BitPrivate(file))
 {
 	RP_D(Sega8Bit);
 	d->mimeType = "application/x-sms-rom";	// unofficial (TODO: SMS vs. GG)

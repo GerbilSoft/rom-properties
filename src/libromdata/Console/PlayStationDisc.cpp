@@ -41,7 +41,7 @@ namespace LibRomData {
 class PlayStationDiscPrivate final : public RomDataPrivate
 {
 	public:
-		PlayStationDiscPrivate(PlayStationDisc *q, IRpFile *file);
+		PlayStationDiscPrivate(IRpFile *file);
 		~PlayStationDiscPrivate() final;
 
 	private:
@@ -139,8 +139,8 @@ const RomDataInfo PlayStationDiscPrivate::romDataInfo = {
 	"PlayStationDisc", exts, mimeTypes
 };
 
-PlayStationDiscPrivate::PlayStationDiscPrivate(PlayStationDisc *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+PlayStationDiscPrivate::PlayStationDiscPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, discReader(nullptr)
 	, isoPartition(nullptr)
 	, bootExeData(nullptr)
@@ -330,7 +330,7 @@ RomData *PlayStationDiscPrivate::openBootExe(void)
  * @param file Open ROM image.
  */
 PlayStationDisc::PlayStationDisc(IRpFile *file)
-	: super(new PlayStationDiscPrivate(this, file))
+	: super(new PlayStationDiscPrivate(file))
 {
 	// This class handles disc images.
 	RP_D(PlayStationDisc);

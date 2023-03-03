@@ -46,7 +46,7 @@ namespace LibRomData {
 class WiiWADPrivate final : public LibRpBase::RomDataPrivate
 {
 	public:
-		WiiWADPrivate(WiiWAD *q, LibRpFile::IRpFile *file);
+		WiiWADPrivate(LibRpFile::IRpFile *file);
 		~WiiWADPrivate();
 
 	private:

@@ -36,7 +36,7 @@ namespace LibRomData {
 class XboxDiscPrivate final : public RomDataPrivate
 {
 	public:
-		XboxDiscPrivate(XboxDisc *q, LibRpFile::IRpFile *file);
+		XboxDiscPrivate(LibRpFile::IRpFile *file);
 		~XboxDiscPrivate() final;
 
 	private:
@@ -145,8 +145,8 @@ const RomDataInfo XboxDiscPrivate::romDataInfo = {
 	"XboxDisc", exts, mimeTypes
 };
 
-XboxDiscPrivate::XboxDiscPrivate(XboxDisc *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+XboxDiscPrivate::XboxDiscPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, wave(0)
 	, isKreon(false)
@@ -309,7 +309,7 @@ inline void XboxDiscPrivate::lockKreonDrive(void)
  * @param file Open ROM image.
  */
 XboxDisc::XboxDisc(IRpFile *file)
-	: super(new XboxDiscPrivate(this, file))
+	: super(new XboxDiscPrivate(file))
 {
 	// This class handles disc images.
 	RP_D(XboxDisc);

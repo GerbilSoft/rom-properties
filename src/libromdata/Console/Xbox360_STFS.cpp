@@ -37,7 +37,7 @@ namespace LibRomData {
 class Xbox360_STFS_Private final : public RomDataPrivate
 {
 	public:
-		Xbox360_STFS_Private(Xbox360_STFS *q, IRpFile *file);
+		Xbox360_STFS_Private(IRpFile *file);
 		~Xbox360_STFS_Private();
 
 	private:
@@ -173,8 +173,8 @@ const RomDataInfo Xbox360_STFS_Private::romDataInfo = {
 	"Xbox360_STFS", exts, mimeTypes
 };
 
-Xbox360_STFS_Private::Xbox360_STFS_Private(Xbox360_STFS *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+Xbox360_STFS_Private::Xbox360_STFS_Private(IRpFile *file)
+	: super(file, &romDataInfo)
 	, stfsType(StfsType::Unknown)
 	, img_icon(nullptr)
 	, headers_loaded(0)
@@ -557,7 +557,7 @@ Xbox360_XEX *Xbox360_STFS_Private::openDefaultXex(void)
  * @param file Open STFS file.
  */
 Xbox360_STFS::Xbox360_STFS(IRpFile *file)
-	: super(new Xbox360_STFS_Private(this, file))
+	: super(new Xbox360_STFS_Private(file))
 {
 	// This class handles application packages.
 	// TODO: Change to Save File if the content is a save file.

@@ -30,7 +30,7 @@ namespace LibRomData {
 class ISOPrivate final : public RomDataPrivate
 {
 	public:
-		ISOPrivate(ISO *q, LibRpFile::IRpFile *file);
+		ISOPrivate(LibRpFile::IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -211,8 +211,8 @@ const RomDataInfo ISOPrivate::romDataInfo = {
 	"ISO", exts, mimeTypes
 };
 
-ISOPrivate::ISOPrivate(ISO *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+ISOPrivate::ISOPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, sector_size(0)
 	, sector_offset(0)
@@ -573,7 +573,7 @@ void ISOPrivate::addPVDTimestamps_metaData(RomMetaData *metaData, const T *pvd)
  * @param file Open ROM image.
  */
 ISO::ISO(IRpFile *file)
-	: super(new ISOPrivate(this, file))
+	: super(new ISOPrivate(file))
 {
 	// This class handles disc images.
 	RP_D(ISO);

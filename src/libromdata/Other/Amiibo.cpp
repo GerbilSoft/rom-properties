@@ -25,7 +25,7 @@ namespace LibRomData {
 class AmiiboPrivate final : public RomDataPrivate
 {
 	public:
-		AmiiboPrivate(Amiibo *q, IRpFile *file);
+		AmiiboPrivate(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -80,8 +80,8 @@ const RomDataInfo AmiiboPrivate::romDataInfo = {
 	"Amiibo", exts, mimeTypes
 };
 
-AmiiboPrivate::AmiiboPrivate(Amiibo *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+AmiiboPrivate::AmiiboPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, nfpSize(0)
 {
 	// Clear the NFP data struct.
@@ -121,7 +121,7 @@ bool AmiiboPrivate::verifyCheckBytes(const uint8_t *serial)
  * @param file Open NFC dump.
  */
 Amiibo::Amiibo(IRpFile *file)
-	: super(new AmiiboPrivate(this, file))
+	: super(new AmiiboPrivate(file))
 {
 	// This class handles NFC dumps.
 	RP_D(Amiibo);

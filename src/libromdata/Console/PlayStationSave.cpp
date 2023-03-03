@@ -29,7 +29,7 @@ namespace LibRomData {
 class PlayStationSavePrivate final : public RomDataPrivate
 {
 	public:
-		PlayStationSavePrivate(PlayStationSave *q, IRpFile *file);
+		PlayStationSavePrivate(IRpFile *file);
 		~PlayStationSavePrivate() final;
 
 	private:
@@ -105,8 +105,8 @@ const RomDataInfo PlayStationSavePrivate::romDataInfo = {
 	"PlayStationSave", exts, mimeTypes
 };
 
-PlayStationSavePrivate::PlayStationSavePrivate(PlayStationSave *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+PlayStationSavePrivate::PlayStationSavePrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, iconAnimData(nullptr)
 	, saveType(SaveType::Unknown)
 {
@@ -212,7 +212,7 @@ const rp_image *PlayStationSavePrivate::loadIcon(void)
  * @param file Open ROM image.
  */
 PlayStationSave::PlayStationSave(IRpFile *file)
-	: super(new PlayStationSavePrivate(this, file))
+	: super(new PlayStationSavePrivate(file))
 {
 	// This class handles save files.
 	RP_D(PlayStationSave);

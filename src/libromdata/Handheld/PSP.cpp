@@ -38,7 +38,7 @@ namespace LibRomData {
 class PSPPrivate final : public LibRpBase::RomDataPrivate
 {
 	public:
-		PSPPrivate(PSP *q, IRpFile *file);
+		PSPPrivate(IRpFile *file);
 		~PSPPrivate() final;
 
 	private:
@@ -128,8 +128,8 @@ const RomDataInfo PSPPrivate::romDataInfo = {
 	"PSP", exts, mimeTypes
 };
 
-PSPPrivate::PSPPrivate(PSP *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+PSPPrivate::PSPPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, discReader(nullptr)
 	, isoPartition(nullptr)
@@ -235,7 +235,7 @@ RomData *PSPPrivate::openBootExe(void)
  * @param file Open ROM image.
  */
 PSP::PSP(IRpFile *file)
-	: super(new PSPPrivate(this, file))
+	: super(new PSPPrivate(file))
 {
 	// This class handles disc images.
 	RP_D(PSP);

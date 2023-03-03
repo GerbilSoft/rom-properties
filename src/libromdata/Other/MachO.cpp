@@ -29,7 +29,7 @@ namespace LibRomData {
 class MachOPrivate final : public RomDataPrivate
 {
 	public:
-		MachOPrivate(MachO *q, LibRpFile::IRpFile *file);
+		MachOPrivate(LibRpFile::IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -129,8 +129,8 @@ const RomDataInfo MachOPrivate::romDataInfo = {
 	"MachO", exts, mimeTypes
 };
 
-MachOPrivate::MachOPrivate(MachO *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+MachOPrivate::MachOPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, execFormat(Exec_Format::Unknown)
 { }
 
@@ -175,7 +175,7 @@ MachOPrivate::Mach_Format MachOPrivate::checkMachMagicNumber(uint32_t magic)
  * @param file Open ROM image.
  */
 MachO::MachO(IRpFile *file)
-	: super(new MachOPrivate(this, file))
+	: super(new MachOPrivate(file))
 {
 	// This class handles different types of files.
 	// d->fileType will be set later.

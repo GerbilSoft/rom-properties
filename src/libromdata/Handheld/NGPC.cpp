@@ -24,7 +24,7 @@ namespace LibRomData {
 class NGPCPrivate final : public RomDataPrivate
 {
 	public:
-		NGPCPrivate(NGPC *q, IRpFile *file);
+		NGPCPrivate(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -79,8 +79,8 @@ const RomDataInfo NGPCPrivate::romDataInfo = {
 	"NGPC", exts, mimeTypes
 };
 
-NGPCPrivate::NGPCPrivate(NGPC *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+NGPCPrivate::NGPCPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
 {
 	// Clear the various structs.
@@ -103,7 +103,7 @@ NGPCPrivate::NGPCPrivate(NGPC *q, IRpFile *file)
  * @param file Open ROM file.
  */
 NGPC::NGPC(IRpFile *file)
-	: super(new NGPCPrivate(this, file))
+	: super(new NGPCPrivate(file))
 {
 	RP_D(NGPC);
 	if (!d->file) {

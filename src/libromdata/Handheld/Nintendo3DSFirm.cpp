@@ -41,7 +41,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 class Nintendo3DSFirmPrivate final : public RomDataPrivate
 {
 	public:
-		Nintendo3DSFirmPrivate(Nintendo3DSFirm *q, IRpFile *file);
+		Nintendo3DSFirmPrivate(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -81,8 +81,8 @@ const RomDataInfo Nintendo3DSFirmPrivate::romDataInfo = {
 	"Nintendo3DSFirm", exts, mimeTypes
 };
 
-Nintendo3DSFirmPrivate::Nintendo3DSFirmPrivate(Nintendo3DSFirm *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+Nintendo3DSFirmPrivate::Nintendo3DSFirmPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 {
 	// Clear the various structs.
 	memset(&firmHeader, 0, sizeof(firmHeader));
@@ -104,7 +104,7 @@ Nintendo3DSFirmPrivate::Nintendo3DSFirmPrivate(Nintendo3DSFirm *q, IRpFile *file
  * @param file Open ROM image.
  */
 Nintendo3DSFirm::Nintendo3DSFirm(IRpFile *file)
-	: super(new Nintendo3DSFirmPrivate(this, file))
+	: super(new Nintendo3DSFirmPrivate(file))
 {
 	RP_D(Nintendo3DSFirm);
 	d->mimeType = "application/x-nintendo-3ds-firm";	// unofficial, not on fd.o

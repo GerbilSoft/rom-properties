@@ -24,7 +24,7 @@ namespace LibRomData {
 class NSFPrivate final : public RomDataPrivate
 {
 	public:
-		NSFPrivate(NSF *q, IRpFile *file);
+		NSFPrivate(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -62,8 +62,8 @@ const RomDataInfo NSFPrivate::romDataInfo = {
 	"NSF", exts, mimeTypes
 };
 
-NSFPrivate::NSFPrivate(NSF *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+NSFPrivate::NSFPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 {
 	// Clear the NSF header struct.
 	memset(&nsfHeader, 0, sizeof(nsfHeader));
@@ -85,7 +85,7 @@ NSFPrivate::NSFPrivate(NSF *q, IRpFile *file)
  * @param file Open ROM image.
  */
 NSF::NSF(IRpFile *file)
-	: super(new NSFPrivate(this, file))
+	: super(new NSFPrivate(file))
 {
 	RP_D(NSF);
 	d->mimeType = "audio/x-nsf";	// unofficial

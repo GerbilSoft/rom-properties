@@ -26,7 +26,7 @@ namespace LibRomData {
 class VirtualBoyPrivate final : public RomDataPrivate
 {
 	public:
-		VirtualBoyPrivate(VirtualBoy *q, IRpFile *file);
+		VirtualBoyPrivate(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -88,8 +88,8 @@ const RomDataInfo VirtualBoyPrivate::romDataInfo = {
 	"VirtualBoy", exts, mimeTypes
 };
 
-VirtualBoyPrivate::VirtualBoyPrivate(VirtualBoy *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+VirtualBoyPrivate::VirtualBoyPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 {
 	// Clear the ROM footer struct.
 	memset(&romFooter, 0, sizeof(romFooter));
@@ -146,7 +146,7 @@ bool inline VirtualBoyPrivate::isGameID(char c){
  * @param file Open ROM file.
  */
 VirtualBoy::VirtualBoy(IRpFile *file)
-	: super(new VirtualBoyPrivate(this, file))
+	: super(new VirtualBoyPrivate(file))
 {
 	RP_D(VirtualBoy);
 	d->mimeType = "application/x-virtual-boy-rom";	// unofficial

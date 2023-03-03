@@ -30,7 +30,7 @@ class EXE;
 class EXEPrivate final : public LibRpBase::RomDataPrivate
 {
 	public:
-		EXEPrivate(EXE *q, LibRpFile::IRpFile *file);
+		EXEPrivate(LibRpFile::IRpFile *file);
 		~EXEPrivate();
 
 	private:

@@ -24,7 +24,7 @@ namespace LibRomData {
 class LuaPrivate final : public RomDataPrivate
 {
 	public:
-		LuaPrivate(Lua *q, IRpFile *file);
+		LuaPrivate(IRpFile *file);
 
 	public:
 		/** RomDataInfo **/
@@ -189,8 +189,8 @@ const RomDataInfo LuaPrivate::romDataInfo = {
 	"Lua", exts, mimeTypes
 };
 
-LuaPrivate::LuaPrivate(Lua *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+LuaPrivate::LuaPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, luaVersion(LuaVersion::Unknown)
 {
 	// Clear the header struct.
@@ -546,7 +546,7 @@ void LuaPrivate::parse4(uint8_t version, const uint8_t *p) {
  * @param file Open ROM file.
  */
 Lua::Lua(IRpFile *file)
-	: super(new LuaPrivate(this, file))
+	: super(new LuaPrivate(file))
 {
 	RP_D(Lua);
 	d->mimeType = "application/x-lua";	// unofficial; binary files only

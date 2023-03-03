@@ -78,8 +78,8 @@ const char *const EXEPrivate::NE_TargetOSes[6] = {
 	"Borland Operating System Services",	// NE_OS_BOSS
 };
 
-EXEPrivate::EXEPrivate(EXE *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+EXEPrivate::EXEPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, exeType(ExeType::Unknown)
 	, rsrcReader(nullptr)
 	, pe_subsystem(IMAGE_SUBSYSTEM_UNKNOWN)
@@ -497,7 +497,7 @@ void EXEPrivate::addFields_LE(void)
  * @param file Open ROM image.
  */
 EXE::EXE(IRpFile *file)
-	: super(new EXEPrivate(this, file))
+	: super(new EXEPrivate(file))
 {
 	// This class handles different types of files.
 	// d->fileType will be set later.

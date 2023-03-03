@@ -37,7 +37,7 @@ namespace LibRomData {
 class WiiSavePrivate final : public RomDataPrivate
 {
 	public:
-		WiiSavePrivate(WiiSave *q, IRpFile *file);
+		WiiSavePrivate(IRpFile *file);
 		~WiiSavePrivate();
 
 	private:
@@ -111,8 +111,8 @@ const uint8_t WiiSavePrivate::bk_header_magic[8] = {
 	0x00, 0x00, 0x00, 0x70, 0x42, 0x6B, 0x00, 0x01
 };
 
-WiiSavePrivate::WiiSavePrivate(WiiSave *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+WiiSavePrivate::WiiSavePrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, svLoaded(false)
 #ifdef ENABLE_DECRYPTION
 	, cbcReader(nullptr)
@@ -151,7 +151,7 @@ WiiSavePrivate::~WiiSavePrivate()
  * @param file Open disc image.
  */
 WiiSave::WiiSave(IRpFile *file)
-	: super(new WiiSavePrivate(this, file))
+	: super(new WiiSavePrivate(file))
 {
 	// This class handles save files.
 	RP_D(WiiSave);

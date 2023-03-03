@@ -35,7 +35,7 @@ namespace LibRomData {
 class WiiUPrivate final : public RomDataPrivate
 {
 	public:
-		WiiUPrivate(WiiU *q, IRpFile *file);
+		WiiUPrivate(IRpFile *file);
 		~WiiUPrivate() final;
 
 	private:
@@ -92,8 +92,8 @@ const RomDataInfo WiiUPrivate::romDataInfo = {
 	"WiiU", exts, mimeTypes
 };
 
-WiiUPrivate::WiiUPrivate(WiiU *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+WiiUPrivate::WiiUPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, discReader(nullptr)
 {
@@ -122,7 +122,7 @@ WiiUPrivate::~WiiUPrivate()
  * @param file Open disc image.
  */
 WiiU::WiiU(IRpFile *file)
-	: super(new WiiUPrivate(this, file))
+	: super(new WiiUPrivate(file))
 {
 	// This class handles disc images.
 	RP_D(WiiU);

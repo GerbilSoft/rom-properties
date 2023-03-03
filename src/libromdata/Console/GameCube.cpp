@@ -53,7 +53,7 @@ namespace LibRomData {
 class GameCubePrivate final : public RomDataPrivate
 {
 	public:
-		GameCubePrivate(GameCube *q, IRpFile *file);
+		GameCubePrivate(IRpFile *file);
 		~GameCubePrivate() final;
 
 	private:
@@ -261,8 +261,8 @@ const uint8_t GameCubePrivate::nddemo_header[64] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 };
 
-GameCubePrivate::GameCubePrivate(GameCube *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+GameCubePrivate::GameCubePrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, discType(DISC_UNKNOWN)
 	, discReader(nullptr)
 	, hasRegionCode(false)
@@ -703,7 +703,7 @@ const char *GameCubePrivate::wii_getCryptoStatus(WiiPartition *partition)
  * @param file Open disc image.
  */
 GameCube::GameCube(IRpFile *file)
-	: super(new GameCubePrivate(this, file))
+	: super(new GameCubePrivate(file))
 {
 	// This class handles disc images.
 	RP_D(GameCube);

@@ -27,7 +27,7 @@ namespace LibRomData {
 class SNESPrivate final : public RomDataPrivate
 {
 	public:
-		SNESPrivate(SNES *q, IRpFile *file);
+		SNESPrivate(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -149,8 +149,8 @@ const RomDataInfo SNESPrivate::romDataInfo = {
 	"SNES", exts, mimeTypes
 };
 
-SNESPrivate::SNESPrivate(SNES *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+SNESPrivate::SNESPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
 	, header_address(0)
 {
@@ -793,7 +793,7 @@ string SNESPrivate::getGameID(bool doFake) const
  * @param file Open ROM image.
  */
 SNES::SNES(IRpFile *file)
-	: super(new SNESPrivate(this, file))
+	: super(new SNESPrivate(file))
 {
 	RP_D(SNES);
 	d->mimeType = "application/vnd.nintendo.snes.rom";	// vendor-specific

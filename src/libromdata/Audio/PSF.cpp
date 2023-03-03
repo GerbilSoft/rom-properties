@@ -28,7 +28,7 @@ namespace LibRomData {
 class PSFPrivate final : public RomDataPrivate
 {
 	public:
-		PSFPrivate(PSF *q, IRpFile *file);
+		PSFPrivate(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -125,8 +125,8 @@ const PSFPrivate::psf_type_tbl_t PSFPrivate::psf_type_tbl[] = {
 };
 const PSFPrivate::psf_type_tbl_t *const PSFPrivate::p_psf_type_tbl_end = &psf_type_tbl[ARRAY_SIZE(psf_type_tbl)];
 
-PSFPrivate::PSFPrivate(PSF *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+PSFPrivate::PSFPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 {
 	// Clear the PSF header struct.
 	memset(&psfHeader, 0, sizeof(psfHeader));
@@ -396,7 +396,7 @@ unsigned int PSFPrivate::lengthToMs(const char *str)
  * @param file Open ROM image.
  */
 PSF::PSF(IRpFile *file)
-	: super(new PSFPrivate(this, file))
+	: super(new PSFPrivate(file))
 {
 	RP_D(PSF);
 	d->mimeType = "audio/x-psf";	// unofficial (TODO: x-minipsf?)

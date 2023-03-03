@@ -30,7 +30,7 @@ namespace LibRomData {
 class GameCubeSavePrivate final : public RomDataPrivate
 {
 	public:
-		GameCubeSavePrivate(GameCubeSave *q, IRpFile *file);
+		GameCubeSavePrivate(IRpFile *file);
 		~GameCubeSavePrivate() final;
 
 	private:
@@ -130,8 +130,8 @@ const RomDataInfo GameCubeSavePrivate::romDataInfo = {
 	"GameCubeSave", exts, mimeTypes
 };
 
-GameCubeSavePrivate::GameCubeSavePrivate(GameCubeSave *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+GameCubeSavePrivate::GameCubeSavePrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, img_banner(nullptr)
 	, iconAnimData(nullptr)
 	, saveType(SaveType::Unknown)
@@ -551,7 +551,7 @@ const rp_image *GameCubeSavePrivate::loadBanner(void)
  * @param file Open disc image.
  */
 GameCubeSave::GameCubeSave(IRpFile *file)
-	: super(new GameCubeSavePrivate(this, file))
+	: super(new GameCubeSavePrivate(file))
 {
 	// This class handles save files.
 	RP_D(GameCubeSave);

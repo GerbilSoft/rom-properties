@@ -24,7 +24,7 @@ namespace LibRomData {
 class BCSTMPrivate final : public RomDataPrivate
 {
 	public:
-		BCSTMPrivate(BCSTM *q, IRpFile *file);
+		BCSTMPrivate(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -109,8 +109,8 @@ const RomDataInfo BCSTMPrivate::romDataInfo = {
 	"BCSTM", exts, mimeTypes
 };
 
-BCSTMPrivate::BCSTMPrivate(BCSTM *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+BCSTMPrivate::BCSTMPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, audioFormat(AudioFormat::Unknown)
 	, needsByteswap(false)
 {
@@ -135,7 +135,7 @@ BCSTMPrivate::BCSTMPrivate(BCSTM *q, IRpFile *file)
  * @param file Open ROM image.
  */
 BCSTM::BCSTM(IRpFile *file)
-	: super(new BCSTMPrivate(this, file))
+	: super(new BCSTMPrivate(file))
 {
 	RP_D(BCSTM);
 	d->fileType = FileType::AudioFile;

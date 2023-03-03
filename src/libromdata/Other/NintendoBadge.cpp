@@ -30,7 +30,7 @@ namespace LibRomData {
 class NintendoBadgePrivate final : public RomDataPrivate
 {
 	public:
-		NintendoBadgePrivate(NintendoBadge *q, IRpFile *file);
+		NintendoBadgePrivate(IRpFile *file);
 		~NintendoBadgePrivate();
 
 	private:
@@ -127,8 +127,8 @@ const RomDataInfo NintendoBadgePrivate::romDataInfo = {
 	"NintendoBadge", exts, mimeTypes
 };
 
-NintendoBadgePrivate::NintendoBadgePrivate(NintendoBadge *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+NintendoBadgePrivate::NintendoBadgePrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, badgeType(BadgeType::Unknown)
 	, megaBadge(false)
 {
@@ -409,7 +409,7 @@ inline uint32_t NintendoBadgePrivate::getDefaultLC(void) const
  * @param file Open ROM image.
  */
 NintendoBadge::NintendoBadge(IRpFile *file)
-	: super(new NintendoBadgePrivate(this, file))
+	: super(new NintendoBadgePrivate(file))
 {
 	// This class handles texture files.
 	RP_D(NintendoBadge);

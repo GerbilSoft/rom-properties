@@ -45,7 +45,7 @@ namespace LibRomData {
 class ELFPrivate final : public RomDataPrivate
 {
 	public:
-		ELFPrivate(ELF *q, LibRpFile::IRpFile *file);
+		ELFPrivate(LibRpFile::IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -250,8 +250,8 @@ const RomDataInfo ELFPrivate::romDataInfo = {
 	"ELF", exts, mimeTypes
 };
 
-ELFPrivate::ELFPrivate(ELF *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+ELFPrivate::ELFPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, elfFormat(Elf_Format::Unknown)
 	, hasCheckedPH(false)
 	, hasCheckedSH(false)
@@ -1151,7 +1151,7 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
  * @param file Open ROM image.
  */
 ELF::ELF(IRpFile *file)
-	: super(new ELFPrivate(this, file))
+	: super(new ELFPrivate(file))
 {
 	// This class handles different types of files.
 	// d->fileType will be set later.

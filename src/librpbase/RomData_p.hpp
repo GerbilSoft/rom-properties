@@ -43,20 +43,15 @@ class RomDataPrivate
 	public:
 		/**
 		 * Initialize a RomDataPrivate storage class.
-		 *
-		 * @param q RomData class
 		 * @param file ROM file
 		 * @param pRomDataInfo RomData subclass information
 		 */
-		RomDataPrivate(RomData *q, LibRpFile::IRpFile *file, const RomDataInfo *pRomDataInfo);
+		RomDataPrivate(LibRpFile::IRpFile *file, const RomDataInfo *pRomDataInfo);
 
 		virtual ~RomDataPrivate();
 
 	private:
 		RP_DISABLE_COPY(RomDataPrivate)
-	protected:
-		friend class RomData;
-		RomData *const q_ptr;
 
 	public:
 		/** These fields must be set by RomData subclasses in their constructors. **/

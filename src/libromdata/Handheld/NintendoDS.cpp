@@ -63,8 +63,8 @@ const RomDataInfo NintendoDSPrivate::romDataInfo = {
 	"NintendoDS", exts, mimeTypes
 };
 
-NintendoDSPrivate::NintendoDSPrivate(NintendoDS *q, IRpFile *file, bool cia)
-	: super(q, file, &romDataInfo)
+NintendoDSPrivate::NintendoDSPrivate(IRpFile *file, bool cia)
+	: super(file, &romDataInfo)
 	, iconAnimData(nullptr)
 	, icon_first_frame(nullptr)
 	, romType(RomType::Unknown)
@@ -590,7 +590,7 @@ RomFields::ListData_t *NintendoDSPrivate::getDSiFlagsStringVector(void)
  * @param file Open ROM image.
  */
 NintendoDS::NintendoDS(IRpFile *file)
-	: super(new NintendoDSPrivate(this, file, false))
+	: super(new NintendoDSPrivate(file, false))
 {
 	RP_D(NintendoDS);
 	if (!d->file) {
@@ -616,7 +616,7 @@ NintendoDS::NintendoDS(IRpFile *file)
  * @param cia If true, hide fields that aren't relevant to DSiWare in 3DS CIA packages.
  */
 NintendoDS::NintendoDS(IRpFile *file, bool cia)
-	: super(new NintendoDSPrivate(this, file, cia))
+	: super(new NintendoDSPrivate(file, cia))
 {
 	RP_D(NintendoDS);
 	if (!d->file) {

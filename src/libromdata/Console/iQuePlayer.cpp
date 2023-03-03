@@ -42,7 +42,7 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 class iQuePlayerPrivate final : public RomDataPrivate
 {
 	public:
-		iQuePlayerPrivate(iQuePlayer *q, IRpFile *file);
+		iQuePlayerPrivate(IRpFile *file);
 		~iQuePlayerPrivate() final;
 
 	private:
@@ -142,8 +142,8 @@ const RomDataInfo iQuePlayerPrivate::romDataInfo = {
 	"iQuePlayer", exts, mimeTypes
 };
 
-iQuePlayerPrivate::iQuePlayerPrivate(iQuePlayer *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+iQuePlayerPrivate::iQuePlayerPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, iQueFileType(IQueFileType::Unknown)
 	, img_thumbnail(nullptr)
 	, img_title(nullptr)
@@ -408,7 +408,7 @@ const rp_image *iQuePlayerPrivate::loadTitleImage(void)
  * @param file Open ROM image.
  */
 iQuePlayer::iQuePlayer(IRpFile *file)
-	: super(new iQuePlayerPrivate(this, file))
+	: super(new iQuePlayerPrivate(file))
 {
 	RP_D(iQuePlayer);
 	d->fileType = FileType::MetadataFile;

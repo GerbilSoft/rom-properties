@@ -24,7 +24,7 @@ namespace LibRomData {
 class N64Private final : public RomDataPrivate
 {
 	public:
-		N64Private(N64 *q, IRpFile *file);
+		N64Private(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -76,8 +76,8 @@ const RomDataInfo N64Private::romDataInfo = {
 	"N64", exts, mimeTypes
 };
 
-N64Private::N64Private(N64 *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+N64Private::N64Private(IRpFile *file)
+	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
 {
 	// Clear the ROM header struct.
@@ -100,7 +100,7 @@ N64Private::N64Private(N64 *q, IRpFile *file)
  * @param file Open ROM image.
  */
 N64::N64(IRpFile *file)
-	: super(new N64Private(this, file))
+	: super(new N64Private(file))
 {
 	RP_D(N64);
 	d->mimeType = "application/x-n64-rom";	// unofficial

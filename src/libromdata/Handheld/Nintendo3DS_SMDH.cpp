@@ -33,7 +33,7 @@ namespace LibRomData {
 class Nintendo3DS_SMDH_Private final : public RomDataPrivate
 {
 	public:
-		Nintendo3DS_SMDH_Private(Nintendo3DS_SMDH *q, IRpFile *file);
+		Nintendo3DS_SMDH_Private(IRpFile *file);
 		~Nintendo3DS_SMDH_Private() final;
 
 	private:
@@ -103,8 +103,8 @@ const RomDataInfo Nintendo3DS_SMDH_Private::romDataInfo = {
 	"Nintendo3DS", exts, mimeTypes
 };
 
-Nintendo3DS_SMDH_Private::Nintendo3DS_SMDH_Private(Nintendo3DS_SMDH *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+Nintendo3DS_SMDH_Private::Nintendo3DS_SMDH_Private(IRpFile *file)
+	: super(file, &romDataInfo)
 {
 	// Clear img_icon.
 	img_icon.fill(nullptr);
@@ -250,7 +250,7 @@ inline uint32_t Nintendo3DS_SMDH_Private::getDefaultLC(void) const
  * @param file Open SMDH file and/or section..
  */
 Nintendo3DS_SMDH::Nintendo3DS_SMDH(IRpFile *file)
-	: super(new Nintendo3DS_SMDH_Private(this, file))
+	: super(new Nintendo3DS_SMDH_Private(file))
 {
 	// This class handles SMDH files and/or sections only.
 	// NOTE: Using the same image settings as Nintendo3DS.

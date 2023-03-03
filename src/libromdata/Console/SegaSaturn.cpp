@@ -32,7 +32,7 @@ namespace LibRomData {
 class SegaSaturnPrivate final : public RomDataPrivate
 {
 	public:
-		SegaSaturnPrivate(SegaSaturn *q, IRpFile *file);
+		SegaSaturnPrivate(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -148,8 +148,8 @@ const RomDataInfo SegaSaturnPrivate::romDataInfo = {
 	"SegaSaturn", exts, mimeTypes
 };
 
-SegaSaturnPrivate::SegaSaturnPrivate(SegaSaturn *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+SegaSaturnPrivate::SegaSaturnPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 	, discType(DiscType::Unknown)
 	, saturn_region(0)
 {
@@ -326,7 +326,7 @@ void SegaSaturnPrivate::parseDiscNumber(uint8_t &disc_num, uint8_t &disc_total) 
  * @param file Open ROM image.
  */
 SegaSaturn::SegaSaturn(IRpFile *file)
-	: super(new SegaSaturnPrivate(this, file))
+	: super(new SegaSaturnPrivate(file))
 {
 	// This class handles disc images.
 	RP_D(SegaSaturn);

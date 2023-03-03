@@ -33,7 +33,7 @@ namespace LibRomData {
 class GameCubeBNRPrivate final : public RomDataPrivate
 {
 	public:
-		GameCubeBNRPrivate(GameCubeBNR *q, IRpFile *file, uint32_t gcnRegion = ~0U);
+		GameCubeBNRPrivate(IRpFile *file, uint32_t gcnRegion = ~0U);
 		~GameCubeBNRPrivate() final;
 
 	private:
@@ -146,8 +146,8 @@ const RomDataInfo GameCubeBNRPrivate::romDataInfo = {
 	"GameCube", exts, mimeTypes
 };
 
-GameCubeBNRPrivate::GameCubeBNRPrivate(GameCubeBNR *q, IRpFile *file, uint32_t gcnRegion)
-	: super(q, file, &romDataInfo)
+GameCubeBNRPrivate::GameCubeBNRPrivate(IRpFile *file, uint32_t gcnRegion)
+	: super(file, &romDataInfo)
 	, bannerType(BannerType::Unknown)
 	, gcnRegion(gcnRegion)
 	, img_banner(nullptr)
@@ -383,7 +383,7 @@ string GameCubeBNRPrivate::getGameInfoString(const gcn_banner_comment_t *comment
  * @param file Open banner file
  */
 GameCubeBNR::GameCubeBNR(IRpFile *file)
-	: super(new GameCubeBNRPrivate(this, file))
+	: super(new GameCubeBNRPrivate(file))
 {
 	init();
 }
@@ -402,7 +402,7 @@ GameCubeBNR::GameCubeBNR(IRpFile *file)
  * @param file Open banner file
  */
 GameCubeBNR::GameCubeBNR(IRpFile *file, uint32_t gcnRegion)
-	: super(new GameCubeBNRPrivate(this, file, gcnRegion))
+	: super(new GameCubeBNRPrivate(file, gcnRegion))
 {
 	init();
 }

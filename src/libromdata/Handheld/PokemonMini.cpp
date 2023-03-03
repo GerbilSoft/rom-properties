@@ -24,7 +24,7 @@ namespace LibRomData {
 class PokemonMiniPrivate final : public RomDataPrivate
 {
 	public:
-		PokemonMiniPrivate(PokemonMini *q, IRpFile *file);
+		PokemonMiniPrivate(IRpFile *file);
 
 	private:
 		typedef RomDataPrivate super;
@@ -62,8 +62,8 @@ const RomDataInfo PokemonMiniPrivate::romDataInfo = {
 	"PokemonMini", exts, mimeTypes
 };
 
-PokemonMiniPrivate::PokemonMiniPrivate(PokemonMini *q, IRpFile *file)
-	: super(q, file, &romDataInfo)
+PokemonMiniPrivate::PokemonMiniPrivate(IRpFile *file)
+	: super(file, &romDataInfo)
 {
 	// Clear the ROM header struct.
 	memset(&romHeader, 0, sizeof(romHeader));
@@ -85,7 +85,7 @@ PokemonMiniPrivate::PokemonMiniPrivate(PokemonMini *q, IRpFile *file)
  * @param file Open ROM image.
  */
 PokemonMini::PokemonMini(IRpFile *file)
-	: super(new PokemonMiniPrivate(this, file))
+	: super(new PokemonMiniPrivate(file))
 {
 	RP_D(PokemonMini);
 	d->mimeType = "application/x-pokemon-mini-rom";	// unofficial, not on fd.o
