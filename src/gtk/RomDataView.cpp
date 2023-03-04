@@ -426,17 +426,16 @@ rp_rom_data_view_new_with_romData(const gchar *uri, RomData *romData, RpDescForm
 		}
 	}
 
-	// NOTE: G_SOURCE_FUNC() was added in glib-2.58.
 	if (G_LIKELY(romData != nullptr)) {
 		// NOTE: Don't call rp_rom_data_view_load_rom_data() because that will
 		// close and reopen romData, which wastes CPU cycles.
 		// Call rp_rom_data_view_update_display() instead.
-		page->changed_idle = g_idle_add((GSourceFunc)rp_rom_data_view_update_display, page);
+		page->changed_idle = g_idle_add(G_SOURCE_FUNC(rp_rom_data_view_update_display), page);
 		page->hasCheckedAchievements = false;
 	} else if (G_LIKELY(uri != nullptr)) {
 		// URI is specified, but not RomData.
 		// We'll need to create a RomData object.
-		page->changed_idle = g_idle_add((GSourceFunc)rp_rom_data_view_load_rom_data, page);
+		page->changed_idle = g_idle_add(G_SOURCE_FUNC(rp_rom_data_view_load_rom_data), page);
 	}
 
 	return reinterpret_cast<GtkWidget*>(page);
@@ -547,8 +546,7 @@ rp_rom_data_view_set_uri(RpRomDataView	*page,
 	/* Connect to the new file (if any) */
 	if (G_LIKELY(page->uri != nullptr)) {
 		if (page->changed_idle == 0) {
-			// NOTE: G_SOURCE_FUNC() was added in glib-2.58.
-			page->changed_idle = g_idle_add((GSourceFunc)rp_rom_data_view_load_rom_data, page);
+			page->changed_idle = g_idle_add(G_SOURCE_FUNC(rp_rom_data_view_load_rom_data), page);
 		}
 	} else {
 		// Hide the header row. (outerbox)

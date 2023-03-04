@@ -71,6 +71,15 @@ typedef void (* GClearHandleFunc) (guint handle_id);
       }                                                    \
   } G_STMT_END
 
+/** Functions added in GLib 2.58.0 **/
+
+// NOTE: Always defining G_SOURCE_FUNC() here to prevent
+// warnings because we have a minimum GLib version set for warnings.
+#ifdef G_SOURCE_FUNC
+#  undef G_SOURCE_FUNC
+#endif
+#define G_SOURCE_FUNC(f) ((GSourceFunc) (void (*)(void)) (f))
+
 /** Functions added in GLib 2.76.0 **/
 
 #if !GLIB_CHECK_VERSION(2,75,1)

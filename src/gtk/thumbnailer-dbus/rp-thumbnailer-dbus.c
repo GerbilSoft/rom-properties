@@ -252,7 +252,7 @@ rp_thumbnailer_constructed(GObject *object)
 		
 	// Make sure we shut down after inactivity.
 	thumbnailer->timeout_id = g_timeout_add_seconds(SHUTDOWN_TIMEOUT_SECONDS,
-		(GSourceFunc)rp_thumbnailer_timeout, thumbnailer);
+		G_SOURCE_FUNC(rp_thumbnailer_timeout), thumbnailer);
 
 	// Object is exported.
 	thumbnailer->exported = true;
@@ -439,7 +439,7 @@ rp_thumbnailer_queue(SpecializedThumbnailer1 *skeleton,
 	// Make sure the idle process is started.
 	// TODO: Make it multi-threaded? (needs atomic compare and/or mutex...)
 	if (thumbnailer->idle_process == 0) {
-		thumbnailer->idle_process = g_idle_add((GSourceFunc)rp_thumbnailer_process, thumbnailer);
+		thumbnailer->idle_process = g_idle_add(G_SOURCE_FUNC(rp_thumbnailer_process), thumbnailer);
 	}
 
 	specialized_thumbnailer1_complete_queue(skeleton, invocation, handle);
@@ -619,7 +619,7 @@ cleanup:
 		// Restart the inactivity timeout.
 		if (G_LIKELY(thumbnailer->timeout_id == 0)) {
 			thumbnailer->timeout_id = g_timeout_add_seconds(SHUTDOWN_TIMEOUT_SECONDS,
-				(GSourceFunc)rp_thumbnailer_timeout, thumbnailer);
+				G_SOURCE_FUNC(rp_thumbnailer_timeout), thumbnailer);
 		}
 	}
 	return !isEmpty;
