@@ -72,7 +72,7 @@ class NESPrivate final : public RomDataPrivate
 		int romType;
 
 	public:
-		// ROM header.
+		// ROM header
 		struct {
 			// iNES and FDS are mutually exclusive.
 			// TNES + FDS is possible, though.
@@ -86,11 +86,11 @@ class NESPrivate final : public RomDataPrivate
 			TNES_RomHeader tnes;
 		} header;
 
-		// ROM footer. (optional)
+		// ROM footer (optional)
 		NES_IntFooter footer;
+		string s_footerName;		// Name from the footer.
 		bool hasCheckedIntFooter;	// True if we already checked.
 		uint8_t intFooterErrno;		// If checked: 0 if valid, positive errno on error.
-		string s_footerName;		// Name from the footer.
 
 		/**
 		 * Convert an FDS BCD datestamp to Unix time.
