@@ -254,6 +254,11 @@ rp_xattr_view_init(RpXAttrView *widget)
 #endif /* GTK_CHECK_VERSION(2,91,0) */
 
 #if GTK_CHECK_VERSION(4,0,0)
+	// Default to hidden. (GTK4 defaults to visible)
+	gtk_widget_set_visible(widget->fraLinuxAttributes, false);
+	gtk_widget_set_visible(widget->fraDosAttributes, false);
+	gtk_widget_set_visible(widget->fraXAttr, false);
+
 	gtk_box_append(GTK_BOX(widget), widget->fraLinuxAttributes);
 	gtk_box_append(GTK_BOX(widget), widget->fraDosAttributes);
 	gtk_box_append(GTK_BOX(widget), widget->fraXAttr);	// TODO: Expand?
