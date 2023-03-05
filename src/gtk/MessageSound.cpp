@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * MessageSound.cpp: Message sound effects class.                          *
  *                                                                         *
- * Copyright (c) 2018-2021 by David Korth.                                 *
+ * Copyright (c) 2018-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -103,12 +103,6 @@ void MessageSound::play(GtkMessageType notificationType, const char *message, Gt
 	if (name != nullptr) {
 		g_hash_table_insert(attrs, (void*)GSOUND_ATTR_WINDOW_X11_DISPLAY, (void*)g_strdup(name));
 	}
-
-#if !GTK_CHECK_VERSION(4,0,0)
-	// X11 screen number. (TODO: GTK4 version?)
-	name = g_strdup_printf("%i", gdk_screen_get_number(screen));
-	g_hash_table_insert(attrs, (void*)GSOUND_ATTR_WINDOW_X11_SCREEN, (void*)name);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// NOTE: g_object_unref() on ctx immediately after calling
 	// gsound_context_play_simplev() results in no sound.
