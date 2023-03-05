@@ -22,8 +22,8 @@ FIND_PACKAGE(GObject2 ${REQUIRE_GTK2} ${GLIB_MIN_VERSION})
 FIND_PACKAGE(GIO ${REQUIRE_GTK2} ${GLIB_MIN_VERSION})
 FIND_PACKAGE(GIO-UNIX ${REQUIRE_GTK2} ${GLIB_MIN_VERSION})
 FIND_PACKAGE(GdkPixbuf2 ${REQUIRE_GTK2})
-# GTK2 minimum is 2.0.0, so no version check is needed.
-FIND_PACKAGE(GTK2 ${REQUIRE_GTK2} COMPONENTS gtk)
+# GTK2 minimum is 2.18.0. (gtk_widget_set_visible)
+FIND_PACKAGE(GTK2 2.18.0 ${REQUIRE_GTK2} COMPONENTS gtk)
 IF(GLib2_FOUND AND GObject2_FOUND AND GIO_FOUND AND GIO-UNIX_FOUND AND GdkPixbuf2_FOUND AND GTK2_FOUND)
 	# We're not going to have an explicit dependency on libnautilus-extension.
 	# It will be dlopen()'d at runtime based on which

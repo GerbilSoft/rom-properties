@@ -248,8 +248,8 @@ ENDIF(UNIX AND NOT APPLE)
 
 # Build GTK+ 2.x frontends.
 IF(BUILD_GTK2)
-	# GTK2 minimum is 2.0.0, so no version check is needed.
-	FIND_PACKAGE(GTK2 ${REQUIRE_GTK2} COMPONENTS gtk)
+	# GTK2 minimum is 2.18.0. (gtk_widget_set_visible)
+	FIND_PACKAGE(GTK2 2.18.0 ${REQUIRE_GTK2} COMPONENTS gtk)
 	IF(GTK2_FOUND)
 		ADD_SUBDIRECTORY(xfce)
 	ELSE(GTK2_FOUND)

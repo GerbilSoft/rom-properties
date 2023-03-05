@@ -367,7 +367,7 @@ rp_xattr_view_load_linux_attrs(RpXAttrView *widget)
 {
 	// Hide by default.
 	// If we do have attributes, we'll show the widgets there.
-	gtk_widget_hide(widget->fraLinuxAttributes);
+	gtk_widget_set_visible(widget->fraLinuxAttributes, false);
 
 	if (!widget->xattrReader->hasLinuxAttributes()) {
 		// No Linux attributes.
@@ -377,7 +377,7 @@ rp_xattr_view_load_linux_attrs(RpXAttrView *widget)
 	// We have Linux attributes.
 	rp_linux_attr_view_set_flags(RP_LINUX_ATTR_VIEW(widget->linuxAttrView),
 		widget->xattrReader->linuxAttributes());
-	gtk_widget_show(widget->fraLinuxAttributes);
+	gtk_widget_set_visible(widget->fraLinuxAttributes, true);
 	return 0;
 }
 
@@ -391,7 +391,7 @@ rp_xattr_view_load_dos_attrs(RpXAttrView *widget)
 {
 	// Hide by default.
 	// If we do have attributes, we'll show the widgets there.
-	gtk_widget_hide(widget->fraDosAttributes);
+	gtk_widget_set_visible(widget->fraDosAttributes, false);
 
 	if (!widget->xattrReader->hasDosAttributes()) {
 		// No Linux attributes.
@@ -401,7 +401,7 @@ rp_xattr_view_load_dos_attrs(RpXAttrView *widget)
 	// We have Linux attributes.
 	rp_dos_attr_view_set_attrs(RP_DOS_ATTR_VIEW(widget->dosAttrView),
 		widget->xattrReader->dosAttributes());
-	gtk_widget_show(widget->fraDosAttributes);
+	gtk_widget_set_visible(widget->fraDosAttributes, true);
 	return 0;
 }
 
@@ -415,7 +415,7 @@ rp_xattr_view_load_posix_xattrs(RpXAttrView *widget)
 {
 	// Hide by default.
 	// If we do have attributes, we'll show the widgets there.
-	gtk_widget_hide(widget->fraXAttr);
+	gtk_widget_set_visible(widget->fraXAttr, false);
 
 	gtk_list_store_clear(widget->listStore);
 	if (!widget->xattrReader->hasGenericXAttrs()) {
@@ -442,7 +442,7 @@ rp_xattr_view_load_posix_xattrs(RpXAttrView *widget)
 	gtk_tree_view_columns_autosize(GTK_TREE_VIEW(widget->treeView));
 
 	// Extended attributes retrieved.
-	gtk_widget_show(widget->fraXAttr);
+	gtk_widget_set_visible(widget->fraXAttr, true);
 	return 0;
 }
 

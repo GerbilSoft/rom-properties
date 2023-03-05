@@ -347,7 +347,7 @@ rp_key_manager_tab_init(RpKeyManagerTab *tab)
 
 #if GTK_CHECK_VERSION(4,0,0)
 	// Hide the MessageWidget initially.
-	gtk_widget_hide(tab->messageWidget);
+	gtk_widget_set_visible(tab->messageWidget, false);
 
 	gtk_box_append(GTK_BOX(tab), tab->messageWidget);
 	gtk_box_append(GTK_BOX(tab), scrolledWindow);
@@ -364,7 +364,7 @@ rp_key_manager_tab_init(RpKeyManagerTab *tab)
 
 	// NOTE: GTK4 defaults to visible; GTK2 and GTK3 defaults to invisible.
 	// Hiding unconditionally just in case.
-	gtk_widget_hide(tab->messageWidget);
+	gtk_widget_set_visible(tab->messageWidget, false);
 
 	gtk_widget_show_all(scrolledWindow);
 	gtk_widget_show_all(tab->btnImport);
@@ -829,7 +829,7 @@ rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 	// TODO: MessageSound?
 	rp_message_widget_set_message_type(RP_MESSAGE_WIDGET(tab->messageWidget), type);
 	rp_message_widget_set_text(RP_MESSAGE_WIDGET(tab->messageWidget), msg.c_str());
-	gtk_widget_show(tab->messageWidget);
+	gtk_widget_set_visible(tab->messageWidget, true);
 }
 
 /**

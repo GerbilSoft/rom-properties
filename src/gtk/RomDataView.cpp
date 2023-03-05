@@ -296,7 +296,7 @@ rp_rom_data_view_init(RpRomDataView *page)
 	gtk_widget_set_halign(page->hboxHeaderRow, GTK_ALIGN_CENTER);
 
 #  if GTK_CHECK_VERSION(4,0,0)
-	gtk_widget_hide(page->hboxHeaderRow_outer);	// GTK4 shows widgets by default.
+	gtk_widget_set_visible(page->hboxHeaderRow_outer, false);	// GTK4 shows widgets by default.
 	gtk_box_append(GTK_BOX(page), page->hboxHeaderRow_outer);
 	gtk_box_append(GTK_BOX(page->hboxHeaderRow_outer), page->hboxHeaderRow);
 	gtk_widget_set_hexpand(page->hboxHeaderRow_outer, true);
@@ -553,7 +553,7 @@ rp_rom_data_view_set_uri(RpRomDataView	*page,
 	} else {
 		// Hide the header row. (outerbox)
 		if (page->hboxHeaderRow_outer) {
-			gtk_widget_hide(page->hboxHeaderRow_outer);
+			gtk_widget_set_visible(page->hboxHeaderRow_outer, false);
 		}
 	}
 
@@ -623,7 +623,7 @@ rp_rom_data_view_init_header_row(RpRomDataView *page)
 	if (!romData) {
 		// No ROM data.
 		// Hide the widgets.
-		gtk_widget_hide(page->hboxHeaderRow);
+		gtk_widget_set_visible(page->hboxHeaderRow, false);
 		return;
 	}
 
@@ -650,17 +650,17 @@ rp_rom_data_view_init_header_row(RpRomDataView *page)
 	const uint32_t imgbf = romData->supportedImageTypes();
 
 	// Banner.
-	gtk_widget_hide(page->imgBanner);
+	gtk_widget_set_visible(page->imgBanner, false);
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
 		// Get the banner.
 		bool ok = rp_drag_image_set_rp_image(RP_DRAG_IMAGE(page->imgBanner), romData->image(RomData::IMG_INT_BANNER));
 		if (ok) {
-			gtk_widget_show(page->imgBanner);
+			gtk_widget_set_visible(page->imgBanner, true);
 		}
 	}
 
 	// Icon.
-	gtk_widget_hide(page->imgIcon);
+	gtk_widget_set_visible(page->imgIcon, false);
 	if (imgbf & RomData::IMGBF_INT_ICON) {
 		// Get the icon.
 		const rp_image *const icon = romData->image(RomData::IMG_INT_ICON);
@@ -673,13 +673,13 @@ rp_rom_data_view_init_header_row(RpRomDataView *page)
 				ok = rp_drag_image_set_rp_image(RP_DRAG_IMAGE(page->imgIcon), icon);
 			}
 			if (ok) {
-				gtk_widget_show(page->imgIcon);
+				gtk_widget_set_visible(page->imgIcon, true);
 			}
 		}
 	}
 
 	// Show the header row. (outer box)
-	gtk_widget_show(page->hboxHeaderRow_outer);
+	gtk_widget_set_visible(page->hboxHeaderRow_outer, true);
 }
 
 /**
@@ -1544,8 +1544,11 @@ rp_rom_data_view_create_options_button(RpRomDataView *page)
 	// Create the RpOptionsMenuButton.
 	page->btnOptions = rp_options_menu_button_new();
 	gtk_widget_set_name(page->btnOptions, "btnOptions");
-	gtk_widget_hide(page->btnOptions);
 	rp_options_menu_button_set_direction(RP_OPTIONS_MENU_BUTTON(page->btnOptions), GTK_ARROW_UP);
+#if GTK_CHECK_VERSION(4,0,0)
+	// GTK2/GTK3 default to hidden. GTK4 defaults to visible.
+	gtk_widget_set_visible(page->btnOptions, false);
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 #if GTK_CHECK_VERSION(3,0,0)
 	if (isLibAdwaita) {
@@ -2148,7 +2151,7 @@ rp_rom_data_view_map_signal_handler(RpRomDataView	*page,
 	RP_UNUSED(user_data);
 	rp_drag_image_start_anim_timer(RP_DRAG_IMAGE(page->imgIcon));
 	if (page->btnOptions) {
-		gtk_widget_show(page->btnOptions);
+		gtk_widget_set_visible(page->btnOptions, true);
 	}
 
 	// Check for "viewed" achievements.
@@ -2170,7 +2173,7 @@ rp_rom_data_view_unmap_signal_handler(RpRomDataView	*page,
 	RP_UNUSED(user_data);
 	rp_drag_image_stop_anim_timer(RP_DRAG_IMAGE(page->imgIcon));
 	if (page->btnOptions) {
-		gtk_widget_hide(page->btnOptions);
+		gtk_widget_set_visible(page->btnOptions, false);
 	}
 }
 

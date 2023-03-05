@@ -185,8 +185,8 @@ rp_cache_tab_init(RpCacheTab *tab)
 	g_signal_connect(tab->btnRpCache,  "clicked", G_CALLBACK(rp_cache_tab_on_btnRpCache_clicked),  tab);
 
 #if GTK_CHECK_VERSION(4,0,0)
-	gtk_widget_hide(tab->lblStatus);
-	gtk_widget_hide(tab->pbStatus);
+	gtk_widget_set_visible(tab->lblStatus, false);
+	gtk_widget_set_visible(tab->pbStatus, false);
 
 	gtk_box_append(GTK_BOX(tab), tab->lblSysCache);
 	gtk_box_append(GTK_BOX(tab), tab->btnSysCache);
@@ -374,8 +374,8 @@ rp_cache_tab_clear_cache_dir(RpCacheTab *tab, RpCacheDir cache_dir)
 #endif /* !GTK_CHECK_VERSION(3,0,0) */
 
 	// Show the progress controls.
-	gtk_widget_show(tab->lblStatus);
-	gtk_widget_show(tab->pbStatus);
+	gtk_widget_set_visible(tab->lblStatus, true);
+	gtk_widget_set_visible(tab->pbStatus, true);
 
 	// Disable the buttons until we're done.
 	rp_cache_tab_enable_ui_controls(tab, FALSE);

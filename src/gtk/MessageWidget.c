@@ -413,5 +413,5 @@ rp_message_widget_close_button_clicked_handler(GtkButton *button, RpMessageWidge
 {
 	// TODO: Animation like KMessageWidget.
 	RP_UNUSED(button);
-	gtk_widget_hide(GTK_WIDGET(widget));
+	gtk_widget_set_visible(GTK_WIDGET(widget), false);
 }
