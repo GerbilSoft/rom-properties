@@ -358,7 +358,9 @@ rp_rom_data_view_doRomOp_stdop(RpRomDataView *page, int id)
 	g_signal_connect(fileDialog, "response", G_CALLBACK(rp_rom_data_view_doRomOp_stdop_response), page);
 	gtk_window_set_transient_for(GTK_WINDOW(fileDialog), parent);
 	gtk_window_set_modal(GTK_WINDOW(fileDialog), true);
+#if !GTK_CHECK_VERSION(4,0,0)
 	gtk_widget_show(GTK_WIDGET(fileDialog));
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
 
 	// GtkFileChooserDialog will send the "response" signal when the dialog is closed.
 }
@@ -593,6 +595,8 @@ btnOptions_triggered_signal_handler(RpOptionsMenuButton *menuButton,
 		RpMessageWidget *const messageWidget = RP_MESSAGE_WIDGET(page->messageWidget);
 		rp_message_widget_set_message_type(messageWidget, messageType);
 		rp_message_widget_set_text(messageWidget, params.msg.c_str());
+#if !GTK_CHECK_VERSION(4,0,0)
 		gtk_widget_show(page->messageWidget);
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
 	}
 }

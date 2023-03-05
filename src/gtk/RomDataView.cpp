@@ -289,19 +289,19 @@ rp_rom_data_view_init(RpRomDataView *page)
 	// NOTE: Not visible initially.
 	page->hboxHeaderRow_outer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_widget_set_name(page->hboxHeaderRow_outer, "hboxHeaderRow_outer");
-	gtk_widget_hide(page->hboxHeaderRow_outer);	// GTK4 shows widgets by default.
 
 	// Header row. (inner box)
 	page->hboxHeaderRow = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
 	gtk_widget_set_name(page->hboxHeaderRow, "hboxHeaderRow");
 	gtk_widget_set_halign(page->hboxHeaderRow, GTK_ALIGN_CENTER);
-	gtk_widget_show(page->hboxHeaderRow);
 
 #  if GTK_CHECK_VERSION(4,0,0)
+	gtk_widget_hide(page->hboxHeaderRow_outer);	// GTK4 shows widgets by default.
 	gtk_box_append(GTK_BOX(page), page->hboxHeaderRow_outer);
 	gtk_box_append(GTK_BOX(page->hboxHeaderRow_outer), page->hboxHeaderRow);
 	gtk_widget_set_hexpand(page->hboxHeaderRow_outer, true);
 #  else /* !GTK_CHECK_VERSION(4,0,0) */
+	gtk_widget_show(page->hboxHeaderRow);
 	gtk_box_pack_start(GTK_BOX(page), page->hboxHeaderRow_outer, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(page->hboxHeaderRow_outer), page->hboxHeaderRow, true, false, 0);
 #  endif /* GTK_CHECK_VERSION(4,0,0) */
@@ -330,7 +330,9 @@ rp_rom_data_view_init(RpRomDataView *page)
 	page->lblSysInfo = gtk_label_new(nullptr);
 	gtk_widget_set_name(page->lblSysInfo, "lblSysInfo");
 	gtk_label_set_justify(GTK_LABEL(page->lblSysInfo), GTK_JUSTIFY_CENTER);
+#if !GTK_CHECK_VERSION(4,0,0)
 	gtk_widget_show(page->lblSysInfo);
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
 
 	// Banner and icon.
 	page->imgBanner = rp_drag_image_new();
@@ -696,7 +698,9 @@ rp_rom_data_view_init_string(RpRomDataView *page,
 	GtkWidget *widget = gtk_label_new(nullptr);
 	// NOTE: No name for this GtkWidget.
 	gtk_label_set_use_underline(GTK_LABEL(widget), false);
+#if !GTK_CHECK_VERSION(4,0,0)
 	gtk_widget_show(widget);
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
 
 	if (!str) {
 		str = field.data.str;
@@ -814,7 +818,9 @@ rp_rom_data_view_init_bitfield(RpRomDataView *page,
 	//gtk_table_set_row_spacings(GTK_TABLE(widget), 2);
 	//gtk_table_set_col_spacings(GTK_TABLE(widget), 8);
 #endif /* USE_GTK_GRID */
+#if !GTK_CHECK_VERSION(4,0,0)
 	gtk_widget_show(widget);
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
 
 	int row = 0, col = 0;
 	uint32_t bitfield = field.data.bitfield;
@@ -826,9 +832,11 @@ rp_rom_data_view_init_bitfield(RpRomDataView *page,
 
 		GtkWidget *const checkBox = gtk_check_button_new_with_label(name.c_str());
 		// NOTE: No name for this GtkWidget.
-		gtk_widget_show(checkBox);
 		gboolean value = (bitfield & 1);
 		gtk_check_button_set_active(GTK_CHECK_BUTTON(checkBox), value);
+#if !GTK_CHECK_VERSION(4,0,0)
+		gtk_widget_show(checkBox);
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
 
 		// Save the bitfield checkbox's value in the GObject.
 		g_object_set_qdata(G_OBJECT(checkBox), RFT_BITFIELD_value_quark,
@@ -1021,10 +1029,10 @@ rp_rom_data_view_init_listdata(RpRomDataView *page,
 	GtkWidget *const scrolledWindow = gtk_scrolled_window_new(nullptr, nullptr);
 	// NOTE: No name for this GtkWidget.
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolledWindow), GTK_SHADOW_IN);
+	gtk_widget_show(scrolledWindow);
 #endif /* GTK_CHECK_VERSION */
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledWindow),
 			GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-	gtk_widget_show(scrolledWindow);
 
 	// Sort proxy model for the GtkListStore.
 	GtkTreeModel *sortProxy = gtk_tree_model_sort_new_with_model(GTK_TREE_MODEL(listStore));
@@ -1034,7 +1042,9 @@ rp_rom_data_view_init_listdata(RpRomDataView *page,
 	// NOTE: No name for this GtkWidget.
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeView),
 		(listDataDesc.names != nullptr));
+#if !GTK_CHECK_VERSION(4,0,0)
 	gtk_widget_show(treeView);
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
 
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolledWindow), treeView);
 
@@ -1392,11 +1402,11 @@ rp_rom_data_view_update_multi(RpRomDataView *page, uint32_t user_lc)
 		GtkWidget *const vboxCboLanguage = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 		gtk_widget_set_name(vboxCboLanguage, "vboxCboLanguage");
 		gtk_widget_set_valign(vboxCboLanguage, GTK_ALIGN_START);
-		gtk_widget_show(vboxCboLanguage);
 
 #  if GTK_CHECK_VERSION(4,0,0)
 		gtk_box_append(GTK_BOX(page->hboxHeaderRow_outer), vboxCboLanguage);
 #  else /* !GTK_CHECK_VERSION(4,0,0) */
+		gtk_widget_show(vboxCboLanguage);
 		gtk_box_pack_end(GTK_BOX(page->hboxHeaderRow_outer), vboxCboLanguage, false, false, 0);
 #  endif /* GTK_CHECK_VERSION(4,0,0) */
 #else /* !GTK_CHECK_VERSION(3,0,0) */
@@ -1414,11 +1424,11 @@ rp_rom_data_view_update_multi(RpRomDataView *page, uint32_t user_lc)
 		// Create the language combobox.
 		page->cboLanguage = rp_language_combo_box_new();
 		gtk_widget_set_name(page->cboLanguage, "cboLanguage");
-		gtk_widget_show(page->cboLanguage);
 
 #if GTK_CHECK_VERSION(4,0,0)
 		gtk_box_append(GTK_BOX(vboxCboLanguage), page->cboLanguage);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
+		gtk_widget_show(page->cboLanguage);
 		gtk_box_pack_end(GTK_BOX(vboxCboLanguage), page->cboLanguage, false, false, 0);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
@@ -1704,10 +1714,9 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 			gtk_container_set_border_width(GTK_CONTAINER(tab.table), 8);
 			gtk_box_pack_start(GTK_BOX(tab.vbox), tab.table, false, false, 0);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
-
 			gtk_widget_show(tab.table);
 			gtk_widget_show(tab.vbox);
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 			// Add the tab.
 			GtkWidget *label = gtk_label_new(name);
@@ -1715,11 +1724,11 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 			gtk_widget_set_name(label, tab_name);
 			gtk_notebook_append_page(GTK_NOTEBOOK(page->tabWidget), tab.vbox, label);
 		}
-		gtk_widget_show(page->tabWidget);
 
 #if GTK_CHECK_VERSION(4,0,0)
 		gtk_box_append(GTK_BOX(page), page->tabWidget);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
+		gtk_widget_show(page->tabWidget);
 		gtk_box_pack_start(GTK_BOX(page), page->tabWidget, true, true, 0);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 	} else {
@@ -1742,13 +1751,13 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 		gtk_table_set_col_spacings(GTK_TABLE(tab.table), 8);
 #endif /* USE_GTK_GRID */
 		gtk_widget_set_name(tab.table, "tableTab0");
-		gtk_widget_show(tab.table);
 
 #if GTK_CHECK_VERSION(4,0,0)
 		// FIXME: GTK4 equivalent of gtk_container_set_border_width().
 		//gtk_container_set_border_width(GTK_CONTAINER(tab.table), 8);
 		gtk_box_append(GTK_BOX(page), tab.table);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
+		gtk_widget_show(tab.table);
 		gtk_container_set_border_width(GTK_CONTAINER(tab.table), 8);
 		gtk_box_pack_start(GTK_BOX(page), tab.table, false, false, 0);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
@@ -1837,8 +1846,10 @@ rp_rom_data_view_update_display(RpRomDataView *page)
 		// NOTE: No name for this GtkWidget.
 		gtk_label_set_use_underline(GTK_LABEL(lblDesc), false);
 		set_label_format_type(GTK_LABEL(lblDesc), page->desc_format_type);
-		gtk_widget_show(lblDesc);
 		page->cxx->vecDescLabels.emplace_back(GTK_LABEL(lblDesc));
+#if !GTK_CHECK_VERSION(4,0,0)
+		gtk_widget_show(lblDesc);
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
 
 		// Check if this is an RFT_STRING with warning set.
 		// If it is, set the "RFT_STRING_warning" flag.

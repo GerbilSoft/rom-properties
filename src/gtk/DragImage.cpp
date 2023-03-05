@@ -127,10 +127,10 @@ rp_drag_image_init(RpDragImage *image)
 	// Create the child GtkImage widget.
 	image->imageWidget = gtk_image_new();
 	gtk_widget_set_name(image->imageWidget, "imageWidget");
-	gtk_widget_show(image->imageWidget);
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_box_append(GTK_BOX(image), image->imageWidget);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
+	gtk_widget_show(image->imageWidget);
 	gtk_container_add(GTK_CONTAINER(image), image->imageWidget);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 

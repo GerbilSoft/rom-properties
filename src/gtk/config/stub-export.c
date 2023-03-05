@@ -55,7 +55,9 @@ app_activate(GtkApplication *app, gpointer user_data)
 	// Create the ConfigDialog.
 	GtkWidget *const configDialog = rp_config_dialog_new();
 	gtk_widget_set_name(configDialog, "configDialog");
+#if !GTK_CHECK_VERSION(4,0,0)
 	gtk_widget_show(configDialog);
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
 #if GTK_CHECK_VERSION(2,90,2)
 	gtk_application_add_window(app, GTK_WINDOW(configDialog));
 #else /* GTK_CHECK_VERSION(2,90,2) */

@@ -210,7 +210,6 @@ rp_options_menu_button_init(RpOptionsMenuButton *widget)
 	widget->arrowType = (GtkArrowType)-1;	// force update
 #endif /* USE_GTK_MENU_BUTTON */
 	gtk_widget_set_name(widget->menuButton, "menuButton");
-	gtk_widget_show(widget->menuButton);
 
 	// Initialize the direction image.
 #if !GTK_CHECK_VERSION(4,0,0)
@@ -223,6 +222,8 @@ rp_options_menu_button_init(RpOptionsMenuButton *widget)
 	gtk_menu_button_set_label(GTK_MENU_BUTTON(widget), s_title.c_str());
 	gtk_menu_button_set_use_underline(GTK_MENU_BUTTON(widget), TRUE);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
+	gtk_widget_show(widget->menuButton);	// needed for GTK2/GTK3 but not GTK4
+
 	GtkWidget *const lblOptions = gtk_label_new(nullptr);
 	gtk_widget_set_name(lblOptions, "lblOptions");
 	gtk_label_set_markup_with_mnemonic(GTK_LABEL(lblOptions), s_title.c_str());
