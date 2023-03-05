@@ -756,28 +756,37 @@ int NES::isRomSupported_static(const DetectInfo *info)
 		if ((inesHeader->mapper_hi & 0x0C) == 0x08) {
 			// May be NES 2.0
 			// Verify the ROM size.
+			bool isNES2 = false;
 
-			// NES 2.0 has an alternate method for indicating PRG ROM size,
-			// so we need to check for that.
-			unsigned int prg_rom_size, chr_rom_size;
-			if (likely((inesHeader->nes2.banks_hi & 0x0F) != 0x0F)) {
-				// Standard method.
-				prg_rom_size = ((inesHeader->prg_banks |
-						((inesHeader->nes2.banks_hi & 0x0F) << 8))
-						* INES_PRG_BANK_SIZE);
+			if (unlikely(info->szFile == sizeof(INES_RomHeader))) {
+				// 16-byte ROM file. This is a test file. [RomHeaderTest]
+				// Assume it's NES2.
+				isNES2 = true;
 			} else {
-				// Alternate method: [EEEE EEMM] -> 2^E * (MM*2 + 1)
-				// TODO: Verify that this works.
-				prg_rom_size = (1U << (inesHeader->prg_banks >> 2)) *
-					       ((inesHeader->prg_banks & 0x03) + 1);
-			}
-			chr_rom_size = ((inesHeader->chr_banks |
-					((inesHeader->nes2.banks_hi & 0xF0) << 4))
-					* INES_CHR_BANK_SIZE);
+				// NES 2.0 has an alternate method for indicating PRG ROM size,
+				// so we need to check for that.
+				unsigned int prg_rom_size, chr_rom_size;
+				if (likely((inesHeader->nes2.banks_hi & 0x0F) != 0x0F)) {
+					// Standard method.
+					prg_rom_size = ((inesHeader->prg_banks |
+							((inesHeader->nes2.banks_hi & 0x0F) << 8))
+							* INES_PRG_BANK_SIZE);
+				} else {
+					// Alternate method: [EEEE EEMM] -> 2^E * (MM*2 + 1)
+					// TODO: Verify that this works.
+					prg_rom_size = (1U << (inesHeader->prg_banks >> 2)) *
+						((inesHeader->prg_banks & 0x03) + 1);
+				}
+				chr_rom_size = ((inesHeader->chr_banks |
+						((inesHeader->nes2.banks_hi & 0xF0) << 4))
+						* INES_CHR_BANK_SIZE);
 
-			const off64_t size = sizeof(INES_RomHeader) +
-				prg_rom_size + chr_rom_size;
-			if (size <= info->szFile) {
+				const off64_t size = sizeof(INES_RomHeader) +
+					prg_rom_size + chr_rom_size;
+				isNES2 = (size <= info->szFile);
+			}
+
+			if (isNES2) {
 				// This is an NES 2.0 header.
 				switch (inesHeader->mapper_hi & INES_F7_SYSTEM_MASK) {
 					case INES_F7_SYSTEM_VS:
