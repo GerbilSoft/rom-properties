@@ -10,6 +10,13 @@
 #include "config.gtk.h"
 #include "MessageSound.hpp"
 
+#include <gdk/gdkdisplay.h>
+#if GTK_CHECK_VERSION(4,0,0)
+#  include <gdk/wayland/gdkwayland.h>
+#elif GTK_CHECK_VERSION(3,7,8)
+#  include <gdk/gdkwayland.h>
+#endif
+
 #if defined(HAVE_GSOUND)
 #  include <gsound.h>
 #elif defined(HAVE_LIBCANBERRA_GTK)
@@ -86,20 +93,25 @@ void MessageSound::play(GtkMessageType notificationType, const char *message, Gt
 		g_hash_table_insert(attrs, (void*)GSOUND_ATTR_APPLICATION_ICON_NAME, (void*)g_strdup(name));
 	}
 
-#if !GTK_CHECK_VERSION(4,0,0)
-	GdkScreen *const screen = gdk_screen_get_default();
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
-
+	GdkDisplay *display;
 	if (parent) {
-		name = gdk_display_get_name(gtk_widget_get_display(parent));
+		display = gtk_widget_get_display(parent);
 	} else {
-#if GTK_CHECK_VERSION(4,0,0)
-		// TODO: Get X11 display? (Use the DISPLAY variable, maybe...)
-		name = nullptr;
-#else /* !GTK_CHECK_VERSION(4,0,0) */
-		name = gdk_display_get_name(gdk_screen_get_display(screen));
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+		display = gdk_display_get_default();
 	}
+
+	// Verify that this is an X11 display before attempting to set the attribute.
+#if GTK_CHECK_VERSION(3,7,8)
+	if (GDK_IS_WAYLAND_DISPLAY(display)) {
+		// Wayland. Cannot be X11.
+		name = nullptr;
+	} else
+#endif /* GTK_CHECK_VERSION(3,7,8) */
+	{
+		// Assuming X11.
+		name = gdk_display_get_name(display);
+	}
+
 	if (name != nullptr) {
 		g_hash_table_insert(attrs, (void*)GSOUND_ATTR_WINDOW_X11_DISPLAY, (void*)g_strdup(name));
 	}
