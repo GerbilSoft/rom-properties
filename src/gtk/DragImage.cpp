@@ -413,7 +413,7 @@ rp_drag_image_anim_timer_func(RpDragImage *image)
 		// Set a new timer and unset the current one.
 		anim->last_delay = delay;
 		anim->tmrIconAnim = g_timeout_add(delay,
-			reinterpret_cast<GSourceFunc>(rp_drag_image_anim_timer_func), image);
+			G_SOURCE_FUNC(rp_drag_image_anim_timer_func), image);
 		return false;
 	}
 
@@ -451,7 +451,7 @@ rp_drag_image_start_anim_timer(RpDragImage *image)
 	// Set a single-shot timer for the current frame.
 	image->anim->last_delay = delay;
 	image->anim->tmrIconAnim = g_timeout_add(delay,
-		reinterpret_cast<GSourceFunc>(rp_drag_image_anim_timer_func), image);
+		G_SOURCE_FUNC(rp_drag_image_anim_timer_func), image);
 }
 
 /**
