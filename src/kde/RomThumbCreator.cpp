@@ -42,8 +42,9 @@ using LibRomData::TCreateThumbnail;
 using std::string;
 using std::unique_ptr;
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 /**
- * Factory method.
+ * Factory method for ThumbCreator. (KDE4/KF5 only; dropped in KF6)
  * References:
  * - https://api.kde.org/4.x-api/kdelibs-apidocs/kio/html/classThumbCreator.html
  * - https://api.kde.org/frameworks/kio/html/classThumbCreator.html
@@ -60,6 +61,7 @@ extern "C" {
 		return new RomThumbCreator();
 	}
 }
+#endif /* QT_VERSION < QT_VERSION_CHECK(6,0,0) */
 
 class RomThumbCreatorPrivate final : public TCreateThumbnail<QImage>
 {

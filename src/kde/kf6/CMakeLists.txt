@@ -70,13 +70,12 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 		### FIXME: KF6 isn't available yet, so we're only
 		### compile-testing against Qt6.
 
-		# Find KF6. (TODO: Version?)
-		# NOTE: KF6 is still using the KF5 namespace for now.
-		FIND_PACKAGE(KF5 ${REQUIRE_KF6} COMPONENTS KIO WidgetsAddons) # FileMetaData)
-		IF(NOT KF5KIO_FOUND OR NOT KF5WidgetsAddons_FOUND) # OR NOT KF5FileMetaData_FOUND)
+		# Find KF6.
+		FIND_PACKAGE(KF6 ${REQUIRE_KF6} COMPONENTS KIO WidgetsAddons FileMetaData)
+		IF(NOT KF6KIO_FOUND OR NOT KF6WidgetsAddons_FOUND OR NOT KF6FileMetaData_FOUND)
 			# KF6 not found.
 			SET(BUILD_KF6 OFF CACHE INTERNAL "Build the KDE Frameworks 6 plugin." FORCE)
-		ENDIF(NOT KF5KIO_FOUND OR NOT KF5WidgetsAddons_FOUND) # OR NOT KF6FileMetaData_FOUND)
+		ENDIF(NOT KF6KIO_FOUND OR NOT KF6WidgetsAddons_FOUND OR NOT KF6FileMetaData_FOUND)
 
 		# KIO::ThumbnailCreator is always available in KF6.
 		SET(HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H 1)
@@ -151,14 +150,14 @@ SET(${PROJECT_NAME}_SRCS
 	${${PROJECT_NAME}_DBUS_IFACE_SRCS_2}
 	${${PROJECT_NAME}_RCC_O}
 	PluginFactoryKF6.cpp
-	#../ExtractorPlugin.cpp	# FIXME: KF5 KFileMetaData uses QMap::insertMulti().
+	../ExtractorPlugin.cpp
 	../OverlayIconPlugin.cpp
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_H}
 	${rom-properties-kio6_H}
 	${${PROJECT_NAME}-notify_H}
-	#../ExtractorPlugin.hpp	# FIXME: KF5 KFileMetaData uses QMap::insertMulti().
+	../ExtractorPlugin.hpp
 	../OverlayIconPlugin.hpp
 	)
 
@@ -204,8 +203,7 @@ IF(BUILD_KF6)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# src
 		)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE romdata)
-	# NOTE: KF6 is still using the KF5 namespace for now.
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC KF5::KIOGui KF5::KIOCore KF5::KIOWidgets KF5::WidgetsAddons) ## KF5::FileMetaData)
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC KF6::KIOGui KF6::KIOCore KF6::KIOWidgets KF6::WidgetsAddons KF6::FileMetaData)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC Qt6::Widgets Qt6::Gui Qt6::Core)
 	IF(HAVE_QtDBus)
 		TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC Qt6::DBus)
@@ -237,8 +235,8 @@ IF(BUILD_KF6)
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>	# src
 		)
 	TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PRIVATE romdata)
-	# NOTE: KF6 is still using the KF5 namespace for now.
-	TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PRIVATE KF5::KIOCore KF5::KIOWidgets)
+	# NOTE: KF6 is still using the KF6 namespace for now.
+	TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PRIVATE KF6::KIOCore KF6::KIOWidgets)
 	TARGET_LINK_LIBRARIES(${XATTRVIEW_NAME} PUBLIC Qt6::Widgets Qt6::Gui Qt6::Core)
 
 	### Plugin Forwarders ###
@@ -250,8 +248,8 @@ IF(BUILD_KF6)
 		)
 	SET_TARGET_PROPERTIES(kfilemetadata_${PROJECT_NAME} PROPERTIES PREFIX "")
 	DO_SPLIT_DEBUG(kfilemetadata_${PROJECT_NAME})
-	# NOTE: KF6 is still using the KF5 namespace for now.
-	TARGET_LINK_LIBRARIES(kfilemetadata_${PROJECT_NAME} PRIVATE KF5::KIOCore) # KF5::FileMetaData)
+	# NOTE: KF6 is still using the KF6 namespace for now.
+	TARGET_LINK_LIBRARIES(kfilemetadata_${PROJECT_NAME} PRIVATE KF6::KIOCore KF6::FileMetaData)
 	TARGET_LINK_LIBRARIES(kfilemetadata_${PROJECT_NAME} PRIVATE Qt6::Core)
 
 	# Link in libdl if it's required for dlopen().
@@ -269,8 +267,8 @@ IF(BUILD_KF6)
 		)
 	SET_TARGET_PROPERTIES(overlayiconplugin_${PROJECT_NAME} PROPERTIES PREFIX "")
 	DO_SPLIT_DEBUG(overlayiconplugin_${PROJECT_NAME})
-	# NOTE: KF6 is still using the KF5 namespace for now.
-	TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE KF5::KIOCore KF5::KIOWidgets)
+	# NOTE: KF6 is still using the KF6 namespace for now.
+	TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE KF6::KIOCore KF6::KIOWidgets)
 	TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE Qt6::Core)
 
 	# Link in libdl if it's required for dlopen().
@@ -334,7 +332,7 @@ IF(BUILD_KF6)
 	# FIXME: Run kbuildsycoca6?
 
 	# Service menus
-	# FIXME: Conflicts with KF5. Figure out how to fix this later.
+	# FIXME: Conflicts with KF6. Figure out how to fix this later.
 	#INSTALL(FILES ../servicemenus/rp-convert-to-png.desktop
 	#	DESTINATION "${CMAKE_INSTALL_PREFIX}/share/kio/servicemenus"
 	#	PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE

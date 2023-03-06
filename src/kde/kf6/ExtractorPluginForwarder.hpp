@@ -13,6 +13,7 @@
 #pragma once
 
 #include <QtCore/qglobal.h>
+#include <QtCore/QObject>	// missing in KF6 extractorplugin.h?
 #include <kfilemetadata/extractorplugin.h>
 
 namespace RomPropertiesKF6 {
@@ -20,6 +21,8 @@ namespace RomPropertiesKF6 {
 class ExtractorPluginForwarder final : public ::KFileMetaData::ExtractorPlugin
 {
 	Q_OBJECT
+	// FIXME: "kf5" -> "kf6" once it's updated upstream.
+	// https://invent.kde.org/frameworks/kfilemetadata/-/blob/master/src/extractorplugin.h
 	Q_PLUGIN_METADATA(IID "org.kde.kf5.kfilemetadata.ExtractorPlugin")
 	Q_INTERFACES(KFileMetaData::ExtractorPlugin)
 
