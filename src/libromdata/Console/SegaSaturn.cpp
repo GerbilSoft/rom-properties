@@ -47,8 +47,8 @@ class SegaSaturnPrivate final : public RomDataPrivate
 	public:
 		/** RomFields **/
 
-		// Peripherals. (RFT_BITFIELD)
-		enum Saturn_Peripherals_Bitfield {
+		// Peripherals (RFT_BITFIELD) [bit values]
+		enum Saturn_Peripherals_Bitfield : unsigned int {
 			SATURN_IOBF_CONTROL_PAD		= (1U <<  0),	// Standard control pad
 			SATURN_IOBF_ANALOG_CONTROLLER	= (1U <<  1),	// Analog controller
 			SATURN_IOBF_MOUSE		= (1U <<  2),	// Mouse
@@ -66,7 +66,26 @@ class SegaSaturnPrivate final : public RomDataPrivate
 			SATURN_IOBF_MPEG_CARD		= (1U << 14),	// MPEG Card
 		};
 
-		// Region code.
+		// Peripherals (RFT_BITFIELD) [bit numbers]
+		enum Saturn_Peripherals_Bits : uint8_t {
+			SATURN_IOBIT_CONTROL_PAD	=  0U,	// Standard control pad
+			SATURN_IOBIT_ANALOG_CONTROLLER	=  1U,	// Analog controller
+			SATURN_IOBIT_MOUSE		=  2U,	// Mouse
+			SATURN_IOBIT_KEYBOARD		=  3U,	// Keyboard
+			SATURN_IOBIT_STEERING		=  4U,	// Steering controller
+			SATURN_IOBIT_MULTITAP		=  5U,	// Multi-Tap
+			SATURN_IOBIT_LIGHT_GUN		=  6U,	// Light Gun
+			SATURN_IOBIT_RAM_CARTRIDGE	=  7U,	// RAM Cartridge
+			SATURN_IOBIT_3D_CONTROLLER	=  8U,	// 3D Controller
+			SATURN_IOBIT_LINK_CABLE		=  9U,	// Link Cable
+			SATURN_IOBIT_NETLINK		= 10U,	// NetLink
+			SATURN_IOBIT_PACHINKO		= 11U,	// Pachinko Controller
+			SATURN_IOBIT_FDD		= 12U,	// Floppy Disk Drive
+			SATURN_IOBIT_ROM_CARTRIDGE	= 13U,	// ROM Cartridge
+			SATURN_IOBIT_MPEG_CARD		= 14U,	// MPEG Card
+		};
+
+		// Region code
 		enum SaturnRegion {
 			SATURN_REGION_JAPAN	= (1U << 0),
 			SATURN_REGION_TAIWAN	= (1U << 1),
@@ -173,10 +192,10 @@ uint32_t SegaSaturnPrivate::parsePeripherals(const char *peripherals, int size)
 	uint32_t ret = 0;
 	for (int i = size-1; i >= 0; i--) {
 		// TODO: Sort by character and use bsearch()?
-		#define SATURN_IO_SUPPORT_ENTRY(entry) {SATURN_IO_##entry, SATURN_IOBF_##entry}
+		#define SATURN_IO_SUPPORT_ENTRY(entry) {SATURN_IO_##entry, SATURN_IOBIT_##entry}
 		static const struct {
-			char io_chr;
-			uint32_t io_bf;
+			char io_chr;	// Character in the Peripherals field
+			uint8_t io_bit;	// Bit number in the returned bitfield
 		} saturn_io_lkup_tbl[] = {
 			{' ', 0},	// quick exit for empty entries
 			SATURN_IO_SUPPORT_ENTRY(CONTROL_PAD),
@@ -190,8 +209,8 @@ uint32_t SegaSaturnPrivate::parsePeripherals(const char *peripherals, int size)
 			SATURN_IO_SUPPORT_ENTRY(3D_CONTROLLER),
 
 			// TODO: Are these actually the same thing?
-			{SATURN_IO_LINK_CABLE_JPN, SATURN_IOBF_LINK_CABLE},
-			{SATURN_IO_LINK_CABLE_USA, SATURN_IOBF_LINK_CABLE},
+			{SATURN_IO_LINK_CABLE_JPN, SATURN_IOBIT_LINK_CABLE},
+			{SATURN_IO_LINK_CABLE_USA, SATURN_IOBIT_LINK_CABLE},
 
 			SATURN_IO_SUPPORT_ENTRY(NETLINK),
 			SATURN_IO_SUPPORT_ENTRY(PACHINKO),
@@ -202,7 +221,7 @@ uint32_t SegaSaturnPrivate::parsePeripherals(const char *peripherals, int size)
 
 		for (const auto &p : saturn_io_lkup_tbl) {
 			if (p.io_chr == peripherals[i]) {
-				ret |= p.io_bf;
+				ret |= (1U << p.io_bit);
 				break;
 			}
 		}
