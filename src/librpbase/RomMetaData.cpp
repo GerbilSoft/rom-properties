@@ -367,11 +367,21 @@ int RomMetaData::count(void) const
 }
 
 /**
+ * Is this RomMetaData empty?
+ * @return True if empty; false if not.
+ */
+bool RomMetaData::empty(void) const
+{
+	RP_D(const RomMetaData);
+	return d->metaData.empty();
+}
+
+/**
  * Get a metadata property.
  * @param idx Metadata index
  * @return Metadata property, or nullptr if the index is invalid.
  */
-const RomMetaData::MetaData *RomMetaData::prop(int idx) const
+const RomMetaData::MetaData *RomMetaData::at(int idx) const
 {
 	RP_D(const RomMetaData);
 	if (idx < 0 || idx >= static_cast<int>(d->metaData.size()))
@@ -380,13 +390,23 @@ const RomMetaData::MetaData *RomMetaData::prop(int idx) const
 }
 
 /**
- * Is this RomMetaData empty?
- * @return True if empty; false if not.
+ * Get a const iterator pointing to the beginning of the RomMetaData.
+ * @return Const iterator.
  */
-bool RomMetaData::empty(void) const
+RomMetaData::const_iterator RomMetaData::cbegin(void) const
 {
 	RP_D(const RomMetaData);
-	return d->metaData.empty();
+	return d->metaData.cbegin();
+}
+
+/**
+ * Get a const iterator pointing to the end of the RomMetaData.
+ * @return Const iterator.
+ */
+RomMetaData::const_iterator RomMetaData::cend(void) const
+{
+	RP_D(const RomMetaData);
+	return d->metaData.cend();
 }
 
 /** Convenience functions for RomData subclasses. **/
@@ -427,44 +447,44 @@ int RomMetaData::addMetaData_metaData(const RomMetaData *other)
 	// - Use absolute or relative tab offset.
 	d->metaData.reserve(d->metaData.size() + other->count());
 
-	for (int i = 0; i < other->count(); i++) {
-		const MetaData *const pSrc = other->prop(i);
-		if (!pSrc)
-			continue;
+	const auto iter_end = other->cend();
+	for (auto iter = other->cbegin(); iter != iter_end; ++iter) {
+		const RomMetaData::MetaData &pSrc = *iter;
 
-		assert(pSrc->name > Property::FirstProperty);
-		assert(pSrc->name < Property::PropertyCount);
-		if (pSrc->name <= Property::FirstProperty ||
-		    pSrc->name >= Property::PropertyCount)
+		assert(pSrc.name > Property::FirstProperty);
+		assert(pSrc.name < Property::PropertyCount);
+		if (pSrc.name <= Property::FirstProperty ||
+		    pSrc.name >= Property::PropertyCount)
 		{
 			continue;
 		}
 
-		MetaData *const pDest = d->addProperty(pSrc->name);
+		// TODO: Make use of the MetaData copy constructor?
+		MetaData *const pDest = d->addProperty(pSrc.name);
 		assert(pDest != nullptr);
 		if (!pDest)
 			break;
-		assert(pDest->type == pSrc->type);
-		if (pDest->type != pSrc->type)
+		assert(pDest->type == pSrc.type);
+		if (pDest->type != pSrc.type)
 			continue;	// TODO: Should be break?
 
-		switch (pSrc->type) {
+		switch (pSrc.type) {
 			case PropertyType::Integer:
-				pDest->data.ivalue = pSrc->data.ivalue;
+				pDest->data.ivalue = pSrc.data.ivalue;
 				break;
 			case PropertyType::UnsignedInteger:
-				pDest->data.uvalue = pSrc->data.uvalue;
+				pDest->data.uvalue = pSrc.data.uvalue;
 				break;
 			case PropertyType::String:
 				// TODO: Don't add a property if the string value is nullptr?
-				assert(pSrc->data.str != nullptr);
-				pDest->data.str = (pSrc->data.str ? new string(*pSrc->data.str) : nullptr);
+				assert(pSrc.data.str != nullptr);
+				pDest->data.str = (pSrc.data.str ? new string(*pSrc.data.str) : nullptr);
 				break;
 			case PropertyType::Timestamp:
-				pDest->data.timestamp = pSrc->data.timestamp;
+				pDest->data.timestamp = pSrc.data.timestamp;
 				break;
 			case PropertyType::Double:
-				pDest->data.dvalue = pSrc->data.dvalue;
+				pDest->data.dvalue = pSrc.data.dvalue;
 				break;
 			default:
 				// ERROR!

@@ -228,6 +228,10 @@ class RomMetaData
 		RomMetaDataPrivate *d_ptr;
 
 	public:
+		/** Metadata iterator types **/
+		typedef std::vector<MetaData>::const_iterator const_iterator;
+
+	public:
 		/** Metadata accessors. **/
 
 		/**
@@ -238,19 +242,33 @@ class RomMetaData
 		int count(void) const;
 
 		/**
-		 * Get a metadata property.
-		 * @param idx Metadata index
-		 * @return Metadata property, or nullptr if the index is invalid.
-		 */
-		RP_LIBROMDATA_PUBLIC
-		const MetaData *prop(int idx) const;
-
-		/**
 		 * Is this RomMetaData empty?
 		 * @return True if empty; false if not.
 		 */
 		RP_LIBROMDATA_PUBLIC
 		bool empty(void) const;
+
+		/**
+		 * Get a metadata property.
+		 * @param idx Metadata index
+		 * @return Metadata property, or nullptr if the index is invalid.
+		 */
+		RP_LIBROMDATA_PUBLIC
+		const MetaData *at(int idx) const;
+
+		/**
+		 * Get a const iterator pointing to the beginning of the RomMetaData.
+		 * @return Const iterator.
+		 */
+		RP_LIBROMDATA_PUBLIC
+		const_iterator cbegin(void) const;
+
+		/**
+		 * Get a const iterator pointing to the end of the RomMetaData.
+		 * @return Const iterator.
+		 */
+		RP_LIBROMDATA_PUBLIC
+		const_iterator cend(void) const;
 
 	public:
 		/** Convenience functions for RomData subclasses. **/

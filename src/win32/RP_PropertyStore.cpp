@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_PropertyStore.cpp: IPropertyStore implementation.                    *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -269,15 +269,14 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 	// TODO: Use IPropertyStoreCache?
 	// Reference: https://github.com/Microsoft/Windows-classic-samples/blob/master/Samples/Win7Samples/winui/shell/appshellintegration/RecipePropertyHandler/RecipePropertyHandler.cpp
 	const int count = metaData->count();
+	assert(count > 0);
 	d->prop_key.reserve(count);
 	d->prop_val.reserve(count);
-	for (int i = 0; i < count; i++) {
-		const RomMetaData::MetaData *prop = metaData->prop(i);
-		assert(prop != nullptr);
-		if (!prop)
-			continue;
+	const auto iter_end = metaData->cend();
+	for (auto iter = metaData->cbegin(); iter != iter_end; ++iter) {
+		const RomMetaData::MetaData &prop = *iter;
 
-		if (prop->name <= Property::Invalid || (int)prop->name >= ARRAY_SIZE(d->metaDataConv)) {
+		if (prop.name <= Property::Invalid || (int)prop.name >= ARRAY_SIZE(d->metaDataConv)) {
 			// FIXME: Should assert here, but Windows doesn't support
 			// certain properties...
 			continue;
@@ -285,7 +284,7 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 
 		// Convert from the RomMetaData property indexes to
 		// Windows property keys.
-		const RP_PropertyStore_Private::MetaDataConv &conv = d->metaDataConv[(int)prop->name];
+		const RP_PropertyStore_Private::MetaDataConv &conv = d->metaDataConv[(int)prop.name];
 		if (!conv.pkey || conv.vtype == VT_EMPTY) {
 			// FIXME: Should assert here, but Windows doesn't support
 			// certain properties...
@@ -299,13 +298,13 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 		switch (conv.vtype) {
 			case VT_UI8: {
 				// FIXME: 64-bit values?
-				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
-				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
+				assert(prop.type == PropertyType::Integer || prop.type == PropertyType::UnsignedInteger);
+				if (prop.type != PropertyType::Integer && prop.type != PropertyType::UnsignedInteger)
 					continue;
 
 				// Special handling for some properties.
-				uint64_t uvalue64 = static_cast<uint64_t>(prop->data.uvalue);
-				switch (prop->name) {
+				uint64_t uvalue64 = static_cast<uint64_t>(prop.data.uvalue);
+				switch (prop.name) {
 					case LibRpBase::Property::Duration:
 						// Converting duration from ms to 100ns units.
 						uvalue64 *= 10000ULL;
@@ -319,20 +318,20 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 			}
 
 			case VT_UI4: {
-				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
-				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
+				assert(prop.type == PropertyType::Integer || prop.type == PropertyType::UnsignedInteger);
+				if (prop.type != PropertyType::Integer && prop.type != PropertyType::UnsignedInteger)
 					continue;
 
 				// Special handling for some properties.
-				uint32_t uvalue = prop->data.uvalue;
-				switch (prop->name) {
+				uint32_t uvalue = prop.data.uvalue;
+				switch (prop.name) {
 					case LibRpBase::Property::Width:
 						assert(dimensions.cx == 0);
-						dimensions.cx = prop->data.uvalue;
+						dimensions.cx = prop.data.uvalue;
 						break;
 					case LibRpBase::Property::Height:
 						assert(dimensions.cy == 0);
-						dimensions.cy = prop->data.uvalue;
+						dimensions.cy = prop.data.uvalue;
 						break;
 					case LibRpBase::Property::Rating:
 						// Constrain to [1,99].
@@ -351,69 +350,69 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 			}
 
 			case VT_UI2:
-				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
-				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
+				assert(prop.type == PropertyType::Integer || prop.type == PropertyType::UnsignedInteger);
+				if (prop.type != PropertyType::Integer && prop.type != PropertyType::UnsignedInteger)
 					continue;
 
-				InitPropVariantFromUInt16(static_cast<uint16_t>(prop->data.uvalue), &prop_var);
+				InitPropVariantFromUInt16(static_cast<uint16_t>(prop.data.uvalue), &prop_var);
 				break;
 
 			case VT_UI1:
-				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
-				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
+				assert(prop.type == PropertyType::Integer || prop.type == PropertyType::UnsignedInteger);
+				if (prop.type != PropertyType::Integer && prop.type != PropertyType::UnsignedInteger)
 					continue;
 
-				InitPropVariantFromUInt8(static_cast<uint8_t>(prop->data.uvalue), &prop_var);
+				InitPropVariantFromUInt8(static_cast<uint8_t>(prop.data.uvalue), &prop_var);
 				break;
 
 			case VT_I8:
 				// FIXME: 64-bit values?
-				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
-				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
+				assert(prop.type == PropertyType::Integer || prop.type == PropertyType::UnsignedInteger);
+				if (prop.type != PropertyType::Integer && prop.type != PropertyType::UnsignedInteger)
 					continue;
 
-				InitPropVariantFromInt64(static_cast<int64_t>(prop->data.ivalue), &prop_var);
+				InitPropVariantFromInt64(static_cast<int64_t>(prop.data.ivalue), &prop_var);
 				break;
 
 			case VT_I4:
-				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
-				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
+				assert(prop.type == PropertyType::Integer || prop.type == PropertyType::UnsignedInteger);
+				if (prop.type != PropertyType::Integer && prop.type != PropertyType::UnsignedInteger)
 					continue;
 
-				InitPropVariantFromInt32(static_cast<int32_t>(prop->data.ivalue), &prop_var);
+				InitPropVariantFromInt32(static_cast<int32_t>(prop.data.ivalue), &prop_var);
 				break;
 
 			case VT_I2:
-				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
-				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
+				assert(prop.type == PropertyType::Integer || prop.type == PropertyType::UnsignedInteger);
+				if (prop.type != PropertyType::Integer && prop.type != PropertyType::UnsignedInteger)
 					continue;
 
-				InitPropVariantFromInt16(static_cast<int16_t>(prop->data.ivalue), &prop_var);
+				InitPropVariantFromInt16(static_cast<int16_t>(prop.data.ivalue), &prop_var);
 				break;
 
 			case VT_I1:
-				assert(prop->type == PropertyType::Integer || prop->type == PropertyType::UnsignedInteger);
-				if (prop->type != PropertyType::Integer && prop->type != PropertyType::UnsignedInteger)
+				assert(prop.type == PropertyType::Integer || prop.type == PropertyType::UnsignedInteger);
+				if (prop.type != PropertyType::Integer && prop.type != PropertyType::UnsignedInteger)
 					continue;
 
-				InitPropVariantFromInt8(static_cast<int8_t>(prop->data.ivalue), &prop_var);
+				InitPropVariantFromInt8(static_cast<int8_t>(prop.data.ivalue), &prop_var);
 				break;
 
 			case VT_BSTR:
-				assert(prop->type == PropertyType::String);
-				if (prop->type != PropertyType::String)
+				assert(prop.type == PropertyType::String);
+				if (prop.type != PropertyType::String)
 					continue;
-				if (prop->data.str) {
-					InitPropVariantFromString(U82W_s(*prop->data.str), &prop_var);
+				if (prop.data.str) {
+					InitPropVariantFromString(U82W_s(*prop.data.str), &prop_var);
 				}
 				break;
 
 			case VT_VECTOR|VT_BSTR: {
 				// For now, assuming an array with a single string.
-				assert(prop->type == PropertyType::String);
-				if (prop->type != PropertyType::String)
+				assert(prop.type == PropertyType::String);
+				if (prop.type != PropertyType::String)
 					continue;
-				const wstring wstr = (prop->data.str ? U82W_s(*prop->data.str) : L"");
+				const wstring wstr = (prop.data.str ? U82W_s(*prop.data.str) : L"");
 				const wchar_t *vstr[] = {wstr.c_str()};
 
 				InitPropVariantFromStringVector(vstr, 1, &prop_var);
@@ -423,34 +422,34 @@ IFACEMETHODIMP RP_PropertyStore::Initialize(_In_ IStream *pstream, DWORD grfMode
 			// FIXME: This is VT_FILETIME, not VT_DATE.
 			// Add a proper VT_DATE handler.
 			case VT_DATE: {
-				assert(prop->type == PropertyType::Timestamp);
-				if (prop->type != PropertyType::Timestamp)
+				assert(prop.type == PropertyType::Timestamp);
+				if (prop.type != PropertyType::Timestamp)
 					continue;
 				// Date is stored as Unix time.
 				// Convert to FILETIME, then to VT_DATE.
 				// TODO: Verify timezone handling.
 				FILETIME ft;
-				UnixTimeToFileTime(prop->data.timestamp, &ft);
+				UnixTimeToFileTime(prop.data.timestamp, &ft);
 
 				InitPropVariantFromFileTime(&ft, &prop_var);
 				break;
 			}
 
 			case VT_R8: {
-				assert(prop->type == PropertyType::Double);
-				if (prop->type != PropertyType::Double)
+				assert(prop.type == PropertyType::Double);
+				if (prop.type != PropertyType::Double)
 					continue;
 
-				InitPropVariantFromDouble(prop->data.dvalue, &prop_var);
+				InitPropVariantFromDouble(prop.data.dvalue, &prop_var);
 				break;
 			}
 
 			case VT_R4: {
-				assert(prop->type == PropertyType::Double);
-				if (prop->type != PropertyType::Double)
+				assert(prop.type == PropertyType::Double);
+				if (prop.type != PropertyType::Double)
 					continue;
 
-				InitPropVariantFromFloat(static_cast<float>(prop->data.dvalue), &prop_var);
+				InitPropVariantFromFloat(static_cast<float>(prop.data.dvalue), &prop_var);
 				break;
 			}
 

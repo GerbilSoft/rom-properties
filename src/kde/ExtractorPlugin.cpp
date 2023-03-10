@@ -98,19 +98,16 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 	}
 
 	// Process the metadata.
-	const int count = metaData->count();
-	for (int i = 0; i < count; i++) {
-		const RomMetaData::MetaData *const prop = metaData->prop(i);
-		assert(prop != nullptr);
-		if (!prop)
-			continue;
+	const auto iter_end = metaData->cend();
+	for (auto iter = metaData->cbegin(); iter != iter_end; ++iter) {
+		const RomMetaData::MetaData &prop = *iter;
 
 		// RomMetaData's property indexes match KFileMetaData.
 		// No conversion is necessary.
-		switch (prop->type) {
+		switch (prop.type) {
 			case PropertyType::Integer: {
-				int ivalue = prop->data.ivalue;
-				switch (prop->name) {
+				int ivalue = prop.data.ivalue;
+				switch (prop.name) {
 					case LibRpBase::Property::Duration:
 						// Duration needs to be converted from ms to seconds.
 						ivalue /= 1000;
@@ -122,18 +119,18 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 					default:
 						break;
 				}
-				result->add(static_cast<KFileMetaData::Property::Property>(prop->name), ivalue);
+				result->add(static_cast<KFileMetaData::Property::Property>(prop.name), ivalue);
 				break;
 			}
 
 			case PropertyType::UnsignedInteger: {
-				result->add(static_cast<KFileMetaData::Property::Property>(prop->name),
-					    prop->data.uvalue);
+				result->add(static_cast<KFileMetaData::Property::Property>(prop.name),
+					    prop.data.uvalue);
 				break;
 			}
 
 			case PropertyType::String: {
-				LibRpBase::Property prop_name = prop->name;
+				LibRpBase::Property prop_name = prop.name;
 				// NOTE: kfilemetadata_version.h was added in KF5 5.94.0.
 				// Using kcoreaddons_version.h instead.
 #if KCOREADDONS_VERSION < QT_VERSION_CHECK(5,53,0)
@@ -144,7 +141,7 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 				}
 #endif /* KCOREADDONS_VERSION < QT_VERSION_CHECK(5,53,0) */
 
-				const string *str = prop->data.str;
+				const string *str = prop.data.str;
 				if (str) {
 					result->add(static_cast<KFileMetaData::Property::Property>(prop_name),
 						QString::fromUtf8(str->data(), static_cast<int>(str->size())));
@@ -160,15 +157,15 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 				// CreationDate seems to work fine with just QDate.
 				QDateTime dateTime;
 				dateTime.setTimeSpec(Qt::UTC);
-				dateTime.setMSecsSinceEpoch((qint64)prop->data.timestamp * 1000);
-				result->add(static_cast<KFileMetaData::Property::Property>(prop->name),
+				dateTime.setMSecsSinceEpoch((qint64)prop.data.timestamp * 1000);
+				result->add(static_cast<KFileMetaData::Property::Property>(prop.name),
 					dateTime.date());
 				break;
 			}
 
 			case PropertyType::Double: {
-				result->add(static_cast<KFileMetaData::Property::Property>(prop->name),
-					    prop->data.dvalue);
+				result->add(static_cast<KFileMetaData::Property::Property>(prop.name),
+					    prop.data.dvalue);
 				break;
 			}
 
