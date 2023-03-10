@@ -327,7 +327,7 @@ int VGM::loadFieldData(void)
 		return -EIO;
 	}
 
-	// VGM header.
+	// VGM header
 	const VGM_Header *const vgmHeader = &d->vgmHeader;
 	// NOTE: It's very unlikely that a single VGM will have
 	// all supported sound chips, so we'll reserve enough
@@ -336,15 +336,15 @@ int VGM::loadFieldData(void)
 	d->fields.reserve(11+(8*2));
 	d->fields.reserveTabs(2);
 
-	// Main tab.
+	// Main tab
 	d->fields.setTabName(0, "VGM");
 
-	// Version number. (BCD)
+	// Version number (BCD)
 	unsigned int vgm_version = le32_to_cpu(vgmHeader->version);
 	d->fields.addField_string(C_("VGM", "VGM Version"),
-		rp_sprintf_p(C_("VGM", "%1$x.%2$02x"), vgm_version >> 8, vgm_version & 0xFF));
+		rp_sprintf("%x.%02x", vgm_version >> 8, vgm_version & 0xFF));
 
-	// VGM data offset.
+	// VGM data offset
 	// Header fields must end before this offset.
 	unsigned int data_offset;
 	if (vgm_version < 0x0150) {
@@ -362,7 +362,7 @@ int VGM::loadFieldData(void)
 	// NOTE: Not byteswapping when checking for 0 because
 	// 0 in big-endian is the same as 0 in little-endian.
 
-	// GD3 tags.
+	// GD3 tags
 	if (d->vgmHeader.gd3_offset != 0) {
 		// TODO: Make sure the GD3 offset is stored after the header.
 		const unsigned int addr = le32_to_cpu(d->vgmHeader.gd3_offset) + offsetof(VGM_Header, gd3_offset);
@@ -382,7 +382,7 @@ int VGM::loadFieldData(void)
 #else /* !ENABLE_NLS */
 			struct gd3_tag_field_tbl_t {
 				const char *desc;	// Description
-				GD3_TAG_ID idx;	// GD3 tag index
+				GD3_TAG_ID idx;		// GD3 tag index
 			};
 #define GD3_TAG_FIELD_TBL_ENTRY(ctx, desc, idx) \
 			{(desc), (idx)}
