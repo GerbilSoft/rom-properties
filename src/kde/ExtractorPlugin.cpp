@@ -6,7 +6,7 @@
  * multiple plugins, so this file acts as a KFileMetaData ExtractorPlugin, *
  * and then forwards the request to the main library.                      *
  *                                                                         *
- * Copyright (c) 2018-2022 by David Korth.                                 *
+ * Copyright (c) 2018-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -73,6 +73,12 @@ QStringList ExtractorPlugin::mimetypes(void) const
 
 void ExtractorPlugin::extract(ExtractionResult *result)
 {
+	const ExtractionResult::Flags flags = result->inputFlags();
+	if (unlikely(flags != ExtractionResult::ExtractMetaData)) {
+		// Nothing to extract...
+		return;
+	}
+
 	// Attempt to open the ROM file.
 	IRpFile *const file = openQUrl(QUrl(result->inputUrl()), false);
 	if (!file) {
@@ -109,11 +115,13 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 				int ivalue = prop.data.ivalue;
 				switch (prop.name) {
 					case LibRpBase::Property::Duration:
-						// Duration needs to be converted from ms to seconds.
+						// rom-properties: milliseconds
+						// KFileMetaData: seconds
 						ivalue /= 1000;
 						break;
 					case LibRpBase::Property::Rating:
-						// Rating is [0,100]; needs to be converted to [0,10].
+						// rom-properties: [0,100]
+						// KFileMetaData: [0,10]
 						ivalue /= 10;
 						break;
 					default:
@@ -125,7 +133,7 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 
 			case PropertyType::UnsignedInteger: {
 				result->add(static_cast<KFileMetaData::Property::Property>(prop.name),
-					    prop.data.uvalue);
+					prop.data.uvalue);
 				break;
 			}
 
@@ -165,7 +173,7 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 
 			case PropertyType::Double: {
 				result->add(static_cast<KFileMetaData::Property::Property>(prop.name),
-					    prop.data.dvalue);
+					prop.data.dvalue);
 				break;
 			}
 
