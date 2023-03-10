@@ -237,7 +237,16 @@ class RomData : public RefBase
 		 * Get the general file type.
 		 * @return General file type.
 		 */
+		RP_LIBROMDATA_PUBLIC
 		FileType fileType(void) const;
+
+		/**
+		 * FileType to string conversion function.
+		 * @param fileType File type
+		 * @return FileType as a string, or nullptr if unknown.
+		 */
+		RP_LIBROMDATA_PUBLIC
+		static const char *fileType_to_string(FileType fileType);
 
 		/**
 		 * Get the general file type as a string.

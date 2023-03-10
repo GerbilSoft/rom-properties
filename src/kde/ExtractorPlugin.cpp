@@ -95,6 +95,30 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 		return;
 	}
 
+	// File type
+	// NOTE: KFileMetaData has a limited set of file types as of v5.103.
+	static_assert((int)RomData::FileType::Max == (int)RomData::FileType::PatchFile + 1, "Update KFileMetaData file types!");
+	switch (romData->fileType()) {
+		default:
+			// No KFileMetaData::Type is applicable here.
+			break;
+
+		case RomData::FileType::IconFile:
+		case RomData::FileType::BannerFile:
+		case RomData::FileType::TextureFile:
+			result->addType(KFileMetaData::Type::Image);
+			break;
+
+		case RomData::FileType::ContainerFile:
+		case RomData::FileType::Bundle:
+			result->addType(KFileMetaData::Type::Archive);
+			break;
+
+		case RomData::FileType::AudioFile:
+			result->addType(KFileMetaData::Type::Audio);
+			break;
+	}
+
 	// Get the metadata properties.
 	const RomMetaData *const metaData = romData->metaData();
 	if (!metaData || metaData->empty()) {

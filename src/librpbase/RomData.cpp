@@ -534,20 +534,20 @@ const char *RomData::className(void) const
 RomData::FileType RomData::fileType(void) const
 {
 	RP_D(const RomData);
-	assert(d->fileType != FileType::Unknown);
+	assert(d->fileType > FileType::Unknown && d->fileType < FileType::Max);
 	return d->fileType;
 }
 
 /**
- * Get the general file type as a string.
- * @return General file type as a string, or nullptr if unknown.
+ * FileType to string conversion function.
+ * @param fileType File type
+ * @return FileType as a string, or nullptr if unknown.
  */
-const char *RomData::fileType_string(void) const
+const char *RomData::fileType_to_string(FileType fileType)
 {
-	RP_D(const RomData);
-	assert(d->fileType >= FileType::Unknown && d->fileType < FileType::Max);
-	if (d->fileType < FileType::Unknown || d->fileType >= FileType::Max) {
-		return C_("RomData|FileType", "(unknown file type)");
+	assert(fileType >= FileType::Unknown && fileType < FileType::Max);
+	if (unlikely(fileType < FileType::Unknown || fileType >= FileType::Max)) {
+		fileType = FileType::Unknown;
 	}
 
 	static const char *const fileType_names[] = {
@@ -613,11 +613,20 @@ const char *RomData::fileType_string(void) const
 	static_assert(ARRAY_SIZE(fileType_names) == (int)FileType::Max,
 		"fileType_names[] needs to be updated.");
  
-	const char *const fileType = fileType_names[(int)d->fileType];
-	if (fileType != nullptr) {
-		return dpgettext_expr(RP_I18N_DOMAIN, "RomData|FileType", fileType);
-	}
-	return nullptr;
+	const char *const s_fileType = fileType_names[(int)fileType];
+	assert(s_fileType != nullptr);
+	return dpgettext_expr(RP_I18N_DOMAIN, "RomData|FileType", s_fileType);
+}
+
+/**
+ * Get the general file type as a string.
+ * @return General file type as a string, or nullptr if unknown.
+ */
+const char *RomData::fileType_string(void) const
+{
+	RP_D(const RomData);
+	assert(d->fileType >= FileType::Unknown && d->fileType < FileType::Max);
+	return fileType_to_string(d->fileType);
 }
 
 /**
