@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-stub)                          *
  * rp-stub.c: Stub program to invoke the rom-properties library.           *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -75,7 +75,7 @@ static void show_version(void)
 	puts(RP_DESCRIPTION);
 	puts(C_("rp_stub",
 		"Shared library stub program.\n"
-		"Copyright (c) 2016-2021 by David Korth."));
+		"Copyright (c) 2016-2023 by David Korth."));
 	putchar('\n');
 	printf(C_("rp-stub", "rom-properties version: %s"), RP_VERSION_STRING);
 	putchar('\n');
