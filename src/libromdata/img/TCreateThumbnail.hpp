@@ -32,6 +32,7 @@ typedef enum {
 	RPCT_ERROR_SOURCE_FILE_BAD_FS		= 7,	// Source file is located on a "bad" file system.
 	RPCT_ERROR_RUNNING_AS_ROOT		= 8,	// Running as root is not supported.
 	RPCT_ERROR_INVALID_IMAGE_SIZE		= 9,	// Invalid image size requested. (e.g. 0 or less)
+	RPCT_ERROR_INVALID_FLAGS		= 10,	// Invalid flag values. (v2)
 } RpCreateThumbnailError;
 
 /**
@@ -39,6 +40,8 @@ typedef enum {
  */
 typedef enum {
 	RPCT_FLAG_NO_XDG_THUMBNAIL_METADATA	= (1U << 0),	/*< Don't add XDG thumbnail metadata */
+
+	RPCT_FLAG_VALID_MASK			= 0x00000001,
 } RpCreateThumbnailFlags;
 
 /**

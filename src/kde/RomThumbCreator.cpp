@@ -405,6 +405,11 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 	// in order to return better error codes.
 	CHECK_UID_RET(RPCT_ERROR_RUNNING_AS_ROOT);
 
+	// Validate flags.
+	if ((flags & ~RPCT_FLAG_VALID_MASK) != 0) {
+		return RPCT_ERROR_INVALID_FLAGS;
+	}
+
 	// Register RpQImageBackend.
 	// TODO: Static initializer somewhere?
 	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);

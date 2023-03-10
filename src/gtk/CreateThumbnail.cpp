@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * CreateThumbnail.cpp: Thumbnail creator for wrapper programs.            *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -297,6 +297,11 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const
 	// Some of this is based on the GNOME Thumbnailer skeleton project.
 	// https://github.com/hadess/gnome-thumbnailer-skeleton/blob/master/gnome-thumbnailer-skeleton.c
 	CHECK_UID_RET(RPCT_ERROR_RUNNING_AS_ROOT);
+
+	// Validate flags.
+	if ((flags & ~RPCT_FLAG_VALID_MASK) != 0) {
+		return RPCT_ERROR_INVALID_FLAGS;
+	}
 
 	// Make sure glib is initialized.
 	// NOTE: This is a no-op as of glib-2.35.1.
