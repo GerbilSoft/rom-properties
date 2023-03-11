@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2023-03-10 18:59-0500\n"
-"PO-Revision-Date: 2023-03-11 00:23\n"
+"POT-Creation-Date: 2023-03-10 19:55-0500\n"
+"PO-Revision-Date: 2023-03-11 01:35\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar_SA\n"
@@ -40,20 +40,20 @@ msgstr ""
 #: ../src/win32/config/AchievementsTab.cpp:449
 msgctxt "AchievementsTab"
 msgid "Unlock Time"
-msgstr ""
+msgstr "مدة الفتح"
 
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:52
 #: ../src/gtk/config/AchievementsTab.cpp:214
 #: ../src/win32/config/AchievementsTab.cpp:443
 msgctxt "AchievementsTab"
 msgid "Achievement"
-msgstr ""
+msgstr "إنجاز"
 
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:53
 #: ../src/gtk/config/AchievementsTab.cpp:213
 msgctxt "AchievementsTab"
 msgid "Icon"
-msgstr ""
+msgstr "أيقونة"
 
 #: ../build/src/kde/kf5/ui_CacheTab.h:98
 msgctxt "CacheTab"
@@ -155,7 +155,7 @@ msgid "&Encrypted"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_ImageTypesTab.h:81
-#: ../src/gtk/config/ImageTypesTab.cpp:467
+#: ../src/gtk/config/ImageTypesTab.cpp:468
 msgctxt "ImageTypesTab"
 msgid "Select the image types you would like to use for each system as its thumbnail image.\n"
 "Internal images are contained within the ROM file.\n"
@@ -185,19 +185,19 @@ msgstr ""
 #: ../src/gtk/xattr/LinuxAttrView.c:97
 msgctxt "LinuxAttrView"
 msgid "a: append only"
-msgstr ""
+msgstr "أ: أضف فقد"
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:224
 #: ../src/gtk/xattr/LinuxAttrView.c:152
 msgctxt "LinuxAttrView"
 msgid "Directory will be treated like a top-level directory by the ext3/ext4 Orlov block allocator."
-msgstr ""
+msgstr "الدليل سيتعامل كانه مثل أعلى-مرحلة محدد الحاجز لي \"أورلوف\" من ex3/ex4."
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:226
 #: ../src/gtk/xattr/LinuxAttrView.c:151
 msgctxt "LinuxAttrView"
 msgid "T: top dir"
-msgstr ""
+msgstr "ت: أعلى دليل"
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:228
 #: ../src/gtk/xattr/LinuxAttrView.c:134
@@ -209,13 +209,13 @@ msgstr ""
 #: ../src/gtk/xattr/LinuxAttrView.c:133
 msgctxt "LinuxAttrView"
 msgid "m: no compress"
-msgstr ""
+msgstr "م: لا ضغط"
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:232
 #: ../src/gtk/xattr/LinuxAttrView.c:158
 msgctxt "LinuxAttrView"
 msgid "Direct access"
-msgstr ""
+msgstr "مدخل مباشر"
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:234
 #: ../src/gtk/xattr/LinuxAttrView.c:157
@@ -880,17 +880,18 @@ msgctxt "ConfigDialog|Button"
 msgid "&OK"
 msgstr ""
 
-#: ../src/gtk/config/ImageTypesTab.cpp:335
-#: ../src/gtk/config/ImageTypesTab.cpp:347
-#: ../src/kde/config/ImageTypesTab.cpp:245
-#: ../src/win32/config/ImageTypesTab.cpp:381
+#. tr: Don't use this image type for this particular system.
+#: ../src/gtk/config/ImageTypesTab.cpp:336
+#: ../src/gtk/config/ImageTypesTab.cpp:348
+#: ../src/kde/config/ImageTypesTab.cpp:246
+#: ../src/win32/config/ImageTypesTab.cpp:382
 msgctxt "ImageTypesTab|Values"
 msgid "No"
 msgstr ""
 
-#: ../src/gtk/config/ImageTypesTab.cpp:480
-#: ../src/kde/config/ImageTypesTab.cpp:356
-#: ../src/win32/config/ImageTypesTab.cpp:508
+#: ../src/gtk/config/ImageTypesTab.cpp:481
+#: ../src/kde/config/ImageTypesTab.cpp:357
+#: ../src/win32/config/ImageTypesTab.cpp:509
 msgctxt "ImageTypesTab"
 msgid "GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\n"
 "are provided by <a href=\"https://www.gametdb.com/\">GameTDB</a>.\n"
@@ -10203,7 +10204,7 @@ msgid "Defaults"
 msgstr ""
 
 #. tr: Tab title.
-#: ../src/win32/config/ImageTypesTab.cpp:717
+#: ../src/win32/config/ImageTypesTab.cpp:718
 msgctxt "ImageTypesTab"
 msgid "Image Types"
 msgstr ""
