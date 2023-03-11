@@ -1,9 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (Win32)                            *
- * rp-es_ES.rc: Win32 resource script. (es_ES)                             *
+ * resource.rc: Win32 resource script. (en_US)                             *
  *                                                                         *
  * Copyright (c) 2016-2021 by David Korth.                                 *
- * Copyright (c) 2021 by Amnesia1000.                                      *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -24,7 +23,7 @@
  * Configuration: Image type priorities
  */
 LANGUAGE LANG_SPANISH, SUBLANG_SPANISH
-IDD_CONFIG_IMAGETYPES DIALOGEX 0, 0, 413, 245
+IDD_CONFIG_IMAGETYPES DIALOGEX 0, 0, 413, 240
 STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_CAPTION | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 CAPTION "Dialog"
@@ -32,7 +31,7 @@ FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
     LTEXT           "Selecione los tipos de imagenes que usted desea utilizar en cada sistema como miniatura.\nLas imágenes internas están contenidas en la ROM.\nLas imágenes externas se reciben de una base de datos de imágenes externas.", IDC_IMAGETYPES_DESC1, 7, 7, 397, 30, SS_LEFT, WS_EX_LEFT
     LTEXT           "1 = prioridad más alta; 2 = prioridad alta; No = ignorar", IDC_IMAGETYPES_DESC2, 7, 37, 397, 8, SS_LEFT, WS_EX_LEFT
-    CONTROL         "IDC_IMAGETYPES_CREDITS", IDC_IMAGETYPES_CREDITS, "SysLink", 0x50010000, 7, 214, 397, 24, 0x00000000
+    CONTROL         "IDC_IMAGETYPES_CREDITS", IDC_IMAGETYPES_CREDITS, "SysLink", 0x50010000, 7, 209, 397, 24, 0x00000000
 END
 
 /**
@@ -59,7 +58,7 @@ END
  * Configuration: Options
  */
 LANGUAGE LANG_SPANISH, SUBLANG_SPANISH
-IDD_CONFIG_OPTIONS DIALOGEX 0, 0, 413, 245
+IDD_CONFIG_OPTIONS DIALOGEX 0, 0, 413, 240
 STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
@@ -86,7 +85,7 @@ END
  * Configuration: Thumbnail cache (Windows Vista and later)
  */
 LANGUAGE LANG_SPANISH, SUBLANG_SPANISH
-IDD_CONFIG_CACHE DIALOGEX 0, 0, 413, 245
+IDD_CONFIG_CACHE DIALOGEX 0, 0, 413, 240
 STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
@@ -95,15 +94,15 @@ BEGIN
     PUSHBUTTON      "Borrar el caché de miniaturas del sistema", IDC_CACHE_CLEAR_SYS_THUMBS, 7, 20, 398, 28, 0, WS_EX_LEFT
     LTEXT           "La página de Rom properties mantiene su propia caché de descarga para las imágenes externas.\nBorrar esta caché obligará a volver a descargar las imágenes externas.", IDC_STATIC, 7, 55, 397, 17, SS_LEFT, WS_EX_TRANSPARENT
     PUSHBUTTON      "Borrar la caché de descarga de la página de Rom properties", IDC_CACHE_CLEAR_RP_DL, 7, 75, 398, 28, 0, WS_EX_LEFT
-    LTEXT           "Borrando el cache...", IDC_CACHE_STATUS, 7, 210, 397, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
-    CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 221, 397, 16, WS_EX_LEFT
+    LTEXT           "Clearing the cache...", IDC_CACHE_STATUS, 7, 205, 397, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
+    CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 216, 397, 16, WS_EX_LEFT
 END
 
 /**
  * Configuration: Thumbnail cache (Windows XP and earlier)
  */
 LANGUAGE LANG_SPANISH, SUBLANG_SPANISH
-IDD_CONFIG_CACHE_XP DIALOGEX 0, 0, 413, 245
+IDD_CONFIG_CACHE_XP DIALOGEX 0, 0, 413, 240
 STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
@@ -117,20 +116,20 @@ BEGIN
     PUSHBUTTON      "Encontrar y eliminar los archivos Thumbs.db", IDC_CACHE_XP_CLEAR_SYS_THUMBS, 7, 95, 398, 20, WS_DISABLED | BS_MULTILINE, WS_EX_LEFT
     LTEXT           "La página de Rom properties mantiene su propia caché de descarga de imágenes externas. Borrar esta caché obligará a volver a descargar las imágenes externas.", IDC_STATIC, 7, 125, 313, 20, SS_LEFT, WS_EX_TRANSPARENT
     PUSHBUTTON      "Borrar", IDC_CACHE_CLEAR_RP_DL, 323, 127, 82, 15, 0, WS_EX_LEFT
-    LTEXT           "Borrando el cache...", IDC_CACHE_STATUS, 7, 210, 397, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
-    CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 221, 397, 16, WS_EX_LEFT
+    LTEXT           "Clearing the cache...", IDC_CACHE_STATUS, 7, 205, 397, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
+    CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 216, 397, 16, WS_EX_LEFT
 END
 
 /**
  * Configuration: Achievements
  */
 LANGUAGE LANG_SPANISH, SUBLANG_SPANISH
-IDD_CONFIG_ACHIEVEMENTS DIALOGEX 0, 0, 413, 245
+IDD_CONFIG_ACHIEVEMENTS DIALOGEX 0, 0, 413, 240
 STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
-    CONTROL         "", IDC_ACHIEVEMENTS_LIST, WC_LISTVIEW, WS_TABSTOP | WS_BORDER | LVS_ALIGNLEFT | LVS_REPORT | LVS_SINGLESEL, 7, 7, 397, 231, WS_EX_LEFT | WS_EX_CLIENTEDGE
+    CONTROL         "", IDC_ACHIEVEMENTS_LIST, WC_LISTVIEW, WS_TABSTOP | WS_BORDER | LVS_ALIGNLEFT | LVS_REPORT | LVS_SINGLESEL, 7, 7, 397, 226, WS_EX_LEFT | WS_EX_CLIENTEDGE
     // Dummy control needed to fix an issue on Win7 where the
     // tab background color is wrong.
     LTEXT           "", IDC_STATIC, 7, 7, 1, 1, NOT WS_VISIBLE, WS_EX_TRANSPARENT
@@ -141,15 +140,15 @@ END
  * Configuration: Key Manager
  */
 LANGUAGE LANG_SPANISH, SUBLANG_SPANISH
-IDD_CONFIG_KEYMANAGER DIALOGEX 0, 0, 413, 245
+IDD_CONFIG_KEYMANAGER DIALOGEX 0, 0, 413, 240
 STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
-    CONTROL         "", IDC_KEYMANAGER_LIST, WC_LISTVIEW, WS_TABSTOP | WS_BORDER | LVS_ALIGNLEFT | LVS_REPORT | LVS_OWNERDATA | LVS_SINGLESEL, 7, 7, 397, 213, WS_EX_LEFT | WS_EX_CLIENTEDGE
+    CONTROL         "", IDC_KEYMANAGER_LIST, WC_LISTVIEW, WS_TABSTOP | WS_BORDER | LVS_ALIGNLEFT | LVS_REPORT | LVS_OWNERDATA | LVS_SINGLESEL, 7, 7, 397, 208, WS_EX_LEFT | WS_EX_CLIENTEDGE
     // EDIT control is created as a child control of the ListView.
     //EDITTEXT        IDC_KEYMANAGER_EDIT, 0, 0, 0, 0, NOT WS_VISIBLE | ES_AUTOHSCROLL | ES_WANTRETURN, WS_EX_LEFT
-    PUSHBUTTON      "I&mportar", IDC_KEYMANAGER_IMPORT, 7, 224, 50, 14, 0, WS_EX_LEFT
+    PUSHBUTTON      "I&mport", IDC_KEYMANAGER_IMPORT, 7, 219, 50, 14, 0, WS_EX_LEFT
 END
 #endif /* ENABLE_DECRYPTION */
 
@@ -157,7 +156,7 @@ END
  * Configuration: About
  */
 LANGUAGE LANG_SPANISH, SUBLANG_SPANISH
-IDD_CONFIG_ABOUT DIALOGEX 0, 0, 413, 245
+IDD_CONFIG_ABOUT DIALOGEX 0, 0, 413, 240
 STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_TABSTOP
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
@@ -165,8 +164,8 @@ BEGIN
     CONTROL         "", IDC_ABOUT_ICON, WC_STATIC, SS_ICON, 7, 7, 16, 16, WS_EX_LEFT
     CTEXT           "ROM Properties Page", IDC_ABOUT_LINE1, 7, 7, 398, 9, SS_CENTER, WS_EX_LEFT
     CTEXT           "Extension de Shell", IDC_ABOUT_LINE2, 7, 16, 398, 9, SS_CENTER, WS_EX_LEFT
-    CONTROL         "", IDC_ABOUT_UPDATE_CHECK, RICHEDIT_CLASS, ES_MULTILINE | ES_READONLY, 310, 7, 96, 64, SS_RIGHT, WS_EX_RIGHT | WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT
     CTEXT           "", IDC_ABOUT_VERSION, 7, 28, 398, 32, SS_CENTER, WS_EX_LEFT
+    CONTROL         "", IDC_ABOUT_UPDATE_CHECK, RICHEDIT_CLASS, ES_MULTILINE | ES_READONLY, 310, 7, 96, 64, SS_RIGHT, WS_EX_RIGHT | WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT
     CONTROL         "", IDC_ABOUT_TABCONTROL, WC_TABCONTROL, 0, 7, 63, 398, 168, WS_EX_LEFT
-    CONTROL         "", IDC_ABOUT_RICHEDIT, RICHEDIT_CLASS, WS_TABSTOP | WS_BORDER | ES_MULTILINE | ES_READONLY | WS_VSCROLL | ES_AUTOVSCROLL, 14, 84, 366, 140, WS_EX_LEFT | WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT
+    CONTROL         "", IDC_ABOUT_RICHEDIT, RICHEDIT_CLASS, WS_TABSTOP | WS_BORDER | ES_MULTILINE | ES_READONLY | WS_VSCROLL | ES_AUTOVSCROLL, 14, 84, 384, 140, WS_EX_LEFT | WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT
 END

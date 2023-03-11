@@ -1,53 +1,21 @@
-# Russian translations for rom-properties package.
-# Copyright (C) 2018 David Korth
-# This file is distributed under the same license as the rom-properties package.
-#
-# General translation notes:
-# I decided to not translate the short name "ROM Properties". The pacakge is
-# known by this name, so tranlating it could create confusion.
-#
-# Long name is translated this way: "Расширение оболочки ROM Properties Page"
-#
-# When "ROM" means "a file processed by RP", it is translated as "РОМ", since
-# that's the term used on emulation sites for everything (including stuff like
-# CD images, which technically aren't ROMs). When an actual ROM chip is
-# involved, it is translated as "ПЗУ".
-# "РОМ" can be pluralized.
-#
-# In the context of images, the following adjectives are used:
-# external - внешний
-# internal - встроенный
-#
-# In constructs like "Property: Value", "Unknown" is translated as
-# "Неизвестно" (neuter gender) regardless of gender of "Property" noun.
-# All other adjectives in "Value" should have corresponding gender.
-# Rationale: for most adjectives it's more natural to use the same gender as
-# noun (otherwise it sounds like the two strings were translated
-# independently, out of context.) "Неизвестно" is a bit different, since it
-# can also mean "not known". "Not known property" sounds weird, so we use
-# neuter gender to sortof separate the noun from adjective. The end result can
-# be interpreted somewhat like this: "Property: [it's] unknown".
-#
-# Strings like "Nintendo 3DS" which don't need translation, are explicitly
-# copied. This way it's easier to see just the strings that actually need
-# translations. I've found no disadvantages to this.
-#
-# Egor <egor@opensrc.club>, 2018.
 msgid ""
 msgstr ""
-"Project-Id-Version: rom-properties 1.9+\n"
+"Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-03-10 18:59-0500\n"
-"PO-Revision-Date: 2018-04-13 04:50+0200\n"
-"Last-Translator: Egor <egor@opensrc.club>\n"
-"Language-Team: none\n"
-"Language: ru\n"
+"PO-Revision-Date: 2023-03-11 00:23\n"
+"Last-Translator: \n"
+"Language-Team: Russian\n"
+"Language: ru_RU\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Lokalize 2.0\n"
+"Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
+"X-Crowdin-Project: rom-properties\n"
+"X-Crowdin-Project-ID: 573479\n"
+"X-Crowdin-Language: ru\n"
+"X-Crowdin-File: /master/locale/rom-properties.pot\n"
+"X-Crowdin-File-ID: 5\n"
 
 #: ../build/src/kde/kf5/ui_AboutTab.h:276
 #: ../src/gtk/config/AboutTab.cpp:288
@@ -83,15 +51,13 @@ msgstr ""
 
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:53
 #: ../src/gtk/config/AchievementsTab.cpp:213
-#, fuzzy
 msgctxt "AchievementsTab"
 msgid "Icon"
-msgstr "Иконка"
+msgstr ""
 
 #: ../build/src/kde/kf5/ui_CacheTab.h:98
 msgctxt "CacheTab"
-msgid ""
-"If any image type settings were changed, you will need to\n"
+msgid "If any image type settings were changed, you will need to\n"
 "clear the system thumbnail cache."
 msgstr ""
 
@@ -104,8 +70,7 @@ msgstr ""
 #: ../build/src/kde/kf5/ui_CacheTab.h:101
 #: ../src/gtk/config/CacheTab.cpp:165
 msgctxt "CacheTab"
-msgid ""
-"ROM Properties Page maintains its own download cache for external images.\n"
+msgid "ROM Properties Page maintains its own download cache for external images.\n"
 "Clearing this cache will force external images to be redownloaded."
 msgstr ""
 
@@ -155,10 +120,9 @@ msgstr ""
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:96
 #: ../src/gtk/config/ConfigDialog.cpp:246
-#, fuzzy
 msgctxt "ConfigDialog"
 msgid "Abou&t"
-msgstr "О программе"
+msgstr ""
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:100
 msgctxt "DosAttrView"
@@ -176,10 +140,9 @@ msgid "&Archive"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:103
-#, fuzzy
 msgctxt "DosAttrView"
 msgid "&System"
-msgstr "Система"
+msgstr ""
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:104
 msgctxt "DosAttrView"
@@ -194,21 +157,14 @@ msgstr ""
 #: ../build/src/kde/kf5/ui_ImageTypesTab.h:81
 #: ../src/gtk/config/ImageTypesTab.cpp:467
 msgctxt "ImageTypesTab"
-msgid ""
-"Select the image types you would like to use for each system as its "
-"thumbnail image.\n"
+msgid "Select the image types you would like to use for each system as its thumbnail image.\n"
 "Internal images are contained within the ROM file.\n"
-"External images are downloaded from an external image database.\n"
-"\n"
+"External images are downloaded from an external image database.\n\n"
 "1 = highest priority; 2 = second highest priority; No = ignore"
-msgstr ""
-"Выберете типы изображений которые будут использоваться для каждой системы в "
-"качестве миниатюры.\n"
+msgstr "Выберете типы изображений которые будут использоваться для каждой системы в качестве миниатюры.\n"
 "Встроенные изображения находятся внутри РОМ файла.\n"
-"Внешние изображения загружаются из внешнего источника.\n"
-"\n"
-"1 = наивысший приоритет; 2 = второй после наивысшего; Выкл. = не "
-"использовать этот тип"
+"Внешние изображения загружаются из внешнего источника.\n\n"
+"1 = наивысший приоритет; 2 = второй после наивысшего; Выкл. = не использовать этот тип"
 
 #: ../build/src/kde/kf5/ui_KeyManagerTab.h:90
 #: ../src/kde/config/KeyManagerTab.cpp:323
@@ -237,9 +193,7 @@ msgstr ""
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:224
 #: ../src/gtk/xattr/LinuxAttrView.c:152
 msgctxt "LinuxAttrView"
-msgid ""
-"Directory will be treated like a top-level directory by the ext3/ext4 Orlov "
-"block allocator."
+msgid "Directory will be treated like a top-level directory by the ext3/ext4 Orlov block allocator."
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:226
@@ -407,9 +361,7 @@ msgstr ""
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:280
 #: ../src/gtk/xattr/LinuxAttrView.c:155
 msgctxt "LinuxAttrView"
-msgid ""
-"File's contents will be saved when deleted, potentially allowing for "
-"undeletion. This is known to be broken."
+msgid "File's contents will be saved when deleted, potentially allowing for undeletion. This is known to be broken."
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:282
@@ -469,9 +421,7 @@ msgstr ""
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:300
 #: ../src/gtk/xattr/LinuxAttrView.c:149
 msgctxt "LinuxAttrView"
-msgid ""
-"If the file system supports tail merging, this file will not have a partial "
-"block fragment at the end of the file merged with other files."
+msgid "If the file system supports tail merging, this file will not have a partial block fragment at the end of the file merged with other files."
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:302
@@ -506,8 +456,7 @@ msgstr ""
 #: ../build/src/kde/kf5/ui_OptionsTab.h:179
 #: ../src/gtk/config/OptionsTab.cpp:149
 msgctxt "OptionsTab"
-msgid ""
-"When using an unlimited\n"
+msgid "When using an unlimited\n"
 "network connection:"
 msgstr ""
 
@@ -535,8 +484,7 @@ msgstr ""
 #: ../build/src/kde/kf5/ui_OptionsTab.h:185
 #: ../src/gtk/config/OptionsTab.cpp:151
 msgctxt "OptionsTab"
-msgid ""
-"When using a metered\n"
+msgid "When using a metered\n"
 "network connection:"
 msgstr ""
 
@@ -544,15 +492,12 @@ msgstr ""
 #: ../src/gtk/config/OptionsTab.cpp:225
 msgctxt "OptionsTab"
 msgid "Always use the internal icon (if present) for small sizes."
-msgstr ""
-"Всегда использовать встроенную иконку (если присутствует) для небольших "
-"размеров."
+msgstr "Всегда использовать встроенную иконку (если присутствует) для небольших размеров."
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:192
 #: ../src/gtk/config/OptionsTab.cpp:228
 msgctxt "OptionsTab"
-msgid ""
-"Store cached file origin information using extended attributes.\n"
+msgid "Store cached file origin information using extended attributes.\n"
 "This helps to identify where cached files were downloaded from."
 msgstr ""
 
@@ -570,16 +515,14 @@ msgstr ""
 #: ../build/src/kde/kf5/ui_OptionsTab.h:196
 #: ../src/gtk/config/OptionsTab.cpp:261
 msgctxt "OptionsTab"
-msgid ""
-"Show a security overlay icon for ROM images with\n"
+msgid "Show a security overlay icon for ROM images with\n"
 "\"dangerous\" permissions."
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:198
 #: ../src/gtk/config/OptionsTab.cpp:264
 msgctxt "OptionsTab"
-msgid ""
-"Enable thumbnailing and metadata extraction on network\n"
+msgid "Enable thumbnailing and metadata extraction on network\n"
 "file systems. This may slow down file browsing."
 msgstr ""
 
@@ -654,17 +597,15 @@ msgstr ""
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:102
 #: ../src/gtk/xattr/XAttrView.cpp:162
-#, fuzzy
 msgctxt "XAttrView"
 msgid "Value"
-msgstr "Значение"
+msgstr ""
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:103
 #: ../src/gtk/xattr/XAttrView.cpp:161
-#, fuzzy
 msgctxt "XAttrView"
 msgid "Name"
-msgstr "Назавние"
+msgstr ""
 
 #: ../src/gtk/AchGDBus.cpp:267 ../src/kde/AchQtDBus.cpp:298
 #: ../src/win32/AchWin32.cpp:393
@@ -675,11 +616,9 @@ msgstr ""
 #. tr: Uses Pango's HTML subset for formatting.
 #: ../src/gtk/config/AboutTab.cpp:449
 msgctxt "AboutTab"
-msgid ""
-"<b>ROM Properties Page</b>\n"
+msgid "<b>ROM Properties Page</b>\n"
 "Shell Extension"
-msgstr ""
-"Расширение оболочки\n"
+msgstr "Расширение оболочки\n"
 "<b>ROM Properties Page</b>"
 
 #: ../src/gtk/config/AboutTab.cpp:451 ../src/kde/config/AboutTab.cpp:173
@@ -693,7 +632,7 @@ msgstr "Версия %s"
 #: ../src/win32/config/AboutTab.cpp:844
 msgctxt "AboutTabl|Credits"
 msgid "GNU GPL v2"
-msgstr "GNU GPL v2"
+msgstr ""
 
 #. tr: %s is the name of the license.
 #: ../src/gtk/config/AboutTab.cpp:485 ../src/kde/config/AboutTab.cpp:205
@@ -701,9 +640,7 @@ msgstr "GNU GPL v2"
 #, c-format
 msgctxt "AboutTab|Credits"
 msgid "This program is licensed under the %s or later."
-msgstr ""
-"Эта программа распространяется под лицензией %s или любой более поздней "
-"версией."
+msgstr "Эта программа распространяется под лицензией %s или любой более поздней версией."
 
 #: ../src/gtk/config/AboutTab.cpp:500 ../src/kde/config/AboutTab.cpp:220
 #: ../src/win32/config/AboutTab.cpp:862
@@ -711,7 +648,6 @@ msgctxt "AboutTab|Credits"
 msgid "Developers:"
 msgstr "Разработчики:"
 
-# Anglicism, but there's no substitute. I spent a couple of years looking for one. :V
 #: ../src/gtk/config/AboutTab.cpp:503 ../src/kde/config/AboutTab.cpp:223
 #: ../src/win32/config/AboutTab.cpp:865
 msgctxt "AboutTab|Credits"
@@ -730,7 +666,7 @@ msgstr "Переводчики:"
 #, c-format
 msgctxt "AboutTab|Credits"
 msgid " (%s)"
-msgstr " (%s)"
+msgstr ""
 
 #. tr: Using an internal copy of a library.
 #: ../src/gtk/config/AboutTab.cpp:561 ../src/kde/config/AboutTab.cpp:279
@@ -862,8 +798,7 @@ msgstr ""
 
 #: ../src/gtk/config/CacheTab.cpp:156
 msgctxt "CacheTab"
-msgid ""
-"If any image type settings were changed, you will need\n"
+msgid "If any image type settings were changed, you will need\n"
 "to clear the system thumbnail cache."
 msgstr ""
 
@@ -960,18 +895,11 @@ msgstr "Выкл"
 #: ../src/gtk/config/ImageTypesTab.cpp:480
 #: ../src/kde/config/ImageTypesTab.cpp:356
 #: ../src/win32/config/ImageTypesTab.cpp:508
-#, fuzzy
 msgctxt "ImageTypesTab"
-msgid ""
-"GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\n"
+msgid "GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\n"
 "are provided by <a href=\"https://www.gametdb.com/\">GameTDB</a>.\n"
-"amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</"
-"a>, the Unofficial amiibo Database."
+"amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</a>, the Unofficial amiibo Database."
 msgstr ""
-"Внешние изображения для GameCube, Wii, Wii U, Nintendo DS и Nintendo 3DS\n"
-"предоставлены сайтом<a href=\"https://www.gametdb.com/\">GameTDB</a>.\n"
-"Внешние изображения amiibo предоставлены сайтом <a href=\"https://amiibo."
-"life/\">amiibo.life</a>."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:29
 #: ../src/win32/config/KeyManagerTab.cpp:1723
@@ -1103,22 +1031,18 @@ msgstr ""
 #: ../src/kde/config/KeyManagerTab.cpp:146
 #: ../src/win32/config/KeyManagerTab.cpp:1455
 msgctxt "KeyManagerTab"
-msgid ""
-"An invalid parameter was passed to the key importer.\n"
+msgid "An invalid parameter was passed to the key importer.\n"
 "THIS IS A BUG; please report this to the developers!"
-msgstr ""
-"Неправильный параметр был передан в импортер ключей.\n"
+msgstr "Неправильный параметр был передан в импортер ключей.\n"
 "ЭТО БАГ; пожалуйста сообщите об этом разработчикам!"
 
 #: ../src/gtk/config/KeyManagerTab.cpp:694
 #: ../src/kde/config/KeyManagerTab.cpp:154
 #: ../src/win32/config/KeyManagerTab.cpp:1462
 msgctxt "KeyManagerTab"
-msgid ""
-"An unknown key ID was passed to the key importer.\n"
+msgid "An unknown key ID was passed to the key importer.\n"
 "THIS IS A BUG; please report this to the developers!"
-msgstr ""
-"Неправильный параметр был передан в импортер ключей.\n"
+msgstr "Неправильный параметр был передан в импортер ключей.\n"
 "ЭТО БАГ; пожалуйста сообщите об этом разработчикам!"
 
 #: ../src/gtk/config/KeyManagerTab.cpp:703
@@ -1179,6 +1103,7 @@ msgid_plural "%1$s keys were imported from '%2$s'."
 msgstr[0] "%1$s ключ был импортирован из '%2$s'."
 msgstr[1] "%1$s ключа был импортированы из '%2$s'."
 msgstr[2] "%1$s ключей был импортированы из '%2$s'."
+msgstr[3] ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:774
 #: ../src/kde/config/KeyManagerTab.cpp:239
@@ -1190,6 +1115,7 @@ msgid_plural "%s keys already exist in the Key Manager."
 msgstr[0] "%s ключ уже существует в менеджере ключей."
 msgstr[1] "%s ключа уже существуют в менеджере ключей."
 msgstr[2] "%s ключей уже существуют в менеджере ключей."
+msgstr[3] ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:783
 #: ../src/kde/config/KeyManagerTab.cpp:248
@@ -1201,6 +1127,7 @@ msgid_plural "%s keys were not imported because they are incorrect."
 msgstr[0] "%s ключ не был импортирован, т.к. он не является правильным."
 msgstr[1] "%s ключа не были импортированы, т.к. они не являются правильными."
 msgstr[2] "%s ключей не были импортированы, т.к. они не являются правильными."
+msgstr[3] ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:792
 #: ../src/kde/config/KeyManagerTab.cpp:257
@@ -1208,35 +1135,23 @@ msgstr[2] "%s ключей не были импортированы, т.к. он
 #, c-format
 msgctxt "KeyManagerTab"
 msgid "%s key was not imported because it isn't used by rom-properties."
-msgid_plural ""
-"%s keys were not imported because they aren't used by rom-properties."
-msgstr[0] ""
-"%s ключ не был импортирован, т.к. он не используется rom-properties."
-msgstr[1] ""
-"%s ключа не были импортированы, т.к. они не используются rom-properties."
-msgstr[2] ""
-"%s ключей не были импортированы, т.к. они не используются rom-properties."
+msgid_plural "%s keys were not imported because they aren't used by rom-properties."
+msgstr[0] "%s ключ не был импортирован, т.к. он не используется rom-properties."
+msgstr[1] "%s ключа не были импортированы, т.к. они не используются rom-properties."
+msgstr[2] "%s ключей не были импортированы, т.к. они не используются rom-properties."
+msgstr[3] ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:801
 #: ../src/kde/config/KeyManagerTab.cpp:266
 #: ../src/win32/config/KeyManagerTab.cpp:1584
 #, c-format
 msgctxt "KeyManagerTab"
-msgid ""
-"%s key was not imported because it is encrypted and the master key isn't "
-"available."
-msgid_plural ""
-"%s keys were not imported because they are encrypted and the master key "
-"isn't available."
-msgstr[0] ""
-"%s зашифрованный ключ не был импортирован из-за отсутствия ключа для "
-"расшифрования."
-msgstr[1] ""
-"%s зашифрованных ключа не были импортированы из-за отсутствия ключа для "
-"расшифрования."
-msgstr[2] ""
-"%s зашифрованных ключей не были импортированы из-за отсутствия ключа для "
-"расшифрования."
+msgid "%s key was not imported because it is encrypted and the master key isn't available."
+msgid_plural "%s keys were not imported because they are encrypted and the master key isn't available."
+msgstr[0] "%s зашифрованный ключ не был импортирован из-за отсутствия ключа для расшифрования."
+msgstr[1] "%s зашифрованных ключа не были импортированы из-за отсутствия ключа для расшифрования."
+msgstr[2] "%s зашифрованных ключей не были импортированы из-за отсутствия ключа для расшифрования."
+msgstr[3] ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:810
 #: ../src/kde/config/KeyManagerTab.cpp:275
@@ -1248,6 +1163,7 @@ msgid_plural "%s keys have been imported and verified as correct."
 msgstr[0] "%s ключ был импортирован и проверен на корректность."
 msgstr[1] "%s ключа был импортированы и проверены на корректность."
 msgstr[2] "%s ключей был импортированы и проверены на корректность."
+msgstr[3] ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:818
 #: ../src/kde/config/KeyManagerTab.cpp:283
@@ -1259,6 +1175,7 @@ msgid_plural "%s keys have been imported without verification."
 msgstr[0] "%s ключ был импортирован без проверки."
 msgstr[1] "%s ключа был импортированы без проверки."
 msgstr[2] "%s ключей был импортированы без проверки."
+msgstr[3] ""
 
 #: ../src/gtk/config/OptionsTab.cpp:124
 msgctxt "OptionsTab"
@@ -1278,8 +1195,7 @@ msgstr ""
 
 #: ../src/gtk/config/SystemsTab.cpp:114
 msgctxt "SystemsTab"
-msgid ""
-"Select the Game Boy model to use for title screens for different types of\n"
+msgid "Select the Game Boy model to use for title screens for different types of\n"
 "Game Boy ROM images."
 msgstr ""
 
@@ -1328,6 +1244,7 @@ msgid_plural "Convert the selected texture files to PNG format."
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 #. tr: Tab title.
 #. tr: RomDataView tab title
@@ -1339,7 +1256,7 @@ msgstr[2] ""
 #: ../src/win32/RP_ShellPropSheetExt.cpp:2317
 msgctxt "RomDataView"
 msgid "ROM Properties"
-msgstr "ROM Properties"
+msgstr ""
 
 #. tr: Invalid date/time.
 #. tr: Invalid date/time
@@ -1379,7 +1296,7 @@ msgstr ""
 #, c-format
 msgctxt "RomDataView"
 msgid "%1$s | %2$s"
-msgstr "%1$s | %2$s"
+msgstr ""
 
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:224
 msgctxt "RomDataView"
@@ -1421,8 +1338,7 @@ msgstr ""
 #: ../src/win32/RP_ShellPropSheetExt.cpp:252
 #, c-format
 msgctxt "RomDataView"
-msgid ""
-"%1$s\n"
+msgid "%1$s\n"
 "%2$s"
 msgstr ""
 
@@ -1432,7 +1348,7 @@ msgstr ""
 #, c-format
 msgctxt "RomDataView"
 msgid "%s:"
-msgstr "%s:"
+msgstr ""
 
 #: ../src/gtk/RomDataView_ops.cpp:279 ../src/gtk/RomDataView_ops.cpp:428
 #: ../src/kde/RomDataView_ops.cpp:198 ../src/kde/RomDataView_ops.cpp:264
@@ -1493,10 +1409,9 @@ msgid "Archive"
 msgstr ""
 
 #: ../src/gtk/xattr/DosAttrView.c:126
-#, fuzzy
 msgctxt "DosAttrView"
 msgid "System"
-msgstr "Система"
+msgstr ""
 
 #: ../src/gtk/xattr/DosAttrView.c:148
 msgctxt "DosAttrView"
@@ -1993,10 +1908,9 @@ msgid "Author"
 msgstr ""
 
 #: ../src/libromdata/Audio/SAP.cpp:581 ../src/libromdata/Audio/SNDH.cpp:795
-#, fuzzy
 msgctxt "RomData|Audio"
 msgid "Song Title"
-msgstr "Название"
+msgstr ""
 
 #: ../src/libromdata/Audio/SAP.cpp:586
 msgctxt "SAP"
@@ -2166,10 +2080,9 @@ msgid "Subtune List"
 msgstr ""
 
 #: ../src/libromdata/Audio/SPC.cpp:647
-#, fuzzy
 msgctxt "RomData|Audio"
 msgid "Song Name"
-msgstr "Назавние"
+msgstr ""
 
 #: ../src/libromdata/Audio/SPC.cpp:657
 msgctxt "SPC"
@@ -2211,11 +2124,6 @@ msgctxt "SPC"
 msgid "OST Title"
 msgstr ""
 
-# There's two ways "Disc #: %d" can be parsed.
-# (1) "number of the disс is %d" (NP is N)
-# (2) "disс number %d" (NP)
-# The meaning is the same in this context, but I decided to go with (2), because it sounds more concise.
-# (1) can be translated as "Номер диска" or "№ диска".
 #: ../src/libromdata/Audio/SPC.cpp:763
 msgctxt "SPC"
 msgid "OST Disc #"
@@ -2311,7 +2219,6 @@ msgctxt "VGM|PSGFlags"
 msgid "Freq 0 is 0x400"
 msgstr ""
 
-# bad style?
 #: ../src/libromdata/Audio/VGM.cpp:497
 msgctxt "VGM|PSGFlags"
 msgid "Output Negate"
@@ -2383,120 +2290,79 @@ msgstr ""
 
 #. tr: IMG_INT_ICON
 #: ../src/libromdata/config/ImageTypesConfig.cpp:97
-#, fuzzy
 msgctxt "ImageTypesConfig|ImageTypeDisp"
-msgid ""
-"Internal\n"
+msgid "Internal\n"
 "Icon"
 msgstr ""
-"Встроенная\n"
-"иконка"
 
 #. tr: IMG_INT_BANNER
 #: ../src/libromdata/config/ImageTypesConfig.cpp:99
-#, fuzzy
 msgctxt "ImageTypesConfig|ImageTypeDisp"
-msgid ""
-"Internal\n"
+msgid "Internal\n"
 "Banner"
 msgstr ""
-"Встроенный\n"
-"баннер"
 
 #. tr: IMG_INT_MEDIA
 #: ../src/libromdata/config/ImageTypesConfig.cpp:101
-#, fuzzy
 msgctxt "ImageTypesConfig|ImageTypeDisp"
-msgid ""
-"Internal\n"
+msgid "Internal\n"
 "Media"
 msgstr ""
-"Встроенный\n"
-"носитель"
 
 #. tr: IMG_INT_IMAGE
 #: ../src/libromdata/config/ImageTypesConfig.cpp:103
-#, fuzzy
 msgctxt "ImageTypesConfig|ImageTypeDisp"
-msgid ""
-"Internal\n"
+msgid "Internal\n"
 "Image"
 msgstr ""
-"Встроенное\n"
-"изображение"
 
 #. tr: IMG_EXT_MEDIA
 #: ../src/libromdata/config/ImageTypesConfig.cpp:108
-#, fuzzy
 msgctxt "ImageTypesConfig|ImageTypeDisp"
-msgid ""
-"External\n"
+msgid "External\n"
 "Media"
 msgstr ""
-"Внешний\n"
-"носитель"
 
 #. tr: IMG_EXT_COVER
 #: ../src/libromdata/config/ImageTypesConfig.cpp:110
-#, fuzzy
 msgctxt "ImageTypesConfig|ImageTypeDisp"
-msgid ""
-"External\n"
+msgid "External\n"
 "Cover"
 msgstr ""
-"Внешняя\n"
-"обложка"
 
 #. tr: IMG_EXT_COVER_3D
 #: ../src/libromdata/config/ImageTypesConfig.cpp:112
-#, fuzzy
 msgctxt "ImageTypesConfig|ImageTypeDisp"
-msgid ""
-"External\n"
+msgid "External\n"
 "3D Cover"
 msgstr ""
-"Внешняя\n"
-"3D обложка"
 
 #. tr: IMG_EXT_COVER_FULL
 #: ../src/libromdata/config/ImageTypesConfig.cpp:114
-#, fuzzy
 msgctxt "ImageTypesConfig|ImageTypeDisp"
-msgid ""
-"External\n"
+msgid "External\n"
 "Full Cover"
 msgstr ""
-"Внешний\n"
-"разворот"
 
 #. tr: IMG_EXT_BOX
 #: ../src/libromdata/config/ImageTypesConfig.cpp:116
-#, fuzzy
 msgctxt "ImageTypesConfig|ImageTypeDisp"
-msgid ""
-"External\n"
+msgid "External\n"
 "Box"
 msgstr ""
-"Внешняя\n"
-"упаковка"
 
 #. tr: IMG_EXT_TITLE_SCREEN
 #: ../src/libromdata/config/ImageTypesConfig.cpp:118
-#, fuzzy
 msgctxt "ImageTypesConfig|ImageTypeDisp"
-msgid ""
-"External\n"
+msgid "External\n"
 "Title Screen"
 msgstr ""
-"Внешняя\n"
-"обложка"
 
 #. tr: amiibo
 #: ../src/libromdata/config/ImageTypesConfig.cpp:148
-#, fuzzy
 msgctxt "ImageTypesConfig|SysName"
 msgid "amiibo"
-msgstr "amiibo"
+msgstr ""
 
 #. tr: NintendoBadge
 #: ../src/libromdata/config/ImageTypesConfig.cpp:150
@@ -2506,59 +2372,51 @@ msgstr ""
 
 #. tr: DreamcastSave
 #: ../src/libromdata/config/ImageTypesConfig.cpp:152
-#, fuzzy
 msgctxt "ImageTypesConfig|SysName"
 msgid "Dreamcast Saves"
-msgstr "Сохранения Dreamcast"
+msgstr ""
 
 #. tr: GameCube
 #: ../src/libromdata/config/ImageTypesConfig.cpp:154
-#, fuzzy
 msgctxt "ImageTypesConfig|SysName"
 msgid "GameCube / Wii"
-msgstr "GameCube / Wii"
+msgstr ""
 
 #. tr: GameCubeSave
 #: ../src/libromdata/config/ImageTypesConfig.cpp:156
-#, fuzzy
 msgctxt "ImageTypesConfig|SysName"
 msgid "GameCube Saves"
-msgstr "Сохранения GameCube"
+msgstr ""
 
 #. tr: NintendoDS
 #: ../src/libromdata/config/ImageTypesConfig.cpp:158
-#, fuzzy
 msgctxt "ImageTypesConfig|SysName"
 msgid "Nintendo DS(i)"
-msgstr "Nintendo DS(i)"
+msgstr ""
 
 #. tr: Nintendo3DS
 #: ../src/libromdata/config/ImageTypesConfig.cpp:160
-#, fuzzy
 msgctxt "ImageTypesConfig|SysName"
 msgid "Nintendo 3DS"
-msgstr "Nintendo 3DS"
+msgstr ""
 
 #. tr: PlayStationDisc (PS1 and PS2)
 #: ../src/libromdata/config/ImageTypesConfig.cpp:162
-#, fuzzy
 msgctxt "ImageTypesConfig|SysName"
 msgid "PlayStation 1 & 2"
-msgstr "PlayStation 1 & 2"
+msgstr ""
 
 #. tr: PlayStationSave
 #: ../src/libromdata/config/ImageTypesConfig.cpp:164
-#, fuzzy
 msgctxt "ImageTypesConfig|SysName"
 msgid "PlayStation Saves"
-msgstr "Сохранения PlayStation"
+msgstr ""
 
 #. tr: WiiU
 #: ../src/libromdata/config/ImageTypesConfig.cpp:166
-#, fuzzy
 msgctxt "ImageTypesConfig|SysName"
 msgid "Wii U"
-msgstr "Wii U"
+msgstr ""
 
 #. tr: WiiWAD
 #: ../src/libromdata/config/ImageTypesConfig.cpp:168
@@ -2662,7 +2520,7 @@ msgstr "Тип"
 #: ../src/libromdata/Console/Dreamcast.cpp:612
 msgctxt "Dreamcast"
 msgid "Dreamcast"
-msgstr "Dreamcast"
+msgstr ""
 
 #: ../src/libromdata/Console/Dreamcast.cpp:620
 #: ../src/libromdata/Console/GameCube.cpp:1539
@@ -2690,11 +2548,6 @@ msgctxt "Dreamcast"
 msgid "Product #"
 msgstr ""
 
-# There's two ways "Disc #: %d" can be parsed.
-# (1) "number of the disс is %d" (NP is N)
-# (2) "disс number %d" (NP)
-# The meaning is the same in this context, but I decided to go with (2), because it sounds more concise.
-# (1) can be translated as "Номер диска" or "№ диска".
 #: ../src/libromdata/Console/Dreamcast.cpp:645
 #: ../src/libromdata/Console/GameCube.cpp:1542
 #: ../src/libromdata/Console/SegaSaturn.cpp:552
@@ -3142,10 +2995,9 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1038
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:357
 #: ../src/libromdata/Handheld/WonderSwan.cpp:458
-#, fuzzy
 msgctxt "RomData"
 msgid "Revision"
-msgstr "Ревизия"
+msgstr ""
 
 #. tr: %1%s == full region name, %2$s == abbreviation
 #: ../src/libromdata/Console/GameCube.cpp:1576
@@ -3153,7 +3005,7 @@ msgstr "Ревизия"
 #, c-format
 msgctxt "Wii"
 msgid "%1$s (%2$s)"
-msgstr "%1$s (%2$s)"
+msgstr ""
 
 #: ../src/libromdata/Console/GameCube.cpp:1585
 #: ../src/libromdata/Console/SNES.cpp:1471
@@ -3299,10 +3151,9 @@ msgstr ""
 
 #. tr: Unknown used size.
 #: ../src/libromdata/Console/GameCube.cpp:1945
-#, fuzzy
 msgctxt "Wii|Partition"
 msgid "Unknown"
-msgstr "Неизвестно"
+msgstr ""
 
 #. tr: Partition number.
 #: ../src/libromdata/Console/GameCube.cpp:1955
@@ -3312,10 +3163,9 @@ msgstr "№"
 
 #. tr: Partition type.
 #: ../src/libromdata/Console/GameCube.cpp:1957
-#, fuzzy
 msgctxt "Wii|Partition"
 msgid "Type"
-msgstr "Тип"
+msgstr ""
 
 #. tr: Encryption key.
 #: ../src/libromdata/Console/GameCube.cpp:1959
@@ -3710,11 +3560,6 @@ msgctxt "N64"
 msgid "CRCs"
 msgstr ""
 
-# there's a synonym/paronym (depending on who you ask) "архаический".
-# I chose "архаичный" because it sounds more concise and formal (I've seen someone claim the opposite, that архаичный is informal)
-# It also matches the paronyms definition:
-# архаический - characteristic of antiquity
-# архаичный - out of use, not in accordance with new views, rules
 #: ../src/libromdata/Console/NES.cpp:1032
 msgctxt "NES|Format"
 msgid "Archaic iNES"
@@ -4296,7 +4141,7 @@ msgstr ""
 #: ../src/libromdata/Console/Sega8Bit.cpp:400
 msgctxt "Sega8Bit|SysID"
 msgid "Sega Master System"
-msgstr "Sega Master System"
+msgstr ""
 
 #. tr: Any region that isn't Japan. (used for Sega 8-bit)
 #: ../src/libromdata/Console/Sega8Bit.cpp:402
@@ -4310,7 +4155,7 @@ msgstr ""
 #: ../src/libromdata/Console/Sega8Bit.cpp:414
 msgctxt "Sega8Bit|SysID"
 msgid "Game Gear"
-msgstr "Game Gear"
+msgstr ""
 
 #. tr: Effectively region-free.
 #: ../src/libromdata/Console/Sega8Bit.cpp:416
@@ -4565,16 +4410,14 @@ msgid "Features"
 msgstr ""
 
 #: ../src/libromdata/Console/SufamiTurbo.cpp:392
-#, fuzzy
 msgctxt "SufamiTurbo"
 msgid "ROM Size"
-msgstr "Размер ПЗУ"
+msgstr ""
 
 #: ../src/libromdata/Console/SufamiTurbo.cpp:396
-#, fuzzy
 msgctxt "SufamiTurbo"
 msgid "SRAM Size"
-msgstr "Размер ОЗУ"
+msgstr ""
 
 #: ../src/libromdata/Console/WiiSave.cpp:459
 msgctxt "WiiSave"
@@ -4685,9 +4528,7 @@ msgstr ""
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:50
 msgctxt "WiiWAD|RomOps"
-msgid ""
-"Nintendo DS SRL Files|*.nds;*.srl|application/x-nintendo-ds-rom;application/"
-"x-nintendo-dsi-rom"
+msgid "Nintendo DS SRL Files|*.nds;*.srl|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom"
 msgstr ""
 
 #: ../src/libromdata/Console/WiiWAD_ops.cpp:74
@@ -4748,10 +4589,9 @@ msgid "SRL extraction is not supported in NoCrypto builds."
 msgstr "Расшифрование не поддерживается в этой сборке."
 
 #: ../src/libromdata/Console/WiiWIBN.cpp:471
-#, fuzzy
 msgctxt "WiiWIBN"
 msgid "Title"
-msgstr "Название"
+msgstr ""
 
 #: ../src/libromdata/Console/WiiWIBN.cpp:479
 msgctxt "WiiWIBN"
@@ -4789,10 +4629,9 @@ msgid "Package Type"
 msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:942
-#, fuzzy
 msgctxt "Xbox360_STFS|RomData"
 msgid "Type"
-msgstr "Тип"
+msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:950
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:952
@@ -4819,10 +4658,9 @@ msgid "%1$08X (%2$s-%3$04u)"
 msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:996
-#, fuzzy
 msgctxt "Xbox360_XEX"
 msgid "Version"
-msgstr "Версия"
+msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1002
 msgctxt "Xbox360_XEX"
@@ -4830,10 +4668,9 @@ msgid "Base Version"
 msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1013
-#, fuzzy
 msgctxt "Xbox360_XEX"
 msgid "Console ID"
-msgstr "Консоль"
+msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1020
 msgctxt "Xbox360_XEX"
@@ -4851,10 +4688,9 @@ msgid "Retail"
 msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1037
-#, fuzzy
 msgctxt "Xbox360_XEX"
 msgid "Console Type"
-msgstr "Консоль"
+msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:845
 msgctxt "Xbox360_XDBF|TitleType"
@@ -5296,7 +5132,6 @@ msgctxt "KeyStoreUI|Section"
 msgid "Nintendo Wii AES Keys"
 msgstr "Ключи AES для Nintendo Wii"
 
-# Anglicism, but wikipedia has a page on it.
 #: ../src/libromdata/crypto/KeyStoreUI.cpp:880
 msgctxt "KeyStoreUI|Section"
 msgid "Nintendo 3DS Key Scrambler Constants"
@@ -5517,10 +5352,9 @@ msgid "amiibo Settings"
 msgstr ""
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:25
-#, fuzzy
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Saved Game"
-msgstr "Файл сохранения"
+msgstr ""
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:26
 msgctxt "Xbox360_STFS|ContentType"
@@ -5643,10 +5477,9 @@ msgid "Music Video"
 msgstr ""
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:53
-#, fuzzy
 msgctxt "Xbox360_STFS|ContentType"
 msgid "Game Video"
-msgstr "Game Gear"
+msgstr ""
 
 #: ../src/libromdata/data/Xbox360_STFS_ContentType.cpp:54
 msgctxt "Xbox360_STFS|ContentType"
@@ -5695,13 +5528,11 @@ msgctxt "DMG|Features"
 msgid "Timer"
 msgstr "Таймер"
 
-# not sure if correct term
 #: ../src/libromdata/Handheld/DMG.cpp:908
 #: ../src/libromdata/Handheld/DMG.cpp:1104
-#, fuzzy
 msgctxt "DMG|Features"
 msgid "Rumble"
-msgstr "Виброотдача"
+msgstr ""
 
 #: ../src/libromdata/Handheld/DMG.cpp:909
 msgctxt "DMG|Features"
@@ -5734,6 +5565,7 @@ msgid_plural "%1$u KiB (%2$u banks)"
 msgstr[0] "%1$u КиБ (%2$u банк)"
 msgstr[1] "%1$u КиБ (%2$u банка)"
 msgstr[2] "%1$u КиБ (%2$u банков)"
+msgstr[3] ""
 
 #: ../src/libromdata/Handheld/DMG.cpp:930
 #: ../src/libromdata/Handheld/DMG.cpp:957
@@ -6247,9 +6079,7 @@ msgstr ""
 
 #: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:50
 msgctxt "Nintendo3DS|RomOps"
-msgid ""
-"Nintendo DS SRL Files|*.nds;*.srl|application/x-nintendo-ds-rom;application/"
-"x-nintendo-dsi-rom"
+msgid "Nintendo DS SRL Files|*.nds;*.srl|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom"
 msgstr ""
 
 #: ../src/libromdata/Handheld/Nintendo3DS_ops.cpp:101
@@ -6486,10 +6316,9 @@ msgid "Game Card Power On"
 msgstr ""
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1253
-#, fuzzy
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "Shared2 File"
-msgstr "Файл сохранения"
+msgstr ""
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1254
 msgctxt "NintendoDS|DSi_Permissions"
@@ -6697,6 +6526,7 @@ msgid_plural "Secure Areas encrypted successfully."
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:582
 msgctxt "NintendoDS"
@@ -6705,6 +6535,7 @@ msgid_plural "Secure Areas decrypted successfully."
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 #: ../src/libromdata/Handheld/PokemonMini.cpp:311
 msgctxt "RomData|VectorTable"
@@ -6722,16 +6553,14 @@ msgid "None"
 msgstr ""
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:477
-#, fuzzy
 msgctxt "WonderSwan"
 msgid "System"
-msgstr "Система"
+msgstr ""
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:486
-#, fuzzy
 msgctxt "WonderSwan"
 msgid "ROM Size"
-msgstr "Размер ПЗУ"
+msgstr ""
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:499
 msgctxt "WonderSwan"
@@ -6896,8 +6725,7 @@ msgstr ""
 #: ../src/libromdata/Other/Amiibo.cpp:446
 #, c-format
 msgctxt "Amiibo"
-msgid ""
-"amiibo images provided by %s,\n"
+msgid "amiibo images provided by %s,\n"
 "the Unofficial amiibo Database."
 msgstr ""
 
@@ -7577,7 +7405,7 @@ msgstr "Архитектура ЦП"
 #: ../src/libromdata/Other/EXE_manifest.cpp:241
 msgctxt "EXE|Manifest"
 msgid "publicKeyToken"
-msgstr "publicKeyToken"
+msgstr ""
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:245
 msgctxt "EXE|Manifest"
@@ -7954,7 +7782,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:644
 msgctxt "EXE|Subsystem"
 msgid "Windows"
-msgstr "Windows"
+msgstr ""
 
 #. tr: IMAGE_SUBSYSTEM_WINDOWS_CUI
 #: ../src/libromdata/Other/EXE_PE.cpp:646
@@ -7984,7 +7812,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:658
 msgctxt "EXE|Subsystem"
 msgid "Windows CE"
-msgstr "Windows CE"
+msgstr ""
 
 #. tr: IMAGE_SUBSYSTEM_EFI_APPLICATION
 #: ../src/libromdata/Other/EXE_PE.cpp:660
@@ -8014,7 +7842,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:668
 msgctxt "EXE|Subsystem"
 msgid "Xbox"
-msgstr "Xbox"
+msgstr ""
 
 #: ../src/libromdata/Other/EXE_PE.cpp:689
 msgctxt "EXE"
@@ -8170,10 +7998,9 @@ msgid "Data Preparer"
 msgstr ""
 
 #: ../src/libromdata/Other/ISO.cpp:474
-#, fuzzy
 msgctxt "ISO"
 msgid "Application"
-msgstr "Приложение"
+msgstr ""
 
 #: ../src/libromdata/Other/ISO.cpp:479
 msgctxt "ISO"
@@ -8435,6 +8262,7 @@ msgid_plural "%s directories"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 #. tr: Parameter is a number; it's formatted elsewhere.
 #: ../src/libromdata/tests/disc/FstPrint.cpp:230
@@ -8445,6 +8273,7 @@ msgid_plural "%s files"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 #: ../src/libromdata/tests/disc/GcnFstPrint.cpp:63
 #, c-format
@@ -8464,7 +8293,6 @@ msgctxt "GcnFstPrint"
 msgid "Invalid offset shift '%s' specified."
 msgstr ""
 
-# bad style?
 #. tr: %1$s == filename, %2$s == error message
 #: ../src/libromdata/tests/disc/GcnFstPrint.cpp:87
 #, c-format
@@ -8651,7 +8479,6 @@ msgctxt "RomData|FileType"
 msgid "NFC Dump"
 msgstr ""
 
-# Translated as "diskette" for now. Gerbil says it's supposed to be both Floppy and HDD, but right now only FDS uses it.
 #. tr: FileType::DiskImage
 #: ../src/librpbase/RomData.cpp:569
 msgctxt "RomData|FileType"
@@ -8925,6 +8752,7 @@ msgid_plural "bytes"
 msgstr[0] "байт"
 msgstr[1] "байта"
 msgstr[2] "байтов"
+msgstr[3] ""
 
 #. tr: Kilobytes
 #: ../src/librptext/conversion.cpp:290 ../src/librptext/conversion.cpp:374
@@ -8967,7 +8795,7 @@ msgstr "ЭиБ"
 #, c-format
 msgctxt "LibRpText|FileSize"
 msgid "%1$s %2$s"
-msgstr "%1$s %2$s"
+msgstr ""
 
 #. tr: Hertz (< 1,000)
 #: ../src/librptext/conversion.cpp:392
@@ -8998,7 +8826,7 @@ msgstr ""
 #, c-format
 msgctxt "LibRpText|Frequency"
 msgid "%1$s %2$s"
-msgstr "%1$s %2$s"
+msgstr ""
 
 #: ../src/librptexture/fileformat/DidjTex.cpp:501
 msgctxt "DidjTex"
@@ -9030,10 +8858,9 @@ msgid "Luminance (%u-bit)"
 msgstr ""
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1184
-#, fuzzy
 msgctxt "FileFormat"
 msgid "Unknown"
-msgstr "Неизвестно"
+msgstr ""
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1233
 msgctxt "DirectDrawSurface"
@@ -9051,10 +8878,10 @@ msgid "DX10 Format"
 msgstr ""
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1245
-#, fuzzy, c-format
+#, c-format
 msgctxt "FileFormat"
 msgid "Unknown (0x%08X)"
-msgstr "Неизвестно (0x%08X)"
+msgstr ""
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1251
 msgctxt "DirectDrawSurface"
@@ -9338,10 +9165,9 @@ msgid "Key"
 msgstr ""
 
 #: ../src/librptexture/fileformat/KhronosKTX2.cpp:1042
-#, fuzzy
 msgctxt "KhronosKTX2|KeyValue"
 msgid "Value"
-msgstr "Значение"
+msgstr ""
 
 #: ../src/librptexture/fileformat/KhronosKTX2.cpp:1053
 msgctxt "KhronosKTX2"
@@ -9391,10 +9217,9 @@ msgid "Key/Value Data"
 msgstr ""
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1048
-#, fuzzy
 msgctxt "PowerVR3"
 msgid "Version"
-msgstr "Версия"
+msgstr ""
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1055
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1064
@@ -9511,10 +9336,9 @@ msgstr ""
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1115
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1119
-#, fuzzy
 msgctxt "PowerVR3"
 msgid "Channel Type"
-msgstr "Типы изображений"
+msgstr ""
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1124
 msgctxt "PowerVR3"
@@ -9617,10 +9441,9 @@ msgid "Software ID"
 msgstr ""
 
 #: ../src/librptexture/fileformat/TGA.cpp:889
-#, fuzzy
 msgctxt "TGA"
 msgid "Software Version"
-msgstr "Версия"
+msgstr ""
 
 #: ../src/librptexture/fileformat/TGA.cpp:897
 msgctxt "TGA"
@@ -9851,13 +9674,12 @@ msgctxt "rpcli"
 msgid "ATA %s failed: %08X"
 msgstr ""
 
-# bad style?
 #. tr: %1$s == image type name, %2$s == output filename
 #: ../src/rpcli/rpcli.cpp:145
-#, fuzzy, c-format
+#, c-format
 msgctxt "rpcli"
 msgid "Extracting %1$s into '%2$s'"
-msgstr "Извлекаем %1$s в '%2$s'"
+msgstr ""
 
 #. tr: %1$s == filename, %2%s == error message
 #: ../src/rpcli/rpcli.cpp:151 ../src/rpcli/rpcli.cpp:171
@@ -9871,12 +9693,11 @@ msgctxt "rpcli"
 msgid "Done"
 msgstr "Готово"
 
-# bad style?
 #: ../src/rpcli/rpcli.cpp:162
-#, fuzzy, c-format
+#, c-format
 msgctxt "rpcli"
 msgid "Extracting animated icon into '%s'"
-msgstr "Извлекаем анимированную иконку в '%s'"
+msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:165
 msgctxt "rpcli"
@@ -9900,13 +9721,11 @@ msgctxt "rpcli"
 msgid "Reading file '%s'..."
 msgstr ""
 
-# bad style?
 #: ../src/rpcli/rpcli.cpp:210 ../src/rpcli/rpcli.cpp:298
 #: ../src/rpcli/rpcli.cpp:329
-#, fuzzy
 msgctxt "rpcli"
 msgid "Outputting JSON data"
-msgstr "Выводим данные в JSON"
+msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:218
 msgctxt "rpcli"
@@ -9950,9 +9769,7 @@ msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:409
 msgctxt "rpcli"
-msgid ""
-"Usage: rpcli [-k] [-c] [-p] [-j] [-l lang] [[-x[b]N outfile]... [-a "
-"apngoutfile] filename]..."
+msgid "Usage: rpcli [-k] [-c] [-p] [-j] [-l lang] [[-x[b]N outfile]... [-a apngoutfile] filename]..."
 msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:410
@@ -9962,9 +9779,7 @@ msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:412
 msgctxt "rpcli"
-msgid ""
-"Usage: rpcli [-c] [-p] [-j] [-l lang] [[-x[b]N outfile]... [-a apngoutfile] "
-"filename]..."
+msgid "Usage: rpcli [-c] [-p] [-j] [-l lang] [[-x[b]N outfile]... [-a apngoutfile] filename]..."
 msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:414
@@ -10117,8 +9932,7 @@ msgstr "ОШИБКА: %s"
 
 #: ../src/rp-stub/rp-stub.c:77
 msgctxt "rp_stub"
-msgid ""
-"Shared library stub program.\n"
+msgid "Shared library stub program.\n"
 "Copyright (c) 2016-2023 by David Korth."
 msgstr ""
 
@@ -10130,10 +9944,8 @@ msgstr ""
 
 #: ../src/rp-stub/rp-stub.c:90
 msgctxt "rp-stub"
-msgid ""
-"This program is licensed under the GNU GPL v2.\n"
-"See https://www.gnu.org/licenses/old-licenses/gpl-2.0.html for more "
-"information."
+msgid "This program is licensed under the GNU GPL v2.\n"
+"See https://www.gnu.org/licenses/old-licenses/gpl-2.0.html for more information."
 msgstr ""
 
 #: ../src/rp-stub/rp-stub.c:99
@@ -10144,19 +9956,13 @@ msgstr ""
 
 #: ../src/rp-stub/rp-stub.c:103
 msgctxt "rp-stub"
-msgid ""
-"If source_file is a supported ROM image, a thumbnail is\n"
-"extracted and saved as output_file.\n"
-"\n"
+msgid "If source_file is a supported ROM image, a thumbnail is\n"
+"extracted and saved as output_file.\n\n"
 "Thumbnailing options:\n"
-"  -s, --size\t\tMaximum thumbnail size. (default is 256px) [0 for full "
-"image]\n"
-"  -a, --autoext\t\tGenerate the output filename based on the source "
-"filename.\n"
-"               \t\t(WARNING: May overwrite an existing file without "
-"prompting.)\n"
-"  -n, --noxdg\t\tDon't include XDG thumbnail metadata.\n"
-"\n"
+"  -s, --size\t\tMaximum thumbnail size. (default is 256px) [0 for full image]\n"
+"  -a, --autoext\t\tGenerate the output filename based on the source filename.\n"
+"               \t\t(WARNING: May overwrite an existing file without prompting.)\n"
+"  -n, --noxdg\t\tDon't include XDG thumbnail metadata.\n\n"
 "Other options:\n"
 "  -c, --config\t\tShow the configuration dialog instead of thumbnailing.\n"
 "  -d, --debug\t\tShow debug output when searching for rom-properties.\n"
@@ -10172,8 +9978,7 @@ msgstr ""
 
 #: ../src/rp-stub/rp-stub.c:122
 msgctxt "rp-stub"
-msgid ""
-"When invoked as rp-config, this program will open the configuration dialog\n"
+msgid "When invoked as rp-config, this program will open the configuration dialog\n"
 "using an installed plugin that most closely matches the currently running\n"
 "desktop environment."
 msgstr ""
@@ -10290,19 +10095,14 @@ msgstr ""
 #. tr: Windows Vista and later. Has a centralized thumbnails cache.
 #: ../src/win32/config/CacheTab.cpp:161
 msgctxt "CacheTab"
-msgid ""
-"If any image type settings were changed, you will need to clear the system "
-"thumbnail cache."
+msgid "If any image type settings were changed, you will need to clear the system thumbnail cache."
 msgstr ""
 
 #. tr: Windows XP or earlier. Has Thumbs.db scattered throughout the system.
 #: ../src/win32/config/CacheTab.cpp:163
 msgctxt "CacheTab"
-msgid ""
-"If any image type settings were changed, you will need to clear the "
-"thumbnail cache files.\n"
-"This version of Windows does not have a centralized thumbnail database, so "
-"it may take a while for all Thumbs.db files to be located and deleted."
+msgid "If any image type settings were changed, you will need to clear the thumbnail cache files.\n"
+"This version of Windows does not have a centralized thumbnail database, so it may take a while for all Thumbs.db files to be located and deleted."
 msgstr ""
 
 #: ../src/win32/config/CacheTab.cpp:361
@@ -10336,8 +10136,7 @@ msgstr ""
 #: ../src/win32/config/CacheTab.cpp:492
 #, c-format
 msgctxt "CacheTab|Win32"
-msgid ""
-"ERROR: IEmptyVolumeCache::Initialize() failed on drive %c. (hr == 0x%08X)"
+msgid "ERROR: IEmptyVolumeCache::Initialize() failed on drive %c. (hr == 0x%08X)"
 msgstr ""
 
 #: ../src/win32/config/CacheTab.cpp:509
@@ -10400,10 +10199,9 @@ msgstr "Менеджер ключей"
 
 #. tr: Tab title.
 #: ../src/win32/config/SystemsTab.cpp:389
-#, fuzzy
 msgctxt "SystemsTab"
 msgid "Systems"
-msgstr "Система"
+msgstr ""
 
 #: ../src/win32/config/UpdateChecker.cpp:166
 msgctxt "UpdateChecker"
@@ -10421,3 +10219,4 @@ msgstr ""
 msgctxt "RomData"
 msgid "All Files|*.*|-"
 msgstr ""
+

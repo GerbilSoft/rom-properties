@@ -5,15 +5,15 @@ msgstr ""
 "POT-Creation-Date: 2023-03-10 18:59-0500\n"
 "PO-Revision-Date: 2023-03-11 00:23\n"
 "Last-Translator: \n"
-"Language-Team: Ukrainian\n"
-"Language: uk_UA\n"
+"Language-Team: German\n"
+"Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Crowdin-Project: rom-properties\n"
 "X-Crowdin-Project-ID: 573479\n"
-"X-Crowdin-Language: uk\n"
+"X-Crowdin-Language: de\n"
 "X-Crowdin-File: /master/locale/rom-properties.pot\n"
 "X-Crowdin-File-ID: 5\n"
 
@@ -21,19 +21,19 @@ msgstr ""
 #: ../src/gtk/config/AboutTab.cpp:288
 msgctxt "AboutTab"
 msgid "C&redits"
-msgstr "&Автори"
+msgstr ""
 
 #: ../build/src/kde/kf5/ui_AboutTab.h:277
 #: ../src/gtk/config/AboutTab.cpp:292
 msgctxt "AboutTab"
 msgid "&Libraries"
-msgstr "&Бібліотеки"
+msgstr ""
 
 #: ../build/src/kde/kf5/ui_AboutTab.h:278
 #: ../src/gtk/config/AboutTab.cpp:296
 msgctxt "AboutTab"
 msgid "&Support"
-msgstr "Тех&підтримка"
+msgstr ""
 
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:51
 #: ../src/gtk/config/AchievementsTab.cpp:215
@@ -86,13 +86,13 @@ msgstr ""
 #: ../src/win32/config/ConfigDialog.cpp:242
 msgctxt "ConfigDialog"
 msgid "ROM Properties Page configuration"
-msgstr "Налаштування ROM Properties Page"
+msgstr ""
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:91
 #: ../src/gtk/config/ConfigDialog.cpp:238
 msgctxt "ConfigDialog"
 msgid "&Image Types"
-msgstr "&Типи зображень"
+msgstr ""
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:92
 #: ../src/gtk/config/ConfigDialog.cpp:239
@@ -122,7 +122,7 @@ msgstr ""
 #: ../src/gtk/config/ConfigDialog.cpp:246
 msgctxt "ConfigDialog"
 msgid "Abou&t"
-msgstr "Про програму"
+msgstr ""
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:100
 msgctxt "DosAttrView"
@@ -161,10 +161,7 @@ msgid "Select the image types you would like to use for each system as its thumb
 "Internal images are contained within the ROM file.\n"
 "External images are downloaded from an external image database.\n\n"
 "1 = highest priority; 2 = second highest priority; No = ignore"
-msgstr "Оберіть типи зображень які будуть використовуватися для кожної системи у ролі мініатюри.\n"
-"Вбудовані зображення знаходяться всередині РОМ файлу.\n"
-"Зовнішні зображення завантажуються із зовнішнього джерела\n\n"
-"1 = найвищий пріоритет; 2 = другий після найвищого; Вимк. = не використовувати цей тип"
+msgstr ""
 
 #: ../build/src/kde/kf5/ui_KeyManagerTab.h:90
 #: ../src/kde/config/KeyManagerTab.cpp:323
@@ -492,7 +489,7 @@ msgstr ""
 #: ../src/gtk/config/OptionsTab.cpp:225
 msgctxt "OptionsTab"
 msgid "Always use the internal icon (if present) for small sizes."
-msgstr "Завжди використовувати вбудовану іконку (якщо присутня) для невеликих розмірів."
+msgstr ""
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:192
 #: ../src/gtk/config/OptionsTab.cpp:228
@@ -618,15 +615,14 @@ msgstr ""
 msgctxt "AboutTab"
 msgid "<b>ROM Properties Page</b>\n"
 "Shell Extension"
-msgstr "Розширення оболонки\n"
-"<b>ROM Properties Page</b>"
+msgstr ""
 
 #: ../src/gtk/config/AboutTab.cpp:451 ../src/kde/config/AboutTab.cpp:173
 #: ../src/win32/config/AboutTab.cpp:736
 #, c-format
 msgctxt "AboutTab"
 msgid "Version %s"
-msgstr "Версія %s"
+msgstr ""
 
 #: ../src/gtk/config/AboutTab.cpp:475 ../src/kde/config/AboutTab.cpp:195
 #: ../src/win32/config/AboutTab.cpp:844
@@ -640,25 +636,25 @@ msgstr ""
 #, c-format
 msgctxt "AboutTab|Credits"
 msgid "This program is licensed under the %s or later."
-msgstr "Ця програма розповсюджується під ліцензією %s чи будь-якої пізнішої версією."
+msgstr ""
 
 #: ../src/gtk/config/AboutTab.cpp:500 ../src/kde/config/AboutTab.cpp:220
 #: ../src/win32/config/AboutTab.cpp:862
 msgctxt "AboutTab|Credits"
 msgid "Developers:"
-msgstr "Розробники:"
+msgstr ""
 
 #: ../src/gtk/config/AboutTab.cpp:503 ../src/kde/config/AboutTab.cpp:223
 #: ../src/win32/config/AboutTab.cpp:865
 msgctxt "AboutTab|Credits"
 msgid "Contributors:"
-msgstr "Контріб'ютор:"
+msgstr ""
 
 #: ../src/gtk/config/AboutTab.cpp:506 ../src/kde/config/AboutTab.cpp:226
 #: ../src/win32/config/AboutTab.cpp:868
 msgctxt "AboutTab|Credits"
 msgid "Translators:"
-msgstr "Перекладачі:"
+msgstr ""
 
 #. tr: Sub-credit.
 #: ../src/gtk/config/AboutTab.cpp:535 ../src/kde/config/AboutTab.cpp:255
@@ -674,7 +670,7 @@ msgstr ""
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "Internal copy of %s."
-msgstr "Вбудована копія бібліотеки %s."
+msgstr ""
 
 #. tr: Compiled with a specific version of an external library.
 #: ../src/gtk/config/AboutTab.cpp:563 ../src/kde/config/AboutTab.cpp:281
@@ -682,7 +678,7 @@ msgstr "Вбудована копія бібліотеки %s."
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "Compiled with %s."
-msgstr "Скомпільовано з бібліотекою %s."
+msgstr ""
 
 #. tr: Using an external library, e.g. libpcre.so
 #: ../src/gtk/config/AboutTab.cpp:565 ../src/kde/config/AboutTab.cpp:283
@@ -690,7 +686,7 @@ msgstr "Скомпільовано з бібліотекою %s."
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "Using %s."
-msgstr "Використовується: %s."
+msgstr ""
 
 #. tr: License: (libraries with only a single license)
 #: ../src/gtk/config/AboutTab.cpp:567 ../src/kde/config/AboutTab.cpp:285
@@ -698,7 +694,7 @@ msgstr "Використовується: %s."
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "License: %s"
-msgstr "Ліцензія: %s"
+msgstr ""
 
 #. tr: Licenses: (libraries with multiple licenses)
 #: ../src/gtk/config/AboutTab.cpp:569 ../src/kde/config/AboutTab.cpp:287
@@ -706,7 +702,7 @@ msgstr "Ліцензія: %s"
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "Licenses: %s"
-msgstr "Ліцензії: %s"
+msgstr ""
 
 #: ../src/gtk/config/AboutTab.cpp:677 ../src/kde/config/AboutTab.cpp:420
 #: ../src/win32/config/AboutTab.cpp:1040
@@ -718,13 +714,13 @@ msgstr ""
 #: ../src/win32/config/AboutTab.cpp:1113
 msgctxt "AboutTab|Support"
 msgid "For technical support, you can visit the following websites:"
-msgstr "Для отримання технічної підтримки, відвідуйте наступні веб-сайти:"
+msgstr ""
 
 #: ../src/gtk/config/AboutTab.cpp:801 ../src/kde/config/AboutTab.cpp:543
 #: ../src/win32/config/AboutTab.cpp:1129
 msgctxt "AboutTab|Support"
 msgid "You can also email the developer directly:"
-msgstr "Ви також можете зв'язатися з розробником безпосередньо:"
+msgstr ""
 
 #: ../src/gtk/config/AboutTab.cpp:827 ../src/kde/config/AboutTab.cpp:594
 #: ../src/win32/config/AboutTab.cpp:478
@@ -852,7 +848,7 @@ msgstr ""
 #: ../src/gtk/config/ConfigDialog.cpp:244 ../src/kde/config/ConfigDialog.cpp:82
 msgctxt "ConfigDialog"
 msgid "&Key Manager"
-msgstr "&Менеджер ключів"
+msgstr ""
 
 #: ../src/gtk/config/ConfigDialog.cpp:298
 #: ../src/gtk/config/ConfigDialog.cpp:329
@@ -890,7 +886,7 @@ msgstr ""
 #: ../src/win32/config/ImageTypesTab.cpp:381
 msgctxt "ImageTypesTab|Values"
 msgid "No"
-msgstr "Вимк"
+msgstr ""
 
 #: ../src/gtk/config/ImageTypesTab.cpp:480
 #: ../src/kde/config/ImageTypesTab.cpp:356
@@ -1100,8 +1096,6 @@ msgid "%1$s key was imported from '%2$s'."
 msgid_plural "%1$s keys were imported from '%2$s'."
 msgstr[0] ""
 msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:774
 #: ../src/kde/config/KeyManagerTab.cpp:239
@@ -1112,8 +1106,6 @@ msgid "%s key already exists in the Key Manager."
 msgid_plural "%s keys already exist in the Key Manager."
 msgstr[0] ""
 msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:783
 #: ../src/kde/config/KeyManagerTab.cpp:248
@@ -1124,8 +1116,6 @@ msgid "%s key was not imported because it is incorrect."
 msgid_plural "%s keys were not imported because they are incorrect."
 msgstr[0] ""
 msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:792
 #: ../src/kde/config/KeyManagerTab.cpp:257
@@ -1136,8 +1126,6 @@ msgid "%s key was not imported because it isn't used by rom-properties."
 msgid_plural "%s keys were not imported because they aren't used by rom-properties."
 msgstr[0] ""
 msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:801
 #: ../src/kde/config/KeyManagerTab.cpp:266
@@ -1148,8 +1136,6 @@ msgid "%s key was not imported because it is encrypted and the master key isn't 
 msgid_plural "%s keys were not imported because they are encrypted and the master key isn't available."
 msgstr[0] ""
 msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:810
 #: ../src/kde/config/KeyManagerTab.cpp:275
@@ -1160,8 +1146,6 @@ msgid "%s key has been imported and verified as correct."
 msgid_plural "%s keys have been imported and verified as correct."
 msgstr[0] ""
 msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:818
 #: ../src/kde/config/KeyManagerTab.cpp:283
@@ -1172,13 +1156,11 @@ msgid "%s key has been imported without verification."
 msgid_plural "%s keys have been imported without verification."
 msgstr[0] ""
 msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
 
 #: ../src/gtk/config/OptionsTab.cpp:124
 msgctxt "OptionsTab"
 msgid "Downloads"
-msgstr "&Завантаження"
+msgstr ""
 
 #. tr: Tab title.
 #: ../src/gtk/config/OptionsTab.cpp:244 ../src/win32/config/OptionsTab.cpp:573
@@ -1241,8 +1223,6 @@ msgid "Convert the selected texture file to PNG format."
 msgid_plural "Convert the selected texture files to PNG format."
 msgstr[0] ""
 msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
 
 #. tr: Tab title.
 #. tr: RomDataView tab title
@@ -1263,7 +1243,7 @@ msgstr ""
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1226
 msgctxt "RomDataView"
 msgid "Unknown"
-msgstr "Невідомо"
+msgstr ""
 
 #. tr: No age ratings data.
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:144
@@ -1430,7 +1410,7 @@ msgstr ""
 #: ../src/kde/config/AboutTab.cpp:171
 msgctxt "AboutTab"
 msgid "<b>ROM Properties Page</b><br>Shell Extension"
-msgstr "Розширення оболонки<br><b>ROM Properties Page</b>"
+msgstr ""
 
 #. tr: Error message template. (Qt version, with formatting)
 #: ../src/kde/config/AboutTab.cpp:662 ../src/kde/config/CacheTab.cpp:262
@@ -1513,7 +1493,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1006
 msgctxt "RomData"
 msgid "Unknown"
-msgstr "Невідомо"
+msgstr ""
 
 #: ../src/libromdata/Audio/ADX.cpp:284
 msgctxt "RomData|Audio"
@@ -1559,7 +1539,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:414
 msgctxt "RomData"
 msgid "No"
-msgstr "Вимк"
+msgstr ""
 
 #: ../src/libromdata/Audio/ADX.cpp:317
 msgctxt "ADX"
@@ -1592,7 +1572,7 @@ msgstr ""
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%d)"
-msgstr "Невідомо (%d)"
+msgstr ""
 
 #: ../src/libromdata/Audio/BCSTM.cpp:419 ../src/libromdata/Audio/BRSTM.cpp:326
 #: ../src/libromdata/Other/Lua.cpp:685
@@ -1639,7 +1619,7 @@ msgstr ""
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%u)"
-msgstr "Невідомо (%u)"
+msgstr ""
 
 #: ../src/libromdata/Audio/BCSTM.cpp:500
 msgctxt "BCSTM"
@@ -1669,7 +1649,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:411
 msgctxt "RomData"
 msgid "Version"
-msgstr "Версія"
+msgstr ""
 
 #: ../src/libromdata/Audio/BRSTM.cpp:333
 msgctxt "BRSTM|Codec"
@@ -1851,7 +1831,7 @@ msgstr ""
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (0x%02X)"
-msgstr "Невідомо (0x%02X)"
+msgstr ""
 
 #: ../src/libromdata/Audio/PSF.cpp:551 ../src/libromdata/Audio/SPC.cpp:667
 msgctxt "RomData|Audio"
@@ -2110,7 +2090,7 @@ msgstr ""
 #: ../src/libromdata/Audio/SPC.cpp:724
 msgctxt "SPC|Emulator"
 msgid "Unknown"
-msgstr "Невідомо"
+msgstr ""
 
 #: ../src/libromdata/Audio/SPC.cpp:737
 msgctxt "SPC"
@@ -2135,7 +2115,7 @@ msgstr ""
 #: ../src/libromdata/Audio/VGM.cpp:344
 msgctxt "VGM"
 msgid "VGM Version"
-msgstr "VGM Версія"
+msgstr ""
 
 #: ../src/libromdata/Audio/VGM.cpp:393
 msgctxt "RomData|Audio"
@@ -2935,7 +2915,7 @@ msgstr ""
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%.2s)"
-msgstr "Невідомо (%.2s)"
+msgstr ""
 
 #: ../src/libromdata/Console/GameCube.cpp:466
 #: ../src/libromdata/Console/SNES.cpp:622
@@ -2948,7 +2928,7 @@ msgstr "Невідомо (%.2s)"
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%02X %02X)"
-msgstr "Невідомо (%02X %02X)"
+msgstr ""
 
 #: ../src/libromdata/Console/GameCube.cpp:673
 msgctxt "Wii"
@@ -2995,7 +2975,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/WonderSwan.cpp:458
 msgctxt "RomData"
 msgid "Revision"
-msgstr "Версія"
+msgstr ""
 
 #. tr: %1%s == full region name, %2$s == abbreviation
 #: ../src/libromdata/Console/GameCube.cpp:1576
@@ -3012,7 +2992,7 @@ msgstr ""
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (0x%08X)"
-msgstr "Невідомо (0x%08X)"
+msgstr ""
 
 #: ../src/libromdata/Console/GameCube.cpp:1611
 #: ../src/libromdata/Console/WiiWAD.cpp:957
@@ -3064,7 +3044,7 @@ msgstr ""
 #: ../src/libromdata/Console/GameCube.cpp:1702
 msgctxt "GameCube"
 msgid "Unknown"
-msgstr "Невідомо"
+msgstr ""
 
 #: ../src/libromdata/Console/GameCube.cpp:1810
 msgctxt "Nintendo"
@@ -3151,7 +3131,7 @@ msgstr ""
 #: ../src/libromdata/Console/GameCube.cpp:1945
 msgctxt "Wii|Partition"
 msgid "Unknown"
-msgstr "Невідомо"
+msgstr ""
 
 #. tr: Partition number.
 #: ../src/libromdata/Console/GameCube.cpp:1955
@@ -4033,7 +4013,7 @@ msgstr ""
 #: ../src/libromdata/Console/PlayStationDisc.cpp:785
 msgctxt "PlayStationDisc"
 msgid "Version"
-msgstr "Версія"
+msgstr ""
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:792
 msgctxt "PlayStationDisc"
@@ -4322,7 +4302,7 @@ msgstr ""
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%02X)"
-msgstr "Невідомо (%02X)"
+msgstr ""
 
 #: ../src/libromdata/Console/SNES.cpp:1349
 msgctxt "SNES"
@@ -4446,13 +4426,13 @@ msgstr ""
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%.4s)"
-msgstr "Невідомо (%.4s)"
+msgstr ""
 
 #: ../src/libromdata/Console/WiiU.cpp:440
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%02X %02X %02X %02X)"
-msgstr "Невідомо (%02X %02X %02X %02X)"
+msgstr ""
 
 #: ../src/libromdata/Console/WiiU.cpp:461
 msgctxt "WiiU"
@@ -4502,7 +4482,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiWAD.cpp:1143
 msgctxt "WiiWAD"
 msgid "Unknown"
-msgstr "Невідомо"
+msgstr ""
 
 #: ../src/libromdata/Console/WiiWAD.cpp:1145
 msgctxt "WiiWAD"
@@ -4754,7 +4734,7 @@ msgstr ""
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%c%c)"
-msgstr "Невідомо (%c%c)"
+msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1659
 #, c-format
@@ -5552,7 +5532,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/DMG.cpp:920
 msgctxt "DMG"
 msgid "Unknown"
-msgstr "Невідомо"
+msgstr ""
 
 #: ../src/libromdata/Handheld/DMG.cpp:925
 #: ../src/libromdata/Handheld/DMG.cpp:952
@@ -5562,8 +5542,6 @@ msgid "%1$u KiB (%2$u bank)"
 msgid_plural "%1$u KiB (%2$u banks)"
 msgstr[0] ""
 msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
 
 #: ../src/libromdata/Handheld/DMG.cpp:930
 #: ../src/libromdata/Handheld/DMG.cpp:957
@@ -5888,7 +5866,7 @@ msgstr ""
 #, c-format
 msgctxt "Nintendo3DS|CDev"
 msgid "Unknown (SDK2=0x%1$02X, SDK3=0x%2$02X)"
-msgstr "Невідомо (SDK2=0x%1$02X, SDK3=0x%2$02X)"
+msgstr ""
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1953
 msgctxt "Nintendo3DS"
@@ -6523,8 +6501,6 @@ msgid "Secure Area encrypted successfully."
 msgid_plural "Secure Areas encrypted successfully."
 msgstr[0] ""
 msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:582
 msgctxt "NintendoDS"
@@ -6532,8 +6508,6 @@ msgid "Secure Area decrypted successfully."
 msgid_plural "Secure Areas decrypted successfully."
 msgstr[0] ""
 msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
 
 #: ../src/libromdata/Handheld/PokemonMini.cpp:311
 msgctxt "RomData|VectorTable"
@@ -6822,7 +6796,7 @@ msgstr ""
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (0x%04X)"
-msgstr "Невідомо (0x%04X)"
+msgstr ""
 
 #: ../src/libromdata/Other/ELF.cpp:1545 ../src/libromdata/Other/ELF.cpp:1924
 #: ../src/libromdata/Other/ELF.cpp:2018
@@ -7363,7 +7337,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE.cpp:991
 msgctxt "EXE"
 msgid "Unknown"
-msgstr "Невідомо"
+msgstr ""
 
 #: ../src/libromdata/Other/EXE_manifest.cpp:215
 msgctxt "EXE"
@@ -8259,8 +8233,6 @@ msgid "%s directory"
 msgid_plural "%s directories"
 msgstr[0] ""
 msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
 
 #. tr: Parameter is a number; it's formatted elsewhere.
 #: ../src/libromdata/tests/disc/FstPrint.cpp:230
@@ -8270,8 +8242,6 @@ msgid "%s file"
 msgid_plural "%s files"
 msgstr[0] ""
 msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
 
 #: ../src/libromdata/tests/disc/GcnFstPrint.cpp:63
 #, c-format
@@ -8749,8 +8719,6 @@ msgid "byte"
 msgid_plural "bytes"
 msgstr[0] ""
 msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
 
 #. tr: Kilobytes
 #: ../src/librptext/conversion.cpp:290 ../src/librptext/conversion.cpp:374
@@ -10066,23 +10034,23 @@ msgstr ""
 #: ../src/win32/config/AboutTab.cpp:906
 msgctxt "AboutTab"
 msgid "Credits"
-msgstr "Автори"
+msgstr ""
 
 #: ../src/win32/config/AboutTab.cpp:1093
 msgctxt "AboutTab"
 msgid "Libraries"
-msgstr "Бібліотеки"
+msgstr ""
 
 #: ../src/win32/config/AboutTab.cpp:1135
 msgctxt "AboutTab"
 msgid "Support"
-msgstr "Техпідтримка"
+msgstr ""
 
 #. tr: Tab title.
 #: ../src/win32/config/AboutTab.cpp:1347
 msgctxt "AboutTab"
 msgid "About"
-msgstr "Про програму"
+msgstr ""
 
 #. tr: Tab title.
 #: ../src/win32/config/AchievementsTab.cpp:580
@@ -10182,7 +10150,7 @@ msgstr ""
 #: ../src/win32/config/ImageTypesTab.cpp:717
 msgctxt "ImageTypesTab"
 msgid "Image Types"
-msgstr "Типи зображень"
+msgstr ""
 
 #: ../src/win32/config/KeyManagerTab.cpp:318
 msgctxt "KeyManagerTab"
@@ -10193,7 +10161,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:1763
 msgctxt "KeyManagerTab"
 msgid "Key Manager"
-msgstr "Менеджер ключів"
+msgstr ""
 
 #. tr: Tab title.
 #: ../src/win32/config/SystemsTab.cpp:389
