@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2023-03-10 18:59-0500\n"
-"PO-Revision-Date: 2023-03-11 00:23\n"
+"POT-Creation-Date: 2023-03-10 19:55-0500\n"
+"PO-Revision-Date: 2023-03-11 01:35\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -155,7 +155,7 @@ msgid "&Encrypted"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_ImageTypesTab.h:81
-#: ../src/gtk/config/ImageTypesTab.cpp:467
+#: ../src/gtk/config/ImageTypesTab.cpp:468
 msgctxt "ImageTypesTab"
 msgid "Select the image types you would like to use for each system as its thumbnail image.\n"
 "Internal images are contained within the ROM file.\n"
@@ -880,17 +880,18 @@ msgctxt "ConfigDialog|Button"
 msgid "&OK"
 msgstr ""
 
-#: ../src/gtk/config/ImageTypesTab.cpp:335
-#: ../src/gtk/config/ImageTypesTab.cpp:347
-#: ../src/kde/config/ImageTypesTab.cpp:245
-#: ../src/win32/config/ImageTypesTab.cpp:381
+#. tr: Don't use this image type for this particular system.
+#: ../src/gtk/config/ImageTypesTab.cpp:336
+#: ../src/gtk/config/ImageTypesTab.cpp:348
+#: ../src/kde/config/ImageTypesTab.cpp:246
+#: ../src/win32/config/ImageTypesTab.cpp:382
 msgctxt "ImageTypesTab|Values"
 msgid "No"
 msgstr ""
 
-#: ../src/gtk/config/ImageTypesTab.cpp:480
-#: ../src/kde/config/ImageTypesTab.cpp:356
-#: ../src/win32/config/ImageTypesTab.cpp:508
+#: ../src/gtk/config/ImageTypesTab.cpp:481
+#: ../src/kde/config/ImageTypesTab.cpp:357
+#: ../src/win32/config/ImageTypesTab.cpp:509
 msgctxt "ImageTypesTab"
 msgid "GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\n"
 "are provided by <a href=\"https://www.gametdb.com/\">GameTDB</a>.\n"
@@ -10147,7 +10148,7 @@ msgid "Defaults"
 msgstr ""
 
 #. tr: Tab title.
-#: ../src/win32/config/ImageTypesTab.cpp:717
+#: ../src/win32/config/ImageTypesTab.cpp:718
 msgctxt "ImageTypesTab"
 msgid "Image Types"
 msgstr ""
