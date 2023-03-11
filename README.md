@@ -7,6 +7,7 @@ video game ROM and disc images.
 [![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/5lk15ct43jtmhejs/branch/master?svg=true)](https://ci.appveyor.com/project/GerbilSoft/rom-properties/branch/master)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/10146/badge.svg)](https://scan.coverity.com/projects/10146)<br>
 [![CodeQL](https://github.com/GerbilSoft/rom-properties/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/GerbilSoft/rom-properties/actions/workflows/codeql-analysis.yml)
+[![Crowdin](https://badges.crowdin.net/rom-properties/localized.svg)](https://crowdin.com/project/rom-properties)
 
 ## v2.1
 
