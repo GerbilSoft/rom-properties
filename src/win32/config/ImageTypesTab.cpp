@@ -378,6 +378,7 @@ void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 	// NOTE: Need to add one more than the total number,
 	// since "No" counts as an entry.
 	assert(max_prio <= static_cast<int>(ImageTypesConfig::imageTypeCount()));
+	// tr: Don't use this image type for this particular system.
 	ComboBox_AddString(cboImageType, U82T_c(C_("ImageTypesTab|Values", "No")));
 	for (int i = 1; i <= max_prio; i++) {
 		TCHAR buf[16];

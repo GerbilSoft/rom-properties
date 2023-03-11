@@ -332,6 +332,7 @@ void RpImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 	// since "No" counts as an entry.
 #ifdef USE_GTK_DROP_DOWN
 	GtkStringList *const list = gtk_string_list_new(nullptr);
+	// tr: Don't use this image type for this particular system.
 	gtk_string_list_append(list, C_("ImageTypesTab|Values", "No"));
 	for (int i = 1; i <= max_prio; i++) {
 		char buf[16];

@@ -242,6 +242,7 @@ void ImageTypesTabPrivate::addComboBoxStrings(unsigned int cbid, int max_prio)
 	// since "No" counts as an entry.
 	assert(max_prio <= static_cast<int>(ImageTypesConfig::imageTypeCount()));
 	const bool blockCbo = cbo->blockSignals(true);
+	// tr: Don't use this image type for this particular system.
 	cbo->addItem(U82Q(C_("ImageTypesTab|Values", "No")));
 	for (int i = 1; i <= max_prio; i++) {
 		cbo->addItem(QString::number(i));
