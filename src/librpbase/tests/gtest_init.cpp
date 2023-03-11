@@ -129,7 +129,9 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// POSIX putenv() takes `char*` and the buffer becomes
 	// part of the environment.
 	static TCHAR lc_all_env[] = _T("LC_ALL=C");
+	static TCHAR lc_messages_env[] = _T("LC_MESSAGES=C");
 	_tputenv(lc_all_env);
+	_tputenv(lc_messages_env);
 	locale::global(locale("C"));
 
 	// Call the actual main function.

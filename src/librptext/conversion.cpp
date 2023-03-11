@@ -318,12 +318,19 @@ string formatFileSize(off64_t size)
 	}
 
 	// Localize the whole part.
-	// FIXME: If using C locale, don't do localization.
 	ostringstream s_value;
+#ifdef _WIN32
+	if (is_C_locale) {
+		// MSVC doesn't handle LC_ALL/LC_MESSAGES, so we have to
+		// set ostringstream's locale manually.
+		// TODO: Cache the C locale?
+		s_value.imbue(std::locale("C"));
+	}
+#endif /* _WIN32 */
 	s_value << whole_part;
 
 	if (size >= (2LL << 10)) {
-		// Fractional part.
+		// Fractional part
 		int frac_digits = 2;
 		if (whole_part >= 10) {
 			int round_adj = ((frac_part % 10) > 5);
@@ -410,12 +417,19 @@ std::string formatFrequency(uint32_t frequency)
 	}
 
 	// Localize the whole part.
-	// FIXME: If using C locale, don't do localization.
 	ostringstream s_value;
+#ifdef _WIN32
+	if (is_C_locale) {
+		// MSVC doesn't handle LC_ALL/LC_MESSAGES, so we have to
+		// set ostringstream's locale manually.
+		// TODO: Cache the C locale?
+		s_value.imbue(std::locale("C"));
+	}
+#endif /* _WIN32 */
 	s_value << whole_part;
 
 	if (frequency >= (2*1000)) {
-		// Fractional part.
+		// Fractional part
 		const int frac_digits = 3;
 
 		// Ensure the localized decimal point is initialized.
