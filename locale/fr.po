@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-03-10 19:55-0500\n"
-"PO-Revision-Date: 2023-03-11 01:35\n"
+"PO-Revision-Date: 2023-03-11 02:53\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -5978,7 +5978,7 @@ msgstr ""
 #, c-format
 msgctxt "Nintendo3DS"
 msgid "%1$s (%2$u MiB)"
-msgstr ""
+msgstr "%1$s (%2$u Mio)"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2355
 msgctxt "Nintendo3DS"
@@ -6562,7 +6562,7 @@ msgstr ""
 #, c-format
 msgctxt "WonderSwan|SaveMemory"
 msgid "%1$u bytes (%2$s)"
-msgstr ""
+msgstr "%1$u octets (%2$s)"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:527
 msgctxt "WonderSwan|SaveMemory"
@@ -8718,44 +8718,44 @@ msgstr ""
 msgctxt "LibRpText|FileSize"
 msgid "byte"
 msgid_plural "bytes"
-msgstr[0] ""
+msgstr[0] "octet"
 msgstr[1] ""
 
 #. tr: Kilobytes
 #: ../src/librptext/conversion.cpp:290 ../src/librptext/conversion.cpp:374
 msgctxt "LibRpText|FileSize"
 msgid "KiB"
-msgstr ""
+msgstr "Kio"
 
 #. tr: Megabytes
 #: ../src/librptext/conversion.cpp:295
 msgctxt "LibRpText|FileSize"
 msgid "MiB"
-msgstr ""
+msgstr "Mio"
 
 #. tr: Gigabytes
 #: ../src/librptext/conversion.cpp:300
 msgctxt "LibRpText|FileSize"
 msgid "GiB"
-msgstr ""
+msgstr "Gio"
 
 #. tr: Terabytes
 #: ../src/librptext/conversion.cpp:305
 msgctxt "LibRpText|FileSize"
 msgid "TiB"
-msgstr ""
+msgstr "Tio"
 
 #. tr: Petabytes
 #: ../src/librptext/conversion.cpp:310
 msgctxt "LibRpText|FileSize"
 msgid "PiB"
-msgstr ""
+msgstr "Pio"
 
 #. tr: Exabytes
 #: ../src/librptext/conversion.cpp:315
 msgctxt "LibRpText|FileSize"
 msgid "EiB"
-msgstr ""
+msgstr "Eio"
 
 #. tr: %1$s == localized value, %2$s == suffix (e.g. MiB)
 #: ../src/librptext/conversion.cpp:345 ../src/librptext/conversion.cpp:373
