@@ -1,22 +1,24 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR David Korth
+# French translations for rom-properties.
 # This file is distributed under the same license as the rom-properties package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.1+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-03-12 13:11-0400\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"PO-Revision-Date: 2023-03-11 02:53\n"
+"Last-Translator: \n"
+"Language-Team: French\n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Crowdin-Project: rom-properties\n"
+"X-Crowdin-Project-ID: 573479\n"
+"X-Crowdin-Language: fr\n"
+"X-Crowdin-File: /master/locale/rom-properties.pot\n"
+"X-Crowdin-File-ID: 5\n"
 
 #: ../build/src/kde/kf5/ui_AboutTab.h:276
 #: ../src/gtk/config/AboutTab.cpp:288
@@ -6020,7 +6022,7 @@ msgstr ""
 #, c-format
 msgctxt "Nintendo3DS"
 msgid "%1$s (%2$u MiB)"
-msgstr ""
+msgstr "%1$s (%2$u Mio)"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2355
 msgctxt "Nintendo3DS"
@@ -6606,7 +6608,7 @@ msgstr ""
 #, c-format
 msgctxt "WonderSwan|SaveMemory"
 msgid "%1$u bytes (%2$s)"
-msgstr ""
+msgstr "%1$u octets (%2$s)"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:527
 msgctxt "WonderSwan|SaveMemory"
@@ -8763,44 +8765,44 @@ msgstr ""
 msgctxt "LibRpText|FileSize"
 msgid "byte"
 msgid_plural "bytes"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "octet"
+msgstr[1] "octets"
 
 #. tr: Kilobytes
 #: ../src/librptext/conversion.cpp:290 ../src/librptext/conversion.cpp:381
 msgctxt "LibRpText|FileSize"
 msgid "KiB"
-msgstr ""
+msgstr "Kio"
 
 #. tr: Megabytes
 #: ../src/librptext/conversion.cpp:295
 msgctxt "LibRpText|FileSize"
 msgid "MiB"
-msgstr ""
+msgstr "Mio"
 
 #. tr: Gigabytes
 #: ../src/librptext/conversion.cpp:300
 msgctxt "LibRpText|FileSize"
 msgid "GiB"
-msgstr ""
+msgstr "Gio"
 
 #. tr: Terabytes
 #: ../src/librptext/conversion.cpp:305
 msgctxt "LibRpText|FileSize"
 msgid "TiB"
-msgstr ""
+msgstr "Tio"
 
 #. tr: Petabytes
 #: ../src/librptext/conversion.cpp:310
 msgctxt "LibRpText|FileSize"
 msgid "PiB"
-msgstr ""
+msgstr "Pio"
 
 #. tr: Exabytes
 #: ../src/librptext/conversion.cpp:315
 msgctxt "LibRpText|FileSize"
 msgid "EiB"
-msgstr ""
+msgstr "Eio"
 
 #. tr: %1$s == localized value, %2$s == suffix (e.g. MiB)
 #: ../src/librptext/conversion.cpp:352 ../src/librptext/conversion.cpp:380
