@@ -811,7 +811,7 @@ void KhronosKTXPrivate::loadKeyValueData(void)
 			static const orientation_tbl_t *const p_orientation_tbl_end = &orientation_tbl[ARRAY_SIZE(orientation_tbl)];
 
 			auto iter = std::find_if(orientation_tbl, p_orientation_tbl_end,
-				[v](const orientation_tbl_t &p) {
+				[v](const orientation_tbl_t &p) noexcept -> bool {
 					return !strncmp(p.str, v, 7);
 				});
 			if (iter != p_orientation_tbl_end) {

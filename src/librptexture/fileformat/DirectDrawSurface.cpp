@@ -402,10 +402,11 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 
 		const uint32_t dwFourCC = ddspf.dwFourCC;	// to use by-value lambda capture
 		auto fourCC_iter = std::find_if(fourCC_dxgi_tbl, p_fourCC_dxgi_tbl_end,
-			[dwFourCC](const fourCC_dxgi_tbl_t &p) {
+			[dwFourCC](const fourCC_dxgi_tbl_t &p) noexcept -> bool {
 				return (p.dwFourCC == dwFourCC);
 			});
 		if (fourCC_iter != p_fourCC_dxgi_tbl_end) {
+			// Found a match.
 			dxgi_format = fourCC_iter->dxgi_format;
 			dxgi_alpha = fourCC_iter->dxgi_alpha;
 		}
@@ -470,7 +471,7 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 			// as-is, assuming it's compressed.
 			const uint8_t dxgi_format_tmp = dxgi_format;	// needed for lambda capture
 			auto dx10_iter = std::find_if(dx10_tbl, p_dx10_tbl_end,
-				[dxgi_format_tmp](const dx10_tbl_t &p) {
+				[dxgi_format_tmp](const dx10_tbl_t &p) noexcept -> bool {
 					return (p.dxgi_format == dxgi_format_tmp);
 				});
 			if (dx10_iter != p_dx10_tbl_end) {

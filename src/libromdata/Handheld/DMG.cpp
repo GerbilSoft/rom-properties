@@ -1054,7 +1054,7 @@ int DMG::loadFieldData(void)
 		const char *s_mapper = nullptr;
 		const uint32_t lkup = be32_to_cpu(gbxFooter->mapper_id);
 		auto iter = std::find_if(gbx_mapper_tbl, p_gbx_mapper_tbl_end,
-			[lkup](const gbx_mapper_tbl_t &p) {
+			[lkup](const gbx_mapper_tbl_t &p) noexcept -> bool {
 				return (p.mapper_id == lkup);
 			});
 		if (iter != p_gbx_mapper_tbl_end) {

@@ -556,7 +556,7 @@ int XboxDisc::isRomSupported_static(
 
 	// TODO: Use std::lower_bound() instead?
 	auto iter = std::find_if(xgd_tbl, p_xgd_tbl_end,
-		[btime](const xgd_pvd_t &p) {
+		[btime](const xgd_pvd_t &p) noexcept -> bool {
 			return (p.btime == btime);
 		});
 	if (iter != p_xgd_tbl_end) {

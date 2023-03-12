@@ -96,7 +96,7 @@ bool RpFile::isKreonDriveModel(void)
 
 	// Find the vendor.
 	auto vendor_iter = std::find_if(vendor_tbl, p_vendor_tbl_end,
-		[&resp](const vendor_tbl_t &p) {
+		[&resp](const vendor_tbl_t &p) noexcept -> bool {
 			return !memcmp(p.vendor_id, resp.vendor_id, 8);
 		});
 	if (vendor_iter == p_vendor_tbl_end) {

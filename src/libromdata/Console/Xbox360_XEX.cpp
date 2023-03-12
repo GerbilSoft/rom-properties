@@ -1281,7 +1281,7 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 			// File has zero padding removed.
 			// Determine the actual physical address.
 			auto iter = std::find_if(basicZDataSegments.cbegin(), basicZDataSegments.cend(),
-				[xdbf_physaddr](const BasicZDataSeg_t &p) -> bool {
+				[xdbf_physaddr](const BasicZDataSeg_t &p) noexcept -> bool {
 					return (xdbf_physaddr >= p.vaddr &&
 					        xdbf_physaddr < (p.vaddr + p.length));
 				});

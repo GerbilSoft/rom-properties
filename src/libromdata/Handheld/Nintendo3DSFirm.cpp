@@ -386,7 +386,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 
 		const char *s_sighax_status = nullptr;
 		auto iter = std::find_if(sighaxStatus_tbl, p_sighaxStatus_tbl_end,
-			[first4](const sighaxStatus_tbl_t &p) {
+			[first4](const sighaxStatus_tbl_t &p) noexcept -> bool {
 				return (p.first4 == first4);
 			});
 		if (iter != p_sighaxStatus_tbl_end) {

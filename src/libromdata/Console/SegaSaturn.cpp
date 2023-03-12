@@ -223,7 +223,7 @@ uint32_t SegaSaturnPrivate::parsePeripherals(const char *peripherals, int size)
 		static const saturn_io_tbl_t *const p_saturn_io_tbl_end = &saturn_io_tbl[ARRAY_SIZE(saturn_io_tbl)];
 		const char io_chr = peripherals[i];
 		auto iter = std::find_if(saturn_io_tbl, p_saturn_io_tbl_end,
-			[io_chr](const saturn_io_tbl_t &p) {
+			[io_chr](const saturn_io_tbl_t &p) noexcept -> bool {
 				return (p.io_chr == io_chr);
 			});
 		if (iter != p_saturn_io_tbl_end) {
