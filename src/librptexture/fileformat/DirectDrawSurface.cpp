@@ -1258,7 +1258,7 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 	if (ddsHeader->nvtt.dwNvttMagic == cpu_to_be32(NVTT_MAGIC)) {
 		const uint32_t nvtt_version = le32_to_cpu(ddsHeader->nvtt.dwNvttVersion);
 		fields->addField_string(C_("DirectDrawSurface", "NVTT Version"),
-			rp_sprintf(C_("DirectDrawSurface", "%u.%u.%u"),
+			rp_sprintf("%u.%u.%u",
 				   (nvtt_version >> 16) & 0xFF,
 				   (nvtt_version >>  8) & 0xFF,
 				    nvtt_version        & 0xFF));
