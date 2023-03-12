@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (D-Bus Thumbnailer)                *
  * rp-thumbnailer-dbus.c: D-Bus thumbnailer service.                       *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -249,7 +249,7 @@ rp_thumbnailer_constructed(GObject *object)
 		G_CALLBACK(rp_thumbnailer_queue), thumbnailer);
 	g_signal_connect(thumbnailer->skeleton, "handle-dequeue",
 		G_CALLBACK(rp_thumbnailer_dequeue), thumbnailer);
-		
+
 	// Make sure we shut down after inactivity.
 	thumbnailer->timeout_id = g_timeout_add_seconds(SHUTDOWN_TIMEOUT_SECONDS,
 		G_SOURCE_FUNC(rp_thumbnailer_timeout), thumbnailer);
