@@ -364,11 +364,12 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 	// Check if a FourCC is specified.
 	if (ddspf.dwFourCC != 0) {
 		// FourCC is specified.
-		static const struct {
+		struct fourCC_dxgi_tbl_t {
 			uint32_t dwFourCC;
 			uint8_t dxgi_format;
 			uint8_t dxgi_alpha;
-		} fourCC_dxgi_lkup_tbl[] = {
+		};
+		static const fourCC_dxgi_tbl_t fourCC_dxgi_tbl[] = {
 			{DDPF_FOURCC_DXT1, DXGI_FORMAT_BC1_UNORM, DDS_ALPHA_MODE_STRAIGHT},
 			{DDPF_FOURCC_DXT2, DXGI_FORMAT_BC2_UNORM, DDS_ALPHA_MODE_PREMULTIPLIED},
 			{DDPF_FOURCC_DXT3, DXGI_FORMAT_BC2_UNORM, DDS_ALPHA_MODE_STRAIGHT},
@@ -397,28 +398,31 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 			// RXGB: DXT5 with swizzled channels
 			{DDPF_FOURCC_RXGB, DXGI_FORMAT_BC3_UNORM, DDS_ALPHA_MODE_STRAIGHT},
 		};
+		static const fourCC_dxgi_tbl_t *const p_fourCC_dxgi_tbl_end = &fourCC_dxgi_tbl[ARRAY_SIZE(fourCC_dxgi_tbl)];
 
-		for (const auto &p : fourCC_dxgi_lkup_tbl) {
-			if (ddspf.dwFourCC == p.dwFourCC) {
-				// Found a match.
-				dxgi_format = p.dxgi_format;
-				dxgi_alpha = p.dxgi_alpha;
-				break;
-			}
+		const uint32_t dwFourCC = ddspf.dwFourCC;	// to use by-value lambda capture
+		auto fourCC_iter = std::find_if(fourCC_dxgi_tbl, p_fourCC_dxgi_tbl_end,
+			[dwFourCC](const fourCC_dxgi_tbl_t &p) {
+				return (p.dwFourCC == dwFourCC);
+			});
+		if (fourCC_iter != p_fourCC_dxgi_tbl_end) {
+			dxgi_format = fourCC_iter->dxgi_format;
+			dxgi_alpha = fourCC_iter->dxgi_alpha;
 		}
 
 		// TODO: Check DX10/XBOX before the other FourCCs?
-		if (dxgi_format == 0 && (ddspf.dwFourCC == DDPF_FOURCC_DX10 || ddspf.dwFourCC == DDPF_FOURCC_XBOX)) {
+		if (dxgi_format == 0 && (dwFourCC == DDPF_FOURCC_DX10 || dwFourCC == DDPF_FOURCC_XBOX)) {
 			// Check the DX10 format.
 			// TODO: Handle typeless, signed, sRGB, float.
 			dxgi_format = dxt10Header.dxgiFormat;
 			dxgi_alpha = dxt10Header.miscFlags2;
 
-			static const struct {
+			struct dx10_tbl_t {
 				uint8_t dxgi_format;
 				ImageDecoder::PixelFormat pxf_uncomp;
 				uint8_t bytespp;
-			} dx10_lkup_tbl[] = {
+			};
+			static const dx10_tbl_t dx10_tbl[] = {
 				{DXGI_FORMAT_R10G10B10A2_TYPELESS,	ImageDecoder::PixelFormat::A2B10G10R10, 4},
 				{DXGI_FORMAT_R10G10B10A2_UNORM,		ImageDecoder::PixelFormat::A2B10G10R10, 4},
 				{DXGI_FORMAT_R10G10B10A2_UINT,		ImageDecoder::PixelFormat::A2B10G10R10, 4},
@@ -460,15 +464,19 @@ int DirectDrawSurfacePrivate::updatePixelFormat(void)
 
 				{DXGI_FORMAT_B4G4R4A4_UNORM,		ImageDecoder::PixelFormat::ARGB4444, 2},
 			};
+			static const dx10_tbl_t *const p_dx10_tbl_end = &dx10_tbl[ARRAY_SIZE(dx10_tbl)];
 
 			// If the dxgi_format is not listed in the table, we'll use it
 			// as-is, assuming it's compressed.
-			for (const auto &p : dx10_lkup_tbl) {
-				if (dxgi_format == p.dxgi_format) {
-					// Found a match.
-					pxf_uncomp = p.pxf_uncomp;
-					bytespp = p.bytespp;
-				}
+			const uint8_t dxgi_format_tmp = dxgi_format;	// needed for lambda capture
+			auto dx10_iter = std::find_if(dx10_tbl, p_dx10_tbl_end,
+				[dxgi_format_tmp](const dx10_tbl_t &p) {
+					return (p.dxgi_format == dxgi_format_tmp);
+				});
+			if (dx10_iter != p_dx10_tbl_end) {
+				// Found a match.
+				pxf_uncomp = dx10_iter->pxf_uncomp;
+				bytespp = dx10_iter->bytespp;
 			}
 		}
 

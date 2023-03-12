@@ -798,22 +798,25 @@ void KhronosKTXPrivate::loadKeyValueData(void)
 			// NOTE: str[7] does NOT have a NULL terminator.
 			const char *const v = k_end + 1;
 
-			static const struct {
+			struct orientation_tbl_t {
 				char str[7];
 				rp_image::FlipOp flipOp;
-			} orientation_lkup_tbl[] = {
+			};
+			static const orientation_tbl_t orientation_tbl[] = {
 				{{'S','=','r',',','T','=','d'}, rp_image::FLIP_NONE},
 				{{'S','=','r',',','T','=','u'}, rp_image::FLIP_V},
 				{{'S','=','l',',','T','=','d'}, rp_image::FLIP_H},
 				{{'S','=','l',',','T','=','u'}, rp_image::FLIP_VH},
 			};
+			static const orientation_tbl_t *const p_orientation_tbl_end = &orientation_tbl[ARRAY_SIZE(orientation_tbl)];
 
-			for (const auto &p : orientation_lkup_tbl) {
-				if (!strncmp(v, p.str, 7)) {
-					// Found a match.
-					flipOp = p.flipOp;
-					break;
-				}
+			auto iter = std::find_if(orientation_tbl, p_orientation_tbl_end,
+				[v](const orientation_tbl_t &p) {
+					return !strncmp(p.str, v, 7);
+				});
+			if (iter != p_orientation_tbl_end) {
+				// Found a match.
+				flipOp = iter->flipOp;
 			}
 		}
 

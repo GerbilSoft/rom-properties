@@ -552,15 +552,19 @@ int XboxDisc::isRomSupported_static(
 		//   - 17, -07:00
 		//   - 16, -08:00
 	};
+	static const xgd_pvd_t *const p_xgd_tbl_end = &xgd_tbl[ARRAY_SIZE(xgd_tbl)];
 
-	for (const xgd_pvd_t &p : xgd_tbl) {
-		if (p.btime == btime) {
-			// Found a match!
-			if (pWave) {
-				*pWave = p.wave;
-			}
-			return p.xgd;
+	// TODO: Use std::lower_bound() instead?
+	auto iter = std::find_if(xgd_tbl, p_xgd_tbl_end,
+		[btime](const xgd_pvd_t &p) {
+			return (p.btime == btime);
+		});
+	if (iter != p_xgd_tbl_end) {
+		// Found a match!
+		if (pWave) {
+			*pWave = iter->wave;
 		}
+		return iter->xgd;
 	}
 
 	// No match in the XGD table.

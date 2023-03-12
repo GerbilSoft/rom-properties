@@ -193,10 +193,11 @@ uint32_t SegaSaturnPrivate::parsePeripherals(const char *peripherals, int size)
 	for (int i = size-1; i >= 0; i--) {
 		// TODO: Sort by character and use bsearch()?
 		#define SATURN_IO_SUPPORT_ENTRY(entry) {SATURN_IO_##entry, SATURN_IOBIT_##entry}
-		static const struct {
+		struct saturn_io_tbl_t {
 			char io_chr;	// Character in the Peripherals field
 			uint8_t io_bit;	// Bit number in the returned bitfield
-		} saturn_io_lkup_tbl[] = {
+		};
+		static const saturn_io_tbl_t saturn_io_tbl[] = {
 			{' ', 0},	// quick exit for empty entries
 			SATURN_IO_SUPPORT_ENTRY(CONTROL_PAD),
 			SATURN_IO_SUPPORT_ENTRY(ANALOG_CONTROLLER),
@@ -219,11 +220,14 @@ uint32_t SegaSaturnPrivate::parsePeripherals(const char *peripherals, int size)
 			SATURN_IO_SUPPORT_ENTRY(MPEG_CARD),
 		};
 
-		for (const auto &p : saturn_io_lkup_tbl) {
-			if (p.io_chr == peripherals[i]) {
-				ret |= (1U << p.io_bit);
-				break;
-			}
+		static const saturn_io_tbl_t *const p_saturn_io_tbl_end = &saturn_io_tbl[ARRAY_SIZE(saturn_io_tbl)];
+		const char io_chr = peripherals[i];
+		auto iter = std::find_if(saturn_io_tbl, p_saturn_io_tbl_end,
+			[io_chr](const saturn_io_tbl_t &p) {
+				return (p.io_chr == io_chr);
+			});
+		if (iter != p_saturn_io_tbl_end) {
+			ret |= (1U << iter->io_bit);
 		}
 	}
 

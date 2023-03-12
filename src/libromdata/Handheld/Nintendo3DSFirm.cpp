@@ -367,10 +367,11 @@ int Nintendo3DSFirm::loadFieldData(void)
 		// TODO: If it's SPI, we need to decrypt the FIRM contents.
 		// Reference: https://github.com/TuxSH/firmtool/blob/master/firmtool/__main__.py
 		const uint32_t first4 = be32_to_cpu(*(reinterpret_cast<const uint32_t*>(firmHeader->signature)));
-		static const struct {
+		struct sighaxStatus_tbl_t {
 			uint32_t first4;
 			char status[12];
-		} sighaxStatus_tbl[] = {
+		};
+		static const sighaxStatus_tbl_t sighaxStatus_tbl[] = {
 			{0xB6724531,	"NAND retail"},		// SciresM
 			{0x6EFF209C,	"NAND retail"},		// sighax.com
 			{0x88697CDC,	"NAND devkit"},		// SciresM
@@ -381,13 +382,15 @@ int Nintendo3DSFirm::loadFieldData(void)
 			{0x37E96B10,	"SPI retail"},
 			{0x18722BC7,	"SPI devkit"},
 		};
+		static const sighaxStatus_tbl_t *const p_sighaxStatus_tbl_end = &sighaxStatus_tbl[ARRAY_SIZE(sighaxStatus_tbl)];
 
 		const char *s_sighax_status = nullptr;
-		for (const auto &p : sighaxStatus_tbl) {
-			if (p.first4 == first4) {
-				s_sighax_status = p.status;
-				break;
-			}
+		auto iter = std::find_if(sighaxStatus_tbl, p_sighaxStatus_tbl_end,
+			[first4](const sighaxStatus_tbl_t &p) {
+				return (p.first4 == first4);
+			});
+		if (iter != p_sighaxStatus_tbl_end) {
+			s_sighax_status = iter->status;
 		}
 
 		if (s_sighax_status) {

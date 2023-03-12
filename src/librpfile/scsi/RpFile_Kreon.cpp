@@ -31,7 +31,7 @@ namespace LibRpFile {
  */
 bool RpFile::isKreonDriveModel(void)
 {
-	RP_D(RpFile);
+	RP_D(const RpFile);
 	if (!d->devInfo) {
 		// Not a device.
 		return false;
@@ -83,32 +83,32 @@ bool RpFile::isKreonDriveModel(void)
 	// Vendor table.
 	// NOTE: Vendor strings MUST be 8 characters long.
 	// NOTE: Strings in product ID tables MUST be 16 characters long.
-	static const struct {
-		char vendor[8];
+	struct vendor_tbl_t {
+		char vendor_id[8];
 		const char *const *product_id_tbl;
-	} vendor_tbl[] = {
+	};
+	static const vendor_tbl_t vendor_tbl[] = {
 		{{'T','S','S','T','c','o','r','p'}, TSSTcorp_product_tbl},
 		{{'P','B','D','S',' ',' ',' ',' '}, PBDS_product_tbl},
 		{{'H','L','-','D','T','-','S','T'}, HLDTST_product_tbl},
 	};
+	static const vendor_tbl_t *const p_vendor_tbl_end = &vendor_tbl[ARRAY_SIZE(vendor_tbl)];
 
 	// Find the vendor.
-	const char *const *pProdTbl = nullptr;
-	for (const auto &pVendorTbl : vendor_tbl) {
-		if (!memcmp(resp.vendor_id, pVendorTbl.vendor, 8)) {
-			// Found a match.
-			pProdTbl = pVendorTbl.product_id_tbl;
-			break;
-		}
-	}
-	if (!pProdTbl) {
+	auto vendor_iter = std::find_if(vendor_tbl, p_vendor_tbl_end,
+		[&resp](const vendor_tbl_t &p) {
+			return !memcmp(p.vendor_id, resp.vendor_id, 8);
+		});
+	if (vendor_iter == p_vendor_tbl_end) {
 		// Not found.
 		return false;
 	}
 
 	// Check if the product ID is supported.
 	bool found = false;
-	for (; *pProdTbl != nullptr; pProdTbl++) {
+	for (const char *const *pProdTbl = vendor_iter->product_id_tbl;
+	     *pProdTbl != nullptr; pProdTbl++)
+	{
 		if (!memcmp(resp.product_id, *pProdTbl, 16)) {
 			// Found a match.
 			found = true;

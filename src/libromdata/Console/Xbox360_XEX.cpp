@@ -1280,15 +1280,15 @@ const Xbox360_XDBF *Xbox360_XEX_Private::initXDBF(void)
 		if (fileFormatInfo.compression_type == XEX2_COMPRESSION_TYPE_BASIC) {
 			// File has zero padding removed.
 			// Determine the actual physical address.
-			for (const BasicZDataSeg_t &p : basicZDataSegments) {
-				if (xdbf_physaddr >= p.vaddr &&
-				    xdbf_physaddr < (p.vaddr + p.length))
-				{
-					// Found the correct segment.
-					// Adjust the physical address.
-					xdbf_physaddr -= (p.vaddr - p.physaddr);
-					break;
-				}
+			auto iter = std::find_if(basicZDataSegments.cbegin(), basicZDataSegments.cend(),
+				[xdbf_physaddr](const BasicZDataSeg_t &p) -> bool {
+					return (xdbf_physaddr >= p.vaddr &&
+					        xdbf_physaddr < (p.vaddr + p.length));
+				});
+			if (iter != basicZDataSegments.cend()) {
+				// Found the correct segment.
+				// Adjust the physical address.
+				xdbf_physaddr -= (iter->vaddr - iter->physaddr);
 			}
 		}
 		peFile_tmp = new PartitionFile(peReader, xdbf_physaddr, pResInfo->size);
