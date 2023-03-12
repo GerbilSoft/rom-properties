@@ -1239,8 +1239,7 @@ int DirectDrawSurface::getFields(RomFields *fields) const
 		? C_("DirectDrawSurface", "Linear Size")
 		: C_("DirectDrawSurface", "Pitch");
 	fields->addField_string_numeric(
-		/*dpgettext_expr(RP_I18N_DOMAIN, "DirectDrawSurface", pitch_name),*/
-		pitch_name,
+		dpgettext_expr(RP_I18N_DOMAIN, "DirectDrawSurface", pitch_name),
 		ddsHeader->dwPitchOrLinearSize, RomFields::Base::Dec, 0);
 
 	if (d->dxgi_format != 0) {
