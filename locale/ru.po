@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2023-03-10 19:55-0500\n"
-"PO-Revision-Date: 2023-03-11 01:35\n"
+"POT-Creation-Date: 2023-03-12 13:11-0400\n"
+"PO-Revision-Date: 2023-03-12 18:31\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Language: ru_RU\n"
@@ -1667,7 +1667,7 @@ msgstr "Тип"
 #: ../src/libromdata/Audio/BRSTM.cpp:322 ../src/libromdata/Audio/SID.cpp:221
 #: ../src/libromdata/Console/Dreamcast.cpp:630
 #: ../src/libromdata/Console/Sega8Bit.cpp:389
-#: ../src/libromdata/Console/SegaSaturn.cpp:520
+#: ../src/libromdata/Console/SegaSaturn.cpp:516
 #: ../src/libromdata/Console/WiiU.cpp:451
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:411
 msgctxt "RomData"
@@ -1868,7 +1868,7 @@ msgstr ""
 
 #: ../src/libromdata/Audio/PSF.cpp:564 ../src/libromdata/Audio/VGM.cpp:397
 #: ../src/libromdata/Console/Dreamcast.cpp:636
-#: ../src/libromdata/Console/SegaSaturn.cpp:526
+#: ../src/libromdata/Console/SegaSaturn.cpp:522
 msgctxt "RomData"
 msgid "Release Date"
 msgstr ""
@@ -2431,7 +2431,7 @@ msgstr ""
 #: ../src/libromdata/Console/GameCube.cpp:1506
 #: ../src/libromdata/Console/iQuePlayer.cpp:655
 #: ../src/libromdata/Console/N64.cpp:271
-#: ../src/libromdata/Console/SegaSaturn.cpp:505
+#: ../src/libromdata/Console/SegaSaturn.cpp:501
 #: ../src/libromdata/Console/SNES.cpp:1305
 #: ../src/libromdata/Console/SufamiTurbo.cpp:348
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:923
@@ -2529,7 +2529,7 @@ msgstr ""
 #: ../src/libromdata/Console/MegaDrive.cpp:385
 #: ../src/libromdata/Console/NES.cpp:1260
 #: ../src/libromdata/Console/NES.cpp:1565
-#: ../src/libromdata/Console/SegaSaturn.cpp:510
+#: ../src/libromdata/Console/SegaSaturn.cpp:506
 #: ../src/libromdata/Console/SNES.cpp:1318
 #: ../src/libromdata/Console/WiiU.cpp:447
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:916
@@ -2551,7 +2551,7 @@ msgstr ""
 
 #: ../src/libromdata/Console/Dreamcast.cpp:645
 #: ../src/libromdata/Console/GameCube.cpp:1542
-#: ../src/libromdata/Console/SegaSaturn.cpp:552
+#: ../src/libromdata/Console/SegaSaturn.cpp:548
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1900
 #: ../src/libromdata/Other/ISO.cpp:451
 msgctxt "RomData"
@@ -2560,7 +2560,7 @@ msgstr "Диск №"
 
 #. tr: Disc X of Y (for multi-disc games)
 #: ../src/libromdata/Console/Dreamcast.cpp:648
-#: ../src/libromdata/Console/SegaSaturn.cpp:555
+#: ../src/libromdata/Console/SegaSaturn.cpp:551
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1902
 #: ../src/libromdata/Other/ISO.cpp:454
 #, c-format
@@ -2573,7 +2573,7 @@ msgstr "%1$u из %2$u"
 #: ../src/libromdata/Console/MegaDrive.cpp:545
 #: ../src/libromdata/Console/Sega8Bit.cpp:397
 #: ../src/libromdata/Console/Sega8Bit.cpp:406
-#: ../src/libromdata/Console/SegaSaturn.cpp:538
+#: ../src/libromdata/Console/SegaSaturn.cpp:534
 #: ../src/libromdata/Console/SNES.cpp:1366
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1803
 #: ../src/libromdata/Console/Xbox_XBE.cpp:823
@@ -2587,7 +2587,7 @@ msgstr "Япония"
 #: ../src/libromdata/Console/Dreamcast.cpp:663
 #: ../src/libromdata/Console/GameCubeRegions.cpp:118
 #: ../src/libromdata/Console/MegaDrive.cpp:547
-#: ../src/libromdata/Console/SegaSaturn.cpp:540
+#: ../src/libromdata/Console/SegaSaturn.cpp:536
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1802
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:539
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1194
@@ -2598,7 +2598,7 @@ msgstr "США"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:664
 #: ../src/libromdata/Console/MegaDrive.cpp:548
-#: ../src/libromdata/Console/SegaSaturn.cpp:541
+#: ../src/libromdata/Console/SegaSaturn.cpp:537
 #: ../src/libromdata/Console/SNES.cpp:1368
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1806
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:540
@@ -2611,7 +2611,7 @@ msgstr "Европа"
 #: ../src/libromdata/Console/GameCube.cpp:1564
 #: ../src/libromdata/Console/MegaDrive.cpp:552
 #: ../src/libromdata/Console/Sega8Bit.cpp:424
-#: ../src/libromdata/Console/SegaSaturn.cpp:545
+#: ../src/libromdata/Console/SegaSaturn.cpp:541
 #: ../src/libromdata/Console/SNES.cpp:1394
 #: ../src/libromdata/Console/WiiU.cpp:465
 #: ../src/libromdata/Console/WiiWAD.cpp:1030
@@ -3193,7 +3193,7 @@ msgstr ""
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:63
 #: ../src/libromdata/Console/GameCubeRegions.cpp:144
-#: ../src/libromdata/Console/SegaSaturn.cpp:539
+#: ../src/libromdata/Console/SegaSaturn.cpp:535
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:544
 msgctxt "Region"
 msgid "Taiwan"
@@ -4230,92 +4230,92 @@ msgctxt "Sega8Bit"
 msgid "M404 Copyright Header"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:502
+#: ../src/libromdata/Console/SegaSaturn.cpp:498
 msgctxt "SegaSaturn"
 msgid "Saturn"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:515
+#: ../src/libromdata/Console/SegaSaturn.cpp:511
 msgctxt "SegaSaturn"
 msgid "Product #"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:561
+#: ../src/libromdata/Console/SegaSaturn.cpp:557
 msgctxt "SegaSaturn|Peripherals"
 msgid "Control Pad"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:562
+#: ../src/libromdata/Console/SegaSaturn.cpp:558
 msgctxt "SegaSaturn|Peripherals"
 msgid "Analog Controller"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:563
+#: ../src/libromdata/Console/SegaSaturn.cpp:559
 msgctxt "SegaSaturn|Peripherals"
 msgid "Mouse"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:564
+#: ../src/libromdata/Console/SegaSaturn.cpp:560
 msgctxt "SegaSaturn|Peripherals"
 msgid "Keyboard"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:565
+#: ../src/libromdata/Console/SegaSaturn.cpp:561
 msgctxt "SegaSaturn|Peripherals"
 msgid "Steering Controller"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:566
+#: ../src/libromdata/Console/SegaSaturn.cpp:562
 msgctxt "SegaSaturn|Peripherals"
 msgid "Multi-Tap"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:567
+#: ../src/libromdata/Console/SegaSaturn.cpp:563
 msgctxt "SegaSaturn|Peripherals"
 msgid "Light Gun"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:568
+#: ../src/libromdata/Console/SegaSaturn.cpp:564
 msgctxt "SegaSaturn|Peripherals"
 msgid "RAM Cartridge"
 msgstr "Картридж ОЗУ"
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:569
+#: ../src/libromdata/Console/SegaSaturn.cpp:565
 msgctxt "SegaSaturn|Peripherals"
 msgid "3D Controller"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:570
+#: ../src/libromdata/Console/SegaSaturn.cpp:566
 msgctxt "SegaSaturn|Peripherals"
 msgid "Link Cable"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:571
+#: ../src/libromdata/Console/SegaSaturn.cpp:567
 msgctxt "SegaSaturn|Peripherals"
 msgid "NetLink"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:572
+#: ../src/libromdata/Console/SegaSaturn.cpp:568
 msgctxt "SegaSaturn|Peripherals"
 msgid "Pachinko"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:573
+#: ../src/libromdata/Console/SegaSaturn.cpp:569
 msgctxt "SegaSaturn|Peripherals"
 msgid "Floppy Drive"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:574
+#: ../src/libromdata/Console/SegaSaturn.cpp:570
 msgctxt "SegaSaturn|Peripherals"
 msgid "ROM Cartridge"
 msgstr "Картридж ПЗУ"
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:575
+#: ../src/libromdata/Console/SegaSaturn.cpp:571
 msgctxt "SegaSaturn|Peripherals"
 msgid "MPEG Card"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:581
+#: ../src/libromdata/Console/SegaSaturn.cpp:577
 msgctxt "SegaSaturn"
 msgid "Peripherals"
 msgstr ""
@@ -8756,7 +8756,7 @@ msgstr[2] "байтов"
 msgstr[3] ""
 
 #. tr: Kilobytes
-#: ../src/librptext/conversion.cpp:290 ../src/librptext/conversion.cpp:374
+#: ../src/librptext/conversion.cpp:290 ../src/librptext/conversion.cpp:381
 msgctxt "LibRpText|FileSize"
 msgid "KiB"
 msgstr "КиБ"
@@ -8792,38 +8792,38 @@ msgid "EiB"
 msgstr "ЭиБ"
 
 #. tr: %1$s == localized value, %2$s == suffix (e.g. MiB)
-#: ../src/librptext/conversion.cpp:345 ../src/librptext/conversion.cpp:373
+#: ../src/librptext/conversion.cpp:352 ../src/librptext/conversion.cpp:380
 #, c-format
 msgctxt "LibRpText|FileSize"
 msgid "%1$s %2$s"
 msgstr ""
 
 #. tr: Hertz (< 1,000)
-#: ../src/librptext/conversion.cpp:392
+#: ../src/librptext/conversion.cpp:399
 msgctxt "LibRpText|Frequency"
 msgid "Hz"
 msgstr ""
 
 #. tr: Kilohertz
-#: ../src/librptext/conversion.cpp:397
+#: ../src/librptext/conversion.cpp:404
 msgctxt "LibRpText|Frequency"
 msgid "kHz"
 msgstr ""
 
 #. tr: Megahertz
-#: ../src/librptext/conversion.cpp:402
+#: ../src/librptext/conversion.cpp:409
 msgctxt "LibRpText|Frequency"
 msgid "MHz"
 msgstr ""
 
 #. tr: Gigahertz
-#: ../src/librptext/conversion.cpp:407
+#: ../src/librptext/conversion.cpp:414
 msgctxt "LibRpText|Frequency"
 msgid "GHz"
 msgstr ""
 
 #. tr: %1$s == localized value, %2$s == suffix (e.g. MHz)
-#: ../src/librptext/conversion.cpp:431
+#: ../src/librptext/conversion.cpp:445
 #, c-format
 msgctxt "LibRpText|Frequency"
 msgid "%1$s %2$s"
