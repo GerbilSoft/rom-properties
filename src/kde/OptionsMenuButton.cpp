@@ -36,7 +36,7 @@ OptionsMenuButton::OptionsMenuButton(QWidget *parent)
 	, romOps_firstActionIndex(-1)
 {
 	// tr: "Options" button.
-	const QString s_options = U82Q(C_("RomDataView", "&Options"));
+	const QString s_options = U82Q(C_("OptionsMenuButton", "&Options"));
 	this->setText(s_options);
 
 	// Create the menu.
