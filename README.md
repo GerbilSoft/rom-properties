@@ -124,7 +124,7 @@ button.
 | Sony PlayStation Discs    |       Yes      |    No    |       N/A       |      Covers     |
 | Sony PlayStation EXEs     |       Yes      |    No    |       N/A       |       N/A       |
 | Sony PlayStation Saves    |       Yes      |    Yes   |       Icon      |       N/A       |
-| Sony PlayStation 2 Discs  |       Yes      |    Yes   |       N/A       |        No       |
+| Sony PlayStation 2 Discs  |       Yes      |    Yes   |       N/A       |      Covers     |
 
 \* Internal images are only present in Wii DLC WADs.<br>
 \* Sega Mega Drive includes Sega CD, 32X, and Pico.

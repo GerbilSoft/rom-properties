@@ -55,7 +55,8 @@
     have a single import, MSCOREEE!_CorExeMain.
   * New unit test RomHeaderTest that runs `rpcli` against a set of known ROM
     headers and reference text and JSON output. Currently has headers for
-    MegaDrive (including 32X), N64, SNES, DMG, and GameBoyAdvance.
+    MegaDrive (including 32X and Pico), N64, NES, Sega 8-bit (SMS and GG),
+    SNES, SufamiTurbo, DMG, and GameBoyAdvance.
   * libromdata's SOVERSION was bumped to 3 due to, among other things, the
     librptext split.
 
