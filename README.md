@@ -26,8 +26,11 @@ Major changes in v2.1 include:
 
 * KTX2: RG88 texture format and swizzling are now supported.
 
-Translators needed; file an issue if you'd like to get started on a new
-translation, or submit a Pull Request if you have a translation ready to go.
+Translators wanted; if you can translate rom-properties from English to another
+language, check out the [Crowdin project](https://crowdin.com/project/rom-properties).
+(If you would like to translate to a language not currently listed on the
+Crowdin project page, file an issue here on GitHub with the requested
+language.)
 
 See [`NEWS.md`](NEWS.md) for a full list of changes in v2.1.
 
