@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2023-03-12 13:11-0400\n"
-"PO-Revision-Date: 2023-03-12 18:31\n"
+"POT-Creation-Date: 2023-03-13 18:55-0400\n"
+"PO-Revision-Date: 2023-03-14 00:05\n"
 "Last-Translator: \n"
 "Language-Team: Romanian\n"
 "Language: ro_RO\n"
@@ -1315,7 +1315,8 @@ msgid "Copy as JSON"
 msgstr ""
 
 #. tr: "Options" button.
-#: ../src/gtk/OptionsMenuButton.cpp:203 ../src/win32/OptionsMenuButton.cpp:93
+#: ../src/gtk/OptionsMenuButton.cpp:203 ../src/kde/OptionsMenuButton.cpp:39
+#: ../src/win32/OptionsMenuButton.cpp:93
 msgctxt "OptionsMenuButton"
 msgid "&Options"
 msgstr ""
@@ -1428,12 +1429,6 @@ msgctxt "ConfigDialog"
 msgid "<b>ERROR:</b> %1"
 msgstr ""
 
-#. tr: "Options" button.
-#: ../src/kde/OptionsMenuButton.cpp:39
-msgctxt "RomDataView"
-msgid "&Options"
-msgstr ""
-
 #. tr: "All Files" filter (RP format)
 #: ../src/kde/RomDataView_ops.cpp:319
 msgctxt "RomData"
@@ -1474,7 +1469,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1375
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1699
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1923
-#: ../src/libromdata/Console/XboxDisc.cpp:779
+#: ../src/libromdata/Console/XboxDisc.cpp:783
 #: ../src/libromdata/Console/Xbox_XBE.cpp:705
 #: ../src/libromdata/Console/Xbox_XBE.cpp:709
 #: ../src/libromdata/Handheld/DMG.cpp:842
@@ -1485,8 +1480,8 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:734
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1652
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:305
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:403
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:418
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:406
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:421
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:513
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:174
 #: ../src/libromdata/Other/Amiibo.cpp:416
@@ -1620,7 +1615,7 @@ msgstr ""
 #: ../src/libromdata/Console/Atari7800.cpp:252
 #: ../src/libromdata/Console/CBMCart.cpp:420
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:1042
-#: ../src/libromdata/Console/XboxDisc.cpp:750
+#: ../src/libromdata/Console/XboxDisc.cpp:754
 #: ../src/libromdata/Handheld/WonderSwan.cpp:492
 #: ../src/libromdata/Other/ELF.cpp:2060 ../src/libromdata/Other/MachO.cpp:513
 #: ../src/librptexture/fileformat/GodotSTEX.cpp:1241
@@ -1653,9 +1648,9 @@ msgstr ""
 #: ../src/libromdata/Audio/BRSTM.cpp:322 ../src/libromdata/Audio/SID.cpp:221
 #: ../src/libromdata/Console/Dreamcast.cpp:630
 #: ../src/libromdata/Console/Sega8Bit.cpp:389
-#: ../src/libromdata/Console/SegaSaturn.cpp:516
+#: ../src/libromdata/Console/SegaSaturn.cpp:520
 #: ../src/libromdata/Console/WiiU.cpp:451
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:411
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:414
 msgctxt "RomData"
 msgid "Version"
 msgstr ""
@@ -1854,7 +1849,7 @@ msgstr ""
 
 #: ../src/libromdata/Audio/PSF.cpp:564 ../src/libromdata/Audio/VGM.cpp:397
 #: ../src/libromdata/Console/Dreamcast.cpp:636
-#: ../src/libromdata/Console/SegaSaturn.cpp:522
+#: ../src/libromdata/Console/SegaSaturn.cpp:526
 msgctxt "RomData"
 msgid "Release Date"
 msgstr ""
@@ -2417,7 +2412,7 @@ msgstr ""
 #: ../src/libromdata/Console/GameCube.cpp:1506
 #: ../src/libromdata/Console/iQuePlayer.cpp:655
 #: ../src/libromdata/Console/N64.cpp:271
-#: ../src/libromdata/Console/SegaSaturn.cpp:501
+#: ../src/libromdata/Console/SegaSaturn.cpp:505
 #: ../src/libromdata/Console/SNES.cpp:1305
 #: ../src/libromdata/Console/SufamiTurbo.cpp:348
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:923
@@ -2429,7 +2424,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/GameCom.cpp:730
 #: ../src/libromdata/Handheld/Lynx.cpp:201
 #: ../src/libromdata/Handheld/NGPC.cpp:309
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:406
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:409
 #: ../src/libromdata/Handheld/NintendoDS.cpp:959
 #: ../src/libromdata/Handheld/PokemonMini.cpp:221
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:329
@@ -2515,7 +2510,7 @@ msgstr ""
 #: ../src/libromdata/Console/MegaDrive.cpp:385
 #: ../src/libromdata/Console/NES.cpp:1260
 #: ../src/libromdata/Console/NES.cpp:1565
-#: ../src/libromdata/Console/SegaSaturn.cpp:506
+#: ../src/libromdata/Console/SegaSaturn.cpp:510
 #: ../src/libromdata/Console/SNES.cpp:1318
 #: ../src/libromdata/Console/WiiU.cpp:447
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:916
@@ -2537,7 +2532,7 @@ msgstr ""
 
 #: ../src/libromdata/Console/Dreamcast.cpp:645
 #: ../src/libromdata/Console/GameCube.cpp:1542
-#: ../src/libromdata/Console/SegaSaturn.cpp:548
+#: ../src/libromdata/Console/SegaSaturn.cpp:552
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1900
 #: ../src/libromdata/Other/ISO.cpp:451
 msgctxt "RomData"
@@ -2546,7 +2541,7 @@ msgstr ""
 
 #. tr: Disc X of Y (for multi-disc games)
 #: ../src/libromdata/Console/Dreamcast.cpp:648
-#: ../src/libromdata/Console/SegaSaturn.cpp:551
+#: ../src/libromdata/Console/SegaSaturn.cpp:555
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1902
 #: ../src/libromdata/Other/ISO.cpp:454
 #, c-format
@@ -2559,7 +2554,7 @@ msgstr ""
 #: ../src/libromdata/Console/MegaDrive.cpp:545
 #: ../src/libromdata/Console/Sega8Bit.cpp:397
 #: ../src/libromdata/Console/Sega8Bit.cpp:406
-#: ../src/libromdata/Console/SegaSaturn.cpp:534
+#: ../src/libromdata/Console/SegaSaturn.cpp:538
 #: ../src/libromdata/Console/SNES.cpp:1366
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1803
 #: ../src/libromdata/Console/Xbox_XBE.cpp:823
@@ -2573,7 +2568,7 @@ msgstr ""
 #: ../src/libromdata/Console/Dreamcast.cpp:663
 #: ../src/libromdata/Console/GameCubeRegions.cpp:118
 #: ../src/libromdata/Console/MegaDrive.cpp:547
-#: ../src/libromdata/Console/SegaSaturn.cpp:536
+#: ../src/libromdata/Console/SegaSaturn.cpp:540
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1802
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:539
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1194
@@ -2584,7 +2579,7 @@ msgstr ""
 
 #: ../src/libromdata/Console/Dreamcast.cpp:664
 #: ../src/libromdata/Console/MegaDrive.cpp:548
-#: ../src/libromdata/Console/SegaSaturn.cpp:537
+#: ../src/libromdata/Console/SegaSaturn.cpp:541
 #: ../src/libromdata/Console/SNES.cpp:1368
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1806
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:540
@@ -2597,7 +2592,7 @@ msgstr ""
 #: ../src/libromdata/Console/GameCube.cpp:1564
 #: ../src/libromdata/Console/MegaDrive.cpp:552
 #: ../src/libromdata/Console/Sega8Bit.cpp:424
-#: ../src/libromdata/Console/SegaSaturn.cpp:541
+#: ../src/libromdata/Console/SegaSaturn.cpp:545
 #: ../src/libromdata/Console/SNES.cpp:1394
 #: ../src/libromdata/Console/WiiU.cpp:465
 #: ../src/libromdata/Console/WiiWAD.cpp:1030
@@ -3179,7 +3174,7 @@ msgstr ""
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:63
 #: ../src/libromdata/Console/GameCubeRegions.cpp:144
-#: ../src/libromdata/Console/SegaSaturn.cpp:535
+#: ../src/libromdata/Console/SegaSaturn.cpp:539
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:544
 msgctxt "Region"
 msgid "Taiwan"
@@ -4216,92 +4211,92 @@ msgctxt "Sega8Bit"
 msgid "M404 Copyright Header"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:498
+#: ../src/libromdata/Console/SegaSaturn.cpp:502
 msgctxt "SegaSaturn"
 msgid "Saturn"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:511
+#: ../src/libromdata/Console/SegaSaturn.cpp:515
 msgctxt "SegaSaturn"
 msgid "Product #"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:557
+#: ../src/libromdata/Console/SegaSaturn.cpp:561
 msgctxt "SegaSaturn|Peripherals"
 msgid "Control Pad"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:558
+#: ../src/libromdata/Console/SegaSaturn.cpp:562
 msgctxt "SegaSaturn|Peripherals"
 msgid "Analog Controller"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:559
+#: ../src/libromdata/Console/SegaSaturn.cpp:563
 msgctxt "SegaSaturn|Peripherals"
 msgid "Mouse"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:560
+#: ../src/libromdata/Console/SegaSaturn.cpp:564
 msgctxt "SegaSaturn|Peripherals"
 msgid "Keyboard"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:561
+#: ../src/libromdata/Console/SegaSaturn.cpp:565
 msgctxt "SegaSaturn|Peripherals"
 msgid "Steering Controller"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:562
+#: ../src/libromdata/Console/SegaSaturn.cpp:566
 msgctxt "SegaSaturn|Peripherals"
 msgid "Multi-Tap"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:563
+#: ../src/libromdata/Console/SegaSaturn.cpp:567
 msgctxt "SegaSaturn|Peripherals"
 msgid "Light Gun"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:564
+#: ../src/libromdata/Console/SegaSaturn.cpp:568
 msgctxt "SegaSaturn|Peripherals"
 msgid "RAM Cartridge"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:565
+#: ../src/libromdata/Console/SegaSaturn.cpp:569
 msgctxt "SegaSaturn|Peripherals"
 msgid "3D Controller"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:566
+#: ../src/libromdata/Console/SegaSaturn.cpp:570
 msgctxt "SegaSaturn|Peripherals"
 msgid "Link Cable"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:567
+#: ../src/libromdata/Console/SegaSaturn.cpp:571
 msgctxt "SegaSaturn|Peripherals"
 msgid "NetLink"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:568
+#: ../src/libromdata/Console/SegaSaturn.cpp:572
 msgctxt "SegaSaturn|Peripherals"
 msgid "Pachinko"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:569
+#: ../src/libromdata/Console/SegaSaturn.cpp:573
 msgctxt "SegaSaturn|Peripherals"
 msgid "Floppy Drive"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:570
+#: ../src/libromdata/Console/SegaSaturn.cpp:574
 msgctxt "SegaSaturn|Peripherals"
 msgid "ROM Cartridge"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:571
+#: ../src/libromdata/Console/SegaSaturn.cpp:575
 msgctxt "SegaSaturn|Peripherals"
 msgid "MPEG Card"
 msgstr ""
 
-#: ../src/libromdata/Console/SegaSaturn.cpp:577
+#: ../src/libromdata/Console/SegaSaturn.cpp:581
 msgctxt "SegaSaturn"
 msgid "Peripherals"
 msgstr ""
@@ -4973,22 +4968,22 @@ msgctxt "Xbox360_XEX"
 msgid "Compression"
 msgstr ""
 
-#: ../src/libromdata/Console/XboxDisc.cpp:731
+#: ../src/libromdata/Console/XboxDisc.cpp:735
 msgctxt "XboxDisc"
 msgid "Disc Type"
 msgstr ""
 
-#: ../src/libromdata/Console/XboxDisc.cpp:736
+#: ../src/libromdata/Console/XboxDisc.cpp:740
 msgctxt "XboxDisc"
 msgid "Extracted XDVDFS"
 msgstr ""
 
-#: ../src/libromdata/Console/XboxDisc.cpp:755
+#: ../src/libromdata/Console/XboxDisc.cpp:759
 msgctxt "XboxDisc"
 msgid "Disc Timestamp"
 msgstr ""
 
-#: ../src/libromdata/Console/XboxDisc.cpp:778
+#: ../src/libromdata/Console/XboxDisc.cpp:782
 msgctxt "XboxDisc"
 msgid "Boot Filename"
 msgstr ""
@@ -5504,19 +5499,19 @@ msgid "RAM"
 msgstr ""
 
 #: ../src/libromdata/Handheld/DMG.cpp:906
-#: ../src/libromdata/Handheld/DMG.cpp:1103
+#: ../src/libromdata/Handheld/DMG.cpp:1105
 msgctxt "DMG|Features"
 msgid "Battery"
 msgstr ""
 
 #: ../src/libromdata/Handheld/DMG.cpp:907
-#: ../src/libromdata/Handheld/DMG.cpp:1105
+#: ../src/libromdata/Handheld/DMG.cpp:1107
 msgctxt "DMG|Features"
 msgid "Timer"
 msgstr ""
 
 #: ../src/libromdata/Handheld/DMG.cpp:908
-#: ../src/libromdata/Handheld/DMG.cpp:1104
+#: ../src/libromdata/Handheld/DMG.cpp:1106
 msgctxt "DMG|Features"
 msgid "Rumble"
 msgstr ""
@@ -5527,13 +5522,13 @@ msgid "Tilt Sensor"
 msgstr ""
 
 #: ../src/libromdata/Handheld/DMG.cpp:913
-#: ../src/libromdata/Handheld/DMG.cpp:1109
+#: ../src/libromdata/Handheld/DMG.cpp:1111
 msgctxt "DMG"
 msgid "Features"
 msgstr ""
 
 #: ../src/libromdata/Handheld/DMG.cpp:917
-#: ../src/libromdata/Handheld/DMG.cpp:1113
+#: ../src/libromdata/Handheld/DMG.cpp:1115
 msgctxt "DMG"
 msgid "ROM Size"
 msgstr ""
@@ -5561,7 +5556,7 @@ msgid "%u KiB"
 msgstr ""
 
 #: ../src/libromdata/Handheld/DMG.cpp:935
-#: ../src/libromdata/Handheld/DMG.cpp:1118
+#: ../src/libromdata/Handheld/DMG.cpp:1120
 msgctxt "DMG"
 msgid "RAM Size"
 msgstr ""
@@ -5610,9 +5605,9 @@ msgctxt "DMG"
 msgid "GBX Version"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:1064
-#: ../src/libromdata/Handheld/DMG.cpp:1074
-#: ../src/libromdata/Handheld/DMG.cpp:1079
+#: ../src/libromdata/Handheld/DMG.cpp:1066
+#: ../src/libromdata/Handheld/DMG.cpp:1076
+#: ../src/libromdata/Handheld/DMG.cpp:1081
 msgctxt "DMG"
 msgid "Mapper"
 msgstr ""
@@ -6011,7 +6006,7 @@ msgstr ""
 
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:277
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:356
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:395
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:398
 msgctxt "Nintendo3DSFirm"
 msgid "ARM9 Homebrew"
 msgstr ""
@@ -6022,8 +6017,8 @@ msgid "ARM11 Homebrew"
 msgstr ""
 
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:304
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:402
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:417
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:405
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:420
 msgctxt "Nintendo3DSFirm"
 msgid "Type"
 msgstr ""
@@ -6038,22 +6033,22 @@ msgctxt "Nintendo3DSFirm"
 msgid "System Version"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:398
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:401
 msgctxt "Nintendo3DSFirm"
 msgid "Not sighaxed"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:414
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:417
 msgctxt "Nintendo3DSFirm"
 msgid "Sighax Status"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:423
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:426
 msgctxt "Nintendo3DSFirm"
 msgid "ARM11 Entry Point"
 msgstr ""
 
-#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:427
+#: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:430
 msgctxt "Nintendo3DSFirm"
 msgid "ARM9 Entry Point"
 msgstr ""
@@ -8814,198 +8809,192 @@ msgctxt "DidjTex"
 msgid "Display Size"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1165
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1171
 #, c-format
 msgctxt "DirectDrawSurface"
 msgid "Alpha (%u-bit)"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1169
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1175
 #, c-format
 msgctxt "DirectDrawSurface"
 msgid "YUV (%u-bit)"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1174
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1180
 #, c-format
 msgctxt "DirectDrawSurface"
 msgid "Luminance + Alpha (%u-bit)"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1178
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1184
 #, c-format
 msgctxt "DirectDrawSurface"
 msgid "Luminance (%u-bit)"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1184
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1190
 msgctxt "FileFormat"
 msgid "Unknown"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1233
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1239
 msgctxt "DirectDrawSurface"
 msgid "Linear Size"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1234
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1240
 msgctxt "DirectDrawSurface"
 msgid "Pitch"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1243
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1248
 msgctxt "DirectDrawSurface"
 msgid "DX10 Format"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1245
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1250
 #, c-format
 msgctxt "FileFormat"
 msgid "Unknown (0x%08X)"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1251
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1256
 msgctxt "DirectDrawSurface"
 msgid "NVTT Version"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1252
-#, c-format
-msgctxt "DirectDrawSurface"
-msgid "%u.%u.%u"
-msgstr ""
-
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1266
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1271
 msgctxt "DirectDrawSurface"
 msgid "GIMP-DDS FourCC"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1273
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1278
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Caps"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1274
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1279
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Height"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1275
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1280
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Width"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1276
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1281
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Pitch"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1282
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1287
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Pixel Format"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1286
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1291
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Mipmap Count"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1288
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1293
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Linear Size"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1291
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1296
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Depth"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1295
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1300
 msgctxt "DirectDrawSurface"
 msgid "Flags"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1302
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1307
 msgctxt "DirectDrawSurface|dwCaps"
 msgid "Complex"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1308
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1313
 msgctxt "DirectDrawSurface|dwCaps"
 msgid "Texture"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1314
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1319
 msgctxt "DirectDrawSurface|dwCaps"
 msgid "Mipmap"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1318
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1323
 msgctxt "DirectDrawSurface"
 msgid "Caps"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1325
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1330
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "Cubemap"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1326
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1331
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+X"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1327
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1332
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "-X"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1329
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1334
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+Y"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1330
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1335
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "-Y"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1331
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1336
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+Z"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1332
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1337
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "-Z"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1337
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1342
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "Volume"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1341
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1346
 msgctxt "DirectDrawSurface"
 msgid "Caps2"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1348
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1353
 msgctxt "DirectDrawSurface"
 msgid "Tile Mode"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1349
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1354
 msgctxt "DirectDrawSurface"
 msgid "Base Alignment"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1351
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1356
 msgctxt "DirectDrawSurface"
 msgid "Data Size"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1353
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1358
 msgctxt "DirectDrawSurface"
 msgid "XDK Version"
 msgstr ""
@@ -9155,44 +9144,44 @@ msgctxt "KhronosKTX2"
 msgid "Key/Value Data"
 msgstr ""
 
-#: ../src/librptexture/fileformat/KhronosKTX.cpp:1033
-#: ../src/librptexture/fileformat/KhronosKTX.cpp:1042
+#: ../src/librptexture/fileformat/KhronosKTX.cpp:1036
+#: ../src/librptexture/fileformat/KhronosKTX.cpp:1045
 msgctxt "FileFormat"
 msgid "Little-Endian"
 msgstr ""
 
-#: ../src/librptexture/fileformat/KhronosKTX.cpp:1035
-#: ../src/librptexture/fileformat/KhronosKTX.cpp:1040
+#: ../src/librptexture/fileformat/KhronosKTX.cpp:1038
+#: ../src/librptexture/fileformat/KhronosKTX.cpp:1043
 msgctxt "FileFormat"
 msgid "Big-Endian"
 msgstr ""
 
-#: ../src/librptexture/fileformat/KhronosKTX.cpp:1045
+#: ../src/librptexture/fileformat/KhronosKTX.cpp:1048
 msgctxt "FileFormat"
 msgid "Endianness"
 msgstr ""
 
-#: ../src/librptexture/fileformat/KhronosKTX.cpp:1088
+#: ../src/librptexture/fileformat/KhronosKTX.cpp:1091
 msgctxt "KhronosKTX"
 msgid "# of Array Elements"
 msgstr ""
 
-#: ../src/librptexture/fileformat/KhronosKTX.cpp:1094
+#: ../src/librptexture/fileformat/KhronosKTX.cpp:1097
 msgctxt "KhronosKTX"
 msgid "# of Faces"
 msgstr ""
 
-#: ../src/librptexture/fileformat/KhronosKTX.cpp:1102
+#: ../src/librptexture/fileformat/KhronosKTX.cpp:1105
 msgctxt "KhronosKTX|KeyValue"
 msgid "Key"
 msgstr ""
 
-#: ../src/librptexture/fileformat/KhronosKTX.cpp:1103
+#: ../src/librptexture/fileformat/KhronosKTX.cpp:1106
 msgctxt "KhronosKTX|KeyValue"
 msgid "Value"
 msgstr ""
 
-#: ../src/librptexture/fileformat/KhronosKTX.cpp:1114
+#: ../src/librptexture/fileformat/KhronosKTX.cpp:1117
 msgctxt "KhronosKTX"
 msgid "Key/Value Data"
 msgstr ""
