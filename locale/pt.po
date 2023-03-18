@@ -7,11 +7,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.1+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2023-03-13 18:55-0400\n"
+"POT-Creation-Date: 2023-03-18 11:25-0400\n"
 "PO-Revision-Date: 2018-06-02 15:07-0300\n"
 "Last-Translator: Null Magic\n"
 "Language-Team: \n"
-"Language: pt\n"
+"Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -8871,7 +8871,7 @@ msgid "Animated icon is present (use -a to extract)"
 msgstr "O ícone animado está presente (utilizar -a para extrair)"
 
 #. tr: Bytes (< 1,024)
-#: ../src/librptext/conversion.cpp:285
+#: ../src/librptext/conversion.cpp:286
 msgctxt "LibRpText|FileSize"
 msgid "byte"
 msgid_plural "bytes"
@@ -8879,74 +8879,74 @@ msgstr[0] "byte"
 msgstr[1] "bytes"
 
 #. tr: Kilobytes
-#: ../src/librptext/conversion.cpp:290 ../src/librptext/conversion.cpp:381
+#: ../src/librptext/conversion.cpp:291 ../src/librptext/conversion.cpp:382
 msgctxt "LibRpText|FileSize"
 msgid "KiB"
 msgstr "KiB"
 
 #. tr: Megabytes
-#: ../src/librptext/conversion.cpp:295
+#: ../src/librptext/conversion.cpp:296
 msgctxt "LibRpText|FileSize"
 msgid "MiB"
 msgstr "MiB"
 
 #. tr: Gigabytes
-#: ../src/librptext/conversion.cpp:300
+#: ../src/librptext/conversion.cpp:301
 msgctxt "LibRpText|FileSize"
 msgid "GiB"
 msgstr "GiB"
 
 #. tr: Terabytes
-#: ../src/librptext/conversion.cpp:305
+#: ../src/librptext/conversion.cpp:306
 msgctxt "LibRpText|FileSize"
 msgid "TiB"
 msgstr "TiB"
 
 #. tr: Petabytes
-#: ../src/librptext/conversion.cpp:310
+#: ../src/librptext/conversion.cpp:311
 msgctxt "LibRpText|FileSize"
 msgid "PiB"
 msgstr "PiB"
 
 #. tr: Exabytes
-#: ../src/librptext/conversion.cpp:315
+#: ../src/librptext/conversion.cpp:316
 msgctxt "LibRpText|FileSize"
 msgid "EiB"
 msgstr "EiB"
 
 #. tr: %1$s == localized value, %2$s == suffix (e.g. MiB)
-#: ../src/librptext/conversion.cpp:352 ../src/librptext/conversion.cpp:380
+#: ../src/librptext/conversion.cpp:353 ../src/librptext/conversion.cpp:381
 #, c-format
 msgctxt "LibRpText|FileSize"
 msgid "%1$s %2$s"
 msgstr "%1$s %2$s"
 
 #. tr: Hertz (< 1,000)
-#: ../src/librptext/conversion.cpp:399
+#: ../src/librptext/conversion.cpp:400
 msgctxt "LibRpText|Frequency"
 msgid "Hz"
 msgstr ""
 
 #. tr: Kilohertz
-#: ../src/librptext/conversion.cpp:404
+#: ../src/librptext/conversion.cpp:405
 msgctxt "LibRpText|Frequency"
 msgid "kHz"
 msgstr ""
 
 #. tr: Megahertz
-#: ../src/librptext/conversion.cpp:409
+#: ../src/librptext/conversion.cpp:410
 msgctxt "LibRpText|Frequency"
 msgid "MHz"
 msgstr ""
 
 #. tr: Gigahertz
-#: ../src/librptext/conversion.cpp:414
+#: ../src/librptext/conversion.cpp:415
 msgctxt "LibRpText|Frequency"
 msgid "GHz"
 msgstr ""
 
 #. tr: %1$s == localized value, %2$s == suffix (e.g. MHz)
-#: ../src/librptext/conversion.cpp:445
+#: ../src/librptext/conversion.cpp:446
 #, c-format
 msgctxt "LibRpText|Frequency"
 msgid "%1$s %2$s"
@@ -10070,22 +10070,27 @@ msgctxt "rpcli"
 msgid "ERROR: %s"
 msgstr "ERRO: %s"
 
-#: ../src/rp-stub/rp-stub.c:77
+#: ../src/rp-stub/rp-stub.c:76
+#, fuzzy
 msgctxt "rp_stub"
-msgid ""
-"Shared library stub program.\n"
-"Copyright (c) 2016-2023 by David Korth."
+msgid "Shared library stub program."
+msgstr "Biblioteca compartilhada"
+
+#: ../src/rp-stub/rp-stub.c:77
+#, fuzzy
+msgctxt "rp-stub"
+msgid "Copyright (c) 2016-2023 by David Korth."
 msgstr ""
 "Carregador de biblioteca ROM-Properties .\n"
 "Copyright (c) 2016-2023 by David Korth."
 
-#: ../src/rp-stub/rp-stub.c:80
+#: ../src/rp-stub/rp-stub.c:79
 #, c-format
 msgctxt "rp-stub"
 msgid "rom-properties version: %s"
 msgstr "Versão de rom-properties: %s"
 
-#: ../src/rp-stub/rp-stub.c:90
+#: ../src/rp-stub/rp-stub.c:89
 msgctxt "rp-stub"
 msgid ""
 "This program is licensed under the GNU GPL v2.\n"
@@ -10096,59 +10101,80 @@ msgstr ""
 "Confira https://www.gnu.org/licenses/old-licenses/gpl-2.0.html para mais "
 "informações."
 
-#: ../src/rp-stub/rp-stub.c:99
-#, c-format
-msgctxt "rp-stub"
+#: ../src/rp-stub/rp-stub.c:98
+#, fuzzy, c-format
+msgctxt "rp-stub|Help"
 msgid "Usage: %s [-s size] source_file output_file"
 msgstr "Utilização: %s [-s tamanho] arquivo_fonte arquivo_de saída"
 
-#: ../src/rp-stub/rp-stub.c:103
-msgctxt "rp-stub"
+#: ../src/rp-stub/rp-stub.c:102
+msgctxt "rp-stub|Help"
 msgid ""
 "If source_file is a supported ROM image, a thumbnail is\n"
-"extracted and saved as output_file.\n"
-"\n"
-"Thumbnailing options:\n"
-"  -s, --size\t\tMaximum thumbnail size. (default is 256px) [0 for full "
-"image]\n"
-"  -a, --autoext\t\tGenerate the output filename based on the source "
-"filename.\n"
-"               \t\t(WARNING: May overwrite an existing file without "
-"prompting.)\n"
-"  -n, --noxdg\t\tDon't include XDG thumbnail metadata.\n"
-"\n"
-"Other options:\n"
-"  -c, --config\t\tShow the configuration dialog instead of thumbnailing.\n"
-"  -d, --debug\t\tShow debug output when searching for rom-properties.\n"
-"  -h, --help\t\tDisplay this help and exit.\n"
-"  -V, --version\t\tOutput version information and exit."
+"extracted and saved as output_file."
 msgstr ""
 "Se arquivo_fonte for um arquivo ROM compatível, uma minatura\n"
-"será extraída e gravada como um arquivo_de_saída.\n"
-"\n"
-"Thumbnailing options:\n"
-"  -s, --size\t\tTamanho máximo de miniatura. (padrão: 256px) [0 for full "
-"image]\n"
-"  -a, --autoext\t\tGenerate the output filename based on the source "
-"filename.\n"
-"               \t\t(WARNING: May overwrite an existing file without "
-"prompting.)\n"
-"  -n, --noxdg\t\tDon't include XDG thumbnail metadata.\n"
-"\n"
-"Other options:\n"
-"  -c, --config\t\tMostra diálogo de confiruação em vez de minuatura.\n"
-"  -d, --debug\t\tMostra depuração de saída ao procurar por rom-properties.\n"
-"  -h, --help\t\tMostrar esta ajuda e sair.\n"
-"  -V, --version\t\tMostrar informações de versão e sair."
+"será extraída e gravada como um arquivo_de_saída."
 
-#: ../src/rp-stub/rp-stub.c:118
-#, c-format
-msgctxt "rp-stub"
+#: ../src/rp-stub/rp-stub.c:105
+msgctxt "rp-stub|Help"
+msgid "Thumbnailing options:"
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:107
+msgctxt "rp-stub|Help"
+msgid "Maximum thumbnail size. (default is 256px) [0 for full image]"
+msgstr "Tamanho máximo de miniatura. (padrão: 256px) [0 for full image]"
+
+#: ../src/rp-stub/rp-stub.c:109
+msgctxt "rp-stub|Help"
+msgid "Generate the output filename based on the source filename."
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:111
+msgctxt "rp-stub|Help"
+msgid "(WARNING: May overwrite an existing file without prompting.)"
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:113
+msgctxt "rp-stub|Help"
+msgid "Don't include XDG thumbnail metadata."
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:115
+msgctxt "rp-stub|Help"
+msgid "Other options:"
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:117
+msgctxt "rp-stub|Help"
+msgid "Show the configuration dialog instead of thumbnailing."
+msgstr "Mostra diálogo de confiruação em vez de minuatura."
+
+#: ../src/rp-stub/rp-stub.c:119
+msgctxt "rp-stub|Help"
+msgid "Show debug output when searching for rom-properties."
+msgstr "Mostra depuração de saída ao procurar por rom-properties."
+
+#: ../src/rp-stub/rp-stub.c:121
+msgctxt "rp-stub|Help"
+msgid "Display this help and exit."
+msgstr "Mostrar esta ajuda e sair."
+
+#: ../src/rp-stub/rp-stub.c:123
+msgctxt "rp-stub|Help"
+msgid "Output version information and exit."
+msgstr "Mostrar informações de versão e sair."
+
+#: ../src/rp-stub/rp-stub.c:125
+#, fuzzy, c-format
+msgctxt "rp-stub|Help"
 msgid "Usage: %s"
 msgstr "Utilização: %s"
 
-#: ../src/rp-stub/rp-stub.c:122
-msgctxt "rp-stub"
+#: ../src/rp-stub/rp-stub.c:129
+#, fuzzy
+msgctxt "rp-stub|Help"
 msgid ""
 "When invoked as rp-config, this program will open the configuration dialog\n"
 "using an installed plugin that most closely matches the currently running\n"
@@ -10159,67 +10185,67 @@ msgstr ""
 "utilizando um plugin instalado que mais combine com o ambiente de trabalho\n"
 "em execução."
 
-#: ../src/rp-stub/rp-stub.c:171
+#: ../src/rp-stub/rp-stub.c:178
 #, c-format
 msgctxt "rp-stub"
 msgid "Try '%s --help' for more information."
 msgstr "Digite '%s --help'  para mais informações."
 
-#: ../src/rp-stub/rp-stub.c:239
+#: ../src/rp-stub/rp-stub.c:246
 #, c-format
 msgctxt "rp-stub"
 msgid "invalid size '%s'"
 msgstr "tamanho inválido '%s'"
 
-#: ../src/rp-stub/rp-stub.c:242
+#: ../src/rp-stub/rp-stub.c:249
 #, c-format
 msgctxt "rp-stub"
 msgid "size '%s' is out of range"
 msgstr "tamanho '%s' fora do limite"
 
-#: ../src/rp-stub/rp-stub.c:294
+#: ../src/rp-stub/rp-stub.c:301
 msgctxt "rp-stub"
 msgid "missing source and output file parameters"
 msgstr "arquivo fonte e arquivo de saída faltando"
 
-#: ../src/rp-stub/rp-stub.c:297
+#: ../src/rp-stub/rp-stub.c:304
 msgctxt "rp-stub"
 msgid "missing output file parameter"
 msgstr "parâmetro de arquivo de saída faltando"
 
-#: ../src/rp-stub/rp-stub.c:300
+#: ../src/rp-stub/rp-stub.c:307
 msgctxt "rp-stub"
 msgid "--autoext and output file specified"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:303
+#: ../src/rp-stub/rp-stub.c:310
 msgctxt "rp-stub"
 msgid "too many parameters specified"
 msgstr "muitos parâmetros especificados"
 
 #. tr: NOTE: Not positional. Don't change argument positions!
 #. tr: Only localize "Calling function:".
-#: ../src/rp-stub/rp-stub.c:352
+#: ../src/rp-stub/rp-stub.c:359
 #, c-format
 msgctxt "rp-stub"
 msgid "Calling function: %s(\"%s\", \"%s\", %d, %u);"
 msgstr "Chamando função: %s(\"%s\", \"%s\", %d, %u);"
 
-#: ../src/rp-stub/rp-stub.c:364
+#: ../src/rp-stub/rp-stub.c:371
 #, c-format
 msgctxt "rp-stub"
 msgid "Calling function: %s();"
 msgstr "Chamando função: %s();"
 
 #. tr: %1$s == function name, %2$d == return value
-#: ../src/rp-stub/rp-stub.c:375
+#: ../src/rp-stub/rp-stub.c:382
 #, c-format
 msgctxt "rp-stub"
 msgid "%1$s() returned %2$d."
 msgstr "%1$s() devolveu %2$d."
 
 #. tr: %1$s == function name, %2$d == return value
-#: ../src/rp-stub/rp-stub.c:380
+#: ../src/rp-stub/rp-stub.c:387
 #, c-format
 msgctxt "rp-stub"
 msgid "*** ERROR: %1$s() returned %2$d."
@@ -10410,13 +10436,3 @@ msgstr ""
 msgctxt "RomData"
 msgid "All Files|*.*|-"
 msgstr "Todos os arquivos|*.*|-"
-
-#, c-format
-#~ msgctxt "WonderSwan"
-#~ msgid "%u KiB"
-#~ msgstr "%u KiB"
-
-#, c-format
-#~ msgctxt "TextFuncs|Frequency"
-#~ msgid "%1$s %2$s"
-#~ msgstr "%1$s %2$s"
