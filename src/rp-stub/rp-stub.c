@@ -73,9 +73,8 @@ static bool is_debug = false;
 static void show_version(void)
 {
 	puts(RP_DESCRIPTION);
-	puts(C_("rp_stub",
-		"Shared library stub program.\n"
-		"Copyright (c) 2016-2023 by David Korth."));
+	puts(C_("rp_stub", "Shared library stub program."));
+	puts(C_("rp-stub", "Copyright (c) 2016-2023 by David Korth."));
 	putchar('\n');
 	printf(C_("rp-stub", "rom-properties version: %s"), RP_VERSION_STRING);
 	putchar('\n');
@@ -96,29 +95,37 @@ static void show_help(const char *argv0)
 	show_version();
 	putchar('\n');
 	if (!is_rp_config) {
-		printf(C_("rp-stub", "Usage: %s [-s size] source_file output_file"), argv0);
+		printf(C_("rp-stub|Help", "Usage: %s [-s size] source_file output_file"), argv0);
 		putchar('\n');
 		putchar('\n');
-		puts(C_("rp-stub",
+		puts(C_("rp-stub|Help",
 			"If source_file is a supported ROM image, a thumbnail is\n"
-			"extracted and saved as output_file.\n"
-			"\n"
-			"Thumbnailing options:\n"
-			"  -s, --size\t\tMaximum thumbnail size. (default is 256px) [0 for full image]\n"
-			"  -a, --autoext\t\tGenerate the output filename based on the source filename.\n"
-			"               \t\t(WARNING: May overwrite an existing file without prompting.)\n"
-			"  -n, --noxdg\t\tDon't include XDG thumbnail metadata.\n"
-			"\n"
-			"Other options:\n"
-			"  -c, --config\t\tShow the configuration dialog instead of thumbnailing.\n"
-			"  -d, --debug\t\tShow debug output when searching for rom-properties.\n"
-			"  -h, --help\t\tDisplay this help and exit.\n"
-			"  -V, --version\t\tOutput version information and exit."));
+			"extracted and saved as output_file."));
+		putchar('\n');
+		puts(C_("rp-stub|Help", "Thumbnailing options:"));
+		fputs("  -s, --size\t\t", stdout);
+		puts(C_("rp-stub|Help", "Maximum thumbnail size. (default is 256px) [0 for full image]"));
+		fputs("  -a, --autoext\t\t", stdout);
+		puts(C_("rp-stub|Help", "Generate the output filename based on the source filename."));
+		fputs("               \t\t", stdout);
+		puts(C_("rp-stub|Help", "(WARNING: May overwrite an existing file without prompting.)"));
+		fputs("  -n, --noxdg\t\t", stdout);
+		puts(C_("rp-stub|Help", "Don't include XDG thumbnail metadata."));
+		putchar('\n');
+		puts(C_("rp-stub|Help", "Other options:"));
+		fputs("  -c, --config\t\t", stdout);
+		puts(C_("rp-stub|Help", "Show the configuration dialog instead of thumbnailing."));
+		fputs("  -d, --debug\t\t", stdout);
+		puts(C_("rp-stub|Help", "Show debug output when searching for rom-properties."));
+		fputs("  -h, --help\t\t", stdout);
+		puts(C_("rp-stub|Help", "Display this help and exit."));
+		fputs("  -V, --version\t\t", stdout);
+		puts(C_("rp-stub|Help", "Output version information and exit."));
 	} else {
-		printf(C_("rp-stub", "Usage: %s"), argv0);
+		printf(C_("rp-stub|Help", "Usage: %s"), argv0);
 		putchar('\n');
 		putchar('\n');
-		puts(C_("rp-stub",
+		puts(C_("rp-stub|Help",
 			"When invoked as rp-config, this program will open the configuration dialog\n"
 			"using an installed plugin that most closely matches the currently running\n"
 			"desktop environment."));
