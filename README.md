@@ -330,28 +330,28 @@ https://github.com/GerbilSoft/rom-properties/issues
 
 ### Websites
 
-* [GBATEK](http://problemkaputt.de/gbatek.htm): Game Boy Advance, Nintendo DS,
+* [GBATEK](https://problemkaputt.de/gbatek.htm): Game Boy Advance, Nintendo DS,
   and Nintendo DSi technical information.
-* [WiiBrew](http://wiibrew.org/wiki/Main_Page): Wii homebrew and reverse
+* [WiiBrew](https://wiibrew.org/wiki/Main_Page): Wii homebrew and reverse
   engineering. Used for Wii and GameCube disc and file format information.
-* [GameTDB](http://www.gametdb.com/): Database of games for various game
+* [GameTDB](https://www.gametdb.com/): Database of games for various game
   consoles. Used for automatic downloading of disc scans for Wii and GameCube.
-* [Pan Docs](http://problemkaputt.de/pandocs.htm): Game Boy, Game Boy Color and
+* [Pan Docs](https://problemkaputt.de/pandocs.htm): Game Boy, Game Boy Color and
   Super Game Boy technical information.
 * [Virtual Boy Programmers Manual](http://www.goliathindustries.com/vb/download/vbprog.pdf):
   Virtual Boy technical information.
-* [Sega Retro](http://www.segaretro.org/Main_Page): Sega Mega Drive technical
+* [Sega Retro](https://www.segaretro.org/Main_Page): Sega Mega Drive technical
   information, plus information for other Sega systems that will be supported
   in a future release.
-* [PS3 Developer wiki](http://www.psdevwiki.com/ps3/) for information on the
+* [PS3 Developer wiki](https://www.psdevwiki.com/ps3/) for information on the
   "PS1 on PS3" save file format.
-* [Nocash PSX Specification Reference](http://problemkaputt.de/psx-spx.htm)
+* [Nocash PSX Specification Reference](https://problemkaputt.de/psx-spx.htm)
   for more information on PS1 save files.
-* [amiibo.life](http://amiibo.life): Database of Nintendo amiibo figurines,
+* [amiibo.life](https://amiibo.life/): Database of Nintendo amiibo figurines,
   cards, and plushes. Used for automatic downloading of amiibo images.
-* [3dbrew](https://www.3dbrew.org): Nintendo 3DS homebrew and reverse
-  engineering. Used for Nintendo 3DS file format information.
-* [SMS Power](http://www.smspower.org): Sega 8-bit technical information.
+* [3dbrew](https://www.3dbrew.org/wiki/Main_Page): Nintendo 3DS homebrew and
+  reverse engineering. Used for Nintendo 3DS file format information.
+* [SMS Power](https://www.smspower.org/): Sega 8-bit technical information.
 * [Puyo Tools](https://github.com/nickworonekin/puyotools): Information on
   Sega's PVR, GVR, and related texture formats.
 * [Badge Arcade Tool](https://github.com/CaitSith2/BadgeArcadeTool): Information
@@ -360,22 +360,21 @@ https://github.com/GerbilSoft/rom-properties/issues
   Information on Nintendo Badge Arcade files.
 * [HandyBug Documentation](http://handy.cvs.sourceforge.net/viewvc/handy/win32src/public/handybug/dvreadme.txt):
   Information on Atari Lynx cartridge format.
-* [Khronos KTX File Format Specification](https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/):
+* [Khronos KTX File Format Specification](https://registry.khronos.org/KTX/specs/1.0/ktxspec.v1.html):
   Information on the Khornos KTX texture file format.
-* [Khronos KTX 2.0 File Format Specification](http://github.khronos.org/KTX-Specification/):
+* [Khronos KTX 2.0 File Format Specification](https://registry.khronos.org/KTX/specs/2.0/ktxspec.v2.html):
   Information on the Khornos KTX 2.0 texture file format.
 * [Valve Texture Format](https://developer.valvesoftware.com/wiki/Valve_Texture_Format):
   Information on the Valve VTF texture file format.
-* [nocash SNES hardware specifications](http://problemkaputt.de/fullsnes.htm):
+* [nocash SNES hardware specifications](https://problemkaputt.de/fullsnes.htm):
   Super NES and Satellaview BS-X technical information.
 * [Homebrew Development Kit for the Tiger game.com](https://github.com/Tpot-SSL/GameComHDK)
   by @Tpot-SSL: game.com technical information.
 * [Low Level Bits: Parsing Mach-O Files](https://lowlevelbits.org/parsing-mach-o-files/)
   for Mac OS X Mach-O binary information.
-* [Free60.org Wiki archive](https://free60project.github.io/wiki/) for Xbox 360
-  technical information.
+* [Free60.org Wiki archive](https://free60.org/) for Xbox 360 technical information.
 * [Xenia Project](https://github.com/xenia-project/xenia) for Xbox 360 technical information.
-* [Xbox Dev Wiki](https://xboxdevwiki.net/) for Original Xbox technical information.
+* [Xbox Dev Wiki](https://xboxdevwiki.net/Main_Page) for Original Xbox technical information.
 * [.XBE File Format by Caustik](http://www.caustik.com/cxbx/download/xbe.htm) for
   information about the Original Xbox .XBE executable format.
 * [Cxbx-Reloaded](https://github.com/Cxbx-Reloaded/Cxbx-Reloaded) for Original Xbox
@@ -388,9 +387,9 @@ https://github.com/GerbilSoft/rom-properties/issues
 * [Basis Universal](https://github.com/BinomialLLC/basis_universal) for the ASTC
   decoder, which was derived from the [Android Open Source Project](https://source.android.com/).
 * [Godot Engine](https://github.com/godotengine/godot) for documentation on
-  Godot's own .stex format.
+  Godot's own .ctex (previously .stex) format.
 * [Vulkan SDK for Android](https://arm-software.github.io/vulkan-sdk/_a_s_t_c.html)
   for the ASTC file format header.
-* [NEZ Plug](http://nezplug.sourceforge.net/) for basic GBR specifications.
+* [NEZ Plug](https://nezplug.sourceforge.net/) for basic GBR specifications.
 * [xlenore](https://github.com/xlenore) for the PlayStation 1 and 2 cover art
   repository.
