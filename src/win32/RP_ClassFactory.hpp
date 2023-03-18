@@ -86,7 +86,7 @@ class RP_ClassFactory final : public LibWin32Common::ComBase<IClassFactory>, pub
 
 		IFACEMETHODIMP LockServer(_In_ BOOL fLock) final
 		{
-			CoLockObjectExternal(this, fLock, TRUE);
-			return S_OK;
+			// FIXME: Should the last parameter be TRUE?
+			return CoLockObjectExternal(this, fLock, TRUE);
 		}
 };
