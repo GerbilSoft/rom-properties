@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2023-03-13 18:55-0400\n"
-"PO-Revision-Date: 2023-03-14 00:05\n"
+"POT-Creation-Date: 2023-03-18 11:25-0400\n"
+"PO-Revision-Date: 2023-03-18 15:54\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -8709,7 +8709,7 @@ msgid "Animated icon is present (use -a to extract)"
 msgstr ""
 
 #. tr: Bytes (< 1,024)
-#: ../src/librptext/conversion.cpp:285
+#: ../src/librptext/conversion.cpp:286
 msgctxt "LibRpText|FileSize"
 msgid "byte"
 msgid_plural "bytes"
@@ -8717,74 +8717,74 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. tr: Kilobytes
-#: ../src/librptext/conversion.cpp:290 ../src/librptext/conversion.cpp:381
+#: ../src/librptext/conversion.cpp:291 ../src/librptext/conversion.cpp:382
 msgctxt "LibRpText|FileSize"
 msgid "KiB"
 msgstr ""
 
 #. tr: Megabytes
-#: ../src/librptext/conversion.cpp:295
+#: ../src/librptext/conversion.cpp:296
 msgctxt "LibRpText|FileSize"
 msgid "MiB"
 msgstr ""
 
 #. tr: Gigabytes
-#: ../src/librptext/conversion.cpp:300
+#: ../src/librptext/conversion.cpp:301
 msgctxt "LibRpText|FileSize"
 msgid "GiB"
 msgstr ""
 
 #. tr: Terabytes
-#: ../src/librptext/conversion.cpp:305
+#: ../src/librptext/conversion.cpp:306
 msgctxt "LibRpText|FileSize"
 msgid "TiB"
 msgstr ""
 
 #. tr: Petabytes
-#: ../src/librptext/conversion.cpp:310
+#: ../src/librptext/conversion.cpp:311
 msgctxt "LibRpText|FileSize"
 msgid "PiB"
 msgstr ""
 
 #. tr: Exabytes
-#: ../src/librptext/conversion.cpp:315
+#: ../src/librptext/conversion.cpp:316
 msgctxt "LibRpText|FileSize"
 msgid "EiB"
 msgstr ""
 
 #. tr: %1$s == localized value, %2$s == suffix (e.g. MiB)
-#: ../src/librptext/conversion.cpp:352 ../src/librptext/conversion.cpp:380
+#: ../src/librptext/conversion.cpp:353 ../src/librptext/conversion.cpp:381
 #, c-format
 msgctxt "LibRpText|FileSize"
 msgid "%1$s %2$s"
 msgstr ""
 
 #. tr: Hertz (< 1,000)
-#: ../src/librptext/conversion.cpp:399
+#: ../src/librptext/conversion.cpp:400
 msgctxt "LibRpText|Frequency"
 msgid "Hz"
 msgstr ""
 
 #. tr: Kilohertz
-#: ../src/librptext/conversion.cpp:404
+#: ../src/librptext/conversion.cpp:405
 msgctxt "LibRpText|Frequency"
 msgid "kHz"
 msgstr ""
 
 #. tr: Megahertz
-#: ../src/librptext/conversion.cpp:409
+#: ../src/librptext/conversion.cpp:410
 msgctxt "LibRpText|Frequency"
 msgid "MHz"
 msgstr ""
 
 #. tr: Gigahertz
-#: ../src/librptext/conversion.cpp:414
+#: ../src/librptext/conversion.cpp:415
 msgctxt "LibRpText|Frequency"
 msgid "GHz"
 msgstr ""
 
 #. tr: %1$s == localized value, %2$s == suffix (e.g. MHz)
-#: ../src/librptext/conversion.cpp:445
+#: ../src/librptext/conversion.cpp:446
 #, c-format
 msgctxt "LibRpText|Frequency"
 msgid "%1$s %2$s"
@@ -9886,120 +9886,164 @@ msgctxt "rpcli"
 msgid "ERROR: %s"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:77
+#: ../src/rp-stub/rp-stub.c:76
 msgctxt "rp_stub"
-msgid "Shared library stub program.\n"
-"Copyright (c) 2016-2023 by David Korth."
+msgid "Shared library stub program."
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:80
+#: ../src/rp-stub/rp-stub.c:77
+msgctxt "rp-stub"
+msgid "Copyright (c) 2016-2023 by David Korth."
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:79
 #, c-format
 msgctxt "rp-stub"
 msgid "rom-properties version: %s"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:90
+#: ../src/rp-stub/rp-stub.c:89
 msgctxt "rp-stub"
 msgid "This program is licensed under the GNU GPL v2.\n"
 "See https://www.gnu.org/licenses/old-licenses/gpl-2.0.html for more information."
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:99
+#: ../src/rp-stub/rp-stub.c:98
 #, c-format
-msgctxt "rp-stub"
+msgctxt "rp-stub|Help"
 msgid "Usage: %s [-s size] source_file output_file"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:103
-msgctxt "rp-stub"
+#: ../src/rp-stub/rp-stub.c:102
+msgctxt "rp-stub|Help"
 msgid "If source_file is a supported ROM image, a thumbnail is\n"
-"extracted and saved as output_file.\n\n"
-"Thumbnailing options:\n"
-"  -s, --size\t\tMaximum thumbnail size. (default is 256px) [0 for full image]\n"
-"  -a, --autoext\t\tGenerate the output filename based on the source filename.\n"
-"               \t\t(WARNING: May overwrite an existing file without prompting.)\n"
-"  -n, --noxdg\t\tDon't include XDG thumbnail metadata.\n\n"
-"Other options:\n"
-"  -c, --config\t\tShow the configuration dialog instead of thumbnailing.\n"
-"  -d, --debug\t\tShow debug output when searching for rom-properties.\n"
-"  -h, --help\t\tDisplay this help and exit.\n"
-"  -V, --version\t\tOutput version information and exit."
+"extracted and saved as output_file."
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:118
+#: ../src/rp-stub/rp-stub.c:105
+msgctxt "rp-stub|Help"
+msgid "Thumbnailing options:"
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:107
+msgctxt "rp-stub|Help"
+msgid "Maximum thumbnail size. (default is 256px) [0 for full image]"
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:109
+msgctxt "rp-stub|Help"
+msgid "Generate the output filename based on the source filename."
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:111
+msgctxt "rp-stub|Help"
+msgid "(WARNING: May overwrite an existing file without prompting.)"
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:113
+msgctxt "rp-stub|Help"
+msgid "Don't include XDG thumbnail metadata."
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:115
+msgctxt "rp-stub|Help"
+msgid "Other options:"
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:117
+msgctxt "rp-stub|Help"
+msgid "Show the configuration dialog instead of thumbnailing."
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:119
+msgctxt "rp-stub|Help"
+msgid "Show debug output when searching for rom-properties."
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:121
+msgctxt "rp-stub|Help"
+msgid "Display this help and exit."
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:123
+msgctxt "rp-stub|Help"
+msgid "Output version information and exit."
+msgstr ""
+
+#: ../src/rp-stub/rp-stub.c:125
 #, c-format
-msgctxt "rp-stub"
+msgctxt "rp-stub|Help"
 msgid "Usage: %s"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:122
-msgctxt "rp-stub"
+#: ../src/rp-stub/rp-stub.c:129
+msgctxt "rp-stub|Help"
 msgid "When invoked as rp-config, this program will open the configuration dialog\n"
 "using an installed plugin that most closely matches the currently running\n"
 "desktop environment."
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:171
+#: ../src/rp-stub/rp-stub.c:178
 #, c-format
 msgctxt "rp-stub"
 msgid "Try '%s --help' for more information."
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:239
+#: ../src/rp-stub/rp-stub.c:246
 #, c-format
 msgctxt "rp-stub"
 msgid "invalid size '%s'"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:242
+#: ../src/rp-stub/rp-stub.c:249
 #, c-format
 msgctxt "rp-stub"
 msgid "size '%s' is out of range"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:294
+#: ../src/rp-stub/rp-stub.c:301
 msgctxt "rp-stub"
 msgid "missing source and output file parameters"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:297
+#: ../src/rp-stub/rp-stub.c:304
 msgctxt "rp-stub"
 msgid "missing output file parameter"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:300
+#: ../src/rp-stub/rp-stub.c:307
 msgctxt "rp-stub"
 msgid "--autoext and output file specified"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:303
+#: ../src/rp-stub/rp-stub.c:310
 msgctxt "rp-stub"
 msgid "too many parameters specified"
 msgstr ""
 
 #. tr: NOTE: Not positional. Don't change argument positions!
 #. tr: Only localize "Calling function:".
-#: ../src/rp-stub/rp-stub.c:352
+#: ../src/rp-stub/rp-stub.c:359
 #, c-format
 msgctxt "rp-stub"
 msgid "Calling function: %s(\"%s\", \"%s\", %d, %u);"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:364
+#: ../src/rp-stub/rp-stub.c:371
 #, c-format
 msgctxt "rp-stub"
 msgid "Calling function: %s();"
 msgstr ""
 
 #. tr: %1$s == function name, %2$d == return value
-#: ../src/rp-stub/rp-stub.c:375
+#: ../src/rp-stub/rp-stub.c:382
 #, c-format
 msgctxt "rp-stub"
 msgid "%1$s() returned %2$d."
 msgstr ""
 
 #. tr: %1$s == function name, %2$d == return value
-#: ../src/rp-stub/rp-stub.c:380
+#: ../src/rp-stub/rp-stub.c:387
 #, c-format
 msgctxt "rp-stub"
 msgid "*** ERROR: %1$s() returned %2$d."
