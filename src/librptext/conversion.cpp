@@ -24,6 +24,7 @@
 
 // C includes (C++ namespace)
 #include <cassert>
+#include <cstring>
 #include <cwctype>
 
 // for strnlen() if it's not available in <string.h>
