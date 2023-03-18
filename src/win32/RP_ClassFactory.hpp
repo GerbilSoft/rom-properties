@@ -37,7 +37,7 @@ class RP_ClassFactory final : public LibWin32Common::ComBase<IClassFactory>, pub
 	public:
 		/** IUnknown **/
 
-		IFACEMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObject) final
+		IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObject) final
 		{
 			if (!ppvObject) {
 				return E_POINTER;
@@ -59,7 +59,7 @@ class RP_ClassFactory final : public LibWin32Common::ComBase<IClassFactory>, pub
 
 		/** IClassFactory **/
 
-		IFACEMETHODIMP CreateInstance(LPUNKNOWN pUnkOuter, REFIID riid, LPVOID *ppvObject) final
+		IFACEMETHODIMP CreateInstance(_In_ LPUNKNOWN pUnkOuter, _In_ REFIID riid, _Outptr_ LPVOID *ppvObject) final
 		{
 			// Always set out parameter to NULL, validating it first.
 			if (!ppvObject)
@@ -84,7 +84,7 @@ class RP_ClassFactory final : public LibWin32Common::ComBase<IClassFactory>, pub
 			return hr;
 		}
 
-		IFACEMETHODIMP LockServer(BOOL fLock) final
+		IFACEMETHODIMP LockServer(_In_ BOOL fLock) final
 		{
 			CoLockObjectExternal(this, fLock, TRUE);
 			return S_OK;
