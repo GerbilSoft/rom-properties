@@ -204,7 +204,7 @@ int RpFilePrivate::reOpenFile(void)
 	} else {
 		// Not a device. Make sure this isn't a directory.
 		// TODO: Other checks?
-		DWORD dwAttr = GetFileAttributes(tfilename.c_str());
+		const DWORD dwAttr = GetFileAttributes(tfilename.c_str());
 		if (dwAttr == INVALID_FILE_ATTRIBUTES) {
 			// File cannot be opened.
 			// This is okay if creating a new file, but not if we're
@@ -765,7 +765,7 @@ int RpFile::makeWritable(void)
 	}
 
 	RP_D(RpFile);
-	off64_t prev_pos = this->tell();
+	const off64_t prev_pos = this->tell();
 	// Set file mode to FM_WRITE and reopen it.
 	d->mode = (RpFile::FileMode)(d->mode | FM_WRITE);
 	int ret = d->reOpenFile();
