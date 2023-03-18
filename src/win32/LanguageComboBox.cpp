@@ -430,6 +430,7 @@ void LanguageComboBoxRegister(void)
 
 	pfnComboBoxExWndProc = wndClass.lpfnWndProc;
 	wndClass.lpfnWndProc = LanguageComboBoxWndProc;
+	wndClass.style &= ~CS_GLOBALCLASS;
 	wndClass.hInstance = HINST_THISCOMPONENT;
 	wndClass.lpszClassName = WC_LANGUAGECOMBOBOX;
 

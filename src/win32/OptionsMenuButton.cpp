@@ -275,6 +275,7 @@ void OptionsMenuButtonRegister(void)
 
 	pfnButtonWndProc = wndClass.lpfnWndProc;
 	wndClass.lpfnWndProc = OptionsMenuButtonWndProc;
+	wndClass.style &= ~CS_GLOBALCLASS;
 	wndClass.hInstance = HINST_THISCOMPONENT;
 	wndClass.lpszClassName = WC_OPTIONSMENUBUTTON;
 
