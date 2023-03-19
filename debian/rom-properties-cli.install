@@ -1,2 +1,3 @@
 etc/apparmor.d/*.rpcli
+etc/apparmor.d/local/*.rpcli
 usr/bin/rpcli
