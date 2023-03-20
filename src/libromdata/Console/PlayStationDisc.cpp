@@ -966,6 +966,7 @@ int PlayStationDisc::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int 
 	// Boot filename format: SLUS_207.18
 	// Using the first part as the region code.
 	string gameID = d->boot_filename;
+	std::transform(gameID.begin(), gameID.end(), gameID.begin(), ::toupper);
 	string region_code;
 	size_t pos = gameID.find('_');
 	if (pos != string::npos) {
