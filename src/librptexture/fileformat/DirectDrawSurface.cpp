@@ -1148,7 +1148,10 @@ const char *DirectDrawSurface::pixelFormat(void) const
 	if (ddspf.dwFlags & DDPF_FOURCC) {
 		// Compressed RGB data.
 		// NOTE: If DX10, see dxgi_format.
-		memcpy(d_nc->pixel_format, &ddspf.dwFourCC, 4);
+		d_nc->pixel_format[0] = (ddspf.dwFourCC >> 24) & 0xFF;
+		d_nc->pixel_format[1] = (ddspf.dwFourCC >> 16) & 0xFF;
+		d_nc->pixel_format[2] = (ddspf.dwFourCC >>  8) & 0xFF;
+		d_nc->pixel_format[3] =  ddspf.dwFourCC        & 0xFF;
 		d_nc->pixel_format[4] = '\0';
 		return d_nc->pixel_format;
 	}
