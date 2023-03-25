@@ -70,6 +70,7 @@ CS:0x320:Sonic the Hedgehog
 CS:0x324:Bayonetta
 CS:0x334:Pac-Man
 CS:0x338:Dark Souls
+CS:0x33C:Tekken
 CS:0x348:Mega Man
 CS:0x34C:Street Fighter
 CS:0x350:Monster Hunter
@@ -718,11 +719,13 @@ C:0x0802:Marie
 C:0x0803:Pearl
 C:0x0804:Marina
 C:0x0805:Octoling
+C:0x0806:Smallfry
 # NOTE: Variant 0 is not actually assigned.
 CV:0x0805:0x00:Octoling
 CV:0x0805:0x01:Octoling Girl
 CV:0x0805:0x02:Octoling Boy
 CV:0x0805:0x03:Octoling Octopus
+CV:0x0806:0x01:Smallfry
 
 # Mario Sports Superstars (character series == 0x09C)
 C:0x09C0:Mario
@@ -956,6 +959,9 @@ C:0x3340:Pac-Man
 # Dark Souls (character series == 0x338)
 C:0x3380:Solaire of Astora
 
+# Tekken (character series == 0x33C)
+C:0x33C0:Kazuya
+
 # Mega Man (character series == 0x348)
 C:0x3480:Mega Man
 
@@ -1004,6 +1010,7 @@ C:0x35C3:King Knight
 C:0x3600:Cloud
 CV:0x3600:0x00:Cloud
 CV:0x3600:0x01:Cloud (Player 2)
+C:0x3601:Sephiroth
 
 # Dragon Quest (character series == 0x364)
 C:0x3640:Hero
@@ -1251,6 +1258,11 @@ A:0x0377:0:4:Marina
 A:0x038E:0:5:Octoling Girl
 A:0x038F:0:5:Octoling Boy
 A:0x0390:0:5:Octoling Octopus
+
+# Splatoon: Wave 6 [0x0415-0x041C]
+A:0x0415:0:6:Inkling (Yellow)
+A:0x041B:0:6:Octoling (Blue)
+A:0x041C:0:6:Smallfry
 
 # Diablo [0x0391]
 A:0x0391:0:0:Loot Goblin
@@ -1964,6 +1976,8 @@ A:0x039D:3:1:Peach Power-Up Band
 A:0x039E:4:1:Daisy Power-Up Band
 A:0x03A0:5:1:Toad Power-Up Band
 A:0x039F:6:1:Yoshi Power-Up Band
+# Super Nintendo World: Gold Power-Up Bands [0x0430]
+A:0x0430:7:1:Gold Mairo Power-Up Band
 
 # SSBU: Wave 14 (Ultimate Fighter Pass 1) [0x03A1-0x03A5]
 A:0x03A1:83:14:Joker
@@ -2045,6 +2059,8 @@ A:0x0414:0:0:Zelda & Loftwing
 
 # SSBU: Wave 15 (Ultimate Fighter Pass 2) [0x041D,0x0422-0x0423]
 A:0x041D:88:15:Min Min
+A:0x0420:92:15:Kazuya
+A:0x0421:91:15:Sephiroth
 A:0x0422:89:15:Steve
 A:0x0423:90:15:Alex
 
