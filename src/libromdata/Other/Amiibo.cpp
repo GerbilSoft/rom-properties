@@ -209,7 +209,7 @@ int Amiibo::isRomSupported_static(const DetectInfo *info)
 			return -1;
 	}
 
-	const NFP_Data_t *nfpData = reinterpret_cast<const NFP_Data_t*>(info->header.pData);
+	const NFP_Data_t *const nfpData = reinterpret_cast<const NFP_Data_t*>(info->header.pData);
 
 	// UID must start with 0x04.
 	if (nfpData->serial[0] != 0x04) {
@@ -222,7 +222,14 @@ int Amiibo::isRomSupported_static(const DetectInfo *info)
 		// Check bytes are invalid.
 		// These are read-only, so something went wrong
 		// when the tag was being dumped.
-		return -1;
+
+		// NOTE: Some Super Nintendo World power-up bands, e.g.
+		// the Gold Mario Power-Up Band, have incorrect check bytes.
+		// Not sure why.
+		const uint32_t char_id = be32_to_cpu(nfpData->char_id);
+		if ((char_id & 0xFF) != NFP_TYPE_BAND) {
+			return -1;
+		}
 	}
 
 	// Check the "must match" values.
