@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-03-18 11:25-0400\n"
-"PO-Revision-Date: 2023-04-18 14:23\n"
+"PO-Revision-Date: 2023-04-18 15:19\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -47,7 +47,7 @@ msgstr "Zeit Freischalten"
 #: ../src/win32/config/AchievementsTab.cpp:443
 msgctxt "AchievementsTab"
 msgid "Achievement"
-msgstr ""
+msgstr "Errungenschaft"
 
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:53
 #: ../src/gtk/config/AchievementsTab.cpp:213
@@ -328,7 +328,7 @@ msgstr "d: kein Dump"
 #: ../src/gtk/xattr/LinuxAttrView.c:122
 msgctxt "LinuxAttrView"
 msgid "Files stored in this directory use case-insensitive filenames."
-msgstr ""
+msgstr "Dateien in diesem Verzeichnis nutzen Namen ohne Rücksicht auf Groß- und Kleinschreibung."
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:270
 #: ../src/gtk/xattr/LinuxAttrView.c:121
@@ -340,7 +340,7 @@ msgstr ""
 #: ../src/gtk/xattr/LinuxAttrView.c:101
 msgctxt "LinuxAttrView"
 msgid "Access time record is not modified."
-msgstr ""
+msgstr "Zugriffsdatum wurde nicht verändert."
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:274
 #: ../src/gtk/xattr/LinuxAttrView.c:100
@@ -352,7 +352,7 @@ msgstr ""
 #: ../src/gtk/xattr/LinuxAttrView.c:137
 msgctxt "LinuxAttrView"
 msgid "File data is stored inline in the inode."
-msgstr ""
+msgstr "Dateidaten sind direkt im Inode gespeichert."
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:278
 #: ../src/gtk/xattr/LinuxAttrView.c:136
@@ -364,7 +364,7 @@ msgstr ""
 #: ../src/gtk/xattr/LinuxAttrView.c:155
 msgctxt "LinuxAttrView"
 msgid "File's contents will be saved when deleted, potentially allowing for undeletion. This is known to be broken."
-msgstr ""
+msgstr "Der Inhalt der Datei wird beim Löschen gespeichert, welches Wiederherstellung zulassen kann. Dies ist bekanntlich defekt."
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:282
 #: ../src/gtk/xattr/LinuxAttrView.c:154
@@ -376,7 +376,7 @@ msgstr ""
 #: ../src/gtk/xattr/LinuxAttrView.c:140
 msgctxt "LinuxAttrView"
 msgid "Directory will enforce a hierarchical structure for project IDs."
-msgstr ""
+msgstr "Das Verzeichnis wird eine hierarchische Struktur für Projekt-IDs erzwingen."
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:286
 #: ../src/gtk/xattr/LinuxAttrView.c:139
@@ -388,7 +388,7 @@ msgstr ""
 #: ../src/gtk/xattr/LinuxAttrView.c:161
 msgctxt "LinuxAttrView"
 msgid "File has fs-verity enabled."
-msgstr ""
+msgstr "Datei hat \"fs-verity\" aktiviert."
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:290
 #: ../src/gtk/xattr/LinuxAttrView.c:160
@@ -400,13 +400,13 @@ msgstr ""
 #: ../src/gtk/xattr/LinuxAttrView.c:119
 msgctxt "LinuxAttrView"
 msgid "File is encrypted."
-msgstr ""
+msgstr "Datei ist verschlüsselt."
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:294
 #: ../src/gtk/xattr/LinuxAttrView.c:118
 msgctxt "LinuxAttrView"
 msgid "E: encrypted"
-msgstr ""
+msgstr "E: verschlüsselt"
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:296
 #: ../src/gtk/xattr/LinuxAttrView.c:107
@@ -436,18 +436,18 @@ msgstr ""
 #: ../src/gtk/xattr/LinuxAttrView.c:143
 msgctxt "LinuxAttrView"
 msgid "File's blocks will be zeroed when deleted."
-msgstr ""
+msgstr "Dateiblöcke werden beim Löschen ausgeräumt."
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:306
 #: ../src/gtk/xattr/LinuxAttrView.c:142
 msgctxt "LinuxAttrView"
 msgid "s: secure del"
-msgstr ""
+msgstr "s: sicheres löschen"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:177
 msgctxt "OptionsTab"
 msgid "&Downloads"
-msgstr ""
+msgstr "&Downloads"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:178
 #: ../src/gtk/config/OptionsTab.cpp:143
@@ -467,52 +467,52 @@ msgstr ""
 #: ../src/gtk/config/OptionsTab.cpp:155 ../src/win32/config/OptionsTab.cpp:408
 msgctxt "OptionsTab"
 msgid "Don't download any images"
-msgstr ""
+msgstr "Keine Bilder herunterladen"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:182
 #: ../build/src/kde/kf5/ui_OptionsTab.h:188
 #: ../src/gtk/config/OptionsTab.cpp:156 ../src/win32/config/OptionsTab.cpp:409
 msgctxt "OptionsTab"
 msgid "Download normal-resolution images"
-msgstr ""
+msgstr "Bilder in normaler Auflösung herunterladen"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:183
 #: ../build/src/kde/kf5/ui_OptionsTab.h:189
 #: ../src/gtk/config/OptionsTab.cpp:157 ../src/win32/config/OptionsTab.cpp:410
 msgctxt "OptionsTab"
 msgid "Download high-resolution images"
-msgstr ""
+msgstr "Bilder in hoher Auflösung herunterladen"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:185
 #: ../src/gtk/config/OptionsTab.cpp:151
 msgctxt "OptionsTab"
 msgid "When using a metered\n"
 "network connection:"
-msgstr ""
+msgstr "Wenn eine getaktete Netzwerkverbindung genutzt wird:"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:191
 #: ../src/gtk/config/OptionsTab.cpp:225
 msgctxt "OptionsTab"
 msgid "Always use the internal icon (if present) for small sizes."
-msgstr ""
+msgstr "Immer das interne Symbol (wenn möglich) für kleine Größe nutzen."
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:192
 #: ../src/gtk/config/OptionsTab.cpp:228
 msgctxt "OptionsTab"
 msgid "Store cached file origin information using extended attributes.\n"
 "This helps to identify where cached files were downloaded from."
-msgstr ""
+msgstr "Ursprungsinformationen für zwischengespeicherte Dateien mithilfe von erweiterten Attributen sichern. Dies kann zu der Identifizierung beitragen."
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:194
 #: ../src/gtk/config/OptionsTab.cpp:235
 msgctxt "OptionsTab"
 msgid "Language for PAL titles on GameTDB:"
-msgstr ""
+msgstr "Sprache für PAL-Titel auf GameTDB:"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:195
 msgctxt "OptionsTab"
 msgid "&Options"
-msgstr ""
+msgstr "&Optionen"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:196
 #: ../src/gtk/config/OptionsTab.cpp:261
@@ -526,24 +526,24 @@ msgstr ""
 msgctxt "OptionsTab"
 msgid "Enable thumbnailing and metadata extraction on network\n"
 "file systems. This may slow down file browsing."
-msgstr ""
+msgstr "Thumbnail- und Metadaten-Extrahierung auf Netzwerk-Dateisystemen aktivieren. Dies kann das Browsen verlangsamen."
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:200
 #: ../src/gtk/config/OptionsTab.cpp:268
 msgctxt "OptionsTab"
 msgid "Show the Extended Attributes tab."
-msgstr ""
+msgstr "Tab mit erweiterten Attributen anzeigen."
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:126
 msgctxt "SystemsTab"
 msgid "&Game Boy Title Screens"
-msgstr ""
+msgstr "&Game Boy Titelbildschirme"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:127
 #: ../src/gtk/config/SystemsTab.cpp:120
 msgctxt "SystemsTab"
 msgid "Game &Boy:"
-msgstr ""
+msgstr "Game &Boy:"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:128
 #: ../build/src/kde/kf5/ui_SystemsTab.h:132
@@ -551,7 +551,7 @@ msgstr ""
 #: ../src/gtk/config/SystemsTab.cpp:130
 msgctxt "SystemsTab"
 msgid "Game Boy"
-msgstr ""
+msgstr "Game Boy"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:129
 #: ../build/src/kde/kf5/ui_SystemsTab.h:134
@@ -559,61 +559,61 @@ msgstr ""
 #: ../src/gtk/config/SystemsTab.cpp:132
 msgctxt "SystemsTab"
 msgid "Game Boy Color"
-msgstr ""
+msgstr "Game Boy Color"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:131
 #: ../src/gtk/config/SystemsTab.cpp:122
 msgctxt "SystemsTab"
 msgid "&Super Game Boy:"
-msgstr ""
+msgstr "&Super Game Boy:"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:133
 #: ../build/src/kde/kf5/ui_SystemsTab.h:138
 #: ../src/gtk/config/SystemsTab.cpp:131
 msgctxt "SystemsTab"
 msgid "Super Game Boy"
-msgstr ""
+msgstr "Super Game Boy"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:136
 #: ../src/gtk/config/SystemsTab.cpp:124
 msgctxt "SystemsTab"
 msgid "Game Boy &Color:"
-msgstr ""
+msgstr "Game Boy &Color:"
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:98
 #: ../src/gtk/xattr/XAttrView.cpp:121
 msgctxt "XAttrView"
 msgid "Linux Attributes"
-msgstr ""
+msgstr "Linux Attribute"
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:99
 #: ../src/gtk/xattr/XAttrView.cpp:129
 msgctxt "XAttrView"
 msgid "MS-DOS Attributes"
-msgstr ""
+msgstr "MS-DOS-Attribute"
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:100
 msgctxt "XAttrView"
 msgid "E&xtended Attributes"
-msgstr ""
+msgstr "Erweiterte Attribute"
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:102
 #: ../src/gtk/xattr/XAttrView.cpp:162
 msgctxt "XAttrView"
 msgid "Value"
-msgstr ""
+msgstr "Wert"
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:103
 #: ../src/gtk/xattr/XAttrView.cpp:161
 msgctxt "XAttrView"
 msgid "Name"
-msgstr ""
+msgstr "Name"
 
 #: ../src/gtk/AchGDBus.cpp:267 ../src/kde/AchQtDBus.cpp:298
 #: ../src/win32/AchWin32.cpp:393
 msgctxt "Achievements"
 msgid "Achievement Unlocked"
-msgstr ""
+msgstr "Erfolg freigeschaltet"
 
 #. tr: Uses Pango's HTML subset for formatting.
 #: ../src/gtk/config/AboutTab.cpp:449
@@ -627,7 +627,7 @@ msgstr ""
 #, c-format
 msgctxt "AboutTab"
 msgid "Version %s"
-msgstr ""
+msgstr "Version %s"
 
 #: ../src/gtk/config/AboutTab.cpp:475 ../src/kde/config/AboutTab.cpp:195
 #: ../src/win32/config/AboutTab.cpp:844
@@ -1381,7 +1381,7 @@ msgstr ""
 #: ../src/gtk/RomDataView_ops.cpp:500
 msgctxt "RomData"
 msgid "All Files"
-msgstr ""
+msgstr "Alle Dateien"
 
 #: ../src/gtk/xattr/DosAttrView.c:120
 msgctxt "DosAttrView"
@@ -1406,7 +1406,7 @@ msgstr ""
 #: ../src/gtk/xattr/DosAttrView.c:148
 msgctxt "DosAttrView"
 msgid "Compressed"
-msgstr ""
+msgstr "Komprimiert"
 
 #: ../src/gtk/xattr/DosAttrView.c:150
 msgctxt "DosAttrView"
@@ -1429,7 +1429,7 @@ msgstr ""
 #: ../src/kde/config/CacheTab.cpp:306
 msgctxt "ConfigDialog"
 msgid "<b>ERROR:</b> %1"
-msgstr ""
+msgstr "<b>Fehler:</b> %1"
 
 #. tr: "All Files" filter (RP format)
 #: ../src/kde/RomDataView_ops.cpp:319
@@ -1499,30 +1499,30 @@ msgstr ""
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1006
 msgctxt "RomData"
 msgid "Unknown"
-msgstr ""
+msgstr "Unbekannt"
 
 #: ../src/libromdata/Audio/ADX.cpp:284
 msgctxt "RomData|Audio"
 msgid "Format"
-msgstr ""
+msgstr "Format"
 
 #: ../src/libromdata/Audio/ADX.cpp:287 ../src/libromdata/Audio/BCSTM.cpp:484
 #: ../src/libromdata/Audio/BRSTM.cpp:347
 msgctxt "RomData|Audio"
 msgid "Channels"
-msgstr ""
+msgstr "Kanäle"
 
 #: ../src/libromdata/Audio/ADX.cpp:297 ../src/libromdata/Audio/BCSTM.cpp:490
 #: ../src/libromdata/Audio/BRSTM.cpp:357
 msgctxt "RomData|Audio"
 msgid "Sample Rate"
-msgstr ""
+msgstr "Sample Rate"
 
 #: ../src/libromdata/Audio/ADX.cpp:300 ../src/libromdata/Audio/BCSTM.cpp:495
 #: ../src/libromdata/Audio/BRSTM.cpp:360
 msgctxt "RomData|Audio"
 msgid "Length"
-msgstr ""
+msgstr "Länge"
 
 #: ../src/libromdata/Audio/ADX.cpp:309
 msgctxt "ADX"
@@ -1536,7 +1536,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:412
 msgctxt "RomData"
 msgid "Yes"
-msgstr ""
+msgstr "Ja"
 
 #. tr: Debugging is disabled.
 #: ../src/libromdata/Audio/ADX.cpp:314 ../src/libromdata/Audio/BCSTM.cpp:501
@@ -1545,12 +1545,12 @@ msgstr ""
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:414
 msgctxt "RomData"
 msgid "No"
-msgstr ""
+msgstr "Nein"
 
 #: ../src/libromdata/Audio/ADX.cpp:317
 msgctxt "ADX"
 msgid "Encrypted"
-msgstr ""
+msgstr "Verschlüsselt"
 
 #: ../src/libromdata/Audio/ADX.cpp:323
 msgctxt "ADX"
@@ -2030,7 +2030,7 @@ msgstr "%u Hz"
 #: ../src/libromdata/Audio/SNDH.cpp:834
 msgctxt "SNDH"
 msgid "VBlank Freq"
-msgstr ""
+msgstr "VBlank Frequenz"
 
 #: ../src/libromdata/Audio/SNDH.cpp:840
 #, c-format
@@ -2277,136 +2277,146 @@ msgstr "%s Takt Teiler"
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid "Internal\n"
 "Icon"
-msgstr ""
+msgstr "Internes\n"
+"Icon"
 
 #. tr: IMG_INT_BANNER
 #: ../src/libromdata/config/ImageTypesConfig.cpp:99
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid "Internal\n"
 "Banner"
-msgstr ""
+msgstr "Interner\n"
+"Banner"
 
 #. tr: IMG_INT_MEDIA
 #: ../src/libromdata/config/ImageTypesConfig.cpp:101
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid "Internal\n"
 "Media"
-msgstr ""
+msgstr "Interne\n"
+"Medien"
 
 #. tr: IMG_INT_IMAGE
 #: ../src/libromdata/config/ImageTypesConfig.cpp:103
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid "Internal\n"
 "Image"
-msgstr ""
+msgstr "Internes\n"
+"Bild"
 
 #. tr: IMG_EXT_MEDIA
 #: ../src/libromdata/config/ImageTypesConfig.cpp:108
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid "External\n"
 "Media"
-msgstr ""
+msgstr "Externe\n"
+"Medien"
 
 #. tr: IMG_EXT_COVER
 #: ../src/libromdata/config/ImageTypesConfig.cpp:110
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid "External\n"
 "Cover"
-msgstr ""
+msgstr "Externes\n"
+"Cover"
 
 #. tr: IMG_EXT_COVER_3D
 #: ../src/libromdata/config/ImageTypesConfig.cpp:112
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid "External\n"
 "3D Cover"
-msgstr ""
+msgstr "Externes\n"
+"3D Cover"
 
 #. tr: IMG_EXT_COVER_FULL
 #: ../src/libromdata/config/ImageTypesConfig.cpp:114
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid "External\n"
 "Full Cover"
-msgstr ""
+msgstr "Externes\n"
+"Ganzes Cover"
 
 #. tr: IMG_EXT_BOX
 #: ../src/libromdata/config/ImageTypesConfig.cpp:116
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid "External\n"
 "Box"
-msgstr ""
+msgstr "Externe\n"
+"Box"
 
 #. tr: IMG_EXT_TITLE_SCREEN
 #: ../src/libromdata/config/ImageTypesConfig.cpp:118
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid "External\n"
 "Title Screen"
-msgstr ""
+msgstr "Externes\n"
+"Titel Bildschrim"
 
 #. tr: amiibo
 #: ../src/libromdata/config/ImageTypesConfig.cpp:148
 msgctxt "ImageTypesConfig|SysName"
 msgid "amiibo"
-msgstr ""
+msgstr "amiibo"
 
 #. tr: NintendoBadge
 #: ../src/libromdata/config/ImageTypesConfig.cpp:150
 msgctxt "ImageTypesConfig|SysName"
 msgid "Badge Arcade"
-msgstr ""
+msgstr "Badge Arcade"
 
 #. tr: DreamcastSave
 #: ../src/libromdata/config/ImageTypesConfig.cpp:152
 msgctxt "ImageTypesConfig|SysName"
 msgid "Dreamcast Saves"
-msgstr ""
+msgstr "Dreamcast Spielstände"
 
 #. tr: GameCube
 #: ../src/libromdata/config/ImageTypesConfig.cpp:154
 msgctxt "ImageTypesConfig|SysName"
 msgid "GameCube / Wii"
-msgstr ""
+msgstr "GameCube / Wii"
 
 #. tr: GameCubeSave
 #: ../src/libromdata/config/ImageTypesConfig.cpp:156
 msgctxt "ImageTypesConfig|SysName"
 msgid "GameCube Saves"
-msgstr ""
+msgstr "GameCube Spielstände"
 
 #. tr: NintendoDS
 #: ../src/libromdata/config/ImageTypesConfig.cpp:158
 msgctxt "ImageTypesConfig|SysName"
 msgid "Nintendo DS(i)"
-msgstr ""
+msgstr "Nintendo DS(i)"
 
 #. tr: Nintendo3DS
 #: ../src/libromdata/config/ImageTypesConfig.cpp:160
 msgctxt "ImageTypesConfig|SysName"
 msgid "Nintendo 3DS"
-msgstr ""
+msgstr "Nintendo 3DS"
 
 #. tr: PlayStationDisc (PS1 and PS2)
 #: ../src/libromdata/config/ImageTypesConfig.cpp:162
 msgctxt "ImageTypesConfig|SysName"
 msgid "PlayStation 1 & 2"
-msgstr ""
+msgstr "PlayStation 1 & 2"
 
 #. tr: PlayStationSave
 #: ../src/libromdata/config/ImageTypesConfig.cpp:164
 msgctxt "ImageTypesConfig|SysName"
 msgid "PlayStation Saves"
-msgstr ""
+msgstr "PlayStation Spielstände"
 
 #. tr: WiiU
 #: ../src/libromdata/config/ImageTypesConfig.cpp:166
 msgctxt "ImageTypesConfig|SysName"
 msgid "Wii U"
-msgstr ""
+msgstr "Wii U"
 
 #. tr: WiiWAD
 #: ../src/libromdata/config/ImageTypesConfig.cpp:168
 msgctxt "ImageTypesConfig|SysName"
 msgid "Wii WAD Files"
-msgstr ""
+msgstr "Wii WAD Dateien"
 
 #: ../src/libromdata/Console/Atari7800.cpp:202
 #: ../src/libromdata/Console/CBMCart.cpp:344
@@ -2432,7 +2442,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:329
 msgctxt "RomData"
 msgid "Title"
-msgstr ""
+msgstr "Titel"
 
 #: ../src/libromdata/Console/Atari7800.cpp:210
 msgctxt "Atari7800"
@@ -2482,12 +2492,12 @@ msgstr ""
 #: ../src/libromdata/Console/Atari7800.cpp:235
 msgctxt "Atari7800|ControllerType"
 msgid "Mouse (Atari ST)"
-msgstr ""
+msgstr "Maus (Atari ST)"
 
 #: ../src/libromdata/Console/Atari7800.cpp:236
 msgctxt "Atari7800|ControllerType"
 msgid "Mouse (Amiga)"
-msgstr ""
+msgstr "Maus (Amiga)"
 
 #: ../src/libromdata/Console/Atari7800.cpp:243
 #, c-format
@@ -3071,26 +3081,26 @@ msgstr ""
 #: ../src/libromdata/Console/GameCube.cpp:1865
 msgctxt "Wii|Partition"
 msgid "Game"
-msgstr ""
+msgstr "Spiel"
 
 #. tr: GameCubePrivate::RVL_PT_UPDATE (Update partition)
 #: ../src/libromdata/Console/GameCube.cpp:1867
 msgctxt "Wii|Partition"
 msgid "Update"
-msgstr ""
+msgstr "Update"
 
 #. tr: GameCubePrivate::RVL_PT_CHANNEL (Channel partition)
 #: ../src/libromdata/Console/GameCube.cpp:1869
 msgctxt "Wii|Partition"
 msgid "Channel"
-msgstr ""
+msgstr "Kanal"
 
 #. tr: WiiPartition::EncKey::RVL_Common - Retail encryption key.
 #: ../src/libromdata/Console/GameCube.cpp:1911
 #: ../src/libromdata/Console/WiiWAD.cpp:1124
 msgctxt "Wii|EncKey"
 msgid "Retail"
-msgstr ""
+msgstr "Retail"
 
 #. tr: WiiPartition::EncKey::RVL_Korean - Korean encryption key.
 #: ../src/libromdata/Console/GameCube.cpp:1913
@@ -3104,14 +3114,14 @@ msgstr ""
 #: ../src/libromdata/Console/WiiWAD.cpp:1126
 msgctxt "Wii|EncKey"
 msgid "vWii"
-msgstr ""
+msgstr "vWii"
 
 #. tr: WiiPartition::EncKey::RVT_Debug - Debug encryption key.
 #: ../src/libromdata/Console/GameCube.cpp:1918
 #: ../src/libromdata/Console/WiiWAD.cpp:1129
 msgctxt "Wii|EncKey"
 msgid "Debug"
-msgstr ""
+msgstr "Debug"
 
 #. tr: WiiPartition::EncKey::RVT_Korean - Korean (debug) encryption key.
 #: ../src/libromdata/Console/GameCube.cpp:1920
@@ -3125,7 +3135,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiWAD.cpp:1131
 msgctxt "Wii|EncKey"
 msgid "vWii (debug)"
-msgstr ""
+msgstr "vWii (debug)"
 
 #. tr: WiiPartition::EncKey::None - No encryption.
 #: ../src/libromdata/Console/GameCube.cpp:1925
@@ -3143,13 +3153,13 @@ msgstr ""
 #: ../src/libromdata/Console/GameCube.cpp:1955
 msgctxt "Wii|Partition"
 msgid "#"
-msgstr ""
+msgstr "#"
 
 #. tr: Partition type.
 #: ../src/libromdata/Console/GameCube.cpp:1957
 msgctxt "Wii|Partition"
 msgid "Type"
-msgstr ""
+msgstr "Typ"
 
 #. tr: Encryption key.
 #: ../src/libromdata/Console/GameCube.cpp:1959
