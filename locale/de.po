@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-03-18 11:25-0400\n"
-"PO-Revision-Date: 2023-04-18 13:07\n"
+"PO-Revision-Date: 2023-04-18 14:23\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -21,7 +21,7 @@ msgstr ""
 #: ../src/gtk/config/AboutTab.cpp:288
 msgctxt "AboutTab"
 msgid "C&redits"
-msgstr "Credits"
+msgstr "C&redits"
 
 #: ../build/src/kde/kf5/ui_AboutTab.h:277
 #: ../src/gtk/config/AboutTab.cpp:292
