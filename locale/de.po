@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-03-18 11:25-0400\n"
-"PO-Revision-Date: 2023-04-18 16:16\n"
+"PO-Revision-Date: 2023-04-18 21:12\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -613,7 +613,7 @@ msgstr "Name"
 #: ../src/win32/AchWin32.cpp:393
 msgctxt "Achievements"
 msgid "Achievement Unlocked"
-msgstr "Erfolg freigeschaltet"
+msgstr "Erfolg Freigeschaltet"
 
 #. tr: Uses Pango's HTML subset for formatting.
 #: ../src/gtk/config/AboutTab.cpp:449
@@ -713,7 +713,7 @@ msgstr "Lizenzen: %s"
 #: ../src/win32/config/AboutTab.cpp:1040
 msgctxt "AboutTab|Libraries"
 msgid "APNG patch:"
-msgstr "APNG Patch:"
+msgstr "APNG patch:"
 
 #: ../src/gtk/config/AboutTab.cpp:784 ../src/kde/config/AboutTab.cpp:526
 #: ../src/win32/config/AboutTab.cpp:1113
@@ -1429,7 +1429,7 @@ msgstr ""
 #: ../src/kde/config/CacheTab.cpp:306
 msgctxt "ConfigDialog"
 msgid "<b>ERROR:</b> %1"
-msgstr "<b>Fehler:</b> %1"
+msgstr "<b>FEHLER:</b> %1"
 
 #. tr: "All Files" filter (RP format)
 #: ../src/kde/RomDataView_ops.cpp:319
@@ -1924,7 +1924,7 @@ msgstr "Flaggen"
 #: ../src/libromdata/Audio/SAP.cpp:614
 msgctxt "SAP"
 msgid "Type"
-msgstr "Type"
+msgstr "Typ"
 
 #: ../src/libromdata/Audio/SAP.cpp:630
 msgctxt "SAP"
@@ -2030,7 +2030,7 @@ msgstr "%u Hz"
 #: ../src/libromdata/Audio/SNDH.cpp:834
 msgctxt "SNDH"
 msgid "VBlank Freq"
-msgstr "VBlank Frequenz"
+msgstr "VBlank Freq"
 
 #: ../src/libromdata/Audio/SNDH.cpp:840
 #, c-format
