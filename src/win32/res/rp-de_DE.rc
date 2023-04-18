@@ -30,7 +30,7 @@ CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
     LTEXT           "Wählen Sie die Bildtypen aus, die Sie für jedes System als Vorschaubild verwenden möchten.\nInterne Bilder sind in der ROM Datei enthalten.\nExterne Bilder werden aus einer externen Bilddatenbank heruntergeladen.", IDC_IMAGETYPES_DESC1, 7, 7, 397, 30, SS_LEFT, WS_EX_LEFT
-    LTEXT           "1 = höchste Priorität; 2 = zweithöchste Priorität; No = ignorieren", IDC_IMAGETYPES_DESC2, 7, 37, 397, 8, SS_LEFT, WS_EX_LEFT
+    LTEXT           "1 = höchste Priorität; 2 = zweithöchste Priorität; Nein = ignorieren", IDC_IMAGETYPES_DESC2, 7, 37, 397, 8, SS_LEFT, WS_EX_LEFT
     CONTROL         "IDC_IMAGETYPES_CREDITS", IDC_IMAGETYPES_CREDITS, "SysLink", 0x50010000, 7, 209, 397, 24, 0x00000000
 END
 
