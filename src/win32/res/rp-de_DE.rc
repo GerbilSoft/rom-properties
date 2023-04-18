@@ -44,7 +44,7 @@ EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Game Boy Title Bildschirme", IDC_STATIC, 7, 7, 397, 74
+    GROUPBOX        "Game Boy-Titelbildschirme", IDC_STATIC, 7, 7, 397, 74
     LTEXT           "Wählen Sie das Game Boy-Modell aus, das für Titelbildschirme für verschiedene Arten von Game Boy-ROM-Bildern verwendet werden soll.", IDC_STATIC, 15, 18, 381, 8
     LTEXT           "Game Boy:", IDC_STATIC, 15, 30, 80, 9
     COMBOBOX        IDC_SYSTEMS_DMGTS_DMG, 77, 29, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
