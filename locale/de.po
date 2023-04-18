@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-03-18 11:25-0400\n"
-"PO-Revision-Date: 2023-03-18 15:54\n"
+"PO-Revision-Date: 2023-04-18 12:05\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -21,26 +21,26 @@ msgstr ""
 #: ../src/gtk/config/AboutTab.cpp:288
 msgctxt "AboutTab"
 msgid "C&redits"
-msgstr ""
+msgstr "Credits"
 
 #: ../build/src/kde/kf5/ui_AboutTab.h:277
 #: ../src/gtk/config/AboutTab.cpp:292
 msgctxt "AboutTab"
 msgid "&Libraries"
-msgstr ""
+msgstr "&Bibliotheken"
 
 #: ../build/src/kde/kf5/ui_AboutTab.h:278
 #: ../src/gtk/config/AboutTab.cpp:296
 msgctxt "AboutTab"
 msgid "&Support"
-msgstr ""
+msgstr "&Unterstützung"
 
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:51
 #: ../src/gtk/config/AchievementsTab.cpp:215
 #: ../src/win32/config/AchievementsTab.cpp:449
 msgctxt "AchievementsTab"
 msgid "Unlock Time"
-msgstr ""
+msgstr "Zeit Freischalten"
 
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:52
 #: ../src/gtk/config/AchievementsTab.cpp:214
@@ -53,32 +53,34 @@ msgstr ""
 #: ../src/gtk/config/AchievementsTab.cpp:213
 msgctxt "AchievementsTab"
 msgid "Icon"
-msgstr ""
+msgstr "Icon"
 
 #: ../build/src/kde/kf5/ui_CacheTab.h:98
 msgctxt "CacheTab"
 msgid "If any image type settings were changed, you will need to\n"
 "clear the system thumbnail cache."
-msgstr ""
+msgstr "Wenn die Einstellungen für den Bildtyp geändert wurden, müssen Sie\n"
+"den System Miniaturbild Cache löschen."
 
 #: ../build/src/kde/kf5/ui_CacheTab.h:100
 #: ../src/gtk/config/CacheTab.cpp:161
 msgctxt "CacheTab"
 msgid "Clear the System Thumbnail Cache"
-msgstr ""
+msgstr "Löschen des System Caches für Miniaturansichten"
 
 #: ../build/src/kde/kf5/ui_CacheTab.h:101
 #: ../src/gtk/config/CacheTab.cpp:165
 msgctxt "CacheTab"
 msgid "ROM Properties Page maintains its own download cache for external images.\n"
 "Clearing this cache will force external images to be redownloaded."
-msgstr ""
+msgstr "ROM Properties Seite unterhält einen eigenen Download-Cache für externe Bilder.\n"
+"Wenn Sie diesen Cache löschen, müssen die externen Bilder erneut heruntergeladen werden."
 
 #: ../build/src/kde/kf5/ui_CacheTab.h:103
 #: ../src/gtk/config/CacheTab.cpp:171
 msgctxt "CacheTab"
 msgid "Clear the ROM Properties Page Download Cache"
-msgstr ""
+msgstr "Löschen Sie den Download Cache der ROM Properties Seite"
 
 #. tr: Dialog title.
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:90
@@ -86,73 +88,73 @@ msgstr ""
 #: ../src/win32/config/ConfigDialog.cpp:242
 msgctxt "ConfigDialog"
 msgid "ROM Properties Page configuration"
-msgstr ""
+msgstr "Konfiguration der ROM Properties Seite"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:91
 #: ../src/gtk/config/ConfigDialog.cpp:238
 msgctxt "ConfigDialog"
 msgid "&Image Types"
-msgstr ""
+msgstr "&Bildtypen"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:92
 #: ../src/gtk/config/ConfigDialog.cpp:239
 msgctxt "ConfigDialog"
 msgid "&Systems"
-msgstr ""
+msgstr "&Systeme"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:93
 #: ../src/gtk/config/ConfigDialog.cpp:240
 msgctxt "ConfigDialog"
 msgid "&Options"
-msgstr ""
+msgstr "&Optionen"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:94
 #: ../src/gtk/config/ConfigDialog.cpp:241
 msgctxt "ConfigDialog"
 msgid "Thumbnail Cache"
-msgstr ""
+msgstr "Vorschaubilder Cache"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:95
 #: ../src/gtk/config/ConfigDialog.cpp:242
 msgctxt "ConfigDialog"
 msgid "&Achievements"
-msgstr ""
+msgstr "&Errungenschaften"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:96
 #: ../src/gtk/config/ConfigDialog.cpp:246
 msgctxt "ConfigDialog"
 msgid "Abou&t"
-msgstr ""
+msgstr "Übe&r"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:100
 msgctxt "DosAttrView"
 msgid "&Read-only"
-msgstr ""
+msgstr "&Schreibgeschützt"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:101
 msgctxt "DosAttrView"
 msgid "&Hidden"
-msgstr ""
+msgstr "&Versteckt"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:102
 msgctxt "DosAttrView"
 msgid "&Archive"
-msgstr ""
+msgstr "&Archiv"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:103
 msgctxt "DosAttrView"
 msgid "&System"
-msgstr ""
+msgstr "&System"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:104
 msgctxt "DosAttrView"
 msgid "&Compressed"
-msgstr ""
+msgstr "&Komprimiert"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:105
 msgctxt "DosAttrView"
 msgid "&Encrypted"
-msgstr ""
+msgstr "&Verschlüsselt"
 
 #: ../build/src/kde/kf5/ui_ImageTypesTab.h:81
 #: ../src/gtk/config/ImageTypesTab.cpp:468
@@ -161,19 +163,22 @@ msgid "Select the image types you would like to use for each system as its thumb
 "Internal images are contained within the ROM file.\n"
 "External images are downloaded from an external image database.\n\n"
 "1 = highest priority; 2 = second highest priority; No = ignore"
-msgstr ""
+msgstr "Wählen Sie die Bildtypen aus, die Sie für jedes System als Vorschaubild verwenden möchten.\n"
+"Interne Bilder sind in der ROM Datei enthalten.\n"
+"Externe Bilder werden aus einer externen Bilddatenbank heruntergeladen.\n\n"
+"1 = höchste Priorität; 2 = zweithöchste Priorität; Nein = ignorieren"
 
 #: ../build/src/kde/kf5/ui_KeyManagerTab.h:90
 #: ../src/kde/config/KeyManagerTab.cpp:323
 msgctxt "KeyManagerTab"
 msgid "I&mport"
-msgstr ""
+msgstr "I&mportieren"
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:218
 #: ../src/gtk/xattr/LinuxAttrView.c:225
 msgctxt "LinuxAttrView"
 msgid "lsattr:"
-msgstr ""
+msgstr "lsattr:"
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:220
 #: ../src/gtk/xattr/LinuxAttrView.c:98
