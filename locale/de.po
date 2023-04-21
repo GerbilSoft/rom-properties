@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-03-18 11:25-0400\n"
-"PO-Revision-Date: 2023-04-18 21:12\n"
+"PO-Revision-Date: 2023-04-21 09:26\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -328,7 +328,7 @@ msgstr "d: kein Dump"
 #: ../src/gtk/xattr/LinuxAttrView.c:122
 msgctxt "LinuxAttrView"
 msgid "Files stored in this directory use case-insensitive filenames."
-msgstr "Dateien in diesem Verzeichnis nutzen Namen ohne Rücksicht auf Groß- und Kleinschreibung."
+msgstr "Dateinamen in diesem Verzeichnis wird die Groß- und Kleinschreibung nicht berücksichtigt."
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:270
 #: ../src/gtk/xattr/LinuxAttrView.c:121
@@ -376,7 +376,7 @@ msgstr ""
 #: ../src/gtk/xattr/LinuxAttrView.c:140
 msgctxt "LinuxAttrView"
 msgid "Directory will enforce a hierarchical structure for project IDs."
-msgstr "Das Verzeichnis wird eine hierarchische Struktur für Projekt-IDs erzwingen."
+msgstr "Das Verzeichnis wird eine hierarchische Struktur für Projekt IDs erzwingen."
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:286
 #: ../src/gtk/xattr/LinuxAttrView.c:139
