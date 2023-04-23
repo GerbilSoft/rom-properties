@@ -31,29 +31,27 @@ LPVOID ITab::LoadResource_i18n(LPCTSTR lpType, DWORD dwResId)
 	WORD wLanguage = 0;		// Desired language code.
 	WORD wLanguageFallback = 0;	// Fallback language.
 
-	switch (lc) {
-		case 'es':
-			// Default is es_ES.
-			wLanguage = MAKELANGID(LANG_SPANISH, SUBLANG_SPANISH);
-			break;
-		case 'pt':
-			// Default is pt_BR.
-			wLanguage = MAKELANGID(LANG_PORTUGUESE, SUBLANG_PORTUGUESE_BRAZILIAN);
-			break;
-		case 'ru':
-			// Default is ru_RU.
-			wLanguage = MAKELANGID(LANG_RUSSIAN, SUBLANG_RUSSIAN_RUSSIA);
-			break;
-		case 'uk':
-			// Default is uk_UA.
-			wLanguage = MAKELANGID(LANG_UKRAINIAN, SUBLANG_UKRAINIAN_UKRAINE);
-			break;
+	// Mappings for languages with only a single variant implemented.
+	struct lc_mapping_t {
+		uint32_t lc;
+		WORD wLanguage;
+	};
+	static const struct lc_mapping_t lc_mappings[] = {
+		{'de', MAKELANGID(LANG_GERMAN, SUBLANG_GERMAN)},
+		{'es', MAKELANGID(LANG_SPANISH, SUBLANG_SPANISH)},
+		{'fr', MAKELANGID(LANG_FRENCH, SUBLANG_FRENCH)},
+		{'pt', MAKELANGID(LANG_PORTUGUESE, SUBLANG_PORTUGUESE_BRAZILIAN)},
+		{'ru', MAKELANGID(LANG_RUSSIAN, SUBLANG_RUSSIAN_RUSSIA)},
+		{'uk', MAKELANGID(LANG_UKRAINIAN, SUBLANG_UKRAINIAN_UKRAINE)},
+	};
+	static const struct lc_mapping_t *const p_lc_mappings_end = &lc_mappings[ARRAY_SIZE(lc_mappings)];
 
-		case 'en':
-		default:
-			// Default is en_US.
-			// TODO: Add other en locales.
-			break;
+	auto iter = std::find_if(lc_mappings, p_lc_mappings_end,
+		[lc](const struct lc_mapping_t lc_mapping) {
+			return (lc == lc_mapping.lc);
+		});
+	if (iter != p_lc_mappings_end) {
+		wLanguage = iter->wLanguage;
 	}
 
 	// Search for the requested language.

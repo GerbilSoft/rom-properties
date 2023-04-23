@@ -105,6 +105,9 @@ static const CreditsData_t creditsData[] = {
 	{CreditType::Translator,	"Egor", "mailto:egor@opensrc.club", "egor@opensrc.club", "ru, uk"},
 	{CreditType::Continue,		"Null Magic", nullptr, nullptr, "pt_BR"},
 	{CreditType::Continue,		"Amnesia1000", nullptr, nullptr, "es"},
+	{CreditType::Continue,		"Slippy", nullptr, nullptr, "de"},
+	{CreditType::Continue,		"CyberYoshi64", nullptr, nullptr, "de"},
+	{CreditType::Continue,		"maschell", nullptr, nullptr, "de"},
 
 	// Contributors
 	{CreditType::Contributor,	"CheatFreak47", nullptr, nullptr, nullptr},
@@ -148,3 +151,4 @@ const SupportSite_t *getSupportSites(void)
 }
 
 } }
+
