@@ -11,5 +11,5 @@ The following changes have been made to the original:
 
 - The Meson build scripts have been removed.
 
-To obtain the original inih-r52, visit:
+To obtain the original inih-r56, visit:
 https://github.com/benhoyt/inih
