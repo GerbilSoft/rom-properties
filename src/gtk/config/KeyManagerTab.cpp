@@ -246,7 +246,7 @@ rp_key_manager_tab_init(RpKeyManagerTab *tab)
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tab->treeView), column);
 
 	// "Import" button.
-	string s_import = convert_accel_to_gtk(C_("KeyManagerTab", "&Import"));
+	string s_import = convert_accel_to_gtk(C_("KeyManagerTab", "I&mport"));
 #ifdef USE_GTK_MENU_BUTTON
 	tab->btnImport = gtk_menu_button_new();
 #else /* !USE_GTK_MENU_BUTTON */
