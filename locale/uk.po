@@ -26,7 +26,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.1+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2023-03-18 11:25-0400\n"
+"POT-Creation-Date: 2023-04-23 09:14-0400\n"
 "PO-Revision-Date: 2018-04-13 04:36+0200\n"
 "Last-Translator: Egor <egor@opensrc.club>\n"
 "Language-Team: none\n"
@@ -38,20 +38,17 @@ msgstr ""
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Generator: Lokalize 2.0\n"
 
-#: ../build/src/kde/kf5/ui_AboutTab.h:276
-#: ../src/gtk/config/AboutTab.cpp:288
+#: ../build/src/kde/kf5/ui_AboutTab.h:276 ../src/gtk/config/AboutTab.cpp:288
 msgctxt "AboutTab"
 msgid "C&redits"
 msgstr "&Автори"
 
-#: ../build/src/kde/kf5/ui_AboutTab.h:277
-#: ../src/gtk/config/AboutTab.cpp:292
+#: ../build/src/kde/kf5/ui_AboutTab.h:277 ../src/gtk/config/AboutTab.cpp:292
 msgctxt "AboutTab"
 msgid "&Libraries"
 msgstr "&Бібліотеки"
 
-#: ../build/src/kde/kf5/ui_AboutTab.h:278
-#: ../src/gtk/config/AboutTab.cpp:296
+#: ../build/src/kde/kf5/ui_AboutTab.h:278 ../src/gtk/config/AboutTab.cpp:296
 msgctxt "AboutTab"
 msgid "&Support"
 msgstr "Тех&підтримка"
@@ -83,22 +80,19 @@ msgid ""
 "clear the system thumbnail cache."
 msgstr ""
 
-#: ../build/src/kde/kf5/ui_CacheTab.h:100
-#: ../src/gtk/config/CacheTab.cpp:161
+#: ../build/src/kde/kf5/ui_CacheTab.h:100 ../src/gtk/config/CacheTab.cpp:161
 msgctxt "CacheTab"
 msgid "Clear the System Thumbnail Cache"
 msgstr ""
 
-#: ../build/src/kde/kf5/ui_CacheTab.h:101
-#: ../src/gtk/config/CacheTab.cpp:165
+#: ../build/src/kde/kf5/ui_CacheTab.h:101 ../src/gtk/config/CacheTab.cpp:165
 msgctxt "CacheTab"
 msgid ""
 "ROM Properties Page maintains its own download cache for external images.\n"
 "Clearing this cache will force external images to be redownloaded."
 msgstr ""
 
-#: ../build/src/kde/kf5/ui_CacheTab.h:103
-#: ../src/gtk/config/CacheTab.cpp:171
+#: ../build/src/kde/kf5/ui_CacheTab.h:103 ../src/gtk/config/CacheTab.cpp:171
 msgctxt "CacheTab"
 msgid "Clear the ROM Properties Page Download Cache"
 msgstr ""
@@ -197,6 +191,7 @@ msgstr ""
 "використовувати цей тип"
 
 #: ../build/src/kde/kf5/ui_KeyManagerTab.h:90
+#: ../src/gtk/config/KeyManagerTab.cpp:249
 #: ../src/kde/config/KeyManagerTab.cpp:323
 msgctxt "KeyManagerTab"
 msgid "I&mport"
@@ -624,14 +619,12 @@ msgctxt "SystemsTab"
 msgid "Game Boy &Color:"
 msgstr ""
 
-#: ../build/src/kde/kf5/ui_XAttrView.h:98
-#: ../src/gtk/xattr/XAttrView.cpp:121
+#: ../build/src/kde/kf5/ui_XAttrView.h:98 ../src/gtk/xattr/XAttrView.cpp:121
 msgctxt "XAttrView"
 msgid "Linux Attributes"
 msgstr ""
 
-#: ../build/src/kde/kf5/ui_XAttrView.h:99
-#: ../src/gtk/xattr/XAttrView.cpp:129
+#: ../build/src/kde/kf5/ui_XAttrView.h:99 ../src/gtk/xattr/XAttrView.cpp:129
 msgctxt "XAttrView"
 msgid "MS-DOS Attributes"
 msgstr ""
@@ -641,14 +634,12 @@ msgctxt "XAttrView"
 msgid "E&xtended Attributes"
 msgstr ""
 
-#: ../build/src/kde/kf5/ui_XAttrView.h:102
-#: ../src/gtk/xattr/XAttrView.cpp:162
+#: ../build/src/kde/kf5/ui_XAttrView.h:102 ../src/gtk/xattr/XAttrView.cpp:162
 msgctxt "XAttrView"
 msgid "Value"
 msgstr ""
 
-#: ../build/src/kde/kf5/ui_XAttrView.h:103
-#: ../src/gtk/xattr/XAttrView.cpp:161
+#: ../build/src/kde/kf5/ui_XAttrView.h:103 ../src/gtk/xattr/XAttrView.cpp:161
 msgctxt "XAttrView"
 msgid "Name"
 msgstr ""
@@ -1007,11 +998,6 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:355
 msgctxt "KeyManagerTab"
 msgid "Valid?"
-msgstr ""
-
-#: ../src/gtk/config/KeyManagerTab.cpp:249
-msgctxt "KeyManagerTab"
-msgid "&Import"
 msgstr ""
 
 #. tr: Wii keys.bin dialog title
@@ -1557,10 +1543,10 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:421
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:513
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:174
-#: ../src/libromdata/Other/Amiibo.cpp:416
-#: ../src/libromdata/Other/Amiibo.cpp:421
-#: ../src/libromdata/Other/Amiibo.cpp:426
-#: ../src/libromdata/Other/Amiibo.cpp:441 ../src/libromdata/Other/ELF.cpp:1497
+#: ../src/libromdata/Other/Amiibo.cpp:423
+#: ../src/libromdata/Other/Amiibo.cpp:428
+#: ../src/libromdata/Other/Amiibo.cpp:433
+#: ../src/libromdata/Other/Amiibo.cpp:448 ../src/libromdata/Other/ELF.cpp:1497
 #: ../src/libromdata/Other/EXE.cpp:219
 #: ../src/libromdata/Other/EXE_manifest.cpp:219
 #: ../src/libromdata/Other/EXE_PE.cpp:678 ../src/libromdata/Other/MachO.cpp:504
@@ -1902,7 +1888,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1166
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:377
 #: ../src/libromdata/Handheld/WonderSwan.cpp:466
-#: ../src/libromdata/Other/Amiibo.cpp:407 ../src/libromdata/Other/ELF.cpp:1616
+#: ../src/libromdata/Other/Amiibo.cpp:414 ../src/libromdata/Other/ELF.cpp:1616
 #: ../src/libromdata/Other/EXE.cpp:295 ../src/libromdata/Other/EXE.cpp:480
 #: ../src/libromdata/Other/EXE_NE.cpp:322
 #, c-format
@@ -6720,78 +6706,78 @@ msgctxt "WonderSwan|ROMAccessSpeed"
 msgid "3 cycles"
 msgstr ""
 
-#: ../src/libromdata/Other/Amiibo.cpp:375
+#: ../src/libromdata/Other/Amiibo.cpp:382
 msgctxt "Amiibo"
 msgid "NTAG215 Serial"
 msgstr ""
 
 #. tr: amiibo ID. Represents the character and amiibo series.
 #. TODO: Link to https://amiibo.life/nfc/%08X-%08X
-#: ../src/libromdata/Other/Amiibo.cpp:385
+#: ../src/libromdata/Other/Amiibo.cpp:392
 msgctxt "Amiibo"
 msgid "amiibo ID"
 msgstr ""
 
 #. tr: NFP_TYPE_FIGURINE == standard amiibo
-#: ../src/libromdata/Other/Amiibo.cpp:392
+#: ../src/libromdata/Other/Amiibo.cpp:399
 msgctxt "Amiibo|Type"
 msgid "Figurine"
 msgstr ""
 
 #. tr: NFP_TYPE_CARD == amiibo card
-#: ../src/libromdata/Other/Amiibo.cpp:394
+#: ../src/libromdata/Other/Amiibo.cpp:401
 msgctxt "Amiibo|Type"
 msgid "Card"
 msgstr ""
 
 #. tr: NFP_TYPE_YARN == yarn amiibo
-#: ../src/libromdata/Other/Amiibo.cpp:396
+#: ../src/libromdata/Other/Amiibo.cpp:403
 msgctxt "Amiibo|Type"
 msgid "Yarn"
 msgstr ""
 
 #. tr: NFP_TYPE_BAND == Power-Up Band
-#: ../src/libromdata/Other/Amiibo.cpp:398
+#: ../src/libromdata/Other/Amiibo.cpp:405
 msgctxt "Amiibo|Type"
 msgid "Power-Up Band"
 msgstr ""
 
-#: ../src/libromdata/Other/Amiibo.cpp:400
+#: ../src/libromdata/Other/Amiibo.cpp:407
 msgctxt "Amiibo"
 msgid "amiibo Type"
 msgstr ""
 
-#: ../src/libromdata/Other/Amiibo.cpp:415
+#: ../src/libromdata/Other/Amiibo.cpp:422
 msgctxt "Amiibo"
 msgid "Character Series"
 msgstr ""
 
-#: ../src/libromdata/Other/Amiibo.cpp:420
+#: ../src/libromdata/Other/Amiibo.cpp:427
 msgctxt "Amiibo"
 msgid "Character Name"
 msgstr ""
 
-#: ../src/libromdata/Other/Amiibo.cpp:425
+#: ../src/libromdata/Other/Amiibo.cpp:432
 msgctxt "Amiibo"
 msgid "amiibo Series"
 msgstr ""
 
-#: ../src/libromdata/Other/Amiibo.cpp:430
+#: ../src/libromdata/Other/Amiibo.cpp:437
 msgctxt "Amiibo"
 msgid "amiibo Name"
 msgstr ""
 
-#: ../src/libromdata/Other/Amiibo.cpp:435
+#: ../src/libromdata/Other/Amiibo.cpp:442
 msgctxt "Amiibo"
 msgid "amiibo Wave #"
 msgstr ""
 
-#: ../src/libromdata/Other/Amiibo.cpp:438
+#: ../src/libromdata/Other/Amiibo.cpp:445
 msgctxt "Amiibo"
 msgid "amiibo Release #"
 msgstr ""
 
-#: ../src/libromdata/Other/Amiibo.cpp:446
+#: ../src/libromdata/Other/Amiibo.cpp:453
 #, c-format
 msgctxt "Amiibo"
 msgid ""
@@ -6799,7 +6785,7 @@ msgid ""
 "the Unofficial amiibo Database."
 msgstr ""
 
-#: ../src/libromdata/Other/Amiibo.cpp:448
+#: ../src/libromdata/Other/Amiibo.cpp:455
 msgctxt "Amiibo"
 msgid "Credits"
 msgstr ""
@@ -8900,193 +8886,193 @@ msgctxt "DidjTex"
 msgid "Display Size"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1171
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1174
 #, c-format
 msgctxt "DirectDrawSurface"
 msgid "Alpha (%u-bit)"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1175
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1178
 #, c-format
 msgctxt "DirectDrawSurface"
 msgid "YUV (%u-bit)"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1180
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1183
 #, c-format
 msgctxt "DirectDrawSurface"
 msgid "Luminance + Alpha (%u-bit)"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1184
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1187
 #, c-format
 msgctxt "DirectDrawSurface"
 msgid "Luminance (%u-bit)"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1190
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1193
 #, fuzzy
 msgctxt "FileFormat"
 msgid "Unknown"
 msgstr "Невідомо"
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1239
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1242
 msgctxt "DirectDrawSurface"
 msgid "Linear Size"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1240
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1243
 msgctxt "DirectDrawSurface"
 msgid "Pitch"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1248
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1251
 msgctxt "DirectDrawSurface"
 msgid "DX10 Format"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1250
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1253
 #, fuzzy, c-format
 msgctxt "FileFormat"
 msgid "Unknown (0x%08X)"
 msgstr "Невідомо (0x%08X)"
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1256
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1259
 msgctxt "DirectDrawSurface"
 msgid "NVTT Version"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1271
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1274
 msgctxt "DirectDrawSurface"
 msgid "GIMP-DDS FourCC"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1278
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1281
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Caps"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1279
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1282
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Height"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1280
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1283
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Width"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1281
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1284
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Pitch"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1287
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1290
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Pixel Format"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1291
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1294
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Mipmap Count"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1293
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1296
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Linear Size"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1296
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1299
 msgctxt "DirectDrawSurface|dwFlags"
 msgid "Depth"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1300
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1303
 msgctxt "DirectDrawSurface"
 msgid "Flags"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1307
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1310
 msgctxt "DirectDrawSurface|dwCaps"
 msgid "Complex"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1313
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1316
 msgctxt "DirectDrawSurface|dwCaps"
 msgid "Texture"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1319
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1322
 msgctxt "DirectDrawSurface|dwCaps"
 msgid "Mipmap"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1323
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1326
 msgctxt "DirectDrawSurface"
 msgid "Caps"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1330
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1333
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "Cubemap"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1331
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1334
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+X"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1332
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1335
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "-X"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1334
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1337
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+Y"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1335
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1338
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "-Y"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1336
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1339
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+Z"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1337
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1340
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "-Z"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1342
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1345
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "Volume"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1346
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1349
 msgctxt "DirectDrawSurface"
 msgid "Caps2"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1353
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1356
 msgctxt "DirectDrawSurface"
 msgid "Tile Mode"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1354
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1357
 msgctxt "DirectDrawSurface"
 msgid "Base Alignment"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1356
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1359
 msgctxt "DirectDrawSurface"
 msgid "Data Size"
 msgstr ""
 
-#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1358
+#: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1361
 msgctxt "DirectDrawSurface"
 msgid "XDK Version"
 msgstr ""
