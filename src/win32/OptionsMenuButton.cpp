@@ -265,8 +265,8 @@ void OptionsMenuButtonRegister(void)
 
 	// Get Button class information.
 	// TODO: Do we need to use GetClassInfo for BUTTON?
-	WNDCLASSEX wndClass;
-	BOOL bRet = GetClassInfoEx(nullptr, WC_BUTTON, &wndClass);
+	WNDCLASS wndClass;
+	BOOL bRet = GetClassInfo(nullptr, WC_BUTTON, &wndClass);
 	assert(bRet != FALSE);
 	if (!bRet) {
 		// Error getting class info.
@@ -279,7 +279,7 @@ void OptionsMenuButtonRegister(void)
 	wndClass.hInstance = HINST_THISCOMPONENT;
 	wndClass.lpszClassName = WC_OPTIONSMENUBUTTON;
 
-	atom_optionsMenuButton = RegisterClassEx(&wndClass);
+	atom_optionsMenuButton = RegisterClass(&wndClass);
 }
 
 void OptionsMenuButtonUnregister(void)

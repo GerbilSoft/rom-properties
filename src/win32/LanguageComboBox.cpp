@@ -420,8 +420,8 @@ void LanguageComboBoxRegister(void)
 	// Get ComboBoxEx class information.
 	// NOTE: ComboBoxEx was introduced in MSIE 3.0, so we don't
 	// need to fall back to regular ComboBox.
-	WNDCLASSEX wndClass;
-	BOOL bRet = GetClassInfoEx(nullptr, WC_COMBOBOXEX, &wndClass);
+	WNDCLASS wndClass;
+	BOOL bRet = GetClassInfo(nullptr, WC_COMBOBOXEX, &wndClass);
 	assert(bRet != FALSE);
 	if (!bRet) {
 		// Error getting class info.
@@ -434,7 +434,7 @@ void LanguageComboBoxRegister(void)
 	wndClass.hInstance = HINST_THISCOMPONENT;
 	wndClass.lpszClassName = WC_LANGUAGECOMBOBOX;
 
-	atom_languageComboBox = RegisterClassEx(&wndClass);
+	atom_languageComboBox = RegisterClass(&wndClass);
 }
 
 void LanguageComboBoxUnregister(void)
