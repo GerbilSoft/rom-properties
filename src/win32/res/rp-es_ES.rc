@@ -32,7 +32,7 @@ FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
     LTEXT           "Selecione los tipos de imagenes que usted desea utilizar en cada sistema como miniatura.\nLas imágenes internas están contenidas en la ROM.\nLas imágenes externas se reciben de una base de datos de imágenes externas.", IDC_IMAGETYPES_DESC1, 7, 7, 397, 30, SS_LEFT, WS_EX_LEFT
     LTEXT           "1 = prioridad más alta; 2 = prioridad alta; No = ignorar", IDC_IMAGETYPES_DESC2, 7, 37, 397, 8, SS_LEFT, WS_EX_LEFT
-    CONTROL         "IDC_IMAGETYPES_CREDITS", IDC_IMAGETYPES_CREDITS, "SysLink", 0x50010000, 7, 214, 397, 24, 0x00000000
+    CONTROL         "", IDC_IMAGETYPES_CREDITS, "SysLink", 0x50010000, 7, 214, 397, 24, 0x00000000
 END
 
 /**

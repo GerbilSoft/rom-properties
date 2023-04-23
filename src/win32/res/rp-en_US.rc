@@ -31,7 +31,7 @@ FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
     LTEXT           "Select the image types you would like to use for each system as its thumbnail image.\nInternal images are contained within the ROM file.\nExternal images are downloaded from an external image database.", IDC_IMAGETYPES_DESC1, 7, 7, 397, 30, SS_LEFT, WS_EX_LEFT
     LTEXT           "1 = highest priority; 2 = second highest priority; No = ignore", IDC_IMAGETYPES_DESC2, 7, 37, 397, 8, SS_LEFT, WS_EX_LEFT
-    CONTROL         "IDC_IMAGETYPES_CREDITS", IDC_IMAGETYPES_CREDITS, "SysLink", 0x50010000, 7, 209, 397, 24, 0x00000000
+    CONTROL         "", IDC_IMAGETYPES_CREDITS, "SysLink", 0x50010000, 7, 209, 397, 24, 0x00000000
 END
 
 /**
