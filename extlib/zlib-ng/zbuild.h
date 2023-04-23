@@ -1,6 +1,10 @@
 #ifndef _ZBUILD_H
 #define _ZBUILD_H
 
+#ifndef _ISOC11_SOURCE
+#  define _ISOC11_SOURCE 1 /* aligned_alloc */
+#endif
+
 /* This has to be first include that defines any types */
 #if defined(_MSC_VER)
 #  if defined(_WIN64)
@@ -32,5 +36,12 @@
 #define MAX(a, b) ((a) < (b) ? (b) : (a))
 /* Ignore unused variable warning */
 #define Z_UNUSED(var) (void)(var)
+
+#if defined(__has_feature)
+#  if __has_feature(memory_sanitizer)
+#    define Z_MEMORY_SANITIZER 1
+#    include <sanitizer/msan_interface.h>
+#  endif
+#endif
 
 #endif

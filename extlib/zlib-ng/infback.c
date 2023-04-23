@@ -51,6 +51,7 @@ int32_t Z_EXPORT PREFIX(inflateBackInit_)(PREFIX3(stream) *strm, int32_t windowB
     state->window = window;
     state->wnext = 0;
     state->whave = 0;
+    state->sane = 1;
     state->chunksize = functable.chunksize();
     return Z_OK;
 }
@@ -464,12 +465,8 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
             break;
 
         case DONE:
-            /* inflate stream terminated properly -- write leftover output */
+            /* inflate stream terminated properly */
             ret = Z_STREAM_END;
-            if (left < state->wsize) {
-                if (out(out_desc, state->window, state->wsize - left))
-                    ret = Z_BUF_ERROR;
-            }
             goto inf_leave;
 
         case BAD:
@@ -481,8 +478,13 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
             goto inf_leave;
         }
 
-    /* Return unused input */
+    /* Write leftover output and return unused input */
   inf_leave:
+    if (left < state->wsize) {
+        if (out(out_desc, state->window, state->wsize - left) && (ret == Z_STREAM_END)) {
+            ret = Z_BUF_ERROR;
+        }
+    }
     strm->next_in = next;
     strm->avail_in = have;
     return ret;

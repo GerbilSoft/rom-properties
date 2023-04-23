@@ -52,7 +52,7 @@
 #include "deflate_p.h"
 #include "functable.h"
 
-const char PREFIX(deflate_copyright)[] = " deflate 1.2.11.f Copyright 1995-2016 Jean-loup Gailly and Mark Adler ";
+const char PREFIX(deflate_copyright)[] = " deflate 1.2.11 Copyright 1995-2022 Jean-loup Gailly and Mark Adler ";
 /*
   If you use the zlib library in a product, an acknowledgment is welcome
   in the documentation of your product. If for some reason you cannot
@@ -284,6 +284,8 @@ int32_t Z_EXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int32_t level, int
 
     if (windowBits < 0) { /* suppress zlib wrapper */
         wrap = 0;
+        if (windowBits < -15)
+            return Z_STREAM_ERROR;
         windowBits = -windowBits;
 #ifdef GZIP
     } else if (windowBits > 15) {
@@ -298,11 +300,6 @@ int32_t Z_EXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int32_t level, int
     }
     if (windowBits == 8)
         windowBits = 9;  /* until 256-byte window bug fixed */
-
-#if !defined(NO_QUICK_STRATEGY) && !defined(S390_DFLTCC_DEFLATE)
-    if (level == 1)
-        windowBits = 13;
-#endif
 
     s = (deflate_state *) ZALLOC_STATE(strm, 1, sizeof(deflate_state));
     if (s == NULL)
@@ -404,11 +401,11 @@ static int deflateStateCheck (PREFIX3(stream) *strm) {
     if (s == NULL || s->strm != strm || (s->status != INIT_STATE &&
 #ifdef GZIP
                                            s->status != GZIP_STATE &&
-#endif
                                            s->status != EXTRA_STATE &&
                                            s->status != NAME_STATE &&
                                            s->status != COMMENT_STATE &&
                                            s->status != HCRC_STATE &&
+#endif
                                            s->status != BUSY_STATE &&
                                            s->status != FINISH_STATE))
         return 1;
@@ -718,11 +715,20 @@ unsigned long Z_EXPORT PREFIX(deflateBound)(PREFIX3(stream) *strm, unsigned long
 
     /* if not default parameters, return conservative bound */
     if (DEFLATE_NEED_CONSERVATIVE_BOUND(strm) ||  /* hook for IBM Z DFLTCC */
-            s->w_bits != 15 || HASH_BITS < 15)
+            s->w_bits != 15 || HASH_BITS < 15) {
+        if (s->level == 0) {
+            /* upper bound for stored blocks with length 127 (memLevel == 1) --
+               ~4% overhead plus a small constant */
+            complen = sourceLen + (sourceLen >> 5) + (sourceLen >> 7) + (sourceLen >> 11) + 7;
+        }
+
         return complen + wraplen;
+    }
 
 #ifndef NO_QUICK_STRATEGY
     return sourceLen                       /* The source size itself */
+      + (sourceLen == 0 ? 1 : 0)           /* Always at least one byte for any input */
+      + (sourceLen < 9 ? 1 : 0)            /* One extra byte for lengths less than 9 */
       + DEFLATE_QUICK_OVERHEAD(sourceLen)  /* Source encoding overhead, padded to next full byte */
       + DEFLATE_BLOCK_OVERHEAD             /* Deflate block overhead bytes */
       + wraplen;                           /* none, zlib or gzip wrapper */

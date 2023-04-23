@@ -99,6 +99,7 @@ with_fuzzers=0
 floatabi=
 native=0
 forcesse2=0
+forcetzcnt=0
 avx2flag="-mavx2"
 sse2flag="-msse2"
 ssse3flag="-mssse3"
@@ -155,6 +156,7 @@ case "$1" in
       echo '    [--with-dfltcc-deflate]     Use DEFLATE CONVERSION CALL instruction for compression on IBM Z' | tee -a configure.log
       echo '    [--with-dfltcc-inflate]     Use DEFLATE CONVERSION CALL instruction for decompression on IBM Z' | tee -a configure.log
       echo '    [--force-sse2]              Assume SSE2 instructions are always available (disabled by default on x86, enabled on x86_64)' | tee -a configure.log
+      echo '    [--force-tzcnt]             Assume TZCNT instructions are always available (disabled by default)' | tee -a configure.log
       echo '    [--with-sanitizer]          Build with sanitizer (memory, address, undefined)' | tee -a configure.log
       echo '    [--with-fuzzers]            Build test/fuzz (disabled by default)' | tee -a configure.log
       echo '    [--native]                  Compiles with full instruction set supported on this host' | tee -a configure.log
@@ -181,6 +183,7 @@ case "$1" in
     --with-dfltcc-deflate) builddfltccdeflate=1; shift ;;
     --with-dfltcc-inflate) builddfltccinflate=1; shift ;;
     --force-sse2) forcesse2=1; shift ;;
+    --force-tzcnt) forcetzcnt=1; shift ;;
     -n | --native) native=1; shift ;;
     -a*=* | --archs=*) ARCHS=`echo $1 | sed 's/.*=//'`; shift ;;
     --sysconfdir=*) echo "ignored option: --sysconfdir" | tee -a configure.log; shift ;;
@@ -329,7 +332,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
       else
         ARCH=native
       fi ;;
-    aarch64 | aarch64_be)
+    aarch64 | aarch64_be | arm64)
       if test "${uname}" = "elf"; then
         uname=aarch64
       fi
@@ -399,7 +402,6 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         LDSHAREDLIBC=""
         DEFFILE='win32/${LIBNAME2}.def'
         RC="${CROSS_PREFIX}windres"
-        RCFLAGS='--define GCC_WINDRES'
         RCOBJS='zlibrc.o'
         STRIP="${CROSS_PREFIX}strip"
         EXE='.exe' ;;
@@ -422,13 +424,12 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         LDSHAREDLIBC=""
         DEFFILE='win32/${LIBNAME2}.def'
         RC="${CROSS_PREFIX}windres"
-        RCFLAGS='--define GCC_WINDRES'
         RCOBJS='zlibrc.o'
         STRIP="${CROSS_PREFIX}strip"
         EXE='.exe' ;;
   MINGW* | mingw*)
         ARFLAGS="rcs"
-        CFLAGS="${CFLAGS} -D_POSIX_C_SOURCE=200809L -D_GNU_SOURCE=1"
+        CFLAGS="${CFLAGS} -D_POSIX_C_SOURCE=200809L -D_GNU_SOURCE=1 -Wno-pedantic-ms-format"
         SFLAGS="${CFLAGS}"
         shared_ext='.dll'
         sharedlibdir='${bindir}'
@@ -442,7 +443,6 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         LDSHAREDLIBC=""
         DEFFILE='win32/${LIBNAME2}.def'
         RC="${CROSS_PREFIX}windres"
-        RCFLAGS='--define GCC_WINDRES'
         if [ "$CC" == "mingw32-gcc" ]; then
           case $ARCH in
           i386 | i486 | i586 | i686) RCFLAGS="${RCFLAGS} -F pe-i386";;
@@ -551,29 +551,17 @@ if ($CC -c $CFLAGS $test.c) 2>/dev/null; then
   }
   echo - using any output from compiler to indicate an error >> configure.log
 else
-try()
-{
-  show $*
-  ( $* ) >> configure.log 2>&1
-  ret=$?
-  if test $ret -ne 0; then
-    echo "(exit code "$ret")" >> configure.log
-  fi
-  return $ret
-}
-fi
-
-tryboth()
-{
-  show $*
-  got=`( $* ) 2>&1`
-  ret=$?
-  printf %s "$got" >> configure.log
-  if test $ret -ne 0; then
+  try()
+  {
+    show $*
+    ( $* ) >> configure.log 2>&1
+    ret=$?
+    if test $ret -ne 0; then
+      echo "(exit code $ret)" >> configure.log
+    fi
     return $ret
-  fi
-  test "$got" = ""
-}
+  }
+fi
 
 cat > $test.c << EOF
 int foo() { return 0; }
@@ -762,6 +750,25 @@ else
 fi
 echo >> configure.log
 
+cat > $test.c <<EOF
+#define _ISOC11_SOURCE 1
+#include <stdlib.h>
+int main(void) {
+  void *ptr = aligned_alloc(64, 10);
+  if (ptr)
+    free(ptr);
+  return 0;
+}
+EOF
+if try $CC $CFLAGS -o $test $test.c $LDSHAREDLIBC; then
+  echo "Checking for aligned_alloc... Yes." | tee -a configure.log
+  CFLAGS="${CFLAGS} -DHAVE_ALIGNED_ALLOC"
+  SFLAGS="${SFLAGS} -DHAVE_ALIGNED_ALLOC"
+else
+  echo "Checking for aligned_alloc... No." | tee -a configure.log
+fi
+echo >> configure.log
+
 # check for strerror() for use by gz* functions
 cat > $test.c <<EOF
 #include <string.h>
@@ -875,6 +882,7 @@ echo >> configure.log
 
 # Check for ANSI C compliant compiler
 cat > $test.c <<EOF
+#include <stdint.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include "zconf${SUFFIX}.h"
@@ -927,7 +935,7 @@ if test "$gcc" -eq 1; then
 int Z_INTERNAL foo;
 int main() { return 0; }
 EOF
-  if tryboth $CC -c $CFLAGS $test.c; then
+  if try $CC $CFLAGS $test.c; then
     CFLAGS="$CFLAGS -DHAVE_VISIBILITY_HIDDEN"
     SFLAGS="$SFLAGS -DHAVE_VISIBILITY_HIDDEN"
     echo >> configure.log
@@ -946,7 +954,7 @@ if test "$gcc" -eq 1; then
 int Z_INTERNAL foo;
 int main() { return 0; }
 EOF
-  if tryboth $CC -c $CFLAGS $test.c; then
+  if try $CC $CFLAGS $test.c; then
     CFLAGS="$CFLAGS -DHAVE_VISIBILITY_INTERNAL"
     SFLAGS="$SFLAGS -DHAVE_VISIBILITY_INTERNAL"
     echo >> configure.log
@@ -1258,8 +1266,8 @@ case "${ARCH}" in
             fi
 
             if test ${HAVE_SSE2_INTRIN} -eq 1; then
-                CFLAGS="${CFLAGS} -DX86_SSE2 -DX86_SSE2_CHUNKSET"
-                SFLAGS="${SFLAGS} -DX86_SSE2 -DX86_SSE2_CHUNKSET"
+                CFLAGS="${CFLAGS} -DX86_SSE2 -DX86_SSE2_CHUNKSET -DX86_SSE2_SLIDEHASH"
+                SFLAGS="${SFLAGS} -DX86_SSE2 -DX86_SSE2_CHUNKSET -DX86_SSE2_SLIDEHASH"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} chunkset_sse.o slide_sse.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} chunkset_sse.lo slide_sse.lo"
 
@@ -1281,6 +1289,11 @@ case "${ARCH}" in
                 SFLAGS="${SFLAGS} -DX86_PCLMULQDQ_CRC"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc_folding.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc_folding.lo"
+            fi
+
+            if test $forcetzcnt -eq 1; then
+                CFLAGS="${CFLAGS} -DX86_NOCHECK_TZCNT"
+                SFLAGS="${SFLAGS} -DX86_NOCHECK_TZCNT"
             fi
         fi
     ;;
@@ -1470,7 +1483,7 @@ EOF
 
     ;;
     # 64-bit ARM specific optimizations
-    aarch64)
+    aarch64 | arm64)
         [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=aarch64
         ARCHDIR=arch/arm
 

@@ -15,30 +15,25 @@ typedef uint8x16_t chunk_t;
 
 #define CHUNK_SIZE 16
 
-#define HAVE_CHUNKMEMSET_1
 #define HAVE_CHUNKMEMSET_2
 #define HAVE_CHUNKMEMSET_4
 #define HAVE_CHUNKMEMSET_8
 
-static inline void chunkmemset_1(uint8_t *from, chunk_t *chunk) {
-    *chunk = vld1q_dup_u8(from);
-}
-
 static inline void chunkmemset_2(uint8_t *from, chunk_t *chunk) {
     uint16_t tmp;
-    memcpy(&tmp, from, 2);
+    memcpy(&tmp, from, sizeof(tmp));
     *chunk = vreinterpretq_u8_u16(vdupq_n_u16(tmp));
 }
 
 static inline void chunkmemset_4(uint8_t *from, chunk_t *chunk) {
     uint32_t tmp;
-    memcpy(&tmp, from, 4);
+    memcpy(&tmp, from, sizeof(tmp));
     *chunk = vreinterpretq_u8_u32(vdupq_n_u32(tmp));
 }
 
 static inline void chunkmemset_8(uint8_t *from, chunk_t *chunk) {
     uint64_t tmp;
-    memcpy(&tmp, from, 8);
+    memcpy(&tmp, from, sizeof(tmp));
     *chunk = vreinterpretq_u8_u64(vdupq_n_u64(tmp));
 }
 

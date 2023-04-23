@@ -82,7 +82,6 @@ add_option(WITH_GZFILEOP "Compile with support for gzFile related functions" ON)
 add_option(ZLIB_COMPAT "Compile with zlib compatible API" OFF)
 add_option(ZLIB_ENABLE_TESTS "Build test binaries" ON)
 add_option(ZLIB_DUAL_LINK "Dual link tests against system zlib" OFF)
-add_option(WITH_SANITIZER "Build with sanitizer (Memory, Address, Undefined)" OFF)
 add_option(WITH_FUZZERS "Build test/fuzz" OFF)
 add_option(WITH_OPTIM "Build with optimisation" ON)
 add_option(WITH_NEW_STRATEGIES "Use new strategies" ON)
@@ -107,6 +106,7 @@ elseif(BASEARCH_S360_FOUND)
     add_option(WITH_DFLTCC_DEFLATE "Build with DFLTCC intrinsics for compression on IBM Z" OFF)
     add_option(WITH_DFLTCC_INFLATE "Build with DFLTCC intrinsics for decompression on IBM Z" OFF)
 elseif(BASEARCH_X86_FOUND)
+    option(FORCE_TZCNT "Always assume CPU is TZCNT capable" OFF)
     add_option(WITH_AVX2 "Build with AVX2" ON)
     add_option(WITH_SSE2 "Build with SSE2" ON)
     add_option(WITH_SSSE3 "Build with SSSE3" ON)
@@ -141,8 +141,10 @@ if(ZLIB_COMPAT)
     add_definitions(-DZLIB_COMPAT)
     set(WITH_GZFILEOP ON)
     set(SUFFIX "")
+    set(ZLIB_FULL_VERSION ${ZLIB_HEADER_VERSION}.zlib-ng)
 else()
     set(SUFFIX "-ng")
+    set(ZLIB_FULL_VERSION ${ZLIBNG_HEADER_VERSION})
 endif()
 
 if(WITH_GZFILEOP)
@@ -199,6 +201,9 @@ elseif(MSVC)
     endif()
     if(WITH_NATIVE_INSTRUCTIONS)
         message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not supported on this configuration")
+    endif()
+    if(MINGW)
+        list(APPEND WARNFLAGS_DISABLE -Wno-pedantic-ms-format)
     endif()
 else()
     # catch all GNU C compilers as well as Clang and AppleClang
@@ -285,6 +290,15 @@ endif()
 if(NOT MSVC AND NOT CMAKE_C_FLAGS MATCHES "([\\/\\-]O)3")
     string(REGEX REPLACE "([\\/\\-]O)3" "\\12"
         CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
+endif()
+
+# Disable LTO
+if(NOT WITH_NATIVE_INSTRUCTIONS)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
+    foreach(_cfg_name IN LISTS CMAKE_CONFIGURATION_TYPES)
+        string(TOUPPER "${_cfg_name}" _cfg_name_uc)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_${_cfg_name_uc} OFF)
+    endforeach()
 endif()
 
 # Set architecture alignment requirements
@@ -383,10 +397,17 @@ if(NOT HAVE_STRERROR)
     add_definitions(-DNO_STRERROR)
 endif()
 
-set(CMAKE_REQUIRED_DEFINITIONS -D _POSIX_C_SOURCE=200112L)
+set(CMAKE_REQUIRED_DEFINITIONS -D_POSIX_C_SOURCE=200112L)
 check_function_exists(posix_memalign HAVE_POSIX_MEMALIGN)
 if(HAVE_POSIX_MEMALIGN)
     add_definitions(-DHAVE_POSIX_MEMALIGN)
+endif()
+set(CMAKE_REQUIRED_DEFINITIONS)
+
+set(CMAKE_REQUIRED_DEFINITIONS -D_ISOC11_SOURCE=1)
+check_function_exists(aligned_alloc HAVE_ALIGNED_ALLOC)
+if(HAVE_ALIGNED_ALLOC)
+    add_definitions(-DHAVE_ALIGNED_ALLOC)
 endif()
 set(CMAKE_REQUIRED_DEFINITIONS)
 
@@ -841,13 +862,21 @@ if(WITH_OPTIM)
                 endif()
             endif()
         endif()
-        if(WITH_SSSE3 AND HAVE_SSSE3_INTRIN)
-            add_definitions(-DX86_SSSE3 -DX86_SSSE3_ADLER32)
-            set(SSSE3_SRCS ${ARCHDIR}/adler32_ssse3.c)
-            add_feature_info(SSSE3_ADLER32 1 "Support SSSE3-accelerated adler32, using \"${SSSE3FLAG}\"")
-            list(APPEND ZLIB_ARCH_SRCS ${SSSE3_SRCS})
-            set_property(SOURCE ${SSSE3_SRCS} PROPERTY COMPILE_FLAGS "${SSSE3FLAG} ${NOLTOFLAG}")
+        if(WITH_SSSE3)
+            if(HAVE_SSSE3_INTRIN)
+                add_definitions(-DX86_SSSE3 -DX86_SSSE3_ADLER32)
+                set(SSSE3_SRCS ${ARCHDIR}/adler32_ssse3.c)
+                add_feature_info(SSSE3_ADLER32 1 "Support SSSE3-accelerated adler32, using \"${SSSE3FLAG}\"")
+                list(APPEND ZLIB_ARCH_SRCS ${SSSE3_SRCS})
+                set_property(SOURCE ${SSSE3_SRCS} PROPERTY COMPILE_FLAGS "${SSSE3FLAG} ${NOLTOFLAG}")
+            else()
+                set(WITH_SSSE3 OFF)
+            endif()
         endif()
+        if(FORCE_TZCNT)
+            add_definitions(-DX86_NOCHECK_TZCNT)
+        endif()
+        add_feature_info(FORCE_TZCNT FORCE_TZCNT "Assume CPU is TZCNT capable")
         if(WITH_PCLMULQDQ AND HAVE_PCLMULQDQ_INTRIN AND WITH_SSSE3 AND WITH_SSE4)
             add_definitions(-DX86_PCLMULQDQ_CRC)
             set(PCLMULQDQ_SRCS ${ARCHDIR}/crc_folding.c)
@@ -976,26 +1005,8 @@ set(ZLIB_GZFILE_SRCS
     gzwrite.c
 )
 
-if(NOT MINGW AND NOT MSYS AND NOT CYGWIN)
-    set(ZLIB_DLL_SRCS
-        win32/zlib${SUFFIX}1.rc # If present will override custom build rule below.
-    )
-endif()
-
-if(MINGW OR MSYS OR CYGWIN)
-    # This gets us DLL resource information when compiling on MinGW.
-    if(NOT CMAKE_RC_COMPILER)
-        set(CMAKE_RC_COMPILER windres.exe)
-    endif()
-
-    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/zlib1rc.obj
-        COMMAND ${CMAKE_RC_COMPILER}
-            -D GCC_WINDRES
-            -I ${CMAKE_CURRENT_SOURCE_DIR}
-            -I ${CMAKE_CURRENT_BINARY_DIR}
-            -o ${CMAKE_CURRENT_BINARY_DIR}/zlib1rc.obj
-            -i ${CMAKE_CURRENT_SOURCE_DIR}/win32/zlib${SUFFIX}1.rc)
-    set(ZLIB_DLL_SRCS ${CMAKE_CURRENT_BINARY_DIR}/zlib1rc.obj)
+if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
+    set(ZLIB_DLL_SRCS win32/zlib${SUFFIX}1.rc)
 endif()
 
 # rom-properties: Moved ${ZLIB_DLL_SRCS} from ZLIB_ALL_SRCS to add_library(zlib).
@@ -1036,6 +1047,9 @@ else()
 endif()
 
 foreach(ZLIB_INSTALL_LIBRARY ${ZLIB_INSTALL_LIBRARIES})
+    if(NOT ZLIB_COMPAT)
+        target_compile_definitions(${ZLIB_INSTALL_LIBRARY} PUBLIC ZLIBNG_NATIVE_API)
+    endif()
     target_include_directories(${ZLIB_INSTALL_LIBRARY} PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR};${CMAKE_CURRENT_SOURCE_DIR}>"
         "$<INSTALL_INTERFACE:include>")
@@ -1069,10 +1083,8 @@ if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
     set_target_properties(zlib PROPERTIES DEFINE_SYMBOL ZLIB_DLL)
 
     if(ZLIB_COMPAT)
-        set(ZLIB_FULL_VERSION ${ZLIB_HEADER_VERSION}.zlib-ng)
         set_target_properties(zlib PROPERTIES SOVERSION 1)
     else()
-        set(ZLIB_FULL_VERSION ${ZLIBNG_HEADER_VERSION})
         set_target_properties(zlib PROPERTIES SOVERSION 2)
     endif()
 
@@ -1282,7 +1294,7 @@ if(ZLIB_ENABLE_TESTS)
     add_test(NAME makefixed
         COMMAND ${CMAKE_COMMAND}
         "-DCOMMAND=${MAKEFIXED_COMMAND}"
-        -DOUTPUT=${CMAKE_CURRENT_BINARY_DIR}/inffixed_tbl._h
+        -DOUTPUT=${CMAKE_CURRENT_BINARY_DIR}/Testing/Temporary/inffixed_tbl._h
         -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/inffixed_tbl.h
         -DIGNORE_LINE_ENDINGS=ON
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
@@ -1296,7 +1308,7 @@ if(ZLIB_ENABLE_TESTS)
     add_test(NAME maketrees
         COMMAND ${CMAKE_COMMAND}
         "-DCOMMAND=${MAKETREES_COMMAND}"
-        -DOUTPUT=${CMAKE_CURRENT_BINARY_DIR}/trees_tbl._h
+        -DOUTPUT=${CMAKE_CURRENT_BINARY_DIR}/Testing/Temporary/trees_tbl._h
         -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/trees_tbl.h
         -DIGNORE_LINE_ENDINGS=ON
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
@@ -1310,7 +1322,7 @@ if(ZLIB_ENABLE_TESTS)
     add_test(NAME makecrct-crc32
         COMMAND ${CMAKE_COMMAND}
         "-DCOMMAND=${MAKECRCT_COMMAND}"
-        -DOUTPUT=${CMAKE_CURRENT_BINARY_DIR}/crc32_tbl._h
+        -DOUTPUT=${CMAKE_CURRENT_BINARY_DIR}/Testing/Temporary/crc32_tbl._h
         -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/crc32_tbl.h
         -DIGNORE_LINE_ENDINGS=ON
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
@@ -1319,7 +1331,7 @@ if(ZLIB_ENABLE_TESTS)
     add_test(NAME makecrct-crc32-combine
         COMMAND ${CMAKE_COMMAND}
         "-DCOMMAND=${MAKECRCT_COMMAND}"
-        -DOUTPUT=${CMAKE_CURRENT_BINARY_DIR}/crc32_comb_tbl._h
+        -DOUTPUT=${CMAKE_CURRENT_BINARY_DIR}/Testing/Temporary/crc32_comb_tbl._h
         -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/crc32_comb_tbl.h
         -DIGNORE_LINE_ENDINGS=ON
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
@@ -1406,6 +1418,27 @@ if(ZLIB_ENABLE_TESTS)
             -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/${CVE}/test.gz
             "-DSUCCESS_EXIT=0;1"
             -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+    endforeach()
+
+    set(TEST_LEVELS 6 1 2)
+    foreach(TEST_LEVEL ${TEST_LEVELS})
+        add_test(NAME CVE-2018-25032-fixed-level-${TEST_LEVEL}
+            COMMAND ${CMAKE_COMMAND}
+            "-DTARGET=${MINIDEFLATE_COMMAND}"
+            "-DCOMPRESS_ARGS=-c;-k;-m;1;-w;-15;-s;4;-F;-${TEST_LEVEL}"
+            "-DDECOMPRESS_ARGS=-c;-k;-d;-m;1;-w;-15;-${TEST_LEVEL}"
+            -DGZIP_VERIFY=OFF
+            -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/CVE-2018-25032/fixed.txt
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
+
+        add_test(NAME CVE-2018-25032-default-level-${TEST_LEVEL}
+            COMMAND ${CMAKE_COMMAND}
+            "-DTARGET=${MINIDEFLATE_COMMAND}"
+            "-DCOMPRESS_ARGS=-c;-k;-m;1;-w;-15;-s;4;-${TEST_LEVEL}"
+            "-DDECOMPRESS_ARGS=-c;-k;-d;-m;1;-w;-15;-${TEST_LEVEL}"
+            -DGZIP_VERIFY=OFF
+            -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/CVE-2018-25032/default.txt
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
     endforeach()
 
     # Run tests targeting tools

@@ -1,20 +1,33 @@
-This copy of zlib-ng 2.0.6 is a modified version of the original.
+This copy of zlib-ng 2.0.7 is a modified version of the original.
 
-commit b56a2fd0b126cfe5f13e68ab9090cd4f6a773286
-Version 2.0.6
- - Fix hangs on macOS #1031
- - Fix minideflate write buffers being overwritten #1060
- - Fix deflateBound and compressBound returning too small size estimates #1049 #1071
- - Fix incorrect function declaration warning #1080
- - Fix build problems when building outside of source dir #1049
- - Fix build problems on arm2-7 #1030
- - Fixed some compile warnings #1020 #1036 #1037 #1048
- - Improved posix memalign support #888
- - Improvements to testing #637 #1026 #1032 #1035 #1049 #1051 #1056 #1063 #1067 #1079
- - Improvements for integration into other projects #1022 #1042
- - Code style fixes #637 #1040 #1050 #1075
+commit a583e215afa2356e23b418efa871a1cc4348702a
+Version 2.0.7
+    
+Changes since 2.0.7:
+- Fix CVE-2022-37434 #1328
+- Fix chunkmemset #1196
+- Fix deflateBound too small #1236
+- Fix Z_SOLO #1263
+- Fix ACLE variant of crc32 #1274
+- Fix inflateBack #1311
+- Fix deflate_quick windowsize #1431
+- Fix DFLTCC bugs related to adler32 #1349 and #1390
+- Fix warnings #1194 #1312 #1362
+- MacOS build fix #1198
+- Add invalid windowBits handling #1293
+- Support for Force TZCNT #1186
+- Support for aligned_alloc() #1360
+- Minideflate improvements #1175 #1238
+- Dont use unaligned access for memcpy #1309
+- Build system #1209 #1233 #1267 #1273 #1278 #1292 #1316 #1318 #1365
+- Test improvements #1208 #1227 #1241 #1353
+- Cleanup #1266
+- Documentation #1205 #1359
+- Misc improvements #1294 #1297 #1306 #1344 #1348
+- Backported zlib fixes
+- Backported CI workflows from Develop branch
 
-Tag: 2.0.6
+Tag: 2.0.7
 
 The following changes have been made to the original:
 
@@ -23,7 +36,7 @@ The following changes have been made to the original:
 - CMakeLists.txt has been edited to prevent building the Win32 resource
   data when being built as a shared library.
 
-- Example binaries are no longer built.
+- Example binaries are no longer built. (Removed the entire test/ directory.)
 
 - CMakeLists.txt now sets the target compile definitions to -DZLIB_CONST
   and sets the target include directories. This allows all targets
@@ -35,7 +48,7 @@ The following changes have been made to the original:
 
 - Some other functionality not needed by rom-properties has been disabled.
 
-To obtain the original zlib-ng v2.0.6, visit:
+To obtain the original zlib-ng v2.0.7, visit:
 https://github.com/zlib-ng/zlib-ng
 
 To obtain the original zlib-1.2.11, visit:

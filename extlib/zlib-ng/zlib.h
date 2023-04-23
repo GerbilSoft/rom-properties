@@ -36,6 +36,7 @@
 
 #include <stdint.h>
 #include <stdarg.h>
+
 #include "zconf.h"
 
 #ifndef ZCONF_H
@@ -46,11 +47,11 @@
 extern "C" {
 #endif
 
-#define ZLIBNG_VERSION "2.0.6"
-#define ZLIBNG_VERNUM 0x2060
+#define ZLIBNG_VERSION "2.0.7"
+#define ZLIBNG_VERNUM 0x2070
 #define ZLIBNG_VER_MAJOR 2
 #define ZLIBNG_VER_MINOR 0
-#define ZLIBNG_VER_REVISION 6
+#define ZLIBNG_VER_REVISION 7
 #define ZLIBNG_VER_SUBREVISION 0
 
 #define ZLIB_VERSION "1.2.11.zlib-ng"
@@ -58,7 +59,7 @@ extern "C" {
 #define ZLIB_VER_MAJOR 1
 #define ZLIB_VER_MINOR 2
 #define ZLIB_VER_REVISION 11
-#define ZLIB_VER_SUBREVISION 0
+#define ZLIB_VER_SUBREVISION 15    /* 15=fork (0xf) */
 
 /*
     The 'zlib' compression library provides in-memory compression and
@@ -1799,7 +1800,7 @@ Z_EXTERN int Z_EXPORT gzgetc_(gzFile file);  /* backward compatibility */
 #endif
 #endif
 
-#if !defined(Z_INTERNAL) && defined(Z_WANT64)
+#if !defined(Z_SOLO) && !defined(Z_INTERNAL) && defined(Z_WANT64)
 #    define gzopen gzopen64
 #    define gzseek gzseek64
 #    define gztell gztell64
@@ -1817,10 +1818,12 @@ Z_EXTERN int Z_EXPORT gzgetc_(gzFile file);  /* backward compatibility */
      Z_EXTERN void Z_EXPORT crc32_combine_gen64(uint32_t *op, z_off64_t);
 #  endif
 #else
+#  ifndef Z_SOLO
    Z_EXTERN gzFile Z_EXPORT gzopen(const char *, const char *);
    Z_EXTERN z_off_t Z_EXPORT gzseek(gzFile, z_off_t, int);
    Z_EXTERN z_off_t Z_EXPORT gztell(gzFile);
    Z_EXTERN z_off_t Z_EXPORT gzoffset(gzFile);
+#  endif   
    Z_EXTERN unsigned long Z_EXPORT adler32_combine(unsigned long, unsigned long, z_off_t);
    Z_EXTERN unsigned long Z_EXPORT crc32_combine(unsigned long, unsigned long, z_off_t);
    Z_EXTERN void Z_EXPORT crc32_combine_gen(uint32_t *op, z_off_t);

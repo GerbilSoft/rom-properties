@@ -16,12 +16,12 @@ macro(check_sanitizer_support known_checks supported_checks)
 
         set(CMAKE_REQUIRED_FLAGS "-fsanitize=${compile_checks}")
 
-        check_c_source_compiles("int main() { return 0; }" HAS_SANITIZER_${check}
+        check_c_source_compiles("int main() { return 0; }" HAVE_SANITIZER_${check}
             FAIL_REGEX "not supported|unrecognized command|unknown option")
 
         set(CMAKE_REQUIRED_FLAGS)
 
-        if(HAS_SANITIZER_${check})
+        if(HAVE_SANITIZER_${check})
             set(available_checks ${compile_checks})
         endif()
     endforeach()
@@ -108,7 +108,7 @@ macro(add_undefined_sanitizer)
         )
 
     # Only check for alignment sanitizer flag if unaligned access is not supported
-    if(NOT UNALIGNED_OK)
+    if(NOT WITH_UNALIGNED)
         list(APPEND known_checks alignment)
     endif()
     # Object size sanitizer has no effect at -O0 and produces compiler warning if enabled
@@ -124,7 +124,7 @@ macro(add_undefined_sanitizer)
 
         # Group sanitizer flag -fsanitize=undefined will automatically add alignment, even if
         # it is not in our sanitize flag list, so we need to explicitly disable alignment sanitizing.
-        if(UNALIGNED_OK)
+        if(WITH_UNALIGNED)
             set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-sanitize=alignment")
         endif()
     else()

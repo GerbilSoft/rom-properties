@@ -105,6 +105,8 @@ int32_t Z_EXPORT PREFIX(inflateReset2)(PREFIX3(stream) *strm, int32_t windowBits
     /* extract wrap request from windowBits parameter */
     if (windowBits < 0) {
         wrap = 0;
+        if (windowBits < -15)
+            return Z_STREAM_ERROR;
         windowBits = -windowBits;
     } else {
         wrap = (windowBits >> 4) + 5;
@@ -209,7 +211,12 @@ int Z_INTERNAL inflate_ensure_window(struct inflate_state *state) {
         state->window = (unsigned char *) ZALLOC_WINDOW(state->strm, wsize + state->chunksize, sizeof(unsigned char));
         if (state->window == Z_NULL)
             return 1;
-        memset(state->window + wsize, 0, state->chunksize);
+#ifdef Z_MEMORY_SANITIZER
+        /* This is _not_ to subvert the memory sanitizer but to instead unposion some
+           data we willingly and purposefully load uninitialized into vector registers
+           in order to safely read the last < chunksize bytes of the window. */
+        __msan_unpoison(state->window + wsize, state->chunksize);
+#endif
     }
 
     /* if window not in use yet, initialize */
@@ -507,9 +514,11 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                 if (copy) {
                     if (state->head != NULL && state->head->extra != NULL) {
                         len = state->head->extra_len - state->length;
-                        memcpy(state->head->extra + len, next,
-                                len + copy > state->head->extra_max ?
-                                state->head->extra_max - len : copy);
+                        if (len < state->head->extra_max) {
+                            memcpy(state->head->extra + len, next,
+                                    len + copy > state->head->extra_max ?
+                                    state->head->extra_max - len : copy);
+                        }
                     }
                     if ((state->flags & 0x0200) && (state->wrap & 4))
                         state->check = PREFIX(crc32)(state->check, next, copy);
