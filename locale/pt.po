@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.1+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2023-04-23 09:14-0400\n"
+"POT-Creation-Date: 2023-04-23 09:52-0400\n"
 "PO-Revision-Date: 2018-06-02 15:07-0300\n"
 "Last-Translator: Null Magic\n"
 "Language-Team: \n"
@@ -18,17 +18,20 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 2.0.7\n"
 
-#: ../build/src/kde/kf5/ui_AboutTab.h:276 ../src/gtk/config/AboutTab.cpp:288
+#: ../build/src/kde/kf5/ui_AboutTab.h:276
+#: ../src/gtk/config/AboutTab.cpp:288
 msgctxt "AboutTab"
 msgid "C&redits"
 msgstr "C&réditos"
 
-#: ../build/src/kde/kf5/ui_AboutTab.h:277 ../src/gtk/config/AboutTab.cpp:292
+#: ../build/src/kde/kf5/ui_AboutTab.h:277
+#: ../src/gtk/config/AboutTab.cpp:292
 msgctxt "AboutTab"
 msgid "&Libraries"
 msgstr "&Bibliotecas"
 
-#: ../build/src/kde/kf5/ui_AboutTab.h:278 ../src/gtk/config/AboutTab.cpp:296
+#: ../build/src/kde/kf5/ui_AboutTab.h:278
+#: ../src/gtk/config/AboutTab.cpp:296
 msgctxt "AboutTab"
 msgid "&Support"
 msgstr "&Obter apoio"
@@ -62,19 +65,22 @@ msgstr ""
 "Se qualquer configuração de tipo de imagem for alterada, será necessário\n"
 "apagar o cachê de miniaturas de sistema."
 
-#: ../build/src/kde/kf5/ui_CacheTab.h:100 ../src/gtk/config/CacheTab.cpp:161
+#: ../build/src/kde/kf5/ui_CacheTab.h:100
+#: ../src/gtk/config/CacheTab.cpp:161
 msgctxt "CacheTab"
 msgid "Clear the System Thumbnail Cache"
 msgstr "Apagar Cachê de Miniaturas de Sistema"
 
-#: ../build/src/kde/kf5/ui_CacheTab.h:101 ../src/gtk/config/CacheTab.cpp:165
+#: ../build/src/kde/kf5/ui_CacheTab.h:101
+#: ../src/gtk/config/CacheTab.cpp:165
 msgctxt "CacheTab"
 msgid ""
 "ROM Properties Page maintains its own download cache for external images.\n"
 "Clearing this cache will force external images to be redownloaded."
 msgstr ""
 
-#: ../build/src/kde/kf5/ui_CacheTab.h:103 ../src/gtk/config/CacheTab.cpp:171
+#: ../build/src/kde/kf5/ui_CacheTab.h:103
+#: ../src/gtk/config/CacheTab.cpp:171
 msgctxt "CacheTab"
 msgid "Clear the ROM Properties Page Download Cache"
 msgstr "Apagar a página de recebimento de cacê de rom-properties"
@@ -553,58 +559,68 @@ msgctxt "OptionsTab"
 msgid "Show the Extended Attributes tab."
 msgstr ""
 
-#: ../build/src/kde/kf5/ui_SystemsTab.h:126
+#: ../build/src/kde/kf5/ui_SystemsTab.h:124
 msgctxt "SystemsTab"
 msgid "&Game Boy Title Screens"
 msgstr ""
 
-#: ../build/src/kde/kf5/ui_SystemsTab.h:127
+#: ../build/src/kde/kf5/ui_SystemsTab.h:125
 #: ../src/gtk/config/SystemsTab.cpp:120
 msgctxt "SystemsTab"
 msgid "Game &Boy:"
 msgstr ""
 
-#: ../build/src/kde/kf5/ui_SystemsTab.h:128
-#: ../build/src/kde/kf5/ui_SystemsTab.h:132
-#: ../build/src/kde/kf5/ui_SystemsTab.h:137
+#: ../build/src/kde/kf5/ui_SystemsTab.h:126
+#: ../build/src/kde/kf5/ui_SystemsTab.h:130
+#: ../build/src/kde/kf5/ui_SystemsTab.h:135
 #: ../src/gtk/config/SystemsTab.cpp:130
 msgctxt "SystemsTab"
 msgid "Game Boy"
 msgstr ""
 
-#: ../build/src/kde/kf5/ui_SystemsTab.h:129
-#: ../build/src/kde/kf5/ui_SystemsTab.h:134
-#: ../build/src/kde/kf5/ui_SystemsTab.h:139
+#: ../build/src/kde/kf5/ui_SystemsTab.h:127
+#: ../build/src/kde/kf5/ui_SystemsTab.h:132
+#: ../build/src/kde/kf5/ui_SystemsTab.h:137
 #: ../src/gtk/config/SystemsTab.cpp:132
 msgctxt "SystemsTab"
 msgid "Game Boy Color"
 msgstr ""
 
-#: ../build/src/kde/kf5/ui_SystemsTab.h:131
+#: ../build/src/kde/kf5/ui_SystemsTab.h:129
 #: ../src/gtk/config/SystemsTab.cpp:122
 msgctxt "SystemsTab"
 msgid "&Super Game Boy:"
 msgstr ""
 
-#: ../build/src/kde/kf5/ui_SystemsTab.h:133
-#: ../build/src/kde/kf5/ui_SystemsTab.h:138
+#: ../build/src/kde/kf5/ui_SystemsTab.h:131
+#: ../build/src/kde/kf5/ui_SystemsTab.h:136
 #: ../src/gtk/config/SystemsTab.cpp:131
 msgctxt "SystemsTab"
 msgid "Super Game Boy"
 msgstr ""
 
-#: ../build/src/kde/kf5/ui_SystemsTab.h:136
+#: ../build/src/kde/kf5/ui_SystemsTab.h:134
 #: ../src/gtk/config/SystemsTab.cpp:124
 msgctxt "SystemsTab"
 msgid "Game Boy &Color:"
 msgstr ""
 
-#: ../build/src/kde/kf5/ui_XAttrView.h:98 ../src/gtk/xattr/XAttrView.cpp:121
+#: ../build/src/kde/kf5/ui_SystemsTab.h:139
+#: ../src/gtk/config/SystemsTab.cpp:114
+msgctxt "SystemsTab"
+msgid ""
+"Select the Game Boy model to use for title screens for different types of\n"
+"Game Boy ROM images."
+msgstr ""
+
+#: ../build/src/kde/kf5/ui_XAttrView.h:98
+#: ../src/gtk/xattr/XAttrView.cpp:121
 msgctxt "XAttrView"
 msgid "Linux Attributes"
 msgstr ""
 
-#: ../build/src/kde/kf5/ui_XAttrView.h:99 ../src/gtk/xattr/XAttrView.cpp:129
+#: ../build/src/kde/kf5/ui_XAttrView.h:99
+#: ../src/gtk/xattr/XAttrView.cpp:129
 msgctxt "XAttrView"
 msgid "MS-DOS Attributes"
 msgstr ""
@@ -614,13 +630,15 @@ msgctxt "XAttrView"
 msgid "E&xtended Attributes"
 msgstr ""
 
-#: ../build/src/kde/kf5/ui_XAttrView.h:102 ../src/gtk/xattr/XAttrView.cpp:162
+#: ../build/src/kde/kf5/ui_XAttrView.h:102
+#: ../src/gtk/xattr/XAttrView.cpp:162
 #, fuzzy
 msgctxt "XAttrView"
 msgid "Value"
 msgstr "Valor"
 
-#: ../build/src/kde/kf5/ui_XAttrView.h:103 ../src/gtk/xattr/XAttrView.cpp:161
+#: ../build/src/kde/kf5/ui_XAttrView.h:103
+#: ../src/gtk/xattr/XAttrView.cpp:161
 #, fuzzy
 msgctxt "XAttrView"
 msgid "Name"
@@ -1223,13 +1241,6 @@ msgstr ""
 #: ../src/gtk/config/SystemsTab.cpp:97
 msgctxt "SystemsTab"
 msgid "Game Boy Title Screens"
-msgstr ""
-
-#: ../src/gtk/config/SystemsTab.cpp:114
-msgctxt "SystemsTab"
-msgid ""
-"Select the Game Boy model to use for title screens for different types of\n"
-"Game Boy ROM images."
 msgstr ""
 
 #: ../src/gtk/config/UpdateChecker.cpp:160
