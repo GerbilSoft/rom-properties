@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-03-18 11:25-0400\n"
-"PO-Revision-Date: 2023-04-21 09:26\n"
+"PO-Revision-Date: 2023-04-23 13:04\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -460,7 +460,7 @@ msgstr ""
 msgctxt "OptionsTab"
 msgid "When using an unlimited\n"
 "network connection:"
-msgstr "Wenn eine grenzenlose Netzwerkverbindung genutzt wird:"
+msgstr "Wenn eine unlimitierte Netzwerkverbindung genutzt wird:"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:181
 #: ../build/src/kde/kf5/ui_OptionsTab.h:187
@@ -494,7 +494,7 @@ msgstr "Wenn eine getaktete Netzwerkverbindung genutzt wird:"
 #: ../src/gtk/config/OptionsTab.cpp:225
 msgctxt "OptionsTab"
 msgid "Always use the internal icon (if present) for small sizes."
-msgstr "Immer das interne Symbol (wenn möglich) für kleine Größe nutzen."
+msgstr "Wenn möglich immer das interne Icon für Bilder in kleiner Größe nutzen."
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:192
 #: ../src/gtk/config/OptionsTab.cpp:228
@@ -1182,13 +1182,13 @@ msgstr "Optionen"
 #: ../src/gtk/config/SystemsTab.cpp:97
 msgctxt "SystemsTab"
 msgid "Game Boy Title Screens"
-msgstr ""
+msgstr "Game Boy-Titelbildschirme"
 
 #: ../src/gtk/config/SystemsTab.cpp:114
 msgctxt "SystemsTab"
 msgid "Select the Game Boy model to use for title screens for different types of\n"
 "Game Boy ROM images."
-msgstr ""
+msgstr "Wählen Sie das Game Boy-Modell aus, das für Titelbildschirme für verschiedene Arten von Game Boy-ROM-Bildern verwendet werden soll."
 
 #: ../src/gtk/config/UpdateChecker.cpp:160
 #: ../src/kde/config/UpdateChecker.cpp:60
