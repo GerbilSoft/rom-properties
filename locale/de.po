@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2023-04-23 09:14-0400\n"
-"PO-Revision-Date: 2023-04-23 14:17\n"
+"POT-Creation-Date: 2023-04-23 09:52-0400\n"
+"PO-Revision-Date: 2023-04-23 15:14\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -537,51 +537,59 @@ msgctxt "OptionsTab"
 msgid "Show the Extended Attributes tab."
 msgstr "Tab mit erweiterten Attributen anzeigen."
 
-#: ../build/src/kde/kf5/ui_SystemsTab.h:126
+#: ../build/src/kde/kf5/ui_SystemsTab.h:124
 msgctxt "SystemsTab"
 msgid "&Game Boy Title Screens"
 msgstr "&Game Boy Titelbildschirme"
 
-#: ../build/src/kde/kf5/ui_SystemsTab.h:127
+#: ../build/src/kde/kf5/ui_SystemsTab.h:125
 #: ../src/gtk/config/SystemsTab.cpp:120
 msgctxt "SystemsTab"
 msgid "Game &Boy:"
 msgstr "Game &Boy:"
 
-#: ../build/src/kde/kf5/ui_SystemsTab.h:128
-#: ../build/src/kde/kf5/ui_SystemsTab.h:132
-#: ../build/src/kde/kf5/ui_SystemsTab.h:137
+#: ../build/src/kde/kf5/ui_SystemsTab.h:126
+#: ../build/src/kde/kf5/ui_SystemsTab.h:130
+#: ../build/src/kde/kf5/ui_SystemsTab.h:135
 #: ../src/gtk/config/SystemsTab.cpp:130
 msgctxt "SystemsTab"
 msgid "Game Boy"
 msgstr "Game Boy"
 
-#: ../build/src/kde/kf5/ui_SystemsTab.h:129
-#: ../build/src/kde/kf5/ui_SystemsTab.h:134
-#: ../build/src/kde/kf5/ui_SystemsTab.h:139
+#: ../build/src/kde/kf5/ui_SystemsTab.h:127
+#: ../build/src/kde/kf5/ui_SystemsTab.h:132
+#: ../build/src/kde/kf5/ui_SystemsTab.h:137
 #: ../src/gtk/config/SystemsTab.cpp:132
 msgctxt "SystemsTab"
 msgid "Game Boy Color"
 msgstr "Game Boy Color"
 
-#: ../build/src/kde/kf5/ui_SystemsTab.h:131
+#: ../build/src/kde/kf5/ui_SystemsTab.h:129
 #: ../src/gtk/config/SystemsTab.cpp:122
 msgctxt "SystemsTab"
 msgid "&Super Game Boy:"
 msgstr "&Super Game Boy:"
 
-#: ../build/src/kde/kf5/ui_SystemsTab.h:133
-#: ../build/src/kde/kf5/ui_SystemsTab.h:138
+#: ../build/src/kde/kf5/ui_SystemsTab.h:131
+#: ../build/src/kde/kf5/ui_SystemsTab.h:136
 #: ../src/gtk/config/SystemsTab.cpp:131
 msgctxt "SystemsTab"
 msgid "Super Game Boy"
 msgstr "Super Game Boy"
 
-#: ../build/src/kde/kf5/ui_SystemsTab.h:136
+#: ../build/src/kde/kf5/ui_SystemsTab.h:134
 #: ../src/gtk/config/SystemsTab.cpp:124
 msgctxt "SystemsTab"
 msgid "Game Boy &Color:"
 msgstr "Game Boy &Color:"
+
+#: ../build/src/kde/kf5/ui_SystemsTab.h:139
+#: ../src/gtk/config/SystemsTab.cpp:114
+msgctxt "SystemsTab"
+msgid "Select the Game Boy model to use for title screens for different types of\n"
+"Game Boy ROM images."
+msgstr "Wählen Sie das Game Boy-Modell aus, das für Titelbildschirme für verschiedene Arten von\n"
+"Game Boy-ROM-Bildern verwendet werden soll."
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:98
 #: ../src/gtk/xattr/XAttrView.cpp:121
@@ -1181,13 +1189,6 @@ msgstr "Optionen"
 msgctxt "SystemsTab"
 msgid "Game Boy Title Screens"
 msgstr "Game Boy Titelbildschirme"
-
-#: ../src/gtk/config/SystemsTab.cpp:114
-msgctxt "SystemsTab"
-msgid "Select the Game Boy model to use for title screens for different types of\n"
-"Game Boy ROM images."
-msgstr "Wählen Sie das Game Boy-Modell aus, das für Titelbildschirme für verschiedene Arten von\n"
-"Game Boy-ROM-Bildern verwendet werden soll."
 
 #: ../src/gtk/config/UpdateChecker.cpp:160
 #: ../src/kde/config/UpdateChecker.cpp:60
@@ -2333,7 +2334,8 @@ msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid "External\n"
 "Full Cover"
 msgstr "Externes\n"
-"Ganzes Cover"
+"Ganzes\n"
+"Cover"
 
 #. tr: IMG_EXT_BOX
 #: ../src/libromdata/config/ImageTypesConfig.cpp:116
