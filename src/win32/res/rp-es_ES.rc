@@ -91,11 +91,11 @@ STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_T
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
-    LTEXT           "IDC_CACHE_DESCRIPTION (Vista)", IDC_CACHE_DESCRIPTION, 7, 7, 397, 8, SS_LEFT, WS_EX_TRANSPARENT
+    LTEXT           "", IDC_CACHE_DESCRIPTION, 7, 7, 397, 8, SS_LEFT, WS_EX_TRANSPARENT
     PUSHBUTTON      "Borrar el caché de miniaturas del sistema", IDC_CACHE_CLEAR_SYS_THUMBS, 7, 20, 398, 28, 0, WS_EX_LEFT
     LTEXT           "La página de Rom properties mantiene su propia caché de descarga para las imágenes externas.\nBorrar esta caché obligará a volver a descargar las imágenes externas.", IDC_STATIC, 7, 55, 397, 17, SS_LEFT, WS_EX_TRANSPARENT
     PUSHBUTTON      "Borrar la caché de descarga de la página de Rom properties", IDC_CACHE_CLEAR_RP_DL, 7, 75, 398, 28, 0, WS_EX_LEFT
-    LTEXT           "Borrando el cache...", IDC_CACHE_STATUS, 7, 210, 397, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
+    LTEXT           "", IDC_CACHE_STATUS, 7, 210, 397, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
     CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 221, 397, 16, WS_EX_LEFT
 END
 
@@ -108,7 +108,7 @@ STYLE DS_3DLOOK | DS_CONTROL | DS_SHELLFONT | WS_VISIBLE | WS_CHILDWINDOW | WS_T
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
-    LTEXT           "IDC_CACHE_DESCRIPTION (XP)", IDC_CACHE_DESCRIPTION, 7, 7, 397, 25, SS_LEFT, WS_EX_TRANSPARENT
+    LTEXT           "", IDC_CACHE_DESCRIPTION, 7, 7, 397, 25, SS_LEFT, WS_EX_TRANSPARENT
     AUTORADIOBUTTON "Encuentra todos los archivos Thumbs.db en la(s) unidad(es) especificada(s):", IDC_CACHE_XP_FIND_DRIVES, 7, 35, 168, 8, WS_GROUP, WS_EX_LEFT
     AUTORADIOBUTTON "Ruta especifica", IDC_CACHE_XP_FIND_PATH, 180, 35, 61, 8, 0, WS_EX_LEFT
     CONTROL         "", IDC_CACHE_XP_DRIVES, WC_LISTVIEW, WS_TABSTOP | WS_BORDER | LVS_ALIGNLEFT | LVS_LIST | LVS_SINGLESEL, 7, 46, 397, 45, WS_EX_LEFT | WS_EX_CLIENTEDGE
@@ -117,7 +117,7 @@ BEGIN
     PUSHBUTTON      "Encontrar y eliminar los archivos Thumbs.db", IDC_CACHE_XP_CLEAR_SYS_THUMBS, 7, 95, 398, 20, WS_DISABLED | BS_MULTILINE, WS_EX_LEFT
     LTEXT           "La página de Rom properties mantiene su propia caché de descarga de imágenes externas. Borrar esta caché obligará a volver a descargar las imágenes externas.", IDC_STATIC, 7, 125, 313, 20, SS_LEFT, WS_EX_TRANSPARENT
     PUSHBUTTON      "Borrar", IDC_CACHE_CLEAR_RP_DL, 323, 127, 82, 15, 0, WS_EX_LEFT
-    LTEXT           "Borrando el cache...", IDC_CACHE_STATUS, 7, 210, 397, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
+    LTEXT           "", IDC_CACHE_STATUS, 7, 210, 397, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
     CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 221, 397, 16, WS_EX_LEFT
 END
 
