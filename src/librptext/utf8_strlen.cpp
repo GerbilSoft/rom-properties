@@ -11,6 +11,7 @@
 #include "common.h"
 
 // C includes
+#include <stdint.h>
 #ifdef HAVE_WCWIDTH
 #  include <wchar.h>
 #else /* !HAVE_WCWIDTH */
