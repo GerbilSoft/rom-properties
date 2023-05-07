@@ -1007,6 +1007,9 @@ set(ZLIB_GZFILE_SRCS
 
 if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
     set(ZLIB_DLL_SRCS win32/zlib${SUFFIX}1.rc)
+    if(NOT MSVC)
+        add_definitions(-DGCC_WINDRES)
+    endif(NOT MSVC)
 endif()
 
 # rom-properties: Moved ${ZLIB_DLL_SRCS} from ZLIB_ALL_SRCS to add_library(zlib).
