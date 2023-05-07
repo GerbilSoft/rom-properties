@@ -19,9 +19,19 @@ set(CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE ON)
 # rom-properties:
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
 IF(UNIX AND NOT APPLE)
-	SET(CMAKE_C_FLAGS	"${CMAKE_C_FLAGS} -fpic -fPIC")
-	SET(CMAKE_CXX_FLAGS	"${CMAKE_CXX_FLAGS} -fpic -fPIC")
+	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fpic -fPIC")
 ENDIF(UNIX AND NOT APPLE)
+
+# Disable certain warning flags.
+IF(NOT MSVC)
+	FOREACH(FLAG_TEST "-Wno-empty-body" "-Wno-shift-negative-value")
+		CHECK_C_COMPILER_FLAG("${FLAG_TEST}" CFLAG_${FLAG_TEST})
+		IF(CFLAG_${FLAG_TEST})
+			SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${FLAG_TEST}")
+		ENDIF(CFLAG_${FLAG_TEST})
+		UNSET(CFLAG_${FLAG_TEST})
+	ENDFOREACH()
+ENDIF(NOT MSVC)
 
 # ======================================================================
 # Modules
@@ -98,17 +108,6 @@ set(includedir "\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}")
 set(libdir "\${prefix}/${CMAKE_INSTALL_LIBDIR}")
 
 add_definitions(-DHAVE_CONFIG_H)
-
-# Disable certain warning flags.
-IF(NOT MSVC)
-	FOREACH(FLAG_TEST "-Wno-empty-body -Wno-shift-negative-value")
-		CHECK_C_COMPILER_FLAG("${FLAG_TEST}" CFLAG_${FLAG_TEST})
-		IF(CFLAG_${FLAG_TEST})
-			SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${FLAG_TEST}")
-		ENDIF(CFLAG_${FLAG_TEST})
-		UNSET(CFLAG_${FLAG_TEST})
-	ENDFOREACH()
-ENDIF(NOT MSVC)
 
 # ======================================================================
 # Target library: unice68
