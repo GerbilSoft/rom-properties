@@ -8,6 +8,9 @@
 
 #pragma once
 
+// C includes
+#include <stdint.h>
+
 // C++ includes
 #include <string>
 
