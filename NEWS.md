@@ -18,6 +18,11 @@
   * GameCube: Display the Wii update partition date if available.
     * Requested by @johnsanc314.
 
+* New parser features:
+  * EXEData: Fix ordering of Alpha64 so binaries are detected properly.
+    * Fixes #380: Alpha64 binaries are showing up as Unknown
+      * Reported by @XenoPanther.
+
 * Bug fixes:
   * WiiWAD: Add application/x-doom-wad for compatibility with some systems that
     assume all .wad files are Doom WADs.
