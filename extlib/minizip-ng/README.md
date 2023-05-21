@@ -47,7 +47,6 @@ not been maintained for a long period of time. The code has been largely refacto
 + Support for Apple's compression library ZLIB and XZ implementations.
 + Zero out local file header information.
 + Zip/unzip of central directory to reduce size.
-+ Ability to generate and verify CMS signature for each entry.
 + Recover the central directory if it is corrupt or missing.
 + Example minizip and minigzip command line tools.
 
@@ -77,10 +76,8 @@ cmake --build build
 | MZ_FORCE_FETCH_LIBS | Enables fetching third-party libraries always       |      OFF      |
 | MZ_PKCRYPT          | Enables PKWARE traditional encryption               |      ON       |
 | MZ_WZAES            | Enables WinZIP AES encryption                       |      ON       |
-| MZ_BCRYPT           | Builds with Win32 Crypto API New Generation (CNG)   |      OFF      |
 | MZ_OPENSSL          | Enables OpenSSL encryption                          |     UNIX      |
 | MZ_LIBBSD           | Builds with libbsd crypto random                    |     UNIX      |
-| MZ_SIGNING          | Enables zip signing support                         |      OFF      |
 | MZ_ICONV            | Enables iconv encoding conversion                   |      ON       |
 | MZ_COMPRESS_ONLY    | Only support compression                            |      OFF      |
 | MZ_DECOMPRESS_ONLY  | Only support decompression                          |      OFF      |
@@ -89,7 +86,7 @@ cmake --build build
 | MZ_BUILD_UNIT_TESTS | Builds minizip unit test project                    |      OFF      |
 | MZ_BUILD_FUZZ_TESTS | Builds minizip fuzz executables                     |      OFF      |
 | MZ_CODE_COVERAGE    | Build with code coverage flags                      |      OFF      |
-| MZ_PROJECT_SUFFIX   | Project name suffix for packaging                   |               |
+| MZ_LIB_SUFFIX       | Library name suffix for packaging                   |               |
 
 ## Third-Party Libraries
 

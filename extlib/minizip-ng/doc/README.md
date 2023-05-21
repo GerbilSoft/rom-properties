@@ -4,6 +4,7 @@
 
 - [API](#api)
 - [Limitations](#limitations)
+- [Minimum OS Requirements](#minimum-os-requirements)
 - [Xcode Instructions](#xcode-instructions)
 - [Zlib Configuration](#zlib-configuration)
 - [Upgrading from 1.x](#upgrading-from-1x)
@@ -47,7 +48,7 @@
 
 ### Extrafield Proposals <!-- omit in toc -->
 
-The zip reader and writer interface provides support for extended hash algorithms for zip entries, compression of the central directory, and the adding and verifying of CMS signatures for each entry. In order to add support for these features, extrafields were added and are described in the [minizip extrafield documentation](mz_extrafield.md).
+The zip reader and writer interface provides support for extended hash algorithms for zip entries and compression of the central directory. In order to add support for these features, extrafields were added and are described in the [minizip extrafield documentation](mz_extrafield.md).
 
 ## Limitations
 
@@ -59,6 +60,16 @@ The zip reader and writer interface provides support for extended hash algorithm
 
 * Windows Explorer zip extraction utility does not support disk splitting. [1](https://stackoverflow.com/questions/31286707/the-same-volume-can-not-be-used-as-both-the-source-and-destination)
 * macOS archive utility does not properly support ZIP files over 4GB. [1](http://web.archive.org/web/20140331005235/http://www.springyarchiver.com/blog/topic/topic/203) [2](https://bitinn.net/10716/)
+
+## Minimum OS Requirements
+
+Actively supported minimum operating system versions:
+
+* Windows Vista
+* macOS 10.13
+* Ubuntu 18
+
+Pull requests can be submitted to maintain support for older versions.
 
 ## Xcode Instructions
 
@@ -156,11 +167,11 @@ void *zip_handle = NULL;
 
 /* TODO: fill zip_buffer with zip contents.. */
 
-mz_stream_mem_create(&mem_stream);
+mem_stream = mz_stream_mem_create();
 mz_stream_mem_set_buffer(mem_stream, zip_buffer, zip_buffer_size);
 mz_stream_open(mem_stream, NULL, MZ_OPEN_MODE_READ);
 
-mz_zip_create(&zip_handle);
+zip_handle = mz_zip_create();
 err = mz_zip_open(zip_handle, mem_stream, MZ_OPEN_MODE_READ);
 
 /* TODO: unzip operations.. */
@@ -177,11 +188,11 @@ To create a zip file in memory first create a growable memory stream and pass it
 void *mem_stream = NULL;
 void *zip_handle = NULL;
 
-mz_stream_mem_create(&mem_stream);
+mem_stream = mz_stream_mem_create();
 mz_stream_mem_set_grow_size(mem_stream, (128 * 1024));
 mz_stream_open(mem_stream, NULL, MZ_OPEN_MODE_CREATE);
 
-mz_zip_create(&zip_handle);
+zip_handle = mz_zip_create();
 err = mz_zip_open(zip_handle, mem_stream, MZ_OPEN_MODE_WRITE);
 
 /* TODO: unzip operations.. */
@@ -203,15 +214,15 @@ void *stream = NULL;
 void *buf_stream = NULL;
 void *zip_handle = NULL;
 
-mz_stream_os_create(&stream)
+stream = mz_stream_os_create()
 
 /* TODO: open os stream.. */
 
-mz_stream_buffered_create(&buf_stream);
+buf_stream = mz_stream_buffered_create();
 mz_stream_buffered_open(buf_stream, NULL, MZ_OPEN_MODE_READ);
 mz_stream_buffered_set_base(buf_stream, stream);
 
-mz_zip_create(&zip_handle);
+zip_handle = mz_zip_create();
 err = mz_zip_open(zip_handle, buf_stream, MZ_OPEN_MODE_READ);
 
 /* TODO: unzip operation.. */
@@ -231,14 +242,14 @@ void *stream = NULL;
 void *split_stream = NULL;
 void *zip_handle = NULL;
 
-mz_stream_os_create(&stream);
+stream = mz_stream_os_create();
 
-mz_stream_split_create(&split_stream);
+split_stream = mz_stream_split_create();
 mz_stream_split_set_prop_int64(split_stream, MZ_STREAM_PROP_DISK_SIZE, 64 * 1024);
 mz_stream_set_base(split_stream, stream);
 mz_stream_open(split_stream, path..
 
-mz_zip_create(&zip_handle);
+zip_handle = mz_zip_create();
 err = mz_zip_open(zip_handle, split_stream, MZ_OPEN_MODE_WRITE);
 
 /* TODO: unzip operation.. */

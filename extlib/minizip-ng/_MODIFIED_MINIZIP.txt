@@ -1,9 +1,9 @@
-This copy of minizip-ng 3.0.10 is a modified version of the original.
+This copy of minizip-ng 4.0.0 is a modified version of the original.
 
-commit 8d2488c481ca665f26a8b186ca9e3bcb79ba6e0b
-Version 3.0.10.
+commit a1f568d60135079881ef2be08d1758013ebbb542
+Version 4.0.0.
 
-Tag: 3.0.10
+Tag: 4.0.0
 
 The following changes have been made to the original:
 
@@ -20,7 +20,7 @@ The following changes have been made to the original:
 
 - Some other functionality not needed by rom-properties has been disabled.
 
-To obtain the original minizip-ng 3.0.10, visit:
+To obtain the original minizip-ng 4.0.0, visit:
 https://github.com/zlib-ng/minizip-ng
 
 To obtain the original minizip-1.1, visit:

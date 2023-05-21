@@ -23,11 +23,15 @@
 /***************************************************************************/
 
 #ifndef INVALID_HANDLE_VALUE
-#  define INVALID_HANDLE_VALUE (0xFFFFFFFF)
+#  define INVALID_HANDLE_VALUE 0xFFFFFFFF
 #endif
 
 #ifndef INVALID_SET_FILE_POINTER
-#  define INVALID_SET_FILE_POINTER ((DWORD)-1)
+#  define INVALID_SET_FILE_POINTER (DWORD)-1
+#endif
+
+#ifndef _WIN32_WINNT_WIN8
+#  define _WIN32_WINNT_WIN8 0x0602
 #endif
 
 /***************************************************************************/
@@ -258,15 +262,10 @@ int32_t mz_stream_os_error(void *stream) {
     return win32->error;
 }
 
-void *mz_stream_os_create(void **stream) {
-    mz_stream_win32 *win32 = NULL;
-
-    win32 = (mz_stream_win32 *)calloc(1, sizeof(mz_stream_win32));
+void *mz_stream_os_create(void) {
+    mz_stream_win32 *win32 = (mz_stream_win32 *)calloc(1, sizeof(mz_stream_win32));
     if (win32)
         win32->stream.vtbl = &mz_stream_os_vtbl;
-    if (stream)
-        *stream = win32;
-
     return win32;
 }
 

@@ -431,7 +431,7 @@ static int32_t mz_zip_entry_read_header(void *stream, uint8_t local, mz_zip_file
                 /* Get AES encryption strength and actual compression method */
                 if (err == MZ_OK) {
                     err = mz_stream_read_uint8(file_extra_stream, &value8);
-                    file_info->aes_encryption_mode = value8;
+                    file_info->aes_strength = value8;
                 }
                 if (err == MZ_OK) {
                     err = mz_stream_read_uint16(file_extra_stream, &value16);
@@ -643,7 +643,9 @@ static int32_t mz_zip_entry_write_header(void *stream, uint8_t local, mz_zip_fil
 
     /* Calculate extra field size and check for duplicates */
     if (file_info->extrafield_size > 0) {
-        mz_stream_mem_create(&file_extra_stream);
+        file_extra_stream = mz_stream_mem_create();
+        if (!file_extra_stream)
+            return MZ_MEM_ERROR;
         mz_stream_mem_set_buffer(file_extra_stream, (void *)file_info->extrafield,
             file_info->extrafield_size);
 
@@ -877,7 +879,7 @@ static int32_t mz_zip_entry_write_header(void *stream, uint8_t local, mz_zip_fil
         if (err == MZ_OK)
             err = mz_stream_write_uint8(stream, 'E');
         if (err == MZ_OK)
-            err = mz_stream_write_uint8(stream, file_info->aes_encryption_mode);
+            err = mz_stream_write_uint8(stream, file_info->aes_strength);
         if (err == MZ_OK)
             err = mz_stream_write_uint16(stream, file_info->compression_method);
     }
@@ -1265,10 +1267,13 @@ static int32_t mz_zip_recover_cd(void *handle) {
     } else
         disk_number_with_cd = 1;
 
+    local_file_info_stream = mz_stream_mem_create();
+    if (!local_file_info_stream)
+        return MZ_MEM_ERROR;
+
     if (mz_stream_is_open(cd_mem_stream) != MZ_OK)
         err = mz_stream_mem_open(cd_mem_stream, NULL, MZ_OPEN_MODE_CREATE);
 
-    mz_stream_mem_create(&local_file_info_stream);
     mz_stream_mem_open(local_file_info_stream, NULL, MZ_OPEN_MODE_CREATE);
 
     if (err == MZ_OK) {
@@ -1398,15 +1403,10 @@ static int32_t mz_zip_recover_cd(void *handle) {
     return MZ_OK;
 }
 
-void *mz_zip_create(void **handle) {
-    mz_zip *zip = NULL;
-
-    zip = (mz_zip *)calloc(1, sizeof(mz_zip));
+void *mz_zip_create(void) {
+    mz_zip *zip = (mz_zip *)calloc(1, sizeof(mz_zip));
     if (zip)
         zip->data_descriptor = 1;
-    if (handle)
-        *handle = zip;
-
     return zip;
 }
 
@@ -1431,8 +1431,9 @@ int32_t mz_zip_open(void *handle, void *stream, int32_t mode) {
     mz_zip_print("Zip - Open\n");
 
     zip->stream = stream;
-
-    mz_stream_mem_create(&zip->cd_mem_stream);
+    zip->cd_mem_stream = mz_stream_mem_create();
+    if (!zip->cd_mem_stream)
+        return MZ_MEM_ERROR;
 
     if (mode & MZ_OPEN_MODE_WRITE) {
         mz_stream_mem_open(zip->cd_mem_stream, NULL, MZ_OPEN_MODE_CREATE);
@@ -1484,10 +1485,18 @@ int32_t mz_zip_open(void *handle, void *stream, int32_t mode) {
     }
 
     /* Memory streams used to store variable length file info data */
-    mz_stream_mem_create(&zip->file_info_stream);
+    zip->file_info_stream = mz_stream_mem_create();
+    if (!zip->file_info_stream)
+        return MZ_MEM_ERROR;
+
     mz_stream_mem_open(zip->file_info_stream, NULL, MZ_OPEN_MODE_CREATE);
 
-    mz_stream_mem_create(&zip->local_file_info_stream);
+    zip->local_file_info_stream = mz_stream_mem_create();
+    if (!zip->local_file_info_stream) {
+        mz_stream_delete(&zip->file_info_stream);
+        return MZ_MEM_ERROR;
+    }
+
     mz_stream_mem_open(zip->local_file_info_stream, NULL, MZ_OPEN_MODE_CREATE);
 
     zip->open_mode = mode;
@@ -1725,9 +1734,11 @@ static int32_t mz_zip_entry_open_int(void *handle, uint8_t raw, int16_t compress
     if ((err == MZ_OK) && (use_crypt)) {
 #ifdef HAVE_WZAES
         if (zip->file_info.aes_version) {
-            mz_stream_wzaes_create(&zip->crypt_stream);
+            zip->crypt_stream = mz_stream_wzaes_create();
+            if (!zip->crypt_stream)
+                return MZ_MEM_ERROR;
             mz_stream_wzaes_set_password(zip->crypt_stream, password);
-            mz_stream_wzaes_set_encryption_mode(zip->crypt_stream, zip->file_info.aes_encryption_mode);
+            mz_stream_wzaes_set_strength(zip->crypt_stream, zip->file_info.aes_strength);
         } else
 #endif
         {
@@ -1735,7 +1746,9 @@ static int32_t mz_zip_entry_open_int(void *handle, uint8_t raw, int16_t compress
             uint8_t verify1 = (uint8_t)((zip->file_info.pk_verify >> 8) & 0xff);
             uint8_t verify2 = (uint8_t)((zip->file_info.pk_verify) & 0xff);
 
-            mz_stream_pkcrypt_create(&zip->crypt_stream);
+            zip->crypt_stream = mz_stream_pkcrypt_create();
+            if (!zip->crypt_stream)
+                return MZ_MEM_ERROR;
             mz_stream_pkcrypt_set_password(zip->crypt_stream, password);
             mz_stream_pkcrypt_set_verify(zip->crypt_stream, verify1, verify2);
 #endif
@@ -1744,7 +1757,9 @@ static int32_t mz_zip_entry_open_int(void *handle, uint8_t raw, int16_t compress
 
     if (err == MZ_OK) {
         if (!zip->crypt_stream)
-            mz_stream_raw_create(&zip->crypt_stream);
+            zip->crypt_stream = mz_stream_raw_create();
+        if (!zip->crypt_stream)
+            return MZ_MEM_ERROR;
 
         mz_stream_set_base(zip->crypt_stream, zip->stream);
 
@@ -1753,38 +1768,43 @@ static int32_t mz_zip_entry_open_int(void *handle, uint8_t raw, int16_t compress
 
     if (err == MZ_OK) {
         if (zip->entry_raw || zip->file_info.compression_method == MZ_COMPRESS_METHOD_STORE)
-            mz_stream_raw_create(&zip->compress_stream);
+            zip->compress_stream = mz_stream_raw_create();
 #ifdef HAVE_ZLIB
         else if (zip->file_info.compression_method == MZ_COMPRESS_METHOD_DEFLATE)
-            mz_stream_zlib_create(&zip->compress_stream);
+            zip->compress_stream = mz_stream_zlib_create();
 #endif
 #ifdef HAVE_BZIP2
         else if (zip->file_info.compression_method == MZ_COMPRESS_METHOD_BZIP2)
-            mz_stream_bzip_create(&zip->compress_stream);
+            zip->compress_stream = mz_stream_bzip_create();
 #endif
 #ifdef HAVE_LIBCOMP
         else if (zip->file_info.compression_method == MZ_COMPRESS_METHOD_DEFLATE ||
                  zip->file_info.compression_method == MZ_COMPRESS_METHOD_XZ) {
-            mz_stream_libcomp_create(&zip->compress_stream);
-            mz_stream_set_prop_int64(zip->compress_stream, MZ_STREAM_PROP_COMPRESS_METHOD,
-                zip->file_info.compression_method);
+            zip->compress_stream = mz_stream_libcomp_create();
+            if (zip->compress_stream)
+                mz_stream_set_prop_int64(zip->compress_stream, MZ_STREAM_PROP_COMPRESS_METHOD,
+                    zip->file_info.compression_method);
         }
 #endif
 #ifdef HAVE_LZMA
         else if (zip->file_info.compression_method == MZ_COMPRESS_METHOD_LZMA ||
                  zip->file_info.compression_method == MZ_COMPRESS_METHOD_XZ) {
-            mz_stream_lzma_create(&zip->compress_stream);
-            mz_stream_set_prop_int64(zip->compress_stream, MZ_STREAM_PROP_COMPRESS_METHOD,
-                zip->file_info.compression_method);
+            zip->compress_stream = mz_stream_lzma_create();
+            if (zip->compress_stream)
+                mz_stream_set_prop_int64(zip->compress_stream, MZ_STREAM_PROP_COMPRESS_METHOD,
+                    zip->file_info.compression_method);
         }
 #endif
 #ifdef HAVE_ZSTD
         else if (zip->file_info.compression_method == MZ_COMPRESS_METHOD_ZSTD)
-            mz_stream_zstd_create(&zip->compress_stream);
+            zip->compress_stream = mz_stream_zstd_create();
 #endif
         else
             err = MZ_PARAM_ERROR;
     }
+
+    if (!zip->compress_stream)
+        err = MZ_MEM_ERROR;
 
     if (err == MZ_OK) {
         if (zip->open_mode & MZ_OPEN_MODE_WRITE) {
@@ -1982,8 +2002,8 @@ int32_t mz_zip_entry_write_open(void *handle, const mz_zip_file *file_info, int1
         zip->file_info.pk_verify = mz_zip_get_pk_verify(dos_date, zip->file_info.crc, zip->file_info.flag);
 #endif
 #ifdef HAVE_WZAES
-        if (zip->file_info.aes_version && zip->file_info.aes_encryption_mode == 0)
-            zip->file_info.aes_encryption_mode = MZ_AES_ENCRYPTION_MODE_256;
+        if (zip->file_info.aes_version && zip->file_info.aes_strength == 0)
+            zip->file_info.aes_strength = MZ_AES_STRENGTH_256;
 #endif
     }
 
@@ -2601,13 +2621,13 @@ int32_t mz_zip_extrafield_contains(const uint8_t *extrafield, int32_t extrafield
     if (!extrafield || !extrafield_size)
         return MZ_PARAM_ERROR;
 
-    mz_stream_mem_create(&file_extra_stream);
+    file_extra_stream = mz_stream_mem_create();
+    if (!file_extra_stream)
+        return MZ_MEM_ERROR;
+
     mz_stream_mem_set_buffer(file_extra_stream, (void *)extrafield, extrafield_size);
-
     err = mz_zip_extrafield_find(file_extra_stream, type, extrafield_size, length);
-
     mz_stream_mem_delete(&file_extra_stream);
-
     return err;
 }
 
