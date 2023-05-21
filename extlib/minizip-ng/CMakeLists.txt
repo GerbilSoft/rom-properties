@@ -24,7 +24,7 @@ include(CheckSymbolExists)
 include(CheckFunctionExists)
 include(CheckIncludeFile)
 include(CheckIncludeFiles)
-include(CheckSourceCompiles)
+#include(CheckSourceCompiles)
 include(CheckTypeSize)
 include(GNUInstallDirs)
 # rom-properties: Disabled FeatureSummary.
