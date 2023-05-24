@@ -306,7 +306,7 @@ int Nintendo3DSFirm::loadFieldData(void)
 
 		// FIRM version.
 		d->fields.addField_string(C_("Nintendo3DSFirm", "FIRM Version"),
-			rp_sprintf("%u.%u.%u", firmBin->kernel.major,
+			rp_sprintf("%u.%u-%u", firmBin->kernel.major,
 				firmBin->kernel.minor, firmBin->kernel.revision));
 
 		// System version.
