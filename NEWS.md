@@ -54,6 +54,9 @@
   * GameCube: Handle standalone Wii update partitions containing Incrementing
     Values.
     * Reported by @johnsanc314.
+  * DMG: Handle the 'H' cartridge HW type for IR carts. (HuC1, HuC3)
+    * Merged #359: Update DMG.cpp
+      * Reported by @MarioMasta64.
 
 * Other changes:
   * EXE: Don't show import/export tables for .NET executables, since they only
