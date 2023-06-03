@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-04-23 09:52-0400\n"
-"PO-Revision-Date: 2023-06-03 14:24\n"
+"PO-Revision-Date: 2023-06-03 15:30\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -1285,7 +1285,7 @@ msgstr "(unbekanntes Dateiformat)"
 #, c-format
 msgctxt "RomDataView"
 msgid "%1$s | %2$s"
-msgstr ""
+msgstr "%1$s | %2$s"
 
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:224
 msgctxt "RomDataView"
@@ -1330,7 +1330,8 @@ msgstr "&Optionen"
 msgctxt "RomDataView"
 msgid "%1$s\n"
 "%2$s"
-msgstr ""
+msgstr "%1$s\n"
+"%2$s"
 
 #. tr: Field description label.
 #: ../src/gtk/RomDataView.cpp:1775 ../src/kde/RomDataView.cpp:1007
@@ -1338,7 +1339,7 @@ msgstr ""
 #, c-format
 msgctxt "RomDataView"
 msgid "%s:"
-msgstr ""
+msgstr "%s:"
 
 #: ../src/gtk/RomDataView_ops.cpp:279 ../src/gtk/RomDataView_ops.cpp:428
 #: ../src/kde/RomDataView_ops.cpp:198 ../src/kde/RomDataView_ops.cpp:264
@@ -1347,13 +1348,13 @@ msgstr ""
 #, c-format
 msgctxt "RomDataView"
 msgid "File: '%s'"
-msgstr ""
+msgstr "Datei: '%s'"
 
 #: ../src/gtk/RomDataView_ops.cpp:297 ../src/kde/RomDataView_ops.cpp:216
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:321
 msgctxt "RomDataView"
 msgid "Export to Text File"
-msgstr ""
+msgstr "Als Text-Datei exportieren"
 
 #: ../src/gtk/RomDataView_ops.cpp:298 ../src/kde/RomDataView_ops.cpp:217
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:322
@@ -1375,7 +1376,7 @@ msgstr ""
 
 #: ../src/gtk/RomDataView_ops.cpp:317 ../src/gtk/RomDataView_ops.cpp:484
 msgid "_Save"
-msgstr ""
+msgstr "_Speichern"
 
 #. tr: "All Files" filter (GTK+ file filter)
 #: ../src/gtk/RomDataView_ops.cpp:500
