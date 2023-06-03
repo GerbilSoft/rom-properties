@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-04-23 09:52-0400\n"
-"PO-Revision-Date: 2023-04-23 15:14\n"
+"PO-Revision-Date: 2023-06-03 14:24\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -383,7 +383,7 @@ msgstr "Das Verzeichnis wird eine hierarchische Struktur für Projekt IDs erzwin
 #: ../src/gtk/xattr/LinuxAttrView.c:139
 msgctxt "LinuxAttrView"
 msgid "P: project"
-msgstr ""
+msgstr "P: Projekt"
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:288
 #: ../src/gtk/xattr/LinuxAttrView.c:161
@@ -413,7 +413,7 @@ msgstr "E: verschlüsselt"
 #: ../src/gtk/xattr/LinuxAttrView.c:107
 msgctxt "LinuxAttrView"
 msgid "Not subject to copy-on-write updates."
-msgstr ""
+msgstr "Unterliegt nicht den Copy-on-Write-Updates."
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:298
 #: ../src/gtk/xattr/LinuxAttrView.c:106
@@ -1224,7 +1224,7 @@ msgstr ""
 #: ../src/win32/RP_ContextMenu.cpp:490
 msgctxt "ServiceMenu"
 msgid "Convert to PNG"
-msgstr ""
+msgstr "In PNG umwandeln"
 
 #: ../src/gtk/gtk3/NautilusMenuProvider.cpp:277
 #: ../src/gtk/gtk3/ThunarMenuProvider.cpp:273
@@ -1245,7 +1245,7 @@ msgstr[1] ""
 #: ../src/win32/RP_ShellPropSheetExt.cpp:2317
 msgctxt "RomDataView"
 msgid "ROM Properties"
-msgstr ""
+msgstr "ROM-Eigenschaften"
 
 #. tr: Invalid date/time.
 #. tr: Invalid date/time
@@ -1254,7 +1254,7 @@ msgstr ""
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1226
 msgctxt "RomDataView"
 msgid "Unknown"
-msgstr ""
+msgstr "Unbekannt"
 
 #. tr: No age ratings data.
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:144
@@ -1262,7 +1262,7 @@ msgstr ""
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1340
 msgctxt "RomDataView"
 msgid "ERROR"
-msgstr ""
+msgstr "ERROR"
 
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:212
 #: ../src/gtk/RomDataView.cpp:638 ../src/kde/RomDataView.cpp:156
@@ -1270,7 +1270,7 @@ msgstr ""
 #: ../src/win32/RP_ShellPropSheetExt.cpp:243
 msgctxt "RomDataView"
 msgid "(unknown system)"
-msgstr ""
+msgstr "(unbekanntes System)"
 
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:215
 #: ../src/gtk/RomDataView.cpp:641 ../src/kde/RomDataView.cpp:159
@@ -1278,7 +1278,7 @@ msgstr ""
 #: ../src/win32/RP_ShellPropSheetExt.cpp:246
 msgctxt "RomDataView"
 msgid "(unknown filetype)"
-msgstr ""
+msgstr "(unbekanntes Dateiformat)"
 
 #. tr: %1$s == system name, %2$s == file type
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:223
@@ -1290,31 +1290,31 @@ msgstr ""
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:224
 msgctxt "RomDataView"
 msgid "File Type"
-msgstr ""
+msgstr "Dateiformat"
 
 #: ../src/gtk/OptionsMenuButton.cpp:142 ../src/kde/OptionsMenuButton.cpp:24
 #: ../src/win32/OptionsMenuButton.cpp:34
 msgctxt "OptionsMenuButton|StdActs"
 msgid "Export to Text..."
-msgstr ""
+msgstr "Als Text exportieren..."
 
 #: ../src/gtk/OptionsMenuButton.cpp:143 ../src/kde/OptionsMenuButton.cpp:25
 #: ../src/win32/OptionsMenuButton.cpp:35
 msgctxt "OptionsMenuButton|StdActs"
 msgid "Export to JSON..."
-msgstr ""
+msgstr "Als JSON exportieren..."
 
 #: ../src/gtk/OptionsMenuButton.cpp:144 ../src/kde/OptionsMenuButton.cpp:26
 #: ../src/win32/OptionsMenuButton.cpp:36
 msgctxt "OptionsMenuButton|StdActs"
 msgid "Copy as Text"
-msgstr ""
+msgstr "Als Text kopieren"
 
 #: ../src/gtk/OptionsMenuButton.cpp:145 ../src/kde/OptionsMenuButton.cpp:27
 #: ../src/win32/OptionsMenuButton.cpp:37
 msgctxt "OptionsMenuButton|StdActs"
 msgid "Copy as JSON"
-msgstr ""
+msgstr "Als JSON kopieren"
 
 #. tr: "Options" button.
 #: ../src/gtk/OptionsMenuButton.cpp:203 ../src/kde/OptionsMenuButton.cpp:39
@@ -1391,17 +1391,17 @@ msgstr ""
 #: ../src/gtk/xattr/DosAttrView.c:122
 msgctxt "DosAttrView"
 msgid "Hidden"
-msgstr ""
+msgstr "Versteckt"
 
 #: ../src/gtk/xattr/DosAttrView.c:124
 msgctxt "DosAttrView"
 msgid "Archive"
-msgstr ""
+msgstr "Archiv"
 
 #: ../src/gtk/xattr/DosAttrView.c:126
 msgctxt "DosAttrView"
 msgid "System"
-msgstr ""
+msgstr "System"
 
 #: ../src/gtk/xattr/DosAttrView.c:148
 msgctxt "DosAttrView"
@@ -1411,18 +1411,18 @@ msgstr "Komprimiert"
 #: ../src/gtk/xattr/DosAttrView.c:150
 msgctxt "DosAttrView"
 msgid "Encrypted"
-msgstr ""
+msgstr "Verschlüsselt"
 
 #: ../src/gtk/xattr/XAttrView.cpp:137
 msgctxt "XAttrView"
 msgid "Extended Attributes"
-msgstr ""
+msgstr "Erweiterte Eigenschaften"
 
 #. tr: Uses Qt's HTML subset for formatting.
 #: ../src/kde/config/AboutTab.cpp:171
 msgctxt "AboutTab"
 msgid "<b>ROM Properties Page</b><br>Shell Extension"
-msgstr ""
+msgstr "Shell-Erweiterung für <br><b>ROM Eigenschaften</b>"
 
 #. tr: Error message template. (Qt version, with formatting)
 #: ../src/kde/config/AboutTab.cpp:662 ../src/kde/config/CacheTab.cpp:262
@@ -1435,7 +1435,7 @@ msgstr "<b>FEHLER:</b> %1"
 #: ../src/kde/RomDataView_ops.cpp:319
 msgctxt "RomData"
 msgid "All Files|*|-"
-msgstr ""
+msgstr "Alle Dateien|*|-"
 
 #. tr: XAttrView tab title
 #: ../src/kde/xattr/XAttrViewPropertiesDialogPlugin.cpp:83
@@ -2454,12 +2454,12 @@ msgstr ""
 #: ../src/libromdata/Console/Atari7800.cpp:227
 msgctxt "Atari7800|ControllerType"
 msgid "None"
-msgstr ""
+msgstr "Keine"
 
 #: ../src/libromdata/Console/Atari7800.cpp:228
 msgctxt "Atari7800|ControllerType"
 msgid "Joystick (7800)"
-msgstr ""
+msgstr "Joystick (7800)"
 
 #: ../src/libromdata/Console/Atari7800.cpp:229
 msgctxt "Atari7800|ControllerType"
