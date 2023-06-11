@@ -3,16 +3,8 @@
  */
 
 #include "zbuild.h"
-#include "zutil.h"
 
-// We need sizeof(chunk_t) to be 8, no matter what.
-#if defined(UNALIGNED64_OK)
 typedef uint64_t chunk_t;
-#elif defined(UNALIGNED_OK)
-typedef struct chunk_t { uint32_t u32[2]; } chunk_t;
-#else
-typedef struct chunk_t { uint8_t u8[8]; } chunk_t;
-#endif
 
 #define CHUNK_SIZE 8
 
@@ -39,9 +31,12 @@ static inline void storechunk(uint8_t *out, chunk_t *chunk) {
 
 #define CHUNKSIZE        chunksize_c
 #define CHUNKCOPY        chunkcopy_c
-#define CHUNKCOPY_SAFE   chunkcopy_safe_c
 #define CHUNKUNROLL      chunkunroll_c
 #define CHUNKMEMSET      chunkmemset_c
 #define CHUNKMEMSET_SAFE chunkmemset_safe_c
 
 #include "chunkset_tpl.h"
+
+#define INFLATE_FAST     inflate_fast_c
+
+#include "inffast_tpl.h"

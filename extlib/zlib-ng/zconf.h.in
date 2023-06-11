@@ -6,16 +6,10 @@
 #ifndef ZCONF_H
 #define ZCONF_H
 
+#include "zlib_name_mangling.h"
+
 #if !defined(_WIN32) && defined(__WIN32__)
 #  define _WIN32
-#endif
-
-#ifdef __STDC_VERSION__
-#  if __STDC_VERSION__ >= 199901L
-#    ifndef STDC99
-#      define STDC99
-#    endif
-#  endif
 #endif
 
 /* Clang macro for detecting declspec support
@@ -41,6 +35,9 @@
  * created by gzip. (Files created by minigzip can still be extracted by
  * gzip.)
  */
+#ifndef MIN_WBITS
+#  define MIN_WBITS   8  /* 256 LZ77 window */
+#endif
 #ifndef MAX_WBITS
 #  define MAX_WBITS   15 /* 32K LZ77 window */
 #endif
@@ -104,6 +101,9 @@
 #ifndef Z_EXPORTVA
 #  define Z_EXPORTVA
 #endif
+
+/* Conditional exports */
+#define ZNG_CONDEXPORT Z_INTERNAL
 
 /* For backwards compatibility */
 
@@ -197,5 +197,7 @@ typedef PTRDIFF_TYPE ptrdiff_t;
 #    define z_off64_t z_off_t
 #  endif
 #endif
+
+typedef size_t z_size_t;
 
 #endif /* ZCONF_H */

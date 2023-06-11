@@ -7,7 +7,6 @@
 #ifdef ZLIB_DEBUG
 #  include <ctype.h>
 #  include <inttypes.h>
-#  include <stdint.h>
 #endif
 
 
@@ -16,7 +15,7 @@ extern Z_INTERNAL const ct_data static_ltree[L_CODES+2];
 extern Z_INTERNAL const ct_data static_dtree[D_CODES];
 
 extern const unsigned char Z_INTERNAL zng_dist_code[DIST_CODE_LEN];
-extern const unsigned char Z_INTERNAL zng_length_code[MAX_MATCH-MIN_MATCH+1];
+extern const unsigned char Z_INTERNAL zng_length_code[STD_MAX_MATCH-STD_MIN_MATCH+1];
 
 extern Z_INTERNAL const int base_length[LENGTH_CODES];
 extern Z_INTERNAL const int base_dist[D_CODES];
@@ -126,7 +125,7 @@ static inline uint32_t zng_emit_dist(deflate_state *s, const ct_data *ltree, con
     uint32_t bi_valid = s->bi_valid;
     uint64_t bi_buf = s->bi_buf;
 
-    /* Send the length code, len is the match length - MIN_MATCH */
+    /* Send the length code, len is the match length - STD_MIN_MATCH */
     code = zng_length_code[lc];
     c = code+LITERALS+1;
     Assert(c < L_CODES, "bad l_code");

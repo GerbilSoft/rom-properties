@@ -18,10 +18,11 @@ TOPDIR=$(SRCTOP)
 
 all: \
 	adler32_neon.o adler32_neon.lo \
-	armfeature.o armfeature.lo \
+	arm_features.o arm_features.lo \
 	chunkset_neon.o chunkset_neon.lo \
+	compare256_neon.o compare256_neon.lo \
 	crc32_acle.o crc32_acle.lo \
-	slide_neon.o slide_neon.lo \
+	slide_hash_neon.o slide_hash_neon.lo \
 	insert_string_acle.o insert_string_acle.lo
 
 adler32_neon.o:
@@ -30,11 +31,11 @@ adler32_neon.o:
 adler32_neon.lo:
 	$(CC) $(SFLAGS) $(NEONFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_neon.c
 
-armfeature.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/armfeature.c
+arm_features.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/arm_features.c
 
-armfeature.lo:
-	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/armfeature.c
+arm_features.lo:
+	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/arm_features.c
 
 chunkset_neon.o:
 	$(CC) $(CFLAGS) $(NEONFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_neon.c
@@ -42,17 +43,23 @@ chunkset_neon.o:
 chunkset_neon.lo:
 	$(CC) $(SFLAGS) $(NEONFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_neon.c
 
+compare256_neon.o:
+	$(CC) $(CFLAGS) $(NEONFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare256_neon.c
+
+compare256_neon.lo:
+	$(CC) $(SFLAGS) $(NEONFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare256_neon.c
+
 crc32_acle.o:
 	$(CC) $(CFLAGS) $(ACLEFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_acle.c
 
 crc32_acle.lo:
 	$(CC) $(SFLAGS) $(ACLEFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_acle.c
 
-slide_neon.o:
-	$(CC) $(CFLAGS) $(NEONFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_neon.c
+slide_hash_neon.o:
+	$(CC) $(CFLAGS) $(NEONFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_neon.c
 
-slide_neon.lo:
-	$(CC) $(SFLAGS) $(NEONFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_neon.c
+slide_hash_neon.lo:
+	$(CC) $(SFLAGS) $(NEONFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_neon.c
 
 insert_string_acle.o:
 	$(CC) $(CFLAGS) $(ACLEFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_acle.c
@@ -66,5 +73,5 @@ clean:
 	rm -rf objs
 	rm -f *.gcda *.gcno *.gcov
 
-distclean:
+distclean: clean
 	rm -f Makefile

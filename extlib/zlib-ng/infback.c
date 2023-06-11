@@ -1,5 +1,5 @@
 /* infback.c -- inflate using a call-back interface
- * Copyright (C) 1995-2016 Mark Adler
+ * Copyright (C) 1995-2022 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -14,9 +14,13 @@
 #include "zutil.h"
 #include "inftrees.h"
 #include "inflate.h"
-#include "inffast.h"
 #include "inflate_p.h"
 #include "functable.h"
+
+/* Avoid conflicts with zlib.h macros */
+#ifdef ZLIB_COMPAT
+# undef inflateBackInit
+#endif
 
 /*
    strm provides memory allocation functions in zalloc and zfree, or
@@ -24,23 +28,22 @@
 
    windowBits is in the range 8..15, and window is a user-supplied
    window and output buffer that is 2**windowBits bytes.
+
+   This function is hidden in ZLIB_COMPAT builds.
  */
-int32_t Z_EXPORT PREFIX(inflateBackInit_)(PREFIX3(stream) *strm, int32_t windowBits, uint8_t *window,
-                              const char *version, int32_t stream_size) {
+int32_t ZNG_CONDEXPORT PREFIX(inflateBackInit)(PREFIX3(stream) *strm, int32_t windowBits, uint8_t *window) {
     struct inflate_state *state;
 
-    if (version == NULL || version[0] != PREFIX2(VERSION)[0] || stream_size != (int)(sizeof(PREFIX3(stream))))
-        return Z_VERSION_ERROR;
-    if (strm == NULL || window == NULL || windowBits < 8 || windowBits > 15)
+    if (strm == NULL || window == NULL || windowBits < MIN_WBITS || windowBits > MAX_WBITS)
         return Z_STREAM_ERROR;
     strm->msg = NULL;                   /* in case we return an error */
     if (strm->zalloc == NULL) {
-        strm->zalloc = zng_calloc;
+        strm->zalloc = PREFIX(zcalloc);
         strm->opaque = NULL;
     }
     if (strm->zfree == NULL)
-        strm->zfree = zng_cfree;
-    state = (struct inflate_state *) ZALLOC(strm, 1, sizeof(struct inflate_state));
+        strm->zfree = PREFIX(zcfree);
+    state = ZALLOC_INFLATE_STATE(strm);
     if (state == NULL)
         return Z_MEM_ERROR;
     Tracev((stderr, "inflate: allocated\n"));
@@ -54,6 +57,14 @@ int32_t Z_EXPORT PREFIX(inflateBackInit_)(PREFIX3(stream) *strm, int32_t windowB
     state->sane = 1;
     state->chunksize = functable.chunksize();
     return Z_OK;
+}
+
+/* Function used by zlib.h and zlib-ng version 2.0 macros */
+int32_t Z_EXPORT PREFIX(inflateBackInit_)(PREFIX3(stream) *strm, int32_t windowBits, uint8_t *window,
+                              const char *version, int32_t stream_size) {
+    if (CHECK_VER_STSIZE(version, stream_size))
+        return Z_VERSION_ERROR;
+    return PREFIX(inflateBackInit)(strm, windowBits, window);
 }
 
 /*
@@ -180,7 +191,7 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
                 state->mode = STORED;
                 break;
             case 1:                             /* fixed block */
-                fixedtables(state);
+                PREFIX(fixedtables)(state);
                 Tracev((stderr, "inflate:     fixed codes block%s\n", state->last ? " (last)" : ""));
                 state->mode = LEN;              /* decode codes */
                 break;
@@ -211,8 +222,8 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
                 copy = state->length;
                 PULL();
                 ROOM();
-                if (copy > have) copy = have;
-                if (copy > left) copy = left;
+                copy = MIN(copy, have);
+                copy = MIN(copy, left);
                 memcpy(put, next, copy);
                 have -= copy;
                 next += copy;
@@ -317,18 +328,18 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
             }
 
             /* build code tables -- note: do not change the lenbits or distbits
-               values here (9 and 6) without reading the comments in inftrees.h
+               values here (10 and 9) without reading the comments in inftrees.h
                concerning the ENOUGH constants, which depend on those values */
             state->next = state->codes;
             state->lencode = (const code *)(state->next);
-            state->lenbits = 9;
+            state->lenbits = 10;
             ret = zng_inflate_table(LENS, state->lens, state->nlen, &(state->next), &(state->lenbits), state->work);
             if (ret) {
                 SET_BAD("invalid literal/lengths set");
                 break;
             }
             state->distcode = (const code *)(state->next);
-            state->distbits = 6;
+            state->distbits = 9;
             ret = zng_inflate_table(DISTS, state->lens + state->nlen, state->ndist,
                                 &(state->next), &(state->distbits), state->work);
             if (ret) {
@@ -337,6 +348,7 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
             }
             Tracev((stderr, "inflate:       codes ok\n"));
             state->mode = LEN;
+            Z_FALLTHROUGH;
 
         case LEN:
             /* use inflate_fast() if we have enough input and output */
@@ -345,7 +357,7 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
                 RESTORE();
                 if (state->whave < state->wsize)
                     state->whave = state->wsize - left;
-                zng_inflate_fast(strm, state->wsize);
+                functable.inflate_fast(strm, state->wsize);
                 LOAD();
                 break;
             }
@@ -396,7 +408,7 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
             }
 
             /* length code -- get extra bits, if any */
-            state->extra = (here.op & 15);
+            state->extra = (here.op & MAX_BITS);
             if (state->extra) {
                 NEEDBITS(state->extra);
                 state->length += BITS(state->extra);
@@ -427,7 +439,7 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
                 break;
             }
             state->offset = here.val;
-            state->extra = (here.op & 15);
+            state->extra = (here.op & MAX_BITS);
 
             /* get distance extra bits, if any */
             if (state->extra) {
@@ -454,8 +466,7 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
                     from = put - state->offset;
                     copy = left;
                 }
-                if (copy > state->length)
-                    copy = state->length;
+                copy = MIN(copy, state->length);
                 state->length -= copy;
                 left -= copy;
                 do {
@@ -493,7 +504,7 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
 int32_t Z_EXPORT PREFIX(inflateBackEnd)(PREFIX3(stream) *strm) {
     if (strm == NULL || strm->state == NULL || strm->zfree == NULL)
         return Z_STREAM_ERROR;
-    ZFREE(strm, strm->state);
+    ZFREE_STATE(strm, strm->state);
     strm->state = NULL;
     Tracev((stderr, "inflate: end\n"));
     return Z_OK;

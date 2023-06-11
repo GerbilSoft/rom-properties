@@ -12,6 +12,8 @@
 
 #include "zutil.h"
 #include "zendian.h"
+#include "adler32_fold.h"
+#include "crc32_fold.h"
 
 /* define NO_GZIP when compiling if you want to disable gzip header and
    trailer creation by deflate().  NO_GZIP would be used to avoid linking in
@@ -42,9 +44,6 @@
 
 #define HEAP_SIZE (2*L_CODES+1)
 /* maximum heap size */
-
-#define MAX_BITS 15
-/* All codes must not exceed MAX_BITS bits */
 
 #define BIT_BUF_SIZE 64
 /* size of bit buffer in bi_buf */
@@ -101,8 +100,14 @@ typedef uint16_t Pos;
 /* A Pos is an index in the character window. We use short instead of int to
  * save space in the various tables.
  */
+/* Type definitions for hash callbacks */
+typedef struct internal_state deflate_state;
 
-typedef struct internal_state {
+typedef uint32_t (* update_hash_cb)        (deflate_state *const s, uint32_t h, uint32_t val);
+typedef void     (* insert_string_cb)      (deflate_state *const s, uint32_t str, uint32_t count);
+typedef Pos      (* quick_insert_string_cb)(deflate_state *const s, uint32_t str);
+
+struct internal_state {
     PREFIX3(stream)      *strm;            /* pointer back to this zlib stream */
     unsigned char        *pending_buf;     /* output still pending */
     unsigned char        *pending_out;     /* next pending byte to output to the stream */
@@ -143,7 +148,7 @@ typedef struct internal_state {
     /* Sliding window. Input bytes are read into the second half of the window,
      * and move to the first half later to keep a dictionary of at least wSize
      * bytes. With this organization, matches are limited to a distance of
-     * wSize-MAX_MATCH bytes, but this ensures that IO is always
+     * wSize-STD_MAX_MATCH bytes, but this ensures that IO is always
      * performed with a length multiple of the block size. Also, it limits
      * the window size to 64K, which is quite useful on MSDOS.
      * To do: use the user input buffer as sliding window.
@@ -156,6 +161,8 @@ typedef struct internal_state {
      */
 
     Pos *head; /* Heads of the hash chains or 0. */
+
+    uint32_t ins_h; /* hash index of string to be inserted */
 
     int block_start;
     /* Window position at the beginning of the current output block. Gets
@@ -188,6 +195,12 @@ typedef struct internal_state {
      * max_insert_length is used only for compression levels <= 3.
      */
 
+    update_hash_cb          update_hash;
+    insert_string_cb        insert_string;
+    quick_insert_string_cb  quick_insert_string;
+    /* Hash function callbacks that can be configured depending on the deflate
+     * algorithm being used */
+
     int level;    /* compression level (1..9) */
     int strategy; /* favor or force Huffman coding*/
 
@@ -196,10 +209,7 @@ typedef struct internal_state {
 
     int nice_match; /* Stop searching when current match exceeds this */
 
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || defined(_M_IX86)
-    /* Only used if X86_PCLMULQDQ_CRC is defined */
-    unsigned crc0[4 * 5];
-#endif
+    struct crc32_fold_s ALIGNED_(16) crc_fold;
 
                 /* used by trees.c: */
     /* Didn't use ct_data typedef below to suppress compiler warning */
@@ -269,7 +279,7 @@ typedef struct internal_state {
 
     /* Reserved for future use and alignment purposes */
     int32_t reserved[11];
-} ALIGNED_(8) deflate_state;
+} ALIGNED_(8);
 
 typedef enum {
     need_more,      /* block not completed, need more input or more output */
@@ -345,22 +355,22 @@ static inline void put_uint64(deflate_state *s, uint64_t lld) {
     s->pending += 8;
 }
 
-#define MIN_LOOKAHEAD (MAX_MATCH+MIN_MATCH+1)
+#define MIN_LOOKAHEAD (STD_MAX_MATCH + STD_MIN_MATCH + 1)
 /* Minimum amount of lookahead, except at the end of the input file.
- * See deflate.c for comments about the MIN_MATCH+1.
+ * See deflate.c for comments about the STD_MIN_MATCH+1.
  */
 
-#define MAX_DIST(s)  ((s)->w_size-MIN_LOOKAHEAD)
+#define MAX_DIST(s)  ((s)->w_size - MIN_LOOKAHEAD)
 /* In order to simplify the code, particularly on 16 bit machines, match
  * distances are limited to MAX_DIST instead of WSIZE.
  */
 
-#define WIN_INIT MAX_MATCH
+#define WIN_INIT STD_MAX_MATCH
 /* Number of bytes after end of data in window to initialize in order to avoid
    memory checker errors from longest match routines */
 
 
-void Z_INTERNAL fill_window(deflate_state *s);
+void Z_INTERNAL PREFIX(fill_window)(deflate_state *s);
 void Z_INTERNAL slide_hash_c(deflate_state *s);
 
         /* in trees.c */
@@ -369,8 +379,8 @@ void Z_INTERNAL zng_tr_flush_block(deflate_state *s, char *buf, uint32_t stored_
 void Z_INTERNAL zng_tr_flush_bits(deflate_state *s);
 void Z_INTERNAL zng_tr_align(deflate_state *s);
 void Z_INTERNAL zng_tr_stored_block(deflate_state *s, char *buf, uint32_t stored_len, int last);
-unsigned Z_INTERNAL bi_reverse(unsigned code, int len);
-void Z_INTERNAL flush_pending(PREFIX3(streamp) strm);
+uint16_t Z_INTERNAL PREFIX(bi_reverse)(unsigned code, int len);
+void Z_INTERNAL PREFIX(flush_pending)(PREFIX3(streamp) strm);
 #define d_code(dist) ((dist) < 256 ? zng_dist_code[dist] : zng_dist_code[256+((dist)>>7)])
 /* Mapping from a distance to a distance code. dist is the distance - 1 and
  * must not have side effects. zng_dist_code[256] and zng_dist_code[257] are never

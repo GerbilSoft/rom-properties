@@ -33,8 +33,8 @@ certain value will need to be updated.
 - If your application is pre-allocating a memory buffer and you are providing
   deflate/inflate init with your own allocator that allocates from that buffer
   (looking at you nginx), you should be aware that zlib-ng needs to allocate
-  more memory than stock zlib needs. The same problem exists with Intels and
-  Cloudflares zlib forks. Doing this is not recommended since it makes it
+  more memory than stock zlib needs. The same problem exists with Intel’s and
+  Cloudflare’s zlib forks. Doing this is not recommended since it makes it
   very hard to maintain compatibility over time.
 
 **Build Considerations:**
@@ -43,7 +43,8 @@ certain value will need to be updated.
 - Static library is *libz.a* on Unix and macOS, or *zlib.lib* on Windows
 - Shared library is *libz.so* on Unix, *libz.dylib* on macOS, or *zlib1.dll*
   on Windows
-- Type `z_size_t` is *unsigned long*
+- Type `z_size_t` is *unsigned __int64* on 64-bit Windows, and *unsigned long* on 32-bit Windows, Unix and macOS
+- Type `z_uintmax_t` is *unsigned long* in zlib-compat mode, and *size_t* with zlib-ng API
 
 zlib-ng native mode
 -------------------
