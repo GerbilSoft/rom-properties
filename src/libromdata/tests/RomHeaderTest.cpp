@@ -34,12 +34,10 @@ using LibRpFile::MemFile;
 // C++ includes
 #include <forward_list>
 #include <iostream>
-#include <list>
 #include <memory>
 #include <sstream>
 #include <string>
 using std::forward_list;
-using std::list;
 using std::ostringstream;
 using std::string;
 using std::unique_ptr;
@@ -102,7 +100,7 @@ class RomHeaderTest : public ::testing::TestWithParam<RomHeaderTest_mode>
 	public:
 		// Opened .tar files.
 		// These are opened by ReadTestCasesFromDisk().
-		static list<tar_files_t> all_tar_files;
+		static forward_list<tar_files_t> all_tar_files;
 
 	protected:
 		// Last read file.
@@ -146,7 +144,7 @@ class RomHeaderTest : public ::testing::TestWithParam<RomHeaderTest_mode>
 
 // Opened .tar files.
 // These are opened by ReadTestCasesFromDisk().
-list<tar_files_t> RomHeaderTest::all_tar_files;
+forward_list<tar_files_t> RomHeaderTest::all_tar_files;
 
 // Last read files.
 // NOTE: Not storing the source .tar filename.
@@ -396,13 +394,13 @@ forward_list<RomHeaderTest_mode> RomHeaderTest::ReadTestCasesFromDisk(const char
 	forward_list<RomHeaderTest_mode> files;
 
 	// Open the .tar files.
-	all_tar_files.emplace_back();
-	tar_files_t *p_tar_files = &(*(all_tar_files.rbegin()));
+	all_tar_files.emplace_front();
+	tar_files_t *const p_tar_files = &(*(all_tar_files.begin()));
 
 	int ret = mtar_zstd_open_ro(&p_tar_files->bin_tar, bin_tar_filename);
 	EXPECT_EQ(ret, 0) << "Could not open '" << bin_tar_filename << "', check the test directory!";
 	if (ret != 0) {
-		all_tar_files.pop_back();
+		all_tar_files.pop_front();
 		return files;
 	}
 
@@ -410,7 +408,7 @@ forward_list<RomHeaderTest_mode> RomHeaderTest::ReadTestCasesFromDisk(const char
 	EXPECT_EQ(ret, 0) << "Could not open '" << bin_tar_filename << "', check the test directory!";
 	if (ret != 0) {
 		mtar_close(&p_tar_files->bin_tar);
-		all_tar_files.pop_back();
+		all_tar_files.pop_front();
 		return files;
 	}
 
@@ -419,7 +417,7 @@ forward_list<RomHeaderTest_mode> RomHeaderTest::ReadTestCasesFromDisk(const char
 	if (ret != 0) {
 		mtar_close(&p_tar_files->bin_tar);
 		mtar_close(&p_tar_files->txt_tar);
-		all_tar_files.pop_back();
+		all_tar_files.pop_front();
 		return files;
 	}
 
@@ -440,7 +438,7 @@ forward_list<RomHeaderTest_mode> RomHeaderTest::ReadTestCasesFromDisk(const char
 			mtar_close(&p_tar_files->bin_tar);
 			mtar_close(&p_tar_files->txt_tar);
 			mtar_close(&p_tar_files->json_tar);
-			all_tar_files.pop_back();
+			all_tar_files.pop_front();
 			files.clear();
 			return files;
 		}
