@@ -34,7 +34,7 @@ __CRT_UUID_DECL(IEmptyVolumeCache, __MSABI_LONG(0x8fce5227), 0x04da, 0x11d1, 0xa
 #endif
 
 // C++ STL classes.
-using std::list;
+using std::forward_list;
 using std::pair;
 using std::string;
 using std::wstring;
@@ -79,7 +79,7 @@ class CacheTabPrivate
 		 * @param rlist	[in/out] Return list for filenames and attributes.
 		 * @return 0 on success; non-zero on error.
 		 */
-		int recursiveScan(const TCHAR *path, list<pair<tstring, DWORD> > &rlist);
+		int recursiveScan(const TCHAR *path, forward_list<pair<tstring, DWORD> > &rlist);
 
 		/**
 		 * Clear the rom-properties cache.
@@ -546,7 +546,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
  * @param rlist	[in/out] Return list for filenames and attributes.
  * @return 0 on success; non-zero on error.
  */
-int CacheTabPrivate::recursiveScan(const TCHAR *path, list<pair<tstring, DWORD> > &rlist)
+int CacheTabPrivate::recursiveScan(const TCHAR *path, forward_list<pair<tstring, DWORD> > &rlist)
 {
 	tstring findFilter(path);
 	findFilter += _T("\\*");
@@ -598,14 +598,16 @@ int CacheTabPrivate::recursiveScan(const TCHAR *path, list<pair<tstring, DWORD> 
 		fullFileName += _T('\\');
 		fullFileName += findFileData.cFileName;
 
-		// If this is a directory, recursively scan it, then add it.
+		// Add the filename and attributes.
+		rlist.emplace_front(fullFileName, findFileData.dwFileAttributes);
+
+		// If this is a directory, recursively scan it.
+		// This is done *after* adding the directory because forward_list
+		// enumerates items in reverse order.
 		if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 			// Recursively scan it.
 			recursiveScan(fullFileName.c_str(), rlist);
 		}
-
-		// Add the filename and attributes.
-		rlist.emplace_back(std::move(fullFileName), findFileData.dwFileAttributes);
 	} while (FindNextFile(hFindFile, &findFileData));
 	FindClose(hFindFile);
 
@@ -687,7 +689,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	// Recursively scan the cache directory.
 	// TODO: Do we really want to store everything in a list? (Wastes memory.)
 	// Maybe do a simple counting scan first, then delete.
-	list<pair<tstring, DWORD> > rlist;
+	forward_list<pair<tstring, DWORD> > rlist;
 	int ret = recursiveScan(cacheDirT.c_str(), rlist);
 	if (ret != 0) {
 		// Non-image file found.
@@ -715,8 +717,11 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 		return 0;
 	}
 
+	// NOTE: std::forward_list doesn't have size().
+	const size_t rlist_size = std::distance(rlist.cbegin(), rlist.cend());
+
 	// Delete all of the files and subdirectories.
-	SendMessage(hProgressBar, PBM_SETRANGE32, 0, rlist.size());
+	SendMessage(hProgressBar, PBM_SETRANGE32, 0, rlist_size);
 	SendMessage(hProgressBar, PBM_SETPOS, 2, 0);
 	unsigned int count = 0;
 	unsigned int dirErrs = 0, fileErrs = 0;

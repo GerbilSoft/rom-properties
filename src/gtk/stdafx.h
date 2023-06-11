@@ -36,7 +36,7 @@
 // C++ includes
 #include <algorithm>
 #include <array>
-#include <list>
+#include <forward_list>
 #include <memory>
 #include <set>
 #include <string>

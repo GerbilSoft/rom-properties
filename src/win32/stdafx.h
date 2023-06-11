@@ -68,7 +68,7 @@
 // C++ includes.
 #include <algorithm>
 #include <array>
-#include <list>
+#include <forward_list>
 #include <locale>
 #include <memory>
 #include <numeric>

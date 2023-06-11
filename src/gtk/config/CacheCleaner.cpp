@@ -22,7 +22,7 @@ using namespace LibRpFile;
 #include "d_type.h"
 
 // C++ STL classes
-using std::list;
+using std::forward_list;
 using std::pair;
 using std::string;
 
@@ -235,7 +235,7 @@ rp_cache_cleaner_set_cache_dir(RpCacheCleaner *cleaner, RpCacheDir cache_dir)
  * @return 0 on success; non-zero on error.
  */
 static int
-recursiveScan(const char *path, list<pair<tstring, uint8_t> > &rlist)
+recursiveScan(const char *path, forward_list<pair<tstring, uint8_t> > &rlist)
 {
 	DIR *pdir = opendir(path);
 	if (!pdir) {
@@ -361,14 +361,16 @@ recursiveScan(const char *path, list<pair<tstring, uint8_t> > &rlist)
 		}
 	isok:
 
-		// If this is a directory, recursively scan it, then add it.
+		// Add the filename and file type.
+		rlist.emplace_front(fullpath, d_type);
+
+		// If this is a directory, recursively scan it.
+		// This is done *after* adding the directory because forward_list
+		// enumerates items in reverse order.
 		if (d_type == DT_DIR) {
-			// Recursively scan it.
+			// Recursively scan the directory.
 			recursiveScan(fullpath.c_str(), rlist);
 		}
-
-		// Add the filename and file type.
-		rlist.emplace_back(std::move(fullpath), d_type);
 	};
 	closedir(pdir);
 
@@ -448,7 +450,7 @@ rp_cache_cleaner_run(RpCacheCleaner *cleaner)
 	// Recursively scan the cache directory.
 	// TODO: Do we really want to store everything in a list? (Wastes memory.)
 	// Maybe do a simple counting scan first, then delete.
-	list<pair<string, uint8_t> > rlist;
+	forward_list<pair<string, uint8_t> > rlist;
 	int ret = recursiveScan(cacheDir.c_str(), rlist);
 	if (ret != 0) {
 		// Non-image file found.
@@ -476,8 +478,11 @@ rp_cache_cleaner_run(RpCacheCleaner *cleaner)
 		return;
 	}
 
+	// NOTE: std::forward_list doesn't have size().
+	const size_t rlist_size = std::distance(rlist.cbegin(), rlist.cend());
+
 	// Delete all of the files and subdirectories.
-	g_signal_emit(cleaner, signals[SIGNAL_PROGRESS], 0, 0, static_cast<int>(rlist.size()), FALSE);
+	g_signal_emit(cleaner, signals[SIGNAL_PROGRESS], 0, 0, static_cast<int>(rlist_size), FALSE);
 	unsigned int count = 0;
 	unsigned int dirErrs = 0, fileErrs = 0;
 	bool hasErrors = false;
@@ -501,7 +506,7 @@ rp_cache_cleaner_run(RpCacheCleaner *cleaner)
 
 		// TODO: Restrict update frequency to X number of files/directories?
 		count++;
-		g_signal_emit(cleaner, signals[SIGNAL_PROGRESS], 0, count, static_cast<int>(rlist.size()), hasErrors);
+		g_signal_emit(cleaner, signals[SIGNAL_PROGRESS], 0, count, static_cast<int>(rlist_size), hasErrors);
 	}
 
 	// Directory processed.
