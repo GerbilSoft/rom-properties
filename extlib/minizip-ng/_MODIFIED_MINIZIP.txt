@@ -20,6 +20,9 @@ The following changes have been made to the original:
 
 - Some other functionality not needed by rom-properties has been disabled.
 
+- project(): Disabled DESCRIPTION and HOMEPAGE_URL due to requiring
+  newer versions of CMake than what's available in Ubuntu 16.04.
+
 To obtain the original minizip-ng 4.0.0, visit:
 https://github.com/zlib-ng/minizip-ng
 

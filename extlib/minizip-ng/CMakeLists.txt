@@ -14,9 +14,9 @@ set(SOVERSION "4")
 
 project(minizip-ng
     VERSION ${VERSION}
-    LANGUAGES C
-    DESCRIPTION "Zip manipulation library"
-	HOMEPAGE_URL https://github.com/zlib-ng/minizip-ng/)
+    LANGUAGES C)
+#    DESCRIPTION "Zip manipulation library"
+#	HOMEPAGE_URL https://github.com/zlib-ng/minizip-ng/)
 
 include(CMakeDependentOption)
 include(CheckLibraryExists)
