@@ -32,11 +32,13 @@ using LibRpFile::MemFile;
 #include "ctypex.h"
 
 // C++ includes
+#include <forward_list>
 #include <iostream>
 #include <list>
 #include <memory>
 #include <sstream>
 #include <string>
+using std::forward_list;
 using std::list;
 using std::ostringstream;
 using std::string;
@@ -132,7 +134,7 @@ class RomHeaderTest : public ::testing::TestWithParam<RomHeaderTest_mode>
 		 * @param json_tar_filename .tar file containing the JSON files
 		 * @return Header filenames
 		 */
-		static list<RomHeaderTest_mode> ReadTestCasesFromDisk(const char *bin_tar_filename, const char *txt_tar_filename, const char *json_tar_filename);
+		static forward_list<RomHeaderTest_mode> ReadTestCasesFromDisk(const char *bin_tar_filename, const char *txt_tar_filename, const char *json_tar_filename);
 
 		/**
 		 * Test case suffix generator.
@@ -388,10 +390,10 @@ TEST_P(RomHeaderTest, JSON)
  * @param json_tar_filename .tar file containing the JSON files
  * @return Header filenames
  */
-list<RomHeaderTest_mode> RomHeaderTest::ReadTestCasesFromDisk(const char *bin_tar_filename, const char *txt_tar_filename, const char *json_tar_filename)
+forward_list<RomHeaderTest_mode> RomHeaderTest::ReadTestCasesFromDisk(const char *bin_tar_filename, const char *txt_tar_filename, const char *json_tar_filename)
 {
 	// NOTE: Cannot use ASSERT_TRUE() here.
-	list<RomHeaderTest_mode> files;
+	forward_list<RomHeaderTest_mode> files;
 
 	// Open the .tar files.
 	all_tar_files.emplace_back();
@@ -424,6 +426,7 @@ list<RomHeaderTest_mode> RomHeaderTest::ReadTestCasesFromDisk(const char *bin_ta
 	// Read the headers .tar file and get all the filenames.
 	// The .txt and .json .tar files should have the same filenames,
 	// but with added .txt and .json extensions.
+	bool found_any_files = false;
 	mtar_header_t h;
 	for (; ; mtar_next(&p_tar_files->bin_tar)) {
 		int err = mtar_read_header(&p_tar_files->bin_tar, &h);
@@ -438,6 +441,7 @@ list<RomHeaderTest_mode> RomHeaderTest::ReadTestCasesFromDisk(const char *bin_ta
 			mtar_close(&p_tar_files->txt_tar);
 			mtar_close(&p_tar_files->json_tar);
 			all_tar_files.pop_back();
+			files.clear();
 			return files;
 		}
 
@@ -451,12 +455,17 @@ list<RomHeaderTest_mode> RomHeaderTest::ReadTestCasesFromDisk(const char *bin_ta
 		if (h.size > MAX_BIN_FILESIZE)
 			continue;
 
-		files.emplace_back(h.name, p_tar_files);
+		files.emplace_front(h.name, p_tar_files);
+		found_any_files = true;
 	}
+
+	// NOTE: std::forward_list adds items in reverse-order.
+	// We'll need to reverse it before returning the list.
+	files.reverse();
 
 	// Rewind the .bin header .tar file for the actual tests.
 	mtar_rewind(&p_tar_files->bin_tar);
-	EXPECT_GT(files.size(), 0) << "No files were read from the .bin.tar file.";
+	EXPECT_TRUE(found_any_files) << "No files were read from the .bin.tar file.";
 	return files;
 }
 
