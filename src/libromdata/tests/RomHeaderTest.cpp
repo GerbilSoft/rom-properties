@@ -425,7 +425,22 @@ list<RomHeaderTest_mode> RomHeaderTest::ReadTestCasesFromDisk(const char *bin_ta
 	// The .txt and .json .tar files should have the same filenames,
 	// but with added .txt and .json extensions.
 	mtar_header_t h;
-	for (; (mtar_read_header(&p_tar_files->bin_tar, &h)) != MTAR_ENULLRECORD; mtar_next(&p_tar_files->bin_tar)) {
+	for (; ; mtar_next(&p_tar_files->bin_tar)) {
+		int err = mtar_read_header(&p_tar_files->bin_tar, &h);
+		if (err == MTAR_ENULLRECORD) {
+			// Finished reading the .tar file.
+			break;
+		}
+
+		EXPECT_EQ(err, MTAR_ESUCCESS) << "Error reading from the .bin.tar file.";
+		if (err != MTAR_ESUCCESS) {
+			mtar_close(&p_tar_files->bin_tar);
+			mtar_close(&p_tar_files->txt_tar);
+			mtar_close(&p_tar_files->json_tar);
+			all_tar_files.pop_back();
+			return files;
+		}
+
 		if (h.type != 0 /*MTAR_TREG*/) {
 			// Not a regular file.
 			continue;

@@ -43,6 +43,16 @@ typedef struct _mzstd_ctx {
 	size_t unz_pos;
 } mzstd_ctx;
 
+static inline unsigned my_ZSTD_isError(size_t code)
+{
+	// FIXME: On 32-bit, ZSTD_isError() doesn't properly detect
+	// error code 0xFFFFFFC0 -> 64 -> ZSTD_error_memory_allocation.
+	// We'll assume that any decompressed size >= 0xFFFFFF00 is
+	// an error, since we're not dealing with huge
+	// zstd-compressed blocks here.
+	return (code >= 0xFFFFFF00U);
+}
+
 /**
  * MicroTAR read() callback
  * @param tar	[in] mtar_t
@@ -92,8 +102,9 @@ static int mtar_zstd_read(mtar_t *tar, void *data, unsigned size)
 		ctx->output.pos = 0;
 		ctx->output_ptr = 0;
 		size_t ret = ZSTD_decompressStream(ctx->dctx, &ctx->output, &ctx->input);
-		if (ZSTD_isError(ret)) {
+		if (my_ZSTD_isError(ret)) {
 			// Decompression error!
+			printf("ERR\n");
 			ctx->output.size = 0;
 			ctx->output.pos = 0;
 			ctx->output_ptr = 0;
@@ -102,7 +113,7 @@ static int mtar_zstd_read(mtar_t *tar, void *data, unsigned size)
 
 		// Output buffer copying will be done in the next loop iteration.
 	}
-	
+
 	return MTAR_ESUCCESS;
 }
 
