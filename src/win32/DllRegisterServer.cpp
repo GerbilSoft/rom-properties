@@ -43,7 +43,7 @@ using LibRomData::RomDataFactory;
 using LibRpTexture::FileFormatFactory;
 
 // C++ STL classes
-using std::list;
+using std::forward_list;
 using std::string;
 using std::vector;
 using std::wstring;
@@ -484,7 +484,7 @@ static LONG UnregisterUserFileType(const tstring &sid, const RomDataFactory::Ext
 static LONG UnregisterFromApplications(RegKey& hkcr)
 {
 	// Enumerate the subkeys and unregister from each of them.
-	list<tstring> lstSubKeys;
+	forward_list<tstring> lstSubKeys;
 	LONG lResult = hkcr.enumSubKeys(lstSubKeys);
 	if (lResult != ERROR_SUCCESS || lstSubKeys.empty()) {
 		return lResult;
@@ -588,7 +588,7 @@ STDAPI DllRegisterServer(void)
 	// Enumerate user hives.
 	RegKey hku(HKEY_USERS, nullptr, KEY_READ, false);
 	if (!hku.isOpen()) return SELFREG_E_CLASS;
-	list<tstring> user_SIDs;
+	forward_list<tstring> user_SIDs;
 	lResult = hku.enumSubKeys(user_SIDs);
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	hku.close();
@@ -717,7 +717,7 @@ STDAPI DllUnregisterServer(void)
 	// Enumerate user hives.
 	RegKey hku(HKEY_USERS, nullptr, KEY_READ, false);
 	if (!hku.isOpen()) return SELFREG_E_CLASS;
-	list<tstring> user_SIDs;
+	forward_list<tstring> user_SIDs;
 	lResult = hku.enumSubKeys(user_SIDs);
 	if (lResult != ERROR_SUCCESS) return SELFREG_E_CLASS;
 	hku.close();

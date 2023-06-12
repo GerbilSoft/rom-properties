@@ -8,14 +8,13 @@
 
 #include "RegKey.hpp"
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cassert>
 #include <cstring>
 
-// C++ includes.
+// C++ includes
 #include <memory>
-#include <list>
-#include <string>
+using std::forward_list;
 using std::list;
 using std::unique_ptr;
 using std::tstring;
@@ -480,7 +479,7 @@ LONG RegKey::deleteSubKey(HKEY hKeyRoot, LPCTSTR lpSubKey)
  * @param lstSubKeys List to place the subkey names in.
  * @return ERROR_SUCCESS on success; WinAPI error on error.
  */
-LONG RegKey::enumSubKeys(list<tstring> &lstSubKeys)
+LONG RegKey::enumSubKeys(forward_list<tstring> &lstSubKeys)
 {
 	if (!m_hKey) {
 		// Handle is invalid.
@@ -509,7 +508,7 @@ LONG RegKey::enumSubKeys(list<tstring> &lstSubKeys)
 	// says key names are limited to 255 characters, but who knows...
 	unique_ptr<TCHAR[]> szName(new TCHAR[cMaxSubKeyLen]);
 
-	// Initialize the vector.
+	// Clear the list.
 	lstSubKeys.clear();
 
 	for (int i = 0; i < static_cast<int>(cSubKeys); i++) {
@@ -525,10 +524,10 @@ LONG RegKey::enumSubKeys(list<tstring> &lstSubKeys)
 			return lResult;
 		}
 
-		// Add the subkey name to the return vector.
+		// Add the subkey name to the return list.
 		// cchName contains the number of characters in the
 		// subkey name, NOT including the NULL terminator.
-		lstSubKeys.emplace_back(szName.get(), cchName);
+		lstSubKeys.emplace_front(szName.get(), cchName);
 	}
 
 	return ERROR_SUCCESS;

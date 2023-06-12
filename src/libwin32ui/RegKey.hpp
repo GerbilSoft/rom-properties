@@ -8,11 +8,12 @@
 
 #pragma once
 
-// C++ includes.
-#include <string>
+// C++ includes
+#include <forward_list>
 #include <list>
+#include <string>
 
-// Windows SDK.
+// Windows SDK
 #include "RpWin32_sdk.h"
 
 namespace LibWin32UI {
@@ -172,7 +173,7 @@ class RegKey
 		 * @param lstSubKeys List to place the subkey names in.
 		 * @return ERROR_SUCCESS on success; WinAPI error on error.
 		 */
-		LONG enumSubKeys(std::list<std::tstring> &vSubKeys);
+		LONG enumSubKeys(std::forward_list<std::tstring> &vSubKeys);
 
 		/**
 		 * Is the key empty?
