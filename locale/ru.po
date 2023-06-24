@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-04-23 09:52-0400\n"
-"PO-Revision-Date: 2023-04-23 15:14\n"
+"PO-Revision-Date: 2023-06-24 20:44\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Language: ru_RU\n"
@@ -127,12 +127,12 @@ msgstr ""
 #: ../build/src/kde/kf5/ui_DosAttrView.h:100
 msgctxt "DosAttrView"
 msgid "&Read-only"
-msgstr ""
+msgstr "&Только для чтения"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:101
 msgctxt "DosAttrView"
 msgid "&Hidden"
-msgstr ""
+msgstr "&Скрытый"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:102
 msgctxt "DosAttrView"
