@@ -71,59 +71,11 @@ QStringList ExtractorPlugin::mimetypes(void) const
 	return mimeTypes;
 }
 
-void ExtractorPlugin::extract(ExtractionResult *result)
+void ExtractorPlugin::extract_properties(KFileMetaData::ExtractionResult *result, RomData *romData)
 {
-	const ExtractionResult::Flags flags = result->inputFlags();
-	if (unlikely(flags != ExtractionResult::ExtractMetaData)) {
-		// Nothing to extract...
-		return;
-	}
-
-	// Attempt to open the ROM file.
-	IRpFile *const file = openQUrl(QUrl(result->inputUrl()), false);
-	if (!file) {
-		// Could not open the file.
-		return;
-	}
-
-	// Get the appropriate RomData class for this ROM.
-	// file is dup()'d by RomData.
-	RomData *const romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_METADATA);
-	file->unref();	// file is ref()'d by RomData.
-	if (!romData) {
-		// ROM is not supported.
-		return;
-	}
-
-	// File type
-	// NOTE: KFileMetaData has a limited set of file types as of v5.103.
-	static_assert((int)RomData::FileType::Max == (int)RomData::FileType::PatchFile + 1, "Update KFileMetaData file types!");
-	switch (romData->fileType()) {
-		default:
-			// No KFileMetaData::Type is applicable here.
-			break;
-
-		case RomData::FileType::IconFile:
-		case RomData::FileType::BannerFile:
-		case RomData::FileType::TextureFile:
-			result->addType(KFileMetaData::Type::Image);
-			break;
-
-		case RomData::FileType::ContainerFile:
-		case RomData::FileType::Bundle:
-			result->addType(KFileMetaData::Type::Archive);
-			break;
-
-		case RomData::FileType::AudioFile:
-			result->addType(KFileMetaData::Type::Audio);
-			break;
-	}
-
-	// Get the metadata properties.
 	const RomMetaData *const metaData = romData->metaData();
 	if (!metaData || metaData->empty()) {
 		// No metadata properties.
-		romData->unref();
 		return;
 	}
 
@@ -207,6 +159,106 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 				break;
 		}
 	}
+}
+
+#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,76,0)
+void ExtractorPlugin::extract_image(KFileMetaData::ExtractionResult *result, RomData *romData)
+{
+	// TODO: Get external images. For now, only using internal images.
+	// Image data should be a PNG or JPEG file.
+
+	// File Icon (IMG_INT_ICON)
+	// - If not available: IMG_INT_BANNER
+
+	// Front Cover (IMG_EXT_COVER)
+	// Media (IMG_EXT_MEDIA)
+
+	// For "Other", use the following, if available:
+	// - IMG_INT_IMAGE
+	// - IMG_EXT_TITLE_SCREEN
+
+	/** TODO: Implement this. Placeholder for now... **/
+	Q_UNUSED(result)
+	Q_UNUSED(romData)
+}
+#endif /* KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,76,0) */
+
+void ExtractorPlugin::extract(ExtractionResult *result)
+{
+	const ExtractionResult::Flags flags = result->inputFlags();
+	if (unlikely(flags == ExtractionResult::ExtractNothing)) {
+		// Nothing to extract...
+		return;
+	}
+
+	// Attempt to open the ROM file.
+	IRpFile *const file = openQUrl(QUrl(result->inputUrl()), false);
+	if (!file) {
+		// Could not open the file.
+		return;
+	}
+
+	// Which attributes are required?
+	unsigned int attrs;
+	switch (flags & (ExtractionResult::ExtractMetaData | ExtractionResult::ExtractImageData)) {
+		case ExtractionResult::ExtractMetaData:
+			// Only extract metadata.
+			attrs = RomDataFactory::RDA_HAS_METADATA;
+			break;
+		case ExtractionResult::ExtractImageData:
+			// Only extract images.
+			attrs = RomDataFactory::RDA_HAS_THUMBNAIL;
+			break;
+		default:
+			// Multiple things to extract.
+			attrs = 0;
+			break;
+	}
+
+	// Get the appropriate RomData class for this ROM.
+	// file is dup()'d by RomData.
+	RomData *const romData = RomDataFactory::create(file, attrs);
+	file->unref();	// file is ref()'d by RomData.
+	if (!romData) {
+		// ROM is not supported.
+		return;
+	}
+
+	// File type
+	// NOTE: KFileMetaData has a limited set of file types as of v5.107.
+	static_assert((int)RomData::FileType::Max == (int)RomData::FileType::PatchFile + 1, "Update KFileMetaData file types!");
+	switch (romData->fileType()) {
+		default:
+			// No KFileMetaData::Type is applicable here.
+			break;
+
+		case RomData::FileType::IconFile:
+		case RomData::FileType::BannerFile:
+		case RomData::FileType::TextureFile:
+			result->addType(KFileMetaData::Type::Image);
+			break;
+
+		case RomData::FileType::ContainerFile:
+		case RomData::FileType::Bundle:
+			result->addType(KFileMetaData::Type::Archive);
+			break;
+
+		case RomData::FileType::AudioFile:
+			result->addType(KFileMetaData::Type::Audio);
+			break;
+	}
+
+	// Metadata properties
+	if (flags & ExtractionResult::ExtractMetaData) {
+		extract_properties(result, romData);
+	}
+
+#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,76,0)
+	// KFileMetaData 5.76.0 added images.
+	if (flags & ExtractionResult::ExtractImageData) {
+		extract_image(result, romData);
+	}
+#endif /* KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,76,0) */
 
 	// Finished extracting metadata.
 	romData->unref();

@@ -14,11 +14,16 @@
 
 #include <QtCore/qglobal.h>
 #include <kfilemetadata/extractorplugin.h>
+#include <kcoreaddons_version.h>
 
 #include "RpQt.hpp"
 
 #define PFN_CREATEEXTRACTORPLUGINKDE_FN CONCAT_FN(createExtractorPlugin, RP_KDE_SUFFIX)
 #define PFN_CREATEEXTRACTORPLUGINKDE_NAME "createExtractorPlugin" RP_KDE_UPPER
+
+namespace LibRpBase {
+	class RomData;
+}
 
 namespace RomPropertiesKDE {
 
@@ -36,6 +41,13 @@ class ExtractorPlugin : public ::KFileMetaData::ExtractorPlugin
 
 	public:
 		QStringList mimetypes(void) const final;
+
+	private:
+		static void extract_properties(KFileMetaData::ExtractionResult *result, LibRpBase::RomData *romData);
+#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,76,0)
+		static void extract_image(KFileMetaData::ExtractionResult *result, LibRpBase::RomData *romData);
+#endif /* KCOREADDONS_VERSION <= QT_VERSION_CHECK(5,76,0) */
+	public:
 		void extract(KFileMetaData::ExtractionResult *result) final;
 };
 
