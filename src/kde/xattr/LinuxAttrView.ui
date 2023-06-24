@@ -174,7 +174,7 @@
         <string>This file is not a candidate for dumping with the dump(8) program.</string>
        </property>
        <property name="text">
-        <string>d: no dump</string>
+        <string extracomment="&quot;dump&quot; is the name of the executable, so it should not be localized.">d: no dump</string>
        </property>
       </widget>
      </item>

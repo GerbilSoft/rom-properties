@@ -107,6 +107,7 @@ static const CheckboxInfo checkboxInfo[CHECKBOX_MAX] = {
 	 NOP_C_("LinuxAttrView", "Not subject to copy-on-write updates.")},
 
 	{"chkNoDump", NOP_C_("LinuxAttrView", "d: no dump"),
+	// tr: "dump" is the name of the executable, so it should not be localized.
 	 NOP_C_("LinuxAttrView", "This file is not a candidate for dumping with the dump(8) program.")},
 
 	{"chkDirSync", NOP_C_("LinuxAttrView", "D: dir sync"),
