@@ -31,6 +31,9 @@
       defined(__PPC__) || defined(_ARCH_PPC) || defined(_M_PPC) || \
       defined(__PPCGECKO__) || defined(__PPCBROADWAY__) || defined(__ppc)
 #  define RP_CPU_PPC
+#elif defined(__riscv) || defined(__riscvel) || defined(__RISCVEL) || defined(__RISCVEL__)
+// NOTE: Not differentiating between 32-bit and 64-bit for RISC-V.
+#  define RP_CPU_RISCV
 #endif
 
 // IFUNC attribute.

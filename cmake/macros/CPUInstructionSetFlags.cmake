@@ -1,5 +1,3 @@
-# x86 instruction set flags.
-
 # Determine CPU architecture.
 IF(MSVC AND _MSVC_C_ARCHITECTURE_FAMILY)
 	# Check the MSVC architecture.
@@ -62,6 +60,15 @@ ELSE()
 		ELSE()
 			SET(CPU_arm 1)
 			SET(WIN32_MANIFEST_PROCESSOR_ARCHITECTURE "ppc")
+		ENDIF()
+	ELSEIF(arch MATCHES "^riscv")
+		# TODO: Win32 manifest processor architecture, if it's ever ported to RISC-V.
+		IF(CMAKE_CL_64 OR ("${CMAKE_SIZEOF_VOID_P}" EQUAL 8))
+			SET(CPU_riscv64 1)
+			SET(WIN32_MANIFEST_PROCESSOR_ARCHITECTURE "riscv64")
+		ELSE()
+			SET(CPU_riscv32 1)
+			SET(WIN32_MANIFEST_PROCESSOR_ARCHITECTURE "riscv32")
 		ENDIF()
 	ELSE()
 		MESSAGE(FATAL_ERROR "Unable to determine CPU architecture.\nCMAKE_SYSTEM_PROCESSOR == ${CMAKE_SYSTEM_PROCESSOR}")
