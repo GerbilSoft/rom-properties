@@ -122,6 +122,11 @@ static inline ULONG InterlockedDecrement(ULONG volatile *Addend)
 #  define __out_opt
 #endif
 
+// SAL 2.0 annotations not supported by MinGW-w64 3.1.0. (Ubuntu 14.04)
+#ifndef _Inout_
+#  define _Inout_
+#endif
+
 // SAL 2.0 annotations not supported by Windows SDK 7.1A. (MSVC 2010)
 #ifndef _COM_Outptr_
 #  define _COM_Outptr_

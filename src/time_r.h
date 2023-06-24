@@ -22,6 +22,10 @@
 #include <time.h>
 
 #ifndef HAVE_GMTIME_R
+#  ifdef gmtime_r
+     // Old MinGW-w64 (3.1.0, Ubuntu 14.04) has incompatible *_r() macros.
+#    undef gmtime_r
+#  endif
 static inline struct tm *gmtime_r(const time_t *timep, struct tm *result)
 {
 #ifdef HAVE_GMTIME_S
@@ -39,6 +43,10 @@ static inline struct tm *gmtime_r(const time_t *timep, struct tm *result)
 #endif /* HAVE_GMTIME_R */
 
 #ifndef HAVE_LOCALTIME_R
+#  ifdef localtime_r
+     // Old MinGW-w64 (3.1.0, Ubuntu 14.04) has incompatible *_r() macros.
+#    undef localtime_r
+#  endif
 static inline struct tm *localtime_r(const time_t *timep, struct tm *result)
 {
 #ifdef HAVE_LOCALTIME_S
