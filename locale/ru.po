@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-04-23 09:52-0400\n"
-"PO-Revision-Date: 2023-06-24 20:44\n"
+"PO-Revision-Date: 2023-06-24 21:42\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Language: ru_RU\n"
@@ -33,7 +33,7 @@ msgstr "&Библиотеки"
 #: ../src/gtk/config/AboutTab.cpp:296
 msgctxt "AboutTab"
 msgid "&Support"
-msgstr "Техподдержка"
+msgstr "&Техподдержка"
 
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:51
 #: ../src/gtk/config/AchievementsTab.cpp:215
@@ -47,38 +47,40 @@ msgstr ""
 #: ../src/win32/config/AchievementsTab.cpp:443
 msgctxt "AchievementsTab"
 msgid "Achievement"
-msgstr ""
+msgstr "Достижение"
 
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:53
 #: ../src/gtk/config/AchievementsTab.cpp:213
 msgctxt "AchievementsTab"
 msgid "Icon"
-msgstr ""
+msgstr "Иконка"
 
 #: ../build/src/kde/kf5/ui_CacheTab.h:98
 msgctxt "CacheTab"
 msgid "If any image type settings were changed, you will need to\n"
 "clear the system thumbnail cache."
-msgstr ""
+msgstr "Если любые настройки, связанные с типом изображений, были изменены,\n"
+"вам придётся очистить системный кэш эскизов."
 
 #: ../build/src/kde/kf5/ui_CacheTab.h:100
 #: ../src/gtk/config/CacheTab.cpp:161
 msgctxt "CacheTab"
 msgid "Clear the System Thumbnail Cache"
-msgstr ""
+msgstr "Очистить системный кэш эскизов"
 
 #: ../build/src/kde/kf5/ui_CacheTab.h:101
 #: ../src/gtk/config/CacheTab.cpp:165
 msgctxt "CacheTab"
 msgid "ROM Properties Page maintains its own download cache for external images.\n"
 "Clearing this cache will force external images to be redownloaded."
-msgstr ""
+msgstr "Страница ROM Properties обслуживает свой загрузочный кэш для изображений из внешних источников.\n"
+"Чистка кэша заставит страницу заново скачать их."
 
 #: ../build/src/kde/kf5/ui_CacheTab.h:103
 #: ../src/gtk/config/CacheTab.cpp:171
 msgctxt "CacheTab"
 msgid "Clear the ROM Properties Page Download Cache"
-msgstr ""
+msgstr "Очистить загрузочный кэш страницы ROM Properties"
 
 #. tr: Dialog title.
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:90
@@ -98,25 +100,25 @@ msgstr "&Типы изображений"
 #: ../src/gtk/config/ConfigDialog.cpp:239
 msgctxt "ConfigDialog"
 msgid "&Systems"
-msgstr ""
+msgstr "&Системы"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:93
 #: ../src/gtk/config/ConfigDialog.cpp:240
 msgctxt "ConfigDialog"
 msgid "&Options"
-msgstr ""
+msgstr "&Настройки"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:94
 #: ../src/gtk/config/ConfigDialog.cpp:241
 msgctxt "ConfigDialog"
 msgid "Thumbnail Cache"
-msgstr ""
+msgstr "Кэш эскизов"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:95
 #: ../src/gtk/config/ConfigDialog.cpp:242
 msgctxt "ConfigDialog"
 msgid "&Achievements"
-msgstr ""
+msgstr "&Достижения"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:96
 #: ../src/gtk/config/ConfigDialog.cpp:246
@@ -137,22 +139,22 @@ msgstr "&Скрытый"
 #: ../build/src/kde/kf5/ui_DosAttrView.h:102
 msgctxt "DosAttrView"
 msgid "&Archive"
-msgstr ""
+msgstr "&Архивный"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:103
 msgctxt "DosAttrView"
 msgid "&System"
-msgstr ""
+msgstr "&Системный"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:104
 msgctxt "DosAttrView"
 msgid "&Compressed"
-msgstr ""
+msgstr "&Сжатое"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:105
 msgctxt "DosAttrView"
 msgid "&Encrypted"
-msgstr ""
+msgstr "&Зашифрованные"
 
 #: ../build/src/kde/kf5/ui_ImageTypesTab.h:81
 #: ../src/gtk/config/ImageTypesTab.cpp:468
@@ -183,151 +185,151 @@ msgstr ""
 #: ../src/gtk/xattr/LinuxAttrView.c:98
 msgctxt "LinuxAttrView"
 msgid "File can only be opened in append mode for writing."
-msgstr ""
+msgstr "Файл может быть открыт только в режиме добавления для записи."
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:222
 #: ../src/gtk/xattr/LinuxAttrView.c:97
 msgctxt "LinuxAttrView"
 msgid "a: append only"
-msgstr ""
+msgstr "a: только добавление"
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:224
 #: ../src/gtk/xattr/LinuxAttrView.c:152
 msgctxt "LinuxAttrView"
 msgid "Directory will be treated like a top-level directory by the ext3/ext4 Orlov block allocator."
-msgstr ""
+msgstr "Каталог будет считаться как корневой каталог Орловским выделителем блоков ext3/ext4."
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:226
 #: ../src/gtk/xattr/LinuxAttrView.c:151
 msgctxt "LinuxAttrView"
 msgid "T: top dir"
-msgstr ""
+msgstr "T: Корневой каталог"
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:228
 #: ../src/gtk/xattr/LinuxAttrView.c:134
 msgctxt "LinuxAttrView"
 msgid "File is excluded from compression."
-msgstr ""
+msgstr "Файл исключён из сжатия."
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:230
 #: ../src/gtk/xattr/LinuxAttrView.c:133
 msgctxt "LinuxAttrView"
 msgid "m: no compress"
-msgstr ""
+msgstr "m: не сжимать"
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:232
 #: ../src/gtk/xattr/LinuxAttrView.c:158
 msgctxt "LinuxAttrView"
 msgid "Direct access"
-msgstr ""
+msgstr "Прямой доступ"
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:234
 #: ../src/gtk/xattr/LinuxAttrView.c:157
 msgctxt "LinuxAttrView"
 msgid "x: DAX"
-msgstr ""
+msgstr "x: DAX"
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:236
 #: ../src/gtk/xattr/LinuxAttrView.c:125
 msgctxt "LinuxAttrView"
 msgid "File cannot be modified, deleted, or renamed."
-msgstr ""
+msgstr "Файл не может быть изменён, удалён или переименован."
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:238
 #: ../src/gtk/xattr/LinuxAttrView.c:124
 msgctxt "LinuxAttrView"
 msgid "i: immutable"
-msgstr ""
+msgstr "i: неизменный"
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:240
 #: ../src/gtk/xattr/LinuxAttrView.c:113
 msgctxt "LinuxAttrView"
 msgid "Changes to this directory are written synchronously to the disk."
-msgstr ""
+msgstr "Изменения к этому каталогу синхронизировано записываются на диск."
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:242
 #: ../src/gtk/xattr/LinuxAttrView.c:112
 msgctxt "LinuxAttrView"
 msgid "D: dir sync"
-msgstr ""
+msgstr "D: Синхронизация каталогов"
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:244
 #: ../src/gtk/xattr/LinuxAttrView.c:131
 msgctxt "LinuxAttrView"
 msgid "File data is written to the journal before writing to the file itself."
-msgstr ""
+msgstr "Данные файла записаны в журнал прежде чем в сам файл."
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:246
 #: ../src/gtk/xattr/LinuxAttrView.c:130
 msgctxt "LinuxAttrView"
 msgid "j: journalled"
-msgstr ""
+msgstr "j: журналированно"
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:248
 #: ../src/gtk/xattr/LinuxAttrView.c:128
 msgctxt "LinuxAttrView"
 msgid "Directory is indexed using hashed trees."
-msgstr ""
+msgstr "Каталог индексирован с помощью хэшированный дерев."
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:250
 #: ../src/gtk/xattr/LinuxAttrView.c:127
 msgctxt "LinuxAttrView"
 msgid "I: indexed"
-msgstr ""
+msgstr "I: индексирован"
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:252
 #: ../src/gtk/xattr/LinuxAttrView.c:146
 msgctxt "LinuxAttrView"
 msgid "Changes to this file are written synchronously to the disk."
-msgstr ""
+msgstr "Изменения к этому файлу синхронизировано записываются на диск."
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:254
 #: ../src/gtk/xattr/LinuxAttrView.c:145
 msgctxt "LinuxAttrView"
 msgid "S: sync"
-msgstr ""
+msgstr "S: синхронизация"
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:256
 #: ../src/gtk/xattr/LinuxAttrView.c:104
 msgctxt "LinuxAttrView"
 msgid "File is compressed."
-msgstr ""
+msgstr "Файл сжат."
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:258
 #: ../src/gtk/xattr/LinuxAttrView.c:103
 msgctxt "LinuxAttrView"
 msgid "c: compressed"
-msgstr ""
+msgstr "c: сжатый"
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:260
 #: ../src/gtk/xattr/LinuxAttrView.c:116
 msgctxt "LinuxAttrView"
 msgid "File is mapped on disk using extents."
-msgstr ""
+msgstr "Файл отображён на диске с помощью экстентов."
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:262
 #: ../src/gtk/xattr/LinuxAttrView.c:115
 msgctxt "LinuxAttrView"
 msgid "e: extents"
-msgstr ""
+msgstr "e: экстенты"
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:264
 #: ../src/gtk/xattr/LinuxAttrView.c:110
 msgctxt "LinuxAttrView"
 msgid "This file is not a candidate for dumping with the dump(8) program."
-msgstr ""
+msgstr "Файл не является кандитатом для выгрузки с помощью выгрузочной(8) программы."
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:266
 #: ../src/gtk/xattr/LinuxAttrView.c:109
 msgctxt "LinuxAttrView"
 msgid "d: no dump"
-msgstr ""
+msgstr "d: не выгружать"
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:268
 #: ../src/gtk/xattr/LinuxAttrView.c:122
 msgctxt "LinuxAttrView"
 msgid "Files stored in this directory use case-insensitive filenames."
-msgstr ""
+msgstr "Файлы в этом каталоге используют имена, нечувствительные к регистру."
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:270
 #: ../src/gtk/xattr/LinuxAttrView.c:121
@@ -640,7 +642,7 @@ msgstr "Версия %s"
 #: ../src/win32/config/AboutTab.cpp:844
 msgctxt "AboutTabl|Credits"
 msgid "GNU GPL v2"
-msgstr ""
+msgstr "GNU GPL v2"
 
 #. tr: %s is the name of the license.
 #: ../src/gtk/config/AboutTab.cpp:485 ../src/kde/config/AboutTab.cpp:205
@@ -674,7 +676,7 @@ msgstr "Переводчики:"
 #, c-format
 msgctxt "AboutTab|Credits"
 msgid " (%s)"
-msgstr ""
+msgstr " (%s)"
 
 #. tr: Using an internal copy of a library.
 #: ../src/gtk/config/AboutTab.cpp:561 ../src/kde/config/AboutTab.cpp:279
@@ -753,18 +755,18 @@ msgstr "<b>ОШИБКА:</b> %s"
 #, c-format
 msgctxt "AboutTab"
 msgid "Latest version: %s"
-msgstr ""
+msgstr "Последняя версия: %s"
 
 #: ../src/gtk/config/AboutTab.cpp:880 ../src/kde/config/AboutTab.cpp:697
 msgctxt "AboutTab"
 msgid "<b>New version available!</b>"
-msgstr ""
+msgstr "<b>Доступна новая версия!</b>"
 
 #: ../src/gtk/config/AboutTab.cpp:883 ../src/kde/config/AboutTab.cpp:700
 #: ../src/win32/config/AboutTab.cpp:583
 msgctxt "AboutTab"
 msgid "Download at GitHub"
-msgstr ""
+msgstr "Скачать на GitHub"
 
 #: ../src/gtk/config/CacheCleaner.cpp:401
 #: ../src/gtk/config/CacheCleaner.cpp:459
@@ -1231,7 +1233,7 @@ msgstr ""
 #: ../src/win32/RP_ContextMenu.cpp:490
 msgctxt "ServiceMenu"
 msgid "Convert to PNG"
-msgstr ""
+msgstr "Преобразовать в PNG"
 
 #: ../src/gtk/gtk3/NautilusMenuProvider.cpp:277
 #: ../src/gtk/gtk3/ThunarMenuProvider.cpp:273
@@ -1777,42 +1779,42 @@ msgstr ""
 #: ../src/libromdata/Audio/PSF.cpp:116
 msgctxt "PSF|System"
 msgid "Sony PlayStation"
-msgstr ""
+msgstr "Sony PlayStation"
 
 #: ../src/libromdata/Audio/PSF.cpp:117
 msgctxt "PSF|System"
 msgid "Sony PlayStation 2"
-msgstr ""
+msgstr "Sony PlayStation 2"
 
 #: ../src/libromdata/Audio/PSF.cpp:118
 msgctxt "PSF|System"
 msgid "Sega Saturn"
-msgstr ""
+msgstr "Sega Saturn"
 
 #: ../src/libromdata/Audio/PSF.cpp:119
 msgctxt "PSF|System"
 msgid "Sega Dreamcast"
-msgstr ""
+msgstr "Sega Dreamcast"
 
 #: ../src/libromdata/Audio/PSF.cpp:120
 msgctxt "PSF|System"
 msgid "Sega Mega Drive"
-msgstr ""
+msgstr "Sega Mega Drive"
 
 #: ../src/libromdata/Audio/PSF.cpp:121
 msgctxt "PSF|System"
 msgid "Nintendo 64"
-msgstr ""
+msgstr "Nintendo 64"
 
 #: ../src/libromdata/Audio/PSF.cpp:122
 msgctxt "PSF|System"
 msgid "Game Boy Advance"
-msgstr ""
+msgstr "Game Boy Advance"
 
 #: ../src/libromdata/Audio/PSF.cpp:123
 msgctxt "PSF|System"
 msgid "Super NES"
-msgstr ""
+msgstr "Super NES"
 
 #: ../src/libromdata/Audio/PSF.cpp:124
 msgctxt "PSF|System"
@@ -2385,19 +2387,19 @@ msgstr ""
 #: ../src/libromdata/config/ImageTypesConfig.cpp:158
 msgctxt "ImageTypesConfig|SysName"
 msgid "Nintendo DS(i)"
-msgstr ""
+msgstr "Nintendo DS(i)"
 
 #. tr: Nintendo3DS
 #: ../src/libromdata/config/ImageTypesConfig.cpp:160
 msgctxt "ImageTypesConfig|SysName"
 msgid "Nintendo 3DS"
-msgstr ""
+msgstr "Nintendo 3DS"
 
 #. tr: PlayStationDisc (PS1 and PS2)
 #: ../src/libromdata/config/ImageTypesConfig.cpp:162
 msgctxt "ImageTypesConfig|SysName"
 msgid "PlayStation 1 & 2"
-msgstr ""
+msgstr "PlayStation 1 & 2"
 
 #. tr: PlayStationSave
 #: ../src/libromdata/config/ImageTypesConfig.cpp:164
@@ -2654,7 +2656,7 @@ msgstr ""
 #: ../src/libromdata/Console/Dreamcast.cpp:729
 msgctxt "Dreamcast|OSSupport"
 msgid "Windows CE"
-msgstr ""
+msgstr "Windows CE"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:731
 msgctxt "Dreamcast|OSSupport"
