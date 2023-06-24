@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-04-23 09:52-0400\n"
-"PO-Revision-Date: 2023-06-24 21:42\n"
+"PO-Revision-Date: 2023-06-24 22:38\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Language: ru_RU\n"
@@ -166,7 +166,7 @@ msgid "Select the image types you would like to use for each system as its thumb
 msgstr "Выберете типы изображений которые будут использоваться для каждой системы в качестве миниатюры.\n"
 "Встроенные изображения находятся внутри РОМ файла.\n"
 "Внешние изображения загружаются из внешнего источника.\n\n"
-"1 = наивысший приоритет; 2 = второй после наивысшего; Выкл. = не использовать этот тип"
+"1 = наивысший приоритет; 2 = второй после наивысшего; Выкл = не использовать этот тип"
 
 #: ../build/src/kde/kf5/ui_KeyManagerTab.h:90
 #: ../src/gtk/config/KeyManagerTab.cpp:249
@@ -317,7 +317,7 @@ msgstr "e: экстенты"
 #: ../src/gtk/xattr/LinuxAttrView.c:110
 msgctxt "LinuxAttrView"
 msgid "This file is not a candidate for dumping with the dump(8) program."
-msgstr "Файл не является кандитатом для выгрузки с помощью выгрузочной(8) программы."
+msgstr "Файл не является кандитатом для выгрузки с помощью dump(8) программы."
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:266
 #: ../src/gtk/xattr/LinuxAttrView.c:109
@@ -3000,7 +3000,7 @@ msgstr ""
 #, c-format
 msgctxt "Wii"
 msgid "%1$s (%2$s)"
-msgstr ""
+msgstr "%1$s (%2$s)"
 
 #: ../src/libromdata/Console/GameCube.cpp:1585
 #: ../src/libromdata/Console/SNES.cpp:1471
@@ -3606,7 +3606,7 @@ msgstr "Маппер"
 #, c-format
 msgctxt "NES|Mapper"
 msgid "%1$u - %2$s"
-msgstr ""
+msgstr "%1$u - %2$s"
 
 #: ../src/libromdata/Console/NES.cpp:1166
 msgctxt "NES"
@@ -4136,7 +4136,7 @@ msgstr ""
 #: ../src/libromdata/Console/Sega8Bit.cpp:400
 msgctxt "Sega8Bit|SysID"
 msgid "Sega Master System"
-msgstr ""
+msgstr "Sega Master System"
 
 #. tr: Any region that isn't Japan. (used for Sega 8-bit)
 #: ../src/libromdata/Console/Sega8Bit.cpp:402
@@ -4150,7 +4150,7 @@ msgstr ""
 #: ../src/libromdata/Console/Sega8Bit.cpp:414
 msgctxt "Sega8Bit|SysID"
 msgid "Game Gear"
-msgstr ""
+msgstr "Game Gear"
 
 #. tr: Effectively region-free.
 #: ../src/libromdata/Console/Sega8Bit.cpp:416
@@ -4650,7 +4650,7 @@ msgstr ""
 #, c-format
 msgctxt "Xbox360_XEX"
 msgid "%1$08X (%2$s-%3$04u)"
-msgstr ""
+msgstr "%1$08X (%2$s-%3$04u)"
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:996
 msgctxt "Xbox360_XEX"
@@ -5015,7 +5015,7 @@ msgstr ""
 #, c-format
 msgctxt "Xbox_XBE"
 msgid "%1$08X (%2$s-%3$03u)"
-msgstr ""
+msgstr "%1$08X (%2$s-%3$03u)"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:746
 msgctxt "Xbox_XBE"
@@ -5040,27 +5040,27 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox_XBE.cpp:765
 msgctxt "Xbox_XBE"
 msgid "DVD/CD"
-msgstr ""
+msgstr "DVD/CD"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:766
 msgctxt "Xbox_XBE"
 msgid "CD-ROM"
-msgstr ""
+msgstr "CD-ROM"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:768
 msgctxt "Xbox_XBE"
 msgid "DVD-ROM SL"
-msgstr ""
+msgstr "DVD-ROM SL"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:769
 msgctxt "Xbox_XBE"
 msgid "DVD-ROM DL"
-msgstr ""
+msgstr "DVD-ROM DL"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:770
 msgctxt "Xbox_XBE"
 msgid "DVD-RW SL"
-msgstr ""
+msgstr "DVD-RW SL"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:771
 msgctxt "Xbox_XBE"
@@ -5221,7 +5221,7 @@ msgstr ""
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:47
 msgctxt "Nintendo3DSSysTitles"
 msgid "eShop"
-msgstr ""
+msgstr "eShop"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:48
 msgctxt "Nintendo3DSSysTitles"
@@ -7126,7 +7126,7 @@ msgstr "Приложение"
 #: ../src/libromdata/Other/EXE.cpp:199
 msgctxt "EXE|FileType"
 msgid "DLL"
-msgstr ""
+msgstr "DLL"
 
 #. tr: VFT_DRV
 #: ../src/libromdata/Other/EXE.cpp:201
@@ -7603,7 +7603,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_NE.cpp:382
 msgctxt "EXE|ApplFlags"
 msgid "DLL"
-msgstr ""
+msgstr "DLL"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:386
 msgctxt "EXE"
@@ -7678,7 +7678,7 @@ msgstr ""
 #, c-format
 msgctxt "EXE|Exports"
 msgid "%1$02X:%2$04X (%3$s)"
-msgstr ""
+msgstr "%1$02X:%2$04X (%3$s)"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:644
 msgctxt "EXE|Exports"
@@ -7777,7 +7777,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:644
 msgctxt "EXE|Subsystem"
 msgid "Windows"
-msgstr ""
+msgstr "Windows"
 
 #. tr: IMAGE_SUBSYSTEM_WINDOWS_CUI
 #: ../src/libromdata/Other/EXE_PE.cpp:646
@@ -7807,7 +7807,7 @@ msgstr ""
 #: ../src/libromdata/Other/EXE_PE.cpp:658
 msgctxt "EXE|Subsystem"
 msgid "Windows CE"
-msgstr ""
+msgstr "Windows CE"
 
 #. tr: IMAGE_SUBSYSTEM_EFI_APPLICATION
 #: ../src/libromdata/Other/EXE_PE.cpp:660
@@ -8197,21 +8197,21 @@ msgstr ""
 #, c-format
 msgctxt "NintendoBadge"
 msgid "%1$s (New3DS) (%2$s)"
-msgstr ""
+msgstr "%1$s (New3DS) (%2$s)"
 
 #. tr: Title name
 #: ../src/libromdata/Other/NintendoBadge.cpp:761
 #, c-format
 msgctxt "NintendoBadge"
 msgid "%s (New3DS)"
-msgstr ""
+msgstr "%s (New3DS)"
 
 #. tr: %1$s == Title name, %2$s == Region
 #: ../src/libromdata/Other/NintendoBadge.cpp:766
 #, c-format
 msgctxt "NintendoBadge"
 msgid "%1$s (%2$s)"
-msgstr ""
+msgstr "%1$s (%2$s)"
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:771
 msgctxt "NintendoBadge"
@@ -8790,38 +8790,38 @@ msgstr "ЭиБ"
 #, c-format
 msgctxt "LibRpText|FileSize"
 msgid "%1$s %2$s"
-msgstr ""
+msgstr "%1$s %2$s"
 
 #. tr: Hertz (< 1,000)
 #: ../src/librptext/conversion.cpp:400
 msgctxt "LibRpText|Frequency"
 msgid "Hz"
-msgstr ""
+msgstr "Hz"
 
 #. tr: Kilohertz
 #: ../src/librptext/conversion.cpp:405
 msgctxt "LibRpText|Frequency"
 msgid "kHz"
-msgstr ""
+msgstr "kHz"
 
 #. tr: Megahertz
 #: ../src/librptext/conversion.cpp:410
 msgctxt "LibRpText|Frequency"
 msgid "MHz"
-msgstr ""
+msgstr "MHz"
 
 #. tr: Gigahertz
 #: ../src/librptext/conversion.cpp:415
 msgctxt "LibRpText|Frequency"
 msgid "GHz"
-msgstr ""
+msgstr "GHz"
 
 #. tr: %1$s == localized value, %2$s == suffix (e.g. MHz)
 #: ../src/librptext/conversion.cpp:446
 #, c-format
 msgctxt "LibRpText|Frequency"
 msgid "%1$s %2$s"
-msgstr ""
+msgstr "%1$s %2$s"
 
 #: ../src/librptexture/fileformat/DidjTex.cpp:501
 msgctxt "DidjTex"
