@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-06-24 20:26-0400\n"
-"PO-Revision-Date: 2023-06-25 02:28\n"
+"PO-Revision-Date: 2023-06-25 16:46\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -725,7 +725,7 @@ msgstr "Lizenzen: %s"
 #: ../src/win32/config/AboutTab.cpp:1040
 msgctxt "AboutTab|Libraries"
 msgid "APNG patch:"
-msgstr "APNG patch:"
+msgstr "APNG Patch:"
 
 #: ../src/gtk/config/AboutTab.cpp:784 ../src/kde/config/AboutTab.cpp:526
 #: ../src/win32/config/AboutTab.cpp:1113
