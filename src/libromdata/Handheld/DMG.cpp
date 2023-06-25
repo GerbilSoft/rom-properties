@@ -867,7 +867,7 @@ int DMG::loadFieldData(void)
 	     romHeader->entry[0] == 0xF3 ||	// DI
 	     romHeader->entry[0] == 0x7F ||	// LD A,A
 	     romHeader->entry[0] == 0x3F) &&	// CCF
-	    romHeader->entry[1] == 0xC3)	// JP nnnn
+	     romHeader->entry[1] == 0xC3)	// JP nnnn
 	{
 		// NOP; JP nnnn
 		// This is the "standard" way of doing the entry point.
