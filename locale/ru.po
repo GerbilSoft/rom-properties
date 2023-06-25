@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-06-24 20:26-0400\n"
-"PO-Revision-Date: 2023-06-25 01:20\n"
+"PO-Revision-Date: 2023-06-25 02:28\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Language: ru_RU\n"
@@ -911,7 +911,9 @@ msgctxt "ImageTypesTab"
 msgid "GameCube, Wii, Wii U, Nintendo DS, and Nintendo 3DS external images\n"
 "are provided by <a href=\"https://www.gametdb.com/\">GameTDB</a>.\n"
 "amiibo images are provided by <a href=\"https://amiibo.life/\">amiibo.life</a>, the Unofficial amiibo Database."
-msgstr ""
+msgstr "Внешние изображения для GameCube, Wii, Wii U, Nintendo DS и Nintendo 3DS\n"
+"предоставлены сайтом<a href=\"https://www.gametdb.com/\">GameTDB</a>.\n"
+"Внешние изображения amiibo предоставлены сайтом <a href=\"https://amiibo.life/\">amiibo.life</a>."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:29
 #: ../src/win32/config/KeyManagerTab.cpp:1723
@@ -1413,7 +1415,7 @@ msgstr ""
 #: ../src/gtk/xattr/DosAttrView.c:126
 msgctxt "DosAttrView"
 msgid "System"
-msgstr ""
+msgstr "Система"
 
 #: ../src/gtk/xattr/DosAttrView.c:148
 msgctxt "DosAttrView"
