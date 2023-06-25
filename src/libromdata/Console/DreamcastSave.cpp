@@ -1355,7 +1355,7 @@ int DreamcastSave::loadFieldData(void)
 				filetype = C_("DreamcastSave", "Save Data");
 				break;
 			case DC_VMS_DIRENT_FTYPE_GAME:
-				// tr: VMU game file.
+				// tr: VMU game file. ("VMS" in Japan; "VMU" in USA; "VM" in Europe)
 				filetype = C_("DreamcastSave", "VMU Game");
 				break;
 			default:
@@ -1370,7 +1370,7 @@ int DreamcastSave::loadFieldData(void)
 				filetype = C_("DreamcastSave", "Save Data");
 				break;
 			case DC_VMS_BLOCK_SIZE:
-				// tr: VMU game file.
+				// tr: VMU game file. ("VMS" in Japan; "VMU" in USA; "VM" in Europe)
 				filetype = C_("DreamcastSave", "VMU Game");
 				break;
 			default:

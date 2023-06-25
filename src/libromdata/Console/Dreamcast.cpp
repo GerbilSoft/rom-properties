@@ -740,6 +740,7 @@ int Dreamcast::loadFieldData(void)
 			NOP_C_("Dreamcast|Expansion", "Other"),
 			NOP_C_("Dreamcast|Expansion", "Jump Pack"),
 			NOP_C_("Dreamcast|Expansion", "Microphone"),
+			// tr: "VMS" in Japan; "VMU" in USA; "VM" in Europe
 			NOP_C_("Dreamcast|Expansion", "VMU"),
 		};
 		vector<string> *const v_expansion_bitfield_names = RomFields::strArrayToVector_i18n(
