@@ -760,7 +760,7 @@ msgstr "Lizenzen: %s"
 #: ../src/win32/config/AboutTab.cpp:1040
 msgctxt "AboutTab|Libraries"
 msgid "APNG patch:"
-msgstr "APNG patch:"
+msgstr "APNG Patch:"
 
 #: ../src/gtk/config/AboutTab.cpp:784 ../src/kde/config/AboutTab.cpp:526
 #: ../src/win32/config/AboutTab.cpp:1113
