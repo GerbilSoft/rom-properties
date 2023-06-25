@@ -7,17 +7,15 @@
 
 #pragma once
 
-#ifndef _MSC_VER
-#error c++11-compat.msvc.h should only be included in MSVC builds.
+#if !defined(_MSC_VER)
+#  error c++11-compat.msvc.h should only be included in MSVC builds.
+#elif _MSC_VER < 1700
+#  error Minimum supported MSVC version is MSVC 2012 (11.0)
 #endif
 
 /** C++ 2011 **/
 
 #ifdef __cplusplus
-
-#if (_MSC_VER < 1700)
-#  error Minimum supported MSVC version is MSVC 2012 (11.0)
-#endif
 
 /**
  * Enable compatibility for C++ 2011 features that aren't
