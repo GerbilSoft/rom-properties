@@ -199,16 +199,23 @@ void ExtractorPlugin::extract(ExtractionResult *result)
 	}
 
 	// Which attributes are required?
+#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,76,0)
+	static const unsigned int mask = ExtractionResult::ExtractMetaData | ExtractionResult::ExtractImageData;
+#else /* KCOREADDONS_VERSION < QT_VERSION_CHECK(5,76,0) */
+	static const unsigned int mask = ExtractionResult::ExtractMetaData
+#endif /* KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,76,0) */
 	unsigned int attrs;
-	switch (flags & (ExtractionResult::ExtractMetaData | ExtractionResult::ExtractImageData)) {
+	switch (flags & mask) {
 		case ExtractionResult::ExtractMetaData:
 			// Only extract metadata.
 			attrs = RomDataFactory::RDA_HAS_METADATA;
 			break;
+#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,76,0)
 		case ExtractionResult::ExtractImageData:
 			// Only extract images.
 			attrs = RomDataFactory::RDA_HAS_THUMBNAIL;
 			break;
+#endif /* KCOREADDONS_VERSION >= QT_VERSION_CHECK(5,76,0) */
 		default:
 			// Multiple things to extract.
 			attrs = 0;
