@@ -108,6 +108,8 @@ static const CreditsData_t creditsData[] = {
 	{CreditType::Continue,		"Slippy", nullptr, nullptr, "de"},
 	{CreditType::Continue,		"CyberYoshi64", nullptr, nullptr, "de"},
 	{CreditType::Continue,		"maschell", nullptr, nullptr, "de"},
+	{CreditType::Continue,		"WebSnke", nullptr, nullptr, "de"},
+	{CreditType::Continue,		"TheOneGoofAli", nullptr, nullptr, "ru"},
 
 	// Contributors
 	{CreditType::Contributor,	"CheatFreak47", nullptr, nullptr, nullptr},
