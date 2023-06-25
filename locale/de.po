@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties 2.1+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-06-24 20:26-0400\n"
-"PO-Revision-Date: 2023-04-23 13:38\n"
+"PO-Revision-Date: 2023-06-25 01:20\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -17,20 +17,17 @@ msgstr ""
 "X-Crowdin-File: /master/locale/rom-properties.pot\n"
 "X-Crowdin-File-ID: 5\n"
 
-#: ../build/src/kde/kf5/ui_AboutTab.h:276
-#: ../src/gtk/config/AboutTab.cpp:288
+#: ../build/src/kde/kf5/ui_AboutTab.h:276 ../src/gtk/config/AboutTab.cpp:288
 msgctxt "AboutTab"
 msgid "C&redits"
 msgstr "C&redits"
 
-#: ../build/src/kde/kf5/ui_AboutTab.h:277
-#: ../src/gtk/config/AboutTab.cpp:292
+#: ../build/src/kde/kf5/ui_AboutTab.h:277 ../src/gtk/config/AboutTab.cpp:292
 msgctxt "AboutTab"
 msgid "&Libraries"
 msgstr "&Bibliotheken"
 
-#: ../build/src/kde/kf5/ui_AboutTab.h:278
-#: ../src/gtk/config/AboutTab.cpp:296
+#: ../build/src/kde/kf5/ui_AboutTab.h:278 ../src/gtk/config/AboutTab.cpp:296
 msgctxt "AboutTab"
 msgid "&Support"
 msgstr "&Unterstützung"
@@ -64,14 +61,12 @@ msgstr ""
 "Wenn die Einstellungen für den Bildtyp geändert wurden, müssen Sie\n"
 "den System Vorschaubild Cache löschen."
 
-#: ../build/src/kde/kf5/ui_CacheTab.h:100
-#: ../src/gtk/config/CacheTab.cpp:161
+#: ../build/src/kde/kf5/ui_CacheTab.h:100 ../src/gtk/config/CacheTab.cpp:161
 msgctxt "CacheTab"
 msgid "Clear the System Thumbnail Cache"
 msgstr "Löschen Sie den System Vorschaubilder Cache"
 
-#: ../build/src/kde/kf5/ui_CacheTab.h:101
-#: ../src/gtk/config/CacheTab.cpp:165
+#: ../build/src/kde/kf5/ui_CacheTab.h:101 ../src/gtk/config/CacheTab.cpp:165
 msgctxt "CacheTab"
 msgid ""
 "ROM Properties Page maintains its own download cache for external images.\n"
@@ -82,8 +77,7 @@ msgstr ""
 "Wenn Sie diesen Cache löschen, müssen die externen Bilder erneut "
 "heruntergeladen werden."
 
-#: ../build/src/kde/kf5/ui_CacheTab.h:103
-#: ../src/gtk/config/CacheTab.cpp:171
+#: ../build/src/kde/kf5/ui_CacheTab.h:103 ../src/gtk/config/CacheTab.cpp:171
 msgctxt "CacheTab"
 msgid "Clear the ROM Properties Page Download Cache"
 msgstr "Löschen Sie den Download Cache der ROM Properties Seite"
@@ -412,7 +406,7 @@ msgstr ""
 #: ../src/gtk/xattr/LinuxAttrView.c:140
 msgctxt "LinuxAttrView"
 msgid "P: project"
-msgstr ""
+msgstr "P: Projekt"
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:288
 #: ../src/gtk/xattr/LinuxAttrView.c:162
@@ -442,7 +436,7 @@ msgstr "E: verschlüsselt"
 #: ../src/gtk/xattr/LinuxAttrView.c:107
 msgctxt "LinuxAttrView"
 msgid "Not subject to copy-on-write updates."
-msgstr ""
+msgstr "Unterliegt nicht den Copy-on-Write-Updates."
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:298
 #: ../src/gtk/xattr/LinuxAttrView.c:106
@@ -636,14 +630,12 @@ msgstr ""
 "verschiedene Arten von\n"
 "Game Boy-ROM-Bildern verwendet werden soll."
 
-#: ../build/src/kde/kf5/ui_XAttrView.h:98
-#: ../src/gtk/xattr/XAttrView.cpp:121
+#: ../build/src/kde/kf5/ui_XAttrView.h:98 ../src/gtk/xattr/XAttrView.cpp:121
 msgctxt "XAttrView"
 msgid "Linux Attributes"
 msgstr "Linux Attribute"
 
-#: ../build/src/kde/kf5/ui_XAttrView.h:99
-#: ../src/gtk/xattr/XAttrView.cpp:129
+#: ../build/src/kde/kf5/ui_XAttrView.h:99 ../src/gtk/xattr/XAttrView.cpp:129
 msgctxt "XAttrView"
 msgid "MS-DOS Attributes"
 msgstr "MS-DOS-Attribute"
@@ -653,14 +645,12 @@ msgctxt "XAttrView"
 msgid "E&xtended Attributes"
 msgstr "Erweiterte Attribute"
 
-#: ../build/src/kde/kf5/ui_XAttrView.h:102
-#: ../src/gtk/xattr/XAttrView.cpp:162
+#: ../build/src/kde/kf5/ui_XAttrView.h:102 ../src/gtk/xattr/XAttrView.cpp:162
 msgctxt "XAttrView"
 msgid "Value"
 msgstr "Wert"
 
-#: ../build/src/kde/kf5/ui_XAttrView.h:103
-#: ../src/gtk/xattr/XAttrView.cpp:161
+#: ../build/src/kde/kf5/ui_XAttrView.h:103 ../src/gtk/xattr/XAttrView.cpp:161
 msgctxt "XAttrView"
 msgid "Name"
 msgstr "Name"
@@ -1297,7 +1287,7 @@ msgstr ""
 #: ../src/win32/RP_ContextMenu.cpp:490
 msgctxt "ServiceMenu"
 msgid "Convert to PNG"
-msgstr ""
+msgstr "In PNG umwandeln"
 
 #: ../src/gtk/gtk3/NautilusMenuProvider.cpp:277
 #: ../src/gtk/gtk3/ThunarMenuProvider.cpp:273
@@ -1318,7 +1308,7 @@ msgstr[1] ""
 #: ../src/win32/RP_ShellPropSheetExt.cpp:2317
 msgctxt "RomDataView"
 msgid "ROM Properties"
-msgstr ""
+msgstr "ROM-Eigenschaften"
 
 #. tr: Invalid date/time.
 #. tr: Invalid date/time
@@ -1327,7 +1317,7 @@ msgstr ""
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1226
 msgctxt "RomDataView"
 msgid "Unknown"
-msgstr ""
+msgstr "Unbekannt"
 
 #. tr: No age ratings data.
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:144
@@ -1335,7 +1325,7 @@ msgstr ""
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1340
 msgctxt "RomDataView"
 msgid "ERROR"
-msgstr ""
+msgstr "ERROR"
 
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:212
 #: ../src/gtk/RomDataView.cpp:638 ../src/kde/RomDataView.cpp:156
@@ -1343,7 +1333,7 @@ msgstr ""
 #: ../src/win32/RP_ShellPropSheetExt.cpp:243
 msgctxt "RomDataView"
 msgid "(unknown system)"
-msgstr ""
+msgstr "(unbekanntes System)"
 
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:215
 #: ../src/gtk/RomDataView.cpp:641 ../src/kde/RomDataView.cpp:159
@@ -1351,43 +1341,43 @@ msgstr ""
 #: ../src/win32/RP_ShellPropSheetExt.cpp:246
 msgctxt "RomDataView"
 msgid "(unknown filetype)"
-msgstr ""
+msgstr "(unbekanntes Dateiformat)"
 
 #. tr: %1$s == system name, %2$s == file type
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:223
 #, c-format
 msgctxt "RomDataView"
 msgid "%1$s | %2$s"
-msgstr ""
+msgstr "%1$s | %2$s"
 
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:224
 msgctxt "RomDataView"
 msgid "File Type"
-msgstr ""
+msgstr "Dateiformat"
 
 #: ../src/gtk/OptionsMenuButton.cpp:142 ../src/kde/OptionsMenuButton.cpp:24
 #: ../src/win32/OptionsMenuButton.cpp:34
 msgctxt "OptionsMenuButton|StdActs"
 msgid "Export to Text..."
-msgstr ""
+msgstr "Als Text exportieren..."
 
 #: ../src/gtk/OptionsMenuButton.cpp:143 ../src/kde/OptionsMenuButton.cpp:25
 #: ../src/win32/OptionsMenuButton.cpp:35
 msgctxt "OptionsMenuButton|StdActs"
 msgid "Export to JSON..."
-msgstr ""
+msgstr "Als JSON exportieren..."
 
 #: ../src/gtk/OptionsMenuButton.cpp:144 ../src/kde/OptionsMenuButton.cpp:26
 #: ../src/win32/OptionsMenuButton.cpp:36
 msgctxt "OptionsMenuButton|StdActs"
 msgid "Copy as Text"
-msgstr ""
+msgstr "Als Text kopieren"
 
 #: ../src/gtk/OptionsMenuButton.cpp:145 ../src/kde/OptionsMenuButton.cpp:27
 #: ../src/win32/OptionsMenuButton.cpp:37
 msgctxt "OptionsMenuButton|StdActs"
 msgid "Copy as JSON"
-msgstr ""
+msgstr "Als JSON kopieren"
 
 #. tr: "Options" button.
 #: ../src/gtk/OptionsMenuButton.cpp:203 ../src/kde/OptionsMenuButton.cpp:39
@@ -1405,6 +1395,8 @@ msgid ""
 "%1$s\n"
 "%2$s"
 msgstr ""
+"%1$s\n"
+"%2$s"
 
 #. tr: Field description label.
 #: ../src/gtk/RomDataView.cpp:1775 ../src/kde/RomDataView.cpp:1007
@@ -1412,7 +1404,7 @@ msgstr ""
 #, c-format
 msgctxt "RomDataView"
 msgid "%s:"
-msgstr ""
+msgstr "%s:"
 
 #: ../src/gtk/RomDataView_ops.cpp:279 ../src/gtk/RomDataView_ops.cpp:428
 #: ../src/kde/RomDataView_ops.cpp:198 ../src/kde/RomDataView_ops.cpp:264
@@ -1421,13 +1413,13 @@ msgstr ""
 #, c-format
 msgctxt "RomDataView"
 msgid "File: '%s'"
-msgstr ""
+msgstr "Datei: '%s'"
 
 #: ../src/gtk/RomDataView_ops.cpp:297 ../src/kde/RomDataView_ops.cpp:216
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:321
 msgctxt "RomDataView"
 msgid "Export to Text File"
-msgstr ""
+msgstr "Als Text-Datei exportieren"
 
 #: ../src/gtk/RomDataView_ops.cpp:298 ../src/kde/RomDataView_ops.cpp:217
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:322
@@ -1449,7 +1441,7 @@ msgstr ""
 
 #: ../src/gtk/RomDataView_ops.cpp:317 ../src/gtk/RomDataView_ops.cpp:484
 msgid "_Save"
-msgstr ""
+msgstr "_Speichern"
 
 #. tr: "All Files" filter (GTK+ file filter)
 #: ../src/gtk/RomDataView_ops.cpp:500
@@ -1465,17 +1457,17 @@ msgstr ""
 #: ../src/gtk/xattr/DosAttrView.c:122
 msgctxt "DosAttrView"
 msgid "Hidden"
-msgstr ""
+msgstr "Versteckt"
 
 #: ../src/gtk/xattr/DosAttrView.c:124
 msgctxt "DosAttrView"
 msgid "Archive"
-msgstr ""
+msgstr "Archiv"
 
 #: ../src/gtk/xattr/DosAttrView.c:126
 msgctxt "DosAttrView"
 msgid "System"
-msgstr ""
+msgstr "System"
 
 #: ../src/gtk/xattr/DosAttrView.c:148
 msgctxt "DosAttrView"
@@ -1485,18 +1477,18 @@ msgstr "Komprimiert"
 #: ../src/gtk/xattr/DosAttrView.c:150
 msgctxt "DosAttrView"
 msgid "Encrypted"
-msgstr ""
+msgstr "Verschlüsselt"
 
 #: ../src/gtk/xattr/XAttrView.cpp:137
 msgctxt "XAttrView"
 msgid "Extended Attributes"
-msgstr ""
+msgstr "Erweiterte Eigenschaften"
 
 #. tr: Uses Qt's HTML subset for formatting.
 #: ../src/kde/config/AboutTab.cpp:171
 msgctxt "AboutTab"
 msgid "<b>ROM Properties Page</b><br>Shell Extension"
-msgstr ""
+msgstr "Shell-Erweiterung für<br><b>ROM Eigenschaften</b>"
 
 #. tr: Error message template. (Qt version, with formatting)
 #: ../src/kde/config/AboutTab.cpp:662 ../src/kde/config/CacheTab.cpp:262
@@ -1509,7 +1501,7 @@ msgstr "<b>FEHLER:</b> %1"
 #: ../src/kde/RomDataView_ops.cpp:319
 msgctxt "RomData"
 msgid "All Files|*|-"
-msgstr ""
+msgstr "Alle Dateien|*|-"
 
 #. tr: XAttrView tab title
 #: ../src/kde/xattr/XAttrViewPropertiesDialogPlugin.cpp:83
@@ -2548,12 +2540,12 @@ msgstr ""
 #: ../src/libromdata/Console/Atari7800.cpp:227
 msgctxt "Atari7800|ControllerType"
 msgid "None"
-msgstr ""
+msgstr "Keine"
 
 #: ../src/libromdata/Console/Atari7800.cpp:228
 msgctxt "Atari7800|ControllerType"
 msgid "Joystick (7800)"
-msgstr ""
+msgstr "Joystick (7800)"
 
 #: ../src/libromdata/Console/Atari7800.cpp:229
 msgctxt "Atari7800|ControllerType"
