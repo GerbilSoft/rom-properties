@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-06-24 20:26-0400\n"
-"PO-Revision-Date: 2023-06-25 16:46\n"
+"PO-Revision-Date: 2023-06-25 18:09\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -2689,7 +2689,7 @@ msgstr "Mikrofon"
 #: ../src/libromdata/Console/Dreamcast.cpp:743
 msgctxt "Dreamcast|Expansion"
 msgid "VMU"
-msgstr "VMU"
+msgstr "VM"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:747
 msgctxt "Dreamcast"
@@ -2842,7 +2842,7 @@ msgstr "Icon Daten"
 #: ../src/libromdata/Console/DreamcastSave.cpp:1351
 msgctxt "DreamcastSave"
 msgid "None"
-msgstr "None"
+msgstr "Keine"
 
 #. tr: Save file.
 #: ../src/libromdata/Console/DreamcastSave.cpp:1355
@@ -2856,7 +2856,7 @@ msgstr "Daten speichern"
 #: ../src/libromdata/Console/DreamcastSave.cpp:1374
 msgctxt "DreamcastSave"
 msgid "VMU Game"
-msgstr "VMU Spiel"
+msgstr "VM Spiel"
 
 #: ../src/libromdata/Console/DreamcastSave.cpp:1382
 msgctxt "DreamcastSave"
