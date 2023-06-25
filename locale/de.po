@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-06-24 20:26-0400\n"
-"PO-Revision-Date: 2023-06-25 01:20\n"
+"PO-Revision-Date: 2023-06-25 02:28\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -1424,7 +1424,7 @@ msgstr "Erweiterte Eigenschaften"
 #: ../src/kde/config/AboutTab.cpp:171
 msgctxt "AboutTab"
 msgid "<b>ROM Properties Page</b><br>Shell Extension"
-msgstr "Shell-Erweiterung für <br><b>ROM Eigenschaften</b>"
+msgstr "Shell-Erweiterung für<br><b>ROM Eigenschaften</b>"
 
 #. tr: Error message template. (Qt version, with formatting)
 #: ../src/kde/config/AboutTab.cpp:662 ../src/kde/config/CacheTab.cpp:262
