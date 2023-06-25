@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.1+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2023-04-23 09:52-0400\n"
+"POT-Creation-Date: 2023-06-24 20:26-0400\n"
 "PO-Revision-Date: 2023-03-13 02:37\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
@@ -179,7 +179,7 @@ msgid "I&mport"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:218
-#: ../src/gtk/xattr/LinuxAttrView.c:225
+#: ../src/gtk/xattr/LinuxAttrView.c:226
 msgctxt "LinuxAttrView"
 msgid "lsattr:"
 msgstr ""
@@ -197,7 +197,7 @@ msgid "a: append only"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:224
-#: ../src/gtk/xattr/LinuxAttrView.c:152
+#: ../src/gtk/xattr/LinuxAttrView.c:153
 msgctxt "LinuxAttrView"
 msgid ""
 "Directory will be treated like a top-level directory by the ext3/ext4 Orlov "
@@ -205,91 +205,91 @@ msgid ""
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:226
-#: ../src/gtk/xattr/LinuxAttrView.c:151
+#: ../src/gtk/xattr/LinuxAttrView.c:152
 msgctxt "LinuxAttrView"
 msgid "T: top dir"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:228
-#: ../src/gtk/xattr/LinuxAttrView.c:134
+#: ../src/gtk/xattr/LinuxAttrView.c:135
 msgctxt "LinuxAttrView"
 msgid "File is excluded from compression."
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:230
-#: ../src/gtk/xattr/LinuxAttrView.c:133
+#: ../src/gtk/xattr/LinuxAttrView.c:134
 msgctxt "LinuxAttrView"
 msgid "m: no compress"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:232
-#: ../src/gtk/xattr/LinuxAttrView.c:158
+#: ../src/gtk/xattr/LinuxAttrView.c:159
 msgctxt "LinuxAttrView"
 msgid "Direct access"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:234
-#: ../src/gtk/xattr/LinuxAttrView.c:157
+#: ../src/gtk/xattr/LinuxAttrView.c:158
 msgctxt "LinuxAttrView"
 msgid "x: DAX"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:236
-#: ../src/gtk/xattr/LinuxAttrView.c:125
+#: ../src/gtk/xattr/LinuxAttrView.c:126
 msgctxt "LinuxAttrView"
 msgid "File cannot be modified, deleted, or renamed."
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:238
-#: ../src/gtk/xattr/LinuxAttrView.c:124
+#: ../src/gtk/xattr/LinuxAttrView.c:125
 msgctxt "LinuxAttrView"
 msgid "i: immutable"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:240
-#: ../src/gtk/xattr/LinuxAttrView.c:113
+#: ../src/gtk/xattr/LinuxAttrView.c:114
 msgctxt "LinuxAttrView"
 msgid "Changes to this directory are written synchronously to the disk."
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:242
-#: ../src/gtk/xattr/LinuxAttrView.c:112
+#: ../src/gtk/xattr/LinuxAttrView.c:113
 msgctxt "LinuxAttrView"
 msgid "D: dir sync"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:244
-#: ../src/gtk/xattr/LinuxAttrView.c:131
+#: ../src/gtk/xattr/LinuxAttrView.c:132
 msgctxt "LinuxAttrView"
 msgid "File data is written to the journal before writing to the file itself."
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:246
-#: ../src/gtk/xattr/LinuxAttrView.c:130
+#: ../src/gtk/xattr/LinuxAttrView.c:131
 msgctxt "LinuxAttrView"
 msgid "j: journalled"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:248
-#: ../src/gtk/xattr/LinuxAttrView.c:128
+#: ../src/gtk/xattr/LinuxAttrView.c:129
 msgctxt "LinuxAttrView"
 msgid "Directory is indexed using hashed trees."
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:250
-#: ../src/gtk/xattr/LinuxAttrView.c:127
+#: ../src/gtk/xattr/LinuxAttrView.c:128
 msgctxt "LinuxAttrView"
 msgid "I: indexed"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:252
-#: ../src/gtk/xattr/LinuxAttrView.c:146
+#: ../src/gtk/xattr/LinuxAttrView.c:147
 msgctxt "LinuxAttrView"
 msgid "Changes to this file are written synchronously to the disk."
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:254
-#: ../src/gtk/xattr/LinuxAttrView.c:145
+#: ../src/gtk/xattr/LinuxAttrView.c:146
 msgctxt "LinuxAttrView"
 msgid "S: sync"
 msgstr ""
@@ -307,19 +307,20 @@ msgid "c: compressed"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:260
-#: ../src/gtk/xattr/LinuxAttrView.c:116
+#: ../src/gtk/xattr/LinuxAttrView.c:117
 msgctxt "LinuxAttrView"
 msgid "File is mapped on disk using extents."
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:262
-#: ../src/gtk/xattr/LinuxAttrView.c:115
+#: ../src/gtk/xattr/LinuxAttrView.c:116
 msgctxt "LinuxAttrView"
 msgid "e: extents"
 msgstr ""
 
+#. tr: "dump" is the name of the executable, so it should not be localized.
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:264
-#: ../src/gtk/xattr/LinuxAttrView.c:110
+#: ../src/gtk/xattr/LinuxAttrView.c:111
 msgctxt "LinuxAttrView"
 msgid "This file is not a candidate for dumping with the dump(8) program."
 msgstr ""
@@ -331,13 +332,13 @@ msgid "d: no dump"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:268
-#: ../src/gtk/xattr/LinuxAttrView.c:122
+#: ../src/gtk/xattr/LinuxAttrView.c:123
 msgctxt "LinuxAttrView"
 msgid "Files stored in this directory use case-insensitive filenames."
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:270
-#: ../src/gtk/xattr/LinuxAttrView.c:121
+#: ../src/gtk/xattr/LinuxAttrView.c:122
 msgctxt "LinuxAttrView"
 msgid "F: casefold"
 msgstr ""
@@ -355,19 +356,19 @@ msgid "A: no atime"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:276
-#: ../src/gtk/xattr/LinuxAttrView.c:137
+#: ../src/gtk/xattr/LinuxAttrView.c:138
 msgctxt "LinuxAttrView"
 msgid "File data is stored inline in the inode."
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:278
-#: ../src/gtk/xattr/LinuxAttrView.c:136
+#: ../src/gtk/xattr/LinuxAttrView.c:137
 msgctxt "LinuxAttrView"
 msgid "N: inline data"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:280
-#: ../src/gtk/xattr/LinuxAttrView.c:155
+#: ../src/gtk/xattr/LinuxAttrView.c:156
 msgctxt "LinuxAttrView"
 msgid ""
 "File's contents will be saved when deleted, potentially allowing for "
@@ -375,43 +376,43 @@ msgid ""
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:282
-#: ../src/gtk/xattr/LinuxAttrView.c:154
+#: ../src/gtk/xattr/LinuxAttrView.c:155
 msgctxt "LinuxAttrView"
 msgid "u: undelete"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:284
-#: ../src/gtk/xattr/LinuxAttrView.c:140
+#: ../src/gtk/xattr/LinuxAttrView.c:141
 msgctxt "LinuxAttrView"
 msgid "Directory will enforce a hierarchical structure for project IDs."
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:286
-#: ../src/gtk/xattr/LinuxAttrView.c:139
+#: ../src/gtk/xattr/LinuxAttrView.c:140
 msgctxt "LinuxAttrView"
 msgid "P: project"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:288
-#: ../src/gtk/xattr/LinuxAttrView.c:161
+#: ../src/gtk/xattr/LinuxAttrView.c:162
 msgctxt "LinuxAttrView"
 msgid "File has fs-verity enabled."
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:290
-#: ../src/gtk/xattr/LinuxAttrView.c:160
+#: ../src/gtk/xattr/LinuxAttrView.c:161
 msgctxt "LinuxAttrView"
 msgid "V: fs-verity"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:292
-#: ../src/gtk/xattr/LinuxAttrView.c:119
+#: ../src/gtk/xattr/LinuxAttrView.c:120
 msgctxt "LinuxAttrView"
 msgid "File is encrypted."
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:294
-#: ../src/gtk/xattr/LinuxAttrView.c:118
+#: ../src/gtk/xattr/LinuxAttrView.c:119
 msgctxt "LinuxAttrView"
 msgid "E: encrypted"
 msgstr ""
@@ -429,7 +430,7 @@ msgid "C: no CoW"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:300
-#: ../src/gtk/xattr/LinuxAttrView.c:149
+#: ../src/gtk/xattr/LinuxAttrView.c:150
 msgctxt "LinuxAttrView"
 msgid ""
 "If the file system supports tail merging, this file will not have a partial "
@@ -437,19 +438,19 @@ msgid ""
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:302
-#: ../src/gtk/xattr/LinuxAttrView.c:148
+#: ../src/gtk/xattr/LinuxAttrView.c:149
 msgctxt "LinuxAttrView"
 msgid "t: no tail merge"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:304
-#: ../src/gtk/xattr/LinuxAttrView.c:143
+#: ../src/gtk/xattr/LinuxAttrView.c:144
 msgctxt "LinuxAttrView"
 msgid "File's blocks will be zeroed when deleted."
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:306
-#: ../src/gtk/xattr/LinuxAttrView.c:142
+#: ../src/gtk/xattr/LinuxAttrView.c:143
 msgctxt "LinuxAttrView"
 msgid "s: secure del"
 msgstr ""
@@ -783,40 +784,40 @@ msgctxt "AboutTab"
 msgid "Download at GitHub"
 msgstr ""
 
-#: ../src/gtk/config/CacheCleaner.cpp:401
-#: ../src/gtk/config/CacheCleaner.cpp:459
-#: ../src/kde/config/CacheCleaner.cpp:194
-#: ../src/kde/config/CacheCleaner.cpp:253
+#: ../src/gtk/config/CacheCleaner.cpp:403
+#: ../src/gtk/config/CacheCleaner.cpp:461
+#: ../src/kde/config/CacheCleaner.cpp:196
+#: ../src/kde/config/CacheCleaner.cpp:255
 msgctxt "CacheCleaner"
 msgid "Invalid cache directory specified."
 msgstr ""
 
-#: ../src/gtk/config/CacheCleaner.cpp:408
-#: ../src/kde/config/CacheCleaner.cpp:201
+#: ../src/gtk/config/CacheCleaner.cpp:410
+#: ../src/kde/config/CacheCleaner.cpp:203
 msgctxt "CacheCleaner"
 msgid "Unable to get the XDG cache directory."
 msgstr ""
 
-#: ../src/gtk/config/CacheCleaner.cpp:416
-#: ../src/kde/config/CacheCleaner.cpp:209
+#: ../src/gtk/config/CacheCleaner.cpp:418
+#: ../src/kde/config/CacheCleaner.cpp:211
 msgctxt "CacheCleaner"
 msgid "Thumbnails cache directory does not exist."
 msgstr ""
 
-#: ../src/gtk/config/CacheCleaner.cpp:425
-#: ../src/kde/config/CacheCleaner.cpp:218 ../src/win32/config/CacheTab.cpp:640
+#: ../src/gtk/config/CacheCleaner.cpp:427
+#: ../src/kde/config/CacheCleaner.cpp:220 ../src/win32/config/CacheTab.cpp:642
 msgctxt "CacheCleaner"
 msgid "Unable to get the rom-properties cache directory."
 msgstr ""
 
-#: ../src/gtk/config/CacheCleaner.cpp:462
-#: ../src/kde/config/CacheCleaner.cpp:256
+#: ../src/gtk/config/CacheCleaner.cpp:464
+#: ../src/kde/config/CacheCleaner.cpp:258
 msgctxt "CacheCleaner"
 msgid "System thumbnail cache has unexpected files. Not clearing it."
 msgstr ""
 
-#: ../src/gtk/config/CacheCleaner.cpp:465
-#: ../src/kde/config/CacheCleaner.cpp:259 ../src/win32/config/CacheTab.cpp:695
+#: ../src/gtk/config/CacheCleaner.cpp:467
+#: ../src/kde/config/CacheCleaner.cpp:261 ../src/win32/config/CacheTab.cpp:697
 msgctxt "CacheCleaner"
 msgid "rom-properties cache has unexpected files. Not clearing it."
 msgstr ""
@@ -851,13 +852,13 @@ msgid "System thumbnail cache is empty. Nothing to do."
 msgstr ""
 
 #: ../src/gtk/config/CacheTab.cpp:491 ../src/kde/config/CacheTab.cpp:283
-#: ../src/win32/config/CacheTab.cpp:677 ../src/win32/config/CacheTab.cpp:708
+#: ../src/win32/config/CacheTab.cpp:679 ../src/win32/config/CacheTab.cpp:710
 msgctxt "CacheTab"
 msgid "rom-properties cache is empty. Nothing to do."
 msgstr ""
 
 #: ../src/gtk/config/CacheTab.cpp:518 ../src/kde/config/CacheTab.cpp:307
-#: ../src/win32/config/CacheTab.cpp:759
+#: ../src/win32/config/CacheTab.cpp:764
 #, c-format
 msgctxt "CacheTab"
 msgid "Unable to delete %1$u file(s) and/or %2$u dir(s)."
@@ -870,7 +871,7 @@ msgid "System thumbnail cache cleared successfully."
 msgstr ""
 
 #: ../src/gtk/config/CacheTab.cpp:539 ../src/kde/config/CacheTab.cpp:327
-#: ../src/win32/config/CacheTab.cpp:765
+#: ../src/win32/config/CacheTab.cpp:770
 msgctxt "CacheTab"
 msgid "rom-properties cache cleared successfully."
 msgstr ""
@@ -1493,8 +1494,8 @@ msgstr ""
 #: ../src/libromdata/Console/XboxDisc.cpp:783
 #: ../src/libromdata/Console/Xbox_XBE.cpp:705
 #: ../src/libromdata/Console/Xbox_XBE.cpp:709
-#: ../src/libromdata/Handheld/DMG.cpp:842
-#: ../src/libromdata/Handheld/DMG.cpp:937
+#: ../src/libromdata/Handheld/DMG.cpp:843
+#: ../src/libromdata/Handheld/DMG.cpp:938
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:401
 #: ../src/libromdata/Handheld/Lynx.cpp:215
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:720
@@ -2450,7 +2451,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:915
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1370
 #: ../src/libromdata/Console/Xbox_XBE.cpp:687
-#: ../src/libromdata/Handheld/DMG.cpp:840
+#: ../src/libromdata/Handheld/DMG.cpp:841
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:345
 #: ../src/libromdata/Handheld/GameCom.cpp:730
 #: ../src/libromdata/Handheld/Lynx.cpp:201
@@ -2547,7 +2548,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:916
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1894
 #: ../src/libromdata/Console/Xbox_XBE.cpp:742
-#: ../src/libromdata/Handheld/DMG.cpp:897
+#: ../src/libromdata/Handheld/DMG.cpp:898
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:361
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1021
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:354
@@ -2629,7 +2630,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiWAD.cpp:1030
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1839
 #: ../src/libromdata/Console/Xbox_XBE.cpp:829
-#: ../src/libromdata/Handheld/DMG.cpp:963
+#: ../src/libromdata/Handheld/DMG.cpp:964
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:548
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1187
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:374
@@ -2648,7 +2649,7 @@ msgstr ""
 #: ../src/libromdata/Console/Dreamcast.cpp:711
 #: ../src/libromdata/Console/MegaDrive.cpp:425
 #: ../src/libromdata/Console/Sega8Bit.cpp:428
-#: ../src/libromdata/Handheld/DMG.cpp:994
+#: ../src/libromdata/Handheld/DMG.cpp:995
 msgctxt "RomData"
 msgid "Checksum"
 msgstr ""
@@ -2942,7 +2943,7 @@ msgstr ""
 
 #: ../src/libromdata/Console/GameCube.cpp:461
 #: ../src/libromdata/Console/SNES.cpp:619
-#: ../src/libromdata/Handheld/DMG.cpp:508
+#: ../src/libromdata/Handheld/DMG.cpp:509
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:109
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1028
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1375
@@ -2956,7 +2957,7 @@ msgstr ""
 #: ../src/libromdata/Console/SNES.cpp:622
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1342
 #: ../src/libromdata/Console/Xbox_XBE.cpp:398
-#: ../src/libromdata/Handheld/DMG.cpp:511
+#: ../src/libromdata/Handheld/DMG.cpp:512
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:112
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1031
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:349
@@ -2988,7 +2989,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiSave.cpp:477
 #: ../src/libromdata/Console/WiiU.cpp:413
 #: ../src/libromdata/Console/WiiWAD.cpp:972
-#: ../src/libromdata/Handheld/DMG.cpp:841
+#: ../src/libromdata/Handheld/DMG.cpp:842
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:358
 #: ../src/libromdata/Handheld/GameCom.cpp:735
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1017
@@ -3002,7 +3003,7 @@ msgstr ""
 
 #: ../src/libromdata/Console/GameCube.cpp:1544
 #: ../src/libromdata/Console/N64.cpp:288 ../src/libromdata/Console/NES.cpp:1271
-#: ../src/libromdata/Handheld/DMG.cpp:981
+#: ../src/libromdata/Handheld/DMG.cpp:982
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:364
 #: ../src/libromdata/Handheld/NGPC.cpp:318
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1038
@@ -3548,8 +3549,11 @@ msgctxt "N64"
 msgid "Game ID"
 msgstr ""
 
-#: ../src/libromdata/Console/N64.cpp:292
-msgctxt "N64"
+#: ../src/libromdata/Console/N64.cpp:292 ../src/libromdata/Handheld/DMG.cpp:865
+#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:368
+#: ../src/libromdata/Handheld/GameCom.cpp:740
+#: ../src/libromdata/Handheld/NGPC.cpp:333 ../src/libromdata/Other/ELF.cpp:2103
+msgctxt "RomData"
 msgid "Entry Point"
 msgstr ""
 
@@ -4333,7 +4337,7 @@ msgid "Peripherals"
 msgstr ""
 
 #: ../src/libromdata/Console/SNES.cpp:633
-#: ../src/libromdata/Handheld/DMG.cpp:522
+#: ../src/libromdata/Handheld/DMG.cpp:523
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%02X)"
@@ -5511,68 +5515,63 @@ msgctxt "Xbox360_STFS|ContentType"
 msgid "Community Game"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:851
+#: ../src/libromdata/Handheld/DMG.cpp:852
 msgctxt "DMG"
 msgid "System"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:864
-msgctxt "DMG"
-msgid "Entry Point"
-msgstr ""
-
-#: ../src/libromdata/Handheld/DMG.cpp:900
+#: ../src/libromdata/Handheld/DMG.cpp:901
 msgctxt "DMG"
 msgid "Hardware"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:905
+#: ../src/libromdata/Handheld/DMG.cpp:906
 msgctxt "DMG|Features"
 msgid "RAM"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:906
-#: ../src/libromdata/Handheld/DMG.cpp:1105
+#: ../src/libromdata/Handheld/DMG.cpp:907
+#: ../src/libromdata/Handheld/DMG.cpp:1106
 msgctxt "DMG|Features"
 msgid "Battery"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:907
-#: ../src/libromdata/Handheld/DMG.cpp:1107
+#: ../src/libromdata/Handheld/DMG.cpp:908
+#: ../src/libromdata/Handheld/DMG.cpp:1108
 msgctxt "DMG|Features"
 msgid "Timer"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:908
-#: ../src/libromdata/Handheld/DMG.cpp:1106
+#: ../src/libromdata/Handheld/DMG.cpp:909
+#: ../src/libromdata/Handheld/DMG.cpp:1107
 msgctxt "DMG|Features"
 msgid "Rumble"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:909
+#: ../src/libromdata/Handheld/DMG.cpp:910
 msgctxt "DMG|Features"
 msgid "Tilt Sensor"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:913
-#: ../src/libromdata/Handheld/DMG.cpp:1111
+#: ../src/libromdata/Handheld/DMG.cpp:914
+#: ../src/libromdata/Handheld/DMG.cpp:1112
 msgctxt "DMG"
 msgid "Features"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:917
-#: ../src/libromdata/Handheld/DMG.cpp:1115
+#: ../src/libromdata/Handheld/DMG.cpp:918
+#: ../src/libromdata/Handheld/DMG.cpp:1116
 msgctxt "DMG"
 msgid "ROM Size"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:920
+#: ../src/libromdata/Handheld/DMG.cpp:921
 msgctxt "DMG"
 msgid "Unknown"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:925
-#: ../src/libromdata/Handheld/DMG.cpp:952
+#: ../src/libromdata/Handheld/DMG.cpp:926
+#: ../src/libromdata/Handheld/DMG.cpp:953
 #, c-format
 msgctxt "DMG"
 msgid "%1$u KiB (%2$u bank)"
@@ -5580,73 +5579,68 @@ msgid_plural "%1$u KiB (%2$u banks)"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:930
-#: ../src/libromdata/Handheld/DMG.cpp:957
+#: ../src/libromdata/Handheld/DMG.cpp:931
+#: ../src/libromdata/Handheld/DMG.cpp:958
 #, c-format
 msgctxt "DMG"
 msgid "%u KiB"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:935
-#: ../src/libromdata/Handheld/DMG.cpp:1120
+#: ../src/libromdata/Handheld/DMG.cpp:936
+#: ../src/libromdata/Handheld/DMG.cpp:1121
 msgctxt "DMG"
 msgid "RAM Size"
 msgstr ""
 
 #. tr: MBC2 internal memory - Not really RAM, but whatever.
-#: ../src/libromdata/Handheld/DMG.cpp:945
+#: ../src/libromdata/Handheld/DMG.cpp:946
 msgctxt "DMG"
 msgid "512 x 4 bits"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:947
+#: ../src/libromdata/Handheld/DMG.cpp:948
 msgctxt "DMG"
 msgid "No RAM"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:967
+#: ../src/libromdata/Handheld/DMG.cpp:968
 msgctxt "Region|DMG"
 msgid "Japanese"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:971
+#: ../src/libromdata/Handheld/DMG.cpp:972
 msgctxt "Region|DMG"
 msgid "Non-Japanese"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:976
+#: ../src/libromdata/Handheld/DMG.cpp:977
 #, c-format
 msgctxt "DMG"
 msgid "0x%02X (INVALID)"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:997
+#: ../src/libromdata/Handheld/DMG.cpp:998
 #, c-format
 msgctxt "DMG"
 msgid "0x%1$02X (INVALID; should be 0x%2$02X)"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:1001
+#: ../src/libromdata/Handheld/DMG.cpp:1002
 #, c-format
 msgctxt "DMG"
 msgid "0x%02X (valid)"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:1012
+#: ../src/libromdata/Handheld/DMG.cpp:1013
 msgctxt "DMG"
 msgid "GBX Version"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:1066
-#: ../src/libromdata/Handheld/DMG.cpp:1076
-#: ../src/libromdata/Handheld/DMG.cpp:1081
+#: ../src/libromdata/Handheld/DMG.cpp:1067
+#: ../src/libromdata/Handheld/DMG.cpp:1077
+#: ../src/libromdata/Handheld/DMG.cpp:1082
 msgctxt "DMG"
 msgid "Mapper"
-msgstr ""
-
-#: ../src/libromdata/Handheld/GameBoyAdvance.cpp:368
-msgctxt "GameBoyAdvance"
-msgid "Entry Point"
 msgstr ""
 
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:395
@@ -5657,11 +5651,6 @@ msgstr ""
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:409
 msgctxt "GameBoyAdvance"
 msgid "Enable Debug"
-msgstr ""
-
-#: ../src/libromdata/Handheld/GameCom.cpp:740
-msgctxt "GameCom"
-msgid "Entry Point"
 msgstr ""
 
 #: ../src/libromdata/Handheld/Lynx.cpp:204
@@ -5707,11 +5696,6 @@ msgstr ""
 #: ../src/libromdata/Handheld/NGPC.cpp:327
 msgctxt "NGPC"
 msgid "System"
-msgstr ""
-
-#: ../src/libromdata/Handheld/NGPC.cpp:333
-msgctxt "NGPC"
-msgid "Entry Point"
 msgstr ""
 
 #: ../src/libromdata/Handheld/NGPC.cpp:340
@@ -7076,11 +7060,6 @@ msgstr ""
 #, c-format
 msgctxt "ELF"
 msgid "%s (Position-Independent)"
-msgstr ""
-
-#: ../src/libromdata/Other/ELF.cpp:2103
-msgctxt "ELF"
-msgid "Entry Point"
 msgstr ""
 
 #: ../src/libromdata/Other/EXE.cpp:114
@@ -10208,20 +10187,20 @@ msgctxt "CacheTab"
 msgid "System thumbnail cache is already empty. Nothing to do here."
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:639 ../src/win32/config/CacheTab.cpp:694
-#: ../src/win32/config/CacheTab.cpp:761
+#: ../src/win32/config/CacheTab.cpp:641 ../src/win32/config/CacheTab.cpp:696
+#: ../src/win32/config/CacheTab.cpp:766
 #, c-format
 msgctxt "CacheTab"
 msgid "ERROR: %s"
 msgstr ""
 
-#: ../src/win32/config/CacheTab.cpp:665
+#: ../src/win32/config/CacheTab.cpp:667
 msgctxt "CacheTab"
 msgid "Clearing the rom-properties cache..."
 msgstr ""
 
 #. tr: Tab title.
-#: ../src/win32/config/CacheTab.cpp:1005
+#: ../src/win32/config/CacheTab.cpp:1010
 msgctxt "CacheTab"
 msgid "Thumbnail Cache"
 msgstr ""
