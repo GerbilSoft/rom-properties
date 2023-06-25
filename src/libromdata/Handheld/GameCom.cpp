@@ -737,7 +737,7 @@ int GameCom::loadFieldData(void)
 		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 
 	// Entry point.
-	d->fields.addField_string_numeric(C_("GameCom", "Entry Point"),
+	d->fields.addField_string_numeric(C_("RomData", "Entry Point"),
 		le16_to_cpu(romHeader->entry_point),
 		RomFields::Base::Hex, 4, RomFields::STRF_MONOSPACE);
 

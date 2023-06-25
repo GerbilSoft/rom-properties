@@ -365,7 +365,7 @@ int GameBoyAdvance::loadFieldData(void)
 		romHeader->rom_version, RomFields::Base::Dec, 2);
 
 	// Entry point
-	const char *const entry_point_title = C_("GameBoyAdvance", "Entry Point");
+	const char *const entry_point_title = C_("RomData", "Entry Point");
 	switch (d->romType) {
 		case GameBoyAdvancePrivate::RomType::GBA:
 		case GameBoyAdvancePrivate::RomType::GBA_PassThru:

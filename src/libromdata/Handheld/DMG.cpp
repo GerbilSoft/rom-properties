@@ -862,7 +862,7 @@ int DMG::loadFieldData(void)
 	}
 
 	// Entry Point
-	const char *const entry_point_title = C_("DMG", "Entry Point");
+	const char *const entry_point_title = C_("RomData", "Entry Point");
 	if ((romHeader->entry[0] == 0x00 ||	// NOP
 	     romHeader->entry[0] == 0xF3 ||	// DI
 	     romHeader->entry[0] == 0x7F ||	// LD A,A

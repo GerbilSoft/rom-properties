@@ -289,7 +289,7 @@ int N64::loadFieldData(void)
 		romHeader->revision, RomFields::Base::Dec, 2);
 
 	// Entry point.
-	d->fields.addField_string_numeric(C_("N64", "Entry Point"),
+	d->fields.addField_string_numeric(C_("RomData", "Entry Point"),
 		romHeader->entrypoint, RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
 
 	// OS version.

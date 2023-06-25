@@ -330,7 +330,7 @@ int NGPC::loadFieldData(void)
 
 	// Entry point
 	const uint32_t entry_point = le32_to_cpu(romHeader->entry_point);
-	d->fields.addField_string_numeric(C_("NGPC", "Entry Point"),
+	d->fields.addField_string_numeric(C_("RomData", "Entry Point"),
 		entry_point, RomFields::Base::Hex, 8, RomFields::STRF_MONOSPACE);
 
 	// Debug enabled?

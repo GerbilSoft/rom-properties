@@ -2100,7 +2100,7 @@ int ELF::loadFieldData(void)
 			entry_point = rp_sprintf(C_("ELF", "%s (Position-Independent)"),
 				entry_point.c_str());
 		}
-		d->fields.addField_string(C_("ELF", "Entry Point"), entry_point);
+		d->fields.addField_string(C_("RomData", "Entry Point"), entry_point);
 	}
 
 	// Build ID.
