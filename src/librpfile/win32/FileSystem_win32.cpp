@@ -682,8 +682,21 @@ uint8_t win32_attrs_to_d_type(uint32_t dwAttrs)
 	if (dwAttrs == INVALID_FILE_ATTRIBUTES)
 		return DT_UNKNOWN;
 
-	// TODO: More types.
-	return (dwAttrs & FILE_ATTRIBUTE_DIRECTORY) ? DT_DIR : DT_REG;
+	uint8_t d_type;
+
+	if (dwAttrs & FILE_ATTRIBUTE_DIRECTORY) {
+		d_type = DT_DIR;
+	} else if (dwAttrs & FILE_ATTRIBUTE_REPARSE_POINT) {
+		// TODO: Check WIN32_FIND_DATA::dwReserved0 for IO_REPARSE_TAG_SYMLINK.
+		d_type = DT_LNK;
+	} else if (dwAttrs & FILE_ATTRIBUTE_DEVICE) {
+		// TODO: Is this correct?
+		d_type = DT_CHR;
+	} else {
+		d_type = DT_REG;
+	}
+
+	return d_type;
 }
 
 /**
