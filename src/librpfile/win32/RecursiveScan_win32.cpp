@@ -92,10 +92,7 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 		fullFileName += findFileData.cFileName;
 
 		// Add the filename and d_type.
-		// TODO: Add a "file attributes to d_type" function,
-		// and update FileSystem::get_file_d_type() to use it.
-		const uint8_t d_type = (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? DT_DIR : DT_REG;
-		rlist.emplace_front(fullFileName, d_type);
+		rlist.emplace_front(fullFileName, FileSystem::win32_attrs_to_d_type(findFileData.dwFileAttributes));
 
 		// If this is a directory, recursively scan it.
 		// This is done *after* adding the directory because forward_list

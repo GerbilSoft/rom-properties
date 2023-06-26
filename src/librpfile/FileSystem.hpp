@@ -231,6 +231,15 @@ bool isOnBadFS(const char *filename, bool netFS = false);
  */
 int get_file_size_and_mtime(const std::string &filename, off64_t *pFileSize, time_t *pMtime);
 
+#ifdef _WIN32
+/**
+ * Convert Win32 attributes to d_type.
+ * @param dwAttrs Win32 attributes (NOTE: Can't use DWORD here)
+ * @return d_type, or DT_UNKNOWN on error.
+ */
+uint8_t win32_attrs_to_d_type(uint32_t dwAttrs);
+#endif /* _WIN32 */
+
 /**
  * Get a file's d_type.
  * @param filename Filename

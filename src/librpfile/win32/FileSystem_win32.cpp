@@ -673,6 +673,20 @@ int get_file_size_and_mtime(const string &filename, off64_t *pFileSize, time_t *
 }
 
 /**
+ * Convert Win32 attributes to d_type.
+ * @param dwAttrs Win32 attributes (NOTE: Can't use DWORD here)
+ * @return d_type, or DT_UNKNOWN on error.
+ */
+uint8_t win32_attrs_to_d_type(uint32_t dwAttrs)
+{
+	if (dwAttrs == INVALID_FILE_ATTRIBUTES)
+		return DT_UNKNOWN;
+
+	// TODO: More types.
+	return (dwAttrs & FILE_ATTRIBUTE_DIRECTORY) ? DT_DIR : DT_REG;
+}
+
+/**
  * Get a file's d_type.
  * @param filename Filename
  * @param deref If true, dereference symbolic links (lstat)
@@ -690,12 +704,7 @@ uint8_t get_file_d_type(const char *filename, bool deref)
 	RP_UNUSED(deref);
 
 	const tstring tfilename = makeWinPath(filename);
-	const DWORD dwAttrs = GetFileAttributes(tfilename.c_str());
-	if (dwAttrs == INVALID_FILE_ATTRIBUTES)
-		return DT_UNKNOWN;
-
-	// TODO: More types.
-	return (dwAttrs & FILE_ATTRIBUTE_DIRECTORY) ? DT_DIR : DT_REG;
+	return win32_attrs_to_d_type(GetFileAttributes(tfilename.c_str()));
 }
 
 } }
