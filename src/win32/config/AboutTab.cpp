@@ -657,7 +657,10 @@ string AboutTabPrivate::rtfEscape(const char *str)
 	// Reference: http://www.zopatista.com/python/2012/06/06/rtf-and-unicode/
 	char buf[12];	// Conversion buffer.
 	for (const char16_t *p = u16str.c_str(); *p != 0; p++) {
-		if (*p <= 0x00FF) {
+		if (*p == '\n') {
+			// Newline
+			s_rtf += RTF_BR;
+		} else if (*p <= 0x00FF) {
 			// cp1252 is a superset of ISO-8859-1.
 			s_rtf += (char)*p;
 		} else {
@@ -930,15 +933,15 @@ void AboutTabPrivate::initLibrariesTab(void)
 	// is changed at runtime.
 
 	// tr: Using an internal copy of a library.
-	const char *const sIntCopyOf = C_("AboutTab|Libraries", "Internal copy of %s.");
+	const string sIntCopyOf = rtfEscape(C_("AboutTab|Libraries", "Internal copy of %s."));
 	// tr: Compiled with a specific version of an external library.
-	const char *const sCompiledWith = C_("AboutTab|Libraries", "Compiled with %s.");
+	const string sCompiledWith = rtfEscape(C_("AboutTab|Libraries", "Compiled with %s."));
 	// tr: Using an external library, e.g. libpcre.so
-	const char *const sUsingDll = C_("AboutTab|Libraries", "Using %s.");
+	const string sUsingDll = rtfEscape(C_("AboutTab|Libraries", "Using %s."));
 	// tr: License: (libraries with only a single license)
-	const char *const sLicense = C_("AboutTab|Libraries", "License: %s");
+	const string sLicense = rtfEscape(C_("AboutTab|Libraries", "License: %s"));
 	// tr: Licenses: (libraries with multiple licenses)
-	const char *const sLicenses = C_("AboutTab|Libraries", "Licenses: %s");
+	const string sLicenses = rtfEscape(C_("AboutTab|Libraries", "Licenses: %s"));
 
 	// NOTE: We're only showing the "compiled with" version here,
 	// since the DLLs are delay-loaded and might not be available.
@@ -950,15 +953,15 @@ void AboutTabPrivate::initLibrariesTab(void)
 	sZlibVersion += RpPng::zlib_version_string();
 
 #if defined(USE_INTERNAL_ZLIB) && !defined(USE_INTERNAL_ZLIB_DLL)
-	sLibraries += rp_sprintf(sIntCopyOf, sZlibVersion.c_str());
+	sLibraries += rp_sprintf(sIntCopyOf.c_str(), sZlibVersion.c_str());
 #else
 #  ifdef ZLIBNG_VERSION
-	sLibraries += rp_sprintf(sCompiledWith, "zlib-ng " ZLIBNG_VERSION);
+	sLibraries += rp_sprintf(sCompiledWith.c_str(), "zlib-ng " ZLIBNG_VERSION);
 #  else /* !ZLIBNG_VERSION */
-	sLibraries += rp_sprintf(sCompiledWith, "zlib " ZLIB_VERSION);
+	sLibraries += rp_sprintf(sCompiledWith.c_str(), "zlib " ZLIB_VERSION);
 #  endif /* ZLIBNG_VERSION */
 	sLibraries += RTF_BR;
-	sLibraries += rp_sprintf(sUsingDll, sZlibVersion.c_str());
+	sLibraries += rp_sprintf(sUsingDll.c_str(), sZlibVersion.c_str());
 #endif
 	sLibraries += RTF_BR
 		"Copyright (C) 1995-2022 Jean-loup Gailly and Mark Adler." RTF_BR
@@ -967,7 +970,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	// TODO: Also if zlibVersion() contains "zlib-ng"?
 	sLibraries += "https://github.com/zlib-ng/zlib-ng" RTF_BR;
 #  endif /* ZLIBNG_VERSION */
-	sLibraries += rp_sprintf(sLicense, "zlib license");
+	sLibraries += rp_sprintf(sLicense.c_str(), "zlib license");
 #endif /* HAVE_ZLIB */
 
 	/** libpng **/
@@ -985,7 +988,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 
 	sLibraries += RTF_BR RTF_BR;
 #if defined(USE_INTERNAL_PNG) && !defined(USE_INTERNAL_ZLIB_DLL)
-	sLibraries += rp_sprintf(sIntCopyOf, pngVersion);
+	sLibraries += rp_sprintf(sIntCopyOf.c_str(), pngVersion);
 #else
 	// NOTE: Gentoo's libpng has "+apng" at the end of
 	// PNG_LIBPNG_VER_STRING if APNG is enabled.
@@ -1007,9 +1010,9 @@ void AboutTabPrivate::initLibrariesTab(void)
 		fullPngVersionCompiled = rp_sprintf("%s (No APNG support)", pngVersionCompiled.c_str());
 	}
 
-	sLibraries += rp_sprintf(sCompiledWith, fullPngVersionCompiled.c_str());
+	sLibraries += rp_sprintf(sCompiledWith.c_str(), fullPngVersionCompiled.c_str());
 	sLibraries += RTF_BR;
-	sLibraries += rp_sprintf(sUsingDll, pngVersion);
+	sLibraries += rp_sprintf(sUsingDll.c_str(), pngVersion);
 #endif
 
 	/**
@@ -1023,26 +1026,15 @@ void AboutTabPrivate::initLibrariesTab(void)
 	 */
 	// On Windows, assume we're using our own libpng,
 	// which always uses the __STDC__ copyright notice.
-
-	// Convert newlines to RTF_BR.
-	const char *const s_png_tmp = RpPng::libpng_copyright_string();
-	for (const char *p = s_png_tmp; *p != '\0'; p++) {
-		const char chr = *p;
-		if (unlikely(chr == '\n')) {
-			sLibraries += RTF_BR;
-		} else {
-			sLibraries += chr;
-		}
-	}
-
+	sLibraries += rtfEscape(RpPng::libpng_copyright_string());
 	sLibraries +=
 		"http://www.libpng.org/pub/png/libpng.html" RTF_BR
 		"https://github.com/glennrp/libpng" RTF_BR;
 	if (APNG_is_supported) {
-		sLibraries += C_("AboutTab|Libraries", "APNG patch:");
+		sLibraries += rtfEscape(C_("AboutTab|Libraries", "APNG patch:"));
 		sLibraries += " https://sourceforge.net/projects/libpng-apng/" RTF_BR;
 	}
-	sLibraries += rp_sprintf(sLicense, "libpng license");
+	sLibraries += rp_sprintf(sLicense.c_str(), "libpng license");
 #endif /* HAVE_PNG */
 
 	/** TinyXML2 **/
@@ -1054,11 +1046,11 @@ void AboutTabPrivate::initLibrariesTab(void)
 
 	// FIXME: Runtime version?
 	sLibraries += RTF_BR RTF_BR;
-	sLibraries += rp_sprintf(sCompiledWith, sVerBuf);
+	sLibraries += rp_sprintf(sCompiledWith.c_str(), sVerBuf);
 	sLibraries += RTF_BR
 		"Copyright (C) 2000-2021 Lee Thomason" RTF_BR
 		"http://www.grinninglizard.com/" RTF_BR;
-	sLibraries += rp_sprintf(sLicense, "zlib license");
+	sLibraries += rp_sprintf(sLicense.c_str(), "zlib license");
 #endif /* ENABLE_XML */
 
 	/** GNU gettext **/
@@ -1078,15 +1070,15 @@ void AboutTabPrivate::initLibrariesTab(void)
 
 	sLibraries += RTF_BR RTF_BR;
 #  ifdef _WIN32
-	sLibraries += rp_sprintf(sIntCopyOf, sVerBuf);
+	sLibraries += rp_sprintf(sIntCopyOf.c_str(), sVerBuf);
 #  else /* _WIN32 */
 	// FIXME: Runtime version?
-	sLibraries += rp_sprintf(sCompiledWith, sVerBuf);
+	sLibraries += rp_sprintf(sCompiledWith.c_str(), sVerBuf);
 #  endif /* _WIN32 */
 	sLibraries += RTF_BR
 		"Copyright (C) 1995-1997, 2000-2016, 2018-2020 Free Software Foundation, Inc." RTF_BR
 		"https://www.gnu.org/software/gettext/" RTF_BR;
-	sLibraries += rp_sprintf(sLicense, "GNU LGPL v2.1+");
+	sLibraries += rp_sprintf(sLicense.c_str(), "GNU LGPL v2.1+");
 #endif /* HAVE_GETTEXT && LIBINTL_VERSION */
 
 	sLibraries += '}';
