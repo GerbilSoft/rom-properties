@@ -2326,12 +2326,11 @@ msgstr ""
 
 #. tr: IMG_INT_ICON
 #: ../src/libromdata/config/ImageTypesConfig.cpp:97
-#, fuzzy
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid ""
 "Internal\n"
 "Icon"
-msgstr "Вбудована копія бібліотеки %s."
+msgstr ""
 
 #. tr: IMG_INT_BANNER
 #: ../src/libromdata/config/ImageTypesConfig.cpp:99
