@@ -968,7 +968,7 @@ msgid ""
 "a>, the Unofficial amiibo Database."
 msgstr ""
 "Внешние изображения для GameCube, Wii, Wii U, Nintendo DS и Nintendo 3DS\n"
-"предоставлены сайтом<a href=\"https://www.gametdb.com/\">GameTDB</a>.\n"
+"предоставлены сайтом <a href=\"https://www.gametdb.com/\">GameTDB</a>.\n"
 "Внешние изображения amiibo предоставлены сайтом <a href=\"https://amiibo."
 "life/\">amiibo.life</a>."
 
