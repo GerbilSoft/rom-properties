@@ -608,7 +608,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	// Recursively scan the cache directory.
 	// TODO: Do we really want to store everything in a list? (Wastes memory.)
 	// Maybe do a simple counting scan first, then delete.
-	forward_list<pair<tstring, uint32_t> > rlist;
+	forward_list<pair<tstring, uint8_t> > rlist;
 	int ret = recursiveScan(cacheDirT.c_str(), rlist);
 	if (ret != 0) {
 		// Non-image file found.
@@ -645,32 +645,44 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	unsigned int count = 0;
 	unsigned int dirErrs = 0, fileErrs = 0;
 	for (const auto &p : rlist) {
-		if (p.second & FILE_ATTRIBUTE_DIRECTORY) {
-			// Remove the directory.
-			BOOL bRet = RemoveDirectory(p.first.c_str());
-			if (!bRet) {
-				dirErrs++;
-				SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
-			}
-		} else {
-			// Delete the file.
-			BOOL bRet = TRUE;
-			if (p.second & FILE_ATTRIBUTE_READONLY) {
-				// Need to remove the read-only attribute.
-				bRet = SetFileAttributes(p.first.c_str(), (p.second & ~FILE_ATTRIBUTE_READONLY));
-			}
-			if (!bRet) {
-				// Error removing the read-only attribute.
-				fileErrs++;
-				SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
-			} else {
-				bRet = DeleteFile(p.first.c_str());
+		switch (p.second) {
+			case DT_DIR: {
+				// Remove the directory.
+				BOOL bRet = RemoveDirectory(p.first.c_str());
 				if (!bRet) {
-					// Error deleting the file.
-					fileErrs++;
+					dirErrs++;
 					SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 				}
+				break;
 			}
+
+			case DT_REG: {
+				// Delete the file.
+				BOOL bRet = TRUE;
+				if (p.second & FILE_ATTRIBUTE_READONLY) {
+					// Need to remove the read-only attribute.
+					bRet = SetFileAttributes(p.first.c_str(), (p.second & ~FILE_ATTRIBUTE_READONLY));
+				}
+				if (!bRet) {
+					// Error removing the read-only attribute.
+					fileErrs++;
+					SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
+				} else {
+					bRet = DeleteFile(p.first.c_str());
+					if (!bRet) {
+						// Error deleting the file.
+						fileErrs++;
+						SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
+					}
+				}
+				break;
+			}
+
+			default:
+				// FIXME: Other type of file?
+				fileErrs++;
+				SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
+				break;
 		}
 
 		// TODO: Restrict update frequency to X number of files/directories?

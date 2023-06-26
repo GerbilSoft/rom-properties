@@ -94,7 +94,7 @@ void CacheCleaner::run(void)
 	// Recursively scan the cache directory.
 	// TODO: Do we really want to store everything in a list? (Wastes memory.)
 	// Maybe do a simple counting scan first, then delete.
-	forward_list<pair<string, uint32_t> > rlist;
+	forward_list<pair<string, uint8_t> > rlist;
 	int ret = recursiveScan(cacheDir.c_str(), rlist);
 	if (ret != 0) {
 		// Non-image file found.

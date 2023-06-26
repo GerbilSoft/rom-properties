@@ -25,11 +25,10 @@ namespace LibRpFile {
  * This finds *.png, *.jpg, and "version.txt".
  *
  * @param path	[in] Path to scan.
- * @param rlist	[in/out] Return list for filenames and file attributes.
- *                       (d_type on POSIX; attributes on Win32)
+ * @param rlist	[in/out] Return list for filenames and file types. (d_type)
  * @return 0 on success; non-zero on error.
  */
 RP_LIBROMDATA_PUBLIC
-int recursiveScan(const TCHAR *path, std::forward_list<std::pair<std::tstring, uint32_t> > &rlist);
+int recursiveScan(const TCHAR *path, std::forward_list<std::pair<std::tstring, uint8_t> > &rlist);
 
 }

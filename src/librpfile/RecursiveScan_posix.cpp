@@ -39,16 +39,12 @@ namespace LibRpFile {
  * POSIX implementation: Uses readdir().
  *
  * @param path	[in] Path to scan.
- * @param rlist	[in/out] Return list for filenames and file attributes.
- *                       (d_type on POSIX; attributes on Win32)
+ * @param rlist	[in/out] Return list for filenames and file types. (d_type)
  * @return 0 on success; non-zero on error.
  */
-int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint32_t> > &rlist)
+int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlist)
 {
-	// NOTE: d_type is only uint8_t, but uint32_t is needed for
-	// compatibility with the Windows version (DWORD).
-
-	DIR *pdir = opendir(path);
+	DIR *const pdir = opendir(path);
 	if (!pdir) {
 		// Error opening the directory.
 		return -errno;

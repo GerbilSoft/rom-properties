@@ -11,6 +11,9 @@
 #include "RecursiveScan.hpp"
 #include "FileSystem.hpp"
 
+// d_type compatibility values
+#include "d_type.h"
+
 // C++ STL classes
 using std::forward_list;
 using std::pair;
@@ -32,11 +35,10 @@ namespace LibRpFile {
  * POSIX implementation: Uses readdir().
  *
  * @param path	[in] Path to scan.
- * @param rlist	[in/out] Return list for filenames and file attributes.
- *                       (d_type on POSIX; attributes on Win32)
+ * @param rlist	[in/out] Return list for filenames and file types. (d_type)
  * @return 0 on success; non-zero on error.
  */
-int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint32_t> > &rlist)
+int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlist)
 {
 	tstring findFilter(path);
 	findFilter += _T("\\*");
@@ -89,8 +91,11 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint32_t> > &rli
 		fullFileName += _T('\\');
 		fullFileName += findFileData.cFileName;
 
-		// Add the filename and attributes.
-		rlist.emplace_front(fullFileName, findFileData.dwFileAttributes);
+		// Add the filename and d_type.
+		// TODO: Add a "file attributes to d_type" function,
+		// and update FileSystem::get_file_d_type() to use it.
+		const uint8_t d_type = (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? DT_DIR : DT_REG;
+		rlist.emplace_front(fullFileName, d_type);
 
 		// If this is a directory, recursively scan it.
 		// This is done *after* adding the directory because forward_list
