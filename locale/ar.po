@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2023-06-24 20:26-0400\n"
-"PO-Revision-Date: 2023-06-25 01:20\n"
+"POT-Creation-Date: 2023-06-26 01:07-0400\n"
+"PO-Revision-Date: 2023-06-26 05:47\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar_SA\n"
@@ -56,6 +56,7 @@ msgid "Icon"
 msgstr "أيقونة"
 
 #: ../build/src/kde/kf5/ui_CacheTab.h:98
+#: ../src/gtk/config/CacheTab.cpp:156
 msgctxt "CacheTab"
 msgid "If any image type settings were changed, you will need to\n"
 "clear the system thumbnail cache."
@@ -799,12 +800,6 @@ msgstr ""
 #: ../src/kde/config/CacheCleaner.cpp:261 ../src/win32/config/CacheTab.cpp:697
 msgctxt "CacheCleaner"
 msgid "rom-properties cache has unexpected files. Not clearing it."
-msgstr ""
-
-#: ../src/gtk/config/CacheTab.cpp:156
-msgctxt "CacheTab"
-msgid "If any image type settings were changed, you will need\n"
-"to clear the system thumbnail cache."
 msgstr ""
 
 #: ../src/gtk/config/CacheTab.cpp:360 ../src/gtk/config/CacheTab.cpp:485
@@ -2692,104 +2687,105 @@ msgctxt "Dreamcast|Expansion"
 msgid "Microphone"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:743
+#. tr: "VMS" in Japan; "VMU" in USA; "VM" in Europe
+#: ../src/libromdata/Console/Dreamcast.cpp:744
 msgctxt "Dreamcast|Expansion"
 msgid "VMU"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:747
+#: ../src/libromdata/Console/Dreamcast.cpp:748
 msgctxt "Dreamcast"
 msgid "Expansion Units"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:752
+#: ../src/libromdata/Console/Dreamcast.cpp:753
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Start, A, B, D-Pad"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:753
+#: ../src/libromdata/Console/Dreamcast.cpp:754
 msgctxt "Dreamcast|ReqCtrl"
 msgid "C Button"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:754
+#: ../src/libromdata/Console/Dreamcast.cpp:755
 msgctxt "Dreamcast|ReqCtrl"
 msgid "D Button"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:755
+#: ../src/libromdata/Console/Dreamcast.cpp:756
 msgctxt "Dreamcast|ReqCtrl"
 msgid "X Button"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:756
+#: ../src/libromdata/Console/Dreamcast.cpp:757
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Y Button"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:757
+#: ../src/libromdata/Console/Dreamcast.cpp:758
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Z Button"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:758
+#: ../src/libromdata/Console/Dreamcast.cpp:759
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Second D-Pad"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:759
+#: ../src/libromdata/Console/Dreamcast.cpp:760
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog L Trigger"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:760
+#: ../src/libromdata/Console/Dreamcast.cpp:761
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog R Trigger"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:761
+#: ../src/libromdata/Console/Dreamcast.cpp:762
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog H1"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:762
+#: ../src/libromdata/Console/Dreamcast.cpp:763
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog V1"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:763
+#: ../src/libromdata/Console/Dreamcast.cpp:764
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog H2"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:764
+#: ../src/libromdata/Console/Dreamcast.cpp:765
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog V2"
 msgstr ""
 
 #. tr: Required controller features.
-#: ../src/libromdata/Console/Dreamcast.cpp:769
+#: ../src/libromdata/Console/Dreamcast.cpp:770
 msgctxt "Dreamcast"
 msgid "Req. Controller"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:774
+#: ../src/libromdata/Console/Dreamcast.cpp:775
 msgctxt "Dreamcast|OptCtrl"
 msgid "Light Gun"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:775
+#: ../src/libromdata/Console/Dreamcast.cpp:776
 msgctxt "Dreamcast|OptCtrl"
 msgid "Keyboard"
 msgstr ""
 
-#: ../src/libromdata/Console/Dreamcast.cpp:776
+#: ../src/libromdata/Console/Dreamcast.cpp:777
 msgctxt "Dreamcast|OptCtrl"
 msgid "Mouse"
 msgstr ""
 
 #. tr: Optional controller features.
-#: ../src/libromdata/Console/Dreamcast.cpp:781
+#: ../src/libromdata/Console/Dreamcast.cpp:782
 msgctxt "Dreamcast"
 msgid "Opt. Controller"
 msgstr ""
@@ -2857,7 +2853,7 @@ msgctxt "DreamcastSave"
 msgid "Save Data"
 msgstr ""
 
-#. tr: VMU game file.
+#. tr: VMU game file. ("VMS" in Japan; "VMU" in USA; "VM" in Europe)
 #: ../src/libromdata/Console/DreamcastSave.cpp:1359
 #: ../src/libromdata/Console/DreamcastSave.cpp:1374
 msgctxt "DreamcastSave"
