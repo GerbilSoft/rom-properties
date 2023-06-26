@@ -90,7 +90,7 @@ FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
     LTEXT           "", IDC_CACHE_DESCRIPTION, 7, 7, 397, 8, SS_LEFT, WS_EX_TRANSPARENT
     PUSHBUTTON      "Borrar el caché de miniaturas del sistema", IDC_CACHE_CLEAR_SYS_THUMBS, 7, 20, 398, 28, 0, WS_EX_LEFT
-    LTEXT           "La página de Rom properties mantiene su propia caché de descarga para las imágenes externas.\nBorrar esta caché obligará a volver a descargar las imágenes externas.", IDC_STATIC, 7, 55, 397, 17, SS_LEFT, WS_EX_TRANSPARENT
+    LTEXT           "La página de ROM Properties mantiene su propia caché de descarga para las imágenes externas.\nBorrar esta caché obligará a volver a descargar las imágenes externas.", IDC_STATIC, 7, 55, 397, 17, SS_LEFT, WS_EX_TRANSPARENT
     PUSHBUTTON      "Borrar la caché de descarga de la página de Rom properties", IDC_CACHE_CLEAR_RP_DL, 7, 75, 398, 28, 0, WS_EX_LEFT
     LTEXT           "", IDC_CACHE_STATUS, 7, 205, 397, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
     CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 216, 397, 16, WS_EX_LEFT
@@ -112,7 +112,7 @@ BEGIN
     EDITTEXT        IDC_CACHE_XP_PATH, 7, 46, 343, 14, NOT WS_VISIBLE | ES_AUTOHSCROLL, WS_EX_LEFT
     PUSHBUTTON      "Buscar...", IDC_CACHE_XP_BROWSE, 355, 45, 50, 15, NOT WS_VISIBLE, WS_EX_LEFT
     PUSHBUTTON      "Encontrar y eliminar los archivos Thumbs.db", IDC_CACHE_XP_CLEAR_SYS_THUMBS, 7, 95, 398, 20, WS_DISABLED | BS_MULTILINE, WS_EX_LEFT
-    LTEXT           "La página de Rom properties mantiene su propia caché de descarga de imágenes externas. Borrar esta caché obligará a volver a descargar las imágenes externas.", IDC_STATIC, 7, 125, 313, 20, SS_LEFT, WS_EX_TRANSPARENT
+    LTEXT           "La página de ROM Properties mantiene su propia caché de descarga de imágenes externas. Borrar esta caché obligará a volver a descargar las imágenes externas.", IDC_STATIC, 7, 125, 313, 20, SS_LEFT, WS_EX_TRANSPARENT
     PUSHBUTTON      "Borrar", IDC_CACHE_CLEAR_RP_DL, 323, 127, 82, 15, 0, WS_EX_LEFT
     LTEXT           "", IDC_CACHE_STATUS, 7, 205, 397, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
     CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 216, 397, 16, WS_EX_LEFT
