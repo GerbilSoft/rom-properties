@@ -31,15 +31,16 @@ SET(${PROJECT_NAME}_SRCS
 	)
 # Headers.
 SET(${PROJECT_NAME}_H
+	DualFile.hpp
 	IRpFile.hpp
+	FileSystem.hpp
+	MemFile.hpp
 	RpFile.hpp
 	RpFile_p.hpp
-	MemFile.hpp
-	VectorFile.hpp
-	FileSystem.hpp
+	RecursiveScan.hpp
 	RelatedFile.hpp
-	DualFile.hpp
 	SubFile.hpp
+	VectorFile.hpp
 	scsi/ata_protocol.h
 	scsi/scsi_protocol.h
 	scsi/scsi_ata_cmds.h
@@ -105,8 +106,9 @@ ENDIF()
 IF(WIN32)
 	SET(${PROJECT_NAME}_OS_SRCS
 		win32/FileSystem_win32.cpp
-		win32/RpFile_win32.cpp
 		win32/IStreamWrapper.cpp
+		win32/RecursiveScan_win32.cpp
+		win32/RpFile_win32.cpp
 		win32/RpFile_windres.cpp
 		)
 	SET(${PROJECT_NAME}_OS_H
@@ -116,6 +118,7 @@ IF(WIN32)
 ELSE(WIN32)
 	SET(${PROJECT_NAME}_OS_SRCS
 		FileSystem_posix.cpp
+		RecursiveScan_posix.cpp
 		RpFile_stdio.cpp
 		)
 ENDIF(WIN32)
