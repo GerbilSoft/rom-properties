@@ -2,7 +2,7 @@
 # If libpng isn't found, extlib/libpng/ will be used instead.
 
 IF(NOT USE_INTERNAL_PNG)
-	IF(PNG_LIBRARY MATCHES "^png$" OR PNG_LIBRARY MATCHES "^png_static$")
+	IF(PNG_LIBRARY MATCHES "^png_shared$" OR PNG_LIBRARY MATCHES "^png_static$")
 		# Internal libpng was previously in use.
 		UNSET(PNG_FOUND)
 		UNSET(HAVE_PNG)
@@ -31,7 +31,7 @@ IF(USE_INTERNAL_PNG)
 	IF(WIN32 OR APPLE)
 		# Using DLLs on Windows and Mac OS X.
 		SET(USE_INTERNAL_PNG_DLL ON)
-		SET(PNG_LIBRARY png CACHE INTERNAL "PNG library" FORCE)
+		SET(PNG_LIBRARY png_shared CACHE INTERNAL "PNG library" FORCE)
 		UNSET(PNG_DEFINITIONS)
 	ELSE()
 		# Using static linking on other systems.
