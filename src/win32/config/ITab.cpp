@@ -32,6 +32,7 @@ LPVOID ITab::LoadResource_i18n(LPCTSTR lpType, DWORD dwResId)
 	WORD wLanguageFallback = 0;	// Fallback language.
 
 	// Mappings for languages with only a single variant implemented.
+	// Reference: https://learn.microsoft.com/en-us/previous-versions/windows/desktop/indexsrv/valid-locale-identifiers
 	struct lc_mapping_t {
 		uint32_t lc;
 		WORD wLanguage;
@@ -41,8 +42,8 @@ LPVOID ITab::LoadResource_i18n(LPCTSTR lpType, DWORD dwResId)
 		{'es', MAKELANGID(LANG_SPANISH, SUBLANG_SPANISH)},
 		{'fr', MAKELANGID(LANG_FRENCH, SUBLANG_FRENCH)},
 		{'pt', MAKELANGID(LANG_PORTUGUESE, SUBLANG_PORTUGUESE_BRAZILIAN)},
-		{'ru', MAKELANGID(LANG_RUSSIAN, SUBLANG_RUSSIAN_RUSSIA)},
-		{'uk', MAKELANGID(LANG_UKRAINIAN, SUBLANG_UKRAINIAN_UKRAINE)},
+		{'ru', MAKELANGID(LANG_RUSSIAN, SUBLANG_DEFAULT)},
+		{'uk', MAKELANGID(LANG_UKRAINIAN, SUBLANG_DEFAULT)},
 	};
 	static const struct lc_mapping_t *const p_lc_mappings_end = &lc_mappings[ARRAY_SIZE(lc_mappings)];
 
