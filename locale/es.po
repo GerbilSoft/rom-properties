@@ -15,6 +15,12 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Crowdin-Project: rom-properties\n"
+"X-Crowdin-Project-ID: 573479\n"
+"X-Crowdin-Language: es-ES\n"
+"X-Crowdin-File: /master/locale/rom-properties.pot\n"
+"X-Crowdin-File-ID: 5\n"
 
 #: ../build/src/kde/kf5/ui_AboutTab.h:276 ../src/gtk/config/AboutTab.cpp:288
 msgctxt "AboutTab"
@@ -29,7 +35,7 @@ msgstr "&Bibliotecas"
 #: ../build/src/kde/kf5/ui_AboutTab.h:278 ../src/gtk/config/AboutTab.cpp:296
 msgctxt "AboutTab"
 msgid "&Support"
-msgstr "&Soporte"
+msgstr "&Asistencia"
 
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:51
 #: ../src/gtk/config/AchievementsTab.cpp:215
@@ -71,14 +77,14 @@ msgid ""
 "ROM Properties Page maintains its own download cache for external images.\n"
 "Clearing this cache will force external images to be redownloaded."
 msgstr ""
-"La página de Rom properties mantiene su propia caché de descarga para las "
+"La página de ROM Properties mantiene su propia caché de descarga para las "
 "imágenes externas.\n"
 "Borrar esta caché obligará a volver a descargar las imágenes externas."
 
 #: ../build/src/kde/kf5/ui_CacheTab.h:103 ../src/gtk/config/CacheTab.cpp:171
 msgctxt "CacheTab"
 msgid "Clear the ROM Properties Page Download Cache"
-msgstr "Borrar la caché de descarga de la página de Rom properties"
+msgstr "Borrar la caché de descarga de la página de ROM Properties"
 
 #. tr: Dialog title.
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:90
@@ -92,7 +98,7 @@ msgstr "Configuración de ROM Properties"
 #: ../src/gtk/config/ConfigDialog.cpp:238
 msgctxt "ConfigDialog"
 msgid "&Image Types"
-msgstr "&Tipos de imagen"
+msgstr "&Tipos de Imagen"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:92
 #: ../src/gtk/config/ConfigDialog.cpp:239
@@ -110,7 +116,7 @@ msgstr "&Opciones"
 #: ../src/gtk/config/ConfigDialog.cpp:241
 msgctxt "ConfigDialog"
 msgid "Thumbnail Cache"
-msgstr "Cache de miniaturas"
+msgstr "Cache de Miniaturas"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:95
 #: ../src/gtk/config/ConfigDialog.cpp:242
@@ -859,7 +865,7 @@ msgstr "Limpiando el caché de miniaturas del sistema..."
 #: ../src/gtk/config/CacheTab.cpp:366 ../src/kde/config/CacheTab.cpp:128
 msgctxt "CacheTab"
 msgid "Clearing the ROM Properties Page cache..."
-msgstr "Limpiando el caché de rom-properties..."
+msgstr "Limpiando el caché de ROM Properties..."
 
 #: ../src/gtk/config/CacheTab.cpp:488 ../src/kde/config/CacheTab.cpp:280
 msgctxt "CacheTab"
@@ -901,7 +907,7 @@ msgstr "&Gestor de Llaves"
 #: ../src/gtk/config/ConfigDialog.cpp:329
 msgctxt "ConfigDialog|Button"
 msgid "&Reset"
-msgstr "Reset"
+msgstr "&Reset"
 
 #: ../src/gtk/config/ConfigDialog.cpp:301
 #: ../src/gtk/config/ConfigDialog.cpp:333
@@ -1045,7 +1051,7 @@ msgstr "keys.bin|keys.bin|-|Archivos binarios|*.bin|-|Todos los archivos|*.*|-"
 #: ../src/win32/config/KeyManagerTab.cpp:1697
 msgctxt "KeyManagerTab"
 msgid "otp.bin|otp.bin|-|Binary Files|*.bin|-|All Files|*.*|-"
-msgstr "otp.bin|otp.bin|-|Archivos binários|*.bin|-|Todos os Archivos|*.*|-"
+msgstr "otp.bin|otp.bin|-|Archivos binarios|*.bin|-|Todos los archivos|*.*|-"
 
 #. tr: Nintendo 3DS boot9.bin file filter (RP format)
 #: ../src/gtk/config/KeyManagerTab.cpp:603
@@ -1065,7 +1071,7 @@ msgctxt "KeyManagerTab"
 msgid "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|-|All Files|*.*|-"
 msgstr ""
 "aeskeydb.bin|aeskeydb.bin|-|Archivos binarios|*.bin|application/octet-stream|"
-"Todos los Archivos|*.*|-"
+"Todos los archivos|*.*|-"
 
 #: ../src/gtk/config/KeyManagerTab.cpp:618 ../src/gtk/RomDataView_ops.cpp:316
 #: ../src/gtk/RomDataView_ops.cpp:483
@@ -1408,7 +1414,7 @@ msgstr "Archivo: '%s'"
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:321
 msgctxt "RomDataView"
 msgid "Export to Text File"
-msgstr "Exportar a un archivo de texto"
+msgstr "Exportar a un Archivo de Texto"
 
 #: ../src/gtk/RomDataView_ops.cpp:298 ../src/kde/RomDataView_ops.cpp:217
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:322
@@ -1420,7 +1426,7 @@ msgstr "Archivos de texto|*.txt|text/plain|Todos los archivos|*.*|-"
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:326
 msgctxt "RomDataView"
 msgid "Export to JSON File"
-msgstr "Exportar a un archivo JSON"
+msgstr "Exportar a un Archivo JSON"
 
 #: ../src/gtk/RomDataView_ops.cpp:304 ../src/kde/RomDataView_ops.cpp:223
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:327
@@ -1509,7 +1515,7 @@ msgstr "Coeficiente fijo ADPCM"
 #: ../src/libromdata/Audio/ADX.cpp:269
 msgctxt "ADX|Format"
 msgid "ADX with Exponential Scale"
-msgstr "ADX con escala exponencial"
+msgstr "ADX con Escala Exponencial"
 
 #: ../src/libromdata/Audio/ADX.cpp:281
 #: ../src/libromdata/Console/GameCube.cpp:1935
@@ -1594,7 +1600,7 @@ msgstr "Corte de paso alto"
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:412
 msgctxt "RomData"
 msgid "Yes"
-msgstr "Si"
+msgstr "Sí"
 
 #. tr: Debugging is disabled.
 #: ../src/libromdata/Audio/ADX.cpp:314 ../src/libromdata/Audio/BCSTM.cpp:501
@@ -2343,7 +2349,7 @@ msgid ""
 "Icon"
 msgstr ""
 "Icono\n"
-"interno"
+"Interno"
 
 #. tr: IMG_INT_BANNER
 #: ../src/libromdata/config/ImageTypesConfig.cpp:99
@@ -2353,7 +2359,7 @@ msgid ""
 "Banner"
 msgstr ""
 "Banner\n"
-"interno"
+"Interno"
 
 #. tr: IMG_INT_MEDIA
 #: ../src/libromdata/config/ImageTypesConfig.cpp:101
@@ -2363,7 +2369,7 @@ msgid ""
 "Media"
 msgstr ""
 "Media\n"
-"interna"
+"Interna"
 
 #. tr: IMG_INT_IMAGE
 #: ../src/libromdata/config/ImageTypesConfig.cpp:103
@@ -2373,7 +2379,7 @@ msgid ""
 "Image"
 msgstr ""
 "Imagen\n"
-"interna"
+"Interna"
 
 #. tr: IMG_EXT_MEDIA
 #: ../src/libromdata/config/ImageTypesConfig.cpp:108
@@ -2383,7 +2389,7 @@ msgid ""
 "Media"
 msgstr ""
 "Media\n"
-"externa"
+"Externa"
 
 #. tr: IMG_EXT_COVER
 #: ../src/libromdata/config/ImageTypesConfig.cpp:110
@@ -2393,7 +2399,7 @@ msgid ""
 "Cover"
 msgstr ""
 "Tapa\n"
-"externa"
+"Externa"
 
 #. tr: IMG_EXT_COVER_3D
 #: ../src/libromdata/config/ImageTypesConfig.cpp:112
@@ -2403,7 +2409,7 @@ msgid ""
 "3D Cover"
 msgstr ""
 "Tapa 3D\n"
-"externa"
+"Externa"
 
 #. tr: IMG_EXT_COVER_FULL
 #: ../src/libromdata/config/ImageTypesConfig.cpp:114
@@ -2413,8 +2419,8 @@ msgid ""
 "Full Cover"
 msgstr ""
 "Tapa\n"
-"externa\n"
-"completa"
+"Externa\n"
+"Completa"
 
 #. tr: IMG_EXT_BOX
 #: ../src/libromdata/config/ImageTypesConfig.cpp:116
@@ -2424,7 +2430,7 @@ msgid ""
 "Box"
 msgstr ""
 "Caja\n"
-"externa"
+"Externa"
 
 #. tr: IMG_EXT_TITLE_SCREEN
 #: ../src/libromdata/config/ImageTypesConfig.cpp:118
@@ -2434,8 +2440,8 @@ msgid ""
 "Title Screen"
 msgstr ""
 "Pantalla de\n"
-"titulo\n"
-"externa"
+"Titulo\n"
+"Externa"
 
 #. tr: amiibo
 #: ../src/libromdata/config/ImageTypesConfig.cpp:148
@@ -3321,7 +3327,7 @@ msgstr "Francia"
 #: ../src/libromdata/Console/SNES.cpp:1372
 msgctxt "Region"
 msgid "Netherlands"
-msgstr "Holanda"
+msgstr "Países Bajos"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:97
 #: ../src/libromdata/Console/SNES.cpp:1375
@@ -3668,7 +3674,7 @@ msgstr "Imagen de disco FDS (con cabecera fwNES)"
 #: ../src/libromdata/Console/NES.cpp:1108
 msgctxt "NES|Format"
 msgid "TDS (Nintendo 3DS Virtual Console)"
-msgstr "TDS (Consola virtual de Nintendo 3DS)"
+msgstr "TDS (Consola Virtual de Nintendo 3DS)"
 
 #: ../src/libromdata/Console/NES.cpp:1119
 msgctxt "NES"
@@ -3680,7 +3686,7 @@ msgstr "Formato"
 #, c-format
 msgctxt "NES|Format"
 msgid "%s (Wii U Virtual Console)"
-msgstr "%s (Consola virtual de Wii U)"
+msgstr "%s (Consola Virtual de Wii U)"
 
 #: ../src/libromdata/Console/NES.cpp:1144
 msgctxt "NES"
@@ -6148,7 +6154,7 @@ msgstr "Versión FIRM"
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:313
 msgctxt "Nintendo3DSFirm"
 msgid "System Version"
-msgstr "Versión de sistema"
+msgstr "Versión de Sistema"
 
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:401
 msgctxt "Nintendo3DSFirm"
@@ -10257,7 +10263,7 @@ msgstr "Bibliotecas"
 #: ../src/win32/config/AboutTab.cpp:1135
 msgctxt "AboutTab"
 msgid "Support"
-msgstr "Soporte"
+msgstr "Asistencia"
 
 #. tr: Tab title.
 #: ../src/win32/config/AboutTab.cpp:1347
@@ -10312,12 +10318,12 @@ msgstr "ERROR: No se detectaron HDDs o SSDs."
 #, c-format
 msgctxt "CacheTab|Win32"
 msgid "ERROR: Thumbnail Cache cleaner not found. (res == %ld)"
-msgstr "ERROR: Limpador de cache minuaturas no encontrado. (res == %ld)"
+msgstr "ERROR: Limpador de Cache Minuaturas no encontrado. (res == %ld)"
 
 #: ../src/win32/config/CacheTab.cpp:409 ../src/win32/config/CacheTab.cpp:418
 msgctxt "CacheTab|Win32"
 msgid "ERROR: Thumbnail Cache cleaner CLSID is invalid."
-msgstr "ERROR: limpador de cache de miniaturas CLSID inválido."
+msgstr "ERROR: Limpador de Cache Miniaturas CLSID inválido."
 
 #: ../src/win32/config/CacheTab.cpp:432
 #, c-format
@@ -10380,7 +10386,7 @@ msgstr "Defecto"
 #: ../src/win32/config/ImageTypesTab.cpp:718
 msgctxt "ImageTypesTab"
 msgid "Image Types"
-msgstr "Tipos de imagenes"
+msgstr "Tipos de Imagenes"
 
 #: ../src/win32/config/KeyManagerTab.cpp:318
 msgctxt "KeyManagerTab"
@@ -10391,7 +10397,7 @@ msgstr "I&mportar..."
 #: ../src/win32/config/KeyManagerTab.cpp:1763
 msgctxt "KeyManagerTab"
 msgid "Key Manager"
-msgstr "Gestor de llaves"
+msgstr "Gestor de &Llaves"
 
 #. tr: Tab title.
 #: ../src/win32/config/SystemsTab.cpp:389

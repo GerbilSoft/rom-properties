@@ -11,7 +11,7 @@ msgstr ""
 "PO-Revision-Date: 2018-06-02 15:07-0300\n"
 "Last-Translator: Null Magic\n"
 "Language-Team: \n"
-"Language: pt_BR\n"
+"Language: pt\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -3305,7 +3305,7 @@ msgstr "França"
 #: ../src/libromdata/Console/SNES.cpp:1372
 msgctxt "Region"
 msgid "Netherlands"
-msgstr "Holanda"
+msgstr "Países Baixos"
 
 #: ../src/libromdata/Console/GameCubeRegions.cpp:97
 #: ../src/libromdata/Console/SNES.cpp:1375
