@@ -727,6 +727,7 @@ void AboutTabPrivate::initProgramTitleText(void)
 	initBoldFont(hFontDlg);
 
 	// Set the bold font for the program title.
+	// FIXME: ru/uk have the program title as the second line.
 	assert(hFontBold != nullptr);
 	if (unlikely(hFontBold)) {
 		SetWindowFont(hStaticLine1, hFontBold, FALSE);
