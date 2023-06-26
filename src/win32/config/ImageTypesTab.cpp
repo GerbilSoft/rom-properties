@@ -273,7 +273,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 		const int y_lbl = curPt.y + (sz_lblImageType.cy - h_lbl[i]);
 		HWND lblImageType = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
 			WC_STATIC, U82T_c(imageTypeName(i)),
-			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_CENTER,
+			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_CENTER | SS_NOPREFIX,
 			curPt.x, y_lbl, sz_lblImageType.cx, h_lbl[i],
 			hWndPropSheet, (HMENU)IDC_STATIC, nullptr, nullptr);
 		SetWindowFont(lblImageType, hFontDlg, FALSE);
@@ -298,7 +298,7 @@ void ImageTypesTabPrivate::createGridLabels(void)
 		// System name label.
 		HWND lblSysName = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT,
 			WC_STATIC, U82T_c(sysName(sys)),
-			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_RIGHT,
+			WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | SS_RIGHT | SS_NOPREFIX,
 			curPt.x, curPt.y,
 			sz_lblSysName.cx, sz_lblSysName.cy,
 			hWndPropSheet, (HMENU)IDC_STATIC, nullptr, nullptr);
