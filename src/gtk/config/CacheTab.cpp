@@ -153,7 +153,7 @@ rp_cache_tab_init(RpCacheTab *tab)
 
 	// FIXME: Better wrapping that doesn't require manual newlines.
 	tab->lblSysCache = gtk_label_new(
-		C_("CacheTab", "If any image type settings were changed, you will need\nto clear the system thumbnail cache."));
+		C_("CacheTab", "If any image type settings were changed, you will need to\nclear the system thumbnail cache."));
 	gtk_widget_set_name(tab->lblSysCache, "lblSysCache");
 	GTK_LABEL_XALIGN_LEFT(tab->lblSysCache);
 	gtk_label_set_wrap(GTK_LABEL(tab->lblSysCache), TRUE);
