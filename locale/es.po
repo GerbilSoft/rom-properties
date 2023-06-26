@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.1+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2023-06-24 20:26-0400\n"
+"POT-Creation-Date: 2023-06-26 01:07-0400\n"
 "PO-Revision-Date: 2021-04-02 22:56-0400\n"
 "Last-Translator: Amnesia1000\n"
 "Language-Team: \n"
@@ -16,20 +16,17 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../build/src/kde/kf5/ui_AboutTab.h:276
-#: ../src/gtk/config/AboutTab.cpp:288
+#: ../build/src/kde/kf5/ui_AboutTab.h:276 ../src/gtk/config/AboutTab.cpp:288
 msgctxt "AboutTab"
 msgid "C&redits"
 msgstr "C&réditos"
 
-#: ../build/src/kde/kf5/ui_AboutTab.h:277
-#: ../src/gtk/config/AboutTab.cpp:292
+#: ../build/src/kde/kf5/ui_AboutTab.h:277 ../src/gtk/config/AboutTab.cpp:292
 msgctxt "AboutTab"
 msgid "&Libraries"
 msgstr "&Bibliotecas"
 
-#: ../build/src/kde/kf5/ui_AboutTab.h:278
-#: ../src/gtk/config/AboutTab.cpp:296
+#: ../build/src/kde/kf5/ui_AboutTab.h:278 ../src/gtk/config/AboutTab.cpp:296
 msgctxt "AboutTab"
 msgid "&Support"
 msgstr "&Soporte"
@@ -54,7 +51,7 @@ msgctxt "AchievementsTab"
 msgid "Icon"
 msgstr "Icono"
 
-#: ../build/src/kde/kf5/ui_CacheTab.h:98
+#: ../build/src/kde/kf5/ui_CacheTab.h:98 ../src/gtk/config/CacheTab.cpp:156
 msgctxt "CacheTab"
 msgid ""
 "If any image type settings were changed, you will need to\n"
@@ -63,14 +60,12 @@ msgstr ""
 "Si se cambia alguna configuración del tipo de imagen, debe\n"
 "eliminar el caché de miniaturas del sistema."
 
-#: ../build/src/kde/kf5/ui_CacheTab.h:100
-#: ../src/gtk/config/CacheTab.cpp:161
+#: ../build/src/kde/kf5/ui_CacheTab.h:100 ../src/gtk/config/CacheTab.cpp:161
 msgctxt "CacheTab"
 msgid "Clear the System Thumbnail Cache"
 msgstr "Borrar el caché de miniaturas del sistema"
 
-#: ../build/src/kde/kf5/ui_CacheTab.h:101
-#: ../src/gtk/config/CacheTab.cpp:165
+#: ../build/src/kde/kf5/ui_CacheTab.h:101 ../src/gtk/config/CacheTab.cpp:165
 msgctxt "CacheTab"
 msgid ""
 "ROM Properties Page maintains its own download cache for external images.\n"
@@ -80,8 +75,7 @@ msgstr ""
 "imágenes externas.\n"
 "Borrar esta caché obligará a volver a descargar las imágenes externas."
 
-#: ../build/src/kde/kf5/ui_CacheTab.h:103
-#: ../src/gtk/config/CacheTab.cpp:171
+#: ../build/src/kde/kf5/ui_CacheTab.h:103 ../src/gtk/config/CacheTab.cpp:171
 msgctxt "CacheTab"
 msgid "Clear the ROM Properties Page Download Cache"
 msgstr "Borrar la caché de descarga de la página de Rom properties"
@@ -628,14 +622,12 @@ msgstr ""
 "Selecciona el modelo de Game Boy que se utilizará para las pantallas de\n"
 "título de los diferentes tipos de ROMs de Game Boy."
 
-#: ../build/src/kde/kf5/ui_XAttrView.h:98
-#: ../src/gtk/xattr/XAttrView.cpp:121
+#: ../build/src/kde/kf5/ui_XAttrView.h:98 ../src/gtk/xattr/XAttrView.cpp:121
 msgctxt "XAttrView"
 msgid "Linux Attributes"
 msgstr ""
 
-#: ../build/src/kde/kf5/ui_XAttrView.h:99
-#: ../src/gtk/xattr/XAttrView.cpp:129
+#: ../build/src/kde/kf5/ui_XAttrView.h:99 ../src/gtk/xattr/XAttrView.cpp:129
 msgctxt "XAttrView"
 msgid "MS-DOS Attributes"
 msgstr ""
@@ -645,14 +637,12 @@ msgctxt "XAttrView"
 msgid "E&xtended Attributes"
 msgstr ""
 
-#: ../build/src/kde/kf5/ui_XAttrView.h:102
-#: ../src/gtk/xattr/XAttrView.cpp:162
+#: ../build/src/kde/kf5/ui_XAttrView.h:102 ../src/gtk/xattr/XAttrView.cpp:162
 msgctxt "XAttrView"
 msgid "Value"
 msgstr "Valor"
 
-#: ../build/src/kde/kf5/ui_XAttrView.h:103
-#: ../src/gtk/xattr/XAttrView.cpp:161
+#: ../build/src/kde/kf5/ui_XAttrView.h:103 ../src/gtk/xattr/XAttrView.cpp:161
 #, fuzzy
 msgctxt "XAttrView"
 msgid "Name"
@@ -853,15 +843,6 @@ msgctxt "CacheCleaner"
 msgid "rom-properties cache has unexpected files. Not clearing it."
 msgstr ""
 "El caché de rom-properties tiene archivos inesperados. No se está limpiando."
-
-#: ../src/gtk/config/CacheTab.cpp:156
-msgctxt "CacheTab"
-msgid ""
-"If any image type settings were changed, you will need\n"
-"to clear the system thumbnail cache."
-msgstr ""
-"Si se cambia alguna configuración del tipo de imagen,\n"
-"debe eliminar el caché de miniaturas del sistema."
 
 #: ../src/gtk/config/CacheTab.cpp:360 ../src/gtk/config/CacheTab.cpp:485
 #: ../src/gtk/config/CacheTab.cpp:531 ../src/kde/config/CacheTab.cpp:122
@@ -2787,104 +2768,105 @@ msgctxt "Dreamcast|Expansion"
 msgid "Microphone"
 msgstr "Microfono"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:743
+#. tr: "VMS" in Japan; "VMU" in USA; "VM" in Europe
+#: ../src/libromdata/Console/Dreamcast.cpp:744
 msgctxt "Dreamcast|Expansion"
 msgid "VMU"
 msgstr "VMU"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:747
+#: ../src/libromdata/Console/Dreamcast.cpp:748
 msgctxt "Dreamcast"
 msgid "Expansion Units"
 msgstr "Unidades de expansión"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:752
+#: ../src/libromdata/Console/Dreamcast.cpp:753
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Start, A, B, D-Pad"
 msgstr "Start, A, B, D-Pad"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:753
+#: ../src/libromdata/Console/Dreamcast.cpp:754
 msgctxt "Dreamcast|ReqCtrl"
 msgid "C Button"
 msgstr "Boton C"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:754
+#: ../src/libromdata/Console/Dreamcast.cpp:755
 msgctxt "Dreamcast|ReqCtrl"
 msgid "D Button"
 msgstr "Boton D"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:755
+#: ../src/libromdata/Console/Dreamcast.cpp:756
 msgctxt "Dreamcast|ReqCtrl"
 msgid "X Button"
 msgstr "Boton X"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:756
+#: ../src/libromdata/Console/Dreamcast.cpp:757
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Y Button"
 msgstr "Boton Y"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:757
+#: ../src/libromdata/Console/Dreamcast.cpp:758
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Z Button"
 msgstr "Boton Z"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:758
+#: ../src/libromdata/Console/Dreamcast.cpp:759
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Second D-Pad"
 msgstr "D-Pad secundário"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:759
+#: ../src/libromdata/Console/Dreamcast.cpp:760
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog L Trigger"
 msgstr "Boton analógico L"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:760
+#: ../src/libromdata/Console/Dreamcast.cpp:761
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog R Trigger"
 msgstr "Boton analógico R"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:761
+#: ../src/libromdata/Console/Dreamcast.cpp:762
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog H1"
 msgstr "H1 analógico"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:762
+#: ../src/libromdata/Console/Dreamcast.cpp:763
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog V1"
 msgstr "V1 analógico"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:763
+#: ../src/libromdata/Console/Dreamcast.cpp:764
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog H2"
 msgstr "H2 analógico"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:764
+#: ../src/libromdata/Console/Dreamcast.cpp:765
 msgctxt "Dreamcast|ReqCtrl"
 msgid "Analog V2"
 msgstr "V2 analógico"
 
 #. tr: Required controller features.
-#: ../src/libromdata/Console/Dreamcast.cpp:769
+#: ../src/libromdata/Console/Dreamcast.cpp:770
 msgctxt "Dreamcast"
 msgid "Req. Controller"
 msgstr "Control necesario"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:774
+#: ../src/libromdata/Console/Dreamcast.cpp:775
 msgctxt "Dreamcast|OptCtrl"
 msgid "Light Gun"
 msgstr "Pistola"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:775
+#: ../src/libromdata/Console/Dreamcast.cpp:776
 msgctxt "Dreamcast|OptCtrl"
 msgid "Keyboard"
 msgstr "Teclado"
 
-#: ../src/libromdata/Console/Dreamcast.cpp:776
+#: ../src/libromdata/Console/Dreamcast.cpp:777
 msgctxt "Dreamcast|OptCtrl"
 msgid "Mouse"
 msgstr "Mouse"
 
 #. tr: Optional controller features.
-#: ../src/libromdata/Console/Dreamcast.cpp:781
+#: ../src/libromdata/Console/Dreamcast.cpp:782
 msgctxt "Dreamcast"
 msgid "Opt. Controller"
 msgstr "Control opcional"
@@ -2952,7 +2934,7 @@ msgctxt "DreamcastSave"
 msgid "Save Data"
 msgstr "Datos de Save"
 
-#. tr: VMU game file.
+#. tr: VMU game file. ("VMS" in Japan; "VMU" in USA; "VM" in Europe)
 #: ../src/libromdata/Console/DreamcastSave.cpp:1359
 #: ../src/libromdata/Console/DreamcastSave.cpp:1374
 msgctxt "DreamcastSave"
