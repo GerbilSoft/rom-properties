@@ -1461,9 +1461,10 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 
 		// CGB, JP cases.
 		static const DmgSpecialCase_t dmgSpecialCases_CGB_JP[] = {
-			{"DIGIMON 5", "MK"},	// CGB
+			{"DIGIMON 5", "MK"},
 			{"HARVEST-MOON GB", ""},
-			{"METAL SLUG 2", "01"},	// CGB
+			{"METAL SLUG 2", "01"},
+			{"GBDAYTEST", ""},	// Unl
 
 			{"", ""}
 		};
