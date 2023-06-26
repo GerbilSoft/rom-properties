@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-06-26 01:07-0400\n"
-"PO-Revision-Date: 2023-06-26 17:11\n"
+"PO-Revision-Date: 2023-06-26 22:27\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es_ES\n"
@@ -9662,7 +9662,7 @@ msgstr "No es compatible con APNG. Sólo se extrae el primer fotograma."
 #: ../src/rpcli/rpcli.cpp:181
 msgctxt "rpcli"
 msgid "Animated icon not found"
-msgstr ""
+msgstr "Icono animado"
 
 #: ../src/rpcli/rpcli.cpp:186
 #, c-format
@@ -10197,7 +10197,7 @@ msgstr "I&mportar..."
 #: ../src/win32/config/KeyManagerTab.cpp:1763
 msgctxt "KeyManagerTab"
 msgid "Key Manager"
-msgstr "Gestor de llaves"
+msgstr "Gestor de &Llaves"
 
 #. tr: Tab title.
 #: ../src/win32/config/SystemsTab.cpp:389
