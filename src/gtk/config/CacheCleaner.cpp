@@ -337,7 +337,7 @@ recursiveScan(const char *path, forward_list<pair<tstring, uint8_t> > &rlist)
 		// Check the filename to see if we should delete it.
 		if (d_type == DT_REG || d_type == DT_UNKNOWN) {
 			// Thumbs.db files can be deleted.
-			if (!strcasecmp(dirent->d_name, _T("Thumbs.db")))
+			if (!strcasecmp(dirent->d_name, "Thumbs.db"))
 				goto isok;
 
 			// Check the extension.
@@ -349,8 +349,9 @@ recursiveScan(const char *path, forward_list<pair<tstring, uint8_t> > &rlist)
 			}
 
 			const char *pExt = &dirent->d_name[len-4];
-			if (strcasecmp(pExt, _T(".png")) != 0 &&
-			    strcasecmp(pExt, _T(".jpg")) != 0)
+			if (strcasecmp(pExt, ".png") != 0 &&
+			    strcasecmp(pExt, ".jpg") != 0 &&
+			    strcasecmp(dirent->d_name, "version.txt") != 0)
 			{
 				// Extension is not valid.
 				closedir(pdir);

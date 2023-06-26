@@ -57,6 +57,7 @@
   * DMG: Handle the 'H' cartridge HW type for IR carts. (HuC1, HuC3)
     * Merged #359: Update DMG.cpp
       * Reported by @MarioMasta64.
+  * CacheTab: Allow deletion of "version.txt", used by the Update Checker.
 
 * Other changes:
   * EXE: Don't show import/export tables for .NET executables, since they only

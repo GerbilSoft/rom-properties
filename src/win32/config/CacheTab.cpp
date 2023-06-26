@@ -560,9 +560,9 @@ int CacheTabPrivate::recursiveScan(const TCHAR *path, forward_list<pair<tstring,
 
 	do {
 		// Skip "." and "..".
-		if (findFileData.cFileName[0] == L'.' &&
-			(findFileData.cFileName[1] == L'\0' ||
-			 (findFileData.cFileName[1] == '.' && findFileData.cFileName[2] == '\0')))
+		if (findFileData.cFileName[0] == _T('.') &&
+			(findFileData.cFileName[1] == _T('\0') ||
+			 (findFileData.cFileName[1] == _T('.') && findFileData.cFileName[2] == _T('\0'))))
 		{
 			continue;
 		}
@@ -583,7 +583,8 @@ int CacheTabPrivate::recursiveScan(const TCHAR *path, forward_list<pair<tstring,
 
 			const TCHAR *pExt = &findFileData.cFileName[len-4];
 			if (_tcsicmp(pExt, _T(".png")) != 0 &&
-			    _tcsicmp(pExt, _T(".jpg")) != 0)
+			    _tcsicmp(pExt, _T(".jpg")) != 0 &&
+			    _tcsicmp(findFileData.cFileName, _T("version.txt")) != 0)
 			{
 				// Extension is not valid.
 				FindClose(hFindFile);
