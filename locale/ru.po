@@ -2364,113 +2364,101 @@ msgstr ""
 
 #. tr: IMG_INT_ICON
 #: ../src/libromdata/config/ImageTypesConfig.cpp:97
-#, fuzzy
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid ""
 "Internal\n"
 "Icon"
 msgstr ""
 "Встроенная\n"
-"иконка"
+"Иконка"
 
 #. tr: IMG_INT_BANNER
 #: ../src/libromdata/config/ImageTypesConfig.cpp:99
-#, fuzzy
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid ""
 "Internal\n"
 "Banner"
 msgstr ""
 "Встроенный\n"
-"баннер"
+"Баннер"
 
 #. tr: IMG_INT_MEDIA
 #: ../src/libromdata/config/ImageTypesConfig.cpp:101
-#, fuzzy
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid ""
 "Internal\n"
 "Media"
 msgstr ""
 "Встроенный\n"
-"носитель"
+"Носитель"
 
 #. tr: IMG_INT_IMAGE
 #: ../src/libromdata/config/ImageTypesConfig.cpp:103
-#, fuzzy
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid ""
 "Internal\n"
 "Image"
 msgstr ""
 "Встроенное\n"
-"изображение"
+"Изображение"
 
 #. tr: IMG_EXT_MEDIA
 #: ../src/libromdata/config/ImageTypesConfig.cpp:108
-#, fuzzy
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid ""
 "External\n"
 "Media"
 msgstr ""
 "Внешний\n"
-"носитель"
+"Носитель"
 
 #. tr: IMG_EXT_COVER
 #: ../src/libromdata/config/ImageTypesConfig.cpp:110
-#, fuzzy
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid ""
 "External\n"
 "Cover"
 msgstr ""
 "Внешняя\n"
-"обложка"
+"Обложка"
 
 #. tr: IMG_EXT_COVER_3D
 #: ../src/libromdata/config/ImageTypesConfig.cpp:112
-#, fuzzy
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid ""
 "External\n"
 "3D Cover"
 msgstr ""
 "Внешняя\n"
-"3D обложка"
+"3D Обложка"
 
 #. tr: IMG_EXT_COVER_FULL
 #: ../src/libromdata/config/ImageTypesConfig.cpp:114
-#, fuzzy
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid ""
 "External\n"
 "Full Cover"
 msgstr ""
 "Внешний\n"
-"разворот"
+"Разворот"
 
 #. tr: IMG_EXT_BOX
 #: ../src/libromdata/config/ImageTypesConfig.cpp:116
-#, fuzzy
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid ""
 "External\n"
 "Box"
 msgstr ""
 "Внешняя\n"
-"упаковка"
+"Упаковка"
 
 #. tr: IMG_EXT_TITLE_SCREEN
 #: ../src/libromdata/config/ImageTypesConfig.cpp:118
-#, fuzzy
 msgctxt "ImageTypesConfig|ImageTypeDisp"
 msgid ""
 "External\n"
 "Title Screen"
 msgstr ""
-"Внешняя\n"
-"обложка"
 
 #. tr: amiibo
 #: ../src/libromdata/config/ImageTypesConfig.cpp:148
