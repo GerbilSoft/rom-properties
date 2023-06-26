@@ -475,7 +475,7 @@ void AboutTabPrivate::checkForUpdates(void)
 	sVersionLabel.reserve(64);
 
 	sVersionLabel = RTF_START RTF_ALIGN_RIGHT;
-	sVersionLabel += C_("AboutTab", "Checking for updates...");
+	sVersionLabel += rtfEscape(C_("AboutTab", "Checking for updates..."));
 
 	// NOTE: EM_SETTEXTEX doesn't seem to work.
 	// We'll need to stream in the text instead.
@@ -494,7 +494,7 @@ void AboutTabPrivate::checkForUpdates(void)
 		sVersionLabel.reserve(64);
 
 		sVersionLabel = RTF_START RTF_ALIGN_RIGHT;
-		sVersionLabel += C_("AboutTab", "Update check failed!");
+		sVersionLabel += rtfEscape(C_("AboutTab", "Update check failed!"));
 
 		// NOTE: EM_SETTEXTEX doesn't seem to work.
 		// We'll need to stream in the text instead.
@@ -525,9 +525,9 @@ void AboutTabPrivate::updChecker_error(void)
 
 	sVersionLabel = RTF_START RTF_ALIGN_RIGHT RTF_BOLD_ON;
 	// tr: Error message template. (Windows version, without formatting)
-	sVersionLabel += C_("AboutTab", "ERROR:");
+	sVersionLabel += rtfEscape(C_("AboutTab", "ERROR:"));
 	sVersionLabel += RTF_BOLD_OFF " ";
-	sVersionLabel += errorMessage;
+	sVersionLabel += rtfEscape(errorMessage);
 
 	// NOTE: EM_SETTEXTEX doesn't seem to work.
 	// We'll need to stream in the text instead.
@@ -575,10 +575,12 @@ void AboutTabPrivate::updChecker_retrieved(void)
 	sVersionLabel += RTF_COLOR_TABLE;	// TODO: Skip on Win8+?
 	sVersionLabel += RTF_ALIGN_RIGHT;
 
-	sVersionLabel += rp_sprintf(C_("AboutTab", "Latest version: %s"), sUpdVersion);
+	char s_latest_version[128];
+	snprintf(s_latest_version, sizeof(s_latest_version), C_("AboutTab", "Latest version: %s"), sUpdVersion);
+	sVersionLabel += rtfEscape(s_latest_version);
 	if (updateVersion > ourVersion) {
 		sVersionLabel += RTF_BR RTF_BR RTF_BOLD_ON;
-		sVersionLabel += C_("AboutTab", "New version available!");
+		sVersionLabel += rtfEscape(C_("AboutTab", "New version available!"));
 		sVersionLabel += RTF_BOLD_OFF RTF_BR;
 		sVersionLabel += rtfFriendlyLink("https://github.com/GerbilSoft/rom-properties/releases", C_("AboutTab", "Download at GitHub"));
 	}
