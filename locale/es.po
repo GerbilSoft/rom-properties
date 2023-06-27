@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-06-26 01:07-0400\n"
-"PO-Revision-Date: 2023-06-26 22:27\n"
+"PO-Revision-Date: 2023-06-27 02:24\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es_ES\n"
@@ -10127,7 +10127,7 @@ msgstr "ERROR: Limpador de Cache Minuaturas no encontrado. (res == %ld)"
 #: ../src/win32/config/CacheTab.cpp:409 ../src/win32/config/CacheTab.cpp:418
 msgctxt "CacheTab|Win32"
 msgid "ERROR: Thumbnail Cache cleaner CLSID is invalid."
-msgstr "ERROR: limpador de Cache Miniaturas CLSID inválido."
+msgstr "ERROR: Limpador de Cache Miniaturas CLSID inválido."
 
 #: ../src/win32/config/CacheTab.cpp:432
 #, c-format
