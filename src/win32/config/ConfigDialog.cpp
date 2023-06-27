@@ -282,7 +282,7 @@ LRESULT CALLBACK ConfigDialogPrivate::subclassProc(
 
 			HWND hBtnReset = CreateWindowEx(0, WC_BUTTON,
 				// tr: "Reset" button.
-				U82T_c(C_("ConfigDialog", "Reset")),
+				U82T_c(C_("ConfigDialog", "&Reset")),
 				WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_GROUP | BS_CENTER,
 				ptBtn.x, ptBtn.y, szBtn.cx, szBtn.cy,
 				hWnd, (HMENU)IDC_RP_RESET, nullptr, nullptr);

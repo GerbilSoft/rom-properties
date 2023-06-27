@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.1+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2023-06-27 18:57-0400\n"
+"POT-Creation-Date: 2023-06-27 19:05-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -870,7 +870,9 @@ msgctxt "ConfigDialog"
 msgid "&Key Manager"
 msgstr ""
 
+#. tr: "Reset" button.
 #: ../src/gtk/config/ConfigDialog.cpp:296
+#: ../src/win32/config/ConfigDialog.cpp:285
 msgctxt "ConfigDialog"
 msgid "&Reset"
 msgstr ""
@@ -10162,12 +10164,6 @@ msgstr ""
 #: ../src/win32/config/CacheTab.cpp:941
 msgctxt "CacheTab"
 msgid "Thumbnail Cache"
-msgstr ""
-
-#. tr: "Reset" button.
-#: ../src/win32/config/ConfigDialog.cpp:285
-msgctxt "ConfigDialog"
-msgid "Reset"
 msgstr ""
 
 #. tr: Tab title.
