@@ -383,8 +383,13 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 	gtk_widget_set_sensitive(dialog->btnReset, FALSE);
 
 	// Adjust btnDefaults for the first tab.
-	RpConfigTab *const tab_0 = RP_CONFIG_TAB(gtk_notebook_get_nth_page(GTK_NOTEBOOK(dialog->tabWidget), 0));
+	GtkWidget *tab_0 = gtk_notebook_get_nth_page(GTK_NOTEBOOK(dialog->tabWidget), 0);
 	assert(tab_0 != nullptr);
+#ifdef RP_USE_GTK_ALIGNMENT
+	// tab_0 is a GtkAlignment. Get the actual RP_CONFIG_TAB.
+	tab_0 = gtk_bin_get_child(GTK_BIN(tab_0));
+	assert(tab_0 != nullptr);
+#endif /* RP_USE_GTK_ALIGNMENT */
 	gtk_widget_set_sensitive(dialog->btnDefaults,
 		rp_config_tab_has_defaults(RP_CONFIG_TAB(tab_0)));
 
