@@ -488,7 +488,7 @@ rp_config_dialog_apply(RpConfigDialog *dialog)
 #ifdef ENABLE_DECRYPTION
 		if (RP_IS_KEY_MANAGER_TAB(tab)) {
 			// Found KeyManagerTab.
-			assert(tabKeyManager != nullptr);
+			assert(tabKeyManager == nullptr);
 			tabKeyManager = tab;
 		} else
 #endif /* ENABLE_DECRYPTION */
