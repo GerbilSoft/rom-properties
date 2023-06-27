@@ -1,0 +1,47 @@
+# rom-properties.pot exclusions
+# These translations are provided by GTK.
+
+#: ../src/gtk/gtk-i18n.h:31
+msgid "_Cancel"
+msgstr ""
+
+#: ../src/gtk/gtk-i18n.h:32
+msgid "_Apply"
+msgstr ""
+
+#: ../src/gtk/gtk-i18n.h:33
+msgid "_OK"
+msgstr ""
+
+#: ../src/gtk/gtk-i18n.h:34
+msgid "_Save"
+msgstr ""
+
+#: ../src/gtk/gtk-i18n.h:35
+msgid "_Open"
+msgstr ""
+
+#: ../src/gtk/gtk-i18n.h:38
+msgctxt "Stock label"
+msgid "_Cancel"
+msgstr ""
+
+#: ../src/gtk/gtk-i18n.h:39
+msgctxt "Stock label"
+msgid "_Apply"
+msgstr ""
+
+#: ../src/gtk/gtk-i18n.h:40
+msgctxt "Stock label"
+msgid "_OK"
+msgstr ""
+
+#: ../src/gtk/gtk-i18n.h:41
+msgctxt "Stock label"
+msgid "_Save"
+msgstr ""
+
+#: ../src/gtk/gtk-i18n.h:42
+msgctxt "Stock label"
+msgid "_Open"
+msgstr ""

@@ -12,8 +12,9 @@
 
 #include "RpGtk.hpp"
 #include "gtk-compat.h"
-#include "KeyStoreGTK.hpp"
+#include "gtk-i18n.h"
 
+#include "KeyStoreGTK.hpp"
 #include "MessageWidget.h"
 
 // Other rom-properties libraries
@@ -615,8 +616,8 @@ rp_key_manager_tab_handle_menu_action(RpKeyManagerTab *tab, gint id)
 		s_title,			// title
 		parent,				// parent
 		GTK_FILE_CHOOSER_ACTION_OPEN,	// action
-		_("_Cancel"), GTK_RESPONSE_CANCEL,
-		_("_Open"), GTK_RESPONSE_ACCEPT,
+		GTK_I18N_STR_CANCEL, GTK_RESPONSE_CANCEL,
+		GTK_I18N_STR_OPEN, GTK_RESPONSE_ACCEPT,
 		nullptr);
 	gtk_widget_set_name(fileDialog, "fileDialog");
 

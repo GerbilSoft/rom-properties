@@ -131,6 +131,7 @@ ADD_CUSTOM_TARGET(rom-properties.pot
 		--keyword=NOP_ --keyword=NOP_C_:1c,2 --keyword=NOP_N_:1,2 --keyword=NOP_NC_:1c,2,3
 		--keyword=translate:1c,2
 		--language=C++
+		--exclude-file=exclusions.po
 		--copyright-holder=${COPYRIGHT_HOLDER}
 		--msgid-bugs-address=${MSGID_BUGS_ADDRESS}
 		--files-from=${CMAKE_CURRENT_BINARY_DIR}/POTFILES

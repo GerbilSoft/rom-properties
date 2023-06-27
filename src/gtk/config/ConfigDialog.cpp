@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * ConfigDialog.hpp: Configuration dialog.                                 *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -12,6 +12,7 @@
 
 #include "ConfigDialog.hpp"
 #include "RpGtk.hpp"
+#include "gtk-i18n.h"
 
 #include <gdk/gdkkeysyms.h>
 
@@ -292,25 +293,20 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 	// NOTE: Using GtkButtonBox on GTK2/GTK3 for "secondary" button functionality.
 	// NOTE: GTK+ has deprecated icons on buttons, so we won't add them.
 	// TODO: Proper ordering for the Apply button?
+	const std::string s_reset    = convert_accel_to_gtk(C_("ConfigDialog", "&Reset"));
+	const std::string s_defaults = convert_accel_to_gtk(C_("ConfigDialog", "Defaults"));
+
 #if USE_GTK_DIALOG
 	// Secondary buttons
 	dialog->btnReset = gtk_dialog_add_button(GTK_DIALOG(dialog),
-		convert_accel_to_gtk(C_("ConfigDialog|Button", "&Reset")).c_str(),
-		CONFIG_DIALOG_RESPONSE_RESET);
+		s_reset.c_str(), CONFIG_DIALOG_RESPONSE_RESET);
 	dialog->btnDefaults = gtk_dialog_add_button(GTK_DIALOG(dialog),
-		convert_accel_to_gtk(C_("ConfigDialog|Button", "Defaults")).c_str(),
-		CONFIG_DIALOG_RESPONSE_DEFAULTS);
+		s_defaults.c_str(), CONFIG_DIALOG_RESPONSE_DEFAULTS);
 
 	// GTK4 no longer has GTK_STOCK_*, so we'll have to provide it ourselves.
-	dialog->btnCancel = gtk_dialog_add_button(GTK_DIALOG(dialog),
-		convert_accel_to_gtk(C_("ConfigDialog|Button", "&Cancel")).c_str(),
-		GTK_RESPONSE_CANCEL);
-	dialog->btnApply = gtk_dialog_add_button(GTK_DIALOG(dialog),
-		convert_accel_to_gtk(C_("ConfigDialog|Button", "&Apply")).c_str(),
-		GTK_RESPONSE_APPLY);
-	dialog->btnOK = gtk_dialog_add_button(GTK_DIALOG(dialog),
-		convert_accel_to_gtk(C_("ConfigDialog|Button", "&OK")).c_str(),
-		GTK_RESPONSE_OK);
+	dialog->btnCancel = gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_I18N_STR_CANCEL, GTK_RESPONSE_CANCEL);
+	dialog->btnApply = gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_I18N_STR_APPLY, GTK_RESPONSE_APPLY);
+	dialog->btnOK = gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_I18N_STR_OK, GTK_RESPONSE_OK);
 
 	// Set button alignment
 	GtkWidget *const buttonBox = gtk_widget_get_parent(dialog->btnReset);
@@ -325,28 +321,23 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 	gtk_widget_set_name(dialog->buttonBox, "buttonBox");
 
 	// Secondary buttons
-	dialog->btnReset = gtk_button_new_with_mnemonic(
-		convert_accel_to_gtk(C_("ConfigDialog|Button", "&Reset")).c_str());
+	dialog->btnReset = gtk_button_new_with_mnemonic(s_reset.c_str());
 	g_object_set_qdata(G_OBJECT(dialog->btnReset), response_id_quark,
 		GINT_TO_POINTER(CONFIG_DIALOG_RESPONSE_RESET));
-	dialog->btnDefaults = gtk_button_new_with_mnemonic(
-		convert_accel_to_gtk(C_("ConfigDialog|Button", "Defaults")).c_str());
+	dialog->btnDefaults = gtk_button_new_with_mnemonic(s_defaults.c_str());
 	g_object_set_qdata(G_OBJECT(dialog->btnDefaults), response_id_quark,
 		GINT_TO_POINTER(CONFIG_DIALOG_RESPONSE_DEFAULTS));
 
 	// Primary buttons
 	// GTK4 no longer has GTK_STOCK_*, so we'll have to provide it ourselves.
-	dialog->btnCancel = gtk_button_new_with_mnemonic(
-		convert_accel_to_gtk(C_("ConfigDialog|Button", "&Cancel")).c_str());
+	dialog->btnCancel = gtk_button_new_with_mnemonic(GTK_I18N_STR_CANCEL);
 	g_object_set_qdata(G_OBJECT(dialog->btnCancel), response_id_quark,
 		GINT_TO_POINTER(GTK_RESPONSE_CANCEL));
 	gtk_widget_set_hexpand(dialog->btnCancel, TRUE);
-	dialog->btnApply = gtk_button_new_with_mnemonic(
-		convert_accel_to_gtk(C_("ConfigDialog|Button", "&Apply")).c_str());
+	dialog->btnApply = gtk_button_new_with_mnemonic(GTK_I18N_STR_APPLY);
 	g_object_set_qdata(G_OBJECT(dialog->btnApply), response_id_quark,
 		GINT_TO_POINTER(GTK_RESPONSE_APPLY));
-	dialog->btnOK = gtk_button_new_with_mnemonic(
-		convert_accel_to_gtk(C_("ConfigDialog|Button", "&OK")).c_str());
+	dialog->btnOK = gtk_button_new_with_mnemonic(GTK_I18N_STR_OK);
 	g_object_set_qdata(G_OBJECT(dialog->btnOK), response_id_quark,
 		GINT_TO_POINTER(GTK_RESPONSE_OK));
 

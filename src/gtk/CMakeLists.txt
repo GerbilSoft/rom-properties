@@ -128,6 +128,7 @@ SET(${PROJECT_NAME}_H
 	OptionsMenuButton.hpp
 	check-uid.h
 	AchSpritesheet.hpp
+	gtk-i18n.h
 	config/ConfigDialog.hpp
 	config/RpConfigTab.h
 	config/ImageTypesTab.hpp

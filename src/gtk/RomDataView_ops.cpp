@@ -11,6 +11,7 @@
 #include "RomDataView.hpp"
 #include "RomDataView_p.hpp"
 #include "RpGtk.hpp"
+#include "gtk-i18n.h"
 
 // Custom widgets
 #include "LanguageComboBox.hpp"
@@ -313,8 +314,8 @@ rp_rom_data_view_doRomOp_stdop(RpRomDataView *page, int id)
 	GtkWindow *const parent = gtk_widget_get_toplevel_window(GTK_WIDGET(page));
 	GtkWidget *const fileDialog = gtk_file_chooser_dialog_new(
 		title, parent, GTK_FILE_CHOOSER_ACTION_SAVE,
-		_("_Cancel"), GTK_RESPONSE_CANCEL,
-		_("_Save"), GTK_RESPONSE_ACCEPT,
+		GTK_I18N_STR_CANCEL, GTK_RESPONSE_CANCEL,
+		GTK_I18N_STR_SAVE, GTK_RESPONSE_ACCEPT,
 		nullptr);
 	gtk_widget_set_name(fileDialog, "fileDialog");
 
@@ -480,8 +481,8 @@ btnOptions_triggered_signal_handler(RpOptionsMenuButton *menuButton,
 	if (op->flags & RomData::RomOp::ROF_SAVE_FILE) {
 		GtkWidget *const fileDialog = gtk_file_chooser_dialog_new(
 			op->sfi.title, parent, GTK_FILE_CHOOSER_ACTION_SAVE,
-			_("_Cancel"), GTK_RESPONSE_CANCEL,
-			_("_Save"), GTK_RESPONSE_ACCEPT,
+			GTK_I18N_STR_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_I18N_STR_SAVE, GTK_RESPONSE_ACCEPT,
 			nullptr);
 		gtk_widget_set_name(fileDialog, "fileDialog");
 
