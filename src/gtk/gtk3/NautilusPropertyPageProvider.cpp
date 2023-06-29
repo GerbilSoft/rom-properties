@@ -45,13 +45,11 @@ struct _RpNautilusPropertyPageProvider {
 };
 
 #if !GLIB_CHECK_VERSION(2,59,1)
-# if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 2))
+#  if defined(__GNUC__) && __GNUC__ >= 8
 /* Disable GCC 8 -Wcast-function-type warnings. (Fixed in glib-2.59.1 upstream.) */
-#  if (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
-#   pragma GCC diagnostic push
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wcast-function-type"
 #  endif
-#  pragma GCC diagnostic ignored "-Wcast-function-type"
-# endif
 #endif /* !GLIB_CHECK_VERSION(2,59,1) */
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -62,9 +60,9 @@ G_DEFINE_DYNAMIC_TYPE_EXTENDED(RpNautilusPropertyPageProvider, rp_nautilus_prope
 		rp_nautilus_property_page_provider_page_provider_init));
 
 #if !GLIB_CHECK_VERSION(2,59,1)
-# if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
-#  pragma GCC diagnostic pop
-# endif
+#  if defined(__GNUC__) && __GNUC__ > 8
+#    pragma GCC diagnostic pop
+#  endif
 #endif /* !GLIB_CHECK_VERSION(2,59,1) */
 
 void

@@ -38,11 +38,9 @@ struct _RpNautilusPropertiesModelProvider {
 };
 
 #if !GLIB_CHECK_VERSION(2,59,1)
-#  if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 2))
+#  if defined(__GNUC__) && __GNUC__ >= 8
 /* Disable GCC 8 -Wcast-function-type warnings. (Fixed in glib-2.59.1 upstream.) */
-#    if (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
-#      pragma GCC diagnostic push
-#    endif
+#    pragma GCC diagnostic push
 #    pragma GCC diagnostic ignored "-Wcast-function-type"
 #  endif
 #endif /* !GLIB_CHECK_VERSION(2,59,1) */
@@ -55,7 +53,7 @@ G_DEFINE_DYNAMIC_TYPE_EXTENDED(RpNautilusPropertiesModelProvider, rp_nautilus_pr
 		rp_nautilus_properties_model_provider_page_provider_init));
 
 #if !GLIB_CHECK_VERSION(2,59,1)
-#  if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#  if defined(__GNUC__) && __GNUC__ > 8
 #    pragma GCC diagnostic pop
 #  endif
 #endif /* !GLIB_CHECK_VERSION(2,59,1) */
