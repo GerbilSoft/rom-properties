@@ -12,6 +12,7 @@
 
 // TextFuncs
 #include "../conversion.hpp"
+#include "../utf8_strlen.hpp"
 #include "librpcpu/byteorder.h"
 using namespace LibRpText;
 
@@ -908,6 +909,33 @@ TEST_F(TextFuncsTest, atascii_to_utf8)
 	u16str = utf8_to_utf16(str);
 	EXPECT_EQ(ARRAY_SIZE(atascii_utf16_data)-1, u16str.size());
 	EXPECT_EQ(atascii_utf16_data, u16str);
+}
+
+/** UTF-8 string functions **/
+
+/**
+ * Test utf8_disp_strlen().
+ */
+TEST_F(TextFuncsTest, utf8_disp_strlen)
+{
+       // utf8_disp_strlen() should be identical to strlen() for ASCII text.
+       static const char ascii_text[] = "abc123xyz789";
+       EXPECT_EQ(strlen(ascii_text), utf8_disp_strlen(ascii_text));
+
+       // Test string with 2-byte UTF-8 code points. (U+0080 - U+07FF)
+       static const char utf8_2byte_text[] = "Ακρόπολη";
+       EXPECT_EQ(16, strlen(utf8_2byte_text));
+       EXPECT_EQ(8, utf8_disp_strlen(utf8_2byte_text));
+
+       // Test string with 3-byte UTF-8 code points. (U+0800 - U+FFFF)
+       static const char utf8_3byte_text[] = "╔╗╚╝┼";
+       EXPECT_EQ(15, strlen(utf8_3byte_text));
+       EXPECT_EQ(5, utf8_disp_strlen(utf8_3byte_text));
+
+       // Test string with 4-byte UTF-8 code points. (U+10000 - U+10FFFF)
+       static const char utf8_4byte_text[] = "😂🙄💾🖬";
+       EXPECT_EQ(16, strlen(utf8_4byte_text));
+       EXPECT_EQ(4, utf8_disp_strlen(utf8_4byte_text));
 }
 
 } }
