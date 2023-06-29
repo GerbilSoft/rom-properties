@@ -514,22 +514,44 @@ std::string dos2unix(const char *str_dos, int len, int *lf_count)
 
 	int lf = 0;
 	for (; len > 1; str_dos++, len--) {
-		if (str_dos[0] == '\r' && str_dos[1] == '\n') {
-			str_unix += '\n';
-			str_dos++;
-			lf++;
-			len--;
-		} else {
-			str_unix += *str_dos;
+		switch (str_dos[0]) {
+			case '\r':
+				// Handle all '\r' characters as newlines,
+				// even if a '\n' isn't found after it.
+				str_unix += '\n';
+				lf++;
+				if (str_dos[1] == '\n') {
+					// Skip the '\n' after the '\r'.
+					str_dos++;
+					len--;
+				}
+				break;
+			case '\n':
+				// Standalone '\n'. Count it.
+				str_unix += '\n';
+				lf++;
+				break;
+			default:
+				// Other character. Add it.
+				str_unix += *str_dos;
+				break;
 		}
 	}
-	// Last character cannot be '\r\n'.
-	// If it's '\r', assume it's a newline.
-	if (*str_dos == '\r') {
-		str_unix += '\n';
-		lf++;
-	} else {
-		str_unix += *str_dos;
+
+	// Check the last character.
+	switch (*str_dos) {
+		case '\0':
+			// End of string
+			break;
+		case '\r':
+			// '\r'; assume it's a newline.
+			str_unix += '\n';
+			lf++;
+			break;
+		default:
+			// Some other character.
+			str_unix += *str_dos;
+			break;
 	}
 
 	if (lf_count) {

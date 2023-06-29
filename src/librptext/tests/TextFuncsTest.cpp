@@ -911,7 +911,7 @@ TEST_F(TextFuncsTest, atascii_to_utf8)
 	EXPECT_EQ(atascii_utf16_data, u16str);
 }
 
-/** UTF-8 string functions **/
+/** Other text functions **/
 
 /**
  * Test utf8_disp_strlen().
@@ -936,6 +936,47 @@ TEST_F(TextFuncsTest, utf8_disp_strlen)
        static const char utf8_4byte_text[] = "😂🙄💾🖬";
        EXPECT_EQ(16, strlen(utf8_4byte_text));
        EXPECT_EQ(4, utf8_disp_strlen(utf8_4byte_text));
+}
+
+/**
+ * Test dos2unix().
+ */
+TEST_F(TextFuncsTest, dos2unix)
+{
+	int lf_count;
+
+	static const char expected_lf[] = "The quick brown fox\njumps over\nthe lazy dog.";
+	static const char test1[] = "The quick brown fox\r\njumps over\r\nthe lazy dog.";
+	static const char expected_lf2[] = "The quick brown fox\njumps over\nthe lazy dog.\n";
+	static const char test2[] = "The quick brown fox\r\njumps over\r\nthe lazy dog.\r\n";
+	static const char test3[] = "The quick brown fox\r\njumps over\r\nthe lazy dog.\r";
+	static const char test4[] = "The quick brown fox\rjumps over\rthe lazy dog.\r";
+	static const char test5[] = "The quick brown fox\njumps over\rthe lazy dog.\r";
+
+	// Basic conversion. (no trailing newline sequence)
+	lf_count = 0;
+	EXPECT_EQ(expected_lf, dos2unix(test1, -1, &lf_count));
+	EXPECT_EQ(2, lf_count);
+
+	// Trailing "\r\n"
+	lf_count = 0;
+	EXPECT_EQ(expected_lf2, dos2unix(test2, -1, &lf_count));
+	EXPECT_EQ(3, lf_count);
+
+	// Trailing '\r' should be converted to '\n'.
+	lf_count = 0;
+	EXPECT_EQ(expected_lf2, dos2unix(test3, -1, &lf_count));
+	EXPECT_EQ(3, lf_count);
+
+	// All standalone '\r' characters should be converted to '\n'.
+	lf_count = 0;
+	EXPECT_EQ(expected_lf2, dos2unix(test4, -1, &lf_count));
+	EXPECT_EQ(3, lf_count);
+
+	// Existing standalone '\n' should be counted but not changed.
+	lf_count = 0;
+	EXPECT_EQ(expected_lf2, dos2unix(test5, -1, &lf_count));
+	EXPECT_EQ(3, lf_count);
 }
 
 /** Audio functions **/
