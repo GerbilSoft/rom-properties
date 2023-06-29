@@ -223,6 +223,21 @@ TEST_F(TextFuncsTest, cp1252_to_utf8)
 	str = cp1252_to_utf8(C8(cp1252_data), ARRAY_SIZE_I(cp1252_data));
 	EXPECT_EQ(ARRAY_SIZE(cp1252_utf8_data)-1, str.size());
 	EXPECT_EQ(C8(cp1252_utf8_data), str);
+
+	// Test with std::string source data.
+	string src = string(C8(cp1252_data));
+	EXPECT_EQ(ARRAY_SIZE(cp1252_data)-1, src.size());
+	str = cp1252_to_utf8(src);
+	EXPECT_EQ(ARRAY_SIZE(cp1252_utf8_data)-1, str.size());
+	EXPECT_EQ(C8(cp1252_utf8_data), str);
+
+	// Test with std::string source data and an extra NULL.
+	// The extra NULL should be trimmed.
+	src = string(C8(cp1252_data), ARRAY_SIZE(cp1252_data));
+	EXPECT_EQ(ARRAY_SIZE(cp1252_data), src.size());
+	str = cp1252_to_utf8(src);
+	EXPECT_EQ(ARRAY_SIZE(cp1252_utf8_data)-1, str.size());
+	EXPECT_EQ(C8(cp1252_utf8_data), str);
 }
 
 /**
@@ -269,6 +284,21 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf8_fallback)
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
 	str = cp1252_sjis_to_utf8(C8(cp1252_data), ARRAY_SIZE_I(cp1252_data));
+	EXPECT_EQ(ARRAY_SIZE(cp1252_utf8_data)-1, str.size());
+	EXPECT_EQ(C8(cp1252_utf8_data), str);
+
+	// Test with std::string source data.
+	string src = string(C8(cp1252_data));
+	EXPECT_EQ(ARRAY_SIZE(cp1252_data)-1, src.size());
+	str = cp1252_sjis_to_utf8(src);
+	EXPECT_EQ(ARRAY_SIZE(cp1252_utf8_data)-1, str.size());
+	EXPECT_EQ(C8(cp1252_utf8_data), str);
+
+	// Test with std::string source data and an extra NULL.
+	// The extra NULL should be trimmed.
+	src = string(C8(cp1252_data), ARRAY_SIZE(cp1252_data));
+	EXPECT_EQ(ARRAY_SIZE(cp1252_data), src.size());
+	str = cp1252_sjis_to_utf8(src);
 	EXPECT_EQ(ARRAY_SIZE(cp1252_utf8_data)-1, str.size());
 	EXPECT_EQ(C8(cp1252_utf8_data), str);
 }
@@ -698,6 +728,21 @@ TEST_F(TextFuncsTest, utf8_to_latin1)
 	// Test with explicit length and an extra NULL.
 	// The extra NULL should be trimmed.
 	str = utf8_to_latin1(C8(latin1_utf8_data), ARRAY_SIZE_I(latin1_utf8_data));
+	EXPECT_EQ(ARRAY_SIZE(cp1252_data)-1, str.size());
+	EXPECT_EQ(C8(cp1252_data), str);
+
+	// Test with std::string source data.
+	string src = string(C8(latin1_utf8_data));
+	EXPECT_EQ(ARRAY_SIZE(latin1_utf8_data)-1, src.size());
+	str = utf8_to_latin1(src);
+	EXPECT_EQ(ARRAY_SIZE(cp1252_data)-1, str.size());
+	EXPECT_EQ(C8(cp1252_data), str);
+
+	// Test with std::string source data and an extra NULL.
+	// The extra NULL should be trimmed.
+	src = string(C8(latin1_utf8_data), ARRAY_SIZE(latin1_utf8_data));
+	EXPECT_EQ(ARRAY_SIZE(latin1_utf8_data), src.size());
+	str = utf8_to_latin1(src);
 	EXPECT_EQ(ARRAY_SIZE(cp1252_data)-1, str.size());
 	EXPECT_EQ(C8(cp1252_data), str);
 }
@@ -1137,6 +1182,33 @@ TEST_F(TextFuncsTest, dos2unix)
 	// Existing standalone '\n' should be counted but not changed.
 	lf_count = 0;
 	EXPECT_EQ(expected_lf2, dos2unix(test5, -1, &lf_count));
+	EXPECT_EQ(3, lf_count);
+
+	/** Same tests as above, but with an std::string source **/
+
+	// Basic conversion. (no trailing newline sequence)
+	lf_count = 0;
+	EXPECT_EQ(expected_lf, dos2unix(string(test1), &lf_count));
+	EXPECT_EQ(2, lf_count);
+
+	// Trailing "\r\n"
+	lf_count = 0;
+	EXPECT_EQ(expected_lf2, dos2unix(string(test2), &lf_count));
+	EXPECT_EQ(3, lf_count);
+
+	// Trailing '\r' should be converted to '\n'.
+	lf_count = 0;
+	EXPECT_EQ(expected_lf2, dos2unix(string(test3), &lf_count));
+	EXPECT_EQ(3, lf_count);
+
+	// All standalone '\r' characters should be converted to '\n'.
+	lf_count = 0;
+	EXPECT_EQ(expected_lf2, dos2unix(string(test4), &lf_count));
+	EXPECT_EQ(3, lf_count);
+
+	// Existing standalone '\n' should be counted but not changed.
+	lf_count = 0;
+	EXPECT_EQ(expected_lf2, dos2unix(string(test5), &lf_count));
 	EXPECT_EQ(3, lf_count);
 }
 
