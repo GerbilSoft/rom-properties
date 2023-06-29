@@ -206,10 +206,16 @@ static inline int calc_frac_part(T val, T mask)
 {
 	float f = static_cast<float>(val & (mask - 1)) / static_cast<float>(mask);
 	int frac_part = static_cast<int>(f * 1000.0f);
+	if (frac_part >= 990) {
+		// Edge case: The fractional portion is >= 99.
+		// In extreme cases, it could be 100 due to rounding.
+		// Always return 99 in this case.
+		return 99;
+	}
 
 	// MSVC added round() and roundf() in MSVC 2013.
 	// Use our own rounding code instead.
-	int round_adj = ((frac_part % 10) > 5);
+	const int round_adj = ((frac_part % 10) > 5);
 	frac_part /= 10;
 	frac_part += round_adj;
 	return frac_part;
