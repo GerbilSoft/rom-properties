@@ -1055,6 +1055,51 @@ TEST_F(TextFuncsTest, formatFileSizeKiB)
 }
 
 /**
+ * Test formatFrequency().
+ */
+TEST_F(TextFuncsTest, formatFrequency)
+{
+	// Testing 512, 768, 1024, 1536, 2048, 2560, and 3072 for each order of magnitude.
+	// NOTE: Frequencies aren't powers of two, so the resulting values will
+	// have "weird" decimal points.
+
+	// Special cases
+	EXPECT_EQ("0 Hz", formatFrequency(0U));
+	EXPECT_EQ("1 Hz", formatFrequency(1U));
+	EXPECT_EQ("2 Hz", formatFrequency(2U));
+
+	// Kilohertz
+	EXPECT_EQ("512 Hz", formatFrequency(512U));
+	EXPECT_EQ("768 Hz", formatFrequency(768U));
+	EXPECT_EQ("1024 Hz", formatFrequency(1024U));
+	EXPECT_EQ("1536 Hz", formatFrequency(1536U));
+	EXPECT_EQ("2.048 kHz", formatFrequency(2048U));
+	EXPECT_EQ("2.560 kHz", formatFrequency(2560U));
+	EXPECT_EQ("3.072 kHz", formatFrequency(3072U));
+
+	// Megahertz
+	EXPECT_EQ("524.288 kHz", formatFrequency(512U*1024U));
+	EXPECT_EQ("786.432 kHz", formatFrequency(768U*1024U));
+	EXPECT_EQ("1048.576 kHz", formatFrequency(1024U*1024U));
+	EXPECT_EQ("1572.864 kHz", formatFrequency(1536U*1024U));
+	EXPECT_EQ("2.097 MHz", formatFrequency(2048U*1024U));
+	EXPECT_EQ("2.621 MHz", formatFrequency(2560U*1024U));
+	EXPECT_EQ("3.145 MHz", formatFrequency(3072U*1024U));
+
+	// Gigabyte
+	EXPECT_EQ("536.870 MHz", formatFrequency(512U*1024U*1024U));
+	EXPECT_EQ("805.306 MHz", formatFrequency(768U*1024U*1024U));
+	EXPECT_EQ("1073.741 MHz", formatFrequency(1024U*1024U*1024U));
+	EXPECT_EQ("1610.612 MHz", formatFrequency(1536U*1024U*1024U));
+	EXPECT_EQ("2.147 GHz", formatFrequency(2048U*1024U*1024U));
+	EXPECT_EQ("2.684 GHz", formatFrequency(2560U*1024U*1024U));
+	EXPECT_EQ("3.221 GHz", formatFrequency(3072U*1024U*1024U));
+
+	// Largest value for a 32-bit unsigned integer
+	EXPECT_EQ("4.294 GHz", formatFrequency(0xFFFFFFFFU));
+}
+
+/**
  * Test dos2unix().
  */
 TEST_F(TextFuncsTest, dos2unix)
