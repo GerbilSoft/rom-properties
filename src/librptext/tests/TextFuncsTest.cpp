@@ -938,6 +938,75 @@ TEST_F(TextFuncsTest, utf8_disp_strlen)
        EXPECT_EQ(4, utf8_disp_strlen(utf8_4byte_text));
 }
 
+/** Audio functions **/
+
+/**
+ * Test formatSampleAsTime().
+ */
+TEST_F(TextFuncsTest, formatSampleAsTime)
+{
+	// TODO: More variations?
+
+	// Do whole seconds conversion for: 11, 16, 22, 24, 44, 48 kHz
+	EXPECT_EQ("0:03.00", formatSampleAsTime(11025U*3U, 11025U));
+	EXPECT_EQ("0:03.00", formatSampleAsTime(16000U*3U, 16000U));
+	EXPECT_EQ("0:03.00", formatSampleAsTime(22050U*3U, 22050U));
+	EXPECT_EQ("0:03.00", formatSampleAsTime(24000U*3U, 24000U));
+	EXPECT_EQ("0:03.00", formatSampleAsTime(44100U*3U, 44100U));
+	EXPECT_EQ("0:03.00", formatSampleAsTime(48000U*3U, 48000U));
+
+	// Add a quarter second and see how things go.
+	// NOTE: A few of these end up returning "0:03:24" due to rounding issues.
+	EXPECT_EQ("0:03.24", formatSampleAsTime(11025U*3.25, 11025U));
+	EXPECT_EQ("0:03.25", formatSampleAsTime(16000U*3.25, 16000U));
+	EXPECT_EQ("0:03.24", formatSampleAsTime(22050U*3.25, 22050U));
+	EXPECT_EQ("0:03.25", formatSampleAsTime(24000U*3.25, 24000U));
+	EXPECT_EQ("0:03.25", formatSampleAsTime(44100U*3.25, 44100U));
+	EXPECT_EQ("0:03.25", formatSampleAsTime(48000U*3.25, 48000U));
+
+	/// Add two minutes
+
+	// Do whole seconds conversion for: 11, 16, 22, 24, 44, 48 kHz
+	EXPECT_EQ("2:03.00", formatSampleAsTime(11025U*123U, 11025U));
+	EXPECT_EQ("2:03.00", formatSampleAsTime(16000U*123U, 16000U));
+	EXPECT_EQ("2:03.00", formatSampleAsTime(22050U*123U, 22050U));
+	EXPECT_EQ("2:03.00", formatSampleAsTime(24000U*123U, 24000U));
+	EXPECT_EQ("2:03.00", formatSampleAsTime(44100U*123U, 44100U));
+	EXPECT_EQ("2:03.00", formatSampleAsTime(48000U*123U, 48000U));
+
+	// Add a quarter second and see how things go.
+	// NOTE: A few of these end up returning "0:03:24" due to rounding issues.
+	EXPECT_EQ("2:03.24", formatSampleAsTime(11025U*123.25, 11025U));
+	EXPECT_EQ("2:03.25", formatSampleAsTime(16000U*123.25, 16000U));
+	EXPECT_EQ("2:03.24", formatSampleAsTime(22050U*123.25, 22050U));
+	EXPECT_EQ("2:03.25", formatSampleAsTime(24000U*123.25, 24000U));
+	EXPECT_EQ("2:03.25", formatSampleAsTime(44100U*123.25, 44100U));
+	EXPECT_EQ("2:03.25", formatSampleAsTime(48000U*123.25, 48000U));
+}
+
+/**
+ * Test convSampleToMs().
+ */
+TEST_F(TextFuncsTest, convSampleToMs)
+{
+	// Do whole seconds conversion for: 11, 16, 22, 24, 44, 48 kHz
+	EXPECT_EQ(3000U, convSampleToMs(11025U*3U, 11025U));
+	EXPECT_EQ(3000U, convSampleToMs(16000U*3U, 16000U));
+	EXPECT_EQ(3000U, convSampleToMs(22050U*3U, 22050U));
+	EXPECT_EQ(3000U, convSampleToMs(24000U*3U, 24000U));
+	EXPECT_EQ(3000U, convSampleToMs(44100U*3U, 44100U));
+	EXPECT_EQ(3000U, convSampleToMs(48000U*3U, 48000U));
+
+	// Add a quarter second and see how things go.
+	// NOTE: A few of these end up returning 3249 due to rounding issues.
+	EXPECT_EQ(3249U, convSampleToMs(11025U*3.25, 11025U));
+	EXPECT_EQ(3250U, convSampleToMs(16000U*3.25, 16000U));
+	EXPECT_EQ(3249U, convSampleToMs(22050U*3.25, 22050U));
+	EXPECT_EQ(3250U, convSampleToMs(24000U*3.25, 24000U));
+	EXPECT_EQ(3250U, convSampleToMs(44100U*3.25, 44100U));
+	EXPECT_EQ(3250U, convSampleToMs(48000U*3.25, 48000U));
+}
+
 } }
 
 /**
