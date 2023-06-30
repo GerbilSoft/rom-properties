@@ -506,16 +506,17 @@ int EXEPrivate::addFields_NE_Entry(void)
 		return res;
 
 	struct Entry {
+		span<const char> name;
 		uint16_t ordinal;
 		uint8_t flags;
 		uint8_t segment;
 		uint16_t offset;
-		bool is_movable;
-		bool has_name;
-		bool is_resident;
-		span<const char> name;
+		bool is_movable : 1;
+		bool has_name : 1;
+		bool is_resident : 1;
 	};
 	vector<Entry> ents;
+	ents.reserve(ne_entry_table.size() / 4);
 
 	// Read entry table
 	auto p = ne_entry_table.begin();
@@ -551,7 +552,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 				ent.is_movable = false;
 				ent.has_name = false;
 				ent.is_resident = false;
-				ents.push_back(ent);
+				ents.emplace_back(std::move(ent));
 				p += 3;
 			}
 			break;
@@ -574,7 +575,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 				ent.is_movable = true;
 				ent.has_name = false;
 				ent.is_resident = false;
-				ents.push_back(ent);
+				ents.emplace_back(std::move(ent));
 				p += 6;
 			}
 			break;
