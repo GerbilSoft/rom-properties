@@ -71,19 +71,20 @@ rom_data_format_datetime(time_t date_time, unsigned int flags)
 gchar *
 rom_data_format_dimensions(const int dimensions[3])
 {
+	gchar *str;
+
 	// TODO: 'x' or '×'? Using 'x' for now.
-	char buf[64];
 	if (dimensions[1] > 0) {
 		if (dimensions[2] > 0) {
-			snprintf(buf, sizeof(buf), "%dx%dx%d",
+			str = g_strdup_printf("%dx%dx%d",
 				dimensions[0], dimensions[1], dimensions[2]);
 		} else {
-			snprintf(buf, sizeof(buf), "%dx%d",
+			str = g_strdup_printf("%dx%d",
 				dimensions[0], dimensions[1]);
 		}
 	} else {
-		snprintf(buf, sizeof(buf), "%d", dimensions[0]);
+		str = g_strdup_printf("%d", dimensions[0]);
 	}
 
-	return g_strdup(buf);
+	return str;
 }
