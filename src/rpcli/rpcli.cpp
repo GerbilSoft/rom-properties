@@ -436,7 +436,7 @@ int RP_C_API main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 	
-	assert(RomData::IMG_INT_MIN == 0);
+	static_assert(RomData::IMG_INT_MIN == 0, "RomData::IMG_INT_MIN must be 0!");
 
 	unsigned int flags = 0;	// OutputFlags
 	// DoFile parameters
