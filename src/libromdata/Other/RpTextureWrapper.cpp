@@ -29,7 +29,7 @@ class RpTextureWrapperPrivate final : public RomDataPrivate
 {
 	public:
 		RpTextureWrapperPrivate(IRpFile *file);
-		~RpTextureWrapperPrivate();
+		~RpTextureWrapperPrivate() final;
 
 	private:
 		typedef RomDataPrivate super;

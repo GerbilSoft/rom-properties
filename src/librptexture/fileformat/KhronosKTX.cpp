@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * KhronosKTX.cpp: Khronos KTX image reader.                               *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -47,7 +47,7 @@ class KhronosKTXPrivate final : public FileFormatPrivate
 {
 	public:
 		KhronosKTXPrivate(KhronosKTX *q, IRpFile *file);
-		~KhronosKTXPrivate();
+		~KhronosKTXPrivate() final;
 
 	private:
 		typedef FileFormatPrivate super;

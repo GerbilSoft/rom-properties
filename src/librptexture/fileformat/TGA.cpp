@@ -35,7 +35,7 @@ class TGAPrivate final : public FileFormatPrivate
 {
 	public:
 		TGAPrivate(TGA *q, IRpFile *file);
-		~TGAPrivate();
+		~TGAPrivate() final;
 
 	private:
 		typedef FileFormatPrivate super;

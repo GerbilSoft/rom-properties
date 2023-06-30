@@ -37,7 +37,7 @@ class RpImageTypesTabPrivate : public TImageTypesConfig<OurComboBox*>
 {
 	public:
 		explicit RpImageTypesTabPrivate(RpImageTypesTab *q);
-		~RpImageTypesTabPrivate();
+		~RpImageTypesTabPrivate() final;
 
 	private:
 		RpImageTypesTab *const q;

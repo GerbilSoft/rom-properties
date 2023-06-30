@@ -46,7 +46,7 @@ class MegaDrivePrivate final : public RomDataPrivate
 {
 	public:
 		MegaDrivePrivate(IRpFile *file);
-		~MegaDrivePrivate();
+		~MegaDrivePrivate() final;
 
 	private:
 		typedef RomDataPrivate super;

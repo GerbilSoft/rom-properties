@@ -38,7 +38,7 @@ class Xbox360_STFS_Private final : public RomDataPrivate
 {
 	public:
 		Xbox360_STFS_Private(IRpFile *file);
-		~Xbox360_STFS_Private();
+		~Xbox360_STFS_Private() final;
 
 	private:
 		typedef RomDataPrivate super;

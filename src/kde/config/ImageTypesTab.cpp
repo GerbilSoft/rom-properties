@@ -23,7 +23,7 @@ class ImageTypesTabPrivate final : public TImageTypesConfig<QComboBox*>
 {
 	public:
 		explicit ImageTypesTabPrivate(ImageTypesTab *q);
-		~ImageTypesTabPrivate();
+		~ImageTypesTabPrivate() final;
 
 	private:
 		ImageTypesTab *const q_ptr;

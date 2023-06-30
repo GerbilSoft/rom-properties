@@ -92,7 +92,7 @@ class ImageDecoderLinearTest : public ::testing::TestWithParam<ImageDecoderLinea
 #endif /* _WIN32 */
 		}
 
-		~ImageDecoderLinearTest()
+		~ImageDecoderLinearTest() override
 		{
 			aligned_free(m_img_buf);
 		}

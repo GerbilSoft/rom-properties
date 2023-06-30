@@ -31,7 +31,7 @@ class NintendoBadgePrivate final : public RomDataPrivate
 {
 	public:
 		NintendoBadgePrivate(IRpFile *file);
-		~NintendoBadgePrivate();
+		~NintendoBadgePrivate() final;
 
 	private:
 		typedef RomDataPrivate super;

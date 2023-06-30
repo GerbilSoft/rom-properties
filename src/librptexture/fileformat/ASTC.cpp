@@ -27,7 +27,7 @@ class ASTCPrivate final : public FileFormatPrivate
 {
 	public:
 		ASTCPrivate(ASTC *q, IRpFile *file);
-		~ASTCPrivate();
+		~ASTCPrivate() final;
 
 	private:
 		typedef FileFormatPrivate super;

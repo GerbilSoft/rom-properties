@@ -28,7 +28,7 @@ class XboxXPRPrivate final : public FileFormatPrivate
 {
 	public:
 		XboxXPRPrivate(XboxXPR *q, IRpFile *file);
-		~XboxXPRPrivate();
+		~XboxXPRPrivate() final;
 
 	private:
 		typedef FileFormatPrivate super;

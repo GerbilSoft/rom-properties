@@ -91,7 +91,7 @@ class RomHeaderTest : public ::testing::TestWithParam<RomHeaderTest_mode>
 			, romData(nullptr)
 		{ }
 
-		~RomHeaderTest()
+		~RomHeaderTest() override
 		{
 			UNREF(memFile);
 			UNREF(romData);

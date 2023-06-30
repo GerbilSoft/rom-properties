@@ -53,7 +53,7 @@ class KhronosKTX2Private final : public FileFormatPrivate
 {
 	public:
 		KhronosKTX2Private(KhronosKTX2 *q, IRpFile *file);
-		~KhronosKTX2Private();
+		~KhronosKTX2Private() final;
 
 	private:
 		typedef FileFormatPrivate super;

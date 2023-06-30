@@ -45,7 +45,7 @@ class PowerVR3Private final : public FileFormatPrivate
 {
 	public:
 		PowerVR3Private(PowerVR3 *q, IRpFile *file);
-		~PowerVR3Private();
+		~PowerVR3Private() final;
 
 	private:
 		typedef FileFormatPrivate super;

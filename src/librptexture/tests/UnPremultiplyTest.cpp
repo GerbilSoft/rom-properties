@@ -51,7 +51,7 @@ class UnPremultiplyTest : public ::testing::Test
 			memset(m_img->bits(), 0x55, sz);
 		}
 
-		~UnPremultiplyTest()
+		~UnPremultiplyTest() override
 		{
 			m_img->unref();
 		}

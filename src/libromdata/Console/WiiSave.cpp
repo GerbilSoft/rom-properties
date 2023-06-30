@@ -38,7 +38,7 @@ class WiiSavePrivate final : public RomDataPrivate
 {
 	public:
 		WiiSavePrivate(IRpFile *file);
-		~WiiSavePrivate();
+		~WiiSavePrivate() final;
 
 	private:
 		typedef RomDataPrivate super;
