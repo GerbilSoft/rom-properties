@@ -308,6 +308,8 @@ IF(BUILD_KF6)
 		"${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types"
 		)
 	CONFIGURE_FILE(${PROJECT_NAME}.json.in ${PROJECT_NAME}.json @ONLY)
+	CONFIGURE_FILE(ExtractorPluginForwarder.json.in ExtractorPluginForwarder.json @ONLY)
+	CONFIGURE_FILE(OverlayIconPluginForwarder.json.in OverlayIconPluginForwarder.json @ONLY)
 
 	# Main plugin is installed in the propertiesdialog subdirectory.
 	# Create a symlink for ThumbCreator.

@@ -20,7 +20,7 @@ namespace RomPropertiesKF5 {
 class ExtractorPluginForwarder final : public ::KFileMetaData::ExtractorPlugin
 {
 	Q_OBJECT
-	Q_PLUGIN_METADATA(IID "org.kde.kf5.kfilemetadata.ExtractorPlugin")
+	Q_PLUGIN_METADATA(IID "org.kde.kf5.kfilemetadata.ExtractorPlugin" FILE "ExtractorPluginForwarder.json")
 	Q_INTERFACES(KFileMetaData::ExtractorPlugin)
 
 	public:

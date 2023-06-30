@@ -316,6 +316,8 @@ IF(BUILD_KF5)
 		CONFIGURE_FILE(${PROJECT_NAME}.ThumbCreator.desktop.in      ${PROJECT_NAME}.ThumbCreator.desktop @ONLY)
 	ENDIF(NOT HAVE_JSON_PLUGIN_LOADER)
 	CONFIGURE_FILE(${PROJECT_NAME}.json.in ${PROJECT_NAME}.json @ONLY)
+	CONFIGURE_FILE(ExtractorPluginForwarder.json.in ExtractorPluginForwarder.json @ONLY)
+	CONFIGURE_FILE(OverlayIconPluginForwarder.json.in OverlayIconPluginForwarder.json @ONLY)
 
 	IF(HAVE_JSON_PLUGIN_LOADER)
 		# Main plugin is installed in the propertiesdialog subdirectory.

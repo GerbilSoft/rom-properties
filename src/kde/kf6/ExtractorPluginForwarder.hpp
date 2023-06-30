@@ -23,7 +23,7 @@ class ExtractorPluginForwarder final : public ::KFileMetaData::ExtractorPlugin
 	Q_OBJECT
 	// FIXME: "kf5" -> "kf6" once it's updated upstream.
 	// https://invent.kde.org/frameworks/kfilemetadata/-/blob/master/src/extractorplugin.h
-	Q_PLUGIN_METADATA(IID "org.kde.kf5.kfilemetadata.ExtractorPlugin")
+	Q_PLUGIN_METADATA(IID "org.kde.kf5.kfilemetadata.ExtractorPlugin" FILE "ExtractorPluginForwarder.json")
 	Q_INTERFACES(KFileMetaData::ExtractorPlugin)
 
 	public:
