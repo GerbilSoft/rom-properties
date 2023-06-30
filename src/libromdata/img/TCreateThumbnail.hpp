@@ -110,8 +110,8 @@ template<typename ImgClass>
 class TCreateThumbnail
 {
 	public:
-		TCreateThumbnail();
-		virtual ~TCreateThumbnail();
+		TCreateThumbnail() = default;
+		virtual ~TCreateThumbnail() = default;
 	private:
 		RP_DISABLE_COPY(TCreateThumbnail)
 

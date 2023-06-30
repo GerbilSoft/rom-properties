@@ -31,7 +31,7 @@ class ConfReaderPrivate
 		 * @param filename Configuration filename. Relative to ~/.config/rom-properties
 		 */
 		explicit ConfReaderPrivate(const char *filename);
-		virtual ~ConfReaderPrivate();
+		virtual ~ConfReaderPrivate() = default;
 
 	private:
 		RP_DISABLE_COPY(ConfReaderPrivate)

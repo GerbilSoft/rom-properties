@@ -26,7 +26,6 @@ class IsoPartitionPrivate
 	public:
 		IsoPartitionPrivate(IsoPartition *q,
 			off64_t partition_offset, int iso_start_offset);
-		~IsoPartitionPrivate();
 
 	private:
 		RP_DISABLE_COPY(IsoPartitionPrivate)
@@ -151,9 +150,6 @@ IsoPartitionPrivate::IsoPartitionPrivate(IsoPartition *q,
 	// Load the root directory.
 	getDirectory("/");
 }
-
-IsoPartitionPrivate::~IsoPartitionPrivate()
-{ }
 
 /**
  * Look up a directory entry from a base filename and directory.

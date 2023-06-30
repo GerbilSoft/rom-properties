@@ -19,7 +19,7 @@ namespace LibRpBase {
 class IAesCipher
 {
 	protected:
-		IAesCipher() { }
+		explicit IAesCipher() = default;
 	public:
 		virtual ~IAesCipher() = 0;
 

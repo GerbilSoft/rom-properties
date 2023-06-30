@@ -18,7 +18,7 @@
 class CreateThumbnail : public LibRomData::TCreateThumbnail<HBITMAP>
 {
 	public:
-		CreateThumbnail() { }
+		explicit CreateThumbnail() = default;
 
 	private:
 		typedef TCreateThumbnail<HBITMAP> super;
@@ -112,7 +112,7 @@ class CreateThumbnail : public LibRomData::TCreateThumbnail<HBITMAP>
 class CreateThumbnailNoAlpha final : public CreateThumbnail
 {
 	public:
-		CreateThumbnailNoAlpha() { }
+		explicit CreateThumbnailNoAlpha() = default;
 
 	private:
 		typedef CreateThumbnail super;

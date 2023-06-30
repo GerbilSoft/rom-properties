@@ -42,14 +42,6 @@ using std::unique_ptr;
 
 namespace LibRomData {
 
-template<typename ImgClass>
-TCreateThumbnail<ImgClass>::TCreateThumbnail()
-{ }
-
-template<typename ImgClass>
-TCreateThumbnail<ImgClass>::~TCreateThumbnail()
-{ }
-
 /**
  * Get an internal image.
  * @param romData	[in] RomData object.

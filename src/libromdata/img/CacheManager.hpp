@@ -23,8 +23,8 @@ namespace LibRomData {
 class CacheManager
 {
 	public:
-		CacheManager() { }
-		~CacheManager() { }
+		CacheManager() = default;
+		~CacheManager() = default;
 
 	private:
 		RP_DISABLE_COPY(CacheManager)

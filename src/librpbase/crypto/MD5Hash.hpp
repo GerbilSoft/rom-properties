@@ -20,8 +20,8 @@ namespace LibRpBase {
 class MD5Hash
 {
 	protected:
-		MD5Hash() { }
-		~MD5Hash() { }
+		explicit MD5Hash() = delete;
+		~MD5Hash() = delete;
 
 	private:
 		RP_DISABLE_COPY(MD5Hash)

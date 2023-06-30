@@ -30,10 +30,10 @@ namespace RpDownload {
 class IDownloader
 {
 	public:
-		IDownloader();
+		explicit IDownloader();
 		explicit IDownloader(const TCHAR *url);
 		explicit IDownloader(const std::tstring &url);
-		virtual ~IDownloader();
+		virtual ~IDownloader() = default;
 
 	private:
 		RP_DISABLE_COPY(IDownloader)

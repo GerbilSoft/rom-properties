@@ -36,7 +36,7 @@ namespace LibRpBase { namespace Tests {
 class TextFuncsTest : public ::testing::Test
 {
 	protected:
-		TextFuncsTest() { }
+		TextFuncsTest() = default;
 
 	public:
 		// NOTE: 8-bit test strings are unsigned in order to prevent

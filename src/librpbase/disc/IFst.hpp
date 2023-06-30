@@ -26,7 +26,7 @@ namespace LibRpBase {
 class IFst
 {
 	protected:
-		IFst() { }
+		IFst() = default;
 	public:
 		virtual ~IFst() = 0;
 

@@ -14,7 +14,7 @@
 class ITab
 {
 	protected:
-		ITab() { }
+		explicit ITab() = default;
 	public:
 		virtual ~ITab() = 0;
 

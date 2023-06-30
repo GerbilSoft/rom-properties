@@ -577,9 +577,6 @@ WiiPartition::WiiPartition(IDiscReader *discReader, off64_t partition_offset,
 	// read() is called.
 }
 
-WiiPartition::~WiiPartition()
-{ }
-
 /** IDiscReader **/
 
 /**

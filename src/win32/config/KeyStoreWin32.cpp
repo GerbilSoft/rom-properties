@@ -21,9 +21,6 @@ KeyStoreWin32::KeyStoreWin32(HWND hWnd)
 	reset();
 }
 
-KeyStoreWin32::~KeyStoreWin32()
-{ }
-
 /** Pure virtual functions for Win32 notifications. **/
 
 /**

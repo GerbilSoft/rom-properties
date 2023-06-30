@@ -59,7 +59,7 @@ struct FilterCacheKeyTest_mode
 class FilterCacheKeyTest : public ::testing::TestWithParam<FilterCacheKeyTest_mode>
 {
 	protected:
-		FilterCacheKeyTest() { }
+		FilterCacheKeyTest() = default;
 };
 
 /**

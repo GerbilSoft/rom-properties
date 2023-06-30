@@ -35,7 +35,7 @@ class DiscReader final : public IDiscReader
 		 */
 		explicit DiscReader(LibRpFile::IRpFile *file, off64_t offset, off64_t length);
 	protected:
-		~DiscReader() final { };	// call unref() instead
+		~DiscReader() final = default;	// call unref() instead
 
 	private:
 		typedef IDiscReader super;

@@ -53,7 +53,7 @@ class RP_LIBROMDATA_PUBLIC RefBase
 {
 	protected:
 		RefBase() : m_ref_cnt(1) { }
-		virtual ~RefBase() { }
+		virtual ~RefBase() = default;
 
 	public:
 		/**

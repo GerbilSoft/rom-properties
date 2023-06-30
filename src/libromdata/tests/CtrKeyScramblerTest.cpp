@@ -62,10 +62,7 @@ struct CtrKeyScramblerTest_mode
 class CtrKeyScramblerTest : public ::testing::TestWithParam<CtrKeyScramblerTest_mode>
 {
 	protected:
-		CtrKeyScramblerTest() { }
-
-		void SetUp(void) final;
-		void TearDown(void) final;
+		CtrKeyScramblerTest() = default;
 
 	public:
 		// TODO: Split into a separate file, since this is
@@ -146,20 +143,6 @@ void CtrKeyScramblerTest::CompareByteArrays(
 		"Expected " << data_type << ":" << '\n' << s_expected << '\n' <<
 		"Actual " << data_type << ":" << '\n' << s_actual << '\n';
 }
-
-/**
- * SetUp() function.
- * Run before each test.
- */
-void CtrKeyScramblerTest::SetUp(void)
-{ }
-
-/**
- * TearDown() function.
- * Run after each test.
- */
-void CtrKeyScramblerTest::TearDown(void)
-{ }
 
 /**
  * Run a CtrKeyScrambler test.

@@ -53,7 +53,7 @@ using std::unique_ptr;
 class CreateThumbnailPrivate : public TCreateThumbnail<PIMGTYPE>
 {
 	public:
-		CreateThumbnailPrivate() { }
+		CreateThumbnailPrivate() = default;
 
 	private:
 		typedef TCreateThumbnail<PIMGTYPE> super;

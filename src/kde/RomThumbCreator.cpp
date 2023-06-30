@@ -66,7 +66,7 @@ extern "C" {
 class RomThumbCreatorPrivate final : public TCreateThumbnail<QImage>
 {
 	public:
-		RomThumbCreatorPrivate() { }
+		RomThumbCreatorPrivate() = default;
 
 	private:
 		typedef TCreateThumbnail<QImage> super;

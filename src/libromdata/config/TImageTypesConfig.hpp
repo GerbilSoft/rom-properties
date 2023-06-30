@@ -30,7 +30,7 @@ class TImageTypesConfig
 {
 	public:
 		TImageTypesConfig();
-		virtual ~TImageTypesConfig();
+		virtual ~TImageTypesConfig() = default;
 	private:
 		RP_DISABLE_COPY(TImageTypesConfig)
 

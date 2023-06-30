@@ -20,7 +20,7 @@ class RP_LIBROMDATA_PUBLIC rp_image_backend
 {
 	public:
 		rp_image_backend(int width, int height, rp_image::Format format);
-		virtual ~rp_image_backend();
+		virtual ~rp_image_backend() = default;
 
 	private:
 		RP_DISABLE_COPY(rp_image_backend)

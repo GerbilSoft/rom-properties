@@ -27,7 +27,7 @@ class ConfigDialogPrivate
 {
 	public:
 		explicit ConfigDialogPrivate(ConfigDialog *q);
-		~ConfigDialogPrivate();
+		~ConfigDialogPrivate() = default;
 
 	private:
 		ConfigDialog *const q_ptr;
@@ -67,9 +67,6 @@ ConfigDialogPrivate::ConfigDialogPrivate(ConfigDialog* q)
 	, btnReset(nullptr)
 	, btnDefaults(nullptr)
 	, lastFocus(nullptr)
-{ }
-
-ConfigDialogPrivate::~ConfigDialogPrivate()
 { }
 
 #ifdef ENABLE_DECRYPTION

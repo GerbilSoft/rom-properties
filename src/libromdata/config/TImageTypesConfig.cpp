@@ -46,10 +46,6 @@ TImageTypesConfig<ComboBox>::TImageTypesConfig()
 	}
 }
 
-template<typename ComboBox>
-TImageTypesConfig<ComboBox>::~TImageTypesConfig()
-{ }
-
 /**
  * Create the grid of labels and ComboBoxes.
  */

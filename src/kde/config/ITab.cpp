@@ -15,6 +15,3 @@
 ITab::ITab(QWidget *parent)
 	: super(parent)
 { }
-
-ITab::~ITab()
-{ }

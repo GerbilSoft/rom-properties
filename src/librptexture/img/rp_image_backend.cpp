@@ -66,9 +66,6 @@ rp_image_backend::rp_image_backend(int width, int height, rp_image::Format forma
 	}
 }
 
-rp_image_backend::~rp_image_backend()
-{ }
-
 bool rp_image_backend::isValid(void) const
 {
 	return (width > 0 && height > 0 && stride > 0 &&

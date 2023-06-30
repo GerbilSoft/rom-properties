@@ -31,8 +31,8 @@ namespace LibRpFile {
 class RP_LIBROMDATA_PUBLIC IRpFile : public RefBase
 {
 	protected:
-		IRpFile();
-		~IRpFile() override { }	// call unref() instead
+		explicit IRpFile();
+		~IRpFile() override = default;	// call unref() instead
 
 	private:
 		RP_DISABLE_COPY(IRpFile)

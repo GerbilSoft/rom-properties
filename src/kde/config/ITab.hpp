@@ -20,7 +20,7 @@ class ITab : public QWidget
 	protected:
 		explicit ITab(QWidget *parent = nullptr);
 	public:
-		~ITab() override;
+		~ITab() override = default;
 
 	private:
 		typedef QWidget super;

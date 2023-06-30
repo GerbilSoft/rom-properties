@@ -21,7 +21,7 @@ class SparseDiscReaderPrivate
 	protected:
 		explicit SparseDiscReaderPrivate(SparseDiscReader *q);
 	public:
-		virtual ~SparseDiscReaderPrivate() { };
+		virtual ~SparseDiscReaderPrivate() = default;
 
 	private:
 		RP_DISABLE_COPY(SparseDiscReaderPrivate)

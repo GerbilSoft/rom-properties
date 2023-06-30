@@ -20,7 +20,7 @@ class KeyStore_OwnerDataCallback final : public LibWin32Common::ComBase<IOwnerDa
 	public:
 		explicit KeyStore_OwnerDataCallback(const KeyStoreWin32 *keyStore);
 	protected:
-		~KeyStore_OwnerDataCallback() final { }
+		~KeyStore_OwnerDataCallback() final = default;
 
 	private:
 		typedef LibWin32Common::ComBase<IOwnerDataCallback> super;

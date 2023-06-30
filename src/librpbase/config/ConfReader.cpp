@@ -32,9 +32,6 @@ ConfReaderPrivate::ConfReaderPrivate(const char *filename)
 	, conf_was_found(false)
 { }
 
-ConfReaderPrivate::~ConfReaderPrivate()
-{ }
-
 /**
  * Process a configuration line.
  * Static function; used by inih as a C-style callback function.

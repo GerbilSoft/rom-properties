@@ -28,7 +28,7 @@ template <class comObj, class creatorClass = RP_MultiCreator<comObj> >
 class RP_ClassFactory final : public LibWin32Common::ComBase<IClassFactory>, public creatorClass
 {
 	public:
-		RP_ClassFactory() { }
+		explicit RP_ClassFactory() = default;
 
 	private:
 		typedef LibWin32Common::ComBase<IClassFactory> super;

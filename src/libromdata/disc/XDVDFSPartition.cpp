@@ -26,7 +26,6 @@ class XDVDFSPartitionPrivate
 	public:
 		XDVDFSPartitionPrivate(XDVDFSPartition *q,
 			off64_t partition_offset, off64_t partition_size);
-		~XDVDFSPartitionPrivate();
 
 	private:
 		RP_DISABLE_COPY(XDVDFSPartitionPrivate)
@@ -129,9 +128,6 @@ XDVDFSPartitionPrivate::XDVDFSPartitionPrivate(XDVDFSPartition *q,
 	// Load the root directory.
 	getDirectory("/");
 }
-
-XDVDFSPartitionPrivate::~XDVDFSPartitionPrivate()
-{ }
 
 /**
  * XDVDFS strcasecmp() implementation.

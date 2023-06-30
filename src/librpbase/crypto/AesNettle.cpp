@@ -27,7 +27,7 @@ class AesNettlePrivate
 {
 	public:
 		AesNettlePrivate();
-		~AesNettlePrivate() { }
+		~AesNettlePrivate() = default;
 
 	private:
 		RP_DISABLE_COPY(AesNettlePrivate)

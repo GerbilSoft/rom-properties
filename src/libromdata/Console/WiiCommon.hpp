@@ -19,8 +19,8 @@ namespace LibRomData {
 class WiiCommon
 {
 	private:
-		WiiCommon() { }
-		~WiiCommon() { }
+		explicit WiiCommon() = default;
+		~WiiCommon() = default;
 	private:
 		RP_DISABLE_COPY(WiiCommon)
 

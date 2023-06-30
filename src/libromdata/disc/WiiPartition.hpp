@@ -49,7 +49,7 @@ class WiiPartition : public GcnPartition
 		 */
 		WiiPartition(IDiscReader *discReader, off64_t partition_offset,
 			off64_t partition_size, CryptoMethod crypto = CM_STANDARD);
-		~WiiPartition();
+		~WiiPartition() = default;
 
 	private:
 		typedef GcnPartition super;
