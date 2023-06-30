@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * rp_image.hpp: Image class.                                              *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -21,7 +21,7 @@ namespace LibRpTexture {
 
 /** rp_image_backend_default **/
 
-class rp_image_backend_default : public rp_image_backend
+class rp_image_backend_default final : public rp_image_backend
 {
  	public:
 		rp_image_backend_default(int width, int height, rp_image::Format format);

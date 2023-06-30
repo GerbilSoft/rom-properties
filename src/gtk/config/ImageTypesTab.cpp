@@ -33,7 +33,7 @@ typedef GtkVBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_VBOX
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
-class RpImageTypesTabPrivate : public TImageTypesConfig<OurComboBox*>
+class RpImageTypesTabPrivate final : public TImageTypesConfig<OurComboBox*>
 {
 	public:
 		explicit RpImageTypesTabPrivate(RpImageTypesTab *q);

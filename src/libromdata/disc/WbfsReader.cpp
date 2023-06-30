@@ -17,7 +17,7 @@ using LibRpFile::IRpFile;
 
 namespace LibRomData {
 
-class WbfsReaderPrivate : public SparseDiscReaderPrivate {
+class WbfsReaderPrivate final : public SparseDiscReaderPrivate {
 	public:
 		explicit WbfsReaderPrivate(WbfsReader *q);
 		~WbfsReaderPrivate() final;
