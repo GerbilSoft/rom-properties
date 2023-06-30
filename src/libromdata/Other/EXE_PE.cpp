@@ -913,9 +913,7 @@ int EXEPrivate::addFields_PE_Export(void)
 	// Convert to ListData
 	auto vv_data = new RomFields::ListData_t();
 	vv_data->reserve(ents.size());
-	for (unsigned int i = 0; i < static_cast<unsigned int>(ents.size()); i++) {
-		const ExportEntry &ent = ents[i];
-
+	for (const ExportEntry &ent : ents) {
 		// Filter out any unused ordinals.
 		if (ent.hint == -1 && ent.vaddr == 0)
 			continue;
