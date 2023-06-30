@@ -14,8 +14,9 @@
 
 // librpbase, librpfile
 #include "libi18n/i18n.h"
-using LibRpText::rp_sprintf;
+using LibRpBase::RomFields;
 using LibRpFile::IRpFile;
+using LibRpText::rp_sprintf;
 
 // librptexture
 #include "img/rp_image.hpp"
@@ -742,7 +743,7 @@ int XboxXPR::mipmapCount(void) const
  * @param fields RomFields object to which fields should be added.
  * @return Number of fields added, or 0 on error.
  */
-int XboxXPR::getFields(LibRpBase::RomFields *fields) const
+int XboxXPR::getFields(RomFields *fields) const
 {
 	assert(fields != nullptr);
 	if (!fields)

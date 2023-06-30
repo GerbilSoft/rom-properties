@@ -26,10 +26,6 @@ using namespace LibRpBase;
 using namespace LibRpText;
 using LibRpTexture::rp_image;
 
-// libromdata
-#include "libromdata/RomDataFactory.hpp"
-using LibRomData::RomDataFactory;
-
 // libdl
 #ifdef HAVE_DLVSYM
 #  ifndef _GNU_SOURCE

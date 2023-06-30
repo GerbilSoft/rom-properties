@@ -18,9 +18,6 @@
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
-// C++ STL classes.
-using std::array;
-
 namespace LibRomData {
 
 class WuxReaderPrivate : public SparseDiscReaderPrivate {

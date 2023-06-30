@@ -12,7 +12,6 @@
 // librpbase, librptexture
 #include "librpbase/Achievements.hpp"
 using LibRpBase::Achievements;
-using LibRpTexture::argb32_t;
 
 namespace AchSpritesheet {
 

@@ -15,11 +15,7 @@
 #include "librpbase/img/IconAnimHelper.hpp"
 #include "librpfile/VectorFile.hpp"
 using namespace LibRpBase;
-using LibRpFile::VectorFile;
 using LibRpTexture::rp_image;
-
-// C++ STL classes.
-using std::vector;
 
 // TODO: Adjust minimum image size based on DPI.
 #define DIL_MIN_IMAGE_SIZE 32
@@ -529,6 +525,7 @@ rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSele
 	auto *const anim = image->anim;
 	const bool isAnimated = (anim && anim->iconAnimData && anim->iconAnimHelper.isAnimated());
 
+	using LibRpFile::VectorFile;
 	VectorFile *const pngData = new VectorFile();
 	RpPngWriter *pngWriter;
 	if (isAnimated) {
@@ -574,7 +571,7 @@ rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSele
 
 	// Set the selection data.
 	// NOTE: gtk_selection_data_set() copies the data.
-	const vector<uint8_t> &pngVec = pngData->vector();
+	const std::vector<uint8_t> &pngVec = pngData->vector();
 	gtk_selection_data_set(data, gdk_atom_intern_static_string("image/png"), 8,
 		pngVec.data(), static_cast<gint>(pngVec.size()));
 

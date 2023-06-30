@@ -57,7 +57,6 @@ using LibRpTexture::rp_image;
 #include <ostream>
 #include <string>
 using std::string;
-using std::unique_ptr;
 
 namespace LibRpBase { namespace Tests {
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * CisoPspReader.cpp: PlayStation Portable CISO disc image reader.         *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -42,9 +42,6 @@
 // librpbase, librpfile
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
-
-// C++ STL classes.
-using std::unique_ptr;
 
 namespace LibRomData {
 

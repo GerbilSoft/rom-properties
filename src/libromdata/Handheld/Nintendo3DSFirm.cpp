@@ -22,7 +22,6 @@ using LibRpFile::IRpFile;
 // C++ STL classes.
 using std::string;
 using std::unique_ptr;
-using std::vector;
 
 // zlib for crc32()
 #include <zlib.h>

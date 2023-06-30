@@ -34,13 +34,11 @@ using LibRpFile::MemFile;
 // C++ includes
 #include <forward_list>
 #include <iostream>
-#include <memory>
 #include <sstream>
 #include <string>
 using std::forward_list;
 using std::ostringstream;
 using std::string;
-using std::unique_ptr;
 
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector

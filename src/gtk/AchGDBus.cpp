@@ -2,16 +2,13 @@
  * ROM Properties Page shell extension. (GTK+)                             *
  * AchGDBus.cpp: GDBus notifications for achievements.                     *
  *                                                                         *
- * Copyright (c) 2020-2022 by David Korth.                                 *
+ * Copyright (c) 2020-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "AchGDBus.hpp"
 using LibRpBase::Achievements;
-
-// librptexture
-using LibRpTexture::argb32_t;
 
 // GDBus
 #include <glib-object.h>
@@ -210,6 +207,8 @@ int AchGDBusPrivate::notifyFunc(Achievements::ID id)
 		// NOTE: The R and B channels need to be swapped for XDG notifications.
 		// Cairo: Swap the R and B channels in place.
 		// TODO: SSSE3-optimized version?
+		using LibRpTexture::argb32_t;
+
 		int width, height;
 		PIMGTYPE_get_size(subIcon, &width, &height);
 		argb32_t *bits = reinterpret_cast<argb32_t*>(PIMGTYPE_get_image_data(subIcon));

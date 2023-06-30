@@ -23,7 +23,6 @@ using namespace LibRpText;
 // C++ STL classes
 using std::string;
 using std::unique_ptr;
-using std::unordered_set;
 using std::vector;
 
 namespace LibRomData {

@@ -38,7 +38,6 @@
 using std::ostringstream;
 using std::string;
 using std::u16string;
-using std::unique_ptr;
 
 namespace LibRpText {
 

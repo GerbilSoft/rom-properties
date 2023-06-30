@@ -14,7 +14,6 @@
 
 // librpbase, librpfile
 #include "libi18n/i18n.h"
-using LibRpText::rp_sprintf;
 using LibRpBase::RomFields;
 using LibRpFile::IRpFile;
 

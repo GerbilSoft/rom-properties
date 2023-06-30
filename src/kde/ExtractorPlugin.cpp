@@ -34,7 +34,6 @@ using std::vector;
 #include <kcoreaddons_version.h>
 #include <kfilemetadata/extractorplugin.h>
 #include <kfilemetadata/properties.h>
-using KFileMetaData::ExtractorPlugin;
 using KFileMetaData::ExtractionResult;
 using namespace KFileMetaData::Property;
 

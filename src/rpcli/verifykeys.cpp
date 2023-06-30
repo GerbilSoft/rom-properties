@@ -30,9 +30,7 @@ using namespace LibRomData;
 
 // C++ includes
 #include <iostream>
-using std::cerr;
 using std::cout;
-using std::endl;
 
 /**
  * Simple implementation of KeyStoreUI with no signal handling.

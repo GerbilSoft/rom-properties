@@ -17,7 +17,6 @@ using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::string;
-using std::vector;
 
 namespace LibRomData {
 

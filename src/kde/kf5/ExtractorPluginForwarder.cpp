@@ -6,7 +6,7 @@
  * multiple plugins, so this file acts as a KFileMetaData ExtractorPlugin, *
  * and then forwards the request to the main library.                      *
  *                                                                         *
- * Copyright (c) 2018-2022 by David Korth.                                 *
+ * Copyright (c) 2018-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -24,7 +24,6 @@
 #define SO_FILENAME "rom-properties-kf5.so"
 #include <kfileitem.h>
 #include <kfilemetadata/extractorplugin.h>
-using KFileMetaData::ExtractorPlugin;
 using KFileMetaData::ExtractionResult;
 
 #ifndef KF5_PRPD_PLUGIN_INSTALL_DIR

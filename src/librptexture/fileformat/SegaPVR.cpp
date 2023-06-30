@@ -26,7 +26,6 @@ using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::unique_ptr;
-using std::vector;
 
 namespace LibRpTexture {
 
@@ -1494,7 +1493,7 @@ int SegaPVR::mipmapCount(void) const
  * @param fields RomFields object to which fields should be added.
  * @return Number of fields added, or 0 on error.
  */
-int SegaPVR::getFields(LibRpBase::RomFields *fields) const
+int SegaPVR::getFields(RomFields *fields) const
 {
 	assert(fields != nullptr);
 	if (!fields)

@@ -11,14 +11,12 @@
 
 #include "libi18n/i18n.h"
 
-// C++ STL classes.
-using std::map;
+// C++ STL classes
 using std::string;
 using std::unique_ptr;
 using std::vector;
 
 using namespace LibRpText;
-using LibRpTexture::rp_image;
 
 namespace LibRpBase {
 

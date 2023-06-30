@@ -14,7 +14,6 @@
 #include <cassert>
 
 // C++ STL classes
-using std::flush;
 using std::max;
 using std::ostream;
 using std::string;

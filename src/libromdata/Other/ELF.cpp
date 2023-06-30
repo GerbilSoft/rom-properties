@@ -30,7 +30,6 @@ using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::string;
-using std::unique_ptr;
 using std::vector;
 
 // Uninitialized vector class.

@@ -16,9 +16,6 @@
 
 #include "../RomDataView.hpp"
 
-#include "librpbase/RomData.hpp"
-using LibRpBase::RomData;
-
 // nautilus-extension.h mini replacement
 #if GTK_CHECK_VERSION(4,0,0)
 #  include "../gtk4/NautilusPlugin.hpp"

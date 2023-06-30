@@ -18,7 +18,6 @@ using namespace LibRpText;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
-using std::vector;
 
 // Uninitialized vector class.
 // Reference: http://andreoffringa.org/?q=uvector

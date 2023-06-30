@@ -15,9 +15,8 @@ using namespace LibRpBase;
 using namespace LibRpText;
 using LibRpFile::IRpFile;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
-using std::vector;
 
 namespace LibRomData {
 

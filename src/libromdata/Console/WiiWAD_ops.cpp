@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * WiiWAD_ops.cpp: Nintendo Wii WAD file reader. (ROM operations)          *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,16 +14,14 @@
 
 // librpbase, librpfile
 using LibRpBase::RomData;
-using LibRpBase::RomFields;
 using LibRpFile::IRpFile;
 using LibRpFile::RpFile;
 
 // For sections delegated to other RomData subclasses.
 #include "Handheld/NintendoDS.hpp"
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
-using std::unique_ptr;
 using std::vector;
 
 namespace LibRomData {

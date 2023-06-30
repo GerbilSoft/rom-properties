@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * DragImageLabel.cpp: Drag & Drop image label.                            *
  *                                                                         *
- * Copyright (c) 2019-2022 by David Korth.                                 *
+ * Copyright (c) 2019-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -15,7 +15,6 @@
 #include "librpbase/img/IconAnimData.hpp"
 #include "librpbase/img/IconAnimHelper.hpp"
 using LibRpBase::IconAnimData;
-using LibRpBase::IconAnimHelper;
 using LibRpBase::RpPngWriter;
 using LibRpTexture::rp_image;
 

@@ -19,7 +19,6 @@
 # include "librpbase/crypto/AesCipherFactory.hpp"
 #endif /* ENABLE_DECRYPTION */
 using namespace LibRpBase;
-using LibRpFile::IRpFile;
 
 // C++ STL classes.
 using std::unique_ptr;

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RomPropertiesDialogPlugin.cpp: KPropertiesDialogPlugin implementation   *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -29,7 +29,6 @@ using LibRomData::RomDataFactory;
 
 // C++ STL classes
 using std::string;
-using std::vector;
 
 /**
  * Instantiate a RomDataView object for the given QUrl.

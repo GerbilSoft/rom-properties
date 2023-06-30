@@ -22,9 +22,8 @@ using namespace LibRpBase;
 using namespace LibRpText;
 using namespace LibRpTexture;
 using LibRpFile::IRpFile;
-using LibRpFile::RpFile;
 
-// C++ STL classes.
+// C++ STL classes
 using std::array;
 using std::string;
 using std::vector;

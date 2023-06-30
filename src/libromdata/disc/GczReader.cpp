@@ -28,9 +28,6 @@
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
-// C++ STL classes.
-using std::unique_ptr;
-
 namespace LibRomData {
 
 #ifdef _MSC_VER

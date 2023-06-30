@@ -27,7 +27,6 @@ using LibRpTexture::rp_image;
 // C++ STL classes
 using std::set;
 using std::string;
-using std::vector;
 
 // Custom widgets
 #include "DragImageTreeView.hpp"

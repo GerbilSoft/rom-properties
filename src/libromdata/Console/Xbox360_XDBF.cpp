@@ -21,12 +21,11 @@ using LibRpFile::IRpFile;
 using LibRpFile::MemFile;
 using LibRpTexture::rp_image;
 
-// C++ STL classes.
+// C++ STL classes
 using std::array;
 using std::string;
 using std::unique_ptr;
 using std::unordered_map;
-using std::unordered_set;
 using std::vector;
 
 namespace LibRomData {

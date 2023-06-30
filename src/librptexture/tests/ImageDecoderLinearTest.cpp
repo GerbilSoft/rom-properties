@@ -24,17 +24,16 @@
 #endif /* _WIN32 */
 using namespace LibRpTexture;
 
-// C includes.
+// C includes
 #include <stdint.h>
 #include <stdlib.h>
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cstring>
 
-// C++ includes.
+// C++ includes
 #include <memory>
 #include <string>
-using std::unique_ptr;
 using std::string;
 
 // Uninitialized vector class.

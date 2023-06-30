@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase/tests)                  *
  * MD5HashTest.cpp: MD5Hash class test.                                    *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -20,10 +20,8 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <vector>
 using std::ostringstream;
 using std::string;
-using std::vector;
 
 namespace LibRpBase { namespace Tests {
 

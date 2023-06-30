@@ -40,10 +40,6 @@ using namespace LibRpFile;
 #include "libromdata/RomDataFactory.hpp"
 using namespace LibRomData;
 
-// librptexture
-#include "librptexture/img/rp_image.hpp"
-using LibRpTexture::rp_image;
-
 #ifdef _WIN32
 #  include "libwin32common/RpWin32_sdk.h"
 #  include "librptexture/img/GdiplusHelper.hpp"

@@ -6,7 +6,7 @@
  * multiple plugins, so this file acts as a KOverlayIconPlugin,            *
  * and then forwards the request to the main library.                      *
  *                                                                         *
- * Copyright (c) 2018-2022 by David Korth.                                 *
+ * Copyright (c) 2018-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -22,9 +22,8 @@ using LibRpFile::IRpFile;
 #include "libromdata/RomDataFactory.hpp"
 using LibRomData::RomDataFactory;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
-using std::vector;
 
 // Qt includes.
 #include <QtCore/QStandardPaths>

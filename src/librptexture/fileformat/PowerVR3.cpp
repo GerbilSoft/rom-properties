@@ -1028,7 +1028,7 @@ int PowerVR3::mipmapCount(void) const
  * @param fields RomFields object to which fields should be added.
  * @return Number of fields added, or 0 on error.
  */
-int PowerVR3::getFields(LibRpBase::RomFields *fields) const
+int PowerVR3::getFields(RomFields *fields) const
 {
 	assert(fields != nullptr);
 	if (!fields)

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * GcnPartition_p.cpp: GameCube partition private class.                   *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,9 +11,6 @@
 
 #include "GcnFst.hpp"
 #include "GcnPartition.hpp"
-
-// librpbase
-using LibRpBase::IDiscReader;
 
 namespace LibRomData {
 

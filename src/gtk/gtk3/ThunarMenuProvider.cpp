@@ -14,11 +14,6 @@
 #include "img/TCreateThumbnail.hpp"
 #include "CreateThumbnail.hpp"
 
-#include "../RomDataView.hpp"
-
-#include "librpbase/RomData.hpp"
-using LibRpBase::RomData;
-
 // thunarx.h mini replacement
 #include "thunarx-mini.h"
 

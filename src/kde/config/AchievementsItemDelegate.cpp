@@ -18,7 +18,6 @@
 
 // C++ STL classes
 using std::array;
-using std::vector;
 
 #define LINE_COUNT 2
 

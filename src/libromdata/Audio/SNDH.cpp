@@ -27,11 +27,9 @@ using LibRpFile::IRpFile;
 // for memmem() if it's not available in <string.h>
 #include "librptext/libc.h"
 
-// C++ STL classes.
-using std::pair;
+// C++ STL classes
 using std::string;
 using std::unique_ptr;
-using std::unordered_map;
 using std::vector;
 
 namespace LibRomData {
