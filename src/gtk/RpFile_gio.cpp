@@ -43,13 +43,13 @@ class RpFileGioPrivate
 RpFileGioPrivate::RpFileGioPrivate(const char *uri)
 	: stream(nullptr)
 {
-	this->uri = (uri ? strdup(uri) : nullptr);
+	this->uri = g_strdup(uri);
 }
 
 RpFileGioPrivate::RpFileGioPrivate(const string &uri)
 	: stream(nullptr)
 {
-	this->uri = (!uri.empty() ? strdup(uri.c_str()) : nullptr);
+	this->uri = (!uri.empty() ? g_strdup(uri.c_str()) : nullptr);
 }
 
 RpFileGioPrivate::~RpFileGioPrivate()
