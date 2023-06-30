@@ -646,8 +646,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 
 	auto vv_data = new RomFields::ListData_t();
 	vv_data->reserve(ents.size());
-	for (unsigned int i = 0; i < static_cast<unsigned int>(ents.size()); i++) {
-		const Entry &ent = ents[i];
+	for (const Entry &ent : ents) {
 		vv_data->emplace_back();
 		auto &row = vv_data->back();
 		row.reserve(4);
@@ -679,10 +678,11 @@ int EXEPrivate::addFields_NE_Entry(void)
 		}
 
 		row.emplace_back(rp_sprintf("%d", ent.ordinal));
-		if (ent.has_name)
+		if (ent.has_name) {
 			row.emplace_back(ent.name.data(), ent.name.size());
-		else
+		} else {
 			row.emplace_back(s_no_name);
+		}
 		if (ent.is_movable) {
 			row.emplace_back(rp_sprintf_p(s_address_mf, ent.segment, ent.offset, s_address_movable));
 		} else if (ent.segment != 0xFE) {
@@ -690,7 +690,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 		} else {
 			row.emplace_back(rp_sprintf(C_("EXE|Exports", "0x%04X (Constant)"), ent.offset));
 		}
-		row.emplace_back(flags);
+		row.emplace_back(std::move(flags));
 	}
 
 	// Create the tab if we have any exports.
