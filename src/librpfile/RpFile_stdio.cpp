@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_stdio.cpp: Standard file object. (stdio implementation)          *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -27,7 +27,7 @@ namespace LibRpFile {
 
 RpFilePrivate::~RpFilePrivate()
 {
-	if (gzfd != 0) {
+	if (gzfd != nullptr) {
 		gzclose_r(gzfd);
 	}
 	if (file) {
@@ -352,7 +352,7 @@ void RpFile::close(void)
 		d->devInfo->close();
 	}
 
-	if (d->gzfd != 0) {
+	if (d->gzfd != nullptr) {
 		gzclose_r(d->gzfd);
 		d->gzfd = nullptr;
 	}
@@ -382,7 +382,7 @@ size_t RpFile::read(void *ptr, size_t size)
 	}
 
 	size_t ret;
-	if (d->gzfd != 0) {
+	if (d->gzfd != nullptr) {
 		int iret = gzread(d->gzfd, ptr, size);
 		if (iret >= 0) {
 			ret = (size_t)iret;
@@ -453,7 +453,7 @@ int RpFile::seek(off64_t pos)
 	}
 
 	int ret;
-	if (d->gzfd != 0) {
+	if (d->gzfd != nullptr) {
 		errno = 0;
 		z_off_t zret = gzseek(d->gzfd, pos, SEEK_SET);
 		if (zret >= 0) {
@@ -487,7 +487,7 @@ off64_t RpFile::tell(void)
 		return -1;
 	}
 
-	if (d->gzfd != 0) {
+	if (d->gzfd != nullptr) {
 		return (off64_t)gztell(d->gzfd);
 	}
 	return ftello(d->file);
@@ -580,7 +580,7 @@ off64_t RpFile::size(void)
 	if (d->devInfo) {
 		// Block device. Use the cached device size.
 		return d->devInfo->device_size;
-	} else if (d->gzfd != 0) {
+	} else if (d->gzfd != nullptr) {
 		// gzipped files have the uncompressed size stored
 		// at the end of the stream.
 		return d->gzsz;

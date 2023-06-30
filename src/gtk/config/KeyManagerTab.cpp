@@ -1028,7 +1028,7 @@ keyStore_modified_signal_handler(RpKeyStoreGTK *keyStore, RpKeyManagerTab *tab)
 
         // Forward the "modified" signal.
         tab->changed = true;
-        g_signal_emit_by_name(tab, "modified", NULL);
+        g_signal_emit_by_name(tab, "modified", nullptr);
 }
 
 /** GtkCellRendererText signal handlers **/

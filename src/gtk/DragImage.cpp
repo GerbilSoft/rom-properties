@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * DragImage.cpp: Drag & Drop image.                                       *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -137,9 +137,9 @@ rp_drag_image_init(RpDragImage *image)
 // FIXME: GTK4 has a new Drag & Drop API.
 #if !GTK_CHECK_VERSION(4,0,0)
 	g_signal_connect(G_OBJECT(image), "drag-begin",
-		G_CALLBACK(rp_drag_image_drag_begin), (gpointer)0);
+		G_CALLBACK(rp_drag_image_drag_begin), nullptr);
 	g_signal_connect(G_OBJECT(image), "drag-data-get",
-		G_CALLBACK(rp_drag_image_drag_data_get), (gpointer)0);
+		G_CALLBACK(rp_drag_image_drag_data_get), nullptr);
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 }
 

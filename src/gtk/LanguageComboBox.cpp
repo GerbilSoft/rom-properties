@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * LanguageComboBox.cpp: Language GtkComboBox subclass.                    *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -133,7 +133,7 @@ rp_language_combo_box_class_init(RpLanguageComboBoxClass *klass)
 	signals[SIGNAL_LC_CHANGED] = g_signal_new("lc-changed",
 		G_OBJECT_CLASS_TYPE(gobject_class),
 		G_SIGNAL_RUN_LAST,
-		0, NULL, NULL, NULL,
+		0, nullptr, nullptr, nullptr,
 		G_TYPE_NONE, 1, G_TYPE_UINT);
 }
 
@@ -229,13 +229,13 @@ rp_language_combo_box_init(RpLanguageComboBox *widget)
 	GtkCellRenderer *renderer = gtk_cell_renderer_pixbuf_new();
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(widget->comboBox), renderer, false);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(widget->comboBox),
-		renderer, GTK_CELL_RENDERER_PIXBUF_PROPERTY, SM_COL_ICON, NULL);
+		renderer, GTK_CELL_RENDERER_PIXBUF_PROPERTY, SM_COL_ICON, nullptr);
 
 	// Text renderer
 	renderer = gtk_cell_renderer_text_new();
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(widget->comboBox), renderer, true);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(widget->comboBox),
-		renderer, "text", SM_COL_TEXT, NULL);
+		renderer, "text", SM_COL_TEXT, nullptr);
 #endif /* !USE_GTK_DROP_DOWN */
 
 	/** Signals **/

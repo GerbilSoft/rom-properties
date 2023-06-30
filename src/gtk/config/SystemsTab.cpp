@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * SystemsTab.cpp: Systems tab for rp-config.                              *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -352,7 +352,7 @@ rp_systems_tab_load_defaults(RpSystemsTab *tab)
 
 	if (isDefChanged) {
 		tab->changed = true;
-		g_signal_emit_by_name(tab, "modified", NULL);
+		g_signal_emit_by_name(tab, "modified", nullptr);
 	}
 	tab->inhibit = false;
 }
@@ -417,7 +417,7 @@ rp_systems_tab_notify_selected_handler(GtkDropDown *dropDown, GParamSpec *pspec,
 
 	// Forward the "modified" signal.
 	tab->changed = true;
-	g_signal_emit_by_name(tab, "modified", NULL);
+	g_signal_emit_by_name(tab, "modified", nullptr);
 }
 #else /* !USE_GTK_DROP_DOWN */
 /**
@@ -434,6 +434,6 @@ rp_systems_tab_modified_handler(GtkComboBox *cbo, RpSystemsTab *tab)
 
 	// Forward the "modified" signal.
 	tab->changed = true;
-	g_signal_emit_by_name(tab, "modified", NULL);
+	g_signal_emit_by_name(tab, "modified", nullptr);
 }
 #endif /* USE_GTK_DROP_DOWN */

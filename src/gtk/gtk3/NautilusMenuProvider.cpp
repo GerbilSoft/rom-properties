@@ -193,7 +193,7 @@ rp_item_convert_to_png_ThreadFunc(GList *files)
 	}
 
 	nautilus_file_info_list_free(files);
-	return 0;
+	return nullptr;
 }
 
 static void

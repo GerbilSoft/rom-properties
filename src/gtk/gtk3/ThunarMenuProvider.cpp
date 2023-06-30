@@ -184,7 +184,7 @@ rp_item_convert_to_png_ThreadFunc(GList *files)
 	}
 
 	thunarx_file_info_list_free(files);
-	return 0;
+	return nullptr;
 }
 
 #if GTK_CHECK_VERSION(3,0,0)

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_XAttrView.cpp: Extended attribute viewer property page.              *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -324,7 +324,7 @@ IFACEMETHODIMP RP_XAttrView::Initialize(
 	}
 
 	// TODO: Handle CFSTR_MOUNTEDVOLUME for volumes mounted on an NTFS mount point.
-	FORMATETC fe = { CF_HDROP, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
+	FORMATETC fe = { CF_HDROP, nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
 	STGMEDIUM stm;
 
 	HRESULT hr = E_FAIL;
@@ -350,7 +350,7 @@ IFACEMETHODIMP RP_XAttrView::Initialize(
 	// Determine how many files are involved in this operation. This
 	// code sample displays the custom context menu item when only
 	// one file is selected.
-	nFiles = DragQueryFile(hDrop, 0xFFFFFFFF, NULL, 0);
+	nFiles = DragQueryFile(hDrop, 0xFFFFFFFF, nullptr, 0);
 	if (nFiles != 1) {
 		// Wrong file count.
 		goto cleanup;
@@ -440,7 +440,7 @@ IFACEMETHODIMP RP_XAttrView::AddPages(_In_ LPFNADDPROPSHEETPAGE pfnAddPage, LPAR
 	psp.lParam = reinterpret_cast<LPARAM>(this);
 
 	HPROPSHEETPAGE hPage = CreatePropertySheetPage(&psp);
-	if (hPage == NULL) {
+	if (hPage == nullptr) {
 		return E_OUTOFMEMORY;
 	}
 

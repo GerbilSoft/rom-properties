@@ -247,7 +247,7 @@ int GcnFstTest::getFileFromZip(const char *zip_filename,
 
 	// Locate the required FST file.
 	// TODO: Always case-insensitive? (currently using OS-dependent value)
-	int ret = unzLocateFile(unz, int_filename, 0);
+	int ret = unzLocateFile(unz, int_filename, nullptr);
 	EXPECT_EQ(UNZ_OK, ret);
 	if (ret != UNZ_OK) {
 		unzClose(unz);

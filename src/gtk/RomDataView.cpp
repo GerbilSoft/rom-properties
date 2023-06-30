@@ -1569,7 +1569,7 @@ rp_rom_data_view_create_options_button(RpRomDataView *page)
 			signal_id = gtk_widget_class_get_activate_signal(GTK_WIDGET_GET_CLASS(page->btnOptions));
 		}
 		gulong handler_id = g_signal_handler_find(page->btnOptions, G_SIGNAL_MATCH_ID,
-			signal_id, 0, nullptr, 0, 0);
+			signal_id, 0, nullptr, nullptr, nullptr);
 		g_signal_handler_disconnect(page->btnOptions, handler_id);
 	}
 

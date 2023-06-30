@@ -820,7 +820,7 @@ INT_PTR CALLBACK CacheTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 				// TODO: Instead of waiting 1 second, just keep retrying
 				// SHGetFileInfo() until it succeeds? (media change only)
 				d->dwUnitmaskXP |= lpdbv->dbcv_unitmask;
-				SetTimer(hDlg, TMRID_XP_DRIVE_UPDATE, 1000, NULL);
+				SetTimer(hDlg, TMRID_XP_DRIVE_UPDATE, 1000, nullptr);
 			}
 			return TRUE;
 		}

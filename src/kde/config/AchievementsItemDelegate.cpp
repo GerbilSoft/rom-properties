@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * AchievementsItemDelegate.hpp: Achievements item delegate for rp-config. *
  *                                                                         *
- * Copyright (c) 2013-2022 by David Korth.                                 *
+ * Copyright (c) 2013-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -34,9 +34,9 @@ class AchievementsItemDelegatePrivate
 		Q_DISABLE_COPY(AchievementsItemDelegatePrivate)
 
 	public:
-		// Font retrieval.
-		QFont fontName(const QWidget *widget = 0) const;
-		QFont fontDesc(const QWidget *widget = 0) const;
+		// Font retrieval
+		QFont fontName(const QWidget *widget = nullptr) const;
+		QFont fontDesc(const QWidget *widget = nullptr) const;
 };
 
 /** AchievementsItemDelegatePrivate **/

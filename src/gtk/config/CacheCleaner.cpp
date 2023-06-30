@@ -105,7 +105,7 @@ rp_cache_cleaner_class_init(RpCacheCleanerClass *klass)
 	signals[SIGNAL_PROGRESS] = g_signal_new("progress",
 		G_OBJECT_CLASS_TYPE(gobject_class),
 		G_SIGNAL_RUN_LAST,
-		0, NULL, NULL, NULL,
+		0, nullptr, nullptr, nullptr,
 		G_TYPE_NONE, 3, G_TYPE_INT, G_TYPE_INT, G_TYPE_BOOLEAN);
 
 	/**
@@ -115,7 +115,7 @@ rp_cache_cleaner_class_init(RpCacheCleanerClass *klass)
 	signals[SIGNAL_ERROR] = g_signal_new("error",
 		G_OBJECT_CLASS_TYPE(gobject_class),
 		G_SIGNAL_RUN_LAST,
-		0, NULL, NULL, NULL,
+		0, nullptr, nullptr, nullptr,
 		G_TYPE_NONE, 1, G_TYPE_STRING);
 
 	/**
@@ -125,7 +125,7 @@ rp_cache_cleaner_class_init(RpCacheCleanerClass *klass)
 	signals[SIGNAL_CACHE_IS_EMPTY] = g_signal_new("cache-is-empty",
 		G_OBJECT_CLASS_TYPE(gobject_class),
 		G_SIGNAL_RUN_LAST,
-		0, NULL, NULL, NULL,
+		0, nullptr, nullptr, nullptr,
 		G_TYPE_NONE, 1, RP_TYPE_CACHE_DIR);
 
 	/**
@@ -137,7 +137,7 @@ rp_cache_cleaner_class_init(RpCacheCleanerClass *klass)
 	signals[SIGNAL_CACHE_CLEARED] = g_signal_new("cache-cleared",
 		G_OBJECT_CLASS_TYPE(gobject_class),
 		G_SIGNAL_RUN_LAST,
-		0, NULL, NULL, NULL,
+		0, nullptr, nullptr, nullptr,
 		G_TYPE_NONE, 3, RP_TYPE_CACHE_DIR, G_TYPE_UINT, G_TYPE_UINT);
 
 	/**
@@ -147,7 +147,7 @@ rp_cache_cleaner_class_init(RpCacheCleanerClass *klass)
 	signals[SIGNAL_FINISHED] = g_signal_new("finished",
 		G_OBJECT_CLASS_TYPE(gobject_class),
 		G_SIGNAL_RUN_LAST,
-		0, NULL, NULL, NULL,
+		0, nullptr, nullptr, nullptr,
 		G_TYPE_NONE, 0);
 }
 

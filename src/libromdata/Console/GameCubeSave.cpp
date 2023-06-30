@@ -440,7 +440,7 @@ const rp_image *GameCubeSavePrivate::loadIcon(void)
 			default:
 				// No icon.
 				// Add a nullptr as a placeholder.
-				iconAnimData->frames[i] = 0;
+				iconAnimData->frames[i] = nullptr;
 				break;
 		}
 

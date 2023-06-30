@@ -312,8 +312,8 @@ static off64_t filesize_int(const tstring &tfilename)
 #endif
 	// Use GetFileSize() instead of _stati64().
 	HANDLE hFile = CreateFile(tfilename.c_str(),
-		GENERIC_READ, FILE_SHARE_READ, NULL,
-		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		GENERIC_READ, FILE_SHARE_READ, nullptr,
+		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if (!hFile) {
 		// Error opening the file.
 		return -w32err_to_posix(GetLastError());
@@ -396,8 +396,8 @@ int get_mtime(const string &filename, time_t *pMtime)
 #endif
 	// Use GetFileTime() instead of _stati64().
 	HANDLE hFile = CreateFile(tfilename.c_str(),
-		GENERIC_READ, FILE_SHARE_READ, NULL,
-		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		GENERIC_READ, FILE_SHARE_READ, nullptr,
+		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if (!hFile) {
 		// Error opening the file.
 		return -w32err_to_posix(GetLastError());

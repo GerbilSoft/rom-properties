@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * XAttrView.cpp: MS-DOS file system attribute viewer widget.              *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -292,7 +292,7 @@ rp_xattr_view_init(RpXAttrView *widget)
 GtkWidget*
 rp_xattr_view_new(const gchar *uri)
 {
-	return (GtkWidget*)g_object_new(RP_TYPE_XATTR_VIEW, "uri", uri, NULL);
+	return (GtkWidget*)g_object_new(RP_TYPE_XATTR_VIEW, "uri", uri, nullptr);
 }
 
 /** Properties **/

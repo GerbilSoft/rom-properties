@@ -394,7 +394,7 @@ IFACEMETHODIMP RP_ContextMenu::Initialize(
 		return E_INVALIDARG;
 	}
 
-	FORMATETC fe = { CF_HDROP, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
+	FORMATETC fe = { CF_HDROP, nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
 	STGMEDIUM stm;
 
 	// The pDataObj pointer contains the objects being acted upon. In this 
@@ -413,7 +413,7 @@ IFACEMETHODIMP RP_ContextMenu::Initialize(
 	// Determine how many files are involved in this operation. This
 	// code sample displays the custom context menu item when only
 	// one file is selected.
-	UINT nFiles = DragQueryFile(hDrop, 0xFFFFFFFF, NULL, 0);
+	UINT nFiles = DragQueryFile(hDrop, 0xFFFFFFFF, nullptr, 0);
 	if (nFiles == 0) {
 		// No files?
 		//goto cleanup;

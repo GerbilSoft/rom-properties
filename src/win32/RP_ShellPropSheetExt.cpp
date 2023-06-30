@@ -2330,7 +2330,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::AddPages(_In_ LPFNADDPROPSHEETPAGE pfnAddPa
 	psp.lParam = reinterpret_cast<LPARAM>(this);
 
 	HPROPSHEETPAGE hPage = CreatePropertySheetPage(&psp);
-	if (hPage == NULL) {
+	if (hPage == nullptr) {
 		return E_OUTOFMEMORY;
 	}
 

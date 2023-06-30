@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ 3.x)                         *
  * ThunarPlugin.cpp: ThunarX Plugin Definition                             *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -78,8 +78,8 @@ thunar_extension_initialize(ThunarxProviderPlugin *plugin)
 	SHOW_INIT_MESSAGE();
 	VERIFY_GTK_VERSION();
 
-	assert(libextension_so == NULL);
-	if (libextension_so != NULL) {
+	assert(libextension_so == nullptr);
+	if (libextension_so != nullptr) {
 		// TODO: Reference count?
 		g_critical("*** " G_LOG_DOMAIN ": thunar_extension_initialize() called twice?");
 		return;
@@ -110,10 +110,10 @@ thunar_extension_initialize(ThunarxProviderPlugin *plugin)
 	// Verify that the ThunarX versions are compatible.
 	const gchar *mismatch = thunarx_check_version(
 		THUNARX_MAJOR_VERSION, THUNARX_MINOR_VERSION, THUNARX_MICRO_VERSION);
-	if (G_UNLIKELY(mismatch != NULL)) {
+	if (G_UNLIKELY(mismatch != nullptr)) {
 		g_warning ("Version mismatch: %s", mismatch);
 		dlclose(libextension_so);
-		libextension_so = NULL;
+		libextension_so = nullptr;
 		return;
 	}
 
@@ -132,7 +132,7 @@ thunar_extension_shutdown(void)
 
 	if (libextension_so) {
 		dlclose(libextension_so);
-		libextension_so = NULL;
+		libextension_so = nullptr;
 	}
 }
 

@@ -185,7 +185,7 @@ const char *className(unsigned int sys)
 {
 	assert(sys < SYS_COUNT);
 	if (sys >= SYS_COUNT)
-		return 0;
+		return nullptr;
 	return Private::sysData[sys].className;
 }
 

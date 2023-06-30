@@ -142,7 +142,7 @@ rp_key_store_gtk_class_init(RpKeyStoreGTKClass *klass)
 	signals[SIGNAL_KEY_CHANGED] = g_signal_new("key-changed",
 		G_OBJECT_CLASS_TYPE(gobject_class),
 		G_SIGNAL_RUN_LAST,
-		0, NULL, NULL, NULL,
+		0, nullptr, nullptr, nullptr,
 		G_TYPE_NONE, 2, G_TYPE_INT, G_TYPE_INT);
 
 	/**
@@ -152,7 +152,7 @@ rp_key_store_gtk_class_init(RpKeyStoreGTKClass *klass)
 	signals[SIGNAL_KEY_CHANGED_FLAT] = g_signal_new("key-changed-flat",
 		G_OBJECT_CLASS_TYPE(gobject_class),
 		G_SIGNAL_RUN_LAST,
-		0, NULL, NULL, NULL,
+		0, nullptr, nullptr, nullptr,
 		G_TYPE_NONE, 1, G_TYPE_INT);
 
 	/**
@@ -161,7 +161,7 @@ rp_key_store_gtk_class_init(RpKeyStoreGTKClass *klass)
 	signals[SIGNAL_ALL_KEYS_CHANGED] = g_signal_new("all-keys-changed",
 		G_OBJECT_CLASS_TYPE(gobject_class),
 		G_SIGNAL_RUN_LAST,
-		0, NULL, NULL, NULL,
+		0, nullptr, nullptr, nullptr,
 		G_TYPE_NONE, 0);
 
 	/**
@@ -170,7 +170,7 @@ rp_key_store_gtk_class_init(RpKeyStoreGTKClass *klass)
 	signals[SIGNAL_MODIFIED] = g_signal_new("modified",
 		G_OBJECT_CLASS_TYPE(gobject_class),
 		G_SIGNAL_RUN_LAST,
-		0, NULL, NULL, NULL,
+		0, nullptr, nullptr, nullptr,
 		G_TYPE_NONE, 0);
 }
 

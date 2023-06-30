@@ -139,11 +139,11 @@ rp_config_dialog_class_init(RpConfigDialogClass *klass)
 	signals[SIGNAL_CLOSE] = g_signal_new("close",
 		G_OBJECT_CLASS_TYPE(gobject_class),
 		(GSignalFlags)(G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
-		0, NULL, NULL, NULL,
+		0, nullptr, nullptr, nullptr,
 		G_TYPE_NONE, 0);
 
 	/** Escape key handling **/
-	gtk_widget_class_add_binding_signal(GTK_WIDGET_CLASS(klass), GDK_KEY_Escape, (GdkModifierType)0, "close", NULL);
+	gtk_widget_class_add_binding_signal(GTK_WIDGET_CLASS(klass), GDK_KEY_Escape, (GdkModifierType)0, "close", nullptr);
 #endif /* USE_GTK_DIALOG */
 }
 
@@ -315,7 +315,7 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 	gtk_button_box_set_child_secondary(GTK_BUTTON_BOX(buttonBox), dialog->btnDefaults, true);
 
 	// Connect the dialog response handler.
-	g_signal_connect(dialog, "response", G_CALLBACK(rp_config_dialog_response_handler), NULL);
+	g_signal_connect(dialog, "response", G_CALLBACK(rp_config_dialog_response_handler), nullptr);
 #else /* !USE_GTK_DIALOG */
 	dialog->buttonBox = rp_gtk_hbox_new(2);
 	gtk_widget_set_name(dialog->buttonBox, "buttonBox");

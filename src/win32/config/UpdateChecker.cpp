@@ -161,7 +161,7 @@ bool UpdateChecker::run(HWND hWnd)
 	m_updateVersion = 0;
 
 	// Create the thread.
-	m_hThread = (HANDLE)_beginthreadex(NULL, 0, ThreadProc, this, 0, NULL);
+	m_hThread = (HANDLE)_beginthreadex(nullptr, 0, ThreadProc, this, 0, NULL);
 	if (!m_hThread) {
 		m_errorMessage = C_("UpdateChecker", "Error creating thread.");
 		SendMessage(m_hWnd, WM_UPD_ERROR, 0, 0);

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * UpdateChecker.cpp: Update checker object for AboutTab.                  *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -67,7 +67,7 @@ rp_update_checker_class_init(RpUpdateCheckerClass *klass)
 	signals[SIGNAL_ERROR] = g_signal_new("error",
 		G_OBJECT_CLASS_TYPE(gobject_class),
 		G_SIGNAL_RUN_LAST,
-		0, NULL, NULL, NULL,
+		0, nullptr, nullptr, nullptr,
 		G_TYPE_NONE, 1, G_TYPE_STRING);
 
 	/**
@@ -77,7 +77,7 @@ rp_update_checker_class_init(RpUpdateCheckerClass *klass)
 	signals[SIGNAL_RETRIEVED] = g_signal_new("retrieved",
 		G_OBJECT_CLASS_TYPE(gobject_class),
 		G_SIGNAL_RUN_LAST,
-		0, NULL, NULL, NULL,
+		0, nullptr, nullptr, nullptr,
 		G_TYPE_NONE, 1, G_TYPE_UINT64);
 
 	/**
@@ -87,7 +87,7 @@ rp_update_checker_class_init(RpUpdateCheckerClass *klass)
 	signals[SIGNAL_FINISHED] = g_signal_new("finished",
 		G_OBJECT_CLASS_TYPE(gobject_class),
 		G_SIGNAL_RUN_LAST,
-		0, NULL, NULL, NULL,
+		0, nullptr, nullptr, nullptr,
 		G_TYPE_NONE, 0);
 }
 

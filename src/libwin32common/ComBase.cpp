@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * ComBase.cpp: Base class for COM objects.                                *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -63,7 +63,7 @@ HRESULT WINAPI rp_QISearch(_Inout_ void *that, _In_ LPCQITAB pqit, _In_ REFIID r
 		return E_POINTER;
 	}
 
-	for (const QITAB *p = pqit; p->piid != NULL; ++p) {
+	for (const QITAB *p = pqit; p->piid != nullptr; ++p) {
 		if (IsEqualIID(riid, *p->piid)) {
 			// Found a matching IID.
 			IUnknown *const pUnk = reinterpret_cast<IUnknown*>(

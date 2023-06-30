@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * OptionsMenuButton.cpp: Options menu GtkMenuButton container.            *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -177,12 +177,12 @@ rp_options_menu_button_class_init(RpOptionsMenuButtonClass *klass)
 	signals[SIGNAL_CLICKED] = g_signal_new("clicked",
 		G_OBJECT_CLASS_TYPE(gobject_class),
 		static_cast<GSignalFlags>(G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION),
-		0, NULL, NULL, NULL,
+		0, nullptr, nullptr, nullptr,
 		G_TYPE_NONE, 0);
 	signals[SIGNAL_ACTIVATE] = g_signal_new("activate",
 		G_OBJECT_CLASS_TYPE(gobject_class),
 		static_cast<GSignalFlags>(G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION),
-		0, NULL, NULL, NULL,
+		0, nullptr, nullptr, nullptr,
 		G_TYPE_NONE, 0);
 
 	// GtkMenuButton signals
@@ -190,7 +190,7 @@ rp_options_menu_button_class_init(RpOptionsMenuButtonClass *klass)
 	signals[SIGNAL_TRIGGERED] = g_signal_new("triggered",
 		G_OBJECT_CLASS_TYPE(gobject_class),
 		G_SIGNAL_RUN_LAST,
-		0, NULL, NULL, NULL,
+		0, nullptr, nullptr, nullptr,
 		G_TYPE_NONE, 1, G_TYPE_INT);
 
 	// Register the Activate signal.

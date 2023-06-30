@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * OptionsTab.cpp: Options tab for rp-config.                              *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -481,7 +481,7 @@ rp_options_tab_load_defaults(RpOptionsTab *tab)
 
 	if (isDefChanged) {
 		tab->changed = true;
-		g_signal_emit_by_name(tab, "modified", NULL);
+		g_signal_emit_by_name(tab, "modified", nullptr);
 	}
 	tab->inhibit = false;
 }
@@ -573,7 +573,7 @@ rp_options_tab_notify_selected_handler(GtkDropDown *dropDown, GParamSpec *pspec,
 
 	// Forward the "modified" signal.
 	tab->changed = true;
-	g_signal_emit_by_name(tab, "modified", NULL);
+	g_signal_emit_by_name(tab, "modified", nullptr);
 }
 #endif /* USE_GTK_DROP_DOWN */
 
@@ -591,7 +591,7 @@ rp_options_tab_modified_handler(GtkWidget *widget, RpOptionsTab *tab)
 
 	// Forward the "modified" signal.
 	tab->changed = true;
-	g_signal_emit_by_name(tab, "modified", NULL);
+	g_signal_emit_by_name(tab, "modified", nullptr);
 }
 
 /**
@@ -612,7 +612,7 @@ rp_options_tab_lc_changed_handler(RpLanguageComboBox *widget,
 
 	// Forward the "modified" signal.
 	tab->changed = true;
-	g_signal_emit_by_name(tab, "modified", NULL);
+	g_signal_emit_by_name(tab, "modified", nullptr);
 }
 
 /**
