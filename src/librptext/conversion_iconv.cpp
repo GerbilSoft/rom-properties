@@ -146,7 +146,7 @@ static char *rp_iconv(const char *src, int len,
 		// The string was converted successfully.
 
 		// Make sure the string is null-terminated.
-		size_t null_bytes = (out_bytes_remaining > 4 ? 4 : out_bytes_remaining);
+		const unsigned int null_bytes = (out_bytes_remaining > 4U) ? 4U : static_cast<unsigned int>(out_bytes_remaining);
 		for (size_t i = null_bytes; i > 0; i--) {
 			*outptr++ = 0x00;
 		}
