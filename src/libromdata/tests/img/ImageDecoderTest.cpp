@@ -114,10 +114,12 @@ struct ImageDecoderTest_mode
 	// Required for MSVC 2010.
 	ImageDecoderTest_mode &operator=(const ImageDecoderTest_mode &other)
 	{
-		dds_gz_filename = other.dds_gz_filename;
-		png_filename = other.png_filename;
-		expected_pixel_format = other.expected_pixel_format;
-		imgType = other.imgType;
+		if (this != &other) {
+			dds_gz_filename = other.dds_gz_filename;
+			png_filename = other.png_filename;
+			expected_pixel_format = other.expected_pixel_format;
+			imgType = other.imgType;
+		}
 		return *this;
 	}
 };

@@ -130,13 +130,15 @@ struct RpPngFormatTest_mode
 	// Required for MSVC 2010.
 	RpPngFormatTest_mode &operator=(const RpPngFormatTest_mode &other)
 	{
-		png_filename = other.png_filename;
-		bmp_gz_filename = other.bmp_gz_filename;
-		ihdr = other.ihdr;
-		bih = other.bih;
-		memcpy(bmp_tRNS.alpha, other.bmp_tRNS.alpha, sizeof(bmp_tRNS));
-		rp_format = other.rp_format;
-		has_bmp_tRNS = other.has_bmp_tRNS;
+		if (this != &other) {
+			png_filename = other.png_filename;
+			bmp_gz_filename = other.bmp_gz_filename;
+			ihdr = other.ihdr;
+			bih = other.bih;
+			memcpy(bmp_tRNS.alpha, other.bmp_tRNS.alpha, sizeof(bmp_tRNS));
+			rp_format = other.rp_format;
+			has_bmp_tRNS = other.has_bmp_tRNS;
+		}
 		return *this;
 	}
 };

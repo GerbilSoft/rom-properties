@@ -49,9 +49,11 @@ struct FilterCacheKeyTest_mode
 	// Required for MSVC 2010.
 	FilterCacheKeyTest_mode &operator=(const FilterCacheKeyTest_mode &other)
 	{
-		keyOrig = other.keyOrig;
-		keyFilteredPosix = other.keyFilteredPosix;
-		keyFilteredWin32 = other.keyFilteredWin32;
+		if (this != &other) {
+			keyOrig = other.keyOrig;
+			keyFilteredPosix = other.keyFilteredPosix;
+			keyFilteredWin32 = other.keyFilteredWin32;
+		}
 		return *this;
 	}
 };

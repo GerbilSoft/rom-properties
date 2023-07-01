@@ -50,9 +50,11 @@ struct CtrKeyScramblerTest_mode
 	// Required for MSVC 2010.
 	CtrKeyScramblerTest_mode &operator=(const CtrKeyScramblerTest_mode &other)
 	{
-		keyNormal = other.keyNormal;
-		keyX = other.keyX;
-		keyY = other.keyY;
+		if (this != &other) {
+			keyNormal = other.keyNormal;
+			keyX = other.keyX;
+			keyY = other.keyY;
+		}
 		return *this;
 	}
 };
