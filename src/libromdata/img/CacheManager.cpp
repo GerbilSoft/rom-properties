@@ -22,20 +22,11 @@ using LibRpThreads::SemaphoreLocker;
 // libcachecommon
 #include "libcachecommon/CacheKeys.hpp"
 
-// OS-specific includes
-#ifdef _WIN32
-#  include "libwin32common/RpWin32_sdk.h"
-#  include "librptext/wchar.hpp"
-#endif /* _WIN32 */
-
 // C includes (C++ namespace)
 #include <ctime>
 
 // C++ STL classes
 using std::string;
-#ifdef _WIN32
-using std::wstring;
-#endif /* _WIN32 */
 
 namespace LibRomData {
 

@@ -136,9 +136,11 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 
 	// Call the actual main function.
 	int ret = gtest_main(argc, argv);
+
 #ifdef _WIN32
 	// Shut down GDI+.
 	Gdiplus::GdiplusShutdown(gdipToken);
 #endif /* _WIN32 */
+
 	return ret;
 }

@@ -18,11 +18,11 @@
 #include "libunixcommon/dll-search.h"
 #include "libi18n/i18n.h"
 
-// OS-specific security options.
+// OS-specific security options
 #include "rp-stub_secure.h"
 #include "stdboolx.h"
 
-// C includes.
+// C includes
 #include <dlfcn.h>
 #include <errno.h>
 #include <getopt.h>
@@ -34,11 +34,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#ifdef _WIN32
-#  define DIR_SEP_CHR '\\'
-#else
-#  define DIR_SEP_CHR '/'
-#endif
+#include "tcharx.h"	// for DIR_SEP_CHR
 
 /**
  * rp_create_thumbnail2() flags
