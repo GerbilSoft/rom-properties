@@ -11,7 +11,8 @@
 #include <glib.h>
 
 #ifdef __cplusplus
-namespace LibRomData {
+
+namespace LibRpBase {
 	class RomData;
 };
 
