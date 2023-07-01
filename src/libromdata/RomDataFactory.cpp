@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * RomDataFactory.cpp: RomData factory class.                              *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -394,10 +394,10 @@ RomData *RomDataFactoryPrivate::openDreamcastVMSandVMI(IRpFile *file)
 	// VMS files are always a multiple of 512 bytes,
 	// or 160 bytes for some monochrome ICONDATA_VMS.
 	// VMI files are always 108 bytes;
-	off64_t filesize = file->size();
-	bool has_dc_vms = (filesize % DC_VMS_BLOCK_SIZE == 0) ||
-			  (filesize == DC_VMS_ICONDATA_MONO_MINSIZE);
-	bool has_dc_vmi = (filesize == sizeof(DC_VMI_Header));
+	const off64_t filesize = file->size();
+	const bool has_dc_vms = (filesize % DC_VMS_BLOCK_SIZE == 0) ||
+	                        (filesize == DC_VMS_ICONDATA_MONO_MINSIZE);
+	const bool has_dc_vmi = (filesize == sizeof(DC_VMI_Header));
 	if (!(has_dc_vms ^ has_dc_vmi)) {
 		// Can't be none or both...
 		return nullptr;
@@ -470,7 +470,7 @@ RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
 
 	bool is2048;
 	const ISO_Primary_Volume_Descriptor *pvd = nullptr;
-	int discType = ISO::checkPVD(sector.m1.data);
+	const int discType = ISO::checkPVD(sector.m1.data);
 	if (discType >= 0) {
 		// Found a PVD with 2048-byte sectors.
 		pvd = reinterpret_cast<const ISO_Primary_Volume_Descriptor*>(sector.m1.data);
@@ -480,7 +480,7 @@ RomData *RomDataFactoryPrivate::checkISO(IRpFile *file)
 		static const unsigned int sector_sizes[] = {2352, 2448};
 		is2048 = false;
 
-		for (unsigned int p : sector_sizes) {
+		for (const unsigned int p : sector_sizes) {
 			size_t size = file->seekAndRead(p * ISO_PVD_LBA, &sector, sizeof(sector));
 			if (size != sizeof(sector)) {
 				// Unable to read the PVD.
@@ -650,7 +650,7 @@ RomData *RomDataFactory::create(IRpFile *file, unsigned int attrs)
 		// TODO: Verify alignment restrictions.
 		assert(fns->address % 4 == 0);
 		assert(fns->address + sizeof(uint32_t) <= sizeof(header.u32));
-		uint32_t magic = header.u32[fns->address/4];
+		const uint32_t magic = header.u32[fns->address/4];
 		if (be32_to_cpu(magic) == fns->size) {
 			// Found a matching magic number.
 			if (fns->isRomSupported(&info) >= 0) {
@@ -1025,7 +1025,7 @@ void RomDataFactoryPrivate::init_supportedMimeTypes(void)
 	}
 
 	// Get MIME types from FileFormatFactory.
-	vector<const char*> vec_mimeTypes_fileFormat = FileFormatFactory::supportedMimeTypes();
+	const vector<const char*> vec_mimeTypes_fileFormat = FileFormatFactory::supportedMimeTypes();
 	for (const char *mimeType : vec_mimeTypes_fileFormat) {
 		auto iter = set_mimeTypes.find(mimeType);
 		if (iter == set_mimeTypes.end()) {

@@ -871,7 +871,7 @@ int ValveVTF::getFields(RomFields *fields) const
 		if (!pFlagName)
 			continue;
 
-		size_t j = vv_flags->size()+1;
+		const size_t j = vv_flags->size()+1;
 		vv_flags->resize(j);
 		auto &data_row = vv_flags->at(j-1);
 		// TODO: Localization.

@@ -147,7 +147,7 @@ void AboutTabPrivate::initProgramTitleText(void)
 	// TODO: Make a custom icon instead of reusing the system icon.
 	// TODO: Fallback for older Qt?
 #if QT_VERSION >= QT_VERSION_CHECK(4,6,0)
-	QIcon icon = QIcon::fromTheme(QLatin1String("media-flash"));
+	const QIcon icon = QIcon::fromTheme(QLatin1String("media-flash"));
 	if (!icon.isNull()) {
 		// Get the 128x128 icon.
 		// TODO: Determine the best size.
@@ -383,7 +383,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	// We have our own "+ APNG", so remove Gentoo's.
 	string pngVersionCompiled = "libpng " PNG_LIBPNG_VER_STRING;
 	for (size_t i = pngVersionCompiled.size()-1; i > 6; i--) {
-		char chr = pngVersionCompiled[i];
+		const char chr = pngVersionCompiled[i];
 		if (ISDIGIT(chr))
 			break;
 		pngVersionCompiled.resize(i);

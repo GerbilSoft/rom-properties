@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyStoreItemDelegate.cpp: KeyStore item delegate for QListView.         *
  *                                                                         *
- * Copyright (c) 2013-2022 by David Korth.                                 *
+ * Copyright (c) 2013-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -69,8 +69,8 @@ QWidget *KeyStoreItemDelegate::createEditor(QWidget *parent,
 void KeyStoreItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
 	const QAbstractItemModel *model = index.model();
-	QString value = model->data(index, Qt::EditRole).toString();
-	bool allowKanji = model->data(index, KeyStoreModel::AllowKanjiRole).toBool();
+	const QString value = model->data(index, Qt::EditRole).toString();
+	const bool allowKanji = model->data(index, KeyStoreModel::AllowKanjiRole).toBool();
 
 	QLineEdit *line = qobject_cast<QLineEdit*>(editor);
 	assert(line != nullptr);
@@ -87,8 +87,7 @@ void KeyStoreItemDelegate::setModelData(QWidget *editor,
 	QLineEdit *line = qobject_cast<QLineEdit*>(editor);
 	assert(line != nullptr);
 	if (line) {
-		QString value = line->text();
-		model->setData(index, value);
+		model->setData(index, line->text());
 	}
 }
 
@@ -113,7 +112,7 @@ void KeyStoreItemDelegate::paint(QPainter *painter,
 	}
 
 	// Get the QPixmap from the QModelIndex.
-	QPixmap pxm = index.data(Qt::DecorationRole).value<QPixmap>();
+	const QPixmap pxm = index.data(Qt::DecorationRole).value<QPixmap>();
 	if (pxm.isNull()) {
 		// NULL QPixmap.
 		// Use the default paint().

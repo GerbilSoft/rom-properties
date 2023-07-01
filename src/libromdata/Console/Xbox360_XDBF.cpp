@@ -419,7 +419,7 @@ const ao::uvector<char> *Xbox360_XDBF_Private::loadStringTable_SPA(XDBF_Language
 	}
 
 	// String table index should already be loaded.
-	int16_t idx = strTblIndexes[langID];
+	const int16_t idx = strTblIndexes[langID];
 	assert(idx >= 0);
 	assert(idx < (uint16_t)entryTable.size());
 	if (idx < 0 || idx >= (uint16_t)entryTable.size()) {
@@ -709,7 +709,7 @@ inline uint32_t Xbox360_XDBF_Private::getDefaultLC(void) const
 {
 	// Get the system language.
 	// TODO: Verify against the game's region code?
-	XDBF_Language_e langID = getLanguageID();
+	const XDBF_Language_e langID = getLanguageID();
 	uint32_t lc = XboxLanguage::getXbox360LanguageCode(langID);
 	if (lc == 0) {
 		// Invalid language code...
@@ -874,7 +874,7 @@ int Xbox360_XDBF_Private::addFields_strings_SPA(RomFields *fields) const
 		title_en = const_cast<Xbox360_XDBF_Private*>(this)->loadString_SPA(
 			XDBF_LANGUAGE_ENGLISH, XDBF_ID_TITLE);
 	}
-	bool dedupe_titles = !title_en.empty();
+	const bool dedupe_titles = !title_en.empty();
 
 	// Title fields.
 	RomFields::StringMultiMap_t *const pMap_title = new RomFields::StringMultiMap_t();
@@ -1367,7 +1367,7 @@ int Xbox360_XDBF_Private::addFields_strings_GPD(RomFields *fields) const
 
 	// Title
 	const char *const s_title_title = C_("RomData", "Title");
-	string s_title = const_cast<Xbox360_XDBF_Private*>(this)->loadString_GPD(XDBF_ID_TITLE);
+	const string s_title = const_cast<Xbox360_XDBF_Private*>(this)->loadString_GPD(XDBF_ID_TITLE);
 	if (!s_title.empty()) {
 		fields->addField_string(s_title_title, s_title);
 	} else {

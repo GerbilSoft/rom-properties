@@ -401,7 +401,7 @@ public:
 				// FIXME: What was this used for?
 				totalWidth += colSize[col]; // this could be in a separate loop, but whatever
 				os << '|';
-				size_t str_sz = utf8_disp_strlen(*it);
+				const size_t str_sz = utf8_disp_strlen(*it);
 				switch (align & 3) {
 					case TXA_L:
 						// Left alignment
@@ -497,7 +497,7 @@ public:
 						// End of string.
 					} else {
 						// Find the next newline.
-						size_t nl_pos = jt->find('\n', linePos[col]);
+						const size_t nl_pos = jt->find('\n', linePos[col]);
 						if (nl_pos == string::npos) {
 							// No more newlines.
 							str = SafeString(jt->c_str() + linePos[col], false);
@@ -577,7 +577,7 @@ public:
 		// FIXME: This may result in truncated times on 32-bit Linux.
 		struct tm timestamp;
 		struct tm *ret;
-		time_t date_time = (time_t)romField.data.date_time;
+		const time_t date_time = (time_t)romField.data.date_time;
 		if (flags & RomFields::RFT_DATETIME_IS_UTC) {
 			ret = gmtime_r(&date_time, &timestamp);
 		}

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * NCCHReader.cpp: Nintendo 3DS NCCH reader.                               *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -593,7 +593,7 @@ size_t NCCHReader::read(void *ptr, size_t size)
 	size_t sz_total_read = 0;
 	while (size > 0) {
 		// Determine what section we're in.
-		int sectIdx = d->findEncSection(d->pos);
+		const int sectIdx = d->findEncSection(d->pos);
 		const NCCHReaderPrivate::EncSection *section = (
 			sectIdx >= 0 ? &d->encSections.at(sectIdx) : nullptr);
 
@@ -605,7 +605,7 @@ size_t NCCHReader::read(void *ptr, size_t size)
 			return sz_total_read;
 		} else {
 			// We're in an encrypted section.
-			uint32_t section_offset = static_cast<uint32_t>(d->pos - section->address);
+			const uint32_t section_offset = static_cast<uint32_t>(d->pos - section->address);
 			if (section_offset + size <= section->length) {
 				// Remainder of reading is in this section.
 				sz_to_read = size;

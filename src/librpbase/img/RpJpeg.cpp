@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpJpeg.cpp: JPEG image handler.                                         *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -357,7 +357,7 @@ rp_image *RpJpeg::load(IRpFile *file)
 			for (unsigned int i = 0; i < std::min(256U, img_palette_len);
 				i++, img_palette++)
 			{
-				uint8_t gray = static_cast<uint8_t>(i);
+				const uint8_t gray = static_cast<uint8_t>(i);
 				*img_palette = (gray | gray << 8 | gray << 16);
 				*img_palette |= 0xFF000000;
 			}
@@ -525,7 +525,7 @@ rp_image *RpJpeg::load(IRpFile *file)
 					}
 					// Remaining pixels.
 					for (; x > 0; x--, dest++, src += 4) {
-						unsigned int k = src[3];
+						const unsigned int k = src[3];
 						dest->b = k * src[2] / 255;	// Blue
 						dest->g = k * src[1] / 255;	// Green
 						dest->r = k * src[0] / 255;	// Red

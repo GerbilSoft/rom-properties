@@ -3,7 +3,7 @@
  * un-premultiply.cpp: Un-premultiply function.                            *
  * Standard version. (C++ code only)                                       *
  *                                                                         *
- * Copyright (c) 2017-2019 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -105,7 +105,7 @@ int rp_image::un_premultiply_cpp(void)
 
 	const int width = backend->width;
 	argb32_t *px_dest = static_cast<argb32_t*>(backend->data());
-	int dest_stride_adj = (backend->stride / sizeof(*px_dest)) - width;
+	const int dest_stride_adj = (backend->stride / sizeof(*px_dest)) - width;
 	for (int y = backend->height; y > 0; y--, px_dest += dest_stride_adj) {
 		int x = width;
 		for (; x > 1; x -= 2, px_dest += 2) {
@@ -178,7 +178,7 @@ int rp_image::premultiply(void)
 
 	const int width = backend->width;
 	argb32_t *px_dest = static_cast<argb32_t*>(backend->data());
-	int dest_stride_adj = (backend->stride / sizeof(*px_dest)) - width;
+	const int dest_stride_adj = (backend->stride / sizeof(*px_dest)) - width;
 	for (int y = backend->height; y > 0; y--, px_dest += dest_stride_adj) {
 		int x = width;
 		for (; x > 1; x -= 2, px_dest += 2) {

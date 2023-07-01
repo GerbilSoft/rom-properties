@@ -28,7 +28,7 @@ qlonglong ListDataSortProxyModel::parseQString(const QString &str, bool *pbAllNu
 			break;
 	}
 
-	bool isAllNumeric = (pos == str.size());
+	const bool isAllNumeric = (pos == str.size());
 	if (pbAllNumeric) {
 		*pbAllNumeric = isAllNumeric;
 	}
@@ -59,8 +59,8 @@ bool ListDataSortProxyModel::doNumericCompare(const QString &strA, const QString
 	}
 
 	bool okA = false, okB = false;
-	qlonglong valA = parseQString(strA, &okA);
-	qlonglong valB = parseQString(strB, &okB);
+	const qlonglong valA = parseQString(strA, &okA);
+	const qlonglong valB = parseQString(strB, &okB);
 
 	if (valA == valB) {
 		// Values are identical.
@@ -104,15 +104,15 @@ bool ListDataSortProxyModel::lessThan(const QModelIndex &source_left, const QMod
 			break;
 		case RomFields::COLSORT_NOCASE: {
 			// Case-insensitive sorting.
-			QString strA = source_left.data().toString();
-			QString strB = source_right.data().toString();
+			const QString strA = source_left.data().toString();
+			const QString strB = source_right.data().toString();
 			bRet = (QString::compare(strA, strB, Qt::CaseInsensitive) < 0);
 			break;
 		}
 		case RomFields::COLSORT_NUMERIC: {
 			// Numeric sorting.
-			QString strA = source_left.data().toString();
-			QString strB = source_right.data().toString();
+			const QString strA = source_left.data().toString();
+			const QString strB = source_right.data().toString();
 			bRet = doNumericCompare(strA, strB);
 			break;
 		}

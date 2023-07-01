@@ -444,7 +444,7 @@ void KeyManagerTab::save(QSettings *pSettings)
 void KeyManagerTab::on_actionImportWiiKeysBin_triggered(void)
 {
 	Q_D(KeyManagerTab);
-	QString filename = QFileDialog::getOpenFileName(this,
+	const QString filename = QFileDialog::getOpenFileName(this,
 		// tr: Wii keys.bin dialog title
 		U82Q(C_("KeyManagerTab", "Select Wii keys.bin File")),
 		d->keyFileDir,	// dir
@@ -455,7 +455,7 @@ void KeyManagerTab::on_actionImportWiiKeysBin_triggered(void)
 		return;
 	d->keyFileDir = QFileInfo(filename).canonicalPath();
 
-	KeyStoreQt::ImportReturn iret = d->keyStore->importKeysFromBin(
+	const KeyStoreQt::ImportReturn iret = d->keyStore->importKeysFromBin(
 		KeyStoreUI::ImportFileID::WiiKeysBin, Q2U8(filename));
 	d->showKeyImportReturnStatus(filename, QLatin1String("Wii keys.bin"), iret);
 }
@@ -466,7 +466,7 @@ void KeyManagerTab::on_actionImportWiiKeysBin_triggered(void)
 void KeyManagerTab::on_actionImportWiiUOtpBin_triggered(void)
 {
 	Q_D(KeyManagerTab);
-	QString filename = QFileDialog::getOpenFileName(this,
+	const QString filename = QFileDialog::getOpenFileName(this,
 		// tr: Wii U otp.bin dialog title
 		U82Q(C_("KeyManagerTab", "Select Wii U otp.bin File")),
 		d->keyFileDir,	// dir
@@ -477,7 +477,7 @@ void KeyManagerTab::on_actionImportWiiUOtpBin_triggered(void)
 		return;
 	d->keyFileDir = QFileInfo(filename).canonicalPath();
 
-	KeyStoreQt::ImportReturn iret = d->keyStore->importKeysFromBin(
+	const KeyStoreQt::ImportReturn iret = d->keyStore->importKeysFromBin(
 		KeyStoreUI::ImportFileID::WiiUOtpBin, Q2U8(filename));
 	d->showKeyImportReturnStatus(filename, QLatin1String("Wii U otp.bin"), iret);
 }
@@ -488,7 +488,7 @@ void KeyManagerTab::on_actionImportWiiUOtpBin_triggered(void)
 void KeyManagerTab::on_actionImport3DSboot9bin_triggered(void)
 {
 	Q_D(KeyManagerTab);
-	QString filename = QFileDialog::getOpenFileName(this,
+	const QString filename = QFileDialog::getOpenFileName(this,
 		// tr: Nintendo 3DS boot9.bin dialog title
 		U82Q(C_("KeyManagerTab", "Select 3DS boot9.bin File")),
 		d->keyFileDir,	// dir
@@ -499,7 +499,7 @@ void KeyManagerTab::on_actionImport3DSboot9bin_triggered(void)
 		return;
 	d->keyFileDir = QFileInfo(filename).canonicalPath();
 
-	KeyStoreQt::ImportReturn iret = d->keyStore->importKeysFromBin(
+	const KeyStoreQt::ImportReturn iret = d->keyStore->importKeysFromBin(
 		KeyStoreUI::ImportFileID::N3DSboot9bin, Q2U8(filename));
 	d->showKeyImportReturnStatus(filename, QLatin1String("3DS boot9.bin"), iret);
 }
@@ -510,7 +510,7 @@ void KeyManagerTab::on_actionImport3DSboot9bin_triggered(void)
 void KeyManagerTab::on_actionImport3DSaeskeydb_triggered(void)
 {
 	Q_D(KeyManagerTab);
-	QString filename = QFileDialog::getOpenFileName(this,
+	const QString filename = QFileDialog::getOpenFileName(this,
 		// tr: Nintendo 3DS aeskeydb.bin dialog title
 		U82Q(C_("KeyManagerTab", "Select 3DS aeskeydb.bin File")),
 		d->keyFileDir,	// dir
@@ -521,7 +521,7 @@ void KeyManagerTab::on_actionImport3DSaeskeydb_triggered(void)
 		return;
 	d->keyFileDir = QFileInfo(filename).canonicalPath();
 
-	KeyStoreQt::ImportReturn iret = d->keyStore->importKeysFromBin(
+	const KeyStoreQt::ImportReturn iret = d->keyStore->importKeysFromBin(
 		KeyStoreUI::ImportFileID::N3DSaeskeydb, Q2U8(filename));
 	d->showKeyImportReturnStatus(filename, QLatin1String("3DS aeskeydb.bin"), iret);
 }

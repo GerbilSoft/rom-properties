@@ -859,8 +859,8 @@ int SNDH::loadFieldData(void)
 		// NOTE: While most SMDH files have both '!#SN' and 'TIME',
 		// some files might have only one or the other.
 		// Example: Count_Zero/Decade_Demo_Quartet.sndh ('!#SN' only)
-		bool has_SN = !tags.subtune_names.empty();
-		bool has_TIME = !tags.subtune_lengths.empty();
+		const bool has_SN = !tags.subtune_names.empty();
+		const bool has_TIME = !tags.subtune_lengths.empty();
 		unsigned int col_count = 2 + (has_SN && has_TIME);
 
 		// Some SNDH files have all zeroes for duration.
@@ -968,7 +968,7 @@ int SNDH::loadMetaData(void)
 	}
 
 	// Get the tags.
-	SNDHPrivate::TagData tags = d->parseTags();
+	const SNDHPrivate::TagData tags = d->parseTags();
 	if (!tags.tags_read) {
 		// No tags.
 		return 0;

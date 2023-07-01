@@ -1306,7 +1306,7 @@ int SNES::loadFieldData(void)
 
 	// Game ID
 	const char *const game_id_title = C_("RomData", "Game ID");
-	string gameID = d->getGameID();
+	const string gameID = d->getGameID();
 	if (!gameID.empty()) {
 		d->fields.addField_string(game_id_title, gameID);
 	} else if (d->romType == SNESPrivate::RomType::SNES) {
@@ -1536,7 +1536,7 @@ int SNES::loadMetaData(void)
 	//const SNES_RomHeader *const romHeader = &d->romHeader;
 
 	// Title
-	string s_title = d->getRomTitle();
+	const string s_title = d->getRomTitle();
 	if (!s_title.empty()) {
 		d->metaData->addMetaData_string(Property::Title, s_title);
 	}
@@ -1602,7 +1602,7 @@ int SNES::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	}
 
 	// Get the game ID.
-	string gameID = d->getGameID(true);
+	const string gameID = d->getGameID(true);
 	if (gameID.empty()) {
 		// No game ID. Image is not available.
 		return -ENOENT;

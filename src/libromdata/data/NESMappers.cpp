@@ -539,8 +539,8 @@ const char *lookup_ines_mirroring(int mapper, int submapper, bool vert, bool fou
 	const NESMapperEntry *const ent1 = lookup_ines_info(mapper);
 	const NESSubmapperInfo *const ent2 = lookup_nes2_submapper_info(mapper, submapper);
 	NESMirroring mirror = ent1 ? ent1->mirroring : NESMirroring::Unknown;
-	NESMirroring submapper_mirror = ent2 ? ent2->mirroring :NESMirroring::Unknown;
 
+	const NESMirroring submapper_mirror = ent2 ? ent2->mirroring :NESMirroring::Unknown;
 	if (submapper_mirror != NESMirroring::Unknown) // Override mapper's value
 		mirror = submapper_mirror;
 

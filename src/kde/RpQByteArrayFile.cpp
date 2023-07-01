@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpQByteArrayFile.cpp: IRpFile implementation using a QByteArray.        *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -85,7 +85,7 @@ size_t RpQByteArrayFile::write(const void *ptr, size_t size)
 	}
 
 	// Do we need to expand the QByteArray?
-	off64_t req_size = static_cast<off64_t>(m_byteArray.size()) + size;
+	const off64_t req_size = static_cast<off64_t>(m_byteArray.size()) + size;
 	if (req_size < 0) {
 		// Overflow...
 		return 0;

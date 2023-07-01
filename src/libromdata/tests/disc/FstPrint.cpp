@@ -110,7 +110,7 @@ static int fstPrint(IFst *fst, ostream &os, const string &path,
 			// Subdirectory.
 			fc.dirs++;
 
-			string name = dirent->name;
+			const string name = dirent->name;
 			string subdir = path;
 			if (path.empty() || (path[path.size()-1] != '/')) {
 				// Append a trailing slash.
@@ -149,7 +149,7 @@ static int fstPrint(IFst *fst, ostream &os, const string &path,
 			fc.files++;
 
 			// Save the filename.
-			string name = dirent->name;
+			const string name = dirent->name;
 
 			// Tree + name length.
 			// - Tree is 4 characters per level.

@@ -241,7 +241,7 @@ int AmiiboDataPrivate::loadIfNeeded(void)
 	// Determine the amiibo-data.bin file to load.
 	string filename;
 
-	time_t now = time(nullptr);
+	const time_t now = time(nullptr);
 	if (!amiibo_bin_data.empty()) {
 		// amiibo data is already loaded.
 		if (now == amiibo_bin_check_ts) {
@@ -567,7 +567,7 @@ const char *AmiiboData::lookup_char_name(uint32_t char_id) const
 	const CharTableEntry *const pCharTblEnd = d->pCharTbl + d->charTbl_count;
 	auto pCTEntry = std::lower_bound(d->pCharTbl, pCharTblEnd, id,
 		[](const CharTableEntry &entry, uint32_t id2) noexcept -> bool {
-			uint32_t id1 = le32_to_cpu(entry.char_id) & ~CHARTABLE_VARIANT_FLAG;
+			const uint32_t id1 = le32_to_cpu(entry.char_id) & ~CHARTABLE_VARIANT_FLAG;
 			return (id1 < id2);
 		});
 	if (pCTEntry == pCharTblEnd || (le32_to_cpu(pCTEntry->char_id) & ~CHARTABLE_VARIANT_FLAG) != id) {

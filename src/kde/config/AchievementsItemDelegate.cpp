@@ -98,8 +98,8 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 	// Achievement text is separated by '\n'.
 	// If no '\n' is present, assume this is regular text
 	// and use the default paint().
-	QString s_ach = index.data().toString();
-	int nl_pos = s_ach.indexOf(QChar(L'\n'));
+	const QString s_ach = index.data().toString();
+	const int nl_pos = s_ach.indexOf(QChar(L'\n'));
 	if (nl_pos < 0) {
 		// No '\n' is present.
 		// Use the default paint().
@@ -132,7 +132,7 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 		textAlignment = option.displayAlignment;
 	}
 
-	QRect textRect = option.rect;
+	const QRect textRect = option.rect;
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 	QStyleOptionViewItem bgOption = option;
 #else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
@@ -154,8 +154,8 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 
 	// Get the fonts.
 	Q_D(const AchievementsItemDelegate);
-	QFont fontName = d->fontName(bgOption.widget);
-	QFont fontDesc = d->fontDesc(bgOption.widget);
+	const QFont fontName = d->fontName(bgOption.widget);
+	const QFont fontDesc = d->fontDesc(bgOption.widget);
 
 	// Total text height.
 	int textHeight = 0;
@@ -168,7 +168,7 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 		// Description lines use a slightly smaller font.
 		const QFontMetrics fm(i == 0 ? fontName : fontDesc);
 		sl[i] = fm.elidedText(sl[i], Qt::ElideRight, textRect.width()-1);
-		QRect tmpRect(textRect.x(), textRect.y() + textHeight, textRect.width(), fm.height());
+		const QRect tmpRect(textRect.x(), textRect.y() + textHeight, textRect.width(), fm.height());
 		textHeight += fm.height();
 		v_rect[i] = fm.boundingRect(tmpRect, (textAlignment & HALIGN_FLAGS), sl[i]);
 	}
@@ -202,7 +202,7 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 	painter->save();
 
 	// Draw the background color first.
-	QVariant bg_var = index.data(Qt::BackgroundRole);
+	const QVariant bg_var = index.data(Qt::BackgroundRole);
 	QBrush bg;
 	if (bg_var.canConvert<QBrush>()) {
 		bg = bg_var.value<QBrush>();
@@ -249,8 +249,8 @@ QSize AchievementsItemDelegate::sizeHint(const QStyleOptionViewItem &option,
 	// Achievement text is separated by '\n'.
 	// If no '\n' is present, assume this is regular text
 	// and use the default paint().
-	QString s_ach = index.data().toString();
-	int nl_pos = s_ach.indexOf(QChar(L'\n'));
+	const QString s_ach = index.data().toString();
+	const int nl_pos = s_ach.indexOf(QChar(L'\n'));
 	if (nl_pos < 0) {
 		// No '\n' is present.
 		// Use the default sizeHint().
@@ -271,15 +271,15 @@ QSize AchievementsItemDelegate::sizeHint(const QStyleOptionViewItem &option,
 
 	// Get the fonts.
 	Q_D(const AchievementsItemDelegate);
-	QFont fontName = d->fontName(bgOption.widget);
-	QFont fontDesc = d->fontDesc(bgOption.widget);
+	const QFont fontName = d->fontName(bgOption.widget);
+	const QFont fontDesc = d->fontDesc(bgOption.widget);
 
 	QSize sz;
 	for (size_t i = 0; i < sl.size(); i++) {
 		// Name uses the normal font.
 		// Description lines use a slightly smaller font.
 		const QFontMetrics fm(i == 0 ? fontName : fontDesc);
-		QSize szLine = fm.size(0, sl[i]);
+		const QSize szLine = fm.size(0, sl[i]);
 		sz.setHeight(sz.height() + szLine.height());
 
 		if (szLine.width() > sz.width()) {

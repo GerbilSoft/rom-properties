@@ -569,7 +569,7 @@ int PSP::loadFieldData(void)
 		// TODO: Move to an "EBOOT" tab once PARAM.SFO is added.
 		const RomFields *const exeFields = bootExeData->fields();
 		if (exeFields) {
-			int exeTabCount = exeFields->tabCount();
+			const int exeTabCount = exeFields->tabCount();
 			for (int i = 1; i < exeTabCount; i++) {
 				d->fields.setTabName(i, exeFields->tabName(i));
 			}

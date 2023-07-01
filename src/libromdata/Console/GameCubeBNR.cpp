@@ -668,8 +668,8 @@ int GameCubeBNR::loadFieldData(void)
 		// Check if English is valid.
 		// If it is, we'll de-duplicate fields.
 		const gcn_banner_comment_t &comment_en = d->comments.at(GCN_PAL_LANG_ENGLISH);
-		bool dedupe_titles = (comment_en.gamename_full[0] != '\0') ||
-		                     (comment_en.gamename[0] != '\0');
+		const bool dedupe_titles = (comment_en.gamename_full[0] != '\0') ||
+		                           (comment_en.gamename[0] != '\0');
 
 		// Fields.
 		RomFields::StringMultiMap_t *const pMap_gamename = new RomFields::StringMultiMap_t();
@@ -891,7 +891,7 @@ int GameCubeBNR::addField_gameInfo(LibRpBase::RomFields *fields) const
 		const gcn_banner_comment_t *const comment = &d->comments[0];
 
 		// Get the game info string.
-		string s_gameInfo = d->getGameInfoString(comment);
+		const string s_gameInfo = d->getGameInfoString(comment);
 
 		// Add the field.
 		fields->addField_string(game_info_title, s_gameInfo);
@@ -903,8 +903,8 @@ int GameCubeBNR::addField_gameInfo(LibRpBase::RomFields *fields) const
 		// Check if English is valid.
 		// If it is, we'll de-duplicate fields.
 		const gcn_banner_comment_t &comment_en = d->comments[GCN_PAL_LANG_ENGLISH];
-		bool dedupe_titles = (comment_en.gamename_full[0] != '\0') ||
-		                     (comment_en.gamename[0] != '\0');
+		const bool dedupe_titles = (comment_en.gamename_full[0] != '\0') ||
+		                           (comment_en.gamename[0] != '\0');
 
 		// Fields.
 		RomFields::StringMultiMap_t *const pMap_gameinfo = new RomFields::StringMultiMap_t();

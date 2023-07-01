@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * TextOut.hpp: Text output for RomData. (JSON output)                     *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * Copyright (c) 2016-2018 by Egor.                                        *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
@@ -54,7 +54,7 @@ private:
 		char s_lc[8];
 		int s_lc_pos = 0;
 		for (; lc != 0; lc <<= 8) {
-			char chr = (char)(lc >> 24);
+			const char chr = (char)(lc >> 24);
 			if (chr != 0) {
 				s_lc[s_lc_pos++] = chr;
 			}

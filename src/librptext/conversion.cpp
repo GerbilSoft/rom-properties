@@ -114,7 +114,7 @@ size_t u16_strnlen(const char16_t *wcs, size_t maxlen)
  */
 char16_t *u16_strdup(const char16_t *wcs)
 {
-	size_t len = u16_strlen(wcs)+1;	// includes terminator
+	const size_t len = u16_strlen(wcs)+1;	// includes terminator
 	char16_t *const ret = static_cast<char16_t*>(malloc(len * sizeof(*wcs)));
 	memcpy(ret, wcs, len*sizeof(*wcs));
 	return ret;
@@ -203,7 +203,7 @@ const char16_t *u16_memchr(const char16_t *wcs, char16_t c, size_t n)
 template<typename T>
 static inline int calc_frac_part(T val, T mask)
 {
-	float f = static_cast<float>(val & (mask - 1)) / static_cast<float>(mask);
+	const float f = static_cast<float>(val & (mask - 1)) / static_cast<float>(mask);
 	int frac_part = static_cast<int>(f * 1000.0f);
 	if (frac_part >= 990) {
 		// Edge case: The fractional portion is >= 99.
@@ -339,7 +339,7 @@ string formatFileSize(off64_t size)
 		// Fractional part
 		int frac_digits = 2;
 		if (whole_part >= 10) {
-			int round_adj = ((frac_part % 10) > 5);
+			const int round_adj = ((frac_part % 10) > 5);
 			frac_part /= 10;
 			frac_part += round_adj;
 			frac_digits = 1;

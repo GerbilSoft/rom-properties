@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * ConfigDialog.cpp: Configuration dialog.                                 *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -126,7 +126,7 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 	// TODO: Fallback for older Qt?
 	// TODO: Make a custom icon instead of reusing the system icon.
 #if QT_VERSION >= 0x040600
-	QString iconName = QLatin1String("media-flash");
+	const QString iconName = QLatin1String("media-flash");
 	if (QIcon::hasThemeIcon(iconName)) {
 		this->setWindowIcon(QIcon::fromTheme(iconName));
 	}
@@ -169,7 +169,7 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 	// Install the event filter on all child widgets.
 	// This is needed in order to track focus in case
 	// the "Apply" button is clicked.
-	QList<QWidget*> widgets = this->findChildren<QWidget*>();
+	const QList<QWidget*> widgets = this->findChildren<QWidget*>();
 	for (QWidget *widget : widgets) {
 		widget->installEventFilter(this);
 	}

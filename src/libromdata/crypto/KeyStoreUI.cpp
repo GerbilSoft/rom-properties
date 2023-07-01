@@ -378,7 +378,7 @@ void KeyStoreUIPrivate::reset(void)
 					assert(keyData.length > 0);
 					assert(keyData.length <= 32);
 					if (keyData.key != nullptr && keyData.length > 0 && keyData.length <= 32) {
-						string value = binToHexStr(keyData.key, keyData.length);
+						const string value = binToHexStr(keyData.key, keyData.length);
 						if (pKey->value != value) {
 							pKey->value = value;
 							hasChanged = true;
@@ -720,7 +720,7 @@ int KeyStoreUIPrivate::verifyKeyData(const uint8_t *keyData, const uint8_t *veri
  */
 void KeyStoreUIPrivate::verifyKey(int sectIdx, int keyIdx)
 {
-	int idx = sectKeyToIdx(sectIdx, keyIdx);
+	const int idx = sectKeyToIdx(sectIdx, keyIdx);
 	if (idx < 0)
 		return;
 
@@ -937,7 +937,7 @@ bool KeyStoreUI::isEmpty(void) const
 const KeyStoreUI::Key *KeyStoreUI::getKey(int sectIdx, int keyIdx) const
 {
 	RP_D(const KeyStoreUI);
-	int idx = d->sectKeyToIdx(sectIdx, keyIdx);
+	const int idx = d->sectKeyToIdx(sectIdx, keyIdx);
 	if (idx < 0)
 		return nullptr;
 	return &d->keys[idx];
@@ -972,7 +972,7 @@ const KeyStoreUI::Key *KeyStoreUI::getKey(int idx) const
 int KeyStoreUI::setKey(int sectIdx, int keyIdx, const char *value)
 {
 	RP_D(KeyStoreUI);
-	int idx = d->sectKeyToIdx(sectIdx, keyIdx);
+	const int idx = d->sectKeyToIdx(sectIdx, keyIdx);
 	if (idx < 0)
 		return -ERANGE;
 

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * ndscrypt.cpp: Nintendo DS encryption.                                   *
  *                                                                         *
- * Copyright (c) 2020-2022 by David Korth.                                 *
+ * Copyright (c) 2020-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -411,7 +411,7 @@ static int encryptSecureArea(uint8_t *pRom, BlowfishKey bfkey)
 		}
 	}
 
-	uint32_t gamecode = le32_to_cpu(pRom32[0x0C/4]);
+	const uint32_t gamecode = le32_to_cpu(pRom32[0x0C/4]);
 	NDSCrypt ndsCrypt(gamecode);
 	ndsCrypt.encrypt_arm9(&pRom[0x4000], bfkey);
 
@@ -509,7 +509,7 @@ static int decryptSecureArea(uint8_t *pRom, BlowfishKey bfkey)
 		}
 	}
 
-	uint32_t gamecode = le32_to_cpu(pRom32[0x0C/4]);
+	const uint32_t gamecode = le32_to_cpu(pRom32[0x0C/4]);
 	NDSCrypt ndsCrypt(gamecode);
 	ndsCrypt.decrypt_arm9(&pRom[0x4000], bfkey);
 

@@ -391,7 +391,7 @@ rp_drag_image_anim_timer_func(RpDragImage *image)
 
 	// Next frame.
 	int delay = 0;
-	int frame = anim->iconAnimHelper.nextFrame(&delay);
+	const int frame = anim->iconAnimHelper.nextFrame(&delay);
 	if (delay <= 0 || frame < 0) {
 		// Invalid frame...
 		anim->tmrIconAnim = 0;

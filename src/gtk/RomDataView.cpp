@@ -828,7 +828,7 @@ rp_rom_data_view_init_bitfield(RpRomDataView *page,
 
 		GtkWidget *const checkBox = gtk_check_button_new_with_label(name.c_str());
 		// NOTE: No name for this GtkWidget.
-		gboolean value = (bitfield & 1);
+		const gboolean value = (bitfield & 1U);
 		gtk_check_button_set_active(GTK_CHECK_BUTTON(checkBox), value);
 #if !GTK_CHECK_VERSION(4,0,0)
 		gtk_widget_show(checkBox);
@@ -1251,7 +1251,7 @@ rp_rom_data_view_init_age_ratings(RpRomDataView *page,
 	}
 
 	// Convert the age ratings field to a string.
-	string str = RomFields::ageRatingsDecode(age_ratings);
+	const string str = RomFields::ageRatingsDecode(age_ratings);
 	return rp_rom_data_view_init_string(page, field, str.c_str());
 }
 
@@ -1564,7 +1564,7 @@ rp_rom_data_view_create_options_button(RpRomDataView *page)
 		} else {
 			signal_id = gtk_widget_class_get_activate_signal(GTK_WIDGET_GET_CLASS(page->btnOptions));
 		}
-		gulong handler_id = g_signal_handler_find(page->btnOptions, G_SIGNAL_MATCH_ID,
+		const gulong handler_id = g_signal_handler_find(page->btnOptions, G_SIGNAL_MATCH_ID,
 			signal_id, 0, nullptr, nullptr, nullptr);
 		g_signal_handler_disconnect(page->btnOptions, handler_id);
 	}

@@ -348,7 +348,7 @@ rp_rom_data_view_doRomOp_stdop(RpRomDataView *page, int id)
 	string defaultName = basename;
 	g_free(basename);
 	// Remove the extension, if present.
-	size_t extpos = defaultName.rfind('.');
+	const size_t extpos = defaultName.rfind('.');
 	if (extpos != string::npos) {
 		defaultName.resize(extpos);
 	}
@@ -507,7 +507,7 @@ btnOptions_triggered_signal_handler(RpOptionsMenuButton *menuButton,
 		string initialFile = FileSystem::replace_ext(page->romData->filename(), op->sfi.ext);
 		if (!initialFile.empty()) {
 			// Split the directory and basename.
-			size_t slash_pos = initialFile.rfind(DIR_SEP_CHR);
+			const size_t slash_pos = initialFile.rfind(DIR_SEP_CHR);
 			if (slash_pos != string::npos) {
 				// Full path. Set the directory and filename separately.
 				gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(fileDialog), &initialFile[slash_pos + 1]);
@@ -559,7 +559,7 @@ btnOptions_triggered_signal_handler(RpOptionsMenuButton *menuButton,
 		// ROM operation completed.
 
 		// Update fields.
-		for (int fieldIdx : params.fieldIdx) {
+		for (const int fieldIdx : params.fieldIdx) {
 			rp_rom_data_view_update_field(page, fieldIdx);
 		}
 

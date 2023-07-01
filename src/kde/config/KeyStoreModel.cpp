@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * KeyStoreModel.cpp: QAbstractListModel for KeyStore.                     *
  *                                                                         *
- * Copyright (c) 2012-2022 by David Korth.                                 *
+ * Copyright (c) 2012-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -111,7 +111,7 @@ void KeyStoreModelPrivate::style_t::init_fonts(void)
 
 	// Size hint for the monospace column.
 	// NOTE: Needs an extra space, possibly due to margins...
-	QFontMetrics fm(fntMonospace);
+	const QFontMetrics fm(fntMonospace);
 	szValueHint = fm.size(Qt::TextSingleLine,
 		QLatin1String("0123456789ABCDEF0123456789ABCDEF "));
 }
@@ -529,7 +529,7 @@ void KeyStoreModel::keyStore_destroyed_slot(QObject *obj)
 	// NOTE: It's still valid while this function is running.
 	// QAbstractItemModel segfaults if we NULL it out before
 	// calling beginRemoveRows(). (QAbstractListModel didn't.)
-	int old_sectCount = d->sectCount;
+	const int old_sectCount = d->sectCount;
 	if (old_sectCount > 0) {
 		beginRemoveRows(QModelIndex(), 0, old_sectCount-1);
 	}
@@ -550,8 +550,8 @@ void KeyStoreModel::keyStore_destroyed_slot(QObject *obj)
 void KeyStoreModel::keyStore_keyChanged_slot(int sectIdx, int keyIdx)
 {
 	const uint32_t parent_id = MAKELONG(sectIdx, 0xFFFF);
-	QModelIndex qmi_left = createIndex(keyIdx, 0, parent_id);
-	QModelIndex qmi_right = createIndex(keyIdx, (int)Column::Max-1, parent_id);
+	const QModelIndex qmi_left = createIndex(keyIdx, 0, parent_id);
+	const QModelIndex qmi_right = createIndex(keyIdx, (int)Column::Max-1, parent_id);
 	emit dataChanged(qmi_left, qmi_right);
 }
 
@@ -565,8 +565,8 @@ void KeyStoreModel::keyStore_allKeysChanged_slot(void)
 		return;
 
 	// TODO: Enumerate all child keys too?
-	QModelIndex qmi_left = createIndex(0, 0);
-	QModelIndex qmi_right = createIndex(d->sectCount-1, (int)Column::Max-1);
+	const QModelIndex qmi_left = createIndex(0, 0);
+	const QModelIndex qmi_right = createIndex(d->sectCount-1, (int)Column::Max-1);
 	emit dataChanged(qmi_left, qmi_right);
 }
 

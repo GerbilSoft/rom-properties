@@ -81,11 +81,11 @@ void AchievementsTab::reset(void)
 
 	char ach_filename[32];
 	snprintf(ach_filename, sizeof(ach_filename), ":/ach/ach-%dx%d.png", iconSize, iconSize);
-	QPixmap pxmAchSheet(QString::fromLatin1(ach_filename));
+	const QPixmap pxmAchSheet(QString::fromLatin1(ach_filename));
 	if (pxmAchSheet.isNull())
 		return;
 	snprintf(ach_filename, sizeof(ach_filename), ":/ach/ach-gray-%dx%d.png", iconSize, iconSize);
-	QPixmap pxmAchGraySheet(QString::fromLatin1(ach_filename));
+	const QPixmap pxmAchGraySheet(QString::fromLatin1(ach_filename));
 	if (pxmAchGraySheet.isNull())
 		return;
 
@@ -116,7 +116,7 @@ void AchievementsTab::reset(void)
 
 		// Extract the sub-icon.
 		const QRect subRect(col*iconSize, row*iconSize, iconSize, iconSize);
-		QPixmap pxmSubIcon = unlocked
+		const QPixmap pxmSubIcon = unlocked
 			? pxmAchSheet.copy(subRect)
 			: pxmAchGraySheet.copy(subRect);
 

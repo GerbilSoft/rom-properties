@@ -166,7 +166,7 @@ rp_config_dialog_init(RpConfigDialog *dialog)
 	// TODO: Redo icon if the icon theme changes?
 	const uint8_t icon_sizes[] = {16, 32, 48, 64, 128};
 	GList *icon_list = nullptr;
-	for (int icon_size : icon_sizes) {
+	for (const int icon_size : icon_sizes) {
 		GdkPixbuf *const icon = gtk_icon_theme_load_icon(
 			iconTheme, "media-flash", icon_size,
 			(GtkIconLookupFlags)0, nullptr);

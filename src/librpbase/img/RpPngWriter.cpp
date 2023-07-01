@@ -1279,8 +1279,9 @@ static inline int u8strIsPngLatin1(const char *str)
 				// Invalid second character.
 				return 2;
 			}
-			unsigned int chr = (((unsigned int)str[0] & 0x1F) << 5) |
-					    ((unsigned int)str[1] & 0x3F);
+			const unsigned int chr =
+				(((unsigned int)str[0] & 0x1F) << 5) |
+				 ((unsigned int)str[1] & 0x3F);
 			if ((chr > 0xFF) ||
 			    (chr < 0x20 && chr != '\n') ||
 			    (chr > 0x7E && chr < 0xA0))

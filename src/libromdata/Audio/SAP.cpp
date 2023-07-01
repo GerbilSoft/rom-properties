@@ -561,7 +561,7 @@ int SAP::loadFieldData(void)
 	}
 
 	// Get the tags.
-	SAPPrivate::sap_tags_t tags = d->parseTags();
+	const SAPPrivate::sap_tags_t tags = d->parseTags();
 	if (!tags.tags_read) {
 		// No tags.
 		return 0;
@@ -722,7 +722,7 @@ int SAP::loadMetaData(void)
 	}
 
 	// Get the tags.
-	SAPPrivate::sap_tags_t tags = d->parseTags();
+	const SAPPrivate::sap_tags_t tags = d->parseTags();
 	if (!tags.tags_read) {
 		// No tags.
 		return 0;
@@ -748,13 +748,13 @@ int SAP::loadMetaData(void)
 	d->metaData->addMetaData_integer(Property::Channels, (tags.stereo ? 2 : 1));
 
 	// NOTE: Including all songs in the duration.
-	uint32_t duration = std::accumulate(tags.durations.cbegin(), tags.durations.cend(), 0U,
+	const uint32_t duration = std::accumulate(tags.durations.cbegin(), tags.durations.cend(), 0U,
 		[](uint32_t a, const pair<uint32_t, bool> &tag_duration) noexcept -> uint32_t {
 			return a + tag_duration.first;
 		}
 	);
 	if (duration > 0) {
-		d->metaData->addMetaData_integer(Property::Duration, (int)duration);
+		d->metaData->addMetaData_integer(Property::Duration, static_cast<int>(duration));
 	}
 
 	// Finished reading the metadata.

@@ -363,7 +363,7 @@ rp_language_combo_box_rebuild_icons(RpLanguageComboBox *widget)
 	assert(flags_spriteSheet != nullptr);
 
 #ifdef USE_GTK_DROP_DOWN
-	guint n_items = g_list_model_get_n_items(G_LIST_MODEL(widget->listStore));
+	const guint n_items = g_list_model_get_n_items(G_LIST_MODEL(widget->listStore));
 	for (guint i = 0; i < n_items; i++) {
 		RpLanguageComboBoxItem *const item = RP_LANGUAGE_COMBO_BOX_ITEM(
 			g_list_model_get_item(G_LIST_MODEL(widget->listStore), i));
@@ -622,7 +622,7 @@ rp_language_combo_box_set_selected_lc(RpLanguageComboBox *widget, uint32_t lc)
 		// Find an item with a matching LC.
 		bRet = false;
 
-		guint n_items = g_list_model_get_n_items(G_LIST_MODEL(widget->listStore));
+		const guint n_items = g_list_model_get_n_items(G_LIST_MODEL(widget->listStore));
 		for (guint i = 0; i < n_items; i++) {
 			RpLanguageComboBoxItem *const item = RP_LANGUAGE_COMBO_BOX_ITEM(
 				g_list_model_get_item(G_LIST_MODEL(widget->listStore), i));

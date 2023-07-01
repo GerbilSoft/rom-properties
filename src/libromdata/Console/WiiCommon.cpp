@@ -44,7 +44,7 @@ RomFields::StringMultiMap_t *WiiCommon::getWiiBannerStrings(
 
 	// Check if English is valid.
 	// If it is, we'll de-duplicate fields.
-	bool dedupe_titles = (pImet->names[WII_LANG_ENGLISH][0][0] != cpu_to_be16('\0'));
+	const bool dedupe_titles = (pImet->names[WII_LANG_ENGLISH][0][0] != cpu_to_be16('\0'));
 
 	RomFields::StringMultiMap_t *const pMap_bannerName = new RomFields::StringMultiMap_t();
 	for (int langID = 0; langID < WII_LANG_MAX; langID++) {

@@ -549,7 +549,7 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	const WiiU_DiscHeader *const discHeader = &d->discHeader;
 
 	// Look up the publisher ID.
-	uint32_t publisher_id = WiiUData::lookup_disc_publisher(discHeader->id4);
+	const uint32_t publisher_id = WiiUData::lookup_disc_publisher(discHeader->id4);
 	if (publisher_id == 0 || (publisher_id & 0xFFFF0000) != 0x30300000) {
 		// Either the publisher ID is unknown, or it's a
 		// 4-character ID, which isn't supported by
@@ -560,7 +560,7 @@ int WiiU::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 	// Determine the GameTDB language code(s).
 	// TODO: Figure out the actual Wii U region code.
 	// Using the game ID for now.
-	vector<uint16_t> tdb_lc = GameCubeRegions::gcnRegionToGameTDB(~0U, discHeader->id4[3]);
+	const vector<uint16_t> tdb_lc = GameCubeRegions::gcnRegionToGameTDB(~0U, discHeader->id4[3]);
 
 	// Game ID.
 	// Replace any non-printable characters with underscores.

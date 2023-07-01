@@ -511,7 +511,7 @@ const XEX2_Resource_Info *Xbox360_XEX_Private::getXdbfResInfo(const char *resour
 	}
 
 	// Search the resource table for the specified resource ID.
-	unsigned int res_count = static_cast<unsigned int>(
+	const unsigned int res_count = static_cast<unsigned int>(
 		(size - sizeof(uint32_t)) / sizeof(XEX2_Resource_Info));
 	if (res_count == 0) {
 		// No resource information...
@@ -1626,7 +1626,7 @@ int Xbox360_XEX::loadFieldData(void)
 	// Image flags.
 	// NOTE: Same for both XEX1 and XEX2 according to Xenia.
 	// TODO: Show image flags as-is?
-	uint32_t image_flags = (d->xexType != Xbox360_XEX_Private::XexType::XEX1)
+	const uint32_t image_flags = (d->xexType != Xbox360_XEX_Private::XexType::XEX1)
 		? be32_to_cpu(d->secInfo.xex2.image_flags)
 		: be32_to_cpu(d->secInfo.xex1.image_flags);
 
@@ -1687,7 +1687,7 @@ int Xbox360_XEX::loadFieldData(void)
 
 	// tr: Minimum kernel version (i.e. dashboard)
 	//const char *const s_minver = C_("Xbox360_XEX", "Min. Kernel");
-	Xbox360_Version_t minver = d->getMinKernelVersion();
+	const Xbox360_Version_t minver = d->getMinKernelVersion();
 	string s_minver;
 	if (minver.u32 != 0) {
 		s_minver = rp_sprintf("%u.%u.%u.%u",

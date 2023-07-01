@@ -224,7 +224,7 @@ inline uint32_t Nintendo3DS_SMDH_Private::getDefaultLC(void) const
 {
 	// Get the system language.
 	// TODO: Verify against the game's region code?
-	N3DS_Language_ID langID = getLanguageID();
+	const N3DS_Language_ID langID = getLanguageID();
 	uint32_t lc = NintendoLanguage::getNDSLanguageCode(langID, N3DS_LANG_MAX-1);
 	if (lc == 0) {
 		// Invalid language code...
@@ -450,7 +450,7 @@ int Nintendo3DS_SMDH::loadFieldData(void)
 
 	// Title: Check if English is valid.
 	// If it is, we'll de-duplicate fields.
-	bool dedupe_titles = (smdhHeader->titles[N3DS_LANG_ENGLISH].desc_short[0] != cpu_to_le16('\0'));
+	const bool dedupe_titles = (smdhHeader->titles[N3DS_LANG_ENGLISH].desc_short[0] != cpu_to_le16('\0'));
 
 	// Title fields.
 	RomFields::StringMultiMap_t *const pMap_desc_short = new RomFields::StringMultiMap_t();
@@ -656,7 +656,7 @@ int Nintendo3DS_SMDH::loadMetaData(void)
 
 	// Title.
 	// NOTE: Preferring Full Title. If not found, using Title.
-	N3DS_Language_ID langID = d->getLanguageID();
+	const N3DS_Language_ID langID = d->getLanguageID();
 	if (smdhHeader->titles[langID].desc_long[0] != '\0') {
 		// Using the Full Title.
 		d->metaData->addMetaData_string(Property::Title,

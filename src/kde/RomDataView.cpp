@@ -158,7 +158,7 @@ void RomDataViewPrivate::initHeaderRow(void)
 		fileType = C_("RomDataView", "(unknown filetype)");
 	}
 
-	QString sysInfo = U82Q(rp_sprintf_p(
+	const QString sysInfo = U82Q(rp_sprintf_p(
 		// tr: %1$s == system name, %2$s == file type
 		C_("RomDataView", "%1$s\n%2$s"), systemName, fileType));
 	ui.lblSysInfo->setText(sysInfo);
@@ -317,8 +317,7 @@ QLabel *RomDataViewPrivate::initString(QLabel *lblDesc,
 			// Set the bottom margin to match the QFormLayout.
 			// TODO: Use a QHBoxLayout whose margins match the QFormLayout?
 			// TODO: Verify this.
-			QMargins margins = tab.form->contentsMargins();
-			tab.vbox->setContentsMargins(margins);
+			tab.vbox->setContentsMargins(tab.form->contentsMargins());
 		} else {
 			// Duplicate credits label.
 			delete lblString;
@@ -775,7 +774,7 @@ QLabel *RomDataViewPrivate::initStringMulti(QLabel *lblDesc,
 	// be able to change the displayed language.
 	// NOTE 2: The string must be an empty QString, not nullptr. Otherwise, it will
 	// attempt to use the field's string data, which is invalid.
-	QString qs_empty;
+	const QString qs_empty;
 	QLabel *const lblStringMulti = initString(lblDesc, field, &qs_empty);
 	if (lblStringMulti) {
 		vecStringMulti.emplace_back(lblStringMulti, &field);
@@ -905,7 +904,7 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 void RomDataViewPrivate::initDisplayWidgets(void)
 {
 	// Clear the tabs.
-	for (RomDataViewPrivate::tab &tab : tabs) {
+	for (const RomDataViewPrivate::tab &tab : tabs) {
 		// Delete the credits label if it's present.
 		delete tab.lblCredits;
 		// Delete the QFormLayout if it's present.
@@ -1036,8 +1035,8 @@ void RomDataViewPrivate::initDisplayWidgets(void)
 		}
 
 		// tr: Field description label.
-		string txt = rp_sprintf(desc_label_fmt, field.name);
-		QLabel *lblDesc = new QLabel(U82Q(txt), q);
+		const string txt = rp_sprintf(desc_label_fmt, field.name);
+		QLabel *const lblDesc = new QLabel(U82Q(txt), q);
 		// NOTE: No name for this QObject.
 		lblDesc->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 		lblDesc->setTextFormat(Qt::PlainText);
@@ -1225,7 +1224,7 @@ bool RomDataView::eventFilter(QObject *object, QEvent *event)
 
 	// Get the height of the first item.
 	QAbstractItemModel *const model = treeView->model();
-	QRect rect = treeView->visualRect(model->index(0, 0));
+	const QRect rect = treeView->visualRect(model->index(0, 0));
 	if (rect.height() <= 0) {
 		// Item has no height?
 		return false;
@@ -1302,7 +1301,7 @@ void RomDataView::setRomData(RomData *romData)
 	if (d->romData == romData)
 		return;
 
-	bool prevAnimTimerRunning = d->ui.lblIcon->isAnimTimerRunning();
+	const bool prevAnimTimerRunning = d->ui.lblIcon->isAnimTimerRunning();
 	if (prevAnimTimerRunning) {
 		// Animation is running.
 		// Stop it temporarily and reset the frame number.

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * KeyManager.cpp: Encryption key manager.                                 *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -174,7 +174,7 @@ int KeyManagerPrivate::processConfigLine(const char *section, const char *name, 
 
 	// Parse the value.
 	const uint32_t vKeys_start_pos = static_cast<uint32_t>(vKeys.size());
-	uint32_t vKeys_pos = vKeys_start_pos;
+	const uint32_t vKeys_pos = vKeys_start_pos;
 	// Reserve space for half of the key string.
 	// Key string is ASCII hex, so two characters make up one byte.
 	vKeys.resize(vKeys.size() + len);
@@ -453,8 +453,8 @@ int KeyManager::hexStringToBytes(const Char *str, uint8_t *buf, unsigned int len
 			return -EINVAL;
 		}
 
-		uint8_t chr0 = ascii_to_hex[static_cast<uint8_t>(str[0])];
-		uint8_t chr1 = ascii_to_hex[static_cast<uint8_t>(str[1])];
+		const uint8_t chr0 = ascii_to_hex[static_cast<uint8_t>(str[0])];
+		const uint8_t chr1 = ascii_to_hex[static_cast<uint8_t>(str[1])];
 		if (chr0 > 0x0F || chr1 > 0x0F) {
 			// Invalid character.
 			return -EINVAL;

@@ -80,13 +80,13 @@ int EXEPrivate::loadNEResident(void)
 		return -EIO;
 	}
 
-	size_t segment_count = le16_to_cpu(hdr.ne.SegCount);
+	const size_t segment_count = le16_to_cpu(hdr.ne.SegCount);
 	ne_segment_table = reinterpret_span_limit<const NE_Segment>(ne_segment_raw, segment_count);
 	assert(segment_count <= ne_segment_table.size());
 
 	ne_resident_name_table = reinterpret_span<const char>(ne_resident_name_raw);
 
-	size_t modref_count = le16_to_cpu(hdr.ne.ModRefs);
+	const size_t modref_count = le16_to_cpu(hdr.ne.ModRefs);
 	ne_modref_table = reinterpret_span_limit<const uint16_t>(ne_modref_raw, modref_count);
 	assert(modref_count <= ne_modref_table.size());
 
@@ -151,12 +151,12 @@ int EXEPrivate::loadNEResourceTable(void)
 
 	// FIXME: NEResourceReader should be able to just take ne_resource_table.
 	// NE resource table offset is relative to the start of the NE header.
-	uint32_t ResTableOffset = le16_to_cpu(mz.e_lfanew) + le16_to_cpu(hdr.ne.ResTableOffset);
+	const uint32_t ResTableOffset = le16_to_cpu(mz.e_lfanew) + le16_to_cpu(hdr.ne.ResTableOffset);
 	if (ResTableOffset < le16_to_cpu(mz.e_lfanew)) {
 		// Offse overflow
 		return -EIO;
 	}
-	uint32_t resTableSize = ne_resource_table.size();
+	const uint32_t resTableSize = ne_resource_table.size();
 
 	// Load the resources using NEResourceReader.
 	rsrcReader = new NEResourceReader(file, ResTableOffset, resTableSize);
@@ -209,7 +209,7 @@ int EXEPrivate::findNERuntimeDLL(string &refDesc, string &refLink, bool &refHasK
 	};
 
 	// FIXME: Alignment?
-	for (uint16_t modRef : ne_modref_table) {
+	for (const uint16_t modRef : ne_modref_table) {
 		const unsigned int nameOffset = le16_to_cpu(modRef);
 		assert(nameOffset < ne_imported_name_table.size());
 		if (nameOffset >= ne_imported_name_table.size()) {
@@ -456,7 +456,7 @@ void EXEPrivate::addFields_NE(void)
 	auto get_first_string = [](span<const char> sp, string &out) -> bool {
 		if (sp.size() == 0)
 			return false;
-		size_t len = static_cast<uint8_t>(sp[0]);
+		const size_t len = static_cast<uint8_t>(sp[0]);
 		if (!len || sp.size() - 1 < len)
 			return false;
 		out = string(sp.data() + 1, len);
@@ -597,11 +597,11 @@ int EXEPrivate::addFields_NE_Entry(void)
 			return -ENOENT;
 
 		while (*p) {
-			uint8_t len = static_cast<uint8_t>(*p++);
+			const uint8_t len = static_cast<uint8_t>(*p++);
 			if (p + len + 2 >= end) // next length byte >= end
 				return -ENOENT;
 			span<const char> name(p, len);
-			uint16_t ordinal = static_cast<uint8_t>(p[len]) | static_cast<uint8_t>(p[len+1])<<8;
+			const uint16_t ordinal = static_cast<uint8_t>(p[len]) | static_cast<uint8_t>(p[len+1])<<8;
 
 			// binary search for the ordinal
 			auto it = std::lower_bound(ents.begin(), ents.begin()+last, ordinal,

@@ -203,7 +203,7 @@ bool DragImageLabel::updatePixmaps(void)
 		// Single image.
 
 		// Convert the rp_image to a QImage.
-		QImage qImg = rpToQImage(m_img);
+		const QImage qImg = rpToQImage(m_img);
 		if (qImg.isNull()) {
 			// Unable to convert the image.
 			return false;
@@ -269,7 +269,7 @@ void DragImageLabel::tmrIconAnim_timeout(void)
 
 	// Next frame.
 	int delay = 0;
-	int frame = m_anim->iconAnimHelper.nextFrame(&delay);
+	const int frame = m_anim->iconAnimHelper.nextFrame(&delay);
 	if (delay <= 0 || frame < 0) {
 		// Invalid frame...
 		return;

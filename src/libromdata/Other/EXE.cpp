@@ -298,8 +298,8 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 
 	// File timestamp (FILETIME format)
 	// NOTE: This seems to be 0 in most EXEs and DLLs I've tested.
-	uint64_t fileTime = (static_cast<uint64_t>(pVsFfi->dwFileDateMS)) << 32 |
-			     static_cast<uint64_t>(pVsFfi->dwFileDateLS);
+	const uint64_t fileTime = (static_cast<uint64_t>(pVsFfi->dwFileDateMS)) << 32 |
+	                           static_cast<uint64_t>(pVsFfi->dwFileDateLS);
 	if (fileTime != 0) {
 		// Convert to UNIX time.
 #ifndef FILETIME_1970
@@ -308,7 +308,7 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 #ifndef HECTONANOSEC_PER_SEC
 		#define HECTONANOSEC_PER_SEC 10000000LL
 #endif
-		time_t fileTimeUnix = static_cast<time_t>((fileTime - FILETIME_1970) / HECTONANOSEC_PER_SEC);
+		const time_t fileTimeUnix = static_cast<time_t>((fileTime - FILETIME_1970) / HECTONANOSEC_PER_SEC);
 		fields.addField_dateTime(C_("EXE", "File Time"), fileTimeUnix,
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_HAS_TIME
@@ -379,14 +379,14 @@ void EXEPrivate::addFields_MZ(void)
 
 	// Header and program size
 	fields.addField_string(C_("EXE", "Header Size"), formatFileSize(le16_to_cpu(mz.e_cparhdr) * 16));
-	uint32_t program_size = le16_to_cpu(mz.e_cp) * 512 - le16_to_cpu(mz.e_cparhdr) * 16;
+	const uint32_t program_size = le16_to_cpu(mz.e_cp) * 512 - le16_to_cpu(mz.e_cparhdr) * 16;
 	fields.addField_string(C_("EXE", "Program Size"), formatFileSize(program_size));
 
 	// File size warnings
 	// Only show them if it's an MZ-only executable and if e_cblp is sane
 	bool shownWarning = false;
 	if (exeType == EXEPrivate::ExeType::MZ && le16_to_cpu(mz.e_cblp) > 511) {
-		off64_t file_size = file->size();
+		const off64_t file_size = file->size();
 		if (file_size != -1) {
 			off64_t image_size = le16_to_cpu(mz.e_cp)*512;
 			if (mz.e_cblp != 0)
@@ -598,7 +598,7 @@ EXE::EXE(IRpFile *file)
 	// Load the secondary header. (NE/LE/LX/PE)
 	// TODO: LE/LX.
 	// NOTE: NE and PE secondary headers are both 64 bytes.
-	uint32_t hdr_addr = le32_to_cpu(d->mz.e_lfanew);
+	const uint32_t hdr_addr = le32_to_cpu(d->mz.e_lfanew);
 	if (hdr_addr < sizeof(d->mz) || hdr_addr >= (d->file->size() - sizeof(d->hdr))) {
 		// PE header address is out of range.
 		d->exeType = EXEPrivate::ExeType::MZ;
@@ -774,9 +774,9 @@ int EXE::isRomSupported_static(const DetectInfo *info)
 		// JMP16
 		// Offset must either be positive or wrap around to the
 		// end of the executable, and cannot be in the PSP.
-		int16_t offset = (pData[1] | (pData[2] << 8));
+		const int16_t offset = (pData[1] | (pData[2] << 8));
 		if (offset > 0 || offset < -259) {
-			uint16_t u_offset = (uint16_t)offset;
+			const uint16_t u_offset = (uint16_t)offset;
 			if (u_offset < info->szFile) {
 				has_x86_jmp = true;
 			}

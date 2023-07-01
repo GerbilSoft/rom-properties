@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * CBCReader.hpp: AES-128-CBC data reader class.                           *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -277,7 +277,7 @@ size_t CBCReader::read(void *ptr, size_t size)
 	}
 
 	// Read full blocks.
-	size_t full_block_sz = size & ~15LL;
+	const size_t full_block_sz = (size & ~15ULL);
 	if (full_block_sz > 0) {
 		size_t sz_read = m_file->read(ptr8, full_block_sz);
 		if (sz_read != full_block_sz) {

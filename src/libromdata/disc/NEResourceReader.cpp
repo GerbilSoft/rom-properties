@@ -384,7 +384,7 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 
 	// Total string table size (in bytes) is wLength - (pos_strings - pos_start).
 	const off64_t pos_strings = file->tell();
-	int strTblData_len = static_cast<int>(fields[0]) - static_cast<int>(pos_strings - pos_start);
+	const int strTblData_len = static_cast<int>(fields[0]) - static_cast<int>(pos_strings - pos_start);
 	if (strTblData_len <= 0) {
 		// Error...
 		return -EIO;

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * UpdateChecker.hpp: Update checker object for AboutTab.                  *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -54,7 +54,7 @@ void UpdateChecker::run(void)
 	}
 
 	// Download the version file.
-	string cache_filename = cache.download(updateVersionCacheKey);
+	const string cache_filename = cache.download(updateVersionCacheKey);
 	if (cache_filename.empty()) {
 		// Unable to download the version file.
 		emit error(U82Q(C_("UpdateChecker", "Failed to download version file.")));
@@ -72,7 +72,7 @@ void UpdateChecker::run(void)
 	}
 
 	// Read the first line, which should contain a 4-decimal version number.
-	QString sVersion = U82Q(file.readLine().constData()).trimmed();
+	const QString sVersion = U82Q(file.readLine().constData()).trimmed();
 	if (sVersion.isEmpty()) {
 		emit error(U82Q(C_("UpdateChecker", "Version file is invalid.")));
 		emit finished();
@@ -90,7 +90,7 @@ void UpdateChecker::run(void)
 	bool ok = false;
 	uint64_t updateVersion = 0;
 	for (unsigned int i = 0; i < 3; i++, updateVersion <<= 16U) {
-		int x = sVersionArray[i].toInt(&ok);
+		const int x = sVersionArray[i].toInt(&ok);
 		if (!ok || x < 0) {
 			emit error(U82Q(C_("UpdateChecker", "Version file is invalid.")));
 			emit finished();

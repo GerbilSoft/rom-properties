@@ -346,7 +346,7 @@ void LuaPrivate::parse()
 	reset_lua();
 
 	const uint8_t *p = header + 4;
-	uint8_t version = *p++;
+	const uint8_t version = *p++;
 
 	if (version < 0x31)
 		parse2(version, p);
@@ -387,7 +387,7 @@ void LuaPrivate::parse2(uint8_t version, const uint8_t *p) {
  */
 void LuaPrivate::parse3(uint8_t version, const uint8_t *p) {
 	if (version == 0x31) {
-		uint8_t Number_type = *p++;
+		const uint8_t Number_type = *p++;
 		switch (Number_type) {
 			case 'l':
 				number_size = 4;
@@ -455,17 +455,17 @@ void LuaPrivate::parse4(uint8_t version, const uint8_t *p) {
 	   instruction_size = *p++;
 
 	if (version == 0x40) {
-		uint8_t INSTRUCTION_bits = *p++;
-		uint8_t OP_bits = *p++;
-		uint8_t B_bits = *p++;
+		const uint8_t INSTRUCTION_bits = *p++;
+		const uint8_t OP_bits = *p++;
+		const uint8_t B_bits = *p++;
 		if (INSTRUCTION_bits != 32 || OP_bits != 6 || B_bits != 9) {
 			weird_layout = true;
 		}
 	} else if (version == 0x50) {
-		uint8_t OP_bits = *p++;
-		uint8_t A_bits = *p++;
-		uint8_t B_bits = *p++;
-		uint8_t C_bits = *p++;
+		const uint8_t OP_bits = *p++;
+		const uint8_t A_bits = *p++;
+		const uint8_t B_bits = *p++;
+		const uint8_t C_bits = *p++;
 		if (OP_bits != 6 || A_bits != 8 || B_bits != 9 || C_bits != 9) {
 			weird_layout = true;
 		}
@@ -600,8 +600,8 @@ int Lua::isRomSupported_static(const DetectInfo *info)
 
 	const uint8_t *header = info->header.pData;
 	if (!memcmp(header, LUA_MAGIC, sizeof(LUA_MAGIC)-1)) {
-		uint8_t version = header[4];
-		uint8_t format = version >= 0x51 ? header[5] : 0;
+		const uint8_t version = header[4];
+		const uint8_t format = version >= 0x51 ? header[5] : 0;
 		if (format == 0) {
 			return static_cast<int>(LuaPrivate::to_version(version));
 		}

@@ -342,7 +342,7 @@ void ISOPrivate::readBootCatalog(uint32_t lba)
 
 	// Read the entire sector.
 	uint8_t sector_buf[ISO_SECTOR_SIZE_MODE1_COOKED];
-	off64_t addr = (lba * static_cast<off64_t>(sector_size)) + sector_offset;
+	const off64_t addr = (lba * static_cast<off64_t>(sector_size)) + sector_offset;
 	size_t size = file->seekAndRead(addr, sector_buf, sizeof(sector_buf));
 	if (size != sizeof(sector_buf)) {
 		// Seek and/or read error.

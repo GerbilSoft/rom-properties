@@ -91,7 +91,7 @@ rp_nautilus_properties_model_init_bitfield(RpNautilusPropertiesModel *self, cons
 			continue;
 
 		// FIXME: Fall back if a color emoji font can't be loaded.
-		gboolean value = (bitfield & 1);
+		const gboolean value = (bitfield & 1U);
 		str += (value) ? "✅ " : "🟩 ";
 		//str += (value) ? "☑ " : "☐ ";
 		str += name;

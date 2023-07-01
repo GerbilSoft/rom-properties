@@ -41,7 +41,7 @@ IRpFile *openRelatedFile(const char *filename, const char *basename, const char 
 
 	// Get the directory portion of the filename.
 	string s_dir = filename;
-	size_t slash_pos = s_dir.find_last_of(DIR_SEP_CHR);
+	const size_t slash_pos = s_dir.find_last_of(DIR_SEP_CHR);
 	if (slash_pos != string::npos) {
 		s_dir.resize(slash_pos+1);
 	} else {
@@ -58,7 +58,7 @@ IRpFile *openRelatedFile(const char *filename, const char *basename, const char 
 		s_basename = &filename[slash_pos+1];
 
 		// Check for any dots.
-		size_t dot_pos = s_basename.find_last_of('.');
+		const size_t dot_pos = s_basename.find_last_of('.');
 		if (dot_pos != string::npos) {
 			// Remove the extension.
 			s_basename.resize(dot_pos);
@@ -97,7 +97,7 @@ IRpFile *openRelatedFile(const char *filename, const char *basename, const char 
 		// Could not open the related file, but the
 		// primary file is a symlink. Dereference the
 		// symlink and check the original directory.
-		string deref_filename = FileSystem::resolve_symlink(filename);
+		const string deref_filename = FileSystem::resolve_symlink(filename);
 		if (!deref_filename.empty()) {
 			test_file = openRelatedFile(deref_filename.c_str(), basename, ext);
 		}

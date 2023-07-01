@@ -840,7 +840,7 @@ int Xbox360_STFS::loadFieldData(void)
 
 	// Check if English is valid.
 	// If it is, we'll de-duplicate the fields.
-	bool dedupe_titles = (stfsMetadata->display_name[0][0] != 0);
+	const bool dedupe_titles = (stfsMetadata->display_name[0][0] != 0);
 
 	// NOTE: The main section in the metadata has 18 languages.
 	// Metadata version 2 adds an additional 6 languages, but we only

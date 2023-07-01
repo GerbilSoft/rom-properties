@@ -213,7 +213,7 @@ int PEResourceReaderPrivate::loadResDir(uint32_t addr, rsrc_dir_t &dir)
 	unsigned int entriesRead = 0;
 	for (unsigned int i = 0; i < entryCount; i++, irdEntry++) {
 		// Skipping any root directory entry that isn't an ID.
-		uint32_t id = le32_to_cpu(irdEntry->Name);
+		const uint32_t id = le32_to_cpu(irdEntry->Name);
 		if (id > 0xFFFF) {
 			// Not an ID.
 			continue;
@@ -290,7 +290,7 @@ const PEResourceReaderPrivate::rsrc_dir_t *PEResourceReaderPrivate::getTypeDir(u
 const PEResourceReaderPrivate::rsrc_dir_t *PEResourceReaderPrivate::getTypeIdDir(uint16_t type, uint16_t id)
 {
 	// Check if the type and ID is already cached.
-	uint32_t type_and_id = (type | (static_cast<uint32_t>(id) << 16));
+	const uint32_t type_and_id = (type | (static_cast<uint32_t>(id) << 16));
 	auto iter_td = type_and_id_dirs.find(type_and_id);
 	if (iter_td != type_and_id_dirs.end()) {
 		// Type and ID is already cached.
@@ -366,7 +366,7 @@ int PEResourceReaderPrivate::load_VS_VERSION_INFO_header(IRpFile *file, const ch
 	}
 
 	// Check the key name.
-	unsigned int key_len = static_cast<unsigned int>(u16_strlen(key));
+	const unsigned int key_len = static_cast<unsigned int>(u16_strlen(key));
 	// DWORD alignment: Make sure we end on a multiple of 4 bytes.
 	unsigned int keyData_len = (key_len+1) * sizeof(char16_t);
 	keyData_len = ALIGN_BYTES(4, keyData_len + sizeof(fields)) - sizeof(fields);
@@ -439,7 +439,7 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 	}
 
 	// Convert to UTF-8.
-	string str_langID = utf16le_to_utf8(s_langID, 8);
+	const string str_langID = utf16le_to_utf8(s_langID, 8);
 	// Parse using strtoul().
 	char *endptr;
 	*langID = static_cast<unsigned int>(strtoul(str_langID.c_str(), &endptr, 16));
@@ -453,7 +453,7 @@ int PEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 
 	// Total string table size (in bytes) is wLength - (pos_strings - pos_start).
 	const off64_t pos_strings = file->tell();
-	int strTblData_len = static_cast<int>(fields[0]) - static_cast<int>(pos_strings - pos_start);
+	const int strTblData_len = static_cast<int>(fields[0]) - static_cast<int>(pos_strings - pos_start);
 	if (strTblData_len <= 0) {
 		// Error...
 		return -EIO;

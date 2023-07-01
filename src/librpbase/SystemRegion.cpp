@@ -457,7 +457,7 @@ string lcToString(uint32_t lc)
 	string s_lc;
 	s_lc.reserve(4);
 	for (; lc != 0; lc <<= 8) {
-		uint8_t chr = (uint8_t)(lc >> 24);
+		const uint8_t chr = static_cast<uint8_t>(lc >> 24);
 		if (chr != 0) {
 			s_lc += TOLOWER(chr);
 		}
@@ -476,7 +476,7 @@ string lcToStringUpper(uint32_t lc)
 	string s_lc;
 	s_lc.reserve(4);
 	for (; lc != 0; lc <<= 8) {
-		uint8_t chr = (uint8_t)(lc >> 24);
+		const uint8_t chr = static_cast<uint8_t>(lc >> 24);
 		if (chr != 0) {
 			s_lc += TOUPPER(chr);
 		}

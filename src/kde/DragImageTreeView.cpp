@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * DragImageTreeView.cpp: Drag & Drop QTreeView subclass.                  *
  *                                                                         *
- * Copyright (c) 2019-2022 by David Korth.                                 *
+ * Copyright (c) 2019-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,7 +25,7 @@ void DragImageTreeView::startDrag(Qt::DropActions supportedActions)
 	Q_UNUSED(supportedActions)
 
 	// Get the selected indexes.
-	QModelIndexList indexes = selectedIndexes();
+	const QModelIndexList indexes = selectedIndexes();
 	if (indexes.isEmpty()) {
 		// No items selected.
 		return;

@@ -597,7 +597,7 @@ DMG::DMG(IRpFile *file)
 	}
 
 	// Attempt to read the GBX footer.
-	off64_t addr = file->size() - sizeof(GBX_Footer);
+	const off64_t addr = file->size() - sizeof(GBX_Footer);
 	if (addr >= (off64_t)sizeof(GBX_Footer)) {
 		size = file->seekAndRead(addr, &d->gbxFooter, sizeof(d->gbxFooter));
 		if (size != sizeof(d->gbxFooter)) {
@@ -1337,7 +1337,7 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 
 		// Manually filter out characters that are rejected by CacheKeys.
 		img_filename.reserve(s_title.size() + 8);
-		for (char p : s_title) {
+		for (const char p : s_title) {
 			switch (p) {
 				case ':':
 				case '/':

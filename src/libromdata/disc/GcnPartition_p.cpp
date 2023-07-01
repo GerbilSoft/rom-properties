@@ -149,7 +149,7 @@ int GcnPartitionPrivate::loadFst(void)
 
 	// Read the FST.
 	// TODO: Eliminate the extra copy?
-	uint32_t fstData_len = bootBlock.fst_size << offsetShift;
+	const uint32_t fstData_len = bootBlock.fst_size << offsetShift;
 	uint8_t *const fstData = new uint8_t[fstData_len];
 	size_t size = q->read(fstData, fstData_len);
 	if (size != fstData_len) {

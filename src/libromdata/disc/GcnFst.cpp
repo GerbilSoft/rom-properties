@@ -113,7 +113,7 @@ GcnFstPrivate::GcnFstPrivate(const uint8_t *fstData, uint32_t len, uint8_t offse
 		return;
 	}
 
-	uint32_t string_table_offset = file_count * sizeof(GCN_FST_Entry);
+	const uint32_t string_table_offset = file_count * sizeof(GCN_FST_Entry);
 	if (string_table_offset >= len) {
 		// Invalid FST length.
 		hasErrors = true;
@@ -161,7 +161,7 @@ inline bool GcnFstPrivate::is_dir(const GCN_FST_Entry *fst_entry)
 inline const char *GcnFstPrivate::entry_name(const GCN_FST_Entry *fst_entry) const
 {
 	// Get the name entry from the string table.
-	uint32_t offset = be32_to_cpu(fst_entry->file_type_name_offset) & 0xFFFFFF;
+	const uint32_t offset = be32_to_cpu(fst_entry->file_type_name_offset) & 0xFFFFFF;
 	if (offset >= string_table_sz) {
 		// Out of range.
 		return nullptr;
@@ -178,7 +178,7 @@ inline const char *GcnFstPrivate::entry_name(const GCN_FST_Entry *fst_entry) con
 	// Do the conversion now.
 	const char *str = &string_table_ptr[offset];
 	int len = static_cast<int>(strlen(str));	// TODO: Bounds checking.
-	string u8str = cp1252_sjis_to_utf8(str, len);
+	const string u8str = cp1252_sjis_to_utf8(str, len);
 	iter = u8_string_table.emplace(offset, u8str).first;
 	return iter->second.c_str();
 }
@@ -268,7 +268,7 @@ const GCN_FST_Entry *GcnFstPrivate::find_path(const char *path) const
 	int last_fst_idx = be32_to_cpu(fst_entry->root_dir.file_count);
 	size_t slash_pos = 0;
 	do {
-		size_t next_slash_pos = s_path.find('/', slash_pos + 1);
+		const size_t next_slash_pos = s_path.find('/', slash_pos + 1);
 		string path_component;
 		bool are_more_slashes = true;
 		if (next_slash_pos == string::npos) {
@@ -460,7 +460,7 @@ IFst::DirEnt *GcnFst::readdir(IFst::Dir *dirp)
 
 	if (idx != dirp->dir_idx && d->is_dir(fst_entry)) {
 		// Skip over this directory.
-		int next_idx = be32_to_cpu(fst_entry->dir.next_offset);
+		const int next_idx = be32_to_cpu(fst_entry->dir.next_offset);
 		if (next_idx <= idx) {
 			// Seeking backwards? (or looping to the same entry)
 			d->hasErrors = true;

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * AchQtDBus.cpp: QtDBus notifications for achievements.                   *
  *                                                                         *
- * Copyright (c) 2020-2021 by David Korth.                                 *
+ * Copyright (c) 2020-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -182,7 +182,7 @@ QImage AchQtDBusPrivate::loadSpriteSheet(int iconSize)
 	// TODO: Qt 6.0 will have an in-place rgbSwap() function.
 	// TODO: SSSE3-optimized version?
 	argb32_t *bits = reinterpret_cast<argb32_t*>(imgAchSheet.bits());
-	int strideDiff = imgAchSheet.bytesPerLine() - (imgAchSheet.width() * sizeof(uint32_t));
+	const int strideDiff = imgAchSheet.bytesPerLine() - (imgAchSheet.width() * sizeof(uint32_t));
 	for (unsigned int y = (unsigned int)imgAchSheet.height(); y > 0; y--) {
 		unsigned int x;
 		for (x = (unsigned int)imgAchSheet.width(); x > 1; x -= 2) {
@@ -261,8 +261,8 @@ int AchQtDBusPrivate::notifyFunc(Achievements::ID id)
 	// Hints, including image data.
 	// FIXME: Icon size. Using 32px for now.
 	static const int iconSize = 32;
+	const QImage imgspr = loadSpriteSheet(iconSize);
 	QVariantMap hints;
-	QImage imgspr = loadSpriteSheet(iconSize);
 	QImage subIcon;
 	if (!imgspr.isNull()) {
 		// Determine row and column.

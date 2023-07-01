@@ -369,7 +369,7 @@ XboxDisc::XboxDisc(IRpFile *file)
 			// Check if this is a supported drive model.
 			if (rpFile->isKreonDriveModel()) {
 				// Do we have Kreon features?
-				vector<RpFile::KreonFeature> features = rpFile->getKreonFeatureList();
+				const vector<RpFile::KreonFeature> features = rpFile->getKreonFeatureList();
 				if (!features.empty()) {
 					// Found Kreon features.
 					// TODO: Check the feature list?
@@ -608,7 +608,7 @@ const char *XboxDisc::systemName(unsigned int type) const
 	static_assert(SYSNAME_TYPE_MASK == 3,
 		"XboxDisc::systemName() array index optimization needs to be updated.");
 
-	XboxDiscPrivate::ConsoleType consoleType = d->getConsoleType();
+	const XboxDiscPrivate::ConsoleType consoleType = d->getConsoleType();
 	switch (consoleType) {
 		default:
 		case XboxDiscPrivate::ConsoleType::Xbox: {
@@ -718,7 +718,7 @@ int XboxDisc::loadFieldData(void)
 	d->fields.reserve(3);	// Maximum of 3 fields.
 
 	// Get the console name.
-	XboxDiscPrivate::ConsoleType consoleType = d->getConsoleType();
+	const XboxDiscPrivate::ConsoleType consoleType = d->getConsoleType();
 	const char *s_tab_name;
 	switch (consoleType) {
 		default:
@@ -787,7 +787,7 @@ int XboxDisc::loadFieldData(void)
 		// the primary tab.
 		const RomFields *const exeFields = defaultExeData->fields();
 		if (exeFields) {
-			int exeTabCount = exeFields->tabCount();
+			const int exeTabCount = exeFields->tabCount();
 			for (int i = 1; i < exeTabCount; i++) {
 				d->fields.setTabName(i, exeFields->tabName(i));
 			}

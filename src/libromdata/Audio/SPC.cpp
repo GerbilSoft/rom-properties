@@ -344,7 +344,7 @@ SPCPrivate::spc_tags_t SPCPrivate::parseTags(void)
 	}
 
 	// NOTE: Maximum of 16 KB.
-	unsigned int len = le32_to_cpu(xID6.size);
+	const unsigned int len = le32_to_cpu(xID6.size);
 	if (len < 4 || len > 16384) {
 		// Invalid length.
 		return kv;
@@ -774,8 +774,8 @@ int SPC::loadFieldData(void)
 			// Low byte: Optional letter.
 			// TODO: Restrict track number?
 			char buf[32];
-			uint8_t track_num = data.uvalue >> 8;
-			char track_letter = data.uvalue & 0xFF;
+			const uint8_t track_num = data.uvalue >> 8;
+			const char track_letter = data.uvalue & 0xFF;
 			if (ISALNUM(track_letter)) {
 				// Valid track letter.
 				snprintf(buf, sizeof(buf), "%u%c", track_num, track_letter);

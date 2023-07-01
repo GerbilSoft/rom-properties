@@ -465,7 +465,7 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 	}
 
 	// Check if there is a space.
-	size_t pos = bf_str.find(' ');
+	const size_t pos = bf_str.find(' ');
 	if (pos != string::npos && pos > 0) {
 		// Found a space.
 		// Everything after the space is a boot argument.
@@ -474,7 +474,7 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 	}
 
 	// Remove the ISO version number.
-	size_t len = d->boot_filename.size();
+	const size_t len = d->boot_filename.size();
 	if (len > 2) {
 		if (ISDIGIT(d->boot_filename[len-1]) && d->boot_filename[len-2] == ';') {
 			d->boot_filename.resize(len-2);
@@ -814,7 +814,7 @@ int PlayStationDisc::loadFieldData(void)
 		// the primary tab.
 		const RomFields *const exeFields = bootExeData->fields();
 		if (exeFields) {
-			int exeTabCount = exeFields->tabCount();
+			const int exeTabCount = exeFields->tabCount();
 			for (int i = 1; i < exeTabCount; i++) {
 				d->fields.setTabName(i, exeFields->tabName(i));
 			}

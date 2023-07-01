@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * FileSystem_common.cpp: File system functions. (Common functions)        *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,11 +11,11 @@
 
 // OS-specific userdirs
 #ifdef _WIN32
-# include "libwin32common/userdirs.hpp"
-# define OS_NAMESPACE LibWin32Common
+#  include "libwin32common/userdirs.hpp"
+#  define OS_NAMESPACE LibWin32Common
 #else
-# include "libunixcommon/userdirs.hpp"
-# define OS_NAMESPACE LibUnixCommon
+#  include "libunixcommon/userdirs.hpp"
+#  define OS_NAMESPACE LibUnixCommon
 #endif
 
 // librpthreads
@@ -150,8 +150,8 @@ std::string replace_ext(const char *filename, const char *ext)
 	}
 
 	string s_ret = filename;
-	size_t dotpos = s_ret.find_last_of('.');
-	size_t slashpos = s_ret.find_last_of(DIR_SEP_CHR);
+	const size_t dotpos = s_ret.find_last_of('.');
+	const size_t slashpos = s_ret.find_last_of(DIR_SEP_CHR);
 	if (dotpos == string::npos ||
 	    dotpos >= s_ret.size()-1 ||
 	    (slashpos != string::npos && dotpos <= slashpos))

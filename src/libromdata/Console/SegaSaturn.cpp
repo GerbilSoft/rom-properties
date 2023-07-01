@@ -522,7 +522,7 @@ int SegaSaturn::loadFieldData(void)
 		RomFields::STRF_TRIM_END);
 
 	// Release date.
-	time_t release_date = d->ascii_yyyymmdd_to_unix_time(discHeader->release_date);
+	const time_t release_date = d->ascii_yyyymmdd_to_unix_time(discHeader->release_date);
 	d->fields.addField_dateTime(C_("RomData", "Release Date"), release_date,
 		RomFields::RFT_DATETIME_HAS_DATE |
 		RomFields::RFT_DATETIME_IS_UTC  // Date only.
@@ -577,7 +577,7 @@ int SegaSaturn::loadFieldData(void)
 	vector<string> *const v_peripherals_bitfield_names = RomFields::strArrayToVector_i18n(
 		"SegaSaturn|Peripherals", peripherals_bitfield_names, ARRAY_SIZE(peripherals_bitfield_names));
 	// Parse peripherals.
-	uint32_t peripherals = d->parsePeripherals(discHeader->peripherals, sizeof(discHeader->peripherals));
+	const uint32_t peripherals = d->parsePeripherals(discHeader->peripherals, sizeof(discHeader->peripherals));
 	d->fields.addField_bitfield(C_("SegaSaturn", "Peripherals"),
 		v_peripherals_bitfield_names, 3, peripherals);
 

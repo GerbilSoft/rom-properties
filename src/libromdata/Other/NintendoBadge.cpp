@@ -383,7 +383,7 @@ inline uint32_t NintendoBadgePrivate::getDefaultLC(void) const
 {
 	// Get the system language.
 	// TODO: Verify against the game's region code?
-	N3DS_Language_ID langID = getLanguageID();
+	const N3DS_Language_ID langID = getLanguageID();
 	uint32_t lc = NintendoLanguage::getNDSLanguageCode(langID, N3DS_LANG_MAX-1);
 	if (lc == 0) {
 		// Invalid language code...
@@ -489,7 +489,7 @@ int NintendoBadge::isRomSupported_static(const DetectInfo *info)
 
 	// Check for PRBS.
 	NintendoBadgePrivate::BadgeType badgeType;
-	uint32_t magic = *((const uint32_t*)info->header.pData);
+	const uint32_t magic = *((const uint32_t*)info->header.pData);
 	if (magic == cpu_to_be32(BADGE_PRBS_MAGIC)) {
 		// PRBS header is present.
 		// TODO: Other checks?
@@ -669,7 +669,7 @@ int NintendoBadge::loadFieldData(void)
 
 			// Name: Check if English is valid.
 			// If it is, we'll de-duplicate fields.
-			bool dedupe_titles = (prbs->name[N3DS_LANG_ENGLISH][0] != cpu_to_le16('\0'));
+			const bool dedupe_titles = (prbs->name[N3DS_LANG_ENGLISH][0] != cpu_to_le16('\0'));
 
 			// Name field.
 			// NOTE: There are 16 entries for names, but only 12 Nintendo 3DS langauges...
@@ -745,13 +745,13 @@ int NintendoBadge::loadFieldData(void)
 
 				// Check if this is a known system title.
 				const char *region = nullptr;
-				const char *title = Nintendo3DSSysTitles::lookup_sys_title(
+				const char *const title = Nintendo3DSSysTitles::lookup_sys_title(
 					le32_to_cpu(prbs->title_id.hi),
 					le32_to_cpu(prbs->title_id.lo), &region);
 				if (title) {
 					// Add optional fields.
 					string str;
-					bool isN3DS = !!(le32_to_cpu(prbs->title_id.lo) & 0x20000000);
+					const bool isN3DS = !!(le32_to_cpu(prbs->title_id.lo) & 0x20000000);
 					if (isN3DS) {
 						if (region) {
 							// tr: %1$s == Title name, %2$s == Region

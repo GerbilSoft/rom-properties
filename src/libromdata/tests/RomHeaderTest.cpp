@@ -250,7 +250,7 @@ int RomHeaderTest::read_next_files(const RomHeaderTest_mode &mode)
 	{
 		static const size_t MIN_BIN_DATA_SIZE = 64U * 1024U;
 		if (last_bin_data.size() < MIN_BIN_DATA_SIZE) {
-			size_t cur_size = last_bin_data.size();
+			const size_t cur_size = last_bin_data.size();
 			last_bin_data.resize(MIN_BIN_DATA_SIZE);
 			memset(&last_bin_data[cur_size], 0, MIN_BIN_DATA_SIZE - cur_size);
 		}

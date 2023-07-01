@@ -67,7 +67,7 @@ int EXEPrivate::loadPESectionTable(void)
 	}
 
 	// Read the section table, up to SizeOfHeaders.
-	uint32_t section_count = (SizeOfHeaders - section_table_start) / sizeof(IMAGE_SECTION_HEADER);
+	const uint32_t section_count = (SizeOfHeaders - section_table_start) / sizeof(IMAGE_SECTION_HEADER);
 	assert(section_count <= 128);
 	if (section_count > 128) {
 		// Sanity check: Maximum of 128 sections.
@@ -291,7 +291,7 @@ int EXEPrivate::readPENullBlock(uint32_t low, uint32_t high, uint32_t minExtra,
 	if (sizeMin > minMax) {
 		return -EIO;
 	}
-	uint32_t paddr = pe_vaddr_to_paddr(low, sizeMin);
+	const uint32_t paddr = pe_vaddr_to_paddr(low, sizeMin);
 	if (paddr == 0) {
 		// Invalid VAs...
 		return -ENOENT;
@@ -387,7 +387,7 @@ int EXEPrivate::readPEImportDir(void)
 	peImportNames.clear();
 	peImportNames.reserve(peImportDir.size());
 	for(auto &ent : peImportDir) {
-		uint32_t vaddr = le32_to_cpu(ent.rvaModuleName);
+		const uint32_t vaddr = le32_to_cpu(ent.rvaModuleName);
 		assert(vaddr >= dll_vaddr_low);
 		assert(vaddr <= dll_vaddr_high);
 		if (vaddr < dll_vaddr_low || vaddr > dll_vaddr_high) {
@@ -414,7 +414,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 	refDesc.clear();
 	refLink.clear();
 
-	bool is64 = exeType == ExeType::PE32PLUS;
+	const bool is64 = exeType == ExeType::PE32PLUS;
 
 	int res = readPEImportDir();
 	if (res)
@@ -730,7 +730,7 @@ void EXEPrivate::addFields_PE(void)
 	// We should detect that by checking for obviously out-of-range values.
 	// TODO: time_t is signed, so values greater than 2^31-1 may be negative.
 	const char *const timestamp_title = C_("EXE", "Timestamp");
-	uint32_t timestamp = le32_to_cpu(hdr.pe.FileHeader.TimeDateStamp);
+	const uint32_t timestamp = le32_to_cpu(hdr.pe.FileHeader.TimeDateStamp);
 	if (timestamp != 0) {
 		fields.addField_dateTime(timestamp_title,
 			static_cast<time_t>(timestamp),
@@ -794,7 +794,7 @@ int EXEPrivate::addFields_PE_Export(void)
 		return res;
 
 	const IMAGE_EXPORT_DIRECTORY *pExpDirTbl = reinterpret_cast<const IMAGE_EXPORT_DIRECTORY*>(expDirTbl.data());
-	uint32_t ordinalBase = le32_to_cpu(pExpDirTbl->Base);
+	const uint32_t ordinalBase = le32_to_cpu(pExpDirTbl->Base);
 	if (ordinalBase > 65535)
 		return -ENOENT;
 
@@ -811,7 +811,7 @@ int EXEPrivate::addFields_PE_Export(void)
 	};
 
 	// Export Address Table
-	uint32_t rvaExpAddrTbl = le32_to_cpu(pExpDirTbl->AddressOfFunctions);
+	const uint32_t rvaExpAddrTbl = le32_to_cpu(pExpDirTbl->AddressOfFunctions);
 	uint32_t szExpAddrTbl = le32_to_cpu(pExpDirTbl->NumberOfFunctions);
 	// Ignore ordinals greater than 65535
 	szExpAddrTbl = std::min(65536-ordinalBase, szExpAddrTbl);
@@ -821,15 +821,15 @@ int EXEPrivate::addFields_PE_Export(void)
 		return -ENOENT;
 
 	// Export Name Table
-	uint32_t rvaExpNameTbl = le32_to_cpu(pExpDirTbl->AddressOfNames);
-	uint32_t szExpNameTbl = le32_to_cpu(pExpDirTbl->NumberOfNames);
+	const uint32_t rvaExpNameTbl = le32_to_cpu(pExpDirTbl->AddressOfNames);
+	const uint32_t szExpNameTbl = le32_to_cpu(pExpDirTbl->NumberOfNames);
 	const uint32_t *expNameTbl = reinterpret_cast<const uint32_t*>(
 		checkBounds(rvaExpNameTbl, szExpAddrTbl*sizeof(uint32_t)));
 	if (!expNameTbl)
 		return -ENOENT;
 
 	// Export Ordinal Table
-	uint32_t rvaExpOrdTbl = le32_to_cpu(pExpDirTbl->AddressOfNameOrdinals);
+	const uint32_t rvaExpOrdTbl = le32_to_cpu(pExpDirTbl->AddressOfNameOrdinals);
 	const uint16_t *expOrdTbl = reinterpret_cast<const uint16_t*>(
 		checkBounds(rvaExpOrdTbl, szExpAddrTbl*sizeof(uint16_t)));
 	if (!expOrdTbl)
@@ -867,8 +867,8 @@ int EXEPrivate::addFields_PE_Export(void)
 
 	// Read name table
 	for (uint32_t i = 0; i < szExpNameTbl; i++) {
-		uint32_t rvaName = le32_to_cpu(expNameTbl[i]);
-		uint16_t ord = le16_to_cpu(expOrdTbl[i]);
+		const uint32_t rvaName = le32_to_cpu(expNameTbl[i]);
+		const uint16_t ord = le16_to_cpu(expOrdTbl[i]);
 		if (ord >= szExpAddrTbl) // out of bounds ordinal
 			continue;
 		if (rvaName < rvaMin || rvaName >= rvaMax)
@@ -971,7 +971,7 @@ int EXEPrivate::addFields_PE_Export(void)
  */
 int EXEPrivate::addFields_PE_Import(void)
 {
-	bool is64 = exeType == ExeType::PE32PLUS;
+	const bool is64 = exeType == ExeType::PE32PLUS;
 
 	int res = readPEImportDir();
 	if (res)

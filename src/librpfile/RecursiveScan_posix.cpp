@@ -148,7 +148,7 @@ int recursiveScan(const TCHAR *path, forward_list<pair<tstring, uint8_t> > &rlis
 				goto isok;
 
 			// Check the extension.
-			size_t len = strlen(dirent->d_name);
+			const size_t len = strlen(dirent->d_name);
 			if (len <= 4) {
 				// Filename is too short. This is bad.
 				closedir(pdir);

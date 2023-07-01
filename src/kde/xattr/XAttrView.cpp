@@ -283,7 +283,7 @@ void XAttrView::setFilename(const QUrl &filename)
 
 	// TODO: Handle non-local URLs.
 	// For now, converting to local.
-	QUrl localUrl = localizeQUrl(filename);
+	const QUrl localUrl = localizeQUrl(filename);
 	if (d->filename != localUrl) {
 		d->filename = localUrl;
 		d->loadAttributes();

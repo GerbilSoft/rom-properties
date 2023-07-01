@@ -244,7 +244,7 @@ GczReader::GczReader(IRpFile *file)
 	}
 
 	// Data offset is the current read position.
-	off64_t pos = m_file->tell();
+	const off64_t pos = m_file->tell();
 	if (pos <= 0 || pos >= 1LL*1024*1024*1024) {
 		// tell() failed...
 		m_lastError = m_file->lastError();
@@ -423,7 +423,7 @@ int GczReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 		return 0;
 	}
 
-	bool compressed = (!(blockPointer & GCZ_FLAG_BLOCK_NOT_COMPRESSED));
+	const bool compressed = (!(blockPointer & GCZ_FLAG_BLOCK_NOT_COMPRESSED));
 	if (!compressed) {
 		// (Un)compressed block size must match the actual block size.
 		if (z_block_size != d->block_size) {

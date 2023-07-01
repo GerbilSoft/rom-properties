@@ -120,7 +120,7 @@ string RomDataPrivate::getURL_RPDB(
 	const char *ext)
 {
 	// Game ID may need to be urlencoded.
-	string gameID_urlencode = LibCacheCommon::urlencode(gameID);
+	const string gameID_urlencode = LibCacheCommon::urlencode(gameID);
 	return rp_sprintf("https://rpdb.gerbilsoft.com/%s/%s/%s%s%s%s",
 		system, type, (region ? region : ""), (region ? "/" : ""),
 		gameID_urlencode.c_str(), ext);

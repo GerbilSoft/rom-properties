@@ -163,12 +163,13 @@ int Nintendo3DSPrivate::loadSMDH(void)
 			// only takes up 14,016 bytes.
 			if (le32_to_cpu(mxh.cia_header.meta_size) >= (uint32_t)N3DS_SMDH_Section_Size) {
 				// Determine the SMDH starting address.
-				uint32_t addr = toNext64(le32_to_cpu(mxh.cia_header.header_size)) +
-						toNext64(le32_to_cpu(mxh.cia_header.cert_chain_size)) +
-						toNext64(le32_to_cpu(mxh.cia_header.ticket_size)) +
-						toNext64(le32_to_cpu(mxh.cia_header.tmd_size)) +
-						toNext64(static_cast<uint32_t>(le64_to_cpu(mxh.cia_header.content_size))) +
-						(uint32_t)sizeof(N3DS_CIA_Meta_Header_t);
+				const uint32_t addr =
+					toNext64(le32_to_cpu(mxh.cia_header.header_size)) +
+					toNext64(le32_to_cpu(mxh.cia_header.cert_chain_size)) +
+					toNext64(le32_to_cpu(mxh.cia_header.ticket_size)) +
+					toNext64(le32_to_cpu(mxh.cia_header.tmd_size)) +
+					toNext64(static_cast<uint32_t>(le64_to_cpu(mxh.cia_header.content_size))) +
+					(uint32_t)sizeof(N3DS_CIA_Meta_Header_t);
 
 				// Open the SMDH section.
 				// TODO: Verify that this works.
@@ -701,8 +702,8 @@ void Nintendo3DSPrivate::addTitleIdAndProductCodeFields(bool showContentType)
 
 	// Program ID, if different from title ID.
 	if (ncch_header->program_id.id != ncch_header->title_id.id) {
-		uint32_t pid_lo = le32_to_cpu(ncch_header->program_id.lo);
-		uint32_t pid_hi = le32_to_cpu(ncch_header->program_id.hi);
+		const uint32_t pid_lo = le32_to_cpu(ncch_header->program_id.lo);
+		const uint32_t pid_hi = le32_to_cpu(ncch_header->program_id.hi);
 		fields.addField_string(C_("Nintendo3DS", "Program ID"),
 			rp_sprintf("%08X-%08X", pid_hi, pid_lo));
 	}
@@ -2691,10 +2692,10 @@ int Nintendo3DS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size
 	}
 
 	// SMDH contains a region code bitfield.
-	uint32_t smdhRegion = const_cast<Nintendo3DSPrivate*>(d)->getSMDHRegionCode();
+	const uint32_t smdhRegion = const_cast<Nintendo3DSPrivate*>(d)->getSMDHRegionCode();
 
 	// Determine the GameTDB language code(s).
-	vector<uint16_t> tdb_lc = d->n3dsRegionToGameTDB(smdhRegion, id4[3]);
+	const vector<uint16_t> tdb_lc = d->n3dsRegionToGameTDB(smdhRegion, id4[3]);
 
 	// If we're downloading a "high-resolution" image (M or higher),
 	// also add the default image to ExtURLs in case the user has

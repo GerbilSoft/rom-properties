@@ -389,13 +389,13 @@ G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const
 				G_FILE_QUERY_INFO_NONE, nullptr, &error);
 			if (!error) {
 				// Get the modification time.
-				guint64 mtime = g_file_info_get_attribute_uint64(fi_src, G_FILE_ATTRIBUTE_TIME_MODIFIED);
+				const guint64 mtime = g_file_info_get_attribute_uint64(fi_src, G_FILE_ATTRIBUTE_TIME_MODIFIED);
 				if (mtime > 0) {
 					snprintf(mtime_str, sizeof(mtime_str), "%" PRId64, (int64_t)mtime);
 				}
 
 				// Get the file size.
-				gint64 szFile = g_file_info_get_size(fi_src);
+				const gint64 szFile = g_file_info_get_size(fi_src);
 				if (szFile > 0) {
 					snprintf(szFile_str, sizeof(szFile_str), "%" PRId64, szFile);
 				}

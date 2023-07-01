@@ -986,7 +986,7 @@ const char *PowerVR3::pixelFormat(void) const
 	uint32_t pixel_format = d->pvr3Header.pixel_format;
 	uint32_t channel_depth = d->pvr3Header.channel_depth;
 	for (unsigned int i = 0; i < 4; i++, pixel_format >>= 8, channel_depth >>= 8) {
-		uint8_t pxf = (pixel_format & 0xFF);
+		const uint8_t pxf = (pixel_format & 0xFF);
 		if (pxf == 0)
 			break;
 

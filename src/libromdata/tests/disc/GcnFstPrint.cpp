@@ -137,7 +137,7 @@ int RP_C_API main(int argc, char *argv[])
 	// Print the FST to an ostringstream.
 	ostringstream oss;
 	LibRomData::fstPrint(fst.get(), oss);
-	string fst_str = oss.str();
+	const string fst_str = oss.str();
 
 #ifdef _WIN32
 	// FIXME: isatty() might not work properly on Win8+ with MinGW.

@@ -197,7 +197,7 @@ const XDVDFS_DirEntry *XDVDFSPartitionPrivate::getDirEntry(const ao::uvector<uin
 
 		// Check the filename.
 		uint16_t subtree_offset = 0;
-		int cmp = xdvdfs_strcasecmp(s_filename.c_str(), s_entry_filename.c_str());
+		const int cmp = xdvdfs_strcasecmp(s_filename.c_str(), s_entry_filename.c_str());
 		if (cmp == 0) {
 			// Found it!
 			dirEntry_found = dirEntry;

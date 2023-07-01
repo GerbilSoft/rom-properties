@@ -275,8 +275,8 @@ void ListDataModelPrivate::updateLC(uint32_t lc)
 
 	// New pData.
 	pData = &(iter->second);
-	QModelIndex indexFirst = q->createIndex(0, 0);
-	QModelIndex indexLast = q->createIndex(rowCount-1, columnCount-1);
+	const QModelIndex indexFirst = q->createIndex(0, 0);
+	const QModelIndex indexLast = q->createIndex(rowCount-1, columnCount-1);
 	emit q->dataChanged(indexFirst, indexLast);
 
 	// Language code has changed.
@@ -333,8 +333,8 @@ void ListDataModelPrivate::updateLC(uint32_t def_lc, uint32_t user_lc)
 
 	// New pData.
 	this->pData = pData;
-	QModelIndex indexFirst = q->createIndex(0, 0);
-	QModelIndex indexLast = q->createIndex(rowCount-1, columnCount-1);
+	const QModelIndex indexFirst = q->createIndex(0, 0);
+	const QModelIndex indexLast = q->createIndex(rowCount-1, columnCount-1);
 	emit q->dataChanged(indexFirst, indexLast);
 
 	// Language code has changed.
@@ -704,8 +704,8 @@ void ListDataModel::setIconSize(const QSize &iconSize)
 	d->iconSize = iconSize;
 	if (!d->icons_rp.empty()) {
 		d->updateIconPixmaps();
-		QModelIndex indexFirst = createIndex(0, 0);
-		QModelIndex indexLast = createIndex(d->rowCount-1, 0);
+		const QModelIndex indexFirst = createIndex(0, 0);
+		const QModelIndex indexLast = createIndex(d->rowCount-1, 0);
 		emit dataChanged(indexFirst, indexLast);
 	}
 

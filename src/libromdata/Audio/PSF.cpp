@@ -154,7 +154,7 @@ unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
 
 	// Read the rest of the file.
 	// NOTE: Maximum of 16 KB.
-	off64_t data_len = file->size() - tag_addr - sizeof(tag_magic);
+	const off64_t data_len = file->size() - tag_addr - sizeof(tag_magic);
 	if (data_len <= 0) {
 		// Not enough data...
 		return kv;
@@ -192,8 +192,8 @@ unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
 		const char *eq = static_cast<const char*>(memchr(p, '=', nl-p));
 		if (eq) {
 			// Found the equals sign.
-			int k_len = (int)(eq - p);
-			int v_len = (int)(nl - eq - 1);
+			const int k_len = static_cast<int>(eq - p);
+			const int v_len = static_cast<int>(nl - eq - 1);
 			if (k_len > 0 && v_len > 0) {
 				// Key and value are valid.
 				// NOTE: Key is case-insensitive, so convert to lowercase.

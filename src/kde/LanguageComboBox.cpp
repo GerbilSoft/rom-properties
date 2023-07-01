@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * LanguageComboBox.cpp: Language QComboBox subclass.                      *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -70,7 +70,7 @@ void LanguageComboBox::setLCs(const std::set<uint32_t> &set_lc)
 
 	int sel_idx = -1;
 	int cur_idx = 0;
-	for (uint32_t lc : set_lc) {
+	for (const uint32_t lc : set_lc) {
 		const char *const name = SystemRegion::getLocalizedLanguageName(lc);
 		if (name) {
 			this->addItem(U82Q(name), lc);
@@ -161,7 +161,7 @@ bool LanguageComboBox::setSelectedLC(uint32_t lc)
 		return true;
 	}
 
-	int index = this->findData(lc);
+	const int index = this->findData(lc);
 	if (index >= 0) {
 		if (index != this->currentIndex()) {
 			this->setCurrentIndex(index);

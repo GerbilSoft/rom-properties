@@ -845,7 +845,7 @@ int TGA::getFields(RomFields *fields) const
 		}
 
 		// Timestamp
-		time_t timestamp = d->tgaTimeToUnixTime(&tgaExtArea->timestamp);
+		const time_t timestamp = d->tgaTimeToUnixTime(&tgaExtArea->timestamp);
 		if (timestamp != -1) {
 			fields->addField_dateTime(C_("TGA", "Last Saved Time"), timestamp,
 				RomFields::RFT_DATETIME_HAS_DATE |

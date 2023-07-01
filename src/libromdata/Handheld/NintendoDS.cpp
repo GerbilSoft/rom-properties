@@ -223,7 +223,7 @@ const rp_image *NintendoDSPrivate::loadIcon(void)
 			// of palette and bitmap. As a workaround, we'll make each
 			// combination a unique bitmap, which means we have a maximum
 			// of 64 bitmaps.
-			uint8_t high_token = (seq >> 8);
+			const uint8_t high_token = (seq >> 8);
 			if (arr_bmpUsed[high_token] == 0xFF) {
 				// Not used yet. Create the bitmap.
 				const uint8_t bmp = (high_token & 7);
@@ -342,7 +342,7 @@ uint32_t NintendoDSPrivate::getDefaultLC(void) const
 {
 	// Get the system language.
 	// TODO: Verify against the game's region code?
-	NDS_Language_ID langID = getLanguageID();
+	const NDS_Language_ID langID = getLanguageID();
 
 	// Version number check is required for ZH and KO.
 	const NDS_Language_ID maxID = getMaxSupportedLanguage(
@@ -966,7 +966,7 @@ int NintendoDS::loadFieldData(void)
 	if (d->nds_icon_title_loaded) {
 		// Full title: Check if English is valid.
 		// If it is, we'll de-duplicate fields.
-		bool dedupe_titles = (d->nds_icon_title.title[NDS_LANG_ENGLISH][0] != cpu_to_le16(0));
+		const bool dedupe_titles = (d->nds_icon_title.title[NDS_LANG_ENGLISH][0] != cpu_to_le16(0));
 
 		// Full title field.
 		RomFields::StringMultiMap_t *const pMap_full_title = new RomFields::StringMultiMap_t();
@@ -1340,10 +1340,10 @@ int NintendoDS::loadMetaData(void)
 			                        ARRAY_SIZE(d->nds_icon_title.title[NDS_LANG_ENGLISH]));
 
 			// Adjust the title based on the number of lines.
-			size_t nl_1 = s_title.find('\n');
+			const size_t nl_1 = s_title.find('\n');
 			if (nl_1 != string::npos) {
 				// Found the first newline.
-				size_t nl_2 = s_title.find('\n', nl_1+1);
+				const size_t nl_2 = s_title.find('\n', nl_1+1);
 				if (nl_2 != string::npos) {
 					// Found the second newline.
 					// Change the first to a space, and remove the third line.
@@ -1538,7 +1538,7 @@ int NintendoDS::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size)
 	id4[4] = 0;
 
 	// Determine the GameTDB language code(s).
-	vector<uint16_t> tdb_lc = d->ndsRegionToGameTDB(
+	const vector<uint16_t> tdb_lc = d->ndsRegionToGameTDB(
 		romHeader->nds_region,
 		(romHeader->unitcode & NintendoDSPrivate::DS_HW_DSi)
 			? le32_to_cpu(romHeader->dsi.region_code)

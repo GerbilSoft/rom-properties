@@ -1270,7 +1270,7 @@ int NES::loadFieldData(void)
 			d->header.fds.revision, RomFields::Base::Dec, 2);
 
 		// Manufacturing Date.
-		time_t mfr_date = d->fds_bcd_datestamp_to_unix_time(&d->header.fds.mfr_date);
+		const time_t mfr_date = d->fds_bcd_datestamp_to_unix_time(&d->header.fds.mfr_date);
 		d->fields.addField_dateTime(C_("NES", "Manufacturing Date"), mfr_date,
 			RomFields::RFT_DATETIME_HAS_DATE |
 			RomFields::RFT_DATETIME_IS_UTC  // Date only.
@@ -1518,7 +1518,7 @@ int NES::loadFieldData(void)
 
 			// CHR ROM/RAM size
 			string s_chr_size;
-			bool b_chr_ram = !!(footer.rom_size & 0x08);
+			const bool b_chr_ram = !!(footer.rom_size & 0x08);
 			if (chr_size > 0) {
 				s_chr_size = formatFileSizeKiB(chr_size);
 			} else {

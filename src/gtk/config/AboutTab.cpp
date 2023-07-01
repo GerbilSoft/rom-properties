@@ -579,7 +579,7 @@ rp_about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 	sLibraries.reserve(8192);
 
 	/** GTK+ **/
-	string gtkVersionCompiled = rp_sprintf("GTK%s %u.%u.%u",
+	const string gtkVersionCompiled = rp_sprintf("GTK%s %u.%u.%u",
 		(GTK_MAJOR_VERSION >= 4 ? "" : "+"),
 		(guint)GTK_MAJOR_VERSION, (guint)GTK_MINOR_VERSION,
 		(guint)GTK_MICRO_VERSION);
@@ -590,7 +590,7 @@ rp_about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 	// which results in undefined symbols at at runtime.
 #if GTK_CHECK_VERSION(2,90,7)
 	const guint gtk_major = gtk_get_major_version();
-	string gtkVersionUsing = rp_sprintf("GTK%s %u.%u.%u",
+	const string gtkVersionUsing = rp_sprintf("GTK%s %u.%u.%u",
 		(gtk_major >= 4 ? "" : "+"),
 		gtk_major, gtk_get_minor_version(),
 		gtk_get_micro_version());
@@ -650,7 +650,7 @@ rp_about_tab_init_libraries_tab(GtkLabel *lblLibraries)
 	// We have our own "+ APNG", so remove Gentoo's.
 	string pngVersionCompiled = "libpng " PNG_LIBPNG_VER_STRING;
 	for (size_t i = pngVersionCompiled.size()-1; i > 6; i--) {
-		char chr = pngVersionCompiled[i];
+		const char chr = pngVersionCompiled[i];
 		if (ISDIGIT(chr))
 			break;
 		pngVersionCompiled.resize(i);

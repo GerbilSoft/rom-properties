@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * CurlDownloader.cpp: libcurl-based file downloader.                      *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -45,7 +45,7 @@ size_t CurlDownloader::write_data(char *ptr, size_t size, size_t nmemb, void *us
 	// - https://curl.haxx.se/libcurl/c/CURLOPT_WRITEFUNCTION.html
 	CurlDownloader *curlDL = static_cast<CurlDownloader*>(userdata);
 	ao::uvector<uint8_t> *vec = &curlDL->m_data;
-	size_t len = size * nmemb;
+	const size_t len = size * nmemb;
 
 	if (curlDL->m_maxSize > 0) {
 		// Maximum buffer size is set.
@@ -59,11 +59,11 @@ size_t CurlDownloader::write_data(char *ptr, size_t size, size_t nmemb, void *us
 		// Capacity wasn't initialized by Content-Length.
 		// Reserve at least 64 KB.
 		static const size_t min_reserve = 64*1024;
-		size_t reserve = (len > min_reserve ? len : min_reserve);
+		const size_t reserve = (len > min_reserve ? len : min_reserve);
 		vec->reserve(reserve);
 	}
 
-	size_t pos = vec->size();
+	const size_t pos = vec->size();
 	vec->resize(pos + len);
 	memcpy(vec->data() + pos, ptr, len);
 	return len;
@@ -85,7 +85,7 @@ size_t CurlDownloader::parse_header(char *ptr, size_t size, size_t nitems, void 
 	// TODO: Add support for non-HTTP protocols?
 	CurlDownloader *curlDL = static_cast<CurlDownloader*>(userdata);
 	ao::uvector<uint8_t> *vec = &curlDL->m_data;
-	size_t len = size * nitems;
+	const size_t len = size * nitems;
 
 	// Supported headers.
 	static const char http_content_length[] = "Content-Length: ";
@@ -107,7 +107,7 @@ size_t CurlDownloader::parse_header(char *ptr, size_t size, size_t nitems, void 
 
 		// Convert the Content-Length to an off64_t.
 		char *endptr = nullptr;
-		off64_t fileSize = strtoll(s_val, &endptr, 10);
+		const off64_t fileSize = strtoll(s_val, &endptr, 10);
 
 		// *endptr should be \0 or a whitespace character.
 		if (*endptr != '\0' && !ISSPACE(*endptr)) {

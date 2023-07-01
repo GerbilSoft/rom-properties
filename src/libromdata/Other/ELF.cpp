@@ -353,7 +353,7 @@ int ELFPrivate::checkProgramHeaders(void)
 			break;
 		}
 
-		Elf64_Phdr phdr = readProgramHeader(phbuf);
+		const Elf64_Phdr phdr = readProgramHeader(phbuf);
 
 		// Check the type.
 		switch (phdr.p_type) {
@@ -536,8 +536,8 @@ int ELFPrivate::checkSectionHeaders(void)
 			continue;
 
 		// Get the note address and size.
-		off64_t int_addr = shdr.sh_offset;
-		uint64_t int_size = shdr.sh_size;
+		const off64_t int_addr = shdr.sh_offset;
+		const uint64_t int_size = shdr.sh_size;
 
 		// Sanity check: Note must be 256 bytes or less,
 		// and must be greater than sizeof(Elf32_Nhdr).
@@ -757,8 +757,8 @@ int ELFPrivate::readDataAtVA(uint64_t vaddr, ao::uvector<uint8_t> &out)
 	it--;
 
 	// Check the bounds
-	uint64_t sstart = it->p_vaddr;
-	uint64_t send = it->p_vaddr + it->p_filesz;
+	const uint64_t sstart = it->p_vaddr;
+	const uint64_t send = it->p_vaddr + it->p_filesz;
 	if (sstart <= vaddr && vaddr <= send && sstart <= vend && vend <= send) {
 		// Read data
 		vaddr += it->p_offset - it->p_vaddr;

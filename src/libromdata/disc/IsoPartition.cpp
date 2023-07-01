@@ -195,7 +195,7 @@ const ISO_DirEntry *IsoPartitionPrivate::lookup_int(const DirData_t *pDir, const
 				{
 					// Found it!
 					// Verify directory vs. file.
-					bool isDir = !!(dirEntry->flags & ISO_FLAG_DIRECTORY);
+					const bool isDir = !!(dirEntry->flags & ISO_FLAG_DIRECTORY);
 					if (isDir == bFindDir) {
 						// Directory attribute matches.
 						dirEntry_found = dirEntry;
@@ -342,7 +342,7 @@ const IsoPartitionPrivate::DirData_t *IsoPartitionPrivate::getDirectory(const ch
 		pDir = getDirectory("");
 	} else {
 		// Found a slash.
-		string s_parentDir(path, (sl - path));
+		const string s_parentDir(path, (sl - path));
 		path = sl + 1;
 		pDir = getDirectory(s_parentDir.c_str());
 	}

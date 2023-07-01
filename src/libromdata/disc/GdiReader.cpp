@@ -137,7 +137,7 @@ int GdiReaderPrivate::parseGdiFile(char *gdibuf)
 	}
 
 	char *endptr = nullptr;
-	int trackCount = strtol(linetoken, &endptr, 10);
+	const int trackCount = strtol(linetoken, &endptr, 10);
 	if (trackCount <= 0 || trackCount > 99 || (*endptr != 0 && *endptr != '\r')) {
 		// Track count is invalid.
 		return -EIO;
@@ -204,7 +204,7 @@ int GdiReaderPrivate::parseGdiFile(char *gdibuf)
 		}
 
 		// Save the track information.
-		size_t idx = blockRanges.size();
+		const size_t idx = blockRanges.size();
 		blockRanges.resize(idx+1);
 		BlockRange &blockRange = blockRanges[idx];
 		blockRange.blockStart = static_cast<unsigned int>(blockStart);
@@ -261,7 +261,7 @@ int GdiReaderPrivate::openTrack(int trackNumber)
 	// Separate the file extension.
 	string basename = blockRange->filename;
 	string ext;
-	size_t dotpos = basename.find_last_of('.');
+	const size_t dotpos = basename.find_last_of('.');
 	if (dotpos != string::npos) {
 		ext = basename.substr(dotpos);
 		basename.resize(dotpos);
@@ -546,7 +546,7 @@ int GdiReader::readBlock(uint32_t blockIdx, int pos, void *ptr, size_t size)
 	}
 
 	// Read the full block.
-	off64_t phys_pos = (static_cast<off64_t>(blockIdx - blockRange->blockStart) * blockRange->sectorSize);
+	const off64_t phys_pos = (static_cast<off64_t>(blockIdx - blockRange->blockStart) * blockRange->sectorSize);
 	if (blockRange->sectorSize == 2352) {
 		// 2352-byte sectors.
 		// TODO: Handle audio tracks properly?
@@ -610,7 +610,7 @@ int GdiReader::startingLBA(int trackNumber) const
  */
 IsoPartition *GdiReader::openIsoPartition(int trackNumber)
 {
-	int lba = startingLBA(trackNumber);
+	const int lba = startingLBA(trackNumber);
 	if (lba < 0)
 		return nullptr;
 

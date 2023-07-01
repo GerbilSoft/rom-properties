@@ -235,7 +235,7 @@ MachO::MachO(IRpFile *file)
 					continue;
 				}
 
-				size_t idx = d->machFormats.size();
+				const size_t idx = d->machFormats.size();
 				d->machFormats.resize(idx+1);
 				d->machHeaders.resize(idx+1);
 				size_t size = d->file->seekAndRead(offset, &d->machHeaders[i], sizeof(mach_header));

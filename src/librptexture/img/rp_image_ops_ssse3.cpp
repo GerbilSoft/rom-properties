@@ -163,7 +163,7 @@ int rp_image::swizzle_ssse3(const char *swz_spec)
 	// Swizzle the sBIT value, if set.
 	if (d->has_sBIT) {
 		// TODO: If gray is set, move its values to rgb?
-		rp_image::sBIT_t sBIT_old = d->sBIT;
+		const rp_image::sBIT_t sBIT_old = d->sBIT;
 
 #define SWIZZLE_sBIT(n, ch) do { \
 				switch (swz_ch.u8[n]) { \

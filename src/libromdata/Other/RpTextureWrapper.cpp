@@ -291,7 +291,7 @@ int RpTextureWrapper::loadFieldData(void)
 	}
 
 	// Mipmap count
-	int mipmapCount = texture->mipmapCount();
+	const int mipmapCount = texture->mipmapCount();
 	if (mipmapCount >= 0) {
 		d->fields.addField_string_numeric(C_("RpTextureWrapper", "Mipmap Count"), mipmapCount);
 	}

@@ -589,10 +589,11 @@ int WiiWAD::isRomSupported_static(const DetectInfo *info)
 	}
 	
 	// Check the file size to ensure we have at least the IMET section.
-	unsigned int expected_size = WiiWADPrivate::toNext64(be32_to_cpu(wadHeader->header_size)) +
-				     WiiWADPrivate::toNext64(be32_to_cpu(wadHeader->cert_chain_size)) +
-				     WiiWADPrivate::toNext64(be32_to_cpu(wadHeader->ticket_size)) +
-				     WiiWADPrivate::toNext64(be32_to_cpu(wadHeader->tmd_size));
+	const unsigned int expected_size =
+		WiiWADPrivate::toNext64(be32_to_cpu(wadHeader->header_size)) +
+		WiiWADPrivate::toNext64(be32_to_cpu(wadHeader->cert_chain_size)) +
+		WiiWADPrivate::toNext64(be32_to_cpu(wadHeader->ticket_size)) +
+		WiiWADPrivate::toNext64(be32_to_cpu(wadHeader->tmd_size));
 	if (expected_size > info->szFile) {
 		// File is too small.
 		return static_cast<int>(WiiWADPrivate::WadType::Unknown);
@@ -1161,7 +1162,7 @@ int WiiWAD::loadFieldData(void)
 		if (mainContentFields) {
 			// For Wii, add the fields to the same tab.
 			// For DSi, add the fields to new tabs.
-			int tabOffset = (sys_id == NINTENDO_SYSID_TWL ? RomFields::TabOffset_AddTabs : 0);
+			const int tabOffset = (sys_id == NINTENDO_SYSID_TWL ? RomFields::TabOffset_AddTabs : 0);
 			d->fields.addFields_romFields(mainContentFields, tabOffset);
 		}
 	} else if (sys_id != NINTENDO_SYSID_TWL) {
@@ -1447,8 +1448,7 @@ int WiiWAD::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) con
 	// Determine the GameTDB language code(s).
 	const unsigned int gcnRegion = be16_to_cpu(tmdHeader->region_code);
 	const char id4_region = (char)tmdHeader->title_id.u8[7];
-	vector<uint16_t> tdb_lc =
-		GameCubeRegions::gcnRegionToGameTDB(gcnRegion, id4_region);
+	const vector<uint16_t> tdb_lc = GameCubeRegions::gcnRegionToGameTDB(gcnRegion, id4_region);
 
 	// If we're downloading a "high-resolution" image (M or higher),
 	// also add the default image to ExtURLs in case the user has

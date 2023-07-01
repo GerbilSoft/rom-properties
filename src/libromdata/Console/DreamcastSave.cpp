@@ -875,7 +875,7 @@ DreamcastSave::DreamcastSave(IRpFile *file)
 	// Game files have the header in block 1.
 	if (d->loaded_headers & DreamcastSavePrivate::DC_HAVE_DIR_ENTRY) {
 		// Use the header address specified in the directory entry.
-		unsigned int headerLoaded = d->readAndVerifyVmsHeader(
+		const unsigned int headerLoaded = d->readAndVerifyVmsHeader(
 			d->data_area_offset + (d->vms_dirent.header_addr * DC_VMS_BLOCK_SIZE));
 		if (headerLoaded != DreamcastSavePrivate::DC_HAVE_UNKNOWN) {
 			// Valid VMS header.
@@ -990,7 +990,7 @@ DreamcastSave::DreamcastSave(IRpFile *vms_file, IRpFile *vmi_file)
 	} else {
 		// Load the VMS header.
 		// Use the header address specified in the directory entry.
-		unsigned int headerLoaded = d->readAndVerifyVmsHeader(
+		const unsigned int headerLoaded = d->readAndVerifyVmsHeader(
 			d->data_area_offset + (d->vms_dirent.header_addr * DC_VMS_BLOCK_SIZE));
 		if (headerLoaded != DreamcastSavePrivate::DC_HAVE_UNKNOWN) {
 			// Valid VMS header.

@@ -516,7 +516,7 @@ int CBMCart::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) co
 
 		// Read CHIP packets until we've read up to 16 KB of ROM data.
 		size_t sz_rd_total = 0;
-		off64_t addr = static_cast<off64_t>(be32_to_cpu(romHeader->hdr_len));
+		const off64_t addr = static_cast<off64_t>(be32_to_cpu(romHeader->hdr_len));
 		int ret = d->file->seek(addr);
 		if (ret != 0) {
 			// Seek error.

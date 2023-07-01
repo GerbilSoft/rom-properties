@@ -264,7 +264,7 @@ bool RomThumbCreator::create(const QString &path, int width, int height, QImage 
 	path_enc.replace(QChar(L'?'), QLatin1String("%3f"));
 #endif /* _WIN32 */
 	path_enc.replace(QChar(L'#'), QLatin1String("%23"));
-	QUrl path_url(path_enc);
+	const QUrl path_url(path_enc);
 
 	IRpFile *const file = openQUrl(path_url, true);
 	if (!file) {
@@ -338,7 +338,7 @@ RomThumbnailCreator::~RomThumbnailCreator()
  */
 KIO::ThumbnailResult RomThumbnailCreator::create(const KIO::ThumbnailRequest &request)
 {
-	QUrl url = request.url();
+	const QUrl url = request.url();
 	if (url.isEmpty()) {
 		return KIO::ThumbnailResult::fail();
 	}
@@ -415,7 +415,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 	rp_image::setBackendCreatorFn(RpQImageBackend::creator_fn);
 
 	// Attempt to open the ROM file.
-	QUrl localUrl = localizeQUrl(QUrl(QString::fromUtf8(source_file)));
+	const QUrl localUrl = localizeQUrl(QUrl(QString::fromUtf8(source_file)));
 	IRpFile *const file = openQUrl(localUrl, true);
 	if (!file) {
 		// Could not open the file.
@@ -497,16 +497,16 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 
 		// FIXME: Local files only. Figure out how to handle this for remote.
 		if (!qs_source_filename.isEmpty()) {
-			QFileInfo fi_src(qs_source_filename);
+			const QFileInfo fi_src(qs_source_filename);
 
 			// Modification time
-			int64_t mtime = fi_src.lastModified().toMSecsSinceEpoch() / 1000;
+			const int64_t mtime = fi_src.lastModified().toMSecsSinceEpoch() / 1000;
 			if (mtime > 0) {
 				kv.emplace_back("Thumb::MTime", rp_sprintf("%" PRId64, mtime));
 			}
 
 			// File size
-			off64_t szFile = fi_src.size();
+			const off64_t szFile = fi_src.size();
 			if (szFile > 0) {
 				kv.emplace_back("Thumb::Size", rp_sprintf("%" PRId64, szFile));
 			}
@@ -542,7 +542,7 @@ Q_DECL_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const c
 	// CI8 palette.
 	// This will be an empty vector if the image isn't CI8.
 	// RpPngWriter will ignore the palette arguments in that case.
-	QVector<QRgb> colorTable = outParams.retImg.colorTable();
+	const QVector<QRgb> colorTable = outParams.retImg.colorTable();
 
 	// If sBIT wasn't found, all fields will be 0.
 	// RpPngWriter will ignore sBIT in this case.

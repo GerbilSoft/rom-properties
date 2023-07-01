@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * Achievements.cpp: Achievements class.                                   *
  *                                                                         *
- * Copyright (c) 2020-2022 by David Korth.                                 *
+ * Copyright (c) 2020-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -317,7 +317,7 @@ void AchievementsPrivate::doObfuscate(uint16_t iv, uint8_t *buf, size_t size)
 	// Run for 32 cycles to initialize the LFSR.
 	for (unsigned int i = 32; i > 0; i--) {
 		// Bits 3 and 0 are XOR'd to form the next input.
-		unsigned int n = ((lfsr & 0x08) >> 3) ^ (lfsr & 0x01);
+		const unsigned int n = ((lfsr & 0x08) >> 3) ^ (lfsr & 0x01);
 		lfsr >>= 1;
 		lfsr |= (n << 15);
 	}
@@ -334,7 +334,7 @@ void AchievementsPrivate::doObfuscate(uint16_t iv, uint8_t *buf, size_t size)
 		*buf16 = data;
 
 		// Bits 3 and 0 are XOR'd to form the next input.
-		unsigned int n = ((lfsr & 0x08) >> 3) ^ (lfsr & 0x01);
+		const unsigned int n = ((lfsr & 0x08) >> 3) ^ (lfsr & 0x01);
 		lfsr >>= 1;
 		lfsr |= (n << 15);
 	}
@@ -463,7 +463,7 @@ int AchievementsPrivate::save(void) const
 #endif /* NDEBUG || FORCE_OBFUSCATE */
 
 	// Write the achievements file.
-	string filename = getFilename();
+	const string filename = getFilename();
 	if (filename.empty()) {
 		// Unable to get the filename.
 		return -EIO;
@@ -517,11 +517,12 @@ int AchievementsPrivate::load(void)
 	mapAchData.clear();
 
 	// Load the achievements file in memory.
-	string filename = getFilename();
+	const string filename = getFilename();
 	if (filename.empty()) {
 		// Unable to get the filename.
 		return -EIO;
 	}
+
 	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ);
 	if (!file->isOpen()) {
 		int ret = -file->lastError();
@@ -871,7 +872,7 @@ int Achievements::unlock(ID id, int bit)
 			}
 
 			// Set the bit.
-			uint64_t bf_new = bf_value | (1ULL << (unsigned int)bit);
+			const uint64_t bf_new = bf_value | (1ULL << (unsigned int)bit);
 			if (bf_new == bf_value) {
 				// No change.
 				return 0;
@@ -946,8 +947,7 @@ time_t Achievements::isUnlocked(ID id) const
 			auto iter = d->mapAchData.find(id);
 			if (iter != d->mapAchData.end()) {
 				const auto &ach = iter->second;
-				uint8_t count = ach.count;
-				if (count >= achInfo->count) {
+				if (ach.count >= achInfo->count) {
 					timestamp = ach.timestamp;
 				}
 			}
@@ -961,7 +961,7 @@ time_t Achievements::isUnlocked(ID id) const
 			if (iter != d->mapAchData.end()) {
 				const auto &ach = iter->second;
 				const uint64_t bf_filled = (1ULL << achInfo->count) - 1;
-				if (ach.bitfield == bf_filled) {
+				if (bf_filled == ach.bitfield) {
 					timestamp = ach.timestamp;
 				}
 			}

@@ -212,7 +212,7 @@ int AchGDBusPrivate::notifyFunc(Achievements::ID id)
 		int width, height;
 		PIMGTYPE_get_size(subIcon, &width, &height);
 		argb32_t *bits = reinterpret_cast<argb32_t*>(PIMGTYPE_get_image_data(subIcon));
-		int strideDiff = (PIMGTYPE_get_rowstride(subIcon) / sizeof(argb32_t)) - width;
+		const int strideDiff = (PIMGTYPE_get_rowstride(subIcon) / sizeof(argb32_t)) - width;
 		for (unsigned int y = (unsigned int)height; y > 0; y--) {
 			unsigned int x;
 			for (x = (unsigned int)width; x > 1; x -= 2) {

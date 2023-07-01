@@ -377,7 +377,7 @@ int GameCubePrivate::loadWiiPartitionTables(void)
 		}
 
 		// Read the partition table entries.
-		off64_t pt_addr = static_cast<off64_t>(be32_to_cpu(vgtbl.vg[i].addr)) << 2;
+		const off64_t pt_addr = static_cast<off64_t>(be32_to_cpu(vgtbl.vg[i].addr)) << 2;
 		static constexpr size_t pt_size = pt.size() * sizeof(pt[0]);
 		size = discReader->seekAndRead(pt_addr, pt.data(), pt_size);
 		if (size != pt_size) {
@@ -756,7 +756,7 @@ GameCube::GameCube(IRpFile *file)
 			d->fileType = FileType::EmbeddedDiscImage;
 			// Check the TGC header for the disc offset.
 			const GCN_TGC_Header *tgcHeader = reinterpret_cast<const GCN_TGC_Header*>(header);
-			uint32_t gcm_offset = be32_to_cpu(tgcHeader->header_size);
+			const uint32_t gcm_offset = be32_to_cpu(tgcHeader->header_size);
 			d->discReader = new DiscReader(d->file, gcm_offset, -1);
 			break;
 		}
@@ -1229,7 +1229,7 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 	// Check for WBFS.
 	if (WbfsReader::isDiscSupported_static(info->header.pData, info->header.size) >= 0) {
 		// Disc image is stored in "HDD" sector 1.
-		unsigned int hdd_sector_size = (1U << info->header.pData[8]);
+		const unsigned int hdd_sector_size = (1U << info->header.pData[8]);
 		if (info->header.size >= hdd_sector_size + 0x200) {
 			// Check for magic numbers.
 			gcn_header = reinterpret_cast<const GCN_DiscHeader*>(&info->header.pData[hdd_sector_size]);
@@ -2181,7 +2181,7 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 
 	// Get the image sizes and sort them based on the
 	// requested image size.
-	vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
+	const vector<ImageSizeDef> sizeDefs = supportedImageSizes(imageType);
 	if (sizeDefs.empty()) {
 		// No image sizes.
 		return -ENOENT;
@@ -2225,8 +2225,7 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 		 imageTypeName_base, (sizeDef->name ? sizeDef->name : ""));
 
 	// Determine the GameTDB region code(s).
-	vector<uint16_t> tdb_lc =
-		GameCubeRegions::gcnRegionToGameTDB(d->gcnRegion, discHeader->id4[3]);
+	const vector<uint16_t> tdb_lc = GameCubeRegions::gcnRegionToGameTDB(d->gcnRegion, discHeader->id4[3]);
 
 	// Game ID.
 	// Replace any non-printable characters with underscores.

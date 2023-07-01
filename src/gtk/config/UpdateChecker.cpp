@@ -201,14 +201,14 @@ rp_update_checker_thread_run(RpUpdateChecker *updChecker)
 	uint64_t updateVersion = 0;
 	for (unsigned int i = 0; i < 3; i++, updateVersion <<= 16U) {
 		gchar *endptr;
-		gint64 x = g_ascii_strtoll(sVersionArray[i], &endptr, 10);
+		const gint64 x = g_ascii_strtoll(sVersionArray[i], &endptr, 10);
 		if (x < 0 || *endptr != '\0') {
 			g_signal_emit(updChecker, signals[SIGNAL_ERROR], 0,
 				C_("UpdateChecker", "Version file is invalid."));
 			g_strfreev(sVersionArray);
 			return GINT_TO_POINTER(6);
 		}
-		updateVersion |= ((uint64_t)x & 0xFFFFU);
+		updateVersion |= (static_cast<uint64_t>(x) & 0xFFFFU);
 	}
 	g_strfreev(sVersionArray);
 

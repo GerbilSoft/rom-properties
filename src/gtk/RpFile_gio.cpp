@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpFile_gio.cpp: IRpFile implementation using GIO/GVfs.                  *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -290,7 +290,7 @@ off64_t RpFileGio::size(void)
 	}
 
 	// Get the file size.
-	goffset fileSize = g_file_info_get_size(fileInfo);
+	const goffset fileSize = g_file_info_get_size(fileInfo);
 	g_object_unref(fileInfo);
 	return fileSize;
 }

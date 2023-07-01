@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpQt.cpp: Qt wrappers for some libromdata functionality.                *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -115,7 +115,7 @@ string convert_accel_to_gtk(const char *str)
 {
 	// GTK+ uses '_' for accelerators, not '&'.
 	string s_ret = str;
-	size_t accel_pos = s_ret.find('&');
+	const size_t accel_pos = s_ret.find('&');
 	if (accel_pos != string::npos) {
 		s_ret[accel_pos] = '_';
 	}

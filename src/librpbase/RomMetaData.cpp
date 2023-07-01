@@ -198,7 +198,7 @@ RomMetaData::MetaData *RomMetaDataPrivate::addProperty(Property name)
 		}
 
 		metaData.emplace_back(name, static_cast<PropertyType>(PropertyTypeMap[static_cast<int>(name)]));
-		size_t idx = metaData.size() - 1;
+		const size_t idx = metaData.size() - 1;
 		pMetaData = &metaData[idx];
 		map_metaData[static_cast<int>(name)] = static_cast<Property>(idx);
 	}

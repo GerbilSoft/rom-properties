@@ -84,7 +84,7 @@ int Nintendo3DS::doRomOp_int(int id, RomOpParams *pParams)
 	}
 
 	// If the DSi SRL isn't open right now, make sure we close it later.
-	bool wasMainContentOpen = (d->mainContent && d->mainContent->isOpen());
+	const bool wasMainContentOpen = (d->mainContent && d->mainContent->isOpen());
 
 	// Check for a DSi SRL.
 	int ret = d->openSRL();

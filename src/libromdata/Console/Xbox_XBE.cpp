@@ -377,8 +377,8 @@ const EXE *Xbox_XBE_Private::initEXE(void)
  */
 string Xbox_XBE_Private::getPublisher(void) const
 {
-	uint16_t pub_id = ((unsigned int)xbeCertificate.title_id.a << 8) |
-	                  ((unsigned int)xbeCertificate.title_id.b);
+	const uint16_t pub_id = ((unsigned int)xbeCertificate.title_id.a << 8) |
+	                        ((unsigned int)xbeCertificate.title_id.b);
 	const char *const publisher = XboxPublishers::lookup(pub_id);
 	if (publisher) {
 		return publisher;
@@ -698,7 +698,7 @@ int Xbox_XBE::loadFieldData(void)
 		if (size == sizeof(pe_filename_W)) {
 			// Convert to UTF-8.
 			pe_filename_W[ARRAY_SIZE(pe_filename_W)-1] = 0;
-			string pe_filename = utf16le_to_utf8(pe_filename_W, -1);
+			const string pe_filename = utf16le_to_utf8(pe_filename_W, -1);
 			if (!pe_filename.empty()) {
 				d->fields.addField_string(s_filename_title, pe_filename);
 			} else {
@@ -744,7 +744,7 @@ int Xbox_XBE::loadFieldData(void)
 	// Timestamp
 	// TODO: time_t is signed, so values greater than 2^31-1 may be negative.
 	const char *const s_timestamp_title = C_("Xbox_XBE", "Timestamp");
-	uint32_t timestamp = le32_to_cpu(xbeHeader->timestamp);
+	const uint32_t timestamp = le32_to_cpu(xbeHeader->timestamp);
 	if (timestamp != 0) {
 		d->fields.addField_dateTime(s_timestamp_title,
 			static_cast<time_t>(timestamp),

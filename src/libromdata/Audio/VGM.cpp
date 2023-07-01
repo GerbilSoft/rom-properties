@@ -340,7 +340,7 @@ int VGM::loadFieldData(void)
 	d->fields.setTabName(0, "VGM");
 
 	// Version number (BCD)
-	unsigned int vgm_version = le32_to_cpu(vgmHeader->version);
+	const unsigned int vgm_version = le32_to_cpu(vgmHeader->version);
 	d->fields.addField_string(C_("VGM", "VGM Version"),
 		rp_sprintf("%x.%02x", vgm_version >> 8, vgm_version & 0xFF));
 

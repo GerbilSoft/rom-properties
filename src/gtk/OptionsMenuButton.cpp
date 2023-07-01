@@ -200,7 +200,7 @@ rp_options_menu_button_class_init(RpOptionsMenuButtonClass *klass)
 static void
 rp_options_menu_button_init(RpOptionsMenuButton *widget)
 {
-	string s_title = convert_accel_to_gtk(C_("OptionsMenuButton", "&Options"));
+	const string s_title = convert_accel_to_gtk(C_("OptionsMenuButton", "&Options"));
 
 	// Create the GtkMenuButton.
 #ifdef USE_GTK_MENU_BUTTON

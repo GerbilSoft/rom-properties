@@ -138,7 +138,7 @@ class MegaDrivePrivate final : public RomDataPrivate
 		 */
 		inline bool isDisc(void) const
 		{
-			int rfmt = romType & ROM_FORMAT_MASK;
+			const int rfmt = (romType & ROM_FORMAT_MASK);
 			return (rfmt == ROM_FORMAT_DISC_2048 ||
 				rfmt == ROM_FORMAT_DISC_2352);
 		}
@@ -449,7 +449,7 @@ void MegaDrivePrivate::addFields_romHeader(const MD_RomHeader *pRomHeader, bool 
 	};
 	// NOTE: Using a plain text field because most games only support
 	// one or two devices, so we don't need to list them all.
-	uint32_t io_support = parseIOSupport(s_io_support, sizeof(pRomHeader->io_support));
+	const uint32_t io_support = parseIOSupport(s_io_support, sizeof(pRomHeader->io_support));
 	string s_io_devices;
 	s_io_devices.reserve(32);
 	uint32_t bit = 1U;

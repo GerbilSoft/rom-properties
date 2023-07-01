@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * RpQUrl.cpp: QUrl utility functions                                      *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -50,11 +50,11 @@ QUrl localizeQUrl(const QUrl &url)
 
 	if (url.scheme().isEmpty()) {
 		// No scheme. Assume this is a plain old filename.
-		QFileInfo fi(url.path());
+		const QFileInfo fi(url.path());
 		return QUrl::fromLocalFile(fi.absoluteFilePath());
 	} else if (url.isLocalFile()) {
 		// This is a local file. ("file://" scheme)
-		QFileInfo fi(url.toLocalFile());
+		const QFileInfo fi(url.toLocalFile());
 		return QUrl::fromLocalFile(fi.absoluteFilePath());
 	} else if (url.scheme() == QLatin1String("desktop")) {
 		// Desktop folder.
@@ -63,7 +63,7 @@ QUrl localizeQUrl(const QUrl &url)
 			url_path.remove(0, 1);
 		}
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
-		QString qs_local_filename = QStandardPaths::locate(QStandardPaths::DesktopLocation, url_path);
+		const QString qs_local_filename = QStandardPaths::locate(QStandardPaths::DesktopLocation, url_path);
 #else /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 		QString qs_local_filename = QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
 		if (!qs_local_filename.isEmpty()) {

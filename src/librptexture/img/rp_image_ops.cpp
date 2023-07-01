@@ -667,7 +667,7 @@ rp_image *rp_image::flip(FlipOp op) const
 
 	// If CI8, copy the palette.
 	if (backend->format == Format::CI8) {
-		int entries = std::min(flipimg->palette_len(), d->backend->palette_len());
+		const int entries = std::min(flipimg->palette_len(), d->backend->palette_len());
 		uint32_t *const dest_pal = flipimg->palette();
 		memcpy(dest_pal, d->backend->palette(), entries * sizeof(uint32_t));
 		// Palette is zero-initialized, so we don't need to
@@ -792,7 +792,7 @@ int rp_image::swizzle_cpp(const char *swz_spec)
 	// Swizzle the sBIT value, if set.
 	if (d->has_sBIT) {
 		// TODO: If gray is set, move its values to rgb?
-		rp_image::sBIT_t sBIT_old = d->sBIT;
+		const rp_image::sBIT_t sBIT_old = d->sBIT;
 
 #define SWIZZLE_sBIT(n, ch) do { \
 				switch (swz_ch.u8[n]) { \

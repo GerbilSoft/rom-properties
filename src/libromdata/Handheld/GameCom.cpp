@@ -177,7 +177,7 @@ const rp_image *GameComPrivate::loadIcon(void)
 			return nullptr;
 		}
 		// Get the lowest power of two size and mask the bank number.
-		unsigned int lz = (1U << uilog2(static_cast<unsigned int>(fileSize)));
+		const unsigned int lz = (1U << uilog2(static_cast<unsigned int>(fileSize)));
 		bank_number &= ((lz / GCOM_ICON_BANK_SIZE) - 1);
 		bank_offset = (bank_number * GCOM_ICON_BANK_SIZE) - bank_adj;
 	}
@@ -402,7 +402,7 @@ const rp_image *GameComPrivate::loadIconRLE(void)
 			return nullptr;
 		}
 		// Get the lowest power of two size and mask the bank number.
-		unsigned int lz = (1U << uilog2(static_cast<unsigned int>(fileSize)));
+		const unsigned int lz = (1U << uilog2(static_cast<unsigned int>(fileSize)));
 		bank_number &= ((lz / GCOM_ICON_BANK_SIZE_RLE) - 1);
 		bank_offset = (bank_number * GCOM_ICON_BANK_SIZE_RLE) - bank_adj;
 	}
@@ -457,7 +457,7 @@ const rp_image *GameComPrivate::loadIconRLE(void)
 	// on a byte boundary in the decompressed data, so we won't need
 	// to do manual realignment.
 	uint8_t *pDestBase = static_cast<uint8_t*>(tmp_icon->bits());
-	int dest_stride = tmp_icon->stride();
+	const int dest_stride = tmp_icon->stride();
 
 	// Convert 2bpp to 8bpp.
 	const uint8_t *pSrc = icon_data.get();

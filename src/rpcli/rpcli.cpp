@@ -535,7 +535,7 @@ int RP_C_API main(int argc, char *argv[])
 				break;
 			}
 			case 'x': {
-				long num = atol(argv[i] + 2);
+				const long num = atol(argv[i] + 2);
 				if (num<RomData::IMG_INT_MIN || num>RomData::IMG_INT_MAX) {
 					cerr << rp_sprintf(C_("rpcli", "Warning: skipping unknown image type %ld"), num) << endl;
 					i++; continue;

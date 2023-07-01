@@ -230,7 +230,7 @@ void RomDataViewPrivate::doRomOp_stdop(int id)
 	}
 
 	// Export/copy to text or JSON.
-	QFileInfo fi(U82Q(rom_filename));
+	const QFileInfo fi(U82Q(rom_filename));
 
 	if (prevExportDir.isEmpty()) {
 		prevExportDir = fi.path();
@@ -241,13 +241,13 @@ void RomDataViewPrivate::doRomOp_stdop(int id)
 
 	// TODO: Rework so it's not application-modal.
 	Q_Q(RomDataView);
-	QString out_filename = QFileDialog::getSaveFileName(q,
+	const QString out_filename = QFileDialog::getSaveFileName(q,
 		U82Q(title), defaultFileName, rpFileDialogFilterToQt(filter));
 	if (out_filename.isEmpty())
 		return;
 
 	// Save the previous export directory.
-	QFileInfo fi2(out_filename);
+	const QFileInfo fi2(out_filename);
 	prevExportDir = fi2.path();
 
 	// TODO: QTextStream wrapper for ostream.
@@ -319,10 +319,10 @@ void RomDataView::btnOptions_triggered(int id)
 		filter += rpFileDialogFilterToQt(C_("RomData", "All Files|*|-"));
 
 		// Initial file and directory, based on the current file.
-		QString initialFile = U82Q(FileSystem::replace_ext(d->romData->filename(), op->sfi.ext));
+		const QString initialFile = U82Q(FileSystem::replace_ext(d->romData->filename(), op->sfi.ext));
 
 		// Prompt for a save file.
-		QString filename = QFileDialog::getSaveFileName(this,
+		const QString filename = QFileDialog::getSaveFileName(this,
 			U82Q(op->sfi.title), initialFile, filter);
 		if (filename.isEmpty())
 			return;
@@ -337,7 +337,7 @@ void RomDataView::btnOptions_triggered(int id)
 		// ROM operation completed.
 
 		// Update fields.
-		for (int fieldIdx : params.fieldIdx) {
+		for (const int fieldIdx : params.fieldIdx) {
 			d->updateField(fieldIdx);
 		}
 

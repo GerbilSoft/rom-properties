@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_scsi.cpp: General SCSI functions.                                *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -213,7 +213,7 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 
 	// Read contiguous blocks.
 	uint32_t lba_count = static_cast<uint32_t>(size / devInfo->sector_size);
-	size_t contig_size = static_cast<off64_t>(lba_count) * devInfo->sector_size;
+	const size_t contig_size = static_cast<off64_t>(lba_count) * devInfo->sector_size;
 	if (devInfo->isKreonUnlocked) {
 		// Kreon drive. Use SCSI commands.
 		// NOTE: Reading up to 65535 LBAs at a time due to READ(10) limitations.
@@ -221,7 +221,7 @@ size_t RpFilePrivate::readUsingBlocks(void *ptr, size_t size)
 		// FIXME: Seems to have issues above a certain number of LBAs on Linux...
 		// Reducing it to 64 KB maximum reads.
 		// TODO: Use the sector cache for the first LBA if possible.
-		uint32_t lba_increment = 65536 / devInfo->sector_size;
+		const uint32_t lba_increment = 65536 / devInfo->sector_size;
 		for (; lba_count > 0; lba_count -= lba_increment) {
 			const uint16_t lba_cur_count = (lba_count > lba_increment ? lba_increment : (uint16_t)lba_count);
 			const size_t lba_cur_size = (size_t)lba_cur_count * devInfo->sector_size;
