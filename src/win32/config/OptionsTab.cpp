@@ -18,7 +18,10 @@
 using namespace LibRpBase;
 using namespace LibRpFile;
 
-// C++ STL classes.
+// Netowrk status
+#include "NetworkStatus.h"
+
+// C++ STL classes
 using std::tstring;
 
 class OptionsTabPrivate
@@ -369,7 +372,14 @@ void OptionsTabPrivate::save(void)
  */
 void OptionsTabPrivate::updateGrpExtImgDl(void)
 {
-	const bool enable = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_CHKEXTIMGDL));
+	// The dropdowns will be enabled if:
+	// - chkExtImgDl is enabled
+	// - Metered/unmetered detection is available
+	bool enable = bstCheckedToBool(IsDlgButtonChecked(hWndPropSheet, IDC_OPTIONS_CHKEXTIMGDL));
+	if (!rp_win32_can_identify_if_metered()) {
+		enable = false;
+	}
+
 	EnableWindow(GetDlgItem(hWndPropSheet, IDC_OPTIONS_LBL_UNMETERED_DL), enable);
 	EnableWindow(GetDlgItem(hWndPropSheet, IDC_OPTIONS_CBO_UNMETERED_DL), enable);
 	EnableWindow(GetDlgItem(hWndPropSheet, IDC_OPTIONS_LBL_METERED_DL), enable);
