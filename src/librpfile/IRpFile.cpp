@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * IRpFile.cpp: File wrapper interface.                                    *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -46,7 +46,7 @@ int IRpFile::ungetc(int c)
 	RP_UNUSED(c);	// TODO: Don't ignore this?
 
 	// TODO: seek() overload that supports SEEK_CUR?
-	off64_t pos = tell();
+	const off64_t pos = tell();
 	if (pos <= 0) {
 		// Cannot ungetc().
 		return -1;
@@ -82,7 +82,7 @@ int IRpFile::copyTo(IRpFile *pDestFile, off64_t size,
 
 	// Copy the data.
 	for (; size > 0; size -= COPYTO_BUFFER_SIZE) {
-		size_t cbRead = this->read(buf, COPYTO_BUFFER_SIZE);
+		const size_t cbRead = this->read(buf, COPYTO_BUFFER_SIZE);
 		cbReadTotal += cbRead;
 		if (cbRead != COPYTO_BUFFER_SIZE &&
 		    (size < COPYTO_BUFFER_SIZE && cbRead != (size_t)size))
@@ -97,7 +97,7 @@ int IRpFile::copyTo(IRpFile *pDestFile, off64_t size,
 				break;
 		}
 
-		size_t cbWritten = pDestFile->write(buf, cbRead);
+		const size_t cbWritten = pDestFile->write(buf, cbRead);
 		cbWrittenTotal += cbWritten;
 		if (cbWritten != cbRead) {
 			// Short write.

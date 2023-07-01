@@ -234,7 +234,7 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 
 		// Get the value for this attribute.
 		// NOTE: vlen does *not* include a NULL-terminator.
-		ssize_t vlen = fgetxattr(fd, name, nullptr, 0);
+		const ssize_t vlen = fgetxattr(fd, name, nullptr, 0);
 		if (vlen <= 0) {
 			// Error retrieving attribute information.
 			continue;
