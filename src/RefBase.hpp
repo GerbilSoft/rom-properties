@@ -136,12 +136,13 @@ class unique_RefBase
 		 */
 		operator bool(void) const { return (m_refBase != nullptr); }
 
-	private:
 		// Disable copy/assignment constructors.
 #if __cplusplus >= 201103L
+	public:
 		unique_RefBase(const unique_RefBase &) = delete;
 		unique_RefBase &operator=(const unique_RefBase &) = delete;
 #else
+	private:
 		unique_RefBase(const unique_RefBase &);
 		unique_RefBase &operator=(const unique_RefBase &);
 #endif
