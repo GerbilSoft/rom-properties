@@ -70,7 +70,7 @@ u16string utf16_bswap(const char16_t *str, int len)
 	u16string ret;
 	ret.reserve(len);
 	for (; len > 0; len--, str++) {
-		ret += __swab16(*str);
+		ret += static_cast<char16_t>(__swab16(static_cast<uint16_t>(*str)));
 	}
 
 	return ret;
