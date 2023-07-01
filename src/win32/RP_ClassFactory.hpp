@@ -64,7 +64,7 @@ class RP_ClassFactory final : public LibWin32Common::ComBase<IClassFactory>, pub
 			// Always set out parameter to NULL, validating it first.
 			if (!ppvObject)
 				return E_INVALIDARG;
-			*ppvObject = NULL;
+			*ppvObject = nullptr;
 
 			if (pUnkOuter) {
 				// Aggregation is not supported.

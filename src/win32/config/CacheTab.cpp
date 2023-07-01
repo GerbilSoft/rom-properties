@@ -435,7 +435,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 	HWND hClearRpDl = GetDlgItem(hWndPropSheet, IDC_CACHE_CLEAR_RP_DL);
 	EnableWindow(hClearSysThumbs, FALSE);
 	EnableWindow(hClearRpDl, FALSE);
-	SetCursor(LoadCursor(NULL, IDC_WAIT));
+	SetCursor(LoadCursor(nullptr, IDC_WAIT));
 
 	// Initialize the progress bar.
 	SendMessage(hProgressBar, PBM_SETSTATE, PBST_NORMAL, 0);
@@ -489,7 +489,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 			pCallback->Release();
 			EnableWindow(hClearSysThumbs, TRUE);
 			EnableWindow(hClearRpDl, TRUE);
-			SetCursor(LoadCursor(NULL, IDC_ARROW));
+			SetCursor(LoadCursor(nullptr, IDC_ARROW));
 			MessageBeep(MB_ICONERROR);
 			return 7;
 		}
@@ -506,7 +506,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 			pCallback->Release();
 			EnableWindow(hClearSysThumbs, TRUE);
 			EnableWindow(hClearRpDl, TRUE);
-			SetCursor(LoadCursor(NULL, IDC_ARROW));
+			SetCursor(LoadCursor(nullptr, IDC_ARROW));
 			MessageBeep(MB_ICONERROR);
 			return 8;
 		}
@@ -528,7 +528,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 	pCallback->Release();
 	EnableWindow(hClearSysThumbs, TRUE);
 	EnableWindow(hClearRpDl, TRUE);
-	SetCursor(LoadCursor(NULL, IDC_ARROW));
+	SetCursor(LoadCursor(nullptr, IDC_ARROW));
 	MessageBeep(MB_ICONINFORMATION);
 	return 0;
 }
@@ -581,7 +581,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 	HWND hClearRpDl = GetDlgItem(hWndPropSheet, IDC_CACHE_CLEAR_RP_DL);
 	EnableWindow(hClearSysThumbs, FALSE);
 	EnableWindow(hClearRpDl, FALSE);
-	SetCursor(LoadCursor(NULL, IDC_WAIT));
+	SetCursor(LoadCursor(nullptr, IDC_WAIT));
 
 	SetWindowText(hStatusLabel, U82T_c(C_("CacheTab", "Clearing the rom-properties cache...")));
 
@@ -600,7 +600,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 		SendMessage(hProgressBar, PBM_SETPOS, 1, 0);
 		EnableWindow(hClearSysThumbs, TRUE);
 		EnableWindow(hClearRpDl, TRUE);
-		SetCursor(LoadCursor(NULL, IDC_ARROW));
+		SetCursor(LoadCursor(nullptr, IDC_ARROW));
 		MessageBeep(MB_ICONINFORMATION);
 		return 0;
 	}
@@ -619,7 +619,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 		SendMessage(hProgressBar, PBM_SETPOS, 1, 0);
 		EnableWindow(hClearSysThumbs, TRUE);
 		EnableWindow(hClearRpDl, TRUE);
-		SetCursor(LoadCursor(NULL, IDC_ARROW));
+		SetCursor(LoadCursor(nullptr, IDC_ARROW));
 		// FIXME: Not working...
 		SendMessage(hProgressBar, PBM_SETSTATE, PBST_ERROR, 0);
 		MessageBeep(MB_ICONERROR);
@@ -631,7 +631,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 		SendMessage(hProgressBar, PBM_SETPOS, 1, 0);
 		EnableWindow(hClearSysThumbs, TRUE);
 		EnableWindow(hClearRpDl, TRUE);
-		SetCursor(LoadCursor(NULL, IDC_ARROW));
+		SetCursor(LoadCursor(nullptr, IDC_ARROW));
 		MessageBeep(MB_ICONINFORMATION);
 		return 0;
 	}
@@ -704,7 +704,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 
 	EnableWindow(hClearSysThumbs, TRUE);
 	EnableWindow(hClearRpDl, TRUE);
-	SetCursor(LoadCursor(NULL, IDC_ARROW));
+	SetCursor(LoadCursor(nullptr, IDC_ARROW));
 	return 0;
 }
 
