@@ -26,7 +26,7 @@
 #  endif /* __cplusplus */
 #  include <cairo-gobject.h>
 #  define PIMGTYPE_GOBJECT_TYPE CAIRO_GOBJECT_TYPE_SURFACE
-#  define PIMGTYPE_CAST(obj) ((PIMGTYPE)obj)
+#  define PIMGTYPE_CAST(obj) ((PIMGTYPE)(obj))
 #  define GTK_CELL_RENDERER_PIXBUF_PROPERTY "surface"
 G_BEGIN_DECLS
 typedef cairo_surface_t *PIMGTYPE;
