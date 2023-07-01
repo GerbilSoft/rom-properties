@@ -463,6 +463,22 @@
     <property name="Version" type="s" access="read"/>
 
     <!--
+        VersionInfo:
+
+        NetworkManager version and capabilities.
+
+        The first element in the array is the NM_VERSION of the daemon. It is a binary representation
+        of the "Version" and can be compared numerically. The version is encoded as
+        "(major &lt;&lt; 16 | minor &lt;&lt; 8 | micro)".
+
+        The following elements are a bitfield of static capabilities of the daemon. See
+        #NMVersionInfoCapability for the available capability numbers.
+
+        Since: 1.42
+    -->
+    <property name="VersionInfo" type="au" access="read"/>
+
+    <!--
         Capabilities:
 
         The current set of capabilities. See <link
