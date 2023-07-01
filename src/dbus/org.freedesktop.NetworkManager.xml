@@ -476,7 +476,9 @@
 
         Since: 1.42
     -->
-    <property name="VersionInfo" type="au" access="read"/>
+    <property name="VersionInfo" type="au" access="read">
+      <annotation name="org.qtproject.QtDBus.QtTypeName" value="QList&lt;quint32&gt;"/>
+    </property>
 
     <!--
         Capabilities:
