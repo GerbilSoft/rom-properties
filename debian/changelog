@@ -1,5 +1,12 @@
 rom-properties (2.2-1ppa1~xenial3) xenial; urgency=medium
 
+  * Disable RomHeaderTest entirely for now because the PPA build servers
+    are still failing with an exception.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 01 Jul 2023 17:04:52 -0400
+
+rom-properties (2.2-1ppa1~xenial3) xenial; urgency=medium
+
   * Recompress RomHeaderTest files using `zstd -3` because `zstd -22` was
     using up too much memory at runtime, which caused the test to fail on
     the PPA build servers.
