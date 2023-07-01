@@ -38,11 +38,11 @@ class Semaphore
 		// Disable copy/assignment constructors.
 #if __cplusplus >= 201103L
 	public:
-		Semaphore(const Semaphore &) = delete; \
+		Semaphore(const Semaphore &) = delete;
 		Semaphore &operator=(const Semaphore &) = delete;
 #else /* __cplusplus < 201103L */
 	private:
-		Semaphore(const Semaphore &); \
+		Semaphore(const Semaphore &);
 		Semaphore &operator=(const Semaphore &);
 #endif /* __cplusplus */
 

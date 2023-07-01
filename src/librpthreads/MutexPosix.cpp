@@ -31,11 +31,11 @@ class Mutex
 		// Disable copy/assignment constructors.
 #if __cplusplus >= 201103L
 	public:
-		Mutex(const Mutex &) = delete; \
+		Mutex(const Mutex &) = delete;
 		Mutex &operator=(const Mutex &) = delete;
 #else /* __cplusplus < 201103L */
 	private:
-		Mutex(const Mutex &); \
+		Mutex(const Mutex &);
 		Mutex &operator=(const Mutex &);
 #endif /* __cplusplus */
 
