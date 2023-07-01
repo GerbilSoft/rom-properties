@@ -74,6 +74,7 @@ SET(${PROJECT_NAME}_SRCS
 	LvData.cpp
 	LanguageComboBox.cpp
 	OptionsMenuButton.cpp
+	NetworkStatus.c
 	config/ConfigDialog.cpp
 	config/PropSheetIcon.cpp
 	config/RP_EmptyVolumeCacheCallback.cpp
@@ -112,6 +113,7 @@ SET(${PROJECT_NAME}_H
 	LvData.hpp
 	LanguageComboBox.hpp
 	OptionsMenuButton.hpp
+	NetworkStatus.h
 	config/ConfigDialog.hpp
 	config/PropSheetIcon.hpp
 	config/RP_EmptyVolumeCacheCallback.hpp
