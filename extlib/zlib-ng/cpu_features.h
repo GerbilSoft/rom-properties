@@ -180,6 +180,9 @@ extern uint32_t compare256_neon(const uint8_t *src0, const uint8_t *src1);
 #ifdef POWER9
 extern uint32_t compare256_power9(const uint8_t *src0, const uint8_t *src1);
 #endif
+#ifdef RISCV_RVV
+extern uint32_t compare256_rvv(const uint8_t *src0, const uint8_t *src1);
+#endif
 
 #ifdef DEFLATE_H_
 /* insert_string */
@@ -213,6 +216,9 @@ extern uint32_t longest_match_neon(deflate_state *const s, Pos cur_match);
 #ifdef POWER9
 extern uint32_t longest_match_power9(deflate_state *const s, Pos cur_match);
 #endif
+#ifdef RISCV_RVV
+extern uint32_t longest_match_rvv(deflate_state *const s, Pos cur_match);
+#endif
 
 /* longest_match_slow */
 extern uint32_t longest_match_slow_c(deflate_state *const s, Pos cur_match);
@@ -234,6 +240,9 @@ extern uint32_t longest_match_slow_neon(deflate_state *const s, Pos cur_match);
 #endif
 #ifdef POWER9
 extern uint32_t longest_match_slow_power9(deflate_state *const s, Pos cur_match);
+#endif
+#ifdef RISCV_RVV
+extern uint32_t longest_match_slow_rvv(deflate_state *const s, Pos cur_match);
 #endif
 
 /* quick_insert_string */
@@ -257,6 +266,9 @@ extern void slide_hash_vmx(deflate_state *s);
 #endif
 #if defined(POWER8_VSX)
 extern void slide_hash_power8(deflate_state *s);
+#endif
+#if defined(RISCV_RVV)
+extern void slide_hash_rvv(deflate_state *s);
 #endif
 #ifdef X86_AVX2
 extern void slide_hash_avx2(deflate_state *s);

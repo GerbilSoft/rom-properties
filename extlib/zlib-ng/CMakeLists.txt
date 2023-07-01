@@ -222,24 +222,27 @@ elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         if(BASEARCH_ARM_FOUND)
             if("${ARCH}" MATCHES "arm" AND NOT CMAKE_C_FLAGS MATCHES "-mfloat-abi")
                 # Auto-detect support for ARM floating point ABI
-                set(CMAKE_REQUIRED_FLAGS -mfloat-abi=softfp)
-                check_c_source_compiles(
-                    "#include <features.h>
-                    int main() { return 0; }"
-                    HAVE_FLOATABI_SOFTFP)
-                if(HAVE_FLOATABI_SOFTFP)
-                    set(FLOATABI -mfloat-abi=softfp)
-                else()
-                    set(CMAKE_REQUIRED_FLAGS -mfloat-abi=hard)
+                check_include_file(features.h HAVE_FEATURES_H)
+                if(HAVE_FEATURES_H)
+                    set(CMAKE_REQUIRED_FLAGS -mfloat-abi=softfp)
                     check_c_source_compiles(
                         "#include <features.h>
                         int main() { return 0; }"
-                        HAVE_FLOATABI_HARD)
-                    if(HAVE_FLOATABI_HARD)
-                        set(FLOATABI -mfloat-abi=hard)
+                        HAVE_FLOATABI_SOFTFP)
+                    if(HAVE_FLOATABI_SOFTFP)
+                        set(FLOATABI -mfloat-abi=softfp)
+                    else()
+                        set(CMAKE_REQUIRED_FLAGS -mfloat-abi=hard)
+                        check_c_source_compiles(
+                            "#include <features.h>
+                            int main() { return 0; }"
+                            HAVE_FLOATABI_HARD)
+                        if(HAVE_FLOATABI_HARD)
+                            set(FLOATABI -mfloat-abi=hard)
+                        endif()
                     endif()
+                    set(CMAKE_REQUIRED_FLAGS)
                 endif()
-                set(CMAKE_REQUIRED_FLAGS)
                 if(FLOATABI)
                     message(STATUS "ARM floating point arch: ${FLOATABI}")
                     add_compile_options(${FLOATABI})
@@ -743,6 +746,11 @@ if(WITH_OPTIM)
                 add_definitions(-DRISCV_RVV)
                 list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/riscv_features.h)
                 list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/riscv_features.c)
+                # FIXME: we will not set compile flags for riscv_features.c when 
+                # the kernels update hwcap or hwprobe for riscv
+                set(RVV_SRCS ${ARCHDIR}/riscv_features.c ${ARCHDIR}/compare256_rvv.c ${ARCHDIR}/slide_hash_rvv.c)
+                list(APPEND ZLIB_ARCH_SRCS ${RVV_SRCS})
+                set_property(SOURCE ${RVV_SRCS} PROPERTY COMPILE_FLAGS "${RISCVFLAG} ${NOLTOFLAG}")
             else()
                 set(WITH_RVV OFF)
             endif()
@@ -911,6 +919,7 @@ if(WITH_OPTIM)
         endif()
     endif()
 endif()
+
 message(STATUS "Architecture-specific source files: ${ZLIB_ARCH_SRCS}")
 
 #============================================================================
@@ -969,8 +978,15 @@ else()
   set(PC_INC_INSTALL_DIR "${CMAKE_INSTALL_INCLUDEDIR}")
 endif()
 
+if(APPLE)
+  option(WITH_RPATH "Enable RPATH for shared library" OFF)
+endif()
 if(NOT IS_ABSOLUTE "${CMAKE_INSTALL_LIBDIR}")
-  set(PC_LIB_INSTALL_DIR "\${exec_prefix}/${CMAKE_INSTALL_LIBDIR}")
+  if(APPLE AND WITH_RPATH)
+    set(PC_LIB_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}")
+  else()
+    set(PC_LIB_INSTALL_DIR "\${exec_prefix}/${CMAKE_INSTALL_LIBDIR}")
+  endif()
 elseif(LIBDIR_POS EQUAL 0)
   string(SUBSTRING "${CMAKE_INSTALL_LIBDIR}" "${INSTALL_PREFIX_LEN}" "-1" LIBDIR_RELATIVE)
   set(PC_LIB_INSTALL_DIR "\${exec_prefix}/${LIBDIR_RELATIVE}")
@@ -1152,9 +1168,11 @@ if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
         if(NOT APPLE)
             set_target_properties(zlib PROPERTIES LINK_FLAGS
                 "-Wl,--version-script,\"${CMAKE_CURRENT_SOURCE_DIR}/zlib${SUFFIX}.map\"")
+        elseif(IS_ABSOLUTE "${CMAKE_INSTALL_LIBDIR}" OR NOT WITH_RPATH)
+            # Match configure/make's behavior (i.e. don't use @rpath on mac when using absolute path).
+            set_target_properties(zlib PROPERTIES INSTALL_NAME_DIR "@rpath/${CMAKE_INSTALL_FULL_LIBDIR}")
         else()
-            # Match configure/make's behavior (i.e. don't use @rpath on mac).
-            set_target_properties(zlib PROPERTIES INSTALL_NAME_DIR "${CMAKE_INSTALL_FULL_LIBDIR}")
+            set_target_properties(zlib PROPERTIES INSTALL_NAME_DIR "@rpath/${CMAKE_INSTALL_LIBDIR}")
         endif()
     endif()
     if(MSYS)
@@ -1219,6 +1237,10 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/zlib${SUFFIX}.h.in
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/gzread.c.in
     ${CMAKE_CURRENT_BINARY_DIR}/gzread.c @ONLY)
 
+# Fix install directory after generating zlib.pc/zlib-ng.pc
+if (NOT IS_ABSOLUTE CMAKE_INSTALL_LIBDIR AND WITH_RPATH)
+    set(CMAKE_INSTALL_LIBDIR "/${CMAKE_INSTALL_LIBDIR}")
+endif()
 
 if (NOT ZLIB_SYMBOL_PREFIX STREQUAL "")
     add_feature_info(ZLIB_SYMBOL_PREFIX ON "Publicly exported symbols have a custom prefix")
@@ -1349,5 +1371,9 @@ elseif(BASEARCH_X86_FOUND)
 endif()
 
 add_feature_info(INSTALL_UTILS INSTALL_UTILS "Copy minigzip and minideflate during install")
+
+if(APPLE)
+    add_feature_info(WITH_RPATH WITH_RPATH "Enable RPATH for shared library")
+endif()
 
 FEATURE_SUMMARY(WHAT ALL INCLUDE_QUIET_PACKAGES)
