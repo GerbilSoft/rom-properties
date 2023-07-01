@@ -40,8 +40,7 @@ class rp_image_private
 		~rp_image_private();
 
 	private:
-		rp_image_private(const rp_image_private &other);
-		rp_image_private &operator=(const rp_image_private &other);
+		RP_DISABLE_COPY(rp_image_private)
 
 	public:
 		static rp_image::rp_image_backend_creator_fn backend_fn;

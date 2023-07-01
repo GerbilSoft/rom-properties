@@ -40,11 +40,13 @@ class MutexLocker
 			m_mutex.unlock();
 		}
 
-	private:
+		// Disable copy/assignment constructors.
 #if __cplusplus >= 201103L
+	public:
 		MutexLocker(const MutexLocker &) = delete; \
 		MutexLocker &operator=(const MutexLocker &) = delete;
 #else /* __cplusplus < 201103L */
+	private:
 		MutexLocker(const MutexLocker &); \
 		MutexLocker &operator=(const MutexLocker &);
 #endif /* __cplusplus */

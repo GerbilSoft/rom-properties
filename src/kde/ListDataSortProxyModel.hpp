@@ -23,7 +23,7 @@ class ListDataSortProxyModel : public QSortFilterProxyModel
 	Q_PROPERTY(uint32_t sortingMethods READ sortingMethods WRITE setSortingMethods NOTIFY sortingMethodsChanged)
 
 	public:
-		explicit ListDataSortProxyModel(QObject *parent = 0)
+		explicit ListDataSortProxyModel(QObject *parent = nullptr)
 			: super(parent)
 			, m_sortingMethods(0) { }
 		~ListDataSortProxyModel() override = default;

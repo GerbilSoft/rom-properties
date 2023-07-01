@@ -13,10 +13,11 @@
 
 class MessageSound
 {
+	public:
+		// Static class
+		MessageSound() = delete;
+		~MessageSound() = delete;
 	private:
-		// MessageSound is a private class.
-		MessageSound();
-		~MessageSound();
 		RP_DISABLE_COPY(MessageSound);
 
 	public:

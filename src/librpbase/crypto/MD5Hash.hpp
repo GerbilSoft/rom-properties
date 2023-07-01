@@ -19,7 +19,7 @@ namespace LibRpBase {
 
 class MD5Hash
 {
-	protected:
+	public:
 		explicit MD5Hash() = delete;
 		~MD5Hash() = delete;
 

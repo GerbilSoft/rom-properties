@@ -25,7 +25,7 @@ class LanguageComboBox : public QComboBox
 	Q_PROPERTY(bool forcePAL READ isForcePAL WRITE setForcePAL)
 
 	public:
-		explicit LanguageComboBox(QWidget *parent = 0);
+		explicit LanguageComboBox(QWidget *parent = nullptr);
 
 	private:
 		typedef QComboBox super;

@@ -82,12 +82,14 @@
 // RP equivalent of Q_DISABLE_COPY().
 #  if __cplusplus >= 201103L
 #    define RP_DISABLE_COPY(klass) \
-	klass(const klass &) = delete; \
-	klass &operator=(const klass &) = delete;
+	public: \
+		klass(const klass &) = delete; \
+		klass &operator=(const klass &) = delete;
 #  else /* __cplusplus < 201103L */
 #    define RP_DISABLE_COPY(klass) \
-	klass(const klass &); \
-	klass &operator=(const klass &);
+	private: \
+		klass(const klass &); \
+		klass &operator=(const klass &);
 #  endif /* __cplusplus >= 201103L */
 #endif /* __cplusplus */
 

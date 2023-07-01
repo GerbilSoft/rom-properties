@@ -97,7 +97,7 @@ static inline QString lcToQString(uint32_t lc)
 	QString s_lc;
 	s_lc.reserve(4);
 	for (; lc != 0; lc <<= 8) {
-		ushort chr = (ushort)(lc >> 24);
+		const ushort chr = static_cast<ushort>(lc >> 24);
 		if (chr != 0) {
 			s_lc += QChar(chr);
 		}

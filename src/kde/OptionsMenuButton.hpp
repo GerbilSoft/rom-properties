@@ -35,7 +35,7 @@ class OptionsMenuButton : public QPushButton
 	Q_OBJECT
 
 	public:
-		explicit OptionsMenuButton(QWidget *parent = 0);
+		explicit OptionsMenuButton(QWidget *parent = nullptr);
 
 	private:
 		typedef QPushButton super;

@@ -21,10 +21,11 @@ namespace LibRpTexture {
 
 class CairoImageConv
 {
-	private:
+	public:
 		// Static class.
-		CairoImageConv();
-		~CairoImageConv();
+		CairoImageConv() = delete;
+		~CairoImageConv() = delete;
+	private:
 		RP_DISABLE_COPY(CairoImageConv)
 
 	public:

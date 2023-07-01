@@ -22,8 +22,8 @@ class RomDataView : public QWidget
 	Q_PROPERTY(LibRpBase::RomData* romData READ romData WRITE setRomData NOTIFY romDataChanged)
 
 	public:
-		explicit RomDataView(QWidget *parent = 0);
-		explicit RomDataView(LibRpBase::RomData *romData, QWidget *parent = 0);
+		explicit RomDataView(QWidget *parent = nullptr);
+		explicit RomDataView(LibRpBase::RomData *romData, QWidget *parent = nullptr);
 		~RomDataView() override;
 
 	private:

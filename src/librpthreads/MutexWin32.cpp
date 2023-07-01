@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpthreads)                     *
  * MutexWin32.cpp: Win32 mutex implementation.                             *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -39,11 +39,13 @@ class Mutex
 		 */
 		inline ~Mutex();
 
-	private:
+		// Disable copy/assignment constructors.
 #if __cplusplus >= 201103L
+	public:
 		Mutex(const Mutex &) = delete; \
 		Mutex &operator=(const Mutex &) = delete;
 #else /* __cplusplus < 201103L */
+	private:
 		Mutex(const Mutex &); \
 		Mutex &operator=(const Mutex &);
 #endif /* __cplusplus */

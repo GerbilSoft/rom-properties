@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpthreads)                     *
  * SemaphoreMac.cpp: Mac OS X semaphore implementation.                    *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -35,11 +35,13 @@ class Semaphore
 		 */
 		inline ~Semaphore();
 
-	private:
+		// Disable copy/assignment constructors.
 #if __cplusplus >= 201103L
+	public:
 		Semaphore(const Semaphore &) = delete; \
 		Semaphore &operator=(const Semaphore &) = delete;
 #else /* __cplusplus < 201103L */
+	private:
 		Semaphore(const Semaphore &); \
 		Semaphore &operator=(const Semaphore &);
 #endif /* __cplusplus */

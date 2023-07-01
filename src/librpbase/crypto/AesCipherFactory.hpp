@@ -17,9 +17,10 @@ namespace LibRpBase {
 class IAesCipher;
 class AesCipherFactory
 {
-	private:
-		AesCipherFactory();
-		~AesCipherFactory();
+	public:
+		// Static class
+		AesCipherFactory() = delete;
+		~AesCipherFactory() = delete;
 	private:
 		RP_DISABLE_COPY(AesCipherFactory)
 

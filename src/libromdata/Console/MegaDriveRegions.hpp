@@ -14,10 +14,11 @@ namespace LibRomData {
 
 class MegaDriveRegions
 {
+	public:
+		// Static class
+		MegaDriveRegions() = delete;
+		~MegaDriveRegions() = delete;
 	private:
-		// MegaDriveRegions is a static class.
-		MegaDriveRegions();
-		~MegaDriveRegions();
 		RP_DISABLE_COPY(MegaDriveRegions)
 
 	public:

@@ -21,10 +21,11 @@ namespace LibRpBase {
 
 class RpJpeg
 {
+	public:
+		// Static class
+		RpJpeg() = delete;
+		~RpJpeg() = delete;
 	private:
-		// RpJpeg is a static class.
-		RpJpeg();
-		~RpJpeg();
 		RP_DISABLE_COPY(RpJpeg)
 
 	public:

@@ -28,7 +28,7 @@ class ListDataModel : public QAbstractListModel
 	Q_PROPERTY(QSize iconSize READ iconSize WRITE setIconSize NOTIFY iconSizeChanged)
 
 	public:
-		explicit ListDataModel(QObject *parent = 0);
+		explicit ListDataModel(QObject *parent = nullptr);
 		~ListDataModel() override;
 
 	protected:

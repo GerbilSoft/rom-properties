@@ -50,9 +50,10 @@ union u128_t {
 class N3DSVerifyKeys
 {
 	private:
-		// Static class.
-		N3DSVerifyKeys();
-		~N3DSVerifyKeys();
+		// Static class
+		N3DSVerifyKeys() = delete;
+		~N3DSVerifyKeys() = delete;
+	private:
 		RP_DISABLE_COPY(N3DSVerifyKeys)
 
 	public:

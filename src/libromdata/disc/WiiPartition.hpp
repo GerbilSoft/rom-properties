@@ -18,7 +18,7 @@
 namespace LibRomData {
 
 class WiiPartitionPrivate;
-class WiiPartition : public GcnPartition
+class WiiPartition final : public GcnPartition
 {
 	public:
 		// Bitfield enum indicating the encryption type.
@@ -49,7 +49,7 @@ class WiiPartition : public GcnPartition
 		 */
 		WiiPartition(IDiscReader *discReader, off64_t partition_offset,
 			off64_t partition_size, CryptoMethod crypto = CM_STANDARD);
-		~WiiPartition() = default;
+		~WiiPartition() final = default;
 
 	private:
 		typedef GcnPartition super;

@@ -47,7 +47,7 @@ class WiiWADPrivate final : public LibRpBase::RomDataPrivate
 {
 	public:
 		WiiWADPrivate(LibRpFile::IRpFile *file);
-		~WiiWADPrivate();
+		~WiiWADPrivate() final;
 
 	private:
 		typedef RomDataPrivate super;

@@ -25,9 +25,10 @@ namespace LibRomData {
 
 class RomDataFactory
 {
-	private:
-		RomDataFactory();
-		~RomDataFactory();
+	public:
+		// Static class
+		RomDataFactory() = delete;
+		~RomDataFactory() = delete;
 	private:
 		RP_DISABLE_COPY(RomDataFactory)
 

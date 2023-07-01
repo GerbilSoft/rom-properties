@@ -22,9 +22,10 @@ namespace LibRpTexture {
 class FileFormat;
 class FileFormatFactory
 {
-	private:
-		FileFormatFactory();
-		~FileFormatFactory();
+	public:
+		// Static class
+		FileFormatFactory() = delete;
+		~FileFormatFactory() = delete;
 	private:
 		RP_DISABLE_COPY(FileFormatFactory)
 

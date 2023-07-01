@@ -47,10 +47,10 @@ namespace LibRpTexture {
 
 class FileFormatFactoryPrivate
 {
-	private:
-		FileFormatFactoryPrivate();
-		~FileFormatFactoryPrivate();
-
+	public:
+		// Static class
+		FileFormatFactoryPrivate() = delete;
+		~FileFormatFactoryPrivate() = delete;
 	private:
 		RP_DISABLE_COPY(FileFormatFactoryPrivate)
 

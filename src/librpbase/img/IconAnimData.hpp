@@ -27,7 +27,7 @@
 
 namespace LibRpBase {
 
-struct IconAnimData : public RefBase
+struct IconAnimData final : public RefBase
 {
 	static const int MAX_FRAMES = 64;
 	static const int MAX_SEQUENCE = 64;
@@ -67,7 +67,7 @@ struct IconAnimData : public RefBase
 		, seq_count(0)
 	{
 		seq_index.fill(0);
-		frames.fill(0);
+		frames.fill(nullptr);
 
 		// MSVC 2010 doesn't support initializer lists,
 		// so create a dummy struct.
@@ -76,7 +76,7 @@ struct IconAnimData : public RefBase
 	}
 
 protected:
-	~IconAnimData()	// call unref() instead
+	~IconAnimData() final	// call unref() instead
 	{
 		for (LibRpTexture::rp_image *img : frames) {
 			UNREF(img);

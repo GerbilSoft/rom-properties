@@ -17,10 +17,11 @@ namespace LibRomData {
 
 class GameCubeRegions
 {
+	public:
+		// Static class
+		GameCubeRegions() = delete;
+		~GameCubeRegions() = delete;
 	private:
-		// GameCubeRegions is a static class.
-		GameCubeRegions();
-		~GameCubeRegions();
 		RP_DISABLE_COPY(GameCubeRegions)
 
 	public:

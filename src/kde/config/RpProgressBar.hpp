@@ -19,7 +19,7 @@ class RpProgressBar : public QProgressBar
 	Q_PROPERTY(bool error READ hasError WRITE setError NOTIFY errorChanged)
 
 	public:
-		explicit RpProgressBar(QWidget *parent = 0)
+		explicit RpProgressBar(QWidget *parent = nullptr)
 			: super(parent)
 			, m_error(false)
 		{ }

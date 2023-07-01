@@ -20,7 +20,7 @@ class KeyStoreModel : public QAbstractItemModel
 	Q_PROPERTY(KeyStoreQt* keyStore READ keyStore WRITE setKeyStore NOTIFY keyStoreChanged)
 
 	public:
-		explicit KeyStoreModel(QObject *parent = 0);
+		explicit KeyStoreModel(QObject *parent = nullptr);
 		~KeyStoreModel() override;
 
 	private:
@@ -78,7 +78,7 @@ class KeyStoreModel : public QAbstractItemModel
 		 * KeyStore object was destroyed.
 		 * @param obj QObject that was destroyed.
 		 */
-		void keyStore_destroyed_slot(QObject *obj = 0);
+		void keyStore_destroyed_slot(QObject *obj = nullptr);
 
 		/**
 		 * A key in the KeyStore has changed.

@@ -42,11 +42,13 @@ class SemaphoreLocker
 			m_sem.release();
 		}
 
-	private:
+		// Disable copy/assignment constructors.
 #if __cplusplus >= 201103L
+	public:
 		SemaphoreLocker(const SemaphoreLocker &) = delete; \
 		SemaphoreLocker &operator=(const SemaphoreLocker &) = delete;
 #else /* __cplusplus < 201103L */
+	private:
 		SemaphoreLocker(const SemaphoreLocker &); \
 		SemaphoreLocker &operator=(const SemaphoreLocker &);
 #endif /* __cplusplus */
