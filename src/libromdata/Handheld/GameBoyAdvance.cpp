@@ -533,7 +533,7 @@ int GameBoyAdvance::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int s
 	if (romHeader->id4[0] == '\0') {
 		// Empty ID4. Use the title.
 		name.assign(romHeader->title, sizeof(romHeader->title));
-		size_t null_pos = name.find('\0');
+		const size_t null_pos = name.find('\0');
 		if (null_pos != string::npos) {
 			name.resize(null_pos);
 		}
@@ -548,7 +548,7 @@ int GameBoyAdvance::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int s
 		{
 			// This ROM has a common ID4. Use the title.
 			name.assign(romHeader->title, sizeof(romHeader->title));
-			size_t null_pos = name.find('\0');
+			const size_t null_pos = name.find('\0');
 			if (null_pos != string::npos) {
 				name.resize(null_pos);
 			}
