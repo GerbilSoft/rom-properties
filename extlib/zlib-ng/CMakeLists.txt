@@ -1308,7 +1308,9 @@ endif()
 # Example binaries
 #============================================================================
 
+IF(0) # rom-properties: Disabled options.
 option(ZLIB_ENABLE_TESTS "Build test binaries" ON)
+ENDIF(0) # rom-properties
 if(ZLIB_ENABLE_TESTS)
     enable_testing()
 
