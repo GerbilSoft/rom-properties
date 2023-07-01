@@ -7,9 +7,10 @@ FormatStyle: none
 Checks: >
   bugprone-*,
   -bugprone-easily-swappable-parameters,
-  -bugprone-reserved-identifier,clang-diagnostic-*,
+  -bugprone-reserved-identifier,
   clang-analyzer-*,
   -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
+  clang-diagnostic-*,
   misc-*,
   -misc-non-private-member-variables-in-classes,
   -misc-use-anonymous-namespace,
@@ -23,6 +24,10 @@ Checks: >
   -modernize-use-nodiscard,
   -modernize-use-trailing-return-type,
   -modernize-use-using,
+  objc-*,
+  openmp-*,
+  performance-*,
+  portability-*,
 CheckOptions:
   - key: IgnoreClassesWithAllMemberVariablesBeingPublic
     value: '1'
