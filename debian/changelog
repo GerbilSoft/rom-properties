@@ -1,3 +1,13 @@
+rom-properties (2.2-1ppa2~lunar1) lunar; urgency=medium
+
+  * Build for Ubuntu 23.04 "Lunar" Lobster.
+
+  * Enabled GTK4 builds. (Nautilus 43)
+
+    PPA version bumped to ensure it updates from previous versions.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 01 Jul 2023 20:16:50 -0400
+
 rom-properties (2.2-1ppa2~jammy2) jammy; urgency=medium
 
   * KF5: Fix plugin forwarder paths and don't attempt to install .desktop files.
