@@ -468,7 +468,7 @@ int NEResourceReaderPrivate::load_StringTable(IRpFile *file, IResourceReader::St
 
 		// NOTE: Only converting the value from DOS to UNIX line endings.
 		// The key shouldn't have newlines.
-		st.emplace_back(std::pair<string, string>(std::move(key_utf8), dos2unix(value_utf8)));
+		st.emplace_back(std::move(key_utf8), dos2unix(value_utf8));
 
 		// DWORD alignment is required here.
 		tblPos += wValueLength;
