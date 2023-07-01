@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include "config.librptext.h"	// for RP_WIS16
+
 // System byteorder is needed for conversions from UTF-16.
 // Conversions to UTF-16 always use host-endian.
 #include "librpcpu/byteorder.h"
@@ -25,11 +27,6 @@
 
 #ifdef __cplusplus
 namespace LibRpText {
-
-/* Define to 1 if the system has a 16-bit wchar_t. */
-#ifdef _WIN32
-# define RP_WIS16 1
-#endif
 
 /** UTF-16 string functions. **/
 

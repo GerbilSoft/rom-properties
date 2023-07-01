@@ -239,6 +239,7 @@ TARGET_INCLUDE_DIRECTORIES(rom-properties-glib
 	)
 TARGET_LINK_LIBRARIES(rom-properties-glib PUBLIC glibresources)
 TARGET_LINK_LIBRARIES(rom-properties-glib PUBLIC GLib2::gio-unix GLib2::gio GLib2::gobject GLib2::glib)
+TARGET_LINK_LIBRARIES(rom-properties-glib PRIVATE romdata)		# for config.librptext.h
 
 # Unix: Add -fpic/-fPIC in order to use this static library in plugins.
 # NOTE: This will be propagated to subprojects.

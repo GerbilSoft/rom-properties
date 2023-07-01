@@ -9,6 +9,9 @@
 #ifndef __ROMPROPERTIES_LIBRPTEXT_CONFIG_H__
 #define __ROMPROPERTIES_LIBRPTEXT_CONFIG_H__
 
+/* Define to 1 if wchar_t is 16-bit. (usually Win32) */
+#cmakedefine RP_WIS16 1
+
 /* Define to 1 if you have the `strnlen' function. */
 #cmakedefine HAVE_STRNLEN 1
 

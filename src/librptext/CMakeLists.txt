@@ -24,6 +24,15 @@ ENDIF(NOT WIN32)
 
 # ZLIB and libpng are checked in the top-level CMakeLists.txt.
 
+# Check wchar_t size.
+INCLUDE(CheckTypeSize)
+SET(CMAKE_REQUIRED_INCLUDES "wchar.h")
+CHECK_TYPE_SIZE(wchar_t SIZEOF_WCHAR_T)
+IF(SIZEOF_WCHAR_T EQUAL 2)
+	SET(RP_WIS16 1)
+ENDIF(SIZEOF_WCHAR_T)
+UNSET(CMAKE_REQUIRED_INCLUDES)
+
 # Check for C library functions.
 INCLUDE(CheckSymbolExists)
 INCLUDE(CheckStructHasMember)
