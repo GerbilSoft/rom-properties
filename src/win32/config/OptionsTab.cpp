@@ -472,6 +472,11 @@ INT_PTR CALLBACK OptionsTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 				break;
 			}
 
+			if (wParam == MAKELONG(IDC_OPTIONS_CHKEXTIMGDL, BN_CLICKED)) {
+				// chkExtImgDl was clicked.
+				d->updateGrpExtImgDl();
+			}
+
 			// A checkbox has been adjusted, or a dropdown
 			// box has had its selection changed.
 			// Page has been modified.
