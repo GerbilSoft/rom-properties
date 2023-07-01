@@ -7,6 +7,10 @@ TMP := $(CURDIR)/debian/tmp
 %:
 	dh $@ --parallel -Bbuild
 
+# NOTE: gcc-6.1 or later is required for LTO.
+# Disable LTO on Ubuntu 16.04 "Xenial" Xerus and earlier.
+# Enable LTO on Ubuntu 18.04 "Bionic" Beaver and later.
+
 CMAKE_OPTIONS := \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DENABLE_JPEG=ON \
@@ -21,7 +25,7 @@ CMAKE_OPTIONS := \
 	-DBUILD_GTK4=OFF \
 	-DBUILD_CLI=ON \
 	-DENABLE_PVRTC=ON \
-	-DENABLE_LTO=ON \
+	-DENABLE_LTO=OFF \
 	-DENABLE_PCH=ON \
 	-DUSE_SECCOMP=ON \
 	-DENABLE_SECCOMP_DEBUG=OFF

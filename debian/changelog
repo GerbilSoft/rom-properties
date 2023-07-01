@@ -1,3 +1,10 @@
+rom-properties (2.2-1ppa1~xenial2) xenial; urgency=medium
+
+  * Disable LTO since it's failing builds completely now when compiling
+    with gcc-5.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 01 Jul 2023 16:29:04 -0400
+
 rom-properties (2.2-1ppa1~xenial1) xenial; urgency=medium
 
   * 2.2 release.
