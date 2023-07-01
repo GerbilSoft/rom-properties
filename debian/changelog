@@ -1,3 +1,15 @@
+rom-properties (2.2-1ppa2~focal1) focal; urgency=medium
+
+  * Build for Ubuntu 20.04 "Focal" Fossa.
+
+  * Disabled GTK+ 2.x builds. (XFCE)
+  * Disabled KDE 4.x builds.
+  * Enabled system libzstd.
+
+    PPA version bumped to ensure it updates from previous versions.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 01 Jul 2023 17:59:24 -0400
+
 rom-properties (2.2-1ppa2~bionic1) bionic; urgency=medium
 
   * Build for Ubuntu 18.04 "Bionic" Beaver.
