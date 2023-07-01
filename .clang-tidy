@@ -1,22 +1,28 @@
 ---
+WarningsAsErrors: false
+AnalyzeTemporaryDtors: false
+HeaderFilterRegex: '.*'
+FormatStyle: none
+
 Checks: >
   bugprone-*,
   -bugprone-easily-swappable-parameters,
   -bugprone-reserved-identifier,clang-diagnostic-*,
   clang-analyzer-*,
+  -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
   misc-*,
   -misc-non-private-member-variables-in-classes,
   -misc-use-anonymous-namespace,
   modernize-*,
   -modernize-avoid-c-arrays,
   -modernize-concat-nested-namespaces,
+  -modernize-use-default-member-init,
+  -modernize-macro-to-enum,
   -modernize-redundant-void-arg,
   -modernize-use-auto,
+  -modernize-use-nodiscard,
   -modernize-use-trailing-return-type,
-WarningsAsErrors: false
-AnalyzeTemporaryDtors: false
-HeaderFilterRegex: ''
-FormatStyle: none
+  -modernize-use-using,
 CheckOptions:
   - key: IgnoreClassesWithAllMemberVariablesBeingPublic
     value: '1'
