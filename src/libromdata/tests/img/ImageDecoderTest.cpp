@@ -1647,7 +1647,6 @@ extern "C" int gtest_main(int argc, TCHAR *argv[])
 	bool is_found = false;
 	for (const TCHAR *const subdir : subdirs) {
 		if (!_taccess(subdir, R_OK)) {
-			printf("R_OK\n");
 			if (_tchdir(subdir) == 0) {
 				is_found = true;
 				break;
