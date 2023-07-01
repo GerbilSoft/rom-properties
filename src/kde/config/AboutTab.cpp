@@ -498,12 +498,8 @@ void AboutTabPrivate::initLibrariesTab(void)
 			static_cast<unsigned int>( LIBINTL_VERSION >> 16),
 			static_cast<unsigned int>((LIBINTL_VERSION >>  8) & 0xFF));
 	}
-#  ifdef _WIN32
-	sLibraries += rp_sprintf(sIntCopyOf, sVerBuf);
-#  else /* _WIN32 */
 	// FIXME: Runtime version?
 	sLibraries += rp_sprintf(sCompiledWith, sVerBuf);
-#  endif /* _WIN32 */
 	sLibraries += BR
 		"Copyright (C) 1995-1997, 2000-2016, 2018-2020 Free Software Foundation, Inc." BR
 		"<a href='https://www.gnu.org/software/gettext/'>https://www.gnu.org/software/gettext/</a>" BR;

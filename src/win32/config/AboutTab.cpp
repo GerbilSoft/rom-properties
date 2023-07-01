@@ -1071,12 +1071,8 @@ void AboutTabPrivate::initLibrariesTab(void)
 	}
 
 	sLibraries += RTF_BR RTF_BR;
-#  ifdef _WIN32
+	// NOTE: Not actually an "internal copy"...
 	sLibraries += rp_sprintf(sIntCopyOf.c_str(), sVerBuf);
-#  else /* _WIN32 */
-	// FIXME: Runtime version?
-	sLibraries += rp_sprintf(sCompiledWith.c_str(), sVerBuf);
-#  endif /* _WIN32 */
 	sLibraries += RTF_BR
 		"Copyright (C) 1995-1997, 2000-2016, 2018-2020 Free Software Foundation, Inc." RTF_BR
 		"https://www.gnu.org/software/gettext/" RTF_BR;
