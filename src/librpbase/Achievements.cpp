@@ -27,12 +27,16 @@ using std::unordered_map;
 #include <zlib.h>
 #ifdef _MSC_VER
 // MSVC: Exception handling for /DELAYLOAD.
-# include "libwin32common/DelayLoadHelper.h"
+#  include "libwin32common/DelayLoadHelper.h"
 #endif /* _MSC_VER */
 
 #ifdef _WIN32
-// Win32 needed for GetCurrentProcessId().
-# include "libwin32common/RpWin32_sdk.h"
+// Win32 is needed for GetCurrentProcessId().
+#  include "libwin32common/RpWin32_sdk.h"
+#  ifdef getpid
+#    undef getpid
+#  endif
+#  define getpid() GetCurrentProcessId()
 #endif /* _WIN32 */
 
 // DEBUG: Uncomment this to force obfuscation in debug builds.
@@ -445,11 +449,7 @@ int AchievementsPrivate::save(void) const
 		uint16_t u16[2];
 		uint8_t u8[4];
 	} iv;
-#ifdef _WIN32
-	iv.u16[0] = (GetCurrentProcessId() ^ time(nullptr)) & 0xFFFF;
-#else /* !_WIN32 */
 	iv.u16[0] = (getpid() ^ time(nullptr)) & 0xFFFF;
-#endif /* _WIN32 */
 	iv.u16[1] = 0xFFFF - iv.u16[0];
 #if SYS_BYTEORDER != SYS_LIL_ENDIAN
 	iv.u16[0] = cpu_to_le16(iv.u16[0]);
