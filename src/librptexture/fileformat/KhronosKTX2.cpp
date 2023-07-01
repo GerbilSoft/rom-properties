@@ -771,6 +771,7 @@ void KhronosKTX2Private::loadKeyValueData(void)
 
 			if (isOK) {
 				memcpy(this->ktx_swizzle, v, 4);
+				hasKTXswizzle = true;
 			}
 		}
 
