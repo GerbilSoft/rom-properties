@@ -282,17 +282,6 @@ IF(BUILD_KF5)
 	IF(CMAKE_DL_LIBS)
 		TARGET_LINK_LIBRARIES(overlayiconplugin_${PROJECT_NAME} PRIVATE ${CMAKE_DL_LIBS})
 	ENDIF(CMAKE_DL_LIBS)
-
-	# FIXME: Workaround for gcc-5.4.0 LTO bug.
-	# Disabling LTO for the kf5 build if using gcc-5.4.0 or earlier,
-	# and decryption is enabled. (It crashes when compiling the moc
-	# file for KeyManagerTab.cpp.)
-	# NOTE: We can't add it to the automoc.cpp file because then automoc
-	# will try including itself, resulting in a failure.
-	IF(GCC_5xx_LTO_ISSUES AND ENABLE_DECRYPTION)
-		SET(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} -fno-lto")
-		SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fno-lto")
-	ENDIF(GCC_5xx_LTO_ISSUES AND ENABLE_DECRYPTION)
 ENDIF(BUILD_KF5)
 
 #######################

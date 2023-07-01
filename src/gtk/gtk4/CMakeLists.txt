@@ -80,12 +80,6 @@ IF(CPU_i386 OR CPU_amd64)
 	CHECK_IFUNC_SUPPORT()
 	IF(HAVE_IFUNC)
 		SET(${PROJECT_NAME}_IFUNC_SRCS ../xfce/GdkImageConv_ifunc.cpp)
-
-		# Disable LTO on the IFUNC files if LTO is known to be broken.
-		IF(GCC_5xx_LTO_ISSUES)
-			SET_SOURCE_FILES_PROPERTIES(${${PROJECT_NAME}_IFUNC_SRCS}
-				APPEND_STRING PROPERTIES COMPILE_FLAGS " -fno-lto ")
-		ENDIF(GCC_5xx_LTO_ISSUES)
 	ENDIF(HAVE_IFUNC)
 
 	# NOTE: SSSE3 flags are set in subprojects, not here.
