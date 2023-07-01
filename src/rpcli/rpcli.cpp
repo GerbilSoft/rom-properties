@@ -124,7 +124,7 @@ struct ExtractParam {
 * @param extract Vector of image extraction parameters
 */
 static void ExtractImages(const RomData *romData, vector<ExtractParam>& extract) {
-	int supported = romData->supportedImageTypes();
+	const uint32_t supported = romData->supportedImageTypes();
 	for (const ExtractParam &p : extract) {
 		if (!p.filename) continue;
 		bool found = false;
