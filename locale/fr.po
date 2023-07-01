@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-07-01 15:34-0400\n"
-"PO-Revision-Date: 2023-07-01 19:36\n"
+"PO-Revision-Date: 2023-07-01 23:06\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -21,7 +21,7 @@ msgstr ""
 #: ../src/gtk/config/AboutTab.cpp:288
 msgctxt "AboutTab"
 msgid "C&redits"
-msgstr ""
+msgstr "C&rédits"
 
 #: ../build/src/kde/kf5/ui_AboutTab.h:277
 #: ../src/gtk/config/AboutTab.cpp:292
@@ -47,13 +47,13 @@ msgstr ""
 #: ../src/win32/config/AchievementsTab.cpp:443
 msgctxt "AchievementsTab"
 msgid "Achievement"
-msgstr ""
+msgstr "Succès"
 
 #: ../build/src/kde/kf5/ui_AchievementsTab.h:53
 #: ../src/gtk/config/AchievementsTab.cpp:213
 msgctxt "AchievementsTab"
 msgid "Icon"
-msgstr ""
+msgstr "Icône"
 
 #: ../build/src/kde/kf5/ui_CacheTab.h:98
 #: ../src/gtk/config/CacheTab.cpp:156
@@ -105,7 +105,7 @@ msgstr ""
 #: ../src/gtk/config/ConfigDialog.cpp:241
 msgctxt "ConfigDialog"
 msgid "&Options"
-msgstr ""
+msgstr "&Options"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:94
 #: ../src/gtk/config/ConfigDialog.cpp:242
@@ -117,7 +117,7 @@ msgstr ""
 #: ../src/gtk/config/ConfigDialog.cpp:243
 msgctxt "ConfigDialog"
 msgid "&Achievements"
-msgstr ""
+msgstr "&Succès"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:96
 #: ../src/gtk/config/ConfigDialog.cpp:247
@@ -138,12 +138,12 @@ msgstr ""
 #: ../build/src/kde/kf5/ui_DosAttrView.h:102
 msgctxt "DosAttrView"
 msgid "&Archive"
-msgstr ""
+msgstr "&Archive"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:103
 msgctxt "DosAttrView"
 msgid "&System"
-msgstr ""
+msgstr "&Système"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:104
 msgctxt "DosAttrView"
