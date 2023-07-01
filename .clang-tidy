@@ -1,0 +1,23 @@
+---
+Checks: >
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-reserved-identifier,clang-diagnostic-*,
+  clang-analyzer-*,
+  misc-*,
+  -misc-non-private-member-variables-in-classes,
+  -misc-use-anonymous-namespace,
+  modernize-*,
+  -modernize-avoid-c-arrays,
+  -modernize-concat-nested-namespaces,
+  -modernize-redundant-void-arg,
+  -modernize-use-auto,
+  -modernize-use-trailing-return-type,
+WarningsAsErrors: false
+AnalyzeTemporaryDtors: false
+HeaderFilterRegex: ''
+FormatStyle: none
+CheckOptions:
+  - key: IgnoreClassesWithAllMemberVariablesBeingPublic
+    value: '1'
+...
