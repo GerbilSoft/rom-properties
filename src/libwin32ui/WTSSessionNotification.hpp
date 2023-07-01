@@ -87,10 +87,16 @@ class WTSSessionNotification
 			return FALSE;
 		}
 
+		// Disable copy/assignment constructors.
+#if __cplusplus >= 201103L
+	public:
+		WTSSessionNotification(const WTSSessionNotification &) = delete;
+		WTSSessionNotification &operator=(const WTSSessionNotification &) = delete;
+#else /* __cplusplus < 201103L */
 	private:
-		// Disable copying.
 		WTSSessionNotification(const WTSSessionNotification &);
 		WTSSessionNotification &operator=(const WTSSessionNotification &);
+#endif /* __cplusplus */
 
 	private:
 		// TODO: Make it static and use reference counting?

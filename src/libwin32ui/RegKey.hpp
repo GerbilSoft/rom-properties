@@ -41,10 +41,16 @@ class RegKey
 
 		~RegKey();
 
+		// Disable copy/assignment constructors.
+#if __cplusplus >= 201103L
+	public:
+		RegKey(const RegKey &) = delete;
+		RegKey &operator=(const RegKey &) = delete;
+#else /* __cplusplus < 201103L */
 	private:
-		// Disable copying.
 		RegKey(const RegKey &);
 		RegKey &operator=(const RegKey &);
+#endif /* __cplusplus */
 
 	public:
 		/**

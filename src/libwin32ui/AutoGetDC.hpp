@@ -57,10 +57,16 @@ class AutoGetDC
 			return m_hDC;
 		}
 
+		// Disable copy/assignment constructors.
+#if __cplusplus >= 201103L
+	public:
+		AutoGetDC(const AutoGetDC &) = delete;
+		AutoGetDC &operator=(const AutoGetDC &) = delete;
+#else /* __cplusplus < 201103L */
 	private:
-		// Disable copying.
 		AutoGetDC(const AutoGetDC &);
 		AutoGetDC &operator=(const AutoGetDC &);
+#endif /* __cplusplus */
 
 	private:
 		HWND m_hWnd;

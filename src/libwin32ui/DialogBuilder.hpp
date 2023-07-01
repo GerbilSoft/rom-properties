@@ -31,10 +31,16 @@ class DialogBuilder
 	public:
 		DialogBuilder();
 
+		// Disable copy/assignment constructors.
+#if __cplusplus >= 201103L
+	public:
+		DialogBuilder(const DialogBuilder &) = delete;
+		DialogBuilder &operator=(const DialogBuilder &) = delete;
+#else /* __cplusplus < 201103L */
 	private:
-		// Disable copying.
 		DialogBuilder(const DialogBuilder &);
 		DialogBuilder &operator=(const DialogBuilder &);
+#endif /* __cplusplus */
 
 	private:
 		/** DLGTEMPLATEEX helper functions. **/
