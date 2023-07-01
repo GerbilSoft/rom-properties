@@ -1,6 +1,6 @@
 # Changes
 
-## v2.2 (released 2023/??/??)
+## v2.2 (released 2023/07/01)
 
 * New features:
   * PlayStationDisc: Added external cover images using RPDB, mirrored from

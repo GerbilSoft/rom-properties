@@ -1,3 +1,9 @@
+rom-properties (2.2-1ppa1~xenial1) xenial; urgency=medium
+
+  * 2.2 release.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 01 Jul 2023 15:42:05 -0400
+
 rom-properties (2.1-1ppa1~xenial2) xenial; urgency=medium
 
   * Fixes for KDE4 and GTK builds.

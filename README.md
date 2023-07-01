@@ -9,22 +9,26 @@ video game ROM and disc images.
 [![CodeQL](https://github.com/GerbilSoft/rom-properties/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/GerbilSoft/rom-properties/actions/workflows/codeql-analysis.yml)
 [![Crowdin](https://badges.crowdin.net/rom-properties/localized.svg)](https://crowdin.com/project/rom-properties)
 
-## v2.1
+## v2.2
 
-![Right-click menu in Thunar showing the "Convert to PNG" option](doc/img/rp-v2.1-thunar.ConvertToPNG.png)
+![KDE Dolphin showing some PS1 and PS2 cover art thumbnails.](doc/img/rp-v2.2-kde5.PlayStationDisc.cover-art.png)
 
-Major changes in v2.1 include:
+Major changes in v2.2 include:
 
-* Support for GTK4 UI frontends, e.g. Nautilus 43. Note that Nautilus 43 has
-  significantly limited the functionality of property pages, so it's only
-  partially implemented at the moment.
+* PlayStation 1 and 2 cover art images using RPDB, mirrored from the following
+  GitHub repositories:
+  * https://github.com/xlenore/psx-covers
+  * https://github.com/xlenore/ps2-covers
 
-* Right-click menu option for "Convert to PNG" for supported texture files,
-  e.g. DDS and KTX.
+* Extended attribute viewer tab. Supports viewing MS-DOS and (on Linux)
+  EXT2 attributes on supported file systems, plus POSIX extended attributes.
+  * On Windows, alternate data streams are displayed as extended attributes.
+  * Windows xattr functionality currently does not work on Windows XP.
 
-* rp-config now has a built-in update checker on the "About" tab.
+* GodotSTEX: Update v4 support for changes in the final version of Godot 4.
 
-* KTX2: RG88 texture format and swizzling are now supported.
+* New RomHeaderTest unit test to verify `rpcli` output against a set of known
+  ROM headers and reference text and JSON output.
 
 Translators wanted; if you can translate rom-properties from English to another
 language, check out the [Crowdin project](https://crowdin.com/project/rom-properties).
@@ -32,7 +36,7 @@ language, check out the [Crowdin project](https://crowdin.com/project/rom-proper
 Crowdin project page, file an issue here on GitHub with the requested
 language.)
 
-See [`NEWS.md`](NEWS.md) for a full list of changes in v2.1.
+See [`NEWS.md`](NEWS.md) for a full list of changes in v2.2.
 
 ## Feedback
 
@@ -238,11 +242,9 @@ Notes:
   will be added once support for multiple image sizes is added.
 * Sega 8-bit only supports ROM images with a "TMR SEGA" header.
 
-An initial configuration program is included with the Windows version of
-rom-propreties 1.0. This allows you to configure which images will be used for
-thumbnails on each system. The functionality is available on Linux as well, but
-the UI hasn't been ported over yet. See `doc/rom-properties.conf.example` for
-an example configuration file, which can be placed in `~/.config/rom-properties`.
+A configuration program, `rp-config`, is available to configure rom-properties
+using a graphical interface. This program allows you to configure which images
+will be used for thumbnails on each system, as well as other functionality.
 
 ## External Media Downloads
 
@@ -321,6 +323,12 @@ https://github.com/GerbilSoft/rom-properties/issues
 
 * @DankRank: Russian, Ukrainian
 * @NullMagic2: Brazilian Portuguese
+* @Amnesia1000: Spanish
+* Slippy: German
+* @CyberYoshi64: German
+* @maschell: German
+* @WebSnke: German
+* @TheOneGoofAli: Russian
 
 ### Other Contributions
 
