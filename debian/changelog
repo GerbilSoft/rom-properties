@@ -1,4 +1,4 @@
-rom-properties (2.2-1ppa1~xenial3) xenial; urgency=medium
+rom-properties (2.2-1ppa1~xenial4) xenial; urgency=medium
 
   * Disable RomHeaderTest entirely for now because the PPA build servers
     are still failing with an exception.
