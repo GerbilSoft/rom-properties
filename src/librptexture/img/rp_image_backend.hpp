@@ -38,7 +38,8 @@ class RP_LIBROMDATA_PUBLIC rp_image_backend
 		 * Check if the palette contains alpha values other than 0 and 255.
 		 * @return True if an alpha value other than 0 and 255 was found; false if not, or if ARGB32.
 		 */
-		RP_LIBROMDATA_LOCAL bool has_translucent_palette_entries(void) const;
+		RP_LIBROMDATA_LOCAL
+		bool has_translucent_palette_entries(void) const;
 
 	public:
 		/**
