@@ -98,7 +98,6 @@ void CacheCleaner::run(void)
 	int ret = recursiveScan(cacheDir.c_str(), rlist);
 	if (ret != 0) {
 		// Non-image file found.
-		QString qs_err;
 		switch (m_cacheDir) {
 			default:
 				assert(!"Invalid cache directory specified.");
