@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpImageLoader.cpp: Image loader class.                                  *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -36,6 +36,8 @@ static const uint8_t png_magic[8] = {0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n'
 #ifdef HAVE_JPEG
 static const uint8_t jpeg_magic_1[4] = {0xFF, 0xD8, 0xFF, 0xE0};
 static const uint8_t jpeg_magic_2[4] = {'J','F','I','F'};
+static const uint8_t exif_magic_1[4] = {0xFF, 0xD8, 0xFF, 0xE1};
+static const uint8_t exif_magic_2[4] = {'E','x','i','f'};
 #endif /* HAVE_JPEG */
 
 /** RpImageLoader **/
@@ -62,7 +64,13 @@ rp_image *load(IRpFile *file)
 		else if (!memcmp(buf, jpeg_magic_1, sizeof(jpeg_magic_1)) &&
 			 !memcmp(&buf[6], jpeg_magic_2, sizeof(jpeg_magic_2)))
 		{
-			// Found a JPEG image.
+			// Found a JPEG image in JFIF container.
+			return RpJpeg::load(file);
+		}
+		else if (!memcmp(buf, exif_magic_1, sizeof(exif_magic_1)) &&
+			 !memcmp(&buf[6], exif_magic_2, sizeof(exif_magic_2)))
+		{
+			// Found a JPEG image in Exif container.
 			return RpJpeg::load(file);
 		}
 #endif /* HAVE_JPEG */

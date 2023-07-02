@@ -1,5 +1,13 @@
 # Changes
 
+## v2.2.1 (released 2023/07/??)
+
+* Bug fixes:
+  * JPEG images using the Exif container are now detected properly. This fixes
+    loading certain cover art from the PS1/PS2 section of RPDB.
+    * Fixes #386: Some ps2 games never get their boxart
+      * Reported by @Masamune3210.
+
 ## v2.2 (released 2023/07/01)
 
 * New features:
