@@ -1,3 +1,11 @@
+rom-properties (2.2-1ppa2~jammy3) jammy; urgency=medium
+
+  * KF5: Ensure necessary symlinks are present when installing for KF5
+    versions [5.89,5.100), where JSON loading is used but the new
+    ThumbnailCreator interface isn't implemented yet.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 01 Jul 2023 21:20:07 -0400
+
 rom-properties (2.2-1ppa2~jammy2) jammy; urgency=medium
 
   * KF5: Fix plugin forwarder paths and don't attempt to install .desktop files.
