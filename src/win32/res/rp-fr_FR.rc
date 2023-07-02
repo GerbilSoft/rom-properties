@@ -44,11 +44,11 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "Game Boy Title Screens", IDC_STATIC, 7, 7, 397, 74
     LTEXT           "Select the Game Boy model to use for title screens for different types of Game Boy ROM images.", IDC_STATIC, 15, 18, 381, 8
-    LTEXT           "Game Boy:", IDC_STATIC, 15, 30, 80, 9
+    LTEXT           "Game Boy :", IDC_STATIC, 15, 30, 80, 9
     COMBOBOX        IDC_SYSTEMS_DMGTS_DMG, 77, 29, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Super Game Boy:", IDC_STATIC, 15, 45, 80, 9
+    LTEXT           "Super Game Boy :", IDC_STATIC, 15, 45, 80, 9
     COMBOBOX        IDC_SYSTEMS_DMGTS_SGB, 77, 44, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Game Boy Color:", IDC_STATIC, 15, 60, 80, 9
+    LTEXT           "Game Boy Color :", IDC_STATIC, 15, 60, 80, 9
     COMBOBOX        IDC_SYSTEMS_DMGTS_CGB, 77, 59, 69, 30, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
