@@ -7,15 +7,16 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "config.librpfile.h"
 #include "XAttrReader.hpp"
 #include "XAttrReader_p.hpp"
 
 #include "librpcpu/byteswap_rp.h"
 
-#include <sys/stat.h>
+#include <fcntl.h>	// AT_FDCWD
+#include <sys/stat.h>	// stat(), statx()
 #include <sys/ioctl.h>
 #include <sys/xattr.h>
-#include <fcntl.h>
 #include <unistd.h>
 
 // EXT2 flags (also used for EXT3, EXT4, and other Linux file systems)
@@ -49,16 +50,40 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	, linuxAttributes(0)
 	, dosAttributes(0)
 {
-	// Make sure this is a regular file.
-	// TODO: Use statx() if available.
-	struct stat sb;
-	errno = 0;
-	if (!stat(filename, &sb) && !S_ISREG(sb.st_mode) && !S_ISDIR(sb.st_mode)) {
-		// stat() failed, or this is neither a regular file nor a directory.
+	// Make sure this is a regular file or a directory.
+	mode_t mode;
+
+#ifdef HAVE_STATX
+	struct statx sbx;
+	int ret = statx(AT_FDCWD, filename, 0, STATX_TYPE, &sbx);
+	if (ret != 0 || !(sbx.stx_mask & STATX_TYPE)) {
+		// An error occurred.
 		lastError = -errno;
 		if (lastError == 0) {
 			lastError = -ENOTSUP;
 		}
+		return;
+	}
+
+	mode = sbx.stx_mode;
+#else /* !HAVE_STATX */
+	struct stat sb;
+	errno = 0;
+	if (!stat(filename, &sb)) {
+		// stat() failed.
+		lastError = -errno;
+		if (lastError == 0) {
+			lastError = -ENOTSUP;
+		}
+		return;
+	}
+
+	mode = sb.st_mode;
+#endif /* HAVE_STATX */
+
+	if (!S_ISREG(mode) && !S_ISDIR(mode)) {
+		// This is neither a regular file nor a directory.
+		lastError = -ENOTSUP;
 		return;
 	}
 
