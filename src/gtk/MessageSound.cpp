@@ -20,7 +20,6 @@
 #if defined(HAVE_GSOUND)
 #  include <gsound.h>
 #elif defined(HAVE_LIBCANBERRA_GTK)
-#  include <canberra.h>
 #  include <canberra-gtk.h>
 #else
 #  error Neither GSound nor LibCanberra GTK are available
