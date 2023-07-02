@@ -43,7 +43,7 @@
 #if defined(_MSC_VER)
 #  define ALIGN_ATTR(x) __declspec(align(x))
 #elif defined(__GNUC__)
-#  define ALIGN_ATTR(x) __attribute__ ((aligned (x)))
+#  define ALIGN_ATTR(x) __attribute__((aligned (x)))
 #else
 #  error Missing ALIGN_ATTR() implementation for this compiler.
 #endif

@@ -13,7 +13,7 @@
 // Reference: https://sourceforge.net/p/mingw-w64/mailman/message/32882927/
 #if !defined(__cplusplus) && defined(__forceinline) && defined(__GNUC__) && defined(_WIN32)
 #  undef __forceinline
-#  define __forceinline inline __attribute__((always_inline,__gnu_inline__))
+#  define __forceinline inline __attribute__((always_inline, __gnu_inline__))
 #endif
 
 // Force inline attribute.
@@ -32,5 +32,5 @@
 #    else
 #      define FORCEINLINE inline
 #    endif
-#   endif
+#  endif
 #endif /* !defined(FORCEINLINE) */

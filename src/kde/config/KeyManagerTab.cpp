@@ -9,9 +9,9 @@
 #include "stdafx.h"
 #include "KeyManagerTab.hpp"
 
-#include "KeyStoreQt.hpp"
-#include "KeyStoreModel.hpp"
 #include "KeyStoreItemDelegate.hpp"
+#include "KeyStoreModel.hpp"
+#include "KeyStoreQt.hpp"
 
 // Other rom-properties libraries
 using namespace LibRpBase;

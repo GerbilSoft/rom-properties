@@ -13,8 +13,8 @@
 #pragma once
 
 #include <QtCore/qglobal.h>
-#include <kfilemetadata/extractorplugin.h>
 #include <kcoreaddons_version.h>
+#include <kfilemetadata/extractorplugin.h>
 
 #include "RpQt.hpp"
 

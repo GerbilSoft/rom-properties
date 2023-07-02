@@ -12,14 +12,14 @@
 #include "RomDataView_p.hpp"
 #include "RomDataFormat.hpp"
 
+#include "is-supported.hpp"
 #include "rp-gtk-enums.h"
 #include "sort_funcs.h"
-#include "is-supported.hpp"
 
 // Custom widgets
 #include "DragImage.hpp"
-#include "MessageWidget.h"
 #include "LanguageComboBox.hpp"
+#include "MessageWidget.h"
 
 // Other rom-properties libraries
 using namespace LibRpBase;

@@ -11,8 +11,8 @@
  ***************************************************************************/
 
 #include "config.kf6.h"
-#include "../check-uid.hpp"
 #include "../RpQt.hpp"
+#include "../check-uid.hpp"
 
 #include "ExtractorPluginForwarder.hpp"
 #include "../ExtractorPlugin.hpp"

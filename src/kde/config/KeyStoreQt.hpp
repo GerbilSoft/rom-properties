@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include "libromdata/crypto/KeyStoreUI.hpp"
 #include <QtCore/QObject>
+#include "libromdata/crypto/KeyStoreUI.hpp"
 
 class KeyStoreQt : public QObject, public LibRomData::KeyStoreUI
 {

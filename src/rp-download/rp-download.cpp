@@ -93,7 +93,7 @@ static void show_usage(void)
  */
 static void
 #if !defined(_MSC_VER) && !defined(_UNICODE)
-__attribute__ ((format (printf, 1, 2)))
+__attribute__((format (printf, 1, 2)))
 #endif /* !_MSC_VER && !_UNICODE */
 show_error(const TCHAR *format, ...)
 {
@@ -116,7 +116,7 @@ show_error(const TCHAR *format, ...)
  */
 static void
 #if !defined(_MSC_VER) && !defined(_UNICODE)
-__attribute__ ((format (printf, 1, 2)))
+__attribute__((format (printf, 1, 2)))
 #endif /* !_MSC_VER && !_UNICODE */
 show_info(const TCHAR *format, ...)
 {

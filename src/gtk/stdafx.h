@@ -80,7 +80,7 @@
 #  ifdef G_MODULE_EXPORT
 #    undef G_MODULE_EXPORT
 #  endif
-#  define G_MODULE_EXPORT __attribute__ ((visibility ("default")))
+#  define G_MODULE_EXPORT __attribute__((visibility("default")))
 #endif /* !_WIN32 && __GNUC__ >= 4 */
 
 // libi18n

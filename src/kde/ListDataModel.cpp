@@ -6,7 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include <stdafx.h>
+#include "stdafx.h"
 #include "ListDataModel.hpp"
 
 // librpbase, librptexture
@@ -651,9 +651,9 @@ void ListDataModel::setLC(uint32_t def_lc, uint32_t user_lc)
 }
 
 /**
-* Get the language code used in this model.
-* @return Language code. (0 for default)
-*/
+ * Get the language code used in this model.
+ * @return Language code. (0 for default)
+ */
 uint32_t ListDataModel::lc(void) const
 {
 	Q_D(const ListDataModel);

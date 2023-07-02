@@ -11,8 +11,8 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "check-uid.hpp"
 #include "ExtractorPlugin.hpp"
+#include "check-uid.hpp"
 
 // librpbase, librpfile
 using namespace LibRpBase;

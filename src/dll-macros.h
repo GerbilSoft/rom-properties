@@ -20,15 +20,15 @@
 // Reference: https://gcc.gnu.org/wiki/Visibility
 #if defined _WIN32 || defined __CYGWIN__
 #  ifdef __GNUC__
-#    define RP_PLUGIN_PUBLIC __attribute__ ((dllexport))
+#    define RP_PLUGIN_PUBLIC __attribute__((dllexport))
 #  else
 #    define RP_PLUGIN_PUBLIC __declspec(dllexport)
 #  endif
 #  define RP_PLUGIN_LOCAL
 #else
 #  if __GNUC__ >= 4
-#    define RP_PLUGIN_PUBLIC __attribute__ ((visibility ("default")))
-#    define RP_PLUGIN_LOCAL __attribute__ ((visibility ("hidden")))
+#    define RP_PLUGIN_PUBLIC __attribute__((visibility("default")))
+#    define RP_PLUGIN_LOCAL __attribute__((visibility("hidden")))
 #  else
 #    define RP_PLUGIN_PUBLIC
 #    define RP_PLUGIN_LOCAL

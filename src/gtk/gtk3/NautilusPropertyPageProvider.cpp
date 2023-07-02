@@ -17,14 +17,15 @@
 
 #include "stdafx.h"
 #include "NautilusPropertyPageProvider.hpp"
-#include "NautilusPlugin.hpp"
+
 #include "is-supported.hpp"
+#include "NautilusPlugin.hpp"
 
 #include "../RomDataView.hpp"
 #include "../xattr/XAttrView.hpp"
 
-#include "librpbase/config/Config.hpp"
 #include "librpbase/RomData.hpp"
+#include "librpbase/config/Config.hpp"
 using LibRpBase::Config;
 using LibRpBase::RomData;
 

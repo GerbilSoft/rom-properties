@@ -8,12 +8,12 @@
 
 #include "stdafx.h"
 #include "config.gtk.h"
-#include "plugin-helper.h"
-
 #include "ThunarPlugin.hpp"
+
+#include "AchGDBus.hpp"
+#include "plugin-helper.h"
 #include "ThunarMenuProvider.hpp"
 #include "ThunarPropertyPageProvider.hpp"
-#include "AchGDBus.hpp"
 
 // Thunar version is based on GTK+ version.
 #if GTK_CHECK_VERSION(3,0,0)

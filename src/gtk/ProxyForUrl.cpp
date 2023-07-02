@@ -6,7 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#include <stdafx.h>
+#include "stdafx.h"
 #include "ProxyForUrl.hpp"
 
 // C++ STL classes

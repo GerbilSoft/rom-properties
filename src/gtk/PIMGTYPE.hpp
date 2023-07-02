@@ -13,7 +13,7 @@
 
 // NOTE: GTK+ 3.x earlier than 3.10 is not supported.
 #if GTK_CHECK_VERSION(3,0,0) && !GTK_CHECK_VERSION(3,10,0)
-# error GTK+ 3.x earlier than 3.10 is not supported.
+#  error GTK+ 3.x earlier than 3.10 is not supported.
 #endif
 
 // NOTE: GTK4 doesn't support Cairo anymore, so we'll switch back to GdkPixbuf.

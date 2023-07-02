@@ -7,8 +7,8 @@
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "check-uid.hpp"
 #include "ConfigDialog.hpp"
+#include "check-uid.hpp"
 
 // Program version
 #include "librpbase/config/AboutTabText.hpp"

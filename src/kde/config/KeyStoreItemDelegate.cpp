@@ -17,7 +17,7 @@
 // Qt5 deprecated QStyleOptionViewItemV4 in favor of
 // plain old QStyleOptionViewItem. However, for Qt4
 // compatibility, we still need to use V4 here.
-# define QStyleOptionViewItemV4 QStyleOptionViewItem
+#  define QStyleOptionViewItemV4 QStyleOptionViewItem
 #endif
 
 KeyStoreItemDelegate::KeyStoreItemDelegate(QObject *parent)

@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <unistd.h>
 #include <glib.h>
+#include <unistd.h>
 
 // Prevent running as root.
 #define CHECK_UID() do { \

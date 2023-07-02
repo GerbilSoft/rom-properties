@@ -11,7 +11,7 @@
 // Qt includes.
 #include <QtCore/QAbstractItemModel>
 
-#include "KeyStoreQt.hpp"
+class KeyStoreQt;
 
 class KeyStoreModelPrivate;
 class KeyStoreModel : public QAbstractItemModel

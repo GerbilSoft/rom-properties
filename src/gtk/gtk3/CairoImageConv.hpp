@@ -22,7 +22,7 @@ namespace LibRpTexture {
 class CairoImageConv
 {
 	public:
-		// Static class.
+		// Static class
 		CairoImageConv() = delete;
 		~CairoImageConv() = delete;
 	private:

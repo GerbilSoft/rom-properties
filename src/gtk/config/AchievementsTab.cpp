@@ -12,8 +12,8 @@
 
 #include "../AchSpritesheet.hpp"
 
-#include "RpGtk.hpp"
 #include "gtk-compat.h"
+#include "RpGtk.hpp"
 
 #ifdef USE_GTK_COLUMN_VIEW
 #  include "AchievementItem.h"
@@ -38,11 +38,11 @@ typedef enum {
 #if GTK_CHECK_VERSION(3,0,0)
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
-#define GTK_TYPE_SUPER GTK_TYPE_BOX
+#  define GTK_TYPE_SUPER GTK_TYPE_BOX
 #else /* !GTK_CHECK_VERSION(3,0,0) */
 typedef GtkVBoxClass superclass;
 typedef GtkVBox super;
-#define GTK_TYPE_SUPER GTK_TYPE_VBOX
+#  define GTK_TYPE_SUPER GTK_TYPE_VBOX
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
 // RpAchievementsTab class

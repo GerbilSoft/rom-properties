@@ -11,8 +11,8 @@
 #include "RomDataView.hpp"
 #include "RomDataView_p.hpp"
 
-#include "RpQImageBackend.hpp"
 #include "AchQtDBus.hpp"
+#include "RpQImageBackend.hpp"
 
 // Other rom-properties libraries
 #include "librpbase/TextOut.hpp"

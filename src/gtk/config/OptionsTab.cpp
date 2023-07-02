@@ -10,8 +10,8 @@
 #include "OptionsTab.hpp"
 #include "RpConfigTab.h"
 
-#include "RpGtk.hpp"
 #include "gtk-compat.h"
+#include "RpGtk.hpp"
 
 #include "LanguageComboBox.hpp"
 
@@ -29,11 +29,11 @@ static const int pal_lc_def = 'en';
 #if GTK_CHECK_VERSION(3,0,0)
 typedef GtkBoxClass superclass;
 typedef GtkBox super;
-#define GTK_TYPE_SUPER GTK_TYPE_BOX
+#  define GTK_TYPE_SUPER GTK_TYPE_BOX
 #else /* !GTK_CHECK_VERSION(3,0,0) */
 typedef GtkVBoxClass superclass;
 typedef GtkVBox super;
-#define GTK_TYPE_SUPER GTK_TYPE_VBOX
+#  define GTK_TYPE_SUPER GTK_TYPE_VBOX
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
 // OptionsTab class

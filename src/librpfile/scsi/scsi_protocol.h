@@ -39,7 +39,7 @@
  * prevent the compiler from adding alignment padding. */
 #if !defined(PACKED)
 # if defined(__GNUC__)
-#  define PACKED __attribute__ ((packed))
+#  define PACKED __attribute__((packed))
 # else
 #  define PACKED
 # endif /* defined(__GNUC__) */

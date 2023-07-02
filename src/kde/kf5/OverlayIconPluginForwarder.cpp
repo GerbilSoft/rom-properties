@@ -6,13 +6,13 @@
  * multiple plugins, so this file acts as a KOverlayIconPlugin,            *
  * and then forwards the request to the main library.                      *
  *                                                                         *
- * Copyright (c) 2018-2022 by David Korth.                                 *
+ * Copyright (c) 2018-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "config.kf5.h"
-#include "../check-uid.hpp"
 #include "../RpQt.hpp"
+#include "../check-uid.hpp"
 
 #include "OverlayIconPluginForwarder.hpp"
 #include "../OverlayIconPlugin.hpp"

@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <unistd.h>
 #include <dlfcn.h>
+#include <unistd.h>
 
 #include <glib.h>
 #include "check-uid.h"

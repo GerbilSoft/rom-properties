@@ -2,13 +2,13 @@
  * ROM Properties Page shell extension. (GTK)                              *
  * stub-export.c: Exported function for the rp-config stub.                *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "check-uid.h"
 #include "ConfigDialog.hpp"
+#include "check-uid.h"
 
 #if !GTK_CHECK_VERSION(2,90,2)
 // GtkApplication was introduced in GTK3.

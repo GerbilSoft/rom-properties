@@ -8,16 +8,16 @@
 
 #include "stdafx.h"
 #include "config.gtk.h"
-#include "plugin-helper.h"
-
 #include "NautilusPlugin.hpp"
-#include "NautilusPropertiesModelProvider.hpp"
+
 #include "../gtk3/NautilusMenuProvider.hpp"
 #include "AchGDBus.hpp"
+#include "plugin-helper.h"
+#include "NautilusPropertiesModelProvider.hpp"
 
 static GType type_list[2];
 
-// C includes.
+// C includes
 #include <assert.h>
 
 // Function pointers

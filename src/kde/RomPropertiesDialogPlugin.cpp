@@ -15,9 +15,9 @@
  */
 
 #include "stdafx.h"
-#include "check-uid.hpp"
 #include "RomPropertiesDialogPlugin.hpp"
 #include "RomDataView.hpp"
+#include "check-uid.hpp"
 
 // librpbase, librpfile
 using LibRpBase::RomData;

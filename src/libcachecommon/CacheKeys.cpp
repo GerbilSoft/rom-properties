@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libcachecommon)                   *
  * CacheKeys.cpp: Cache key handling functions.                            *
  *                                                                         *
- * Copyright (c) 2016-2021 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,12 +25,12 @@ using std::wstring;
 
 // OS-specific directory separator.
 #ifdef _WIN32
-# include "libwin32common/RpWin32_sdk.h"
-# define DIR_SEP_CHR '\\'
-# define DIR_SEP_WCHR L'\\'
+#  include "libwin32common/RpWin32_sdk.h"
+#  define DIR_SEP_CHR '\\'
+#  define DIR_SEP_WCHR L'\\'
 #else /* !_WIN32 */
-# define DIR_SEP_CHR '/'
-# include <unistd.h>	/* for R_OK */
+#  define DIR_SEP_CHR '/'
+#  include <unistd.h>	/* for R_OK */
 #endif /* _WIN32 */
 
 namespace LibCacheCommon {
@@ -47,10 +47,10 @@ namespace LibCacheCommon {
 // - 3: Slash
 // - 4: Backslash or colon (error)
 static const uint8_t valid_ascii_tbl[0x80] = {
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	// 0x00
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	// 0x10
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x00
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x10
 	1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 2, 3, // 0x20 (", *, ., /)
-	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 1, 0, 1, 0, 0,	// 0x30 (:, <, >, ?)
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 1, 0, 1, 0, 0, // 0x30 (:, <, >, ?)
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 0x40
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 1, 1, 1, // 0x50 (\\)
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 0x70

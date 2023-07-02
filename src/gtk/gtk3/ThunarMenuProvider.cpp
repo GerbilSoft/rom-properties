@@ -11,8 +11,8 @@
 #include "stdafx.h"
 #include "ThunarMenuProvider.hpp"
 
-#include "img/TCreateThumbnail.hpp"
 #include "CreateThumbnail.hpp"
+#include "img/TCreateThumbnail.hpp"
 
 // thunarx.h mini replacement
 #include "thunarx-mini.h"

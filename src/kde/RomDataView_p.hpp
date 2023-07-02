@@ -19,8 +19,8 @@
 #  include <KWidgetsAddons/kmessagewidget.h>
 #else /* !QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 #  include <kacceleratormanager.h>
-#  include <kpagewidget.h>
 #  include <kdeversion.h>
+#  include <kpagewidget.h>
 #  if (KDE_VERSION_MAJOR > 4) || (KDE_VERSION_MAJOR == 4 && KDE_VERSION_MINOR >= 7)
 #    define HAVE_KMESSAGEWIDGET 1
 #    include <kmessagewidget.h>

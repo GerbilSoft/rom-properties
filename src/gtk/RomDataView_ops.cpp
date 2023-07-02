@@ -15,8 +15,8 @@
 
 // Custom widgets
 #include "LanguageComboBox.hpp"
-#include "OptionsMenuButton.hpp"
 #include "MessageWidget.h"
+#include "OptionsMenuButton.hpp"
 
 // ENABLE_MESSAGESOUND is set by CMakeLists.txt.
 #ifdef ENABLE_MESSAGESOUND

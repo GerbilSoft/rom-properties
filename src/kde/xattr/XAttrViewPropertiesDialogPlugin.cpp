@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                             *
  * XAttrViewPropertiesDialogPlugin.cpp: KPropertiesDialogPlugin implementation *
  *                                                                             *
- * Copyright (c) 2016-2022 by David Korth.                                     *
+ * Copyright (c) 2016-2023 by David Korth.                                     *
  * SPDX-License-Identifier: GPL-2.0-or-later                                   *
  *******************************************************************************/
 
@@ -15,10 +15,10 @@
  */
 
 #include "stdafx.h"
-#include "check-uid.hpp"
-
 #include "XAttrViewPropertiesDialogPlugin.hpp"
+
 #include "XAttrView.hpp"
+#include "check-uid.hpp"
 
 #include "librpbase/config/Config.hpp"
 using LibRpBase::Config;

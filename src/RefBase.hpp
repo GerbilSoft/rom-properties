@@ -22,32 +22,35 @@
 /**
  * Unreference a RefBase object if it's not NULL.
  */
-#define UNREF(obj) do { \
-	if (obj) { \
-		(obj)->unref(); \
-	} \
-} while (0)
+#define UNREF(obj) \
+	do { \
+		if (obj) { \
+			(obj)->unref(); \
+		} \
+	} while (0)
 
 /**
  * Unreference a RefBase object if it's not NULL,
  * then set the variable to NULL.
  */
-#define UNREF_AND_NULL(obj) do { \
-	if (obj) { \
-		(obj)->unref(); \
-		(obj) = nullptr; \
-	} \
-} while (0)
+#define UNREF_AND_NULL(obj) \
+	do { \
+		if (obj) { \
+			(obj)->unref(); \
+			(obj) = nullptr; \
+		} \
+	} while (0)
 
 /**
  * Unreference a RefBase object if it's not NULL,
  * then set the variable to NULL.
  * No NULL check is performed.
  */
-#define UNREF_AND_NULL_NOCHK(obj) do { \
-	(obj)->unref(); \
-	(obj) = nullptr; \
-} while (0)
+#define UNREF_AND_NULL_NOCHK(obj) \
+	do { \
+		(obj)->unref(); \
+		(obj) = nullptr; \
+	} while (0)
 
 class RP_LIBROMDATA_PUBLIC RefBase
 {
