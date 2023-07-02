@@ -1,3 +1,9 @@
+rom-properties (2.2-1ppa2~jammy4) jammy; urgency=medium
+
+  * KF5: Fix the .install file.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 01 Jul 2023 21:32:17 -0400
+
 rom-properties (2.2-1ppa2~jammy3) jammy; urgency=medium
 
   * KF5: Ensure necessary symlinks are present when installing for KF5
