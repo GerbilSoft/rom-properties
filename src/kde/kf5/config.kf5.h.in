@@ -9,6 +9,9 @@
 #ifndef __ROMPROPERTIES_KDE_KF5_CONFIG_H__
 #define __ROMPROPERTIES_KDE_KF5_CONFIG_H__
 
+/* Define to 1 if using the JSON plugin loader. */
+#cmakedefine HAVE_JSON_PLUGIN_LOADER 1
+
 /* KF5 plugin path */
 #cmakedefine KF5_PLUGIN_INSTALL_DIR "@KF5_PLUGIN_INSTALL_DIR@"
 

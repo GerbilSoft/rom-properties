@@ -1,3 +1,18 @@
+rom-properties (2.2-1ppa2~jammy2) jammy; urgency=medium
+
+  * KF5: Fix plugin forwarder paths and don't attempt to install .desktop files.
+    KF5 5.89.0 supports JSON loading, and Ubuntu 22.04 has KF5 5.92.0.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 01 Jul 2023 19:51:29 -0400
+
+rom-properties (2.2-1ppa2~jammy1) jammy; urgency=medium
+
+  * Build for Ubuntu 22.04 "Jammy" Jellyfish.
+
+    PPA version bumped to ensure it updates from previous versions.
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Sat, 01 Jul 2023 19:39:35 -0400
+
 rom-properties (2.2-1ppa2~jammy1) jammy; urgency=medium
 
   * Build for Ubuntu 22.04 "Jammy" Jellyfish.
