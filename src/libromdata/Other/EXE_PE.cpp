@@ -633,59 +633,23 @@ void EXEPrivate::addFields_PE(void)
 	fields.addField_string(C_("EXE", "OS Version"),
 		rp_sprintf("%u.%u", os_ver_major, os_ver_minor));
 
-	// Subsystem names
-	static const char *const subsysNames[IMAGE_SUBSYSTEM_XBOX+1] = {
-		// IMAGE_SUBSYSTEM_UNKNOWN
-		nullptr,
-		// tr: IMAGE_SUBSYSTEM_NATIVE
-		NOP_C_("EXE|Subsystem", "Native"),
-		// tr: IMAGE_SUBSYSTEM_WINDOWS_GUI
-		NOP_C_("EXE|Subsystem", "Windows"),
-		// tr: IMAGE_SUBSYSTEM_WINDOWS_CUI
-		NOP_C_("EXE|Subsystem", "Console"),
-		// Unused...
-		nullptr,
-		// tr: IMAGE_SUBSYSTEM_OS2_CUI
-		NOP_C_("EXE|Subsystem", "OS/2 Console"),
-		// Unused...
-		nullptr,
-		// tr: IMAGE_SUBSYSTEM_POSIX_CUI
-		NOP_C_("EXE|Subsystem", "POSIX Console"),
-		// tr: IMAGE_SUBSYSTEM_NATIVE_WINDOWS
-		NOP_C_("EXE|Subsystem", "Win9x Native Driver"),
-		// tr: IMAGE_SUBSYSTEM_WINDOWS_CE_GUI
-		NOP_C_("EXE|Subsystem", "Windows CE"),
-		// tr: IMAGE_SUBSYSTEM_EFI_APPLICATION
-		NOP_C_("EXE|Subsystem", "EFI Application"),
-		// tr: IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER
-		NOP_C_("EXE|Subsystem", "EFI Boot Service Driver"),
-		// tr: IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER
-		NOP_C_("EXE|Subsystem", "EFI Runtime Driver"),
-		// tr: IMAGE_SUBSYSTEM_EFI_ROM
-		NOP_C_("EXE|Subsystem", "EFI ROM Image"),
-		// tr: IMAGE_SUBSYSTEM_XBOX
-		NOP_C_("EXE|Subsystem", "Xbox"),
-	};
-
 	// Subsystem name and version
-	string subsystem_name;
-	if (pe_subsystem < ARRAY_SIZE(subsysNames) && subsysNames[pe_subsystem] != nullptr) {
-		subsystem_name = rp_sprintf("%s %u.%u",
-			dpgettext_expr(RP_I18N_DOMAIN, "EXE|Subsystem", subsysNames[pe_subsystem]),
+	string subsystem_display;
+	const char *const s_subsystem = EXEData::lookup_pe_subsystem(pe_subsystem);
+	if (s_subsystem) {
+		subsystem_display = rp_sprintf("%s %u.%u", s_subsystem,
 			subsystem_ver_major, subsystem_ver_minor);
 	} else {
 		const char *const s_unknown = C_("RomData", "Unknown");
 		if (pe_subsystem == IMAGE_SUBSYSTEM_UNKNOWN) {
-			subsystem_name = rp_sprintf("%s %u.%u",
-				s_unknown,
-				subsystem_ver_major, subsystem_ver_minor);
+			subsystem_display = rp_sprintf("%s %u.%u",
+				s_unknown, subsystem_ver_major, subsystem_ver_minor);
 		} else {
-			subsystem_name = rp_sprintf("%s (%u) %u.%u",
-				s_unknown, pe_subsystem,
-				subsystem_ver_major, subsystem_ver_minor);
+			subsystem_display = rp_sprintf("%s (%u) %u.%u",
+				s_unknown, pe_subsystem, subsystem_ver_major, subsystem_ver_minor);
 		}
 	}
-	fields.addField_string(C_("EXE", "Subsystem"), subsystem_name);
+	fields.addField_string(C_("EXE", "Subsystem"), subsystem_display);
 
 	// PE flags (characteristics)
 	// NOTE: Only important flags will be listed.

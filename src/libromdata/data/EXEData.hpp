@@ -26,4 +26,12 @@ const char *lookup_pe_cpu(uint16_t cpu);
  */
 const char *lookup_le_cpu(uint16_t cpu);
 
+/**
+ * Look up a PE subsystem name.
+ * NOTE: This function returns localized subsystem names.
+ * @param subsystem PE subsystem
+ * @return PE subsystem name, or nullptr if invalid.
+ */
+const char *lookup_pe_subsystem(uint16_t subsystem);
+
 } }

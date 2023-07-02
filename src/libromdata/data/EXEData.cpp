@@ -10,6 +10,8 @@
 #include "EXEData.hpp"
 #include "Other/exe_structs.h"
 
+#include "libi18n/i18n.h"
+
 namespace LibRomData { namespace EXEData {
 
 struct MachineType {
@@ -72,6 +74,40 @@ static const MachineType machineTypes_LE[] = {
 	{LE_CPU_MIPS_III,	"MIPS Mark III (R4000)"},
 };
 
+// Subsystem names
+static const char *const subsystemNames[IMAGE_SUBSYSTEM_XBOX+1] = {
+	// IMAGE_SUBSYSTEM_UNKNOWN
+	nullptr,
+	// tr: IMAGE_SUBSYSTEM_NATIVE
+	NOP_C_("EXE|Subsystem", "Native"),
+	// tr: IMAGE_SUBSYSTEM_WINDOWS_GUI
+	NOP_C_("EXE|Subsystem", "Windows"),
+	// tr: IMAGE_SUBSYSTEM_WINDOWS_CUI
+	NOP_C_("EXE|Subsystem", "Console"),
+	// Unused...
+	nullptr,
+	// tr: IMAGE_SUBSYSTEM_OS2_CUI
+	NOP_C_("EXE|Subsystem", "OS/2 Console"),
+	// Unused...
+	nullptr,
+	// tr: IMAGE_SUBSYSTEM_POSIX_CUI
+	NOP_C_("EXE|Subsystem", "POSIX Console"),
+	// tr: IMAGE_SUBSYSTEM_NATIVE_WINDOWS
+	NOP_C_("EXE|Subsystem", "Win9x Native Driver"),
+	// tr: IMAGE_SUBSYSTEM_WINDOWS_CE_GUI
+	NOP_C_("EXE|Subsystem", "Windows CE"),
+	// tr: IMAGE_SUBSYSTEM_EFI_APPLICATION
+	NOP_C_("EXE|Subsystem", "EFI Application"),
+	// tr: IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER
+	NOP_C_("EXE|Subsystem", "EFI Boot Service Driver"),
+	// tr: IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER
+	NOP_C_("EXE|Subsystem", "EFI Runtime Driver"),
+	// tr: IMAGE_SUBSYSTEM_EFI_ROM
+	NOP_C_("EXE|Subsystem", "EFI ROM Image"),
+	// tr: IMAGE_SUBSYSTEM_XBOX
+	NOP_C_("EXE|Subsystem", "Xbox"),
+};
+
 /** Public functions **/
 
 /**
@@ -112,6 +148,20 @@ const char *lookup_le_cpu(uint16_t cpu)
 		return nullptr;
 	}
 	return pLE->name;
+}
+
+/**
+ * Look up a PE subsystem name.
+ * NOTE: This function returns localized subsystem names.
+ * @param subsystem PE subsystem
+ * @return PE subsystem name, or nullptr if invalid.
+ */
+const char *lookup_pe_subsystem(uint16_t subsystem)
+{
+	if (subsystem >= ARRAY_SIZE(subsystemNames))
+		return nullptr;
+
+	return dpgettext_expr(RP_I18N_DOMAIN, "EXE|Subsystem", subsystemNames[subsystem]);
 }
 
 } }
