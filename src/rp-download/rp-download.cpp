@@ -53,9 +53,9 @@ using std::unique_ptr;
 
 #ifdef _WIN32
 #  include <direct.h>
-#  define _TMKDIR(dirname) _tmkdir(dirname)
+#  define _TMKDIR(dirname, mode) _tmkdir(dirname)
 #else /* !_WIN32 */
-#  define _TMKDIR(dirname) _tmkdir((dirname), 0777)
+#  define _TMKDIR(dirname, mode) _tmkdir((dirname), (mode))
 #endif /* _WIN32 */
 
 #ifndef _countof
@@ -231,11 +231,14 @@ static int get_file_size_and_mtime(const TCHAR *filename, off64_t *pFileSize, ti
  * are supported by this function.
  *
  * @param path Path to recursively mkdir. (last component is ignored)
+ * @param mode Mode for newly-created directories.
  * @return 0 on success; negative POSIX error code on error.
  */
-int rmkdir(const tstring &path)
+static int rmkdir(const tstring &path, int mode)
 {
 #ifdef _WIN32
+	RP_UNUSED(mode);
+
 	// Check if "\\\\?\\" is at the beginning of path.
 	tstring tpath;
 	if (path.size() >= 4 && !_tcsncmp(path.data(), _T("\\\\?\\"), 4)) {
@@ -267,7 +270,7 @@ int rmkdir(const tstring &path)
 		tpath[slash_pos] = _T('\0');
 
 		// Attempt to create this directory.
-		if (::_TMKDIR(tpath.c_str()) != 0) {
+		if (::_TMKDIR(tpath.c_str(), mode) != 0) {
 			// Could not create the directory.
 			// If it exists already, that's fine.
 			// Otherwise, something went wrong.
@@ -710,7 +713,7 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	} else if (ret == -ENOENT) {
 		// File not found. We'll need to download it.
 		// Make sure the path structure exists.
-		int ret = rmkdir(cache_filename);
+		int ret = rmkdir(cache_filename, 0700);
 		if (ret != 0) {
 			SHOW_ERROR(_T("Error creating directory structure: %s"), _tcserror(-ret));
 			return EXIT_FAILURE;
