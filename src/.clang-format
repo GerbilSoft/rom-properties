@@ -1,0 +1,58 @@
+---
+BasedOnStyle: LLVM
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: true
+  AfterFunction: true
+
+BreakConstructorInitializers: BeforeComma
+PackConstructorInitializers: Never
+ConstructorInitializerIndentWidth: 8
+
+PointerAlignment: Right
+QualifierAlignment: Left
+SpaceAroundPointerQualifiers: After
+
+AllowShortBlocksOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: Empty
+
+# [2023/06/24 09:38 PM EDT]
+# FIXME: This double-indents structs that don't use access modifiers.
+# Reference: https://reviews.llvm.org/D22505
+#IndentAccessModifiers: true
+#AccessModifierOffset: 8
+IndentAccessModifiers: false
+AccessModifierOffset: -8
+IndentPPDirectives: AfterHash
+IndentWidth: 8
+PPIndentWidth: 2
+ContinuationIndentWidth: 8
+
+IncludeBlocks: Preserve
+IncludeCategories:
+  - Regex: '^"stdafx\.h"'
+    Priority: -10
+  - Regex: '^"config\..*\.h"'
+    Priority: -9
+  - Regex: '^"glib-compat\.h"'
+    Priority: -8
+  - Regex: '^"gtk-compat\.h"'
+    Priority: -7
+  - Regex: '^<.*'
+    Priority: 2
+  - Regex: '.*'
+    Priority: 3
+
+AlignAfterOpenBracket: DontAlign
+AlignEscapedNewlines: DontAlign
+AlignTrailingComments: true
+AlwaysBreakTemplateDeclarations: Yes
+ColumnLimit: 120
+CompactNamespaces: true
+SpaceAfterTemplateKeyword: false
+SpacesInLineCommentPrefix:
+  Minimum: 0
+  Maximum: -1
+UseTab: AlignWithSpaces
+...
