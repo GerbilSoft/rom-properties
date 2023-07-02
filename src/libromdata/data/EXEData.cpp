@@ -75,7 +75,7 @@ static const MachineType machineTypes_LE[] = {
 };
 
 // Subsystem names
-static const char *const subsystemNames[IMAGE_SUBSYSTEM_XBOX+1] = {
+static const char *const subsystemNames[IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION+1] = {
 	// IMAGE_SUBSYSTEM_UNKNOWN
 	nullptr,
 	// tr: IMAGE_SUBSYSTEM_NATIVE
@@ -106,6 +106,10 @@ static const char *const subsystemNames[IMAGE_SUBSYSTEM_XBOX+1] = {
 	NOP_C_("EXE|Subsystem", "EFI ROM Image"),
 	// tr: IMAGE_SUBSYSTEM_XBOX
 	NOP_C_("EXE|Subsystem", "Xbox"),
+	// Unused...
+	nullptr,
+	// tr: IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION
+	NOP_C_("EXE|Subsystem", "Boot Application"),
 };
 
 /** Public functions **/

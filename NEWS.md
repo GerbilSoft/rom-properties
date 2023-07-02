@@ -2,6 +2,11 @@
 
 ## v2.2.1 (released 2023/07/??)
 
+* New parser features:
+  * EXE: Add IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION.
+    * Fixes #388: PE subsystems list missing Windows Boot Application
+      * Reported by @Wack0.
+
 * Bug fixes:
   * JPEG images using the Exif container are now detected properly. This fixes
     loading certain cover art from the PS1/PS2 section of RPDB.
