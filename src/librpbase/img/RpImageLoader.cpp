@@ -34,10 +34,8 @@ namespace LibRpBase { namespace RpImageLoader {
 // Magic numbers
 static const uint8_t png_magic[8] = {0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n'};
 #ifdef HAVE_JPEG
-static const uint8_t jpeg_magic_1[4] = {0xFF, 0xD8, 0xFF, 0xE0};
-static const uint8_t jpeg_magic_2[4] = {'J','F','I','F'};
-static const uint8_t exif_magic_1[4] = {0xFF, 0xD8, 0xFF, 0xE1};
-static const uint8_t exif_magic_2[4] = {'E','x','i','f'};
+static const uint8_t jpeg_magic[4] = {'J','F','I','F'};
+static const uint8_t exif_magic[4] = {'E','x','i','f'};
 #endif /* HAVE_JPEG */
 
 /** RpImageLoader **/
@@ -61,17 +59,15 @@ rp_image *load(IRpFile *file)
 			return RpPng::load(file);
 		}
 #ifdef HAVE_JPEG
-		else if (!memcmp(buf, jpeg_magic_1, sizeof(jpeg_magic_1)) &&
-			 !memcmp(&buf[6], jpeg_magic_2, sizeof(jpeg_magic_2)))
-		{
-			// Found a JPEG image in JFIF container.
-			return RpJpeg::load(file);
-		}
-		else if (!memcmp(buf, exif_magic_1, sizeof(exif_magic_1)) &&
-			 !memcmp(&buf[6], exif_magic_2, sizeof(exif_magic_2)))
-		{
-			// Found a JPEG image in Exif container.
-			return RpJpeg::load(file);
+		else if (buf[0] == 0xFF && buf[1] != 0xFF && buf[2] == 0xFF) {
+			// This may be a JPEG.
+			// Check for the JFIF and Exif magic numbers.
+			if (!memcmp(&buf[6], jpeg_magic, sizeof(jpeg_magic)) ||
+			    !memcmp(&buf[6], exif_magic, sizeof(exif_magic)))
+			{
+				// Found a JPEG image.
+				return RpJpeg::load(file);
+			}
 		}
 #endif /* HAVE_JPEG */
 	}
