@@ -1,4 +1,4 @@
-usr/lib/*/nautilus/extensions-3.0/rom-properties-gtk3.so
+usr/lib/nautilus/extensions-3.0/rom-properties-gtk3.so
 usr/lib/*/caja/extensions-2.0/rom-properties-gtk3.so
 usr/lib/*/nemo/extensions-3.0/rom-properties-gtk3.so
 usr/lib/*/thunarx-3/rom-properties-gtk3.so
