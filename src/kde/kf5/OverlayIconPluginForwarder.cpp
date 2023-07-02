@@ -37,8 +37,12 @@ OverlayIconPluginForwarder::OverlayIconPluginForwarder(QObject *parent)
 {
 	CHECK_UID();
 
+#ifdef HAVE_JSON_PLUGIN_LOADER
+	QString pluginPath(QString::fromUtf8(KF5_PRPD_PLUGIN_INSTALL_DIR));
+#else /* !HAVE_JSON_PLUGIN_LOADER */
 	// FIXME: Check the .desktop file?
 	QString pluginPath(QString::fromUtf8(KF5_PLUGIN_INSTALL_DIR));
+#endif /* HAVE_JSON_PLUGIN_LOADER */
 	pluginPath += QLatin1String("/rom-properties-kf5.so");
 
 	// Attempt to load the plugin.

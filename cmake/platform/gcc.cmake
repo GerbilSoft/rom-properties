@@ -10,12 +10,6 @@ ELSEIF(CMAKE_COMPILER_IS_GNUCXX)
 	ENDIF()
 ENDIF()
 
-# gcc-5.4 and earlier have issues with LTO.
-IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND
-   CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.0)
-	SET(GCC_5xx_LTO_ISSUES ON)
-ENDIF()
-
 # Compiler flag modules.
 INCLUDE(CheckCCompilerFlag)
 INCLUDE(CheckCXXCompilerFlag)
@@ -274,6 +268,14 @@ IF(ENABLE_LTO)
 	# occur in gcc-4.9 due to "slim" LTO objects, and possibly
 	# earlier versions for various reasons.
 	MESSAGE(STATUS "Checking if the gcc LTO wrappers are available:")
+
+	# gcc-5.4 and earlier have issues with LTO.
+	IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND
+	   CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.0)
+		MESSAGE(STATUS "Checking if the gcc LTO wrappers are available: too old")
+		MESSAGE(FATAL_ERROR "gcc 6.1 or later is required for LTO.")
+	ENDIF()
+
 	IF("${CMAKE_AR}" MATCHES "gcc-ar$")
 		# Already using the gcc-ar wrapper.
 		SET(GCC_WRAPPER_AR "${CMAKE_AR}")

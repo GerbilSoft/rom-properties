@@ -37,8 +37,7 @@ OverlayIconPluginForwarder::OverlayIconPluginForwarder(QObject *parent)
 {
 	CHECK_UID();
 
-	// FIXME: Check the .desktop file?
-	QString pluginPath(QString::fromUtf8(KF6_PLUGIN_INSTALL_DIR));
+	QString pluginPath(QString::fromUtf8(KF6_PRPD_PLUGIN_INSTALL_DIR));
 	pluginPath += QLatin1String("/rom-properties-kf6.so");
 
 	// Attempt to load the plugin.

@@ -108,9 +108,10 @@ ENDIF()
 # /usr/bin/ld: ../../../bin/TextFuncsTest: hidden symbol `__cpu_indicator_init'
 # in /usr/lib/gcc/i686-linux-gnu/5/libgcc.a(cpuinfo.o) is referenced by DSO
 # Reference: https://github.com/baldurk/renderdoc/issues/365
-IF(GCC_5xx_LTO_ISSUES)
+IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND
+   CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.0)
 	LINK_LIBRARIES(-lgcc)
-ENDIF(GCC_5xx_LTO_ISSUES)
+ENDIF()
 
 # Source Code subdirectories.
 ADD_SUBDIRECTORY(librpsecure)
