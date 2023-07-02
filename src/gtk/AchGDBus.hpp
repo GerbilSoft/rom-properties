@@ -9,7 +9,6 @@
 #pragma once
 
 #include "common.h"
-#include "librpbase/Achievements.hpp"
 
 class AchGDBusPrivate;
 class AchGDBus

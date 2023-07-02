@@ -8,6 +8,9 @@
 
 #include "stdafx.h"
 #include "AchGDBus.hpp"
+
+// librpbase
+#include "librpbase/Achievements.hpp"
 using LibRpBase::Achievements;
 
 // GDBus

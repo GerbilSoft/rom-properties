@@ -8,9 +8,10 @@
 
 #include "stdafx.h"
 #include "AchQtDBus.hpp"
-using LibRpBase::Achievements;
 
-// librptexture
+// librpbase, librptexture
+#include "librpbase/Achievements.hpp"
+using LibRpBase::Achievements;
 using LibRpTexture::argb32_t;
 
 // QtDBus
@@ -18,7 +19,7 @@ using LibRpTexture::argb32_t;
 
 #if QT_VERSION < QT_VERSION_CHECK(5,0,0)
 // for Qt::escape()
-#include <QtGui/QTextDocument>
+#  include <QtGui/QTextDocument>
 #endif /* QT_VERSION < QT_VERSION_CHECK(5,0,0) */
 
 // C++ STL classes.

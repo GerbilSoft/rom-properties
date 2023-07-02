@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "librpbase/Achievements.hpp"
 #include "common.h"
 
 class AchWin32Private;

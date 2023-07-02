@@ -14,6 +14,7 @@
 #include "dll-macros.h"
 
 // Other rom-properties libraries
+#include "librpbase/Achievements.hpp"
 #include "librpbase/img/RpPng.hpp"
 #include "librpfile/win32/RpFile_windres.hpp"
 #include "librptext/wchar.hpp"
