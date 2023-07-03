@@ -15,12 +15,12 @@
 #include "config.version.h"
 #include "git.h"
 
-#include "libunixcommon/dll-search.h"
 #include "libi18n/i18n.h"
+#include "libunixcommon/dll-search.h"
+#include "stdboolx.h"
 
 // OS-specific security options
 #include "rp-stub_secure.h"
-#include "stdboolx.h"
 
 // C includes
 #include <dlfcn.h>
@@ -76,9 +76,9 @@ static void show_version(void)
 	putchar('\n');
 #ifdef RP_GIT_VERSION
 	puts(RP_GIT_VERSION);
-# ifdef RP_GIT_DESCRIBE
+#  ifdef RP_GIT_DESCRIBE
 	puts(RP_GIT_DESCRIBE);
-# endif /* RP_GIT_DESCRIBE */
+#  endif /* RP_GIT_DESCRIBE */
 #endif /* RP_GIT_VERSION */
 	putchar('\n');
 	puts(C_("rp-stub",

@@ -31,7 +31,7 @@ using std::tstring;
 #include "libi18n/config.libi18n.h"
 #if defined(_MSC_VER) && defined(ENABLE_NLS)
 // MSVC: Exception handling for /DELAYLOAD.
-#include "libwin32common/DelayLoadHelper.h"
+#  include "libwin32common/DelayLoadHelper.h"
 // DelayLoad test implementation.
 DELAYLOAD_TEST_FUNCTION_IMPL1(textdomain, nullptr);
 #endif /* defined(_MSC_VER) && defined(ENABLE_NLS) */

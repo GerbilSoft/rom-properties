@@ -44,15 +44,15 @@ class RP_ClassFactory final : public LibWin32Common::ComBase<IClassFactory>, pub
 			}
 
 #ifdef _MSC_VER
-# pragma warning(push)
-# pragma warning(disable: 4365 4838)
+#  pragma warning(push)
+#  pragma warning(disable: 4365 4838)
 #endif /* _MSC_VER */
 			static const QITAB rgqit[] = {
 				QITABENT(RP_ClassFactory, IClassFactory),
 				{ 0, 0 }
 			};
 #ifdef _MSC_VER
-# pragma warning(pop)
+#  pragma warning(pop)
 #endif /* _MSC_VER */
 			return LibWin32Common::rp_QISearch(this, rgqit, riid, ppvObject);
 		}

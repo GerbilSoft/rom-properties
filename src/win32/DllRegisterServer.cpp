@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * DllRegisterServer.cpp: COM registration handler.                        *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -18,11 +18,11 @@
 //   - http://www.codeproject.com/Articles/338268/COM-in-C
 
 #include "stdafx.h"
-#include "config.win32.h"
 #include "config.version.h"
+#include "config.win32.h"
 
-#include "RP_ExtractIcon.hpp"
 #include "RP_ClassFactory.hpp"
+#include "RP_ExtractIcon.hpp"
 #include "RP_ExtractImage.hpp"
 #include "RP_ShellPropSheetExt.hpp"
 #include "RP_ThumbnailProvider.hpp"

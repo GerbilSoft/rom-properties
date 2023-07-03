@@ -359,8 +359,8 @@ RP_ContextMenu::~RP_ContextMenu()
 IFACEMETHODIMP RP_ContextMenu::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj)
 {
 #ifdef _MSC_VER
-# pragma warning(push)
-# pragma warning(disable: 4365 4838)
+#  pragma warning(push)
+#  pragma warning(disable: 4365 4838)
 #endif /* _MSC_VER */
 	static const QITAB rgqit[] = {
 		QITABENT(RP_ContextMenu, IShellExtInit),
@@ -368,7 +368,7 @@ IFACEMETHODIMP RP_ContextMenu::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID 
 		{ 0, 0 }
 	};
 #ifdef _MSC_VER
-# pragma warning(pop)
+#  pragma warning(pop)
 #endif /* _MSC_VER */
 	return LibWin32Common::rp_QISearch(this, rgqit, riid, ppvObj);
 }

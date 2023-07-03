@@ -1339,7 +1339,7 @@ HPROPSHEETPAGE AboutTab::getHPropSheetPage(void)
 	const tstring tsTabTitle = U82T_c(C_("AboutTab", "About"));
 
 	PROPSHEETPAGE psp;
-	psp.dwSize = sizeof(psp);	
+	psp.dwSize = sizeof(psp);
 	psp.dwFlags = PSP_USECALLBACK | PSP_USETITLE | PSP_DLGINDIRECT;
 	psp.hInstance = HINST_THISCOMPONENT;
 	psp.pResource = LoadDialog_i18n(IDD_CONFIG_ABOUT);

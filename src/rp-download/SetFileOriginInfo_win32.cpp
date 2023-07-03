@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                         *
  * SetFileOriginInfo_win32.cpp: setFileOriginInfo() function. (Win32 version) *
  *                                                                            *
- * Copyright (c) 2016-2022 by David Korth.                                    *
+ * Copyright (c) 2016-2023 by David Korth.                                    *
  * SPDX-License-Identifier: GPL-2.0-or-later                                  *
  ******************************************************************************/
 
@@ -10,7 +10,7 @@
 #include "SetFileOriginInfo.hpp"
 
 #ifndef _WIN32
-# error SetFileOriginInfo_posix.cpp is for Windows systems, not POSIX.
+#  error SetFileOriginInfo_posix.cpp is for Windows systems, not POSIX.
 #endif /* !_WIN32 */
 
 // libwin32common
@@ -91,7 +91,7 @@ int setFileOriginInfo(FILE *file, const TCHAR *filename, const TCHAR *url, time_
 	// TODO: Add a static_warning() macro?
 	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
 #if _USE_32BIT_TIME_T
-# error 32-bit time_t is not supported. Get a newer compiler.
+#  error 32-bit time_t is not supported. Get a newer compiler.
 #endif
 
 	// Check if storeFileOriginInfo is enabled.

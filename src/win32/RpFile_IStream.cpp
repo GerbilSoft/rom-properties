@@ -27,7 +27,7 @@ using std::unique_ptr;
 
 #ifdef _MSC_VER
 // MSVC: Exception handling for /DELAYLOAD.
-#include "libwin32common/DelayLoadHelper.h"
+#  include "libwin32common/DelayLoadHelper.h"
 #endif /* _MSC_VER */
 
 #ifdef _MSC_VER

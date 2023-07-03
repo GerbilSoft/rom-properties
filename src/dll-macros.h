@@ -38,7 +38,7 @@
 // Visibility macros for libromdata.
 // Reference: https://gcc.gnu.org/wiki/Visibility
 #if defined(RP_LIBROMDATA_IS_DLL)
-#  if (defined(_WIN32) || defined (__CYGWIN__)) && defined(RP_BUILDING_FOR_DLL)
+#  if (defined(_WIN32) || defined(__CYGWIN__)) && defined(RP_BUILDING_FOR_DLL)
 #    ifdef RP_BUILDING_LIBROMDATA
 #      ifdef __GNUC__
 #        define RP_LIBROMDATA_PUBLIC __attribute__((dllexport))

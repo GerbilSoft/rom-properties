@@ -12,9 +12,9 @@
 #  error This file should only be included in Win32 resource scripts.
 #endif
 
-// Windows SDK.
+// Windows SDK
 #define APSTUDIO_HIDDEN_SYMBOLS
-#  include <windows.h>
+#include <windows.h>
 #undef APSTUDIO_HIDDEN_SYMBOLS
 
 /* program version */

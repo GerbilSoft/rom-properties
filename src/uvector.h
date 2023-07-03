@@ -5,8 +5,8 @@
 #include <cstring>
 #include <iterator>
 #include <memory>
-#include <utility>
 #include <stdexcept>
+#include <utility>
 
 /**
  * @file uvector.h

@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * RP_ExtractIcon.cpp: IExtractIcon implementation.                        *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -55,8 +55,8 @@ RP_ExtractIcon::~RP_ExtractIcon()
 IFACEMETHODIMP RP_ExtractIcon::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID *ppvObj)
 {
 #ifdef _MSC_VER
-# pragma warning(push)
-# pragma warning(disable: 4365 4838)
+#  pragma warning(push)
+#  pragma warning(disable: 4365 4838)
 #endif /* _MSC_VER */
 	static const QITAB rgqit[] = {
 		QITABENT(RP_ExtractIcon, IPersist),
@@ -66,7 +66,7 @@ IFACEMETHODIMP RP_ExtractIcon::QueryInterface(_In_ REFIID riid, _Outptr_ LPVOID 
 		{ 0, 0 }
 	};
 #ifdef _MSC_VER
-# pragma warning(pop)
+#  pragma warning(pop)
 #endif /* _MSC_VER */
 	return LibWin32Common::rp_QISearch(this, rgqit, riid, ppvObj);
 }

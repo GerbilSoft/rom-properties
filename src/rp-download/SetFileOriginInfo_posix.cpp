@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                         *
  * SetFileOriginInfo_posix.cpp: setFileOriginInfo() function. (POSIX version) *
  *                                                                            *
- * Copyright (c) 2016-2020 by David Korth.                                    *
+ * Copyright (c) 2016-2023 by David Korth.                                    *
  * SPDX-License-Identifier: GPL-2.0-or-later                                  *
  ******************************************************************************/
 
@@ -29,9 +29,9 @@ using std::string;
 
 // xattrs
 #if defined(HAVE_FSETXATTR_LINUX)
-# include <sys/xattr.h>
+#  include <sys/xattr.h>
 #elif defined(HAVE_EXTATTR_SET_FD)
-# include <sys/extattr.h>
+#  include <sys/extattr.h>
 // Linux-compatible wrapper.
 static inline int fsetxattr(int fd, const char *name, const void *value, size_t size, int flags)
 {
@@ -44,7 +44,7 @@ static inline int fsetxattr(int fd, const char *name, const void *value, size_t 
 	return 0;
 }
 #elif defined(HAVE_FSETXATTR_MAC)
-# include <sys/xattr.h>
+#  include <sys/xattr.h>
 // TODO: Define a Linux-compatible version.
 #endif /* HAVE_FSETXATTR_LINUX || HAVE_FSETXATTR_MAC*/
 

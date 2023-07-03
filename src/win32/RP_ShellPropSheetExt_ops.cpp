@@ -14,8 +14,8 @@
 #include "res/resource.h"
 
 // Custom controls
-#include "MessageWidget.hpp"
 #include "LanguageComboBox.hpp"
+#include "MessageWidget.hpp"
 #include "OptionsMenuButton.hpp"
 
 // Other rom-properties libraries

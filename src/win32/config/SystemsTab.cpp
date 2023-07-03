@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * SystemsTab.cpp: Systems tab for rp-config.                              *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -389,7 +389,7 @@ HPROPSHEETPAGE SystemsTab::getHPropSheetPage(void)
 	const tstring tsTabTitle = U82T_c(C_("SystemsTab", "Systems"));
 
 	PROPSHEETPAGE psp;
-	psp.dwSize = sizeof(psp);	
+	psp.dwSize = sizeof(psp);
 	psp.dwFlags = PSP_USECALLBACK | PSP_USETITLE | PSP_DLGINDIRECT;
 	psp.hInstance = HINST_THISCOMPONENT;
 	psp.pResource = LoadDialog_i18n(IDD_CONFIG_SYSTEMS);
