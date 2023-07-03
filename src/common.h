@@ -25,8 +25,8 @@
  * Reference: http://stackoverflow.com/questions/8018843/macro-definition-array-size
  */
 #define ARRAY_SIZE(x) \
-	(((sizeof(x) / sizeof(x[0]))) / \
-		(size_t)(!(sizeof(x) % sizeof(x[0]))))
+	(((sizeof(x) / sizeof((x)[0]))) / \
+		(size_t)(!(sizeof(x) % sizeof((x)[0]))))
 
 /**
  * Number of elements in an array. (cast to int)

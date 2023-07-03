@@ -230,8 +230,8 @@ dcpgettext_expr (const char *domain,
                  const char *msgctxt, const char *msgid,
                  int category)
 {
-  size_t msgctxt_len = strlen (msgctxt) + 1;
-  size_t msgid_len = strlen (msgid) + 1;
+  const size_t msgctxt_len = strlen (msgctxt) + 1;
+  const size_t msgid_len = strlen (msgid) + 1;
   const char *translation;
 #if _LIBGETTEXT_HAVE_VARIABLE_SIZE_ARRAYS
   char msg_ctxt_id[msgctxt_len + msgid_len];
@@ -278,8 +278,8 @@ dcnpgettext_expr (const char *domain,
                   const char *msgid_plural, unsigned long int n,
                   int category)
 {
-  size_t msgctxt_len = strlen (msgctxt) + 1;
-  size_t msgid_len = strlen (msgid) + 1;
+  const size_t msgctxt_len = strlen (msgctxt) + 1;
+  const size_t msgid_len = strlen (msgid) + 1;
   const char *translation;
 #if _LIBGETTEXT_HAVE_VARIABLE_SIZE_ARRAYS
   char msg_ctxt_id[msgctxt_len + msgid_len];
