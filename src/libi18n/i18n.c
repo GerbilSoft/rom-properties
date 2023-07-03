@@ -40,10 +40,12 @@ static bool i18n_is_init = false;
 #  define ARCH_NAME _T("arm")
 #elif defined(_M_ARM64) || defined(__aarch64__)
 #  define ARCH_NAME _T("arm64")
-#elif defined(__riscv) || defined(__riscvel) || defined(__RISCVEL) || defined(__RISCVEL__)
-// TODO: MSVC RISC-V preprocessor macro, if one ever gets defined.
-// NOTE: Not differentiating between 32-bit and 64-bit for RISC-V.
-#  define ARCH_NAME _T("riscv")
+#elif defined(__riscv) && (__riscv_xlen == 32)
+// TODO: MSVC riscv32 preprocessor macro, if one ever gets defined.
+#  define ARCH_NAME _T("riscv32")
+#elif defined(__riscv) && (__riscv_xlen == 64)
+// TODO: MSVC riscv64 preprocessor macro, if one ever gets defined.
+#  define ARCH_NAME _T("riscv64")
 #else
 #  error Unsupported CPU architecture.
 #endif

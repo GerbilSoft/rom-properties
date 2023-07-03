@@ -353,32 +353,40 @@ void IDownloader::createUserAgent(void)
 
 	// CPU
 #if defined(_M_ARM64) || defined(__aarch64__)
-# define CPU "ARM64"
-# define MAC_CPU "ARM64"
+#  define CPU "ARM64"
+#  define MAC_CPU "ARM64"
 #elif defined(_M_ARM) || defined(__arm__)
-# define CPU "ARM"
-# define MAC_CPU "ARM"
+#  define CPU "ARM"
+#  define MAC_CPU "ARM"
 #elif defined(_M_X64) || defined(_M_AMD64) || defined(__amd64__) || defined(__x86_64__)
-# ifdef _WIN32
-#  define CPU "x64"
-# else /* !_WIN32 */
-#  define CPU "x86_64"
-# endif
-# define MAC_CPU "Intel"
+#  ifdef _WIN32
+#    define CPU "x64"
+#  else /* !_WIN32 */
+#    define CPU "x86_64"
+#  endif
+#  define MAC_CPU "Intel"
 #elif defined(_M_IX86) || defined(__i386__)
-# ifdef _WIN32
-#  define CPU ""
-#  define NO_CPU 1
-# else /* !_WIN32 */
-#  define CPU "i386"
-# endif /* _WIN32 */
-# define MAC_CPU "Intel"
+#  ifdef _WIN32
+#    define CPU ""
+#    define NO_CPU 1
+#  else /* !_WIN32 */
+#    define CPU "i386"
+#  endif /* _WIN32 */
+#  define MAC_CPU "Intel"
 #elif defined(__powerpc64__) || defined(__ppc64__)
-# define CPU "PPC64"
-# define MAC_CPU "PPC"
+#  define CPU "PPC64"
+#  define MAC_CPU "PPC"
 #elif defined(__powerpc__) || defined(__ppc__)
-# define CPU "PPC"
-# define MAC_CPU "PPC"
+#  define CPU "PPC"
+#  define MAC_CPU "PPC"
+#elif defined(__riscv) && (__riscv_xlen == 32)
+#  define CPU "riscv32"
+#  define MAC_CPU "riscv32"
+#elif defined(__riscv) && (__riscv_xlen == 64)
+#  define CPU "riscv64"
+#  define MAC_CPU "riscv64"
+#else
+#  error Unknown CPU, please update this
 #endif
 
 #ifdef _WIN32
