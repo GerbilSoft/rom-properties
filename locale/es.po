@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-07-01 15:34-0400\n"
-"PO-Revision-Date: 2023-07-01 19:36\n"
+"PO-Revision-Date: 2023-07-03 00:15\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es_ES\n"
@@ -463,7 +463,7 @@ msgstr ""
 msgctxt "OptionsTab"
 msgid "When using an unlimited\n"
 "network connection:"
-msgstr ""
+msgstr "Al utilizar una conexión de red ilimitada:"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:181
 #: ../build/src/kde/kf5/ui_OptionsTab.h:187
@@ -491,7 +491,7 @@ msgstr ""
 msgctxt "OptionsTab"
 msgid "When using a metered\n"
 "network connection:"
-msgstr ""
+msgstr "Cuando utilice una conexión de red medida:"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:191
 #: ../src/gtk/config/OptionsTab.cpp:225
@@ -511,7 +511,7 @@ msgstr "Almacenar la información de origen de los archivos en caché usando atr
 #: ../src/gtk/config/OptionsTab.cpp:235
 msgctxt "OptionsTab"
 msgid "Language for PAL titles on GameTDB:"
-msgstr ""
+msgstr "Idioma para títulos PAL en GameTDB:"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:195
 msgctxt "OptionsTab"
@@ -538,7 +538,7 @@ msgstr "Habilitar la extracción de miniaturas y metadatos de los sistemas\n"
 #: ../src/gtk/config/OptionsTab.cpp:268
 msgctxt "OptionsTab"
 msgid "Show the Extended Attributes tab."
-msgstr ""
+msgstr "Muestra la pestaña Atributos extendidos."
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:124
 msgctxt "SystemsTab"
@@ -1164,14 +1164,14 @@ msgstr "Pantallas de título de Game Boy"
 #: ../src/win32/config/UpdateChecker.cpp:72
 msgctxt "UpdateChecker"
 msgid "Failed to download version file."
-msgstr ""
+msgstr "Error al descargar el archivo de versión."
 
 #: ../src/gtk/config/UpdateChecker.cpp:170
 #: ../src/kde/config/UpdateChecker.cpp:69
 #: ../src/win32/config/UpdateChecker.cpp:81
 msgctxt "UpdateChecker"
 msgid "Failed to open version file."
-msgstr ""
+msgstr "No se pudo abrir el archivo de versión."
 
 #: ../src/gtk/config/UpdateChecker.cpp:181
 #: ../src/gtk/config/UpdateChecker.cpp:194
@@ -9950,7 +9950,9 @@ msgctxt "rp-stub|Help"
 msgid "When invoked as rp-config, this program will open the configuration dialog\n"
 "using an installed plugin that most closely matches the currently running\n"
 "desktop environment."
-msgstr ""
+msgstr "Al invocar este programa a través de rp-config, se abrirá la configuración\n"
+"utilizando el plugin instalado que más se acerque al que se está ejecutando actualmente\n"
+"en su escritorio."
 
 #: ../src/rp-stub/rp-stub.c:174
 #, c-format
@@ -10021,7 +10023,7 @@ msgstr "*** ERROR: %1$s() devuelto %2$d."
 #: ../src/win32/config/AboutTab.cpp:497
 msgctxt "AboutTab"
 msgid "Update check failed!"
-msgstr ""
+msgstr "¡Falló la comprobación de actualización!"
 
 #. tr: Error message template. (Windows version, without formatting)
 #: ../src/win32/config/AboutTab.cpp:528
