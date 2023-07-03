@@ -26,7 +26,7 @@ extern "C" {
 	extern const CLSID CLSID_RP_ShellPropSheetExt;
 }
 
-namespace LibWin32Common {
+namespace LibWin32UI {
 	class RegKey;
 }
 
