@@ -25,10 +25,10 @@ namespace LibRpBase { namespace AboutTabText {
 
 // Program version creation macro
 #define RP_PROGRAM_VERSION(major, minor, revision, devel) \
-	( ((((uint64_t)major)    & 0xFFFFU) << 48U) | \
-	  ((((uint64_t)minor)    & 0xFFFFU) << 32U) | \
-	  ((((uint64_t)revision) & 0xFFFFU) << 16U) | \
-	   (((uint64_t)devel)    & 0xFFFFU) )
+	( ((((uint64_t)(major))    & 0xFFFFU) << 48U) | \
+	  ((((uint64_t)(minor))    & 0xFFFFU) << 32U) | \
+	  ((((uint64_t)(revision)) & 0xFFFFU) << 16U) | \
+	   (((uint64_t)(devel))    & 0xFFFFU) )
 
 /**
  * Get the program version as a 64-bit unsigned int.
