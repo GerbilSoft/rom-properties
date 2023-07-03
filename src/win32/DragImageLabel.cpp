@@ -188,7 +188,7 @@ bool DragImageLabelPrivate::rescaleImage(SIZE req_sz, SIZE &sz)
 
 	// Image is too small.
 	// TODO: Ensure dimensions don't exceed req_img_size.
-	SIZE orig_sz = sz;
+	const SIZE orig_sz = sz;
 	do {
 		// Increase by integer multiples until
 		// the icon is at least 32x32.
@@ -332,7 +332,7 @@ void CALLBACK DragImageLabelPrivate::AnimTimerProc(HWND hWnd, UINT uMsg, UINT_PT
 
 	// Next frame.
 	int delay = 0;
-	int frame = d->anim->iconAnimHelper.nextFrame(&delay);
+	const int frame = d->anim->iconAnimHelper.nextFrame(&delay);
 	if (delay <= 0 || frame < 0) {
 		// Invalid frame...
 		KillTimer(hWnd, idEvent);

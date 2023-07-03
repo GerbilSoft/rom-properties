@@ -15,7 +15,6 @@ using namespace LibRpBase;
 using namespace LibRpFile;
 
 // C++ STL classes.
-using std::array;
 using std::tstring;
 using std::vector;
 
@@ -24,7 +23,7 @@ using std::vector;
 #include "libromdata/config/TImageTypesConfig.cpp"
 using namespace LibRomData;
 
-class ImageTypesTabPrivate : public TImageTypesConfig<HWND>
+class ImageTypesTabPrivate final : public TImageTypesConfig<HWND>
 {
 	public:
 		ImageTypesTabPrivate();

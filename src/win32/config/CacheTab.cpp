@@ -232,7 +232,7 @@ void CacheTabPrivate::enumDrivesXP(void)
 		if (!(dwDrives & 1))
 			continue;
 		path[0] = L'A' + i;
-		UINT uiDriveType = GetDriveType(path);
+		const UINT uiDriveType = GetDriveType(path);
 		if (uiDriveType <= DRIVE_NO_ROOT_DIR || uiDriveType == DRIVE_REMOTE)
 			continue;
 
@@ -283,7 +283,7 @@ void CacheTabPrivate::updateDrivesXP(DWORD unitmask)
 
 		// Check the drive status.
 		path[0] = L'A' + i;
-		UINT uiDriveType = GetDriveType(path);
+		const UINT uiDriveType = GetDriveType(path);
 		if (uiDriveType > DRIVE_NO_ROOT_DIR && uiDriveType != DRIVE_REMOTE) {
 			// Get drive information.
 			DWORD_PTR ret = SHGetFileInfo(path, 0, &sfi, sizeof(sfi),
@@ -395,7 +395,7 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 	}
 
 	// Get the CLSID.
-	tstring s_clsidThumbnailCacheCleaner = hKey.read(nullptr);
+	const tstring s_clsidThumbnailCacheCleaner = hKey.read(nullptr);
 	if (s_clsidThumbnailCacheCleaner.size() != 38) {
 		// Not a CLSID.
 		SetWindowText(hStatusLabel, U82T_c(C_("CacheTab|Win32",
@@ -552,7 +552,7 @@ int CacheTabPrivate::clearRomPropertiesCache(void)
 
 	// Cache directory.
 	// Sanity check: Must be at least 8 characters.
-	const string cacheDir = FileSystem::getCacheDirectory();
+	const string &cacheDir = FileSystem::getCacheDirectory();
 	const size_t bscount = std::count_if(cacheDir.cbegin(), cacheDir.cend(),
 		[](TCHAR chr) noexcept -> bool { return (chr == L'\\'); });
 

@@ -66,7 +66,7 @@ unsigned int WINAPI UpdateChecker::ThreadProc(LPVOID lpParameter)
 
 	// Download the version file.
 	CacheManager cache;
-	string cache_filename = cache.download(updateVersionCacheKey);
+	const string cache_filename = cache.download(updateVersionCacheKey);
 	if (cache_filename.empty()) {
 		// Unable to download the version file.
 		updChecker->m_errorMessage = C_("UpdateChecker", "Failed to download version file.");
@@ -107,7 +107,7 @@ unsigned int WINAPI UpdateChecker::ThreadProc(LPVOID lpParameter)
 		}
 
 		char *endptr;
-		long long x = strtoll(token, &endptr, 10);
+		const long long x = strtoll(token, &endptr, 10);
 		if (x < 0 || *endptr != '\0') {
 			updChecker->m_errorMessage = C_("UpdateChecker", "Version file is invalid.");
 			SendMessage(updChecker->m_hWnd, WM_UPD_ERROR, 0, 0);

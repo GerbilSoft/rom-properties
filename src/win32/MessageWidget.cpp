@@ -234,7 +234,7 @@ void MessageWidgetPrivate::paint(void)
 			rect.right, rect.bottom - (szIcon.cy / 4)
 		};
 		TCHAR tbuf[128];
-		int len = GetWindowTextLength(hWnd);
+		const int len = GetWindowTextLength(hWnd);
 		if (len < _countof(tbuf)) {
 			GetWindowText(hWnd, tbuf, _countof(tbuf));
 			DrawText(hDC, tbuf, len, &textRect, 0);

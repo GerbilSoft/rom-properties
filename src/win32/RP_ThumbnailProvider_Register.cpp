@@ -45,7 +45,7 @@ LONG RP_ThumbnailProvider_Private::RegisterFileType(RegKey &hkey_Assoc)
 	// Is a custom IThumbnailProvider already registered?
 	DWORD dwTypeTreatment;
 	const tstring clsid_reg = hkcr_IThumbnailProvider.read(nullptr);
-	DWORD treatment = hkey_Assoc.read_dword(_T("Treatment"), &dwTypeTreatment);
+	const DWORD treatment = hkey_Assoc.read_dword(_T("Treatment"), &dwTypeTreatment);
 	if (!clsid_reg.empty() && clsid_reg != CLSID_RP_ThumbnailProvider_String) {
 		// Something else is registered.
 		// Copy it to the fallback key.

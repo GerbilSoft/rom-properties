@@ -113,7 +113,7 @@ LRESULT CALLBACK RP_ShellPropSheetExt_Private::MainDialogSubclassProc(
 			assert(d->hBtnOptions != nullptr);
 			if (!d->hBtnOptions)
 				break;
-			int menuId = OptionsMenuButton_PopupMenu(d->hBtnOptions);
+			const int menuId = OptionsMenuButton_PopupMenu(d->hBtnOptions);
 			if (menuId != 0) {
 				d->btnOptions_action_triggered(menuId);
 			}
@@ -345,7 +345,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 				ts_prevExportDir = U82T_c(rom_filename);
 
 				// Remove the filename portion.
-				size_t bspos = ts_prevExportDir.rfind(_T('\\'));
+				const size_t bspos = ts_prevExportDir.rfind(_T('\\'));
 				if (bspos != string::npos) {
 					if (bspos > 2) {
 						ts_prevExportDir.resize(bspos);
@@ -369,7 +369,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 				rom_basename = U82T_c(rom_filename);
 			}
 			// Remove the extension, if present.
-			size_t extpos = rom_basename.rfind(_T('.'));
+			const size_t extpos = rom_basename.rfind(_T('.'));
 			if (extpos != string::npos) {
 				rom_basename.resize(extpos);
 			}
@@ -387,7 +387,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 
 			// Save the previous export directory.
 			ts_prevExportDir = tfilename;
-			size_t bspos2 = ts_prevExportDir.rfind(_T('\\'));
+			const size_t bspos2 = ts_prevExportDir.rfind(_T('\\'));
 			if (bspos2 != tstring::npos && bspos2 > 3) {
 				ts_prevExportDir.resize(bspos2);
 			}
@@ -514,7 +514,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 		messageType = MB_ICONINFORMATION;
 
 		// Update fields.
-		for (int fieldIdx : params.fieldIdx) {
+		for (const int fieldIdx : params.fieldIdx) {
 			this->updateField(fieldIdx);
 		}
 

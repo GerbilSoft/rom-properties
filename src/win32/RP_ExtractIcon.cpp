@@ -161,7 +161,7 @@ IFACEMETHODIMP RP_ExtractIcon::GetCurFile(_In_ LPOLESTR *ppszFileName)
 		*ppszFileName = psz;
 	} else {
 		// Convert the filename to UTF-16 first and then copy it.
-		wstring wfilename = U82W_c(d->filename);
+		const wstring wfilename = U82W_c(d->filename);
 		const size_t cb = (wfilename.size() + 1) * sizeof(wchar_t);
 		LPWSTR psz = static_cast<LPWSTR>(CoTaskMemAlloc(cb));
 		if (!psz) {

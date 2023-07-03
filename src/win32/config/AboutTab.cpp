@@ -764,7 +764,7 @@ void AboutTabPrivate::initProgramTitleText(void)
 	if (ret == 0) {
 		RECT rectStaticVersion;
 		GetWindowRect(hStaticVersion, &rectStaticVersion);
-		SetWindowPos(hStaticVersion, 0, 0, 0,
+		SetWindowPos(hStaticVersion, nullptr, 0, 0,
 			rectStaticVersion.right - rectStaticVersion.left, sz_hStaticVersion.cy,
 			SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOMOVE);
 	}
@@ -784,7 +784,7 @@ void AboutTabPrivate::initProgramTitleText(void)
 
 		// Set the icon and move it over a bit.
 		Static_SetIcon(hStaticIcon, hIcon);
-		SetWindowPos(hStaticIcon, 0,
+		SetWindowPos(hStaticIcon, nullptr,
 			leftPos_icon, dlgMargin.top,
 			96, 96,
 			SWP_NOZORDER | SWP_NOOWNERZORDER);
@@ -807,7 +807,7 @@ void AboutTabPrivate::initProgramTitleText(void)
 			RECT rect_label;
 			GetClientRect(hLabel, &rect_label);
 			MapWindowPoints(hLabel, hWndPropSheet, (LPPOINT)&rect_label, 2);
-			SetWindowPos(hLabel, 0,
+			SetWindowPos(hLabel, nullptr,
 				leftPos, rect_label.top,
 				winRect.right - leftPos - rightPos - dlgMargin.left,
 				rect_label.bottom - rect_label.top,
@@ -815,7 +815,7 @@ void AboutTabPrivate::initProgramTitleText(void)
 		}
 
 		// Adjust the tab control.
-		SetWindowPos(hTabControl, 0,
+		SetWindowPos(hTabControl, nullptr,
 			dlgMargin.left, topPos,
 			winRect.right - (dlgMargin.left*2),
 			winRect.bottom - topPos - dlgMargin.top,
@@ -997,7 +997,7 @@ void AboutTabPrivate::initLibrariesTab(void)
 	// We have our own "+ APNG", so remove Gentoo's.
 	string pngVersionCompiled = "libpng " PNG_LIBPNG_VER_STRING;
 	for (size_t i = pngVersionCompiled.size()-1; i > 6; i--) {
-		char chr = pngVersionCompiled[i];
+		const char chr = pngVersionCompiled[i];
 		if (ISDIGIT(chr))
 			break;
 		pngVersionCompiled.resize(i);
@@ -1264,7 +1264,7 @@ void AboutTabPrivate::initDialog(void)
 #endif /* MSFTEDIT_USE_41 */
 
 	// Set the RichEdit's position.
-	SetWindowPos(hRichEdit, 0,
+	SetWindowPos(hRichEdit, nullptr,
 		tabRect.left + dlgMargin.left,
 		tabRect.top + dlgMargin.top,
 		tabRect.right - tabRect.left - (dlgMargin.left*2),

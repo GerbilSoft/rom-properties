@@ -172,7 +172,7 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_file)
 	// Initialize the row pointers.
 	unique_ptr<const uint8_t*[]> row_pointers(new const uint8_t*[height]);
 	const uint8_t *pixels = static_cast<const uint8_t*>(img->bits());
-	int stride = img->stride();
+	const int stride = img->stride();
 	for (int y = 0; y < height; y++, pixels += stride) {
 		row_pointers[y] = pixels;
 	}

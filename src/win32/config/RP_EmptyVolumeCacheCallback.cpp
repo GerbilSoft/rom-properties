@@ -57,7 +57,7 @@ IFACEMETHODIMP RP_EmptyVolumeCacheCallback::PurgeProgress(DWORDLONG dwlSpaceFree
 
 	// TODO: Better way to calculate a percentage?
 	// TODO: If dwFlags has EVCCBF_LASTNOTIFICATION, show 100% unconditionally?
-	float fPct = static_cast<float>(dwlSpaceFreed) / static_cast<float>(dwlSpaceToFree);
+	const float fPct = static_cast<float>(dwlSpaceFreed) / static_cast<float>(dwlSpaceToFree);
 	SendMessage(m_hProgressBar, PBM_SETSTATE, m_baseProgress + static_cast<unsigned int>(fPct * 100.0f), 0);
 	return S_OK;
 }

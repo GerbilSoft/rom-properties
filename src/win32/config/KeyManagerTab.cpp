@@ -194,7 +194,7 @@ class KeyManagerTabPrivate
 			// NOTE: If this is the root directory, the backslash is left intact.
 			// Otherwise, the backslash is removed.
 			ts_keyFileDir = tfilename;
-			size_t bspos = ts_keyFileDir.rfind(_T('\\'));
+			const size_t bspos = ts_keyFileDir.rfind(_T('\\'));
 			if (bspos != string::npos) {
 				if (bspos > 2) {
 					ts_keyFileDir.resize(bspos);
@@ -895,7 +895,7 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewSubclassProc(
 			lvhti.pt.y = GET_Y_LPARAM(lParam);
 
 			// Check if this point maps to a valid "Value" subitem.
-			int iItem = ListView_SubItemHitTest(hWnd, &lvhti);
+			const int iItem = ListView_SubItemHitTest(hWnd, &lvhti);
 			if (iItem < 0 || lvhti.iSubItem != 1) {
 				// Not a "Value" subitem.
 				break;
@@ -1432,7 +1432,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 
 	// Filename, minus directory.
 	tstring fileNoPath;
-	size_t bs_pos = filename.rfind(_T('\\'));
+	const size_t bs_pos = filename.rfind(_T('\\'));
 	if (bs_pos != tstring::npos && bs_pos != fileNoPath.size()-1) {
 		fileNoPath = filename.substr(bs_pos + 1);
 	} else {
@@ -1726,7 +1726,7 @@ void KeyManagerTabPrivate::importKeysFromBin(KeyStoreUI::ImportFileID id)
 		NOP_C_("KeyManagerTab", "3DS aeskeydb.bin"),
 	};
 
-	KeyStoreWin32::ImportReturn iret = keyStore->importKeysFromBin(id, T2U8(tfilename).c_str());
+	const KeyStoreWin32::ImportReturn iret = keyStore->importKeysFromBin(id, T2U8(tfilename).c_str());
 	showKeyImportReturnStatus(tfilename,
 		dpgettext_expr(RP_I18N_DOMAIN, "KeyManagerTab", import_menu_actions[(int)id]), iret);
 }

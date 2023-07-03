@@ -49,7 +49,7 @@ vector<int> LvData::measureColumnWidths(int *p_nl_max) const
 		int col = 0;
 		for (const auto &data_item : data_row) {
 			int nl_count = 0;
-			int width = LibWin32UI::measureStringForListView(hDC, data_item, &nl_count);
+			const int width = LibWin32UI::measureStringForListView(hDC, data_item, &nl_count);
 			col_widths[col] = std::max(col_widths[col], width);
 			nl_max = std::max(nl_max, nl_count);
 

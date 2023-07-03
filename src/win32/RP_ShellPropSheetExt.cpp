@@ -495,7 +495,7 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hDlg, _In_ HWND hWndTab,
 			winRect.bottom - tmpRect.top - szText.cy
 		};
 		// Set the position and size.
-		SetWindowPos(hDlgItem, 0, pos.x, pos.y, szText.cx, szText.cy,
+		SetWindowPos(hDlgItem, nullptr, pos.x, pos.y, szText.cx, szText.cy,
 			SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 
 		// Clear field_cy so the description widget won't show up
@@ -633,7 +633,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(HWND hDlg, HWND hWndTab,
 				// TODO: Use LibWin32UI::measureTextSize()?
 				SIZE textSize;
 				GetTextExtentPoint32(hDC, tname.data(), (int)tname.size(), &textSize);
-				int chk_w = rect_chkbox.right + textSize.cx;
+				const int chk_w = rect_chkbox.right + textSize.cx;
 				if (chk_w > col_widths[col]) {
 					col_widths[col] = chk_w;
 				}
@@ -961,7 +961,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 				tstring tstr = U82T_s(data_str);
 
 				int nl_count;
-				int width = LibWin32UI::measureStringForListView(hDC, tstr, &nl_count);
+				const int width = LibWin32UI::measureStringForListView(hDC, tstr, &nl_count);
 				if (col < colCount) {
 					lvData.col_widths[col] = std::max(lvData.col_widths[col], width);
 				}
@@ -1092,7 +1092,7 @@ int RP_ShellPropSheetExt_Private::initListData(HWND hDlg, HWND hWndTab,
 
 				assert(hIcon != nullptr);
 				if (hIcon) {
-					int idx = ImageList_AddIcon(himl, hIcon);
+					const int idx = ImageList_AddIcon(himl, hIcon);
 					if (idx >= 0) {
 						// Icon added.
 						iImage = idx;
@@ -1241,7 +1241,7 @@ int RP_ShellPropSheetExt_Private::initDateTime(HWND hDlg, HWND hWndTab,
 
 	if (!(field.flags & RomFields::RFT_DATETIME_IS_UTC)) {
 		// Convert to the current timezone.
-		SYSTEMTIME st_utc = st;
+		const SYSTEMTIME st_utc = st;
 		BOOL ret = SystemTimeToTzSpecificLocalTime(nullptr, &st_utc, &st);
 		if (!ret) {
 			// Conversion failed.
@@ -1341,7 +1341,7 @@ int RP_ShellPropSheetExt_Private::initAgeRatings(HWND hDlg, HWND hWndTab,
 	}
 
 	// Convert the age ratings field to a string.
-	string str = RomFields::ageRatingsDecode(age_ratings);
+	const string str = RomFields::ageRatingsDecode(age_ratings);
 	// Initialize the string field.
 	return initString(hDlg, hWndTab, pt_start, size, field, fieldIdx, U82T_s(str));
 }
@@ -1401,7 +1401,7 @@ int RP_ShellPropSheetExt_Private::initStringMulti(HWND hDlg, HWND hWndTab,
 	// NOTE 2: The string must be _T(""), not nullptr. Otherwise, it will
 	// attempt to use the field's string data, which is invalid.
 	HWND lblStringMulti = nullptr;
-	int field_cy = initString(hDlg, hWndTab, pt_start, size, field, fieldIdx,
+	const int field_cy = initString(hDlg, hWndTab, pt_start, size, field, fieldIdx,
 		_T(""), &lblStringMulti);
 	if (lblStringMulti) {
 		vecStringMulti.emplace_back(lblStringMulti, &field);
@@ -1536,7 +1536,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 				     ++iter_sdr, ++iter_ddr, col++)
 				{
 					tstring tstr = U82T_s(*iter_sdr);
-					int width = LibWin32UI::measureStringForListView(hDC, tstr);
+					const int width = LibWin32UI::measureStringForListView(hDC, tstr);
 					if (col < colCount) {
 						lvData.col_widths[col] = std::max(lvData.col_widths[col], width);
 					}
@@ -1617,7 +1617,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 		LanguageComboBox_SetLCs(cboLanguage, vec_lc.data());
 
 		// Get the minimum size for the combobox.
-		LPARAM minSize = LanguageComboBox_GetMinSize(cboLanguage);
+		const LPARAM minSize = LanguageComboBox_GetMinSize(cboLanguage);
 		SetWindowPos(cboLanguage, nullptr,
 			rectHeader.right - GET_X_LPARAM(minSize), rectHeader.top,
 			GET_X_LPARAM(minSize), GET_Y_LPARAM(minSize),
@@ -2604,7 +2604,7 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 				break;
 
 			// Tab widget. Show the selected tab.
-			int newTabIndex = TabCtrl_GetCurSel(tabWidget);
+			const int newTabIndex = TabCtrl_GetCurSel(tabWidget);
 			ShowWindow(tabs[curTabIndex].hDlg, SW_HIDE);
 			curTabIndex = newTabIndex;
 			auto &newTab = tabs[newTabIndex];
@@ -2893,7 +2893,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			// Did the background color change?
 			// NOTE: Assuming the main background color changed if
 			// the alternate row color changed.
-			COLORREF colorAltRow = LibWin32UI::getAltRowColor();
+			const COLORREF colorAltRow = LibWin32UI::getAltRowColor();
 			if (colorAltRow != d->colorAltRow) {
 				// Alternate row color changed.
 				d->colorAltRow = colorAltRow;
@@ -3118,7 +3118,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMs
 			}
 
 			// Make sure this doesn't go out of range.
-			int scrollPos = tab->scrollPos + deltaY;
+			const int scrollPos = tab->scrollPos + deltaY;
 			if (scrollPos < 0) {
 				deltaY -= scrollPos;
 			} else if (scrollPos + d->dlgSize.cy > tab->curPt.y) {
@@ -3165,7 +3165,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::SubtabDlgProc(HWND hDlg, UINT uMs
 			}
 
 			// Make sure this doesn't go out of range.
-			int scrollPos = tab->scrollPos + deltaY;
+			const int scrollPos = tab->scrollPos + deltaY;
 			if (scrollPos < 0) {
 				deltaY -= scrollPos;
 			} else if (scrollPos + d->dlgSize.cy > tab->curPt.y) {

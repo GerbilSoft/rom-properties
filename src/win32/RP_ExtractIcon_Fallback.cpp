@@ -3,7 +3,7 @@
  * RP_ExtractIcon_Fallback.cpp: IExtractIcon implementation.               *
  * Fallback functions for unsupported files.                               *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -220,7 +220,7 @@ LONG RP_ExtractIcon_Private::Fallback_int(RegKey &hkey_Assoc,
 
 	// Get the DefaultIcon key.
 	DWORD dwType;
-	tstring defaultIcon = hkey_RP_Fallback.read_expand(_T("DefaultIcon"), &dwType);
+	const tstring defaultIcon = hkey_RP_Fallback.read_expand(_T("DefaultIcon"), &dwType);
 	if (defaultIcon.empty()) {
 		// No default icon.
 		return ERROR_FILE_NOT_FOUND;
@@ -312,7 +312,7 @@ LONG RP_ExtractIcon_Private::Fallback(HICON *phiconLarge, HICON *phiconSmall, UI
 	}
 
 	// If we have a ProgID, check it first.
-	tstring progID = hkcr_Assoc.read(nullptr);
+	const tstring progID = hkcr_Assoc.read(nullptr);
 	if (!progID.empty()) {
 		// Custom ProgID is registered.
 		// TODO: Get the correct top-level registry key.
