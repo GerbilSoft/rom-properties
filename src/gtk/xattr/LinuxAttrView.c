@@ -236,7 +236,6 @@ rp_linux_attr_view_init(RpLinuxAttrView *widget)
 
 	// Checkboxes
 	int col = 0, row = 0;
-	const CheckboxInfo *const p_end = &checkboxInfo[ARRAY_SIZE(checkboxInfo)];
 #ifdef USE_GTK_GRID
 	GtkWidget *const gridCheckboxes = gtk_grid_new();
 #else /* !USE_GTK_GRID */
@@ -246,14 +245,16 @@ rp_linux_attr_view_init(RpLinuxAttrView *widget)
 	GtkWidget *const gridCheckboxes = gtk_table_new(row_count, col_count, FALSE);
 #endif /* USE_GTK_GRID */
 	gtk_widget_set_name(gridCheckboxes, "gridCheckboxes");
-	GtkWidget **pCheckboxes = &widget->checkboxes[0];
-	for (const CheckboxInfo *p = checkboxInfo; p < p_end; p++, pCheckboxes++) {
+	for (int i = 0; i < CHECKBOX_MAX; i++) {
+		const CheckboxInfo *const p = &checkboxInfo[i];
+
 		GtkWidget *const checkBox = gtk_check_button_new_with_label(
 			dpgettext_expr(RP_I18N_DOMAIN, "LinuxAttrView", p->label));
 		gtk_widget_set_name(checkBox, p->name);
 		gtk_widget_set_tooltip_text(checkBox,
 			dpgettext_expr(RP_I18N_DOMAIN, "LinuxAttrView", p->tooltip));
-		*pCheckboxes = checkBox;
+
+		widget->checkboxes[i] = checkBox;
 
 #ifdef USE_GTK_GRID
 		gtk_grid_attach(GTK_GRID(gridCheckboxes), checkBox, col, row, 1, 1);
