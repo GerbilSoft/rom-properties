@@ -68,12 +68,17 @@ struct _RpDosAttrView {
 	gboolean inhibit_checkbox_no_toggle;
 
 	// Attribute checkboxes
-	GtkWidget *chkReadOnly;
-	GtkWidget *chkHidden;
-	GtkWidget *chkArchive;
-	GtkWidget *chkSystem;
-	GtkWidget *chkCompressed;
-	GtkWidget *chkEncrypted;
+	union {
+		struct {
+			GtkWidget *chkReadOnly;
+			GtkWidget *chkHidden;
+			GtkWidget *chkArchive;
+			GtkWidget *chkSystem;
+			GtkWidget *chkCompressed;
+			GtkWidget *chkEncrypted;
+		};
+		GtkWidget *checkBoxes[6];
+	};
 };
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -165,12 +170,9 @@ rp_dos_attr_view_init(RpDosAttrView *widget)
 	// NOTE: Unlike Qt, both the "clicked" and "toggled" signals are
 	// emitted for both user and program modifications, so we have to
 	// connect this signal *after* setting the initial value.
-	g_signal_connect(widget->chkReadOnly, "toggled", G_CALLBACK(checkbox_no_toggle_signal_handler), widget);
-	g_signal_connect(widget->chkHidden, "toggled", G_CALLBACK(checkbox_no_toggle_signal_handler), widget);
-	g_signal_connect(widget->chkArchive, "toggled", G_CALLBACK(checkbox_no_toggle_signal_handler), widget);
-	g_signal_connect(widget->chkSystem, "toggled", G_CALLBACK(checkbox_no_toggle_signal_handler), widget);
-	g_signal_connect(widget->chkCompressed, "toggled", G_CALLBACK(checkbox_no_toggle_signal_handler), widget);
-	g_signal_connect(widget->chkEncrypted, "toggled", G_CALLBACK(checkbox_no_toggle_signal_handler), widget);
+	for (size_t i = 0; i < ARRAY_SIZE(widget->checkBoxes); i++) {
+		g_signal_connect(widget->checkBoxes[i], "toggled", G_CALLBACK(checkbox_no_toggle_signal_handler), widget);
+	}
 }
 
 GtkWidget*
@@ -235,19 +237,18 @@ rp_dos_attr_view_update_attrs_display(RpDosAttrView *widget)
 {
 	widget->inhibit_checkbox_no_toggle = TRUE;
 
-	gboolean val;
-#define UPDATE_CHECKBOX(attr, obj) \
-	val = !!(widget->attrs & (attr)); \
-	gtk_check_button_set_active(GTK_CHECK_BUTTON(widget->obj), val); \
-	g_object_set_qdata(G_OBJECT(widget->obj), DosAttrView_value_quark, GUINT_TO_POINTER((guint)val))
+	// Flag order, relative to checkboxes
+	// NOTE: Uses bit indexes.
+	static const uint8_t flag_order[] = {
+		 0,  1,  5,  2,	// RHAS
+		11, 14,		// CE
+	};
 
-	UPDATE_CHECKBOX(FILE_ATTRIBUTE_READONLY, chkReadOnly);
-	UPDATE_CHECKBOX(FILE_ATTRIBUTE_HIDDEN, chkHidden);
-	UPDATE_CHECKBOX(FILE_ATTRIBUTE_ARCHIVE, chkArchive);
-	UPDATE_CHECKBOX(FILE_ATTRIBUTE_SYSTEM, chkSystem);
-
-	UPDATE_CHECKBOX(FILE_ATTRIBUTE_COMPRESSED, chkCompressed);
-	UPDATE_CHECKBOX(FILE_ATTRIBUTE_ENCRYPTED, chkEncrypted);
+	for (size_t i = 0; i < ARRAY_SIZE(widget->checkBoxes); i++) {
+		gboolean val = !!(widget->attrs & (1U << flag_order[i]));
+		gtk_check_button_set_active(GTK_CHECK_BUTTON(widget->checkBoxes[i]), val);
+		g_object_set_qdata(G_OBJECT(widget->checkBoxes[i]), DosAttrView_value_quark, GUINT_TO_POINTER((guint)val));
+	}
 
 	widget->inhibit_checkbox_no_toggle = FALSE;
 }
