@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * LinuxAttrView.cpp: Linux file system attribute viewer widget.           *
  *                                                                         *
- * Copyright (c) 2022 by David Korth.                                      *
+ * Copyright (c) 2022-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -175,7 +175,7 @@ const LinuxAttrViewPrivate::CheckboxInfo LinuxAttrViewPrivate::checkboxInfo[Linu
  */
 void LinuxAttrViewPrivate::retranslateUi_nonDesigner(void)
 {
-	for (int i = 0; i < ARRAY_SIZE_I(checkBoxes); i++) {
+	for (size_t i = 0; i < ARRAY_SIZE(checkBoxes); i++) {
 		checkBoxes[i]->setText(U82Q(dpgettext_expr(RP_I18N_DOMAIN, "LinuxAttrView", checkboxInfo[i].label)));
 		checkBoxes[i]->setToolTip(U82Q(dpgettext_expr(RP_I18N_DOMAIN, "LinuxAttrView", checkboxInfo[i].tooltip)));
 	}
@@ -205,7 +205,7 @@ void LinuxAttrViewPrivate::updateFlagsString(void)
 	};
 
 	for (int i = 0; i < ARRAY_SIZE_I(flags_array); i++) {
-		if (flags & (1 << flags_array[i].bit)) {
+		if (flags & (1U << flags_array[i].bit)) {
 			str[i] = QLatin1Char(flags_array[i].chr);
 		}
 	}
@@ -226,7 +226,7 @@ void LinuxAttrViewPrivate::updateFlagsCheckboxes(void)
 		 3, 15, 17,  1, 25, 20
 	};
 
-	for (int i = 0; i < CHECKBOX_MAX; i++) {
+	for (size_t i = 0; i < ARRAY_SIZE(checkBoxes); i++) {
 		bool val = !!(flags & (1U << flag_order[i]));
 		checkBoxes[i]->setChecked(val);
 		checkBoxes[i]->setProperty("LinuxAttrView.value", val);
@@ -245,7 +245,7 @@ LinuxAttrView::LinuxAttrView(QWidget *parent)
 	// Create the checkboxes.
 	static const int max_col = 4;
 	int col = 0, row = 0;
-	for (int i = 0; i < LinuxAttrViewPrivate::CHECKBOX_MAX; i++) {
+	for (size_t i = 0; i < ARRAY_SIZE(d->checkBoxes); i++) {
 		const LinuxAttrViewPrivate::CheckboxInfo *const p = &d->checkboxInfo[i];
 
 		QCheckBox *const checkBox = new QCheckBox();

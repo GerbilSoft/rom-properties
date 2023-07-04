@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * LinuxAttrView.c: Linux file system attribute viewer widget.             *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -245,7 +245,7 @@ rp_linux_attr_view_init(RpLinuxAttrView *widget)
 	GtkWidget *const gridCheckboxes = gtk_table_new(row_count, col_count, FALSE);
 #endif /* USE_GTK_GRID */
 	gtk_widget_set_name(gridCheckboxes, "gridCheckboxes");
-	for (int i = 0; i < CHECKBOX_MAX; i++) {
+	for (size_t i = 0; i < ARRAY_SIZE(widget->checkBoxes); i++) {
 		const CheckboxInfo *const p = &checkboxInfo[i];
 
 		GtkWidget *const checkBox = gtk_check_button_new_with_label(
@@ -370,8 +370,8 @@ rp_linux_attr_view_update_flags_string(RpLinuxAttrView *widget)
 		{ 20, 'V' }, { 10, 'm' }
 	};
 
-	for (int i = 0; i < ARRAY_SIZE_I(flags_array); i++) {
-		if (widget->flags & (1 << flags_array[i].bit)) {
+	for (size_t i = 0; i < ARRAY_SIZE(flags_array); i++) {
+		if (widget->flags & (1U << flags_array[i].bit)) {
 			str[i] = flags_array[i].chr;
 		}
 	}
@@ -396,7 +396,7 @@ rp_linux_attr_view_update_flags_checkboxes(RpLinuxAttrView *widget)
 		 3, 15, 17,  1, 25, 20
 	};
 
-	for (int i = 0; i < CHECKBOX_MAX; i++) {
+	for (size_t i = 0; i < ARRAY_SIZE(widget->checkBoxes); i++) {
 		gboolean val = !!(widget->flags & (1U << flag_order[i]));
 		gtk_check_button_set_active(GTK_CHECK_BUTTON(widget->checkBoxes[i]), val);
 		g_object_set_qdata(G_OBJECT(widget->checkBoxes[i]), LinuxAttrView_value_quark, GUINT_TO_POINTER((guint)val));
