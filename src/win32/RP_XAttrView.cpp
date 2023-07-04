@@ -70,15 +70,25 @@ int RP_XAttrView_Private::loadDosAttrs(void)
 	const bool hasDosAttributes = xattrReader->hasDosAttributes();
 	const unsigned int attrs = (likely(hasDosAttributes)) ? xattrReader->dosAttributes() : 0;
 
-#define SET_CHECK(id, attr) \
-	Button_SetCheck(GetDlgItem(hDlgSheet, (id)), (attrs & (attr)) ? BST_CHECKED : BST_UNCHECKED);
+	// TODO: Use a "starting resource ID" instead of specifying each one?
+	struct res_map_t {
+		uint16_t id;
+		uint16_t attr;
+	};
+	static const res_map_t res_map[] = {
+		{IDC_XATTRVIEW_DOS_READONLY, FILE_ATTRIBUTE_READONLY},
+		{IDC_XATTRVIEW_DOS_HIDDEN, FILE_ATTRIBUTE_HIDDEN},
+		{IDC_XATTRVIEW_DOS_ARCHIVE, FILE_ATTRIBUTE_ARCHIVE},
+		{IDC_XATTRVIEW_DOS_SYSTEM, FILE_ATTRIBUTE_SYSTEM},
+		{IDC_XATTRVIEW_NTFS_COMPRESSED, FILE_ATTRIBUTE_COMPRESSED},
+		{IDC_XATTRVIEW_NTFS_ENCRYPTED, FILE_ATTRIBUTE_ENCRYPTED},
+	};
 
-	SET_CHECK(IDC_XATTRVIEW_DOS_READONLY, FILE_ATTRIBUTE_READONLY);
-	SET_CHECK(IDC_XATTRVIEW_DOS_HIDDEN, FILE_ATTRIBUTE_HIDDEN);
-	SET_CHECK(IDC_XATTRVIEW_DOS_ARCHIVE, FILE_ATTRIBUTE_ARCHIVE);
-	SET_CHECK(IDC_XATTRVIEW_DOS_SYSTEM, FILE_ATTRIBUTE_SYSTEM);
-	SET_CHECK(IDC_XATTRVIEW_NTFS_COMPRESSED, FILE_ATTRIBUTE_COMPRESSED);
-	SET_CHECK(IDC_XATTRVIEW_NTFS_ENCRYPTED, FILE_ATTRIBUTE_ENCRYPTED);
+	for (size_t i = 0; i < ARRAY_SIZE(res_map); i++) {
+		const res_map_t *const p = &res_map[i];
+		Button_SetCheck(GetDlgItem(hDlgSheet, p->id), (attrs & p->attr) ? BST_CHECKED : BST_UNCHECKED);
+	}
+
 	return (likely(hasDosAttributes)) ? 0 : -ENOENT;
 }
 
@@ -212,12 +222,10 @@ int RP_XAttrView_Private::loadAttributes(void)
  */
 void RP_XAttrView_Private::clearDisplayWidgets()
 {
-	Button_SetCheck(GetDlgItem(hDlgSheet, IDC_XATTRVIEW_DOS_READONLY), BST_UNCHECKED);
-	Button_SetCheck(GetDlgItem(hDlgSheet, IDC_XATTRVIEW_DOS_HIDDEN), BST_UNCHECKED);
-	Button_SetCheck(GetDlgItem(hDlgSheet, IDC_XATTRVIEW_DOS_ARCHIVE), BST_UNCHECKED);
-	Button_SetCheck(GetDlgItem(hDlgSheet, IDC_XATTRVIEW_DOS_SYSTEM), BST_UNCHECKED);
-	Button_SetCheck(GetDlgItem(hDlgSheet, IDC_XATTRVIEW_NTFS_COMPRESSED), BST_UNCHECKED);
-	Button_SetCheck(GetDlgItem(hDlgSheet, IDC_XATTRVIEW_NTFS_ENCRYPTED), BST_UNCHECKED);
+	// NOTE: Assuming contiguous resource IDs.
+	for (uint16_t id = IDC_XATTRVIEW_DOS_READONLY; id <= IDC_XATTRVIEW_NTFS_ENCRYPTED; id++) {
+		Button_SetCheck(GetDlgItem(hDlgSheet, id), BST_UNCHECKED);
+	}
 
 	ListView_DeleteAllItems(GetDlgItem(hDlgSheet, IDC_XATTRVIEW_LISTVIEW_ADS));
 }
