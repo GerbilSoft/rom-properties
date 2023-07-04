@@ -2,12 +2,18 @@
 "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node>
   <!-- https://specifications.freedesktop.org/notification-spec/latest/ar01s09.html -->
+  <!--
+      NOTE: This version is modified for rom-properties to disable unnecessary
+      functions in order to reduce the size of the generated wrapper code.
+  -->
   <interface name="org.freedesktop.Notifications">
     <annotation name="org.gtk.GDBus.C.Name" value="Notifications"/>
 
+    <!--
     <method name="GetCapabilities">
       <arg name="return_caps" type="as" direction="out"/>
     </method>
+    -->
     <method name="Notify">
       <arg name="app_name" type="s" direction="in"/>
       <arg name="id" type="u" direction="in"/>
@@ -20,27 +26,37 @@
       <arg name="return_id" type="u" direction="out"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.In6" value="QVariantMap"/>
     </method>
+    <!--
     <method name="CloseNotification">
       <arg name="id" type="u" direction="in"/>
     </method>
+    -->
+    <!--
     <method name="GetServerInformation">
       <arg name="return_name" type="s" direction="out"/>
       <arg name="return_vendor" type="s" direction="out"/>
       <arg name="return_version" type="s" direction="out"/>
       <arg name="return_spec_version" type="s" direction="out"/>
     </method>
+    -->
 
+    <!--
     <signal name="CheckPermissions">
       <arg name="id" type="u"/>
       <arg name="reason" type="u"/>
     </signal>
+    -->
+    <!--
     <signal name="ActionInvoked">
       <arg name="id" type="u"/>
       <arg name="action_key" type="s"/>
     </signal>
+    -->
+    <!--
     <signal name="ActivationToken">
       <arg name="id" type="u"/>
       <arg name="activation_token" type="s"/>
     </signal>
+    -->
   </interface>
 </node>
