@@ -36,18 +36,30 @@ class RomDataView : public QWidget
 		/** QWidget overridden functions. **/
 
 		/**
-		 * Window has been hidden.
+		 * Window is now visible.
 		 * This means that this tab has been selected.
-		 * @param event QShowEvent.
+		 * @param event QShowEvent
 		 */
 		void showEvent(QShowEvent *event) final;
 
 		/**
 		 * Window has been hidden.
 		 * This means that a different tab has been selected.
-		 * @param event QHideEvent.
+		 * @param event QHideEvent
 		 */
 		void hideEvent(QHideEvent *event) final;
+
+		/**
+		 * Paint event.
+		 *
+		 * The window is technically "shown" and hidden at least once
+		 * before the tab is selected, which causes the achievement
+		 * notification to be triggered too early. Wait for an actual
+		 * paint event before checking for achievements instead.
+		 *
+		 * @param event QPaintEvent
+		 */
+		void paintEvent(QPaintEvent *event) final;
 
 		/**
 		 * Event filter for recalculating RFT_LISTDATA row heights.

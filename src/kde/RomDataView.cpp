@@ -1145,9 +1145,9 @@ RomDataView::~RomDataView()
 /** QWidget overridden functions. **/
 
 /**
- * Window has been hidden.
+ * Window is now visible.
  * This means that this tab has been selected.
- * @param event QShowEvent.
+ * @param event QShowEvent
  */
 void RomDataView::showEvent(QShowEvent *event)
 {
@@ -1160,12 +1160,6 @@ void RomDataView::showEvent(QShowEvent *event)
 		d->btnOptions->show();
 	}
 
-	// Check for "viewed" achievements.
-	if (!d->hasCheckedAchievements) {
-		d->romData->checkViewedAchievements();
-		d->hasCheckedAchievements = true;
-	}
-
 	// Pass the event to the superclass.
 	super::showEvent(event);
 }
@@ -1173,7 +1167,7 @@ void RomDataView::showEvent(QShowEvent *event)
 /**
  * Window has been hidden.
  * This means that a different tab has been selected.
- * @param event QHideEvent.
+ * @param event QHideEvent
  */
 void RomDataView::hideEvent(QHideEvent *event)
 {
@@ -1188,6 +1182,29 @@ void RomDataView::hideEvent(QHideEvent *event)
 
 	// Pass the event to the superclass.
 	super::hideEvent(event);
+}
+
+/**
+ * Paint event.
+ *
+ * The window is technically "shown" and hidden at least once
+ * before the tab is selected, which causes the achievement
+ * notification to be triggered too early. Wait for an actual
+ * paint event before checking for achievements instead.
+ *
+ * @param event QPaintEvent
+ */
+void RomDataView::paintEvent(QPaintEvent *event)
+{
+	// Check for "viewed" achievements.
+	Q_D(RomDataView);
+	if (!d->hasCheckedAchievements) {
+		d->romData->checkViewedAchievements();
+		d->hasCheckedAchievements = true;
+	}
+
+	// Pass the event to the superclass.
+	super::paintEvent(event);
 }
 
 bool RomDataView::eventFilter(QObject *object, QEvent *event)

@@ -12,6 +12,8 @@
     loading certain cover art from the PS1/PS2 section of RPDB.
     * Fixes #386: Some ps2 games never get their boxart
       * Reported by @Masamune3210.
+  * KDE: Fix an issue where achievements are checked when the properties dialog
+    is opened instead of when the "ROM Properties" tab is selected.
 
 ## v2.2 (released 2023/07/01)
 
