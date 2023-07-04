@@ -425,8 +425,8 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 	// NOTE: MSVC debug runtimes are NOT redistributable.
 	// TODO: Move somewhere else?
 	static const struct {
-		unsigned int dll_name_version;	// e.g. 140, 120
-		const char display_version[8];
+		uint16_t dll_name_version;	// e.g. 140, 120
+		const char display_version[6];
 		const char *url_i386;	// i386 download link
 		const char *url_amd64;	// amd64 download link
 	} msvc_dll_tbl[] = {
@@ -449,7 +449,7 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 	static const struct {
 		uint8_t ver_major;
 		uint8_t ver_minor;
-		const char dll_name[13];
+		const char dll_name[14];
 		const char *url;
 	} msvb_dll_tbl[] = {
 		{6,0, "msvbvm60.dll", "https://download.microsoft.com/download/5/a/d/5ad868a0-8ecd-4bb0-a882-fe53eb7ef348/VB6.0-KB290887-X86.exe"},
