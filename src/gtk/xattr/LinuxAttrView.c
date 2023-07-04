@@ -180,7 +180,7 @@ struct _RpLinuxAttrView {
 	GtkWidget *lblLsAttr;
 
 	// See enum CheckboxID and checkboxInfo.
-	GtkWidget *checkboxes[CHECKBOX_MAX];
+	GtkWidget *checkBoxes[CHECKBOX_MAX];
 };
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -254,7 +254,7 @@ rp_linux_attr_view_init(RpLinuxAttrView *widget)
 		gtk_widget_set_tooltip_text(checkBox,
 			dpgettext_expr(RP_I18N_DOMAIN, "LinuxAttrView", p->tooltip));
 
-		widget->checkboxes[i] = checkBox;
+		widget->checkBoxes[i] = checkBox;
 
 #ifdef USE_GTK_GRID
 		gtk_grid_attach(GTK_GRID(gridCheckboxes), checkBox, col, row, 1, 1);
@@ -398,8 +398,8 @@ rp_linux_attr_view_update_flags_checkboxes(RpLinuxAttrView *widget)
 
 	for (int i = 0; i < CHECKBOX_MAX; i++) {
 		gboolean val = !!(widget->flags & (1U << flag_order[i]));
-		gtk_check_button_set_active(GTK_CHECK_BUTTON(widget->checkboxes[i]), val);
-		g_object_set_qdata(G_OBJECT(widget->checkboxes[i]), LinuxAttrView_value_quark, GUINT_TO_POINTER((guint)val));
+		gtk_check_button_set_active(GTK_CHECK_BUTTON(widget->checkBoxes[i]), val);
+		g_object_set_qdata(G_OBJECT(widget->checkBoxes[i]), LinuxAttrView_value_quark, GUINT_TO_POINTER((guint)val));
 	}
 
 	widget->inhibit_checkbox_no_toggle = FALSE;
