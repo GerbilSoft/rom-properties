@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
  * DosAttrView.cpp: MS-DOS file system attribute viewer widget.            *
  *                                                                         *
- * Copyright (c) 2022 by David Korth.                                      *
+ * Copyright (c) 2022-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -122,7 +122,7 @@ void DosAttrView::clearAttrs(void)
  */
 void DosAttrView::checkBox_clicked_slot(bool checked)
 {
-	QAbstractButton *sender = qobject_cast<QAbstractButton*>(QObject::sender());
+	QAbstractButton *const sender = qobject_cast<QAbstractButton*>(QObject::sender());
 	if (!sender)
 		return;
 

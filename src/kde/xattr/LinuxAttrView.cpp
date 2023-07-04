@@ -331,7 +331,7 @@ void LinuxAttrView::clearFlags(void)
  */
 void LinuxAttrView::checkBox_clicked_slot(bool checked)
 {
-	QAbstractButton *sender = qobject_cast<QAbstractButton*>(QObject::sender());
+	QAbstractButton *const sender = qobject_cast<QAbstractButton*>(QObject::sender());
 	if (!sender)
 		return;
 
