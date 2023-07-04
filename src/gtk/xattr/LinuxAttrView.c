@@ -236,10 +236,10 @@ rp_linux_attr_view_init(RpLinuxAttrView *widget)
 
 	// Checkboxes
 	int col = 0, row = 0;
+	static const int col_count = 4;
 #ifdef USE_GTK_GRID
 	GtkWidget *const gridCheckboxes = gtk_grid_new();
 #else /* !USE_GTK_GRID */
-	static const int col_count = 4;
 	static const int row_count = (ARRAY_SIZE(checkboxInfo) / col_count) +
 				    ((ARRAY_SIZE(checkboxInfo) % col_count) > 0);
 	GtkWidget *const gridCheckboxes = gtk_table_new(row_count, col_count, FALSE);
@@ -270,7 +270,7 @@ rp_linux_attr_view_init(RpLinuxAttrView *widget)
 
 		// Next cell.
 		col++;
-		if (col == 4) {
+		if (col == col_count) {
 			col = 0;
 			row++;
 		}
