@@ -71,7 +71,7 @@ class LinuxAttrViewPrivate
 		int flags;
 
 		// See enum CheckboxID and checkboxInfo.
-		QCheckBox *checkboxes[CHECKBOX_MAX];
+		QCheckBox *checkBoxes[CHECKBOX_MAX];
 
 	public:
 		/**
@@ -175,9 +175,9 @@ const LinuxAttrViewPrivate::CheckboxInfo LinuxAttrViewPrivate::checkboxInfo[Linu
  */
 void LinuxAttrViewPrivate::retranslateUi_nonDesigner(void)
 {
-	for (int i = 0; i < ARRAY_SIZE_I(checkboxes); i++) {
-		checkboxes[i]->setText(U82Q(dpgettext_expr(RP_I18N_DOMAIN, "LinuxAttrView", checkboxInfo[i].label)));
-		checkboxes[i]->setToolTip(U82Q(dpgettext_expr(RP_I18N_DOMAIN, "LinuxAttrView", checkboxInfo[i].tooltip)));
+	for (int i = 0; i < ARRAY_SIZE_I(checkBoxes); i++) {
+		checkBoxes[i]->setText(U82Q(dpgettext_expr(RP_I18N_DOMAIN, "LinuxAttrView", checkboxInfo[i].label)));
+		checkBoxes[i]->setToolTip(U82Q(dpgettext_expr(RP_I18N_DOMAIN, "LinuxAttrView", checkboxInfo[i].tooltip)));
 	}
 }
 
@@ -228,8 +228,8 @@ void LinuxAttrViewPrivate::updateFlagsCheckboxes(void)
 
 	for (int i = 0; i < CHECKBOX_MAX; i++) {
 		bool val = !!(flags & (1U << flag_order[i]));
-		checkboxes[i]->setChecked(val);
-		checkboxes[i]->setProperty("LinuxAttrView.value", val);
+		checkBoxes[i]->setChecked(val);
+		checkBoxes[i]->setProperty("LinuxAttrView.value", val);
 	}
 }
 
@@ -256,7 +256,7 @@ LinuxAttrView::LinuxAttrView(QWidget *parent)
 		connect(checkBox, SIGNAL(clicked(bool)),
 			this, SLOT(checkBox_clicked_slot(bool)));
 
-		d->checkboxes[i] = checkBox;
+		d->checkBoxes[i] = checkBox;
 
 		// Next checkbox
 		col++;
