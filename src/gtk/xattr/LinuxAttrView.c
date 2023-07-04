@@ -385,39 +385,19 @@ rp_linux_attr_view_update_flags_checkboxes(RpLinuxAttrView *widget)
 {
 	widget->inhibit_checkbox_no_toggle = TRUE;
 
-	gboolean val;
-#define UPDATE_CHECKBOX(flag, obj) \
-	val = !!(widget->flags & (flag)); \
-	gtk_check_button_set_active(GTK_CHECK_BUTTON(widget->checkboxes[obj]), val); \
-	g_object_set_qdata(G_OBJECT(widget->checkboxes[obj]), LinuxAttrView_value_quark, GUINT_TO_POINTER((guint)val))
+	// Flag order, relative to checkboxes
+	// NOTE: Uses bit indexes.
+	static const uint8_t flag_order[] = {
+		 5,  7,  2, 23,  6, 16, 19, 11,
+		30,  4, 12, 14, 10, 28, 29,  0,
+		 3, 15, 17,  1, 25, 20
+	};
 
-	UPDATE_CHECKBOX(FS_APPEND_FL, chkAppendOnly);
-	UPDATE_CHECKBOX(FS_NOATIME_FL, chkNoATime);
-	UPDATE_CHECKBOX(FS_COMPR_FL, chkCompressed);
-	UPDATE_CHECKBOX(FS_NOCOW_FL, chkNoCOW);
-
-	UPDATE_CHECKBOX(FS_NODUMP_FL, chkNoDump);
-	UPDATE_CHECKBOX(FS_DIRSYNC_FL, chkDirSync);
-	UPDATE_CHECKBOX(FS_EXTENT_FL, chkExtents);
-	UPDATE_CHECKBOX(FS_ENCRYPT_FL, chkEncrypted);
-
-	UPDATE_CHECKBOX(FS_CASEFOLD_FL, chkCasefold);
-	UPDATE_CHECKBOX(FS_IMMUTABLE_FL, chkImmutable);
-	UPDATE_CHECKBOX(FS_INDEX_FL, chkIndexed);
-	UPDATE_CHECKBOX(FS_JOURNAL_DATA_FL, chkJournalled);
-
-	UPDATE_CHECKBOX(FS_NOCOMP_FL, chkNoCompress);
-	UPDATE_CHECKBOX(FS_INLINE_DATA_FL, chkInlineData);
-	UPDATE_CHECKBOX(FS_PROJINHERIT_FL, chkProject);
-	UPDATE_CHECKBOX(FS_SECRM_FL, chkSecureDelete);
-
-	UPDATE_CHECKBOX(FS_SYNC_FL, chkFileSync);
-	UPDATE_CHECKBOX(FS_NOTAIL_FL, chkNoTailMerge);
-	UPDATE_CHECKBOX(FS_TOPDIR_FL, chkTopDir);
-	UPDATE_CHECKBOX(FS_UNRM_FL, chkUndelete);
-
-	UPDATE_CHECKBOX(FS_DAX_FL, chkDAX);
-	UPDATE_CHECKBOX(FS_VERITY_FL, chkVerity);
+	for (int i = 0; i < CHECKBOX_MAX; i++) {
+		gboolean val = !!(widget->flags & (1U << flag_order[i]));
+		gtk_check_button_set_active(GTK_CHECK_BUTTON(widget->checkboxes[i]), val);
+		g_object_set_qdata(G_OBJECT(widget->checkboxes[i]), LinuxAttrView_value_quark, GUINT_TO_POINTER((guint)val));
+	}
 
 	widget->inhibit_checkbox_no_toggle = FALSE;
 }
