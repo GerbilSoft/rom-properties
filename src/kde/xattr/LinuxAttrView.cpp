@@ -218,6 +218,8 @@ void LinuxAttrViewPrivate::updateFlagsString(void)
  */
 void LinuxAttrViewPrivate::updateFlagsCheckboxes(void)
 {
+	static_assert(ARRAY_SIZE(checkBoxes) == ARRAY_SIZE(checkboxInfo), "checkBoxes and checkboxInfo are out of sync!");
+
 	// Flag order, relative to checkboxes
 	// NOTE: Uses bit indexes.
 	static const uint8_t flag_order[] = {

@@ -386,6 +386,8 @@ rp_linux_attr_view_update_flags_string(RpLinuxAttrView *widget)
 static void
 rp_linux_attr_view_update_flags_checkboxes(RpLinuxAttrView *widget)
 {
+	static_assert(ARRAY_SIZE(widget->checkBoxes) == ARRAY_SIZE(checkboxInfo), "checkBoxes and checkboxInfo are out of sync!");
+
 	widget->inhibit_checkbox_no_toggle = TRUE;
 
 	// Flag order, relative to checkboxes
