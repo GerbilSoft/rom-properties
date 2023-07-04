@@ -463,10 +463,9 @@ int EXEPrivate::findPERuntimeDLL(string &refDesc, string &refLink)
 
 	// Check all of the DLL names.
 	bool found = false;
-	const auto peImportNames_cend = peImportNames.cend();
-	for (auto iter = peImportNames.cbegin(); iter != peImportNames_cend && !found; ++iter) {
+	for (const auto &s_dll_name : peImportNames) {
 		// Current DLL name from the import table.
-		const char *const dll_name = iter->c_str();
+		const char *const dll_name = s_dll_name.c_str();
 
 		// Check for MSVC 2015-2019. (vcruntime140.dll)
 		if (!strcasecmp(dll_name, "vcruntime140.dll")) {
