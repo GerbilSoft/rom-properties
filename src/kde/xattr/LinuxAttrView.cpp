@@ -26,8 +26,58 @@ class LinuxAttrViewPrivate
 		Q_DISABLE_COPY(LinuxAttrViewPrivate)
 
 	public:
+		enum CheckboxID : uint8_t {
+			chkAppendOnly,
+			chkNoATime,
+			chkCompressed,
+			chkNoCOW,
+
+			chkNoDump,
+			chkDirSync,
+			chkExtents,
+			chkEncrypted,
+
+			chkCasefold,
+			chkImmutable,
+			chkIndexed,
+			chkJournalled,
+
+			chkNoCompress,
+			chkInlineData,
+			chkProject,
+			chkSecureDelete,
+
+			chkFileSync,
+			chkNoTailMerge,
+			chkTopDir,
+			chkUndelete,
+
+			chkDAX,
+			chkVerity,
+
+			CHECKBOX_MAX
+		};
+
+		struct CheckboxInfo {
+			const char *name;	// object name
+			const char *label;
+			const char *tooltip;
+		};
+
+		static const CheckboxInfo checkboxInfo[CHECKBOX_MAX];
+
+	public:
 		Ui::LinuxAttrView ui;
 		int flags;
+
+		// See enum CheckboxID and checkboxInfo.
+		QCheckBox *checkboxes[CHECKBOX_MAX];
+
+	public:
+		/**
+		 * Retranslate parts of the UI that aren't present in the .ui file.
+		 */
+		void retranslateUi_nonDesigner(void);
 
 	public:
 		/**
@@ -50,6 +100,86 @@ class LinuxAttrViewPrivate
 			updateFlagsCheckboxes();
 		}
 };
+
+const LinuxAttrViewPrivate::CheckboxInfo LinuxAttrViewPrivate::checkboxInfo[LinuxAttrViewPrivate::CHECKBOX_MAX] = {
+	{"chkAppendOnly", NOP_C_("LinuxAttrView", "a: append only"),
+	 NOP_C_("LinuxAttrView", "File can only be opened in append mode for writing.")},
+
+	{"chkNoATime", NOP_C_("LinuxAttrView", "A: no atime"),
+	 NOP_C_("LinuxAttrView", "Access time record is not modified.")},
+
+	{"chkCompressed", NOP_C_("LinuxAttrView", "c: compressed"),
+	 NOP_C_("LinuxAttrView", "File is compressed.")},
+
+	{"chkNoCOW", NOP_C_("LinuxAttrView", "C: no CoW"),
+	 NOP_C_("LinuxAttrView", "Not subject to copy-on-write updates.")},
+
+	{"chkNoDump", NOP_C_("LinuxAttrView", "d: no dump"),
+	// tr: "dump" is the name of the executable, so it should not be localized.
+	 NOP_C_("LinuxAttrView", "This file is not a candidate for dumping with the dump(8) program.")},
+
+	{"chkDirSync", NOP_C_("LinuxAttrView", "D: dir sync"),
+	 NOP_C_("LinuxAttrView", "Changes to this directory are written synchronously to the disk.")},
+
+	{"chkExtents", NOP_C_("LinuxAttrView", "e: extents"),
+	 NOP_C_("LinuxAttrView", "File is mapped on disk using extents.")},
+
+	{"chkEncrypted", NOP_C_("LinuxAttrView", "E: encrypted"),
+	 NOP_C_("LinuxAttrView", "File is encrypted.")},
+
+	{"chkCasefold", NOP_C_("LinuxAttrView", "F: casefold"),
+	 NOP_C_("LinuxAttrView", "Files stored in this directory use case-insensitive filenames.")},
+
+	{"chkImmutable", NOP_C_("LinuxAttrView", "i: immutable"),
+	 NOP_C_("LinuxAttrView", "File cannot be modified, deleted, or renamed.")},
+
+	{"chkIndexed", NOP_C_("LinuxAttrView", "I: indexed"),
+	 NOP_C_("LinuxAttrView", "Directory is indexed using hashed trees.")},
+
+	{"chkJournalled", NOP_C_("LinuxAttrView", "j: journalled"),
+	 NOP_C_("LinuxAttrView", "File data is written to the journal before writing to the file itself.")},
+
+	{"chkNoCompress", NOP_C_("LinuxAttrView", "m: no compress"),
+	 NOP_C_("LinuxAttrView", "File is excluded from compression.")},
+
+	{"chkInlineData", NOP_C_("LinuxAttrView", "N: inline data"),
+	 NOP_C_("LinuxAttrView", "File data is stored inline in the inode.")},
+
+	{"chkProject", NOP_C_("LinuxAttrView", "P: project"),
+	 NOP_C_("LinuxAttrView", "Directory will enforce a hierarchical structure for project IDs.")},
+
+	{"chkSecureDelete", NOP_C_("LinuxAttrView", "s: secure del"),
+	 NOP_C_("LinuxAttrView", "File's blocks will be zeroed when deleted.")},
+
+	{"chkFileSync", NOP_C_("LinuxAttrView", "S: sync"),
+	 NOP_C_("LinuxAttrView", "Changes to this file are written synchronously to the disk.")},
+
+	{"chkNoTailMerge", NOP_C_("LinuxAttrView", "t: no tail merge"),
+	 NOP_C_("LinuxAttrView", "If the file system supports tail merging, this file will not have a partial block fragment at the end of the file merged with other files.")},
+
+	{"chkTopDir", NOP_C_("LinuxAttrView", "T: top dir"),
+	 NOP_C_("LinuxAttrView", "Directory will be treated like a top-level directory by the ext3/ext4 Orlov block allocator.")},
+
+	{"chkUndelete", NOP_C_("LinuxAttrView", "u: undelete"),
+	 NOP_C_("LinuxAttrView", "File's contents will be saved when deleted, potentially allowing for undeletion. This is known to be broken.")},
+
+	{"chkDAX", NOP_C_("LinuxAttrView", "x: DAX"),
+	 NOP_C_("LinuxAttrView", "Direct access")},
+
+	{"chkVerity", NOP_C_("LinuxAttrView", "V: fs-verity"),
+	 NOP_C_("LinuxAttrView", "File has fs-verity enabled.")},
+};
+
+/**
+ * Retranslate parts of the UI that aren't present in the .ui file.
+ */
+void LinuxAttrViewPrivate::retranslateUi_nonDesigner(void)
+{
+	for (int i = 0; i < ARRAY_SIZE_I(checkboxes); i++) {
+		checkboxes[i]->setText(U82Q(dpgettext_expr(RP_I18N_DOMAIN, "LinuxAttrView", checkboxInfo[i].label)));
+		checkboxes[i]->setToolTip(U82Q(dpgettext_expr(RP_I18N_DOMAIN, "LinuxAttrView", checkboxInfo[i].tooltip)));
+	}
+}
 
 /**
  * Update the flags string display.
@@ -88,39 +218,19 @@ void LinuxAttrViewPrivate::updateFlagsString(void)
  */
 void LinuxAttrViewPrivate::updateFlagsCheckboxes(void)
 {
-	bool val;
-#define UPDATE_CHECKBOX(flag, obj) \
-	val = !!(flags & (flag)); \
-	ui.obj->setChecked(val); \
-	ui.obj->setProperty("LinuxAttrView.value", val)
+	// Flag order, relative to checkboxes
+	// NOTE: Uses bit indexes.
+	static const uint8_t flag_order[] = {
+		 5,  7,  2, 23,  6, 16, 19, 11,
+		30,  4, 12, 14, 10, 28, 29,  0,
+		 3, 15, 17,  1, 25, 20
+	};
 
-	UPDATE_CHECKBOX(FS_APPEND_FL, chkAppendOnly);
-	UPDATE_CHECKBOX(FS_NOATIME_FL, chkNoATime);
-	UPDATE_CHECKBOX(FS_COMPR_FL, chkCompressed);
-	UPDATE_CHECKBOX(FS_NOCOW_FL, chkNoCOW);
-
-	UPDATE_CHECKBOX(FS_NODUMP_FL, chkNoDump);
-	UPDATE_CHECKBOX(FS_DIRSYNC_FL, chkDirSync);
-	UPDATE_CHECKBOX(FS_EXTENT_FL, chkExtents);
-	UPDATE_CHECKBOX(FS_ENCRYPT_FL, chkEncrypted);
-
-	UPDATE_CHECKBOX(FS_CASEFOLD_FL, chkCasefold);
-	UPDATE_CHECKBOX(FS_IMMUTABLE_FL, chkImmutable);
-	UPDATE_CHECKBOX(FS_INDEX_FL, chkIndexed);
-	UPDATE_CHECKBOX(FS_JOURNAL_DATA_FL, chkJournalled);
-
-	UPDATE_CHECKBOX(FS_NOCOMP_FL, chkNoCompress);
-	UPDATE_CHECKBOX(FS_INLINE_DATA_FL, chkInlineData);
-	UPDATE_CHECKBOX(FS_PROJINHERIT_FL, chkProject);
-	UPDATE_CHECKBOX(FS_SECRM_FL, chkSecureDelete);
-
-	UPDATE_CHECKBOX(FS_SYNC_FL, chkFileSync);
-	UPDATE_CHECKBOX(FS_NOTAIL_FL, chkNoTailMerge);
-	UPDATE_CHECKBOX(FS_TOPDIR_FL, chkTopDir);
-	UPDATE_CHECKBOX(FS_UNRM_FL, chkUndelete);
-
-	UPDATE_CHECKBOX(FS_DAX_FL, chkDAX);
-	UPDATE_CHECKBOX(FS_VERITY_FL, chkVerity);
+	for (int i = 0; i < CHECKBOX_MAX; i++) {
+		bool val = !!(flags & (1U << flag_order[i]));
+		checkboxes[i]->setChecked(val);
+		checkboxes[i]->setProperty("LinuxAttrView.value", val);
+	}
 }
 
 /** LinuxAttrView **/
@@ -132,33 +242,49 @@ LinuxAttrView::LinuxAttrView(QWidget *parent)
 	Q_D(LinuxAttrView);
 	d->ui.setupUi(this);
 
-	// Connect checkbox signals.
-#define CONNECT_CHECKBOX_SIGNAL(obj) \
-	connect(d->ui.obj, SIGNAL(clicked(bool)), \
-		this, SLOT(checkBox_clicked_slot(bool)))
+	// Create the checkboxes.
+	static const int max_col = 4;
+	int col = 0, row = 0;
+	for (int i = 0; i < LinuxAttrViewPrivate::CHECKBOX_MAX; i++) {
+		const LinuxAttrViewPrivate::CheckboxInfo *const p = &d->checkboxInfo[i];
 
-	CONNECT_CHECKBOX_SIGNAL(chkAppendOnly);
-	CONNECT_CHECKBOX_SIGNAL(chkNoATime);
-	CONNECT_CHECKBOX_SIGNAL(chkCompressed);
-	CONNECT_CHECKBOX_SIGNAL(chkNoCOW);
+		QCheckBox *const checkBox = new QCheckBox();
+		checkBox->setObjectName(U82Q(p->name));
+		d->ui.gridLayout->addWidget(checkBox, row, col);
 
-	CONNECT_CHECKBOX_SIGNAL(chkNoDump);
-	CONNECT_CHECKBOX_SIGNAL(chkDirSync);
-	CONNECT_CHECKBOX_SIGNAL(chkExtents);
-	CONNECT_CHECKBOX_SIGNAL(chkEncrypted);
+		// Connect a signal to prevent modifications.
+		connect(checkBox, SIGNAL(clicked(bool)),
+			this, SLOT(checkBox_clicked_slot(bool)));
 
-	CONNECT_CHECKBOX_SIGNAL(chkCasefold);
-	CONNECT_CHECKBOX_SIGNAL(chkImmutable);
-	CONNECT_CHECKBOX_SIGNAL(chkIndexed);
-	CONNECT_CHECKBOX_SIGNAL(chkJournalled);
+		d->checkboxes[i] = checkBox;
 
-	CONNECT_CHECKBOX_SIGNAL(chkNoCompress);
-	CONNECT_CHECKBOX_SIGNAL(chkInlineData);
-	CONNECT_CHECKBOX_SIGNAL(chkProject);
-	CONNECT_CHECKBOX_SIGNAL(chkSecureDelete);
+		// Next checkbox
+		col++;
+		if (col == max_col) {
+			col = 0;
+			row++;
+		}
+	}
 
-	CONNECT_CHECKBOX_SIGNAL(chkDAX);
-	CONNECT_CHECKBOX_SIGNAL(chkVerity);
+	// Retranslate the checkboxes.
+	d->retranslateUi_nonDesigner();
+}
+
+/**
+ * Widget state has changed.
+ * @param event State change event.
+ */
+void LinuxAttrView::changeEvent(QEvent *event)
+{
+	if (event->type() == QEvent::LanguageChange) {
+		// Retranslate the UI.
+		Q_D(LinuxAttrView);
+		d->ui.retranslateUi(this);
+		d->retranslateUi_nonDesigner();
+	}
+
+	// Pass the event to the base class.
+	super::changeEvent(event);
 }
 
 /**

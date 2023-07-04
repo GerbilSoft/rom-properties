@@ -27,6 +27,10 @@ class LinuxAttrView : public QWidget
 		Q_DECLARE_PRIVATE(LinuxAttrView)
 		Q_DISABLE_COPY(LinuxAttrView)
 
+	protected:
+		// State change event. (Used for switching the UI language at runtime.)
+		void changeEvent(QEvent *event) final;
+
 	public:
 		/**
 		 * Get the current Linux attributes.
