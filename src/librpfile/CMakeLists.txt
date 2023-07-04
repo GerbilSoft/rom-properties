@@ -45,6 +45,9 @@ SET(${PROJECT_NAME}_H
 	scsi/scsi_protocol.h
 	scsi/scsi_ata_cmds.h
 	xattr/XAttrReader.hpp
+	xattr/dos_attrs.h
+	xattr/ext2_flags.h
+	xattr/LinuxAttrData.h
 	)
 
 # OS-specific implementations
