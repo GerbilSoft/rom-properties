@@ -1,4 +1,6 @@
 @ECHO ON
+echo compiler: %compiler%
+echo configuration: %configuration%
 if not "%compiler%" == "msvc2015" exit /b 0
 if not "%configuration%" == "Release" exit /b 0
 
