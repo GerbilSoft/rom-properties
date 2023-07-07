@@ -170,8 +170,6 @@ const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl_U8[] = {
 	{  '\0bgr', 0x00101010, ImageDecoder::PixelFormat::B16G16R16,		48},
 	{  '\0rgb', 0x000B0B0A, ImageDecoder::PixelFormat::R11G11B10,		32},	// NOTE: May be float.
 #endif
-
-	{0, 0, ImageDecoder::PixelFormat::Unknown, 0}
 };
 
 // Uncompressed format lookup table. (USHORT, USHORT_NORM)
@@ -182,8 +180,6 @@ const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl_U16[] = {
 	// TODO: High-bit-depth luminance.
 	{ '\0\0al', 0x00001010, ImageDecoder::PixelFormat::A16L16,	32},
 #endif
-
-	{0, 0, ImageDecoder::PixelFormat::Unknown, 0}
 };
 
 // Uncompressed format lookup table. (UINT, UINT_NORM)
@@ -197,8 +193,6 @@ const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl_U32[] = {
 	{'\0\0\0l', 0x00000020, ImageDecoder::PixelFormat::L32,		32},
 	{ '\0\0al', 0x00002020, ImageDecoder::PixelFormat::A32L32,	32},
 #endif
-
-	{0, 0, ImageDecoder::PixelFormat::Unknown, 0}
 };
 
 PowerVR3Private::PowerVR3Private(PowerVR3 *q, IRpFile *file)
@@ -324,11 +318,11 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 			return nullptr;
 		}
 
-		for (const FmtLkup_t *p = fmtLkup_tbl_U8; p->pixel_format != 0; p++) {
-			if (p->pixel_format == pvr3Header.pixel_format &&
-			    p->channel_depth == pvr3Header.channel_depth)
+		for (const auto &p : fmtLkup_tbl_U8) {
+			if (p.pixel_format == pvr3Header.pixel_format &&
+			    p.channel_depth == pvr3Header.channel_depth)
 			{
-				fmtLkup = p;
+				fmtLkup = &p;
 				break;
 			}
 		}

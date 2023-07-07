@@ -205,7 +205,7 @@ int GameBoyAdvance::isRomSupported_static(const DetectInfo *info)
 
 		// Verify the header checksum.
 		uint8_t chk = 0;
-		for (int i = 0xA0; i <= 0xBC; i++) {
+		for (unsigned int i = 0xA0U; i <= 0xBCU; i++) {
 			chk -= info->header.pData[i];
 		}
 		chk -= 0x19;
@@ -216,7 +216,7 @@ int GameBoyAdvance::isRomSupported_static(const DetectInfo *info)
 			// "Action Replay".
 
 			// The entry point for expansion cartridges is 0xFFFFFFFF.
-			if (gba_header->entry_point == cpu_to_le32(0xFFFFFFFF)) {
+			if (gba_header->entry_point == cpu_to_le32(0xFFFFFFFFU)) {
 				// This is a Nintendo DS expansion cartridge.
 				romType = GameBoyAdvancePrivate::RomType::NDS_Expansion;
 			} else {
@@ -349,7 +349,7 @@ int GameBoyAdvance::loadFieldData(void)
 	// Replace any non-printable characters with underscores.
 	// (Action Replay has ID6 "\0\0\0\001".)
 	char id6[7];
-	for (int i = 0; i < 6; i++) {
+	for (unsigned int i = 0; i < 6; i++) {
 		id6[i] = (ISPRINT(romHeader->id6[i])
 			? romHeader->id6[i]
 			: '_');

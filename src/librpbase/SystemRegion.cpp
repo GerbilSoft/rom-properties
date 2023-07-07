@@ -390,12 +390,12 @@ int getFlagPosition(uint32_t lc, int *pCol, int *pRow, bool forcePAL)
 
 	// Flags are stored in a sprite sheet, so we need to
 	// determine the column and row.
-	struct flagpos_t {
+	struct flagpos_tbl_t {
 		uint32_t lc;
 		uint16_t col;
 		uint16_t row;
-		};
-	static const flagpos_t flagpos[] = {
+	};
+	static const flagpos_tbl_t flagpos_tbl[] = {
 		{'hans',	0, 0},
 		{'hant',	0, 0},
 		{'au',		1, 3},	// GameTDB only
@@ -411,8 +411,6 @@ int getFlagPosition(uint32_t lc, int *pCol, int *pRow, bool forcePAL)
 		{'pt',		1, 2},
 		{'ru',		2, 2},
 		//{'us',		3, 0},
-
-		{0, 0, 0}
 	};
 
 	if (lc == 'en') {
@@ -432,11 +430,11 @@ int getFlagPosition(uint32_t lc, int *pCol, int *pRow, bool forcePAL)
 		// Other flags. Check the table.
 		*pCol = -1;
 		*pRow = -1;
-		for (const flagpos_t *p = flagpos; p->lc != 0; p++) {
-			if (p->lc == lc) {
+		for (const flagpos_tbl_t &p : flagpos_tbl) {
+			if (p.lc == lc) {
 				// Match!
-				*pCol = p->col;
-				*pRow = p->row;
+				*pCol = p.col;
+				*pRow = p.row;
 				ret = 0;
 				break;
 			}

@@ -144,9 +144,7 @@ public:
 						assert(count <= 32);
 						if (count > 32)
 							count = 32;
-						const auto names_cend = bitfieldDesc.names->cend();
-						for (auto iter = bitfieldDesc.names->cbegin(); iter != names_cend; ++iter) {
-							const string &name = *iter;
+						for (const auto &name : *(bitfieldDesc.names)) {;
 							if (name.empty())
 								continue;
 
@@ -179,11 +177,7 @@ public:
 							// TODO: Better JSON schema for RFT_LISTDATA_CHECKBOXES?
 							names_array.PushBack("checked", allocator);
 						}
-						const auto names_cend = listDataDesc.names->cend();
-						for (auto iter = listDataDesc.names->cbegin();
-						     iter != names_cend; ++iter)
-						{
-							const string &name = *iter;
+						for (const auto &name : *(listDataDesc.names)) {
 							names_array.PushBack(StringRef(name), allocator);
 						}
 					}
@@ -451,15 +445,14 @@ std::ostream& operator<<(std::ostream& os, const JSONROMOutput& fo) {
 			imgext_obj.AddMember("type", StringRef(RomData::getImageTypeName((RomData::ImageType)i)), allocator);
 
 			Value exturls_obj(kObjectType);
-			const auto extURLs_cend = extURLs.cend();
-			for (auto iter = extURLs.cbegin(); iter != extURLs_cend; ++iter) {
+			for (const auto &extURL : extURLs) {
 				Value url_val;
-				const string url_str = urlPartialUnescape(iter->url);
+				const string url_str = urlPartialUnescape(extURL.url);
 				url_val.SetString(url_str, allocator);
 				exturls_obj.AddMember("url", url_val, allocator);
 
 				Value cache_key_val;
-				cache_key_val.SetString(iter->cache_key, allocator);
+				cache_key_val.SetString(extURL.cache_key, allocator);
 				exturls_obj.AddMember("cache_key", cache_key_val, allocator);
 			}
 			imgext_obj.AddMember("exturls", exturls_obj, allocator);

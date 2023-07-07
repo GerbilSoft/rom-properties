@@ -607,7 +607,7 @@ ISO::ISO(IRpFile *file)
 		static const unsigned int sector_sizes[] = {2352, 2448};
 		CDROM_2352_Sector_t sector;
 
-		for (auto p : sector_sizes) {
+		for (const unsigned int p : sector_sizes) {
 			size_t size = d->file->seekAndRead(p * ISO_PVD_LBA, &sector, sizeof(sector));
 			if (size != sizeof(sector)) {
 				// Unable to read the PVD.

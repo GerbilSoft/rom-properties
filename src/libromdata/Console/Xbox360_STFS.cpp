@@ -697,9 +697,8 @@ int Xbox360_STFS::isRomSupported_static(const DetectInfo *info)
 			// This area overlaps the Nintendo DS logo section,
 			// which is *never* empty.
 			// TODO: Vectorize this?
-			const uint8_t *pPadding = stfsHeader->ms.padding;
-			const uint8_t *const pPadding_end = pPadding + sizeof(stfsHeader->ms.padding);
-			for (; pPadding < pPadding_end; pPadding++) {
+			const uint8_t *const pPadding_end = &stfsHeader->ms.padding[sizeof(stfsHeader->ms.padding)];
+			for (const uint8_t *pPadding = stfsHeader->ms.padding; pPadding < pPadding_end; pPadding++) {
 				if (*pPadding != 0) {
 					// Not empty.
 					// This is not padding.

@@ -212,7 +212,7 @@ void NDSCrypt::encrypt(const uint32_t *magic, uint32_t *arg1, uint32_t *arg2)
 	uint32_t a,b,c;
 	a = *arg1;
 	b = *arg2;
-	for (int i=0; i<16; i++)
+	for (unsigned int i = 0; i < 16; i++)
 	{
 		c = magic[i] ^ a;
 		a = b ^ lookup(magic, c);
@@ -227,7 +227,7 @@ void NDSCrypt::decrypt(const uint32_t *magic, uint32_t *arg1, uint32_t *arg2)
 	uint32_t a,b,c;
 	a = *arg1;
 	b = *arg2;
-	for (int i=17; i>1; i--)
+	for (unsigned int i = 17; i > 1; i--)
 	{
 		c = magic[i] ^ a;
 		a = b ^ lookup(magic, c);
@@ -249,10 +249,10 @@ void NDSCrypt::decrypt(const uint32_t *magic, uint64_t &cmd)
 
 void NDSCrypt::update_hashtable(uint32_t* magic, const uint8_t arg1[8])
 {
-	for (int j=0;j<18;j++)
+	for (unsigned int j = 0; j < 18; j++)
 	{
 		uint32_t r3=0;
-		for (int i=0;i<4;i++)
+		for (unsigned int i = 0; i < 4; i++)
 		{
 			r3 <<= 8;
 			r3 |= arg1[(j*4 + i) & 7];
@@ -262,13 +262,13 @@ void NDSCrypt::update_hashtable(uint32_t* magic, const uint8_t arg1[8])
 
 	uint32_t tmp1 = 0;
 	uint32_t tmp2 = 0;
-	for (int i=0; i<18; i+=2)
+	for (unsigned int i = 0; i < 18; i += 2)
 	{
 		encrypt(magic,&tmp1,&tmp2);
 		magic[i+0] = tmp1;
 		magic[i+1] = tmp2;
 	}
-	for (int i=0; i<0x400; i+=2)
+	for (unsigned int i = 0; i < 0x400; i += 2)
 	{
 		encrypt(magic,&tmp1,&tmp2);
 		magic[i+18+0] = tmp1;

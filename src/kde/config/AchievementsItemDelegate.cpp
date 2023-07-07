@@ -163,10 +163,13 @@ void AchievementsItemDelegate::paint(QPainter *painter,
 	// Text boundaries.
 	array<QRect, LINE_COUNT> v_rect;
 
+	QFontMetrics fm(fontName);
 	for (size_t i = 0; i < sl.size(); i++) {
 		// Name uses the normal font.
 		// Description lines use a slightly smaller font.
-		const QFontMetrics fm(i == 0 ? fontName : fontDesc);
+		if (i == 1) {
+			fm = QFontMetrics(fontDesc);
+		}
 		sl[i] = fm.elidedText(sl[i], Qt::ElideRight, textRect.width()-1);
 		const QRect tmpRect(textRect.x(), textRect.y() + textHeight, textRect.width(), fm.height());
 		textHeight += fm.height();
@@ -274,11 +277,14 @@ QSize AchievementsItemDelegate::sizeHint(const QStyleOptionViewItem &option,
 	const QFont fontName = d->fontName(bgOption.widget);
 	const QFont fontDesc = d->fontDesc(bgOption.widget);
 
+	QFontMetrics fm(fontName);
 	QSize sz;
 	for (size_t i = 0; i < sl.size(); i++) {
 		// Name uses the normal font.
 		// Description lines use a slightly smaller font.
-		const QFontMetrics fm(i == 0 ? fontName : fontDesc);
+		if (i == 1) {
+			fm = QFontMetrics(fontDesc);
+		}
 		const QSize szLine = fm.size(0, sl[i]);
 		sz.setHeight(sz.height() + szLine.height());
 

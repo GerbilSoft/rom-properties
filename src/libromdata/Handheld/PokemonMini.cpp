@@ -223,7 +223,7 @@ int PokemonMini::loadFieldData(void)
 	// Game ID.
 	// Replace any non-printable characters with underscores.
 	char id4[5];
-	for (int i = 0; i < 4; i++) {
+	for (unsigned int i = 0; i < 4; i++) {
 		id4[i] = (ISPRINT(romHeader->game_id[i])
 			? romHeader->game_id[i]
 			: '_');

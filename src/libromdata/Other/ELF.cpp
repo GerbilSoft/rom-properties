@@ -500,7 +500,7 @@ int ELFPrivate::checkSectionHeaders(void)
 	uint64_t symtab_link = -1, dynsym_link = -1;
 
 	// Read all of the section header entries.
-	for (unsigned i = 0; i < e_shnum; i++) {
+	for (unsigned int i = 0; i < e_shnum; i++) {
 		size_t size = file->read(shbuf, shsize);
 		if (size != shsize) {
 			// Read error.
@@ -918,7 +918,7 @@ int ELFPrivate::addPtDynamicFields(void)
 
 		if (strtab.size() != 0 && needed.size() != 0) {
 			auto vv_data = new RomFields::ListData_t();
-			for (auto offset : needed) {
+			for (const auto offset : needed) {
 				assert(offset < strtab.size());
 				if (offset >= strtab.size())
 					continue;
@@ -1032,7 +1032,7 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 		const char *const elf_sym_common = C_("ELF|Symbol", "(COMMON)");
 
 		auto vv_data = new RomFields::ListData_t();
-		for (auto &sym : tab) {
+		for (const auto &sym : tab) {
 			assert(sym.st_name < strtab.size());
 			if (sym.st_name >= strtab.size()) {
 				continue;
@@ -1040,6 +1040,7 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 			if (strtab[sym.st_name] == '\0') {
 				continue;
 			}
+
 			vector<string> row;
 			row.reserve(7);
 			row.emplace_back(&strtab[sym.st_name]);

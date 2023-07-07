@@ -338,7 +338,7 @@ int EXEPrivate::readPEImportDir(void)
 	// Find the lowest and highest DLL name VAs in the import directory table.
 	uint32_t dll_vaddr_low = ~0U;
 	uint32_t dll_vaddr_high = 0U;
-	const IMAGE_IMPORT_DIRECTORY *pImpDirTbl = reinterpret_cast<const IMAGE_IMPORT_DIRECTORY*>(impDirTbl.data());
+	const IMAGE_IMPORT_DIRECTORY *const pImpDirTbl = reinterpret_cast<const IMAGE_IMPORT_DIRECTORY*>(impDirTbl.data());
 	const IMAGE_IMPORT_DIRECTORY *const pImpDirTblEnd = pImpDirTbl + (impDirTbl.size() / sizeof(IMAGE_IMPORT_DIRECTORY));
 	const IMAGE_IMPORT_DIRECTORY *p = pImpDirTbl;
 	for (; p < pImpDirTblEnd; p++) {

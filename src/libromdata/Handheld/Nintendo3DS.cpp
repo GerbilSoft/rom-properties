@@ -1180,7 +1180,7 @@ int Nintendo3DSPrivate::addFields_permissions(void)
 	auto vv_svc = new RomFields::ListData_t();
 	vv_svc->reserve(N3DS_SERVICE_MAX);
 	const char *svc = perm.services[0];
-	for (int i = 0; i < N3DS_SERVICE_MAX; i++, svc += N3DS_SERVICE_LEN) {
+	for (unsigned int i = 0; i < N3DS_SERVICE_MAX; i++, svc += N3DS_SERVICE_LEN) {
 		if (svc[0] == 0) {
 			// End of service list.
 			break;

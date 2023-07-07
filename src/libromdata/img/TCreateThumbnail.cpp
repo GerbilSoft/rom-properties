@@ -145,9 +145,7 @@ ImgClass TCreateThumbnail<ImgClass>::getExternalImage(
 		: config->imgBandwidthUnmetered();
 
 	CacheManager cache;
-	const auto extURLs_cend = extURLs.cend();
-	for (auto iter = extURLs.cbegin(); iter != extURLs_cend; ++iter) {
-		const RomData::ExtURL &extURL = *iter;
+	for (const auto &extURL : extURLs) {
 		std::string proxy = proxyForUrl(extURL.url.c_str());
 		cache.setProxyUrl(!proxy.empty() ? proxy.c_str() : nullptr);
 

@@ -446,7 +446,7 @@ IFACEMETHODIMP RP_ContextMenu::Initialize(
 		const string s_ext = T2U8(FileSystem::file_ext(tfilename));
 
 		bool is_texture = false;
-		for (auto texture_ext : texture_exts) {
+		for (const char *texture_ext : texture_exts) {
 			if (!strcasecmp(texture_ext, s_ext.c_str())) {
 				is_texture = true;
 				break;

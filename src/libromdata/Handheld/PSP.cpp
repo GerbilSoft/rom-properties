@@ -407,10 +407,9 @@ int PSP::isRomSupported_static(
 	}
 
 	// Make sure the rest of the system ID is either spaces or NULLs.
-	const char *p = &pvd->sysID[pos];
-	const char *const p_end = &pvd->sysID[sizeof(pvd->sysID)];
 	bool isOK = true;
-	for (; p < p_end; p++) {
+	const char *const p_end = &pvd->sysID[sizeof(pvd->sysID)];
+	for (const char *p = &pvd->sysID[pos]; p < p_end; p++) {
 		if (*p != ' ' && *p != '\0') {
 			isOK = false;
 			break;

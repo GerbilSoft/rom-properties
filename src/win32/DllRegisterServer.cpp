@@ -141,7 +141,7 @@ static LONG RegisterFileType(RegKey &hkcr, RegKey *pHklm, const RomDataFactory::
 	const vector<const char*> &texture_exts = FileFormatFactory::supportedFileExtensions();
 
 	bool is_texture = false;
-	for (auto texture_ext : texture_exts) {
+	for (const char *texture_ext : texture_exts) {
 		if (!strcasecmp(texture_ext, extInfo.ext)) {
 			is_texture = true;
 			break;

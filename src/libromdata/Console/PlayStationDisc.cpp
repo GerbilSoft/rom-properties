@@ -358,7 +358,7 @@ PlayStationDisc::PlayStationDisc(IRpFile *file)
 		static const unsigned int sector_sizes[] = {2352, 2448};
 		CDROM_2352_Sector_t sector;
 
-		for (auto p : sector_sizes) {
+		for (const unsigned int p : sector_sizes) {
 			size_t size = d->file->seekAndRead(p * ISO_PVD_LBA, &sector, sizeof(sector));
 			if (size != sizeof(sector)) {
 				UNREF_AND_NULL_NOCHK(d->file);
@@ -559,10 +559,9 @@ int PlayStationDisc::isRomSupported_static(
 	}
 
 	// Make sure the rest of the system ID is either spaces or NULLs.
-	const char *p = &pvd->sysID[pos];
-	const char *const p_end = &pvd->sysID[sizeof(pvd->sysID)];
 	bool isOK = true;
-	for (; p < p_end; p++) {
+	const char *const p_end = &pvd->sysID[sizeof(pvd->sysID)];
+	for (const char *p = &pvd->sysID[pos]; p < p_end; p++) {
 		if (*p != ' ' && *p != '\0') {
 			isOK = false;
 			break;

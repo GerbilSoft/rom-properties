@@ -73,9 +73,8 @@ int RomDataViewPrivate::updateField(int fieldIdx)
 	// NOTE: Linear search through all display objects, since
 	// this function isn't used that often.
 	QObject *qObj = nullptr;
-	const auto tabs_cend = tabs.cend();
-	for (auto iter = tabs.cbegin(); iter != tabs_cend && qObj == nullptr; ++iter) {
-		QFormLayout *const form = iter->form;
+	for (const auto &tab : tabs) {
+		QFormLayout *const form = tab.form;
 		const int rowCount = form->rowCount();
 		for (int row = 0; row < rowCount && qObj == nullptr; row++) {
 			// TODO: Also check LabelRole in some cases?

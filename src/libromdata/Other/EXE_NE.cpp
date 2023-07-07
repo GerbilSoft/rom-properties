@@ -776,7 +776,7 @@ int EXEPrivate::addFields_NE_Import(void)
 	};
 	std::unordered_set<std::pair<uint16_t, uint16_t>, hash2x16> ordinal_set, name_set;
 
-	for (auto& seg : ne_segment_table) {
+	for (const auto &seg : ne_segment_table) {
 		if (seg.offset == 0)
 			continue; // No data
 		if (!(le16_to_cpu(seg.flags) & NE_SEG_RELOCINFO))
@@ -803,7 +803,7 @@ int EXEPrivate::addFields_NE_Import(void)
 			return -EIO; // Short read
 		auto relocs = reinterpret_span<const NE_Reloc>(rel_buf);
 
-		for (auto& reloc : relocs) {
+		for (const auto &reloc : relocs) {
 			switch (reloc.flags & NE_REL_TARGET_MASK) {
 			case NE_REL_IMPORTORDINAL:
 				ordinal_set.emplace(le16_to_cpu(reloc.target1), le16_to_cpu(reloc.target2));
@@ -819,7 +819,7 @@ int EXEPrivate::addFields_NE_Import(void)
 
 	auto vv_data = new RomFields::ListData_t();
 	vv_data->reserve(ordinal_set.size() + name_set.size());
-	for (auto& imp : ordinal_set) {
+	for (const auto &imp : ordinal_set) {
 		string modname;
 		if (!get_modref(imp.first, modname))
 			continue;
@@ -832,7 +832,7 @@ int EXEPrivate::addFields_NE_Import(void)
 		row.emplace_back(std::move(modname));
 		vv_data->emplace_back(std::move(row));
 	}
-	for (auto& imp : name_set) {
+	for (const auto &imp : name_set) {
 		string modname;
 		if (!get_modref(imp.first, modname))
 			continue;

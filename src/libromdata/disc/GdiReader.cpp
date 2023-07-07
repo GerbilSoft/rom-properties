@@ -417,7 +417,7 @@ int GdiReader::isDiscSupported_static(const uint8_t *pHeader, size_t szHeader)
 	}
 
 	int trackCount = 0;
-	for (int i = 0; i < 4; i++) {
+	for (unsigned int i = 0; i < 4; i++) {
 		if (pHeader[i] == '\r' || pHeader[i] == '\n') {
 			// End of line.
 			break;

@@ -369,7 +369,7 @@ int Amiibo::loadFieldData(void)
 		'8','9','A','B','C','D','E','F'
 	};
 	char buf[32]; char *pBuf = buf;
-	for (int i = 0; i < 8; i++, pBuf += 2) {
+	for (unsigned int i = 0; i < 8; i++, pBuf += 2) {
 		if (i == 3) {
 			// Byte 3 is CB0.
 			i++;

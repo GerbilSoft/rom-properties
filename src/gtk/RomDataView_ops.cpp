@@ -82,9 +82,8 @@ rp_rom_data_view_update_field(RpRomDataView *page, int fieldIdx)
 	// NOTE: Linear search through all display objects, since
 	// this function isn't used that often.
 	GtkWidget *widget = nullptr;
-	const auto tabs_cend = cxx->tabs.cend();
-	for (auto iter = cxx->tabs.cbegin(); iter != tabs_cend && widget == nullptr; ++iter) {
-		GtkWidget *const table = iter->table;	// GtkTable (2.x); GtkGrid (3.x)
+	for (const auto &tab : cxx->tabs) {
+		GtkWidget *const table = tab.table;	// GtkTable (2.x); GtkGrid (3.x)
 
 #if GTK_CHECK_VERSION(4,0,0)
 		// Enumerate the child widgets.
