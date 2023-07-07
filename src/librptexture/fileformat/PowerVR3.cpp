@@ -101,7 +101,9 @@ class PowerVR3Private final : public FileFormatPrivate
 
 		static const struct FmtLkup_t fmtLkup_tbl_U8[];
 		static const struct FmtLkup_t fmtLkup_tbl_U16[];
+#if 0
 		static const struct FmtLkup_t fmtLkup_tbl_U32[];
+#endif
 
 		/**
 		 * Load the image.
@@ -182,6 +184,7 @@ const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl_U16[] = {
 #endif
 };
 
+#if 0
 // Uncompressed format lookup table. (UINT, UINT_NORM)
 const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl_U32[] = {
 	//{'\0\0\0r', 0x00000020, ImageDecoder::PixelFormat::R32,			32},
@@ -194,6 +197,7 @@ const struct PowerVR3Private::FmtLkup_t PowerVR3Private::fmtLkup_tbl_U32[] = {
 	{ '\0\0al', 0x00002020, ImageDecoder::PixelFormat::A32L32,	32},
 #endif
 };
+#endif
 
 PowerVR3Private::PowerVR3Private(PowerVR3 *q, IRpFile *file)
 	: super(q, file, &textureInfo)
