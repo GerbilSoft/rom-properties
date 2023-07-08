@@ -748,8 +748,10 @@ static void InitDialog(HWND hDlg)
 	if (missing_arch_count > 0) {
 		// One or more MSVC runtime versions are missing.
 		_sntprintf(line1, _countof(line1),
-			_T("The %s MSVC 2015-%u runtime%s are not installed."),
-				s_missing_arch_names, vcyear, (missing_arch_count == 1) ? _T("") : _T("s"));
+			_T("The %s MSVC 2015-%u runtime%s %s not installed."),
+				s_missing_arch_names, vcyear,
+				(missing_arch_count == 1) ? _T("") : _T("s"),
+				(missing_arch_count == 1) ? _T("is") : _T("are"));
 
 		for (i = 0; i < missing_arch_count; i++) {
 			TCHAR s_runtime_line[160];
