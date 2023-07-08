@@ -143,7 +143,15 @@ IF(UNIX AND NOT APPLE)
 ELSEIF(WIN32)
 	IF(BUILD_WIN32)
 		ADD_SUBDIRECTORY(win32)
-		ADD_SUBDIRECTORY(svrplus)
+
+		# NOTE: Only building svrplus for i386 for compatibility reasons.
+		# All supported versions of Windows support running i386 executables.
+		# IsWow64Process2() and/or IsWow64Process() can be used to determine
+		# the actual host architecture.
+		INCLUDE(CPUInstructionSetFlags)
+		IF(CPU_i386)
+			ADD_SUBDIRECTORY(svrplus)
+		ENDIF(CPU_i386)
 	ENDIF(BUILD_WIN32)
 ENDIF()
 

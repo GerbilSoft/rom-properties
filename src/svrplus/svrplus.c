@@ -17,7 +17,8 @@
 // MSVCRT-specific
 #include <process.h>
 
-// stdbool
+// Common includes
+#include "common.h"
 #include "stdboolx.h"
 
 // libwin32common
@@ -26,17 +27,34 @@
 // librpsecure
 #include "librpsecure/os-secure.h"
 
-// Additional Windows headers.
+// Additional Windows headers
 #include <windowsx.h>
 #include <shellapi.h>
 #include <commctrl.h>
 
+// Older versions of the Windows SDK might be missing some ARM systems.
+#ifndef IMAGE_FILE_MACHINE_ARM
+#  define IMAGE_FILE_MACHINE_ARM 0x01C0
+#endif
+#ifndef IMAGE_FILE_MACHINE_THUMB
+#  define IMAGE_FILE_MACHINE_THUMB 0x01C2
+#endif
+#ifndef IMAGE_FILE_MACHINE_ARMNT
+#  define IMAGE_FILE_MACHINE_ARMNT 0x01C4
+#endif
+#ifndef IMAGE_FILE_MACHINE_ARM64
+#  define IMAGE_FILE_MACHINE_ARM64 0xAA64
+#endif
+
 // Application resources.
 #include "resource.h"
 
-// File paths
-static const TCHAR str_rp32path[] = _T("i386\\rom-properties.dll");
-static const TCHAR str_rp64path[] = _T("amd64\\rom-properties.dll");
+// Single-instance mutex
+static HANDLE g_hSingleInstanceMutex = NULL;
+
+// DLL filename
+// Location should be prepended with an arch-specific directory name.
+static const TCHAR dll_filename[] = _T("rom-properties.dll");
 
 // Bullet symbol
 #ifdef _UNICODE
@@ -47,11 +65,56 @@ static const TCHAR str_rp64path[] = _T("amd64\\rom-properties.dll");
 
 // Globals
 
-#ifdef _WIN64
-static const bool g_is64bit = true;	/**< true if running on 64-bit system */
-#else /* !_WIN64 */
-bool g_is64bit = false;			/**< true if running on 64-bit system */
+/**
+ * NOTE: svrplus.c assumes it's compiled for 32-bit i386.
+ * Windows also supports i386 on the following platforms:
+ * - ia64 (emulated) [Windows 2000 and XP]
+ * - amd64 (native) [Windows XP 64-bit, Windows Server 2003, and later]
+ * - arm (native, 32-bit only) [Windows RT]
+ * - arm64 (native) [Windows 10]
+ *
+ * Non-i386 versions of Windows NT 4.0 and earlier are not supported.
+ * (Then again, Windows NT 4.0 on i386 isn't supported, either.)
+ */
+#if !defined(_M_IX86) && !defined(__i386__)
+#  error svrplus should be compiled for 32-bit i386 only
 #endif
+
+// Runtime architecture
+// NOTE: Named CPU_* to match CMakeLists.txt.
+typedef enum {
+	CPU_unknown	= 0,
+
+	CPU_i386	= 1,
+	CPU_amd64	= 2,
+	CPU_ia64	= 3,
+	CPU_arm	= 4,
+	CPU_arm64	= 5,
+
+	CPU_MAX
+} SysArch;
+
+typedef struct _s_arch_tbl_t {
+	const TCHAR *name;	// "User-friendly" name, e.g. "amd64"
+	const TCHAR *runtime;	// Runtime name, e.g. "x64"
+} s_arch_tbl_t;
+
+static const s_arch_tbl_t s_arch_tbl[] = {
+	{_T("Unknown"),	NULL},		// CPU_unknown
+	{_T("i386"),	_T("x86")},	// CPU_i386
+	{_T("amd64"), _T("x64")},	// CPU_amd64
+	{_T("ia64"),	NULL},		// CPU_ia64
+	{_T("arm"),	NULL},		// CPU_arm
+	{_T("arm64"),	_T("arm64")},	// CPU_arm64
+};
+
+// Array of architectures to check
+// This always includes i386, and then one or two more
+// depending on the detected host architecture.
+#define MAX_ARCHS 4
+static uint8_t g_archs[MAX_ARCHS] = {CPU_i386, CPU_unknown, CPU_unknown, CPU_unknown};
+static uint8_t g_arch_count = 1;
+
 bool g_inProgress = false;		/**< true if currently (un)installing the DLLs */
 
 // Custom messages
@@ -151,12 +214,16 @@ static inline void EnableButtons(HWND hDlg, bool enable)
  * @param pszPath	[out] Path buffer.
  * @param cchPath	[in] Size of path buffer, in characters.
  * @param filename	[in] Filename to append. (Should be at least MAX_PATH.)
- * @param is64		[in] If true, use the 64-bit System directory.
+ * @param arch		[in] System architecture to use.
  * @return Length of path in characters, excluding NULL terminator, on success; negative POSIX error code on error.
  */
-static int GetSystemDirFilePath(TCHAR *pszPath, size_t cchPath, const TCHAR *filename, bool is64)
+static int GetSystemDirFilePath(TCHAR *pszPath, size_t cchPath, const TCHAR *filename, SysArch arch)
 {
 	unsigned int len, cchFilename;
+	const TCHAR *system32_dir;
+
+	if (arch < CPU_unknown || arch >= CPU_MAX)
+		return -EINVAL;
 
 	// Get the Windows directory first.
 	len = GetWindowsDirectory(pszPath, (UINT)cchPath);
@@ -183,14 +250,29 @@ static int GetSystemDirFilePath(TCHAR *pszPath, size_t cchPath, const TCHAR *fil
 		return -ENOMEM;
 	}
 
-	// Append the System directory name.
-	len += _sntprintf(&pszPath[len], cchPath-len, _T("%s\\%s"),
+	// Determine which system directory to use.
+	// FIXME: i386 on ARM?
 #ifdef _WIN64
-		is64 ? _T("System32") : _T("SysWOW64")
-#else /* !_WIN32 */
-		is64 ? _T("Sysnative") : _T("System32")
-#endif /* _WIN32 */
-		, filename);
+#  define HOST_ARCH_DIR(i386, amd64) (amd64)
+#else /* !_WIN64 */
+#  define HOST_ARCH_DIR(i386, amd64) (i386)
+#endif
+	static const TCHAR *const system32_dir_tbl[] = {
+		NULL,						// CPU_unknown
+		HOST_ARCH_DIR(_T("System32"), _T("SysWOW64")),	// CPU_i386
+		HOST_ARCH_DIR(_T("Sysnative"), _T("System32")),	// CPU_amd64
+		HOST_ARCH_DIR(_T("Sysnative"), _T("System32")),	// CPU_ia64
+		HOST_ARCH_DIR(_T("System32"), _T("SysWOW64")),	// CPU_arm [TODO: Verify]
+		HOST_ARCH_DIR(_T("Sysnative"), _T("System32")),	// CPU_arm64 [TODO: Verify]
+	};
+	static_assert(ARRAY_SIZE(system32_dir_tbl) == CPU_MAX, "system32_dir_tbl[] size is wrong!");
+	system32_dir = system32_dir_tbl[arch];
+	if (!system32_dir)
+		return -EINVAL;
+
+	// Append the System32 directory name and the filename.
+	len += _sntprintf(&pszPath[len], cchPath-len, _T("%s\\%s"),
+		system32_dir, filename);
 	return len;
 }
 
@@ -207,14 +289,14 @@ static inline bool fileExists(const TCHAR *filename)
 /**
  * Checks whether or not the Visual C++ runtime is installed.
  *
- * @param is64 when true, checks for 64-bit version
+ * @param arch System architecture to check.
  * @return true if installed
  */
-static bool CheckMsvc(bool is64)
+static bool CheckMsvc(SysArch arch)
 {
 	// Determine the MSVCRT DLL name.
 	TCHAR msvcrt_path[MAX_PATH];
-	int ret = GetSystemDirFilePath(msvcrt_path, _countof(msvcrt_path), _T("msvcp140.dll"), is64);
+	int ret = GetSystemDirFilePath(msvcrt_path, _countof(msvcrt_path), _T("msvcp140.dll"), arch);
 	if (ret <= 0) {
 		// Unable to get the path.
 		// Assume the file exists.
@@ -228,6 +310,7 @@ static bool CheckMsvc(bool is64)
 typedef enum {
 	ISR_FATAL_ERROR = -1,		// Error that should never happen.
 	ISR_OK = 0,
+	ISR_INVALID_ARCH,		// invalid system architecture
 	ISR_FILE_NOT_FOUND,
 	ISR_CREATEPROCESS_FAILED,	// errorCode is GetLastError()
 	ISR_PROCESS_STILL_ACTIVE,
@@ -250,14 +333,15 @@ typedef enum {
  * (Un)installs the COM Server DLL.
  *
  * @param isUninstall	[in] When true, uninstalls the DLL, instead of installing it.
- * @param is64		[in] When true, installs 64-bit version.
+ * @param arch		[in] System architecture to install.
  * @param pErrorCode	[out,opt] Additional error code.
  * @return InstallServerResult
  */
-static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pErrorCode)
+static InstallServerResult InstallServer(bool isUninstall, SysArch arch, DWORD *pErrorCode)
 {
+	const s_arch_tbl_t *s_arch;
 	TCHAR regsvr32_path[MAX_PATH];
-	TCHAR args[14 + MAX_PATH + 4 + 3 + _countof(str_rp64path)] = _T("regsvr32.exe \"");
+	TCHAR args[14 + MAX_PATH + 4 + 3 + _countof(dll_filename) + 32] = _T("regsvr32.exe \"");
 	DWORD szModuleFn;
 	TCHAR *bs;
 
@@ -266,8 +350,14 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pEr
 	DWORD status;
 	BOOL bRet;
 
+	static_assert(ARRAY_SIZE(s_arch_tbl) == CPU_MAX, "s_arch_tbl[] size is wrong!");
+	if (arch <= CPU_unknown || arch >= CPU_MAX) {
+		// Invalid system architecture.
+		return ISR_INVALID_ARCH;
+	}
+
 	// Determine the REGSVR32 path.
-	int ret = GetSystemDirFilePath(regsvr32_path, _countof(regsvr32_path), _T("regsvr32.exe"), is64);
+	int ret = GetSystemDirFilePath(regsvr32_path, _countof(regsvr32_path), _T("regsvr32.exe"), arch);
 	if (ret <= 0) {
 		// Unable to get the path.
 		return ISR_FATAL_ERROR;
@@ -293,7 +383,10 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pEr
 
 	// Remove the EXE filename, then append the DLL relative path.
 	bs[1] = 0;
-	_tcscat_s(args, _countof(args), is64 ? str_rp64path : str_rp32path);
+	s_arch = &s_arch_tbl[arch];
+	_tcscat_s(args, _countof(args), s_arch->name);
+	_tcscat_s(args, _countof(args), _T("\\"));
+	_tcscat_s(args, _countof(args), dll_filename);
 	if (!fileExists(&args[14])) {
 		// File not found.
 		return ISR_FILE_NOT_FOUND;
@@ -363,28 +456,30 @@ static InstallServerResult InstallServer(bool isUninstall, bool is64, DWORD *pEr
  *
  * @param hWnd		[in] owner window of message boxes
  * @param isUninstall	[in] when true, uninstalls the DLL, instead of installing it.
- * @param is64		[in] when true, installs 64-bit version
+ * @param arch		[in] system architecture to register.
  * @param sErrBuf	[out,opt] error message buffer
  * @param cchErrBuf	[in,opt] size of sErrBuf, in characters
  * @return InstallServerResult
  */
 static InstallServerResult TryInstallServer(HWND hWnd,
-	bool isUninstall, bool is64,
+	bool isUninstall, SysArch arch,
 	TCHAR *sErrBuf, size_t cchErrBuf)
 {
-	const TCHAR *dll_path, *entry_point;
+	const TCHAR *entry_point;
+	const s_arch_tbl_t *s_arch;
+
 	DWORD errorCode;
-	InstallServerResult res = InstallServer(isUninstall, is64, &errorCode);
+	InstallServerResult res = InstallServer(isUninstall, arch, &errorCode);
 
 	if (!sErrBuf) {
 		// No error message buffer specified.
 		return res;
 	}
 
-	dll_path = (is64 ? str_rp64path : str_rp32path);
 	entry_point = (isUninstall
 		? _T("DllUnregisterServer")
 		: _T("DllRegisterServer"));
+	s_arch = &s_arch_tbl[arch];
 
 	// NOTE: Using _tcscpy_s() instead of _tcsncpy() because
 	// _tcsncpy() zeroes the rest of the buffer.
@@ -399,8 +494,11 @@ static InstallServerResult TryInstallServer(HWND hWnd,
 		default:
 			_tcscpy_s(sErrBuf, cchErrBuf, _T("An unknown fatal error occurred."));
 			break;
+		case ISR_INVALID_ARCH:
+			_sntprintf(sErrBuf, cchErrBuf, _T("Invalid system architecture: %d"), arch);
+			break;
 		case ISR_FILE_NOT_FOUND:
-			_sntprintf(sErrBuf, cchErrBuf, _T("%s is missing."), dll_path);
+			_sntprintf(sErrBuf, cchErrBuf, _T("%s\\%s is missing."), s_arch->name, dll_filename);
 			break;
 		case ISR_CREATEPROCESS_FAILED:
 			_sntprintf(sErrBuf, cchErrBuf, _T("Could not start REGSVR32.exe. (Err:%u)"), errorCode);
@@ -418,11 +516,11 @@ static InstallServerResult TryInstallServer(HWND hWnd,
 					break;
 				case REGSVR32_FAIL_LOAD:
 					_sntprintf(sErrBuf, cchErrBuf,
-						_T("REGSVR32 failed: %s is not a valid DLL."), dll_path);
+						_T("REGSVR32 failed: %s\\%s is not a valid DLL."), s_arch->name, dll_filename);
 					break;
 				case REGSVR32_FAIL_ENTRY:
 					_sntprintf(sErrBuf, cchErrBuf,
-						_T("REGSVR32 failed: %s is missing %s()."), dll_path, entry_point);
+						_T("REGSVR32 failed: %s\\%s is missing %s()."), s_arch->name, dll_filename, entry_point);
 					break;
 				case REGSVR32_FAIL_REG:
 					_sntprintf(sErrBuf, cchErrBuf,
@@ -455,23 +553,38 @@ static ThreadParams threadParams = {NULL, false};
  */
 static unsigned int WINAPI ThreadProc(LPVOID lpParameter)
 {
-	TCHAR msg32[256], msg64[256];
-	InstallServerResult res32 = ISR_OK, res64 = ISR_OK;
+	const ThreadParams *const params = (ThreadParams*)lpParameter;
 
-	ThreadParams *const params = (ThreadParams*)lpParameter;
+	unsigned int i;
+	InstallServerResult res[MAX_ARCHS] = {ISR_OK, ISR_OK, ISR_OK, ISR_OK};
 
-	// Try to (un)install the 64-bit version.
-	if (g_is64bit) {
-		res64 = TryInstallServer(params->hWnd, params->isUninstall, true, msg64, _countof(msg64));
+	// line2 message for error display.
+	// If all DLLs registered successfully, this will stay blank.
+	TCHAR msg2[1024];
+	msg2[0] = _T('\0');
+
+	// Try to (un)install the various architecture versions.
+	for (i = 0; i < g_arch_count; i++) {
+		TCHAR msg_ret[256];
+		res[i] = TryInstallServer(params->hWnd, params->isUninstall, g_archs[i], msg_ret, _countof(msg_ret));
+		if (res[i] != ISR_OK) {
+			// Append the error message.
+			// TODO: Use _sntprintf() to a temporary buffer?
+			const s_arch_tbl_t *const s_arch = &s_arch_tbl[g_archs[i]];
+			if (msg2[0] != _T('\0')) {
+				_tcscat_s(msg2, _countof(msg2), _T("\n"));
+			}
+			_tcscat_s(msg2, _countof(msg2), BULLET _T(" "));
+			_tcscat_s(msg2, _countof(msg2), s_arch->name);
+			_tcscat_s(msg2, _countof(msg2), _T(": "));
+			_tcscat_s(msg2, _countof(msg2), msg_ret);
+		}
 	}
 
-	// Try to (un)install the 32-bit version.
-	res32 = TryInstallServer(params->hWnd, params->isUninstall, false, msg32, _countof(msg32));
-
-	if (res32 == ISR_OK && res64 == ISR_OK) {
+	if (msg2[0] == _T('\0')) {
 		// DLL(s) registered successfully.
 		const TCHAR *msg;
-		if (g_is64bit) {
+		if (g_arch_count > 1) {
 			msg = (params->isUninstall
 				? _T("DLLs unregistered successfully.")
 				: _T("DLLs registered successfully."));
@@ -485,10 +598,7 @@ static unsigned int WINAPI ThreadProc(LPVOID lpParameter)
 	} else {
 		// At least one of the DLLs failed to register.
 		const TCHAR *msg1;
-		TCHAR msg2[540];
-		msg2[0] = _T('\0');
-
-		if (g_is64bit) {
+		if (g_arch_count > 1) {
 			msg1 = (params->isUninstall
 				? _T("An error occurred while unregistering the DLLs:")
 				: _T("An error occurred while registering the DLLs:"));
@@ -497,21 +607,6 @@ static unsigned int WINAPI ThreadProc(LPVOID lpParameter)
 				? _T("An error occurred while unregistering the DLL:")
 				: _T("An error occurred while registering the DLL:"));
 		}
-
-		if (res32 != ISR_OK) {
-			if (g_is64bit) {
-				_tcscpy_s(msg2, _countof(msg2), BULLET _T(" 32-bit: "));
-			}
-			_tcscat_s(msg2, _countof(msg2), msg32);
-		}
-		if (res64 != ISR_OK) {
-			if (msg2[0] != _T('\0')) {
-				_tcscat_s(msg2, _countof(msg2), _T("\n"));
-			}
-			_tcscat_s(msg2, _countof(msg2), BULLET _T(" 64-bit: "));
-			_tcscat_s(msg2, _countof(msg2), msg64);
-		}
-
 		ShowStatusMessage(params->hWnd, msg1, msg2, MB_ICONSTOP);
 		MessageBeep(MB_ICONSTOP);
 	}
@@ -550,14 +645,21 @@ static void InitDialog(HWND hDlg)
 
 	HWND hStatus1, hExclaim;
 	HMODULE hUser32;
-	bool bHasMsvc32, bErr;
-	TCHAR line1[80], line2[512];
-	line1[0] = _T('\0');
-	line2[0] = _T('\0');
+	bool bErr;
+	TCHAR line1[80], line2[1024];
+	TCHAR s_missing_arch_names[128];
+	unsigned int i;
+	unsigned int missing_arch_count = 0;
+	bool bHasMsvcForArch[MAX_ARCHS] = {false, false, false, false};
 
 	// OS version check.
 	OSVERSIONINFO osvi;
 	unsigned int vcyear, vcver;
+
+	// Clear the lines.
+	line1[0] = _T('\0');
+	line2[0] = _T('\0');
+	s_missing_arch_names[0] = _T('\0');
 
 	if (hIconDialog) {
 		SendMessage(hDlg, WM_SETICON, ICON_BIG, (LPARAM)hIconDialog);
@@ -578,6 +680,7 @@ static void InitDialog(HWND hDlg)
 	// Load the icons.
 	// NOTE: Using IDI_EXCLAMATION will only return the 32x32 icon.
 	// Need to get the icon from USER32 directly.
+	// TODO: Use SHGetStockIconInfo if available?
 	hUser32 = GetModuleHandle(_T("user32"));
 	assert(hUser32 != NULL);
 	if (hUser32) {
@@ -609,10 +712,6 @@ static void InitDialog(HWND hDlg)
 	// Set the dialog strings.
 	SetWindowText(GetDlgItem(hDlg, IDC_STATIC_DESC), strdlg_desc);
 
-	// Check if MSVCRT is installed. If it isn't, show a warning
-	// message and disable the buttons.
-	bHasMsvc32 = CheckMsvc(false);
-
 	// MSVC 2022 runtime requires Windows Vista or later.
 	osvi.dwOSVersionInfoSize = sizeof(osvi);
 	if (GetVersionEx(&osvi) != 0 && osvi.dwMajorVersion >= 6) {
@@ -626,54 +725,43 @@ static void InitDialog(HWND hDlg)
 		vcver = 15;
 	}
 
-	// Go through the various permutations.
-#ifndef _WIN64
-	if (!g_is64bit) {
-		// 32-bit system.
-		if (!bHasMsvc32) {
-			// 32-bit MSVCRT is missing.
-			_sntprintf(line1, _countof(line1),
-				_T("The 32-bit MSVC 2015-%u runtime is not installed."), vcyear);
-			_sntprintf(line2, _countof(line2),
-				_T("You can download the 32-bit MSVC 2015-%u runtime at:\n")
-				BULLET _T(" <a href=\"https://aka.ms/vs/%u/release/VC_redist.x86.exe\">")
-					_T("https://aka.ms/vs/%u/release/VC_redist.x86.exe</a>"),
-				vcyear, vcver, vcver);
+	for (i = 0; i < g_arch_count; i++) {
+		bHasMsvcForArch[i] = CheckMsvc(g_archs[i]);
+		if (!bHasMsvcForArch[i]) {
+			if (missing_arch_count == 0) {
+				_sntprintf(line2, _countof(line2),
+					_T("You can download the MSVC 2015-%u runtime at:"),
+					vcyear);
+			} else if (missing_arch_count > 0) {
+				_tcscat_s(s_missing_arch_names, _countof(s_missing_arch_names), _T(", "));
+			} else if (missing_arch_count > 1 && missing_arch_count == (g_arch_count - 1)) {
+				_tcscat_s(s_missing_arch_names, _countof(s_missing_arch_names), _T(", and "));
+			}
+
+			const s_arch_tbl_t *const s_arch = &s_arch_tbl[g_archs[i]];
+			_tcscat_s(s_missing_arch_names, _countof(s_missing_arch_names), s_arch->name);
+			missing_arch_count++;
 		}
-	} else
-#endif /* !_WIN64 */
-	{
-		// 64-bit system.
-		const bool bHasMsvc64 = CheckMsvc(true);
-		if (!bHasMsvc32 && !bHasMsvc64) {
-			// Both 32-bit and 64-bit MSVCRT are missing.
-			_sntprintf(line1, _countof(line1),
-				_T("The 32-bit and 64-bit MSVC 2015-%u runtimes are not installed."), vcyear);
-			_sntprintf(line2, _countof(line2),
-				_T("You can download the MSVC 2015-%u runtime at:\n")
-				BULLET _T(" 32-bit: <a href=\"https://aka.ms/vs/%u/release/VC_redist.x86.exe\">")
-					_T("https://aka.ms/vs/%u/release/VC_redist.x86.exe</a>\n")
-				BULLET _T(" 64-bit: <a href=\"https://aka.ms/vs/%u/release/VC_redist.x64.exe\">")
-					_T("https://aka.ms/vs/%u/release/VC_redist.x64.exe</a>"),
-				vcyear, vcver, vcver, vcver, vcver);
-		} else if (!bHasMsvc32 && bHasMsvc64) {
-			// 32-bit MSVCRT is missing.
-			_sntprintf(line1, _countof(line1),
-				_T("The 32-bit MSVC 2015-%u runtime is not installed."), vcyear);
-			_sntprintf(line2, _countof(line2),
-				_T("You can download the 32-bit MSVC 2015-%u runtime at:\n")
-				BULLET _T(" <a href=\"https://aka.ms/vs/%u/release/VC_redist.x86.exe\">")
-					_T("https://aka.ms/vs/%u/release/VC_redist.x86.exe</a>"),
-				vcyear, vcver, vcver);
-		} else if (bHasMsvc32 && !bHasMsvc64) {
-			// 64-bit MSVCRT is missing.
-			_sntprintf(line1, _countof(line1),
-				_T("The 64-bit MSVC 2015-%u runtime is not installed."), vcyear);
-			_sntprintf(line2, _countof(line2),
-				_T("You can download the 64-bit MSVC 2015-%u runtime at:\n")
-				BULLET _T(" <a href=\"https://aka.ms/vs/%u/release/VC_redist.x64.exe\">")
-					_T("https://aka.ms/vs/%u/release/VC_redist.x64.exe</a>"),
-				vcyear, vcver, vcver);
+	}
+
+	if (missing_arch_count > 0) {
+		// One or more MSVC runtime versions are missing.
+		_sntprintf(line1, _countof(line1),
+			_T("The %s MSVC 2015-%u runtime%s are not installed."),
+				s_missing_arch_names, vcyear, (missing_arch_count == 1) ? _T("") : _T("s"));
+
+		for (i = 0; i < missing_arch_count; i++) {
+			TCHAR s_runtime_line[160];
+			const s_arch_tbl_t *s_arch;
+			if (bHasMsvcForArch[i])
+				continue;
+
+			s_arch = &s_arch_tbl[g_archs[i]];
+			_sntprintf(s_runtime_line, _countof(s_runtime_line),
+				_T("\n") BULLET _T(" %s: <a href=\"https://aka.ms/vs/%u/release/VC_redist.%s.exe\">")
+					_T("https://aka.ms/vs/%u/release/VC_redist.%s.exe</a>"),
+				s_arch->name, vcver, s_arch->runtime, vcver, s_arch->runtime);
+			_tcscat_s(line2, _countof(line2), s_runtime_line);
 		}
 	}
 
@@ -683,6 +771,10 @@ static void InitDialog(HWND hDlg)
 	bErr = (line1[0] != _T('\0'));
 	ShowStatusMessage(hDlg, line1, line2, (bErr ? MB_ICONEXCLAMATION : 0));
 	EnableButtons(hDlg, !bErr);
+
+	// FIXME: INITIAL COMMIT: Set focus to the "Install" button.
+	// NOTE: Not working...???
+	SetFocus(GetDlgItem(hDlg, IDC_BUTTON_INSTALL));
 }
 
 /**
@@ -701,7 +793,7 @@ static void HandleInstallUninstall(HWND hDlg, bool isUninstall)
 	}
 	g_inProgress = true;
 
-	if (g_is64bit) {
+	if (g_arch_count > 1) {
 		msg = (isUninstall
 			? _T("\n\nUnregistering DLLs...")
 			: _T("\n\nRegistering DLLs..."));
@@ -842,17 +934,144 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 }
 
 /**
+ * Convert an IMAGE_FILE_MACHINE_* value to SysArch.
+ * @param ifm IMAGE_FILE_MACHINE*
+ * @return SysArch, or CPU_unknown if not supported.
+ */
+static SysArch ifm_to_SysArch(USHORT ifm)
+{
+	typedef struct _ifm_to_cpu_tbl_t {
+		uint16_t ifm;
+		uint8_t cpu;
+	} ifm_to_cpu_tbl_t;
+
+	static const ifm_to_cpu_tbl_t ifm_to_cpu_tbl[] = {
+		{IMAGE_FILE_MACHINE_I386,	CPU_i386},
+		{IMAGE_FILE_MACHINE_AMD64,	CPU_amd64},
+		{IMAGE_FILE_MACHINE_IA64,	CPU_ia64},
+		{IMAGE_FILE_MACHINE_ARM,	CPU_arm},
+		{IMAGE_FILE_MACHINE_THUMB,	CPU_arm},	// TODO: Verify
+		{IMAGE_FILE_MACHINE_ARMNT,	CPU_arm},	// TODO: Verify
+		{IMAGE_FILE_MACHINE_ARM64,	CPU_arm64},
+	};
+	static const ifm_to_cpu_tbl_t *const p_end = &ifm_to_cpu_tbl[ARRAY_SIZE(ifm_to_cpu_tbl)];
+	for (const ifm_to_cpu_tbl_t *p = ifm_to_cpu_tbl; p < p_end; p++) {
+		if (p->ifm == ifm) {
+			return p->cpu;
+		}
+	}
+
+	// Not found and/or supported.
+	return CPU_unknown;
+}
+
+/**
+ * Check the system architecture(s).
+ * @return 0 on success; non-zero on error.
+ */
+static int check_system_architectures(void)
+{
+	HMODULE hKernel32;
+
+	typedef BOOL (WINAPI *PFNISWOW64PROCESS2)(HANDLE hProcess, USHORT *pProcessMachine, USHORT *pNativeMachine);
+	typedef BOOL (WINAPI *PFNISWOW64PROCESS)(HANDLE hProcess, PBOOL Wow64Process);
+	union {
+		PFNISWOW64PROCESS2 pfnIsWow64Process2;
+		PFNISWOW64PROCESS pfnIsWow64Process;
+	} pfn;
+
+	// WoW64 functions are located in kernel32.dll.
+	// NOTE: Using GetProcAddress() because regular linking would
+	// prevent svrplus from running on earlier versions of Windows.
+	hKernel32 = GetModuleHandle(_T("kernel32"));
+	assert(hKernel32 != NULL);
+	if (!hKernel32) {
+		// Something is seriously wrong if kernel32 isn't loaded...
+		CloseHandle(g_hSingleInstanceMutex);
+		DebugBreak();
+		return -1;
+	}
+
+	// Check for IsWow64Process2().
+	pfn.pfnIsWow64Process2 = (PFNISWOW64PROCESS2)GetProcAddress(hKernel32, "IsWow64Process2");
+	if (pfn.pfnIsWow64Process2) {
+		// IsWow64Process2() is available.
+		// Check the machine architecture(s).
+		USHORT processMachine, nativeMachine;
+		BOOL bRet = pfn.pfnIsWow64Process2(GetCurrentProcess(), &processMachine, &nativeMachine);
+		if (!bRet) {
+			// Failed?! This shouldn't happen...
+			CloseHandle(g_hSingleInstanceMutex);
+			DebugBreak();
+			return -2;
+		}
+
+		// processMachine contains the emulated architecture if
+		// running under WOW64, or IMAGE_FILE_MACHINE_UNKNOWN if not.
+		// We won't bother checking processMachine. Instead, use
+		// a hard-coded set for each host architecture.
+		switch (ifm_to_SysArch(nativeMachine)) {
+			case CPU_unknown:
+				// Not supported. Show an error message.
+				// TODO
+				CloseHandle(g_hSingleInstanceMutex);
+				DebugBreak();
+				return -3;
+			case CPU_i386:
+				// g_archs[] starts with CPU_i386, so we're done.
+				break;
+			case CPU_amd64:
+				g_archs[g_arch_count++] = CPU_amd64;
+				break;
+			case CPU_ia64:
+				g_archs[g_arch_count++] = CPU_ia64;
+				break;
+			case CPU_arm:
+				g_archs[g_arch_count++] = CPU_arm;
+				break;
+			case CPU_arm64:
+				// NOTE: amd64 was added starting with Windows 10 Build 21277.
+				// https://blogs.windows.com/windows-insider/2020/12/10/introducing-x64-emulation-in-preview-for-windows-10-on-arm-pcs-to-the-windows-insider-program/
+				// TODO: Check for it!
+				g_archs[g_arch_count++] = CPU_amd64;
+				g_archs[g_arch_count++] = CPU_arm64;
+				break;
+		}
+		return 0;
+	}
+
+	// Check for IsWow64Process().
+	pfn.pfnIsWow64Process = (PFNISWOW64PROCESS)GetProcAddress(hKernel32, "IsWow64Process");
+	if (pfn.pfnIsWow64Process) {
+		// IsWow64Process() is available.
+		BOOL bWow;
+		if (!pfn.pfnIsWow64Process(GetCurrentProcess(), &bWow)) {
+			// Failed?! This shouldn't happen...
+			CloseHandle(g_hSingleInstanceMutex);
+			DebugBreak();
+			return -4;
+		}
+
+		if (bWow) {
+			// This system is either i386/amd64 or i386/ia64.
+			// Assuming i386/amd64 for now.
+			// FIXME: IsWow64Process() doesn't distinguish between i386/amd64 and i386/ia64.
+			// TODO: Use GetNativeSystemInfo() maybe? (Or, just forget about Itanium...)
+			g_archs[g_arch_count++] = CPU_amd64;
+		}
+		return 0;
+	}
+
+	// No functions are available.
+	// System is only i386.
+	return 0;
+}
+
+/**
  * Entry point
  */
 int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
-	HANDLE hSingleInstanceMutex;
-#ifndef _WIN64
-	HMODULE hKernel32;
-	typedef BOOL (WINAPI *PFNISWOW64PROCESS)(HANDLE hProcess, PBOOL Wow64Process);
-	PFNISWOW64PROCESS pfnIsWow64Process;
-#endif /* !_WIN64 */
-
 	// Set Win32 security options.
 	rp_secure_param_t param;
 	param.bHighSec = FALSE;
@@ -866,8 +1085,8 @@ int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	// References:
 	// - https://stackoverflow.com/questions/4191465/how-to-run-only-one-instance-of-application
 	// - https://stackoverflow.com/a/33531179
-	hSingleInstanceMutex = CreateMutex(NULL, TRUE, _T("Local\\com.gerbilsoft.rom-properties.svrplus"));
-	if (!hSingleInstanceMutex || GetLastError() == ERROR_ALREADY_EXISTS) {
+	g_hSingleInstanceMutex = CreateMutex(NULL, TRUE, _T("Local\\com.gerbilsoft.rom-properties.svrplus"));
+	if (!g_hSingleInstanceMutex || GetLastError() == ERROR_ALREADY_EXISTS) {
 		// Mutex already exists.
 		// Set focus to the existing instance.
 		HWND hWnd = FindWindow(_T("#32770"), _T("ROM Properties Page Installer"));
@@ -882,31 +1101,13 @@ int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	// adds 28,672 bytes to the statically-linked executable
 	//setlocale(LC_ALL, "");
 
-#ifndef _WIN64
-	// Check if this is a 64-bit system. (WoW64)
-	hKernel32 = GetModuleHandle(_T("kernel32"));
-	assert(hKernel32 != NULL);
-	if (!hKernel32) {
-		CloseHandle(hSingleInstanceMutex);
-		DebugBreak();
+	// Check the system architecture(s).
+	if (check_system_architectures() != 0) {
+		// Failed...
+		// NOTE: check_system_architectures() releases
+		// g_hSingleInstanceMutex on failure.
 		return EXIT_FAILURE;
 	}
-	pfnIsWow64Process = (PFNISWOW64PROCESS)GetProcAddress(hKernel32, "IsWow64Process");
-
-	if (!pfnIsWow64Process) {
-		// IsWow64Process() isn't available.
-		// This must be a 32-bit system.
-		g_is64bit = false;
-	} else {
-		BOOL bWow;
-		if (!pfnIsWow64Process(GetCurrentProcess(), &bWow)) {
-			CloseHandle(hSingleInstanceMutex);
-			DebugBreak();
-			return EXIT_FAILURE;
-		}
-		g_is64bit = !!bWow;
-	}
-#endif /* !_WIN64 */
 
 	// Load the icon.
 	hIconDialog = (HICON)LoadImage(
@@ -930,6 +1131,6 @@ int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		DestroyIcon(hIconDialogSmall);
 	}
 
-	CloseHandle(hSingleInstanceMutex);
+	CloseHandle(g_hSingleInstanceMutex);
 	return EXIT_SUCCESS;
 }
