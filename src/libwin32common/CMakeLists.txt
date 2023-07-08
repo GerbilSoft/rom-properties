@@ -88,7 +88,7 @@ FOREACH(_target ${TARGETS})
 
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE rpthreads${_target_suffix})
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE rptext${_target_suffix})
-	TARGET_LINK_LIBRARIES(${_target} PRIVATE uuid ole32 advapi32 shell32)
+	TARGET_LINK_LIBRARIES(${_target} PRIVATE uuid ole32 oleaut32 advapi32 shell32)
 	# for DefSubclassProc and related
 	TARGET_LINK_LIBRARIES(${_target} PUBLIC comctl32)
 

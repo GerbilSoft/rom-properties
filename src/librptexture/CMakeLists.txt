@@ -300,7 +300,7 @@ FOREACH(_target ${TARGETS})
 		# libwin32common
 		TARGET_LINK_LIBRARIES(${_target} PRIVATE win32common${_target_suffix})
 		# Windows system libraries
-		TARGET_LINK_LIBRARIES(${_target} PRIVATE gdiplus)
+		TARGET_LINK_LIBRARIES(${_target} PRIVATE gdiplus gdi32)
 	ENDIF(WIN32)
 ENDFOREACH(_target)
 UNSET(_target_suffix)
