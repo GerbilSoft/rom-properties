@@ -900,6 +900,11 @@ GameCube::GameCube(IRpFile *file)
 				goto notSupported;
 		}
 
+		// We have the disc header.
+		// NOTE: Only the disc ID region code is present.
+		d->hasDiscHeader = true;
+		d->hasRegionCode = true;
+
 		// Done for now...
 		return;
 	}
@@ -1527,7 +1532,7 @@ int GameCube::loadFieldData(void)
 		// Game ID
 		// Replace any non-printable characters with underscores.
 		// (GameCube NDDEMO has ID6 "00\0E01".)
-		char id6[7]; 
+		char id6[7];
 		for (int i = 0; i < 6; i++) {
 			id6[i] = (ISPRINT(d->discHeader.id6[i])
 				? d->discHeader.id6[i]

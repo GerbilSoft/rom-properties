@@ -14,6 +14,10 @@
       * Reported by @Masamune3210.
   * KDE: Fix an issue where achievements are checked when the properties dialog
     is opened instead of when the "ROM Properties" tab is selected.
+  * GameCube: Un-break partial support for WIA/RVZ images.
+    * This was broken in v2.2.
+    * Fixes #389: Gamecube Property sheet is blank
+      * Reported by @Masamune3210.
 
 ## v2.2 (released 2023/07/01)
 
