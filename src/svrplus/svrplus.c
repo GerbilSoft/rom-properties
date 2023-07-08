@@ -734,9 +734,9 @@ static void InitDialog(HWND hDlg)
 					_T("You can download the MSVC 2015-%u runtime at:"),
 					vcyear);
 			} else if (missing_arch_count > 0) {
+				// TODO: Improve by adding "and" where necessary.
+				// May require removing the comma for only two archs.
 				_tcscat_s(s_missing_arch_names, _countof(s_missing_arch_names), _T(", "));
-			} else if (missing_arch_count > 1 && missing_arch_count == (g_arch_count - 1)) {
-				_tcscat_s(s_missing_arch_names, _countof(s_missing_arch_names), _T(", and "));
 			}
 
 			const s_arch_tbl_t *const s_arch = &s_arch_tbl[g_archs[i]];
