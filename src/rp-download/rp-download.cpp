@@ -2,15 +2,16 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * rp-download.cpp: Standalone cache downloader.                           *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "config.rp-download.h"
 
-// OS-specific security options.
+// librpsecure
 #include "librpsecure/os-secure.h"
+#include "librpsecure/restrict-dll.h"
 
 // C includes.
 #ifndef _WIN32
@@ -310,6 +311,8 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 	// If http_proxy or https_proxy are set, they will be used
 	// by the downloader code if supported.
 
+	// Restrict DLL lookups.
+	rp_secure_restrict_dll_lookups();
 	// Reduce process integrity, if available.
 	rp_secure_reduce_integrity();
 

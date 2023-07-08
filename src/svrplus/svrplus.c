@@ -26,6 +26,7 @@
 
 // librpsecure
 #include "librpsecure/os-secure.h"
+#include "librpsecure/restrict-dll.h"
 
 // Additional Windows headers
 #include <windowsx.h>
@@ -1072,14 +1073,16 @@ static int check_system_architectures(void)
  */
 int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
+	// Restrict DLL lookups.
+	rp_secure_restrict_dll_lookups();
 	// Set Win32 security options.
 	rp_secure_param_t param;
 	param.bHighSec = FALSE;
 	rp_secure_enable(param);
 
-	// Unused parameters
-	((void)hPrevInstance);
-	((void)lpCmdLine);
+	// Unused parameters (Win16 baggage)
+	RP_UNUSED(hPrevInstance);
+	RP_UNUSED(lpCmdLine);
 
 	// Check if another instance of svrplus is already running.
 	// References:

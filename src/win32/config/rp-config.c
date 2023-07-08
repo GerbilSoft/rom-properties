@@ -19,6 +19,7 @@
 
 // librpsecure
 #include "librpsecure/os-secure.h"
+#include "librpsecure/restrict-dll.h"
 
 // C includes.
 #include <locale.h>
@@ -114,13 +115,20 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 	static const TCHAR prg_title[] = _T("ROM Properties Page Configuration");
 
+	// Unused parameters (Win16 baggage)
+	RP_UNUSED(hPrevInstance);
+
+	/** librpsecure **/
+
+	// Restrict DLL lookups.
+	rp_secure_restrict_dll_lookups();
+
 	// Set OS-specific security options.
 	rp_secure_param_t param;
 	param.bHighSec = FALSE;
 	rp_secure_enable(param);
 
-	// Unused parameters. (Win16 baggage)
-	RP_UNUSED(hPrevInstance);
+	/** main startup **/
 
 	// Check if another instance of rp-config is already running.
 	// References:

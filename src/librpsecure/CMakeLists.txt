@@ -17,10 +17,12 @@ IF(ENABLE_EXTRA_SECURITY)
 	IF(WIN32)
 		SET(${PROJECT_NAME}_SRCS
 			win32/integrity_level.c
+			win32/restrict-dll.c
 			win32/secoptions.c
 			)
 		SET(${PROJECT_NAME}_H
 			os-secure.h
+			restrict-dll.h
 			win32/integrity_level.h
 			win32/secoptions.h
 			win32/secoptions_win8.h

@@ -2,11 +2,15 @@
  * ROM Properties Page shell extension. (amiibo-data)                      *
  * amiiboc.cpp: Nintendo amiibo binary data compiler.                      *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "amiibo_bin_structs.h"
+
+// librpsecure
+// TODO: rp_secure_enable()?
+#include "librpsecure/restrict-dll.h"
 
 // Byteswapping
 #include "byteswap_rp.h"
@@ -105,6 +109,9 @@ static void alignFileTo16Bytes(FILE *f)
 
 int main(int argc, char *argv[])
 {
+	// Restrict DLL lookups.
+	rp_secure_restrict_dll_lookups();
+
 	// TODO: Better command line parsing.
 	if (argc < 3) {
 		fprintf(stderr, "syntax: %s [-v] amiibo-data.txt amiibo.bin\n", argv[0]);
