@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rpcli)                            *
  * resource.rc: Win32 resource script.                                     *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -34,18 +34,18 @@ BEGIN
 		/* English (US), Unicode */
 		BLOCK "040904B0"
 		BEGIN
-			//VALUE "Comments", "\0"
-			//VALUE "CompanyName", "\0"
-			VALUE "FileDescription", "ROM Properties Page command line interface\0"
-			VALUE "FileVersion", "rpcli " Win32_RC_FileVersion "\0"
-			VALUE "InternalName", "rpcli\0"
-			VALUE "LegalCopyright", "Copyright (c) 2016-2022 by David Korth, Egor.\0"
-			//VALUE "LegalTrademarks", "\0"
-			//VALUE "OriginalFilename", "\0"
-			//VALUE "PrivateBuild", "\0"
-			VALUE "ProductName", "ROM Properties Page command line interface\0"
-			VALUE "ProductVersion", "rpcli " Win32_RC_FileVersion "\0"
-			//VALUE "SpecialBuild", "\0"
+			//VALUE "Comments"
+			//VALUE "CompanyName"
+			VALUE "FileDescription", "ROM Properties Page command line interface"
+			VALUE "FileVersion", "rpcli " Win32_RC_FileVersion
+			VALUE "InternalName", "rpcli"
+			VALUE "LegalCopyright", "Copyright (c) 2016-2023 by David Korth, Egor."
+			//VALUE "LegalTrademarks"
+			//VALUE "OriginalFilename"
+			//VALUE "PrivateBuild"
+			VALUE "ProductName", "ROM Properties Page command line interface"
+			VALUE "ProductVersion", "rpcli " Win32_RC_FileVersion
+			//VALUE "SpecialBuild"
 		END
 	END
 	BLOCK "VarFileInfo"
