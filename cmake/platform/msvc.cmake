@@ -153,6 +153,10 @@ IF(NOT CMAKE_SIZEOF_VOID_P)
 	ENDIF()
 ENDIF(NOT CMAKE_SIZEOF_VOID_P)
 
+# MSVC needs a flag to automatically NULL-terminate strings in string tables.
+# (It ignores the "\0" in string tables, too.)
+SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} /n")
+
 # TODO: Code coverage checking for MSVC?
 IF(ENABLE_COVERAGE)
 	MESSAGE(FATAL_ERROR "Code coverage testing is currently only supported on gcc and clang.")

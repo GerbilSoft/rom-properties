@@ -7,7 +7,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-// C includes.
+// C includes
 #include <assert.h>
 #include <errno.h>
 #include <locale.h>
@@ -484,6 +484,25 @@ static InstallServerResult TryInstallServer(HWND hWnd,
 
 	// NOTE: Using _tcscpy_s() instead of _tcsncpy() because
 	// _tcsncpy() zeroes the rest of the buffer.
+#define LOAD_STRING(id) do { \
+		LPCTSTR s_strtbl; \
+		int ls_ret = LoadString(NULL, (id), (LPTSTR)&s_strtbl, 0); \
+		assert(ls_ret > 0); \
+		assert(s_strtbl != NULL); \
+		_tcscpy_s(sErrBuf, cchErrBuf, (ls_ret > 0) ? s_strtbl : _T("RES ERR")); \
+	} while (0)
+#define LOAD_STRING_PRINTF(id, ...) do { \
+		LPCTSTR s_strtbl; \
+		int ls_ret = LoadString(NULL, (id), (LPTSTR)&s_strtbl, 0); \
+		assert(ls_ret > 0); \
+		assert(s_strtbl != NULL); \
+		if (ls_ret > 0) { \
+			_sntprintf(sErrBuf, cchErrBuf, s_strtbl, __VA_ARGS__); \
+		} else { \
+			_tcscpy_s(sErrBuf, cchErrBuf, _T("RES ERR")); \
+		} \
+	} while (0)
+
 	switch (res) {
 		case ISR_OK:
 			// No error.
@@ -493,43 +512,39 @@ static InstallServerResult TryInstallServer(HWND hWnd,
 			break;
 		case ISR_FATAL_ERROR:
 		default:
-			_tcscpy_s(sErrBuf, cchErrBuf, _T("An unknown fatal error occurred."));
+			LOAD_STRING(IDS_ISR_FATAL_ERROR);
 			break;
 		case ISR_INVALID_ARCH:
-			_sntprintf(sErrBuf, cchErrBuf, _T("Invalid system architecture: %d"), arch);
+			LOAD_STRING_PRINTF(IDSF_ISR_INVALID_ARCH, arch);
 			break;
 		case ISR_FILE_NOT_FOUND:
-			_sntprintf(sErrBuf, cchErrBuf, _T("%s\\%s is missing."), s_arch->name, dll_filename);
+			LOAD_STRING_PRINTF(IDSF_ISR_FILE_NOT_FOUND, s_arch->name, dll_filename);
 			break;
 		case ISR_CREATEPROCESS_FAILED:
-			_sntprintf(sErrBuf, cchErrBuf, _T("Could not start REGSVR32.exe. (Err:%u)"), errorCode);
+			LOAD_STRING_PRINTF(IDSF_ISR_CREATEPROCESS_FAILED, errorCode);
 			break;
 		case ISR_PROCESS_STILL_ACTIVE:
-			_tcscpy_s(sErrBuf, cchErrBuf, _T("The REGSVR32 process never completed."));
+			LOAD_STRING(IDS_ISR_PROCESS_STILL_ACTIVE);
 			break;
 		case ISR_REGSVR32_EXIT_CODE:
 			switch (errorCode) {
 				case REGSVR32_FAIL_ARGS:
-					_tcscpy_s(sErrBuf, cchErrBuf, _T("REGSVR32 failed: Invalid argument."));
+					LOAD_STRING(IDS_ISR_REGSVR32_FAIL_ARGS);
 					break;
 				case REGSVR32_FAIL_OLE:
-					_tcscpy_s(sErrBuf, cchErrBuf, _T("REGSVR32 failed: OleInitialize() failed."));
+					LOAD_STRING(IDS_ISR_REGSVR32_FAIL_OLE);
 					break;
 				case REGSVR32_FAIL_LOAD:
-					_sntprintf(sErrBuf, cchErrBuf,
-						_T("REGSVR32 failed: %s\\%s is not a valid DLL."), s_arch->name, dll_filename);
+					LOAD_STRING_PRINTF(IDSF_ISR_REGSVR32_FAIL_LOAD, s_arch->name, dll_filename);
 					break;
 				case REGSVR32_FAIL_ENTRY:
-					_sntprintf(sErrBuf, cchErrBuf,
-						_T("REGSVR32 failed: %s\\%s is missing %s()."), s_arch->name, dll_filename, entry_point);
+					LOAD_STRING_PRINTF(IDSF_ISR_REGSVR32_FAIL_ENTRY, s_arch->name, dll_filename, entry_point);
 					break;
 				case REGSVR32_FAIL_REG:
-					_sntprintf(sErrBuf, cchErrBuf,
-						_T("REGSVR32 failed: %s() returned an error."), entry_point);
+					LOAD_STRING_PRINTF(IDSF_ISR_REGSVR32_FAIL_REG, entry_point);
 					break;
 				default:
-					_sntprintf(sErrBuf, cchErrBuf,
-						_T("REGSVR32 failed: Unknown exit code: %u"), errorCode);
+					LOAD_STRING_PRINTF(IDSF_ISR_REGSVR32_UNKNOWN_EXIT_CODE, errorCode);
 					break;
 			}
 			break;
@@ -559,6 +574,11 @@ static unsigned int WINAPI ThreadProc(LPVOID lpParameter)
 	unsigned int i;
 	InstallServerResult res[MAX_ARCHS] = {ISR_OK, ISR_OK, ISR_OK, ISR_OK};
 
+	int status_icon;
+	int ls_ret;
+	uint16_t msg1_id;
+	LPCTSTR msg1;
+
 	// line2 message for error display.
 	// If all DLLs registered successfully, this will stay blank.
 	TCHAR msg2[1024];
@@ -582,36 +602,35 @@ static unsigned int WINAPI ThreadProc(LPVOID lpParameter)
 		}
 	}
 
+	// FIXME: Plural localization for languages with more than two plural forms,
+	// or where plural forms don't match English.
 	if (msg2[0] == _T('\0')) {
 		// DLL(s) registered successfully.
-		const TCHAR *msg;
 		if (g_arch_count > 1) {
-			msg = (params->isUninstall
-				? _T("DLLs unregistered successfully.")
-				: _T("DLLs registered successfully."));
+			msg1_id = (params->isUninstall) ? IDS_DLLS_UNREG_OK : IDS_DLLS_REG_OK;
 		} else {
-			msg = (params->isUninstall
-				? _T("DLL unregistered successfully.")
-				: _T("DLL registered successfully."));
+			msg1_id = (params->isUninstall) ? IDS_DLL_UNREG_OK : IDS_DLL_REG_OK;
 		}
-		ShowStatusMessage(params->hWnd, msg, _T(""), MB_ICONINFORMATION);
-		MessageBeep(MB_ICONINFORMATION);
+		status_icon = MB_ICONINFORMATION;
 	} else {
 		// At least one of the DLLs failed to register.
-		const TCHAR *msg1;
 		if (g_arch_count > 1) {
-			msg1 = (params->isUninstall
-				? _T("An error occurred while unregistering the DLLs:")
-				: _T("An error occurred while registering the DLLs:"));
+			msg1_id = (params->isUninstall) ? IDS_DLLS_UNREG_ERROR : IDS_DLLS_REG_ERROR;
 		} else {
-			msg1 = (params->isUninstall
-				? _T("An error occurred while unregistering the DLL:")
-				: _T("An error occurred while registering the DLL:"));
+			msg1_id = (params->isUninstall) ? IDS_DLL_UNREG_ERROR : IDS_DLL_REG_ERROR;
 		}
-		ShowStatusMessage(params->hWnd, msg1, msg2, MB_ICONSTOP);
-		MessageBeep(MB_ICONSTOP);
+		status_icon = MB_ICONSTOP;;
 	}
 
+	ls_ret = LoadString(NULL, msg1_id, (LPTSTR)&msg1, 0); \
+	assert(ls_ret > 0);
+	assert(msg1 != NULL);
+	if (ls_ret <= 0) {
+		msg1 = _T("RES ERR");
+	}
+
+	ShowStatusMessage(params->hWnd, msg1, msg2, status_icon);
+	MessageBeep(status_icon);
 	SendMessage(params->hWnd, WM_APP_ENDTASK, 0, 0);
 	return 0;
 }
@@ -633,17 +652,6 @@ static void InitDialog(HWND hDlg)
 	// FIXME: Assuming 16x16 icons. May need larger for HiDPI.
 	static const SIZE szIcon = {16, 16};
 
-	// Main dialog description.
-	static const TCHAR strdlg_desc[] =
-		_T("This installer will register the ROM Properties Page DLL with the system, ")
-		_T("which will provide extra functionality for supported files in Windows Explorer.\n\n")
-		_T("Note that the DLL locations are hard-coded in the registry. If you move the DLLs, ")
-		_T("you will have to rerun this installer. In addition, the DLLs will usually be locked ")
-		_T("by Explorer, so you will need to use this program to uninstall the DLLs first and ")
-		_T("then restart Explorer in order to move the DLLs.\n\n")
-		_T("Uninstalling will unregister the ROM Properties DLL, which will disable the extra ")
-		_T("functionality provided by the DLL for supported ROM files.");
-
 	HWND hStatus1, hExclaim;
 	HMODULE hUser32;
 	bool bErr;
@@ -652,6 +660,10 @@ static void InitDialog(HWND hDlg)
 	unsigned int i;
 	unsigned int missing_arch_count = 0;
 	bool bHasMsvcForArch[MAX_ARCHS] = {false, false, false, false};
+
+	// String table access
+	LPCTSTR s_strtbl;
+	int ls_ret;
 
 	// OS version check.
 	OSVERSIONINFO osvi;
@@ -713,7 +725,10 @@ static void InitDialog(HWND hDlg)
 	ShowWindow(GetDlgItem(hDlg, IDC_STATIC_STATUS2), SW_HIDE);
 
 	// Set the dialog strings.
-	SetWindowText(GetDlgItem(hDlg, IDC_STATIC_DESC), strdlg_desc);
+	ls_ret = LoadString(NULL, IDS_MAIN_DESCRIPTION, (LPTSTR)&s_strtbl, 0);
+	assert(ls_ret > 0);
+	assert(s_strtbl != NULL);
+	SetWindowText(GetDlgItem(hDlg, IDC_STATIC_DESC), (ls_ret > 0) ? s_strtbl : _T("RES ERR"));
 
 	// MSVC 2022 runtime requires Windows Vista or later.
 	osvi.dwOSVersionInfoSize = sizeof(osvi);
@@ -732,11 +747,16 @@ static void InitDialog(HWND hDlg)
 		bHasMsvcForArch[i] = CheckMsvc(g_archs[i]);
 		if (!bHasMsvcForArch[i]) {
 			if (missing_arch_count == 0) {
-				_sntprintf(line2, _countof(line2),
-					_T("You can download the MSVC 2015-%u runtime at:"),
-					vcyear);
+				ls_ret = LoadString(NULL, IDSF_MSVCRT_DOWNLOAD_AT, (LPTSTR)&s_strtbl, 0);
+				assert(ls_ret > 0);
+				assert(s_strtbl != NULL);
+				if (ls_ret > 0) {
+					_sntprintf(line2, _countof(line2), s_strtbl, vcyear);
+				} else {
+					_tcscpy_s(line2, _countof(line2), _T("RES ERR"));
+				}
 			} else if (missing_arch_count > 0) {
-				// TODO: Improve by adding "and" where necessary.
+				// TODO: Localize; improve by adding "and" where necessary.
 				// May require removing the comma for only two archs.
 				_tcscat_s(s_missing_arch_names, _countof(s_missing_arch_names), _T(", "));
 			}
@@ -749,11 +769,17 @@ static void InitDialog(HWND hDlg)
 
 	if (missing_arch_count > 0) {
 		// One or more MSVC runtime versions are missing.
-		_sntprintf(line1, _countof(line1),
-			_T("The %s MSVC 2015-%u runtime%s %s not installed."),
-				s_missing_arch_names, vcyear,
-				(missing_arch_count == 1) ? _T("") : _T("s"),
-				(missing_arch_count == 1) ? _T("is") : _T("are"));
+		// FIXME: Plural localization for languages with more than two plural forms,
+		// or where plural forms don't match English.
+		const uint16_t line1_id = (missing_arch_count == 1) ? IDSF_MSVCRT_MISSING_ONE : IDSF_MSVCRT_MISSING_MULTIPLE;
+		ls_ret = LoadString(NULL, line1_id, (LPTSTR)&s_strtbl, 0);
+		assert(ls_ret > 0);
+		assert(s_strtbl != NULL);
+		if (ls_ret > 0) {
+			_sntprintf(line1, _countof(line1), s_strtbl, s_missing_arch_names, vcyear);
+		} else {
+			_tcscpy_s(line1, _countof(line1), _T("RES ERR"));
+		}
 
 		for (i = 0; i < g_arch_count; i++) {
 			TCHAR s_runtime_line[160];
@@ -790,7 +816,9 @@ static void InitDialog(HWND hDlg)
 static void HandleInstallUninstall(HWND hDlg, bool isUninstall)
 {
 	HANDLE hThread;
-	const TCHAR *msg;
+	LPCTSTR msg;
+	int ls_ret;
+	uint16_t msg_id;
 
 	if (g_inProgress) {
 		// Already (un)installing...
@@ -799,15 +827,14 @@ static void HandleInstallUninstall(HWND hDlg, bool isUninstall)
 	g_inProgress = true;
 
 	if (g_arch_count > 1) {
-		msg = (isUninstall
-			? _T("\n\nUnregistering DLLs...")
-			: _T("\n\nRegistering DLLs..."));
+		msg_id = (isUninstall) ? IDS_DLLS_UNREGISTERING : IDS_DLLS_REGISTERING;
 	} else {
-		msg = (isUninstall
-			? _T("\n\nUnregistering DLL...")
-			: _T("\n\nRegistering DLL..."));
+		msg_id = (isUninstall) ? IDS_DLL_UNREGISTERING : IDS_DLL_REGISTERING;
 	}
-	ShowStatusMessage(hDlg, msg, _T(""), 0);
+	ls_ret = LoadString(NULL, msg_id, (LPTSTR)&msg, 0);
+	assert(ls_ret > 0);
+	assert(msg != NULL);
+	ShowStatusMessage(hDlg, (ls_ret > 0) ? msg : _T("RES ERR"), _T(""), 0);
 
 	EnableButtons(hDlg, false);
 	DlgUpdateCursor();
@@ -820,10 +847,13 @@ static void HandleInstallUninstall(HWND hDlg, bool isUninstall)
 		// Couldn't start the worker thread.
 		TCHAR threadErr[128];
 		const DWORD lastError = GetLastError();
-		_sntprintf(threadErr, _countof(threadErr),
-			BULLET _T(" Win32 error code: %u"), lastError);
+		// TODO: Localize this.
+		_sntprintf(threadErr, _countof(threadErr), BULLET _T(" Win32 error code: %u"), lastError);
 
-		ShowStatusMessage(hDlg, _T("An error occurred while starting the worker thread."), threadErr, MB_ICONSTOP);
+		ls_ret = LoadString(NULL, IDS_ERROR_STARTING_WORKER_THREAD, (LPTSTR)&msg, 0);
+		assert(ls_ret > 0);
+		assert(msg != NULL);
+		ShowStatusMessage(hDlg, (ls_ret > 0) ? msg : _T("RES ERR"), threadErr, MB_ICONSTOP);
 		MessageBeep(MB_ICONSTOP);
 		EnableButtons(hDlg, true);
 		DlgUpdateCursor();
@@ -910,10 +940,23 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 					ret = (INT_PTR)ShellExecute(NULL, _T("open"), pNMLink->item.szUrl, NULL, NULL, SW_SHOW);
 					if (ret <= 32) {
 						// ShellExecute() failed.
+						LPCTSTR msg;
+						int ls_ret;
+
 						TCHAR err[128];
-						_sntprintf(err, _countof(err),
-							_T("Could not open the URL.\n\nWin32 error code: %d"), (int)ret);
-						MessageBox(hDlg, err, _T("Could not open URL"), MB_ICONERROR);
+						ls_ret = LoadString(NULL, IDSF_ERROR_COULD_NOT_OPEN_URL, (LPTSTR)&msg, 0);
+						assert(ls_ret > 0);
+						assert(msg != NULL);
+						if (ls_ret > 0) {
+							_sntprintf(err, _countof(err), msg, (int)ret);
+						} else {
+							_tcscpy_s(err, _countof(err), _T("RES ERR"));
+						}
+
+						ls_ret = LoadString(NULL, IDS_ERROR_COULD_NOT_OPEN_URL_TITLE, (LPTSTR)&msg, 0);
+						assert(ls_ret > 0);
+						assert(msg != NULL);
+						MessageBox(hDlg, err, (ls_ret > 0) ? msg : _T("RES ERR"), MB_ICONERROR);
 					}
 					return TRUE;
 				}
