@@ -89,7 +89,7 @@ typedef enum {
 	CPU_i386	= 1,
 	CPU_amd64	= 2,
 	CPU_ia64	= 3,
-	CPU_arm	= 4,
+	CPU_arm		= 4,
 	CPU_arm64	= 5,
 
 	CPU_MAX
@@ -103,7 +103,7 @@ typedef struct _s_arch_tbl_t {
 static const s_arch_tbl_t s_arch_tbl[] = {
 	{_T("Unknown"),	NULL},		// CPU_unknown
 	{_T("i386"),	_T("x86")},	// CPU_i386
-	{_T("amd64"), _T("x64")},	// CPU_amd64
+	{_T("amd64"),	_T("x64")},	// CPU_amd64
 	{_T("ia64"),	NULL},		// CPU_ia64
 	{_T("arm"),	NULL},		// CPU_arm
 	{_T("arm64"),	_T("arm64")},	// CPU_arm64
