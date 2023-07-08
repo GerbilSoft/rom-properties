@@ -249,7 +249,7 @@ ENDIF(HAVE_RP_PROPERTYSTORE_DEPS)
 
 # Make sure git_version.h is created before compiling this target.
 IF(TARGET git_version)
-	ADD_DEPENDENCIES(rpbase git_version)
+	ADD_DEPENDENCIES(${PROJECT_NAME} git_version)
 ENDIF(TARGET git_version)
 
 # CMake-3.7.2 doesn't add include paths to windres.
