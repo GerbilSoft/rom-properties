@@ -56,6 +56,7 @@ static const MachineType machineTypes_PE[] = {
 	{IMAGE_FILE_MACHINE_RISCV128,	"RISC-V (128-bit address space)"},
 	{IMAGE_FILE_MACHINE_AMD64,	"AMD64"},
 	{IMAGE_FILE_MACHINE_M32R,	"Mitsubishi M32R"},
+	{IMAGE_FILE_MACHINE_ARM64EC,	"ARM (64-bit) (emulation-compatible)"},
 	{IMAGE_FILE_MACHINE_ARM64,	"ARM (64-bit)"},
 	{IMAGE_FILE_MACHINE_CEE,	"MSIL"},
 };

@@ -104,6 +104,7 @@ typedef enum {
 	IMAGE_FILE_MACHINE_RISCV128	= 0x5128, /* RISC-V 128-bit address space */
 	IMAGE_FILE_MACHINE_AMD64	= 0x8664, /* x64 */
 	IMAGE_FILE_MACHINE_M32R		= 0x9041, /* Mitsubishi M32R little endian */
+	IMAGE_FILE_MACHINE_ARM64EC	= 0xA641, /* ARM64 ("emulation-compatible") */
 	IMAGE_FILE_MACHINE_ARM64	= 0xAA64, /* ARM64 little-endian */
 	IMAGE_FILE_MACHINE_CEE		= 0xC0EE, /* MSIL (.NET) */
 } PE_Machine;
@@ -774,7 +775,7 @@ typedef enum {
 	LE_EXE_NO_INTERNAL_FIXUP	= (1U << 4),
 	LE_EXE_NO_EXTERNAL_FIXUP	= (1U << 5),
 
-	// Same sa NE_AppType.
+	// Same as NE_AppType.
 	LE_WINDOW_TYPE_UNKNOWN		= (0U << 8),
 	LE_WINDOW_TYPE_INCOMPATIBLE	= (1U << 8),
 	LE_WINDOW_TYPE_COMPATIBLE	= (2U << 8),
