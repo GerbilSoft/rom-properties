@@ -266,7 +266,7 @@ static int GetSystemDirFilePath(TCHAR *pszPath, size_t cchPath, const TCHAR *fil
 		HOST_ARCH_DIR(_T("System32"), _T("SysWOW64")),	// CPU_arm [TODO: Verify]
 		HOST_ARCH_DIR(_T("Sysnative"), _T("System32")),	// CPU_arm64 [TODO: Verify]
 	};
-	static_assert(ARRAY_SIZE(system32_dir_tbl) == CPU_MAX, "system32_dir_tbl[] size is wrong!");
+	static_assert(ARRAY_SIZE(system32_dir_tbl) == CPU_MAX, "system32_dir_tbl[] is out of sync with g_archs[]!");
 	system32_dir = system32_dir_tbl[arch];
 	if (!system32_dir)
 		return -EINVAL;
@@ -351,7 +351,7 @@ static InstallServerResult InstallServer(bool isUninstall, SysArch arch, DWORD *
 	DWORD status;
 	BOOL bRet;
 
-	static_assert(ARRAY_SIZE(s_arch_tbl) == CPU_MAX, "s_arch_tbl[] size is wrong!");
+	static_assert(ARRAY_SIZE(s_arch_tbl) == CPU_MAX, "s_arch_tbl[] size is out of sync with g_archs[]!");
 	if (arch <= CPU_unknown || arch >= CPU_MAX) {
 		// Invalid system architecture.
 		return ISR_INVALID_ARCH;
@@ -657,6 +657,8 @@ static void InitDialog(HWND hDlg)
 	OSVERSIONINFO osvi;
 	unsigned int vcyear, vcver;
 
+	static_assert(ARRAY_SIZE(g_archs) == ARRAY_SIZE(bHasMsvcForArch), "bHasMsvcForArch[] is out of sync with g_archs[]!");
+
 	// Clear the lines.
 	line1[0] = _T('\0');
 	line2[0] = _T('\0');
@@ -753,7 +755,7 @@ static void InitDialog(HWND hDlg)
 				(missing_arch_count == 1) ? _T("") : _T("s"),
 				(missing_arch_count == 1) ? _T("is") : _T("are"));
 
-		for (i = 0; i < missing_arch_count; i++) {
+		for (i = 0; i < g_arch_count; i++) {
 			TCHAR s_runtime_line[160];
 			const s_arch_tbl_t *s_arch;
 			if (bHasMsvcForArch[i])
