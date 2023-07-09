@@ -15,6 +15,10 @@
 #include <windows.h>
 #include <tchar.h>
 
+#ifndef LOAD_LIBRARY_SEARCH_SYSTEM32
+#  define LOAD_LIBRARY_SEARCH_SYSTEM32 0x800
+#endif /* LOAD_LIBRARY_SEARCH_SYSTEM32 */
+
 /**
  * Restrict DLL lookups to system directories.
  *
