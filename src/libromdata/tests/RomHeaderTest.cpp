@@ -488,6 +488,16 @@ string RomHeaderTest::test_case_suffix_generator(const ::testing::TestParamInfo<
 	return suffix;
 }
 
+/* Audio */
+
+// ADX: Music from Sonic Adventure DX, plus some JP voices.
+INSTANTIATE_TEST_SUITE_P(ADX_SADX, RomHeaderTest,
+	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
+		"Audio/ADX.SADX.bin.tar.zst",
+		"Audio/ADX.SADX.txt.tar.zst",
+		"Audio/ADX.SADX.json.tar.zst"))
+	, RomHeaderTest::test_case_suffix_generator);
+
 /* Console */
 
 // GameCube: A few WIA/RVZ headers to ensure they don't break again.
