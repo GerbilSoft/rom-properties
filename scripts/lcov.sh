@@ -56,6 +56,7 @@ lcov -o ${coverage_cleaned} -r ${coverage_info} \
 	'*/notificationsinterface.cpp' \
 	'*/notificationsinterface.h' \
 	'*/SpecializedThumbnailer1.c' \
+	'*/SpecializedThumbnailer1.h' \
 	'*/src/librpbase/img/pngcheck/pngcheck.cpp' \
 	'*/libi18n/gettext.h'
 
