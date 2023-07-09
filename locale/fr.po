@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-07-01 15:34-0400\n"
-"PO-Revision-Date: 2023-07-02 00:19\n"
+"PO-Revision-Date: 2023-07-09 08:46\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -175,7 +175,7 @@ msgstr ""
 #: ../src/gtk/xattr/LinuxAttrView.c:226
 msgctxt "LinuxAttrView"
 msgid "lsattr:"
-msgstr ""
+msgstr "lsattr :"
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:220
 #: ../src/gtk/xattr/LinuxAttrView.c:98
@@ -541,7 +541,7 @@ msgstr ""
 #: ../src/gtk/config/SystemsTab.cpp:120
 msgctxt "SystemsTab"
 msgid "Game &Boy:"
-msgstr "Game &Boy:"
+msgstr "Game &Boy :"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:126
 #: ../build/src/kde/kf5/ui_SystemsTab.h:130
@@ -563,7 +563,7 @@ msgstr "Game Boy Color"
 #: ../src/gtk/config/SystemsTab.cpp:122
 msgctxt "SystemsTab"
 msgid "&Super Game Boy:"
-msgstr "&Super Game Boy:"
+msgstr "&Super Game Boy :"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:131
 #: ../build/src/kde/kf5/ui_SystemsTab.h:136
@@ -576,7 +576,7 @@ msgstr "Super Game Boy"
 #: ../src/gtk/config/SystemsTab.cpp:124
 msgctxt "SystemsTab"
 msgid "Game Boy &Color:"
-msgstr "Game Boy &Color:"
+msgstr "Game Boy &Color :"
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:139
 #: ../src/gtk/config/SystemsTab.cpp:114
@@ -1293,7 +1293,7 @@ msgstr ""
 #, c-format
 msgctxt "RomDataView"
 msgid "%s:"
-msgstr ""
+msgstr "%s :"
 
 #: ../src/gtk/RomDataView_ops.cpp:280 ../src/gtk/RomDataView_ops.cpp:429
 #: ../src/kde/RomDataView_ops.cpp:198 ../src/kde/RomDataView_ops.cpp:264
@@ -1380,7 +1380,7 @@ msgstr ""
 #: ../src/kde/config/CacheTab.cpp:306
 msgctxt "ConfigDialog"
 msgid "<b>ERROR:</b> %1"
-msgstr ""
+msgstr "<b>ERREUR :</b> %1"
 
 #. tr: "All Files" filter (RP format)
 #: ../src/kde/RomDataView_ops.cpp:319
