@@ -169,7 +169,7 @@ string getHomeDirectory(void)
  *
  * @return XDG directory (without trailing slash), or empty string on error.
  */
-static string getXDGDirectory(const char *xdgvar, const char *relpath, int mode = 0777)
+static string getXDGDirectory(const char *xdgvar, const char *relpath, int mode)
 {
 	assert(xdgvar != nullptr);
 	assert(relpath != nullptr);
