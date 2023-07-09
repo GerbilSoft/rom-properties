@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-07-01 15:34-0400\n"
-"PO-Revision-Date: 2023-07-01 19:36\n"
+"PO-Revision-Date: 2023-07-09 16:13\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -2598,19 +2598,19 @@ msgstr ""
 #: ../src/libromdata/Handheld/DMG.cpp:995
 msgctxt "RomData"
 msgid "Checksum"
-msgstr ""
+msgstr "Prüfsumme"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:702
 #, c-format
 msgctxt "Dreamcast"
 msgid "0x%04X (valid)"
-msgstr ""
+msgstr "0x%04X (gültig)"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:706
 #, c-format
 msgctxt "Dreamcast"
 msgid "0x%1$04X (INVALID; should be 0x%2$04X)"
-msgstr ""
+msgstr "0x%1$04X (UNGÜLTIG; sollte 0x%2$04X sein)"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:712
 #, c-format
@@ -2621,17 +2621,17 @@ msgstr "0x%1$04X (HEADER ist UNGÜLTIG: %2$.4s)"
 #: ../src/libromdata/Console/Dreamcast.cpp:729
 msgctxt "Dreamcast|OSSupport"
 msgid "Windows CE"
-msgstr ""
+msgstr "Windows CE"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:731
 msgctxt "Dreamcast|OSSupport"
 msgid "VGA Box"
-msgstr ""
+msgstr "VGA-Box"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:735
 msgctxt "Dreamcast"
 msgid "OS Support"
-msgstr ""
+msgstr "OS-Unterstützung"
 
 #: ../src/libromdata/Console/Dreamcast.cpp:740
 msgctxt "Dreamcast|Expansion"
@@ -2898,7 +2898,7 @@ msgstr "Spiel Info"
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%.2s)"
-msgstr ""
+msgstr "Unbekannt (%.2s)"
 
 #: ../src/libromdata/Console/GameCube.cpp:466
 #: ../src/libromdata/Console/SNES.cpp:622
@@ -2911,12 +2911,12 @@ msgstr ""
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%02X %02X)"
-msgstr ""
+msgstr "Unbekannt (%02X %02X)"
 
 #: ../src/libromdata/Console/GameCube.cpp:673
 msgctxt "Wii"
 msgid "ERROR: Invalid common key index."
-msgstr ""
+msgstr "FEHLER: Ungültiger Common Key Index."
 
 #: ../src/libromdata/Console/GameCube.cpp:680
 msgctxt "Wii"
