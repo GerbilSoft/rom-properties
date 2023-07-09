@@ -185,6 +185,7 @@ int ADX::isRomSupported_static(const DetectInfo *info)
 
 		default:
 			// Not a valid format.
+			assert(!"Invalid ADX format");
 			return -1;
 	}
 
@@ -278,6 +279,7 @@ int ADX::loadFieldData(void)
 			break;
 		default:
 			// NOTE: This should not be reachable...
+			assert(!"Invalid ADX format");
 			format = C_("RomData", "Unknown");
 			break;
 	}
