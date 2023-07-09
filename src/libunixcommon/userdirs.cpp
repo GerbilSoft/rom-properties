@@ -182,7 +182,7 @@ static string getXDGDirectory(const char *xdgvar, const char *relpath, int mode 
 	if (xdg_env && xdg_env[0] == '/') {
 		// If the directory doesn't exist, create it.
 		if (access(xdg_env, F_OK) != 0) {
-			mkdir(xdg_env, 0777);
+			mkdir(xdg_env, mode);
 		}
 
 		// Make sure this is a writable directory.
