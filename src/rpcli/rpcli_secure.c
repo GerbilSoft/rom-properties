@@ -79,6 +79,11 @@ int rpcli_do_security_options(void)
 		SCMP_SYS(statx),
 #endif /* __SNR_statx || __NR_statx */
 
+#ifdef GCOV
+		SCMP_SYS(getpid),	// gcov uses getpid() in gcov_open() if GCOV_LOCKED
+					// is defined when compiling gcc.
+#endif /* GCOV */
+
 		// glibc ncsd
 		// TODO: Restrict connect() to AF_UNIX.
 		SCMP_SYS(connect), SCMP_SYS(recvmsg), SCMP_SYS(sendto),

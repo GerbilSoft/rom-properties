@@ -75,6 +75,10 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		SCMP_SYS(getcwd),	// testing::internal::FilePath::GetCurrentDir()
 					// - testing::internal::UnitTestImpl::AddTestInfo()
 		SCMP_SYS(ioctl),	// testing::internal::posix::IsATTY()
+#ifdef GCOV
+		SCMP_SYS(getpid),	// gcov uses getpid() in gcov_open() if GCOV_LOCKED
+					// is defined when compiling gcc.
+#endif /* GCOV */
 
 		// MiniZip
 		SCMP_SYS(close),	// mktime() [mz_zip_dosdate_to_time_t()]

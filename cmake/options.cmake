@@ -131,6 +131,9 @@ ENDIF(INSTALL_DEBUG AND NOT SPLIT_DEBUG)
 
 # Enable coverage checking. (gcc/clang only)
 OPTION(ENABLE_COVERAGE "Enable code coverage checking. (gcc/clang only)" OFF)
+IF(ENABLE_COVERAGE)
+	ADD_DEFINITIONS(-DGCOV)
+ENDIF(ENABLE_COVERAGE)
 
 # Enable NLS. (internationalization)
 OPTION(ENABLE_NLS "Enable NLS using gettext for localized messages." ON)

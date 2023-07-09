@@ -81,12 +81,15 @@ int rp_secure_enable(rp_secure_param_t param)
 		SCMP_SYS(rt_sigaction),
 		SCMP_SYS(rt_sigprocmask),
 
-#ifndef NDEBUG
+#if !defined(NDEBUG)
 		// abort() [called by assert()]
 		SCMP_SYS(getpid),
 		SCMP_SYS(gettid),
 		SCMP_SYS(tgkill),
-#endif /* NDEBUG */
+#elif defined(GCOV)
+		SCMP_SYS(getpid),	// gcov uses getpid() in gcov_open() if GCOV_LOCKED
+					// is defined when compiling gcc.
+#endif
 
 		-1	// End of whitelist
 	};
