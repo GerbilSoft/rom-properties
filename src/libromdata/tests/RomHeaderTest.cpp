@@ -490,6 +490,14 @@ string RomHeaderTest::test_case_suffix_generator(const ::testing::TestParamInfo<
 
 /* Console */
 
+// GameCube: A few WIA/RVZ headers to ensure they don't break again.
+INSTANTIATE_TEST_SUITE_P(GameCubeWiaRvz, RomHeaderTest,
+	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
+		"Console/GameCube.wia-rvz.bin.tar.zst",
+		"Console/GameCube.wia-rvz.txt.tar.zst",
+		"Console/GameCube.wia-rvz.json.tar.zst"))
+	, RomHeaderTest::test_case_suffix_generator);
+
 INSTANTIATE_TEST_SUITE_P(MegaDrive, RomHeaderTest,
 	testing::ValuesIn(RomHeaderTest::ReadTestCasesFromDisk(
 		"Console/MegaDrive.bin.tar.zst",
