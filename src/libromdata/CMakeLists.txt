@@ -259,7 +259,11 @@ SET(${PROJECT_NAME}_H
 
 	Other/badge_structs.h
 	Other/elf_structs.h
-	Other/exe_structs.h
+	Other/exe_le_structs.h
+	Other/exe_mz_structs.h
+	Other/exe_ne_structs.h
+	Other/exe_pe_structs.h
+	Other/exe_res_structs.h
 	Other/macho_structs.h
 	Other/nfp_structs.h
 

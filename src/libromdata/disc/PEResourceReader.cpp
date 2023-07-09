@@ -9,6 +9,8 @@
 #include "stdafx.h"
 #include "PEResourceReader.hpp"
 
+#include "../Other/exe_pe_structs.h"
+
 // Other rom-properties libraries
 using namespace LibRpBase;
 using namespace LibRpFile;

@@ -9,7 +9,6 @@
 
 #include "stdafx.h"
 #include "EXENEEntries.hpp"
-#include "Other/exe_structs.h"
 
 namespace LibRomData { namespace EXENEEntries {
 

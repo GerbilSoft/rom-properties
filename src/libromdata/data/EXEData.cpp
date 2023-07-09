@@ -8,7 +8,9 @@
 
 #include "stdafx.h"
 #include "EXEData.hpp"
-#include "Other/exe_structs.h"
+
+#include "Other/exe_pe_structs.h"
+#include "Other/exe_le_structs.h"
 
 #include "libi18n/i18n.h"
 

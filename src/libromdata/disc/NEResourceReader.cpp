@@ -9,6 +9,8 @@
 #include "stdafx.h"
 #include "NEResourceReader.hpp"
 
+#include "../Other/exe_ne_structs.h"
+
 // Other rom-properties libraries
 using namespace LibRpBase;
 using namespace LibRpFile;

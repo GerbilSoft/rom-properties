@@ -11,7 +11,11 @@
 #include "librpbase/config.librpbase.h"
 #include "librpbase/RomData_p.hpp"
 
-#include "exe_structs.h"
+#include "exe_mz_structs.h"
+#include "exe_pe_structs.h"
+#include "exe_ne_structs.h"
+#include "exe_le_structs.h"
+
 #include "disc/PEResourceReader.hpp"
 
 // Uninitialized vector class.

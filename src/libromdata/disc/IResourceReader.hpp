@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "../Other/exe_structs.h"
+#include "../Other/exe_res_structs.h"
 
 // librpbase
 #include "librpbase/disc/IPartition.hpp"
