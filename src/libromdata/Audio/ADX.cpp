@@ -185,7 +185,6 @@ int ADX::isRomSupported_static(const DetectInfo *info)
 
 		default:
 			// Not a valid format.
-			assert(!"Invalid ADX format");
 			return -1;
 	}
 
