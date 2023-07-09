@@ -1170,7 +1170,7 @@ int GameCube::isRomSupported_static(const DetectInfo *info)
 	assert(info->header.addr == 0);
 	if (!info || !info->header.pData ||
 	    info->header.addr != 0 ||
-	    info->header.size < sizeof(GCN_DiscHeader))
+	    info->header.size < 0x100)
 	{
 		// Either no detection information was specified,
 		// or the header is too small.
@@ -1533,7 +1533,7 @@ int GameCube::loadFieldData(void)
 		// Replace any non-printable characters with underscores.
 		// (GameCube NDDEMO has ID6 "00\0E01".)
 		char id6[7];
-		for (int i = 0; i < 6; i++) {
+		for (unsigned int i = 0; i < 6; i++) {
 			id6[i] = (ISPRINT(d->discHeader.id6[i])
 				? d->discHeader.id6[i]
 				: '_');
@@ -2174,11 +2174,12 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 
 	// Check for known unusable game IDs.
 	// - RELSAB: Generic ID used for GCN prototypes and Wii update partitions.
+	//   - Also sen as RELS01, so just check for RELSxx.
 	// - RABAxx: Generic ID used for Wii prototypes and devkit updaters.
 	// - _INSZZ: Channel partition.
 	if (discHeader->id4[0] == '_' ||
-	    !memcmp(discHeader->id6, "RELSAB", 6) ||
-	    !memcmp(discHeader->id4, "RABA", 4))
+	    discHeader->id4_32 == cpu_to_be32('RELS') ||
+	    discHeader->id4_32 == cpu_to_be32('RABA'))
 	{
 		// Cannot download images for this game ID.
 		return -ENOENT;
@@ -2236,7 +2237,7 @@ int GameCube::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) c
 	// Replace any non-printable characters with underscores.
 	// (NDDEMO has ID6 "00\0E01".)
 	char id6[7];
-	for (int i = 0; i < 6; i++) {
+	for (unsigned int i = 0; i < 6; i++) {
 		id6[i] = (ISPRINT(discHeader->id6[i]))
 			? d->discHeader.id6[i]
 			: '_';

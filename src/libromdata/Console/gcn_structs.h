@@ -32,6 +32,7 @@ typedef struct _GCN_DiscHeader {
 			char id4[4];		// [0x000] Game code. (ID4)
 			char company[2];	// [0x004] Company code.
 		};
+		uint32_t id4_32;
 	};
 #pragma pack()
 
