@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (libunixcommon)                    *
  * userdirs.cpp: Find user directories.                                    *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -165,10 +165,11 @@ string getHomeDirectory(void)
  *
  * @param xdgvar XDG variable name.
  * @param relpath Default path relative to the user's home directory (without leading slash).
+ * @param mode Mode for mkdir() if the directory doesn't exist.
  *
  * @return XDG directory (without trailing slash), or empty string on error.
  */
-static string getXDGDirectory(const char *xdgvar, const char *relpath)
+static string getXDGDirectory(const char *xdgvar, const char *relpath, int mode = 0777)
 {
 	assert(xdgvar != nullptr);
 	assert(relpath != nullptr);
@@ -209,10 +210,15 @@ static string getXDGDirectory(const char *xdgvar, const char *relpath)
 
 	// If the directory doesn't exist, create it.
 	if (access(xdg_dir.c_str(), F_OK) != 0) {
-		mkdir(xdg_dir.c_str(), 0777);
+		mkdir(xdg_dir.c_str(), mode);
 	}
 	return xdg_dir;
 }
+
+// TODO: Parameters indicating if directories should be created or not.
+// We shouldn't create directories if we're just going to be reading
+// files that should already be present within the directories.
+// This will cause an ABI break, so wait until libromdata.so.4.
 
 /**
  * Get the user's cache directory.
@@ -224,7 +230,7 @@ static string getXDGDirectory(const char *xdgvar, const char *relpath)
  */
 string getCacheDirectory(void)
 {
-	return getXDGDirectory("XDG_CACHE_HOME", ".cache");
+	return getXDGDirectory("XDG_CACHE_HOME", ".cache", 0700);
 }
 
 /**
@@ -237,7 +243,7 @@ string getCacheDirectory(void)
  */
 string getConfigDirectory(void)
 {
-	return getXDGDirectory("XDG_CONFIG_HOME", ".config");
+	return getXDGDirectory("XDG_CONFIG_HOME", ".config", 0777);
 }
 
 }
