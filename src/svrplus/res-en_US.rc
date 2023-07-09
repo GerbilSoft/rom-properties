@@ -92,7 +92,7 @@ END
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 STRINGTABLE
 BEGIN
-	IDS_MAIN_DESCRIPTION, "This installer will register the ROM Properties Page DLL with the system, which will provide extra functionality for supported files in Windows Explorer.\n\nNote that the DLL locations are hard-coded in the registry. If you move the DLLs, you will have to rerun this installer. In addition, the DLLs will usually be locked by Explorer, so you will need to use this program to uninstall the DLLs first and then restart Explorer in order to move the DLLs.\n\nUninstalling will unregister the ROM Properties DLL, which will disable the extra functionality provided by the DLL for supported ROM files.\0");
+	IDS_MAIN_DESCRIPTION, "This installer will register the ROM Properties Page DLL with the system, which will provide extra functionality for supported files in Windows Explorer.\n\nNote that the DLL locations are hard-coded in the registry. If you move the DLLs, you will have to rerun this installer. In addition, the DLLs will usually be locked by Explorer, so you will need to use this program to uninstall the DLLs first and then restart Explorer in order to move the DLLs.\n\nUninstalling will unregister the ROM Properties DLL, which will disable the extra functionality provided by the DLL for supported ROM files.\0"
 
 	IDS_ISR_FATAL_ERROR, "An unknown fatal error occurred.\0"
 	IDS_ISR_PROCESS_STILL_ACTIVE, "The REGSVR32 process never completed.\0"
