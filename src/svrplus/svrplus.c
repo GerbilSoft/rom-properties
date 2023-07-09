@@ -788,6 +788,10 @@ static void InitDialog(HWND hDlg)
 				continue;
 
 			s_arch = &s_arch_tbl[g_archs[i]];
+			if (!s_arch->runtime) {
+				// No runtime name specified...
+				continue;
+			}
 			_sntprintf(s_runtime_line, _countof(s_runtime_line),
 				_T("\n") BULLET _T(" %s: <a href=\"https://aka.ms/vs/%u/release/VC_redist.%s.exe\">")
 					_T("https://aka.ms/vs/%u/release/VC_redist.%s.exe</a>"),
