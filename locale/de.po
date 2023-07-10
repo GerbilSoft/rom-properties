@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-07-01 15:34-0400\n"
-"PO-Revision-Date: 2023-07-10 19:06\n"
+"PO-Revision-Date: 2023-07-10 20:37\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -5627,38 +5627,38 @@ msgstr ""
 #: ../src/libromdata/Handheld/Lynx.cpp:217
 msgctxt "Lynx"
 msgid "Bank 0 Size"
-msgstr ""
+msgstr "Bank 0 Größe"
 
 #: ../src/libromdata/Handheld/Lynx.cpp:220
 msgctxt "Lynx"
 msgid "Bank 1 Size"
-msgstr ""
+msgstr "Bank 1 Größe"
 
 #: ../src/libromdata/Handheld/NGPC.cpp:314
 msgctxt "RomData"
 msgid "Product ID"
-msgstr ""
+msgstr "Produkt-ID"
 
 #: ../src/libromdata/Handheld/NGPC.cpp:327
 msgctxt "NGPC"
 msgid "System"
-msgstr ""
+msgstr "System"
 
 #: ../src/libromdata/Handheld/NGPC.cpp:340
 msgctxt "NGPC|DebugMode"
 msgid "Off"
-msgstr ""
+msgstr "Aus"
 
 #: ../src/libromdata/Handheld/NGPC.cpp:343
 msgctxt "NGPC|DebugMode"
 msgid "On"
-msgstr ""
+msgstr "Ein"
 
 #: ../src/libromdata/Handheld/NGPC.cpp:349
 #: ../src/libromdata/Handheld/NGPC.cpp:351
 msgctxt "NGPC"
 msgid "Debug Mode"
-msgstr ""
+msgstr "Debug-Modus"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:681
 msgctxt "Nintendo3DS"
@@ -5685,7 +5685,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2111
 msgctxt "Nintendo3DS"
 msgid "Issuer"
-msgstr ""
+msgstr "Herausgeber"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:728
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1966
@@ -5709,7 +5709,7 @@ msgstr "Verschlüsselung"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:835
 msgctxt "Nintendo3DS|Logo"
 msgid "Custom"
-msgstr ""
+msgstr "Benutzerdefiniert"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:840
 msgctxt "Nintendo3DS"
@@ -5729,19 +5729,19 @@ msgstr "ARM9 Zugriff"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1199
 msgctxt "Nintendo3DS"
 msgid "Services"
-msgstr ""
+msgstr "Dienste"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1690
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1786
 msgctxt "Nintendo3DS"
 msgid "Unable to open the primary NCCH section."
-msgstr ""
+msgstr "Der primäre NCCH-Bereich konnte nicht geöffnet werden."
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1704
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1800
 msgctxt "Nintendo3DS"
 msgid "Unknown error. (THIS IS A BUG!)"
-msgstr ""
+msgstr "Unbekannter Fehler. (DIES IST EIN BUG!)"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1740
 msgctxt "Nintendo3DS"
@@ -5751,7 +5751,7 @@ msgstr "DSiWare"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1811
 msgctxt "Nintendo3DS"
 msgid "NCCH encryption flags are incorrect. Use GodMode9 to fix."
-msgstr ""
+msgstr "NCCH Verschlüsselungsflaggen sind falsch. Verwende GodMode9, um dies zu beheben."
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1858
 msgctxt "Nintendo3DS|CCI"
@@ -5792,7 +5792,7 @@ msgstr "#"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1887
 msgctxt "Nintendo3DS|eMMC"
 msgid "Keyslot"
-msgstr ""
+msgstr "Keyslot"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1888
 msgctxt "Nintendo3DS|eMMC"
@@ -5807,7 +5807,7 @@ msgstr "Medientyp"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1919
 msgctxt "Nintendo3DS"
 msgid "Card2 RW Address"
-msgstr ""
+msgstr "Card2 RW-Adresse"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1938
 msgctxt "Nintendo3DS|CDev"
@@ -5817,7 +5817,7 @@ msgstr "NOR-Flash"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1939
 msgctxt "Nintendo3DS|CDev"
 msgid "None"
-msgstr ""
+msgstr "Keine"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1940
 msgctxt "Nintendo3DS|CDev"
@@ -5853,7 +5853,7 @@ msgstr "Version"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2124
 msgctxt "Nintendo3DS"
 msgid "Demo Use Limit"
-msgstr ""
+msgstr "Demo-Nutzungslimit"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2131
 msgctxt "Nintendo3DS"
@@ -5863,12 +5863,12 @@ msgstr "Konsolen-ID"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2257
 msgctxt "Nintendo3DS|CtNames"
 msgid "#"
-msgstr ""
+msgstr "#"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2258
 msgctxt "Nintendo3DS|CtNames"
 msgid "Type"
-msgstr ""
+msgstr "Typ"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2259
 msgctxt "Nintendo3DS|CtNames"
@@ -5949,41 +5949,41 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2356
 msgctxt "Nintendo3DS"
 msgid "New3DS Sys Mode"
-msgstr ""
+msgstr "New3DS Sys-Modus"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2371
 msgctxt "Nintendo3DS|N3DSCPUMode"
 msgid "L2 Cache"
-msgstr ""
+msgstr "L2-Cache"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2372
 msgctxt "Nintendo3DS|N3DSCPUMode"
 msgid "804 MHz"
-msgstr ""
+msgstr "804 MHz"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2386
 msgctxt "Nintendo3DS"
 msgid "Permissions"
-msgstr ""
+msgstr "Berechtigungen"
 
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:276
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:355
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:397
 msgctxt "Nintendo3DSFirm"
 msgid "ARM9 Homebrew"
-msgstr ""
+msgstr "ARM9 Homebrew"
 
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:280
 msgctxt "Nintendo3DSFirm"
 msgid "ARM11 Homebrew"
-msgstr ""
+msgstr "ARM11 Homebrew"
 
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:303
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:404
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:419
 msgctxt "Nintendo3DSFirm"
 msgid "Type"
-msgstr ""
+msgstr "Typ"
 
 #: ../src/libromdata/Handheld/Nintendo3DSFirm.cpp:307
 msgctxt "Nintendo3DSFirm"
