@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-07-01 15:34-0400\n"
-"PO-Revision-Date: 2023-07-09 17:14\n"
+"PO-Revision-Date: 2023-07-10 00:45\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -456,7 +456,7 @@ msgstr "&Downloads"
 #: ../src/gtk/config/OptionsTab.cpp:143
 msgctxt "OptionsTab"
 msgid "E&xternal Image Downloads"
-msgstr ""
+msgstr "E&xterne Bild Downloads"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:179
 #: ../src/gtk/config/OptionsTab.cpp:149
@@ -523,7 +523,8 @@ msgstr "&Optionen"
 msgctxt "OptionsTab"
 msgid "Show a security overlay icon for ROM images with\n"
 "\"dangerous\" permissions."
-msgstr ""
+msgstr "Zeige ein Sicherheits-Overlay-Symbol für ROM-Bilder mit\n"
+"\"gefährlichen\" Berechtigungen."
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:198
 #: ../src/gtk/config/OptionsTab.cpp:264
