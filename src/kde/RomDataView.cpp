@@ -904,7 +904,7 @@ void RomDataViewPrivate::updateMulti(uint32_t user_lc)
 void RomDataViewPrivate::initDisplayWidgets(void)
 {
 	// Clear the tabs.
-	for (const RomDataViewPrivate::tab &tab : tabs) {
+	for (const tab &tab : tabs) {
 		// Delete the credits label if it's present.
 		delete tab.lblCredits;
 		// Delete the QFormLayout if it's present.
