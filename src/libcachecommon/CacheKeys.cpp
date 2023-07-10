@@ -202,7 +202,7 @@ int filterCacheKey(char *pCacheKey)
 	return 0;
 }
 
-#ifdef _WIN32
+#ifdef RP_WIS16
 /**
  * Filter invalid characters from a cache key.
  * This updates the cache key in place.
@@ -300,7 +300,7 @@ int filterCacheKey(wchar_t *pCacheKey)
 	// Cache key has been filtered.
 	return 0;
 }
-#endif /* _WIN32 */
+#endif /* RP_WIS16 */
 
 /**
  * Combine a cache key with the cache directory to get a cache filename.

@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
+#include "dll-macros.h"			// for RP_LIBROMDATA_PUBLIC
+#include "librptext/config.librptext.h"	// for RP_WIS16
 
 // C++ includes.
 #include <string>
@@ -37,7 +38,7 @@ static inline int filterCacheKey(std::string &cacheKey)
 	return filterCacheKey(&cacheKey[0]);
 }
 
-#ifdef _WIN32
+#ifdef RP_WIS16
 /**
  * Filter invalid characters from a cache key.
  * This updates the cache key in place.
@@ -58,7 +59,7 @@ static inline int filterCacheKey(std::wstring &cacheKey)
 	cacheKey.c_str();
 	return filterCacheKey(&cacheKey[0]);
 }
-#endif /* _WIN32 */
+#endif /* RP_WIS16 */
 
 /**
  * Get a cache filename.
