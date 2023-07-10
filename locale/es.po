@@ -485,6 +485,8 @@ msgid ""
 "When using an unlimited\n"
 "network connection:"
 msgstr ""
+"Al utilizar una conexión\n"
+"de red ilimitada:"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:181
 #: ../build/src/kde/kf5/ui_OptionsTab.h:187
@@ -492,6 +494,8 @@ msgstr ""
 msgctxt "OptionsTab"
 msgid "Don't download any images"
 msgstr ""
+"Cuando utilice una conexión\n"
+"de red medida:"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:182
 #: ../build/src/kde/kf5/ui_OptionsTab.h:188
@@ -538,7 +542,7 @@ msgstr ""
 #: ../src/gtk/config/OptionsTab.cpp:235
 msgctxt "OptionsTab"
 msgid "Language for PAL titles on GameTDB:"
-msgstr ""
+msgstr "Idioma para títulos PAL en GameTDB:"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:195
 msgctxt "OptionsTab"
@@ -570,7 +574,7 @@ msgstr ""
 #: ../src/gtk/config/OptionsTab.cpp:268
 msgctxt "OptionsTab"
 msgid "Show the Extended Attributes tab."
-msgstr ""
+msgstr "Muestra la pestaña Atributos extendidos."
 
 #: ../build/src/kde/kf5/ui_SystemsTab.h:124
 msgctxt "SystemsTab"
@@ -898,7 +902,7 @@ msgstr "Cache de rom-properties se limpió con éxito."
 #: ../src/gtk/config/ConfigDialog.cpp:245 ../src/kde/config/ConfigDialog.cpp:79
 msgctxt "ConfigDialog"
 msgid "&Key Manager"
-msgstr "&Gestor de Llaves"
+msgstr "Gestor de &Llaves"
 
 #. tr: "Reset" button.
 #: ../src/gtk/config/ConfigDialog.cpp:296
@@ -1225,14 +1229,14 @@ msgstr "Pantallas de título de Game Boy"
 #: ../src/win32/config/UpdateChecker.cpp:72
 msgctxt "UpdateChecker"
 msgid "Failed to download version file."
-msgstr ""
+msgstr "Error al descargar el archivo de versión."
 
 #: ../src/gtk/config/UpdateChecker.cpp:170
 #: ../src/kde/config/UpdateChecker.cpp:69
 #: ../src/win32/config/UpdateChecker.cpp:81
 msgctxt "UpdateChecker"
 msgid "Failed to open version file."
-msgstr ""
+msgstr "No se pudo abrir el archivo de versión."
 
 #: ../src/gtk/config/UpdateChecker.cpp:181
 #: ../src/gtk/config/UpdateChecker.cpp:194
@@ -5870,7 +5874,7 @@ msgstr "No se puede abrir la sección primaria de NCCH."
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1800
 msgctxt "Nintendo3DS"
 msgid "Unknown error. (THIS IS A BUG!)"
-msgstr "Error Desconocido (ESTO ES UN ERROR!)"
+msgstr "Error Desconocido. (ESTO ES UN ERROR!)"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1740
 msgctxt "Nintendo3DS"
