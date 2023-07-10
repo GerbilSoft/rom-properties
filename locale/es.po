@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-07-01 15:34-0400\n"
-"PO-Revision-Date: 2023-07-10 05:09\n"
+"PO-Revision-Date: 2023-07-10 06:06\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es_ES\n"
@@ -74,7 +74,7 @@ msgstr "Borrar el caché de miniaturas del sistema"
 msgctxt "CacheTab"
 msgid "ROM Properties Page maintains its own download cache for external images.\n"
 "Clearing this cache will force external images to be redownloaded."
-msgstr "La página de Rom properties mantiene su propia caché de descarga para las imágenes externas.\n"
+msgstr "La página de ROM Properties mantiene su propia caché de descarga para las imágenes externas.\n"
 "Borrar esta caché obligará a volver a descargar las imágenes externas."
 
 #: ../build/src/kde/kf5/ui_CacheTab.h:103
@@ -471,7 +471,8 @@ msgstr "Al utilizar una conexión\n"
 #: ../src/gtk/config/OptionsTab.cpp:155 ../src/win32/config/OptionsTab.cpp:418
 msgctxt "OptionsTab"
 msgid "Don't download any images"
-msgstr ""
+msgstr "Cuando utilice una conexión\n"
+"de red medida:"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:182
 #: ../build/src/kde/kf5/ui_OptionsTab.h:188
@@ -991,7 +992,7 @@ msgstr "keys.bin|keys.bin|-|Archivos binarios|*.bin|-|Todos los archivos|*.*|-"
 #: ../src/win32/config/KeyManagerTab.cpp:1697
 msgctxt "KeyManagerTab"
 msgid "otp.bin|otp.bin|-|Binary Files|*.bin|-|All Files|*.*|-"
-msgstr "otp.bin|otp.bin|-|Archivos binarios|*.bin|-|Todos os Archivos|*.*|-"
+msgstr "otp.bin|otp.bin|-|Archivos binarios|*.bin|-|Todos los archivos|*.*|-"
 
 #. tr: Nintendo 3DS boot9.bin file filter (RP format)
 #: ../src/gtk/config/KeyManagerTab.cpp:604
@@ -1007,7 +1008,7 @@ msgstr "boot9.bin|boot9.bin|-|Archivos binarios|*.bin|application/octet-stream|T
 #: ../src/win32/config/KeyManagerTab.cpp:1701
 msgctxt "KeyManagerTab"
 msgid "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|-|All Files|*.*|-"
-msgstr "aeskeydb.bin|aeskeydb.bin|-|Archivos binarios|*.bin|application/octet-stream|Todos los Archivos|*.*|-"
+msgstr "aeskeydb.bin|aeskeydb.bin|-|Archivos binarios|*.bin|application/octet-stream|Todos los archivos|*.*|-"
 
 #: ../src/gtk/config/KeyManagerTab.cpp:688
 #: ../src/kde/config/KeyManagerTab.cpp:146
@@ -1402,7 +1403,7 @@ msgstr ""
 #: ../src/kde/RomDataView_ops.cpp:319
 msgctxt "RomData"
 msgid "All Files|*|-"
-msgstr "Todos los Archivos|*|-"
+msgstr "Todos los archivos|*|-"
 
 #. tr: XAttrView tab title
 #: ../src/kde/xattr/XAttrViewPropertiesDialogPlugin.cpp:83
@@ -4431,7 +4432,7 @@ msgstr "Versión de SO"
 #: ../src/libromdata/Console/WiiWAD.cpp:908
 msgctxt "WiiWAD"
 msgid "Unknown error. (THIS IS A BUG!)"
-msgstr ""
+msgstr "Error Desconocido. (ESTO ES UN ERROR!)"
 
 #: ../src/libromdata/Console/WiiWAD.cpp:910
 msgctxt "WiiWAD"
