@@ -517,7 +517,8 @@ rp_config_dialog_apply(RpConfigDialog *dialog)
 	const KeyManager *const keyManager = KeyManager::instance();
 	filename = keyManager->filename();
 	assert(filename != nullptr);
-	if (filename) {
+	assert(tabKeyManager != nullptr);
+	if (filename && tabKeyManager) {
 		keyFile = g_key_file_new();
 
 		// NOTE: Ignoring load errors.
@@ -528,7 +529,6 @@ rp_config_dialog_apply(RpConfigDialog *dialog)
 			nullptr);
 
 		// Save the keys.
-		assert(tabKeyManager != nullptr);
 		// rp_config_tab_save() checks tab's type,
 		// so no need to check RP_IS_CONFIG_TAB() here.
 		rp_config_tab_save(tabKeyManager, keyFile);
