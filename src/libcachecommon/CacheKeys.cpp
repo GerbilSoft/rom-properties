@@ -225,7 +225,7 @@ int filterCacheKey(wchar_t *pCacheKey)
 		return -EINVAL;
 	}
 
-	for (wchar_t *p = pCacheKey; *p != '\0'; p++) {
+	for (wchar_t *p = pCacheKey; *p != L'\0'; p++) {
 		// See valid_ascii_table for a description of valid characters.
 		const wchar_t chr = *p;
 
