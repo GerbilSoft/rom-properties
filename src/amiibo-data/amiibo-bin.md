@@ -1,6 +1,6 @@
 # Amiibo database binary format
 
-Key points:
+### Key points:
 * Most file offsets are absolute.
 * String table offsets are relative to the beginning of the string table.
 * Lengths are in bytes.
