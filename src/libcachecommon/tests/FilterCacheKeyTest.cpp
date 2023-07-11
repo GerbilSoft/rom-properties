@@ -210,10 +210,22 @@ INSTANTIATE_TEST_SUITE_P(CacheManagerTest, FilterCacheKeyTest,
 		// - Overlong encoding: U+0000 -> \xC0\x80 (Modified UTF-8)
 		// - Overlong encoding: U+0020 -> \xE0\x80\xA0
 		// - Overlong encoding: U+20AC -> \xF0\x82\x82\xAC
+		// NOTE: Disabled for UTF-16 testing due to conversion issues,
+		// and the fact that it's useless for UTF-16.
 		FilterCacheKeyTest_mode(false,
 			"\xC2\xA9\x80\xC0\xE0\xF0\xF8\xC0\x80\xE0\x80\xA0\xF0\x82\x82\xAC",
 			"\xC2\xA9______________",
-			"\xC2\xA9______________")
+			"\xC2\xA9______________"),
+
+		// Allow SMP characters. (>U+FFFF)
+		// For UTF-8, this tests 4-byte sequences.
+		// For UTF-16, this tests surrogate pairs.
+		FilterCacheKeyTest_mode(true,
+			"\xF0\x9F\x91\x80\xF0\x9F\x91\xA2\xF0\x9F\x92\xBE\xF0\x9F\xA6\x86",
+			"\xF0\x9F\x91\x80\xF0\x9F\x91\xA2\xF0\x9F\x92\xBE\xF0\x9F\xA6\x86",
+			"\xF0\x9F\x91\x80\xF0\x9F\x91\xA2\xF0\x9F\x92\xBE\xF0\x9F\xA6\x86")
+
+		// TODO: UTF-16 test for invalid surrogate pairs.
 	));
 } }
 
