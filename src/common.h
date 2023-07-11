@@ -74,6 +74,7 @@
 // RP equivalent of Q_UNUSED().
 #define RP_UNUSED(x) ((void)(x))
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #ifdef __cplusplus
 // RP equivalents of Q_D() and Q_Q().
 #  define RP_D(klass) klass##Private *const d = static_cast<klass##Private*>(d_ptr)
@@ -92,6 +93,7 @@
 		klass &operator=(const klass &);
 #  endif /* __cplusplus >= 201103L */
 #endif /* __cplusplus */
+// NOLINTEND(bugprone-macro-parentheses)
 
 // Deprecated function attribute.
 #ifndef DEPRECATED

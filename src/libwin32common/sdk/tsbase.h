@@ -6,12 +6,12 @@
 #pragma once
 
 #ifdef _MAC
-#error Old MSVC for Mac compilers are not supported.
+#  error Old MSVC for Mac compilers are not supported.
 #endif
 
 // Make sure STRICT is defined for better type safety.
 #ifndef STRICT
-#define STRICT
+#  define STRICT
 #endif
 
 #include "../RpWin32_sdk.h"
@@ -60,7 +60,7 @@
 // REINTERPRET_CAST() macro that matches shlwapi.h's STATIC_CAST().
 #ifndef REINTERPRET_CAST
 #  ifdef __cplusplus
-#    define REINTERPRET_CAST(typ) reinterpret_cast<typ>
+#    define REINTERPRET_CAST(typ) reinterpret_cast<typ> /* NOLINT(performance-no-int-to-ptr) */
 #  else
 #    define REINTERPRET_CAST(typ) (typ)
 #  endif
