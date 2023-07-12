@@ -13,6 +13,8 @@
 // char16_t is defined as unsigned, so this isn't a problem
 // for 16-bit strings.
 
+// NOLINTBEGIN(misc-definitions-in-headers)
+
 /**
  * cp1252 test string.
  * Contains all possible cp1252 code points.
@@ -707,3 +709,5 @@ const char16_t TextFuncsTest::atascii_utf16_data[229+1] =
 
 	0
 };
+
+// NOLINTEND(misc-definitions-in-headers)
