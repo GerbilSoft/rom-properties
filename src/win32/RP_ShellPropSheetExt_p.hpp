@@ -74,7 +74,7 @@ class RP_ShellPropSheetExt_Private
 	public:
 		HWND hDlgSheet;		// Property sheet
 
-		// ROM filename
+		// ROM filename (malloc'd; free on delete)
 		char *filename;
 		// ROM data (Not opened until the properties tab is shown.)
 		LibRpBase::RomData *romData;
@@ -196,16 +196,14 @@ class RP_ShellPropSheetExt_Private
 
 		/**
 		 * Create the header row.
-		 * @param hDlg		[in] Dialog window.
 		 * @param pt_start	[in] Starting position, in pixels.
 		 * @param size		[in] Width and height for a full-width single line label.
 		 * @return Row height, in pixels.
 		 */
-		int createHeaderRow(HWND hDlg, POINT pt_start, SIZE size);
+		int createHeaderRow(_In_ POINT pt_start, _In_ SIZE size);
 
 		/**
 		 * Initialize a string field. (Also used for Date/Time.)
-		 * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
 		 * @param hWndTab	[in] Tab window. (for the actual control)
 		 * @param pt_start	[in] Starting position, in pixels.
 		 * @param size		[in] Width and height for a single line label.
@@ -215,26 +213,24 @@ class RP_ShellPropSheetExt_Private
 		 * @param pOutHWND	[out,opt] Retrieves the control's HWND.
 		 * @return Field height, in pixels.
 		 */
-		int initString(_In_ HWND hDlg, _In_ HWND hWndTab,
+		int initString(_In_ HWND hWndTab,
 			_In_ POINT pt_start, _In_ SIZE size,
 			_In_ const LibRpBase::RomFields::Field &field, _In_ int fieldIdx,
 			_In_ LPCTSTR str = nullptr, _Outptr_opt_ HWND *pOutHWND = nullptr);
 
 		/**
 		 * Initialize a bitfield layout.
-		 * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
 		 * @param hWndTab	[in] Tab window. (for the actual control)
 		 * @param pt_start	[in] Starting position, in pixels.
 		 * @param field		[in] RomFields::Field
 		 * @param fieldIdx	[in] Field index
 		 * @return Field height, in pixels.
 		 */
-		int initBitfield(HWND hDlg, HWND hWndTab,
-			POINT pt_start, const LibRpBase::RomFields::Field &field, int fieldIdx);
+		int initBitfield(_In_ HWND hWndTab,
+			_In_ POINT pt_start, _In_ const LibRpBase::RomFields::Field &field, _In_ int fieldIdx);
 
 		/**
 		 * Initialize a ListData field.
-		 * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
 		 * @param hWndTab	[in] Tab window. (for the actual control)
 		 * @param pt_start	[in] Starting position, in pixels.
 		 * @param size		[in] Width and height for a default ListView.
@@ -243,14 +239,13 @@ class RP_ShellPropSheetExt_Private
 		 * @param fieldIdx	[in] Field index
 		 * @return Field height, in pixels.
 		 */
-		int initListData(HWND hDlg, HWND hWndTab,
-			POINT pt_start, SIZE size, bool doResize,
-			const LibRpBase::RomFields::Field &field, int fieldIdx);
+		int initListData(_In_ HWND hWndTab,
+			_In_ POINT pt_start, _In_ SIZE size, _In_ bool doResize,
+			_In_ const LibRpBase::RomFields::Field &field, _In_ int fieldIdx);
 
 		/**
 		 * Initialize a Date/Time field.
 		 * This function internally calls initString().
-		 * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
 		 * @param hWndTab	[in] Tab window. (for the actual control)
 		 * @param pt_start	[in] Starting position, in pixels.
 		 * @param size		[in] Width and height for a single line label.
@@ -258,14 +253,13 @@ class RP_ShellPropSheetExt_Private
 		 * @param fieldIdx	[in] Field index
 		 * @return Field height, in pixels.
 		 */
-		int initDateTime(HWND hDlg, HWND hWndTab,
-			POINT pt_start, SIZE size,
-			const LibRpBase::RomFields::Field &field, int fieldIdx);
+		int initDateTime(_In_ HWND hWndTab,
+			_In_ POINT pt_start, _In_ SIZE size,
+			_In_ const LibRpBase::RomFields::Field &field, _In_ int fieldIdx);
 
 		/**
 		 * Initialize an Age Ratings field.
 		 * This function internally calls initString().
-		 * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
 		 * @param hWndTab	[in] Tab window. (for the actual control)
 		 * @param pt_start	[in] Starting position, in pixels.
 		 * @param size		[in] Width and height for a single line label.
@@ -273,14 +267,13 @@ class RP_ShellPropSheetExt_Private
 		 * @param fieldIdx	[in] Field index
 		 * @return Field height, in pixels.
 		 */
-		int initAgeRatings(HWND hDlg, HWND hWndTab,
-			POINT pt_start, SIZE size,
-			const LibRpBase::RomFields::Field &field, int fieldIdx);
+		int initAgeRatings(_In_ HWND hWndTab,
+			_In_ POINT pt_start, _In_ SIZE size,
+			_In_ const LibRpBase::RomFields::Field &field, _In_ int fieldIdx);
 
 		/**
 		 * Initialize a Dimensions field.
 		 * This function internally calls initString().
-		 * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
 		 * @param hWndTab	[in] Tab window. (for the actual control)
 		 * @param pt_start	[in] Starting position, in pixels.
 		 * @param size		[in] Width and height for a single line label.
@@ -288,13 +281,12 @@ class RP_ShellPropSheetExt_Private
 		 * @param fieldIdx	[in] Field index
 		 * @return Field height, in pixels.
 		 */
-		int initDimensions(HWND hDlg, HWND hWndTab,
-			POINT pt_start, SIZE size,
-			const LibRpBase::RomFields::Field &field, int fieldIdx);
+		int initDimensions(_In_  HWND hWndTab,
+			_In_ POINT pt_start, _In_ SIZE size,
+			_In_ const LibRpBase::RomFields::Field &field, _In_ int fieldIdx);
 
 		/**
 		 * Initialize a multi-language string field.
-		 * @param hDlg		[in] Parent dialog window. (for dialog unit mapping)
 		 * @param hWndTab	[in] Tab window. (for the actual control)
 		 * @param pt_start	[in] Starting position, in pixels.
 		 * @param size		[in] Width and height for a single line label.
@@ -302,9 +294,9 @@ class RP_ShellPropSheetExt_Private
 		 * @param fieldIdx	[in] Field index
 		 * @return Field height, in pixels.
 		 */
-		int initStringMulti(HWND hDlg, HWND hWndTab,
-			POINT pt_start, SIZE size,
-			const LibRpBase::RomFields::Field &field, int fieldIdx);
+		int initStringMulti(_In_  HWND hWndTab,
+			_In_ POINT pt_start, _In_ SIZE size,
+			_In_ const LibRpBase::RomFields::Field &field, _In_ int fieldIdx);
 
 		/**
 		 * Update all multi-language fields.
