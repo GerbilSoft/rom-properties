@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-07-11 20:05-0400\n"
-"PO-Revision-Date: 2023-07-12 01:10\n"
+"PO-Revision-Date: 2023-07-14 17:07\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -123,7 +123,7 @@ msgstr "&Succès"
 #: ../src/gtk/config/ConfigDialog.cpp:247
 msgctxt "ConfigDialog"
 msgid "Abou&t"
-msgstr ""
+msgstr "À propo&s"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:100
 msgctxt "DosAttrView"
@@ -169,7 +169,7 @@ msgstr ""
 #: ../src/kde/config/KeyManagerTab.cpp:323
 msgctxt "KeyManagerTab"
 msgid "I&mport"
-msgstr ""
+msgstr "I&mporter"
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:85
 #: ../src/gtk/xattr/LinuxAttrView.c:121
@@ -180,7 +180,7 @@ msgstr "lsattr :"
 #: ../build/src/kde/kf5/ui_OptionsTab.h:177
 msgctxt "OptionsTab"
 msgid "&Downloads"
-msgstr ""
+msgstr "&Téléchargements"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:178
 #: ../src/gtk/config/OptionsTab.cpp:143
@@ -245,7 +245,7 @@ msgstr ""
 #: ../build/src/kde/kf5/ui_OptionsTab.h:195
 msgctxt "OptionsTab"
 msgid "&Options"
-msgstr ""
+msgstr "&Options"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:196
 #: ../src/gtk/config/OptionsTab.cpp:261
@@ -387,19 +387,19 @@ msgstr ""
 #: ../src/win32/config/AboutTab.cpp:869
 msgctxt "AboutTab|Credits"
 msgid "Developers:"
-msgstr ""
+msgstr "Développeurs :"
 
 #: ../src/gtk/config/AboutTab.cpp:503 ../src/kde/config/AboutTab.cpp:223
 #: ../src/win32/config/AboutTab.cpp:872
 msgctxt "AboutTab|Credits"
 msgid "Contributors:"
-msgstr ""
+msgstr "Contributeurs :"
 
 #: ../src/gtk/config/AboutTab.cpp:506 ../src/kde/config/AboutTab.cpp:226
 #: ../src/win32/config/AboutTab.cpp:875
 msgctxt "AboutTab|Credits"
 msgid "Translators:"
-msgstr ""
+msgstr "Traducteurs :"
 
 #. tr: Sub-credit.
 #: ../src/gtk/config/AboutTab.cpp:535 ../src/kde/config/AboutTab.cpp:255
@@ -407,7 +407,7 @@ msgstr ""
 #, c-format
 msgctxt "AboutTab|Credits"
 msgid " (%s)"
-msgstr ""
+msgstr " (%s)"
 
 #. tr: Using an internal copy of a library.
 #: ../src/gtk/config/AboutTab.cpp:561 ../src/kde/config/AboutTab.cpp:279
@@ -607,7 +607,7 @@ msgstr ""
 #: ../src/win32/config/ImageTypesTab.cpp:381
 msgctxt "ImageTypesTab|Values"
 msgid "No"
-msgstr ""
+msgstr "Non"
 
 #: ../src/gtk/config/ImageTypesTab.cpp:481
 #: ../src/kde/config/ImageTypesTab.cpp:357
@@ -914,7 +914,7 @@ msgstr ""
 #: ../src/win32/RP_ContextMenu.cpp:490
 msgctxt "ServiceMenu"
 msgid "Convert to PNG"
-msgstr ""
+msgstr "Convertir en PNG"
 
 #: ../src/gtk/gtk3/NautilusMenuProvider.cpp:272
 #: ../src/gtk/gtk3/ThunarMenuProvider.cpp:266
@@ -952,7 +952,7 @@ msgstr ""
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1340
 msgctxt "RomDataView"
 msgid "ERROR"
-msgstr ""
+msgstr "ERREUR"
 
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:212
 #: ../src/gtk/RomDataView.cpp:634 ../src/kde/RomDataView.cpp:155
