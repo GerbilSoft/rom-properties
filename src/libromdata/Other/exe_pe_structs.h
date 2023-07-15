@@ -166,7 +166,7 @@ typedef enum {
 	IMAGE_DATA_DIRECTORY_ARCH_SPECIFIC_DATA		= 7,
 	IMAGE_DATA_DIRECTORY_GLOBAL_PTR_REG		= 8,
 	IMAGE_DATA_DIRECTORY_TLS_TABLE			= 9,
-	IMAGE_DATA_DIRECTORY_LOCAL_CFG_TABLE		= 10,
+	IMAGE_DATA_DIRECTORY_LOAD_CONFIG_TABLE		= 10,
 	IMAGE_DATA_DIRECTORY_BOUND_IMPORT_TABLE		= 11,
 	IMAGE_DATA_DIRECTORY_IMPORT_ADDR_TABLE		= 12,
 	IMAGE_DATA_DIRECTORY_DELAY_IMPORT_DESCRIPTOR	= 13,
@@ -175,7 +175,7 @@ typedef enum {
 } ImageDataDirectoryIndex;
 
 /**
- * PE image data directory.
+ * PE image data directory
  * All fields are little-endian.
  */
 typedef struct _IMAGE_DATA_DIRECTORY {
@@ -185,7 +185,7 @@ typedef struct _IMAGE_DATA_DIRECTORY {
 ASSERT_STRUCT(IMAGE_DATA_DIRECTORY, 2*sizeof(uint32_t));
 
 /**
- * "Optional" 32-bit PE header.
+ * "Optional" 32-bit PE header
  * All fields are little-endian.
  */
 typedef struct _IMAGE_OPTIONAL_HEADER32 {
@@ -224,7 +224,7 @@ typedef struct _IMAGE_OPTIONAL_HEADER32 {
 ASSERT_STRUCT(IMAGE_OPTIONAL_HEADER32, 224);
 
 /**
- * "Optional" 64-bit PE header.
+ * "Optional" 64-bit PE header
  * All fields are little-endian.
  */
 typedef struct _IMAGE_OPTIONAL_HEADER64 {
@@ -262,7 +262,138 @@ typedef struct _IMAGE_OPTIONAL_HEADER64 {
 ASSERT_STRUCT(IMAGE_OPTIONAL_HEADER64, 240);
 
 /**
- * 32-bit PE headers.
+ * Load Config: Code integrity
+ * TODO: Implement this.
+ */
+typedef struct _IMAGE_LOAD_CONFIG_CODE_INTEGRITY {
+	uint8_t code_integrity[12];
+} IMAGE_LOAD_CONFIG_CODE_INTEGRITY;
+ASSERT_STRUCT(IMAGE_LOAD_CONFIG_CODE_INTEGRITY, 12);
+
+/**
+ * Load Config table (32-bit)
+ * All fields are little-endian.
+ * Reference: https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-image_load_config_directory32
+ */
+typedef struct _IMAGE_LOAD_CONFIG_DIRECTORY32 {
+	uint32_t Size;
+	uint32_t TimeDateStamp;
+	uint16_t MajorVersion;
+	uint16_t MinorVersion;
+	uint32_t GlobalFlagsClear;
+	uint32_t GlobalFlagsSet;
+	uint32_t CriticalSectionDefaultTimeout;
+	uint32_t DeCommitFreeBlockThreshold;
+	uint32_t DeCommitTotalFreeThreshold;
+	uint32_t LockPrefixTable;
+	uint32_t MaximumAllocationSize;
+	uint32_t VirtualMemoryThreshold;
+	uint32_t ProcessHeapFlags;
+	uint32_t ProcessAffinityMask;
+	uint16_t CSDVersion;
+	uint16_t DependentLoadFlags;
+	uint32_t EditList;
+	uint32_t SecurityCookie;
+	uint32_t SEHandlerTable;
+	uint32_t SEHandlerCount;
+	// For Windows XP, this struct ends here.
+
+	uint32_t GuardCFCheckFunctionPointer;
+	uint32_t GuardCFDispatchFunctionPointer;
+	uint32_t GuardCFFunctionTable;
+	uint32_t GuardCFFunctionCount;
+	uint32_t GuardFlags;
+	IMAGE_LOAD_CONFIG_CODE_INTEGRITY CodeIntegrity;
+	uint32_t GuardAddressTakenIatEntryTable;
+	uint32_t GuardAddressTakenIatEntryCount;
+	uint32_t GuardLongJumpTargetTable;
+	uint32_t GuardLongJumpTargetCount;
+	uint32_t DynamicValueRelocTable;
+	uint32_t CHPEMetadataPointer;
+	uint32_t GuardRFFailureRoutine;
+	uint32_t GuardRFFailureRoutineFunctionPointer;
+	uint32_t DynamicValueRelocTableOffset;
+	uint16_t DynamicValueRelocTableSection;
+	uint16_t Reserved2;
+	uint32_t GuardRFVerifyStackPointerFunctionPointer;
+	uint32_t HotPatchTableOffset;
+	uint32_t Reserved3;
+	uint32_t EnclaveConfigurationPointer;
+	uint32_t VolatileMetadataPointer;
+	uint32_t GuardEHContinuationTable;
+	uint32_t GuardEHContinuationCount;
+	uint32_t GuardXFGCheckFunctionPointer;
+	uint32_t GuardXFGDispatchFunctionPointer;
+	uint32_t GuardXFGTableDispatchFunctionPointer;
+	uint32_t CastGuardOsDeterminedFailureMode;
+	uint32_t GuardMemcpyFunctionPointer;
+	// End of main struct for i386
+} IMAGE_LOAD_CONFIG_DIRECTORY32;
+ASSERT_STRUCT(IMAGE_LOAD_CONFIG_DIRECTORY32, 192);
+
+/**
+ * Load Config table (64-bit)
+ * All fields are little-endian.
+ * Reference: https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-image_load_config_directory64
+ */
+typedef struct _IMAGE_LOAD_CONFIG_DIRECTORY64 {
+	uint32_t Size;
+	uint32_t TimeDateStamp;
+	uint16_t MajorVersion;
+	uint16_t MinorVersion;
+	uint32_t GlobalFlagsClear;
+	uint32_t GlobalFlagsSet;
+	uint32_t CriticalSectionDefaultTimeout;
+	uint64_t DeCommitFreeBlockThreshold;
+	uint64_t DeCommitTotalFreeThreshold;
+	uint64_t LockPrefixTable;
+	uint64_t MaximumAllocationSize;
+	uint64_t VirtualMemoryThreshold;
+	uint64_t ProcessAffinityMask;
+	uint32_t ProcessHeapFlags;
+	uint16_t CSDVersion;
+	uint16_t DependentLoadFlags;
+	uint64_t EditList;
+	uint64_t SecurityCookie;
+	uint64_t SEHandlerTable;
+	uint64_t SEHandlerCount;
+	// For Windows XP, this struct ends here.
+
+	uint64_t GuardCFCheckFunctionPointer;
+	uint64_t GuardCFDispatchFunctionPointer;
+	uint64_t GuardCFFunctionTable;
+	uint64_t GuardCFFunctionCount;
+	uint32_t GuardFlags;
+	IMAGE_LOAD_CONFIG_CODE_INTEGRITY CodeIntegrity;
+	uint64_t GuardAddressTakenIatEntryTable;
+	uint64_t GuardAddressTakenIatEntryCount;
+	uint64_t GuardLongJumpTargetTable;
+	uint64_t GuardLongJumpTargetCount;
+	uint64_t DynamicValueRelocTable;
+	uint64_t CHPEMetadataPointer;
+	uint64_t GuardRFFailureRoutine;
+	uint64_t GuardRFFailureRoutineFunctionPointer;
+	uint32_t DynamicValueRelocTableOffset;
+	uint16_t DynamicValueRelocTableSection;
+	uint16_t Reserved2;
+	uint64_t GuardRFVerifyStackPointerFunctionPointer;
+	uint32_t HotPatchTableOffset;
+	uint32_t Reserved3;
+	uint64_t EnclaveConfigurationPointer;
+	uint64_t VolatileMetadataPointer;
+	uint64_t GuardEHContinuationTable;
+	uint64_t GuardEHContinuationCount;
+	uint64_t GuardXFGCheckFunctionPointer;
+	uint64_t GuardXFGDispatchFunctionPointer;
+	uint64_t GuardXFGTableDispatchFunctionPointer;
+	uint64_t CastGuardOsDeterminedFailureMode;
+	uint64_t GuardMemcpyFunctionPointer;
+	// End of main struct for amd64
+} IMAGE_LOAD_CONFIG_DIRECTORY64;
+ASSERT_STRUCT(IMAGE_LOAD_CONFIG_DIRECTORY64, 320);
+
+/**
+ * 32-bit PE headers
  * All fields are little-endian.
  */
 typedef struct _IMAGE_NT_HEADERS32 {
@@ -273,7 +404,7 @@ typedef struct _IMAGE_NT_HEADERS32 {
 ASSERT_STRUCT(IMAGE_NT_HEADERS32, 248);
 
 /**
- * 64-bit PE32+ headers.
+ * 64-bit PE32+ headers
  * All fields are little-endian.
  */
 typedef struct _IMAGE_NT_HEADERS64 {

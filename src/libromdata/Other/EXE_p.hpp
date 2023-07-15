@@ -67,10 +67,10 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 		ExeType exeType;
 
 	public:
-		// DOS MZ header.
+		// DOS MZ header
 		IMAGE_DOS_HEADER mz;
 
-		// Secondary header.
+		// Secondary header
 		#pragma pack(1)
 		union {
 			uint32_t sig32;
@@ -320,6 +320,13 @@ class EXEPrivate final : public LibRpBase::RomDataPrivate
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int addFields_PE_Import(void);
+
+	public:
+		/**
+		 * Get the hybrid metadata pointer, if present.
+		 * @return Hybrid metadata pointer, or 0 if not present.
+		 */
+		uint64_t getHybridMetadataPointer(void);
 };
 
 }

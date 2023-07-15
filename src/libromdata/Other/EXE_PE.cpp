@@ -616,14 +616,36 @@ void EXEPrivate::addFields_PE(void)
 
 	// CPU (Also .NET status)
 	string s_cpu;
-	const char *const cpu = EXEData::lookup_pe_cpu(machine);
-	if (cpu != nullptr) {
-		s_cpu = cpu;
-	} else {
-		s_cpu = rp_sprintf(C_("RomData", "Unknown (0x%04X)"), machine);
+
+	// Check for a hybrid metadata pointer.
+	// If present, this is an ARM64EC/ARM64X executable.
+	uint64_t hybridMetadataPointer = getHybridMetadataPointer();
+	if (hybridMetadataPointer != 0) {
+		switch (machine) {
+			case IMAGE_FILE_MACHINE_I386:
+				s_cpu = "CHPE i386";
+				break;
+			case IMAGE_FILE_MACHINE_AMD64:
+				s_cpu = "CHPEv2 ARM64EC";
+				break;
+			case IMAGE_FILE_MACHINE_ARM64:
+				s_cpu = "CHPEv2 ARM64X";
+				break;
+			default:
+				break;
+		}
+	}
+	if (s_cpu.empty()) {
+		const char *const cpu = EXEData::lookup_pe_cpu(machine);
+		if (cpu != nullptr) {
+			s_cpu = cpu;
+		} else {
+			s_cpu = rp_sprintf(C_("RomData", "Unknown (0x%04X)"), machine);
+		}
 	}
 	if (dotnet) {
-		// .NET executable.
+		// .NET executable
+		// TODO: How does this interact with CHPE?
 		s_cpu += " (.NET)";
 	}
 	fields.addField_string(C_("EXE", "CPU"), s_cpu);
@@ -1142,6 +1164,85 @@ int EXEPrivate::addFields_PE_Import(void)
 	// TODO: Header alignment?
 	params.col_attrs.align_data = AFLD_ALIGN3(TXA_D, TXA_R, TXA_D);
 	fields.addField_listData(C_("EXE", "Imports"), &params);
+	return 0;
+}
+
+/**
+ * Get the hybrid metadata pointer, if present.
+ * @return Hybrid metadata pointer, or 0 if not present.
+ */
+uint64_t EXEPrivate::getHybridMetadataPointer(void)
+{
+	// Get the Load Config Table.
+	if (exeType == EXEPrivate::ExeType::PE) {
+		IMAGE_LOAD_CONFIG_DIRECTORY32 load_config;
+
+		// FIXME: How does XEX handle this?
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+		const auto &dirEntry = hdr.pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_LOAD_CONFIG_TABLE];
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+		auto dirEntry = hdr.pe.OptionalHeader.opt32.DataDirectory[IMAGE_DATA_DIRECTORY_LOAD_CONFIG_TABLE];
+		dirEntry.VirtualAddress = le32_to_cpu(dirEntry.VirtualAddress);
+		dirEntry.Size = le32_to_cpu(dirEntry.Size);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+
+		if (dirEntry.VirtualAddress == 0 || dirEntry.Size == 0 ||
+		    dirEntry.Size < (offsetof(IMAGE_LOAD_CONFIG_DIRECTORY32, CHPEMetadataPointer) + sizeof(uint32_t)) ||
+		    dirEntry.Size > sizeof(load_config))
+		{
+			return 0;
+		}
+
+		uint32_t size = dirEntry.Size;
+		const uint32_t paddr = pe_vaddr_to_paddr(dirEntry.VirtualAddress, size);
+		if (paddr == 0)
+			return 0;
+
+		size_t sz_read = file->seekAndRead(paddr, &load_config, size);
+		if (sz_read != size)
+			return 0;
+
+		// Verify the size of load_config.
+		if (size != le32_to_cpu(load_config.Size))
+			return 0;
+
+		return le32_to_cpu(load_config.CHPEMetadataPointer);
+	} else /*if (exeType == EXEPrivate::ExeType::PE32PLUS)*/ {
+		IMAGE_LOAD_CONFIG_DIRECTORY64 load_config;
+
+#if SYS_BYTEORDER == SYS_LIL_ENDIAN
+		const auto &dirEntry = hdr.pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_LOAD_CONFIG_TABLE];
+#else /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+		auto dirEntry = hdr.pe.OptionalHeader.opt64.DataDirectory[IMAGE_DATA_DIRECTORY_LOAD_CONFIG_TABLE];
+		dirEntry.VirtualAddress = le32_to_cpu(dirEntry.VirtualAddress);
+		dirEntry.Size = le32_to_cpu(dirEntry.Size);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+
+		if (dirEntry.VirtualAddress == 0 || dirEntry.Size == 0 ||
+		    dirEntry.Size < (offsetof(IMAGE_LOAD_CONFIG_DIRECTORY64, CHPEMetadataPointer) + sizeof(uint64_t)) ||
+		    dirEntry.Size > sizeof(load_config))
+		{
+			return 0;
+		}
+
+		uint32_t size = dirEntry.Size;
+		const uint32_t paddr = pe_vaddr_to_paddr(dirEntry.VirtualAddress, size);
+		if (paddr == 0)
+			return 0;
+
+		size_t sz_read = file->seekAndRead(paddr, &load_config, size);
+		if (sz_read != size)
+			return 0;
+
+		// Verify the size of load_config.
+		if (size != le32_to_cpu(load_config.Size))
+			return 0;
+
+		return le64_to_cpu(load_config.CHPEMetadataPointer);
+	}
+
+	// FIXME: Shouldn't get here...
+	assert(!"Unreachable code!");
 	return 0;
 }
 
