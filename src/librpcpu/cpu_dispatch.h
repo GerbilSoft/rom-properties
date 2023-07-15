@@ -16,12 +16,14 @@
 #  define RP_CPU_I386 1
 #endif
 #if defined(__x86_64__) || defined(__x86_64) || defined(__amd64__) || defined(__amd64) || defined(_M_X64)
-#  define RP_CPU_AMD64 1
+#  if !defined(_M_ARM64EC)
+#    define RP_CPU_AMD64 1
+#  endif
 #endif
 #if defined(__arm__) || defined(__thumb__) || defined(__arm) || defined(_ARM) || defined(_M_ARM)
 #  define RP_CPU_ARM 1
 #endif
-#if defined(__aarch64__)
+#if defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
 #  define RP_CPU_ARM64 1
 #endif
 #if defined(__powerpc64__) || defined(__ppc64__) || defined(__PPC64__) || \
