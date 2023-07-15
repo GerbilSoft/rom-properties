@@ -18,6 +18,9 @@
     * This was broken in v2.2.
     * Fixes #389: Gamecube Property sheet is blank
       * Reported by @Masamune3210.
+  * Windows: Don't square thumbnails for anything except icon extraction.
+    * Fixes #385: Ratio of ps2 longbox thumbnails looks wrong?
+      * Reported by @Masamune3210.
 
 ## v2.2 (released 2023/07/01)
 

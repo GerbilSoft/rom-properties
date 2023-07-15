@@ -30,6 +30,7 @@ const CLSID CLSID_RP_ExtractIcon =
 RP_ExtractIcon_Private::RP_ExtractIcon_Private()
 	: filename(nullptr)
 	, romData(nullptr)
+	, thumbnailer(true)	// enable automatic squaring
 { }
 
 RP_ExtractIcon_Private::~RP_ExtractIcon_Private()

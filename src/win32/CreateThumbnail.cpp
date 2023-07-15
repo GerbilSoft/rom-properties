@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * CreateThumbnail.cpp: TCreateThumbnail<HBITMAP> implementation.          *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -51,9 +51,8 @@ HBITMAP CreateThumbnail::rpImageToImgClass(const rp_image *img) const
 	// Windows doesn't like non-square icons.
 	// Add extra transparent columns/rows before
 	// converting to HBITMAP.
-	// TODO: Disable this for RP_ExtractImage and RP_ThumbnailProvider?
 	rp_image *tmp_img = nullptr;
-	if (!img->isSquare()) {
+	if (m_doSquaring && !img->isSquare()) {
 		// Image is non-square.
 		tmp_img = img->squared();
 		assert(tmp_img != nullptr);

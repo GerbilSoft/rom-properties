@@ -18,7 +18,10 @@
 class CreateThumbnail : public LibRomData::TCreateThumbnail<HBITMAP>
 {
 	public:
-		explicit CreateThumbnail() = default;
+		explicit CreateThumbnail(bool doSquaring = false)
+		{
+			m_doSquaring = doSquaring;
+		}
 
 	private:
 		typedef TCreateThumbnail<HBITMAP> super;
@@ -102,6 +105,14 @@ class CreateThumbnail : public LibRomData::TCreateThumbnail<HBITMAP>
 		 * @return True if metered; false if not.
 		 */
 		bool isMetered(void) final;
+
+	private:
+		// Enable automatic squaring of thumbnails when converting to the
+		// native OS image class. This is needed for icons.
+		// - IExtractIcon: squared
+		// - IExtractImage: not squared
+		// - IThumbnailProvider: not squared
+		bool m_doSquaring;
 };
 
 /**
@@ -112,7 +123,9 @@ class CreateThumbnail : public LibRomData::TCreateThumbnail<HBITMAP>
 class CreateThumbnailNoAlpha final : public CreateThumbnail
 {
 	public:
-		explicit CreateThumbnailNoAlpha() = default;
+		explicit CreateThumbnailNoAlpha(bool doSquaring = false)
+			: super(doSquaring)
+		{ }
 
 	private:
 		typedef CreateThumbnail super;
