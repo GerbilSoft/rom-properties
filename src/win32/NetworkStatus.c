@@ -47,7 +47,7 @@ bool rp_win32_can_identify_if_metered(void)
 	// GetNetworkConnectivityHint() was added in Windows 10 v2004.
 	// Reference: https://learn.microsoft.com/en-us/windows/win32/api/netioapi/nf-netioapi-getnetworkconnectivityhint
 	// TODO: Cache this?
-	HMODULE hIPhlpapiDll = LoadLibraryEx(_T("IPHLPAPI.DLL"), NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
+	HMODULE hIPhlpapiDll = LoadLibraryEx(_T("iphlpapi.dll"), NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
 	if (!hIPhlpapiDll) {
 		return false;
 	}
@@ -72,7 +72,7 @@ bool rp_win32_is_metered(void)
 	// GetNetworkConnectivityHint() was added in Windows 10 v2004.
 	// Reference: https://learn.microsoft.com/en-us/windows/win32/api/netioapi/nf-netioapi-getnetworkconnectivityhint
 	// TODO: Cache this?
-	HMODULE hIPhlpapiDll = LoadLibraryEx(_T("IPHLPAPI.DLL"), NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
+	HMODULE hIPhlpapiDll = LoadLibraryEx(_T("iphlpapi.dll"), NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
 	if (!hIPhlpapiDll) {
 		return bRet;
 	}

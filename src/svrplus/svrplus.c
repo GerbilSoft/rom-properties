@@ -3,7 +3,7 @@
  * svrplus.c: Win32 installer for rom-properties.                          *
  *                                                                         *
  * Copyright (c) 2017-2018 by Egor.                                        *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -696,7 +696,7 @@ static void InitDialog(HWND hDlg)
 	// NOTE: Using IDI_EXCLAMATION will only return the 32x32 icon.
 	// Need to get the icon from USER32 directly.
 	// TODO: Use SHGetStockIconInfo if available?
-	hUser32 = GetModuleHandle(_T("user32"));
+	hUser32 = GetModuleHandle(_T("user32.dll"));
 	assert(hUser32 != NULL);
 	if (hUser32) {
 		hIconExclaim = (HICON)LoadImage(hUser32,
@@ -1035,7 +1035,7 @@ static int check_system_architectures(void)
 	// WoW64 functions are located in kernel32.dll.
 	// NOTE: Using GetProcAddress() because regular linking would
 	// prevent svrplus from running on earlier versions of Windows.
-	hKernel32 = GetModuleHandle(_T("kernel32"));
+	hKernel32 = GetModuleHandle(_T("kernel32.dll"));
 	assert(hKernel32 != NULL);
 	if (!hKernel32) {
 		// Something is seriously wrong if kernel32 isn't loaded...

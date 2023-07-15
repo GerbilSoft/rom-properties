@@ -503,7 +503,7 @@ static PFNGETFINALPATHNAMEBYHANDLE pfnGetFinalPathnameByHandle = nullptr;
  */
 static void LookupGetFinalPathnameByHandle(void)
 {
-	HMODULE hKernel32 = GetModuleHandle(_T("kernel32"));
+	HMODULE hKernel32 = GetModuleHandle(_T("kernel32.dll"));
 	if (hKernel32) {
 		pfnGetFinalPathnameByHandle = reinterpret_cast<PFNGETFINALPATHNAMEBYHANDLE>(
 			GetProcAddress(hKernel32, GETFINALPATHNAMEBYHANDLE_FN));

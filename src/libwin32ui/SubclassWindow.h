@@ -57,7 +57,7 @@ static inline BOOL SetWindowSubclass_compat(
 {
 	PFNSETWINDOWSUBCLASS pfnSetWindowSubclass;
 
-	HMODULE hComCtl32_dll = GetModuleHandle(_T("COMCTL32"));
+	HMODULE hComCtl32_dll = GetModuleHandle(_T("comctl32.dll"));
 	if (!hComCtl32_dll) {
 		return FALSE;
 	}
@@ -84,7 +84,7 @@ static inline BOOL GetWindowSubclass_compat(
 {
 	PFNGETWINDOWSUBCLASS pfnGetWindowSubclass;
 
-	HMODULE hComCtl32_dll = GetModuleHandle(_T("COMCTL32"));
+	HMODULE hComCtl32_dll = GetModuleHandle(_T("comctl32.dll"));
 	if (!hComCtl32_dll) {
 		return FALSE;
 	}
@@ -109,7 +109,7 @@ static inline BOOL RemoveWindowSubclass_compat(
 {
 	PFNREMOVEWINDOWSUBCLASS pfnRemoveWindowSubclass;
 
-	HMODULE hComCtl32_dll = GetModuleHandle(_T("COMCTL32"));
+	HMODULE hComCtl32_dll = GetModuleHandle(_T("comctl32.dll"));
 	if (!hComCtl32_dll) {
 		return FALSE;
 	}
@@ -132,7 +132,7 @@ static inline LRESULT DefSubclassProc_compat(HWND hWnd, UINT uMsg, WPARAM wParam
 {
 	PFNDEFSUBCLASSPROC pfnDefSubclassProc;
 
-	HMODULE hComCtl32_dll = GetModuleHandle(_T("COMCTL32"));
+	HMODULE hComCtl32_dll = GetModuleHandle(_T("comctl32.dll"));
 	if (!hComCtl32_dll) {
 		return FALSE;
 	}

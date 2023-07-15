@@ -240,7 +240,7 @@ bool isThemeActive(void)
 bool isComCtl32_v610(void)
 {
 	// Check the COMCTL32.DLL version.
-	HMODULE hComCtl32 = GetModuleHandle(_T("COMCTL32"));
+	HMODULE hComCtl32 = GetModuleHandle(_T("comctl32.dll"));
 	assert(hComCtl32 != nullptr);
 	if (!hComCtl32)
 		return false;
@@ -521,7 +521,7 @@ static inline HRESULT getFileName_int_IFileDialog(tstring &ts_ret, bool bSave, H
 		// need to use GetProcAddress().
 		typedef HRESULT(STDAPICALLTYPE* PFNSHCREATEITEMFROMPARSINGNAME)(
 			PCWSTR pszPath, IBindCtx* pbc, REFIID riid, void** ppv);
-		HMODULE hShell32 = GetModuleHandle(_T("shell32"));
+		HMODULE hShell32 = GetModuleHandle(_T("shell32.dll"));
 		assert(hShell32 != nullptr);
 		if (!hShell32)
 			return E_FAIL;

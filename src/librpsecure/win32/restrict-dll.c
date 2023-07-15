@@ -40,7 +40,7 @@ int rp_secure_restrict_dll_lookups(void)
 		PFNSETDLLDIRECTORYW pfnSetDllDirectoryW;
 	} pfn;
 
-	hKernel32 = GetModuleHandle(_T("kernel32"));
+	hKernel32 = GetModuleHandle(_T("kernel32.dll"));
 	assert(hKernel32 != NULL);
 	if (!hKernel32) {
 		// Something is seriously wrong if kernel32 isn't loaded...

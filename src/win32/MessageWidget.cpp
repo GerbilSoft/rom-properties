@@ -175,7 +175,7 @@ void MessageWidgetPrivate::updateIcon(void)
 			break;
 	}
 	if (lpszRes) {
-		HMODULE hUser32 = GetModuleHandle(_T("user32"));
+		HMODULE hUser32 = GetModuleHandle(_T("user32.dll"));
 		assert(hUser32 != nullptr);
 		if (hUser32) {
 			hbrBg = CreateSolidBrush(colorBg);

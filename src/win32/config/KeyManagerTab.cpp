@@ -1396,7 +1396,7 @@ void KeyManagerTabPrivate::loadImages(void)
 	// Load the icons.
 	// NOTE: Using IDI_* will only return the 32x32 icon.
 	// Need to get the icon from USER32 directly.
-	HMODULE hUser32 = GetModuleHandle(_T("user32"));
+	HMODULE hUser32 = GetModuleHandle(_T("user32.dll"));
 	assert(hUser32 != nullptr);
 	if (hUser32) {
 		hIconUnknown = (HICON)LoadImage(hUser32,

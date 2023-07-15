@@ -273,7 +273,7 @@ tstring IDownloader::getOSRelease(void)
 	static bool bTriedWow64 = false;
 	static bool bIsWow64 = false;
 	if (!bTriedWow64) {
-		HMODULE hKernel32 = GetModuleHandle(_T("kernel32"));
+		HMODULE hKernel32 = GetModuleHandle(_T("kernel32.dll"));
 		assert(hKernel32 != nullptr);
 		if (hKernel32) {
 			typedef BOOL (WINAPI *PFNISWOW64PROCESS)(HANDLE hProcess, PBOOL Wow64Process);

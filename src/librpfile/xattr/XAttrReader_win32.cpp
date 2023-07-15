@@ -114,7 +114,7 @@ int XAttrReaderPrivate::loadGenericXattrs_FindFirstStreamW(void)
 {
 	// Windows Vista: Use FindFirstStream().
 	// Windows XP: Use BackupRead(). [TODO]
-	HMODULE hKernel32 = GetModuleHandle(_T("kernel32"));
+	HMODULE hKernel32 = GetModuleHandle(_T("kernel32.dll"));
 	assert(hKernel32 != nullptr);
 	if (!hKernel32)
 		return -ENOMEM;

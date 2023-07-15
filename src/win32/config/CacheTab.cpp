@@ -174,7 +174,7 @@ void CacheTabPrivate::initDialog(void)
 
 	// NOTE: CacheTab, DllMain, and others call SHELL32 functions
 	// directly, so we can assume SHELL32.DLL is loaded.
-	HMODULE hShell32_dll = GetModuleHandle(_T("shell32"));
+	HMODULE hShell32_dll = GetModuleHandle(_T("shell32.dll"));
 	assert(hShell32_dll != nullptr);
 	if (hShell32_dll) {
 		// Get SHGetImageList() by ordinal.
