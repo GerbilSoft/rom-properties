@@ -21,6 +21,10 @@
   * Windows: Don't square thumbnails for anything except icon extraction.
     * Fixes #385: Ratio of ps2 longbox thumbnails looks wrong?
       * Reported by @Masamune3210.
+  * KDE: Fix metadata extraction. v2.2 added JSON plugin metadata to the
+    forwarder plugins. Unfortunately, KFileMetaData uses a completely different
+    format than other KDE plugins, which broke metadata extraction.
+    * This was broken in v2.2.
 
 ## v2.2 (released 2023/07/01)
 

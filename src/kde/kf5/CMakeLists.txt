@@ -291,6 +291,7 @@ ENDIF(BUILD_KF5)
 IF(BUILD_KF5)
 	# Process MIME types for the .desktop and .json files.
 	# FIXME: Need to add a dependency to ensure these files are regenerated if the XDG files are changed.
+	# TODO: Better versioning for ExtractorPlugin?
 	INCLUDE(ParseMimeTypes)
 	PARSE_MIME_TYPES(MIMETYPES_THUMBONLY
 		"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types")
@@ -298,6 +299,10 @@ IF(BUILD_KF5)
 		"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
 		"${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types")
 	PARSE_MIME_TYPES_JSON(MIMETYPES_ALL_JSON_ARRAY "            "
+		"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
+		"${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types")
+	PARSE_MIME_TYPES_JSON_VERSIONED(MIMETYPES_ALL_JSON_VERSIONED_ARRAY "        "
+		"${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH}"
 		"${CMAKE_SOURCE_DIR}/xdg/mime.thumbnail.types"
 		"${CMAKE_SOURCE_DIR}/xdg/mime.no-thumbnail.types")
 	IF(NOT HAVE_JSON_PLUGIN_LOADER)
