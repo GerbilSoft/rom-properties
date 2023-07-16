@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-07-11 20:05-0400\n"
-"PO-Revision-Date: 2023-07-14 18:16\n"
+"PO-Revision-Date: 2023-07-16 23:32\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -10079,7 +10079,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:318
 msgctxt "KeyManagerTab"
 msgid "I&mport..."
-msgstr "I&mporter…"
+msgstr "I&mporter..."
 
 #. tr: Tab title.
 #: ../src/win32/config/KeyManagerTab.cpp:1763
@@ -10102,7 +10102,7 @@ msgstr ""
 #: ../src/win32/OptionsMenuButton.cpp:106
 msgctxt "OptionsMenuButton"
 msgid "&Options..."
-msgstr "&Options…"
+msgstr "&Options..."
 
 #. tr: "All Files" filter (RP format)
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:496
