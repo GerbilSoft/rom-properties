@@ -9,9 +9,11 @@
 // UTF-8 encoding
 #pragma code_page(65001)
 
+// Common rom-properties resource header
 #include "resource.common.inc.h"
 
 /** Manifest **/
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 ISOLATIONAWARE_MANIFEST_RESOURCE_ID	RT_MANIFEST	"res/romdata.dll.manifest"
 
 // TODO: The git version gets cut off on Windows 7, since it uses

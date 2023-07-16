@@ -20,21 +20,26 @@
 #undef APSTUDIO_HIDDEN_SYMBOLS
 
 /** Manifest **/
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 ISOLATIONAWARE_MANIFEST_RESOURCE_ID	RT_MANIFEST	"res/rom-properties.dll.manifest"
 
 /** Icons **/
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 IDI_KEY_VALID	ICON	"res/dialog-ok-apply.ico"
 
 /** PNG images **/
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 IDP_FLAGS_16x16	RT_PNG	"../../res/flags/flags-16x16.png"
 IDP_FLAGS_24x24	RT_PNG	"../../res/flags/flags-24x24.png"
 IDP_FLAGS_32x32	RT_PNG	"../../res/flags/flags-32x32.png"
 
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 IDP_ACH_16x16	RT_PNG	"../../res/ach/ach-16x16.png"
 IDP_ACH_24x24	RT_PNG	"../../res/ach/ach-24x24.png"
 IDP_ACH_32x32	RT_PNG	"../../res/ach/ach-32x32.png"
 IDP_ACH_64x64	RT_PNG	"../../res/ach/ach-64x64.png"
 
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 IDP_ACH_GRAY_16x16	RT_PNG	"../../res/ach/ach-gray-16x16.png"
 IDP_ACH_GRAY_24x24	RT_PNG	"../../res/ach/ach-gray-24x24.png"
 IDP_ACH_GRAY_32x32	RT_PNG	"../../res/ach/ach-gray-32x32.png"

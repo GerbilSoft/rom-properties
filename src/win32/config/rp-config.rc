@@ -2,17 +2,18 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * rp-config.rc: rp-config.exe Win32 resource script.                      *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 // UTF-8 encoding
 #pragma code_page(65001)
 
-// Common rom-properties resource header.
+// Common rom-properties resource header
 #include "resource.common.inc.h"
 
-/** Manifest. **/
+/** Manifest **/
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 CREATEPROCESS_MANIFEST_RESOURCE_ID	RT_MANIFEST	"rp-config.exe.manifest"
 
 // TODO: The git version gets cut off on Windows 7, since it uses
