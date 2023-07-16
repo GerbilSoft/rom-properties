@@ -5,7 +5,7 @@ CD /D "%~dp0\.."
 :: Packaging script for rom-properties, Windows version.
 :: Requires the following:
 :: - CMake 3.0.0 or later
-:: - MSVC 2012, 2013, 2015, or 2017 with 32-bit and 64-bit compilers
+:: - MSVC 2015, or 2017 with 32-bit and 64-bit compilers
 :: - MSVC 2019, 2022 with v141_xp toolchain is also supported.
 :: - Windows 7 SDK
 :: - zip.exe and unzip.exe in %PATH%
@@ -38,8 +38,8 @@ SET CMAKE64_TOOLSET=
 SET CMAKE64_ARCH=
 
 :: Check for supported MSVC versions.
-:: MSVC 2012/2013/2015
-FOR %%I IN (2012.11 2013.12 2015.14) DO (
+:: MSVC 2015
+FOR %%I IN (2015.14) DO (
 	SET J=%%I
 	SET YEAR=!J:~0,4!
 	SET V=!J:~5,2!
@@ -97,7 +97,7 @@ FOR %%I IN (Community Professional Enterprise) DO (
 :: MSVC 2022: Use the 2017 (14.1x) compiler for 32-bit in order to maintain WinXP compatibilty.
 :: NOTE: MSVC 2022 switched to 64-bit Program Files
 FOR %%I IN (Community Professional Enterprise) DO (
-	IF EXIST "%PROGRAMFILES%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.33.31629\bin\HostX86\x86\cl.exe" (
+	IF EXIST "%PROGRAMFILES%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.36.32532\bin\HostX86\x86\cl.exe" (
 		SET "MSVC32_DIR=%PROGRAMFILES%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.16.27023"
 		SET MSVC32_VERSION=14.16
 		SET MSVC32_YEAR=2022
@@ -105,7 +105,7 @@ FOR %%I IN (Community Professional Enterprise) DO (
 		SET CMAKE32_TOOLSET=v141_xp
 		SET CMAKE32_ARCH=-A Win32
 
-		SET "MSVC64_DIR=%PROGRAMFILES%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.33.31629"
+		SET "MSVC64_DIR=%PROGRAMFILES%\Microsoft Visual Studio\2022\%%I\VC\Tools\MSVC\14.36.32532"
 		SET MSVC64_VERSION=14.33
 		SET MSVC64_YEAR=2022
 		SET CMAKE64_GENERATOR=17 2022
@@ -116,7 +116,7 @@ FOR %%I IN (Community Professional Enterprise) DO (
 
 IF "%CMAKE64_GENERATOR%" == "" (
 	ECHO *** ERROR: Supported version of MSVC was not found.
-	ECHO Supported versions: 2022, 2019, 2017, 2015, 2013, 2012
+	ECHO Supported versions: 2022, 2019, 2017, 2015
 	PAUSE
 	EXIT /B 1
 )
@@ -290,7 +290,7 @@ zip "..\..\%ZIP_PREFIX%-windows.debug.zip" i386/*.pdb amd64/*.pdb
 
 :: Compress everything else.
 DEL /q "..\..\%ZIP_PREFIX%-windows.zip" >NUL 2>&1
-zip -r "..\..\%ZIP_PREFIX%-windows.zip" * -x *.pdb
+zip -r "..\..\%ZIP_PREFIX%-windows.zip" * -x *.pdb -x *cmake_mode_t*
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
 
 :: Package merged.
