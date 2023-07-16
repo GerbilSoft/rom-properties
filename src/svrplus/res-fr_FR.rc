@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension installer. (svrplus)                *
- * resource.rc: Win32 resource script. (en_US)                             *
+ * resource.rc: Win32 resource script. (fr_FR)                             *
  *                                                                         *
  * Copyright (c) 2017-2022 by Egor.                                        *
  * Copyright (c) 2017-2023 by David Korth.                                 *
@@ -21,7 +21,7 @@
 // on Windows XP.
 
 /** Application version **/
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
 VS_VERSION_INFO VERSIONINFO
 	FILEVERSION RP_VERSION_WIN32
 	PRODUCTVERSION RP_VERSION_WIN32
@@ -34,25 +34,25 @@ BEGIN
 	BLOCK "StringFileInfo"
 	BEGIN
 		/* English (US), Unicode */
-		BLOCK "040904B0"
+		BLOCK "040C04B0"
 		BEGIN
 			//VALUE "Comments"
 			//VALUE "CompanyName"
 			VALUE "FileDescription", "ROM Properties Page shell extension installer"
 			VALUE "FileVersion", "svrplus " Win32_RC_FileVersion
 			VALUE "InternalName", "svrplus"
-			VALUE "LegalCopyright", "Copyright (c) 2017-2022 by Egor."
+			VALUE "LegalCopyright", "Copyright (c) 2017-2022 par Egor."
 			//VALUE "LegalTrademarks"
 			//VALUE "OriginalFilename"
 			//VALUE "PrivateBuild"
 			VALUE "ProductName", "ROM Properties Page shell extension installer"
 			VALUE "ProductVersion", "svrplus " Win32_RC_FileVersion
-			//VALUE "SpecialBuild"
+			//VALUE ""SpecialBuild"
 		END
 	END
 	BLOCK "VarFileInfo"
 	BEGIN
-		VALUE "Translation", 0x409, 1200
+		VALUE "Translation", 0x40C, 1200
 	END
 END
 
@@ -60,7 +60,7 @@ END
 IDI_SVRPLUS ICON "icon.ico"
 
 /** Dialogs **/
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
 IDD_SVRPLUS DIALOGEX 0, 0, 273, 157
 STYLE DS_3DLOOK | DS_CENTER | DS_MODALFRAME | DS_SHELLFONT | WS_CAPTION | WS_VISIBLE | WS_POPUPWINDOW | WS_MINIMIZEBOX | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
@@ -70,8 +70,8 @@ BEGIN
     LTEXT           "", IDC_STATIC_DESC, 7, 7, 260, 81, SS_LEFT, WS_EX_LEFT | WS_EX_TRANSPARENT
     LTEXT           "", IDC_STATIC_STATUS1, 7, 92, 259, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT | WS_EX_TRANSPARENT
     CONTROL         "", IDC_STATIC_STATUS2, "SysLink", 0x50010000, 7, 102, 259, 33, WS_EX_LEFT | WS_EX_TRANSPARENT
-    PUSHBUTTON      "Uninstall", IDC_BUTTON_UNINSTALL, 139, 136, 50, 14, 0, WS_EX_LEFT
-    DEFPUSHBUTTON   "Install", IDC_BUTTON_INSTALL, 83, 136, 50, 14, 0, WS_EX_LEFT
+    PUSHBUTTON      "Désinstaller", IDC_BUTTON_UNINSTALL, 139, 136, 50, 14, 0, WS_EX_LEFT
+    DEFPUSHBUTTON   "Installer", IDC_BUTTON_INSTALL, 83, 136, 50, 14, 0, WS_EX_LEFT
 END
 
 /** String Table **/
@@ -82,7 +82,7 @@ END
 //            accept the "\0" here.
 // - MSVC rc: Ignores "\0", but has a "/n" option to automatically
 //            NULL-terminate strings.
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
 STRINGTABLE
 BEGIN
 	IDS_MAIN_DESCRIPTION, "This installer will register the ROM Properties Page DLL with the system, which will provide extra functionality for supported files in Windows Explorer.\n\nNote that the DLL locations are hard-coded in the registry. If you move the DLLs, you will have to rerun this installer. In addition, the DLLs will usually be locked by Explorer, so you will need to use this program to uninstall the DLLs first and then restart Explorer in order to move the DLLs.\n\nUninstalling will unregister the ROM Properties DLL, which will disable the extra functionality provided by the DLL for supported ROM files.\0"

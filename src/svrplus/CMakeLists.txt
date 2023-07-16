@@ -15,7 +15,9 @@ SET(${PROJECT_NAME}_SRCS svrplus.c)
 SET(${PROJECT_NAME}_H resource.h)
 
 SET(${PROJECT_NAME}_RC
+	resource.rc
 	res-en_US.rc
+	res-fr_FR.rc
 	)
 
 #########################
