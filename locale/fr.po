@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: rom-properties 2.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-07-11 20:05-0400\n"
-"PO-Revision-Date: 2023-07-09 09:51\n"
+"PO-Revision-Date: 2023-07-14 18:16\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr\n"
@@ -121,7 +121,7 @@ msgstr "&Succès"
 #: ../src/gtk/config/ConfigDialog.cpp:247
 msgctxt "ConfigDialog"
 msgid "Abou&t"
-msgstr ""
+msgstr "À propo&s"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:100
 msgctxt "DosAttrView"
@@ -170,7 +170,7 @@ msgstr ""
 #: ../src/kde/config/KeyManagerTab.cpp:323
 msgctxt "KeyManagerTab"
 msgid "I&mport"
-msgstr ""
+msgstr "I&mporter"
 
 #: ../build/src/kde/kf5/ui_LinuxAttrView.h:85
 #: ../src/gtk/xattr/LinuxAttrView.c:121
@@ -181,7 +181,7 @@ msgstr "lsattr :"
 #: ../build/src/kde/kf5/ui_OptionsTab.h:177
 msgctxt "OptionsTab"
 msgid "&Downloads"
-msgstr ""
+msgstr "&Téléchargements"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:178
 #: ../src/gtk/config/OptionsTab.cpp:143
@@ -249,7 +249,7 @@ msgstr ""
 #: ../build/src/kde/kf5/ui_OptionsTab.h:195
 msgctxt "OptionsTab"
 msgid "&Options"
-msgstr ""
+msgstr "&Options"
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:196
 #: ../src/gtk/config/OptionsTab.cpp:261
@@ -391,19 +391,19 @@ msgstr ""
 #: ../src/win32/config/AboutTab.cpp:869
 msgctxt "AboutTab|Credits"
 msgid "Developers:"
-msgstr ""
+msgstr "Développeurs :"
 
 #: ../src/gtk/config/AboutTab.cpp:503 ../src/kde/config/AboutTab.cpp:223
 #: ../src/win32/config/AboutTab.cpp:872
 msgctxt "AboutTab|Credits"
 msgid "Contributors:"
-msgstr ""
+msgstr "Contributeurs :"
 
 #: ../src/gtk/config/AboutTab.cpp:506 ../src/kde/config/AboutTab.cpp:226
 #: ../src/win32/config/AboutTab.cpp:875
 msgctxt "AboutTab|Credits"
 msgid "Translators:"
-msgstr ""
+msgstr "Traducteurs :"
 
 #. tr: Sub-credit.
 #: ../src/gtk/config/AboutTab.cpp:535 ../src/kde/config/AboutTab.cpp:255
@@ -411,7 +411,7 @@ msgstr ""
 #, c-format
 msgctxt "AboutTab|Credits"
 msgid " (%s)"
-msgstr ""
+msgstr " (%s)"
 
 #. tr: Using an internal copy of a library.
 #: ../src/gtk/config/AboutTab.cpp:561 ../src/kde/config/AboutTab.cpp:279
@@ -611,7 +611,7 @@ msgstr ""
 #: ../src/win32/config/ImageTypesTab.cpp:381
 msgctxt "ImageTypesTab|Values"
 msgid "No"
-msgstr ""
+msgstr "Non"
 
 #: ../src/gtk/config/ImageTypesTab.cpp:481
 #: ../src/kde/config/ImageTypesTab.cpp:357
@@ -927,7 +927,7 @@ msgstr ""
 #: ../src/win32/RP_ContextMenu.cpp:490
 msgctxt "ServiceMenu"
 msgid "Convert to PNG"
-msgstr ""
+msgstr "Convertir en PNG"
 
 #: ../src/gtk/gtk3/NautilusMenuProvider.cpp:272
 #: ../src/gtk/gtk3/ThunarMenuProvider.cpp:266
@@ -965,7 +965,7 @@ msgstr ""
 #: ../src/win32/RP_ShellPropSheetExt.cpp:1340
 msgctxt "RomDataView"
 msgid "ERROR"
-msgstr ""
+msgstr "ERREUR"
 
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:212
 #: ../src/gtk/RomDataView.cpp:634 ../src/kde/RomDataView.cpp:155
@@ -1236,7 +1236,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:412
 msgctxt "RomData"
 msgid "Yes"
-msgstr ""
+msgstr "Oui"
 
 #. tr: Debugging is disabled.
 #: ../src/libromdata/Audio/ADX.cpp:315 ../src/libromdata/Audio/BCSTM.cpp:501
@@ -1245,7 +1245,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:414
 msgctxt "RomData"
 msgid "No"
-msgstr ""
+msgstr "Non"
 
 #: ../src/libromdata/Audio/ADX.cpp:318
 msgctxt "ADX"
@@ -1345,7 +1345,7 @@ msgstr ""
 #: ../src/libromdata/Audio/BRSTM.cpp:319
 msgctxt "BRSTM"
 msgid "Type"
-msgstr ""
+msgstr "Type"
 
 #: ../src/libromdata/Audio/BRSTM.cpp:322 ../src/libromdata/Audio/SID.cpp:220
 #: ../src/libromdata/Console/Dreamcast.cpp:630
@@ -1599,7 +1599,7 @@ msgstr ""
 #: ../src/libromdata/Audio/SAP.cpp:585
 msgctxt "SAP"
 msgid "Date"
-msgstr ""
+msgstr "Date"
 
 #: ../src/libromdata/Audio/SAP.cpp:589 ../src/libromdata/Audio/SID.cpp:257
 msgctxt "RomData|Audio"
@@ -1624,7 +1624,7 @@ msgstr ""
 #: ../src/libromdata/Audio/SAP.cpp:613
 msgctxt "SAP"
 msgid "Type"
-msgstr ""
+msgstr "Type"
 
 #: ../src/libromdata/Audio/SAP.cpp:629
 msgctxt "SAP"
@@ -1746,7 +1746,7 @@ msgstr ""
 #: ../src/libromdata/Audio/SNDH.cpp:910
 msgctxt "SNDH|SubtuneList"
 msgid "#"
-msgstr ""
+msgstr "#"
 
 #: ../src/libromdata/Audio/SNDH.cpp:914 ../src/libromdata/Audio/SNDH.cpp:917
 msgctxt "SNDH|SubtuneList"
@@ -2380,7 +2380,7 @@ msgstr ""
 #: ../src/libromdata/Console/Dreamcast.cpp:742
 msgctxt "Dreamcast|Expansion"
 msgid "Microphone"
-msgstr ""
+msgstr "Microphone"
 
 #. tr: "VMS" in Japan; "VMU" in USA; "VM" in Europe
 #: ../src/libromdata/Console/Dreamcast.cpp:744
@@ -2854,7 +2854,7 @@ msgstr ""
 #: ../src/libromdata/Console/GameCube.cpp:1960
 msgctxt "Wii|Partition"
 msgid "#"
-msgstr ""
+msgstr "#"
 
 #. tr: Partition type.
 #: ../src/libromdata/Console/GameCube.cpp:1962
@@ -3286,7 +3286,7 @@ msgstr ""
 #: ../src/libromdata/Console/NES.cpp:1117
 msgctxt "NES"
 msgid "Format"
-msgstr ""
+msgstr "Format"
 
 #. tr: ROM format, e.g. iNES or FDS disk image.
 #: ../src/libromdata/Console/NES.cpp:1128
@@ -4053,7 +4053,7 @@ msgstr ""
 #: ../src/libromdata/Console/SNES.cpp:1380
 msgctxt "Region"
 msgid "Canada"
-msgstr ""
+msgstr "Canada"
 
 #: ../src/libromdata/Console/SNES.cpp:1381
 msgctxt "Region"
@@ -4492,7 +4492,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1712
 msgctxt "Xbox360_XEX"
 msgid "DLL"
-msgstr ""
+msgstr "DLL"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1713
 msgctxt "Xbox360_XEX"
@@ -4538,22 +4538,22 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1739
 msgctxt "Xbox360_XEX"
 msgid "XGD1"
-msgstr ""
+msgstr "XGD1"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1740
 msgctxt "Xbox360_XEX"
 msgid "DVD/CD"
-msgstr ""
+msgstr "DVD/CD"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1741
 msgctxt "Xbox360_XEX"
 msgid "DVD-ROM SL"
-msgstr ""
+msgstr "DVD-ROM SL"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1743
 msgctxt "Xbox360_XEX"
 msgid "DVD-ROM DL"
-msgstr ""
+msgstr "DVD-ROM DL"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1744
 msgctxt "Xbox360_XEX"
@@ -4755,22 +4755,22 @@ msgstr "CD-ROM"
 #: ../src/libromdata/Console/Xbox_XBE.cpp:768
 msgctxt "Xbox_XBE"
 msgid "DVD-ROM SL"
-msgstr ""
+msgstr "DVD-ROM SL"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:769
 msgctxt "Xbox_XBE"
 msgid "DVD-ROM DL"
-msgstr ""
+msgstr "DVD-ROM DL"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:770
 msgctxt "Xbox_XBE"
 msgid "DVD-RW SL"
-msgstr ""
+msgstr "DVD-RW SL"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:771
 msgctxt "Xbox_XBE"
 msgid "DVD-RW DL"
-msgstr ""
+msgstr "DVD-RW DL"
 
 #: ../src/libromdata/Console/Xbox_XBE.cpp:773
 msgctxt "Xbox_XBE"
@@ -4857,7 +4857,7 @@ msgstr ""
 #: ../src/libromdata/data/EXEData.cpp:87
 msgctxt "EXE|Subsystem"
 msgid "Windows"
-msgstr ""
+msgstr "Windows"
 
 #. tr: IMAGE_SUBSYSTEM_WINDOWS_CUI
 #: ../src/libromdata/data/EXEData.cpp:89
@@ -4887,7 +4887,7 @@ msgstr ""
 #: ../src/libromdata/data/EXEData.cpp:101
 msgctxt "EXE|Subsystem"
 msgid "Windows CE"
-msgstr ""
+msgstr "Windows CE"
 
 #. tr: IMAGE_SUBSYSTEM_EFI_APPLICATION
 #: ../src/libromdata/data/EXEData.cpp:103
@@ -4917,7 +4917,7 @@ msgstr ""
 #: ../src/libromdata/data/EXEData.cpp:111
 msgctxt "EXE|Subsystem"
 msgid "Xbox"
-msgstr ""
+msgstr "Xbox"
 
 #. tr: IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION
 #: ../src/libromdata/data/EXEData.cpp:115
@@ -5004,7 +5004,7 @@ msgstr ""
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:47
 msgctxt "Nintendo3DSSysTitles"
 msgid "eShop"
-msgstr ""
+msgstr "eShop"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:48
 msgctxt "Nintendo3DSSysTitles"
@@ -5117,7 +5117,7 @@ msgstr ""
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:80
 msgctxt "Nintendo3DSSysTitles"
 msgid "Miiverse"
-msgstr ""
+msgstr "Miiverse"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:81
 msgctxt "Nintendo3DSSysTitles"
@@ -5287,7 +5287,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/DMG.cpp:906
 msgctxt "DMG|Features"
 msgid "RAM"
-msgstr ""
+msgstr "RAM"
 
 #: ../src/libromdata/Handheld/DMG.cpp:907
 #: ../src/libromdata/Handheld/DMG.cpp:1106
@@ -5355,7 +5355,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/DMG.cpp:946
 msgctxt "DMG"
 msgid "512 x 4 bits"
-msgstr ""
+msgstr "512 × 4 bits"
 
 #: ../src/libromdata/Handheld/DMG.cpp:948
 msgctxt "DMG"
@@ -5527,7 +5527,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:840
 msgctxt "Nintendo3DS"
 msgid "Logo"
-msgstr ""
+msgstr "Logo"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1142
 msgctxt "Nintendo3DS"
@@ -5595,7 +5595,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1886
 msgctxt "Nintendo3DS|eMMC"
 msgid "Type"
-msgstr ""
+msgstr "Type"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:1885
 msgctxt "Nintendo3DS|eMMC"
@@ -5676,12 +5676,12 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2257
 msgctxt "Nintendo3DS|CtNames"
 msgid "#"
-msgstr ""
+msgstr "#"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2258
 msgctxt "Nintendo3DS|CtNames"
 msgid "Type"
-msgstr ""
+msgstr "Type"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2259
 msgctxt "Nintendo3DS|CtNames"
@@ -6383,12 +6383,12 @@ msgstr ""
 #: ../src/libromdata/Handheld/WonderSwan.cpp:549
 msgctxt "WonderSwan|BusWidth"
 msgid "8-bit"
-msgstr ""
+msgstr "8-bit"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:550
 msgctxt "WonderSwan|BusWidth"
 msgid "16-bit"
-msgstr ""
+msgstr "16-bit"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:553
 msgctxt "WonderSwan"
@@ -6398,12 +6398,12 @@ msgstr ""
 #: ../src/libromdata/Handheld/WonderSwan.cpp:555
 msgctxt "WonderSwan|ROMAccessSpeed"
 msgid "1 cycle"
-msgstr ""
+msgstr "1 cycle"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:556
 msgctxt "WonderSwan|ROMAccessSpeed"
 msgid "3 cycles"
-msgstr ""
+msgstr "3 cycles"
 
 #: ../src/libromdata/Other/Amiibo.cpp:382
 msgctxt "Amiibo"
@@ -7808,7 +7808,7 @@ msgstr ""
 #: ../src/libromdata/Other/MachO.cpp:495
 msgctxt "MachO"
 msgid "Format"
-msgstr ""
+msgstr "Format"
 
 #: ../src/libromdata/Other/MachO.cpp:508
 msgctxt "MachO"
@@ -7828,7 +7828,7 @@ msgstr ""
 #: ../src/libromdata/Other/NintendoBadge.cpp:658
 msgctxt "NintendoBadge"
 msgid "Type"
-msgstr ""
+msgstr "Type"
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:659
 msgctxt "NintendoBadge"
@@ -8369,7 +8369,7 @@ msgstr ""
 #: ../src/librpbase/RomFields.cpp:374
 msgctxt "RomFields|AgeRating"
 msgid "No"
-msgstr ""
+msgstr "Non"
 
 #. tr: No age restriction.
 #: ../src/librpbase/RomFields.cpp:380
@@ -10029,7 +10029,7 @@ msgstr ""
 #: ../src/win32/config/AboutTab.cpp:1339
 msgctxt "AboutTab"
 msgid "About"
-msgstr ""
+msgstr "À propos"
 
 #. tr: Tab title.
 #: ../src/win32/config/AchievementsTab.cpp:580
@@ -10128,7 +10128,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:318
 msgctxt "KeyManagerTab"
 msgid "I&mport..."
-msgstr ""
+msgstr "I&mporter…"
 
 #. tr: Tab title.
 #: ../src/win32/config/KeyManagerTab.cpp:1763
@@ -10151,7 +10151,7 @@ msgstr ""
 #: ../src/win32/OptionsMenuButton.cpp:106
 msgctxt "OptionsMenuButton"
 msgid "&Options..."
-msgstr ""
+msgstr "&Options…"
 
 #. tr: "All Files" filter (RP format)
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:496

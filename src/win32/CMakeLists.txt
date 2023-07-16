@@ -131,6 +131,7 @@ SET(${PROJECT_NAME}_RC
 	res/resource.rc
 	res/rp-de_DE.rc
 	res/rp-es_ES.rc
+	res/rp-fr_FR.rc
 	res/rp-en_US.rc
 	res/rp-pt_BR.rc
 	res/rp-ru_RU.rc
