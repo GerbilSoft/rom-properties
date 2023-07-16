@@ -38,6 +38,15 @@ SET(BUILD_GMOCK ON)
 SET(INSTALL_GTEST OFF)
 ENDIF(0) # rom-properties
 
+# rom-properties: Set CMake debug/release postfix on MSVC.
+IF(MSVC)
+  SET(CMAKE_DEBUG_POSTFIX "d")
+  SET(CMAKE_RELEASE_POSTFIX "")
+ELSE(MSVC)
+  SET(CMAKE_DEBUG_POSTFIX "")
+  SET(CMAKE_RELEASE_POSTFIX "")
+ENDIF(MSVC)
+
 if(BUILD_GMOCK)
   add_subdirectory( googlemock )
 else()
