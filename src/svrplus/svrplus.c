@@ -145,7 +145,7 @@ static RECT rectStatus1_icon;
 static void ShowStatusMessage(HWND hDlg, const TCHAR *line1, const TCHAR *line2, UINT uType)
 {
 	HICON hIcon;
-	const RECT *rect;
+	const RECT *lpRect;
 	int sw_status;
 
 	HWND const hStaticIcon = GetDlgItem(hDlg, IDC_STATIC_ICON);
@@ -179,24 +179,28 @@ static void ShowStatusMessage(HWND hDlg, const TCHAR *line1, const TCHAR *line2,
 	if (hIcon != NULL) {
 		// Show the icon.
 		sw_status = SW_SHOW;
-		rect = &rectStatus1_icon;
+		lpRect = &rectStatus1_icon;
 		Static_SetIcon(hStaticIcon, hIcon);
 	} else {
 		// Hide the icon.
 		sw_status = SW_HIDE;
-		rect = &rectStatus1_noIcon;
+		lpRect = &rectStatus1_noIcon;
 	}
 
 	// Adjust the icon and Status1 rectangle.
 	ShowWindow(hStaticIcon, sw_status);
-	SetWindowPos(hStatus1, NULL, rect->left, rect->top,
-		rect->right - rect->left, rect->bottom - rect->top,
+	SetWindowPos(hStatus1, NULL, lpRect->left, lpRect->top,
+		lpRect->right - lpRect->left, lpRect->bottom - lpRect->top,
 		SWP_NOACTIVATE | SWP_NOREDRAW | SWP_NOZORDER);
 
 	SetWindowText(hStatus1, line1);
 	SetWindowText(hStatus2, line2);
 	ShowWindow(hStatus1, SW_SHOW);
 	ShowWindow(hStatus2, SW_SHOW);
+
+	// Invalidate the full line 1 rectangle to prevent garbage from
+	// being drawn between the icon and the label.
+	InvalidateRect(hDlg, &rectStatus1_noIcon, TRUE);
 }
 
 /**
