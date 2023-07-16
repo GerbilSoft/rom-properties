@@ -7,15 +7,13 @@ FUNCTION(CHECK_GETTEXT)
 	# Gettext == compile-time tools
 	IF(WIN32)
 		# Use our own precompiled version for Windows.
-		# NOTE: DirInstallPaths sets ${arch}.
+		# NOTE: DirInstallPaths sets ${TARGET_CPU_ARCH}.
 		INCLUDE(DirInstallPaths)
 		SET(gettext_ROOT "${CMAKE_SOURCE_DIR}/extlib/gettext.win32")
-		SET(gettext_BIN "${gettext_ROOT}/bin.${arch}")
-		SET(gettext_LIB "${gettext_ROOT}/lib.${arch}")
-		IF(arch STREQUAL "amd64")
-			# Use 32-bit executables on amd64.
-			SET(gettext_BIN "${gettext_ROOT}/bin.i386")
-		ENDIF(arch STREQUAL "amd64")
+		SET(gettext_BIN "${gettext_ROOT}/bin.${TARGET_CPU_ARCH}")
+		SET(gettext_LIB "${gettext_ROOT}/lib.${TARGET_CPU_ARCH}")
+		# Use 32-bit executables on all systems.
+		SET(gettext_BIN "${gettext_ROOT}/bin.i386")
 
 		SET(Intl_INCLUDE_DIR "${gettext_ROOT}/include" CACHE INTERNAL "libintl include directory." FORCE)
 		IF(MSVC)
