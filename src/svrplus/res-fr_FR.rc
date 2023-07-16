@@ -48,7 +48,7 @@ BEGIN
 			VALUE "FileDescription", "ROM Properties Page shell extension installer"
 			VALUE "FileVersion", "svrplus "" Win32_RC_FileVersion
 			VALUE ""InternalName"", ""svrplus"
-			VALUE "LegalCopyright", "Copyright © 2017-2022 par Egor."
+			VALUE "LegalCopyright", "Copyright (c) 2017-2022 par Egor."
 			//VALUE "LegalTrademarks"
 			//VALUE "OriginalFilename"
 			//VALUE "PrivateBuild"
