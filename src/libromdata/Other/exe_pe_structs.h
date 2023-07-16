@@ -66,10 +66,10 @@ typedef enum {
 	IMAGE_FILE_MACHINE_UNKNOWN	= 0x0000,
 	IMAGE_FILE_MACHINE_I386		= 0x014C, /* Intel 386 or later processors 
 						     and compatible processors */
-	IMAGE_FILE_MACHINE_R3000_BE	= 0x0160, /* MIPS big endian */
-	IMAGE_FILE_MACHINE_R3000	= 0x0162, /* MIPS little endian */
-	IMAGE_FILE_MACHINE_R4000	= 0x0166, /* MIPS little endian */
-	IMAGE_FILE_MACHINE_R10000	= 0x0168, /* MIPS little endian */
+	IMAGE_FILE_MACHINE_R3000_BE	= 0x0160, /* MIPS big-endian */
+	IMAGE_FILE_MACHINE_R3000	= 0x0162, /* MIPS little-endian */
+	IMAGE_FILE_MACHINE_R4000	= 0x0166, /* MIPS little-endian */
+	IMAGE_FILE_MACHINE_R10000	= 0x0168, /* MIPS little-endian */
 	IMAGE_FILE_MACHINE_WCEMIPSV2	= 0x0169, /* MIPS little-endian WCE v2 */
 	IMAGE_FILE_MACHINE_ALPHA	= 0x0184, /* Alpha AXP */
 	IMAGE_FILE_MACHINE_SH3		= 0x01A2, /* Hitachi SH3 */
@@ -92,12 +92,14 @@ typedef enum {
 	IMAGE_FILE_MACHINE_MIPSFPU	= 0x0366, /* MIPS with FPU */
 	IMAGE_FILE_MACHINE_MIPSFPU16	= 0x0466, /* MIPS16 with FPU */
 	IMAGE_FILE_MACHINE_AXP64	= IMAGE_FILE_MACHINE_ALPHA64, /* Alpha AXP (64-bit) */
-	IMAGE_FILE_MACHINE_TRICORE	= 0x0520, /* Infinieon */
+	IMAGE_FILE_MACHINE_TRICORE	= 0x0520, /* Infineon TriCore */
 	IMAGE_FILE_MACHINE_CEF		= 0x0CEF, /* Common Executable Format (Windows CE) */
 	IMAGE_FILE_MACHINE_EBC		= 0x0EBC, /* EFI byte code */
 	IMAGE_FILE_MACHINE_RISCV32	= 0x5032, /* RISC-V 32-bit address space */
 	IMAGE_FILE_MACHINE_RISCV64	= 0x5064, /* RISC-V 64-bit address space */
 	IMAGE_FILE_MACHINE_RISCV128	= 0x5128, /* RISC-V 128-bit address space */
+	IMAGE_FILE_MACHINE_LOONGARCH32	= 0x6232, /* LoongArch 32-bit */
+	IMAGE_FILE_MACHINE_LOONGARCH64	= 0x6264, /* LoongArch 64-bit */
 	IMAGE_FILE_MACHINE_AMD64	= 0x8664, /* x64 */
 	IMAGE_FILE_MACHINE_M32R		= 0x9041, /* Mitsubishi M32R little endian */
 	IMAGE_FILE_MACHINE_ARM64EC	= 0xA641, /* ARM64 ("emulation-compatible") */
