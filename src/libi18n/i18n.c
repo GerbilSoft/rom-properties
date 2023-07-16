@@ -27,19 +27,20 @@
 static bool i18n_is_init = false;
 
 #ifdef _WIN32
-// Architecture name.
-// Architecture-specific subdirectory.
-#if defined(_M_IX86) || defined(__i386__)
+// Architecture name for the arch-specific subdirectory.
+#if defined(_M_ARM) || defined(__arm__) || \
+      defined(_M_ARMT) || defined(__thumb__)
+#  define ARCH_NAME _T("arm")
+#elif defined(_M_ARM64EC)
+#  define ARCH_NAME _T("arm64ec")
+#elif defined(_M_ARM64) || defined(__aarch64__)
+#  define ARCH_NAME _T("arm64")
+#elif defined(_M_IX86) || defined(__i386__)
 #  define ARCH_NAME _T("i386")
 #elif defined(_M_X64) || defined(_M_AMD64) || defined(__amd64__) || defined(__x86_64__)
 #  define ARCH_NAME _T("amd64")
 #elif defined(_M_IA64) || defined(__ia64__)
 #  define ARCH_NAME _T("ia64")
-#elif defined(_M_ARM) || defined(__arm__) || \
-      defined(_M_ARMT) || defined(__thumb__)
-#  define ARCH_NAME _T("arm")
-#elif defined(_M_ARM64) || defined(__aarch64__)
-#  define ARCH_NAME _T("arm64")
 #elif defined(__riscv) && (__riscv_xlen == 32)
 // TODO: MSVC riscv32 preprocessor macro, if one ever gets defined.
 #  define ARCH_NAME _T("riscv32")

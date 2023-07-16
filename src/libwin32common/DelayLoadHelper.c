@@ -23,17 +23,25 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 #define HINST_THISCOMPONENT ((HINSTANCE)&__ImageBase)
 
 // Architecture-specific subdirectory.
-#if defined(_M_IX86) || defined(__i386__)
+#if defined(_M_ARM) || defined(__arm__) || \
+      defined(_M_ARMT) || defined(__thumb__)
+static const TCHAR rp_subdir[] = _T("arm\\");
+#elif defined(_M_ARM64EC)
+static const TCHAR rp_subdir[] = _T("arm64ec\\");
+#elif defined(_M_ARM64) || defined(__aarch64__)
+static const TCHAR rp_subdir[] = _T("arm64\\");
+#elif defined(_M_IX86) || defined(__i386__)
 static const TCHAR rp_subdir[] = _T("i386\\");
 #elif defined(_M_X64) || defined(_M_AMD64) || defined(__amd64__) || defined(__x86_64__)
 static const TCHAR rp_subdir[] = _T("amd64\\");
 #elif defined(_M_IA64) || defined(__ia64__)
 static const TCHAR rp_subdir[] = _T("ia64\\");
-#elif defined(_M_ARM) || defined(__arm__) || \
-      defined(_M_ARMT) || defined(__thumb__)
-static const TCHAR rp_subdir[] = _T("arm\\");
-#elif defined(_M_ARM64) || defined(__aarch64__)
-static const TCHAR rp_subdir[] = _T("arm64\\");
+#elif defined(__riscv) && (__riscv_xlen == 32)
+// TODO: MSVC riscv32 preprocessor macro, if one ever gets defined.
+static const TCHAR rp_subdir[] = _T("riscv32\\");
+#elif defined(__riscv) && (__riscv_xlen == 64)
+// TODO: MSVC riscv64 preprocessor macro, if one ever gets defined.
+static const TCHAR rp_subdir[] = _T("riscv64\\");
 #else
 #  error Unsupported CPU architecture.
 #endif

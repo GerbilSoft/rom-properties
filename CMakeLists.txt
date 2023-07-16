@@ -284,11 +284,13 @@ IF(BUILD_TESTING)
 ENDIF(BUILD_TESTING)
 
 
+INCLUDE(DirInstallPaths)
 MESSAGE(STATUS "
 
 *** ROM Properties Page Shell Extension v${RP_DISPLAY_VERSION} ***
 
 Build Summary:
+- Target CPU architecture: ${TARGET_CPU_ARCH}
 - Building these UI frontends: ${UI_FRONTENDS}
 - Building command-line frontend: ${CLI_BUILD_MSG}
 - libromdata is built as: ${LIBROMDATA_LIB_TYPE}
