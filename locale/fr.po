@@ -10128,7 +10128,7 @@ msgstr ""
 #: ../src/win32/config/KeyManagerTab.cpp:318
 msgctxt "KeyManagerTab"
 msgid "I&mport..."
-msgstr "I&mporter…"
+msgstr "I&mporter..."
 
 #. tr: Tab title.
 #: ../src/win32/config/KeyManagerTab.cpp:1763
@@ -10151,7 +10151,7 @@ msgstr ""
 #: ../src/win32/OptionsMenuButton.cpp:106
 msgctxt "OptionsMenuButton"
 msgid "&Options..."
-msgstr "&Options…"
+msgstr "&Options..."
 
 #. tr: "All Files" filter (RP format)
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:496
