@@ -95,6 +95,7 @@ SET(${PROJECT_NAME}_SRCS
 	MessageWidget.c
 	RpGtk.cpp
 	sort_funcs.c
+	gtk-compat.c
 	LanguageComboBox.cpp
 	OptionsMenuButton.cpp
 	AchSpritesheet.cpp

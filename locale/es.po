@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.1+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2023-07-11 20:05-0400\n"
+"POT-Creation-Date: 2023-07-17 18:49-0400\n"
 "PO-Revision-Date: 2021-04-02 22:56-0400\n"
 "Last-Translator: Amnesia1000\n"
 "Language-Team: \n"
@@ -130,34 +130,32 @@ msgctxt "ConfigDialog"
 msgid "Abou&t"
 msgstr "Sob&re"
 
-#: ../build/src/kde/kf5/ui_DosAttrView.h:100
+#: ../build/src/kde/kf5/ui_DosAttrView.h:100 ../src/gtk/xattr/DosAttrView.c:125
 msgctxt "DosAttrView"
 msgid "&Read-only"
 msgstr ""
 
-#: ../build/src/kde/kf5/ui_DosAttrView.h:101
+#: ../build/src/kde/kf5/ui_DosAttrView.h:101 ../src/gtk/xattr/DosAttrView.c:127
 msgctxt "DosAttrView"
 msgid "&Hidden"
 msgstr ""
 
-#: ../build/src/kde/kf5/ui_DosAttrView.h:102
+#: ../build/src/kde/kf5/ui_DosAttrView.h:102 ../src/gtk/xattr/DosAttrView.c:129
 msgctxt "DosAttrView"
 msgid "&Archive"
 msgstr ""
 
-#: ../build/src/kde/kf5/ui_DosAttrView.h:103
+#: ../build/src/kde/kf5/ui_DosAttrView.h:103 ../src/gtk/xattr/DosAttrView.c:131
 msgctxt "DosAttrView"
 msgid "&System"
-msgstr ""
+msgstr "&Sistema"
 
-#: ../build/src/kde/kf5/ui_DosAttrView.h:104
-#, fuzzy
+#: ../build/src/kde/kf5/ui_DosAttrView.h:104 ../src/gtk/xattr/DosAttrView.c:153
 msgctxt "DosAttrView"
 msgid "&Compressed"
 msgstr "&Comprimido"
 
-#: ../build/src/kde/kf5/ui_DosAttrView.h:105
-#, fuzzy
+#: ../build/src/kde/kf5/ui_DosAttrView.h:105 ../src/gtk/xattr/DosAttrView.c:155
 msgctxt "DosAttrView"
 msgid "&Encrypted"
 msgstr "&Encriptado"
@@ -385,7 +383,7 @@ msgid "Name"
 msgstr "Nombre"
 
 #: ../src/gtk/AchGDBus.cpp:269 ../src/kde/AchQtDBus.cpp:299
-#: ../src/win32/AchWin32.cpp:394
+#: ../src/win32/AchWin32.cpp:392
 msgctxt "Achievements"
 msgid "Achievement Unlocked"
 msgstr "Logro Desbloqueado"
@@ -1002,7 +1000,7 @@ msgstr[1] ""
 #: ../src/gtk/gtk3/ThunarPropertyPageProvider.cpp:110
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:297
 #: ../src/kde/RomPropertiesDialogPlugin.cpp:103
-#: ../src/win32/RP_ShellPropSheetExt.cpp:2317
+#: ../src/win32/RP_ShellPropSheetExt.cpp:2310
 msgctxt "RomDataView"
 msgid "ROM Properties"
 msgstr "ROM Properties"
@@ -1011,7 +1009,7 @@ msgstr "ROM Properties"
 #. tr: Invalid date/time
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:128
 #: ../src/gtk/RomDataView.cpp:1230 ../src/kde/RomDataView.cpp:653
-#: ../src/win32/RP_ShellPropSheetExt.cpp:1226
+#: ../src/win32/RP_ShellPropSheetExt.cpp:1222
 msgctxt "RomDataView"
 msgid "Unknown"
 msgstr "DESCONOCIDO"
@@ -1019,7 +1017,7 @@ msgstr "DESCONOCIDO"
 #. tr: No age ratings data.
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:144
 #: ../src/gtk/RomDataView.cpp:1250 ../src/kde/RomDataView.cpp:730
-#: ../src/win32/RP_ShellPropSheetExt.cpp:1340
+#: ../src/win32/RP_ShellPropSheetExt.cpp:1335
 msgctxt "RomDataView"
 msgid "ERROR"
 msgstr "ERROR"
@@ -1097,7 +1095,7 @@ msgstr ""
 
 #. tr: Field description label.
 #: ../src/gtk/RomDataView.cpp:1771 ../src/kde/RomDataView.cpp:1005
-#: ../src/win32/RP_ShellPropSheetExt.cpp:1731
+#: ../src/win32/RP_ShellPropSheetExt.cpp:1724
 #, c-format
 msgctxt "RomDataView"
 msgid "%s:"
@@ -1141,39 +1139,6 @@ msgstr "Archivos JSON|*.json|application/json|Todos los archivos|*.*|-"
 msgctxt "RomData"
 msgid "All Files"
 msgstr "Todos los archivos"
-
-#: ../src/gtk/xattr/DosAttrView.c:125
-msgctxt "DosAttrView"
-msgid "Read-only"
-msgstr ""
-
-#: ../src/gtk/xattr/DosAttrView.c:127
-msgctxt "DosAttrView"
-msgid "Hidden"
-msgstr ""
-
-#: ../src/gtk/xattr/DosAttrView.c:129
-msgctxt "DosAttrView"
-msgid "Archive"
-msgstr ""
-
-#: ../src/gtk/xattr/DosAttrView.c:131
-#, fuzzy
-msgctxt "DosAttrView"
-msgid "System"
-msgstr "Sistema"
-
-#: ../src/gtk/xattr/DosAttrView.c:153
-#, fuzzy
-msgctxt "DosAttrView"
-msgid "Compressed"
-msgstr "Comprimido"
-
-#: ../src/gtk/xattr/DosAttrView.c:155
-#, fuzzy
-msgctxt "DosAttrView"
-msgid "Encrypted"
-msgstr "Encriptado"
 
 #: ../src/gtk/xattr/XAttrView.cpp:137
 msgctxt "XAttrView"
@@ -1254,7 +1219,7 @@ msgstr "ADX con Escala Exponencial"
 #: ../src/libromdata/Other/Amiibo.cpp:448 ../src/libromdata/Other/ELF.cpp:1497
 #: ../src/libromdata/Other/EXE.cpp:219
 #: ../src/libromdata/Other/EXE_manifest.cpp:219
-#: ../src/libromdata/Other/EXE_PE.cpp:642 ../src/libromdata/Other/MachO.cpp:504
+#: ../src/libromdata/Other/EXE_PE.cpp:664 ../src/libromdata/Other/MachO.cpp:504
 #: ../src/libromdata/Other/NintendoBadge.cpp:712
 #: ../src/libromdata/Other/NintendoBadge.cpp:820
 #: ../src/librpbase/TextOut_text.cpp:573
@@ -4967,79 +4932,79 @@ msgid "Microsoft Xbox 360 AES Keys"
 msgstr "Microsoft Xbox 360 AES Keys"
 
 #. tr: IMAGE_SUBSYSTEM_NATIVE
-#: ../src/libromdata/data/EXEData.cpp:85
+#: ../src/libromdata/data/EXEData.cpp:87
 msgctxt "EXE|Subsystem"
 msgid "Native"
 msgstr "Nativo"
 
 #. tr: IMAGE_SUBSYSTEM_WINDOWS_GUI
-#: ../src/libromdata/data/EXEData.cpp:87
+#: ../src/libromdata/data/EXEData.cpp:89
 msgctxt "EXE|Subsystem"
 msgid "Windows"
 msgstr "Windows"
 
 #. tr: IMAGE_SUBSYSTEM_WINDOWS_CUI
-#: ../src/libromdata/data/EXEData.cpp:89
+#: ../src/libromdata/data/EXEData.cpp:91
 msgctxt "EXE|Subsystem"
 msgid "Console"
 msgstr "Consola"
 
 #. tr: IMAGE_SUBSYSTEM_OS2_CUI
-#: ../src/libromdata/data/EXEData.cpp:93
+#: ../src/libromdata/data/EXEData.cpp:95
 msgctxt "EXE|Subsystem"
 msgid "OS/2 Console"
 msgstr "Consola OS/2"
 
 #. tr: IMAGE_SUBSYSTEM_POSIX_CUI
-#: ../src/libromdata/data/EXEData.cpp:97
+#: ../src/libromdata/data/EXEData.cpp:99
 msgctxt "EXE|Subsystem"
 msgid "POSIX Console"
 msgstr "Consola POSIX"
 
 #. tr: IMAGE_SUBSYSTEM_NATIVE_WINDOWS
-#: ../src/libromdata/data/EXEData.cpp:99
+#: ../src/libromdata/data/EXEData.cpp:101
 msgctxt "EXE|Subsystem"
 msgid "Win9x Native Driver"
 msgstr "Controlador nativo Win9x"
 
 #. tr: IMAGE_SUBSYSTEM_WINDOWS_CE_GUI
-#: ../src/libromdata/data/EXEData.cpp:101
+#: ../src/libromdata/data/EXEData.cpp:103
 msgctxt "EXE|Subsystem"
 msgid "Windows CE"
 msgstr "Windows CE"
 
 #. tr: IMAGE_SUBSYSTEM_EFI_APPLICATION
-#: ../src/libromdata/data/EXEData.cpp:103
+#: ../src/libromdata/data/EXEData.cpp:105
 msgctxt "EXE|Subsystem"
 msgid "EFI Application"
 msgstr "Aplicación EFI"
 
 #. tr: IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER
-#: ../src/libromdata/data/EXEData.cpp:105
+#: ../src/libromdata/data/EXEData.cpp:107
 msgctxt "EXE|Subsystem"
 msgid "EFI Boot Service Driver"
 msgstr "Controlador de servicio de Boot EFI"
 
 #. tr: IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER
-#: ../src/libromdata/data/EXEData.cpp:107
+#: ../src/libromdata/data/EXEData.cpp:109
 msgctxt "EXE|Subsystem"
 msgid "EFI Runtime Driver"
 msgstr "Controlador de execución EFI"
 
 #. tr: IMAGE_SUBSYSTEM_EFI_ROM
-#: ../src/libromdata/data/EXEData.cpp:109
+#: ../src/libromdata/data/EXEData.cpp:111
 msgctxt "EXE|Subsystem"
 msgid "EFI ROM Image"
 msgstr "Imagen de ROM EFI"
 
 #. tr: IMAGE_SUBSYSTEM_XBOX
-#: ../src/libromdata/data/EXEData.cpp:111
+#: ../src/libromdata/data/EXEData.cpp:113
 msgctxt "EXE|Subsystem"
 msgid "Xbox"
 msgstr "Xbox"
 
 #. tr: IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION
-#: ../src/libromdata/data/EXEData.cpp:115
+#: ../src/libromdata/data/EXEData.cpp:117
 msgctxt "EXE|Subsystem"
 msgid "Boot Application"
 msgstr ""
@@ -6707,7 +6672,7 @@ msgid "CPU"
 msgstr "CPU"
 
 #: ../src/libromdata/Other/ELF.cpp:1507 ../src/libromdata/Other/EXE.cpp:469
-#: ../src/libromdata/Other/EXE_PE.cpp:623
+#: ../src/libromdata/Other/EXE_PE.cpp:643
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (0x%04X)"
@@ -7214,7 +7179,7 @@ msgctxt "EXE"
 msgid "No stack"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE.cpp:462 ../src/libromdata/Other/EXE_PE.cpp:629
+#: ../src/libromdata/Other/EXE.cpp:462 ../src/libromdata/Other/EXE_PE.cpp:651
 msgctxt "EXE"
 msgid "CPU"
 msgstr "CPU"
@@ -7523,7 +7488,7 @@ msgid "Other Flags"
 msgstr "Otros parametros"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:434
-#: ../src/libromdata/Other/EXE_PE.cpp:695
+#: ../src/libromdata/Other/EXE_PE.cpp:717
 msgctxt "EXE"
 msgid "Timestamp"
 msgstr "Marca de tiempo"
@@ -7534,7 +7499,7 @@ msgid "Windows Version"
 msgstr "Versión de Windows"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:452
-#: ../src/libromdata/Other/EXE_PE.cpp:711
+#: ../src/libromdata/Other/EXE_PE.cpp:733
 msgctxt "EXE"
 msgid "Runtime DLL"
 msgstr "Runtime DLL"
@@ -7550,7 +7515,7 @@ msgid "Module Description"
 msgstr ""
 
 #: ../src/libromdata/Other/EXE_NE.cpp:481
-#: ../src/libromdata/Other/EXE_PE.cpp:723
+#: ../src/libromdata/Other/EXE_PE.cpp:745
 msgctxt "EXE"
 msgid "Version"
 msgstr "Versión"
@@ -7592,15 +7557,15 @@ msgstr ""
 
 #: ../src/libromdata/Other/EXE_NE.cpp:703
 #: ../src/libromdata/Other/EXE_NE.cpp:888
-#: ../src/libromdata/Other/EXE_PE.cpp:909
+#: ../src/libromdata/Other/EXE_PE.cpp:931
 msgctxt "EXE|Exports"
 msgid "Ordinal"
 msgstr ""
 
 #: ../src/libromdata/Other/EXE_NE.cpp:704
 #: ../src/libromdata/Other/EXE_NE.cpp:887
-#: ../src/libromdata/Other/EXE_PE.cpp:908
-#: ../src/libromdata/Other/EXE_PE.cpp:1131
+#: ../src/libromdata/Other/EXE_PE.cpp:930
+#: ../src/libromdata/Other/EXE_PE.cpp:1153
 msgctxt "EXE|Exports"
 msgid "Name"
 msgstr "Nombre"
@@ -7617,14 +7582,14 @@ msgstr "Atributos"
 
 #: ../src/libromdata/Other/EXE_NE.cpp:882
 #: ../src/libromdata/Other/EXE_NE.cpp:900
-#: ../src/libromdata/Other/EXE_PE.cpp:1126
-#: ../src/libromdata/Other/EXE_PE.cpp:1144
+#: ../src/libromdata/Other/EXE_PE.cpp:1148
+#: ../src/libromdata/Other/EXE_PE.cpp:1166
 msgctxt "EXE"
 msgid "Imports"
 msgstr ""
 
 #: ../src/libromdata/Other/EXE_NE.cpp:889
-#: ../src/libromdata/Other/EXE_PE.cpp:1133
+#: ../src/libromdata/Other/EXE_PE.cpp:1155
 msgctxt "EXE|Exports"
 msgid "Module"
 msgstr "Módulo"
@@ -7649,129 +7614,129 @@ msgctxt "EXE|Runtime"
 msgid "Microsoft System C++ Runtime"
 msgstr "Microsoft System C++ Runtime"
 
-#: ../src/libromdata/Other/EXE_PE.cpp:632
+#: ../src/libromdata/Other/EXE_PE.cpp:654
 msgctxt "EXE"
 msgid "OS Version"
 msgstr "Versión de SO"
 
-#: ../src/libromdata/Other/EXE_PE.cpp:651
+#: ../src/libromdata/Other/EXE_PE.cpp:673
 msgctxt "EXE"
 msgid "Subsystem"
 msgstr "Subsistema"
 
-#: ../src/libromdata/Other/EXE_PE.cpp:657
+#: ../src/libromdata/Other/EXE_PE.cpp:679
 msgctxt "EXE|PEFlags"
 msgid "Executable"
 msgstr "Executáble"
 
-#: ../src/libromdata/Other/EXE_PE.cpp:659
+#: ../src/libromdata/Other/EXE_PE.cpp:681
 msgctxt "EXE|PEFlags"
 msgid ">2GB addressing"
 msgstr "+ de 2GB de direccionamiento"
 
-#: ../src/libromdata/Other/EXE_PE.cpp:663
+#: ../src/libromdata/Other/EXE_PE.cpp:685
 msgctxt "EXE|PEFlags"
 msgid "DLL"
 msgstr "DLL"
 
-#: ../src/libromdata/Other/EXE_PE.cpp:668
+#: ../src/libromdata/Other/EXE_PE.cpp:690
 msgctxt "EXE"
 msgid "PE Flags"
 msgstr "Parametros PE"
 
-#: ../src/libromdata/Other/EXE_PE.cpp:674
+#: ../src/libromdata/Other/EXE_PE.cpp:696
 msgctxt "EXE|DLLFlags"
 msgid "High Entropy VA"
 msgstr "Valor de alta entropia"
 
-#: ../src/libromdata/Other/EXE_PE.cpp:675
+#: ../src/libromdata/Other/EXE_PE.cpp:697
 msgctxt "EXE|DLLFlags"
 msgid "Dynamic Base"
 msgstr "Base dinamica"
 
-#: ../src/libromdata/Other/EXE_PE.cpp:676
+#: ../src/libromdata/Other/EXE_PE.cpp:698
 msgctxt "EXE|DLLFlags"
 msgid "Force Integrity"
 msgstr "Forzar verificación"
 
-#: ../src/libromdata/Other/EXE_PE.cpp:677
+#: ../src/libromdata/Other/EXE_PE.cpp:699
 msgctxt "EXE|DLLFlags"
 msgid "NX Compatible"
 msgstr "Compatíble con NX"
 
-#: ../src/libromdata/Other/EXE_PE.cpp:678
+#: ../src/libromdata/Other/EXE_PE.cpp:700
 msgctxt "EXE|DLLFlags"
 msgid "No Isolation"
 msgstr "Sin isolameción"
 
-#: ../src/libromdata/Other/EXE_PE.cpp:679
+#: ../src/libromdata/Other/EXE_PE.cpp:701
 msgctxt "EXE|DLLFlags"
 msgid "No SEH"
 msgstr "Sin SEH"
 
-#: ../src/libromdata/Other/EXE_PE.cpp:680
+#: ../src/libromdata/Other/EXE_PE.cpp:702
 msgctxt "EXE|DLLFlags"
 msgid "No Bind"
 msgstr "No vinculado"
 
-#: ../src/libromdata/Other/EXE_PE.cpp:681
+#: ../src/libromdata/Other/EXE_PE.cpp:703
 msgctxt "EXE|DLLFlags"
 msgid "AppContainer"
 msgstr "AppContainer"
 
-#: ../src/libromdata/Other/EXE_PE.cpp:682
+#: ../src/libromdata/Other/EXE_PE.cpp:704
 msgctxt "EXE|DLLFlags"
 msgid "WDM Driver"
 msgstr "Controlador WDM"
 
-#: ../src/libromdata/Other/EXE_PE.cpp:683
+#: ../src/libromdata/Other/EXE_PE.cpp:705
 msgctxt "EXE|DLLFlags"
 msgid "Control Flow Guard"
 msgstr "Control de flujo de guardia"
 
-#: ../src/libromdata/Other/EXE_PE.cpp:684
+#: ../src/libromdata/Other/EXE_PE.cpp:706
 msgctxt "EXE|DLLFlags"
 msgid "TS Aware"
 msgstr "TS consciente"
 
-#: ../src/libromdata/Other/EXE_PE.cpp:688
+#: ../src/libromdata/Other/EXE_PE.cpp:710
 msgctxt "EXE"
 msgid "DLL Flags"
 msgstr "Parametro de DLL"
 
-#: ../src/libromdata/Other/EXE_PE.cpp:703
+#: ../src/libromdata/Other/EXE_PE.cpp:725
 msgctxt "EXE"
 msgid "Not set"
 msgstr "No definido(a)"
 
-#: ../src/libromdata/Other/EXE_PE.cpp:889
+#: ../src/libromdata/Other/EXE_PE.cpp:911
 msgctxt "EXE|Exports"
 msgid "None"
 msgstr "Ninguno"
 
-#: ../src/libromdata/Other/EXE_PE.cpp:904
-#: ../src/libromdata/Other/EXE_PE.cpp:923
+#: ../src/libromdata/Other/EXE_PE.cpp:926
+#: ../src/libromdata/Other/EXE_PE.cpp:945
 msgctxt "EXE"
 msgid "Exports"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_PE.cpp:910
-#: ../src/libromdata/Other/EXE_PE.cpp:1132
+#: ../src/libromdata/Other/EXE_PE.cpp:932
+#: ../src/libromdata/Other/EXE_PE.cpp:1154
 msgctxt "EXE|Exports"
 msgid "Hint"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_PE.cpp:911
+#: ../src/libromdata/Other/EXE_PE.cpp:933
 msgctxt "EXE|Exports"
 msgid "Virtual Address"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_PE.cpp:912
+#: ../src/libromdata/Other/EXE_PE.cpp:934
 msgctxt "EXE|Exports"
 msgid "File Offset"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_PE.cpp:1080
+#: ../src/libromdata/Other/EXE_PE.cpp:1102
 #, c-format
 msgctxt "EXE|Exports"
 msgid "Ordinal #%u"

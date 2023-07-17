@@ -406,4 +406,13 @@ typedef GtkComboBox OurComboBox;
 #define GET_CHK(widget) \
 	gtk_check_button_get_active(GTK_CHECK_BUTTON(widget))
 
+/** rom-properties GTK function wrappers **/
+
+/**
+ * gtk_check_button_new_with_mnemonic() wrapper that uses '&' for mnemonics.
+ * @param label Label with '&' mnemonic.
+ * @return GtkCheckButton
+ */
+GtkWidget *rp_gtk_check_button_new_with_mnemonic(const char *label);
+
 G_END_DECLS

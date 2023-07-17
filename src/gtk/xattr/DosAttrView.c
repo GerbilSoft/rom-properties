@@ -122,13 +122,13 @@ rp_dos_attr_view_init(RpDosAttrView *widget)
 	GtkWidget *const hboxDOSAttrs = rp_gtk_hbox_new(4);
 	gtk_widget_set_name(hboxDOSAttrs, "hboxDOSAttrs");
 
-	widget->chkReadOnly = gtk_check_button_new_with_label(C_("DosAttrView", "Read-only"));
+	widget->chkReadOnly = rp_gtk_check_button_new_with_mnemonic(C_("DosAttrView", "&Read-only"));
 	gtk_widget_set_name(widget->chkReadOnly, "chkReadOnly");
-	widget->chkHidden = gtk_check_button_new_with_label(C_("DosAttrView", "Hidden"));
+	widget->chkHidden = rp_gtk_check_button_new_with_mnemonic(C_("DosAttrView", "&Hidden"));
 	gtk_widget_set_name(widget->chkHidden, "chkHidden");
-	widget->chkArchive = gtk_check_button_new_with_label(C_("DosAttrView", "Archive"));
+	widget->chkArchive = rp_gtk_check_button_new_with_mnemonic(C_("DosAttrView", "&Archive"));
 	gtk_widget_set_name(widget->chkArchive, "chkArchive");
-	widget->chkSystem = gtk_check_button_new_with_label(C_("DosAttrView", "System"));
+	widget->chkSystem = rp_gtk_check_button_new_with_mnemonic(C_("DosAttrView", "&System"));
 	gtk_widget_set_name(widget->chkSystem, "chkSystem");
 
 #if GTK_CHECK_VERSION(4,0,0)
@@ -150,9 +150,9 @@ rp_dos_attr_view_init(RpDosAttrView *widget)
 	GtkWidget *const hboxNTFSAttrs = rp_gtk_hbox_new(4);
 	gtk_widget_set_name(hboxNTFSAttrs, "hboxNTFSAttrs");
 
-	widget->chkCompressed = gtk_check_button_new_with_label(C_("DosAttrView", "Compressed"));
+	widget->chkCompressed = rp_gtk_check_button_new_with_mnemonic(C_("DosAttrView", "&Compressed"));
 	gtk_widget_set_name(widget->chkReadOnly, "chkCompressed");
-	widget->chkEncrypted = gtk_check_button_new_with_label(C_("DosAttrView", "Encrypted"));
+	widget->chkEncrypted = rp_gtk_check_button_new_with_mnemonic(C_("DosAttrView", "&Encrypted"));
 	gtk_widget_set_name(widget->chkEncrypted, "chkEncrypted");
 
 #if GTK_CHECK_VERSION(4,0,0)
