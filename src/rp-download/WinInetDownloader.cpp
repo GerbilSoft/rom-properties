@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (rp-download)                      *
  * WinInetDownloader.cpp: WinInet-based file downloader.                   *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -14,11 +14,12 @@
 #include "libwin32common/w32err.hpp"
 #include "libwin32common/w32time.h"
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 using std::wstring;
 
-// Windows includes.
+// Windows includes
+#include <versionhelpers.h>
 #include <wininet.h>
 
 namespace RpDownload {
@@ -69,7 +70,7 @@ int WinInetDownloader::download(void)
 			INTERNET_FLAG_NO_AUTH |
 			INTERNET_FLAG_NO_COOKIES |
 			INTERNET_FLAG_NO_UI;
-	if (m_isWinXP) {
+	if (!IsWindowsVistaOrGreater()) {
 		// WinInet doesn't support SNI prior to Vista.
 		static const TCHAR rpdb_domain[] = _T("https://rpdb.gerbilsoft.com/");
 		if (m_url.size() >= _countof(rpdb_domain) &&

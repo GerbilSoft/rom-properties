@@ -25,12 +25,13 @@
 #include "libwin32common/sdk/windowsx_ts.h"
 #include "libwin32common/sdk/commctrl_ts.h"
 
-// Additional Windows headers.
+// Additional Windows headers
 #include <olectl.h>
 #include <shellapi.h>
 #include <shlwapi.h>
 #include <commdlg.h>
 #include <objidl.h>
+#include <versionhelpers.h>
 
 // FIXME: shlobj.h on MinGW-w64 on AppVeyor doesn't properly inline a few
 // functions when building in C mode, resulting in multiple definition errors.

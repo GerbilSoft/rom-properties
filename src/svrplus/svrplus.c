@@ -29,9 +29,10 @@
 #include "librpsecure/restrict-dll.h"
 
 // Additional Windows headers
-#include <windowsx.h>
-#include <shellapi.h>
 #include <commctrl.h>
+#include <shellapi.h>
+#include <versionhelpers.h>
+#include <windowsx.h>
 
 // Older versions of the Windows SDK might be missing some ARM systems.
 #ifndef IMAGE_FILE_MACHINE_ARM
@@ -669,8 +670,8 @@ static void InitDialog(HWND hDlg)
 	LPCTSTR s_strtbl;
 	int ls_ret;
 
-	// OS version check.
-	OSVERSIONINFO osvi;
+	// OS version check
+	// MSVC 2022 runtime requires Windows Vista or later.
 	unsigned int vcyear, vcver;
 
 	static_assert(ARRAY_SIZE(g_archs) == ARRAY_SIZE(bHasMsvcForArch), "bHasMsvcForArch[] is out of sync with g_archs[]!");
@@ -735,14 +736,12 @@ static void InitDialog(HWND hDlg)
 	SetWindowText(GetDlgItem(hDlg, IDC_STATIC_DESC), (ls_ret > 0) ? s_strtbl : _T("RES ERR"));
 
 	// MSVC 2022 runtime requires Windows Vista or later.
-	osvi.dwOSVersionInfoSize = sizeof(osvi);
-	if (GetVersionEx(&osvi) != 0 && osvi.dwMajorVersion >= 6) {
+	if (IsWindowsVistaOrGreater()) {
 		// Windows Vista or later. Use MSVC 2022.
 		vcyear = 2022;
 		vcver = 17;
 	} else {
-		// Windows XP/2003 or earlier, or GetVersionEx() failed.
-		// Use MSVC 2017.
+		// Windows XP/2003 or earlier. Use MSVC 2017.
 		vcyear = 2017;
 		vcver = 15;
 	}

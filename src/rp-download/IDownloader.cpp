@@ -32,9 +32,6 @@ IDownloader::IDownloader()
 	, m_if_modified_since(-1)
 	, m_maxSize(0)
 	, m_inProgress(false)
-#ifdef _WIN32
-	, m_isWinXP(false)
-#endif /* _WIN32 */
 {
 	createUserAgent();
 }
@@ -45,9 +42,6 @@ IDownloader::IDownloader(const TCHAR *url)
 	, m_if_modified_since(-1)
 	, m_maxSize(0)
 	, m_inProgress(false)
-#ifdef _WIN32
-	, m_isWinXP(false)
-#endif /* _WIN32 */
 {
 	createUserAgent();
 }
@@ -58,9 +52,6 @@ IDownloader::IDownloader(const tstring &url)
 	, m_if_modified_since(-1)
 	, m_maxSize(0)
 	, m_inProgress(false)
-#ifdef _WIN32
-	, m_isWinXP(false)
-#endif /* _WIN32 */
 {
 	createUserAgent();
 }
@@ -262,9 +253,6 @@ tstring IDownloader::getOSRelease(void)
 	TCHAR buf[32];
 	_sntprintf(buf, _countof(buf), _T("%lu.%lu"), osvi.dwMajorVersion, osvi.dwMinorVersion);
 	s_os_release += buf;
-
-	// Check if we're using an older (pre-Vista) version of Windows.
-	m_isWinXP = (osvi.dwMajorVersion < 6);
 
 #  ifdef _WIN64
 	s_os_release += _T("; Win64");

@@ -148,9 +148,6 @@ class IDownloader
 		std::tstring m_userAgent;	// User-Agent
 
 		bool m_inProgress;		// Set when downloading
-#ifdef _WIN32
-		bool m_isWinXP;			// Set for Windows versions older than Vista
-#endif /* _WIN32 */
 };
 
 }

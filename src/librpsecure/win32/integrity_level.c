@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpsecure/win32)                *
  * integrity_level.c: Integrity level manipulation for process tokens.     *
  *                                                                         *
- * Copyright (c) 2020-2022 by David Korth.                                 *
+ * Copyright (c) 2020-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,49 +11,19 @@
 
 #include "integrity_level.h"
 
-// C includes.
+// C includes
 #include <assert.h>
 #include <errno.h>
 #include <malloc.h>
 #include <stdlib.h>
 
-// Windows includes.
+// Windows includes
 #include <sddl.h>
 #include <tchar.h>
+#include <versionhelpers.h>
 
 // stdboolx
 #include "stdboolx.h"
-
-/**
- * Check if we're running Windows Vista or later.
- * @return True if running Vista; false if not.
- */
-static bool isRunningVista(void)
-{
-	// Are we running Windows Vista or later?
-	// NOTE: Technically not thread-safe, but the worst that will
-	// happen is two threads set isVista to the same value.
-	static bool isVista = false;
-	static bool hasCheckedVista = false;
-	OSVERSIONINFO osvi;
-
-	if (hasCheckedVista) {
-		return isVista;
-	}
-
-#ifdef _MSC_VER
-# pragma warning(push)
-# pragma warning(disable: 4996)
-#endif /* _MSC_VER */
-	// TODO: Use versionhelpers.h.
-	osvi.dwOSVersionInfoSize = sizeof(osvi);
-	isVista = (GetVersionEx(&osvi) && osvi.dwMajorVersion >= 6);
-#ifdef _MSC_VER
-# pragma warning(pop)
-#endif /* _MSC_VER */
-
-	return isVista;
-}
 
 /**
  * Adjust a token's integrity level.
@@ -144,7 +114,7 @@ HANDLE CreateIntegrityLevelToken(int level)
 	DWORD dwRet;
 
 	// Are we running Windows Vista or later?
-	if (!isRunningVista()) {
+	if (!IsWindowsVistaOrGreater()) {
 		// Not running Windows Vista or later.
 		// Can't create a low-integrity token.
 		return NULL;
@@ -210,7 +180,7 @@ int GetProcessIntegrityLevel(void)
 	DWORD dwLengthNeeded;
 
 	// Are we running Windows Vista or later?
-	if (!isRunningVista()) {
+	if (!IsWindowsVistaOrGreater()) {
 		// Not running Windows Vista or later.
 		// Can't get the integrity level.
 		return ret;
@@ -289,7 +259,7 @@ DWORD SetProcessIntegrityLevel(int level)
 	DWORD dwRet;
 
 	// Are we running Windows Vista or later?
-	if (!isRunningVista()) {
+	if (!IsWindowsVistaOrGreater()) {
 		// Not running Windows Vista or later.
 		// Can't set the process integrity level.
 		// We'll pretend everything "just works" anyway.

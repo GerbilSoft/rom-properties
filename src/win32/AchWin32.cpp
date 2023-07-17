@@ -23,10 +23,10 @@ using namespace LibRpBase;
 using LibRpFile::RpFile_windres;
 using LibRpTexture::rp_image;
 
-// ROM icon.
+// ROM icon
 #include "config/PropSheetIcon.hpp"
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
 using std::tstring;
 using std::unordered_map;
@@ -362,9 +362,7 @@ int AchWin32Private::notifyFunc(Achievements::ID id)
 	// TODO: DPI awareness.
 	const UINT dpi = rp_GetDpiForWindow(hNotifyWnd);
 	int iconSize;
-	OSVERSIONINFO osvi;
-	osvi.dwOSVersionInfoSize = sizeof(osvi);
-	if (GetVersionEx(&osvi) && osvi.dwMajorVersion >= 6) {
+	if (IsWindowsVistaOrGreater()) {
 		// Windows Vista or later. Use the large icon.
 		nid.dwInfoFlags |= NIIF_LARGE_ICON;
 		iconSize = 32;

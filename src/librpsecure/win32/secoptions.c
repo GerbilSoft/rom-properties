@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpsecure/win32)                *
  * secoptions.c: Security options for executables.                         *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,17 +11,18 @@
 
 #include "secoptions.h"
 
-// C includes.
+// C includes
 #include <assert.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-// Windows includes.
+// Windows includes
 #include <windows.h>
 #include <sdkddkver.h>
 #include <winternl.h>
 #include <tchar.h>
+#include <versionhelpers.h>
 
 #ifndef _WIN64
 
@@ -216,7 +217,6 @@ out:
  */
 int rp_secure_win32_secoptions_init(int bHighSec)
 {
-	OSVERSIONINFO osvi;
 	HMODULE hKernel32;
 	PFNHEAPSETINFORMATION pfnHeapSetInformation;
 	PFNSETDLLDIRECTORYW pfnSetDllDirectoryW;
@@ -242,25 +242,6 @@ int rp_secure_win32_secoptions_init(int bHighSec)
 		// Should never happen...
 		return GetLastError();
 	}
-
-#ifdef _MSC_VER
-# pragma warning(push)
-# pragma warning(disable: 4996)
-#endif /* _MSC_VER */
-	// GetVersionEx() should never fail...
-	osvi.dwOSVersionInfoSize = sizeof(osvi);
-	bRet = GetVersionEx(&osvi);
-	assert(bRet != 0);
-	if (!bRet) {
-		// GetVersionEx() failed somehow.
-		// Assume we're running Windows XP.
-		osvi.dwMajorVersion = 5;
-		osvi.dwMinorVersion = 1;
-		osvi.dwBuildNumber = 2600;
-	}
-#ifdef _MSC_VER
-# pragma warning(pop)
-#endif /* _MSC_VER */
 
 	/** BEGIN: Windows XP/2003 **/
 	// Remove the current directory from the DLL search path.
@@ -327,7 +308,7 @@ int rp_secure_win32_secoptions_init(int bHighSec)
 	}
 #endif /* !_WIN64 */
 
-	if (osvi.dwMajorVersion < 6) {
+	if (!IsWindowsVistaOrGreater()) {
 		// We're done here.
 		return 0;
 	}
@@ -338,9 +319,7 @@ int rp_secure_win32_secoptions_init(int bHighSec)
 	// Harden the process's integrity level policy.
 	HardenProcessIntegrityLevelPolicy();
 
-	if ((osvi.dwMajorVersion == 6 && osvi.dwMinorVersion < 2) ||
-	     osvi.dwMajorVersion < 7)
-	{
+	if (!IsWindows8OrGreater()) {
 		// We're done here.
 		return 0;
 	}

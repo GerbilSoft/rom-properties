@@ -34,10 +34,10 @@ RP_ExtractIcon_Private::RP_ExtractIcon_Private()
 	// Enable icon squaring only on Windows XP.
 	// On Windows 7 and 11, it causes the icon to look "squished"
 	// if the original image is taller than it is wide.
-	OSVERSIONINFO osvi;
-	osvi.dwOSVersionInfoSize = sizeof(osvi);
-	if (GetVersionEx(&osvi) == 0 || osvi.dwMajorVersion < 6) {
-		// GetVersionEx() failed, or we're running Windows XP.
+	if (!IsWindowsVistaOrGreater()) {
+		// Not running Windows Vista or later.
+		// This must be Windows XP or earlier.
+		// Enable icon squaring.
 		thumbnailer.setDoSquaring(true);
 	}
 }
