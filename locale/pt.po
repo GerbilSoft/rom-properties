@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-07-11 20:05-0400\n"
-"PO-Revision-Date: 2023-07-12 01:10\n"
+"PO-Revision-Date: 2023-07-17 19:58\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese, Brazilian\n"
 "Language: pt_BR\n"
@@ -80,7 +80,7 @@ msgstr ""
 #: ../src/gtk/config/CacheTab.cpp:171
 msgctxt "CacheTab"
 msgid "Clear the ROM Properties Page Download Cache"
-msgstr "Apagar a página de recebimento de cacê de rom-properties"
+msgstr "Apagar a página de recebimento de cacê de ROM Properties"
 
 #. tr: Dialog title.
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:90
@@ -112,7 +112,7 @@ msgstr ""
 #: ../src/gtk/config/ConfigDialog.cpp:242
 msgctxt "ConfigDialog"
 msgid "Thumbnail Cache"
-msgstr "Cachê de miniaturas"
+msgstr "Cachê de Miniaturas"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:95
 #: ../src/gtk/config/ConfigDialog.cpp:243
@@ -154,7 +154,7 @@ msgstr ""
 #: ../build/src/kde/kf5/ui_DosAttrView.h:105
 msgctxt "DosAttrView"
 msgid "&Encrypted"
-msgstr "&Codificado"
+msgstr "&Criptografada"
 
 #: ../build/src/kde/kf5/ui_ImageTypesTab.h:81
 #: ../src/gtk/config/ImageTypesTab.cpp:468
@@ -1106,7 +1106,7 @@ msgstr ""
 #: ../src/gtk/xattr/DosAttrView.c:155
 msgctxt "DosAttrView"
 msgid "Encrypted"
-msgstr "Codificado"
+msgstr "Criptografio"
 
 #: ../src/gtk/xattr/XAttrView.cpp:137
 msgctxt "XAttrView"
@@ -1245,7 +1245,7 @@ msgstr "Não"
 #: ../src/libromdata/Audio/ADX.cpp:318
 msgctxt "ADX"
 msgid "Encrypted"
-msgstr "Codificado"
+msgstr "Criptografado"
 
 #: ../src/libromdata/Audio/ADX.cpp:324
 msgctxt "ADX"
@@ -5511,7 +5511,7 @@ msgstr "Aluguel"
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:734
 msgctxt "Nintendo3DS"
 msgid "Encryption"
-msgstr ""
+msgstr "Criptografia"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:835
 msgctxt "Nintendo3DS|Logo"
@@ -6143,7 +6143,7 @@ msgstr "Descodificado"
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:164
 msgctxt "NintendoDS|SecureArea"
 msgid "Encrypted"
-msgstr "Codificado"
+msgstr "Criptografio"
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:222
 msgctxt "NintendoDS|RomOps"
@@ -8483,7 +8483,7 @@ msgstr ""
 #: ../src/librpfile/xattr/LinuxAttrData.h:81
 msgctxt "LinuxAttrView"
 msgid "E: encrypted"
-msgstr "E: codificado"
+msgstr "E: criptografio"
 
 #: ../src/librpfile/xattr/LinuxAttrData.h:82
 msgctxt "LinuxAttrView"
@@ -9653,7 +9653,7 @@ msgstr ""
 #: ../src/rpcli/rpcli.cpp:406
 msgctxt "rpcli"
 msgid "Verify encryption keys in keys.conf."
-msgstr "Verificar chaves de criptografia em  keys.conf."
+msgstr "Verificar chaves de criptografia em keys.conf."
 
 #: ../src/rpcli/rpcli.cpp:408
 msgctxt "rpcli"
