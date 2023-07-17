@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-07-11 20:05-0400\n"
-"PO-Revision-Date: 2023-07-17 19:58\n"
+"PO-Revision-Date: 2023-07-17 20:59\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese, Brazilian\n"
 "Language: pt_BR\n"
@@ -144,7 +144,7 @@ msgstr ""
 #: ../build/src/kde/kf5/ui_DosAttrView.h:103
 msgctxt "DosAttrView"
 msgid "&System"
-msgstr ""
+msgstr "&Sistema"
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:104
 msgctxt "DosAttrView"
