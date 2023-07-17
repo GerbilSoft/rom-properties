@@ -91,8 +91,8 @@ FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
     LTEXT           "", IDC_CACHE_DESCRIPTION, 7, 7, 437, 8, SS_LEFT, WS_EX_TRANSPARENT
     PUSHBUTTON      "Apagar Cachê de Miniaturas de Sistema", IDC_CACHE_CLEAR_SYS_THUMBS, 7, 18, 438, 28, 0, WS_EX_LEFT
-    LTEXT           "A página de rom-properties mantém seu próprio cachê de recebimentos para imagens externas. Apagá-lo forçará imagens externas a serem recebidas novamente.", IDC_STATIC, 7, 53, 437, 17, SS_LEFT, WS_EX_TRANSPARENT
-    PUSHBUTTON      "Apagar a página de recebimento de cacê de rom-properties", IDC_CACHE_CLEAR_RP_DL, 7, 73, 438, 28, 0, WS_EX_LEFT
+    LTEXT           "A página do rom-properties mantém seu próprio cachê de recebimentos de imagens externas.\nLimpar o cachê forçará as imagens externas a serem recebidas novamente.", IDC_STATIC, 7, 53, 437, 17, SS_LEFT, WS_EX_TRANSPARENT
+    PUSHBUTTON      "Apagar a página de recebimento de cacê de ROM Properties", IDC_CACHE_CLEAR_RP_DL, 7, 73, 438, 28, 0, WS_EX_LEFT
     LTEXT           "", IDC_CACHE_STATUS, 7, 210, 437, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
     CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 221, 437, 16, WS_EX_LEFT
 END
@@ -113,7 +113,7 @@ BEGIN
     EDITTEXT        IDC_CACHE_XP_PATH, 7, 46, 383, 14, NOT WS_VISIBLE | ES_AUTOHSCROLL, WS_EX_LEFT
     PUSHBUTTON      "Procurar...", IDC_CACHE_XP_BROWSE, 395, 45, 50, 15, NOT WS_VISIBLE, WS_EX_LEFT
     PUSHBUTTON      "Localizar e remover arquivos Thumbs.db", IDC_CACHE_XP_CLEAR_SYS_THUMBS, 7, 95, 438, 20, WS_DISABLED | BS_MULTILINE, WS_EX_LEFT
-    LTEXT           "A página do rom-properties mantém seu próprio cachê de recebimentos de imagens externas. Limpar o cachê forçará as imagens externas a serem recebidas novamente.", IDC_STATIC, 7, 125, 353, 20, SS_LEFT, WS_EX_TRANSPARENT
+    LTEXT           "A página do rom-properties mantém seu próprio cachê de recebimentos de imagens externas.\nLimpar o cachê forçará as imagens externas a serem recebidas novamente.", IDC_STATIC, 7, 125, 353, 20, SS_LEFT, WS_EX_TRANSPARENT
     PUSHBUTTON      "Apagar", IDC_CACHE_CLEAR_RP_DL, 363, 127, 82, 15, 0, WS_EX_LEFT
     LTEXT           "", IDC_CACHE_STATUS, 7, 210, 437, 9, NOT WS_VISIBLE | SS_LEFT, WS_EX_LEFT
     CONTROL         "", IDC_CACHE_PROGRESS, PROGRESS_CLASS, NOT WS_VISIBLE, 7, 221, 437, 16, WS_EX_LEFT

@@ -5,10 +5,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: rom-properties 2.1+\n"
+"Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-07-11 20:05-0400\n"
-"PO-Revision-Date: 2018-06-02 15:07-0300\n"
+"PO-Revision-Date: 2023-07-17 19:58\n"
 "Last-Translator: Null Magic\n"
 "Language-Team: \n"
 "Language: pt\n"
@@ -17,6 +17,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 2.0.7\n"
+"X-Crowdin-Project: rom-properties\n"
+"X-Crowdin-Project-ID: 573479\n"
+"X-Crowdin-Language: pt-BR\n"
+"X-Crowdin-File: /master/locale/rom-properties.pot\n"
+"X-Crowdin-File-ID: 5\n"
 
 #: ../build/src/kde/kf5/ui_AboutTab.h:276 ../src/gtk/config/AboutTab.cpp:288
 msgctxt "AboutTab"
@@ -77,7 +82,7 @@ msgstr ""
 #: ../build/src/kde/kf5/ui_CacheTab.h:103 ../src/gtk/config/CacheTab.cpp:171
 msgctxt "CacheTab"
 msgid "Clear the ROM Properties Page Download Cache"
-msgstr "Apagar a página de recebimento de cacê de rom-properties"
+msgstr "Apagar a página de recebimento de cacê de ROM Properties"
 
 #. tr: Dialog title.
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:90
@@ -109,7 +114,7 @@ msgstr ""
 #: ../src/gtk/config/ConfigDialog.cpp:242
 msgctxt "ConfigDialog"
 msgid "Thumbnail Cache"
-msgstr "Cachê de miniaturas"
+msgstr "Cachê de Miniaturas"
 
 #: ../build/src/kde/kf5/ui_ConfigDialog.h:95
 #: ../src/gtk/config/ConfigDialog.cpp:243
@@ -139,7 +144,6 @@ msgid "&Archive"
 msgstr ""
 
 #: ../build/src/kde/kf5/ui_DosAttrView.h:103
-#, fuzzy
 msgctxt "DosAttrView"
 msgid "&System"
 msgstr "&Sistema"
@@ -152,7 +156,7 @@ msgstr ""
 #: ../build/src/kde/kf5/ui_DosAttrView.h:105
 msgctxt "DosAttrView"
 msgid "&Encrypted"
-msgstr "&Codificado"
+msgstr "&Criptografada"
 
 #: ../build/src/kde/kf5/ui_ImageTypesTab.h:81
 #: ../src/gtk/config/ImageTypesTab.cpp:468
@@ -423,7 +427,7 @@ msgstr "Tradutores:"
 #, c-format
 msgctxt "AboutTab|Credits"
 msgid " (%s)"
-msgstr " (%s)"
+msgstr ""
 
 #. tr: Using an internal copy of a library.
 #: ../src/gtk/config/AboutTab.cpp:561 ../src/kde/config/AboutTab.cpp:279
@@ -1145,7 +1149,7 @@ msgstr ""
 #: ../src/gtk/xattr/DosAttrView.c:155
 msgctxt "DosAttrView"
 msgid "Encrypted"
-msgstr "Codificado"
+msgstr "Criptografio"
 
 #: ../src/gtk/xattr/XAttrView.cpp:137
 msgctxt "XAttrView"
@@ -1284,7 +1288,7 @@ msgstr "Não"
 #: ../src/libromdata/Audio/ADX.cpp:318
 msgctxt "ADX"
 msgid "Encrypted"
-msgstr "Codificado"
+msgstr "Criptografado"
 
 #: ../src/libromdata/Audio/ADX.cpp:324
 msgctxt "ADX"
@@ -3468,10 +3472,9 @@ msgid "Unspecified"
 msgstr ""
 
 #: ../src/libromdata/Console/NES.cpp:1366
-#, fuzzy
 msgctxt "NES|Expansion"
 msgid "NES/Famicom Controllers"
-msgstr "Controle analógico"
+msgstr ""
 
 #: ../src/libromdata/Console/NES.cpp:1367
 msgctxt "NES|Expansion"
@@ -3800,7 +3803,6 @@ msgid "Max Event Count"
 msgstr ""
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:784
-#, fuzzy
 msgctxt "PlayStationDisc"
 msgid "Version"
 msgstr "Versão"
@@ -4437,7 +4439,6 @@ msgid "%1$08X (%2$s-%3$04u)"
 msgstr ""
 
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:995
-#, fuzzy
 msgctxt "Xbox360_XEX"
 msgid "Version"
 msgstr "Versão"
@@ -4804,7 +4805,6 @@ msgctxt "Xbox_XBE"
 msgid "Title ID"
 msgstr "Código de nome"
 
-# c-format
 #: ../src/libromdata/Console/Xbox_XBE.cpp:735
 #, c-format
 msgctxt "Xbox_XBE"
@@ -5429,8 +5429,8 @@ msgstr "Desconhecido(a)"
 msgctxt "DMG"
 msgid "%1$u KiB (%2$u bank)"
 msgid_plural "%1$u KiB (%2$u banks)"
-msgstr[0] "%1$u KiB (banco %2$u)"
-msgstr[1] "%1$u KiB (%2$u banks)"
+msgstr[0] "%1$u KiB (%2$u banco)"
+msgstr[1] "%1$u KiB (%2$u bancos)"
 
 #: ../src/libromdata/Handheld/DMG.cpp:931
 #: ../src/libromdata/Handheld/DMG.cpp:958
@@ -5611,7 +5611,6 @@ msgid "Retail"
 msgstr "Aluguel"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:734
-#, fuzzy
 msgctxt "Nintendo3DS"
 msgid "Encryption"
 msgstr "Criptografia"
@@ -6159,7 +6158,7 @@ msgstr ""
 #, fuzzy
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "SD Card"
-msgstr "Cartão"
+msgstr "Cartão SD"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1250
 #, fuzzy
@@ -6173,10 +6172,9 @@ msgid "Game Card Power On"
 msgstr ""
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1252
-#, fuzzy
 msgctxt "NintendoDS|DSi_Permissions"
 msgid "Shared2 File"
-msgstr "Arquivo de gravação"
+msgstr ""
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1253
 msgctxt "NintendoDS|DSi_Permissions"
@@ -6251,7 +6249,7 @@ msgstr "Descodificado"
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:164
 msgctxt "NintendoDS|SecureArea"
 msgid "Encrypted"
-msgstr "Codificado"
+msgstr "Criptografio"
 
 #: ../src/libromdata/Handheld/NintendoDS_ops.cpp:222
 msgctxt "NintendoDS|RomOps"
@@ -6408,7 +6406,6 @@ msgid "None"
 msgstr "Nenhum"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:477
-#, fuzzy
 msgctxt "WonderSwan"
 msgid "System"
 msgstr "Sistema"
@@ -6460,10 +6457,9 @@ msgid "RTC Present"
 msgstr ""
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:537
-#, fuzzy
 msgctxt "WonderSwan"
 msgid "Features"
-msgstr "Recursos"
+msgstr ""
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:541
 msgctxt "WonderSwan"
@@ -7920,7 +7916,6 @@ msgid "Format"
 msgstr "Formato"
 
 #: ../src/libromdata/Other/MachO.cpp:508
-#, fuzzy
 msgctxt "MachO"
 msgid "CPU"
 msgstr "CPU"
@@ -8376,7 +8371,7 @@ msgstr ""
 #, fuzzy
 msgctxt "RomData|FileType"
 msgid "Resource File"
-msgstr "Arquivo de recursos"
+msgstr "Arquivo de Recursos"
 
 #. tr: FileType::Partition
 #: ../src/librpbase/RomData.cpp:607
@@ -8603,7 +8598,7 @@ msgstr ""
 #: ../src/librpfile/xattr/LinuxAttrData.h:81
 msgctxt "LinuxAttrView"
 msgid "E: encrypted"
-msgstr "E: codificado"
+msgstr "E: criptografio"
 
 #: ../src/librpfile/xattr/LinuxAttrData.h:82
 msgctxt "LinuxAttrView"
@@ -8889,7 +8884,7 @@ msgid "DX10 Format"
 msgstr "Formato DX10"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1253
-#, fuzzy, c-format
+#, c-format
 msgctxt "FileFormat"
 msgid "Unknown (0x%08X)"
 msgstr "Desconhecido (0x%08X)"
@@ -9177,10 +9172,9 @@ msgid "Value"
 msgstr "Valor"
 
 #: ../src/librptexture/fileformat/KhronosKTX2.cpp:1054
-#, fuzzy
 msgctxt "KhronosKTX2"
 msgid "Key/Value Data"
-msgstr "Dados de gravação"
+msgstr ""
 
 #: ../src/librptexture/fileformat/KhronosKTX.cpp:1036
 #: ../src/librptexture/fileformat/KhronosKTX.cpp:1045
@@ -9228,7 +9222,6 @@ msgid "Key/Value Data"
 msgstr ""
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1046
-#, fuzzy
 msgctxt "PowerVR3"
 msgid "Version"
 msgstr "Versão"
@@ -9789,13 +9782,13 @@ msgid ""
 "Usage: rpcli [-k] [-c] [-p] [-j] [-l lang] [[-x[b]N outfile]... [-a "
 "apngoutfile] filename]..."
 msgstr ""
-"Utilização: [-k] [-c] [-j] [-l lang] [[-x[b]N arquivo de saída]... [-a "
+"Utilização: [-k] [-c] [-p] [-j] [-l lang] [[-x[b]N arquivo de saída]... [-a "
 "arquivo de saída apng] nome de arquivo]..."
 
 #: ../src/rpcli/rpcli.cpp:406
 msgctxt "rpcli"
 msgid "Verify encryption keys in keys.conf."
-msgstr "Verificar chaves de criptografia em  keys.conf."
+msgstr "Verificar chaves de criptografia em keys.conf."
 
 #: ../src/rpcli/rpcli.cpp:408
 #, fuzzy
@@ -9804,7 +9797,7 @@ msgid ""
 "Usage: rpcli [-c] [-p] [-j] [-l lang] [[-x[b]N outfile]... [-a apngoutfile] "
 "filename]..."
 msgstr ""
-"Utilização: [-k] [-c] [-j] [-l lang] [[-x[b]N arquivo de saída]... [-a "
+"Utilização: [-c] [-p] [-j] [-l lang] [[-x[b]N arquivo de saída]... [-a "
 "arquivo de saída apng] nome de arquivo]..."
 
 #: ../src/rpcli/rpcli.cpp:410
@@ -9813,10 +9806,9 @@ msgid "Print system region information."
 msgstr "Mostrar informações regionais de sistema."
 
 #: ../src/rpcli/rpcli.cpp:411
-#, fuzzy
 msgctxt "rpcli"
 msgid "Print system path information."
-msgstr "Mostrar informações regionais de sistema."
+msgstr ""
 
 #: ../src/rpcli/rpcli.cpp:412
 msgctxt "rpcli"
@@ -9914,16 +9906,16 @@ msgid "Checking encryption keys: %s"
 msgstr "Verificando chaves de criptografia de '%s'..."
 
 #: ../src/rpcli/verifykeys.cpp:74
-#, fuzzy, c-format
+#, c-format
 msgctxt "rpcli"
 msgid "WARNING: Key [%d,%d] has no Key object. Skipping..."
-msgstr "AVISO: a chave %d não tem nome. Ignorando..."
+msgstr ""
 
 #: ../src/rpcli/verifykeys.cpp:80
 #, fuzzy, c-format
 msgctxt "rpcli"
 msgid "WARNING: Key [%d,%d] has no name. Skipping..."
-msgstr "AVISO: a chave %d não tem nome. Ignorando..."
+msgstr "AVISO: a chave [%d,%d] não tem nome. Ignorando..."
 
 #: ../src/rpcli/verifykeys.cpp:92
 msgctxt "rpcli|KeyVerifyStatus"
@@ -9957,18 +9949,14 @@ msgid "ERROR: %s"
 msgstr "ERRO: %s"
 
 #: ../src/rp-stub/rp-stub.c:72
-#, fuzzy
 msgctxt "rp_stub"
 msgid "Shared library stub program."
-msgstr "Biblioteca compartilhada"
+msgstr ""
 
 #: ../src/rp-stub/rp-stub.c:73
-#, fuzzy
 msgctxt "rp-stub"
 msgid "Copyright (c) 2016-2023 by David Korth."
 msgstr ""
-"Carregador de biblioteca ROM-Properties .\n"
-"Copyright (c) 2016-2023 by David Korth."
 
 #: ../src/rp-stub/rp-stub.c:75
 #, c-format
@@ -9991,7 +9979,7 @@ msgstr ""
 #, fuzzy, c-format
 msgctxt "rp-stub|Help"
 msgid "Usage: %s [-s size] source_file output_file"
-msgstr "Utilização: %s [-s tamanho] arquivo_fonte arquivo_de saída"
+msgstr "Utilização: %s [-s tamanho] arquivo_fonte arquivo_de_saída"
 
 #: ../src/rp-stub/rp-stub.c:98
 msgctxt "rp-stub|Help"
@@ -10289,7 +10277,6 @@ msgstr "&Gestor de chaves"
 
 #. tr: Tab title.
 #: ../src/win32/config/SystemsTab.cpp:389
-#, fuzzy
 msgctxt "SystemsTab"
 msgid "Systems"
 msgstr "Sistemas"
