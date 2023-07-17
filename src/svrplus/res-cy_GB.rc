@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension installer. (svrplus)                *
- * resource.rc: Win32 resource script.                                     *
+ * resource.rc: Win32 resource script. (en_US)                             *
  *                                                                         *
  * Copyright (c) 2017-2022 by Egor.                                        *
  * Copyright (c) 2017-2023 by David Korth.                                 *
@@ -10,22 +10,15 @@
 // UTF-8 encoding
 #pragma code_page(65001)
 
-// Common rom-properties resource header.
+// Common rom-properties resource header
 #include "resource.common.inc.h"
 
-// svrplus resources.
+// svrplus resources
 #include "resource.h"
-
-/** Manifest **/
-CREATEPROCESS_MANIFEST_RESOURCE_ID	RT_MANIFEST	"svrplus.exe.manifest"
 
 // TODO: The git version gets cut off on Windows 7, since it uses
 // a ListView instead of separate ListBox and Edit controls like
 // on Windows XP.
-
-// TODO: Localize!
-// - Move strings from svrplus.c into a string table.
-// - Add this .rc file to Crowdin.
 
 /** Application version **/
 LANGUAGE LANG_WELSH, SUBLANG_WELSH_UNITED_KINGDOM
