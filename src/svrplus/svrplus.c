@@ -23,6 +23,7 @@
 
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"
+#include "libwin32common/rp_versionhelpers.h"
 
 // librpsecure
 #include "librpsecure/os-secure.h"
@@ -31,7 +32,6 @@
 // Additional Windows headers
 #include <commctrl.h>
 #include <shellapi.h>
-#include <versionhelpers.h>
 #include <windowsx.h>
 
 // Older versions of the Windows SDK might be missing some ARM systems.

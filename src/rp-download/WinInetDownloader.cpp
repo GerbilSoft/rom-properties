@@ -11,6 +11,7 @@
 
 // libwin32common
 #include "libwin32common/RpWin32_sdk.h"
+#include "libwin32common/rp_versionhelpers.h"
 #include "libwin32common/w32err.hpp"
 #include "libwin32common/w32time.h"
 
@@ -19,7 +20,6 @@ using std::string;
 using std::wstring;
 
 // Windows includes
-#include <versionhelpers.h>
 #include <wininet.h>
 
 namespace RpDownload {

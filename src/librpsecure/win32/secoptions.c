@@ -22,7 +22,7 @@
 #include <sdkddkver.h>
 #include <winternl.h>
 #include <tchar.h>
-#include <versionhelpers.h>
+#include "libwin32common/rp_versionhelpers.h"
 
 #ifndef _WIN64
 

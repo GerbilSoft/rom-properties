@@ -15,6 +15,7 @@
 
 // Windows SDK defines and includes.
 #include "libwin32common/RpWin32_sdk.h"
+#include "libwin32common/rp_versionhelpers.h"
 #include <windows.h>
 
 #if _WIN32_WINNT < 0x0600
@@ -31,7 +32,6 @@
 #include <shlwapi.h>
 #include <commdlg.h>
 #include <objidl.h>
-#include <versionhelpers.h>
 
 // FIXME: shlobj.h on MinGW-w64 on AppVeyor doesn't properly inline a few
 // functions when building in C mode, resulting in multiple definition errors.

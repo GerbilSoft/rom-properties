@@ -20,7 +20,7 @@
 // Windows includes
 #include <sddl.h>
 #include <tchar.h>
-#include <versionhelpers.h>
+#include "libwin32common/rp_versionhelpers.h"
 
 // stdboolx
 #include "stdboolx.h"
