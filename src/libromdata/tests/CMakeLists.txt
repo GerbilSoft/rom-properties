@@ -57,6 +57,13 @@ DO_SPLIT_DEBUG(GcnFstTest)
 SET_WINDOWS_SUBSYSTEM(GcnFstTest CONSOLE)
 SET_WINDOWS_ENTRYPOINT(GcnFstTest wmain OFF)
 ADD_TEST(NAME GcnFstTest COMMAND GcnFstTest --gtest_brief)
+IF(NOT WIN32)
+	# Create a symlink to the fst_data directory.
+	ADD_CUSTOM_COMMAND(TARGET GcnFstTest POST_BUILD
+		COMMAND ln -sf "${CMAKE_CURRENT_SOURCE_DIR}/disc/fst_data" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/fst_data"
+		VERBATIM
+		)
+ENDIF(NOT WIN32)
 
 # ImageDecoder test
 ADD_EXECUTABLE(ImageDecoderTest img/ImageDecoderTest.cpp)
@@ -73,6 +80,13 @@ DO_SPLIT_DEBUG(ImageDecoderTest)
 SET_WINDOWS_SUBSYSTEM(ImageDecoderTest CONSOLE)
 SET_WINDOWS_ENTRYPOINT(ImageDecoderTest wmain OFF)
 ADD_TEST(NAME ImageDecoderTest COMMAND ImageDecoderTest --gtest_brief --gtest_filter=-*Benchmark*)
+IF(NOT WIN32)
+	# Create a symlink to the ImageDecoder_data directory.
+	ADD_CUSTOM_COMMAND(TARGET ImageDecoderTest POST_BUILD
+		COMMAND ln -sf "${CMAKE_CURRENT_SOURCE_DIR}/img/ImageDecoder_data" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ImageDecoder_data"
+		VERBATIM
+		)
+ENDIF(NOT WIN32)
 
 # Nintendo System ID test
 ADD_EXECUTABLE(NintendoSystemIDTest NintendoSystemIDTest.cpp)
@@ -115,4 +129,11 @@ IF(ENABLE_ZSTD)
 	SET_WINDOWS_SUBSYSTEM(RomHeaderTest CONSOLE)
 	SET_WINDOWS_ENTRYPOINT(RomHeaderTest wmain OFF)
 	ADD_TEST(NAME RomHeaderTest COMMAND RomHeaderTest --gtest_brief)
+	IF(NOT WIN32)
+		# Create a symlink to the RomHeaders directory.
+		ADD_CUSTOM_COMMAND(TARGET RomHeaderTest POST_BUILD
+			COMMAND ln -sf "${CMAKE_CURRENT_SOURCE_DIR}/RomHeaders" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RomHeaders"
+			VERBATIM
+			)
+	ENDIF(NOT WIN32)
 ENDIF(ENABLE_ZSTD)

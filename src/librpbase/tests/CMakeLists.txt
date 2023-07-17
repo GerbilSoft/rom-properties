@@ -43,6 +43,13 @@ DO_SPLIT_DEBUG(RpPngFormatTest)
 SET_WINDOWS_SUBSYSTEM(RpPngFormatTest CONSOLE)
 SET_WINDOWS_ENTRYPOINT(RpPngFormatTest wmain OFF)
 ADD_TEST(NAME RpPngFormatTest COMMAND RpPngFormatTest --gtest_brief)
+IF(NOT WIN32)
+	# Create a symlink to the png_data directory.
+	ADD_CUSTOM_COMMAND(TARGET RpPngFormatTest POST_BUILD
+		COMMAND ln -sf "${CMAKE_CURRENT_SOURCE_DIR}/img/png_data" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/png_data"
+		VERBATIM
+		)
+ENDIF(NOT WIN32)
 
 IF(ENABLE_DECRYPTION)
 	# Crypto tests
