@@ -28,6 +28,11 @@ only_commits:
     - extlib/**/*
     - src/**/*
 
+# Ignore the l10n_master branch from Crowdin.
+branches:
+  except:
+    - l10n_master
+
 # Run CMake with optional features turned off initially.
 before_build:
   - cmd: cd %APPVEYOR_BUILD_FOLDER%
