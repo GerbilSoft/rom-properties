@@ -106,12 +106,34 @@ class CreateThumbnail : public LibRomData::TCreateThumbnail<HBITMAP>
 		 */
 		bool isMetered(void) final;
 
+	public:
+		/**
+		 * Set automatic squaring of thumbnails when converting to the
+		 * native OS image class. This is needed for icons on Windows XP.
+		 *
+		 * - IExtractIcon: squared
+		 * - IExtractImage: not squared
+		 * - IThumbnailProvider: not squared
+		 *
+		 * NOTE: On Windows 7 and 11, squaring the thumbnail results in it being squished
+		 * if the original image is taller than it is wide. I have no idea why, since the
+		 * squared icon maintains the correct aspect ratio...
+		 *
+		 * For now, only set squaring on Windows XP.
+		 *
+		 * @param doSquaring New doSquaring setting.
+		 */
+		void setDoSquaring(bool doSquaring)
+		{
+			m_doSquaring = doSquaring;
+		}
+
+		inline bool doSquaring(void)
+		{
+			return m_doSquaring;
+		}
+
 	private:
-		// Enable automatic squaring of thumbnails when converting to the
-		// native OS image class. This is needed for icons.
-		// - IExtractIcon: squared
-		// - IExtractImage: not squared
-		// - IThumbnailProvider: not squared
 		bool m_doSquaring;
 };
 

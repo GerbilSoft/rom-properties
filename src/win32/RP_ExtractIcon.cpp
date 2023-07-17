@@ -30,8 +30,17 @@ const CLSID CLSID_RP_ExtractIcon =
 RP_ExtractIcon_Private::RP_ExtractIcon_Private()
 	: filename(nullptr)
 	, romData(nullptr)
-	, thumbnailer(true)	// enable automatic squaring
-{ }
+{
+	// Enable icon squaring only on Windows XP.
+	// On Windows 7 and 11, it causes the icon to look "squished"
+	// if the original image is taller than it is wide.
+	OSVERSIONINFO osvi;
+	osvi.dwOSVersionInfoSize = sizeof(osvi);
+	if (GetVersionEx(&osvi) == 0 || osvi.dwMajorVersion < 6) {
+		// GetVersionEx() failed, or we're running Windows XP.
+		thumbnailer.setDoSquaring(true);
+	}
+}
 
 RP_ExtractIcon_Private::~RP_ExtractIcon_Private()
 {

@@ -18,7 +18,13 @@
     * This was broken in v2.2.
     * Fixes #389: Gamecube Property sheet is blank
       * Reported by @Masamune3210.
-  * Windows: Don't square thumbnails for anything except icon extraction.
+  * Windows: Don't square thumbnails for anything on Windows Vista and later.
+    * On Windows XP, we'll still square the icons.
+    * Thumbnails for images that were taller than they were wide appeared
+      squished with squaring enabled, even though the generated image is
+      correct. Not sure why this is happening...
+    * Windows XP had issues with non-square icons, but Windows 7 seems to be
+      handling them without any problems.
     * Fixes #385: Ratio of ps2 longbox thumbnails looks wrong?
       * Reported by @Masamune3210.
   * KDE: Fix metadata extraction. v2.2 added JSON plugin metadata to the
