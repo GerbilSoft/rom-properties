@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-07-11 20:05-0400\n"
-"PO-Revision-Date: 2023-07-17 20:59\n"
+"PO-Revision-Date: 2023-07-17 22:04\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese, Brazilian\n"
 "Language: pt_BR\n"
@@ -984,7 +984,7 @@ msgstr ""
 #, c-format
 msgctxt "RomDataView"
 msgid "%1$s | %2$s"
-msgstr ""
+msgstr "%1$s | %2$s"
 
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:224
 msgctxt "RomDataView"
@@ -1029,7 +1029,8 @@ msgstr ""
 msgctxt "RomDataView"
 msgid "%1$s\n"
 "%2$s"
-msgstr ""
+msgstr "%1$s\n"
+"%2$s"
 
 #. tr: Field description label.
 #: ../src/gtk/RomDataView.cpp:1771 ../src/kde/RomDataView.cpp:1005
@@ -2696,7 +2697,7 @@ msgstr "Revisão"
 #, c-format
 msgctxt "Wii"
 msgid "%1$s (%2$s)"
-msgstr ""
+msgstr "%1$s (%2$s)"
 
 #: ../src/libromdata/Console/GameCube.cpp:1590
 #: ../src/libromdata/Console/SNES.cpp:1471
@@ -3729,7 +3730,7 @@ msgstr ""
 #: ../src/libromdata/Console/PlayStationDisc.cpp:784
 msgctxt "PlayStationDisc"
 msgid "Version"
-msgstr ""
+msgstr "Versão"
 
 #: ../src/libromdata/Console/PlayStationDisc.cpp:791
 msgctxt "PlayStationDisc"
@@ -5329,15 +5330,15 @@ msgstr "Desconhecido(a)"
 msgctxt "DMG"
 msgid "%1$u KiB (%2$u bank)"
 msgid_plural "%1$u KiB (%2$u banks)"
-msgstr[0] "%1$u KiB (banco %2$u)"
-msgstr[1] ""
+msgstr[0] "%1$u KiB (%2$u banco)"
+msgstr[1] "%1$u KiB (%2$u bancos)"
 
 #: ../src/libromdata/Handheld/DMG.cpp:931
 #: ../src/libromdata/Handheld/DMG.cpp:958
 #, c-format
 msgctxt "DMG"
 msgid "%u KiB"
-msgstr ""
+msgstr "%u KiB"
 
 #: ../src/libromdata/Handheld/DMG.cpp:936
 #: ../src/libromdata/Handheld/DMG.cpp:1121
@@ -5751,7 +5752,7 @@ msgstr "Modo de sist. do antigo 3DS"
 #, c-format
 msgctxt "Nintendo3DS"
 msgid "%1$s (%2$u MiB)"
-msgstr ""
+msgstr "%1$s (%2$u MiB)"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2356
 msgctxt "Nintendo3DS"
@@ -6335,7 +6336,7 @@ msgstr ""
 #, c-format
 msgctxt "WonderSwan|SaveMemory"
 msgid "%1$u bytes (%2$s)"
-msgstr ""
+msgstr "%1$u bytes (%2$s)"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:527
 msgctxt "WonderSwan|SaveMemory"
@@ -7885,7 +7886,7 @@ msgstr "%s (Novo 3DS)"
 #, c-format
 msgctxt "NintendoBadge"
 msgid "%1$s (%2$s)"
-msgstr ""
+msgstr "%1$s (%2$s)"
 
 #: ../src/libromdata/Other/NintendoBadge.cpp:771
 msgctxt "NintendoBadge"
@@ -8635,51 +8636,51 @@ msgstr ""
 msgctxt "LibRpText|FileSize"
 msgid "byte"
 msgid_plural "bytes"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "byte"
+msgstr[1] "bytes"
 
 #. tr: Kilobytes
 #: ../src/librptext/conversion.cpp:296 ../src/librptext/conversion.cpp:387
 msgctxt "LibRpText|FileSize"
 msgid "KiB"
-msgstr ""
+msgstr "KiB"
 
 #. tr: Megabytes
 #: ../src/librptext/conversion.cpp:301
 msgctxt "LibRpText|FileSize"
 msgid "MiB"
-msgstr ""
+msgstr "MiB"
 
 #. tr: Gigabytes
 #: ../src/librptext/conversion.cpp:306
 msgctxt "LibRpText|FileSize"
 msgid "GiB"
-msgstr ""
+msgstr "GiB"
 
 #. tr: Terabytes
 #: ../src/librptext/conversion.cpp:311
 msgctxt "LibRpText|FileSize"
 msgid "TiB"
-msgstr ""
+msgstr "TiB"
 
 #. tr: Petabytes
 #: ../src/librptext/conversion.cpp:316
 msgctxt "LibRpText|FileSize"
 msgid "PiB"
-msgstr ""
+msgstr "PiB"
 
 #. tr: Exabytes
 #: ../src/librptext/conversion.cpp:321
 msgctxt "LibRpText|FileSize"
 msgid "EiB"
-msgstr ""
+msgstr "EiB"
 
 #. tr: %1$s == localized value, %2$s == suffix (e.g. MiB)
 #: ../src/librptext/conversion.cpp:358 ../src/librptext/conversion.cpp:386
 #, c-format
 msgctxt "LibRpText|FileSize"
 msgid "%1$s %2$s"
-msgstr ""
+msgstr "%1$s %2$s"
 
 #. tr: Hertz (< 1,000)
 #: ../src/librptext/conversion.cpp:405
@@ -8710,7 +8711,7 @@ msgstr ""
 #, c-format
 msgctxt "LibRpText|Frequency"
 msgid "%1$s %2$s"
-msgstr ""
+msgstr "%1$s %2$s"
 
 #: ../src/librptexture/fileformat/DidjTex.cpp:500
 msgctxt "DidjTex"
@@ -8765,7 +8766,7 @@ msgstr "Formato DX10"
 #, c-format
 msgctxt "FileFormat"
 msgid "Unknown (0x%08X)"
-msgstr ""
+msgstr "Desconhecido (0x%08X)"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1259
 msgctxt "DirectDrawSurface"
@@ -9097,7 +9098,7 @@ msgstr ""
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1046
 msgctxt "PowerVR3"
 msgid "Version"
-msgstr ""
+msgstr "Versão"
 
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1053
 #: ../src/librptexture/fileformat/PowerVR3.cpp:1062
@@ -10114,7 +10115,7 @@ msgstr "&Gestor de chaves"
 #: ../src/win32/config/SystemsTab.cpp:389
 msgctxt "SystemsTab"
 msgid "Systems"
-msgstr ""
+msgstr "Sistemas"
 
 #: ../src/win32/config/UpdateChecker.cpp:166
 msgctxt "UpdateChecker"
