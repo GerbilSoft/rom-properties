@@ -11,21 +11,10 @@
 
 #include "RpWin32_sdk.h"
 
-// Newer Windows version definitions for the Windows 7 SDK
-#ifndef _WIN32_WINNT_WIN8
-#  define _WIN32_WINNT_WIN8 0x0602
-#endif
-#ifndef _WIN32_WINNT_WINBLUE
-#  define _WIN32_WINNT_WINBLUE 0x0603
-#endif
-#ifndef _WIN32_WINNT_WINTHRESHOLD
-#  define _WIN32_WINNT_WINTHRESHOLD 0x0A00
-#endif
-
 #ifdef __cplusplus
-#  define VERSIONHELPERAPI inline bool
+#define VERSIONHELPERAPI inline bool
 #else
-#  define VERSIONHELPERAPI FORCEINLINE BOOL
+#define VERSIONHELPERAPI FORCEINLINE BOOL
 #endif
 
 VERSIONHELPERAPI IsWindowsVersionOrGreater(WORD major, WORD minor, WORD servpack)
@@ -75,14 +64,22 @@ VERSIONHELPERAPI IsWindows7SP1OrGreater(void) {
 }
 
 VERSIONHELPERAPI IsWindows8OrGreater(void) {
-    return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN8), LOBYTE(_WIN32_WINNT_WIN8), 0);
+    // FIXME: _WIN32_WINNT_WIN8 is missing when building with the Windows 7 SDK.
+    // Defining it causes a lot of other things to break for some reason...
+    //return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN8), LOBYTE(_WIN32_WINNT_WIN8), 0);
+    return IsWindowsVersionOrGreater(HIBYTE(0x0602), LOBYTE(0x0602), 0);
 }
 
 VERSIONHELPERAPI IsWindows8Point1OrGreater(void) {
-    return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WINBLUE), LOBYTE(_WIN32_WINNT_WINBLUE), 0);
+    // FIXME: _WIN32_WINNT_WINBLUE is missing when building with the Windows 7 SDK.
+    // Defining it causes a lot of other things to break for some reason...
+    //return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WINBLUE), LOBYTE(_WIN32_WINNT_WINBLUE), 0);
+    return IsWindowsVersionOrGreater(HIBYTE(0x0603), LOBYTE(0x0603), 0);
 }
 
 VERSIONHELPERAPI IsWindowsThresholdOrGreater(void) {
+    // FIXME: _WIN32_WINNT_WINTHRESHOLD is missing when building with MSVC 2022 for some reason.
+    //return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WINTHRESHOLD), LOBYTE(_WIN32_WINNT_WINTHRESHOLD), 0);
     return IsWindowsVersionOrGreater(HIBYTE(0x0A00), LOBYTE(0x0A00), 0);
 }
 
