@@ -5404,12 +5404,12 @@ msgstr "Sem RAM"
 #: ../src/libromdata/Handheld/DMG.cpp:968
 msgctxt "Region|DMG"
 msgid "Japanese"
-msgstr "Japão"
+msgstr "Japonês"
 
 #: ../src/libromdata/Handheld/DMG.cpp:972
 msgctxt "Region|DMG"
 msgid "Non-Japanese"
-msgstr "Fora do Japão"
+msgstr "Não Japonês"
 
 #: ../src/libromdata/Handheld/DMG.cpp:977
 #, c-format
