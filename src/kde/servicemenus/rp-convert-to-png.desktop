@@ -13,5 +13,8 @@ Exec=rp-stub -s 0 -an %f
 Icon=image-png
 
 Name=Convert to PNG
+Name[de]=In PNG umwandeln
+Name[fr]=Convertir en PNG
+Name[ru]=Преобразовать в PNG
 
-Comment=Convert the texture file to PNG format using rom-properties
+Comment=Convert the selected texture file(s) to PNG format (rom-properties)
