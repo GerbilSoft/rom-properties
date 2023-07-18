@@ -284,18 +284,18 @@ int PlayStationEXE::loadFieldData(void)
 	if (xor_result == 0x693C && psxHeader->region_id[36] == ' ') {
 		// Check the region name.
 		if (!strncmp(&psxHeader->region_id[37], "North America area", 19)) {
-			s_region = "North America";
+			s_region = C_("Region", "North America");
 		} else if (!strncmp(&psxHeader->region_id[37], "Japan area", 11)) {
-			s_region = "Japan";
+			s_region = C_("Region", "Japan");
 		} else if (!strncmp(&psxHeader->region_id[37], "Europe area", 12)) {
-			s_region = "Europe";
+			s_region = C_("Region", "Europe");
 		}
 	}
 	const char *const s_region_title = C_("RomData", "Region");
 	if (s_region) {
 		d->fields.addField_string(s_region_title, s_region);
 	} else {
-		d->fields.addField_string(s_region_title, 
+		d->fields.addField_string(s_region_title,
 			latin1_to_utf8(psxHeader->region_id, sizeof(psxHeader->region_id)));
 	}
 
