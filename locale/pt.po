@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-07-18 10:24-0400\n"
-"PO-Revision-Date: 2023-07-18 22:45\n"
+"PO-Revision-Date: 2023-07-18 23:47\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese, Brazilian\n"
 "Language: pt_BR\n"
@@ -4095,7 +4095,7 @@ msgstr ""
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%.4s)"
-msgstr "Desconhecido(a) (%4s)"
+msgstr "Desconhecido(a) (%.4s)"
 
 #: ../src/libromdata/Console/WiiU.cpp:440
 #, c-format
@@ -5312,12 +5312,12 @@ msgstr "Sem RAM"
 #: ../src/libromdata/Handheld/DMG.cpp:968
 msgctxt "Region|DMG"
 msgid "Japanese"
-msgstr "Japão"
+msgstr "Japonês"
 
 #: ../src/libromdata/Handheld/DMG.cpp:972
 msgctxt "Region|DMG"
 msgid "Non-Japanese"
-msgstr "Fora do Japão"
+msgstr "Não Japonês"
 
 #: ../src/libromdata/Handheld/DMG.cpp:977
 #, c-format
