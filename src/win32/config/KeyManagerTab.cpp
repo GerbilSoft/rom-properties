@@ -39,6 +39,21 @@ using std::string;
 using std::wostringstream;
 using std::wstring;
 
+// KeyStoreUI::ImportFileID
+static const LPCTSTR import_menu_actions[] = {
+	_T("Wii keys.bin"),
+	_T("Wii U otp.bin"),
+	_T("3DS boot9.bin"),
+	_T("3DS aeskeydb.bin"),
+};
+
+static const uint16_t import_menu_actions_ids[] = {
+	IDM_KEYMANAGER_IMPORT_WII_KEYS_BIN,
+	IDM_KEYMANAGER_IMPORT_WIIU_OTP_BIN,
+	IDM_KEYMANAGER_IMPORT_3DS_BOOT9_BIN,
+	IDM_KEYMANAGER_IMPORT_3DS_AESKEYDB,
+};
+
 class KeyManagerTabPrivate
 {
 	public:
@@ -211,7 +226,7 @@ class KeyManagerTabPrivate
 		 * @param iret ImportReturn
 		 */
 		void showKeyImportReturnStatus(const tstring &filename,
-			const char *keyType, const KeyStoreUI::ImportReturn &iret);
+			const TCHAR *keyType, const KeyStoreUI::ImportReturn &iret);
 
 		/**
 		 * Import keys from a binary file.
@@ -654,21 +669,20 @@ INT_PTR CALLBACK KeyManagerTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 				case IDC_KEYMANAGER_IMPORT: {
 					// Show the "Import" popup menu.
 					if (!d->hMenuImport) {
-						d->hMenuImport = ITab::LoadMenu_i18n(IDR_KEYMANAGER_IMPORT);
+						d->hMenuImport = CreatePopupMenu();
+						if (!d->hMenuImport) {
+							// Unable to create the "Import" popup menu.
+							return true;
+						}
+						for (unsigned int i = 0; i < (unsigned int)ARRAY_SIZE(import_menu_actions); i++) {
+							AppendMenu(d->hMenuImport, MF_STRING, import_menu_actions_ids[i], import_menu_actions[i]);
+						}
 					}
 
-					if (!d->hMenuImport) {
-						// Unable to create the "Import" popup menu.
-						return true;
-					}
-
-					HMENU hSubMenu = GetSubMenu(d->hMenuImport, 0);
-					if (hSubMenu) {
-						RECT btnRect;
-						GetWindowRect(GetDlgItem(hDlg, IDC_KEYMANAGER_IMPORT), &btnRect);
-						TrackPopupMenu(hSubMenu, TPM_LEFTALIGN|TPM_TOPALIGN,
-							btnRect.left, btnRect.bottom, 0, hDlg, nullptr);
-					}
+					RECT btnRect;
+					GetWindowRect(GetDlgItem(hDlg, IDC_KEYMANAGER_IMPORT), &btnRect);
+					TrackPopupMenu(d->hMenuImport, TPM_LEFTALIGN|TPM_BOTTOMALIGN,
+						btnRect.left, btnRect.top, 0, hDlg, nullptr);
 					return true;
 				}
 
@@ -1422,7 +1436,7 @@ void KeyManagerTabPrivate::loadImages(void)
  */
 void KeyManagerTabPrivate::showKeyImportReturnStatus(
 	const tstring &filename,
-	const char *keyType,
+	const TCHAR *keyType,
 	const KeyStoreUI::ImportReturn &iret)
 {
 	unsigned int type = MB_ICONINFORMATION;
@@ -1499,7 +1513,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 			// tr: %1$s == filename, %2$s == type of file
 			msg = rp_stprintf_p(U82T_c(C_("KeyManagerTab",
 				"The file '%1$s' is not a valid %2$s file.")),
-				fileNoPath.c_str(), U82T_c(keyType));
+				fileNoPath.c_str(), keyType);
 			type = MB_ICONWARNING;
 			break;
 
@@ -1718,17 +1732,8 @@ void KeyManagerTabPrivate::importKeysFromBin(KeyStoreUI::ImportFileID id)
 	// Update ts_keyFileDir using the returned filename.
 	updateKeyFileDir(tfilename);
 
-	// KeyStoreUI::ImportFileID
-	static const char *const import_menu_actions[] = {
-		NOP_C_("KeyManagerTab", "Wii keys.bin"),
-		NOP_C_("KeyManagerTab", "Wii U otp.bin"),
-		NOP_C_("KeyManagerTab", "3DS boot9.bin"),
-		NOP_C_("KeyManagerTab", "3DS aeskeydb.bin"),
-	};
-
 	const KeyStoreWin32::ImportReturn iret = keyStore->importKeysFromBin(id, T2U8(tfilename).c_str());
-	showKeyImportReturnStatus(tfilename,
-		dpgettext_expr(RP_I18N_DOMAIN, "KeyManagerTab", import_menu_actions[(int)id]), iret);
+	showKeyImportReturnStatus(tfilename, import_menu_actions[(int)id], iret);
 }
 
 /** KeyManagerTab **/

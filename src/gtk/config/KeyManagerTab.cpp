@@ -27,10 +27,10 @@ using std::string;
 
 // KeyStoreUI::ImportFileID
 static const char *const import_menu_actions[] = {
-	NOP_C_("KeyManagerTab", "Wii keys.bin"),
-	NOP_C_("KeyManagerTab", "Wii U otp.bin"),
-	NOP_C_("KeyManagerTab", "3DS boot9.bin"),
-	NOP_C_("KeyManagerTab", "3DS aeskeydb.bin"),
+	"Wii keys.bin",
+	"Wii U otp.bin",
+	"3DS boot9.bin",
+	"3DS aeskeydb.bin",
 };
 
 static GQuark menuImport_id_quark;
@@ -878,8 +878,7 @@ rp_key_manager_tab_menu_action_response(GtkFileChooserDialog *fileDialog, gint r
 	KeyStoreUI *const keyStoreUI = rp_key_store_gtk_get_key_store_ui(tab->keyStore);
 	const KeyStoreUI::ImportReturn iret = keyStoreUI->importKeysFromBin(id, in_filename);
 
-	rp_key_manager_tab_show_key_import_return_status(tab, in_filename,
-		dpgettext_expr(RP_I18N_DOMAIN, "KeyManagerTab", import_menu_actions[(int)id]), iret);
+	rp_key_manager_tab_show_key_import_return_status(tab, in_filename, import_menu_actions[(int)id], iret);
 	g_free(in_filename);
 }
 

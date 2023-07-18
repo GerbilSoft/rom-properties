@@ -89,7 +89,7 @@
 #define WM_KEYSTORE_MODIFIED					(WM_USER + 0x2004)
 #define KeyStore_Modified(hWnd)					(void)SNDMSG(hWnd,WM_KEYSTORE_MODIFIED,0,0)
 
-/**** RP_ShellPropSheetExt ****/
+/**** rp-config ****/
 
 /** Configuration dialog **/
 #define IDD_CONFIG_IMAGETYPES			110
@@ -101,7 +101,7 @@
 #define IDD_CONFIG_KEYMANAGER			116
 #define IDD_CONFIG_ABOUT			117
 
-// Image type priorities.
+// Image type priorities
 #define IDC_IMAGETYPES_DESC1			40001
 #define IDC_IMAGETYPES_DESC2			40002
 #define IDC_IMAGETYPES_CREDITS			40003
@@ -150,7 +150,7 @@
 #define IDC_KEYMANAGER_IMPORT			40503
 
 // Key Manager: "Import" menu
-#define IDR_KEYMANAGER_IMPORT			30501
+//#define IDR_KEYMANAGER_IMPORT			30501
 #define IDM_KEYMANAGER_IMPORT_WII_KEYS_BIN	30502
 #define IDM_KEYMANAGER_IMPORT_WIIU_OTP_BIN	30503
 #define IDM_KEYMANAGER_IMPORT_3DS_BOOT9_BIN	30504

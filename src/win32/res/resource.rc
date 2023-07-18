@@ -114,24 +114,6 @@ FONT 8, "MS Shell Dlg", FW_NORMAL, 0, 0
 BEGIN
 END
 
-#ifdef ENABLE_DECRYPTION
-/**
- * Configuration: Key Manager ("Import" popup menu)
- * NOTE: The popup menu's title isn't seen by the user.
- */
-LANGUAGE LANG_NEUTRAL, LANG_NEUTRAL
-IDR_KEYMANAGER_IMPORT MENU
-BEGIN
-    POPUP "Import"
-    BEGIN
-        MENUITEM "Wii keys.bin", IDM_KEYMANAGER_IMPORT_WII_KEYS_BIN
-        MENUITEM "Wii U otp.bin", IDM_KEYMANAGER_IMPORT_WIIU_OTP_BIN
-        MENUITEM "3DS boot9.bin", IDM_KEYMANAGER_IMPORT_3DS_BOOT9_BIN
-        MENUITEM "3DS aeskeydb.bin", IDM_KEYMANAGER_IMPORT_3DS_AESKEYDB
-    END
-END
-#endif /* ENABLE_DECRYPTION */
-
 /**
  * XAttrView (TODO: Localize this)
  * FIXME: PROP_MED_CYDLG (215) is too small on Win7.

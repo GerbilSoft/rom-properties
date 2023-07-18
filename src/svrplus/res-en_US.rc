@@ -16,49 +16,6 @@
 // svrplus resources
 #include "resource.h"
 
-// TODO: The git version gets cut off on Windows 7, since it uses
-// a ListView instead of separate ListBox and Edit controls like
-// on Windows XP.
-
-/** Application version **/
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-VS_VERSION_INFO VERSIONINFO
-	FILEVERSION RP_VERSION_WIN32
-	PRODUCTVERSION RP_VERSION_WIN32
-	FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
-	FILEFLAGS RP_VS_FILEFLAGS
-	FILEOS VOS_NT_WINDOWS32
-	FILETYPE VFT_APP
-	FILESUBTYPE 0x0L
-BEGIN
-	BLOCK "StringFileInfo"
-	BEGIN
-		/* English (US), Unicode */
-		BLOCK "040904B0"
-		BEGIN
-			//VALUE "Comments"
-			//VALUE "CompanyName"
-			VALUE "FileDescription", "ROM Properties Page shell extension installer"
-			VALUE "FileVersion", "svrplus " Win32_RC_FileVersion
-			VALUE "InternalName", "svrplus"
-			VALUE "LegalCopyright", "Copyright (c) 2017-2022 by Egor."
-			//VALUE "LegalTrademarks"
-			//VALUE "OriginalFilename"
-			//VALUE "PrivateBuild"
-			VALUE "ProductName", "ROM Properties Page shell extension installer"
-			VALUE "ProductVersion", "svrplus " Win32_RC_FileVersion
-			//VALUE "SpecialBuild"
-		END
-	END
-	BLOCK "VarFileInfo"
-	BEGIN
-		VALUE "Translation", 0x409, 1200
-	END
-END
-
-/** Icons **/
-IDI_SVRPLUS ICON "icon.ico"
-
 /** Dialogs **/
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 IDD_SVRPLUS DIALOGEX 0, 0, 273, 157
