@@ -246,25 +246,23 @@ rp_gtk_vbox_new(gint spacing)
 #endif
 }
 
-// TODo: Find the exact version when GtkButtonBox was removed.
+// TODO: Find the exact version when GtkButtonBox was removed.
 #if !GTK_CHECK_VERSION(4,0,0)
 static inline GtkWidget*
-rp_gtk_hbutton_box_new(void)
+rp_gtk_button_box_new(GtkOrientation orientation)
 {
 #if GTK_CHECK_VERSION(2,90,1)
-	return gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
+	return gtk_button_box_new(orientation);
 #else /* GTK_CHECK_VERSION(2,90,1) */
-	return gtk_hbutton_box_new();
-#endif
-}
-
-static inline GtkWidget*
-rp_gtk_vbutton_box_new(void)
-{
-#if GTK_CHECK_VERSION(2,90,1)
-	return gtk_button_box_new(GTK_ORIENTATION_VERTICAL);
-#else /* GTK_CHECK_VERSION(2,90,1) */
-	return gtk_vbutton_box_new();
+	switch (orientation) {
+		case GTK_ORIENTATION_HORIZONTAL:
+			return gtk_hbutton_box_new();
+		case GTK_ORIENTATION_VERTICAL:
+			return gtk_vbutton_box_new();
+		default:
+			assert(!"Invalid GtkOrientation specified.");
+			return NULL;
+	}
 #endif
 }
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
