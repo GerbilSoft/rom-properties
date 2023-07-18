@@ -216,19 +216,7 @@ gtk_widget_class_get_activate_signal(GtkWidgetClass *widget_class)
 
 // Clipboard
 #if GTK_CHECK_VERSION(4,0,0)
-static inline void
-rp_gtk_main_clipboard_set_text(const char *text)
-{
-	GValue value = G_VALUE_INIT;
-	g_value_init(&value, G_TYPE_STRING);
-	g_value_set_string(&value, text);
-
-	GdkDisplay *const display = gdk_display_get_default();
-	GdkClipboard *const clipboard = gdk_display_get_clipboard(display);
-	gdk_clipboard_set_value(clipboard, &value);
-
-	g_value_unset(&value);
-}
+void rp_gtk_main_clipboard_set_text(const char *text);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 static inline void
 rp_gtk_main_clipboard_set_text(const char *text)

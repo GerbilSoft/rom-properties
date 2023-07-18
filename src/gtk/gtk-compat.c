@@ -38,6 +38,24 @@ GtkWidget *gtk_widget_get_first_child(GtkWidget *widget)
 }
 #endif /* !GTK_CHECK_VERSION(3,89,3) */
 
+/** Functions that changed in GTK 4.0.0 but are otherwise similar enough **/
+/** to GTK2/GTK3 that a simple wrapper function or macro can be used.    **/
+
+#if GTK_CHECK_VERSION(4,0,0)
+void rp_gtk_main_clipboard_set_text(const char *text)
+{
+	GValue value = G_VALUE_INIT;
+	g_value_init(&value, G_TYPE_STRING);
+	g_value_set_string(&value, text);
+
+	GdkDisplay *const display = gdk_display_get_default();
+	GdkClipboard *const clipboard = gdk_display_get_clipboard(display);
+	gdk_clipboard_set_value(clipboard, &value);
+
+	g_value_unset(&value);
+}
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+
 /** rom-properties GTK function wrappers **/
 
 /**
