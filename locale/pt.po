@@ -4167,7 +4167,7 @@ msgstr ""
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%.4s)"
-msgstr "Desconhecido(a) (%4s)"
+msgstr "Desconhecido(a) (%.4s)"
 
 #: ../src/libromdata/Console/WiiU.cpp:440
 #, c-format
