@@ -109,6 +109,7 @@ SET(${PROJECT_NAME}_SRCS
 	NautilusPropertiesModelProvider.cpp
 	NautilusPropertiesModel.cpp
 	../gtk3/NautilusMenuProvider.cpp
+	../gtk3/MenuProviderCommon.c
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_H}
@@ -119,6 +120,7 @@ SET(${PROJECT_NAME}_H
 	../gtk3/NautilusMenuProvider.hpp
 	../plugin-helper.h
 	nautilus-extension-mini.h
+	../gtk3/MenuProviderCommon.h
 	)
 
 IF(HAVE_GSOUND)

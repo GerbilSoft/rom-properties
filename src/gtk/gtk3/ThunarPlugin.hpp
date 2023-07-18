@@ -51,6 +51,7 @@ typedef const gchar* (*PFN_THUNARX_CHECK_VERSION)(guint required_major, guint re
 typedef GType (*PFN_THUNARX_FILE_INFO_GET_TYPE)(void);
 typedef gchar* (*PFN_THUNARX_FILE_INFO_GET_MIME_TYPE)(ThunarxFileInfo *file_info);
 typedef gchar* (*PFN_THUNARX_FILE_INFO_GET_URI)(ThunarxFileInfo *file);
+typedef gchar* (*PFN_THUNARX_FILE_INFO_GET_URI_SCHEME)(ThunarxFileInfo *file);
 typedef GList* (*PFN_THUNARX_FILE_INFO_LIST_COPY)(GList *file_infos);
 typedef void (*PFN_THUNARX_FILE_INFO_LIST_FREE)(GList *file_infos);
 
@@ -69,6 +70,7 @@ extern PFN_THUNARX_CHECK_VERSION pfn_thunarx_check_version;
 extern PFN_THUNARX_FILE_INFO_GET_TYPE pfn_thunarx_file_info_get_type;
 extern PFN_THUNARX_FILE_INFO_GET_MIME_TYPE pfn_thunarx_file_info_get_mime_type;
 extern PFN_THUNARX_FILE_INFO_GET_URI pfn_thunarx_file_info_get_uri;
+extern PFN_THUNARX_FILE_INFO_GET_URI_SCHEME pfn_thunarx_file_info_get_uri_scheme;
 extern PFN_THUNARX_FILE_INFO_LIST_COPY pfn_thunarx_file_info_list_copy;
 extern PFN_THUNARX_FILE_INFO_LIST_FREE pfn_thunarx_file_info_list_free;
 #if GTK_CHECK_VERSION(3,0,0)
@@ -85,6 +87,7 @@ extern PFN_THUNARX_PROPERTY_PAGE_NEW pfn_thunarx_property_page_new;
 #define thunarx_file_info_get_type()				(pfn_thunarx_file_info_get_type ())
 #define thunarx_file_info_get_mime_type(file_info)		(pfn_thunarx_file_info_get_mime_type(file_info))
 #define thunarx_file_info_get_uri(file)				(pfn_thunarx_file_info_get_uri(file))
+#define thunarx_file_info_get_uri_scheme(file)			(pfn_thunarx_file_info_get_uri_scheme(file))
 #define thunarx_file_info_list_copy(file_infos)			(pfn_thunarx_file_info_list_copy(file_infos))
 #define thunarx_file_info_list_free(file_infos)			(pfn_thunarx_file_info_list_free(file_infos))
 #if GTK_CHECK_VERSION(3,0,0)

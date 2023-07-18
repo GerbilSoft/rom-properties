@@ -10,9 +10,7 @@
 
 #include "stdafx.h"
 #include "ThunarMenuProvider.hpp"
-
-#include "CreateThumbnail.hpp"
-#include "img/TCreateThumbnail.hpp"
+#include "MenuProviderCommon.h"
 
 // thunarx.h mini replacement
 #include "thunarx-mini.h"
@@ -91,35 +89,6 @@ rp_thunar_menu_provider_page_provider_init(ThunarxMenuProviderIface *iface)
 	iface->get_file_menu_items = rp_thunar_menu_provider_get_file_menu_items;
 }
 
-static bool
-is_file_uri(const gchar *uri)
-{
-	bool ret = false;
-	if (G_UNLIKELY(!uri))
-		return ret;
-
-	gchar *const scheme = g_uri_parse_scheme(uri);
-	if (!g_ascii_strcasecmp(scheme, "file")) {
-		// It's file:// protocol!
-		ret = true;
-	}
-
-	g_free(scheme);
-	return ret;
-}
-
-static bool
-is_file_uri(ThunarxFileInfo *file_info)
-{
-	gchar *const uri = thunarx_file_info_get_uri(file_info);
-	if (G_UNLIKELY(!uri))
-		return false;
-
-	const bool ret = is_file_uri(uri);
-	g_free(uri);
-	return ret;
-}
-
 static gpointer
 rp_item_convert_to_png_ThreadFunc(GList *files)
 {
@@ -128,54 +97,10 @@ rp_item_convert_to_png_ThreadFunc(GList *files)
 		if (G_UNLIKELY(!source_uri))
 			continue;
 
-		// FIXME: We don't support writing to non-local files right now.
-		// Only allow file:// protocol.
-		if (!is_file_uri(source_uri)) {
-			// Not file:// protocol.
-			g_free(source_uri);
-			continue;
-		}
+		// TODO: Check for errors.
+		rp_menu_provider_convert_to_png(source_uri);
 
-		// Create the output filename based on the input filename.
-		const size_t source_len = strlen(source_uri);
-		if (source_len < 8) {
-			// Doesn't have "file://".
-			g_free(source_uri);
-			continue;
-		}
-		// Skip the "file://" portion.
-		// NOTE: Needs to be urldecoded.
-		const size_t output_len_esc = source_len - 7 + 16;
-		gchar *output_file_esc = static_cast<gchar*>(g_malloc(output_len_esc));
-		g_strlcpy(output_file_esc, &source_uri[7], output_len_esc);
-
-		// Find the current extension and replace it.
-		gchar *const dotpos = strrchr(output_file_esc, '.');
-		if (!dotpos) {
-			// No file extension. Add it.
-			g_strlcat(output_file_esc, ".png", output_len_esc);
-		} else {
-			// If the dot is after the last slash, we already have a file extension.
-			// Otherwise, we don't have one, and need to add it.
-			gchar *const slashpos = strrchr(output_file_esc, DIR_SEP_CHR);
-			if (slashpos < dotpos) {
-				// We already have a file extension.
-				strcpy(dotpos, ".png");
-			} else {
-				// No file extension.
-				g_strlcat(output_file_esc, ".png", output_len_esc);
-			}
-		}
-
-		// Unescape the URI.
-		gchar *const output_file = g_uri_unescape_string(output_file_esc, nullptr);
-
-		// Convert the file using rp_create_thumbnail2().
-		// TODO: Check for errors?
-		rp_create_thumbnail2(source_uri, output_file, 0, RPCT_FLAG_NO_XDG_THUMBNAIL_METADATA);
 		g_free(source_uri);
-		g_free(output_file_esc);
-		g_free(output_file);
 	}
 
 	thunarx_file_info_list_free(files);
@@ -219,7 +144,10 @@ rp_thunar_menu_provider_get_file_menu_items(ThunarxMenuProvider *provider, GtkWi
 
 		// FIXME: We don't support writing to non-local files right now.
 		// Only allow file:// protocol.
-		if (!is_file_uri(file_info)) {
+		gchar *const scheme = thunarx_file_info_get_uri_scheme(file_info);
+		const bool is_file = (scheme && g_ascii_strcasecmp(scheme, "file") != 0);
+		g_free(scheme);
+		if (!is_file) {
 			// Not file:// protocol.
 			continue;
 		}

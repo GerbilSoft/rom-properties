@@ -23,7 +23,6 @@ G_BEGIN_DECLS
  * @param flags Flags (see RpCreateThumbnailFlags)
  * @return 0 on success; non-zero on error.
  */
-extern "C"
 G_MODULE_EXPORT int RP_C_API rp_create_thumbnail2(const char *source_file, const char *output_file, int maximum_size, unsigned int flags);
 
 G_END_DECLS

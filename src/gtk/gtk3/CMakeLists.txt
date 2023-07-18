@@ -117,6 +117,7 @@ SET(${PROJECT_NAME}_SRCS
 	ThunarPlugin.cpp
 	ThunarPropertyPageProvider.cpp
 	ThunarMenuProvider.cpp
+	MenuProviderCommon.c
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_H}
@@ -130,6 +131,7 @@ SET(${PROJECT_NAME}_H
 	thunarx-mini.h
 	nautilus-extension-mini.h
 	mime-types.convert-to-png.h
+	MenuProviderCommon.h
 	)
 
 IF(HAVE_GSOUND OR (HAVE_LIBCANBERRA AND HAVE_LIBCANBERRA_GTK3))

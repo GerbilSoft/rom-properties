@@ -43,6 +43,7 @@ typedef struct _NautilusPropertyPage NautilusPropertyPage;
 typedef GType (*PFN_NAUTILUS_FILE_INFO_GET_TYPE)(void);
 typedef gchar* (*PFN_NAUTILUS_FILE_INFO_GET_MIME_TYPE)(NautilusFileInfo *file_info);
 typedef char* (*PFN_NAUTILUS_FILE_INFO_GET_URI)(NautilusFileInfo *file);
+typedef char* (*PFN_NAUTILUS_FILE_INFO_GET_URI_SCHEME)(NautilusFileInfo *file);
 typedef GList* (*PFN_NAUTILUS_FILE_INFO_LIST_COPY)(GList *files);
 typedef void (*PFN_NAUTILUS_FILE_INFO_LIST_FREE)(GList *files);
 
@@ -58,6 +59,7 @@ typedef NautilusPropertyPage* (*PFN_NAUTILUS_PROPERTY_PAGE_NEW)(const char *name
 extern PFN_NAUTILUS_FILE_INFO_GET_TYPE			pfn_nautilus_file_info_get_type;
 extern PFN_NAUTILUS_FILE_INFO_GET_MIME_TYPE		pfn_nautilus_file_info_get_mime_type;
 extern PFN_NAUTILUS_FILE_INFO_GET_URI			pfn_nautilus_file_info_get_uri;
+extern PFN_NAUTILUS_FILE_INFO_GET_URI_SCHEME		pfn_nautilus_file_info_get_uri_scheme;
 extern PFN_NAUTILUS_FILE_INFO_LIST_COPY			pfn_nautilus_file_info_list_copy;
 extern PFN_NAUTILUS_FILE_INFO_LIST_FREE			pfn_nautilus_file_info_list_free;
 extern PFN_NAUTILUS_MENU_ITEM_GET_TYPE			pfn_nautilus_menu_item_get_type;
@@ -70,6 +72,7 @@ extern PFN_NAUTILUS_PROPERTY_PAGE_NEW			pfn_nautilus_property_page_new;
 #define nautilus_file_info_get_type()			(pfn_nautilus_file_info_get_type ())
 #define nautilus_file_info_get_mime_type(file_info)	(pfn_nautilus_file_info_get_mime_type(file_info))
 #define nautilus_file_info_get_uri(file)		(pfn_nautilus_file_info_get_uri(file))
+#define nautilus_file_info_get_uri_scheme(file)		(pfn_nautilus_file_info_get_uri_scheme(file))
 #define nautilus_file_info_list_copy(files)		(pfn_nautilus_file_info_list_copy(files))
 #define nautilus_file_info_list_free(files)		(pfn_nautilus_file_info_list_free(files))
 #define nautilus_menu_item_get_type()			(pfn_nautilus_menu_item_get_type ())

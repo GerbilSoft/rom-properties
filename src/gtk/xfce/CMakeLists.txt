@@ -93,6 +93,7 @@ SET(${PROJECT_NAME}_SRCS
 	../gtk3/ThunarPlugin.cpp
 	../gtk3/ThunarMenuProvider.cpp
 	../gtk3/ThunarPropertyPageProvider.cpp
+	../gtk3/MenuProviderCommon.c
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_H}
@@ -101,6 +102,7 @@ SET(${PROJECT_NAME}_H
 	../gtk3/RpThunarPropertyPageProvider.hpp
 	../gtk3/plugin-helper.h
 	../gtk3/thunarx-mini.h
+	../gtk3/MenuProviderCommon.h
 	)
 
 IF(HAVE_GSOUND OR (HAVE_LIBCANBERRA AND HAVE_LIBCANBERRA_GTK2))
