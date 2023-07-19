@@ -815,8 +815,8 @@ msgstr "Nenhuma chave foi importada de '%s'."
 msgctxt "KeyManagerTab"
 msgid "%1$s key was imported from '%2$s'."
 msgid_plural "%1$s keys were imported from '%2$s'."
-msgstr[0] "A chave %1$s foi importada de '%2$s'."
-msgstr[1] "As chaves %1$s foram importadas de '%2$s'."
+msgstr[0] "%1$s chave foi importada de '%2$s'."
+msgstr[1] "%1$s chaves foram importadas de '%2$s'."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:775
 #: ../src/kde/config/KeyManagerTab.cpp:239
@@ -825,8 +825,8 @@ msgstr[1] "As chaves %1$s foram importadas de '%2$s'."
 msgctxt "KeyManagerTab"
 msgid "%s key already exists in the Key Manager."
 msgid_plural "%s keys already exist in the Key Manager."
-msgstr[0] "A chave %s já existe no Gestor de Chaves."
-msgstr[1] "As chaves %s já existem no Gestor de Chaves."
+msgstr[0] "%s chave já existe no Gestor de Chaves."
+msgstr[1] "%s chaves já existem no Gestor de Chaves."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:784
 #: ../src/kde/config/KeyManagerTab.cpp:248
@@ -835,8 +835,8 @@ msgstr[1] "As chaves %s já existem no Gestor de Chaves."
 msgctxt "KeyManagerTab"
 msgid "%s key was not imported because it is incorrect."
 msgid_plural "%s keys were not imported because they are incorrect."
-msgstr[0] "Chave %s não importada porque está incorreta."
-msgstr[1] "Chaves %s não importadas porque estão incorretas."
+msgstr[0] "%s chave não importada porque está incorreta."
+msgstr[1] "%s chaves não importadas porque estão incorretas."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:793
 #: ../src/kde/config/KeyManagerTab.cpp:257
@@ -846,9 +846,9 @@ msgctxt "KeyManagerTab"
 msgid "%s key was not imported because it isn't used by rom-properties."
 msgid_plural ""
 "%s keys were not imported because they aren't used by rom-properties."
-msgstr[0] "Chave %s não importada porque não é utilizada por rom-properties."
+msgstr[0] "%s chave não importada porque não é utilizada por ROM Properties."
 msgstr[1] ""
-"Chaves %s não importadas porque não são utilizadas por rom-properties."
+"%s chaves não importadas porque não são utilizadas por ROM Properties."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:802
 #: ../src/kde/config/KeyManagerTab.cpp:266
@@ -862,10 +862,10 @@ msgid_plural ""
 "%s keys were not imported because they are encrypted and the master key "
 "isn't available."
 msgstr[0] ""
-"Chave %s não importada porque está codificada e chave-mestra não está "
+"%s chave não importada porque está codificada e chave-mestra não está "
 "disponível."
 msgstr[1] ""
-"Chaves %s não importadas porque estão codificadas e chaves-mestras não estão "
+"%s chaves não importadas porque estão codificadas e chaves-mestras não estão "
 "disponíveis."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:811
