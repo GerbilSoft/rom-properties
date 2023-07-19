@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-07-18 10:24-0400\n"
-"PO-Revision-Date: 2023-07-19 01:14\n"
+"PO-Revision-Date: 2023-07-19 03:11\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese, Brazilian\n"
 "Language: pt_BR\n"
@@ -8803,32 +8803,32 @@ msgstr ""
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1334
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+X"
-msgstr ""
+msgstr "+X"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1335
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "-X"
-msgstr ""
+msgstr "-X"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1337
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+Y"
-msgstr ""
+msgstr "+Y"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1338
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "-Y"
-msgstr ""
+msgstr "-Y"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1339
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "+Z"
-msgstr ""
+msgstr "+Z"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1340
 msgctxt "DirectDrawSurface|dwCaps2"
 msgid "-Z"
-msgstr ""
+msgstr "-Z"
 
 #: ../src/librptexture/fileformat/DirectDrawSurface.cpp:1345
 msgctxt "DirectDrawSurface|dwCaps2"
