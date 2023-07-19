@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-07-18 10:24-0400\n"
-"PO-Revision-Date: 2023-07-18 23:47\n"
+"PO-Revision-Date: 2023-07-19 01:14\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese, Brazilian\n"
 "Language: pt_BR\n"
@@ -792,8 +792,8 @@ msgstr "Nenhuma chave foi importada de '%s'."
 msgctxt "KeyManagerTab"
 msgid "%1$s key was imported from '%2$s'."
 msgid_plural "%1$s keys were imported from '%2$s'."
-msgstr[0] "A chave %1$s  foi importada de '%2$s'."
-msgstr[1] "As chaves %1$s  foram importadas de '%2$s'."
+msgstr[0] "%1$s chave foi importada de '%2$s'."
+msgstr[1] "%1$s chaves foram importadas de '%2$s'."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:775
 #: ../src/kde/config/KeyManagerTab.cpp:239
@@ -802,8 +802,8 @@ msgstr[1] "As chaves %1$s  foram importadas de '%2$s'."
 msgctxt "KeyManagerTab"
 msgid "%s key already exists in the Key Manager."
 msgid_plural "%s keys already exist in the Key Manager."
-msgstr[0] "A chave %s   já existe no Gestor de Chaves."
-msgstr[1] "As chaves %s   já existem no Gestor de Chaves."
+msgstr[0] "%s chave já existe no Gestor de Chaves."
+msgstr[1] "%s chaves já existem no Gestor de Chaves."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:784
 #: ../src/kde/config/KeyManagerTab.cpp:248
@@ -812,8 +812,8 @@ msgstr[1] "As chaves %s   já existem no Gestor de Chaves."
 msgctxt "KeyManagerTab"
 msgid "%s key was not imported because it is incorrect."
 msgid_plural "%s keys were not imported because they are incorrect."
-msgstr[0] "Chave %s não importada porque está incorreta."
-msgstr[1] "Chaves %s não importadas porque estão incorretas."
+msgstr[0] "%s chave não importada porque está incorreta."
+msgstr[1] "%s chaves não importadas porque estão incorretas."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:793
 #: ../src/kde/config/KeyManagerTab.cpp:257
@@ -822,8 +822,8 @@ msgstr[1] "Chaves %s não importadas porque estão incorretas."
 msgctxt "KeyManagerTab"
 msgid "%s key was not imported because it isn't used by rom-properties."
 msgid_plural "%s keys were not imported because they aren't used by rom-properties."
-msgstr[0] "Chave %s não importada porque não é utilizada por rom-properties."
-msgstr[1] "Chaves %s não importadas porque não são utilizadas por rom-properties."
+msgstr[0] "%s chave não importada porque não é utilizada por ROM Properties."
+msgstr[1] "%s chaves não importadas porque não são utilizadas por ROM Properties."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:802
 #: ../src/kde/config/KeyManagerTab.cpp:266
@@ -832,8 +832,8 @@ msgstr[1] "Chaves %s não importadas porque não são utilizadas por rom-propert
 msgctxt "KeyManagerTab"
 msgid "%s key was not imported because it is encrypted and the master key isn't available."
 msgid_plural "%s keys were not imported because they are encrypted and the master key isn't available."
-msgstr[0] "Chave %s não importada porque está codificada e chave-mestra não está disponível."
-msgstr[1] "Chaves %s não importadas porque estão codificadas e chaves-mestras não estão disponíveis."
+msgstr[0] "%s chave não importada porque está codificada e chave-mestra não está disponível."
+msgstr[1] "%s chaves não importadas porque estão codificadas e chaves-mestras não estão disponíveis."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:811
 #: ../src/kde/config/KeyManagerTab.cpp:275
@@ -842,8 +842,8 @@ msgstr[1] "Chaves %s não importadas porque estão codificadas e chaves-mestras 
 msgctxt "KeyManagerTab"
 msgid "%s key has been imported and verified as correct."
 msgid_plural "%s keys have been imported and verified as correct."
-msgstr[0] "Chave %s importada e validada."
-msgstr[1] "Chaves %s importadas e validadas."
+msgstr[0] "%s chave importada e validada."
+msgstr[1] "%s chaves importadas e validadas."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:819
 #: ../src/kde/config/KeyManagerTab.cpp:283
@@ -852,8 +852,8 @@ msgstr[1] "Chaves %s importadas e validadas."
 msgctxt "KeyManagerTab"
 msgid "%s key has been imported without verification."
 msgid_plural "%s keys have been imported without verification."
-msgstr[0] "Chave %s foi importada sem validação."
-msgstr[1] "Chaves %s foram importadas sem validação."
+msgstr[0] "%s chave foi importada sem validação."
+msgstr[1] "%s chaves foram importadas sem validação."
 
 #: ../src/gtk/config/OptionsTab.cpp:124
 msgctxt "OptionsTab"
@@ -9864,7 +9864,7 @@ msgstr ""
 #, c-format
 msgctxt "rp-stub"
 msgid "Try '%s --help' for more information."
-msgstr "Digite '%s --help'  para mais informações."
+msgstr "Digite '%s --help' para mais informações."
 
 #: ../src/rp-stub/rp-stub.c:242
 #, c-format
