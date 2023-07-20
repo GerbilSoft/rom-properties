@@ -1,5 +1,5 @@
 # AppVeyor configuration file.
-version: '2.1.0.{build}'
+version: '2.2.0.{build}'
 
 # Build worker image (VM template)
 image:
@@ -27,6 +27,11 @@ only_commits:
     - '**/*.sh'
     - extlib/**/*
     - src/**/*
+
+# Ignore the l10n_master branch from Crowdin.
+branches:
+  except:
+    - l10n_master
 
 # Run CMake with optional features turned off initially.
 before_build:
