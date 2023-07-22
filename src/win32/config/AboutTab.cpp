@@ -47,7 +47,9 @@ using std::u16string;
 #endif
 // Uncomment to enable use of RichEdit 4.1 if available.
 // Reference: https://docs.microsoft.com/en-us/archive/blogs/murrays/richedit-colors
-#define MSFTEDIT_USE_41 1
+#ifdef UNICODE
+#  define MSFTEDIT_USE_41 1
+#endif /* UNICODE */
 
 // Other libraries.
 #ifdef HAVE_ZLIB

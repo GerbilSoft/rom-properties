@@ -17,9 +17,9 @@ using namespace LibRpFile;
 using LibRpTexture::rp_image;
 using LibRomData::RomDataFactory;
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
-using std::tstring;
+using std::wstring;
 
 // CLSID
 const CLSID CLSID_RP_ExtractImage =

@@ -37,7 +37,7 @@ namespace LibRpFile {
 /** XAttrReaderPrivate **/
 
 XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
-	: filename(U82W_c(filename))
+	: filename(U82T_c(filename))
 	, lastError(0)
 	, hasLinuxAttributes(false)
 	, hasDosAttributes(false)
@@ -48,6 +48,7 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	init();
 }
 
+#ifdef _UNICODE
 XAttrReaderPrivate::XAttrReaderPrivate(const wchar_t *filename)
 	: filename(filename)
 	, lastError(0)
@@ -59,6 +60,7 @@ XAttrReaderPrivate::XAttrReaderPrivate(const wchar_t *filename)
 {
 	init();
 }
+#endif /* _UNICODE */
 
 /**
  * Initialize attributes.
@@ -103,6 +105,7 @@ int XAttrReaderPrivate::loadDosAttrs(void)
 	return (hasDosAttributes ? 0 : -ENOTSUP);
 }
 
+#ifdef _UNICODE
 /**
  * Load generic xattrs, if available.
  * (POSIX xattr on Linux; ADS on Windows)
@@ -237,6 +240,7 @@ int XAttrReaderPrivate::loadGenericXattrs_FindFirstStreamW(void)
 	hasGenericXAttrs = true;
 	return 0;
 }
+#endif /* _UNICODE */
 
 /**
  * Load generic xattrs, if available.
@@ -261,6 +265,7 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 {
 	genericXAttrs.clear();
 
+#ifdef _UNICODE
 	// Try FindFirstStreamW() first.
 	int ret = loadGenericXattrs_FindFirstStreamW();
 	if (ret != -ENOTSUP) {
@@ -268,6 +273,7 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 		// FindFirstStreamW() not being available.
 		return ret;
 	}
+#endif /* _UNICODE */
 
 	// Try BackupRead().
 	return loadGenericXattrs_BackupRead();

@@ -89,7 +89,7 @@ int WinInetDownloader::download(void)
 		SYSTEMTIME st;
 
 		UnixTimeToSystemTime(m_if_modified_since, &st);
-		BOOL bRet = InternetTimeFromSystemTimeW(&st, INTERNET_RFC1123_FORMAT, szTime, sizeof(szTime));
+		BOOL bRet = InternetTimeFromSystemTime(&st, INTERNET_RFC1123_FORMAT, szTime, sizeof(szTime));
 		if (bRet) {
 			headers = _T("If-Modified-Since: ");
 			headers += szTime;
