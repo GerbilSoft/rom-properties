@@ -459,7 +459,7 @@ void EXEPrivate::addFields_NE(void)
 		const size_t len = static_cast<uint8_t>(sp[0]);
 		if (!len || sp.size() - 1 < len)
 			return false;
-		out = string(sp.data() + 1, len);
+		out.assign(sp.data() + 1, len);
 		return true;
 	};
 	string module_name, module_desc;
@@ -619,7 +619,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 				Entry ent = *it;
 				ent.name = name;
 				ent.is_resident = is_resident;
-				ents.push_back(ent); // `it` is invalidated here
+				ents.emplace_back(std::move(ent)); // `it` is invalidated here
 			} else {
 				it->has_name = true;
 				it->name = name;
@@ -751,7 +751,7 @@ int EXEPrivate::addFields_NE_Import(void)
 		assert(offset + 1 + count <= ne_imported_name_table.size());
 		if (offset + 1 + count > ne_imported_name_table.size())
 			return false;
-		out = string(&ne_imported_name_table[offset+1], count);
+		out.assign(&ne_imported_name_table[offset+1], count);
 		return true;
 	};
 	auto get_modref = [&](size_t modref, string &out) -> bool {

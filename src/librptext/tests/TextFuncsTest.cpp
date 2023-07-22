@@ -225,7 +225,7 @@ TEST_F(TextFuncsTest, cp1252_to_utf8)
 	EXPECT_EQ(C8(cp1252_utf8_data), str);
 
 	// Test with std::string source data.
-	string src = string(C8(cp1252_data));
+	string src(C8(cp1252_data));
 	EXPECT_EQ(ARRAY_SIZE(cp1252_data)-1, src.size());
 	str = cp1252_to_utf8(src);
 	EXPECT_EQ(ARRAY_SIZE(cp1252_utf8_data)-1, str.size());
@@ -233,7 +233,7 @@ TEST_F(TextFuncsTest, cp1252_to_utf8)
 
 	// Test with std::string source data and an extra NULL.
 	// The extra NULL should be trimmed.
-	src = string(C8(cp1252_data), ARRAY_SIZE(cp1252_data));
+	src.assign(C8(cp1252_data), ARRAY_SIZE(cp1252_data));
 	EXPECT_EQ(ARRAY_SIZE(cp1252_data), src.size());
 	str = cp1252_to_utf8(src);
 	EXPECT_EQ(ARRAY_SIZE(cp1252_utf8_data)-1, str.size());
@@ -288,7 +288,7 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf8_fallback)
 	EXPECT_EQ(C8(cp1252_utf8_data), str);
 
 	// Test with std::string source data.
-	string src = string(C8(cp1252_data));
+	string src(C8(cp1252_data));
 	EXPECT_EQ(ARRAY_SIZE(cp1252_data)-1, src.size());
 	str = cp1252_sjis_to_utf8(src);
 	EXPECT_EQ(ARRAY_SIZE(cp1252_utf8_data)-1, str.size());
@@ -296,7 +296,7 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf8_fallback)
 
 	// Test with std::string source data and an extra NULL.
 	// The extra NULL should be trimmed.
-	src = string(C8(cp1252_data), ARRAY_SIZE(cp1252_data));
+	src.assign(C8(cp1252_data), ARRAY_SIZE(cp1252_data));
 	EXPECT_EQ(ARRAY_SIZE(cp1252_data), src.size());
 	str = cp1252_sjis_to_utf8(src);
 	EXPECT_EQ(ARRAY_SIZE(cp1252_utf8_data)-1, str.size());
@@ -732,7 +732,7 @@ TEST_F(TextFuncsTest, utf8_to_latin1)
 	EXPECT_EQ(C8(cp1252_data), str);
 
 	// Test with std::string source data.
-	string src = string(C8(latin1_utf8_data));
+	string src(C8(latin1_utf8_data));
 	EXPECT_EQ(ARRAY_SIZE(latin1_utf8_data)-1, src.size());
 	str = utf8_to_latin1(src);
 	EXPECT_EQ(ARRAY_SIZE(cp1252_data)-1, str.size());
@@ -740,7 +740,7 @@ TEST_F(TextFuncsTest, utf8_to_latin1)
 
 	// Test with std::string source data and an extra NULL.
 	// The extra NULL should be trimmed.
-	src = string(C8(latin1_utf8_data), ARRAY_SIZE(latin1_utf8_data));
+	src.assign(C8(latin1_utf8_data), ARRAY_SIZE(latin1_utf8_data));
 	EXPECT_EQ(ARRAY_SIZE(latin1_utf8_data), src.size());
 	str = utf8_to_latin1(src);
 	EXPECT_EQ(ARRAY_SIZE(cp1252_data)-1, str.size());

@@ -221,17 +221,15 @@ int XAttrReaderPrivate::loadGenericXattrs_FindFirstStreamW(void)
 
 		// The leading ':' and trailing ":$DATA" will be removed
 		// from the attribute name.
-		string s_name;
+		// FIXME: Currently allowing blank stream names. Is this valid?
+		string s_name, s_value;
 		if (fsd.cStreamName[0] != L'\0') {
 			s_name.assign(W2U8(&fsd.cStreamName[1]));
 		}
 		if (ads_data.zero_data != 0) {
-			string s_value = (is_unicode) ? W2U8(ads_data.wch) : A2U8(ads_data.ch);
-			genericXAttrs.emplace(std::move(s_name), std::move(s_value));
-		} else {
-			// Empty data value.
-			genericXAttrs.emplace(std::move(s_name), string());
+			s_value.assign(is_unicode ? W2U8(ads_data.wch) : A2U8(ads_data.ch));
 		}
+		genericXAttrs.emplace(std::move(s_name), std::move(s_value));
 	} while (pfnFindNextStreamW(hFindADS, &fsd));
 
 	FindClose(hFindADS);

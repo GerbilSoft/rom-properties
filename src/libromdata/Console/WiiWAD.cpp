@@ -318,7 +318,7 @@ WiiWAD::WiiWAD(IRpFile *file)
 				size = d->file->seekAndRead(name_addr, namebuf.get(), name_size);
 				if (size == name_size) {
 					// TODO: Trim NULLs?
-					d->wadName = string(namebuf.get(), name_size);
+					d->wadName.assign(namebuf.get(), name_size);
 				}
 			}
 			break;
@@ -930,7 +930,7 @@ int WiiWAD::loadFieldData(void)
 					memcpy(buf, &d->wadHeader.wad.type, sizeof(buf));
 					buf[2] = '\0';
 					buf[3] = '\0';
-					s_wadType = string(buf, 2);
+					s_wadType.assign(buf, 2);
 					break;
 				}
 			}
