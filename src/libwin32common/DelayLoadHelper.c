@@ -79,7 +79,7 @@ static const char *const dll_whitelist[] = {
  * @param pdli Delay-load info.
  * @return Library handle, or NULL on error.
  */
-static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
+static HMODULE WINAPI rp_LoadLibrary(LPCSTR pszModuleName)
 {
 	// We only want to handle DLLs included with rom-properties.
 	// System DLLs should be handled normally.
@@ -172,7 +172,7 @@ static FARPROC WINAPI rp_dliNotifyHook(unsigned int dliNotify, PDelayLoadInfo pd
 {
 	switch (dliNotify) {
 		case dliNotePreLoadLibrary:
-			return (FARPROC)rp_loadLibrary(pdli->szDll);
+			return (FARPROC)rp_LoadLibrary(pdli->szDll);
 		default:
 			break;
 	}
