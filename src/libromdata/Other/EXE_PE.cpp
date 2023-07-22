@@ -757,7 +757,7 @@ void EXEPrivate::addFields_PE(void)
 	if (!dotnet) {
 		// Add exports / imports
 		// NOTE: .NET executables have a single import,
-		// MSCOREEE!_CorExeMain, so we're ignoring the
+		// MSCOREE!_CorExeMain, so we're ignoring the
 		// import/export tables for .NET.
 		addFields_PE_Export();
 		addFields_PE_Import();
