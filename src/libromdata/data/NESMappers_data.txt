@@ -599,7 +599,7 @@
 455|N625836 MMC3-based multicart|NTDEC|MapperHV
 456|K6C3001 multicart|Realtec|MapperHV
 457|810431C multicart||MapperHV
-# 458 TODO: Submappers
+# 458: The two types are distinguished by submapper ID.
 458|K-3102 / GN-23 MMC3-based multicart||MapperHV
 459|||Unknown
 
@@ -612,7 +612,7 @@
 465|||Unknown
 466|||Unknown
 467|47-2 (MMC3)||Unknown
-# 468 TODO: Submappers
+# 468: TODO: Submappers indicate which mappers are selectable via $5700.
 468|BlazePro multicart||Unknown
 469|BlazePro multicart (FDS)||Unknown
 

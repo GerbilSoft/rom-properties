@@ -282,8 +282,14 @@ static const struct NESSubmapperInfo mapper407_submappers[] = {
 static const struct NESSubmapperInfo mapper444_submappers[] = {
 	{0, 0,   0, NESMirroring::Unknown, "CHR A17 to $6000.0; CHR A18 to $6000.1"},
 	{1, 0,   0, NESMirroring::Unknown, "CHR A17 to MMC3 CHR A17; CHR A18 to $6000.1"},
-	{0, 0,   0, NESMirroring::Unknown, "CHR A17 to $6000.0; CHR A18 to $6000.4"},
-	{1, 0,   0, NESMirroring::Unknown, "CHR A17 to MMC3 CHR A17; CHR A18 to $6000.4"},
+	{2, 0,   0, NESMirroring::Unknown, "CHR A17 to $6000.0; CHR A18 to $6000.4"},
+	{3, 0,   0, NESMirroring::Unknown, "CHR A17 to MMC3 CHR A17; CHR A18 to $6000.4"},
+};
+
+// Mapper 458: K-3102 and GN-23 multicart PCBs (MMC3-based)
+static const struct NESSubmapperInfo mapper458_submappers[] = {
+	{0, 0,   0, NESMirroring::MapperHV, "K-3102"},
+	{1, 0,   0, NESMirroring::MapperHV, "GN-23"},
 };
 
 /**
@@ -330,6 +336,7 @@ static const NESSubmapperEntry submappers[] = {
 	NES2_SUBMAPPER(313, mapper313_submappers),		// Reset-based multicart (MMC3)
 	NES2_SUBMAPPER(407, mapper407_submappers),		// Win, Lose, or Draw Plug-n-Play (VT03)
 	NES2_SUBMAPPER(444, mapper444_submappers),		// NC7000M multicart (MMC3-compatible)
+	NES2_SUBMAPPER(458, mapper458_submappers),		// K-3102 / GN-23 multicart (MMC3-based)
 	NES2_SUBMAPPER(561, mapper006_submappers),		// Bung Super Game Doctor
 	NES2_SUBMAPPER(562, mapper006_submappers),		// Venus Turbo Game Doctor
 };
