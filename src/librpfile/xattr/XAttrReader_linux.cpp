@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * XAttrReader_linux.cpp: Extended Attribute reader (Linux version)        *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -276,6 +276,8 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 			break;
 		}
 		p += strlen(name) + 1;
+		if (p >= list_end)
+			break;
 
 		// Get the value for this attribute.
 		// NOTE: vlen does *not* include a NULL-terminator.
@@ -296,7 +298,8 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 		// We have the attribute.
 		// NOTE: Not checking for duplicates, since there
 		// shouldn't be duplicate attribute names.
-		genericXAttrs.emplace(string(name), string(value_buf.get(), vlen));
+		const string s_value(value_buf.get(), vlen);
+		genericXAttrs.emplace(name, std::move(s_value));
 	}
 
 	// Extended attributes retrieved.
