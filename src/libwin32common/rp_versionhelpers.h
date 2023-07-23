@@ -12,9 +12,14 @@
 #include "RpWin32_sdk.h"
 
 #ifdef __cplusplus
-#define VERSIONHELPERAPI inline bool
+#  define VERSIONHELPERAPI inline bool
 #else
-#define VERSIONHELPERAPI FORCEINLINE BOOL
+#  define VERSIONHELPERAPI FORCEINLINE BOOL
+#endif
+
+#if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 2))
+/* gcc complains about missing field initializers. */
+#  pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #endif
 
 VERSIONHELPERAPI IsWindowsVersionOrGreater(WORD major, WORD minor, WORD servpack)
