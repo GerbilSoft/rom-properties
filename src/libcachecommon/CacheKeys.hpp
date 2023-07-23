@@ -29,7 +29,7 @@ int filterCacheKey(char *pCacheKey);
 #if defined(_MSC_VER)
 #  pragma warning(push)
 #  pragma warning(disable: 4834)
-#elif defined(__GNUC__) && __GNUC__ >= 8
+#elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5))
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wunused-result"
 #endif
