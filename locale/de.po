@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-07-18 10:24-0400\n"
-"PO-Revision-Date: 2023-07-23 19:00\n"
+"PO-Revision-Date: 2023-07-23 20:06\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -4777,12 +4777,12 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox_XBE.cpp:825
 msgctxt "Region"
 msgid "Manufacturing"
-msgstr ""
+msgstr "Hersteller"
 
 #: ../src/libromdata/crypto/KeyStoreUI.cpp:879
 msgctxt "KeyStoreUI|Section"
 msgid "Nintendo Wii AES Keys"
-msgstr ""
+msgstr "Nintendo Wii AES Schlüssel"
 
 #: ../src/libromdata/crypto/KeyStoreUI.cpp:880
 msgctxt "KeyStoreUI|Section"
@@ -4792,24 +4792,24 @@ msgstr ""
 #: ../src/libromdata/crypto/KeyStoreUI.cpp:881
 msgctxt "KeyStoreUI|Section"
 msgid "Nintendo 3DS AES Keys"
-msgstr ""
+msgstr "Nintendo Wii AES Schlüssel"
 
 #: ../src/libromdata/crypto/KeyStoreUI.cpp:882
 msgctxt "KeyStoreUI|Section"
 msgid "Microsoft Xbox 360 AES Keys"
-msgstr ""
+msgstr "Microsoft XBox 360 AES Schlüssel"
 
 #. tr: IMAGE_SUBSYSTEM_NATIVE
 #: ../src/libromdata/data/EXEData.cpp:87
 msgctxt "EXE|Subsystem"
 msgid "Native"
-msgstr ""
+msgstr "Nativ"
 
 #. tr: IMAGE_SUBSYSTEM_WINDOWS_GUI
 #: ../src/libromdata/data/EXEData.cpp:89
 msgctxt "EXE|Subsystem"
 msgid "Windows"
-msgstr ""
+msgstr "Windows"
 
 #. tr: IMAGE_SUBSYSTEM_WINDOWS_CUI
 #: ../src/libromdata/data/EXEData.cpp:91
@@ -4851,13 +4851,13 @@ msgstr "EFI Anwendung"
 #: ../src/libromdata/data/EXEData.cpp:107
 msgctxt "EXE|Subsystem"
 msgid "EFI Boot Service Driver"
-msgstr ""
+msgstr "EFI Boot-Service-Treiber"
 
 #. tr: IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER
 #: ../src/libromdata/data/EXEData.cpp:109
 msgctxt "EXE|Subsystem"
 msgid "EFI Runtime Driver"
-msgstr ""
+msgstr "EFI Laufzeit-Treiber"
 
 #. tr: IMAGE_SUBSYSTEM_EFI_ROM
 #: ../src/libromdata/data/EXEData.cpp:111
@@ -4869,7 +4869,7 @@ msgstr ""
 #: ../src/libromdata/data/EXEData.cpp:113
 msgctxt "EXE|Subsystem"
 msgid "Xbox"
-msgstr ""
+msgstr "Xbox"
 
 #. tr: IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION
 #: ../src/libromdata/data/EXEData.cpp:117
@@ -5239,7 +5239,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/DMG.cpp:906
 msgctxt "DMG|Features"
 msgid "RAM"
-msgstr ""
+msgstr "RAM"
 
 #: ../src/libromdata/Handheld/DMG.cpp:907
 #: ../src/libromdata/Handheld/DMG.cpp:1106
@@ -5251,18 +5251,18 @@ msgstr "Batterie"
 #: ../src/libromdata/Handheld/DMG.cpp:1108
 msgctxt "DMG|Features"
 msgid "Timer"
-msgstr ""
+msgstr "Timer"
 
 #: ../src/libromdata/Handheld/DMG.cpp:909
 #: ../src/libromdata/Handheld/DMG.cpp:1107
 msgctxt "DMG|Features"
 msgid "Rumble"
-msgstr ""
+msgstr "Rumble"
 
 #: ../src/libromdata/Handheld/DMG.cpp:910
 msgctxt "DMG|Features"
 msgid "Tilt Sensor"
-msgstr ""
+msgstr "Neigungssensor"
 
 #: ../src/libromdata/Handheld/DMG.cpp:914
 #: ../src/libromdata/Handheld/DMG.cpp:1112
@@ -5825,7 +5825,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:510
 msgctxt "Nintendo3DS"
 msgid "Title"
-msgstr ""
+msgstr "Titel"
 
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:511
 msgctxt "Nintendo3DS"
@@ -5869,7 +5869,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:557
 msgctxt "NintendoDS|DSi_Flags"
 msgid "Nintendo WFC"
-msgstr ""
+msgstr "Nintendo WFC"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:558
 msgctxt "NintendoDS|DSi_Flags"
@@ -5889,22 +5889,22 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:561
 msgctxt "NintendoDS|DSi_Flags"
 msgid "Developer"
-msgstr ""
+msgstr "Entwickler"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:955
 msgctxt "NintendoDS"
 msgid "Type"
-msgstr ""
+msgstr "Typ"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1009
 msgctxt "NintendoDS"
 msgid "Full Title"
-msgstr ""
+msgstr "Vollständiger Titel"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1042
 msgctxt "NintendoDS|SecurityData"
 msgid "Blowfish Tables"
-msgstr ""
+msgstr "Blowfish Tabellen"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1043
 msgctxt "NintendoDS|SecurityData"
@@ -5940,7 +5940,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1296
 msgctxt "NintendoDS"
 msgid "Flags"
-msgstr ""
+msgstr "Flags"
 
 #. tr: DSi-enhanced or DSi-exclusive cartridge.
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1133
