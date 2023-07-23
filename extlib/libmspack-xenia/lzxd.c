@@ -409,7 +409,7 @@ int lzxd_decompress(struct lzxd_stream *lzx, off_t out_bytes) {
   if (lzx->error) return lzx->error;
 
   /* flush out any stored-up bytes before we begin */
-  i = lzx->o_end - lzx->o_ptr;
+  i = (int)(lzx->o_end - lzx->o_ptr);
   if ((off_t) i > out_bytes) i = (int) out_bytes;
   if (i) {
     if (lzx->sys->write(lzx->output, lzx->o_ptr, i) != i) {
@@ -779,7 +779,7 @@ int lzxd_decompress(struct lzxd_stream *lzx, off_t out_bytes) {
         rundest = &window[window_posn];
         window_posn += this_run;
         while (this_run > 0) {
-          if ((i = i_end - i_ptr) == 0) {
+          if ((i = (int)(i_end - i_ptr)) == 0) {
             READ_IF_NEEDED;
           }
           else {

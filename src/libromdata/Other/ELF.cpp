@@ -877,7 +877,7 @@ int ELFPrivate::addPtDynamicFields(void)
 			vector<string> *const v_dt_flags_names = RomFields::strArrayToVector(
 				dt_flags_names, ARRAY_SIZE(dt_flags_names));
 			fields.addField_bitfield("DT_FLAGS",
-				v_dt_flags_names, 3, val_dtag[DT_FLAGS]);
+				v_dt_flags_names, 3, static_cast<uint32_t>(val_dtag[DT_FLAGS]));
 		}
 
 		if (has_flags1) {
@@ -902,7 +902,7 @@ int ELFPrivate::addPtDynamicFields(void)
 			vector<string> *const v_dt_flags_1_names = RomFields::strArrayToVector(
 				dt_flags_1_names, ARRAY_SIZE(dt_flags_1_names));
 			fields.addField_bitfield("DT_FLAGS_1",
-				v_dt_flags_1_names, 3, val_flags1);
+				v_dt_flags_1_names, 3, static_cast<uint32_t>(val_flags1));
 		}
 
 		assert(!has_dtag[DT_SONAME] || val_dtag[DT_SONAME] < strtab.size());

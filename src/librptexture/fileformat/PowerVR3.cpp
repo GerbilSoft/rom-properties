@@ -465,7 +465,7 @@ const rp_image *PowerVR3Private::loadImage(int mip)
 		}
 
 		// TODO: Skip the multiply if both surfaces and faces are 1?
-		start_addr += (expected_size * prod_surfaces_faces);
+		start_addr += static_cast<unsigned int>(expected_size * prod_surfaces_faces);
 		expected_size /= 4;
 	}
 

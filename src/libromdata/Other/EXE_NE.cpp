@@ -61,7 +61,9 @@ int EXEPrivate::loadNEResident(void)
 	span<const uint8_t> ne_modref_raw;
 	span<const uint8_t> ne_imported_name_raw;
 
-	uint32_t end = ne_resident.size();
+	// NOTE: For performance reasons on 64-bit, we're using uint32_t instead of size_t.
+	// It's not possible for an NE executable to be larger than 16 MB, anyway.
+	uint32_t end = static_cast<uint32_t>(ne_resident.size());
 	auto set_span = [this, &end](span<const uint8_t> &sp, unsigned int offset) -> bool {
 		if (offset > end)
 			return true;
@@ -156,10 +158,10 @@ int EXEPrivate::loadNEResourceTable(void)
 		// Offse overflow
 		return -EIO;
 	}
-	const uint32_t resTableSize = ne_resource_table.size();
 
 	// Load the resources using NEResourceReader.
-	rsrcReader = new NEResourceReader(file, ResTableOffset, resTableSize);
+	rsrcReader = new NEResourceReader(file, ResTableOffset,
+		static_cast<uint32_t>(ne_resource_table.size()));
 	if (!rsrcReader->isOpen()) {
 		// Failed to open the resource table.
 		int err = rsrcReader->lastError();

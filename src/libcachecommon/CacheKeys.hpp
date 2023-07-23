@@ -25,6 +25,15 @@ namespace LibCacheCommon {
 RP_LIBROMDATA_PUBLIC
 int filterCacheKey(char *pCacheKey);
 
+// Ignore warnings from not using cacheKey.c_str()'s return value.
+#if defined(_MSC_VER)
+#  pragma warning(push)
+#  pragma warning(disable: 4834)
+#elif defined(__GNUC__) && __GNUC__ >= 8
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wunused-result"
+#endif
+
 /**
  * Filter invalid characters from a cache key.
  * This updates the cache key in place.
@@ -60,6 +69,12 @@ static inline int filterCacheKey(std::wstring &cacheKey)
 	return filterCacheKey(&cacheKey[0]);
 }
 #endif /* RP_WIS16 */
+
+#if defined(_MSC_VER)
+#  pragma warning(pop)
+#elif defined(__GNUC__) && __GNUC__ >= 8
+#  pragma GCC diagnostic pop
+#endif
 
 /**
  * Get a cache filename.

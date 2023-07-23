@@ -2,12 +2,12 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * RpFile_scsi_win32.cpp: Standard file object. (Win32 SCSI)               *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #ifndef _WIN32
-# error RpFile_scsi_linux.cpp is for Windows ONLY.
+#  error RpFile_scsi_linux.cpp is for Windows ONLY.
 #endif /* _WIN32 */
 
 #include "stdafx.h"
@@ -17,18 +17,31 @@
 #include "scsi_protocol.h"
 
 #include "libwin32common/w32err.hpp"
-// NT DDK SCSI functions.
+
+// Windows 8.1 SDK's ntddscsi.h doesn't prpoerly declare
+// _NV_SEP_WRITE_CACHE_TYPE as an enum, so MSVC complains
+// that the typedef is unnecessary.
+#ifdef _MSC_VER
+#  pragma warning(push)
+#  pragma warning(disable: 4091)
+#endif /* _MSC_VER */
+
+// NT DDK SCSI functions
 #if defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
 // Old MinGW has the NT DDK headers in include/ddk/.
 // IOCTL headers conflict with WinDDK.
-# include <ddk/ntddscsi.h>
-# include <ddk/ntddstor.h>
+#  include <ddk/ntddscsi.h>
+#  include <ddk/ntddstor.h>
 #else
 // MinGW-w64 and MSVC has the NT DDK headers in include/.
 // IOCTL headers are also required.
-# include <winioctl.h>
-# include <ntddscsi.h>
+#  include <winioctl.h>
+#  include <ntddscsi.h>
 #endif
+
+#ifdef _MSC_VER
+#  pragma warning(pop)
+#endif /* _MSC_VER */
 
 namespace LibRpFile {
 
