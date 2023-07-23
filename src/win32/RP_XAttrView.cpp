@@ -182,6 +182,7 @@ int RP_XAttrView_Private::loadAttributes(void)
 
 	if (!filename) {
 		// No filename.
+		xattrReader = nullptr;
 		return -EIO;
 	}
 
