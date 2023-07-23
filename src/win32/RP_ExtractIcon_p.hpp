@@ -28,7 +28,8 @@ class RP_ExtractIcon_Private
 
 	public:
 		// ROM filename from IPersistFile::Load()
-		char *filename;
+		// NOTE: LPOLESTR, not LPTSTR.
+		LPOLESTR olefilename;
 
 		// RomData object. Loaded in IPersistFile::Load().
 		LibRpBase::RomData *romData;

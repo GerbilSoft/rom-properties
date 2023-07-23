@@ -17,8 +17,8 @@ using namespace LibRpFile;
 using LibRpTexture::rp_image;
 using LibRomData::RomDataFactory;
 
-// C++ STL classes.
-using std::wstring;
+// C++ STL classes
+using std::string;
 
 // CLSID
 const CLSID CLSID_RP_ExtractIcon =
@@ -28,7 +28,7 @@ const CLSID CLSID_RP_ExtractIcon =
 #include "RP_ExtractIcon_p.hpp"
 
 RP_ExtractIcon_Private::RP_ExtractIcon_Private()
-	: filename(nullptr)
+	: olefilename(nullptr)
 	, romData(nullptr)
 {
 	// Enable icon squaring only on Windows XP.
@@ -44,7 +44,7 @@ RP_ExtractIcon_Private::RP_ExtractIcon_Private()
 
 RP_ExtractIcon_Private::~RP_ExtractIcon_Private()
 {
-	free(filename);
+	free(olefilename);
 	UNREF(romData);
 }
 
@@ -108,21 +108,29 @@ IFACEMETHODIMP RP_ExtractIcon::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
 
 	// pszFileName is the file being worked on.
 	// TODO: If the file was already loaded, don't reload it.
-	free(d->filename);
-	d->filename = strdup(W2U8(pszFileName).c_str());
-	if (!d->filename) {
+	free(d->olefilename);
+	d->olefilename = _wcsdup(pszFileName);
+	if (!d->olefilename) {
 		return E_OUTOFMEMORY;
 	}
 
+	// Convert the filename to UTF-8.
+	// NOTE: LPOLESTR is always wchar_t*.
+	const string u8filename = W2U8(d->olefilename);
+
 	// Check for "bad" file systems.
+	// TODO: wchar_t* overload so we don't need to use WTF-8.
+	// Requires adding to the API, so romdata-4.dll?
 	const Config *const config = Config::instance();
-	if (FileSystem::isOnBadFS(d->filename, config->enableThumbnailOnNetworkFS())) {
+	if (FileSystem::isOnBadFS(u8filename.c_str(), config->enableThumbnailOnNetworkFS())) {
 		// This file is on a "bad" file system.
 		return E_FAIL;
 	}
 
 	// Attempt to open the ROM file.
-	RpFile *const file = new RpFile(d->filename, RpFile::FM_OPEN_READ_GZ);
+	// TODO: wchar_t* overload so we don't need to use WTF-8.
+	// Requires adding to the API, so romdata-4.dll?
+	RpFile *const file = new RpFile(u8filename, RpFile::FM_OPEN_READ_GZ);
 	if (!file->isOpen()) {
 		// Unable to open the file.
 		file->unref();
@@ -160,9 +168,9 @@ IFACEMETHODIMP RP_ExtractIcon::GetCurFile(_In_ LPOLESTR *ppszFileName)
 		return E_POINTER;
 
 	RP_D(const RP_ExtractIcon);
-	if (!d->filename) {
+	if (!d->olefilename) {
 		// No filename. Create an empty string.
-		LPWSTR psz = static_cast<LPWSTR>(CoTaskMemAlloc(sizeof(wchar_t)));
+		LPOLESTR psz = static_cast<LPOLESTR>(CoTaskMemAlloc(sizeof(OLECHAR)));
 		if (!psz) {
 			*ppszFileName = nullptr;
 			return E_OUTOFMEMORY;
@@ -170,15 +178,15 @@ IFACEMETHODIMP RP_ExtractIcon::GetCurFile(_In_ LPOLESTR *ppszFileName)
 		*psz = L'\0';
 		*ppszFileName = psz;
 	} else {
-		// Convert the filename to UTF-16 first and then copy it.
-		const wstring wfilename = U82W_c(d->filename);
-		const size_t cb = (wfilename.size() + 1) * sizeof(wchar_t);
-		LPWSTR psz = static_cast<LPWSTR>(CoTaskMemAlloc(cb));
+		// Copy the filename.
+		// NOTE: Can't use _wcsdup() because we have to allocate memory using CoTaskMemAlloc().
+		const size_t cb = (wcslen(d->olefilename) + 1) * sizeof(OLECHAR);
+		LPOLESTR psz = static_cast<LPOLESTR>(CoTaskMemAlloc(cb));
 		if (!psz) {
 			*ppszFileName = nullptr;
 			return E_OUTOFMEMORY;
 		}
-		memcpy(psz, wfilename.c_str(), cb);
+		memcpy(psz, d->olefilename, cb);
 		*ppszFileName = psz;
 	}
 
@@ -202,7 +210,7 @@ IFACEMETHODIMP RP_ExtractIcon::GetIconLocation(UINT uFlags,
 
 	// If the file wasn't set via IPersistFile::Load(), that's an error.
 	RP_D(RP_ExtractIcon);
-	if (!d->filename || d->filename[0] == '\0') {
+	if (!d->olefilename || d->olefilename[0] == L'\0') {
 		return E_UNEXPECTED;
 	}
 
@@ -236,7 +244,7 @@ IFACEMETHODIMP RP_ExtractIcon::Extract(_In_ LPCWSTR pszFile, UINT nIconIndex,
 
 	// Make sure a filename was set by calling IPersistFile::Load().
 	RP_D(RP_ExtractIcon);
-	if (!d->filename || d->filename[0] == '\0') {
+	if (!d->olefilename || d->olefilename[0] == L'\0') {
 		return E_UNEXPECTED;
 	}
 
