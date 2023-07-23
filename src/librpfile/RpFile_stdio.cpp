@@ -235,7 +235,7 @@ RpFile::RpFile(const char *filename, FileMode mode)
  */
 RpFile::RpFile(const string &filename, FileMode mode)
 	: super()
-	, d_ptr(new RpFilePrivate(this, filename, mode))
+	, d_ptr(new RpFilePrivate(this, filename.c_str(), mode))
 {
 	init();
 }
