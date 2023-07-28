@@ -19,6 +19,8 @@ namespace LibRpTexture {
 	class rp_image;
 }
 
+#define IDM_ECKS_BAWKS_MENU_BASE	0x9000
+
 class DragImageLabelPrivate;
 class DragImageLabel
 {
@@ -79,6 +81,11 @@ class DragImageLabel
 		 * This will stop the animation timer if it's running.
 		 */
 		void clearRp(void);
+
+		bool ecksBawks(void) const;
+		void setEcksBawks(bool newEcksBawks);
+
+		int tryPopupEcksBawks(LPARAM lParam);
 
 	public:
 		/**

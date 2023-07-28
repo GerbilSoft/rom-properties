@@ -314,6 +314,12 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(_In_ POINT pt_start, _In_ SIZE
 		curPt.x += icon_width + pt_start.x;
 	}
 
+	if (lblIcon) {
+		const bool ecksBawks = (romData->fileType() == RomData::FileType::DiscImage &&
+		                        systemName && strstr(systemName, "Xbox") != nullptr);
+		lblIcon->setEcksBawks(ecksBawks);
+	}
+
 	// Return the label height and some extra padding.
 	// TODO: Icon/banner height?
 	return size_lblSysInfo.cy + (pt_start.y * 5 / 8);
@@ -2967,6 +2973,41 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			// Forward the message to the active child dialog.
 			SendMessage(d->tabs[d->curTabIndex].hDlg, uMsg, wParam, lParam);
 			return TRUE;
+		}
+
+		case WM_RBUTTONUP: {
+			auto *const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+			if (!d) {
+				// No RP_ShellPropSheetExt_Private. Can't do anything...
+				return FALSE;
+			}
+
+			// Allow lblIcon to process this in case it's in lblIcon's rectangle.
+			// TODO: Make DragImageLabel a real control?
+			if (d->lblIcon) {
+				LPCTSTR url = nullptr;
+				int id = d->lblIcon->tryPopupEcksBawks(lParam);
+				switch (id) {
+					default:
+						assert(!"Invalid ecksbawks URL ID.");
+						break;
+					case -1:	// Error...
+					case 0:		// No item selected
+						break;
+					case IDM_ECKS_BAWKS_MENU_BASE + 1:
+						url = _T("https://twitter.com/DeaThProj/status/1684469412978458624");
+						break;
+					case IDM_ECKS_BAWKS_MENU_BASE + 2:
+						url = _T("https://github.com/xenia-canary/xenia-canary/pull/180");
+						break;
+				}
+
+				if (url) {
+					ShellExecute(nullptr, _T("open"), url, nullptr, nullptr, SW_SHOW);
+					return TRUE;
+				}
+			}
+			break;
 		}
 
 		default:
