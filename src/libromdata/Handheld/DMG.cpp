@@ -476,7 +476,7 @@ trimTitle:
 	// Trim trailing spaces if the title doesn't start with a space.
 	// TODO: Trim leading spaces?
 	if (!s_title.empty() && s_title[0] != ' ') {
-		while (!s_title.empty()) {
+		do {
 			const size_t size = s_title.size();
 			if (s_title[size-1] == ' ') {
 				// Found a space. Remove it.
@@ -485,7 +485,7 @@ trimTitle:
 				// Not a space. We're done here.
 				break;
 			}
-		}
+		} while (!s_title.empty());
 	}
 }
 
