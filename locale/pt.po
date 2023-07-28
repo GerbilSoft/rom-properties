@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-07-18 10:24-0400\n"
-"PO-Revision-Date: 2023-07-19 03:11\n"
+"PO-Revision-Date: 2023-07-28 18:24\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese, Brazilian\n"
 "Language: pt_BR\n"
@@ -6277,7 +6277,7 @@ msgstr ""
 #, c-format
 msgctxt "WonderSwan|SaveMemory"
 msgid "%1$u KiB (%2$s)"
-msgstr "%1$u KiB (%2$u)"
+msgstr "%1$u KiB (%2$s)"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:506
 msgctxt "WonderSwan|SaveMemory"
