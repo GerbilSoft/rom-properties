@@ -85,7 +85,7 @@ class DragImageLabel
 		bool ecksBawks(void) const;
 		void setEcksBawks(bool newEcksBawks);
 
-		int tryPopupEcksBawks(LPARAM lParam);
+		void tryPopupEcksBawks(LPARAM lParam);
 
 	public:
 		/**

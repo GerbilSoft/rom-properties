@@ -2985,27 +2985,8 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			// Allow lblIcon to process this in case it's in lblIcon's rectangle.
 			// TODO: Make DragImageLabel a real control?
 			if (d->lblIcon) {
-				LPCTSTR url = nullptr;
-				int id = d->lblIcon->tryPopupEcksBawks(lParam);
-				switch (id) {
-					default:
-						assert(!"Invalid ecksbawks URL ID.");
-						break;
-					case -1:	// Error...
-					case 0:		// No item selected
-						break;
-					case IDM_ECKS_BAWKS_MENU_BASE + 1:
-						url = _T("https://twitter.com/DeaThProj/status/1684469412978458624");
-						break;
-					case IDM_ECKS_BAWKS_MENU_BASE + 2:
-						url = _T("https://github.com/xenia-canary/xenia-canary/pull/180");
-						break;
-				}
-
-				if (url) {
-					ShellExecute(nullptr, _T("open"), url, nullptr, nullptr, SW_SHOW);
-					return TRUE;
-				}
+				d->lblIcon->tryPopupEcksBawks(lParam);
+				return TRUE;
 			}
 			break;
 		}

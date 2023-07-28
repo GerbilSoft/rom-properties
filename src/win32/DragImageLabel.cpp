@@ -458,15 +458,15 @@ void DragImageLabel::setEcksBawks(bool newEcksBawks)
 		_T("Yar, har, fiddle dee dee"));
 }
 
-int DragImageLabel::tryPopupEcksBawks(LPARAM lParam)
+void DragImageLabel::tryPopupEcksBawks(LPARAM lParam)
 {
 	RP_D(const DragImageLabel);
 	if (!d->ecksBawks || !d->hMenuEcksBawks)
-		return -1;
+		return;
 
 	POINT pt = { LOWORD(lParam), HIWORD(lParam) };
 	if (!PtInRect(&d->rect, pt))
-		return -1;
+		return;
 
 	// Convert from local coordinates to screen coordinates.
 	MapWindowPoints(d->hwndParent, HWND_DESKTOP, &pt, 1);
@@ -476,8 +476,24 @@ int DragImageLabel::tryPopupEcksBawks(LPARAM lParam)
 			TPM_NONOTIFY | TPM_RETURNCMD,
 		pt.x, pt.y, 0, d->hwndParent, nullptr);
 
-	// TODO: Send a notification instead of returning a value?
-	return id;
+	LPCTSTR url = nullptr;
+	switch (id) {
+		default:
+			assert(!"Invalid ecksbawks URL ID.");
+			break;
+		case 0:		// No item selected
+			break;
+		case IDM_ECKS_BAWKS_MENU_BASE + 1:
+			url = _T("https://twitter.com/DeaThProj/status/1684469412978458624");
+			break;
+		case IDM_ECKS_BAWKS_MENU_BASE + 2:
+			url = _T("https://github.com/xenia-canary/xenia-canary/pull/180");
+			break;
+	}
+
+	if (url) {
+		ShellExecute(nullptr, _T("open"), url, nullptr, nullptr, SW_SHOW);
+	}
 }
 
 /**
