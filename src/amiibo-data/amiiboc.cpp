@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
 	//charVarTable.reserve(128);
 	amiiboSeriesTable.reserve(32);
 	amiiboTable.reserve(0x1000);
-	
+
 	// Initialize the string table.
 	// The string table always starts with a NULL byte. (empty string)
 	stringTable.reserve(32768);	// TODO: Optimal reservation?
