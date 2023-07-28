@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-07-18 10:24-0400\n"
-"PO-Revision-Date: 2023-07-18 22:45\n"
+"PO-Revision-Date: 2023-07-28 18:24\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Language: ru_RU\n"
@@ -5720,7 +5720,7 @@ msgstr ""
 #, c-format
 msgctxt "Nintendo3DS"
 msgid "%1$s (%2$u MiB)"
-msgstr "%1$s (%2$s MiB)"
+msgstr "%1$s (%2$u MiB)"
 
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:2356
 msgctxt "Nintendo3DS"
@@ -6297,7 +6297,7 @@ msgstr ""
 #, c-format
 msgctxt "WonderSwan|SaveMemory"
 msgid "%1$u KiB (%2$s)"
-msgstr "%1$u КиБ (%2$u)"
+msgstr "%1$u КиБ (%2$s)"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:506
 msgctxt "WonderSwan|SaveMemory"
