@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-07-18 10:24-0400\n"
-"PO-Revision-Date: 2023-07-18 22:45\n"
+"PO-Revision-Date: 2023-07-28 18:24\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es_ES\n"
@@ -801,7 +801,7 @@ msgctxt "KeyManagerTab"
 msgid "%1$s key was imported from '%2$s'."
 msgid_plural "%1$s keys were imported from '%2$s'."
 msgstr[0] "La llave fue importada de '%2$s'."
-msgstr[1] "Las llaves fueron importadas de '%2$s'."
+msgstr[1] "%1%s llaves fueron importadas de '%2$s'."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:775
 #: ../src/kde/config/KeyManagerTab.cpp:239
@@ -6285,7 +6285,7 @@ msgstr "Ninguno"
 #, c-format
 msgctxt "WonderSwan|SaveMemory"
 msgid "%1$u KiB (%2$s)"
-msgstr "%1$u KiB (%2$u)"
+msgstr "%1$u KiB (%2$s)"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:506
 msgctxt "WonderSwan|SaveMemory"
