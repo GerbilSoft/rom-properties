@@ -6378,7 +6378,7 @@ msgstr "Nenhum"
 #, c-format
 msgctxt "WonderSwan|SaveMemory"
 msgid "%1$u KiB (%2$s)"
-msgstr "%1$u KiB (%2$u)"
+msgstr "%1$u KiB (%2$s)"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:506
 msgctxt "WonderSwan|SaveMemory"

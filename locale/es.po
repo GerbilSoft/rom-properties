@@ -835,8 +835,8 @@ msgstr "No se importaron llaves de '%s'."
 msgctxt "KeyManagerTab"
 msgid "%1$s key was imported from '%2$s'."
 msgid_plural "%1$s keys were imported from '%2$s'."
-msgstr[0] "La llave fue importada de '%2$s'."
-msgstr[1] "Las llaves fueron importadas de '%2$s'."
+msgstr[0] "%1$s llave fue importada de '%2$s'."
+msgstr[1] "%1$s llaves fueron importadas de '%2$s'."
 
 #: ../src/gtk/config/KeyManagerTab.cpp:775
 #: ../src/kde/config/KeyManagerTab.cpp:239
@@ -6402,7 +6402,7 @@ msgstr "Ninguno"
 #, c-format
 msgctxt "WonderSwan|SaveMemory"
 msgid "%1$u KiB (%2$s)"
-msgstr "%1$u KiB (%2$u)"
+msgstr "%1$u KiB (%2$s)"
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:506
 msgctxt "WonderSwan|SaveMemory"
