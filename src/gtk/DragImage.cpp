@@ -360,6 +360,10 @@ void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
 	if (ecksbawks_quark == 0) {
 		ecksbawks_quark = g_quark_from_string("ecksbawks");
 	}
+	static const char *menu_items[] = {
+		"ermahgerd! an ecks bawks ISO!",
+		"Yar, har, fiddle dee dee",
+	};
 #ifdef USE_G_MENU_MODEL
 	image->menuEcksBawks = g_menu_new();
 	image->actionGroup = g_simple_action_group_new();
@@ -368,21 +372,16 @@ void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
 	char buf[128];
 	snprintf(prefix, sizeof(prefix), "rp-EcksBawks-%p", image);
 
-	GSimpleAction *const actMenu1 = g_simple_action_new("ecksbawks-1", nullptr);
-	g_simple_action_set_enabled(actMenu1, TRUE);
-	g_object_set_qdata(G_OBJECT(actMenu1), ecksbawks_quark, GINT_TO_POINTER(1));
-	g_signal_connect(actMenu1, "activate", G_CALLBACK(ecksbawks_action_triggered_signal_handler), image);
-	g_action_map_add_action(G_ACTION_MAP(image->actionGroup), G_ACTION(actMenu1));
-	snprintf(buf, sizeof(buf), "%s.ecksbawks-%d", prefix, 1);
-	g_menu_append(image->menuEcksBawks, "ermahgerd! an ecks bawks ISO!", buf);
-
-	GSimpleAction *const actMenu2 = g_simple_action_new("ecksbawks-2", nullptr);
-	g_simple_action_set_enabled(actMenu2, TRUE);
-	g_object_set_qdata(G_OBJECT(actMenu2), ecksbawks_quark, GINT_TO_POINTER(2));
-	g_signal_connect(actMenu2, "activate", G_CALLBACK(ecksbawks_action_triggered_signal_handler), image);
-	g_action_map_add_action(G_ACTION_MAP(image->actionGroup), G_ACTION(actMenu2));
-	snprintf(buf, sizeof(buf), "%s.ecksbawks-%d", prefix, 2);
-	g_menu_append(image->menuEcksBawks, "Yar, har, fiddle dee dee", buf);
+	for (int i = 0; i < ARRAY_SIZE_I(menu_items); i++) {
+		snprintf(buf, sizeof(buf), "ecksbawks-%d", i+1);
+		GSimpleAction *const action = g_simple_action_new(buf, nullptr);
+		g_simple_action_set_enabled(action, TRUE);
+		g_object_set_qdata(G_OBJECT(action), ecksbawks_quark, GINT_TO_POINTER(i+1));
+		g_signal_connect(action, "activate", G_CALLBACK(ecksbawks_action_triggered_signal_handler), image);
+		g_action_map_add_action(G_ACTION_MAP(image->actionGroup), G_ACTION(action));
+		snprintf(buf, sizeof(buf), "%s.ecksbawks-%d", prefix, i+1);
+		g_menu_append(image->menuEcksBawks, menu_items[i], buf);
+	}
 
 	gtk_widget_insert_action_group(GTK_WIDGET(image), prefix, G_ACTION_GROUP(image->actionGroup));
 #  if GTK_CHECK_VERSION(4,0,0)
@@ -394,17 +393,13 @@ void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
 	image->menuEcksBawks = gtk_menu_new();
 	gtk_widget_set_name(image->menuEcksBawks, "menuEcksBawks");
 
-	GtkWidget *const actMenu1 = gtk_menu_item_new_with_label("ermahgerd! an ecks bawks ISO!");
-	g_object_set_qdata(G_OBJECT(actMenu1), ecksbawks_quark, GINT_TO_POINTER(1));
-	g_signal_connect(actMenu1, "activate", G_CALLBACK(ecksbawks_menuItem_triggered_signal_handler), image);
-	gtk_widget_show(actMenu1);
-	gtk_menu_shell_append(GTK_MENU_SHELL(image->menuEcksBawks), actMenu1);
-
-	GtkWidget *const actMenu2 = gtk_menu_item_new_with_label("Yar, har, fiddle dee dee");
-	g_object_set_qdata(G_OBJECT(actMenu2), ecksbawks_quark, GINT_TO_POINTER(2));
-	g_signal_connect(actMenu2, "activate", G_CALLBACK(ecksbawks_menuItem_triggered_signal_handler), image);
-	gtk_widget_show(actMenu2);
-	gtk_menu_shell_append(GTK_MENU_SHELL(image->menuEcksBawks), actMenu2);
+	for (int i = 0; i < ARRAY_SIZE_I(menu_items); i++) {
+		GtkWidget *const action = gtk_menu_item_new_with_label(menu_items[i]);
+		g_object_set_qdata(G_OBJECT(action), ecksbawks_quark, GINT_TO_POINTER(i+1));
+		g_signal_connect(action, "activate", G_CALLBACK(ecksbawks_menuItem_triggered_signal_handler), image);
+		gtk_widget_show(action);
+		gtk_menu_shell_append(GTK_MENU_SHELL(image->menuEcksBawks), action);
+	}
 #endif
 
 #if !GTK_CHECK_VERSION(4,0,0)
