@@ -144,7 +144,7 @@ void RomDataViewPrivate::initHeaderRow(void)
 		return;
 	}
 
-	// System name and file type.
+	// System name and file type
 	// TODO: System logo and/or game title?
 	const char *systemName = romData->systemName(
 		RomData::SYSNAME_TYPE_LONG | RomData::SYSNAME_REGION_ROM_LOCAL);
@@ -164,10 +164,10 @@ void RomDataViewPrivate::initHeaderRow(void)
 	ui.lblSysInfo->setText(sysInfo);
 	ui.lblSysInfo->show();
 
-	// Supported image types.
+	// Supported image types
 	const uint32_t imgbf = romData->supportedImageTypes();
 
-	// Banner.
+	// Banner
 	if (imgbf & RomData::IMGBF_INT_BANNER) {
 		// Get the banner.
 		bool ok = ui.lblBanner->setRpImage(romData->image(RomData::IMG_INT_BANNER));
@@ -177,7 +177,7 @@ void RomDataViewPrivate::initHeaderRow(void)
 		ui.lblBanner->hide();
 	}
 
-	// Icon.
+	// Icon
 	if (imgbf & RomData::IMGBF_INT_ICON) {
 		// Get the icon.
 		const rp_image *const icon = romData->image(RomData::IMG_INT_ICON);
@@ -198,6 +198,10 @@ void RomDataViewPrivate::initHeaderRow(void)
 		// No icon.
 		ui.lblIcon->hide();
 	}
+
+	const bool ecksBawks = (romData->fileType() == RomData::FileType::DiscImage &&
+	                        systemName && strstr(systemName, "Xbox") != nullptr);
+	ui.lblIcon->setEcksBawks(ecksBawks);
 }
 
 /**

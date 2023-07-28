@@ -20,6 +20,15 @@ using LibRpTexture::rp_image;
 // TODO: Adjust minimum image size based on DPI.
 #define DIL_MIN_IMAGE_SIZE 32
 
+// GtkPopover was added in GTK 3.12.
+// GMenuModel is also implied by this, since GMenuModel
+// support was added to GTK+ 3.4.
+#if GTK_CHECK_VERSION(3,11,5)
+#  define USE_G_MENU_MODEL 1
+#endif /* GTK_CHECK_VERSION(3,11,5) */
+
+static GQuark ecksbawks_quark = 0;
+
 static void	rp_drag_image_dispose	(GObject	*object);
 
 // Signal handlers
@@ -28,6 +37,15 @@ static void	rp_drag_image_dispose	(GObject	*object);
 static void	rp_drag_image_drag_begin(RpDragImage *image, GdkDragContext *context, gpointer user_data);
 static void	rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSelectionData *data, guint info, guint time, gpointer user_data);
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
+
+#ifdef USE_G_MENU_MODEL
+static void	ecksbawks_action_triggered_signal_handler     (GSimpleAction	*action,
+							       GVariant		*parameter,
+							       RpDragImage	*widget);
+#else /* !USE_G_MENU_MODEL */
+static void	ecksbawks_menuItem_triggered_signal_handler   (GtkMenuItem	*menuItem,
+							       RpDragImage	*widget);
+#endif /* USE_G_MENU_MODEL */
 
 // GTK4 no longer needs GtkEventBox, since
 // all widgets receive events.
@@ -60,6 +78,15 @@ struct _RpDragImage {
 		int width;
 		int height;
 	} minimumImageSize;
+
+	bool ecksBawks;
+#ifdef USE_G_MENU_MODEL
+	GMenu *menuEcksBawks;
+	GtkWidget *popEcksBawks;		// GtkPopover (3.x); GtkPopoverMenu (4.x)
+	GSimpleActionGroup *actionGroup;
+#else /* !USE_G_MENU_MODEL */
+	GtkWidget *menuEcksBawks;	// GtkMenu
+#endif /* USE_G_MENU_MODEL */
 
 	// rp_image. [ref()'d]
 	const rp_image *img;
@@ -157,6 +184,28 @@ rp_drag_image_dispose(GObject *object)
 
 	// Unreference the image.
 	UNREF_AND_NULL(image->img);
+
+#ifdef USE_G_MENU_MODEL
+#  if GTK_CHECK_VERSION(4,0,0)
+	// FIXME: Verify that this works.
+	g_clear_object(&image->popEcksBawks);
+#  else /* !GTK_CHECK_VERSION(4,0,0) */
+	if (image->popEcksBawks) {
+		gtk_widget_destroy(image->popEcksBawks);
+		image->popEcksBawks = nullptr;
+	}
+#  endif /* GTK_CHECK_VERSION(4,0,0) */
+	g_clear_object(&image->menuEcksBawks);
+
+	// The GSimpleActionGroup owns the actions, so
+	// this will automatically delete the actions.
+	g_clear_object(&image->actionGroup);
+#else /* !USE_G_MENU_MODEL */
+	if (image->menuEcksBawks) {
+		gtk_widget_destroy(image->menuEcksBawks);
+		image->menuEcksBawks = nullptr;
+	}
+#endif /* !USE_G_MENU_MODEL */
 
 	// Call the superclass dispose() function.
 	G_OBJECT_CLASS(rp_drag_image_parent_class)->dispose(object);
@@ -269,6 +318,101 @@ rp_drag_image_set_minimum_image_size(RpDragImage *image, int width, int height)
 		image->minimumImageSize.height = height;
 		rp_drag_image_update_pixmaps(image);
 	}
+}
+
+bool rp_drag_image_get_ecks_bawks(RpDragImage *image)
+{
+	g_return_val_if_fail(RP_IS_DRAG_IMAGE(image), false);
+	return image->ecksBawks;
+}
+
+#if !GTK_CHECK_VERSION(4,0,0)
+static void
+rp_drag_image_on_button_press_event(RpDragImage *image, GdkEventButton *event, gpointer userdata)
+{
+	RP_UNUSED(userdata);
+	if (!image->ecksBawks)
+		return;
+
+	if (event->type == GDK_BUTTON_PRESS && event->button == 3) {
+#ifdef USE_G_MENU_MODEL
+		gtk_popover_popup(GTK_POPOVER(image->popEcksBawks));
+#else /* !USE_G_MENU_MODEL */
+		gtk_menu_popup(GTK_MENU(image->menuEcksBawks),
+			nullptr, nullptr, nullptr,
+			image, event->button,
+			gdk_event_get_time((GdkEvent*)event));
+#endif /* USE_G_MENU_MODEL */
+	}
+}
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
+
+void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
+{
+	g_return_if_fail(RP_IS_DRAG_IMAGE(image));
+	image->ecksBawks = new_ecks_bawks;
+	if (image->ecksBawks && image->menuEcksBawks) {
+		// Ecks Bawks popup menu is already created.
+		return;
+	}
+
+	// Create the Ecks Bawks popup menu.
+	if (ecksbawks_quark == 0) {
+		ecksbawks_quark = g_quark_from_string("ecksbawks");
+	}
+#ifdef USE_G_MENU_MODEL
+	image->menuEcksBawks = g_menu_new();
+	image->actionGroup = g_simple_action_group_new();
+
+	char prefix[64];
+	char buf[128];
+	snprintf(prefix, sizeof(prefix), "rp-EcksBawks-%p", image);
+
+	GSimpleAction *const actMenu1 = g_simple_action_new("ecksbawks-1", nullptr);
+	g_simple_action_set_enabled(actMenu1, TRUE);
+	g_object_set_qdata(G_OBJECT(actMenu1), ecksbawks_quark, GINT_TO_POINTER(1));
+	g_signal_connect(actMenu1, "activate", G_CALLBACK(ecksbawks_action_triggered_signal_handler), image);
+	g_action_map_add_action(G_ACTION_MAP(image->actionGroup), G_ACTION(actMenu1));
+	snprintf(buf, sizeof(buf), "%s.ecksbawks-%d", prefix, 1);
+	g_menu_append(image->menuEcksBawks, "ermahgerd! an ecks bawks ISO!", buf);
+
+	GSimpleAction *const actMenu2 = g_simple_action_new("ecksbawks-2", nullptr);
+	g_simple_action_set_enabled(actMenu2, TRUE);
+	g_object_set_qdata(G_OBJECT(actMenu2), ecksbawks_quark, GINT_TO_POINTER(2));
+	g_signal_connect(actMenu2, "activate", G_CALLBACK(ecksbawks_action_triggered_signal_handler), image);
+	g_action_map_add_action(G_ACTION_MAP(image->actionGroup), G_ACTION(actMenu2));
+	snprintf(buf, sizeof(buf), "%s.ecksbawks-%d", prefix, 2);
+	g_menu_append(image->menuEcksBawks, "Yar, har, fiddle dee dee", buf);
+
+	gtk_widget_insert_action_group(GTK_WIDGET(image), prefix, G_ACTION_GROUP(image->actionGroup));
+#  if GTK_CHECK_VERSION(4,0,0)
+	image->popEcksBawks = gtk_popover_menu_new_from_model(G_MENU_MODEL(image->menuEcksBawks));
+#  else /* !GTK_CHECK_VERSION(4,0,0) */
+	image->popEcksBawks = gtk_popover_new_from_model(GTK_WIDGET(image), G_MENU_MODEL(image->menuEcksBawks));
+#  endif /* GTK_CHECK_VERSION(4,0,0) */
+#else /* !USE_G_MENU_MODEL */
+	image->menuEcksBawks = gtk_menu_new();
+	gtk_widget_set_name(image->menuEcksBawks, "menuEcksBawks");
+
+	GtkWidget *const actMenu1 = gtk_menu_item_new_with_label("ermahgerd! an ecks bawks ISO!");
+	g_object_set_qdata(G_OBJECT(actMenu1), ecksbawks_quark, GINT_TO_POINTER(1));
+	g_signal_connect(actMenu1, "activate", G_CALLBACK(ecksbawks_menuItem_triggered_signal_handler), image);
+	gtk_widget_show(actMenu1);
+	gtk_menu_shell_append(GTK_MENU_SHELL(image->menuEcksBawks), actMenu1);
+
+	GtkWidget *const actMenu2 = gtk_menu_item_new_with_label("Yar, har, fiddle dee dee");
+	g_object_set_qdata(G_OBJECT(actMenu2), ecksbawks_quark, GINT_TO_POINTER(2));
+	g_signal_connect(actMenu2, "activate", G_CALLBACK(ecksbawks_menuItem_triggered_signal_handler), image);
+	gtk_widget_show(actMenu2);
+	gtk_menu_shell_append(GTK_MENU_SHELL(image->menuEcksBawks), actMenu2);
+#endif
+
+#if !GTK_CHECK_VERSION(4,0,0)
+	// GTK2/GTK3: Show context menu on right-click.
+	// NOTE: On my system, programs show context menus on mouse button down.
+	// On Windows, it shows the menu on mouse button up?
+	g_signal_connect(image, "button-press-event", G_CALLBACK(rp_drag_image_on_button_press_event), nullptr);
+#endif /* !GTK_CHECK_VERSION(4,0,0) */
 }
 
 /**
@@ -579,3 +723,53 @@ rp_drag_image_drag_data_get(RpDragImage *image, GdkDragContext *context, GtkSele
 	pngData->unref();
 }
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
+
+static void
+ecksbawks_show_url(gint id)
+{
+	const char *uri = nullptr;
+
+	switch (id) {
+		default:
+			assert(!"Invalid ecksbawks URL ID.");
+			break;
+		case 1:
+			uri = "https://twitter.com/DeaThProj/status/1684469412978458624";
+			break;
+		case 2:
+			uri = "https://github.com/xenia-canary/xenia-canary/pull/180";
+			break;
+	}
+
+	if (uri) {
+		g_app_info_launch_default_for_uri(uri, nullptr, nullptr);
+	}
+}
+
+#ifdef USE_G_MENU_MODEL
+static void
+ecksbawks_action_triggered_signal_handler(GSimpleAction	*action,
+					  GVariant	*parameter,
+					  RpDragImage	*widget)
+{
+	g_return_if_fail(RP_IS_DRAG_IMAGE(widget));
+	RP_UNUSED(parameter);
+
+	const gint id = (gboolean)GPOINTER_TO_INT(
+		g_object_get_qdata(G_OBJECT(action), ecksbawks_quark));
+
+	ecksbawks_show_url(id);
+}
+#else /* !USE_G_MENU_MODEL */
+static void
+ecksbawks_menuItem_triggered_signal_handler(GtkMenuItem	*menuItem,
+					    RpDragImage	*widget)
+{
+	g_return_if_fail(RP_IS_DRAG_IMAGE(widget));
+
+	const gint id = (gboolean)GPOINTER_TO_INT(
+		g_object_get_qdata(G_OBJECT(menuItem), ecksbawks_quark));
+
+	ecksbawks_show_url(id);
+}
+#endif /* USE_G_MENU_MODEL */

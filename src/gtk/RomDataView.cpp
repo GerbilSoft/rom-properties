@@ -676,6 +676,10 @@ rp_rom_data_view_init_header_row(RpRomDataView *page)
 
 	// Show the header row. (outer box)
 	gtk_widget_set_visible(page->hboxHeaderRow_outer, true);
+
+	const bool ecksBawks = (romData->fileType() == RomData::FileType::DiscImage &&
+	                        systemName && strstr(systemName, "Xbox") != nullptr);
+	rp_drag_image_set_ecks_bawks(RP_DRAG_IMAGE(page->imgIcon), ecksBawks);
 }
 
 /**

@@ -18,9 +18,13 @@ using LibRpBase::IconAnimData;
 using LibRpBase::RpPngWriter;
 using LibRpTexture::rp_image;
 
+// Qt includes
+#include <QDesktopServices>
+
 DragImageLabel::DragImageLabel(const QString &text, QWidget *parent, Qt::WindowFlags f)
 	: super(text, parent, f)
 	, m_minimumImageSize(DIL_MIN_IMAGE_SIZE, DIL_MIN_IMAGE_SIZE)
+	, m_ecksBawks(false)
 	, m_img(nullptr)
 	, m_anim(nullptr)
 { }
@@ -28,6 +32,7 @@ DragImageLabel::DragImageLabel(const QString &text, QWidget *parent, Qt::WindowF
 DragImageLabel::DragImageLabel(QWidget *parent, Qt::WindowFlags f)
 	: super(parent, f)
 	, m_minimumImageSize(DIL_MIN_IMAGE_SIZE, DIL_MIN_IMAGE_SIZE)
+	, m_ecksBawks(false)
 	, m_img(nullptr)
 	, m_anim(nullptr)
 { }
@@ -36,6 +41,32 @@ DragImageLabel::~DragImageLabel()
 {
 	delete m_anim;
 	UNREF(m_img);
+}
+
+void DragImageLabel::setEcksBawks(bool newEcksBawks)
+{
+	m_ecksBawks = newEcksBawks;
+	setContextMenuPolicy(m_ecksBawks ? Qt::ActionsContextMenu : Qt::DefaultContextMenu);
+	if (m_ecksBawks && actions().isEmpty()) {
+#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
+		// Need to initialize Ecks Bawks actions.
+		// NOTE: Only supporting Qt 5 for lambda functions.
+		QAction *const actMenu1 = new QAction(QLatin1String("ermahgerd! an ecks bawks ISO!"), this);
+		connect(actMenu1, &QAction::triggered,
+			[](bool) {
+				QDesktopServices::openUrl(QUrl(QLatin1String("https://twitter.com/DeaThProj/status/1684469412978458624")));
+			});
+
+		QAction *const actMenu2 = new QAction(QLatin1String("Yar, har, fiddle dee dee"), this);
+		connect(actMenu2, &QAction::triggered,
+			[](bool) {
+				QDesktopServices::openUrl(QUrl(QLatin1String("https://github.com/xenia-canary/xenia-canary/pull/180")));
+			});
+
+		addAction(actMenu1);
+		addAction(actMenu2);
+#endif /* QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
+	}
 }
 
 /**
