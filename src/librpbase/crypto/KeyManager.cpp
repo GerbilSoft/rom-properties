@@ -204,7 +204,7 @@ int KeyManagerPrivate::processConfigLine(const char *section, const char *name, 
 	// Value parsed successfully.
 	uint32_t keyIdx = vKeys_start_pos;
 	keyIdx |= (len << 24);
-	mapKeyNames.emplace(string(name), keyIdx);
+	mapKeyNames.emplace(name, keyIdx);
 	return 1;
 #else /* !ENABLE_DECRYPTION */
 	RP_UNUSED(section);

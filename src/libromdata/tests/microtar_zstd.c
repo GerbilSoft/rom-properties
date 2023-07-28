@@ -78,7 +78,7 @@ static int mtar_zstd_read(mtar_t *tar, void *data, unsigned size)
 			memcpy(data8, &ctx->buf_out[ctx->output_ptr], toCopy);
 
 			data8 += toCopy;
-			size -= toCopy;
+			size -= (unsigned)toCopy;
 			ctx->output_ptr += toCopy;
 			ctx->unz_pos += toCopy;
 			if (size == 0)
@@ -178,7 +178,7 @@ static int mtar_zstd_seek(mtar_t *tar, unsigned pos)
 	while (seek_diff > 0) {
 		// Read up to seek_buf bytes.
 		size_t toCopy = min_sz(sizeof(seek_buf), seek_diff);
-		int ret = mtar_zstd_read(tar, seek_buf, toCopy);
+		int ret = mtar_zstd_read(tar, seek_buf, (unsigned)toCopy);
 		if (ret != MTAR_ESUCCESS)
 			return ret;
 

@@ -31,6 +31,7 @@
     forwarder plugins. Unfortunately, KFileMetaData uses a completely different
     format than other KDE plugins, which broke metadata extraction.
     * This was broken in v2.2.
+  * NES: Update mappers; Fix detection of mapper 458, submappers 2 and 3.
 
 ## v2.2 (released 2023/07/01)
 

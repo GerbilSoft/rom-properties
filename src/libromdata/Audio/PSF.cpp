@@ -198,14 +198,16 @@ unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
 				// Key and value are valid.
 				// NOTE: Key is case-insensitive, so convert to lowercase.
 				// NOTE: Key *must* be ASCII.
-				string key(p, k_len);
-				std::transform(key.begin(), key.end(), key.begin(),
+				string s_key(p, k_len);
+				std::transform(s_key.begin(), s_key.end(), s_key.begin(),
 					[](unsigned char c) noexcept -> char { return std::tolower(c); });
-				kv.emplace(key, string(eq+1, v_len));
+				const bool is_utf8 = (s_key == "utf8");
+				const string s_value(eq+1, v_len);
+				kv.emplace(std::move(s_key), std::move(s_value));
 
 				// Check for UTF-8.
-				// NOTE: v_len check is redundant...
-				if (key == "utf8" && v_len > 0) {
+				// NOTE: The v_len check is redundant...
+				if (is_utf8 && v_len > 0) {
 					// "utf8" key with non-empty value.
 					// This is UTF-8.
 					isUtf8 = true;

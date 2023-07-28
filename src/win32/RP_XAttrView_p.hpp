@@ -45,7 +45,7 @@ class RP_XAttrView_Private
 
 	public:
 		HWND hDlgSheet;				// Property sheet
-		LPTSTR filename;			// Opened file
+		LPTSTR tfilename;			// Opened file
 		LibRpFile::XAttrReader *xattrReader;	// XAttrReader
 
 		// wtsapi32.dll for Remote Desktop status. (WinXP and later)

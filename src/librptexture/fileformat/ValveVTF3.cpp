@@ -157,7 +157,7 @@ const rp_image *ValveVTF3Private::loadImage(void)
 
 	// TODO: Adjust for mipmaps.
 	// For now, assuming the main texture is at the end of the file.
-	const unsigned int texDataStartAddr = file_sz - expected_size;
+	const unsigned int texDataStartAddr = static_cast<unsigned int>(file_sz - expected_size);
 
 	// Texture cannot start inside of the VTF header.
 	assert(texDataStartAddr >= sizeof(vtf3Header));

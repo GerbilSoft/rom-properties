@@ -280,7 +280,7 @@ NCCHReaderPrivate::NCCHReaderPrivate(NCCHReader *q,
 				encSections.emplace_back(
 					exefs_offset,	// Address within NCCH.
 					exefs_offset,	// Counter base address.
-					sizeof(N3DS_ExeFS_Header_t),
+					static_cast<unsigned int>(sizeof(N3DS_ExeFS_Header_t)),
 					0, N3DS_NCCH_SECTION_EXEFS);
 
 				// ExeFS files

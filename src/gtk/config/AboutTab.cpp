@@ -352,9 +352,9 @@ rp_about_tab_init(RpAboutTab *tab)
 static void
 rp_about_tab_dispose(GObject *object)
 {
+#ifdef ENABLE_UPDATE_CHECK
 	RpAboutTab *const tab = RP_ABOUT_TAB(object);
 
-#ifdef ENABLE_UPDATE_CHECK
 	if (tab->updChecker) {
 		g_clear_object(&tab->updChecker);
 	}

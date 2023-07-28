@@ -61,7 +61,9 @@ int EXEPrivate::loadNEResident(void)
 	span<const uint8_t> ne_modref_raw;
 	span<const uint8_t> ne_imported_name_raw;
 
-	uint32_t end = ne_resident.size();
+	// NOTE: For performance reasons on 64-bit, we're using uint32_t instead of size_t.
+	// It's not possible for an NE executable to be larger than 16 MB, anyway.
+	uint32_t end = static_cast<uint32_t>(ne_resident.size());
 	auto set_span = [this, &end](span<const uint8_t> &sp, unsigned int offset) -> bool {
 		if (offset > end)
 			return true;
@@ -156,10 +158,10 @@ int EXEPrivate::loadNEResourceTable(void)
 		// Offse overflow
 		return -EIO;
 	}
-	const uint32_t resTableSize = ne_resource_table.size();
 
 	// Load the resources using NEResourceReader.
-	rsrcReader = new NEResourceReader(file, ResTableOffset, resTableSize);
+	rsrcReader = new NEResourceReader(file, ResTableOffset,
+		static_cast<uint32_t>(ne_resource_table.size()));
 	if (!rsrcReader->isOpen()) {
 		// Failed to open the resource table.
 		int err = rsrcReader->lastError();
@@ -459,7 +461,7 @@ void EXEPrivate::addFields_NE(void)
 		const size_t len = static_cast<uint8_t>(sp[0]);
 		if (!len || sp.size() - 1 < len)
 			return false;
-		out = string(sp.data() + 1, len);
+		out.assign(sp.data() + 1, len);
 		return true;
 	};
 	string module_name, module_desc;
@@ -619,7 +621,7 @@ int EXEPrivate::addFields_NE_Entry(void)
 				Entry ent = *it;
 				ent.name = name;
 				ent.is_resident = is_resident;
-				ents.push_back(ent); // `it` is invalidated here
+				ents.emplace_back(std::move(ent)); // `it` is invalidated here
 			} else {
 				it->has_name = true;
 				it->name = name;
@@ -751,7 +753,7 @@ int EXEPrivate::addFields_NE_Import(void)
 		assert(offset + 1 + count <= ne_imported_name_table.size());
 		if (offset + 1 + count > ne_imported_name_table.size())
 			return false;
-		out = string(&ne_imported_name_table[offset+1], count);
+		out.assign(&ne_imported_name_table[offset+1], count);
 		return true;
 	};
 	auto get_modref = [&](size_t modref, string &out) -> bool {

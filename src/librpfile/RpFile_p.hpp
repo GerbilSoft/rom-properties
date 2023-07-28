@@ -76,13 +76,6 @@ class RpFilePrivate
 			assert(filename != nullptr);
 			this->filename = strdup(filename);
 		}
-		RpFilePrivate(RpFile *q, const string &filename, RpFile::FileMode mode)
-			: q_ptr(q), file(INVALID_HANDLE_VALUE)
-			, mode(mode), gzfd(nullptr), gzsz(-1), devInfo(nullptr)
-		{
-			assert(!filename.empty());
-			this->filename = strdup(filename.c_str());
-		}
 		~RpFilePrivate();
 
 	private:

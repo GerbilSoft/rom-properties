@@ -176,24 +176,25 @@ static const char NESMappers_strtbl[] =
 	"(duplicate of 043)" "\x00" "Highway Star (bootleg)" "\x00" "Rese"
 	"t-based multicart (MMC3)" "\x00" "Y2K multicart" "\x00" "820732C"
 	"- or 830134C- multicart" "\x00" "HP-898F / KD-7/9-E boards" "\x00"
-	"Super HiK 6-in-1 A-030 multicart" "\x00" "35-in-1 (K-3033) multi"
-	"cart" "\x00" "Farid's homebrew 8-in-1 SLROM multicart" "\x00" "F"
-	"arid's homebrew 8-in-1 UNROM multicart" "\x00" "Super Mali Splas"
-	"h Bomb (bootleg)" "\x00" "Contra/Gryzor (bootleg)" "\x00" "6-in-"
-	"1 multicart" "\x00" "Test Ver. 1.01 Dlya Proverki TV Pristavok t"
-	"est cartridge" "\x00" "Education Computer 2000" "\x00" "Sangokus"
-	"hi II: Ha" "\xc5\x8d" " no Tairiku (bootleg)" "\x00" "7-in-1 (NS"
-	"03) multicart" "\x00" "Super 40-in-1 multicart" "\x00" "New Star"
-	" Super 8-in-1 multicart" "\x00" "New Star" "\x00" "5/20-in-1 199"
-	"3 Copyright multicart" "\x00" "10-in-1 multicart" "\x00" "11-in-"
-	"1 multicart" "\x00" "12-in-1 Game Card multicart" "\x00" "16-in-"
-	"1, 200/300/600/1000-in-1 multicart" "\x00" "21-in-1 multicart" "\x00"
-	"Simple 4-in-1 multicart" "\x00" "COOLGIRL multicart (Homebrew)" "\x00"
-	"Kuai Da Jin Ka Zhong Ji Tiao Zhan 3-in-1 multicart" "\x00" "New "
-	"Star 6-in-1 Game Cartridge multicart" "\x00" "Zanac (FDS convers"
-	"ion)" "\x00" "Yume Koujou: Doki Doki Panic (FDS conversion)" "\x00"
-	"830118C" "\x00" "1994 Super HIK 14-in-1 (G-136) multicart" "\x00"
-	"Super 15-in-1 Game Card multicart" "\x00" "9-in-1 multicart" "\x00"
+	"Super HiK 6-in-1 A-030 multicart" "\x00" "BMC-820310-C" "\x00" "3"
+	"5-in-1 (K-3033) multicart" "\x00" "Farid's homebrew 8-in-1 SLROM"
+	" multicart" "\x00" "Farid's homebrew 8-in-1 UNROM multicart" "\x00"
+	"Super Mali Splash Bomb (bootleg)" "\x00" "Contra/Gryzor (bootleg"
+	")" "\x00" "6-in-1 multicart" "\x00" "Test Ver. 1.01 Dlya Proverk"
+	"i TV Pristavok test cartridge" "\x00" "Education Computer 2000" "\x00"
+	"Sangokushi II: Ha" "\xc5\x8d" " no Tairiku (bootleg)" "\x00" "7-"
+	"in-1 (NS03) multicart" "\x00" "Super 40-in-1 multicart" "\x00" "N"
+	"ew Star Super 8-in-1 multicart" "\x00" "New Star" "\x00" "5/20-i"
+	"n-1 1993 Copyright multicart" "\x00" "10-in-1 multicart" "\x00" "1"
+	"1-in-1 multicart" "\x00" "12-in-1 Game Card multicart" "\x00" "1"
+	"6-in-1, 200/300/600/1000-in-1 multicart" "\x00" "21-in-1 multica"
+	"rt" "\x00" "Simple 4-in-1 multicart" "\x00" "COOLGIRL multicart "
+	"(Homebrew)" "\x00" "Reset-based 4-in-1 multicart" "\x00" "Kuai D"
+	"a Jin Ka Zhong Ji Tiao Zhan 3-in-1 multicart" "\x00" "New Star 6"
+	"-in-1 Game Cartridge multicart" "\x00" "Zanac (FDS conversion)" "\x00"
+	"Yume Koujou: Doki Doki Panic (FDS conversion)" "\x00" "BMC-83011"
+	"8C" "\x00" "1994 Super HIK 14-in-1 (G-136) multicart" "\x00" "Su"
+	"per 15-in-1 Game Card multicart" "\x00" "9-in-1 multicart" "\x00"
 	"J.Y. Company / Techline" "\x00" "Kaiser 4-in-1 multicart (KS106C"
 	")" "\x00" "92 Super Mario Family multicart" "\x00" "250-in-1 mul"
 	"ticart" "\x00\xe9\xbb\x83\xe4\xbf\xa1\xe7\xb6\xad" " 3D-BLOCK" "\x00"
@@ -214,72 +215,85 @@ static const char NESMappers_strtbl[] =
 	"1A16 (VRC4e clone)" "\x00" "NTDEC 2779" "\x00" "YY860729C" "\x00"
 	"YY850735C / YY850817C" "\x00" "YY841145C / YY850835C" "\x00" "Ca"
 	"ltron 9-in-1 multicart" "\x00" "Realtec 8031" "\x00" "NC7000M (M"
-	"MC3 clone)" "\x00" "Realtec HSK007 multicart" "\x00" "Realtec 82"
-	"10 multicart (MMC3-compatible)" "\x00" "YY850437C / Realtec GN-5"
-	"1 multicart" "\x00" "1996 Soccer 6-in-1 (JY-082)" "\x00" "YY8408"
-	"20C" "\x00" "Star Versus" "\x00" "8-BIT XMAS 2017" "\x00" "retro"
-	"USB" "\x00" "KC885 multicart" "\x00" "J-2282 multicart" "\x00" "8"
-	"9433" "\x00" "JY012005 MMC1-based multicart" "\x00" "Game design"
-	"ed for UMC UM6578" "\x00" "UMC" "\x00" "Haradius Zero" "\x00" "W"
-	"in, Lose, or Draw Plug-n-Play (VT03)" "\x00" "Konami Collector's"
-	" Series Advance Arcade Plug & Play" "\x00" "DPCMcart" "\x00" "Su"
-	"per 8-in-1 multicart (JY-302)" "\x00" "A88S-1 multicart (MMC3-co"
-	"mpatible)" "\x00" "Intellivision 10-in-1 Plug 'n Play 2nd Editio"
-	"n" "\x00" "Techno Source" "\x00" "Super Russian Roulette" "\x00" "9"
-	"999999-in-1 multicart" "\x00" "Lucky Rabbit (0353) (FDS conversi"
-	"on of Roger Rabbit)" "\x00" "4-in-1 multicart" "\x00" "Batman: T"
-	"he Video Game (Fine Studio bootleg)" "\x00" "Fine Studio" "\x00" "8"
-	"20106-C / 821007C (LH42)" "\x00" "TK-8007 MCU (VT03)" "\x00" "Ta"
-	"ikee" "\x00" "A971210" "\x00" "Kasheng" "\x00" "SC871115C" "\x00"
-	"BS-300 / BS-400 / BS-4040 multicarts" "\x00" "Lexibook Compact C"
-	"yber Arcade (VT369)" "\x00" "Lexibook" "\x00" "Lexibook Retro TV"
-	" Game Console (VT369)" "\x00" "Cube Tech VT369 handheld consoles"
-	"\x00" "Cube Tech" "\x00" "VT369-based handheld console with 256-"
-	"byte serial ROM" "\x00" "VT369-based handheld console with I" "\xc2"
-	"\xb2" "C protection chip" "\x00" "(C)NROM multicart" "\x00" "Mil"
-	"owork FCFC1 flash cartridge (A mode)" "\x00" "Milowork" "\x00" "8"
-	"31031C/T-308 multicart (MMC3-based)" "\x00" "Realtec GN-91B" "\x00"
-	"Realtec 8090 (MMC3-based)" "\x00" "NC-20MB PCB; 20-in-1 multicar"
-	"t (CA-006)" "\x00" "S-009" "\x00" "NC3000M multicart" "\x00" "NC"
-	"7000M multicart (MMC3-compatible)" "\x00" "DG574B multicart (MMC"
-	"3-compatible)" "\x00" "SMD172B_FPGA" "\x00" "Mindkids" "\x00" "K"
-	"L-06 multicart (VRC4)" "\x00" "830768C multicart (VRC4)" "\x00" "S"
-	"uper Games King" "\x00" "YY841157C multicart (VRC2)" "\x00" "Har"
-	"atyler HP/MP" "\x00" "DS-9-27 multicart" "\x00" "Realtec 8042" "\x00"
-	"47-2 (MMC3)" "\x00" "Zh" "\xc5\x8d" "nggu" "\xc3\xb3" " D" "\xc3"
-	"\xa0" "h" "\xc4\x93" "ng" "\x00" "M" "\xc4\x9b" "i Sh" "\xc3\xa0"
-	"on" "\xc7\x9a" " M" "\xc3\xa8" "ng G" "\xc5\x8d" "ngch" "\xc7\x8e"
-	"ng III" "\x00" "Subor Karaoke" "\x00" "Family Noraebang" "\x00" "B"
-	"rilliant Com Cocoma Pack" "\x00" "EduBank" "\x00" "Kkachi-wa Nol"
-	"ae Chingu" "\x00" "Subor multicart" "\x00" "UNL-EH8813A" "\x00" "2"
-	"-in-1 Datach multicart (VRC4e clone)" "\x00" "Korean Igo" "\x00" "F"
-	"\xc5\xab" "un Sh" "\xc5\x8d" "rinken (FDS conversion)" "\x00" "F"
-	"\xc4\x93" "ngsh" "\xc3\xa9" "nb" "\xc7\x8e" "ng: F" "\xc3\xba" "m"
-	"\xc3\xb3" " S" "\xc4\x81" "n T" "\xc3\xa0" "iz" "\xc7\x90" " (Jn"
-	"cota)" "\x00" "The Lord of King (Jaleco) (bootleg)" "\x00" "UNL-"
-	"KS7021A (VRC2b clone)" "\x00" "Sangokushi: Ch" "\xc5\xab" "gen n"
-	"o Hasha (bootleg)" "\x00" "Fud" "\xc5\x8d" " My" "\xc5\x8d\xc5\x8d"
-	" Den (bootleg) (VRC2b clone)" "\x00" "1995 New Series Super 2-in"
-	"-1 multicart" "\x00" "Datach Dragon Ball Z (bootleg) (VRC4e clon"
-	"e)" "\x00" "Super Mario Bros. Pocker Mali (VRC4f clone)" "\x00" "L"
-	"ittleCom PC-95" "\x00" "CHINA_ER_SAN2" "\x00" "Sachen 3014" "\x00"
-	"2-in-1 Sudoku/Gomoku (NJ064) (MMC3 clone)" "\x00" "Nazo no Muras"
-	"amej" "\xc5\x8d" " (FDS conversion)" "\x00" "W" "\xc3\xa0" "ix" "\xc4"
-	"\xab" "ng FS303 (MMC3 clone) (same as 195)" "\x00" "60-1064-16L" "\x00"
-	"Kid Icarus (FDS conversion)" "\x00" "Master Fighter VI' hack (va"
-	"riant of 359)" "\x00" "LittleCom 160-in-1 multicart" "\x00" "Wor"
-	"ld Hero hack (VRC4 clone)" "\x00" "5-in-1 (CH-501) multicart (MM"
-	"C1 clone)" "\x00" "W" "\xc3\xa0" "ix" "\xc4\xab" "ng FS306" "\x00"
-	"ST-80 (4-in-1)" "\x00" "10-in-1 Tenchi wo Kurau multicart" "\x00"
-	"Konami QTa adapter (VRC5)" "\x00" "CTC-15" "\x00" "Co Tung Co." "\x00"
-	"Meikyuu Jiin Dababa" "\x00" "JY820845C" "\x00" "Jncota RPG re-re"
-	"lease (variant of 178)" "\x00" "Taito X1-017 (correct PRG ROM ba"
-	"nk ordering)" "\x00" "Sachen 3013" "\x00" "Kaiser KS-7010" "\x00"
-	"Nintendo Campus Challenge 1991 (RetroUSB version)" "\x00" "JY-21"
-	"5 multicart" "\x00" "Moero TwinBee: Cinnamon-hakase o Sukue! (FD"
-	"S conversion)" "\x00" "YC-03-09" "\x00" "Y" "\xc3\xa0" "nch" "\xc3"
-	"\xa9" "ng" "\x00" "Bung Super Game Doctor 2M/4M RAM cartridge" "\x00"
-	"Venus Turbo Game Doctor 4+/6+/6M RAM cartridge" "\x00";
+	"MC3 clone)" "\x00" "00202650 (MMC3 clone)" "\x00" "820720C multi"
+	"cart" "\x00" "Realtec HSK007 multicart" "\x00" "Realtec 8210 mul"
+	"ticart (MMC3-compatible)" "\x00" "YY850437C / Realtec GN-51 mult"
+	"icart" "\x00" "1996 Soccer 6-in-1 (JY-082)" "\x00" "YY840820C" "\x00"
+	"Star Versus" "\x00" "8-BIT XMAS 2017" "\x00" "retroUSB" "\x00" "K"
+	"C885 multicart" "\x00" "J-2282 multicart" "\x00" "89433" "\x00" "J"
+	"Y012005 MMC1-based multicart" "\x00" "Game designed for UMC UM65"
+	"78" "\x00" "UMC" "\x00" "Haradius Zero" "\x00" "Win, Lose, or Dr"
+	"aw Plug-n-Play (VT03)" "\x00" "Konami Collector's Series Advance"
+	" Arcade Plug & Play" "\x00" "DPCMcart" "\x00" "Super 8-in-1 mult"
+	"icart (JY-302)" "\x00" "A88S-1 multicart (MMC3-compatible)" "\x00"
+	"Intellivision 10-in-1 Plug 'n Play 2nd Edition" "\x00" "Techno S"
+	"ource" "\x00" "Super Russian Roulette" "\x00" "9999999-in-1 mult"
+	"icart" "\x00" "Lucky Rabbit (0353) (FDS conversion of Roger Rabb"
+	"it)" "\x00" "4-in-1 multicart" "\x00" "Batman: The Video Game (F"
+	"ine Studio bootleg)" "\x00" "Fine Studio" "\x00" "820106-C / 821"
+	"007C (LH42)" "\x00" "TK-8007 MCU (VT03)" "\x00" "Taikee" "\x00" "A"
+	"971210" "\x00" "Kasheng" "\x00" "SC871115C" "\x00" "BS-300 / BS-"
+	"400 / BS-4040 multicarts" "\x00" "Lexibook Compact Cyber Arcade "
+	"(VT369)" "\x00" "Lexibook" "\x00" "Lexibook Retro TV Game Consol"
+	"e (VT369)" "\x00" "Cube Tech VT369 handheld consoles" "\x00" "Cu"
+	"be Tech" "\x00" "VT369-based handheld console with 256-byte seri"
+	"al ROM" "\x00" "VT369-based handheld console with I" "\xc2\xb2" "C"
+	" protection chip" "\x00" "(C)NROM multicart" "\x00" "Milowork FC"
+	"FC1 flash cartridge (A mode)" "\x00" "Milowork" "\x00" "831031C/"
+	"T-308 multicart (MMC3-based)" "\x00" "Realtec GN-91B" "\x00" "Re"
+	"altec 8090 (MMC3-based)" "\x00" "NC-20MB PCB; 20-in-1 multicart "
+	"(CA-006)" "\x00" "S-009" "\x00" "F-1002 multicart" "\x00" "ZLX-0"
+	"8 plug-and-play (VT02)" "\x00" "TH2348 multicart" "\x00" "K-3071"
+	" multicart" "\x00" "YS2309 multicart" "\x00" "Sonic REC-9388" "\x00"
+	"841026C / 850335C multicart" "\x00" "Golden Key" "\x00" "NC3000M"
+	" multicart" "\x00" "NC7000M multicart (MMC3-compatible)" "\x00" "D"
+	"G574B multicart (MMC3-compatible)" "\x00" "SMD172B_FPGA" "\x00" "M"
+	"indkids" "\x00" "KL-06 multicart (VRC4)" "\x00" "830768C multica"
+	"rt (VRC4)" "\x00" "Super Games King" "\x00" "YY841157C multicart"
+	" (VRC2)" "\x00" "Haratyler HP/MP" "\x00" "DS-9-27 multicart" "\x00"
+	"Realtec 8042" "\x00" "110-in-1 multicart" "\x00" "N625836 MMC3-b"
+	"ased multicart" "\x00" "K6C3001 multicart" "\x00" "810431C multi"
+	"cart" "\x00" "K-3102 / GN-23 MMC3-based multicart" "\x00" "FC-29"
+	"-40 / K-3101 MMC3-based multicart" "\x00" "CM-9309 MMC1-based mu"
+	"lticart" "\x00" "47-2 (MMC3)" "\x00" "BlazePro multicart" "\x00" "B"
+	"lazePro multicart (FDS)" "\x00" "INX_007T_V01" "\x00" "Retro-Bit"
+	"\x00" "IM1" "\x00" "Impact Soft" "\x00" "FK-206 JG (MMC3-compati"
+	"ble)" "\x00\xe6\x81\x92\xe6\xa0\xbc\x00" "KJ01A-18 (MMC3-compati"
+	"ble)" "\x00" "NROM-383 / NROM-368" "\x00" "Akerasoft" "\x00" "Zh"
+	"\xc5\x8d" "nggu" "\xc3\xb3" " D" "\xc3\xa0" "h" "\xc4\x93" "ng" "\x00"
+	"M" "\xc4\x9b" "i Sh" "\xc3\xa0" "on" "\xc7\x9a" " M" "\xc3\xa8" "n"
+	"g G" "\xc5\x8d" "ngch" "\xc7\x8e" "ng III" "\x00" "Subor Karaoke"
+	"\x00" "Family Noraebang" "\x00" "Brilliant Com Cocoma Pack" "\x00"
+	"EduBank" "\x00" "Kkachi-wa Nolae Chingu" "\x00" "Subor multicart"
+	"\x00" "UNL-EH8813A" "\x00" "2-in-1 Datach multicart (VRC4e clone"
+	")" "\x00" "Korean Igo" "\x00" "F" "\xc5\xab" "un Sh" "\xc5\x8d" "r"
+	"inken (FDS conversion)" "\x00" "F" "\xc4\x93" "ngsh" "\xc3\xa9" "n"
+	"b" "\xc7\x8e" "ng: F" "\xc3\xba" "m" "\xc3\xb3" " S" "\xc4\x81" "n"
+	" T" "\xc3\xa0" "iz" "\xc7\x90" " (Jncota)" "\x00" "The Lord of K"
+	"ing (Jaleco) (bootleg)" "\x00" "UNL-KS7021A (VRC2b clone)" "\x00"
+	"Sangokushi: Ch" "\xc5\xab" "gen no Hasha (bootleg)" "\x00" "Fud" "\xc5"
+	"\x8d" " My" "\xc5\x8d\xc5\x8d" " Den (bootleg) (VRC2b clone)" "\x00"
+	"1995 New Series Super 2-in-1 multicart" "\x00" "Datach Dragon Ba"
+	"ll Z (bootleg) (VRC4e clone)" "\x00" "Super Mario Bros. Pocker M"
+	"ali (VRC4f clone)" "\x00" "LittleCom PC-95" "\x00" "CHINA_ER_SAN"
+	"2" "\x00" "Sachen 3014" "\x00" "2-in-1 Sudoku/Gomoku (NJ064) (MM"
+	"C3 clone)" "\x00" "Nazo no Murasamej" "\xc5\x8d" " (FDS conversi"
+	"on)" "\x00" "W" "\xc3\xa0" "ix" "\xc4\xab" "ng FS303 (MMC3 clone"
+	") (same as 195)" "\x00" "60-1064-16L" "\x00" "Kid Icarus (FDS co"
+	"nversion)" "\x00" "Master Fighter VI' hack (variant of 359)" "\x00"
+	"LittleCom 160-in-1 multicart" "\x00" "World Hero hack (VRC4 clon"
+	"e)" "\x00" "5-in-1 (CH-501) multicart (MMC1 clone)" "\x00" "W" "\xc3"
+	"\xa0" "ix" "\xc4\xab" "ng FS306" "\x00" "ST-80 (4-in-1)" "\x00" "1"
+	"0-in-1 Tenchi wo Kurau multicart" "\x00" "Konami QTa adapter (VR"
+	"C5)" "\x00" "CTC-15" "\x00" "Co Tung Co." "\x00" "Meikyuu Jiin D"
+	"ababa" "\x00" "JY820845C" "\x00" "Jncota RPG re-release (variant"
+	" of 178)" "\x00" "Taito X1-017 (correct PRG ROM bank ordering)" "\x00"
+	"Sachen 3013" "\x00" "Kaiser KS-7010" "\x00" "Nintendo Campus Cha"
+	"llenge 1991 (RetroUSB version)" "\x00" "JY-215 multicart" "\x00" "M"
+	"oero TwinBee: Cinnamon-hakase o Sukue! (FDS conversion)" "\x00" "Y"
+	"C-03-09" "\x00" "Y" "\xc3\xa0" "nch" "\xc3\xa9" "ng" "\x00" "Bun"
+	"g Super Game Doctor 2M/4M RAM cartridge" "\x00" "Venus Turbo Gam"
+	"e Doctor 4+/6+/6M RAM cartridge" "\x00";
 
 typedef struct _NESMapperEntry {
 	uint16_t name_idx;
@@ -674,190 +688,190 @@ static const NESMapperEntry NESMappers_offtbl[] = {
 
 	/* Mapper 320 */
 	{7498, 0, NESMirroring::Unknown},
-	{0, 0, NESMirroring::Unknown},
 	{7531, 0, NESMirroring::Unknown},
-	{7558, 514, NESMirroring::Unknown},
-	{7598, 514, NESMirroring::Unknown},
-	{7638, 0, NESMirroring::Unknown},
-	{7671, 0, NESMirroring::Unknown},
-	{7695, 0, NESMirroring::Unknown},
-	{7712, 0, NESMirroring::Unknown},
-	{7769, 0, NESMirroring::Unknown},
+	{7544, 0, NESMirroring::Unknown},
+	{7571, 514, NESMirroring::Unknown},
+	{7611, 514, NESMirroring::Unknown},
+	{7651, 0, NESMirroring::Unknown},
+	{7684, 0, NESMirroring::Unknown},
+	{7708, 0, NESMirroring::Unknown},
+	{7725, 0, NESMirroring::Unknown},
+	{7782, 0, NESMirroring::Unknown},
 
 	/* Mapper 330 */
-	{7793, 0, NESMirroring::Unknown},
-	{7834, 0, NESMirroring::Unknown},
-	{7858, 0, NESMirroring::Unknown},
-	{7882, 7914, NESMirroring::Unknown},
-	{7923, 0, NESMirroring::Unknown},
-	{7958, 0, NESMirroring::Unknown},
-	{7976, 0, NESMirroring::Unknown},
-	{7994, 0, NESMirroring::Unknown},
-	{8022, 0, NESMirroring::Unknown},
-	{8063, 0, NESMirroring::Unknown},
+	{7806, 0, NESMirroring::Unknown},
+	{7847, 0, NESMirroring::Unknown},
+	{7871, 0, NESMirroring::Unknown},
+	{7895, 7927, NESMirroring::Unknown},
+	{7936, 0, NESMirroring::Unknown},
+	{7971, 0, NESMirroring::Unknown},
+	{7989, 0, NESMirroring::Unknown},
+	{8007, 0, NESMirroring::Unknown},
+	{8035, 0, NESMirroring::Unknown},
+	{8076, 0, NESMirroring::Unknown},
 
 	/* Mapper 340 */
 	{4695, 0, NESMirroring::Unknown},
-	{8081, 0, NESMirroring::Unknown},
-	{8105, 514, NESMirroring::Unknown},
-	{0, 0, NESMirroring::Unknown},
-	{8135, 0, NESMirroring::Unknown},
-	{8186, 7914, NESMirroring::Unknown},
-	{8227, 3169, NESMirroring::Unknown},
-	{8250, 3169, NESMirroring::Unknown},
-	{8296, 0, NESMirroring::Unknown},
-	{8304, 0, NESMirroring::Unknown},
+	{8094, 0, NESMirroring::Unknown},
+	{8118, 514, NESMirroring::Unknown},
+	{8148, 0, NESMirroring::Unknown},
+	{8177, 0, NESMirroring::Unknown},
+	{8228, 7927, NESMirroring::Unknown},
+	{8269, 3169, NESMirroring::Unknown},
+	{8292, 3169, NESMirroring::Unknown},
+	{8338, 0, NESMirroring::Unknown},
+	{8350, 0, NESMirroring::Unknown},
 
 	/* Mapper 350 */
-	{8345, 0, NESMirroring::Unknown},
-	{8379, 8396, NESMirroring::Unknown},
-	{8420, 3169, NESMirroring::Unknown},
-	{8453, 0, NESMirroring::Unknown},
-	{8485, 0, NESMirroring::Unknown},
-	{8504, 0, NESMirroring::Unknown},
-	{8523, 674, NESMirroring::Unknown},
-	{8547, 741, NESMirroring::Unknown},
+	{8391, 0, NESMirroring::Unknown},
+	{8425, 8442, NESMirroring::Unknown},
+	{8466, 3169, NESMirroring::Unknown},
+	{8499, 0, NESMirroring::Unknown},
+	{8531, 0, NESMirroring::Unknown},
+	{8550, 0, NESMirroring::Unknown},
+	{8569, 674, NESMirroring::Unknown},
+	{8593, 741, NESMirroring::Unknown},
 	{6460, 674, NESMirroring::Unknown},
-	{8571, 0, NESMirroring::Unknown},
+	{8617, 0, NESMirroring::Unknown},
 
 	/* Mapper 360 */
-	{8609, 741, NESMirroring::Unknown},
-	{8634, 674, NESMirroring::Unknown},
-	{8667, 674, NESMirroring::Unknown},
+	{8655, 741, NESMirroring::Unknown},
+	{8680, 674, NESMirroring::Unknown},
+	{8713, 674, NESMirroring::Unknown},
 	{6460, 674, NESMirroring::Unknown},
-	{8699, 674, NESMirroring::Unknown},
-	{8719, 6663, NESMirroring::Unknown},
-	{8752, 0, NESMirroring::Unknown},
-	{8781, 0, NESMirroring::Unknown},
-	{8798, 8839, NESMirroring::Unknown},
-	{8847, 0, NESMirroring::Unknown},
+	{8745, 674, NESMirroring::Unknown},
+	{8765, 6663, NESMirroring::Unknown},
+	{8798, 0, NESMirroring::Unknown},
+	{8827, 0, NESMirroring::Unknown},
+	{8844, 8885, NESMirroring::Unknown},
+	{8893, 0, NESMirroring::Unknown},
 
 	/* Mapper 370 */
-	{8856, 0, NESMirroring::Unknown},
-	{8861, 8901, NESMirroring::Unknown},
-	{8908, 0, NESMirroring::Unknown},
-	{8939, 0, NESMirroring::Unknown},
-	{8971, 0, NESMirroring::Unknown},
-	{8998, 0, NESMirroring::Unknown},
-	{9025, 674, NESMirroring::Unknown},
-	{9045, 674, NESMirroring::Unknown},
-	{9077, 0, NESMirroring::Unknown},
-	{9106, 0, NESMirroring::Unknown},
+	{8902, 0, NESMirroring::Unknown},
+	{8907, 8947, NESMirroring::Unknown},
+	{8954, 0, NESMirroring::Unknown},
+	{8985, 0, NESMirroring::Unknown},
+	{9017, 0, NESMirroring::Unknown},
+	{9044, 0, NESMirroring::Unknown},
+	{9071, 674, NESMirroring::Unknown},
+	{9091, 674, NESMirroring::Unknown},
+	{9123, 0, NESMirroring::Unknown},
+	{9152, 0, NESMirroring::Unknown},
 
 	/* Mapper 380 */
-	{9129, 0, NESMirroring::Unknown},
-	{9137, 0, NESMirroring::Unknown},
-	{9143, 0, NESMirroring::Unknown},
-	{9151, 674, NESMirroring::Unknown},
-	{9174, 0, NESMirroring::Unknown},
-	{9194, 793, NESMirroring::Unknown},
-	{9205, 674, NESMirroring::Unknown},
-	{9215, 674, NESMirroring::Unknown},
-	{9237, 674, NESMirroring::Unknown},
-	{9259, 814, NESMirroring::Unknown},
+	{9175, 0, NESMirroring::Unknown},
+	{9183, 0, NESMirroring::Unknown},
+	{9189, 0, NESMirroring::Unknown},
+	{9197, 674, NESMirroring::Unknown},
+	{9220, 0, NESMirroring::Unknown},
+	{9240, 793, NESMirroring::Unknown},
+	{9251, 674, NESMirroring::Unknown},
+	{9261, 674, NESMirroring::Unknown},
+	{9283, 674, NESMirroring::Unknown},
+	{9305, 814, NESMirroring::Unknown},
 
 	/* Mapper 390 */
-	{9284, 5412, NESMirroring::Unknown},
-	{9297, 0, NESMirroring::Unknown},
-	{0, 0, NESMirroring::Unknown},
-	{0, 0, NESMirroring::Unknown},
-	{9318, 5412, NESMirroring::Unknown},
-	{9343, 5412, NESMirroring::Unknown},
-	{9384, 0, NESMirroring::Unknown},
-	{9420, 674, NESMirroring::Unknown},
-	{9448, 674, NESMirroring::Unknown},
-	{9458, 514, NESMirroring::Unknown},
+	{9330, 5412, NESMirroring::Unknown},
+	{9343, 0, NESMirroring::Unknown},
+	{9364, 0, NESMirroring::Unknown},
+	{9386, 0, NESMirroring::Unknown},
+	{9404, 5412, NESMirroring::Unknown},
+	{9429, 5412, NESMirroring::Unknown},
+	{9470, 0, NESMirroring::Unknown},
+	{9506, 674, NESMirroring::Unknown},
+	{9534, 674, NESMirroring::Unknown},
+	{9544, 514, NESMirroring::Unknown},
 
 	/* Mapper 400 */
-	{9470, 9486, NESMirroring::Unknown},
-	{9495, 0, NESMirroring::Unknown},
-	{9511, 0, NESMirroring::Unknown},
-	{9528, 0, NESMirroring::Unknown},
-	{9534, 674, NESMirroring::Unknown},
-	{9564, 9593, NESMirroring::Unknown},
-	{9597, 514, NESMirroring::Unknown},
-	{9611, 0, NESMirroring::Unknown},
-	{9649, 426, NESMirroring::Unknown},
-	{9702, 9486, NESMirroring::Unknown},
+	{9556, 9572, NESMirroring::Unknown},
+	{9581, 0, NESMirroring::Unknown},
+	{9597, 0, NESMirroring::Unknown},
+	{9614, 0, NESMirroring::Unknown},
+	{9620, 674, NESMirroring::Unknown},
+	{9650, 9679, NESMirroring::Unknown},
+	{9683, 514, NESMirroring::Unknown},
+	{9697, 0, NESMirroring::Unknown},
+	{9735, 426, NESMirroring::Unknown},
+	{9788, 9572, NESMirroring::Unknown},
 
 	/* Mapper 410 */
-	{9711, 674, NESMirroring::Unknown},
-	{9743, 0, NESMirroring::Unknown},
-	{9778, 9825, NESMirroring::Unknown},
-	{9839, 514, NESMirroring::Unknown},
-	{9862, 0, NESMirroring::Unknown},
-	{9885, 0, NESMirroring::Unknown},
-	{9938, 0, NESMirroring::Unknown},
-	{9955, 10000, NESMirroring::Unknown},
-	{10012, 0, NESMirroring::Unknown},
-	{10038, 10057, NESMirroring::Unknown},
+	{9797, 674, NESMirroring::Unknown},
+	{9829, 0, NESMirroring::Unknown},
+	{9864, 9911, NESMirroring::Unknown},
+	{9925, 514, NESMirroring::Unknown},
+	{9948, 0, NESMirroring::Unknown},
+	{9971, 0, NESMirroring::Unknown},
+	{10024, 0, NESMirroring::Unknown},
+	{10041, 10086, NESMirroring::Unknown},
+	{10098, 0, NESMirroring::Unknown},
+	{10124, 10143, NESMirroring::Unknown},
 
 	/* Mapper 420 */
-	{10064, 10072, NESMirroring::Unknown},
-	{10080, 674, NESMirroring::Unknown},
-	{10090, 0, NESMirroring::Unknown},
-	{10127, 10165, NESMirroring::Unknown},
-	{10174, 10165, NESMirroring::Unknown},
-	{10213, 10247, NESMirroring::Unknown},
-	{10257, 0, NESMirroring::Unknown},
-	{10311, 0, NESMirroring::Unknown},
-	{10366, 0, NESMirroring::Unknown},
-	{10384, 10424, NESMirroring::Unknown},
+	{10150, 10158, NESMirroring::Unknown},
+	{10166, 674, NESMirroring::Unknown},
+	{10176, 0, NESMirroring::Unknown},
+	{10213, 10251, NESMirroring::Unknown},
+	{10260, 10251, NESMirroring::Unknown},
+	{10299, 10333, NESMirroring::Unknown},
+	{10343, 0, NESMirroring::Unknown},
+	{10397, 0, NESMirroring::Unknown},
+	{10452, 0, NESMirroring::Unknown},
+	{10470, 10510, NESMirroring::Unknown},
 
 	/* Mapper 430 */
-	{10433, 0, NESMirroring::Unknown},
-	{10470, 5412, NESMirroring::Unknown},
-	{10485, 5412, NESMirroring::Unknown},
-	{10511, 0, NESMirroring::Unknown},
-	{10551, 0, NESMirroring::Unknown},
-	{0, 0, NESMirroring::Unknown},
-	{0, 0, NESMirroring::Unknown},
-	{0, 0, NESMirroring::Unknown},
-	{0, 0, NESMirroring::Unknown},
-	{0, 0, NESMirroring::Unknown},
+	{10519, 0, NESMirroring::Unknown},
+	{10556, 5412, NESMirroring::Unknown},
+	{10571, 5412, NESMirroring::Unknown},
+	{10597, 0, NESMirroring::Unknown},
+	{10637, 0, NESMirroring::Unknown},
+	{10643, 0, NESMirroring::Unknown},
+	{10660, 0, NESMirroring::Unknown},
+	{10688, 793, NESMirroring::MapperHV},
+	{10705, 0, NESMirroring::MapperHV},
+	{10722, 0, NESMirroring::MapperHV},
 
 	/* Mapper 440 */
-	{0, 0, NESMirroring::Unknown},
-	{0, 0, NESMirroring::Unknown},
-	{0, 0, NESMirroring::Unknown},
-	{10557, 0, NESMirroring::Unknown},
-	{10575, 0, NESMirroring::Unknown},
-	{10611, 0, NESMirroring::Unknown},
-	{10646, 10659, NESMirroring::Unknown},
-	{10668, 0, NESMirroring::Unknown},
-	{10691, 0, NESMirroring::Unknown},
-	{10716, 0, NESMirroring::Unknown},
+	{10739, 8947, NESMirroring::Unknown},
+	{10754, 0, NESMirroring::Unknown},
+	{10782, 0, NESMirroring::Unknown},
+	{10793, 0, NESMirroring::Unknown},
+	{10811, 0, NESMirroring::Unknown},
+	{10847, 0, NESMirroring::Unknown},
+	{10882, 10895, NESMirroring::Unknown},
+	{10904, 0, NESMirroring::Unknown},
+	{10927, 0, NESMirroring::Unknown},
+	{10952, 0, NESMirroring::Unknown},
 
 	/* Mapper 450 */
-	{10733, 674, NESMirroring::Unknown},
-	{10760, 0, NESMirroring::Unknown},
-	{10776, 0, NESMirroring::Unknown},
-	{10794, 5412, NESMirroring::Unknown},
-	{0, 0, NESMirroring::Unknown},
-	{0, 0, NESMirroring::Unknown},
-	{0, 0, NESMirroring::Unknown},
-	{0, 0, NESMirroring::Unknown},
-	{0, 0, NESMirroring::Unknown},
+	{10969, 674, NESMirroring::Unknown},
+	{10996, 0, NESMirroring::Unknown},
+	{11012, 0, NESMirroring::Unknown},
+	{11030, 5412, NESMirroring::Unknown},
+	{11043, 0, NESMirroring::MapperHV},
+	{11062, 793, NESMirroring::MapperHV},
+	{11091, 5412, NESMirroring::MapperHV},
+	{11109, 0, NESMirroring::MapperHV},
+	{11127, 0, NESMirroring::MapperHV},
 	{0, 0, NESMirroring::Unknown},
 
 	/* Mapper 460 */
+	{11163, 0, NESMirroring::MapperHV},
+	{11202, 0, NESMirroring::Unknown},
 	{0, 0, NESMirroring::Unknown},
 	{0, 0, NESMirroring::Unknown},
 	{0, 0, NESMirroring::Unknown},
 	{0, 0, NESMirroring::Unknown},
 	{0, 0, NESMirroring::Unknown},
-	{0, 0, NESMirroring::Unknown},
-	{0, 0, NESMirroring::Unknown},
-	{10807, 0, NESMirroring::Unknown},
-	{0, 0, NESMirroring::Unknown},
-	{0, 0, NESMirroring::Unknown},
+	{11231, 0, NESMirroring::Unknown},
+	{11243, 0, NESMirroring::Unknown},
+	{11262, 0, NESMirroring::Unknown},
 
 	/* Mapper 470 */
-	{0, 0, NESMirroring::Unknown},
-	{0, 0, NESMirroring::Unknown},
-	{0, 0, NESMirroring::Unknown},
-	{0, 0, NESMirroring::Unknown},
-	{0, 0, NESMirroring::Unknown},
+	{11287, 11300, NESMirroring::MapperAB},
+	{11310, 11314, NESMirroring::Header},
+	{11326, 11354, NESMirroring::MapperHV},
+	{11361, 0, NESMirroring::MapperHV},
+	{11388, 11408, NESMirroring::Unknown},
 	{0, 0, NESMirroring::Unknown},
 	{0, 0, NESMirroring::Unknown},
 	{0, 0, NESMirroring::Unknown},
@@ -903,65 +917,65 @@ static const NESMapperEntry NESMappers_offtbl[] = {
 	/* Mapper 510 */
 	{0, 0, NESMirroring::Unknown},
 	{0, 0, NESMirroring::Unknown},
-	{10819, 2232, NESMirroring::Unknown},
-	{10839, 2232, NESMirroring::Unknown},
-	{10875, 3827, NESMirroring::Unknown},
-	{10889, 0, NESMirroring::Unknown},
-	{10906, 10932, NESMirroring::Unknown},
-	{10940, 0, NESMirroring::Unknown},
-	{10963, 3827, NESMirroring::Unknown},
-	{10979, 0, NESMirroring::Unknown},
+	{11418, 2232, NESMirroring::Unknown},
+	{11438, 2232, NESMirroring::Unknown},
+	{11474, 3827, NESMirroring::Unknown},
+	{11488, 0, NESMirroring::Unknown},
+	{11505, 11531, NESMirroring::Unknown},
+	{11539, 0, NESMirroring::Unknown},
+	{11562, 3827, NESMirroring::Unknown},
+	{11578, 0, NESMirroring::Unknown},
 
 	/* Mapper 520 */
-	{10991, 0, NESMirroring::Unknown},
-	{11029, 0, NESMirroring::Unknown},
-	{11040, 2710, NESMirroring::Unknown},
-	{11074, 5292, NESMirroring::Unknown},
-	{11120, 0, NESMirroring::Unknown},
-	{11156, 3169, NESMirroring::Unknown},
-	{11182, 0, NESMirroring::Unknown},
-	{11221, 0, NESMirroring::Unknown},
-	{11262, 0, NESMirroring::Unknown},
-	{11301, 0, NESMirroring::Unknown},
+	{11590, 0, NESMirroring::Unknown},
+	{11628, 0, NESMirroring::Unknown},
+	{11639, 2710, NESMirroring::Unknown},
+	{11673, 5292, NESMirroring::Unknown},
+	{11719, 0, NESMirroring::Unknown},
+	{11755, 3169, NESMirroring::Unknown},
+	{11781, 0, NESMirroring::Unknown},
+	{11820, 0, NESMirroring::Unknown},
+	{11861, 0, NESMirroring::Unknown},
+	{11900, 0, NESMirroring::Unknown},
 
 	/* Mapper 530 */
-	{11346, 0, NESMirroring::Unknown},
-	{11390, 6663, NESMirroring::Unknown},
-	{11406, 0, NESMirroring::Unknown},
-	{11420, 2232, NESMirroring::Unknown},
-	{11432, 0, NESMirroring::Unknown},
-	{11474, 2710, NESMirroring::Unknown},
-	{11511, 1442, NESMirroring::Unknown},
-	{11511, 1442, NESMirroring::Unknown},
-	{11554, 0, NESMirroring::Unknown},
-	{11566, 0, NESMirroring::Unknown},
+	{11945, 0, NESMirroring::Unknown},
+	{11989, 6663, NESMirroring::Unknown},
+	{12005, 0, NESMirroring::Unknown},
+	{12019, 2232, NESMirroring::Unknown},
+	{12031, 0, NESMirroring::Unknown},
+	{12073, 2710, NESMirroring::Unknown},
+	{12110, 1442, NESMirroring::Unknown},
+	{12110, 1442, NESMirroring::Unknown},
+	{12153, 0, NESMirroring::Unknown},
+	{12165, 0, NESMirroring::Unknown},
 
 	/* Mapper 540 */
-	{11594, 0, NESMirroring::Unknown},
-	{11635, 0, NESMirroring::Unknown},
-	{11664, 0, NESMirroring::Unknown},
-	{11693, 0, NESMirroring::Unknown},
-	{11732, 1442, NESMirroring::Unknown},
-	{11748, 0, NESMirroring::Unknown},
-	{11763, 0, NESMirroring::Unknown},
-	{11797, 426, NESMirroring::Unknown},
-	{11823, 11830, NESMirroring::Unknown},
-	{11842, 3169, NESMirroring::Unknown},
+	{12193, 0, NESMirroring::Unknown},
+	{12234, 0, NESMirroring::Unknown},
+	{12263, 0, NESMirroring::Unknown},
+	{12292, 0, NESMirroring::Unknown},
+	{12331, 1442, NESMirroring::Unknown},
+	{12347, 0, NESMirroring::Unknown},
+	{12362, 0, NESMirroring::Unknown},
+	{12396, 426, NESMirroring::Unknown},
+	{12422, 12429, NESMirroring::Unknown},
+	{12441, 3169, NESMirroring::Unknown},
 
 	/* Mapper 550 */
-	{11862, 674, NESMirroring::Unknown},
-	{11872, 5292, NESMirroring::Unknown},
-	{11911, 621, NESMirroring::Unknown},
-	{11956, 2232, NESMirroring::Unknown},
-	{11968, 3169, NESMirroring::Unknown},
-	{11983, 6, NESMirroring::Unknown},
-	{12033, 674, NESMirroring::Unknown},
-	{12050, 3169, NESMirroring::Unknown},
-	{12107, 12116, NESMirroring::Unknown},
+	{12461, 674, NESMirroring::Unknown},
+	{12471, 5292, NESMirroring::Unknown},
+	{12510, 621, NESMirroring::Unknown},
+	{12555, 2232, NESMirroring::Unknown},
+	{12567, 3169, NESMirroring::Unknown},
+	{12582, 6, NESMirroring::Unknown},
+	{12632, 674, NESMirroring::Unknown},
+	{12649, 3169, NESMirroring::Unknown},
+	{12706, 12715, NESMirroring::Unknown},
 	{0, 0, NESMirroring::Unknown},
 
 	/* Mapper 560 */
 	{0, 0, NESMirroring::Unknown},
-	{12127, 139, NESMirroring::Unknown},
-	{12170, 0, NESMirroring::Unknown},
+	{12726, 139, NESMirroring::Unknown},
+	{12769, 0, NESMirroring::Unknown},
 };

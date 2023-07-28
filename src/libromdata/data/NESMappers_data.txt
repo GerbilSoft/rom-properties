@@ -1,6 +1,7 @@
- # NES Mappers
+# NES Mappers
 # Format: Number|Name|Manufacturer|Mirroring
 # Number is always interpreted as decimal.
+# Reference: https://www.nesdev.org/wiki/Mapper
 
 ### NES 2.0 Plane 0 [000-255] (iNES 1.0) ###
 
@@ -434,7 +435,8 @@
 
 # Mappers 320-329
 320|Super HiK 6-in-1 A-030 multicart||Unknown
-321|||Unknown
+# 321: From UNIF
+321|BMC-820310-C||Unknown
 322|35-in-1 (K-3033) multicart||Unknown
 323|Farid's homebrew 8-in-1 SLROM multicart|Homebrew|Unknown
 324|Farid's homebrew 8-in-1 UNROM multicart|Homebrew|Unknown
@@ -460,12 +462,12 @@
 340|35-in-1 multicart||Unknown
 341|Simple 4-in-1 multicart||Unknown
 342|COOLGIRL multicart (Homebrew)|Homebrew|Unknown
-343|||Unknown
+343|Reset-based 4-in-1 multicart||Unknown
 344|Kuai Da Jin Ka Zhong Ji Tiao Zhan 3-in-1 multicart||Unknown
 345|New Star 6-in-1 Game Cartridge multicart|New Star|Unknown
 346|Zanac (FDS conversion)|Kaiser|Unknown
 347|Yume Koujou: Doki Doki Panic (FDS conversion)|Kaiser|Unknown
-348|830118C||Unknown
+348|BMC-830118C||Unknown
 349|1994 Super HIK 14-in-1 (G-136) multicart||Unknown
 
 # Mappers 350-359
@@ -519,8 +521,8 @@
 # Mappers 390-399
 390|Realtec 8031|Realtec|Unknown
 391|NC7000M (MMC3 clone)||Unknown
-392|||Unknown
-393|||Unknown
+392|00202650 (MMC3 clone)||Unknown
+393|820720C multicart||Unknown
 394|Realtec HSK007 multicart|Realtec|Unknown
 395|Realtec 8210 multicart (MMC3-compatible)|Realtec|Unknown
 396|YY850437C / Realtec GN-51 multicart||Unknown
@@ -570,16 +572,16 @@
 432|Realtec 8090 (MMC3-based)|Realtec|Unknown
 433|NC-20MB PCB; 20-in-1 multicart (CA-006)||Unknown
 434|S-009||Unknown
-435|||Unknown
-436|||Unknown
-437|||Unknown
-438|||Unknown
-439|||Unknown
+435|F-1002 multicart||Unknown
+436|ZLX-08 plug-and-play (VT02)||Unknown
+437|TH2348 multicart|NTDEC|MapperHV
+438|K-3071 multicart||MapperHV
+439|YS2309 multicart||MapperHV
 
 # Mappers 440-449
-440|||Unknown
-441|||Unknown
-442|||Unknown
+440|Sonic REC-9388|Dongda|Unknown
+441|841026C / 850335C multicart||Unknown
+442|Golden Key||Unknown
 443|NC3000M multicart||Unknown
 444|NC7000M multicart (MMC3-compatible)||Unknown
 445|DG574B multicart (MMC3-compatible)||Unknown
@@ -593,22 +595,33 @@
 451|Haratyler HP/MP||Unknown
 452|DS-9-27 multicart||Unknown
 453|Realtec 8042|Realtec|Unknown
-454|||Unknown
-455|||Unknown
-456|||Unknown
-457|||Unknown
-458|||Unknown
+454|110-in-1 multicart||MapperHV
+455|N625836 MMC3-based multicart|NTDEC|MapperHV
+456|K6C3001 multicart|Realtec|MapperHV
+457|810431C multicart||MapperHV
+# 458: The two types are distinguished by submapper ID.
+458|K-3102 / GN-23 MMC3-based multicart||MapperHV
 459|||Unknown
 
 # Mappers 460-469
-460|||Unknown
-461|||Unknown
+460|FC-29-40 / K-3101 MMC3-based multicart||MapperHV
+461|CM-9309 MMC1-based multicart||Unknown
 462|||Unknown
 463|||Unknown
 464|||Unknown
 465|||Unknown
 466|||Unknown
 467|47-2 (MMC3)||Unknown
+# 468: TODO: Submappers indicate which mappers are selectable via $5700.
+468|BlazePro multicart||Unknown
+469|BlazePro multicart (FDS)||Unknown
+
+# Mapperrs 470-479
+470|INX_007T_V01|Retro-Bit|MapperAB
+471|IM1|Impact Soft|Header
+472|FK-206 JG (MMC3-compatible)|恒格|MapperHV
+473|KJ01A-18 (MMC3-compatible)||MapperHV
+474|NROM-383 / NROM-368|Akerasoft|Unknown
 
 ### NES 2.0 Plane 2 [512-767] ###
 

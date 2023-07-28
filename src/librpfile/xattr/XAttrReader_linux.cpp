@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * XAttrReader_linux.cpp: Extended Attribute reader (Linux version)        *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -64,7 +64,6 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 		}
 		return;
 	}
-
 	mode = sbx.stx_mode;
 #else /* !HAVE_STATX */
 	struct stat sb;
@@ -77,7 +76,6 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 		}
 		return;
 	}
-
 	mode = sb.st_mode;
 #endif /* HAVE_STATX */
 
@@ -114,16 +112,38 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
  */
 int XAttrReaderPrivate::init(void)
 {
-	// Verify the file mode again using fstat().
-	struct stat sb;
-	errno = 0;
-	if (!fstat(fd, &sb) && !S_ISREG(sb.st_mode) && !S_ISDIR(sb.st_mode)) {
-		// fstat() failed, or this is neither a regular file nor a directory.
+	// Verify the file type again using fstat().
+	mode_t mode;
+
+#ifdef HAVE_STATX
+	struct statx sbx;
+	int ret = statx(fd, "", AT_EMPTY_PATH, STATX_TYPE, &sbx);
+	if (ret != 0 || !(sbx.stx_mask & STATX_TYPE)) {
+		// An error occurred.
 		int err = -errno;
 		if (err == 0) {
 			err = -EIO;
 		}
 		return err;
+	}
+	mode = sbx.stx_mode;
+#else /* !HAVE_STATX */
+	struct stat sb;
+	errno = 0;
+	if (!fstat(fd, &sb)) {
+		// fstat() failed.
+		int err = -errno;
+		if (err == 0) {
+			err = -EIO;
+		}
+		return err;
+	}
+	mode = sb.st_mode;
+#endif /* HAVE_STATX */
+
+	if (!S_ISREG(mode) && !S_ISDIR(mode)) {
+		// This is neither a regular file nor a directory.
+		return -ENOTSUP;
 	}
 
 	// Load the attributes.
@@ -256,6 +276,8 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 			break;
 		}
 		p += strlen(name) + 1;
+		if (p >= list_end)
+			break;
 
 		// Get the value for this attribute.
 		// NOTE: vlen does *not* include a NULL-terminator.
@@ -276,7 +298,8 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 		// We have the attribute.
 		// NOTE: Not checking for duplicates, since there
 		// shouldn't be duplicate attribute names.
-		genericXAttrs.emplace(string(name), string(value_buf.get(), vlen));
+		const string s_value(value_buf.get(), vlen);
+		genericXAttrs.emplace(name, std::move(s_value));
 	}
 
 	// Extended attributes retrieved.

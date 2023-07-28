@@ -45,10 +45,10 @@ const TCHAR RP_XAttrView_Private::TAB_PTR_PROP[] = _T("RP_XAttrView_Private::tab
  * @param q
  * @param filename Filename (RP_XAttrView_Private takes ownership)
  */
-RP_XAttrView_Private::RP_XAttrView_Private(RP_XAttrView *q, LPTSTR filename)
+RP_XAttrView_Private::RP_XAttrView_Private(RP_XAttrView *q, LPTSTR tfilename)
 	: q_ptr(q)
 	, hDlgSheet(nullptr)
-	, filename(filename)
+	, tfilename(tfilename)
 	, xattrReader(nullptr)
 	, dwExStyleRTL(LibWin32UI::isSystemRTL())
 	, colorAltRow(LibWin32UI::getAltRowColor())
@@ -57,7 +57,7 @@ RP_XAttrView_Private::RP_XAttrView_Private(RP_XAttrView *q, LPTSTR filename)
 
 RP_XAttrView_Private::~RP_XAttrView_Private()
 {
-	free(filename);
+	free(tfilename);
 	delete xattrReader;
 }
 
@@ -180,13 +180,14 @@ int RP_XAttrView_Private::loadAttributes(void)
 	// Close the XAttrReader if it's already open.
 	delete xattrReader;
 
-	if (!filename) {
+	if (!tfilename) {
 		// No filename.
+		xattrReader = nullptr;
 		return -EIO;
 	}
 
 	// Open an XAttrReader.
-	xattrReader = new XAttrReader(filename);
+	xattrReader = new XAttrReader(tfilename);
 	int err = xattrReader->lastError();
 	if (err != 0) {
 		// Error reading attributes.
@@ -384,16 +385,10 @@ IFACEMETHODIMP RP_XAttrView::Initialize(
 
 	// TODO: Check for "bad" file systems before checking ADS?
 #if 0
-	// Convert the filename to UTF-8.
-	u8filename = strdup(T2U8(tfilename, cchFilename).c_str());
-	if (!u8filename) {
-		// Memory allocation failed.
-		hr = E_OUTOFMEMORY;
-		goto cleanup;
-	}
-
+	// TODO: wchar_t* overload so we don't need to use WTF-8.
+	// Requires adding to the API, so romdata-4.dll?
 	config = Config::instance();
-	if (FileSystem::isOnBadFS(u8filename,
+	if (FileSystem::isOnBadFS(T2U8(tfilename).c_str(),
 	    config->enableThumbnailOnNetworkFS()))
 	{
 		// This file is on a "bad" file system.

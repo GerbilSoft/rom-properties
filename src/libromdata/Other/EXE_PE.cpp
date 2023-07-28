@@ -757,7 +757,7 @@ void EXEPrivate::addFields_PE(void)
 	if (!dotnet) {
 		// Add exports / imports
 		// NOTE: .NET executables have a single import,
-		// MSCOREEE!_CorExeMain, so we're ignoring the
+		// MSCOREE!_CorExeMain, so we're ignoring the
 		// import/export tables for .NET.
 		addFields_PE_Export();
 		addFields_PE_Import();
@@ -845,9 +845,9 @@ int EXEPrivate::addFields_PE_Export(void)
 			 * string that looks like "dllname.symbol" or
 			 * "dllname.#123". */
 			const char *fwd = reinterpret_cast<const char *>(expDirTbl.data() + (ent.vaddr - rvaMin));
-			ent.forwarder = string(fwd, strnlen(fwd, rvaMax - ent.vaddr));
+			ent.forwarder.assign(fwd, strnlen(fwd, rvaMax - ent.vaddr));
 		}
-		ents.push_back(std::move(ent));
+		ents.emplace_back(std::move(ent));
 	}
 
 	// Read name table
@@ -869,7 +869,7 @@ int EXEPrivate::addFields_PE_Export(void)
 			ents[ord].name = std::move(oldname);
 			ent.name = std::move(name);
 			ent.hint = i;
-			ents.push_back(std::move(ent));
+			ents.emplace_back(std::move(ent));
 		} else {
 			ents[ord].name = std::move(name);
 			ents[ord].hint = i;

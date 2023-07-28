@@ -877,7 +877,7 @@ int ELFPrivate::addPtDynamicFields(void)
 			vector<string> *const v_dt_flags_names = RomFields::strArrayToVector(
 				dt_flags_names, ARRAY_SIZE(dt_flags_names));
 			fields.addField_bitfield("DT_FLAGS",
-				v_dt_flags_names, 3, val_dtag[DT_FLAGS]);
+				v_dt_flags_names, 3, static_cast<uint32_t>(val_dtag[DT_FLAGS]));
 		}
 
 		if (has_flags1) {
@@ -902,7 +902,7 @@ int ELFPrivate::addPtDynamicFields(void)
 			vector<string> *const v_dt_flags_1_names = RomFields::strArrayToVector(
 				dt_flags_1_names, ARRAY_SIZE(dt_flags_1_names));
 			fields.addField_bitfield("DT_FLAGS_1",
-				v_dt_flags_1_names, 3, val_flags1);
+				v_dt_flags_1_names, 3, static_cast<uint32_t>(val_flags1));
 		}
 
 		assert(!has_dtag[DT_SONAME] || val_dtag[DT_SONAME] < strtab.size());
@@ -924,7 +924,7 @@ int ELFPrivate::addPtDynamicFields(void)
 					continue;
 				vector<string> row;
 				row.emplace_back(&strtab[offset]);
-				vv_data->push_back(std::move(row));
+				vv_data->emplace_back(std::move(row));
 			}
 
 			static const char *const field_names[] = {
@@ -1075,7 +1075,7 @@ int ELFPrivate::addSymbolFields(span<const char> dynsym_strtab)
 				row.emplace_back(rp_sprintf("%d", sym.st_shndx));
 			row.emplace_back(rp_sprintf("0x%08" PRIX64, sym.st_value));
 			row.emplace_back(rp_sprintf("0x%08" PRIX64, sym.st_size));
-			vv_data->push_back(std::move(row));
+			vv_data->emplace_back(std::move(row));
 		}
 		if (vv_data->empty()) {
 			delete vv_data;

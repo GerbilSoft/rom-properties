@@ -55,9 +55,9 @@ class RP_ShellPropSheetExt_Private
 		/**
 		 * RP_ShellPropSheetExt_Private constructor
 		 * @param q
-		 * @param filename Filename (RP_ShellPropSheetExt_Private takes ownership)
+		 * @param tfilename tfilename (RP_ShellPropSheetExt_Private takes ownership)
 		 */
-		explicit RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q, char *filename);
+		explicit RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q, TCHAR *tfilename);
 
 		~RP_ShellPropSheetExt_Private();
 
@@ -75,7 +75,7 @@ class RP_ShellPropSheetExt_Private
 		HWND hDlgSheet;		// Property sheet
 
 		// ROM filename (malloc'd; free on delete)
-		char *filename;
+		TCHAR *tfilename;
 		// ROM data (Not opened until the properties tab is shown.)
 		LibRpBase::RomData *romData;
 

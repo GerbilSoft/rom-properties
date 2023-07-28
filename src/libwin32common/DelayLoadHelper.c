@@ -46,54 +46,49 @@ static const TCHAR rp_subdir[] = _T("riscv64\\");
 #  error Unsupported CPU architecture.
 #endif
 
+// TODO: Are we using a debug suffix for MinGW-w64?
+
+// libromdata DLL is "romdata-X.dll" (MSVC) or "libromdata-X.dll" (MinGW).
+#ifdef _MSC_VER
+#  define ROMDATA_PREFIX
+#  ifdef NDEBUG
+#    define DEBUG_SUFFIX ""
+#  else
+#    define DEBUG_SUFFIX "d"
+#  endif
+#else
+#  define ROMDATA_PREFIX "lib"
+#  define DEBUG_SUFFIX ""
+#endif
+
+static const char *const dll_whitelist[] = {
+#ifdef RP_LIBROMDATA_IS_DLL
+	ROMDATA_PREFIX "romdata-" LIBROMDATA_SOVERSION_STR DEBUG_SUFFIX ".dll",
+#endif /* RP_LIBROMDATA_IS_DLL */
+	"zlib1" DEBUG_SUFFIX ".dll",
+	"libpng16" DEBUG_SUFFIX ".dll",
+	"tinyxml2-9" DEBUG_SUFFIX ".dll",
+	"zstd" DEBUG_SUFFIX ".dll",
+	"lz4" DEBUG_SUFFIX ".dll",
+	"minilzo" DEBUG_SUFFIX ".dll",
+	"libgnuintl-8.dll",
+};
+
 /**
  * Explicit LoadLibrary() for delay-load.
  * @param pdli Delay-load info.
  * @return Library handle, or NULL on error.
  */
-static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
+static HMODULE WINAPI rp_LoadLibrary(LPCSTR pszModuleName)
 {
 	// We only want to handle DLLs included with rom-properties.
 	// System DLLs should be handled normally.
-
-	// libromdata DLL is "romdata-X.dll" (MSVC) or "libromdata-X.dll" (MinGW).
-#ifdef _MSC_VER
-#  define ROMDATA_PREFIX
-#else
-#  define ROMDATA_PREFIX "lib"
-#endif
-
-	static const char *const dll_whitelist[] = {
-#ifdef NDEBUG
-#  ifdef RP_LIBROMDATA_IS_DLL
-		ROMDATA_PREFIX "romdata-" LIBROMDATA_SOVERSION_STR ".dll",
-#  endif /* RP_LIBROMDATA_IS_DLL */
-		"zlib1.dll",
-		"libpng16.dll",
-		"tinyxml2-9.dll",
-		"zstd.dll",
-		"lz4.dll",
-		"minilzo.dll",
-#else /* !NDEBUG */
-#  ifdef RP_LIBROMDATA_IS_DLL
-		ROMDATA_PREFIX "romdata-" LIBROMDATA_SOVERSION_STR "d.dll",
-#  endif /* RP_LIBROMDATA_IS_DLL */
-		"zlib1d.dll",
-		"libpng16d.dll",
-		"tinyxml2-9d.dll",
-		"zstdd.dll",
-		"lz4d.dll",
-		"minilzod.dll",
-#endif /* NDEBUG */
-		"libgnuintl-8.dll",
-	};
-
 	TCHAR dll_fullpath[MAX_PATH+64];
 	const TCHAR *bs;
 	TCHAR *dest;
 	LPCSTR pszDll;
 	HMODULE hDll;
-	
+
 	DWORD dwResult;
 	unsigned int path_len;
 	unsigned int i;
@@ -152,6 +147,8 @@ static HMODULE WINAPI rp_loadLibrary(LPCSTR pszModuleName)
 	_tcscpy(&dll_fullpath[path_len], rp_subdir);
 	path_len += _countof(rp_subdir) - 1;
 
+	// Copy the DLL name into the fullpath.
+	// TODO: Use strcpy_s() or similar?
 	dest = &dll_fullpath[path_len];
 	for (pszDll = pszModuleName;
 	     *pszDll != 0 && dest != &dll_fullpath[_countof(dll_fullpath)];
@@ -175,7 +172,7 @@ static FARPROC WINAPI rp_dliNotifyHook(unsigned int dliNotify, PDelayLoadInfo pd
 {
 	switch (dliNotify) {
 		case dliNotePreLoadLibrary:
-			return (FARPROC)rp_loadLibrary(pdli->szDll);
+			return (FARPROC)rp_LoadLibrary(pdli->szDll);
 		default:
 			break;
 	}

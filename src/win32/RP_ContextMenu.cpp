@@ -48,32 +48,32 @@ const CLSID CLSID_RP_ContextMenu =
 #include "RP_ContextMenu_p.hpp"
 
 RP_ContextMenu_Private::RP_ContextMenu_Private()
-	: filenames(nullptr)
+	: tfilenames(nullptr)
 	, hbmPng(nullptr)
 { }
 
 RP_ContextMenu_Private::~RP_ContextMenu_Private()
 {
-	clear_filenames_vector(this->filenames);
+	clear_tfilenames_vector(this->tfilenames);
 	if (hbmPng) {
 		DeleteBitmap(hbmPng);
 	}
 }
 
 /**
- * Clear a filenames vector.
+ * Clear a tfilenames vector.
  * All filenames will be deleted and the vector will also be deleted.
- * @param filenames Filenames vector
+ * @param tfilenames tilenames vector
  */
-void RP_ContextMenu_Private::clear_filenames_vector(std::vector<LPTSTR> *filenames)
+void RP_ContextMenu_Private::clear_tfilenames_vector(std::vector<LPTSTR> *tfilenames)
 {
-	if (unlikely(!filenames))
+	if (unlikely(!tfilenames))
 		return;
 
-	for (LPTSTR filename : *filenames) {
-		free(filename);
+	for (LPTSTR tfilename : *tfilenames) {
+		free(tfilename);
 	}
-	delete filenames;
+	delete tfilenames;
 }
 
 /**
@@ -194,23 +194,23 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_file)
 /**
  * Convert texture file(s) to PNG format.
  * This function should be created in a separate thread using _beginthreadex().
- * @param lpParameter [in] Pointer to vector of filenames. Will be freed by this function afterwards.
+ * @param lpParameter [in] Pointer to vector of tfilenames. Will be freed by this function afterwards.
  * @return 0 on success; non-zero on error.
  */
-unsigned int WINAPI RP_ContextMenu_Private::convert_to_png_ThreadProc(std::vector<LPTSTR> *filenames)
+unsigned int WINAPI RP_ContextMenu_Private::convert_to_png_ThreadProc(std::vector<LPTSTR> *tfilenames)
 {
-	if (unlikely(!filenames)) {
+	if (unlikely(!tfilenames)) {
 		// No filenames...
 		return ERROR_INVALID_PARAMETER;
 	}
 
 	// Process the filenames.
-	for (LPTSTR filename : *filenames) {
-		convert_to_png(filename);
+	for (LPTSTR tfilename : *tfilenames) {
+		convert_to_png(tfilename);
 	}
 
-	// Delete the filenames vector.
-	clear_filenames_vector(filenames);
+	// Delete the tfilenames vector.
+	clear_tfilenames_vector(tfilenames);
 
 	// We're done here.
 	return 0;
@@ -385,8 +385,8 @@ IFACEMETHODIMP RP_ContextMenu::Initialize(
 	// Clear the stored filenames on Initialize(),
 	// even if the rest of the function fails.
 	RP_D(RP_ContextMenu);
-	d->clear_filenames_vector(d->filenames);
-	d->filenames = nullptr;
+	d->clear_tfilenames_vector(d->tfilenames);
+	d->tfilenames = nullptr;
 
 	// Based on CppShellExtPropSheetHandler.
 	// https://code.msdn.microsoft.com/windowsapps/CppShellExtPropSheetHandler-d93b49b7
@@ -424,9 +424,9 @@ IFACEMETHODIMP RP_ContextMenu::Initialize(
 	// Get the vector of supported file extensions.
 	const vector<const char*> &texture_exts = FileFormatFactory::supportedFileExtensions();
 
-	// Save the filenames.
-	d->filenames = new std::vector<LPTSTR>();
-	d->filenames->reserve(nFiles);
+	// Save the tfilenames.
+	d->tfilenames = new std::vector<LPTSTR>();
+	d->tfilenames->reserve(nFiles);
 	for (UINT i = 0; i < nFiles; i++) {
 		UINT cchFilename = DragQueryFile(hDrop, i, nullptr, 0);
 		if (cchFilename == 0) {
@@ -455,7 +455,7 @@ IFACEMETHODIMP RP_ContextMenu::Initialize(
 
 		if (is_texture) {
 			// It's a supported texture. Save the filename.
-			d->filenames->emplace_back(tfilename);
+			d->tfilenames->emplace_back(tfilename);
 		} else {
 			// Not a supported texture.
 			free(tfilename);
@@ -538,16 +538,16 @@ IFACEMETHODIMP RP_ContextMenu::InvokeCommand(_In_ CMINVOKECOMMANDINFO *pici)
 
 	// Start the PNG conversion thread.
 	RP_D(RP_ContextMenu);
-	std::vector<LPTSTR> *param_filenames = nullptr;
-	std::swap(param_filenames, d->filenames);
+	std::vector<LPTSTR> *param_tfilenames = nullptr;
+	std::swap(param_tfilenames, d->tfilenames);
 	HANDLE hThread = reinterpret_cast<HANDLE>(_beginthreadex(
 		nullptr, 0, (_beginthreadex_proc_type)d->convert_to_png_ThreadProc,
-		param_filenames, 0, nullptr));
+		param_tfilenames, 0, nullptr));
 	if (!hThread) {
 		// Couldn't start the worker thread.
 
-		// Copy the filenames vector pointer back so we still own it.
-		d->filenames = param_filenames;
+		// Copy the tfilenames vector pointer back so we still own it.
+		d->tfilenames = param_tfilenames;
 
 		// TODO: Better error code?
 		return E_FAIL;
@@ -589,7 +589,7 @@ IFACEMETHODIMP RP_ContextMenu::GetCommandString(_In_ UINT_PTR idCmd, _In_ UINT u
 		}
 
 		// GCS_HELPTEXT(A|W)
-		const int nc = d->filenames ? static_cast<int>(d->filenames->size()) : 0;
+		const int nc = d->tfilenames ? static_cast<int>(d->tfilenames->size()) : 0;
 		const char *const msg = NC_("ServiceMenu",
 			"Convert the selected texture file to PNG format.",
 			"Convert the selected texture files to PNG format.",

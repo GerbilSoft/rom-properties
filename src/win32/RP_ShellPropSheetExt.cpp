@@ -67,12 +67,12 @@ const TCHAR RP_ShellPropSheetExt_Private::TAB_PTR_PROP[] = _T("RP_ShellPropSheet
 /**
  * RP_ShellPropSheetExt_Private constructor
  * @param q
- * @param filename Filename (RP_ShellPropSheetExt_Private takes ownership)
+ * @param tfilename tfilename (RP_ShellPropSheetExt_Private takes ownership)
  */
-RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q, char *filename)
+RP_ShellPropSheetExt_Private::RP_ShellPropSheetExt_Private(RP_ShellPropSheetExt *q, TCHAR *tfilename)
 	: q_ptr(q)
 	, hDlgSheet(nullptr)
-	, filename(filename)
+	, tfilename(tfilename)
 	, romData(nullptr)
 	, fontHandler(nullptr)
 	, lblSysInfo(nullptr)
@@ -102,7 +102,7 @@ RP_ShellPropSheetExt_Private::~RP_ShellPropSheetExt_Private()
 	delete lblIcon;
 
 	// Unreference the RomData object.
-	free(filename);
+	free(tfilename);
 	UNREF(romData);
 }
 
@@ -2204,8 +2204,8 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	RpFile *file = nullptr;
 	RomData *romData = nullptr;
 
-	TCHAR *tfilename = nullptr;
-	char *u8filename = nullptr;	// RP_ShellPropSheetExt_Private takes ownership!
+	TCHAR *tfilename = nullptr;	// RP_ShellPropSheetExt_Private takes ownership!
+	string u8filename;
 
 	const Config *config;
 
@@ -2237,16 +2237,13 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	}
 
 	// Convert the filename to UTF-8.
-	u8filename = strdup(T2U8(tfilename, cchFilename).c_str());
-	if (!u8filename) {
-		// Memory allocation failed.
-		hr = E_OUTOFMEMORY;
-		goto cleanup;
-	}
+	u8filename = T2U8(tfilename, cchFilename);
 
 	// Check for "bad" file systems.
+	// TODO: wchar_t* overload so we don't need to use WTF-8.
+	// Requires adding to the API, so romdata-4.dll?
 	config = Config::instance();
-	if (FileSystem::isOnBadFS(u8filename,
+	if (FileSystem::isOnBadFS(u8filename.c_str(),
 	    config->enableThumbnailOnNetworkFS()))
 	{
 		// This file is on a "bad" file system.
@@ -2254,6 +2251,8 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	}
 
 	// Open the file.
+	// TODO: wchar_t* overload so we don't need to use WTF-8.
+	// Requires adding to the API, so romdata-4.dll?
 	file = new RpFile(u8filename, RpFile::FM_OPEN_READ_GZ);
 	if (!file->isOpen()) {
 		// Unable to open the file.
@@ -2276,8 +2275,8 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 
 	// Save the filename in the private class for later.
 	if (!d_ptr) {
-		d_ptr = new RP_ShellPropSheetExt_Private(this, u8filename);
-		u8filename = nullptr;
+		d_ptr = new RP_ShellPropSheetExt_Private(this, tfilename);
+		tfilename = nullptr;
 	}
 
 	hr = S_OK;
@@ -2287,7 +2286,6 @@ cleanup:
 	GlobalUnlock(stm.hGlobal);
 	ReleaseStgMedium(&stm);
 	free(tfilename);
-	free(u8filename);
 
 	// If any value other than S_OK is returned from the method, the property 
 	// sheet is not displayed.
@@ -2799,7 +2797,9 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			}
 
 			// Open the RomData object.
-			RpFile *const file = new RpFile(d->filename, RpFile::FM_OPEN_READ_GZ);
+			// TODO: wchar_t* overload so we don't need to use WTF-8.
+			// Requires adding to the API, so romdata-4.dll?
+			RpFile *const file = new RpFile(T2U8(d->tfilename).c_str(), RpFile::FM_OPEN_READ_GZ);
 			if (!file->isOpen()) {
 				// Unable to open the file.
 				file->unref();

@@ -129,7 +129,10 @@ string rp_vsprintf_p(const char *fmt, va_list ap)
 	char *const buf = static_cast<char*>(malloc((len+1)*sizeof(char)));
 	int len2 = _vsprintf_p(buf, len+1, fmt, ap);
 	assert(len == len2);
-	string s_ret = (len == len2 ? string(buf, len) : string());
+	string s_ret;
+	if (len == len2) {
+		s_ret.assign(buf, len);
+	}
 	free(buf);
 	return s_ret;
 }
@@ -232,7 +235,10 @@ wstring rp_vswprintf_p(const wchar_t *fmt, va_list ap)
 	wchar_t *const buf = static_cast<wchar_t*>(malloc((len+1)*sizeof(wchar_t)));
 	int len2 = _vswprintf_p(buf, len+1, fmt, ap);
 	assert(len == len2);
-	wstring ws_ret = (len == len2 ? wstring(buf, len) : wstring());
+	wstring ws_ret;
+	if (len == len2) {
+		ws_ret.assign(buf, len);
+	}
 	free(buf);
 	return ws_ret;
 }

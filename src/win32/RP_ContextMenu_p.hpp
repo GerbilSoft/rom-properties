@@ -36,17 +36,17 @@ class RP_ContextMenu_Private
 		// Selected filenames. [from IShellExtInit::Initialize()]
 		// NOTE: Ownership passes to convert_to_png_ThreadProc()
 		// once the command is invoked.
-		std::vector<LPTSTR> *filenames;
+		std::vector<LPTSTR> *tfilenames;
 
 		// Cached icon for "Convert to PNG".
 		HBITMAP hbmPng;
 
 		/**
-		 * Clear a filenames vector.
+		 * Clear a tfilenames vector.
 		 * All filenames will be deleted and the vector will also be deleted.
-		 * @param filenames Filenames vector
+		 * @param tfilenames tfilenames vector
 		 */
-		static void clear_filenames_vector(std::vector<LPTSTR> *filenames);
+		static void clear_tfilenames_vector(std::vector<LPTSTR> *tfilenames);
 
 		/**
 		 * Convert a texture file to PNG format.
@@ -59,10 +59,10 @@ class RP_ContextMenu_Private
 		/**
 		 * Convert texture file(s) to PNG format.
 		 * This function should be created in a separate thread using _beginthreadex().
-		 * @param lpParameter [in] Pointer to vector of filenames. Will be freed by this function afterwards.
+		 * @param lpParameter [in] Pointer to vector of tfilenames. Will be freed by this function afterwards.
 		 * @return 0 on success; non-zero on error.
 		 */
-		static unsigned int WINAPI convert_to_png_ThreadProc(std::vector<LPTSTR> *filenames);
+		static unsigned int WINAPI convert_to_png_ThreadProc(std::vector<LPTSTR> *tfilenames);
 
 		/**
 		 * Get the icon index from an icon resource specification,

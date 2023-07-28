@@ -82,10 +82,14 @@ typedef void (* GClearHandleFunc) (guint handle_id);
 
 /** Functions added in GLib 2.76.0 **/
 
-#if !GLIB_CHECK_VERSION(2,75,1)
+// NOTE: If GLIB_VERSION_MAX_ALLOWED < GLIB_VERSION_2_76, then we will
+// Always define g_set_str() as a macro that calls rp_g_set_str() in
+// order to eliminate deprecation warnings.
+// g_set_str() was added in glib-2.75.1 / glib-2.76.0.
+#if !defined(GLIB_VERSION_2_76) || GLIB_VERSION_MAX_ALLOWED < GLIB_VERSION_2_76
 static inline gboolean
-g_set_str (char       **str_pointer,
-           const char  *new_str)
+rp_g_set_str (char       **str_pointer,
+              const char  *new_str)
 {
   char *copy;
 
@@ -99,6 +103,7 @@ g_set_str (char       **str_pointer,
 
   return TRUE;
 }
-#endif /* GLIB_CHECK_VERSION(2,75,1) */
+#define g_set_str(str_pointer, new_str) rp_g_set_str((str_pointer), (new_str))
+#endif /* !defined(GLIB_VERSION_2_76) || GLIB_VERSION_MAX_ALLOWED < GLIB_VERSION_2_76 */
 
 G_END_DECLS

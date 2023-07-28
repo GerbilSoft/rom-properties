@@ -225,7 +225,7 @@ TEST_F(TextFuncsTest, cp1252_to_utf8)
 	EXPECT_EQ(C8(cp1252_utf8_data), str);
 
 	// Test with std::string source data.
-	string src = string(C8(cp1252_data));
+	string src(C8(cp1252_data));
 	EXPECT_EQ(ARRAY_SIZE(cp1252_data)-1, src.size());
 	str = cp1252_to_utf8(src);
 	EXPECT_EQ(ARRAY_SIZE(cp1252_utf8_data)-1, str.size());
@@ -233,7 +233,7 @@ TEST_F(TextFuncsTest, cp1252_to_utf8)
 
 	// Test with std::string source data and an extra NULL.
 	// The extra NULL should be trimmed.
-	src = string(C8(cp1252_data), ARRAY_SIZE(cp1252_data));
+	src.assign(C8(cp1252_data), ARRAY_SIZE(cp1252_data));
 	EXPECT_EQ(ARRAY_SIZE(cp1252_data), src.size());
 	str = cp1252_to_utf8(src);
 	EXPECT_EQ(ARRAY_SIZE(cp1252_utf8_data)-1, str.size());
@@ -288,7 +288,7 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf8_fallback)
 	EXPECT_EQ(C8(cp1252_utf8_data), str);
 
 	// Test with std::string source data.
-	string src = string(C8(cp1252_data));
+	string src(C8(cp1252_data));
 	EXPECT_EQ(ARRAY_SIZE(cp1252_data)-1, src.size());
 	str = cp1252_sjis_to_utf8(src);
 	EXPECT_EQ(ARRAY_SIZE(cp1252_utf8_data)-1, str.size());
@@ -296,7 +296,7 @@ TEST_F(TextFuncsTest, cp1252_sjis_to_utf8_fallback)
 
 	// Test with std::string source data and an extra NULL.
 	// The extra NULL should be trimmed.
-	src = string(C8(cp1252_data), ARRAY_SIZE(cp1252_data));
+	src.assign(C8(cp1252_data), ARRAY_SIZE(cp1252_data));
 	EXPECT_EQ(ARRAY_SIZE(cp1252_data), src.size());
 	str = cp1252_sjis_to_utf8(src);
 	EXPECT_EQ(ARRAY_SIZE(cp1252_utf8_data)-1, str.size());
@@ -732,7 +732,7 @@ TEST_F(TextFuncsTest, utf8_to_latin1)
 	EXPECT_EQ(C8(cp1252_data), str);
 
 	// Test with std::string source data.
-	string src = string(C8(latin1_utf8_data));
+	string src(C8(latin1_utf8_data));
 	EXPECT_EQ(ARRAY_SIZE(latin1_utf8_data)-1, src.size());
 	str = utf8_to_latin1(src);
 	EXPECT_EQ(ARRAY_SIZE(cp1252_data)-1, str.size());
@@ -740,7 +740,7 @@ TEST_F(TextFuncsTest, utf8_to_latin1)
 
 	// Test with std::string source data and an extra NULL.
 	// The extra NULL should be trimmed.
-	src = string(C8(latin1_utf8_data), ARRAY_SIZE(latin1_utf8_data));
+	src.assign(C8(latin1_utf8_data), ARRAY_SIZE(latin1_utf8_data));
 	EXPECT_EQ(ARRAY_SIZE(latin1_utf8_data), src.size());
 	str = utf8_to_latin1(src);
 	EXPECT_EQ(ARRAY_SIZE(cp1252_data)-1, str.size());
@@ -1234,12 +1234,13 @@ TEST_F(TextFuncsTest, formatSampleAsTime)
 
 	// Add a quarter second and see how things go.
 	// NOTE: A few of these end up returning "0:03:24" due to rounding issues.
-	EXPECT_EQ("0:03.24", formatSampleAsTime(11025U*3.25, 11025U));
-	EXPECT_EQ("0:03.25", formatSampleAsTime(16000U*3.25, 16000U));
-	EXPECT_EQ("0:03.24", formatSampleAsTime(22050U*3.25, 22050U));
-	EXPECT_EQ("0:03.25", formatSampleAsTime(24000U*3.25, 24000U));
-	EXPECT_EQ("0:03.25", formatSampleAsTime(44100U*3.25, 44100U));
-	EXPECT_EQ("0:03.25", formatSampleAsTime(48000U*3.25, 48000U));
+	// NOTE: Using (*13U/4U) instead of (*3.25) to avoid floating-point arithmetic.
+	EXPECT_EQ("0:03.24", formatSampleAsTime(11025U*13U/4U, 11025U));
+	EXPECT_EQ("0:03.25", formatSampleAsTime(16000U*13U/4U, 16000U));
+	EXPECT_EQ("0:03.24", formatSampleAsTime(22050U*13U/4U, 22050U));
+	EXPECT_EQ("0:03.25", formatSampleAsTime(24000U*13U/4U, 24000U));
+	EXPECT_EQ("0:03.25", formatSampleAsTime(44100U*13U/4U, 44100U));
+	EXPECT_EQ("0:03.25", formatSampleAsTime(48000U*13U/4U, 48000U));
 
 	/// Add two minutes
 
@@ -1253,12 +1254,13 @@ TEST_F(TextFuncsTest, formatSampleAsTime)
 
 	// Add a quarter second and see how things go.
 	// NOTE: A few of these end up returning "0:03:24" due to rounding issues.
-	EXPECT_EQ("2:03.24", formatSampleAsTime(11025U*123.25, 11025U));
-	EXPECT_EQ("2:03.25", formatSampleAsTime(16000U*123.25, 16000U));
-	EXPECT_EQ("2:03.24", formatSampleAsTime(22050U*123.25, 22050U));
-	EXPECT_EQ("2:03.25", formatSampleAsTime(24000U*123.25, 24000U));
-	EXPECT_EQ("2:03.25", formatSampleAsTime(44100U*123.25, 44100U));
-	EXPECT_EQ("2:03.25", formatSampleAsTime(48000U*123.25, 48000U));
+	// NOTE: Using (*493U/4U) instead of (*123.25) to avoid floating-point arithmetic.
+	EXPECT_EQ("2:03.24", formatSampleAsTime(11025U*493/4, 11025U));
+	EXPECT_EQ("2:03.25", formatSampleAsTime(16000U*493/4, 16000U));
+	EXPECT_EQ("2:03.24", formatSampleAsTime(22050U*493/4, 22050U));
+	EXPECT_EQ("2:03.25", formatSampleAsTime(24000U*493/4, 24000U));
+	EXPECT_EQ("2:03.25", formatSampleAsTime(44100U*493/4, 44100U));
+	EXPECT_EQ("2:03.25", formatSampleAsTime(48000U*493/4, 48000U));
 }
 
 /**
@@ -1276,12 +1278,13 @@ TEST_F(TextFuncsTest, convSampleToMs)
 
 	// Add a quarter second and see how things go.
 	// NOTE: A few of these end up returning 3249 due to rounding issues.
-	EXPECT_EQ(3249U, convSampleToMs(11025U*3.25, 11025U));
-	EXPECT_EQ(3250U, convSampleToMs(16000U*3.25, 16000U));
-	EXPECT_EQ(3249U, convSampleToMs(22050U*3.25, 22050U));
-	EXPECT_EQ(3250U, convSampleToMs(24000U*3.25, 24000U));
-	EXPECT_EQ(3250U, convSampleToMs(44100U*3.25, 44100U));
-	EXPECT_EQ(3250U, convSampleToMs(48000U*3.25, 48000U));
+	// NOTE: Using (*13U/4U) instead of (*3.25) to avoid floating-point arithmetic.
+	EXPECT_EQ(3249U, convSampleToMs(11025U*13U/4U, 11025U));
+	EXPECT_EQ(3250U, convSampleToMs(16000U*13U/4U, 16000U));
+	EXPECT_EQ(3249U, convSampleToMs(22050U*13U/4U, 22050U));
+	EXPECT_EQ(3250U, convSampleToMs(24000U*13U/4U, 24000U));
+	EXPECT_EQ(3250U, convSampleToMs(44100U*13U/4U, 44100U));
+	EXPECT_EQ(3250U, convSampleToMs(48000U*13U/4U, 48000U));
 }
 
 } }

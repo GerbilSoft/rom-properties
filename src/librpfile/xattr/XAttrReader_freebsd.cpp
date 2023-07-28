@@ -205,7 +205,8 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 			// We have the attribute.
 			// NOTE: Not checking for duplicates, since there
 			// shouldn't be duplicate attribute names.
-			xattrs.emplace(std::move(name), string(value_buf.get(), vlen));
+			const string s_value(value_buf.get(), vlen);
+			xattrs.emplace(name, std::move(s_value));
 		}
 	};
 

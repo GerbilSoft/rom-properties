@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * XAttrReader.cpp: Extended Attribute reader (common functions)           *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -25,11 +25,11 @@ XAttrReader::XAttrReader(const char *filename)
 	: d_ptr(new XAttrReaderPrivate(filename))
 { }
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_UNICODE)
 XAttrReader::XAttrReader(const wchar_t *filename)
 	: d_ptr(new XAttrReaderPrivate(filename))
 { }
-#endif /* _WIN32 */
+#endif /* _WIN32 && _UNICODE */
 
 /**
  * Get the last error number.
