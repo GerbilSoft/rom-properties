@@ -24,72 +24,95 @@ namespace LibRomData { namespace DMGSpecialCases {
 struct DmgSpecialCase_t {
 	char title[17];
 	char publisher[3];
-	uint8_t flags;
 };
 
 // NOTE: Linux is case-sensitive; Windows is not.
 // TODO: Sachen "TETRIS" ROMs have the same global checksum.
-static const DmgSpecialCase_t dmgSpecialCases[] = {
-	{"BIONIC-COMMANDO", "", FLAG_NONE},
-	{"BOKEMOB BLUE", "", FLAG_NONE},
-	{"BUGS BUNNY", "", FLAG_CGB},
-	{"CAESARS PALACE", "61", FLAG_NONE},
-	{"COKEMON BLUE", "", FLAG_NONE},
-	{"COOL HAND", "", FLAG_CGB},
-	{"COOL SPOT", "", FLAG_NONE},
-	{"DENNIS", "67", FLAG_NONE},
-	{"DIG DUG", "", FLAG_NONE},
-	{"DIG DUG+  ASG", "", FLAG_NONE},		// Other hacks
-	{"DIGIMON 5", "MK", FLAG_JP|FLAG_CGB},
-	{"DONKEYKONGLAND 3", "", FLAG_NONE},
-	{"DUCK TALES", "", FLAG_NONE},
-	{"DUCK TALES+ ASG", "", FLAG_NONE},	// Other hacks
-	{"GALAGA&GALAXIAN", "01", FLAG_NONE},	// TM vs. (R); different CGB colorization
-	{"GAME", "", FLAG_JP},			// Sachen
-	{"GB SMART CARD", "", FLAG_CGB},	// Unl
-	{"GBDAYTEST", "", FLAG_JP|FLAG_CGB},	// Unl
-	{"GBWARST", "", FLAG_JP},
-	{"HARVEST-MOON GB", "", FLAG_CGB},
-	{"HARVEST-MOON GB", "", FLAG_JP|FLAG_CGB},
-	{"LOST WORLD", "78", FLAG_NONE},
-	{"MENU", "00", FLAG_JP},			// Unl
-	{"METAL SLUG 2", "01", FLAG_JP|FLAG_CGB},
-	{"MOTOCROSS+  ASG", "", FLAG_NONE},	// Other hacks
-	{"MOTOCROSSMANIACS", "", FLAG_NONE},
-	{"MYSTIC QUEST", "", FLAG_NONE},
-	{"NFL QUARTERBACK", "56", FLAG_NONE},
-	{"OBELIX", "", FLAG_NONE},
-	{"PAC-MAN", "AF", FLAG_NONE},
-	{"PKMN Generations", "", FLAG_NONE},
-	{"POCKET MONSTERS", "", FLAG_JP},
-	{"POCKETMON", "", FLAG_JP},
-	{"POKEMON AQUA", "", FLAG_NONE},
-	{"POKEMON BLUE", "", FLAG_NONE},
-	{"POKEMON RED", "", FLAG_NONE},
-	{"Pokemon Blue", "", FLAG_NONE},
-	{"Pokemon Red", "", FLAG_NONE},
-	{"SAGA", "C3", FLAG_JP},
-	{"SGBPACK", "01", FLAG_NONE},		// Unl
-	{"SHADOWGATE CLAS", "", FLAG_CGB},
-	{"SHANGHAI POCKET", "", FLAG_CGB},
-	{"SNOW BROS.JR", "", FLAG_NONE},
-	{"SOLOMON'S CLUB", "", FLAG_NONE},
-	{"SPY VS SPY", "7F", FLAG_NONE},
-	{"SUPER HUNCHBACK", "67", FLAG_NONE},
-	{"SYLVESTER", "", FLAG_CGB},
-	{"TAZMANIA", "78", FLAG_NONE},
-	{"TESSERAE", "54", FLAG_NONE},
-	{"TEST", "00", FLAG_JP},			// Unl
-	{"THE LION KING", "", FLAG_NONE},
-	{"THE SWORD OFHOPE", "7F", FLAG_NONE},
-	{"TOM AND JERRY", "", FLAG_NONE},
-	{"TOM AND JERRY", "", FLAG_JP},
-	{"TRACK MEET", "", FLAG_NONE},
-	{"ZELDA", "", FLAG_CGB},
-	{"ZELDA PL", "", FLAG_CGB},
-	{"Zelda Colour", "", FLAG_NONE},	// Other hacks
 
-	{"", "", FLAG_NONE}
+// DMG, Non-JP
+static const DmgSpecialCase_t dmgSpecialCases_DMG_NoJP[] = {
+	{"BIONIC-COMMANDO", ""},
+	{"BOKEMOB BLUE", ""},
+	{"CAESARS PALACE", "61"},
+	{"COKEMON BLUE", ""},
+	{"COOL SPOT", ""},
+	{"DENNIS", "67"},
+	{"DIG DUG", ""},
+	{"DIG DUG+  ASG", ""},		// Other hacks
+	{"DONKEYKONGLAND 3", ""},
+	{"DUCK TALES", ""},
+	{"DUCK TALES+ ASG", ""},	// Other hacks
+	{"GALAGA&GALAXIAN", "01"},	// TM vs. (R); different CGB colorization
+	{"LOST WORLD", "78"},
+	{"MOTOCROSS+  ASG", ""},	// Other hacks
+	{"MOTOCROSSMANIACS", ""},
+	{"MYSTIC QUEST", ""},
+	{"NFL QUARTERBACK", "56"},
+	{"OBELIX", ""},
+	{"PAC-MAN", "AF"},
+	{"PKMN Generations", ""},
+	{"POKEMON AQUA", ""},
+	{"POKEMON BLUE", ""},
+	{"POKEMON RED", ""},
+	{"Pokemon Blue", ""},
+	{"Pokemon Red", ""},
+	{"SGBPACK", "01"},		// Unl
+	{"SNOW BROS.JR", ""},
+	{"SOLOMON'S CLUB", ""},
+	{"SPY VS SPY", "7F"},
+	{"SUPER HUNCHBACK", "67"},
+	{"TAZMANIA", "78"},
+	{"TESSERAE", "54"},
+	{"THE LION KING", ""},
+	{"THE SWORD OFHOPE", "7F"},
+	{"TOM AND JERRY", ""},
+	{"TRACK MEET", ""},
+	{"Zelda Colour", ""},	// Other hacks
+};
+
+// DMG, JP
+static const DmgSpecialCase_t dmgSpecialCases_DMG_JP[] = {
+	{"GAME", ""},			// Sachen
+	{"GBWARST", ""},
+	{"MENU", "00"},			// Unl
+	{"POCKET MONSTERS", ""},
+	{"POCKETMON", ""},
+	{"SAGA", "C3"},
+	{"TEST", "00"},			// Unl
+	{"TOM AND JERRY", ""},
+};
+
+// CGB, Non-JP
+static const DmgSpecialCase_t dmgSpecialCases_CGB_NoJP[] = {
+	{"BUGS BUNNY", ""},
+	{"COOL HAND", ""},
+	{"GB SMART CARD", ""},	// Unl
+	{"HARVEST-MOON GB", ""},
+	{"SHADOWGATE CLAS", ""},
+	{"SHANGHAI POCKET", ""},
+	{"SYLVESTER", ""},
+	{"ZELDA", ""},
+	{"ZELDA PL", ""},
+};
+
+// CGB, JP
+static const DmgSpecialCase_t dmgSpecialCases_CGB_JP[] = {
+	{"DIGIMON 5", "MK"},
+	{"GBDAYTEST", ""},	// Unl
+	{"HARVEST-MOON GB", ""},
+	{"METAL SLUG 2", "01"},
+};
+
+// Dispatch array for DMG special cases
+struct DmgSpecialCase_Dispatch_tbl_t {
+	const DmgSpecialCase_t *ptr;
+	size_t size;
+};
+static const DmgSpecialCase_Dispatch_tbl_t dmgSpecialCases_dispatch_tbl[] = {
+	{dmgSpecialCases_DMG_NoJP, ARRAY_SIZE(dmgSpecialCases_DMG_NoJP)},
+	{dmgSpecialCases_DMG_JP,   ARRAY_SIZE(dmgSpecialCases_DMG_JP)},
+	{dmgSpecialCases_CGB_NoJP, ARRAY_SIZE(dmgSpecialCases_CGB_NoJP)},
+	{dmgSpecialCases_CGB_JP,   ARRAY_SIZE(dmgSpecialCases_CGB_JP)},
 };
 
 // Special cases for CGB ROM images with identical ID6s.
@@ -179,9 +202,13 @@ bool is_rpdb_checksum_needed_TitleBased(const DMG_RomHeader *romHeader)
 	char pbcode[3];
 	get_publisher_code(pbcode, romHeader);
 	const uint8_t flags = get_lookup_flags(romHeader);
+	assert(flags < ARRAY_SIZE(dmgSpecialCases_dispatch_tbl));
+	if (flags >= ARRAY_SIZE(dmgSpecialCases_dispatch_tbl))
+		return false;
 
 	// TODO: Change to a binary search.
-	for (const DmgSpecialCase_t *p = dmgSpecialCases; p->title[0] != '\0'; p++) {
+	size_t count = dmgSpecialCases_dispatch_tbl[flags].size;
+	for (const DmgSpecialCase_t *p = dmgSpecialCases_dispatch_tbl[flags].ptr; count > 0; p++, count--) {
 		if (strncmp(p->title, title, title_len) != 0) {
 			// Title does not match.
 			continue;
@@ -192,10 +219,8 @@ bool is_rpdb_checksum_needed_TitleBased(const DMG_RomHeader *romHeader)
 			continue;
 		}
 
-		if (flags == p->flags) {
-			// Lookup flags match. We found it!
-			return true;
-		}
+		// Title and publisher match. We found it!
+		return true;
 	}
 
 	// Not found.
