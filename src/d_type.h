@@ -37,39 +37,39 @@ extern "C" {
 enum {
 #ifndef DT_UNKNOWN
     DT_UNKNOWN = 0,
-# define DT_UNKNOWN	DT_UNKNOWN
+#  define DT_UNKNOWN DT_UNKNOWN
 #endif
 #ifndef DT_FIFO
     DT_FIFO = 1,
-# define DT_FIFO	DT_FIFO
+#  define DT_FIFO DT_FIFO
 #endif
 #ifndef DT_CHR
     DT_CHR = 2,
-# define DT_CHR		DT_CHR
+#  define DT_CHR DT_CHR
 #endif
 #ifndef DT_DIR
     DT_DIR = 4,
-# define DT_DIR		DT_DIR
+#  define DT_DIR DT_DIR
 #endif
 #ifndef DT_BLK
     DT_BLK = 6,
-# define DT_BLK		DT_BLK
+#  define DT_BLK DT_BLK
 #endif
 #ifndef DT_REG
     DT_REG = 8,
-# define DT_REG		DT_REG
+#  define DT_REG DT_REG
 #endif
 #ifndef DT_LNK
     DT_LNK = 10,
-# define DT_LNK		DT_LNK
+#  define DT_LNK DT_LNK
 #endif
 #ifndef DT_SOCK
     DT_SOCK = 12,
-# define DT_SOCK	DT_SOCK
+#  define DT_SOCK DT_SOCK
 #endif
 #ifndef DT_WHT
     DT_WHT = 14,
-# define DT_WHT		DT_WHT
+#  define DT_WHT DT_WHT
 #endif
 
     // Dummy entry to suppress warnings.

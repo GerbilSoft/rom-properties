@@ -9,9 +9,9 @@
 #pragma once
 
 #ifdef __cplusplus
-# include <cctype>
+#  include <cctype>
 #else
-# include <ctype.h>
+#  include <ctype.h>
 #endif
 
 #define ISALNUM(c) isalnum((unsigned char)(c))

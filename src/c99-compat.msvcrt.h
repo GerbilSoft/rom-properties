@@ -23,10 +23,10 @@
 #ifdef _MSC_VER
 #  if _MSC_VER < 1400
 /* MSVC 2003 and older. Don't use variadic macros. */
-#    define snprintf  _snprintf
+#    define snprintf _snprintf
 #  elif _MSC_VER < 1900
 /* MSVC 2005 through MSVC 2013. Use variadic macros. */
-#    define snprintf(str, size, format, ...)  _snprintf(str, size, format, __VA_ARGS__)
+#    define snprintf(str, size, format, ...) _snprintf(str, size, format, __VA_ARGS__)
 #  endif
 #endif /* _MSC_VER */
 
@@ -90,14 +90,14 @@
  */
 #ifdef _MSC_VER
 #  ifndef strcasecmp
-#    define strcasecmp(s1, s2)     _stricmp(s1, s2)
+#    define strcasecmp(s1, s2) _stricmp(s1, s2)
 #  endif
 #  ifndef strncasecmp
 #    define strncasecmp(s1, s2, n) _strnicmp(s1, s2, n)
 #  endif
 #endif /* _MSC_VER */
 #ifndef wcscasecmp
-#  define wcscasecmp(s1, s2)     _wcsicmp(s1, s2)
+#  define wcscasecmp(s1, s2) _wcsicmp(s1, s2)
 #endif
 #ifndef wcsncasecmp
 #  define wcsncasecmp(s1, s2, n) _wcsnicmp(s1, s2, n)

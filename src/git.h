@@ -13,37 +13,38 @@
 
 // RP_GIT_VERSION: Macro for the git revision, if available.
 #ifdef GIT_REPO
-	#ifdef GIT_BRANCH
-		#define RP_GIT_TMP_BRANCH GIT_BRANCH
-		#ifdef GIT_SHAID
-			#define RP_GIT_TMP_SHAID "/" GIT_SHAID
-		#else /* !GIT_SHAID */
-			#define RP_GIT_TMP_SHAID
-		#endif /* GIT_SHAID */
-	#else /* !GIT_BRANCH */
-		#define RP_GIT_TMP_BRANCH
-		#ifdef GIT_SHAID
-			#define RP_GIT_TMP_SHAID GIT_SHAID
-		#else /* !GIT_SHAID */
-			#define RP_GIT_TMP_SHAID
-		#endif /* GIT_SHAID */
-	#endif /* GIT_BRANCH */
-	
-	#ifdef GIT_DIRTY
-		#define RP_GIT_TMP_DIRTY "+"
-	#else /* !GIT_DIRTY */
-		#define RP_GIT_TMP_DIRTY
-	#endif /* GIT_DIRTY */
-	
-	#define RP_GIT_VERSION "git: " RP_GIT_TMP_BRANCH RP_GIT_TMP_SHAID RP_GIT_TMP_DIRTY
-	#ifdef GIT_DESCRIBE
-		#define RP_GIT_DESCRIBE GIT_DESCRIBE RP_GIT_TMP_DIRTY
-	#endif
+#  ifdef GIT_BRANCH
+#    define RP_GIT_TMP_BRANCH GIT_BRANCH
+#    ifdef GIT_SHAID
+#      define RP_GIT_TMP_SHAID "/" GIT_SHAID
+#    else /* !GIT_SHAID */
+#       define RP_GIT_TMP_SHAID
+#    endif /* GIT_SHAID */
+#  else /* !GIT_BRANCH */
+#    define RP_GIT_TMP_BRANCH
+#    ifdef GIT_SHAID
+#      define RP_GIT_TMP_SHAID GIT_SHAID
+#    else /* !GIT_SHAID */
+#      define RP_GIT_TMP_SHAID
+#    endif /* GIT_SHAID */
+#  endif /* GIT_BRANCH */
+
+#  ifdef GIT_DIRTY
+#    define RP_GIT_TMP_DIRTY "+"
+#  else /* !GIT_DIRTY */
+#    define RP_GIT_TMP_DIRTY
+#  endif /* GIT_DIRTY */
+
+#  define RP_GIT_VERSION "git: " RP_GIT_TMP_BRANCH RP_GIT_TMP_SHAID RP_GIT_TMP_DIRTY
+#  ifdef GIT_DESCRIBE
+#    define RP_GIT_DESCRIBE GIT_DESCRIBE RP_GIT_TMP_DIRTY
+#  endif
+
 #else /* !GIT_REPO */
-	#ifdef RP_GIT_VERSION
-		#undef RP_GIT_VERSION
-	#endif /* RP_GIT_VERSION */
-	#ifdef RP_GIT_DESCRIBE
-		#undef RP_GIT_DESCRIBE
-	#endif /* RP_GIT_DESCRIBE */
+#  ifdef RP_GIT_VERSION
+#    undef RP_GIT_VERSION
+#  endif /* RP_GIT_VERSION */
+#  ifdef RP_GIT_DESCRIBE
+#    undef RP_GIT_DESCRIBE
+#  endif /* RP_GIT_DESCRIBE */
 #endif /* GIT_REPO */

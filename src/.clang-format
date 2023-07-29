@@ -5,6 +5,7 @@ BreakBeforeBraces: Custom
 BraceWrapping:
   AfterClass: true
   AfterFunction: true
+  SplitEmptyFunction: false
 
 BreakConstructorInitializers: BeforeComma
 PackConstructorInitializers: Never
