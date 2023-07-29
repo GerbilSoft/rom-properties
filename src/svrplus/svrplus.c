@@ -1159,6 +1159,7 @@ int CALLBACK _tWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstanc
 #if 0
 	setlocale(LC_ALL, "");
 	// NOTE: Revert LC_CTYPE to "C" to fix UTF-8 output.
+	// (Needed for MSVC 2022; does nothing for MinGW-w64 11.0.0)
 	setlocale(LC_CTYPE, "C");
 #endif
 

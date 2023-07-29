@@ -199,6 +199,7 @@ int main(int argc, char *argv[])
 	setlocale(LC_ALL, "");
 #ifdef _WIN32
 	// NOTE: Revert LC_CTYPE to "C" to fix UTF-8 output.
+	// (Needed for MSVC 2022; does nothing for MinGW-w64 11.0.0)
 	setlocale(LC_CTYPE, "C");
 #endif /* _WIN32 */
 
