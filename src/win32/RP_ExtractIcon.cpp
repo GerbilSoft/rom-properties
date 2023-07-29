@@ -100,6 +100,11 @@ IFACEMETHODIMP RP_ExtractIcon::IsDirty(void)
 
 IFACEMETHODIMP RP_ExtractIcon::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
 {
+	// NOTE: Since this is the registered icon handler
+	// for the file type, we have to implement our own
+	// fallbacks for unsupported files. Hence, we'll
+	// return S_OK even if the file can't be opened or
+	// the file is not supported.
 	RP_UNUSED(dwMode);	// TODO
 
 	// If we already have a RomData object, unref() it first.
@@ -124,28 +129,14 @@ IFACEMETHODIMP RP_ExtractIcon::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
 	const Config *const config = Config::instance();
 	if (FileSystem::isOnBadFS(u8filename.c_str(), config->enableThumbnailOnNetworkFS())) {
 		// This file is on a "bad" file system.
-		return E_FAIL;
+		return S_OK;
 	}
 
-	// Attempt to open the ROM file.
+	// Get the appropriate RomData class for this ROM file.
+	// RomData class *must* support at least one image type.
 	// TODO: wchar_t* overload so we don't need to use WTF-8.
 	// Requires adding to the API, so romdata-4.dll?
-	RpFile *const file = new RpFile(u8filename, RpFile::FM_OPEN_READ_GZ);
-	if (!file->isOpen()) {
-		// Unable to open the file.
-		file->unref();
-		return E_FAIL;
-	}
-
-	// Get the appropriate RomData class for this ROM.
-	// RomData class *must* support at least one image type.
-	d->romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_THUMBNAIL);
-	file->unref();
-
-	// NOTE: Since this is the registered icon handler
-	// for the file type, we have to implement our own
-	// fallbacks for unsupported files. Hence, we'll
-	// continue even if d->romData is nullptr;
+	d->romData = RomDataFactory::create(u8filename.c_str(), RomDataFactory::RDA_HAS_THUMBNAIL);
 	return S_OK;
 }
 

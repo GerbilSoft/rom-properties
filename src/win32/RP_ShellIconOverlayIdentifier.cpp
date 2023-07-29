@@ -112,19 +112,11 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::IsMemberOf(_In_ PCWSTR pwszPath, D
 		return S_FALSE;
 	}
 
-	// Open the ROM file.
-	RpFile *const file = new RpFile(u8filename.c_str(), RpFile::FM_OPEN_READ_GZ);
-	if (!file->isOpen()) {
-		// Error opening the ROM file.
-		file->unref();
-		return E_FAIL;
-	}
-
 	// Attempt to create a RomData object.
-	RomData *const romData = RomDataFactory::create(file, RomDataFactory::RDA_HAS_DPOVERLAY);
-	file->unref();
+	RomData *const romData = RomDataFactory::create(u8filename.c_str(), RomDataFactory::RDA_HAS_DPOVERLAY);
 	if (!romData) {
 		// ROM is not supported.
+		// TODO: Return E_FAIL if the file couldn't be opened?
 		return S_FALSE;
 	}
 
