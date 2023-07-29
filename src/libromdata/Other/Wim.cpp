@@ -2,17 +2,21 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Wim.cpp: Microsoft WIM header reader                                    *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth.                                 *
+ * Copyright (c) 2019-2023 by David Korth and ecumber.                     *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "Wim.hpp"
 #include "Wim_structs.h"
+// TinyXML2
+#include "tinyxml2.h"
+#include "librptext/conversion.hpp"
 
 // librpbase, librpfile
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
+using namespace tinyxml2;
 
 // C++ STL classes.
 using std::string;
@@ -22,6 +26,7 @@ class WimPrivate final : public RomDataPrivate
 {
     public:
 		WimPrivate(LibRpFile::IRpFile* file);  
+		int addFields_XML();
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(WimPrivate)
@@ -33,6 +38,7 @@ class WimPrivate final : public RomDataPrivate
     public:
 		// ROM header.
 		WIM_Header wimHeader;
+		XMLDocument document;
 };
 
 static WIM_Version_Type version_type; 	// wims pre-1.13 - these are detected but won't 
@@ -57,6 +63,150 @@ const char* const WimPrivate::mimeTypes[] = {
 const RomDataInfo WimPrivate::romDataInfo = {
 	"WIM", exts, mimeTypes
 };
+
+
+typedef enum _WimWindowsArchitecture {
+	x86 = 0,
+	ARM32 = 5,
+	IA64 = 6,
+	AMD64 = 9,
+	ARM64 = 12,
+} WimWindowsArchitecture;
+
+struct WimWindowsLanguages {
+		std::string language;
+		std::string default_language;
+};
+
+struct WimWindowsVersion {
+		uint8_t majorversion = 0;
+		uint8_t minorversion = 0;
+		uint32_t buildnumber = 0;
+		uint32_t spbuildnumber = 0;
+		uint8_t splevel = 0; // only in windows 7+, added some time around build 6608-6730
+};
+
+struct WimWindowsInfo {
+		WimWindowsArchitecture arch = WimWindowsArchitecture::x86;
+		std::string productname, editionid, installationtype, hal, producttype, productsuite = nullptr;
+		WimWindowsLanguages languages;
+		WimWindowsVersion version;
+		std::string systemroot = nullptr;
+};
+
+struct WimIndex {
+		// if you have more than 2^32 indices in a wim
+		// you probably have bigger issues
+		uint32_t index = 0;
+		uint64_t dircount = 0;
+		uint64_t filecount = 0;
+		uint64_t totalbytes = 0;
+		uint64_t creationtime = 0;
+		uint64_t lastmodificationtime = 0;
+		WimWindowsInfo windowsinfo;
+		std::string name, description, flags, dispname, dispdescription = nullptr;
+};
+
+int WimPrivate::addFields_XML() 
+{
+	xml_data[size] = 0;
+
+	if (size >= 0x7FFFFFFF) /* congrats, you have broken the utf8 converter */ return 2;
+
+	// the xml inside wims are utf-16 but tinyxml only supports utf-8
+	// this means we have to do some conversion
+	std::string utf8_xml = LibRpText::utf16_to_utf8(xml_data, -1);
+
+	delete[](xml_data);
+#if TINYXML2_MAJOR_VERSION >= 2
+	document.Clear();
+#endif /* TINYXML2_MAJOR_VERSION >= 2 */
+	int xerr = document.Parse(utf8_xml.c_str());
+	assert(xerr != XML_SUCCESS);
+	if (xerr != XML_SUCCESS)
+	{
+#if TINYXML2_MAJOR_VERSION >= 2
+		document.Clear();
+#endif /* TINYXML2_MAJOR_VERSION >= 2 */
+		return 1;
+	} 
+
+	const XMLElement* const wim_element = document.FirstChildElement("WIM");
+	assert(wim_element != 0);
+
+	if (!wim_element) {
+		// No wim element.
+		// TODO: Better error code.
+#if TINYXML2_MAJOR_VERSION >= 2
+		document.Clear();
+#endif /* TINYXML2_MAJOR_VERSION >= 2 */
+		return -EIO;
+	}
+
+	std::vector<WimIndex> images(wimHeader.number_of_images);
+	const XMLElement* currentimage = wim_element->FirstChildElement("IMAGE");
+
+	for (uint32_t i = 0; i <= wimHeader.number_of_images - 1; i++)
+	{
+		//images[i].dircount = std::stoull(currentimage->FirstChildElement("DIRCOUNT")->Value());
+		//images[i].filecount = std::stoull(currentimage->FirstChildElement("FILECOUNT")->Value());
+
+		images[i].index = i + 1;
+
+		// the last modification time is split into a high part and a 
+		// low part so we shift and add them together
+		uint32_t lastmodtime_high = std::stoi(currentimage->FirstChildElement("CREATIONTIME")->FirstChildElement("HIGHPART")->Value(), nullptr, 16);
+		uint32_t lastmodtime_low = std::stoi(currentimage->FirstChildElement("CREATIONTIME")->FirstChildElement("LOWPART")->Value(), nullptr, 16);
+		images[i].lastmodificationtime = ((uint64_t)lastmodtime_high << 32) + lastmodtime_low;
+		const XMLElement* windowsinfo = currentimage->FirstChildElement("WINDOWS");
+		images[i].windowsinfo.arch = static_cast<WimWindowsArchitecture>(std::stoi(windowsinfo->FirstChildElement("ARCH")->Value()));
+		images[i].windowsinfo.editionid = windowsinfo->FirstChildElement("EDITIONID")->Value();
+		images[i].windowsinfo.languages.language = windowsinfo->FirstChildElement("LANGUAGES")->FirstChildElement("LANGUAGE")->Value();
+		const XMLElement* version = windowsinfo->FirstChildElement("VERSION");
+		images[i].windowsinfo.version.majorversion = std::stoi(version->FirstChildElement("MAJOR")->Value());
+		images[i].windowsinfo.version.minorversion = std::stoi(version->FirstChildElement("MINOR")->Value());
+		images[i].windowsinfo.version.buildnumber = std::stoi(version->FirstChildElement("BUILD")->Value());
+		images[i].windowsinfo.version.spbuildnumber = static_cast<uint32_t>(std::stoll(version->FirstChildElement("SPBUILD")->Value()));
+		// some wims don't have display names, we will
+		// filter these out when we do the actual parsing
+		images[i].name = currentimage->FirstChildElement("NAME")->GetText();
+		images[i].description = currentimage->FirstChildElement("DESCRIPTION")->GetText();
+		images[i].dispname = currentimage->FirstChildElement("DISPLAYNAME")->GetText();
+		images[i].dispdescription = currentimage->FirstChildElement("DISPLAYDESCRIPTION")->GetText();
+
+		currentimage = currentimage->NextSiblingElement();
+	}
+
+	auto vv_data = new RomFields::ListData_t();
+	vv_data->reserve(7);
+	// loop for the rows
+	for (uint32_t i = 0; i <= wimHeader.number_of_images-1; i++) {
+		vv_data->resize(vv_data->size()+1);
+		auto &data_row = vv_data->at(vv_data->size()-1);
+		data_row.emplace_back(C_("RomData", "Images"));
+	}
+
+	static const char* const field_names[] = {
+		NOP_C_("RomData", "Index"),
+		NOP_C_("RomData", "Name"),
+		NOP_C_("RomData", "Description"),
+		NOP_C_("RomData", "OS Version"),
+		NOP_C_("RomData", "Edition"),
+		NOP_C_("RomData", "Architecture"),
+		NOP_C_("RomData", "Language"),
+	};
+	std::vector<std::string>* const v_field_names = RomFields::strArrayToVector_i18n(
+		"RomData", field_names, ARRAY_SIZE(field_names));
+
+	RomFields::AFLD_PARAMS params;
+	params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;
+	params.headers = v_field_names;
+	params.data.single = vv_data;
+	// TODO: Header alignment?
+	assert(fields.addField_listData(C_("RomData", "Images"), &params) != -1);
+
+	return 0;
+}
 
 WimPrivate::WimPrivate(LibRpFile::IRpFile* file)
     : super(file, &romDataInfo)
@@ -122,6 +272,17 @@ Wim::Wim(LibRpFile::IRpFile* file)
 		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
+
+	d->file->rewind();
+	// the eighth byte of the "size" is used for flags so we have to AND it
+	const uint64_t offset = d->wimHeader.xml_resource.offset_of_xml;
+	const uint64_t size = d->wimHeader.xml_resource.size & 0x00FFFFFFFFFFFFFF;
+	char16_t* xml_data = new char16_t[size+1];
+	// if seek is invalid
+	if (file->seek(offset) && (file->tell() != offset)) return 1;
+
+	size_t real_bytes_read = file->read(&xml_data, -1);
+	assert(real_bytes_read == size);
 
 	// Check if this ROM is supported.
 	const DetectInfo info = {
@@ -245,6 +406,11 @@ int Wim::loadFieldData(void)
 	
 	snprintf(buffer, 6, "%d/%d", d->wimHeader.part_number, d->wimHeader.total_parts);
 	d->fields.addField_string(C_("RomData", "Part Number"), buffer, RomFields::STRF_TRIM_END);
+	snprintf(buffer, 4, "%d", d->wimHeader.number_of_images);
+	d->fields.addField_string(C_("RomData", "Total Images"), buffer, RomFields::STRF_TRIM_END);
+
+	d->addFields_XML();
+
 	return 0;
 }
 
