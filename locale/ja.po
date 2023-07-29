@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2023-07-18 10:24-0400\n"
-"PO-Revision-Date: 2023-07-18 22:45\n"
+"POT-Creation-Date: 2023-07-29 00:40-0400\n"
+"PO-Revision-Date: 2023-07-29 04:53\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Language: ja_JP\n"
@@ -369,47 +369,47 @@ msgid "<b>ROM Properties Page</b>\n"
 msgstr ""
 
 #: ../src/gtk/config/AboutTab.cpp:451 ../src/kde/config/AboutTab.cpp:173
-#: ../src/win32/config/AboutTab.cpp:743
+#: ../src/win32/config/AboutTab.cpp:745
 #, c-format
 msgctxt "AboutTab"
 msgid "Version %s"
 msgstr ""
 
 #: ../src/gtk/config/AboutTab.cpp:475 ../src/kde/config/AboutTab.cpp:195
-#: ../src/win32/config/AboutTab.cpp:851
+#: ../src/win32/config/AboutTab.cpp:853
 msgctxt "AboutTabl|Credits"
 msgid "GNU GPL v2"
 msgstr ""
 
 #. tr: %s is the name of the license.
 #: ../src/gtk/config/AboutTab.cpp:485 ../src/kde/config/AboutTab.cpp:205
-#: ../src/win32/config/AboutTab.cpp:848
+#: ../src/win32/config/AboutTab.cpp:850
 #, c-format
 msgctxt "AboutTab|Credits"
 msgid "This program is licensed under the %s or later."
 msgstr ""
 
 #: ../src/gtk/config/AboutTab.cpp:500 ../src/kde/config/AboutTab.cpp:220
-#: ../src/win32/config/AboutTab.cpp:869
+#: ../src/win32/config/AboutTab.cpp:871
 msgctxt "AboutTab|Credits"
 msgid "Developers:"
 msgstr ""
 
 #: ../src/gtk/config/AboutTab.cpp:503 ../src/kde/config/AboutTab.cpp:223
-#: ../src/win32/config/AboutTab.cpp:872
+#: ../src/win32/config/AboutTab.cpp:874
 msgctxt "AboutTab|Credits"
 msgid "Contributors:"
 msgstr ""
 
 #: ../src/gtk/config/AboutTab.cpp:506 ../src/kde/config/AboutTab.cpp:226
-#: ../src/win32/config/AboutTab.cpp:875
+#: ../src/win32/config/AboutTab.cpp:877
 msgctxt "AboutTab|Credits"
 msgid "Translators:"
 msgstr ""
 
 #. tr: Sub-credit.
 #: ../src/gtk/config/AboutTab.cpp:535 ../src/kde/config/AboutTab.cpp:255
-#: ../src/win32/config/AboutTab.cpp:903
+#: ../src/win32/config/AboutTab.cpp:905
 #, c-format
 msgctxt "AboutTab|Credits"
 msgid " (%s)"
@@ -417,7 +417,7 @@ msgstr ""
 
 #. tr: Using an internal copy of a library.
 #: ../src/gtk/config/AboutTab.cpp:561 ../src/kde/config/AboutTab.cpp:279
-#: ../src/win32/config/AboutTab.cpp:938
+#: ../src/win32/config/AboutTab.cpp:940
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "Internal copy of %s."
@@ -425,7 +425,7 @@ msgstr ""
 
 #. tr: Compiled with a specific version of an external library.
 #: ../src/gtk/config/AboutTab.cpp:563 ../src/kde/config/AboutTab.cpp:281
-#: ../src/win32/config/AboutTab.cpp:940
+#: ../src/win32/config/AboutTab.cpp:942
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "Compiled with %s."
@@ -433,7 +433,7 @@ msgstr ""
 
 #. tr: Using an external library, e.g. libpcre.so
 #: ../src/gtk/config/AboutTab.cpp:565 ../src/kde/config/AboutTab.cpp:283
-#: ../src/win32/config/AboutTab.cpp:942
+#: ../src/win32/config/AboutTab.cpp:944
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "Using %s."
@@ -441,7 +441,7 @@ msgstr ""
 
 #. tr: License: (libraries with only a single license)
 #: ../src/gtk/config/AboutTab.cpp:567 ../src/kde/config/AboutTab.cpp:285
-#: ../src/win32/config/AboutTab.cpp:944
+#: ../src/win32/config/AboutTab.cpp:946
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "License: %s"
@@ -449,32 +449,32 @@ msgstr ""
 
 #. tr: Licenses: (libraries with multiple licenses)
 #: ../src/gtk/config/AboutTab.cpp:569 ../src/kde/config/AboutTab.cpp:287
-#: ../src/win32/config/AboutTab.cpp:946
+#: ../src/win32/config/AboutTab.cpp:948
 #, c-format
 msgctxt "AboutTab|Libraries"
 msgid "Licenses: %s"
 msgstr ""
 
 #: ../src/gtk/config/AboutTab.cpp:677 ../src/kde/config/AboutTab.cpp:420
-#: ../src/win32/config/AboutTab.cpp:1036
+#: ../src/win32/config/AboutTab.cpp:1038
 msgctxt "AboutTab|Libraries"
 msgid "APNG patch:"
 msgstr ""
 
 #: ../src/gtk/config/AboutTab.cpp:780 ../src/kde/config/AboutTab.cpp:522
-#: ../src/win32/config/AboutTab.cpp:1105
+#: ../src/win32/config/AboutTab.cpp:1107
 msgctxt "AboutTab|Support"
 msgid "For technical support, you can visit the following websites:"
 msgstr ""
 
 #: ../src/gtk/config/AboutTab.cpp:797 ../src/kde/config/AboutTab.cpp:539
-#: ../src/win32/config/AboutTab.cpp:1121
+#: ../src/win32/config/AboutTab.cpp:1123
 msgctxt "AboutTab|Support"
 msgid "You can also email the developer directly:"
 msgstr ""
 
 #: ../src/gtk/config/AboutTab.cpp:823 ../src/kde/config/AboutTab.cpp:590
-#: ../src/win32/config/AboutTab.cpp:478
+#: ../src/win32/config/AboutTab.cpp:480
 msgctxt "AboutTab"
 msgid "Checking for updates..."
 msgstr ""
@@ -488,7 +488,7 @@ msgid "<b>ERROR:</b> %s"
 msgstr ""
 
 #: ../src/gtk/config/AboutTab.cpp:873 ../src/kde/config/AboutTab.cpp:690
-#: ../src/win32/config/AboutTab.cpp:579
+#: ../src/win32/config/AboutTab.cpp:581
 #, c-format
 msgctxt "AboutTab"
 msgid "Latest version: %s"
@@ -500,7 +500,7 @@ msgid "<b>New version available!</b>"
 msgstr ""
 
 #: ../src/gtk/config/AboutTab.cpp:879 ../src/kde/config/AboutTab.cpp:696
-#: ../src/win32/config/AboutTab.cpp:585
+#: ../src/win32/config/AboutTab.cpp:587
 msgctxt "AboutTab"
 msgid "Download at GitHub"
 msgstr ""
@@ -884,15 +884,15 @@ msgctxt "UpdateChecker"
 msgid "Version file is invalid."
 msgstr ""
 
-#: ../src/gtk/gtk3/NautilusMenuProvider.cpp:270
-#: ../src/gtk/gtk3/ThunarMenuProvider.cpp:264
+#: ../src/gtk/gtk3/NautilusMenuProvider.cpp:198
+#: ../src/gtk/gtk3/ThunarMenuProvider.cpp:192
 #: ../src/win32/RP_ContextMenu.cpp:490
 msgctxt "ServiceMenu"
 msgid "Convert to PNG"
 msgstr ""
 
-#: ../src/gtk/gtk3/NautilusMenuProvider.cpp:272
-#: ../src/gtk/gtk3/ThunarMenuProvider.cpp:266
+#: ../src/gtk/gtk3/NautilusMenuProvider.cpp:200
+#: ../src/gtk/gtk3/ThunarMenuProvider.cpp:194
 #: ../src/win32/RP_ContextMenu.cpp:594
 msgctxt "ServiceMenu"
 msgid "Convert the selected texture file to PNG format."
@@ -906,7 +906,7 @@ msgstr[0] ""
 #: ../src/gtk/gtk3/ThunarPropertyPageProvider.cpp:110
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:297
 #: ../src/kde/RomPropertiesDialogPlugin.cpp:103
-#: ../src/win32/RP_ShellPropSheetExt.cpp:2310
+#: ../src/win32/RP_ShellPropSheetExt.cpp:2314
 msgctxt "RomDataView"
 msgid "ROM Properties"
 msgstr ""
@@ -914,16 +914,16 @@ msgstr ""
 #. tr: Invalid date/time.
 #. tr: Invalid date/time
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:128
-#: ../src/gtk/RomDataView.cpp:1230 ../src/kde/RomDataView.cpp:653
-#: ../src/win32/RP_ShellPropSheetExt.cpp:1222
+#: ../src/gtk/RomDataView.cpp:1234 ../src/kde/RomDataView.cpp:657
+#: ../src/win32/RP_ShellPropSheetExt.cpp:1228
 msgctxt "RomDataView"
 msgid "Unknown"
 msgstr ""
 
 #. tr: No age ratings data.
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:144
-#: ../src/gtk/RomDataView.cpp:1250 ../src/kde/RomDataView.cpp:730
-#: ../src/win32/RP_ShellPropSheetExt.cpp:1335
+#: ../src/gtk/RomDataView.cpp:1254 ../src/kde/RomDataView.cpp:734
+#: ../src/win32/RP_ShellPropSheetExt.cpp:1341
 msgctxt "RomDataView"
 msgid "ERROR"
 msgstr ""
@@ -997,8 +997,8 @@ msgid "%1$s\n"
 msgstr ""
 
 #. tr: Field description label.
-#: ../src/gtk/RomDataView.cpp:1771 ../src/kde/RomDataView.cpp:1005
-#: ../src/win32/RP_ShellPropSheetExt.cpp:1724
+#: ../src/gtk/RomDataView.cpp:1775 ../src/kde/RomDataView.cpp:1009
+#: ../src/win32/RP_ShellPropSheetExt.cpp:1730
 #, c-format
 msgctxt "RomDataView"
 msgid "%s:"
@@ -1313,7 +1313,7 @@ msgid "Loop Start"
 msgstr ""
 
 #: ../src/libromdata/Audio/GBS.cpp:240 ../src/libromdata/Audio/NSF.cpp:204
-#: ../src/libromdata/Audio/PSF.cpp:544
+#: ../src/libromdata/Audio/PSF.cpp:546
 msgctxt "RomData|Audio"
 msgid "Title"
 msgstr ""
@@ -1325,7 +1325,7 @@ msgid "Composer"
 msgstr ""
 
 #: ../src/libromdata/Audio/GBS.cpp:252 ../src/libromdata/Audio/NSF.cpp:216
-#: ../src/libromdata/Audio/PSF.cpp:575 ../src/libromdata/Audio/SID.cpp:237
+#: ../src/libromdata/Audio/PSF.cpp:577 ../src/libromdata/Audio/SID.cpp:237
 msgctxt "RomData|Audio"
 msgid "Copyright"
 msgstr ""
@@ -1440,12 +1440,12 @@ msgctxt "PSF|System"
 msgid "Capcom QSound"
 msgstr ""
 
-#: ../src/libromdata/Audio/PSF.cpp:525
+#: ../src/libromdata/Audio/PSF.cpp:527
 msgctxt "PSF"
 msgid "System"
 msgstr ""
 
-#: ../src/libromdata/Audio/PSF.cpp:531 ../src/libromdata/Audio/SPC.cpp:742
+#: ../src/libromdata/Audio/PSF.cpp:533 ../src/libromdata/Audio/SPC.cpp:742
 #: ../src/libromdata/Console/DreamcastSave.cpp:1388
 #: ../src/libromdata/Console/DreamcastSave.cpp:1413
 #: ../src/libromdata/Console/NES.cpp:1265
@@ -1463,55 +1463,55 @@ msgstr ""
 #: ../src/libromdata/Handheld/WonderSwan.cpp:466
 #: ../src/libromdata/Other/Amiibo.cpp:414 ../src/libromdata/Other/ELF.cpp:1616
 #: ../src/libromdata/Other/EXE.cpp:295 ../src/libromdata/Other/EXE.cpp:480
-#: ../src/libromdata/Other/EXE_NE.cpp:321
+#: ../src/libromdata/Other/EXE_NE.cpp:323
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (0x%02X)"
 msgstr ""
 
-#: ../src/libromdata/Audio/PSF.cpp:550 ../src/libromdata/Audio/SPC.cpp:667
+#: ../src/libromdata/Audio/PSF.cpp:552 ../src/libromdata/Audio/SPC.cpp:667
 msgctxt "RomData|Audio"
 msgid "Artist"
 msgstr ""
 
-#: ../src/libromdata/Audio/PSF.cpp:556
+#: ../src/libromdata/Audio/PSF.cpp:558
 msgctxt "PSF"
 msgid "Game"
 msgstr ""
 
-#: ../src/libromdata/Audio/PSF.cpp:563 ../src/libromdata/Audio/VGM.cpp:397
+#: ../src/libromdata/Audio/PSF.cpp:565 ../src/libromdata/Audio/VGM.cpp:397
 #: ../src/libromdata/Console/Dreamcast.cpp:636
 #: ../src/libromdata/Console/SegaSaturn.cpp:526
 msgctxt "RomData"
 msgid "Release Date"
 msgstr ""
 
-#: ../src/libromdata/Audio/PSF.cpp:569
+#: ../src/libromdata/Audio/PSF.cpp:571
 msgctxt "RomData|Audio"
 msgid "Genre"
 msgstr ""
 
-#: ../src/libromdata/Audio/PSF.cpp:581
+#: ../src/libromdata/Audio/PSF.cpp:583
 msgctxt "PSF"
 msgid "Ripped By"
 msgstr ""
 
-#: ../src/libromdata/Audio/PSF.cpp:596
+#: ../src/libromdata/Audio/PSF.cpp:598
 msgctxt "PSF"
 msgid "Volume"
 msgstr ""
 
-#: ../src/libromdata/Audio/PSF.cpp:610 ../src/libromdata/Audio/SNDH.cpp:943
+#: ../src/libromdata/Audio/PSF.cpp:612 ../src/libromdata/Audio/SNDH.cpp:943
 msgctxt "RomData|Audio"
 msgid "Duration"
 msgstr ""
 
-#: ../src/libromdata/Audio/PSF.cpp:617
+#: ../src/libromdata/Audio/PSF.cpp:619
 msgctxt "PSF"
 msgid "Fadeout Duration"
 msgstr ""
 
-#: ../src/libromdata/Audio/PSF.cpp:623
+#: ../src/libromdata/Audio/PSF.cpp:625
 msgctxt "RomData|Audio"
 msgid "Comment"
 msgstr ""
@@ -2184,6 +2184,7 @@ msgstr ""
 #: ../src/libromdata/Console/Dreamcast.cpp:662
 #: ../src/libromdata/Console/GameCubeRegions.cpp:60
 #: ../src/libromdata/Console/MegaDrive.cpp:545
+#: ../src/libromdata/Console/PlayStationEXE.cpp:289
 #: ../src/libromdata/Console/Sega8Bit.cpp:396
 #: ../src/libromdata/Console/Sega8Bit.cpp:405
 #: ../src/libromdata/Console/SegaSaturn.cpp:538
@@ -2211,6 +2212,7 @@ msgstr ""
 
 #: ../src/libromdata/Console/Dreamcast.cpp:664
 #: ../src/libromdata/Console/MegaDrive.cpp:548
+#: ../src/libromdata/Console/PlayStationEXE.cpp:291
 #: ../src/libromdata/Console/SegaSaturn.cpp:541
 #: ../src/libromdata/Console/SNES.cpp:1368
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1806
@@ -3568,14 +3570,14 @@ msgstr ""
 
 #: ../src/libromdata/Console/NES.cpp:1439
 #: ../src/libromdata/Console/NES.cpp:1540
-#: ../src/libromdata/data/NESMappers.cpp:594
+#: ../src/libromdata/data/NESMappers.cpp:601
 msgctxt "NES|Mirroring"
 msgid "Horizontal"
 msgstr ""
 
 #: ../src/libromdata/Console/NES.cpp:1442
 #: ../src/libromdata/Console/NES.cpp:1542
-#: ../src/libromdata/data/NESMappers.cpp:594
+#: ../src/libromdata/data/NESMappers.cpp:601
 msgctxt "NES|Mirroring"
 msgid "Vertical"
 msgstr ""
@@ -3733,6 +3735,13 @@ msgstr ""
 #: ../src/libromdata/Console/PlayStationEXE.cpp:271
 msgctxt "PlayStationEXE"
 msgid "Initial SP Offset"
+msgstr ""
+
+#: ../src/libromdata/Console/PlayStationEXE.cpp:287
+#: ../src/libromdata/Console/SNES.cpp:1367
+#: ../src/libromdata/Console/Xbox_XBE.cpp:822
+msgctxt "Region"
+msgid "North America"
 msgstr ""
 
 #: ../src/libromdata/Console/PlayStationEXE.cpp:294
@@ -3952,12 +3961,6 @@ msgstr ""
 #: ../src/libromdata/Console/SNES.cpp:1360
 msgctxt "SNES"
 msgid "Cartridge HW"
-msgstr ""
-
-#: ../src/libromdata/Console/SNES.cpp:1367
-#: ../src/libromdata/Console/Xbox_XBE.cpp:822
-msgctxt "Region"
-msgid "North America"
 msgstr ""
 
 #: ../src/libromdata/Console/SNES.cpp:1369
@@ -4843,37 +4846,37 @@ msgctxt "EXE|Subsystem"
 msgid "Boot Application"
 msgstr ""
 
-#: ../src/libromdata/data/NESMappers.cpp:597
+#: ../src/libromdata/data/NESMappers.cpp:604
 msgctxt "NES|Mirroring"
 msgid "Mapper-controlled"
 msgstr ""
 
-#: ../src/libromdata/data/NESMappers.cpp:599
+#: ../src/libromdata/data/NESMappers.cpp:606
 msgctxt "NES|Mirroring"
 msgid "Mapper-controlled (H/V/A/B)"
 msgstr ""
 
-#: ../src/libromdata/data/NESMappers.cpp:601
+#: ../src/libromdata/data/NESMappers.cpp:608
 msgctxt "NES|Mirroring"
 msgid "Mapper-controlled (H/V)"
 msgstr ""
 
-#: ../src/libromdata/data/NESMappers.cpp:603
+#: ../src/libromdata/data/NESMappers.cpp:610
 msgctxt "NES|Mirroring"
 msgid "Mapper-controlled (A/B)"
 msgstr ""
 
-#: ../src/libromdata/data/NESMappers.cpp:605
+#: ../src/libromdata/data/NESMappers.cpp:612
 msgctxt "NES|Mirroring"
 msgid "Single Screen (A)"
 msgstr ""
 
-#: ../src/libromdata/data/NESMappers.cpp:607
+#: ../src/libromdata/data/NESMappers.cpp:614
 msgctxt "NES|Mirroring"
 msgid "Single Screen (B)"
 msgstr ""
 
-#: ../src/libromdata/data/NESMappers.cpp:609
+#: ../src/libromdata/data/NESMappers.cpp:616
 msgctxt "NES|Mirroring"
 msgid "Four Screens"
 msgstr ""
@@ -6235,85 +6238,87 @@ msgid "Save Memory"
 msgstr ""
 
 #: ../src/libromdata/Handheld/WonderSwan.cpp:501
-#: ../src/libromdata/Handheld/WonderSwan.cpp:517
+#: ../src/libromdata/Handheld/WonderSwan.cpp:518
 msgctxt "WonderSwan|SaveMemory"
 msgid "None"
 msgstr ""
 
-#: ../src/libromdata/Handheld/WonderSwan.cpp:504
-#: ../src/libromdata/Handheld/WonderSwan.cpp:521
+#. tr: Parameter 2 indicates the save type, e.g. "SRAM" or "EEPROM".
+#: ../src/libromdata/Handheld/WonderSwan.cpp:505
+#: ../src/libromdata/Handheld/WonderSwan.cpp:523
 #, c-format
 msgctxt "WonderSwan|SaveMemory"
 msgid "%1$u KiB (%2$s)"
 msgstr ""
 
-#: ../src/libromdata/Handheld/WonderSwan.cpp:506
+#: ../src/libromdata/Handheld/WonderSwan.cpp:507
 msgctxt "WonderSwan|SaveMemory"
 msgid "SRAM"
 msgstr ""
 
-#: ../src/libromdata/Handheld/WonderSwan.cpp:524
+#. tr: Parameter 2 indicates the save type, e.g. "SRAM" or "EEPROM".
+#: ../src/libromdata/Handheld/WonderSwan.cpp:527
 #, c-format
 msgctxt "WonderSwan|SaveMemory"
 msgid "%1$u bytes (%2$s)"
 msgstr ""
 
-#: ../src/libromdata/Handheld/WonderSwan.cpp:527
+#: ../src/libromdata/Handheld/WonderSwan.cpp:530
 msgctxt "WonderSwan|SaveMemory"
 msgid "EEPROM"
 msgstr ""
 
-#: ../src/libromdata/Handheld/WonderSwan.cpp:533
+#: ../src/libromdata/Handheld/WonderSwan.cpp:536
 msgctxt "WonderSwan|Features"
 msgid "RTC Present"
 msgstr ""
 
-#: ../src/libromdata/Handheld/WonderSwan.cpp:537
+#: ../src/libromdata/Handheld/WonderSwan.cpp:540
 msgctxt "WonderSwan"
 msgid "Features"
 msgstr ""
 
-#: ../src/libromdata/Handheld/WonderSwan.cpp:541
+#: ../src/libromdata/Handheld/WonderSwan.cpp:544
 msgctxt "WonderSwan"
 msgid "Orientation"
 msgstr ""
 
-#: ../src/libromdata/Handheld/WonderSwan.cpp:543
+#: ../src/libromdata/Handheld/WonderSwan.cpp:546
 msgctxt "WonderSwan|Orientation"
 msgid "Vertical"
 msgstr ""
 
-#: ../src/libromdata/Handheld/WonderSwan.cpp:544
+#: ../src/libromdata/Handheld/WonderSwan.cpp:547
 msgctxt "WonderSwan|Orientation"
 msgid "Horizontal"
 msgstr ""
 
-#: ../src/libromdata/Handheld/WonderSwan.cpp:547
+#: ../src/libromdata/Handheld/WonderSwan.cpp:550
 msgctxt "WonderSwan"
 msgid "Bus Width"
 msgstr ""
 
-#: ../src/libromdata/Handheld/WonderSwan.cpp:549
+#: ../src/libromdata/Handheld/WonderSwan.cpp:552
 msgctxt "WonderSwan|BusWidth"
 msgid "8-bit"
 msgstr ""
 
-#: ../src/libromdata/Handheld/WonderSwan.cpp:550
+#: ../src/libromdata/Handheld/WonderSwan.cpp:553
 msgctxt "WonderSwan|BusWidth"
 msgid "16-bit"
 msgstr ""
 
-#: ../src/libromdata/Handheld/WonderSwan.cpp:553
+#: ../src/libromdata/Handheld/WonderSwan.cpp:556
 msgctxt "WonderSwan"
 msgid "ROM Access Speed"
 msgstr ""
 
-#: ../src/libromdata/Handheld/WonderSwan.cpp:555
+#: ../src/libromdata/Handheld/WonderSwan.cpp:558
 msgctxt "WonderSwan|ROMAccessSpeed"
 msgid "1 cycle"
 msgstr ""
 
-#: ../src/libromdata/Handheld/WonderSwan.cpp:556
+#: ../src/libromdata/Handheld/WonderSwan.cpp:559
 msgctxt "WonderSwan|ROMAccessSpeed"
 msgid "3 cycles"
 msgstr ""
@@ -6999,7 +7004,7 @@ msgctxt "EXE"
 msgid "CPU"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE.cpp:474 ../src/libromdata/Other/EXE_NE.cpp:316
+#: ../src/libromdata/Other/EXE.cpp:474 ../src/libromdata/Other/EXE_NE.cpp:318
 msgctxt "EXE"
 msgid "Target OS"
 msgstr ""
@@ -7149,261 +7154,261 @@ msgctxt "EXE|Manifest"
 msgid "Compatibility"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:256
+#: ../src/libromdata/Other/EXE_NE.cpp:258
 #: ../src/libromdata/Other/EXE_PE.cpp:564
 #, c-format
 msgctxt "EXE|Runtime"
 msgid "Microsoft Visual Basic %u.%u Runtime"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:326
-msgctxt "EXE|DGroupType"
-msgid "None"
-msgstr ""
-
-#: ../src/libromdata/Other/EXE_NE.cpp:327
-msgctxt "EXE|DGroupType"
-msgid "Single Shared"
-msgstr ""
-
 #: ../src/libromdata/Other/EXE_NE.cpp:328
 msgctxt "EXE|DGroupType"
-msgid "Multiple"
+msgid "None"
 msgstr ""
 
 #: ../src/libromdata/Other/EXE_NE.cpp:329
 msgctxt "EXE|DGroupType"
-msgid "(null)"
+msgid "Single Shared"
+msgstr ""
+
+#: ../src/libromdata/Other/EXE_NE.cpp:330
+msgctxt "EXE|DGroupType"
+msgid "Multiple"
 msgstr ""
 
 #: ../src/libromdata/Other/EXE_NE.cpp:331
+msgctxt "EXE|DGroupType"
+msgid "(null)"
+msgstr ""
+
+#: ../src/libromdata/Other/EXE_NE.cpp:333
 msgctxt "EXE"
 msgid "DGroup Type"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:337
+#: ../src/libromdata/Other/EXE_NE.cpp:339
 msgctxt "EXE|ProgFlags"
 msgid "Global Init"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:338
+#: ../src/libromdata/Other/EXE_NE.cpp:340
 msgctxt "EXE|ProgFlags"
 msgid "Protected Mode Only"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:339
+#: ../src/libromdata/Other/EXE_NE.cpp:341
 msgctxt "EXE|ProgFlags"
 msgid "8086 insns"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:340
+#: ../src/libromdata/Other/EXE_NE.cpp:342
 msgctxt "EXE|ProgFlags"
 msgid "80286 insns"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:341
+#: ../src/libromdata/Other/EXE_NE.cpp:343
 msgctxt "EXE|ProgFlags"
 msgid "80386 insns"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:342
+#: ../src/libromdata/Other/EXE_NE.cpp:344
 msgctxt "EXE|ProgFlags"
 msgid "FPU insns"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:354
-#: ../src/libromdata/Other/EXE_NE.cpp:363
+#: ../src/libromdata/Other/EXE_NE.cpp:356
+#: ../src/libromdata/Other/EXE_NE.cpp:365
 msgctxt "EXE|ApplType"
 msgid "None"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:355
+#: ../src/libromdata/Other/EXE_NE.cpp:357
 msgctxt "EXE|ApplType"
 msgid "Full Screen (not aware of Presentation Manager)"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:356
+#: ../src/libromdata/Other/EXE_NE.cpp:358
 msgctxt "EXE|ApplType"
 msgid "Presentation Manager compatible"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:357
+#: ../src/libromdata/Other/EXE_NE.cpp:359
 msgctxt "EXE|ApplType"
 msgid "Presentation Manager application"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:364
+#: ../src/libromdata/Other/EXE_NE.cpp:366
 msgctxt "EXE|ApplType"
 msgid "Full Screen (not aware of Windows)"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:365
+#: ../src/libromdata/Other/EXE_NE.cpp:367
 msgctxt "EXE|ApplType"
 msgid "Windows compatible"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:366
+#: ../src/libromdata/Other/EXE_NE.cpp:368
 msgctxt "EXE|ApplType"
 msgid "Windows application"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:370
+#: ../src/libromdata/Other/EXE_NE.cpp:372
 msgctxt "EXE"
 msgid "Application Type"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:377
+#: ../src/libromdata/Other/EXE_NE.cpp:379
 msgctxt "EXE|ApplFlags"
 msgid "OS/2 Application"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:379
+#: ../src/libromdata/Other/EXE_NE.cpp:381
 msgctxt "EXE|ApplFlags"
 msgid "Image Error"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:380
+#: ../src/libromdata/Other/EXE_NE.cpp:382
 msgctxt "EXE|ApplFlags"
 msgid "Non-Conforming"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:381
+#: ../src/libromdata/Other/EXE_NE.cpp:383
 msgctxt "EXE|ApplFlags"
 msgid "DLL"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:385
+#: ../src/libromdata/Other/EXE_NE.cpp:387
 msgctxt "EXE"
 msgid "Application Flags"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:395
+#: ../src/libromdata/Other/EXE_NE.cpp:397
 msgctxt "EXE|OtherFlags"
 msgid "Long File Names"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:396
+#: ../src/libromdata/Other/EXE_NE.cpp:398
 msgctxt "EXE|OtherFlags"
 msgid "Protected Mode"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:397
+#: ../src/libromdata/Other/EXE_NE.cpp:399
 msgctxt "EXE|OtherFlags"
 msgid "Proportional Fonts"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:398
+#: ../src/libromdata/Other/EXE_NE.cpp:400
 msgctxt "EXE|OtherFlags"
 msgid "Gangload Area"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:402
+#: ../src/libromdata/Other/EXE_NE.cpp:404
 msgctxt "EXE"
 msgid "Other Flags"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:434
+#: ../src/libromdata/Other/EXE_NE.cpp:436
 #: ../src/libromdata/Other/EXE_PE.cpp:717
 msgctxt "EXE"
 msgid "Timestamp"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:444
+#: ../src/libromdata/Other/EXE_NE.cpp:446
 msgctxt "EXE"
 msgid "Windows Version"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:452
+#: ../src/libromdata/Other/EXE_NE.cpp:454
 #: ../src/libromdata/Other/EXE_PE.cpp:733
 msgctxt "EXE"
 msgid "Runtime DLL"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:467
+#: ../src/libromdata/Other/EXE_NE.cpp:469
 msgctxt "EXE"
 msgid "Module Name"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:469
+#: ../src/libromdata/Other/EXE_NE.cpp:471
 msgctxt "EXE"
 msgid "Module Description"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:481
+#: ../src/libromdata/Other/EXE_NE.cpp:483
 #: ../src/libromdata/Other/EXE_PE.cpp:745
 msgctxt "EXE"
 msgid "Version"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:642
-#: ../src/libromdata/Other/EXE_NE.cpp:818
+#: ../src/libromdata/Other/EXE_NE.cpp:644
+#: ../src/libromdata/Other/EXE_NE.cpp:820
 msgctxt "EXE|Exports"
 msgid "(No name)"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:643
+#: ../src/libromdata/Other/EXE_NE.cpp:645
 #, c-format
 msgctxt "EXE|Exports"
 msgid "%1$02X:%2$04X (%3$s)"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:644
+#: ../src/libromdata/Other/EXE_NE.cpp:646
 msgctxt "EXE|Exports"
 msgid "Movable"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:645
+#: ../src/libromdata/Other/EXE_NE.cpp:647
 msgctxt "EXE|Exports"
 msgid "Fixed"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:691
+#: ../src/libromdata/Other/EXE_NE.cpp:693
 #, c-format
 msgctxt "EXE|Exports"
 msgid "0x%04X (Constant)"
 msgstr ""
 
 #. tr: this is the EXE NE equivalent of EXE PE export table
-#: ../src/libromdata/Other/EXE_NE.cpp:699
-#: ../src/libromdata/Other/EXE_NE.cpp:717
+#: ../src/libromdata/Other/EXE_NE.cpp:701
+#: ../src/libromdata/Other/EXE_NE.cpp:719
 msgctxt "EXE"
 msgid "Entries"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:703
-#: ../src/libromdata/Other/EXE_NE.cpp:888
+#: ../src/libromdata/Other/EXE_NE.cpp:705
+#: ../src/libromdata/Other/EXE_NE.cpp:890
 #: ../src/libromdata/Other/EXE_PE.cpp:931
 msgctxt "EXE|Exports"
 msgid "Ordinal"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:704
-#: ../src/libromdata/Other/EXE_NE.cpp:887
+#: ../src/libromdata/Other/EXE_NE.cpp:706
+#: ../src/libromdata/Other/EXE_NE.cpp:889
 #: ../src/libromdata/Other/EXE_PE.cpp:930
 #: ../src/libromdata/Other/EXE_PE.cpp:1153
 msgctxt "EXE|Exports"
 msgid "Name"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:705
+#: ../src/libromdata/Other/EXE_NE.cpp:707
 msgctxt "EXE|Exports"
 msgid "Address"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:706
+#: ../src/libromdata/Other/EXE_NE.cpp:708
 msgctxt "EXE|Exports"
 msgid "Flags"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:882
-#: ../src/libromdata/Other/EXE_NE.cpp:900
+#: ../src/libromdata/Other/EXE_NE.cpp:884
+#: ../src/libromdata/Other/EXE_NE.cpp:902
 #: ../src/libromdata/Other/EXE_PE.cpp:1148
 #: ../src/libromdata/Other/EXE_PE.cpp:1166
 msgctxt "EXE"
 msgid "Imports"
 msgstr ""
 
-#: ../src/libromdata/Other/EXE_NE.cpp:889
+#: ../src/libromdata/Other/EXE_NE.cpp:891
 #: ../src/libromdata/Other/EXE_PE.cpp:1155
 msgctxt "EXE|Exports"
 msgid "Module"
@@ -9889,39 +9894,39 @@ msgctxt "rp-stub"
 msgid "*** ERROR: %1$s() returned %2$d."
 msgstr ""
 
-#: ../src/win32/config/AboutTab.cpp:497
+#: ../src/win32/config/AboutTab.cpp:499
 msgctxt "AboutTab"
 msgid "Update check failed!"
 msgstr ""
 
 #. tr: Error message template. (Windows version, without formatting)
-#: ../src/win32/config/AboutTab.cpp:528
+#: ../src/win32/config/AboutTab.cpp:530
 msgctxt "AboutTab"
 msgid "ERROR:"
 msgstr ""
 
-#: ../src/win32/config/AboutTab.cpp:583
+#: ../src/win32/config/AboutTab.cpp:585
 msgctxt "AboutTab"
 msgid "New version available!"
 msgstr ""
 
-#: ../src/win32/config/AboutTab.cpp:913
+#: ../src/win32/config/AboutTab.cpp:915
 msgctxt "AboutTab"
 msgid "Credits"
 msgstr ""
 
-#: ../src/win32/config/AboutTab.cpp:1085
+#: ../src/win32/config/AboutTab.cpp:1087
 msgctxt "AboutTab"
 msgid "Libraries"
 msgstr ""
 
-#: ../src/win32/config/AboutTab.cpp:1127
+#: ../src/win32/config/AboutTab.cpp:1129
 msgctxt "AboutTab"
 msgid "Support"
 msgstr ""
 
 #. tr: Tab title.
-#: ../src/win32/config/AboutTab.cpp:1339
+#: ../src/win32/config/AboutTab.cpp:1341
 msgctxt "AboutTab"
 msgid "About"
 msgstr ""
