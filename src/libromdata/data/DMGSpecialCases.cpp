@@ -196,9 +196,6 @@ bool is_rpdb_checksum_needed_TitleBased(const DMG_RomHeader *romHeader)
 	// if the CGB mode byte is present.
 	// If an ID6 is present, caller must use the ID6 function.
 	// TODO: Do the ID6 check here instead?
-	const char *const title = romHeader->title16;
-	const size_t title_len = (romHeader->cgbflag & 0x80) ? 15 : 16;
-
 	char pbcode[3];
 	get_publisher_code(pbcode, romHeader);
 	const uint8_t flags = get_lookup_flags(romHeader);
@@ -206,10 +203,30 @@ bool is_rpdb_checksum_needed_TitleBased(const DMG_RomHeader *romHeader)
 	if (flags >= ARRAY_SIZE(dmgSpecialCases_dispatch_tbl))
 		return false;
 
+	const char *const title = romHeader->title16;
+	size_t title_len = (romHeader->cgbflag & 0x80) ? 15 : 16;
+	// Trim title_len for spaces and NULLs.
+	for (; title_len > 0; title_len--) {
+		const char chr = title[title_len-1];
+		if (chr == '\0' || chr == ' ') {
+			// Space. Keep going.
+		} else {
+			// Found a non-space character. We're done.
+			break;
+		}
+	}
+	if (title_len == 0) {
+		// No title...
+		return false;
+	}
+
 	// TODO: Change to a binary search.
 	size_t count = dmgSpecialCases_dispatch_tbl[flags].size;
 	for (const DmgSpecialCase_t *p = dmgSpecialCases_dispatch_tbl[flags].ptr; count > 0; p++, count--) {
-		if (strncmp(p->title, title, title_len) != 0) {
+		if (p->title[title_len] != '\0') {
+			// Title length is incorrect. Not a match.
+			continue;
+		} else if (strncmp(p->title, title, title_len) != 0) {
 			// Title does not match.
 			continue;
 		}
