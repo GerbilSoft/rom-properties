@@ -152,6 +152,8 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	// Set the C locale.
 	// TODO: C++ locale?
 	setlocale(LC_ALL, "");
+	// NOTE: Revert LC_CTYPE to "C" to fix UTF-8 output.
+	setlocale(LC_CTYPE, "C");
 
 #define FAIL_MESSAGE(msg) do { \
 		MessageBox(NULL, (msg), prg_title, MB_ICONSTOP); \

@@ -1156,7 +1156,11 @@ int CALLBACK _tWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstanc
 	// Set the C locale.
 	// NOTE: svrplus doesn't use localization. Using setlocale()
 	// adds 28,672 bytes to the statically-linked executable
-	//setlocale(LC_ALL, "");
+#if 0
+	setlocale(LC_ALL, "");
+	// NOTE: Revert LC_CTYPE to "C" to fix UTF-8 output.
+	setlocale(LC_CTYPE, "C");
+#endif
 
 	// Check the system architecture(s).
 	if (check_system_architectures() != 0) {
