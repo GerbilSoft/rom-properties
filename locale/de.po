@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties 2.2+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-07-29 00:40-0400\n"
-"PO-Revision-Date: 2023-07-10 20:37\n"
+"PO-Revision-Date: 2023-07-23 20:06\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -4148,12 +4148,12 @@ msgstr ""
 #: ../src/libromdata/Console/WiiSave.cpp:514
 msgctxt "WiiSave"
 msgid "Flags"
-msgstr ""
+msgstr "Flags"
 
 #: ../src/libromdata/Console/WiiSave.cpp:521
 msgctxt "WiiSave"
 msgid "MAC Address"
-msgstr ""
+msgstr "MAC-Adresse"
 
 #: ../src/libromdata/Console/WiiU.cpp:438
 #, c-format
@@ -4490,7 +4490,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1709
 msgctxt "Xbox360_XEX"
 msgid "Title"
-msgstr ""
+msgstr "Titel"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1710
 msgctxt "Xbox360_XEX"
@@ -4556,17 +4556,17 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1740
 msgctxt "Xbox360_XEX"
 msgid "DVD/CD"
-msgstr ""
+msgstr "DVD/CD"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1741
 msgctxt "Xbox360_XEX"
 msgid "DVD-ROM SL"
-msgstr ""
+msgstr "DVD-ROM SL"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1743
 msgctxt "Xbox360_XEX"
 msgid "DVD-ROM DL"
-msgstr ""
+msgstr "DVD-ROM DL"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1744
 msgctxt "Xbox360_XEX"
@@ -4581,12 +4581,12 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1748
 msgctxt "Xbox360_XEX"
 msgid "USB Mass Storage Device"
-msgstr ""
+msgstr "USB-Massenspeichergerät"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1749
 msgctxt "Xbox360_XEX"
 msgid "Network"
-msgstr ""
+msgstr "Netzwerk"
 
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1750
 msgctxt "Xbox360_XEX"
@@ -4838,12 +4838,12 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox_XBE.cpp:825
 msgctxt "Region"
 msgid "Manufacturing"
-msgstr ""
+msgstr "Hersteller"
 
 #: ../src/libromdata/crypto/KeyStoreUI.cpp:879
 msgctxt "KeyStoreUI|Section"
 msgid "Nintendo Wii AES Keys"
-msgstr ""
+msgstr "Nintendo Wii AES Schlüssel"
 
 #: ../src/libromdata/crypto/KeyStoreUI.cpp:880
 msgctxt "KeyStoreUI|Section"
@@ -4853,24 +4853,24 @@ msgstr ""
 #: ../src/libromdata/crypto/KeyStoreUI.cpp:881
 msgctxt "KeyStoreUI|Section"
 msgid "Nintendo 3DS AES Keys"
-msgstr ""
+msgstr "Nintendo Wii AES Schlüssel"
 
 #: ../src/libromdata/crypto/KeyStoreUI.cpp:882
 msgctxt "KeyStoreUI|Section"
 msgid "Microsoft Xbox 360 AES Keys"
-msgstr ""
+msgstr "Microsoft XBox 360 AES Schlüssel"
 
 #. tr: IMAGE_SUBSYSTEM_NATIVE
 #: ../src/libromdata/data/EXEData.cpp:87
 msgctxt "EXE|Subsystem"
 msgid "Native"
-msgstr ""
+msgstr "Nativ"
 
 #. tr: IMAGE_SUBSYSTEM_WINDOWS_GUI
 #: ../src/libromdata/data/EXEData.cpp:89
 msgctxt "EXE|Subsystem"
 msgid "Windows"
-msgstr ""
+msgstr "Windows"
 
 #. tr: IMAGE_SUBSYSTEM_WINDOWS_CUI
 #: ../src/libromdata/data/EXEData.cpp:91
@@ -4900,25 +4900,25 @@ msgstr ""
 #: ../src/libromdata/data/EXEData.cpp:103
 msgctxt "EXE|Subsystem"
 msgid "Windows CE"
-msgstr ""
+msgstr "Windows CE"
 
 #. tr: IMAGE_SUBSYSTEM_EFI_APPLICATION
 #: ../src/libromdata/data/EXEData.cpp:105
 msgctxt "EXE|Subsystem"
 msgid "EFI Application"
-msgstr ""
+msgstr "EFI Anwendung"
 
 #. tr: IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER
 #: ../src/libromdata/data/EXEData.cpp:107
 msgctxt "EXE|Subsystem"
 msgid "EFI Boot Service Driver"
-msgstr ""
+msgstr "EFI Boot-Service-Treiber"
 
 #. tr: IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER
 #: ../src/libromdata/data/EXEData.cpp:109
 msgctxt "EXE|Subsystem"
 msgid "EFI Runtime Driver"
-msgstr ""
+msgstr "EFI Laufzeit-Treiber"
 
 #. tr: IMAGE_SUBSYSTEM_EFI_ROM
 #: ../src/libromdata/data/EXEData.cpp:111
@@ -4930,7 +4930,7 @@ msgstr ""
 #: ../src/libromdata/data/EXEData.cpp:113
 msgctxt "EXE|Subsystem"
 msgid "Xbox"
-msgstr ""
+msgstr "Xbox"
 
 #. tr: IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION
 #: ../src/libromdata/data/EXEData.cpp:117
@@ -5012,38 +5012,38 @@ msgstr ""
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:46
 msgctxt "Nintendo3DSSysTitles"
 msgid "StreetPass Mii Plaza"
-msgstr ""
+msgstr "StreetPass Mii-Lobby"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:47
 msgctxt "Nintendo3DSSysTitles"
 msgid "eShop"
-msgstr ""
+msgstr "eShop"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:48
 msgctxt "Nintendo3DSSysTitles"
 msgid "System Transfer"
-msgstr ""
+msgstr "System-Transfer"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:49
 msgctxt "Nintendo3DSSysTitles"
 msgid "Nintendo Zone"
-msgstr ""
+msgstr "Nintendo Zone"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:50
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:58
 msgctxt "Nintendo3DSSysTitles"
 msgid "Face Raiders"
-msgstr ""
+msgstr "Face Raiders"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:51
 msgctxt "Nintendo3DSSysTitles"
 msgid "AR Games"
-msgstr ""
+msgstr "AR-Games"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:52
 msgctxt "Nintendo3DSSysTitles"
 msgid "System Updater (SAFE_MODE)"
-msgstr ""
+msgstr "System-Updater (SAFE_MODE)"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:53
 msgctxt "Nintendo3DSSysTitles"
@@ -5063,38 +5063,38 @@ msgstr ""
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:67
 msgctxt "Nintendo3DSSysTitles"
 msgid "HOME Menu"
-msgstr ""
+msgstr "HOME-Menü"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:68
 msgctxt "Nintendo3DSSysTitles"
 msgid "Camera"
-msgstr ""
+msgstr "Kamera"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:69
 msgctxt "Nintendo3DSSysTitles"
 msgid "Instruction Manual"
-msgstr ""
+msgstr "Bedienungsanleitung"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:70
 msgctxt "Nintendo3DSSysTitles"
 msgid "Game Notes"
-msgstr ""
+msgstr "Spielnotizen"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:71
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:85
 msgctxt "Nintendo3DSSysTitles"
 msgid "Internet Browser"
-msgstr ""
+msgstr "Internet Browser"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:72
 msgctxt "Nintendo3DSSysTitles"
 msgid "Friend List"
-msgstr ""
+msgstr "Freundesliste"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:73
 msgctxt "Nintendo3DSSysTitles"
 msgid "Notifications"
-msgstr ""
+msgstr "Benachrichtigungen"
 
 #: ../src/libromdata/data/Nintendo3DSSysTitles.cpp:74
 msgctxt "Nintendo3DSSysTitles"
@@ -5300,7 +5300,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/DMG.cpp:906
 msgctxt "DMG|Features"
 msgid "RAM"
-msgstr ""
+msgstr "RAM"
 
 #: ../src/libromdata/Handheld/DMG.cpp:907
 #: ../src/libromdata/Handheld/DMG.cpp:1106
@@ -5312,18 +5312,18 @@ msgstr "Batterie"
 #: ../src/libromdata/Handheld/DMG.cpp:1108
 msgctxt "DMG|Features"
 msgid "Timer"
-msgstr ""
+msgstr "Timer"
 
 #: ../src/libromdata/Handheld/DMG.cpp:909
 #: ../src/libromdata/Handheld/DMG.cpp:1107
 msgctxt "DMG|Features"
 msgid "Rumble"
-msgstr ""
+msgstr "Rumble"
 
 #: ../src/libromdata/Handheld/DMG.cpp:910
 msgctxt "DMG|Features"
 msgid "Tilt Sensor"
-msgstr ""
+msgstr "Neigungssensor"
 
 #: ../src/libromdata/Handheld/DMG.cpp:914
 #: ../src/libromdata/Handheld/DMG.cpp:1112
@@ -5890,7 +5890,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:510
 msgctxt "Nintendo3DS"
 msgid "Title"
-msgstr ""
+msgstr "Titel"
 
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:511
 msgctxt "Nintendo3DS"
@@ -5934,7 +5934,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:557
 msgctxt "NintendoDS|DSi_Flags"
 msgid "Nintendo WFC"
-msgstr ""
+msgstr "Nintendo WFC"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:558
 msgctxt "NintendoDS|DSi_Flags"
@@ -5954,22 +5954,22 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:561
 msgctxt "NintendoDS|DSi_Flags"
 msgid "Developer"
-msgstr ""
+msgstr "Entwickler"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:955
 msgctxt "NintendoDS"
 msgid "Type"
-msgstr ""
+msgstr "Typ"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1009
 msgctxt "NintendoDS"
 msgid "Full Title"
-msgstr ""
+msgstr "Vollständiger Titel"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1042
 msgctxt "NintendoDS|SecurityData"
 msgid "Blowfish Tables"
-msgstr ""
+msgstr "Blowfish Tabellen"
 
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1043
 msgctxt "NintendoDS|SecurityData"
@@ -6005,7 +6005,7 @@ msgstr ""
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1296
 msgctxt "NintendoDS"
 msgid "Flags"
-msgstr ""
+msgstr "Flags"
 
 #. tr: DSi-enhanced or DSi-exclusive cartridge.
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1133
