@@ -60,6 +60,16 @@ typedef enum {
     compress_xpress2 = 0x200000,
 } WIM_Compression_Flags;
 
+typedef struct _WIM_File_Resource_ 
+{
+    //this is 7 bytes but there isn't a good way of
+    //representing that 
+    uint64_t size;
+    uint64_t offset_of_xml;
+    uint64_t not_important;
+} WIM_File_Resource;
+ASSERT_STRUCT(WIM_File_Resource, 0x18);
+
 typedef struct _WIM_Header_ 
 {
     // 0x0
@@ -75,14 +85,14 @@ typedef struct _WIM_Header_
     uint16_t total_parts;
     uint32_t number_of_images;
     // 0x30
-    char offset_table_offset[0x18];
+    WIM_File_Resource offset_table;
     // 0x48
-    char xml_offset[0x18];
+    WIM_File_Resource xml_resource;
     // 0x60
-    char boot_metadata_offset[0x18];
+    WIM_File_Resource boot_metadata_resource;
     // 0x78
     uint32_t bootable_index;
-    char integrity_offset[0x18];
+    WIM_File_Resource integrity_resource;
     char unused[0x3C];
 } WIM_Header;
 
