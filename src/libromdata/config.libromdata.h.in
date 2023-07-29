@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * config.libromdata.h.in: LibRomData configuration. (source file)         *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBROMDATA_CONFIG_H__
-#define __ROMPROPERTIES_LIBROMDATA_CONFIG_H__
+#pragma once
 
 /* DLL SOVERSION (if linking as a shared library) */
 #cmakedefine romdata_LINKAGE 1
@@ -60,5 +59,3 @@
 #if !defined(USE_INTERNAL_LZO) || defined(USE_INTERNAL_LZO_DLL)
 #  define LZO_IS_DLL 1
 #endif
-
-#endif /* __ROMPROPERTIES_LIBROMDATA_CONFIG_H__ */

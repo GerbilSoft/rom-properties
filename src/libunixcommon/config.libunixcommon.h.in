@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (rp-stub)                          *
  * config.libunixcommon.h.in: libunixcommon configuration. (source file)   *
  *                                                                         *
- * Copyright (c) 2017-2022 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBUNIXCOMMON_CONFIG_H__
-#define __ROMPROPERTIES_LIBUNIXCOMMON_CONFIG_H__
+#pragma once
 
 /* KDE4 plugin path */
 #cmakedefine KDE4_PLUGIN_INSTALL_DIR "@KDE4_PLUGIN_INSTALL_DIR@"
@@ -41,5 +40,3 @@
 
 /* Define to 1 if you have the `statx` function. */
 #cmakedefine HAVE_STATX 1
-
-#endif /* __ROMPROPERTIES_LIBUNIXCOMMON_CONFIG_H__ */

@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpcpu)                         *
  * config.byteswap.h.in: Byteswap intrinsics configuration. (source file)  *
  *                                                                         *
- * Copyright (c) 2016-2018 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPCPU_CONFIG_BYTESWAP_H__
-#define __ROMPROPERTIES_LIBRPCPU_CONFIG_BYTESWAP_H__
+#pragma once
 
 /* Define to 1 if you have the <features.h> header file. */
 #cmakedefine HAVE_FEATURES_H 1
@@ -20,5 +19,3 @@
 
 /* Define to 1 if you have __builtin_bswap64(). */
 #cmakedefine HAVE___BUILTIN_BSWAP64 1
-
-#endif /* __ROMPROPERTIES_LIBRPCPU_CONFIG_BYTESWAP_H__ */

@@ -2,14 +2,11 @@
  * ROM Properties Page shell extension. (libwin32ui)                       *
  * config.libwin32ui.h.in: Win32 UI configuration. (source file)           *
  *                                                                         *
- * Copyright (c) 2019-2022 by David Korth.                                 *
+ * Copyright (c) 2019-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBWIN32UI_CONFIG_H__
-#define __ROMPROPERTIES_LIBWIN32UI_CONFIG_H__
+#pragma once
 
 /* Define to 1 if you have the <shellscalingapi.h> header file. */
 #cmakedefine HAVE_SHELLSCALINGAPI_H
-
-#endif /* __ROMPROPERTIES_LIBWIN32UI_CONFIG_H__ */

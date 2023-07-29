@@ -6,8 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPTEXT_CONFIG_H__
-#define __ROMPROPERTIES_LIBRPTEXT_CONFIG_H__
+#pragma once
 
 /* Define to 1 if wchar_t is 16-bit. (usually Win32) */
 #cmakedefine RP_WIS16 1
@@ -39,5 +38,3 @@
 
 /* Define to 1 if iconv() is defined in libiconv. */
 #cmakedefine HAVE_ICONV_LIBICONV 1
-
-#endif /* __ROMPROPERTIES_LIBRPTEXT_CONFIG_H__ */

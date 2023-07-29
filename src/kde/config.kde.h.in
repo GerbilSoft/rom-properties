@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (KDE)                              *
  * config.kde.h.in: KDE frontend configuration. (source file)              *
  *                                                                         *
- * Copyright (c) 2020-2022 by David Korth.                                 *
+ * Copyright (c) 2020-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_KDE_CONFIG_H__
-#define __ROMPROPERTIES_KDE_CONFIG_H__
+#pragma once
 
 /* Define to 1 if achievements are enabled. */
 #cmakedefine ENABLE_ACHIEVEMENTS 1
@@ -20,5 +19,3 @@
 
 /* Define to 1 if the KIOGui/KIO/ThumbnailCreator header file is available. */
 #cmakedefine HAVE_KIOGUI_KIO_THUMBNAILCREATOR_H 1
-
-#endif /* __ROMPROPERTIES_KDE_CONFIG_H__ */

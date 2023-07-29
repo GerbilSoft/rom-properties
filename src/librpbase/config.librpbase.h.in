@@ -6,8 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPBASE_CONFIG_H__
-#define __ROMPROPERTIES_LIBRPBASE_CONFIG_H__
+#pragma once
 
 /* Define to 1 if you have zlib. */
 #cmakedefine HAVE_ZLIB 1
@@ -84,5 +83,3 @@
 
 /* Define to 1 if you have the `unordered_set::reserve` function. */
 #cmakedefine HAVE_UNORDERED_SET_RESERVE 1
-
-#endif /* __ROMPROPERTIES_LIBRPBASE_CONFIG_H__ */

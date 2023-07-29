@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libi18n)                          *
  * config.libi18n.h.in: libi18n configuration. (source file)               *
  *                                                                         *
- * Copyright (c) 2017 by David Korth.                                      *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBI18N_CONFIG_H__
-#define __ROMPROPERTIES_LIBI18N_CONFIG_H__
+#pragma once
 
 /* Define to 1 if NLS should be enabled. */
 #cmakedefine ENABLE_NLS 1
@@ -17,7 +16,5 @@
 
 /* Define to the system locale directory on Unix and Unix-like systems. */
 #ifndef _WIN32
-#cmakedefine DIR_INSTALL_LOCALE "@CMAKE_INSTALL_PREFIX@/@DIR_INSTALL_LOCALE@"
+#  cmakedefine DIR_INSTALL_LOCALE "@CMAKE_INSTALL_PREFIX@/@DIR_INSTALL_LOCALE@"
 #endif
-
-#endif /* __ROMPROPERTIES_LIBI18N_CONFIG_H__ */

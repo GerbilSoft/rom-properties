@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libwin32common)                   *
  * config.libwin32common.h.in: Win32 configuration. (source file)          *
  *                                                                         *
- * Copyright (c) 2019-2022 by David Korth.                                 *
+ * Copyright (c) 2019-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBWIN32COMMON_CONFIG_H__
-#define __ROMPROPERTIES_LIBWIN32COMMON_CONFIG_H__
+#pragma once
 
 /* Define to 1 if you want to support older (pre-WinXP) versions of Windows. */
 #cmakedefine ENABLE_OLDWINCOMPAT 1
@@ -16,5 +15,3 @@
 
 /* Define to 1 if you have the `unordered_set::reserve` function. */
 #cmakedefine HAVE_UNORDERED_SET_RESERVE 1
-
-#endif /* __ROMPROPERTIES_LIBWIN32COMMON_CONFIG_H__ */

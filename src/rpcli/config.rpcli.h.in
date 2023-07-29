@@ -2,14 +2,11 @@
  * ROM Properties Page shell extension. (rpcli)                            *
  * config.rpcli.h.in: rpcli configuration. (source file)                   *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_RPCLI_CONFIG_H__
-#define __ROMPROPERTIES_RPCLI_CONFIG_H__
+#pragma once
 
 /* Define to 1 if decryption should be enabled. */
 #cmakedefine ENABLE_DECRYPTION 1
-
-#endif /* __ROMPROPERTIES_RPCLI_CONFIG_H__ */
