@@ -10,6 +10,7 @@
 #include "stdafx.h"
 #include "DMG.hpp"
 #include "data/NintendoPublishers.hpp"
+#include "data/DMGSpecialCases.hpp"
 #include "dmg_structs.h"
 
 // Other rom-properties libraries
@@ -1352,26 +1353,8 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			}
 		}
 
-		char pbcode[16];
-		if (romHeader->old_publisher_code == 0x33) {
-			// New publisher code.
-			if (unlikely(romHeader->new_publisher_code[0] == '\0' &&
-			             romHeader->new_publisher_code[1] == '\0'))
-			{
-				// NULL publisher code. Use 00.
-				pbcode[0] = '0';
-				pbcode[1] = '0';
-				pbcode[2] = '\0';
-			} else {
-				pbcode[0] = romHeader->new_publisher_code[0];
-				pbcode[1] = romHeader->new_publisher_code[1];
-				pbcode[2] = '\0';
-			}
-			img_filename += '-';
-			img_filename.append(pbcode, 2);
-		} else {
-			// Old publisher code.
-			snprintf(pbcode, sizeof(pbcode), "%02X", romHeader->old_publisher_code);
+		char pbcode[3];
+		if (!DMGSpecialCases::get_publisher_code(pbcode, romHeader)) {
 			img_filename += '-';
 			img_filename += pbcode;
 		}
@@ -1379,120 +1362,9 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 			img_filename += "-J";
 		}
 
-		// Special cases for ROM images with identical titles.
-		struct DmgSpecialCase_t {
-			char title[17];
-			char publisher[3];
-		};
-
-		// Non-CGB, Non-JP cases.
-		// NOTE: Linux is case-sensitive; Windows is not.
-		static const DmgSpecialCase_t dmgSpecialCases_NoCGB_NoJP[] = {
-			{"BIONIC-COMMANDO", ""},
-			{"BOKEMOB BLUE", ""},
-			{"CAESARS PALACE", "61"},
-			{"COKEMON BLUE", ""},
-			{"COOL SPOT", ""},
-			{"DENNIS", "67"},
-			{"DIG DUG", ""},
-			{"DIG DUG+  ASG", ""},		// Other hacks
-			{"DONKEYKONGLAND 3", ""},
-			{"DUCK TALES", ""},
-			{"DUCK TALES+ ASG", ""},	// Other hacks
-			{"GALAGA&GALAXIAN", "01"},	// TM vs. (R); different CGB colorization
-			{"LOST WORLD", "78"},
-			{"MOTOCROSS+  ASG", ""},	// Other hacks
-			{"MOTOCROSSMANIACS", ""},
-			{"MYSTIC QUEST", ""},
-			{"NFL QUARTERBACK", "56"},
-			{"OBELIX", ""},
-			{"PAC-MAN", "AF"},
-			{"PKMN Generations", ""},
-			{"POKEMON AQUA", ""},
-			{"POKEMON BLUE", ""},
-			{"POKEMON RED", ""},
-			{"Pokemon Blue", ""},
-			{"Pokemon Red", ""},
-			{"SGBPACK", "01"},		// Unl
-			{"SNOW BROS.JR", ""},
-			{"SOLOMON'S CLUB", ""},
-			{"SPY VS SPY", "7F"},
-			{"SUPER HUNCHBACK", "67"},
-			{"TAZMANIA", "78"},
-			{"TESSERAE", "54"},
-			{"THE LION KING", ""},
-			{"THE SWORD OFHOPE", "7F"},
-			{"TOM AND JERRY", ""},
-			{"TRACK MEET", ""},
-			{"Zelda Colour", ""},		// Other hacks
-
-			{"", ""}
-		};
-
-		// Non-CGB, JP cases.
-		static const DmgSpecialCase_t dmgSpecialCases_NoCGB_JP[] = {
-			// TODO: Sachen "TETRIS" ROMs have the same global checksum.
-			{"GAME", ""},			// Sachen
-			{"GBWARST", ""},
-			{"MENU", "00"},			// Unl
-			{"POCKET MONSTERS", ""},
-			{"POCKETMON", ""},
-			{"SAGA", "C3"},
-			{"TEST", "00"},			// Unl
-			{"TOM AND JERRY", ""},
-
-			{"", ""}
-		};
-
-		// CGB, Non-JP cases.
-		static const DmgSpecialCase_t dmgSpecialCases_CGB_NoJP[] = {
-			{"BUGS BUNNY", ""},
-			{"COOL HAND", ""},
-			{"GB SMART CARD", ""},	// Unl
-			{"HARVEST-MOON GB", ""},
-			{"SHADOWGATE CLAS", ""},
-			{"SHANGHAI POCKET", ""},
-			{"SYLVESTER", ""},
-			{"ZELDA", ""},
-			{"ZELDA PL", ""},
-
-			{"", ""}
-		};
-
-		// CGB, JP cases.
-		static const DmgSpecialCase_t dmgSpecialCases_CGB_JP[] = {
-			{"DIGIMON 5", "MK"},
-			{"HARVEST-MOON GB", ""},
-			{"METAL SLUG 2", "01"},
-			{"GBDAYTEST", ""},	// Unl
-
-			{"", ""}
-		};
-
-		// Determine which set of special cases to use.
-		const DmgSpecialCase_t *p;
-		if (dmg_system & DMGPrivate::DMG_SYSTEM_CGB) {
-			// CGB
-			p = (romHeader->region != 0)
-				? dmgSpecialCases_CGB_NoJP
-				: dmgSpecialCases_CGB_JP;
-		} else {
-			// Non-CGB
-			p = (romHeader->region != 0)
-				? dmgSpecialCases_NoCGB_NoJP
-				: dmgSpecialCases_NoCGB_JP;
-		}
-
-		for (; p->title[0] != '\0'; p++) {
-			// Check the title.
-			if (s_title == p->title) {
-				// Title matches.
-				if (p->publisher[0] == '\0' || !strcmp(pbcode, p->publisher)) {
-					// Publisher matches (or isn't being checked).
-					append_cksum = true;
-					break;
-				}
-			}
+		if (DMGSpecialCases::is_rpdb_checksum_needed_TitleBased(romHeader)) {
+			// Special case: Append the ROM checksum.
+			append_cksum = true;
 		}
 	} else {
 		// Game ID is present. Subdirectory is based on the region byte.
@@ -1502,38 +1374,9 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 		// Image filename is the Game ID.
 		img_filename = s_gameID;
 
-		// Special cases for ROM images with identical game IDs.
-		static const char cgbSpecialCases[][8] = {
-			// Loppi Puzzle Magazine
-			"B52J8N", "B53J8N", "B5IJ8N",
-			"B62J8N", "B63J8N", "B6IJ8N",
-
-			// Antz Racing (E) - different non-CGB error screens
-			"BAZP69",
-
-			// Gift (E) - different non-CGB error screens
-			"BGFP5T",
-
-			// Tomb Raider (UE) - different non-CGB error screens
-			"AT9E78",
-
-			// F-1 Racing Championship (E) - slightly different copyright text on CGB
-			"AEQP41",
-
-			// Pokémon Crystal (U) - "Pokémon 2004" hack has the same game ID.
-			"BYTE01",
-
-			""
-		};
-
-		for (const char *p = &cgbSpecialCases[0][0];
-		     p[0] != '\0'; p += sizeof(cgbSpecialCases[0]))
-		{
-			if (s_gameID == p) {
-				// Game ID matches.
-				append_cksum = true;
-				break;
-			}
+		if (DMGSpecialCases::is_rpdb_checksum_needed_ID6(s_gameID.c_str())) {
+			// Special case: Append the ROM checksum.
+			append_cksum = true;
 		}
 	}
 

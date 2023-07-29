@@ -88,6 +88,7 @@ SET(${PROJECT_NAME}_SRCS
 
 	data/AmiiboData.cpp
 	data/CBMData.cpp
+	data/DMGSpecialCases.cpp
 	data/ELFData.cpp
 	data/EXEData.cpp
 	data/EXENEEntries.cpp
@@ -270,6 +271,7 @@ SET(${PROJECT_NAME}_H
 	data/AmiiboData.hpp
 	data/CBMData.hpp
 	data/CBM_C64_Cartridge_Type_data.h
+	data/DMGSpecialCases.hpp
 	data/ELFData.hpp
 	data/ELFMachineTypes_data.h
 	data/ELF_OSABI_data.h
