@@ -202,7 +202,7 @@ unordered_map<string, string> PSFPrivate::parseTags(off64_t tag_addr)
 				std::transform(s_key.begin(), s_key.end(), s_key.begin(),
 					[](unsigned char c) noexcept -> char { return std::tolower(c); });
 				const bool is_utf8 = (s_key == "utf8");
-				const string s_value(eq+1, v_len);
+				string s_value(eq+1, v_len);
 				kv.emplace(std::move(s_key), std::move(s_value));
 
 				// Check for UTF-8.

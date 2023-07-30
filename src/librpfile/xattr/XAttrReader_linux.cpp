@@ -298,7 +298,7 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 		// We have the attribute.
 		// NOTE: Not checking for duplicates, since there
 		// shouldn't be duplicate attribute names.
-		const string s_value(value_buf.get(), vlen);
+		string s_value(value_buf.get(), vlen);
 		genericXAttrs.emplace(name, std::move(s_value));
 	}
 
