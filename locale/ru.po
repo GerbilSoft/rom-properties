@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2023-07-29 00:40-0400\n"
-"PO-Revision-Date: 2023-07-29 04:53\n"
+"POT-Creation-Date: 2023-07-30 12:43-0400\n"
+"PO-Revision-Date: 2023-07-30 16:49\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Language: ru_RU\n"
@@ -940,7 +940,7 @@ msgstr[3] ""
 #: ../src/gtk/gtk3/ThunarPropertyPageProvider.cpp:110
 #: ../src/gtk/gtk4/NautilusPropertiesModel.cpp:297
 #: ../src/kde/RomPropertiesDialogPlugin.cpp:103
-#: ../src/win32/RP_ShellPropSheetExt.cpp:2314
+#: ../src/win32/RP_ShellPropSheetExt.cpp:2304
 msgctxt "RomDataView"
 msgid "ROM Properties"
 msgstr ""
@@ -1138,8 +1138,8 @@ msgstr ""
 #: ../src/libromdata/Console/XboxDisc.cpp:783
 #: ../src/libromdata/Console/Xbox_XBE.cpp:705
 #: ../src/libromdata/Console/Xbox_XBE.cpp:709
-#: ../src/libromdata/Handheld/DMG.cpp:843
-#: ../src/libromdata/Handheld/DMG.cpp:938
+#: ../src/libromdata/Handheld/DMG.cpp:844
+#: ../src/libromdata/Handheld/DMG.cpp:939
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:401
 #: ../src/libromdata/Handheld/Lynx.cpp:215
 #: ../src/libromdata/Handheld/Nintendo3DS.cpp:721
@@ -2094,7 +2094,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:914
 #: ../src/libromdata/Console/Xbox360_XDBF.cpp:1369
 #: ../src/libromdata/Console/Xbox_XBE.cpp:687
-#: ../src/libromdata/Handheld/DMG.cpp:841
+#: ../src/libromdata/Handheld/DMG.cpp:842
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:345
 #: ../src/libromdata/Handheld/GameCom.cpp:730
 #: ../src/libromdata/Handheld/Lynx.cpp:201
@@ -2191,7 +2191,7 @@ msgstr ""
 #: ../src/libromdata/Console/Xbox360_STFS.cpp:915
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1894
 #: ../src/libromdata/Console/Xbox_XBE.cpp:742
-#: ../src/libromdata/Handheld/DMG.cpp:898
+#: ../src/libromdata/Handheld/DMG.cpp:899
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:361
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1020
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:353
@@ -2275,7 +2275,7 @@ msgstr "Европа"
 #: ../src/libromdata/Console/WiiWAD.cpp:1031
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1839
 #: ../src/libromdata/Console/Xbox_XBE.cpp:829
-#: ../src/libromdata/Handheld/DMG.cpp:964
+#: ../src/libromdata/Handheld/DMG.cpp:965
 #: ../src/libromdata/Handheld/Nintendo3DS_SMDH.cpp:548
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1186
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:373
@@ -2294,7 +2294,7 @@ msgstr ""
 #: ../src/libromdata/Console/Dreamcast.cpp:711
 #: ../src/libromdata/Console/MegaDrive.cpp:425
 #: ../src/libromdata/Console/Sega8Bit.cpp:427
-#: ../src/libromdata/Handheld/DMG.cpp:995
+#: ../src/libromdata/Handheld/DMG.cpp:996
 msgctxt "RomData"
 msgid "Checksum"
 msgstr "Контрольная сумма"
@@ -2589,7 +2589,7 @@ msgstr ""
 
 #: ../src/libromdata/Console/GameCube.cpp:461
 #: ../src/libromdata/Console/SNES.cpp:619
-#: ../src/libromdata/Handheld/DMG.cpp:509
+#: ../src/libromdata/Handheld/DMG.cpp:510
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:109
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1027
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1374
@@ -2603,7 +2603,7 @@ msgstr "Неизвестно (%.2s)"
 #: ../src/libromdata/Console/SNES.cpp:622
 #: ../src/libromdata/Console/Xbox360_XEX.cpp:1342
 #: ../src/libromdata/Console/Xbox_XBE.cpp:398
-#: ../src/libromdata/Handheld/DMG.cpp:512
+#: ../src/libromdata/Handheld/DMG.cpp:513
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:112
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1030
 #: ../src/libromdata/Handheld/VirtualBoy.cpp:348
@@ -2635,7 +2635,7 @@ msgstr ""
 #: ../src/libromdata/Console/WiiSave.cpp:477
 #: ../src/libromdata/Console/WiiU.cpp:413
 #: ../src/libromdata/Console/WiiWAD.cpp:973
-#: ../src/libromdata/Handheld/DMG.cpp:842
+#: ../src/libromdata/Handheld/DMG.cpp:843
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:358
 #: ../src/libromdata/Handheld/GameCom.cpp:735
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1016
@@ -2649,7 +2649,7 @@ msgstr ""
 
 #: ../src/libromdata/Console/GameCube.cpp:1549
 #: ../src/libromdata/Console/N64.cpp:287 ../src/libromdata/Console/NES.cpp:1269
-#: ../src/libromdata/Handheld/DMG.cpp:982
+#: ../src/libromdata/Handheld/DMG.cpp:983
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:364
 #: ../src/libromdata/Handheld/NGPC.cpp:318
 #: ../src/libromdata/Handheld/NintendoDS.cpp:1037
@@ -3195,7 +3195,7 @@ msgctxt "N64"
 msgid "Game ID"
 msgstr ""
 
-#: ../src/libromdata/Console/N64.cpp:291 ../src/libromdata/Handheld/DMG.cpp:865
+#: ../src/libromdata/Console/N64.cpp:291 ../src/libromdata/Handheld/DMG.cpp:866
 #: ../src/libromdata/Handheld/GameBoyAdvance.cpp:368
 #: ../src/libromdata/Handheld/GameCom.cpp:740
 #: ../src/libromdata/Handheld/NGPC.cpp:333 ../src/libromdata/Other/ELF.cpp:2103
@@ -3990,7 +3990,7 @@ msgid "Peripherals"
 msgstr ""
 
 #: ../src/libromdata/Console/SNES.cpp:633
-#: ../src/libromdata/Handheld/DMG.cpp:523
+#: ../src/libromdata/Handheld/DMG.cpp:524
 #, c-format
 msgctxt "RomData"
 msgid "Unknown (%02X)"
@@ -5238,63 +5238,63 @@ msgctxt "Xbox360_STFS|ContentType"
 msgid "Community Game"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:852
+#: ../src/libromdata/Handheld/DMG.cpp:853
 msgctxt "DMG"
 msgid "System"
 msgstr "Система"
 
-#: ../src/libromdata/Handheld/DMG.cpp:901
+#: ../src/libromdata/Handheld/DMG.cpp:902
 msgctxt "DMG"
 msgid "Hardware"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:906
+#: ../src/libromdata/Handheld/DMG.cpp:907
 msgctxt "DMG|Features"
 msgid "RAM"
 msgstr "ОЗУ"
 
-#: ../src/libromdata/Handheld/DMG.cpp:907
-#: ../src/libromdata/Handheld/DMG.cpp:1106
+#: ../src/libromdata/Handheld/DMG.cpp:908
+#: ../src/libromdata/Handheld/DMG.cpp:1107
 msgctxt "DMG|Features"
 msgid "Battery"
 msgstr "Батарея"
 
-#: ../src/libromdata/Handheld/DMG.cpp:908
-#: ../src/libromdata/Handheld/DMG.cpp:1108
+#: ../src/libromdata/Handheld/DMG.cpp:909
+#: ../src/libromdata/Handheld/DMG.cpp:1109
 msgctxt "DMG|Features"
 msgid "Timer"
 msgstr "Таймер"
 
-#: ../src/libromdata/Handheld/DMG.cpp:909
-#: ../src/libromdata/Handheld/DMG.cpp:1107
+#: ../src/libromdata/Handheld/DMG.cpp:910
+#: ../src/libromdata/Handheld/DMG.cpp:1108
 msgctxt "DMG|Features"
 msgid "Rumble"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:910
+#: ../src/libromdata/Handheld/DMG.cpp:911
 msgctxt "DMG|Features"
 msgid "Tilt Sensor"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:914
-#: ../src/libromdata/Handheld/DMG.cpp:1112
+#: ../src/libromdata/Handheld/DMG.cpp:915
+#: ../src/libromdata/Handheld/DMG.cpp:1113
 msgctxt "DMG"
 msgid "Features"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:918
-#: ../src/libromdata/Handheld/DMG.cpp:1116
+#: ../src/libromdata/Handheld/DMG.cpp:919
+#: ../src/libromdata/Handheld/DMG.cpp:1117
 msgctxt "DMG"
 msgid "ROM Size"
 msgstr "Размер ПЗУ"
 
-#: ../src/libromdata/Handheld/DMG.cpp:921
+#: ../src/libromdata/Handheld/DMG.cpp:922
 msgctxt "DMG"
 msgid "Unknown"
 msgstr "Неизвестно"
 
-#: ../src/libromdata/Handheld/DMG.cpp:926
-#: ../src/libromdata/Handheld/DMG.cpp:953
+#: ../src/libromdata/Handheld/DMG.cpp:927
+#: ../src/libromdata/Handheld/DMG.cpp:954
 #, c-format
 msgctxt "DMG"
 msgid "%1$u KiB (%2$u bank)"
@@ -5304,66 +5304,66 @@ msgstr[1] "%1$u КиБ (%2$u банка)"
 msgstr[2] "%1$u КиБ (%2$u банков)"
 msgstr[3] ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:931
-#: ../src/libromdata/Handheld/DMG.cpp:958
+#: ../src/libromdata/Handheld/DMG.cpp:932
+#: ../src/libromdata/Handheld/DMG.cpp:959
 #, c-format
 msgctxt "DMG"
 msgid "%u KiB"
 msgstr "%u КиБ"
 
-#: ../src/libromdata/Handheld/DMG.cpp:936
-#: ../src/libromdata/Handheld/DMG.cpp:1121
+#: ../src/libromdata/Handheld/DMG.cpp:937
+#: ../src/libromdata/Handheld/DMG.cpp:1122
 msgctxt "DMG"
 msgid "RAM Size"
 msgstr "Размер ОЗУ"
 
 #. tr: MBC2 internal memory - Not really RAM, but whatever.
-#: ../src/libromdata/Handheld/DMG.cpp:946
+#: ../src/libromdata/Handheld/DMG.cpp:947
 msgctxt "DMG"
 msgid "512 x 4 bits"
 msgstr "512 x 4 бита"
 
-#: ../src/libromdata/Handheld/DMG.cpp:948
+#: ../src/libromdata/Handheld/DMG.cpp:949
 msgctxt "DMG"
 msgid "No RAM"
 msgstr "Отсутствует"
 
-#: ../src/libromdata/Handheld/DMG.cpp:968
+#: ../src/libromdata/Handheld/DMG.cpp:969
 msgctxt "Region|DMG"
 msgid "Japanese"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:972
+#: ../src/libromdata/Handheld/DMG.cpp:973
 msgctxt "Region|DMG"
 msgid "Non-Japanese"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:977
+#: ../src/libromdata/Handheld/DMG.cpp:978
 #, c-format
 msgctxt "DMG"
 msgid "0x%02X (INVALID)"
 msgstr "0x%02X (НЕПРАВИЛЬНЫЙ)"
 
-#: ../src/libromdata/Handheld/DMG.cpp:998
+#: ../src/libromdata/Handheld/DMG.cpp:999
 #, c-format
 msgctxt "DMG"
 msgid "0x%1$02X (INVALID; should be 0x%2$02X)"
 msgstr "0x%1$02X (НЕПРАВИЛЬНАЯ; должна быть 0x%2$02X)"
 
-#: ../src/libromdata/Handheld/DMG.cpp:1002
+#: ../src/libromdata/Handheld/DMG.cpp:1003
 #, c-format
 msgctxt "DMG"
 msgid "0x%02X (valid)"
 msgstr "0x%02X (правильная)"
 
-#: ../src/libromdata/Handheld/DMG.cpp:1013
+#: ../src/libromdata/Handheld/DMG.cpp:1014
 msgctxt "DMG"
 msgid "GBX Version"
 msgstr ""
 
-#: ../src/libromdata/Handheld/DMG.cpp:1067
-#: ../src/libromdata/Handheld/DMG.cpp:1077
-#: ../src/libromdata/Handheld/DMG.cpp:1082
+#: ../src/libromdata/Handheld/DMG.cpp:1068
+#: ../src/libromdata/Handheld/DMG.cpp:1078
+#: ../src/libromdata/Handheld/DMG.cpp:1083
 msgctxt "DMG"
 msgid "Mapper"
 msgstr "Маппер"
@@ -7922,49 +7922,49 @@ msgstr[1] ""
 msgstr[2] ""
 msgstr[3] ""
 
-#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:63
+#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:68
 #, c-format
 msgctxt "GcnFstPrint"
 msgid "Syntax: %s fst.bin [offsetShift]"
 msgstr ""
 
-#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:65
-#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:77
+#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:70
+#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:82
 msgctxt "GcnFstPrint"
 msgid "offsetShift should be 0 for GameCube, 2 for Wii. (default is 0)"
 msgstr ""
 
-#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:75
+#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:80
 #, c-format
 msgctxt "GcnFstPrint"
 msgid "Invalid offset shift '%s' specified."
 msgstr ""
 
 #. tr: %1$s == filename, %2$s == error message
-#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:87
+#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:92
 #, c-format
 msgctxt "GcnFstPrint"
 msgid "Error opening '%1$s': '%2$s'"
 msgstr ""
 
-#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:96
+#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:101
 msgctxt "GcnFstPrint"
 msgid "ERROR: FST is too big. (Maximum of 16 MB.)"
 msgstr ""
 
 #. tr: %1$u == number of bytes read, %2$u == number of bytes expected to read
-#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:109
+#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:114
 #, c-format
 msgctxt "GcnFstPrint"
 msgid "ERROR: Read %1$u bytes, expected %2$u bytes."
 msgstr ""
 
-#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:133
+#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:138
 msgctxt "GcnFstPrint"
 msgid "*** ERROR: Could not open a GcnFst."
 msgstr ""
 
-#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:159
+#: ../src/libromdata/tests/disc/GcnFstPrint.cpp:164
 msgctxt "GcnFstPrint"
 msgid "*** WARNING: FST has errors and may be unusable."
 msgstr ""
@@ -9577,167 +9577,167 @@ msgctxt "rpcli"
 msgid "Image '%s' not found"
 msgstr "Изображение '%s' не найдено"
 
-#: ../src/rpcli/rpcli.cpp:200
+#: ../src/rpcli/rpcli.cpp:201
 #, c-format
 msgctxt "rpcli"
 msgid "Reading file '%s'..."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:206 ../src/rpcli/rpcli.cpp:294
-#: ../src/rpcli/rpcli.cpp:325
+#: ../src/rpcli/rpcli.cpp:207 ../src/rpcli/rpcli.cpp:295
+#: ../src/rpcli/rpcli.cpp:326
 msgctxt "rpcli"
 msgid "Outputting JSON data"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:214
+#: ../src/rpcli/rpcli.cpp:215
 msgctxt "rpcli"
 msgid "ROM is not supported"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:220 ../src/rpcli/rpcli.cpp:305
-#: ../src/rpcli/rpcli.cpp:336
+#: ../src/rpcli/rpcli.cpp:221 ../src/rpcli/rpcli.cpp:306
+#: ../src/rpcli/rpcli.cpp:337
 #, c-format
 msgctxt "rpcli"
 msgid "Couldn't open file: %s"
 msgstr "Не удалось открыть файл: %s"
 
-#: ../src/rpcli/rpcli.cpp:242
+#: ../src/rpcli/rpcli.cpp:243
 #, c-format
 msgctxt "rpcli"
 msgid "System language code: %s"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:243 ../src/rpcli/rpcli.cpp:256
+#: ../src/rpcli/rpcli.cpp:244 ../src/rpcli/rpcli.cpp:257
 msgctxt "rpcli"
 msgid "0 (this is a bug!)"
 msgstr "0 (это баг!)"
 
-#: ../src/rpcli/rpcli.cpp:255
+#: ../src/rpcli/rpcli.cpp:256
 #, c-format
 msgctxt "rpcli"
 msgid "System country code: %s"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:288 ../src/rpcli/rpcli.cpp:319
+#: ../src/rpcli/rpcli.cpp:289 ../src/rpcli/rpcli.cpp:320
 #, c-format
 msgctxt "rpcli"
 msgid "Opening device file '%s'..."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:301 ../src/rpcli/rpcli.cpp:332
+#: ../src/rpcli/rpcli.cpp:302 ../src/rpcli/rpcli.cpp:333
 msgctxt "rpcli"
 msgid "Not a device file"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:405
+#: ../src/rpcli/rpcli.cpp:411
 msgctxt "rpcli"
 msgid "Usage: rpcli [-k] [-c] [-p] [-j] [-l lang] [[-x[b]N outfile]... [-a apngoutfile] filename]..."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:406
+#: ../src/rpcli/rpcli.cpp:412
 msgctxt "rpcli"
 msgid "Verify encryption keys in keys.conf."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:408
+#: ../src/rpcli/rpcli.cpp:414
 msgctxt "rpcli"
 msgid "Usage: rpcli [-c] [-p] [-j] [-l lang] [[-x[b]N outfile]... [-a apngoutfile] filename]..."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:410
+#: ../src/rpcli/rpcli.cpp:416
 msgctxt "rpcli"
 msgid "Print system region information."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:411
+#: ../src/rpcli/rpcli.cpp:417
 msgctxt "rpcli"
 msgid "Print system path information."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:412
+#: ../src/rpcli/rpcli.cpp:418
 msgctxt "rpcli"
 msgid "Skip ListData fields with more than 10 items. [text only]"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:413
+#: ../src/rpcli/rpcli.cpp:419
 msgctxt "rpcli"
 msgid "Use JSON output format."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:414
+#: ../src/rpcli/rpcli.cpp:420
 msgctxt "rpcli"
 msgid "Retrieve the specified language from the ROM image."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:415
+#: ../src/rpcli/rpcli.cpp:421
 msgctxt "rpcli"
 msgid "Extract image N to outfile in PNG format."
 msgstr "Извлечь изображение N в outfile в формате PNG."
 
-#: ../src/rpcli/rpcli.cpp:416
+#: ../src/rpcli/rpcli.cpp:422
 msgctxt "rpcli"
 msgid "Extract the animated icon to outfile in APNG format."
 msgstr "Извлечь анимированную иконку в outfile в формате APNG."
 
-#: ../src/rpcli/rpcli.cpp:419
+#: ../src/rpcli/rpcli.cpp:425
 msgctxt "rpcli"
 msgid "Special options for devices:"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:420
+#: ../src/rpcli/rpcli.cpp:426
 msgctxt "rpcli"
 msgid "Run a SCSI INQUIRY command."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:421
+#: ../src/rpcli/rpcli.cpp:427
 msgctxt "rpcli"
 msgid "Run an ATA IDENTIFY DEVICE command."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:422
+#: ../src/rpcli/rpcli.cpp:428
 msgctxt "rpcli"
 msgid "Run an ATA IDENTIFY PACKET DEVICE command."
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:425
+#: ../src/rpcli/rpcli.cpp:431
 msgctxt "rpcli"
 msgid "Examples:"
 msgstr "Примеры:"
 
-#: ../src/rpcli/rpcli.cpp:427
+#: ../src/rpcli/rpcli.cpp:433
 msgctxt "rpcli"
 msgid "displays info about s3.gen"
 msgstr "отображает информацию про s3.gen"
 
-#: ../src/rpcli/rpcli.cpp:429
+#: ../src/rpcli/rpcli.cpp:435
 msgctxt "rpcli"
 msgid "extracts icon from pokeb2.nds"
 msgstr "извлекает иконку из pokeb2.nds"
 
-#: ../src/rpcli/rpcli.cpp:519
+#: ../src/rpcli/rpcli.cpp:525
 #, c-format
 msgctxt "rpcli"
 msgid "Warning: ignoring invalid language code '%s'"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:540
+#: ../src/rpcli/rpcli.cpp:546
 #, c-format
 msgctxt "rpcli"
 msgid "Warning: skipping unknown image type %ld"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:570
+#: ../src/rpcli/rpcli.cpp:576
 msgctxt "rpcli"
 msgid "Warning: no inquiry request specified for '-i'"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:572
+#: ../src/rpcli/rpcli.cpp:578
 #, c-format
 msgctxt "rpcli"
 msgid "Warning: skipping unknown inquiry request '%c'"
 msgstr ""
 
-#: ../src/rpcli/rpcli.cpp:579
+#: ../src/rpcli/rpcli.cpp:585
 #, c-format
 msgctxt "rpcli"
 msgid "Warning: skipping unknown switch '%c'"
@@ -9895,61 +9895,61 @@ msgctxt "rp-stub"
 msgid "Try '%s --help' for more information."
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:242
+#: ../src/rp-stub/rp-stub.c:247
 #, c-format
 msgctxt "rp-stub"
 msgid "invalid size '%s'"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:245
+#: ../src/rp-stub/rp-stub.c:250
 #, c-format
 msgctxt "rp-stub"
 msgid "size '%s' is out of range"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:297
+#: ../src/rp-stub/rp-stub.c:302
 msgctxt "rp-stub"
 msgid "missing source and output file parameters"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:300
+#: ../src/rp-stub/rp-stub.c:305
 msgctxt "rp-stub"
 msgid "missing output file parameter"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:303
+#: ../src/rp-stub/rp-stub.c:308
 msgctxt "rp-stub"
 msgid "--autoext and output file specified"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:306
+#: ../src/rp-stub/rp-stub.c:311
 msgctxt "rp-stub"
 msgid "too many parameters specified"
 msgstr ""
 
 #. tr: NOTE: Not positional. Don't change argument positions!
 #. tr: Only localize "Calling function:".
-#: ../src/rp-stub/rp-stub.c:355
+#: ../src/rp-stub/rp-stub.c:360
 #, c-format
 msgctxt "rp-stub"
 msgid "Calling function: %s(\"%s\", \"%s\", %d, %u);"
 msgstr ""
 
-#: ../src/rp-stub/rp-stub.c:367
+#: ../src/rp-stub/rp-stub.c:372
 #, c-format
 msgctxt "rp-stub"
 msgid "Calling function: %s();"
 msgstr ""
 
 #. tr: %1$s == function name, %2$d == return value
-#: ../src/rp-stub/rp-stub.c:378
+#: ../src/rp-stub/rp-stub.c:383
 #, c-format
 msgctxt "rp-stub"
 msgid "%1$s() returned %2$d."
 msgstr ""
 
 #. tr: %1$s == function name, %2$d == return value
-#: ../src/rp-stub/rp-stub.c:383
+#: ../src/rp-stub/rp-stub.c:388
 #, c-format
 msgctxt "rp-stub"
 msgid "*** ERROR: %1$s() returned %2$d."
