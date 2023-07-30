@@ -343,7 +343,7 @@ void IDownloader::createUserAgent(void)
 #if defined(_M_ARM64EC)
 #  define CPU "ARM64EC"
 #  define MAC_CPU "ARM64EC"
-#if defined(_M_ARM64) || defined(__aarch64__)
+#elif defined(_M_ARM64) || defined(__aarch64__)
 #  define CPU "ARM64"
 #  define MAC_CPU "ARM64"
 #elif defined(_M_ARM) || defined(__arm__)
