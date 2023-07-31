@@ -1,6 +1,6 @@
 # Changes
 
-## v2.2.1 (released 2023/07/??)
+## v2.2.1 (released 2023/07/30)
 
 * New parser features:
   * EXE: Add IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION.
@@ -32,6 +32,12 @@
     format than other KDE plugins, which broke metadata extraction.
     * This was broken in v2.2.
   * NES: Update mappers; Fix detection of mapper 458, submappers 2 and 3.
+
+* Other changes:
+  * Preliminary support for Windows on ARM. The Windows distribution includes
+    DLLs compiled for ARM, ARM64, and ARM64EC, and svrplus has been updated
+    to register these DLLs if an ARM system is detected. Note that svrplus
+    has *not* been tested on any ARM systems yet.
 
 ## v2.2 (released 2023/07/01)
 

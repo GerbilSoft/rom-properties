@@ -9,9 +9,25 @@ video game ROM and disc images.
 [![CodeQL](https://github.com/GerbilSoft/rom-properties/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/GerbilSoft/rom-properties/actions/workflows/codeql-analysis.yml)
 [![Crowdin](https://badges.crowdin.net/rom-properties/localized.svg)](https://crowdin.com/project/rom-properties)
 
-## v2.2
+## v2.2.1
 
 ![KDE Dolphin showing some PS1 and PS2 cover art thumbnails.](doc/img/rp-v2.2-kde5.PlayStationDisc.cover-art.png)
+
+v2.2.1 is a bugfix release for v2.2. Major changes include:
+
+* Handle JPEG images using Exif containers. A good number of boxarts from the
+  PS1/PS2 section of RPDB use Exif containers, so this ensures they can be
+  loaded properly.
+
+* Windows: Fix weird thumbnail aspect ratios for non-square images on current
+  Windows versions.
+
+* KDE: Fix metadata extraction.
+
+* Preliminary support for Windows on ARM. The Windows distribution includes
+  DLLs compiled for ARM, ARM64, and ARM64EC, and svrplus has been updated
+  to register these DLLs if an ARM system is detected. Note that svrplus
+  has *not* been tested on any ARM systems yet.
 
 Major changes in v2.2 include:
 
