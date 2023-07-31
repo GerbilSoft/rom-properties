@@ -38,5 +38,5 @@ override_dh_auto_configure:
 
 override_dh_auto_test:
 ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
-	cd build && CTEST_OUTPUT_ON_FAILURE=1 LD_LIBRARY_PATH=$(shell pwd)/lib ctest -V
+	cd build && CTEST_OUTPUT_ON_FAILURE=1 LD_LIBRARY_PATH=$(shell pwd)/build/lib:$(shell pwd)/lib ctest -V
 endif
