@@ -336,7 +336,11 @@ rp_drag_image_on_button_press_event(RpDragImage *image, GdkEventButton *event, g
 
 	if (event->type == GDK_BUTTON_PRESS && event->button == 3) {
 #ifdef USE_G_MENU_MODEL
+#  if GTK_CHECK_VERSION(3,21,5)
 		gtk_popover_popup(GTK_POPOVER(image->popEcksBawks));
+#  else /* !GTK_CHECK_VERSION(3,21,5) */
+		gtk_widget_show(image->popEcksBawks);
+#  endif /* GTK_CHECK_VERSION(3,21,5) */
 #else /* !USE_G_MENU_MODEL */
 		gtk_menu_popup(GTK_MENU(image->menuEcksBawks),
 			nullptr, nullptr, nullptr,
@@ -388,6 +392,9 @@ void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks)
 	image->popEcksBawks = gtk_popover_menu_new_from_model(G_MENU_MODEL(image->menuEcksBawks));
 #  else /* !GTK_CHECK_VERSION(4,0,0) */
 	image->popEcksBawks = gtk_popover_new_from_model(GTK_WIDGET(image), G_MENU_MODEL(image->menuEcksBawks));
+#    if !GTK_CHECK_VERSION(3,21,5)
+	gtk_popover_set_transitions_enabled(GTK_POPOVER(image->popEcksBawks), true);
+#    endif /* !GTK_CHECK_VERSION(3,21,5) */
 #  endif /* GTK_CHECK_VERSION(4,0,0) */
 #else /* !USE_G_MENU_MODEL */
 	image->menuEcksBawks = gtk_menu_new();
