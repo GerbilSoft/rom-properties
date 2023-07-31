@@ -124,24 +124,23 @@ int WimPrivate::addFields_XML()
 	//assert(file);
 	file->rewind();
 	// the eighth byte of the "size" is used for flags so we have to AND it
-	const uint64_t size = (wimHeader.xml_resource.size & 0x00FFFFFFFFFFFFFF) - 2;
-	char* xml_data = new char[size];
-	memset(xml_data, 0, size);
-	// the +2 is to bypass the BOM
-	file->seek(wimHeader.xml_resource.offset_of_xml + 2); 
+	const uint64_t size = (wimHeader.xml_resource.size & 0x00FFFFFFFFFFFFFF);
+	char* xml_data = new char[size+2];
+	memset(xml_data, 0, size+2);
+	file->seek(wimHeader.xml_resource.offset_of_xml); 
 	// if seek is invalid
-	if (file->tell() != wimHeader.xml_resource.offset_of_xml + 2)
+	if (file->tell() != wimHeader.xml_resource.offset_of_xml)
 		return 1;
 
 	size_t real_bytes_read = file->read(xml_data, size);
 	
-	assert(real_bytes_read == size - 2);
+	assert(real_bytes_read == size);
 
 	if (size >= 0x7FFFFFFF) /* congrats, you have broken the utf8 converter */ return 2;
 
 	// the xml inside wims are utf-16 but tinyxml only supports utf-8
 	// this means we have to do some conversion
-	std::string utf8_xml = LibRpText::utf16_to_utf8(reinterpret_cast<char16_t*>(xml_data), (int)ceil((size + 2) / 2));
+	std::string utf8_xml = LibRpText::utf16_to_utf8(reinterpret_cast<char16_t*>(xml_data), (int)ceil((size) / 2));
 
 	delete[](xml_data);
 #if TINYXML2_MAJOR_VERSION >= 2
