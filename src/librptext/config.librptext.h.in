@@ -24,7 +24,7 @@
 // NOTE: Some versions of MinGW have this, but only with MSVCRT 10.0 or Windows 7 or later.
 #if defined(_WIN32)
 #  if defined(_MSC_VER) || (__MSVCRT_VERSION__ >= 0xA00 || _WIN32_WINNT >= 0x601)
-#    cmakedefine HAVE_STRUCT_LCONV_WCHAR_T 1
+#cmakedefine HAVE_STRUCT_LCONV_WCHAR_T 1
 #  endif
 #endif
 

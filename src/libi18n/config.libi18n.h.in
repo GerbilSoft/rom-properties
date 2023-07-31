@@ -16,5 +16,5 @@
 
 /* Define to the system locale directory on Unix and Unix-like systems. */
 #ifndef _WIN32
-#  cmakedefine DIR_INSTALL_LOCALE "@CMAKE_INSTALL_PREFIX@/@DIR_INSTALL_LOCALE@"
+#cmakedefine DIR_INSTALL_LOCALE "@CMAKE_INSTALL_PREFIX@/@DIR_INSTALL_LOCALE@"
 #endif
