@@ -88,11 +88,11 @@ struct WimWindowsLanguages {
 };
 
 struct WimWindowsVersion {
-	uint8_t majorversion = 0;
-	uint8_t minorversion = 0;
-	uint32_t buildnumber = 0;
-	uint32_t spbuildnumber = 0;
-	uint8_t splevel = 0; // only in windows 7+, added some time around build 6608-6730
+	unsigned int majorversion = 0;
+	unsigned int minorversion = 0;
+	unsigned int buildnumber = 0;
+	unsigned int spbuildnumber = 0;
+	unsigned int splevel = 0; // only in windows 7+, added some time around build 6608-6730
 };
 
 struct WimWindowsInfo {
