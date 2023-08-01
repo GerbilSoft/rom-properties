@@ -374,7 +374,7 @@ int Wim::isRomSupported_static(const DetectInfo* info)
 	int ret = Wim_Unknown;
 
 	// TODO: WLPWM_MAGIC
-	if (memcmp(wimData->magic, MSWIM_MAGIC, 8) == 0) {
+	if (!memcmp(wimData->magic, MSWIM_MAGIC, 8)) {
 		// at least a wim 1.09, check the version
 		// we do not necessarily need to check the
 		// major version because it is always 
@@ -384,8 +384,12 @@ int Wim::isRomSupported_static(const DetectInfo* info)
 		} else{ 
 			ret = Wim109_112;
 		}
-	} else if (memcmp(wimData->magic, "\x7E\0\0\0", 4) == 0) {
-		ret = Wim107_108;
+	} else if (!memcmp(wimData->magic, "\x7E\0\0\0", 4)) {
+		// NOTE: This magic number is too generic.
+		// Verify the file extension.
+		if (info->ext && !strcasecmp(info->ext, ".wim")) {
+			ret = Wim107_108;
+		}
 	}
 
 	return ret;
