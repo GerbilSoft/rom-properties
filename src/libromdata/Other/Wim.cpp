@@ -254,7 +254,7 @@ int WimPrivate::addFields_XML()
 		const char *archstring;
 		switch (rowloop_current_windowsinfo.arch) {
 			default:
-				archstring = C_("RomData", "(unknown)");
+				archstring = nullptr;
 				break;
 			case Wim_Arch_x86:
 				archstring = "x86";
@@ -272,7 +272,11 @@ int WimPrivate::addFields_XML()
 				archstring = "ARM64";
 				break;
 		}
-		data_row.emplace_back(archstring);
+		if (archstring) {
+			data_row.emplace_back(archstring);
+		} else {
+			data_row.emplace_back(rp_sprintf(C_("RomData", "Unknown (%u)"), rowloop_current_windowsinfo.arch));
+		}
 		data_row.emplace_back(rowloop_current_windowsinfo.languages.language);
 	}	
 
