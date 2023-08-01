@@ -147,6 +147,7 @@ int WimPrivate::addFields_XML()
 	// the xml inside wims are utf-16 but tinyxml only supports utf-8
 	// this means we have to do some conversion
 	std::string utf8_xml = LibRpText::utf16_to_utf8(reinterpret_cast<char16_t*>(xml_data), (int)((size / 2) + 1));
+	printf("%s\n", utf8_xml.c_str());
 	delete[] xml_data;
 
 	XMLDocument document;
@@ -211,9 +212,16 @@ int WimPrivate::addFields_XML()
 
 			const XMLElement *const languages = windowsinfo->FirstChildElement("LANGUAGES");
 			if (languages) {
-				const char *s_languages = languages->GetText();
-				currentindex.windowsinfo.languages.language = (s_languages ? s_languages : s_unknown);
-			} else {
+				// NOTE: Only retrieving the first language.
+				const XMLElement *const language = languages->FirstChildElement("LANGUAGE");
+				if (language) {
+					const char *s_language = language->GetText();
+					if (s_language) {
+						currentindex.windowsinfo.languages.language = s_language;
+					}
+				}
+			}
+			if (currentindex.windowsinfo.languages.language.empty()) {
 				currentindex.windowsinfo.languages.language = s_unknown;
 			}
 
