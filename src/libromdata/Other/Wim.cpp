@@ -110,8 +110,8 @@ struct WimIndex {
 	uint64_t dircount = 0;
 	uint64_t filecount = 0;
 	uint64_t totalbytes = 0;
-	uint64_t creationtime = 0;
-	uint64_t lastmodificationtime = 0;
+	//time_t creationtime = 0;	// not used right now
+	time_t lastmodificationtime = 0;
 	WimWindowsInfo windowsinfo;
 	std::string name, description, flags, dispname, dispdescription = "";
 	bool containswindowsimage = false;
@@ -177,13 +177,23 @@ int WimPrivate::addFields_XML()
 
 		// the last modification time is split into a high part and a
 		// low part so we shift and add them together
-		uint32_t lastmodtime_high = std::stoul(
-			currentimage->FirstChildElement("CREATIONTIME")->FirstChildElement("HIGHPART")->GetText(),
-			nullptr, 16);
-		uint32_t lastmodtime_low = std::stoul(
-			currentimage->FirstChildElement("CREATIONTIME")->FirstChildElement("LOWPART")->GetText(),
-			nullptr, 16);
-		currentindex.lastmodificationtime = ((uint64_t)lastmodtime_high << 32) + lastmodtime_low;
+		const XMLElement *const creationTime = currentimage->FirstChildElement("CREATIONTIME");
+		if (creationTime) {
+			const XMLElement *const highPart = creationTime->FirstChildElement("HIGHPART");
+			const XMLElement *const lowPart = creationTime->FirstChildElement("LOWPART");
+			if (highPart && lowPart) {
+				const char *const s_highPart = highPart->GetText();
+				const char *const s_lowPart = lowPart->GetText();
+				if (s_highPart && s_lowPart) {
+					// Parse HIGHPART and LOWPART, then combine them like FILETIME.
+					const uint32_t lastmodtime_high = strtoul(s_highPart, nullptr, 16);
+					const uint32_t lastmodtime_low = strtoul(s_highPart, nullptr, 16);
+					const uint64_t lastmodtime = ((uint64_t)lastmodtime_high << 32U) | lastmodtime_low;
+					currentindex.lastmodificationtime = windows_time_to_unix_epoch(lastmodtime);
+				}
+			}
+		}
+
 		const XMLElement* windowsinfo = currentimage->FirstChildElement("WINDOWS");
 		if (windowsinfo) {
 			currentindex.containswindowsimage = true;
@@ -241,8 +251,7 @@ int WimPrivate::addFields_XML()
 
 		// FIXME: Using our own timestamp formatting instead of the system locale.
 		// Can't easily specify time values in RFT_LISTDATA...
-		time_t time = windows_time_to_unix_epoch(rowloop_current_image.lastmodificationtime); 
-		tm_struct = localtime(&time);
+		tm_struct = localtime(&rowloop_current_image.lastmodificationtime);
 		std::strftime(timestamp, 20, "%Y-%m-%d %R", tm_struct);
 		data_row.emplace_back(timestamp);
 
