@@ -320,13 +320,14 @@ int Wim::isRomSupported_static(const DetectInfo* info)
 
 	const WIM_Header* const wimData = reinterpret_cast<const WIM_Header*>(info->header.pData);
 
-	if (memcmp(wimData->header, "MSWIM\0\0", 8) == 0) {
+	// TODO: WLPWM_MAGIC
+	if (memcmp(wimData->magic, MSWIM_MAGIC, 8) == 0) {
 		// at least a wim 1.09, check the version
 		// we do not necessarily need to check the
 		// major version because it is always 
 		// either 1 or 0 (in the case of esds)
 		wimData->version.minor_version >= 13 ? version_type = Wim113_014 : version_type = Wim109_112;
-	} else if (memcmp(wimData->header, "\x7e\0\0", 4) == 0) {
+	} else if (memcmp(wimData->magic, "\x7E\0\0\0", 4) == 0) {
 		version_type = Wim107_108;
 	} else {
 		// not a wim
@@ -407,11 +408,10 @@ int Wim::loadFieldData(void)
 	d->fields.reserve(6);	// Maximum of 6 fields.
 	char buffer[32];
 
-	if (version_type == WIM_Version_Type::Wim107_108) 
-	{
+	if (version_type == WIM_Version_Type::Wim107_108) {
 		// the version offset is different so we have to get creative
-		d->wimHeader.version.major_version = d->wimHeader.header[6];
-		d->wimHeader.version.minor_version = d->wimHeader.header[5];
+		d->wimHeader.version.major_version = d->wimHeader.magic[6];
+		d->wimHeader.version.minor_version = d->wimHeader.magic[5];
 	}
 	// if the version number is 14, add an indicator that it is an ESD
 	d->wimHeader.version.minor_version == 14

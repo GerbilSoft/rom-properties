@@ -77,8 +77,10 @@ typedef struct _WIM_File_Resource {
 } WIM_File_Resource;
 ASSERT_STRUCT(WIM_File_Resource, 0x18);
 
+#define MSWIM_MAGIC "MSWIM\0\0\0"
+#define WLPWM_MAGIC "WLPWM\0\0\0"
 typedef struct _WIM_Header {
-	char header[8];					// [0x000] "MSWIM\0\0\0"
+	char magic[8];					// [0x000] "MSWIM\0\0\0" (also has version info in some cases)
 	uint32_t header_size;				// [0x008]
 	WIM_Version version;				// [0x00C]
 	uint32_t flags;					// [0x010]
