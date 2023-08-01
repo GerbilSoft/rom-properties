@@ -8,7 +8,7 @@
 
 #include "stdafx.h"
 #include "Wim.hpp"
-#include "Wim_structs.h"
+#include "wim_structs.h"
 // TinyXML2
 #include "tinyxml2.h"
 #include "librptext/conversion.hpp"
