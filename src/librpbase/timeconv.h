@@ -30,6 +30,20 @@ static inline time_t WindowsTimeToUnixTime(int64_t wintime)
 }
 
 /**
+ * Convert from Windows time (split format) to Unix time.
+ * Windows time is hectonanoseconds since 1601/01/01 00:00:00 GMT.
+ * Unix time is seconds since 1970/01/01 00:00:00 GMT.
+ * @param wintime_hi Windows time, high DWORD
+ * @param wintime_lo Windows time, low DWORD
+ * @return Unix time
+ */
+static inline time_t WindowsSplitTimeToUnixTime(uint32_t wintime_hi, uint32_t wintime_lo)
+{
+	const int64_t wintime = ((int64_t)wintime_hi << 32U) | wintime_lo;
+	return WindowsTimeToUnixTime(wintime);
+}
+
+/**
  * Convert from Unix time to Windows time.
  * Unix time is seconds since 1970/01/01 00:00:00 GMT.
  * Windows time is hectonanoseconds since 1601/01/01 00:00:00 GMT.
