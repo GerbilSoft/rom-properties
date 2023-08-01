@@ -1,3 +1,9 @@
+rom-properties (2.2.1-1ppa2~lunar2) lunar; urgency=medium
+
+  * Fix KF5 paths due to the use of JSON loading (*and* ThumbnailCreator).
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Mon, 31 Jul 2023 21:06:25 -0400
+
 rom-properties (2.2.1-1ppa2~lunar1) lunar; urgency=medium
 
   * Build for Ubuntu 23.04 "Lunar" Lobster.
