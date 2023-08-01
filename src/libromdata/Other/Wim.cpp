@@ -75,7 +75,6 @@ const RomDataInfo WimPrivate::romDataInfo = {
 	"WIM", exts, mimeTypes
 };
 
-
 typedef enum _WimWindowsArchitecture {
 	x86 = 0,
 	ARM32 = 5,
@@ -102,7 +101,7 @@ struct WimWindowsInfo {
 		std::string productname, editionid, installationtype, hal, producttype, productsuite;
 		WimWindowsLanguages languages;
 		WimWindowsVersion version;
-		std::string systemroot;
+		std::string systemroot = "";
 };
 
 struct WimIndex {
@@ -115,13 +114,12 @@ struct WimIndex {
 		uint64_t creationtime = 0;
 		uint64_t lastmodificationtime = 0;
 		WimWindowsInfo windowsinfo;
-		std::string name, description, flags, dispname, dispdescription;
-		bool containswindowsimage;
+		std::string name, description, flags, dispname, dispdescription = "";
+		bool containswindowsimage = false;
 };
 
 int WimPrivate::addFields_XML() 
 {
-	//assert(file);
 	file->rewind();
 	// the eighth byte of the "size" is used for flags so we have to AND it
 	const uint64_t size = (wimHeader.xml_resource.size & 0x00FFFFFFFFFFFFFF);
@@ -132,9 +130,9 @@ int WimPrivate::addFields_XML()
 	if (file->tell() != wimHeader.xml_resource.offset_of_xml)
 		return 1;
 
-	size_t real_bytes_read = file->read(xml_data, size);
+	size_t bytes_read = file->read(xml_data, size);
 	
-	assert(real_bytes_read == size);
+	if (bytes_read != size) return 1;
 
 	if (size >= 0x7FFFFFFF) /* congrats, you have broken the utf8 converter */ return 2;
 
@@ -147,7 +145,6 @@ int WimPrivate::addFields_XML()
 	document.Clear();
 #endif /* TINYXML2_MAJOR_VERSION >= 2 */
 	int xerr = document.Parse(utf8_xml.c_str(), utf8_xml.size());
-	assert(xerr == XML_SUCCESS);
 	if (xerr != XML_SUCCESS)
 	{
 #if TINYXML2_MAJOR_VERSION >= 2
@@ -232,7 +229,6 @@ int WimPrivate::addFields_XML()
 	tm* tm_struct;
 	// loop for the rows
 	for (uint32_t i = 0; i <= wimHeader.number_of_images-1; i++) {
-		
 		vv_data->resize(vv_data->size()+1);
 		auto &data_row = vv_data->at(vv_data->size()-1);
 		data_row.emplace_back(rp_sprintf("%d", i + 1));
@@ -240,7 +236,7 @@ int WimPrivate::addFields_XML()
 		data_row.emplace_back(rowloop_current_image.description);
 		data_row.emplace_back(rowloop_current_image.dispname);
 		data_row.emplace_back(rowloop_current_image.dispdescription);
-		time_t time = windows_time_to_unix_epoch(rowloop_current_image.lastmodificationtime);
+		time_t time = windows_time_to_unix_epoch(rowloop_current_image.lastmodificationtime); 
 		tm_struct = localtime(&time);
 		std::strftime(timestamp, 20, "%Y-%m-%d %R", tm_struct);
 		data_row.emplace_back(timestamp);
@@ -251,9 +247,9 @@ int WimPrivate::addFields_XML()
 		data_row.emplace_back(
 			rp_sprintf("%d.%d.%d.%d", rowloop_current_windowsver.majorversion,
 				rowloop_current_windowsver.minorversion, rowloop_current_windowsver.buildnumber,
-				rowloop_current_windowsver.spbuildnumber));
+				rowloop_current_windowsver.spbuildnumber)); 
 		data_row.emplace_back(rowloop_current_windowsinfo.editionid);
-		std::string archstring = "";
+		std::string archstring = "(Unknown)";
 		switch (rowloop_current_windowsinfo.arch)
 		{
 			case WimWindowsArchitecture::x86:
@@ -481,11 +477,10 @@ int Wim::loadFieldData(void)
 			break;
 	}
 	d->fields.addField_string(C_("RomData", "Compression Method"), compression_method, RomFields::STRF_TRIM_END);
-	
-	snprintf(buffer, 6, "%d/%d", d->wimHeader.part_number, d->wimHeader.total_parts);
-	d->fields.addField_string(C_("RomData", "Part Number"), buffer, RomFields::STRF_TRIM_END);
-	snprintf(buffer, 4, "%d", d->wimHeader.number_of_images);
-	d->fields.addField_string(C_("RomData", "Total Images"), buffer, RomFields::STRF_TRIM_END);
+	d->fields.addField_string(C_("RomData", "Part Number"),
+		rp_sprintf("%d/%d", d->wimHeader.part_number, d->wimHeader.total_parts), RomFields::STRF_TRIM_END);
+	d->fields.addField_string(C_("RomData", "Total Images"), rp_sprintf("%d", d->wimHeader.number_of_images),
+		RomFields::STRF_TRIM_END);
 
 	d->addFields_XML();
 
