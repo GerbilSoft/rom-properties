@@ -1,5 +1,11 @@
 # Changes
 
+## v2.3 (released 2023/??/??)
+
+* New parsers:
+  * Wim: Microsoft Windows Images, used by the Windows installer starting with
+    Windows Vista. Contributed by @ecumber.
+
 ## v2.2.1 (released 2023/07/30)
 
 * New parser features:
