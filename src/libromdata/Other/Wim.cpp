@@ -127,7 +127,7 @@ int WimPrivate::addFields_XML()
 	memset(xml_data, 0, size+2);
 	file->seek(wimHeader.xml_resource.offset_of_xml); 
 	// if seek is invalid
-	if (file->tell() != wimHeader.xml_resource.offset_of_xml)
+	if (file->tell() != (off64_t)wimHeader.xml_resource.offset_of_xml)
 		return 1;
 
 	size_t bytes_read = file->read(xml_data, size);
@@ -138,7 +138,7 @@ int WimPrivate::addFields_XML()
 
 	// the xml inside wims are utf-16 but tinyxml only supports utf-8
 	// this means we have to do some conversion
-	std::string utf8_xml = LibRpText::utf16_to_utf8(reinterpret_cast<char16_t*>(xml_data), (int)ceil((size) / 2));
+	std::string utf8_xml = LibRpText::utf16_to_utf8(reinterpret_cast<char16_t*>(xml_data), (int)((size / 2) + 1));
 
 	delete[](xml_data);
 #if TINYXML2_MAJOR_VERSION >= 2
@@ -231,7 +231,7 @@ int WimPrivate::addFields_XML()
 	for (uint32_t i = 0; i <= wimHeader.number_of_images-1; i++) {
 		vv_data->resize(vv_data->size()+1);
 		auto &data_row = vv_data->at(vv_data->size()-1);
-		data_row.emplace_back(rp_sprintf("%d", i + 1));
+		data_row.emplace_back(rp_sprintf("%u", i + 1));
 		data_row.emplace_back(rowloop_current_image.name);
 		data_row.emplace_back(rowloop_current_image.description);
 		data_row.emplace_back(rowloop_current_image.dispname);
@@ -245,7 +245,7 @@ int WimPrivate::addFields_XML()
 			continue;
 		
 		data_row.emplace_back(
-			rp_sprintf("%d.%d.%d.%d", rowloop_current_windowsver.majorversion,
+			rp_sprintf("%u.%u.%u.%u", rowloop_current_windowsver.majorversion,
 				rowloop_current_windowsver.minorversion, rowloop_current_windowsver.buildnumber,
 				rowloop_current_windowsver.spbuildnumber)); 
 		data_row.emplace_back(rowloop_current_windowsinfo.editionid);
@@ -414,10 +414,10 @@ int Wim::loadFieldData(void)
 	}
 	// if the version number is 14, add an indicator that it is an ESD
 	d->wimHeader.version.minor_version == 14
-		? snprintf(buffer, 14, "%d.%02d (ESD)", d->wimHeader.version.major_version,
+		? snprintf(buffer, 14, "%u.%02u (ESD)", d->wimHeader.version.major_version,
 			  d->wimHeader.version.minor_version)
 		: snprintf(
-			  buffer, 8, "%d.%02d", d->wimHeader.version.major_version, d->wimHeader.version.minor_version);
+			  buffer, 8, "%u.%02u", d->wimHeader.version.major_version, d->wimHeader.version.minor_version);
 	d->fields.addField_string(C_("RomData", "WIM Version"), buffer, RomFields::STRF_TRIM_END);
 
 	if (version_type != Wim113_014) 
@@ -450,7 +450,7 @@ int Wim::loadFieldData(void)
 		}
 	}
 
-	char* compression_method = nullptr;
+	std::string compression_method;
 	switch (i) 
 	{
 		case compress_xpress:
@@ -478,8 +478,8 @@ int Wim::loadFieldData(void)
 	}
 	d->fields.addField_string(C_("RomData", "Compression Method"), compression_method, RomFields::STRF_TRIM_END);
 	d->fields.addField_string(C_("RomData", "Part Number"),
-		rp_sprintf("%d/%d", d->wimHeader.part_number, d->wimHeader.total_parts), RomFields::STRF_TRIM_END);
-	d->fields.addField_string(C_("RomData", "Total Images"), rp_sprintf("%d", d->wimHeader.number_of_images),
+		rp_sprintf("%u/%u", d->wimHeader.part_number, d->wimHeader.total_parts), RomFields::STRF_TRIM_END);
+	d->fields.addField_string(C_("RomData", "Total Images"), rp_sprintf("%u", d->wimHeader.number_of_images),
 		RomFields::STRF_TRIM_END);
 
 	d->addFields_XML();
