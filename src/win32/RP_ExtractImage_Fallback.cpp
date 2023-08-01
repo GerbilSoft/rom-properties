@@ -123,15 +123,8 @@ HRESULT RP_ExtractImage_Private::Fallback(HBITMAP *phBmpImage)
 		return ERROR_FILE_NOT_FOUND;
 	}
 
-#ifdef UNICODE
-#  define tfile_ext wfile_ext
-#else
-	const string ts_file_ext = W2U8(wfile_ext);
-#  define tfile_ext (ts_file_ext.c_str())
-#endif
-
 	// Open the filetype key in HKCR.
-	RegKey hkey_Assoc(HKEY_CLASSES_ROOT, tfile_ext, KEY_READ, false);
+	RegKey hkey_Assoc(HKEY_CLASSES_ROOT, wfile_ext, KEY_READ, false);
 	if (!hkey_Assoc.isOpen()) {
 		return hkey_Assoc.lOpenRes();
 	}

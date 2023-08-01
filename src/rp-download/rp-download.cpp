@@ -660,13 +660,11 @@ int RP_C_API _tmain(int argc, TCHAR *argv[])
 		_ftprintf(stderr, _T("Cache Filename: %s\n"), cache_filename.c_str());
 	}
 
-#if defined(_WIN32) && defined(_UNICODE)
 	// If the cache_filename is >= 240 characters, prepend "\\\\?\\".
 	if (cache_filename.size() >= 240) {
 		cache_filename.reserve(cache_filename.size() + 8);
 		cache_filename.insert(0, _T("\\\\?\\"));
 	}
-#endif /* _WIN32 && _UNICODE */
 
 	// Get the cache file information.
 	off64_t filesize = 0;

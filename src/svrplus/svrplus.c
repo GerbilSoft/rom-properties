@@ -59,11 +59,7 @@ static HANDLE g_hSingleInstanceMutex = NULL;
 static const TCHAR dll_filename[] = _T("rom-properties.dll");
 
 // Bullet symbol
-#ifdef _UNICODE
-#  define BULLET _T("\x2022")
-#else /* !_UNICODE */
-#  define BULLET _T("*")
-#endif
+#define BULLET _T("\x2022")
 
 // Globals
 
@@ -929,7 +925,6 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 			const NMHDR *const pHdr = (const NMHDR*)lParam;
 			assert(pHdr != NULL);
 			switch (pHdr->code) {
-#ifdef UNICODE
 				case NM_CLICK:
 				case NM_RETURN: {
 					const NMLINK *pNMLink;
@@ -967,7 +962,6 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 					}
 					return TRUE;
 				}
-#endif
 
 				default:
 					break;

@@ -19,9 +19,8 @@ using std::list;
 using std::unique_ptr;
 using std::tstring;
 
-// Windows SDK.
+// Windows SDK
 #include <objbase.h>
-#include "sdk/GUID_fn.h"
 
 namespace LibWin32UI {
 

@@ -270,14 +270,6 @@ IF(ENABLE_PVRTC)
 	SET_EXTLIB_PROPERTIES(pvrtc)
 ENDIF(ENABLE_PVRTC)
 
-# Compatibility library for older versions of Windows.
-IF(ENABLE_OLDWINCOMPAT)
-	SET(BUILD_STATIC_LIBS ON)
-	SET(BUILD_SHARED_LIBS OFF)
-	ADD_SUBDIRECTORY(oldwincompat)
-	SET_EXTLIB_PROPERTIES(oldwincompat)
-ENDIF(ENABLE_OLDWINCOMPAT)
-
 IF(USE_INTERNAL_LZ4)
 	# Use the internal copy of LZ4.
 	# On Windows and Mac OS X, this will build DLLs.

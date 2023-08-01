@@ -1,24 +1,6 @@
 # Win32-specific CFLAGS/CXXFLAGS.
 # For Microsoft Visual C++ compilers.
 
-# If ENABLE_OLDWINCOMPAT, check for incompatible build settings.
-# If found, show a warning and disable ENABLE_OLDWINCOMPAT.
-IF(ENABLE_OLDWINCOMPAT)
-	IF(MSVC_VERSION LESS 1600)
-		# ENABLE_OLDWINCOMPAT is not useful on MSVC 2005 or earlier.
-		# - MSVC 2005 is the last version to support Win9x.
-		# - MSVC 2008 is the last version to support Win2000.
-		MESSAGE(WARNING "ENABLE_OLDWINCOMPAT is not useful on MSVC 2005 or earlier.")
-		SET(ENABLE_OLDWINCOMPAT OFF CACHE INTERNAL "Enable compatibility with Windows 2000 with MSVC 2010+. (forces static CRT)" FORCE)
-	ELSEIF(CMAKE_CL_64)
-		MESSAGE(WARNING "ENABLE_OLDWINCOMPAT is not useful for 64-bit builds.")
-		SET(ENABLE_OLDWINCOMPAT OFF CACHE INTERNAL "Enable compatibility with Windows 2000 with MSVC 2010+. (forces static CRT)" FORCE)
-	ELSE()
-		MESSAGE(STATUS "Enabling compatibility with Windows 2000.")
-		MESSAGE(STATUS "Static CRT will be used for all targets.")
-	ENDIF()
-ENDIF(ENABLE_OLDWINCOMPAT)
-
 # NOTE: This program is Unicode only on Windows.
 # No ANSI support.
 
@@ -51,15 +33,8 @@ ELSEIF(CPU_arm OR CPU_arm64)
 	SET(RP_WIN32_SUBSYSTEM_VERSION "6.02")
 ELSEIF(CPU_i386)
 	# i386 (32-bit), Unicode Windows only.
-	# Minimum target version is Windows XP,
-	# unless ENABLE_OLDWINCOMPAT is set.
-	# NOTE: MSVC 2012+ doesn't support lower than 5.01.
-	# TODO: Win9x support.
-	IF(ENABLE_OLDWINCOMPAT)
-		SET(RP_WIN32_SUBSYSTEM_VERSION "5.00")
-	ELSE(ENABLE_OLDWINCOMPAT)
-		SET(RP_WIN32_SUBSYSTEM_VERSION "5.01")
-	ENDIF(ENABLE_OLDWINCOMPAT)
+	# Minimum target version is Windows XP.
+	SET(RP_WIN32_SUBSYSTEM_VERSION "5.01")
 ELSE()
 	MESSAGE(FATAL_ERROR "Unsupported CPU.")
 ENDIF()
@@ -75,32 +50,6 @@ ENDIF(CMAKE_BUILD_TYPE MATCHES ^release)
 # Append the CFLAGS and LDFLAGS.
 SET(RP_C_FLAGS_COMMON	"${RP_C_FLAGS_COMMON} ${RP_C_FLAGS_WIN32}")
 SET(RP_CXX_FLAGS_COMMON	"${RP_CXX_FLAGS_COMMON} ${RP_C_FLAGS_WIN32} ${RP_CXX_FLAGS_WIN32}")
-
-IF(ENABLE_OLDWINCOMPAT)
-	# Always use the static CRT when building for old Windows compatibility.
-	SET(RP_C_FLAGS_DEBUG			"${RP_C_FLAGS_DEBUG} /MTd")
-	SET(RP_C_FLAGS_RELEASE			"${RP_C_FLAGS_RELEASE} /MT")
-	SET(RP_CXX_FLAGS_DEBUG			"${RP_CXX_FLAGS_DEBUG} /MTd")
-	SET(RP_CXX_FLAGS_RELEASE		"${RP_CXX_FLAGS_RELEASE} /MT")
-
-	# Remove kernel32.lib from the default libraries list.
-	SET(RP_EXE_LINKER_FLAGS_COMMON		"${RP_EXE_LINKER_FLAGS_COMMON} /NODEFAULTLIB:kernel32.lib")
-	SET(RP_SHARED_LINKER_FLAGS_COMMON	"${RP_SHARED_LINKER_FLAGS_COMMON} /NODEFAULTLIB:kernel32.lib")
-	SET(RP_MODULE_LINKER_FLAGS_COMMON	"${RP_MODULE_LINKER_FLAGS_COMMON} /NODEFAULTLIB:kernel32.lib")
-
-	# Remove kernel32.lib from CMAKE_<lang>_STANDARD_LIBRARIES_INIT.
-	STRING(REPLACE "kernel32.lib" "" CSTDLIBS "${CMAKE_C_STANDARD_LIBRARIES}")
-	STRING(REPLACE "kernel32.lib" "" CXXSTDLIBS "${CMAKE_CXX_STANDARD_LIBRARIES}")
-	SET(CMAKE_C_STANDARD_LIBRARIES "${CSTDLIBS}" CACHE INTERNAL "C standard libraries" FORCE)
-	SET(CMAKE_CXX_STANDARD_LIBRARIES "${CXXSTDLIBS}" CACHE INTERNAL "C++ standard libraries" FORCE)
-	UNSET(CSTDLIBS)
-	UNSET(CXXSTDLIBS)
-
-	# Link everything to liboldwincompat.
-	# Add kernel32.lib after oldwincompat to fix linking issues.
-	LINK_LIBRARIES(oldwincompat)
-	LINK_LIBRARIES(kernel32.lib)
-ENDIF(ENABLE_OLDWINCOMPAT)
 
 # Unset temporary variables.
 UNSET(RP_C_FLAGS_WIN32)

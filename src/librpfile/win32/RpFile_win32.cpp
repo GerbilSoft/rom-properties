@@ -170,15 +170,9 @@ int RpFilePrivate::reOpenFile(void)
 			tfilename[4] = filename[0];
 			q->m_fileType = DT_BLK;	// this is a device
 		} else {
-			// Absolute path.
-#ifdef UNICODE
-			// Unicode only: Prepend "\\?\" in order to support filenames longer than MAX_PATH.
+			// Absolute path: Prepend "\\?\" in order to support filenames longer than MAX_PATH.
 			tfilename = _T("\\\\?\\");
 			tfilename += U82T_c(filename);
-#else /* !UNICODE */
-			// ANSI: Use the filename directly.
-			tfilename = U82T_c(filename);
-#endif /* UNICODE */
 		}
 	} else {
 		// Not an absolute path, or "\\?\" is already

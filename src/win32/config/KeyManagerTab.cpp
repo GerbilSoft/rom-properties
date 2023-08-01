@@ -1111,7 +1111,6 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 				if (_istxdigit(*p)) {
 					tstr += *p;
 				} else if (d->bAllowKanji) {
-#ifdef UNICODE
 					// Allow kanji.
 					// Reference: http://www.localizingjapan.com/blog/2012/01/20/regular-expressions-for-japanese-text/
 					if ((*p >= 0x3400 && *p <= 0x4DB5) ||
@@ -1126,13 +1125,6 @@ LRESULT CALLBACK KeyManagerTabPrivate::ListViewEditSubclassProc(
 						CloseClipboard();
 						return true;
 					}
-#else /* !UNICODE */
-					// TODO: Shift-JIS support?
-					// For now, assuming this is invalid.
-					GlobalUnlock(hClipboardData);
-					CloseClipboard();
-					return true;
-#endif /* UNICODE */
 				} else {
 					// Invalid character.
 					// Prevent the paste.
@@ -1542,13 +1534,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 	}
 
 	// U+2022 (BULLET) == \xE2\x80\xA2
-#ifdef _UNICODE
 	static const wchar_t nl_bullet[] = L"\r\n\x2022 ";
-#else /* !_UNICODE */
-	// NOTE: Windows doesn't support UTF-8 as "ANSI", except on recent
-	// versions of Windows 10 (1903) with a manifest setting.
-	static const char nl_bullet[] = "\r\n* ";
-#endif /* _UNICODE */
 
 	// TODO: Numeric formatting.
 	if (showKeyStats) {

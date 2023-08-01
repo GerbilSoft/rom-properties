@@ -435,7 +435,6 @@ int loadIconFromFilenameAndIndex(LPCTSTR lpszIconFilename, HICON *phiconLarge, H
 
 /** File dialogs **/
 
-#ifdef UNICODE
 /**
  * Get a filename using IFileDialog.
  * @param ts_ret	[out] Output filename (Empty if none)
@@ -603,7 +602,6 @@ static inline HRESULT getFileName_int_IFileDialog(tstring &ts_ret, bool bSave, H
 	CoTaskMemFree(pszFilePath);
 	return S_OK;
 }
-#endif /* UNICODE */
 
 /**
  * Convert an RP file dialog filter to Win32.
@@ -703,7 +701,6 @@ static tstring getFileName_int(bool bSave, HWND hWnd,
 	assert(filterSpec != nullptr);
 	tstring ts_ret;
 
-#ifdef UNICODE
 	// Try IFileDialog first. (Unicode only)
 	HRESULT hr = getFileName_int_IFileDialog(ts_ret, bSave,
 		hWnd, dlgTitle, filterSpec, origFilename);
@@ -711,7 +708,6 @@ static tstring getFileName_int(bool bSave, HWND hWnd,
 		// IFileDialog succeeded.
 		return ts_ret;
 	}
-#endif /* UNICODE */
 
 	// GetOpenFileName() / GetSaveFileName()
 	tstring ts_filterSpec = rpFileDialogFilterToWin32(filterSpec);

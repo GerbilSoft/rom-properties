@@ -126,12 +126,7 @@ static void rp_i18n_init_int(void)
 
 	// Found the locale subdirectory.
 	// Bind the gettext domain.
-	// NOTE: gettext-0.21 supports Unicode paths using wbindtextdomain().
-#ifdef UNICODE
 	base = wbindtextdomain(RP_I18N_DOMAIN, tpathname);
-#else /* !UNICODE */
-	base = bindtextdomain(RP_I18N_DOMAIN, tpathname);
-#endif /* UNICODE */
 	i18n_is_init = (base != NULL);
 }
 

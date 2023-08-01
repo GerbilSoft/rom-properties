@@ -14,17 +14,19 @@
 #include <tchar.h>
 
 // std::tstring, std::tstringstream
-#ifdef _UNICODE
-#  define tstring		wstring
-#  define tstringstream		wstringstream
-#  define tistringstream	wistringstream
-#  define tostringstream	wostringstream
-#else /* !_UNICODE */
-#  define tstring		string
-#  define tstringstream		stringstream
-#  define tistringstream	istringstream
-#  define tostringstream	ostringstream
-#endif /* _UNICODE */
+#if defined(__cplusplus) && !defined(tstring)
+#  ifdef _UNICODE
+#    define tstring		wstring
+#    define tstringstream	wstringstream
+#    define tistringstream	wistringstream
+#    define tostringstream	wostringstream
+#  else /* !_UNICODE */
+#    define tstring		string
+#    define tstringstream	stringstream
+#    define tistringstream	istringstream
+#    define tostringstream	ostringstream
+#  endif /* _UNICODE */
+#endif /* __cplusplus && !tstring */
 
 #else /* !_WIN32 */
 

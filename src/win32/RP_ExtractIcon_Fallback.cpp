@@ -304,15 +304,8 @@ LONG RP_ExtractIcon_Private::Fallback(HICON *phiconLarge, HICON *phiconSmall, UI
 		return ERROR_FILE_NOT_FOUND;
 	}
 
-#ifdef UNICODE
-#  define tfile_ext wfile_ext
-#else
-	const string ts_file_ext = W2U8(wfile_ext);
-#  define tfile_ext (ts_file_ext.c_str())
-#endif
-
 	// Open the filetype key in HKCR.
-	RegKey hkcr_Assoc(HKEY_CLASSES_ROOT, tfile_ext, KEY_READ, false);
+	RegKey hkcr_Assoc(HKEY_CLASSES_ROOT, wfile_ext, KEY_READ, false);
 	if (!hkcr_Assoc.isOpen()) {
 		return hkcr_Assoc.lOpenRes();
 	}

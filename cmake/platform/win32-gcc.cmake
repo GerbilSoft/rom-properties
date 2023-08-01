@@ -24,15 +24,8 @@ ELSEIF(CPU_arm OR CPU_arm64)
 	SET(RP_WIN32_SUBSYSTEM_VERSION "6.02")
 ELSEIF(CPU_i386)
 	# 32-bit, Unicode Windows only.
-	# Minimum target version is Windows XP,
-	# unless ENABLE_OLDWINCOMPAT is set.
-	# NOTE: Newer gcc might not support pre-XP Windows.
-	# TODO: Win9x support.
-	IF(ENABLE_OLDWINCOMPAT)
-		SET(RP_WIN32_SUBSYSTEM_VERSION "5.00")
-	ELSE(ENABLE_OLDWINCOMPAT)
-		SET(RP_WIN32_SUBSYSTEM_VERSION "5.01")
-	ENDIF(ENABLE_OLDWINCOMPAT)
+	# Minimum target version is Windows XP.
+	SET(RP_WIN32_SUBSYSTEM_VERSION "5.01")
 ELSE()
 	MESSAGE(FATAL_ERROR "Unsupported CPU.")
 ENDIF()

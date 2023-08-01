@@ -10,6 +10,10 @@
 
 #include "libwin32common/config.libwin32common.h"
 
+#if !defined(UNICODE) || !defined(_UNICODE)
+#  error rom-properties for Windows must be compiled with -DUNICODE and -D_UNICODE enabled
+#endif
+
 // Show a warning if one of the macros isn't defined in CMake.
 #ifndef WINVER
 #  pragma message("WINVER not defined; defaulting to 0x0500.")
@@ -73,16 +77,7 @@
 #define NOMCX 1
 
 #include <windows.h>
-#include <tchar.h>
-
-#if defined(__cplusplus) && !defined(tstring)
-// FIXME: Would be better to use typedef, but oh well.
-#  ifdef _UNICODE
-#    define tstring wstring
-#  else /* !_UNICODE */
-#    define tstring string
-#  endif /* _UNICODE */
-#endif /* defined(__cplusplus) && !defined(tstring) */
+#include "tcharx.h"
 
 #ifndef WM_DPICHANGED
 #  define WM_DPICHANGED 0x2E0
