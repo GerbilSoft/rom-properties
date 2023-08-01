@@ -384,7 +384,7 @@ int Wim::isRomSupported_static(const DetectInfo* info)
 		} else{ 
 			ret = Wim109_112;
 		}
-	} else if (!memcmp(wimData->magic, "\x7E\0\0\0", 4)) {
+	} else if (!memcmp(wimData->magic, MSWIMOLD_MAGIC, 4)) {
 		// NOTE: This magic number is too generic.
 		// Verify the file extension.
 		if (info->ext && !strcasecmp(info->ext, ".wim")) {
