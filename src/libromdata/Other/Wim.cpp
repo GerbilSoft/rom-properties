@@ -369,14 +369,14 @@ Wim::Wim(LibRpFile::IRpFile* file)
 	// Seek to the beginning of the header.
 	d->file->rewind();
 
-	// Read the ROM header.
+	// Read the Wim header.
 	size_t size = d->file->read(&d->wimHeader, sizeof(d->wimHeader));
 	if (size != sizeof(d->wimHeader)) {
 		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
 
-	// Check if this ROM is supported.
+	// Check if this Wim is supported.
 	const DetectInfo info = {
 		{0, sizeof(d->wimHeader), reinterpret_cast<const uint8_t*>(&d->wimHeader)},
 		nullptr,	// ext (not needed for Wim)
@@ -387,7 +387,30 @@ Wim::Wim(LibRpFile::IRpFile* file)
 	d->isValid = ((int)d->versionType >= 0);
 	if (!d->isValid) {
 		UNREF_AND_NULL_NOCHK(d->file);
+		return;
 	}
+
+#if SYS_BYTEORDER == SYS_BIG_ENDIAN
+	// Byteswap the WIM header.
+	d->wimHeader.header_size	= le32_to_cpu(d->wimHeader.header_size);
+	d->wimHeader.flags		= le32_to_cpu(d->wimHeader.flags);
+	d->wimHeader.chunk_size		= le32_to_cpu(d->wimHeader.chunk_size);
+	d->wimHeader.part_number	= le16_to_cpu(d->wimHeader.part_number);
+	d->wimHeader.total_parts	= le16_to_cpu(d->wimHeader.total_parts);
+	d->wimHeader.number_of_images	= le32_to_cpu(d->wimHeader.number_of_images);
+	d->wimHeader.bootable_index	= le32_to_cpu(d->wimHeader.bootable_index);
+
+	// Byteswap WIM_File_Resource objects.
+	auto do_wfr_byteswap = [](WIM_File_Resource &wfr) {
+		wfr.size          = le64_to_cpu(wfr.size);
+		wfr.offset_of_xml = le64_to_cpu(wfr.offset_of_xml);
+		wfr.not_important = le64_to_cpu(wfr.not_important);
+	};
+	do_wfr_byteswap(d->wimHeader.offset_table);
+	do_wfr_byteswap(d->wimHeader.xml_resource);
+	do_wfr_byteswap(d->wimHeader.boot_metadata_resource);
+	do_wfr_byteswap(d->wimHeader.integrity_resource);
+#endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
 }
 
 const char* Wim::systemName(unsigned int type) const
