@@ -72,6 +72,14 @@ typedef enum {
 	compress_xpress2 = 0x200000,
 } WIM_Compression_Flags;
 
+typedef enum {
+	Wim_Arch_x86 = 0,
+	Wim_Arch_ARM32 = 5,
+	Wim_Arch_IA64 = 6,
+	Wim_Arch_AMD64 = 9,
+	Wim_Arch_ARM64 = 12,
+} WimWindowsArchitecture;
+
 typedef struct _WIM_File_Resource {
 	//this is 7 bytes but there isn't a good way of
 	//representing that 

@@ -82,14 +82,6 @@ const RomDataInfo WimPrivate::romDataInfo = {
 	"WIM", exts, mimeTypes
 };
 
-typedef enum _WimWindowsArchitecture {
-	x86 = 0,
-	ARM32 = 5,
-	IA64 = 6,
-	AMD64 = 9,
-	ARM64 = 12,
-} WimWindowsArchitecture;
-
 struct WimWindowsLanguages {
 	std::string language;
 	std::string default_language;
@@ -104,7 +96,7 @@ struct WimWindowsVersion {
 };
 
 struct WimWindowsInfo {
-	WimWindowsArchitecture arch = WimWindowsArchitecture::x86;
+	WimWindowsArchitecture arch = Wim_Arch_x86;
 	std::string productname, editionid, installationtype, hal, producttype, productsuite;
 	WimWindowsLanguages languages;
 	WimWindowsVersion version;
@@ -259,22 +251,24 @@ int WimPrivate::addFields_XML()
 				rowloop_current_windowsver.minorversion, rowloop_current_windowsver.buildnumber,
 				rowloop_current_windowsver.spbuildnumber)); 
 		data_row.emplace_back(rowloop_current_windowsinfo.editionid);
-		std::string archstring = "(Unknown)";
-		switch (rowloop_current_windowsinfo.arch)
-		{
-			case WimWindowsArchitecture::x86:
+		const char *archstring;
+		switch (rowloop_current_windowsinfo.arch) {
+			default:
+				archstring = C_("RomData", "(unknown)");
+				break;
+			case Wim_Arch_x86:
 				archstring = "x86";
 				break;
-			case WimWindowsArchitecture::ARM32:
+			case Wim_Arch_ARM32:
 				archstring = "ARM32";
 				break;
-			case WimWindowsArchitecture::IA64:
+			case Wim_Arch_IA64:
 				archstring = "IA64";
 				break;
-			case WimWindowsArchitecture::AMD64:
+			case Wim_Arch_AMD64:
 				archstring = "x64";
 				break;
-			case WimWindowsArchitecture::ARM64:
+			case Wim_Arch_ARM64:
 				archstring = "ARM64";
 				break;
 		}
