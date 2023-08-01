@@ -452,6 +452,12 @@ Wim::Wim(LibRpFile::IRpFile* file)
 	do_wfr_byteswap(d->wimHeader.boot_metadata_resource);
 	do_wfr_byteswap(d->wimHeader.integrity_resource);
 #endif /* SYS_BYTEORDER == SYS_BIG_ENDIAN */
+
+	if (d->versionType == WIM_Version_Type::Wim107_108) {
+		// the version offset is different so we have to get creative
+		d->wimHeader.version.major_version = d->wimHeader.magic[6];
+		d->wimHeader.version.minor_version = d->wimHeader.magic[5];
+	}
 }
 
 const char* Wim::systemName(unsigned int type) const
@@ -489,12 +495,6 @@ int Wim::loadFieldData(void)
 
 	d->fields.reserve(6);	// Maximum of 6 fields.
 	char buffer[32];
-
-	if (d->versionType == WIM_Version_Type::Wim107_108) {
-		// the version offset is different so we have to get creative
-		d->wimHeader.version.major_version = d->wimHeader.magic[6];
-		d->wimHeader.version.minor_version = d->wimHeader.magic[5];
-	}
 
 	// if the version number is 14, add an indicator that it is an ESD
 	if (d->wimHeader.version.minor_version == 14) {
