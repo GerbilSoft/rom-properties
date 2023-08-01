@@ -283,26 +283,26 @@ int WimPrivate::addFields_XML()
 	}	
 
 	static const char *const field_names[] = {
-		NOP_C_("RomData", "#"),
-		NOP_C_("RomData", "Name"),
-		NOP_C_("RomData", "Description"),
-		NOP_C_("RomData", "Display Name"),
-		NOP_C_("RomData", "Display Desc."),
-		NOP_C_("RomData", "Last Modified"),
-		NOP_C_("RomData", "OS Version"),
-		NOP_C_("RomData", "Edition"),
-		NOP_C_("RomData", "Architecture"),
-		NOP_C_("RomData", "Language"),
+		NOP_C_("Wim|Images", "#"),
+		NOP_C_("Wim|Images", "Name"),
+		NOP_C_("Wim|Images", "Description"),
+		NOP_C_("Wim|Images", "Display Name"),
+		NOP_C_("Wim|Images", "Display Desc."),
+		NOP_C_("Wim|Images", "Last Modified"),
+		NOP_C_("Wim|Images", "OS Version"),
+		NOP_C_("Wim|Images", "Edition"),
+		NOP_C_("Wim|Images", "Architecture"),
+		NOP_C_("Wim|Images", "Language"),
 	};
 	std::vector<std::string>* const v_field_names = RomFields::strArrayToVector_i18n(
-		"RomData", field_names, ARRAY_SIZE(field_names));
+		"Wim|Images", field_names, ARRAY_SIZE(field_names));
 
 	RomFields::AFLD_PARAMS params;
 	params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;
 	params.headers = v_field_names;
 	params.data.single = vv_data;
 	// TODO: Header alignment?
-	fields.addField_listData(C_("RomData", "Images"), &params);
+	fields.addField_listData(C_("Wim", "Images"), &params);
 
 	return 0;
 }
@@ -430,7 +430,7 @@ int Wim::loadFieldData(void)
 		snprintf(buffer, sizeof(buffer), "%u.%02u",
 			d->wimHeader.version.major_version, d->wimHeader.version.minor_version);
 	}
-	d->fields.addField_string(C_("RomData", "WIM Version"), buffer, RomFields::STRF_TRIM_END);
+	d->fields.addField_string(C_("Wim", "WIM Version"), buffer, RomFields::STRF_TRIM_END);
 
 	if (d->versionType != Wim113_014) {
 		// The rest of the fields require Wim113_014 or later.
@@ -439,19 +439,19 @@ int Wim::loadFieldData(void)
 
 	static const char* const wim_flag_names[] = {
 		nullptr,
-		NOP_C_("RomData", "Compressed"),
-		NOP_C_("RomData", "Read only"),
-		NOP_C_("RomData", "Spanned"),
-		NOP_C_("RomData", "Resource Only"),
-		NOP_C_("RomData", "Metadata Only"),
-		NOP_C_("RomData", "Write in progress"),
+		NOP_C_("Wim|Flags", "Compressed"),
+		NOP_C_("Wim|Flags", "Read-only"),
+		NOP_C_("Wim|Flags", "Spanned"),
+		NOP_C_("Wim|Flags", "Resource Only"),
+		NOP_C_("Wim|Flags", "Metadata Only"),
+		NOP_C_("Wim|Flags", "Write in progress"),
 	};
 
 	uint32_t wimflags = le32_to_cpu(d->wimHeader.flags);
 
-	std::vector<std::string>* const v_wim_flag_names = RomFields::strArrayToVector_i18n(
+	std::vector<std::string> *const v_wim_flag_names = RomFields::strArrayToVector_i18n(
 		"RomData", wim_flag_names, ARRAY_SIZE(wim_flag_names));
-	d->fields.addField_bitfield(C_("RomData", "Flags"),
+	d->fields.addField_bitfield(C_("Wim", "Flags"),
 		v_wim_flag_names, 3, wimflags);
 	int i;
 
@@ -483,10 +483,10 @@ int Wim::loadFieldData(void)
 				: C_("RomData", "None");
 			break;
 	}
-	d->fields.addField_string(C_("RomData", "Compression Method"), compression_method);
-	d->fields.addField_string(C_("RomData", "Part Number"),
+	d->fields.addField_string(C_("Wim", "Compression Method"), compression_method);
+	d->fields.addField_string(C_("Wim", "Part Number"),
 		rp_sprintf("%u/%u", d->wimHeader.part_number, d->wimHeader.total_parts));
-	d->fields.addField_string_numeric(C_("RomData", "Total Images"), d->wimHeader.number_of_images);
+	d->fields.addField_string_numeric(C_("Wim", "Total Images"), d->wimHeader.number_of_images);
 
 	d->addFields_XML();
 
