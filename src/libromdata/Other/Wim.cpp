@@ -100,7 +100,7 @@ struct WimWindowsInfo {
 	std::string productname, editionid, installationtype, hal, producttype, productsuite;
 	WimWindowsLanguages languages;
 	WimWindowsVersion version;
-	std::string systemroot = "";
+	std::string systemroot;
 };
 
 struct WimIndex {
@@ -113,7 +113,7 @@ struct WimIndex {
 	//time_t creationtime = 0;	// not used right now
 	time_t lastmodificationtime = 0;
 	WimWindowsInfo windowsinfo;
-	std::string name, description, flags, dispname, dispdescription = "";
+	std::string name, description, flags, dispname, dispdescription;
 	bool containswindowsimage = false;
 };
 
