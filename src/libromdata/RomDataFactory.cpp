@@ -102,6 +102,7 @@ using std::vector;
 #include "Other/NintendoBadge.hpp"
 #include "Other/RpTextureWrapper.hpp"
 #include "Other/Lua.hpp"
+#include "Other/Wim.hpp"
 
 // Special case for Dreamcast save files.
 #include "Console/dc_structs.h"
@@ -339,6 +340,7 @@ const RomDataFactoryPrivate::RomDataFns RomDataFactoryPrivate::romDataFns_header
 	GetRomDataFns(Amiibo, ATTR_HAS_THUMBNAIL),
 	GetRomDataFns(MachO, ATTR_NONE),
 	GetRomDataFns(NintendoBadge, ATTR_HAS_THUMBNAIL),
+	GetRomDataFns(Wim, ATTR_NONE),
 
 	// The following formats have 16-bit magic numbers,
 	// so they should go at the end of the address=0 section.
