@@ -11,6 +11,7 @@
 #include "xdvdfs_structs.h"
 
 // Other rom-properties libraries
+#include "librpbase/timeconv.h"
 using namespace LibRpBase;
 using namespace LibRpText;
 using LibRpFile::IRpFile;
@@ -594,10 +595,7 @@ time_t XDVDFSPartition::xdvdfsTimestamp(void) const
 
 	// NOTE: Timestamp is stored in Windows FILETIME format,
 	// which is 100ns units since 1601/01/01 00:00:00 UTC.
-	// Based on libwin32common/w32time.h.
-#define FILETIME_1970 116444736000000000LL	// Seconds between 1/1/1601 and 1/1/1970.
-#define HECTONANOSEC_PER_SEC 10000000LL
-	return static_cast<time_t>(d->xdvdfsHeader.timestamp - FILETIME_1970) / HECTONANOSEC_PER_SEC;
+	return WindowsTimeToUnixTime(d->xdvdfsHeader.timestamp);
 }
 
 }

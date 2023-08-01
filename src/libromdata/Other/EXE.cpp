@@ -11,6 +11,7 @@
 
 // Other rom-properties libraries
 #include "librpbase/Achievements.hpp"
+#include "librpbase/timeconv.h"
 using namespace LibRpBase;
 using namespace LibRpText;
 using LibRpFile::IRpFile;
@@ -301,18 +302,11 @@ void EXEPrivate::addFields_VS_VERSION_INFO(const VS_FIXEDFILEINFO *pVsFfi, const
 	const uint64_t fileTime = (static_cast<uint64_t>(pVsFfi->dwFileDateMS)) << 32 |
 	                           static_cast<uint64_t>(pVsFfi->dwFileDateLS);
 	if (fileTime != 0) {
-		// Convert to UNIX time.
-#ifndef FILETIME_1970
-		#define FILETIME_1970 116444736000000000LL	// Seconds between 1/1/1601 and 1/1/1970.
-#endif
-#ifndef HECTONANOSEC_PER_SEC
-		#define HECTONANOSEC_PER_SEC 10000000LL
-#endif
-		const time_t fileTimeUnix = static_cast<time_t>((fileTime - FILETIME_1970) / HECTONANOSEC_PER_SEC);
+		// Convert to UNIX time for display purposes.
+		const time_t fileTimeUnix = WindowsTimeToUnixTime(fileTime);
 		fields.addField_dateTime(C_("EXE", "File Time"), fileTimeUnix,
 			RomFields::RFT_DATETIME_HAS_DATE |
-			RomFields::RFT_DATETIME_HAS_TIME
-			);
+			RomFields::RFT_DATETIME_HAS_TIME);
 	}
 
 	// Was a StringFileInfo table loaded?

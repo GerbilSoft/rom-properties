@@ -69,6 +69,7 @@ SET(${PROJECT_NAME}_H
 	SystemRegion.hpp
 	TextOut.hpp
 	Achievements.hpp
+	timeconv.h
 	img/RpPng.hpp
 	img/RpPngWriter.hpp
 	img/APNG_dlopen.h
