@@ -527,9 +527,9 @@ int Wim::loadFieldData(void)
 		"RomData", wim_flag_names, ARRAY_SIZE(wim_flag_names));
 	d->fields.addField_bitfield(C_("Wim", "Flags"),
 		v_wim_flag_names, 3, wimflags);
-	int i;
 
 	// loop through each compression flag and test if it is set
+	int i;
 	for (i = compress_xpress; i <= compress_xpress2; i = i << 1) {
 		if (wimflags & i)
 			break;
