@@ -238,6 +238,9 @@ int WimPrivate::addFields_XML()
 		data_row.emplace_back(rowloop_current_image.description);
 		data_row.emplace_back(rowloop_current_image.dispname);
 		data_row.emplace_back(rowloop_current_image.dispdescription);
+
+		// FIXME: Using our own timestamp formatting instead of the system locale.
+		// Can't easily specify time values in RFT_LISTDATA...
 		time_t time = windows_time_to_unix_epoch(rowloop_current_image.lastmodificationtime); 
 		tm_struct = localtime(&time);
 		std::strftime(timestamp, 20, "%Y-%m-%d %R", tm_struct);
