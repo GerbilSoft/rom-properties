@@ -461,9 +461,8 @@ int Wim::loadFieldData(void)
 			break;
 	}
 
-	std::string compression_method;
-	switch (i) 
-	{
+	const char *compression_method;
+	switch (i)  {
 		case compress_xpress:
 			compression_method = "XPRESS";
 			break;
@@ -479,19 +478,15 @@ int Wim::loadFieldData(void)
 		default:
 			// if it has compression but the algorithm isn't 
 			// accounted for, say it's unknown
-			if (wimflags & has_compression) {
-				compression_method = "Unknown";
-			}
-			else {
-				compression_method = "None";
-			}
+			compression_method = (wimflags & has_compression)
+				? C_("RomData", "Unknown")
+				: C_("RomData", "None");
 			break;
 	}
-	d->fields.addField_string(C_("RomData", "Compression Method"), compression_method, RomFields::STRF_TRIM_END);
+	d->fields.addField_string(C_("RomData", "Compression Method"), compression_method);
 	d->fields.addField_string(C_("RomData", "Part Number"),
-		rp_sprintf("%u/%u", d->wimHeader.part_number, d->wimHeader.total_parts), RomFields::STRF_TRIM_END);
-	d->fields.addField_string(C_("RomData", "Total Images"), rp_sprintf("%u", d->wimHeader.number_of_images),
-		RomFields::STRF_TRIM_END);
+		rp_sprintf("%u/%u", d->wimHeader.part_number, d->wimHeader.total_parts));
+	d->fields.addField_string_numeric(C_("RomData", "Total Images"), d->wimHeader.number_of_images);
 
 	d->addFields_XML();
 
