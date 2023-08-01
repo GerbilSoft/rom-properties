@@ -84,7 +84,7 @@ const RomDataInfo WimPrivate::romDataInfo = {
 
 struct WimWindowsLanguages {
 	std::string language;
-	std::string default_language;
+	//std::string default_language;	//not used right now
 };
 
 struct WimWindowsVersion {
@@ -160,20 +160,21 @@ int WimPrivate::addFields_XML()
 	if (!wim_element) {
 		// No wim element.
 		// TODO: Better error code.
-#if TINYXML2_MAJOR_VERSION >= 2
-		document.Clear();
-#endif /* TINYXML2_MAJOR_VERSION >= 2 */
 		return -EIO;
 	}
 
 	std::vector<WimIndex> images(0);
 	images.reserve(wimHeader.number_of_images);
-	const XMLElement* currentimage = wim_element->FirstChildElement("IMAGE");
+	const XMLElement *currentimage = wim_element->FirstChildElement("IMAGE");
 
-	for (uint32_t i = 0; i <= wimHeader.number_of_images - 1; i++) {
+	const char *const s_unknown = C_("Wim", "(unknown)");
+	for (uint32_t i = 0; i <= wimHeader.number_of_images-1; i++) {
 		WimIndex currentindex;
-
 		currentindex.index = i + 1;
+
+		assert(currentimage != nullptr);
+		if (!currentimage)
+			break;
 
 		// the last modification time is split into a high part and a
 		// low part so we shift and add them together
@@ -194,43 +195,79 @@ int WimPrivate::addFields_XML()
 			}
 		}
 
-		const XMLElement* windowsinfo = currentimage->FirstChildElement("WINDOWS");
+		const XMLElement *const windowsinfo = currentimage->FirstChildElement("WINDOWS");
 		if (windowsinfo) {
 			currentindex.containswindowsimage = true;
-			currentindex.windowsinfo.arch =
-				static_cast<WimWindowsArchitecture>(windowsinfo->FirstChildElement("ARCH")->IntText(0));
-			windowsinfo->FirstChildElement("EDITIONID") != nullptr
-				? currentindex.windowsinfo.editionid = windowsinfo->FirstChildElement("EDITIONID")->GetText()
-				: currentindex.windowsinfo.editionid = "(Unknown)";
-			windowsinfo->FirstChildElement("LANGUAGES") != nullptr
-				? currentindex.windowsinfo.languages.language = windowsinfo->FirstChildElement("LANGUAGES")->FirstChildElement("LANGUAGE")->GetText()
-				: currentindex.windowsinfo.languages.language = "(Unknown)";
-			const XMLElement* version = windowsinfo->FirstChildElement("VERSION");
-			currentindex.windowsinfo.version.majorversion = version->FirstChildElement("MAJOR")->IntText(0);
-			currentindex.windowsinfo.version.minorversion = version->FirstChildElement("MINOR")->IntText(0);
-			currentindex.windowsinfo.version.buildnumber = version->FirstChildElement("BUILD")->IntText(0);
-			currentindex.windowsinfo.version.spbuildnumber =
-				version->FirstChildElement("SPBUILD")->IntText(0);
-		} else
+			const XMLElement *const arch = windowsinfo->FirstChildElement("ARCH");
+			if (arch) {
+				currentindex.windowsinfo.arch = static_cast<WimWindowsArchitecture>(arch->IntText(0));
+			}
+
+			const XMLElement *const editionId = windowsinfo->FirstChildElement("EDITIONID");
+			if (editionId) {
+				const char *s_editionId = windowsinfo->FirstChildElement("EDITIONID")->GetText();
+				currentindex.windowsinfo.editionid = (s_editionId ? s_editionId : s_unknown);
+			} else {
+				currentindex.windowsinfo.editionid = s_unknown;
+			}
+
+			const XMLElement *const languages = windowsinfo->FirstChildElement("LANGUAGES");
+			if (languages) {
+				const char *s_languages = languages->GetText();
+				currentindex.windowsinfo.languages.language = (s_languages ? s_languages : s_unknown);
+			} else {
+				currentindex.windowsinfo.languages.language = s_unknown;
+			}
+
+			const XMLElement *const version = windowsinfo->FirstChildElement("VERSION");
+			if (version) {
+				const XMLElement *const ver_major = version->FirstChildElement("MAJOR");
+				if (ver_major) {
+					currentindex.windowsinfo.version.majorversion = ver_major->IntText(0);
+				}
+				const XMLElement *const ver_minor = version->FirstChildElement("MINOR");
+				if (ver_minor) {
+					currentindex.windowsinfo.version.minorversion = ver_minor->IntText(0);
+				}
+				const XMLElement *const ver_build = version->FirstChildElement("BUILD");
+				if (ver_build) {
+					currentindex.windowsinfo.version.buildnumber = ver_build->IntText(0);
+				}
+				const XMLElement *const ver_spbuild = version->FirstChildElement("SPBUILD");
+				if (ver_spbuild) {
+					currentindex.windowsinfo.version.spbuildnumber = ver_spbuild->IntText(0);
+				}
+			}
+		} else {
 			currentindex.containswindowsimage = false;
+		}
 
 		// some wims don't have these fields, so we
 		// need to set up fallbacks - the hierarchy goes
 		// display name -> name -> "(None)"
-		currentimage->FirstChildElement("NAME") != nullptr
-			? currentindex.name = currentimage->FirstChildElement("NAME")->GetText()
-			: currentindex.name = "(None)";
-		currentimage->FirstChildElement("DESCRIPTION") != nullptr
-			? currentindex.description = currentimage->FirstChildElement("DESCRIPTION")->GetText()
-			: currentindex.description = "(None)";
-		currentimage->FirstChildElement("DISPLAYNAME") != nullptr
-			? currentindex.dispname = currentimage->FirstChildElement("DISPLAYNAME")->GetText()
-			: currentindex.dispname = "(None)";
-		currentimage->FirstChildElement("DISPLAYDESCRIPTION") != nullptr
-			? currentindex.dispdescription = currentimage->FirstChildElement("DISPLAYDESCRIPTION")->GetText()
-			: currentindex.dispdescription = "(None)";
+		const char *const s_none = C_("Wim", "(none)");
+		const XMLElement *const elem_name = currentimage->FirstChildElement("NAME");
+		if (elem_name) {
+			const char *const s_name = elem_name->GetText();
+			currentindex.name = (s_name ? s_name : s_none);
+		}
+		const XMLElement *const elem_desc = currentimage->FirstChildElement("DESCRIPTION");
+		if (elem_desc) {
+			const char *const s_desc = elem_desc->GetText();
+			currentindex.description = (s_desc ? s_desc : s_none);
+		}
+		const XMLElement *const elem_dispName = currentimage->FirstChildElement("DISPLAYNAME");
+		if (elem_dispName) {
+			const char *const s_dispName = elem_dispName->GetText();
+			currentindex.dispname = (s_dispName ? s_dispName : s_none);
+		}
+		const XMLElement *const elem_dispDesc = currentimage->FirstChildElement("DISPLAYDESCRIPTION");
+		if (elem_dispDesc) {
+			const char *const s_dispDesc = elem_dispDesc->GetText();
+			currentindex.dispdescription = (s_dispDesc ? s_dispDesc : s_none);
+		}
 
-		images.push_back(currentindex);
+		images.emplace_back(std::move(currentindex));
 		currentimage = currentimage->NextSiblingElement();
 	}
 
