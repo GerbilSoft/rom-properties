@@ -212,33 +212,38 @@ int WimPrivate::addFields_XML()
 			? currentindex.name = currentimage->FirstChildElement("NAME")->GetText()
 			: currentindex.name = "(None)";
 		currentimage->FirstChildElement("DESCRIPTION") != nullptr
-			? currentindex.name = currentimage->FirstChildElement("DESCRIPTION")->GetText()
-			: currentindex.name = "(None)";
-		if (currentimage->FirstChildElement("DISPLAYNAME") != nullptr)
-			currentindex.dispname = currentimage->FirstChildElement("DISPLAYNAME")->GetText();
-		if (currentimage->FirstChildElement("DISPLAYNAME") != nullptr)
-			currentindex.dispdescription = currentimage->FirstChildElement("DISPLAYDESCRIPTION")->GetText();
+			? currentindex.description = currentimage->FirstChildElement("DESCRIPTION")->GetText()
+			: currentindex.description = "(None)";
+		currentimage->FirstChildElement("DISPLAYNAME") != nullptr
+			? currentindex.dispname = currentimage->FirstChildElement("DISPLAYNAME")->GetText()
+			: currentindex.dispname = "(None)";
+		currentimage->FirstChildElement("DISPLAYDESCRIPTION") != nullptr
+			? currentindex.dispdescription = currentimage->FirstChildElement("DISPLAYDESCRIPTION")->GetText()
+			: currentindex.dispdescription = "(None)";
 
 		images.push_back(currentindex);
 		currentimage = currentimage->NextSiblingElement();
 	}
 
 	auto vv_data = new RomFields::ListData_t();
-	vv_data->reserve(8);
+	vv_data->reserve(10);
+
+	char timestamp[20];
+	tm* tm_struct;
 	// loop for the rows
 	for (uint32_t i = 0; i <= wimHeader.number_of_images-1; i++) {
+		
 		vv_data->resize(vv_data->size()+1);
 		auto &data_row = vv_data->at(vv_data->size()-1);
 		data_row.emplace_back(rp_sprintf("%d", i + 1));
-
-		images[i].dispname.c_str() != nullptr 
-			? data_row.emplace_back(rowloop_current_image.dispname)
-			: data_row.emplace_back(rowloop_current_image.name);
-		images[i].dispdescription.c_str() != nullptr
-			? data_row.emplace_back(rowloop_current_image.dispdescription)
-			: data_row.emplace_back(rowloop_current_image.description);
+		data_row.emplace_back(rowloop_current_image.name);
+		data_row.emplace_back(rowloop_current_image.description);
+		data_row.emplace_back(rowloop_current_image.dispname);
+		data_row.emplace_back(rowloop_current_image.dispdescription);
 		time_t time = windows_time_to_unix_epoch(rowloop_current_image.lastmodificationtime);
-		data_row.emplace_back(std::ctime(&time));
+		tm_struct = localtime(&time);
+		std::strftime(timestamp, 20, "%Y-%m-%d %R", tm_struct);
+		data_row.emplace_back(timestamp);
 
 		if (images[i].containswindowsimage == false)
 			continue;
@@ -272,9 +277,11 @@ int WimPrivate::addFields_XML()
 	}	
 
 	static const char* const field_names[] = {
-		NOP_C_("RomData", "Index"),
+		NOP_C_("RomData", "#"),
 		NOP_C_("RomData", "Name"),
 		NOP_C_("RomData", "Description"),
+		NOP_C_("RomData", "Display Name"),
+		NOP_C_("RomData", "Display Desc."),
 		NOP_C_("RomData", "Last Modified"),
 		NOP_C_("RomData", "OS Version"),
 		NOP_C_("RomData", "Edition"),
@@ -409,15 +416,16 @@ int Wim::loadFieldData(void)
 		d->wimHeader.version.major_version = d->wimHeader.header[6];
 		d->wimHeader.version.minor_version = d->wimHeader.header[5];
 	}
-
-	snprintf(buffer, 8, "%d.%02d", d->wimHeader.version.major_version, d->wimHeader.version.minor_version);
-    d->fields.addField_string(C_("RomData", "WIM Version"), buffer, RomFields::STRF_TRIM_END);
+	// if the version number is 14, add an indicator that it is an ESD
+	d->wimHeader.version.minor_version == 14
+		? snprintf(buffer, 14, "%d.%02d (ESD)", d->wimHeader.version.major_version,
+			  d->wimHeader.version.minor_version)
+		: snprintf(
+			  buffer, 8, "%d.%02d", d->wimHeader.version.major_version, d->wimHeader.version.minor_version);
+	d->fields.addField_string(C_("RomData", "WIM Version"), buffer, RomFields::STRF_TRIM_END);
 
 	if (version_type != Wim113_014) 
-	{
-		d->fields.addField_string(C_("RomData", ""), "This WIM is currently not supported because its version is too low.", RomFields::STRF_TRIM_END);
 		return 0;
-	}
 
 	static const char* const wim_flag_names[] = {
 		nullptr,
