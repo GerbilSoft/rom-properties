@@ -147,7 +147,6 @@ int WimPrivate::addFields_XML()
 	// the xml inside wims are utf-16 but tinyxml only supports utf-8
 	// this means we have to do some conversion
 	std::string utf8_xml = LibRpText::utf16_to_utf8(reinterpret_cast<char16_t*>(xml_data), (int)((size / 2) + 1));
-	printf("%s\n", utf8_xml.c_str());
 	delete[] xml_data;
 
 	XMLDocument document;
