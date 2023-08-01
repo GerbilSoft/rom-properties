@@ -24,9 +24,9 @@ class XAttrReaderPrivate
 {
 	public:
 		explicit XAttrReaderPrivate(const char *filename);
-#if defined(_WIN32) && defined(_UNICODE)
+#if defined(_WIN32)
 		explicit XAttrReaderPrivate(const wchar_t *filename);
-#endif /* _WIN32 && _UNICODE */
+#endif /* _WIN32 */
 	private:
 		/**
 		 * Initialize attributes.
@@ -54,7 +54,6 @@ class XAttrReaderPrivate
 		int loadDosAttrs(void);
 
 #ifdef _WIN32
-#  ifdef _UNICODE
 		/**
 		 * Load generic xattrs, if available.
 		 * (POSIX xattr on Linux; ADS on Windows)
@@ -63,7 +62,6 @@ class XAttrReaderPrivate
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
 		int loadGenericXattrs_FindFirstStreamW(void);
-#  endif /* _UNICODE */
 
 		/**
 		 * Load generic xattrs, if available.

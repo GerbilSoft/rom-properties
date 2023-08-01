@@ -458,11 +458,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 				memcpy(lpszCopy, ts_out.data(), ts_out.size() * sizeof(TCHAR));
 				lpszCopy[ts_out.size()] = _T('\0');
 				GlobalUnlock(hglbCopy);
-#ifdef UNICODE
 				SetClipboardData(CF_UNICODETEXT, hglbCopy);
-#else /* !UNICODE */
-				SetClipboardData(CF_TEXT, hglbCopy);
-#endif /* UNICODE */
 			}
 			CloseClipboard();
 		}

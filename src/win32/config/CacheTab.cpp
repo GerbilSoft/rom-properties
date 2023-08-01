@@ -446,12 +446,6 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 	RP_EmptyVolumeCacheCallback *const pCallback = new RP_EmptyVolumeCacheCallback(hWndPropSheet);
 
 	// NOTE: IEmptyVolumeCache only supports Unicode strings.
-#ifdef UNICODE
-# define szDrivePathW szDrivePath
-#else /* !UNICODE */
-	wchar_t szDrivePathW[4] = L"X:\\";
-#endif /* UNICODE */
-
 	pCallback->m_baseProgress = 0;
 	unsigned int clearCount = 0;	// Number of drives actually cleared. (S_OK)
 	for (unsigned int bit = 0; bit < 26; bit++) {
@@ -463,8 +457,8 @@ int CacheTabPrivate::clearThumbnailCacheVista(void)
 		LPWSTR pwszDisplayName = nullptr;
 		LPWSTR pwszDescription = nullptr;
 		DWORD dwFlags = 0;
-		szDrivePathW[0] = L'A' + bit;
-		hr = pCleaner->Initialize(hKey.handle(), szDrivePathW,
+		szDrivePath[0] = L'A' + bit;
+		hr = pCleaner->Initialize(hKey.handle(), szDrivePath,
 			&pwszDisplayName, &pwszDescription, &dwFlags);
 
 		// Free the display name and description,

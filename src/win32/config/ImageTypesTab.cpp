@@ -565,7 +565,6 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 					}
 					break;
 
-#ifdef UNICODE
 				case NM_CLICK:
 				case NM_RETURN:
 					// SysLink control notification.
@@ -576,7 +575,6 @@ INT_PTR CALLBACK ImageTypesTabPrivate::dlgProc(HWND hDlg, UINT uMsg, WPARAM wPar
 						ShellExecute(nullptr, _T("open"), pNMLink->item.szUrl, nullptr, nullptr, SW_SHOW);
 					}
 					break;
-#endif /* UNICODE */
 
 				case PSN_SETACTIVE:
 					// Enable the "Defaults" button.

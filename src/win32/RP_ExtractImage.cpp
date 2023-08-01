@@ -293,17 +293,10 @@ IFACEMETHODIMP RP_ExtractImage::GetDateStamp(_Out_ FILETIME *pDateStamp)
 		return E_INVALIDARG;
 	}
 
-#ifdef UNICODE
-#  define tfilename (d->olefilename)
-#else
-	const string afilename = W2A(d->olefilename);
-#  define tfilename (afilename.c_str())
-#endif
-
 	// Open the file and get the last write time.
 	// NOTE: LibRpBase::FileSystem::get_mtime() exists,
 	// but its resolution is seconds, less than FILETIME.
-	HANDLE hFile = CreateFile(tfilename,
+	HANDLE hFile = CreateFile(d->olefilename,
 		GENERIC_READ, FILE_SHARE_READ, nullptr,
 		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if (!hFile) {

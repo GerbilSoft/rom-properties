@@ -440,15 +440,12 @@ int RP_ShellPropSheetExt_Private::initString(_In_ HWND hWndTab,
 		// TODO: With subtabs:
 		// - Verify behavior of LWS_TRANSPARENT.
 		// - Show below subtabs.
-#ifdef UNICODE
 		hDlgItem = CreateWindowEx(WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT | dwExStyleRTL,
 			WC_LINK, str_nl.c_str(),
 			WS_CHILD | WS_TABSTOP | WS_VISIBLE,
 			0, 0, 0, 0,	// will be adjusted afterwards
 			hWndTab, (HMENU)(INT_PTR)cId, nullptr, nullptr);
-		if (!hDlgItem)
-#endif /* UNICODE */
-		{
+		if (!hDlgItem) {
 			// Unable to create a SysLink control
 			// This might happen if this is an ANSI build
 			// or if we're running on Windows 2000.
@@ -2564,7 +2561,6 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 			}
 			break;
 
-#ifdef UNICODE
 		case NM_CLICK:
 		case NM_RETURN: {
 			// Check if this is a SysLink control.
@@ -2583,7 +2579,6 @@ INT_PTR RP_ShellPropSheetExt_Private::DlgProc_WM_NOTIFY(HWND hDlg, NMHDR *pHdr)
 			}
 			break;
 		}
-#endif /* UNICODE */
 
 		case TCN_SELCHANGE: {
 			// Tab change. Make sure this is the correct WC_TABCONTROL.

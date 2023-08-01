@@ -26,15 +26,7 @@
 #include "common.h"
 
 #ifdef _WIN32
-#  include <tchar.h>
-#  if defined(__cplusplus) && !defined(tstring)
-// NOTE: Can't use typedef due to std:: namespace.
-#    ifdef _UNICODE
-#      define tstring wstring
-#    else /* !_UNICODE */
-#      define tstring string
-#    endif /* _UNICODE */
-#  endif /* defined(__cplusplus) && !defined(tstring) */
+#  include "tcharx.h"
 #endif /* _WIN32 */
 
 #ifndef RP_WIS16

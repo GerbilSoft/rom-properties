@@ -32,7 +32,6 @@ SET(${PROJECT_NAME}_SRCS
 	ComBase.cpp
 	propsys_xp.c
 	userdirs.cpp
-	sdk/GUID_fn.c
 	)
 SET(${PROJECT_NAME}_H
 	RpWin32_sdk.h
@@ -47,7 +46,6 @@ SET(${PROJECT_NAME}_H
 	sdk/tsbase.h
 	sdk/windowsx_ts.h
 	sdk/commctrl_ts.h
-	sdk/GUID_fn.h
 	)
 
 ######################

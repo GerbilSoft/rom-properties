@@ -94,7 +94,6 @@
 
 // libwin32common C headers
 #include "libwin32common/w32time.h"
-#include "libwin32common/sdk/GUID_fn.h"
 // libwin32ui C headers
 #include "libwin32ui/HiDPI.h"
 
