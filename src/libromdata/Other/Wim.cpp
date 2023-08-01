@@ -53,13 +53,14 @@ class WimPrivate final : public RomDataPrivate
 		static const RomDataInfo romDataInfo;
 
 	public:
-		// ROM header.
+		// ROM header
 		WIM_Header wimHeader;
-		XMLDocument document;
-};
 
-static WIM_Version_Type version_type; 	// wims pre-1.13 - these are detected but won't 
-					// be read due to the format being different
+		// WIM version
+		// NOTE: WIMs pre-1.13 are being detected but won't
+		// be read due to the format being different.
+		WIM_Version_Type versionType;
+};
 
 ROMDATA_IMPL(Wim)
 
@@ -126,38 +127,42 @@ struct WimIndex {
 
 int WimPrivate::addFields_XML() 
 {
-	file->rewind();
+	if (!file || !file->isOpen()) {
+		return -EIO;
+	}
+
 	// the eighth byte of the "size" is used for flags so we have to AND it
 	const uint64_t size = (wimHeader.xml_resource.size & 0x00FFFFFFFFFFFFFF);
-	char* xml_data = new char[size+2];
+	if (size > 16U*1024*1024) {
+		// XML is larger than 16 MB, which doesn't make any sense.
+		return -ENOMEM;
+	}
+
+	// Read the WIM XML data.
+	char *xml_data = new char[size+2];
 	memset(xml_data, 0, size+2);
+	file->rewind();
 	file->seek(wimHeader.xml_resource.offset_of_xml); 
 	// if seek is invalid
-	if (file->tell() != (off64_t)wimHeader.xml_resource.offset_of_xml)
-		return 1;
+	if (file->tell() != (off64_t)wimHeader.xml_resource.offset_of_xml) {
+		return -EIO;
+	}
 
 	size_t bytes_read = file->read(xml_data, size);
-	
-	if (bytes_read != size) return 1;
-
-	if (size >= 0x7FFFFFFF) /* congrats, you have broken the utf8 converter */ return 2;
+	if (bytes_read != size) {
+		return -EIO;
+	}
 
 	// the xml inside wims are utf-16 but tinyxml only supports utf-8
 	// this means we have to do some conversion
 	std::string utf8_xml = LibRpText::utf16_to_utf8(reinterpret_cast<char16_t*>(xml_data), (int)((size / 2) + 1));
+	delete[] xml_data;
 
-	delete[](xml_data);
-#if TINYXML2_MAJOR_VERSION >= 2
-	document.Clear();
-#endif /* TINYXML2_MAJOR_VERSION >= 2 */
+	XMLDocument document;
 	int xerr = document.Parse(utf8_xml.c_str(), utf8_xml.size());
-	if (xerr != XML_SUCCESS)
-	{
-#if TINYXML2_MAJOR_VERSION >= 2
-		document.Clear();
-#endif /* TINYXML2_MAJOR_VERSION >= 2 */
+	if (xerr != XML_SUCCESS) {
 		return 3;
-	} 
+	}
 
 	const XMLElement *const wim_element = document.FirstChildElement("WIM");
 	if (!wim_element) {
@@ -319,6 +324,7 @@ int Wim::isRomSupported_static(const DetectInfo* info)
 	}
 
 	const WIM_Header* const wimData = reinterpret_cast<const WIM_Header*>(info->header.pData);
+	int ret = Wim_Unknown;
 
 	// TODO: WLPWM_MAGIC
 	if (memcmp(wimData->magic, MSWIM_MAGIC, 8) == 0) {
@@ -326,14 +332,16 @@ int Wim::isRomSupported_static(const DetectInfo* info)
 		// we do not necessarily need to check the
 		// major version because it is always 
 		// either 1 or 0 (in the case of esds)
-		wimData->version.minor_version >= 13 ? version_type = Wim113_014 : version_type = Wim109_112;
+		if (wimData->version.minor_version >= 13) {
+			ret = Wim113_014;
+		} else{ 
+			ret = Wim109_112;
+		}
 	} else if (memcmp(wimData->magic, "\x7E\0\0\0", 4) == 0) {
-		version_type = Wim107_108;
-	} else {
-		// not a wim
-		return -1;
+		ret = Wim107_108;
 	}
-	return 0;
+
+	return ret;
 }
 
 Wim::Wim(LibRpFile::IRpFile* file)
@@ -341,6 +349,7 @@ Wim::Wim(LibRpFile::IRpFile* file)
 {
 	RP_D(Wim);
 	d->mimeType = "application/x-ms-wim";
+	d->fileType = FileType::DiskImage;
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -363,12 +372,11 @@ Wim::Wim(LibRpFile::IRpFile* file)
 		nullptr,	// ext (not needed for Wim)
 		0		// szFile (not needed for Wim)
 	};
-	d->isValid = (isRomSupported_static(&info) >= 0);
-	d->fileType = FileType::DiskImage;
+	d->versionType = static_cast<WIM_Version_Type>(isRomSupported_static(&info));
 
+	d->isValid = ((int)d->versionType >= 0);
 	if (!d->isValid) {
 		UNREF_AND_NULL_NOCHK(d->file);
-		return;
 	}
 }
 
@@ -408,21 +416,26 @@ int Wim::loadFieldData(void)
 	d->fields.reserve(6);	// Maximum of 6 fields.
 	char buffer[32];
 
-	if (version_type == WIM_Version_Type::Wim107_108) {
+	if (d->versionType == WIM_Version_Type::Wim107_108) {
 		// the version offset is different so we have to get creative
 		d->wimHeader.version.major_version = d->wimHeader.magic[6];
 		d->wimHeader.version.minor_version = d->wimHeader.magic[5];
 	}
+
 	// if the version number is 14, add an indicator that it is an ESD
-	d->wimHeader.version.minor_version == 14
-		? snprintf(buffer, 14, "%u.%02u (ESD)", d->wimHeader.version.major_version,
-			  d->wimHeader.version.minor_version)
-		: snprintf(
-			  buffer, 8, "%u.%02u", d->wimHeader.version.major_version, d->wimHeader.version.minor_version);
+	if (d->wimHeader.version.minor_version == 14) {
+		snprintf(buffer, sizeof(buffer), "%u.%02u (ESD)",
+			d->wimHeader.version.major_version, d->wimHeader.version.minor_version);
+	} else {
+		snprintf(buffer, sizeof(buffer), "%u.%02u",
+			d->wimHeader.version.major_version, d->wimHeader.version.minor_version);
+	}
 	d->fields.addField_string(C_("RomData", "WIM Version"), buffer, RomFields::STRF_TRIM_END);
 
-	if (version_type != Wim113_014) 
+	if (d->versionType != Wim113_014) {
+		// The rest of the fields require Wim113_014 or later.
 		return 0;
+	}
 
 	static const char* const wim_flag_names[] = {
 		nullptr,
@@ -443,12 +456,9 @@ int Wim::loadFieldData(void)
 	int i;
 
 	// loop through each compression flag and test if it is set
-	for (i = compress_xpress; i <= compress_xpress2; i = i << 1) 
-	{
+	for (i = compress_xpress; i <= compress_xpress2; i = i << 1) {
 		if (wimflags & i)
-		{
 			break;
-		}
 	}
 
 	std::string compression_method;

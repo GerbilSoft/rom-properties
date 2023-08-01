@@ -44,9 +44,13 @@ typedef struct {
 ASSERT_STRUCT(WIM_Version, 0x4);
 
 typedef enum {
+	Wim_Unknown = -1,
+
 	Wim113_014 = 0,
 	Wim109_112 = 1,
 	Wim107_108 = 2,
+
+	Wim_Max
 } WIM_Version_Type;
 
 typedef enum {
