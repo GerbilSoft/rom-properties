@@ -1,3 +1,9 @@
+rom-properties (2.2.1-1ppa2~jammy2) jammy; urgency=medium
+
+  * Fix KF5 paths due to the use of JSON loading (but not ThumbnailCreator).
+
+ -- David Korth <gerbilsoft@gerbilsoft.com>  Mon, 31 Jul 2023 20:59:55 -0400
+
 rom-properties (2.2.1-1ppa2~jammy1) jammy; urgency=medium
 
   * Build for Ubuntu 22.04 "Jammy" Jellyfish.
