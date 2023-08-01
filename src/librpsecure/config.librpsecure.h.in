@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpsecure)                      *
  * config.librpsecure.h.in: librpsecure configuration. (source file)       *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPSECURE_CONFIG_H__
-#define __ROMPROPERTIES_LIBRPSECURE_CONFIG_H__
+#pragma once
 
 /* Define to 1 if you have the OpenBSD 5.8 `tame` function. */
 #cmakedefine HAVE_TAME 1
@@ -23,5 +22,3 @@
 
 /* Define to 1 to enable extra security functionality. */
 #cmakedefine ENABLE_EXTRA_SECURITY 1
-
-#endif /* __ROMPROPERTIES_LIBRPSECURE_CONFIG_H__ */

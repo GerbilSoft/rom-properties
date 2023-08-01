@@ -340,7 +340,10 @@ void IDownloader::createUserAgent(void)
 	m_userAgent = _T("rom-properties/") _T(RP_VERSION_STRING);
 
 	// CPU
-#if defined(_M_ARM64) || defined(__aarch64__)
+#if defined(_M_ARM64EC)
+#  define CPU "ARM64EC"
+#  define MAC_CPU "ARM64EC"
+#elif defined(_M_ARM64) || defined(__aarch64__)
 #  define CPU "ARM64"
 #  define MAC_CPU "ARM64"
 #elif defined(_M_ARM) || defined(__arm__)

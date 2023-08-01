@@ -131,8 +131,16 @@ IF "%CMAKE64_GENERATOR%" == "" (
 	EXIT /B 1
 )
 ECHO Using the following MSVC versions for packaging:
-ECHO - i386:  MSVC %MSVC32_YEAR% (%MSVC32_VERSION%)
-ECHO - amd64: MSVC %MSVC64_YEAR% (%MSVC64_VERSION%)
+ECHO - i386:    MSVC %MSVC32_YEAR% (%MSVC32_VERSION%)
+ECHO - amd64:   MSVC %MSVC64_YEAR% (%MSVC64_VERSION%)
+SET MSG_ARM=not building; requires MSVC 2019 or later
+SET MSG_ARM64EC=not building; requires MSVC 2022 or later
+IF "%MSVC64_YEAR%" == "2019" SET MSG_ARM=MSVC %MSVC64_YEAR% (%MSVC64_VERSION%)
+IF "%MSVC64_YEAR%" == "2022" SET MSG_ARM=MSVC %MSVC64_YEAR% (%MSVC64_VERSION%)
+IF "%MSVC64_YEAR%" == "2022" SET MSG_ARM64EC=MSVC %MSVC64_YEAR% (%MSVC64_VERSION%)
+ECHO - arm:     %MSG_ARM%
+ECHO - arm64:   %MSG_ARM%
+ECHO - arm64ec: %MSG_ARM64EC%
 ECHO.
 
 :: MSVC 2017+ uses a different directory layout.
@@ -199,7 +207,7 @@ IF NOT DEFINED FOUND (
 	PAUSE
 	EXIT /B 1
 )
-FOR %%X IN (unzip.exe) do (set FOUND=%%~$PATH:X)
+FOR %%X IN (unzip.exe) DO (SET FOUND=%%~$PATH:X)
 IF NOT DEFINED FOUND (
 	ECHO *** ERROR: unzip.exe was not found in PATH.
 	ECHO Please download Info-ZIP from http://www.info-zip.org/
@@ -214,12 +222,10 @@ CMD /C "EXIT /B 0"
 
 :: Clear the packaging prefix.
 ECHO Clearing the pkg_windows directory...
-RMDIR /S /Q pkg_windows
-@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
-MKDIR pkg_windows
-@IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
+MKDIR pkg_windows 2>NUL
 CHDIR pkg_windows
 @IF ERRORLEVEL 1 EXIT /B %ERRORLEVEL%
+FOR /D %%A IN (*) DO (RMDIR /S /Q "%%A")
 
 :: Compile the i386 version.
 ECHO.

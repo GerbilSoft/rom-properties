@@ -2,14 +2,14 @@
  * ROM Properties Page shell extension.                                    *
  * config.libc.h.in: Common libc function detection. (source file)         *
  *                                                                         *
- * Copyright (c) 2016-2017 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #pragma once
 
-#ifndef __ROMPROPERTIES_CONFIG_LIBC_H__
-#define __ROMPROPERTIES_CONFIG_LIBC_H__
+// needed by c++11-compat.h
+#define __ROMPROPERTIES_CONFIG_LIBC_H__ 1
 
 /* Define to the size of `off_t` if it's available. */
 #cmakedefine SIZEOF_OFF_T @OFF_T@
@@ -62,5 +62,3 @@
 
 /* Define to 1 if you have the `memalign` function. */
 #cmakedefine HAVE_MEMALIGN 1
-
-#endif /* __ROMPROPERTIES_CONFIG_LIBC_H__ */

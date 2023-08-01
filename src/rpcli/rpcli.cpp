@@ -197,6 +197,7 @@ static void ExtractImages(const RomData *romData, vector<ExtractParam>& extract)
 static void DoFile(const char *filename, bool json, vector<ExtractParam>& extract,
 	uint32_t lc = 0, unsigned int flags = 0)
 {
+	printf("\n\nDoFile(): %s\n\n", filename);
 	cerr << "== " << rp_sprintf(C_("rpcli", "Reading file '%s'..."), filename) << endl;
 	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
 	if (file->isOpen()) {
@@ -347,6 +348,11 @@ int RP_C_API main(int argc, char *argv[])
 
 	// Set the C and C++ locales.
 	locale::global(locale(""));
+#ifdef _WIN32
+	// NOTE: Revert LC_CTYPE to "C" to fix UTF-8 output.
+	// (Needed for MSVC 2022; does nothing for MinGW-w64 11.0.0)
+	setlocale(LC_CTYPE, "C");
+#endif /* _WIN32 */
 
 #ifdef RP_LIBROMDATA_IS_DLL
 #  ifdef _MSC_VER

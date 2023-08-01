@@ -15,7 +15,7 @@
 /* NOTE: MinGW-w64 v5.0.3 has ProcessDynamicCodePolicy
  * defined as ProcessReserved1MitigationPolicy. */
 #if defined(__GNUC__) && defined(__MINGW64_VERSION_MAJOR) && __MINGW64_VERSION_MAJOR < 6
-# define ProcessDynamicCodePolicy ProcessReserved1MitigationPolicy
+#  define ProcessDynamicCodePolicy ProcessReserved1MitigationPolicy
 #endif
 
 /**

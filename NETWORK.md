@@ -47,7 +47,7 @@ or deleted.
 * [https://art.gametdb.com/](https://gametdb.com/) - Box, cover, and media scans for Nintendo
   GameCube, Wii, Wii U, DS, and 3DS games.
 * https://amiibo.life/ - Images of Nintendo amiibo products.
-* https://rpdb.gerbilsoft.com/ - Title screen images for the following
+* https://rpdb.gerbilsoft.com/ - External images for the following
   systems:
   * Commodore 64/128 (cartridges)
   * Neo Geo Pocket (Color)

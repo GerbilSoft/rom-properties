@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (Win32)                            *
  * config.win32.h.in: Win32 configuration. (source file)                   *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_WIN32_CONFIG_H__
-#define __ROMPROPERTIES_WIN32_CONFIG_H__
+#pragma once
 
 // FIXME: Overlay icon handler is crashing in some cases.
 // Uncomment this to enable the overlay icon handler.
@@ -24,5 +23,3 @@
 
 /* Define to 1 if achievements are enabled. */
 #cmakedefine ENABLE_ACHIEVEMENTS 1
-
-#endif /* __ROMPROPERTIES_WIN32_CONFIG_H__ */

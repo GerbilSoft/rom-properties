@@ -25,6 +25,9 @@ GtkWidget	*rp_drag_image_new		(void) G_GNUC_MALLOC;
 void rp_drag_image_get_minimum_image_size(RpDragImage *image, int *width, int *height);
 void rp_drag_image_set_minimum_image_size(RpDragImage *image, int width, int height);
 
+bool rp_drag_image_get_ecks_bawks(RpDragImage *image);
+void rp_drag_image_set_ecks_bawks(RpDragImage *image, bool new_ecks_bawks);
+
 G_END_DECLS
 
 #ifdef __cplusplus

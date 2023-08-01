@@ -28,7 +28,7 @@ FOREACH(_lingua ${LINGUAS})
 	SET(_poFile ${CMAKE_CURRENT_SOURCE_DIR}/${_lingua}.po)
 
 	ADD_CUSTOM_COMMAND(OUTPUT ${_gmoFile}
-		COMMAND ${GETTEXT_MSGFMT_EXECUTABLE} -o ${_gmoFile} ${_poFile}
+		COMMAND ${GETTEXT_MSGFMT_EXECUTABLE} -c -o ${_gmoFile} ${_poFile}
 		DEPENDS ${_poFile}
 		)
 	SET(_gmoFiles ${_gmoFiles} ${_gmoFile})

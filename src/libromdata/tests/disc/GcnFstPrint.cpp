@@ -55,6 +55,11 @@ int RP_C_API main(int argc, char *argv[])
 
 	// Set the C and C++ locales.
 	locale::global(locale(""));
+#ifdef _WIN32
+	// NOTE: Revert LC_CTYPE to "C" to fix UTF-8 output.
+	// (Needed for MSVC 2022; does nothing for MinGW-w64 11.0.0)
+	setlocale(LC_CTYPE, "C");
+#endif /* _WIN32 */
 
 	// Initialize i18n.
 	rp_i18n_init();

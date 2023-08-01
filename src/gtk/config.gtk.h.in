@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (GTK common)                       *
  * config.gtk.h.in: GTK common frontend configuration. (source file)       *
  *                                                                         *
- * Copyright (c) 2017-2021 by David Korth.                                 *
+ * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_GTK_CONFIG_H__
-#define __ROMPROPERTIES_GTK_CONFIG_H__
+#pragma once
 
 /* Define to 1 if you have the `dlvsym` function. */
 #cmakedefine HAVE_DLVSYM 1
@@ -31,5 +30,3 @@
 
 /* Define to 1 if achievements are enabled. */
 #cmakedefine ENABLE_ACHIEVEMENTS 1
-
-#endif /* __ROMPROPERTIES_GTK_CONFIG_H__ */

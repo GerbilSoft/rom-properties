@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librptexture)                     *
  * config.librptexture.h.in: LibRpTexture configuration. (source file)     *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPTEXTURE_CONFIG_H__
-#define __ROMPROPERTIES_LIBRPTEXTURE_CONFIG_H__
+#pragma once
 
 /* Define to 1 if librpbase RomFields support should be enabled. */
 #define ENABLE_LIBRPBASE_ROMFIELDS 1
@@ -17,5 +16,3 @@
 
 /* Define to 1 if ASTC decompression should be enabled. */
 #cmakedefine ENABLE_ASTC 1
-
-#endif /* __ROMPROPERTIES_LIBRPTEXTURE_CONFIG_H__ */

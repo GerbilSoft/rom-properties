@@ -8,8 +8,7 @@
 
 #pragma once
 
-#ifndef __ROMPROPERTIES_LIBRPSECURE_WIN32_SECOPTIONS_H__
-#define __ROMPROPERTIES_LIBRPSECURE_WIN32_SECOPTIONS_H__
+#define __ROMPROPERTIES_LIBRPSECURE_WIN32_SECOPTIONS_H__ 1
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,5 +25,3 @@ int rp_secure_win32_secoptions_init(int bHighSec);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ROMPROPERTIES_LIBRPSECURE_WIN32_SECOPTIONS_H__ */

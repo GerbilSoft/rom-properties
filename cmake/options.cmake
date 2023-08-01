@@ -136,7 +136,13 @@ IF(ENABLE_COVERAGE)
 ENDIF(ENABLE_COVERAGE)
 
 # Enable NLS. (internationalization)
-OPTION(ENABLE_NLS "Enable NLS using gettext for localized messages." ON)
+IF(NOT WIN32 OR NOT MSVC)
+	OPTION(ENABLE_NLS "Enable NLS using gettext for localized messages." ON)
+ELSEIF(MSVC AND _MSVC_C_ARCHITECTURE_FAMILY MATCHES "^([iI]?[xX3]86)|([xX]64)$")
+	OPTION(ENABLE_NLS "Enable NLS using gettext for localized messages." ON)
+ELSE()
+	SET(ENABLE_NLS OFF CACHE INTERNAL "Enable NLS using gettext for localized messages." FORCE)
+ENDIF()
 
 IF(WIN32 AND MSVC)
 	# Enable compatibility with older Windows.

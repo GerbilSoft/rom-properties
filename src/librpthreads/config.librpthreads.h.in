@@ -2,17 +2,14 @@
  * ROM Properties Page shell extension. (librpthreads)                     *
  * config.librpthreads.h.in: librpthreads configuration. (source file)     *
  *                                                                         *
- * Copyright (c) 2016-2019 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPTHREADS_CONFIG_H__
-#define __ROMPROPERTIES_LIBRPTHREADS_CONFIG_H__
+#pragma once
 
 /* Define to 1 if the system uses Win32 threads. */
 #cmakedefine HAVE_WIN32_THREADS 1
 
 /* Define to 1 if the system uses POSIX threads. */
 #cmakedefine HAVE_PTHREADS 1
-
-#endif /* __ROMPROPERTIES_LIBRPTHREADS_CONFIG_H__ */

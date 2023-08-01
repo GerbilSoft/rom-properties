@@ -54,37 +54,39 @@
 
 class RP_LIBROMDATA_PUBLIC RefBase
 {
-	protected:
-		RefBase() : m_ref_cnt(1) { }
-		virtual ~RefBase() = default;
+protected:
+	RefBase()
+		: m_ref_cnt(1)
+	{}
+	virtual ~RefBase() = default;
 
-	public:
-		/**
-		 * Take a reference to this object.
-		 * @return this
-		 */
-		template<class T>
-		inline T *ref(void)
-		{
-			ATOMIC_INC_FETCH(&m_ref_cnt);
-			return static_cast<T*>(this);
+public:
+	/**
+	 * Take a reference to this object.
+	 * @return this
+	 */
+	template<class T>
+	inline T *ref(void)
+	{
+		ATOMIC_INC_FETCH(&m_ref_cnt);
+		return static_cast<T*>(this);
+	}
+
+	/**
+	 * Unreference this object.
+	 * If ref_cnt reaches 0, the object is deleted.
+	 */
+	void unref(void)
+	{
+		assert(m_ref_cnt > 0);
+		if (ATOMIC_DEC_FETCH(&m_ref_cnt) <= 0) {
+			// All references removed.
+			delete this;
 		}
+	}
 
-		/**
-		 * Unreference this object.
-		 * If ref_cnt reaches 0, the object is deleted.
-		 */
-		void unref(void)
-		{
-			assert(m_ref_cnt > 0);
-			if (ATOMIC_DEC_FETCH(&m_ref_cnt) <= 0) {
-				// All references removed.
-				delete this;
-			}
-		}
-
-	private:
-		volatile int m_ref_cnt;
+private:
+	volatile int m_ref_cnt;
 };
 
 /**
@@ -95,61 +97,69 @@ class RP_LIBROMDATA_PUBLIC RefBase
 template<class T>
 class unique_RefBase
 {
-	public:
-		inline explicit unique_RefBase(T *refBase)
-			: m_refBase(refBase)
-		{
-			static_assert(std::is_base_of<RefBase, T>::value,
-				"unique_RefBase<> only supports RefBase subclasses");
-		}
+public:
+	inline explicit unique_RefBase(T *refBase)
+		: m_refBase(refBase)
+	{
+		static_assert(std::is_base_of<RefBase, T>::value, "unique_RefBase<> only supports RefBase subclasses");
+	}
 
-		inline ~unique_RefBase()
-		{
-			UNREF(m_refBase);
-		}
+	inline ~unique_RefBase()
+	{
+		UNREF(m_refBase);
+	}
 
-		/**
-		 * Get the RefBase*.
-		 * @return RefBase*
-		 */
-		inline T *get(void) { return m_refBase; }
+	/**
+	 * Get the RefBase*.
+	 * @return RefBase*
+	 */
+	inline T *get(void)
+	{
+		return m_refBase;
+	}
 
-		/**
-		 * Release the IRpFile*.
-		 * This class will reset its pointer to nullptr,
-		 * and won't unref() the IRpFile* on destruction.
-		 * @return IRpFile*
-		 */
-		inline T *release(void)
-		{
-			T *const ptr = m_refBase;
-			m_refBase = nullptr;
-			return ptr;
-		}
+	/**
+	 * Release the IRpFile*.
+	 * This class will reset its pointer to nullptr,
+	 * and won't unref() the IRpFile* on destruction.
+	 * @return IRpFile*
+	 */
+	inline T *release(void)
+	{
+		T *const ptr = m_refBase;
+		m_refBase = nullptr;
+		return ptr;
+	}
 
-		/**
-		 * Dereference the RefBase*.
-		 * @return RefBase*
-		 */
-		inline T *operator->(void) const { return m_refBase; }
+	/**
+	 * Dereference the RefBase*.
+	 * @return RefBase*
+	 */
+	inline T *operator->(void) const
+	{
+		return m_refBase;
+	}
 
-		/**
-		 * Is the RefBase* valid or nullptr?
-		 * @return True if valid; false if nullptr.
-		 */
-		operator bool(void) const { return (m_refBase != nullptr); }
+	/**
+	 * Is the RefBase* valid or nullptr?
+	 * @return True if valid; false if nullptr.
+	 */
+	operator bool(void) const
+	{
+		return (m_refBase != nullptr);
+	}
 
-		// Disable copy/assignment constructors.
+	// Disable copy/assignment constructors.
 #if __cplusplus >= 201103L
-	public:
-		unique_RefBase(const unique_RefBase &) = delete;
-		unique_RefBase &operator=(const unique_RefBase &) = delete;
+public:
+	unique_RefBase(const unique_RefBase &) = delete;
+	unique_RefBase &operator=(const unique_RefBase &) = delete;
 #else
-	private:
-		unique_RefBase(const unique_RefBase &);
-		unique_RefBase &operator=(const unique_RefBase &);
+private:
+	unique_RefBase(const unique_RefBase &);
+	unique_RefBase &operator=(const unique_RefBase &);
 #endif
 
-	private:
-		T *m_refBase;
+private:
+	T *m_refBase;
 };

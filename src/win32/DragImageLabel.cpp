@@ -42,17 +42,20 @@ class DragImageLabelPrivate
 	public:
 		HWND hwndParent;
 
-		// Position.
+		// Position
 		POINT position;
 
-		// Icon sizes.
+		// Icon sizes
 		SIZE requiredSize;	// Required size.
 		SIZE actualSize;	// Actual size.
 
-		// Calculated RECT based on position and size.
+		// Calculated RECT based on position and size
 		RECT rect;
 
-		// rp_image. (NOTE: Not owned by this object.)
+		bool ecksBawks;
+		HMENU hMenuEcksBawks;
+
+		// rp_image (NOTE: Not owned by this object.)
 		const LibRpTexture::rp_image *img;
 		HBITMAP hbmpImg;	// for non-animated only
 
@@ -126,6 +129,8 @@ class DragImageLabelPrivate
 
 DragImageLabelPrivate::DragImageLabelPrivate(HWND hwndParent)
 	: hwndParent(hwndParent)
+	, ecksBawks(false)
+	, hMenuEcksBawks(nullptr)
 	, img(nullptr)
 	, hbmpImg(nullptr)
 	, anim(nullptr)
@@ -152,6 +157,10 @@ DragImageLabelPrivate::~DragImageLabelPrivate()
 
 	if (hbmpImg) {
 		DeleteBitmap(hbmpImg);
+	}
+
+	if (hMenuEcksBawks) {
+		DestroyMenu(hMenuEcksBawks);
 	}
 }
 
@@ -424,6 +433,66 @@ void DragImageLabel::setPosition(int x, int y)
 		d->position.x = x;
 		d->position.y = y;
 		d->updateRect();
+	}
+}
+
+bool DragImageLabel::ecksBawks(void) const
+{
+	RP_D(const DragImageLabel);
+	return d->ecksBawks;
+}
+
+void DragImageLabel::setEcksBawks(bool newEcksBawks)
+{
+	RP_D(DragImageLabel);
+	d->ecksBawks = newEcksBawks;
+	if (d->ecksBawks && d->hMenuEcksBawks) {
+		// Already created the Ecks Bawks menu.
+		return;
+	}
+
+	d->hMenuEcksBawks = CreatePopupMenu();
+	AppendMenu(d->hMenuEcksBawks, MF_STRING, IDM_ECKS_BAWKS_MENU_BASE + 1,
+		_T("ermahgerd! an ecks bawks ISO!"));
+	AppendMenu(d->hMenuEcksBawks, MF_STRING, IDM_ECKS_BAWKS_MENU_BASE + 2,
+		_T("Yar, har, fiddle dee dee"));
+}
+
+void DragImageLabel::tryPopupEcksBawks(LPARAM lParam)
+{
+	RP_D(const DragImageLabel);
+	if (!d->ecksBawks || !d->hMenuEcksBawks)
+		return;
+
+	POINT pt = { LOWORD(lParam), HIWORD(lParam) };
+	if (!PtInRect(&d->rect, pt))
+		return;
+
+	// Convert from local coordinates to screen coordinates.
+	MapWindowPoints(d->hwndParent, HWND_DESKTOP, &pt, 1);
+
+	int id = TrackPopupMenu(d->hMenuEcksBawks,
+		TPM_LEFTALIGN | TPM_TOPALIGN | TPM_VERNEGANIMATION |
+			TPM_NONOTIFY | TPM_RETURNCMD,
+		pt.x, pt.y, 0, d->hwndParent, nullptr);
+
+	LPCTSTR url = nullptr;
+	switch (id) {
+		default:
+			assert(!"Invalid ecksbawks URL ID.");
+			break;
+		case 0:		// No item selected
+			break;
+		case IDM_ECKS_BAWKS_MENU_BASE + 1:
+			url = _T("https://twitter.com/DeaThProj/status/1684469412978458624");
+			break;
+		case IDM_ECKS_BAWKS_MENU_BASE + 2:
+			url = _T("https://github.com/xenia-canary/xenia-canary/pull/180");
+			break;
+	}
+
+	if (url) {
+		ShellExecute(nullptr, _T("open"), url, nullptr, nullptr, SW_SHOW);
 	}
 }
 

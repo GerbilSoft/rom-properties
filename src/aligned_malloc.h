@@ -43,7 +43,7 @@
 #if defined(_MSC_VER)
 #  define ALIGN_ATTR(x) __declspec(align(x))
 #elif defined(__GNUC__)
-#  define ALIGN_ATTR(x) __attribute__((aligned (x)))
+#  define ALIGN_ATTR(x) __attribute__((aligned(x)))
 #else
 #  error Missing ALIGN_ATTR() implementation for this compiler.
 #endif
@@ -128,7 +128,8 @@ static FORCEINLINE void aligned_free(void *memptr)
 // NOTE: MSVC 2010 doesn't support "template using".
 // TODO: Check 2012; assuming 2013+ for now.
 #if !defined(_MSC_VER) || _MSC_VER >= 1800
-template<class T> using unique_ptr_aligned = std::unique_ptr<T, decltype(&aligned_free)>;
+template<class T>
+using unique_ptr_aligned = std::unique_ptr<T, decltype(&aligned_free)>;
 #  define UNIQUE_PTR_ALIGNED(T) unique_ptr_aligned<T>
 #else /* _MSC_VER < 1900 */
 #  define UNIQUE_PTR_ALIGNED(T) std::unique_ptr<T, decltype(&aligned_free)>
@@ -142,9 +143,7 @@ template<class T> using unique_ptr_aligned = std::unique_ptr<T, decltype(&aligne
 template<class T>
 static inline UNIQUE_PTR_ALIGNED(T) aligned_uptr(size_t align, size_t size)
 {
-	return UNIQUE_PTR_ALIGNED(T)(
-		static_cast<T*>(aligned_malloc(align, size * sizeof(T))),
-		&aligned_free);
+	return UNIQUE_PTR_ALIGNED(T)(static_cast<T*>(aligned_malloc(align, size * sizeof(T))), &aligned_free);
 }
 
 #endif /* __cplusplus */

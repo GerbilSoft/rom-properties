@@ -43,32 +43,25 @@ FOREACH(FLAG_TEST "/sdl" "/guard:cf" "/utf-8")
 	IF(CFLAG_${FLAG_TEST_VARNAME})
 		SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} ${FLAG_TEST}")
 		SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} ${FLAG_TEST}")
+		# "/guard:cf" must be added to linker flags in addition to CFLAGS.
+		IF(FLAG_TEST STREQUAL "/guard:cf")
+			SET(RP_EXE_LINKER_FLAGS_COMMON "${RP_EXE_LINKER_FLAGS_COMMON} ${FLAG_TEST}")
+			SET(RP_SHARED_LINKER_FLAGS_COMMON "${RP_SHARED_LINKER_FLAGS_COMMON} ${FLAG_TEST}")
+			SET(RP_MODULE_LINKER_FLAGS_COMMON "${RP_MODULE_LINKER_FLAGS_COMMON} ${FLAG_TEST}")
+		ENDIF(FLAG_TEST STREQUAL "/guard:cf")
 	ENDIF(CFLAG_${FLAG_TEST_VARNAME})
 	UNSET(CFLAG_${FLAG_TEST_VARNAME})
 ENDFOREACH()
-
-# "/guard:cf" must be added to linker flags in addition to CFLAGS.
-CHECK_C_COMPILER_FLAG("/guard:cf" CFLAG__guard_cf)
-IF(CFLAG_guard_cf)
-	SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} /guard:cf")
-	SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /guard:cf")
-	SET(RP_EXE_LINKER_FLAGS_COMMON "${RP_EXE_LINKER_FLAGS_COMMON} /guard:cf")
-	SET(RP_SHARED_LINKER_FLAGS_COMMON "${RP_SHARED_LINKER_FLAGS_COMMON} /guard:cf")
-	SET(RP_MODULE_LINKER_FLAGS_COMMON "${RP_MODULE_LINKER_FLAGS_COMMON} /guard:cf")
-ENDIF(CFLAG_guard_cf)
-UNSET(CFLAG_guard_cf)
 
 # MSVC 2019: Enable /CETCOMPAT.
 # NOTE: i386/amd64 only. (last checked in MSVC 2022 [17.0])
 # - LINK : fatal error LNK1246: '/CETCOMPAT' not compatible with 'ARM' target machine; link without '/CETCOMPAT'
 # - LINK : fatal error LNK1246: '/CETCOMPAT' not compatible with 'ARM64' target machine; link without '/CETCOMPAT'
-IF(MSVC_VERSION GREATER 1919)
-	IF(_MSVC_C_ARCHITECTURE_FAMILY MATCHES "^([iI]?[xX3]86)|([xX]64)$")
+IF(MSVC_VERSION GREATER 1919 AND _MSVC_C_ARCHITECTURE_FAMILY MATCHES "^([iI]?[xX3]86)|([xX]64)$")
 		SET(RP_EXE_LINKER_FLAGS_COMMON "${RP_EXE_LINKER_FLAGS_COMMON} /CETCOMPAT")
 		SET(RP_SHARED_LINKER_FLAGS_COMMON "${RP_SHARED_LINKER_FLAGS_COMMON} /CETCOMPAT")
 		SET(RP_MODULE_LINKER_FLAGS_COMMON "${RP_MODULE_LINKER_FLAGS_COMMON} /CETCOMPAT")
-	ENDIF(_MSVC_C_ARCHITECTURE_FAMILY MATCHES "^([iI]?[xX3]86)|([xX]64)$")
-ENDIF(MSVC_VERSION GREATER 1919)
+ENDIF()
 
 # MSVC: C/C++ conformance settings
 FOREACH(FLAG_TEST "/Zc:wchar_t" "/Zc:inline")
@@ -105,11 +98,11 @@ ENDFOREACH()
 # NOTE: "/Zc:throwingNew" was added in MSVC 2015.
 IF(NOT CMAKE_CXX_COMPILER_ID STREQUAL Clang)
 	INCLUDE(CheckCXXCompilerFlag)
-	CHECK_CXX_COMPILER_FLAG("/Zc:throwingNew" CXXFLAG_Zc_throwingNew)
-	IF(CXXFLAG_Zc_throwingNew)
+	CHECK_CXX_COMPILER_FLAG("/Zc:throwingNew" CXXFLAG__Zc_throwingNew)
+	IF(CXXFLAG__Zc_throwingNew)
 		SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /Zc:throwingNew")
-	ENDIF(CXXFLAG_Zc_throwingNew)
-	UNSET(CXXFLAG_Zc_throwingNew)
+	ENDIF(CXXFLAG__Zc_throwingNew)
+	UNSET(CXXFLAG__Zc_throwingNew)
 ENDIF(NOT CMAKE_CXX_COMPILER_ID STREQUAL Clang)
 
 # Disable warning C4996 (deprecated), then re-enable it.
@@ -118,8 +111,11 @@ SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} /wd4996 /w34996")
 SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /wd4996 /w34996")
 
 # MSVC 2015 uses thread-safe statics by default.
-# This doesn't work on XP, so disable it.
-IF(MSVC_VERSION GREATER 1899)
+# This doesn't work on Windows XP, so disable it.
+# NOTE: Only for i386; enabling elsewhere because we aren't
+# supporting 64-bit XP, and XP wasn't available for ARM.
+IF(MSVC_VERSION GREATER 1899 AND _MSVC_C_ARCHITECTURE_FAMILY MATCHES "^[iI]?[xX3]86$")
+	MESSAGE(STATUS "MSVC: Disabling thread-safe statics for 32-bit Windows XP compatibility")
 	SET(RP_C_FLAGS_COMMON   "${RP_C_FLAGS_COMMON} /Zc:threadSafeInit-")
 	SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /Zc:threadSafeInit-")
 ENDIF()

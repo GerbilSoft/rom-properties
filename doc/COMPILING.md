@@ -103,9 +103,8 @@ the directory above the top-level source directory.
 ## Windows
 
 The Windows version requires one of the following compilers: (minimum versions)
-* Microsoft Visual C++ 2012 with the Windows 7 SDK
-  * For test suites, MSVC 2015 or later is required.
-* gcc-4.5 with MinGW-w64
+* Microsoft Visual C++ 2015 with the Windows 7 SDK
+* gcc-4.8 with MinGW-w64
   * The MinGW build is currently somewhat broken, so MSVC is preferred.
     (The property page icon doesn't show up sometimes for Nintendo DS
      ROMs, and XP theming doesn't work because MinGW-w64 doesn't support
@@ -117,7 +116,7 @@ project uses the CMake build system.
 Clone the repository, then open an MSVC or MinGW command prompt and run the
 following commands from your rom-properties repository directory:
 
-MSVC 2010-2017:
+MSVC 2015-2017:
 ```
 mkdir build
 cd build
@@ -125,10 +124,9 @@ cmake .. -G "Visual Studio 15 2017 Win64"
 cmake --build . --config Release
 ```
 
-Replace "Visual Studio 15 2017" with the version of Visual Studio you have
-installed. Leave out "Win64" to build a 32-bit version.
+Leave out "Win64" to build a 32-bit version.
 
-MSVC 2019:
+MSVC 2019 or later:
 ```
 mkdir build
 cd build
@@ -136,7 +134,9 @@ cmake .. -G "Visual Studio 16 2019" -A "x64"
 cmake --build . --config Release
 ```
 
-Replace "x64" with "Win32" to build a 32-bit version.
+Replace "Visual Studio 16 2019" with the version of Visual Studio you have
+installed. Replace "x64" with "Win32" to build a 32-bit version, or "arm",
+"arm64", or "arm64ec" for the various Windows on ARM ABIs.
 
 After building, you will need to run `regsvr32 rom-properties.dll` from
 the `build\bin\Release` directory as Administrator.
@@ -157,9 +157,9 @@ that can be used to build the two distribution packages:
 * rom-properties-[version]-windows.zip: Standard distribution.
 * rom-properties-[version]-windows.debug.zip: PDB files.
 
-The script uses the installed version of MSVC (2010, 2012, 2013, 2015, or
-2017) to build both 32-bit and 64-bit versions of the ROM Properties Page
-shell extension, and then it packages everything together.
+The script uses the installed version of MSVC (2015, 2017, 2019, or 2022)
+to build both 32-bit and 64-bit versions of the ROM Properties Page shell
+extension, and then it packages everything together.
 
 You must have CMake and Info-ZIP's zip.exe and unzip.exe in your path.
 * CMake: https://cmake.org/download/

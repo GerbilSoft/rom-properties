@@ -501,6 +501,7 @@ int WonderSwan::loadFieldData(void)
 		d->fields.addField_string(save_memory_title, C_("WonderSwan|SaveMemory", "None"));
 	} else if (romFooter->save_type < ARRAY_SIZE(sram_size_tbl)) {
 		d->fields.addField_string(save_memory_title,
+			// tr: Parameter 2 indicates the save type, e.g. "SRAM" or "EEPROM".
 			rp_sprintf_p(C_("WonderSwan|SaveMemory", "%1$u KiB (%2$s)"),
 				sram_size_tbl[romFooter->save_type],
 				C_("WonderSwan|SaveMemory", "SRAM")));
@@ -518,9 +519,11 @@ int WonderSwan::loadFieldData(void)
 		} else {
 			const char *fmtstr;
 			if (eeprom_bytes >= 1024) {
+				// tr: Parameter 2 indicates the save type, e.g. "SRAM" or "EEPROM".
 				fmtstr = C_("WonderSwan|SaveMemory", "%1$u KiB (%2$s)");
 				eeprom_bytes /= 1024;
 			} else {
+				// tr: Parameter 2 indicates the save type, e.g. "SRAM" or "EEPROM".
 				fmtstr = C_("WonderSwan|SaveMemory", "%1$u bytes (%2$s)");
 			}
 			d->fields.addField_string(save_memory_title,

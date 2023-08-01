@@ -18,18 +18,20 @@ namespace LibRpTexture {
 #include "librpbase/img/IconAnimData.hpp"
 #include "librpbase/img/IconAnimHelper.hpp"
 
-// C++ includes.
+// C++ includes
 #include <array>
 
-// Qt includes.
+// Qt includes
 #include <QtCore/QTimer>
 #include <QLabel>
+#include <QMenu>
 
 class DragImageLabel : public QLabel
 {
 	Q_OBJECT
 
 	Q_PROPERTY(QSize minimumImageSize READ minimumImageSize WRITE setMinimumImageSize)
+	Q_PROPERTY(bool ecksBawks READ ecksBawks WRITE setEcksBawks)
 
 	// TODO: Adjust minimum image size based on DPI.
 #define DIL_MIN_IMAGE_SIZE 32
@@ -56,6 +58,12 @@ class DragImageLabel : public QLabel
 				updatePixmaps();
 			}
 		}
+
+		bool ecksBawks(void) const
+		{
+			return m_ecksBawks;
+		}
+		void setEcksBawks(bool newEcksBawks);
 
 		/**
 		 * Set the rp_image for this label.
@@ -154,6 +162,7 @@ class DragImageLabel : public QLabel
 	private:
 		QSize m_minimumImageSize;
 		QPoint m_dragStartPos;
+		bool m_ecksBawks;
 
 		// rp_image. (NOTE: Not owned by this object.)
 		const LibRpTexture::rp_image *m_img;

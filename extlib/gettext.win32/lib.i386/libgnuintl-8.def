@@ -1,27 +1,8 @@
 EXPORTS
-    __imp_libintl_version DATA
     __printf__
-    _imp__gl_get_setlocale_null_lock DATA
+    _imp__libintl_version DATA
     _nl_expand_alias
-    _nl_explode_name
-    _nl_find_domain
-    _nl_find_msg
-    _nl_language_preferences_default
-    _nl_load_domain
-    _nl_locale_name
-    _nl_locale_name_canonicalize
-    _nl_locale_name_default
-    _nl_locale_name_environ
-    _nl_locale_name_from_win32_LANGID
-    _nl_locale_name_from_win32_LCID
-    _nl_locale_name_posix
-    _nl_locale_name_thread
-    _nl_locale_name_thread_unsafe
-    _nl_log_untranslated
-    _nl_make_l10nflist
     _nl_msg_cat_cntr DATA
-    _nl_normalize_codeset
-    _nl_state_lock DATA
     bind_textdomain_codeset
     bindtextdomain
     dcgettext
@@ -29,7 +10,6 @@ EXPORTS
     dgettext
     dngettext
     gettext
-    gl_get_setlocale_null_lock
     libintl_asprintf
     libintl_bind_textdomain_codeset
     libintl_bindtextdomain
@@ -39,38 +19,31 @@ EXPORTS
     libintl_dgettext
     libintl_dngettext
     libintl_fprintf
+    libintl_fwprintf
     libintl_gettext
-    libintl_gettext_extract_plural
-    libintl_gettext_free_exp
-    libintl_gettext_germanic_plural DATA
-    libintl_gettextparse
     libintl_hash_string
     libintl_ngettext
     libintl_nl_current_default_domain DATA
     libintl_nl_default_default_domain DATA
     libintl_nl_default_dirname DATA
     libintl_nl_domain_bindings DATA
-    libintl_relocate
-    libintl_relocate2
     libintl_set_relocation_prefix
     libintl_setlocale
     libintl_snprintf
     libintl_sprintf
+    libintl_swprintf
     libintl_textdomain
-    libintl_vasnprintf
     libintl_vasprintf
     libintl_version DATA
     libintl_vfprintf
+    libintl_vfwprintf
     libintl_vprintf
     libintl_vsnprintf
     libintl_vsprintf
+    libintl_vswprintf
+    libintl_vwprintf
     libintl_wbindtextdomain
+    libintl_wprintf
     locale_charset
     ngettext
-    setlocale_null
-    setlocale_null_r
     textdomain
-    xmax
-    xsum
-    xsum3
-    xsum4

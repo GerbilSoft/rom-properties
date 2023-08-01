@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (librpfile)                        *
  * config.librpfile.h.in: LibRpFile configuration. (source file)           *
  *                                                                         *
- * Copyright (c) 2016-2020 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPFILE_CONFIG_H__
-#define __ROMPROPERTIES_LIBRPFILE_CONFIG_H__
+#pragma once
 
 /* Define to 1 if you have zlib. */
 #cmakedefine HAVE_ZLIB 1
@@ -30,5 +29,3 @@
 
 /* Define to 1 if support for SCSI commands is implemented for this operating system. */
 #cmakedefine RP_OS_SCSI_SUPPORTED 1
-
-#endif /* __ROMPROPERTIES_LIBRPBASE_CONFIG_H__ */

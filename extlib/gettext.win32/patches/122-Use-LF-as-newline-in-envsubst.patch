@@ -11,12 +11,11 @@ And, change mode back to prior mode
  gettext-runtime/src/envsubst.c | 18 ++++++++++++++++++
  1 file changed, 18 insertions(+)
 
-diff --git a/gettext-runtime/src/envsubst.c b/gettext-runtime/src/envsubst.c
-index 941452b03..2afceb9ac 100644
---- a/gettext-runtime/src/envsubst.c
-+++ b/gettext-runtime/src/envsubst.c
-@@ -27,6 +27,11 @@
- #include <string.h>
+diff a/gettext-runtime/src/envsubst.c b/gettext-runtime/src/envsubst.c
+--- a/gettext-runtime/src/envsubst.c.orig 2023-06-17 06:58:50.000000000 -0400
++++ b/gettext-runtime/src/envsubst.c      2023-07-01 12:25:40.029138440 -0400
+@@ -28,6 +28,11 @@
+ #include <unistd.h>
  #include <locale.h>
  
 +#ifdef _WIN32
@@ -24,10 +23,10 @@ index 941452b03..2afceb9ac 100644
 +# include <fcntl.h>
 +#endif
 +
+ #include "noreturn.h"
  #include "closeout.h"
  #include "error.h"
- #include "progname.h"
-@@ -281,8 +286,21 @@ find_variables (const char *string,
+@@ -289,8 +294,21 @@
  static void
  print_variable (const char *var_ptr, size_t var_len)
  {
@@ -49,6 +48,3 @@ index 941452b03..2afceb9ac 100644
  }
  
  /* Print the variables contained in STRING to stdout, each one followed by a
--- 
-2.19.0.windows.1
-

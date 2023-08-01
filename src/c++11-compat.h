@@ -45,8 +45,7 @@
 
 /* nullptr: Represents a NULL pointer. NULL == 0 */
 #ifdef CXX11_COMPAT_NULLPTR
-#  if defined __GNUG__ && \
-       (__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 8))
+#  if defined(__GNUG__) && (__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 8))
 #    define nullptr (__null)
 #  else
 #    if !defined(__cplusplus)

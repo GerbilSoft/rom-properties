@@ -2,12 +2,11 @@
  * ROM Properties Page shell extension. (libcachecommon)                   *
  * config.libcachecommon.h.in: libcachecommon configuration. (source file) *
  *                                                                         *
- * Copyright (c) 2020 by David Korth.                                      *
+ * Copyright (c) 2020-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBCACHECOMMON_CONFIG_H__
-#define __ROMPROPERTIES_LIBCACHECOMMON_CONFIG_H__
+#pragma once
 
 /* Define to 1 if NLS should be enabled. */
 #cmakedefine ENABLE_NLS 1
@@ -19,5 +18,3 @@
 #if !defined(_WIN32) && !defined(__APPLE__)
 #  define DIR_INSTALL_CACHE "@CMAKE_INSTALL_PREFIX@/@DIR_INSTALL_CACHE@"
 #endif
-
-#endif /* __ROMPROPERTIES_LIBCACHECOMMON_CONFIG_H__ */

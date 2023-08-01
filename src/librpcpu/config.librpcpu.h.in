@@ -2,17 +2,14 @@
  * ROM Properties Page shell extension. (librpcpu)                         *
  * config.librpcpu.h.in: LibRpCpu configuration. (source file)             *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
-#ifndef __ROMPROPERTIES_LIBRPCPU_CONFIG_LIBRPCPU_H__
-#define __ROMPROPERTIES_LIBRPCPU_CONFIG_LIBRPCPU_H__
+#pragma once
 
 /* Define to 1 if IFUNC is supported by this system. */
 #cmakedefine HAVE_IFUNC 1
 
 /* Define to 1 if you have the <cpuid.h> header file. */
 #cmakedefine HAVE_CPUID_H 1
-
-#endif /* __ROMPROPERTIES_LIBRPCPU_CONFIG_LIBRPCPU_H__ */

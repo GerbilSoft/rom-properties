@@ -2,12 +2,9 @@
  * ROM Properties Page shell extension. (KF6)                              *
  * config.kf6.h.in: KDE Frameworks 6 configuration. (source file)          *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
-
-#ifndef __ROMPROPERTIES_KDE_KF6_CONFIG_H__
-#define __ROMPROPERTIES_KDE_KF6_CONFIG_H__
 
 /* KF6 plugin path */
 #cmakedefine KF6_PLUGIN_INSTALL_DIR "@KF6_PLUGIN_INSTALL_DIR@"
@@ -20,5 +17,3 @@
 
 /* KF6 KOverlayIcon plugin path */
 #cmakedefine KF6_KOVI_PLUGIN_INSTALL_DIR "@KF6_KOVI_PLUGIN_INSTALL_DIR@"
-
-#endif /* __ROMPROPERTIES_KDE_KF6_CONFIG_H__ */

@@ -314,6 +314,12 @@ int RP_ShellPropSheetExt_Private::createHeaderRow(_In_ POINT pt_start, _In_ SIZE
 		curPt.x += icon_width + pt_start.x;
 	}
 
+	if (lblIcon) {
+		const bool ecksBawks = (romData->fileType() == RomData::FileType::DiscImage &&
+		                        systemName && strstr(systemName, "Xbox") != nullptr);
+		lblIcon->setEcksBawks(ecksBawks);
+	}
+
 	// Return the label height and some extra padding.
 	// TODO: Icon/banner height?
 	return size_lblSysInfo.cy + (pt_start.y * 5 / 8);
@@ -2201,7 +2207,6 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 
 	HRESULT hr = E_FAIL;
 	UINT nFiles, cchFilename;
-	RpFile *file = nullptr;
 	RomData *romData = nullptr;
 
 	TCHAR *tfilename = nullptr;	// RP_ShellPropSheetExt_Private takes ownership!
@@ -2250,18 +2255,10 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 		goto cleanup;
 	}
 
-	// Open the file.
+	// Get the appropriate RomData class for this ROM.
 	// TODO: wchar_t* overload so we don't need to use WTF-8.
 	// Requires adding to the API, so romdata-4.dll?
-	file = new RpFile(u8filename, RpFile::FM_OPEN_READ_GZ);
-	if (!file->isOpen()) {
-		// Unable to open the file.
-		goto cleanup;
-	}
-
-	// Get the appropriate RomData class for this ROM.
-	// file is dup()'d by RomData.
-	romData = RomDataFactory::create(file);
+	romData = RomDataFactory::create(u8filename.c_str());
 	if (!romData) {
 		// Could not open the RomData object.
 		goto cleanup;
@@ -2282,7 +2279,6 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	hr = S_OK;
 
 cleanup:
-	UNREF(file);
 	GlobalUnlock(stm.hGlobal);
 	ReleaseStgMedium(&stm);
 	free(tfilename);
@@ -2796,24 +2792,12 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 				break;
 			}
 
-			// Open the RomData object.
+			// Get the appropriate RomData class for this ROM.
 			// TODO: wchar_t* overload so we don't need to use WTF-8.
 			// Requires adding to the API, so romdata-4.dll?
-			RpFile *const file = new RpFile(T2U8(d->tfilename).c_str(), RpFile::FM_OPEN_READ_GZ);
-			if (!file->isOpen()) {
-				// Unable to open the file.
-				file->unref();
-				break;
-			}
-
-			d->romData = RomDataFactory::create(file);
-			file->unref();
+			d->romData = RomDataFactory::create(T2U8(d->tfilename).c_str());
 			if (!d->romData) {
 				// Unable to get a RomData object.
-				break;
-			} else if (!d->romData->isOpen()) {
-				// RomData is not open.
-				UNREF_AND_NULL_NOCHK(d->romData);
 				break;
 			}
 
@@ -2967,6 +2951,22 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			// Forward the message to the active child dialog.
 			SendMessage(d->tabs[d->curTabIndex].hDlg, uMsg, wParam, lParam);
 			return TRUE;
+		}
+
+		case WM_RBUTTONUP: {
+			auto *const d = reinterpret_cast<RP_ShellPropSheetExt_Private*>(GetWindowLongPtr(hDlg, GWLP_USERDATA));
+			if (!d) {
+				// No RP_ShellPropSheetExt_Private. Can't do anything...
+				return FALSE;
+			}
+
+			// Allow lblIcon to process this in case it's in lblIcon's rectangle.
+			// TODO: Make DragImageLabel a real control?
+			if (d->lblIcon) {
+				d->lblIcon->tryPopupEcksBawks(lParam);
+				return TRUE;
+			}
+			break;
 		}
 
 		default:
