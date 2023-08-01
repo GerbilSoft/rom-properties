@@ -1,10 +1,12 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (libromdata)                       *
- * Wim.cpp: Microsoft WIM header reader                                    *
+ * Wim.hpp: Microsoft WIM header reader                                    *
  *                                                                         *
+ * Copyright (c) 2023 by ecumber.                                          *
  * Copyright (c) 2019-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
+
 #pragma once
 
 #include "librpbase/RomData.hpp"

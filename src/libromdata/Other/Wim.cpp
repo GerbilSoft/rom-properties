@@ -2,18 +2,18 @@
  * ROM Properties Page shell extension. (libromdata)                       *
  * Wim.cpp: Microsoft WIM header reader                                    *
  *                                                                         *
- * Copyright (c) 2019-2023 by David Korth and ecumber.                     *
+ * Copyright (c) 2023 by ecumber.                                          *
+ * Copyright (c) 2019-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
 #include "Wim.hpp"
 #include "wim_structs.h"
+
 // TinyXML2
 #include "tinyxml2.h"
 #include "librptext/conversion.hpp"
-#include <cuchar>
-#include <ctime>
 using namespace LibRpText;
 
 // librpbase, librpfile
@@ -21,7 +21,11 @@ using namespace LibRpBase;
 using LibRpFile::IRpFile;
 using namespace tinyxml2;
 
-// C++ STL classes.
+// C includes
+#include <cuchar>
+#include <ctime>
+
+// C++ STL classes
 using std::string;
 
 // https://stackoverflow.com/a/74650247
@@ -31,33 +35,35 @@ using std::string;
 #define rowloop_current_windowsinfo images[i].windowsinfo
 #define rowloop_current_windowsver images[i].windowsinfo.version
 
-
 namespace LibRomData {
+
 class WimPrivate final : public RomDataPrivate
 {
-    public:
+	public:
 		WimPrivate(LibRpFile::IRpFile* file);  
 		int addFields_XML();
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(WimPrivate)
+
 	public:
 		/** RomDataInfo **/
-		static const char* const exts[];
-		static const char* const mimeTypes[];
+		static const char *const exts[];
+		static const char *const mimeTypes[];
 		static const RomDataInfo romDataInfo;
-    public:
+
+	public:
 		// ROM header.
 		WIM_Header wimHeader;
 		XMLDocument document;
 };
 
 static WIM_Version_Type version_type; 	// wims pre-1.13 - these are detected but won't 
-                  		  			  	// be read due to the format being different
+					// be read due to the format being different
 
 ROMDATA_IMPL(Wim)
 
-const char* const WimPrivate::exts[] = {
+const char *const WimPrivate::exts[] = {
 	".wim",
 	".esd",
 	".swm",
@@ -65,7 +71,7 @@ const char* const WimPrivate::exts[] = {
     nullptr
 };
 
-const char* const WimPrivate::mimeTypes[] = {
+const char *const WimPrivate::mimeTypes[] = {
 	// Unofficial MIME types.
 	"application/x-ms-wim",
 	nullptr
@@ -84,38 +90,38 @@ typedef enum _WimWindowsArchitecture {
 } WimWindowsArchitecture;
 
 struct WimWindowsLanguages {
-		std::string language;
-		std::string default_language;
+	std::string language;
+	std::string default_language;
 };
 
 struct WimWindowsVersion {
-		uint8_t majorversion = 0;
-		uint8_t minorversion = 0;
-		uint32_t buildnumber = 0;
-		uint32_t spbuildnumber = 0;
-		uint8_t splevel = 0; // only in windows 7+, added some time around build 6608-6730
+	uint8_t majorversion = 0;
+	uint8_t minorversion = 0;
+	uint32_t buildnumber = 0;
+	uint32_t spbuildnumber = 0;
+	uint8_t splevel = 0; // only in windows 7+, added some time around build 6608-6730
 };
 
 struct WimWindowsInfo {
-		WimWindowsArchitecture arch = WimWindowsArchitecture::x86;
-		std::string productname, editionid, installationtype, hal, producttype, productsuite;
-		WimWindowsLanguages languages;
-		WimWindowsVersion version;
-		std::string systemroot = "";
+	WimWindowsArchitecture arch = WimWindowsArchitecture::x86;
+	std::string productname, editionid, installationtype, hal, producttype, productsuite;
+	WimWindowsLanguages languages;
+	WimWindowsVersion version;
+	std::string systemroot = "";
 };
 
 struct WimIndex {
-		// if you have more than 2^32 indices in a wim
-		// you probably have bigger issues
-		uint32_t index = 0;
-		uint64_t dircount = 0;
-		uint64_t filecount = 0;
-		uint64_t totalbytes = 0;
-		uint64_t creationtime = 0;
-		uint64_t lastmodificationtime = 0;
-		WimWindowsInfo windowsinfo;
-		std::string name, description, flags, dispname, dispdescription = "";
-		bool containswindowsimage = false;
+	// if you have more than 2^32 indices in a wim
+	// you probably have bigger issues
+	uint32_t index = 0;
+	uint64_t dircount = 0;
+	uint64_t filecount = 0;
+	uint64_t totalbytes = 0;
+	uint64_t creationtime = 0;
+	uint64_t lastmodificationtime = 0;
+	WimWindowsInfo windowsinfo;
+	std::string name, description, flags, dispname, dispdescription = "";
+	bool containswindowsimage = false;
 };
 
 int WimPrivate::addFields_XML() 
@@ -153,8 +159,7 @@ int WimPrivate::addFields_XML()
 		return 3;
 	} 
 
-	const XMLElement* const wim_element = document.FirstChildElement("WIM");
-
+	const XMLElement *const wim_element = document.FirstChildElement("WIM");
 	if (!wim_element) {
 		// No wim element.
 		// TODO: Better error code.
@@ -272,7 +277,7 @@ int WimPrivate::addFields_XML()
 		data_row.emplace_back(rowloop_current_windowsinfo.languages.language);
 	}	
 
-	static const char* const field_names[] = {
+	static const char *const field_names[] = {
 		NOP_C_("RomData", "#"),
 		NOP_C_("RomData", "Name"),
 		NOP_C_("RomData", "Description"),
@@ -300,46 +305,41 @@ int WimPrivate::addFields_XML()
 WimPrivate::WimPrivate(LibRpFile::IRpFile* file)
     : super(file, &romDataInfo)
 { 
-    // Clear the WIM header struct.
+	// Clear the WIM header struct.
 	memset(&wimHeader, 0, sizeof(wimHeader));
 }
 
 int Wim::isRomSupported_static(const DetectInfo* info)
 {
-    assert(info != nullptr);
+	assert(info != nullptr);
 	assert(info->header.pData != nullptr);
 	if (!info || !info->header.pData) {
 		// No detection information.
 		return -1;
 	}
 
-    const WIM_Header* const wimData = reinterpret_cast<const WIM_Header*>(info->header.pData);
+	const WIM_Header* const wimData = reinterpret_cast<const WIM_Header*>(info->header.pData);
 
-    if (memcmp(wimData->header, "MSWIM\0\0", 8) == 0)
-    {
-        // at least a wim 1.09, check the version
-        // we do not necessarily need to check the
-        // major version because it is always 
-        // either 1 or 0 (in the case of esds)
-        wimData->version.minor_version >= 13 ? version_type = Wim113_014 : version_type = Wim109_112;
-    }
-    else if (memcmp(wimData->header, "\x7e\0\0", 4) == 0) 
-    {
-        version_type = Wim107_108;
-    }
-    else 
-    {
-        // not a wim
-        return -1;
-    }
-    return 0;
+	if (memcmp(wimData->header, "MSWIM\0\0", 8) == 0) {
+		// at least a wim 1.09, check the version
+		// we do not necessarily need to check the
+		// major version because it is always 
+		// either 1 or 0 (in the case of esds)
+		wimData->version.minor_version >= 13 ? version_type = Wim113_014 : version_type = Wim109_112;
+	} else if (memcmp(wimData->header, "\x7e\0\0", 4) == 0) {
+		version_type = Wim107_108;
+	} else {
+		// not a wim
+		return -1;
+	}
+	return 0;
 }
 
 Wim::Wim(LibRpFile::IRpFile* file)
 	: super(new WimPrivate(file))
 {
 	RP_D(Wim);
-    d->mimeType = "application/x-ms-wim";
+	d->mimeType = "application/x-ms-wim";
 
 	if (!d->file) {
 		// Could not ref() the file handle.
@@ -362,10 +362,10 @@ Wim::Wim(LibRpFile::IRpFile* file)
 		nullptr,	// ext (not needed for Wim)
 		0		// szFile (not needed for Wim)
 	};
-    d->isValid = (isRomSupported_static(&info) >= 0);
+	d->isValid = (isRomSupported_static(&info) >= 0);
 	d->fileType = FileType::DiskImage;
 
-    if (!d->isValid) {
+	if (!d->isValid) {
 		UNREF_AND_NULL_NOCHK(d->file);
 		return;
 	}
@@ -392,8 +392,8 @@ const char* Wim::systemName(unsigned int type) const
 
 int Wim::loadFieldData(void)
 {
-    RP_D(Wim);
-    if (!d->fields.empty()) {
+	RP_D(Wim);
+	if (!d->fields.empty()) {
 		// Field data *has* been loaded...
 		return 0;
 	} else if (!d->file) {
@@ -403,7 +403,8 @@ int Wim::loadFieldData(void)
 		// Unknown ROM image type.
 		return -EIO;
 	}
-    d->fields.reserve(6);	// Maximum of 6 fields.
+
+	d->fields.reserve(6);	// Maximum of 6 fields.
 	char buffer[32];
 
 	if (version_type == WIM_Version_Type::Wim107_108) 
