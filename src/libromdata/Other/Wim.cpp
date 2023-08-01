@@ -17,6 +17,7 @@
 using namespace LibRpText;
 
 // librpbase, librpfile
+#include "librpbase/timeconv.h"
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
 using namespace tinyxml2;
@@ -28,8 +29,6 @@ using namespace tinyxml2;
 // C++ STL classes
 using std::string;
 
-// https://stackoverflow.com/a/74650247
-#define windows_time_to_unix_epoch(x) ((x) - 116444736000000000LL) / 10000000LL
 // for convenience
 #define rowloop_current_image images[i]
 #define rowloop_current_windowsinfo images[i].windowsinfo
@@ -189,8 +188,7 @@ int WimPrivate::addFields_XML()
 					// Parse HIGHPART and LOWPART, then combine them like FILETIME.
 					const uint32_t lastmodtime_high = strtoul(s_highPart, nullptr, 16);
 					const uint32_t lastmodtime_low = strtoul(s_highPart, nullptr, 16);
-					const uint64_t lastmodtime = ((uint64_t)lastmodtime_high << 32U) | lastmodtime_low;
-					currentindex.lastmodificationtime = windows_time_to_unix_epoch(lastmodtime);
+					currentindex.lastmodificationtime = WindowsSplitTimeToUnixTime(lastmodtime_high, lastmodtime_low);
 				}
 			}
 		}
