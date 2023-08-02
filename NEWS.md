@@ -7,6 +7,12 @@
     Windows Vista. Contributed by @ecumber.
     * Pull requests: #391, #392
 
+* Bug fixes:
+  * Windows: Truncate ListView strings to a maximum of 259+1 characters. (259
+    actual characters plus 1 NULL terminator.) The ListView control can only
+    handle strings up to this limit; longer strings can trigger assertions.
+    * Related to: PR #392
+
 ## v2.2.1 (released 2023/07/30)
 
 * New parser features:
