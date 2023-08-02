@@ -22,7 +22,6 @@
 	<url type="homepage">https://gerbilsoft.com/</url>
 	<url type="bugtracker">https://github.com/GerbilSoft/rom-properties/issues</url>
 	<url type="vcs-browser">https://github.com/GerbilSoft/rom-properties</url>
-	<project_group>KDE</project_group>
 	<provides>
 		<binary>rp-config</binary>
 	</provides>
