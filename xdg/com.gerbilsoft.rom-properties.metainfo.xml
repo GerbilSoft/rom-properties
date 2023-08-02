@@ -32,7 +32,7 @@
 	<developer_name>David Korth</developer_name>
 	<update_contact>gerbilsoft@gerbilsoft.com</update_contact>
 	<icon type="stock">media-flash</icon>
-	<content_rating type="oars-1.1"/>
+	<translation type="gettext">rom-properties</translation>
 	<releases>
 		<release version="2.2.1" date="2023-07-30"/>
 		<release version="2.2" date="2023-07-01"/>
