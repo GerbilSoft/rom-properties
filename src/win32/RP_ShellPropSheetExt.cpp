@@ -881,7 +881,14 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 			const string &str = *iter;
 			if (!str.empty()) {
 				// NOTE: pszText is LPTSTR, not LPCTSTR...
-				const tstring tstr = U82T_s(str);
+				// NOTE 2: ListView is limited to 260 characters. (259+1)
+				// TODO: Handle surrogate pairs?
+				tstring tstr = U82T_s(str);
+				if (tstr.size() >= 260) {
+					// Reduce to 256 and add "..."
+					tstr.resize(256);
+					tstr += _T("...");
+				}
 				lvData.col_widths[col] = LibWin32UI::measureStringForListView(hDC, tstr);
 				lvColumn.pszText = const_cast<LPTSTR>(tstr.c_str());
 				ListView_InsertColumn(hListView, col, &lvColumn);
@@ -958,7 +965,14 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 			// Single language.
 			int col = 0;
 			for (const auto &data_str : data_row) {
+				// NOTE: ListView is limited to 260 characters. (259+1)
+				// TODO: Handle surrogate pairs?
 				tstring tstr = U82T_s(data_str);
+				if (tstr.size() >= 260) {
+					// Reduce to 256 and add "..."
+					tstr.resize(256);
+					tstr += _T("...");
+				}
 
 				int nl_count;
 				const int width = LibWin32UI::measureStringForListView(hDC, tstr, &nl_count);
@@ -1505,7 +1519,14 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 					if (str.empty())
 						continue;
 
-					const tstring tstr = U82T_s(str);
+					// NOTE: ListView is limited to 260 characters. (259+1)
+					// TODO: Handle surrogate pairs?
+					tstring tstr = U82T_s(str);
+					if (tstr.size() >= 260) {
+						// Reduce to 256 and add "..."
+						tstr.resize(256);
+						tstr += _T("...");
+					}
 					lvData.col_widths[col] = LibWin32UI::measureStringForListView(hDC, tstr);
 				}
 			}
@@ -1531,7 +1552,14 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 				for (; iter_sdr != src_data_row_cend && iter_ddr != dest_data_row_end;
 				     ++iter_sdr, ++iter_ddr, col++)
 				{
+					// NOTE: ListView is limited to 260 characters. (259+1)
+					// TODO: Handle surrogate pairs?
 					tstring tstr = U82T_s(*iter_sdr);
+					if (tstr.size() >= 260) {
+						// Reduce to 256 and add "..."
+						tstr.resize(256);
+						tstr += _T("...");
+					}
 					const int width = LibWin32UI::measureStringForListView(hDC, tstr);
 					if (col < colCount) {
 						lvData.col_widths[col] = std::max(lvData.col_widths[col], width);
@@ -2394,7 +2422,11 @@ inline BOOL RP_ShellPropSheetExtPrivate::ListView_GetDispInfo(NMLVDISPINFO *plvd
 		// Is the column in range?
 		if (plvItem->iSubItem >= 0 && plvItem->iSubItem < static_cast<int>(row_data.size())) {
 			// Return the string data.
-			_tcscpy_s(plvItem->pszText, plvItem->cchTextMax, row_data[plvItem->iSubItem].c_str());
+			// NOTE: ListView is limited to 260 characters. (259+1)
+			// This should be handled when the ListView data is initialized.
+			// If it isn't, we'll truncate the string here (but without the "...").
+			const tstring &tstr = row_data[plvItem->iSubItem];
+			_tcsncpy_s(plvItem->pszText, plvItem->cchTextMax, tstr.c_str(), _TRUNCATE);
 			bRet = TRUE;
 		}
 	}
