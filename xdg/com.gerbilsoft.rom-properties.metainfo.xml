@@ -35,6 +35,10 @@
 	<icon type="stock">media-flash</icon>
 	<content_rating type="oars-1.1"/>
 	<releases>
+		<release version="2.2.1" date="2023-07-30"/>
+		<release version="2.2" date="2023-07-01"/>
+		<release version="2.1" date="2022-12-24"/>
+		<release version="2.0" date="2022-09-24"/>
 		<release version="1.9" date="2022-05-22"/>
 		<release version="1.8.3" date="2021-08-03"/>
 		<release version="1.8.2" date="2021-07-19"/>
