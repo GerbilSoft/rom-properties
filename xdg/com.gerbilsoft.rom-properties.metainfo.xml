@@ -29,6 +29,12 @@
 	<categories>
 		<category>Utility</category>
 	</categories>
+	<recommends>
+		<internet>always</internet>
+	</recommends>
+	<supports>
+		<internet>offline-only</internet>
+	</supports>
 	<developer_name>David Korth</developer_name>
 	<update_contact>gerbilsoft@gerbilsoft.com</update_contact>
 	<icon type="stock">media-flash</icon>
