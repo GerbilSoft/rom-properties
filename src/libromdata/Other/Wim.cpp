@@ -8,19 +8,25 @@
  ***************************************************************************/
 
 #include "stdafx.h"
+#include "librpbase/config.librpbase.h"
+
 #include "Wim.hpp"
 #include "wim_structs.h"
 
+#ifdef ENABLE_XML
 // TinyXML2
-#include "tinyxml2.h"
-#include "librptext/conversion.hpp"
-using namespace LibRpText;
+#  include "tinyxml2.h"
+using namespace tinyxml2;
+// Character set conversion, needed for TinyXML2
+// because WIM uses UTF-16LE manifests.
+#  include "librptext/conversion.hpp"
+#endif /* ENABLE_XML */
 
 // librpbase, librpfile
 #include "librpbase/timeconv.h"
+using namespace LibRpText;
 using namespace LibRpBase;
 using LibRpFile::IRpFile;
-using namespace tinyxml2;
 
 // C includes
 #include <cuchar>
@@ -40,7 +46,6 @@ class WimPrivate final : public RomDataPrivate
 {
 	public:
 		WimPrivate(LibRpFile::IRpFile* file);  
-		int addFields_XML();
 	private:
 		typedef RomDataPrivate super;
 		RP_DISABLE_COPY(WimPrivate)
@@ -59,6 +64,15 @@ class WimPrivate final : public RomDataPrivate
 		// NOTE: WIMs pre-1.13 are being detected but won't
 		// be read due to the format being different.
 		WIM_Version_Type versionType;
+
+	public:
+#ifdef ENABLE_XML
+		/**
+		 * Add fields from the WIM image's XML manifest.
+		 * @return 0 on success; non-zero on error.
+		 */
+		int addFields_XML();
+#endif /* ENABLE_XML */
 };
 
 ROMDATA_IMPL(Wim)
@@ -116,6 +130,11 @@ struct WimIndex {
 	bool containswindowsimage = false;
 };
 
+#ifdef ENABLE_XML
+/**
+ * Add fields from the WIM image's XML manifest.
+ * @return 0 on success; non-zero on error.
+ */
 int WimPrivate::addFields_XML() 
 {
 	if (!file || !file->isOpen()) {
@@ -358,6 +377,7 @@ int WimPrivate::addFields_XML()
 
 	return 0;
 }
+#endif /* ENABLE_XML */
 
 WimPrivate::WimPrivate(LibRpFile::IRpFile* file)
     : super(file, &romDataInfo)
@@ -498,7 +518,7 @@ int Wim::loadFieldData(void)
 		return -EIO;
 	}
 
-	d->fields.reserve(6);	// Maximum of 6 fields.
+	d->fields.reserve(6);	// Maximum of 6 fields. (5 if XML is disabled)
 	char buffer[32];
 
 	// if the version number is 14, add an indicator that it is an ESD
@@ -567,7 +587,10 @@ int Wim::loadFieldData(void)
 		rp_sprintf("%u/%u", d->wimHeader.part_number, d->wimHeader.total_parts));
 	d->fields.addField_string_numeric(C_("Wim", "Total Images"), d->wimHeader.number_of_images);
 
+#ifdef ENABLE_XML
+	// Add fields from the WIM image's XML manifest.
 	d->addFields_XML();
+#endif /* ENABLE_XML */
 
 	return 0;
 }
