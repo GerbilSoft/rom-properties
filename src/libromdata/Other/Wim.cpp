@@ -326,7 +326,7 @@ int WimPrivate::addFields_XML()
 		// FIXME: Using our own timestamp formatting instead of the system locale.
 		// Can't easily specify time values in RFT_LISTDATA...
 		tm_struct = localtime(&rowloop_current_image.lastmodificationtime);
-		std::strftime(timestamp, 20, "%Y-%m-%d %R", tm_struct);
+		std::strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %R", tm_struct);
 		data_row.emplace_back(timestamp);
 
 		if (images[i].containswindowsimage == false)
@@ -378,7 +378,7 @@ int WimPrivate::addFields_XML()
 		NOP_C_("Wim|Images", "Architecture"),
 		NOP_C_("Wim|Images", "Language"),
 	};
-	vector<string>* const v_field_names = RomFields::strArrayToVector_i18n(
+	vector<string> *const v_field_names = RomFields::strArrayToVector_i18n(
 		"Wim|Images", field_names, ARRAY_SIZE(field_names));
 
 	RomFields::AFLD_PARAMS params;
