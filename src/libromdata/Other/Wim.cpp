@@ -517,6 +517,11 @@ const char* Wim::systemName(unsigned int type) const
 	return sysNames[type & SYSNAME_TYPE_MASK];
 }
 
+/**
+ * Load field data.
+ * Called by RomData::fields() if the field data hasn't been loaded yet.
+ * @return Number of fields read on success; negative POSIX error code on error.
+ */
 int Wim::loadFieldData(void)
 {
 	RP_D(Wim);
@@ -605,7 +610,8 @@ int Wim::loadFieldData(void)
 	d->addFields_XML();
 #endif /* ENABLE_XML */
 
-	return 0;
+	// Finished reading the field data.
+	return static_cast<int>(d->fields.count());
 }
 
 }
