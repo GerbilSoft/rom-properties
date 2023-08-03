@@ -458,6 +458,9 @@ string urlencode(const char *url)
 				case '%':
 					s_ret += "%25";
 					break;
+				case '^':
+					s_ret += "%5E";
+					break;
 				default:
 					s_ret += *url;
 					break;
