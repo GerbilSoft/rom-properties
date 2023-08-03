@@ -399,40 +399,19 @@ WimPrivate::WimPrivate(LibRpFile::IRpFile* file)
 	memset(&wimHeader, 0, sizeof(wimHeader));
 }
 
-int Wim::isRomSupported_static(const DetectInfo* info)
-{
-	assert(info != nullptr);
-	assert(info->header.pData != nullptr);
-	if (!info || !info->header.pData) {
-		// No detection information.
-		return -1;
-	}
-
-	const WIM_Header* const wimData = reinterpret_cast<const WIM_Header*>(info->header.pData);
-	int ret = Wim_Unknown;
-
-	// TODO: WLPWM_MAGIC
-	if (!memcmp(wimData->magic, MSWIM_MAGIC, 8)) {
-		// at least a wim 1.09, check the version
-		// we do not necessarily need to check the
-		// major version because it is always 
-		// either 1 or 0 (in the case of esds)
-		if (wimData->version.minor_version >= 13) {
-			ret = Wim113_014;
-		} else{ 
-			ret = Wim109_112;
-		}
-	} else if (!memcmp(wimData->magic, MSWIMOLD_MAGIC, 4)) {
-		// NOTE: This magic number is too generic.
-		// Verify the file extension.
-		if (info->ext && !strcasecmp(info->ext, ".wim")) {
-			ret = Wim107_108;
-		}
-	}
-
-	return ret;
-}
-
+/**
+ * Read a WIM image.
+ *
+ * A WIM image must be opened by the caller. The file handle
+ * will be ref()'d and must be kept open in order to load
+ * data from the WIM image.
+ *
+ * To close the file, either delete this object or call close().
+ *
+ * NOTE: Check isValid() to determine if this is a valid WIM image.
+ *
+ * @param file Open WIM image.
+ */
 Wim::Wim(LibRpFile::IRpFile* file)
 	: super(new WimPrivate(file))
 {
@@ -498,6 +477,50 @@ Wim::Wim(LibRpFile::IRpFile* file)
 	}
 }
 
+/**
+ * Is a ROM image supported by this class?
+ * @param info DetectInfo containing ROM detection information.
+ * @return Class-specific system ID (>= 0) if supported; -1 if not.
+ */
+int Wim::isRomSupported_static(const DetectInfo* info)
+{
+	assert(info != nullptr);
+	assert(info->header.pData != nullptr);
+	if (!info || !info->header.pData) {
+		// No detection information.
+		return -1;
+	}
+
+	const WIM_Header* const wimData = reinterpret_cast<const WIM_Header*>(info->header.pData);
+	int ret = Wim_Unknown;
+
+	// TODO: WLPWM_MAGIC
+	if (!memcmp(wimData->magic, MSWIM_MAGIC, 8)) {
+		// at least a wim 1.09, check the version
+		// we do not necessarily need to check the
+		// major version because it is always
+		// either 1 or 0 (in the case of esds)
+		if (wimData->version.minor_version >= 13) {
+			ret = Wim113_014;
+		} else {
+			ret = Wim109_112;
+		}
+	} else if (!memcmp(wimData->magic, MSWIMOLD_MAGIC, 4)) {
+		// NOTE: This magic number is too generic.
+		// Verify the file extension.
+		if (info->ext && !strcasecmp(info->ext, ".wim")) {
+			ret = Wim107_108;
+		}
+	}
+
+	return ret;
+}
+
+/**
+ * Get the name of the system the loaded ROM is designed for.
+ * @param type System name type. (See the SystemName enum.)
+ * @return System name, or nullptr if type is invalid.
+ */
 const char* Wim::systemName(unsigned int type) const
 {
 	RP_D(const Wim);
