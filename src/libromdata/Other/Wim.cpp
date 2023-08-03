@@ -331,7 +331,7 @@ int WimPrivate::addFields_XML()
 
 		if (images[i].containswindowsimage == false)
 			continue;
-		
+
 		data_row.emplace_back(
 			rp_sprintf("%u.%u.%u.%u", rowloop_current_windowsver.majorversion,
 				rowloop_current_windowsver.minorversion, rowloop_current_windowsver.buildnumber,
@@ -393,7 +393,7 @@ int WimPrivate::addFields_XML()
 #endif /* ENABLE_XML */
 
 WimPrivate::WimPrivate(LibRpFile::IRpFile* file)
-    : super(file, &romDataInfo)
+	: super(file, &romDataInfo)
 { 
 	// Clear the WIM header struct.
 	memset(&wimHeader, 0, sizeof(wimHeader));
@@ -563,13 +563,9 @@ int Wim::loadFieldData(void)
 	char buffer[32];
 
 	// if the version number is 14, add an indicator that it is an ESD
-	if (d->wimHeader.version.minor_version == 14) {
-		snprintf(buffer, sizeof(buffer), "%u.%02u (ESD)",
-			d->wimHeader.version.major_version, d->wimHeader.version.minor_version);
-	} else {
-		snprintf(buffer, sizeof(buffer), "%u.%02u",
-			d->wimHeader.version.major_version, d->wimHeader.version.minor_version);
-	}
+	snprintf(buffer, sizeof(buffer), "%u.%02u%s",
+		d->wimHeader.version.major_version, d->wimHeader.version.minor_version,
+		(d->wimHeader.version.minor_version == 14) ? " (ESD)" : "");
 	d->fields.addField_string(C_("Wim", "WIM Version"), buffer, RomFields::STRF_TRIM_END);
 
 	if (d->versionType != Wim113_014) {
