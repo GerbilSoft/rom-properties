@@ -34,6 +34,7 @@ using LibRpFile::IRpFile;
 
 // C++ STL classes
 using std::string;
+using std::vector;
 
 // for convenience
 #define rowloop_current_image images[i]
@@ -65,8 +66,8 @@ class WimPrivate final : public RomDataPrivate
 		// be read due to the format being different.
 		WIM_Version_Type versionType;
 
-	public:
 #ifdef ENABLE_XML
+	public:
 		/**
 		 * Add fields from the WIM image's XML manifest.
 		 * @return 0 on success; non-zero on error.
@@ -82,7 +83,7 @@ const char *const WimPrivate::exts[] = {
 	".esd",
 	".swm",
 	// TODO: More?
-    nullptr
+	nullptr
 };
 
 const char *const WimPrivate::mimeTypes[] = {
@@ -96,8 +97,8 @@ const RomDataInfo WimPrivate::romDataInfo = {
 };
 
 struct WimWindowsLanguages {
-	std::string language;
-	//std::string default_language;	//not used right now
+	string language;
+	//string default_language;	//not used right now
 };
 
 struct WimWindowsVersion {
@@ -110,10 +111,15 @@ struct WimWindowsVersion {
 
 struct WimWindowsInfo {
 	WimWindowsArchitecture arch = Wim_Arch_x86;
-	std::string productname, editionid, installationtype, hal, producttype, productsuite;
+	string productname;
+	string editionid;
+	//string installationtype;	// not used right now
+	//string hal;			// not used right now
+	//string producttype;		// not used right now
+	//string productsuite;		// not used right now
 	WimWindowsLanguages languages;
 	WimWindowsVersion version;
-	std::string systemroot;
+	string systemroot;
 };
 
 struct WimIndex {
@@ -126,7 +132,9 @@ struct WimIndex {
 	//time_t creationtime = 0;	// not used right now
 	time_t lastmodificationtime = 0;
 	WimWindowsInfo windowsinfo;
-	std::string name, description, flags, dispname, dispdescription;
+	string name, description;
+	//string flags;			// not used right now
+	string dispname, dispdescription;
 	bool containswindowsimage = false;
 };
 
@@ -142,15 +150,18 @@ int WimPrivate::addFields_XML()
 	}
 
 	// the eighth byte of the "size" is used for flags so we have to AND it
-	const uint64_t size = (wimHeader.xml_resource.size & 0x00FFFFFFFFFFFFFF);
+	uint64_t size = (wimHeader.xml_resource.size & 0x00FFFFFFFFFFFFFF);
 	if (size > 16U*1024*1024) {
 		// XML is larger than 16 MB, which doesn't make any sense.
 		return -ENOMEM;
 	}
 
+	// XML data is UTF-16LE, so the size should be a multiple of 2.
+	// TODO: Error out if it isn't?
+	assert(size % 2 == 0);
+	size &= ~1ULL;
+
 	// Read the WIM XML data.
-	char *xml_data = new char[size+2];
-	memset(xml_data, 0, size+2);
 	file->rewind();
 	file->seek(wimHeader.xml_resource.offset_of_xml); 
 	// if seek is invalid
@@ -158,14 +169,16 @@ int WimPrivate::addFields_XML()
 		return -EIO;
 	}
 
+	char16_t *const xml_data = new char16_t[size/2];
 	size_t bytes_read = file->read(xml_data, size);
 	if (bytes_read != size) {
+		delete[] xml_data;
 		return -EIO;
 	}
 
 	// the xml inside wims are utf-16 but tinyxml only supports utf-8
 	// this means we have to do some conversion
-	std::string utf8_xml = LibRpText::utf16le_to_utf8(reinterpret_cast<char16_t*>(xml_data), (int)((size / 2) + 1));
+	string utf8_xml = LibRpText::utf16le_to_utf8(xml_data, size/2);
 	delete[] xml_data;
 
 	XMLDocument document;
@@ -181,7 +194,7 @@ int WimPrivate::addFields_XML()
 		return -EIO;
 	}
 
-	std::vector<WimIndex> images(0);
+	vector<WimIndex> images(0);
 	images.reserve(wimHeader.number_of_images);
 	const XMLElement *currentimage = wim_element->FirstChildElement("IMAGE");
 
@@ -365,7 +378,7 @@ int WimPrivate::addFields_XML()
 		NOP_C_("Wim|Images", "Architecture"),
 		NOP_C_("Wim|Images", "Language"),
 	};
-	std::vector<std::string>* const v_field_names = RomFields::strArrayToVector_i18n(
+	vector<string>* const v_field_names = RomFields::strArrayToVector_i18n(
 		"Wim|Images", field_names, ARRAY_SIZE(field_names));
 
 	RomFields::AFLD_PARAMS params;
@@ -548,7 +561,7 @@ int Wim::loadFieldData(void)
 
 	uint32_t wimflags = le32_to_cpu(d->wimHeader.flags);
 
-	std::vector<std::string> *const v_wim_flag_names = RomFields::strArrayToVector_i18n(
+	vector<string> *const v_wim_flag_names = RomFields::strArrayToVector_i18n(
 		"RomData", wim_flag_names, ARRAY_SIZE(wim_flag_names));
 	d->fields.addField_bitfield(C_("Wim", "Flags"),
 		v_wim_flag_names, 3, wimflags);
