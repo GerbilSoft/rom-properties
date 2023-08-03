@@ -583,7 +583,7 @@ int Wim::loadFieldData(void)
 		NOP_C_("Wim|Flags", "Write in progress"),
 	};
 
-	uint32_t wimflags = le32_to_cpu(d->wimHeader.flags);
+	const uint32_t wimflags = d->wimHeader.flags;
 
 	vector<string> *const v_wim_flag_names = RomFields::strArrayToVector_i18n(
 		"RomData", wim_flag_names, ARRAY_SIZE(wim_flag_names));
