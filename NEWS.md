@@ -12,6 +12,11 @@
     actual characters plus 1 NULL terminator.) The ListView control can only
     handle strings up to this limit; longer strings can trigger assertions.
     * Related to: PR #392
+  * GTK: Add SOVERSIONs to all of the dlopen()'d library filenames. This fixes
+    the UI frontends on Ubuntu systems that don't have the dev packages for
+    the file browser extension libraries installed, e.g. libnautilus-extension-dev.
+    * This was broken since rom-properties v1.6, i.e. when the various GTK3 UI
+      frontends were merged into a single library.
 
 ## v2.2.1 (released 2023/07/30)
 

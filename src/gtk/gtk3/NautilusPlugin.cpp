@@ -72,7 +72,7 @@ prefix##_module_initialize(GTypeModule *module) \
 	} \
 \
 	/* dlopen() the extension library. */ \
-	libextension_so = dlopen("lib" #prefix "-extension.so", RTLD_LAZY | RTLD_LOCAL); \
+	libextension_so = dlopen("lib" #prefix "-extension.so.1", RTLD_LAZY | RTLD_LOCAL); \
 	if (!libextension_so) { \
 		g_critical("*** " G_LOG_DOMAIN ": dlopen() failed: %s\n", dlerror()); \
 		return; \

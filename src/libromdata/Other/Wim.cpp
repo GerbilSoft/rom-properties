@@ -150,7 +150,7 @@ int WimPrivate::addFields_XML()
 	}
 
 	// the eighth byte of the "size" is used for flags so we have to AND it
-	uint64_t size = (wimHeader.xml_resource.size & 0x00FFFFFFFFFFFFFF);
+	uint64_t size = (wimHeader.xml_resource.size & 0x00FFFFFFFFFFFFFFULL);
 	if (size > 16U*1024*1024) {
 		// XML is larger than 16 MB, which doesn't make any sense.
 		return -ENOMEM;
@@ -491,7 +491,7 @@ int Wim::isRomSupported_static(const DetectInfo* info)
 		return -1;
 	}
 
-	const WIM_Header* const wimData = reinterpret_cast<const WIM_Header*>(info->header.pData);
+	const WIM_Header *const wimData = reinterpret_cast<const WIM_Header*>(info->header.pData);
 	int ret = Wim_Unknown;
 
 	// TODO: WLPWM_MAGIC

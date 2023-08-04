@@ -17,12 +17,12 @@
 
 // Thunar version is based on GTK+ version.
 #if GTK_CHECK_VERSION(3,0,0)
-#  define LIBTHUNARX_SO_FILENAME "libthunarx-3.so"
+#  define LIBTHUNARX_SO_FILENAME "libthunarx-3.so.0"
 #  define THUNARX_MAJOR_VERSION 1
 #  define THUNARX_MINOR_VERSION 8
 #  define THUNARX_MICRO_VERSION 0
 #else /* !GTK_CHECK_VERSION(3,0,0) */
-#  define LIBTHUNARX_SO_FILENAME "libthunarx-2.so"
+#  define LIBTHUNARX_SO_FILENAME "libthunarx-2.so.0"
 #  define THUNARX_MAJOR_VERSION 1
 #  define THUNARX_MINOR_VERSION 6
 #  define THUNARX_MICRO_VERSION 0
