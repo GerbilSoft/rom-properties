@@ -54,22 +54,22 @@ typedef enum {
 } WIM_Version_Type;
 
 typedef enum {
-	header_reserved = 0x1,
-	has_compression = 0x2,
-	read_only = 0x4,
-	spanned = 0x8,
-	resource_only = 0x10,
-	metadata_only = 0x20,
-	write_in_progress = 0x40,
-	rp_fix = 0x80,
+	header_reserved		= (1U << 0),
+	has_compression		= (1U << 1),
+	read_only		= (1U << 2),
+	spanned			= (1U << 3),
+	resource_only		= (1U << 4),
+	metadata_only		= (1U << 5),
+	write_in_progress	= (1U << 6),
+	rp_fix			= (1U << 7),
 } WIM_Flags;
 
 typedef enum {
-	compress_reserved = 0x10000,
-	compress_xpress = 0x20000,
-	compress_lzx = 0x40000,
-	compress_lzms = 0x80000,
-	compress_xpress2 = 0x200000,
+	compress_reserved	= (1U << 16),
+	compress_xpress		= (1U << 17),
+	compress_lzx		= (1U << 18),
+	compress_lzms		= (1U << 19),
+	compress_xpress2	= (1U << 21),
 } WIM_Compression_Flags;
 
 typedef enum {
