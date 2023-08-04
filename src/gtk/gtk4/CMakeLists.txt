@@ -56,11 +56,11 @@ ENDIF()
 ADD_DEFINITIONS(-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_66 -DGLIB_VERSION_MAX_ALLOWED=GLIB_VERSION_2_66)
 
 # Sources and headers. (GTK+ common)
-STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_CSRCS "${rom-properties-gtk_SRCS}")
-STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_CH    "${rom-properties-gtk_H}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_SRCS "${rom-properties-gtk_SRCS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_H    "${rom-properties-gtk_H}")
 
-STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_GTK4MIN_CSRCS "${rom-properties-gtk_GTK4MIN_SRCS}")
-STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_GTK4MIN_CH    "${rom-properties-gtk_GTK4MIN_H}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_GTK4MIN_SRCS "${rom-properties-gtk_GTK4MIN_SRCS}")
+STRING(REGEX REPLACE "([^;]+)" "../\\1" ${PROJECT_NAME}_GTK4MIN_H    "${rom-properties-gtk_GTK4MIN_H}")
 
 # GdkImageConv (GTK+ 2.x; TODO: Switch to GdkTexture)
 SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} ../xfce/GdkImageConv.cpp)
@@ -100,8 +100,8 @@ UNSET(arch)
 
 # Sources and headers. (GTK4-specific)
 SET(${PROJECT_NAME}_SRCS
-	${${PROJECT_NAME}_CSRCS} ${${PROJECT_NAME}_SRCS}
-	${${PROJECT_NAME}_GTK4MIN_CSRCS}
+	${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H}
+	${${PROJECT_NAME}_GTK4MIN_SRCS} ${${PROJECT_NAME}_GTK4MIN_H}
 	${${PROJECT_NAME}-notify_SRCS} ${${PROJECT_NAME}-notify_H}
 	${${PROJECT_NAME}_IFUNC_SRCS}
 	${${PROJECT_NAME}_SSSE3_SRCS}
@@ -114,11 +114,11 @@ SET(${PROJECT_NAME}_SRCS
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_H}
 	${${PROJECT_NAME}_GTK4MIN_H}
+	../plugin-helper.h
 	NautilusPlugin.hpp
 	NautilusPropertiesModelProvider.hpp
 	NautilusPropertiesModel.hpp
 	../gtk3/NautilusMenuProvider.hpp
-	../plugin-helper.h
 	nautilus-extension-mini.h
 	../gtk3/MenuProviderCommon.h
 	)

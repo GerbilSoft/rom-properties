@@ -97,10 +97,10 @@ SET(${PROJECT_NAME}_SRCS
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_H}
-	../gtk3/RpThunarPlugin.hpp
-	../gtk3/RpThunarMenuProvider.hpp
-	../gtk3/RpThunarPropertyPageProvider.hpp
-	../gtk3/plugin-helper.h
+	../plugin-helper.h
+	../gtk3/ThunarPlugin.hpp
+	../gtk3/ThunarMenuProvider.hpp
+	../gtk3/ThunarPropertyPageProvider.hpp
 	../gtk3/thunarx-mini.h
 	../gtk3/MenuProviderCommon.h
 	)
@@ -111,7 +111,7 @@ IF(HAVE_GSOUND OR (HAVE_LIBCANBERRA AND HAVE_LIBCANBERRA_GTK2))
 ENDIF(HAVE_GSOUND OR (HAVE_LIBCANBERRA AND HAVE_LIBCANBERRA_GTK2))
 
 IF(BUILD_GTK2)
-	ADD_LIBRARY(${PROJECT_NAME} MODULE ${${PROJECT_NAME}_SRCS})
+	ADD_LIBRARY(${PROJECT_NAME} MODULE ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H})
 	IF(ENABLE_PCH)
 		TARGET_PRECOMPILE_HEADERS(${PROJECT_NAME} PRIVATE
 			"${RP_CONFIG_LIBC_H}" "${RP_CXX11_COMPAT_H}"
