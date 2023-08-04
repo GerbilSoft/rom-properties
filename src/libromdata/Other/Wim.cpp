@@ -317,6 +317,7 @@ int WimPrivate::addFields_XML()
 	for (uint32_t i = 0; i <= wimHeader.number_of_images-1; i++) {
 		vv_data->resize(vv_data->size()+1);
 		auto &data_row = vv_data->at(vv_data->size()-1);
+		data_row.reserve(10);
 		data_row.emplace_back(rp_sprintf("%u", i + 1));
 		data_row.emplace_back(rowloop_current_image.name);
 		data_row.emplace_back(rowloop_current_image.description);
@@ -329,8 +330,13 @@ int WimPrivate::addFields_XML()
 		std::strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %R", tm_struct);
 		data_row.emplace_back(timestamp);
 
-		if (images[i].containswindowsimage == false)
+		if (images[i].containswindowsimage == false) {
+			// No Windows image. Add empty strings to complete the row.
+			for (unsigned int i = 4; i > 0; i--) {
+				data_row.emplace_back();
+			}
 			continue;
+		}
 
 		data_row.emplace_back(
 			rp_sprintf("%u.%u.%u.%u", rowloop_current_windowsver.majorversion,
