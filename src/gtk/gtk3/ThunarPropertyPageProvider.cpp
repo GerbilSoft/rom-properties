@@ -129,6 +129,7 @@ rp_thunar_property_page_provider_get_XAttrView(const gchar *uri)
 	GtkWidget *const xattrView = rp_xattr_view_new(uri);
 	if (!rp_xattr_view_has_attributes(RP_XATTR_VIEW(xattrView))) {
 		// No attributes available.
+		g_object_ref_sink(xattrView);
 		g_object_unref(xattrView);
 		return nullptr;
 	}
