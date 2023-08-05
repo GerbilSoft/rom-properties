@@ -313,8 +313,6 @@ int WimPrivate::addFields_XML()
 	auto vv_data = new RomFields::ListData_t();
 	vv_data->reserve(10);
 
-	char timestamp[20];
-	tm* tm_struct;
 	// loop for the rows
 	for (uint32_t i = 0; i <= wimHeader.number_of_images-1; i++) {
 		vv_data->resize(vv_data->size()+1);
@@ -326,11 +324,10 @@ int WimPrivate::addFields_XML()
 		data_row.emplace_back(rowloop_current_image.dispname);
 		data_row.emplace_back(rowloop_current_image.dispdescription);
 
-		// FIXME: Using our own timestamp formatting instead of the system locale.
-		// Can't easily specify time values in RFT_LISTDATA...
-		tm_struct = localtime(&rowloop_current_image.lastmodificationtime);
-		std::strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %R", tm_struct);
-		data_row.emplace_back(timestamp);
+		// Pack the 64-bit time_t into a string.
+		RomFields::TimeString_t time_string;
+		time_string.time = rowloop_current_image.lastmodificationtime;
+		data_row.emplace_back(time_string.str, sizeof(time_string.str));
 
 		if (images[i].containswindowsimage == false) {
 			// No Windows image. Add empty strings to complete the row.
@@ -391,6 +388,9 @@ int WimPrivate::addFields_XML()
 
 	RomFields::AFLD_PARAMS params;
 	params.flags = RomFields::RFT_LISTDATA_SEPARATE_ROW;
+	params.col_attrs.is_timestamp = (1U << 5);
+	params.col_attrs.dtflags = static_cast<RomFields::DateTimeFlags>(
+		RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_HAS_TIME);
 	params.headers = v_field_names;
 	params.data.single = vv_data;
 	// TODO: Header alignment?
@@ -470,7 +470,7 @@ Wim::Wim(LibRpFile::IRpFile* file)
 	auto do_wfr_byteswap = [](WIM_File_Resource &wfr) {
 		wfr.size          = le64_to_cpu(wfr.size);
 		wfr.offset_of_xml = le64_to_cpu(wfr.offset_of_xml);
-		wfr.not_important = le64_to_cpu(wfr.not_important);
+		//wfr.not_important = le64_to_cpu(wfr.not_important);
 	};
 	do_wfr_byteswap(d->wimHeader.offset_table);
 	do_wfr_byteswap(d->wimHeader.xml_resource);
