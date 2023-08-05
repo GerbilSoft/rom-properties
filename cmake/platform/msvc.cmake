@@ -112,11 +112,11 @@ SET(RP_C_FLAGS_COMMON "${RP_C_FLAGS_COMMON} /wd4996 /w34996")
 SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /wd4996 /w34996")
 
 # MSVC 2015 uses thread-safe statics by default.
-# This doesn't work on Windows XP, so disable it.
-# NOTE: Only for i386; enabling elsewhere because we aren't
-# supporting 64-bit XP, and XP wasn't available for ARM.
-IF(MSVC_VERSION GREATER 1899 AND _MSVC_C_ARCHITECTURE_FAMILY MATCHES "^[iI]?[xX3]86$")
-	MESSAGE(STATUS "MSVC: Disabling thread-safe statics for 32-bit Windows XP compatibility")
+# This doesn't work on Windows XP or Windows Server 2003, so disable it.
+# NOTE: Only for i386 and amd64; enabling elsewhere because
+# Windows XP and Windows Server 2003 weren't available for ARM.
+IF(MSVC_VERSION GREATER 1899 AND _MSVC_C_ARCHITECTURE_FAMILY MATCHES "^([iI]?[xX3]86)|([xX]64)$")
+	MESSAGE(STATUS "MSVC: Disabling thread-safe statics for Windows XP and Windows Server 2003 compatibility")
 	SET(RP_C_FLAGS_COMMON   "${RP_C_FLAGS_COMMON} /Zc:threadSafeInit-")
 	SET(RP_CXX_FLAGS_COMMON "${RP_CXX_FLAGS_COMMON} /Zc:threadSafeInit-")
 ENDIF()
