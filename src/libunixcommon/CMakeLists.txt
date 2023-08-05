@@ -28,7 +28,9 @@ IF(BUILD_KF5)
 	# Find the qtpaths5 executable for Qt5.
 	SET(QT_SELECT_OLD "$ENV{QT_SELECT}")
 	SET(ENV{QT_SELECT} qt5)
-	FIND_PROGRAM(QTPATHS5 NAMES qtpaths5 qtpaths)
+	FIND_PROGRAM(QTPATHS5 NAMES qtpaths5 qtpaths
+		PATHS /usr/local/lib/qt5/bin	# FreeBSD
+		)
 	IF(NOT QTPATHS5)
 		MESSAGE(FATAL_ERROR "qtpaths5 not found. Install one of these packages:
   - Debian/Ubuntu: qttools5-dev-tools
@@ -54,7 +56,9 @@ IF(BUILD_KF6)
 	# Find the qtpaths6 executable for Qt6.
 	SET(QT_SELECT_OLD "$ENV{QT_SELECT}")
 	SET(ENV{QT_SELECT} qt6)
-	FIND_PROGRAM(QTPATHS6 NAMES qtpaths6 qtpaths)
+	FIND_PROGRAM(QTPATHS6 NAMES qtpaths6 qtpaths
+		PATHS /usr/local/lib/qt6/bin	# FreeBSD
+		)
 	IF(NOT QTPATHS6)
 		MESSAGE(FATAL_ERROR "qtpaths6 not found. Install one of these packages:
   - Debian/Ubuntu: qttools6-dev-tools

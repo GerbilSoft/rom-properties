@@ -28,25 +28,13 @@
 using std::string;
 
 // xattrs
-#if defined(HAVE_FSETXATTR_LINUX)
+#if defined(HAVE_SYS_XATTR_H)
+// NOTE: Mac fsetxattr() is the same as Linux but with an extra options parameter.
 #  include <sys/xattr.h>
-#elif defined(HAVE_EXTATTR_SET_FD)
+#elif defined(HAVE_SYS_EXTATTR_H)
+#  include <sys/types.h>
 #  include <sys/extattr.h>
-// Linux-compatible wrapper.
-static inline int fsetxattr(int fd, const char *name, const void *value, size_t size, int flags)
-{
-	RP_UNUSED(flags);
-	ssize_t sxret = extattr_set_fd(fd, EXTATTR_NAMESPACE_USER, name, value, size);
-	if (sxret != size) {
-		errno = EIO;
-		return -1;
-	}
-	return 0;
-}
-#elif defined(HAVE_FSETXATTR_MAC)
-#  include <sys/xattr.h>
-// TODO: Define a Linux-compatible version.
-#endif /* HAVE_FSETXATTR_LINUX || HAVE_FSETXATTR_MAC*/
+#endif
 
 namespace RpDownload {
 
@@ -137,11 +125,8 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime)
 	// Check if storeFileOriginInfo is enabled.
 	const bool storeFileOriginInfo = getStoreFileOriginInfo();
 	if (storeFileOriginInfo) {
-#if defined(HAVE_FSETXATTR_LINUX) || defined(HAVE_EXTATTR_SET_FD)
+#if defined(HAVE_FSETXATTR_LINUX)
 		// fsetxattr() [Linux version]
-		// NOTE: Also used for FreeBSD using a wrapper function.
-
-		// Set the XDG origin attributes.
 		errno = 0;
 		int sxret = fsetxattr(fd, "user.xdg.origin.url", url, _tcslen(url), 0);
 		if (sxret != 0 && err != 0) {
@@ -150,9 +135,26 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime)
 				err = EIO;
 			}
 		}
-
 		errno = 0;
 		sxret = fsetxattr(fd, "user.xdg.publisher", xdg_publisher, sizeof(xdg_publisher)-1, 0);
+		if (sxret != 0 && err != 0) {
+			err = errno;
+			if (err == 0) {
+				err = EIO;
+			}
+		}
+#elif defined(HAVE_EXTATTR_SET_FD)
+		// extattr_set_fd() [FreeBSD version]
+		errno = 0;
+		ssize_t sxret = extattr_set_fd(fd, EXTATTR_NAMESPACE_USER, "user.xdg.origin.url", url, _tcslen(url));
+		if (sxret != 0 && err != 0) {
+			err = errno;
+			if (err == 0) {
+				err = EIO;
+			}
+		}
+		errno = 0;
+		sxret = extattr_set_fd(fd, EXTATTR_NAMESPACE_USER, "user.xdg.publisher", xdg_publisher, sizeof(xdg_publisher)-1);
 		if (sxret != 0 && err != 0) {
 			err = errno;
 			if (err == 0) {
@@ -167,9 +169,9 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime)
 		// References:
 		// - https://apple.stackexchange.com/questions/110239/where-is-the-where-from-meta-data-stored-when-downloaded-via-chrome
 		// - http://osxdaily.com/2018/05/03/view-remove-extended-attributes-file-mac/
-# warning Mac origin info not implemented yet.
+#  warning Mac origin info not implemented yet.
 #else
-# warning No xattr implementation for this system, cannot set origin info.
+#  warning No xattr implementation for this system, cannot set origin info.
 #endif /* HAVE_FSETXATTR_LINUX */
 	}
 

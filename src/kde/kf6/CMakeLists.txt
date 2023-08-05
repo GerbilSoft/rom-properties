@@ -48,7 +48,9 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 		#
 
 		# Find the qtpaths6 executable.
-		FIND_PROGRAM(QTPATHS6 NAMES qtpaths6 qtpaths)
+		FIND_PROGRAM(QTPATHS6 NAMES qtpaths6 qtpaths
+			PATHS /usr/local/lib/qt6/bin	# FreeBSD
+			)
 		IF(NOT QTPATHS6)
 			MESSAGE(FATAL_ERROR "qtpaths6 not found. Install one of these packages:
   - Debian/Ubuntu: qttools6-dev-tools

@@ -17,6 +17,11 @@
     the file browser extension libraries installed, e.g. libnautilus-extension-dev.
     * This was broken since rom-properties v1.6, i.e. when the various GTK3 UI
       frontends were merged into a single library.
+  * Consolidated the Linux and FreeBSD XAttr readers into a single file with
+    a few #ifdef's. Partially based on KIO's FileProtocol::copyXattrs().
+    * Also partially supports macOS.
+  * Unix XAttr reader: Fix off-by-one that prevented a file's last attribute
+    from being displayed.
 
 * Other changes:
   * Nintendo3DS: The "Options" menu no longer shows a grayed-out "Extract SRL"

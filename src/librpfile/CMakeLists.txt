@@ -15,6 +15,23 @@ IF(NOT WIN32)
 	CHECK_SYMBOL_EXISTS(statx "sys/stat.h" HAVE_STATX)
 	SET(CMAKE_REQUIRED_DEFINITIONS "${OLD_CMAKE_REQUIRED_DEFINITIONS}")
 	UNSET(OLD_CMAKE_REQUIRED_DEFINITIONS)
+
+	# Check for an xattr header.
+	INCLUDE(CheckIncludeFile)
+	CHECK_INCLUDE_FILE("sys/xattr.h" HAVE_SYS_XATTR_H)
+	CHECK_INCLUDE_FILE("sys/extattr.h" HAVE_SYS_EXTATTR_H)
+
+	# Check for an xattr function.
+	INCLUDE(CheckSymbolExists)
+	IF(HAVE_SYS_XATTR_H)
+		IF(APPLE)
+			CHECK_SYMBOL_EXISTS(fsetxattr "sys/xattr.h" HAVE_FSETXATTR_MAC)
+		ELSE(APPLE)
+			CHECK_SYMBOL_EXISTS(fsetxattr "sys/xattr.h" HAVE_FSETXATTR_LINUX)
+		ENDIF(APPLE)
+	ELSEIF(HAVE_SYS_EXTATTR_H)
+		CHECK_SYMBOL_EXISTS(extattr_set_fd "sys/extattr.h" HAVE_EXTATTR_SET_FD)
+	ENDIF()
 ENDIF(NOT WIN32)
 
 # Sources.
@@ -52,28 +69,15 @@ SET(${PROJECT_NAME}_H
 
 # OS-specific implementations
 IF(WIN32)
-	SET(${PROJECT_NAME}_SRCS
-		${${PROJECT_NAME}_SRCS}
-		scsi/RpFile_scsi_win32.cpp
-		xattr/XAttrReader_win32.cpp
-		)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} scsi/RpFile_scsi_win32.cpp)
 	SET(RP_OS_SCSI_SUPPORTED 1)
 ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-	SET(${PROJECT_NAME}_SRCS
-		${${PROJECT_NAME}_SRCS}
-		scsi/RpFile_scsi_linux.cpp
-		xattr/XAttrReader_linux.cpp
-		)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} scsi/RpFile_scsi_linux.cpp)
 	SET(RP_OS_SCSI_SUPPORTED 1)
 ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR CMAKE_SYSTEM_NAME STREQUAL "Dragonfly")
 	# FIXME: Not working properly. (SCSI ILLEGAL REQUEST errors)
 	# NOTE: The file is still needed for rereadDeviceSizeOS().
-	SET(${PROJECT_NAME}_SRCS
-		${${PROJECT_NAME}_SRCS}
-		scsi/RpFile_scsi_freebsd.cpp
-		xattr/XAttrReader_dummy.cpp
-		#xattr/XAttrReader_freebsd.cpp	# FIXME: Needs testing
-		)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} scsi/RpFile_scsi_freebsd.cpp)
 
 	IF(0) # FIXME
 	# TODO: Check for header files. CHECK_INCLUDE_FILE() doesn't work
@@ -91,19 +95,21 @@ ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR CMAKE_SYSTEM_NAME STREQUAL "Drago
 	ENDIF()
 	ENDIF(0) # FIXME
 ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "NetBSD" OR CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
-	SET(${PROJECT_NAME}_SRCS
-		${${PROJECT_NAME}_SRCS}
-		scsi/RpFile_scsi_netbsd.cpp
-		xattr/XAttrReader_dummy.cpp
-		)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} scsi/RpFile_scsi_netbsd.cpp)
 	SET(RP_OS_SCSI_SUPPORTED 1)
 ELSE()
-	# Dummy implementations
-	SET(${PROJECT_NAME}_SRCS
-		${${PROJECT_NAME}_SRCS}
-		scsi/RpFile_scsi_dummy.cpp
-		xattr/XAttrReader_dummy.cpp
-		)
+	# Dummy implementation
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} scsi/RpFile_scsi_dummy.cpp)
+ENDIF()
+
+# XAttr functionality (OS-specific)
+IF(WIN32)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} xattr/XAttrReader_win32.cpp)
+ELSEIF(HAVE_SYS_XATTR_H OR HAVE_SYS_EXTATTR_H)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} xattr/XAttrReader_posix.cpp)
+ELSE()
+	# Dummy implementation
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} xattr/XAttrReader_dummy.cpp)
 ENDIF()
 
 IF(WIN32)
