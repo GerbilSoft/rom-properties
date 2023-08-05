@@ -39,6 +39,14 @@ DELAYLOAD_TEST_FUNCTION_IMPL0(get_crc_table);
 
 /** RpFilePrivate **/
 
+RpFilePrivate::RpFilePrivate(RpFile *q, const wchar_t *filenameW, RpFile::FileMode mode)
+	: q_ptr(q), file(INVALID_HANDLE_VALUE), filename(nullptr)
+	, mode(mode), gzfd(nullptr), gzsz(-1), devInfo(nullptr)
+{
+	assert(filenameW != nullptr);
+	this->filenameW = wcsdup(filenameW);
+}
+
 RpFilePrivate::~RpFilePrivate()
 {
 	if (gzfd) {
@@ -48,6 +56,7 @@ RpFilePrivate::~RpFilePrivate()
 		CloseHandle(file);
 	}
 	free(filename);
+	free(filenameW);
 	delete devInfo;
 }
 
@@ -102,7 +111,7 @@ inline int RpFilePrivate::mode_to_win32(RpFile::FileMode mode,
 int RpFilePrivate::reOpenFile(void)
 {
 	RP_Q(RpFile);
-	if (!filename || filename[0] == '\0') {
+	if (!filenameW || filenameW[0] == L'\0') {
 		// No filename...
 		q->m_lastError = EINVAL;
 		return -EINVAL;
@@ -118,37 +127,43 @@ int RpFilePrivate::reOpenFile(void)
 		return -EINVAL;
 	}
 
-	// Converted filename for Windows.
-	tstring tfilename;
-
 	// If the filename is "X:", change it to "X:\\".
-	if (ISASCII(filename[0]) && ISALPHA(filename[0]) &&
-	    filename[1] == ':' && filename[2] == '\0')
+	if (ISASCII(filenameW[0]) && ISALPHA(filenameW[0]) &&
+	    filenameW[1] == L':' && filenameW[2] == L'\0')
 	{
 		// Drive letter. Append '\\'.
-		char *drvfilename = static_cast<char*>(malloc(4));
+		wchar_t *drvfilename = static_cast<wchar_t*>(malloc(4*sizeof(wchar_t)));
 		drvfilename[0] = filename[0];
-		drvfilename[1] = ':';
-		drvfilename[2] = '\\';
-		drvfilename[3] = '\0';
+		drvfilename[1] = _T(':');
+		drvfilename[2] = _T('\\');
+		drvfilename[3] = _T('\0');
 
-		std::swap(drvfilename, this->filename);
+		std::swap(drvfilename, this->filenameW);
 		free(drvfilename);
+		if (this->filename) {
+			free(this->filename);
+			this->filename = nullptr;
+		}
 	}
 
+	// Adjusted filename for Windows.
+	tstring tfilename;
+
 	// Check if the path starts with a drive letter.
-	if (ISASCII(filename[0]) && ISALPHA(filename[0]) &&
-	    filename[1] == ':' && filename[2] == '\\')
+	// NEXT COMMIT TODO: Add ISDRIVELETTER() because ISASCII/ISALPHA only
+	// handle 8-bit chars, and iswascii/iswalpha are affected by locale.
+	if (ISASCII(filenameW[0]) && ISALPHA(filenameW[0]) &&
+	    filenameW[1] == L':' && filenameW[2] == L'\\')
 	{
 		// Is it only a drive letter?
-		if (filename[3] == '\0') {
+		if (filenameW[3] == L'\0') {
 			// This is a drive letter.
 			// Only CD-ROM (and similar) drives are supported.
 			// TODO: Verify if opening by drive letter works,
 			// or if we have to resolve the physical device name.
 			// NOTE: filename is UTF-8, but we can use it as if
 			// it's ANSI for a drive letter.
-			const UINT driveType = GetDriveTypeA(filename);
+			const UINT driveType = GetDriveType(filenameW);
 			switch (driveType) {
 				case DRIVE_CDROM:
 					// CD-ROM works.
@@ -167,17 +182,17 @@ int RpFilePrivate::reOpenFile(void)
 			// Create a raw device filename.
 			// Reference: https://support.microsoft.com/en-us/help/138434/how-win32-based-applications-read-cd-rom-sectors-in-windows-nt
 			tfilename = _T("\\\\.\\X:");
-			tfilename[4] = filename[0];
+			tfilename[4] = filenameW[0];
 			q->m_fileType = DT_BLK;	// this is a device
 		} else {
 			// Absolute path: Prepend "\\?\" in order to support filenames longer than MAX_PATH.
 			tfilename = _T("\\\\?\\");
-			tfilename += U82T_c(filename);
+			tfilename += filenameW;
 		}
 	} else {
 		// Not an absolute path, or "\\?\" is already
 		// prepended. Use it as-is.
-		tfilename = U82T_c(filename);
+		tfilename = filenameW;
 	}
 
 	if (q->m_fileType == DT_BLK) {
@@ -271,12 +286,12 @@ int RpFilePrivate::reOpenFile(void)
 /**
  * Open a file.
  * NOTE: Files are always opened in binary mode.
- * @param filename Filename.
- * @param mode File mode.
+ * @param filename Filename (UTF-8)
+ * @param mode File mode
  */
 RpFile::RpFile(const char *filename, FileMode mode)
 	: super()
-	, d_ptr(new RpFilePrivate(this, filename, mode))
+	, d_ptr(new RpFilePrivate(this, U82W_c(filename), mode))
 {
 	init();
 }
@@ -284,12 +299,38 @@ RpFile::RpFile(const char *filename, FileMode mode)
 /**
  * Open a file.
  * NOTE: Files are always opened in binary mode.
- * @param filename Filename.
- * @param mode File mode.
+ * @param filename Filename (UTF-8)
+ * @param mode File mode
  */
 RpFile::RpFile(const string &filename, FileMode mode)
 	: super()
-	, d_ptr(new RpFilePrivate(this, filename.c_str(), mode))
+	, d_ptr(new RpFilePrivate(this, U82W_s(filename), mode))
+{
+	init();
+}
+
+/**
+ * Open a file.
+ * NOTE: Files are always opened in binary mode.
+ * @param filename Filename (UTF-16)
+ * @param mode File mode
+ */
+RpFile::RpFile(const wchar_t *filenameW, FileMode mode)
+	: super()
+	, d_ptr(new RpFilePrivate(this, filenameW, mode))
+{
+	init();
+}
+
+/**
+ * Open a file.
+ * NOTE: Files are always opened in binary mode.
+ * @param filename Filename (UTF-16)
+ * @param mode File mode
+ */
+RpFile::RpFile(const wstring &filenameW, FileMode mode)
+	: super()
+	, d_ptr(new RpFilePrivate(this, filenameW.c_str(), mode))
 {
 	init();
 }
@@ -734,12 +775,30 @@ off64_t RpFile::size(void)
 
 /**
  * Get the filename.
- * @return Filename. (May be nullptr if the filename is not available.)
+ * @return Filename (UTF-8) (May be nullptr if the filename is not available.)
  */
 const char *RpFile::filename(void) const
 {
 	RP_D(const RpFile);
-	return (d->filename != nullptr && d->filename[0] != '\0') ? d->filename : nullptr;
+	if (d->filename && d->filename[0] != '\0') {
+		return d->filename;
+	} else if (d->filenameW && d->filenameW[0] != L'\0') {
+		const_cast<RpFilePrivate*>(d)->filename = strdup(W2U8(d->filenameW).c_str());
+		return d->filename;
+	}
+
+	return nullptr;
+}
+
+/**
+ * Get the filename.
+ * Get the filename. (Windows only: returns UTF-16.)
+ * @return Filename (UTF-16) (May be nullptr if the filename is not available.)
+ */
+const wchar_t *RpFile::filenameW(void) const
+{
+	RP_D(const RpFile);
+	return (d->filenameW != nullptr && d->filenameW[0] != L'\0') ? d->filenameW : nullptr;
 }
 
 /** Extra functions **/

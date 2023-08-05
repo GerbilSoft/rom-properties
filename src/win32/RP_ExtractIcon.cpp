@@ -134,9 +134,7 @@ IFACEMETHODIMP RP_ExtractIcon::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
 
 	// Get the appropriate RomData class for this ROM file.
 	// RomData class *must* support at least one image type.
-	// TODO: wchar_t* overload so we don't need to use WTF-8.
-	// Requires adding to the API, so romdata-4.dll?
-	d->romData = RomDataFactory::create(u8filename.c_str(), RomDataFactory::RDA_HAS_THUMBNAIL);
+	d->romData = RomDataFactory::create(d->olefilename, RomDataFactory::RDA_HAS_THUMBNAIL);
 	return S_OK;
 }
 

@@ -184,9 +184,23 @@ std::string replace_ext(const char *filename, const char *ext);
  * Symbolic links are NOT resolved; otherwise wouldn't check
  * if the specified file was a symlink itself.
  *
+ * @param filename Filename (UTF-8)
  * @return True if the file is a symbolic link; false if not.
  */
 bool is_symlink(const char *filename);
+
+#ifdef _WIN32
+/**
+ * Check if the specified file is a symbolic link.
+ *
+ * Symbolic links are NOT resolved; otherwise wouldn't check
+ * if the specified file was a symlink itself.
+ *
+ * @param filenameW Filename (UTF-16)
+ * @return True if the file is a symbolic link; false if not.
+ */
+bool is_symlink(const wchar_t *filenameW);
+#endif /* _WIN32 */
 
 /**
  * Resolve a symbolic link.
@@ -194,19 +208,45 @@ bool is_symlink(const char *filename);
  * If the specified filename is not a symbolic link,
  * the filename will be returned as-is.
  *
- * @param filename Filename of symbolic link.
+ * @param filename Filename of symbolic link (UTF-8)
  * @return Resolved symbolic link, or empty string on error.
  */
 std::string resolve_symlink(const char *filename);
+
+#ifdef _WIN32
+/**
+ * Resolve a symbolic link.
+ *
+ * If the specified filename is not a symbolic link,
+ * the filename will be returned as-is.
+ *
+ * @param filenameW Filename of symbolic link (UTF-16)
+ * @return Resolved symbolic link, or empty string on error.
+ */
+std::wstring resolve_symlink(const wchar_t *filenameW);
+#endif /* _WIN32 */
 
 /**
  * Check if the specified file is a directory.
  *
  * Symbolic links are resolved as per usual directory traversal.
  *
+ * @param filename Filename to check (UTF-8)
  * @return True if the file is a directory; false if not.
  */
 bool is_directory(const char *filename);
+
+#ifdef _WIN32
+/**
+ * Check if the specified file is a directory.
+ *
+ * Symbolic links are resolved as per usual directory traversal.
+ *
+ * @param filenameW Filename to check (UTF-16)
+ * @return True if the file is a directory; false if not.
+ */
+bool is_directory(const wchar_t *filenameW);
+#endif /* _WIN32 */
 
 /**
  * Is a file located on a "bad" file system?

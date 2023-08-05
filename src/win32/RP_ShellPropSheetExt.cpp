@@ -2232,9 +2232,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	}
 
 	// Get the appropriate RomData class for this ROM.
-	// TODO: wchar_t* overload so we don't need to use WTF-8.
-	// Requires adding to the API, so romdata-4.dll?
-	romData = RomDataFactory::create(u8filename.c_str());
+	romData = RomDataFactory::create(tfilename);
 	if (!romData) {
 		// Could not open the RomData object.
 		goto cleanup;
@@ -2771,9 +2769,7 @@ INT_PTR CALLBACK RP_ShellPropSheetExt_Private::DlgProc(HWND hDlg, UINT uMsg, WPA
 			}
 
 			// Get the appropriate RomData class for this ROM.
-			// TODO: wchar_t* overload so we don't need to use WTF-8.
-			// Requires adding to the API, so romdata-4.dll?
-			d->romData = RomDataFactory::create(T2U8(d->tfilename).c_str());
+			d->romData = RomDataFactory::create(d->tfilename);
 			if (!d->romData) {
 				// Unable to get a RomData object.
 				break;

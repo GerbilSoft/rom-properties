@@ -11,14 +11,18 @@
 #ifdef __cplusplus
 /** C++ **/
 
-// C includes. (C++ namespace)
+// C includes (C++ namespace)
 #include <cassert>
 #include <cerrno>
 #include <cstring>
 #include <ctime>
 #include <stdint.h>
 
-// C++ includes.
+#ifdef _WIN32
+#  include <cwctype>
+#endif /* _WIN32 */
+
+// C++ includes
 #include <algorithm>
 #include <array>
 #include <limits>
@@ -27,12 +31,16 @@
 #else /* !__cplusplus */
 /** C **/
 
-// C includes.
+// C includes
 #include <assert.h>
 #include <errno.h>
 #include <string.h>
 #include <time.h>
 #include <stdint.h>
+
+#ifdef _WIN32
+#  include <wctype.h>
+#endif /* _WIN32 */
 
 #endif /* __cplusplus */
 

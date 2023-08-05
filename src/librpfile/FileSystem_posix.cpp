@@ -234,6 +234,7 @@ int delete_file(const char *filename)
  * Symbolic links are NOT resolved; otherwise wouldn't check
  * if the specified file was a symlink itself.
  *
+ * @param filename Filename (UTF-8)
  * @return True if the file is a symbolic link; false if not.
  */
 bool is_symlink(const char *filename)
@@ -271,7 +272,7 @@ bool is_symlink(const char *filename)
  * If the specified filename is not a symbolic link,
  * the filename will be returned as-is.
  *
- * @param filename Filename of symbolic link.
+ * @param filename Filename of symbolic link (UTF-8)
  * @return Resolved symbolic link, or empty string on error.
  */
 string resolve_symlink(const char *filename)
@@ -297,6 +298,7 @@ string resolve_symlink(const char *filename)
  *
  * Symbolic links are resolved as per usual directory traversal.
  *
+ * @param filename Filename to check (UTF-8)
  * @return True if the file is a directory; false if not.
  */
 bool is_directory(const char *filename)
