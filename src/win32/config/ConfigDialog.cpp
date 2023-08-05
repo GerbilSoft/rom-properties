@@ -14,9 +14,6 @@
 // librpbase
 using namespace LibRpBase;
 
-// libwin32ui
-#include "libwin32ui/SubclassWindow.h"
-
 // Property sheet icon.
 // Extracted from imageres.dll or shell32.dll.
 #include "PropSheetIcon.hpp"

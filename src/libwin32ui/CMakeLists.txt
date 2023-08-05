@@ -25,7 +25,6 @@ SET(${PROJECT_NAME}_H
 	DialogBuilder.hpp
 	HiDPI.h
 	RegKey.hpp
-	SubclassWindow.h
 	WinUI.hpp
 	WTSSessionNotification.hpp
 	)

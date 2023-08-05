@@ -20,7 +20,6 @@
 #include "KeyStore_OwnerDataCallback.hpp"
 
 // libwin32ui
-#include "libwin32ui/SubclassWindow.h"
 using LibWin32UI::WTSSessionNotification;
 
 // Other rom-properties libraries

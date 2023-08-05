@@ -27,7 +27,6 @@
 
 // libwin32ui
 #include "libwin32ui/AutoGetDC.hpp"
-#include "libwin32ui/SubclassWindow.h"
 using LibWin32UI::AutoGetDC;
 using LibWin32UI::WTSSessionNotification;
 
