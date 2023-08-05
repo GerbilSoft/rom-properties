@@ -189,6 +189,7 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 
 			string name = s_namespace;
 			name.append(p+1, len);
+			p += 1 + len;
 
 			// Get the value for this attribute.
 			// NOTE: vlen does *not* include a NULL-terminator.
