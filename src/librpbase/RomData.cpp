@@ -38,6 +38,9 @@ RomDataPrivate::RomDataPrivate(IRpFile *file, const RomDataInfo *pRomDataInfo)
 	, isValid(false)
 	, file(nullptr)
 	, filename(nullptr)
+#ifdef _WIN32
+	, filenameW(nullptr)
+#endif /* _WIN32 */
 	, isCompressed(false)
 	, metaData(nullptr)
 {
@@ -51,6 +54,18 @@ RomDataPrivate::RomDataPrivate(IRpFile *file, const RomDataInfo *pRomDataInfo)
 		this->file = file->ref();
 		this->isCompressed = file->isCompressed();
 
+#ifdef _WIN32
+		// If this is RpFile, get the UTF-16 filename directly.
+		RpFile *const rpFile = dynamic_cast<RpFile*>(file);
+		if (rpFile) {
+			const wchar_t *const filenameW = rpFile->filenameW();
+			if (filenameW) {
+				this->filenameW = wcsdup(filenameW);
+			}
+		}
+#endif /* _WIN32 */
+
+		// TODO: Don't set if filenameW was set?
 		const char *const filename = file->filename();
 		if (filename) {
 			this->filename = strdup(filename);
@@ -62,6 +77,9 @@ RomDataPrivate::~RomDataPrivate()
 {
 	delete metaData;
 	free(filename);
+#ifdef _WIN32
+	free(filenameW);
+#endif /* _WIN32 */
 
 	// Unreference the file.
 	UNREF(this->file);
@@ -502,6 +520,7 @@ IRpFile *RomData::ref_file(void)
  */
 const char *RomData::filename(void) const
 {
+	// TODO: filenameW() variant on Windows?
 	RP_D(const RomData);
 	return (d->filename != nullptr && d->filename[0] != '\0') ? d->filename : nullptr;
 }
@@ -990,7 +1009,16 @@ int RomData::doRomOp(int id, RomOpParams *pParams)
 	} else {
 		// Reopen the file.
 		closeFileAfter = true;
-		RpFile *const file = new RpFile(d->filename, RpFile::FM_OPEN_WRITE);
+		RpFile *file;
+#ifdef _WIN32
+		if (d->filenameW) {
+			file = new RpFile(d->filenameW, RpFile::FM_OPEN_WRITE);
+		} else
+#endif /* _WIN32 */
+		{
+			file = new RpFile(d->filename, RpFile::FM_OPEN_WRITE);
+		}
+
 		if (!file->isOpen()) {
 			// Error opening the file.
 			int ret = -file->lastError();
