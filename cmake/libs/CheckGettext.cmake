@@ -18,10 +18,10 @@ FUNCTION(CHECK_GETTEXT)
 		SET(Intl_INCLUDE_DIR "${gettext_ROOT}/include" CACHE INTERNAL "libintl include directory." FORCE)
 		IF(MSVC)
 			# MSVC: Link to the import library
-			SET(Intl_LIBRARIES "${gettext_LIB}/libgnuintl-8.lib" CACHE INTERNAL "libintl libraries" FORCE)
+			SET(Intl_LIBRARY "${gettext_LIB}/libgnuintl-8.lib" CACHE INTERNAL "libintl libraries" FORCE)
 		ELSE(MSVC)
 			# MinGW: Link to the import library (TODO: Link to the DLL?)
-			SET(Intl_LIBRARIES "${gettext_LIB}/libgnuintl.dll.a" CACHE INTERNAL "libintl libraries" FORCE)
+			SET(Intl_LIBRARY "${gettext_LIB}/libgnuintl.dll.a" CACHE INTERNAL "libintl libraries" FORCE)
 		ENDIF(MSVC)
 
 		# Executables
