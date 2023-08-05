@@ -275,8 +275,10 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 			// Empty name. Assume we're at the end of the list.
 			break;
 		}
+		// NOTE: If p == list_end here, then we're at the last attribute.
+		// Only fail if p > list_end, because that indicates an overflow.
 		p += strlen(name) + 1;
-		if (p >= list_end)
+		if (p > list_end)
 			break;
 
 		// Get the value for this attribute.

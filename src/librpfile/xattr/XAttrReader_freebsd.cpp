@@ -179,7 +179,10 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 		const char *p = list_buf.get();
 		while (p < list_end) {
 			uint8_t len = *p;
-			if (p + 1 + len >= list_end) {
+
+			// NOTE: If p + 1 + len == list_end here, then we're at the last attribute.
+			// Only fail if p + 1 + len > list_end, because that indicates an overflow.
+			if (p + 1 + len > list_end) {
 				// Out of bounds.
 				break;
 			}

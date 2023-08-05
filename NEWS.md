@@ -17,6 +17,8 @@
     the file browser extension libraries installed, e.g. libnautilus-extension-dev.
     * This was broken since rom-properties v1.6, i.e. when the various GTK3 UI
       frontends were merged into a single library.
+  * Linux and FreeBSD XAttr readers: Fix off-by-one that prevented a file's
+    last attribute from being displayed.
 
 ## v2.2.1 (released 2023/07/30)
 
