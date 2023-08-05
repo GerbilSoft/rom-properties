@@ -72,7 +72,7 @@ ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR CMAKE_SYSTEM_NAME STREQUAL "Drago
 		${${PROJECT_NAME}_SRCS}
 		scsi/RpFile_scsi_freebsd.cpp
 		xattr/XAttrReader_dummy.cpp
-		#xattr/XAttrReader_freebsd.cpp	# FIXME: Needs testing
+		xattr/XAttrReader_freebsd.cpp
 		)
 
 	IF(0) # FIXME

@@ -10,6 +10,7 @@
 #include "XAttrReader.hpp"
 #include "XAttrReader_p.hpp"
 
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/extattr.h>
@@ -53,7 +54,7 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	// Open the file to get attributes.
 	// TODO: Move this to librpbase or libromdata,
 	// and add configure checks for FAT_IOCTL_GET_ATTRIBUTES.
-#define OPEN_FLAGS (O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+#define OPEN_FLAGS (O_RDONLY|O_NONBLOCK)
 	errno = 0;
 	fd = open(filename, OPEN_FLAGS);
 	if (fd < 0) {
@@ -136,7 +137,7 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 
 	auto process_attrs = [](XAttrReader::XAttrList &xattrs, int fd, int attrnamespace) -> int {
 		// Get the size of the xattr name list.
-		ssize_t list_size = extattr_list_fd(fd, nullptr, attrnamespace, 0);
+		ssize_t list_size = extattr_list_fd(fd, attrnamespace, nullptr, 0);
 		if (list_size == 0) {
 			// No xattrs.
 			return 0;
@@ -146,7 +147,7 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 		}
 
 		unique_ptr<char[]> list_buf(new char[list_size]);
-		if (extattr_list_fd(fd, list_buf.get(), attrnamespace, list_size) != list_size) {
+		if (extattr_list_fd(fd, attrnamespace, list_buf.get(), list_size) != list_size) {
 			// List size doesn't match. Something broke here...
 			return -ENOTSUP;
 		}
@@ -188,7 +189,7 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 
 			// Get the value for this attribute.
 			// NOTE: vlen does *not* include a NULL-terminator.
-			ssize_t vlen = extattr_get_fd(fd, attrnamespace, name, nullptr, 0);
+			ssize_t vlen = extattr_get_fd(fd, attrnamespace, name.c_str(), nullptr, 0);
 			if (vlen <= 0) {
 				// Error retrieving attribute information.
 				continue;
@@ -197,7 +198,7 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 				value_len = vlen;
 				value_buf.reset(new char[value_len]);
 			}
-			if (extattr_get_fd(fd, attrnamespace, name, value_buf.get(), value_len) != vlen) {
+			if (extattr_get_fd(fd, attrnamespace, name.c_str(), value_buf.get(), value_len) != vlen) {
 				// Failed to get this attribute. Skip it for now.
 				continue;
 			}
@@ -208,6 +209,9 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 			string s_value(value_buf.get(), vlen);
 			xattrs.emplace(name, std::move(s_value));
 		}
+
+		// Extended attributes retrieved successfully.
+		return 0;
 	};
 
 	int ret1 = process_attrs(genericXAttrs, fd, EXTATTR_NAMESPACE_SYSTEM);
