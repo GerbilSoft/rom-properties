@@ -18,6 +18,10 @@
     * This was broken since rom-properties v1.6, i.e. when the various GTK3 UI
       frontends were merged into a single library.
 
+* Other changes:
+  * Nintendo3DS: The "Options" menu no longer shows a grayed-out "Extract SRL"
+    option if the file does not contain an embedded SRL.
+
 ## v2.2.1 (released 2023/07/30)
 
 * New parser features:

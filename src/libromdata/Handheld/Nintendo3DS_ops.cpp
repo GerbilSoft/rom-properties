@@ -43,18 +43,16 @@ vector<RomData::RomOp> Nintendo3DS::romOps_int(void) const
 		const_cast<Nintendo3DSPrivate*>(d)->loadTicketAndTMD();
 	}
 
-	RomOp op("E&xtract SRL...", RomOp::ROF_SAVE_FILE);
-	op.sfi.title = C_("Nintendo3DS|RomOps", "Extract Nintendo DS SRL File");
-	op.sfi.filter = C_("Nintendo3DS|RomOps", "Nintendo DS SRL Files|*.nds;*.srl|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom");
-	op.sfi.ext = ".nds";
-
 	// Check for a DSi SRL.
 	NintendoDS *const srl = dynamic_cast<NintendoDS*>(d->mainContent);
 	if (srl) {
-		op.flags |= RomOp::ROF_ENABLED;
+		RomOp op("E&xtract SRL...", RomOp::ROF_SAVE_FILE | RomOp::ROF_ENABLED);
+		op.sfi.title = C_("Nintendo3DS|RomOps", "Extract Nintendo DS SRL File");
+		op.sfi.filter = C_("Nintendo3DS|RomOps", "Nintendo DS SRL Files|*.nds;*.srl|application/x-nintendo-ds-rom;application/x-nintendo-dsi-rom");
+		op.sfi.ext = ".nds";
+		ops.emplace_back(std::move(op));
 	}
 
-	ops.emplace_back(std::move(op));
 	return ops;
 }
 
