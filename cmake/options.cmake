@@ -25,7 +25,7 @@ IF(UNIX AND NOT APPLE)
 	# Reference: https://cmake.org/pipermail/cmake/2016-October/064342.html
 	OPTION_UI(KDE4 "Build the KDE4 plugin.")
 	OPTION_UI(KF5 "Build the KDE Frameworks 5 plugin.")
-	#OPTION_UI(KF6 "Build the KDE Frameworks 6 plugin. (EXPERIMENTAL)")	# NOTE: Only enable if debugging!
+	OPTION_UI(KF6 "Build the KDE Frameworks 6 plugin. (EXPERIMENTAL)")
 	OPTION_UI(XFCE "Build the XFCE (GTK+ 2.x) plugin. (Thunar 1.7 and earlier)")
 	OPTION_UI(GTK3 "Build the GTK+ 3.x plugin.")
 	OPTION_UI(GTK4 "Build the GTK 4.x plugin. (EXPERIMENTAL)")
