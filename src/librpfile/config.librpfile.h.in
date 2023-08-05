@@ -25,6 +25,23 @@
 /* Define to 1 if you have the `statx` function. */
 #cmakedefine HAVE_STATX 1
 
+/** Extended attributes **/
+
+/* Define to 1 if you have the <sys/xattr.h> header file. */
+#cmakedefine HAVE_SYS_XATTR_H 1
+
+/* Define to 1 if you have the <sys/extattr.h> header file. */
+#cmakedefine HAVE_SYS_EXTATTR_H 1
+
+/* Define to 1 if you have the Linux `fsetxattr` function. */
+#cmakedefine HAVE_FSETXATTR_LINUX 1
+
+/* Define to 1 if you have the Mac OS X `fsetxattr` function. */
+#cmakedefine HAVE_FSETXATTR_MAC 1
+
+/* Define to 1 if you have the FreeBSD `extattr_set_fd` function. */
+#cmakedefine HAVE_EXTATTR_SET_FD 1
+
 /** Other miscellaneous functionality **/
 
 /* Define to 1 if support for SCSI commands is implemented for this operating system. */

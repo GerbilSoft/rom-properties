@@ -16,15 +16,34 @@
 #include <fcntl.h>	// AT_FDCWD
 #include <sys/stat.h>	// stat(), statx()
 #include <sys/ioctl.h>
-#include <sys/xattr.h>
 #include <unistd.h>
+
+#if defined(HAVE_SYS_XATTR_H)
+// NOTE: Mac fsetxattr() is the same as Linux but with an extra options parameter.
+#  include <sys/xattr.h>
+#elif defined(HAVE_SYS_EXTATTR_H)
+#  include <sys/types.h>
+#  include <sys/extattr.h>
+#endif
 
 // EXT2 flags (also used for EXT3, EXT4, and other Linux file systems)
 #include "ext2_flags.h"
+
+#ifdef __linux__
 // for FS_IOC_GETFLAGS (equivalent to EXT2_IOC_GETFLAGS)
-#include <linux/fs.h>
+#  include <linux/fs.h>
 // for FAT_IOCTL_GET_ATTRIBUTES
-#include <linux/msdos_fs.h>
+#  include <linux/msdos_fs.h>
+#endif /* __linux__ */
+
+// O_LARGEFILE is Linux-specific.
+#ifndef O_LARGEFILE
+#  define O_LARGEFILE 0
+#endif /* !O_LARGEFILE */
+
+// Uninitialized vector class.
+// Reference: http://andreoffringa.org/?q=uvector
+#include "uvector.h"
 
 // C++ STL classes
 using std::string;
@@ -161,6 +180,8 @@ int XAttrReaderPrivate::init(void)
 int XAttrReaderPrivate::loadLinuxAttrs(void)
 {
 	// Attempt to get EXT2 flags.
+
+#ifdef __linux__
 	// NOTE: The ioctl is defined as using long, but the actual
 	// kernel code uses int.
 	int ret;
@@ -180,6 +201,10 @@ int XAttrReaderPrivate::loadLinuxAttrs(void)
 		hasLinuxAttributes = false;
 	}
 	return ret;
+#else /* !__linux__ */
+	// Not supported.
+	return -ENOTSUP;
+#endif /* __linux__ */
 }
 
 /**
@@ -191,6 +216,7 @@ int XAttrReaderPrivate::loadDosAttrs(void)
 {
 	// Attempt to get MS-DOS attributes.
 
+#ifdef __linux__
 	// ioctl (Linux vfat only)
 	if (!ioctl(fd, FAT_IOCTL_GET_ATTRIBUTES, &dosAttributes)) {
 		// ioctl() succeeded. We have MS-DOS attributes.
@@ -227,6 +253,10 @@ int XAttrReaderPrivate::loadDosAttrs(void)
 
 	// No valid attributes found.
 	return -ENOENT;
+#else /* !__linux__ */
+	// Not supported.
+	return -ENOTSUP;
+#endif /* __linux__ */
 }
 
 /**
@@ -239,69 +269,152 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 {
 	genericXAttrs.clear();
 
-	// Get the size of the xattr name list.
-	ssize_t list_size = flistxattr(fd, nullptr, 0);
-	if (list_size == 0) {
-		// No xattrs. Show an empty list.
-		hasGenericXAttrs = true;
-		return 0;
-	} else if (list_size < 0) {
-		// Xattrs are not supported.
-		return -ENOTSUP;
+#ifdef HAVE_SYS_EXTATTR_H
+	// TODO: XAttrReader_freebsd.cpp ran this twice: once for user and once for system.
+	// TODO: Read system namespace attributes.
+	const int attrnamespace = EXTATTR_NAMESPACE_USER;
+
+	// Namespace prefix
+	const char *s_namespace;
+	switch (attrnamespace) {
+		case EXTATTR_NAMESPACE_SYSTEM:
+			s_namespace = "system: ";
+			break;
+		case EXTATTR_NAMESPACE_USER:
+			s_namespace = "user: ";
+			break;
+		default:
+			assert(!"Invalid attribute namespace.");
+			s_namespace = "invalid: ";
+			break;
+	}
+#endif /* HAVE_SYS_EXTATTR_H */
+
+	// Partially based on KIO's FileProtocol::copyXattrs().
+	// Reference: https://invent.kde.org/frameworks/kio/-/blob/584a81fd453858db432a573c011a1433bc6947e1/src/kioworkers/file/file_unix.cpp#L521
+	ssize_t listlen = 0;
+	ao::uvector<char> keylist;
+	keylist.reserve(256);
+	while (true) {
+		keylist.resize(listlen);
+#if defined(HAVE_SYS_XATTR_H) && !defined(__stub_getxattr) && !defined(__APPLE__)
+		listlen = flistxattr(fd, keylist.data(), listlen);
+#elif defined(__APPLE__)
+		listlen = flistxattr(fd, keylist.data(), listlen, 0);
+#elif defined(HAVE_SYS_EXTATTR_H)
+		listlen = extattr_list_fd(fd, attrnamespace, listlen == 0 ? nullptr : keylist.data(), listlen);
+#endif
+
+		if (listlen > 0 && keylist.size() == 0) {
+			continue;
+		} else if (listlen > 0 && keylist.size() > 0) {
+			break;
+		} else if (listlen == -1 && errno == ERANGE) {
+			// Not sure when this case would be hit...
+			listlen = 0;
+			continue;
+		} else if (listlen == 0) {
+			// No extended attributes.
+			hasGenericXAttrs = true;
+			return 0;
+		} else if (listlen == -1 && errno == ENOTSUP) {
+			// Filesystem does not support extended attributes.
+			return -ENOTSUP;
+		}
 	}
 
-	unique_ptr<char[]> list_buf(new char[list_size]);
-	if (flistxattr(fd, list_buf.get(), list_size) != list_size) {
-		// List size doesn't match. Something broke here...
-		return -ENOTSUP;
+	if (listlen == 0 || keylist.empty()) {
+		// Shouldn't be empty...
+		return -EIO;
 	}
-	// List should end with a NULL terminator.
-	if (list_buf[list_size-1] != '\0') {
+	keylist.resize(listlen);
+
+#ifdef HAVE_SYS_XATTR_H
+	// Linux, macOS: List should end with a NULL terminator.
+	if (keylist[keylist.size()-1] != '\0') {
 		// Not NULL-terminated...
 		return -EIO;
 	}
+#endif /* HAVE_SYS_XATTR_H */
 
 	// Value buffer
-	size_t value_len = 256;
-	unique_ptr<char[]> value_buf(new char[value_len]);
+	ao::uvector<char> value;
+	value.reserve(256);
 
-	// List contains NULL-terminated strings.
+	// Linux, macOS: List contains NULL-terminated strings.
+	// FreeBSD: List contains counted (but not NULL-terminated) strings.
 	// Process strings until we reach list_buf + list_size.
-	const char *const list_end = &list_buf[list_size];
-	const char *p = list_buf.get();
-	while (p < list_end) {
+	const char *const keylist_end = keylist.data() + keylist.size();
+	const char *p = keylist.data();
+	while (p < keylist_end) {
+#if defined(HAVE_SYS_XATTR_H)
 		const char *name = p;
 		if (name[0] == '\0') {
 			// Empty name. Assume we're at the end of the list.
 			break;
 		}
-		// NOTE: If p == list_end here, then we're at the last attribute.
-		// Only fail if p > list_end, because that indicates an overflow.
-		p += strlen(name) + 1;
-		if (p > list_end)
-			break;
 
-		// Get the value for this attribute.
-		// NOTE: vlen does *not* include a NULL-terminator.
-		const ssize_t vlen = fgetxattr(fd, name, nullptr, 0);
-		if (vlen <= 0) {
-			// Error retrieving attribute information.
-			continue;
-		} else if ((size_t)vlen > value_len) {
-			// Need to reallocate the buffer.
-			value_len = vlen;
-			value_buf.reset(new char[value_len]);
+		// NOTE: If p == keylist_end here, then we're at the last attribute.
+		// Only fail if p > keylist_end, because that indicates an overflow.
+		p += strlen(name) + 1;
+		if (p > keylist_end)
+			break;
+#elif defined(HAVE_SYS_EXTATTR_H)
+		uint8_t len = *p;
+
+		// NOTE: If p + 1 + len == keylist_end here, then we're at the last attribute.
+		// Only fail if p + 1 + len > keylist_end, because that indicates an overflow.
+			if (p + 1 + len > keylist_end) {
+			// Out of bounds.
+			break;
 		}
-		if (fgetxattr(fd, name, value_buf.get(), value_len) != vlen) {
-			// Failed to get this attribute. Skip it for now.
+
+		string name(p+1, len);
+		p += 1 + len;
+#endif
+
+		ssize_t valuelen = 0;
+		do {
+			// Get the value for this attribute.
+			// NOTE: valuelen does *not* include a NULL-terminator.
+			value.resize(valuelen);
+#if defined(HAVE_SYS_XATTR_H) && !defined(__stub_getxattr) && !defined(__APPLE__)
+			valuelen = fgetxattr(fd, name, value.data(), valuelen);
+#elif defined(__APPLE__)
+			valuelen = fgetxattr(fd, name, nullptr, value.data(), 0);
+#elif defined(HAVE_SYS_EXTATTR_H)
+			valuelen = extattr_get_fd(fd, attrnamespace, name.c_str(), nullptr, 0);
+#endif
+
+			if (valuelen > 0 && value.size() == 0) {
+				continue;
+			} else if (valuelen > 0 && value.size() > 0) {
+				break;
+			} else if (valuelen == -1 && errno == ERANGE) {
+				valuelen = 0;
+				continue;
+			} else if (valuelen == 0) {
+				// attr value is an empty string
+				break;
+			}
+		} while (true);
+
+		if (valuelen < 0) {
+			// Not valid. Go to the next attribute.
 			continue;
 		}
 
 		// We have the attribute.
 		// NOTE: Not checking for duplicates, since there
 		// shouldn't be duplicate attribute names.
-		string s_value(value_buf.get(), vlen);
+		string s_value(value.data(), valuelen);
+#if HAVE_SYS_EXTATTR_H
+		string s_name_prefixed(s_namespace);
+		s_name_prefixed.append(name);
+		genericXAttrs.emplace(std::move(s_name_prefixed), std::move(s_value));
+#else /* !HAVE_SYS_EXTATTR_H */
 		genericXAttrs.emplace(name, std::move(s_value));
+#endif /* HAVE_SYS_EXTATTR_H */
 	}
 
 	// Extended attributes retrieved.
