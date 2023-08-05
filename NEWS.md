@@ -28,6 +28,7 @@
       likely have issues with broken UTF-16 filenames anyway.
     * Fixes #390: Windows: Add UTF-16 filename functions to handle filenames
       with unpaired UTF-16 surrogate characters
+  * DMGSpecialCases: Fix an incorrect bounds check for CGB special cases.
 
 * Other changes:
   * Nintendo3DS: The "Options" menu no longer shows a grayed-out "Extract SRL"

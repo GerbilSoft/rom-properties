@@ -256,8 +256,9 @@ bool is_rpdb_checksum_needed_TitleBased(const DMG_RomHeader *romHeader)
 bool is_rpdb_checksum_needed_ID6(const char *id6)
 {
 	// TODO: Binary search?
+	size_t count = ARRAY_SIZE(cgbSpecialCases);
 	for (const char *p = &cgbSpecialCases[0][0];
-	     p[0] != '\0'; p += sizeof(cgbSpecialCases[0]))
+	     count > 0; p += sizeof(cgbSpecialCases[0]), count--)
 	{
 		if (!strncmp(p, id6, 6)) {
 			// Game ID matches.
