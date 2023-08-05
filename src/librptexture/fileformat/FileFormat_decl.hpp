@@ -25,13 +25,13 @@ namespace LibRpTexture {
 
 #ifdef ENABLE_LIBRPBASE_ROMFIELDS
 #  define FILEFORMAT_GETFIELDS_FUNCTION \
-	public: \
-		/** \
-		 * Get property fields for rom-properties. \
-		 * @param fields RomFields object to which fields should be added. \
-		 * @return Number of fields added, or 0 on error. \
-		 */ \
-		int getFields(LibRpBase::RomFields *fields) const final;
+public: \
+	/** \
+	 * Get property fields for rom-properties. \
+	 * @param fields RomFields object to which fields should be added. \
+	 * @return Number of fields added, or 0 on error. \
+	 */ \
+	int getFields(LibRpBase::RomFields *fields) const final;
 #else
 #  define FILEFORMAT_GETFIELDS_FUNCTION
 #endif /* ENABLE_LIBRPBASE_ROMFIELDS */
@@ -43,76 +43,76 @@ namespace LibRpTexture {
 #define FILEFORMAT_DECL_BEGIN(klass) \
 class klass##Private; \
 class klass final : public LibRpTexture::FileFormat { \
-	public: \
-		explicit klass(LibRpFile::IRpFile *file); \
-	protected: \
-		~klass() final = default; \
-	private: \
-		typedef FileFormat super; \
-		friend class klass##Private; \
-		RP_DISABLE_COPY(klass); \
-	\
-	public: \
-		/** Class-specific functions that can be used even if isValid() is false. **/ \
-		\
-		/** \
-		 * Get the static RomDataInfo for this class. \
-		 * @return Static RomDataInfo \
-		 */ \
-		static const LibRpTexture::TextureInfo *textureInfo(void); \
-	\
-	public: \
-		/** Property accessors **/ \
-		\
-		/** \
-		 * Get the texture format name. \
-		 * @return Texture format name, or nullptr on error. \
-		 */ \
-		const char *textureFormatName(void) const final; \
-		\
-		/** \
-		 * Get the pixel format, e.g. "RGB888" or "DXT1". \
-		 * @return Pixel format, or nullptr if unavailable. \
-		 */ \
-		const char *pixelFormat(void) const final; \
-		\
-		/** \
-		 * Get the mipmap count. \
-		 * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps) \
-		 */ \
-		int mipmapCount(void) const final; \
-		\
-		FILEFORMAT_GETFIELDS_FUNCTION \
-	\
-	public: \
-		/** Image accessors **/ \
-		\
-		/** \
-		 * Get the image. \
-		 * For textures with mipmaps, this is the largest mipmap. \
-		 * The image is owned by this object. \
-		 * @return Image, or nullptr on error. \
-		 */ \
-		const LibRpTexture::rp_image *image(void) const final; \
-		\
-		/** \
-		 * Get the image for the specified mipmap. \
-		 * Mipmap 0 is the largest image. \
-		 * @param mip Mipmap number. \
-		 * @return Image, or nullptr on error. \
-		 */ \
-		const LibRpTexture::rp_image *mipmap(int mip) const final;
+public: \
+	explicit klass(LibRpFile::IRpFile *file); \
+protected: \
+	~klass() final = default; \
+private: \
+	typedef FileFormat super; \
+	friend class klass##Private; \
+	RP_DISABLE_COPY(klass); \
+\
+public: \
+	/** Class-specific functions that can be used even if isValid() is false. **/ \
+\
+	/** \
+	 * Get the static RomDataInfo for this class. \
+	 * @return Static RomDataInfo \
+	 */ \
+	static const LibRpTexture::TextureInfo *textureInfo(void); \
+\
+public: \
+	/** Property accessors **/ \
+\
+	/** \
+	 * Get the texture format name. \
+	 * @return Texture format name, or nullptr on error. \
+	 */ \
+	const char *textureFormatName(void) const final; \
+\
+	/** \
+	 * Get the pixel format, e.g. "RGB888" or "DXT1". \
+	 * @return Pixel format, or nullptr if unavailable. \
+	 */ \
+	const char *pixelFormat(void) const final; \
+\
+	/** \
+	 * Get the mipmap count. \
+	 * @return Number of mipmaps. (0 if none; -1 if format doesn't support mipmaps) \
+	 */ \
+	int mipmapCount(void) const final; \
+\
+	FILEFORMAT_GETFIELDS_FUNCTION \
+\
+public: \
+	/** Image accessors **/ \
+\
+	/** \
+	 * Get the image. \
+	 * For textures with mipmaps, this is the largest mipmap. \
+	 * The image is owned by this object. \
+	 * @return Image, or nullptr on error. \
+	 */ \
+	const LibRpTexture::rp_image *image(void) const final; \
+\
+	/** \
+	 * Get the image for the specified mipmap. \
+	 * Mipmap 0 is the largest image. \
+	 * @param mip Mipmap number. \
+	 * @return Image, or nullptr on error. \
+	 */ \
+	const LibRpTexture::rp_image *mipmap(int mip) const final;
 
 /**
  * FileFormat subclass function declaration for closing the internal file handle.
  * Only needed if extra handling is needed, e.g. if multiple files are opened.
  */
 #define FILEFORMAT_DECL_CLOSE() \
-	public: \
-		/** \
-		 * Close the opened file. \
-		 */ \
-		void close(void) final;
+public: \
+	/** \
+	 * Close the opened file. \
+	 */ \
+	void close(void) final;
 
 /**
  * End of FileFormat subclass declaration.

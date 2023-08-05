@@ -10,7 +10,7 @@
 #pragma once
 
 #ifndef __ROMPROPERTIES_LIBRPBASE_ROMDATA_HPP__
-# error RomData_decl.hpp should only be included by RomData.hpp
+#  error RomData_decl.hpp should only be included by RomData.hpp
 #endif
 
 // for loadInternalImage() implementation macros
@@ -30,120 +30,120 @@ namespace LibRpBase {
 #define ROMDATA_DECL_BEGIN(klass) \
 class klass##Private; \
 class klass final : public LibRpBase::RomData { \
-	public: \
-		explicit klass(LibRpFile::IRpFile *file); \
-	protected: \
-		RP_LIBROMDATA_LOCAL \
-		~klass() final = default; \
-	private: \
-		typedef RomData super; \
-		friend class klass##Private; \
-		RP_DISABLE_COPY(klass); \
-	\
-	public: \
-		/** \
-		 * Is a ROM image supported by this class? \
-		 * @param info DetectInfo containing ROM detection information. \
-		 * @return Class-specific system ID (>= 0) if supported; -1 if not. \
-		 */ \
-		static int isRomSupported_static(const DetectInfo *info); \
-		\
-		/** \
-		 * Is a ROM image supported by this object? \
-		 * @param info DetectInfo containing ROM detection information. \
-		 * @return Class-specific system ID (>= 0) if supported; -1 if not. \
-		 */ \
-		int isRomSupported(const DetectInfo *info) const final; \
-		\
-		/** \
-		 * Get the name of the system the loaded ROM is designed for. \
-		 * @param type System name type. (See the SystemName enum.) \
-		 * @return System name, or nullptr if type is invalid. \
-		 */ \
-		const char *systemName(unsigned int type) const final; \
-		\
-		/** \
-		 * Get the static RomDataInfo for this class. \
-		 * @return Static RomDataInfo \
-		 */ \
-		static const LibRpBase::RomDataInfo *romDataInfo(void); \
-	\
-	protected: \
-		/** \
-		 * Load field data. \
-		 * Called by RomData::fields() if the field data hasn't been loaded yet. \
-		 * @return 0 on success; negative POSIX error code on error. \
-		 */ \
-		RP_LIBROMDATA_LOCAL \
-		int loadFieldData(void) final;
+public: \
+	explicit klass(LibRpFile::IRpFile *file); \
+protected: \
+	RP_LIBROMDATA_LOCAL \
+	~klass() final = default; \
+private: \
+	typedef RomData super; \
+	friend class klass##Private; \
+	RP_DISABLE_COPY(klass); \
+\
+public: \
+	/** \
+	 * Is a ROM image supported by this class? \
+	 * @param info DetectInfo containing ROM detection information. \
+	 * @return Class-specific system ID (>= 0) if supported; -1 if not. \
+	 */ \
+	static int isRomSupported_static(const DetectInfo *info); \
+\
+	/** \
+	 * Is a ROM image supported by this object? \
+	 * @param info DetectInfo containing ROM detection information. \
+	 * @return Class-specific system ID (>= 0) if supported; -1 if not. \
+	 */ \
+	int isRomSupported(const DetectInfo *info) const final; \
+\
+	/** \
+	 * Get the name of the system the loaded ROM is designed for. \
+	 * @param type System name type. (See the SystemName enum.) \
+	 * @return System name, or nullptr if type is invalid. \
+	 */ \
+	const char *systemName(unsigned int type) const final; \
+\
+	/** \
+	 * Get the static RomDataInfo for this class. \
+	 * @return Static RomDataInfo \
+	 */ \
+	static const LibRpBase::RomDataInfo *romDataInfo(void); \
+\
+protected: \
+	/** \
+	 * Load field data. \
+	 * Called by RomData::fields() if the field data hasn't been loaded yet. \
+	 * @return 0 on success; negative POSIX error code on error. \
+	 */ \
+	RP_LIBROMDATA_LOCAL \
+	int loadFieldData(void) final;
 
 /**
  * RomData subclass function declaration for loading metadata properties.
  */
 #define ROMDATA_DECL_METADATA() \
-	protected: \
-		/** \
-		 * Load metadata properties. \
-		 * Called by RomData::metaData() if the field data hasn't been loaded yet. \
-		 * @return Number of metadata properties read on success; negative POSIX error code on error. \
-		 */ \
-		RP_LIBROMDATA_LOCAL \
-		int loadMetaData(void) final;
+protected: \
+	/** \
+	 * Load metadata properties. \
+	 * Called by RomData::metaData() if the field data hasn't been loaded yet. \
+	 * @return Number of metadata properties read on success; negative POSIX error code on error. \
+	 */ \
+	RP_LIBROMDATA_LOCAL \
+	int loadMetaData(void) final;
 
 /**
  * RomData subclass function declarations for image handling.
  */
 #define ROMDATA_DECL_IMGSUPPORT() \
-	public: \
-		/** \
-		 * Get a bitfield of image types this class can retrieve. \
-		 * @return Bitfield of supported image types. (ImageTypesBF) \
-		 */ \
-		static uint32_t supportedImageTypes_static(void); \
-		\
-		/** \
-		 * Get a bitfield of image types this object can retrieve. \
-		 * @return Bitfield of supported image types. (ImageTypesBF) \
-		 */ \
-		uint32_t supportedImageTypes(void) const final; \
-		\
-		/** \
-		 * Get a list of all available image sizes for the specified image type. \
-		 * \
-		 * The first item in the returned vector is the "default" size. \
-		 * If the width/height is 0, then an image exists, but the size is unknown. \
-		 * \
-		 * @param imageType Image type. \
-		 * @return Vector of available image sizes, or empty vector if no images are available. \
-		 */ \
-		static std::vector<RomData::ImageSizeDef> supportedImageSizes_static(ImageType imageType); \
-		\
-		/** \
-		 * Get a list of all available image sizes for the specified image type. \
-		 * \
-		 * The first item in the returned vector is the "default" size. \
-		 * If the width/height is 0, then an image exists, but the size is unknown. \
-		 * \
-		 * @param imageType Image type. \
-		 * @return Vector of available image sizes, or empty vector if no images are available. \
-		 */ \
-		std::vector<RomData::ImageSizeDef> supportedImageSizes(ImageType imageType) const final;
+public: \
+	/** \
+	 * Get a bitfield of image types this class can retrieve. \
+	 * @return Bitfield of supported image types. (ImageTypesBF) \
+	 */ \
+	static uint32_t supportedImageTypes_static(void); \
+\
+	/** \
+	 * Get a bitfield of image types this object can retrieve. \
+	 * @return Bitfield of supported image types. (ImageTypesBF) \
+	 */ \
+	uint32_t supportedImageTypes(void) const final; \
+\
+	/** \
+	 * Get a list of all available image sizes for the specified image type. \
+	 * \
+	 * The first item in the returned vector is the "default" size. \
+	 * If the width/height is 0, then an image exists, but the size is unknown. \
+	 * \
+	 * @param imageType Image type. \
+	 * @return Vector of available image sizes, or empty vector if no images are available. \
+	 */ \
+	static std::vector<RomData::ImageSizeDef> supportedImageSizes_static(ImageType imageType); \
+\
+	/** \
+	 * Get a list of all available image sizes for the specified image type. \
+	 * \
+	 * The first item in the returned vector is the "default" size. \
+	 * If the width/height is 0, then an image exists, but the size is unknown. \
+	 * \
+	 * @param imageType Image type. \
+	 * @return Vector of available image sizes, or empty vector if no images are available. \
+	 */ \
+	std::vector<RomData::ImageSizeDef> supportedImageSizes(ImageType imageType) const final;
 
 /**
  * RomData subclass function declaration for image processing flags.
  */
 #define ROMDATA_DECL_IMGPF() \
-	public: \
-		/** \
-		 * Get image processing flags. \
-		 * \
-		 * These specify post-processing operations for images, \
-		 * e.g. applying transparency masks. \
-		 * \
-		 * @param imageType Image type. \
-		 * @return Bitfield of ImageProcessingBF operations to perform. \
-		 */ \
-		uint32_t imgpf(ImageType imageType) const final;
+public: \
+	/** \
+	 * Get image processing flags. \
+	 * \
+	 * These specify post-processing operations for images, \
+	 * e.g. applying transparency masks. \
+	 * \
+	 * @param imageType Image type. \
+	 * @return Bitfield of ImageProcessingBF operations to perform. \
+	 */ \
+	uint32_t imgpf(ImageType imageType) const final;
 
 /**
  * RomData subclass function declaration for loading internal images.
@@ -153,113 +153,113 @@ class klass final : public LibRpBase::RomData { \
  *
  */
 #define ROMDATA_DECL_IMGINT() \
-	public: \
-		/** \
-		 * Load an internal image. \
-		 * Called by RomData::image(). \
-		 * @param imageType	[in] Image type to load. \
-		 * @param pImage	[out] Pointer to const rp_image* to store the image in. \
-		 * @return 0 on success; negative POSIX error code on error. \
-		 */ \
-		int loadInternalImage(ImageType imageType, const LibRpTexture::rp_image **pImage) final;
+public: \
+	/** \
+	 * Load an internal image. \
+	 * Called by RomData::image(). \
+	 * @param imageType	[in] Image type to load. \
+	 * @param pImage	[out] Pointer to const rp_image* to store the image in. \
+	 * @return 0 on success; negative POSIX error code on error. \
+	 */ \
+	int loadInternalImage(ImageType imageType, const LibRpTexture::rp_image **pImage) final;
 
 /**
  * RomData subclass function declaration for obtaining URLs for external images.
  */
 #define ROMDATA_DECL_IMGEXT() \
-	public: \
-		/** \
-		 * Get a list of URLs for an external image type. \
-		 * \
-		 * A thumbnail size may be requested from the shell. \
-		 * If the subclass supports multiple sizes, it should \
-		 * try to get the size that most closely matches the \
-		 * requested size. \
-		 * \
-		 * @param imageType     [in]     Image type. \
-		 * @param pExtURLs      [out]    Output vector. \
-		 * @param size          [in,opt] Requested image size. This may be a requested \
-		 *                               thumbnail size in pixels, or an ImageSizeType \
-		 *                               enum value. \
-		 * @return 0 on success; negative POSIX error code on error. \
-		 */ \
-		int extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs, int size = IMAGE_SIZE_DEFAULT) const final;
+public: \
+	/** \
+	 * Get a list of URLs for an external image type. \
+	 * \
+	 * A thumbnail size may be requested from the shell. \
+	 * If the subclass supports multiple sizes, it should \
+	 * try to get the size that most closely matches the \
+	 * requested size. \
+	 * \
+	 * @param imageType     [in]     Image type. \
+	 * @param pExtURLs      [out]    Output vector. \
+	 * @param size          [in,opt] Requested image size. This may be a requested \
+	 *                               thumbnail size in pixels, or an ImageSizeType \
+	 *                               enum value. \
+	 * @return 0 on success; negative POSIX error code on error. \
+	 */ \
+	int extURLs(ImageType imageType, std::vector<ExtURL> *pExtURLs, int size = IMAGE_SIZE_DEFAULT) const final;
 
 /**
  * RomData subclass function declaration for loading the animated icon.
  */
 #define ROMDATA_DECL_ICONANIM() \
-	public: \
-		/** \
-		 * Get the animated icon data. \
-		 * \
-		 * Check imgpf for IMGPF_ICON_ANIMATED first to see if this \
-		 * object has an animated icon. \
-		 * \
-		 * The retrieved IconAnimData must be ref()'d by the caller if the \
-		 * caller stores it instead of using it immediately. \
-		 * \
-		 * @return Animated icon data, or nullptr if no animated icon is present. \
-		 */ \
-		const LibRpBase::IconAnimData *iconAnimData(void) const final;
+public: \
+	/** \
+	 * Get the animated icon data. \
+	 * \
+	 * Check imgpf for IMGPF_ICON_ANIMATED first to see if this \
+	 * object has an animated icon. \
+	 * \
+	 * The retrieved IconAnimData must be ref()'d by the caller if the \
+	 * caller stores it instead of using it immediately. \
+	 * \
+	 * @return Animated icon data, or nullptr if no animated icon is present. \
+	 */ \
+	const LibRpBase::IconAnimData *iconAnimData(void) const final;
 
 /**
  * RomData subclass function declaration for indicating "dangerous" permissions.
  */
 #define ROMDATA_DECL_DANGEROUS() \
-	public: \
-		/** \
-		 * Does this ROM image have "dangerous" permissions? \
-		 * \
-		 * @return True if the ROM image has "dangerous" permissions; false if not. \
-		 */ \
-		bool hasDangerousPermissions(void) const final;
+public: \
+	/** \
+	 * Does this ROM image have "dangerous" permissions? \
+	 * \
+	 * @return True if the ROM image has "dangerous" permissions; false if not. \
+	 */ \
+	bool hasDangerousPermissions(void) const final;
 
 /**
  * RomData subclass function declaration for indicating ROM operations are possible.
  */
 #define ROMDATA_DECL_ROMOPS() \
-	protected: \
-		/** \
-		 * Get the list of operations that can be performed on this ROM. \
-		 * Internal function; called by RomData::romOps(). \
-		 * @return List of operations. \
-		 */ \
-		RP_LIBROMDATA_LOCAL \
-		std::vector<RomOp> romOps_int(void) const final; \
-		\
-		/** \
-		 * Perform a ROM operation. \
-		 * Internal function; called by RomData::doRomOp(). \
-		 * @param id		[in] Operation index. \
-		 * @param pParams	[in/out] Parameters and results. (for e.g. UI updates) \
-		 * @return 0 on success; negative POSIX error code on error.
-		 */ \
-		RP_LIBROMDATA_LOCAL \
-		int doRomOp_int(int id, RomOpParams *pParams) final;
+protected: \
+	/** \
+	 * Get the list of operations that can be performed on this ROM. \
+	 * Internal function; called by RomData::romOps(). \
+	 * @return List of operations. \
+	 */ \
+	RP_LIBROMDATA_LOCAL \
+	std::vector<RomOp> romOps_int(void) const final; \
+\
+	/** \
+	 * Perform a ROM operation. \
+	 * Internal function; called by RomData::doRomOp(). \
+	 * @param id		[in] Operation index. \
+	 * @param pParams	[in/out] Parameters and results. (for e.g. UI updates) \
+	 * @return 0 on success; negative POSIX error code on error.
+	 */ \
+	RP_LIBROMDATA_LOCAL \
+	int doRomOp_int(int id, RomOpParams *pParams) final;
 
 /**
  * RomData subclass function declaration for "viewed" achievements.
  */
 #define ROMDATA_DECL_VIEWED_ACHIEVEMENTS() \
-	public: \
-		/** \
-		 * Check for "viewed" achievements. \
-		 * \
-		 * @return Number of achievements unlocked.
-		 */ \
-		int checkViewedAchievements(void) const final;
+public: \
+	/** \
+	 * Check for "viewed" achievements. \
+	 * \
+	 * @return Number of achievements unlocked.
+	 */ \
+	int checkViewedAchievements(void) const final;
 
 /**
  * RomData subclass function declaration for closing the internal file handle.
  * Only needed if extra handling is needed, e.g. if multiple files are opened.
  */
 #define ROMDATA_DECL_CLOSE() \
-	public: \
-		/** \
-		 * Close the opened file. \
-		 */ \
-		void close(void) final;
+public: \
+	/** \
+	 * Close the opened file. \
+	 */ \
+	void close(void) final;
 
 /**
  * End of RomData subclass declaration.
