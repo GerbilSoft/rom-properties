@@ -75,6 +75,7 @@ SET(${PROJECT_NAME}_SRCS
 	LanguageComboBox.cpp
 	OptionsMenuButton.cpp
 	NetworkStatus.c
+	RomDataFormat.cpp
 	config/ConfigDialog.cpp
 	config/PropSheetIcon.cpp
 	config/RP_EmptyVolumeCacheCallback.cpp
@@ -114,6 +115,7 @@ SET(${PROJECT_NAME}_H
 	LanguageComboBox.hpp
 	OptionsMenuButton.hpp
 	NetworkStatus.h
+	RomDataFormat.hpp
 	config/ConfigDialog.hpp
 	config/PropSheetIcon.hpp
 	config/RP_EmptyVolumeCacheCallback.hpp
