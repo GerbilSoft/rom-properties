@@ -48,7 +48,9 @@ IF(ECM_MODULE_PATH AND ECM_KDE_MODULE_DIR)
 		#
 
 		# Find the qtpaths5 executable.
-		FIND_PROGRAM(QTPATHS5 NAMES qtpaths5 qtpaths)
+		FIND_PROGRAM(QTPATHS5 NAMES qtpaths5 qtpaths
+			PATHS /usr/local/lib/qt5/bin	# FreeBSD
+			)
 		IF(NOT QTPATHS5)
 			MESSAGE(FATAL_ERROR "qtpaths5 not found. Install one of these packages:
   - Debian/Ubuntu: qttools5-dev-tools
