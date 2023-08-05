@@ -25,12 +25,12 @@ using std::string;
 #if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 #  define HAVE_KMESSAGEWIDGET 1
 #  define HAVE_KMESSAGEWIDGET_SETICON 1
-#  include <KWidgetsAddons/kmessagewidget.h>
+#  include <KMessageWidget>
 #else /* !QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
 #  include <kdeversion.h>
 #  if (KDE_VERSION_MAJOR > 4) || (KDE_VERSION_MAJOR == 4 && KDE_VERSION_MINOR >= 7)
 #    define HAVE_KMESSAGEWIDGET 1
-#    include <kmessagewidget.h>
+#    include <KMessageWidget>
 #    if (KDE_VERSION_MAJOR > 4) || (KDE_VERSION_MAJOR == 4 && KDE_VERSION_MINOR >= 11)
 #      define HAVE_KMESSAGEWIDGET_SETICON 1
 #    endif
