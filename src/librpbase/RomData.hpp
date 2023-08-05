@@ -14,11 +14,11 @@
 #include "RefBase.hpp"
 #include "RomData_decl.hpp"
 
-// C includes.
-#include <stdint.h>
+// C includes
 #include <stddef.h>	/* size_t */
+#include <stdint.h>
 
-// C++ includes.
+// C++ includes
 #include <string>
 #include <vector>
 
@@ -612,7 +612,8 @@ public:
 
 		RomOpParams()
 			: status(0)
-			, save_filename(nullptr) { }
+			, save_filename(nullptr)
+		{}
 	};
 
 	/**
@@ -656,4 +657,4 @@ public:
 	virtual int checkViewedAchievements(void) const;
 };
 
-}
+} //namespace LibRpBase

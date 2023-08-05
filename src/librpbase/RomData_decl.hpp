@@ -233,7 +233,7 @@ protected: \
 	 * Internal function; called by RomData::doRomOp(). \
 	 * @param id		[in] Operation index. \
 	 * @param pParams	[in/out] Parameters and results. (for e.g. UI updates) \
-	 * @return 0 on success; negative POSIX error code on error.
+	 * @return 0 on success; negative POSIX error code on error. \
 	 */ \
 	RP_LIBROMDATA_LOCAL \
 	int doRomOp_int(int id, RomOpParams *pParams) final;
@@ -246,7 +246,7 @@ public: \
 	/** \
 	 * Check for "viewed" achievements. \
 	 * \
-	 * @return Number of achievements unlocked.
+	 * @return Number of achievements unlocked. \
 	 */ \
 	int checkViewedAchievements(void) const final;
 

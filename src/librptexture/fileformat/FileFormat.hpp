@@ -181,4 +181,4 @@ public:
 	virtual const rp_image *mipmap(int mip) const = 0;
 };
 
-}
+} //namespace LibRpTexture
