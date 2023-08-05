@@ -366,7 +366,8 @@ int WimPrivate::addFields_XML()
 		if (archstring) {
 			data_row.emplace_back(archstring);
 		} else {
-			data_row.emplace_back(rp_sprintf(C_("RomData", "Unknown (%u)"), rowloop_current_windowsinfo.arch));
+			data_row.emplace_back(rp_sprintf(C_("RomData", "Unknown (%d)"),
+				static_cast<int>(rowloop_current_windowsinfo.arch)));
 		}
 		data_row.emplace_back(rowloop_current_windowsinfo.languages.language);
 	}	
