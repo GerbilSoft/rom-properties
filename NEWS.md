@@ -23,6 +23,11 @@
     copying text or JSON would result in the option being disabled unless the
     properties window as closed or reopened.
     * This bug was introduced in v1.8.
+  * Windows: Handle filenames with unpaired UTF-16 surrogate characters.
+    * rpcli has NOT been updated for this, but the Windows command line will
+      likely have issues with broken UTF-16 filenames anyway.
+    * Fixes #390: Windows: Add UTF-16 filename functions to handle filenames
+      with unpaired UTF-16 surrogate characters
 
 * Other changes:
   * Nintendo3DS: The "Options" menu no longer shows a grayed-out "Extract SRL"
