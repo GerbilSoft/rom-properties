@@ -49,7 +49,7 @@ class ListDataModel : public QAbstractListModel
 		/**
 		 * Set the field to use in this model.
 		 * Field data is *copied* into the model.
-		 * @param field Field.
+		 * @param field Field
 		 */
 		void setField(const LibRpBase::RomFields::Field *pField);
 
