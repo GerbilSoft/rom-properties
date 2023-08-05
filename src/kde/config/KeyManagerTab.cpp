@@ -30,7 +30,7 @@ using std::string;
 #  include <kdeversion.h>
 #  if (KDE_VERSION_MAJOR > 4) || (KDE_VERSION_MAJOR == 4 && KDE_VERSION_MINOR >= 7)
 #    define HAVE_KMESSAGEWIDGET 1
-#    include <KMessageWidget>
+#    include <kmessagewidget.h>
 #    if (KDE_VERSION_MAJOR > 4) || (KDE_VERSION_MAJOR == 4 && KDE_VERSION_MINOR >= 11)
 #      define HAVE_KMESSAGEWIDGET_SETICON 1
 #    endif

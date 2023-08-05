@@ -18,12 +18,12 @@
 #  define HAVE_KMESSAGEWIDGET_SETICON 1
 #  include <KMessageWidget>
 #else /* !QT_VERSION >= QT_VERSION_CHECK(5,0,0) */
-#  include <KAcceleratorManager>
+#  include <kacceleratormanager.h>
 #  include <kdeversion.h>
-#  include <KPageWidget>
+#  include <kpagewidget.h>
 #  if (KDE_VERSION_MAJOR > 4) || (KDE_VERSION_MAJOR == 4 && KDE_VERSION_MINOR >= 7)
 #    define HAVE_KMESSAGEWIDGET 1
-#    include <KMessageWidget>
+#    include <kmessagewidget.h>
 #    if (KDE_VERSION_MAJOR > 4) || (KDE_VERSION_MAJOR == 4 && KDE_VERSION_MINOR >= 11)
 #      define HAVE_KMESSAGEWIDGET_SETICON 1
 #    endif
