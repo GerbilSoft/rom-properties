@@ -34,17 +34,6 @@ using std::string;
 #elif defined(HAVE_SYS_EXTATTR_H)
 #  include <sys/types.h>
 #  include <sys/extattr.h>
-// Linux-compatible wrapper.
-static inline int fsetxattr(int fd, const char *name, const void *value, size_t size, int flags)
-{
-	RP_UNUSED(flags);
-	ssize_t sxret = extattr_set_fd(fd, EXTATTR_NAMESPACE_USER, name, value, size);
-	if (sxret != size) {
-		errno = EIO;
-		return -1;
-	}
-	return 0;
-}
 #endif
 
 namespace RpDownload {
@@ -136,11 +125,8 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime)
 	// Check if storeFileOriginInfo is enabled.
 	const bool storeFileOriginInfo = getStoreFileOriginInfo();
 	if (storeFileOriginInfo) {
-#if defined(HAVE_FSETXATTR_LINUX) || defined(HAVE_EXTATTR_SET_FD)
+#if defined(HAVE_FSETXATTR_LINUX)
 		// fsetxattr() [Linux version]
-		// NOTE: Also used for FreeBSD using a wrapper function.
-
-		// Set the XDG origin attributes.
 		errno = 0;
 		int sxret = fsetxattr(fd, "user.xdg.origin.url", url, _tcslen(url), 0);
 		if (sxret != 0 && err != 0) {
@@ -149,9 +135,26 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime)
 				err = EIO;
 			}
 		}
-
 		errno = 0;
 		sxret = fsetxattr(fd, "user.xdg.publisher", xdg_publisher, sizeof(xdg_publisher)-1, 0);
+		if (sxret != 0 && err != 0) {
+			err = errno;
+			if (err == 0) {
+				err = EIO;
+			}
+		}
+#elif defined(HAVE_EXTATTR_SET_FD)
+		// extattr_set_fd() [FreeBSD version]
+		errno = 0;
+		ssize_t sxret = extattr_set_fd(fd, EXTATTR_NAMESPACE_USER, "user.xdg.origin.url", url, _tcslen(url));
+		if (sxret != 0 && err != 0) {
+			err = errno;
+			if (err == 0) {
+				err = EIO;
+			}
+		}
+		errno = 0;
+		sxret = extattr_set_fd(fd, EXTATTR_NAMESPACE_USER, "user.xdg.publisher", xdg_publisher, sizeof(xdg_publisher)-1);
 		if (sxret != 0 && err != 0) {
 			err = errno;
 			if (err == 0) {
