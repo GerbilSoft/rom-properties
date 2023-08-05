@@ -237,6 +237,17 @@ ENDIF(UNIX AND NOT APPLE)
 SET(RP_SHARED_LINKER_FLAGS_COMMON "${RP_EXE_LINKER_FLAGS_COMMON}")
 SET(RP_MODULE_LINKER_FLAGS_COMMON "${RP_EXE_LINKER_FLAGS_COMMON}")
 
+# Special case: On non-Linux systems, remove "--no-undefined" and
+# "--no-allow-shlib-undefined" from SHARED and MODULE linker flags.
+# On FreeBSD 13.2, `environ` and `__progname` are intentionally undefined,
+# so this *always* fails when building a shared library.
+IF(NOT CMAKE_SYSTEM MATCHES "Linux")
+	FOREACH(FLAG_REMOVE "--no-undefined" "--no-allow-shlib-undefined")
+		STRING(REPLACE "-Wl,${FLAG_REMOVE}" "" RP_SHARED_LINKER_FLAGS_COMMON "${RP_SHARED_LINKER_FLAGS_COMMON}")
+		STRING(REPLACE "-Wl,${FLAG_REMOVE}" "" RP_MODULE_LINKER_FLAGS_COMMON "${RP_MODULE_LINKER_FLAGS_COMMON}")
+	ENDFOREACH(FLAG_REMOVE)
+ENDIF(NOT CMAKE_SYSTEM MATCHES "Linux")
+
 # Check for -Og.
 # This flag was added in gcc-4.8, and enables optimizations that
 # don't interfere with debugging.
