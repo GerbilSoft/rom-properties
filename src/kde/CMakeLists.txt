@@ -27,6 +27,7 @@ SET(${PROJECT_NAME}_SRCS
 	LanguageComboBox.cpp
 	OptionsMenuButton.cpp
 	ProxyForUrl.cpp
+	RomDataFormat.cpp
 	config/stub-export.cpp
 	config/ConfigDialog.cpp
 	config/ITab.cpp
@@ -60,6 +61,7 @@ SET(${PROJECT_NAME}_H
 	OptionsMenuButton.hpp
 	ProxyForUrl.hpp
 	check-uid.hpp
+	RomDataFormat.hpp
 	config/ConfigDialog.hpp
 	config/ITab.hpp
 	config/ImageTypesTab.hpp

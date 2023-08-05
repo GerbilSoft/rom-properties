@@ -1011,8 +1011,23 @@ rp_rom_data_view_init_listdata(RpRomDataView *page,
 
 		if (!isMulti) {
 			int col = listStore_col_start;
+			unsigned int is_timestamp = listDataDesc.col_attrs.is_timestamp;
 			for (const string &str : data_row) {
-				gtk_list_store_set(listStore, &treeIter, col, str.c_str(), -1);
+				if (unlikely((is_timestamp & 1) && str.size() == sizeof(int64_t))) {
+					// Timestamp column. Format the timestamp.
+					RomFields::TimeString_t time_string;
+					memcpy(time_string.str, str.data(), 8);
+
+					gchar *const str = rom_data_format_datetime(time_string.time,
+						listDataDesc.col_attrs.dtflags);
+					gtk_list_store_set(listStore, &treeIter, col,
+						(likely(str != nullptr) ? str : C_("RomData", "Unknown")), -1);
+					g_free(str);
+				} else {
+					gtk_list_store_set(listStore, &treeIter, col, str.c_str(), -1);
+				}
+
+				is_timestamp >>= 1;
 				col++;
 			}
 		}
@@ -1369,6 +1384,8 @@ rp_rom_data_view_update_multi(RpRomDataView *page, uint32_t user_lc)
 				listStore_col_start = 0;
 			}
 
+			const auto &listDataDesc = pField->desc.list_data;
+
 			// Update the list.
 			GtkTreeIter treeIter;
 			GtkTreeModel *const treeModel = GTK_TREE_MODEL(listStore);
@@ -1378,12 +1395,28 @@ rp_rom_data_view_update_multi(RpRomDataView *page, uint32_t user_lc)
 			while (ok && iter_listData != pListData_cend) {
 				// TODO: Verify GtkListStore column count?
 				int col = listStore_col_start;
+				unsigned int is_timestamp = listDataDesc.col_attrs.is_timestamp;
 				for (const string &str : *iter_listData) {
-					gtk_list_store_set(listStore, &treeIter, col, str.c_str(), -1);
+					if (unlikely((is_timestamp & 1) && str.size() == sizeof(int64_t))) {
+						// Timestamp column. Format the timestamp.
+						RomFields::TimeString_t time_string;
+						memcpy(time_string.str, str.data(), 8);
+
+						gchar *const str = rom_data_format_datetime(time_string.time,
+							listDataDesc.col_attrs.dtflags);
+						gtk_list_store_set(listStore, &treeIter, col,
+							(likely(str != nullptr) ? str : C_("RomData", "Unknown")), -1);
+						g_free(str);
+					} else {
+						gtk_list_store_set(listStore, &treeIter, col, str.c_str(), -1);
+					}
+
+					// Next column
+					is_timestamp >>= 1;
 					col++;
 				}
 
-				// Next row.
+				// Next row
 				++iter_listData;
 				ok = gtk_tree_model_iter_next(treeModel, &treeIter);
 			}

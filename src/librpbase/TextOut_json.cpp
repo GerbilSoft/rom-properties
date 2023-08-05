@@ -87,9 +87,19 @@ private:
 				checkboxes >>= 1;
 			}
 
+			unsigned int is_timestamp = romField.desc.list_data.col_attrs.is_timestamp;
 			const auto it_cend = it->cend();
-			for (auto jt = it->cbegin(); jt != it_cend; ++jt) {
-				row_array.PushBack(StringRef(*jt), allocator);
+			for (auto jt = it->cbegin(); jt != it_cend; ++jt, is_timestamp >>= 1) {
+				if (unlikely((is_timestamp & 1) && jt->size() == sizeof(int64_t))) {
+					// Timestamp column. Print the timestamp directly, similar to RFT_DATETIME.
+					RomFields::TimeString_t time_string;
+					memcpy(time_string.str, jt->data(), 8);
+					row_array.PushBack(time_string.time, allocator);
+				} else {
+					// Not a timestamp column. Use the string as-is.
+					// TODO: Some way to indicate a numeric data column?
+					row_array.PushBack(StringRef(*jt), allocator);
+				}
 			}
 
 			data_array.PushBack(row_array, allocator);

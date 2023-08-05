@@ -15,6 +15,7 @@
 
 #include "RP_ShellPropSheetExt.hpp"
 #include "RP_ShellPropSheetExt_p.hpp"
+#include "RomDataFormat.hpp"
 #include "RpImageWin32.hpp"
 #include "res/resource.h"
 
@@ -48,11 +49,6 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 using std::wstring;	// for tstring
-
-// Windows 10 and later
-#ifndef DATE_MONTHDAY
-#  define DATE_MONTHDAY 0x00000080
-#endif /* DATE_MONTHDAY */
 
 // CLSID
 const CLSID CLSID_RP_ShellPropSheetExt =
@@ -759,7 +755,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 	const RomFields::ListData_t *list_data;
 	const bool isMulti = !!(field.flags & RomFields::RFT_LISTDATA_MULTI);
 	if (isMulti) {
-		// Multiple languages.
+		// Multiple languages
 		const auto *const multi = field.data.list_data.data.multi;
 		assert(multi != nullptr);
 		assert(!multi->empty());
@@ -770,7 +766,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 
 		list_data = &multi->cbegin()->second;
 	} else {
-		// Single language.
+		// Single language
 		list_data = field.data.list_data.data.single;
 	}
 
@@ -879,7 +875,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 			lvColumn.fmt = align_tbl[align & RomFields::TXA_MASK];
 
 			const string &str = *iter;
-			if (!str.empty()) {
+			if (likely(!str.empty())) {
 				// NOTE: pszText is LPTSTR, not LPCTSTR...
 				// NOTE 2: ListView is limited to 260 characters. (259+1)
 				// TODO: Handle surrogate pairs?
@@ -934,12 +930,12 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 			}
 		}
 
-		// Destination row.
+		// Destination row
 		lvData.vvStr.resize(lvData.vvStr.size()+1);
 		auto &lv_row_data = lvData.vvStr.at(lvData.vvStr.size()-1);
 		lv_row_data.reserve(data_row.size());
 
-		// String data.
+		// String data
 		if (isMulti) {
 			// RFT_LISTDATA_MULTI. Allocate space for the strings,
 			// but don't initialize them here.
@@ -949,7 +945,14 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 			for (const auto &ldm : *(field.data.list_data.data.multi)) {
 				const RomFields::ListData_t &ld = ldm.second;
 				for (const auto &m_data_row : ld) {
+					unsigned int is_timestamp = listDataDesc.col_attrs.is_timestamp;
 					for (const auto &m_data_col : m_data_row) {
+						if (unlikely((is_timestamp & 1) && m_data_col.size() == sizeof(int64_t))) {
+							// Timestamp column. NL count is 0.
+							is_timestamp >>= 1;
+							continue;
+						}
+
 						size_t prev_nl_pos = 0;
 						size_t cur_nl_pos;
 						int nl = 0;
@@ -958,20 +961,35 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 							prev_nl_pos = cur_nl_pos + 1;
 						}
 						nl_max = std::max(nl_max, nl);
+						is_timestamp >>= 1;
 					}
 				}
 			}
 		} else {
-			// Single language.
+			// Single language
 			int col = 0;
+			unsigned int is_timestamp = listDataDesc.col_attrs.is_timestamp;
 			for (const auto &data_str : data_row) {
 				// NOTE: ListView is limited to 260 characters. (259+1)
 				// TODO: Handle surrogate pairs?
-				tstring tstr = U82T_s(data_str);
-				if (tstr.size() >= 260) {
-					// Reduce to 256 and add "..."
-					tstr.resize(256);
-					tstr += _T("...");
+				tstring tstr;
+				if (unlikely((is_timestamp & 1) && data_str.size() == sizeof(int64_t))) {
+					// Timestamp column. Format the timestamp.
+					RomFields::TimeString_t time_string;
+					memcpy(time_string.str, data_str.data(), 8);
+
+					tstr = formatDateTime(time_string.time,
+						listDataDesc.col_attrs.dtflags);
+					if (unlikely(tstr.empty())) {
+						tstr = U82T_c(C_("RomData", "Unknown"));
+					}
+				} else {
+					tstr = U82T_s(data_str);
+					if (tstr.size() >= 260) {
+						// Reduce to 256 and add "..."
+						tstr.resize(256);
+						tstr += _T("...");
+					}
 				}
 
 				int nl_count;
@@ -985,6 +1003,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 				lv_row_data.emplace_back(std::move(tstr));
 
 				// Next column.
+				is_timestamp >>= 1;
 				col++;
 			}
 		}
@@ -1239,95 +1258,12 @@ int RP_ShellPropSheetExt_Private::initDateTime(_In_ HWND hWndTab,
 			U82T_c(C_("RomDataView", "Unknown")));
 	}
 
-	// Format the date/time using the system locale.
-	TCHAR dateTimeStr[256];
-	int start_pos = 0;
-	int cchBuf = _countof(dateTimeStr);
-
-	// Convert from Unix time to Win32 SYSTEMTIME.
-	SYSTEMTIME st;
-	UnixTimeToSystemTime(field.data.date_time, &st);
-
-	// At least one of Date and/or Time must be set.
-	assert((field.flags &
-		(RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_HAS_TIME)) != 0);
-
-	if (!(field.flags & RomFields::RFT_DATETIME_IS_UTC)) {
-		// Convert to the current timezone.
-		const SYSTEMTIME st_utc = st;
-		BOOL ret = SystemTimeToTzSpecificLocalTime(nullptr, &st_utc, &st);
-		if (!ret) {
-			// Conversion failed.
-			return 0;
-		}
-	}
-
-	if (field.flags & RomFields::RFT_DATETIME_HAS_DATE) {
-		// Format the date.
-		int ret;
-		if (field.flags & RomFields::RFT_DATETIME_NO_YEAR) {
-			// Try Windows 10's DATE_MONTHDAY first.
-			ret = GetDateFormat(
-				MAKELCID(LOCALE_USER_DEFAULT, SORT_DEFAULT),
-				DATE_MONTHDAY,
-				&st, nullptr, &dateTimeStr[start_pos], cchBuf);
-			if (ret == 0) {
-				// DATE_MONTHDAY failed.
-				// Fall back to a hard-coded format string.
-				// TODO: Localization.
-				ret = GetDateFormat(
-					MAKELCID(LOCALE_USER_DEFAULT, SORT_DEFAULT),
-					0, &st, _T("MMM d"), &dateTimeStr[start_pos], cchBuf);
-			}
-		} else {
-			ret = GetDateFormat(
-				MAKELCID(LOCALE_USER_DEFAULT, SORT_DEFAULT),
-				DATE_SHORTDATE,
-				&st, nullptr, &dateTimeStr[start_pos], cchBuf);
-		}
-		if (ret <= 0) {
-			// Error!
-			return 0;
-		}
-
-		// Adjust the buffer position.
-		// NOTE: ret includes the NULL terminator.
-		start_pos += (ret-1);
-		cchBuf -= (ret-1);
-	}
-
-	if (field.flags & RomFields::RFT_DATETIME_HAS_TIME) {
-		// Format the time.
-		if (start_pos > 0 && cchBuf >= 1) {
-			// Add a space.
-			dateTimeStr[start_pos] = L' ';
-			dateTimeStr[start_pos+1] = 0;
-			start_pos++;
-			cchBuf--;
-		}
-
-		int ret = GetTimeFormat(
-			MAKELCID(LOCALE_USER_DEFAULT, SORT_DEFAULT),
-			0, &st, nullptr, &dateTimeStr[start_pos], cchBuf);
-		if (ret <= 0) {
-			// Error!
-			return 0;
-		}
-
-		// Adjust the buffer position.
-		// NOTE: ret includes the NULL terminator.
-		start_pos += (ret-1);
-		cchBuf -= (ret-1);
-	}
-
-	if (start_pos == 0) {
-		// Empty string.
-		// Something failed...
-		return 0;
-	}
+	// Format the date/time.
+	const tstring dateTimeStr = formatDateTime(field.data.date_time, field.flags);
 
 	// Initialize the string.
-	return initString(hWndTab, pt_start, size, field, fieldIdx, dateTimeStr);
+	return initString(hWndTab, pt_start, size, field, fieldIdx,
+		(likely(!dateTimeStr.empty()) ? dateTimeStr.c_str() : U82T_c(C_("RomDataView", "Unknown"))));
 }
 
 /**
@@ -1545,21 +1481,36 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 				vector<tstring> &dest_data_row = *iter_vvStr_row;
 
 				int col = 0;
+				unsigned int is_timestamp = listDataDesc.col_attrs.is_timestamp;
 				auto iter_sdr = src_data_row.cbegin();
 				auto iter_ddr = dest_data_row.begin();
 				const auto src_data_row_cend = src_data_row.cend();
 				const auto dest_data_row_end = dest_data_row.end();
 				for (; iter_sdr != src_data_row_cend && iter_ddr != dest_data_row_end;
-				     ++iter_sdr, ++iter_ddr, col++)
+				     ++iter_sdr, ++iter_ddr, col++, is_timestamp >>= 1)
 				{
 					// NOTE: ListView is limited to 260 characters. (259+1)
 					// TODO: Handle surrogate pairs?
-					tstring tstr = U82T_s(*iter_sdr);
-					if (tstr.size() >= 260) {
-						// Reduce to 256 and add "..."
-						tstr.resize(256);
-						tstr += _T("...");
+					tstring tstr;
+					if (unlikely((is_timestamp & 1) && iter_sdr->size() == sizeof(int64_t))) {
+						// Timestamp column. Format the timestamp.
+						RomFields::TimeString_t time_string;
+						memcpy(time_string.str, iter_sdr->data(), 8);
+
+						tstr = formatDateTime(time_string.time,
+							listDataDesc.col_attrs.dtflags);
+						if (unlikely(tstr.empty())) {
+							tstr = U82T_c(C_("RomData", "Unknown"));
+						}
+					} else {
+						tstr = U82T_s(*iter_sdr);
+						if (tstr.size() >= 260) {
+							// Reduce to 256 and add "..."
+							tstr.resize(256);
+							tstr += _T("...");
+						}
 					}
+
 					const int width = LibWin32UI::measureStringForListView(hDC, tstr);
 					if (col < colCount) {
 						lvData.col_widths[col] = std::max(lvData.col_widths[col], width);

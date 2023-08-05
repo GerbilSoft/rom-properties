@@ -75,6 +75,7 @@ SET(${PROJECT_NAME}_SRCS
 	LanguageComboBox.cpp
 	OptionsMenuButton.cpp
 	NetworkStatus.c
+	RomDataFormat.cpp
 	config/ConfigDialog.cpp
 	config/PropSheetIcon.cpp
 	config/RP_EmptyVolumeCacheCallback.cpp
@@ -114,6 +115,7 @@ SET(${PROJECT_NAME}_H
 	LanguageComboBox.hpp
 	OptionsMenuButton.hpp
 	NetworkStatus.h
+	RomDataFormat.hpp
 	config/ConfigDialog.hpp
 	config/PropSheetIcon.hpp
 	config/RP_EmptyVolumeCacheCallback.hpp
@@ -189,8 +191,8 @@ IF(RP_LIBROMDATA_IS_DLL AND MSVC)
 	# Otherwise, we won't be able to load it if it's in an
 	# architecture-specific subdirectory.
 	# TODO: Global variable with the libromdata SOVERSION?
-	SET(DL_DEBUG_FLAGS "${DL_DEBUG_FLAGS} /DELAYLOAD:romdata-3d.dll")
-	SET(DL_RELEASE_FLAGS "${DL_RELEASE_FLAGS} /DELAYLOAD:romdata-3.dll")
+	SET(DL_DEBUG_FLAGS "${DL_DEBUG_FLAGS} /DELAYLOAD:romdata-4d.dll")
+	SET(DL_RELEASE_FLAGS "${DL_RELEASE_FLAGS} /DELAYLOAD:romdata-4.dll")
 
 	SET(CMAKE_SHARED_LINKER_FLAGS_DEBUG	"${CMAKE_SHARED_LINKER_FLAGS_DEBUG} ${DL_DEBUG_FLAGS}")
 	SET(CMAKE_SHARED_LINKER_FLAGS_RELEASE	"${CMAKE_SHARED_LINKER_FLAGS_RELEASE} ${DL_RELEASE_FLAGS}")

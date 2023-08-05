@@ -8,6 +8,7 @@
 
 #include "stdafx.h"
 #include "ListDataModel.hpp"
+#include "RomDataFormat.hpp"
 
 // librpbase, librptexture
 #include "librpbase/RomFields.hpp"
@@ -73,7 +74,7 @@ class ListDataModelPrivate
 		uint32_t checkboxes;
 		bool hasCheckboxes;
 
-		// Current language code.
+		// Current language code
 		uint32_t lc;
 
 	public:
@@ -90,10 +91,10 @@ class ListDataModelPrivate
 		/**
 		 * Convert a single language from RFT_LISTDATA or RFT_LISTDATA_MULTI to vector<QString>.
 		 * @param list_data Single language RFT_LISTDATA data.
-		 * @param hasCheckboxes If true, skip empty rows.
+		 * @param pField Field
 		 * @return vector<QString>.
 		 */
-		static vector<QString> convertListDataToVector(const RomFields::ListData_t *list_data, bool hasCheckboxes);
+		static vector<QString> convertListDataToVector(const RomFields::ListData_t *list_data, const RomFields::Field *pField);
 
 	public:
 		/**
@@ -203,16 +204,20 @@ void ListDataModelPrivate::updateIconPixmaps(void)
 /**
  * Convert a single language from RFT_LISTDATA or RFT_LISTDATA_MULTI to vector<QString>.
  * @param list_data Single language RFT_LISTDATA data.
- * @param hasCheckboxes If true, skip empty rows.
+ * @param pField Field
  * @return vector<QString>.
  */
-vector<QString> ListDataModelPrivate::convertListDataToVector(const RomFields::ListData_t *list_data, bool hasCheckboxes)
+vector<QString> ListDataModelPrivate::convertListDataToVector(const RomFields::ListData_t *list_data, const RomFields::Field *pField)
 {
 	vector<QString> data;
 	if (!list_data || list_data->empty()) {
 		// No data...
 		return data;
 	}
+
+	const auto &listDataDesc = pField->desc.list_data;
+	const unsigned int flags = pField->flags;
+	const bool hasCheckboxes = !!(flags & RomFields::RFT_LISTDATA_CHECKBOXES);
 
 	const int columnCount = static_cast<int>(list_data->at(0).size());
 	const int rowCount = list_data->size();
@@ -227,9 +232,22 @@ vector<QString> ListDataModelPrivate::convertListDataToVector(const RomFields::L
 		// Add item text.
 		assert((int)data_row.size() == columnCount);
 		int cols = columnCount;
+		unsigned int is_timestamp = listDataDesc.col_attrs.is_timestamp;
 		for (const string &u8_str : data_row) {
-			data.emplace_back(U82Q(u8_str));
+			if (unlikely(is_timestamp & 1)) {
+				// Timestamp column. Format the timestamp.
+				RomFields::TimeString_t time_string;
+				memcpy(time_string.str, u8_str.data(), 8);
 
+				QString str = formatDateTime(time_string.time,
+					listDataDesc.col_attrs.dtflags);
+				data.emplace_back(likely(!str.isEmpty()) ? str : U82Q(C_("RomData", "Unknown")));
+			} else {
+				data.emplace_back(U82Q(u8_str));
+			}
+
+			// Next column
+			is_timestamp >>= 1;
 			cols--;
 			if (cols <= 0) {
 				break;
@@ -448,7 +466,7 @@ QVariant ListDataModel::headerData(int section, Qt::Orientation orientation, int
 /**
  * Set the field to use in this model.
  * Field data is *copied* into the model.
- * @param field Field.
+ * @param field Field
  */
 void ListDataModel::setField(const RomFields::Field *pField)
 {
@@ -581,7 +599,7 @@ void ListDataModel::setField(const RomFields::Field *pField)
 		for (auto &pdm : *multi) {
 			assert(static_cast<int>(pdm.second.size()) == rowCount);
 			auto pair = d->map_data.emplace(pdm.first,
-				d->convertListDataToVector(&(pdm.second), hasCheckboxes));
+				d->convertListDataToVector(&(pdm.second), pField));
 			if (!d->pData && pdm.first == d->lc) {
 				d->pData = &(pair.first->second);
 			}
@@ -596,7 +614,7 @@ void ListDataModel::setField(const RomFields::Field *pField)
 		// RFT_LISTDATA: Single language.
 		rowCount = static_cast<int>(list_data->size());
 		auto pair = d->map_data.emplace(0,
-			d->convertListDataToVector(list_data, hasCheckboxes));
+			d->convertListDataToVector(list_data, pField));
 		d->pData = &(pair.first->second);
 	}
 

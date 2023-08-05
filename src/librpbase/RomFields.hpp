@@ -125,7 +125,7 @@ class RomFields
 		};
 
 		// Display flags for RFT_DATETIME.
-		enum DateTimeFlags : unsigned int {
+		enum DateTimeFlags : uint8_t {
 			// Show the date value.
 			RFT_DATETIME_HAS_DATE = (1U << 0),
 
@@ -229,8 +229,13 @@ class RomFields
 			uint16_t sizing;	// Column sizing
 			uint16_t sorting;	// Column sorting
 
-			int8_t  sort_col;	// Default sort column. (-1 for none)
-			ColSortOrder sort_dir;	// Sort order.
+			int8_t   sort_col;	// Default sort column (-1 for none)
+			ColSortOrder sort_dir;	// Sort order
+
+			// Timestamp column: String is 8 bytes and contains a 64-bit time_t.
+			// If the string is not exactly 8 bytes, it will be handled as a regular string.
+			uint8_t is_timestamp;	// Should a column be interpreted as a timestamp? (bitfield)
+			DateTimeFlags dtflags;	// Date/Time flags (applies to all timestamp columns)
 
 			/**
 			 * Shift the column alignment/sizing/sorting bits by one column.
@@ -665,6 +670,13 @@ class RomFields
 			const std::vector<std::string> *bit_names,
 			int elemsPerRow, uint32_t bitfield);
 
+		// Union for packing 64-bit time_t into a string for `is_timestamp` entries.
+		typedef union _TimeString_t {
+			int64_t time;
+			char str[8];
+		} TimeString_t;
+		ASSERT_STRUCT(TimeString_t, 8);
+
 		/**
 		 * addField_listData() parameter struct.
 		 */
@@ -681,6 +693,8 @@ class RomFields
 				col_attrs.sorting = 0;
 				col_attrs.sort_col = -1;
 				col_attrs.sort_dir = COLSORTORDER_ASCENDING;
+				col_attrs.is_timestamp = 0;
+				col_attrs.dtflags = static_cast<DateTimeFlags>(0);
 
 				data.single = nullptr;
 				mxd.icons = nullptr;
@@ -697,6 +711,8 @@ class RomFields
 				col_attrs.sorting = 0;
 				col_attrs.sort_col = -1;
 				col_attrs.sort_dir = COLSORTORDER_ASCENDING;
+				col_attrs.is_timestamp = 0;
+				col_attrs.dtflags = static_cast<DateTimeFlags>(0);
 
 				data.single = nullptr;
 				mxd.icons = nullptr;

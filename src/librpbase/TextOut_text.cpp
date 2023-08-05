@@ -263,6 +263,121 @@ public:
 	}
 };
 
+/**
+ * Format an RFT_DATETIME field (or an `is_timestamp` column in RFT_LISTDATA).
+ * @param buf		[out] Output buffer
+ * @param size		[in] Size of `buf`
+ * @param timestamp	[in] Timestamp to format
+ * @param dtflags	[in] DateTimeFlags
+ * @return 0 on success; non-zero on error.
+ */
+static int formatDateTime(char *buf, size_t size, time_t timestamp, RomFields::DateTimeFlags dtflags)
+{
+	// FIXME: This may result in truncated times on 32-bit Linux.
+	struct tm tm_struct;
+	struct tm *ret;
+	if (dtflags & RomFields::RFT_DATETIME_IS_UTC) {
+		ret = gmtime_r(&timestamp, &tm_struct);
+	}
+	else {
+		ret = localtime_r(&timestamp, &tm_struct);
+	}
+
+	if (!ret) {
+		// gmtime_r() or localtime_r() failed.
+		return -1;
+	}
+
+	if (likely(SystemRegion::getLanguageCode() != 0)) {
+		// Localized time format
+		static const char formats_strtbl[] =
+			"\0"		// [0] No date or time
+			"%x\0"		// [1] Date
+			"%X\0"		// [4] Time
+			"%x %X\0"	// [7] Date Time
+
+			// TODO: Better localization here.
+			"\0"		// [13] No date or time
+			"%b %d\0"	// [14] Date (no year)
+			"%X\0"		// [20] Time
+			"%b %d %X\0";	// [23] Date Time (no year)
+		static const uint8_t formats_offtbl[8] = {0, 1, 4, 7, 13, 14, 20, 23};
+		static_assert(sizeof(formats_strtbl) == 33, "formats_offtbl[] needs to be recalculated");
+
+		const unsigned int offset = (dtflags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK);
+		const char *format = &formats_strtbl[formats_offtbl[offset]];
+		assert(format[0] != '\0');
+		if (likely(format[0] != '\0')) {
+			strftime(buf, size, format, &tm_struct);
+		} else {
+			return -2;
+		}
+	} else {
+		// LC_ALL=C
+		// Always use the same format regardless of platform.
+		// This is needed on Windows because LC_ALL doesn't affect
+		// MSVCRT's strftime().
+
+		// Month names for dates without years
+		static const char months[12][4] = {
+			"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+			"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+		};
+
+		switch (dtflags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK) {
+			case 0:
+			case RomFields::RFT_DATETIME_NO_YEAR:
+			default:
+				// Nothing to do...
+				return -3;
+
+			case RomFields::RFT_DATETIME_HAS_DATE:
+				// Date, with year
+				snprintf(buf, size, "%04d/%02d/%02d",
+					tm_struct.tm_year + 1900, tm_struct.tm_mon + 1, tm_struct.tm_mday);
+				break;
+			case RomFields::RFT_DATETIME_HAS_TIME:
+			case RomFields::RFT_DATETIME_HAS_TIME | RomFields::RFT_DATETIME_NO_YEAR:
+				// Time
+				snprintf(buf, size, "%02d:%02d:%02d",
+					 tm_struct.tm_hour, tm_struct.tm_min, tm_struct.tm_sec);
+				break;
+			case RomFields::RFT_DATETIME_HAS_DATE |
+			     RomFields::RFT_DATETIME_HAS_TIME:
+				// Date and time (with year)
+				snprintf(buf, size, "%04d/%02d/%02d %02d:%02d:%02d",
+					tm_struct.tm_year + 1900, tm_struct.tm_mon + 1, tm_struct.tm_mday,
+					tm_struct.tm_hour, tm_struct.tm_min, tm_struct.tm_sec);
+				break;
+
+			case RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_NO_YEAR: {
+				// Date, without year
+				const char *const s_mon = (tm_struct.tm_mon >= 0 && tm_struct.tm_mon < 12)
+					? months[tm_struct.tm_mon]
+					: "Unk";
+
+				snprintf(buf, size, "%s %02d", s_mon, tm_struct.tm_mday);
+				break;
+			}
+
+			case RomFields::RFT_DATETIME_HAS_DATE |
+			     RomFields::RFT_DATETIME_HAS_TIME | RomFields::RFT_DATETIME_NO_YEAR: {
+				// Date and time (without year)
+				const char *const s_mon = (tm_struct.tm_mon >= 0 && tm_struct.tm_mon < 12)
+					? months[tm_struct.tm_mon]
+					: "Unk";
+
+				snprintf(buf, size, "%s %02d %02d:%02d:%02d",
+					s_mon, tm_struct.tm_mday,
+					tm_struct.tm_hour, tm_struct.tm_min, tm_struct.tm_sec);
+				break;
+			}
+		}
+	}
+
+	return 0;
+}
+
 class ListDataField {
 	size_t width;
 	const RomFields::Field &romField;
@@ -332,9 +447,42 @@ public:
 		size_t totalWidth = col_count + 1;
 		if (listDataDesc.names) {
 			unsigned int i = 0;
+			unsigned int is_timestamp = listDataDesc.col_attrs.is_timestamp;
 			for (const string &name : *(listDataDesc.names)) {
 				colSize[i] = utf8_disp_strlen(name);
+
+				if (unlikely(is_timestamp & 1)) {
+					// This is a timestamp column.
+					// Use a dummy timestamp to figure out the width.
+					char buf[128];
+					int ret = formatDateTime(buf, sizeof(buf), 0,
+						listDataDesc.col_attrs.dtflags);
+					if (likely(ret == 0)) {
+						// Got the column width.
+						colSize[i] = std::max(colSize[i], utf8_disp_strlen(buf));
+					}
+				}
+
+				// Next column
+				is_timestamp >>= 1;
 				i++;
+			}
+		} else if (listDataDesc.col_attrs.is_timestamp != 0) {
+			// No column names, but at least one column has timestamps.
+			unsigned int i = 0;
+			unsigned int is_timestamp = listDataDesc.col_attrs.is_timestamp;
+			for (; is_timestamp != 0 && i < col_count; i++, is_timestamp >>= 1) {
+				if (unlikely(is_timestamp & 1)) {
+					// This is a timestamp column.
+					// Use a dummy timestamp to figure out the width.
+					char buf[128];
+					int ret = formatDateTime(buf, sizeof(buf), 0,
+						listDataDesc.col_attrs.dtflags);
+					if (likely(ret == 0)) {
+						// Got the column width.
+						colSize[i] = utf8_disp_strlen(buf);
+					}
+				}
 			}
 		}
 
@@ -345,8 +493,15 @@ public:
 		const auto pListData_cend = pListData->cend();
 		for (auto it = pListData->cbegin(); it != pListData_cend; ++it, row++) {
 			unsigned int col = 0;
+			unsigned int is_timestamp = listDataDesc.col_attrs.is_timestamp;
 			const auto it_cend = it->cend();
-			for (auto jt = it->cbegin(); jt != it_cend; ++jt, col++) {
+			for (auto jt = it->cbegin(); jt != it_cend; ++jt, col++, is_timestamp >>= 1) {
+				if (unlikely(is_timestamp & 1)) {
+					// Timestamp field. No newlines here.
+					nl_count[row] = 0;
+					continue;
+				}
+
 				// Check for newlines.
 				unsigned int nl_row = 0;
 				const size_t str_sz = jt->size();
@@ -487,12 +642,30 @@ public:
 				}
 				unsigned int col = 0;
 				unsigned int align = listDataDesc.col_attrs.align_data;
+				unsigned int is_timestamp = listDataDesc.col_attrs.is_timestamp;
 				const auto it_cend = it->cend();
-				for (auto jt = it->cbegin(); jt != it_cend; ++jt, ++col, align >>= 2) {
+				for (auto jt = it->cbegin(); jt != it_cend; ++jt, ++col, align >>= 2, is_timestamp >>= 1) {
 					string str;
 					if (nl_count[row] == 0) {
 						// No newlines. Print the string directly.
-						str = SafeString(*jt, false);
+						if (unlikely((is_timestamp & 1) && jt->size() == sizeof(int64_t))) {
+							// Timestamp column. Format the timestamp.
+							RomFields::TimeString_t time_string;
+							memcpy(time_string.str, jt->data(), 8);
+
+							char buf[128];
+							int ret = formatDateTime(buf, sizeof(buf),
+								static_cast<time_t>(time_string.time),
+								listDataDesc.col_attrs.dtflags);
+							if (likely(ret == 0)) {
+								str.assign(buf);
+							} else {
+								str = C_("RomData", "Unknown");
+							}
+						} else {
+							// Not a timestamp column. Use the string as-is.
+							str = SafeString(*jt, false);
+						}
 					} else if (linePos[col] == (unsigned int)string::npos) {
 						// End of string.
 					} else {
@@ -563,128 +736,25 @@ public:
 		: width(width), romField(romField) { }
 	friend ostream& operator<<(ostream& os, const DateTimeField& field) {
 		auto romField = field.romField;
-		auto flags = romField.flags;
 
 		os << ColonPad(field.width, romField.name);
 		StreamStateSaver state(os);
 
-		if (romField.data.date_time == -1) {
+		if (unlikely(romField.data.date_time == -1)) {
 			// Invalid date/time.
 			os << C_("RomData", "Unknown");
 			return os;
 		}
 
-		// FIXME: This may result in truncated times on 32-bit Linux.
-		struct tm timestamp;
-		struct tm *ret;
-		const time_t date_time = (time_t)romField.data.date_time;
-		if (flags & RomFields::RFT_DATETIME_IS_UTC) {
-			ret = gmtime_r(&date_time, &timestamp);
-		}
-		else {
-			ret = localtime_r(&date_time, &timestamp);
-		}
-
-		if (!ret) {
-			// gmtime_r() or localtime_r() failed.
-			os << "Invalid DateTime";
-			return os;
-		}
-
-		// Buffer for the RFT_DATETIME string
 		char str[128];
 		str[0] = '\0';
-
-		if (likely(SystemRegion::getLanguageCode() != 0)) {
-			// Localized time format
-			static const char formats_strtbl[] =
-				"\0"		// [0] No date or time
-				"%x\0"		// [1] Date
-				"%X\0"		// [4] Time
-				"%x %X\0"	// [7] Date Time
-
-				// TODO: Better localization here.
-				"\0"		// [13] No date or time
-				"%b %d\0"	// [14] Date (no year)
-				"%X\0"		// [20] Time
-				"%b %d %X\0";	// [23] Date Time (no year)
-			static const uint8_t formats_offtbl[8] = {0, 1, 4, 7, 13, 14, 20, 23};
-			static_assert(sizeof(formats_strtbl) == 33, "formats_offtbl[] needs to be recalculated");
-
-			const unsigned int offset = (flags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK);
-			const char *format = &formats_strtbl[formats_offtbl[offset]];
-			assert(format[0] != '\0');
-			if (format[0] == '\0') {
-				os << "Invalid DateTime";
-			} else {
-				strftime(str, 128, format, &timestamp);
-			}
-		} else {
-			// LC_ALL=C
-			// Always use the same format regardless of platform.
-			// This is needed on Windows because LC_ALL doesn't affect
-			// MSVCRT's strftime().
-
-			// Month names for dates without years
-			static const char months[12][4] = {
-				"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-				"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-			};
-
-			switch (flags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK) {
-				case 0:
-				case RomFields::RFT_DATETIME_NO_YEAR:
-				default:
-					// Nothing to do...
-					os << "Invalid DateTime";
-					break;
-
-				case RomFields::RFT_DATETIME_HAS_DATE:
-					// Date, with year
-					snprintf(str, sizeof(str), "%04d/%02d/%02d",
-						timestamp.tm_year + 1900, timestamp.tm_mon + 1, timestamp.tm_mday);
-					break;
-				case RomFields::RFT_DATETIME_HAS_TIME:
-				case RomFields::RFT_DATETIME_HAS_TIME | RomFields::RFT_DATETIME_NO_YEAR:
-					// Time
-					snprintf(str, sizeof(str), "%02d:%02d:%02d",
-						 timestamp.tm_hour, timestamp.tm_min, timestamp.tm_sec);
-					break;
-				case RomFields::RFT_DATETIME_HAS_DATE |
-				     RomFields::RFT_DATETIME_HAS_TIME:
-					// Date and time (with year)
-					snprintf(str, sizeof(str), "%04d/%02d/%02d %02d:%02d:%02d",
-						timestamp.tm_year + 1900, timestamp.tm_mon + 1, timestamp.tm_mday,
-						timestamp.tm_hour, timestamp.tm_min, timestamp.tm_sec);
-					break;
-
-				case RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_NO_YEAR: {
-					// Date, without year
-					const char *const s_mon = (timestamp.tm_mon >= 0 && timestamp.tm_mon < 12)
-						? months[timestamp.tm_mon]
-						: "Unk";
-
-					snprintf(str, sizeof(str), "%s %02d",
-						s_mon, timestamp.tm_mday);
-					break;
-				}
-				case RomFields::RFT_DATETIME_HAS_DATE |
-				     RomFields::RFT_DATETIME_HAS_TIME | RomFields::RFT_DATETIME_NO_YEAR: {
-					// Date and time (without year)
-					const char *const s_mon = (timestamp.tm_mon >= 0 && timestamp.tm_mon < 12)
-						? months[timestamp.tm_mon]
-						: "Unk";
-
-					snprintf(str, sizeof(str), "%s %02d %02d:%02d:%02d",
-						s_mon, timestamp.tm_mday,
-						timestamp.tm_hour, timestamp.tm_min, timestamp.tm_sec);
-					break;
-				}
-			}
-		}
-
-		if (str[0] != '\0') {
+		int ret = formatDateTime(str, sizeof(str),
+			static_cast<time_t>(romField.data.date_time),
+			static_cast<RomFields::DateTimeFlags>(romField.flags));
+		if (likely(ret == 0)) {
 			os << str;
+		} else {
+			os << C_("RomData", "Unknown");
 		}
 		return os;
 	}

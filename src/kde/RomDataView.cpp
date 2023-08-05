@@ -10,6 +10,7 @@
 
 #include "RomDataView.hpp"
 #include "RomDataView_p.hpp"
+#include "RomDataFormat.hpp"
 
 #include "AchQtDBus.hpp"
 #include "RpQImageBackend.hpp"
@@ -651,61 +652,13 @@ void RomDataViewPrivate::adjustListData(int tabIdx)
 QLabel *RomDataViewPrivate::initDateTime(QLabel *lblDesc,
 	const RomFields::Field &field)
 {
-	// Date/Time.
+	// Date/Time
 	if (field.data.date_time == -1) {
 		// tr: Invalid date/time
 		return initString(lblDesc, field, U82Q(C_("RomDataView", "Unknown")));
 	}
 
-	QDateTime dateTime;
-	dateTime.setTimeSpec(
-		(field.flags & RomFields::RFT_DATETIME_IS_UTC)
-			? Qt::UTC : Qt::LocalTime);
-	dateTime.setMSecsSinceEpoch(field.data.date_time * 1000);
-
-	QString str;
-	const QLocale locale = QLocale::system();
-	switch (field.flags & RomFields::RFT_DATETIME_HAS_DATETIME_NO_YEAR_MASK) {
-		case RomFields::RFT_DATETIME_HAS_DATE:
-			// Date only.
-			str = locale.toString(dateTime.date(), locale.dateFormat(QLocale::ShortFormat));
-			break;
-
-		case RomFields::RFT_DATETIME_HAS_TIME:
-		case RomFields::RFT_DATETIME_HAS_TIME |
-		     RomFields::RFT_DATETIME_NO_YEAR:
-			// Time only.
-			str = locale.toString(dateTime.time(), locale.timeFormat(QLocale::ShortFormat));
-			break;
-
-		case RomFields::RFT_DATETIME_HAS_DATE |
-		     RomFields::RFT_DATETIME_HAS_TIME:
-			// Date and time.
-			str = locale.toString(dateTime, locale.dateTimeFormat(QLocale::ShortFormat));
-			break;
-
-		case RomFields::RFT_DATETIME_HAS_DATE |
-		     RomFields::RFT_DATETIME_NO_YEAR:
-			// Date only. (No year)
-			// TODO: Localize this.
-			str = locale.toString(dateTime.date(), QLatin1String("MMM d"));
-			break;
-
-		case RomFields::RFT_DATETIME_HAS_DATE |
-		     RomFields::RFT_DATETIME_HAS_TIME |
-		     RomFields::RFT_DATETIME_NO_YEAR:
-			// Date and time. (No year)
-			// TODO: Localize this.
-			str = dateTime.date().toString(QLatin1String("MMM d")) + QChar(L' ') +
-			      dateTime.time().toString();
-			break;
-
-		default:
-			// Invalid combination.
-			assert(!"Invalid Date/Time formatting.");
-			break;
-	}
-
+	QString str = formatDateTime(field.data.date_time, field.flags);
 	if (!str.isEmpty()) {
 		return initString(lblDesc, field, str);
 	}
