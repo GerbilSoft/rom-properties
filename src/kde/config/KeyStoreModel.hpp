@@ -8,10 +8,11 @@
 
 #pragma once
 
-// Qt includes.
+// Qt includes
 #include <QtCore/QAbstractItemModel>
 
-class KeyStoreQt;
+// KeyStoreQt (include needed for proper moc on Qt6)
+#include "KeyStoreQt.hpp"
 
 class KeyStoreModelPrivate;
 class KeyStoreModel : public QAbstractItemModel
