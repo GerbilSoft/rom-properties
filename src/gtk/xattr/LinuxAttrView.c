@@ -135,13 +135,13 @@ rp_linux_attr_view_init(RpLinuxAttrView *widget)
 #ifdef USE_GTK_GRID
 	GtkWidget *const gridCheckboxes = gtk_grid_new();
 #else /* !USE_GTK_GRID */
-	static const int row_count = (ARRAY_SIZE(linuxAttrCheckboxInfo) / col_count) +
-				    ((ARRAY_SIZE(linuxAttrCheckboxInfo) % col_count) > 0);
+	static const int row_count = (LINUX_ATTR_CHECKBOX_MAX / col_count) +
+				    ((LINUX_ATTR_CHECKBOX_MAX % col_count) > 0);
 	GtkWidget *const gridCheckboxes = gtk_table_new(row_count, col_count, FALSE);
 #endif /* USE_GTK_GRID */
 	gtk_widget_set_name(gridCheckboxes, "gridCheckboxes");
 	for (size_t i = 0; i < ARRAY_SIZE(widget->checkBoxes); i++) {
-		const LinuxAttrCheckboxInfo *const p = &linuxAttrCheckboxInfo[i];
+		const LinuxAttrCheckboxInfo_t *const p = linuxAttrCheckboxInfo((LinuxAttrCheckboxID)i);
 
 		GtkWidget *const checkBox = gtk_check_button_new_with_label(
 			dpgettext_expr(RP_I18N_DOMAIN, "LinuxAttrView", p->label));
@@ -281,8 +281,8 @@ rp_linux_attr_view_update_flags_string(RpLinuxAttrView *widget)
 static void
 rp_linux_attr_view_update_flags_checkboxes(RpLinuxAttrView *widget)
 {
-	static_assert(ARRAY_SIZE(widget->checkBoxes) == ARRAY_SIZE(linuxAttrCheckboxInfo),
-		"checkBoxes and linuxAttrCheckboxInfo are out of sync!");
+	static_assert(ARRAY_SIZE(widget->checkBoxes) == LINUX_ATTR_CHECKBOX_MAX,
+		"checkBoxes and LINUX_ATTR_CHECKBOX_MAX are out of sync!");
 
 	widget->inhibit_checkbox_no_toggle = TRUE;
 

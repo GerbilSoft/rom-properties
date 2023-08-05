@@ -45,6 +45,7 @@ SET(${PROJECT_NAME}_SRCS
 	scsi/RpFile_Kreon.cpp
 	scsi/RpFile_scsi.cpp
 	xattr/XAttrReader.cpp
+	xattr/LinuxAttrData.c
 	)
 # Headers.
 SET(${PROJECT_NAME}_H
@@ -184,6 +185,7 @@ FOREACH(_target ${TARGETS})
 	# rpthreads is needed for atomic functions.
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE rpcpu${_target_suffix} rpthreads${_target_suffix})
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE cachecommon${_target_suffix})
+	TARGET_LINK_LIBRARIES(${_target} PRIVATE i18n${_target_suffix})
 	IF(WIN32)
 		# xattr/XAttrReader_win32.cpp uses wchar.hpp
 		TARGET_LINK_LIBRARIES(${_target} PRIVATE rptext${_target_suffix})

@@ -69,8 +69,9 @@ class LinuxAttrViewPrivate
 void LinuxAttrViewPrivate::retranslateUi_nonDesigner(void)
 {
 	for (size_t i = 0; i < ARRAY_SIZE(checkBoxes); i++) {
-		checkBoxes[i]->setText(U82Q(dpgettext_expr(RP_I18N_DOMAIN, "LinuxAttrView", linuxAttrCheckboxInfo[i].label)));
-		checkBoxes[i]->setToolTip(U82Q(dpgettext_expr(RP_I18N_DOMAIN, "LinuxAttrView", linuxAttrCheckboxInfo[i].tooltip)));
+		const LinuxAttrCheckboxInfo_t *const p = linuxAttrCheckboxInfo(static_cast<LinuxAttrCheckboxID>(i));
+		checkBoxes[i]->setText(U82Q(dpgettext_expr(RP_I18N_DOMAIN, "LinuxAttrView", p->label)));
+		checkBoxes[i]->setToolTip(U82Q(dpgettext_expr(RP_I18N_DOMAIN, "LinuxAttrView", p->tooltip)));
 	}
 }
 
@@ -111,8 +112,8 @@ void LinuxAttrViewPrivate::updateFlagsString(void)
  */
 void LinuxAttrViewPrivate::updateFlagsCheckboxes(void)
 {
-	static_assert(ARRAY_SIZE(checkBoxes) == ARRAY_SIZE(linuxAttrCheckboxInfo),
-		"checkBoxes and checkboxInfo are out of sync!");
+	static_assert(ARRAY_SIZE(checkBoxes) == LINUX_ATTR_CHECKBOX_MAX,
+		"checkBoxes and LINUX_ATTR_CHECKBOX_MAX are out of sync!");
 
 	// Flag order, relative to checkboxes
 	// NOTE: Uses bit indexes.
@@ -142,7 +143,7 @@ LinuxAttrView::LinuxAttrView(QWidget *parent)
 	static const int col_count = 4;
 	int col = 0, row = 0;
 	for (size_t i = 0; i < ARRAY_SIZE(d->checkBoxes); i++) {
-		const LinuxAttrCheckboxInfo *const p = &linuxAttrCheckboxInfo[i];
+		const LinuxAttrCheckboxInfo_t *const p = linuxAttrCheckboxInfo(static_cast<LinuxAttrCheckboxID>(i));
 
 		QCheckBox *const checkBox = new QCheckBox();
 		checkBox->setObjectName(U82Q(p->name));
