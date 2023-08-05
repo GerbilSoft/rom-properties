@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpfile)                        *
- * XAttrReader_linux.cpp: Extended Attribute reader (Linux version)        *
+ * XAttrReader_posix.cpp: Extended Attribute reader (POSIX version)        *
  *                                                                         *
  * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *

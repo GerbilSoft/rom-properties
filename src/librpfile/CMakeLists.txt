@@ -106,8 +106,7 @@ ENDIF()
 IF(WIN32)
 	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} xattr/XAttrReader_win32.cpp)
 ELSEIF(HAVE_SYS_XATTR_H OR HAVE_SYS_EXTATTR_H)
-	# TODO: Rename to _posix.cpp.
-	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} xattr/XAttrReader_linux.cpp)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} xattr/XAttrReader_posix.cpp)
 ELSE()
 	# Dummy implementation
 	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} xattr/XAttrReader_dummy.cpp)
