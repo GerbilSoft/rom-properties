@@ -176,7 +176,6 @@ void OptionsMenuButtonPrivate::updateOp(int id, const RomData::RomOp *op)
 	} else {
 		uFlags = MF_BYCOMMAND | MF_STRING;
 	}
-	uFlags |= MF_DISABLED;
 
 	const int menuId = id + IDM_OPTIONS_MENU_BASE;
 	ModifyMenu(hMenuOptions, menuId, uFlags, menuId, U82T_c(op->desc));

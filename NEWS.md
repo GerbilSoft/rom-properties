@@ -17,15 +17,19 @@
     the file browser extension libraries installed, e.g. libnautilus-extension-dev.
     * This was broken since rom-properties v1.6, i.e. when the various GTK3 UI
       frontends were merged into a single library.
-  * Consolidated the Linux and FreeBSD XAttr readers into a single file with
-    a few #ifdef's. Partially based on KIO's FileProtocol::copyXattrs().
-    * Also partially supports macOS.
   * Unix XAttr reader: Fix off-by-one that prevented a file's last attribute
     from being displayed.
+  * Windows: Using any option in the "Options" menu aside from exporting or
+    copying text or JSON would result in the option being disabled unless the
+    properties window as closed or reopened.
+    * This bug was introduced in v1.8.
 
 * Other changes:
   * Nintendo3DS: The "Options" menu no longer shows a grayed-out "Extract SRL"
     option if the file does not contain an embedded SRL.
+  * Consolidated the Linux and FreeBSD XAttr readers into a single file with
+    a few #ifdef's. Partially based on KIO's FileProtocol::copyXattrs().
+    * Also partially supports macOS.
 
 ## v2.2.1 (released 2023/07/30)
 
