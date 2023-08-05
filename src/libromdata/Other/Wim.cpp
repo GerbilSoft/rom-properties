@@ -29,7 +29,9 @@ using namespace LibRpBase;
 using LibRpFile::IRpFile;
 
 // C includes
-#include <cuchar>
+#include <uchar.h>
+
+// C includes (C++ namespace)
 #include <ctime>
 
 // C++ STL classes
