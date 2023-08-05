@@ -30,6 +30,10 @@
   * Consolidated the Linux and FreeBSD XAttr readers into a single file with
     a few #ifdef's. Partially based on KIO's FileProtocol::copyXattrs().
     * Also partially supports macOS.
+  * Windows: Better error reporting if a file could not be opened.
+    * For example, if a file is missing, it now shows "No such file or directory"
+      instead of just "Input/output error".
+    * This bug has been present since at least v1.4.
 
 ## v2.2.1 (released 2023/07/30)
 

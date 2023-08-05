@@ -219,9 +219,13 @@ int RpFilePrivate::reOpenFile(void)
 			// This is okay if creating a new file, but not if we're
 			// opening an existing file.
 			if (!(mode & RpFile::FM_CREATE)) {
+				int err = w32err_to_posix(GetLastError());
+				if (err == 0) {
+					err = EIO;
+				}
 				q->m_fileType = DT_UNKNOWN;
-				q->m_lastError = EIO;
-				return -EIO;
+				q->m_lastError = err;
+				return -err;
 			}
 		} else if (dwAttr & FILE_ATTRIBUTE_DIRECTORY) {
 			// File is a directory.
