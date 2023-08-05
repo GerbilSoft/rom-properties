@@ -185,7 +185,9 @@ FOREACH(_target ${TARGETS})
 	# rpthreads is needed for atomic functions.
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE rpcpu${_target_suffix} rpthreads${_target_suffix})
 	TARGET_LINK_LIBRARIES(${_target} PRIVATE cachecommon${_target_suffix})
-	TARGET_LINK_LIBRARIES(${_target} PRIVATE i18n${_target_suffix})
+	IF(ENABLE_NLS)
+		TARGET_LINK_LIBRARIES(${_target} PRIVATE i18n${_target_suffix})
+	ENDIF(ENABLE_NLS)
 	IF(WIN32)
 		# xattr/XAttrReader_win32.cpp uses wchar.hpp
 		TARGET_LINK_LIBRARIES(${_target} PRIVATE rptext${_target_suffix})
