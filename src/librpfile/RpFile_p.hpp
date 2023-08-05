@@ -65,17 +65,12 @@ class RpFilePrivate
 	public:
 #ifdef _WIN32
 		typedef HANDLE FILE_TYPE;
+		RpFilePrivate(RpFile *q, const wchar_t *filenameW, RpFile::FileMode mode);
 #else /* !_WIN32 */
 		typedef FILE *FILE_TYPE;
+		RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode);
 #endif /* _WIN32 */
 
-		RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode)
-			: q_ptr(q), file(INVALID_HANDLE_VALUE)
-			, mode(mode), gzfd(nullptr), gzsz(-1), devInfo(nullptr)
-		{
-			assert(filename != nullptr);
-			this->filename = strdup(filename);
-		}
 		~RpFilePrivate();
 
 	private:
@@ -84,7 +79,12 @@ class RpFilePrivate
 
 	public:
 		FILE_TYPE file;		// File pointer
-		char *filename;		// Filename
+		char *filename;		// Filename (UTF-8)
+#ifdef _WIN32
+		wchar_t *filenameW;	// Filename (UTF-16)
+					// NOTE: Win32 version uses this as primary.
+					// UTF-8 filename is only used for the filename() function.
+#endif /* _WIN32 */
 		RpFile::FileMode mode;	// File mode
 
 		gzFile gzfd;		// Used for transparent gzip decompression.

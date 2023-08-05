@@ -25,6 +25,14 @@ namespace LibRpFile {
 
 /** RpFilePrivate **/
 
+RpFilePrivate::RpFilePrivate(RpFile *q, const char *filename, RpFile::FileMode mode)
+	: q_ptr(q), file(INVALID_HANDLE_VALUE)
+	, mode(mode), gzfd(nullptr), gzsz(-1), devInfo(nullptr)
+{
+	assert(filename != nullptr);
+	this->filename = strdup(filename);
+}
+
 RpFilePrivate::~RpFilePrivate()
 {
 	if (gzfd != nullptr) {
@@ -217,8 +225,8 @@ int RpFilePrivate::reOpenFile(void)
 /**
  * Open a file.
  * NOTE: Files are always opened in binary mode.
- * @param filename Filename.
- * @param mode File mode.
+ * @param filename Filename
+ * @param mode File mode
  */
 RpFile::RpFile(const char *filename, FileMode mode)
 	: super()
@@ -230,8 +238,8 @@ RpFile::RpFile(const char *filename, FileMode mode)
 /**
  * Open a file.
  * NOTE: Files are always opened in binary mode.
- * @param filename Filename.
- * @param mode File mode.
+ * @param filename Filename
+ * @param mode File mode
  */
 RpFile::RpFile(const string &filename, FileMode mode)
 	: super()

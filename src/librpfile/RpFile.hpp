@@ -48,13 +48,27 @@ class RpFile final : public IRpFile
 		/**
 		 * Open a file.
 		 * NOTE: Files are always opened in binary mode.
-		 * @param filename Filename.
-		 * @param mode File mode.
+		 * @param filename Filename (UTF-8)
+		 * @param mode File mode
 		 */
 		RP_LIBROMDATA_PUBLIC
 		RpFile(const char *filename, FileMode mode);
 		RP_LIBROMDATA_PUBLIC
 		RpFile(const std::string &filename, FileMode mode);
+
+#ifdef _WIN32
+		/**
+		 * Open a file.
+		 * NOTE: Files are always opened in binary mode.
+		 * @param filenameW Filename (UTF-16)
+		 * @param mode File mode
+		 */
+		RP_LIBROMDATA_PUBLIC
+		RpFile(const wchar_t *filenameW, FileMode mode);
+		RP_LIBROMDATA_PUBLIC
+		RpFile(const std::wstring &filenameW, FileMode mode);
+#endif /* _WIN32 */
+
 	private:
 		void init(void);
 	protected:
@@ -140,10 +154,19 @@ class RpFile final : public IRpFile
 
 		/**
 		 * Get the filename.
-		 * @return Filename. (May be nullptr if the filename is not available.)
+		 * @return Filename (UTF-8) (May be nullptr if the filename is not available.)
 		 */
 		RP_LIBROMDATA_PUBLIC
 		const char *filename(void) const final;
+
+#ifdef _WIN32
+		/**
+		 * Get the filename. (Windows only: returns UTF-16.)
+		 * @return Filename (UTF-16) (May be nullptr if the filename is not available.)
+		 */
+		RP_LIBROMDATA_PUBLIC
+		const wchar_t *filenameW(void) const;
+#endif /* _WIN32 */
 
 	public:
 		/** Extra functions **/

@@ -62,7 +62,10 @@ class RomDataPrivate
 	public:
 		/** These fields are set by RomData's own constructor. **/
 		LibRpFile::IRpFile *file;	// Open file
-		char *filename;			// Copy of the filename
+		char *filename;			// Copy of the filename (UTF-8)
+#ifdef _WIN32
+		wchar_t *filenameW;		// Copy of the filename (UTF-16; Windows only)
+#endif /* _WIN32 */
 		bool isCompressed;		// True if the file is compressed. (transparent decompression)
 	public:
 		RomFields fields;		// ROM fields (always allocated)

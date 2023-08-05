@@ -441,25 +441,20 @@ int delete_file(const char *filename)
 
 /**
  * Check if the specified file is a symbolic link.
+ * Internal function; has common code for after filename parsing.
  *
  * Symbolic links are NOT resolved; otherwise wouldn't check
  * if the specified file was a symlink itself.
  *
+ * @param tfilename Filename (UTF-16; makeWinPath() must have been called)
  * @return True if the file is a symbolic link; false if not.
  */
-bool is_symlink(const char *filename)
+static bool is_symlink_int(const TCHAR *tfilename)
 {
-	assert(filename != nullptr);
-	assert(filename[0] != '\0');
-	if (unlikely(!filename || filename[0] == '\0')) {
-		return false;
-	}
-	const tstring tfilename = makeWinPath(filename);
-
 	// Check the reparse point type.
 	// Reference: https://devblogs.microsoft.com/oldnewthing/20100212-00/?p=14963
 	WIN32_FIND_DATA findFileData;
-	HANDLE hFind = FindFirstFile(tfilename.c_str(), &findFileData);
+	HANDLE hFind = FindFirstFile(tfilename, &findFileData);
 	if (!hFind || hFind == INVALID_HANDLE_VALUE) {
 		// Cannot find the file.
 		return false;
@@ -473,6 +468,46 @@ bool is_symlink(const char *filename)
 
 	// Not a reparse point.
 	return false;
+}
+
+/**
+ * Check if the specified file is a symbolic link.
+ *
+ * Symbolic links are NOT resolved; otherwise wouldn't check
+ * if the specified file was a symlink itself.
+ *
+ * @param filename Filename (UTF-8)
+ * @return True if the file is a symbolic link; false if not.
+ */
+bool is_symlink(const char *filename)
+{
+	assert(filename != nullptr);
+	assert(filename[0] != '\0');
+	if (unlikely(!filename || filename[0] == '\0')) {
+		return false;
+	}
+	const tstring tfilename = makeWinPath(filename);
+	return is_symlink_int(tfilename.c_str());
+}
+
+/**
+ * Check if the specified file is a symbolic link.
+ *
+ * Symbolic links are NOT resolved; otherwise wouldn't check
+ * if the specified file was a symlink itself.
+ *
+ * @param filenameW Filename (UTF-16)
+ * @return True if the file is a symbolic link; false if not.
+ */
+bool is_symlink(const wchar_t *filenameW)
+{
+	assert(filenameW != nullptr);
+	assert(filenameW[0] != L'\0');
+	if (unlikely(!filenameW || filenameW[0] == L'\0')) {
+		return false;
+	}
+	const tstring tfilename = makeWinPath(filenameW);
+	return is_symlink_int(tfilename.c_str());
 }
 
 // GetFinalPathnameByHandleW() lookup.
@@ -512,11 +547,67 @@ static void LookupGetFinalPathnameByHandle(void)
 
 /**
  * Resolve a symbolic link.
+ * Internal function; has common code for after filename parsing.
  *
  * If the specified filename is not a symbolic link,
  * the filename will be returned as-is.
  *
- * @param filename Filename of symbolic link.
+ * @param tfilename Filename of symbolic link (UTF-16; makeWinPath() must have been called)
+ * @return Resolved symbolic link, or empty string on error.
+ */
+static wstring resolve_symlink_int(const TCHAR *tfilename)
+{
+	pthread_once(&once_gfpbh, LookupGetFinalPathnameByHandle);
+	if (!pfnGetFinalPathnameByHandle) {
+		// GetFinalPathnameByHandle() not available.
+		return wstring();
+	}
+
+	// Reference: https://devblogs.microsoft.com/oldnewthing/20100212-00/?p=14963
+	// TODO: Enable write sharing in regular IRpFile?
+	HANDLE hFile = CreateFile(tfilename,
+		GENERIC_READ,
+		FILE_SHARE_READ|FILE_SHARE_WRITE,
+		nullptr,
+		OPEN_EXISTING,
+		FILE_ATTRIBUTE_NORMAL,
+		nullptr);
+	if (!hFile || hFile == INVALID_HANDLE_VALUE) {
+		// Unable to open the file.
+		return wstring();
+	}
+
+	// NOTE: GetFinalPathNameByHandle() always returns "\\\\?\\" paths.
+	DWORD cchDeref = pfnGetFinalPathnameByHandle(hFile, nullptr, 0, VOLUME_NAME_DOS);
+	if (cchDeref == 0) {
+		// Error...
+		CloseHandle(hFile);
+		return wstring();
+	}
+
+	// NOTE: cchDeref may include the NULL terminator on ANSI systems.
+	// We'll add one anyway, just in case it doesn't.
+	// TODO: Allocate std::wstring() here and read directly into data()?
+	TCHAR *szDeref = new TCHAR[cchDeref+1];
+	pfnGetFinalPathnameByHandle(hFile, szDeref, cchDeref+1, VOLUME_NAME_DOS);
+	if (szDeref[cchDeref-1] == '\0') {
+		// Extra NULL terminator found.
+		cchDeref--;
+	}
+
+	wstring ws_ret(szDeref, cchDeref);
+	delete[] szDeref;
+	CloseHandle(hFile);
+	return ws_ret;
+}
+
+/**
+ * Resolve a symbolic link.
+ *
+ * If the specified filename is not a symbolic link,
+ * the filename will be returned as-is.
+ *
+ * @param filename Filename of symbolic link (UTF-8)
  * @return Resolved symbolic link, or empty string on error.
  */
 string resolve_symlink(const char *filename)
@@ -526,49 +617,28 @@ string resolve_symlink(const char *filename)
 	if (unlikely(!filename || filename[0] == '\0')) {
 		return string();
 	}
-
-	pthread_once(&once_gfpbh, LookupGetFinalPathnameByHandle);
-	if (!pfnGetFinalPathnameByHandle) {
-		// GetFinalPathnameByHandle() not available.
-		return string();
-	}
-
-	// Reference: https://devblogs.microsoft.com/oldnewthing/20100212-00/?p=14963
-	// TODO: Enable write sharing in regular IRpFile?
 	const tstring tfilename = makeWinPath(filename);
-	HANDLE hFile = CreateFile(tfilename.c_str(),
-		GENERIC_READ,
-		FILE_SHARE_READ|FILE_SHARE_WRITE,
-		nullptr,
-		OPEN_EXISTING,
-		FILE_ATTRIBUTE_NORMAL,
-		nullptr);
-	if (!hFile || hFile == INVALID_HANDLE_VALUE) {
-		// Unable to open the file.
-		return string();
-	}
+	return W2U8(resolve_symlink_int(tfilename.c_str()));
+}
 
-	// NOTE: GetFinalPathNameByHandle() always returns "\\\\?\\" paths.
-	DWORD cchDeref = pfnGetFinalPathnameByHandle(hFile, nullptr, 0, VOLUME_NAME_DOS);
-	if (cchDeref == 0) {
-		// Error...
-		CloseHandle(hFile);
-		return string();
+/**
+ * Resolve a symbolic link.
+ *
+ * If the specified filename is not a symbolic link,
+ * the filename will be returned as-is.
+ *
+ * @param filenameW Filename of symbolic link (UTF-16)
+ * @return Resolved symbolic link, or empty string on error.
+ */
+wstring resolve_symlink(const wchar_t *filenameW)
+{
+	assert(filenameW != nullptr);
+	assert(filenameW[0] != L'\0');
+	if (unlikely(!filenameW || filenameW[0] == '\0')) {
+		return wstring();
 	}
-
-	// NOTE: cchDeref may include the NULL terminator on ANSI systems.
-	// We'll add one anyway, just in case it doesn't.
-	TCHAR *szDeref = new TCHAR[cchDeref+1];
-	pfnGetFinalPathnameByHandle(hFile, szDeref, cchDeref+1, VOLUME_NAME_DOS);
-	if (szDeref[cchDeref-1] == '\0') {
-		// Extra NULL terminator found.
-		cchDeref--;
-	}
-
-	string ret = T2U8(szDeref, cchDeref);
-	delete[] szDeref;
-	CloseHandle(hFile);
-	return ret;
+	const tstring tfilename = makeWinPath(filenameW);
+	return resolve_symlink_int(tfilename.c_str());
 }
 
 /**
@@ -576,6 +646,7 @@ string resolve_symlink(const char *filename)
  *
  * Symbolic links are resolved as per usual directory traversal.
  *
+ * @param filename Filename to check (UTF-8)
  * @return True if the file is a directory; false if not.
  */
 bool is_directory(const char *filename)
@@ -586,6 +657,27 @@ bool is_directory(const char *filename)
 		return false;
 	}
 	const tstring tfilename = makeWinPath(filename);
+
+	const DWORD attrs = GetFileAttributes(tfilename.c_str());
+	return (attrs != INVALID_FILE_ATTRIBUTES && (attrs & FILE_ATTRIBUTE_DIRECTORY));
+}
+
+/**
+ * Check if the specified file is a directory.
+ *
+ * Symbolic links are resolved as per usual directory traversal.
+ *
+ * @param filenameW Filename to check (UTF-16)
+ * @return True if the file is a directory; false if not.
+ */
+bool is_directory(const wchar_t *filenameW)
+{
+	assert(filenameW != nullptr);
+	assert(filenameW[0] != '\0');
+	if (unlikely(!filenameW || filenameW[0] == L'\0')) {
+		return false;
+	}
+	const tstring tfilename = makeWinPath(filenameW);
 
 	const DWORD attrs = GetFileAttributes(tfilename.c_str());
 	return (attrs != INVALID_FILE_ATTRIBUTES && (attrs & FILE_ATTRIBUTE_DIRECTORY));

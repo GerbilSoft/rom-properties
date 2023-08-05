@@ -92,12 +92,36 @@ class RomDataFactory
 		 * types must be supported by the RomData subclass in order to
 		 * be returned.
 		 *
-		 * @param filename ROM filename
+		 * @param filename ROM filename (UTF-8)
 		 * @param attrs RomDataAttr bitfield. If set, RomData subclass must have the specified attributes.
 		 * @return RomData subclass, or nullptr if the ROM isn't supported.
 		 */
 		RP_LIBROMDATA_PUBLIC
 		static LibRpBase::RomData *create(const char *filename, unsigned int attrs = 0);
+
+#ifdef _WIN32
+		/**
+		 * Create a RomData subclass for the specified ROM file.
+		 *
+		 * This version creates a base RpFile for the RomData object.
+		 * It does not support extended virtual filesystems like GVfs
+		 * or KIO, but it does support directories.
+		 *
+		 * NOTE: RomData::isValid() is checked before returning a
+		 * created RomData instance, so returned objects can be
+		 * assumed to be valid as long as they aren't nullptr.
+		 *
+		 * If imgbf is non-zero, at least one of the specified image
+		 * types must be supported by the RomData subclass in order to
+		 * be returned.
+		 *
+		 * @param filenameW ROM filename (UTF-16)
+		 * @param attrs RomDataAttr bitfield. If set, RomData subclass must have the specified attributes.
+		 * @return RomData subclass, or nullptr if the ROM isn't supported.
+		 */
+		RP_LIBROMDATA_PUBLIC
+		static LibRpBase::RomData *create(const wchar_t *filenameW, unsigned int attrs = 0);
+#endif /* _WIN32 */
 
 		struct ExtInfo {
 			const char *ext;
