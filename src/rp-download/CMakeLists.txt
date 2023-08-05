@@ -7,16 +7,24 @@ IF(POLICY CMP0063)
 ENDIF(POLICY CMP0063)
 PROJECT(rp-download LANGUAGES C CXX)
 
-# Check for an xattr function.
-INCLUDE(CheckSymbolExists)
-IF(APPLE)
-	CHECK_SYMBOL_EXISTS(fsetxattr "sys/xattr.h" HAVE_FSETXATTR_MAC)
-ELSEIF(NOT WIN32)
-	CHECK_SYMBOL_EXISTS(fsetxattr "sys/xattr.h" HAVE_FSETXATTR_LINUX)
-	CHECK_SYMBOL_EXISTS(extattr_set_fd "sys/extattr.h" HAVE_EXTATTR_SET_FD)
-ENDIF()
-
 IF(NOT WIN32)
+	# Check for an xattr header.
+	INCLUDE(CheckIncludeFile)
+	CHECK_INCLUDE_FILE("sys/xattr.h" HAVE_SYS_XATTR_H)
+	CHECK_INCLUDE_FILE("sys/extattr.h" HAVE_SYS_EXTATTR_H)
+
+	# Check for an xattr function.
+	INCLUDE(CheckSymbolExists)
+	IF(HAVE_SYS_XATTR_H)
+		IF(APPLE)
+			CHECK_SYMBOL_EXISTS(fsetxattr "sys/xattr.h" HAVE_FSETXATTR_MAC)
+		ELSE(APPLE)
+			CHECK_SYMBOL_EXISTS(fsetxattr "sys/xattr.h" HAVE_FSETXATTR_LINUX)
+		ENDIF(APPLE)
+	ELSEIF(HAVE_SYS_EXTATTR_H)
+		CHECK_SYMBOL_EXISTS(extattr_set_fd "sys/extattr.h" HAVE_EXTATTR_SET_FD)
+	ENDIF()
+
 	# Check for statx().
 	SET(OLD_CMAKE_REQUIRED_DEFINITIONS "${CMAKE_REQUIRED_DEFINITIONS}")
 	SET(CMAKE_REQUIRED_DEFINITIONS "-D_GNU_SOURCE=1")

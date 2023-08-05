@@ -28,9 +28,11 @@
 using std::string;
 
 // xattrs
-#if defined(HAVE_FSETXATTR_LINUX)
+#if defined(HAVE_SYS_XATTR_H)
+// NOTE: Mac fsetxattr() is the same as Linux but with an extra options parameter.
 #  include <sys/xattr.h>
-#elif defined(HAVE_EXTATTR_SET_FD)
+#elif defined(HAVE_SYS_EXTATTR_H)
+#  include <sys/types.h>
 #  include <sys/extattr.h>
 // Linux-compatible wrapper.
 static inline int fsetxattr(int fd, const char *name, const void *value, size_t size, int flags)
@@ -43,10 +45,7 @@ static inline int fsetxattr(int fd, const char *name, const void *value, size_t 
 	}
 	return 0;
 }
-#elif defined(HAVE_FSETXATTR_MAC)
-#  include <sys/xattr.h>
-// TODO: Define a Linux-compatible version.
-#endif /* HAVE_FSETXATTR_LINUX || HAVE_FSETXATTR_MAC*/
+#endif
 
 namespace RpDownload {
 
@@ -167,9 +166,9 @@ int setFileOriginInfo(FILE *file, const TCHAR *url, time_t mtime)
 		// References:
 		// - https://apple.stackexchange.com/questions/110239/where-is-the-where-from-meta-data-stored-when-downloaded-via-chrome
 		// - http://osxdaily.com/2018/05/03/view-remove-extended-attributes-file-mac/
-# warning Mac origin info not implemented yet.
+#  warning Mac origin info not implemented yet.
 #else
-# warning No xattr implementation for this system, cannot set origin info.
+#  warning No xattr implementation for this system, cannot set origin info.
 #endif /* HAVE_FSETXATTR_LINUX */
 	}
 
