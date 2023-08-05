@@ -187,8 +187,7 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 				break;
 			}
 
-			string name = s_namespace;
-			name.append(p+1, len);
+			string name(p+1, len);
 			p += 1 + len;
 
 			// Get the value for this attribute.
@@ -210,8 +209,10 @@ int XAttrReaderPrivate::loadGenericXattrs(void)
 			// We have the attribute.
 			// NOTE: Not checking for duplicates, since there
 			// shouldn't be duplicate attribute names.
+			string s_name_prefixed(s_namespace);
+			s_name_prefixed.append(name);
 			string s_value(value_buf.get(), vlen);
-			xattrs.emplace(name, std::move(s_value));
+			xattrs.emplace(std::move(s_name_prefixed), std::move(s_value));
 		}
 
 		// Extended attributes retrieved successfully.
