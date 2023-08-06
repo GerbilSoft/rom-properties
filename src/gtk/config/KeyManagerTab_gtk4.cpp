@@ -88,6 +88,37 @@ rp_key_manager_tab_create_child_GListModel(gpointer item, gpointer user_data)
 	return nullptr;
 }
 
+/**
+ * GtkEditableLabel was changed.
+ * @param self GtkEditable*
+ * @param tab RpKeyManagerTab (user_data)
+ */
+static void
+gtkEditableLabel_changed(GtkEditable *self, RpKeyManagerTab *tab)
+{
+	// NOTE: We can't use user_data for the flat key index because
+	// GtkColumnView reuses widgets. The flat key index is stored
+	// as a property when the data is bound in bind_listitem_cb().
+
+	// NOTE: The property is incremented by 1 because a default
+	// GtkEditableLabel will return NULL (0).
+
+	if (gtk_editable_label_get_editing(GTK_EDITABLE_LABEL(self))) {
+		// Currently editing the label. Don't do anything.
+		return;
+	}
+	int idx = GPOINTER_TO_INT(g_object_get_qdata(G_OBJECT(self), KeyManagerTab_flatKeyIdx_quark));
+	if (idx <= 0)
+		return;
+
+	// Subtract 1 to get the actual flat key index.
+	idx--;
+
+	// Update the key store.
+	KeyStoreUI *const keyStoreUI = rp_key_store_gtk_get_key_store_ui(tab->keyStore);
+	keyStoreUI->setKey(idx, gtk_editable_get_text(self));
+}
+
 // GtkSignalListItemFactory signal handlers
 // Reference: https://blog.gtk.org/2020/09/05/a-primer-on-gtklistview/
 // NOTE: user_data will indicate the column number: 0 == name, 1 == value, 2 == valid?
@@ -109,6 +140,8 @@ setup_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer 
 			GtkWidget *const label = gtk_editable_label_new("");
 			//g_object_set(label, "xalign", 0.0f, nullptr);
 			gtk_list_item_set_child(list_item, label);
+			g_signal_connect(label, "changed", G_CALLBACK(gtkEditableLabel_changed),
+				g_object_get_qdata(G_OBJECT(factory), KeyManagerTab_self_quark));
 
 			// Set a monospace font.
 			gtk_widget_add_css_class(label, "gsrp_monospace");
@@ -168,7 +201,14 @@ bind_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer u
 			// Value
 			// NOTE: GtkEditableLabel doesn't like nullptr strings.
 			const char *s_value = rp_key_store_item_get_value(ksitem);
+			// NOTE: +1 because a default GtkEditableLabel will return NULL (0).
+			const int idx = likely(!rp_key_store_item_get_is_section(ksitem))
+				? rp_key_store_item_get_flat_idx(ksitem)+1
+				: 0;
+
+			printf("editable set text: %s\n", s_value);
 			gtk_editable_set_text(GTK_EDITABLE(widget), s_value ? s_value : "");
+			g_object_set_qdata(G_OBJECT(widget), KeyManagerTab_flatKeyIdx_quark, GINT_TO_POINTER(idx));
 			break;
 		}
 
@@ -240,6 +280,7 @@ void rp_key_manager_tab_create_GtkTreeView(RpKeyManagerTab *tab)
 	// Create the columns.
 	for (int i = 0; i < KEY_COL_MAX; i++) {
 		GtkListItemFactory *const factory = gtk_signal_list_item_factory_new();
+		g_object_set_qdata(G_OBJECT(factory), KeyManagerTab_self_quark, tab);
 		g_signal_connect(factory, "setup", G_CALLBACK(setup_listitem_cb), GINT_TO_POINTER(i));
 		g_signal_connect(factory, "bind", G_CALLBACK(bind_listitem_cb), GINT_TO_POINTER(i));
 
