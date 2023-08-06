@@ -149,7 +149,8 @@ SET(${PROJECT_NAME}_H
 SET(${PROJECT_NAME}_GTK4MIN_SRCS
 	LanguageComboBoxItem.c
 	config/AchievementItem.c
-	config/KeyManagerTab_gtk4.cpp
+	#config/KeyManagerTab_gtk4.cpp	# FIXME: Not working...
+	config/KeyManagerTab_gtk3.cpp
 	config/KeyStoreItem.c
 	)
 SET(${PROJECT_NAME}_GTK4MIN_H

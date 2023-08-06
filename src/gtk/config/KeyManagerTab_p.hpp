@@ -40,6 +40,12 @@ typedef GtkVBox super;
 #  define USE_G_MENU_MODEL 1
 #endif /* GTK_CHECK_VERSION(3,5,6) */
 
+// Uncomment to use the new GtkColumnView on GTK4.
+// FIXME: Editing is broken...
+#if GTK_CHECK_VERSION(4,0,0)
+//#  define RP_KEY_MANAGER_USE_GTK_COLUMN_VIEW 1
+#endif /* GTK_CHECK_VERSION(4,0,0) */
+
 // KeyManagerTab class
 struct _RpKeyManagerTabClass {
 	superclass __parent__;
@@ -53,7 +59,7 @@ struct _RpKeyManagerTab {
 	RpKeyStoreGTK *keyStore;
 	GtkWidget *scrolledWindow;
 
-#if GTK_CHECK_VERSION(4,0,0)
+#ifdef RP_KEY_MANAGER_USE_GTK_COLUMN_VIEW
 	// GTK4: GtkColumnView and GtkListModel
 	GListStore *rootListStore;
 	GtkTreeListModel *treeListModel;
@@ -61,11 +67,11 @@ struct _RpKeyManagerTab {
 
 	// Vector of GListStore objects, one per section.
 	std::vector<GListStore*> *vSectionListStore;
-#else /* !GTK_CHCEK_VERSION(4,0,0) */
+#else /* !RP_KEY_MANAGER_USE_GTK_COLUMN_VIEW */
 	// GTK2/GTK3: GtkTreeView and GtkTreeStore
 	GtkTreeStore *treeStore;
 	GtkWidget *treeView;
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+#endif /* RP_KEY_MANAGER_USE_GTK_COLUMN_VIEW */
 
 	GtkWidget *btnImport;
 	gchar *prevOpenDir;
