@@ -963,26 +963,26 @@ TEST_F(TextFuncsTest, atascii_to_utf8)
  */
 TEST_F(TextFuncsTest, utf8_disp_strlen)
 {
-       // utf8_disp_strlen() should be identical to strlen() for ASCII text.
-       static const char ascii_text[] = "abc123xyz789";
-       EXPECT_EQ(strlen(ascii_text), utf8_disp_strlen(ascii_text));
+	// utf8_disp_strlen() should be identical to strlen() for ASCII text.
+	static const char ascii_text[] = "abc123xyz789";
+	EXPECT_EQ(strlen(ascii_text), utf8_disp_strlen(ascii_text));
 
-       // Test string with 2-byte UTF-8 code points. (U+0080 - U+07FF)
-       static const char utf8_2byte_text[] = "Ακρόπολη";
-       EXPECT_EQ(16, strlen(utf8_2byte_text));
-       EXPECT_EQ(8, utf8_disp_strlen(utf8_2byte_text));
+	// Test string with 2-byte UTF-8 code points. (U+0080 - U+07FF)
+	static const char utf8_2byte_text[] = "Ακρόπολη";
+	EXPECT_EQ(16, strlen(utf8_2byte_text));
+	EXPECT_EQ(8, utf8_disp_strlen(utf8_2byte_text));
 
-       // Test string with 3-byte UTF-8 code points. (U+0800 - U+FFFF)
-       static const char utf8_3byte_text[] = "╔╗╚╝┼";
-       EXPECT_EQ(15, strlen(utf8_3byte_text));
-       EXPECT_EQ(5, utf8_disp_strlen(utf8_3byte_text));
+	// Test string with 3-byte UTF-8 code points. (U+0800 - U+FFFF)
+	static const char utf8_3byte_text[] = "╔╗╚╝┼";
+	EXPECT_EQ(15, strlen(utf8_3byte_text));
+	EXPECT_EQ(5, utf8_disp_strlen(utf8_3byte_text));
 
 #ifndef _WIN32
-       // Test string with 4-byte UTF-8 code points. (U+10000 - U+10FFFF)
-       // FIXME: Broken on Windows... (returns 7)
-       static const char utf8_4byte_text[] = "😂🙄💾🖬";
-       EXPECT_EQ(16, strlen(utf8_4byte_text));
-       EXPECT_EQ(4, utf8_disp_strlen(utf8_4byte_text));
+	// Test string with 4-byte UTF-8 code points. (U+10000 - U+10FFFF)
+	// FIXME: Broken on Windows... (returns 7)
+	static const char utf8_4byte_text[] = "😂🙄💾🖬";
+	EXPECT_EQ(16, strlen(utf8_4byte_text));
+	EXPECT_EQ(4, utf8_disp_strlen(utf8_4byte_text));
 #endif /* !_WIN32 */
 }
 
