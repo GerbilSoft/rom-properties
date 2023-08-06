@@ -118,6 +118,7 @@ SET(${PROJECT_NAME}_SRCS
 	ThunarPropertyPageProvider.cpp
 	ThunarMenuProvider.cpp
 	MenuProviderCommon.c
+	../config/KeyManagerTab_gtk3.cpp
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_H}

@@ -149,17 +149,19 @@ SET(${PROJECT_NAME}_H
 SET(${PROJECT_NAME}_GTK4MIN_SRCS
 	LanguageComboBoxItem.c
 	config/AchievementItem.c
+	config/KeyManagerTab_gtk4.cpp
+	config/KeyStoreItem.c
 	)
 SET(${PROJECT_NAME}_GTK4MIN_H
 	LanguageComboBoxItem.h
 	config/AchievementItem.h
+	config/KeyStoreItem.h
 	)
 
 IF(ENABLE_DECRYPTION)
 	SET(${PROJECT_NAME}_SRCS
 		${${PROJECT_NAME}_SRCS}
 		config/KeyManagerTab.cpp
-		config/KeyManagerTab_gtk3.cpp
 		config/KeyStoreGTK.cpp
 		)
 	SET(${PROJECT_NAME}_H

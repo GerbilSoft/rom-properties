@@ -27,6 +27,8 @@ static void	renderer_edited_signal_handler(GtkCellRendererText	*self,
 static void
 rp_key_manager_tab_GWeakNotify_GtkTreeView(gpointer data, GObject *where_the_object_was)
 {
+	RP_UNUSED(where_the_object_was);
+
 	g_return_if_fail(GTK_IS_TREE_STORE(data));
 	g_object_unref(data);
 }
@@ -222,21 +224,6 @@ void keyStore_all_keys_changed_signal_handler(RpKeyStoreGTK *keyStore, RpKeyMana
 			g_value_unset(&gv_idx);
 		}
 	}
-}
-
-/**
- * KeyStore has been modified.
- * This signal is forwarded to the parent ConfigDialog.
- * @param keyStore KeyStoreGTK
- * @param tab KeyManagerTab
- */
-void keyStore_modified_signal_handler(RpKeyStoreGTK *keyStore, RpKeyManagerTab *tab)
-{
-        RP_UNUSED(keyStore);
-
-        // Forward the "modified" signal.
-        tab->changed = true;
-        g_signal_emit_by_name(tab, "modified", nullptr);
 }
 
 /** GtkCellRendererText signal handlers **/

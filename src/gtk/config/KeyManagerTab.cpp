@@ -55,6 +55,11 @@ static void	menuImport_triggered_signal_handler		(GtkMenuItem		*menuItem,
 								 RpKeyManagerTab	*tab);
 #endif /* USE_G_MENU_MODEL */
 
+/** Signal handlers **/
+
+static void	keyStore_modified_signal_handler		(RpKeyStoreGTK *keyStore,
+								 RpKeyManagerTab *tab);
+
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
 G_DEFINE_TYPE_EXTENDED(RpKeyManagerTab, rp_key_manager_tab,
@@ -123,7 +128,7 @@ rp_key_manager_tab_init(RpKeyManagerTab *tab)
 	gtk_widget_set_vexpand(tab->scrolledWindow, TRUE);
 #endif /* GTK_CHECK_VERSION(2,91,1) */
 
-	// Create the GtkTreeStore and GtkTreeView.
+	// Create the Gtk(Tree|Column)View and backing store.
 	rp_key_manager_tab_create_GtkTreeView(tab);
 
 	// "Import" button.
@@ -758,3 +763,21 @@ menuImport_triggered_signal_handler(GtkMenuItem *menuItem, RpKeyManagerTab *tab)
 	rp_key_manager_tab_handle_menu_action(tab, id);
 }
 #endif /* USE_G_MENU_MODEL */
+
+/** Signal handlers **/
+
+/**
+ * KeyStore has been modified.
+ * This signal is forwarded to the parent ConfigDialog.
+ * @param keyStore KeyStoreGTK
+ * @param tab KeyManagerTab
+ */
+static void
+keyStore_modified_signal_handler(RpKeyStoreGTK *keyStore, RpKeyManagerTab *tab)
+{
+        RP_UNUSED(keyStore);
+
+        // Forward the "modified" signal.
+        tab->changed = true;
+        g_signal_emit_by_name(tab, "modified", nullptr);
+}

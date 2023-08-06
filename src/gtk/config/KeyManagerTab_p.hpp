@@ -53,9 +53,19 @@ struct _RpKeyManagerTab {
 	RpKeyStoreGTK *keyStore;
 	GtkWidget *scrolledWindow;
 
-	// GTK2/GTK3: TreeView and backing store
+#if GTK_CHECK_VERSION(4,0,0)
+	// GTK4: GtkColumnView and GtkListModel
+	GListStore *rootListStore;
+	GtkTreeListModel *treeListModel;
+	GtkWidget *columnView;
+
+	// Vector of GListStore objects, one per section.
+	std::vector<GListStore*> *vSectionListStore;
+#else /* !GTK_CHCEK_VERSION(4,0,0) */
+	// GTK2/GTK3: GtkTreeView and GtkTreeStore
 	GtkTreeStore *treeStore;
 	GtkWidget *treeView;
+#endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	GtkWidget *btnImport;
 	gchar *prevOpenDir;
@@ -101,14 +111,6 @@ void keyStore_key_changed_signal_handler(RpKeyStoreGTK *keyStore, int sectIdx, i
  * @param tab KeyManagerTab
  */
 void keyStore_all_keys_changed_signal_handler(RpKeyStoreGTK *keyStore, RpKeyManagerTab *tab);
-
-/**
- * KeyStore has been modified.
- * This signal is forwarded to the parent ConfigDialog.
- * @param keyStore KeyStoreGTK
- * @param tab KeyManagerTab
- */
-void keyStore_modified_signal_handler(RpKeyStoreGTK *keyStore, RpKeyManagerTab *tab);
 
 #ifdef __cplusplus
 }
