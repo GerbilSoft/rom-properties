@@ -96,11 +96,23 @@ setup_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer 
 	RP_UNUSED(factory);
 
 	switch (GPOINTER_TO_INT(user_data)) {
-		case KEY_COL_NAME:
+		case KEY_COL_NAME: {
+			GtkWidget *const label = gtk_label_new(nullptr);
+			gtk_label_set_xalign(GTK_LABEL(label), 0.0f);
+			gtk_list_item_set_child(list_item, label);
+			break;
+		}
+
 		case KEY_COL_VALUE: {
 			GtkWidget *const label = gtk_label_new(nullptr);
 			gtk_label_set_xalign(GTK_LABEL(label), 0.0f);
 			gtk_list_item_set_child(list_item, label);
+
+			// Set a monospace font.
+			PangoAttrList *const attr_lst = pango_attr_list_new();
+			pango_attr_list_insert(attr_lst, pango_attr_family_new("monospace"));
+			gtk_label_set_attributes(GTK_LABEL(label), attr_lst);
+			pango_attr_list_unref(attr_lst);
 			break;
 		}
 
@@ -119,6 +131,14 @@ static void
 bind_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer user_data)
 {
 	RP_UNUSED(factory);
+
+	static const char *const is_valid_icon_name_tbl[] = {
+		nullptr,		// Empty
+		"dialog-question",	// Unknown
+		"dialog-error",		// NotAKey
+		"dialog-error",		// Incorrect
+		"dialog-ok-apply",	// OK
+	};
 
 	GtkWidget *const widget = gtk_list_item_get_child(list_item);
 	assert(widget != nullptr);
@@ -302,14 +322,6 @@ void rp_key_manager_tab_init_keys(RpKeyManagerTab *tab)
 
 /** KeyStoreGTK signal handlers **/
 
-static const char *const is_valid_icon_name_tbl[] = {
-	nullptr,		// Empty
-	"dialog-question",	// Unknown
-	"dialog-error",		// NotAKey
-	"dialog-error",		// Incorrect
-	"dialog-ok-apply",	// OK
-};
-
 /**
  * A key in the KeyStore has changed.
  * @param keyStore KeyStoreGTK
@@ -319,37 +331,31 @@ static const char *const is_valid_icon_name_tbl[] = {
  */
 void keyStore_key_changed_signal_handler(RpKeyStoreGTK *keyStore, int sectIdx, int keyIdx, RpKeyManagerTab *tab)
 {
-	// TODO
-#if 0
 	const KeyStoreUI *const keyStoreUI = rp_key_store_gtk_get_key_store_ui(keyStore);
-	GtkTreeModel *const treeModel = GTK_TREE_MODEL(tab->treeStore);
 
-	// Get the iterator from a path.
-	GtkTreeIter treeIterKey;
-	GtkTreePath *const path = gtk_tree_path_new_from_indices(sectIdx, keyIdx, -1);
-	if (!gtk_tree_model_get_iter(treeModel, &treeIterKey, path)) {
-		// Path not found...
-		assert(!"GtkTreePath not found!");
-		gtk_tree_path_free(path);
+	assert(sectIdx >= 0);
+	assert(sectIdx <= static_cast<int>(tab->vSectionListStore->size()));
+	if (sectIdx < 0 || sectIdx >= static_cast<int>(tab->vSectionListStore->size()))
 		return;
-	}
-	gtk_tree_path_free(path);
+
+	GListStore *const listStore = tab->vSectionListStore->at(sectIdx);
+	assert(keyIdx >= 0);
+	assert(keyIdx < static_cast<int>(g_list_model_get_n_items(G_LIST_MODEL(listStore))));
+	if (keyIdx < 0 || keyIdx >= static_cast<int>(g_list_model_get_n_items(G_LIST_MODEL(listStore))))
+		return;
+
+	RpKeyStoreItem *const ksitem = RP_KEY_STORE_ITEM(g_list_model_get_item(G_LIST_MODEL(listStore), keyIdx));
+	assert(ksitem != nullptr);
+	if (!ksitem)
+		return;
 
 	const KeyStoreUI::Key *const key = keyStoreUI->getKey(sectIdx, keyIdx);
 	assert(key != nullptr);
-	if (!key) {
+	if (!key)
 		return;
-	}
 
-	const char *icon_name = nullptr;
-	if (/*(int)key->status >= 0 &&*/ (int)key->status < ARRAY_SIZE_I(is_valid_icon_name_tbl)) {
-		icon_name = is_valid_icon_name_tbl[(int)key->status];
-	}
-
-	gtk_tree_store_set(tab->treeStore, &treeIterKey,
-		1, key->value.c_str(),	// value
-		2, icon_name, -1);	// Valid?
-#endif
+	rp_key_store_item_set_value(ksitem, key->value.c_str());
+	rp_key_store_item_set_status(ksitem, static_cast<uint8_t>(key->status));
 }
 
 /**
@@ -359,45 +365,27 @@ void keyStore_key_changed_signal_handler(RpKeyStoreGTK *keyStore, int sectIdx, i
  */
 void keyStore_all_keys_changed_signal_handler(RpKeyStoreGTK *keyStore, RpKeyManagerTab *tab)
 {
-	// TODO
-#if 0
 	const KeyStoreUI *const keyStoreUI = rp_key_store_gtk_get_key_store_ui(keyStore);
-	GtkTreeModel *const treeModel = GTK_TREE_MODEL(tab->treeStore);
 
-	// Load the key values and "Valid?" icons.
-	GtkTreeIter treeIterSect;
-	for (bool validSect = gtk_tree_model_get_iter_first(treeModel, &treeIterSect);
-	     validSect; validSect = gtk_tree_model_iter_next(treeModel, &treeIterSect))
-	{
-		// treeIterSect points to a section.
-		// Iterate over all keys in the section.
-		GtkTreeIter treeIterKey;
-		for (bool validKey = gtk_tree_model_iter_children(treeModel, &treeIterKey, &treeIterSect);
-		     validKey; validKey = gtk_tree_model_iter_next(treeModel, &treeIterKey))
-		{
-			// Get the flat key index.
-			GValue gv_idx = G_VALUE_INIT;
-			gtk_tree_model_get_value(treeModel, &treeIterKey, 3, &gv_idx);
-			if (G_VALUE_HOLDS_INT(&gv_idx)) {
-				const int idx = g_value_get_int(&gv_idx);
-				const KeyStoreUI::Key *const key = keyStoreUI->getKey(idx);
-				assert(key != nullptr);
-				if (!key) {
-					g_value_unset(&gv_idx);
-					continue;
-				}
+	// Load the key values and statuses.
+	for (GListStore *listStore : *(tab->vSectionListStore)) {
+		// Iterate over all keys in this section.
+		const guint n_items = g_list_model_get_n_items(G_LIST_MODEL(listStore));
+		for (guint i = 0; i < n_items; i++) {
+			RpKeyStoreItem *const ksitem = RP_KEY_STORE_ITEM(
+				g_list_model_get_item(G_LIST_MODEL(listStore), i));
+			assert(ksitem != nullptr);
+			if (!ksitem)
+				continue;
 
-				const char *icon_name = nullptr;
-				if (/*(int)key->status >= 0 &&*/ (int)key->status < ARRAY_SIZE_I(is_valid_icon_name_tbl)) {
-					icon_name = is_valid_icon_name_tbl[(int)key->status];
-				}
+			const int idx = rp_key_store_item_get_flat_idx(ksitem);
+			const KeyStoreUI::Key *const key = keyStoreUI->getKey(idx);
+			assert(key != nullptr);
+			if (!key)
+				continue;
 
-				gtk_tree_store_set(tab->treeStore, &treeIterKey,
-					1, key->value.c_str(),	// value
-					2, icon_name, -1);	// Valid?
-			}
-			g_value_unset(&gv_idx);
+			rp_key_store_item_set_value(ksitem, key->value.c_str());
+			rp_key_store_item_set_status(ksitem, static_cast<uint8_t>(key->status));
 		}
 	}
-#endif
 }

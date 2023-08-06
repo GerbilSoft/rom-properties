@@ -15,7 +15,7 @@ typedef enum {
 
 	PROP_NAME,
 	PROP_VALUE,
-	PROP_IS_VALID,
+	PROP_STATUS,
 	PROP_FLAT_IDX,
 	PROP_IS_SECTION,
 
@@ -46,9 +46,10 @@ struct _RpKeyStoreItem {
 
 	char		*name;
 	char		*value;
-	gboolean	is_valid;
 	int		flat_idx;
-	gboolean	is_section;
+
+	uint8_t		status;
+	bool		is_section;
 };
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
@@ -76,9 +77,9 @@ rp_key_store_item_class_init(RpKeyStoreItemClass *klass)
 		"",
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
-	props[PROP_IS_VALID] = g_param_spec_boolean(
-		"is-valid", "Is Valid?", "Is this key valid?",
-		FALSE,
+	props[PROP_STATUS] = g_param_spec_uint(
+		"status", "Status", "Key status (corresponds to KeyStoreUI::Status)",
+		0U, 4U, 0U,
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
 	// NOTE: Flat index *should* be considered unsigned,
@@ -105,23 +106,23 @@ rp_key_store_item_init(RpKeyStoreItem *item)
 }
 
 RpKeyStoreItem*
-rp_key_store_item_new(const char *name, const char *value, gboolean is_valid, int flat_idx, gboolean is_section)
+rp_key_store_item_new(const char *name, const char *value, uint8_t status, int flat_idx, gboolean is_section)
 {
 	return g_object_new(RP_TYPE_KEY_STORE_ITEM,
-		"name", name, "value", value, "is-valid", is_valid,
+		"name", name, "value", value, "status", status,
 		"flat-idx", flat_idx, "is-section", is_section, NULL);
 }
 
 RpKeyStoreItem*
-rp_key_store_item_new_key(const char *name, const char *value, gboolean is_valid, int flat_idx)
+rp_key_store_item_new_key(const char *name, const char *value, uint8_t status, int flat_idx)
 {
-	return rp_key_store_item_new(name, value, is_valid, flat_idx, FALSE);
+	return rp_key_store_item_new(name, value, status, flat_idx, FALSE);
 }
 
 RpKeyStoreItem*
 rp_key_store_item_new_section	(const char *name, const char *value, int sect_idx)
 {
-	return rp_key_store_item_new(name, value, TRUE, sect_idx, TRUE);
+	return rp_key_store_item_new(name, value, 0, sect_idx, TRUE);
 }
 
 /** Properties **/
@@ -143,8 +144,8 @@ rp_key_store_item_set_property(GObject		*object,
 			g_set_str(&item->value, g_value_get_string(value));
 			break;
 
-		case PROP_IS_VALID:
-			item->is_valid = g_value_get_boolean(value);
+		case PROP_STATUS:
+			item->status = g_value_get_uint(value);
 			break;
 
 		case PROP_FLAT_IDX:
@@ -180,8 +181,8 @@ rp_key_store_item_get_property(GObject		*object,
 			g_value_set_string(value, item->value);
 			break;
 
-		case PROP_IS_VALID:
-			g_value_set_boolean(value, item->is_valid);
+		case PROP_STATUS:
+			g_value_set_uint(value, item->status);
 			break;
 
 		case PROP_FLAT_IDX:
@@ -251,19 +252,19 @@ rp_key_store_item_get_value(RpKeyStoreItem *item)
 }
 
 void
-rp_key_store_item_set_is_valid(RpKeyStoreItem *item, gboolean is_valid)
+rp_key_store_item_set_status(RpKeyStoreItem *item, uint8_t status)
 {
 	g_return_if_fail(RP_IS_KEY_STORE_ITEM(item));
-	item->is_valid = is_valid;
-	g_object_notify_by_pspec(G_OBJECT(item), props[PROP_IS_VALID]);
+	item->status = status;	// TODO: Verify range?
+	g_object_notify_by_pspec(G_OBJECT(item), props[PROP_STATUS]);
 
 }
 
-gboolean
-rp_key_store_item_get_is_valid(RpKeyStoreItem *item)
+uint8_t
+rp_key_store_item_get_status(RpKeyStoreItem *item)
 {
 	g_return_val_if_fail(RP_IS_KEY_STORE_ITEM(item), 0);
-	return item->is_valid;
+	return item->status;
 }
 
 void
