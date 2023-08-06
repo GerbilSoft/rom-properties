@@ -28,22 +28,32 @@ typedef enum {
 	KEY_COL_MAX
 } KeyManagerColumns;
 
-#if 0
 /**
- * GWeakNotify function to destroy the GtkTreeListModel when the GtkColumnView is destroyed.
- * @param data GtkTreeListModel
+ * GWeakNotify function to destroy the GtkTreeListModel and related when the GtkColumnView is destroyed.
+ * @param data RpKeyManagerTab
  * @param where_the_object_was GtkColumnView
  */
 static void
-rp_key_manager_tab_GWeakNotify_GtkTreeView(gpointer data, GObject *where_the_object_was)
+rp_key_manager_tab_GWeakNotify_GtkColumnView(gpointer data, GObject *where_the_object_was)
 {
 	RP_UNUSED(where_the_object_was);
+	g_return_if_fail(RP_IS_KEY_MANAGER_TAB(data));
 
-	g_return_if_fail(GTK_IS_TREE_STORE(data));
-	g_object_unref(data);
-	delete tab->vSectionListStore
+	RpKeyManagerTab *const tab = RP_KEY_MANAGER_TAB(data);
+	if (tab) {
+		// NOTE: treeListModel takes ownership of rootListStore
+		// and all child GListModels, so we should *not* attempt
+		// to g_object_unref() them. Just NULL them out.
+		tab->rootListStore = nullptr;
+
+		delete tab->vSectionListStore;
+		tab->vSectionListStore = nullptr;
+
+		// Delete treeListModel, which will also delete the
+		// GListModels that were NULLed out above.
+		g_clear_object(&tab->treeListModel);
+	}
 }
-#endif
 
 /**
  * Create GListModels for nodes when expanded.
@@ -154,7 +164,7 @@ void rp_key_manager_tab_create_GtkTreeView(RpKeyManagerTab *tab)
 	// Columns: Key Name, Value, Valid?, Flat Key Index
 	// NOTE: "Valid?" column contains an icon name.
 
-	// GListSTore for the root list.
+	// GListStore for the root list.
 	// This contains the sections.
 	// NOTE: Using RpKeyStoreItem for sections in order to reuse
 	// flat-idx as the section index.
@@ -172,6 +182,9 @@ void rp_key_manager_tab_create_GtkTreeView(RpKeyManagerTab *tab)
 	tab->columnView = gtk_column_view_new(nullptr);
 	gtk_widget_set_name(tab->columnView, "columnView");
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(tab->scrolledWindow), tab->columnView);
+
+	// Maintain a weak reference so we can destroy the GtkTreeListModel and related when columnView is destroyed.
+	g_object_weak_ref(G_OBJECT(tab->columnView), rp_key_manager_tab_GWeakNotify_GtkColumnView, tab);
 
 	// GtkColumnView requires a GtkSelectionModel, so we'll create
 	// a GtkSingleSelection to wrap around the GListStore.
