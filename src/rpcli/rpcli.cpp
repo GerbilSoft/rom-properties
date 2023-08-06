@@ -148,13 +148,13 @@ static void ExtractImages(const RomData *romData, vector<ExtractParam>& extract)
 					// tr: %1$s == image type name, %2$s == output filename
 					rp_sprintf_p(C_("rpcli", "Extracting %1$s into '%2$s'"),
 						RomData::getImageTypeName(imageType),
-						p.filename) << endl;
+						T2U8c(p.filename)) << endl;
 				// FIXME: Add UTF-16 overload for Windows.
 				int errcode = RpPng::save(T2U8c(p.filename), image);
 				if (errcode != 0) {
 					// tr: %1$s == filename, %2%s == error message
 					cerr << rp_sprintf_p(C_("rpcli", "Couldn't create file '%1$s': %2$s"),
-						p.filename, strerror(-errcode)) << endl;
+						T2U8c(p.filename), strerror(-errcode)) << endl;
 				} else {
 					cerr << "   " << C_("rpcli", "Done") << endl;
 				}
@@ -164,7 +164,7 @@ static void ExtractImages(const RomData *romData, vector<ExtractParam>& extract)
 			auto iconAnimData = romData->iconAnimData();
 			if (iconAnimData && iconAnimData->count != 0 && iconAnimData->seq_count != 0) {
 				found = true;
-				cerr << "-- " << rp_sprintf(C_("rpcli", "Extracting animated icon into '%s'"), p.filename) << endl;
+				cerr << "-- " << rp_sprintf(C_("rpcli", "Extracting animated icon into '%s'"), T2U8c(p.filename)) << endl;
 				// FIXME: Add UTF-16 overload for Windows.
 				int errcode = RpPng::save(T2U8c(p.filename), iconAnimData);
 				if (errcode == -ENOTSUP) {
@@ -176,7 +176,7 @@ static void ExtractImages(const RomData *romData, vector<ExtractParam>& extract)
 				if (errcode != 0) {
 					cerr << "   " <<
 						rp_sprintf_p(C_("rpcli", "Couldn't create file '%1$s': %2$s"),
-							p.filename, strerror(-errcode)) << endl;
+							T2U8c(p.filename), strerror(-errcode)) << endl;
 				} else {
 					cerr << "   " << C_("rpcli", "Done") << endl;
 				}
