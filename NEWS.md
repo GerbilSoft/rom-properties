@@ -24,8 +24,6 @@
     properties window as closed or reopened.
     * This bug was introduced in v1.8.
   * Windows: Handle filenames with unpaired UTF-16 surrogate characters.
-    * rpcli has NOT been updated for this, but the Windows command line will
-      likely have issues with broken UTF-16 filenames anyway.
     * Fixes #390: Windows: Add UTF-16 filename functions to handle filenames
       with unpaired UTF-16 surrogate characters
   * DMGSpecialCases: Fix an incorrect bounds check for CGB special cases.
