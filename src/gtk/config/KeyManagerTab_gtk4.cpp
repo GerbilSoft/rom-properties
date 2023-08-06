@@ -102,6 +102,8 @@ gtkEditableLabel_changed(GtkEditable *self, RpKeyManagerTab *tab)
 
 	// NOTE: The property is incremented by 1 because a default
 	// GtkEditableLabel will return NULL (0).
+	printf("text: %s\n", gtk_editable_get_text(self));
+	return;
 
 	if (gtk_editable_label_get_editing(GTK_EDITABLE_LABEL(self))) {
 		// Currently editing the label. Don't do anything.
