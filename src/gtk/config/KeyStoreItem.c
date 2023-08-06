@@ -136,13 +136,21 @@ rp_key_store_item_set_property(GObject		*object,
 	RpKeyStoreItem *const item = RP_KEY_STORE_ITEM(object);
 
 	switch (prop_id) {
-		case PROP_NAME:
-			g_set_str(&item->name, g_value_get_string(value));
+		case PROP_NAME: {
+			const char *str = g_value_get_string(value);
+			if (g_strcmp0(item->name, str) != 0) {
+				g_set_str(&item->name, str);
+			}
 			break;
+		}
 
-		case PROP_VALUE:
-			g_set_str(&item->value, g_value_get_string(value));
+		case PROP_VALUE: {
+			const char *str = g_value_get_string(value);
+			if (g_strcmp0(item->value, str) != 0) {
+				g_set_str(&item->value, str);
+			}
 			break;
+		}
 
 		case PROP_STATUS:
 			item->status = g_value_get_uint(value);
@@ -219,8 +227,10 @@ void
 rp_key_store_item_set_name(RpKeyStoreItem *item, const char *name)
 {
 	g_return_if_fail(RP_IS_KEY_STORE_ITEM(item));
-	g_set_str(&item->name, name);
-	g_object_notify_by_pspec(G_OBJECT(item), props[PROP_NAME]);
+	if (g_strcmp0(item->name, name) != 0) {
+		g_set_str(&item->name, name);
+		g_object_notify_by_pspec(G_OBJECT(item), props[PROP_NAME]);
+	}
 
 }
 
@@ -237,9 +247,10 @@ void
 rp_key_store_item_set_value(RpKeyStoreItem *item, const char *value)
 {
 	g_return_if_fail(RP_IS_KEY_STORE_ITEM(item));
-	g_set_str(&item->value, value);
-	g_object_notify_by_pspec(G_OBJECT(item), props[PROP_VALUE]);
-
+	if (g_strcmp0(item->value, value) != 0) {
+		g_set_str(&item->value, value);
+		g_object_notify_by_pspec(G_OBJECT(item), props[PROP_VALUE]);
+	}
 }
 
 const char*
@@ -255,8 +266,10 @@ void
 rp_key_store_item_set_status(RpKeyStoreItem *item, uint8_t status)
 {
 	g_return_if_fail(RP_IS_KEY_STORE_ITEM(item));
-	item->status = status;	// TODO: Verify range?
-	g_object_notify_by_pspec(G_OBJECT(item), props[PROP_STATUS]);
+	if (item->status != status) {
+		item->status = status;	// TODO: Verify range?
+		g_object_notify_by_pspec(G_OBJECT(item), props[PROP_STATUS]);
+	}
 
 }
 
@@ -271,9 +284,10 @@ void
 rp_key_store_item_set_flat_idx(RpKeyStoreItem *item, int flat_idx)
 {
 	g_return_if_fail(RP_IS_KEY_STORE_ITEM(item));
-	item->flat_idx = flat_idx;
-	g_object_notify_by_pspec(G_OBJECT(item), props[PROP_FLAT_IDX]);
-
+	if (item->flat_idx != flat_idx) {
+		item->flat_idx = flat_idx;
+		g_object_notify_by_pspec(G_OBJECT(item), props[PROP_FLAT_IDX]);
+	}
 }
 
 int
@@ -287,9 +301,10 @@ void
 rp_key_store_item_set_is_section(RpKeyStoreItem *item, gboolean is_section)
 {
 	g_return_if_fail(RP_IS_KEY_STORE_ITEM(item));
-	item->is_section = is_section;
-	g_object_notify_by_pspec(G_OBJECT(item), props[PROP_IS_SECTION]);
-
+	if (item->is_section != is_section) {
+		item->is_section = is_section;
+		g_object_notify_by_pspec(G_OBJECT(item), props[PROP_IS_SECTION]);
+	}
 }
 
 gboolean
