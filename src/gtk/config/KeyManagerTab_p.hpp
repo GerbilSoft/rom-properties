@@ -80,11 +80,11 @@ struct _RpKeyManagerTab {
 	GtkWidget *messageWidget;
 };
 
-// Quark for GtkEditableLabel to identify the original key index.
-extern GQuark KeyManagerTab_flatKeyIdx_quark;
-
-// Quark for GtkEditableLabel to access the KeyManagerTab object.
-extern GQuark KeyManagerTab_self_quark;
+/**
+ * RpKeyManagerTab: GTK version-specific class initialization.
+ * @param klass RpKeyManagerTabClass
+ */
+void rp_key_manager_tab_class_init_gtkver(RpKeyManagerTabClass *klass);
 
 /**
  * Create the GtkTreeStore and GtkTreeView. (GTK2/GTK3)

@@ -29,6 +29,12 @@ typedef enum {
 	KEY_COL_MAX
 } KeyManagerColumns;
 
+// Quark for GtkEditableLabel to identify the original key index.
+static GQuark KeyManagerTab_flatKeyIdx_quark;
+
+// Quark for GtkEditableLabel to access the KeyManagerTab object.
+static GQuark KeyManagerTab_self_quark;
+
 /**
  * GWeakNotify function to destroy the GtkTreeListModel and related when the GtkColumnView is destroyed.
  * @param data RpKeyManagerTab
@@ -239,6 +245,32 @@ bind_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer u
 			assert(!"Invalid column number");
 			return;
 	}
+}
+
+/**
+ * RpKeyManagerTab: GTK version-specific class initialization.
+ * @param klass RpKeyManagerTabClass
+ */
+void rp_key_manager_tab_class_init_gtkver(RpKeyManagerTabClass *klass)
+{
+	KeyManagerTab_flatKeyIdx_quark = g_quark_from_string("KeyManagerTab.flatKeyIdx");
+	KeyManagerTab_self_quark = g_quark_from_string("KeyManagerTab.self");
+
+	// CSS class for monospace GtkEditableLabel widgets
+	GtkCssProvider *const provider = gtk_css_provider_new();
+	GdkDisplay *const display = gdk_display_get_default();
+	gtk_style_context_add_provider_for_display(display,
+		GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+
+	// Reference: https://discourse.gnome.org/t/setting-text-colour-in-gtkeditable-label-while-its-being-edited-gtk4/6979/5
+	static const char css_EditableLabel[] =
+		"editablelabel.gsrp_monospace stack text,\n"
+		"editablelabel.gsrp_monospace stack text selection,\n"
+		"editablelabel.gsrp_monospace stack label {\n"
+		"\tfont-family: monospace;\n"
+		"}\n";
+
+	GTK_CSS_PROVIDER_LOAD_FROM_STRING(GTK_CSS_PROVIDER(provider), css_EditableLabel);
 }
 
 /**

@@ -28,8 +28,6 @@ static const char *const import_menu_actions[] = {
 
 static GQuark menuImport_id_quark;
 static GQuark KeyManagerTab_fileID_quark;
-GQuark KeyManagerTab_flatKeyIdx_quark = 0;
-GQuark KeyManagerTab_self_quark = 0;
 
 static void	rp_key_manager_tab_dispose			(GObject	*object);
 static void	rp_key_manager_tab_finalize			(GObject	*object);
@@ -83,26 +81,8 @@ rp_key_manager_tab_class_init(RpKeyManagerTabClass *klass)
 	menuImport_id_quark = g_quark_from_string("menuImport_id");
 	KeyManagerTab_fileID_quark = g_quark_from_string("KeyManagerTab.fileID");
 
-#if GTK_CHECK_VERSION(4,0,0)
-	KeyManagerTab_flatKeyIdx_quark = g_quark_from_string("KeyManagerTab.flatKeyIdx");
-	KeyManagerTab_self_quark = g_quark_from_string("KeyManagerTab.self");
-
-	// CSS class for monospace GtkEditableLabel widgets
-	GtkCssProvider *const provider = gtk_css_provider_new();
-	GdkDisplay *const display = gdk_display_get_default();
-	gtk_style_context_add_provider_for_display(display,
-		GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-
-	// Reference: https://discourse.gnome.org/t/setting-text-colour-in-gtkeditable-label-while-its-being-edited-gtk4/6979/5
-	static const char css_EditableLabel[] =
-		"editablelabel.gsrp_monospace stack text,\n"
-		"editablelabel.gsrp_monospace stack text selection,\n"
-		"editablelabel.gsrp_monospace stack label {\n"
-		"\tfont-family: monospace;\n"
-		"}\n";
-
-	GTK_CSS_PROVIDER_LOAD_FROM_STRING(GTK_CSS_PROVIDER(provider), css_EditableLabel);
-#endif /* GTK_CHECK_VERSION(4,0,0) */
+	// Version-specific class initialization
+	rp_key_manager_tab_class_init_gtkver(klass);
 }
 
 static void

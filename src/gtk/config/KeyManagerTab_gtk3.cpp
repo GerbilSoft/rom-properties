@@ -37,6 +37,16 @@ rp_key_manager_tab_GWeakNotify_GtkTreeView(gpointer data, GObject *where_the_obj
 }
 
 /**
+ * RpKeyManagerTab: GTK version-specific class initialization.
+ * @param klass RpKeyManagerTabClass
+ */
+void rp_key_manager_tab_class_init_gtkver(RpKeyManagerTabClass *klass)
+{
+	// Nothing to do here...
+	RP_UNUSED(klass);
+}
+
+/**
  * Create the GtkTreeStore and GtkTreeView. (GTK2/GTK3)
  * @param tab RpKeyManagerTab
  */
