@@ -103,9 +103,6 @@ TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
 		$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 	)
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE rpsecure romdata)
-IF(WIN32)
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE wmain)
-ENDIF(WIN32)
 
 # Make sure git_version.h is created before compiling this target.
 IF(TARGET git_version)

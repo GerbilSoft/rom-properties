@@ -110,11 +110,19 @@ DELAYLOAD_TEST_FUNCTION_IMPL1(textdomain, nullptr);
 #  endif /* ENABLE_NLS */
 #endif /* _MSC_VER */
 
+// Mini-T2U8()
+#ifdef _WIN32
+#  include "librptext/wchar.hpp"
+#  define T2U8c(tcs) (T2U8(tcs).c_str())
+#else /* !_WIN32 */
+#  define T2U8c(tcs) (tcs)
+#endif /* _WIN32 */
+
 struct ExtractParam {
-	const char* filename;	// Target filename. Can be null due to argv[argc]
+	const TCHAR *filename;	// Target filename. Can be null due to argv[argc]
 	int imageType;		// Image Type. -1 = iconAnimData, MUST be between -1 and IMG_INT_MAX
 
-	ExtractParam(const char *filename, int imageType)
+	ExtractParam(const TCHAR *filename, int imageType)
 		: filename(filename), imageType(imageType) { }
 };
 
@@ -141,7 +149,8 @@ static void ExtractImages(const RomData *romData, vector<ExtractParam>& extract)
 					rp_sprintf_p(C_("rpcli", "Extracting %1$s into '%2$s'"),
 						RomData::getImageTypeName(imageType),
 						p.filename) << endl;
-				int errcode = RpPng::save(p.filename, image);
+				// FIXME: Add UTF-16 overload for Windows.
+				int errcode = RpPng::save(T2U8c(p.filename), image);
 				if (errcode != 0) {
 					// tr: %1$s == filename, %2%s == error message
 					cerr << rp_sprintf_p(C_("rpcli", "Couldn't create file '%1$s': %2$s"),
@@ -156,11 +165,13 @@ static void ExtractImages(const RomData *romData, vector<ExtractParam>& extract)
 			if (iconAnimData && iconAnimData->count != 0 && iconAnimData->seq_count != 0) {
 				found = true;
 				cerr << "-- " << rp_sprintf(C_("rpcli", "Extracting animated icon into '%s'"), p.filename) << endl;
-				int errcode = RpPng::save(p.filename, iconAnimData);
+				// FIXME: Add UTF-16 overload for Windows.
+				int errcode = RpPng::save(T2U8c(p.filename), iconAnimData);
 				if (errcode == -ENOTSUP) {
 					cerr << "   " << C_("rpcli", "APNG not supported, extracting only the first frame") << endl;
 					// falling back to outputting the first frame
-					errcode = RpPng::save(p.filename, iconAnimData->frames[iconAnimData->seq_index[0]]);
+					// FIXME: Add UTF-16 overload for Windows.
+					errcode = RpPng::save(T2U8c(p.filename), iconAnimData->frames[iconAnimData->seq_index[0]]);
 				}
 				if (errcode != 0) {
 					cerr << "   " <<
@@ -194,10 +205,11 @@ static void ExtractImages(const RomData *romData, vector<ExtractParam>& extract)
  * @param lc Language code (0 for default)
  * @param flags ROMOutput flags (see OutputFlags)
  */
-static void DoFile(const char *filename, bool json, vector<ExtractParam>& extract,
+static void DoFile(const TCHAR *filename, bool json, vector<ExtractParam>& extract,
 	uint32_t lc = 0, unsigned int flags = 0)
 {
-	cerr << "== " << rp_sprintf(C_("rpcli", "Reading file '%s'..."), filename) << endl;
+	// FIXME: Make T2U8c() unnecessary here.
+	cerr << "== " << rp_sprintf(C_("rpcli", "Reading file '%s'..."), T2U8c(filename)) << endl;
 	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
 	if (file->isOpen()) {
 		RomData *romData = RomDataFactory::create(file);
@@ -283,9 +295,10 @@ static void PrintPathnames(void)
  * @param filename Device filename
  * @param json Is program running in json mode?
  */
-static void DoScsiInquiry(const char *filename, bool json)
+static void DoScsiInquiry(const TCHAR *filename, bool json)
 {
-	cerr << "== " << rp_sprintf(C_("rpcli", "Opening device file '%s'..."), filename) << endl;
+	// FIXME: Make T2U8c() unnecessary here.
+	cerr << "== " << rp_sprintf(C_("rpcli", "Opening device file '%s'..."), T2U8c(filename)) << endl;
 	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
 	if (file->isOpen()) {
 		// TODO: Check for unsupported devices? (Only CD-ROM is supported.)
@@ -314,9 +327,10 @@ static void DoScsiInquiry(const char *filename, bool json)
  * @param json Is program running in json mode?
  * @param packet If true, use ATA IDENTIFY PACKET.
  */
-static void DoAtaIdentifyDevice(const char *filename, bool json, bool packet)
+static void DoAtaIdentifyDevice(const TCHAR *filename, bool json, bool packet)
 {
-	cerr << "== " << rp_sprintf(C_("rpcli", "Opening device file '%s'..."), filename) << endl;
+	// FIXME: Make T2U8c() unnecessary here.
+	cerr << "== " << rp_sprintf(C_("rpcli", "Opening device file '%s'..."), T2U8c(filename)) << endl;
 	RpFile *const file = new RpFile(filename, RpFile::FM_OPEN_READ_GZ);
 	if (file->isOpen()) {
 		// TODO: Check for unsupported devices? (Only CD-ROM is supported.)
@@ -340,7 +354,7 @@ static void DoAtaIdentifyDevice(const char *filename, bool json, bool packet)
 }
 #endif /* RP_OS_SCSI_SUPPORTED */
 
-int RP_C_API main(int argc, char *argv[])
+int RP_C_API _tmain(int argc, TCHAR *argv[])
 {
 	// Enable security options.
 	rpcli_do_security_options();
@@ -445,10 +459,10 @@ int RP_C_API main(int argc, char *argv[])
 	vector<ExtractParam> extract;
 
 	for (int i = 1; i < argc; i++) { // figure out the json mode in advance
-		if (argv[i][0] == '-') {
-			if (argv[i][1] == 'j') {
+		if (argv[i][0] == _T('-')) {
+			if (argv[i][1] == _T('j')) {
 				json = true;
-			} else if (argv[i][1] == 'J') {
+			} else if (argv[i][1] == _T('J')) {
 				json = true;
 				flags |= OF_JSON_NoPrettyPrint;
 			}
@@ -475,10 +489,10 @@ int RP_C_API main(int argc, char *argv[])
 	bool first = true;
 	int ret = 0;
 	for (int i = 1; i < argc; i++){
-		if (argv[i][0] == '-'){
+		if (argv[i][0] == _T('-')){
 			switch (argv[i][1]) {
 #ifdef ENABLE_DECRYPTION
-			case 'k': {
+			case _T('k'): {
 				// Verify encryption keys.
 				static bool hasVerifiedKeys = false;
 				if (!hasVerifiedKeys) {
@@ -488,22 +502,22 @@ int RP_C_API main(int argc, char *argv[])
 				break;
 			}
 #endif /* ENABLE_DECRYPTION */
-			case 'c':
+			case _T('c'):
 				// Print the system region information.
 				PrintSystemRegion();
 				break;
-			case 'p':
+			case _T('p'):
 				// Print pathnames.
 				PrintPathnames();
 				break;
-			case 'l': {
+			case _T('l'): {
 				// Language code.
 				// NOTE: Actual language may be immediately after 'l',
 				// or it might be a completely separate argument.
 				// NOTE 2: Allowing multiple language codes, since the
 				// language code affects files specified *after* it.
-				const char *s_lang;
-				if (argv[i][2] == '\0') {
+				const TCHAR *s_lang;
+				if (argv[i][2] == _T('\0')) {
 					// Separate argument.
 					s_lang = argv[i+1];
 					i++;
@@ -515,13 +529,13 @@ int RP_C_API main(int argc, char *argv[])
 				// Parse the language code.
 				uint32_t new_lc = 0;
 				int pos;
-				for (pos = 0; pos < 4 && s_lang[pos] != '\0'; pos++) {
+				for (pos = 0; pos < 4 && s_lang[pos] != _T('\0'); pos++) {
 					new_lc <<= 8;
 					new_lc |= (uint8_t)s_lang[pos];
 				}
-				if (pos == 4 && s_lang[pos] != '\0') {
+				if (pos == 4 && s_lang[pos] != _T('\0')) {
 					// Invalid language code.
-					cerr << rp_sprintf(C_("rpcli", "Warning: ignoring invalid language code '%s'"), s_lang) << endl;
+					cerr << rp_sprintf(C_("rpcli", "Warning: ignoring invalid language code '%s'"), T2U8c(s_lang)) << endl;
 					break;
 				}
 
@@ -529,51 +543,53 @@ int RP_C_API main(int argc, char *argv[])
 				lc = new_lc;
 				break;
 			}
-			case 'K': {
+			case _T('K'): {
 				// Skip internal images. (NOTE: Not documented.)
 				flags |= LibRpBase::OF_SkipInternalImages;
 				break;
 			}
-			case 'd': {
+			case _T('d'): {
 				// Skip RFT_LISTDATA with more than 10 items. (Text only)
 				flags |= LibRpBase::OF_SkipListDataMoreThan10;
 				break;
 			}
-			case 'x': {
-				const long num = atol(argv[i] + 2);
-				if (num<RomData::IMG_INT_MIN || num>RomData::IMG_INT_MAX) {
+			case _T('x'): {
+				// TODO: Switch from _ttol() to _tcstol() and implement better error checking?
+				const long num = _ttol(argv[i] + 2);
+				if (num < RomData::IMG_INT_MIN || num > RomData::IMG_INT_MAX) {
 					cerr << rp_sprintf(C_("rpcli", "Warning: skipping unknown image type %ld"), num) << endl;
 					i++; continue;
 				}
 				extract.emplace_back(argv[++i], num);
 				break;
 			}
-			case 'a':
+			case _T('a'):
 				extract.emplace_back(argv[++i], -1);
 				break;
-			case 'j': // do nothing
-			case 'J': // still do nothing
+			case _T('j'): // do nothing
+			case _T('J'): // still do nothing
 				break;
 #ifdef RP_OS_SCSI_SUPPORTED
-			case 'i':
+			case _T('i'):
 				// These commands take precedence over the usual rpcli functionality.
 				switch (argv[i][2]) {
-					case 's':
+					case _T('s'):
 						// SCSI INQUIRY command.
 						inq_scsi = true;
 						break;
-					case 'a':
+					case _T('a'):
 						// ATA IDENTIFY DEVICE command.
 						inq_ata = true;
 						break;
-					case 'p':
+					case _T('p'):
 						// ATA IDENTIFY PACKET DEVICE command.
 						inq_ata_packet = true;
 						break;
 					default:
-						if (argv[i][2] == '\0') {
+						if (argv[i][2] == _T('\0')) {
 							cerr << C_("rpcli", "Warning: no inquiry request specified for '-i'") << endl;
 						} else {
+							// FIXME: Unicode character on Windows.
 							cerr << rp_sprintf(C_("rpcli", "Warning: skipping unknown inquiry request '%c'"), argv[i][2]) << endl;
 						}
 						break;
@@ -581,6 +597,7 @@ int RP_C_API main(int argc, char *argv[])
 				break;
 #endif /* RP_OS_SCSI_SUPPORTED */
 			default:
+				// FIXME: Unicode character on Windows.
 				cerr << rp_sprintf(C_("rpcli", "Warning: skipping unknown switch '%c'"), argv[i][1]) << endl;
 				break;
 			}

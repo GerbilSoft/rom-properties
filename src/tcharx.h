@@ -60,8 +60,10 @@ typedef char TCHAR;
 #define _tcscmp(s1, s2)			strcmp((s1), (s2))
 #define _tcsicmp(s1, s2)		strcasecmp((s1), (s2))
 #define _tcsnicmp(s1, s2)		strncasecmp((s1), (s2), (n))
+#define _tcstol(nptr, endptr, base)	strtol((nptr), (endptr), (base))
 #define _tcstoul(nptr, endptr, base)	strtoul((nptr), (endptr), (base))
 #define _tputenv(envstring)		putenv(envstring)
+#define _ttol(nptr)			atol(nptr)
 
 // string.h
 #define _tcschr(s, c)			strchr((s), (c))
