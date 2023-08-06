@@ -277,6 +277,7 @@ rp_key_manager_tab_dispose(GObject *object)
 	}
 #endif /* USE_G_MENU_MODEL */
 
+	// KeyStoreGTK
 	g_clear_object(&tab->keyStore);
 
 	// Call the superclass dispose() function.
