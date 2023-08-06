@@ -15,9 +15,24 @@
 #include <windows.h>
 #include <tchar.h>
 
+typedef BOOL (WINAPI *PFNSETDEFAULTDLLDIRECTORIES)(DWORD DirectoryFlags);
+typedef BOOL (WINAPI *PFNSETDLLDIRECTORYW)(LPCWSTR lpPathName);
+
+#ifndef LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR
+#  define LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR    0x00000100
+#endif
+#ifndef LOAD_LIBRARY_SEARCH_APPLICATION_DIR
+#  define LOAD_LIBRARY_SEARCH_APPLICATION_DIR 0x00000200
+#endif
+#ifndef LOAD_LIBRARY_SEARCH_USER_DIRS
+#  define LOAD_LIBRARY_SEARCH_USER_DIRS       0x00000400
+#endif
 #ifndef LOAD_LIBRARY_SEARCH_SYSTEM32
-#  define LOAD_LIBRARY_SEARCH_SYSTEM32 0x800
-#endif /* LOAD_LIBRARY_SEARCH_SYSTEM32 */
+#  define LOAD_LIBRARY_SEARCH_SYSTEM32        0x00000800
+#endif
+#ifndef LOAD_LIBRARY_SEARCH_DEFAULT_DIRS
+#  define LOAD_LIBRARY_SEARCH_DEFAULT_DIRS    0x00001000
+#endif
 
 /**
  * Restrict DLL lookups to system directories.
@@ -33,8 +48,6 @@ int rp_secure_restrict_dll_lookups(void)
 	// Reference: https://support.microsoft.com/en-gb/topic/secure-loading-of-libraries-to-prevent-dll-preloading-attacks-d41303ec-0748-9211-f317-2edc819682e1
 	HANDLE hKernel32;
 
-	typedef BOOL (WINAPI *PFNSETDEFAULTDLLDIRECTORIES)(DWORD DirectoryFlags);
-	typedef BOOL (WINAPI *PFNSETDLLDIRECTORYW)(LPCWSTR lpPathName);
 	union {
 		PFNSETDEFAULTDLLDIRECTORIES pfnSetDefaultDllDirectories;
 		PFNSETDLLDIRECTORYW pfnSetDllDirectoryW;

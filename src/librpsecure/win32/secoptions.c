@@ -59,27 +59,6 @@ typedef BOOL (WINAPI *PFNSETPROCESSDEPPOLICY)(_In_ DWORD dwFlags);
 
 #endif /* _WIN64 */
 
-// SetDllDirectory() (Win2003; later backported to XP SP1)
-typedef BOOL (WINAPI *PFNSETDLLDIRECTORYW)(_In_opt_ LPCWSTR lpPathName);
-
-// SetDefaultDllDirectories() (Win8; later backported to Vista and Win7)
-typedef BOOL (WINAPI *PFNSETDEFAULTDLLDIRECTORIES)(_In_ DWORD DirectoryFlags);
-#ifndef LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR
-#  define LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR    0x00000100
-#endif
-#ifndef LOAD_LIBRARY_SEARCH_APPLICATION_DIR
-#  define LOAD_LIBRARY_SEARCH_APPLICATION_DIR 0x00000200
-#endif
-#ifndef LOAD_LIBRARY_SEARCH_USER_DIRS
-#  define LOAD_LIBRARY_SEARCH_USER_DIRS       0x00000400
-#endif
-#ifndef LOAD_LIBRARY_SEARCH_SYSTEM32
-#  define LOAD_LIBRARY_SEARCH_SYSTEM32        0x00000800
-#endif
-#ifndef LOAD_LIBRARY_SEARCH_DEFAULT_DIRS
-#  define LOAD_LIBRARY_SEARCH_DEFAULT_DIRS    0x00001000
-#endif
-
 // HeapSetInformation() (WinXP)
 typedef BOOL (WINAPI *PFNHEAPSETINFORMATION)
 	(_In_opt_ HANDLE HeapHandle,
@@ -219,8 +198,6 @@ int rp_secure_win32_secoptions_init(int bHighSec)
 {
 	HMODULE hKernel32;
 	PFNHEAPSETINFORMATION pfnHeapSetInformation;
-	PFNSETDLLDIRECTORYW pfnSetDllDirectoryW;
-	PFNSETDEFAULTDLLDIRECTORIES pfnSetDefaultDllDirectories;
 #ifndef _WIN64
 	PFNSETPROCESSDEPPOLICY pfnSetProcessDEPPolicy;
 #endif /* _WIN64 */
@@ -244,24 +221,6 @@ int rp_secure_win32_secoptions_init(int bHighSec)
 	}
 
 	/** BEGIN: Windows XP/2003 **/
-	// Remove the current directory from the DLL search path.
-	// TODO: Enable and test this.
-	pfnSetDllDirectoryW = (PFNSETDLLDIRECTORYW)
-		GetProcAddress(hKernel32, "SetDllDirectoryW");
-	if (pfnSetDllDirectoryW) {
-		//pfnSetDllDirectoryW(L"");
-	}
-
-	// Only search the system directory for DLLs.
-	// The Delay-Load helper will handle bundled DLLs at runtime.
-	// NOTE: gdiplus.dll is not a "Known DLL", and since it isn't
-	// delay-loaded, it may be loaded from the application directory...
-	// TODO: Enable and test this.
-	pfnSetDefaultDllDirectories = (PFNSETDEFAULTDLLDIRECTORIES)
-		GetProcAddress(hKernel32, "SetDefaultDllDirectories");
-	if (pfnSetDefaultDllDirectories) {
-		//pfnSetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_SYSTEM32);
-	}
 
 	// Terminate the process if heap corruption is detected.
 	// NOTE: Parameter 2 is usually type enum HEAP_INFORMATION_CLASS,
