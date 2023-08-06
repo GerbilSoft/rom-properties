@@ -157,6 +157,33 @@ class RpPngWriterPrivate
 			UNREF(file);
 		}
 
+#ifdef _WIN32
+		RpPngWriterPrivate(const wchar_t *filename, int width, int height, rp_image::Format format)
+			: lastError(0), file(nullptr), imageTag(ImageTag::Invalid)
+			, png_ptr(nullptr), info_ptr(nullptr), IHDR_written(false)
+		{
+			RpFile *const file = (filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr);
+			init(file, width, height, format);
+			UNREF(file);
+		}
+		RpPngWriterPrivate(const wchar_t *filename, const rp_image *img)
+			: lastError(0), file(nullptr), imageTag(ImageTag::Invalid)
+			, png_ptr(nullptr), info_ptr(nullptr), IHDR_written(false)
+		{
+			RpFile *const file = (filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr);
+			init(file, img);
+			UNREF(file);
+		}
+		RpPngWriterPrivate(const wchar_t *filename, const IconAnimData *iconAnimData)
+			: lastError(0), file(nullptr), imageTag(ImageTag::Invalid)
+			, png_ptr(nullptr), info_ptr(nullptr), IHDR_written(false)
+		{
+			RpFile *const file = (filename ? new RpFile(filename, RpFile::FM_CREATE_WRITE) : nullptr);
+			init(file, iconAnimData);
+			UNREF(file);
+		}
+#endif /* _WIN32 */
+
 		~RpPngWriterPrivate();
 	private:
 		// Internal constructor functions.
@@ -944,6 +971,72 @@ int RpPngWriterPrivate::write_IDAT_APNG(void)
 /** RpPngWriter **/
 
 /**
+ * Write a raw image to a PNG file.
+ *
+ * Check isOpen() after constructing to verify that
+ * the file was opened.
+ *
+ * NOTE: If the write fails, the caller will need
+ * to delete the file.
+ *
+ * NOTE 2: If the write fails, the caller will need
+ * to delete the file.
+ *
+ * @param filename	[in] Filename (UTF-8)
+ * @param width 	[in] Image width
+ * @param height 	[in] Image height
+ * @param format 	[in] Image format
+ */
+RpPngWriter::RpPngWriter(const char *filename, int width, int height, rp_image::Format format)
+	: d_ptr(new RpPngWriterPrivate(filename, width, height, format))
+{}
+
+#ifdef _WIN32
+/**
+ * Write a raw image to a PNG file.
+ *
+ * Check isOpen() after constructing to verify that
+ * the file was opened.
+ *
+ * NOTE: If the write fails, the caller will need
+ * to delete the file.
+ *
+ * NOTE 2: If the write fails, the caller will need
+ * to delete the file.
+ *
+ * @param filename	[in] Filename (UTF-16)
+ * @param width 	[in] Image width
+ * @param height 	[in] Image height
+ * @param format 	[in] Image format
+ */
+RpPngWriter::RpPngWriter(const wchar_t *filename, int width, int height, rp_image::Format format)
+	: d_ptr(new RpPngWriterPrivate(filename, width, height, format))
+{}
+#endif /* _WIN32 */
+
+/**
+ * Write a raw image to a PNG file.
+ * IRpFile must be open for writing.
+ *
+ * Check isOpen() after constructing to verify that
+ * the file was opened.
+ *
+ * NOTE: If the write fails, the caller will need
+ * to delete the file.
+ *
+ * NOTE 2: If the write fails, the caller will need
+ * to delete the file.
+ *
+ * @param file		[in] IRpFile open for writing
+ * @param width 	[in] Image width
+ * @param height 	[in] Image height
+ * @param format 	[in] Image format
+ */
+RpPngWriter::RpPngWriter(IRpFile *file, int width, int height, rp_image::Format format)
+	: d_ptr(new RpPngWriterPrivate(file, width, height, format))
+{ }
+
+/**
  * Write an image to a PNG file.
  *
  * Check isOpen() after constructing to verify that
@@ -955,12 +1048,33 @@ int RpPngWriterPrivate::write_IDAT_APNG(void)
  * NOTE 2: If the write fails, the caller will need
  * to delete the file.
  *
- * @param filename	[in] Filename.
- * @param img		[in] rp_image.
+ * @param filename	[in] Filename (UTF-8)
+ * @param img		[in] rp_image
  */
 RpPngWriter::RpPngWriter(const char *filename, const rp_image *img)
 	: d_ptr(new RpPngWriterPrivate(filename, img))
-{ }
+{}
+
+#ifdef _WIN32
+/**
+ * Write an image to a PNG file.
+ *
+ * Check isOpen() after constructing to verify that
+ * the file was opened.
+ *
+ * NOTE: If the write fails, the caller will need
+ * to delete the file.
+ *
+ * NOTE 2: If the write fails, the caller will need
+ * to delete the file.
+ *
+ * @param filename	[in] Filename (UTF-16)
+ * @param img		[in] rp_image
+ */
+RpPngWriter::RpPngWriter(const wchar_t *filename, const rp_image *img)
+	: d_ptr(new RpPngWriterPrivate(filename, img))
+{}
+#endif /* _WIN32 */
 
 /**
  * Write an image to a PNG file.
@@ -975,12 +1089,12 @@ RpPngWriter::RpPngWriter(const char *filename, const rp_image *img)
  * NOTE 2: If the write fails, the caller will need
  * to delete the file.
  *
- * @param file	[in] IRpFile open for writing.
- * @param img	[in] rp_image.
+ * @param file	[in] IRpFile open for writing
+ * @param img	[in] rp_image
  */
 RpPngWriter::RpPngWriter(IRpFile *file, const rp_image *img)
 	: d_ptr(new RpPngWriterPrivate(file, img))
-{ }
+{}
 
 /**
  * Write an animated image to an APNG file.
@@ -999,12 +1113,38 @@ RpPngWriter::RpPngWriter(IRpFile *file, const rp_image *img)
  * NOTE 2: If the write fails, the caller will need
  * to delete the file.
  *
- * @param file		[in] IRpFile open for writing.
- * @param iconAnimData	[in] Animated image data.
+ * @param filename	[in] Filename (UTF-8)
+ * @param iconAnimData	[in] Animated image data
  */
 RpPngWriter::RpPngWriter(const char *filename, const IconAnimData *iconAnimData)
 	: d_ptr(new RpPngWriterPrivate(filename, iconAnimData))
-{ }
+{}
+
+#ifdef _WIN32
+/**
+ * Write an animated image to an APNG file.
+ *
+ * Check isOpen() after constructing to verify that
+ * the file was opened.
+ *
+ * If the animated image contains a single frame,
+ * a standard PNG image will be written.
+ *
+ * NOTE: If the image has multiple frames and APNG
+ * write support is unavailable, -ENOTSUP will be
+ * set as the last error. The caller should then save
+ * the image as a standard PNG file.
+ *
+ * NOTE 2: If the write fails, the caller will need
+ * to delete the file.
+ *
+ * @param filename	[in] Filename (UTF-16)
+ * @param iconAnimData	[in] Animated image data
+ */
+RpPngWriter::RpPngWriter(const wchar_t *filename, const IconAnimData *iconAnimData)
+	: d_ptr(new RpPngWriterPrivate(filename, iconAnimData))
+{}
+#endif /* _WIN32 */
 
 /**
  * Write an animated image to an APNG file.
@@ -1029,50 +1169,7 @@ RpPngWriter::RpPngWriter(const char *filename, const IconAnimData *iconAnimData)
  */
 RpPngWriter::RpPngWriter(IRpFile *file, const IconAnimData *iconAnimData)
 	: d_ptr(new RpPngWriterPrivate(file, iconAnimData))
-{ }
-
-/**
- * Write a raw image to a PNG file.
- *
- * Check isOpen() after constructing to verify that
- * the file was opened.
- *
- * NOTE: If the write fails, the caller will need
- * to delete the file.
- *
- * NOTE 2: If the write fails, the caller will need
- * to delete the file.
- *
- * @param filename	[in] Filename.
- * @param width 	[in] Image width.
- * @param height 	[in] Image height.
- * @param format 	[in] Image format.
- */
-RpPngWriter::RpPngWriter(const char *filename, int width, int height, rp_image::Format format)
-	: d_ptr(new RpPngWriterPrivate(filename, width, height, format))
-{ }
-
-/**
- * Write a raw image to a PNG file.
- * IRpFile must be open for writing.
- *
- * Check isOpen() after constructing to verify that
- * the file was opened.
- *
- * NOTE: If the write fails, the caller will need
- * to delete the file.
- *
- * NOTE 2: If the write fails, the caller will need
- * to delete the file.
- *
- * @param file	[in] IRpFile open for writing.
- * @param width 	[in] Image width.
- * @param height 	[in] Image height.
- * @param format 	[in] Image format.
- */
-RpPngWriter::RpPngWriter(IRpFile *file, int width, int height, rp_image::Format format)
-	: d_ptr(new RpPngWriterPrivate(file, width, height, format))
-{ }
+{}
 
 RpPngWriter::~RpPngWriter()
 {

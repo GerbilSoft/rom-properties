@@ -2,7 +2,7 @@
  * ROM Properties Page shell extension. (librpbase)                        *
  * RpPng.cpp: PNG image handler.                                           *
  *                                                                         *
- * Copyright (c) 2016-2022 by David Korth.                                 *
+ * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -477,8 +477,8 @@ static rp_image *loadPng(png_structp png_ptr, png_infop info_ptr)
 
 /**
  * Load a PNG image from an IRpFile.
- * @param file IRpFile to load from.
- * @return rp_image*, or nullptr on error.
+ * @param file IRpFile to load from
+ * @return rp_image*, or nullptr on error
  */
 rp_image *load(IRpFile *file)
 {
@@ -538,9 +538,9 @@ rp_image *load(IRpFile *file)
  * NOTE: If the write fails, the caller will need
  * to delete the file.
  *
- * @param file IRpFile to write to.
- * @param img rp_image to save.
- * @return 0 on success; negative POSIX error code on error.
+ * @param file IRpFile to write to
+ * @param img rp_image to save
+ * @return 0 on success; negative POSIX error code on error
  */
 int save(IRpFile *file, const rp_image *img)
 {
@@ -566,16 +566,16 @@ int save(IRpFile *file, const rp_image *img)
 /**
  * Save an image in PNG format to a file.
  *
- * @param filename Destination filename.
- * @param img rp_image to save.
- * @return 0 on success; negative POSIX error code on error.
+ * @param filename Destination filename (UTF-8)
+ * @param img rp_image to save
+ * @return 0 on success; negative POSIX error code on error
  */
 int save(const char *filename, const rp_image *img)
 {
 	assert(filename != nullptr);
-	assert(filename[0] != 0);
+	assert(filename[0] != '\0');
 	assert(img != nullptr);
-	if (!filename || filename[0] == 0 || !img)
+	if (!filename || filename[0] == '\0' || !img)
 		return -EINVAL;
 
 	// Create a PNG writer.
@@ -592,6 +592,37 @@ int save(const char *filename, const rp_image *img)
 	return pngWriter->write_IDAT();
 }
 
+#ifdef _WIN32
+/**
+ * Save an image in PNG format to a file.
+ *
+ * @param filename Destination filename (UTF-8)
+ * @param img rp_image to save
+ * @return 0 on success; negative POSIX error code on error
+ */
+int save(const wchar_t *filename, const rp_image *img)
+{
+	assert(filename != nullptr);
+	assert(filename[0] != L'\0');
+	assert(img != nullptr);
+	if (!filename || filename[0] == L'\0' || !img)
+		return -EINVAL;
+
+	// Create a PNG writer.
+	unique_ptr<RpPngWriter> pngWriter(new RpPngWriter(filename, img));
+	if (!pngWriter->isOpen())
+		return -pngWriter->lastError();
+
+	// Write the PNG IHDR.
+	int ret = pngWriter->write_IHDR();
+	if (ret != 0)
+		return ret;
+
+	// Write the PNG image data.
+	return pngWriter->write_IDAT();
+}
+#endif /* _WIN32 */
+
 /**
  * Save an animated image in APNG format to an IRpFile.
  * IRpFile must be open for writing.
@@ -607,9 +638,9 @@ int save(const char *filename, const rp_image *img)
  * NOTE 2: If the write fails, the caller will need
  * to delete the file.
  *
- * @param file IRpFile to write to.
- * @param iconAnimData Animated image data to save.
- * @return 0 on success; negative POSIX error code on error.
+ * @param file IRpFile to write to
+ * @param iconAnimData Animated image data to save
+ * @return 0 on success; negative POSIX error code on error
  */
 int save(IRpFile *file, const IconAnimData *iconAnimData)
 {
@@ -644,16 +675,16 @@ int save(IRpFile *file, const IconAnimData *iconAnimData)
  * returned. The caller should then save the image
  * as a standard PNG file.
  *
- * @param filename Destination filename.
- * @param iconAnimData Animated image data to save.
- * @return 0 on success; negative POSIX error code on error.
+ * @param filename Destination filename (UTF-8)
+ * @param iconAnimData Animated image data to save
+ * @return 0 on success; negative POSIX error code on error
  */
 int save(const char *filename, const IconAnimData *iconAnimData)
 {
 	assert(filename != nullptr);
-	assert(filename[0] != 0);
+	assert(filename[0] != '\0');
 	assert(iconAnimData != nullptr);
-	if (!filename || filename[0] == 0 || !iconAnimData)
+	if (!filename || filename[0] == '\0' || !iconAnimData)
 		return -EINVAL;
 
 	// Create a PNG writer.
@@ -669,6 +700,46 @@ int save(const char *filename, const IconAnimData *iconAnimData)
 	// Write the PNG image data.
 	return pngWriter->write_IDAT();
 }
+
+#ifdef _WIN32
+/**
+ * Save an animated image in APNG format to a file.
+ * IRpFile must be open for writing.
+ *
+ * If the animated image contains a single frame,
+ * a standard PNG image will be written.
+ *
+ * NOTE: If the image has multiple frames and APNG
+ * write support is unavailable, -ENOTSUP will be
+ * returned. The caller should then save the image
+ * as a standard PNG file.
+ *
+ * @param filename Destination filename (UTF-16)
+ * @param iconAnimData Animated image data to save
+ * @return 0 on success; negative POSIX error code on error
+ */
+int save(const wchar_t *filename, const IconAnimData *iconAnimData)
+{
+	assert(filename != nullptr);
+	assert(filename[0] != L'\0');
+	assert(iconAnimData != nullptr);
+	if (!filename || filename[0] == L'\0' || !iconAnimData)
+		return -EINVAL;
+
+	// Create a PNG writer.
+	unique_ptr<RpPngWriter> pngWriter(new RpPngWriter(filename, iconAnimData));
+	if (!pngWriter->isOpen())
+		return -pngWriter->lastError();
+
+	// Write the PNG IHDR.
+	int ret = pngWriter->write_IHDR();
+	if (ret != 0)
+		return ret;
+
+	// Write the PNG image data.
+	return pngWriter->write_IDAT();
+}
+#endif /* _WIN32 */
 
 /** Version info wrapper functions **/
 

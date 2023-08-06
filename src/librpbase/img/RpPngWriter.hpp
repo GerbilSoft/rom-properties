@@ -40,12 +40,33 @@ public:
 	 * NOTE 2: If the write fails, the caller will need
 	 * to delete the file.
 	 *
-	 * @param filename	[in] Filename.
-	 * @param width 	[in] Image width.
-	 * @param height 	[in] Image height.
-	 * @param format 	[in] Image format.
+	 * @param filename	[in] Filename (UTF-8)
+	 * @param width 	[in] Image width
+	 * @param height 	[in] Image height
+	 * @param format 	[in] Image format
 	 */
 	RpPngWriter(const char *filename, int width, int height, LibRpTexture::rp_image::Format format);
+
+#ifdef _WIN32
+	/**
+	 * Write a raw image to a PNG file.
+	 *
+	 * Check isOpen() after constructing to verify that
+	 * the file was opened.
+	 *
+	 * NOTE: If the write fails, the caller will need
+	 * to delete the file.
+	 *
+	 * NOTE 2: If the write fails, the caller will need
+	 * to delete the file.
+	 *
+	 * @param filename	[in] Filename (UTF-16)
+	 * @param width 	[in] Image width
+	 * @param height 	[in] Image height
+	 * @param format 	[in] Image format
+	 */
+	RpPngWriter(const wchar_t *filename, int width, int height, LibRpTexture::rp_image::Format format);
+#endif /* _WIN32 */
 
 	/**
 	 * Write a raw image to a PNG file.
@@ -60,10 +81,10 @@ public:
 	 * NOTE 2: If the write fails, the caller will need
 	 * to delete the file.
 	 *
-	 * @param file	[in] IRpFile open for writing.
-	 * @param width 	[in] Image width.
-	 * @param height 	[in] Image height.
-	 * @param format 	[in] Image format.
+	 * @param file		[in] IRpFile open for writing
+	 * @param width 	[in] Image width
+	 * @param height 	[in] Image height
+	 * @param format 	[in] Image format
 	 */
 	RpPngWriter(LibRpFile::IRpFile *file, int width, int height, LibRpTexture::rp_image::Format format);
 
@@ -79,10 +100,29 @@ public:
 	 * NOTE 2: If the write fails, the caller will need
 	 * to delete the file.
 	 *
-	 * @param filename	[in] Filename.
-	 * @param img		[in] rp_image.
+	 * @param filename	[in] Filename (UTF-8)
+	 * @param img		[in] rp_image
 	 */
 	RpPngWriter(const char *filename, const LibRpTexture::rp_image *img);
+
+#ifdef _WIN32
+	/**
+	 * Write an image to a PNG file.
+	 *
+	 * Check isOpen() after constructing to verify that
+	 * the file was opened.
+	 *
+	 * NOTE: If the write fails, the caller will need
+	 * to delete the file.
+	 *
+	 * NOTE 2: If the write fails, the caller will need
+	 * to delete the file.
+	 *
+	 * @param filename	[in] Filename (UTF-16)
+	 * @param img		[in] rp_image
+	 */
+	RpPngWriter(const wchar_t *filename, const LibRpTexture::rp_image *img);
+#endif /* _WIN32 */
 
 	/**
 	 * Write an image to a PNG file.
@@ -97,8 +137,8 @@ public:
 	 * NOTE 2: If the write fails, the caller will need
 	 * to delete the file.
 	 *
-	 * @param file	[in] IRpFile open for writing.
-	 * @param img	[in] rp_image.
+	 * @param file	[in] IRpFile open for writing
+	 * @param img	[in] rp_image
 	 */
 	RpPngWriter(LibRpFile::IRpFile *file, const LibRpTexture::rp_image *img);
 
@@ -119,10 +159,34 @@ public:
 	 * NOTE 2: If the write fails, the caller will need
 	 * to delete the file.
 	 *
-	 * @param file		[in] IRpFile open for writing.
-	 * @param iconAnimData	[in] Animated image data.
+	 * @param filename	[in] Filename (UTF-8)
+	 * @param iconAnimData	[in] Animated image data
 	 */
 	RpPngWriter(const char *filename, const IconAnimData *iconAnimData);
+
+#ifdef _WIN32
+	/**
+	 * Write an animated image to an APNG file.
+	 *
+	 * Check isOpen() after constructing to verify that
+	 * the file was opened.
+	 *
+	 * If the animated image contains a single frame,
+	 * a standard PNG image will be written.
+	 *
+	 * NOTE: If the image has multiple frames and APNG
+	 * write support is unavailable, -ENOTSUP will be
+	 * set as the last error. The caller should then save
+	 * the image as a standard PNG file.
+	 *
+	 * NOTE 2: If the write fails, the caller will need
+	 * to delete the file.
+	 *
+	 * @param filename	[in] Filename (UTF-16)
+	 * @param iconAnimData	[in] Animated image data
+	 */
+	RpPngWriter(const wchar_t *filename, const IconAnimData *iconAnimData);
+#endif /* _WIN32 */
 
 	/**
 	 * Write an animated image to an APNG file.
@@ -142,8 +206,8 @@ public:
 	 * NOTE 2: If the write fails, the caller will need
 	 * to delete the file.
 	 *
-	 * @param file		[in] IRpFile open for writing.
-	 * @param iconAnimData	[in] Animated image data.
+	 * @param file		[in] IRpFile open for writing
+	 * @param iconAnimData	[in] Animated image data
 	 */
 	RpPngWriter(LibRpFile::IRpFile *file, const IconAnimData *iconAnimData);
 

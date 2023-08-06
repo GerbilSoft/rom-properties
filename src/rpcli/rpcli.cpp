@@ -149,8 +149,7 @@ static void ExtractImages(const RomData *romData, vector<ExtractParam>& extract)
 					rp_sprintf_p(C_("rpcli", "Extracting %1$s into '%2$s'"),
 						RomData::getImageTypeName(imageType),
 						T2U8c(p.filename)) << endl;
-				// FIXME: Add UTF-16 overload for Windows.
-				int errcode = RpPng::save(T2U8c(p.filename), image);
+				int errcode = RpPng::save(p.filename, image);
 				if (errcode != 0) {
 					// tr: %1$s == filename, %2%s == error message
 					cerr << rp_sprintf_p(C_("rpcli", "Couldn't create file '%1$s': %2$s"),
@@ -165,13 +164,12 @@ static void ExtractImages(const RomData *romData, vector<ExtractParam>& extract)
 			if (iconAnimData && iconAnimData->count != 0 && iconAnimData->seq_count != 0) {
 				found = true;
 				cerr << "-- " << rp_sprintf(C_("rpcli", "Extracting animated icon into '%s'"), T2U8c(p.filename)) << endl;
-				// FIXME: Add UTF-16 overload for Windows.
-				int errcode = RpPng::save(T2U8c(p.filename), iconAnimData);
+				int errcode = RpPng::save(p.filename, iconAnimData);
 				if (errcode == -ENOTSUP) {
 					cerr << "   " << C_("rpcli", "APNG not supported, extracting only the first frame") << endl;
 					// falling back to outputting the first frame
 					// FIXME: Add UTF-16 overload for Windows.
-					errcode = RpPng::save(T2U8c(p.filename), iconAnimData->frames[iconAnimData->seq_index[0]]);
+					errcode = RpPng::save(p.filename, iconAnimData->frames[iconAnimData->seq_index[0]]);
 				}
 				if (errcode != 0) {
 					cerr << "   " <<

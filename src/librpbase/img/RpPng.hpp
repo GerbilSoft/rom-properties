@@ -26,8 +26,8 @@ namespace RpPng {
 
 /**
  * Load a PNG image from an IRpFile.
- * @param file IRpFile to load from.
- * @return rp_image*, or nullptr on error.
+ * @param file IRpFile to load from
+ * @return rp_image*, or nullptr on error
  */
 RP_LIBROMDATA_PUBLIC
 LibRpTexture::rp_image *load(LibRpFile::IRpFile *file);
@@ -39,21 +39,33 @@ LibRpTexture::rp_image *load(LibRpFile::IRpFile *file);
  * NOTE: If the write fails, the caller will need
  * to delete the file.
  *
- * @param file IRpFile to write to.
- * @param img rp_image to save.
- * @return 0 on success; negative POSIX error code on error.
+ * @param file IRpFile to write to
+ * @param img rp_image to save
+ * @return 0 on success; negative POSIX error code on error
  */
 int save(LibRpFile::IRpFile *file, const LibRpTexture::rp_image *img);
 
 /**
  * Save an image in PNG format to a file.
  *
- * @param filename Destination filename.
- * @param img rp_image to save.
- * @return 0 on success; negative POSIX error code on error.
+ * @param filename Destination filename (UTF-8)
+ * @param img rp_image to save
+ * @return 0 on success; negative POSIX error code on error
  */
 RP_LIBROMDATA_PUBLIC
 int save(const char *filename, const LibRpTexture::rp_image *img);
+
+#ifdef _WIN32
+/**
+ * Save an image in PNG format to a file.
+ *
+ * @param filename Destination filename
+ * @param img rp_image to save (UTF-16)
+ * @return 0 on success; negative POSIX error code on error
+ */
+RP_LIBROMDATA_PUBLIC
+int save(const wchar_t *filename, const LibRpTexture::rp_image *img);
+#endif /* _WIN32 */
 
 /**
  * Save an animated image in APNG format to an IRpFile.
@@ -70,9 +82,9 @@ int save(const char *filename, const LibRpTexture::rp_image *img);
  * NOTE 2: If the write fails, the caller will need
  * to delete the file.
  *
- * @param file IRpFile to write to.
- * @param iconAnimData Animated image data to save.
- * @return 0 on success; negative POSIX error code on error.
+ * @param file IRpFile to write to
+ * @param iconAnimData Animated image data to save
+ * @return 0 on success; negative POSIX error code on error
  */
 int save(LibRpFile::IRpFile *file, const IconAnimData *iconAnimData);
 
@@ -87,12 +99,32 @@ int save(LibRpFile::IRpFile *file, const IconAnimData *iconAnimData);
  * returned. The caller should then save the image
  * as a standard PNG file.
  *
- * @param filename Destination filename.
- * @param iconAnimData Animated image data to save.
- * @return 0 on success; negative POSIX error code on error.
+ * @param filename Destination filename (UTF-8)
+ * @param iconAnimData Animated image data to save
+ * @return 0 on success; negative POSIX error code on error
  */
 RP_LIBROMDATA_PUBLIC
 int save(const char *filename, const IconAnimData *iconAnimData);
+
+#ifdef _WIN32
+/**
+ * Save an animated image in APNG format to a file.
+ *
+ * If the animated image contains a single frame,
+ * a standard PNG image will be written.
+ *
+ * NOTE: If the image has multiple frames and APNG
+ * write support is unavailable, -ENOTSUP will be
+ * returned. The caller should then save the image
+ * as a standard PNG file.
+ *
+ * @param filename Destination filename (UTF-16)
+ * @param iconAnimData Animated image data to save
+ * @return 0 on success; negative POSIX error code on error
+ */
+RP_LIBROMDATA_PUBLIC
+int save(const wchar_t *filename, const IconAnimData *iconAnimData);
+#endif /* _WIN32 */
 
 /** Version info wrapper functions **/
 
