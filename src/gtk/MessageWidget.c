@@ -146,7 +146,7 @@ rp_message_widget_class_init(RpMessageWidgetClass *klass)
 		"\tborder: 2px solid @gsrp_color_error;\n"
 		"}\n";
 
-	GTK_CSS_PROVIDER_LOAD_FROM_DATA(GTK_CSS_PROVIDER(provider), css_MessageWidget, -1);
+	GTK_CSS_PROVIDER_LOAD_FROM_STRING(GTK_CSS_PROVIDER(provider), css_MessageWidget);
 	g_object_unref(provider);
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 }
