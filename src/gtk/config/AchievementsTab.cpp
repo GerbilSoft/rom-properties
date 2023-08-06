@@ -97,9 +97,7 @@ rp_achievements_tab_rp_config_tab_interface_init(RpConfigTabInterface *iface)
 // Reference: https://blog.gtk.org/2020/09/05/a-primer-on-gtklistview/
 // NOTE: user_data will indicate the column number: 0 == icon, 1 == description, 2 == unlock time
 static void
-setup_listitem_cb(GtkListItemFactory	*factory,
-		  GtkListItem		*list_item,
-		  gpointer		 user_data)
+setup_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer user_data)
 {
 	RP_UNUSED(factory);
 
@@ -124,22 +122,18 @@ setup_listitem_cb(GtkListItemFactory	*factory,
 }
 
 static void
-bind_listitem_cb(GtkListItemFactory	*factory,
-                 GtkListItem		*list_item,
-		 gpointer		 user_data)
+bind_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer user_data)
 {
 	RP_UNUSED(factory);
 
 	GtkWidget *const widget = gtk_list_item_get_child(list_item);
 	assert(widget != nullptr);
-	if (!widget) {
+	if (!widget)
 		return;
-	}
 
 	RpAchievementItem *const item = RP_ACHIEVEMENT_ITEM(gtk_list_item_get_item(list_item));
-	if (!item) {
+	if (!item)
 		return;
-	}
 
 	switch (GPOINTER_TO_INT(user_data)) {
 		case ACH_COL_ICON:
@@ -177,6 +171,10 @@ bind_listitem_cb(GtkListItemFactory	*factory,
 			}
 			break;
 		}
+
+		default:
+			assert(!"Invalid column number");
+			return;
 	}
 }
 #endif /* USE_GTK_COLUMN_VIEW */
@@ -227,7 +225,7 @@ rp_achievements_tab_init(RpAchievementsTab *tab)
 
 	// GtkColumnView requires a GtkSelectionModel, so we'll create
 	// a GtkSingleSelection to wrap around the GListStore.
-	GtkSingleSelection *selModel = gtk_single_selection_new(G_LIST_MODEL(tab->listStore));
+	GtkSingleSelection *const selModel = gtk_single_selection_new(G_LIST_MODEL(tab->listStore));
 	gtk_column_view_set_model(GTK_COLUMN_VIEW(tab->columnView), GTK_SELECTION_MODEL(selModel));
 
 	// NOTE: Regarding object ownership:

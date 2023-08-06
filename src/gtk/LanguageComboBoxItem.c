@@ -190,10 +190,7 @@ rp_language_combo_box_item_finalize(GObject *object)
 {
 	RpLanguageComboBoxItem *const item = RP_LANGUAGE_COMBO_BOX_ITEM(object);
 
-	if (item->name) {
-		g_free(item->name);
-		item->name = NULL;
-	}
+	g_free(item->name);
 
 	// Call the superclass finalize() function.
 	G_OBJECT_CLASS(rp_language_combo_box_item_parent_class)->finalize(object);
