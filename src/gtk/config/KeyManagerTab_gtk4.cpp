@@ -13,6 +13,7 @@
 #include "KeyStoreItem.h"
 
 // C++ STL classes
+using std::string;
 using std::vector;
 
 // Other rom-properties libraries
@@ -145,26 +146,34 @@ bind_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer u
 	if (!widget)
 		return;
 
-	RpKeyStoreItem *const item = RP_KEY_STORE_ITEM(gtk_list_item_get_item(list_item));
-	if (!item)
+	RpKeyStoreItem *const ksitem = RP_KEY_STORE_ITEM(gtk_list_item_get_item(list_item));
+	if (!ksitem)
 		return;
 
 	switch (GPOINTER_TO_INT(user_data)) {
 		case KEY_COL_NAME:
 			// Key name
-			// TODO: Some indication that this is a section item, and if so,
-			// span it across all columns.
-			gtk_label_set_text(GTK_LABEL(widget), rp_key_store_item_get_name(item));
+			// FIXME: GtkColumnView isn't indenting child items...
+			if (unlikely(rp_key_store_item_get_is_section(ksitem))) {
+				// Section header. Use it as-is.
+				// TODO: Column spanning?
+				gtk_label_set_text(GTK_LABEL(widget), rp_key_store_item_get_name(ksitem));
+			} else {
+				// Key name. Indent it a bit because GtkColumnView isn't.
+				string str("\t");
+				str += rp_key_store_item_get_name(ksitem);
+				gtk_label_set_text(GTK_LABEL(widget), str.c_str());
+			}
 			break;
 
 		case KEY_COL_VALUE:
 			// Value
-			gtk_label_set_text(GTK_LABEL(widget), rp_key_store_item_get_value(item));
+			gtk_label_set_text(GTK_LABEL(widget), rp_key_store_item_get_value(ksitem));
 			break;
 
 		case KEY_COL_VALID: {
 			// Valid?
-			const uint8_t status = rp_key_store_item_get_status(item);
+			const uint8_t status = rp_key_store_item_get_status(ksitem);
 			const char *const icon_name = likely(status < ARRAY_SIZE(is_valid_icon_name_tbl))
 				? is_valid_icon_name_tbl[status]
 				: nullptr;
