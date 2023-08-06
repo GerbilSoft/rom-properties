@@ -162,11 +162,15 @@ bind_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer u
 			gtk_label_set_text(GTK_LABEL(widget), rp_key_store_item_get_value(item));
 			break;
 
-		case KEY_COL_VALID:
+		case KEY_COL_VALID: {
 			// Valid?
-			// TODO: Validity icon.
-			//gtk_image_set_from_pixbuf(GTK_IMAGE(widget), rp_achievement_item_get_icon(item));
+			const uint8_t status = rp_key_store_item_get_status(item);
+			const char *const icon_name = likely(status < ARRAY_SIZE(is_valid_icon_name_tbl))
+				? is_valid_icon_name_tbl[status]
+				: nullptr;
+			gtk_image_set_from_icon_name(GTK_IMAGE(widget), icon_name);
 			break;
+		}
 
 		default:
 			assert(!"Invalid column number");
@@ -250,21 +254,6 @@ void rp_key_manager_tab_create_GtkTreeView(RpKeyManagerTab *tab)
 	g_signal_connect(renderer, "edited", G_CALLBACK(renderer_edited_signal_handler), tab);
 	gtk_tree_view_column_pack_start(column, renderer, FALSE);
 	gtk_tree_view_column_add_attribute(column, renderer, "text", 1);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(tab->treeView), column);
-
-	// Column 3: Valid?
-	column = gtk_tree_view_column_new();
-	gtk_tree_view_column_set_title(column, C_("KeyManagerTab", "Valid?"));
-	gtk_tree_view_column_set_resizable(column, FALSE);
-	renderer = gtk_cell_renderer_pixbuf_new();
-	g_object_set(renderer, "xalign", 0.5f, nullptr);	// FIXME: Not working on GTK2.
-	gtk_tree_view_column_pack_start(column, renderer, FALSE);
-	gtk_tree_view_column_add_attribute(column, renderer, "icon-name", 2);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(tab->treeView), column);
-
-	// Dummy column to shrink Column 3.
-	column = gtk_tree_view_column_new();
-	gtk_tree_view_column_set_resizable(column, FALSE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tab->treeView), column);
 #endif
 }
