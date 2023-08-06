@@ -21,16 +21,19 @@ static void	renderer_edited_signal_handler(GtkCellRendererText	*self,
 
 /**
  * GWeakNotify function to destroy the GtkTreeStore when the GtkTreeView is destroyed.
- * @param data GtkTreeStore
+ * @param data RpKeyManagerTab
  * @param where_the_object_was GtkTreeView
  */
 static void
 rp_key_manager_tab_GWeakNotify_GtkTreeView(gpointer data, GObject *where_the_object_was)
 {
 	RP_UNUSED(where_the_object_was);
+	g_return_if_fail(RP_IS_KEY_MANAGER_TAB(data));
 
-	g_return_if_fail(GTK_IS_TREE_STORE(data));
-	g_object_unref(data);
+	RpKeyManagerTab *const tab = RP_KEY_MANAGER_TAB(data);
+	if (tab) {
+		g_clear_object(&tab->treeStore);
+	}
 }
 
 /**
@@ -50,7 +53,7 @@ void rp_key_manager_tab_create_GtkTreeView(RpKeyManagerTab *tab)
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(tab->scrolledWindow), tab->treeView);
 
 	// Maintain a weak reference so we can destroy the treeStore when the treeView is destroyed.
-	g_object_weak_ref(G_OBJECT(tab->treeView), rp_key_manager_tab_GWeakNotify_GtkTreeView, tab->treeStore);
+	g_object_weak_ref(G_OBJECT(tab->treeView), rp_key_manager_tab_GWeakNotify_GtkTreeView, tab);
 
 	// Column 1: Key Name
 	GtkTreeViewColumn *column = gtk_tree_view_column_new();
