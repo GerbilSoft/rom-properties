@@ -96,14 +96,17 @@ rp_key_manager_tab_create_child_GListModel(gpointer item, gpointer user_data)
 static void
 gtkEditableLabel_changed(GtkEditable *self, RpKeyManagerTab *tab)
 {
+	// FIXME: gtk_editable_get_text() returns an empty string, and for
+	// some reason, it's keeping pointers to strings in KeyStoreItem.
+	// This doesn't work properly, and it crashes.
+
+#if 0
 	// NOTE: We can't use user_data for the flat key index because
 	// GtkColumnView reuses widgets. The flat key index is stored
 	// as a property when the data is bound in bind_listitem_cb().
 
 	// NOTE: The property is incremented by 1 because a default
 	// GtkEditableLabel will return NULL (0).
-	printf("text: %s\n", gtk_editable_get_text(self));
-	return;
 
 	if (gtk_editable_label_get_editing(GTK_EDITABLE_LABEL(self))) {
 		// Currently editing the label. Don't do anything.
@@ -119,6 +122,7 @@ gtkEditableLabel_changed(GtkEditable *self, RpKeyManagerTab *tab)
 	// Update the key store.
 	KeyStoreUI *const keyStoreUI = rp_key_store_gtk_get_key_store_ui(tab->keyStore);
 	keyStoreUI->setKey(idx, gtk_editable_get_text(self));
+#endif
 }
 
 // GtkSignalListItemFactory signal handlers
@@ -211,9 +215,11 @@ bind_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer u
 
 				gtk_editable_set_text(GTK_EDITABLE(widget), s_value ? s_value : "");
 				g_object_set_qdata(G_OBJECT(widget), KeyManagerTab_flatKeyIdx_quark, GINT_TO_POINTER(idx));
-				gtk_editable_set_editable(GTK_EDITABLE(widget), true);
+				// FIXME: Editing causes crashes for some reason...
+				//gtk_editable_set_editable(GTK_EDITABLE(widget), true);
+				gtk_editable_set_editable(GTK_EDITABLE(widget), false);
 			} else {
-				// Section header.
+				// Section header
 				gtk_editable_set_editable(GTK_EDITABLE(widget), false);
 			}
 			break;
@@ -401,6 +407,7 @@ void keyStore_key_changed_signal_handler(RpKeyStoreGTK *keyStore, int sectIdx, i
 	if (!key)
 		return;
 
+	printf("individual key update: sect %d, key %d -> %s\n", sectIdx, keyIdx, key->value.c_str());
 	rp_key_store_item_set_value(ksitem, key->value.c_str());
 	rp_key_store_item_set_status(ksitem, static_cast<uint8_t>(key->status));
 }
