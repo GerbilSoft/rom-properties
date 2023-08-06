@@ -105,15 +105,13 @@ setup_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer 
 		}
 
 		case KEY_COL_VALUE: {
-			GtkWidget *const label = gtk_label_new(nullptr);
-			gtk_label_set_xalign(GTK_LABEL(label), 0.0f);
+			// NOTE: GtkEditableLabel doesn't like nullptr strings.
+			GtkWidget *const label = gtk_editable_label_new("");
+			//g_object_set(label, "xalign", 0.0f, nullptr);
 			gtk_list_item_set_child(list_item, label);
 
 			// Set a monospace font.
-			PangoAttrList *const attr_lst = pango_attr_list_new();
-			pango_attr_list_insert(attr_lst, pango_attr_family_new("monospace"));
-			gtk_label_set_attributes(GTK_LABEL(label), attr_lst);
-			pango_attr_list_unref(attr_lst);
+			gtk_widget_add_css_class(label, "gsrp_monospace");
 			break;
 		}
 
@@ -166,10 +164,13 @@ bind_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer u
 			}
 			break;
 
-		case KEY_COL_VALUE:
+		case KEY_COL_VALUE: {
 			// Value
-			gtk_label_set_text(GTK_LABEL(widget), rp_key_store_item_get_value(ksitem));
+			// NOTE: GtkEditableLabel doesn't like nullptr strings.
+			const char *s_value = rp_key_store_item_get_value(ksitem);
+			gtk_editable_set_text(GTK_EDITABLE(widget), s_value ? s_value : "");
 			break;
+		}
 
 		case KEY_COL_VALID: {
 			// Valid?
