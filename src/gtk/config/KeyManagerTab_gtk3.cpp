@@ -52,7 +52,7 @@ void rp_key_manager_tab_create_GtkTreeView(RpKeyManagerTab *tab)
 	gtk_tree_view_set_enable_tree_lines(GTK_TREE_VIEW(tab->treeView), TRUE);
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(tab->scrolledWindow), tab->treeView);
 
-	// Maintain a weak reference so we can destroy the treeStore when the treeView is destroyed.
+	// Maintain a weak reference so we can destroy treeStore when treeView is destroyed.
 	g_object_weak_ref(G_OBJECT(tab->treeView), rp_key_manager_tab_GWeakNotify_GtkTreeView, tab);
 
 	// Column 1: Key Name
