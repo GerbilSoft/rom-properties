@@ -1340,11 +1340,13 @@ int DMG::extURLs(ImageType imageType, vector<ExtURL> *pExtURLs, int size) const
 		img_filename.reserve(s_title.size() + 8);
 		for (const char p : s_title) {
 			switch (p) {
-				case ':':
-				case '/':
-				case '\\':
 				case '*':
+				case '/':
+				case ':':
+				case '<':
+				case '>':
 				case '?':
+				case '\\':
 					img_filename += '_';
 					break;
 				default:
