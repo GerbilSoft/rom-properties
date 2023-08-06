@@ -204,14 +204,20 @@ gtk_widget_class_get_activate_signal(GtkWidgetClass *widget_class)
 /** Functions that changed in GTK 4.0.0 but are otherwise similar enough **/
 /** to GTK2/GTK3 that a simple wrapper function or macro can be used.    **/
 
-// GtkCssProvider: Error parameter removed.
+// GtkCssProvider:
+// - GTK4: Error parameter removed.
+// - GTK4 4.12: Deprecated in favor of gtk_css_provider_load_from_string(),
+//              which is the same thing but has no length parameter.
 // Use the GtkCssProvider::parsing-error signal instead if needed.
-#if GTK_CHECK_VERSION(3,89,1)
-#  define GTK_CSS_PROVIDER_LOAD_FROM_DATA(provider, data, length) \
-	gtk_css_provider_load_from_data((provider), (data), (length))
+#if GTK_CHECK_VERSION(4,11,3)
+#  define GTK_CSS_PROVIDER_LOAD_FROM_STRING(provider, str) \
+	gtk_css_provider_load_from_string((provider), (str))
+#elif GTK_CHECK_VERSION(3,89,1)
+#  define GTK_CSS_PROVIDER_LOAD_FROM_STRING(provider, str) \
+	gtk_css_provider_load_from_data((provider), (str), -1)
 #else /* !GTK_CHECK_VERSION(3,89,1) */
-#  define GTK_CSS_PROVIDER_LOAD_FROM_DATA(provider, data, length) \
-	gtk_css_provider_load_from_data((provider), (data), (length), NULL)
+#  define GTK_CSS_PROVIDER_LOAD_FROM_STRING(provider, str) \
+	gtk_css_provider_load_from_data((provider), (str), -1, NULL)
 #endif /* GTK_CHECK_VERSION(3,89,1) */
 
 // Clipboard

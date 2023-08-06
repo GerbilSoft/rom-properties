@@ -146,7 +146,7 @@ rp_message_widget_class_init(RpMessageWidgetClass *klass)
 		"\tborder: 2px solid @gsrp_color_error;\n"
 		"}\n";
 
-	GTK_CSS_PROVIDER_LOAD_FROM_DATA(GTK_CSS_PROVIDER(provider), css_MessageWidget, -1);
+	GTK_CSS_PROVIDER_LOAD_FROM_STRING(GTK_CSS_PROVIDER(provider), css_MessageWidget);
 	g_object_unref(provider);
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 }
@@ -333,10 +333,39 @@ rp_message_widget_set_message_type(RpMessageWidget *widget, GtkMessageType messa
 			"gsrp_msgw_question_dark",
 			"gsrp_msgw_error_dark",
 		};
+		static const IconInfo_t *const pIconInfo_tbl_end = &iconInfo_tbl[ARRAY_SIZE(iconInfo_tbl)];
 
+#  if GTK_CHECK_VERSION(4,0,0)
+		// Remove all of our CSS classes first.
+		for (const IconInfo_t *p = iconInfo_tbl; p < pIconInfo_tbl_end; p++) {
+			gtk_widget_remove_css_class(GTK_WIDGET(widget), p->css_class);
+		}
+		for (unsigned int i = 0; i < ARRAY_SIZE(dark_css_class_tbl); i++) {
+			gtk_widget_remove_css_class(GTK_WIDGET(widget), dark_css_class_tbl[i]);
+		}
+
+		// Get the text color. If its grayscale value is >= 0.75,
+		// assume we're using a dark theme.
+		// FIXME: Better way to determine if a dark theme is in use.
+		// (gtk_style_context_lookup_color() is deprecated in GTK4)
+		bool dark = false;
+		GdkRGBA color;
+		gboolean bRet = gtk_style_context_lookup_color(
+			gtk_widget_get_style_context(GTK_WIDGET(widget)), "theme_text_color", &color);
+		if (bRet) {
+			// BT.601 grayscale conversion
+			const gfloat grayscale = (color.red   * 0.299f) +
+			                         (color.green * 0.587f) +
+						 (color.blue  * 0.114f);
+			dark = (grayscale >= 0.750f);
+		}
+
+		// Add the new CSS class.
+		gtk_widget_add_css_class(GTK_WIDGET(widget),
+			(likely(!dark) ? pIconInfo->css_class : dark_css_class_tbl[messageType]));
+#  else /* !GTK_CHECK_VERSION(4,0,0) */
 		// Remove all of our CSS classes first.
 		GtkStyleContext *const context = gtk_widget_get_style_context(GTK_WIDGET(widget));
-		static const IconInfo_t *const pIconInfo_tbl_end = &iconInfo_tbl[ARRAY_SIZE(iconInfo_tbl)];
 		for (const IconInfo_t *p = iconInfo_tbl; p < pIconInfo_tbl_end; p++) {
 			gtk_style_context_remove_class(context, p->css_class);
 		}
@@ -360,6 +389,7 @@ rp_message_widget_set_message_type(RpMessageWidget *widget, GtkMessageType messa
 		// Add the new CSS class.
 		gtk_style_context_add_class(context,
 			(likely(!dark) ? pIconInfo->css_class : dark_css_class_tbl[messageType]));
+#  endif /* GTK_CHECK_VERSION(4,0,0) */
 #else /* !GTK_CHECK_VERSION(3,0,0) */
 		GdkColor color;
 		color.pixel	 = pIconInfo->border_color;

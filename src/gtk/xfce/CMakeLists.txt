@@ -96,6 +96,7 @@ SET(${PROJECT_NAME}_SRCS
 	../gtk3/ThunarMenuProvider.cpp
 	../gtk3/ThunarPropertyPageProvider.cpp
 	../gtk3/MenuProviderCommon.c
+	../config/KeyManagerTab_gtk3.cpp
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_H}

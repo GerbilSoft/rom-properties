@@ -125,9 +125,13 @@ rp_achievement_item_set_property(GObject	*object,
 			break;
 		}
 
-		case PROP_DESCRIPTION:
-			g_set_str(&item->description, g_value_get_string(value));
+		case PROP_DESCRIPTION: {
+			const char *str = g_value_get_string(value);
+			if (g_strcmp0(item->description, str) != 0) {
+				g_set_str(&item->description, str);
+			}
 			break;
+		}
 
 		case PROP_UNLOCK_TIME:
 			item->unlock_time = g_value_get_int64(value);
@@ -215,7 +219,6 @@ rp_achievement_item_set_icon(RpAchievementItem *item, PIMGTYPE icon)
 	item->icon = PIMGTYPE_ref(icon);
 
 	g_object_notify_by_pspec(G_OBJECT(item), props[PROP_ICON]);
-
 }
 
 PIMGTYPE
@@ -231,9 +234,10 @@ void
 rp_achievement_item_set_description(RpAchievementItem *item, const char *description)
 {
 	g_return_if_fail(RP_IS_ACHIEVEMENT_ITEM(item));
-	g_set_str(&item->description, description);
-	g_object_notify_by_pspec(G_OBJECT(item), props[PROP_DESCRIPTION]);
-
+	if (g_strcmp0(item->description, description) != 0) {
+		g_set_str(&item->description, description);
+		g_object_notify_by_pspec(G_OBJECT(item), props[PROP_DESCRIPTION]);
+	}
 }
 
 const char*
@@ -250,9 +254,10 @@ rp_achievement_item_set_unlock_time(RpAchievementItem *item, time_t unlock_time)
 {
 	g_return_if_fail(RP_IS_ACHIEVEMENT_ITEM(item));
 
-	item->unlock_time = (gint64)unlock_time;
-	g_object_notify_by_pspec(G_OBJECT(item), props[PROP_UNLOCK_TIME]);
-
+	if (item->unlock_time != (gint64)unlock_time) {
+		item->unlock_time = (gint64)unlock_time;
+		g_object_notify_by_pspec(G_OBJECT(item), props[PROP_UNLOCK_TIME]);
+	}
 }
 
 time_t

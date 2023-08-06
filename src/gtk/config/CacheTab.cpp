@@ -128,7 +128,7 @@ rp_cache_tab_class_init(RpCacheTabClass *klass)
 		"\tborder: solid @gsrp_color_info;\n"
 		"}\n";
 
-	GTK_CSS_PROVIDER_LOAD_FROM_DATA(GTK_CSS_PROVIDER(provider), css_ProgressBar, -1);
+	GTK_CSS_PROVIDER_LOAD_FROM_STRING(GTK_CSS_PROVIDER(provider), css_ProgressBar);
 	g_object_unref(provider);
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 }

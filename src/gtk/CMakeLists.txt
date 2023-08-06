@@ -149,10 +149,14 @@ SET(${PROJECT_NAME}_H
 SET(${PROJECT_NAME}_GTK4MIN_SRCS
 	LanguageComboBoxItem.c
 	config/AchievementItem.c
+	#config/KeyManagerTab_gtk4.cpp	# FIXME: Not working...
+	config/KeyManagerTab_gtk3.cpp
+	config/KeyStoreItem.c
 	)
 SET(${PROJECT_NAME}_GTK4MIN_H
 	LanguageComboBoxItem.h
 	config/AchievementItem.h
+	config/KeyStoreItem.h
 	)
 
 IF(ENABLE_DECRYPTION)
@@ -164,6 +168,7 @@ IF(ENABLE_DECRYPTION)
 	SET(${PROJECT_NAME}_H
 		${${PROJECT_NAME}_H}
 		config/KeyManagerTab.hpp
+		config/KeyManagerTab_p.hpp
 		config/KeyStoreGTK.hpp
 		)
 ENDIF(ENABLE_DECRYPTION)
