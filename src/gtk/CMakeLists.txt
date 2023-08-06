@@ -159,11 +159,13 @@ IF(ENABLE_DECRYPTION)
 	SET(${PROJECT_NAME}_SRCS
 		${${PROJECT_NAME}_SRCS}
 		config/KeyManagerTab.cpp
+		config/KeyManagerTab_gtk3.cpp
 		config/KeyStoreGTK.cpp
 		)
 	SET(${PROJECT_NAME}_H
 		${${PROJECT_NAME}_H}
 		config/KeyManagerTab.hpp
+		config/KeyManagerTab_p.hpp
 		config/KeyStoreGTK.hpp
 		)
 ENDIF(ENABLE_DECRYPTION)
