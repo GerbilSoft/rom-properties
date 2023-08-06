@@ -16,7 +16,7 @@
  * @param userdata Column ID
  * @return -1, 0, or 1.
  */
-gint sort_RFT_LISTDATA_nocase(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, G_GNUC_UNUSED gpointer userdata)
+gint sort_RFT_LISTDATA_nocase(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer userdata)
 {
 	gint ret = 0;
 	gchar *strA, *strB;
@@ -53,7 +53,7 @@ gint sort_RFT_LISTDATA_nocase(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *
  * @param userdata Column ID
  * @return -1, 0, or 1 (like strcmp())
  */
-gint sort_RFT_LISTDATA_numeric(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, G_GNUC_UNUSED gpointer userdata)
+gint sort_RFT_LISTDATA_numeric(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer userdata)
 {
 	gint ret = 0;
 
