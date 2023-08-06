@@ -122,6 +122,11 @@ SET(${PROJECT_NAME}_H
 	nautilus-extension-mini.h
 	../gtk3/MenuProviderCommon.h
 	)
+IF(ENABLE_DECRYPTION)
+	# FIXME: Editing keys in the GTK4 version causes crashes.
+	#SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} ../config/KeyManagerTab_gtk4.cpp)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} ../config/KeyManagerTab_gtk3.cpp)
+ENDIF(ENABLE_DECRYPTION)
 
 IF(HAVE_GSOUND)
 	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} ../MessageSound.cpp)

@@ -96,7 +96,6 @@ SET(${PROJECT_NAME}_SRCS
 	../gtk3/ThunarMenuProvider.cpp
 	../gtk3/ThunarPropertyPageProvider.cpp
 	../gtk3/MenuProviderCommon.c
-	../config/KeyManagerTab_gtk3.cpp
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_H}
@@ -107,6 +106,9 @@ SET(${PROJECT_NAME}_H
 	../gtk3/thunarx-mini.h
 	../gtk3/MenuProviderCommon.h
 	)
+IF(ENABLE_DECRYPTION)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} ../config/KeyManagerTab_gtk3.cpp)
+ENDIF(ENABLE_DECRYPTION)
 
 IF(HAVE_GSOUND OR (HAVE_LIBCANBERRA AND HAVE_LIBCANBERRA_GTK2))
 	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} ../MessageSound.cpp)

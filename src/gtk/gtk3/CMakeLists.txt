@@ -118,7 +118,6 @@ SET(${PROJECT_NAME}_SRCS
 	ThunarPropertyPageProvider.cpp
 	ThunarMenuProvider.cpp
 	MenuProviderCommon.c
-	../config/KeyManagerTab_gtk3.cpp
 	)
 SET(${PROJECT_NAME}_H
 	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_H}
@@ -134,6 +133,9 @@ SET(${PROJECT_NAME}_H
 	mime-types.convert-to-png.h
 	MenuProviderCommon.h
 	)
+IF(ENABLE_DECRYPTION)
+	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} ../config/KeyManagerTab_gtk3.cpp)
+ENDIF(ENABLE_DECRYPTION)
 
 IF(HAVE_GSOUND OR (HAVE_LIBCANBERRA AND HAVE_LIBCANBERRA_GTK3))
 	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} ../MessageSound.cpp)
