@@ -168,9 +168,8 @@ void keyStore_key_changed_signal_handler(RpKeyStoreGTK *keyStore, int sectIdx, i
 
 	const KeyStoreUI::Key *const key = keyStoreUI->getKey(sectIdx, keyIdx);
 	assert(key != nullptr);
-	if (!key) {
+	if (!key)
 		return;
-	}
 
 	const char *icon_name = nullptr;
 	if (/*(int)key->status >= 0 &&*/ (int)key->status < ARRAY_SIZE_I(is_valid_icon_name_tbl)) {
