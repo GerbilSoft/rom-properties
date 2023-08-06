@@ -201,16 +201,21 @@ bind_listitem_cb(GtkListItemFactory *factory, GtkListItem *list_item, gpointer u
 
 		case KEY_COL_VALUE: {
 			// Value
-			// NOTE: GtkEditableLabel doesn't like nullptr strings.
-			const char *s_value = rp_key_store_item_get_value(ksitem);
-			// NOTE: +1 because a default GtkEditableLabel will return NULL (0).
-			const int idx = likely(!rp_key_store_item_get_is_section(ksitem))
-				? rp_key_store_item_get_flat_idx(ksitem)+1
-				: 0;
+			if (likely(!rp_key_store_item_get_is_section(ksitem))) {
+				// NOTE: GtkEditableLabel doesn't like nullptr strings.
+				const char *s_value = rp_key_store_item_get_value(ksitem);
+				// NOTE: +1 because a default GtkEditableLabel will return NULL (0).
+				const int idx = likely(!rp_key_store_item_get_is_section(ksitem))
+					? rp_key_store_item_get_flat_idx(ksitem)+1
+					: 0;
 
-			printf("editable set text: %s\n", s_value);
-			gtk_editable_set_text(GTK_EDITABLE(widget), s_value ? s_value : "");
-			g_object_set_qdata(G_OBJECT(widget), KeyManagerTab_flatKeyIdx_quark, GINT_TO_POINTER(idx));
+				gtk_editable_set_text(GTK_EDITABLE(widget), s_value ? s_value : "");
+				g_object_set_qdata(G_OBJECT(widget), KeyManagerTab_flatKeyIdx_quark, GINT_TO_POINTER(idx));
+				gtk_editable_set_editable(GTK_EDITABLE(widget), true);
+			} else {
+				// Section header.
+				gtk_editable_set_editable(GTK_EDITABLE(widget), false);
+			}
 			break;
 		}
 
