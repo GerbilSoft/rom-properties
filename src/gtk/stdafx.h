@@ -123,7 +123,12 @@
 #    include <cairo.h>
 #    include <cairo-gobject.h>
 #  else /* !RP_GTK_USE_CAIRO */
-#    include <gdk/gdkpixbuf.h>
+#    if GTK_CHECK_VERSION(4,11,3)
+// TODO: Find a suitable replacement for GdkPixbuf.
+#      include <gdk/deprecated/gdkpixbuf.h>
+#    else /* !GTK_CHECK_VERSION(4,11,3) */
+#      include <gdk/gdkpixbuf.h>
+#    endif /* GTK_CHECK_VERSION(4,11,3) */
 #  endif /* RP_GTK_USE_CAIRO */
 #endif /* !RP_IS_GLIB_ONLY */
 
