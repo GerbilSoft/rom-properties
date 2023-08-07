@@ -75,7 +75,7 @@ int measureTextSize(HWND hWnd, HFONT hFont, const TCHAR *tstr, LPSIZE lpSize)
 		return -EINVAL;
 
 	SIZE size_total = {0, 0};
-	AutoGetDC hDC(hWnd, hFont);
+	AutoGetDC_font hDC(hWnd, hFont);
 
 	// Find the next newline.
 	do {

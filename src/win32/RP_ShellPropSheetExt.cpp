@@ -27,7 +27,7 @@
 
 // libwin32ui
 #include "libwin32ui/AutoGetDC.hpp"
-using LibWin32UI::AutoGetDC;
+using LibWin32UI::AutoGetDC_font;
 using LibWin32UI::WTSSessionNotification;
 
 // NOTE: Using "RomDataView" for the libi18n context, since that
@@ -574,7 +574,7 @@ int RP_ShellPropSheetExt_Private::initBitfield(_In_ HWND hWndTab,
 	// Dialog font and device context.
 	// NOTE: Using the parent dialog's font.
 	HFONT hFontDlg = GetWindowFont(hDlgSheet);
-	AutoGetDC hDC(hWndTab, hFontDlg);
+	AutoGetDC_font hDC(hWndTab, hFontDlg);
 
 	// Create a grid of checkboxes.
 	const auto &bitfieldDesc = field.desc.bitfield;
@@ -853,7 +853,7 @@ int RP_ShellPropSheetExt_Private::initListData(_In_ HWND hWndTab,
 
 	// Dialog font and device context.
 	// NOTE: Using the parent dialog's font.
-	AutoGetDC hDC(hListView, hFontDlg);
+	AutoGetDC_font hDC(hListView, hFontDlg);
 
 	// Format table.
 	// All values are known to fit in uint8_t.
@@ -1444,7 +1444,7 @@ void RP_ShellPropSheetExt_Private::updateMulti(uint32_t user_lc)
 
 			// Dialog font and device context.
 			// NOTE: Using the parent dialog's font.
-			AutoGetDC hDC(hListView, hFontDlg);
+			AutoGetDC_font hDC(hListView, hFontDlg);
 
 			if (listDataDesc.names) {
 				// Measure header text widths.
@@ -1684,7 +1684,7 @@ void RP_ShellPropSheetExt_Private::initDialog(void)
 	fontHandler.setWindow(hDlgSheet);
 
 	// Device context for text measurement
-	AutoGetDC hDC(hDlgSheet, GetWindowFont(hDlgSheet));
+	AutoGetDC_font hDC(hDlgSheet, GetWindowFont(hDlgSheet));
 
 	// Convert the bitfield description names to the
 	// native Windows encoding once.

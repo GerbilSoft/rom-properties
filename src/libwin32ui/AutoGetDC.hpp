@@ -17,29 +17,20 @@
 
 namespace LibWin32UI {
 
+// TODO: There should be a way to remove m_hFontOrig without making two separate classes.
+// ("compressed" pair or something)
+
 /**
- * GetDC() RAII wrapper.
+ * GetDC() RAII wrapper (no font)
  */
 class AutoGetDC
 {
 public:
 	explicit inline AutoGetDC(HWND hWnd)
 		: m_hWnd(hWnd)
-		, m_hFontOrig(nullptr)
-		, m_bAdjFont(false)
 	{
 		assert(hWnd != nullptr);
 		m_hDC = GetDC(hWnd);
-	}
-
-	explicit inline AutoGetDC(HWND hWnd, HFONT hFont)
-		: m_hWnd(hWnd)
-		, m_bAdjFont(true)
-	{
-		assert(hWnd != nullptr);
-		assert(hFont != nullptr);
-		m_hDC = GetDC(m_hWnd);
-		m_hFontOrig = (m_hDC ? SelectFont(m_hDC, hFont) : nullptr);
 	}
 
 	inline ~AutoGetDC() {
@@ -47,9 +38,6 @@ public:
 			return;
 		}
 
-		if (m_bAdjFont) {
-			SelectFont(m_hDC, m_hFontOrig);
-		}
 		ReleaseDC(m_hWnd, m_hDC);
 	}
 
@@ -71,8 +59,51 @@ private:
 private:
 	HWND m_hWnd;
 	HDC m_hDC;
+};
+
+/**
+ * GetDC() RAII wrapper (with font)
+ */
+class AutoGetDC_font
+{
+public:
+	explicit inline AutoGetDC_font(HWND hWnd, HFONT hFont)
+		: m_hWnd(hWnd)
+	{
+		assert(hWnd != nullptr);
+		assert(hFont != nullptr);
+		m_hDC = GetDC(m_hWnd);
+		m_hFontOrig = (m_hDC ? SelectFont(m_hDC, hFont) : nullptr);
+	}
+
+	inline ~AutoGetDC_font() {
+		if (!m_hDC) {
+			return;
+		}
+
+		SelectFont(m_hDC, m_hFontOrig);
+		ReleaseDC(m_hWnd, m_hDC);
+	}
+
+	inline operator HDC() {
+		return m_hDC;
+	}
+
+	// Disable copy/assignment constructors.
+#if __cplusplus >= 201103L
+public:
+	AutoGetDC_font(const AutoGetDC_font &) = delete;
+	AutoGetDC_font &operator=(const AutoGetDC_font &) = delete;
+#else /* __cplusplus < 201103L */
+private:
+	AutoGetDC_font(const AutoGetDC_font &);
+	AutoGetDC_font &operator=(const AutoGetDC_font &);
+#endif /* __cplusplus */
+
+private:
+	HWND m_hWnd;
+	HDC m_hDC;
 	HFONT m_hFontOrig;
-	bool m_bAdjFont;
 };
 
 } //namespace LibWin32UI

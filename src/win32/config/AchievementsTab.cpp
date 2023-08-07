@@ -26,7 +26,7 @@ using std::unique_ptr;
 
 // libwin32ui
 #include "libwin32ui/AutoGetDC.hpp"
-using LibWin32UI::AutoGetDC;
+using LibWin32UI::AutoGetDC_font;
 
 class AchievementsTabPrivate
 {
@@ -455,7 +455,7 @@ void AchievementsTabPrivate::reset(void)
 	// Maximum width for column 1.
 	// FIXME: Get auto-sizing working.
 	// FIXME: Newlines don't work in ListView on WinXP and wine-staging-5.18.
-	AutoGetDC hDC(hWndPropSheet, GetWindowFont(hWndPropSheet));
+	AutoGetDC_font hDC(hWndPropSheet, GetWindowFont(hWndPropSheet));
 	int col1Width = 0;
 
 	// Add the achievements.
