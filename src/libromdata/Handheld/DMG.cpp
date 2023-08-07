@@ -108,10 +108,10 @@ class DMGPrivate final : public RomDataPrivate
 
 		/**
 		 * Get a dmg_cart_type struct describing a cartridge type byte.
-		 * @param type Cartridge type byte.
-		 * @return dmg_cart_type struct.
+		 * @param type Cartridge type byte
+		 * @return dmg_cart_type struct
 		 */
-		static inline const dmg_cart_type& CartType(uint8_t type);
+		static inline dmg_cart_type CartType(uint8_t type);
 
 		/**
 		 * Convert the ROM size value to an actual size.
@@ -147,10 +147,9 @@ class DMGPrivate final : public RomDataPrivate
 		RomType romType;
 
 	public:
-		// ROM header.
+		// ROM header
 		DMG_RomHeader romHeader;
-
-		// GBX footer.
+		// GBX footer
 		GBX_Footer gbxFooter;
 
 		/**
@@ -160,8 +159,8 @@ class DMGPrivate final : public RomDataPrivate
 		 * later games take bytes away from the title field to use
 		 * for the CGB flag and the game ID.
 		 *
-		 * @param s_title	[out] Title.
-		 * @param s_gameID	[out] Game ID, or empty string if not available.
+		 * @param s_title	[out] Title
+		 * @param s_gameID	[out] Game ID, or empty string if not available
 		 */
 		void getTitleAndGameID(string &s_title, string &s_gameID) const;
 
@@ -305,17 +304,21 @@ uint32_t DMGPrivate::systemID(void) const
  * @param type Cartridge type byte.
  * @return dmg_cart_type struct.
  */
-inline const DMGPrivate::dmg_cart_type& DMGPrivate::CartType(uint8_t type)
+inline DMGPrivate::dmg_cart_type DMGPrivate::CartType(uint8_t type)
 {
-	static const dmg_cart_type unk = {DMG_Hardware::Unknown, 0};
+	// Check for low cartridge types.
 	if (type < ARRAY_SIZE(dmg_cart_types_start)) {
 		return dmg_cart_types_start[type];
 	}
+
+	// Check for high cartridge types. (closer to 0xFF)
 	const unsigned end_offset = 0x100u-ARRAY_SIZE(dmg_cart_types_end);
 	if (type>=end_offset) {
 		return dmg_cart_types_end[type-end_offset];
 	}
-	return unk;
+
+	// Not recognized.
+	return {DMG_Hardware::Unknown, 0};
 }
 
 /**
@@ -823,6 +826,7 @@ int DMG::loadFieldData(void)
 
 	// DMG ROM header, excluding the RST table.
 	const DMG_RomHeader *const romHeader = &d->romHeader;
+	const DMGPrivate::dmg_cart_type cart_type = DMGPrivate::CartType(romHeader->cart_type);
 
 	// DMG ROM header:
 	// - 12 regular fields.
@@ -900,7 +904,7 @@ int DMG::loadFieldData(void)
 
 	// Hardware
 	d->fields.addField_string(C_("DMG", "Hardware"),
-		DMGPrivate::dmg_hardware_names[(int)DMGPrivate::CartType(romHeader->cart_type).hardware]);
+		DMGPrivate::dmg_hardware_names[static_cast<int>(cart_type.hardware)]);
 
 	// Features
 	static const char *const feature_bitfield_names[] = {
@@ -913,7 +917,7 @@ int DMG::loadFieldData(void)
 	vector<string> *const v_feature_bitfield_names = RomFields::strArrayToVector_i18n(
 		"DMG|Features", feature_bitfield_names, ARRAY_SIZE(feature_bitfield_names));
 	d->fields.addField_bitfield(C_("DMG", "Features"),
-		v_feature_bitfield_names, 3, DMGPrivate::CartType(romHeader->cart_type).features);
+		v_feature_bitfield_names, 3, cart_type.features);
 
 	// ROM Size
 	const char *const rom_size_title = C_("DMG", "ROM Size");
@@ -939,9 +943,7 @@ int DMG::loadFieldData(void)
 		d->fields.addField_string(ram_size_title, C_("RomData", "Unknown"));
 	} else {
 		const uint8_t ram_size = DMGPrivate::dmg_ram_size[romHeader->ram_size];
-		if (ram_size == 0 &&
-		    DMGPrivate::CartType(romHeader->cart_type).hardware == DMGPrivate::DMG_Hardware::MBC2)
-		{
+		if (ram_size == 0 && cart_type.hardware == DMGPrivate::DMG_Hardware::MBC2) {
 			d->fields.addField_string(ram_size_title,
 				// tr: MBC2 internal memory - Not really RAM, but whatever.
 				C_("DMG", "512 x 4 bits"));
