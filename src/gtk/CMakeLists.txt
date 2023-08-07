@@ -62,7 +62,6 @@ FUNCTION(GDBUS_CODEGEN _outvar _prefix _xml)
 ENDFUNCTION(GDBUS_CODEGEN)
 
 # D-Bus bindings for NetworkManager.
-# NOTE: This has to be in this file, not the GTK+ CMakeLists.txt.
 GDBUS_CODEGEN(NetworkManager_GDBus_SRCS NetworkManager "${CMAKE_CURRENT_SOURCE_DIR}/../dbus/org.freedesktop.NetworkManager.xml")
 IF(ENABLE_ACHIEVEMENTS)
 	GDBUS_CODEGEN(Notifications_GDBus_SRCS Notifications "${CMAKE_CURRENT_SOURCE_DIR}/../dbus/org.freedesktop.Notifications.xml")
