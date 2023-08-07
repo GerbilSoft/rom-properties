@@ -131,7 +131,7 @@ struct ExtractParam {
 * @param romData RomData containing the images
 * @param extract Vector of image extraction parameters
 */
-static void ExtractImages(const RomData *romData, vector<ExtractParam>& extract) {
+static void ExtractImages(const RomData *romData, const vector<ExtractParam>& extract) {
 	const uint32_t supported = romData->supportedImageTypes();
 	for (const ExtractParam &p : extract) {
 		if (!p.filename) continue;
@@ -203,7 +203,7 @@ static void ExtractImages(const RomData *romData, vector<ExtractParam>& extract)
  * @param lc Language code (0 for default)
  * @param flags ROMOutput flags (see OutputFlags)
  */
-static void DoFile(const TCHAR *filename, bool json, vector<ExtractParam>& extract,
+static void DoFile(const TCHAR *filename, bool json, const vector<ExtractParam>& extract,
 	uint32_t lc = 0, unsigned int flags = 0)
 {
 	// FIXME: Make T2U8c() unnecessary here.
