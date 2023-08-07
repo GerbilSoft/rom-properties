@@ -248,7 +248,7 @@ IF(NOT CMAKE_SYSTEM MATCHES "Linux")
 	ENDFOREACH(FLAG_REMOVE)
 ENDIF(NOT CMAKE_SYSTEM MATCHES "Linux")
 
-# Check for -Og.
+# Debug builds: Check for -Og.
 # This flag was added in gcc-4.8, and enables optimizations that
 # don't interfere with debugging.
 CHECK_C_COMPILER_FLAG("-Og" CFLAG_OPTIMIZE_DEBUG)
@@ -258,11 +258,27 @@ ELSE(CFLAG_OPTIMIZE_DEBUG)
 	SET(CFLAG_OPTIMIZE_DEBUG "-O0")
 ENDIF(CFLAG_OPTIMIZE_DEBUG)
 
+# Release builds: Check for -ftree-vectorize.
+# On i386, also add -mstackrealign to ensure proper stack alignment.
+CHECK_C_COMPILER_FLAG("-ftree-vectorize" CFLAG_OPTIMIZE_FTREE_VECTORIZE)
+IF(CFLAG_OPTIMIZE_FTREE_VECTORIZE)
+	IF(arch MATCHES "^(i.|x)86$" AND NOT CMAKE_CL_64 AND ("${CMAKE_SIZEOF_VOID_P}" EQUAL 4))
+		# i386: "-mstackrealign" is required.
+		CHECK_C_COMPILER_FLAG("-mstackrealign" CFLAG_OPTIMIZE_MSTACKREALIGN)
+		IF(CFLAG_OPTIMIZE_MSTACK_REALIGN)
+			SET(CFLAGS_VECTORIZE "-ftree-vectorize -mstackrealign")
+		ENDIF(CFLAG_OPTIMIZE_MSTACKREALIGN)
+	ELSE()
+		# Not i386. Add "-ftree-vectorize" without "-mstackrealign".
+		SET(CFLAGS_VECTORIZE "-ftree-vectorize")
+	ENDIF()
+ENDIF(CFLAG_OPTIMIZE_FTREE_VECTORIZE)
+
 # Debug/release flags.
 SET(RP_C_FLAGS_DEBUG		"${CFLAG_OPTIMIZE_DEBUG} -ggdb -DDEBUG -D_DEBUG")
 SET(RP_CXX_FLAGS_DEBUG		"${CFLAG_OPTIMIZE_DEBUG} -ggdb -DDEBUG -D_DEBUG")
-SET(RP_C_FLAGS_RELEASE		"-O2 -ggdb -DNDEBUG")
-SET(RP_CXX_FLAGS_RELEASE	"-O2 -ggdb -DNDEBUG")
+SET(RP_C_FLAGS_RELEASE		"-O2 -ggdb -DNDEBUG ${CFLAGS_VECTORIZE}")
+SET(RP_CXX_FLAGS_RELEASE	"-O2 -ggdb -DNDEBUG ${CFLAGS_VECTORIZE}")
 
 # Unset temporary variables.
 UNSET(CFLAG_OPTIMIZE_DEBUG)
