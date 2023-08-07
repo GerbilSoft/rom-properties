@@ -10,9 +10,11 @@
 #include "AchievementsTab.hpp"
 #include "RpImageWin32.hpp"
 #include "res/resource.h"
+#include "RomDataFormat.hpp"
 
 // librpbase, librpfile, librptexture
 #include "librpbase/Achievements.hpp"
+#include "librpbase/RomFields.hpp"
 #include "librpbase/img/RpPng.hpp"
 #include "librpfile/win32/RpFile_windres.hpp"
 #include "librptexture/img/rp_image.hpp"
@@ -487,41 +489,15 @@ void AchievementsTabPrivate::reset(void)
 		ListView_InsertItem(hListView, &item);
 
 		// Column 1: Unlock time
-		TCHAR dateTimeStr[256];
-		dateTimeStr[0] = _T('\0');
+		tstring ts_timestamp;
 		if (timestamp != -1) {
-			int cchBuf = _countof(dateTimeStr);
-
-			SYSTEMTIME st;
-			UnixTimeToSystemTime(timestamp, &st);
-
-			// Date portion
-			int ret = GetDateFormat(
-				MAKELCID(LOCALE_USER_DEFAULT, SORT_DEFAULT),
-				DATE_SHORTDATE,
-				&st, nullptr, dateTimeStr, cchBuf);
-			if (ret > 0) {
-				int start_pos = ret-1;
-				cchBuf -= (ret-1);
-
-				// Add a space.
-				dateTimeStr[start_pos] = _T(' ');
-				start_pos++;
-				cchBuf--;
-
-				// Time portion
-				int ret = GetTimeFormat(
-					MAKELCID(LOCALE_USER_DEFAULT, SORT_DEFAULT),
-					0, &st, nullptr, &dateTimeStr[start_pos], cchBuf);
-				if (ret <= 0) {
-					dateTimeStr[0] = _T('\0');
-				}
-			}
+			ts_timestamp = formatDateTime(timestamp,
+				RomFields::RFT_DATETIME_HAS_DATE | RomFields::RFT_DATETIME_HAS_TIME);
 		}
 
 		item.mask = LVIF_TEXT;
 		item.iSubItem = 1;
-		item.pszText = dateTimeStr;
+		item.pszText = const_cast<LPTSTR>(ts_timestamp.c_str());
 		ListView_SetItem(hListView, &item);
 	}
 
