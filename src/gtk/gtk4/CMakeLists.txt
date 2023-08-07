@@ -112,7 +112,7 @@ SET(${PROJECT_NAME}_SRCS
 	../gtk3/MenuProviderCommon.c
 	)
 SET(${PROJECT_NAME}_H
-	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_H}
+	${${PROJECT_NAME}_H} ${${PROJECT_NAME}_H}
 	${${PROJECT_NAME}_GTK4MIN_H}
 	../plugin-helper.h
 	NautilusPlugin.hpp
@@ -124,7 +124,8 @@ SET(${PROJECT_NAME}_H
 	)
 IF(ENABLE_DECRYPTION)
 	# FIXME: Editing keys in the GTK4 version causes crashes.
-	#SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} ../config/KeyManagerTab_gtk4.cpp)
+	#SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} ../config/KeyManagerTab_gtk4.cpp ../config/KeyStoreItem.c)
+	#SET(${PROJECT_NAME}_H    ${${PROJECT_NAME}_H} ../config/KeyStoreItem.h)
 	SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} ../config/KeyManagerTab_gtk3.cpp)
 ENDIF(ENABLE_DECRYPTION)
 
@@ -134,7 +135,7 @@ IF(HAVE_GSOUND)
 ENDIF(HAVE_GSOUND)
 
 IF(BUILD_GTK4)
-	ADD_LIBRARY(${PROJECT_NAME} MODULE ${${PROJECT_NAME}_SRCS})
+	ADD_LIBRARY(${PROJECT_NAME} MODULE ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_H})
 	IF(ENABLE_PCH)
 		TARGET_PRECOMPILE_HEADERS(${PROJECT_NAME} PRIVATE
 			"${RP_CONFIG_LIBC_H}" "${RP_CXX11_COMPAT_H}"

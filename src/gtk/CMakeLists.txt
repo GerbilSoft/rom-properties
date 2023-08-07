@@ -149,12 +149,10 @@ SET(${PROJECT_NAME}_H
 SET(${PROJECT_NAME}_GTK4MIN_SRCS
 	LanguageComboBoxItem.c
 	config/AchievementItem.c
-	config/KeyStoreItem.c
 	)
 SET(${PROJECT_NAME}_GTK4MIN_H
 	LanguageComboBoxItem.h
 	config/AchievementItem.h
-	config/KeyStoreItem.h
 	)
 
 IF(ENABLE_DECRYPTION)
