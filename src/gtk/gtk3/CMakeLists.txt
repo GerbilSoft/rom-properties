@@ -120,7 +120,7 @@ SET(${PROJECT_NAME}_SRCS
 	MenuProviderCommon.c
 	)
 SET(${PROJECT_NAME}_H
-	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_H}
+	${${PROJECT_NAME}_H} ${${PROJECT_NAME}_H}
 	../plugin-helper.h
 	NautilusPlugin.hpp
 	NautilusPropertyPageProvider.hpp

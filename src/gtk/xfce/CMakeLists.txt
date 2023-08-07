@@ -88,7 +88,7 @@ UNSET(arch)
 
 # Sources and headers. (XFCE-specific)
 SET(${PROJECT_NAME}_SRCS
-	${${PROJECT_NAME}_CSRCS} ${${PROJECT_NAME}_SRCS}
+	${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_SRCS}
 	${${PROJECT_NAME}-notify_SRCS} ${${PROJECT_NAME}-notify_H}
 	${${PROJECT_NAME}_IFUNC_SRCS}
 	${${PROJECT_NAME}_SSSE3_SRCS}
@@ -98,7 +98,7 @@ SET(${PROJECT_NAME}_SRCS
 	../gtk3/MenuProviderCommon.c
 	)
 SET(${PROJECT_NAME}_H
-	${${PROJECT_NAME}_CH} ${${PROJECT_NAME}_H}
+	${${PROJECT_NAME}_H} ${${PROJECT_NAME}_H}
 	../plugin-helper.h
 	../gtk3/ThunarPlugin.hpp
 	../gtk3/ThunarMenuProvider.hpp
