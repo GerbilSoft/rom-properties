@@ -77,7 +77,7 @@ class DMGPrivate final : public RomDataPrivate
 			MBC5,
 			MBC6,
 			MBC7,
-			MMM01,
+			MMM01,	// multicart: real header is in the last 32 KB
 			HUC1,
 			HUC3,
 			TAMA5,
@@ -151,6 +151,9 @@ class DMGPrivate final : public RomDataPrivate
 		DMG_RomHeader romHeader;
 		// GBX footer
 		GBX_Footer gbxFooter;
+
+		// ROM copier header offset
+		unsigned int copier_offset;
 
 		/**
 		 * Get the title and game ID.
@@ -264,6 +267,7 @@ const DMGPrivate::dmg_cart_type DMGPrivate::dmg_cart_types_end[] = {
 DMGPrivate::DMGPrivate(IRpFile *file)
 	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
+	, copier_offset(0)
 {
 	// Clear the various structs.
 	memset(&romHeader, 0, sizeof(romHeader));
@@ -562,10 +566,11 @@ DMG::DMG(IRpFile *file)
 	// Read the ROM header.
 	// We're reading extra data in case the ROM has an extra
 	// 512-byte copier header present.
-	union {
+	typedef union _header_read_t {
 		uint8_t   u8[ 0x300 + sizeof(d->romHeader)];
 		uint32_t u32[(0x300 + sizeof(d->romHeader))/4];
-	} header;
+	} header_read_t;
+	header_read_t header;
 	size_t size = d->file->read(header.u8, sizeof(header.u8));
 	if (size < (0x100 + sizeof(d->romHeader))) {
 		UNREF_AND_NULL_NOCHK(d->file);
@@ -582,22 +587,47 @@ DMG::DMG(IRpFile *file)
 		0		// szFile (not needed for DMG)
 	};
 	d->romType = static_cast<DMGPrivate::RomType>(isRomSupported_static(&info));
-
 	d->isValid = ((int)d->romType >= 0);
-	if (d->isValid) {
-		// Save the header for later.
-		// TODO: Save the RST table?
-
-		// Check the first DWORD of the Nintendo logo
-		// to determine if a copier header is present.
-		if (likely(header.u32[0x104/4] == cpu_to_be32(0xCEED6666))) {
-			memcpy(&d->romHeader, &header.u8[0x100], sizeof(d->romHeader));
-		} else {
-			memcpy(&d->romHeader, &header.u8[0x300], sizeof(d->romHeader));
-		}
-	} else {
+	if (!d->isValid) {
 		UNREF_AND_NULL_NOCHK(d->file);
 		return;
+	}
+
+	// Save the header for later.
+	// TODO: Save the RST table?
+
+	// Check the first DWORD of the Nintendo logo
+	// to determine if a copier header is present.
+	if (unlikely(header.u32[0x104/4] != cpu_to_be32(0xCEED6666))) {
+		// No Nintendo logo. Assume a copier header is present.
+		d->copier_offset = 0x200;
+	}
+	int64_t filesize = d->file->size() - d->copier_offset;
+
+	bool mmm01_found = false;
+	if (filesize >= 1048576) {
+		// If >= 1 MB, check for an MMM01 menu header at 0xF8000.
+		header_read_t mmm01_header;
+		size = d->file->seekAndRead(d->copier_offset + 1048576 - 32768, mmm01_header.u8, sizeof(mmm01_header.u8));
+		if (size == sizeof(mmm01_header)) {
+			const DetectInfo mmm01_info = {
+				{0, static_cast<unsigned int>(size), mmm01_header.u8},
+				nullptr,	// ext (not needed for DMG)
+				0		// szFile (not needed for DMG)
+			};
+			DMGPrivate::RomType mmm01_romType = static_cast<DMGPrivate::RomType>(isRomSupported_static(&mmm01_info));
+			if ((int)mmm01_romType >= 0) {
+				// Found an MMM01 multicart menu header.
+				// TODO: Verify MMM01 hardware type?
+				d->romType = mmm01_romType;
+				memcpy(&d->romHeader, &mmm01_header.u8[0x100], sizeof(d->romHeader));
+				mmm01_found = true;
+			}
+		}
+	}
+	if (!mmm01_found) {
+		// No MMM01 multicart header. Use the regular header.
+		memcpy(&d->romHeader, &header.u8[d->copier_offset + 0x100], sizeof(d->romHeader));
 	}
 
 	// Attempt to read the GBX footer.
