@@ -852,7 +852,7 @@ DMG::DMG(IRpFile *file)
 				reinterpret_cast<const DMG_RomHeader*>(&mmm01_header.u8[0x100]);
 			const DMGPrivate::dmg_cart_type cart_type = DMGPrivate::CartType(pMmm01RomHeader->cart_type);
 			if (cart_type.hardware == DMGPrivate::DMG_Hardware::MMM01 ||
-			    pMmm01RomHeader->cart_type == 0x11) /* MBC3 with no accessories */
+			    pMmm01RomHeader->cart_type == 0x11) /* MBC3 with no extra features */
 			{
 				// Valid hardware type byte.
 				d->romType = mmm01_romType;
