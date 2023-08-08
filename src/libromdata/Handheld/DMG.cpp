@@ -377,8 +377,8 @@ inline DMGPrivate::dmg_cart_type DMGPrivate::CartType(uint8_t type)
  */
 inline int DMGPrivate::RomSize(uint8_t type)
 {
-	static const int rom_size[] = {32, 64, 128, 256, 512, 1024, 2048, 4096};
-	static const int rom_size_52[] = {1152, 1280, 1536};
+	static const uint16_t rom_size[] = {32, 64, 128, 256, 512, 1024, 2048, 4096};
+	static const uint16_t rom_size_52[] = {1152, 1280, 1536};
 	if (type < ARRAY_SIZE(rom_size)) {
 		return rom_size[type];
 	} else if (type >= 0x52 && type < 0x52+ARRAY_SIZE(rom_size_52)) {
