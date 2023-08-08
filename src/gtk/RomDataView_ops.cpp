@@ -358,9 +358,7 @@ rp_rom_data_view_doRomOp_stdop(RpRomDataView *page, int id)
 	g_signal_connect(fileDialog, "response", G_CALLBACK(rp_rom_data_view_doRomOp_stdop_response), page);
 	gtk_window_set_transient_for(GTK_WINDOW(fileDialog), parent);
 	gtk_window_set_modal(GTK_WINDOW(fileDialog), true);
-#if !GTK_CHECK_VERSION(4,0,0)
-	gtk_widget_show(GTK_WIDGET(fileDialog));
-#endif /* !GTK_CHECK_VERSION(4,0,0) */
+	gtk_window_present(GTK_WINDOW(fileDialog));
 
 	// GtkFileChooserDialog will send the "response" signal when the dialog is closed.
 }

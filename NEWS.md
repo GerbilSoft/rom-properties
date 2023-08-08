@@ -29,6 +29,8 @@
   * DMGSpecialCases: Fix an incorrect bounds check for CGB special cases.
   * Windows: rp-config's AchievementsTab incorrectly showed timestamps in UTC.
     They are now displayed in the local timezone.
+  * GTK4 rp-config: Fix an issue where the Key Manager tab didn't show the
+    "Open" dialog properly.
 
 * Other changes:
   * Nintendo3DS: The "Options" menu no longer shows a grayed-out "Extract SRL"
