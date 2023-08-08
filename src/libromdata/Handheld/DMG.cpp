@@ -824,7 +824,7 @@ DMG::DMG(IRpFile *file)
 	int64_t filesize = d->file->size() - d->copier_offset;
 
 	d->is_mmm01_multicart = false;
-	if (filesize >= 1048576) {
+	if (filesize >= 1048576 + d->copier_offset) {
 		// If >= 1 MB, check for an MMM01 menu header at 0xF8000.
 		header_read_t mmm01_header;
 		size = d->file->seekAndRead(d->copier_offset + 1048576 - 32768, mmm01_header.u8, sizeof(mmm01_header.u8));
