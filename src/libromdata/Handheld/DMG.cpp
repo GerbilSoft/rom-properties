@@ -824,7 +824,7 @@ DMG::DMG(IRpFile *file)
 	const int64_t filesize = d->file->size() - d->copier_offset;
 
 	// Check for MMM01 menu headers at 0xF8000 (1 MiB) and 0x78000 (512 KiB).
-	// NOTE: 512 KiB versions indicates MBC3, not MMM01, in the menu bank.
+	// NOTE: 512 KiB versions indicates MBC3 (0x11), not MMM01, in the menu bank.
 	// TODO: 256 KiB version has a menu at 0x00000, not the expected 0x38000.
 	static const unsigned int mmm01_rom_size_check[] = {1048576U, 524288U};
 	d->is_mmm01_multicart = false;
@@ -852,7 +852,7 @@ DMG::DMG(IRpFile *file)
 				reinterpret_cast<const DMG_RomHeader*>(&mmm01_header.u8[0x100]);
 			const DMGPrivate::dmg_cart_type cart_type = DMGPrivate::CartType(pMmm01RomHeader->cart_type);
 			if (cart_type.hardware == DMGPrivate::DMG_Hardware::MMM01 ||
-			    cart_type.hardware == DMGPrivate::DMG_Hardware::MBC3)
+			    pMmm01RomHeader->cart_type == 0x11) /* MBC3 with no accessories */
 			{
 				// Valid hardware type byte.
 				d->romType = mmm01_romType;
