@@ -823,26 +823,34 @@ DMG::DMG(IRpFile *file)
 	}
 	const int64_t filesize = d->file->size() - d->copier_offset;
 
+	// Check for MMM01 menu headers at 0xF8000 (1 MiB) and 0x78000 (512 KiB).
+	// NOTE: 512 KiB versions indicates MBC3, not MMM01, in the menu bank.
+	static const unsigned int mmm01_rom_size_check[] = {1048576, 524288};
 	d->is_mmm01_multicart = false;
-	if (filesize >= 1048576) {
-		// If >= 1 MB, check for an MMM01 menu header at 0xF8000.
+	for (unsigned int mmm01_rom_size : mmm01_rom_size_check) {
+		if (filesize < mmm01_rom_size)
+			continue;
+
+		// Check for an MMM01 menu header at 0xF8000 or 0x78000.
 		header_read_t mmm01_header;
-		size = d->file->seekAndRead(d->copier_offset + 1048576 - 32768, mmm01_header.u8, sizeof(mmm01_header.u8));
-		if (size == sizeof(mmm01_header)) {
-			const DetectInfo mmm01_info = {
-				{0, static_cast<unsigned int>(size), mmm01_header.u8},
-				nullptr,	// ext (not needed for DMG)
-				0		// szFile (not needed for DMG)
-			};
-			DMGPrivate::RomType mmm01_romType = static_cast<DMGPrivate::RomType>(isRomSupported_static(&mmm01_info));
-			if ((int)mmm01_romType >= 0) {
-				// Found an MMM01 multicart menu header.
-				// NOTE: Some MMM01 multicarts, e.g. "Mani 4 in 1 - Takahashi Meijin no Bouken-jima II",
-				// don't have the cart_type flag set to MMM01. Don't check the cart_type flag.
-				d->romType = mmm01_romType;
-				memcpy(&d->romHeader, &mmm01_header.u8[0x100], sizeof(d->romHeader));
-				d->is_mmm01_multicart = true;
-			}
+		size = d->file->seekAndRead(mmm01_rom_size + d->copier_offset - 32768, mmm01_header.u8, sizeof(mmm01_header.u8));
+		if (size != sizeof(mmm01_header))
+			continue;
+
+		const DetectInfo mmm01_info = {
+			{0, static_cast<unsigned int>(size), mmm01_header.u8},
+			nullptr,	// ext (not needed for DMG)
+			0		// szFile (not needed for DMG)
+		};
+		DMGPrivate::RomType mmm01_romType = static_cast<DMGPrivate::RomType>(isRomSupported_static(&mmm01_info));
+		if ((int)mmm01_romType >= 0) {
+			// Found an MMM01 multicart menu header.
+			// NOTE: Some MMM01 multicarts, e.g. "Mani 4 in 1 - Takahashi Meijin no Bouken-jima II",
+			// don't have the cart_type flag set to MMM01. Don't check the cart_type flag.
+			d->romType = mmm01_romType;
+			memcpy(&d->romHeader, &mmm01_header.u8[0x100], sizeof(d->romHeader));
+			d->is_mmm01_multicart = true;
+			break;
 		}
 	}
 	if (!d->is_mmm01_multicart) {
@@ -1101,8 +1109,10 @@ int DMG::loadFieldData(void)
 	d->addFields_romHeader(romHeader);
 
 	// Check if this might be an MBC1 multicart.
+	// TODO: "Mani 4 in 1 - Tetris + Alleyway + Yakuman + Tennis (China) (Ja).gb" is MBC3M with 32 KB banks?
+	const int64_t filesize = d->file->size() - d->copier_offset;
 	const bool may_be_mbc1m = (cart_type.hardware == DMGPrivate::DMG_Hardware::MBC1) &&
-				  (d->file->size() >= 1048576 + d->copier_offset);
+				  (filesize >= 1048576);
 	if (d->is_mmm01_multicart || may_be_mbc1m) {
 		// MMM01 multicart, or possibly an MBC1M multicart.
 		// Check for additional ROM headers.
@@ -1123,7 +1133,16 @@ int DMG::loadFieldData(void)
 		// Base address depends on multicart type.
 		const unsigned int base_addr = (d->is_mmm01_multicart) ? 0x00000 : 0x40000;
 
-		for (unsigned int addr = base_addr + d->copier_offset; addr < 0x100000; addr += 0x40000) {
+		unsigned int bank_increment;
+		if (d->is_mmm01_multicart) {
+			// MMC01 bank increment is 0x40000 for 1 MiB carts; 0x20000 for 512 KiB carts
+			bank_increment = (filesize >= 1048576) ? 0x40000 : 0x20000;
+		} else {
+			// MBC1M bank increment is 0x40000 for 1 MiB carts.
+			bank_increment = 0x40000;
+		}
+
+		for (unsigned int addr = base_addr + d->copier_offset; addr < filesize; addr += bank_increment) {
 			size_t size = d->file->seekAndRead(addr, mmm01_header.u8, sizeof(mmm01_header.u8));
 			if (size == sizeof(mmm01_header)) {
 				d->romType = static_cast<DMGPrivate::RomType>(isRomSupported_static(&info));
