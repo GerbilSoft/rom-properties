@@ -59,6 +59,13 @@ typedef enum {
 
 static GParamSpec *props[PROP_LAST];
 
+// NOTE: Don't make these static. They're needed in RomDataView_ops.cpp.
+GQuark RFT_BITFIELD_value_quark = 0;
+GQuark RFT_LISTDATA_rows_visible_quark = 0;
+GQuark RFT_fieldIdx_quark = 0;
+GQuark RFT_STRING_warning_quark = 0;
+GQuark RomDataView_romOp_quark = 0;
+
 static void	rp_rom_data_view_set_property	(GObject	*object,
 						 guint		 prop_id,
 						 const GValue	*value,
