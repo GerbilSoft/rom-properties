@@ -825,6 +825,7 @@ DMG::DMG(IRpFile *file)
 
 	// Check for MMM01 menu headers at 0xF8000 (1 MiB) and 0x78000 (512 KiB).
 	// NOTE: 512 KiB versions indicates MBC3, not MMM01, in the menu bank.
+	// TODO: 256 KiB version has a menu at 0x00000, not the expected 0x38000.
 	static const unsigned int mmm01_rom_size_check[] = {1048576, 524288};
 	d->is_mmm01_multicart = false;
 	for (unsigned int mmm01_rom_size : mmm01_rom_size_check) {
