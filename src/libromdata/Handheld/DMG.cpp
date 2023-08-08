@@ -1100,8 +1100,12 @@ int DMG::loadFieldData(void)
 	// Add the main ROM header.
 	d->addFields_romHeader(romHeader);
 
-	if (d->is_mmm01_multicart) {
-		// MMM01 multicart. Check for additional ROM headers.
+	// Check if this might be an MBC1 multicart.
+	const bool may_be_mbc1m = (cart_type.hardware == DMGPrivate::DMG_Hardware::MBC1) &&
+				  (d->file->size() >= 1048576 + d->copier_offset);
+	if (d->is_mmm01_multicart || may_be_mbc1m) {
+		// MMM01 multicart, or possibly an MBC1M multicart.
+		// Check for additional ROM headers.
 		union {
 			uint8_t u8[0x100 + sizeof(d->romHeader)];
 			struct {
@@ -1116,7 +1120,10 @@ int DMG::loadFieldData(void)
 			0		// szFile (not needed for DMG)
 		};
 
-		for (unsigned int addr = 0x00000 + d->copier_offset; addr < 0x100000; addr += 0x40000) {
+		// Base address depends on multicart type.
+		const unsigned int base_addr = (d->is_mmm01_multicart) ? 0x00000 : 0x40000;
+
+		for (unsigned int addr = base_addr + d->copier_offset; addr < 0x100000; addr += 0x40000) {
 			size_t size = d->file->seekAndRead(addr, mmm01_header.u8, sizeof(mmm01_header.u8));
 			if (size == sizeof(mmm01_header)) {
 				d->romType = static_cast<DMGPrivate::RomType>(isRomSupported_static(&info));
