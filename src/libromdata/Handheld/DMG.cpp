@@ -164,6 +164,12 @@ class DMGPrivate final : public RomDataPrivate
 		// ROM copier header offset
 		unsigned int copier_offset;
 
+		// Is this an MMM01 multicart?
+		// Some MMM01 multicarts, e.g. "Mani 4 in 1 - Takahashi Meijin no Bouken-jima II",
+		// don't have the cart_type flag set to MMM01. The only way to detect it is
+		// by checking for the 32 KB menu at the end of the ROM.
+		bool is_mmm01_multicart;
+
 		/**
 		 * Get the title and game ID.
 		 *
@@ -305,6 +311,7 @@ DMGPrivate::DMGPrivate(IRpFile *file)
 	: super(file, &romDataInfo)
 	, romType(RomType::Unknown)
 	, copier_offset(0)
+	, is_mmm01_multicart(false)
 {
 	// Clear the various structs.
 	memset(&romHeader, 0, sizeof(romHeader));
@@ -816,7 +823,7 @@ DMG::DMG(IRpFile *file)
 	}
 	int64_t filesize = d->file->size() - d->copier_offset;
 
-	bool mmm01_found = false;
+	d->is_mmm01_multicart = false;
 	if (filesize >= 1048576) {
 		// If >= 1 MB, check for an MMM01 menu header at 0xF8000.
 		header_read_t mmm01_header;
@@ -830,14 +837,15 @@ DMG::DMG(IRpFile *file)
 			DMGPrivate::RomType mmm01_romType = static_cast<DMGPrivate::RomType>(isRomSupported_static(&mmm01_info));
 			if ((int)mmm01_romType >= 0) {
 				// Found an MMM01 multicart menu header.
-				// TODO: Verify MMM01 hardware type?
+				// NOTE: Some MMM01 multicarts, e.g. "Mani 4 in 1 - Takahashi Meijin no Bouken-jima II",
+				// don't have the cart_type flag set to MMM01. Don't check the cart_type flag.
 				d->romType = mmm01_romType;
 				memcpy(&d->romHeader, &mmm01_header.u8[0x100], sizeof(d->romHeader));
-				mmm01_found = true;
+				d->is_mmm01_multicart = true;
 			}
 		}
 	}
-	if (!mmm01_found) {
+	if (!d->is_mmm01_multicart) {
 		// No MMM01 multicart header. Use the regular header.
 		memcpy(&d->romHeader, &header.u8[d->copier_offset + 0x100], sizeof(d->romHeader));
 	}
@@ -1092,8 +1100,35 @@ int DMG::loadFieldData(void)
 	// Add the main ROM header.
 	d->addFields_romHeader(romHeader);
 
-	if (cart_type.hardware == DMGPrivate::DMG_Hardware::MMM01) {
-		// MMM01 multicart. Need to check multiple ROM headers.
+	if (d->is_mmm01_multicart) {
+		// MMM01 multicart. Check for additional ROM headers.
+		union {
+			uint8_t u8[0x100 + sizeof(d->romHeader)];
+			struct {
+				uint8_t u8_nohdr[0x100];
+				DMG_RomHeader romHeader;
+			};
+		} mmm01_header;
+
+		const DetectInfo info = {
+			{0, static_cast<unsigned int>(sizeof(mmm01_header)), mmm01_header.u8},
+			nullptr,	// ext (not needed for DMG)
+			0		// szFile (not needed for DMG)
+		};
+
+		for (unsigned int addr = 0x00000 + d->copier_offset; addr < 0x100000; addr += 0x40000) {
+			size_t size = d->file->seekAndRead(addr, mmm01_header.u8, sizeof(mmm01_header.u8));
+			if (size == sizeof(mmm01_header)) {
+				d->romType = static_cast<DMGPrivate::RomType>(isRomSupported_static(&info));
+				if ((int)d->romType >= 0) {
+					// ROM header is valid.
+					char buf[16];
+					snprintf(buf, sizeof(buf), "0x%05X", addr - d->copier_offset);
+					d->fields.addTab(buf);
+					d->addFields_romHeader(&mmm01_header.romHeader);
+				}
+			}
+		}
 	}
 
 	/** GBX footer **/
