@@ -549,11 +549,10 @@ trimTitle:
  */
 string DMGPrivate::getPublisher(void) const
 {
-	const char* publisher;
 	string s_publisher;
 	if (romHeader.old_publisher_code == 0x33) {
 		// New publisher code.
-		publisher = NintendoPublishers::lookup(romHeader.new_publisher_code);
+		const char *publisher = NintendoPublishers::lookup(romHeader.new_publisher_code);
 		if (publisher) {
 			s_publisher = publisher;
 		} else {
@@ -570,7 +569,7 @@ string DMGPrivate::getPublisher(void) const
 		}
 	} else {
 		// Old publisher code.
-		publisher = NintendoPublishers::lookup_old(romHeader.old_publisher_code);
+		const char *publisher = NintendoPublishers::lookup_old(romHeader.old_publisher_code);
 		if (publisher) {
 			s_publisher = publisher;
 		} else {
