@@ -1154,8 +1154,8 @@ int DMG::loadFieldData(void)
 		for (unsigned int addr = base_addr + d->copier_offset; addr < filesize; addr += bank_increment) {
 			size_t size = d->file->seekAndRead(addr, mmm01_header.u8, sizeof(mmm01_header.u8));
 			if (size == sizeof(mmm01_header)) {
-				d->romType = static_cast<DMGPrivate::RomType>(isRomSupported_static(&info));
-				if ((int)d->romType >= 0) {
+				DMGPrivate::RomType mmm01_romType = static_cast<DMGPrivate::RomType>(isRomSupported_static(&info));
+				if ((int)mmm01_romType >= 0) {
 					// ROM header is valid.
 					char buf[16];
 					snprintf(buf, sizeof(buf), "0x%05X", addr - d->copier_offset);
