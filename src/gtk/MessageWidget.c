@@ -337,7 +337,7 @@ rp_message_widget_set_message_type(RpMessageWidget *widget, GtkMessageType messa
 
 #  if GTK_CHECK_VERSION(4,0,0)
 		// Remove all of our CSS classes first.
-		for (const IconInfo_t *p = iconInfo_tbl; p < pIconInfo_tbl_end; p++) {
+		for (const IconInfo_t *p = iconInfo_tbl; p < pIconInfo_tbl_end-1; p++) {
 			gtk_widget_remove_css_class(GTK_WIDGET(widget), p->css_class);
 		}
 		for (unsigned int i = 0; i < ARRAY_SIZE(dark_css_class_tbl); i++) {
@@ -366,7 +366,7 @@ rp_message_widget_set_message_type(RpMessageWidget *widget, GtkMessageType messa
 #  else /* !GTK_CHECK_VERSION(4,0,0) */
 		// Remove all of our CSS classes first.
 		GtkStyleContext *const context = gtk_widget_get_style_context(GTK_WIDGET(widget));
-		for (const IconInfo_t *p = iconInfo_tbl; p < pIconInfo_tbl_end; p++) {
+		for (const IconInfo_t *p = iconInfo_tbl; p < pIconInfo_tbl_end-1; p++) {
 			gtk_style_context_remove_class(context, p->css_class);
 		}
 		for (unsigned int i = 0; i < ARRAY_SIZE(dark_css_class_tbl); i++) {
