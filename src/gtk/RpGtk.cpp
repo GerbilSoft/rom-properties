@@ -12,6 +12,58 @@
 // C++ STL classes
 using std::string;
 
+/**
+ * Convert an RP file dialog filter to GtkFileFilter objects.
+ *
+ * Internal function used by both the GtkFileChooserDialog version
+ * and the GtkFileDialog (GTK 4.10) version.
+ *
+ * The RP file dialog filter must have been split using g_strsplit().
+ *
+ * @param pStrv Pointer to current position in strv
+ * @return GtkFileFilter, or nullptr on error.
+ */
+static GtkFileFilter *rpFileFilterToGtk_int(const gchar *const *pStrv)
+{
+	// String indexes:
+	// - 0: Display name
+	// - 1: Pattern
+	// - 2: MIME type (optional)
+	assert(pStrv[0] != nullptr);
+	assert(pStrv[1] != nullptr);
+	if (!pStrv[0] || !pStrv[1]) {
+		// Missing token...
+		return nullptr;
+	}
+
+	GtkFileFilter *const fileFilter = gtk_file_filter_new();
+	gtk_file_filter_set_name(fileFilter, pStrv[0]);
+
+	// Split the pattern. (';'-separated)
+	gchar **const strv_ext = g_strsplit(pStrv[1], ";", 0);
+	if (strv_ext) {
+		for (const gchar *const *pStrvExt = strv_ext; *pStrvExt != nullptr; pStrvExt++) {
+			gtk_file_filter_add_pattern(fileFilter, *pStrvExt);
+		}
+		g_strfreev(strv_ext);
+	}
+
+	// Separator 3: Between MIME types and the next display name.
+	if (pStrv[2] && pStrv[2][0] != '-') {
+		// Split the pattern. (';'-separated)
+		gchar **const strv_mime = g_strsplit(pStrv[2], ";", 0);
+		if (strv_mime) {
+			for (const gchar *const *pStrvMime = strv_mime; *pStrvMime != nullptr; pStrvMime++) {
+				gtk_file_filter_add_mime_type(fileFilter, *pStrvMime);
+			}
+			g_strfreev(strv_mime);
+		}
+	}
+
+	// Return the GtkFileFilter.
+	return fileFilter;
+}
+
 // TODO: Consolidate the GTK2/GTK3 and GTK4 filter functions.
 
 /**
@@ -44,55 +96,21 @@ int rpFileChooserDialogFilterToGtk(GtkFileChooser *fileChooser, const char *filt
 	if (!strv)
 		return -EINVAL;
 
+	int ret = 0;
 	const gchar *const *pStrv = strv;
 	do {
 		// String indexes:
 		// - 0: Display name
 		// - 1: Pattern
 		// - 2: MIME type (optional)
-
-		// Separator 1: Between display name and pattern.
-		assert(pStrv[0] != nullptr);
-		if (!pStrv[0]) {
-			// Missing token...
-			g_strfreev(strv);
-			return -EINVAL;
+		GtkFileFilter *const fileFilter = rpFileFilterToGtk_int(pStrv);
+		if (!fileFilter) {
+			// Parse error...
+			ret = -EINVAL;
+			break;
 		}
 
-		GtkFileFilter *const fileFilter = gtk_file_filter_new();
-		gtk_file_filter_set_name(fileFilter, pStrv[0]);
-
-		// Separator 2: Between pattern and MIME types.
-		assert(pStrv[1] != nullptr);
-		if (!pStrv[1]) {
-			// Missing token...
-			g_object_unref(fileFilter);
-			g_strfreev(strv);
-			return -EINVAL;
-		}
-
-		// Split the pattern. (';'-separated)
-		gchar **const strv_ext = g_strsplit(pStrv[1], ";", 0);
-		if (strv_ext) {
-			for (const gchar *const *pStrvExt = strv_ext; *pStrvExt != nullptr; pStrvExt++) {
-				gtk_file_filter_add_pattern(fileFilter, *pStrvExt);
-			}
-			g_strfreev(strv_ext);
-		}
-
-		// Separator 3: Between MIME types and the next display name.
-		if (pStrv[2] && pStrv[2][0] != '-') {
-			// Split the pattern. (';'-separated)
-			gchar **const strv_mime = g_strsplit(pStrv[2], ";", 0);
-			if (strv_mime) {
-				for (const gchar *const *pStrvMime = strv_mime; *pStrvMime != nullptr; pStrvMime++) {
-					gtk_file_filter_add_mime_type(fileFilter, *pStrvMime);
-				}
-				g_strfreev(strv_mime);
-			}
-		}
-
-		// Add the GtkFileFilter.
+		// Add the GtkFileFilter to the GtkFileChooserDialog.
 		gtk_file_chooser_add_filter(fileChooser, fileFilter);
 
 		if (!pStrv[2]) {
@@ -105,7 +123,7 @@ int rpFileChooserDialogFilterToGtk(GtkFileChooser *fileChooser, const char *filt
 	} while (*pStrv != nullptr);
 
 	g_strfreev(strv);
-	return 0;
+	return ret;
 }
 
 #if GTK_CHECK_VERSION(4,9,1)
@@ -144,52 +162,18 @@ int rpFileDialogFilterToGtk(GtkFileDialog *fileDialog, const char *filter)
 		return -EINVAL;
 	}
 
+	int ret = 0;
 	const gchar *const *pStrv = strv;
 	do {
 		// String indexes:
 		// - 0: Display name
 		// - 1: Pattern
 		// - 2: MIME type (optional)
-
-		// Separator 1: Between display name and pattern.
-		assert(pStrv[0] != nullptr);
-		if (!pStrv[0]) {
-			// Missing token...
-			g_strfreev(strv);
-			return -EINVAL;
-		}
-
-		GtkFileFilter *const fileFilter = gtk_file_filter_new();
-		gtk_file_filter_set_name(fileFilter, pStrv[0]);
-
-		// Separator 2: Between pattern and MIME types.
-		assert(pStrv[1] != nullptr);
-		if (!pStrv[1]) {
-			// Missing token...
-			g_object_unref(fileFilter);
-			g_strfreev(strv);
-			return -EINVAL;
-		}
-
-		// Split the pattern. (';'-separated)
-		gchar **const strv_ext = g_strsplit(pStrv[1], ";", 0);
-		if (strv_ext) {
-			for (const gchar *const *pStrvExt = strv_ext; *pStrvExt != nullptr; pStrvExt++) {
-				gtk_file_filter_add_pattern(fileFilter, *pStrvExt);
-			}
-			g_strfreev(strv_ext);
-		}
-
-		// Separator 3: Between MIME types and the next display name.
-		if (pStrv[2] && pStrv[2][0] != '-') {
-			// Split the pattern. (';'-separated)
-			gchar **const strv_mime = g_strsplit(pStrv[2], ";", 0);
-			if (strv_mime) {
-				for (const gchar *const *pStrvMime = strv_mime; *pStrvMime != nullptr; pStrvMime++) {
-					gtk_file_filter_add_mime_type(fileFilter, *pStrvMime);
-				}
-				g_strfreev(strv_mime);
-			}
+		GtkFileFilter *const fileFilter = rpFileFilterToGtk_int(pStrv);
+		if (!fileFilter) {
+			// Parse error...
+			ret = -EINVAL;
+			break;
 		}
 
 		// Add the GtkFileFilter to the GListStore.
@@ -210,7 +194,7 @@ int rpFileDialogFilterToGtk(GtkFileDialog *fileDialog, const char *filter)
 	g_object_unref(listStore);
 
 	g_strfreev(strv);
-	return 0;
+	return ret;
 }
 #endif /* GTK_CHECK_VERSION(4,9,1) */
 
