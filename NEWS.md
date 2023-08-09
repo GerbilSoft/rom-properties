@@ -7,6 +7,17 @@
     Windows Vista. Contributed by @ecumber.
     * Pull requests: #391, #392
 
+* New parser features:
+  * DMG: MMM01 and MBC1M multicarts are now detected, and the internal ROM
+    headers are shown in separate tabs.
+    * For MMM01, the main ROM header is actually located at 0xF8000 or 0x78000,
+      which means it was previously getting RPDB title screen information from
+      one of the included ROMs instead of the menu ROM.
+    * The title screen is now correctly showing the main menu.
+    * 256 KiB M161 ROMs are not supported yet.
+    * Fixes #394: GameBoy multicarts: MBC1M and MMM01
+      * Requested by @DankRank.
+
 * Bug fixes:
   * Windows: Truncate ListView strings to a maximum of 259+1 characters. (259
     actual characters plus 1 NULL terminator.) The ListView control can only
