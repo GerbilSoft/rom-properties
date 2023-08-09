@@ -462,6 +462,7 @@ rp_key_manager_tab_handle_menu_action(RpKeyManagerTab *tab, gint id)
 	const char *const s_filter = dpgettext_expr(
 		RP_I18N_DOMAIN, "KeyManagerTab", file_filters_tbl[id]);
 
+	// TODO: Use GtkFileDialog instead of GtkFileChooserDialog in gtk-4.10.
 	GtkWindow *const parent = gtk_widget_get_toplevel_window(GTK_WIDGET(tab));
 	GtkWidget *const fileDialog = gtk_file_chooser_dialog_new(
 		s_title,			// title
@@ -502,6 +503,7 @@ rp_key_manager_tab_handle_menu_action(RpKeyManagerTab *tab, gint id)
 	g_signal_connect(fileDialog, "response", G_CALLBACK(rp_key_manager_tab_menu_action_response), tab);
 	gtk_window_set_transient_for(GTK_WINDOW(fileDialog), parent);
 	gtk_window_set_modal(GTK_WINDOW(fileDialog), true);
+	gtk_window_present(GTK_WINDOW(fileDialog));
 
 	// GtkFileChooserDialog will send the "response" signal when the dialog is closed.
 }
