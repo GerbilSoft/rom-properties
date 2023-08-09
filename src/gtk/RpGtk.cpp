@@ -67,7 +67,7 @@ static GtkFileFilter *rpFileFilterToGtk_int(const gchar *const *pStrv)
 // TODO: Consolidate the GTK2/GTK3 and GTK4 filter functions.
 
 /**
- * Convert an RP file dialog filter to GTK2/GTK3 for GtkFileChooserDialog.
+ * Convert an RP file dialog filter to GTK2/GTK3 for GtkFileChooser.
  *
  * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|application/x-genesis-rom|All Files|*.*:-"
  * Similar the same as Windows, but with '|' instead of '\0'.
@@ -84,7 +84,7 @@ static GtkFileFilter *rpFileFilterToGtk_int(const gchar *const *pStrv)
  * @param filter RP file dialog filter (UTF-8, from gettext())
  * @return 0 on success; negative POSIX error code on error
  */
-int rpFileChooserDialogFilterToGtk(GtkFileChooser *fileChooser, const char *filter)
+int rpFileFilterToGtkFileChooser(GtkFileChooser *fileChooser, const char *filter)
 {
 	assert(fileChooser != nullptr);
 	assert(filter != nullptr && filter[0] != '\0');
@@ -145,7 +145,7 @@ int rpFileChooserDialogFilterToGtk(GtkFileChooser *fileChooser, const char *filt
  * @param filter RP file dialog filter (UTF-8, from gettext())
  * @return 0 on success; negative POSIX error code on error.
  */
-int rpFileDialogFilterToGtk(GtkFileDialog *fileDialog, const char *filter)
+int rpFileFilterToGtkFileDialog(GtkFileDialog *fileDialog, const char *filter)
 {
 	assert(fileDialog != nullptr);
 	assert(filter != nullptr && filter[0] != '\0');

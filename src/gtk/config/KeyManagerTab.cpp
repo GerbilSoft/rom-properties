@@ -518,9 +518,9 @@ rp_key_manager_tab_handle_menu_action(RpKeyManagerTab *tab, gint id)
 
 	// Set the filters.
 #if USE_GTK4_FILE_DIALOG
-	rpFileDialogFilterToGtk(fileDialog, s_filter);
+	rpFileFilterToGtkFileDialog(fileDialog, s_filter);
 #else /* !USE_GTK4_FILE_DIALOG */
-	rpFileChooserDialogFilterToGtk(GTK_FILE_CHOOSER(fileDialog), s_filter);
+	rpFileFilterToGtkFileChooser(GTK_FILE_CHOOSER(fileDialog), s_filter);
 #endif /* USE_GTK4_FILE_DIALOG */
 
 	// Set the file ID in the dialog.

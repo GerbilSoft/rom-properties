@@ -13,7 +13,7 @@
 G_BEGIN_DECLS
 
 /**
- * Convert an RP file dialog filter to GTK2/GTK3 for GtkFileChooserDialog.
+ * Convert an RP file dialog filter to GTK2/GTK3 for GtkFileChooser.
  *
  * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|application/x-genesis-rom|All Files|*.*|-"
  * Similar the same as Windows, but with '|' instead of '\0'.
@@ -30,7 +30,7 @@ G_BEGIN_DECLS
  * @param filter RP file dialog filter (UTF-8, from gettext())
  * @return 0 on success; negative POSIX error code on error.
  */
-int rpFileChooserDialogFilterToGtk(GtkFileChooser *fileChooser, const char *filter);
+int rpFileFilterToGtkFileChooser(GtkFileChooser *fileChooser, const char *filter);
 
 #if GTK_CHECK_VERSION(4,9,1)
 /**
@@ -51,7 +51,7 @@ int rpFileChooserDialogFilterToGtk(GtkFileChooser *fileChooser, const char *filt
  * @param filter RP file dialog filter (UTF-8, from gettext())
  * @return 0 on success; negative POSIX error code on error.
  */
-int rpFileDialogFilterToGtk(GtkFileDialog *fileDialog, const char *filter);
+int rpFileFilterToGtkFileDialog(GtkFileDialog *fileDialog, const char *filter);
 #endif /* GTK_CHECK_VERSION(4,9,1) */
 
 G_END_DECLS

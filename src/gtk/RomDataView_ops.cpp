@@ -338,7 +338,7 @@ rp_rom_data_view_doRomOp_stdop(RpRomDataView *page, int id)
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 	// Set the filters.
-	rpFileChooserDialogFilterToGtk(GTK_FILE_CHOOSER(fileDialog), filter);
+	rpFileFilterToGtkFileChooser(GTK_FILE_CHOOSER(fileDialog), filter);
 
 	// Set the operation ID in the dialog.
 	g_object_set_qdata(G_OBJECT(fileDialog), RomDataView_romOp_quark, GINT_TO_POINTER(id));
@@ -490,7 +490,7 @@ btnOptions_triggered_signal_handler(RpOptionsMenuButton *menuButton,
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 
 		// Set the filters.
-		rpFileChooserDialogFilterToGtk(GTK_FILE_CHOOSER(fileDialog), op->sfi.filter);
+		rpFileFilterToGtkFileChooser(GTK_FILE_CHOOSER(fileDialog), op->sfi.filter);
 
 		// Add the "All Files" filter.
 		GtkFileFilter *const allFilesFilter = gtk_file_filter_new();
