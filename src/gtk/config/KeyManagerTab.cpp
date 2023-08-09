@@ -486,7 +486,6 @@ rp_key_manager_tab_handle_menu_action(RpKeyManagerTab *tab, gint id)
 		}
 	}
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-	gtk_widget_show(GTK_WIDGET(fileDialog));
 	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(fileDialog), TRUE);
 	if (tab->prevOpenDir) {
 		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fileDialog), tab->prevOpenDir);
@@ -503,7 +502,7 @@ rp_key_manager_tab_handle_menu_action(RpKeyManagerTab *tab, gint id)
 	g_signal_connect(fileDialog, "response", G_CALLBACK(rp_key_manager_tab_menu_action_response), tab);
 	gtk_window_set_transient_for(GTK_WINDOW(fileDialog), parent);
 	gtk_window_set_modal(GTK_WINDOW(fileDialog), true);
-	gtk_window_present(GTK_WINDOW(fileDialog));
+	gtk_widget_set_visible(GTK_WIDGET(fileDialog), true);
 
 	// GtkFileChooserDialog will send the "response" signal when the dialog is closed.
 }
