@@ -64,7 +64,6 @@ GQuark RFT_BITFIELD_value_quark = 0;
 GQuark RFT_LISTDATA_rows_visible_quark = 0;
 GQuark RFT_fieldIdx_quark = 0;
 GQuark RFT_STRING_warning_quark = 0;
-GQuark RomDataView_romOp_quark = 0;
 
 static void	rp_rom_data_view_set_property	(GObject	*object,
 						 guint		 prop_id,
@@ -135,7 +134,6 @@ rp_rom_data_view_class_init(RpRomDataViewClass *klass)
 	RFT_LISTDATA_rows_visible_quark = g_quark_from_string("RFT_LISTDATA_rows_visible");
 	RFT_fieldIdx_quark = g_quark_from_string("RFT_fieldIdx");
 	RFT_STRING_warning_quark = g_quark_from_string("RFT_STRING_warning");
-	RomDataView_romOp_quark = g_quark_from_string("RomDataView.romOp");
 
 	/** Properties **/
 

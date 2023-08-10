@@ -132,7 +132,6 @@ extern GQuark RFT_BITFIELD_value_quark;
 extern GQuark RFT_LISTDATA_rows_visible_quark;
 extern GQuark RFT_fieldIdx_quark;
 extern GQuark RFT_STRING_warning_quark;
-extern GQuark RomDataView_romOp_quark;
 
 int	rp_rom_data_view_update_field		(RpRomDataView		*page,
 						 int			 fieldIdx);
