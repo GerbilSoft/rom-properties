@@ -514,6 +514,7 @@ rp_key_manager_tab_handle_menu_action(RpKeyManagerTab *tab, gint id)
 		title,			// title
 		filter,			// filter
 		tab->prevOpenDir,	// init_dir
+		nullptr,		// init_name
 		(rpGtk_fileDialogCallback)rp_key_manager_getOpenFileDialog_callback,	// callback
 		open_data,		// user_data
 	};

@@ -314,6 +314,10 @@ static int rpGtk_getFileName_int(const rpGtk_getFileName_t *gfndata, bool bSave)
                         g_object_unref(set_file);
 		}
 	}
+
+	// Set the initial name.
+	if (gfndata->init_name) {
+	}
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	// GTK2/GTK3: Require overwrite confirmation. (save dialogs only)
 	// NOTE: GTK4 has *mandatory* overwrite confirmation.
@@ -327,6 +331,15 @@ static int rpGtk_getFileName_int(const rpGtk_getFileName_t *gfndata, bool bSave)
 		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fileDialog), gfndata->init_dir);
 	}
 #endif
+
+	// Set the initial name.
+	if (gfndata->init_name) {
+#  if USE_GTK4_FILE_DIALOG
+		gtk_file_dialog_set_initial_name(fileDialog, gfndata->init_name);
+#  else /* !USE_GTK4_FILE_DIALOG */
+		gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(fileDialog), gfndata->init_name);
+#  endif /* !USE_GTK4_FILE_DIALOG */
+	}
 
 	// Set the file filters.
 	if (gfndata->filter) {
