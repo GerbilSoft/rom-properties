@@ -493,7 +493,6 @@ rp_key_manager_tab_handle_menu_action(RpKeyManagerTab *tab, gint id)
 	// GTK4, GtkFileChooserDialog and/or GtkFileDialog
 	// Set the initial folder. (A GFile is required.)
         if (tab->prevOpenDir) {
-		printf("prevOpenDir == %s\n", tab->prevOpenDir);
                 GFile *const set_file = g_file_new_for_path(tab->prevOpenDir);
                 if (set_file) {
 #  if USE_GTK4_FILE_DIALOG
