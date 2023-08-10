@@ -1,4 +1,4 @@
-/***************************************************************************
+/**************************************************************************
  * ROM Properties Page shell extension. (GTK+ common)                      *
  * RpGtk.hpp: glib/gtk+ wrappers for some libromdata functionality.        *
  *                                                                         *
@@ -13,46 +13,57 @@
 G_BEGIN_DECLS
 
 /**
- * Convert an RP file dialog filter to GTK2/GTK3 for GtkFileChooser.
- *
- * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|application/x-genesis-rom|All Files|*.*|-"
- * Similar the same as Windows, but with '|' instead of '\0'.
- * Also, no terminator sequence is needed.
- * The "(*.bin; *.srl)" part is added to the display name if needed.
- * A third segment provides for semicolon-separated MIME types. (May be "-" for 'any'.)
- *
- * NOTE: GTK+ doesn't use strings for file filters. Instead, it has
- * GtkFileFilter objects that are added to a GtkFileChooser.
- * To reduce overhead, the GtkFileChooser is passed to this function
- * so the GtkFileFilter objects can be added directly.
- *
- * @param fileChooser GtkFileChooser*
- * @param filter RP file dialog filter (UTF-8, from gettext())
- * @return 0 on success; negative POSIX error code on error.
+ * File dialog callback function.
+ * @param file (in) (transfer full): Selected file, or nullptr if no file was selected
+ * @param user_data (in) (transfer full): Specified user data when calling the original function
  */
-int rpFileFilterToGtkFileChooser(GtkFileChooser *fileChooser, const char *filter);
+typedef void (*rpGtk_fileDialogCallback)(GFile *file, gpointer user_data);
 
-#if GTK_CHECK_VERSION(4,9,1)
 /**
- * Convert an RP file dialog filter to GTK4 for GtkFileDialog.
+ * File dialog data struct
+ */
+typedef struct _rpGtk_getFileName_t {
+	GtkWindow *parent;			// (nullable) Parent window to set as modal
+	const char *title;			// Dialog title
+	const char *filter;			// RP file dialog filter (UTF-8, from gettext())
+	const char *init_dir;			// (nullable) Initial directory
+	rpGtk_fileDialogCallback callback;	// Callback function
+	gpointer user_data;			// User data for the callback function
+} rpGtk_getFileName_t;
+
+/**
+ * Prompt the user to open a file.
  *
- * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|application/x-genesis-rom|All Files|*.*|-"
+ * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|application/x-genesis-rom|All Files|*.*:-"
  * Similar the same as Windows, but with '|' instead of '\0'.
  * Also, no terminator sequence is needed.
  * The "(*.bin; *.srl)" part is added to the display name if needed.
  * A third segment provides for semicolon-separated MIME types. (May be "-" for 'any'.)
  *
- * NOTE: GTK+ doesn't use strings for file filters. Instead, a
- * GListModel of GtkFileFilter objects is added to a GtkFileDialog.
- * To reduce overhead, the GtkFileDialog is passed to this function
- * so the GtkFileFilter objects can be added directly.
+ * The dialog is opened as modal, but is handled asynchronously.
+ * The callback function is run when the dialog is closed.
  *
- * @param fileDialog GtkFileDialog*
- * @param filter RP file dialog filter (UTF-8, from gettext())
- * @return 0 on success; negative POSIX error code on error.
+ * @param gfndata (in): rpGtk_getFileName_t
+ * @return 0 on success; negative POSIX error code on error
  */
-int rpFileFilterToGtkFileDialog(GtkFileDialog *fileDialog, const char *filter);
-#endif /* GTK_CHECK_VERSION(4,9,1) */
+int rpGtk_getOpenFileName(const rpGtk_getFileName_t *gfndata);
+
+/**
+ * Prompt the user to save a file.
+ *
+ * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|application/x-genesis-rom|All Files|*.*:-"
+ * Similar the same as Windows, but with '|' instead of '\0'.
+ * Also, no terminator sequence is needed.
+ * The "(*.bin; *.srl)" part is added to the display name if needed.
+ * A third segment provides for semicolon-separated MIME types. (May be "-" for 'any'.)
+ *
+ * The dialog is opened as modal, but is handled asynchronously.
+ * The callback function is run when the dialog is closed.
+ *
+ * @param gfndata (in): rpGtk_getFileName_t
+ * @return 0 on success; negative POSIX error code on error
+ */
+int rpGtk_getSaveFileName(const rpGtk_getFileName_t *gfndata);
 
 G_END_DECLS
 

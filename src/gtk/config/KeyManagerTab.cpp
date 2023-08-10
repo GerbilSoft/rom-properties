@@ -18,11 +18,6 @@ using LibRomData::KeyStoreUI;
 // C++ STL classes
 using std::string;
 
-// Use the new GtkFileDialog class on GTK 4.10 and later.
-#if GTK_CHECK_VERSION(4,9,1)
-#  define USE_GTK4_FILE_DIALOG 1
-#endif /* GTK_CHECK_VERSION(4,9,1) */
-
 // KeyStoreUI::ImportFileID
 static const char *const import_menu_actions[] = {
 	"Wii keys.bin",
@@ -50,6 +45,11 @@ static gboolean	btnImport_event_signal_handler			(GtkButton		*button,
 								 GdkEvent 		*event,
 								 RpKeyManagerTab	*tab);
 #endif /* !USE_GTK_MENU_BUTTON */
+
+static void rp_key_manager_tab_show_key_import_return_status	(RpKeyManagerTab	*tab,
+								 const char		*filename,
+								 const char		*keyType,
+								 const KeyStoreUI::ImportReturn &iret);
 
 #ifdef USE_G_MENU_MODEL
 static void	action_triggered_signal_handler			(GSimpleAction		*action,
@@ -422,13 +422,45 @@ btnImport_event_signal_handler(GtkButton *button, GdkEvent *event, RpKeyManagerT
 }
 #endif /* !USE_GTK_MENU_BUTTON */
 
-#if USE_GTK4_FILE_DIALOG
+// Simple struct for passing both KeyManagerTab and the file ID.
+struct open_data_t {
+	RpKeyManagerTab *tab;
+	KeyStoreUI::ImportFileID id;
+};
+
+/**
+ * File dialog callback function.
+ * @param file (in) (transfer full): Selected file, or nullptr if no file was selected
+ * @param open_data (in) (transfer full): open_data_t specified as user_data when rpGtk_getOpenFileName() was called.
+ */
 static void
-rp_key_manager_tab_menu_action_AsyncCallback(GtkFileDialog *fileDialog, GAsyncResult *res, RpKeyManagerTab *tab);
-#else /* !USE_GTK4_FILE_DIALOG */
-static void
-rp_key_manager_tab_menu_action_response(GtkFileChooserDialog *fileDialog, gint response_id, RpKeyManagerTab *tab);
-#endif /*  USE_GTK4_FILE_DIALOG */
+rp_key_manager_getOpenFileDialog_callback(GFile *file, open_data_t *open_data)
+{
+	if (!file) {
+		// No file selected.
+		g_free(open_data);
+		return;
+	}
+
+	// TODO: URIs?
+	gchar *const filename = g_file_get_path(file);
+	g_object_unref(file);
+	if (!filename) {
+		// No filename...
+		g_free(open_data);
+		return;
+	}
+
+	// for convenience purposes
+	RpKeyManagerTab *const tab = open_data->tab;
+
+	KeyStoreUI *const keyStoreUI = rp_key_store_gtk_get_key_store_ui(tab->keyStore);
+	const KeyStoreUI::ImportReturn iret = keyStoreUI->importKeysFromBin(open_data->id, filename);
+
+	rp_key_manager_tab_show_key_import_return_status(tab, filename, import_menu_actions[(int)open_data->id], iret);
+	g_free(filename);
+	g_free(open_data);
+}
 
 /**
  * Handle a menu action.
@@ -467,81 +499,38 @@ rp_key_manager_tab_handle_menu_action(RpKeyManagerTab *tab, gint id)
 		NOP_C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|-|All Files|*.*|-"),
 	};
 
-	const char *const s_title = dpgettext_expr(
+	GtkWindow *const parent = gtk_widget_get_toplevel_window(GTK_WIDGET(tab));
+	const char *const title = dpgettext_expr(
 		RP_I18N_DOMAIN, "KeyManagerTab", dialog_titles_tbl[id]);
-	const char *const s_filter = dpgettext_expr(
+	const char *const filter = dpgettext_expr(
 		RP_I18N_DOMAIN, "KeyManagerTab", file_filters_tbl[id]);
 
-	GtkWindow *const parent = gtk_widget_get_toplevel_window(GTK_WIDGET(tab));
+	open_data_t *const open_data = static_cast<open_data_t*>(g_malloc(sizeof(*open_data)));
+	open_data->tab = tab;
+	open_data->id = static_cast<LibRomData::KeyStoreUI::ImportFileID>(id);
 
-#if USE_GTK4_FILE_DIALOG
-	// GTK 4.10.0 introduces a new GtkFileDialog.
-	GtkFileDialog *const fileDialog = gtk_file_dialog_new();
-	gtk_file_dialog_set_title(fileDialog, s_title);
-#else /* !USE_GTK4_FILE_DIALOG */
-	GtkWidget *const fileDialog = gtk_file_chooser_dialog_new(
-		s_title,			// title
-		parent,				// parent
-		GTK_FILE_CHOOSER_ACTION_OPEN,	// action
-		GTK_I18N_STR_CANCEL, GTK_RESPONSE_CANCEL,
-		GTK_I18N_STR_OPEN, GTK_RESPONSE_ACCEPT,
-		nullptr);
-	gtk_widget_set_name(fileDialog, "fileDialog");
-#endif /* USE_GTK4_FILE_DIALOG */
-
-#if GTK_CHECK_VERSION(4,0,0)
-	// GTK4, GtkFileChooserDialog and/or GtkFileDialog
-	// Set the initial folder. (A GFile is required.)
-        if (tab->prevOpenDir) {
-                GFile *const set_file = g_file_new_for_path(tab->prevOpenDir);
-                if (set_file) {
-#  if USE_GTK4_FILE_DIALOG
-			gtk_file_dialog_set_initial_folder(fileDialog, set_file);
-#  else /* !USE_GTK4_FILE_DIALOG */
-			gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fileDialog), set_file, nullptr);
-#  endif /* !USE_GTK4_FILE_DIALOG */
-                        g_object_unref(set_file);
-		}
+	const rpGtk_getFileName_t gfndata = {
+		parent,			// parent
+		title,			// title
+		filter,			// filter
+		tab->prevOpenDir,	// init_dir
+		(rpGtk_fileDialogCallback)rp_key_manager_getOpenFileDialog_callback,	// callback
+		open_data,		// user_data
+	};
+	int ret = rpGtk_getOpenFileName(&gfndata);
+	if (ret != 0) {
+		// rpGtk_getOpenFileName() failed.
+		// free() the open_data_t because the callback won't be run.
+		free(open_data);
 	}
-#else /* !GTK_CHECK_VERSION(4,0,0) */
-	// GTK2/GTK3: Require overwrite confirmation.
-	// NOTE: GTK4 has *mandatory* overwrite confirmation.
-	// Reference: https://gitlab.gnome.org/GNOME/gtk/-/commit/063ad28b1a06328e14ed72cc4b99cd4684efed12
-	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(fileDialog), TRUE);
 
-	// Set the initial folder.
-	if (tab->prevOpenDir) {
-		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fileDialog), tab->prevOpenDir);
-	}
-#endif
-
-	// Set the filters.
-#if USE_GTK4_FILE_DIALOG
-	rpFileFilterToGtkFileDialog(fileDialog, s_filter);
-#else /* !USE_GTK4_FILE_DIALOG */
-	rpFileFilterToGtkFileChooser(GTK_FILE_CHOOSER(fileDialog), s_filter);
-#endif /* USE_GTK4_FILE_DIALOG */
-
-	// Set the file ID in the dialog.
-	g_object_set_qdata(G_OBJECT(fileDialog), KeyManagerTab_fileID_quark, GINT_TO_POINTER(id));
-
-	// Prompt for a filename.
-#if USE_GTK4_FILE_DIALOG
-	gtk_file_dialog_set_modal(fileDialog, true);
-	gtk_file_dialog_open(fileDialog, parent, nullptr, (GAsyncReadyCallback)rp_key_manager_tab_menu_action_AsyncCallback, tab);
-#else /* !USE_GTK4_FILE_DIALOG */
-	g_signal_connect(fileDialog, "response", G_CALLBACK(rp_key_manager_tab_menu_action_response), tab);
-	gtk_window_set_transient_for(GTK_WINDOW(fileDialog), parent);
-	gtk_window_set_modal(GTK_WINDOW(fileDialog), true);
-	gtk_widget_set_visible(GTK_WIDGET(fileDialog), true);
-#endif /* !USE_GTK4_FILE_DIALOG */
-
-	// GtkFileChooserDialog will send the "response" signal when the dialog is closed.
+	// rpGtk_getOpenFileName() will call rp_key_manager_getOpenFileDialog_callback()
+	// when the dialog is closed.
 }
 
 /**
  * Show key import return status.
- * @praam tab KeyManagerTab
+ * @param tab KeyManagerTab
  * @param filename Filename
  * @param keyType Key type
  * @param iret ImportReturn
@@ -716,86 +705,6 @@ rp_key_manager_tab_show_key_import_return_status(RpKeyManagerTab	*tab,
 	rp_message_widget_set_text(RP_MESSAGE_WIDGET(tab->messageWidget), msg.c_str());
 	gtk_widget_set_visible(tab->messageWidget, true);
 }
-
-#if USE_GTK4_FILE_DIALOG
-static void
-rp_key_manager_tab_menu_action_AsyncCallback(GtkFileDialog *fileDialog, GAsyncResult *res, RpKeyManagerTab *tab)
-{
-	GFile *const get_file = gtk_file_dialog_open_finish(fileDialog, res, nullptr);
-	g_object_unref(fileDialog);
-	if (!get_file) {
-		// No file selected.
-		return;
-	}
-
-	// Get the file ID from the dialog.
-	const KeyStoreUI::ImportFileID id = static_cast<KeyStoreUI::ImportFileID>(
-		GPOINTER_TO_INT(g_object_get_qdata(G_OBJECT(fileDialog), KeyManagerTab_fileID_quark)));
-
-	// TODO: URIs?
-	gchar *const in_filename = g_file_get_path(get_file);
-	g_object_unref(get_file);
-	if (!in_filename) {
-		// No filename...
-		return;
-	}
-
-	KeyStoreUI *const keyStoreUI = rp_key_store_gtk_get_key_store_ui(tab->keyStore);
-	const KeyStoreUI::ImportReturn iret = keyStoreUI->importKeysFromBin(id, in_filename);
-
-	rp_key_manager_tab_show_key_import_return_status(tab, in_filename, import_menu_actions[(int)id], iret);
-	g_free(in_filename);
-}
-#else /* !USE_GTK4_FILE_DIALOG */
-/**
- * The Save dialog for a Standard ROM Operation has been closed.
- * @param fileDialog GtkFileChooserDialog
- * @param response_id Response ID
- * @param tab KeyManagerTab
- */
-static void
-rp_key_manager_tab_menu_action_response(GtkFileChooserDialog *fileDialog, gint response_id, RpKeyManagerTab *tab)
-{
-	if (response_id != GTK_RESPONSE_ACCEPT) {
-		// User cancelled the dialog.
-#if GTK_CHECK_VERSION(4,0,0)
-		gtk_window_destroy(GTK_WINDOW(fileDialog));
-#else /* !GTK_CHECK_VERSION(4,0,0) */
-		gtk_widget_destroy(GTK_WIDGET(fileDialog));
-#endif /* GTK_CHECK_VERSION(4,0,0) */
-		return;
-	}
-
-	// Get the file ID from the dialog.
-	const KeyStoreUI::ImportFileID id = static_cast<KeyStoreUI::ImportFileID>(
-		GPOINTER_TO_INT(g_object_get_qdata(G_OBJECT(fileDialog), KeyManagerTab_fileID_quark)));
-
-#if GTK_CHECK_VERSION(4,0,0)
-	// TODO: URIs?
-	gchar *in_filename = nullptr;
-	GFile *const get_file = gtk_file_chooser_get_file(GTK_FILE_CHOOSER(fileDialog));
-	if (get_file) {
-		in_filename = g_file_get_path(get_file);
-		g_object_unref(get_file);
-	}
-	gtk_window_destroy(GTK_WINDOW(fileDialog));
-#else /* !GTK_CHECK_VERSION(4,0,0) */
-	gchar *const in_filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fileDialog));
-	gtk_widget_destroy(GTK_WIDGET(fileDialog));
-#endif /* GTK_CHECK_VERSION(4,0,0) */
-
-	if (!in_filename) {
-		// No filename...
-		return;
-	}
-
-	KeyStoreUI *const keyStoreUI = rp_key_store_gtk_get_key_store_ui(tab->keyStore);
-	const KeyStoreUI::ImportReturn iret = keyStoreUI->importKeysFromBin(id, in_filename);
-
-	rp_key_manager_tab_show_key_import_return_status(tab, in_filename, import_menu_actions[(int)id], iret);
-	g_free(in_filename);
-}
-#endif /* !USE_GTK4_FILE_DIALOG */
 
 #ifdef USE_G_MENU_MODEL
 /**

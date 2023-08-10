@@ -337,8 +337,11 @@ rp_rom_data_view_doRomOp_stdop(RpRomDataView *page, int id)
 	}
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
+	// TODO: Port to the new rpGtk_getSaveFileName() function.
+#if 0
 	// Set the filters.
 	rpFileFilterToGtkFileChooser(GTK_FILE_CHOOSER(fileDialog), filter);
+#endif
 
 	// Set the operation ID in the dialog.
 	g_object_set_qdata(G_OBJECT(fileDialog), RomDataView_romOp_quark, GINT_TO_POINTER(id));
@@ -489,6 +492,8 @@ btnOptions_triggered_signal_handler(RpOptionsMenuButton *menuButton,
 		gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(fileDialog), TRUE);
 #endif /* !GTK_CHECK_VERSION(4,0,0) */
 
+		// TODO: Port to the new rpGtk_getSaveFileName() function.
+#if 0
 		// Set the filters.
 		rpFileFilterToGtkFileChooser(GTK_FILE_CHOOSER(fileDialog), op->sfi.filter);
 
@@ -498,6 +503,7 @@ btnOptions_triggered_signal_handler(RpOptionsMenuButton *menuButton,
 		gtk_file_filter_set_name(allFilesFilter, C_("RomData", "All Files"));
 		gtk_file_filter_add_pattern(allFilesFilter, "*");
 		gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(fileDialog), allFilesFilter);
+#endif
 
 		// Initial file and directory, based on the current file.
 		// NOTE: Not checking if it's a file or a directory. Assuming it's a file.
