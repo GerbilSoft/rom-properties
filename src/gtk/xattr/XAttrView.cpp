@@ -511,6 +511,7 @@ rp_xattr_view_clear_display_widgets(RpXAttrView *widget)
 {
 	rp_ext2_attr_view_clear_flags(RP_EXT2_ATTR_VIEW(widget->ext2AttrView));
 	rp_dos_attr_view_clear_attrs(RP_DOS_ATTR_VIEW(widget->dosAttrView));
+	gtk_list_store_clear(widget->listStore);
 }
 
 /** Property accessors / mutators **/
