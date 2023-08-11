@@ -690,11 +690,11 @@ bool is_directory(const wchar_t *filenameW)
  * or on network file systems if the option is disabled.
  *
  * @param filename Filename.
- * @param netFS If true, allow network file systems.
+ * @param allowNetFS If true, allow network file systems.
  *
  * @return True if this file is on a "bad" file system; false if not.
  */
-bool isOnBadFS(const char *filename, bool netFS)
+bool isOnBadFS(const char *filename, bool allowNetFS)
 {
 	// TODO: More comprehensive check.
 	// For now, merely checking if it starts with "\\\\"
@@ -703,7 +703,7 @@ bool isOnBadFS(const char *filename, bool netFS)
 	    filename[2] != '\0' && filename[2] != '?' && filename[2] != '.')
 	{
 		// This file is located on a network share.
-		return !netFS;
+		return !allowNetFS;
 	}
 
 	// Not on a network share.

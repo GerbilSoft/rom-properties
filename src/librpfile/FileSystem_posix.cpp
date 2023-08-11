@@ -337,11 +337,11 @@ bool is_directory(const char *filename)
  * or on network file systems if the option is disabled.
  *
  * @param filename Filename.
- * @param netFS If true, allow network file systems.
+ * @param allowNetFS If true, allow network file systems.
  *
  * @return True if this file is on a "bad" file system; false if not.
  */
-bool isOnBadFS(const char *filename, bool netFS)
+bool isOnBadFS(const char *filename, bool allowNetFS)
 {
 	bool bRet = false;
 
@@ -385,7 +385,7 @@ bool isOnBadFS(const char *filename, bool netFS)
 		case V9FS_MAGIC:
 			// Network file system.
 			// Allow it if we're allowing network file systems.
-			bRet = !netFS;
+			bRet = !allowNetFS;
 			break;
 
 		case FUSE_SUPER_MAGIC:	// TODO: Check the actual fs type.
@@ -401,7 +401,7 @@ bool isOnBadFS(const char *filename, bool netFS)
 #else
 # warning TODO: Implement "badfs" support for non-Linux systems.
 	RP_UNUSED(filename);
-	RP_UNUSED(netFS);
+	RP_UNUSED(allowNetFS);
 #endif
 
 	return bRet;

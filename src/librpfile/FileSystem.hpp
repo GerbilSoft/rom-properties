@@ -255,12 +255,12 @@ bool is_directory(const wchar_t *filenameW);
  * or on network file systems if the option is disabled.
  *
  * @param filename Filename.
- * @param netFS If true, allow network file systems.
+ * @param allowNetFS If true, allow network file systems.
  *
  * @return True if this file is on a "bad" file system; false if not.
  */
 RP_LIBROMDATA_PUBLIC
-bool isOnBadFS(const char *filename, bool netFS = false);
+bool isOnBadFS(const char *filename, bool allowNetFS = false);
 
 /**
  * Get a file's size and time.
