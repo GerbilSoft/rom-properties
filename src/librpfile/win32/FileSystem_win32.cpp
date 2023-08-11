@@ -689,7 +689,7 @@ bool is_directory(const wchar_t *filenameW)
  * We don't want to check files on e.g. procfs,
  * or on network file systems if the option is disabled.
  *
- * @param filename Filename.
+ * @param filename Filename (UTF-8)
  * @param allowNetFS If true, allow network file systems.
  *
  * @return True if this file is on a "bad" file system; false if not.
@@ -701,6 +701,33 @@ bool isOnBadFS(const char *filename, bool allowNetFS)
 	// and the third character is not '?' or '.'.
 	if (filename[0] == '\\' && filename[1] == '\\' &&
 	    filename[2] != '\0' && filename[2] != '?' && filename[2] != '.')
+	{
+		// This file is located on a network share.
+		return !allowNetFS;
+	}
+
+	// Not on a network share.
+	return false;
+}
+
+/**
+ * Is a file located on a "bad" file system?
+ *
+ * We don't want to check files on e.g. procfs,
+ * or on network file systems if the option is disabled.
+ *
+ * @param filename Filename (UTF-16)
+ * @param allowNetFS If true, allow network file systems.
+ *
+ * @return True if this file is on a "bad" file system; false if not.
+ */
+bool isOnBadFS(const wchar_t *filenameW, bool allowNetFS)
+{
+	// TODO: More comprehensive check.
+	// For now, merely checking if it starts with "\\\\"
+	// and the third character is not '?' or '.'.
+	if (filenameW[0] == L'\\' && filenameW[1] == L'\\' &&
+	    filenameW[2] != L'\0' && filenameW[2] != L'?' && filenameW[2] != L'.')
 	{
 		// This file is located on a network share.
 		return !allowNetFS;

@@ -336,7 +336,7 @@ bool is_directory(const char *filename)
  * We don't want to check files on e.g. procfs,
  * or on network file systems if the option is disabled.
  *
- * @param filename Filename.
+ * @param filename Filename (UTF-8)
  * @param allowNetFS If true, allow network file systems.
  *
  * @return True if this file is on a "bad" file system; false if not.
@@ -399,7 +399,7 @@ bool isOnBadFS(const char *filename, bool allowNetFS)
 			break;
 	}
 #else
-# warning TODO: Implement "badfs" support for non-Linux systems.
+#  warning TODO: Implement "badfs" support for non-Linux systems.
 	RP_UNUSED(filename);
 	RP_UNUSED(allowNetFS);
 #endif

@@ -254,13 +254,29 @@ bool is_directory(const wchar_t *filenameW);
  * We don't want to check files on e.g. procfs,
  * or on network file systems if the option is disabled.
  *
- * @param filename Filename.
+ * @param filename Filename (UTF-8)
  * @param allowNetFS If true, allow network file systems.
  *
  * @return True if this file is on a "bad" file system; false if not.
  */
 RP_LIBROMDATA_PUBLIC
 bool isOnBadFS(const char *filename, bool allowNetFS = false);
+
+#ifdef _WIN32
+/**
+ * Is a file located on a "bad" file system?
+ *
+ * We don't want to check files on e.g. procfs,
+ * or on network file systems if the option is disabled.
+ *
+ * @param filename Filename (UTF-16)
+ * @param allowNetFS If true, allow network file systems.
+ *
+ * @return True if this file is on a "bad" file system; false if not.
+ */
+RP_LIBROMDATA_PUBLIC
+bool isOnBadFS(const wchar_t *filenameW, bool allowNetFS = false);
+#endif /* _WIN32 */
 
 /**
  * Get a file's size and time.
