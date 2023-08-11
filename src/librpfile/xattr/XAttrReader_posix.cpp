@@ -87,7 +87,7 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 #else /* !HAVE_STATX */
 	struct stat sb;
 	errno = 0;
-	if (!stat(filename, &sb)) {
+	if (stat(filename, &sb) != 0) {
 		// stat() failed.
 		lastError = -errno;
 		if (lastError == 0) {
@@ -149,7 +149,7 @@ int XAttrReaderPrivate::init(void)
 #else /* !HAVE_STATX */
 	struct stat sb;
 	errno = 0;
-	if (!fstat(fd, &sb)) {
+	if (fstat(fd, &sb) != 0) {
 		// fstat() failed.
 		int err = -errno;
 		if (err == 0) {
