@@ -42,6 +42,8 @@
     They are now displayed in the local timezone.
   * GTK4 rp-config: Fix an issue where the Key Manager tab didn't show the
     "Open" dialog properly.
+  * Windows rp-config: Fix the Key Manager tab not showing up at all.
+    * This regressed in v2.2.1.
 
 * Other changes:
   * Nintendo3DS: The "Options" menu no longer shows a grayed-out "Extract SRL"
