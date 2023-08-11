@@ -17,6 +17,10 @@
 // C++ includes.
 #include <string>
 
+namespace LibRpFile {
+	class IRpFile;
+}
+
 namespace LibRomData {
 
 class KeyStoreUIPrivate;
@@ -231,11 +235,29 @@ class RP_LIBROMDATA_PUBLIC KeyStoreUI
 
 		/**
 		 * Import keys from a binary file.
-		 * @param fileID Type of file
-		 * @param filename Filename
+		 * @param fileID	[in] Type of file
+		 * @param file		[in] Opened file
+		 * @return ImportReturn
+		 */
+		ImportReturn importKeysFromBin(ImportFileID fileID, LibRpFile::IRpFile *file);
+
+		/**
+		 * Import keys from a binary file.
+		 * @param fileID	[in] Type of file
+		 * @param filename	[in] Filename (UTF-8)
 		 * @return ImportReturn
 		 */
 		ImportReturn importKeysFromBin(ImportFileID fileID, const char *filename);
+
+#ifdef _WIN32
+		/**
+		 * Import keys from a binary file.
+		 * @param fileID	[in] Type of file
+		 * @param filenameW	[in] Filename (UTF-16)
+		 * @return ImportReturn
+		 */
+		ImportReturn importKeysFromBin(ImportFileID fileID, const wchar_t *filenameW);
+#endif /* _WIN32 */
 };
 
 }

@@ -148,11 +148,11 @@ class KeyStoreUIPrivate
 
 		/**
 		 * Import keys from a binary blob.
-		 * @param sectIdx	[in] Section index.
-		 * @param kba		[in] KeyBinAddress array.
-		 * @param buf		[in] Key buffer.
-		 * @param len		[in] Length of buf.
-		 * @return Key import status.
+		 * @param sectIdx	[in] Section index
+		 * @param kba		[in] KeyBinAddress array
+		 * @param buf		[in] Key buffer
+		 * @param len		[in] Length of buf
+		 * @return Key import status
 		 */
 		KeyStoreUI::ImportReturn importKeysFromBlob(SectionID sectIdx,
 			const KeyBinAddress *kba, const uint8_t *buf, unsigned int len);
@@ -191,9 +191,9 @@ class KeyStoreUIPrivate
 
 		/**
 		 * Convert a binary key to a hexadecimal string.
-		 * @param data	[in] Binary key.
-		 * @param len	[in] Length of binary key, in bytes.
-		 * @return Hexadecimal string.
+		 * @param data	[in] Binary key
+		 * @param len	[in] Length of binary key, in bytes
+		 * @return Hexadecimal string
 		 */
 		static string binToHexStr(const uint8_t *data, unsigned int len);
 
@@ -202,31 +202,31 @@ class KeyStoreUIPrivate
 
 		/**
 		 * Import keys from Wii keys.bin. (BootMii format)
-		 * @param filename keys.bin filename.
-		 * @return Key import status.
+		 * @param file Opened keys.bin file
+		 * @return Key import status
 		 */
-		KeyStoreUI::ImportReturn importWiiKeysBin(const char *filename);
+		KeyStoreUI::ImportReturn importWiiKeysBin(IRpFile *file);
 
 		/**
 		 * Import keys from Wii U otp.bin.
-		 * @param filename otp.bin filename.
-		 * @return Key import status.
+		 * @param file Opened otp.bin file
+		 * @return Key import status
 		 */
-		KeyStoreUI::ImportReturn importWiiUOtpBin(const char *filename);
+		KeyStoreUI::ImportReturn importWiiUOtpBin(IRpFile *file);
 
 		/**
 		 * Import keys from 3DS boot9.bin.
-		 * @param filename boot9.bin filename.
-		 * @return Key import status.
+		 * @param file Opened boot9.bin file
+		 * @return Key import status
 		 */
-		KeyStoreUI::ImportReturn importN3DSboot9bin(const char *filename);
+		KeyStoreUI::ImportReturn importN3DSboot9bin(IRpFile *file);
 
 		/**
 		 * Import keys from 3DS aeskeydb.bin.
-		 * @param filename aeskeydb.bin filename.
-		 * @return Key import status.
+		 * @param file Opened aeskeydb.bin file
+		 * @return Key import status
 		 */
-		KeyStoreUI::ImportReturn importN3DSaeskeydb(const char *filename);
+		KeyStoreUI::ImportReturn importN3DSaeskeydb(IRpFile *file);
 };
 
 /** KeyStoreUIPrivate **/
@@ -489,11 +489,11 @@ inline int KeyStoreUIPrivate::idxToSectKey(int idx, int *pSectIdx, int *pKeyIdx)
 /**
  * Import keys from a binary blob.
  * FIXME: More comprehensive error messages for the message bar.
- * @param sectIdx	[in] Section index.
- * @param kba		[in] KeyBinAddress array.
- * @param buf		[in] Key buffer.
- * @param len		[in] Length of buf.
- * @return Key import status.
+ * @param sectIdx	[in] Section index
+ * @param kba		[in] KeyBinAddress array
+ * @param buf		[in] Key buffer
+ * @param len		[in] Length of buf
+ * @return Key import status
  */
 KeyStoreUI::ImportReturn KeyStoreUIPrivate::importKeysFromBlob(
 	SectionID sectIdx, const KeyBinAddress *kba, const uint8_t *buf, unsigned int len)
@@ -775,9 +775,9 @@ void KeyStoreUIPrivate::verifyKey(int sectIdx, int keyIdx)
 
 /**
  * Convert a binary key to a hexadecimal string.
- * @param data	[in] Binary key.
- * @param len	[in] Length of binary key, in bytes.
- * @return Hexadecimal string.
+ * @param data	[in] Binary key
+ * @param len	[in] Length of binary key, in bytes
+ * @return Hexadecimal string
  */
 string KeyStoreUIPrivate::binToHexStr(const uint8_t *data, unsigned int len)
 {
@@ -1098,20 +1098,12 @@ bool KeyStoreUI::hasChanged(void) const
 
 /**
  * Import keys from Wii keys.bin. (BootMii format)
- * @param filename keys.bin filename.
- * @return Number of keys imported if the file is valid; negative POSIX error code on error.
+ * @param file Opened keys.bin file
+ * @return Key import status
  */
-KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiKeysBin(const char *filename)
+KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiKeysBin(IRpFile *file)
 {
 	KeyStoreUI::ImportReturn iret = {KeyStoreUI::ImportStatus::InvalidParams, 0, 0, 0, 0, 0, 0, 0};
-
-	unique_RefBase<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
-	if (!file->isOpen()) {
-		// TODO: file->lastError()?
-		iret.status = KeyStoreUI::ImportStatus::OpenError;
-		iret.error_code = static_cast<uint8_t>(file->lastError());
-		return iret;
-	}
 
 	// File must be 1,024 bytes.
 	if (file->size() != 1024) {
@@ -1121,7 +1113,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiKeysBin(const char *filenam
 
 	// Read the entire 1,024 bytes.
 	uint8_t buf[1024];
-	size_t size = file->read(buf, sizeof(buf));
+	size_t size = file->seekAndRead(0, buf, sizeof(buf));
 	if (size != 1024) {
 		// Read error.
 		// TODO: file->lastError()?
@@ -1129,7 +1121,6 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiKeysBin(const char *filenam
 		iret.error_code = static_cast<uint8_t>(file->lastError());
 		return iret;
 	}
-	file->close();
 
 	// Verify the BootMii (BackupMii) header.
 	// TODO: Is there a v0? If this shows v0, show a different message.
@@ -1158,19 +1149,12 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiKeysBin(const char *filenam
 
 /**
  * Import keys from Wii U otp.bin.
- * @param filename otp.bin filename.
- * @return Key import status.
+ * @param file Opened otp.bin file
+ * @return Key import status
  */
-KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiUOtpBin(const char *filename)
+KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiUOtpBin(IRpFile *file)
 {
 	KeyStoreUI::ImportReturn iret = {KeyStoreUI::ImportStatus::InvalidParams, 0, 0, 0, 0, 0, 0, 0};
-
-	unique_RefBase<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
-	if (!file->isOpen()) {
-		iret.status = KeyStoreUI::ImportStatus::OpenError;
-		iret.error_code = static_cast<uint8_t>(file->lastError());
-		return iret;
-	}
 
 	// File must be 1,024 bytes.
 	if (file->size() != 1024) {
@@ -1180,14 +1164,13 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiUOtpBin(const char *filenam
 
 	// Read the entire 1,024 bytes.
 	uint8_t buf[1024];
-	size_t size = file->read(buf, sizeof(buf));
+	size_t size = file->seekAndRead(0, buf, sizeof(buf));
 	if (size != 1024) {
 		// Read error.
 		iret.status = KeyStoreUI::ImportStatus::ReadError;
 		iret.error_code = static_cast<uint8_t>(file->lastError());
 		return iret;
 	}
-	file->close();
 
 	// Verify the vWii Boot1 hash.
 	// TODO: Are there multiple variants of vWii Boot1?
@@ -1255,23 +1238,16 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importWiiUOtpBin(const char *filenam
 
 /**
  * Import keys from 3DS boot9.bin.
- * @param filename boot9.bin filename.
- * @return Number of keys imported if the file is valid; negative POSIX error code on error.
+ * @param file Opened boot9.bin file
+ * @return Key import status
  */
-KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSboot9bin(const char *filename)
+KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSboot9bin(IRpFile *file)
 {
 	KeyStoreUI::ImportReturn iret = {KeyStoreUI::ImportStatus::InvalidParams, 0, 0, 0, 0, 0, 0, 0};
 
-	unique_RefBase<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
-	if (!file->isOpen()) {
-		iret.status = KeyStoreUI::ImportStatus::OpenError;
-		iret.error_code = static_cast<uint8_t>(file->lastError());
-		return iret;
-	}
-
 	// File may be:
 	// - 65,536 bytes: Unprotected + Protected boot9
-	// - 32,768 bytes: Protected boot9
+	// - 32,768 bytes: Protected boot9 only
 	const off64_t fileSize = file->size();
 	if (fileSize != 65536 && fileSize != 32768) {
 		iret.status = KeyStoreUI::ImportStatus::InvalidFile;
@@ -1281,6 +1257,7 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSboot9bin(const char *filen
 	// Read the protected section into memory.
 	unique_ptr<uint8_t[]> buf(new uint8_t[32768]);
 	if (fileSize == 65536) {
+		// 64 KiB (Unprotected + Protected boot9)
 		// Seek to the second half.
 		int ret = file->seek(32768);
 		if (ret != 0) {
@@ -1289,6 +1266,10 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSboot9bin(const char *filen
 			iret.error_code = static_cast<uint8_t>(file->lastError());
 			return iret;
 		}
+	} else {
+		// 32 KiB (Protected boot9.bin only)
+		// Rewind to the beginning of the file.
+		file->rewind();
 	}
 	size_t size = file->read(buf.get(), 32768);
 	if (size != 32768) {
@@ -1297,7 +1278,6 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSboot9bin(const char *filen
 		iret.error_code = static_cast<uint8_t>(file->lastError());
 		return iret;
 	}
-	file->close();
 
 #if defined(_MSC_VER) && defined(ZLIB_IS_DLL)
 	// Delay load verification.
@@ -1347,19 +1327,12 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSboot9bin(const char *filen
 
 /**
  * Import keys from 3DS aeskeydb.bin.
- * @param filename aeskeydb.bin filename.
- * @return Key import status.
+ * @param file Opened aeskeydb.bin file
+ * @return Key import status
  */
-KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(const char *filename)
+KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(IRpFile *file)
 {
 	KeyStoreUI::ImportReturn iret = {KeyStoreUI::ImportStatus::InvalidParams, 0, 0, 0, 0, 0, 0, 0};
-
-	unique_RefBase<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
-	if (!file->isOpen()) {
-		iret.status = KeyStoreUI::ImportStatus::OpenError;
-		iret.error_code = static_cast<uint8_t>(file->lastError());
-		return iret;
-	}
 
 	// File must be <= 64 KB and a multiple of 32 bytes.
 	const off64_t fileSize = file->size();
@@ -1370,14 +1343,13 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(const char *filen
 
 	// Read the entire file into memory.
 	unique_ptr<uint8_t[]> buf(new uint8_t[static_cast<size_t>(fileSize)]);
-	size_t size = file->read(buf.get(), static_cast<size_t>(fileSize));
+	size_t size = file->seekAndRead(0, buf.get(), static_cast<size_t>(fileSize));
 	if (size != static_cast<size_t>(fileSize)) {
 		// Read error.
 		iret.status = KeyStoreUI::ImportStatus::ReadError;
 		iret.error_code = static_cast<uint8_t>(file->lastError());
 		return iret;
 	}
-	file->close();
 
 	// aeskeydb keyslot from Decrypt9WIP.
 	// NOTE: Decrypt9WIP and SafeB9SInstaller interpret the "keyUnitType" field differently.
@@ -1631,31 +1603,77 @@ KeyStoreUI::ImportReturn KeyStoreUIPrivate::importN3DSaeskeydb(const char *filen
 
 /**
  * Import keys from a binary file.
- * @param fileID Type of file
- * @param filename Filename
+ * @param fileID	[in] Type of file
+ * @param file		[in] Opened file
  * @return ImportReturn
  */
-KeyStoreUI::ImportReturn KeyStoreUI::importKeysFromBin(ImportFileID fileID, const char *filename)
+KeyStoreUI::ImportReturn KeyStoreUI::importKeysFromBin(ImportFileID fileID, IRpFile *file)
 {
 	RP_D(KeyStoreUI);
 	switch (fileID) {
 		case ImportFileID::WiiKeysBin:
-			return d->importWiiKeysBin(filename);
+			return d->importWiiKeysBin(file);
 		case ImportFileID::WiiUOtpBin:
-			return d->importWiiUOtpBin(filename);
+			return d->importWiiUOtpBin(file);
 		case ImportFileID::N3DSboot9bin:
-			return d->importN3DSboot9bin(filename);
+			return d->importN3DSboot9bin(file);
 		case ImportFileID::N3DSaeskeydb:
-			return d->importN3DSaeskeydb(filename);
+			return d->importN3DSaeskeydb(file);
 		default:
+			assert(!"Invalid file ID");
 			break;
 	}
 
 	// Unknown key ID.
 	// TODO: Mark this as static const? Not sure if that's
 	// actually beneficial here.
-	KeyStoreUI::ImportReturn iret = {KeyStoreUI::ImportStatus::UnknownKeyID, 0, 0, 0, 0, 0, 0, 0};
+	ImportReturn iret = {KeyStoreUI::ImportStatus::UnknownKeyID, 0, 0, 0, 0, 0, 0, 0};
 	return iret;
 }
+
+/**
+ * Import keys from a binary file.
+ * @param fileID	[in] Type of file
+ * @param filename	[in] Filename (UTF-8)
+ * @return ImportReturn
+ */
+KeyStoreUI::ImportReturn KeyStoreUI::importKeysFromBin(ImportFileID fileID, const char *filename)
+{
+	ImportReturn iret = {ImportStatus::InvalidParams, 0, 0, 0, 0, 0, 0, 0};
+
+	unique_RefBase<RpFile> file(new RpFile(filename, RpFile::FM_OPEN_READ));
+	if (!file->isOpen()) {
+		// TODO: file->lastError()?
+		iret.status = ImportStatus::OpenError;
+		iret.error_code = static_cast<uint8_t>(file->lastError());
+		UNREF(file);
+		return iret;
+	}
+
+	return importKeysFromBin(fileID, file.get());
+}
+
+#ifdef _WIN32
+/**
+ * Import keys from a binary file.
+ * @param fileID	[in] Type of file
+ * @param filenameW	[in] Filename (UTF-16)
+ * @return ImportReturn
+ */
+KeyStoreUI::ImportReturn KeyStoreUI::importKeysFromBin(ImportFileID fileID, const wchar_t *filenameW)
+{
+	ImportReturn iret = {ImportStatus::InvalidParams, 0, 0, 0, 0, 0, 0, 0};
+
+	unique_RefBase<RpFile> file(new RpFile(filenameW, RpFile::FM_OPEN_READ));
+	if (!file->isOpen()) {
+		// TODO: file->lastError()?
+		iret.status = ImportStatus::OpenError;
+		iret.error_code = static_cast<uint8_t>(file->lastError());
+		return iret;
+	}
+
+	return importKeysFromBin(fileID, file.get());
+}
+#endif /* _WIN32 */
 
 }

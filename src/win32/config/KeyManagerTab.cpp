@@ -1717,7 +1717,7 @@ void KeyManagerTabPrivate::importKeysFromBin(KeyStoreUI::ImportFileID id)
 	// Update ts_keyFileDir using the returned filename.
 	updateKeyFileDir(tfilename);
 
-	const KeyStoreWin32::ImportReturn iret = keyStore->importKeysFromBin(id, T2U8(tfilename).c_str());
+	const KeyStoreWin32::ImportReturn iret = keyStore->importKeysFromBin(id, tfilename.c_str());
 	showKeyImportReturnStatus(tfilename, import_menu_actions[(int)id], iret);
 }
 
