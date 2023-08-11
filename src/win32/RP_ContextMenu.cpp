@@ -109,7 +109,7 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_file)
 	// Get the appropriate RomData class for this ROM.
 	// RomData class *must* support at least one image type.
 	// TODO: Use FileFormatFactory from librptexture instead?
-	RomData *const romData = RomDataFactory::create(T2U8(source_file).c_str(), RomDataFactory::RDA_HAS_THUMBNAIL);
+	RomData *const romData = RomDataFactory::create(source_file, RomDataFactory::RDA_HAS_THUMBNAIL);
 	if (!romData) {
 		// ROM is not supported.
 		free(output_file);
@@ -133,7 +133,7 @@ int RP_ContextMenu_Private::convert_to_png(LPCTSTR source_file)
 	// tEXt chunks
 	RpPngWriter::kv_vector kv;
 
-	unique_ptr<RpPngWriter> pngWriter(new RpPngWriter(T2U8(output_file).c_str(),
+	unique_ptr<RpPngWriter> pngWriter(new RpPngWriter(output_file,
 		img->width(), height, img->format()));
 	free(output_file);
 	if (!pngWriter->isOpen()) {
