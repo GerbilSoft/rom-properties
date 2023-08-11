@@ -272,9 +272,6 @@ rp_xattr_view_init(RpXAttrView *widget)
 	gtk_box_pack_start(GTK_BOX(widget), alignFraDosAttributes, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(widget), alignFraXAttr, TRUE, TRUE, 0);	// FIXME: Expand isn't working here.
 #  endif /* GTK_CHECK_VERSION(2,91,0) */
-	gtk_widget_show(widget->fraExt2Attributes);
-	gtk_widget_show(widget->fraDosAttributes);
-	gtk_widget_show(widget->fraXAttr);
 	gtk_widget_show(vboxExt2Attributes);
 	gtk_widget_show(vboxDosAttributes);
 	gtk_widget_show(widget->ext2AttrView);
