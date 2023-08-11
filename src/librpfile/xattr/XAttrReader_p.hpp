@@ -40,11 +40,11 @@ class XAttrReaderPrivate
 
 	public:
 		/**
-		 * Load Linux attributes, if available.
+		 * Load Ext2 attributes, if available.
 		 * Internal fd (filename on Windows) must be set.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int loadLinuxAttrs(void);
+		int loadExt2Attrs(void);
 
 		/**
 		 * Load MS-DOS attributes, if available.
@@ -92,11 +92,11 @@ class XAttrReaderPrivate
 
 		int lastError;
 
-		bool hasLinuxAttributes;
+		bool hasExt2Attributes;
 		bool hasDosAttributes;
 		bool hasGenericXAttrs;
 
-		int linuxAttributes;
+		int ext2Attributes;
 		unsigned int dosAttributes;
 		XAttrReader::XAttrList genericXAttrs;
 };

@@ -42,23 +42,23 @@ int XAttrReader::lastError(void) const
 }
 
 /**
- * Does this file have Linux attributes?
+ * Does this file have Ext2 attributes?
  * @return True if it does; false if not.
  */
-bool XAttrReader::hasLinuxAttributes(void) const
+bool XAttrReader::hasExt2Attributes(void) const
 {
 	RP_D(const XAttrReader);
-	return d->hasLinuxAttributes;
+	return d->hasExt2Attributes;
 }
 
 /**
- * Get this file's Linux attributes.
- * @return Linux attributes
+ * Get this file's Ext2 attributes.
+ * @return Ext2 attributes
  */
-int XAttrReader::linuxAttributes(void) const
+int XAttrReader::ext2Attributes(void) const
 {
 	RP_D(const XAttrReader);
-	return d->linuxAttributes;
+	return d->ext2Attributes;
 }
 
 /**

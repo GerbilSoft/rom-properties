@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (KDE4/KF5)                         *
- * LinuxAttrView.cpp: Linux file system attribute viewer widget.           *
+ * Ext2AttrView.cpp: Ext2 file system attribute viewer widget.             *
  *                                                                         *
  * Copyright (c) 2022-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -8,32 +8,32 @@
 
 // Reference: https://doc.qt.io/qt-5/dnd.html
 #include "stdafx.h"
-#include "LinuxAttrView.hpp"
+#include "Ext2AttrView.hpp"
 
-// EXT2 flags (also used for EXT3, EXT4, and other Linux file systems)
+// Ext2 flags (also used for Ext3, Ext4, and other Linux file systems)
 #include "librpfile/xattr/ext2_flags.h"
 
-// LinuxAttrData (TODO: Rework into functions for libromdata.so.4)
-#include "librpfile/xattr/LinuxAttrData.h"
+// Ext2AttrData
+#include "librpfile/xattr/Ext2AttrData.h"
 
-/** LinuxAttrViewPrivate **/
+/** Ext2AttrViewPrivate **/
 
-#include "ui_LinuxAttrView.h"
-class LinuxAttrViewPrivate
+#include "ui_Ext2AttrView.h"
+class Ext2AttrViewPrivate
 {
 	public:
-		LinuxAttrViewPrivate()
+		Ext2AttrViewPrivate()
 			: flags(0) { }
 
 	private:
-		Q_DISABLE_COPY(LinuxAttrViewPrivate)
+		Q_DISABLE_COPY(Ext2AttrViewPrivate)
 
 	public:
-		Ui::LinuxAttrView ui;
+		Ui::Ext2AttrView ui;
 		int flags;
 
-		// See LinuxAttrData.h
-		QCheckBox *checkBoxes[LINUX_ATTR_CHECKBOX_MAX];
+		// See Ext2AttrData.h
+		QCheckBox *checkBoxes[EXT2_ATTR_CHECKBOX_MAX];
 
 	public:
 		/**
@@ -66,12 +66,12 @@ class LinuxAttrViewPrivate
 /**
  * Retranslate parts of the UI that aren't present in the .ui file.
  */
-void LinuxAttrViewPrivate::retranslateUi_nonDesigner(void)
+void Ext2AttrViewPrivate::retranslateUi_nonDesigner(void)
 {
 	for (size_t i = 0; i < ARRAY_SIZE(checkBoxes); i++) {
-		const LinuxAttrCheckboxInfo_t *const p = linuxAttrCheckboxInfo(static_cast<LinuxAttrCheckboxID>(i));
-		checkBoxes[i]->setText(U82Q(dpgettext_expr(RP_I18N_DOMAIN, "LinuxAttrView", p->label)));
-		checkBoxes[i]->setToolTip(U82Q(dpgettext_expr(RP_I18N_DOMAIN, "LinuxAttrView", p->tooltip)));
+		const Ext2AttrCheckboxInfo_t *const p = ext2AttrCheckboxInfo(static_cast<Ext2AttrCheckboxID>(i));
+		checkBoxes[i]->setText(U82Q(dpgettext_expr(RP_I18N_DOMAIN, "Ext2AttrView", p->label)));
+		checkBoxes[i]->setToolTip(U82Q(dpgettext_expr(RP_I18N_DOMAIN, "Ext2AttrView", p->tooltip)));
 	}
 }
 
@@ -79,7 +79,7 @@ void LinuxAttrViewPrivate::retranslateUi_nonDesigner(void)
  * Update the flags string display.
  * This uses the same format as e2fsprogs lsattr.
  */
-void LinuxAttrViewPrivate::updateFlagsString(void)
+void Ext2AttrViewPrivate::updateFlagsString(void)
 {
 	QString str = QLatin1String("----------------------");
 	assert(str.size() == 22);
@@ -110,10 +110,10 @@ void LinuxAttrViewPrivate::updateFlagsString(void)
 /**
  * Update the flags checkboxes.
  */
-void LinuxAttrViewPrivate::updateFlagsCheckboxes(void)
+void Ext2AttrViewPrivate::updateFlagsCheckboxes(void)
 {
-	static_assert(ARRAY_SIZE(checkBoxes) == LINUX_ATTR_CHECKBOX_MAX,
-		"checkBoxes and LINUX_ATTR_CHECKBOX_MAX are out of sync!");
+	static_assert(ARRAY_SIZE(checkBoxes) == EXT2_ATTR_CHECKBOX_MAX,
+		"checkBoxes and EXT2_ATTR_CHECKBOX_MAX are out of sync!");
 
 	// Flag order, relative to checkboxes
 	// NOTE: Uses bit indexes.
@@ -126,24 +126,24 @@ void LinuxAttrViewPrivate::updateFlagsCheckboxes(void)
 	for (size_t i = 0; i < ARRAY_SIZE(checkBoxes); i++) {
 		bool val = !!(flags & (1U << flag_order[i]));
 		checkBoxes[i]->setChecked(val);
-		checkBoxes[i]->setProperty("LinuxAttrView.value", val);
+		checkBoxes[i]->setProperty("Ext2AttrView.value", val);
 	}
 }
 
-/** LinuxAttrView **/
+/** Ext2AttrView **/
 
-LinuxAttrView::LinuxAttrView(QWidget *parent)
+Ext2AttrView::Ext2AttrView(QWidget *parent)
 	: super(parent)
-	, d_ptr(new LinuxAttrViewPrivate())
+	, d_ptr(new Ext2AttrViewPrivate())
 {
-	Q_D(LinuxAttrView);
+	Q_D(Ext2AttrView);
 	d->ui.setupUi(this);
 
 	// Create the checkboxes.
 	static const int col_count = 4;
 	int col = 0, row = 0;
 	for (size_t i = 0; i < ARRAY_SIZE(d->checkBoxes); i++) {
-		const LinuxAttrCheckboxInfo_t *const p = linuxAttrCheckboxInfo(static_cast<LinuxAttrCheckboxID>(i));
+		const Ext2AttrCheckboxInfo_t *const p = ext2AttrCheckboxInfo(static_cast<Ext2AttrCheckboxID>(i));
 
 		QCheckBox *const checkBox = new QCheckBox();
 		checkBox->setObjectName(U82Q(p->name));
@@ -171,11 +171,11 @@ LinuxAttrView::LinuxAttrView(QWidget *parent)
  * Widget state has changed.
  * @param event State change event.
  */
-void LinuxAttrView::changeEvent(QEvent *event)
+void Ext2AttrView::changeEvent(QEvent *event)
 {
 	if (event->type() == QEvent::LanguageChange) {
 		// Retranslate the UI.
-		Q_D(LinuxAttrView);
+		Q_D(Ext2AttrView);
 		d->ui.retranslateUi(this);
 		d->retranslateUi_nonDesigner();
 	}
@@ -185,22 +185,22 @@ void LinuxAttrView::changeEvent(QEvent *event)
 }
 
 /**
- * Get the current Linux attributes.
- * @return Linux attributes
+ * Get the current Ext2 attributes.
+ * @return Ext2 attributes
  */
-int LinuxAttrView::flags(void) const
+int Ext2AttrView::flags(void) const
 {
-	Q_D(const LinuxAttrView);
+	Q_D(const Ext2AttrView);
 	return d->flags;
 }
 
 /**
- * Set the current Linux attributes.
- * @param flags Linux attributes
+ * Set the current Ext2 attributes.
+ * @param flags Ext2 attributes
  */
-void LinuxAttrView::setFlags(int flags)
+void Ext2AttrView::setFlags(int flags)
 {
-	Q_D(LinuxAttrView);
+	Q_D(Ext2AttrView);
 	if (d->flags != flags) {
 		d->flags = flags;
 		d->updateFlagsDisplay();
@@ -208,11 +208,11 @@ void LinuxAttrView::setFlags(int flags)
 }
 
 /**
- * Clear the current Linux attributes.
+ * Clear the current Ext2 attributes.
  */
-void LinuxAttrView::clearFlags(void)
+void Ext2AttrView::clearFlags(void)
 {
-	Q_D(LinuxAttrView);
+	Q_D(Ext2AttrView);
 	if (d->flags != 0) {
 		d->flags = 0;
 		d->updateFlagsDisplay();
@@ -224,14 +224,14 @@ void LinuxAttrView::clearFlags(void)
 /**
  * Disable user modifications of checkboxes.
  */
-void LinuxAttrView::checkBox_clicked_slot(bool checked)
+void Ext2AttrView::checkBox_clicked_slot(bool checked)
 {
 	QAbstractButton *const sender = qobject_cast<QAbstractButton*>(QObject::sender());
 	if (!sender)
 		return;
 
-	// Get the saved LinuxAttrView value.
-	const bool value = sender->property("LinuxAttrView.value").toBool();
+	// Get the saved Ext2AttrView value.
+	const bool value = sender->property("Ext2AttrView.value").toBool();
 	if (checked != value) {
 		// Toggle this box.
 		sender->setChecked(value);

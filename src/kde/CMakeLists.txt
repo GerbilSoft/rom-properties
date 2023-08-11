@@ -94,20 +94,20 @@ SET(${PROJECT_NAME}_RCC_SRCS
 SET(${PROJECT_NAME}_XATTR_SRCS
 	RpQUrl.cpp	# NOTE: duplicated here
 	xattr/XAttrViewPropertiesDialogPlugin.cpp
-	xattr/LinuxAttrView.cpp
+	xattr/Ext2AttrView.cpp
 	xattr/DosAttrView.cpp
 	xattr/XAttrView.cpp
 	)
 SET(${PROJECT_NAME}_XATTR_H
 	RpQUrl.hpp	# NOTE: duplicated here
 	xattr/XAttrViewPropertiesDialogPlugin.hpp
-	xattr/LinuxAttrView.hpp
+	xattr/Ext2AttrView.hpp
 	xattr/DosAttrView.hpp
 	xattr/XAttrView.hpp
 	)
 SET(${PROJECT_NAME}_XATTR_UIS
 	xattr/XAttrView.ui
-	xattr/LinuxAttrView.ui
+	xattr/Ext2AttrView.ui
 	xattr/DosAttrView.ui
 	)
 

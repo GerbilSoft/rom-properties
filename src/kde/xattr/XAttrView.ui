@@ -12,13 +12,13 @@
   </property>
   <layout class="QVBoxLayout" name="vboxXAttrView" stretch="0,0,1">
    <item>
-    <widget class="QGroupBox" name="grpLinuxAttributes">
+    <widget class="QGroupBox" name="grpExt2Attributes">
      <property name="title">
-      <string>Linux Attributes</string>
+      <string>Ext2 Attributes</string>
      </property>
-     <layout class="QVBoxLayout" name="vboxLinuxAttributes">
+     <layout class="QVBoxLayout" name="vboxExt2Attributes">
       <item>
-       <widget class="LinuxAttrView" name="linuxAttrView" native="true"/>
+       <widget class="Ext2AttrView" name="ext2AttrView" native="true"/>
       </item>
      </layout>
     </widget>
@@ -77,9 +77,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>LinuxAttrView</class>
+   <class>Ext2AttrView</class>
    <extends>QWidget</extends>
-   <header>xattr/LinuxAttrView.hpp</header>
+   <header>xattr/Ext2AttrView.hpp</header>
    <container>1</container>
   </customwidget>
   <customwidget>

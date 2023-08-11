@@ -45,7 +45,7 @@ SET(${PROJECT_NAME}_SRCS
 	scsi/RpFile_Kreon.cpp
 	scsi/RpFile_scsi.cpp
 	xattr/XAttrReader.cpp
-	xattr/LinuxAttrData.c
+	xattr/Ext2AttrData.c
 	)
 # Headers.
 SET(${PROJECT_NAME}_H
@@ -65,7 +65,7 @@ SET(${PROJECT_NAME}_H
 	xattr/XAttrReader.hpp
 	xattr/dos_attrs.h
 	xattr/ext2_flags.h
-	xattr/LinuxAttrData.h
+	xattr/Ext2AttrData.h
 	)
 
 # OS-specific implementations

@@ -43,16 +43,16 @@ class RP_LIBROMDATA_PUBLIC XAttrReader
 
 	public:
 		/**
-		 * Does this file have Linux attributes?
+		 * Does this file have Ext2 attributes?
 		 * @return True if it does; false if not.
 		 */
-		bool hasLinuxAttributes(void) const;
+		bool hasExt2Attributes(void) const;
 
 		/**
-		 * Get this file's Linux attributes.
-		 * @return Linux attributes
+		 * Get this file's Ext2 attributes.
+		 * @return Ext2 attributes
 		 */
-		int linuxAttributes(void) const;
+		int ext2Attributes(void) const;
 
 		/**
 		 * Does this file have MS-DOS attributes?

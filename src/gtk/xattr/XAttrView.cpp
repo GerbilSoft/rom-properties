@@ -14,7 +14,7 @@
 using LibRpFile::XAttrReader;
 
 // Attribute viewer widgets
-#include "LinuxAttrView.h"
+#include "Ext2AttrView.h"
 #include "DosAttrView.h"
 
 /* Property identifiers */
@@ -74,8 +74,8 @@ struct _RpXAttrView {
 	XAttrReader *xattrReader;
 	gboolean has_attributes;
 
-	GtkWidget *fraLinuxAttributes;
-	GtkWidget *linuxAttrView;
+	GtkWidget *fraExt2Attributes;
+	GtkWidget *ext2AttrView;
 
 	GtkWidget *fraDosAttributes;
 	GtkWidget *dosAttrView;
@@ -117,13 +117,13 @@ rp_xattr_view_init(RpXAttrView *widget)
 	gtk_orientable_set_orientation(GTK_ORIENTABLE(widget), GTK_ORIENTATION_VERTICAL);
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
-	// Linux attributes
-	widget->fraLinuxAttributes = gtk_frame_new(C_("XAttrView", "Linux Attributes"));
-	gtk_widget_set_name(widget->fraLinuxAttributes, "fraLinuxAttributes");
-	GtkWidget *const vboxLinuxAttributes = rp_gtk_vbox_new(0);
-	gtk_widget_set_name(vboxLinuxAttributes, "vboxLinuxAttributes");
-	widget->linuxAttrView = rp_linux_attr_view_new();
-	gtk_widget_set_name(widget->linuxAttrView, "linuxAttrView");
+	// Ext2 attributes
+	widget->fraExt2Attributes = gtk_frame_new(C_("XAttrView", "Ext2 Attributes"));
+	gtk_widget_set_name(widget->fraExt2Attributes, "fraExt2Attributes");
+	GtkWidget *const vboxExt2Attributes = rp_gtk_vbox_new(0);
+	gtk_widget_set_name(vboxExt2Attributes, "vboxExt2Attributes");
+	widget->ext2AttrView = rp_ext2_attr_view_new();
+	gtk_widget_set_name(widget->ext2AttrView, "ext2AttrView");
 
 	// MS-DOS attributes
 	widget->fraDosAttributes = gtk_frame_new(C_("XAttrView", "MS-DOS Attributes"));
@@ -194,37 +194,37 @@ rp_xattr_view_init(RpXAttrView *widget)
 	}
 
 #if GTK_CHECK_VERSION(4,0,0)
-	gtk_box_append(GTK_BOX(vboxLinuxAttributes), widget->linuxAttrView);
+	gtk_box_append(GTK_BOX(vboxExt2Attributes), widget->ext2AttrView);
 	gtk_box_append(GTK_BOX(vboxDosAttributes), widget->dosAttrView);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-	gtk_box_pack_start(GTK_BOX(vboxLinuxAttributes), widget->linuxAttrView, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vboxExt2Attributes), widget->ext2AttrView, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(vboxDosAttributes), widget->dosAttrView, FALSE, FALSE, 0);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 #if GTK_CHECK_VERSION(2,91,0)
-	gtk_widget_set_margin(widget->fraLinuxAttributes, 6);
+	gtk_widget_set_margin(widget->fraExt2Attributes, 6);
 	gtk_widget_set_margin(widget->fraDosAttributes, 6);
 	gtk_widget_set_margin(widget->fraXAttr, 6);
-	gtk_widget_set_margin(vboxLinuxAttributes, 6);
+	gtk_widget_set_margin(vboxExt2Attributes, 6);
 	gtk_widget_set_margin(vboxDosAttributes, 6);
-	gtk_frame_set_child(GTK_FRAME(widget->fraLinuxAttributes), vboxLinuxAttributes);
+	gtk_frame_set_child(GTK_FRAME(widget->fraExt2Attributes), vboxExt2Attributes);
 	gtk_frame_set_child(GTK_FRAME(widget->fraDosAttributes), vboxDosAttributes);
 	gtk_frame_set_child(GTK_FRAME(widget->fraXAttr), scrlXAttr);
 #else /* !GTK_CHECK_VERSION(2,91,0) */
 	// NOTE: The extra alignments outside the frame reduce the frame widths.
 	// This only affects GTK2, so meh.
-	GtkWidget *const alignVboxLinuxAttributes = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
-	gtk_widget_set_name(alignVboxLinuxAttributes, "alignVboxLinuxAttributes");
-	gtk_widget_show(alignVboxLinuxAttributes);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(alignVboxLinuxAttributes), 6, 6, 6, 6);
-	gtk_container_add(GTK_CONTAINER(alignVboxLinuxAttributes), vboxLinuxAttributes);
-	gtk_frame_set_child(GTK_FRAME(widget->fraLinuxAttributes), alignVboxLinuxAttributes);
+	GtkWidget *const alignVboxExt2Attributes = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
+	gtk_widget_set_name(alignVboxExt2Attributes, "alignVboxExt2Attributes");
+	gtk_widget_show(alignVboxExt2Attributes);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignVboxExt2Attributes), 6, 6, 6, 6);
+	gtk_container_add(GTK_CONTAINER(alignVboxExt2Attributes), vboxExt2Attributes);
+	gtk_frame_set_child(GTK_FRAME(widget->fraExt2Attributes), alignVboxExt2Attributes);
 
-	GtkWidget *const alignFraLinuxAttributes = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
-	gtk_widget_set_name(alignFraLinuxAttributes, "alignFraLinuxAttributes");
-	gtk_widget_show(alignFraLinuxAttributes);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(alignFraLinuxAttributes), 6, 6, 6, 6);
-	gtk_container_add(GTK_CONTAINER(alignFraLinuxAttributes), widget->fraLinuxAttributes);
+	GtkWidget *const alignFraExt2Attributes = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
+	gtk_widget_set_name(alignFraExt2Attributes, "alignFraExt2Attributes");
+	gtk_widget_show(alignFraExt2Attributes);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignFraExt2Attributes), 6, 6, 6, 6);
+	gtk_container_add(GTK_CONTAINER(alignFraExt2Attributes), widget->fraExt2Attributes);
 
 	GtkWidget *const alignVboxDosAttributes = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
 	gtk_widget_set_name(alignVboxDosAttributes, "alignVboxDosAttributes");
@@ -255,29 +255,29 @@ rp_xattr_view_init(RpXAttrView *widget)
 
 #if GTK_CHECK_VERSION(4,0,0)
 	// Default to hidden. (GTK4 defaults to visible)
-	gtk_widget_set_visible(widget->fraLinuxAttributes, false);
+	gtk_widget_set_visible(widget->fraExt2Attributes, false);
 	gtk_widget_set_visible(widget->fraDosAttributes, false);
 	gtk_widget_set_visible(widget->fraXAttr, false);
 
-	gtk_box_append(GTK_BOX(widget), widget->fraLinuxAttributes);
+	gtk_box_append(GTK_BOX(widget), widget->fraExt2Attributes);
 	gtk_box_append(GTK_BOX(widget), widget->fraDosAttributes);
 	gtk_box_append(GTK_BOX(widget), widget->fraXAttr);	// TODO: Expand?
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 #  if GTK_CHECK_VERSION(2,91,0)
-	gtk_box_pack_start(GTK_BOX(widget), widget->fraLinuxAttributes, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(widget), widget->fraExt2Attributes, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(widget), widget->fraDosAttributes, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(widget), widget->fraXAttr, TRUE, TRUE, 0);
 #  else /* !GTK_CHECK_VERSION(2,91,0) */
-	gtk_box_pack_start(GTK_BOX(widget), alignFraLinuxAttributes, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(widget), alignFraExt2Attributes, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(widget), alignFraDosAttributes, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(widget), alignFraXAttr, TRUE, TRUE, 0);	// FIXME: Expand isn't working here.
 #  endif /* GTK_CHECK_VERSION(2,91,0) */
-	gtk_widget_show(widget->fraLinuxAttributes);
+	gtk_widget_show(widget->fraExt2Attributes);
 	gtk_widget_show(widget->fraDosAttributes);
 	gtk_widget_show(widget->fraXAttr);
-	gtk_widget_show(vboxLinuxAttributes);
+	gtk_widget_show(vboxExt2Attributes);
 	gtk_widget_show(vboxDosAttributes);
-	gtk_widget_show(widget->linuxAttrView);
+	gtk_widget_show(widget->ext2AttrView);
 	gtk_widget_show(widget->dosAttrView);
 	gtk_widget_show(scrlXAttr);
 	gtk_widget_show(widget->treeView);
@@ -358,26 +358,26 @@ rp_xattr_view_finalize(GObject *object)
 /** Update display **/
 
 /**
- * Load Linux attributes, if available.
+ * Load Ext2 attributes, if available.
  * @param widget XAttrView
  * @return 0 on success; negative POSIX error code on error.
  */
 static int
-rp_xattr_view_load_linux_attrs(RpXAttrView *widget)
+rp_xattr_view_load_ext2_attrs(RpXAttrView *widget)
 {
 	// Hide by default.
 	// If we do have attributes, we'll show the widgets there.
-	gtk_widget_set_visible(widget->fraLinuxAttributes, false);
+	gtk_widget_set_visible(widget->fraExt2Attributes, false);
 
-	if (!widget->xattrReader->hasLinuxAttributes()) {
-		// No Linux attributes.
+	if (!widget->xattrReader->hasExt2Attributes()) {
+		// No Ext2 attributes.
 		return -ENOENT;
 	}
 
-	// We have Linux attributes.
-	rp_linux_attr_view_set_flags(RP_LINUX_ATTR_VIEW(widget->linuxAttrView),
-		widget->xattrReader->linuxAttributes());
-	gtk_widget_set_visible(widget->fraLinuxAttributes, true);
+	// We have Ext2 attributes.
+	rp_ext2_attr_view_set_flags(RP_EXT2_ATTR_VIEW(widget->ext2AttrView),
+		widget->xattrReader->ext2Attributes());
+	gtk_widget_set_visible(widget->fraExt2Attributes, true);
 	return 0;
 }
 
@@ -394,11 +394,11 @@ rp_xattr_view_load_dos_attrs(RpXAttrView *widget)
 	gtk_widget_set_visible(widget->fraDosAttributes, false);
 
 	if (!widget->xattrReader->hasDosAttributes()) {
-		// No Linux attributes.
+		// No MS-DOS attributes.
 		return -ENOENT;
 	}
 
-	// We have Linux attributes.
+	// We have MS-DOS attributes.
 	rp_dos_attr_view_set_attrs(RP_DOS_ATTR_VIEW(widget->dosAttrView),
 		widget->xattrReader->dosAttributes());
 	gtk_widget_set_visible(widget->fraDosAttributes, true);
@@ -481,7 +481,7 @@ rp_xattr_view_load_attributes(RpXAttrView *widget)
 
 	// Load the attributes.
 	bool hasAnyAttrs = false;
-	int ret = rp_xattr_view_load_linux_attrs(widget);
+	int ret = rp_xattr_view_load_ext2_attrs(widget);
 	if (ret == 0) {
 		hasAnyAttrs = true;
 	}
@@ -512,7 +512,7 @@ rp_xattr_view_load_attributes(RpXAttrView *widget)
 static void
 rp_xattr_view_clear_display_widgets(RpXAttrView *widget)
 {
-	rp_linux_attr_view_clear_flags(RP_LINUX_ATTR_VIEW(widget->linuxAttrView));
+	rp_ext2_attr_view_clear_flags(RP_EXT2_ATTR_VIEW(widget->ext2AttrView));
 	rp_dos_attr_view_clear_attrs(RP_DOS_ATTR_VIEW(widget->dosAttrView));
 }
 

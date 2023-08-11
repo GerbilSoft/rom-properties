@@ -39,10 +39,10 @@ namespace LibRpFile {
 XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	: filename(U82T_c(filename))
 	, lastError(0)
-	, hasLinuxAttributes(false)
+	, hasExt2Attributes(false)
 	, hasDosAttributes(false)
 	, hasGenericXAttrs(false)
-	, linuxAttributes(0)
+	, ext2Attributes(0)
 	, dosAttributes(0)
 {
 	init();
@@ -51,10 +51,10 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 XAttrReaderPrivate::XAttrReaderPrivate(const wchar_t *filename)
 	: filename(filename)
 	, lastError(0)
-	, hasLinuxAttributes(false)
+	, hasExt2Attributes(false)
 	, hasDosAttributes(false)
 	, hasGenericXAttrs(false)
-	, linuxAttributes(0)
+	, ext2Attributes(0)
 	, dosAttributes(0)
 {
 	init();
@@ -72,22 +72,22 @@ int XAttrReaderPrivate::init(void)
 	// handle from the file, so we'll just use the filename.
 
 	// Load the attributes.
-	loadLinuxAttrs();
+	loadExt2Attrs();
 	loadDosAttrs();
 	loadGenericXattrs();
 	return 0;
 }
 
 /**
- * Load Linux attributes, if available.
+ * Load Ext2 attributes, if available.
  * @param fd File descriptor of the open file
  * @return 0 on success; negative POSIX error code on error.
  */
-int XAttrReaderPrivate::loadLinuxAttrs(void)
+int XAttrReaderPrivate::loadExt2Attrs(void)
 {
 	// FIXME: WSL support?
-	linuxAttributes = 0;
-	hasLinuxAttributes = false;
+	ext2Attributes = 0;
+	hasExt2Attributes = false;
 	return -ENOTSUP;
 }
 

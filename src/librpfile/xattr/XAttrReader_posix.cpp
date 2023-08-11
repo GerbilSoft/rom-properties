@@ -26,7 +26,7 @@
 #  include <sys/extattr.h>
 #endif
 
-// EXT2 flags (also used for EXT3, EXT4, and other Linux file systems)
+// Ext2 flags (also used for Ext3, Ext4, and other Linux file systems)
 #include "ext2_flags.h"
 
 #ifdef __linux__
@@ -63,10 +63,10 @@ namespace LibRpFile {
 XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	: fd(-1)
 	, lastError(0)
-	, hasLinuxAttributes(false)
+	, hasExt2Attributes(false)
 	, hasDosAttributes(false)
 	, hasGenericXAttrs(false)
-	, linuxAttributes(0)
+	, ext2Attributes(0)
 	, dosAttributes(0)
 {
 	// Make sure this is a regular file or a directory.
@@ -166,39 +166,39 @@ int XAttrReaderPrivate::init(void)
 	}
 
 	// Load the attributes.
-	loadLinuxAttrs();
+	loadExt2Attrs();
 	loadDosAttrs();
 	loadGenericXattrs();
 	return 0;
 }
 
 /**
- * Load Linux attributes, if available.
+ * Load Ext2 attributes, if available.
  * Internal fd (filename on Windows) must be set.
  * @return 0 on success; negative POSIX error code on error.
  */
-int XAttrReaderPrivate::loadLinuxAttrs(void)
+int XAttrReaderPrivate::loadExt2Attrs(void)
 {
-	// Attempt to get EXT2 flags.
+	// Attempt to get Ext2 flags.
 
 #ifdef __linux__
 	// NOTE: The ioctl is defined as using long, but the actual
 	// kernel code uses int.
 	int ret;
-	if (!ioctl(fd, FS_IOC_GETFLAGS, &linuxAttributes)) {
-		// ioctl() succeeded. We have EXT2 flags.
-		hasLinuxAttributes = true;
+	if (!ioctl(fd, FS_IOC_GETFLAGS, &ext2Attributes)) {
+		// ioctl() succeeded. We have Ext2 flags.
+		hasExt2Attributes = true;
 		ret = 0;
 	} else {
-		// No EXT2 flags on this file.
+		// No Ext2 flags on this file.
 		// Assume this file system doesn't support them.
 		ret = errno;
 		if (ret == 0) {
 			ret = -EIO;
 		}
 
-		linuxAttributes = 0;
-		hasLinuxAttributes = false;
+		ext2Attributes = 0;
+		hasExt2Attributes = false;
 	}
 	return ret;
 #else /* !__linux__ */
