@@ -438,15 +438,15 @@ int loadIconFromFilenameAndIndex(LPCTSTR lpszIconFilename, HICON *phiconLarge, H
 /**
  * Get a filename using IFileDialog.
  * @param ts_ret	[out] Output filename (Empty if none)
- * @param bSave		[in] True for save; false for open
  * @param hWnd		[in] Owner
  * @param dlgTitle	[in] Dialog title
  * @param filterSpec	[in] RP file dialog filter (UTF-16, converted from gettext())
  * @param origFilename	[in,opt] Starting filename
+ * @param bSave		[in] True for save; false for open
  * @return 0 on success; HRESULT on error.
  */
-static inline HRESULT getFileName_int_IFileDialog(tstring &ts_ret, bool bSave, HWND hWnd,
-	LPCTSTR dlgTitle, LPCTSTR filterSpec, LPCTSTR origFilename)
+static inline HRESULT getFileName_int_IFileDialog(tstring &ts_ret, HWND hWnd,
+	LPCTSTR dlgTitle, LPCTSTR filterSpec, LPCTSTR origFilename, bool bSave)
 {
 	IFileDialogPtr pFileDlg;
 	HRESULT hr = CoCreateInstance(
@@ -687,23 +687,23 @@ static tstring rpFileDialogFilterToWin32(const TCHAR *filter)
  * - Vista+: IOpenFileDialog / IFileSaveDialog
  * - XP: GetOpenFileName() / GetSaveFileName()
  *
- * @param bSave		[in] True for save; false for open.
  * @param hWnd		[in] Owner.
  * @param dlgTitle	[in] Dialog title.
  * @param filterSpec	[in] Filter specification. (RP format, UTF-8)
  * @param origFilename	[in,opt] Starting filename.
+ * @param bSave		[in] True for save; false for open.
  * @return Filename, or empty string on error.
  */
-static tstring getFileName_int(bool bSave, HWND hWnd,
-	LPCTSTR dlgTitle, LPCTSTR filterSpec, LPCTSTR origFilename)
+static tstring getFileName_int(HWND hWnd, LPCTSTR dlgTitle,
+	LPCTSTR filterSpec, LPCTSTR origFilename, bool bSave)
 {
 	assert(dlgTitle != nullptr);
 	assert(filterSpec != nullptr);
 	tstring ts_ret;
 
 	// Try IFileDialog first. (Unicode only)
-	HRESULT hr = getFileName_int_IFileDialog(ts_ret, bSave,
-		hWnd, dlgTitle, filterSpec, origFilename);
+	HRESULT hr = getFileName_int_IFileDialog(ts_ret, hWnd,
+		dlgTitle, filterSpec, origFilename, bSave);
 	if (hr != REGDB_E_CLASSNOTREG) {
 		// IFileDialog succeeded.
 		return ts_ret;
@@ -778,7 +778,7 @@ static tstring getFileName_int(bool bSave, HWND hWnd,
  */
 tstring getOpenFileName(HWND hWnd, LPCTSTR dlgTitle, LPCTSTR filterSpec, LPCTSTR origFilename)
 {
-	return getFileName_int(false, hWnd, dlgTitle, filterSpec, origFilename);
+	return getFileName_int(hWnd, dlgTitle, filterSpec, origFilename, false);
 }
 
 /**
@@ -796,7 +796,7 @@ tstring getOpenFileName(HWND hWnd, LPCTSTR dlgTitle, LPCTSTR filterSpec, LPCTSTR
  */
 tstring getSaveFileName(HWND hWnd, LPCTSTR dlgTitle, LPCTSTR filterSpec, LPCTSTR origFilename)
 {
-	return getFileName_int(true, hWnd, dlgTitle, filterSpec, origFilename);
+	return getFileName_int(hWnd, dlgTitle, filterSpec, origFilename, true);
 }
 
 /** Window procedure subclasses **/
