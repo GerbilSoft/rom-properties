@@ -279,6 +279,7 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 		}
 		if (iret.keysImportedNoVerify > 0) {
 			msg += nl_bullet;
+			// tr: %s == number of keys (formatted)
 			msg += rp_sprintf(NC_("KeyManagerTab",
 				"%s key has been imported without verification.",
 				"%s keys have been imported without verification.",
