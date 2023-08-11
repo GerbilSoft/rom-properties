@@ -49,8 +49,7 @@ bool isWritableDirectory(const char *path)
 	}
 #else /* !HAVE_STATX */
 	struct stat sb;
-	int ret = stat(path, &sb);
-	if (ret != 0) {
+	if (stat(path, &sb) != 0) {
 		// stat() failed.
 		return false;
 	} else if (!S_ISDIR(sb.st_mode)) {

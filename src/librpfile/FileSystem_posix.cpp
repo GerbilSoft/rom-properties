@@ -137,8 +137,7 @@ off64_t filesize(const char *filename)
 	return sbx.stx_size;
 #else /* !HAVE_STATX */
 	struct stat sb;
-	int ret = stat(filename, &sb);
-	if (ret != 0) {
+	if (stat(filename, &sb) != 0) {
 		// stat() failed.
 		int ret = -errno;
 		return (ret != 0 ? ret : -EIO);
@@ -198,8 +197,7 @@ int get_mtime(const char *filename, time_t *pMtime)
 	*pMtime = sbx.stx_mtime.tv_sec;
 #else /* !HAVE_STATX */
 	struct stat sb;
-	int ret = stat(filename, &sb);
-	if (ret != 0) {
+	if (stat(filename, &sb) != 0) {
 		// stat() failed.
 		int ret = -errno;
 		return (ret != 0 ? ret : -EIO);
@@ -248,7 +246,7 @@ bool is_symlink(const char *filename)
 	if (unlikely(!filename || filename[0] == '\0')) {
 		return false;
 	}
-	
+
 #ifdef HAVE_STATX
 	struct statx sbx;
 	int ret = statx(AT_FDCWD, filename, AT_SYMLINK_NOFOLLOW, STATX_TYPE, &sbx);
@@ -260,8 +258,7 @@ bool is_symlink(const char *filename)
 	return !!S_ISLNK(sbx.stx_mode);
 #else /* !HAVE_STATX */
 	struct stat sb;
-	int ret = lstat(filename, &sb);
-	if (ret != 0) {
+	if (lstat(filename, &sb) != 0) {
 		// lstat() failed.
 		// Assume this is not a symlink.
 		return false;
@@ -324,8 +321,7 @@ bool is_directory(const char *filename)
 	return !!S_ISDIR(sbx.stx_mode);
 #else /* !HAVE_STATX */
 	struct stat sb;
-	int ret = stat(filename, &sb);
-	if (ret != 0) {
+	if (stat(filename, &sb) != 0) {
 		// stat() failed.
 		// Assume this is not a directory.
 		return false;
@@ -451,8 +447,7 @@ int get_file_size_and_mtime(const char *filename, off64_t *pFileSize, time_t *pM
 	*pMtime = sbx.stx_mtime.tv_sec;
 #else /* !HAVE_STATX */
 	struct stat sb;
-	int ret = stat(filename, &sb);
-	if (ret != 0) {
+	if (stat(filename, &sb) != 0) {
 		// stat() failed.
 		int ret = -errno;
 		return (ret != 0 ? ret : -EIO);
