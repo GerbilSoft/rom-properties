@@ -100,20 +100,15 @@ IFACEMETHODIMP RP_ShellIconOverlayIdentifier::IsMemberOf(_In_ PCWSTR pwszPath, D
 		return S_FALSE;
 	}
 
-	// Convert the filename to UTF-8.
-	const string u8filename = W2U8(pwszPath);
-
 	// Check for "bad" file systems.
 	// TODO: Combine with the above "slow" check?
-	if (FileSystem::isOnBadFS(u8filename.c_str(),
-	    config->enableThumbnailOnNetworkFS()))
-	{
+	if (FileSystem::isOnBadFS(pwszPath, config->enableThumbnailOnNetworkFS())) {
 		// This file is on a "bad" file system.
 		return S_FALSE;
 	}
 
 	// Attempt to create a RomData object.
-	RomData *const romData = RomDataFactory::create(u8filename.c_str(), RomDataFactory::RDA_HAS_DPOVERLAY);
+	RomData *const romData = RomDataFactory::create(pwszPath, RomDataFactory::RDA_HAS_DPOVERLAY);
 	if (!romData) {
 		// ROM is not supported.
 		// TODO: Return E_FAIL if the file couldn't be opened?

@@ -2183,9 +2183,7 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 	HRESULT hr = E_FAIL;
 	UINT nFiles, cchFilename;
 	RomData *romData = nullptr;
-
 	TCHAR *tfilename = nullptr;	// RP_ShellPropSheetExt_Private takes ownership!
-	string u8filename;
 
 	const Config *config;
 
@@ -2216,16 +2214,9 @@ IFACEMETHODIMP RP_ShellPropSheetExt::Initialize(
 		goto cleanup;
 	}
 
-	// Convert the filename to UTF-8.
-	u8filename = T2U8(tfilename, cchFilename);
-
 	// Check for "bad" file systems.
-	// TODO: wchar_t* overload so we don't need to use WTF-8.
-	// Requires adding to the API, so romdata-4.dll?
 	config = Config::instance();
-	if (FileSystem::isOnBadFS(u8filename.c_str(),
-	    config->enableThumbnailOnNetworkFS()))
-	{
+	if (FileSystem::isOnBadFS(tfilename, config->enableThumbnailOnNetworkFS())) {
 		// This file is on a "bad" file system.
 		goto cleanup;
 	}

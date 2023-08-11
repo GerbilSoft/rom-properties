@@ -115,15 +115,9 @@ IFACEMETHODIMP RP_ExtractImage::Load(_In_ LPCOLESTR pszFileName, DWORD dwMode)
 		return E_OUTOFMEMORY;
 	}
 
-	// Convert the filename to UTF-8.
-	// NOTE: LPOLESTR is always wchar_t*.
-	const string u8filename = W2U8(d->olefilename);
-
 	// Check for "bad" file systems.
-	// TODO: wchar_t* overload so we don't need to use WTF-8.
-	// Requires adding to the API, so romdata-4.dll?
 	const Config *const config = Config::instance();
-	if (FileSystem::isOnBadFS(u8filename.c_str(), config->enableThumbnailOnNetworkFS())) {
+	if (FileSystem::isOnBadFS(d->olefilename, config->enableThumbnailOnNetworkFS())) {
 		// This file is on a "bad" file system.
 		return S_OK;
 	}

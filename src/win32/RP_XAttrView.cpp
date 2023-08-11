@@ -385,12 +385,8 @@ IFACEMETHODIMP RP_XAttrView::Initialize(
 
 	// TODO: Check for "bad" file systems before checking ADS?
 #if 0
-	// TODO: wchar_t* overload so we don't need to use WTF-8.
-	// Requires adding to the API, so romdata-4.dll?
 	config = Config::instance();
-	if (FileSystem::isOnBadFS(T2U8(tfilename).c_str(),
-	    config->enableThumbnailOnNetworkFS()))
-	{
+	if (FileSystem::isOnBadFS(tfilename.c_str(), config->enableThumbnailOnNetworkFS())) {
 		// This file is on a "bad" file system.
 		goto cleanup;
 	}
