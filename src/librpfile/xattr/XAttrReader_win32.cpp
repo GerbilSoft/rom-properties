@@ -40,9 +40,12 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	: filename(U82T_c(filename))
 	, lastError(0)
 	, hasExt2Attributes(false)
+	, hasXfsAttributes(false)
 	, hasDosAttributes(false)
 	, hasGenericXAttrs(false)
 	, ext2Attributes(0)
+	, xfsXFlags(0)
+	, xfsProjectId(0)
 	, dosAttributes(0)
 {
 	init();
@@ -52,9 +55,12 @@ XAttrReaderPrivate::XAttrReaderPrivate(const wchar_t *filename)
 	: filename(filename)
 	, lastError(0)
 	, hasExt2Attributes(false)
+	, hasXfsAttributes(false)
 	, hasDosAttributes(false)
 	, hasGenericXAttrs(false)
 	, ext2Attributes(0)
+	, xfsXFlags(0)
+	, xfsProjectId(0)
 	, dosAttributes(0)
 {
 	init();
@@ -73,6 +79,7 @@ int XAttrReaderPrivate::init(void)
 
 	// Load the attributes.
 	loadExt2Attrs();
+	loadXfsAttrs();
 	loadDosAttrs();
 	loadGenericXattrs();
 	return 0;
@@ -88,6 +95,20 @@ int XAttrReaderPrivate::loadExt2Attrs(void)
 	// FIXME: WSL support?
 	ext2Attributes = 0;
 	hasExt2Attributes = false;
+	return -ENOTSUP;
+}
+
+/**
+ * Load XFS attributes, if available.
+ * @param fd File descriptor of the open file
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int XAttrReaderPrivate::loadXfsAttrs(void)
+{
+	// FIXME: WSL support?
+	xfsXFlags = 0;
+	xfsProjectId = 0;
+	hasXfsAttributes = false;
 	return -ENOTSUP;
 }
 

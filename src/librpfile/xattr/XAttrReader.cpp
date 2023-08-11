@@ -62,6 +62,36 @@ int XAttrReader::ext2Attributes(void) const
 }
 
 /**
+ * Does this file have XFS attributes?
+ * @return True if it does; false if not.
+ */
+bool XAttrReader::hasXfsAttributes(void) const
+{
+	RP_D(const XAttrReader);
+	return d->hasExt2Attributes;
+}
+
+/**
+ * Get this file's XFS xflags.
+ * @return XFS xflags
+ */
+uint32_t XAttrReader::xfsXFlags(void) const
+{
+	RP_D(const XAttrReader);
+	return d->xfsXFlags;
+}
+
+/**
+ * Get this file's XFS project ID.
+ * @return XFS project ID
+ */
+uint32_t XAttrReader::xfsProjectId(void) const
+{
+	RP_D(const XAttrReader);
+	return d->xfsProjectId;
+}
+
+/**
  * Does this file have MS-DOS attributes?
  * @return True if it does; false if not.
  */

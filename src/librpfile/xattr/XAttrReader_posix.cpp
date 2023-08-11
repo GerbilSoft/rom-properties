@@ -30,9 +30,12 @@
 #include "ext2_flags.h"
 
 #ifdef __linux__
-// for FS_IOC_GETFLAGS (equivalent to EXT2_IOC_GETFLAGS)
+// for the following ioctls:
+// - FS_IOC_GETFLAGS (equivalent to EXT2_IOC_GETFLAGS)
+// - FS_IOC_FSGETXATTR (equivalent to XFS_IOC_FSGETXATTR)
 #  include <linux/fs.h>
-// for FAT_IOCTL_GET_ATTRIBUTES
+// for the following ioctls:
+// - FAT_IOCTL_GET_ATTRIBUTES
 #  include <linux/msdos_fs.h>
 #endif /* __linux__ */
 
@@ -64,9 +67,12 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	: fd(-1)
 	, lastError(0)
 	, hasExt2Attributes(false)
+	, hasXfsAttributes(false)
 	, hasDosAttributes(false)
 	, hasGenericXAttrs(false)
 	, ext2Attributes(0)
+	, xfsXFlags(0)
+	, xfsProjectId(0)
 	, dosAttributes(0)
 {
 	// Make sure this is a regular file or a directory.
@@ -167,6 +173,7 @@ int XAttrReaderPrivate::init(void)
 
 	// Load the attributes.
 	loadExt2Attrs();
+	loadXfsAttrs();
 	loadDosAttrs();
 	loadGenericXattrs();
 	return 0;
@@ -205,6 +212,45 @@ int XAttrReaderPrivate::loadExt2Attrs(void)
 	// Not supported.
 	return -ENOTSUP;
 #endif /* __linux__ */
+}
+
+/**
+ * Load XFS attributes, if available.
+ * Internal fd (filename on Windows) must be set.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int XAttrReaderPrivate::loadXfsAttrs(void)
+{
+	// Attempt to get the XFS flags and project ID.
+
+#if defined(__linux__) && defined(FS_IOC_FSGETXATTR)
+	// NOTE: If we want to use the fsx_nextents field later,
+	// change the ioctl to FS_IOC_FSGETXATTRA.
+	int ret;
+	struct fsxattr fsx;
+	if (!ioctl(fd, FS_IOC_FSGETXATTR, &fsx)) {
+		// ioctl() succeeded. We have XFS flags.
+		xfsXFlags = fsx.fsx_xflags;
+		xfsProjectId = fsx.fsx_projid;
+		hasXfsAttributes = true;
+		ret = 0;
+	} else {
+		// No XFS flags on this file.
+		// Assume this file system doesn't support them.
+		ret = -errno;
+		if (ret == 0) {
+			ret = -EIO;
+		}
+
+		xfsXFlags = 0;
+		xfsProjectId = 0;
+		hasXfsAttributes = false;
+	}
+	return ret;
+#else /* !__linux__ || !FS_IOC_FSGETXATTR */
+	// Not supported.
+	return -ENOTSUP;
+#endif /* __linux__ && FS_IOC_FSGETXATTR */
 }
 
 /**
