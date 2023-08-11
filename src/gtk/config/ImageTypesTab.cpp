@@ -120,7 +120,7 @@ struct _RpImageTypesTab {
 
 	RpImageTypesTabPrivate *d;
 
-	GtkWidget *table;	// GtkGrid/GtkTable
+	GtkWidget *tblImageTypes;	// GtkGrid/GtkTable
 	GtkWidget *lblCredits;
 };
 
@@ -210,9 +210,9 @@ void RpImageTypesTabPrivate::createGridLabels(void)
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
 #ifdef USE_GTK_GRID
-		gtk_grid_attach(GTK_GRID(q->table), lblImageType, i+1, 0, 1, 1);
+		gtk_grid_attach(GTK_GRID(q->tblImageTypes), lblImageType, i+1, 0, 1, 1);
 #else /* !USE_GTK_GRID */
-		gtk_table_attach(GTK_TABLE(q->table), lblImageType, i+1, i+2, 0, 1, GTK_SHRINK, GTK_SHRINK, 0, 0);
+		gtk_table_attach(GTK_TABLE(q->tblImageTypes), lblImageType, i+1, i+2, 0, 1, GTK_SHRINK, GTK_SHRINK, 0, 0);
 #endif /* USE_GTK_GRID */
 	}
 
@@ -235,9 +235,9 @@ void RpImageTypesTabPrivate::createGridLabels(void)
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
 #ifdef USE_GTK_GRID
-		gtk_grid_attach(GTK_GRID(q->table), lblSysName, 0, sys+1, 1, 1);
+		gtk_grid_attach(GTK_GRID(q->tblImageTypes), lblSysName, 0, sys+1, 1, 1);
 #else /* !USE_GTK_GRID */
-		gtk_table_attach(GTK_TABLE(q->table), lblSysName, 0, 1, sys+1, sys+2, GTK_FILL, GTK_SHRINK, 0, 0);
+		gtk_table_attach(GTK_TABLE(q->tblImageTypes), lblSysName, 0, 1, sys+1, sys+2, GTK_FILL, GTK_SHRINK, 0, 0);
 #endif /* USE_GTK_GRID */
 	}
 }
@@ -276,9 +276,9 @@ void RpImageTypesTabPrivate::createComboBox(unsigned int cbid)
 	gtk_widget_show(cbo);
 #endif /* !GTK_CHECK_VERSION */
 #ifdef USE_GTK_GRID
-	gtk_grid_attach(GTK_GRID(q->table), cbo, imageType+1, sys+1, 1, 1);
+	gtk_grid_attach(GTK_GRID(q->tblImageTypes), cbo, imageType+1, sys+1, 1, 1);
 #else /* !USE_GTK_GRID */
-	gtk_table_attach(GTK_TABLE(q->table), cbo, imageType+1, imageType+2, sys+1, sys+2, GTK_SHRINK, GTK_SHRINK, 0, 0);
+	gtk_table_attach(GTK_TABLE(q->tblImageTypes), cbo, imageType+1, imageType+2, sys+1, sys+2, GTK_SHRINK, GTK_SHRINK, 0, 0);
 #endif /* USE_GTK_GRID */
 	sysData.cboImageType[imageType] = OUR_COMBO_BOX(cbo);
 
@@ -486,16 +486,16 @@ rp_image_types_tab_init(RpImageTypesTab *tab)
 
 	// Create the GtkGrid/GtkTable.
 #ifdef USE_GTK_GRID
-	tab->table = gtk_grid_new();
-	gtk_grid_set_row_spacing(GTK_GRID(tab->table), 2);
-	gtk_grid_set_column_spacing(GTK_GRID(tab->table), 2);
+	tab->tblImageTypes = gtk_grid_new();
+	gtk_grid_set_row_spacing(GTK_GRID(tab->tblImageTypes), 2);
+	gtk_grid_set_column_spacing(GTK_GRID(tab->tblImageTypes), 2);
 #else /* !USE_GTK_GRID */
-	tab->table = gtk_table_new(ImageTypesConfig::sysCount()+1,
+	tab->tblImageTypes = gtk_table_new(ImageTypesConfig::sysCount()+1,
 				   ImageTypesConfig::imageTypeCount()+1, false);
-	gtk_table_set_row_spacings(GTK_TABLE(tab->table), 2);
-	gtk_table_set_col_spacings(GTK_TABLE(tab->table), 2);
+	gtk_table_set_row_spacings(GTK_TABLE(tab->tblImageTypes), 2);
+	gtk_table_set_col_spacings(GTK_TABLE(tab->tblImageTypes), 2);
 #endif /* USE_GTK_GRID */
-	gtk_widget_set_name(tab->table, "table");
+	gtk_widget_set_name(tab->tblImageTypes, "tblImageTypes");
 
 	// Create the control grid.
 	tab->d = new RpImageTypesTabPrivate(tab);
@@ -503,19 +503,19 @@ rp_image_types_tab_init(RpImageTypesTab *tab)
 
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_box_append(GTK_BOX(tab), lblImageTypes);
-	gtk_box_append(GTK_BOX(tab), tab->table);
+	gtk_box_append(GTK_BOX(tab), tab->tblImageTypes);
 
 	// TODO: Spacer and/or alignment?
 	gtk_box_append(GTK_BOX(tab), tab->lblCredits);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	gtk_box_pack_start(GTK_BOX(tab), lblImageTypes, false, false, 0);
-	gtk_box_pack_start(GTK_BOX(tab), tab->table, false, false, 0);
+	gtk_box_pack_start(GTK_BOX(tab), tab->tblImageTypes, false, false, 0);
 
 	// TODO: Spacer and/or alignment?
 	gtk_box_pack_end(GTK_BOX(tab), tab->lblCredits, false, false, 0);
 
 	gtk_widget_show(lblImageTypes);
-	gtk_widget_show(tab->table);
+	gtk_widget_show(tab->tblImageTypes);
 	gtk_widget_show(tab->lblCredits);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 

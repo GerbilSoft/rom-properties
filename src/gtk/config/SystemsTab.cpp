@@ -97,6 +97,7 @@ rp_systems_tab_init(RpSystemsTab *tab)
 	GtkWidget *const fraDMG = gtk_frame_new(C_("SystemsTab", "Game Boy Title Screens"));
 	gtk_widget_set_name(fraDMG, "fraDMG");
 	GtkWidget *const vboxDMG = rp_gtk_vbox_new(6);
+	gtk_widget_set_name(vboxDMG, "vboxDMG");
 #if GTK_CHECK_VERSION(2,91,0)
 	gtk_widget_set_margin(vboxDMG, 6);
 	gtk_frame_set_child(GTK_FRAME(fraDMG), vboxDMG);
@@ -213,30 +214,30 @@ rp_systems_tab_init(RpSystemsTab *tab)
 
 	// GtkGrid/GtkTable
 #ifdef USE_GTK_GRID
-	GtkWidget *const table = gtk_grid_new();
-	gtk_widget_set_name(table, "table");
-	gtk_grid_set_row_spacing(GTK_GRID(table), 2);
-	gtk_grid_set_column_spacing(GTK_GRID(table), 8);
+	GtkWidget *const tblDMG = gtk_grid_new();
+	gtk_widget_set_name(tblDMG, "tblDMG");
+	gtk_grid_set_row_spacing(GTK_GRID(tblDMG), 2);
+	gtk_grid_set_column_spacing(GTK_GRID(tblDMG), 8);
 
 	// TODO: GTK_FILL
-	gtk_grid_attach(GTK_GRID(table), lblDMG, 0, 0, 1, 1);
-	gtk_grid_attach(GTK_GRID(table), tab->cboDMG, 1, 0, 1, 1);
-	gtk_grid_attach(GTK_GRID(table), lblSGB, 0, 1, 1, 1);
-	gtk_grid_attach(GTK_GRID(table), tab->cboSGB, 1, 1, 1, 1);
-	gtk_grid_attach(GTK_GRID(table), lblCGB, 0, 2, 1, 1);
-	gtk_grid_attach(GTK_GRID(table), tab->cboCGB, 1, 2, 1, 1);
+	gtk_grid_attach(GTK_GRID(tblDMG), lblDMG, 0, 0, 1, 1);
+	gtk_grid_attach(GTK_GRID(tblDMG), tab->cboDMG, 1, 0, 1, 1);
+	gtk_grid_attach(GTK_GRID(tblDMG), lblSGB, 0, 1, 1, 1);
+	gtk_grid_attach(GTK_GRID(tblDMG), tab->cboSGB, 1, 1, 1, 1);
+	gtk_grid_attach(GTK_GRID(tblDMG), lblCGB, 0, 2, 1, 1);
+	gtk_grid_attach(GTK_GRID(tblDMG), tab->cboCGB, 1, 2, 1, 1);
 #else /* !USE_GTK_GRID */
-	GtkWidget *const table = gtk_table_new(3, 2, false);
-	gtk_widget_set_name(table, "table");
-	gtk_table_set_row_spacings(GTK_TABLE(table), 2);
-	gtk_table_set_col_spacings(GTK_TABLE(table), 8);
+	GtkWidget *const tblDMG = gtk_table_new(3, 2, false);
+	gtk_widget_set_name(tblDMG, "tblDMG");
+	gtk_table_set_row_spacings(GTK_TABLE(tblDMG), 2);
+	gtk_table_set_col_spacings(GTK_TABLE(tblDMG), 8);
 
-	gtk_table_attach(GTK_TABLE(table), lblDMG, 0, 1, 0, 1, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(table), tab->cboDMG, 1, 2, 0, 1, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(table), lblSGB, 0, 1, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(table), tab->cboSGB, 1, 2, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(table), lblCGB, 0, 1, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
-	gtk_table_attach(GTK_TABLE(table), tab->cboCGB, 1, 2, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(tblDMG), lblDMG, 0, 1, 0, 1, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(tblDMG), tab->cboDMG, 1, 2, 0, 1, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(tblDMG), lblSGB, 0, 1, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(tblDMG), tab->cboSGB, 1, 2, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(tblDMG), lblCGB, 0, 1, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach(GTK_TABLE(tblDMG), tab->cboCGB, 1, 2, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
 
 #if !GTK_CHECK_VERSION(3,0,0)
 	// GTK2: Vertically-center the labels. (Not needed for GTK3/GTK4...)
@@ -255,19 +256,11 @@ rp_systems_tab_init(RpSystemsTab *tab)
 	gtk_box_append(GTK_BOX(tab), fraDMG);
 
 	gtk_box_append(GTK_BOX(vboxDMG), lblDMGDescription);
-	gtk_box_append(GTK_BOX(vboxDMG), table);
+	gtk_box_append(GTK_BOX(vboxDMG), tblDMG);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
-	gtk_widget_show(table);
-	gtk_widget_show(lblDMG);
-	gtk_widget_show(tab->cboDMG);
-	gtk_widget_show(lblSGB);
-	gtk_widget_show(tab->cboSGB);
-	gtk_widget_show(lblCGB);
-	gtk_widget_show(tab->cboCGB);
-
 	gtk_box_pack_start(GTK_BOX(tab), fraDMG, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(vboxDMG), lblDMGDescription, false, false, 0);
-	gtk_box_pack_start(GTK_BOX(vboxDMG), table, false, false, 0);
+	gtk_box_pack_start(GTK_BOX(vboxDMG), tblDMG, false, false, 0);
 
 	gtk_widget_show_all(fraDMG);
 #endif /* GTK_CHECK_VERSION(4,0,0) */

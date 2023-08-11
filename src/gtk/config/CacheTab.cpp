@@ -47,8 +47,8 @@ struct _RpCacheTab {
 	GtkWidget	*lblRpCache;
 	GtkWidget	*btnRpCache;
 
-	GtkWidget	*lblStatus;
-	GtkWidget	*pbStatus;
+	GtkWidget	*lblCacheStatus;
+	GtkWidget	*pbCacheStatus;
 
 	RpCacheCleaner	*ccCleaner;
 };
@@ -171,13 +171,13 @@ rp_cache_tab_init(RpCacheTab *tab)
 	tab->btnRpCache  = gtk_button_new_with_label(C_("CacheTab", "Clear the ROM Properties Page Download Cache"));
 	gtk_widget_set_name(tab->btnRpCache, "btnRpCache");
 
-	tab->lblStatus = gtk_label_new(nullptr);
-	gtk_widget_set_name(tab->lblStatus, "lblStatus");
-	GTK_LABEL_XALIGN_LEFT(tab->lblStatus);
-	tab->pbStatus = gtk_progress_bar_new();
-	gtk_widget_set_name(tab->pbStatus, "pbStatus");
+	tab->lblCacheStatus = gtk_label_new(nullptr);
+	gtk_widget_set_name(tab->lblCacheStatus, "lblCacheStatus");
+	GTK_LABEL_XALIGN_LEFT(tab->lblCacheStatus);
+	tab->pbCacheStatus = gtk_progress_bar_new();
+	gtk_widget_set_name(tab->pbCacheStatus, "pbCacheStatus");
 #if GTK_CHECK_VERSION(3,0,0)
-	gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(tab->pbStatus), TRUE);
+	gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(tab->pbCacheStatus), TRUE);
 #endif /* !GTK_CHECK_VERSION(3,0,0) */
 
 	// Connect the signal handlers for the buttons.
@@ -185,8 +185,8 @@ rp_cache_tab_init(RpCacheTab *tab)
 	g_signal_connect(tab->btnRpCache,  "clicked", G_CALLBACK(rp_cache_tab_on_btnRpCache_clicked),  tab);
 
 #if GTK_CHECK_VERSION(4,0,0)
-	gtk_widget_set_visible(tab->lblStatus, false);
-	gtk_widget_set_visible(tab->pbStatus, false);
+	gtk_widget_set_visible(tab->lblCacheStatus, false);
+	gtk_widget_set_visible(tab->pbCacheStatus, false);
 
 	gtk_box_append(GTK_BOX(tab), tab->lblSysCache);
 	gtk_box_append(GTK_BOX(tab), tab->btnSysCache);
@@ -194,8 +194,8 @@ rp_cache_tab_init(RpCacheTab *tab)
 	gtk_box_append(GTK_BOX(tab), tab->btnRpCache);
 
 	// TODO: Spacer and/or alignment?
-	gtk_box_append(GTK_BOX(tab), tab->lblStatus);
-	gtk_box_append(GTK_BOX(tab), tab->pbStatus);
+	gtk_box_append(GTK_BOX(tab), tab->lblCacheStatus);
+	gtk_box_append(GTK_BOX(tab), tab->pbCacheStatus);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	gtk_box_pack_start(GTK_BOX(tab), tab->lblSysCache, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(tab), tab->btnSysCache, false, false, 0);
@@ -203,15 +203,15 @@ rp_cache_tab_init(RpCacheTab *tab)
 	gtk_box_pack_start(GTK_BOX(tab), tab->btnRpCache, false, false, 0);
 
 	// TODO: Spacer and/or alignment?
-	gtk_box_pack_end(GTK_BOX(tab), tab->pbStatus, false, false, 0);
-	gtk_box_pack_end(GTK_BOX(tab), tab->lblStatus, false, false, 0);
+	gtk_box_pack_end(GTK_BOX(tab), tab->pbCacheStatus, false, false, 0);
+	gtk_box_pack_end(GTK_BOX(tab), tab->lblCacheStatus, false, false, 0);
 
 	// NOTE: GTK4 defaults to visible; GTK2 and GTK3 defaults to invisible.
 	// Hiding unconditionally just in case.
-	gtk_widget_hide(tab->lblStatus);
-	gtk_widget_hide(tab->pbStatus);
-	gtk_widget_set_no_show_all(tab->lblStatus, TRUE);
-	gtk_widget_set_no_show_all(tab->pbStatus, TRUE);
+	gtk_widget_hide(tab->lblCacheStatus);
+	gtk_widget_hide(tab->pbCacheStatus);
+	gtk_widget_set_no_show_all(tab->lblCacheStatus, TRUE);
+	gtk_widget_set_no_show_all(tab->pbCacheStatus, TRUE);
 
 	gtk_widget_show(tab->lblSysCache);
 	gtk_widget_show(tab->btnSysCache);
@@ -349,8 +349,8 @@ rp_cache_tab_clear_cache_dir(RpCacheTab *tab, RpCacheDir cache_dir)
 {
 	// Reset the progress bar.
 	// FIXME: No "error" option in GtkProgressBar.
-	gtk_progress_bar_set_error(GTK_PROGRESS_BAR(tab->pbStatus), FALSE);
-	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(tab->pbStatus), 0.0);
+	gtk_progress_bar_set_error(GTK_PROGRESS_BAR(tab->pbCacheStatus), FALSE);
+	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(tab->pbCacheStatus), 0.0);
 
 	// Set the label text.
 	const char *s_label;
@@ -366,16 +366,16 @@ rp_cache_tab_clear_cache_dir(RpCacheTab *tab, RpCacheDir cache_dir)
 			s_label = C_("CacheTab", "Clearing the ROM Properties Page cache...");
 			break;
 	}
-	gtk_label_set_text(GTK_LABEL(tab->lblStatus), s_label);
+	gtk_label_set_text(GTK_LABEL(tab->lblCacheStatus), s_label);
 
 #if !GTK_CHECK_VERSION(3,0,0)
 	// GTK2: Clear the styling immediately to prevent shenanigans.
-	gtk_progress_bar_set_error(GTK_PROGRESS_BAR(tab->pbStatus), FALSE);
+	gtk_progress_bar_set_error(GTK_PROGRESS_BAR(tab->pbCacheStatus), FALSE);
 #endif /* !GTK_CHECK_VERSION(3,0,0) */
 
 	// Show the progress controls.
-	gtk_widget_set_visible(tab->lblStatus, true);
-	gtk_widget_set_visible(tab->pbStatus, true);
+	gtk_widget_set_visible(tab->lblCacheStatus, true);
+	gtk_widget_set_visible(tab->pbCacheStatus, true);
 
 	// Disable the buttons until we're done.
 	rp_cache_tab_enable_ui_controls(tab, FALSE);
@@ -437,9 +437,9 @@ ccCleaner_progress(RpCacheCleaner *cleaner, int pg_cur, int pg_max, gboolean has
 	RP_UNUSED(cleaner);
 
 	// GtkProgressBar uses a gdouble fraction in the range [0.0,1.0].
-	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(tab->pbStatus),
+	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(tab->pbCacheStatus),
 		(gdouble)pg_cur / (gdouble)pg_max);
-	gtk_progress_bar_set_error(GTK_PROGRESS_BAR(tab->pbStatus), hasError);
+	gtk_progress_bar_set_error(GTK_PROGRESS_BAR(tab->pbCacheStatus), hasError);
 	gtk_process_main_event_loop();
 }
 
@@ -455,12 +455,12 @@ ccCleaner_error(RpCacheCleaner *cleaner, const char *error, RpCacheTab *tab)
 	g_return_if_fail(RP_IS_CACHE_TAB(tab));
 	RP_UNUSED(cleaner);
 
-	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(tab->pbStatus), 1.0);
-	gtk_progress_bar_set_error(GTK_PROGRESS_BAR(tab->pbStatus), TRUE);
+	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(tab->pbCacheStatus), 1.0);
+	gtk_progress_bar_set_error(GTK_PROGRESS_BAR(tab->pbCacheStatus), TRUE);
 
 	// tr: Error message template. (GTK version, with formatting)
 	const string s_msg = rp_sprintf(C_("ConfigDialog", "<b>ERROR:</b> %s"), error);
-	gtk_label_set_markup(GTK_LABEL(tab->lblStatus), s_msg.c_str());
+	gtk_label_set_markup(GTK_LABEL(tab->lblCacheStatus), s_msg.c_str());
 	// FIXME: Causes crashes...
 	//MessageSound::play(GTK_MESSAGE_WARNING, s_msg.c_str(), GTK_WIDGET(tab));
 	gtk_process_main_event_loop();
@@ -492,8 +492,8 @@ ccCleaner_cacheIsEmpty(RpCacheCleaner *cleaner, RpCacheDir cache_dir, RpCacheTab
 			break;
 	}
 
-	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(tab->pbStatus), 1.0);
-	gtk_label_set_text(GTK_LABEL(tab->lblStatus), s_msg);
+	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(tab->pbCacheStatus), 1.0);
+	gtk_label_set_text(GTK_LABEL(tab->lblCacheStatus), s_msg);
 	// FIXME: Causes crashes...
 	//MessageSound::play(GTK_MESSAGE_WARNING, s_msg, GTK_WIDGET(tab));
 	gtk_process_main_event_loop();
@@ -517,7 +517,7 @@ ccCleaner_cacheCleared(RpCacheCleaner *cleaner, RpCacheDir cache_dir, unsigned i
 		const string s_msg = rp_sprintf(C_("ConfigDialog", "<b>ERROR:</b> %s"),
 			rp_sprintf_p(C_("CacheTab", "Unable to delete %1$u file(s) and/or %2$u dir(s)."),
 				fileErrs, dirErrs).c_str());
-		gtk_label_set_markup(GTK_LABEL(tab->lblStatus), s_msg.c_str());
+		gtk_label_set_markup(GTK_LABEL(tab->lblCacheStatus), s_msg.c_str());
 		// FIXME: Causes crashes...
 		//MessageSound::play(GTK_MESSAGE_WARNING, s_msg.c_str(), GTK_WIDGET(tab));
 		return;
@@ -541,7 +541,7 @@ ccCleaner_cacheCleared(RpCacheCleaner *cleaner, RpCacheDir cache_dir, unsigned i
 			break;
 	}
 
-	gtk_label_set_text(GTK_LABEL(tab->lblStatus), s_msg);
+	gtk_label_set_text(GTK_LABEL(tab->lblCacheStatus), s_msg);
 	// FIXME: Causes crashes...
 	//MessageSound::play(icon, s_msg, GTK_WIDGET(tab));
 	RP_UNUSED(icon);

@@ -196,6 +196,7 @@ rp_options_tab_init(RpOptionsTab *tab)
 
 #if GTK_CHECK_VERSION(3,0,0)
 	GtkWidget *const tblImgBandwidth = gtk_grid_new();
+	gtk_widget_set_name(tblImgBandwidth, "tblImgBandwidth");
 	gtk_widget_set_margin(tblImgBandwidth, 6);
 	gtk_grid_set_row_spacing(GTK_GRID(tblImgBandwidth), 2);
 	gtk_grid_set_column_spacing(GTK_GRID(tblImgBandwidth), 8);
@@ -206,6 +207,7 @@ rp_options_tab_init(RpOptionsTab *tab)
 	gtk_frame_set_child(GTK_FRAME(tab->fraExtImgDownloads), tblImgBandwidth);
 #else /* !GTK_CHECK_VERSION(3,0,0) */
 	GtkWidget *const tblImgBandwidth = gtk_table_new(2, 2, false);
+	gtk_widget_set_name(tblImgBandwidth, "tblImgBandwidth");
 	gtk_table_set_row_spacings(GTK_TABLE(tblImgBandwidth), 2);
 	gtk_table_set_col_spacings(GTK_TABLE(tblImgBandwidth), 8);
 	gtk_table_attach(GTK_TABLE(tblImgBandwidth), tab->lblUnmeteredConnection, 0, 1, 0, 1, GTK_EXPAND, GTK_EXPAND, 0, 0);
