@@ -34,6 +34,16 @@
 // - FS_IOC_GETFLAGS (equivalent to EXT2_IOC_GETFLAGS)
 // - FS_IOC_FSGETXATTR (equivalent to XFS_IOC_FSGETXATTR)
 #  include <linux/fs.h>
+#  ifndef FS_IOC_GETFLAGS
+#    ifdef EXT2_IOC_GETFLAGS
+#      define FS_IOC_GETFLAGS EXT2_IOC_GETFLAGS
+#    endif /* EXT2_IOC_GETFLAGS */
+#  endif /* !FS_IOC_GETFLAGS */
+#  ifndef FS_IOC_FSGETXATTR
+#    ifdef XFS_IOC_FSGETXATTR
+#      define FS_IOC_FSGETXATTR XFS_IOC_FSGETXATTR
+#    endif /* XFS_IOC_FSGETXATTR */
+#  endif /* !FS_IOC_FSGETXATTR */
 // for the following ioctls:
 // - FAT_IOCTL_GET_ATTRIBUTES
 #  include <linux/msdos_fs.h>
@@ -188,7 +198,7 @@ int XAttrReaderPrivate::loadExt2Attrs(void)
 {
 	// Attempt to get Ext2 flags.
 
-#ifdef __linux__
+#if defined(__linux__) && defined(FS_IOC_GETFLAGS)
 	// NOTE: The ioctl is defined as using long, but the actual
 	// kernel code uses int.
 	int ret;
@@ -208,10 +218,10 @@ int XAttrReaderPrivate::loadExt2Attrs(void)
 		hasExt2Attributes = false;
 	}
 	return ret;
-#else /* !__linux__ */
+#else /* !__linux__ || !FS_IOC_GETFLAGS */
 	// Not supported.
 	return -ENOTSUP;
-#endif /* __linux__ */
+#endif /* __linux__ && FS_IOC_GETFLAGS */
 }
 
 /**
