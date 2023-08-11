@@ -192,7 +192,7 @@ int XAttrReaderPrivate::loadExt2Attrs(void)
 	} else {
 		// No Ext2 flags on this file.
 		// Assume this file system doesn't support them.
-		ret = errno;
+		ret = -errno;
 		if (ret == 0) {
 			ret = -EIO;
 		}
