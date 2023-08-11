@@ -149,35 +149,39 @@ off64_t filesize(const char *filename)
 
 /**
  * Set the modification timestamp of a file.
- * @param filename Filename.
- * @param mtime Modification time.
+ * @param filename	[in] Filename (UTF-16)
+ * @param mtime		[in] Modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int set_mtime(const string &filename, time_t mtime)
+int set_mtime(const char *filename, time_t mtime)
 {
+	assert(filename && filename[0] != '\0');
+	if (!filename || filename[0] == '\0')
+		return -EINVAL;
+
 	// FIXME: time_t is 32-bit on 32-bit Linux.
 	// TODO: Add a static_warning() macro?
 	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
 	struct utimbuf utbuf;
 	utbuf.actime = time(nullptr);
 	utbuf.modtime = mtime;
-	int ret = utime(filename.c_str(), &utbuf);
+	int ret = utime(filename, &utbuf);
 
 	return (ret == 0 ? 0 : -errno);
 }
 
 /**
  * Get the modification timestamp of a file.
- * @param filename Filename.
- * @param pMtime Buffer for the modification timestamp.
+ * @param filename	[in] Filename (UTF-8)
+ * @param pMtime	[out] Buffer for the modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_mtime(const string &filename, time_t *pMtime)
+int get_mtime(const char *filename, time_t *pMtime)
 {
+	assert(filename && filename[0] != '\0');
 	assert(pMtime != nullptr);
-	if (!pMtime) {
+	if (!filename || filename[0] == '\0' || !pMtime)
 		return -EINVAL;
-	}
 
 	// FIXME: time_t is 32-bit on 32-bit Linux.
 	// TODO: Add a static_warning() macro?
@@ -185,7 +189,7 @@ int get_mtime(const string &filename, time_t *pMtime)
 
 #ifdef HAVE_STATX
 	struct statx sbx;
-	int ret = statx(AT_FDCWD, filename.c_str(), 0, STATX_MTIME, &sbx);
+	int ret = statx(AT_FDCWD, filename, 0, STATX_MTIME, &sbx);
 	if (ret != 0 || !(sbx.stx_mask & STATX_MTIME)) {
 		// statx() failed and/or did not return the modification time.
 		int ret = -errno;
@@ -194,7 +198,7 @@ int get_mtime(const string &filename, time_t *pMtime)
 	*pMtime = sbx.stx_mtime.tv_sec;
 #else /* !HAVE_STATX */
 	struct stat sb;
-	int ret = stat(filename.c_str(), &sb);
+	int ret = stat(filename, &sb);
 	if (ret != 0) {
 		// stat() failed.
 		int ret = -errno;
@@ -409,17 +413,17 @@ bool isOnBadFS(const char *filename, bool allowNetFS)
 
 /**
  * Get a file's size and time.
- * @param filename	[in] Filename.
- * @param pFileSize	[out] File size.
- * @param pMtime	[out] Modification time.
+ * @param filename	[in] Filename (UTF-8)
+ * @param pFileSize	[out] File size
+ * @param pMtime	[out] Modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_file_size_and_mtime(const string &filename, off64_t *pFileSize, time_t *pMtime)
+int get_file_size_and_mtime(const char *filename, off64_t *pFileSize, time_t *pMtime)
 {
-	assert(!filename.empty());
+	assert(filename && filename[0] != '\0');
 	assert(pFileSize != nullptr);
 	assert(pMtime != nullptr);
-	if (unlikely(filename.empty() || !pFileSize || !pMtime)) {
+	if (unlikely(filename || filename[0] == '\0' || !pFileSize || !pMtime)) {
 		return -EINVAL;
 	}
 
@@ -429,7 +433,7 @@ int get_file_size_and_mtime(const string &filename, off64_t *pFileSize, time_t *
 
 #ifdef HAVE_STATX
 	struct statx sbx;
-	int ret = statx(AT_FDCWD, filename.c_str(), 0, STATX_TYPE | STATX_MTIME | STATX_SIZE, &sbx);
+	int ret = statx(AT_FDCWD, filename, 0, STATX_TYPE | STATX_MTIME | STATX_SIZE, &sbx);
 	if (ret != 0 || (sbx.stx_mask & (STATX_MTIME | STATX_SIZE)) != (STATX_MTIME | STATX_SIZE)) {
 		// statx() failed and/or did not return the modification time or file size.
 		int ret = -errno;
@@ -447,7 +451,7 @@ int get_file_size_and_mtime(const string &filename, off64_t *pFileSize, time_t *
 	*pMtime = sbx.stx_mtime.tv_sec;
 #else /* !HAVE_STATX */
 	struct stat sb;
-	int ret = stat(filename.c_str(), &sb);
+	int ret = stat(filename, &sb);
 	if (ret != 0) {
 		// stat() failed.
 		int ret = -errno;

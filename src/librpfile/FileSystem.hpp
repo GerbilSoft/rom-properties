@@ -118,19 +118,83 @@ const std::string &getConfigDirectory(void);
 
 /**
  * Set the modification timestamp of a file.
- * @param filename Filename.
- * @param mtime Modification time.
+ * @param filename	[in] Filename (UTF-8)
+ * @param mtime		[in] Modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int set_mtime(const std::string &filename, time_t mtime);
+int set_mtime(const char *filename, time_t mtime);
+
+/**
+ * Set the modification timestamp of a file.
+ * @param filename	[in] Filename (UTF-8)
+ * @param mtime		[in] Modification time (UNIX timestamp)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+static inline int set_mtime(const std::string &filename, time_t mtime)
+{
+	return set_mtime(filename.c_str(), mtime);
+}
+
+#ifdef _WIN32
+/**
+ * Set the modification timestamp of a file.
+ * @param filename	[in] Filename (UTF-16)
+ * @param mtime		[in] Modification time (UNIX timestamp)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int set_mtime(const wchar_t *filenameW, time_t mtime);
+
+/**
+ * Set the modification timestamp of a file.
+ * @param filename	[in] Filename (UTF-16)
+ * @param mtime		[in] Modification time (UNIX timestamp)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+static inline int set_mtime(const std::wstring &filenameW, time_t mtime)
+{
+	return set_mtime(filenameW.c_str(), mtime);
+}
+#endif /* _WIN32 */
 
 /**
  * Get the modification timestamp of a file.
- * @param filename Filename.
- * @param pMtime Buffer for the modification timestamp.
+ * @param filename	[in] Filename (UTF-8)
+ * @param pMtime	[out] Buffer for the modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_mtime(const std::string &filename, time_t *pMtime);
+int get_mtime(const char *filename, time_t *pMtime);
+
+/**
+ * Get the modification timestamp of a file.
+ * @param filename	[in] Filename (UTF-8)
+ * @param pMtime	[out] Buffer for the modification time (UNIX timestamp)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+static inline int get_mtime(const std::string &filename, time_t *pMtime)
+{
+	return get_mtime(filename.c_str(), pMtime);
+}
+
+#ifdef _WIN32
+/**
+ * Get the modification timestamp of a file.
+ * @param filename	[in] Filename (UTF-8)
+ * @param pMtime	[out] Buffer for the modification time (UNIX timestamp)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int get_mtime(const wchar_t *filenameW, time_t *pMtime);
+
+/**
+ * Get the modification timestamp of a file.
+ * @param filename	[in] Filename (UTF-8)
+ * @param pMtime	[out] Buffer for the modification time (UNIX timestamp)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+static inline int get_mtime(const std::wstring &filenameW, time_t *pMtime)
+{
+	return get_mtime(filenameW.c_str(), pMtime);
+}
+#endif /* _WIN32 */
 
 /**
  * Delete a file.
@@ -280,12 +344,47 @@ bool isOnBadFS(const wchar_t *filenameW, bool allowNetFS = false);
 
 /**
  * Get a file's size and time.
- * @param filename	[in] Filename.
- * @param pFileSize	[out] File size.
- * @param pMtime	[out] Modification time.
+ * @param filename	[in] Filename (UTF-8)
+ * @param pFileSize	[out] File size
+ * @param pMtime	[out] Modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_file_size_and_mtime(const std::string &filename, off64_t *pFileSize, time_t *pMtime);
+int get_file_size_and_mtime(const char *filename, off64_t *pFileSize, time_t *pMtime);
+
+/**
+ * Get a file's size and time.
+ * @param filename	[in] Filename (UTF-8)
+ * @param pFileSize	[out] File size
+ * @param pMtime	[out] Modification time (UNIX timestamp)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+static inline int get_file_size_and_mtime(const std::string &filename, off64_t *pFileSize, time_t *pMtime)
+{
+	return get_file_size_and_mtime(filename.c_str(), pFileSize, pMtime);
+}
+
+#ifdef _WIN32
+/**
+ * Get a file's size and time.
+ * @param filenameW	[in] Filename (UTF-16)
+ * @param pFileSize	[out] File size
+ * @param pMtime	[out] Modification time (UNIX timestamp)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int get_file_size_and_mtime(const wchar_t *filenameW, off64_t *pFileSize, time_t *pMtime);
+
+/**
+ * Get a file's size and time.
+ * @param filenameW	[in] Filename (UTF-16)
+ * @param pFileSize	[out] File size
+ * @param pMtime	[out] Modification time (UNIX timestamp)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+static inline int get_file_size_and_mtime(const std::wstring &filenameW, off64_t *pFileSize, time_t *pMtime)
+{
+	return get_file_size_and_mtime(filenameW.c_str(), pFileSize, pMtime);
+}
+#endif /* _WIN32 */
 
 #ifdef _WIN32
 /**

@@ -353,19 +353,19 @@ off64_t wfilesize(const wchar_t *filename)
 
 /**
  * Set the modification timestamp of a file.
- * @param filename Filename.
- * @param mtime Modification time.
+ * @param tfilename	[in] Filename (tstring)
+ * @param mtime		[in] Modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int set_mtime(const string &filename, time_t mtime)
+static int set_mtime_int(const tstring &tfilename, time_t mtime)
 {
 	// TODO: Add a static_warning() macro?
 	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
 #if _USE_32BIT_TIME_T
-# error 32-bit time_t is not supported. Get a newer compiler.
+#  error 32-bit time_t is not supported. Get a newer compiler.
 #endif
-	const tstring tfilename = makeWinPath(filename);
 
+	// TODO: Use Win32 API directly instead of MSVCRT?
 	struct __utimbuf64 utbuf;
 	utbuf.actime = _time64(nullptr);
 	utbuf.modtime = mtime;
@@ -375,24 +375,43 @@ int set_mtime(const string &filename, time_t mtime)
 }
 
 /**
- * Get the modification timestamp of a file.
- * @param filename Filename.
- * @param pMtime Buffer for the modification timestamp.
+ * Set the modification timestamp of a file.
+ * @param filename	[in] Filename (UTF-8)
+ * @param mtime		[in] Modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_mtime(const string &filename, time_t *pMtime)
+int set_mtime(const char *filename, time_t mtime)
+{
+	return set_mtime_int(makeWinPath(filename), mtime);
+}
+
+/**
+ * Set the modification timestamp of a file.
+ * @param filename	[in] Filename (UTF-16)
+ * @param mtime		[in] Modification time (UNIX timestamp)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int set_mtime(const wchar_t *filenameW, time_t mtime)
+{
+	return set_mtime_int(makeWinPath(filenameW), mtime);
+}
+
+/**
+ * Get the modification timestamp of a file. (internal function)
+ * @param tfilename	[in] Filename (tstring)
+ * @param pMtime	[out] Buffer for the modification time (UNIX timestamp)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+static int get_mtime_int(const tstring &tfilename, time_t *pMtime)
 {
 	assert(pMtime != nullptr);
-	if (!pMtime) {
+	if (!pMtime)
 		return -EINVAL;
-	}
-
-	const tstring tfilename = makeWinPath(filename);
 
 	// TODO: Add a static_warning() macro?
 	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
 #if _USE_32BIT_TIME_T
-# error 32-bit time_t is not supported. Get a newer compiler.
+#  error 32-bit time_t is not supported. Get a newer compiler.
 #endif
 	// Use GetFileTime() instead of _stati64().
 	HANDLE hFile = CreateFile(tfilename.c_str(),
@@ -414,6 +433,28 @@ int get_mtime(const string &filename, time_t *pMtime)
 	// Convert to Unix timestamp.
 	*pMtime = FileTimeToUnixTime(&mtime);
 	return 0;
+}
+
+/**
+ * Get the modification timestamp of a file.
+ * @param filename	[in] Filename (UTF-8)
+ * @param pMtime	[out] Buffer for the modification time (UNIX timestamp)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int get_mtime(const char *filename, time_t *pMtime)
+{
+	return get_mtime_int(makeWinPath(filename), pMtime);
+}
+
+/**
+ * Get the modification timestamp of a file.
+ * @param filenameW	[in] Filename (UTF-16)
+ * @param pMtime	[out] Buffer for the modification time (UNIX timestamp)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int get_mtime(const wchar_t *filenameW, time_t *pMtime)
+{
+	return get_mtime_int(makeWinPath(filenameW), pMtime);
 }
 
 /**
@@ -738,26 +779,24 @@ bool isOnBadFS(const wchar_t *filenameW, bool allowNetFS)
 }
 
 /**
- * Get a file's size and mtime.
- * @param filename	[in] Filename.
- * @param pFileSize	[out] File size.
- * @param pMtime	[out] Modification time.
+ * Get a file's size and time. (internal function)
+ * @param tfilename	[in] Filename (tstring)
+ * @param pFileSize	[out] File size
+ * @param pMtime	[out] Modification time (UNIX timestamp)
  * @return 0 on success; negative POSIX error code on error.
  */
-int get_file_size_and_mtime(const string &filename, off64_t *pFileSize, time_t *pMtime)
+static int get_file_size_and_mtime_int(const tstring &tfilename, off64_t *pFileSize, time_t *pMtime)
 {
-	assert(!filename.empty());
 	assert(pFileSize != nullptr);
 	assert(pMtime != nullptr);
-	if (unlikely(filename.empty() || !pFileSize || !pMtime)) {
+	if (unlikely(!pFileSize || !pMtime)) {
 		return -EINVAL;
 	}
-	const tstring tfilename = makeWinPath(filename);
 
 	// TODO: Add a static_warning() macro?
 	// - http://stackoverflow.com/questions/8936063/does-there-exist-a-static-warning
 #if _USE_32BIT_TIME_T
-# error 32-bit time_t is not supported. Get a newer compiler.
+#  error 32-bit time_t is not supported. Get a newer compiler.
 #endif
 
 	// Use FindFirstFile() to get the file information.
@@ -789,6 +828,30 @@ int get_file_size_and_mtime(const string &filename, off64_t *pFileSize, time_t *
 
 	// We're done here.
 	return 0;
+}
+
+/**
+ * Get a file's size and time.
+ * @param filename	[in] Filename (UTF-8)
+ * @param pFileSize	[out] File size
+ * @param pMtime	[out] Modification time (UNIX timestamp)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int get_file_size_and_mtime(const char *filename, off64_t *pFileSize, time_t *pMtime)
+{
+	return get_file_size_and_mtime_int(makeWinPath(filename), pFileSize, pMtime);
+}
+
+/**
+ * Get a file's size and time.
+ * @param filenameW	[in] Filename (UTF-16)
+ * @param pFileSize	[out] File size
+ * @param pMtime	[out] Modification time (UNIX timestamp)
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int get_file_size_and_mtime(const wchar_t *filenameW, off64_t *pFileSize, time_t *pMtime)
+{
+	return get_file_size_and_mtime_int(makeWinPath(filenameW), pFileSize, pMtime);
 }
 
 /**
