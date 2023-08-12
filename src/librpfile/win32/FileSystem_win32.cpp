@@ -21,7 +21,6 @@
 
 // C++ STL classes
 using std::string;
-using std::u16string;
 using std::wstring;
 
 // libwin32common

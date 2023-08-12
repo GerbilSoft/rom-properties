@@ -40,7 +40,6 @@ using std::unique_ptr;
 #  include "libwin32common/RpWin32_sdk.h"
 #  include <io.h>
 #  include "librptext/wchar.hpp"
-using std::u16string;
 #endif /* _WIN32 */
 
 int RP_C_API main(int argc, char *argv[])
