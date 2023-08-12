@@ -59,3 +59,6 @@
 #if !defined(USE_INTERNAL_LZO) || defined(USE_INTERNAL_LZO_DLL)
 #  define LZO_IS_DLL 1
 #endif
+
+/* Define to 1 if TinyXML2 has XMLElement::IntText(int defaultValue). */
+#cmakedefine HAVE_TINYXML2_XMLELEMENT_INTTEXT 1

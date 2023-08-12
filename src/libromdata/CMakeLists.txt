@@ -425,6 +425,36 @@ ELSE()
 	SET(${PROJECT_NAME}_LINKAGE STATIC)
 ENDIF()
 
+IF(ENABLE_XML)
+	# Check if TinyXML2 has XMLElement::IntText(int defaultValue).
+	# Was added sometime between TinyXML2 4.0.1 and 5.0.0.
+	# NOTE: Can't just do an #if on the version macro because
+	# TinyXML2 didn't have version macros until 6.2.0.
+	SET(OLD_CMAKE_REQUIRED_INCLUDES "${CMAKE_REQUIRED_INCLUDES}")
+	SET(OLD_CMAKE_REQUIRED_LIBRARIES "${CMAKE_REQUIRED_LIBRARIES}")
+	SET(CMAKE_REQUIRED_INCLUDES ${TinyXML2_INCLUDE_DIR})
+	SET(CMAKE_REQUIRED_LIBRARIES ${TinyXML2_LIBRARY})
+	INCLUDE(CheckCXXSourceCompiles)
+	CHECK_CXX_SOURCE_COMPILES("#include <stdio.h>
+#include \"tinyxml2.h\"
+using namespace tinyxml2;
+
+int main(void) {
+        XMLDocument document;
+        XMLElement *element = document.NewElement(\"test\");
+        element->SetText(\"12345\"); \
+        int value = element->IntText(0); \
+        printf(\"value == %d, should be 12345\", value);
+        puts(\"\");
+
+        return !(value == 12345);
+}" HAVE_TINYXML2_XMLELEMENT_INTTEXT)
+	SET(CMAKE_REQUIRED_INCLUDES "${OLD_CMAKE_REQUIRED_INCLUDES}")
+	SET(CMAKE_REQUIRED_LIBRARIES "${OLD_CMAKE_REQUIRED_LIBRARIES}")
+	UNSET(OLD_CMAKE_REQUIRED_INCLUDES)
+	UNSET(OLD_CMAKE_REQUIRED_LIBRARIES)
+ENDIF(ENABLE_XML)
+
 # Write the config.h file.
 INCLUDE(DirInstallPaths)
 CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/config.lib${PROJECT_NAME}.h.in"

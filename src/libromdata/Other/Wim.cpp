@@ -9,6 +9,7 @@
 
 #include "stdafx.h"
 #include "librpbase/config.librpbase.h"
+#include "libromdata/config.libromdata.h"
 
 #include "Wim.hpp"
 #include "wim_structs.h"
@@ -141,6 +142,28 @@ struct WimIndex {
 };
 
 #ifdef ENABLE_XML
+
+// TinyXML2 2.2.0 (Ubuntu 16.04) doesn't have XMLElement::IntText(),
+// but it *does* have QueryIntText().
+// NOTE: IntText was originally added for 2.0.1 in commit
+// 4cd1f269c28ff2c84c454270acbb47a2c8eb0403, but was removed at some point
+// before release. Was re-added at some point between 4.0.1 and 5.0.0.
+// (Merges are making it difficult to identify the exact commit.)
+static inline int XMLElement_IntText(const XMLElement *element, int defaultValue = 0)
+{
+#ifdef HAVE_TINYXML2_XMLELEMENT_INTTEXT
+	// XMLElement::IntText(int defaultValue) is available.
+	// Use it directly.
+	return element->IntText(defaultValue);
+#else /* HAVE_TINYXML2_XMLELEMENT_INTTEXT */
+	// XMLElement::IntText(int defaultValue) is *not* available.
+	// Reimplement it here.
+	int i = defaultValue;
+	element->QueryIntText(&i);
+	return i;
+#endif /* HAVE_TINYXML2_XMLELEMENT_INTTEXT */
+}
+
 /**
  * Add fields from the WIM image's XML manifest.
  * @return 0 on success; non-zero on error.
@@ -232,7 +255,7 @@ int WimPrivate::addFields_XML()
 			currentindex.containswindowsimage = true;
 			const XMLElement *const arch = windowsinfo->FirstChildElement("ARCH");
 			if (arch) {
-				currentindex.windowsinfo.arch = static_cast<WimWindowsArchitecture>(arch->IntText(0));
+				currentindex.windowsinfo.arch = static_cast<WimWindowsArchitecture>(XMLElement_IntText(arch, 0));
 			}
 
 			const XMLElement *const editionId = windowsinfo->FirstChildElement("EDITIONID");
@@ -262,19 +285,19 @@ int WimPrivate::addFields_XML()
 			if (version) {
 				const XMLElement *const ver_major = version->FirstChildElement("MAJOR");
 				if (ver_major) {
-					currentindex.windowsinfo.version.majorversion = ver_major->IntText(0);
+					currentindex.windowsinfo.version.majorversion = XMLElement_IntText(ver_major, 0);
 				}
 				const XMLElement *const ver_minor = version->FirstChildElement("MINOR");
 				if (ver_minor) {
-					currentindex.windowsinfo.version.minorversion = ver_minor->IntText(0);
+					currentindex.windowsinfo.version.minorversion = XMLElement_IntText(ver_minor, 0);
 				}
 				const XMLElement *const ver_build = version->FirstChildElement("BUILD");
 				if (ver_build) {
-					currentindex.windowsinfo.version.buildnumber = ver_build->IntText(0);
+					currentindex.windowsinfo.version.buildnumber = XMLElement_IntText(ver_build, 0);
 				}
 				const XMLElement *const ver_spbuild = version->FirstChildElement("SPBUILD");
 				if (ver_spbuild) {
-					currentindex.windowsinfo.version.spbuildnumber = ver_spbuild->IntText(0);
+					currentindex.windowsinfo.version.spbuildnumber = XMLElement_IntText(ver_spbuild, 0);
 				}
 			}
 		} else {
