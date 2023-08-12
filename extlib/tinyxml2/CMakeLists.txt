@@ -41,10 +41,14 @@ IF(NOT (WIN32 OR APPLE) AND NOT BUILD_SHARED_LIBS)
     # rom-properties: Hide all symbols so they're not exported by libromdata.
     INCLUDE(CheckHiddenVisibility)
     CHECK_HIDDEN_VISIBILITY()
-    ADD_DEFINITIONS(-DTINYXML2_NO_GCC_EXPORT)
 ENDIF(NOT (WIN32 OR APPLE) AND NOT BUILD_SHARED_LIBS)
 add_library(tinyxml2 tinyxml2.cpp tinyxml2.h ${TINYXML2_RC})
 add_library(tinyxml2::tinyxml2 ALIAS tinyxml2)
+
+IF(NOT (WIN32 OR APPLE) AND NOT BUILD_SHARED_LIBS)
+    # rom-properties: Hide all symbols so they're not exported by libromdata.
+    target_compile_definitions(tinyxml2 PUBLIC -DTINYXML2_NO_GCC_EXPORT)
+ENDIF(NOT (WIN32 OR APPLE) AND NOT BUILD_SHARED_LIBS)
 
 # Uncomment the following line to require C++11 (or greater) to use tinyxml2
 # target_compile_features(tinyxml2 PUBLIC cxx_std_11)
