@@ -111,6 +111,7 @@ SET(${PROJECT_NAME}_SRCS
 	config/AboutTab.cpp
 	config/UpdateChecker.cpp
 	xattr/Ext2AttrView.c
+	xattr/XfsAttrView.c
 	xattr/DosAttrView.c
 	xattr/XAttrView.cpp
 	)
@@ -141,6 +142,7 @@ SET(${PROJECT_NAME}_H
 	config/AboutTab.hpp
 	config/UpdateChecker.hpp
 	xattr/Ext2AttrView.h
+	xattr/XfsAttrView.h
 	xattr/DosAttrView.h
 	xattr/XAttrView.hpp
 	)

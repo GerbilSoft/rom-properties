@@ -15,6 +15,7 @@ using LibRpFile::XAttrReader;
 
 // Attribute viewer widgets
 #include "Ext2AttrView.h"
+#include "XfsAttrView.h"
 #include "DosAttrView.h"
 
 /* Property identifiers */
@@ -77,6 +78,9 @@ struct _RpXAttrView {
 	GtkWidget *fraExt2Attributes;
 	GtkWidget *ext2AttrView;
 
+	GtkWidget *fraXfsAttributes;
+	GtkWidget *xfsAttrView;
+
 	GtkWidget *fraDosAttributes;
 	GtkWidget *dosAttrView;
 
@@ -124,6 +128,14 @@ rp_xattr_view_init(RpXAttrView *widget)
 	gtk_widget_set_name(vboxExt2Attributes, "vboxExt2Attributes");
 	widget->ext2AttrView = rp_ext2_attr_view_new();
 	gtk_widget_set_name(widget->ext2AttrView, "ext2AttrView");
+
+	// XFS attributes
+	widget->fraXfsAttributes = gtk_frame_new(C_("XAttrView", "XFS Attributes"));
+	gtk_widget_set_name(widget->fraXfsAttributes, "fraXfsAttributes");
+	GtkWidget *const vboxXfsAttributes = rp_gtk_vbox_new(0);
+	gtk_widget_set_name(vboxXfsAttributes, "vboxXfsAttributes");
+	widget->xfsAttrView = rp_xfs_attr_view_new();
+	gtk_widget_set_name(widget->xfsAttrView, "xfsAttrView");
 
 	// MS-DOS attributes
 	widget->fraDosAttributes = gtk_frame_new(C_("XAttrView", "MS-DOS Attributes"));
@@ -195,19 +207,24 @@ rp_xattr_view_init(RpXAttrView *widget)
 
 #if GTK_CHECK_VERSION(4,0,0)
 	gtk_box_append(GTK_BOX(vboxExt2Attributes), widget->ext2AttrView);
+	gtk_box_append(GTK_BOX(vboxXfsAttributes), widget->xfsAttrView);
 	gtk_box_append(GTK_BOX(vboxDosAttributes), widget->dosAttrView);
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 	gtk_box_pack_start(GTK_BOX(vboxExt2Attributes), widget->ext2AttrView, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vboxXfsAttributes), widget->xfsAttrView, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(vboxDosAttributes), widget->dosAttrView, FALSE, FALSE, 0);
 #endif /* GTK_CHECK_VERSION(4,0,0) */
 
 #if GTK_CHECK_VERSION(2,91,0)
 	gtk_widget_set_margin(widget->fraExt2Attributes, 6);
+	gtk_widget_set_margin(widget->fraXfsAttributes, 6);
 	gtk_widget_set_margin(widget->fraDosAttributes, 6);
 	gtk_widget_set_margin(widget->fraXAttr, 6);
 	gtk_widget_set_margin(vboxExt2Attributes, 6);
+	gtk_widget_set_margin(vboxXfsAttributes, 6);
 	gtk_widget_set_margin(vboxDosAttributes, 6);
 	gtk_frame_set_child(GTK_FRAME(widget->fraExt2Attributes), vboxExt2Attributes);
+	gtk_frame_set_child(GTK_FRAME(widget->fraXfsAttributes), vboxXfsAttributes);
 	gtk_frame_set_child(GTK_FRAME(widget->fraDosAttributes), vboxDosAttributes);
 	gtk_frame_set_child(GTK_FRAME(widget->fraXAttr), scrlXAttr);
 #else /* !GTK_CHECK_VERSION(2,91,0) */
@@ -225,6 +242,19 @@ rp_xattr_view_init(RpXAttrView *widget)
 	gtk_widget_show(alignFraExt2Attributes);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignFraExt2Attributes), 6, 6, 6, 6);
 	gtk_container_add(GTK_CONTAINER(alignFraExt2Attributes), widget->fraExt2Attributes);
+
+	GtkWidget *const alignVboxXfsAttributes = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
+	gtk_widget_set_name(alignVboxXfsAttributes, "alignVboxXfsAttributes");
+	gtk_widget_show(alignVboxXfsAttributes);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignVboxXfsAttributes), 6, 6, 6, 6);
+	gtk_container_add(GTK_CONTAINER(alignVboxXfsAttributes), vboxXfsAttributes);
+	gtk_frame_set_child(GTK_FRAME(widget->fraXfsAttributes), alignVboxXfsAttributes);
+
+	GtkWidget *const alignFraXfsAttributes = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
+	gtk_widget_set_name(alignFraXfsAttributes, "alignFraXfsAttributes");
+	gtk_widget_show(alignFraXfsAttributes);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignFraXfsAttributes), 6, 6, 6, 6);
+	gtk_container_add(GTK_CONTAINER(alignFraXfsAttributes), widget->fraXfsAttributes);
 
 	GtkWidget *const alignVboxDosAttributes = gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f);
 	gtk_widget_set_name(alignVboxDosAttributes, "alignVboxDosAttributes");
@@ -256,25 +286,31 @@ rp_xattr_view_init(RpXAttrView *widget)
 #if GTK_CHECK_VERSION(4,0,0)
 	// Default to hidden. (GTK4 defaults to visible)
 	gtk_widget_set_visible(widget->fraExt2Attributes, false);
+	gtk_widget_set_visible(widget->fraXfsAttributes, false);
 	gtk_widget_set_visible(widget->fraDosAttributes, false);
 	gtk_widget_set_visible(widget->fraXAttr, false);
 
 	gtk_box_append(GTK_BOX(widget), widget->fraExt2Attributes);
+	gtk_box_append(GTK_BOX(widget), widget->fraXfsAttributes);
 	gtk_box_append(GTK_BOX(widget), widget->fraDosAttributes);
 	gtk_box_append(GTK_BOX(widget), widget->fraXAttr);	// TODO: Expand?
 #else /* !GTK_CHECK_VERSION(4,0,0) */
 #  if GTK_CHECK_VERSION(2,91,0)
 	gtk_box_pack_start(GTK_BOX(widget), widget->fraExt2Attributes, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(widget), widget->fraXfsAttributes, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(widget), widget->fraDosAttributes, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(widget), widget->fraXAttr, TRUE, TRUE, 0);
 #  else /* !GTK_CHECK_VERSION(2,91,0) */
 	gtk_box_pack_start(GTK_BOX(widget), alignFraExt2Attributes, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(widget), alignFraXfsAttributes, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(widget), alignFraDosAttributes, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(widget), alignFraXAttr, TRUE, TRUE, 0);	// FIXME: Expand isn't working here.
 #  endif /* GTK_CHECK_VERSION(2,91,0) */
 	gtk_widget_show(vboxExt2Attributes);
+	gtk_widget_show(vboxXfsAttributes);
 	gtk_widget_show(vboxDosAttributes);
 	gtk_widget_show(widget->ext2AttrView);
+	gtk_widget_show(widget->xfsAttrView);
 	gtk_widget_show(widget->dosAttrView);
 	gtk_widget_show(scrlXAttr);
 	gtk_widget_show(widget->treeView);
@@ -375,6 +411,43 @@ rp_xattr_view_load_ext2_attrs(RpXAttrView *widget)
 	rp_ext2_attr_view_set_flags(RP_EXT2_ATTR_VIEW(widget->ext2AttrView),
 		widget->xattrReader->ext2Attributes());
 	gtk_widget_set_visible(widget->fraExt2Attributes, true);
+	return 0;
+}
+
+/**
+ * Load XFS attributes, if available.
+ * @param widget XAttrView
+ * @return 0 on success; negative POSIX error code on error.
+ */
+static int
+rp_xattr_view_load_xfs_attrs(RpXAttrView *widget)
+{
+	// Hide by default.
+	// If we do have attributes, we'll show the widgets there.
+	gtk_widget_set_visible(widget->fraXfsAttributes, false);
+
+	if (!widget->xattrReader->hasXfsAttributes()) {
+		// No XFS attributes.
+		return -ENOENT;
+	}
+
+	// We have XFS attributes.
+	// NOTE: If all attributes are 0, don't bother showing it.
+	// XFS isn't *nearly* as common as Ext2/Ext3/Ext4.
+	// TODO: ...unless this is an XFS file system?
+	const uint32_t xflags = widget->xattrReader->xfsXFlags();
+	const uint32_t project_id = widget->xattrReader->xfsProjectId();
+	if (xflags == 0 && project_id == 0) {
+		// All zero.
+		return -ENOENT;
+	}
+
+	// Show the XFS attributes.
+	rp_xfs_attr_view_set_xflags(RP_XFS_ATTR_VIEW(widget->xfsAttrView),
+		widget->xattrReader->xfsXFlags());
+	rp_xfs_attr_view_set_project_id(RP_XFS_ATTR_VIEW(widget->xfsAttrView),
+		widget->xattrReader->xfsProjectId());
+	gtk_widget_set_visible(widget->fraXfsAttributes, true);
 	return 0;
 }
 
@@ -482,6 +555,10 @@ rp_xattr_view_load_attributes(RpXAttrView *widget)
 	if (ret == 0) {
 		hasAnyAttrs = true;
 	}
+	ret = rp_xattr_view_load_xfs_attrs(widget);
+	if (ret == 0) {
+		hasAnyAttrs = true;
+	}
 	ret = rp_xattr_view_load_dos_attrs(widget);
 	if (ret == 0) {
 		hasAnyAttrs = true;
@@ -510,6 +587,8 @@ static void
 rp_xattr_view_clear_display_widgets(RpXAttrView *widget)
 {
 	rp_ext2_attr_view_clear_flags(RP_EXT2_ATTR_VIEW(widget->ext2AttrView));
+	rp_xfs_attr_view_clear_xflags(RP_XFS_ATTR_VIEW(widget->xfsAttrView));
+	rp_xfs_attr_view_clear_project_id(RP_XFS_ATTR_VIEW(widget->xfsAttrView));
 	rp_dos_attr_view_clear_attrs(RP_DOS_ATTR_VIEW(widget->dosAttrView));
 	gtk_list_store_clear(widget->listStore);
 }

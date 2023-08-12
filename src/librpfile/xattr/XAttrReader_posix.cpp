@@ -42,6 +42,19 @@
 #  ifndef FS_IOC_FSGETXATTR
 #    ifdef XFS_IOC_FSGETXATTR
 #      define FS_IOC_FSGETXATTR XFS_IOC_FSGETXATTR
+#    else /* !XFS_IOC_FSGETXATTR */
+       // System headers are too old...
+       // (Ubuntu 16.04 is missing this, even though XFS has been around for years?)
+       // Defining everything here *does* work, so we'll do that.
+struct fsxattr {
+	uint32_t	fsx_xflags;	/* xflags field value (get/set) */
+	uint32_t	fsx_extsize;	/* extsize field value (get/set)*/
+	uint32_t	fsx_nextents;	/* nextents field value (get)	*/
+	uint32_t	fsx_projid;	/* project identifier (get/set) */
+	uint32_t	fsx_cowextsize;	/* CoW extsize field value (get/set)*/
+	unsigned char	fsx_pad[8];
+};
+#      define FS_IOC_FSGETXATTR _IOR('X', 31, struct fsxattr)
 #    endif /* XFS_IOC_FSGETXATTR */
 #  endif /* !FS_IOC_FSGETXATTR */
 // for the following ioctls:
