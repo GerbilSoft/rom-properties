@@ -16,6 +16,9 @@
 #include <utime.h>
 #include <unistd.h>
 
+// C++ includes
+#include <algorithm>
+
 // DT_* enumeration
 #include "d_type.h"
 
@@ -354,8 +357,6 @@ bool is_directory(const char *filename)
  */
 bool isOnBadFS(const char *filename, bool allowNetFS)
 {
-	bool bRet = false;
-
 #ifdef __linux__
 	// TODO: Get the mount point, then look it up in /proc/mounts.
 
@@ -365,67 +366,78 @@ bool isOnBadFS(const char *filename, bool allowNetFS)
 		// Assume this isn't a network file system.
 		return false;
 	}
+	const uint32_t f_type = static_cast<uint32_t>(sfbuf.f_type);
 
-	// TODO: Convert to a lookup table? Check the generated assembler code.
-	switch (static_cast<uint32_t>(sfbuf.f_type)) {
-		case ANON_INODE_FS_MAGIC:
-		case BDEVFS_MAGIC:
-		case BPF_FS_MAGIC:
-		case CGROUP_SUPER_MAGIC:
-		case CGROUP2_SUPER_MAGIC:
-		case DEBUGFS_MAGIC:
-		case DEVPTS_SUPER_MAGIC:
-		case EFIVARFS_MAGIC:
-		case FUTEXFS_SUPER_MAGIC:
-		case MQUEUE_MAGIC:
-		case NSFS_MAGIC:
-		case OPENPROM_SUPER_MAGIC:
-		case PIPEFS_MAGIC:
-		case PROC_SUPER_MAGIC:
-		case PSTOREFS_MAGIC:
-		case SECURITYFS_MAGIC:
-		case SMACK_MAGIC:
-		case SOCKFS_MAGIC:
-		case SYSFS_MAGIC:
-		case SYSV2_SUPER_MAGIC:
-		case SYSV4_SUPER_MAGIC:
-		case TRACEFS_MAGIC:
-		case USBDEVICE_SUPER_MAGIC:
-			// Bad file systems.
-			bRet = true;
-			break;
+	// Virtual file systems; ignore these completely
+	static const uint32_t vfs_types[] = {
+		ANON_INODE_FS_MAGIC,
+		BDEVFS_MAGIC,
+		BPF_FS_MAGIC,
+		CGROUP_SUPER_MAGIC,
+		CGROUP2_SUPER_MAGIC,
+		DEBUGFS_MAGIC,
+		DEVPTS_SUPER_MAGIC,
+		EFIVARFS_MAGIC,
+		FUTEXFS_SUPER_MAGIC,
+		MQUEUE_MAGIC,
+		NSFS_MAGIC,
+		OPENPROM_SUPER_MAGIC,
+		PIPEFS_MAGIC,
+		PROC_SUPER_MAGIC,
+		PSTOREFS_MAGIC,
+		SECURITYFS_MAGIC,
+		SMACK_MAGIC,
+		SOCKFS_MAGIC,
+		SYSFS_MAGIC,
+		SYSV2_SUPER_MAGIC,
+		SYSV4_SUPER_MAGIC,
+		TRACEFS_MAGIC,
+		USBDEVICE_SUPER_MAGIC,
+	};
+	static const uint32_t *const p_vfs_types_end = &vfs_types[ARRAY_SIZE(vfs_types)];
 
-		case AFS_SUPER_MAGIC:
-		case CIFS_MAGIC_NUMBER:
-		case CODA_SUPER_MAGIC:
-		case COH_SUPER_MAGIC:
-		case NCP_SUPER_MAGIC:
-		case NFS_SUPER_MAGIC:
-		case OCFS2_SUPER_MAGIC:
-		case SMB_SUPER_MAGIC:
-		case V9FS_MAGIC:
-			// Network file system.
-			// Allow it if we're allowing network file systems.
-			bRet = !allowNetFS;
-			break;
+	// Network file systems; ignore only if !netFS
+	static const uint32_t netfs_types[] = {
+		AFS_SUPER_MAGIC,
+		CIFS_MAGIC_NUMBER,
+		CODA_SUPER_MAGIC,
+		COH_SUPER_MAGIC,
+		NCP_SUPER_MAGIC,
+		NFS_SUPER_MAGIC,
+		OCFS2_SUPER_MAGIC,
+		SMB_SUPER_MAGIC,
+		V9FS_MAGIC,
+	};
+	static const uint32_t *const p_netfs_types_end = &netfs_types[ARRAY_SIZE(netfs_types)];
 
-		case FUSE_SUPER_MAGIC:	// TODO: Check the actual fs type.
-			// Other file system.
-			// FIXME: `fuse` is used for various local file systems
-			// as well as sshfs. Local is more common, so let's assume
-			// it's in use for a local file system.
-			break;
-
-		default:
-			break;
+	// Search for a virtual file system.
+	auto vfs_iter = std::find(vfs_types, p_vfs_types_end, f_type);
+	if (vfs_iter != p_vfs_types_end) {
+		// Found a virtual file system. Ignore it.
+		return true;
 	}
+
+	// If network file systems are prohibited, check if this is one.
+	if (!allowNetFS) {
+		// Search for a network file system.
+		auto netfs_iter = std::find(netfs_types, p_netfs_types_end, f_type);
+		if (netfs_iter != p_netfs_types_end) {
+			// Found a network file system. Ignore it.
+			return true;
+		}
+	}
+
+	// TODO: Check for FUSE_SUPER_MAGIC, and if found, check the actual fs type.
+	// FIXME: `fuse` is used for various local file systems
+	// as well as sshfs. Local is more common, so let's assume
+	// it's in use for a local file system.
 #else
 #  warning TODO: Implement "badfs" support for non-Linux systems.
 	RP_UNUSED(filename);
 	RP_UNUSED(allowNetFS);
 #endif
 
-	return bRet;
+	return false;
 }
 
 /**
