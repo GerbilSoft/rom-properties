@@ -349,8 +349,7 @@ bool isOnBadFS(const char *filename, bool allowNetFS)
 	// TODO: Get the mount point, then look it up in /proc/mounts.
 
 	struct statfs sfbuf;
-	int ret = statfs(filename, &sfbuf);
-	if (ret != 0) {
+	if (statfs(filename, &sfbuf) != 0) {
 		// statfs() failed.
 		// Assume this isn't a network file system.
 		return false;
