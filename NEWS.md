@@ -2,6 +2,10 @@
 
 ## v2.3 (released 2023/??/??)
 
+* New features:
+  * Extended attributes: On Linux, XFS attributes are now displayed if they're
+    available and any are set. This includes the project ID for project quotas.
+
 * New parsers:
   * Wim: Microsoft Windows Images, used by the Windows installer starting with
     Windows Vista. Contributed by @ecumber.
