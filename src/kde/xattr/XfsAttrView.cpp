@@ -86,11 +86,11 @@ void XfsAttrViewPrivate::updateXFlagsCheckboxes(void)
 		"checkBoxes and XFS_ATTR_CHECKBOX_MAX are out of sync!");
 
 	// NOTE: Bit 2 is skipped, and the last attribute is 0x80000000.
-	uint32_t bitval = 1U;
-	for (size_t i = 0; i < ARRAY_SIZE(checkBoxes); i++, bitval <<= 1) {
+	uint32_t tmp_xflags = xflags;
+	for (size_t i = 0; i < ARRAY_SIZE(checkBoxes); i++, tmp_xflags >>= 1) {
 		if (i == 2)
-			bitval <<= 1;
-		bool val = !!(xflags & bitval);
+			tmp_xflags >>= 1;
+		bool val = (tmp_xflags & 1);
 		checkBoxes[i]->setChecked(val);
 		checkBoxes[i]->setProperty("XfsAttrView.value", val);
 	}

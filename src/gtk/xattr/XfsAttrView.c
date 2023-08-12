@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK+ common)                      *
- * XfsAttrView.c: Xfs file system attribute viewer widget.               *
+ * XfsAttrView.c: XFS file system attribute viewer widget.                 *
  *                                                                         *
  * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -274,11 +274,11 @@ rp_xfs_attr_view_update_xflags_checkboxes(RpXfsAttrView *widget)
 	widget->inhibit_checkbox_no_toggle = TRUE;
 
 	// NOTE: Bit 2 is skipped, and the last attribute is 0x80000000.
-	uint32_t bitval = 1U;
-	for (size_t i = 0; i < ARRAY_SIZE(widget->checkBoxes)-1; i++, bitval <<= 1) {
+	uint32_t tmp_xflags = widget->xflags;
+	for (size_t i = 0; i < ARRAY_SIZE(widget->checkBoxes)-1; i++, tmp_xflags >>= 1) {
 		if (i == 2)
-			bitval <<= 1;
-		gboolean val = !!(widget->xflags & bitval);
+			tmp_xflags >>= 1;
+		gboolean val = (tmp_xflags & 1);
 		gtk_check_button_set_active(GTK_CHECK_BUTTON(widget->checkBoxes[i]), val);
 		g_object_set_qdata(G_OBJECT(widget->checkBoxes[i]), XfsAttrView_value_quark, GUINT_TO_POINTER((guint)val));
 	}
