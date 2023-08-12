@@ -419,7 +419,7 @@ int get_file_size_and_mtime(const char *filename, off64_t *pFileSize, time_t *pM
 	assert(filename && filename[0] != '\0');
 	assert(pFileSize != nullptr);
 	assert(pMtime != nullptr);
-	if (unlikely(filename || filename[0] == '\0' || !pFileSize || !pMtime)) {
+	if (unlikely(!filename || filename[0] == '\0' || !pFileSize || !pMtime)) {
 		return -EINVAL;
 	}
 
