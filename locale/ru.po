@@ -8645,8 +8645,8 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:19
 msgctxt "Ext2AttrView"
-msgid "a: append only"
-msgstr "a: только добавление"
+msgid "append only"
+msgstr "только добавление"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:20
 msgctxt "Ext2AttrView"
@@ -8655,7 +8655,7 @@ msgstr "Файл может быть открыт только в режиме �
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:22
 msgctxt "Ext2AttrView"
-msgid "A: no atime"
+msgid "no atime"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:23
@@ -8665,8 +8665,8 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:25
 msgctxt "Ext2AttrView"
-msgid "c: compressed"
-msgstr "c: сжатый"
+msgid "compressed"
+msgstr "сжатый"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:26
 msgctxt "Ext2AttrView"
@@ -8675,7 +8675,7 @@ msgstr "Файл сжат."
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:28
 msgctxt "Ext2AttrView"
-msgid "C: no CoW"
+msgid "no CoW"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:29
@@ -8685,8 +8685,8 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:31
 msgctxt "Ext2AttrView"
-msgid "d: no dump"
-msgstr "d: не выгружать"
+msgid "no dump"
+msgstr "не выгружать"
 
 #. tr: "dump" is the name of the executable, so it should not be localized.
 #: ../src/librpfile/xattr/Ext2AttrData.c:33
@@ -8696,8 +8696,8 @@ msgstr "Файл не является кандитатом для выгруз�
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:35
 msgctxt "Ext2AttrView"
-msgid "D: dir sync"
-msgstr "D: Синхронизация каталогов"
+msgid "dir sync"
+msgstr "Синхронизация каталогов"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:36
 msgctxt "Ext2AttrView"
@@ -8706,8 +8706,8 @@ msgstr "Изменения к этому каталогу синхронизир
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:38
 msgctxt "Ext2AttrView"
-msgid "e: extents"
-msgstr "e: экстенты"
+msgid "extents"
+msgstr "экстенты"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:39
 msgctxt "Ext2AttrView"
@@ -8716,7 +8716,7 @@ msgstr "Файл отображён на диске с помощью эксте
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:41
 msgctxt "Ext2AttrView"
-msgid "E: encrypted"
+msgid "encrypted"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:42
@@ -8726,7 +8726,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:44
 msgctxt "Ext2AttrView"
-msgid "F: casefold"
+msgid "casefold"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:45
@@ -8736,8 +8736,8 @@ msgstr "Файлы в этом каталоге используют имена,
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:47
 msgctxt "Ext2AttrView"
-msgid "i: immutable"
-msgstr "i: неизменный"
+msgid "immutable"
+msgstr "неизменный"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:48
 msgctxt "Ext2AttrView"
@@ -8746,8 +8746,8 @@ msgstr "Файл не может быть изменён, удалён или п
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:50
 msgctxt "Ext2AttrView"
-msgid "I: indexed"
-msgstr "I: индексирован"
+msgid "indexed"
+msgstr "индексирован"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:51
 msgctxt "Ext2AttrView"
@@ -8756,8 +8756,8 @@ msgstr "Каталог индексирован с помощью хэширов
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:53
 msgctxt "Ext2AttrView"
-msgid "j: journalled"
-msgstr "j: журналированно"
+msgid "journalled"
+msgstr "журналированно"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:54
 msgctxt "Ext2AttrView"
@@ -8766,8 +8766,8 @@ msgstr "Данные файла записаны в журнал прежде ч
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:56
 msgctxt "Ext2AttrView"
-msgid "m: no compress"
-msgstr "m: не сжимать"
+msgid "no compress"
+msgstr "не сжимать"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:57
 msgctxt "Ext2AttrView"
@@ -8776,7 +8776,7 @@ msgstr "Файл исключён из сжатия."
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:59
 msgctxt "Ext2AttrView"
-msgid "N: inline data"
+msgid "inline data"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:60
@@ -8786,7 +8786,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:62
 msgctxt "Ext2AttrView"
-msgid "P: project"
+msgid "project"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:63
@@ -8796,7 +8796,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:65
 msgctxt "Ext2AttrView"
-msgid "s: secure del"
+msgid "secure del"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:66
@@ -8806,8 +8806,8 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:68
 msgctxt "Ext2AttrView"
-msgid "S: sync"
-msgstr "S: синхронизация"
+msgid "sync"
+msgstr "синхронизация"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:69
 msgctxt "Ext2AttrView"
@@ -8816,7 +8816,7 @@ msgstr "Изменения к этому файлу синхронизирова
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:71
 msgctxt "Ext2AttrView"
-msgid "t: no tail merge"
+msgid "no tail merge"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:72
@@ -8828,8 +8828,8 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:74
 msgctxt "Ext2AttrView"
-msgid "T: top dir"
-msgstr "T: Корневой каталог"
+msgid "top dir"
+msgstr "Корневой каталог"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:75
 msgctxt "Ext2AttrView"
@@ -8842,7 +8842,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:77
 msgctxt "Ext2AttrView"
-msgid "u: undelete"
+msgid "undelete"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:78
@@ -8854,8 +8854,8 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:80
 msgctxt "Ext2AttrView"
-msgid "x: DAX"
-msgstr "x: DAX"
+msgid "DAX"
+msgstr "DAX"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:81
 msgctxt "Ext2AttrView"
@@ -8864,7 +8864,7 @@ msgstr "Прямой доступ"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:83
 msgctxt "Ext2AttrView"
-msgid "V: fs-verity"
+msgid "fs-verity"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:84

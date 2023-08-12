@@ -8569,8 +8569,8 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:19
 msgctxt "Ext2AttrView"
-msgid "a: append only"
-msgstr "a: nur anhängen"
+msgid "append only"
+msgstr "nur anhängen"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:20
 msgctxt "Ext2AttrView"
@@ -8579,8 +8579,8 @@ msgstr "Die Datei kann nur im Anhänge Modus zum Schreiben geöffnet werden."
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:22
 msgctxt "Ext2AttrView"
-msgid "A: no atime"
-msgstr "A: kein atime"
+msgid "no atime"
+msgstr "kein atime"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:23
 msgctxt "Ext2AttrView"
@@ -8589,8 +8589,8 @@ msgstr "Zugriffsdatum wurde nicht verändert."
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:25
 msgctxt "Ext2AttrView"
-msgid "c: compressed"
-msgstr "c: komprimiert"
+msgid "compressed"
+msgstr "komprimiert"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:26
 msgctxt "Ext2AttrView"
@@ -8599,8 +8599,8 @@ msgstr "Die Datei ist komprimiert."
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:28
 msgctxt "Ext2AttrView"
-msgid "C: no CoW"
-msgstr "C: kein CoW"
+msgid "no CoW"
+msgstr "kein CoW"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:29
 msgctxt "Ext2AttrView"
@@ -8609,8 +8609,8 @@ msgstr "Unterliegt nicht den Copy-on-Write-Updates."
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:31
 msgctxt "Ext2AttrView"
-msgid "d: no dump"
-msgstr "d: kein Dump"
+msgid "no dump"
+msgstr "kein Dump"
 
 #. tr: "dump" is the name of the executable, so it should not be localized.
 #: ../src/librpfile/xattr/Ext2AttrData.c:33
@@ -8620,8 +8620,8 @@ msgstr "Diese Datei kann nicht mit dem Programm dump(8) entpackt werden."
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:35
 msgctxt "Ext2AttrView"
-msgid "D: dir sync"
-msgstr "D: Verzeichnis Synchronisieren"
+msgid "dir sync"
+msgstr "Verzeichnis Synchronisieren"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:36
 msgctxt "Ext2AttrView"
@@ -8632,8 +8632,8 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:38
 msgctxt "Ext2AttrView"
-msgid "e: extents"
-msgstr "e: Ausmaße"
+msgid "extents"
+msgstr "Ausmaße"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:39
 msgctxt "Ext2AttrView"
@@ -8642,8 +8642,8 @@ msgstr "Die Datei wird auf der Festplatte mit Hilfe von Extents abgebildet."
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:41
 msgctxt "Ext2AttrView"
-msgid "E: encrypted"
-msgstr "E: verschlüsselt"
+msgid "encrypted"
+msgstr "verschlüsselt"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:42
 msgctxt "Ext2AttrView"
@@ -8652,7 +8652,7 @@ msgstr "Datei ist verschlüsselt."
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:44
 msgctxt "Ext2AttrView"
-msgid "F: casefold"
+msgid "casefold"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:45
@@ -8664,8 +8664,8 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:47
 msgctxt "Ext2AttrView"
-msgid "i: immutable"
-msgstr "i: unveränderlich"
+msgid "immutable"
+msgstr "unveränderlich"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:48
 msgctxt "Ext2AttrView"
@@ -8674,8 +8674,8 @@ msgstr "Die Datei kann nicht geändert, gelöscht oder umbenannt werden."
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:50
 msgctxt "Ext2AttrView"
-msgid "I: indexed"
-msgstr "I: indexiert"
+msgid "indexed"
+msgstr "indexiert"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:51
 msgctxt "Ext2AttrView"
@@ -8684,8 +8684,8 @@ msgstr "Das Verzeichnis wird mit Hash Baum indiziert."
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:53
 msgctxt "Ext2AttrView"
-msgid "j: journalled"
-msgstr "j: gezählt"
+msgid "journalled"
+msgstr "gezählt"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:54
 msgctxt "Ext2AttrView"
@@ -8696,8 +8696,8 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:56
 msgctxt "Ext2AttrView"
-msgid "m: no compress"
-msgstr "m: keine Komprimierung"
+msgid "no compress"
+msgstr "keine Komprimierung"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:57
 msgctxt "Ext2AttrView"
@@ -8706,7 +8706,7 @@ msgstr "Die Datei ist von der Komprimierung ausgeschlossen."
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:59
 msgctxt "Ext2AttrView"
-msgid "N: inline data"
+msgid "inline data"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:60
@@ -8716,8 +8716,8 @@ msgstr "Dateidaten sind direkt im Inode gespeichert."
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:62
 msgctxt "Ext2AttrView"
-msgid "P: project"
-msgstr "P: Projekt"
+msgid "project"
+msgstr "Projekt"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:63
 msgctxt "Ext2AttrView"
@@ -8727,8 +8727,8 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:65
 msgctxt "Ext2AttrView"
-msgid "s: secure del"
-msgstr "s: sicheres löschen"
+msgid "secure del"
+msgstr "sicheres löschen"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:66
 msgctxt "Ext2AttrView"
@@ -8737,8 +8737,8 @@ msgstr "Dateiblöcke werden beim Löschen ausgeräumt."
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:68
 msgctxt "Ext2AttrView"
-msgid "S: sync"
-msgstr "S: Synchronisieren"
+msgid "sync"
+msgstr "Synchronisieren"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:69
 msgctxt "Ext2AttrView"
@@ -8748,7 +8748,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:71
 msgctxt "Ext2AttrView"
-msgid "t: no tail merge"
+msgid "no tail merge"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:72
@@ -8762,8 +8762,8 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:74
 msgctxt "Ext2AttrView"
-msgid "T: top dir"
-msgstr "T: Obere Verzeichnis"
+msgid "top dir"
+msgstr "Obere Verzeichnis"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:75
 msgctxt "Ext2AttrView"
@@ -8776,7 +8776,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:77
 msgctxt "Ext2AttrView"
-msgid "u: undelete"
+msgid "undelete"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:78
@@ -8790,8 +8790,8 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:80
 msgctxt "Ext2AttrView"
-msgid "x: DAX"
-msgstr "x: DAX"
+msgid "DAX"
+msgstr "DAX"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:81
 msgctxt "Ext2AttrView"
@@ -8800,8 +8800,8 @@ msgstr "Direkter Zugang"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:83
 msgctxt "Ext2AttrView"
-msgid "V: fs-verity"
-msgstr "V: fs-verity"
+msgid "fs-verity"
+msgstr "fs-verity"
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:84
 msgctxt "Ext2AttrView"

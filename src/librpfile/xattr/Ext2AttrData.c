@@ -16,71 +16,71 @@
 #include <assert.h>
 
 static const Ext2AttrCheckboxInfo_t ext2AttrCheckboxInfo_data[EXT2_ATTR_CHECKBOX_MAX] = {
-	{"chkAppendOnly", NOP_C_("Ext2AttrView", "a: append only"),
+	{"chkAppendOnly", 'a', NOP_C_("Ext2AttrView", "append only"),
 	 NOP_C_("Ext2AttrView", "File can only be opened in append mode for writing.")},
 
-	{"chkNoATime", NOP_C_("Ext2AttrView", "A: no atime"),
+	{"chkNoATime", 'A', NOP_C_("Ext2AttrView", "no atime"),
 	 NOP_C_("Ext2AttrView", "Access time record is not modified.")},
 
-	{"chkCompressed", NOP_C_("Ext2AttrView", "c: compressed"),
+	{"chkCompressed", 'c', NOP_C_("Ext2AttrView", "compressed"),
 	 NOP_C_("Ext2AttrView", "File is compressed.")},
 
-	{"chkNoCOW", NOP_C_("Ext2AttrView", "C: no CoW"),
+	{"chkNoCOW", 'C', NOP_C_("Ext2AttrView", "no CoW"),
 	 NOP_C_("Ext2AttrView", "Not subject to copy-on-write updates.")},
 
-	{"chkNoDump", NOP_C_("Ext2AttrView", "d: no dump"),
+	{"chkNoDump", 'd', NOP_C_("Ext2AttrView", "no dump"),
 	// tr: "dump" is the name of the executable, so it should not be localized.
 	 NOP_C_("Ext2AttrView", "This file is not a candidate for dumping with the dump(8) program.")},
 
-	{"chkDirSync", NOP_C_("Ext2AttrView", "D: dir sync"),
+	{"chkDirSync", 'D', NOP_C_("Ext2AttrView", "dir sync"),
 	 NOP_C_("Ext2AttrView", "Changes to this directory are written synchronously to the disk.")},
 
-	{"chkExtents", NOP_C_("Ext2AttrView", "e: extents"),
+	{"chkExtents", 'e', NOP_C_("Ext2AttrView", "extents"),
 	 NOP_C_("Ext2AttrView", "File is mapped on disk using extents.")},
 
-	{"chkEncrypted", NOP_C_("Ext2AttrView", "E: encrypted"),
+	{"chkEncrypted", 'E', NOP_C_("Ext2AttrView", "encrypted"),
 	 NOP_C_("Ext2AttrView", "File is encrypted.")},
 
-	{"chkCasefold", NOP_C_("Ext2AttrView", "F: casefold"),
+	{"chkCasefold", 'F', NOP_C_("Ext2AttrView", "casefold"),
 	 NOP_C_("Ext2AttrView", "Files stored in this directory use case-insensitive filenames.")},
 
-	{"chkImmutable", NOP_C_("Ext2AttrView", "i: immutable"),
+	{"chkImmutable", 'i', NOP_C_("Ext2AttrView", "immutable"),
 	 NOP_C_("Ext2AttrView", "File cannot be modified, deleted, or renamed.")},
 
-	{"chkIndexed", NOP_C_("Ext2AttrView", "I: indexed"),
+	{"chkIndexed", 'I', NOP_C_("Ext2AttrView", "indexed"),
 	 NOP_C_("Ext2AttrView", "Directory is indexed using hashed trees.")},
 
-	{"chkJournalled", NOP_C_("Ext2AttrView", "j: journalled"),
+	{"chkJournalled", 'j', NOP_C_("Ext2AttrView", "journalled"),
 	 NOP_C_("Ext2AttrView", "File data is written to the journal before writing to the file itself.")},
 
-	{"chkNoCompress", NOP_C_("Ext2AttrView", "m: no compress"),
+	{"chkNoCompress", 'm', NOP_C_("Ext2AttrView", "no compress"),
 	 NOP_C_("Ext2AttrView", "File is excluded from compression.")},
 
-	{"chkInlineData", NOP_C_("Ext2AttrView", "N: inline data"),
+	{"chkInlineData", 'N', NOP_C_("Ext2AttrView", "inline data"),
 	 NOP_C_("Ext2AttrView", "File data is stored inline in the inode.")},
 
-	{"chkProject", NOP_C_("Ext2AttrView", "P: project"),
+	{"chkProject", 'P', NOP_C_("Ext2AttrView", "project"),
 	 NOP_C_("Ext2AttrView", "Directory will enforce a hierarchical structure for project IDs.")},
 
-	{"chkSecureDelete", NOP_C_("Ext2AttrView", "s: secure del"),
+	{"chkSecureDelete", 's', NOP_C_("Ext2AttrView", "secure del"),
 	 NOP_C_("Ext2AttrView", "File's blocks will be zeroed when deleted.")},
 
-	{"chkFileSync", NOP_C_("Ext2AttrView", "S: sync"),
+	{"chkFileSync", 'S', NOP_C_("Ext2AttrView", "sync"),
 	 NOP_C_("Ext2AttrView", "Changes to this file are written synchronously to the disk.")},
 
-	{"chkNoTailMerge", NOP_C_("Ext2AttrView", "t: no tail merge"),
+	{"chkNoTailMerge", 't', NOP_C_("Ext2AttrView", "no tail merge"),
 	 NOP_C_("Ext2AttrView", "If the file system supports tail merging, this file will not have a partial block fragment at the end of the file merged with other files.")},
 
-	{"chkTopDir", NOP_C_("Ext2AttrView", "T: top dir"),
+	{"chkTopDir", 'T', NOP_C_("Ext2AttrView", "top dir"),
 	 NOP_C_("Ext2AttrView", "Directory will be treated like a top-level directory by the ext3/ext4 Orlov block allocator.")},
 
-	{"chkUndelete", NOP_C_("Ext2AttrView", "u: undelete"),
+	{"chkUndelete", 'u', NOP_C_("Ext2AttrView", "undelete"),
 	 NOP_C_("Ext2AttrView", "File's contents will be saved when deleted, potentially allowing for undeletion. This is known to be broken.")},
 
-	{"chkDAX", NOP_C_("Ext2AttrView", "x: DAX"),
+	{"chkDAX", 'x', NOP_C_("Ext2AttrView", "DAX"),
 	 NOP_C_("Ext2AttrView", "Direct access")},
 
-	{"chkVerity", NOP_C_("Ext2AttrView", "V: fs-verity"),
+	{"chkVerity", 'V', NOP_C_("Ext2AttrView", "fs-verity"),
 	 NOP_C_("Ext2AttrView", "File has fs-verity enabled.")},
 };
 

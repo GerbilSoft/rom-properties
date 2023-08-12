@@ -8560,7 +8560,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:19
 msgctxt "Ext2AttrView"
-msgid "a: append only"
+msgid "append only"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:20
@@ -8570,7 +8570,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:22
 msgctxt "Ext2AttrView"
-msgid "A: no atime"
+msgid "no atime"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:23
@@ -8580,7 +8580,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:25
 msgctxt "Ext2AttrView"
-msgid "c: compressed"
+msgid "compressed"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:26
@@ -8590,7 +8590,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:28
 msgctxt "Ext2AttrView"
-msgid "C: no CoW"
+msgid "no CoW"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:29
@@ -8600,7 +8600,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:31
 msgctxt "Ext2AttrView"
-msgid "d: no dump"
+msgid "no dump"
 msgstr ""
 
 #. tr: "dump" is the name of the executable, so it should not be localized.
@@ -8611,7 +8611,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:35
 msgctxt "Ext2AttrView"
-msgid "D: dir sync"
+msgid "dir sync"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:36
@@ -8621,7 +8621,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:38
 msgctxt "Ext2AttrView"
-msgid "e: extents"
+msgid "extents"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:39
@@ -8631,7 +8631,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:41
 msgctxt "Ext2AttrView"
-msgid "E: encrypted"
+msgid "encrypted"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:42
@@ -8641,7 +8641,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:44
 msgctxt "Ext2AttrView"
-msgid "F: casefold"
+msgid "casefold"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:45
@@ -8651,7 +8651,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:47
 msgctxt "Ext2AttrView"
-msgid "i: immutable"
+msgid "immutable"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:48
@@ -8661,7 +8661,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:50
 msgctxt "Ext2AttrView"
-msgid "I: indexed"
+msgid "indexed"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:51
@@ -8671,7 +8671,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:53
 msgctxt "Ext2AttrView"
-msgid "j: journalled"
+msgid "journalled"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:54
@@ -8681,7 +8681,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:56
 msgctxt "Ext2AttrView"
-msgid "m: no compress"
+msgid "no compress"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:57
@@ -8691,7 +8691,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:59
 msgctxt "Ext2AttrView"
-msgid "N: inline data"
+msgid "inline data"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:60
@@ -8701,7 +8701,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:62
 msgctxt "Ext2AttrView"
-msgid "P: project"
+msgid "project"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:63
@@ -8711,7 +8711,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:65
 msgctxt "Ext2AttrView"
-msgid "s: secure del"
+msgid "secure del"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:66
@@ -8721,7 +8721,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:68
 msgctxt "Ext2AttrView"
-msgid "S: sync"
+msgid "sync"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:69
@@ -8731,7 +8731,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:71
 msgctxt "Ext2AttrView"
-msgid "t: no tail merge"
+msgid "no tail merge"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:72
@@ -8743,7 +8743,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:74
 msgctxt "Ext2AttrView"
-msgid "T: top dir"
+msgid "top dir"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:75
@@ -8755,7 +8755,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:77
 msgctxt "Ext2AttrView"
-msgid "u: undelete"
+msgid "undelete"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:78
@@ -8767,7 +8767,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:80
 msgctxt "Ext2AttrView"
-msgid "x: DAX"
+msgid "DAX"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:81
@@ -8777,7 +8777,7 @@ msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:83
 msgctxt "Ext2AttrView"
-msgid "V: fs-verity"
+msgid "fs-verity"
 msgstr ""
 
 #: ../src/librpfile/xattr/Ext2AttrData.c:84

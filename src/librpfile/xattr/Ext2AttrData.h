@@ -51,6 +51,7 @@ typedef enum {
 
 typedef struct _Ext2AttrCheckboxInfo_t {
 	const char *name;	// object name
+	char lsattr_chr;	// lsattr character
 	const char *label;	// label (translatable)
 	const char *tooltip;	// tooltip (translatable)
 } Ext2AttrCheckboxInfo_t;

@@ -68,9 +68,18 @@ class Ext2AttrViewPrivate
  */
 void Ext2AttrViewPrivate::retranslateUi_nonDesigner(void)
 {
+	// tr: format string for Ext2 attribute checkbox labels (%c == lsattr character)
+	const char *const s_lsattr_fmt = C_("Ext2AttrView", "%c: %s");
+
 	for (size_t i = 0; i < ARRAY_SIZE(checkBoxes); i++) {
 		const Ext2AttrCheckboxInfo_t *const p = ext2AttrCheckboxInfo(static_cast<Ext2AttrCheckboxID>(i));
-		checkBoxes[i]->setText(U82Q(dpgettext_expr(RP_I18N_DOMAIN, "Ext2AttrView", p->label)));
+
+		// Prepend the lsattr character to the checkbox label.
+		char buf[256];
+		snprintf(buf, sizeof(buf), s_lsattr_fmt, p->lsattr_chr,
+			dpgettext_expr(RP_I18N_DOMAIN, "Ext2AttrView", p->label));
+
+		checkBoxes[i]->setText(U82Q(buf));
 		checkBoxes[i]->setToolTip(U82Q(dpgettext_expr(RP_I18N_DOMAIN, "Ext2AttrView", p->tooltip)));
 	}
 }

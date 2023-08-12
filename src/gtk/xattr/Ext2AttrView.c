@@ -140,11 +140,19 @@ rp_ext2_attr_view_init(RpExt2AttrView *widget)
 	GtkWidget *const gridCheckboxes = gtk_table_new(row_count, col_count, FALSE);
 #endif /* USE_GTK_GRID */
 	gtk_widget_set_name(gridCheckboxes, "gridCheckboxes");
+
+	// tr: format string for Ext2 attribute checkbox labels (%c == lsattr character)
+	const char *const s_lsattr_fmt = C_("Ext2AttrView", "%c: %s");
+
 	for (size_t i = 0; i < ARRAY_SIZE(widget->checkBoxes); i++) {
 		const Ext2AttrCheckboxInfo_t *const p = ext2AttrCheckboxInfo((Ext2AttrCheckboxID)i);
 
-		GtkWidget *const checkBox = gtk_check_button_new_with_label(
+		// Prepend the lsattr character to the checkbox label.
+		char buf[256];
+		snprintf(buf, sizeof(buf), s_lsattr_fmt, p->lsattr_chr,
 			dpgettext_expr(RP_I18N_DOMAIN, "Ext2AttrView", p->label));
+
+		GtkWidget *const checkBox = gtk_check_button_new_with_label(buf);
 		gtk_widget_set_name(checkBox, p->name);
 		gtk_widget_set_tooltip_text(checkBox,
 			dpgettext_expr(RP_I18N_DOMAIN, "Ext2AttrView", p->tooltip));
