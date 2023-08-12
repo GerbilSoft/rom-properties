@@ -40,11 +40,8 @@ bool isWritableDirectory(const char *path)
 #ifdef HAVE_STATX
 	struct statx sbx;
 	int ret = statx(AT_FDCWD, path, 0, STATX_TYPE, &sbx);
-	if (ret != 0) {
+	if (ret != 0 || !(sbx.stx_mask & STATX_TYPE)) {
 		// statx() failed.
-		return false;
-	} else if (!(sbx.stx_mask & STATX_TYPE)) {
-		// Unable to get the file type.
 		return false;
 	} else if (!S_ISDIR(sbx.stx_mode)) {
 		// Not a directory.
@@ -52,8 +49,7 @@ bool isWritableDirectory(const char *path)
 	}
 #else /* !HAVE_STATX */
 	struct stat sb;
-	int ret = stat(path, &sb);
-	if (ret != 0) {
+	if (stat(path, &sb) != 0) {
 		// stat() failed.
 		return false;
 	} else if (!S_ISDIR(sb.st_mode)) {

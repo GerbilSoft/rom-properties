@@ -1,19 +1,19 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (GTK+ common)                      *
- * LinuxAttrView.c: Linux file system attribute viewer widget.             *
+ * Ext2AttrView.c: Ext2 file system attribute viewer widget.               *
  *                                                                         *
  * Copyright (c) 2017-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
 #include "stdafx.h"
-#include "LinuxAttrView.h"
+#include "Ext2AttrView.h"
 
-// EXT2 flags (also used for EXT3, EXT4, and other Linux file systems)
+// Ext2 flags (also used for Ext3, Ext4, and other Linux file systems)
 #include "librpfile/xattr/ext2_flags.h"
 
-// LinuxAttrData (TODO: Rework into functions for libromdata.so.4)
-#include "librpfile/xattr/LinuxAttrData.h"
+// Ext2AttrData
+#include "librpfile/xattr/Ext2AttrData.h"
 
 /* Property identifiers */
 typedef enum {
@@ -22,29 +22,29 @@ typedef enum {
 	PROP_FLAGS,
 
 	PROP_LAST
-} RpLinuxAttrViewPropID;
+} RpExt2AttrViewPropID;
 
-static void	rp_linux_attr_view_set_property(GObject		*object,
-						guint		 prop_id,
-						const GValue	*value,
-						GParamSpec	*pspec);
-static void	rp_linux_attr_view_get_property(GObject		*object,
-						guint		 prop_id,
-						GValue		*value,
-						GParamSpec	*pspec);
+static void	rp_ext2_attr_view_set_property(GObject		*object,
+					       guint		 prop_id,
+					       const GValue	*value,
+					       GParamSpec	*pspec);
+static void	rp_ext2_attr_view_get_property(GObject		*object,
+					       guint		 prop_id,
+					       GValue		*value,
+					       GParamSpec	*pspec);
 
 /** Signal handlers **/
 static void	checkbox_no_toggle_signal_handler(GtkCheckButton	*checkbutton,
-						  RpLinuxAttrView	*widget);
+						  RpExt2AttrView	*widget);
 
 /** Update flags display **/
-static void	rp_linux_attr_view_update_flags_string(RpLinuxAttrView *widget);
-static void	rp_linux_attr_view_update_flags_checkboxes(RpLinuxAttrView *widget);
-static void	rp_linux_attr_view_update_flags_display(RpLinuxAttrView *widget);
+static void	rp_ext2_attr_view_update_flags_string(RpExt2AttrView *widget);
+static void	rp_ext2_attr_view_update_flags_checkboxes(RpExt2AttrView *widget);
+static void	rp_ext2_attr_view_update_flags_display(RpExt2AttrView *widget);
 
 static GParamSpec *props[PROP_LAST];
 
-static GQuark LinuxAttrView_value_quark;
+static GQuark Ext2AttrView_value_quark;
 
 #if GTK_CHECK_VERSION(3,0,0)
 typedef GtkBoxClass superclass;
@@ -57,13 +57,13 @@ typedef GtkVBox super;
 #define GTK_TYPE_SUPER GTK_TYPE_VBOX
 #endif /* GTK_CHECK_VERSION(3,0,0) */
 
-// LinuxAttrView class
-struct _RpLinuxAttrViewClass {
+// Ext2AttrView class
+struct _RpExt2AttrViewClass {
 	superclass __parent__;
 };
 
-// LinuxAttrView instance
-struct _RpLinuxAttrView {
+// Ext2AttrView instance
+struct _RpExt2AttrView {
 	super __parent__;
 
 	int flags;
@@ -75,31 +75,31 @@ struct _RpLinuxAttrView {
 	GtkWidget *lblLsAttr;
 
 	// See enum CheckboxID and checkboxInfo.
-	GtkWidget *checkBoxes[LINUX_ATTR_CHECKBOX_MAX];
+	GtkWidget *checkBoxes[EXT2_ATTR_CHECKBOX_MAX];
 };
 
 // NOTE: G_DEFINE_TYPE() doesn't work in C++ mode with gcc-6.2
 // due to an implicit int to GTypeFlags conversion.
-G_DEFINE_TYPE_EXTENDED(RpLinuxAttrView, rp_linux_attr_view,
+G_DEFINE_TYPE_EXTENDED(RpExt2AttrView, rp_ext2_attr_view,
 	GTK_TYPE_SUPER, (GTypeFlags)0, {});
 
 static void
-rp_linux_attr_view_class_init(RpLinuxAttrViewClass *klass)
+rp_ext2_attr_view_class_init(RpExt2AttrViewClass *klass)
 {
 	GObjectClass *const gobject_class = G_OBJECT_CLASS(klass);
-	gobject_class->set_property = rp_linux_attr_view_set_property;
-	gobject_class->get_property = rp_linux_attr_view_get_property;
+	gobject_class->set_property = rp_ext2_attr_view_set_property;
+	gobject_class->get_property = rp_ext2_attr_view_get_property;
 
 	/** Quarks **/
 
 	// NOTE: Not using g_quark_from_static_string()
 	// because the extension can be unloaded.
-	LinuxAttrView_value_quark = g_quark_from_string("LinuxAttrValue.value");
+	Ext2AttrView_value_quark = g_quark_from_string("Ext2AttrValue.value");
 
 	/** Properties **/
 
 	props[PROP_FLAGS] = g_param_spec_int(
-		"flags", "Flags", "Linux file system file attributes",
+		"flags", "Flags", "Ext2 file system file attributes",
 		G_MININT, G_MAXINT, 0,
 		(GParamFlags)(G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
@@ -108,7 +108,7 @@ rp_linux_attr_view_class_init(RpLinuxAttrViewClass *klass)
 }
 
 static void
-rp_linux_attr_view_init(RpLinuxAttrView *widget)
+rp_ext2_attr_view_init(RpExt2AttrView *widget)
 {
 #if GTK_CHECK_VERSION(3,0,0)
 	// Make this a VBox.
@@ -118,7 +118,7 @@ rp_linux_attr_view_init(RpLinuxAttrView *widget)
 	/** lsattr **/
 	GtkWidget *const hboxLsAttr = rp_gtk_hbox_new(4);
 	gtk_widget_set_name(hboxLsAttr, "hboxLsAttr");
-	GtkWidget *const lblLsAttrDesc = gtk_label_new(C_("LinuxAttrView", "lsattr:"));
+	GtkWidget *const lblLsAttrDesc = gtk_label_new(C_("Ext2AttrView", "lsattr:"));
 	gtk_widget_set_name(lblLsAttrDesc, "lblLsAttrDesc");
 	widget->lblLsAttr = gtk_label_new("----------------------");
 	gtk_widget_set_name(widget->lblLsAttr, "lblLsAttr");
@@ -135,19 +135,27 @@ rp_linux_attr_view_init(RpLinuxAttrView *widget)
 #ifdef USE_GTK_GRID
 	GtkWidget *const gridCheckboxes = gtk_grid_new();
 #else /* !USE_GTK_GRID */
-	static const int row_count = (LINUX_ATTR_CHECKBOX_MAX / col_count) +
-				    ((LINUX_ATTR_CHECKBOX_MAX % col_count) > 0);
+	static const int row_count = (EXT2_ATTR_CHECKBOX_MAX / col_count) +
+				    ((EXT2_ATTR_CHECKBOX_MAX % col_count) > 0);
 	GtkWidget *const gridCheckboxes = gtk_table_new(row_count, col_count, FALSE);
 #endif /* USE_GTK_GRID */
 	gtk_widget_set_name(gridCheckboxes, "gridCheckboxes");
-	for (size_t i = 0; i < ARRAY_SIZE(widget->checkBoxes); i++) {
-		const LinuxAttrCheckboxInfo_t *const p = linuxAttrCheckboxInfo((LinuxAttrCheckboxID)i);
 
-		GtkWidget *const checkBox = gtk_check_button_new_with_label(
-			dpgettext_expr(RP_I18N_DOMAIN, "LinuxAttrView", p->label));
+	// tr: format string for Ext2 attribute checkbox labels (%c == lsattr character)
+	const char *const s_lsattr_fmt = C_("Ext2AttrView", "%c: %s");
+
+	for (size_t i = 0; i < ARRAY_SIZE(widget->checkBoxes); i++) {
+		const Ext2AttrCheckboxInfo_t *const p = ext2AttrCheckboxInfo((Ext2AttrCheckboxID)i);
+
+		// Prepend the lsattr character to the checkbox label.
+		char buf[256];
+		snprintf(buf, sizeof(buf), s_lsattr_fmt, p->lsattr_chr,
+			dpgettext_expr(RP_I18N_DOMAIN, "Ext2AttrView", p->label));
+
+		GtkWidget *const checkBox = gtk_check_button_new_with_label(buf);
 		gtk_widget_set_name(checkBox, p->name);
 		gtk_widget_set_tooltip_text(checkBox,
-			dpgettext_expr(RP_I18N_DOMAIN, "LinuxAttrView", p->tooltip));
+			dpgettext_expr(RP_I18N_DOMAIN, "Ext2AttrView", p->tooltip));
 
 		widget->checkBoxes[i] = checkBox;
 
@@ -188,27 +196,27 @@ rp_linux_attr_view_init(RpLinuxAttrView *widget)
 }
 
 GtkWidget*
-rp_linux_attr_view_new(void)
+rp_ext2_attr_view_new(void)
 {
-	return (GtkWidget*)g_object_new(RP_TYPE_LINUX_ATTR_VIEW, NULL);
+	return (GtkWidget*)g_object_new(RP_TYPE_EXT2_ATTR_VIEW, NULL);
 }
 
 /** Properties **/
 
 static void
-rp_linux_attr_view_set_property(GObject		*object,
+rp_ext2_attr_view_set_property(GObject		*object,
 				guint		 prop_id,
 				const GValue	*value,
 				GParamSpec	*pspec)
 {
-	RpLinuxAttrView *const widget = RP_LINUX_ATTR_VIEW(object);
+	RpExt2AttrView *const widget = RP_EXT2_ATTR_VIEW(object);
 
 	switch (prop_id) {
 		case PROP_FLAGS: {
 			const int flags = g_value_get_int(value);
 			if (widget->flags != flags) {
 				widget->flags = flags;
-				rp_linux_attr_view_update_flags_display(widget);
+				rp_ext2_attr_view_update_flags_display(widget);
 			}
 			break;
 		}
@@ -220,16 +228,16 @@ rp_linux_attr_view_set_property(GObject		*object,
 }
 
 static void
-rp_linux_attr_view_get_property(GObject		*object,
+rp_ext2_attr_view_get_property(GObject		*object,
 				guint		 prop_id,
 				GValue		*value,
 				GParamSpec	*pspec)
 {
-	RpLinuxAttrView *const widget = RP_LINUX_ATTR_VIEW(object);
+	RpExt2AttrView *const widget = RP_EXT2_ATTR_VIEW(object);
 
 	switch (prop_id) {
 		case PROP_FLAGS:
-			g_value_set_uint(value, widget->flags);
+			g_value_set_int(value, widget->flags);
 			break;
 
 		default:
@@ -243,10 +251,10 @@ rp_linux_attr_view_get_property(GObject		*object,
 /**
  * Update the flags string display.
  * This uses the same format as e2fsprogs lsattr.
- * @param widget LinuxAttrView
+ * @param widget Ext2AttrView
  */
 static void
-rp_linux_attr_view_update_flags_string(RpLinuxAttrView *widget)
+rp_ext2_attr_view_update_flags_string(RpExt2AttrView *widget)
 {
 	char str[] = "----------------------";
 	static_assert(sizeof(str) == 22+1, "str[] is the wrong size");
@@ -276,13 +284,13 @@ rp_linux_attr_view_update_flags_string(RpLinuxAttrView *widget)
 
 /**
  * Update the flags checkboxes.
- * @param widget LinuxAttrView
+ * @param widget Ext2AttrView
  */
 static void
-rp_linux_attr_view_update_flags_checkboxes(RpLinuxAttrView *widget)
+rp_ext2_attr_view_update_flags_checkboxes(RpExt2AttrView *widget)
 {
-	static_assert(ARRAY_SIZE(widget->checkBoxes) == LINUX_ATTR_CHECKBOX_MAX,
-		"checkBoxes and LINUX_ATTR_CHECKBOX_MAX are out of sync!");
+	static_assert(ARRAY_SIZE(widget->checkBoxes) == EXT2_ATTR_CHECKBOX_MAX,
+		"checkBoxes and EXT2_ATTR_CHECKBOX_MAX are out of sync!");
 
 	widget->inhibit_checkbox_no_toggle = TRUE;
 
@@ -297,7 +305,7 @@ rp_linux_attr_view_update_flags_checkboxes(RpLinuxAttrView *widget)
 	for (size_t i = 0; i < ARRAY_SIZE(widget->checkBoxes); i++) {
 		gboolean val = !!(widget->flags & (1U << flag_order[i]));
 		gtk_check_button_set_active(GTK_CHECK_BUTTON(widget->checkBoxes[i]), val);
-		g_object_set_qdata(G_OBJECT(widget->checkBoxes[i]), LinuxAttrView_value_quark, GUINT_TO_POINTER((guint)val));
+		g_object_set_qdata(G_OBJECT(widget->checkBoxes[i]), Ext2AttrView_value_quark, GUINT_TO_POINTER((guint)val));
 	}
 
 	widget->inhibit_checkbox_no_toggle = FALSE;
@@ -305,56 +313,56 @@ rp_linux_attr_view_update_flags_checkboxes(RpLinuxAttrView *widget)
 
 /**
  * Update the flags display.
- * @param widget LinuxAttrView
+ * @param widget Ext2AttrView
  */
 static void
-rp_linux_attr_view_update_flags_display(RpLinuxAttrView *widget)
+rp_ext2_attr_view_update_flags_display(RpExt2AttrView *widget)
 {
-	rp_linux_attr_view_update_flags_string(widget);
-	rp_linux_attr_view_update_flags_checkboxes(widget);
+	rp_ext2_attr_view_update_flags_string(widget);
+	rp_ext2_attr_view_update_flags_checkboxes(widget);
 }
 
 /** Property accessors / mutators **/
 
 /**
- * Set the current Linux attributes.
- * @param widget LinuxAttrView
- * @param flags Linux attributes
+ * Set the current Ext2 attributes.
+ * @param widget Ext2AttrView
+ * @param flags Ext2 attributes
  */
 void
-rp_linux_attr_view_set_flags(RpLinuxAttrView *widget, int flags)
+rp_ext2_attr_view_set_flags(RpExt2AttrView *widget, int flags)
 {
-	g_return_if_fail(RP_IS_LINUX_ATTR_VIEW(widget));
+	g_return_if_fail(RP_IS_EXT2_ATTR_VIEW(widget));
 	if (widget->flags != flags) {
 		widget->flags = flags;
-		rp_linux_attr_view_update_flags_display(widget);
+		rp_ext2_attr_view_update_flags_display(widget);
 		g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_FLAGS]);
 	}
 }
 
 /**
- * Get the current Linux attributes.
- * @param widget LinuxAttrView
- * @return Linux attributes
+ * Get the current Ext2 attributes.
+ * @param widget Ext2AttrView
+ * @return Ext2 attributes
  */
 int
-rp_linux_attr_view_get_flags(RpLinuxAttrView *widget)
+rp_ext2_attr_view_get_flags(RpExt2AttrView *widget)
 {
-	g_return_val_if_fail(RP_IS_LINUX_ATTR_VIEW(widget), 0);
+	g_return_val_if_fail(RP_IS_EXT2_ATTR_VIEW(widget), 0);
 	return widget->flags;
 }
 
 /**
- * Clear the current Linux attributes.
- * @param widget LinuxAttrView
+ * Clear the current Ext2 attributes.
+ * @param widget Ext2AttrView
  */
 void
-rp_linux_attr_view_clear_flags(RpLinuxAttrView *widget)
+rp_ext2_attr_view_clear_flags(RpExt2AttrView *widget)
 {
-	g_return_if_fail(RP_IS_LINUX_ATTR_VIEW(widget));
+	g_return_if_fail(RP_IS_EXT2_ATTR_VIEW(widget));
 	if (widget->flags != 0) {
 		widget->flags = 0;
-		rp_linux_attr_view_update_flags_display(widget);
+		rp_ext2_attr_view_update_flags_display(widget);
 		g_object_notify_by_pspec(G_OBJECT(widget), props[PROP_FLAGS]);
 	}
 }
@@ -364,20 +372,20 @@ rp_linux_attr_view_clear_flags(RpLinuxAttrView *widget)
 /**
  * Prevent bitfield checkboxes from being toggled.
  * @param checkbutton Bitfield checkbox
- * @param page LinuxAttrView
+ * @param page Ext2AttrView
  */
 static void
 checkbox_no_toggle_signal_handler(GtkCheckButton	*checkbutton,
-				  RpLinuxAttrView	*widget)
+				  RpExt2AttrView	*widget)
 {
 	if (widget->inhibit_checkbox_no_toggle) {
 		// Inhibiting the no-toggle handler.
 		return;
 	}
 
-	// Get the saved LinuxAttrView value.
+	// Get the saved Ext2AttrView value.
 	const gboolean value = (gboolean)GPOINTER_TO_UINT(
-		g_object_get_qdata(G_OBJECT(checkbutton), LinuxAttrView_value_quark));
+		g_object_get_qdata(G_OBJECT(checkbutton), Ext2AttrView_value_quark));
 	if (gtk_check_button_get_active(checkbutton) != value) {
 		// Toggle this box.
 		gtk_check_button_set_active(checkbutton, value);

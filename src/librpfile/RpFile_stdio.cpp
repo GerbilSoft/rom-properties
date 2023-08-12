@@ -104,8 +104,7 @@ int RpFilePrivate::reOpenFile(void)
 	}
 #else /* !HAVE_STATX */
 	struct stat sb;
-	int ret = stat(filename, &sb);
-	if (ret == 0) {
+	if (!stat(filename, &sb)) {
 		// fstat() succeeded.
 		hasFileMode = true;
 		fileType = IFTODT(sb.st_mode);

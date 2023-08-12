@@ -12,6 +12,9 @@
 #include "common.h"
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 
+// C includes
+#include <stdint.h>
+
 // C++ includes
 #include <map>
 #include <string>
@@ -43,16 +46,34 @@ class RP_LIBROMDATA_PUBLIC XAttrReader
 
 	public:
 		/**
-		 * Does this file have Linux attributes?
+		 * Does this file have Ext2 attributes?
 		 * @return True if it does; false if not.
 		 */
-		bool hasLinuxAttributes(void) const;
+		bool hasExt2Attributes(void) const;
 
 		/**
-		 * Get this file's Linux attributes.
-		 * @return Linux attributes
+		 * Get this file's Ext2 attributes.
+		 * @return Ext2 attributes
 		 */
-		int linuxAttributes(void) const;
+		int ext2Attributes(void) const;
+
+		/**
+		 * Does this file have XFS attributes?
+		 * @return True if it does; false if not.
+		 */
+		bool hasXfsAttributes(void) const;
+
+		/**
+		 * Get this file's XFS xflags.
+		 * @return XFS xflags
+		 */
+		uint32_t xfsXFlags(void) const;
+
+		/**
+		 * Get this file's XFS project ID.
+		 * @return XFS project ID
+		 */
+		uint32_t xfsProjectId(void) const;
 
 		/**
 		 * Does this file have MS-DOS attributes?

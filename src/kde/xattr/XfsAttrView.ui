@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>LinuxAttrView</class>
- <widget class="QWidget" name="LinuxAttrView">
+ <class>XfsAttrView</class>
+ <widget class="QWidget" name="XfsAttrView">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -12,37 +12,9 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QHBoxLayout" name="hboxLsAttr" stretch="0,0,1">
-     <item>
-      <widget class="QLabel" name="lblLsAttrDesc">
-       <property name="text">
-        <string>lsattr:</string>
-       </property>
-       <property name="textFormat">
-        <enum>Qt::PlainText</enum>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="lblLsAttr">
-       <property name="font">
-        <font>
-         <family>Monospace</family>
-        </font>
-       </property>
-       <property name="text">
-        <string notr="true">----------------------</string>
-       </property>
-       <property name="textFormat">
-        <enum>Qt::PlainText</enum>
-       </property>
-       <property name="textInteractionFlags">
-        <set>Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="hspcLsAttr">
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="4">
+      <spacer name="hspcGrid">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -57,9 +29,37 @@
     </layout>
    </item>
    <item>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="4">
-      <spacer name="hspcGrid">
+    <layout class="QHBoxLayout" name="hboxProjectId" stretch="0,0,1">
+     <item>
+      <widget class="QLabel" name="lblProjectIdDesc">
+       <property name="text">
+        <string>Project ID:</string>
+       </property>
+       <property name="textFormat">
+        <enum>Qt::PlainText</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="lblProjectId">
+       <property name="font">
+        <font>
+         <family>Monospace</family>
+        </font>
+       </property>
+       <property name="text">
+        <string notr="true">0</string>
+       </property>
+       <property name="textFormat">
+        <enum>Qt::PlainText</enum>
+       </property>
+       <property name="textInteractionFlags">
+        <set>Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="hspcProjectId">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>

@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpfile)                        *
- * ext2_flags.h: EXT2 file system flags                                    *
+ * ext2_flags.h: Ext2 file system flags                                    *
  *                                                                         *
  * Based on fs.h and ext2.h from the Linux kernel.                         *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *

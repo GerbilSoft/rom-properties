@@ -1,6 +1,6 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (librpfile)                        *
- * LinuxAttrData.h: Linux file system attribute data                       *
+ * XfsAttrData.h: XFS file system attribute data                           *
  *                                                                         *
  * Copyright (c) 2016-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
@@ -15,57 +15,48 @@ extern "C" {
 #endif
 
 typedef enum {
-	chkAppendOnly,
-	chkNoATime,
-	chkCompressed,
-	chkNoCOW,
+	XFS_chkRealtime,
+	XFS_chkPrealloc,
+	XFS_chkImmutable,
+	XFS_chkAppend,
 
-	chkNoDump,
-	chkDirSync,
-	chkExtents,
-	chkEncrypted,
+	XFS_chkSync,
+	XFS_chkNoATime,
+	XFS_chkNoDump,
+	XFS_chkRtInherit,
 
-	chkCasefold,
-	chkImmutable,
-	chkIndexed,
-	chkJournalled,
+	XFS_chkProjInherit,
+	XFS_chkNoSymlinks,
+	XFS_chkExtSize,
+	XFS_chkExtSzInherit,
 
-	chkNoCompress,
-	chkInlineData,
-	chkProject,
-	chkSecureDelete,
-
-	chkFileSync,
-	chkNoTailMerge,
-	chkTopDir,
-	chkUndelete,
-
-	chkDAX,
-	chkVerity,
+	XFS_chkNoDefrag,
+	XFS_chkFilestream,
+	XFS_chkHasAttr,
 
 	// NOTE: The number of attributes is not expected to change
 	// anytime soon, so this constant can be used directly instead
 	// of using a function to retrieve the highest attribute value.
-	LINUX_ATTR_CHECKBOX_MAX
-} LinuxAttrCheckboxID;
+	XFS_ATTR_CHECKBOX_MAX
+} XfsAttrCheckboxID;
 
-typedef struct _LinuxAttrCheckboxInfo_t {
+typedef struct _XfsAttrCheckboxInfo_t {
 	const char *name;	// object name
 	const char *label;	// label (translatable)
 	const char *tooltip;	// tooltip (translatable)
-} LinuxAttrCheckboxInfo_t;
+} XfsAttrCheckboxInfo_t;
 
 /**
- * Get Linux attribute checkbox info.
+ * Get XFS attribute checkbox info.
  *
  * NOTE: The UI frontend has to translate the label and tooltip
- * using the "LinuxAttrView" context.
+ * using the "XfsAttrView" context.
  *
- * @param id LinuxAttrCheckboxID
- * @return LinuxAttrCheckboxInfo_t struct, or nullptr if the ID is invalid.
+ * @param id XfsAttrCheckboxID
+ * @return XfsAttrCheckboxInfo_t struct, or nullptr if the ID is invalid.
  */
 RP_LIBROMDATA_PUBLIC
-const LinuxAttrCheckboxInfo_t *linuxAttrCheckboxInfo(LinuxAttrCheckboxID id);
+const XfsAttrCheckboxInfo_t *xfsAttrCheckboxInfo(XfsAttrCheckboxID id);
 
 #ifdef __cplusplus
 }

@@ -174,8 +174,7 @@ static int get_file_size_and_mtime(const TCHAR *filename, off64_t *pFileSize, ti
 #elif defined(HAVE_STATX)
 	// Linux or UNIX system with statx()
 	struct statx sbx;
-	int ret = statx(AT_FDCWD, filename, 0, STATX_TYPE | STATX_MTIME | STATX_SIZE, &sbx);
-	if (ret != 0) {
+	if (statx(AT_FDCWD, filename, 0, STATX_TYPE | STATX_MTIME | STATX_SIZE, &sbx) != 0) {
 		// An error occurred.
 		const int err = errno;
 		return (err != 0 ? -err : -EIO);
@@ -199,8 +198,7 @@ static int get_file_size_and_mtime(const TCHAR *filename, off64_t *pFileSize, ti
 #else
 	// Linux/UNIX, and statx() isn't available. Use stat().
 	struct stat sb;
-	int ret = stat(filename, &sb);
-	if (ret != 0) {
+	if (stat(filename, &sb) != 0) {
 		// An error occurred.
 		const int err = errno;
 		return (err != 0 ? -err : -EIO);

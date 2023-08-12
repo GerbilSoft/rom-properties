@@ -24,7 +24,7 @@ namespace LibRpFile {
 XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	: fd(-1)
 	, lastError(0)
-	, hasLinuxAttributes(false)
+	, hasExt2Attributes(false)
 	, hasDosAttributes(false)
 	, hasGenericXAttrs(false)
 	, linuxAttributes(0)
@@ -45,11 +45,11 @@ int XAttrReaderPrivate::init(void)
 }
 
 /**
- * Load Linux attributes, if available.
+ * Load Ext2 attributes, if available.
  * Internal fd (filename on Windows) must be set.
  * @return 0 on success; negative POSIX error code on error.
  */
-int XAttrReaderPrivate::loadLinuxAttrs(void)
+int XAttrReaderPrivate::loadExt2Attrs(void)
 {
 	RP_UNUSED(fd);
 	return -ENOTSUP;

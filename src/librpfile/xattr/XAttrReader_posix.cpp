@@ -26,13 +26,39 @@
 #  include <sys/extattr.h>
 #endif
 
-// EXT2 flags (also used for EXT3, EXT4, and other Linux file systems)
+// Ext2 flags (also used for Ext3, Ext4, and other Linux file systems)
 #include "ext2_flags.h"
 
 #ifdef __linux__
-// for FS_IOC_GETFLAGS (equivalent to EXT2_IOC_GETFLAGS)
+// for the following ioctls:
+// - FS_IOC_GETFLAGS (equivalent to EXT2_IOC_GETFLAGS)
+// - FS_IOC_FSGETXATTR (equivalent to XFS_IOC_FSGETXATTR)
 #  include <linux/fs.h>
-// for FAT_IOCTL_GET_ATTRIBUTES
+#  ifndef FS_IOC_GETFLAGS
+#    ifdef EXT2_IOC_GETFLAGS
+#      define FS_IOC_GETFLAGS EXT2_IOC_GETFLAGS
+#    endif /* EXT2_IOC_GETFLAGS */
+#  endif /* !FS_IOC_GETFLAGS */
+#  ifndef FS_IOC_FSGETXATTR
+#    ifdef XFS_IOC_FSGETXATTR
+#      define FS_IOC_FSGETXATTR XFS_IOC_FSGETXATTR
+#    else /* !XFS_IOC_FSGETXATTR */
+       // System headers are too old...
+       // (Ubuntu 16.04 is missing this, even though XFS has been around for years?)
+       // Defining everything here *does* work, so we'll do that.
+struct fsxattr {
+	uint32_t	fsx_xflags;	/* xflags field value (get/set) */
+	uint32_t	fsx_extsize;	/* extsize field value (get/set)*/
+	uint32_t	fsx_nextents;	/* nextents field value (get)	*/
+	uint32_t	fsx_projid;	/* project identifier (get/set) */
+	uint32_t	fsx_cowextsize;	/* CoW extsize field value (get/set)*/
+	unsigned char	fsx_pad[8];
+};
+#      define FS_IOC_FSGETXATTR _IOR('X', 31, struct fsxattr)
+#    endif /* XFS_IOC_FSGETXATTR */
+#  endif /* !FS_IOC_FSGETXATTR */
+// for the following ioctls:
+// - FAT_IOCTL_GET_ATTRIBUTES
 #  include <linux/msdos_fs.h>
 #endif /* __linux__ */
 
@@ -63,10 +89,13 @@ namespace LibRpFile {
 XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 	: fd(-1)
 	, lastError(0)
-	, hasLinuxAttributes(false)
+	, hasExt2Attributes(false)
+	, hasXfsAttributes(false)
 	, hasDosAttributes(false)
 	, hasGenericXAttrs(false)
-	, linuxAttributes(0)
+	, ext2Attributes(0)
+	, xfsXFlags(0)
+	, xfsProjectId(0)
 	, dosAttributes(0)
 {
 	// Make sure this is a regular file or a directory.
@@ -87,7 +116,7 @@ XAttrReaderPrivate::XAttrReaderPrivate(const char *filename)
 #else /* !HAVE_STATX */
 	struct stat sb;
 	errno = 0;
-	if (!stat(filename, &sb)) {
+	if (stat(filename, &sb) != 0) {
 		// stat() failed.
 		lastError = -errno;
 		if (lastError == 0) {
@@ -149,7 +178,7 @@ int XAttrReaderPrivate::init(void)
 #else /* !HAVE_STATX */
 	struct stat sb;
 	errno = 0;
-	if (!fstat(fd, &sb)) {
+	if (fstat(fd, &sb) != 0) {
 		// fstat() failed.
 		int err = -errno;
 		if (err == 0) {
@@ -166,45 +195,85 @@ int XAttrReaderPrivate::init(void)
 	}
 
 	// Load the attributes.
-	loadLinuxAttrs();
+	loadExt2Attrs();
+	loadXfsAttrs();
 	loadDosAttrs();
 	loadGenericXattrs();
 	return 0;
 }
 
 /**
- * Load Linux attributes, if available.
+ * Load Ext2 attributes, if available.
  * Internal fd (filename on Windows) must be set.
  * @return 0 on success; negative POSIX error code on error.
  */
-int XAttrReaderPrivate::loadLinuxAttrs(void)
+int XAttrReaderPrivate::loadExt2Attrs(void)
 {
-	// Attempt to get EXT2 flags.
+	// Attempt to get Ext2 flags.
 
-#ifdef __linux__
+#if defined(__linux__) && defined(FS_IOC_GETFLAGS)
 	// NOTE: The ioctl is defined as using long, but the actual
 	// kernel code uses int.
 	int ret;
-	if (!ioctl(fd, FS_IOC_GETFLAGS, &linuxAttributes)) {
-		// ioctl() succeeded. We have EXT2 flags.
-		hasLinuxAttributes = true;
+	if (!ioctl(fd, FS_IOC_GETFLAGS, &ext2Attributes)) {
+		// ioctl() succeeded. We have Ext2 flags.
+		hasExt2Attributes = true;
 		ret = 0;
 	} else {
-		// No EXT2 flags on this file.
+		// No Ext2 flags on this file.
 		// Assume this file system doesn't support them.
-		ret = errno;
+		ret = -errno;
 		if (ret == 0) {
 			ret = -EIO;
 		}
 
-		linuxAttributes = 0;
-		hasLinuxAttributes = false;
+		ext2Attributes = 0;
+		hasExt2Attributes = false;
 	}
 	return ret;
-#else /* !__linux__ */
+#else /* !__linux__ || !FS_IOC_GETFLAGS */
 	// Not supported.
 	return -ENOTSUP;
-#endif /* __linux__ */
+#endif /* __linux__ && FS_IOC_GETFLAGS */
+}
+
+/**
+ * Load XFS attributes, if available.
+ * Internal fd (filename on Windows) must be set.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int XAttrReaderPrivate::loadXfsAttrs(void)
+{
+	// Attempt to get the XFS flags and project ID.
+
+#if defined(__linux__) && defined(FS_IOC_FSGETXATTR)
+	// NOTE: If we want to use the fsx_nextents field later,
+	// change the ioctl to FS_IOC_FSGETXATTRA.
+	int ret;
+	struct fsxattr fsx;
+	if (!ioctl(fd, FS_IOC_FSGETXATTR, &fsx)) {
+		// ioctl() succeeded. We have XFS flags.
+		xfsXFlags = fsx.fsx_xflags;
+		xfsProjectId = fsx.fsx_projid;
+		hasXfsAttributes = true;
+		ret = 0;
+	} else {
+		// No XFS flags on this file.
+		// Assume this file system doesn't support them.
+		ret = -errno;
+		if (ret == 0) {
+			ret = -EIO;
+		}
+
+		xfsXFlags = 0;
+		xfsProjectId = 0;
+		hasXfsAttributes = false;
+	}
+	return ret;
+#else /* !__linux__ || !FS_IOC_FSGETXATTR */
+	// Not supported.
+	return -ENOTSUP;
+#endif /* __linux__ && FS_IOC_FSGETXATTR */
 }
 
 /**

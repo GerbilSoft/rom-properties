@@ -13,6 +13,9 @@
 #include "dll-macros.h"	// for RP_LIBROMDATA_PUBLIC
 #include "tcharx.h"
 
+// C includes
+#include <stdint.h>
+
 // C++ includes
 #include <list>
 #include <string>
@@ -40,11 +43,18 @@ class XAttrReaderPrivate
 
 	public:
 		/**
-		 * Load Linux attributes, if available.
+		 * Load Ext2 attributes, if available.
 		 * Internal fd (filename on Windows) must be set.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
-		int loadLinuxAttrs(void);
+		int loadExt2Attrs(void);
+
+		/**
+		 * Load XFS attributes, if available.
+		 * Internal fd (filename on Windows) must be set.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int loadXfsAttrs(void);
 
 		/**
 		 * Load MS-DOS attributes, if available.
@@ -92,11 +102,14 @@ class XAttrReaderPrivate
 
 		int lastError;
 
-		bool hasLinuxAttributes;
+		bool hasExt2Attributes;
+		bool hasXfsAttributes;
 		bool hasDosAttributes;
 		bool hasGenericXAttrs;
 
-		int linuxAttributes;
+		int ext2Attributes;
+		uint32_t xfsXFlags;
+		uint32_t xfsProjectId;
 		unsigned int dosAttributes;
 		XAttrReader::XAttrList genericXAttrs;
 };

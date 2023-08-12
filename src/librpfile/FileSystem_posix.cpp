@@ -16,6 +16,9 @@
 #include <utime.h>
 #include <unistd.h>
 
+// C++ includes
+#include <algorithm>
+
 // DT_* enumeration
 #include "d_type.h"
 
@@ -24,29 +27,40 @@
 #  include <sys/vfs.h>
 #  include <linux/magic.h>
 // from `man 2 fstatfs`, but not present in linux/magic.h on 4.14-r1
-#  ifndef MQUEUE_MAGIC
-#    define MQUEUE_MAGIC 0x19800202
-#  endif /* MQUEUE_MAGIC */
-#  ifndef TRACEFS_MAGIC
-#    define TRACEFS_MAGIC 0x74726163
-#  endif /* TRACEFS_MAGIC */
+#  ifndef CGROUP2_SUPER_MAGIC
+#    define CGROUP2_SUPER_MAGIC 0x63677270
+#  endif
 #  ifndef CIFS_MAGIC_NUMBER
 #    define CIFS_MAGIC_NUMBER 0xff534d42
-#  endif /* CIFS_MAGIC_NUMBER */
+#  endif
 #  ifndef COH_SUPER_MAGIC
 #    define COH_SUPER_MAGIC 0x012ff7b7
-#  endif /* COH_SUPER_MAGIC */
+#  endif
 #  ifndef FUSE_SUPER_MAGIC
 #    define FUSE_SUPER_MAGIC 0x65735546
-#  endif /* FUSE_SUPER_MAGIC */
+#  endif
+#  ifndef MQUEUE_MAGIC
+#    define MQUEUE_MAGIC 0x19800202
+#  endif
+#  ifndef NSFS_MAGIC
+#    define NSFS_MAGIC 0x6e736673
+#  endif
 #  ifndef OCFS2_SUPER_MAGIC
 #    define OCFS2_SUPER_MAGIC 0x7461636f
-#  endif /* OCFS2_SUPER_MAGIC */
+#  endif
+#  ifndef TRACEFS_MAGIC
+#    define TRACEFS_MAGIC 0x74726163
+#  endif
+#  ifndef SYSV2_SUPER_MAGIC
+#    define SYSV2_SUPER_MAGIC 0x012ff7b6
+#  endif
+#  ifndef SYSV4_SUPER_MAGIC
+#    define SYSV4_SUPER_MAGIC 0x012ff7b5
+#  endif
 #endif /* __linux__ */
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
-using std::u16string;
 
 namespace LibRpFile { namespace FileSystem {
 
@@ -137,8 +151,7 @@ off64_t filesize(const char *filename)
 	return sbx.stx_size;
 #else /* !HAVE_STATX */
 	struct stat sb;
-	int ret = stat(filename, &sb);
-	if (ret != 0) {
+	if (stat(filename, &sb) != 0) {
 		// stat() failed.
 		int ret = -errno;
 		return (ret != 0 ? ret : -EIO);
@@ -198,8 +211,7 @@ int get_mtime(const char *filename, time_t *pMtime)
 	*pMtime = sbx.stx_mtime.tv_sec;
 #else /* !HAVE_STATX */
 	struct stat sb;
-	int ret = stat(filename, &sb);
-	if (ret != 0) {
+	if (stat(filename, &sb) != 0) {
 		// stat() failed.
 		int ret = -errno;
 		return (ret != 0 ? ret : -EIO);
@@ -248,7 +260,7 @@ bool is_symlink(const char *filename)
 	if (unlikely(!filename || filename[0] == '\0')) {
 		return false;
 	}
-	
+
 #ifdef HAVE_STATX
 	struct statx sbx;
 	int ret = statx(AT_FDCWD, filename, AT_SYMLINK_NOFOLLOW, STATX_TYPE, &sbx);
@@ -260,8 +272,7 @@ bool is_symlink(const char *filename)
 	return !!S_ISLNK(sbx.stx_mode);
 #else /* !HAVE_STATX */
 	struct stat sb;
-	int ret = lstat(filename, &sb);
-	if (ret != 0) {
+	if (lstat(filename, &sb) != 0) {
 		// lstat() failed.
 		// Assume this is not a symlink.
 		return false;
@@ -324,8 +335,7 @@ bool is_directory(const char *filename)
 	return !!S_ISDIR(sbx.stx_mode);
 #else /* !HAVE_STATX */
 	struct stat sb;
-	int ret = stat(filename, &sb);
-	if (ret != 0) {
+	if (stat(filename, &sb) != 0) {
 		// stat() failed.
 		// Assume this is not a directory.
 		return false;
@@ -347,68 +357,87 @@ bool is_directory(const char *filename)
  */
 bool isOnBadFS(const char *filename, bool allowNetFS)
 {
-	bool bRet = false;
-
 #ifdef __linux__
 	// TODO: Get the mount point, then look it up in /proc/mounts.
 
 	struct statfs sfbuf;
-	int ret = statfs(filename, &sfbuf);
-	if (ret != 0) {
+	if (statfs(filename, &sfbuf) != 0) {
 		// statfs() failed.
 		// Assume this isn't a network file system.
 		return false;
 	}
+	const uint32_t f_type = static_cast<uint32_t>(sfbuf.f_type);
 
-	switch (static_cast<uint32_t>(sfbuf.f_type)) {
-		case DEBUGFS_MAGIC:
-		case DEVPTS_SUPER_MAGIC:
-		case EFIVARFS_MAGIC:
-		case FUTEXFS_SUPER_MAGIC:
-		case MQUEUE_MAGIC:
-		case PIPEFS_MAGIC:
-		case PROC_SUPER_MAGIC:
-		case PSTOREFS_MAGIC:
-		case SECURITYFS_MAGIC:
-		case SMACK_MAGIC:
-		case SOCKFS_MAGIC:
-		case TRACEFS_MAGIC:
-		case USBDEVICE_SUPER_MAGIC:
-			// Bad file systems.
-			bRet = true;
-			break;
+	// Virtual file systems; ignore these completely
+	static const uint32_t vfs_types[] = {
+		ANON_INODE_FS_MAGIC,
+		BDEVFS_MAGIC,
+		BPF_FS_MAGIC,
+		CGROUP_SUPER_MAGIC,
+		CGROUP2_SUPER_MAGIC,
+		DEBUGFS_MAGIC,
+		DEVPTS_SUPER_MAGIC,
+		EFIVARFS_MAGIC,
+		FUTEXFS_SUPER_MAGIC,
+		MQUEUE_MAGIC,
+		NSFS_MAGIC,
+		OPENPROM_SUPER_MAGIC,
+		PIPEFS_MAGIC,
+		PROC_SUPER_MAGIC,
+		PSTOREFS_MAGIC,
+		SECURITYFS_MAGIC,
+		SMACK_MAGIC,
+		SOCKFS_MAGIC,
+		SYSFS_MAGIC,
+		SYSV2_SUPER_MAGIC,
+		SYSV4_SUPER_MAGIC,
+		TRACEFS_MAGIC,
+		USBDEVICE_SUPER_MAGIC,
+	};
+	static const uint32_t *const p_vfs_types_end = &vfs_types[ARRAY_SIZE(vfs_types)];
 
-		case AFS_SUPER_MAGIC:
-		case CIFS_MAGIC_NUMBER:
-		case CODA_SUPER_MAGIC:
-		case COH_SUPER_MAGIC:
-		case NCP_SUPER_MAGIC:
-		case NFS_SUPER_MAGIC:
-		case OCFS2_SUPER_MAGIC:
-		case SMB_SUPER_MAGIC:
-		case V9FS_MAGIC:
-			// Network file system.
-			// Allow it if we're allowing network file systems.
-			bRet = !allowNetFS;
-			break;
+	// Network file systems; ignore only if !netFS
+	static const uint32_t netfs_types[] = {
+		AFS_SUPER_MAGIC,
+		CIFS_MAGIC_NUMBER,
+		CODA_SUPER_MAGIC,
+		COH_SUPER_MAGIC,
+		NCP_SUPER_MAGIC,
+		NFS_SUPER_MAGIC,
+		OCFS2_SUPER_MAGIC,
+		SMB_SUPER_MAGIC,
+		V9FS_MAGIC,
+	};
+	static const uint32_t *const p_netfs_types_end = &netfs_types[ARRAY_SIZE(netfs_types)];
 
-		case FUSE_SUPER_MAGIC:	// TODO: Check the actual fs type.
-			// Other file system.
-			// FIXME: `fuse` is used for various local file systems
-			// as well as sshfs. Local is more common, so let's assume
-			// it's in use for a local file system.
-			break;
-
-		default:
-			break;
+	// Search for a virtual file system.
+	auto vfs_iter = std::find(vfs_types, p_vfs_types_end, f_type);
+	if (vfs_iter != p_vfs_types_end) {
+		// Found a virtual file system. Ignore it.
+		return true;
 	}
+
+	// If network file systems are prohibited, check if this is one.
+	if (!allowNetFS) {
+		// Search for a network file system.
+		auto netfs_iter = std::find(netfs_types, p_netfs_types_end, f_type);
+		if (netfs_iter != p_netfs_types_end) {
+			// Found a network file system. Ignore it.
+			return true;
+		}
+	}
+
+	// TODO: Check for FUSE_SUPER_MAGIC, and if found, check the actual fs type.
+	// FIXME: `fuse` is used for various local file systems
+	// as well as sshfs. Local is more common, so let's assume
+	// it's in use for a local file system.
 #else
 #  warning TODO: Implement "badfs" support for non-Linux systems.
 	RP_UNUSED(filename);
 	RP_UNUSED(allowNetFS);
 #endif
 
-	return bRet;
+	return false;
 }
 
 /**
@@ -423,7 +452,7 @@ int get_file_size_and_mtime(const char *filename, off64_t *pFileSize, time_t *pM
 	assert(filename && filename[0] != '\0');
 	assert(pFileSize != nullptr);
 	assert(pMtime != nullptr);
-	if (unlikely(filename || filename[0] == '\0' || !pFileSize || !pMtime)) {
+	if (unlikely(!filename || filename[0] == '\0' || !pFileSize || !pMtime)) {
 		return -EINVAL;
 	}
 
@@ -451,8 +480,7 @@ int get_file_size_and_mtime(const char *filename, off64_t *pFileSize, time_t *pM
 	*pMtime = sbx.stx_mtime.tv_sec;
 #else /* !HAVE_STATX */
 	struct stat sb;
-	int ret = stat(filename, &sb);
-	if (ret != 0) {
+	if (stat(filename, &sb) != 0) {
 		// stat() failed.
 		int ret = -errno;
 		return (ret != 0 ? ret : -EIO);

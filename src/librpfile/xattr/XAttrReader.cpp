@@ -42,23 +42,53 @@ int XAttrReader::lastError(void) const
 }
 
 /**
- * Does this file have Linux attributes?
+ * Does this file have Ext2 attributes?
  * @return True if it does; false if not.
  */
-bool XAttrReader::hasLinuxAttributes(void) const
+bool XAttrReader::hasExt2Attributes(void) const
 {
 	RP_D(const XAttrReader);
-	return d->hasLinuxAttributes;
+	return d->hasExt2Attributes;
 }
 
 /**
- * Get this file's Linux attributes.
- * @return Linux attributes
+ * Get this file's Ext2 attributes.
+ * @return Ext2 attributes
  */
-int XAttrReader::linuxAttributes(void) const
+int XAttrReader::ext2Attributes(void) const
 {
 	RP_D(const XAttrReader);
-	return d->linuxAttributes;
+	return d->ext2Attributes;
+}
+
+/**
+ * Does this file have XFS attributes?
+ * @return True if it does; false if not.
+ */
+bool XAttrReader::hasXfsAttributes(void) const
+{
+	RP_D(const XAttrReader);
+	return d->hasExt2Attributes;
+}
+
+/**
+ * Get this file's XFS xflags.
+ * @return XFS xflags
+ */
+uint32_t XAttrReader::xfsXFlags(void) const
+{
+	RP_D(const XAttrReader);
+	return d->xfsXFlags;
+}
+
+/**
+ * Get this file's XFS project ID.
+ * @return XFS project ID
+ */
+uint32_t XAttrReader::xfsProjectId(void) const
+{
+	RP_D(const XAttrReader);
+	return d->xfsProjectId;
 }
 
 /**

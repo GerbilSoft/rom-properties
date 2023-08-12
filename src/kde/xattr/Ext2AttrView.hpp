@@ -1,8 +1,8 @@
 /***************************************************************************
  * ROM Properties Page shell extension. (KDE)                              *
- * LinuxAttrView.hpp: Linux file system attribute viewer widget.           *
+ * Ext2AttrView.hpp: Ext2 file system attribute viewer widget.             *
  *                                                                         *
- * Copyright (c) 2022 by David Korth.                                      *
+ * Copyright (c) 2022-2023 by David Korth.                                 *
  * SPDX-License-Identifier: GPL-2.0-or-later                               *
  ***************************************************************************/
 
@@ -11,21 +11,21 @@
 // Qt includes
 #include <QWidget>
 
-class LinuxAttrViewPrivate;
-class LinuxAttrView : public QWidget
+class Ext2AttrViewPrivate;
+class Ext2AttrView : public QWidget
 {
 	Q_OBJECT
 
 	Q_PROPERTY(int flags READ flags WRITE setFlags RESET clearFlags)
 
 	public:
-		explicit LinuxAttrView(QWidget *parent = nullptr);
+		explicit Ext2AttrView(QWidget *parent = nullptr);
 
 	private:
 		typedef QWidget super;
-		LinuxAttrViewPrivate *const d_ptr;
-		Q_DECLARE_PRIVATE(LinuxAttrView)
-		Q_DISABLE_COPY(LinuxAttrView)
+		Ext2AttrViewPrivate *const d_ptr;
+		Q_DECLARE_PRIVATE(Ext2AttrView)
+		Q_DISABLE_COPY(Ext2AttrView)
 
 	protected:
 		// State change event. (Used for switching the UI language at runtime.)
@@ -33,19 +33,19 @@ class LinuxAttrView : public QWidget
 
 	public:
 		/**
-		 * Get the current Linux attributes.
-		 * @return Linux attributes
+		 * Get the current Ext2 attributes.
+		 * @return Ext2 attributes
 		 */
 		int flags(void) const;
 
 		/**
-		 * Set the current Linux attributes.
-		 * @param flags Linux attributes
+		 * Set the current Ext2 attributes.
+		 * @param flags Ext2 attributes
 		 */
 		void setFlags(int flags);
 
 		/**
-		 * Clear the current Linux attributes.
+		 * Clear the current Ext2 attributes.
 		 */
 		void clearFlags(void);
 
