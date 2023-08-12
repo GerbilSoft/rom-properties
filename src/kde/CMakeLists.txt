@@ -95,6 +95,7 @@ SET(${PROJECT_NAME}_XATTR_SRCS
 	RpQUrl.cpp	# NOTE: duplicated here
 	xattr/XAttrViewPropertiesDialogPlugin.cpp
 	xattr/Ext2AttrView.cpp
+	xattr/XfsAttrView.cpp
 	xattr/DosAttrView.cpp
 	xattr/XAttrView.cpp
 	)
@@ -102,13 +103,15 @@ SET(${PROJECT_NAME}_XATTR_H
 	RpQUrl.hpp	# NOTE: duplicated here
 	xattr/XAttrViewPropertiesDialogPlugin.hpp
 	xattr/Ext2AttrView.hpp
+	xattr/XfsAttrView.hpp
 	xattr/DosAttrView.hpp
 	xattr/XAttrView.hpp
 	)
 SET(${PROJECT_NAME}_XATTR_UIS
-	xattr/XAttrView.ui
 	xattr/Ext2AttrView.ui
+	xattr/XfsAttrView.ui
 	xattr/DosAttrView.ui
+	xattr/XAttrView.ui
 	)
 
 IF(ENABLE_DECRYPTION)

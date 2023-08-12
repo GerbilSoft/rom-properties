@@ -56,6 +56,12 @@ class XAttrViewPrivate
 		int loadExt2Attrs(void);
 
 		/**
+		 * Load XFS attributes, if available.
+		 * @return 0 on success; negative POSIX error code on error.
+		 */
+		int loadXfsAttrs(void);
+
+		/**
 		 * Load MS-DOS attributes, if available.
 		 * @return 0 on success; negative POSIX error code on error.
 		 */
@@ -99,6 +105,39 @@ int XAttrViewPrivate::loadExt2Attrs(void)
 	// We have Ext2 attributes.
 	ui.ext2AttrView->setFlags(xattrReader->ext2Attributes());
 	ui.grpExt2Attributes->show();
+	return 0;
+}
+
+/**
+ * Load XFS attributes, if available.
+ * @return 0 on success; negative POSIX error code on error.
+ */
+int XAttrViewPrivate::loadXfsAttrs(void)
+{
+	// Hide by default.
+	// If we do have attributes, we'll show the widgets there.
+	ui.grpXfsAttributes->hide();
+
+	if (!xattrReader->hasXfsAttributes()) {
+		// No XFS attributes.
+		return -ENOENT;
+	}
+
+	// We have XFS attributes.
+	// NOTE: If all attributes are 0, don't bother showing it.
+	// XFS isn't *nearly* as common as Ext2/Ext3/Ext4.
+	// TODO: ...unless this is an XFS file system?
+	const uint32_t xflags = xattrReader->xfsXFlags();
+	const uint32_t projectId = xattrReader->xfsProjectId();
+	if (xflags == 0 && projectId == 0) {
+		// All zero.
+		return -ENOENT;
+	}
+
+	// Show the XFS attributes.
+	ui.xfsAttrView->setXFlags(xattrReader->xfsXFlags());
+	ui.xfsAttrView->setProjectId(xattrReader->xfsProjectId());
+	ui.grpXfsAttributes->show();
 	return 0;
 }
 
@@ -209,6 +248,10 @@ int XAttrViewPrivate::loadAttributes(void)
 	// Load the attributes.
 	bool hasAnyAttrs = false;
 	int ret = loadExt2Attrs();
+	if (ret == 0) {
+		hasAnyAttrs = true;
+	}
+	ret = loadXfsAttrs();
 	if (ret == 0) {
 		hasAnyAttrs = true;
 	}

@@ -24,6 +24,18 @@
     </widget>
    </item>
    <item>
+    <widget class="QGroupBox" name="grpXfsAttributes">
+     <property name="title">
+      <string>XFS Attributes</string>
+     </property>
+     <layout class="QVBoxLayout" name="vboxXfsAttributes">
+      <item>
+       <widget class="XfsAttrView" name="xfsAttrView" native="true"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QGroupBox" name="grpDosAttributes">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
@@ -80,6 +92,12 @@
    <class>Ext2AttrView</class>
    <extends>QWidget</extends>
    <header>xattr/Ext2AttrView.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>XfsAttrView</class>
+   <extends>QWidget</extends>
+   <header>xattr/XfsAttrView.hpp</header>
    <container>1</container>
   </customwidget>
   <customwidget>
