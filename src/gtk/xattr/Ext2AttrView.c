@@ -229,7 +229,7 @@ rp_ext2_attr_view_get_property(GObject		*object,
 
 	switch (prop_id) {
 		case PROP_FLAGS:
-			g_value_set_uint(value, widget->flags);
+			g_value_set_int(value, widget->flags);
 			break;
 
 		default:
