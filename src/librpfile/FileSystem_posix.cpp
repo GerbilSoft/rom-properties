@@ -24,29 +24,40 @@
 #  include <sys/vfs.h>
 #  include <linux/magic.h>
 // from `man 2 fstatfs`, but not present in linux/magic.h on 4.14-r1
-#  ifndef MQUEUE_MAGIC
-#    define MQUEUE_MAGIC 0x19800202
-#  endif /* MQUEUE_MAGIC */
-#  ifndef TRACEFS_MAGIC
-#    define TRACEFS_MAGIC 0x74726163
-#  endif /* TRACEFS_MAGIC */
+#  ifndef CGROUP2_SUPER_MAGIC
+#    define CGROUP2_SUPER_MAGIC 0x63677270
+#  endif
 #  ifndef CIFS_MAGIC_NUMBER
 #    define CIFS_MAGIC_NUMBER 0xff534d42
-#  endif /* CIFS_MAGIC_NUMBER */
+#  endif
 #  ifndef COH_SUPER_MAGIC
 #    define COH_SUPER_MAGIC 0x012ff7b7
-#  endif /* COH_SUPER_MAGIC */
+#  endif
 #  ifndef FUSE_SUPER_MAGIC
 #    define FUSE_SUPER_MAGIC 0x65735546
-#  endif /* FUSE_SUPER_MAGIC */
+#  endif
+#  ifndef MQUEUE_MAGIC
+#    define MQUEUE_MAGIC 0x19800202
+#  endif
+#  ifndef NSFS_MAGIC
+#    define NSFS_MAGIC 0x6e736673
+#  endif
 #  ifndef OCFS2_SUPER_MAGIC
 #    define OCFS2_SUPER_MAGIC 0x7461636f
-#  endif /* OCFS2_SUPER_MAGIC */
+#  endif
+#  ifndef TRACEFS_MAGIC
+#    define TRACEFS_MAGIC 0x74726163
+#  endif
+#  ifndef SYSV2_SUPER_MAGIC
+#    define SYSV2_SUPER_MAGIC 0x012ff7b6
+#  endif
+#  ifndef SYSV4_SUPER_MAGIC
+#    define SYSV4_SUPER_MAGIC 0x012ff7b5
+#  endif
 #endif /* __linux__ */
 
-// C++ STL classes.
+// C++ STL classes
 using std::string;
-using std::u16string;
 
 namespace LibRpFile { namespace FileSystem {
 
@@ -355,18 +366,29 @@ bool isOnBadFS(const char *filename, bool allowNetFS)
 		return false;
 	}
 
+	// TODO: Convert to a lookup table? Check the generated assembler code.
 	switch (static_cast<uint32_t>(sfbuf.f_type)) {
+		case ANON_INODE_FS_MAGIC:
+		case BDEVFS_MAGIC:
+		case BPF_FS_MAGIC:
+		case CGROUP_SUPER_MAGIC:
+		case CGROUP2_SUPER_MAGIC:
 		case DEBUGFS_MAGIC:
 		case DEVPTS_SUPER_MAGIC:
 		case EFIVARFS_MAGIC:
 		case FUTEXFS_SUPER_MAGIC:
 		case MQUEUE_MAGIC:
+		case NSFS_MAGIC:
+		case OPENPROM_SUPER_MAGIC:
 		case PIPEFS_MAGIC:
 		case PROC_SUPER_MAGIC:
 		case PSTOREFS_MAGIC:
 		case SECURITYFS_MAGIC:
 		case SMACK_MAGIC:
 		case SOCKFS_MAGIC:
+		case SYSFS_MAGIC:
+		case SYSV2_SUPER_MAGIC:
+		case SYSV4_SUPER_MAGIC:
 		case TRACEFS_MAGIC:
 		case USBDEVICE_SUPER_MAGIC:
 			// Bad file systems.
