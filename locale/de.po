@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: rom-properties\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
 "POT-Creation-Date: 2023-08-05 14:18-0400\n"
-"PO-Revision-Date: 2023-08-05 18:38\n"
+"PO-Revision-Date: 2023-08-12 16:15\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -182,11 +182,11 @@ msgctxt "KeyManagerTab"
 msgid "I&mport"
 msgstr "I&mportieren"
 
-#: ../build/src/kde/kf5/ui_LinuxAttrView.h:85
-#: ../src/gtk/xattr/LinuxAttrView.c:121
-msgctxt "LinuxAttrView"
+#: ../build/src/kde/kf5/ui_Ext2AttrView.h:85
+#: ../src/gtk/xattr/Ext2AttrView.c:121
+msgctxt "Ext2AttrView"
 msgid "lsattr:"
-msgstr "lsattr:"
+msgstr ""
 
 #: ../build/src/kde/kf5/ui_OptionsTab.h:177
 msgctxt "OptionsTab"
@@ -338,8 +338,8 @@ msgstr "Wählen Sie das Game Boy-Modell aus, das für Titelbildschirme für vers
 #: ../build/src/kde/kf5/ui_XAttrView.h:98
 #: ../src/gtk/xattr/XAttrView.cpp:121
 msgctxt "XAttrView"
-msgid "Linux Attributes"
-msgstr "Linux Attribute"
+msgid "Ext2 Attributes"
+msgstr "Ext2 Attribute"
 
 #: ../build/src/kde/kf5/ui_XAttrView.h:99
 #: ../src/gtk/xattr/XAttrView.cpp:129
@@ -8503,224 +8503,224 @@ msgctxt "TextOut"
 msgid "Animated icon is present (use -a to extract)"
 msgstr ""
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:19
-msgctxt "LinuxAttrView"
-msgid "a: append only"
-msgstr "a: nur anhängen"
+#: ../src/librpfile/xattr/Ext2AttrData.c:19
+msgctxt "Ext2AttrView"
+msgid "append only"
+msgstr "nur anhängen"
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:20
-msgctxt "LinuxAttrView"
+#: ../src/librpfile/xattr/Ext2AttrData.c:20
+msgctxt "Ext2AttrView"
 msgid "File can only be opened in append mode for writing."
 msgstr "Die Datei kann nur im Anhänge Modus zum Schreiben geöffnet werden."
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:22
-msgctxt "LinuxAttrView"
-msgid "A: no atime"
-msgstr "A: kein atime"
+#: ../src/librpfile/xattr/Ext2AttrData.c:22
+msgctxt "Ext2AttrView"
+msgid "no atime"
+msgstr "kein atime"
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:23
-msgctxt "LinuxAttrView"
+#: ../src/librpfile/xattr/Ext2AttrData.c:23
+msgctxt "Ext2AttrView"
 msgid "Access time record is not modified."
 msgstr "Zugriffsdatum wurde nicht verändert."
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:25
-msgctxt "LinuxAttrView"
-msgid "c: compressed"
-msgstr "c: komprimiert"
+#: ../src/librpfile/xattr/Ext2AttrData.c:25
+msgctxt "Ext2AttrView"
+msgid "compressed"
+msgstr "komprimiert"
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:26
-msgctxt "LinuxAttrView"
+#: ../src/librpfile/xattr/Ext2AttrData.c:26
+msgctxt "Ext2AttrView"
 msgid "File is compressed."
 msgstr "Die Datei ist komprimiert."
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:28
-msgctxt "LinuxAttrView"
-msgid "C: no CoW"
-msgstr "C: kein CoW"
+#: ../src/librpfile/xattr/Ext2AttrData.c:28
+msgctxt "Ext2AttrView"
+msgid "no CoW"
+msgstr "kein CoW"
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:29
-msgctxt "LinuxAttrView"
+#: ../src/librpfile/xattr/Ext2AttrData.c:29
+msgctxt "Ext2AttrView"
 msgid "Not subject to copy-on-write updates."
 msgstr "Unterliegt nicht den Copy-on-Write-Updates."
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:31
-msgctxt "LinuxAttrView"
-msgid "d: no dump"
-msgstr "d: kein Dump"
+#: ../src/librpfile/xattr/Ext2AttrData.c:31
+msgctxt "Ext2AttrView"
+msgid "no dump"
+msgstr "kein Dump"
 
 #. tr: "dump" is the name of the executable, so it should not be localized.
-#: ../src/librpfile/xattr/LinuxAttrData.c:33
-msgctxt "LinuxAttrView"
+#: ../src/librpfile/xattr/Ext2AttrData.c:33
+msgctxt "Ext2AttrView"
 msgid "This file is not a candidate for dumping with the dump(8) program."
 msgstr "Diese Datei kann nicht mit dem Programm dump(8) entpackt werden."
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:35
-msgctxt "LinuxAttrView"
-msgid "D: dir sync"
-msgstr "D: Verzeichnis Synchronisieren"
+#: ../src/librpfile/xattr/Ext2AttrData.c:35
+msgctxt "Ext2AttrView"
+msgid "dir sync"
+msgstr "Verzeichnis Synchronisieren"
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:36
-msgctxt "LinuxAttrView"
+#: ../src/librpfile/xattr/Ext2AttrData.c:36
+msgctxt "Ext2AttrView"
 msgid "Changes to this directory are written synchronously to the disk."
 msgstr "Änderungen in diesem Verzeichnis werden synchron auf die Festplatte geschrieben."
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:38
-msgctxt "LinuxAttrView"
-msgid "e: extents"
-msgstr "e: Ausmaße"
+#: ../src/librpfile/xattr/Ext2AttrData.c:38
+msgctxt "Ext2AttrView"
+msgid "extents"
+msgstr "Ausmaße"
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:39
-msgctxt "LinuxAttrView"
+#: ../src/librpfile/xattr/Ext2AttrData.c:39
+msgctxt "Ext2AttrView"
 msgid "File is mapped on disk using extents."
 msgstr "Die Datei wird auf der Festplatte mit Hilfe von Extents abgebildet."
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:41
-msgctxt "LinuxAttrView"
-msgid "E: encrypted"
-msgstr "E: verschlüsselt"
+#: ../src/librpfile/xattr/Ext2AttrData.c:41
+msgctxt "Ext2AttrView"
+msgid "encrypted"
+msgstr "verschlüsselt"
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:42
-msgctxt "LinuxAttrView"
+#: ../src/librpfile/xattr/Ext2AttrData.c:42
+msgctxt "Ext2AttrView"
 msgid "File is encrypted."
 msgstr "Datei ist verschlüsselt."
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:44
-msgctxt "LinuxAttrView"
-msgid "F: casefold"
+#: ../src/librpfile/xattr/Ext2AttrData.c:44
+msgctxt "Ext2AttrView"
+msgid "casefold"
 msgstr ""
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:45
-msgctxt "LinuxAttrView"
+#: ../src/librpfile/xattr/Ext2AttrData.c:45
+msgctxt "Ext2AttrView"
 msgid "Files stored in this directory use case-insensitive filenames."
 msgstr "Dateinamen in diesem Verzeichnis wird die Groß- und Kleinschreibung nicht berücksichtigt."
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:47
-msgctxt "LinuxAttrView"
-msgid "i: immutable"
-msgstr "i: unveränderlich"
+#: ../src/librpfile/xattr/Ext2AttrData.c:47
+msgctxt "Ext2AttrView"
+msgid "immutable"
+msgstr "unveränderlich"
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:48
-msgctxt "LinuxAttrView"
+#: ../src/librpfile/xattr/Ext2AttrData.c:48
+msgctxt "Ext2AttrView"
 msgid "File cannot be modified, deleted, or renamed."
 msgstr "Die Datei kann nicht geändert, gelöscht oder umbenannt werden."
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:50
-msgctxt "LinuxAttrView"
-msgid "I: indexed"
-msgstr "I: indexiert"
+#: ../src/librpfile/xattr/Ext2AttrData.c:50
+msgctxt "Ext2AttrView"
+msgid "indexed"
+msgstr "indexiert"
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:51
-msgctxt "LinuxAttrView"
+#: ../src/librpfile/xattr/Ext2AttrData.c:51
+msgctxt "Ext2AttrView"
 msgid "Directory is indexed using hashed trees."
 msgstr "Das Verzeichnis wird mit Hash Baum indiziert."
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:53
-msgctxt "LinuxAttrView"
-msgid "j: journalled"
-msgstr "j: gezählt"
+#: ../src/librpfile/xattr/Ext2AttrData.c:53
+msgctxt "Ext2AttrView"
+msgid "journalled"
+msgstr "gezählt"
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:54
-msgctxt "LinuxAttrView"
+#: ../src/librpfile/xattr/Ext2AttrData.c:54
+msgctxt "Ext2AttrView"
 msgid "File data is written to the journal before writing to the file itself."
 msgstr "Die Dateidaten werden in das Journal geschrieben, bevor sie in die Datei selbst geschrieben werden."
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:56
-msgctxt "LinuxAttrView"
-msgid "m: no compress"
-msgstr "m: keine Komprimierung"
+#: ../src/librpfile/xattr/Ext2AttrData.c:56
+msgctxt "Ext2AttrView"
+msgid "no compress"
+msgstr "keine Komprimierung"
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:57
-msgctxt "LinuxAttrView"
+#: ../src/librpfile/xattr/Ext2AttrData.c:57
+msgctxt "Ext2AttrView"
 msgid "File is excluded from compression."
 msgstr "Die Datei ist von der Komprimierung ausgeschlossen."
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:59
-msgctxt "LinuxAttrView"
-msgid "N: inline data"
+#: ../src/librpfile/xattr/Ext2AttrData.c:59
+msgctxt "Ext2AttrView"
+msgid "inline data"
 msgstr ""
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:60
-msgctxt "LinuxAttrView"
+#: ../src/librpfile/xattr/Ext2AttrData.c:60
+msgctxt "Ext2AttrView"
 msgid "File data is stored inline in the inode."
 msgstr "Dateidaten sind direkt im Inode gespeichert."
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:62
-msgctxt "LinuxAttrView"
-msgid "P: project"
-msgstr "P: Projekt"
+#: ../src/librpfile/xattr/Ext2AttrData.c:62
+msgctxt "Ext2AttrView"
+msgid "project"
+msgstr "Projekt"
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:63
-msgctxt "LinuxAttrView"
+#: ../src/librpfile/xattr/Ext2AttrData.c:63
+msgctxt "Ext2AttrView"
 msgid "Directory will enforce a hierarchical structure for project IDs."
 msgstr "Das Verzeichnis wird eine hierarchische Struktur für Projekt IDs erzwingen."
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:65
-msgctxt "LinuxAttrView"
-msgid "s: secure del"
-msgstr "s: sicheres löschen"
+#: ../src/librpfile/xattr/Ext2AttrData.c:65
+msgctxt "Ext2AttrView"
+msgid "secure del"
+msgstr "sicheres löschen"
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:66
-msgctxt "LinuxAttrView"
+#: ../src/librpfile/xattr/Ext2AttrData.c:66
+msgctxt "Ext2AttrView"
 msgid "File's blocks will be zeroed when deleted."
 msgstr "Dateiblöcke werden beim Löschen ausgeräumt."
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:68
-msgctxt "LinuxAttrView"
-msgid "S: sync"
-msgstr "S: Synchronisieren"
+#: ../src/librpfile/xattr/Ext2AttrData.c:68
+msgctxt "Ext2AttrView"
+msgid "sync"
+msgstr "Synchronisieren"
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:69
-msgctxt "LinuxAttrView"
+#: ../src/librpfile/xattr/Ext2AttrData.c:69
+msgctxt "Ext2AttrView"
 msgid "Changes to this file are written synchronously to the disk."
 msgstr "Änderungen an dieser Datei werden synchron auf die Festplatte geschrieben."
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:71
-msgctxt "LinuxAttrView"
-msgid "t: no tail merge"
+#: ../src/librpfile/xattr/Ext2AttrData.c:71
+msgctxt "Ext2AttrView"
+msgid "no tail merge"
 msgstr ""
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:72
-msgctxt "LinuxAttrView"
+#: ../src/librpfile/xattr/Ext2AttrData.c:72
+msgctxt "Ext2AttrView"
 msgid "If the file system supports tail merging, this file will not have a partial block fragment at the end of the file merged with other files."
 msgstr "Wenn das Dateisystem Tail-Merging unterstützt, wird bei dieser Datei kein Teilblockfragment am Ende der Datei mit anderen Dateien zusammengeführt."
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:74
-msgctxt "LinuxAttrView"
-msgid "T: top dir"
-msgstr "T: Obere Verzeichnis"
+#: ../src/librpfile/xattr/Ext2AttrData.c:74
+msgctxt "Ext2AttrView"
+msgid "top dir"
+msgstr "Obere Verzeichnis"
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:75
-msgctxt "LinuxAttrView"
+#: ../src/librpfile/xattr/Ext2AttrData.c:75
+msgctxt "Ext2AttrView"
 msgid "Directory will be treated like a top-level directory by the ext3/ext4 Orlov block allocator."
 msgstr "Das Verzeichnis wird vom ext3/ext4 Orlov Block Allocator wie ein Top Level Verzeichnis behandelt."
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:77
-msgctxt "LinuxAttrView"
-msgid "u: undelete"
+#: ../src/librpfile/xattr/Ext2AttrData.c:77
+msgctxt "Ext2AttrView"
+msgid "undelete"
 msgstr ""
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:78
-msgctxt "LinuxAttrView"
+#: ../src/librpfile/xattr/Ext2AttrData.c:78
+msgctxt "Ext2AttrView"
 msgid "File's contents will be saved when deleted, potentially allowing for undeletion. This is known to be broken."
 msgstr "Der Inhalt der Datei wird beim Löschen gespeichert, welches Wiederherstellung zulassen kann. Dies ist bekanntlich defekt."
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:80
-msgctxt "LinuxAttrView"
-msgid "x: DAX"
-msgstr "x: DAX"
+#: ../src/librpfile/xattr/Ext2AttrData.c:80
+msgctxt "Ext2AttrView"
+msgid "DAX"
+msgstr ""
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:81
-msgctxt "LinuxAttrView"
+#: ../src/librpfile/xattr/Ext2AttrData.c:81
+msgctxt "Ext2AttrView"
 msgid "Direct access"
 msgstr "Direkter Zugang"
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:83
-msgctxt "LinuxAttrView"
-msgid "V: fs-verity"
-msgstr "V: fs-verity"
+#: ../src/librpfile/xattr/Ext2AttrData.c:83
+msgctxt "Ext2AttrView"
+msgid "fs-verity"
+msgstr ""
 
-#: ../src/librpfile/xattr/LinuxAttrData.c:84
-msgctxt "LinuxAttrView"
+#: ../src/librpfile/xattr/Ext2AttrData.c:84
+msgctxt "Ext2AttrView"
 msgid "File has fs-verity enabled."
 msgstr "Datei hat \"fs-verity\" aktiviert."
 
