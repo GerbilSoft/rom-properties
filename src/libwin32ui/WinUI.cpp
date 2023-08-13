@@ -487,6 +487,12 @@ static inline HRESULT getFileName_int_IFileDialog(tstring &ts_ret, HWND hWnd,
 			free(tmpfilter);
 			return E_INVALIDARG;
 		}
+
+		// Windows users are more accustomed to "*.*" instead of "*".
+		if (!_tcscmp(token, _T("*"))) {
+			token = _T("*.*");
+		}
+
 		// FIXME: Hide display name if pszName == pszSpec.
 		// Setting pszName = nullptr results in failure.
 		cdfs.pszSpec = token;
@@ -606,7 +612,7 @@ static inline HRESULT getFileName_int_IFileDialog(tstring &ts_ret, HWND hWnd,
 /**
  * Convert an RP file dialog filter to Win32.
  *
- * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|application/x-genesis-rom|All Files|*.*|-"
+ * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|application/x-genesis-rom|All Files|*|-"
  * Similar the same as Windows, but with '|' instead of '\0'.
  * Also, no terminator sequence is needed.
  * The "(*.bin; *.srl)" part is added to the display name if needed.
@@ -649,6 +655,11 @@ static tstring rpFileDialogFilterToWin32(const TCHAR *filter)
 			// Missing token...
 			free(tmpfilter);
 			return tstring();
+		}
+
+		// Windows users are more accustomed to "*.*" instead of "*".
+		if (!_tcscmp(token, _T("*"))) {
+			token = _T("*.*");
 		}
 
 		// Don't append the pattern in parentheses if it's

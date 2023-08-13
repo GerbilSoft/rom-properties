@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: rom-properties 2.2.1+\n"
 "Report-Msgid-Bugs-To: gerbilsoft@gerbilsoft.com\n"
-"POT-Creation-Date: 2023-08-13 13:31-0400\n"
+"POT-Creation-Date: 2023-08-13 14:31-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -688,7 +688,7 @@ msgstr ""
 #: ../src/kde/config/KeyManagerTab.cpp:454
 #: ../src/win32/config/KeyManagerTab.cpp:1694
 msgctxt "KeyManagerTab"
-msgid "keys.bin|keys.bin|-|Binary Files|*.bin|-|All Files|*.*|-"
+msgid "keys.bin|keys.bin|-|Binary Files|*.bin|-|All Files|*|-"
 msgstr ""
 
 #. tr: Wii U otp.bin file filter (RP format)
@@ -696,7 +696,7 @@ msgstr ""
 #: ../src/kde/config/KeyManagerTab.cpp:476
 #: ../src/win32/config/KeyManagerTab.cpp:1696
 msgctxt "KeyManagerTab"
-msgid "otp.bin|otp.bin|-|Binary Files|*.bin|-|All Files|*.*|-"
+msgid "otp.bin|otp.bin|-|Binary Files|*.bin|-|All Files|*|-"
 msgstr ""
 
 #. tr: Nintendo 3DS boot9.bin file filter (RP format)
@@ -704,7 +704,7 @@ msgstr ""
 #: ../src/kde/config/KeyManagerTab.cpp:498
 #: ../src/win32/config/KeyManagerTab.cpp:1698
 msgctxt "KeyManagerTab"
-msgid "boot9.bin|boot9.bin|-|Binary Files|*.bin|-|All Files|*.*|-"
+msgid "boot9.bin|boot9.bin|-|Binary Files|*.bin|-|All Files|*|-"
 msgstr ""
 
 #. tr: Nintendo 3DS aeskeydb.bin file filter (RP format)
@@ -712,7 +712,7 @@ msgstr ""
 #: ../src/kde/config/KeyManagerTab.cpp:520
 #: ../src/win32/config/KeyManagerTab.cpp:1700
 msgctxt "KeyManagerTab"
-msgid "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|-|All Files|*.*|-"
+msgid "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|-|All Files|*|-"
 msgstr ""
 
 #: ../src/gtk/config/KeyManagerTab.cpp:562
@@ -1105,9 +1105,9 @@ msgid "%s:"
 msgstr ""
 
 #: ../src/gtk/RomDataView_ops.cpp:308 ../src/gtk/RomDataView_ops.cpp:413
-#: ../src/kde/RomDataView_ops.cpp:197 ../src/kde/RomDataView_ops.cpp:263
-#: ../src/win32/RP_ShellPropSheetExt_ops.cpp:413
-#: ../src/win32/RP_ShellPropSheetExt_ops.cpp:432
+#: ../src/kde/RomDataView_ops.cpp:197 ../src/kde/RomDataView_ops.cpp:265
+#: ../src/win32/RP_ShellPropSheetExt_ops.cpp:415
+#: ../src/win32/RP_ShellPropSheetExt_ops.cpp:434
 #, c-format
 msgctxt "RomDataView"
 msgid "File: '%s'"
@@ -1119,26 +1119,29 @@ msgctxt "RomDataView"
 msgid "Export to Text File"
 msgstr ""
 
-#: ../src/gtk/RomDataView_ops.cpp:432 ../src/kde/RomDataView_ops.cpp:216
-#: ../src/win32/RP_ShellPropSheetExt_ops.cpp:322
+#. tr: "Text Files" filter (RP format)
+#: ../src/gtk/RomDataView_ops.cpp:433 ../src/kde/RomDataView_ops.cpp:217
+#: ../src/win32/RP_ShellPropSheetExt_ops.cpp:323
 msgctxt "RomDataView"
-msgid "Text Files|*.txt|text/plain|All Files|*.*|-"
-msgstr ""
-
-#: ../src/gtk/RomDataView_ops.cpp:437 ../src/kde/RomDataView_ops.cpp:221
-#: ../src/win32/RP_ShellPropSheetExt_ops.cpp:326
-msgctxt "RomDataView"
-msgid "Export to JSON File"
+msgid "Text Files|*.txt|text/plain|All Files|*|-"
 msgstr ""
 
 #: ../src/gtk/RomDataView_ops.cpp:438 ../src/kde/RomDataView_ops.cpp:222
 #: ../src/win32/RP_ShellPropSheetExt_ops.cpp:327
 msgctxt "RomDataView"
-msgid "JSON Files|*.json|application/json|All Files|*.*|-"
+msgid "Export to JSON File"
+msgstr ""
+
+#. tr: "JSON Files" filter (RP format)
+#: ../src/gtk/RomDataView_ops.cpp:440 ../src/kde/RomDataView_ops.cpp:224
+#: ../src/win32/RP_ShellPropSheetExt_ops.cpp:329
+msgctxt "RomDataView"
+msgid "JSON Files|*.json|application/json|All Files|*|-"
 msgstr ""
 
 #. tr: "All Files" filter (RP format)
-#: ../src/gtk/RomDataView_ops.cpp:528 ../src/kde/RomDataView_ops.cpp:318
+#: ../src/gtk/RomDataView_ops.cpp:531 ../src/kde/RomDataView_ops.cpp:320
+#: ../src/win32/RP_ShellPropSheetExt_ops.cpp:494
 msgctxt "RomData"
 msgid "All Files|*|-"
 msgstr ""
@@ -10414,10 +10417,4 @@ msgstr ""
 #: ../src/win32/OptionsMenuButton.cpp:106
 msgctxt "OptionsMenuButton"
 msgid "&Options..."
-msgstr ""
-
-#. tr: "All Files" filter (RP format)
-#: ../src/win32/RP_ShellPropSheetExt_ops.cpp:492
-msgctxt "RomData"
-msgid "All Files|*.*|-"
 msgstr ""

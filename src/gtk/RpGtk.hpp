@@ -35,7 +35,7 @@ typedef struct _rpGtk_getFileName_t {
 /**
  * Prompt the user to open a file.
  *
- * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|application/x-genesis-rom|All Files|*.*:-"
+ * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|application/x-genesis-rom|All Files|*|-"
  * Similar the same as Windows, but with '|' instead of '\0'.
  * Also, no terminator sequence is needed.
  * The "(*.bin; *.srl)" part is added to the display name if needed.
@@ -52,7 +52,7 @@ int rpGtk_getOpenFileName(const rpGtk_getFileName_t *gfndata);
 /**
  * Prompt the user to save a file.
  *
- * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|application/x-genesis-rom|All Files|*.*:-"
+ * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|application/x-genesis-rom|All Files|*|-"
  * Similar the same as Windows, but with '|' instead of '\0'.
  * Also, no terminator sequence is needed.
  * The "(*.bin; *.srl)" part is added to the display name if needed.

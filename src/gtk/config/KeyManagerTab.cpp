@@ -490,13 +490,13 @@ rp_key_manager_tab_handle_menu_action(RpKeyManagerTab *tab, gint id)
 
 	static const char file_filters_tbl[][88] = {
 		// tr: Wii keys.bin file filter (RP format)
-		NOP_C_("KeyManagerTab", "keys.bin|keys.bin|-|Binary Files|*.bin|-|All Files|*.*|-"),
+		NOP_C_("KeyManagerTab", "keys.bin|keys.bin|-|Binary Files|*.bin|-|All Files|*|-"),
 		// tr: Wii U otp.bin file filter (RP format)
-		NOP_C_("KeyManagerTab", "otp.bin|otp.bin|-|Binary Files|*.bin|-|All Files|*.*|-"),
+		NOP_C_("KeyManagerTab", "otp.bin|otp.bin|-|Binary Files|*.bin|-|All Files|*|-"),
 		// tr: Nintendo 3DS boot9.bin file filter (RP format)
-		NOP_C_("KeyManagerTab", "boot9.bin|boot9.bin|-|Binary Files|*.bin|-|All Files|*.*|-"),
+		NOP_C_("KeyManagerTab", "boot9.bin|boot9.bin|-|Binary Files|*.bin|-|All Files|*|-"),
 		// tr: Nintendo 3DS aeskeydb.bin file filter (RP format)
-		NOP_C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|-|All Files|*.*|-"),
+		NOP_C_("KeyManagerTab", "aeskeydb.bin|aeskeydb.bin|-|Binary Files|*.bin|-|All Files|*|-"),
 	};
 
 	GtkWindow *const parent = gtk_widget_get_toplevel_window(GTK_WIDGET(tab));

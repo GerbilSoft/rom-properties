@@ -213,13 +213,15 @@ void RomDataViewPrivate::doRomOp_stdop(int id)
 
 		case OPTION_EXPORT_TEXT:
 			title = C_("RomDataView", "Export to Text File");
-			filter = C_("RomDataView", "Text Files|*.txt|text/plain|All Files|*.*|-");
+			// tr: "Text Files" filter (RP format)
+			filter = C_("RomDataView", "Text Files|*.txt|text/plain|All Files|*|-");
 			default_ext = ".txt";
 			break;
 
 		case OPTION_EXPORT_JSON:
 			title = C_("RomDataView", "Export to JSON File");
-			filter = C_("RomDataView", "JSON Files|*.json|application/json|All Files|*.*|-");
+			// tr: "JSON Files" filter (RP format)
+			filter = C_("RomDataView", "JSON Files|*.json|application/json|All Files|*|-");
 			default_ext = ".json";
 			break;
 

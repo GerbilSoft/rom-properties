@@ -73,7 +73,7 @@ static GtkFileFilter *rpFileFilterToGtk_int(const gchar *const *pStrv)
 /**
  * Convert an RP file dialog filter to GTK2/GTK3 for GtkFileChooser.
  *
- * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|application/x-genesis-rom|All Files|*.*:-"
+ * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|application/x-genesis-rom|All Files|*|-"
  * Similar the same as Windows, but with '|' instead of '\0'.
  * Also, no terminator sequence is needed.
  * The "(*.bin; *.srl)" part is added to the display name if needed.
@@ -134,7 +134,7 @@ static int rpFileFilterToGtkFileChooser(GtkFileChooser *fileChooser, const char 
 /**
  * Convert an RP file dialog filter to GTK4 for GtkFileDialog.
  *
- * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|application/x-genesis-rom|All Files|*.*|-"
+ * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|application/x-genesis-rom|All Files|*|-"
  * Similar the same as Windows, but with '|' instead of '\0'.
  * Also, no terminator sequence is needed.
  * The "(*.bin; *.srl)" part is added to the display name if needed.
@@ -380,7 +380,7 @@ static int rpGtk_getFileName_int(const rpGtk_getFileName_t *gfndata, bool bSave)
 /**
  * Prompt the user to open a file.
  *
- * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|application/x-genesis-rom|All Files|*.*:-"
+ * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|application/x-genesis-rom|All Files|*|-"
  * Similar the same as Windows, but with '|' instead of '\0'.
  * Also, no terminator sequence is needed.
  * The "(*.bin; *.srl)" part is added to the display name if needed.
@@ -400,7 +400,7 @@ int rpGtk_getOpenFileName(const rpGtk_getFileName_t *gfndata)
 /**
  * Prompt the user to save a file.
  *
- * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|application/x-genesis-rom|All Files|*.*:-"
+ * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|application/x-genesis-rom|All Files|*|-"
  * Similar the same as Windows, but with '|' instead of '\0'.
  * Also, no terminator sequence is needed.
  * The "(*.bin; *.srl)" part is added to the display name if needed.

@@ -155,7 +155,7 @@ LibRpFile::IRpFile *openQUrl(const QUrl &url, bool isThumbnail = false);
 /**
  * Convert an RP file dialog filter to Qt.
  *
- * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|application/x-genesis-rom|All Files|*.*|-"
+ * RP syntax: "Sega Mega Drive ROM images|*.gen;*.bin|application/x-genesis-rom|All Files|*|-"
  * Similar the same as Windows, but with '|' instead of '\0'.
  * Also, no terminator sequence is needed.
  * The "(*.bin; *.srl)" part is added to the display name if needed.

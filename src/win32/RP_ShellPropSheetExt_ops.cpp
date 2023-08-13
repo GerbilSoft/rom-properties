@@ -319,12 +319,14 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 		static const StdActsInfo_t stdActsInfo[] = {
 			// OPTION_EXPORT_TEXT
 			{NOP_C_("RomDataView", "Export to Text File"),
-			 NOP_C_("RomDataView", "Text Files|*.txt|text/plain|All Files|*.*|-"),
+			 // tr: "Text Files" filter (RP format)
+			 NOP_C_("RomDataView", "Text Files|*.txt|text/plain|All Files|*|-"),
 			 _T(".txt"), false},
 
 			// OPTION_EXPORT_JSON
 			{NOP_C_("RomDataView", "Export to JSON File"),
-			 NOP_C_("RomDataView", "JSON Files|*.json|application/json|All Files|*.*|-"),
+			 // tr: "JSON Files" filter (RP format)
+			 NOP_C_("RomDataView", "JSON Files|*.json|application/json|All Files|*|-"),
 			 _T(".json"), false},
 
 			// OPTION_COPY_TEXT
@@ -489,7 +491,7 @@ void RP_ShellPropSheetExt_Private::btnOptions_action_triggered(int menuId)
 			filter += '|';
 		}
 		// tr: "All Files" filter (RP format)
-		filter += C_("RomData", "All Files|*.*|-");
+		filter += C_("RomData", "All Files|*|-");
 
 		// Initial file and directory, based on the current file.
 		string initialFile = FileSystem::replace_ext(romData->filename(), op->sfi.ext);
