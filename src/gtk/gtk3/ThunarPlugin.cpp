@@ -93,8 +93,18 @@ thunar_extension_initialize(ThunarxProviderPlugin *plugin)
 		return;
 	}
 
+	// Verify that the ThunarX versions are compatible.
+	DLSYM(thunarx_check_version, thunarx_check_version);
+	const gchar *const mismatch = thunarx_check_version(
+		THUNARX_MAJOR_VERSION, THUNARX_MINOR_VERSION, THUNARX_MICRO_VERSION);
+	if (G_UNLIKELY(mismatch != nullptr)) {
+		g_warning ("Version mismatch: %s", mismatch);
+		dlclose(libextension_so);
+		libextension_so = nullptr;
+		return;
+	}
+
 	// Load symbols.
-	DLSYM(thunarx_check_version,			thunarx_check_version);
 	DLSYM(thunarx_file_info_get_type,		thunarx_file_info_get_type);
 	DLSYM(thunarx_file_info_get_mime_type,		thunarx_file_info_get_mime_type);
 	DLSYM(thunarx_file_info_get_uri,		thunarx_file_info_get_uri);
@@ -108,16 +118,6 @@ thunar_extension_initialize(ThunarxProviderPlugin *plugin)
 	DLSYM(thunarx_menu_provider_get_type,		thunarx_menu_provider_get_type);
 	DLSYM(thunarx_property_page_provider_get_type,	thunarx_property_page_provider_get_type);
 	DLSYM(thunarx_property_page_new,		thunarx_property_page_new);
-
-	// Verify that the ThunarX versions are compatible.
-	const gchar *mismatch = thunarx_check_version(
-		THUNARX_MAJOR_VERSION, THUNARX_MINOR_VERSION, THUNARX_MICRO_VERSION);
-	if (G_UNLIKELY(mismatch != nullptr)) {
-		g_warning ("Version mismatch: %s", mismatch);
-		dlclose(libextension_so);
-		libextension_so = nullptr;
-		return;
-	}
 
 	// Symbols loaded. Register our types.
 	rp_thunar_register_types(plugin);
