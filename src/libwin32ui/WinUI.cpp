@@ -724,7 +724,7 @@ static tstring getFileName_int(HWND hWnd, LPCTSTR dlgTitle,
 	tstring ts_filterSpec = rpFileDialogFilterToWin32(filterSpec);
 
 	TCHAR tfilename[MAX_PATH];
-	tfilename[0] = 0;
+	tfilename[0] = _T('\0');
 
 	OPENFILENAME ofn;
 	memset(&ofn, 0, sizeof(ofn));
