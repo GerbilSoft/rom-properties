@@ -297,7 +297,7 @@ static int rpGtk_getFileName_int(const rpGtk_getFileName_t *gfndata, bool bSave)
 		GTK_I18N_STR_CANCEL, GTK_RESPONSE_CANCEL,
 		accept_text, GTK_RESPONSE_ACCEPT,
 		nullptr);
-	gtk_widget_set_name(fileDialog, "rpGtk_getFileName_int");
+	gtk_widget_set_name(fileDialog, "rpGtk_getFileName");
 #endif /* USE_GTK4_FILE_DIALOG */
 
 #if GTK_CHECK_VERSION(4,0,0)
