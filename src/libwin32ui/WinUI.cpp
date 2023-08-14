@@ -746,7 +746,7 @@ static tstring getFileName_int(HWND hWnd, LPCTSTR dlgTitle,
 			// Not a directory, or invalid.
 			// Assume it's a filename.
 			ofn.lpstrInitialDir = nullptr;
-			_tcscpy_s(tfilename, _countof(tfilename), origFilename);
+			_tcsncpy_s(tfilename, _countof(tfilename), origFilename, _TRUNCATE);
 		}
 	}
 
