@@ -352,7 +352,7 @@ static int rpGtk_getFileName_int(const rpGtk_getFileName_t *gfndata, bool bSave)
 
 	// Data for the GtkFileChooserDialog/GtkFileDialog callback function.
 	rpGtk_getFileName_int_callback_data_t *const gfncbdata =
-		static_cast<rpGtk_getFileName_int_callback_data_t*>(g_malloc(sizeof(gfncbdata)));
+		static_cast<rpGtk_getFileName_int_callback_data_t*>(g_malloc(sizeof(*gfncbdata)));
 	gfncbdata->callback = gfndata->callback;
 	gfncbdata->user_data = gfndata->user_data;
 	gfncbdata->bSave = bSave;
