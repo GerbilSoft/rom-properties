@@ -291,7 +291,9 @@ void KeyManagerTabPrivate::showKeyImportReturnStatus(
 	// Display the message.
 	// TODO: If it's already visible, animateHide(), then animateShow()?
 	messageWidget->setMessageType(type);
+#ifdef HAVE_KMESSAGEWIDGET_SETICON
 	messageWidget->setIcon(qApp->style()->standardIcon(icon, nullptr, messageWidget));
+#endif /* HAVE_KMESSAGEWIDGET_SETICON */
 	messageWidget->setText(U82Q(msg));
 	messageWidget->animatedShow();
 }
@@ -435,7 +437,7 @@ void KeyManagerTab::save(QSettings *pSettings)
 	d->keyStore->allKeysSaved();
 }
 
-/** Actions. **/
+/** Actions **/
 
 /** TODO: Combine into a single function by storing an ID in the QActions. **/
 
