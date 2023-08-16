@@ -496,7 +496,7 @@ wstring urlencode(const wchar_t *url)
 				ws_ret += L"%25";
 				break;
 			case L'^':
-				s_ret += L"%5E";
+				ws_ret += L"%5E";
 				break;
 			default:
 				ws_ret += *url;
