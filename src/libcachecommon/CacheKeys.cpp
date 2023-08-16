@@ -232,7 +232,7 @@ int filterCacheKey(wchar_t *pCacheKey)
 		// Surrogate pair check
 		const wchar_t schk = (chr & 0xDC00);
 		if (schk == 0xD800) {
-			// Start of UTF-16 surrogate pair.
+			// High surrogate: Start of UTF-16 surrogate pair.
 			// Verify that the next code point is a low surrogate.
 			if ((p[1] & 0xDC00) != 0xDC00) {
 				// Not a low surrogate.
@@ -244,7 +244,7 @@ int filterCacheKey(wchar_t *pCacheKey)
 			// This is a low surrogate.
 			p++;
 			continue;
-		} else if (schk == 0xD800) {
+		} else if (schk == 0xDC00) {
 			// Unpaired low surrogate.
 			// This is invalid.
 			*p = L'_';
