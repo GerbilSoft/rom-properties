@@ -16,12 +16,13 @@
 // Other rom-properties libraries
 #include "librpbase/Achievements.hpp"
 #include "librpbase/img/RpPng.hpp"
-#include "librpfile/win32/RpFile_windres.hpp"
 #include "librptext/wchar.hpp"
 #include "librptexture/img/rp_image.hpp"
 using namespace LibRpBase;
-using LibRpFile::RpFile_windres;
 using LibRpTexture::rp_image;
+
+// RpFile_windres
+#include "file/RpFile_windres.hpp"
 
 // ROM icon
 #include "config/PropSheetIcon.hpp"

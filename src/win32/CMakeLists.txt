@@ -57,7 +57,6 @@ SET(${PROJECT_NAME}_SRCS
 	RP_ShellPropSheetExt.cpp
 	RP_ShellPropSheetExt_ops.cpp
 	RP_ShellPropSheetExt_Register.cpp
-	RpFile_IStream.cpp
 	RP_ThumbnailProvider.cpp
 	RP_ThumbnailProvider_Register.cpp
 	RP_ThumbnailProvider_Fallback.cpp
@@ -87,6 +86,8 @@ SET(${PROJECT_NAME}_SRCS
 	config/AchievementsTab.cpp
 	config/AboutTab.cpp
 	config/UpdateChecker.cpp
+	file/RpFile_IStream.cpp
+	file/RpFile_windres.cpp
 	)
 SET(${PROJECT_NAME}_H
 	RP_ExtractIcon.hpp
@@ -97,7 +98,6 @@ SET(${PROJECT_NAME}_H
 	RpImageWin32.hpp
 	RP_ShellPropSheetExt.hpp
 	RP_ShellPropSheetExt_p.hpp
-	RpFile_IStream.hpp
 	thumbcache-wrapper.hpp
 	RP_ThumbnailProvider.hpp
 	RP_ThumbnailProvider_p.hpp
@@ -127,6 +127,8 @@ SET(${PROJECT_NAME}_H
 	config/AchievementsTab.hpp
 	config/AboutTab.hpp
 	config/UpdateChecker.hpp
+	file/RpFile_IStream.hpp
+	file/RpFile_windres.hpp
 	res/resource.h
 	)
 SET(${PROJECT_NAME}_RC

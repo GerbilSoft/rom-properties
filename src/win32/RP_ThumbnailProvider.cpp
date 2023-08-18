@@ -17,7 +17,7 @@ using LibRpFile::IRpFile;
 using LibRpTexture::rp_image;
 
 // RpFile_IStream
-#include "RpFile_IStream.hpp"
+#include "file/RpFile_IStream.hpp"
 
 // C++ STL classes.
 using std::wstring;

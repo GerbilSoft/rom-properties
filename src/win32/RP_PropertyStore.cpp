@@ -25,7 +25,7 @@ using LibRomData::RomDataFactory;
 #include "libwin32common/propsys_xp.h"
 
 // RpFile_IStream
-#include "RpFile_IStream.hpp"
+#include "file/RpFile_IStream.hpp"
 
 // C++ STL classes.
 using std::wstring;

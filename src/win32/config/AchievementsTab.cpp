@@ -16,13 +16,14 @@
 #include "librpbase/Achievements.hpp"
 #include "librpbase/RomFields.hpp"
 #include "librpbase/img/RpPng.hpp"
-#include "librpfile/win32/RpFile_windres.hpp"
 #include "librptexture/img/rp_image.hpp"
 using namespace LibRpBase;
-using LibRpFile::RpFile_windres;
 using LibRpTexture::rp_image;
 
-// C++ STL classes.
+// RpFile_windres
+#include "file/RpFile_windres.hpp"
+
+// C++ STL classes
 using std::tstring;
 using std::unique_ptr;
 

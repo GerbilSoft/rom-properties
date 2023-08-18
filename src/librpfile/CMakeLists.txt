@@ -122,11 +122,9 @@ IF(WIN32)
 		win32/IStreamWrapper.cpp
 		win32/RecursiveScan_win32.cpp
 		win32/RpFile_win32.cpp
-		win32/RpFile_windres.cpp
 		)
 	SET(${PROJECT_NAME}_OS_H
 		win32/IStreamWrapper.hpp
-		win32/RpFile_windres.hpp
 		)
 ELSE(WIN32)
 	SET(${PROJECT_NAME}_OS_SRCS

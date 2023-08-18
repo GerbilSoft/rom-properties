@@ -14,10 +14,11 @@
 // librpbase, librpfile, librptexture
 #include "librpbase/SystemRegion.hpp"
 #include "librpbase/img/RpPng.hpp"
-#include "librpfile/win32/RpFile_windres.hpp"
 using namespace LibRpBase;
-using LibRpFile::RpFile_windres;
 using LibRpTexture::rp_image;
+
+// RpFile_windres
+#include "file/RpFile_windres.hpp"
 
 // C++ STL classes
 using std::tstring;
