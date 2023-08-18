@@ -39,11 +39,6 @@ using LibRpFile::IRpFile;
 using std::string;
 using std::vector;
 
-// for convenience
-#define rowloop_current_image images[i]
-#define rowloop_current_windowsinfo images[i].windowsinfo
-#define rowloop_current_windowsver images[i].windowsinfo.version
-
 namespace LibRomData {
 
 class WimPrivate final : public RomDataPrivate
@@ -175,8 +170,10 @@ int WimPrivate::addFields_XML()
 	}
 
 	// the eighth byte of the "size" is used for flags so we have to AND it
+	static const uint64_t XML_MAX_SIZE = 16U*1024U*1024U;
 	uint64_t size = (wimHeader.xml_resource.size & 0x00FFFFFFFFFFFFFFULL);
-	if (size > 16U*1024*1024) {
+	assert(size <= XML_MAX_SIZE);
+	if (size > XML_MAX_SIZE) {
 		// XML is larger than 16 MB, which doesn't make any sense.
 		return -ENOMEM;
 	}
@@ -219,18 +216,24 @@ int WimPrivate::addFields_XML()
 		return -EIO;
 	}
 
-	vector<WimIndex> images(0);
-	images.reserve(wimHeader.number_of_images);
+	// Sanity check: Allow up to 256 images.
+	unsigned int number_of_images = wimHeader.number_of_images;
+	assert(number_of_images <= 256);
+	if (number_of_images > 256)
+		number_of_images = 256;
+
+	vector<WimIndex> images;
+	images.reserve(number_of_images);
 	const XMLElement *currentimage = wim_element->FirstChildElement("IMAGE");
 
 	const char *const s_unknown = C_("Wim", "(unknown)");
 	for (uint32_t i = 0; i < wimHeader.number_of_images; i++) {
-		WimIndex currentindex;
-		currentindex.index = i + 1;
-
 		assert(currentimage != nullptr);
 		if (!currentimage)
 			break;
+
+		WimIndex currentindex;
+		currentindex.index = i + 1;
 
 		// the last modification time is split into a high part and a
 		// low part so we shift and add them together
@@ -334,25 +337,26 @@ int WimPrivate::addFields_XML()
 	}
 
 	auto vv_data = new RomFields::ListData_t();
-	vv_data->reserve(wimHeader.number_of_images);
+	vv_data->reserve(number_of_images);
 
 	// loop for the rows
-	for (uint32_t i = 0; i < wimHeader.number_of_images; i++) {
+	unsigned int idx = 1;
+	for (const auto &image : images) {
 		vv_data->resize(vv_data->size()+1);
 		auto &data_row = vv_data->at(vv_data->size()-1);
 		data_row.reserve(10);
-		data_row.emplace_back(rp_sprintf("%u", i + 1));
-		data_row.emplace_back(rowloop_current_image.name);
-		data_row.emplace_back(rowloop_current_image.description);
-		data_row.emplace_back(rowloop_current_image.dispname);
-		data_row.emplace_back(rowloop_current_image.dispdescription);
+		data_row.emplace_back(rp_sprintf("%u", idx++));
+		data_row.emplace_back(image.name);
+		data_row.emplace_back(image.description);
+		data_row.emplace_back(image.dispname);
+		data_row.emplace_back(image.dispdescription);
 
 		// Pack the 64-bit time_t into a string.
 		RomFields::TimeString_t time_string;
-		time_string.time = rowloop_current_image.lastmodificationtime;
+		time_string.time = image.lastmodificationtime;
 		data_row.emplace_back(time_string.str, sizeof(time_string.str));
 
-		if (images[i].containswindowsimage == false) {
+		if (image.containswindowsimage == false) {
 			// No Windows image. Add empty strings to complete the row.
 			for (unsigned int i = 4; i > 0; i--) {
 				data_row.emplace_back();
@@ -360,13 +364,16 @@ int WimPrivate::addFields_XML()
 			continue;
 		}
 
+		const auto &windowsver = image.windowsinfo.version;
 		data_row.emplace_back(
-			rp_sprintf("%u.%u.%u.%u", rowloop_current_windowsver.majorversion,
-				rowloop_current_windowsver.minorversion, rowloop_current_windowsver.buildnumber,
-				rowloop_current_windowsver.spbuildnumber)); 
-		data_row.emplace_back(rowloop_current_windowsinfo.editionid);
+			rp_sprintf("%u.%u.%u.%u", windowsver.majorversion,
+				windowsver.minorversion, windowsver.buildnumber,
+				windowsver.spbuildnumber));
+
+		const auto &windowsinfo = image.windowsinfo;
+		data_row.emplace_back(windowsinfo.editionid);
 		const char *archstring;
-		switch (rowloop_current_windowsinfo.arch) {
+		switch (windowsinfo.arch) {
 			default:
 				archstring = nullptr;
 				break;
@@ -390,9 +397,9 @@ int WimPrivate::addFields_XML()
 			data_row.emplace_back(archstring);
 		} else {
 			data_row.emplace_back(rp_sprintf(C_("RomData", "Unknown (%d)"),
-				static_cast<int>(rowloop_current_windowsinfo.arch)));
+				static_cast<int>(windowsinfo.arch)));
 		}
-		data_row.emplace_back(rowloop_current_windowsinfo.languages.language);
+		data_row.emplace_back(windowsinfo.languages.language);
 	}	
 
 	static const char *const field_names[] = {
