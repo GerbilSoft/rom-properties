@@ -40,12 +40,15 @@ LibRpBase::RomData *rp_gtk_open_uri(const gchar *uri)
 		file = new RpFileGio(uri);
 	}
 
-	// Open the ROM file.
-	RomData *romData = nullptr;
-	if (file->isOpen()) {
-		// Attempt to open the ROM file.
-		romData = RomDataFactory::create(file);
+	if (!file->isOpen()) {
+		// Unable to open the file...
+		// TODO: Return an error code?
+		file->unref();
+		return nullptr;
 	}
+
+	// Create the RomData object.
+	RomData *const romData = RomDataFactory::create(file);
 	file->unref();
 
 	return romData;
